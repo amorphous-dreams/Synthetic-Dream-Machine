@@ -118,8 +118,8 @@ describe("a message carries the sender's past into the recipient", () => {
   test("replay joins the sender's history: a message between siblings orders the recipient after the sender", () => {
     const replay = replayWorldlineEdges(root, [
       delegationEdge(root, "run.a", { turnKey: "a0" }),
-      delegationEdge(root, "run.b", { turnKey: "b0" }),
-      communicationEdge(root, "run.a", { turnKey: "a1", parentKey: "a0" }),
+      delegationEdge(root, "run.b", { turnKey: "b0", parentKey: "a0" }),
+      communicationEdge(root, "run.a", { turnKey: "a1", parentKey: "b0" }),
       communicationEdge("run.a", "run.b", { turnKey: "ab", parentKey: "a1" }),
     ]);
     expect(replay.skipped).toEqual([]);
@@ -135,5 +135,72 @@ describe("a message carries the sender's past into the recipient", () => {
     expect(replay.unjoined.map((u) => [u.subject, u.reason])).toEqual([["outside", "sender-unrecorded"]]);
     expect(worldlineStampFor(replay.causal, "outside")).toBeUndefined();
     expect(worldlineCompare(replay.causal, root, "run.a")).toBe("before");
+  });
+});
+
+describe("replay orders only what the links order", () => {
+  // The live order: spawn A, spawn B; A hands back; B hands back; the run resumes A; A messages B.
+  function live() {
+    let c = worldlineCausalSeed(root);
+    c = worldlineSpawn(c, root, "run.A");
+    c = worldlineSpawn(c, root, "run.B");
+    c = worldlineHandback(c, root, "run.A").causal;
+    c = worldlineHandback(c, root, "run.B").causal;
+    c = worldlineResume(c, root, "run.A");
+    return worldlineInject(c, "run.A", "run.B");
+  }
+
+  test("an unlinked sibling message never reverses a verdict: the replay names it a gap and marks its handles uncertain", () => {
+    const replay = replayWorldlineEdges(root, [
+      delegationEdge(root, "run.A", { turnKey: "a0" }),
+      delegationEdge(root, "run.B", { turnKey: "b0", parentKey: "a0" }),
+      handbackEdge("run.A", root, { turnKey: "hA1", parentKey: "b0" }),
+      handbackEdge("run.B", root, { turnKey: "hB1", parentKey: "hA1" }),
+      communicationEdge(root, "run.A", { turnKey: "mA2", parentKey: "hB1" }),
+      communicationEdge("run.A", "run.B", { turnKey: "xA" }),
+    ]);
+    expect(worldlineCompare(live(), root, "run.B")).toBe("before");
+    expect(replay.skipped.map((s) => [s.turnKey, s.reason])).toEqual([["xA", "order-unlinked"]]);
+    expect(replay.uncertain).toEqual(expect.arrayContaining(["run.A", "run.B"]));
+  });
+
+  test("a main chain linking every main event replays the live registry exactly", () => {
+    const replay = replayWorldlineEdges(root, [
+      delegationEdge(root, "run.A", { turnKey: "a0" }),
+      delegationEdge(root, "run.B", { turnKey: "b0", parentKey: "a0" }),
+      handbackEdge("run.A", root, { turnKey: "hA1", parentKey: "b0" }),
+      handbackEdge("run.B", root, { turnKey: "hB1", parentKey: "hA1" }),
+      communicationEdge(root, "run.A", { turnKey: "mA2", parentKey: "hB1" }),
+      communicationEdge("run.A", "run.B", { turnKey: "xA", parentKey: "mA2" }),
+    ]);
+    expect(replay.skipped).toEqual([]);
+    expect(replay.uncertain).toEqual([]);
+    expect(replay.causal).toEqual(live());
+  });
+
+  test("two unlinked messages from one sender name a gap rather than an order taken from their content", () => {
+    const replay = replayWorldlineEdges(root, [
+      delegationEdge(root, "run.a", { turnKey: "a0" }),
+      delegationEdge(root, "run.b", { turnKey: "b0", parentKey: "a0" }),
+      communicationEdge(root, "run.a", { turnKey: "m1", parentKey: "b0" }),
+      communicationEdge(root, "run.b", { turnKey: "m2", parentKey: "b0" }),
+    ]);
+    expect(replay.skipped.map((s) => s.reason)).toEqual(["order-unlinked"]);
+    expect(replay.uncertain.length).toBeGreaterThan(0);
+  });
+
+  test("a retirement carries its turn key: an exchange linked after it finds the spirit gone", () => {
+    const replay = replayWorldlineEdges(root, [
+      delegationEdge(root, child, { turnKey: "s0" }),
+      communicationEdge(root, child, { turnKey: "m1", parentKey: "r1" }),
+    ], [retireClose(root, child, undefined, "s0", "r1")]);
+    expect(replay.skipped.map((s) => [s.turnKey, s.reason])).toEqual([["m1", "target-unspawned"]]);
+    expect(worldlineStampFor(replay.causal, child)).toBeUndefined();
+  });
+
+  test("a spawn from a parent the record never holds refuses, and seeds no second full-ownership root", () => {
+    const replay = replayWorldlineEdges(root, [delegationEdge("elsewhere", "elsewhere.c", { turnKey: "e0" })]);
+    expect(replay.skipped.map((s) => s.reason)).toEqual(["parent-unrecorded"]);
+    expect(Object.keys(replay.causal.stamps)).toHaveLength(1);
   });
 });

@@ -120,13 +120,15 @@ export interface FormPalaceProvider {
 
 /**
  * A spirit's worldline edges derived from a transcript (the worldline-compare edge-DAG source): its spawn,
- * one round-closing handback edge per real handback event, and every delivered message it received or
- * sent to a sibling. No retirement rides the feed; a transcript records none.
+ * one round-closing handback edge per real report, every delivered message it received or sent to a
+ * sibling, and each killed/failed/stopped end (no edge). The run's own events share one parentKey chain;
+ * a sibling message rides unlinked. No retirement rides the feed; a transcript records none.
  */
 export interface SpiritEdges {
   readonly spawn: WorldlineEdgeTriple;
   readonly handbacks: readonly WorldlineEdgeTriple[];
   readonly messages: readonly WorldlineEdgeTriple[];
+  readonly ends: readonly { readonly turn: string; readonly status: string }[];
 }
 
 /** daemon-VM provider — the sovereign-worker reads + the capture FEED. The host supplies only the
@@ -198,7 +200,7 @@ export interface DaemonVerbProvider {
    *  `subagent-edges` serve-op, so it reads async. `sensoriumRoot` addresses a holder (absent → memory). */
   subagentEdges(input: { transcript: string; sensoriumRoot?: string }): Promise<readonly SpiritEdges[]>;
   /** Well 1 — the concurrent-capable causal verdict between two handles, IN the daemon VM. */
-  worldlineCompare(input: DaemonWorldlineCompareInput): Promise<{ order: string }>;
+  worldlineCompare(input: DaemonWorldlineCompareInput): Promise<{ order: string; uncertain: readonly string[] }>;
   /** Well 3 + Well 4 — a handle's worldline-ordered form-vector path (+ optional null baseline). */
   worldlineTrajectory(input: DaemonWorldlineTrajectoryInput): Promise<DaemonWorldlineTrajectoryResult>;
   // ── the DURABLE sensorium-lifecycle verbs — pure manifest.json reducers (no store holder), routed over
@@ -644,8 +646,10 @@ export function worldlineVerbCap(): CapModule {
             ? await daemon.subagentEdges(sensoriumRoot !== undefined ? { transcript, sensoriumRoot } : { transcript })
             : [];
           const opens = spirits.flatMap((s) => [s.spawn, ...s.handbacks, ...s.messages]);
+          // The feed's spawns name the run they fork from; the registry seeds there.
+          const root = spirits[0]?.spawn.subject;
           try {
-            return await daemon.worldlineCompare({ a, b, opens });
+            return await daemon.worldlineCompare({ a, b, opens, ...(root !== undefined ? { root } : {}) });
           } catch (err) {
             throw new Error(`worldline-compare: ${err instanceof Error ? err.message : String(err)} (supply a transcript that names both handles)`);
           }

@@ -11,11 +11,15 @@ TWO append-only sqlite tables BESIDE the palace (the raw-sqlite-beside-chroma id
 structurepalace already ride):
 
   worldline_edges  — the rhizome STRUCTURE + the bitemporal spawn-interval.
-      Each edge points CAUSE -> EFFECT (happened-before): a `fork` runs parent->child, a
-      `linear` runs prev->next, a `join` (handback) runs child->parent (the reunion — the
-      parent's post-handback acts stand AFTER the child), an `inform` runs sender->recipient (a
-      message). `valid_from` opens the interval on a caller LOGICAL tick; `valid_to` closes the fork
-      at retirement (bitemporal, kg_io's idiom).
+      The spawn tree points CAUSE -> EFFECT (happened-before): a `fork` runs parent->child, a
+      `linear` runs prev->next. Two evidence rows ride beside it: a `join` records a round's
+      handback (the spirit's handle -> the main turn that received it) and an `inform` records a
+      message (the sending turn -> the recipient's handle). One handle node stands for a spirit's
+      whole worldline across every round, so a join and an inform read as evidence of an exchange,
+      never as a happened-before order: across rounds they can close a loop through the handle.
+      Only the fork/linear walks (descendants, worldline_of, are_concurrent, relation_of, kapae)
+      read order. `valid_from` opens the interval on a caller LOGICAL tick; `valid_to` closes the
+      fork at retirement (bitemporal, kg_io's idiom).
       History stays: a close sets `valid_to`, never a DELETE.
 
   worldline_kapae  — the MUTE polarity-log (persistence_io's move-not-delete idiom).
@@ -70,11 +74,12 @@ from holder_caps import (
     run_holder,
 )
 
-# The rhizome relations — each stored CAUSE -> EFFECT so happened-before reads as reachability.
+# The rhizome relations. fork and linear store CAUSE -> EFFECT, so happened-before reads as reachability over
+# them alone; join and inform record exchanges against a spirit's one handle node and carry no order.
 REL_FORK = "fork"      # spawn: parent -> child
 REL_LINEAR = "linear"  # sequential: prev -> next
-REL_JOIN = "join"      # handback: child -> parent's receipt (a round closes; parent stands after child)
-REL_INFORM = "inform"  # message: sender -> recipient (the receive stands after the send)
+REL_JOIN = "join"      # handback evidence: spirit handle -> the main turn that received the round's report
+REL_INFORM = "inform"  # message evidence: sending turn -> the recipient's handle
 REL_CONTAINS = "contains"  # declared static topology; never temporal or branch lineage
 
 # The spawn-tree relations — the DOWNWARD branch. kapae mutes a subtree over these; the ∥ verdict
@@ -276,9 +281,8 @@ class WorldlineStore:
         return self.add_edge(prev, nxt, REL_LINEAR, tick, basis=basis)
 
     def handback(self, parent: str, child: str, tick, *, receipt: "str | None" = None) -> dict:
-        """HANDBACK — a ROUND closes: add the JOIN edge child -> `receipt` (the parent's receiving turn;
-        the parent node itself when no receipt turn stands), so the receipt stands after the child. The
-        fork stays OPEN: the spirit persists and a later round resumes it. Retirement takes its own act
+        """HANDBACK — a ROUND closes: add the JOIN evidence row child -> `receipt` (the parent's receiving
+        turn; the parent node itself when no receipt turn stands). The fork stays OPEN: the spirit persists and a later round resumes it. Retirement takes its own act
         (`retire`). Idempotent per (child, receipt, tick)."""
         join = self.add_edge(child, receipt or parent, REL_JOIN, tick)
         return {"join": join["added"]}
@@ -296,8 +300,8 @@ class WorldlineStore:
         return {"fork_closed": closed}
 
     def inform(self, sender: str, recipient: str, tick) -> dict:
-        """MESSAGE — the sender's turn reached the recipient (the receive stands after the send). Rides
-        no spawn-tree walk, so kapae and the ∥ verdict keep their branch reach."""
+        """MESSAGE — record that the sender's turn reached the recipient. Evidence, never order: rides no
+        spawn-tree walk, so kapae and the ∥ verdict keep their branch reach."""
         return self.add_edge(sender, recipient, REL_INFORM, tick)
 
     # -- reads: the bitemporal rhizome + the branch subtree + the ∥ verdict ------------------

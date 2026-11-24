@@ -541,6 +541,8 @@ export interface DaemonMsg_WorldlineCompareResult {
   requestId: string;
   /** "before" | "after" | "concurrent" | "equal" — the ItcOrder, carried as a plain string (GP-2). */
   order?: string;
+  /** Handles whose stamps rest on an incomplete record (the replay's `uncertain`); a verdict naming one reads partial. */
+  uncertain?: readonly string[];
   error?: string;
 }
 
@@ -1454,6 +1456,7 @@ export function mkDaemonWorldlineCompareRequest(opts: {
 export function mkDaemonWorldlineCompareResult(opts: {
   requestId: string;
   order?: string;
+  uncertain?: readonly string[];
   error?: string;
 }): DaemonMsg_WorldlineCompareResult {
   const msg: DaemonMsg_WorldlineCompareResult = {
@@ -1461,6 +1464,7 @@ export function mkDaemonWorldlineCompareResult(opts: {
     requestId: opts.requestId,
   };
   if (opts.order !== undefined) msg.order = opts.order;
+  if (opts.uncertain !== undefined) msg.uncertain = opts.uncertain;
   if (opts.error !== undefined) msg.error = opts.error;
   return msg;
 }

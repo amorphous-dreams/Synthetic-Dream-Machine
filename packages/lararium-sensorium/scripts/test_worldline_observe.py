@@ -63,7 +63,7 @@ def test_wire_builds_fork_and_chain_with_no_invented_handback(tmp_path):
     handle = derive_handle(run, "aaa")
     assert run.startswith("wl-")      # opaque — the bare "sess-xyz" never rides the graph
     assert "sess-xyz" not in run
-    assert summary == {"run": run, "main_turns": 4, "spirits": [handle], "rounds": [], "messages": []}
+    assert summary == {"run": run, "main_turns": 4, "spirits": [handle], "rounds": [], "messages": [], "ends": []}
 
     edges = {(e["frm"], e["to"]): e for e in store.dag()["edges"]}
     # the SPAWN fork run -> handle (the task's edge)

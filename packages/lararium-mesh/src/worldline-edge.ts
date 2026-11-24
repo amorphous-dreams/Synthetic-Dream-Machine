@@ -62,6 +62,8 @@ export interface WorldlineEdgeClose {
   readonly ended?: string;
   /** The turnKey of the event this retirement causally follows. */
   readonly parentKey?: string;
+  /** The turn-DAG key of the retirement itself, so a later event can link after it. */
+  readonly turnKey?: string;
 }
 
 export interface EdgeOpts {
@@ -106,7 +108,7 @@ export function handbackEdge(child: string, parent: string, opts: EdgeOpts = {})
 }
 
 /** RETIRE → the close descriptor for the spawn edge (the continuing spirit's explicit end). */
-export function retireClose(parent: string, child: string, ended?: string, parentKey?: string): WorldlineEdgeClose {
+export function retireClose(parent: string, child: string, ended?: string, parentKey?: string, turnKey?: string): WorldlineEdgeClose {
   if (!parent || !child) throw new Error("retireClose: parent and child handles required");
   return {
     subject: parent,
@@ -114,5 +116,6 @@ export function retireClose(parent: string, child: string, ended?: string, paren
     object: child,
     ...(ended !== undefined ? { ended } : {}),
     ...(parentKey !== undefined ? { parentKey } : {}),
+    ...(turnKey !== undefined ? { turnKey } : {}),
   };
 }

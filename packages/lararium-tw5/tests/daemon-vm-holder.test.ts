@@ -55,7 +55,7 @@ function fakeVm(pluginCids: readonly string[] = []): Fake {
     dropFace: async (k: string) => { registered.push(`dropFace:${k}`); },
     placeTelemetry: () => { calls.push("placeTelemetry"); },
     placeStructurepalaceKapae: () => { calls.push("kapae"); },
-    worldlineCompare: async () => { calls.push("worldlineCompare"); return { order: `vm${id}` }; },
+    worldlineCompare: async () => { calls.push("worldlineCompare"); return { order: `vm${id}`, uncertain: [] }; },
     worldlineTrajectory: async () => ({ trajectory: id }) as never,
     resolveBinding: async () => {
       calls.push("resolveBinding:start");

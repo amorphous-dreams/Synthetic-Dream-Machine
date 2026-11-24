@@ -32,10 +32,10 @@ import type { IslandContext } from "../src/island-context.js";
 describe("computeWorldlineCompare — Well 1 (registry held in-VM, concurrent-capable verdict)", () => {
   test("project the edge-DAG, hold the registry, answer before/concurrent/equal", () => {
     const opens = [
-      delegationEdge("run", "run.a", { validFrom: "2026-06-29T00:00:00Z" }),
-      delegationEdge("run", "run.b", { validFrom: "2026-06-29T00:00:01Z" }),
-      communicationEdge("run", "run.a", { validFrom: "2026-06-29T00:00:02Z" }),
-      communicationEdge("run", "run.b", { validFrom: "2026-06-29T00:00:03Z" }),
+      delegationEdge("run", "run.a", { validFrom: "2026-06-29T00:00:00Z", turnKey: "s-a" }),
+      delegationEdge("run", "run.b", { validFrom: "2026-06-29T00:00:01Z", turnKey: "s-b", parentKey: "s-a" }),
+      communicationEdge("run", "run.a", { validFrom: "2026-06-29T00:00:02Z", turnKey: "m-a", parentKey: "s-b" }),
+      communicationEdge("run", "run.b", { validFrom: "2026-06-29T00:00:03Z", turnKey: "m-b", parentKey: "m-a" }),
     ];
     expect(computeWorldlineCompare({ a: "run", b: "run.b", opens, root: "run" }).order).toBe("before"); // run's last send reached b
     expect(computeWorldlineCompare({ a: "run.a", b: "run.b", opens, root: "run" }).order).toBe("concurrent");

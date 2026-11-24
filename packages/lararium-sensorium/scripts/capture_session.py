@@ -466,15 +466,19 @@ class CaptureSessionServer:
         The read uses `worldline_observe.derive_subagent_edges` over spirit transcripts under
         `<session>/subagents/` and `read_spirit_events` over the transcripts, and writes no store or
         worldline handle. The compare feed uses the plain session basename as its run-root; the storage
-        path carries its own veiled root. Each spirit carries these edge shapes:
+        path carries its own veiled root. Each placed spirit carries these edge shapes:
           spawn     = {subject: run, predicate: "prov:Delegation", object: handle, turnKey: <first turn uuid>}
           handbacks = [{subject: handle, predicate: "prov:Communication", object: run, turnKey: <receipt
-                        turn>, parentKey: <prior event>, round: "close"}] — one per REAL handback event
+                        turn>, round: "close"}] — one per REAL report
           messages  = [{subject: sender, predicate: "prov:Communication", object: handle, turnKey: <sending
-                        turn>, parentKey: <prior event>?}] — one per delivered SendMessage
-        A spirit's main-transcript events chain by parentKey in that transcript's order, from its spawn;
-        a sibling's message names no parentKey. The edges carry no valid_from/ended, and no retirement
-        rides the feed, since no transcript records one."""
+                        turn>}] — one per delivered SendMessage
+          ends      = [{turn, status}] — a killed/failed/stopped notification; no edge
+        ONE main chain: every main-transcript event (a spawn placed at its Agent launch row, a handback, a
+        message) carries `parentKey` = the run's previous event, so replay orders the run's events by its
+        own transcript. A spirit with no launch row in the main transcript rides no edge and lands in
+        `unplaced`. A spirit's message to its sibling rides with no parentKey: its place on either spirit's
+        line stays unknown, and the replay names it a gap where it would otherwise guess. A row holding two
+        events keys the second `<row>#<tool use or agent>`. No valid_from/ended and no retirement ride."""
         from worldline_observe import derive_subagent_edges, read_spirit_events, run_id_of
         transcript = str(req.get("transcript") or "")
         if not transcript:
@@ -482,35 +486,48 @@ class CaptureSessionServer:
         run = run_id_of(transcript)
         spirits = derive_subagent_edges(transcript, run)
         handles = {s.agent_id: s.handle for s in spirits}
-        entries: dict = {}
-        last: dict = {}
-        for spirit in spirits:
-            spawn = {"subject": run, "predicate": _PRED_DELEGATION, "object": spirit.handle}
-            if spirit.chain:
-                spawn["turnKey"] = spirit.chain[0].uuid   # the spawn anchor = the spirit's first turn uuid
-                last[spirit.agent_id] = spirit.chain[0].uuid
-            entries[spirit.agent_id] = {"spawn": spawn, "handbacks": [], "messages": []}
+        events = read_spirit_events(transcript, handles)
+        placed = {ev["agent"] for ev in events if ev["kind"] == "launch"}
+        entries: dict = {s.agent_id: {"spawn": None, "handbacks": [], "messages": [], "ends": []}
+                         for s in spirits if s.agent_id in placed}
+        first_turn = {s.agent_id: s.chain[0].uuid for s in spirits if s.chain}
+        used: set = set()
+        prior = None
 
-        def chained(agent_id: str, edge: dict, turn: str) -> dict:
-            prior = last.get(agent_id)
-            last[agent_id] = turn
-            return {**edge, "turnKey": turn, **({"parentKey": prior} if prior else {})}
+        def chained(edge: dict, turn: str, agent: str) -> dict:
+            nonlocal prior
+            key = turn if turn not in used else f"{turn}#{agent}"
+            used.add(key)
+            out = {**edge, "turnKey": key, **({"parentKey": prior} if prior else {})}
+            prior = key
+            return out
 
-        for ev in read_spirit_events(transcript, handles):
-            handle = handles[ev["agent"]]
-            if ev["kind"] == "handback":
+        for ev in events:
+            agent = ev["agent"]
+            if agent not in entries:
+                continue
+            handle = handles[agent]
+            if ev["kind"] == "launch":
+                spawn = {"subject": run, "predicate": _PRED_DELEGATION, "object": handle}
+                entries[agent]["spawn"] = chained(spawn, first_turn.get(agent, ev["turn"]), agent)
+            elif ev["kind"] == "handback":
                 edge = {"subject": handle, "predicate": _PRED_COMMUNICATION, "object": run}
-                entries[ev["agent"]]["handbacks"].append({**chained(ev["agent"], edge, ev["turn"]), "round": _ROUND_CLOSE})
-            else:
+                entries[agent]["handbacks"].append({**chained(edge, ev["turn"], agent), "round": _ROUND_CLOSE})
+            elif ev["kind"] == "message":
                 edge = {"subject": run, "predicate": _PRED_COMMUNICATION, "object": handle}
-                entries[ev["agent"]]["messages"].append(chained(ev["agent"], edge, ev["turn"]))
+                entries[agent]["messages"].append(chained(edge, ev["turn"], agent))
+            elif ev["kind"] == "end":
+                entries[agent]["ends"].append({"turn": ev["turn"], "status": ev["status"]})
         for spirit in spirits:
+            if spirit.agent_id not in entries:
+                continue
             for ev in read_spirit_events(spirit.agent_file, handles):
-                if ev["kind"] == "message" and ev["agent"] != spirit.agent_id:
+                if ev["kind"] == "message" and ev["agent"] != spirit.agent_id and ev["agent"] in entries:
                     entries[spirit.agent_id]["messages"].append({
                         "subject": spirit.handle, "predicate": _PRED_COMMUNICATION,
                         "object": handles[ev["agent"]], "turnKey": ev["turn"]})
-        return {"spirits": [entries[s.agent_id] for s in spirits]}
+        return {"spirits": [entries[s.agent_id] for s in spirits if s.agent_id in entries],
+                "unplaced": [s.agent_id for s in spirits if s.agent_id not in entries]}
 
     def kapae(self, req: dict) -> dict:
         """Mute a worldline branch + cascade the mute across THIS holder's content store (move-not-delete;

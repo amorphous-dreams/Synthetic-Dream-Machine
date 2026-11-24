@@ -178,11 +178,14 @@ interface CausalEvent {
 }
 
 /**
- * A replay gap announces the event and the failed causal condition.
+ * A replay gap announces the event and the failed causal condition. `order-unlinked` names an event the
+ * links leave unordered against another event on a worldline it shares (a message, handback or retirement
+ * that ticks the same handle, or a spawn that reads it): the replay never takes that order from content,
+ * so it applies the first and names the second.
  */
 export interface WorldlineReplaySkip extends CausalEvent {
   readonly reason: "child-already-spawned" | "target-unspawned" | "sender-retired" | "pair-unknown" |
-    "parent-key-unknown" | "dependency-unapplied" | "cycle" | "malformed";
+    "parent-key-unknown" | "parent-unrecorded" | "order-unlinked" | "dependency-unapplied" | "cycle" | "malformed";
 }
 
 /**
@@ -193,9 +196,21 @@ export interface WorldlineReplayUnjoined extends CausalEvent {
   readonly reason: "sender-unrecorded";
 }
 
+/** What a replay rebuilt, what it refused, and which handles' histories a refusal leaves uncertain. */
+export interface WorldlineReplay {
+  readonly causal: WorldlineCausal;
+  readonly skipped: readonly WorldlineReplaySkip[];
+  readonly unjoined: readonly WorldlineReplayUnjoined[];
+  /**
+   * Handles whose stamps rest on an incomplete record: a skipped event touched them, or they took a
+   * message, handback, spawn or retirement from such a handle. A verdict on one reads partial.
+   */
+  readonly uncertain: readonly string[];
+}
+
 const opRank = { spawn: 0, message: 1, handback: 2, retire: 3 } as const;
 
-/** Content order resolves concurrent events without using input position or wall time. */
+/** Content order picks among READY events whose order no shared worldline can tell; it never orders a shared one. */
 function compareEvent(a: CausalEvent, b: CausalEvent): number {
   if (opRank[a.op] !== opRank[b.op]) return opRank[a.op] - opRank[b.op];
   const fieldsA = [a.subject, a.object, a.turnKey ?? "", a.parentKey ?? ""];
@@ -207,12 +222,22 @@ function compareEvent(a: CausalEvent, b: CausalEvent): number {
   return 0;
 }
 
-/** Rebuild the ITC registry in topological order and name every unapplied event. */
+/** The handles an event ticks (advances) and the handle a spawn reads. */
+function touches(e: CausalEvent): { ticks: readonly string[]; reads: readonly string[] } {
+  if (e.op === "spawn") return { ticks: [e.object], reads: [e.subject] };
+  return { ticks: [e.subject, e.object], reads: [] };
+}
+
+/**
+ * Rebuild the ITC registry in link order and name every unapplied event. An event applies only where its
+ * parent link and the spawns of its handles came first, and where the links order it after every applied
+ * event on a worldline it shares — so a replay never reverses a live verdict; it names a gap instead.
+ */
 export function replayWorldlineEdges(
   root: string,
   opens: readonly WorldlineEdgeTriple[],
   closes: readonly WorldlineEdgeClose[] = [],
-): { causal: WorldlineCausal; skipped: readonly WorldlineReplaySkip[]; unjoined: readonly WorldlineReplayUnjoined[] } {
+): WorldlineReplay {
   const events: CausalEvent[] = [];
   const skipped: WorldlineReplaySkip[] = [];
   const unjoined: WorldlineReplayUnjoined[] = [];
@@ -228,7 +253,7 @@ export function replayWorldlineEdges(
     else skipped.push({ ...event, reason: "malformed" });
   }
   for (const c of closes) {
-    const event = eventOf("retire", c.subject, c.object, undefined, c.parentKey);
+    const event = eventOf("retire", c.subject, c.object, c.turnKey, c.parentKey);
     if (c.predicate === PRED_DELEGATION) events.push(event);
     else skipped.push({ ...event, reason: "malformed" });
   }
@@ -240,18 +265,8 @@ export function replayWorldlineEdges(
     if (byTurn.has(e.turnKey)) ambiguous.add(e.turnKey);
     else byTurn.set(e.turnKey, e);
   }
-  const spawns = unique.filter((e) => e.op === "spawn");
-  const spawnedObjects = new Set(spawns.map((s) => s.object));
-  // Every message and handback a handle sends or receives, and every retirement it performs on its own
-  // children — a retirement of that handle waits on all of them.
-  const exchangesOf = new Map<string, CausalEvent[]>();
-  const push = (h: string, e: CausalEvent): void => { (exchangesOf.get(h) ?? exchangesOf.set(h, []).get(h)!).push(e); };
-  for (const e of unique) {
-    if (e.op === "message" || e.op === "handback") { push(e.subject, e); push(e.object, e); }
-    else if (e.op === "retire") push(e.subject, e);
-  }
   const firstSpawn = new Map<string, CausalEvent>();
-  for (const spawn of spawns) if (!firstSpawn.has(spawn.object)) firstSpawn.set(spawn.object, spawn);
+  for (const e of unique) if (e.op === "spawn" && !firstSpawn.has(e.object)) firstSpawn.set(e.object, e);
   const dependencies = new Map<CausalEvent, Set<CausalEvent>>();
   const invalid = new Set<CausalEvent>();
   for (const e of unique) {
@@ -269,13 +284,63 @@ export function replayWorldlineEdges(
     const objectSpawn = firstSpawn.get(e.object);
     if (subjectSpawn && subjectSpawn !== e) deps.add(subjectSpawn);
     if (objectSpawn && objectSpawn !== e) deps.add(objectSpawn);
-    if (e.op === "retire") {
-      for (const prior of exchangesOf.get(e.object) ?? []) if (prior !== e) deps.add(prior);
-    }
     dependencies.set(e, deps);
   }
-  // Kahn's order: each event waits on its unfinished dependencies, and the ready set always yields
-  // its content-first event, so the order depends on the edges alone.
+  const links = new Map(dependencies);
+
+  // Ancestry over the links (memoized): does `a` come before `b` by links alone?
+  const ancestry = new Map<CausalEvent, Set<CausalEvent>>();
+  const ancestorsOf = (e: CausalEvent): Set<CausalEvent> => {
+    const known = ancestry.get(e);
+    if (known) return known;
+    const out = new Set<CausalEvent>();
+    ancestry.set(e, out);                         // a cycle reads its partial set; cycles never apply
+    for (const d of links.get(e) ?? []) { out.add(d); for (const x of ancestorsOf(d)) out.add(x); }
+    return out;
+  };
+
+  // Only an event that can apply claims a worldline: a handle the record never holds (not the root, never
+  // spawned) touches nothing, and a message from such a sender ticks its recipient alone.
+  const recorded = new Set<string>([root, ...firstSpawn.keys()]);
+  const claims = (e: CausalEvent): { ticks: readonly string[]; reads: readonly string[] } => {
+    if (e.op === "spawn") return recorded.has(e.subject) ? touches(e) : { ticks: [], reads: [] };
+    if (!recorded.has(e.object)) return { ticks: [], reads: [] };
+    if (e.op === "message" && !recorded.has(e.subject)) return { ticks: [e.object], reads: [] };
+    return recorded.has(e.subject) ? touches(e) : { ticks: [], reads: [] };
+  };
+  // Shared worldlines need link order: two events conflict when both touch one handle, at least one ticking
+  // it, and neither comes before the other by links. Refuse the most-conflicted event first (content breaks a
+  // tie between refusals, never an order) until no conflict stands.
+  const conflicts = new Map<CausalEvent, Set<CausalEvent>>();
+  const byHandle = new Map<string, { e: CausalEvent; ticks: boolean }[]>();
+  for (const e of dependencies.keys()) {
+    const { ticks, reads } = claims(e);
+    for (const h of ticks) (byHandle.get(h) ?? byHandle.set(h, []).get(h)!).push({ e, ticks: true });
+    for (const h of reads) (byHandle.get(h) ?? byHandle.set(h, []).get(h)!).push({ e, ticks: false });
+  }
+  for (const members of byHandle.values()) {
+    for (let i = 0; i < members.length; i++) for (let j = i + 1; j < members.length; j++) {
+      const x = members[i]!, y = members[j]!;
+      if (x.e === y.e || (!x.ticks && !y.ticks)) continue;
+      if (ancestorsOf(x.e).has(y.e) || ancestorsOf(y.e).has(x.e)) continue;
+      (conflicts.get(x.e) ?? conflicts.set(x.e, new Set()).get(x.e)!).add(y.e);
+      (conflicts.get(y.e) ?? conflicts.set(y.e, new Set()).get(y.e)!).add(x.e);
+    }
+  }
+  const unlinked = new Set<CausalEvent>();
+  for (;;) {
+    let worst: CausalEvent | undefined;
+    let degree = 0;
+    for (const [e, others] of conflicts) {
+      if (others.size > degree || (others.size === degree && degree > 0 && worst && compareEvent(e, worst) > 0)) { worst = e; degree = others.size; }
+    }
+    if (!worst || degree === 0) break;
+    for (const other of conflicts.get(worst)!) conflicts.get(other)?.delete(worst);
+    conflicts.delete(worst);
+    unlinked.add(worst);
+  }
+
+  // Kahn's order over the links; the ready set yields its content-first event.
   const waiting = new Map<CausalEvent, number>();
   const dependents = new Map<CausalEvent, CausalEvent[]>();
   for (const [e, deps] of dependencies) {
@@ -297,83 +362,103 @@ export function replayWorldlineEdges(
   let causal = worldlineCausalSeed(root);
   const spawned = new Set<string>();
   const activePairs = new Set<string>();
-  const finished = new Set<CausalEvent>(invalid);
   const failed = new Set<CausalEvent>(invalid);
+  const applied: CausalEvent[] = [];
+  const lastTick = new Map<string, CausalEvent>();
+  const readsSince = new Map<string, CausalEvent[]>();
+  const refuse = (ev: CausalEvent, reason: WorldlineReplaySkip["reason"]): void => {
+    skipped.push({ ...ev, reason });
+    failed.add(ev);
+  };
+  // The links must order `ev` after every applied event on each worldline it shares.
+  type Touch = { ticks: readonly string[]; reads: readonly string[] };
+  const linkedAfterShared = (ev: CausalEvent, { ticks, reads }: Touch = touches(ev)): boolean => {
+    const before = ancestorsOf(ev);
+    for (const h of [...ticks, ...reads]) {
+      const last = lastTick.get(h);
+      if (last && !before.has(last)) return false;
+    }
+    for (const h of ticks) for (const r of readsSince.get(h) ?? []) if (r !== ev && !before.has(r)) return false;
+    return true;
+  };
+  const record = (ev: CausalEvent, { ticks, reads }: Touch = touches(ev)): void => {
+    for (const h of ticks) { lastTick.set(h, ev); readsSince.set(h, []); }
+    for (const h of reads) (readsSince.get(h) ?? readsSince.set(h, []).get(h)!).push(ev);
+    applied.push(ev);
+  };
   while (ready.length > 0) {
     const ev = ready.shift()!;
     const deps = dependencies.get(ev)!;
     dependencies.delete(ev);
-    finished.add(ev);
     for (const next of dependents.get(ev) ?? []) {
       const left = waiting.get(next)! - 1;
       waiting.set(next, left);
       if (left === 0) enqueue(next);
     }
-    if ([...deps].some((d) => failed.has(d))) {
-      skipped.push({ ...ev, reason: "dependency-unapplied" });
-      failed.add(ev);
-      continue;
-    }
-    const pair = JSON.stringify([ev.subject, ev.object]);
+    if (unlinked.has(ev)) { refuse(ev, "order-unlinked"); continue; }
+    if ([...deps].some((d) => failed.has(d))) { refuse(ev, "dependency-unapplied"); continue; }
     try {
-      if (!ev.subject || !ev.object || ev.subject === ev.object) {
-        skipped.push({ ...ev, reason: "malformed" });
-        failed.add(ev);
-        continue;
-      }
+      if (!ev.subject || !ev.object || ev.subject === ev.object) { refuse(ev, "malformed"); continue; }
       if (ev.op === "spawn") {
-        if (spawned.has(ev.object) || worldlineStampFor(causal, ev.object)) {
-          skipped.push({ ...ev, reason: "child-already-spawned" });
-          failed.add(ev);
-          continue;
-        }
-        if (!worldlineStampFor(causal, ev.subject) && !spawnedObjects.has(ev.subject)) causal = mergeSeed(causal, ev.subject);
+        if (spawned.has(ev.object) || worldlineStampFor(causal, ev.object)) { refuse(ev, "child-already-spawned"); continue; }
+        if (!worldlineStampFor(causal, ev.subject)) { refuse(ev, "parent-unrecorded"); continue; }
+        if (!linkedAfterShared(ev)) { refuse(ev, "order-unlinked"); continue; }
         causal = worldlineSpawn(causal, ev.subject, ev.object);
         spawned.add(ev.object);
-        activePairs.add(pair);
+        activePairs.add(JSON.stringify([ev.subject, ev.object]));
       } else if (ev.op === "message") {
-        if (!worldlineStampFor(causal, ev.object)) {
-          skipped.push({ ...ev, reason: "target-unspawned" });
-          failed.add(ev);
-          continue;
-        }
+        if (!worldlineStampFor(causal, ev.object)) { refuse(ev, "target-unspawned"); continue; }
         if (worldlineStampFor(causal, ev.subject)) {
+          if (!linkedAfterShared(ev)) { refuse(ev, "order-unlinked"); continue; }
           causal = worldlineInject(causal, ev.subject, ev.object);
         } else if (spawned.has(ev.subject)) {
-          skipped.push({ ...ev, reason: "sender-retired" });
-          failed.add(ev);
-          continue;
+          refuse(ev, "sender-retired"); continue;
         } else {
           // The sender holds no recorded worldline: the recipient takes the receive alone, named unjoined.
+          const alone: Touch = { ticks: [ev.object], reads: [] };
+          if (!linkedAfterShared(ev, alone)) { refuse(ev, "order-unlinked"); continue; }
           causal = worldlineTick(causal, ev.object);
           unjoined.push({ ...ev, reason: "sender-unrecorded" });
+          record(ev, alone);
+          continue;
         }
       } else if (ev.op === "handback") {
         // The edge runs child → parent; the spawn pair reads parent → child.
-        const spawnPair = JSON.stringify([ev.object, ev.subject]);
-        if (!activePairs.has(spawnPair) || !worldlineStampFor(causal, ev.subject) || !worldlineStampFor(causal, ev.object)) {
-          skipped.push({ ...ev, reason: "pair-unknown" });
-          failed.add(ev);
-          continue;
+        if (!activePairs.has(JSON.stringify([ev.object, ev.subject])) || !worldlineStampFor(causal, ev.subject) || !worldlineStampFor(causal, ev.object)) {
+          refuse(ev, "pair-unknown"); continue;
         }
+        if (!linkedAfterShared(ev)) { refuse(ev, "order-unlinked"); continue; }
         causal = worldlineHandback(causal, ev.object, ev.subject).causal;
       } else {
+        const pair = JSON.stringify([ev.subject, ev.object]);
+        if (!worldlineStampFor(causal, ev.object) && spawned.has(ev.object)) { refuse(ev, "target-unspawned"); continue; }
         if (!activePairs.has(pair) || !worldlineStampFor(causal, ev.subject) || !worldlineStampFor(causal, ev.object)) {
-          skipped.push({ ...ev, reason: "pair-unknown" });
-          failed.add(ev);
-          continue;
+          refuse(ev, "pair-unknown"); continue;
         }
+        if (!linkedAfterShared(ev)) { refuse(ev, "order-unlinked"); continue; }
         causal = worldlineRetire(causal, ev.subject, ev.object);
         activePairs.delete(pair);
       }
+      record(ev);
     } catch {
-      skipped.push({ ...ev, reason: "malformed" });
-      failed.add(ev);
+      refuse(ev, "malformed");
     }
   }
   for (const ev of [...dependencies.keys()].sort(compareEvent)) skipped.push({ ...ev, reason: "cycle" });
   skipped.sort((a, b) => compareEvent(a, b) || (a.reason < b.reason ? -1 : a.reason > b.reason ? 1 : 0));
-  return { causal, skipped, unjoined };
+
+  // Uncertainty spreads from every refused event along every applied flow of history, to a fixpoint.
+  const uncertain = new Set<string>();
+  for (const ev of skipped) { if (ev.subject) uncertain.add(ev.subject); if (ev.object) uncertain.add(ev.object); }
+  for (let grew = uncertain.size > 0; grew;) {
+    grew = false;
+    for (const ev of applied) {
+      const from = ev.op === "retire" ? ev.object : ev.subject;
+      const to = ev.op === "retire" ? ev.subject : ev.object;
+      if (uncertain.has(from) && !uncertain.has(to)) { uncertain.add(to); grew = true; }
+    }
+  }
+  return { causal, skipped, unjoined, uncertain: [...uncertain].sort() };
 }
 
 /** Project the ITC registry from causal edge links; valid-time rides as display metadata. */
@@ -383,12 +468,6 @@ export function worldlineCausalFromEdges(
   closes: readonly WorldlineEdgeClose[] = [],
 ): WorldlineCausal {
   return replayWorldlineEdges(root, opens, closes).causal;
-}
-
-/** Seed an extra root-like handle into an existing registry (a fresh full-ownership stamp). */
-function mergeSeed(c: WorldlineCausal, handle: string): WorldlineCausal {
-  const seeded = worldlineCausalSeed(handle); // composite-keyed (`${handle}@${frontier}`)
-  return { stamps: { ...c.stamps, ...seeded.stamps } };
 }
 
 // ---------------------------------------------------------------------------
@@ -405,6 +484,7 @@ export interface RewindThenForkResult {
   readonly dropped: number;
   readonly skipped: readonly WorldlineReplaySkip[];
   readonly unjoined: readonly WorldlineReplayUnjoined[];
+  readonly uncertain: readonly string[];
   readonly parent: string;
   readonly child: string;
 }
@@ -447,5 +527,5 @@ export function rewindThenFork(
   // Fork the new concurrent sibling off the rewound frontier (itcFork, via worldlineSpawn).
   const causal = worldlineSpawn(view, fork.parent, fork.child);
 
-  return { causal, view, dropped, skipped: replay.skipped, unjoined: replay.unjoined, parent: fork.parent, child: fork.child };
+  return { causal, view, dropped, skipped: replay.skipped, unjoined: replay.unjoined, uncertain: replay.uncertain, parent: fork.parent, child: fork.child };
 }

@@ -3,8 +3,8 @@
   "unbaked": [
     {
       "source": "packages/lararium-tw5/plugins/lares-memetic-wikitext.json",
-      "sha256": "c5b14a506aaf654be2df3a66cef0a3ebb000362d62dd3ddd488e78a98fe6415d",
-      "why": "The worldline-truths lane re-packs the memetic-wikitext bundle: its in-VM worldline read carries the round-closing handback, explicit retirement and sender-joining messages (@lararium/mesh worldline-causal and replay). The next labelled GENESIS RE-BAKE carries these bytes and deletes this row."
+      "sha256": "431bb7493ffcd7dc514990748181fda6bae88be949548a3063e9d0a6a7580a7b",
+      "why": "The worldline-truths lane re-packs the memetic-wikitext bundle: its in-VM worldline read carries the round-closing handback, explicit retirement, sender-joining messages and link-order replay with its uncertain handles (@lararium/mesh worldline-causal and replay). The next labelled GENESIS RE-BAKE carries these bytes and deletes this row."
     }
   ]
 }

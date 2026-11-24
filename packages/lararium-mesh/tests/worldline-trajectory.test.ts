@@ -107,10 +107,10 @@ describe("worldlineCausalFromEdges — project the ITC registry from the durable
     // (a Communication edge: the send ticks the sender, the receive joins it), per ITC semantics.
     const root = "run";
     const opens = [
-      delegationEdge(root, "run.a", { validFrom: "2026-06-29T00:00:00Z" }),
-      delegationEdge(root, "run.b", { validFrom: "2026-06-29T00:00:01Z" }),
-      communicationEdge(root, "run.a", { validFrom: "2026-06-29T00:00:02Z" }), // a works
-      communicationEdge(root, "run.b", { validFrom: "2026-06-29T00:00:03Z" }), // b works
+      delegationEdge(root, "run.a", { validFrom: "2026-06-29T00:00:00Z", turnKey: "s-a" }),
+      delegationEdge(root, "run.b", { validFrom: "2026-06-29T00:00:01Z", turnKey: "s-b", parentKey: "s-a" }),
+      communicationEdge(root, "run.a", { validFrom: "2026-06-29T00:00:02Z", turnKey: "m-a", parentKey: "s-b" }), // a works
+      communicationEdge(root, "run.b", { validFrom: "2026-06-29T00:00:03Z", turnKey: "m-b", parentKey: "m-a" }), // b works
     ];
     const causal = worldlineCausalFromEdges(root, opens);
     expect(worldlineCompare(causal, root, "run.b")).toBe("before"); // root's last send reached b

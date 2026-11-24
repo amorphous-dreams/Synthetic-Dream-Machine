@@ -302,7 +302,7 @@ export interface DaemonVmCore {
    * the island's `$tw.lares.worldlineCompareVm`; the worker projects the registry + runs the ITC
    * tree-leq. Rejects (the worker's error) on an unknown handle — the verb wraps the helpful message.
    */
-  worldlineCompare: (input: DaemonWorldlineCompareInput) => Promise<{ order: string }>;
+  worldlineCompare: (input: DaemonWorldlineCompareInput) => Promise<{ order: string; uncertain: readonly string[] }>;
   /**
    * Well 3 (THE CORE) + Well 4 (NULL-READY) — a handle's worldline-ordered form-vector path IN the
    * daemon VM. Round-trips the captured turns (form-vectors the host pre-fetched from the form store
@@ -655,7 +655,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     if (raw.type === "daemon:worldline-compare-result") {
       const msg = raw as DaemonMsg_WorldlineCompareResult;
       if (msg.error) settleAsk(msg.requestId, undefined, msg.error);
-      else settleAsk(msg.requestId, { order: msg.order });
+      else settleAsk(msg.requestId, { order: msg.order, uncertain: msg.uncertain ?? [] });
       return;
     }
 
@@ -949,7 +949,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
       worker.post(mkStructurepalaceKapae({ turnKey, ...(ended ? { ended } : {}) }));
     },
     worldlineCompare: (input: DaemonWorldlineCompareInput) =>
-      askIsland<{ order: string }>("wl-cmp", (requestId) => mkDaemonWorldlineCompareRequest({
+      askIsland<{ order: string; uncertain: readonly string[] }>("wl-cmp", (requestId) => mkDaemonWorldlineCompareRequest({
         requestId, a: input.a, b: input.b, opens: input.opens,
         ...(input.closes !== undefined ? { closes: input.closes } : {}),
         ...(input.root   !== undefined ? { root: input.root }     : {}),

@@ -16,8 +16,8 @@ function fixture(spawnTime = "3000-01-01T00:00:00Z", injectTime = "1970-01-01T00
     delegationEdge(a, b, { turnKey: "b0", parentKey: "a1", validFrom: injectTime }),
   ];
   const closes = [
-    retireClose(a, b, spawnTime, "b0"),
-    retireClose(root, a, injectTime, "a1"),
+    retireClose(a, b, spawnTime, "b0", "rb"),
+    retireClose(root, a, injectTime, "rb", "ra"),
   ];
   return { opens, closes };
 }
@@ -59,8 +59,11 @@ describe("causal worldline replay", () => {
     const opens = [], closes = [];
     for (let i = 0; i < 200; i++) {
       const child = `run.s${String(i).padStart(4, "0")}`;
-      opens.push(delegationEdge(root, child, { turnKey: `s${i}` }), communicationEdge(root, child, { turnKey: `i${i}`, parentKey: `s${i}` }));
-      closes.push(retireClose(root, child, undefined, `i${i}`));
+      opens.push(
+        delegationEdge(root, child, { turnKey: `s${i}`, ...(i > 0 ? { parentKey: `r${i - 1}` } : {}) }),
+        communicationEdge(root, child, { turnKey: `i${i}`, parentKey: `s${i}` }),
+      );
+      closes.push(retireClose(root, child, undefined, `i${i}`, `r${i}`));
     }
     const replay = replayWorldlineEdges(root, opens, closes);
     expect(replay.skipped).toEqual([]);
