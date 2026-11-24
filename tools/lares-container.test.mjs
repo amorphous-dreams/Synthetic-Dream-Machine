@@ -1824,6 +1824,17 @@ test(`${name}: pulama-rehive-reaches-the-hand-door: rehive forwards one face ord
     assert.doesNotMatch(bad.calls, /rehive/);
   }
 });
+test(`${name}: pulama-recard-reaches-the-hand-door: recard forwards one face ordinal to the pūlama's own verb; a bare or malformed ordinal refuses and sends nothing`, { skip }, async () => {
+  const ok = await run(shim, ["pulama", "recard", "1"], { envFile: PULAMA_ENV });
+  assert.equal(ok.status, 0, ok.stderr);
+  assert.match(ok.calls, /--profile pulama exec (-T )?pulama node packages\/lararium-node\/dist\/src\/pulama-main\.js recard 1/);
+  for (const argv of [["pulama", "recard"], ["pulama", "recard", "one"]]) {
+    const bad = await run(shim, argv, { envFile: PULAMA_ENV });
+    assert.notEqual(bad.status, 0);
+    assert.match(bad.stderr, /pulama recard takes one face ordinal \(a number\)/);
+    assert.doesNotMatch(bad.calls, /recard/);
+  }
+});
 test(`${name}: pulama-unadmit-reaches-the-hand-door: unadmit forwards one image digest to the pūlama's own verb; a bare or malformed digest refuses and sends nothing`, { skip }, async () => {
   const digest = "sha256:" + "ab".repeat(32);
   const ok = await run(shim, ["pulama", "unadmit", digest], { envFile: PULAMA_ENV });
