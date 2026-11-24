@@ -260,7 +260,29 @@ for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
     assert.match(value.calls, /--text --file/);
   });
 }
-test("sh: reset clears the hearth alone, after its refusals; sensoriums, projections, library, config and the env file stay", { skip: !haveScript }, async () => {
+test("sh: RED reset under an AI seat refuses hand-act-only by name before the terminal and the typed word, and the hearth keeps every entry", { skip: !haveScript }, async () => {
+  const dir = await mkdtemp(join(tmpdir(), "lares-reset-seat-"));
+  try {
+    const house = join(dir, "house"), workspace = join(dir, "workspace"), hearth = join(house, "hearth");
+    await Promise.all([hearth, workspace].map((path) => mkdir(path, { recursive: true })));
+    await writeFile(join(hearth, "entry"), "keep");
+    await writeFile(join(dir, "docker"), "#!/bin/sh\nexit 0\n");
+    await chmod(join(dir, "docker"), 0o755);
+    const env = { PATH: `${dir}:${process.env.PATH}`, HOME: dir, LARES_HOUSE: house, LARES_WORKSPACE: workspace };
+    for (const mark of [{ CLAUDECODE: "1" }, { CODEX_SANDBOX: "seatbelt" }]) {
+      const r = spawnSync("script", ["-qec", `sh '${SH}' reset`, "/dev/null"], { env: { ...env, ...mark }, input: "re-found\n", encoding: "utf8" });
+      assert.equal(r.status, 2, r.stdout);
+      assert.match(r.stdout, /reset refused hand-act-only/);
+      assert.match(r.stdout, /at their own terminal/);
+      assert.doesNotMatch(r.stdout, /Type re-found/);
+    }
+    assert.deepEqual(await readdir(hearth), ["entry"]);
+  } finally { await rm(dir, { recursive: true, force: true }); }
+});
+// A reset under a harness refuses hand-act-only before its other refusals read, so the two cases below that walk those refusals
+// and the clearing itself run where this suite's chain reads a person (CI, the operator's shell); the seat's own refusal runs
+// everywhere, its mark carried in the shim's environment.
+test("sh: reset clears the hearth alone, after its refusals; sensoriums, projections, library, config and the env file stay", { skip: !haveScript || SUITE_SEAT }, async () => {
   const dir = await mkdtemp(join(tmpdir(), "lares-reset-"));
   try {
     const house = join(dir, "house"), workspace = join(dir, "workspace"), hearth = join(house, "hearth");
@@ -309,7 +331,7 @@ test("sh: reset clears the hearth alone, after its refusals; sensoriums, project
     assert.equal(await readFile(join(dir, ".lares", "lares-surface.env"), "utf8"), "# stays\n");
   } finally { await rm(dir, { recursive: true, force: true }); }
 });
-test("sh: reset refuses a hearth that resolves outside the house", { skip: !haveScript }, async () => {
+test("sh: reset refuses a hearth that resolves outside the house", { skip: !haveScript || SUITE_SEAT }, async () => {
   const dir = await mkdtemp(join(tmpdir(), "lares-reset-link-"));
   try {
     const house = join(dir, "house"), elsewhere = join(dir, "elsewhere"), workspace = join(dir, "workspace");

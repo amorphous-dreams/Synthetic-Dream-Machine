@@ -646,7 +646,8 @@ host_chain_kind() {
   done
   echo hand
 }
-if [ "$(host_chain_kind)" != hand ]; then CLAUDECODE=1; export CLAUDECODE; fi
+HOST_CHAIN=$(host_chain_kind)
+if [ "$HOST_CHAIN" != hand ]; then CLAUDECODE=1; export CLAUDECODE; fi
 
 pass_env() {
   for name in NO_COLOR TERM COLORTERM LARES_DEBUG CLAUDECODE CODEX_SANDBOX CODEX_SANDBOX_NETWORK_DISABLED; do
@@ -1441,6 +1442,9 @@ case "$verb" in
     esac ;;
   reset)
     [ "$#" -eq 0 ] || die "reset takes no arguments"
+    # The hearth's clearing stays the operator's: a harness on this shim's own chain (or its mark) refuses by name before
+    # the terminal and the typed word are read. An unread chain falls through to those two, which an AI seat rarely holds.
+    [ "$HOST_CHAIN" != ai ] || die "reset refused hand-act-only: an AI seat never clears the hearth; the operator runs tools/lares-container.sh reset at their own terminal (nothing removed)"
     if running_vessel; then die "reset refuses while the lares vessel stands; run tools/lares-container.sh down first"; fi
     [ -n "$HAVE_TTY" ] || die "reset needs a terminal; nothing removed"
     # Compose accepts plain KEY=VALUE lines; reset accepts literal paths alone and resolves symlinks before clearing.

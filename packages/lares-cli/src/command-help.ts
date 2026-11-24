@@ -1327,14 +1327,16 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "THE OPERATOR'S HOMES' DOOR — every home the device carries (the native home, and the Windows profile under WSL) " +
       "holds its declared reality tunnel: each harness's memory guard at its maximum (Claude's cleanupPeriodDays, Codex's saved " +
       "history, Copilot's prompt history), the lares MCP seats and hooks aimed at the main clone, the seed rule, `lares` on " +
-      "the path. `tend` names every path it will write and asks first (--yes without a terminal). No door lowers a memory " +
+      "the path. `tend` names every path it will write and asks first (--yes without a terminal). `undo` stays the operator's " +
+      "hand: an AI seat refuses it by name (it puts back the bytes a tend replaced, a settings file that lacks the doors' deny list among them), and it " +
+      "asks before restoring (--yes without a terminal). No door lowers a memory " +
       "guard. Exit: 0 aligned · 1 drift · 2 usage · 3 foreign bytes refused · 4 a needed piece absent.",
     examples: [
       "lares home read                  # every home's items, both diffs; writes nothing",
       "lares home read --brief          # one line (the wake hook prints it at turn 1)",
       "lares home tend                  # converge every home; asks before writing",
       "lares home verify                # the last Claude session loaded the seed once",
-      "lares home undo 3                # restore generation 3",
+      "lares home undo 3                # restore generation 3 (the operator's terminal alone)",
     ],
     flags: [
       "--brief        one line: every item holds, or which stand off the tunnel (drift alone; an aligned row another hand rewrote reads apart)",

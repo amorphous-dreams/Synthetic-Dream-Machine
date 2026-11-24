@@ -179,10 +179,29 @@ kind = "json-includes"
 file = ".claude/settings.json"
 key = "permissions.deny"
 values = [
-  "Bash(lares reset:*)", "Bash(lares found:*)", "Bash(lares home undo:*)",
+  "Bash(lares reset:*)", 'Bash(lares "reset"*)', "Bash(lares 'reset'*)", "Bash(*/lares reset*)", "Bash(*lares.mjs reset*)", "Bash(npx lares reset*)",
   "Bash(tools/lares-container.sh reset:*)", "Bash(./tools/lares-container.sh reset:*)", "Bash(*lares-container.sh reset*)",
+  "Bash(lares found:*)", 'Bash(lares "found"*)', "Bash(lares 'found'*)", "Bash(*/lares found*)", "Bash(*lares.mjs found*)", "Bash(npx lares found*)",
+  "Bash(lares vessel found:*)", "Bash(lares vessel *found*)", "Bash(lares vessel rite founding*)",
+  "Bash(*/lares vessel *found*)", "Bash(*lares.mjs vessel *found*)", "Bash(npx lares vessel *found*)",
+  "Bash(*lares-container.sh found*)", "Bash(*lares-container.sh * found*)", "Bash(*lares-container.ps1 found*)", "Bash(*lares-container.ps1 * found*)",
+  "Bash(lares home undo:*)", "Bash(lares home *undo*)", "Bash(*/lares home *undo*)", "Bash(*lares.mjs home *undo*)", "Bash(npx lares home *undo*)",
+  "Edit(~/.claude/settings.json)", "Write(~/.claude/settings.json)",
 ]
-what = "the two acts that clear or re-seed the hearth stay the operator's: `reset` empties a stopped hearth on a typed word, and `found` over a stopped hearth whose custody tree stands asks no route and re-seeds its bootstrap under `--force`; neither reads the hand behind the terminal. The shim's own `reset` spellings close the side door to the same act, and `lares home undo` stays shut, since an undo restores a settings file from before these entries stood (`tend` only appends, so it never drops one). Every other host act rides the doors' allow and the house's own gates: a lei's returns, a route-proved custody act, a hand read. `docker` itself stands outside what these rules govern: the trusted host, whose engine the shim drives"
+what = "the two acts that clear or re-seed the hearth stay the operator's: `reset` empties a stopped hearth on a typed word, and `found` over a stopped hearth whose custody tree stands asks no route and re-seeds its bootstrap under `--force` (`vessel rite founding --force` composes the same act). Each spelling stands denied: the CLI's word with its flags in any order, quoted, through any path to the same binary (`*/lares`, `lares.mjs`, `npx`), and through either shim. `lares home undo` stays shut in every flag order, since an undo restores a settings file from before these entries stood (`tend` only appends, so it never drops one), and an AI edits or writes no operator's `~/.claude/settings.json` by hand. A list reads spellings, never acts, so the acts carry their own gates as well: the shim's `reset` and the CLI's `found --force` over a founded hearth, and the home door's `undo`, each refuse an AI seat by name. Every other host act rides the doors' allow and the house's own gates: a lei's returns, a route-proved custody act, a hand read. `docker` itself stands outside what these rules govern: the trusted host, whose engine the shim drives"
+
+[[home]]
+id = "claude.host-acts-ask"
+host = "claude"
+homes = "all"
+kind = "json-includes"
+file = ".claude/settings.json"
+key = "permissions.ask"
+values = [
+  "Bash(lares home tend --force*)", "Bash(lares home *--force*)", "Bash(lares * undo*)",
+  "Bash(lares down*)", "Bash(lares vessel stop*)", "Bash(lares vessel *stop*)", "Bash(lares vessel release*)", "Bash(lares vessel *--release*)", "Bash(lares rebuild*)",
+]
+what = "the acts that take a foreign file, restore a generation, stop the vessel, release a quarantined document or restand the image ride the doors' allow and still ask the operator first, in any flag order: Claude reads deny, then ask, then allow, so the wide allow never answers these alone"
 
 [[home]]
 id = "claude.wake-hook"
@@ -369,12 +388,14 @@ what = "Copilot's house hook file names no house hook script beyond the ones thi
 * ''Native Windows on the path.'' The `bin.lares` item links a POSIX path and reads absent on native Windows; a `.cmd`/`.ps1` owned-file item and a native probe settle it.
 * ''Compaction beyond Claude.'' The load log reads a Claude compact (`load_reason = "compact"`); Codex and Copilot carry their instructions as context a compact may summarize. A hash probe after each host's compact.
 * ''VS Code agent mode and Copilot's cloud surfaces.'' Whether each reads CLAUDE.md's include, and whether code review cuts an instruction file short; a probe for the seed's final hash on each.
-* ''The doors beyond Claude.'' `claude.doors-allow` and `claude.host-acts-deny` keep Claude's permission lists; Codex's approval policy and sandbox rules and Copilot's tool allow and deny lists carry no item yet. A probe of each host's permission file names the keys an item would keep.
-* ''A door beside the deny list.'' A permission list reads spellings, never acts: the shim's `reset` and `lares home undo` stand denied by name, and `docker` stays the trusted host no rule here governs. The shim's acting verbs (`up`, `down`, `vessel stop`, `vessel stand`, `build`, `rebuild`) read neither a hand nor a lei today; an AI's stop, stand, up or down spending a kūkulu lei return the way a rite does, and a hand needing none, closes what a permission list cannot.
+* ''The doors beyond Claude.'' `claude.doors-allow`, `claude.host-acts-ask` and `claude.host-acts-deny` keep Claude's permission lists; Codex's approval policy and sandbox rules and Copilot's tool allow and deny lists carry no item yet. A probe of each host's permission file names the keys an item would keep.
+* ''A door beside the deny list.'' A permission list reads spellings, never acts: the shim's `reset` and `found`, the CLI's `reset`, `found`, `vessel found` and `vessel rite founding`, and `lares home undo` stand denied by name, and `docker` stays the trusted host no rule here governs. A spelling no list foresees (a variable set before the word, a shell function, a script that calls the CLI) reaches the act's own gate alone. The shim's acting verbs (`up`, `down`, `vessel stop`, `vessel stand`, `build`, `rebuild`) read neither a hand nor a lei today; an AI's stop, stand, up or down spending a kūkulu lei return the way a rite does, and a hand needing none, closes what a permission list cannot.
+* ''The PowerShell shim.'' `tools/lares-container.ps1` answers `found` (it carries no `reset`); the deny list names its spelling under Claude's `Bash` tool, and Claude's PowerShell tool on native Windows reads rules of its own that no item keeps yet. A probe of that tool's rule names on a Windows home settles the item.
+* ''An operator's own lift of a rule.'' `json-includes` appends every missing value, so an operator who removes a deny or ask entry by hand gets it back on the next `tend`. No kind reads an opt-out today; a home-config row naming the values a tend leaves out (read beside each list item, and named in `read` as the operator's own lift) closes it.
 * ''Seats outside the clone for Codex and Copilot.'' Each loads a home file beside the project's with no exclude, so their homes stay seedless; the item opens again when a host offers an exclude or a per-directory scope.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;lcYg8H1KFYq6etom0EwZJSI4DK1Ks0lmGSbgXGKckNs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;edoa2qzHid1ayLQqDpnBjSfIv8PTr1lGEZax9aXOEY8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

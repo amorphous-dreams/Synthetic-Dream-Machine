@@ -549,9 +549,9 @@ describe("json-includes keeps every member of a list at a dotted key path, and e
     const h = { native, windows };
     const items = () => homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false });
     const l = ledger();
-    const ids = ["claude.doors-allow", "claude.host-acts-deny", "claude.doors-allow@windows", "claude.host-acts-deny@windows"];
+    const ids = ["claude.doors-allow", "claude.host-acts-deny", "claude.host-acts-ask", "claude.doors-allow@windows", "claude.host-acts-deny@windows", "claude.host-acts-ask@windows"];
     const before = read(items(), l);
-    expect(ids.map((id) => before.find((r) => r.id === id)?.state)).toEqual(["drift", "drift", "drift", "drift"]);
+    expect(ids.map((id) => before.find((r) => r.id === id)?.state)).toEqual(ids.map(() => "drift"));
     await tend(items(), l);
     const d = declared(REPO);
     const listOf = (id: string): string[] => d.home.find((s) => s.id === id)!["values"] as string[];
@@ -559,13 +559,14 @@ describe("json-includes keeps every member of a list at a dotted key path, and e
       const o = JSON.parse(readFileSync(join(home, ".claude/settings.json"), "utf8"));
       expect(o.permissions.allow).toEqual(expect.arrayContaining(listOf("claude.doors-allow")));
       expect(o.permissions.deny).toEqual(expect.arrayContaining(listOf("claude.host-acts-deny")));
+      expect(o.permissions.ask).toEqual(expect.arrayContaining(listOf("claude.host-acts-ask")));
     }
     const o = JSON.parse(readFileSync(join(native, ".claude/settings.json"), "utf8"));
     expect(o.permissions.allow[0]).toBe("Bash(git:*)");
     expect(o.permissions.deny[0]).toBe("Bash(rm -rf:*)");
     expect(o.model).toBe("m");
     const after = read(items(), l);
-    expect(ids.map((id) => after.find((r) => r.id === id)?.state)).toEqual(["aligned", "aligned", "aligned", "aligned"]);
+    expect(ids.map((id) => after.find((r) => r.id === id)?.state)).toEqual(ids.map(() => "aligned"));
     expect((await tend(items(), l)).wrote).toEqual([]);
   });
 
@@ -582,12 +583,19 @@ describe("json-includes keeps every member of a list at a dotted key path, and e
     expect(readFileSync(join(native, ".claude/settings.json"), "utf8")).toBe(held);
   });
 
-  it("the live carrier's deny list holds the two hearth acts, their shim spellings and the undo that would drop them: every other host act rides the doors and the house's own gates", () => {
+  it("the live carrier's deny list holds the two hearth acts, their shim spellings and the undo that would drop them, and the ask list the acts the operator keeps a prompt on", () => {
     const valuesOf = (id: string): string[] => declared(REPO).home.find((s) => s.id === id)!["values"] as string[];
-    expect(valuesOf("claude.host-acts-deny")).toEqual([
-      "Bash(lares reset:*)", "Bash(lares found:*)", "Bash(lares home undo:*)",
-      "Bash(tools/lares-container.sh reset:*)", "Bash(./tools/lares-container.sh reset:*)", "Bash(*lares-container.sh reset*)",
-    ]);
+    const deny = valuesOf("claude.host-acts-deny");
+    for (const v of [
+      "Bash(lares reset:*)", "Bash(lares found:*)", "Bash(lares vessel found:*)", "Bash(lares vessel *found*)", "Bash(lares vessel rite founding*)",
+      "Bash(lares home undo:*)", "Bash(lares home *undo*)", "Bash(tools/lares-container.sh reset:*)", "Bash(./tools/lares-container.sh reset:*)",
+      "Bash(*lares-container.sh reset*)", "Bash(*lares-container.sh found*)", "Bash(*lares-container.sh * found*)", "Bash(*lares.mjs reset*)",
+      "Bash(*/lares reset*)", "Edit(~/.claude/settings.json)", "Write(~/.claude/settings.json)",
+    ]) expect(deny, v).toContain(v);
+    const ask = valuesOf("claude.host-acts-ask");
+    for (const v of ["Bash(lares home tend --force*)", "Bash(lares * undo*)", "Bash(lares down*)", "Bash(lares vessel stop*)", "Bash(lares vessel release*)", "Bash(lares rebuild*)"]) {
+      expect(ask, v).toContain(v);
+    }
     expect(valuesOf("claude.doors-allow")).toEqual(["Bash(lares:*)", "mcp__lares__*"]);
   });
 });
