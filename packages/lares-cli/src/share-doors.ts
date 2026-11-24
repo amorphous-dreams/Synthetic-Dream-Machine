@@ -10,10 +10,11 @@ import { join } from "node:path";
 import { larConfigHome } from "@lararium/node";
 import { SHARE_CONFIG_FILE, type ShareEntry, type ShareFace } from "@lararium/mesh";
 import { vesselDid } from "./env.js";
-import { runVerb, runVerbAsFace } from "./verb-call.js";
+import { DaemonUnreachable, runVerb } from "./verb-call.js";
 import { sealedAct } from "./sealed-act-door.js";
 import { summaryOutput, type SubmitResult } from "./verb-result.js";
-import { LocalWaitExpired, queryReceipt, type ReceiptAnswer } from "./local-connector.js";
+import { LocalWaitExpired, queryReceipt, UdsUnreachable, udsSocketPath, type ReceiptAnswer } from "./local-connector.js";
+import { openLocalSession, SessionRefused } from "./session-connector.js";
 import { readPersonaRoots, sealedPetnameStore } from "./sealed-records.js";
 import { makeFleetPetnameStore } from "./daemon-persona-store.js";
 
@@ -82,6 +83,71 @@ const LIVE_READBACK: ReadBackPorts = {
   note: (line) => console.error(line),
 };
 
+
+/** How long a landing's session call waits for its answer: a landing founds a realm and seats faces, so it outlasts the usual wait. */
+export const LANDING_WAIT_MS = 600_000;
+
+/** One session of a face, as a landing reaches it. */
+export interface FaceSession {
+  call(verb: string, args: Record<string, unknown>, opts?: { timeoutMs?: number }): Promise<Record<string, unknown>>;
+  receipt(requestId: string): Promise<{ readonly state: string; readonly outcome?: Readonly<Record<string, unknown>> }>;
+  close(): Promise<void>;
+}
+/** Open a session of face `h<N>`; a vessel's refusal throws `SessionRefused`, no socket `UdsUnreachable`. */
+export type OpenFaceSession = (face: number) => Promise<FaceSession>;
+export interface LandingPorts { readonly pause: (ms: number) => Promise<void>; readonly now: () => number; readonly patienceMs?: number; readonly note?: (line: string) => void }
+
+const liveFaceSession: OpenFaceSession = (face) => openLocalSession({ faceRef: `h${face}`, hand: "cli" });
+const LIVE_LANDING: LandingPorts = { pause: (ms) => new Promise((r) => setTimeout(r, ms)), now: () => performance.now(), note: (line) => console.error(line) };
+
+/**
+ * RUN ONE LANDING ON A FACE'S SESSION AND KEEP THE SESSION OPEN TO ITS END: the sign booking the owner's holder reads lives as long
+ * as the session, so a local wait that ends reads the landing's receipt through THIS session (the vessel scopes the request id to
+ * the face) before the session closes, and never closes it mid-landing. A shut or closing face answers `face-not-open`, which the
+ * caller meets by the one-shot; every other refusal keeps its own name.
+ */
+export async function landOnFaceSession(open: OpenFaceSession, verb: string, args: Record<string, unknown>, face: number, ports: LandingPorts): Promise<SubmitResult> {
+  let session: FaceSession;
+  try { session = await open(face); }
+  catch (e) {
+    if (e instanceof UdsUnreachable) throw new DaemonUnreachable(udsSocketPath());
+    if (e instanceof SessionRefused) return refusedLanding(face, e.refusal);
+    throw e;
+  }
+  try {
+    try {
+      const { kind: _kind, ...rest } = await session.call(verb, args, { timeoutMs: LANDING_WAIT_MS });
+      return rest as unknown as SubmitResult;
+    } catch (e) {
+      if (e instanceof SessionRefused) return refusedLanding(face, e.refusal);
+      if (!(e instanceof LocalWaitExpired)) throw e;
+      const id = e.requestId, patience = ports.patienceMs ?? SHARE_READBACK_MS, started = ports.now();
+      ports.note?.(`  ${verb} still lands in the vessel; reading its receipt (request ${id})…`);
+      for (;;) {
+        const r = await session.receipt(id).catch(() => ({ state: "unknown" } as { state: string; outcome?: Readonly<Record<string, unknown>> }));
+        if (r.state === "done" || r.state === "error") {
+          const out = (r.outcome ?? {}) as { results?: SubmitResult["results"]; errorMessage?: string };
+          return { status: r.state, requestId: id, ...(out.results !== undefined ? { results: out.results } : {}), ...(out.errorMessage !== undefined ? { errorMessage: out.errorMessage } : {}) };
+        }
+        if (r.state === "abandoned" || r.state === "interrupted") throw new Error(`request-${r.state}: the vessel ${r.state} ${verb} (request ${id}); run it again`);
+        if (r.state === "evicted") throw new Error(`retention-gap: the vessel no longer holds the outcome of ${verb} (request ${id})`);
+        if (ports.now() - started >= patience) throw new Error(`${verb} still lands after ${Math.round(patience / 1000)}s of reading its receipt; read its outcome with \`lares vessel request ${id}\``);
+        await ports.pause(1_000);
+      }
+    }
+  } finally { await session.close().catch(() => { /* the socket already went */ }); }
+}
+
+/** A session's refusal, kept by name; only a shut or closing face reads `face-not-open`. */
+function refusedLanding(face: number, refusal: string): SubmitResult {
+  const shut = /^(face-not-open|face-closing)/.test(refusal);
+  return {
+    status: "error", requestId: "",
+    errorMessage: shut ? `face-not-open: face h${face} stands shut on this vessel (${refusal}); nothing ran` : `${refusal}: the vessel refused this landing on face h${face}'s session; nothing ran${/-needs-hand$/.test(refusal) ? "; the shares land by a person's hand: run `lares wiki share` (or `lares wear ${face}`) at a terminal outside any agent harness" : ""}`,
+    refusal: { reason: shut ? "face-not-open" : refusal },
+  };
+}
+
 export const LIVE_SHARE_DOORS: ShareDoors = {
   faces: async () => {
     const petnames = makeFleetPetnameStore(sealedPetnameStore());
@@ -104,7 +170,13 @@ export const LIVE_SHARE_DOORS: ShareDoors = {
       // THE LANDING RIDES THE WORN FACE'S SESSION: a landing that seats a face hands it a lockbox from the realm owner's holder, and
       // that holder signs only under the session the ask books (a one-shot line books none, so it reads `signer-unavailable`).
       const worn = name === "share-apply" ? await sealedAct<{ face: number }>("face.resolve", { worn: true }).then((f) => f.face, () => null) : null;
-      const r = await readBackOnExpiry(name, () => (worn === null ? runVerb(name, args, did) : runVerbAsFace(name, args, worn).then((one) => (one.refusal?.reason === "face-not-open" ? runVerb(name, args, did) : one))), LIVE_READBACK);
+      const oneShot = () => readBackOnExpiry(name, () => runVerb(name, args, did), LIVE_READBACK);
+      let r: SubmitResult;
+      if (worn === null) r = await oneShot();
+      else {
+        r = await landOnFaceSession(liveFaceSession, name, args, worn, LIVE_LANDING);
+        if (r.refusal?.reason === "face-not-open") r = await oneShot();
+      }
       if (r.status === "error") throw new Error(r.errorMessage ?? `${name} refused`);
       return (summaryOutput(r) ?? {}) as Record<string, unknown>;
     } catch (e) {
