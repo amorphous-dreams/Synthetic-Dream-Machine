@@ -40,7 +40,7 @@ import {
 } from "@lararium/tw5";
 import { applyShares, liftCarriedShares } from "./share-apply.js";
 import { grantShare } from "./share-grant.js";
-import { adoptWorkbench, faceWorkbenchRealm, landWorkbench, workbenchFoundsOnWrite, workbenchWriterSeat, type LedgerDoc } from "./workbench-realm.js";
+import { adoptWorkbench, faceWorkbenchRealm, landWorkbench, landsUnderAHand, workbenchFoundsOnWrite, workbenchWriterSeat, type LedgerDoc } from "./workbench-realm.js";
 import { daemonRetiredHome, faceOwnSlot, wikiShellPorts } from "./wiki-shell-ports.js";
 import { workbenchKeyDocs, ledgerWorkbenchRealms, privateCabalRealmId, bagUri as meshBagUri, shareCarryTitle, shareCarryOf, tiddlerText, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX } from "@lararium/mesh";
 import { DAEMON_WIKI_SLUG, daemonSlotTitle, stoodDocumentBytes, ACTION_VERBS, sha256HexBytesSync, canonicalJsonBytes, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, fleetEdgeBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc, wikiBagUri, recipeLayerIndex, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, ControlHomeUnavailable, canonOfferDocUrl, type ChangeOrigin } from "@lararium/mesh";
@@ -1980,7 +1980,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       const ownerCure = (slug: string, owner: { readonly handleIndex: number }) =>
         ({ cure: `wear the realm's owner face (\`lares vault unlock --face ${owner.handleIndex}\`, then \`lares wear ${owner.handleIndex}\`) and land the share again (\`lares wiki share ${slug}\`)` });
       /** The realm owner's own seat under the session of the ask, which must wear that owner face; null where it does not. */
-      const ownerUnderSession = async (owner: { readonly group: string }, context: Parameters<typeof sessionOf>[1]) => {
+      const ownerUnderSession = async (owner: { readonly group: string }, context: Parameters<typeof sessionOf>[1] & { readonly asker?: Hand }) => {
+        // A landing signs only under a hand: any other asker leaves the cure to the person (the socket refuses a seat first).
+        if (!landsUnderAHand(context)) return null;
         const requestId = context.invocation?.requestId;
         const ask = context.local === true && typeof requestId === "string" && requestId.length > 0 ? { requestId, verb: "share-apply" } : null;
         let worn: Awaited<ReturnType<typeof faces.session>>;
@@ -1990,7 +1992,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         const seat = ownerEntry?.seat;
         return seat && worn.face === ownerEntry ? { seat, signer: worn.signer } : null;
       };
-      const realmKeyholder = async (slug: string, owner: { readonly handleIndex: number; readonly group: string }, context: Parameters<typeof sessionOf>[1]) => {
+      const realmKeyholder = async (slug: string, owner: { readonly handleIndex: number; readonly group: string }, context: Parameters<typeof sessionOf>[1] & { readonly asker?: Hand }) => {
         const bagId = wikiSlotUri(slug, "working");
         const cure = ownerCure(slug, owner);
         const under = await ownerUnderSession(owner, context);
