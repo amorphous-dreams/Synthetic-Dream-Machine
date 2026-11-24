@@ -257,6 +257,8 @@ export async function loadNodeWardCosignPort(repo: Repo, catalogUrl: string | un
  * THE KEEPER VEST'S CO-SIGN, VESSEL SIDE (`lares intent keeper-cosign`): run `ward-keeper-vest` over one keeper commit (the successor
  * closure D′, the chain head it links to, its nonce) through this face's ward co-sign gate, and answer what the commit carries: the
  * face's roster and, past one device, the spent co-sign (`keeperCosignGate`). An unanswered ask refuses `ward-awaiting-cosign`.
+ * The co-sign's group reads `loadFaceFold().group` (the PersonaGroup id), the owner the kūkulu offer's face reads too (`riteFaceOf`),
+ * so the keeper's check of a vouch's group against a co-sign's group compares one name with itself.
  */
 export async function runKeeperCosign(opts: { readonly repo: Repo; readonly catalogUrl?: string; readonly face?: number; readonly next: string; readonly prev: string | null; readonly nonce: string }): Promise<Record<string, unknown>> {
   if (!/^sha256:[0-9a-f]{64}$/.test(opts.next)) throw new IntentRefused("keeper-cosign-next-malformed: the successor closure reads `sha256:<64 hex>`");

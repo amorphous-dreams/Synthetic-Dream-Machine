@@ -199,8 +199,12 @@ export function offerVouchesOf(text: string | null, faceOfGroup: ReadonlyMap<str
 /** One lent face as a kūkulu row reads it: the offer's parts beside the device atom that signs its rite's halves. */
 type RiteFace = KukuluOfferFace & { readonly vessel: SwarmSignerPort };
 
-/** One loaded face: its group, the trust its hand and this device's atom verify under, its ward witness, and that atom. */
-async function riteFaceOf(repo: Repo, catalogUrl: string | undefined, ordinal: number): Promise<RiteFace> {
+/**
+ * One loaded face: its group, the trust its hand and this device's atom verify under, its ward witness, and that atom. Its group
+ * reads `loadFaceFold().group` (the PersonaGroup id), the one owner the keeper vest's co-sign reads too (`runKeeperCosign`), so the
+ * group a vouch signs and the group a co-sign carries never part (`ward-cosign-face-fold`).
+ */
+export async function riteFaceOf(repo: Repo, catalogUrl: string | undefined, ordinal: number): Promise<RiteFace> {
   let fold: FaceFold;
   try { fold = await loadFaceFold(repo, catalogUrl, { index: ordinal }); }
   catch (e) { if (e instanceof IntentRefused) throw new SwarmRefused("face-log-unreadable", `h${ordinal}: ${e.message}`); throw e; }
