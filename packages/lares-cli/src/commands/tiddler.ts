@@ -35,7 +35,9 @@ import { readCarrierShape } from "@lararium/tw5";
 import { cmdFamily } from "./family.js";
 import type { ParsedArgs } from "../parse-args.js";
 
-const SUBS = ["get", "put", "delete"] as const;
+/** Every verb the tiddler door answers. */
+export const TIDDLER_VERBS = ["get", "put", "delete"] as const;
+const SUBS = TIDDLER_VERBS;
 type Sub = typeof SUBS[number];
 
 /** The verb and its args for a tiddler sub-verb: the argument law, with no daemon in reach. */

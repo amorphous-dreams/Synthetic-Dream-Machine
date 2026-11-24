@@ -6,7 +6,7 @@ import { join } from "node:path";
 import { TreeKeyRefusal, type Credential } from "@lararium/mesh";
 import { FsCustodyIo } from "../src/custody-io.js";
 import { foundCustody } from "../src/custody-session.js";
-import { makeCustodyHolder, seatFaceAutoFounder, CustodyLocked, CustodyRecordUnknown } from "../src/custody-holder.js";
+import { makeCustodyHolder, seatFaceAutoFounder, CustodyLocked, CustodyRecordUnknown, UNLOCK_ATTEMPTS_PER_BOOT as BOUND } from "../src/custody-holder.js";
 import { sSlotsPath, type CustodyHomes } from "../src/vault-carriers.js";
 import { handleRecordPathIn } from "./face-paths.js";
 
@@ -56,26 +56,25 @@ describe("CustodyHolder", () => {
     const h = await found();
     const before = hashes(root);
     const wrong = await h.unlock([pass("holder-test-passphrase-wrong")]);
-    expect(wrong).toEqual({ reading: "no-slot-opens", attemptsLeft: 2 });
+    expect(wrong).toEqual({ reading: "no-slot-opens", attemptsLeft: BOUND - 1 });
     expect(h.isUnlocked()).toBe(false);
     expect(hashes(root)).toEqual(before);
     expect((await h.unlock([pass(RIGHT)])).reading).toBe("opens");
     expect(h.isUnlocked()).toBe(true);
   });
 
-  test("H2 the fourth guess does not read the slot tree; two misses still permit success", async () => {
+  test("H2 the guess past the bound does not read the slot tree; the misses short of it still permit success", async () => {
     const h = await found();
     const target = sSlotsPath(homes.identity);
     let reads = 0;
     const read = io.read.bind(io);
     io.read = async (path) => { if (path === target) reads++; return read(path); };
-    for (let i = 0; i < 3; i++) await h.unlock([pass(`holder-wrong-${i}`)]);
+    for (let i = 0; i < BOUND; i++) await h.unlock([pass(`holder-wrong-${i}`)]);
     const before = reads;
     expect(await h.unlock([pass(RIGHT)])).toEqual({ reading: "attempts-spent" });
     expect(reads).toBe(before);
     const control = await found(stage("h2-control"));
-    await control.unlock([pass("holder-wrong-a")]);
-    await control.unlock([pass("holder-wrong-b")]);
+    for (let i = 0; i < BOUND - 1; i++) await control.unlock([pass(`holder-wrong-${i}`)]);
     expect((await control.unlock([pass(RIGHT)])).reading).toBe("opens");
   });
 
@@ -175,16 +174,14 @@ describe("CustodyHolder.proves — a person stands at an unlocked vessel", () =>
     const h = await found(); await h.unlock([pass(RIGHT)]);
     const before = hashes(root);
     expect(await h.proves([pass(RIGHT)])).toMatchObject({ reading: "proves", opener: [0], proved: [expect.objectContaining({ t: 1, pins: 1, opener: [0] })] });
-    expect(h.attemptsLeft()).toBe(3);
+    expect(h.attemptsLeft()).toBe(BOUND);
     expect(h.isUnlocked()).toBe(true);
     expect(hashes(root)).toEqual(before);
   });
 
   test("P2 a route that opens no slot spends one of the boot's attempts, and spent attempts refuse before any derivation", async () => {
     const h = await found(); await h.unlock([pass(RIGHT)]);
-    expect(await h.proves([pass("holder-wrong-P2-a")])).toEqual({ reading: "no-slot-opens", attemptsLeft: 2 });
-    expect(await h.proves([pass("holder-wrong-P2-b")])).toEqual({ reading: "no-slot-opens", attemptsLeft: 1 });
-    expect(await h.proves([pass("holder-wrong-P2-c")])).toEqual({ reading: "no-slot-opens", attemptsLeft: 0 });
+    for (let i = 1; i <= BOUND; i++) expect(await h.proves([pass(`holder-wrong-P2-${i}`)])).toEqual({ reading: "no-slot-opens", attemptsLeft: BOUND - i });
     const target = sSlotsPath(homes.identity);
     let reads = 0;
     const read = io.read.bind(io);
@@ -200,14 +197,14 @@ describe("CustodyHolder.proves — a person stands at an unlocked vessel", () =>
     await h.unlock([pass("holder-wrong-P3-a")]);
     await h.unlock([pass("holder-wrong-P3-b")]);
     expect((await h.unlock([pass(RIGHT)])).reading).toBe("opens");
-    expect(await h.proves([pass("holder-wrong-P3-c")])).toEqual({ reading: "no-slot-opens", attemptsLeft: 0 });
+    for (let i = 3; i <= BOUND; i++) expect(await h.proves([pass(`holder-wrong-P3-${i}`)])).toEqual({ reading: "no-slot-opens", attemptsLeft: BOUND - i });
     expect(await h.proves([pass(RIGHT)])).toEqual({ reading: "attempts-spent" });
   });
 
   test("P4 a locked holder proves nothing and spends nothing", async () => {
     const h = await found();
     expect(await h.proves([pass(RIGHT)])).toEqual({ reading: "locked" });
-    expect(h.attemptsLeft()).toBe(3);
+    expect(h.attemptsLeft()).toBe(BOUND);
     expect(h.isUnlocked(), "a proof never opens the key").toBe(false);
   });
 
@@ -220,7 +217,7 @@ describe("CustodyHolder.proves — a person stands at an unlocked vessel", () =>
     writeFileSync(sSlotsPath(homes.identity), readFileSync(sSlotsPath(other.homes.identity)));
     // THE BYTES MOVED: the tree at this vessel's path now reads as the other vessel's.
     expect(readFileSync(sSlotsPath(homes.identity)).equals(mine)).toBe(false);
-    expect(await h.proves([pass("the-other-vessels-route")])).toEqual({ reading: "no-slot-opens", attemptsLeft: 2 });
+    expect(await h.proves([pass("the-other-vessels-route")])).toEqual({ reading: "no-slot-opens", attemptsLeft: BOUND - 1 });
     // CONTROL: with its own tree back, its own route proves.
     writeFileSync(sSlotsPath(homes.identity), mine);
     expect(await h.proves([pass(RIGHT)])).toMatchObject({ reading: "proves", opener: [0], proved: [expect.objectContaining({ t: 1, pins: 1, opener: [0] })] });

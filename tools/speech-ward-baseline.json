@@ -1,11 +1,11 @@
 {
   "//": "Per-package ceilings of the speech the system emits (tools/speech-ward-witness.mjs; lar:///ha.ka.ba/lares/api/mu/l-prime#/system-speech). `ceilings` holds the identity/predication copulas, `auxiliary` the likely-auxiliary forms (debt: stative predications the demotion hides), `silent` the packages that speak nothing. A ceiling only lowers, and a count below its ceiling reads red until the ceiling lowers to it; the end state reads every ceiling 0.",
   "ceilings": {
-    "lararium-browser": 34,
+    "lararium-browser": 33,
     "lararium-keyhive": 13,
     "lararium-memetic-frame": 1,
     "lararium-mesh": 106,
-    "lararium-node": 134,
+    "lararium-node": 133,
     "lararium-sensorium": 50,
     "lararium-tw5": 15,
     "lararium-web": 1,

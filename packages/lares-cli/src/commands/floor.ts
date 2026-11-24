@@ -27,7 +27,7 @@
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane#/the-vessel-pin
  */
-import { ratchetWords, ratchetsDiffer, type FloorAcceptOutcome, type FloorStatus, type GenesisDigests, type RatchetDifference } from "@lararium/mesh";
+import { ratchetWords, ratchetsDiffer, type FloorAcceptOutcome, type FloorDrift, type FloorStatus, type GenesisDigests, type RatchetDifference } from "@lararium/mesh";
 import { FloorRefused } from "@lararium/node";
 import { emit, exitFor } from "../render.js";
 import { storeVerb, storeFailure } from "../store-door.js";
@@ -51,7 +51,39 @@ export type FloorStatusOutput = Partial<FloorStatus> & {
     readonly unread?: string;
   };
   readonly nexusRefused?: { readonly refusal: string; readonly message: string };
+  /** How far the floor this vessel serves trails live public canon, by carrier; null (or absent, on a vessel older than the
+   *  reading) where it does not read. */
+  readonly floorDrift?: FloorDrift | null;
+  /** Why `floorDrift` reads null, by name, where the vessel names it. */
+  readonly floorDriftWhy?: string;
 };
+
+/** How many carrier names a drift line spells before it counts the rest. */
+const DRIFT_NAMES = 8;
+const named = (titles: readonly string[]): string =>
+  `${titles.slice(0, DRIFT_NAMES).join(", ")}${titles.length > DRIFT_NAMES ? `, … ${titles.length - DRIFT_NAMES} more` : ""}`;
+
+/** The drift's per-slug tally: `lararium 2 missing, 1 older · … · unread sdm`. */
+export function floorDriftTally(d: FloorDrift): string {
+  return [...d.slugs.map((s) => `${s.slug} ${s.missing.length} missing, ${s.older.length} older`), ...(d.unread.length > 0 ? [`unread ${d.unread.join(", ")}`] : [])].join(" · ");
+}
+
+/** The carrier names a drift reading spells, missing first, each line indented by `indent`. */
+export function floorDriftNames(d: FloorDrift, indent: string): string[] {
+  const missing = d.slugs.flatMap((s) => s.missing);
+  const older = d.slugs.flatMap((s) => s.older);
+  return [
+    ...(missing.length > 0 ? [`${indent}missing: ${named(missing)}`] : []),
+    ...(older.length > 0 ? [`${indent}older:   ${named(older)}`] : []),
+  ];
+}
+
+/** The floor drift's lines on the status: the count by carrier and the names, or why it reads unread. */
+function floorDriftLines(d: FloorDrift | null | undefined, why: string | undefined): string[] {
+  if (d === undefined) return ["  floor drift:     unread (the standing vessel answers no drift reading; its build predates it, and a refresh carries it)"];
+  if (d === null) return [`  floor drift:     unread (${why ?? "no reason named"})`];
+  return [`  floor drift:     ${d.count} carrier(s) behind live canon · ${floorDriftTally(d)}`, ...floorDriftNames(d, "    ")];
+}
 
 /** The human lines of `floor status`: both truths, then the Nexus part or its refusal by name. */
 export function floorStatusLines(s: FloorStatusOutput): string[] {
@@ -72,6 +104,7 @@ export function floorStatusLines(s: FloorStatusOutput): string[] {
         ? "  floor pin:       none (no Nexus charter; the founding record's genesis floor serves)"
         : `  floor pin:       ${s.pinned?.manifest ?? "?"} — its manifest does not read from this vessel's CAS`);
   }
+  lines.push(...floorDriftLines(s.floorDrift, s.floorDriftWhy));
   if (s.nexusRefused) {
     lines.push(`  nexus:           refused ${s.nexusRefused.refusal} — ${s.nexusRefused.message}`);
     return lines;

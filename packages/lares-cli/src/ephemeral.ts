@@ -3,7 +3,7 @@
  *
  * Witness-spirits, harness-staged sandbox runs, and scratch sessions pollute the rhizome when the
  * palace ingests them as memory. This module reads ONE verdict per session transcript, honored
- * at the two ingest gates (`lares sense capture` · `lares sense subagents`),
+ * at the two ingest gates (`lares sense capture` and its sub-agent transcripts),
  * in two grains:
  *
  *   (a) DERIVED — the session's own recorded cwd (its first-line `cwd`, the same row the wing

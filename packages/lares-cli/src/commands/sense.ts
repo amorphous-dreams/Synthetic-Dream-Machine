@@ -28,6 +28,7 @@ import { cmdPalaceTeardown } from "./palace-teardown.js";
 import { cmdRecall } from "./recall.js";
 import { cmdRefresh } from "./refresh.js";
 import { cmdMeta } from "./meta.js";
+import { helpLines } from "../command-help.js";
 import { cmdSenseAnalyze, resolveLens, SENSE_LENSES } from "./sense-analyze.js";
 import { cmdPlaneRecord } from "./plane-record.js";
 import { runQuiesce, runResume, runTopology, type DoorScope } from "./mempalace.js";
@@ -119,6 +120,9 @@ const LIFECYCLE: Readonly<Record<string, (a: ParsedArgs) => Promise<number> | nu
   purge:       cmdSensePurge,
 };
 
+/** Every verb the sense door answers: the four plane reads and the lifecycle verbs. */
+export const SENSE_VERBS: readonly string[] = [...VERBS, ...Object.keys(LIFECYCLE)];
+
 /**
  * A FOLD READS ONLY ITS OWN FLAGS — the door's `pathAccepts`. The `sense` row is the union over every verb, so a path
  * folded beneath it names the narrower list it reads and the dispatcher refuses any other flag by name before the
@@ -198,12 +202,9 @@ export async function cmdSense(args: ParsedArgs): Promise<number> {
       error: { code: "usage", message: `name a verb: read (${VERBS.join(" · ")}) or lifecycle (${Object.keys(LIFECYCLE).join(" · ")})`,
                hint: `lares sense search "<query>" --lens <${known.join("|")}>` },
       human: () => {
-        console.error("lares sense — the SOVEREIGN sensorium's one door (the guest lives at `lares mempalace`)\n");
-        console.error("  read (plane as a parameter):");
-        for (const v of VERBS) console.error(`    lares sense ${v.padEnd(10)} --lens <plane>`);
-        console.error("\n  lifecycle (tend the planes):");
-        for (const v of Object.keys(LIFECYCLE)) console.error(`    lares sense ${v}`);
-        console.error(`\n  planes: ${known.join(" · ")}`);
+        if (verb) console.error(`lares sense: unknown verb "${verb}"`);
+        console.error(`  planes: ${known.join(" · ")}\n`);
+        for (const line of helpLines("sense")) console.error(line);
       },
     });
     return exitFor("usage");

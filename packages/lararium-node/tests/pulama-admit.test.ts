@@ -27,6 +27,7 @@ import { PulamaVerbUsage, RouteNeedsTerminal, readRoute, runHandVerb, type Route
 import { wardRootSigner } from "../src/ward-signer.js";
 import { FIXTURE_PASSPHRASE, fixtureWard } from "./custody-seat-fixture.js";
 import { fixtureRoute, fixtureSlots, standPulama, type PulamaFixture } from "./pulama-fixture.js";
+import { UNLOCK_ATTEMPTS_PER_BOOT as BOUND } from "../src/custody-holder.js";
 
 vi.setConfig({ testTimeout: 180_000 });
 
@@ -174,7 +175,7 @@ describe("RED pulama-admit-asks-the-route-on-a-terminal", () => {
     expect(answer).toMatchObject({ op: "admit", reading: "admitted", admitted: IMAGE, lent: [0], faces: 1, lit: true });
     // THE ROUTE OPENED NOTHING: the holder stood lit before and holds the same faces after; no attempt spent.
     expect(s.fx.kept.unlockedFaces()).toEqual([s.face.fcid]);
-    expect(answer["attemptsLeft"]).toBe(3);
+    expect(answer["attemptsLeft"]).toBe(BOUND);
     // THE HAND'S OWN TESSERA: both halves rest from this one act, the host half naming the guest half, under the pūlama's key.
     const tessera = String(answer["tessera"]);
     const guest = JSON.parse((await s.records.read(pulamaAdmitTesseraTitle(tessera, "guest")))!) as SignedPulamaAdmit;
@@ -196,7 +197,7 @@ describe("RED pulama-admit-asks-the-route-on-a-terminal", () => {
     const s = await stand();
     s.image.report(IMAGE);
     const wrong = await s.door({ op: "admit", credentials: [{ kind: "passphrase", passphrase: "a-wrong-route" }] });
-    expect(wrong).toMatchObject({ op: "admit", reading: "no-slot-opens", attemptsLeft: 2 });
+    expect(wrong).toMatchObject({ op: "admit", reading: "no-slot-opens", attemptsLeft: BOUND - 1 });
     expect(await s.records.read(pulamaAdmittedTitle(IMAGE))).toBeNull();
     expect(await s.hello({})).toBe("pulama-image-unadmitted");
     expect(await s.door({ op: "admit" })).toMatchObject({ reading: "malformed" });
@@ -270,7 +271,7 @@ describe("RED pulama-admit-refuses-unlit-or-unreported", () => {
     // LIT, and the host reported nothing.
     expect(await runHandVerb("admit", undefined, ports)).toMatchObject({ op: "admit", reading: "image-unreported" });
     expect(prompts).toBe(0);
-    expect(await s.door({ op: "admit", credentials: [{ kind: "passphrase", passphrase: "a-wrong-route" }] })).toMatchObject({ reading: "image-unreported", attemptsLeft: 3 });
+    expect(await s.door({ op: "admit", credentials: [{ kind: "passphrase", passphrase: "a-wrong-route" }] })).toMatchObject({ reading: "image-unreported", attemptsLeft: BOUND });
     // UNLIT, with an image reported.
     s.image.report(IMAGE);
     await s.fx.server.lock();
@@ -319,7 +320,7 @@ describe("RED pulama-route-reading-names-what-it-heard", () => {
     bare.type("\r");
     expect(((await blank) as Error).message).toMatch(/no route came/);
     expect(frames).toEqual([]);
-    expect((await s.door({ op: "status" }))["attemptsLeft"]).toBe(3);
+    expect((await s.door({ op: "status" }))["attemptsLeft"]).toBe(BOUND);
   });
 });
 
@@ -332,7 +333,7 @@ describe("RED pulama-unadmit-ends-an-admission by a signed tombstone", () => {
     expect(await s.hello({})).toBe("opens");
     // NEEDS A ROUTE: a frame with none refuses as malformed; a wrong one proves nothing and spends an attempt.
     expect(await s.door({ op: "unadmit", image: IMAGE })).toMatchObject({ op: "unadmit", reading: "malformed" });
-    expect(await s.door({ op: "unadmit", image: IMAGE, credentials: [{ kind: "passphrase", passphrase: "a-wrong-route" }] })).toMatchObject({ op: "unadmit", reading: "no-slot-opens", attemptsLeft: 2 });
+    expect(await s.door({ op: "unadmit", image: IMAGE, credentials: [{ kind: "passphrase", passphrase: "a-wrong-route" }] })).toMatchObject({ op: "unadmit", reading: "no-slot-opens", attemptsLeft: BOUND - 1 });
     // AN UNKNOWN DIGEST answers a reading and rests nothing.
     expect(await s.door({ op: "unadmit", image: OTHER, credentials: fixtureRoute })).toMatchObject({ op: "unadmit", reading: "image-not-admitted", digest: OTHER });
     const ended = await s.door({ op: "unadmit", image: IMAGE, credentials: fixtureRoute });

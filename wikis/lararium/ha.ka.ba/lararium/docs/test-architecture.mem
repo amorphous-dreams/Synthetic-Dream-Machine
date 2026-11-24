@@ -57,7 +57,7 @@ duration below comes off GitHub's own records or off the vitest JSON reports CI 
 
 Limits a reader should hold:
 
-- **Prior research unread.** `lares meme get lar:///ha.ka.ba/kahua/memory/research/test-estate-astra` answered
+- **Prior research unread.** `lares tiddler get lar:///ha.ka.ba/kahua/memory/research/test-estate-astra --meme` answered
   `control-home-unavailable: vessel-locked`; no copy stands on disk. The #/subsumption list never entered this survey, so
   the redundancy clusters below rest on names, titles and timings alone.
 - **One run feeds the per-file numbers.** Per-file seconds come from run `44497221032` on idle 4-vCPU hosted runners.
@@ -661,7 +661,7 @@ Recalled, not re-opened (verify before quoting onward):
 - Micco, *Flaky Tests at Google and How We Mitigate Them* (the three percentages): https://testing.googleblog.com/2016/05/flaky-tests-at-google-and-how-we.html
 - Automerge `save` / `load` / `clone`; pnpm `--filter "...[ref]"`; Node `NODE_V8_COVERAGE`; Stryker's sandbox copy.
 
-Not reached: `lar:///ha.ka.ba/kahua/memory/research/test-estate-astra`. `lares meme get` refused with `control-home-unavailable: vessel-locked`, and no copy stands in the tracked tree. This design may repeat or contradict that research; reconcile the two before a lane starts.
+Not reached: `lar:///ha.ka.ba/kahua/memory/research/test-estate-astra`. `lares tiddler get --meme` refused with `control-home-unavailable: vessel-locked`, and no copy stands in the tracked tree. This design may repeat or contradict that research; reconcile the two before a lane starts.
 
 Repo files read: `.github/workflows/ci.yml`, `e2e-shards.yml`, `held-out.yml` (headers); `tools/ci-cells.mjs`, `tools/e2e-shard-weights.json`, `tools/law-mutants.mjs`, `tools/law-mutants-witness.sh`, `tools/clock-census.mjs`, `tools/typecheck-tests-baseline.json`; `tests/TEST-ARCHITECTURE.md`, `tests/vitest.config.ts`; the vitest configs of node, cli, mesh, tw5; `packages/lararium-node/tests/support/kept-house.ts`, `scratch-custody-setup.ts`; `packages/lararium-mesh/src/keyslot.ts` (lines 53-64); `packages/lares-cli/tests/laws/mutants.json`.
 
@@ -669,6 +669,6 @@ Repo files read: `.github/workflows/ci.yml`, `e2e-shards.yml`, `held-out.yml` (h
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;nPwNCiu5_oZ_sFaaU755nhsME-q78Ot5PZUTGdk2dV4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;SPCsUOsIcVjRFJ4n3UieBrsZpTQhU5MHgfKdoNpM8W8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

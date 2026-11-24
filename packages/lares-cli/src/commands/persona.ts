@@ -51,6 +51,7 @@ import { emit, exitFor, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { cmdRaiseSign } from "./raise.js";
+import { tableCovers } from "../verb-table.js";
 
 class UsageError extends Error {}
 
@@ -96,11 +97,19 @@ export function parseIndex(raw: string | undefined, env: NodeJS.ProcessEnv = pro
   return n;
 }
 
+/** Every verb the persona door answers; `recovery-contact` names its own. */
+export const PERSONA_VERBS = {
+  new: null, list: null, sync: null, reissue: null, lease: null,
+  "recovery-contact": ["offer", "show", "enrol", "view"], provisional: null, confirm: null, view: null, "raise-sign": null,
+} as const;
+type PersonaVerb = keyof typeof PERSONA_VERBS;
+
 export async function cmdPersona(args: ParsedArgs): Promise<number> {
   const sub = args.positional[0];
   if (!sub) { usage(args); return 2; }
   try {
-    switch (sub) {
+    const v = sub as PersonaVerb;
+    switch (v) {
       case "new":   return await personaNew(args);
       case "list":  return await personaList(args);
       case "sync":  return await personaSync(args);
@@ -112,7 +121,7 @@ export async function cmdPersona(args: ParsedArgs): Promise<number> {
       case "view": return await personaView(args);
       case "raise-sign": return await cmdRaiseSign({ ...args, positional: args.positional.slice(1) });
       default:
-        console.error(`lares persona: unknown sub-verb "${sub}"`);
+        console.error(`lares persona: unknown sub-verb "${tableCovers(v)}"`);
         return usage(args, sub);
     }
   } catch (err) {
@@ -263,7 +272,7 @@ export function recoveryContactEnrolmentSpeech(): readonly string[] {
  * takes the recovery contacts' quorum. Three recovery contacts, a threshold of two: two of the three, together, restore your Handle.
  */
 async function personaRecoveryContact(args: ParsedArgs): Promise<number> {
-  const verb = args.positional[1];
+  const verb = args.positional[1] as (typeof PERSONA_VERBS)["recovery-contact"][number] | undefined;
   if (verb === "offer") {
     const prefix = typeof args.options["prefix"] === "string" ? args.options["prefix"].trim() : "";
     if (!/^persona-[0-9a-f]{64}$/.test(prefix)) throw new UsageError("`persona recovery-contact offer` names the face it guards: --prefix persona-<64 hex>");
@@ -345,7 +354,7 @@ async function personaRecoveryContact(args: ParsedArgs): Promise<number> {
     });
     return 0;
   }
-  return usage(args, "recovery-contact");
+  return refuseUsage(args, "persona recovery-contact", helpLines("persona recovery-contact"), verb ? `unknown sub-verb "${verb}"` : undefined);
 }
 
 /** The recovery contact's card, read hidden on a terminal; a test installs its own. */

@@ -30,6 +30,7 @@ import {
 import { storeVerb } from "../store-door.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
+import { tableCovers } from "../verb-table.js";
 
 /** A recognized-but-unwired verb reports its shape and where its ahu waits, then declines to act. */
 function declared(verb: string, willDo: string, mint: string): number {
@@ -239,8 +240,11 @@ async function handleAttest(args: ParsedArgs): Promise<number> {
   return 0;
 }
 
+/** Every verb the handle door answers. */
+export const HANDLE_VERBS = ["publish", "rotate", "graft", "burn", "verify-attestation", "attest"] as const;
+
 export async function cmdHandle(args: ParsedArgs): Promise<number> {
-  const sub = args.positional[0];
+  const sub = args.positional[0] as (typeof HANDLE_VERBS)[number] | undefined;
   switch (sub) {
     case "publish": return await handlePublish(args);
     case "rotate": {
@@ -262,6 +266,6 @@ export async function cmdHandle(args: ParsedArgs): Promise<number> {
     case "verify-attestation": return await handleVerifyAttestation(args);
     case "attest": return await handleAttest(args);
     default:
-      return refuse(args, sub ? `unknown sub-verb "${sub}"` : "name a sub-verb");
+      return refuse(args, sub ? `unknown sub-verb "${tableCovers(sub)}"` : "name a sub-verb");
   }
 }
