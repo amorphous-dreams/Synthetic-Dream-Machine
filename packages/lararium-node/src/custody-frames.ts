@@ -205,6 +205,8 @@ export interface CustodyFrameDeps {
   readonly rehive?: (face: number, credentials: readonly Credential[]) => Promise<RehiveOutcome>;
   /** Arm face `ordinal`'s NEXT light as a recard (`face-recard`), one use. Absent, every `recard` frame refuses `recard-unavailable`. */
   readonly armRecard?: (ordinal: number) => void;
+  /** Clear face `ordinal`'s recard arm: the door calls it once the awaited light settled, whether the light took the arm or never reached it. */
+  readonly disarmRecard?: (ordinal: number) => void;
   /**
    * Ask every island of the standing composition that mounts a disk shore to flush (`flushEveryShore`, the same flush the
    * teardown's flush phase runs). A wear that turns the face asks it first, in this process. Absent, or null while no
@@ -219,8 +221,9 @@ const OPS: ReadonlySet<string> = new Set(["unlock", "lock", "wear", "custody", "
 /** The keys a `recard` frame may carry: the vessel's own route and the face, nothing beside them. */
 const RECARD_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "credentials", "face"]);
 /** A light refused for want of a prekey secret, read by the refusal's NAME (`FaceHoldsNoPrekeySecret`, as `String(error)` leads
- *  with it), never by its prose: the one dark a recard cures. */
-export const STALE_LIGHT = /\bFaceHoldsNoPrekeySecret:/;
+ *  with it), never by its prose: the one dark a recard cures. A recard that refused for its Archive (`archive-unrouted`,
+ *  `archive-unrested`) leaves the face as stale as before, so the next recard reads it the same. */
+export const STALE_LIGHT = /\bFaceHoldsNoPrekeySecret:|\bFaceRecardRefused:[^\n]*\brecard refused \(archive-un(?:routed|rested)\)/;
 /** The keys a `rehive` frame may carry: the face's own route and the face, nothing beside them. */
 const REHIVE_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "credentials", "face"]);
 /** The keys a `wear` frame may carry: a face, and the seat's mark; no route ever rides a wear. */
@@ -687,7 +690,7 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     };
     const hand = await readHand(sock, { proveRoute: true }, deps.peerOf);
     if ("refusal" in hand) return refuse(hand.refusal, "a recard asks a person at their terminal: a detected AI seat refuses, and the vessel's own route gates it; nothing moved");
-    if (!deps.armRecard || !deps.refusedLights || !deps.replayLend) return refuse("recard-unavailable", "this vessel's custody door recards no face; nothing moved");
+    if (!deps.armRecard || !deps.disarmRecard || !deps.refusedLights || !deps.lightFace) return refuse("recard-unavailable", "this vessel's custody door recards no face; nothing moved");
     if (deps.pulama) return refuse("recard-under-pulama", `this vessel's custody rests with its pūlama, which lights faces on its own hand; nothing moved. Read the face there: tools/lares-container.sh pulama status`);
     if (!holder.isUnlocked()) return refuse("custody-locked", `${new CustodyLocked().message}: unlock it (\`lares vault unlock\`), then \`lares vault recard --face ${face}\`; nothing moved`);
     const at = await holder.faceStanding({ ordinal: face });
@@ -703,11 +706,14 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       if (proof.reading === "attempts-spent") return refuse("attempts-spent", "this vessel's unlock attempts for this boot stand spent; nothing moved. Stand the vessel again (`lares vessel stand`)");
       return refuse(proof.reading, `the vessel's slot tree reads ${proof.reading}; nothing moved. Read it with \`lares vault status\``);
     }
+    // THIS FACE'S LIGHT, AWAITED: the lend's sweep fires its lights and answers at once, so the door arms the face, asks its own
+    // light and reads the refusals only once that light settled. An arm no light took is cleared the same turn.
     deps.armRecard(face);
-    try { await deps.replayLend(); }
-    catch (e) { return refuse("recard-failed", `the lend did not replay (${e instanceof Error ? e.message : String(e)}): the recard stands armed for face h${face}'s next light; \`lares vault unlock\` replays it`); }
+    try { await deps.lightFace(face); }
+    catch (e) { return refuse("recard-failed", `face h${face} failed to light (${e instanceof Error ? e.message : String(e)}): the recard clears its arm; read it with \`lares vault status --verbose\`, then \`lares vault recard --face ${face}\` again`); }
+    finally { deps.disarmRecard(face); }
     const after = deps.refusedLights().find((r) => r.ordinal === face);
-    if (after !== undefined) return refuse("recard-refused", `face h${face} stayed dark and the recard spent its arm: ${after.cause}. Clear what that names, then \`lares vault recard --face ${face}\` again (read the face with \`lares vault status\`)`);
+    if (after !== undefined) return refuse("recard-refused", `face h${face} stayed dark and the recard spent its arm: ${after.cause}. Read it with \`lares vault status --verbose\` and clear what that names, then \`lares vault recard --face ${face}\` again`);
     deps.onLog(`recard h${face}: lit`);
     return { op: "recard", face, recarded: true };
   };

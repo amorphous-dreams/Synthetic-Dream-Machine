@@ -106,6 +106,8 @@ The mounted face is the composition's own state: no `active-persona` record rest
 
 Records whose class includes ''LEAD'' block byte movement until their payload and owning principal are proved. Current `face` and `bundle` fields describe filename/export selection only (`vault-carriers.ts:119-165`); they never confer cryptographic separation. The existing S-key rotation sweeps all hot/cold records (`:64-68,477-510`), so K15 replaces it with per-face and named-S rotation.
 
+''The recard ~ `lares vault recard --face N`.'' A face whose Archive fell behind its cards refuses its light by name, `FaceHoldsNoPrekeySecret`; the recard lights it again under its own identity. The door reads the face's last refused light (a refusal of `FaceRecardRefused` for `archive-unrouted` or `archive-unrested` keeps the face stale, so a second recard runs), proves the vessel's own route (a person's act at a terminal; an AI seat refuses `hand-act-only`; a pūlama's vessel refuses `recard-under-pulama`), arms that one face's next light and awaits that light's settling; it then reads the refusals and answers `recarded` only where none stands. The arm is single-use: the light takes it as it starts, and the door clears it in a finally whether a light took it or none reached. Its card mints before the face's bags register and its Archive rests after that card in the face's own `veil-archive` row; a recard whose Archive does not rest refuses `FaceRecardRefused` `archive-unrested`, `archive-unrouted` where this shore rests no Archive for the face, `still-refuses` where the face held no prekey secret even after its card, and the face stays dark with the refusing row readable at `lares vault status --verbose`. Content a peer sealed to the lost prekey stays unreadable: `SealedUnderLostDocument` names a bag the recard reminted whose seal belongs to the Document that left, and `ContentKeyNotHeld` names any other `Key not found` read, which claims no permanent loss (its key may arrive by sync); the stand that holds the Document shares it anew (`lares bag share <bag> --read <face>` there). Open ruling: the recard proves the vessel's route, not the face's own.
+
 <<~/ahu>>
 
 <<~ ahu slot=`#/row-census-browser`>>
@@ -280,6 +282,6 @@ Wave D audit of every child the sealed custody root derives and of the vessel's 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;2C9ZPHYlf0lejp5FXmBYEgl7oTko4aQRw1Yzvek9Kbw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ToyqnNjMy0ShPL1KXAijNec5xMOzdMZ8I80HJLFPzF0`>>
 
 <<^ code=`&#x0004;` to=`?`>>
