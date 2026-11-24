@@ -31,6 +31,7 @@ import { emit, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { houseFaceNames, LIVE_REALM_DOORS, oneId, type RealmDoors } from "./realm-doors.js";
+import { tableCovers } from "../verb-table.js";
 
 export { ensureWikiRealm, houseFaceNames, LIVE_REALM_DOORS, placeWikiInRealm, type RealmDoors, type RealmSeat } from "./realm-doors.js";
 
@@ -120,7 +121,9 @@ async function cmdList(args: ParsedArgs, doors: RealmDoors): Promise<number> {
   return 0;
 }
 
-const SUB_DOORS = ["rename", "move", "list"] as const;
+/** Every verb the realm door answers. */
+export const REALM_VERBS = ["rename", "move", "list"] as const;
+const SUB_DOORS = REALM_VERBS;
 
 export async function cmdRealm(args: ParsedArgs, doors: RealmDoors = LIVE_REALM_DOORS): Promise<number> {
   const verb = args.positional[0];
@@ -128,10 +131,12 @@ export async function cmdRealm(args: ParsedArgs, doors: RealmDoors = LIVE_REALM_
     return refuseUsage(args, "realm", helpLines("realm"), verb === undefined ? "name a sub-verb" : `unknown sub-verb "${verb}"`);
   }
   try {
-    switch (verb) {
+    const v = verb as (typeof REALM_VERBS)[number];
+    switch (v) {
       case "rename": return await cmdRename(args, doors);
       case "move": return await cmdMove(args, doors);
-      default: return await cmdList(args, doors);
+      case "list": return await cmdList(args, doors);
+      default: return refuseUsage(args, "realm", helpLines("realm"), `unknown sub-verb "${tableCovers(v)}"`);
     }
   } catch (err) {
     if (err instanceof RealmRefused) {

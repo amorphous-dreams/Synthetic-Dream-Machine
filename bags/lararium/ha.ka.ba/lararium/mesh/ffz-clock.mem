@@ -349,7 +349,7 @@ literal: ''store at the block, navigate at the segment.''
 
 ''The clock ticks on the HARNESS transcript's deterministic events — never on the rendered''
 ''grammar.'' L0 reads each generation segment (`stop_reason`); L1 reads the operator's grounding
-turn (the recorded next user-message). The HUD / `lares yield` gives a ''render'' of the clock, a
+turn (the recorded next user-message). The HUD / the `yield` firing gives a ''render'' of the clock, a
 //map//, not its //source//; it degrades, partial-renders, drifts — and loses no tick, because the
 //territory// (the transcript) persists. ''Lose the HUD, keep the clock.'' (L-Prime's map/territory,
 applied to time.)
@@ -468,6 +468,6 @@ targeted revocation MUST ride Keyhive's convergent removal, never the counter
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;hjbizGqFk5vW8U9448G_Usor12TZEhToYiHLP05jhHY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;4CMSCo06lOkegrfr_0bU9JIkK1U-YJYQpoItHFbB_po`>>
 
 <<^ code=`&#x0004;` to=`?`>>

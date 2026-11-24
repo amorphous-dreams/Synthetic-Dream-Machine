@@ -149,7 +149,7 @@ Later that day the hearth-wiki itself boots with one dead module. The island kee
 | the daemon width against the glass at full and skinny | D3 | the three-boot spike |
 | the Catalog's actor states; //waking//, `superseded`, `actor-not-spawned` with //spawn//; `cap-refused` on residency acts; `open-surface` as a second camera on one actor | D4 | `dreamdom#/open-rulings` 5, 7, 11 |
 | golden 13 for the daemon road; golden 14 for wake and spawn; proposed daemon scripts (`daemon/summon-under-plate`, `daemon/fault-plate-names-cure`, `daemon/refused-service-mirrors`) | D5 | `dreamdom#/open-rulings` 13 |
-| the daemon as a lean surface: `lares daemon` text camera on the CLI, an MCP resource per daemon key, a Mudlet status pane | D6 | D2's `blocks` and `text` serialisers |
+| the daemon as a lean surface: a `daemon` text camera (not yet a door) on the CLI, an MCP resource per daemon key, a Mudlet status pane | D6 | D2's `blocks` and `text` serialisers |
 | the daemon over QuickJS, Hermes, UE6 panels | D7 | their gates |
 
 <<~/ahu>>
@@ -170,6 +170,6 @@ Later that day the hearth-wiki itself boots with one dead module. The island kee
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;KsUzikBaVnH8sD8Jctis3q2tQ_dqPplo9qcmkH69fu0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;VZg2gGNT-e9DuKstvu884Q4RpTZFzUfWYuMa7lNANUg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

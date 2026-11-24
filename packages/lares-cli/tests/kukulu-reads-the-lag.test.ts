@@ -69,6 +69,10 @@ describe("kukulu reads the lag on every raise and lays the workbench on the owne
     await riteKukulu(f.ports, {});
     const text = f.said.join("\n");
     expect(text).toMatch(/canon lags the canon source by 2 carrier\(s\) \(1 new, 1 changed\) in \/workspace\/bags; canon fills through promote and the floor's sealed cut, never from a raise/);
+    // The lag line names the two commands that fill canon, so the cure sits on the line that names the lag.
+    const lagLine = f.said.find((l) => l.includes("canon lags the canon source"))!;
+    expect(lagLine).toContain("`lares meme offer promote <cid>`");
+    expect(lagLine).toContain("`lares nexus release <manifest-file> --cut`");
     expect(text).toMatch(/the workbenches lag the checkout's \/workspace\/wikis by 3 carrier\(s\): sdm 2, lares 1/);
     expect(text).toMatch(/workbench lares does not mount under the worn face \(the worn face holds no writer's seat there\); nothing of it lays/);
   });

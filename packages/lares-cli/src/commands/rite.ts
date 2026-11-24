@@ -55,6 +55,9 @@ export type RiteVerb = "rite-begin" | "rite-land" | "rite-receipts" | "rite-offe
 export interface RitePlan { readonly verb: RiteVerb; readonly args: Record<string, unknown> }
 
 /** The host sub-verb's two spellings. */
+/** Every verb the rite door answers (`kūkulu` reads as `kukulu`). */
+export const RITE_VERBS = ["kukulu", "keep", "keep-cut", "begin", "offer", "land", "receipts"] as const;
+
 export const isKukulu = (word: string | undefined): boolean => word === "kukulu" || word === "kūkulu";
 
 /** One vessel sub-verb's store row and args, or a `RiteUsage` naming what the line lacks. */
@@ -90,7 +93,7 @@ export function ritePlan(args: ParsedArgs): RitePlan {
     if (tessera === undefined || head === undefined) throw new RiteUsage("land names its tessera and the head the vessel stands at: --tessera <id> --head <commit>");
     return { verb: "rite-land", args: { tessera, head, ...image, ...face } };
   }
-  throw new RiteUsage(isKukulu(act) ? "kukulu runs on the host and plans no single row" : act === "keep" || act === "keep-cut" ? `${act} runs several rows and plans no single one` : "name a sub-verb: kukulu, keep, keep-cut, begin, offer, land, receipts or receipt");
+  throw new RiteUsage(isKukulu(act) ? "kukulu runs on the host and plans no single row" : act === "keep" || act === "keep-cut" ? `${act} runs several rows and plans no single one` : `name a sub-verb: ${RITE_VERBS.join(", ")}`);
 }
 
 /** What a `rite keep` line names, or a `RiteUsage` naming what it lacks. */

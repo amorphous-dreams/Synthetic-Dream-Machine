@@ -3,7 +3,7 @@
  * migration / teardown runs WITHOUT spawn-contention.
  *
  * The daemon-spawn whack-a-mole roots at the SPAWNER, never the children: whatever runs the
- * `lares capture/subagents/telemetry` legs on a session event mints a warm write-daemon each
+ * `lares sense capture` and `lares sense telemetry` legs on a session event mints a warm write-daemon each
  * time. Killing daemons never stops the minting. This lever pauses the minting itself:
  * `lares hooks pause` writes the marker, a capture hook's guard exits early, and
  * `lares mempalace quiesce` then drains to zero.
