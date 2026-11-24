@@ -26,7 +26,7 @@
  *   B1  a backup at an unlocked holder proves the vessel's route FIRST, then cuts, and answers the body sealed.
  *   B2  a locked vessel refuses `custody-locked`: no proof runs and nothing gets cut.
  *   B3  a route that opens no slot refuses `no-slot-opens` with the attempts left, and nothing gets cut; spent
- *       attempts refuse `attempts-spent`.                                     control: the right route cuts
+ *       attempts refuse `attempts-spent` carrying `attemptsLeft: 0` and the spent words.                                     control: the right route cuts
  *   B4  a frame that misses its shape, or carries any key beside its four, refuses whole before the holder hears.
  *   B5  a cut that refuses answers its own name; a custody fault answers the row it met.
  *   B6  the door logs how the cut ended and never the route, the bundle key or the sealed body.
@@ -41,7 +41,7 @@ import { EventEmitter } from "node:events";
 import type { Socket } from "node:net";
 import { beforeEach, describe, expect, test } from "vitest";
 import { custodyFrameHandler, CUSTODY_LINE } from "../src/custody-frames.js";
-import { CustodyRecordUnavailable, type CustodyHolder, type HolderProof, type HolderUnlock } from "../src/custody-holder.js";
+import { CustodyRecordUnavailable, UNLOCK_ATTEMPTS_PER_BOOT as BOUND, type CustodyHolder, type HolderProof, type HolderUnlock } from "../src/custody-holder.js";
 import { BackupRefused, type FaceBundleCut } from "../src/face-bundle-cut.js";
 import { runSealedAct } from "../src/sealed-acts.js";
 import { mountedFaceOrdinal, setMountedFace } from "../src/node-vessel-identity.js";
@@ -69,18 +69,19 @@ function harness(opts: {
     unlock: async (creds): Promise<HolderUnlock> => {
       heard.push(creds);
       if (unlocked) return { reading: "already-unlocked" };
+      if (spent >= BOUND) return { reading: "attempts-spent" };
       const ok = creds.some((c) => c.kind === "passphrase" && c.passphrase === RIGHT);
-      if (!ok) { spent += 1; return { reading: "no-slot-opens", attemptsLeft: 3 - spent }; }
+      if (!ok) { spent += 1; return { reading: "no-slot-opens", attemptsLeft: BOUND - spent }; }
       unlocked = true;
       return { reading: "opens", slot: "slot-1" };
     },
     proves: async (creds): Promise<HolderProof> => {
       proved.push(creds);
       if (!unlocked) return { reading: "locked" };
-      if (spent >= 3) return { reading: "attempts-spent" };
+      if (spent >= BOUND) return { reading: "attempts-spent" };
       if (creds.some((c) => c.kind === "passphrase" && c.passphrase === RIGHT)) return { reading: "proves", opener: [0] };
       spent += 1;
-      return { reading: "no-slot-opens", attemptsLeft: 3 - spent };
+      return { reading: "no-slot-opens", attemptsLeft: BOUND - spent };
     },
     lock: async () => { unlocked = false; },
     unlockFace: async (_face: unknown) => ({ reading: "opens", fcid: "00".repeat(16), ordinal: 0, slot: "face-slot" }),
@@ -88,7 +89,7 @@ function harness(opts: {
     unlockedFaces: () => [],
     faceStanding: async () => null,
     isUnlocked: () => unlocked,
-    attemptsLeft: () => 3 - spent,
+    attemptsLeft: () => BOUND - spent,
     openedSlot: () => (unlocked ? "slot-1" : null),
     readRecord: async () => ({ reading: "locked" }),
     writeRecord: async () => {},
@@ -134,11 +135,25 @@ describe("the custody door", () => {
   test("F2 — an opening unlock recomposes sovereign once; a miss recomposes nothing", async () => {
     const h = harness();
     const miss = await h.send(unlockFrame("wrong")).answer;
-    expect(miss).toMatchObject({ op: "unlock", reading: "no-slot-opens", attemptsLeft: 2, standing: "herm" });
+    expect(miss).toMatchObject({ op: "unlock", reading: "no-slot-opens", attemptsLeft: BOUND - 1, standing: "herm" });
+    expect(String(miss["warning"])).toContain(`${BOUND - 1} of ${BOUND} tries remain`);
     expect(h.recomposed).toEqual([]);
     const hit = await h.send(unlockFrame(RIGHT)).answer;
     expect(hit).toMatchObject({ op: "unlock", reading: "opens", slot: "slot-1", standing: "hearth", held: true });
     expect(h.recomposed).toEqual([true]);
+  });
+
+  test("F2b — every miss carries the tries left and the climbing words; the spent reading carries 0 (five tries, the alarm from the third)", async () => {
+    const h = harness();
+    const answers: Array<Record<string, unknown>> = [];
+    for (let i = 1; i <= BOUND + 1; i++) answers.push(await h.send(unlockFrame(`wrong-${i}`)).answer);
+    expect(answers.map((a) => a["reading"])).toEqual([...Array(BOUND).fill("no-slot-opens"), "attempts-spent"]);
+    expect(answers.map((a) => a["attemptsLeft"])).toEqual([4, 3, 2, 1, 0, 0]);
+    expect(answers.slice(0, 2).every((a) => !/CAREFUL|LAST TRY|SPENT/.test(String(a["warning"])))).toBe(true);
+    expect(String(answers[2]!["warning"])).toMatch(/^CAREFUL/);
+    expect(String(answers[3]!["warning"])).toMatch(/^LAST TRY/);
+    expect(String(answers[4]!["warning"])).toMatch(/^SPENT/);
+    expect(String(answers[5]!["warning"])).toMatch(/^SPENT/);
   });
 
   test("F3 — lock drops the key and recomposes at the floor; a second lock does neither", async () => {
@@ -149,7 +164,7 @@ describe("the custody door", () => {
     expect(h.recomposed).toEqual([true, false]);
     expect(await h.send({ op: "lock" }).answer).toMatchObject({ locked: true, was: "locked" });
     expect(h.recomposed).toEqual([true, false]);
-    expect(await h.send({ op: "custody" }).answer).toMatchObject({ op: "custody", unlocked: false, slot: null, attemptsLeft: 3, standing: "herm" });
+    expect(await h.send({ op: "custody" }).answer).toMatchObject({ op: "custody", unlocked: false, slot: null, attemptsLeft: BOUND, standing: "herm" });
   });
 
   test("F4 — two unlocks sent together stand one sovereign composition", async () => {
@@ -363,10 +378,11 @@ describe("the custody door's backup frame", () => {
   test("B3 — a route that opens no slot refuses with the attempts left and cuts nothing; spent attempts refuse by name", async () => {
     const h = cutting();
     await h.send(unlockFrame(RIGHT)).answer;
-    expect(await h.send(backupFrame("frames-wrong-1")).answer).toMatchObject({ op: "backup", status: "error", refusal: { reason: "no-slot-opens", attemptsLeft: 2 } });
-    await h.send(backupFrame("frames-wrong-2")).answer;
-    await h.send(backupFrame("frames-wrong-3")).answer;
-    expect(await h.send(backupFrame(RIGHT)).answer).toMatchObject({ op: "backup", status: "error", refusal: { reason: "attempts-spent" } });
+    expect(await h.send(backupFrame("frames-wrong-1")).answer).toMatchObject({ op: "backup", status: "error", refusal: { reason: "no-slot-opens", attemptsLeft: BOUND - 1 } });
+    for (let i = 2; i <= BOUND; i++) await h.send(backupFrame(`frames-wrong-${i}`)).answer;
+    const spentAnswer = await h.send(backupFrame(RIGHT)).answer;
+    expect(spentAnswer).toMatchObject({ op: "backup", status: "error", refusal: { reason: "attempts-spent", attemptsLeft: 0 } });
+    expect(String(spentAnswer["errorMessage"])).toMatch(/SPENT/);
     expect(h.cuts).toEqual([]);
     const control = cutting();                                            // CONTROL: the right route, first, cuts
     await control.send(unlockFrame(RIGHT)).answer;

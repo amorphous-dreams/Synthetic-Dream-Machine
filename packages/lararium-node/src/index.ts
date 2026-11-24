@@ -200,9 +200,11 @@ export type { NodeVesselOptions, NodeVesselResult, NodeHermResult, NodeFloor, So
 export { createReadinessState, mountReadinessFace, markReadyOnceStanding } from "./readiness-face.js";
 export type { NodeReadiness, ReadinessState, ReadinessFace } from "./readiness-face.js";
 export { createEngineWatch, engineFatalCauseOf, engineTerminatedRefusal, engineFallBody, tapRepoLogs, tapInboundDocs, islandAskRefusal, ISOLATE_ENGINE, ENGINE_TERMINATED, ENGINE_HAND_ACT } from "./engine-watch.js";
-export { answerEngineFall, armFallKeeper, fallAwareProbeDoors, heldBackReason, heldInFlight, holdBackStorage, keepFallDown, HELD_BACK, HELD_IN_FLIGHT, HELD_HAND_ACT, readEngineFalls, restEngineFall, clearEngineFalls, engineFallsPath, ENGINE_FALL_EXIT, ENGINE_RESTART_CAP, ENGINE_DOWN_HAND_ACT } from "./engine-fall.js";
+export { answerEngineFall, armFallKeeper, fallAwareProbeDoors, heldBackReason, heldInFlight, holdBackStorage, keepFallDown, HELD_BACK, HELD_IN_FLIGHT, HELD_HAND_ACT, readEngineFalls, restEngineFall, clearEngineFalls, fallenHolder, engineFallsPath, ENGINE_FALL_EXIT, ENGINE_RESTART_CAP, ENGINE_DOWN_HAND_ACT } from "./engine-fall.js";
 export type { RestingFall, FallAnswer, FallPorts, FallKeeper, FallKeeperPorts, ProbeDoors } from "./engine-fall.js";
 export type { EngineWatch, EngineFall, EngineFatalCause, EnginePath, EngineSettled } from "./engine-watch.js";
+export { createEngineMeter, findEngineMemories, processWasmOf, readProcessWasm, ENGINE_WASM_CEILING_BYTES, WASM_PAGE_BYTES, ENGINE_METER_MARKS, ENGINE_METER_TICK_MS } from "./engine-meter.js";
+export type { EngineMeter, EngineMeterOptions, EngineMeterReading, EngineWasmReading, ProcessWasmReading } from "./engine-meter.js";
 
 export { SOCIAL_BOOTSTRAP_PLUGIN_TITLE } from "./open-node-vessel.js";
 export { SyncedTree, contentHash, syncedTreeKey, syncedTreeDir, type SyncedBase } from "./synced-tree.js";

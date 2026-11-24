@@ -24,7 +24,7 @@
  */
 import {
   bindWardSlot, commitWardTree, decodeSlotTree, encodeSlotTree, mintWardKey, nobleKdf, openWardKey, readWardCarrier,
-  writeWardCarrier, WardRefused, type Credential, type SlotTree, type WardKey,
+  writeWardCarrier, WardRefused, ATTEMPT_BUDGET, attemptWarning, type Credential, type SlotTree, type WardKey,
 } from "@lararium/mesh";
 import { browserKeystoreCustodyIo, BrowserCustodyRefused, readBrowserCustody, withCustodyRecords } from "./browser-custody.js";
 import { openWardedRoot, wardCredentialOf, wardPinOf, wardRootCarrier, wardRootRowsOf, wardRootTreeOf, type WardRoute } from "./ward-core.js";
@@ -65,15 +65,23 @@ export async function sweepOrphanBrowserWards(idbName: string): Promise<string[]
 /** One roster line: the custody tree of the face a held root belongs to, and the root's public key. */
 export interface PersonaRosterLine { readonly tree: string; readonly verifyingKey: string }
 
-/** The ward acts a page may miss before it refuses every one until it reloads: the node holder's own bound, per keystore. */
-export const WARD_ATTEMPTS_PER_PAGE = 3;
+/** The ward acts a page may miss before it refuses every one until it reloads: the house's one attempt budget, per keystore. */
+export const WARD_ATTEMPTS_PER_PAGE = ATTEMPT_BUDGET;
 const spent = new Map<string, number>();
 
-/** Charge one attempt before the route derives; an act that opens earns it back. A throw keeps the charge. */
+/** Charge one attempt before the route derives; an act that opens earns it back. A throw keeps the charge, and a miss
+ *  (`ward-no-slot-opens`) answers again carrying the tries left and the attempt budget's climbing words. */
 export async function chargeWardAttempt<T>(idbName: string, act: () => Promise<T>): Promise<T> {
-  if ((spent.get(idbName) ?? 0) >= WARD_ATTEMPTS_PER_PAGE) throw new WardRefused("ward-attempts-spent", "this page's ward attempts are spent until it reloads");
+  if ((spent.get(idbName) ?? 0) >= WARD_ATTEMPTS_PER_PAGE) throw new WardRefused("ward-attempts-spent", attemptWarning(0, "page-ward", WARD_ATTEMPTS_PER_PAGE), 0);
   spent.set(idbName, (spent.get(idbName) ?? 0) + 1);
-  const out = await act();
+  let out: T;
+  try { out = await act(); } catch (e) {
+    // A miss reads `ward-no-slot-opens` in either class (the ward's own, or the page's for a worker's answer).
+    const reading = e instanceof Error ? (e as { reading?: unknown }).reading : undefined;
+    if (reading !== "ward-no-slot-opens") throw e;
+    const left = Math.max(0, WARD_ATTEMPTS_PER_PAGE - (spent.get(idbName) ?? 0));
+    throw new WardRefused(reading, `${(e as Error).message.replace(/^ward-no-slot-opens: /, "")}. ${attemptWarning(left, "page-ward", WARD_ATTEMPTS_PER_PAGE)}`, left);
+  }
   spent.set(idbName, (spent.get(idbName) ?? 1) - 1);
   return out;
 }

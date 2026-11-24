@@ -35,7 +35,7 @@ export { splitRootAtFounding, type FoundingShares } from "@lararium/mesh";
  *
  * `readmit.boundEpoch` is REQUIRED (`ReadmitEdgeInput`, keyhive `recovery-core.ts`) — a readmit is never a
  * founding, so there is no honest 0 to float to. NO CALLER LIVES HERE YET that reads the daemon doc, so a
- * future CLI door (a `lares device-readmit` verb or similar) wiring this MUST read the PersonaGroup's live
+ * future CLI door (a `device-readmit` verb or similar, not yet a door) wiring this MUST read the PersonaGroup's live
  * lease epoch itself before calling — the exact composition `device-admit.ts`'s `runDeviceAdmit` already
  * runs at its admit door: `leaseEpochPrefix(personaGroupId)` → filter the daemon doc's tiddler map to
  * that prefix → `signedLeaseEpoch(leaseSlotValues)`. That door does not exist today (this file has no

@@ -20,7 +20,7 @@ import { stopIncumbent, probePort } from "../port-control.js";
 import { udsAlive } from "../local-connector.js";
 import { existsSync, statSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import { palaceOrgans, organHealthy, guestMempalaceOrgan, readMemeticWikitextCoupling, runDoctor, formatDoctorReport, readFloorShadowFile, quarantineHolds, releaseQuarantinedDoc, QUARANTINE_RELEASE_ACT, type QuarantineReleaseAct } from "@lararium/node";
+import { palaceOrgans, organHealthy, guestMempalaceOrgan, readMemeticWikitextCoupling, runDoctor, formatDoctorReport, readFloorShadowFile, quarantineHolds, readEngineFalls, heldInFlight, QUARANTINE_RELEASE_ACT, ENGINE_DOWN_HAND_ACT, ENGINE_RESTART_CAP, HELD_HAND_ACT, type EngineMeterReading } from "@lararium/node";
 import { floorShadowLine } from "@lararium/mesh";
 import { read as readIntent, Ledger } from "../reality-tunnel/engine.js";
 import { homeItems } from "../reality-tunnel/catalog.js";
@@ -115,8 +115,8 @@ export async function cmdStop(args: ParsedArgs): Promise<number> {
     holderAlive: () => udsAlive(dataDir, 300),
     onPastGrace: (pids) => console.log(
       pids.length > 0
-        ? `[lares] :${port} is past its grace, still held by pid(s) ${pids.join(", ")}${cut ? " — delivering the operator's cut signal now" : " — waiting on its own exit, never a forced kill"}`
-        : `[lares] :${port} is past its grace, held by no discoverable pid${cut ? " — cut has nobody to reach" : " — waiting on its own exit, never a forced kill"}`,
+        ? `[lares] :${port} runs past its grace, still held by pid(s) ${pids.join(", ")}${cut ? " — delivering the operator's cut signal now" : " — waiting on its own exit, never a forced kill"}`
+        : `[lares] :${port} runs past its grace, held by no discoverable pid${cut ? " — cut has nobody to reach" : " — waiting on its own exit, never a forced kill"}`,
     ),
   });
   emit(args, {
@@ -138,29 +138,12 @@ export async function cmdStop(args: ParsedArgs): Promise<number> {
  * abort the WASM runtime on load). Read-only; a condemned doc can be laid again from its disk holding with `lares vessel lay --apply --yes`.
  * Exits non-zero on a tear, so a boot/CI gate reads health off the exit code.
  *
- * THE HELD IDS, AND THE HAND ACTS THAT WRITE. The lens also names each id the store holds in quarantine: its bytes rest
- * aside, and every boot mounts its plane read-only until the hand releases it. `--release <documentId>` moves the bytes
- * back (the next boot probes them again); `--release-keep <documentId>` releases the hold and keeps whatever stands under
- * the id; `--release-fresh <documentId>` seeds a plane no sibling carries empty under its own name (the bytes stay aside).
- * Each runs only with the vessel stopped, since a live Repo would not see bytes move; without one the lens writes nothing.
+ * THE HELD IDS. The lens also names each id the store holds in quarantine: its bytes rest aside, and every boot mounts its
+ * plane read-only until the hand releases it by the vessel door's own write, `lares vessel release <documentId>
+ * [--keep|--fresh]`. The lens itself writes nothing.
  */
 async function cmdReadVessel(args: ParsedArgs): Promise<number> {
   const storageDir = larDataDir();
-  // THE RELEASE ACTS, each read by its own name. A bare spelling (no id) parses as a flag and refuses with its usage.
-  const bare = args.flags["release"] === true ? "release" : args.flags["release-keep"] === true ? "release-keep" : args.flags["release-fresh"] === true ? "release-fresh" : null;
-  if (bare !== null) {
-    console.error(`lares vessel read vessel: --${bare} <documentId> names the held id it releases (\`lares vessel read vessel\` lists them)`);
-    return 2;
-  }
-  const asked: ReadonlyArray<readonly [string | undefined, QuarantineReleaseAct]> = [
-    [args.options["release"], "restored"], [args.options["release-keep"], "kept"], [args.options["release-fresh"], "fresh"],
-  ];
-  const acts = asked.filter(([id]) => id !== undefined);
-  if (acts.length > 1) {
-    console.error("lares vessel read vessel: name one act, --release <documentId>, --release-keep <documentId> or --release-fresh <documentId>");
-    return 2;
-  }
-  if (acts.length === 1) return releaseHeldDoc(args, storageDir, acts[0]![0]!, acts[0]![1]);
   const report = await runDoctor(storageDir);
   const held = quarantineHolds(storageDir).map((h) => ({
     documentId: h.manifest.documentId, status: h.manifest.status, quarantinedAt: h.manifest.quarantinedAt, movedTo: h.manifest.movedTo,
@@ -189,28 +172,6 @@ async function cmdReadVessel(args: ParsedArgs): Promise<number> {
   return report.degraded || held.length > 0 ? 1 : 0;
 }
 
-/** `read vessel --release|--release-keep|--release-fresh <documentId>`: the hand's release of one held id, with the vessel stopped. */
-async function releaseHeldDoc(args: ParsedArgs, storageDir: string, documentId: string, act: QuarantineReleaseAct): Promise<number> {
-  if (await udsAlive(storageDir, 300)) {
-    console.error("lares vessel read vessel --release: the vessel stands; stop it first (`lares vessel stop`), since a live Repo would not see the bytes move");
-    return 2;
-  }
-  const r = releaseQuarantinedDoc(storageDir, documentId, act);
-  emit(args, {
-    ok: r.ok,
-    data: r as unknown as Record<string, unknown>,
-    ...(r.ok ? {} : { error: { code: "refused", message: r.why } }),
-    human: () => r.ok
-      ? console.log(r.act === "restored"
-        ? `[lares] released ${documentId}: the bytes returned from ${r.from}; the next stand probes them again`
-        : r.act === "kept"
-          ? `[lares] released ${documentId}: what stands under the id stays; any moved-aside copy rests where it was`
-          : `[lares] released ${documentId}: the id starts empty under its own name; the bytes stay aside`)
-      : console.error(`lares vessel read vessel --release: ${r.why}`),
-  });
-  return r.ok ? 0 : 2;
-}
-
 export async function cmdRead(given: ParsedArgs): Promise<number> {
   // EVERY LENS ANSWERS A PIPE IN PROSE (render.ts `proseFirst`): the deep probe's JSON names every document in the store, so a
   // piped read prints the terminal's lines and only `--json` answers the envelope.
@@ -221,7 +182,7 @@ export async function cmdRead(given: ParsedArgs): Promise<number> {
   // so it refuses by name rather than answering as the bare node read.
   const lens = args.positional[0];
   if (lens !== undefined && lens !== "vessel") {
-    console.error(`lares vessel read: unknown lens "${lens}" (the one lens is \`vessel\`; bare \`read\` is the node health reading)`);
+    console.error(`lares vessel read: unknown lens "${lens}" (the door answers one lens, \`vessel\`; bare \`read\` gives the node health reading)`);
     return 2;
   }
   // --palaces: the palace-organ health table (re-runnable; same registry as setup/teardown).
@@ -231,6 +192,44 @@ export async function cmdRead(given: ParsedArgs): Promise<number> {
   if (args.positional[0] === "vessel") return cmdReadVessel(args);
   // Bare `lares vessel read` — node health, the reading an operator wants most often.
   return cmdReadNode(args);
+}
+
+const MiB = 1024 * 1024;
+const GiB = 1024 * MiB;
+const size = (bytes: number): string => (bytes >= GiB ? `${Number((bytes / GiB).toFixed(2))} GiB` : `${Math.round(bytes / MiB)} MiB`);
+
+/** One line of the vessel's engine meter (`engine-meter`): the engine against its ceiling, node's heap, and the whole process's wasm. */
+export function engineMeterLine(r: EngineMeterReading): string {
+  const engine = r.wasm === null
+    ? `${r.isolate} engine unread`
+    : `${r.isolate} engine ${size(r.wasm.bytes)} of ${size(r.wasm.ceilingBytes)} (${Math.round(r.wasm.fraction * 100)}%, ${r.wasm.pages.toLocaleString("en-US")} pages)`;
+  const parts = [
+    engine,
+    `heap ${size(r.node.heapUsed)} of ${size(r.node.heapTotal)}`,
+    `external ${size(r.node.external)}`,
+    `rss ${size(r.node.rss)} (peak ${size(r.node.maxRss)})`,
+  ];
+  if (r.process !== null) {
+    parts.push("unread" in r.process
+      ? `process wasm unread (${r.process.unread})`
+      : `process wasm ${size(r.process.bytes)} in ${r.process.memories.length} memories, ${r.process.residentBytes === null ? "resident unread" : `${size(r.process.residentBytes)} resident`}`);
+  }
+  return parts.join(" · ");
+}
+
+/**
+ * THE ENGINE METER, read off the vessel's health face (`readiness-face`): its `engine` reading, or null where no vessel answers
+ * on the port, its answer carries none, or it answers past a short bound. A read that cannot reach it never fails.
+ */
+async function readEngineMeter(port: number): Promise<EngineMeterReading | null> {
+  try {
+    const res = await fetch(`http://127.0.0.1:${port}/api/health`, { signal: AbortSignal.timeout(2_000) });
+    const body = await res.json() as { engine?: unknown };
+    const engine = body.engine as EngineMeterReading | null | undefined;
+    return engine && typeof engine === "object" && typeof engine.node === "object" ? engine : null;
+  } catch {
+    return null;
+  }
 }
 
 /** Node health — bootstrap presence, storage size, port probe, retention. Pure local inspection. */
@@ -275,9 +274,22 @@ async function cmdReadNode(args: ParsedArgs): Promise<number> {
   // THE FLOOR SHADOW COUNT (backlog-awakens 3a): the tally each boot's mounts keep beside the vessel store, read from the
   // file whether or not the vessel stands, keyed by floor: the line names the current floor's count and sets older floors
   // aside. The operator flips mounts onto the floor once the current floor reads clean.
+  // THE ENGINE METER (`engine-meter`): where the vessel answers health on its port, its engine's wasm memory and node's heap.
+  const engine = portInUse ? await readEngineMeter(port) : null;
+  data["engine"] = engine;
   const shadow = readFloorShadowFile(storage);
   data["floorShadow"] = shadow;
   const shadowLine = floorShadowLine(shadow);
+  // THE STEP-IN READING (`engine-fall`): a fallen vessel answers no verbs, so the falls resting beside the store and every id a
+  // boot holds (in flight at a fall, or in quarantine) read from the files themselves, the same whether the vessel stands, has
+  // fallen, or rests stopped.
+  const falls = readEngineFalls(storage).map((f) => ({ life: f.life, pid: f.pid, cause: f.cause, path: f.path, since: f.since, inFlight: f.inFlight }));
+  const held = [
+    ...heldInFlight(falls).map((documentId) => ({ documentId, why: "in-flight" as const })),
+    ...quarantineHolds(storage).map((h) => ({ documentId: h.manifest.documentId, why: "quarantine" as const })),
+  ];
+  data["engineFalls"] = falls;
+  data["held"] = held;
   let residencyLine: string | null = null;
 
   // C.4 — when the daemon is reachable, ask it for a residency snapshot. The CLI
@@ -317,7 +329,19 @@ async function cmdReadNode(args: ParsedArgs): Promise<number> {
       console.log(`  storage:     ${storageStr}`);
       console.log(`  port ${port}:  ${portInUse ? "in use (node likely running)" : "free"}`);
       if (residencyLine) console.log(`  residency:   ${residencyLine}`);
+      if (engine) console.log(`  engine:      ${engineMeterLine(engine)}`);
       console.log(`  ${shadowLine}`);
+      if (falls.length > 0) {
+        const last = falls[falls.length - 1]!;
+        console.log(`  engine falls: ${falls.length} resting; the last ${last.cause} on the ${last.path} path since ${last.since}`);
+        console.log(falls.length > ENGINE_RESTART_CAP
+          ? `    hand act: ${ENGINE_DOWN_HAND_ACT}`
+          : "    the vessel rose once; a clean stop (`lares vessel stop`) clears the count, and a second fall before one keeps it down");
+      }
+      for (const h of held) console.log(`  held:        ${h.documentId} (${h.why === "in-flight" ? "in flight at a fall" : "quarantine"})`);
+      // Each hand act once, under the ids it frees.
+      if (held.some((h) => h.why === "in-flight")) console.log(`    in flight: ${HELD_HAND_ACT}`);
+      if (held.some((h) => h.why === "quarantine")) console.log(`    quarantine: ${QUARANTINE_RELEASE_ACT}`);
       console.log(guards === null
         ? `  memory:      the retention guards read nowhere: ${guardsUnread ?? "unread"}`
         : guardsHeld

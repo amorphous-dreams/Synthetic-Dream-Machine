@@ -14,14 +14,18 @@
  *   · THE STATUS NAMES BOTH TRUTHS CHARTER-FREE (D1, shore recommendation 8): the founding record beside the seed (offered)
  *     and the floor pin, ratchet by ratchet. A place in no Nexus charter whose store holds the island answers that part and
  *     refuses only the Nexus part, by name.
+ *   · THE STATUS NAMES THE FLOOR'S DRIFT (`floorDrift`): on a founded hearth, a carrier live lararium canon holds and the floor
+ *     lacks reads missing, by carrier, its slots counting once; each floor carrier the empty live lares canon no longer holds
+ *     reads older. CONTROL: a place whose store names no catalog reads the drift null, never a silent zero.
  */
 import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, describe, expect, test, vi } from "vitest";
+import type { AutomergeUrl } from "@automerge/automerge-repo";
 import {
-  BAG_IDS, DAEMON_BAG_ID, REALM_ID_TIDDLER, emptyLarDoc, foldRealmBags, genesisFloorCidOf, materializeSharedLarDoc, realmDocPointer, realmDocUrl, resolveFloor,
-  sha256HexBytesSync, storedLarRecord, writeRealmStanding, type LarDoc,
+  AutomergeDocStore, BAG_IDS, DAEMON_BAG_ID, bagUri, realmStandingDocUrl, REALM_ID_TIDDLER, emptyLarDoc, foldRealmBags, genesisFloorCidOf, materializeSharedLarDoc, realmDocPointer, realmDocUrl, resolveFloor,
+  sha256HexBytesSync, storedLarRecord, writeRealmStanding, type FloorDrift, type LarDoc,
 } from "@lararium/mesh";
 import { STORE_DOOR_FACE_VERBS, STORE_DOOR_HAND_CODES, STORE_DOOR_HAND_ONLY_ACTS, STORE_DOOR_VERBS, storeDoorDirect } from "../src/store-door-verbs.js";
 import { genesisCasDir, loadOrMaterializeOracle, readGenesisCasManifest } from "../src/genesis-artifact.js";
@@ -127,6 +131,39 @@ describe("the floor doors cross a founded hearth's own bootstrap", () => {
     });
   });
 
+  test("RED: the status names the floor's drift behind live canon: a carrier laid after the cut reads missing, counted once with its slots", async () => {
+    const drifted = freshRoot("drift");
+    await withLarRoot(drifted, () => foundHearthDirect({ storageDir: join(drifted, "hearth", "vessel"), genesisDir: join(drifted, "genesis") }));
+    await withLarRoot(drifted, async () => {
+      const { genesisFloor } = await standTheBootsDocuments(drifted);
+      const CREST = "lar:///ha.ka.ba/lararium/mesh/crest-behind-the-floor";
+      await ownedStore(larDataDir(), async (repo) => {
+        const catalog = (await repo.find<LarDoc>(readFileSync(join(larDataDir(), "catalog-url"), "utf8").trim() as AutomergeUrl)).doc();
+        const url = realmStandingDocUrl(catalog, bagUri("lararium"));
+        expect(url).not.toBeNull();
+        const live = new AutomergeDocStore(await repo.find<LarDoc>(url as AutomergeUrl), bagUri("lararium"));
+        for (const title of [CREST, `${CREST}#/purpose`, `${CREST}#/source`]) {
+          await live.put({ tiddler: { title, text: "laid after the cut" } }, { kind: "lares-verb", requestId: `seed-${title}` });
+        }
+        await repo.flush();
+      });
+      const status = await storeDoorDirect("floor-status", {}, { sealHome: larSealHome() });
+      const drift = status["floorDrift"] as FloorDrift | null;
+      expect(drift).not.toBeNull();
+      expect(drift!.manifest).toBe(genesisFloor);
+      const lararium = drift!.slugs.find((s) => s.slug === "lararium")!;
+      expect(lararium.missing).toEqual([CREST]);
+      expect(drift!.carriers).toContain(CREST);
+      expect(drift!.carriers.some((c) => c.includes("#"))).toBe(false);          // carriers, never slots
+      // The live lares canon holds no row here, so every carrier the floor serves for it reads older: canon no longer holds those bytes.
+      expect(drift!.slugs.find((s) => s.slug === "lares")!.older.length).toBeGreaterThan(0);
+      expect(drift!.count).toBe(drift!.carriers.length);
+      // A public bag the floor names whose live document this founding holds none of reads unread by name; the system canon reads.
+      expect(drift!.unread).not.toContain("lares");
+      expect(drift!.unread).not.toContain("lararium");
+    });
+  });
+
   test("RED: a place in no charter whose store holds the island answers the founding record beside the seed (offered), refusing only the Nexus part by name", async () => {
     const lone = freshRoot("charterless");
     await withLarRoot(lone, async () => {
@@ -138,6 +175,9 @@ describe("the floor doors cross a founded hearth's own bootstrap", () => {
       expect(line).toMatch(/^\[genesis\] founding record: engine \S+ · grammar \S+ · plugins \S+ · floor \S+/);
       expect(line).toContain(": same on every ratchet");
       expect(line).toContain("floor pin: none — this vessel stands in no Nexus charter");
+      // CONTROL: no catalog names live canon here, so the drift reads null, never a silent zero.
+      expect(out).toHaveProperty("floorDrift", null);
+      expect(out["floorDriftWhy"]).toMatch(/no catalog names live canon/);
     });
   });
 

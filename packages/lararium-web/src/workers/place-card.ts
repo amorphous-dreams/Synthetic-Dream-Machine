@@ -10,7 +10,7 @@
  *
  * Canon: lar:///ha.ka.ba/lares/docs/stable-founding-road (W29) · lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift#/the-ceremony
  */
-import { coldKeyCardLines, coldKeySeedFromCode, type Credential, type PlaceFoundingCard } from "@lararium/mesh";
+import { ATTEMPT_BUDGET, attemptWarning, coldKeyCardLines, coldKeySeedFromCode, type Credential, type PlaceFoundingCard } from "@lararium/mesh";
 import type { CeremonyAskSpec } from "./ceremony-door.js";
 
 /** A card that never read back, or one the person declined: nothing was written. */
@@ -19,7 +19,7 @@ export class PlaceCardRefused extends Error {
   constructor(readonly refusal: string, detail: string) { super(`${refusal}: ${detail}`); }
 }
 
-const TRIES = 3;
+const TRIES = ATTEMPT_BUDGET;
 const CODE_CHARACTERS = 72;
 
 /** What the card serves, in the person's words: the ceremony shows it above the card. */
@@ -40,7 +40,7 @@ function faultOf(typed: string): string | null {
   } finally { back?.fill(0); }
 }
 
-/** The founding's read-back over one session's ceremony door: the card shows once per attempt, three attempts at most. */
+/** The founding's read-back over one session's ceremony door: the card shows once per attempt, `ATTEMPT_BUDGET` (five) attempts at most. */
 export function ceremonyPlaceCard(door: { ask(spec: CeremonyAskSpec): Promise<Credential | null> }): PlaceFoundingCard {
   return {
     async readBack(card, fingerprint, generation) {
@@ -48,7 +48,7 @@ export function ceremonyPlaceCard(door: { ask(spec: CeremonyAskSpec): Promise<Cr
       let note = "";
       for (let tries = 0; tries < TRIES; tries++) {
         const answer = await door.ask({ kind: "card", act: "found this browser's place", face: null, card: lines,
-          words: `${SERVES}${note ? ` Attempt ${tries + 1} of ${TRIES}: the last one read ${note}.` : ""}` });
+          words: `${SERVES}${note ? ` Attempt ${tries + 1} of ${TRIES}: the last one read ${note}. ${attemptWarning(TRIES - tries, "read-back", TRIES)}` : ""}` });
         if (answer === null || answer.kind !== "passphrase") throw new PlaceCardRefused("card-declined", "the place card was not read back; nothing was written. Opening this page again prints a new card: discard this one");
         const fault = faultOf(answer.passphrase);
         if (fault === null) {
@@ -59,7 +59,7 @@ export function ceremonyPlaceCard(door: { ask(spec: CeremonyAskSpec): Promise<Cr
           note = "as another card";
         } else note = fault;
       }
-      throw new PlaceCardRefused("card-unread", `the place card: ${note}; ${TRIES} attempts never matched, and nothing was written. Opening this page again prints a new card: discard this one and write down the new one`);
+      throw new PlaceCardRefused("card-unread", `the place card: ${note}; ${TRIES} attempts never matched, and nothing was written. Opening this page again prints a new card: discard this one and write down the new one. ${attemptWarning(0, "read-back", TRIES)}`);
     },
   };
 }

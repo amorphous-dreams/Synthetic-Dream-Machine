@@ -63,6 +63,7 @@ import { makeFleetPetnameStore } from "../daemon-persona-store.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { envValue, IN_CONTAINER_ENV, surfaceEnvPath } from "../surface-env.js";
 import { locateShim, SHIM_ABSENT_EXIT } from "../shim-locate.js";
+import { tableCovers } from "../verb-table.js";
 
 // ── the doors ───────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -697,7 +698,9 @@ export function surfaceCommit(root: string, tree: SyncedTree, seam: string = HAN
 
 // ── the command ────────────────────────────────────────────────────────────────────────────────────────────
 
-const SUB_DOORS = ["init", "check", "open", "commit", "face"] as const;
+/** Every verb the surface door answers. */
+export const SURFACE_VERBS = ["init", "check", "open", "commit", "face"] as const;
+const SUB_DOORS = SURFACE_VERBS;
 
 /** The face the house resolves and the pet name it wears: the one line the host asks the vessel. */
 async function cmdFace(args: ParsedArgs, doors: SurfaceDoors): Promise<number> {
@@ -944,12 +947,14 @@ export async function cmdSurface(args: ParsedArgs, doors: SurfaceDoors = liveSur
     return refuseUsage(args, "surface", helpLines("surface"), verb === undefined ? "name a sub-verb" : `unknown sub-verb "${verb}"`);
   }
   try {
-    switch (verb) {
+    const v = verb as (typeof SURFACE_VERBS)[number];
+    switch (v) {
       case "init": return await cmdInit(args, doors);
       case "open": return await cmdOpen(args, doors);
       case "commit": return await cmdCommit(args, doors);
       case "face": return await cmdFace(args, doors);
-      default: return await cmdCheck(args, doors);
+      case "check": return await cmdCheck(args, doors);
+      default: return refuseUsage(args, "surface", helpLines("surface"), `unknown sub-verb "${tableCovers(v)}"`);
     }
   } catch (err) {
     if (err instanceof FaceOptionMalformed) return refuseUsage(args, `surface ${verb}`, helpLines(`surface ${verb}`), err.message);

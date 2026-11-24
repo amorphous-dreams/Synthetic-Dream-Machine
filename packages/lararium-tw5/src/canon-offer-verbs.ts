@@ -66,7 +66,8 @@ async function portsOf(opts: CanonOfferVerbOptions, args: Readonly<Record<string
 
 /**
  * HOUSE CANON'S ONE DOCUMENT. Where the vessel names the Kahu realm's standing document for a bag (`reach.systemCanonUrl`), the
- * offer doors read and write THAT document: the one the charter seat's retire and the floor cut read (`nodeCanonStore`). A
+ * offer doors read and write THAT document: the one the charter seat's retire, the floor cut and the floor drift read
+ * (`nodeCanonStore` in `@lararium/node`'s `commands/canon-rows.ts`). A
  * registry row that names another document for the bag never answers here, so a promotion never lands where its retire cannot
  * see it. A vessel whose realm names none (a rig, a page with no realm reach) reaches the bag by access, as every action verb does.
  */

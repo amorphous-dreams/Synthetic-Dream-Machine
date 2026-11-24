@@ -211,8 +211,13 @@ export function loadVeilArchivePrev(personaGroup: string): Promise<Uint8Array | 
   return readCustodyRecord("identity", veilArchivePrevFile(personaGroup));
 }
 
-/** ONE face's veil archive, or null when none stands: a row a rehive left standing as its marker reads as none. */
+/**
+ * ONE face's veil archive, or null when none stands: a row a rehive left standing as its marker reads as none. The read waits
+ * on that face's write already queued (`veilWrites`), so a reader that follows a rest (a supervisor reopen) never reads one
+ * card behind; a queued write that refuses leaves the row standing, and the read takes that.
+ */
 export async function loadVeilArchive(personaGroup: string): Promise<Uint8Array | null> {
+  await veilWrites.get(personaGroup)?.catch(() => undefined);
   const bytes = await readCustodyRecord("identity", veilArchiveFile(personaGroup));
   return bytes !== null && rehiveMarkerAside(bytes) !== null ? null : bytes;
 }

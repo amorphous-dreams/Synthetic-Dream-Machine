@@ -202,8 +202,10 @@ function Act([string]$kind, [string[]]$more) {
       }
     }
   }
-  if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+  if ($LASTEXITCODE -ne 0 -and -not $script:ActKeepsExit) { exit $LASTEXITCODE }
 }
+# Set by the step-in read alone: Act hands a failed client's exit back in $LASTEXITCODE instead of ending the shim.
+$script:ActKeepsExit = $false
 
 # Whether a vessel stands. A `ps` that fails reads as UNKNOWN, never as "none stands": the offline door opens only
 # on a reading, so a broken engine never routes an act beside a live holder.
@@ -404,6 +406,51 @@ function LiftVessel([string[]]$output) {
   UnlockOrName
 }
 
+# THE STEP-IN READ ON THE HOST. A fallen engine answers no verb, and docker itself may reach no CLI (the daemon wedged, the
+# container mid-restart, an exec docker refuses). The fall rests its count beside the store and each quarantined id rests a
+# manifest, both plain files under the hearth bind, so the shim reads them here with no container. It opens no store and
+# writes nothing.
+function HostRead([string]$why) {
+  $store = Join-Path (Join-Path $House 'hearth') 'vessel'
+  [Console]::Error.WriteLine("lares-container: $why, so the read runs on the host over $store (no verb, nothing opened)")
+  if (-not (Test-Path -LiteralPath $store -PathType Container)) { "store absent: $store (no vessel founded at this house)"; return }
+  $falls = Join-Path $store '.engine-falls'
+  if (Test-Path -LiteralPath $falls -PathType Leaf) {
+    $text = [System.IO.File]::ReadAllText($falls)
+    "engine falls (${falls}):"
+    foreach ($ln in ($text -split "`n")) { if ($ln -ne '') { "  $ln" } }
+    $ids = [regex]::Matches($text, '"inFlight"\s*:\s*"([^"]*)"') | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique
+    foreach ($id in $ids) { "held in flight: $id" }
+  } else { 'engine falls: none resting' }
+  # One line per held id: an id held across several manifests names the last one read (dated dirs, oldest first).
+  $held = [ordered]@{}
+  foreach ($dir in @(Get-ChildItem -LiteralPath $store -Directory -Filter 'quarantine-torn-snapshots-*' -ErrorAction SilentlyContinue | Sort-Object Name)) {
+    foreach ($m in @(Get-ChildItem -LiteralPath $dir.FullName -File -Filter '*.manifest.json' | Sort-Object Name)) {
+      $body = [System.IO.File]::ReadAllText($m.FullName)
+      if ($body -match '"released"') { continue }
+      if ($body -match '"documentId"\s*:\s*"([^"]*)"') { $id = $Matches[1]; if ($held.Contains($id)) { $held.Remove($id) }; $held[$id] = $m.FullName }
+    }
+  }
+  foreach ($id in $held.Keys) { "held in quarantine: $id ($($held[$id]))" }
+  'hand act: `lares vessel stop` stops the vessel (a fallen engine reads the stop as the hand''s, clears the count and frees each id held in flight), then `lares vessel stand`; with the vessel stopped, `lares vessel release <documentId> [--keep|--fresh]` ends a quarantine hold'
+}
+
+# `vessel read`: inside the container where docker reaches one, on the host where it reaches none. A fallen engine answers
+# no standing verdict, so the read asks none after it.
+function VesselRead([string[]]$rest) {
+  $running = & docker compose @Base ps -q --status running lares
+  if ($LASTEXITCODE -ne 0) { HostRead 'docker compose ps failed'; exit 0 }
+  $restarting = & docker compose @Base ps -q --status restarting lares
+  if ([string]::IsNullOrWhiteSpace(($running -join '')) -and $LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace(($restarting -join ''))) {
+    HostRead 'the vessel container restarts, so no command reaches it'; exit 0
+  }
+  $script:ActKeepsExit = $true
+  RouteCli (@('vessel') + $rest) $false
+  $script:ActKeepsExit = $false
+  if ($LASTEXITCODE -in 125, 126, 127) { HostRead "docker could not run the read (exit $LASTEXITCODE)"; exit 0 }
+  exit $LASTEXITCODE
+}
+
 # Any CLI verb: inside the standing vessel, else through the offline door. A verb that succeeds inside a standing
 # vessel gets followed by one standing check, and the shim lifts the vessel when the verdict asks for it.
 function RouteCli([string[]]$argv, [bool]$followUp) {
@@ -411,7 +458,7 @@ function RouteCli([string[]]$argv, [bool]$followUp) {
   $isPut = $argv.Count -ge 3 -and $argv[0] -ceq 'tiddler' -and $argv[1] -ceq 'put'
   if ($argv.Count -gt 0) {
     $alwaysValued = @('--fields', '--note', '--reason', '--text')
-    $boolean = @('accept-omissions', 'added', 'all', 'all-strata', 'apply', 'approve', 'brief', 'bulk', 'cancel', 'cards', 'cosign', 'confirm', 'create', 'cut', 'drain', 'deny', 'docs', 'draft', 'drop', 'dry-run', 'edge', 'ephemeral', 'every', 'executable', 'family', 'force', 'foreground', 'from-persona', 'held', 'help', 'help-mempalace', 'history', 'hearth', 'hold', 'if-due', 'in-wiki', 'init', 'join', 'json', 'keep', 'keep-hooks', 'keyhive-trace', 'lag', 'launch', 'list', 'meme', 'memory', 'observe', 'orphans', 'over-fresher', 'page', 'pair', 'palaces', 'paper', 'partial', 'passphrase', 'pending', 'probe', 'quorum', 'overwrite', 'remove', 'repour', 'restart', 'rotate', 'seat', 'sessions', 'shadow', 'skinny', 'skip-build', 'spectral', 'split-root', 'staged', 'sweep', 'tag-blobs', 'tree', 'verbose', 'wait', 'watch', 'with-web', 'workbench', 'writeback', 'yes')
+    $boolean = @('accept-omissions', 'added', 'all', 'all-strata', 'apply', 'approve', 'brief', 'bulk', 'cancel', 'cards', 'cosign', 'confirm', 'create', 'cut', 'drain', 'deny', 'docs', 'draft', 'drop', 'dry-run', 'edge', 'ephemeral', 'every', 'executable', 'family', 'force', 'foreground', 'fresh', 'from-persona', 'held', 'help', 'help-mempalace', 'history', 'hearth', 'hold', 'if-due', 'in-wiki', 'init', 'join', 'json', 'keep', 'keep-hooks', 'keyhive-trace', 'lag', 'launch', 'list', 'meme', 'memory', 'observe', 'orphans', 'over-fresher', 'page', 'pair', 'palaces', 'paper', 'partial', 'passphrase', 'pending', 'probe', 'quorum', 'overwrite', 'remove', 'repour', 'restart', 'rotate', 'seat', 'sessions', 'shadow', 'skinny', 'skip-build', 'spectral', 'split-root', 'staged', 'sweep', 'tag-blobs', 'tree', 'verbose', 'wait', 'watch', 'with-web', 'workbench', 'writeback', 'yes')
     $sources = @()
     for ($i = 0; $i -lt $argv.Count; $i++) {
       $word = $argv[$i]
@@ -1451,6 +1498,15 @@ switch ($verb) {
     }
     # Stopping the daemon stops the container's main process: a host act.
     elseif ($sub -eq 'stop') { if ($rest.Count -ne 1) { Die 'vessel stop takes no option through this shim' }; Compose @('stop', 'lares') }
+    # The step-in read asks no standing verdict after it: a fallen engine answers none, and the read reads its files.
+    elseif ($sub -eq 'read') { VesselRead $rest }
+    # The release holds the store: a standing container refuses here, naming the stop; a stopped one takes the offline door.
+    elseif ($sub -eq 'release') {
+      # A paused container still holds the store (its process stands frozen mid-act), so it reads as standing here.
+      $paused = & docker compose @Base ps -q --status paused lares
+      if ((HasRunningVessel) -or -not [string]::IsNullOrWhiteSpace(($paused -join ''))) { Die 'vessel release holds the store, and a vessel stands; stop it first with `lares vessel stop`, then release again' }
+      RouteCli (@($verb) + $rest) $true
+    }
     else { RouteCli (@($verb) + $rest) (-not $observing) }
   }
   'lei' {

@@ -300,7 +300,15 @@ const execCall = (b: Bench): string[] | undefined => calls(b).find((c) => c.incl
 const builtExists = existsSync(join(HERE, "..", "dist", "src", "host-bridge.js"));
 const haveScript = spawnSync("script", ["--version"]).status === 0;
 
-describe.skipIf(!builtExists)("the built `lares` forwards through the real shim", () => {
+/**
+ * THE BUDGET A BUILT-CLI CASE NEEDS. Each case below spawns the built `lares` (a cold Node start that loads the whole command
+ * table) one to three times, each through the real shell shim and its fake docker. One cold start measured 4.0-4.5 s on a
+ * 10-core box at load 30 (2026-11-23), and these cases failed vitest's 5 s default on origin/develop and on this branch
+ * alike, a different set each run: the budget, never the code. Three spawns at that measure, with room: 60 s.
+ */
+const BUILT_CLI_BUDGET = { timeout: 60_000 };
+
+describe.skipIf(!builtExists)("the built `lares` forwards through the real shim", BUILT_CLI_BUDGET, () => {
   it("a vessel verb forwards: argv faithful (quotes, spaces, empty, --), stdout untouched, -T off a TTY", () => {
     const b = bench();
     try {
@@ -465,7 +473,7 @@ describe.skipIf(!builtExists)("the built `lares` forwards through the real shim"
   });
 });
 
-describe.skipIf(!builtExists)("a lone SIGTERM to the host process leaves nothing running", () => {
+describe.skipIf(!builtExists)("a lone SIGTERM to the host process leaves nothing running", BUILT_CLI_BUDGET, () => {
   async function lone(sig: NodeJS.Signals, running: boolean): Promise<{ b: Bench; ended: { code: number | null; signal: NodeJS.Signals | null }; sleeperAlive: boolean }> {
     const b = bench({ running });
     const child = spawn(process.execPath, [BIN, "persona", "list"], { env: { ...b.env, FAKE_SLEEP: "1" }, stdio: "ignore" });
@@ -523,7 +531,7 @@ describe("crashReading — an unnamed house root reads in two lines, no stack", 
   });
 });
 
-describe.skipIf(!builtExists)("a local verb that reaches for the root inside the vessel", () => {
+describe.skipIf(!builtExists)("a local verb that reaches for the root inside the vessel", BUILT_CLI_BUDGET, () => {
   it("exits with the house-absent code and the short reading", () => {
     const env = { ...process.env, LARES_IN_CONTAINER: "1" } as Record<string, string>;
     delete env["LAR_ROOT"];
