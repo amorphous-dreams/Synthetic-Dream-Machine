@@ -1728,6 +1728,12 @@ switch ($verb) {
         if ($rest.Count -ne 2 -or $rest[1] -notmatch '^[0-9]+$') { Die 'pulama rehive takes one face ordinal (a number)' }
         Compose (@('--profile', 'pulama', 'exec') + $NoTty + @((PulamaSvc), 'node', $PulamaMain, 'rehive', $rest[1]))
       }
+      'recard' {
+        # recard proves a stale face's OWN route (its light on the vessel refused FaceHoldsNoPrekeySecret) on a real terminal inside
+        # the pūlama, which holds its key; one grant rests, and `lares vault recard --face N` at the vessel spends it and arms the light.
+        if ($rest.Count -ne 2 -or $rest[1] -notmatch '^[0-9]+$') { Die 'pulama recard takes one face ordinal (a number)' }
+        Compose (@('--profile', 'pulama', 'exec') + $NoTty + @((PulamaSvc), 'node', $PulamaMain, 'recard', $rest[1]))
+      }
       'unadmit' {
         # unadmit ends one image's admission: the route proves on a real terminal inside the pūlama, and a signed
         # tombstone naming the admission's tessera rests; the gate then reads pulama-image-unadmitted.
@@ -1765,7 +1771,7 @@ switch ($verb) {
         Move-Item -Force -LiteralPath $tmp -Destination $seatFile
         [Console]::Error.WriteLine("lares-container: the keep seat rests at $seatFile (0600); a keep now seals under it")
       }
-      default { Die 'pulama takes up, down, restand, light [--admit], admit, unadmit, rehive, keep-seat, keeper-commit [<rev>], keeper-land, take-fire, lock, status or tessera' }
+      default { Die 'pulama takes up, down, restand, light [--admit], admit, unadmit, rehive, recard, keep-seat, keeper-commit [<rev>], keeper-land, take-fire, lock, status or tessera' }
     }
   }
   'logs'  { Compose (@('logs') + $rest + @('lares')) }

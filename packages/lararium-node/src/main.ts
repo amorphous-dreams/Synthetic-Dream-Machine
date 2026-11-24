@@ -540,7 +540,7 @@ async function main(): Promise<void> {
   });
   custodyDoor = custodyFrameHandler({
     holder, recompose, testScratch,
-    ...(pulama !== null && standBy !== null ? { pulama: { standing: () => ({ session: pulama.isUnlocked(), waits: pulama.isUnlocked() ? null : (standBy.waits() ?? pulama.waits()) }), dial: () => standBy.dial(), lent: () => pulama.lends(), tellWorn: (o) => pulama.tellWorn(o) } } : {}),
+    ...(pulama !== null && standBy !== null ? { pulama: { standing: () => ({ session: pulama.isUnlocked(), waits: pulama.isUnlocked() ? null : (standBy.waits() ?? pulama.waits()) }), dial: () => standBy.dial(), lent: () => pulama.lends(), tellWorn: (o) => pulama.tellWorn(o), takeRecard: (o) => pulama.takeRecard(o) } } : {}),
     lightFace: async (ordinal) => { if (!composition) throw new Error("composition unavailable"); return await composition.lightFace(ordinal); },
     dropFace: async (ordinal) => { if (!composition) throw new Error("composition unavailable"); await composition.dropFace(ordinal); },
     releaseFace: (ordinal) => { composition?.releaseFace?.(ordinal); },

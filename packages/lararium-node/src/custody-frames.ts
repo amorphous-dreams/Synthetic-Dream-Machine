@@ -29,7 +29,9 @@
  *            (`face-rehive`). The frame carries the face's own route and the face; the door refuses a face worn or lit
  *            (`face-open`) and opens the face's key for this act alone, outside the holder, so no composition hears it.
  *   recard   light a face whose Archive fell behind its own cards (its last light here refused `FaceHoldsNoPrekeySecret`)
- *            with its card minted before its bags, keeping its identity (`face-recard`). The frame carries the vessel's own
+ *            with its card minted before its bags, keeping its identity (`face-recard`). Under a pūlama the face's own route proves
+ *            at the pūlama's hand door, where its key rests (`tools/lares-container.sh pulama recard N`), and the frame carries no
+ *            route: the door reads its guard, then spends the pūlama's one grant (`takeRecard`) before it arms. The frame carries the vessel's own
  *            route and the face; the door refuses any face whose last light did not refuse for want of a prekey secret.
  *
  * ── A BACKUP ASKS THE VESSEL'S ROUTE AGAIN ──────────────────────────────────────────────────────
@@ -194,6 +196,9 @@ export interface CustodyFrameDeps {
     /** Tell the pūlama the face a wear just wore (`PulamaHolder.tellWorn`), so a vessel that restarts wears it again. The
      *  wear door alone calls it, with the ordinal alone. */
     readonly tellWorn: (ordinal: number) => Promise<void>;
+    /** Spend the recard grant the pūlama's hand door rested for a lent face (`PulamaHolder.takeRecard`): true once. The recard
+     *  alone calls it, after its guard reads. Absent, a recard under the pūlama refuses `recard-under-pulama`. */
+    readonly takeRecard?: (ordinal: number) => Promise<boolean>;
   };
   /**
    * Run one act of the sealed-act table against the seated holder (`runSealedAct`, bound to what the standing
@@ -689,7 +694,8 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
   /**
    * One recard, run on the door's one chain. THE FACE STANDS SERVED AND DARK for want of a prekey secret: its last light here
    * refused `FaceHoldsNoPrekeySecret`. A face lit, shut, or dark for another cause refuses before anything moves. The face's
-   * own route proves a person stands here; the door arms the face's next light as a recard and awaits that face's own light.
+   * own route proves a person stands here (under a pūlama it proved at the pūlama's hand door, and the door spends the grant it
+   * rested); the door arms the face's next light as a recard and awaits that face's own light.
    */
   const runRecard = (credentials: readonly Credential[], face: number, sock: Socket) => async (): Promise<CustodyAnswer> => {
     const refuse = (reason: string, errorMessage: string, extra: { attemptsLeft?: number } = {}): CustodyAnswer => {
@@ -699,37 +705,54 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     const hand = await readHand(sock, { proveRoute: true }, deps.peerOf);
     if ("refusal" in hand) return refuse(hand.refusal, "a recard asks a person at their terminal: a detected AI seat refuses, and the face's own route gates it; nothing moved");
     if (!deps.armRecard || !deps.disarmRecard || !deps.refusedLights || !deps.lightFace) return refuse("recard-unavailable", "this vessel's custody door recards no face; nothing moved");
-    if (deps.pulama) return refuse("recard-under-pulama", `this vessel's custody rests with its pūlama, which lights faces on its own hand; nothing moved. Read the face there: tools/lares-container.sh pulama status`);
+    // UNDER A PŪLAMA THE ROUTE PROVES THERE: the face's key rests at the pūlama, so a route sent here would ride to no slot.
+    const atPulama = `the face's own route proves at the pūlama, which holds its key: tools/lares-container.sh pulama recard ${face} (the face's passphrase, typed at that terminal), then lares vault recard --face ${face}`;
+    if (deps.pulama && credentials.length > 0) return refuse("route-at-the-pulama", `this vessel's custody rests with its pūlama, so no route rides to it: ${atPulama}; nothing moved`);
+    if (deps.pulama && !deps.pulama.takeRecard) return refuse("recard-under-pulama", `this vessel's custody rests with its pūlama, and this door reaches no recard grant there; nothing moved. Read the face there: tools/lares-container.sh pulama status`);
+    if (!deps.pulama && credentials.length === 0) return refuse("bad-custody-frame", "a recard frame carries `op`, the face's own `credentials` and the `face` (a handle-index), and nothing beside them");
     if (!holder.isUnlocked()) return refuse("custody-locked", `${new CustodyLocked().message}: unlock it (\`lares vault unlock\`), then \`lares vault recard --face ${face}\`; nothing moved`);
     const at = await holder.faceStanding({ ordinal: face });
     if (at === null) return refuse("face-not-standing", `no face h${face} stands on this vessel (\`lares vessel roster\` names each face); nothing moved`);
     // THE NO-OP GUARD: only a face whose last light here refused for want of a prekey secret recards.
     const dark = deps.refusedLights().find((r) => r.ordinal === face);
+    if (!at.unlocked && deps.pulama) return refuse("face-shut", `face h${face} stands shut in this vessel's lend: light it at the pūlama (tools/lares-container.sh pulama light), let its light refuse by name, then tools/lares-container.sh pulama recard ${face} and lares vault recard --face ${face}; nothing moved`);
     if (!at.unlocked) return refuse("face-shut", `face h${face} stands shut: open it (\`lares vault unlock --face ${face}\`); a face whose Archive fell behind its cards refuses its light by name, and the recard follows; nothing moved`);
     if (dark === undefined) return refuse("face-not-stale", `the last light of face h${face} here did not refuse for want of a prekey secret (it stands lit, or still lighting): nothing needs a recard. Read it with \`lares vault status\`; nothing moved`);
     if (!STALE_LIGHT.test(dark.cause)) return refuse("face-not-stale", `face h${face} stands dark for another cause (${dark.cause}): a recard cures only a face that holds no prekey secret; clear it with \`lares vault unlock\`; nothing moved`);
+    // UNDER A PŪLAMA THE GRANT STANDS FOR THE ROUTE: the pūlama's hand door proved the face's own route against that face's
+    // attempt budget and rested one grant; the guard above read first, so a face that needs no recard leaves the grant unspent.
+    const spendGrant = async (takeRecard: (ordinal: number) => Promise<boolean>): Promise<CustodyAnswer | null> => {
+      let granted: boolean;
+      try { granted = await takeRecard(face); }
+      catch (e) { const reading = (e as { reading?: unknown }).reading; return refuse(typeof reading === "string" ? reading : "recard-ungranted", `the pūlama spent no recard grant for face h${face} (${e instanceof Error ? e.message : String(e)}); ${atPulama}; nothing moved`); }
+      return granted ? null : refuse("recard-ungranted", `no recard grant stands at the pūlama for face h${face}: ${atPulama}; nothing moved`);
+    };
     // THE FACE'S OWN ROUTE GATES, through the holder's per-face opening the rehive uses (one prover, the face's own attempt budget):
     // the face's key stands open for this act, so it opens whileOpen, and the key opened for the proof zeroes at once.
-    if (!holder.openFaceForAct) return refuse("recard-unavailable", "this vessel's custody rests elsewhere: recard the face where its custody rests; nothing moved");
-    const proof = await holder.openFaceForAct({ ordinal: face }, credentials, { whileOpen: true });
-    if (proof.reading !== "opens") {
+    const proveHere = async (): Promise<CustodyAnswer | null> => {
+      if (!holder.openFaceForAct) return refuse("recard-unavailable", "this vessel's custody rests elsewhere: recard the face where its custody rests; nothing moved");
+      const proof = await holder.openFaceForAct({ ordinal: face }, credentials, { whileOpen: true });
+      if (proof.reading === "opens") { proof.fck.fill(0); return null; }
       if (proof.reading === "no-slot-opens") return refuse("no-slot-opens", `no slot of face h${face} opens under what the holder presented: a recard asks the FACE's own route, never the vessel's; nothing moved (${proof.attemptsLeft} attempt(s) left this boot for this face)`, { attemptsLeft: proof.attemptsLeft });
       if (proof.reading === "attempts-spent") return refuse("attempts-spent", `face h${face}'s unlock attempts for this boot stand spent; nothing moved. Stand the vessel again (\`lares vessel stand\`)`);
       return refuse(proof.reading, `face h${face} did not open for the recard (${proof.reading}); nothing moved. Read it with \`lares vault status\``);
-    }
-    proof.fck.fill(0);
+    };
+    const unproven = deps.pulama?.takeRecard ? await spendGrant(deps.pulama.takeRecard) : await proveHere();
+    if (unproven !== null) return unproven;
+    // A RECARD AGAIN, as this vessel asks it: under a pūlama a spent grant asks the face's route there once more.
+    const again = deps.pulama ? `tools/lares-container.sh pulama recard ${face}, then lares vault recard --face ${face}` : `lares vault recard --face ${face}`;
     // THIS FACE'S LIGHT, AWAITED: the lend's sweep fires its lights and answers at once, so the door arms the face, asks its own
     // light and reads the refusals only once that light settled. An arm no light took is cleared the same turn.
     deps.armRecard(face);
     let lightAnswer: "lit" | "refused" | void;
     let untaken = false;
     try { lightAnswer = await deps.lightFace(face); }
-    catch (e) { return refuse("recard-failed", `face h${face} failed to light (${e instanceof Error ? e.message : String(e)}): the recard clears its arm; read it with \`lares vault status --verbose\`, then \`lares vault recard --face ${face}\` again`); }
+    catch (e) { return refuse("recard-failed", `face h${face} failed to light (${e instanceof Error ? e.message : String(e)}): the recard clears its arm; read it with \`lares vault status --verbose\`, then ${again} again`); }
     finally { untaken = deps.disarmRecard(face) === true; }
     const after = deps.refusedLights().find((r) => r.ordinal === face);
     // A HELD FACE READS NO REFUSAL (a lock ran ahead of the light): the light's own answer decides, never the refusal list alone.
-    if (lightAnswer === "refused" && after === undefined) return refuse("recard-refused", `face h${face} stays dark and held (a lock or a stand-down ran ahead of its light): the arm went untaken. Read it with \`lares vault status --verbose\`, unlock custody where it reads locked, then \`lares vault recard --face ${face}\` again`);
-    if (after !== undefined) return refuse("recard-refused", `face h${face} stayed dark and ${untaken ? "the arm went untaken (a light had run before the door armed)" : "the recard spent its arm"}: ${after.cause}. Read it with \`lares vault status --verbose\` and clear what that names, then \`lares vault recard --face ${face}\` again`);
+    if (lightAnswer === "refused" && after === undefined) return refuse("recard-refused", `face h${face} stays dark and held (a lock or a stand-down ran ahead of its light): the arm went untaken. Read it with \`lares vault status --verbose\`, unlock custody where it reads locked, then ${again} again`);
+    if (after !== undefined) return refuse("recard-refused", `face h${face} stayed dark and ${untaken ? "the arm went untaken (a light had run before the door armed)" : "the recard spent its arm"}: ${after.cause}. Read it with \`lares vault status --verbose\` and clear what that names, then ${again} again`);
     deps.onLog(`recard h${face}: lit`);
     return { op: "recard", face, recarded: true };
   };
@@ -743,7 +766,8 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     if (op === "recard") {
       const frame = parsed as Record<string, unknown>;
       const stray = Object.keys(frame).find((k) => !RECARD_FRAME_KEYS.has(k));
-      const credentials = credentialsOf(frame["credentials"]);
+      // UNDER A PŪLAMA the frame carries an empty route (the route proved at the pūlama); the act refuses a route it carries.
+      const credentials = Array.isArray(frame["credentials"]) && frame["credentials"].length === 0 ? [] : credentialsOf(frame["credentials"]);
       const face = frame["face"];
       if (stray !== undefined || !credentials || !Number.isSafeInteger(face) || (face as number) < 0) {
         deps.onLog("recard: refused (bad-custody-frame)");

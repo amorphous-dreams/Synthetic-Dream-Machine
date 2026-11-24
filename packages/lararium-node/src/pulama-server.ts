@@ -28,6 +28,11 @@
  *                  that one ordinal in its own memory (never on disk) and hands it back in the standing of every session
  *                  it serves after, so a vessel that restarts wears the face again. An ordinal outside the session's lend
  *                  refuses `outside-the-lei`. The lock forgets it, as a restart does: a fresh light remembers no wear.
+ *   `face.recard`  THE VESSEL SPENDS A RECARD GRANT: it names a lent face by ordinal and nothing beside it, and the pūlama
+ *                  answers true once, where the hand door's `recard` proved that face's own route (`grantRecard`) and the face
+ *                  still stands lit here; the grant spends with the answer. A face outside the lend refuses `outside-the-lei`;
+ *                  a face with no grant answers false. The vessel's custody door then arms that face's next light as a recard.
+ *                  No route rides it: the route proved at the hand door, on the person's terminal, where the face key rests.
  *   `face.closed`  THE VESSEL'S HALF OF A TWO-PHASE CLOSE: it names the face (by custody id) and the opening the pūlama's
  *                  `closing` named, once its face actor stopped serving that face. The pūlama locks the key when every
  *                  session it told has answered. The answer names nothing: a face outside the lend, an unknown id, a face
@@ -98,6 +103,12 @@ export interface PulamaServer {
   sessions(): number;
   /** The face the vessel's wear door last named here (`face.worn`); none since the last lock. */
   worn?(): number | undefined;
+  /**
+   * REST ONE RECARD GRANT for the face at `ordinal`, once the hand door proved that face's own route: a vessel lending it spends
+   * it once (`face.recard`). Memory alone; the lock forgets every grant, and a second grant for one face stands as the one.
+   * Answers the custody id the grant names, or null where no face stands at that ordinal.
+   */
+  grantRecard?(ordinal: number): string | null;
 }
 
 /** What a face's close answers: locked now, closing (sessions still to answer), already shut, or no such face. */
@@ -160,6 +171,8 @@ export function servePulama(a: {
   let nextClaim = 1;
   /** The face a vessel's wear door last wore, by ordinal: memory alone, forgotten at the lock. */
   let worn: number | undefined;
+  /** THE RECARD GRANTS the hand door rested, by custody id: each spends once (`face.recard`); memory alone, forgotten at the lock. */
+  const recardGrants = new Set<string>();
   /**
    * THE FACES CLOSING, by custody id: the opening the close names, the sessions still to answer it, and the vessel lives it waits
    * on past them (`dropped`): each told session that ended unanswered, and each life this pūlama lent the face that ended before
@@ -398,6 +411,20 @@ export function servePulama(a: {
         });
         return out;
       }
+      case "face.recard": {
+        const ordinal = args["ordinal"];
+        if (Object.keys(args).some((k) => k !== "ordinal") || !Number.isSafeInteger(ordinal) || (ordinal as number) < 0) {
+          throw new PulamaRefused("pulama-frame-malformed", "a recard names the face by its ordinal, a whole number from 0, and nothing beside it");
+        }
+        const found = await holder.faceStanding({ ordinal: ordinal as number });
+        if (found === null) return false;
+        if (!lends(s, found)) throw new PulamaRefused("outside-the-lei", `the pūlama lends this vessel ${renderLentFaces(s.scope.faces)}; h${String(ordinal)} stands outside it`);
+        // THE GRANT SPENDS ONCE, and only while the face stands lit here and open to this session: a closing face reads shut.
+        if (!recardGrants.has(found.fcid) || !found.unlocked || closedTo(s, found.fcid)) return false;
+        recardGrants.delete(found.fcid);
+        log(`recard: h${found.ordinal}'s grant spent by a vessel; it arms that face's next light`);
+        return true;
+      }
       case "face.worn": {
         const ordinal = args["ordinal"];
         if (Object.keys(args).some((k) => k !== "ordinal") || !Number.isSafeInteger(ordinal) || (ordinal as number) < 0) {
@@ -565,6 +592,7 @@ export function servePulama(a: {
     async lock() {
       for (const s of [...live]) end(s);
       worn = undefined;
+      recardGrants.clear();
       closings.clear();
       lentLives.clear();
       await holder.lock();
@@ -643,5 +671,12 @@ export function servePulama(a: {
           : `face h${c.ordinal}: no session still owes its close; close it again to lock it, or force it by hand` })),
     sessions: () => live.size,
     worn: () => worn,
+    grantRecard(ordinal) {
+      const at = readFaceIndexSync(holder.homes.identity).faces[ordinal];
+      if (at === undefined || !("fcid" in at)) return null;
+      recardGrants.add(at.fcid);
+      log(`recard: h${ordinal}'s own route proved at the hand; one grant stands for a vessel that lends it`);
+      return at.fcid;
+    },
   };
 }

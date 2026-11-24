@@ -23,6 +23,14 @@
  *            (`openFaceForAct`), the foreign bytes rest aside and one compare-and-replace seals the row's next bytes, and nothing
  *            lights. It rides this door's one chain, so `light` never opens the face mid-act. The answer names what moved, what
  *            was lost and the pūlama-path acts that come next.
+ *   recard   THE HAND PROVES A STALE FACE'S OWN ROUTE FOR ITS RECARD (`face-recard` under a pūlama): a face whose light on the
+ *            vessel refused `FaceHoldsNoPrekeySecret` lights again under its own identity, and the light runs in the vessel,
+ *            while the face's key rests here. The face must stand LIT here (a shut face refuses `face-shut`: `light` opens it); the
+ *            face's own route (the A1 ruling: never the vessel's) opens its key for the proof alone through the holder's attempt
+ *            budget (`openFaceForAct`, while open), the opened copy zeroes at once, and ONE grant rests in the server's memory
+ *            (`grantRecard`). The vessel's `lares vault recard --face N` then reads its own guard (only a face whose last light
+ *            refused for want of a prekey secret), spends the grant over its session (`face.recard`) and arms that face's next
+ *            light. An unlit pūlama refuses `pulama-locked` before the route reads; a refusal grants nothing. The lock forgets it.
  *   lock     every session drops and every key zero-fills.
  *   close    ONE FACE CLOSES IN TWO PHASES (`face`, by its whole ordinal): the pūlama tells every vessel that lends it, keeps
  *            the key while each drains, and locks it once each answered; one no vessel lends locks at once. It answers
@@ -364,6 +372,36 @@ export function pulamaHandDoor(a: {
           log(`rehive h${face}: ${reading}`);
           return { op: "rehive", reading, face, ...(typeof e.message === "string" ? { detail: e.message } : {}) };
         }
+      }
+      case "recard": {
+        if (passing) return passingRefusal("recard");
+        if (!server.grantRecard || !holder.openFaceForAct) return { op: "recard", reading: "recard-unavailable" };
+        const face = f["face"];
+        const credentials = credentialsOf(f["credentials"]);
+        if (typeof face !== "number" || !Number.isSafeInteger(face) || face < 0 || credentials === null) return { op: "recard", reading: "malformed", detail: "a recard names the face by its whole ordinal and carries the face's own route" };
+        // UNLIT REFUSES BEFORE THE ROUTE READS, and a face shut here holds no key the vessel lights.
+        if (!holder.isUnlocked()) return { op: "recard", reading: "pulama-locked", face, detail: `the pūlama stands unlit: light it (tools/lares-container.sh pulama light), then tools/lares-container.sh pulama recard ${face}; nothing moved`, ...status() };
+        const at = await holder.faceStanding({ ordinal: face });
+        if (at === null) return { op: "recard", reading: "face-not-standing", face, detail: `no face h${face} stands in this house (\`lares vessel roster\` names each face); nothing moved` };
+        if (!at.unlocked) return { op: "recard", reading: "face-shut", face, detail: `face h${face} stands shut at the pūlama: light it (tools/lares-container.sh pulama light), let the vessel's light refuse it by name, then tools/lares-container.sh pulama recard ${face}; nothing moved`, ...status() };
+        // THE FACE'S OWN ROUTE PROVES A PERSON STANDS HERE: its key opens for the proof alone, and the copy zeroes at once.
+        const proof = await holder.openFaceForAct({ ordinal: face }, credentials, { whileOpen: true });
+        if (proof.reading !== "opens") {
+          log(`recard h${face}: ${proof.reading}`);
+          const left = "attemptsLeft" in proof ? proof.attemptsLeft : undefined;
+          return { op: "recard", reading: proof.reading, face, ...(left !== undefined ? { attemptsLeft: left } : {}),
+            detail: proof.reading === "no-slot-opens"
+              ? `no slot of face h${face} opens under what the hand presented: a recard asks the FACE's own route, never the vessel's; nothing moved (${String(left)} attempt(s) left this boot for this face)`
+              : `face h${face} did not open for the recard (${proof.reading}); nothing moved. Read it with tools/lares-container.sh pulama status` };
+        }
+        proof.fck.fill(0);
+        if (server.grantRecard(face) === null) return { op: "recard", reading: "face-not-standing", face, detail: `no face h${face} stands in this house's face index; nothing moved` };
+        log(`recard granted by hand: h${face}`);
+        return { op: "recard", reading: "granted", face, lines: [
+          `face h${face}: its own route proved at the pūlama, and one recard grant stands for the vessel that lends it.`,
+          `Next, at the vessel: lares vault recard --face ${face} (it arms the face's next light and spends the grant; a face that needs no recard leaves the grant unspent).`,
+          "A lock of the pūlama forgets the grant.",
+        ] };
       }
       // THE LOCK SPENDS THE PASSING (blind read F4): the slot already left, the keys zero here, and a later light strikes the fire anew.
       case "lock": await server.lock(); litBy = null; passing = false; return { op: "lock", ...status() };

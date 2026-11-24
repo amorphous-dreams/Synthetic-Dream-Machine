@@ -1161,6 +1161,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares vault restore --cards --face <key|persona-…> --as 1   # rebuild a face's root from two split cards: a root, never memory",
       "lares vault rehive --face <N>          # a SHUT face whose veil-archive row holds another identity's Archive stands from its own seed; the answer names the next acts",
       "lares vault recard --face <N>          # a face whose light refused FaceHoldsNoPrekeySecret lights again under its own identity: asks the FACE's passphrase (as rehive does), card before bags, Archive after the card; names what it cannot recover",
+      "tools/lares-container.sh pulama recard <N>   # under a pūlama: the face's own passphrase proves at the pūlama (where its key rests) and rests one grant; then `lares vault recard --face <N>` asks no route and spends it",
     ],
     flags: [
       "--passphrase|--paper  (bind) which route the new slot carries; (unlock) skip the route question",
