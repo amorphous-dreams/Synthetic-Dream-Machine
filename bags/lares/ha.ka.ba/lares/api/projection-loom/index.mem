@@ -190,19 +190,19 @@ The operator released this carrier's displaced historical ahu from the living te
 
 <<~ ahu slot=`#/edges`>>
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/capability-composition">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/handoff">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/projection-loom/handoff">>
 
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/ooda-ha">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/ooda-ha">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/hybrid">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/reference-ci">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/athenaion">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/poc0">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/projection-loom/athenaion">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/projection-loom/poc0">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;SrZlyDLwk1IWU--VTYOFjzWDmOsc7NLbf5J4FNsmgWo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2sy1chOztAGmWK1yptARlXxQ7R4laYCuZZslHadKk04`>>
 
 <<^ code=`&#x0004;` to=`?`>>

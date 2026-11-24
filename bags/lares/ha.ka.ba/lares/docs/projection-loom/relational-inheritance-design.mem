@@ -121,12 +121,12 @@ The evergreen machina and design docs remain discoverable after the fire. The op
 <<~ ahu slot=`#/edges`>>
 
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/index">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/research">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/handoff">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/projection-loom/research">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/projection-loom/handoff">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing">>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;jiRvEBJSgwB8y2W5WI8DagtRdBlDcydxdlr0QVupt2Q`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;m0AtyenXuuEN7ydwYREWHp-W3UVKCDC1yz28tt9Y54A`>>
 
 <<^ code=`&#x0004;` to=`?`>>

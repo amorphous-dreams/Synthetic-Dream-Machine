@@ -19,11 +19,11 @@ def _carrier(body: str) -> str:
     digest = base64.urlsafe_b64encode(
         hashlib.sha256(span.encode("utf-8")).digest()
     ).decode("ascii").rstrip("=")
+    sealed = span.removesuffix(">>") + " bcc=`ni:///sha-256;" + digest + "`>>"
     return (
-        '<<!DOCTYPE "memetic-wikitext+tiddlywiki">>\n'
-        + span
-        + "ni:///sha-256;" + digest + "\n\n"
-        + '<<^ code="&#x0004;" -> to="?">>\n'
+        "<<!DOCTYPE type=`memetic-wikitext+tiddlywiki`>>\n"
+        + sealed + "\n\n"
+        + "<<^ code=`&#x0004;` to=`?`>>\n"
     )
 
 

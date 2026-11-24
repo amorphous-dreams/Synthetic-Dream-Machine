@@ -1,6 +1,6 @@
 <<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lares/api/projection-loom/pair-a`>>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lares/docs/projection-loom/pair-a`>>
 <<^ code=`&#x0002;`>>
 
 ```toml meta
@@ -9,9 +9,9 @@ l-space   = "stable"
 namespace = "&#x0950; &#x0901;"
 role      = "Pair A hard-reference, seed provenance and first-pass evidence gates"
 tags      = ["api/pono/meme"]
-title     = "lar:///ha.ka.ba/lares/api/projection-loom/pair-a"
+title     = "lar:///ha.ka.ba/lares/docs/projection-loom/pair-a"
 type      = "text/memetic-wikitext+tiddlywiki"
-uri-path  = "ha.ka.ba/lares/api/projection-loom/pair-a"
+uri-path  = "ha.ka.ba/lares/docs/projection-loom/pair-a"
 ```
 
 <<~ ahu slot=`#/entry`>>
@@ -55,6 +55,6 @@ validate the machina's mechanics but not the external reconstruction's fidelity.
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/index">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/ooda-ha">>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;4ayQHHdk-MV4bb7_AM3RTVv37KS8bGYOsBBf8nHfN7I`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;iU_JWBTW5CU7I-L1_pFaqaFy0GaMePesfmCkZNfMgyQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

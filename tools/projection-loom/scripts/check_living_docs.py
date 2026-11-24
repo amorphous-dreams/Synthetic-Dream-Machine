@@ -19,25 +19,25 @@ FRONTS = frozenset({
 })
 CARRIERS = (
     "bags/lares/ha.ka.ba/lares/api/projection-loom/index.mem",
-    "bags/lares/ha.ka.ba/lares/api/projection-loom/handoff.mem",
+    "bags/lares/ha.ka.ba/lares/docs/projection-loom/handoff.mem",
     "bags/lares/ha.ka.ba/lares/api/projection-loom/capability-composition.mem",
-    "bags/lares/ha.ka.ba/lares/api/projection-loom/athenaion.mem",
+    "bags/lares/ha.ka.ba/lares/docs/projection-loom/athenaion.mem",
     "bags/lares/ha.ka.ba/lares/api/projection-loom/epochs.mem",
     "bags/lares/ha.ka.ba/lares/api/projection-loom/growth.mem",
     "bags/lares/ha.ka.ba/lares/api/projection-loom/hybrid.mem",
     "bags/lares/ha.ka.ba/lares/api/projection-loom/ooda-ha.mem",
-    "bags/lares/ha.ka.ba/lares/api/projection-loom/pair-a.mem",
-    "bags/lares/ha.ka.ba/lares/api/projection-loom/poc0.mem",
+    "bags/lares/ha.ka.ba/lares/docs/projection-loom/pair-a.mem",
+    "bags/lares/ha.ka.ba/lares/docs/projection-loom/poc0.mem",
     "bags/lares/ha.ka.ba/lares/api/projection-loom/reference-ci.mem",
-    "bags/lares/ha.ka.ba/lares/api/projection-loom/research.mem",
+    "bags/lares/ha.ka.ba/lares/docs/projection-loom/research.mem",
     "bags/lares/ha.ka.ba/lares/api/projection-loom/witness.mem",
     "bags/lares/ha.ka.ba/lares/docs/projection-loom/native-inheritance-crew-handoff.mem",
     "bags/lares/ha.ka.ba/lares/docs/projection-loom/relational-inheritance-design.mem",
 )
 ASHES_RELEASED = frozenset(CARRIERS[:3])
-STX = '<<^ code="&#x0002;">>'
-ETX = '<<^ code="&#x0003;">>'
-BLOCK_CHECK = re.compile(r'<<\^ code="&#x0003;">>ni:///sha-256;([A-Za-z0-9_-]+)')
+STX = "<<^ code=`&#x0002;`>>"
+ETX = "<<^ code=`&#x0003;`>>"
+BLOCK_CHECK = re.compile(r"<<\^ code=`&#x0003;` bcc=`ni:///sha-256;([A-Za-z0-9_-]+)`>>")
 MARKDOWN_LINK = re.compile(r'\]\(([^)]*)\)')
 
 
@@ -98,7 +98,8 @@ def inspect_carrier(path: Path, *, no_nested_ashes: bool = False) -> list[str]:
         errors.append(f"{path}: incomplete or ambiguous Lares STX/ETX block check")
     else:
         check = checks[0]
-        frame = text[start : check.start() + len(ETX)]
+        # The check rides the ETX bcc slot; the span reads with that run deleted.
+        frame = text[start : check.start()] + ETX
         computed = base64.urlsafe_b64encode(
             hashlib.sha256(frame.encode("utf-8")).digest()
         ).decode("ascii").rstrip("=")
@@ -119,7 +120,7 @@ def inspect_carrier_siting(path: Path, repo: Path) -> list[str]:
     bare = relative.removeprefix("bags/lares/").removesuffix(".mem")
     uri = "lar:///" + bare
     errors: list[str] = []
-    if not re.search(r'<<\^ code="&#x0001;"[^\n]*-> to="' + re.escape(uri) + r'"', text):
+    if not re.search(r"<<\^ code=`&#x0001;`[^\n]* to=`" + re.escape(uri) + r"`", text):
         errors.append(f"{relative}: SOH destination does not match disk siting {uri}")
     if not re.search(r'^\s*uri-path\s*=\s*"' + re.escape(bare) + r'"\s*$', text, re.MULTILINE):
         errors.append(f"{relative}: uri-path does not match disk siting")

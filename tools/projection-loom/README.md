@@ -6,8 +6,8 @@ Projection Loom is a source-grounded constructive CAD and OODA-HA architecture l
 
 - [Lares core](../../bags/lares/ha.ka.ba/lares/api/projection-loom/index.mem): canonical Projection Loom root carrier; other Loom memes are sited under the API and docs subtrees.
 - [Current working handoff](docs/HANDOFF.md): PR status, exact receipts, unresolved gates, and commands for re-entry.
-- [Lares operational authority](../../bags/lares/ha.ka.ba/lares/api/projection-loom/handoff.mem): active authority for current operation, next priorities, and boundaries.
-- [Lares research](../../bags/lares/ha.ka.ba/lares/api/projection-loom/research.mem): research testimony and evidence constraints.
+- [Lares operational authority](../../bags/lares/ha.ka.ba/lares/docs/projection-loom/handoff.mem): active authority for current operation, next priorities, and boundaries.
+- [Lares research](../../bags/lares/ha.ka.ba/lares/docs/projection-loom/research.mem): research testimony and evidence constraints.
 - [Lares relational design](../../bags/lares/ha.ka.ba/lares/docs/projection-loom/relational-inheritance-design.mem): native relation-inheritance design and attributed dissent.
 - [Lares crew handoff](../../bags/lares/ha.ka.ba/lares/docs/projection-loom/native-inheritance-crew-handoff.mem): OODA-HA working procedure.
 - Historical experiment and documentation narratives are recoverable at the pre-burn Git commit listed below, including the former `archives/README.md`.

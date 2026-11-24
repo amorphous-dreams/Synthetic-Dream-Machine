@@ -1,6 +1,6 @@
 <<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lares/api/projection-loom/poc0`>>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lares/docs/projection-loom/poc0`>>
 <<^ code=`&#x0002;`>>
 
 ```toml meta
@@ -12,9 +12,9 @@ manao     = 14
 manaoio   = 14
 role      = "first unscaled Necrospire image witness; real operator steering and source-specific PoC 0 receipt"
 tags      = ["api/pono/meme"]
-title     = "lar:///ha.ka.ba/lares/api/projection-loom/poc0"
+title     = "lar:///ha.ka.ba/lares/docs/projection-loom/poc0"
 type      = "text/memetic-wikitext+tiddlywiki"
-uri-path  = "ha.ka.ba/lares/api/projection-loom/poc0"
+uri-path  = "ha.ka.ba/lares/docs/projection-loom/poc0"
 ```
 
 <<~ ahu slot=`#/entry`>>
@@ -76,6 +76,6 @@ choice of method diversity versus architectural/circulation diversity.
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/witness">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/ooda-ha">>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;2u4r3lLHK2OtJJiv8mxU39v6FnJ-C_tT-ejD3JjiFSg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;A_r5hXoNl6WgoEVDttUX0Os2-1QJZSIpAEk5-tkfBqI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

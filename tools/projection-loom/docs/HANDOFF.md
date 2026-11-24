@@ -39,13 +39,14 @@
 | Responsibility | Current file |
 | --- | --- |
 | Source/constructive Loom contract | `bags/lares/ha.ka.ba/lares/api/projection-loom/index.mem` |
-| Operational handoff/next waves | `bags/lares/ha.ka.ba/lares/api/projection-loom/handoff.mem` |
-| Research ledger | `bags/lares/ha.ka.ba/lares/api/projection-loom/research.mem` |
+| Operational handoff/next waves | `bags/lares/ha.ka.ba/lares/docs/projection-loom/handoff.mem` |
+| Research ledger | `bags/lares/ha.ka.ba/lares/docs/projection-loom/research.mem` |
 | Relational-inheritance design/dissent | `bags/lares/ha.ka.ba/lares/docs/projection-loom/relational-inheritance-design.mem` |
 | Crew handoff | `bags/lares/ha.ka.ba/lares/docs/projection-loom/native-inheritance-crew-handoff.mem` |
-| Other capabilities | 10 remaining carriers under `bags/lares/ha.ka.ba/lares/api/projection-loom/` |
+| Other capabilities | 7 remaining law carriers under `bags/lares/ha.ka.ba/lares/api/projection-loom/` |
+| Research records (Athenaion, Pair A, PoC 0) | `bags/lares/ha.ka.ba/lares/docs/projection-loom/{athenaion,pair-a,poc0}.mem` |
 
-The identity is a siting law: `lar:///ha.ka.ba/lares/api/projection-loom/handoff` maps to `bags/lares/ha.ka.ba/lares/api/projection-loom/handoff.mem`. `lar:` routes and `file-path`/title/SOH/uri-path fields must agree. Archive history retains pre-move names and the dissent they carried; old URLs are not live handles.
+The identity is a siting law: `lar:///ha.ka.ba/lares/docs/projection-loom/handoff` maps to `bags/lares/ha.ka.ba/lares/docs/projection-loom/handoff.mem`. `lar:` routes and `file-path`/title/SOH/uri-path fields must agree. Archive history retains pre-move names and the dissent they carried; old URLs are not live handles.
 
 ### Durable recovery refs
 

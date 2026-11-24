@@ -1,6 +1,6 @@
 <<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lares/api/projection-loom/handoff`>>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lares/docs/projection-loom/handoff`>>
 <<^ code=`&#x0002;`>>
 
 ```toml meta
@@ -9,9 +9,9 @@ l-space   = "working"
 namespace = "&#x0950; &#x0901;"
 role      = "volatile operational handoff, operator how-tos, verified receipts, in-flight work and prioritized backlog for Projection Loom"
 tags      = ["api/pono/meme", "working/handoff"]
-title     = "lar:///ha.ka.ba/lares/api/projection-loom/handoff"
+title     = "lar:///ha.ka.ba/lares/docs/projection-loom/handoff"
 type      = "text/memetic-wikitext+tiddlywiki"
-uri-path  = "ha.ka.ba/lares/api/projection-loom/handoff"
+uri-path  = "ha.ka.ba/lares/docs/projection-loom/handoff"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -60,7 +60,7 @@ Read `tools/projection-loom/README.md`, `tools/projection-loom/docs/HANDOFF.md` 
 
 !! Research re-entry and root-bag crew meme
 
-The operator-supplied `deep-research-report.md` recommends complete admitted-route mutation first, semantic reconstruction second. This reopens the earlier reconstruction-first design priority without erasing its testimony. The complete crew handoff lives at `lar:///ha.ka.ba/lares/docs/projection-loom/native-inheritance-crew-handoff` under repository-root `bags/lares/`. Its source-derived family descriptor and separately native-observed admission receipt preserve one geometric truth and one OODA-HA helm. The full report attachment remains conversation testimony, not a verbatim Git archive. The Pair A carrier now lives at `bags/lares/ha.ka.ba/lares/api/projection-loom/pair-a.mem` with its new site-derived `lar:` identity; predecessor bytes remain on the pinned pre-move archive branch.
+The operator-supplied `deep-research-report.md` recommends complete admitted-route mutation first, semantic reconstruction second. This reopens the earlier reconstruction-first design priority without erasing its testimony. The complete crew handoff lives at `lar:///ha.ka.ba/lares/docs/projection-loom/native-inheritance-crew-handoff` under repository-root `bags/lares/`. Its source-derived family descriptor and separately native-observed admission receipt preserve one geometric truth and one OODA-HA helm. The full report attachment remains conversation testimony, not a verbatim Git archive. The Pair A carrier now lives at `bags/lares/ha.ka.ba/lares/docs/projection-loom/pair-a.mem` with its new site-derived `lar:` identity; predecessor bytes remain on the pinned pre-move archive branch.
 
 <<~ loulou "lar:///ha.ka.ba/lares/docs/projection-loom/native-inheritance-crew-handoff">>
 
@@ -207,6 +207,6 @@ The operator released this carrier's displaced historical ahu from the living te
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/reference-ci">>
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;fcI5PGYfwttvDBMp-b6_xFn2S9tF_-PpjV-dfcK-T4U`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qR-6ND6gW0Ctv2X3jCWNfJfymUxV9NKjsUem9Y3PXr8`>>
 
 <<^ code=`&#x0004;` to=`?`>>
