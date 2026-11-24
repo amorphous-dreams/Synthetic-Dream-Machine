@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
 import { faceLives, type FaceLifeEffects } from "../src/face-lifecycle.js";
-import { adoptFirstLit, faceLend, openingNewer, type FaceLendPorts } from "../src/face-lend.js";
+import { adoptFirstLit, composeRefusalHearing, faceLend, openingNewer, type FaceLendPorts } from "../src/face-lend.js";
 
 const settle = async (): Promise<void> => { for (let i = 0; i < 12; i++) await Promise.resolve(); };
 
@@ -41,6 +41,37 @@ function vessel(opts: { served?: number[]; open?: Set<number>; standing?: FaceLe
   lend = faceLend(ports);
   return { lives, lend, drains, events, open, mountClosed, faceClosed, lightFace };
 }
+
+describe("the island's refusal of a manifest face reaches that face's own life", () => {
+  const STALE = "FaceHoldsNoPrekeySecret: [daemon-keyhive] it holds none";
+  test("the hearing maps the island's atom key (any case, with or without 0x) to the ordinal the open composed, under the opening it composed", () => {
+    const v = vessel({ served: [0, 1, 2] });
+    v.lives.adopt(1, { atomKey: "0xAbCd01", custody: null });
+    v.lives.adopt(2, { atomKey: "ef02", custody: null });
+    const hear = composeRefusalHearing([
+      { ordinal: 1, atomKey: "0xAbCd01", opening: v.lives.opening(1)!, fresh: true },
+      { ordinal: 2, atomKey: "ef02", opening: v.lives.opening(2)!, fresh: true },
+    ], v.lives);
+    hear("abcd01", STALE);
+    expect(v.lives.refusedLights()).toEqual([{ ordinal: 1, cause: STALE }]);
+    expect(v.lives.state(2).kind, "another face of the same open keeps standing").toBe("lit");
+    hear("0xEF02", STALE);
+    expect(v.lives.refusedLights().map((r) => r.ordinal)).toEqual([1, 2]);
+  });
+  test("CONTROLS: a key the open never composed changes nothing; a refusal from an open whose face has since lit anew names a life that left", async () => {
+    const v = vessel({ served: [0, 1] });
+    v.lives.adopt(1, { atomKey: "k1", custody: null });
+    const stale = composeRefusalHearing([{ ordinal: 1, atomKey: "k1", opening: v.lives.opening(1)!, fresh: true }], v.lives);
+    composeRefusalHearing([{ ordinal: 1, atomKey: "k1", opening: v.lives.opening(1)!, fresh: true }], v.lives)("someone-else", STALE);
+    expect(v.lives.state(1).kind).toBe("lit");
+    const closed = v.lives.close(1, "lock");
+    v.drains.get(1)!.resolve(); await closed; await settle();
+    await v.lives.light(1);
+    stale("k1", STALE);
+    expect(v.lives.state(1).kind, "the new life keeps its island entry").toBe("lit");
+    expect(v.lives.refusedLights()).toEqual([]);
+  });
+});
 
 describe("the lend watch and the mount's one life", () => {
   test("the mount reads lit from the composition's own turn: the door gates it and a whole lock's close reaches it at once", async () => {

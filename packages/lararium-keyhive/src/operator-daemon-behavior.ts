@@ -439,6 +439,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         } catch (error) { console.warn(`[daemon] face ${key.slice(0, 12)}… handed the worn face no cap events: ${error instanceof Error ? error.message : String(error)}`); }
       }
     } catch (error) {
+      // A LIGHT THAT THROWS LEAVES NO ENTRY: a fault past the provider's seating clears the lit set, so the face reads dark
+      // here as it reads to the vessel, and its next light meets no stale `face-lit-changed`.
+      if (providers.get(key)?.provider === joined.keyhive) { providers.delete(key); litInputs.delete(key); litSiblings.delete(key); }
       await joined.keyhive.dispose();
       throw error;
     }

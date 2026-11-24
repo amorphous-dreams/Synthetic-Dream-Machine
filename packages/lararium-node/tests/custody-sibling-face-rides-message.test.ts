@@ -1,7 +1,7 @@
 import { EventEmitter } from "node:events";
 import type { Socket } from "node:net";
 import { afterEach, expect, test, vi } from "vitest";
-import { custodyFrameHandler, servedDark } from "../src/custody-frames.js";
+import { custodyFrameHandler, doorDarkLine, servedDark } from "../src/custody-frames.js";
 import { setMountedFace } from "../src/node-vessel-identity.js";
 import type { CustodyHolder } from "../src/custody-holder.js";
 
@@ -240,6 +240,19 @@ test("R9 A STALE FACE'S CLEARING LINE NAMES THE RECARD: a face dark for want of 
   expect(own!.note).toContain("lares vault recard --face 2");
   expect(own!.note).not.toContain("pulama recard");
   expect(own!.note).not.toContain("lares vault unlock");
+});
+
+test("R9 THE DOOR AND THE CENSUS SAY ONE LINE: the session door's dark line for a face reads the census's own note, live from the refused lights; a face with no refused light reads none", () => {
+  const cause = "face 0xabc refused: FaceHoldsNoPrekeySecret: [daemon-keyhive] face abc… holds no prekey secret";
+  let refused: Array<{ ordinal: number; cause: string }> = [];
+  for (const pulama of [true, false]) {
+    const line = doorDarkLine(() => refused, pulama);
+    refused = [];
+    expect(line(2)).toBeNull();
+    refused = [{ ordinal: 2, cause }];
+    expect(line(2)).toBe(servedDark(refused, [2], pulama)[0]!.note);
+    expect(line(1)).toBeNull();
+  }
 });
 
 test("R9 THE CLEARING LINE: an unlock over a held key replays the lend, so a served face whose light refused lights again", async () => {

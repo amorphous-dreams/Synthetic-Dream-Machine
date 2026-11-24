@@ -303,7 +303,7 @@ test("SOL R6 M (writes enter during the drain): a write dispatched before the cl
 // an island that held no such face. The door reads the face's own actor and answers at once, with the cause and its cure.
 test("A DARK FACE'S ACT REFUSES AT THE DOOR BY NAME: a rite-land on a face whose light refused answers face-not-open with the cause and its clearing line, and no act runs; CONTROL: the lit face's act runs", async () => {
   const { lives } = actors(0, 1);
-  lives.composeRefused(1, "FaceHoldsNoPrekeySecret: [daemon-keyhive] face k1 holds no prekey secret");
+  lives.composeRefused(1, "FaceHoldsNoPrekeySecret: [daemon-keyhive] face k1 holds no prekey secret", { opening: lives.opening(1)!, fresh: true });
   const acts: string[] = [];
   const NOTE = "h1 served by custody, dark here: its light refused (FaceHoldsNoPrekeySecret: …); recard it: lares vault recard --face 1";
   const v = await stand({ faceLife: lives, acts, faceDark: (face) => face === 1 ? NOTE : null });

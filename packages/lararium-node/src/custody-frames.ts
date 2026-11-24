@@ -156,6 +156,14 @@ export const servedDarkNote = (face: number, cause: string, pulama = false): str
 export const servedDark = (refused: ReadonlyArray<{ readonly ordinal: number; readonly cause: string }>, lit: readonly number[], pulama = false): ServedDark[] =>
   refused.filter((r) => lit.includes(r.ordinal)).map((r) => ({ face: r.ordinal, cause: r.cause, note: servedDarkNote(r.ordinal, r.cause, pulama) }));
 
+/**
+ * THE DOOR AND THE CENSUS SAY ONE LINE: the session door's `face-not-open` for a face whose light refused carries the note the
+ * census prints for it, read live from the refused lights; a face with no refused light reads none. `pulama` reads the one
+ * fact both doors hold: whether this vessel's custody rests with a pūlama (`namesPulama`).
+ */
+export const doorDarkLine = (refused: () => ReadonlyArray<{ readonly ordinal: number; readonly cause: string }>, pulama: boolean): ((face: number) => string | null) =>
+  (face) => { const dark = refused().find((r) => r.ordinal === face); return dark === undefined ? null : servedDarkNote(face, dark.cause, pulama); };
+
 export interface CustodyFrameDeps {
   readonly holder: CustodyHolder;
   /** Tear the standing composition down and compose again: `sovereign` true with the private rows, false at the floor. */

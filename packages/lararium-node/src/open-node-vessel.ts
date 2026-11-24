@@ -182,7 +182,7 @@ import { CustodyLocked, WardNeedsFreshUnlock } from "./custody-holder.js";
 import { servesFaceOfGroup, standingCustody, custodyFloorKeyDoor, unlockedFaceOrdinals, watchCustodyOpened } from "./custody-seat.js";
 import { joinedFaceAuth, refreshLitArchives, type JoinedFaceAuthPorts } from "./joined-face-auth.js";
 import { drainPlans, faceLives, type FaceLives, type FaceLit, type FacesClosed, type LightAnswer } from "./face-lifecycle.js";
-import { adoptFirstLit, faceLend } from "./face-lend.js";
+import { adoptFirstLit, composeRefusalHearing, faceLend, type ComposedFace } from "./face-lend.js";
 import { fleetLineageOf } from "./fleet-lineage.js";
 import { hearthGatePins, hearthNameOf, dialDeadlines, chooseHearthDial, fileHearthPins, type HearthDialChoice } from "./hearth-gate-pins.js";
 import { certifyFounderAt, composeDialPresentation } from "./dial-presentation.js";
@@ -4015,6 +4015,9 @@ async function prepareNodeBootOn(
     /** The faces the island's LAST open composed with: a restart releases every closing face it left out (the supervisor). */
     let composedWith: ReadonlySet<number> = new Set();
     let composedOnce = false;
+    /** What the open now under way composed: each face's ordinal, atom key and lit opening (a fresh array per open, never
+     *  written again), so the island's refusal of one reaches the life that stood at that open and no later one. */
+    let composedManifest: readonly ComposedFace[] = [];
     /**
      * EVERY OPEN OF THE ISLAND. The first reads the custody standing (no actor stands yet) and adopts each face it lit; every later
      * open (a refused drop's recompose, a restart) is the SUPERVISOR's: it lights only faces whose actor reads lit and never asks
@@ -4056,6 +4059,10 @@ async function prepareNodeBootOn(
       }));
       const standing = faces.filter((face) => face.handleIndex === mountedFace || faceLife.state(face.handleIndex!).kind === "lit");
       composedWith = new Set(standing.map((face) => face.handleIndex!));
+      composedManifest = standing.flatMap((face) => {
+        const ordinal = face.handleIndex!, opening = faceLife.opening(ordinal);
+        return ordinal !== mountedFace && opening !== null ? [{ ordinal, atomKey: face.atom.key, opening, fresh: first }] : [];
+      });
       if (standing.length > 0) sealedRest.store.mapMoved();
       return standing;
     };
@@ -4254,12 +4261,9 @@ async function prepareNodeBootOn(
           return null;
         },
         daemonAuth: daemonAuthNow(joinedFaces),
-        // THE ISLAND'S OPEN REFUSED A FACE ITS MANIFEST CARRIED: this composition adopted that face lit before the island
-        // opened, so its actor reads it dark from here, with the island's reason (the recard guard and the door read it).
-        onFaceRefused: (atomKey, reason) => {
-          const bare = atomKey.toLowerCase().replace(/^0x/, "");
-          for (const [ordinal, entry] of faceEntries) if (entry.atom.key.toLowerCase().replace(/^0x/, "") === bare) faceLife.composeRefused(ordinal, reason);
-        },
+        // THE ISLAND'S OPEN REFUSED A FACE ITS MANIFEST CARRIED: the face read lit here before the island opened, so its actor
+        // hears the refusal for the life that stood at THIS open (`composeRefusalHearing`; the recard guard and the door read it).
+        onFaceRefused: composeRefusalHearing(composedManifest, faceLife),
         storageDir,
         // D-VR-C: the daemon bag is the one explicit worker-owned durable scope;
         // ordinary oracle/recipe documents remain parent-attached in the primary worker Repo.
