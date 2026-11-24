@@ -327,12 +327,12 @@ function sealedFacesRefusal(faces: readonly KeeperVouchedFace[], sealed: readonl
   const vouched = new Map(faces.map((f) => [f.ordinal, f.devices] as const));
   const short = [...new Set([...sealed, ...committed.map((f) => f.ordinal)])].sort((x, y) => x - y).filter((o) => !((vouched.get(o) ?? 0) >= 1));
   if (short.length === 0) return null;
-  return refuse("vest-devices-unread", `this keeper holds ${short.map((o) => `h${o}`).join(", ")} open (or the commit names it), and the rite's vouches count no devices there, so the vest cannot tell whether a co-sign is owed; raise the rite with every lit face lent: lares rite kukulu, or commit again with the vessel standing: lares pulama keeper-commit`);
+  return refuse("vest-devices-unread", `this keeper holds ${short.map((o) => `h${o}`).join(", ")} open (or the commit names it), and the rite's vouches count no devices there, so the vest cannot tell whether it owes a co-sign; raise the rite with every lit face lent: lares rite kukulu, or commit again with the vessel standing: lares pulama keeper-commit`);
 }
 
 /** Past one device the commit owes its carried co-sign, read offline against the commit it rides and the count `where` names. */
 const coSignRefusal = (devices: number | null, where: string, body: KeeperBegunBody): KeeperRefusal | null => {
-  if (devices === null || devices < 1) return refuse("vest-devices-unread", `${where} carries no device count, so the vest cannot tell whether a co-sign is owed; commit again with the vessel standing: lares pulama keeper-commit, or light the successor by hand (the struck fire): lares rite kukulu on a terminal`);
+  if (devices === null || devices < 1) return refuse("vest-devices-unread", `${where} carries no device count, so the vest cannot tell whether it owes a co-sign; commit again with the vessel standing: lares pulama keeper-commit, or light the successor by hand (the struck fire): lares rite kukulu on a terminal`);
   if (devices < 2) return null;
   if (body.cosigns === null || body.cosigns === undefined) return refuse("vest-cosign-owed", `${where} names a face of ${devices} devices, and the commit carries no co-sign; commit again while a second device of the face approves the ask in its ward dialog: lares pulama keeper-commit, or light the successor by hand (the struck fire): lares rite kukulu on a terminal`);
   return cosignsRefusal({ next: body.next, prev: body.prev, nonce: body.nonce, faces: body.faces, devices }, body.cosigns);

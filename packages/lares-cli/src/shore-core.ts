@@ -84,7 +84,7 @@ export async function readShoreList(
     const told = `${String(o["standoffCount"])}/${String(o["pendingCount"])}`;
     const markNow = typeof o["mark"] === "string" ? o["mark"] : null;
     if (markNow === null) return refuse("shore-list-unpaged", "the shore's page named no mark of the shore it read; this vessel answers an unpaged list");
-    if (mark !== null && markNow !== mark) return refuse("shore-list-moved", `the shore moved while its pages were read (${counts} standoffs/pending, then ${told}); read it again`);
+    if (mark !== null && markNow !== mark) return refuse("shore-list-moved", `the shore moved while the read walked its pages (${counts} standoffs/pending, then ${told}); read it again`);
     mark = markNow;
     counts = told;
     standoffs.push(...(o["standoffs"] as Array<Record<string, unknown>>));
