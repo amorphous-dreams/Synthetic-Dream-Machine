@@ -9,6 +9,14 @@ from .render import silhouette
 from .relations import PetNameLedger, RelationWitness
 
 
+def _load(path):
+    return json.loads(path.read_text(encoding='utf8'))
+
+
+def _emit(result):
+    print(json.dumps(result,indent=2))
+
+
 def _save(path,value):
     p=Path(path);p.parent.mkdir(parents=True,exist_ok=True)
     p.write_text(json.dumps(value,indent=2))
@@ -633,33 +641,33 @@ def main(argv=None):
         else:
             ground = RelationalGround.load(args.ground)
             if args.command == 'ground-apply':
-                edit = json.loads(args.edit.read_text(encoding='utf8'))
+                edit = _load(args.edit)
                 ground, receipt = ground.apply(edit)
                 ground.save(args.out)
                 result = receipt
             else:
                 result = ground.snapshot()
-        print(json.dumps(result, indent=2))
+        _emit(result)
         return result
     if args.command in ('scene-package', 'scene-validate'):
         from .scene_usd import package_scene, validate_scene
         if args.command == 'scene-package':
-            declared = json.loads(args.declaration.read_text(encoding='utf8'))
+            declared = _load(args.declaration)
             result = package_scene(declared, args.out)
         else:
             result = validate_scene(args.bundle)
-        print(json.dumps(result, indent=2))
+        _emit(result)
         return result
     if args.command == 'scene-invalidation':
         from .incremental_graph import graph_for_scene
-        old = graph_for_scene(json.loads(args.before.read_text(encoding='utf8')))
-        new = graph_for_scene(json.loads(args.after.read_text(encoding='utf8')))
+        old = graph_for_scene(_load(args.before))
+        new = graph_for_scene(_load(args.after))
         result = new.compare(old)
-        print(json.dumps(result, indent=2))
+        _emit(result)
         return result
     if args.command in ('editor-seed', 'editor-apply'):
         from .editor_proposals import seed_editor_ground, apply_proposal
-        declaration = json.loads(args.declaration.read_text(encoding='utf8'))
+        declaration = _load(args.declaration)
         if args.command == 'editor-seed':
             ground = seed_editor_ground(declaration)
             ground.save(args.out)
@@ -668,64 +676,64 @@ def main(argv=None):
         else:
             from .relational_ground import RelationalGround
             ground = RelationalGround.load(args.ground)
-            proposal = json.loads(args.proposal.read_text(encoding='utf8'))
+            proposal = _load(args.proposal)
             result = apply_proposal(declaration, ground, args.bundle, proposal, args.out)
-        print(json.dumps(result, indent=2))
+        _emit(result)
         return result
     if args.command == 'regulative-control':
         from .regulative_growth import matched_trial
         from .developmental import GrowthProgram
-        growth = GrowthProgram.from_dict(json.loads(args.growth.read_text(encoding='utf8')))
+        growth = GrowthProgram.from_dict(_load(args.growth))
         result = matched_trial(growth, args.out, fill=args.fill)
-        print(json.dumps(result, indent=2))
+        _emit(result)
         return result
     if args.command in ('scene-variants', 'scene-variants-validate'):
         from .scene_variants import build_variants, validate_variants
         if args.command == 'scene-variants':
-            declared = json.loads(args.specification.read_text(encoding='utf8'))
+            declared = _load(args.specification)
             result = build_variants(declared, args.out)
         else:
             result = validate_variants(args.comparison)
-        print(json.dumps(result, indent=2))
+        _emit(result)
         return result
     if args.command in ('place-bearing-chain','place-bearing-chain-verify'):
         from .place_bearing_causal import materialize_bearing_chain,verify_bearing_chain
         from .place_genome import PlaceGenome
         from .spatial_intent import SpatialIntent
-        genotype=PlaceGenome.from_dict(json.loads(args.genome.read_text(encoding='utf8')))
-        spatial=SpatialIntent.from_dict(json.loads(args.spatial.read_text(encoding='utf8')))
+        genotype=PlaceGenome.from_dict(_load(args.genome))
+        spatial=SpatialIntent.from_dict(_load(args.spatial))
         if args.command=='place-bearing-chain':
             result=materialize_bearing_chain(args.workspace,genotype,spatial,
                                              args.out,actor=args.actor)
         else:
             result=verify_bearing_chain(args.workspace,genotype,spatial,args.causal)
-        print(json.dumps(result,indent=2))
+        _emit(result)
         return result
     if args.command in ('place-bearing-support','place-bearing-support-verify'):
         from .place_bearing_causal import materialize_bearing_support,verify_bearing_support
         from .place_genome import PlaceGenome
         from .spatial_intent import SpatialIntent
-        genotype=PlaceGenome.from_dict(json.loads(args.genome.read_text(encoding='utf8')))
-        spatial=SpatialIntent.from_dict(json.loads(args.spatial.read_text(encoding='utf8')))
+        genotype=PlaceGenome.from_dict(_load(args.genome))
+        spatial=SpatialIntent.from_dict(_load(args.spatial))
         if args.command=='place-bearing-support':
             result=materialize_bearing_support(args.workspace,genotype,spatial,
                                                args.out,actor=args.actor)
         else:
             result=verify_bearing_support(args.workspace,genotype,spatial,args.causal)
-        print(json.dumps(result,indent=2))
+        _emit(result)
         return result
     if args.command in ('place-causal-support','place-causal-support-verify'):
         from .place_causal_support import materialize_crossing_support,verify_crossing_support
         from .place_genome import PlaceGenome
         from .spatial_intent import SpatialIntent
-        genotype=PlaceGenome.from_dict(json.loads(args.genome.read_text(encoding='utf8')))
-        spatial=SpatialIntent.from_dict(json.loads(args.spatial.read_text(encoding='utf8')))
+        genotype=PlaceGenome.from_dict(_load(args.genome))
+        spatial=SpatialIntent.from_dict(_load(args.spatial))
         if args.command=='place-causal-support':
             result=materialize_crossing_support(args.workspace,genotype,spatial,
                                                 args.out,actor=args.actor)
         else:
             result=verify_crossing_support(args.workspace,genotype,spatial,args.causal)
-        print(json.dumps(result,indent=2))
+        _emit(result)
         return result
     if args.command in ('place-gallery','place-gallery-verify'):
         from .place_gallery import render_place_gallery,verify_place_gallery
@@ -734,22 +742,22 @@ def main(argv=None):
         else:
             result={'valid':verify_place_gallery(args.campaign,args.gallery),
                     'source_camera_registration':False,'automatic_promotion':False}
-        print(json.dumps(result,indent=2))
+        _emit(result)
         return result
     if args.command in ('place-source-transfer','place-source-transfer-verify'):
         from .place_source_transfer import run_source_transfer,verify_source_transfer
         from .intent_seed import SeedEntry,SeedBundle,IntentContract
         from .spatial_intent import SpatialIntent
         from .place_genome import PlaceGenome
-        raw=json.loads(args.intent.read_text(encoding='utf8'))
+        raw=_load(args.intent)
         if set(raw)!={'location','aim','objectives','invariants','budgets'}:
             raise ValueError('Source transfer requires exact original authored intent')
         intent=IntentContract(raw['location'],raw['aim'],
               tuple(raw['objectives']),tuple(raw['invariants']),
               tuple(tuple(v) for v in raw['budgets']))
-        spatial=SpatialIntent.from_dict(json.loads(args.spatial.read_text(encoding='utf8')))
-        genome=PlaceGenome.from_dict(json.loads(args.genome.read_text(encoding='utf8')))
-        spec=json.loads(args.sources.read_text(encoding='utf8'))
+        spatial=SpatialIntent.from_dict(_load(args.spatial))
+        genome=PlaceGenome.from_dict(_load(args.genome))
+        spec=_load(args.sources)
         if not isinstance(spec,dict) or any(type(v) is not str for v in spec.values()):
             raise ValueError('Source transfer requires typed original file locations')
         arms={kind:SeedBundle((SeedEntry.from_file(kind,path),))
@@ -760,15 +768,15 @@ def main(argv=None):
             result=run_source_transfer(arms,intent,spatial,genome,args.out,**kw)
         else:
             result=verify_source_transfer(arms,intent,spatial,genome,args.study,**kw)
-        print(json.dumps(result,indent=2))
+        _emit(result)
         return result
     if args.command in ('place-compose-route','place-compose-route-verify'):
         from .place_genome import PlaceGenome
         from .spatial_intent import SpatialIntent
         from .place_composed_route import compose_operator_route,verify_composed_operator_route
         from .receipt_store import save_once
-        genome=PlaceGenome.from_dict(json.loads(args.genome.read_text(encoding='utf8')))
-        spatial=SpatialIntent.from_dict(json.loads(args.spatial.read_text(encoding='utf8')))
+        genome=PlaceGenome.from_dict(_load(args.genome))
+        spatial=SpatialIntent.from_dict(_load(args.spatial))
         if args.command=='place-compose-route':
             if args.out==args.genome_out:
                 raise ValueError('Source-bound route receipt and constructed genome require separate paths')
@@ -778,34 +786,34 @@ def main(argv=None):
             save_once(args.genome_out,result['proposed_genome'])
         else:
             result={'valid':verify_composed_operator_route(genome,spatial,
-                json.loads(args.receipt.read_text(encoding='utf8'))),
+                _load(args.receipt)),
                     'automatic_promotion':False}
-        print(json.dumps(result,indent=2))
+        _emit(result)
         return result
     if args.command in ('place-recombine-native','place-recombine-native-verify'):
         from .place_recombination_study import run_recombined_native,verify_recombined_native
         from .place_genome import PlaceGenome
         from .spatial_intent import SpatialIntent
         def parse_genome(path):
-            return PlaceGenome.from_dict(json.loads(path.read_text(encoding='utf8')))
+            return PlaceGenome.from_dict(_load(path))
         original=parse_genome(args.original)
         left=parse_genome(args.left_parent)
         right=parse_genome(args.right_parent)
-        spatial=SpatialIntent.from_dict(json.loads(args.spatial.read_text(encoding='utf8')))
+        spatial=SpatialIntent.from_dict(_load(args.spatial))
         opts={'location':args.location,'left_generated':args.left_generated,
               'right_generated':args.right_generated}
         if args.command=='place-recombine-native':
             result=run_recombined_native(original,left,right,spatial,args.out,**opts)
         else:
             result=verify_recombined_native(args.study,original,left,right,spatial,**opts)
-        print(json.dumps(result,indent=2))
+        _emit(result)
         return result
     if args.command in ('place-topology-gallery','place-topology-gallery-verify'):
         from .place_topology_gallery import render_topology_gallery,verify_topology_gallery
         from .place_genome import PlaceGenome
         from .spatial_intent import SpatialIntent
-        original=PlaceGenome.from_dict(json.loads(args.genome.read_text(encoding='utf8')))
-        spatial=SpatialIntent.from_dict(json.loads(args.spatial.read_text(encoding='utf8')))
+        original=PlaceGenome.from_dict(_load(args.genome))
+        spatial=SpatialIntent.from_dict(_load(args.spatial))
         choices={'location':args.location,'goal_index':args.goal_index,
                  'corner_prefix':args.corner_prefix}
         if args.command=='place-topology-gallery':
@@ -813,85 +821,85 @@ def main(argv=None):
         else:
             result={'valid':verify_topology_gallery(original,spatial,args.study,args.gallery,**choices),
                     'automatic_artistic_winner':False}
-        print(json.dumps(result,indent=2))
+        _emit(result)
         return result
     if args.command in ('place-topology-study','place-topology-study-verify'):
         from .place_topology_study import run_topology_study,verify_topology_study
         from .place_genome import PlaceGenome
         from .spatial_intent import SpatialIntent
-        original=PlaceGenome.from_dict(json.loads(args.genome.read_text(encoding='utf8')))
-        spatial=SpatialIntent.from_dict(json.loads(args.spatial.read_text(encoding='utf8')))
+        original=PlaceGenome.from_dict(_load(args.genome))
+        spatial=SpatialIntent.from_dict(_load(args.spatial))
         choices={'location':args.location,'goal_index':args.goal_index,
                  'corner_prefix':args.corner_prefix}
         if args.command=='place-topology-study':
             result=run_topology_study(original,spatial,args.out,**choices)
         else:
             result=verify_topology_study(original,spatial,args.study,**choices)
-        print(json.dumps(result,indent=2))
+        _emit(result)
         return result
     if args.command in ('place-compound-routes','place-compound-routes-verify'):
         from .place_compound_routes import run_compound_route_study,verify_compound_route_study
         from .place_genome import PlaceGenome
         from .spatial_intent import SpatialIntent
-        genome=PlaceGenome.from_dict(json.loads(args.genome.read_text(encoding='utf8')))
-        spatial=SpatialIntent.from_dict(json.loads(args.spatial.read_text(encoding='utf8')))
+        genome=PlaceGenome.from_dict(_load(args.genome))
+        spatial=SpatialIntent.from_dict(_load(args.spatial))
         options={'location':args.location,'goal_index':args.goal_index,
                  'corner_id':args.corner_id}
         if args.command=='place-compound-routes':
             result=run_compound_route_study(genome,spatial,args.out,**options)
         else:
             result=verify_compound_route_study(genome,spatial,args.study,**options)
-        print(json.dumps(result,indent=2))
+        _emit(result)
         return result
     if args.command in ('place-orthogonal-study','place-orthogonal-study-verify'):
         from .place_genome import PlaceGenome
         from .spatial_intent import SpatialIntent
         from .place_orthogonal_study import run_orthogonal_study,verify_orthogonal_study
-        genome=PlaceGenome.from_dict(json.loads(args.genome.read_text(encoding='utf8')))
-        spatial=SpatialIntent.from_dict(json.loads(args.spatial.read_text(encoding='utf8')))
+        genome=PlaceGenome.from_dict(_load(args.genome))
+        spatial=SpatialIntent.from_dict(_load(args.spatial))
         if args.command=='place-orthogonal-study':
             result=run_orthogonal_study(genome,spatial,args.out,
                        location=args.location,corner_id=args.corner_id)
         else:
             result=verify_orthogonal_study(args.study,genome,spatial,
                        location=args.location,corner_id=args.corner_id)
-        print(json.dumps(result,indent=2))
+        _emit(result)
         return result
     if args.command in ('place-orthogonal-route','place-orthogonal-route-verify'):
         from .place_genome import PlaceGenome
         from .spatial_intent import SpatialIntent
         from .place_orthogonal_route import orthogonal_route_receipt,verify_orthogonal_route_receipt
         from .receipt_store import save_once
-        genome=PlaceGenome.from_dict(json.loads(args.genome.read_text(encoding='utf8')))
-        spatial=SpatialIntent.from_dict(json.loads(args.spatial.read_text(encoding='utf8')))
+        genome=PlaceGenome.from_dict(_load(args.genome))
+        spatial=SpatialIntent.from_dict(_load(args.spatial))
         if args.command=='place-orthogonal-route':
             result=orthogonal_route_receipt(genome,spatial,turn=args.turn,
                                             corner_id=args.corner_id)
             save_once(args.out,result)
         else:
             result={'valid':verify_orthogonal_route_receipt(genome,spatial,
-                  json.loads(args.receipt.read_text(encoding='utf8'))),
+                  _load(args.receipt)),
                   'automatic_promotion':False}
-        print(json.dumps(result,indent=2))
+        _emit(result)
         return result
     if args.command in ('place-intent-ablate','place-intent-ablate-verify'):
         from .intent_seed import IntentContract
         from .spatial_intent import SpatialIntent
         from .place_genome import PlaceGenome
         from .compound_intent_study import run_compound_intent_study,verify_compound_intent_study
-        authored=json.loads(args.intent.read_text(encoding='utf8'))
+        authored=_load(args.intent)
         if set(authored)!={'location','aim','objectives','invariants','budgets'}:
             raise ValueError('Matched native study requires original attributed intent fields')
         intent=IntentContract(authored['location'],authored['aim'],
                               tuple(authored['objectives']),tuple(authored['invariants']),
                               tuple(tuple(x) for x in authored['budgets']))
-        spatial=SpatialIntent.from_dict(json.loads(args.spatial.read_text(encoding='utf8')))
-        genotype=PlaceGenome.from_dict(json.loads(args.genome.read_text(encoding='utf8')))
+        spatial=SpatialIntent.from_dict(_load(args.spatial))
+        genotype=PlaceGenome.from_dict(_load(args.genome))
         if args.command=='place-intent-ablate':
             result=run_compound_intent_study(intent,spatial,genotype,args.out)
         else:
             result=verify_compound_intent_study(args.study,intent,spatial,genotype)
-        print(json.dumps(result,indent=2))
+        _emit(result)
         return result
     if args.command in ('place-intent-preview','place-intent-preview-verify'):
         from .intent_seed import IntentContract
@@ -899,21 +907,21 @@ def main(argv=None):
         from .place_genome import PlaceGenome
         from .place_intent_preview import preview_place_intent,verify_place_intent_preview
         from .receipt_store import save_once
-        raw=json.loads(args.intent.read_text(encoding='utf8'))
+        raw=_load(args.intent)
         if set(raw)!={'location','aim','objectives','invariants','budgets'}:
             raise ValueError('Preview needs exact attributed IntentContract fields')
         intent=IntentContract(raw['location'],raw['aim'],tuple(raw['objectives']),
                               tuple(raw['invariants']),tuple(tuple(x) for x in raw['budgets']))
-        spatial=SpatialIntent.from_dict(json.loads(args.spatial.read_text(encoding='utf8')))
-        genome=PlaceGenome.from_dict(json.loads(args.genome.read_text(encoding='utf8')))
+        spatial=SpatialIntent.from_dict(_load(args.spatial))
+        genome=PlaceGenome.from_dict(_load(args.genome))
         if args.command=='place-intent-preview':
             result=preview_place_intent(intent,spatial,genome)
             save_once(args.out,result)
         else:
             result={'valid':verify_place_intent_preview(intent,spatial,genome,
-                         json.loads(args.receipt.read_text(encoding='utf8'))),
+                         _load(args.receipt)),
                     'automatic_promotion':False}
-        print(json.dumps(result,indent=2))
+        _emit(result)
         return result
     if args.command in ('place-board','place-board-verify'):
         from .place_board import render_place_board,verify_place_board
@@ -922,7 +930,7 @@ def main(argv=None):
         else:
             result={'valid':verify_place_board(args.campaign,args.board),
                     'automatic_promotion':False}
-        print(json.dumps(result,indent=2))
+        _emit(result)
         return result
     if args.command in ('place-compare','place-compare-verify'):
         from .place_comparison import place_comparison,verify_place_comparison
@@ -930,22 +938,22 @@ def main(argv=None):
             result=place_comparison(args.campaign,args.out)
         else:
             result={'valid':verify_place_comparison(args.campaign,
-                json.loads(args.receipt.read_text(encoding='utf8'))),
+                _load(args.receipt)),
                 'automatic_promotion':False}
-        print(json.dumps(result,indent=2))
+        _emit(result)
         return result
     if args.command in ('fire-place-bind-set','fire-place-verify-set'):
         from .fire_spatial import bind_fire_spatial_set,verify_fire_spatial_set
         from .intent_seed import IntentContract
         from .place_genome import PlaceGenome
         from .receipt_store import save_once
-        raw=json.loads(args.intent.read_text(encoding='utf8'))
+        raw=_load(args.intent)
         if set(raw)!={'location','aim','objectives','invariants','budgets'}:
             raise ValueError('Fire joint contract requires exact authored fields')
         intent=IntentContract(raw['location'],raw['aim'],tuple(raw['objectives']),
                 tuple(raw['invariants']),tuple(tuple(x) for x in raw['budgets']))
-        genome=PlaceGenome.from_dict(json.loads(args.genome.read_text(encoding='utf8')))
-        plan=json.loads(args.plan.read_text(encoding='utf8'))
+        genome=PlaceGenome.from_dict(_load(args.genome))
+        plan=_load(args.plan)
         if args.command=='fire-place-bind-set':
             if args.out==args.spatial_out:
                 raise ValueError('Original selected Fire receipt and machine intent need separate files')
@@ -956,33 +964,33 @@ def main(argv=None):
             save_once(args.out,result)
             save_once(args.spatial_out,result['spatial_intent'])
         else:
-            original=json.loads(args.binding.read_text(encoding='utf8'))
+            original=_load(args.binding)
             result={'valid':verify_fire_spatial_set(original,plan,intent,genome),
                     'automatic_selection':False,'automatic_promotion':False}
-        print(json.dumps(result,indent=2))
+        _emit(result)
         return result
     if args.command in ('fire-place-bind','fire-place-verify'):
         from .intent_seed import IntentContract
         from .place_genome import PlaceGenome
         from .fire_spatial import bind_fire_spatial,verify_fire_spatial
         from .receipt_store import save_once
-        data=json.loads(args.intent.read_text(encoding='utf8'))
+        data=_load(args.intent)
         if set(data)!={'location','aim','objectives','invariants','budgets'}:
             raise ValueError('Fire place intent requires exact author-supplied fields')
         intent=IntentContract(data['location'],data['aim'],tuple(data['objectives']),
                 tuple(data['invariants']),tuple(tuple(x) for x in data['budgets']))
-        genome=PlaceGenome.from_dict(json.loads(args.genome.read_text(encoding='utf8')))
-        plan=json.loads(args.plan.read_text(encoding='utf8'))
+        genome=PlaceGenome.from_dict(_load(args.genome))
+        plan=_load(args.plan)
         if args.command == 'fire-place-bind':
             result=bind_fire_spatial(plan,intent,genome,alternative_id=args.alternative,
                     source_witness_id=args.witness_id,authored_by=args.actor,
                     seed_sha256=args.seed_sha256)
             save_once(args.out,result)
         else:
-            binding=json.loads(args.binding.read_text(encoding='utf8'))
+            binding=_load(args.binding)
             result={'valid':verify_fire_spatial(binding,plan,intent,genome),
                     'automatic_promotion':False}
-        print(json.dumps(result,indent=2))
+        _emit(result)
         return result
     if args.command=='place-amend':
         from .place_campaign import verify_place_campaign
@@ -992,16 +1000,16 @@ def main(argv=None):
         from .receipt_store import save_once
         verify_place_campaign(args.campaign)
         old=json.loads((args.campaign/'pre_registration.json').read_text(encoding='utf8'))
-        payload=json.loads(args.intent.read_text(encoding='utf8'))
+        payload=_load(args.intent)
         if set(payload)!={'location','aim','objectives','invariants','budgets'}:
             raise ValueError('Place amendment requires exact authored intent fields')
         contract=IntentContract(payload['location'],payload['aim'],
                   tuple(payload['objectives']),tuple(payload['invariants']),
                   tuple(tuple(x) for x in payload['budgets']))
-        spatial=SpatialIntent.from_dict(json.loads(args.spatial.read_text(encoding='utf8')))
+        spatial=SpatialIntent.from_dict(_load(args.spatial))
         result=author_place_amendment(old,contract,spatial,actor=args.actor,reason=args.reason)
         save_once(args.out,result)
-        print(json.dumps(result,indent=2))
+        _emit(result)
         return result
     if args.command in ('place-run','place-verify','place-candidate-review','place-continue'):
         from .place_campaign import run_place_campaign,verify_place_campaign,review_place_candidate
@@ -1010,15 +1018,15 @@ def main(argv=None):
             from .spatial_intent import SpatialIntent
             from .place_genome import PlaceGenome
             from .location_stack import LocationStack
-            intent_data=json.loads(args.intent.read_text(encoding='utf8'))
+            intent_data=_load(args.intent)
             if set(intent_data)!={'location','aim','objectives','invariants','budgets'}:
                 raise ValueError('Place-run IntentContract needs exact author-supplied fields')
             intent=IntentContract(intent_data['location'],intent_data['aim'],
                 tuple(intent_data['objectives']),tuple(intent_data['invariants']),
                 tuple(tuple(x) for x in intent_data['budgets']))
             result=run_place_campaign(LocationStack.load(args.inventory),intent,
-                SpatialIntent.from_dict(json.loads(args.spatial.read_text(encoding='utf8'))),
-                PlaceGenome.from_dict(json.loads(args.genome.read_text(encoding='utf8'))),
+                SpatialIntent.from_dict(_load(args.spatial)),
+                PlaceGenome.from_dict(_load(args.genome)),
                 args.out,epochs=args.epochs,offspring=args.offspring,
                 exact_budget=args.exact_budget,seed=args.seed,
                 prefer_emitter=args.prefer_emitter)
@@ -1026,15 +1034,15 @@ def main(argv=None):
             from .place_campaign import continue_place_campaign
             from .intent_seed import IntentContract
             from .spatial_intent import SpatialIntent
-            source=json.loads(args.intent.read_text(encoding='utf8'))
+            source=_load(args.intent)
             if set(source)!={'location','aim','objectives','invariants','budgets'}:
                 raise ValueError('Continued intent requires exact original contract fields')
             intent=IntentContract(source['location'],source['aim'],tuple(source['objectives']),
                        tuple(source['invariants']),tuple(tuple(x) for x in source['budgets']))
-            amendment=(json.loads(args.amendment.read_text(encoding='utf8'))
+            amendment=(_load(args.amendment)
                        if args.amendment is not None else None)
             result=continue_place_campaign(args.campaign,args.review,intent,
-                SpatialIntent.from_dict(json.loads(args.spatial.read_text(encoding='utf8'))),
+                SpatialIntent.from_dict(_load(args.spatial)),
                 args.out,epochs=args.epochs,offspring=args.offspring,
                 exact_budget=args.exact_budget,seed=args.seed,
                 amendment=amendment,prefer_emitter=args.prefer_emitter)
@@ -1043,7 +1051,7 @@ def main(argv=None):
         else:
             result=review_place_candidate(args.campaign,args.candidate,actor=args.actor,
                    decision=args.decision,reason=args.reason,destination=args.out)
-        print(json.dumps(result,indent=2))
+        _emit(result)
         return result
     if args.command in ('location-review','location-review-verify'):
         from .location_review import review_location, verify_location_review
@@ -1051,33 +1059,33 @@ def main(argv=None):
             result=review_location(args.workspace,actor=args.actor,
                         decision=args.decision,reason=args.reason,destination=args.out)
         else:
-            data=json.loads(args.receipt.read_text(encoding='utf8'))
+            data=_load(args.receipt)
             result={'valid':verify_location_review(args.workspace,data),
                     'automatic_promotion':False}
-        print(json.dumps(result,indent=2))
+        _emit(result)
         return result
     if args.command in ('location-init','location-edit','location-verify','location-support'):
         from .location_workspace import create_workspace, edit_workspace, verify_workspace, support_workspace
         if args.command=='location-init':
             from .location_stack import LocationStack
             inventory=LocationStack.load(args.inventory)
-            declaration=json.loads(args.declaration.read_text(encoding='utf8'))
+            declaration=_load(args.declaration)
             result=create_workspace(inventory,declaration,args.out)
         elif args.command=='location-edit':
-            proposal=json.loads(args.proposal.read_text(encoding='utf8'))
+            proposal=_load(args.proposal)
             result=edit_workspace(args.workspace,proposal,args.out)
         elif args.command=='location-support':
-            proposal=json.loads(args.proposal.read_text(encoding='utf8'))
+            proposal=_load(args.proposal)
             result=support_workspace(args.workspace,proposal,args.out)
         else:
             result=verify_workspace(args.workspace)
-        print(json.dumps(result,indent=2))
+        _emit(result)
         return result
     if args.command=='registered-ablation':
         from .matched_registered_trial import matched_registered_ablation
         from .seed_adapters import image_group
         from .intent_seed import IntentContract
-        raw=json.loads(args.intent.read_text(encoding='utf8'))
+        raw=_load(args.intent)
         raw['objectives']=tuple(raw['objectives'])
         raw['invariants']=tuple(raw.get('invariants',()))
         raw['budgets']=tuple(tuple(row) for row in raw.get('budgets',()))
@@ -1086,7 +1094,7 @@ def main(argv=None):
                     epochs=args.epochs,offspring=args.offspring,
                     exact_budget=args.exact_budget,finalists=args.finalists,
                     seed=args.seed)
-        print(json.dumps(result,indent=2))
+        _emit(result)
         return result
     if args.command in ('native-support-propose','native-support-reparent',
                            'native-support-verify'):
@@ -1102,9 +1110,9 @@ def main(argv=None):
                                     args.new_parent,args.child)
             save_once(args.out,result)
         else:
-            document=json.loads(args.proposal.read_text(encoding='utf8'))
+            document=_load(args.proposal)
             result=verify_support_proposal(document,ground,args.bundle)
-        print(json.dumps(result,indent=2))
+        _emit(result)
         return result
     if args.command=='registered-inventory':
         from .seed_adapters import image_group
@@ -1118,20 +1126,20 @@ def main(argv=None):
                 'verified_source_registrations':len(stack.registrations),
                 'source_inventory_sha256':stack.to_dict()['snapshot_sha256'],
                 'external_survey_certification':False}
-        print(json.dumps(result,indent=2))
+        _emit(result)
         return result
     if args.command=='full-location-crucible':
         from .hephaestus_holistic import run_holistic
-        declaration=json.loads(args.declaration.read_text(encoding='utf8'))
+        declaration=_load(args.declaration)
         result=run_holistic(args.image_group,declaration,args.lower,args.upper,
                             args.move,args.delta,args.out)
-        print(json.dumps(result,indent=2))
+        _emit(result)
         return result
     if args.command=='registered-replicates':
         from .matched_registered_trial import matched_registered_replicates
         from .seed_adapters import image_group
         from .intent_seed import IntentContract
-        raw=json.loads(args.intent.read_text(encoding='utf8'))
+        raw=_load(args.intent)
         raw['objectives']=tuple(raw['objectives'])
         raw['invariants']=tuple(raw.get('invariants',()))
         raw['budgets']=tuple(tuple(row) for row in raw.get('budgets',()))
@@ -1140,7 +1148,7 @@ def main(argv=None):
             image_group(args.image_group),intent,args.out,
             seeds=tuple(args.seeds),epochs=args.epochs,offspring=args.offspring,
             exact_budget=args.exact_budget,finalists=args.finalists)
-        print(json.dumps(result,indent=2))
+        _emit(result)
         return result
     if args.command=='fracture-pattern':
         from .fracture_patterns import export_pattern
@@ -1155,7 +1163,7 @@ def main(argv=None):
         from .ortho_gallery import make
         result=make(args.out,args.project,args.capability_recipe,args.gallery,
                     seats=args.seats)
-        print(json.dumps(result,indent=2));return result
+        _emit(result);return result
     if args.command=='place-review':
         from .capability_stack import CapabilityRecipe,CapabilityCompositor
         from .fire_geometry import _staged,verify_native_rule_replay
@@ -1306,7 +1314,7 @@ def main(argv=None):
         from .experiment_zero import select_survivor
         result=select_survivor(args.out,proposal=args.proposal,actor=args.actor,
                                rationale=args.reason)
-        print(json.dumps(result,indent=2));return result
+        _emit(result);return result
     if args.command=='campaign-readiness':
         from .pre_campaign_readiness import run_readiness
         result=run_readiness(args.project,args.capability_recipe,args.out,
@@ -1314,7 +1322,7 @@ def main(argv=None):
             exact=args.exact_budget,detail=args.detail_budget,seed=args.seed,
             size=tuple(args.score_size),control_scale=args.control_mutation_scale,
             candidate_scale=args.candidate_mutation_scale)
-        print(json.dumps(result,indent=2));return result
+        _emit(result);return result
     if args.command=='campaign-verify':
         from .pre_campaign_readiness import verify_seal
         result=verify_seal(args.out)
@@ -1336,7 +1344,7 @@ def main(argv=None):
                 'source_sha256':receipt.source_sha256,
                 'entities':sorted(receipt.masks),
                 'evidence_state':'operator-annotated'}
-        print(json.dumps(result,indent=2))
+        _emit(result)
         return result
     if args.command=='transfer-seed':
         from .capability_stack import CapabilityRecipe
@@ -1354,7 +1362,7 @@ def main(argv=None):
             donor_genome=donor,focus=tuple(args.focus),authorized=args.authorize)
         result=bundle_transfers([seed],target_recipe_sha256=target.sha256)
         _save(args.out,result)
-        print(json.dumps(result,indent=2))
+        _emit(result)
         return result
     if args.command=='search-census':
         from .campaign import LineageArchive
@@ -1370,7 +1378,7 @@ def main(argv=None):
         result['emitter_performance']=emitter_performance(archive)
         result['recipe_sha256']=recipe.sha256
         if args.out:_save(args.out,result)
-        print(json.dumps(result,indent=2))
+        _emit(result)
         return result
     if args.command in ('ooda-ha-run','wide-epoch'):
         from .fractal_ooda_ha import run_ooda_ha_epochs
@@ -1417,7 +1425,7 @@ def main(argv=None):
             record=write_review(project,recipe,args.out,exploration_budget,
                                 passes=args.passes,seats=args.explore_review_seats)
             result['experiment_zero_review_sha256']=record['sha256']
-        print(json.dumps(result,indent=2));return result
+        _emit(result);return result
     if args.command=='ooda-ha-finalists':
         from .finalists import export_finalists
         project=Project.load(args.project)
