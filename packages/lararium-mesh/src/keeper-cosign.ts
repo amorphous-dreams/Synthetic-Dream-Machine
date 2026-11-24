@@ -4,7 +4,7 @@
  *
  * THE ACT. `ward-keeper-vest` names one keeper commit: its head binds the successor closure D′, the chain head the commit links to
  * (`prev`, null at the founding link), the commit's own nonce and the face's device roster as the vessel read it, so a co-sign
- * answers one commit on one roster and no other, and the device count the keeper reads stands under two devices' signatures. The vessel runs the
+ * answers one commit on one roster and no other. The vessel runs the
  * act through the ward co-sign gate (`wardCosignGate`) with no effect of its own: the gate issues the intent and its ask, a second
  * device of the face approves in its own ward dialog, and the gate signs the outcome that spends it, citing the answer and the
  * frontier that answer names. A spent co-sign never re-spends: a second run reads the spent proof back, and the keeper's commit
@@ -13,12 +13,16 @@
  * THE PROOF (`KeeperCosign`), one per committed face: the face's ordinal and group, the device atoms its signed admission fold held
  * as the vessel read it (bound into the act's digest), and (on two devices or more) the three signed entries the spend stands on: the issuer's ask (detail = the
  * act's digest), the second device's approve (its atom's signature, and its ward signature over the answer, the digest and the
- * frontier, under the ward key its admission carries) and the issuer's outcome (citing that answer and that frontier). The keeper
- * reads the device roster and the co-signer's ward key as the commit names them: the commit rests under the operator's route, the
- * same consent the device count already rode.
+ * frontier, under the ward key its admission carries) and the issuer's outcome (citing that answer and that frontier).
+ *
+ * WHAT IT PROVES, AND NO MORE (blind read F2): the roster and the co-signer's ward key ride INSIDE the proof, named by the vessel, and
+ * the entries verify under their own signers alone (no admission chain authorizes them). So the proof shows an approve signed by
+ * ANOTHER atom of the roster this vessel named, under the ward key it named for that atom: an honest vessel's second device, or an
+ * atom a compromised vessel minted itself. It proves second-device consent only as far as the vessel's own roster holds; anchoring
+ * the co-signer in the face's admission chain offline stays a course row.
  *
  * `keeperCosignRefusal` reads it offline: every entry verifies under its signer; the ask names the act's intent and digest; the
- * answer comes from a DIFFERENT device of the face than the issuer, approves with the issuer as executor, and carries its ward
+ * answer comes from a DIFFERENT atom of the carried roster than the issuer, approves with the issuer as executor, and carries its ward
  * signature; the outcome spends exactly that answer at exactly its frontier. Pure: no clock, no document, no network.
  * Meme: lar:///ha.ka.ba/kahua/memory/research/keeper-tessera#/vesting
  */
@@ -45,7 +49,8 @@ export const keeperRoster = (devices: readonly string[]): string[] => [...new Se
 
 /**
  * The ward act one keeper commit names, on one face's roster. THE ROSTER RIDES THE DIGEST: the issuer's ask and the co-signer's ward
- * signature both cover the device set the vessel read, so the keeper reads the face's device count from what two devices signed.
+ * signature both cover the device set the vessel read, so the roster the keeper reads is the one both atoms signed over (and the
+ * vessel named; see the header for what that proves).
  */
 export function keeperVestAct(terms: KeeperVestTerms, devices: readonly string[]): WardCosignAct {
   return { verb: KEEPER_VEST_VERB, wiki: KEEPER_VEST_WIKI, head: sha256HexBytesSync(canonicalJsonBytes({ domain: KEEPER_VEST_COSIGN_DOMAIN, next: terms.next, prev: terms.prev, nonce: terms.nonce, devices: keeperRoster(devices) })) };

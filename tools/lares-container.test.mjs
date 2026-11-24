@@ -1837,6 +1837,15 @@ test(`${name}: CONTROL rebuild-still-admits-what-the-light-did-not: a light that
   assert.equal(r.status, 0, r.stdout);
   assert.match(r.calls, /pulama-main\.js light --admit\n[\s\S]*pulama-main\.js admit\n/);
 });
+test(`${name}: RED F7 rebuild-lands-only-its-own-commit: a plain relight whose reported closure differs from the live commit's lands nothing (the commit stays for its own rite); CONTROL: a relight on the committed closure lands struck`, { skip: skip || !haveScript }, async () => {
+  const after = (pending, closure) => `{"op":"status","lit":true,"admitted":["sha256:new"],"ended":[],"closure":"${closure}","keeper":{"pending":"${pending}"}}`;
+  const other = await run(shim, ["rebuild"], { envFile: PULAMA_ENV, tty: "", checkout: "clean", wornFace: 2, env: { ...REBUILT, FAKE_IMAGE_CLOSURE: CL("b"), FAKE_PULAMA_CLOSURE: CL("a"), FAKE_PULAMA_STATUS_AFTER: after(CL("c"), CL("b")) } });
+  assert.equal(other.status, 0, other.stdout);
+  assert.doesNotMatch(other.calls, /pulama-main\.js keeper-land/);
+  const own = await run(shim, ["rebuild"], { envFile: PULAMA_ENV, tty: "", checkout: "clean", wornFace: 2, env: { ...REBUILT, FAKE_IMAGE_CLOSURE: CL("b"), FAKE_PULAMA_CLOSURE: CL("a"), FAKE_PULAMA_STATUS_AFTER: after(CL("b"), CL("b")) } });
+  assert.equal(own.status, 0, own.stdout);
+  assert.match(own.calls, /pulama-main\.js keeper-land/);
+});
 const VEST_TO = "cd".repeat(32);
 const VESTS = { ...REBUILT, FAKE_IMAGE_CLOSURE: CL("b"), FAKE_PULAMA_CLOSURE: CL("a"), FAKE_PULAMA_B_ID: "p2", FAKE_PULAMA_B_RUNNING: "1", FAKE_PULAMA_STATUS: `{"op":"status","lit":true,"admitted":["sha256:new"],"keeper":{"pending":"${CL("b")}"},"vestReady":"${CL("b")}","fire":true}`, FAKE_VEST_ANSWER: '{"op":"keeper-vest","reading":"vested","slot":{"body":{"act":"keeper-slot"},"signer":"s","sig":"g"}}' };
 const RITE_OFFER = { "config/kukulu-offer.json": '{"lei":[],"unstrung":[],"vouch":[{"body":{"image":"sha256:new"}}]}\n' };
@@ -1888,6 +1897,12 @@ test(`${name}: RED keeper-settle-finishes-or-unwinds: two keepers with the succe
   assert.equal(unwind.status, 0, unwind.stderr);
   assert.match(unwind.calls, / stop pulama-b/);
   assert.doesNotMatch(unwind.calls, /take-fire|pulama-main\.js lock/);
+  // F5: the fire-holder restarted unlit (its passing lost with it) beside a successor that stands lit and landed par: the lit
+  // successor takes the fire; the unlit holder never wins it.
+  const restarted = await run(shim, ["pulama", "take-fire"], { envFile: PULAMA_ENV, env: { ...two, FAKE_PULAMA_STATUS: '{"op":"status","lit":false,"fire":true}', FAKE_PULAMA_B_STATUS: '{"op":"status","lit":true,"fire":false,"keeper":{"last":"par"}}' } });
+  assert.equal(restarted.status, 0, restarted.stderr);
+  assert.match(restarted.calls, /exec -T pulama-b node \S+ take-fire/);
+  assert.doesNotMatch(restarted.calls, / stop pulama-b/);
   const alone = await run(shim, ["pulama", "take-fire"], { envFile: PULAMA_ENV, env: { ...REBUILT, FAKE_PULAMA_STATUS: '{"op":"status","lit":true,"fire":false}' } });
   assert.equal(alone.status, 0, alone.stderr);
   assert.match(alone.calls, /exec -T pulama node \S+ take-fire/);

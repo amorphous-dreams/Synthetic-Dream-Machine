@@ -13,9 +13,9 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { FsCustodyIo } from "../src/custody-io.js";
 import { UNLOCK_ATTEMPTS_PER_BOOT, makeCustodyHolder, type CustodyHolder } from "../src/custody-holder.js";
 import { personaGroupDigest } from "../src/persona-group-file.js";
-import { pulamaAdmissions } from "../src/pulama-admit.js";
+import { pulamaAdmissions, signPulamaRecord, verifiedPulamaRecord } from "../src/pulama-admit.js";
 import { pulamaHandDoor, type PulamaHandAnswer } from "../src/pulama-hand.js";
-import { KEEPER_STRUCK_EVERY, keeperFold, pulamaKeeperPrefix } from "../src/pulama-keeper.js";
+import { KEEPER_STRUCK_EVERY, keeperEphemeral, keeperFold, pulamaKeeperPrefix } from "../src/pulama-keeper.js";
 import { servePulama } from "../src/pulama-server.js";
 import { listenPulama, pulamaAnswers } from "../src/pulama-socket.js";
 import { pulamaImage, pulamaRecords } from "../src/pulama-state.js";
@@ -35,18 +35,24 @@ const scratch = (): string => { const d = mkdtempSync(join(tmpdir(), "lar-keeper
 afterEach(async () => { await fx?.drop(); fx = null; for (const d of dirs.splice(0)) rmSync(d, { recursive: true, force: true }); });
 
 /** One house: the lit keeper (the fixture's holder, one face open) and a door over a shared state dir; `successor()` stands another beside it. */
-async function house(label: string) {
+async function house(label: string, opts: { readonly realRite?: true } = {}) {
   fx = await standPulama(label, () => openGate({ faces: lend(0), coldReads: [] }));
   const face = await fx.kept.foundFace({ group: personaGroupDigest(`group-${label}`), ordinal: 0, slots: fixtureSlots });
   const state = scratch(), records = pulamaRecords(state), image = pulamaImage(state);
   const lines: string[] = [], answers: PulamaHandAnswer[] = [];
   /** THE LIVE RITE, faked at its port (`keeperRiteOver` reads it for real below): an offer of "rite" begins one, at `riteDevices`. */
   const live = { devices: 1, begun: 0, faces: [] as { ordinal: number; group: string; devices: number }[] };
-  const keeperRite = async (offer: unknown, keeper: { readonly to: string; readonly next: string }) => {
+  const fakeRite = async (offer: unknown, keeper: { readonly to: string; readonly next: string }) => {
     if (offer !== "rite") return { ok: false as const, refusal: "vest-rite-absent", detail: "a vest rides a live kūkulu rite, and this frame carries no offer with a vouch" };
-    live.begun++;
-    return { ok: true as const, rite: [sha(`${keeper.to}${keeper.next}${live.begun}`)], devices: live.devices, faces: live.faces };
+    const faces = live.faces.length > 0 ? live.faces : [{ ordinal: 0, group: `group-${label}`, devices: live.devices }];
+    return { ok: true as const, devices: live.devices, faces,
+      begin: async () => { live.begun++; return { ok: true as const, rite: [sha(`${keeper.to}${keeper.next}${live.begun}`)] }; } };
   };
+  /** THE REAL RITE (`keeperRiteOver` over this keeper's own holder): its vouches verify for real; its begin, faked at the rite port,
+   *  counts each lei return it would claim, so a refusal that spends none reads `begins` unmoved. */
+  const begins: string[] = [];
+  const ritePort = { begin: async (_o: unknown, at: { group: string }) => { begins.push(at.group); return { ok: true as const, tessera: sha(`begun-${at.group}-${begins.length}`), lei: "11".repeat(32), n: 1 }; }, land: async () => ({ par: true }) };
+  const keeperRite = opts.realRite ? keeperRiteOver({ holder: fx.kept, hand: async () => "aa".repeat(32), rite: ritePort as never, image: () => image.raised() }) : fakeRite;
   const watch = (door: (f: unknown) => Promise<PulamaHandAnswer>) => async (frame: unknown) => { const a = await door(frame); answers.push(a); return a; };
   const old = watch(pulamaHandDoor({ holder: fx.kept, server: fx.server, image, records, admissions: pulamaAdmissions(records), keeperRite, worn: () => 0, onLog: (l) => lines.push(l) }));
   await old({ op: "image", digest: IMAGE, closure: D });
@@ -58,7 +64,7 @@ async function house(label: string) {
   };
   /** A commit as the shim sends it: the device count the vessel read, or (null) none read. */
   const commit = (next = D2, devices: number | null = 1) => old({ op: "keeper-commit", next, ...(devices === null ? {} : { devices }), credentials: fixtureRoute });
-  return { face, records, image, old, successor, commit, lines, answers, live };
+  return { face, records, image, old, successor, commit, lines, answers, live, begins };
 }
 
 /** Offer, vest and receive: the whole unattended handoff over one successor. */
@@ -242,6 +248,54 @@ describe("RED the vest hands the living fire, and the successor lands par", () =
     expect(control.landed).toMatchObject({ reading: "landed" });
   });
 
+  test("F4: a keeper that passed its fire names it at `light --admit` (never a silent skip); its lock spends the passing, so a struck relight admits and closes again", async () => {
+    const h = await house("keeper-passing-clears");
+    await h.commit(D2, 1);
+    expect((await handoff(h, h.old)).landed).toMatchObject({ reading: "landed" });
+    const lit = await h.old({ op: "light", credentials: fixtureRoute, admit: true });
+    expect(lit).toMatchObject({ admit: "fire-passing", detail: expect.stringContaining("lares rite kukulu") });
+    expect(await h.old({ op: "close", face: 0 })).toMatchObject({ reading: "fire-passing" });
+    await h.old({ op: "lock" });
+    expect(await h.old({ op: "status" })).not.toHaveProperty("passing");
+    expect(await h.old({ op: "close", face: 0 })).toMatchObject({ reading: "pulama-locked" });
+    const relit = await h.old({ op: "light", credentials: fixtureRoute, admit: true });
+    expect(relit["admit"]).toEqual(expect.stringMatching(/^(admitted|already-admitted)$/));
+  });
+
+  test("F6: a fork of two live commits names its cure, and the cure runs: a fresh `lares pulama keeper-commit` settles both and stands alone", async () => {
+    const h = await house("keeper-commit-fork");
+    // Two commits at one link, each reading no live commit before it (two doors racing): neither supersedes the other.
+    await h.commit(D3, 1);
+    const by = await pulamaSignerOf(fx!.kept);
+    const [first] = (await h.records.list(pulamaKeeperPrefix())).filter((t) => t.endsWith("/guest"));
+    const body = verifiedPulamaRecord(await h.records.read(first!), by.key)!.body as unknown as Record<string, unknown>;
+    const nonce = "99".repeat(16), tessera = sha(`racing-${nonce}`);
+    const racer = await signPulamaRecord<"keeper-begun">({ ...body, tessera, next: D2, nonce, supersedes: null } as never, by);
+    expect(await h.records.writeNew(`${pulamaKeeperPrefix()}${tessera}/guest`, JSON.stringify(racer))).toBe(true);
+    expect(await h.old({ op: "status" })).toMatchObject({ keeper: { fork: true } });
+    const next = h.successor(D2); await next.report();
+    const offer = await next.door({ op: "keeper-offer" });
+    expect(await h.old({ op: "keeper-vest", to: offer["to"], closure: D2, offer: "rite" })).toMatchObject({ reading: "fork", detail: expect.stringContaining("lares pulama keeper-commit") });
+    expect(await h.commit(D2, 1)).toMatchObject({ reading: "committed" });
+    expect(await h.old({ op: "status" })).toMatchObject({ keeper: { fork: false, pending: D2 } });
+    expect((await handoff(h, h.old)).landed).toMatchObject({ reading: "landed" });
+  });
+
+  test("F8: the slot carries the keys as bytes, never hex strings: the opened payload hands Uint8Arrays the receiver zero-fills", async () => {
+    const h = await house("keeper-slot-bytes");
+    await h.commit(D2, 1);
+    const next = h.successor(D2); await next.report();
+    const e = keeperEphemeral();
+    const vest = await h.old({ op: "keeper-vest", to: e.pub, closure: D2, offer: "rite" });
+    expect(vest).toMatchObject({ reading: "vested" });
+    const payload = e.open((vest["slot"] as { body: never }).body)!;
+    expect(payload.node).toBeInstanceOf(Uint8Array);
+    expect(payload.node).toHaveLength(32);
+    expect(payload.faces).toHaveLength(1);
+    expect(payload.faces[0]!.fck).toBeInstanceOf(Uint8Array);
+    expect(payload.faces[0]).toMatchObject({ fcid: expect.any(String), ordinal: 0 });
+  });
+
   test("CONTROL: a replayed vest refuses `vest-spent`; a replayed slot refuses at the successor; a slot to another key refuses; a replayed land refuses", async () => {
     const h = await house("keeper-vest-replays");
     await h.commit();
@@ -393,6 +447,45 @@ describe("RED two keepers never both hold the fire", () => {
   });
 });
 
+describe("RED the vest over the REAL rite: every face the keeper would seal stands vouched, and nothing begins before every check passes", () => {
+  /** A real offer: one vouch per named face, signed by this house's vouch key over this keeper move. */
+  const offerOf = async (to: string, faces: readonly { group: string; devices: number }[]) => {
+    const signer = await vouchSignerOf(fx!.kept);
+    const vouch = await Promise.all(faces.map((f) => signKukuluVouch({ group: f.group, branch: "main", head: "a".repeat(40), tree: "b".repeat(40), image: IMAGE, keeper: { to, next: D2, devices: f.devices } as never }, signer)));
+    return { lei: [], unstrung: [], vouch };
+  };
+  const vestOver = async (h: Awaited<ReturnType<typeof house>>, faces: readonly { group: string; devices: number }[]) => {
+    const next = h.successor(D2);
+    await next.report();
+    const offer = await next.door({ op: "keeper-offer" });
+    const vest = await h.old({ op: "keeper-vest", to: offer["to"], closure: D2, offer: await offerOf(offer["to"] as string, faces) });
+    return { vest, landed: vest["reading"] === "vested" ? await next.door({ op: "keeper-receive", slot: vest["slot"] }) : null };
+  };
+
+  test("F1: a second face the keeper holds open (two devices) that the vessel never vouched lapses `vest-devices-unread` and seals nothing; CONTROL: both faces vouched vest", async () => {
+    const h = await house("keeper-real-unvouched", { realRite: true });
+    await fx!.kept.foundFace({ group: personaGroupDigest("group-keeper-real-unvouched-h1"), ordinal: 1, slots: fixtureSlots });
+    await h.commit(D2, 1);
+    const out = await vestOver(h, [{ group: "group-keeper-real-unvouched", devices: 1 }]);
+    expect(out.vest).toMatchObject({ reading: "vest-devices-unread", detail: expect.stringMatching(/h1[\s\S]*lares (pulama keeper-commit|rite kukulu)/) });
+    expect(out.landed).toBeNull();
+    // F3: the refusal spent no lei return and rested no begun half.
+    expect(h.begins).toEqual([]);
+    await h.commit(D2, 1);
+    const both = await vestOver(h, [{ group: "group-keeper-real-unvouched", devices: 1 }, { group: "group-keeper-real-unvouched-h1", devices: 1 }]);
+    expect(both.landed).toMatchObject({ reading: "landed" });
+    expect(h.begins).toHaveLength(2);
+  });
+
+  test("F3: a late refusal (the vouch counts two devices against a one-device commit with no co-sign) spends no lei and begins no rite", async () => {
+    const h = await house("keeper-real-late", { realRite: true });
+    await h.commit(D2, 1);
+    const out = await vestOver(h, [{ group: "group-keeper-real-late", devices: 2 }]);
+    expect(out.vest).toMatchObject({ reading: "vest-cosign-owed" });
+    expect(h.begins).toEqual([]);
+  });
+});
+
 describe("RED the live rite a vest rides (`keeperRiteOver`)", () => {
   test("a vouch under the house's key naming this keeper move begins the rite; CONTROL: no vouch, another key, another closure, no keeper move, another image, or another signer each refuse and begin nothing", async () => {
     const h = await house("keeper-rite-over");
@@ -415,7 +508,12 @@ describe("RED the live rite a vest rides (`keeperRiteOver`)", () => {
       expect(await over(raw, { to, next: D2 }), why).toMatchObject({ ok: false, refusal: reading, detail: expect.stringContaining("lares rite kukulu") });
     }
     expect(begun).toEqual([]);
-    expect(await over(await offer(await vouch({ to, next: D2, devices: 1 })), { to, next: D2 })).toEqual({ ok: true, rite: ["ef".repeat(32)], devices: 1, faces: [{ ordinal: 0, group, devices: 1 }] });
+    const read = await over(await offer(await vouch({ to, next: D2, devices: 1 })), { to, next: D2 });
+    expect(read).toMatchObject({ ok: true, devices: 1, faces: [{ ordinal: 0, group, devices: 1 }] });
+    // NOTHING BEGINS AT THE READ: the rite begins only when the vest calls `begin`, after every check passed.
+    expect(begun).toEqual([]);
+    expect(read.ok && await read.begin()).toEqual({ ok: true, rite: ["ef".repeat(32)] });
+    expect(begun).toEqual(["x"]);
     expect(await over(await offer(await vouch({ to, next: D2, devices: 0 })), { to, next: D2 })).toMatchObject({ ok: true, devices: 0 });
   });
 });

@@ -273,7 +273,7 @@ services:
   # TWO KEEPER SERVICES, ONE FIRE (the keeper tally, lar:///ha.ka.ba/kahua/memory/research/keeper-tessera#/vesting): `pulama` and
   # `pulama-b` share one stanza, so a successor stands beside the lit keeper over the same socket volume and state dir. Exactly
   # one holds the vessel socket (an exclusive claim); the other stands as its successor on its own hand door until a vest lights
-  # it and `take-fire` claims the socket the old keeper let go. Outside a handoff one alone runs.
+  # it and `take-fire` claims the socket the fire-holder let go. Outside a handoff one alone runs.
   pulama: &pulama-keeper
     image: ${LARES_IMAGE:-lares-surface:local}
     profiles: [pulama]

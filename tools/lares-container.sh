@@ -1215,11 +1215,12 @@ resolve_image() { # $1 = a revision, or nothing for the prior image
 # answers leaves both unread.
 ps_lit=""; ps_admitted=""; ps_vest=""; ps_struck=""; ps_pending=""
 pulama_status_read() { # $1 = the image digest
-  ps_lit=""; ps_admitted=""; ps_vest=""; ps_struck=""; ps_pending=""
+  ps_lit=""; ps_admitted=""; ps_vest=""; ps_struck=""; ps_pending=""; ps_closure=""
   ps_flat=$(compose --profile pulama exec -T "$(pulama_svc)" node "$PULAMA_MAIN" status </dev/null 2>/dev/null | tr -d ' \t\r\n') || return 0
   # THE KEEPER TALLY: the live commit's successor closure where it can vest, whether the struck fire is due, and any live commit.
   ps_vest=$(printf '%s' "$ps_flat" | sed -n 's/.*"vestReady":"\(sha256:[0-9a-f]\{64\}\)".*/\1/p')
   ps_pending=$(printf '%s' "$ps_flat" | sed -n 's/.*"pending":"\(sha256:[0-9a-f]\{64\}\)".*/\1/p')
+  ps_closure=$(printf '%s' "$ps_flat" | sed -n 's/.*"closure":"\(sha256:[0-9a-f]\{64\}\)".*/\1/p')
   case "$ps_flat" in *'"struckDue":true'*) ps_struck=yes ;; esac
   case "$ps_flat" in *'"lit":true'*) ps_lit=yes ;; *'"lit":false'*) ps_lit=no; return 0 ;; *) return 0 ;; esac
   ps_list=$(printf '%s' "$ps_flat" | sed -n 's/.*"admitted":\[\([^]]*\)\].*/\1/p')
@@ -1290,7 +1291,7 @@ keep_after_raise() {
 # service (`keeper-stand`): the host reports the image and the closure its container's label reads, and the successor offers a
 # one-handoff key, which the rite's vouches then name. Here, inside the raise (`rebuild --keeper-to <key>`), the lit keeper vests to
 # that key: the frame carries the rite's offer (`kukulu-offer.json`), the vest begins the rite itself (one lei return), and the
-# successor opens the slot and lands the pair. A refusal or a red pair stops the successor, leaves the old fire burning and the
+# successor opens the slot and lands the pair. A refusal or a red pair stops the successor, leaves the lit fire burning and the
 # vessel as it stood, and names the cure that runs from there. The slot crosses this pipe once, sealed to the successor's key.
 KV_OLD=""; KV_NEW=""; R_KEEPER_TO=""
 keeper_reading() { printf '%s' "$1" | tr -d ' \t\r\n' | sed -n 's/.*"reading":"\([a-z-]*\)".*/\1/p'; }
@@ -1332,8 +1333,8 @@ keeper_vest() {
   kv_land=$(compose --profile pulama exec -T "$KV_NEW" node "$PULAMA_MAIN" keeper-receive "$kv_slot" </dev/null) || kv_fail "the successor read the keeper pair red ($(keeper_reading "$kv_land")) and locked; the old keeper passes the fire and writes nothing"
   printf 'lares-container: rebuild: the keeper pair reads par; the successor (%s) stands lit by vest, and asked no route\n' "$KV_NEW" >&2
 }
-# After the down (the old keeper still served the vessel's keep and census): the old keeper locks and stops, then the successor
-# claims the vessel socket. Two keepers never both hold it: the claim refuses while the old one still answers.
+# After the down (the fire-holder still served the vessel's keep and census): the fire-holder locks and stops, then the successor
+# claims the vessel socket. Two keepers never both hold it: the claim refuses while the fire-holder still answers.
 keeper_take_fire() {
   compose --profile pulama exec -T "$KV_OLD" node "$PULAMA_MAIN" lock </dev/null >/dev/null || die "the old keeper ($KV_OLD) refused its lock; the successor stands lit beside it: \`lares rite kukulu\` again finishes the handoff"
   compose --profile pulama stop "$KV_OLD" >/dev/null || die "the old keeper ($KV_OLD) did not stop; \`lares rite kukulu\` again finishes the handoff"
@@ -1341,7 +1342,7 @@ keeper_take_fire() {
   printf 'lares-container: rebuild: the living fire passed to %s; it holds the vessel socket\n' "$KV_NEW" >&2
 }
 # THE HANDOFF SETTLES ON EVERY RUN: two keepers standing (a handoff a crash or a Ctrl+C cut short) finish where the successor
-# stands lit and the fire-holder passes it (lock and stop the old, the successor takes the fire), and unwind otherwise (the
+# stands lit and the fire-holder passes it (lock and stop the fire-holder, the successor takes the fire), and unwind otherwise (the
 # successor stops), unless this run carries the move the rite stood the successor for. One keeper lit and holding no socket (the
 # old one stopped, the take never ran) takes the fire. So no state leaves the house with no keeper holding the fire.
 keeper_settle() {
@@ -1354,6 +1355,15 @@ keeper_settle() {
     se_olit=""; se_pass=""
     case "$se_os" in *'"lit":true'*) se_olit=yes ;; esac
     case "$se_hs" in *'"passing":true'*) se_pass=yes ;; esac
+    # THE LIT, PAR-LANDED SUCCESSOR WINS (blind read F5): a fire-holder that restarted stands unlit and lost its passing with it, so a
+    # successor standing lit whose landing reads par takes the fire rather than stopping for the unlit keeper.
+    se_hlit=""; case "$se_hs" in *'"lit":true'*) se_hlit=yes ;; esac
+    se_opar=""; case "$se_os" in *'"last":"par"'*) se_opar=yes ;; esac
+    if [ -n "$se_olit" ] && [ -z "$se_hlit" ] && [ -n "$se_opar" ]; then
+      printf 'lares-container: two keepers stand, the fire-holder (%s) stands unlit, and %s stands lit and landed par; %s takes the fire\n' "$se_hold" "$se_other" "$se_other" >&2
+      KV_OLD=$se_hold; KV_NEW=$se_other; keeper_take_fire
+      return 0
+    fi
     if [ -n "$se_olit" ] && [ -n "$se_pass" ]; then
       printf 'lares-container: two keepers stand and the handoff was cut short after the vest; it finishes: %s takes the fire from %s\n' "$se_other" "$se_hold" >&2
       KV_OLD=$se_hold; KV_NEW=$se_other; keeper_take_fire
@@ -1410,7 +1420,7 @@ stand_house() {
       [ -z "$s_admit" ] || die "rebuild stops before anything moves: the pūlama has not admitted this image and no kūkulu offer carries it, and its admit reads your route on a terminal; $HAND_LINE (or string a kukulu lei first: lares lei kui --rite kukulu --branch <name> --returns <n> --all)"
     fi
   fi
-  # THE VEST RUNS BEFORE THE DOWN: a red pair, or a crash, leaves the vessel standing on the old fire, and nothing moved.
+  # THE VEST RUNS BEFORE THE DOWN: a red pair, or a crash, leaves the vessel standing on the lit fire, and nothing moved.
   [ -z "$s_vest" ] || keeper_vest
   if [ -n "$s_stays" ]; then
     KEEP_SAID="the vessel stayed standing, so no keep ran"
@@ -1430,8 +1440,13 @@ stand_house() {
     compose --profile pulama exec "$(pulama_svc)" node "$PULAMA_MAIN" light $s_light_admit || true
     pulama_status_read "$s_digest"
     [ "$ps_lit" = yes ] || die "the pūlama did not light (above); run \`lares rite kukulu\` again on a terminal, and it picks up from here"
-    # A LIVE KEEPER COMMIT LANDS STRUCK: the chain records the hand's relight, and a red pair stops loudly (it locks nothing).
-    if [ -n "$ps_pending" ]; then
+    # A LIVE KEEPER COMMIT LANDS STRUCK, ONLY ON ITS OWN CLOSURE (blind read F7): the chain records the hand's relight where the keeper
+    # now runs the closure the commit names, and a red pair stops loudly (it locks nothing). A plain relight on another closure leaves
+    # the commit standing for its own rite.
+    if [ -n "$ps_pending" ] && [ "$ps_closure" != "$ps_pending" ]; then
+      printf 'lares-container: rebuild: the live keeper commit names %s and this keeper runs %s; the commit stays for its own rite\n' "$ps_pending" "${ps_closure:-no reported closure}" >&2
+    fi
+    if [ -n "$ps_pending" ] && [ "$ps_closure" = "$ps_pending" ]; then
       kl_out=$(compose --profile pulama exec -T "$(pulama_svc)" node "$PULAMA_MAIN" keeper-land </dev/null 2>/dev/null) || {
         kl_why=$(printf '%s' "$kl_out" | tr -d ' \t\r\n' | sed -n 's/.*"red":"\([a-z-]*\)".*/\1/p')
         die "the keeper pair reads red (${kl_why:-unread}) after the hand's light: the keeper stands lit and nothing locked; read it with \`lares pulama status\`, then \`lares rite kukulu\` picks up from here"
@@ -1588,7 +1603,8 @@ case "$verb" in
           kc_dev="--devices $kc_most"
         fi
         # THE CARRIED CO-SIGN (keeper-tessera#/vesting): past one device the vessel asks `ward-keeper-vest` over (D′, the chain head,
-        # the commit's nonce) on each lit face, a second device approves it in its own ward dialog, and the commit carries the spends.
+        # the commit's nonce, the roster) on each lit face, another device of that roster approves it in its own ward dialog, and the
+        # commit carries the spends. It proves the vessel's own roster approving, not consent past what that roster holds.
         # The nonce rests in the house cache while the ask waits, so the re-run after the approve asks over the same commit.
         kc_cosign=""
         if [ -n "$kc_dev" ] && [ "$kc_most" -gt 1 ]; then
@@ -1611,7 +1627,7 @@ case "$verb" in
           done
           rm -f "$HOUSE/cache/keeper-cosign.err"
           kc_cosign="{\"nonce\":\"$kc_nonce\",\"faces\":[$kc_faces]}"
-          printf '%s\n' 'lares-container: keeper-commit: a second device of each face co-signed the vest; the commit carries the spends' >&2
+          printf '%s\n' 'lares-container: keeper-commit: the co-sign of each face spent: another atom of the roster this vessel read approved the vest (the keeper checks the roster of this vessel, not the admission chain of the face); the commit carries the spends' >&2
         fi
         # shellcheck disable=SC2046,SC2086
         if [ -n "$kc_cosign" ]; then

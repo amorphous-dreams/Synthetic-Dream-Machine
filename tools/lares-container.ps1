@@ -1201,13 +1201,14 @@ function ResolveImage([string]$want) {
 # answers leaves both unread.
 $script:PsLit = ''; $script:PsAdmitted = ''; $script:PsVest = ''; $script:PsStruck = $false; $script:PsPending = ''
 function PulamaStatusRead([string]$digest) {
-  $script:PsLit = ''; $script:PsAdmitted = ''; $script:PsVest = ''; $script:PsStruck = $false; $script:PsPending = ''
+  $script:PsLit = ''; $script:PsAdmitted = ''; $script:PsVest = ''; $script:PsStruck = $false; $script:PsPending = ''; $script:PsClosure = ''
   $out = $null | & docker compose @Base --profile pulama exec -T (PulamaSvc) node $PulamaMain status 2>$null
   if ($LASTEXITCODE -ne 0) { return }
   $flat = (($out -join '') -replace '\s', '')
   # THE KEEPER TALLY: the live commit's successor closure where it can vest, whether the struck fire is due, and any live commit.
   $script:PsVest = ([regex]::Match($flat, '"vestReady":"(sha256:[0-9a-f]{64})"')).Groups[1].Value
   $script:PsPending = ([regex]::Match($flat, '"pending":"(sha256:[0-9a-f]{64})"')).Groups[1].Value
+  $script:PsClosure = ([regex]::Match($flat, '"closure":"(sha256:[0-9a-f]{64})"')).Groups[1].Value
   $script:PsStruck = $flat.Contains('"struckDue":true')
   if ($flat.Contains('"lit":true')) { $script:PsLit = 'yes' }
   elseif ($flat.Contains('"lit":false')) { $script:PsLit = 'no'; return }
@@ -1282,7 +1283,7 @@ function KeepAfterRaise {
 # service (`keeper-stand`): the host reports the image and the closure its container's label reads, and the successor offers a
 # one-handoff key, which the rite's vouches then name. Inside the raise (`rebuild --keeper-to <key>`), the lit keeper vests to that
 # key: the frame carries the rite's offer (`kukulu-offer.json`), the vest begins the rite itself (one lei return), and the successor
-# opens the slot and lands the pair. A refusal or a red pair stops the successor, leaves the old fire burning and the vessel as it
+# opens the slot and lands the pair. A refusal or a red pair stops the successor, leaves the lit fire burning and the vessel as it
 # stood, and names the cure that runs from there. The slot crosses this pipe once, sealed to the successor's key.
 $script:KvOld = ''; $script:KvNew = ''; $script:KeeperTo = ''
 function KeeperReading($out) { return ([regex]::Match((($out -join '') -replace '\s', ''), '"reading":"([a-z-]*)"')).Groups[1].Value }
@@ -1330,8 +1331,8 @@ function KeeperVest {
   if ($LASTEXITCODE -ne 0) { KeeperFail "the successor read the keeper pair red ($(KeeperReading $landed)) and locked; the old keeper passes the fire and writes nothing" }
   [Console]::Error.WriteLine("lares-container: rebuild: the keeper pair reads par; the successor ($new) stands lit by vest, and asked no route")
 }
-# After the down (the old keeper still served the vessel's keep and census): the old keeper locks and stops, then the successor
-# claims the vessel socket. Two keepers never both hold it: the claim refuses while the old one still answers.
+# After the down (the fire-holder still served the vessel's keep and census): the fire-holder locks and stops, then the successor
+# claims the vessel socket. Two keepers never both hold it: the claim refuses while the fire-holder still answers.
 function KeeperTakeFire {
   $old = $script:KvOld; $new = $script:KvNew
   $null | & docker compose @Base --profile pulama exec -T $old node $PulamaMain lock | Out-Null
@@ -1351,6 +1352,11 @@ function KeeperSettle {
   if ($a -and $b) {
     $fa = SvcStatus 'pulama'; $fb = SvcStatus 'pulama-b'
     if ($fb.Contains('"fire":true')) { $hold = 'pulama-b'; $hs = $fb; $other = 'pulama'; $os = $fa } else { $hold = 'pulama'; $hs = $fa; $other = 'pulama-b'; $os = $fb }
+    # THE LIT, PAR-LANDED SUCCESSOR WINS (blind read F5), as the sh twin settles it: an unlit fire-holder never keeps the fire from it.
+    if ($os.Contains('"lit":true') -and -not $hs.Contains('"lit":true') -and $os.Contains('"last":"par"')) {
+      [Console]::Error.WriteLine("lares-container: two keepers stand, the fire-holder ($hold) stands unlit, and $other stands lit and landed par; $other takes the fire")
+      $script:KvOld = $hold; $script:KvNew = $other; KeeperTakeFire; return
+    }
     if ($os.Contains('"lit":true') -and $hs.Contains('"passing":true')) {
       [Console]::Error.WriteLine("lares-container: two keepers stand and the handoff was cut short after the vest; it finishes: $other takes the fire from $hold")
       $script:KvOld = $hold; $script:KvNew = $other; KeeperTakeFire; return
@@ -1425,8 +1431,13 @@ function StandHouse {
     & docker compose @Base --profile pulama exec (PulamaSvc) node $PulamaMain @lightArgs
     PulamaStatusRead $digest
     if ($script:PsLit -ne 'yes') { Die 'the pūlama did not light (above); run `lares rite kukulu` again on a terminal, and it picks up from here' }
-    # A LIVE KEEPER COMMIT LANDS STRUCK: the chain records the hand's relight, and a red pair stops loudly (it locks nothing).
-    if ($script:PsPending) {
+    # A LIVE KEEPER COMMIT LANDS STRUCK, ONLY ON ITS OWN CLOSURE (blind read F7), as the sh twin lands it: a plain relight on another
+    # closure leaves the commit standing for its own rite.
+    if ($script:PsPending -and $script:PsClosure -ne $script:PsPending) {
+      $runs = if ($script:PsClosure) { $script:PsClosure } else { 'no reported closure' }
+      [Console]::Error.WriteLine("lares-container: rebuild: the live keeper commit names $($script:PsPending) and this keeper runs $runs; the commit stays for its own rite")
+    }
+    if ($script:PsPending -and $script:PsClosure -eq $script:PsPending) {
       $land = $null | & docker compose @Base --profile pulama exec -T (PulamaSvc) node $PulamaMain keeper-land 2>$null
       if ($LASTEXITCODE -ne 0) {
         $red = ([regex]::Match((($land -join '') -replace '\s', ''), '"red":"([a-z-]*)"')).Groups[1].Value
@@ -1635,7 +1646,7 @@ switch ($verb) {
           }
           Remove-Item -Force -ErrorAction SilentlyContinue (Join-Path $House 'cache/keeper-cosign.err')
           $cosignArgs = @('--cosign', "{""nonce"":""$nonce"",""faces"":[$($faces -join ',')]}")
-          [Console]::Error.WriteLine('lares-container: keeper-commit: a second device of each face co-signed the vest; the commit carries the spends')
+          [Console]::Error.WriteLine('lares-container: keeper-commit: the co-sign of each face spent: another atom of the roster this vessel read approved the vest (the keeper checks the roster of this vessel, not the admission chain of the face); the commit carries the spends')
         }
         Compose (@('--profile', 'pulama', 'exec') + $NoTty + @((PulamaSvc), 'node', $PulamaMain, 'keeper-commit', $d) + $devArgs + $cosignArgs)
         if ($LASTEXITCODE -eq 0 -and $held) { Remove-Item -Force $held }

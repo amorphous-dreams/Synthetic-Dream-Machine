@@ -29,7 +29,7 @@
  *
  * THE SLOT (`keeper-slot`) is the vest itself: the keys sealed to the successor's ephemeral X25519 key (`sealed-box`), bound to the
  * commit and to `D′` (both ride the seal's salt and the signed body), signed under the pūlama's key. It crosses the host's pipe once,
- * from the old keeper's hand door to the successor's, and NEVER rests on disk; the successor's ephemeral secret zero-fills on its
+ * from the fire-holder's hand door to the successor's, and NEVER rests on disk; the successor's ephemeral secret zero-fills on its
  * first open, so the slot spends on landing.
  *
  * THE HUMAN'S END NEVER CROSSES. The passphrase root derives the slot tree and never rests in a holder; a vest carries only keys the
@@ -52,12 +52,13 @@
  * vessel read the face's signed admission fold, and the commit carries the count the vessel read at commit time (so `status` and the
  * rite read it early). A count read nowhere refuses `vest-devices-unread`. Each per-face budget carries with the vest too.
  * PAST ONE DEVICE THE COMMIT CARRIES THE CO-SIGN: the vessel runs `ward-keeper-vest` through the ward co-sign gate over (D′, the chain
- * head, the commit's nonce, the face's roster) BEFORE the commit, a second device of the face approves it in its own ward, and the
+ * head, the commit's nonce, the face's roster) BEFORE the commit, another device of the roster approves it in its own ward, and the
  * commit carries the spent co-sign (`cosigns`, one per committed face: its roster, the issuer's ask, the approve, the outcome). The
  * keeper opens no document, so it reads that proof offline (`keeperCosignRefusal`) at the commit and again at the vest: each entry
- * verifies under its signer, the approve comes from ANOTHER device of the face under its ward signature, and the digest names this
- * commit and this roster (so the count stands under two devices' signatures). The rite's vouch must count no device the co-signed
- * roster lacks. A commit with none refuses `vest-cosign-owed`; a proof that does not answer it refuses `vest-cosign-refused`. The
+ * verifies under its signer, the approve comes from ANOTHER atom of the carried roster under the ward key carried for it, and the
+ * digest names this commit and this roster. The roster and that ward key ride in the proof as the vessel named them (blind read F2):
+ * the proof shows the vessel's own roster approving, never second-device consent past what that roster holds. The rite's vouch must
+ * count no device the co-signed roster lacks, and every face this keeper would seal must stand vouched. A commit with none refuses `vest-cosign-owed`; a proof that does not answer it refuses `vest-cosign-refused`. The
  * nonce rides the tessera, so one proof rides one commit: a second commit under it refuses `vest-cosign-spent`.
  *
  * THE SCHEDULED STRUCK FIRE: after `KEEPER_STRUCK_EVERY` handed links in a row, the vest refuses `struck-due` and the hand lights the
@@ -95,7 +96,7 @@ export const pulamaKeeperPrefix = (): string => PREFIX;
 export const pulamaKeeperTitle = (tessera: string, half: "guest" | "host" | "vest"): string => `${PREFIX}${tessera}/${half}`;
 /** A closure as `tools/pulama-closure.mjs` prints it. */
 export const CLOSURE = /^sha256:[0-9a-f]{64}$/;
-const VEST_INFO = new TextEncoder().encode("lares/pulama/keeper-vest/v1");
+const VEST_INFO = new TextEncoder().encode("lares/pulama/keeper-vest");
 const hex = (b: Uint8Array): string => Buffer.from(b).toString("hex");
 const unhex = (s: string): Uint8Array => Uint8Array.from(Buffer.from(s, "hex"));
 
@@ -110,6 +111,8 @@ export interface KeeperFold {
   readonly vestings: number;
   readonly struckDue: boolean;
   readonly fork: boolean;
+  /** Where the fork stands between live commits alone (no two landings at a link): their cids, which a fresh commit settles. */
+  readonly forkCommits: readonly string[];
   /** The commit at the next link a vest spent and no landing names yet: the one a vested successor lands. */
   readonly vested: { readonly tessera: string; readonly v: number; readonly next: string; readonly begun: string } | null;
 }
@@ -145,10 +148,10 @@ export async function keeperFold(records: SwarmWikiPort, by: KukuluSigner): Prom
   // THE CHAIN WALKS PAR LINKS ALONE: at each link the landings that read par over the link before; one extends the chain, two read a
   // fork, none ends it. A red landing (closure-differs, faces-short, …) never becomes the tip and never resets the handed count.
   const chain = new Map<number, Landed>();
-  let tip: Landed | null = null, fork = false;
+  let tip: Landed | null = null, fork = false, landingFork = false;
   for (let v = 1; landedAt.has(v); v++) {
     const par = landedAt.get(v)!.filter((l) => { const b = beginOf(l); return b !== null && keeperRed(b, l, rows, tip?.cid ?? null) === null; });
-    if (par.length > 1) { fork = true; break; }
+    if (par.length > 1) { fork = true; landingFork = true; break; }
     if (par.length === 0) break;
     tip = par[0]!;
     chain.set(v, tip);
@@ -173,14 +176,16 @@ export async function keeperFold(records: SwarmWikiPort, by: KukuluSigner): Prom
   // supersedes. Two live ones read a fork.
   const linked = (b: Begun): boolean => b.body.v === (tip?.body.v ?? 0) + 1 && b.body.prev === (tip?.cid ?? null);
   const open = [...rows.begun].flatMap(([t, b]) => (b !== "refused" && !rows.landed.has(t) && !rows.marked.has(t) && linked(b) ? [b] : []));
-  const superseded = new Set([...rows.begun.values()].flatMap((b) => (b !== "refused" && b.body.supersedes !== null ? [b.body.supersedes] : [])));
+  // A commit supersedes the one live commit it read, or SETTLES every live commit of a fork it read (`settles`).
+  const superseded = new Set([...rows.begun.values()].flatMap((b) => (b !== "refused" ? [...(b.body.supersedes !== null ? [b.body.supersedes] : []), ...(Array.isArray(b.body.settles) ? b.body.settles : [])] : [])));
   const live = open.filter((b) => !superseded.has(b.cid));
   if (live.length > 1) fork = true;
   const pending = live.length === 1 ? { tessera: live[0]!.body.tessera, v: live[0]!.body.v, next: live[0]!.body.next, begun: live[0]!.cid, devices: typeof live[0]!.body.devices === "number" ? live[0]!.body.devices : null, body: live[0]!.body } : null;
   const vestings = tip?.body.vestings ?? 0;
   const spentBy = [...rows.begun].flatMap(([t, b]) => (b !== "refused" && !rows.landed.has(t) && linked(b) && rows.vested.get(t)?.begun === b.cid ? [b] : []));
   const vested = spentBy.length === 1 ? { tessera: spentBy[0]!.body.tessera, v: spentBy[0]!.body.v, next: spentBy[0]!.body.next, begun: spentBy[0]!.cid } : null;
-  return { v: tip?.body.v ?? 0, tip: tip?.cid ?? null, pairs, pending: fork ? null : pending, vestings, struckDue: vestings >= KEEPER_STRUCK_EVERY, fork, vested: fork ? null : vested };
+  const forkCommits = fork && !landingFork ? live.map((b) => b.cid).sort() : [];
+  return { v: tip?.body.v ?? 0, tip: tip?.cid ?? null, pairs, pending: fork ? null : pending, vestings, struckDue: vestings >= KEEPER_STRUCK_EVERY, fork, forkCommits, vested: fork ? null : vested };
 }
 
 /** One pair's red reading over the link before it (`prev`: that link's cid, null at the first link), or null for par. */
@@ -208,7 +213,9 @@ export async function keeperCommit(records: SwarmWikiPort, by: KukuluSigner, at:
   if (!CLOSURE.test(at.next)) return refuse("next-malformed", "the successor's closure reads `sha256:<64 hex>`, as tools/pulama-closure.mjs prints it");
   if (at.closure === null) return refuse("closure-unreported", "the host reported no closure for this keeper, so the chain cannot name what it hands from");
   const fold = await keeperFold(records, by);
-  if (fold.fork) return refuse("fork", "the keeper chain reads a fork (two commits or two landings at one link); read `pulama status`, and the hand settles it before a new commit");
+  // A FORK OF LIVE COMMITS SETTLES HERE (blind read F6): this commit settles every live commit at the link and stands alone. Two
+  // landings at one link settle nowhere on the chain: the struck fire keeps the house lit.
+  if (fold.fork && fold.forkCommits.length === 0) return refuse("fork", "the keeper chain reads two landings at one link, which no commit settles; read them with `lares pulama status`, and light the successor by hand (the struck fire): lares rite kukulu on a terminal");
   // THE CARRIED CO-SIGN names the commit's nonce (the co-sign's digest binds it), so the nonce comes with it; else the keeper mints one.
   const carried = at.cosign === undefined || at.cosign === null ? null : at.cosign as { readonly nonce?: unknown; readonly faces?: unknown };
   if (carried !== null && (typeof carried !== "object" || typeof carried.nonce !== "string" || !KEEPER_NONCE.test(carried.nonce) || !Array.isArray(carried.faces)))
@@ -220,26 +227,71 @@ export async function keeperCommit(records: SwarmWikiPort, by: KukuluSigner, at:
   const wrong = cosignsRefusal({ next: at.next, prev: fold.tip, nonce, faces: at.faces, devices }, cosigns);
   if (wrong !== null) return wrong;
   const tessera = sha256HexBytesSync(canonicalJsonBytes({ v, prev: fold.tip, next: at.next, nonce }));
-  const supersedes = fold.pending?.begun ?? null;
-  const act = await signPulamaRecord<"keeper-begun">({ act: "keeper-begun", tessera, v, prev: fold.tip, closure: at.closure, next: at.next, image: at.image, faces: at.faces, worn: at.worn, budget: { spent: at.spent }, supersedes, nonce, devices, cosigns }, by);
+  const supersedes = fold.pending?.begun ?? null, settles = fold.forkCommits;
+  const act = await signPulamaRecord<"keeper-begun">({ act: "keeper-begun", tessera, v, prev: fold.tip, closure: at.closure, next: at.next, image: at.image, faces: at.faces, worn: at.worn, budget: { spent: at.spent }, supersedes, ...(settles.length > 0 ? { settles: [...settles] } : {}), nonce, devices, cosigns }, by);
   if (!(await records.writeNew(pulamaKeeperTitle(tessera, "guest"), JSON.stringify(act)))) return cosigns !== null
     ? refuse("vest-cosign-spent", "this co-sign rode a commit already (its nonce names that commit's tessera), and a co-sign spends once; ask a fresh one: lares pulama keeper-commit")
     : refuse("keeper-begun-stands", `a guest half already rests for tessera ${tessera}`);
   return { tessera, v, next: at.next, supersedes };
 }
 
-/** What the vest seals: the house's end of the bond and the budget (the keeper's and each face's), nothing of the human's. */
-interface VestPayload {
-  readonly node: string;
-  readonly faces: ReadonlyArray<{ readonly fcid: string; readonly ordinal: number; readonly fck: string; readonly spent: number }>;
+/**
+ * What the vest seals: the house's end of the bond and the budget (the keeper's and each face's), nothing of the human's. THE KEYS
+ * RIDE AS BYTES (blind read F8): the plaintext packs them raw and the open hands back fresh Uint8Arrays, so no key ever stands as an
+ * immutable hex string a receiver cannot zero; the receiver zero-fills `node` and each `fck` when it settles (`keeperPayloadDrop`).
+ */
+export interface VestPayload {
+  readonly node: Uint8Array;
+  readonly faces: ReadonlyArray<{ readonly fcid: string; readonly ordinal: number; readonly fck: Uint8Array; readonly spent: number }>;
   readonly spent: number; readonly worn: number | null;
 }
+const PAYLOAD_V = 1, KEY = 32;
+/** Pack a payload: v1 · node(32) · spent u32 · worn i32 (-1 null) · faces u16 · each [fcid u16+utf8 · ordinal u32 · fck(32) · spent u32]. */
+function packPayload(p: { readonly node: Uint8Array; readonly faces: ReadonlyArray<{ readonly fcid: string; readonly ordinal: number; readonly fck: Uint8Array; readonly spent: number }>; readonly spent: number; readonly worn: number | null }): Uint8Array {
+  const ids = p.faces.map((f) => new TextEncoder().encode(f.fcid));
+  const out = new Uint8Array(1 + KEY + 4 + 4 + 2 + ids.reduce((n, id) => n + 2 + id.length + 4 + KEY + 4, 0));
+  const view = new DataView(out.buffer);
+  let at = 0;
+  out[at++] = PAYLOAD_V; out.set(p.node, at); at += KEY;
+  view.setUint32(at, p.spent); at += 4; view.setInt32(at, p.worn ?? -1); at += 4; view.setUint16(at, p.faces.length); at += 2;
+  p.faces.forEach((f, i) => {
+    view.setUint16(at, ids[i]!.length); at += 2; out.set(ids[i]!, at); at += ids[i]!.length;
+    view.setUint32(at, f.ordinal); at += 4; out.set(f.fck, at); at += KEY; view.setUint32(at, f.spent); at += 4;
+  });
+  return out;
+}
+/** Read a packed payload into fresh key buffers; null where it reads short or under another version. */
+function unpackPayload(b: Uint8Array): VestPayload | null {
+  const view = new DataView(b.buffer, b.byteOffset, b.byteLength);
+  let at = 0;
+  const need = (n: number): boolean => at + n <= b.length;
+  if (!need(1 + KEY + 10) || b[at++] !== PAYLOAD_V) return null;
+  const node = b.slice(at, at + KEY); at += KEY;
+  const spent = view.getUint32(at); at += 4; const wornRaw = view.getInt32(at); at += 4; const n = view.getUint16(at); at += 2;
+  const faces: { fcid: string; ordinal: number; fck: Uint8Array; spent: number }[] = [];
+  for (let i = 0; i < n; i++) {
+    if (!need(2)) { node.fill(0); for (const f of faces) f.fck.fill(0); return null; }
+    const len = view.getUint16(at); at += 2;
+    if (!need(len + 4 + KEY + 4)) { node.fill(0); for (const f of faces) f.fck.fill(0); return null; }
+    const fcid = new TextDecoder().decode(b.subarray(at, at + len)); at += len;
+    const ordinal = view.getUint32(at); at += 4; const fck = b.slice(at, at + KEY); at += KEY; const fspent = view.getUint32(at); at += 4;
+    faces.push({ fcid, ordinal, fck, spent: fspent });
+  }
+  if (at !== b.length) { node.fill(0); for (const f of faces) f.fck.fill(0); return null; }
+  return { node, faces, spent, worn: wornRaw < 0 ? null : wornRaw };
+}
+/** Zero every key a payload carries. */
+export function keeperPayloadDrop(p: VestPayload): void { p.node.fill(0); for (const f of p.faces) f.fck.fill(0); }
 
 /** The live rite a vest rides, as the pūlama reads the offer: each lent face's rite tessera it began, and the faces' device count. */
 /** One face a rite's vouch names, as the keeper maps it: its ordinal (off this keeper's own holder), the group the vessel signed,
  *  and the device count the vouch carries. */
 export interface KeeperVouchedFace { readonly ordinal: number; readonly group: string; readonly devices: number }
-export type KeeperRiteReading = { readonly ok: true; readonly rite: readonly string[]; readonly devices: number; readonly faces?: readonly KeeperVouchedFace[] } | { readonly ok: false; readonly refusal: string; readonly detail: string };
+/** What a begun rite answers: the tesserae it rested, or why it began nothing. */
+export type KeeperRiteBegun = { readonly ok: true; readonly rite: readonly string[] } | { readonly ok: false; readonly refusal: string; readonly detail: string };
+/** The live rite as the vest reads it: every vouch verified, each face it names, and a `begin` the vest calls only after every
+ *  check passes, so a refusal spends no lei return and rests no begun half. */
+export type KeeperRiteReading = { readonly ok: true; readonly devices: number; readonly faces: readonly KeeperVouchedFace[]; readonly begin: () => Promise<KeeperRiteBegun> } | { readonly ok: false; readonly refusal: string; readonly detail: string };
 /** The keys a vest seals, copied out of the lit holder for one seal (the caller's copies zero-fill after). */
 export type KeeperKeys = { readonly treeKey: Uint8Array; readonly faces: ReadonlyArray<{ readonly fcid: string; readonly ordinal: number; readonly fck: Uint8Array; readonly spent?: number }> };
 
@@ -249,8 +301,11 @@ export type KeeperKeys = { readonly treeKey: Uint8Array; readonly faces: Readonl
  * co-sign spent on another of the operator's faces never answers this one.
  */
 function vouchedCosignRefusal(faces: readonly KeeperVouchedFace[], body: KeeperBegunBody): KeeperRefusal | null {
-  if (!Array.isArray(body.cosigns)) return null;
   const cure = "commit again with each face's own co-sign: lares pulama keeper-commit, or light the successor by hand: lares rite kukulu on a terminal";
+  if (!Array.isArray(body.cosigns)) {
+    const owed = faces.find((f) => f.devices > 1);
+    return owed ? refuse("vest-cosign-owed", `the rite's vouch names h${owed.ordinal} with ${owed.devices} devices, and the commit carries no co-sign; ${cure}`) : null;
+  }
   for (const c of body.cosigns) {
     const vouched = faces.filter((f) => f.ordinal === c.ordinal);
     if (vouched.length !== 1) return refuse("vest-cosign-refused", `the rite's vouch names ${vouched.length === 0 ? "no face" : "two faces"} at h${c.ordinal}, which a co-sign answers; ${cure}`);
@@ -259,6 +314,18 @@ function vouchedCosignRefusal(faces: readonly KeeperVouchedFace[], body: KeeperB
   }
   for (const f of faces) if (f.devices > 1 && !body.cosigns.some((c) => c.ordinal === f.ordinal)) return refuse("vest-cosign-owed", `the rite's vouch names h${f.ordinal} with ${f.devices} devices, and the commit carries no co-sign for it; ${cure}`);
   return null;
+}
+
+/**
+ * EVERY FACE THE VEST WOULD SEAL STANDS VOUCHED (blind read F1): the keeper seals each face it holds open, so each such face, and each
+ * face the commit names, must stand in the rite's vouches with a count of its own; a face the vessel never vouched (its device count
+ * read nowhere) lapses `vest-devices-unread` before any key leaves.
+ */
+function sealedFacesRefusal(faces: readonly KeeperVouchedFace[], sealed: readonly number[], committed: readonly AdmittedFace[]): KeeperRefusal | null {
+  const vouched = new Map(faces.map((f) => [f.ordinal, f.devices] as const));
+  const short = [...new Set([...sealed, ...committed.map((f) => f.ordinal)])].sort((x, y) => x - y).filter((o) => !((vouched.get(o) ?? 0) >= 1));
+  if (short.length === 0) return null;
+  return refuse("vest-devices-unread", `this keeper holds ${short.map((o) => `h${o}`).join(", ")} open (or the commit names it), and the rite's vouches count no devices there, so the vest cannot tell whether a co-sign is owed; raise the rite with every lit face lent: lares rite kukulu, or commit again with the vessel standing: lares pulama keeper-commit`);
 }
 
 /** Past one device the commit owes its carried co-sign, read offline against the commit it rides and the count `where` names. */
@@ -276,7 +343,7 @@ const coSignRefusal = (devices: number | null, where: string, body: KeeperBegunB
  *
  * ONE RITE ATTEMPT PER COMMIT: once the live commit stands, any refusal rests `keeper-lapsed` at the commit's mark, and a vest rests
  * `keeper-vested` there, so the commit spends either way and no stale commit waits for a later frame. A crash after the mark leaves
- * the old fire burning; the next try refuses `vest-spent`, and the hand relights struck (`lares rite kukulu` on a terminal).
+ * the lit fire burning; the next try refuses `vest-spent`, and the hand relights struck (`lares rite kukulu` on a terminal).
  */
 export async function keeperVest(records: SwarmWikiPort, by: KukuluSigner, at: {
   readonly to: string; readonly closure: string;
@@ -286,7 +353,9 @@ export async function keeperVest(records: SwarmWikiPort, by: KukuluSigner, at: {
 }): Promise<{ readonly slot: SignedPulamaAdmit; readonly tessera: string; readonly faces: readonly number[]; readonly rite: readonly string[] } | KeeperRefusal> {
   if (!/^[0-9a-f]{64}$/.test(at.to)) return refuse("vest-key-malformed", "the successor's key reads 64 hex (an X25519 public key)");
   const fold = await keeperFold(records, by);
-  if (fold.fork) return refuse("fork", "the keeper chain reads a fork; nothing vests: read it with `lares pulama status`, then light the successor by hand: lares rite kukulu on a terminal");
+  if (fold.fork) return refuse("fork", fold.forkCommits.length > 0
+    ? "the keeper chain reads two live commits at one link; nothing vests: a fresh commit settles both (`lares pulama keeper-commit` on a terminal), or light the successor by hand: lares rite kukulu"
+    : "the keeper chain reads two landings at one link; nothing vests: read them with `lares pulama status`, and light the successor by hand (the struck fire): lares rite kukulu on a terminal");
   if (fold.pending === null) return refuse("commit-absent", "no live keeper commit names a successor closure, so no key vests: commit one on a terminal (`lares pulama keeper-commit`), or light the successor by hand: lares rite kukulu");
   const { tessera, begun, next } = fold.pending;
   // FROM HERE THE ATTEMPT SPENDS THE COMMIT: a refusal lapses it by name.
@@ -302,19 +371,23 @@ export async function keeperVest(records: SwarmWikiPort, by: KukuluSigner, at: {
   if (!rite.ok) return lapse(refuse(rite.refusal, rite.detail));
   const late = coSignRefusal(rite.devices, "the rite's vouch", fold.pending.body);
   if (late !== null) return lapse(late);
-  const mapped = vouchedCosignRefusal(rite.faces ?? [], fold.pending.body);
+  const mapped = vouchedCosignRefusal(rite.faces, fold.pending.body);
   if (mapped !== null) return lapse(mapped);
   const keys = at.keys();
   if (keys === null) return lapse(refuse("pulama-locked", "this keeper holds no key to vest; light the successor by hand: lares rite kukulu on a terminal"));
   try {
-    const mark = await signPulamaRecord<"keeper-vested">({ act: "keeper-vested", tessera, begun, next, to: sha256HexBytesSync(unhex(at.to)), node: true, faces: keys.faces.map((f) => f.fcid), nonce: randomUUID(), rite: [...rite.rite] }, by);
+    const unvouched = sealedFacesRefusal(rite.faces, keys.faces.map((f) => f.ordinal), fold.pending.body.faces);
+    if (unvouched !== null) return lapse(unvouched);
+    // EVERY CHECK PASSED: only now does the rite begin (it claims a lei return and rests its begun half), and only then does a key leave.
+    const started = await rite.begin();
+    if (!started.ok) return lapse(refuse(started.refusal, started.detail));
+    const mark = await signPulamaRecord<"keeper-vested">({ act: "keeper-vested", tessera, begun, next, to: sha256HexBytesSync(unhex(at.to)), node: true, faces: keys.faces.map((f) => f.fcid), nonce: randomUUID(), rite: [...started.rite] }, by);
     if (!(await records.writeNew(pulamaKeeperTitle(tessera, "vest"), JSON.stringify(mark)))) return refuse("vest-spent", "this commit already spent its one rite attempt; commit again on a terminal (`lares pulama keeper-commit`), or light the successor by hand: lares rite kukulu");
-    const payload: VestPayload = { node: hex(keys.treeKey), faces: keys.faces.map((f) => ({ fcid: f.fcid, ordinal: f.ordinal, fck: hex(f.fck), spent: f.spent ?? 0 })), spent: at.spent, worn: at.worn };
-    const plain = new TextEncoder().encode(JSON.stringify(payload));
+    const plain = packPayload({ node: keys.treeKey, faces: keys.faces.map((f) => ({ fcid: f.fcid, ordinal: f.ordinal, fck: f.fck, spent: f.spent ?? 0 })), spent: at.spent, worn: at.worn });
     let box;
     try { box = sealToRecipient({ recipientPub: unhex(at.to), plaintext: plain, info: VEST_INFO, extraSalt: [unhex(begun), new TextEncoder().encode(next)] }); } finally { plain.fill(0); }
     const slot = await signPulamaRecord<"keeper-slot">({ act: "keeper-slot", tessera, begun, next, to: at.to, box: { e: hex(box.senderEphemeralPub), n: hex(box.aeadNonce), c: hex(box.ciphertext) } }, by);
-    return { slot, tessera, faces: keys.faces.map((f) => f.ordinal).sort((x, y) => x - y), rite: rite.rite };
+    return { slot, tessera, faces: keys.faces.map((f) => f.ordinal).sort((x, y) => x - y), rite: started.rite };
   } finally {
     keys.treeKey.fill(0);
     for (const f of keys.faces) f.fck.fill(0);
@@ -335,7 +408,7 @@ export function keeperEphemeral(): KeeperEphemeral {
       try {
         const plain = openFromSender({ recipientSecret: secret, senderEphemeralPub: unhex(slot.box.e), aeadNonce: unhex(slot.box.n), ciphertext: unhex(slot.box.c), info: VEST_INFO, extraSalt: [unhex(slot.begun), new TextEncoder().encode(slot.next)] });
         if (plain === null) return null;
-        try { return JSON.parse(new TextDecoder().decode(plain)) as VestPayload; } catch { return null; } finally { plain.fill(0); }
+        try { return unpackPayload(plain); } finally { plain.fill(0); }
       } finally { secret.fill(0); }
     },
     spent: () => used,
@@ -365,7 +438,7 @@ export async function keeperLand(records: SwarmWikiPort, by: KukuluSigner, at: K
   if (pending === null || (at.tessera !== undefined && pending.tessera !== at.tessera)) {
     const landed = at.tessera !== undefined && (await records.read(pulamaKeeperTitle(at.tessera, "host"))) !== null;
     return landed ? refuse("keeper-already-landed", `a host half already rests for tessera ${at.tessera}; a landing writes once`)
-      : refuse(before.fork ? "fork" : "begun-absent", before.fork ? "the keeper chain reads a fork; nothing lands" : "no live keeper commit stands to land");
+      : refuse(before.fork ? "fork" : "begun-absent", before.fork ? (before.forkCommits.length > 0 ? "the keeper chain reads two live commits at one link; nothing lands: a fresh commit settles both (`lares pulama keeper-commit` on a terminal)" : "the keeper chain reads two landings at one link; nothing lands: read them with `lares pulama status`, and keep the struck fire lit: lares rite kukulu on a terminal") : "no live keeper commit stands to land; commit one on a terminal: lares pulama keeper-commit");
   }
   const vestings = at.vest === null ? 0 : before.vestings + 1;
   const act = await signPulamaRecord<"keeper-landed">({ act: "keeper-landed", tessera: pending.tessera, v: pending.v, prev: pending.begun, begun: pending.begun, closure: at.closure, image: at.image, faces: at.faces, worn: at.worn, budget: { spent: at.spent }, vestings, vest: at.vest, nonce: randomUUID() }, by);

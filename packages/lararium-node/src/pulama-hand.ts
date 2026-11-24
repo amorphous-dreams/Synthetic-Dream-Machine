@@ -65,7 +65,7 @@
  *                  census ride the keeper that still holds the fire; the successor holds no socket and serves nothing meanwhile.
  *   keeper-receive (the successor) open the slot with its one-handoff key (spent on the open), adopt the node key and each face
  *                  key, check the slot against this house's own key, the commit and its own closure, carry the budget, and land
- *                  the host half naming what it received. Any refusal or a red pair locks it: the old fire still burns.
+ *                  the host half naming what it received. Any refusal or a red pair locks it: the lit fire still burns.
  *   keeper-land    (a keeper the hand lit by passphrase: the struck fire) land the live commit with no vest; a keeper lit by a
  *                  vest, or a passing one, refuses.
  *   take-fire      (a lit successor) claim the vessel socket; it refuses while another keeper still holds it.
@@ -85,7 +85,7 @@ import { nativeKdf } from "@lararium/mesh/node";
 import { UNLOCK_ATTEMPTS_PER_BOOT, type CustodyHolder } from "./custody-holder.js";
 import { pulamaSignerOf } from "./kukulu-gate.js";
 import { pulamaRecordCid } from "./pulama-admit.js";
-import { CLOSURE, keeperCommit, keeperEphemeral, keeperFold, keeperLand, keeperSlotBinds, keeperSlotOf, keeperVest, type KeeperEphemeral, type KeeperRiteReading, type KeeperStanding } from "./pulama-keeper.js";
+import { CLOSURE, keeperCommit, keeperEphemeral, keeperFold, keeperLand, keeperPayloadDrop, keeperSlotBinds, keeperSlotOf, keeperVest, type KeeperEphemeral, type KeeperRiteReading, type KeeperStanding } from "./pulama-keeper.js";
 import type { PulamaAdmissions } from "./pulama-admit.js";
 import type { PulamaServer } from "./pulama-server.js";
 import type { RehiveOutcome } from "./face-rehive.js";
@@ -224,7 +224,9 @@ export function pulamaHandDoor(a: {
         log(`lit: ${faces.filter((r) => r === "opens" || r === "already-unlocked").length} face(s) open`);
         // THE STRUCK FIRE IS ONE PROOF: `admit: true` admits the reported image for every lit face under the route that just lit,
         // so a moved closure asks the passphrase once. An image already admitted stays as it stands.
-        if (f["admit"] === true && a.admissions && !passing) {
+        // A KEEPER THAT PASSED ITS FIRE NAMES IT (blind read F4), never a silent skip: its lock spends the passing, then a struck light admits.
+        if (f["admit"] === true && passing) return { op: "light", reading: opened.reading, faceReadings: faces, admit: "fire-passing", detail: "this keeper vested its fire to a successor, so it admits nothing; lock it (`lares pulama lock`) and light it again to strike the fire here, or finish the handoff: lares rite kukulu", ...status() };
+        if (f["admit"] === true && a.admissions) {
           const image = a.image.raised();
           if (image === null) return { op: "light", reading: opened.reading, faceReadings: faces, admit: "image-unreported", ...status() };
           const by = await pulamaSignerOf(holder);
@@ -363,7 +365,8 @@ export function pulamaHandDoor(a: {
           return { op: "rehive", reading, face, ...(typeof e.message === "string" ? { detail: e.message } : {}) };
         }
       }
-      case "lock": await server.lock(); litBy = null; return { op: "lock", ...status() };
+      // THE LOCK SPENDS THE PASSING (blind read F4): the slot already left, the keys zero here, and a later light strikes the fire anew.
+      case "lock": await server.lock(); litBy = null; passing = false; return { op: "lock", ...status() };
       case "close": {
         if (passing) return passingRefusal("close");
         if (!holder.isUnlocked()) return { op: "close", reading: "pulama-locked", ...status() };
@@ -433,30 +436,31 @@ export function pulamaHandDoor(a: {
         if (slot.body.to !== ephemeral.pub) return { op: "keeper-receive", reading: "slot-names-another", detail: "the slot names another successor key than this keeper's offer" };
         const payload = ephemeral.open(slot.body);
         if (payload === null) return { op: "keeper-receive", reading: "slot-unopened", detail: "the slot opens under no key this keeper offered; nothing seats" };
-        // A RECEIVE THAT FAILS LOCKS THIS SUCCESSOR, and the old keeper (which vested, so it passes the fire and writes nothing) still
+        // A RECEIVE THAT FAILS LOCKS THIS SUCCESSOR, and the fire-holder (which vested, so it passes the fire and writes nothing) still
         // serves; the cure that runs from here is the struck fire, which relights one keeper by passphrase.
         const cure = "this successor locks; the old keeper still holds the fire but passes it and writes nothing: relight one keeper by hand with `lares rite kukulu` on a terminal (the struck fire)";
         const red = async (reading: string, detail: string): Promise<PulamaHandAnswer> => { await holder.lock(); litBy = null; log(`keeper-receive: ${reading}; nothing stays seated`); return { op: "keeper-receive", reading, detail: `${detail}; ${cure}`, ...status() }; };
-        const node = Uint8Array.from(Buffer.from(payload.node, "hex"));
-        try { await holder.adopt(node as Parameters<CustodyHolder["adopt"]>[0]); }
-        catch { return red("slot-refused", "the node key the slot carried opens no custody root here"); }
-        finally { node.fill(0); }
-        const by = await pulamaSignerOf(holder);
-        const binds = await keeperSlotBinds(a.records, by, slot, { to: ephemeral.pub, closure });
-        if (binds !== null) return red(binds.refusal, binds.detail);
-        const adopted: string[] = [];
-        for (const face of payload.faces) {
-          const fck = Uint8Array.from(Buffer.from(face.fck, "hex"));
-          try { const opened = await holder.adoptFace?.(face.fcid, fck); if (opened?.reading === "opens") adopted.push(face.fcid); } finally { fck.fill(0); }
-        }
-        holder.seedSpent?.(payload.spent, payload.faces.map((face) => ({ fcid: face.fcid, spent: face.spent })));
-        const landed = await keeperLand(a.records, by, { ...await standing(), worn: a.worn?.() ?? payload.worn, vest: { slot: pulamaRecordCid(slot), node: true, faces: adopted }, tessera: slot.body.tessera });
-        if ("refusal" in landed) return red(landed.refusal, landed.detail);
-        if (!landed.pair.par) return red(landed.pair.red ?? "keeper-red", `the keeper pair reads ${landed.pair.red ?? "red"}; the successor locks and the old fire still burns`);
-        litBy = "vest";
-        server.refresh();
-        log(`keeper landed by vest: v${landed.fold.v} par, ${adopted.length} face(s) carried`);
-        return { op: "keeper-receive", reading: "landed", pair: landed.pair, vestings: landed.fold.vestings, ...status() };
+        // THE KEYS ARRIVE AS BYTES (blind read F8) and zero when the receive settles, whichever way it settles.
+        try {
+          try { await holder.adopt(payload.node as Parameters<CustodyHolder["adopt"]>[0]); }
+          catch { return red("slot-refused", "the node key the slot carried opens no custody root here"); }
+          const by = await pulamaSignerOf(holder);
+          const binds = await keeperSlotBinds(a.records, by, slot, { to: ephemeral.pub, closure });
+          if (binds !== null) return red(binds.refusal, binds.detail);
+          const adopted: string[] = [];
+          for (const face of payload.faces) {
+            const opened = await holder.adoptFace?.(face.fcid, face.fck);
+            if (opened?.reading === "opens") adopted.push(face.fcid);
+          }
+          holder.seedSpent?.(payload.spent, payload.faces.map((face) => ({ fcid: face.fcid, spent: face.spent })));
+          const landed = await keeperLand(a.records, by, { ...await standing(), worn: a.worn?.() ?? payload.worn, vest: { slot: pulamaRecordCid(slot), node: true, faces: adopted }, tessera: slot.body.tessera });
+          if ("refusal" in landed) return red(landed.refusal, landed.detail);
+          if (!landed.pair.par) return red(landed.pair.red ?? "keeper-red", `the keeper pair reads ${landed.pair.red ?? "red"}; the successor locks and the old fire still burns`);
+          litBy = "vest";
+          server.refresh();
+          log(`keeper landed by vest: v${landed.fold.v} par, ${adopted.length} face(s) carried`);
+          return { op: "keeper-receive", reading: "landed", pair: landed.pair, vestings: landed.fold.vestings, ...status() };
+        } finally { keeperPayloadDrop(payload); }
       }
       case "keeper-land": {
         if (passing) return passingRefusal("keeper-land");
