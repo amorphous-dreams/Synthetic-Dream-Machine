@@ -254,6 +254,11 @@ export function readOrMintDevice(src: SessionSources): KeepDevice {
   return { uuid, name, dir: `${name}-${uuid.slice(0, 8)}` };
 }
 
+/** The device this machine already names, read and never minted: null where no identity file stands (a keep that mirrors nothing names no device). */
+export function readDevice(src: SessionSources): KeepDevice | null {
+  return isFile(src.deviceFile) ? readOrMintDevice(src) : null;
+}
+
 // ── the sanitize ────────────────────────────────────────────────────────────────────────────────────────────────────
 
 /** The top-level keys that name the account or carry a push key: they never leave the device. */

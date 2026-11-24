@@ -44,12 +44,12 @@
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
-import { readFileSync, statSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { secretShapes } from "@lararium/mesh";
 import { join } from "node:path";
 import { MANIFEST_FILE, unsafeRelPath } from "./bundle-manifest.js";
 import { configuredKeepSessions } from "./keep-config.js";
-import { DEVICES_DIR, SessionsRefused, mirrorSessions, readOrMintDevice, sessionSources, type SessionSources } from "./keep-sessions.js";
+import { DEVICES_DIR, SessionsRefused, mirrorSessions, readDevice, readOrMintDevice, sessionSources, type KeepDevice, type SessionSources } from "./keep-sessions.js";
 import { KEEP_INTO, KeepRefused, RITE_KEEP, codedMessage, keepFaceLine } from "./rite-keep.js";
 import { RETURNS_SPENT, type RefillPort, type RiteVerbAnswer } from "./rite-kukulu.js";
 import type { ShoreFlushReading } from "./shore-core.js";
@@ -165,9 +165,12 @@ export async function riteKeepHost(ports: KeepHostPorts, opts: KeepHostOptions):
     // THE DEVICE'S SESSIONS: on unless the line, the ports or the house config say otherwise. The identity reads (or mints)
     // before the guard, so the guard knows the one device dir it allows.
     const sessionsOn = opts.sessions ?? (ports.sessions !== undefined ? ports.sessions !== null : configuredKeepSessions());
-    const sources = sessionsOn ? (ports.sessions ?? sessionSources()) : null;
-    const device = sources === null ? null : readOrMintDevice(sources);
-    const devRel = device === null ? null : `${DEVICES_DIR}/${device.dir}`;
+    // The sources stand even where the mirror rests: the device's dir already in the workspace belongs to this keep either way.
+    const sources = ports.sessions === null ? null : (ports.sessions ?? sessionSources());
+    let device: KeepDevice | null = null;
+    if (sources !== null) { if (sessionsOn) device = readOrMintDevice(sources); else { try { device = readDevice(sources); } catch { device = null; } } }
+    // Where the mirror rests, the device dir stands as this keep's; where it does not, the dir counts only if the workspace already holds it.
+    const devRel = device === null || (!sessionsOn && !existsSync(join(dir, DEVICES_DIR, device.dir))) ? null : `${DEVICES_DIR}/${device.dir}`;
     const kept2 = devRel === null ? `${into}/` : `${into}/ and ${devRel}/`;
     const git = async (argv: readonly string[], refusal?: string): Promise<string> => {
       const r = await ports.git(dir, argv);
@@ -193,32 +196,40 @@ export async function riteKeepHost(ports: KeepHostPorts, opts: KeepHostOptions):
     const before = await outside();
     if (before.length > 0) throw new HostRefused("keep-tree-unclean", `the workspace "${name}" holds changes outside ${kept2} (${before.slice(0, 5).join(", ")}${before.length > 5 ? ", …" : ""}); commit or clear them first, since a keep commits ${kept2} alone`, { outside: before });
     /** The secret-shaped strings among the files git reads as new or changed under one place, each by its path. */
-    const scan = async (place: string, textOf: (rel: string) => string | null): Promise<string[]> => {
-      const found: string[] = [];
+    const scan = async (place: string, textOf: (rel: string) => string | null): Promise<{ rel: string; shape: string }[]> => {
+      const found: { rel: string; shape: string }[] = [];
       for (const rel of (await git(["ls-files", "-mo", "--exclude-standard", "-z", "--", place], "keep-status-unread")).split("\0").filter((p) => p !== "")) {
         const text = textOf(rel);
         const shapes = text === null ? [] : secretShapes(text);
-        if (shapes.length > 0) found.push(`${rel} (${shapes[0]!.slice(0, 8)}…)`);
+        if (shapes.length > 0) found.push({ rel, shape: shapes[0]!.slice(0, 8) });
       }
       return found;
     };
 
     // ── 2. THE SESSIONS, on the host, before anything spends ──────────────────────────────────────────────────
     let sessionsMoved = false;
+    // THE WITHHELD: a device file that reads secret-shaped stays out of the commit, in place; the rest of the keep goes on.
+    const withheld: string[] = [];
     if (sources !== null && device !== null && devRel !== null) {
-      const mirrored = mirrorSessions(sources, dir, device);
-      for (const f of mirrored.unpacked) ports.say(`keep: the transcript ${f} did not compress; it waits for the next keep`);
+      if (sessionsOn) {
+        const mirrored = mirrorSessions(sources, dir, device);
+        for (const f of mirrored.unpacked) ports.say(`keep: the transcript ${f} did not compress; it waits for the next keep`);
+      }
       // A compressed transcript reads by the bytes it unpacks to; a file that left, or a nested repo's own dir, reads as none.
       const hits = await scan(devRel, (rel) => {
         const abs = join(dir, rel);
         try { if (!statSync(abs).isFile()) return null; } catch { return null; }
         return (rel.endsWith(".zst") ? sources.unzstd(abs) : readFileSync(abs)).toString("latin1");
       });
-      if (hits.length > 0) throw new HostRefused("keep-secret-shaped", `the device's sessions hold secret-shaped strings: ${hits.slice(0, 8).join(", ")}${hits.length > 8 ? `, … (${hits.length} files)` : ""}; nothing commits and no return spent. Inspect them and clear each at its source under ${sources.claudeHome} (the mirror follows), or keep the house alone with --no-sessions`, { secrets: hits });
+      for (const h of hits) withheld.push(h.rel);
+      if (hits.length > 0) {
+        const named = hits.slice(0, 8).map((h) => `${h.rel} (${h.shape}…)`).join(", ") + (hits.length > 8 ? `, … (${hits.length} files)` : "");
+        ports.say(`keep: withheld from the commit, secret-shaped, left in place: ${named}; clear each at its source under ${sources.claudeHome} (the mirror follows), and a later keep carries it`);
+      }
       const st = await ports.git(dir, ["status", "--porcelain=v1", "-z", "--untracked-files=all", "--", devRel]);
       if (st.code !== 0) throw new HostRefused("keep-status-unread", `git status answered ${st.code}: ${st.stderr.trim() || st.stdout.trim()}`);
-      sessionsMoved = st.stdout !== "";
-      base["sessions"] = { device: devRel, moved: sessionsMoved };
+      sessionsMoved = changedPaths(st.stdout).some((p) => !withheld.includes(p));
+      base["sessions"] = { device: devRel, moved: sessionsMoved, ...(withheld.length > 0 ? { withheld } : {}) };
     }
 
     // ── 3. THE VESSEL HALF ────────────────────────────────────────────────────────────────────────────────────
@@ -265,7 +276,7 @@ export async function riteKeepHost(ports: KeepHostPorts, opts: KeepHostOptions):
     if (seen !== bundleId) throw new HostRefused("keep-workspace-differs", `the vessel cut bundle ${bundleId} and ${join(dir, into)} holds ${seen === null ? "no bundle" : String(seen)}; the host's workspace "${name}" and the vessel's stand as two directories`);
     const after = await outside();
     if (after.length > 0) throw new HostRefused("keep-tree-unclean", `the keep left changes outside ${kept2} (${after.slice(0, 5).join(", ")}); nothing commits`, { outside: after });
-    const hits = await scan(into, (rel) => { try { return readFileSync(join(dir, rel), "utf8"); } catch { return null; } });
+    const hits = (await scan(into, (rel) => { try { return readFileSync(join(dir, rel), "utf8"); } catch { return null; } })).map((h) => `${h.rel} (${h.shape}…)`);
     if (hits.length > 0) throw new HostRefused("keep-secret-shaped", `the bundle holds secret-shaped strings: ${hits.join(", ")}; nothing commits. Inspect them, clear the record from the house, and keep again`, { secrets: hits });
 
     // ── IF DUE: an unmoved house whose bundle the remote-tracking branch holds, with nothing owed, stops here ──────
@@ -307,7 +318,7 @@ export async function riteKeepHost(ports: KeepHostPorts, opts: KeepHostOptions):
 
     // ── 6. GIT: one commit, rebase, one push ──────────────────────────────────────────────────────────────────
     stage = "commit";
-    await git(["add", "-A", "--", into, ...(devRel !== null ? [devRel] : [])], "keep-commit-refused");
+    await git(["add", "-A", "--", into, ...(devRel !== null ? [devRel, ...withheld.map((w) => `:(exclude,literal)${w}`)] : [])], "keep-commit-refused");
     const staged = (await ports.git(dir, ["diff", "--cached", "--quiet"])).code !== 0;
     if (staged) await git([...KEEP_IDENTITY, "commit", "-q", `--author=${KEEP_AUTHOR.name} <${KEEP_AUTHOR.email}>`, "-m", `keep ${bundleId}`], "keep-commit-refused");
     base["committed"] = staged;
@@ -316,7 +327,7 @@ export async function riteKeepHost(ports: KeepHostPorts, opts: KeepHostOptions):
     const upstream = `refs/remotes/${remote}/${branch}`;
     const tracked = (await ports.git(dir, ["rev-parse", "--verify", "-q", upstream])).code === 0;
     if (tracked) {
-      const rebased = await ports.git(dir, [...KEEP_IDENTITY, "rebase", "-q", upstream]);
+      const rebased = await ports.git(dir, [...KEEP_IDENTITY, "rebase", "-q", "--autostash", upstream]);
       if (rebased.code !== 0) {
         await ports.git(dir, ["rebase", "--abort"]);
         throw new HostRefused("keep-rebase-refused", `the keep commit does not rebase onto ${remote}/${branch} (${rebased.stderr.trim()}); the workspace stands as the commit left it. Settle ${remote}/${branch} by hand, then run the rite again`);

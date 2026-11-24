@@ -217,6 +217,12 @@ test("the keep rite lays a bundle into a bound workspace under a lei, and a bran
     assert.notEqual(dry.status, 0, dry.stdout);
     assert.equal(old.answer(dry).error?.code, "swarm-lei-returns-spent", dry.stdout);
     assert.equal(git(workspace, "rev-list", "--count", "HEAD"), git(remote, "rev-list", "--count", "main"), "nothing committed without a return");
+    // THE MIRROR A REFUSED KEEP LEAVES STANDING belongs to this device's dir: a --no-sessions keep reads it as the sessions' half,
+    // never as a dirty tree, and refuses on the empty lei alone.
+    assert.match(git(workspace, "status", "--porcelain", "--untracked-files=all"), /devices\/.*pond\.md/, "the refused keep left its mirror in the workspace");
+    const noSessions = old.lares(["rite", "keep", "--workspace", "backup", "--no-sessions", "--json"]);
+    assert.notEqual(noSessions.status, 0, noSessions.stdout);
+    assert.equal(old.answer(noSessions).error?.code, "swarm-lei-returns-spent", noSessions.stdout);
     rmSync(join(old.claudeHome, "projects", "-scratch-proj", "memory", "pond.md"));
 
     // ── the census before the down ──────────────────────────────────────────────────────────────────────────────
