@@ -295,6 +295,9 @@ export function keeperRiteOver(a: {
         const begun = await a.rite.begin({ lei, unstrung }, at);
         if (begun.ok) tesserae.push(begun.tessera);
         else if (begun.refusal === "swarm-lei-absent") none ??= begun.refusal;
+        // A BEGIN THAT FAILS PART WAY NAMES WHAT IT BEGAN (blind read L1): the halves earlier faces rested stay resting, named here and
+        // in the lapse the vest rests, so the hand reads them rather than finding them.
+        else if (tesserae.length > 0) return { ...no(begun.refusal, `the rite began ${tesserae.length} half(s) (${tesserae.join(", ")}) before a later face refused; they rest unlanded: read them with \`lares rite receipts --rite kukulu\``), begun: [...tesserae] };
         else return no(begun.refusal, "the rite this vest rides begins nothing");
       }
       if (tesserae.length === 0) return no("vest-rite-absent", `no lit face's kukulu lei began a rite for this vest (${none ?? "no face"})`);

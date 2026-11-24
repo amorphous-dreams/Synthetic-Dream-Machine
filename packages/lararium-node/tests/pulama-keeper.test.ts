@@ -15,7 +15,7 @@ import { UNLOCK_ATTEMPTS_PER_BOOT, makeCustodyHolder, type CustodyHolder } from 
 import { personaGroupDigest } from "../src/persona-group-file.js";
 import { pulamaAdmissions, signPulamaRecord, verifiedPulamaRecord } from "../src/pulama-admit.js";
 import { pulamaHandDoor, type PulamaHandAnswer } from "../src/pulama-hand.js";
-import { KEEPER_STRUCK_EVERY, keeperEphemeral, keeperFold, pulamaKeeperPrefix } from "../src/pulama-keeper.js";
+import { KEEPER_STRUCK_EVERY, keeperEphemeral, keeperFold, keeperSlotOpen, pulamaKeeperPrefix } from "../src/pulama-keeper.js";
 import { servePulama } from "../src/pulama-server.js";
 import { listenPulama, pulamaAnswers } from "../src/pulama-socket.js";
 import { pulamaImage, pulamaRecords } from "../src/pulama-state.js";
@@ -41,7 +41,7 @@ async function house(label: string, opts: { readonly realRite?: true } = {}) {
   const state = scratch(), records = pulamaRecords(state), image = pulamaImage(state);
   const lines: string[] = [], answers: PulamaHandAnswer[] = [];
   /** THE LIVE RITE, faked at its port (`keeperRiteOver` reads it for real below): an offer of "rite" begins one, at `riteDevices`. */
-  const live = { devices: 1, begun: 0, faces: [] as { ordinal: number; group: string; devices: number }[] };
+  const live = { devices: 1, begun: 0, faces: [] as { ordinal: number; group: string; devices: number }[], failGroup: null as string | null };
   const fakeRite = async (offer: unknown, keeper: { readonly to: string; readonly next: string }) => {
     if (offer !== "rite") return { ok: false as const, refusal: "vest-rite-absent", detail: "a vest rides a live kūkulu rite, and this frame carries no offer with a vouch" };
     const faces = live.faces.length > 0 ? live.faces : [{ ordinal: 0, group: `group-${label}`, devices: live.devices }];
@@ -51,7 +51,7 @@ async function house(label: string, opts: { readonly realRite?: true } = {}) {
   /** THE REAL RITE (`keeperRiteOver` over this keeper's own holder): its vouches verify for real; its begin, faked at the rite port,
    *  counts each lei return it would claim, so a refusal that spends none reads `begins` unmoved. */
   const begins: string[] = [];
-  const ritePort = { begin: async (_o: unknown, at: { group: string }) => { begins.push(at.group); return { ok: true as const, tessera: sha(`begun-${at.group}-${begins.length}`), lei: "11".repeat(32), n: 1 }; }, land: async () => ({ par: true }) };
+  const ritePort = { begin: async (_o: unknown, at: { group: string }) => { if (at.group === live.failGroup) return { ok: false as const, refusal: "kukulu-lei-spent" }; begins.push(at.group); return { ok: true as const, tessera: sha(`begun-${at.group}-${begins.length}`), lei: "11".repeat(32), n: 1 }; }, land: async () => ({ par: true }) };
   const keeperRite = opts.realRite ? keeperRiteOver({ holder: fx.kept, hand: async () => "aa".repeat(32), rite: ritePort as never, image: () => image.raised() }) : fakeRite;
   const watch = (door: (f: unknown) => Promise<PulamaHandAnswer>) => async (frame: unknown) => { const a = await door(frame); answers.push(a); return a; };
   const old = watch(pulamaHandDoor({ holder: fx.kept, server: fx.server, image, records, admissions: pulamaAdmissions(records), keeperRite, worn: () => 0, onLog: (l) => lines.push(l) }));
@@ -296,6 +296,29 @@ describe("RED the vest hands the living fire, and the successor lands par", () =
     expect(payload.faces[0]).toMatchObject({ fcid: expect.any(String), ordinal: 0 });
   });
 
+  test("L3 THE SLOT WIRE STANDS FROZEN: a v1 slot sealed under fixed keys (its plaintext packed by hand from the documented layout) opens under the current reader, byte for byte; a reader accepts every version an older image could write", () => {
+    // GOLDEN v1: never regenerate this to make a reader pass; a new version adds its own golden beside this one.
+    const golden = {
+      secret: "5a".repeat(32),
+      body: { act: "keeper-slot", tessera: "0".repeat(64), begun: "be".repeat(32), next: "sha256:" + "94".repeat(32), to: "b0d08f35b4683381489afb32825e59152d47d19bc9e050d6d5a954984c9d1e2c",
+        box: { e: "a54040e08770832d33ce9e217733af2c396a779c79d4f0d26c3c18e6b59b6877", n: "34558478e83916a862a963df8b708caddda2220ccf0122d2",
+          c: "78a87aec79839e8304a050dbcfd1b314f4dcd44533b4f48bc3ca46ac17e0495509a6dca8c33b3ac5bd2f495fb3dd1deefa7876af44771e8138ceebff889de9595e7fd314044d55eb00acdc7600f6269b3455bb095379bf57f25ba04525d083d778742a53d484d0f8868cc99dca60d7c6" } },
+    };
+    const secret = Uint8Array.from(Buffer.from(golden.secret, "hex"));
+    const payload = keeperSlotOpen(secret, golden.body as never);
+    expect(payload).not.toBeNull();
+    expect(Buffer.from(payload!.node).toString("hex")).toBe("11".repeat(32));
+    expect(payload!.spent).toBe(3);
+    expect(payload!.worn).toBe(7);
+    expect(payload!.faces).toHaveLength(1);
+    expect(payload!.faces[0]).toMatchObject({ fcid: "fcid-golden", ordinal: 2, spent: 1 });
+    expect(Buffer.from(payload!.faces[0]!.fck).toString("hex")).toBe("22".repeat(32));
+    // CONTROL: the same slot under another key, or one byte of ciphertext moved, opens nothing.
+    expect(keeperSlotOpen(new Uint8Array(32).fill(0x5b), golden.body as never)).toBeNull();
+    const moved = { ...golden.body, box: { ...golden.body.box, c: golden.body.box.c.replace(/^78/, "79") } };
+    expect(keeperSlotOpen(Uint8Array.from(Buffer.from(golden.secret, "hex")), moved as never)).toBeNull();
+  });
+
   test("CONTROL: a replayed vest refuses `vest-spent`; a replayed slot refuses at the successor; a slot to another key refuses; a replayed land refuses", async () => {
     const h = await house("keeper-vest-replays");
     await h.commit();
@@ -475,6 +498,20 @@ describe("RED the vest over the REAL rite: every face the keeper would seal stan
     const both = await vestOver(h, [{ group: "group-keeper-real-unvouched", devices: 1 }, { group: "group-keeper-real-unvouched-h1", devices: 1 }]);
     expect(both.landed).toMatchObject({ reading: "landed" });
     expect(h.begins).toHaveLength(2);
+  });
+
+  test("L1: a begin that fails on a later face after an earlier face began names the halves it began, in the refusal and in the lapse it rests", async () => {
+    const h = await house("keeper-real-partial", { realRite: true });
+    await fx!.kept.foundFace({ group: personaGroupDigest("group-keeper-real-partial-h1"), ordinal: 1, slots: fixtureSlots });
+    await h.commit(D2, 1);
+    h.live.failGroup = "group-keeper-real-partial-h1";
+    const out = await vestOver(h, [{ group: "group-keeper-real-partial", devices: 1 }, { group: "group-keeper-real-partial-h1", devices: 1 }]);
+    expect(h.begins).toEqual(["group-keeper-real-partial"]);
+    const half = sha("begun-group-keeper-real-partial-1");
+    expect(out.vest).toMatchObject({ reading: "kukulu-lei-spent", detail: expect.stringMatching(new RegExp(`${half}[\\s\\S]*lares rite receipts --rite kukulu`)) });
+    const by = await pulamaSignerOf(fx!.kept);
+    const [mark] = (await h.records.list(pulamaKeeperPrefix())).filter((t) => t.endsWith("/vest"));
+    expect(verifiedPulamaRecord(await h.records.read(mark!), by.key)!.body).toMatchObject({ act: "keeper-lapsed", reason: "kukulu-lei-spent", halves: [half] });
   });
 
   test("F3: a late refusal (the vouch counts two devices against a one-device commit with no co-sign) spends no lei and begins no rite", async () => {

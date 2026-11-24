@@ -245,6 +245,8 @@ export interface VestPayload {
   readonly faces: ReadonlyArray<{ readonly fcid: string; readonly ordinal: number; readonly fck: Uint8Array; readonly spent: number }>;
   readonly spent: number; readonly worn: number | null;
 }
+/** THE WIRE VERSION THIS IMAGE WRITES. THE READER RULE: a reader accepts every version an older image could write (each frozen as
+ *  a golden slot in `pulama-keeper.test.ts`), so a successor never locks on a slot its elder sealed; a new version adds its golden. */
 const PAYLOAD_V = 1, KEY = 32;
 /** Pack a payload: v1 · node(32) · spent u32 · worn i32 (-1 null) · faces u16 · each [fcid u16+utf8 · ordinal u32 · fck(32) · spent u32]. */
 function packPayload(p: { readonly node: Uint8Array; readonly faces: ReadonlyArray<{ readonly fcid: string; readonly ordinal: number; readonly fck: Uint8Array; readonly spent: number }>; readonly spent: number; readonly worn: number | null }): Uint8Array {
@@ -288,7 +290,7 @@ export function keeperPayloadDrop(p: VestPayload): void { p.node.fill(0); for (c
  *  and the device count the vouch carries. */
 export interface KeeperVouchedFace { readonly ordinal: number; readonly group: string; readonly devices: number }
 /** What a begun rite answers: the tesserae it rested, or why it began nothing. */
-export type KeeperRiteBegun = { readonly ok: true; readonly rite: readonly string[] } | { readonly ok: false; readonly refusal: string; readonly detail: string };
+export type KeeperRiteBegun = { readonly ok: true; readonly rite: readonly string[] } | { readonly ok: false; readonly refusal: string; readonly detail: string; readonly begun?: readonly string[] };
 /** The live rite as the vest reads it: every vouch verified, each face it names, and a `begin` the vest calls only after every
  *  check passes, so a refusal spends no lei return and rests no begun half. */
 export type KeeperRiteReading = { readonly ok: true; readonly devices: number; readonly faces: readonly KeeperVouchedFace[]; readonly begin: () => Promise<KeeperRiteBegun> } | { readonly ok: false; readonly refusal: string; readonly detail: string };
@@ -359,8 +361,8 @@ export async function keeperVest(records: SwarmWikiPort, by: KukuluSigner, at: {
   if (fold.pending === null) return refuse("commit-absent", "no live keeper commit names a successor closure, so no key vests: commit one on a terminal (`lares pulama keeper-commit`), or light the successor by hand: lares rite kukulu");
   const { tessera, begun, next } = fold.pending;
   // FROM HERE THE ATTEMPT SPENDS THE COMMIT: a refusal lapses it by name.
-  const lapse = async (why: KeeperRefusal): Promise<KeeperRefusal> => {
-    const mark = await signPulamaRecord<"keeper-lapsed">({ act: "keeper-lapsed", tessera, begun, reason: why.refusal, nonce: randomUUID() }, by);
+  const lapse = async (why: KeeperRefusal, halves: readonly string[] = []): Promise<KeeperRefusal> => {
+    const mark = await signPulamaRecord<"keeper-lapsed">({ act: "keeper-lapsed", tessera, begun, reason: why.refusal, ...(halves.length > 0 ? { halves: [...halves] } : {}), nonce: randomUUID() }, by);
     return (await records.writeNew(pulamaKeeperTitle(tessera, "vest"), JSON.stringify(mark))) ? why : refuse("vest-spent", "this commit already spent its one rite attempt; commit again on a terminal (`lares pulama keeper-commit`), or light the successor by hand: lares rite kukulu");
   };
   if (fold.struckDue) return lapse(refuse("struck-due", `${fold.vestings} handed links stand in a row; light this successor by passphrase (the struck fire): lares rite kukulu on a terminal, and the run starts over`));
@@ -380,7 +382,7 @@ export async function keeperVest(records: SwarmWikiPort, by: KukuluSigner, at: {
     if (unvouched !== null) return lapse(unvouched);
     // EVERY CHECK PASSED: only now does the rite begin (it claims a lei return and rests its begun half), and only then does a key leave.
     const started = await rite.begin();
-    if (!started.ok) return lapse(refuse(started.refusal, started.detail));
+    if (!started.ok) return lapse(refuse(started.refusal, started.detail), started.begun ?? []);
     const mark = await signPulamaRecord<"keeper-vested">({ act: "keeper-vested", tessera, begun, next, to: sha256HexBytesSync(unhex(at.to)), node: true, faces: keys.faces.map((f) => f.fcid), nonce: randomUUID(), rite: [...started.rite] }, by);
     if (!(await records.writeNew(pulamaKeeperTitle(tessera, "vest"), JSON.stringify(mark)))) return refuse("vest-spent", "this commit already spent its one rite attempt; commit again on a terminal (`lares pulama keeper-commit`), or light the successor by hand: lares rite kukulu");
     const plain = packPayload({ node: keys.treeKey, faces: keys.faces.map((f) => ({ fcid: f.fcid, ordinal: f.ordinal, fck: f.fck, spent: f.spent ?? 0 })), spent: at.spent, worn: at.worn });
@@ -394,6 +396,14 @@ export async function keeperVest(records: SwarmWikiPort, by: KukuluSigner, at: {
   }
 }
 
+/** Open one slot under a one-handoff secret and read its payload; null where it opens under no key or reads no version this image
+ *  accepts. The caller owns the secret's zeroing. */
+export function keeperSlotOpen(secret: Uint8Array, slot: KeeperSlotBody): VestPayload | null {
+  const plain = openFromSender({ recipientSecret: secret, senderEphemeralPub: unhex(slot.box.e), aeadNonce: unhex(slot.box.n), ciphertext: unhex(slot.box.c), info: VEST_INFO, extraSalt: [unhex(slot.begun), new TextEncoder().encode(slot.next)] });
+  if (plain === null) return null;
+  try { return unpackPayload(plain); } finally { plain.fill(0); }
+}
+
 /** The successor's one-handoff key: minted at its offer, zero-filled at its first open, so a slot spends once. */
 export interface KeeperEphemeral { readonly pub: string; open(slot: KeeperSlotBody): VestPayload | null; spent(): boolean; drop(): void }
 export function keeperEphemeral(): KeeperEphemeral {
@@ -405,11 +415,7 @@ export function keeperEphemeral(): KeeperEphemeral {
     open(slot) {
       if (used) return null;
       used = true;
-      try {
-        const plain = openFromSender({ recipientSecret: secret, senderEphemeralPub: unhex(slot.box.e), aeadNonce: unhex(slot.box.n), ciphertext: unhex(slot.box.c), info: VEST_INFO, extraSalt: [unhex(slot.begun), new TextEncoder().encode(slot.next)] });
-        if (plain === null) return null;
-        try { return unpackPayload(plain); } finally { plain.fill(0); }
-      } finally { secret.fill(0); }
+      try { return keeperSlotOpen(secret, slot); } finally { secret.fill(0); }
     },
     spent: () => used,
     drop() { used = true; secret.fill(0); },

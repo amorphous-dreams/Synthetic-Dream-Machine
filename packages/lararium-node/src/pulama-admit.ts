@@ -99,6 +99,8 @@ export interface KeeperVestedBody {
 /** THE COMMIT LAPSES after one rite attempt that refused: the mark rests where a vest's would, so the commit never vests later. */
 export interface KeeperLapsedBody {
   readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "keeper-lapsed"; readonly tessera: string; readonly begun: string; readonly reason: string; readonly nonce: string;
+  /** The rite halves a begin rested before a later face refused (blind read L1): they rest unlanded, named here. */
+  readonly halves?: readonly string[];
 }
 /** The host half: the successor, lit by vest or by the hand, names what it stands on and what it received. */
 export interface KeeperLandedBody {
