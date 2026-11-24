@@ -31,9 +31,14 @@ export const COMPACTION_DISPLAY = "hoʻoili";
 /** A pet name a hook carries; anything else reads as none. */
 export const PET = /^[a-z0-9][a-z0-9-]{0,62}$/;
 /** The observation's budget: the gate every door read waits on. */
-export const OBSERVE_BUDGET_MS = 3_500;
-/** The wake's read, after the gate, inside the harness's 12-second bound (the grace included). */
-export const OM_BUDGET_MS = 5_000;
+export const OBSERVE_BUDGET_MS = 2_500;
+/**
+ * The wake's read, after the gate. The whole wake (observe, om, and the TERM grace past a budget) finishes under 9 s, well
+ * inside the harness's 12-second bound once node itself starts.
+ */
+export const OM_BUDGET_MS = 3_500;
+/** The whole wake's ceiling, its worst case included: the gate, the read, and one TERM grace. */
+export const WAKE_CEILING_MS = 9_000;
 /** The landing's budget, inside the harness's 30-second bound. */
 export const LANDING_BUDGET_MS = 22_000;
 /** The handback's budget, inside the harness's 20-second bound. */

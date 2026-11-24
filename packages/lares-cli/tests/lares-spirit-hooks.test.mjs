@@ -10,8 +10,8 @@ import { join, resolve } from "node:path";
 import { tmpdir } from "node:os";
 import { spawnSync } from "node:child_process";
 import {
-  COMPACTION_DISPLAY, COMPACTION_WORD, PRECOMPACT_CHARS, busy, compactionAsk, handbackPetOf, inHouse, omContext, omSourceOf, petCandidates, petOf,
-  precompactText, sessionPet, stateDirOf, statePathOf, stopStep, titleMismatch, trueUpText, TRUE_UP_EVERY,
+  COMPACTION_DISPLAY, COMPACTION_WORD, OBSERVE_BUDGET_MS, OM_BUDGET_MS, PRECOMPACT_CHARS, WAKE_CEILING_MS, busy, compactionAsk, handbackPetOf, inHouse,
+  omContext, omSourceOf, petCandidates, petOf, precompactText, sessionPet, stateDirOf, statePathOf, stopStep, titleMismatch, trueUpText, TRUE_UP_EVERY,
 } from "../.claude-plugin/hooks/lares-spirit-core.mjs";
 
 const sourceDir = resolve(import.meta.dirname, "..", ".claude-plugin", "hooks");
@@ -63,6 +63,11 @@ test("the pure parts", async (t) => {
     assert.match(line, /this session's title reads "Kahu Night Watch"; the seated familiar reads "lares-alpha"/);
     assert.match(line, /never retargets/);
     assert.match(line, /lares spirit ah lares-alpha --slot '#\/entry' --add/);
+  });
+  await t.test("the wake's worst case (the gate, the read, one TERM grace) finishes under its ceiling", async () => {
+    const { TERM_GRACE_MS } = await import("../.claude-plugin/hooks/lares-wake-core.mjs");
+    assert.ok(OBSERVE_BUDGET_MS + OM_BUDGET_MS + TERM_GRACE_MS + 250 <= WAKE_CEILING_MS);
+    assert.ok(WAKE_CEILING_MS <= 9_000);
   });
   await t.test("the compaction asks for its closing section, under the word and the pet name", () => {
     const ask = compactionAsk("lares-alpha", null);

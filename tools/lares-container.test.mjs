@@ -231,7 +231,9 @@ for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
   test(`${name}: a spirit verb streams a named host file whole as stdin, and a read verb streams none`, { skip }, async () => {
     const env = { LARES_HOUSE: "@HOUSE@", LARES_WORKSPACE: "/w", FAKE_RUNNING_ID: "vessel" };
     const bytes = Buffer.from("!! Open\n\n* a loop\n", "utf8");
-    for (const wire of [["spirit", "ah", "lares-alpha", "--slot", "#/open"], ["spirit", "round", "lares-alpha"], ["spirit", "residue", "om-wright"]]) {
+    // The carry's verb reads from the built table (`spirit-words.ts`), so a rename of the word reaches this match too.
+    const { COMPACTION_WORD } = await import("../packages/lares-cli/dist/src/spirit-words.js");
+    for (const wire of [["spirit", "ah", "lares-alpha", "--slot", "#/open"], ["spirit", COMPACTION_WORD, "lares-alpha"], ["spirit", "residue", "om-wright"]]) {
       const r = await run(shim, [...wire, "--file", "@HOST_FILE@"], { env, hostInput: bytes });
       assert.equal(r.status, 0, `${wire.join(" ")}: ${r.stderr}`);
       assert.deepEqual(r.received, bytes, wire.join(" "));

@@ -397,12 +397,13 @@ lift_vessel() {
 # that asked for the reading itself (`--observe`) gets that reading alone.
 follow_up=yes
 route_cli() {
-  # A named host file crosses the container boundary as raw stdin (a put's text, and the spirit verbs that take `--file`).
+  # A named host file crosses the container boundary as raw stdin (a put's text, and the spirit verbs that take `--file`: ah, the
+  # carry's verb (its word stands in packages/lares-cli/src/spirit-words.ts; a rename edits this match too) and residue).
   # Rotate the positional
   # arguments while replacing only the consuming value, preserving every other byte of argv.
   stream_file=""
   stream_door=""
-  case "${1:-} ${2:-}" in "tiddler put"|"spirit ah"|"spirit round"|"spirit residue") stream_door=yes ;; esac
+  case "${1:-} ${2:-}" in "tiddler put"|"spirit ah"|"spirit hooili"|"spirit residue") stream_door=yes ;; esac
   if [ -n "$stream_door" ]; then
     stream_n=0 stream_kind="" stream_empty="" stream_want=""
     # One pass names the text sources. A value that rides beside another flag (`--text --file`) counts as a value, never as a flag.
