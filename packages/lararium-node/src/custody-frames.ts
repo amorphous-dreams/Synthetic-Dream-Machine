@@ -145,7 +145,8 @@ export interface CustodyFrameDeps {
   readonly holder: CustodyHolder;
   /** Tear the standing composition down and compose again: `sovereign` true with the private rows, false at the floor. */
   readonly recompose: (sovereign: boolean, ward?: WardCredential) => Promise<CustodyStanding>;
-  readonly lightFace?: (ordinal: number) => Promise<void>;
+  /** Light a face; the answer (`lit` or `refused`) rides back where the live composition gives it. */
+  readonly lightFace?: (ordinal: number) => Promise<"lit" | "refused" | void>;
   /** Close a face through its actor, holding it dark (no relight) until `releaseFace`; answers at CLOSED. */
   readonly dropFace?: (ordinal: number) => Promise<void>;
   /** Lift the hold `dropFace` set, once the lock locked the key or let it be. */
@@ -205,8 +206,8 @@ export interface CustodyFrameDeps {
   readonly rehive?: (face: number, credentials: readonly Credential[]) => Promise<RehiveOutcome>;
   /** Arm face `ordinal`'s NEXT light as a recard (`face-recard`), one use. Absent, every `recard` frame refuses `recard-unavailable`. */
   readonly armRecard?: (ordinal: number) => void;
-  /** Clear face `ordinal`'s recard arm: the door calls it once the awaited light settled, whether the light took the arm or never reached it. */
-  readonly disarmRecard?: (ordinal: number) => void;
+  /** Clear face `ordinal`'s recard arm: the door calls it once the awaited light settled, whether the light took the arm or never reached it. It answers true where an arm still stood (no light took it). */
+  readonly disarmRecard?: (ordinal: number) => boolean | void;
   /**
    * Ask every island of the standing composition that mounts a disk shore to flush (`flushEveryShore`, the same flush the
    * teardown's flush phase runs). A wear that turns the face asks it first, in this process. Absent, or null while no
@@ -709,11 +710,15 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     // THIS FACE'S LIGHT, AWAITED: the lend's sweep fires its lights and answers at once, so the door arms the face, asks its own
     // light and reads the refusals only once that light settled. An arm no light took is cleared the same turn.
     deps.armRecard(face);
-    try { await deps.lightFace(face); }
+    let lightAnswer: "lit" | "refused" | void;
+    let untaken = false;
+    try { lightAnswer = await deps.lightFace(face); }
     catch (e) { return refuse("recard-failed", `face h${face} failed to light (${e instanceof Error ? e.message : String(e)}): the recard clears its arm; read it with \`lares vault status --verbose\`, then \`lares vault recard --face ${face}\` again`); }
-    finally { deps.disarmRecard(face); }
+    finally { untaken = deps.disarmRecard(face) === true; }
     const after = deps.refusedLights().find((r) => r.ordinal === face);
-    if (after !== undefined) return refuse("recard-refused", `face h${face} stayed dark and the recard spent its arm: ${after.cause}. Read it with \`lares vault status --verbose\` and clear what that names, then \`lares vault recard --face ${face}\` again`);
+    // A HELD FACE READS NO REFUSAL (a lock ran ahead of the light): the light's own answer decides, never the refusal list alone.
+    if (lightAnswer === "refused" && after === undefined) return refuse("recard-refused", `face h${face} stays dark and held (a lock or a stand-down ran ahead of its light): the arm went untaken. Read it with \`lares vault status --verbose\`, unlock custody where it reads locked, then \`lares vault recard --face ${face}\` again`);
+    if (after !== undefined) return refuse("recard-refused", `face h${face} stayed dark and ${untaken ? "the arm went untaken (a light had run before the door armed)" : "the recard spent its arm"}: ${after.cause}. Read it with \`lares vault status --verbose\` and clear what that names, then \`lares vault recard --face ${face}\` again`);
     deps.onLog(`recard h${face}: lit`);
     return { op: "recard", face, recarded: true };
   };

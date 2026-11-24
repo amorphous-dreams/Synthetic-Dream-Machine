@@ -23,9 +23,10 @@ const ROUTE = "recard-frame-vessel-route";
 const STALE = "Error: face 0xabc refused: FaceHoldsNoPrekeySecret: [daemon-keyhive] face abc… holds no prekey secret: its Archive was absent or older than its latest card";
 
 function door(opts: { faces?: Record<number, { unlocked: boolean }>; refused?: Array<{ ordinal: number; cause: string }>; proves?: boolean;
-  staysDark?: boolean; lightThrows?: boolean; lightHeld?: boolean; peer?: "ai" | "hand" | "unknown"; pulama?: boolean } = {}) {
+  staysDark?: boolean; lightThrows?: boolean; lightHeld?: boolean; armUntaken?: boolean; peer?: "ai" | "hand" | "unknown"; pulama?: boolean } = {}) {
   const armed: number[] = [];
   const disarmed: number[] = [];
+  let taken = false;
   const lit: number[] = [];
   const proved: Array<readonly Credential[]> = [];
   const logs: string[] = [];
@@ -47,11 +48,14 @@ function door(opts: { faces?: Record<number, { unlocked: boolean }>; refused?: A
       lit.push(ordinal);
       await new Promise((resolve) => setTimeout(resolve, 5));
       if (opts.lightThrows) throw new Error("composition unavailable");
-      if (opts.lightHeld) return;
+      // THE REAL HELD CASE: a lock ran ahead, the actor answers refused at once, and the refusal list leaves a held face out.
+      if (opts.lightHeld) { refused = refused.filter((r) => r.ordinal !== ordinal); return "refused" as const; }
+      taken = opts.armUntaken !== true;
       if (!opts.staysDark) refused = refused.filter((r) => r.ordinal !== ordinal);
       else refused = refused.map((r) => ({ ...r, cause: "FaceRecardRefused: [daemon-keyhive] recard refused (archive-unrested): no row took it" }));
+      return opts.staysDark ? "refused" as const : "lit" as const;
     },
-    disarmRecard: (ordinal: number) => { disarmed.push(ordinal); },
+    disarmRecard: (ordinal: number) => { disarmed.push(ordinal); return !taken; },
     replayLend: async () => { throw new Error("the recard lights its own face, never the whole lend"); },
     peerOf: async () => opts.peer ?? "hand",
     ...(opts.pulama ? { pulama: { standing: () => ({ session: true, waits: null }), dial: async () => ({ session: true, waits: null }), lent: () => [0, 2], tellWorn: async () => {} } } : {}),
@@ -114,8 +118,14 @@ describe("the custody door's recard frame", () => {
     expect(await throws.send(frame(2))).toMatchObject({ refusal: { reason: "recard-failed" } });
     expect(throws.disarmed).toEqual([2]);
     const held = door({ lightHeld: true });
-    expect(await held.send(frame(2))).toMatchObject({ refusal: { reason: "recard-refused" } });
+    const heldAnswer = await held.send(frame(2));
+    expect(heldAnswer).toMatchObject({ refusal: { reason: "recard-refused" } });
+    expect(heldAnswer).not.toHaveProperty("recarded");
+    expect(String(heldAnswer["errorMessage"])).toContain("untaken");
     expect(held.disarmed).toEqual([2]);
+    // A light that ran before the door armed leaves the arm untaken: the answer names it.
+    const early = door({ staysDark: true, lightHeld: false, armUntaken: true });
+    expect(String((await early.send(frame(2)))["errorMessage"])).toContain("untaken");
   });
 
   test("C7 a face whose recard refused for its Archive still reads stale: a direct recard arms again", async () => {
