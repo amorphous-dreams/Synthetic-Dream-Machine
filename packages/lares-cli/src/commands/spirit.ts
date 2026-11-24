@@ -231,11 +231,13 @@ async function resolveRecord(args: ParsedArgs, label: string, pet: string, soft 
     budgets: { slot: countField(fields["slot-budget"], SLOT_BUDGET_BYTES), record: countField(fields["record-budget"], RECORD_BUDGET_BYTES) },
     every: countField(fields["true-up-every"], TRUE_UP_EVERY),
     id: PET.test(fields["spirit-id"] ?? "") ? fields["spirit-id"]! : null,
-    lease: leaseOf(sideFields["lease"]), distilled: sideFields["distilled"] || null, crossing: sideFields["crossing"] || null,
+    lease: leaseOf(sideFields["lease"]), distilled: sideFields["distilled"] || fields["distilled"] || null, crossing: sideFields["crossing"] || null,
     side, sideFields,
   };
 }
 
+/** How many times a fold's ash write tries before the line returns to its slot. */
+const ASH_ROUNDS = 3;
 /** How many times a field write reads again over a record that moved under it before it refuses. */
 const CAS_ROUNDS = 4;
 
@@ -588,7 +590,7 @@ async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
   const rec = found;
   const key = await keyOf(args, "om", rec);
   const epoch = body !== null ? await claimLease(args, rec, body, ctx) : rec.lease?.epoch ?? null;
-  const awake = body !== null ? await joinPresence(args, rec, body, ctx) : presenceOf(rec.fields["bodies-awake"]).filter((a) => live(a, ctx.now().getTime()));
+  const awake = body !== null ? await joinPresence(args, rec, body, ctx) : presenceOf(rec.sideFields["bodies-awake"]).filter((a) => live(a, ctx.now().getTime()));
   const leaseLine = epoch === null ? null : `Lares spirit wake epoch ${epoch}: an ordering stamp; no write needs it, and no body locks another out.`;
   const presence = body !== null ? presenceLine(pet, awake) : awake.length > 0 ? `${awake.length} ${awake.length === 1 ? "body wears" : "bodies wear"} ${pet}: ${awake.map((a) => `#${a.body.slice(0, 8)} since ${a.at.slice(11, 16)}`).join(", ")}` : null;
   const data = { pet, uri: rec.uri, kind: rec.kind, base: rec.base, spiritId: key, epoch, every: rec.every, budgets: rec.budgets, source, ...(turn.to !== null ? { turnedFrom: given } : {}) };
@@ -653,7 +655,7 @@ export function budgetRefusal(rec: Pick<Record_, "pet" | "uri" | "slots"> & { bu
   const was = bytesOf(oldBody);
   const now = bytesOf(newBody);
   if (now <= was) return null;
-  const fold = `\`lares spirit hum ${rec.pet} --fold '${slot}'\` lists its lines; \`--line <n>\` moves one to the ash ledger`;
+  const fold = `\`lares spirit hum ${rec.pet} --fold '${slot}'\` lists its lines with their digests; \`--line <n> --expect <digest>\` moves one to the ash ledger`;
   if (now > budgets.slot) return new SpiritRefusal("spirit-slot-over-budget", `spirit-slot-over-budget: ${slot} would hold ${now} bytes, past its ${budgets.slot}-byte budget (it holds ${was}); nothing landed. Fold first: ${fold}, then true it again`);
   const total = rec.slots.reduce((n, s) => n + s.bytes, 0) + (now - was);
   if (total > budgets.record) return new SpiritRefusal("spirit-record-over-budget", `spirit-record-over-budget: ${rec.uri} would hold ${total} bytes across its slots, past its ${budgets.record}-byte budget; nothing landed. \`lares spirit hum ${rec.pet}\` names the heaviest slots; ${fold}`);
@@ -858,18 +860,26 @@ async function hum(args: ParsedArgs, ctx: Ctx): Promise<number> {
   const lines = read.body.split("\n");
   if (lineWord === null) {
     emit(args, {
-      ok: true, data: { pet, uri: rec.uri, slot: fold, lines: lines.map((text, i) => ({ n: i + 1, text })) },
+      ok: true, data: { pet, uri: rec.uri, slot: fold, lines: lines.map((text, i) => ({ n: i + 1, text, digest: slotDigest(text) })) },
       human: () => {
-        console.log(`${rec.uri}${fold}: pick the line to fold with --line <n>`);
-        lines.forEach((text, i) => console.log(`  ${String(i + 1).padStart(3)}  ${text}`));
+        console.log(`${rec.uri}${fold}: pick the line to fold with --line <n> --expect <its digest>`);
+        lines.forEach((text, i) => console.log(`  ${String(i + 1).padStart(3)}  ${slotDigest(text)}  ${text}`));
       },
     });
     return 0;
   }
   crossingHolds(rec, ctx, wordOf(args.options["body"]));
+  // THE LISTED LINE, BY ITS DIGEST. The number reads the listing this body saw; `--expect` names that line's digest, so a sibling's
+  // write between the listing and the fold folds the line this body chose (wherever it moved), or nothing.
+  const expect = wordOf(args.options["expect"]);
+  if (expect === null || !SLOT_DIGEST.test(expect)) throw new DoorUsage(`--line <n> rides beside --expect <the line's digest> (16 hex), as \`lares spirit hum ${pet} --fold '${fold}'\` lists each line's`);
   const n = /^[1-9][0-9]*$/.test(lineWord) ? Number(lineWord) : NaN;
-  const picked = Number.isInteger(n) ? lines[n - 1] : undefined;
-  if (picked === undefined || picked.trim() === "") {
+  const at = Number.isInteger(n) && lines[n - 1] !== undefined && slotDigest(lines[n - 1]!) === expect ? n - 1 : lines.findIndex((l) => slotDigest(l) === expect);
+  if (at < 0) {
+    throw new SpiritRefusal("spirit-fold-gone", `spirit-fold-gone: no line in ${rec.uri}${fold} reads the digest ${expect} (a sibling body folded or rewrote it since the listing); nothing landed. List the lines again: \`lares spirit hum ${pet} --fold '${fold}'\``, 4);
+  }
+  const picked = lines[at]!;
+  if (picked.trim() === "") {
     throw new DoorUsage(`--line ${lineWord} names no line holding words in ${fold} (it holds ${lines.length}); \`lares spirit hum ${pet} --fold '${fold}'\` numbers them`);
   }
   // The fold lands first, at slot grain: past a sibling's write it re-reads and finds its line by content, so a shifted slot folds
@@ -877,11 +887,16 @@ async function hum(args: ParsedArgs, ctx: Ctx): Promise<number> {
   const stamp = ctx.now();
   const receipt = await foldLine(args, rec, fold, picked);
   const ashLine = `* ${stamp.toISOString().slice(0, 10)} · hum ${pet} folded from ${rec.uri}${fold}: ${picked.trim()}`;
-  let ledger: string;
-  try { ledger = await burnToAshes(args, "hum", [ashLine], stamp); }
-  catch (e) {
-    if (e instanceof SpiritRefusal) throw new SpiritRefusal(e.code, `${e.message}. The fold already landed; the line it moved reads: ${redacted(picked.trim()).slice(0, 300)}`, e.exit);
-    throw e;
+  // The ash write retries a bounded number of times; a ledger that keeps refusing gets the line back in the slot, never lost.
+  let ledger: string | null = null;
+  let last: unknown = null;
+  for (let round = 0; round < ASH_ROUNDS && ledger === null; round++) {
+    try { ledger = await burnToAshes(args, "hum", [ashLine], stamp); } catch (e) { last = e; }
+  }
+  if (ledger === null) {
+    await mergeSlot(args, rec, fold, { add: picked });
+    const why = last instanceof SpiritRefusal ? last.message : last instanceof Printed ? `the ledger's door refused (exit ${last.exit})` : String(last);
+    throw new SpiritRefusal("spirit-ashes-refused", `spirit-ashes-refused: the ash ledger refused the folded line ${ASH_ROUNDS} times (${why.slice(0, 300)}), so the line returned to the slot's end: ${redacted(picked.trim()).slice(0, 300)}. Fold it again once the ledger answers: \`lares spirit hum ${pet} --fold '${fold}'\``, 4);
   }
   await writeSide(args, "hum", rec, { distilled: stamp.toISOString() });
   emit(args, {

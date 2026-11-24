@@ -25,8 +25,9 @@ try {
   const title = typeof input.session_title === "string" && input.session_title.trim() !== "" ? input.session_title : null;
   const path = sessionCounter(input);
   const source = omSourceOf(input.source);
-  const held = readState(path).pet;
-  const pet = wakePet({ source, held, seated: petOf(process.argv), title });
+  const state = readState(path);
+  const held = state.pet;
+  const pet = wakePet({ source, held, seated: petOf(process.argv), title, offer: state.offer });
   if (pet !== null && houseSession(input, import.meta.url)) {
     const run = shimRun(import.meta.url);
     if (!(await vesselUp(run))) say(omDownLine(pet));
@@ -39,7 +40,7 @@ try {
       if (answer?.ok === true) {
         const worn = answer.data?.starter === true ? null : typeof answer.data?.pet === "string" ? answer.data.pet : pet;
         updateState(path, (cur) => ({
-          ...cur, ...(worn !== null ? { pet: worn } : {}), ...(title !== null ? { title } : {}),
+          ...cur, ...(worn !== null ? { pet: worn, offer: null } : { offer: typeof answer.data?.pet === "string" ? answer.data.pet : pet }), ...(title !== null ? { title } : {}),
           ...(Number.isSafeInteger(answer.data?.epoch) ? { epoch: answer.data.epoch } : {}),
           ...(Number.isSafeInteger(answer.data?.every) ? { every: answer.data.every } : {}),
           ...(answer.data?.digests && typeof answer.data.digests === "object" ? { digests: digestsOf(answer.data.digests) } : {}),

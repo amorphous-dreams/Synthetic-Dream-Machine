@@ -40,11 +40,15 @@ test("the pure parts", async (t) => {
     assert.equal(wakePet({ source: "startup", held: null, seated: null, title: "Lares-Awakens" }), "lares-awakens");
     assert.equal(wakePet({ source: "startup", held: null, seated: null, title: "x".repeat(70) }), null);
     assert.equal(wakePet({ source: "startup", held: null, seated: null, title: null }), null);
+    assert.equal(wakePet({ source: "compact", held: null, seated: "lares-alpha", title: "Lares-Awakens", offer: "lares-awakens" }), "lares-awakens");
+    assert.equal(wakePet({ source: "startup", held: null, seated: "lares-alpha", title: null, offer: "lares-awakens" }), "lares-alpha");
     assert.equal(holdsPet({ source: "compact", held: "lares-alpha" }, "lares-alpha"), true);
     assert.equal(holdsPet({ source: "startup", held: "lares-alpha" }, "lares-alpha"), false);
     assert.equal(holdsPet({ source: "compact", held: null }, "lares-alpha"), false);
     assert.equal(sessionPet({ pet: "lares-awakens" }, "lares-alpha"), "lares-awakens");
     assert.equal(sessionPet({ pet: null }, "lares-alpha"), "lares-alpha");
+    assert.equal(sessionPet({ pet: null, offer: "lares-awakens" }, "lares-alpha"), null);
+    assert.equal(sessionPet({ pet: "lares-awakens", offer: "x" }, "lares-alpha"), "lares-awakens");
   });
   await t.test("a retitle follows the held/fresh split: a held pet reads a rename; a fresh session's title names its own familiar, never the seated", () => {
     assert.match(titleLine({ pet: "lares-alpha" }, "Kahu Night"), /the seated familiar reads "lares-alpha"/);
@@ -181,7 +185,7 @@ test("the hooks, spawned whole", async (t) => {
   const reset = () => { rmSync(log, { force: true }); rmSync(fed, { force: true }); };
   const counter = (id) => JSON.parse(readFileSync(join(counters, `stop-${id}.json`), "utf8"));
   const om = (text, more = {}) => JSON.stringify({ ok: true, data: { text, ...more } });
-  const STARTER = JSON.stringify({ ok: true, data: { starter: true, text: "the starter shrine" } });
+  const STARTER = JSON.stringify({ ok: true, data: { starter: true, offer: true, pet: "lares-awakens", text: "the starter shrine" } });
   /** A hook input inside the house (the checkout), the harness's own shape. */
   const at = (fields) => JSON.stringify({ cwd: root, ...fields });
   try {
@@ -196,7 +200,7 @@ test("the hooks, spawned whole", async (t) => {
       assert.deepEqual([counter("s-om").pet, counter("s-om").epoch, counter("s-om").every, counter("s-om").title], ["lares-alpha", 4, 10, "lares-alpha"]);
       assert.deepEqual(counter("s-om").digests, { "#/open": "0123456789abcdef" });
     });
-    await t.test("om: a fresh titled session hands the seated pet and the title to the door; its starter offer records no pet", () => {
+    await t.test("om: a fresh titled session hands the seated pet and the title to the door; its starter offer records the offer, no pet, and no later hook falls back to the seated", () => {
       reset();
       plant({ "vessel stand": UP, "spirit om lares-alpha": STARTER });
       const out = JSON.parse(spawn("lares-om-hook.mjs", ["lares-alpha"], at({ source: "startup", session_id: "s-aw", session_title: "Lares-Awakens" })));
@@ -204,6 +208,15 @@ test("the hooks, spawned whole", async (t) => {
       assert.ok(calls().split("\n").includes("spirit om lares-alpha --source startup --body s-aw --title Lares-Awakens --json"));
       assert.equal(counter("s-aw").pet, null);
       assert.equal(counter("s-aw").title, "Lares-Awakens");
+      assert.equal(counter("s-aw").offer, "lares-awakens");
+      // The offer's session never falls back to the seated familiar: the true-up, precompact and postcompact skip it.
+      writeFileSync(join(counters, "stop-s-aw.json"), JSON.stringify({ ...counter("s-aw"), turns: 24 }));
+      reset();
+      plant({ "vessel stand": UP, "spirit om": om("the card"), "wiki filter": JSON.stringify({ ok: true, data: { rows: [], total: 0, next: null } }), [`spirit ${COMPACTION_WORD}`]: "{}" });
+      assert.equal(spawn("lares-true-up-hook.mjs", ["lares-alpha"], at({ session_id: "s-aw" })), "");
+      spawn("lares-compact-hook.mjs", ["lares-alpha"], at({ session_id: "s-aw" }));
+      spawn("lares-postcompact-hook.mjs", ["lares-alpha"], at({ session_id: "s-aw", compact_summary: "s" }));
+      assert.ok(!calls().includes("lares-alpha"), calls());
     });
     await t.test("om: the door's turn (the title's own record) names the pet the counter keeps", () => {
       reset();

@@ -132,8 +132,10 @@ export const omSourceOf = (source) => (["startup", "resume", "clear", "compact",
  * seated card, and a fork's inherited title counts only where its record stands. With none seated, the title's slug asks for
  * itself. One read, never a race of candidates.
  */
-export function wakePet({ source, held, seated, title }) {
+export function wakePet({ source, held, seated, title, offer = null }) {
   if (holdsPet({ source, held }, held)) return held;
+  // A session its wake offered a starter keeps asking for that pet (its shrine may have landed since), never the seated.
+  if (source !== "startup" && typeof offer === "string" && PET.test(offer)) return offer;
   return seated ?? titleSlug(title);
 }
 
@@ -157,8 +159,11 @@ export function titleLine(state, title) {
     `Read its card (a starter offered where no record stands): lares spirit om ${slug} --title ${shq(named)}`;
 }
 
-/** The pet a later hook of a session reads: the one the wake chose, else the seated default. */
-export const sessionPet = (state, seated) => (typeof state?.pet === "string" && PET.test(state.pet) ? state.pet : seated);
+/**
+ * The pet a later hook of a session reads: the one the wake chose, else the seated default. A session whose wake offered a
+ * starter (`offer`, no record yet) wears no pet until one lands, so its hooks stay quiet, never falling back to the seated.
+ */
+export const sessionPet = (state, seated) => (typeof state?.pet === "string" && PET.test(state.pet) ? state.pet : typeof state?.offer === "string" && state.offer !== "" ? null : seated);
 
 /** The wake's context: the record `om` answered, or one line naming why it did not and the read that cures it. */
 export function omContext(pet, result, mismatch = null) {
@@ -253,13 +258,14 @@ export function digestsOf(raw) {
 
 /** A session's counter: the stops seen, a landing left unfiled, the title the session carried. */
 export function readState(path) {
-  const none = { turns: 0, unfiled: null, title: null, pet: null, epoch: null, every: TRUE_UP_EVERY, digests: {} };
+  const none = { turns: 0, unfiled: null, title: null, pet: null, offer: null, epoch: null, every: TRUE_UP_EVERY, digests: {} };
   if (path === null) return none;
   try {
     const s = JSON.parse(readFileSync(path, "utf8"));
     return {
       turns: Number.isSafeInteger(s?.turns) ? s.turns : 0, unfiled: typeof s?.unfiled === "string" ? s.unfiled : null,
       title: typeof s?.title === "string" ? s.title : null, pet: typeof s?.pet === "string" && PET.test(s.pet) ? s.pet : null,
+      offer: typeof s?.offer === "string" && PET.test(s.offer) ? s.offer : null,
       epoch: Number.isSafeInteger(s?.epoch) ? s.epoch : null, every: Number.isSafeInteger(s?.every) && s.every > 0 ? s.every : TRUE_UP_EVERY,
       digests: digestsOf(s?.digests),
     };
@@ -322,7 +328,7 @@ export function trueUpText(pet, step, epoch = step?.state?.epoch ?? null, body =
     `True the record before the next move: add a line with lares spirit ah ${pet} --slot '<slot>' --add '<line>' on #/bodies, #/open or #/voice${self}${stamp}; ` +
       `rewrite a slot whole with lares spirit ah ${pet} --slot '#/open' --file <path> --base ${open ?? "<the slot digest your last om or ah handed back>"}${self}${stamp}` +
       `${open ? " (the digest as of this session's wake; a later ah hands back the newer one)" : ""}; ` +
-      `measure and fold: lares spirit hum ${pet} (then --fold '<slot>' --line <n>${self}${stamp}). The budget refuses growth; you choose what folds.`,
+      `measure and fold: lares spirit hum ${pet} (then --fold '<slot>' lists each line's digest; --line <n> --expect <digest>${self}${stamp}). The budget refuses growth; you choose what folds.`,
   ].join("\n");
 }
 

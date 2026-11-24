@@ -69,6 +69,8 @@ interface StageOpts {
   conflicts?: number;
   /** The sibling presence record's fields (presence, wake epoch, crossing, distill mark, last writers); absent, none stands. */
   side?: Record<string, string>;
+  /** The ash ledger's appends answer `refused` this many times before they land. */
+  ledgerRefuse?: number;
   /** Slot patches answer `conflict` this many times, a sibling body's words landing first (`sibling`, by slot) at each. */
   patchConflicts?: number;
   sibling?: Record<string, string>;
@@ -87,6 +89,7 @@ function stage(opts: StageOpts = {}) {
   const standing = (title: unknown): boolean => own(title) || other(title) !== null;
   let conflicts = opts.conflicts ?? 0;
   let patchConflicts = opts.patchConflicts ?? 0;
+  let ledgerRefuse = opts.ledgerRefuse ?? 0;
   // The card's live canonical hash: its fields render into the carrier's meta, so a field put on the card moves it, as a slot patch does.
   let rev = 0;
   const live = (): string => (rev === 0 ? FULL : "sha256:" + rev.toString(16).padStart(2, "0").repeat(32));
@@ -124,6 +127,7 @@ function stage(opts: StageOpts = {}) {
       const crossed = ["text", "base", "fields", "unset"].filter((n) => args[n] !== undefined && args[n] !== null);
       if (typeof args["append"] === "string" && crossed.length > 0) return { refuse: `append-alone: an append carries no ${crossed.join(", ")}; send those as their own put. Nothing moved.` };
       const ledger = String(args["title"]).startsWith(`${MEMORY_PREFIX}state/ashes-`);
+      if (ledger && ledgerRefuse > 0) { ledgerRefuse--; return { decision: "refused" }; }
       if ((standing(args["title"]) || isSide(args["title"])) && args["fields"] !== undefined && conflicts > 0) { conflicts--; return { decision: "conflict" }; }
       if (args["title"] === URI && (args["fields"] !== undefined || args["unset"] !== undefined)) rev++;
       if (ledger && typeof args["append"] === "string" && !opts.ledgerStands && args["create"] !== true) {
@@ -354,12 +358,12 @@ describe("hum measures and folds", () => {
   test("--fold alone numbers the slot's lines", async () => {
     stage({ bodies: "!! Bodies\n\n* one\n* two" });
     const r = await run(argv(["hum", "lares-alpha"], { fold: "#/bodies" }));
-    expect(data(r)["lines"]).toEqual([{ n: 1, text: "!! Bodies" }, { n: 2, text: "" }, { n: 3, text: "* one" }, { n: 4, text: "* two" }]);
+    expect(data(r)["lines"]).toEqual(["!! Bodies", "", "* one", "* two"].map((text, i) => ({ n: i + 1, text, digest: digest(text) })));
   });
 
   test("the first fold of a month opens its ledger: the append names create, so the door's append-target-missing never answers", async () => {
     stage({ bodies: "!! Bodies\n\n* one\n* two" });
-    const r = await run(argv(["hum", "lares-alpha"], { fold: "#/bodies", line: "3" }));
+    const r = await run(argv(["hum", "lares-alpha"], { fold: "#/bodies", line: "3", expect: digest("* one") }));
     expect(r.exit).toBe(0);
     expect(puts(LEDGER)).toHaveLength(1);
     expect(puts(LEDGER)[0]!.args).toMatchObject({ create: true });
@@ -367,20 +371,49 @@ describe("hum measures and folds", () => {
 
   test("a ledger line carries a record's words redacted under the strict reading", async () => {
     stage({ bodies: `!! Bodies\n\n* token ghp_${"A".repeat(36)}\n* two` });
-    await run(argv(["hum", "lares-alpha"], { fold: "#/bodies", line: "3" }));
+    await run(argv(["hum", "lares-alpha"], { fold: "#/bodies", line: "3", expect: digest(`* token ghp_${"A".repeat(36)}`) }));
     const append = String(puts(LEDGER)[0]!.args["append"]);
     expect(append).not.toContain("ghp_");
   });
 
   test("--fold --line moves the line out of the record, then burns it to the month's ash ledger once the patch lands", async () => {
     stage({ bodies: "!! Bodies\n\n* one\n* two" });
-    const r = await run(argv(["hum", "lares-alpha"], { fold: "#/bodies", line: "3" }));
+    const r = await run(argv(["hum", "lares-alpha"], { fold: "#/bodies", line: "3", expect: digest("* one") }));
     expect(r.exit).toBe(0);
     const verbs = h.calls.map((c) => `${c.verb}:${String(c.args["title"] ?? c.args["uri"])}`);
     expect(verbs.indexOf(`meme-patch:${URI}`)).toBeLessThan(verbs.indexOf(`tiddler-put:${LEDGER}`));
     expect(String(puts(LEDGER)[0]!.args["append"])).toContain("* one");
     expect(h.calls.filter((c) => c.verb === "meme-patch").at(-1)!.args["replace"]).toBe("!! Bodies\n\n* two");
     expect((puts(SIDE).at(-1)!.args["fields"] as Record<string, string>)["distilled"]).toBe("2026-11-24T12:00:00.000Z");
+  });
+
+  test("--line names the listed line's digest (--expect); a sibling's fold between the listing and this fold refuses spirit-fold-gone", async () => {
+    stage({ bodies: "!! Bodies\n\n* one\n* two" });
+    const listed = (data(await run(argv(["hum", "lares-alpha"], { fold: "#/bodies" })))["lines"] as Array<{ n: number; text: string; digest: string }>)[2]!;
+    expect(listed.text).toBe("* one");
+    stage({ bodies: "!! Bodies\n\n* two" });
+    const r = await run(argv(["hum", "lares-alpha"], { fold: "#/bodies", line: "3", expect: listed.digest }));
+    expect(error(r).code).toBe("spirit-fold-gone");
+    expect(h.calls.some((c) => c.verb === "meme-patch")).toBe(false);
+    const bare = await run(argv(["hum", "lares-alpha"], { fold: "#/bodies", line: "3" }));
+    expect(bare.exit).toBe(2);
+  });
+
+  test("a ledger that refuses past its retries after a landed fold puts the line back in the slot and names it", async () => {
+    stage({ bodies: "!! Bodies\n\n* one\n* two", ledgerRefuse: 5 });
+    const r = await run(argv(["hum", "lares-alpha"], { fold: "#/bodies", line: "3", expect: digest("* one") }));
+    expect(error(r).code).toBe("spirit-ashes-refused");
+    expect(error(r).message).toContain("returned to the slot");
+    expect(puts(LEDGER)).toHaveLength(3);
+    const patches = h.calls.filter((c) => c.verb === "meme-patch").map((c) => String(c.args["replace"]));
+    expect(patches).toEqual(["!! Bodies\n\n* two", "!! Bodies\n\n* one\n* two\n* one"]);
+  });
+
+  test("a ledger that refuses once retries and lands", async () => {
+    stage({ bodies: "!! Bodies\n\n* one\n* two", ledgerRefuse: 1 });
+    const r = await run(argv(["hum", "lares-alpha"], { fold: "#/bodies", line: "3", expect: digest("* one") }));
+    expect(r.exit, JSON.stringify(r.printed)).toBe(0);
+    expect(puts(LEDGER)).toHaveLength(2);
   });
 
   test("a blank line refuses as usage and names the listing", async () => {
@@ -456,6 +489,12 @@ describe("otakiage burns the residue and keeps the card", () => {
     expect(String(ledger[0]!.args["append"])).toContain(`burning ${round}`);
     expect(String(ledger[1]!.args["append"])).toContain("burned 2 of 2");
     expect(h.calls.findIndex((c) => c.verb === "tiddler-delete")).toBeGreaterThan(h.calls.indexOf(ledger[0]!));
+  });
+
+  test("a distill mark standing on the card itself still reads where the sibling record holds none", async () => {
+    stage({ titles: [round], fields: { distilled: "2026-11-20T00:00:00.000Z" }, residue: { [round]: old } });
+    const r = await run(argv(["otakiage", "lares-alpha"]));
+    expect(data(r)["burned"]).toEqual([round]);
   });
 
   test("a ledger that refuses its lines leaves every residue standing", async () => {
@@ -668,9 +707,9 @@ describe.skipIf(wikiSkip)(`the burn lands through the real tiddler-put verb${ski
     stage({ bodies: "!! Bodies\n\n* one\n* two\n* three" });
     const mocked = h.answer;
     h.answer = (verb, args) => verb === "tiddler-put" && String(args["title"]).startsWith(`${MEMORY_PREFIX}state/ashes-`) ? real.put(args) : mocked(verb, args);
-    const first = await run(argv(["hum", "lares-alpha"], { fold: "#/bodies", line: "3" }));
+    const first = await run(argv(["hum", "lares-alpha"], { fold: "#/bodies", line: "3", expect: digest("* one") }));
     expect(first.exit, JSON.stringify(first.printed)).toBe(0);
-    const second = await run(argv(["hum", "lares-alpha"], { fold: "#/bodies", line: "4" }));
+    const second = await run(argv(["hum", "lares-alpha"], { fold: "#/bodies", line: "4", expect: digest("* two") }));
     expect(second.exit, JSON.stringify(second.printed)).toBe(0);
     const ledger = real.engine.wiki.getTiddler(LEDGER_TITLE)!;
     expect(ledger.fields["text"]).toContain("* one");
@@ -775,7 +814,7 @@ describe("bunrei: many bodies wear one pet, and none locks another out", () => {
     const a = await run(argv(["ah", "lares-alpha"], { slot: "#/open", add: "* a's line", body: "body-a00" }));
     expect(error(a).code).toBe("spirit-crossing");
     expect(error(a).message).toContain("#body-a00");
-    const fold = await run(argv(["hum", "lares-alpha"], { fold: "#/open", line: "3", body: "body-b00" }));
+    const fold = await run(argv(["hum", "lares-alpha"], { fold: "#/open", line: "3", body: "body-b00", expect: digest("* a loop") }));
     expect(fold.exit, JSON.stringify(fold.printed)).toBe(0);
   });
 
@@ -891,7 +930,7 @@ describe("bunrei: many bodies wear one pet, and none locks another out", () => {
 
   test("hum's fold retries at slot grain past a sibling's write, finds its line by content, and burns only after the patch lands", async () => {
     stage({ bodies: "!! Bodies\n\n* one\n* two", patchConflicts: 1, sibling: { "#/bodies": "!! Bodies\n\n* zero\n* one\n* two" } });
-    const r = await run(argv(["hum", "lares-alpha"], { fold: "#/bodies", line: "3" }));
+    const r = await run(argv(["hum", "lares-alpha"], { fold: "#/bodies", line: "3", expect: digest("* one") }));
     expect(r.exit, JSON.stringify(r.printed)).toBe(0);
     expect(String(h.calls.filter((c) => c.verb === "meme-patch").at(-1)!.args["replace"])).toBe("!! Bodies\n\n* zero\n* two");
     expect(puts(LEDGER)).toHaveLength(1);
@@ -915,6 +954,13 @@ describe("bunrei: many bodies wear one pet, and none locks another out", () => {
     expect(awake).toContain("lares-alpha#body-me ");
     expect(awake).toContain("lares-alpha#body-19 ");
     expect(awake).not.toContain("lares-alpha#body-00 ");
+  });
+
+  test("a body-less om reads the presence off the sibling record", async () => {
+    stage({ side: { "bodies-awake": "lares-alpha#body-a00 2026-11-24T11:50:00.000Z" } });
+    const r = await run(argv(["om", "lares-alpha"]));
+    expect(String(data(r)["text"])).toContain("1 body wears lares-alpha: #body-a00 since 11:50");
+    expect(puts(SIDE)).toHaveLength(0);
   });
 
   test("om shows each live body's chain: its last carry", async () => {
