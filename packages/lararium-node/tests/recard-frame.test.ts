@@ -10,7 +10,10 @@
  *   C4  a recarded face that stays dark refuses `recard-refused` with its cause, though its light settles on a later tick.
  *   C6  the arm never outlives the act: a light that throws, or one that refuses without taking the arm, leaves nothing armed.
  *   C7  a face whose recard refused for its Archive stays a stale face: a direct recard arms again.
- *   C5  a hand act: an AI seat refuses `hand-act-only`; a frame beside its three keys refuses whole; under a pūlama it refuses.
+ *   C5  a hand act: an AI seat refuses `hand-act-only`; a frame beside its three keys refuses whole; under a pūlama with no grant
+ *       standing it refuses `recard-ungranted`, naming the pūlama's runnable recard.
+ *   C9  UNDER A PŪLAMA the face's own route proves at the pūlama's hand door, where its key rests: the vessel's frame carries no
+ *       route, the guard reads first, and the door spends the pūlama's one grant before it arms; a frame carrying a route refuses.
  */
 import { EventEmitter } from "node:events";
 import type { Socket } from "node:net";
@@ -24,7 +27,7 @@ const VESSEL_ROUTE = "recard-frame-vessel-route";
 const STALE = "Error: face 0xabc refused: FaceHoldsNoPrekeySecret: [daemon-keyhive] face abc… holds no prekey secret: its Archive was absent or older than its latest card";
 
 function door(opts: { faces?: Record<number, { unlocked: boolean }>; refused?: Array<{ ordinal: number; cause: string }>; proves?: boolean;
-  staysDark?: boolean; lightThrows?: boolean; lightHeld?: boolean; armUntaken?: boolean; peer?: "ai" | "hand" | "unknown"; pulama?: boolean } = {}) {
+  staysDark?: boolean; lightThrows?: boolean; lightHeld?: boolean; armUntaken?: boolean; peer?: "ai" | "hand" | "unknown"; pulama?: boolean; granted?: boolean } = {}) {
   const armed: number[] = [];
   const disarmed: number[] = [];
   let taken = false;
@@ -33,6 +36,8 @@ function door(opts: { faces?: Record<number, { unlocked: boolean }>; refused?: A
   const vesselProved: Array<readonly Credential[]> = [];
   const whileOpen: boolean[] = [];
   const logs: string[] = [];
+  const spent: number[] = [];
+  let grant = opts.granted === true;
   let refused = opts.refused ?? [{ ordinal: 2, cause: STALE }];
   const holder = {
     isUnlocked: () => true,
@@ -69,13 +74,14 @@ function door(opts: { faces?: Record<number, { unlocked: boolean }>; refused?: A
     disarmRecard: (ordinal: number) => { disarmed.push(ordinal); return !taken; },
     replayLend: async () => { throw new Error("the recard lights its own face, never the whole lend"); },
     peerOf: async () => opts.peer ?? "hand",
-    ...(opts.pulama ? { pulama: { standing: () => ({ session: true, waits: null }), dial: async () => ({ session: true, waits: null }), lent: () => [0, 2], tellWorn: async () => {} } } : {}),
+    ...(opts.pulama ? { pulama: { standing: () => ({ session: true, waits: null }), dial: async () => ({ session: true, waits: null }), lent: () => [0, 2], tellWorn: async () => {},
+      takeRecard: async (ordinal: number) => { spent.push(ordinal); const had = grant; grant = false; return had; } } } : {}),
   });
   const send = (frame: unknown): Promise<Record<string, unknown>> => new Promise((resolve) => {
     const sock = Object.assign(new EventEmitter(), { end: (line: string) => resolve(JSON.parse(line) as Record<string, unknown>) }) as unknown as Socket;
     handle(frame, sock);
   });
-  return { send, armed, disarmed, lit, proved, vesselProved, whileOpen, logs };
+  return { send, armed, disarmed, lit, proved, vesselProved, whileOpen, logs, spent };
 }
 const frame = (face: number, over: Record<string, unknown> = {}) => ({ op: "recard", credentials: [{ kind: "passphrase", passphrase: ROUTE }], face, ...over });
 
@@ -168,7 +174,34 @@ describe("the custody door's recard frame", () => {
     const stray = door();
     expect(await stray.send(frame(2, { yes: true }))).toMatchObject({ refusal: { reason: "bad-custody-frame" } });
     const pulama = door({ pulama: true });
-    expect(await pulama.send(frame(2))).toMatchObject({ refusal: { reason: "recard-under-pulama" } });
+    const ungranted = await pulama.send(frame(2, { credentials: [] }));
+    expect(ungranted).toMatchObject({ refusal: { reason: "recard-ungranted" } });
+    expect(String(ungranted["errorMessage"])).toContain("tools/lares-container.sh pulama recard 2");
+    expect(String(ungranted["errorMessage"])).toContain("lares vault recard --face 2");
     for (const d of [ai, stray, pulama]) { expect(d.armed).toEqual([]); expect(d.proved).toEqual([]); }
+  });
+
+  test("C9 under a pūlama the guard reads first, the pūlama's grant spends once, and the face lights; a route in the frame refuses", async () => {
+    const d = door({ pulama: true, granted: true });
+    expect(await d.send(frame(2, { credentials: [] }))).toEqual({ op: "recard", face: 2, recarded: true });
+    expect(d.spent).toEqual([2]);
+    expect(d.armed).toEqual([2]);
+    expect(d.lit).toEqual([2]);
+    expect(d.disarmed).toEqual([2]);
+    expect(d.proved, "the vessel opens no face key under a pūlama").toEqual([]);
+    // THE GUARD READS BEFORE THE GRANT SPENDS: a face that needs no recard leaves the pūlama's grant standing.
+    const healthy = door({ pulama: true, granted: true, refused: [] });
+    expect(await healthy.send(frame(2, { credentials: [] }))).toMatchObject({ refusal: { reason: "face-not-stale" } });
+    expect(healthy.spent).toEqual([]);
+    // A ROUTE NEVER RIDES TO A VESSEL UNDER A PŪLAMA: the frame that carries one refuses whole, and nothing spends.
+    const routed = door({ pulama: true, granted: true });
+    const r = await routed.send(frame(2));
+    expect(r).toMatchObject({ refusal: { reason: "route-at-the-pulama" } });
+    expect(String(r["errorMessage"])).toContain("tools/lares-container.sh pulama recard 2");
+    expect(routed.spent).toEqual([]);
+    expect(routed.armed).toEqual([]);
+    expect(routed.logs.join("\n")).not.toContain(ROUTE);
+    // A vessel off the pūlama's frame still asks the face's route: an empty one refuses whole.
+    expect(await door().send(frame(2, { credentials: [] }))).toMatchObject({ refusal: { reason: "bad-custody-frame" } });
   });
 });

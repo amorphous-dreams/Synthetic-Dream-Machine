@@ -1717,6 +1717,13 @@ case "$verb" in
         case "$2" in ''|*[!0-9]*) die "pulama rehive takes one face ordinal (a number)" ;; esac
         # shellcheck disable=SC2046
         compose --profile pulama exec $(tty_flag) "$(pulama_svc)" node "$PULAMA_MAIN" rehive "$2" ;;
+      recard)
+        # recard proves a stale face's OWN route (its light on the vessel refused FaceHoldsNoPrekeySecret) on a real terminal inside
+        # the pūlama, which holds its key; one grant rests, and `lares vault recard --face N` at the vessel spends it and arms the light.
+        [ "$#" -eq 2 ] || die "pulama recard takes one face ordinal (a number)"
+        case "$2" in ''|*[!0-9]*) die "pulama recard takes one face ordinal (a number)" ;; esac
+        # shellcheck disable=SC2046
+        compose --profile pulama exec $(tty_flag) "$(pulama_svc)" node "$PULAMA_MAIN" recard "$2" ;;
       unadmit)
         # unadmit ends one image's admission: the route proves on a real terminal inside the pūlama, and a signed
         # tombstone naming the admission's tessera rests; the gate then reads pulama-image-unadmitted.
@@ -1757,7 +1764,7 @@ case "$verb" in
         tmp="$seat_file.$$.tmp"
         ( umask 077; printf '%s\n' "$file" > "$tmp" ) && chmod 600 "$tmp" && mv -f -- "$tmp" "$seat_file" || { rm -f -- "$tmp"; die "the seat could not be written to $seat_file"; }
         printf 'lares-container: the keep seat rests at %s (0600); a keep now seals under it\n' "$seat_file" >&2 ;;
-      *) die "pulama takes up, down, restand, light [--admit], admit, unadmit, rehive, keep-seat, keeper-commit [<rev>], keeper-land, take-fire, lock, status or tessera" ;;
+      *) die "pulama takes up, down, restand, light [--admit], admit, unadmit, rehive, recard, keep-seat, keeper-commit [<rev>], keeper-land, take-fire, lock, status or tessera" ;;
     esac ;;
   reset)
     [ "$#" -eq 0 ] || die "reset takes no arguments"

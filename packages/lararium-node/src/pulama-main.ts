@@ -15,6 +15,9 @@
  *   node dist/src/pulama-main.js rehive <N>         the operator rehives a SHUT face (its veil-archive row holds another identity's
  *                                                   Archive): reads the face's own route on a real terminal; the face stands its
  *                                                   hive again from its seed at its next wear
+ *   node dist/src/pulama-main.js recard <N>         the operator proves a stale face's OWN route (its light on the vessel refused
+ *                                                   FaceHoldsNoPrekeySecret) on a real terminal: one recard grant rests for the
+ *                                                   vessel that lends it, whose `lares vault recard --face N` arms its next light
  *   node dist/src/pulama-main.js lock               drop every session, zero-fill every key
  *   node dist/src/pulama-main.js status             lit or not, faces open, sessions, attempts left, the reported image
  *   node dist/src/pulama-main.js image <digest>     the host shim reports the image digest it raises; as
@@ -126,8 +129,9 @@ async function serve(): Promise<void> {
       try { frame = JSON.parse(buffered.slice(0, at)); } catch { /* answers unknown-act */ }
       buffered = "";
       // A HAND ACT reads its peer first (`hand-act-gate`): a detected AI seat refuses; the face's own route and per-face budget are the gate.
-      const gated = (frame as { op?: unknown } | null)?.op === "rehive"
-        ? readHand(sock, { proveRoute: true }).then((hand) => ("refusal" in hand ? { op: "rehive", reading: hand.refusal } : door(frame)))
+      const op = (frame as { op?: unknown } | null)?.op;
+      const gated = op === "rehive" || op === "recard"
+        ? readHand(sock, { proveRoute: true }).then((hand) => ("refusal" in hand ? { op, reading: hand.refusal } : door(frame)))
         : door(frame);
       gated.then(
         (answer) => sock.end(JSON.stringify(answer) + "\n"),

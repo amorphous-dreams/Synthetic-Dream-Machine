@@ -33,6 +33,10 @@
  * `tellWorn` sends the pūlama the one ordinal the wear door just wore (`face.worn`), and `worn` reads back the ordinal the
  * session's standing carried at the hello. Nothing else rides that op: no route, no key, no row.
  *
+ * ── A RECARD SPENDS THE PŪLAMA'S GRANT ──────────────────────────────────────────────────────────
+ * `takeRecard` asks the pūlama for the one recard grant its hand door rested for a lent face (`face.recard`), by ordinal and
+ * nothing beside it; true spends it. The route proved at the hand door, never here.
+ *
  * `derive` answers synchronously from the children the session carried, under the domains the pūlama serves a session.
  * The holder names no host: `dial` hands it a channel.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
@@ -79,6 +83,9 @@ export interface PulamaHolder extends CustodyHolder {
   worn(): number | undefined;
   /** Tell the pūlama the face this vessel now wears: one ordinal, nothing beside it. Only the wear door calls it. */
   tellWorn(ordinal: number): Promise<void>;
+  /** Spend the recard grant the pūlama's hand door rested for the lent face at `ordinal`: true once, false where none stands.
+   *  The custody door's recard alone calls it, with the ordinal alone. */
+  takeRecard(ordinal: number): Promise<boolean>;
   /**
    * THE CLEAN GOODBYE: the vessel drained every save and leaves. It tells the pūlama so through its session, naming the life
    * its hello named, and the session ends. Answers whether the pūlama heard it: with no session, no life to name, or a refusal,
@@ -304,6 +311,7 @@ export function makePulamaHolder(a: {
     waits: () => (session === null ? refused : null),
     worn: () => session?.standing.worn,
     async tellWorn(ordinal) { await call("face.worn", { ordinal }); },
+    async takeRecard(ordinal) { return (await call("face.recard", { ordinal })) === true; },
     async goodbye() {
       const s = session, life = a.life?.();
       // A GOODBYE WHILE A DIAL RUNS COUNTS AS LEAVING: the dial in flight seats no session after it.
