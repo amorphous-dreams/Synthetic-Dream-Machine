@@ -15,7 +15,7 @@ import { evaluateMeme, placeMeme, readMeme, wikiMemeSink } from "../src/place-me
 import { stampCarrier, verifyBcc } from "@lararium/memetic-frame";
 import {
   makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeWikiRenderOutReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor,
-  makeWikiStatusReactor, makeWikiActionReactor, pageFilterAnswer, WIKI_FILTER_ROWS, type FilterPage, type TiddlerVerbOptions,
+  makeWikiStatusReactor, makeWikiActionReactor, pageFilterAnswer, WIKI_FILTER_ROWS, SHORE_COLLAPSE_CONFIG_PREFIX, type FilterPage, type TiddlerVerbOptions,
 } from "../src/tiddler-verbs.js";
 import { AUDIT_ARRAY_CAP, boundOutcomeOutput, placeVerb, removeVerb } from "../src/verb-vm.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
@@ -1432,5 +1432,23 @@ describe.skipIf(wikiSkip)(`a bag read through the tiddler door${skipNote}`, () =
     await expect(makeWikiStatusReactor(r.opts)({ bag: "lares" }, ctx())).rejects.toMatchObject({ reason: "wiki-not-anchored" });
     await expect(makeTiddlerPutReactor(r.opts)({ bag: "lares", title: "x", text: "y" }, ctx())).rejects.toMatchObject({ reason: "wiki-not-anchored", message: expect.stringMatching(/tiddler put --meme --bag/) });
     await expect(makeTiddlerDeleteReactor(r.opts)({ bag: "lares", title: "x" }, ctx())).rejects.toMatchObject({ reason: "wiki-not-anchored", message: expect.stringMatching(/tiddler delete --meme --bag/) });
+  });
+});
+
+describe.skipIf(wikiSkip)(`the person's collapse rules take a hand's write alone${skipNote}`, () => {
+  const RULE = `${SHORE_COLLAPSE_CONFIG_PREFIX}slot-disjoint`;
+
+  test("a seat's put or delete of a collapse rule refuses hand-act-only; a line no door read refuses hand-unattested; nothing lands", async () => {
+    const r = await rig();
+    const put = makeTiddlerPutReactor(r.opts);
+    await expect(put({ ...A, title: RULE, create: true, bags: CANON }, { ...ctx(), asker: "seat" })).rejects.toMatchObject({ reason: "hand-act-only", message: expect.stringContaining(`lares tiddler put "${RULE}"`) });
+    await expect(put({ ...A, title: RULE, create: true, bags: CANON }, ctx())).rejects.toMatchObject({ reason: "hand-unattested" });
+    expect(r.engine.wiki.getTiddler(RULE)).toBeUndefined();
+    await expect(makeTiddlerDeleteReactor(r.opts)({ ...A, title: RULE }, { ...ctx(), asker: "seat" })).rejects.toMatchObject({ reason: "hand-act-only" });
+  });
+
+  test("CONTROL: the operator's own line lands the rule", async () => {
+    const r = await rig();
+    expect(await makeTiddlerPutReactor(r.opts)({ ...A, title: RULE, create: true, text: "", fields: { bags: CANON } }, { ...ctx(), asker: "cli" })).toMatchObject({ decision: "put" });
   });
 });

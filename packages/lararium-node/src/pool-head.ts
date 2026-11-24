@@ -14,7 +14,8 @@
  * the records hold nothing under the carrier, so such a file lands as an arrival and no echo pins a base for it.
  *
  * ONE PLACE, ONE BLOB READ. `poolPlaceOf` names a file's repository and its path inside it; `blobAt` reads one blob at one
- * revision. The shore's base read (`basePoolText`, lares-cli `shore-merge`) walks the history through the same two.
+ * revision. The shore's base read (`basePoolText`, below; `lares shore take-disk` and the stand-off keeper both read it) walks
+ * the history through the same two.
  *
  * Git runs walled (`walledGit`): no caller `GIT_*` crosses, an empty global config, no system config, as `lares surface`
  * runs it. A pool with no `.git` and a file outside every pool spawn no git at all (`poolHeads`).
@@ -24,6 +25,8 @@ import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { FACES_PROJECTION_DIR } from "./bag-paths.js";
+import { digestsEqual } from "@lararium/mesh";
+import { contentHash } from "./synced-tree.js";
 import type { GitRun } from "./watch-core.js";
 
 /** One git run with the hook env dropped, an empty global config and no system config. */
@@ -97,4 +100,29 @@ export function facePoolHeads(projectionsRoot: () => string | null, git: GitRun 
     if (rel === "" || rel.startsWith("..") || rel.split(sep).length < 2) return null;
     return poolHeads(join(faces, rel.split(sep)[0]!), git)(file);
   };
+}
+
+/** How many commits of one path the base read walks back, newest first, looking for the base's bytes. */
+export const POOL_BASE_DEPTH = 64;
+
+export type PoolBase = { readonly text: string; readonly commit: string } | { readonly text: null; readonly why: string };
+
+/**
+ * THE BASE'S WORDS FROM THE FILE'S OWN GIT HISTORY: the blob of `file` at the newest commit (within `POOL_BASE_DEPTH`)
+ * whose bytes hash to `baseDisk`, the disk side of the base a stand-off's key folded. Clear text rests in the live wiki
+ * and the operator's projected files alone (the synced tree holds hashes), so the base reads from the history the
+ * projected file itself rests in: a face pool, a realm's tree, or any repository a mirror stands inside.
+ */
+export function basePoolText(file: string, baseDisk: string, git: GitRun = walledGit): PoolBase {
+  const place = poolPlaceOf(file, git);
+  if ("why" in place) return { text: null, why: place.why };
+  const { top, rel } = place;
+  const revs = git(["rev-list", "-n", String(POOL_BASE_DEPTH), "HEAD", "--", rel], top);
+  const commits = revs.code === 0 ? revs.stdout.split("\n").map((l) => l.trim()).filter(Boolean) : [];
+  if (commits.length === 0) return { text: null, why: `the pool's git holds no commit of ${rel}, so no base's words stand in clear` };
+  for (const commit of commits) {
+    const blob = blobAt(top, commit, rel, git);
+    if (blob !== null && digestsEqual(contentHash(blob), baseDisk)) return { text: blob, commit };
+  }
+  return { text: null, why: `no commit of ${rel} in the pool's git (the newest ${commits.length}) holds the base's bytes` };
 }

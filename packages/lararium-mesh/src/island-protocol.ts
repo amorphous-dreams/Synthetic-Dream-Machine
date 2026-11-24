@@ -274,6 +274,13 @@ export interface IslandMsg_Manifest {
    */
   diskMirrors?: readonly { bagId: string; mirrorRoot: string; scope: string; mirrorClass?: "recovery"; titlePaths?: boolean; tempLayer?: boolean }[];
   /**
+   * THE PERSON'S STAND-OFF COLLAPSE RULES, read from the worn face's daemon wiki (`$:/config/lares/shore/collapse/<rule>`,
+   * each naming the bags it may collapse in) as the vessel mints this manifest: rule → bags. A wiki island reads its
+   * rules here alone, never from its own wiki, which another writer may share; absent = no rule enabled anywhere.
+   * The daemon island reads its own wiki, the daemon face itself (`@lararium/node` standoff-collapse).
+   */
+  shoreCollapse?: Readonly<Record<string, readonly string[]>>;
+  /**
    * DAEMON-ISLAND ONLY — operator authn/z material for in-worker keyhive boot
    * (isomorphic-vessel epic, Stage 1). The daemon worker's `onEa` calls
    * `bootDaemonKeyhive` with this + its daemon CompositeStore (the cap-event
@@ -1165,6 +1172,9 @@ export interface WikiMsg_PlaceVerb {
   targets?:       string[];
   batchMode?:     string;
   requestId?:     string;
+  /** The asker's hand as the vessel's own door read it (`DaemonMsg_PlaceVerb.asker`); never read off args. Absent where no
+   *  door read one (a verb the vessel places by itself). */
+  asker?:         Hand;
 }
 
 /**
@@ -1335,6 +1345,7 @@ export function mkManifest(
     floorCid?:       string | null;
     view?:           IslandViewStanding;
     resolved?:       Readonly<Record<string, string>>;
+    shoreCollapse?:  Readonly<Record<string, readonly string[]>>;
   },
 ): IslandMsg_Manifest {
   const msg: IslandMsg_Manifest = {
@@ -1353,6 +1364,7 @@ export function mkManifest(
   if (opts?.floorCid)            msg.floorCid    = opts.floorCid;
   if (opts?.view)                msg.view        = opts.view;
   if (opts?.resolved)            msg.resolved    = opts.resolved;
+  if (opts?.shoreCollapse && Object.keys(opts.shoreCollapse).length > 0) msg.shoreCollapse = opts.shoreCollapse;
   return msg;
 }
 
@@ -1660,6 +1672,7 @@ export function mkWikiPlaceVerb(opts: {
   targets?: string[];
   batchMode?: string;
   requestId?: string;
+  asker?: Hand;
 }): WikiMsg_PlaceVerb {
   const msg: WikiMsg_PlaceVerb = {
     type: "wiki:place-verb",
@@ -1670,6 +1683,7 @@ export function mkWikiPlaceVerb(opts: {
   if (opts.targets?.length)  msg.targets   = opts.targets;
   if (opts.batchMode)        msg.batchMode = opts.batchMode;
   if (opts.requestId)        msg.requestId = opts.requestId;
+  if (opts.asker)            msg.asker     = opts.asker;
   return msg;
 }
 

@@ -134,6 +134,18 @@ describe("lares shore take-disk — the records' slot edit survives the disk's",
     expect(readFileSync(r.path, "utf8")).toBe(disk);
   });
 
+  test("★ keep-disk lands the file's words WHOLE over one slot both sides moved: the operator's words stand ★", async () => {
+    const records = carrier("a holds.", "b one way.");
+    const disk = carrier("a holds.", "b the other way.");
+    const r = rig(disk, records, BASE);
+    const taken = await takeDisk({ uri: URI, key: KEY, whole: true }, r.deps);
+    expect(taken).toMatchObject({ ok: true, merge: { kind: "whole" } });
+    expect(r.waves).toHaveLength(1);
+    expect(r.waves[0]!.candidates[0]!.text).toBe(disk);
+    expect(r.waves[0]!.candidates[0]!.syncedHash, "the wave lands over the records the key folded").toBe(carrierHash(records));
+    expect(readFileSync(r.path, "utf8")).toBe(disk);
+  });
+
   test("★ the base reads from an older pool commit where a later commit took the hand's edit ★", async () => {
     const records = carrier("a turns in the records.", "b holds.");
     const disk = carrier("a holds.", "b turns on the disk.");

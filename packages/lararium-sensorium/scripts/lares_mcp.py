@@ -1742,7 +1742,7 @@ def build_mcp(coordinator: LaresCoordinator):
                 if not isinstance(out.get("mark"), str):
                     raise unpaged(island, "the shore's page named no mark of the shore it read")
                 if mark is not None and out["mark"] != mark:
-                    raise uds.LaresVerbError(f"shore-list-moved: the {island} island's shore moved while its pages were read; read it again")
+                    raise uds.LaresVerbError(f"shore-list-moved: the {island} island's shore moved while the read walked its pages; read it again")
                 mark = out["mark"]
                 counts = (out.get("standoffCount"), out.get("pendingCount"))
                 got_s.extend({**r, "island": island} for r in out["standoffs"])
