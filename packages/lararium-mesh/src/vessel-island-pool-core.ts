@@ -63,7 +63,7 @@ import {
   floorShadowLine, floorShadowReadingLine, foldFloorShadowTally, readFloorShadow, readFloorShadowTally,
   type FloorShadowStore, type FloorShadowTally,
 } from "./floor-shadow.js";
-import { isCapabilityProfile, type CapabilityProfile } from "./session-contract.js";
+import { isCapabilityProfile, type CapabilityProfile, type Hand } from "./session-contract.js";
 import { facetsOfSurfaceRecipe, resolvedSlotsOf, type SurfaceRecipe } from "./surface-recipe.js";
 import { ORACLE_BAG } from "./wiki-recipe.js";
 import { verifyCidBytes } from "./cas-transit.js";
@@ -1035,7 +1035,7 @@ export class VesselIslandPoolCore {
   /** Place a wiki-scope job into a live island and await the result. */
   placeWikiVerb(
     wikiId: string,
-    opts: { verb: string; args: Record<string, unknown>; requestedBy: string; targets?: string[]; batchMode?: string },
+    opts: { verb: string; args: Record<string, unknown>; requestedBy: string; targets?: string[]; batchMode?: string; asker?: Hand },
     session?: PlacingSession,
   ): Promise<Record<string, unknown>> {
     const slot = this._placeable(wikiId, session);

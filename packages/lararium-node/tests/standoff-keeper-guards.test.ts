@@ -22,12 +22,11 @@ import {
   type CollapseAudit, type KeeperStandoff, type KeeperWiki, type StandoffAlert, type StandoffKeeperDeps,
 } from "../src/standoff-drafts.js";
 
-const REPO = new URL("../../..", import.meta.url).pathname;
 const URI = "lar:///ha.ka.ba/lares/api/pono/tick";
 const BAG = "lar:///ha.ka.ba/bags/lares";
 const KEY = "a1b2c3d4e5f6a7b8c9d0e1f2";
 const PATH = "/scratch/bags/lares/ha.ka.ba/lares/api/pono/tick.mem";
-const BASE = readFileSync(`${REPO}bags/lares/ha.ka.ba/lares/api/pono/tick.mem`, "utf8");
+const BASE = readFileSync(new URL("./fixtures/standoff-tick.mem", import.meta.url), "utf8");
 const sealed = (t: string): string => { const s = memeSealer(t); if (!s.ok) throw new Error(s.why); return s.text; };
 const DISK = sealed(BASE.replace("Device lifecycle hook: run this block once per //nalu//", "Device lifecycle hook (the hand's midnight words): run this block once per //nalu//"));
 const RECORDS = sealed(BASE.replace("<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/nalu`>>\n", "<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/nalu`>>\n\nThe seat appended this line.\n"));

@@ -23,10 +23,13 @@
  *     names the same adoption `take-disk` does.
  *   · A STAND-OFF COMES INSIDE AS DRAFTS (`standoff-drafts.ts`, @lararium/node): the file's side loads as drafts of its
  *     targets in the worn face's draft layer, and the person's collapse rules (their daemon face's
- *     `$:/config/lares/shore/collapse/<rule>`) settle what they can. What stays raises one awaiting alert naming four
+ *     `$:/config/lares/shore/collapse/<rule>`) settle what they can. What stays raises one awaiting alert naming its
  *     actions: `keep-disk` lands the file's words whole (no merge), `keep-records` writes the records' render over the file
- *     and lets the drafts go, `keep-both` writes the records' render and keeps the drafts as parallel drafts, and `drafts`
- *     names the drafts by title (`lares tiddler get` reads each).
+ *     and lets the drafts go, and, where drafts stand, `keep-both` writes the records' render and keeps the drafts as
+ *     parallel drafts, and `drafts` names the drafts by title (`lares tiddler get` reads each).
+ *   · SETTLING STAYS A HAND ACT: `take-records`, `take-disk` and the keep acts read the hand behind this command
+ *     (`readOwnHand`) before anything else; an AI harness on its branch refuses `hand-act-only`, an unreadable branch
+ *     `hand-unattested`, each naming the command the operator runs, and `--yes` approves nothing by itself.
  *   · A PENDING REMOVAL: a file vanished from the path its base names. Nothing writes it back and nothing
  *     tombstones its records. `restore` writes the file back from the records; `remove` deletes the
  *     carrier in the wiki, where the wiki shore lands the tombstone.
@@ -61,6 +64,7 @@
 
 import { createInterface } from "readline/promises";
 import { stdin, stdout } from "process";
+import { readOwnHand, type HandReading } from "@lararium/node";
 import type { ParsedArgs } from "../parse-args.js";
 import { emit, exitFor, wantsJson } from "../render.js";
 import { verbFailure } from "../verb-call.js";
@@ -156,7 +160,29 @@ function confirmLine(act: ShoreAct, shaped: Record<string, unknown>): string {
     : `remove ${what}: each carrier leaves the wiki, and its records rest under a tombstone. Proceed? [y/N] `;
 }
 
-export async function cmdShore(args: ParsedArgs): Promise<number> {
+/** How a settling act reads the hand behind this command: the house gate over its own branch. A suite names its reading. */
+export type ShoreHandRead = () => HandReading;
+const ownHand: ShoreHandRead = () => readOwnHand({ proveRoute: false });
+
+/** The acts that settle a stand-off: a person's hand alone runs them. */
+const SETTLING: ReadonlySet<ShoreAct> = new Set(["take-records", "take-disk", "keep-disk", "keep-records", "keep-both"]);
+
+/**
+ * SETTLING A STAND-OFF STAYS A HAND ACT (operator ruling, 2026-11-23): an AI harness on this command's branch refuses
+ * `hand-act-only`, a branch that reads nothing refuses `hand-unattested`, and `--yes` approves nothing by itself. Each
+ * refusal names the command the operator runs at their own terminal. Null where the act settles nothing or a hand stands.
+ */
+export function shoreHandRefusal(act: ShoreAct, named: Readonly<Record<string, unknown>>, hand: ShoreHandRead = ownHand): { readonly code: "hand-act-only" | "hand-unattested"; readonly message: string } | null {
+  if (!SETTLING.has(act)) return null;
+  const read = hand();
+  if (!("refusal" in read)) return null;
+  const line = `lares shore ${act} ${String(named["uri"] ?? "<uri>")} --key ${String(named["key"] ?? "<key>")}${typeof named["bag"] === "string" ? ` --bag ${named["bag"]}` : ""}`;
+  return read.refusal === "hand-act-only"
+    ? { code: "hand-act-only", message: `hand-act-only: \`lares shore ${act}\` settles a stand-off on a person's hand at a real terminal, and an AI harness stands on this command's branch. Ask the operator to run \`${line}\` on their own terminal.` }
+    : { code: "hand-unattested", message: `hand-unattested: \`lares shore ${act}\` settles a stand-off on a person's hand at a real terminal, and this command's process chain reads nothing to attest one. Run \`${line}\` on a terminal whose processes the host can read.` };
+}
+
+export async function cmdShore(args: ParsedArgs, deps: { readonly hand?: ShoreHandRead } = {}): Promise<number> {
   const act = (args.positional[0] ?? "list") as ShoreAct;
   if (!(SHORE_ACTS as readonly string[]).includes(act)) { printUsage(); return 2; }
   const shaped = shoreArgs(act, args);
@@ -170,7 +196,14 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
     return runMirrors({ apply: true, liftKahua: String(shaped.args["count"]), json: wantsJson(args) }, LIVE_MIRROR_DOORS);
   }
 
-  // An act that writes asks first (a person at a TTY), or carries `--yes` (an agent).
+  // A SETTLING ACT READS THE HAND FIRST, before any confirmation: `--yes` names the intent and approves nothing.
+  const handRefused = shoreHandRefusal(act, { ...shaped.args, uri: args.positional[1], key: args.options["key"] }, deps.hand);
+  if (handRefused !== null) {
+    emit(args, { ok: false, error: { code: handRefused.code, message: handRefused.message }, human: () => console.error(`lares shore ${act}: ${handRefused.message}`) });
+    return exitFor(handRefused.code);
+  }
+
+  // An act that writes asks first (a person at a TTY), or carries `--yes`.
   if (act !== "list" && act !== "settle" && act !== "flush" && act !== "drafts" && !args.flags["yes"]) {
     if (wantsJson(args)) {
       emit(args, { ok: false, error: { code: "usage", message: "confirmation required", hint: "pass --yes for non-interactive (agent) invocation" }, human: () => { /* unreachable */ } });

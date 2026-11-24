@@ -101,9 +101,29 @@ export const noLineMerge: LineMerge = ({ base, ours, theirs }) => {
   return { text: ours, conflicts: 1 };
 };
 
-/** Whitespace folded: each line's trailing space dropped, runs of blank lines folded to one, the ends trimmed. */
+/**
+ * Whitespace folded where it carries no words: each line's trailing space dropped, runs of blank lines folded to one, the
+ * leading and trailing blank lines dropped. Two places keep every byte: a FENCED block (``` or ~~~, closed by a run at
+ * least as long), whose blank lines and trailing spaces belong to the code it holds, and a line ending in two or more
+ * spaces, the hard break a renderer reads.
+ */
 export function foldWhitespace(text: string): string {
-  return text.split(/\r?\n/).map((l) => l.replace(/[ \t]+$/, "")).join("\n").replace(/\n{3,}/g, "\n\n").trim();
+  const out: string[] = [];
+  let fence: string | null = null;
+  for (const raw of text.split(/\r?\n/)) {
+    const mark = /^\s*(`{3,}|~{3,})/.exec(raw)?.[1] ?? null;
+    if (fence !== null) {
+      out.push(raw);
+      if (mark !== null && mark[0] === fence[0] && mark.length >= fence.length && raw.trim() === mark) fence = null;
+      continue;
+    }
+    if (mark !== null) fence = mark;
+    const line = raw.trim() === "" ? "" : / {2,}$/.test(raw) && mark === null ? raw : raw.replace(/[ \t]+$/, "");
+    if (line === "" && (out.length === 0 || out[out.length - 1] === "")) continue;
+    out.push(line);
+  }
+  while (out.length > 0 && out[out.length - 1] === "" && fence === null) out.pop();
+  return out.join("\n");
 }
 
 export interface CollapseInput {

@@ -19,17 +19,26 @@
  *      reads it as it reads any parallel draft.
  *   2. RUNS THE PERSON'S RULES (`standoff-collapse.ts`), read from their daemon face, against the base's words (the file's
  *      own git history, `basePoolText`), the records' render and the file's words.
- *   3. A COLLAPSE LANDS THROUGH THE ORDINARY SAVE PATH. Toward the disk or a merge: ONE wiki dispatch writes each target
- *      the landing words move and deletes the drafts, the shape the wiki shore reads as a SAVE, so each target builds on
- *      the base its draft opened on and merges at field grain with any hand that moved since. The projector's next weighing
- *      then finds the records saying the merge and the file the hand's words, and the same rules settle it toward the
- *      records, which writes the merge over the file (the hand's words stand inside it). Toward the records: the drafts
- *      leave (a cancel) and the records' render writes over the file under the stand-off's own key. Each collapse files one
- *      audit row naming the rule.
- *   4. WHAT NO RULE COLLAPSES STAYS DRAFTS PLUS ONE AWAITING ALERT (`$:/temp/lares/alert/standoff/<key>`). The alert names
- *      the carrier, the path, the bag and the drafts by title, and the actions as runnable commands; it never carries a
- *      draft's words. Approving an action stays a HAND act (`lares shore keep-disk|keep-records|keep-both`); a seat reads
+ *   3. A COLLAPSE LANDS THROUGH THE ORDINARY SAVE PATH, AND ONLY WHERE THE INGEST GATE WOULD LAND IT. Toward the disk or a
+ *      merge, the landing words pass the ingest grade first (`carrierLanding`: the frame, the parse, the render, every
+ *      declared slot), the file's path stands inside the bag's own grant, the stand-off's key still stands, and a save of
+ *      each target lands in the stand-off's OWN bag (the cascade's save bag, read as a probe); any of these failing, the
+ *      drafts stay and the alert rises. Then ONE wiki dispatch writes each target the landing moves and deletes the drafts,
+ *      the shape the wiki shore reads as a SAVE, so each target builds on the base its draft opened on and merges at field
+ *      grain with any hand that moved since. The projector's next weighing finds the records saying the merge and the file
+ *      the hand's words, and the same rules settle it toward the records, which writes the merge over the file. Toward the
+ *      records: the records' render writes over the file under the stand-off's own key, and only once it landed do the
+ *      drafts leave. A native carrier (no slots, no memetic congruence) collapses toward the records alone: its raw bytes
+ *      never land in a record. Each collapse files one audit row naming the rule.
+ *   4. WHAT NO RULE COLLAPSES STAYS DRAFTS PLUS ONE AWAITING ALERT, raised on the ward rail where the daemon face reads its
+ *      alerts. It names the carrier, the path, the bag and the drafts by title, and the actions as runnable commands
+ *      (`keep-both` only where drafts stand); it never carries a draft's words. Approving an action stays a HAND act
+ *      (`lares shore keep-disk|keep-records|keep-both`, read off the hand behind the command and at the verb); a seat reads
  *      the alert and the drafts, and may write its own proposed-resolution draft, never approve.
+ *
+ * A draft's title carries its stand-off's key (`Draft of '<title>' by disk/<key>`), so a later stand-off, or the same
+ * title in another bag, never writes over a draft a person kept; a draft that already stands is never written again, so a
+ * hand's edit of it stays. At mount the keeper sweeps every unkept draft whose stand-off the projector's standing set holds not.
  *
  * A stand-off that resolves takes its drafts with it (a cancel), save those a person kept (`keep-both`: the records take
  * the file and the disk's words stay as parallel drafts beside them).
@@ -42,12 +51,11 @@ import { contentHash } from "./synced-tree.js";
 import { digestsEqual } from "@lararium/mesh";
 import { decideCollapse, type CollapseRule, type CollapseToward } from "./standoff-collapse.js";
 
-/** The draft title the disk side of a stand-off takes for one target: TW5's own draft shape, its writer named `disk`. */
-export const standoffDraftTitle = (title: string): string => `Draft of '${title}' by disk`;
-
-/** The alert kind an uncollapsed stand-off raises, keyed by the stand-off's key. */
-export const STANDOFF_ALERT_KIND = "standoff";
-export const standoffAlertTitle = (key: string): string => `$:/temp/lares/alert/${STANDOFF_ALERT_KIND}/${key}`;
+/**
+ * The draft title the disk side of a stand-off takes for one target: TW5's own draft shape, its writer named `disk` and
+ * the stand-off's key (its first twelve digits), so two stand-offs of one title never share a draft.
+ */
+export const standoffDraftTitle = (title: string, key: string): string => `Draft of '${title}' by disk/${key.slice(0, 12)}`;
 
 /** The fields a draft carries to name its stand-off. */
 export const STANDOFF_FIELD = "lar-standoff";
@@ -56,13 +64,15 @@ export const STANDOFF_BAG_FIELD = "lar-standoff-bag";
 /** A person kept this draft past its stand-off's end (`keep-both`). */
 export const STANDOFF_KEPT_FIELD = "lar-standoff-kept";
 
-/** The actions an awaiting stand-off offers a person, each a runnable command. */
-export function standoffActions(uri: string, key: string): Array<{ readonly action: string; readonly command: string }> {
+/** The actions an awaiting stand-off offers a person, each a runnable command: `keep-both` and the drafts only where drafts stand. */
+export function standoffActions(uri: string, key: string, withDrafts: boolean): Array<{ readonly action: string; readonly command: string }> {
   return [
     { action: "keep-disk", command: `lares shore keep-disk ${uri} --key ${key}` },
     { action: "keep-records", command: `lares shore keep-records ${uri} --key ${key}` },
-    { action: "keep-both", command: `lares shore keep-both ${uri} --key ${key}` },
-    { action: "open-drafts", command: `lares shore drafts ${uri}` },
+    ...(withDrafts ? [
+      { action: "keep-both", command: `lares shore keep-both ${uri} --key ${key}` },
+      { action: "open-drafts", command: `lares shore drafts ${uri}` },
+    ] : []),
   ];
 }
 
@@ -96,14 +106,20 @@ export interface StandoffKeeperDeps {
   readonly standing: () => readonly KeeperStandoff[];
   readonly render: (bagId: string, uri: string, standoff: string) => { readonly text: string } | null;
   readonly takeRecords: (bagId: string, uri: string, standoff: string) => Promise<{ readonly took: boolean; readonly why?: string }>;
-  /** The person's rules for a bag, read from their daemon face. */
-  readonly rules: (bagId: string) => ReadonlySet<CollapseRule>;
+  /** The person's rules for a bag, read from their daemon face at each weighing. */
+  readonly rules: (bagId: string) => ReadonlySet<CollapseRule> | Promise<ReadonlySet<CollapseRule>>;
   /** The base's words for the file at `path` whose bytes hash to `baseDisk`, or null where no history holds them. */
   readonly baseText: (path: string, baseDisk: string) => string | null;
   readonly readDisk: (path: string) => string | null;
   /** The tiddlers a memetic carrier's words say (root and slots), or null where they parse to none. */
   readonly deserialize: (uri: string, text: string) => readonly Fields[] | null;
   readonly canonical: (uri: string, text: string) => string | null;
+  /** The tiddlers a collapse's landing words say, through the ingest gate's own grade, or why the gate refuses them (`carrierLanding`). */
+  readonly land: (uri: string, text: string) => { readonly records: readonly Fields[] } | { readonly why: string };
+  /** Where a save of `title` would land (the cascade's save bag, asked as a probe), or null where no layer takes it. */
+  readonly saveBag: (title: string) => string | null;
+  /** Whether the vessel's grant lets `bagId`'s mirror carry the file at `path` (the source root INGEST reads). */
+  readonly grants: (bagId: string, path: string) => boolean;
   /** One audit row per collapse. */
   readonly audit: (row: CollapseAudit) => void;
   /** Raise, or clear, the awaiting alert of one stand-off. */
@@ -148,6 +164,9 @@ const byTitle = (records: readonly Fields[] | null): Map<string, Fields> =>
 
 /** How many collapses one carrier may land in a row before the keeper stops and asks a person. */
 const COLLAPSE_ROUNDS = 3;
+
+/** The rules that settle toward the records byte for byte, and so the only ones a native carrier (no congruence, no slots) reads. */
+const RECORDS_ONLY_RULES: ReadonlySet<CollapseRule> = new Set(["canonical-equivalent", "seal-line-only"]);
 
 export class StandoffKeeper {
   /** One weighing at a time: each act reads the wiki its predecessor left. */
@@ -205,9 +224,27 @@ export class StandoffKeeper {
     });
   }
 
+  /**
+   * THE MOUNT'S SWEEP: each draft whose stand-off the projector's standing set does not hold leaves, save those a person
+   * kept. A stand-off that ended while the island rested raised no resolution here, so its drafts would stand forever.
+   */
+  sweep(): Promise<readonly string[]> {
+    return this.queue(async () => {
+      const standing = new Set(this.deps.standing().map((s) => s.standoff));
+      const leave = this.deps.wiki.titles().filter((t) => {
+        const f = this.deps.wiki.get(t);
+        const key = f?.[STANDOFF_FIELD];
+        return typeof key === "string" && typeof f?.["draft.of"] === "string" && f?.[STANDOFF_KEPT_FIELD] !== "yes" && !standing.has(key);
+      });
+      if (leave.length > 0) await this.deps.wiki.act((_put, del) => { for (const t of leave) del(t); return leave.length; });
+      return leave;
+    });
+  }
+
   private async weighNow(info: { readonly bagId: string; readonly uri: string; readonly standoff: string }): Promise<KeeperOutcome> {
     const { bagId, uri, standoff } = info;
-    const entry = this.deps.standing().find((s) => s.bagId === bagId && s.uri === uri && s.standoff === standoff);
+    const stands = (): KeeperStandoff | undefined => this.deps.standing().find((s) => s.bagId === bagId && s.uri === uri && s.standoff === standoff);
+    const entry = stands();
     if (entry === undefined) return { kind: "passed", why: "the stand-off left before the keeper weighed it" };
     if (entry.kind !== "sides" || !entry.path || !entry.disk) return { kind: "passed", why: "the stand-off names no one file whose words could load as drafts" };
     const path = entry.path;
@@ -217,101 +254,121 @@ export class StandoffKeeper {
       return this.awaiting(entry, path, [], render === null ? "the records' side holds no text render (a sidecar, a pointer or a binary body)" : "the file moved since the stand-off was weighed");
     }
     const ext = extname(path);
-    const diskRecs = ext === ".mem" ? byTitle(this.deps.deserialize(uri, diskText)) : new Map<string, Fields>();
-    const recordRecs = ext === ".mem" ? byTitle(this.deps.deserialize(uri, render.text)) : new Map<string, Fields>();
+    const memetic = ext === ".mem";
+    // A MEMETIC CARRIER READS THROUGH THE ONE CONGRUENCE, ON BOTH SIDES: words the ingest grade refuses load no draft and
+    // collapse nothing, since no record could be said from them.
+    const diskSaid = memetic ? this.deps.deserialize(uri, diskText) : [];
+    const recordsSaid = memetic ? this.deps.deserialize(uri, render.text) : [];
+    if (diskSaid === null) return this.awaiting(entry, path, [], "the file's words fail the ingest grade (a torn frame, an unterminated fence or another fault of error grade), so no draft loads and nothing collapses");
+    if (recordsSaid === null) return this.awaiting(entry, path, [], "the records' render fails the ingest grade, so nothing collapses");
+    const diskRecs = byTitle(diskSaid);
+    const recordRecs = byTitle(recordsSaid);
     const baseText = entry.base ? this.deps.baseText(path, entry.base.disk) : null;
-    const baseRecs = baseText !== null && ext === ".mem" ? byTitle(this.deps.deserialize(uri, baseText)) : null;
+    const baseSaid = baseText !== null && memetic ? this.deps.deserialize(uri, baseText) : null;
+    const baseRecs = baseSaid ? byTitle(baseSaid) : null;
 
     // 1 — THE DISK SIDE LOADS AS DRAFTS: each tiddler the file moved past the base that says something the records do not.
-    const drafted: Array<{ title: string; fields: Fields }> = [];
+    // A draft that stands already (this stand-off weighed before, or a hand edited it) is never written again.
+    const drafts: string[] = [];
+    const fresh: Array<Record<string, unknown>> = [];
     for (const [title, fields] of diskRecs) {
       const moved = movedFields(fields, recordRecs.get(title));
       if (moved.length === 0) continue;
       if (baseRecs !== null && movedFields(fields, baseRecs.get(title)).length === 0) continue;
+      const draftTitle = standoffDraftTitle(title, standoff);
+      drafts.push(draftTitle);
+      if (this.deps.wiki.get(draftTitle) !== undefined) continue;
       const draft: Record<string, unknown> = {};
       for (const [k, v] of Object.entries(fields)) if (!BOOKKEEPING.has(k)) draft[k] = v;
       Object.assign(draft, {
-        title: standoffDraftTitle(title), "draft.of": title, "draft.title": title,
+        title: draftTitle, "draft.of": title, "draft.title": title,
         [STANDOFF_FIELD]: standoff, [STANDOFF_PATH_FIELD]: path, [STANDOFF_BAG_FIELD]: bagId,
         "lar-conflict-fields": moved.join(" "), "lar-conflict-live": "",
       });
-      drafted.push({ title: draft["title"] as string, fields: draft });
+      fresh.push(draft);
     }
-    const drafts = drafted.map((d) => d.title);
-    if (drafted.length > 0) await this.deps.wiki.act((put) => { for (const d of drafted) put(d.fields); return drafted.length; });
+    if (fresh.length > 0) await this.deps.wiki.act((put) => { for (const d of fresh) put(d); return fresh.length; });
 
-    // 2 — THE PERSON'S RULES.
-    const verdict = decideCollapse({
-      base: baseText, records: render.text, disk: diskText, ext, path, rules: this.deps.rules(bagId),
-      canonical: (t) => this.deps.canonical(uri, t),
-    });
+    // 2 — THE PERSON'S RULES. A native carrier reads only the rules that settle toward the records byte for byte.
+    const enabled = await this.deps.rules(bagId);
+    const rules = memetic ? enabled : new Set([...enabled].filter((r) => RECORDS_ONLY_RULES.has(r)));
+    const verdict = decideCollapse({ base: baseText, records: render.text, disk: diskText, ext, path, rules, canonical: (t) => this.deps.canonical(uri, t) });
     if (!verdict.collapsed) return this.awaiting(entry, path, drafts, verdict.why);
+    if (verdict.toward !== "records" && !memetic) return this.awaiting(entry, path, drafts, `${verdict.rule} would land a native carrier's raw bytes in the records`);
     const round = (this.rounds.get(uri) ?? 0) + 1;
     if (verdict.toward !== "records" && round > COLLAPSE_ROUNDS) {
       this.rounds.delete(uri);
       return this.awaiting(entry, path, drafts, `${verdict.rule} collapsed this carrier ${COLLAPSE_ROUNDS} times and the stand-off still stands`);
     }
 
-    // 3 — THE COLLAPSE LANDS THROUGH THE ORDINARY SAVE PATH.
-    const landing = verdict.toward === "records" ? null : byTitle(this.deps.deserialize(uri, verdict.text));
-    let moved = 0;
-    await this.deps.wiki.act((put, del) => {
-      if (landing !== null) {
-        for (const [title, fields] of landing) {
-          if (movedFields(fields, recordRecs.get(title)).length === 0) continue;
-          const held = this.deps.wiki.get(title) ?? {};
-          const next: Record<string, unknown> = { ...held };
-          for (const k of Object.keys(recordRecs.get(title) ?? {})) if (!BOOKKEEPING.has(k) && !(k in fields)) delete next[k];
-          Object.assign(next, fields);
-          put(next);
-          moved++;
-        }
-        for (const title of recordRecs.keys()) if (!landing.has(title) && this.deps.wiki.get(title) !== undefined) { del(title); moved++; }
+    // 3 — TOWARD THE RECORDS: the records' render lands over the file first; the drafts leave once it landed.
+    if (verdict.toward === "records") return this.settleTowardRecords(entry, path, drafts, verdict.rule);
+
+    // 3 — TOWARD THE DISK OR A MERGE: the landing passes the ingest grade, the grant, the key and the save bag, or waits.
+    const landed = this.deps.land(uri, verdict.text);
+    if ("why" in landed) return this.awaiting(entry, path, drafts, `${verdict.rule} merged words the ingest gate refuses: ${landed.why}`);
+    if (!this.deps.grants(bagId, path)) return this.awaiting(entry, path, drafts, `${verdict.rule} would land words from ${path}, which ${bagId}'s grant does not reach`);
+    const landing = byTitle(landed.records);
+    const writes: Array<{ readonly title: string; readonly fields: Fields | null }> = [];
+    for (const [title, fields] of landing) if (movedFields(fields, recordRecs.get(title)).length > 0) writes.push({ title, fields });
+    for (const title of recordRecs.keys()) if (!landing.has(title) && this.deps.wiki.get(title) !== undefined) writes.push({ title, fields: null });
+    // The landing says what the records say already: nothing lands in the records, and the file takes their render.
+    if (writes.length === 0) return this.settleTowardRecords(entry, path, drafts, verdict.rule);
+    for (const w of writes) {
+      const lands = this.deps.saveBag(w.title);
+      if (lands !== bagId) {
+        return this.awaiting(entry, path, drafts, `${verdict.rule} would land ${w.title} in ${lands ?? "no layer this face mounts"}, not in ${bagId} where the stand-off stands`);
       }
-      for (const d of drafts) del(d);
-      return moved + drafts.length;
-    });
-    const toward: CollapseToward = landing !== null && moved === 0 ? "records" : verdict.toward;
-    this.deps.audit({ rule: verdict.rule, toward, bagId, uri, path, standoff, drafts });
-    if (toward === "records") {
-      this.rounds.delete(uri);
-      const took = await this.deps.takeRecords(bagId, uri, standoff);
-      if (!took.took) return this.awaiting(entry, path, [], `${verdict.rule} settled toward the records, and the records' side could not land: ${took.why ?? "the states moved"}`);
-    } else {
-      this.rounds.set(uri, round);
     }
-    return { kind: "collapsed", rule: verdict.rule, toward, drafts };
+    if (stands() === undefined) return { kind: "passed", why: "the stand-off moved while the keeper weighed it" };
+    await this.deps.wiki.act((put, del) => {
+      for (const w of writes) {
+        if (w.fields === null) { del(w.title); continue; }
+        const next: Record<string, unknown> = { ...(this.deps.wiki.get(w.title) ?? {}) };
+        for (const k of Object.keys(recordRecs.get(w.title) ?? {})) if (!BOOKKEEPING.has(k) && !(k in w.fields)) delete next[k];
+        Object.assign(next, w.fields);
+        put(next);
+      }
+      for (const d of drafts) if (this.deps.wiki.get(d)?.[STANDOFF_KEPT_FIELD] !== "yes") del(d);
+      return writes.length + drafts.length;
+    });
+    this.deps.audit({ rule: verdict.rule, toward: verdict.toward, bagId, uri, path, standoff, drafts });
+    this.rounds.set(uri, round);
+    return { kind: "collapsed", rule: verdict.rule, toward: verdict.toward, drafts };
+  }
+
+  /** The records' render writes over the file under the stand-off's key; the drafts leave only once it landed. */
+  private async settleTowardRecords(entry: KeeperStandoff, path: string, drafts: readonly string[], rule: CollapseRule): Promise<KeeperOutcome> {
+    this.rounds.delete(entry.uri);
+    const took = await this.deps.takeRecords(entry.bagId, entry.uri, entry.standoff);
+    if (!took.took) return this.awaiting(entry, path, drafts.filter((d) => this.deps.wiki.get(d) !== undefined), `${rule} settled toward the records, and the records' side could not land: ${took.why ?? "the states moved"}`);
+    const leave = drafts.filter((d) => { const f = this.deps.wiki.get(d); return f !== undefined && f[STANDOFF_KEPT_FIELD] !== "yes"; });
+    if (leave.length > 0) await this.deps.wiki.act((_put, del) => { for (const d of leave) del(d); return leave.length; });
+    this.deps.audit({ rule, toward: "records", bagId: entry.bagId, uri: entry.uri, path, standoff: entry.standoff, drafts });
+    return { kind: "collapsed", rule, toward: "records", drafts };
   }
 
   private async awaiting(entry: KeeperStandoff, path: string, drafts: readonly string[], why: string): Promise<KeeperOutcome> {
     this.rounds.delete(entry.uri);
-    // ONE ALERT PER STAND-OFF: a memetic carrier's awaiting alert stands here; a native carrier loads no drafts, and the
-    // ward rail's own alert stays its one alert.
-    if (extname(path) === ".mem") await this.deps.alert({ standoff: entry.standoff, bagId: entry.bagId, uri: entry.uri, path, drafts, why });
+    // ONE ALERT PER STAND-OFF: the keeper's awaiting alert IS the stand-off's alert, on the ward rail.
+    await this.deps.alert({ standoff: entry.standoff, bagId: entry.bagId, uri: entry.uri, path, drafts, why });
     return { kind: "awaiting", drafts, why };
   }
 }
 
 /**
- * The alert an uncollapsed stand-off raises, as fields: it NAMES the carrier, the path, the bag, the drafts and the actions,
- * and never carries a draft's words. Its text names each action as the command that runs it.
+ * The words of the alert an uncollapsed stand-off raises: it NAMES the carrier, the path, the bag, the drafts and the
+ * actions, and never carries a draft's words. Each action reads as the command that runs it.
  */
-export function standoffAlertFields(a: Extract<StandoffAlert, { readonly bagId: string }>): { readonly title: string } & Record<string, string> {
+export function standoffAlertWords(a: Extract<StandoffAlert, { readonly bagId: string }>): { readonly reason: string; readonly drafts: string; readonly actions: string } {
   const list = (xs: readonly string[]): string => xs.map((x) => (/\s|\]\]/.test(x) ? `[[${x}]]` : x)).join(" ");
-  const actions = standoffActions(a.uri, a.standoff);
+  const actions = standoffActions(a.uri, a.standoff, a.drafts.length > 0);
   return {
-    title: standoffAlertTitle(a.standoff),
-    tags: "$:/tags/Alert",
-    "alert-kind": STANDOFF_ALERT_KIND,
-    standoff: a.standoff,
-    carrier: a.uri,
-    path: a.path,
-    bag: a.bagId,
     drafts: list(a.drafts),
     actions: actions.map((x) => x.action).join(" "),
-    text: [
-      `A stand-off awaits a person: ${a.uri} (${a.path}) moved on disk and in the records, and no collapse rule settled it (${a.why}).`,
-      a.drafts.length > 0 ? `The file's side stands as ${a.drafts.length} draft(s) in this face's draft layer.` : "The file's side loaded no draft.",
+    reason: [
+      `a stand-off awaits a person: ${a.uri} (${a.path}) moved on disk and in the records, and no collapse rule settled it (${a.why}).`,
+      a.drafts.length > 0 ? `The file's side stands as ${a.drafts.length} draft(s) in this face's draft layer: ${list(a.drafts)}.` : "The file's side loaded no draft.",
       ...actions.map((x) => `${x.action}: \`${x.command}\``),
     ].join("\n"),
   };

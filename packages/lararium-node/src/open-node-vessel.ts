@@ -4694,6 +4694,8 @@ async function prepareNodeBootOn(
         verb,
         args: innerArgs,
         requestedBy: ctx.invocation.requestedBy,
+        // The asker this vessel's door read rides into the island (the shore's hand acts read it there).
+        ...(ctx.asker ? { asker: ctx.asker } : {}),
       });
     });
     registry.register("wiki-render-out", async (args, ctx) => {

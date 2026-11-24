@@ -10,14 +10,14 @@ import { describe, expect, test } from "vitest";
 import { canonicalizeCarrierText } from "@lararium/tw5/carrier-canonical";
 import { bareSeal } from "@lararium/mesh/meme-merge";
 import { mkManifest } from "@lararium/mesh";
+import { SHORE_COLLAPSE_CONFIG_PREFIX } from "@lararium/tw5";
 import {
-  COLLAPSE_RULES, collapseConfigOf, collapseRuleTitle, decideCollapse, foldWhitespace, memeSealer, rulesFor,
+  COLLAPSE_CONFIG_PREFIX, COLLAPSE_RULES, collapseConfigOf, collapseRuleTitle, decideCollapse, foldWhitespace, memeSealer, rulesFor,
   type CollapseRule,
 } from "../src/standoff-collapse.js";
 
-const REPO = new URL("../../..", import.meta.url).pathname;
 const URI = "lar:///ha.ka.ba/lares/api/pono/tick";
-const BASE = readFileSync(`${REPO}bags/lares/ha.ka.ba/lares/api/pono/tick.mem`, "utf8");
+const BASE = readFileSync(new URL("./fixtures/standoff-tick.mem", import.meta.url), "utf8");
 const BAG = "lar:///ha.ka.ba/bags/lares";
 const canonical = (t: string): string | null => canonicalizeCarrierText(URI, t);
 const sealed = (t: string): string => { const s = memeSealer(t); if (!s.ok) throw new Error(s.why); return s.text; };
@@ -45,6 +45,10 @@ describe("the person's rules rest in their daemon face", () => {
     expect(rulesFor(config, "lar:///ha.ka.ba/bags/other").size).toBe(0);
     expect(rulesFor(null, BAG).size).toBe(0);
     expect(COLLAPSE_RULES.map(collapseRuleTitle)).toContain("$:/config/lares/shore/collapse/line-three-way");
+  });
+
+  test("WELD: the prefix the tiddler door gates as a hand act is the prefix the rules read", () => {
+    expect(SHORE_COLLAPSE_CONFIG_PREFIX).toBe(COLLAPSE_CONFIG_PREFIX);
   });
 });
 

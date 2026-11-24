@@ -24,7 +24,6 @@ import { collapseRuleTitle } from "../src/standoff-collapse.js";
 import { STANDOFF_FIELD, STANDOFF_KEPT_FIELD, standoffDraftTitle } from "../src/standoff-drafts.js";
 import { coreBlobSkip } from "./shore-rig.js";
 
-const REPO = new URL("../../..", import.meta.url).pathname;
 const SLUG = "notes";
 const BAG = bagUri("lares");
 const TEMP = wikiSlotUri(SLUG, "temp");
@@ -39,7 +38,7 @@ async function island(before: (s: { $tw: Wiki; working: MemoryTiddlerStore }) =>
   const scratch = mkdtempSync(join(tmpdir(), "standoff-one-alert-"));
   const mirrorRoot = join(scratch, "bags", "lares");
   const file = join(mirrorRoot, "ha.ka.ba/lares/api/pono/tick.mem");
-  const words = readFileSync(`${REPO}bags/lares/ha.ka.ba/lares/api/pono/tick.mem`, "utf8");
+  const words = readFileSync(new URL("./fixtures/standoff-tick.mem", import.meta.url), "utf8");
   mkdirSync(dirname(file), { recursive: true });
   writeFileSync(file, words.replace("Device lifecycle hook:", "Device lifecycle hook (the operator's own words):"));
 

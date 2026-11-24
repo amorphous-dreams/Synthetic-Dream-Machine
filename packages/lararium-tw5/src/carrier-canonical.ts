@@ -77,3 +77,26 @@ export function carrierRecords(uri: string, diskText: string): ReadonlyArray<Rea
   if (memeticIngestOps.grade(diagnostics) === "error") return null;
   return records as ReadonlyArray<Readonly<Record<string, unknown>>>;
 }
+
+/**
+ * THE WORDS A COLLAPSE WOULD LAND, read through the ingest gate's own grade before anything writes: the tiddlers they say,
+ * or why the gate would refuse them. A fragment address, bare data (no frame), a parse that grades `error`, a render that
+ * says nothing and a render that drops a slot the words declare each refuse, as `decideIngest` refuses them; a landing
+ * never writes what a person's own `lares ingest` of the same words could not land.
+ */
+export function carrierLanding(uri: string, text: string): { readonly records: ReadonlyArray<Readonly<Record<string, unknown>>> } | { readonly why: string } {
+  if (uri.includes("#")) return { why: `${uri}: a fragment address never founds a meme` };
+  const frame = memeticVerdict(text);
+  if (frame.kind === "bare") return { why: `${uri}: the words stand as bare data (no frame), which the ingest gate holds verbatim and never reads as a meme's tiddlers` };
+  const { records, diagnostics, declared } = memeticIngestOps.deserialize(uri, text, frame);
+  if (memeticIngestOps.grade(diagnostics) === "error") {
+    const faults = diagnostics.filter((d) => d.severity === "error").map((d) => d.message);
+    return { why: `${uri}: the ingest grade refuses the words (${faults.join("; ") || "a fault of error grade"})` };
+  }
+  const canonical = memeticIngestOps.render(uri, records);
+  if (canonical === "") return { why: `${uri}: the words render no canonical text` };
+  const rendered = memeticIngestOps.declaredStructure(canonical);
+  const dropped = [...declared].filter((slot) => !rendered.has(slot));
+  if (dropped.length > 0) return { why: `${uri}: the render drops the slot(s) the words declare (${dropped.join(", ")})` };
+  return { records: records as ReadonlyArray<Readonly<Record<string, unknown>>> };
+}

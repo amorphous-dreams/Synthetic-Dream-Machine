@@ -30,6 +30,12 @@ export interface IslandContext {
   /** Request a best-effort drain; no persistence acknowledgement follows. */
   requestDrain?: () => void;
   /**
+   * Where a hand's save of `title` would land through this island's adaptor (the cascade's save bag, a title living in a
+   * higher layer staying there), asked as a probe that raises nothing; null where no layer this composition mounts takes
+   * it. Absent where the island stands no adaptor.
+   */
+  saveBagOf?: (title: string) => string | null;
+  /**
    * The island-side Automerge Repo. Island behaviors that mint docs (e.g. the
    * daemon island's personal/draft binding resolver) create them here; the docs
    * sync to the host relay via the manifest syncPort. Isomorphic-vessel Stage 1.

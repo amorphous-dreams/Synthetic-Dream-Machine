@@ -16,9 +16,9 @@
  */
 import { afterEach, describe, expect, test } from "vitest";
 import { readFileSync } from "node:fs";
-import { canonicalizeCarrierText, carrierRecords } from "@lararium/tw5/carrier-canonical";
+import { canonicalizeCarrierText, carrierLanding, carrierRecords } from "@lararium/tw5/carrier-canonical";
 import { contentHash } from "../src/synced-tree.js";
-import { StandoffKeeper, keeperWikiOf, standoffAlertFields, standoffDraftTitle, type CollapseAudit, type KeeperOutcome, type StandoffAlert, type Tw5WikiLike } from "../src/standoff-drafts.js";
+import { StandoffKeeper, keeperWikiOf, standoffAlertWords, standoffDraftTitle, type CollapseAudit, type KeeperOutcome, type StandoffAlert, type Tw5WikiLike } from "../src/standoff-drafts.js";
 import type { CollapseRule } from "../src/standoff-collapse.js";
 import { ShoreRig, RIG_BAG, coreBlobSkip } from "./shore-rig.js";
 
@@ -49,6 +49,10 @@ async function keep(r: ShoreRig, rules: ReadonlySet<CollapseRule>, bases: Map<st
     readDisk: (path) => { try { return readFileSync(path, "utf8"); } catch { return null; } },
     deserialize: carrierRecords,
     canonical: canonicalizeCarrierText,
+    land: carrierLanding,
+    // The rig's saves land in its one bag, under its one mirror.
+    saveBag: () => RIG_BAG,
+    grants: (bag) => bag === RIG_BAG,
     audit: (row) => { audits.push(row); },
     alert: (a) => { alerts.push(a); },
   });
@@ -125,27 +129,28 @@ describe.skipIf(coreBlobSkip)("a stand-off comes inside as drafts", () => {
 
     expect(kept.audits).toEqual([]);
     expect(rig.read(uri), "the operator's disk words never get overwritten").toBe(operatorFile);
+    const key = rig.projector.standing().find((s) => s.uri === uri)!.standoff;
     const drafts = kept.keeper.draftsOf(uri);
     expect(drafts.map((d) => d.of)).toContain(slots[0]);
-    const draft = (rig.engine.$tw as unknown as Tw5WikiLike).wiki.getTiddler(standoffDraftTitle(slots[0]!))!.fields;
+    const draft = (rig.engine.$tw as unknown as Tw5WikiLike).wiki.getTiddler(standoffDraftTitle(slots[0]!, key))!.fields;
     expect(draft["draft.of"]).toBe(slots[0]);
     expect(String(draft["text"])).toContain("(the operator's own words)");
     const raised = kept.alerts.filter((a): a is Extract<StandoffAlert, { bagId: string }> => a.clear !== true);
     expect(raised).toHaveLength(1);
-    expect(raised[0]!.drafts).toContain(standoffDraftTitle(slots[0]!));
+    expect(raised[0]!.drafts).toContain(standoffDraftTitle(slots[0]!, key));
     expect(raised[0]!.bagId).toBe(RIG_BAG);
 
     // THE ALERT NAMES, NEVER QUOTES: no draft's words ride it, and each action names a runnable command.
-    const fields = standoffAlertFields(raised[0]!);
-    for (const value of Object.values(fields)) {
+    const words = standoffAlertWords(raised[0]!);
+    for (const value of Object.values(words)) {
       expect(value).not.toContain("the operator's own words");
       expect(value).not.toContain("the seat's rival words");
     }
-    expect(fields["carrier"]).toBe(uri);
-    expect(fields["text"]).toContain(`lares shore keep-disk ${uri} --key `);
-    expect(fields["text"]).toContain(`lares shore keep-records ${uri} --key `);
-    expect(fields["text"]).toContain(`lares shore keep-both ${uri} --key `);
-    expect(fields["text"]).toContain(`lares shore drafts ${uri}`);
+    expect(words.reason).toContain(uri);
+    expect(words.reason).toContain(`lares shore keep-disk ${uri} --key ${key}`);
+    expect(words.reason).toContain(`lares shore keep-records ${uri} --key ${key}`);
+    expect(words.reason).toContain(`lares shore keep-both ${uri} --key ${key}`);
+    expect(words.reason).toContain(`lares shore drafts ${uri}`);
   });
 
   test("a disabled rule collapses nothing: the midnight story with no rule enabled waits for a person", async () => {
@@ -179,7 +184,7 @@ describe.skipIf(coreBlobSkip)("a stand-off comes inside as drafts", () => {
     const key = rig.projector.standing().find((s) => s.uri === uri)!.standoff;
 
     // keep-both: the drafts stay, and the records take the file.
-    expect(await kept.keeper.keep(uri, key)).toEqual([standoffDraftTitle(slots[0]!)]);
+    expect(await kept.keeper.keep(uri, key)).toEqual([standoffDraftTitle(slots[0]!, key)]);
     expect((await rig.projector.takeRecords(RIG_BAG, uri, key)).took).toBe(true);
     await kept.settle();
     expect(kept.keeper.draftsOf(uri).map((d) => d.kept)).toEqual([true]);

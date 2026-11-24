@@ -51,10 +51,11 @@ describe("settling a stand-off stays a hand act at the command", () => {
     const said: string[] = [];
     const out = vi.spyOn(console, "log").mockImplementation((...a: unknown[]) => { said.push(a.map(String).join(" ")); });
     const err = vi.spyOn(console, "error").mockImplementation((...a: unknown[]) => { said.push(a.map(String).join(" ")); });
+    const wrote = vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { said.push(String(chunk)); return true; });
     try {
       const code = await cmdShore(parsed(["keep-both", URI], { key: "k1" }, { yes: true, json: true }), { hand: () => ({ refusal: "hand-act-only" }) });
       expect(code).not.toBe(0);
-    } finally { out.mockRestore(); err.mockRestore(); }
+    } finally { out.mockRestore(); err.mockRestore(); wrote.mockRestore(); }
     expect(said.join("\n")).toContain("hand-act-only");
     expect(said.join("\n")).toContain(`lares shore keep-both ${URI} --key k1`);
   });

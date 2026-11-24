@@ -275,6 +275,23 @@ function anchorOf(opts: TiddlerVerbOptions, args: Readonly<Record<string, unknow
  */
 
 
+/**
+ * Where a person's stand-off collapse rules rest (`@lararium/node` standoff-collapse, `COLLAPSE_CONFIG_PREFIX`): a rule
+ * there lets the house settle a stand-off with no hand present, so writing one is a hand act like settling one.
+ */
+export const SHORE_COLLAPSE_CONFIG_PREFIX = "$:/config/lares/shore/collapse/";
+
+/**
+ * A COLLAPSE RULE TAKES A HAND'S WRITE ALONE: a seat refuses `hand-act-only`, a line no door read (no asker) refuses
+ * `hand-unattested`, and the refusal names the command the operator runs. The operator's line (`cli`) and a tab write.
+ */
+function refuseUnhandedCollapseRule(title: string, verb: string, asker: VerbContext["asker"]): void {
+  if (!title.startsWith(SHORE_COLLAPSE_CONFIG_PREFIX) || asker === "cli" || asker === "tab") return;
+  const line = `lares ${verb} "${title}"`;
+  if (asker === "seat") throw new VerbRefusal("hand-act-only", `hand-act-only: "${title}" names a rule that settles stand-offs with no hand present, so a person alone writes it; a seat proposes. Ask the operator to run \`${line}\` on their own terminal.`);
+  throw new VerbRefusal("hand-unattested", `hand-unattested: "${title}" names a rule that settles stand-offs with no hand present, and this line's asker reads nothing to attest a person. Run \`${line}\` on a terminal whose processes the host can read.`);
+}
+
 function refuseWithheld(title: string, verb: string): void {
   if (staysHome(title)) throw new VerbRefusal("tiddler-withheld", `tiddler-withheld: "${title}" stays home (a temp, state, volatile-VM, control, secret or cap/** title); ${verb} neither reads nor writes it.`);
 }
@@ -937,6 +954,7 @@ export const makeTiddlerPutReactor = everyWiki("tiddler-put", true, (opts: Tiddl
     if (!title) throw new Error("tiddler-put: args.title is required");
     refuseWithheld(title, "tiddler-put");
     refuseEffectLedgerWrite(title, "tiddler-put");
+    refuseUnhandedCollapseRule(title, "tiddler put", ctx.asker);
     await requireWrite(opts, anchor, ctx.cap, "tiddler put", ctx.asker);
     const { wiki, utils, Tiddler } = anchor.engine;
     const append = typeof args["append"] === "string" ? args["append"] : null;
@@ -1118,6 +1136,7 @@ export const makeTiddlerDeleteReactor = everyWiki("tiddler-delete", true, (opts:
     if (!title) throw new Error("tiddler-delete: args.title is required");
     refuseWithheld(title, "tiddler-delete");
     refuseEffectLedgerWrite(title, "tiddler-delete");
+    refuseUnhandedCollapseRule(title, "tiddler delete", ctx.asker);
     await requireWrite(opts, anchor, ctx.cap, "tiddler delete", ctx.asker);
     const named = optionalStringArg(args, "mode");
     if (named !== null && named !== "kapae" && named !== "reveal") {

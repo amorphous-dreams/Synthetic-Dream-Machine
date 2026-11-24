@@ -46,6 +46,7 @@ import { workbenchKeyDocs, ledgerWorkbenchRealms, privateCabalRealmId, bagUri as
 import { DAEMON_WIKI_SLUG, daemonSlotTitle, stoodDocumentBytes, ACTION_VERBS, sha256HexBytesSync, canonicalJsonBytes, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, fleetEdgeBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc, wikiBagUri, recipeLayerIndex, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, ControlHomeUnavailable, canonOfferDocUrl, type ChangeOrigin } from "@lararium/mesh";
 import type { IslandBehavior, IslandContext, DaemonBehaviorOptions, VerbReactor, VerbTable } from "@lararium/tw5";
 import type { IslandMsg_Manifest, JoinedFaceAuth } from "@lararium/mesh";
+import type { Hand } from "@lararium/mesh/session-contract";
 import { boardDyadReader, intentDoorStandings } from "./board-dyad-reader.js";
 import { litFaceProjections, type LitFaceProjectionMount, type LitFaceProjections } from "./lit-face-projections.js";
 import type { DocHandle, LarDoc, AutomergeUrl, CapabilityVerifier, Verb, LarTiddlerStore } from "@lararium/mesh";
@@ -66,8 +67,9 @@ type DaemonExtra = Pick<DaemonBehaviorOptions, "makeCaptureEngine" | "captureTic
   routesVeilArchive?: (face: string) => boolean;
   /** `shore` — a person's answers at THIS island's disk shore (`lares shore`): the node entry injects the
    *  door that answers from the projector this island mounts (`@lararium/node` `shore-verb.ts`). keyhive
-   *  stays fs-blind. Absent (a browser vessel) → the verb never registers. */
-  shore?: (args: Record<string, unknown>) => Promise<Record<string, unknown>>;
+   *  stays fs-blind. Absent (a browser vessel) → the verb never registers. The asker the vessel's door read rides along, so
+   *  the acts that settle a stand-off answer a person's hand alone. */
+  shore?: (args: Record<string, unknown>, asker?: Hand) => Promise<Record<string, unknown>>;
   /** `events` — the vessel journal read door (`lares events`). Absent → no journal verb stands. */
   events?: (args: Record<string, unknown>, signal?: AbortSignal) => Promise<Record<string, unknown>>;
   /** `journalAppend` — daemon-owned vessel journal writes from non-daemon islands; the invocation names who placed it. */
@@ -1764,7 +1766,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       });
 
       // A person's answers at this island's own disk shore (the daemon wiki's working layer, crossroads).
-      if (shore) registry.register("shore", async (args) => shore(args as Record<string, unknown>));
+      if (shore) registry.register("shore", async (args, context) => shore(args as Record<string, unknown>, context.asker));
       if (events) registry.register("events", async (args, context) => events(args as Record<string, unknown>, context.signal));
       if (journalAppend) registry.register("journal-append", async (args, context) => journalAppend(args as Record<string, unknown>, {
         requestedBy: context.invocation.requestedBy,

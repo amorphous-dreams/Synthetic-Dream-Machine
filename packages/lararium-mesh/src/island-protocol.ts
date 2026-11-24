@@ -1164,6 +1164,9 @@ export interface WikiMsg_PlaceVerb {
   targets?:       string[];
   batchMode?:     string;
   requestId?:     string;
+  /** The asker's hand as the vessel's own door read it (`DaemonMsg_PlaceVerb.asker`); never read off args. Absent where no
+   *  door read one (a verb the vessel places by itself). */
+  asker?:         Hand;
 }
 
 /**
@@ -1659,6 +1662,7 @@ export function mkWikiPlaceVerb(opts: {
   targets?: string[];
   batchMode?: string;
   requestId?: string;
+  asker?: Hand;
 }): WikiMsg_PlaceVerb {
   const msg: WikiMsg_PlaceVerb = {
     type: "wiki:place-verb",
@@ -1669,6 +1673,7 @@ export function mkWikiPlaceVerb(opts: {
   if (opts.targets?.length)  msg.targets   = opts.targets;
   if (opts.batchMode)        msg.batchMode = opts.batchMode;
   if (opts.requestId)        msg.requestId = opts.requestId;
+  if (opts.asker)            msg.asker     = opts.asker;
   return msg;
 }
 

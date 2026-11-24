@@ -110,11 +110,11 @@ runSovereignWorker((manifest) => {
     // A person's answers at this island's disk shore: the same door a wiki island stands (`claimShoreVerb`),
     // answered from the projector this island mounts. `lares shore` reaches it by this verb, beside the
     // `wiki-act` line into the active wiki's island (`shore-core.ts`).
-    shore:          async (args) => {
+    shore:          async (args, asker) => {
       const projector = mountedDiskProjector();
       return projector === null
         ? { ok: false, refusal: "no-disk-shore", why: "the daemon island mounts no disk projection" }
-        : answerShore(projector, args);
+        : answerShore(projector, args, asker);
     },
     events:         async (args, signal) => {
       const kindRaw = args["kind"];
