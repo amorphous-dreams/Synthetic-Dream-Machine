@@ -1,34 +1,50 @@
 #!/usr/bin/env node
 /*
- * SessionStart: the familiar wakes from its record. Its group stands first in the event's list, so its context leads (Claude
- * Code runs an event's matching hooks in parallel; the order names the context's order). One gate, then one read: the
- * observation, and only where the vessel answers up, `lares spirit om <pet>` through the checkout's shim (a shim verb with no
- * vessel would run offline over the store). A resume keeps its own context and wakes nothing. The session's title rides into
- * the session's counter, and a title naming another spirit than the seated familiar leads the context with that mismatch;
- * the seated familiar still answers (lar:///ha.ka.ba/kahua/memory/wave/spirit-om-ah-hum). Any fault exits 0.
+ * SessionStart: the familiar wakes from its card. Its group stands first in the event's list, so its context leads (Claude
+ * Code runs an event's matching hooks in parallel; the order names the context's order). It acts only inside the house (the
+ * checkout or a bound workspace) and only where the vessel answers up (a shim verb with no vessel would run offline).
+ *
+ * A TITLE ONLY PROPOSES. The wake asks once for the pet this session already wears (any source but a startup keeps it), else
+ * the seated familiar (this hook's argument, a default), else the title's slug where neither stands; the door reads the title
+ * beside it (`om --title`) and turns only where the title's record names it as its own, else offers it. `om` reads by source
+ * and claims the card's lease for this session's body; the counter keeps the pet, the epoch, the cadence and the title, merged
+ * under its lock (lar:///ha.ka.ba/kahua/memory/wave/spirit-om-ah-hum). Any fault exits 0.
  */
 import { readFileSync } from "node:fs";
 import {
-  OM_BUDGET_MS, hookInput, omContext, omDownLine, omRunsOn, petOf, readState, settle, shimRun, spiritArgv, stateDirOf, statePathOf,
-  surfaceText, titleMismatch, vesselUp, writeState,
+  OM_BUDGET_MS, hookInput, houseSession, omContext, omDownLine, omSourceOf, parseAnswer, petOf, readState, sessionCounter,
+  settle, shimRun, spiritArgv, updateState, vesselUp, wakePet,
 } from "./lares-spirit-core.mjs";
 
 let raw = "";
 try { raw = readFileSync(0, "utf8"); } catch { /* An empty input reads as a startup. */ }
 const input = hookInput(raw);
-const pet = petOf(process.argv);
+const say = (context) => process.stdout.write(`${JSON.stringify({ hookSpecificOutput: { hookEventName: "SessionStart", additionalContext: context } })}\n`);
 try {
-  if (pet !== null && omRunsOn(input.source)) {
-    const title = typeof input.session_title === "string" ? input.session_title : null;
-    const path = statePathOf(stateDirOf(process.env, surfaceText(process.env)), input.session_id);
-    if (path !== null && title !== null) writeState(path, { ...readState(path), title });
+  const title = typeof input.session_title === "string" && input.session_title.trim() !== "" ? input.session_title : null;
+  const path = sessionCounter(input);
+  const source = omSourceOf(input.source);
+  const pet = wakePet({ source, held: readState(path).pet, seated: petOf(process.argv), title });
+  if (pet !== null && houseSession(input, import.meta.url)) {
     const run = shimRun(import.meta.url);
-    const context = (await vesselUp(run))
-      ? omContext(pet, await settle(run(spiritArgv("om", pet)), OM_BUDGET_MS), titleMismatch(pet, title))
-      : omDownLine(pet);
-    process.stdout.write(`${JSON.stringify({ hookSpecificOutput: { hookEventName: "SessionStart", additionalContext: context } })}\n`);
+    if (!(await vesselUp(run))) say(omDownLine(pet));
+    else {
+      const body = typeof input.session_id === "string" && /^[A-Za-z0-9_-]{1,128}$/.test(input.session_id) ? ["--body", input.session_id] : [];
+      const result = await settle(run(spiritArgv("om", pet, "--source", source, ...body, ...(title !== null ? ["--title", title] : []))), OM_BUDGET_MS);
+      const answer = parseAnswer(result?.stdout);
+      // Only an answer the door gave whole names the pet this session wears; a timeout or a refusal records nothing.
+      if (answer?.ok === true) {
+        const worn = typeof answer.data?.pet === "string" ? answer.data.pet : pet;
+        updateState(path, (cur) => ({
+          ...cur, pet: worn, ...(title !== null ? { title } : {}),
+          ...(Number.isSafeInteger(answer.data?.epoch) ? { epoch: answer.data.epoch } : {}),
+          ...(Number.isSafeInteger(answer.data?.every) ? { every: answer.data.every } : {}),
+        }));
+      }
+      say(omContext(pet, result));
+    }
   }
 } catch (err) {
-  process.stdout.write(`${JSON.stringify({ hookSpecificOutput: { hookEventName: "SessionStart", additionalContext: `Lares spirit om · ${pet}: the wake faulted (${err?.message ?? err}); read it by hand: lares spirit om ${pet}` } })}\n`);
+  say(`Lares spirit om: the wake faulted (${err?.message ?? err}); read it by hand: lares spirit om <pet>`);
 }
 process.exit(0);

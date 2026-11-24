@@ -344,40 +344,40 @@ describe("the home radius", () => {
     const h = homes();
     await tend(homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false }), ledger());
     const hooks = JSON.parse(readFileSync(join(h.native, ".claude/settings.json"), "utf8")).hooks as Record<string, Array<{ hooks: unknown[] }>>;
-    const at = (name: string) => ({ type: "command", command: "node", args: [`${root}/packages/lares-cli/.claude-plugin/hooks/${name}`], timeout: 15 });
-    expect(hooks["PreCompact"]).toEqual([{ hooks: [at("lares-compact-hook.mjs")] }]);
-    expect(hooks["SessionStart"]).toEqual([{ hooks: [at("lares-wake-hook.mjs")] }]);
+    const at = (name: string, timeout = 15, extra = {}) => ({ type: "command", command: "node", args: [`${root}/packages/lares-cli/.claude-plugin/hooks/${name}`], timeout, ...extra });
+    expect(hooks["PreCompact"]).toEqual([{ hooks: [at("lares-compact-hook.mjs", 27)] }]);
+    expect(hooks["SessionStart"]).toEqual([{ hooks: [at("lares-om-hook.mjs", 14, { statusMessage: "the familiar wakes from its card" })] }, { hooks: [at("lares-wake-hook.mjs")] }]);
   });
 
-  it("a tend with a familiar seats the familiar's hooks: om's group first on SessionStart, the landing on PostCompact, the true-up on Stop, the pet name as each one's argument", async () => {
+  it("a tend with a familiar seats the familiar's hooks, the pet name as each one's default argument: om's group first, the landing async, the true-up, the rename read, the handback async", async () => {
     const root = clone();
     const h = homes();
     const l = ledger();
     const items = (familiar?: string) => homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false, ...(familiar ? { familiar } : {}) });
     await tend(items("lares-alpha"), l);
     const hooks = JSON.parse(readFileSync(join(h.native, ".claude/settings.json"), "utf8")).hooks as Record<string, Array<{ matcher?: string; hooks: unknown[] }>>;
-    const at = (name: string, timeout: number, ...args: string[]) => ({ type: "command", command: "node", args: [`${root}/packages/lares-cli/.claude-plugin/hooks/${name}`, ...args], timeout });
-    expect(hooks["SessionStart"]).toEqual([{ hooks: [at("lares-om-hook.mjs", 12, "lares-alpha")] }, { hooks: [at("lares-wake-hook.mjs", 15)] }]);
-    expect(hooks["PreCompact"]).toEqual([{ hooks: [at("lares-compact-hook.mjs", 15, "lares-alpha")] }]);
-    expect(hooks["PostCompact"]).toEqual([{ hooks: [at("lares-postcompact-hook.mjs", 30, "lares-alpha")] }]);
-    expect(hooks["Stop"]).toEqual([{ hooks: [at("lares-true-up-hook.mjs", 10, "lares-alpha")] }]);
-    expect(hooks["PostToolUse"]).toEqual([{ matcher: "SubagentHandback", hooks: [at("lares-handback-hook.mjs", 20, "lares-alpha")] }]);
+    const at = (name: string, timeout: number, args: string[], extra = {}) => ({ type: "command", command: "node", args: [`${root}/packages/lares-cli/.claude-plugin/hooks/${name}`, ...args], timeout, ...extra });
+    const pet = ["lares-alpha"];
+    expect(hooks["SessionStart"]).toEqual([{ hooks: [at("lares-om-hook.mjs", 14, pet, { statusMessage: "the familiar wakes from its card" })] }, { hooks: [at("lares-wake-hook.mjs", 15, [])] }]);
+    expect(hooks["PreCompact"]).toEqual([{ hooks: [at("lares-compact-hook.mjs", 27, pet)] }]);
+    expect(hooks["PostCompact"]).toEqual([{ hooks: [at("lares-postcompact-hook.mjs", 33, pet, { async: true, statusMessage: "the hoʻoili lands" })] }]);
+    expect(hooks["Stop"]).toEqual([{ hooks: [at("lares-true-up-hook.mjs", 11, pet)] }]);
+    expect(hooks["UserPromptSubmit"]).toEqual([{ hooks: [at("lares-rename-hook.mjs", 5, pet)] }]);
+    expect(hooks["PostToolUse"]).toEqual([{ matcher: "SubagentHandback", hooks: [at("lares-handback-hook.mjs", 23, pet, { async: true, statusMessage: "the handback lands as residue" })] }]);
     // The familiar stays where a tend seated it: a tend that names none writes nothing.
     expect((await tend(items(), l)).wrote).toEqual([]);
     // A tend naming another familiar re-aims each hook in its own place.
     await tend(items("lares-awakens"), l);
     const again = JSON.parse(readFileSync(join(h.native, ".claude/settings.json"), "utf8")).hooks as Record<string, Array<{ hooks: unknown[] }>>;
-    expect(again["SessionStart"]).toEqual([{ hooks: [at("lares-om-hook.mjs", 12, "lares-awakens")] }, { hooks: [at("lares-wake-hook.mjs", 15)] }]);
+    expect(again["SessionStart"]).toEqual([{ hooks: [at("lares-om-hook.mjs", 14, ["lares-awakens"], { statusMessage: "the familiar wakes from its card" })] }, { hooks: [at("lares-wake-hook.mjs", 15, [])] }]);
   });
 
-  it("with no familiar named, the familiar's hooks stand absent and name the tend that seats them", () => {
+  it("with no familiar named, the familiar's hooks seat bare: each resolves its pet per session, from the session's title", async () => {
     const root = clone();
     const h = homes();
-    const rows = read(homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false }), ledger());
-    for (const id of ["claude.om-hook", "claude.postcompact-hook", "claude.true-up-hook", "claude.handback-hook"]) {
-      const row = rows.find((r) => r.id === id)!;
-      expect(row.detail, id).toContain("lares home tend --familiar <pet-name> --yes");
-    }
+    await tend(homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false }), ledger());
+    const hooks = JSON.parse(readFileSync(join(h.native, ".claude/settings.json"), "utf8")).hooks as Record<string, Array<{ hooks: Array<{ args: string[] }> }>>;
+    for (const event of ["PostCompact", "Stop", "UserPromptSubmit", "PostToolUse"]) expect(hooks[event]![0]!.hooks[0]!.args, event).toHaveLength(1);
   });
 
   it("a malformed familiar name seats nothing and names the cure", () => {
@@ -455,7 +455,11 @@ describe("the home radius", () => {
     const r = await tend(items(), l);
     const settings = JSON.parse(readFileSync(join(h.native, ".claude/settings.json"), "utf8"));
     for (const gone of [STRAY, "lares-wake-hook.sh", "lares-unlisted-hook.sh"]) expect(JSON.stringify(settings), gone).not.toContain(gone);
-    expect(settings.hooks.Stop).toEqual([{ hooks: [{ type: "command", command: "my-own-stop" }] }]);
+    // The other hand's Stop command stays; the house's own true-up seats beside it, bare (it resolves its pet per session).
+    expect(settings.hooks.Stop).toEqual([
+      { hooks: [{ type: "command", command: "my-own-stop" }] },
+      { hooks: [{ type: "command", command: "node", args: [`${root}/packages/lares-cli/.claude-plugin/hooks/lares-true-up-hook.mjs`], timeout: 11 }] },
+    ]);
     // The stray leaves SessionEnd, and the house's own keep hook stands there alone.
     expect(settings.hooks.SessionEnd).toEqual([{ hooks: [{ type: "command", command: "node", args: [`${root}/${HOOKS}/lares-keep-hook.mjs`], timeout: 10 }] }]);
     // CONTROL: a command of another hand that names no script under the house's folder never moves, its matcher with it.
