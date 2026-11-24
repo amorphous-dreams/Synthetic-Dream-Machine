@@ -172,7 +172,12 @@ test("CONTROL: a lares service that carries no keep name reads red", () => {
  */
 export function serviceVolumes(text, service) {
   const lines = text.split("\n");
-  const start = lines.findIndex((l) => l === `  ${service}:`);
+  // A service may open an anchor (`  pulama: &pulama-keeper`) or stand as an alias of one (`  pulama-b: *pulama-keeper`):
+  // an alias reads the volumes of the stanza its anchor opens.
+  const head = lines.find((l) => new RegExp(`^  ${service}:(\\s+[&*][\\w-]+)?\\s*$`).test(l));
+  if (head === undefined) return null;
+  const alias = /^\s+\S+:\s+\*([\w-]+)\s*$/.exec(head)?.[1];
+  const start = alias === undefined ? lines.indexOf(head) : lines.findIndex((l) => new RegExp(`^  [\\w.-]+:\\s+&${alias}\\s*$`).test(l));
   if (start < 0) return null;
   const out = [];
   let inVolumes = false, volIndent = -1, entry = null;
@@ -214,7 +219,9 @@ export const PULAMA_SOCKET_VOLUME = "lares-pulama-socket";
 export function readPulamaSocketMount(text, dockerfile) {
   const refusals = [];
   if (/source:[^\n]*\/pulama\/socket\s*\n\s*target: \/pulama\/socket/.test(text)) refusals.push("a host path binds at /pulama/socket");
-  for (const service of ["lares", "pulama"]) {
+  // `pulama-b`, the keeper's successor, stands over the same socket volume where the compose names it.
+  const services = ["lares", "pulama", ...(serviceVolumes(text, "pulama-b") ? ["pulama-b"] : [])];
+  for (const service of services) {
     const vols = serviceVolumes(text, service);
     if (!vols) { refusals.push(`no ${service} service stands`); continue; }
     const at = vols.filter((v) => v.target === "/pulama/socket");
@@ -237,6 +244,14 @@ const DOCKERFILE = join(ROOT, "Dockerfile");
 
 test("the pūlama's socket rides one named volume the vessel and the pūlama share, binds no host path, and the image pre-creates its mount point for the runtime user", () => {
   assert.deepEqual(readPulamaSocketMount(readFileSync(COMPOSE, "utf8"), readFileSync(DOCKERFILE, "utf8")), []);
+});
+
+test("CONTROL: a successor keeper that leaves the shared stanza and binds a host path at /pulama/socket reads red", () => {
+  const planted = readFileSync(COMPOSE, "utf8").replace(
+    "  pulama-b: *pulama-keeper",
+    "  pulama-b:\n    image: x\n    volumes:\n      - type: bind\n        source: /srv/pulama/socket\n        target: /pulama/socket");
+  assert.notEqual(planted, readFileSync(COMPOSE, "utf8"), "the plant found the successor's alias line");
+  assert.ok(readPulamaSocketMount(planted, readFileSync(DOCKERFILE, "utf8")).some((r) => r.startsWith("pulama-b mounts")), "the successor's bind reads red");
 });
 
 test("CONTROL: a host bind of /pulama/socket reads red", () => {
