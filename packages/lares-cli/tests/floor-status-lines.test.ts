@@ -100,7 +100,7 @@ describe("the five drifts, each by its own word, and the one card", () => {
     expect(s.drifts!.map((r) => r.word)).toEqual(["disk lag", "working ahead", "canon floor drift", "seed offer", "shadow tally"]);
     expect(s.drifts!.find((r) => r.word === "seed offer")).toMatchObject({ state: "drifts", carriers: ["the seed's floor"], next: "lares vessel floor seed" });
     expect(s.drifts!.find((r) => r.word === "canon floor drift")).toMatchObject({ state: "drifts", carriers: [CREST] });
-    expect(s.drifts!.find((r) => r.word === "disk lag")).toMatchObject({ state: "drifts", count: 1, next: "lares vessel lay --apply --yes" });
+    expect(s.drifts!.find((r) => r.word === "disk lag")).toMatchObject({ state: "drifts", count: 1, next: "lares vessel lay", act: "cure" });
     const text = floorStatusLines(s).join("\n");
     expect(text).not.toMatch(/(?<!seed's )floor moved/);
     expect(text).toContain("the seed's floor moved");
@@ -125,9 +125,9 @@ describe("the five drifts, each by its own word, and the one card", () => {
     expect(first.card).toMatchObject({ decision: "put", state: "armed" });
     expect(second.card).toMatchObject({ decision: "noop" });
     expect(puts[0]).toEqual(puts[1]);
-    expect(puts[0]!.title).toMatch(/^lar:\/\/\/ha\.ka\.ba\/lares\/floor\/[0-9a-f]{12}$/);
+    expect(puts[0]!.title).toMatch(/^lar:\/\/\/ha\.ka\.ba\/kahua\/memory\/state\/floor-[0-9a-f]{12}$/);
     expect(puts[0]!.text).toContain("seed offer");
-    expect(puts[0]!.text).toContain("`lares vessel floor seed`");
+    expect(puts[0]!.text).toContain("read with `lares vessel floor seed`");
     status = driftedStatus({ floorDrift: { manifest: "f".repeat(64), count: 2, carriers: [CREST, `${CREST}-two`], slugs: [], unread: [] } });
     await readFloorStatus({}, doors);
     expect(puts[2]!.fields["floor-cause"]).not.toBe(puts[0]!.fields["floor-cause"]);
@@ -142,5 +142,72 @@ describe("the five drifts, each by its own word, and the one card", () => {
     const s = await readFloorStatus({}, doors);
     expect(s.drifts).toHaveLength(5);
     expect(floorStatusLines(s).join("\n")).toContain("(unwritten: no daemon answers)");
+    // The live door names a runnable cure beside the raw refusal.
+    const { LIVE_FLOOR_DOORS } = await import("../src/commands/floor.js");
+    const refused = await LIVE_FLOOR_DOORS.putCard({ title: "t", text: "x", fields: {}, rows: [] });
+    expect(refused.decision).toBe("unwritten");
+    expect(refused.why).toContain("`lares vessel stand`");
+    expect(refused.why).toContain("`lares vessel floor status`");
+  });
+
+  test("RED: a canon drift of zero with unread slugs reads unread, never level; the unread slugs print", async () => {
+    const s = await readFloorStatus({}, doorsOver(() => driftedStatus({ floorDrift: { manifest: "f".repeat(64), count: 0, carriers: [], slugs: [{ slug: "lares", missing: [], older: [] }], unread: ["x"] } }), []));
+    const row = s.drifts!.find((r) => r.word === "canon floor drift")!;
+    expect(row.state).toBe("unread");
+    expect(row.detail).toContain("x");
+    expect(floorStatusLines(s).join("\n")).toContain("unread x");
+    const both = await readFloorStatus({}, doorsOver(() => driftedStatus({ floorDrift: { manifest: "f".repeat(64), count: 1, carriers: [CREST], slugs: [], unread: ["x"] } }), []));
+    expect(both.drifts!.find((r) => r.word === "canon floor drift")).toMatchObject({ state: "drifts" });
+  });
+
+  test("RED: a shadow tally no boot read clean reads unread; a corrupt file says so, apart from an absent one", async () => {
+    const tally = (c: number, u: number) => ({ current: { floor: "f".repeat(64), cleanBoots: c, mismatchBoots: 0, unreadBoots: u, firstMismatch: null }, prior: [] });
+    for (const t of [tally(0, 4), tally(0, 0)]) {
+      const s = await readFloorStatus({}, doorsOver(() => driftedStatus({ floorShadow: t }), []));
+      expect(s.drifts!.find((r) => r.word === "shadow tally")!.state).toBe("unread");
+    }
+    const clean = await readFloorStatus({}, doorsOver(() => driftedStatus({ floorShadow: tally(3, 0) }), []));
+    expect(clean.drifts!.find((r) => r.word === "shadow tally")!.state).toBe("level");
+    const corrupt = await readFloorStatus({}, doorsOver(() => driftedStatus({ floorShadow: null, floorShadowWhy: "floor-shadow.json will not read (bad json)" }), []));
+    expect(corrupt.drifts!.find((r) => r.word === "shadow tally")!.detail).toContain("corrupt");
+    const absent = await readFloorStatus({}, doorsOver(() => driftedStatus({ floorShadow: null }), []));
+    expect(absent.drifts!.find((r) => r.word === "shadow tally")!.detail).not.toContain("corrupt");
+  });
+
+  test("RED: the not-yet-counted working-ahead row stays out of the state fold, so a healthy vessel's card reads level", async () => {
+    const level = driftedStatus({
+      genesis: { record, seed: { cid: "c".repeat(64), ratchets: (["engine", "grammar", "plugins", "floor"] as const).map(same) }, floorPin: null, line: "" },
+      floorDrift: { manifest: "f".repeat(64), count: 0, carriers: [], slugs: [], unread: [] },
+      floorShadow: { current: { floor: "f".repeat(64), cleanBoots: 2, mismatchBoots: 0, unreadBoots: 0, firstMismatch: null }, prior: [] },
+    });
+    const puts: Array<{ title: string; text: string; fields: Record<string, string> }> = [];
+    const doors = { ...doorsOver(() => level, puts), lag: async () => ({ lag: { source: "/co/bags", holdings: [], lag: 0, benches: [], benchLag: 0 } }) };
+    const s = await readFloorStatus({}, doors);
+    expect(s.card).toMatchObject({ state: "level" });
+    expect(puts[0]!.text).toContain("Not yet counted: working ahead");
+  });
+
+  test("RED: the card's text and cause carry no volatile counts or absolute paths: a same-cause reread answers noop; next lines name read with / cure with, and the lay preview first", async () => {
+    const tally = (u: number) => ({ current: { floor: "f".repeat(64), cleanBoots: 0, mismatchBoots: 1, unreadBoots: u, firstMismatch: { manifest: "f".repeat(64), moved: [{ field: "engine" as const, floor: "a", island: "b" }] } }, prior: [] });
+    const puts: Array<{ title: string; text: string; fields: Record<string, string> }> = [];
+    let u = 1;
+    const doors = doorsOver(() => driftedStatus({ floorShadow: tally(u) }), puts);
+    await readFloorStatus({}, doors); u = 7;
+    const again = await readFloorStatus({}, doors);
+    expect(again.card!.decision).toBe("noop");
+    expect(puts[0]).toEqual(puts[1]);
+    expect(puts[0]!.text).not.toContain("/co/bags");
+    expect(puts[0]!.text).toContain("cure with `lares vessel lay`");
+    expect(puts[0]!.text).not.toContain("--yes");
+    const lines = floorStatusLines(await readFloorStatus({}, doors)).join("\n");
+    expect(lines).toContain("read with: lares vessel read");
+    expect(lines).toContain("cure with: lares nexus release floor-release.json --cut");
+  });
+
+  test("RED: the card's title never stands in canon's lares namespace, where an offer or a promote could carry it", async () => {
+    const puts: Array<{ title: string; text: string; fields: Record<string, string> }> = [];
+    await readFloorStatus({}, doorsOver(() => driftedStatus({ nexus: "aid" }), puts));
+    expect(puts[0]!.title).toMatch(/^lar:\/\/\/ha\.ka\.ba\/kahua\/memory\/state\/floor-[0-9a-f]{12}-[0-9a-f]{12}$/);
+    for (const canon of ["lares", "lararium", "crossroads"]) expect(puts[0]!.title.startsWith(`lar:///ha.ka.ba/${canon}/`)).toBe(false);
   });
 });

@@ -102,7 +102,7 @@ function floorDriftLines(d: FloorDrift | null | undefined, why: string | undefin
 /** One line per drift, by its own word; the canon row spells its carriers beneath. */
 function driftRowLines(s: FloorStatusOutput, grain: FloorGrain): string[] {
   return (s.drifts ?? []).filter((r) => rowInGrain(r, grain)).flatMap((r) =>
-    [floorRowLine(r), ...(r.word === "canon floor drift" && s.floorDrift ? floorDriftNames(s.floorDrift, "    ") : [])]);
+    [floorRowLine(r), ...(r.word === "canon floor drift" && s.floorDrift ? [`    ${floorDriftTally(s.floorDrift)}`, ...floorDriftNames(s.floorDrift, "    ")] : [])]);
 }
 
 /** The human lines of `floor status`: both truths, then the Nexus part or its refusal by name. */
@@ -210,11 +210,16 @@ export interface FloorDoors {
   putCard(card: FloorCard): Promise<{ readonly decision: string; readonly why?: string }>;
 }
 
+/** Where the card lands unwritten, the cure rides the reason: a vessel standing, then the read again. */
+const UNWRITTEN_CURE = "stand the vessel with `lares vessel stand`, then read again with `lares vessel floor status`";
+const unwritten = (why: string): { decision: string; why: string } => ({ decision: "unwritten", why: `${why}; ${UNWRITTEN_CURE}` });
+
 /** Land the card in the worn face's daemon wiki working layer through the tiddler door, as any hand's put would. */
 async function putCardLive(card: FloorCard): Promise<{ decision: string; why?: string }> {
-  const result = await runVerb("tiddler-put", { recipe: "default", title: card.title, text: card.text, fields: card.fields }, await vesselDid());
-  const out = readVerbOutcome(result);
-  return out.ok ? { decision: String(out.output["decision"] ?? "put") } : { decision: "unwritten", why: out.error ?? "the door refused and named no reason" };
+  let out;
+  try { out = readVerbOutcome(await runVerb("tiddler-put", { recipe: "default", title: card.title, text: card.text, fields: card.fields }, await vesselDid())); }
+  catch (e) { return unwritten((e instanceof Error ? e.message : String(e)).replace(/[\r\n]+/g, " ").trim()); }
+  return out.ok ? { decision: String(out.output["decision"] ?? "put") } : unwritten(out.error ?? "the door refused and named no reason");
 }
 
 export const LIVE_FLOOR_DOORS: FloorDoors = {
@@ -240,10 +245,10 @@ export async function readFloorStatus(common: Record<string, unknown>, doors: Fl
   const rows = readFloorDrifts({
     canon: { drift: s.floorDrift, ...(s.floorDriftWhy !== undefined ? { why: s.floorDriftWhy } : {}) },
     seed: s.genesis?.seed ?? null, ...(s.genesis?.unread !== undefined ? { seedWhy: `the founding record reads unread here (${s.genesis.unread})` } : {}),
-    shadow: (output["floorShadow"] ?? null) as never, lag: lag.lag, ...(lag.why !== undefined ? { lagWhy: lag.why } : {}),
+    shadow: (output["floorShadow"] ?? null) as never, ...(typeof output["floorShadowWhy"] === "string" ? { shadowWhy: output["floorShadowWhy"] } : {}), lag: lag.lag, ...(lag.why !== undefined ? { lagWhy: lag.why } : {}),
   });
   const card = floorCardFor(rows, { vessel: await doors.vessel(), ...(s.nexus !== undefined ? { nexus: s.nexus } : {}) });
-  const put = await doors.putCard(card).catch((e: unknown) => ({ decision: "unwritten", why: (e instanceof Error ? e.message : String(e)).replace(/[\r\n]+/g, " ").trim() }));
+  const put = await doors.putCard(card).catch((e: unknown) => unwritten((e instanceof Error ? e.message : String(e)).replace(/[\r\n]+/g, " ").trim()));
   return { ...s, drifts: rows, card: { title: card.title, decision: put.decision, state: card.fields["floor-state"] ?? "level", ...("why" in put && put.why ? { why: put.why } : {}) } };
 }
 

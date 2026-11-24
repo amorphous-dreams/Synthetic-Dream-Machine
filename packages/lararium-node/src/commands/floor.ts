@@ -30,7 +30,7 @@ import type { AutomergeUrl, DocHandle, Repo } from "@automerge/automerge-repo";
 import {
   acceptFloorRelease, floorReleaseEntriesFromBoard, floorRequiredBlobIds, genesisFloorCidOf, materializeSharedLarDoc, nexusAidOf,
   oracleGenesisDocUrl, publicationDocUrl, readControlHome, readFloorDriftReading, readFloorManifest, readFloorOffering, readFloorStatus, resolveBootDoc, sha256HexBytesSync,
-  type FloorDrift, type FloorDriftReading, type FloorPinLike,
+  type FloorDrift, type FloorDriftReading, type FloorShadowTally, type FloorPinLike,
   type FloorAcceptOutcome, type FloorPinPorts, type FloorRemount, type FloorStatus, type LarDoc,
 } from "@lararium/mesh";
 import { bootDaemonUrl } from "../boot-face-planes.js";
@@ -45,7 +45,7 @@ import { daemonGenesisDir } from "../lares-config.js";
 import { foundingRecordLine, readFoundingRecordTruths, type FoundingRecordTruths } from "../genesis-truths.js";
 import { nodeCanonDocUrl, nodeCanonRows } from "./canon-rows.js";
 import { readFloorDrifts, type FloorDriftRow } from "../floor-card.js";
-import { readFloorShadowFile } from "../floor-shadow-file.js";
+import { readFloorShadowFileTold } from "../floor-shadow-file.js";
 
 /** A floor door refused by name. */
 export class FloorRefused extends Error {
@@ -146,7 +146,9 @@ export type FloorStatusRead = Partial<FloorStatus> & {
   /** The five drifts, each by its own word (`floor-card`): the lay's lag rows read at the CLI, which holds the disk. */
   readonly drifts: readonly FloorDriftRow[];
   /** The floor shadow tally the vessel's boots kept; null where none stands. */
-  readonly floorShadow: ReturnType<typeof readFloorShadowFile>;
+  readonly floorShadow: FloorShadowTally | null;
+  /** Why the tally reads nowhere where its file stands corrupt; absent where it reads or no file stands. */
+  readonly floorShadowWhy?: string;
 };
 
 /**
@@ -203,15 +205,16 @@ export async function runFloorStatus(opts: NodeFloorOptions): Promise<FloorStatu
   const genesis = { ...truths, line: foundingRecordLine(truths, { pinNote }) };
   const reading = await nodeFloorDrift(opts, status?.pinned.manifest ?? genesisFloorCidOf(island));
   const drift = { floorDrift: reading.drift, ...(reading.why !== undefined ? { floorDriftWhy: reading.why } : {}) };
-  const floorShadow = opts.storageDir !== undefined ? readFloorShadowFile(opts.storageDir) : null;
+  const shadowRead = opts.storageDir !== undefined ? readFloorShadowFileTold(opts.storageDir) : { tally: null };
+  const floorShadow = shadowRead.tally;
   const drifts = readFloorDrifts({
     canon: { drift: reading.drift, ...(reading.why !== undefined ? { why: reading.why } : {}) },
     seed: truths.seed, ...(truths.unread !== undefined ? { seedWhy: `the founding record reads unread here (${truths.unread})` } : {}),
-    shadow: floorShadow, lag: undefined,
+    shadow: floorShadow, ...("corrupt" in shadowRead && shadowRead.corrupt ? { shadowWhy: shadowRead.corrupt } : {}), lag: undefined,
   });
   return nexusRefused
-    ? { genesis, nexusRefused: { refusal: nexusRefused.refusal, message: nexusRefused.message }, ...drift, drifts, floorShadow }
-    : { ...status!, genesis, ...drift, drifts, floorShadow };
+    ? { genesis, nexusRefused: { refusal: nexusRefused.refusal, message: nexusRefused.message }, ...drift, drifts, floorShadow, ...("corrupt" in shadowRead && shadowRead.corrupt ? { floorShadowWhy: shadowRead.corrupt } : {}) }
+    : { ...status!, genesis, ...drift, drifts, floorShadow, ...("corrupt" in shadowRead && shadowRead.corrupt ? { floorShadowWhy: shadowRead.corrupt } : {}) };
 }
 
 /** `lares vessel floor accept [<release-cid>]`: the outcome, and the live wikis the alert reached. */

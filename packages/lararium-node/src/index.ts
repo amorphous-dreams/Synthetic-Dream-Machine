@@ -188,7 +188,7 @@ export type { FaceGateServer, GateSessionRegistry, SeatedGateSession, StoodGate,
 export { openNodeVessel, openNodeHerm, standNodeFloor, seatedSovereignReaders } from "./open-node-vessel.js";
 export { openDaemonVm } from "./open-daemon-vm.js";
 export { runDoctor, formatDoctorReport, enumerateStoreDocs } from "./doctor.js";
-export { FLOOR_SHADOW_FILE, floorShadowFileStore, readFloorShadowFile } from "./floor-shadow-file.js";
+export { FLOOR_SHADOW_FILE, floorShadowFileStore, readFloorShadowFile, readFloorShadowFileTold, type FloorShadowRead } from "./floor-shadow-file.js";
 export { probeDocLoad, makeChildProcessDocLoadProbe, quarantineDoc, quarantineHolds, quarantineHoldOf, readQuarantineManifests, releaseQuarantinedDoc, QUARANTINE_RELEASE_ACT } from "./doc-load-probe.js";
 export type { QuarantineHold, QuarantineRelease, QuarantineReleaseAct } from "./doc-load-probe.js";
 export { precheckDocStore, docStorePath } from "./store-integrity.js";

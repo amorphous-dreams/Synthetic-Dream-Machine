@@ -41,6 +41,10 @@ export interface FloorDriftRow {
   readonly detail:   string;
   /** The exact `lares` line for the next act. */
   readonly next:     string;
+  /** Whether `next` reads the drift (`read`) or moves a layer toward level (`cure`). */
+  readonly act:      "read" | "cure";
+  /** A stub row S1 does not count yet: it prints, and stays out of the card's state fold. */
+  readonly notCounted?: true;
 }
 
 /** The disk lag as the lay reads it (the CLI's `HouseLag`, narrowed to what the row weighs). */
@@ -59,6 +63,8 @@ export interface FloorDriftInputs {
   readonly seed:   { readonly cid: string; readonly ratchets: readonly RatchetDifference[] } | null;
   readonly seedWhy?: string | undefined;
   readonly shadow: FloorShadowTally | null;
+  /** Why the shadow tally reads nowhere where it stands corrupt (a missing file reads null with no reason). */
+  readonly shadowWhy?: string | undefined;
   /** The lay's lag; `null` where it did not read, `undefined` where this reading holds no lay (the vessel's own answer). */
   readonly lag:    FloorLagInput | null | undefined;
   readonly lagWhy?: string | undefined;
@@ -69,11 +75,15 @@ const seedRatchet = (r: RatchetDifference): string => `${r.ratchet === "floor" ?
 
 const named = (items: readonly string[], cap = 6): string => `${items.slice(0, cap).join(", ")}${items.length > cap ? `, … ${items.length - cap} more` : ""}`;
 
+/** The cut writes the manifest file it names (`floor-release.json` is the path it creates), so the line carries no placeholder. */
 export const CANON_NEXT = "lares nexus release floor-release.json --cut";
 export const SEED_NEXT = "lares vessel floor seed";
 export const SHADOW_NEXT = "lares vessel read";
 export const LAG_NEXT = "lares vessel lay --lag";
-export const WORKING_NEXT = "lares meme offer promote <cid>";
+/** The preview first: `lay --apply --yes` relays the operator's approval, so a seat or an AI reads the card and runs only the preview. */
+export const LAG_PREVIEW = "lares vessel lay";
+export const WORKBENCH_PREVIEW = "lares vessel lay --workbench";
+export const WORKING_NEXT = "lares vessel floor status --grain lag";
 
 /** Read the five drifts into their five rows, in the house's fixed order. */
 export function readFloorDrifts(input: FloorDriftInputs): FloorDriftRow[] {
@@ -82,54 +92,57 @@ export function readFloorDrifts(input: FloorDriftInputs): FloorDriftRow[] {
   // disk lag
   if (input.lag === undefined || input.lag === null) {
     rows.push({ word: "disk lag", grain: "lag", state: "unread", count: null, carriers: [], heads: [],
-      detail: input.lag === null ? `unread (${input.lagWhy ?? "the lay's lag read nowhere"})` : "unread (the lay reads the disk lag; `lares vessel floor status` carries it)", next: LAG_NEXT });
+      detail: input.lag === null ? `unread (${input.lagWhy ?? "the lay's lag read nowhere"})` : "unread (the lay reads the disk lag; `lares vessel floor status` carries it)", next: LAG_NEXT, act: "read" });
   } else {
     const l = input.lag;
     const carriers = [...new Set([...l.holdings.flatMap((h) => [...h.new, ...h.changed]), ...l.benches.flatMap((b) => b.planned)])].sort();
     const count = l.lag + l.benchLag;
-    const next = [l.lag > 0 ? "lares vessel lay --apply --yes" : null, l.benchLag > 0 ? "lares vessel lay --workbench --apply" : null].filter((s) => s !== null).join(" · ");
-    rows.push({ word: "disk lag", grain: "lag", state: count > 0 ? "drifts" : "level", count, carriers, heads: [`canon source ${l.source}`],
-      detail: count > 0 ? `${l.lag} canon carrier(s) and ${l.benchLag} workbench carrier(s) trail the disk` : `canon and workbenches stand level with ${l.source}`,
-      next: next === "" ? LAG_NEXT : next });
+    const next = [l.lag > 0 ? LAG_PREVIEW : null, l.benchLag > 0 ? WORKBENCH_PREVIEW : null].filter((s) => s !== null).join(" · ");
+    rows.push({ word: "disk lag", grain: "lag", state: count > 0 ? "drifts" : "level", count, carriers, heads: ["canon source"],
+      detail: count > 0 ? `${l.lag} canon carrier(s) and ${l.benchLag} workbench carrier(s) trail the disk; the preview names them, and the operator's approval lands them` : `canon and workbenches stand level with ${l.source}`,
+      next: next === "" ? LAG_NEXT : next, act: count > 0 ? "cure" : "read" });
   }
 
   // working ahead
   rows.push({ word: "working ahead", grain: "lag", state: "unread", count: null, carriers: [], heads: [],
-    detail: "unread (no door counts a wiki's working-layer edits ahead of canon yet; floor-mu names it a later slice)", next: WORKING_NEXT });
+    detail: "not yet counted (no door counts a wiki's working-layer edits ahead of canon; floor-mu names it a later slice)", next: WORKING_NEXT, act: "read", notCounted: true });
 
-  // canon floor drift
+  // canon floor drift: a slug whose live canon reads no document stays named, never counted level
   const d = input.canon.drift;
   if (d === undefined || d === null) {
     rows.push({ word: "canon floor drift", grain: "canon", state: "unread", count: null, carriers: [], heads: [],
-      detail: `unread (${d === undefined ? "the standing vessel answers no drift reading: its build carries none, and a refresh brings it" : input.canon.why ?? "no reason named"})`, next: CANON_NEXT });
+      detail: `unread (${d === undefined ? "the standing vessel answers no drift reading: its build carries none, and a refresh brings it" : input.canon.why ?? "no reason named"})`, next: CANON_NEXT, act: "read" });
   } else {
-    rows.push({ word: "canon floor drift", grain: "canon", state: d.count > 0 ? "drifts" : "level", count: d.count, carriers: d.carriers, heads: [`floor ${d.manifest}`],
-      detail: d.count > 0 ? `${d.count} carrier(s) of live canon stand ahead of the floor this vessel serves` : "the floor this vessel serves carries every live canon carrier", next: CANON_NEXT });
+    const unread = d.unread.length > 0 ? `; live canon reads no document for ${d.unread.join(", ")}, so those slugs stay unread` : "";
+    rows.push({ word: "canon floor drift", grain: "canon", state: d.count > 0 ? "drifts" : d.unread.length > 0 ? "unread" : "level", count: d.count, carriers: d.carriers, heads: [`floor ${d.manifest}`],
+      detail: d.count > 0 ? `${d.count} carrier(s) of live canon stand ahead of the floor this vessel serves${unread}` : d.unread.length > 0 ? `the carriers that read stand level${unread}` : "the floor this vessel serves carries every live canon carrier",
+      next: d.count > 0 ? CANON_NEXT : "lares vessel floor status --grain canon", act: d.count > 0 ? "cure" : "read" });
   }
 
   // seed offer
   if (input.seed === null) {
     rows.push({ word: "seed offer", grain: "seed", state: "unread", count: null, carriers: [], heads: [],
-      detail: `unread (${input.seedWhy ?? "no seed reads here"})`, next: SEED_NEXT });
+      detail: `unread (${input.seedWhy ?? "no seed reads here"})`, next: SEED_NEXT, act: "read" });
   } else {
     const moved = input.seed.ratchets.filter((r) => r.reading !== "same");
     rows.push({ word: "seed offer", grain: "seed", state: ratchetsDiffer(input.seed.ratchets) ? "drifts" : "level", count: moved.length,
       carriers: moved.map((r) => r.ratchet === "floor" ? "the seed's floor" : r.ratchet), heads: [`seed ${input.seed.cid}`],
       detail: moved.length > 0 ? `a newer seed waits: ${input.seed.ratchets.map(seedRatchet).join(" · ")}; the founding record keeps serving, and only a re-found takes it (floor adopt stays held)` : "the seed offered stands same on every ratchet",
-      next: SEED_NEXT });
+      next: SEED_NEXT, act: "read" });
   }
 
-  // shadow tally
+  // shadow tally: level needs at least one clean boot; a tally no boot read clean says nothing level
   const cur = input.shadow?.current ?? null;
   if (cur === null) {
     rows.push({ word: "shadow tally", grain: "shadow", state: "unread", count: null, carriers: [], heads: [],
-      detail: input.shadow === null ? "unread (no boot has read the shadow tally yet)" : "unread (no boot read the current floor yet)", next: SHADOW_NEXT });
+      detail: input.shadowWhy !== undefined ? `unread (the tally file reads corrupt: ${input.shadowWhy})` : input.shadow === null ? "unread (no boot has read the shadow tally yet)" : "unread (no boot read the current floor yet)", next: SHADOW_NEXT, act: "read" });
   } else {
     const fields = cur.firstMismatch ? cur.firstMismatch.moved.map((m) => m.field) : [];
-    rows.push({ word: "shadow tally", grain: "shadow", state: cur.mismatchBoots > 0 ? "drifts" : "level", count: cur.mismatchBoots, carriers: fields,
+    const state = cur.mismatchBoots > 0 ? "drifts" : cur.cleanBoots > 0 ? "level" : "unread";
+    rows.push({ word: "shadow tally", grain: "shadow", state, count: cur.mismatchBoots, carriers: fields,
       heads: cur.floor ? [`floor ${cur.floor}`] : [],
-      detail: cur.mismatchBoots > 0 ? `${cur.mismatchBoots} boot(s) mismatched (${fields.join(", ")} moved), ${cur.cleanBoots} clean, ${cur.unreadBoots} unread` : `clean across ${cur.cleanBoots} boot(s), ${cur.unreadBoots} unread; the flip stays the operator's`,
-      next: SHADOW_NEXT });
+      detail: state === "drifts" ? `boots read a mismatch (${fields.join(", ")} moved)` : state === "level" ? `clean across ${cur.cleanBoots} boot(s), ${cur.unreadBoots} unread; the flip stays the operator's` : "unread (no boot read this floor clean yet)",
+      next: SHADOW_NEXT, act: "read" });
   }
   return rows;
 }
@@ -141,7 +154,7 @@ export const rowInGrain = (row: FloorDriftRow, grain: FloorGrain): boolean => gr
 export function floorRowLine(row: FloorDriftRow): string {
   const count = row.count === null ? "-" : String(row.count);
   const names = row.carriers.length > 0 ? ` [${named(row.carriers)}]` : "";
-  return `  ${row.word.padEnd(18)} ${row.state.padEnd(7)} ${count.padStart(3)}  ${row.detail}${names} · next: ${row.next}`;
+  return `  ${row.word.padEnd(18)} ${row.state.padEnd(7)} ${count.padStart(3)}  ${row.detail}${names} · ${row.act} with: ${row.next}`;
 }
 
 /** The card a vessel keeps per Nexus: its title, fields and text, deterministic in the rows. */
@@ -155,15 +168,15 @@ export interface FloorCard {
 
 const shortOf = (value: string): string => createHash("sha256").update(value).digest("hex").slice(0, 12);
 
-/** The card's title: one per vessel, one more per Nexus a charter names. */
+/** The card's title: a kahua state title (never canon's lares namespace), one per vessel and one more per Nexus a charter names. */
 export const floorCardTitle = (vessel: string, nexus?: string): string =>
-  `lar:///ha.ka.ba/lares/floor/${shortOf(vessel)}${nexus ? `/${shortOf(nexus)}` : ""}`;
+  `lar:///ha.ka.ba/kahua/memory/state/floor-${shortOf(vessel)}${nexus ? `-${shortOf(nexus)}` : ""}`;
 
 const cell = (s: string): string => s.replace(/\|/g, "&#124;").replace(/\r?\n/g, " ");
 
 /** Fold the rows into the one card; level rows leave it, unread rows stay (never a zero it did not count). */
 export function floorCardFor(rows: readonly FloorDriftRow[], who: { readonly vessel: string; readonly nexus?: string | undefined }): FloorCard {
-  const standing = rows.filter((r) => r.state !== "level");
+  const standing = rows.filter((r) => r.state !== "level" && r.notCounted !== true);
   const cause = shortOf(JSON.stringify(standing.map((r) => [r.word, r.state, r.count, r.carriers, r.heads])));
   const state = standing.some((r) => r.state === "drifts") ? "armed" : standing.length > 0 ? "unread" : "level";
   const title = floorCardTitle(who.vessel, who.nexus);
@@ -171,8 +184,8 @@ export function floorCardFor(rows: readonly FloorDriftRow[], who: { readonly ves
     `! floor.drift.reads`, "",
     state === "level" ? "Every drift this vessel reads stands level." : `This card names each drift by its own word, the carriers it reads, the heads it read, and the exact next \`lares\` line. A new cause re-arms it; a level reading voids its row.`,
     ...(standing.length > 0 ? ["", "|!word |!state |!count |!carriers |!heads |!detail |!next |",
-      ...standing.map((r) => `|${r.word} |${r.state} |${r.count ?? "-"} |${cell(named(r.carriers, 12))} |${cell(r.heads.join(", "))} |${cell(r.detail)} |\`${cell(r.next)}\` |`)] : []),
-    "", "Read it again: `lares vessel floor status` (`--grain canon|seed|shadow|lag|all`).", "",
+      ...standing.map((r) => `|${r.word} |${r.state} |${r.count ?? "-"} |${cell(named(r.carriers, 12))} |${cell(r.heads.join(", "))} |${cell(r.detail)} |${r.act} with \`${cell(r.next)}\` |`)] : []),
+    "", "Not yet counted: working ahead (no door counts a wiki's working-layer edits ahead of canon).", "", "Read it again: `lares vessel floor status` (`--grain canon|seed|shadow|lag|all`).", "",
   ].join("\n");
   return {
     title, text, rows: standing,

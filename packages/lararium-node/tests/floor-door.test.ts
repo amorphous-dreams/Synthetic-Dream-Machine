@@ -160,11 +160,15 @@ describe("the floor doors cross a founded hearth's own bootstrap", () => {
       expect(drift!.count).toBe(drift!.carriers.length);
       // The canon floor drift reads as its own row: the carriers by name, the floor head it read, the runnable next line.
       const canon = (status["drifts"] as Array<{ word: string; state: string; count: number; carriers: string[]; heads: string[]; next: string }>).find((x) => x.word === "canon floor drift")!;
-      expect(canon).toMatchObject({ state: "drifts", count: drift!.count, heads: [`floor ${genesisFloor}`], next: "lares nexus release floor-release.json --cut" });
+      expect(canon).toMatchObject({ state: "drifts", count: drift!.count, heads: [`floor ${genesisFloor}`], next: "lares nexus release floor-release.json --cut", act: "cure" });
       expect(canon.carriers).toContain(CREST);
       // A shadow tally with a mismatch reads as its own row, apart from the canon drift.
       writeFileSync(join(larDataDir(), "floor-shadow.json"), JSON.stringify({ current: { floor: genesisFloor, cleanBoots: 1, mismatchBoots: 2, unreadBoots: 0, firstMismatch: { manifest: genesisFloor, moved: [{ field: "engine", floor: "a", island: "b" }] } }, prior: [] }));
       const shadowed = await storeDoorDirect("floor-status", {}, { sealHome: larSealHome() });
+      writeFileSync(join(larDataDir(), "floor-shadow.json"), "{ not json");
+      const corrupt = await storeDoorDirect("floor-status", {}, { sealHome: larSealHome() });
+      expect(corrupt["floorShadowWhy"]).toMatch(/floor-shadow\.json will not read/);
+      expect((corrupt["drifts"] as Array<{ word: string; detail: string }>).find((x) => x.word === "shadow tally")!.detail).toContain("corrupt");
       expect((shadowed["drifts"] as Array<{ word: string; state: string; carriers: string[] }>).find((x) => x.word === "shadow tally")).toMatchObject({ state: "drifts", carriers: ["engine"] });
       // A public bag the floor names whose live document this founding holds none of reads unread by name; the system canon reads.
       expect(drift!.unread).not.toContain("lares");
