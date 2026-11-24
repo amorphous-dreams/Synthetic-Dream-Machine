@@ -53,7 +53,7 @@ import {
   type DocumentValue, type LarDoc, type RecordSigner, type SealedAddress, type SealedStoreRest, type SessionOwnChain, type WriterStanding,
 } from "@lararium/mesh";
 import { KeyhiveProvider, InMemoryEventStore, RealmWriterBook, faceStanding, realmRestPort, seatContentKeys, type ContentKeySeat, type RealmWriters } from "../src/index.js";
-import { adoptWorkbench, faceWorkbenchRealm, landWorkbench, projectWorkbenchRoster, removeWorkbenchFace, workbenchFaceHolds, workbenchWriterSeat, type LedgerDoc } from "../src/workbench-realm.js";
+import { adoptWorkbench, faceWorkbenchRealm, landWorkbench, landsUnderAHand, projectWorkbenchRoster, removeWorkbenchFace, workbenchFaceHolds, workbenchWriterSeat, type LedgerDoc } from "../src/workbench-realm.js";
 import { signerOf } from "./content-key-fleet.js";
 import { chain } from "../../lararium-mesh/tests/face-proof-fixture.js";
 
@@ -537,5 +537,12 @@ describe("A6 — the rest gate retires", () => {
     const line = change("g3 for every seat");
     expect(said(await seats.get("steward")!.sealValues({ bagId: WORKING, values: [line], signer: a.signer }))).toBe("OK");
     expect(said(await seats.get("referee")!.holder.openValue({ bagId: WORKING, role: "change", ref: line.ref })), "a read seat opens the workbench").toBe("OK");
+  });
+});
+
+describe("A8 — a landing signs under a person's hand alone", () => {
+  test("W2: a seat, a tab, a watcher and an ask no door read leave the hand-over's cure to the person; the CLI's own hand lands", () => {
+    for (const asker of ["seat", "tab", "watcher", undefined]) expect(landsUnderAHand({ ...(asker !== undefined ? { asker } : {}) }), String(asker)).toBe(false);
+    expect(landsUnderAHand({ asker: "cli" })).toBe(true);
   });
 });

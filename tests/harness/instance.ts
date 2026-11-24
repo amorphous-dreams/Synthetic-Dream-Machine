@@ -147,12 +147,20 @@ function seedCustodyFor(env: Record<string, string>, args: readonly string[]): v
   seedTestCustody(root);
 }
 
+/** The marks an AI harness sets in its shells (`HARNESS_SEAT_MARKS` in the CLI). The staged CLI stands as the operator's hand, so a run under a harness reads as CI does. */
+const HARNESS_SEAT_MARK_NAMES = ["CLAUDECODE", "CODEX_SANDBOX", "CODEX_SANDBOX_NETWORK_DISABLED"] as const;
+const handEnv = (env: Record<string, string>): NodeJS.ProcessEnv => {
+  const out: NodeJS.ProcessEnv = { ...process.env, ...env };
+  for (const mark of HARNESS_SEAT_MARK_NAMES) delete out[mark];
+  return out;
+};
+
 function runCli(env: Record<string, string>, args: readonly string[]): Promise<CliResult> {
   seedCustodyFor(env, args);
   return new Promise((resolve) => {
     // The harness hands its staged CLI the test ward route explicitly (the product binary never answers one from a file).
     const child = spawn(process.execPath, ["--import", TEST_WARD_ROUTE, CLI_BIN, ...args], {
-      env: { ...process.env, ...env },
+      env: handEnv(env),
       cwd: REPO_ROOT,
     });
     let stdout = "";
