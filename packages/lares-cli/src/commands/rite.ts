@@ -533,6 +533,7 @@ function hostPorts(shim: string, say: (line: string) => void): RitePorts {
     // THE KEEP AFTER THE LANDING: the raise defers the keep a down left owed (`--keep-after-landing`), and the rite runs it here.
     keepOwed: () => runShim(shim, ["keep-owed"]),
     // THE LAG AFTER THE RAISE: read in the vessel that stands; the workbench lay rides the owner's yes on this terminal, never canon.
+    floorCard: async () => { const read = await cliVerb(["vessel", "floor", "status"]); const card = read.ok ? read.output["card"] as { title?: unknown } | undefined : undefined; return typeof card?.title === "string" ? { title: card.title } : null; },
     houseLag: async () => { const read = await cliVerb(["vessel", "lay", "--lag"]); return read.ok ? houseLagOf(read.output) : null; },
     ask: askOnTerminal,
     layWorkbench: layWorkbenchOnTerminal,

@@ -593,3 +593,5 @@ export type { CustodyFrame, CustodyAnswer, CustodyFrameDeps } from "./custody-fr
 export { nodePromoteStores, nodePromoteCas, promotedFile, kapaeFile, PROMOTED_FILE, KAPAE_FILE } from "./promoted-store.js";
 
 export { seatReadBackStandIn, readBackStandInSeated } from "./seal-ceremony.js";
+
+export { FLOOR_WORDS, FLOOR_GRAINS, readFloorDrifts, rowInGrain, floorRowLine, floorCardFor, floorCardTitle, type FloorWord, type FloorGrain, type FloorDriftRow, type FloorCard, type FloorLagInput } from "./floor-card.js";

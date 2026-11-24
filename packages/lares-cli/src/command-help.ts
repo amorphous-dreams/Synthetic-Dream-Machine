@@ -177,7 +177,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "day flows. --rollback stands the image that ran before (--rollback <rev>: an older revision's kept image, or a build from " +
       "that commit), with no checkout move. After a raise that stood, the rite reads the lag aloud: the canon bag behind the canon " +
       "source (canon fills through promote and the floor's sealed cut, never from a raise), each wiki's workbench behind the " +
-      "checkout's wikis/<slug>, and a newer sealed floor the release carries than the vessel serves. Where the canon source stands " +
+      "checkout's wikis/<slug>, and a newer seed offer the release carries (the seed's floor), named by its floor card and `lares vessel floor status --grain seed`. Where the canon source stands " +
       "in a checkout and the owner holds the terminal, it previews the workbench lay (each title a workbench the worn face mounts " +
       "would take) and lays it (`lares vessel lay --workbench --apply`) only on an explicit yes; a workbench that does not mount is " +
       "named and left, a no or a Ctrl+C leaves every layer as it stood, and a seat with no terminal, an AI launcher or a source in no " +
@@ -599,7 +599,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares vessel rite refresh               # the post-code-change cure: build · stop · stand",
       "lares vessel request <requestId>        # read a request's receipt, dispatching nothing",
       "lares vessel request <requestId> --cancel  # withdraw it before it is read: your own hand, never a timeout's",
-      "lares vessel floor status               # the vessel's floor pin: pinned release, newest seen, fast-forward, fork",
+      "lares vessel floor status [--grain canon|seed|shadow|lag|all]  # the vessel's floor pin and the five drifts, one row each by its own word (disk lag, working ahead, canon floor drift, seed offer, shadow tally); refreshes the one floor card in the daemon wiki",
       "lares vessel floor accept [<release>]   # walk prior from the pin to the release (or the sole newest)",
       "lares vessel floor seed [--genesis <dir>]  # the seed a genesis dir offers (CID, digests) beside the founding record; moves nothing",
     ],

@@ -44,6 +44,8 @@ import { larBootstrapPath } from "../vessel-paths.js";
 import { daemonGenesisDir } from "../lares-config.js";
 import { foundingRecordLine, readFoundingRecordTruths, type FoundingRecordTruths } from "../genesis-truths.js";
 import { nodeCanonDocUrl, nodeCanonRows } from "./canon-rows.js";
+import { readFloorDrifts, type FloorDriftRow } from "../floor-card.js";
+import { readFloorShadowFile } from "../floor-shadow-file.js";
 
 /** A floor door refused by name. */
 export class FloorRefused extends Error {
@@ -85,6 +87,8 @@ export interface NodeFloorOptions {
   /** The catalog the held store names (`StoreDoorDeps.catalogUrl`), where the live canon documents the floor drift weighs resolve;
    *  absent, no live canon reads and the drift answers null. */
   readonly catalogUrl?: string | undefined;
+  /** The vessel store dir whose floor shadow tally the shadow row reads; absent, the row reads no tally. */
+  readonly storageDir?: string | undefined;
 }
 
 /** Bind the node's substrate to the floor pin ports. */
@@ -139,6 +143,10 @@ export type FloorStatusRead = Partial<FloorStatus> & {
   readonly floorDrift: FloorDrift | null;
   /** Why `floorDrift` reads null, by name; absent where it reads. */
   readonly floorDriftWhy?: string;
+  /** The five drifts, each by its own word (`floor-card`): the lay's lag rows read at the CLI, which holds the disk. */
+  readonly drifts: readonly FloorDriftRow[];
+  /** The floor shadow tally the vessel's boots kept; null where none stands. */
+  readonly floorShadow: ReturnType<typeof readFloorShadowFile>;
 };
 
 /**
@@ -195,9 +203,15 @@ export async function runFloorStatus(opts: NodeFloorOptions): Promise<FloorStatu
   const genesis = { ...truths, line: foundingRecordLine(truths, { pinNote }) };
   const reading = await nodeFloorDrift(opts, status?.pinned.manifest ?? genesisFloorCidOf(island));
   const drift = { floorDrift: reading.drift, ...(reading.why !== undefined ? { floorDriftWhy: reading.why } : {}) };
+  const floorShadow = opts.storageDir !== undefined ? readFloorShadowFile(opts.storageDir) : null;
+  const drifts = readFloorDrifts({
+    canon: { drift: reading.drift, ...(reading.why !== undefined ? { why: reading.why } : {}) },
+    seed: truths.seed, ...(truths.unread !== undefined ? { seedWhy: `the founding record reads unread here (${truths.unread})` } : {}),
+    shadow: floorShadow, lag: undefined,
+  });
   return nexusRefused
-    ? { genesis, nexusRefused: { refusal: nexusRefused.refusal, message: nexusRefused.message }, ...drift }
-    : { ...status!, genesis, ...drift };
+    ? { genesis, nexusRefused: { refusal: nexusRefused.refusal, message: nexusRefused.message }, ...drift, drifts, floorShadow }
+    : { ...status!, genesis, ...drift, drifts, floorShadow };
 }
 
 /** `lares vessel floor accept [<release-cid>]`: the outcome, and the live wikis the alert reached. */
