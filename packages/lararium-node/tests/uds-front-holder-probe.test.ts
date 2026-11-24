@@ -38,7 +38,7 @@ function ask(path: string, frame: unknown, keepOpen = false): Promise<{ sock: So
 }
 
 describe("the live seat answers the holder probe as serving", () => {
-  test("RED: a seated front answers the probe `serving`, naming the oldest ask in flight, and hands the probe to no seat", async () => {
+  test("RED: a seated front answers the probe `serving`, naming the oldest ask's verb, its id to its own asker alone, and hands the probe to no seat", async () => {
     const dir = mkdtempSync(join(tmpdir(), "uds-probe-"));
     dirs.push(dir);
     const claim = await claimStore(dir, { holder: "vessel" });
@@ -50,14 +50,40 @@ describe("the live seat answers the holder probe as serving", () => {
     front.attach({ handle: (parsed) => { seen.push(parsed); reached(); }, close: () => {} });
     await ask(claim.socketPath, { verb: "tiddler-put", args: {}, requestId: "req-oldest" }, true);
     await handed;
-    const probe = await ask(claim.socketPath, { holder: "?" });
-    const answer = await probe.line;
-    expect(answer["serving"]).toBe(true);
-    expect(answer["holder"]).toBe("vessel");
-    expect(answer["inFlight"]).toBe(1);
-    expect(answer["oldest"]).toEqual({ requestId: "req-oldest", verb: "tiddler-put" });
-    expect(String(answer["errorMessage"])).toContain("req-oldest");
+    const stranger = await (await ask(claim.socketPath, { holder: "?" })).line;
+    expect(stranger["serving"]).toBe(true);
+    expect(stranger["holder"]).toBe("vessel");
+    expect(stranger["inFlight"]).toBe(1);
+    expect(stranger["oldest"]).toEqual({ verb: "tiddler-put" });
+    expect(stranger["held"]).toBeUndefined();
+    expect(String(stranger["errorMessage"])).not.toContain("req-oldest");
+    const own = await (await ask(claim.socketPath, { holder: "?", requestId: "req-oldest" })).line;
+    expect(own["oldest"]).toEqual({ verb: "tiddler-put", requestId: "req-oldest" });
+    expect(own["held"]).toBe(true);
+    const gone = await (await ask(claim.socketPath, { holder: "?", requestId: "req-never-sent" })).line;
+    expect(gone["held"]).toBe(false);
     expect(seen).toEqual([{ verb: "tiddler-put", args: {}, requestId: "req-oldest" }]);
+    await front.close();
+  });
+
+  test("RED: an ask leaves the count once the seat writes its answer frame, though its socket stays open (an idle session holds none)", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "uds-probe-"));
+    dirs.push(dir);
+    const claim = await claimStore(dir, { holder: "vessel" });
+    const front = serveUdsFront({ claim });
+    let answer!: (sock: Socket) => void;
+    const handed = new Promise<Socket>((resolve) => { answer = resolve; });
+    front.attach({ handle: (_parsed, sock) => { answer(sock); }, close: () => {} });
+    const caller = await ask(claim.socketPath, { verb: "seal", args: {}, requestId: "req-answered" }, true);
+    const seatSock = await handed;
+    expect((await (await ask(claim.socketPath, { holder: "?", requestId: "req-answered" })).line)["held"]).toBe(true);
+    // The seat answers on a socket it keeps open, as a session answers each act.
+    seatSock.write(JSON.stringify({ kind: "session:result", requestId: "req-answered", status: "done" }) + "\n");
+    await caller.line;
+    const after = await (await ask(claim.socketPath, { holder: "?", requestId: "req-answered" })).line;
+    expect(after["held"]).toBe(false);
+    expect(after["inFlight"]).toBe(0);
+    expect(after["oldest"]).toBeNull();
     await front.close();
   });
 

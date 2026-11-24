@@ -196,12 +196,15 @@ export interface WhoHoldsAnswer {
   readonly phase:   "parked" | "serving" | "wedged";
   readonly holder:  string | null;
   readonly message: string;
-  /** SERVING: the oldest ask the live seat holds in flight, where it names one (the act a caller waits behind). */
-  readonly oldest?: { readonly requestId: string; readonly verb: string } | null;
+  /** SERVING: the oldest ask the live seat holds in flight, where it names one (the act a caller waits behind); its
+   *  request id rides only to the asker whose id it holds. */
+  readonly oldest?: { readonly verb: string; readonly requestId?: string } | null;
   readonly inFlight?: number;
+  /** SERVING, to a probe that named its request id: does the seat still hold that id in flight? */
+  readonly held?: boolean;
 }
 
-export function whoHolds(dataDir?: string | null, timeoutMs = 1_500): Promise<WhoHoldsAnswer | null> {
+export function whoHolds(dataDir?: string | null, timeoutMs = 1_500, requestId?: string): Promise<WhoHoldsAnswer | null> {
   const path = udsSocketPath(dataDir);
   return new Promise((resolve) => {
     let settled = false;
@@ -217,21 +220,21 @@ export function whoHolds(dataDir?: string | null, timeoutMs = 1_500): Promise<Wh
     sock.setTimeout(timeoutMs);
     sock.setEncoding("utf8");
     let buf = "";
-    sock.once("connect", () => { connected = true; sock.write(JSON.stringify({ holder: "?" }) + "\n"); });
+    sock.once("connect", () => { connected = true; sock.write(JSON.stringify({ holder: "?", ...(requestId !== undefined ? { requestId } : {}) }) + "\n"); });
     sock.on("data", (c: string) => {
       buf += c;
       const nl = buf.indexOf("\n");
       if (nl === -1) return;
       try {
-        const line = JSON.parse(buf.slice(0, nl)) as { holder?: unknown; errorMessage?: unknown; serving?: unknown; inFlight?: unknown; oldest?: unknown };
+        const line = JSON.parse(buf.slice(0, nl)) as { holder?: unknown; errorMessage?: unknown; serving?: unknown; inFlight?: unknown; oldest?: unknown; held?: unknown };
         const holder = typeof line.holder === "string" ? line.holder : null;
         const message = typeof line.errorMessage === "string" ? line.errorMessage : "";
         // THE LIVE SEAT ANSWERS `serving` (the front answers the probe itself): a vessel that serves verbs, its act in
         // flight behind whatever the island runs. Only a holder that says it serves reads so; a park still reads parked.
         if (line.serving === true) {
           const o = line.oldest as { requestId?: unknown; verb?: unknown } | null | undefined;
-          const oldest = o && typeof o.requestId === "string" ? { requestId: o.requestId, verb: typeof o.verb === "string" ? o.verb : "?" } : null;
-          done({ phase: "serving", holder, message, oldest, ...(typeof line.inFlight === "number" ? { inFlight: line.inFlight } : {}) });
+          const oldest = o && typeof o === "object" ? { verb: typeof o.verb === "string" ? o.verb : "?", ...(typeof o.requestId === "string" ? { requestId: o.requestId } : {}) } : null;
+          done({ phase: "serving", holder, message, oldest, ...(typeof line.inFlight === "number" ? { inFlight: line.inFlight } : {}), ...(typeof line.held === "boolean" ? { held: line.held } : {}) });
           return;
         }
         done({ phase: "parked", holder, message });

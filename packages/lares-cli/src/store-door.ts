@@ -169,17 +169,31 @@ export const STORE_DOOR_PHASES: readonly BootPhase[] = [
 export class StoreDoorInterrupted extends Error {
   override readonly name = "StoreDoorInterrupted";
   constructor(readonly verb: string, readonly requestId: string, readonly face?: number) {
-    super(`"${verb}": the wait ended at your interrupt; the vessel holds the act under request ${requestId} and may still run it. ${face === undefined
-      ? `Read it back: \`lares vessel request ${requestId}\`.`
-      : `Read its receipt under request ${requestId} on a session of face h${face}.`}`);
+    super(`"${verb}": the wait ended at your interrupt; the vessel holds the act under request ${requestId} and may still run it. ${readBack(requestId, face)}`);
   }
 }
 
-/** The progress line a serving wait prints: the vessel serves, and the act waits behind the island. */
-function servingLine(verb: string, requestId: string, met: WhoHoldsAnswer | null): string {
+/**
+ * THE ACT LEFT THE SEAT'S HOLD, AND NO ANSWER CAME: the holder probe, asked twice under this act's request id,
+ * read it gone from the asks in flight (or, for a caller with no person at the keys, could not confirm it held). Never
+ * a clock's verdict: the seat's own word. The act may have run; the id reads its outcome back.
+ */
+export class RequestLost extends Error {
+  override readonly name = "RequestLost";
+  constructor(readonly verb: string, readonly requestId: string, readonly face?: number) {
+    super(`"${verb}": request ${requestId} left the vessel's asks in flight and no answer reached this caller. ${readBack(requestId, face)}`);
+  }
+}
+const readBack = (requestId: string, face?: number): string => face === undefined
+  ? `Read it back: \`lares vessel request ${requestId}\`.`
+  : `Read its receipt under request ${requestId} on a session of face h${face}.`;
+
+/** The progress line a serving wait prints: the vessel serves, the act waits behind the island, and the cure. */
+function servingLine(verb: string, requestId: string, met: WhoHoldsAnswer | null, interactive: boolean, face?: number): string {
   const oldest = met?.oldest;
-  const behind = oldest && oldest.requestId !== requestId ? `; the oldest ask in flight: ${oldest.verb} under request ${oldest.requestId}` : "";
-  return `[lares] the vessel serves; your act "${verb}" (request ${requestId}) waits behind the island${behind}. Ctrl-C ends this wait, never the act.`;
+  const ahead = oldest && oldest.requestId === undefined ? `; ${met?.inFlight ?? "some"} ask(s) in flight, the oldest a ${oldest.verb}` : oldest ? "; yours stands oldest in flight" : "";
+  const exit = interactive ? " Ctrl-C ends this wait, never the act." : " This wait goes on while the vessel holds the act.";
+  return `[lares] the vessel serves; your act "${verb}" (request ${requestId}) waits behind the island${ahead}.${exit} ${readBack(requestId, face)}`;
 }
 
 /** The pid(s) named in a `heldAs`/`whoHolds` message (`"a vessel (pid 1234) holds…"`, or M4's wedged
@@ -207,6 +221,9 @@ export async function throughStoreDoor(opts: {
   readonly progress?: (line: string) => void;
   /** A person's interrupt; absent, the door listens for SIGINT while it waits. Test seam for the interrupt. */
   readonly interrupt?: AbortSignal;
+  /** Does a person sit at the keys? Absent, read from stdin's TTY. Without one, the wait goes on only while the vessel
+   *  confirms it holds the act. Test seam. */
+  readonly interactive?: boolean;
 }): Promise<{ readonly output: Record<string, unknown>; readonly via: StoreDoorVia }> {
   if (opts.daemonUp ?? (await udsAlive())) {
     const phases = opts.phases ?? STORE_DOOR_PHASES;
@@ -214,17 +231,23 @@ export async function throughStoreDoor(opts: {
     // adds none). It rides the wire; this process sets no timer against it.
     const totalBudgetMs = phases.reduce((sum, p) => sum + (p.paced === true ? 0 : p.budgetMs), 0);
     const progress = opts.progress ?? ((line: string) => { process.stderr.write(`${line}\n`); });
+    const interactive = opts.interactive ?? process.stdin.isTTY === true;
     const requestId = newRequestId();
     let settled = false;
     let lastMessage = "";
     let lastMet: WhoHoldsAnswer | null = null;
     const controller = new AbortController();
-    // A PERSON ENDS THE WAIT, never a clock: the interrupt aborts this door's own socket and names the request id.
+    // A PERSON ENDS THE WAIT, or the seat's own word that the act left its hold, never a clock: either aborts this
+    // door's own socket and names the request id.
     let interrupted = false;
-    let onInterrupt!: () => void;
+    let endWait!: (err: Error) => void;
     const interruption = new Promise<never>((_, reject) => {
-      onInterrupt = () => { interrupted = true; reject(new StoreDoorInterrupted(opts.verb, requestId, opts.face)); };
+      endWait = (err) => { if (interrupted) return; interrupted = true; reject(err); };
     });
+    const onInterrupt = (): void => { endWait(new StoreDoorInterrupted(opts.verb, requestId, opts.face)); };
+    /** Did the probe ever read the act held, and how many readings since read it gone (or, unattended, unconfirmed)? */
+    let seenHeld = false;
+    let goneReads = 0;
     interruption.catch(() => { /* raced below */ });
     const sigint = (): void => { onInterrupt(); };
     if (opts.interrupt) {
@@ -245,14 +268,23 @@ export async function throughStoreDoor(opts: {
       until: () => settled,
       probe: async () => settled,
       phase: async () => {
-        const met = await whoHolds();
+        const met = await whoHolds(undefined, undefined, requestId);
         lastMessage = met?.message ?? "";
         lastMet = met;
+        if (met?.phase === "serving" && !settled) {
+          if (met.held === true) { seenHeld = true; goneReads = 0; }
+          // GONE: the seat held the act, and the act left its hold. UNCONFIRMED: a caller with no person at the keys hears a
+          // seat that names no hold. Either, read twice with no answer arriving, ends the wait by the seat's own word.
+          else if ((met.held === false && seenHeld) || (met.held === undefined && !interactive)) {
+            goneReads += 1;
+            if (goneReads >= 2) endWait(new RequestLost(opts.verb, requestId, opts.face));
+          }
+        }
         // A serving reading prints nothing yet: a verb that answers inside one cadence leaves no line behind.
         return met === null ? "unbound" : met.phase;
       },
       holderPids: () => pidsNamedIn(lastMessage),
-      onPace: (phase) => { if (phase === "serving" && !settled) progress(servingLine(opts.verb, requestId, lastMet)); },
+      onPace: (phase) => { if (phase === "serving" && !settled) progress(servingLine(opts.verb, requestId, lastMet, interactive, opts.face)); },
     }).then((): { readonly quiet: true } => ({ quiet: true }));
     let raced: { readonly quiet: true } | { readonly quiet: false; readonly v: Record<string, unknown> };
     try {
@@ -360,6 +392,11 @@ export function storeFailure(err: unknown, fallback = "error"): { readonly code:
   }
   if (err instanceof StoreHeld) return { code: "store-held", message, hint: "another holder holds this store: a standing vessel, or a command mid-act. Run again once it has gone." };
   if (err instanceof SlowBootTimeout) return { code: "store-door-timeout", message, hint: "the vessel's store door gave no answer inside its budget. `lares vessel read` names what holds it." };
+  if (err instanceof RequestLost) {
+    return { code: "request-lost", message, hint: err.face === undefined
+      ? `the act may have run; read it back with \`lares vessel request ${err.requestId}\` before running it again.`
+      : `the act may have run; read its receipt under request ${err.requestId} on a session of face h${err.face} before running it again.` };
+  }
   if (err instanceof StoreDoorInterrupted) {
     return { code: "outcome-unknown", message, hint: err.face === undefined
       ? `the act may still run; read it back with \`lares vessel request ${err.requestId}\` before running it again.`

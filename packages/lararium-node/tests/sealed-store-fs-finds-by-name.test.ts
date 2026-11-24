@@ -68,4 +68,18 @@ describe("a lookup by one id reads no whole shelf", () => {
       expect(await rest.list("index", "a")).toEqual([]);
     } finally { rmSync(dir, { recursive: true, force: true }); }
   });
+  it("RED: this rest's own writes keep the held list: puts between lookups read the directory no more", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "sealed-fs-finds-"));
+    try {
+      const rest = fsSealedStoreRest(dir);
+      await rest.put("manifest", nameOf(0, value(0)), value(0));
+      await rest.list("manifest", "00000000.");
+      const from = seen.reads;
+      for (let i = 1; i < 50; i++) {
+        await rest.put("manifest", nameOf(i, value(i)), value(i));
+        expect(await rest.list("manifest", `${i.toString(16).padStart(8, "0")}.`)).toEqual([nameOf(i, value(i))]);
+      }
+      expect(seen.reads - from).toBe(0);
+    } finally { rmSync(dir, { recursive: true, force: true }); }
+  });
 });

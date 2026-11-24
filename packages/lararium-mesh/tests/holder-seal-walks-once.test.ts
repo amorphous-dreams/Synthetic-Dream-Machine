@@ -13,7 +13,9 @@
 import { describe, expect, it } from "vitest";
 import { utf8Bytes } from "../src/crypto.js";
 import { recordIdOf, type RecordId, type SealedRecord } from "../src/sealed-records.js";
-import { said, vessel, world, type Vessel } from "./content-key-fixture.js";
+import { contentKeyRollSink, type RollOutcome } from "../src/content-key-lineage.js";
+import type { SeatRoll } from "../src/seat-duties.js";
+import { carry, counts, introduce, said, vessel, world, type Vessel } from "./content-key-fixture.js";
 
 const BAG = "lar:///ha.ka.ba/@test/bags/garden-notes";
 const OTHER = "lar:///ha.ka.ba/@test/bags/kitchen-notes";
@@ -150,5 +152,71 @@ describe("the count verifies from the top down", () => {
     const before = await ids(a);
     await seal(a, "after the forgery");
     expect((await newest(a, before)).body.parents).toEqual([head]);
+  });
+});
+
+describe("the transitive skip", () => {
+  /** A vessel whose standing counts each writer it is asked about: one ask per record that reached its last check. */
+  async function counted(): Promise<{ a: Vessel; asks: () => number }> {
+    let asks = 0;
+    const a = await vessel(world(), "a", { standing: { holdsWrite: () => { asks += 1; return true; } } });
+    return { a, asks: () => asks };
+  }
+  it("a manifest a verified manifest cites never verifies in the count: the first seal reads as many records whatever the ledger's length", async () => {
+    const spent: number[] = [];
+    for (const many of [3, 12]) {
+      const { a, asks } = await counted();
+      for (let i = 0; i < many; i++) await seal(a, `note ${i}`);
+      a.restart();
+      const from = asks();
+      await seal(a, "the first seal after the restart");
+      spent.push(asks() - from);
+    }
+    // The head verifies; every manifest beneath it stands cited by a verified one and is never opened.
+    expect(spent[0]).toBe(spent[1]);
+  });
+});
+
+describe("the re-seal judge yields as any walk does", () => {
+  const SCOPE = "fleet:test-scope";
+  const roll = (raiseCids: string[], seat: Vessel): SeatRoll =>
+    ({ kind: "seat-roll", scope: SCOPE, edgeId: "edge-1", seat: { group: "0xgroup", member: `0x${seat.id}` }, raiseCids, how: "revoked" });
+  async function shelf(): Promise<Vessel> {
+    const w = world();
+    const a = await vessel(w, "a"), c = await vessel(w, "c");
+    introduce(a, c);
+    let photo = "";
+    for (let i = 0; i < 70; i++) {
+      const r = await a.holder.sealBlob({ bagId: BAG, plaintext: utf8Bytes(`photo ${i}`), signer: a.signer });
+      if ("refusal" in r) throw new Error(said(r));
+      photo ||= r.body.ref;
+    }
+    await carry(a, c, BAG);
+    counts(w, a, "raise-1"); counts(w, c, "raise-1");
+    w.group.delete(c.id);
+    const reports: RollOutcome[] = [];
+    await contentKeyRollSink(a.holder.rollerPorts({ bagsOf: (scope) => (scope === SCOPE ? [BAG] : []), signer: () => a.signer, report: (o) => { reports.push(o); } }))(roll(["raise-1"], c));
+    expect(reports.map((r) => r.result)).toEqual(["rolled"]);
+    const replaced = await a.holder.resealBlob({ bagId: BAG, ref: photo, signer: a.signer });
+    if ("refusal" in replaced) throw new Error(said(replaced));
+    return a;
+  }
+
+  it("RED: judging a re-seal over seventy manifests hands the host its turn", async () => {
+    const a = await shelf();
+    let yields = 0;
+    a.yieldHost = async () => { yields += 1; };
+    a.restart();
+    const verdicts = await a.holder.judgeReseals(BAG);
+    if ("refusal" in verdicts) throw new Error(said(verdicts));
+    expect(verdicts.map((v) => v.verdict)).toEqual(["complete"]);
+    expect(yields).toBeGreaterThanOrEqual(1);
+  });
+
+  it("a lock that lands while the judge yields ends it by name", async () => {
+    const a = await shelf();
+    a.yieldHost = async () => { a.holder.lock(); };
+    a.restart();
+    expect(said(await a.holder.judgeReseals(BAG))).toBe("holder-locked");
   });
 });

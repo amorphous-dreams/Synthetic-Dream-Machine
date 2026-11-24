@@ -21,9 +21,11 @@
  * A LOOKUP BY ONE ID READS NO WHOLE SHELF. The rest holds each shelf's sorted names in memory, beside the directory's own
  * stamp (inode, modification and change marks), and a listing under a prefix reads that list by binary search. A stamp
  * that moved (another writer, a file dropped in by hand) reads the directory again; this rest's own write adds its name
- * and takes the new stamp only where the stamp stood as held just before it. A prefix that finds no name in the held
- * list reads the directory once more before it answers empty, so no resting name reads as absent. A listing with no
- * prefix reads the directory itself. The list holds names alone, and every name still passes the rule before it lists.
+ * and takes the new stamp only where the stamp stood as held before the write touched the shelf. A stamp answers to the
+ * file system's own tick, so a second writer's name that lands inside the tick this rest's write took may stay out of
+ * the held list: a prefix that finds no name there reads the directory once more before it answers empty, so no resting
+ * name reads as ABSENT, though a lookup that finds one copy under an id may miss a second copy until the stamp moves. A
+ * listing with no prefix reads the directory itself. The list holds names alone, and every name passes the rule.
  *
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store
  */
@@ -115,6 +117,8 @@ export function fsSealedStoreRest(dir: string): SealedStoreRest {
       if (kind !== "own" && existsSync(target) && (restNameHolds(name, readFileSync(target)) || !restNameHolds(name, bytes))) return;
       const shelf = shelfOf(kind);
       makeDir(shelf);
+      // The shelf's stamp before this write touches it: the temporary file below moves it too.
+      const before = stampOf(shelf);
       // An upper-case lead keeps the temporary name outside the rule every listed name passes.
       const temp = join(shelf, `TMP-${randomBytes(12).toString("hex")}`);
       const fd = openSync(temp, "wx", 0o600);
@@ -127,7 +131,6 @@ export function fsSealedStoreRest(dir: string): SealedStoreRest {
         throw err;
       }
       closeSync(fd);
-      const before = stampOf(shelf);
       try { renameSync(temp, target); } catch (err) { rmSync(temp, { force: true }); throw err; }
       syncDir(shelf);
       // THIS REST'S OWN NAME JOINS THE HELD LIST, where nothing else moved the shelf since this rest last read it;

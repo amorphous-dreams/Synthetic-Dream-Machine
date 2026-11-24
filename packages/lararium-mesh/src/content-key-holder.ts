@@ -1241,6 +1241,7 @@ export class ContentKeyHolder {
       if (!bag) return refuse("bag-unfounded");
       const out: ResealJudgement[] = [];
       let resting: Map<RecordId, SealedRecord<"manifest">[]> | null = null;
+      let walked = 0;
       for (const carried of await this.#ports.store.records("re-seal")) {
         const id = recordIdOf("re-seal", carried.body);
         const line = bag.lines.get(carried.body.bag);
@@ -1258,6 +1259,8 @@ export class ContentKeyHolder {
           resting ??= copiesById(await this.#ports.store.records("manifest"));
           for (const [id, copies] of resting) {
             if (copies[0]!.body.bag !== line.locator || copies[0]!.body.keyVersion !== version) continue;
+            // The judge reads every manifest of both versions: it yields as any walk does, and a lock ends it.
+            if (++walked % WALK_STRIDE === 0) await this.#yieldHost();
             const verified = await this.#manifest(bag, line, versionKey, id, copies);
             if (verified !== null) manifests.push(verified);
           }
