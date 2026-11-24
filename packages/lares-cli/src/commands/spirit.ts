@@ -218,9 +218,12 @@ async function trueSlot(args: ParsedArgs, label: string, rec: Record_, slot: str
     throw new SpiritRefusal("spirit-stale-base", `spirit-stale-base: ${rec.uri} moved past ${given}; it reads ${read.base} now and nothing landed. Read it again (\`lares spirit om ${rec.pet}\` or \`lares tiddler get ${rec.uri} --recipe default --meme --slot '${slot}'\`) and true it against that base`, 4);
   }
   const body = next(read.body).replace(/^\n+/, "").replace(/\s+$/, "");
-  const shapes = secretCount(body);
-  if (shapes > 0) {
-    throw new SpiritRefusal("spirit-secret-shaped", `spirit-secret-shaped: the words for ${rec.uri}${slot} hold ${shapes} secret-shaped string(s), so nothing landed; clear them, then true the slot again: \`lares spirit ah ${rec.pet} --slot '${slot}' --file <scrubbed path>\``, 4);
+  // The guard reads the lines this write brings, never the ones already standing: a standing line answers to its own fold.
+  const standing = new Set(read.body.split("\n"));
+  const brought = body.split("\n").map((line, i) => ({ line, n: i + 1 })).filter(({ line }) => !standing.has(line));
+  const shaped = brought.find(({ line }) => secretCount(line) > 0);
+  if (shaped !== undefined) {
+    throw new SpiritRefusal("spirit-secret-shaped", `spirit-secret-shaped: line ${shaped.n} of the words for ${rec.uri}${slot} holds a secret-shaped string (${redacted(shaped.line).slice(0, 120)}), so nothing landed; clear it, then true the slot again: \`lares spirit ah ${rec.pet} --slot '${slot}' --file <scrubbed path>\``, 4);
   }
   const over = budgetRefusal(rec, slot, read.body, body);
   if (over) throw over;
@@ -267,16 +270,23 @@ export function measure(rec: Pick<Record_, "slots">): { slots: Array<Slot & { bu
   return { slots, total, budget: RECORD_BUDGET_BYTES, over: total > RECORD_BUDGET_BYTES };
 }
 
-/** Append lines to the month's ash ledger, each redacted under the strict reading; `create` opens the month's ledger where none stands. */
+/**
+ * Append lines to the month's ash ledger, each redacted under the strict reading. The append rides alone (the tiddler door
+ * refuses `append-alone` where a field patch rides with it); `create` opens the month's ledger where none stands, and a ledger
+ * the append just opened takes its description in a put of its own.
+ */
 async function burnToAshes(args: ParsedArgs, label: string, lines: readonly string[], now: Date): Promise<string> {
   const ledger = ashLedgerOf(now);
-  const receipt = await door(args, label, "tiddler-put", {
-    recipe: RECIPE, title: ledger, append: lines.map(redacted).join("\n"), create: true,
-    fields: { description: `The ash ledger of the ${now.toISOString().slice(0, 7)} o-takiage sittings: each burned stage item with what landed it and the date.` },
-  });
+  const refused = (decision: string): SpiritRefusal => new SpiritRefusal("spirit-ashes-refused", `spirit-ashes-refused: the ash ledger ${ledger} answered ${decision || "nothing"}; read it: \`lares tiddler get ${ledger} --recipe default\`, then run \`lares spirit ${label} …\` again`, 4);
+  const receipt = await door(args, label, "tiddler-put", { recipe: RECIPE, title: ledger, append: lines.map(redacted).join("\n"), create: true });
   const decision = String(receipt["decision"] ?? "");
-  if (decision !== "put" && decision !== "noop") {
-    throw new SpiritRefusal("spirit-ashes-refused", `spirit-ashes-refused: the ash ledger ${ledger} answered ${decision || "nothing"}; read it: \`lares tiddler get ${ledger} --recipe default\`, then run \`lares spirit ${label} …\` again`, 4);
+  if (decision !== "put" && decision !== "noop") throw refused(decision);
+  if (receipt["created"] === true) {
+    const named = await door(args, label, "tiddler-put", {
+      recipe: RECIPE, title: ledger,
+      fields: { description: `The ash ledger of the ${now.toISOString().slice(0, 7)} o-takiage sittings: each burned stage item with what landed it and the date.` },
+    });
+    if (!["put", "noop"].includes(String(named["decision"] ?? ""))) throw refused(String(named["decision"] ?? ""));
   }
   return ledger;
 }
@@ -405,20 +415,26 @@ async function otakiage(args: ParsedArgs, hand: HandRead, now: () => Date): Prom
   const titles = residueOf(pet, Array.isArray(listed["titles"]) ? (listed["titles"] as string[]) : []);
   const stamp = now();
   const day = stamp.toISOString().slice(0, 10);
-  // Each residue reads first, then leaves; only a delete the door answers `removed` writes its burn line.
-  const burned: string[] = [];
+  // WRITE AHEAD: every residue reads first and its ash line lands before any delete, so the words rest in two places, never
+  // in none; a ledger that refuses its lines leaves every residue standing. A confirm line closes the sitting.
   const lines: string[] = [];
   for (const title of titles) {
     const got = await door(args, "otakiage", "tiddler-get", { recipe: RECIPE, title });
     const t = got["tiddler"] as { fields?: Record<string, string>; textHash?: string | null } | null | undefined;
     const text = t?.fields?.["text"] ?? "";
     const first = text.split("\n").find((l) => l.trim() !== "")?.trim().slice(0, 200) ?? "";
-    const gone = await door(args, "otakiage", "tiddler-delete", { recipe: RECIPE, title });
-    if (String(gone["decision"] ?? "") !== "removed") continue;
-    burned.push(title);
-    lines.push(`* ${day} · otakiage ${pet} burned ${title} (${bytesOf(text)} bytes, ${t?.textHash ?? "?"})${first ? `: ${first}` : ""}`);
+    lines.push(`* ${day} · otakiage ${pet} burning ${title} (${bytesOf(text)} bytes, ${t?.textHash ?? "?"})${first ? `: ${first}` : ""}`);
   }
   const ledger = lines.length > 0 ? await burnToAshes(args, "otakiage", lines, stamp) : null;
+  const burned: string[] = [];
+  for (const title of titles) {
+    const gone = await door(args, "otakiage", "tiddler-delete", { recipe: RECIPE, title });
+    if (String(gone["decision"] ?? "") === "removed") burned.push(title);
+  }
+  if (ledger !== null) {
+    const left = titles.filter((t) => !burned.includes(t));
+    await burnToAshes(args, "otakiage", [`* ${day} · otakiage ${pet} burned ${burned.length} of ${titles.length}${left.length > 0 ? `; still standing: ${left.join(", ")}` : ""}`], stamp);
+  }
   emit(args, {
     ok: true, data: { pet, uri: rec.uri, kept: rec.uri, burned, ledger },
     human: () => {

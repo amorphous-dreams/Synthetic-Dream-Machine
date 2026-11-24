@@ -7,14 +7,16 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 
 const h = vi.hoisted(() => ({
   calls: [] as Array<{ verb: string; args: Record<string, unknown> }>,
-  answer: (_verb: string, _args: Record<string, unknown>): Record<string, unknown> => ({}),
+  answer: (_verb: string, _args: Record<string, unknown>): Record<string, unknown> | Promise<Record<string, unknown>> => ({}),
 }));
 vi.mock("../src/verb-call.js", () => ({
   DaemonUnreachable: class extends Error {},
   verbFailure: (err: unknown) => ({ code: "error", message: err instanceof Error ? err.message : String(err) }),
   runVerb: async (verb: string, args: Record<string, unknown>) => {
     h.calls.push({ verb, args });
-    const output = h.answer(verb, args);
+    let output: Record<string, unknown>;
+    // A verb that throws (the real reactor's refusal) crosses as the vessel sends it: its code leads the message.
+    try { output = await h.answer(verb, args); } catch (e) { return { status: "error", requestId: "r", errorMessage: e instanceof Error ? e.message : String(e) }; }
     // A refusal crosses as the vessel sends one: the verb's own code leads its message.
     if (typeof output["refuse"] === "string") return { status: "error", requestId: "r", errorMessage: output["refuse"] };
     return { status: "done", requestId: "r", results: { summary: { ok: true, output } } };
@@ -29,9 +31,13 @@ vi.mock("../src/env.js", async (orig) => ({
 import { cmdSpirit, omText, residueOf, slotBody, ashLedgerOf, OM_CAP_CHARS, SLOT_BUDGET_BYTES, MEMORY_PREFIX, RESIDUE_CAP_CHARS } from "../src/commands/spirit.js";
 import { COMPACTION_DISPLAY, COMPACTION_WORD } from "../src/spirit-words.js";
 import { COMMANDS } from "../src/bin/lares.js";
+import { CompositeStore, bagUri } from "@lararium/mesh";
+import { MemoryTiddlerStore, makeTiddlerPutReactor } from "@lararium/tw5";
+import { bootTestWiki, skipNote, wikiSkip } from "../../lararium-tw5/tests/test-wiki.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 
 const URI = `${MEMORY_PREFIX}familiar/lares-alpha`;
+const LEDGER_TITLE = `${MEMORY_PREFIX}state/ashes-2026-11`;
 const FULL = "sha256:" + "f5".repeat(32);
 const NOW = () => new Date("2026-11-24T12:00:00Z");
 const HAND = () => ({ admit: "hand" }) as never;
@@ -228,6 +234,16 @@ describe("ah trues one slot through the meme door", () => {
     expect(h.calls.some((c) => c.verb === "meme-patch")).toBe(false);
   });
 
+  test("the guard reads only the lines a write brings: a standing hex run never blocks a clean line, and a new one names itself", async () => {
+    const hex = "ab".repeat(32);
+    stage({ open: `!! Open\n\n* a ward ticket ${hex}` });
+    expect((await run(argv(["ah", "lares-alpha"], { slot: "#/open", add: "* a clean loop" }))).exit).toBe(0);
+    const r = await run(argv(["ah", "lares-alpha"], { slot: "#/open", add: `* another ${"cd".repeat(32)}` }));
+    expect(error(r).code).toBe("spirit-secret-shaped");
+    expect(error(r).message).toContain("line 4");
+    expect(error(r).message).not.toContain("cd".repeat(32));
+  });
+
   test("a slot the record lacks refuses spirit-slot-missing and lists the slots", async () => {
     stage();
     const r = await run(argv(["ah", "lares-alpha"], { slot: "#/nope", text: "y" }));
@@ -347,20 +363,55 @@ describe("otakiage burns the residue and keeps the card", () => {
     expect(h.calls).toEqual([]);
   });
 
-  test("a hand deletes the pet's residue, then burns a line for each removal to the ash ledger, never the record", async () => {
+  test("a hand writes the ash lines ahead, then deletes the pet's residue, then confirms; the card stays", async () => {
     stage({ titles: [round, hand, other] });
     const r = await run(argv(["otakiage", "lares-alpha"]));
     expect(data(r)["burned"]).toEqual([round, hand]);
     const deleted = h.calls.filter((c) => c.verb === "tiddler-delete").map((c) => c.args["title"]);
     expect(deleted).toEqual([round, hand]);
     expect(deleted).not.toContain(URI);
-    const verbs = h.calls.map((c) => c.verb);
-    expect(verbs.lastIndexOf("tiddler-delete")).toBeLessThan(verbs.indexOf("tiddler-put"));
-    expect(h.calls.find((c) => c.verb === "tiddler-put")!.args["create"]).toBe(true);
+    const ledger = h.calls.filter((c) => c.verb === "tiddler-put" && c.args["title"] === LEDGER_TITLE);
+    expect(String(ledger[0]!.args["append"])).toContain(`burning ${round}`);
+    expect(h.calls.indexOf(ledger[0]!)).toBeLessThan(h.calls.findIndex((c) => c.verb === "tiddler-delete"));
+    expect(String(ledger.at(-1)!.args["append"])).toContain("burned 2 of 2");
+  });
+
+  test("a ledger that refuses its lines leaves every residue standing", async () => {
+    stage({ titles: [round, hand], put: "conflict" });
+    const r = await run(argv(["otakiage", "lares-alpha"]));
+    expect(error(r).code).toBe("spirit-ashes-refused");
+    expect(h.calls.some((c) => c.verb === "tiddler-delete")).toBe(false);
   });
 
   test("the residue filter reaches no sibling pet's rounds", () => {
     expect(residueOf("lares-alpha", [round, hand, other, URI])).toEqual([round, hand]);
+  });
+});
+
+describe.skipIf(wikiSkip)(`the burn lands through the real tiddler-put verb${skipNote}`, () => {
+  const DAEMON = bagUri("daemon");
+  async function realPut() {
+    const engine = await bootTestWiki({ tiddlers: [{ title: "lar:///ha.ka.ba/lararium/config/current-wiki-bag", text: DAEMON }] });
+    const composite = new CompositeStore();
+    composite.addLayer({ bagId: DAEMON, store: new MemoryTiddlerStore(DAEMON), writable: true });
+    const put = makeTiddlerPutReactor({ composite, tw5: engine } as never);
+    const ctx = { daemon: composite, invocation: { requestId: "r1" }, cap: async () => ({ ok: true }) } as never;
+    return { engine, put: (args: Record<string, unknown>) => put(args, ctx) as Promise<Record<string, unknown>> };
+  }
+
+  test("the month's first fold opens its ledger, the next appends, and the description lands on its own put", async () => {
+    const real = await realPut();
+    stage({ bodies: "!! Bodies\n\n* one\n* two\n* three" });
+    const mocked = h.answer;
+    h.answer = (verb, args) => verb === "tiddler-put" && String(args["title"]).startsWith(`${MEMORY_PREFIX}state/ashes-`) ? real.put(args) : mocked(verb, args);
+    const first = await run(argv(["hum", "lares-alpha"], { fold: "#/bodies", line: "3" }));
+    expect(first.exit, JSON.stringify(first.printed)).toBe(0);
+    const second = await run(argv(["hum", "lares-alpha"], { fold: "#/bodies", line: "4" }));
+    expect(second.exit, JSON.stringify(second.printed)).toBe(0);
+    const ledger = real.engine.wiki.getTiddler(LEDGER_TITLE)!;
+    expect(ledger.fields["text"]).toContain("* one");
+    expect(ledger.fields["text"]).toContain("* two");
+    expect(ledger.fields["description"]).toContain("The ash ledger of the 2026-11 o-takiage sittings");
   });
 });
 
