@@ -373,6 +373,40 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(await put({ ...A, title: "Note 04", text: "a read rewrite", base: fat.hash }, ctx())).toMatchObject({ decision: "put" });
   });
 
+  test("filter-collapse: a meme root's row carries the same slots and bytes the skinny get answers; a plain row carries its bytes alone; CONTROL: no collapse leaves the rows as they were", async () => {
+    const r = await rig();
+    expect((await placeMeme({ uri: MEME, text: memeText(["a", "b"]) }, wikiMemeSink(r.engine.wiki))).decision).toBe("ingest");
+    const filter = makeWikiFilterReactor(r.opts);
+    const get = makeTiddlerGetReactor(r.opts);
+    const skinny = (await get({ ...A, title: MEME, meme: true, grain: "skinny" }, ctx()))["meme"] as { bytes: number; slots: Array<{ slot: string; bytes: number; first: string | null }> };
+    const out = await filter({ ...A, filter: `[[${MEME}]] [[Other]]`, collapse: true }, ctx());
+    const rows = out["rows"] as Array<{ title: string; bytes: number; slots?: unknown[] }>;
+    expect(rows.map((x) => x.title)).toEqual([MEME, "Other"]);
+    expect(rows[0]).toMatchObject({ bytes: skinny.bytes, slots: skinny.slots });
+    expect(skinny.slots.map((s) => s.slot)).toEqual(["#/a", "#/b"]);
+    expect(rows[1]!.bytes).toBe(8);
+    expect(rows[1]!.slots, "a plain row carries no slots").toBeUndefined();
+    const plain = await filter({ ...A, filter: `[[${MEME}]] [[Other]]` }, ctx());
+    expect(plain["titles"]).toEqual([MEME, "Other"]);
+    expect(plain["rows"]).toBeUndefined();
+    const named = await filter({ ...A, filter: `[[${MEME}]]`, collapse: true, fields: ["description"] }, ctx());
+    expect((named["rows"] as Array<Record<string, unknown>>)[0]).toMatchObject({ title: MEME, fields: {}, slots: skinny.slots });
+  });
+
+  test("filter-collapse: the page law counts the collapsed rows' bytes; a cap cuts the page short and the cursor continues", async () => {
+    const r = await rig();
+    expect((await placeMeme({ uri: MEME, text: memeText(["a", "b", "c", "d"]) }, wikiMemeSink(r.engine.wiki))).decision).toBe("ingest");
+    const filter = makeWikiFilterReactor(r.opts);
+    const first = await filter({ ...A, filter: `[[${MEME}]] [tag[memory]sort[title]]`, collapse: true, maxBytes: 400 }, ctx());
+    const rows = first["rows"] as Array<{ title: string }>;
+    expect(rows[0]!.title).toBe(MEME);
+    expect(JSON.stringify(rows).length).toBeLessThanOrEqual(400);
+    expect(first["next"]).not.toBeNull();
+    expect(rows.length).toBeLessThan(first["total"] as number);
+    const second = await filter({ ...A, filter: `[[${MEME}]] [tag[memory]sort[title]]`, collapse: true, maxBytes: 400, after: first["next"] }, ctx());
+    expect((second["rows"] as Array<{ title: string }>)[0]!.title).not.toBe(MEME);
+  });
+
   test("RED L1: a word the lens or the grain does not read refuses by name, before anything reads", async () => {
     const r = await rig();
     expect((await placeMeme({ uri: MEME, text: memeText(["a", "b"]) }, wikiMemeSink(r.engine.wiki))).decision).toBe("ingest");
