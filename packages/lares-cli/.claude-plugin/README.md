@@ -19,6 +19,8 @@ At a session's end, `hooks/lares-keep-hook.mjs` (`SessionEnd`) starts `lares rit
 
 The static `CLAUDE.md` @-import carries the canonical seed (always-true); this plugin grounds it in live state (true-right-now). A degraded wake never blocks the session — it exits 0 with each read's own cause in the frame, inside one 12-second budget under the harness's 15.
 
+**The disk shore from a seat:** the `lares` MCP seat reads what stands for a hand at the disk shore through `shore()` (each standoff with its key and each pending removal, both islands as one shore; `shore(face=N)` reads a lit sibling's shore without wearing it), the mirror of `lares shore [--face N]`, and asks the vessel's whole-island flush through `shore_flush()`, the mirror of `lares shore flush` (the keep runs the same flush before its cut): every island that mounts a disk shore, the daemon's with each lit face's and every resident wiki's, writes what it holds to its mirrors. The answers that settle a row (`lares shore take-records|take-disk|restore|remove`) stay a person's hand at a terminal.
+
 **Install:** `/plugin marketplace add <this repo>` → `/plugin install lares-wake`, or run `lares home tend`, which seats both hooks in `~/.claude/settings.json` from the main clone.
 
 **Founding vs joining:**

@@ -99,7 +99,7 @@ describe("lei-rite-separates-powers", () => {
       expect(() => swarmLeiTitle(rite as never, BRANCH), String(rite)).toThrow(SwarmRefused);
       await expect(readLei(f.wiki, { rite: rite as never, branch: BRANCH, head: HEAD }, f.trust, GROUP, ONE_DEVICE), String(rite)).rejects.toMatchObject({ code: "swarm-name-malformed" });
     }
-    expect(WARD_COSIGN_VERBS).toEqual(["ward-kapae-lower", "ward-house-cap", "ward-push-lei"]);
+    expect(WARD_COSIGN_VERBS).toEqual(["ward-kapae-lower", "ward-house-cap", "ward-push-lei", "ward-keeper-vest"]);
     expect(faceIntentVerbs().classOfVerb(wardLeiVerb("push"))).toEqual({ class: "single-effect", cosign: true });
   });
 });

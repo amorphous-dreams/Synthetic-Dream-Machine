@@ -31,7 +31,7 @@ import { faceEngineReactor } from "../../lararium-keyhive/src/face-lane.js";
 import { MemoryTiddlerStore } from "../../lararium-tw5/src/memory-store.js";
 import { TW5Engine } from "../../lararium-tw5/src/tw5-vm.js";
 import { daemonDiskMirrors, faceRoot, litFaceDiskMirrors } from "../src/bag-paths.js";
-import { mountDiskProjection, mountLitFaceProjection, mountedDiskProjector } from "../src/island-behaviors.js";
+import { litFaceProjector, litFaceProjectorFaces, mountDiskProjection, mountLitFaceProjection, mountedDiskProjector } from "../src/island-behaviors.js";
 import type { LarDiskProjector } from "../src/disk-projector.js";
 
 const WORKING = wikiSlotUri("daemon", "working");
@@ -208,6 +208,19 @@ describe("every lit face projects its own writes", () => {
       await intruder.write("Intruder", "h4 reaches for h0's root");
       await house.wornProjector.idle();
       expect(textsUnder(house.projections)).not.toContain("h4 reaches");
+    } finally { await house.stopWorn(); }
+  }, 60_000);
+
+  test("RED F9 — a lit sibling's projector seats on the island's shore by its face while it stands, and leaves it at the drop: `lares shore --face N` reads it without a wear", async () => {
+    const house = await wornIsland();
+    const h1 = await house.light(1, "h-one");
+    try {
+      expect(litFaceProjector(1)).not.toBeNull();
+      expect(litFaceProjectorFaces()).toEqual([1]);
+      expect(litFaceProjector(0), "the worn face's projector stays the island's own").toBeNull();
+      await h1.stop!();
+      expect(litFaceProjector(1)).toBeNull();
+      expect(litFaceProjectorFaces()).toEqual([]);
     } finally { await house.stopWorn(); }
   }, 60_000);
 

@@ -522,7 +522,15 @@ function hostPorts(shim: string, say: (line: string) => void): RitePorts {
     sync: () => syncCheckout(CHECKOUT),
     checkout: async () => ({ head: await git(["rev-parse", "HEAD"]), branch: await git(["rev-parse", "--abbrev-ref", "HEAD"]) }),
     stage: (target) => stageShim(shim, target),
-    raise: (revision) => runShim(shim, ["rebuild", "--at", revision, "--keep-after-landing"]),
+    raise: (revision, keeper) => runShim(shim, ["rebuild", "--at", revision, "--keep-after-landing", ...(keeper ? ["--keeper-to", keeper.to] : [])]),
+    // THE KEEPER MOVE: the shim stands the successor and prints one JSON line naming its key and closure.
+    keeperStand: async () => {
+      const line = await shimRead(shim, ["keeper-stand"]);
+      try {
+        const read = JSON.parse(line ?? "null") as { to?: unknown; closure?: unknown } | null;
+        return read !== null && typeof read.to === "string" && /^[0-9a-f]{64}$/.test(read.to) && typeof read.closure === "string" && /^sha256:[0-9a-f]{64}$/.test(read.closure) ? { to: read.to, closure: read.closure } : null;
+      } catch { return null; }
+    },
     tty: () => process.stdin.isTTY === true && process.stdout.isTTY === true,
     row: (verb, rowArgs) => cliVerb(hostRowLine(verb, rowArgs)),
     standing: async (branch, face) => {
@@ -533,6 +541,7 @@ function hostPorts(shim: string, say: (line: string) => void): RitePorts {
     // THE KEEP AFTER THE LANDING: the raise defers the keep a down left owed (`--keep-after-landing`), and the rite runs it here.
     keepOwed: () => runShim(shim, ["keep-owed"]),
     // THE LAG AFTER THE RAISE: read in the vessel that stands; the workbench lay rides the owner's yes on this terminal, never canon.
+    floorCard: async () => { const read = await cliVerb(["vessel", "floor", "status"]); const card = read.ok ? read.output["card"] as { title?: unknown } | undefined : undefined; return typeof card?.title === "string" ? { title: card.title } : null; },
     houseLag: async () => { const read = await cliVerb(["vessel", "lay", "--lag"]); return read.ok ? houseLagOf(read.output) : null; },
     ask: askOnTerminal,
     layWorkbench: layWorkbenchOnTerminal,

@@ -49,9 +49,9 @@ describe("intent issue", () => {
     expect(fold([call, own]).intents[0]?.voidCause).toBe("cancelled");
     expect(fold([call, operator]).intents[0]?.voidCause).toBe("superseded");
   });
-  test("RED: the three ward verbs classify and issue under the asks audience only; CONTROL: buildAsks carries the digest as its detail", async () => {
+  test("RED: the four ward verbs classify and issue under the asks audience only; CONTROL: buildAsks carries the digest as its detail", async () => {
     const atom = await signer(1), verbs = faceIntentVerbs();
-    expect(WARD_COSIGN_VERBS).toEqual(["ward-kapae-lower", "ward-house-cap", "ward-push-lei"]);
+    expect(WARD_COSIGN_VERBS).toEqual(["ward-kapae-lower", "ward-house-cap", "ward-push-lei", "ward-keeper-vest"]);
     for (const verb of WARD_COSIGN_VERBS) {
       expect(verbs.classOfVerb(verb)).toMatchObject({ class: "single-effect", cosign: true });
       const base = { group: "face", signer: atom, verb, args: {}, nonce: "n", verbs };

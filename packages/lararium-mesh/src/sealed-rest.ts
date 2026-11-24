@@ -22,7 +22,7 @@
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed
  */
 import * as A from "@automerge/automerge";
-import { isValidDocumentId, type Chunk, type Repo, type StorageAdapterInterface } from "@automerge/automerge-repo";
+import { isValidDocumentId, type Chunk, type DocumentId, type Repo, type StorageAdapterInterface } from "@automerge/automerge-repo";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { PEER_WRITER_BOUND, type DocumentValue, type HolderRefusal, type OpenedValue } from "./content-key-holder.js";
 import { hex, utf8Bytes } from "./crypto.js";
@@ -496,6 +496,9 @@ export function composeSealedRest<S extends SaveSession>(input: {
   readonly bagOf: (documentId: string) => SealedBag | null;
   /** The map before the bytes (`SealedDocumentPorts.bagRow`): the row a document of a bag maps to, read by the bag alone. */
   readonly bagRow?: (bagId: string) => SealedBag | null;
+  /** THE CLEAR-NAME ROSTER (`SealedDocumentPorts.namesClear`): the vessel's registry names this document (`sealedBagMap.names`).
+   *  Present, a document neither mapped, named here, nor opened by a local caller waits in memory (`save-unnamed`). */
+  readonly namesClear?: (documentId: string) => boolean | Promise<boolean>;
   readonly sessionFace: () => string | null;
   /** THE LIT SET (`SealedDocumentPorts.openFaces`): every face open on this vessel now; absent, the worn face alone. */
   readonly openFaces?: () => readonly string[];
@@ -547,6 +550,7 @@ export function composeSealedRest<S extends SaveSession>(input: {
   const store = new SealedDocumentStore({
     inner: input.inner, bagOf: input.bagOf, sessionFace: input.sessionFace,
     ...(input.bagRow ? { bagRow: input.bagRow } : {}),
+    ...(input.namesClear ? { namesClear: input.namesClear } : {}),
     ...(input.openFaces ? { openFaces: input.openFaces } : {}),
     ...(input.wornAt ? { wornAt: input.wornAt } : {}),
     ...(input.realm ? { realm: input.realm } : {}),
@@ -654,7 +658,7 @@ export function sealedBagMap(input: {
   readonly docsOf: (bagId: string) => readonly (string | null | undefined)[];
   /** The catalog the vessel reads (the floor's, with a lit face's laid over it), or undefined before it stands. */
   readonly catalog?: () => LarDoc | undefined;
-}): { bagOf(documentId: string): SealedBag | null; bagRow(bagId: string): SealedBag | null; docOf(bagId: string): string | null } {
+}): { bagOf(documentId: string): SealedBag | null; bagRow(bagId: string): SealedBag | null; docOf(bagId: string): string | null; names(documentId: string): boolean } {
   const ids = (bagId: string): string[] => input.docsOf(bagId).filter((id): id is string => typeof id === "string" && id.length > 0);
   return {
     bagOf(documentId) {
@@ -681,7 +685,47 @@ export function sealedBagMap(input: {
       return row !== undefined && isBagId(bagId) && catalogRowHalf(bagId, row) === "face" ? { bagId, face: null } : null;
     },
     docOf: (bagId) => ids(bagId)[0] ?? null,
+    // THE CLEAR-NAME ROSTER, off the same registry `bagOf` reads: does any bag the vessel knows (the face's bags, every bag row
+    // of the catalog, whatever half or tier) carry this document by one of its names? `bagOf` decides whether it seals; this
+    // answers only whether the vessel knows it, so a document no bag carries (an unsolicited push) reads unknown.
+    names(documentId) {
+      const known = new Set(input.bags());
+      for (const title of Object.keys(input.catalog?.()?.tiddlers ?? {})) if (isBagId(title)) known.add(title);
+      for (const bagId of known) if (ids(bagId).includes(documentId)) return true;
+      return false;
+    },
   };
+}
+
+/**
+ * THE CLEAR-NAME ROSTER A VESSEL READS, composed from registries that already stand, never a list of its own:
+ *   - the bag registry (`sealedBagMap.names`): a document some bag the vessel knows carries;
+ *   - the federatable shelf (`shelf`, the gate that admits a wire peer's ask on the public lane): a document any admitted peer
+ *     may read by that lane is public by construction, so a push of it rests clear and survives a restart.
+ * The shelf alone among the admission lanes names clear: a sibling's or a same-operator face's lane also admits that face's
+ * sealed planes, so its verdict says nothing of a document's class. A shelf not yet stood, or one that faults, names nothing.
+ */
+export function clearRosterOf(input: {
+  readonly names: (documentId: string) => boolean;
+  readonly shelf?: () => { mayFederate(documentId: DocumentId): boolean | Promise<boolean> } | null;
+}): (documentId: string) => Promise<boolean> {
+  return async (documentId) => {
+    if (input.names(documentId)) return true;
+    const shelf = input.shelf?.() ?? null;
+    if (shelf === null) return false;
+    try { return (await shelf.mayFederate(documentId as DocumentId)) === true; } catch { return false; }
+  };
+}
+
+/**
+ * A CATALOG ROW NAMES A DOCUMENT AT ONCE. The bag map and the clear-name roster both read the catalog (`sealedBagMap`), so each
+ * change of the catalog document moves the map (`moved`, the store's `mapMoved`): a save held `save-unnamed` that a new row
+ * alone names lands clear then, and a load waiting on its map reads again. Answers the watch's own release.
+ */
+export function watchCatalogNames(catalog: { on(event: "change", listener: () => void): unknown; off(event: "change", listener: () => void): unknown }, moved: () => void): () => void {
+  const listener = (): void => { try { moved(); } catch { /* a map that faults keeps its saves waiting by name */ } };
+  catalog.on("change", listener);
+  return () => { catalog.off("change", listener); };
 }
 
 /** The document a mounted layer's store stands on (an `AutomergeDocStore`), or null for a store that names none. */

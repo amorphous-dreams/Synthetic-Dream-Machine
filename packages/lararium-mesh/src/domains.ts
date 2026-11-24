@@ -650,6 +650,8 @@ export const REALM_FEED_DOMAIN = mint("realm-feed");
 export const WARD_COSIGN_DIGEST_DOMAIN = mint("ward-cosign-digest");
 /** What a co-signer's per-face ward key signs in its answer to a ward ask: (the answer, the ask's digest, the fleet frontier it read). */
 export const WARD_ANSWER_DOMAIN = mint("ward-answer");
+/** The head a keeper vest's co-sign names: (the successor closure D′, the chain head the commit links to, the commit's nonce). */
+export const KEEPER_VEST_COSIGN_DOMAIN = mint("keeper-vest-cosign");
 /** The per-face ward signing seed a node derives from that face's own ward key: its public half rides the device's admission. */
 export const WARD_SIGN_SEED_DOMAIN = mint("ward-sign-seed");
 /** What a device's per-face ward key signs to prove its admission names a key that device holds: (group, device atom, ward key). */

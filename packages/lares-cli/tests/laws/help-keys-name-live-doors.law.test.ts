@@ -51,7 +51,7 @@ describe("the per-command help registry", () => {
   });
 
   test("every verb the host shim answers holds a help row: `lares <shim verb> --help` reads it, never `unknown command`", async () => {
-    expect([...SHIM_VERBS].sort()).toEqual(["build", "down", "found", "logs", "rebuild", "reset", "up"]);
+    expect([...SHIM_VERBS].sort()).toEqual(["build", "down", "found", "logs", "pulama", "rebuild", "reset", "up"]);
     for (const verb of SHIM_VERBS) {
       const r = await said([verb, "--help"]);
       expect({ verb, code: r.code, err: r.err }).toEqual({ verb, code: 0, err: "" });

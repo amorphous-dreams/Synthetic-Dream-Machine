@@ -26,8 +26,8 @@ import { faceProofSubjectRef, placeProofSubjectRef } from "@lararium/mesh/face-p
  * vessel cached unavailable still comes to hold the heads the island names, and reads the island's channel closing as a
  * stall rather than waiting on a handle that never moves. `leg.onClose` ends a wait when the vessel stands down.
  */
-export function browserIslandReceipt(repo: Repo, leg?: { readonly ready: Promise<unknown>; readonly onClose: (fn: () => void) => () => void }): ReceiptIssuer {
-  return (documentIds, heads) => receiptInStore(repo, documentIds, leg, heads);
+export function browserIslandReceipt(repo: Repo, leg?: { readonly ready: Promise<unknown>; readonly onClose: (fn: () => void) => () => void }, rest?: Parameters<typeof receiptInStore>[4]): ReceiptIssuer {
+  return (documentIds, heads) => receiptInStore(repo, documentIds, leg, heads, rest);
 }
 
 /** The unlocked session a lift stands on: its signer, and the vessel's own chain at the session's anchor. A joined face's

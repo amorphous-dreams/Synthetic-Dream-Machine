@@ -96,6 +96,8 @@ export interface PulamaServer {
   /** The faces closing now, each with how many sessions have not answered its close. */
   closing(): ReadonlyArray<{ readonly face: number; readonly unanswered: number; readonly note: string }>;
   sessions(): number;
+  /** The face the vessel's wear door last named here (`face.worn`); none since the last lock. */
+  worn?(): number | undefined;
 }
 
 /** What a face's close answers: locked now, closing (sessions still to answer), already shut, or no such face. */
@@ -640,5 +642,6 @@ export function servePulama(a: {
           ? `face h${c.ordinal}: the vessel has not answered its close; close it again to tell the vessel again, or force it by hand`
           : `face h${c.ordinal}: no session still owes its close; close it again to lock it, or force it by hand` })),
     sessions: () => live.size,
+    worn: () => worn,
   };
 }

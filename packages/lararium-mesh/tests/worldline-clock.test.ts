@@ -21,8 +21,8 @@ import {
   CLAUDE_AGENT_BOUNDS,
   worldlineCausalSeed,
   worldlineSpawn,
-  worldlineInject,
-  worldlineHandback,
+  worldlineTick,
+  worldlineRetire,
   worldlineCompare,
   worldlineStampFor,
   worldlineHandles,
@@ -141,7 +141,7 @@ describe("worldline causal partial-order — rides ITC, concurrent-capable", () 
   test("spawn = fork: a spawned child reads AFTER the parent once it acts", () => {
     let c = worldlineCausalSeed("run");
     c = worldlineSpawn(c, "run", "run.child");
-    c = worldlineInject(c, "run.child"); // the child does work
+    c = worldlineTick(c, "run.child"); // the child does work
     expect(worldlineCompare(c, "run", "run.child")).toBe("before"); // parent → child
     expect(worldlineCompare(c, "run.child", "run")).toBe("after");
   });
@@ -150,40 +150,40 @@ describe("worldline causal partial-order — rides ITC, concurrent-capable", () 
     let c = worldlineCausalSeed("run");
     c = worldlineSpawn(c, "run", "run.a");
     c = worldlineSpawn(c, "run", "run.b");
-    c = worldlineInject(c, "run.a");
-    c = worldlineInject(c, "run.b");
+    c = worldlineTick(c, "run.a");
+    c = worldlineTick(c, "run.b");
     expect(worldlineCompare(c, "run.a", "run.b")).toBe("concurrent");
   });
 
-  test("inject FULL-ticks every time (the D-cut): each injection advances the history", () => {
+  test("tick FULL-ticks every time (the D-cut): each event advances the history", () => {
     let c = worldlineCausalSeed("run");
     c = worldlineSpawn(c, "run", "run.a");
     const before = worldlineStampFor(c, "run.a")!;
-    c = worldlineInject(c, "run.a");
+    c = worldlineTick(c, "run.a");
     const after1 = worldlineStampFor(c, "run.a")!;
-    c = worldlineInject(c, "run.a");
+    c = worldlineTick(c, "run.a");
     const after2 = worldlineStampFor(c, "run.a")!;
     expect(itcCompare(before, after1)).toBe("before");
     expect(itcCompare(after1, after2)).toBe("before");
   });
 
-  test("handback = join: the parent absorbs the concurrent child, reads AFTER it; child retires", () => {
+  test("retire = join: the parent absorbs the concurrent child, reads AFTER it; the child leaves", () => {
     let c = worldlineCausalSeed("run");
     c = worldlineSpawn(c, "run", "run.child");
-    c = worldlineInject(c, "run.child"); // the child works
-    c = worldlineInject(c, "run");       // the parent works meanwhile — concurrent
-    const childAtHandback = worldlineStampFor(c, "run.child")!;
+    c = worldlineTick(c, "run.child"); // the child works
+    c = worldlineTick(c, "run");       // the parent works meanwhile — concurrent
+    const childAtRetire = worldlineStampFor(c, "run.child")!;
     expect(worldlineCompare(c, "run", "run.child")).toBe("concurrent");
-    c = worldlineHandback(c, "run", "run.child");
-    expect(worldlineStampFor(c, "run.child")).toBeUndefined(); // dissolved at handback
-    // the reunited parent's history now dominates the child's pre-handback history
-    expect(itcCompare(worldlineStampFor(c, "run")!, childAtHandback)).toBe("after");
+    c = worldlineRetire(c, "run", "run.child");
+    expect(worldlineStampFor(c, "run.child")).toBeUndefined(); // retired
+    // the reunited parent's history now dominates the child's pre-retirement history
+    expect(itcCompare(worldlineStampFor(c, "run")!, childAtRetire)).toBe("after");
   });
 
   test("unknown handles throw — the registry never invents a worldline", () => {
     const c = worldlineCausalSeed("run");
     expect(() => worldlineSpawn(c, "ghost", "x")).toThrow();
-    expect(() => worldlineInject(c, "ghost")).toThrow();
+    expect(() => worldlineTick(c, "ghost")).toThrow();
     expect(() => worldlineCompare(c, "run", "ghost")).toThrow();
   });
 
@@ -193,7 +193,7 @@ describe("worldline causal partial-order — rides ITC, concurrent-capable", () 
     // DISTINCT frontier and rides alongside the old entry (the same-session fork).
     let c = worldlineCausalSeed("run");
     c = worldlineSpawn(c, "run", "run.child"); // first fork — child @ frontier F0
-    c = worldlineInject(c, "run");             // the parent's history advances → frontier moves
+    c = worldlineTick(c, "run");             // the parent's history advances → frontier moves
     expect(() => (c = worldlineSpawn(c, "run", "run.child"))).not.toThrow(); // re-fork @ frontier F1
     // Two concurrent frontiers for ONE rigid handle — the moving antichain, keyed BY the handle.
     expect(worldlineFrontiersFor(c, "run.child").length).toBe(2);

@@ -7,6 +7,7 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/wiki-activation
  */
+import { routingString } from "./routing-arg.js";
 import type { WikiActivationCap } from "@lararium/mesh";
 
 export interface WikiSwitchDeps {
@@ -15,7 +16,7 @@ export interface WikiSwitchDeps {
 }
 
 export async function wikiSwitchVerb(args: Record<string, unknown>, deps: WikiSwitchDeps) {
-  const slug = String(args["slug"] ?? "");
+  const slug = routingString(args, "slug", "wiki-switch");
   if (!slug) throw new Error("wiki-switch: `slug` required");
   if (args["remount"] === true) deps.pool.forgetMountFailures(slug);
   const active = await deps.activation.ensureActive(slug);
