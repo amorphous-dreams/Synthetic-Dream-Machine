@@ -1256,9 +1256,9 @@ function ResolveImage([string]$want) {
 # THE PŪLAMA'S OWN STATUS (`pulama-main.js status`, read detached): whether it stands lit, and whether the admitted set it
 # reads under its key names the image and no tombstone ends it. An unlit pūlama lists no admission; a status that never
 # answers leaves both unread.
-$script:PsLit = ''; $script:PsAdmitted = ''; $script:PsVest = ''; $script:PsStruck = $false; $script:PsPending = ''; $script:PsLei = $false
+$script:PsLit = ''; $script:PsAdmitted = ''; $script:PsVest = ''; $script:PsStruck = $false; $script:PsPending = ''
 function PulamaStatusRead([string]$digest) {
-  $script:PsLit = ''; $script:PsAdmitted = ''; $script:PsVest = ''; $script:PsStruck = $false; $script:PsPending = ''; $script:PsClosure = ''; $script:PsLei = $false
+  $script:PsLit = ''; $script:PsAdmitted = ''; $script:PsVest = ''; $script:PsStruck = $false; $script:PsPending = ''; $script:PsClosure = ''
   $out = $null | & docker compose @Base --profile pulama exec -T (PulamaSvc) node $PulamaMain status 2>$null
   if ($LASTEXITCODE -ne 0) { return }
   $flat = (($out -join '') -replace '\s', '')
@@ -1267,8 +1267,6 @@ function PulamaStatusRead([string]$digest) {
   $script:PsPending = ([regex]::Match($flat, '"pending":"(sha256:[0-9a-f]{64})"')).Groups[1].Value
   $script:PsClosure = ([regex]::Match($flat, '"closure":"(sha256:[0-9a-f]{64})"')).Groups[1].Value
   $script:PsStruck = $flat.Contains('"struckDue":true')
-  # THE KEEPER LEI: a return could spend (the keeper's own bounds; the host adds its testimony at the spend).
-  $script:PsLei = $flat.Contains('"leiReady":true')
   if ($flat.Contains('"lit":true')) { $script:PsLit = 'yes' }
   elseif ($flat.Contains('"lit":false')) { $script:PsLit = 'no'; return }
   else { return }
@@ -1311,7 +1309,6 @@ function PrintReading {
       if ($pul -eq 'moved') {
         if ($script:PsStruck) { $keeper = ',"keeper":"struck-due"' }
         elseif ($script:PsVest -and $script:PsVest -eq (ClosureLabel 'image' $ImageRef)) { $keeper = ',"keeper":"vests"' }
-        elseif ($script:PsLei -and $script:PsLit -eq 'yes' -and -not $script:PsPending) { $keeper = ',"keeper":"lei"' }
       }
     }
   }

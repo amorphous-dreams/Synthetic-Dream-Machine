@@ -495,7 +495,7 @@ export function pulamaHandDoor(a: {
         const ride = a.keeperRite;
         const rite = ride ? (keeper: { readonly to: string; readonly next: string }) => ride(f["offer"], keeper)
           : async () => ({ ok: false as const, refusal: "vest-rite-unavailable", detail: "this keeper reads no kūkulu rite, so nothing vests; light the successor by hand: lares rite kukulu on a terminal" });
-        const out = await keeperVest(a.records, await pulamaSignerOf(holder), { to, closure: theirs, rite, keys: () => holder.handOver!(), spent: UNLOCK_ATTEMPTS_PER_BOOT - holder.attemptsLeft(), worn: a.worn?.() ?? null });
+        const out = await keeperVest(a.records, await pulamaSignerOf(holder), { to, closure: theirs, rite, keys: () => holder.handOver!(), spent: UNLOCK_ATTEMPTS_PER_BOOT - holder.attemptsLeft(), worn: a.worn?.() ?? null, leiFloor });
         if ("refusal" in out) { log(`keeper-vest: ${out.refusal}`); return { op: "keeper-vest", reading: out.refusal, detail: out.detail }; }
         passing = true;
         log(`keeper-vest: the fire vests to one successor key (${out.faces.map((n) => `h${n}`).join(", ") || "no face"}); this keeper passes it`);

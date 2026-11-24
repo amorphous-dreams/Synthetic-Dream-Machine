@@ -2140,7 +2140,13 @@ test(`${name}: RED keeper-commit-lei-guards-the-spend: with no terminal and no r
   assert.deepEqual({ ...JSON.parse(frame), rev: "r", tree: "t" }, { next: d, branch: "develop", rev: "r", tree: "t", recheck: "same", image: d, ci: "77:success", devices: 1 });
   assert.match(JSON.parse(frame).rev, /^[0-9a-f]{40}$/);
 });
-test(`${name}: RED rebuild-image-names-the-keeper-lei: a moved closure the keeper's lei could spend on reads keeper lei; CONTROL: a live hand commit or the struck fire due reads no lei`, { skip }, async () => {
+test(`${name}: RED keeper-commit-lei-stays-internal: the rite's own step refuses a person at a terminal and names the rite; nothing reaches the pūlama`, { skip: skip || shim !== SH || !haveScript }, async () => {
+  const r = await run(shim, ["pulama", "keeper-commit", "--lei", "HEAD", "develop"], { envFile: PULAMA_ENV, checkout: "pulama", origin: true, tty: "", env: { ...REBUILT } });
+  assert.notEqual(r.status, 0);
+  assert.match(r.stdout, /the rite's own step[\s\S]*lares rite kukulu/);
+  assert.doesNotMatch(r.calls, /keeper-commit-lei/);
+});
+test(`${name}: RED rebuild-image-names-the-keeper-lei: a moved closure the keeper's lei could spend on reads keeper lei; CONTROL: a live hand commit or the struck fire due reads no lei`, { skip: skip || shim !== SH }, async () => {
   const lei = await run(shim, ["rebuild", "--image"], { envFile: PULAMA_ENV, checkout: "clean", env: { ...VESTS, FAKE_PULAMA_STATUS: '{"op":"status","lit":true,"keeper":{"v":1},"keeperLei":{"left":3,"floor":true},"leiReady":true}' } });
   assert.match(lei.stdout, /"keeper":"lei"/);
   const pending = await run(shim, ["rebuild", "--image"], { envFile: PULAMA_ENV, checkout: "clean", env: { ...VESTS, FAKE_PULAMA_STATUS: `{"op":"status","lit":true,"keeper":{"pending":"${CL("c")}"},"leiReady":true}` } });

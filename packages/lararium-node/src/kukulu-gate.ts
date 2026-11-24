@@ -281,7 +281,7 @@ export function keeperRiteOver(a: {
       const face = await a.holder.faceStanding({ group: personaGroupDigest(body.group) });
       if (face === null || !face.unlocked) { first ??= "kukulu-face-locked"; continue; }
       // THE VOUCH MAPS ORDINAL TO GROUP: the vessel signed the group; this keeper's own holder names the ordinal.
-      faces.push({ ordinal: face.ordinal, group: body.group, devices: body.keeper.devices });
+      faces.push({ ordinal: face.ordinal, group: body.group, devices: body.keeper.devices, branch: body.branch, head: body.head, tree: body.tree });
       const handKey = (await a.hand(face.ordinal))?.toLowerCase();
       if (!handKey) { first ??= "kukulu-hand-absent"; continue; }
       ats.push({ group: body.group, branch: body.branch, head: body.head, tree: body.tree, image: raised, hand: (key) => key.toLowerCase() === handKey, by });

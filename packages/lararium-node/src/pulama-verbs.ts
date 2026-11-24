@@ -19,8 +19,8 @@
  *            before any prompt), the prompt names the successor closure it commits, and the route proves against the lit holder.
  *            The host's consent screen (`tools/lares-container.sh pulama keeper-commit`) prints that closure and the source tree, and
  *            offers the clean-tree re-check, before it lands here
- *   keeper-commit-lei '<json>'  (no route) the commit the kukulu lei licenses, as the host testifies it
- *            (`tools/lares-container.sh pulama keeper-commit --lei <rev> <branch>` sends it)
+ *   (internal, never a hand verb) `keeper-commit-lei '<json>'`: the commit the kukulu lei licenses, as the host testifies it from
+ *            inside `lares rite kukulu`; it stays out of the usage line
  *   lock · status · tessera · keeper-offer · keeper-land · take-fire · closure <sha256:…> · keeper-vest '{"to","closure"}' ·
  *   keeper-receive '{"slot"}' · image <digest> | image '{"digest","seed","closure"}'   one frame each, no route
  *
@@ -89,7 +89,7 @@ export function readRoute(label: string, what: string, terminal: RouteTerminal =
   });
 }
 
-export const PULAMA_VERB_USAGE = `usage: pulama-main.js serve | light [--admit] | admit [face…] | unadmit <image digest> | rehive <face> | recard <face> | lei kui|restring|unstring '{"face":…,"rite":…,"branch":…,…}' | lei kui '{"faces":[…]}' | keep-seat | lock | status | image <digest> | image '{"digest":…,"seed":…,"closure":…}' | tessera | closure <sha256:…> | keeper-commit <sha256:…> [--devices <n>] [--cosign <json>] | keeper-commit-lei '{"next":…,"branch":…,"rev":…,"tree":…,"recheck":…,"image":…,"ci":…,"devices":…}' | keeper-offer | keeper-vest '{"to":…,"closure":…}' | keeper-receive '{"slot":…}' | keeper-land | take-fire`;
+export const PULAMA_VERB_USAGE = `usage: pulama-main.js serve | light [--admit] | admit [face…] | unadmit <image digest> | rehive <face> | recard <face> | lei kui|restring|unstring '{"face":…,"rite":…,"branch":…,…}' | lei kui '{"faces":[…]}' | keep-seat | lock | status | image <digest> | image '{"digest":…,"seed":…,"closure":…}' | tessera | closure <sha256:…> | keeper-commit <sha256:…> [--devices <n>] [--cosign <json>] | keeper-offer | keeper-vest '{"to":…,"closure":…}' | keeper-receive '{"slot":…}' | keeper-land | take-fire`;
 
 /** A verb line the hand door holds no act for. */
 export class PulamaVerbUsage extends Error { override readonly name = "PulamaVerbUsage"; constructor() { super(PULAMA_VERB_USAGE); } }

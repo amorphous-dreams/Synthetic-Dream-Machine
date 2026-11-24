@@ -1360,14 +1360,16 @@ keep_after_raise() {
 # vessel as it stood, and names the cure that runs from there. The slot crosses this pipe once, sealed to the successor's key.
 KV_OLD=""; KV_NEW=""; R_KEEPER_TO=""
 keeper_reading() { printf '%s' "$1" | tr -d ' \t\r\n' | sed -n 's/.*"reading":"\([a-z-]*\)".*/\1/p'; }
-# THE COMMIT THE KUKULU LEI LICENSES (`pulama keeper-commit --lei <rev> <branch>`, no terminal, no route; operator ruling 2026-11-24:
+# THE COMMIT THE KUKULU LEI LICENSES (internal: `lares rite kukulu` calls `pulama keeper-commit --lei <rev> <branch>`, never a person at a
+# terminal, and no help names it; no route; operator ruling 2026-11-24:
 # the keeper lei keeps no count of its own, it rides the wide kukulu lei the rite read standing on the branch with returns left, and
 # the vest's live rite spends that lei's return). The host's guards before the keeper rests the commit:
 # The revision reads reachable from origin/develop or origin/main as fetched (the rite's own fetch), the checkout's tracked tree
 # clean, its closure D′ off two fresh archives the same, the built image's closure label equal to D′, and the CI push run on the
 # revision green (read with `gh … --jq`, no jq on host); each lit face holds one device. Then the keeper checks its own bounds
 # (no fork, no hand commit, no vested commit unlanded, the last pair par, struck-due false) and
-# rests the same commit `keeper-commit` rests, naming the license. These guards bind against accident; the merge gate binds the rest.
+# rests the same commit `keeper-commit` rests, naming the license. These guards bind against accident: a host can send the commit
+# itself, so the real gate stands at host access plus a standing kukulu lei.
 keeper_commit_lei() { # $1 = the revision, $2 = the branch whose kukulu lei licenses it
   kl_cure='or name the successor by hand on a terminal: lares pulama keeper-commit'
   printf '%s' "$2" | grep -Eq '^[A-Za-z0-9._/-]+$' || die "pulama keeper-commit --lei: \"$2\" names no branch (keeper-lei-testimony-malformed); nothing committed: run lares rite kukulu again, $kl_cure"
@@ -1676,6 +1678,8 @@ case "$verb" in
         compose --profile pulama exec -T "$(pulama_svc)" node "$PULAMA_MAIN" keeper-land </dev/null ;;
       keeper-commit)
         if [ "${2:-}" = --lei ]; then
+          # INTERNAL: the rite's own step (`lares rite kukulu` calls it with no terminal); a person at a terminal is refused.
+          [ -z "$HAVE_TTY" ] || die "pulama keeper-commit --lei is the rite's own step, never a hand verb; run lares rite kukulu (nothing committed)"
           [ "$#" -eq 4 ] || die "pulama keeper-commit --lei takes the revision and the branch whose kukulu lei licenses it, as lares rite kukulu names them"
           keeper_commit_lei "$3" "$4"
         else

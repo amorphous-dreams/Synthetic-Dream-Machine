@@ -154,7 +154,7 @@ export interface RitePorts {
   keeperStand?(): Promise<{ readonly to: string; readonly closure: string } | null>;
   /**
    * THE COMMIT THE KUKULU LEI LICENSES (no route; operator ruling 2026-11-24: the keeper lei keeps no count of its own): the shim's
-   * `pulama keeper-commit --lei <rev> <branch>` checks the revision reachable from origin, the image's closure label equal to its D′
+   * internal step (`pulama keeper-commit --lei <rev> <branch>`, no hand verb) checks the revision reachable from origin, the image's closure label equal to its D′
    * and its CI push run green, and the keeper rests a commit naming D′ and the license. The rite's own begin spends the lei's
    * return (the same return it spends for the lent face), and the vest names it. True where the commit rests (the stand then reads
    * `vests`); false where any guard refused (its lines name why). Absent, nothing licenses a commit.
