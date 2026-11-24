@@ -19,7 +19,7 @@ import { sealedAct } from "./sealed-act-door.js";
 import { vesselStanding, type VesselStanding } from "./custody-door.js";
 import { vesselDid, larSealHome } from "./env.js";
 import { DaemonUnreachable, refusalCode, refusalHint, verbFailure } from "./verb-call.js";
-import { udsAlive, udsSocketPresent, udsSocketPath, whoHolds, invokeLocal, UdsUnreachable, LocalWaitExpired } from "./local-connector.js";
+import { udsAlive, udsSocketPresent, udsSocketPath, whoHolds, invokeLocal, UdsUnreachable, LocalWaitExpired, type WhoHoldsAnswer } from "./local-connector.js";
 import { waitForResourceBudgeted, SlowBootTimeout, type BootPhase } from "./port-control.js";
 import { summaryOutput } from "./verb-result.js";
 import type { SubmitResult } from "./verb-result.js";
@@ -32,10 +32,11 @@ import type { SubmitResult } from "./verb-result.js";
  */
 async function invokeAbortable(
   verb: string, args: Record<string, unknown>, requestedBy: string,
-  opts: { readonly timeoutMs: number; readonly signal: AbortSignal },
+  opts: { readonly timeoutMs: number; readonly signal: AbortSignal; readonly requestId: string },
 ): Promise<SubmitResult> {
   if (!udsSocketPresent()) throw new DaemonUnreachable(udsSocketPath());
-  try { return await invokeLocal(verb, args, requestedBy, opts); }
+  // UNTIMED HERE: the door's own wait reads the holder, and the vessel's answer (or a person's interrupt) ends it.
+  try { return await invokeLocal(verb, args, requestedBy, { ...opts, untimed: true }); }
   catch (e) {
     if (e instanceof UdsUnreachable) throw new DaemonUnreachable(udsSocketPath());
     throw e;
@@ -56,7 +57,7 @@ async function invokeAbortable(
  */
 async function invokeInSession(
   verb: string, args: Record<string, unknown>, face: number,
-  opts: { readonly signal: AbortSignal },
+  opts: { readonly signal: AbortSignal; readonly requestId: string },
 ): Promise<Record<string, unknown>> {
   if (!udsSocketPresent()) throw new DaemonUnreachable(udsSocketPath());
   let session: Awaited<ReturnType<typeof openLocalSession>>;
@@ -68,7 +69,7 @@ async function invokeInSession(
   }
   const abort = () => { void session.close(); };
   opts.signal.addEventListener("abort", abort, { once: true });
-  const requestId = newRequestId();
+  const requestId = opts.requestId;
   try {
     const { answer } = await session.act(verb, args, { requestId });
     if (answer["status"] === "error") {
@@ -155,7 +156,31 @@ export const STORE_DOOR_PHASES: readonly BootPhase[] = [
   { name: "unbound", budgetMs: 10_000 },
   { name: "parked",  budgetMs: 45_000 },
   { name: "wedged",  budgetMs: 10_000 },
+  // SERVING spends no budget (No Global Now): the live seat took the act and answers for it, however long the island
+  // runs ahead of it. The figure names the PACING of the progress lines alone; the vessel's answer, its named refusal,
+  // or a person's interrupt ends the wait.
+  { name: "serving", budgetMs: 15_000, paced: true },
 ];
+
+/**
+ * A PERSON ENDED THE WAIT (an interrupt), never a clock and never a verdict on the act: the vessel took it under
+ * `requestId` and may still run it. The words name the id to read back.
+ */
+export class StoreDoorInterrupted extends Error {
+  override readonly name = "StoreDoorInterrupted";
+  constructor(readonly verb: string, readonly requestId: string, readonly face?: number) {
+    super(`"${verb}": the wait ended at your interrupt; the vessel holds the act under request ${requestId} and may still run it. ${face === undefined
+      ? `Read it back: \`lares vessel request ${requestId}\`.`
+      : `Read its receipt under request ${requestId} on a session of face h${face}.`}`);
+  }
+}
+
+/** The progress line a serving wait prints: the vessel serves, and the act waits behind the island. */
+function servingLine(verb: string, requestId: string, met: WhoHoldsAnswer | null): string {
+  const oldest = met?.oldest;
+  const behind = oldest && oldest.requestId !== requestId ? `; the oldest ask in flight: ${oldest.verb} under request ${oldest.requestId}` : "";
+  return `[lares] the vessel serves; your act "${verb}" (request ${requestId}) waits behind the island${behind}. Ctrl-C ends this wait, never the act.`;
+}
 
 /** The pid(s) named in a `heldAs`/`whoHolds` message (`"a vessel (pid 1234) holds…"`, or M4's wedged
  *  `"…still held by pid(s) 1234, 5678"`), or none. */
@@ -178,16 +203,36 @@ export async function throughStoreDoor(opts: {
   readonly face?:     number;
   /** Test seam — defaults to {@link STORE_DOOR_PHASES}. A real caller never overrides this. */
   readonly phases?:   readonly BootPhase[];
+  /** Where a serving wait's progress lines go; stderr when absent. */
+  readonly progress?: (line: string) => void;
+  /** A person's interrupt; absent, the door listens for SIGINT while it waits. Test seam for the interrupt. */
+  readonly interrupt?: AbortSignal;
 }): Promise<{ readonly output: Record<string, unknown>; readonly via: StoreDoorVia }> {
   if (opts.daemonUp ?? (await udsAlive())) {
     const phases = opts.phases ?? STORE_DOOR_PHASES;
-    const totalBudgetMs = phases.reduce((sum, p) => sum + p.budgetMs, 0);
+    // The vessel's own servo for the maintenance frame: the budgets of the phases a clock still bounds (a paced phase
+    // adds none). It rides the wire; this process sets no timer against it.
+    const totalBudgetMs = phases.reduce((sum, p) => sum + (p.paced === true ? 0 : p.budgetMs), 0);
+    const progress = opts.progress ?? ((line: string) => { process.stderr.write(`${line}\n`); });
+    const requestId = newRequestId();
     let settled = false;
     let lastMessage = "";
+    let lastMet: WhoHoldsAnswer | null = null;
     const controller = new AbortController();
+    // A PERSON ENDS THE WAIT, never a clock: the interrupt aborts this door's own socket and names the request id.
+    let interrupted = false;
+    let onInterrupt!: () => void;
+    const interruption = new Promise<never>((_, reject) => {
+      onInterrupt = () => { interrupted = true; reject(new StoreDoorInterrupted(opts.verb, requestId, opts.face)); };
+    });
+    interruption.catch(() => { /* raced below */ });
+    const sigint = (): void => { onInterrupt(); };
+    if (opts.interrupt) {
+      if (opts.interrupt.aborted) onInterrupt(); else opts.interrupt.addEventListener("abort", onInterrupt, { once: true });
+    } else process.once("SIGINT", sigint);
     const verbPromise = (opts.face !== undefined
-      ? invokeInSession(opts.verb, opts.args, opts.face, { signal: controller.signal })
-      : invokeAbortable(opts.verb, opts.args, await vesselDid(), { timeoutMs: totalBudgetMs, signal: controller.signal }).then((r) => {
+      ? invokeInSession(opts.verb, opts.args, opts.face, { signal: controller.signal, requestId })
+      : invokeAbortable(opts.verb, opts.args, await vesselDid(), { timeoutMs: totalBudgetMs, signal: controller.signal, requestId }).then((r) => {
         // The vessel's own name for the refusal rides out with its words: a floor, a retired bag, an abandoned id.
         if (r.status === "error") throw new RoutedVerbRefused(r.errorMessage ?? "verb failed", r.refusal?.reason);
         return summaryOutput(r) ?? {};
@@ -202,13 +247,16 @@ export async function throughStoreDoor(opts: {
       phase: async () => {
         const met = await whoHolds();
         lastMessage = met?.message ?? "";
+        lastMet = met;
+        // A serving reading prints nothing yet: a verb that answers inside one cadence leaves no line behind.
         return met === null ? "unbound" : met.phase;
       },
       holderPids: () => pidsNamedIn(lastMessage),
+      onPace: (phase) => { if (phase === "serving" && !settled) progress(servingLine(opts.verb, requestId, lastMet)); },
     }).then((): { readonly quiet: true } => ({ quiet: true }));
     let raced: { readonly quiet: true } | { readonly quiet: false; readonly v: Record<string, unknown> };
     try {
-      raced = await Promise.race([verbPromise.then((v): { readonly quiet: false; readonly v: Record<string, unknown> } => ({ quiet: false, v })), named]);
+      raced = await Promise.race([verbPromise.then((v): { readonly quiet: false; readonly v: Record<string, unknown> } => ({ quiet: false, v })), named, interruption]);
     } catch (err) {
       // THIS DOOR'S OWN DECISION CLOSES THE SOCKET AT ONCE (H1). A budgeted wait that names a holder and
       // gives up must not leave the verb's own flat timer holding a channel open for the rest of ITS budget
@@ -216,10 +264,19 @@ export async function throughStoreDoor(opts: {
       // (`owned-store.ts`'s `park`, once it stops masking EOF behind a paused, unshifted socket), rather than
       // running the verb on a late thaw against a caller that already told its operator this failed.
       controller.abort();
+      settled = true;   // the waiter stops polling at its next turn
       await verbPromise.catch(() => { /* the abort's own rejection is not a second fault; `err` already is one */ });
       throw err;
+    } finally {
+      if (opts.interrupt) opts.interrupt.removeEventListener("abort", onInterrupt);
+      else process.removeListener("SIGINT", sigint);
     }
-    return { output: raced.quiet ? await verbPromise : raced.v, via: "daemon" };
+    if (raced.quiet) {
+      // The waiter went quiet once the verb settled; an interrupt that lands first still ends the wait.
+      try { return { output: await Promise.race([verbPromise, interruption]), via: "daemon" }; }
+      catch (err) { if (interrupted) { controller.abort(); await verbPromise.catch(() => {}); } throw err; }
+    }
+    return { output: raced.v, via: "daemon" };
   }
   return { output: await opts.direct(), via: "direct" };
 }
@@ -303,6 +360,11 @@ export function storeFailure(err: unknown, fallback = "error"): { readonly code:
   }
   if (err instanceof StoreHeld) return { code: "store-held", message, hint: "another holder holds this store: a standing vessel, or a command mid-act. Run again once it has gone." };
   if (err instanceof SlowBootTimeout) return { code: "store-door-timeout", message, hint: "the vessel's store door gave no answer inside its budget. `lares vessel read` names what holds it." };
+  if (err instanceof StoreDoorInterrupted) {
+    return { code: "outcome-unknown", message, hint: err.face === undefined
+      ? `the act may still run; read it back with \`lares vessel request ${err.requestId}\` before running it again.`
+      : `the act may still run; read its receipt under request ${err.requestId} on a session of face h${err.face} before running it again.` };
+  }
   if (err instanceof SessionActAnswerLost) {
     return { code: "outcome-unknown", message, hint: `the act may have run; read its receipt under request ${err.requestId} on a session of face h${err.face} before running it again.` };
   }

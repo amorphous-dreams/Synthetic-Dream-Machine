@@ -82,13 +82,14 @@ import {
 } from "./sealed-chunk.js";
 import {
   authorizeFromManifest, bagLocatorOf, entryLocatorOf, factOfRecord, indexEntriesOf, joinProofOf, joinProven, judgeReseal, readBagLocator, readRecord,
-  recordIdOf, recordWriterSubject, signRecord,
+  recordIdOf, recordWriterSubject, signRecord, writerStandsStill,
   type BagLocator, type CheckpointBody, type HandOverBody, type KeyVersionBody, type KeyVersionPrivate, type LockboxRecord, type ManifestBody, type ManifestEntry,
   type ReadRecordRefusalName, type RecordBodies, type RecordId, type RecordKind, type RecordPrivates, type RecordSigner, type ResealBody,
   type ResealVerdict, type SealedRecord, type VerifiedRecord, type WriterStanding,
 } from "./sealed-records.js";
 import type { SeatRoll } from "./seat-duties.js";
 import type { SealedStore } from "./sealed-store-rest.js";
+import { yieldToHost, type HostTaskYield } from "./host-task.js";
 
 // ── Refusals ────────────────────────────────────────────────────────────────────────────────────
 export const HOLDER_REFUSALS = [
@@ -191,6 +192,9 @@ export interface ContentKeyHolderPorts {
   readonly readsAsFreshBase?: (plaintext: Uint8Array) => boolean;
   readonly apart?: KeysHeldApart;
   readonly random?: Pick<RandomProvider, "getRandomValues">;
+  /** The host-task yield a walk over the manifest shelf takes every `WALK_STRIDE` manifests, so the island answers its
+   *  other asks while one walk runs; `yieldToHost` when absent. It paces and decides nothing. */
+  readonly yieldHost?: HostTaskYield;
 }
 
 // ── Readings a door may show ────────────────────────────────────────────────────────────────────
@@ -357,6 +361,32 @@ export class ChainAbsent extends Error {
 }
 
 const ascending = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
+/** How many manifests a walk over the shelf verifies between two host-task yields. A count, never a clock. */
+const WALK_STRIDE = 64;
+/** The copies one pass over the manifest shelf carries, by id: every copy under one id shares its clear part, so its
+ *  founding and version. A walk verifies from these and never asks the store for one id again (an ask that lists the
+ *  shelf under a prefix: once per manifest, a walk quadratic in the shelf). */
+function copiesById(resting: readonly SealedRecord<"manifest">[]): Map<RecordId, SealedRecord<"manifest">[]> {
+  const out = new Map<RecordId, SealedRecord<"manifest">[]>();
+  for (const carried of resting) {
+    const id = recordIdOf("manifest", carried.body);
+    const copies = out.get(id);
+    if (copies === undefined) out.set(id, [carried]); else copies.push(carried);
+  }
+  return out;
+}
+/** Does a line stand on the same footing as the line an earlier reading counted: the same keys, byte for byte, the same
+ *  counted versions under the same records, the same roll? Then every manifest the earlier reading verified under it
+ *  verifies alike, and only the writer's standing may read otherwise. */
+function sameFooting(was: Line, now: Line): boolean {
+  if (was.keys.size !== now.keys.size || was.records.size !== now.records.size || (was.rolled === true) !== (now.rolled === true)) return false;
+  for (const [version, key] of now.keys) {
+    const held = was.keys.get(version);
+    if (held === undefined || held.length !== key.length || held.some((byte, at) => byte !== key[at])) return false;
+  }
+  for (const [version, record] of now.records) if (was.records.get(version)?.id !== record.id) return false;
+  return true;
+}
 const refuse = (refusal: HolderRefusalName, cause?: string): HolderRefusal => (cause === undefined ? { refusal } : { refusal, cause });
 const isRefusal = (value: object): value is HolderRefusal => "refusal" in value;
 const bare = (reader: string): string => reader.trim().toLowerCase().replace(/^0x/, "");
@@ -418,6 +448,13 @@ export class ContentKeyHolder {
     return write();
   }
 
+  /** Hand the walk's stretch back to the host, so the island answers its other asks; a lock that landed meanwhile ends
+   *  the walk before it reads on. */
+  async #yieldHost(): Promise<void> {
+    await (this.#ports.yieldHost ?? yieldToHost)();
+    if (this.#locked) throw new Error("the holder locked while it walked the manifest shelf");
+  }
+
   // ── The reading: lockboxes, then records ──────────────────────────────────────────────────────
   async #loaded(): Promise<Map<string, Bag>> {
     // NO CHAIN, NO READING. Under a standing whose chain does not stand yet, every record reads as no writer's, so a
@@ -446,8 +483,17 @@ export class ContentKeyHolder {
     return false;
   }
 
-  /** Read rest afresh: open every lockbox this seat opens, then count every record under the key it delivered. */
-  async #reload(): Promise<Map<string, Bag>> {
+  /**
+   * Read rest afresh: open every lockbox this seat opens, then count every record under the key it delivered.
+   *
+   * A LINE ON THE SAME FOOTING KEEPS WHAT IT VERIFIED. Where a founding's keys and counted records read as the earlier
+   * reading's did (`sameFooting`), the manifests that reading verified carry over, each asked its writer's standing again
+   * where the chain or the register set moved (`writerStandsStill`). The counted heads carry too, while the standing
+   * stands still and no manifest arrived (`arrived`): a manifest whose writer stood for nothing under the standing the
+   * earlier reading took may stand under this one, and an arrival may sit anywhere in the ledger, so either takes the
+   * count afresh at the next seal, from one pass over the shelf.
+   */
+  async #reload(arrived = false): Promise<Map<string, Bag>> {
     const { store, shore } = this.#ports;
     // The chain this reading is taken under: a reading taken under none (a vessel ask before any session) gives way
     // at the first `#loaded` once a chain stands.
@@ -475,6 +521,16 @@ export class ContentKeyHolder {
       }
     } catch (err) { forget(); throw err; }
     if (this.#locked) { forget(); throw new Error("the holder locked while it read its lockboxes"); }
+    const standingMoved = this.#bags === null || chain !== this.#bagsChain || registered !== this.#bagsRegistered;
+    for (const bag of bags.values()) for (const line of bag.lines.values()) {
+      const was = this.#bags?.get(bag.bagId)?.lines.get(line.locator);
+      if (was === undefined || !sameFooting(was, line)) continue;
+      for (const [id, manifest] of was.manifests) {
+        if (standingMoved && !writerStandsStill(manifest, { bagId: bag.bagId, standing: this.#ports.standing, followsRemoval: this.#follows })) continue;
+        line.manifests.set(id, manifest);
+      }
+      if (!standingMoved && !arrived) for (const [version, heads] of was.heads) line.heads.set(version, new Set(heads));
+    }
     // Keys the earlier reading held leave with it.
     for (const bag of this.#bags?.values() ?? []) for (const line of bag.lines.values()) for (const key of line.keys.values()) key.fill(0);
     this.#bags = bags;
@@ -684,18 +740,49 @@ export class ContentKeyHolder {
    * verified manifests no other verified manifest cites. Each head names its own parents, so the heads carry every
    * manifest the writer read, and a seal's work stays the same however long the ledger grows. The first seal of a
    * reading counts the heads from rest once; each manifest this vessel rests then moves them (`#rested`).
+   *
+   * THE COUNT VERIFIES FROM THE TOP DOWN, AND ONLY WHAT IT MUST. One pass over the shelf carries every copy by id, and
+   * the clear parts name each manifest's parents, so the citations read without opening anything. A manifest a VERIFIED
+   * manifest cites stands as no head whatever its own reading, so it never needs verifying here; a manifest that no
+   * manifest cites, or whose every citer failed its reading, verifies, and stands a head where it holds. The ids hash
+   * their parents, so the citations run acyclic and the walk ends. Over an honest ledger it verifies the heads alone; a
+   * reading of every manifest at rest costs ~5.5 ms apiece, ~48 s over 8,797 manifests inside the island.
    */
   async #cited(bag: Bag, line: Line, key: ContentKey, keyVersion: KeyVersionId): Promise<RecordId[]> {
     let heads = line.heads.get(keyVersion);
     if (heads === undefined) {
-      const verified: VerifiedRecord<"manifest">[] = [];
-      for (const carried of await this.#ports.store.records("manifest")) {
-        if (carried.body.bag !== line.locator || carried.body.keyVersion !== keyVersion) continue;
-        const manifest = await this.#manifest(bag, line, key, recordIdOf("manifest", carried.body));
-        if (manifest !== null) verified.push(manifest);
+      // ONE PASS: the copies the shelf's one listing carries verify here, by id, and no manifest asks the store again.
+      const mine = new Map<RecordId, SealedRecord<"manifest">[]>();
+      for (const [id, copies] of copiesById(await this.#ports.store.records("manifest"))) {
+        const { body } = copies[0]!;
+        if (body.bag === line.locator && body.keyVersion === keyVersion) mine.set(id, copies);
       }
-      const cited = new Set(verified.flatMap((manifest) => manifest.body.parents));
-      heads = new Set(verified.map((manifest) => manifest.id).filter((id) => !cited.has(id)));
+      /** Per manifest: how many of its citers stand undecided, and whether a verified one cites it. */
+      const citedBy = new Map<RecordId, { pending: number; byVerified: boolean }>();
+      for (const copies of mine.values()) for (const parent of new Set(copies[0]!.body.parents)) {
+        if (!mine.has(parent)) continue;
+        const tally = citedBy.get(parent) ?? { pending: 0, byVerified: false };
+        tally.pending += 1;
+        citedBy.set(parent, tally);
+      }
+      const todo = [...mine.keys()].filter((id) => !citedBy.has(id)).sort(ascending);
+      heads = new Set<RecordId>();
+      let walked = 0;
+      while (todo.length > 0) {
+        const id = todo.pop()!;
+        const copies = mine.get(id)!;
+        if (++walked % WALK_STRIDE === 0) await this.#yieldHost();
+        const manifest = await this.#manifest(bag, line, key, id, copies);
+        if (manifest !== null) heads.add(id);
+        for (const parent of new Set(copies[0]!.body.parents)) {
+          const tally = citedBy.get(parent);
+          if (tally === undefined) continue;
+          tally.pending -= 1;
+          if (manifest !== null) tally.byVerified = true;
+          // Every citer failed its reading: the parent stands uncited by anything verified, so it reads in turn.
+          else if (tally.pending === 0 && !tally.byVerified) todo.push(parent);
+        }
+      }
       line.heads.set(keyVersion, heads);
     }
     return [...heads].sort(ascending);
@@ -974,11 +1061,12 @@ export class ContentKeyHolder {
     });
   }
 
-  /** A manifest this vessel verified under one counted version's key, by its id. */
-  async #manifest(bag: Bag, line: Line, key: ContentKey, id: RecordId): Promise<VerifiedRecord<"manifest"> | null> {
+  /** A manifest this vessel verified under one counted version's key, by its id. `copies`: the copies under that id a
+   *  walk's one pass already carries; absent, the store reads them by id. */
+  async #manifest(bag: Bag, line: Line, key: ContentKey, id: RecordId, copies?: readonly SealedRecord<"manifest">[]): Promise<VerifiedRecord<"manifest"> | null> {
     const known = line.manifests.get(id);
     if (known) return known;
-    for (const carried of await this.#ports.store.record("manifest", id)) {
+    for (const carried of copies ?? await this.#ports.store.record("manifest", id)) {
       const read = readRecord("manifest", carried, { bagId: bag.bagId, locator: line.locator, key, standing: this.#ports.standing, followsRemoval: this.#follows, ...(this.#ports.apart ? { apart: this.#ports.apart } : {}) });
       if ("record" in read) { line.manifests.set(id, read.record); return read.record; }
     }
@@ -1152,6 +1240,7 @@ export class ContentKeyHolder {
       const bag = (await this.#loaded()).get(bagId);
       if (!bag) return refuse("bag-unfounded");
       const out: ResealJudgement[] = [];
+      let resting: Map<RecordId, SealedRecord<"manifest">[]> | null = null;
       for (const carried of await this.#ports.store.records("re-seal")) {
         const id = recordIdOf("re-seal", carried.body);
         const line = bag.lines.get(carried.body.bag);
@@ -1166,9 +1255,10 @@ export class ContentKeyHolder {
         for (const version of [carried.body.replaced, carried.body.keyVersion]) {
           const versionKey = counted.get(version);
           if (versionKey === undefined) continue;
-          for (const m of await this.#ports.store.records("manifest")) {
-            if (m.body.bag !== line.locator || m.body.keyVersion !== version) continue;
-            const verified = await this.#manifest(bag, line, versionKey, recordIdOf("manifest", m.body));
+          resting ??= copiesById(await this.#ports.store.records("manifest"));
+          for (const [id, copies] of resting) {
+            if (copies[0]!.body.bag !== line.locator || copies[0]!.body.keyVersion !== version) continue;
+            const verified = await this.#manifest(bag, line, versionKey, id, copies);
             if (verified !== null) manifests.push(verified);
           }
         }
@@ -1394,7 +1484,7 @@ export class ContentKeyHolder {
       for (const record of args.records ?? []) { const id = await this.#rest(() => store.putRecord(record)); if (record.kind === "manifest") arrived.add(id); }
       const before = new Set<KeyVersionId>();
       for (const bag of this.#bags?.values() ?? []) for (const line of bag.lines.values()) for (const version of this.#usable(line)) before.add(version);
-      const bags = await this.#reload();
+      const bags = await this.#reload(arrived.size > 0);
       // A manifest enters the index once this vessel verified it under a version it counted: each manifest that
       // just arrived, and each resting manifest of a version this reading counted for the first time.
       await this.#indexAfter(bags, before, arrived);
@@ -1533,15 +1623,17 @@ export class ContentKeyHolder {
    *  every manifest of a version outside `before` (a version this reading counted for the first time). */
   async #indexAfter(bags: Map<string, Bag>, before: ReadonlySet<KeyVersionId>, arrived: ReadonlySet<RecordId>): Promise<void> {
     const { store } = this.#ports;
-    const resting = await store.records("manifest");
+    const resting = copiesById(await store.records("manifest"));
+    let walked = 0;
     for (const bag of bags.values()) for (const line of bag.lines.values()) {
-      for (const carried of resting) {
-        const version = carried.body.keyVersion;
-        const key = carried.body.bag === line.locator && line.lineage.has(version) ? line.keys.get(version) : undefined;
+      for (const [id, copies] of resting) {
+        const { body } = copies[0]!;
+        const version = body.keyVersion;
+        const key = body.bag === line.locator && line.lineage.has(version) ? line.keys.get(version) : undefined;
         if (key === undefined) continue;
-        const id = recordIdOf("manifest", carried.body);
         if (!arrived.has(id) && before.has(version)) continue;
-        const manifest = await this.#manifest(bag, line, key, id);
+        if (++walked % WALK_STRIDE === 0) await this.#yieldHost();
+        const manifest = await this.#manifest(bag, line, key, id, copies);
         if (manifest !== null) await this.#rest(() => store.putIndexEntries(indexEntriesOf(manifest)));
       }
     }

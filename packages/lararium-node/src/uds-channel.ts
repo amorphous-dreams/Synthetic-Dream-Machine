@@ -868,6 +868,33 @@ export function serveUdsFront(a: {
   const refuseSession = (sock: Socket): void => {
     try { sock.end(JSON.stringify({ kind: "session:refused", refusal: "recomposing" }) + "\n"); } catch { /* gone */ }
   };
+  /**
+   * THE ASKS IN FLIGHT, oldest first: each socket's latest request id and verb (a one-shot line, or a session's act),
+   * until its socket closes. The holder probe names the oldest, so a caller waiting behind it reads whose act it waits
+   * on, never a deadline.
+   */
+  const asks = new Map<Socket, { readonly requestId: string; readonly verb: string }>();
+  const noteAsk = (parsed: unknown, sock: Socket): void => {
+    if (!parsed || typeof parsed !== "object") return;
+    const frame = parsed as { requestId?: unknown; verb?: unknown; act?: unknown; op?: unknown };
+    if (typeof frame.requestId !== "string") return;
+    const verb = typeof frame.verb === "string" ? frame.verb : typeof frame.act === "string" ? frame.act : typeof frame.op === "string" ? frame.op : "?";
+    if (!asks.has(sock)) sock.once("close", () => { asks.delete(sock); });
+    asks.set(sock, { requestId: frame.requestId, verb });
+  };
+  /**
+   * THE HOLDER PROBE (`{holder:"?"}`) ANSWERS AT ONCE, from the front, whatever the seat is running: a seated front
+   * reads `serving`, with the asks it holds in flight and the oldest of them; an unseated one (a recomposition) reads
+   * as held but not serving. The probe dispatches nothing.
+   */
+  const answerProbe = (sock: Socket): void => {
+    const oldest = asks.values().next().value ?? null;
+    const serving = seat !== null && !stopped;
+    const errorMessage = serving
+      ? `the vessel (pid ${process.pid}) serves the store; ${asks.size} ask(s) in flight${oldest ? `, the oldest ${oldest.verb} under request ${oldest.requestId}` : ""}`
+      : `a vessel (pid ${process.pid}) holds the store and recomposes; no seat serves verbs yet`;
+    try { sock.end(JSON.stringify({ holder: "vessel", serving, pid: process.pid, inFlight: asks.size, oldest, errorMessage }) + "\n"); } catch { /* gone */ }
+  };
   a.claim.serve((sock: Socket) => {
     let buf = "";
     let read = true;
@@ -884,10 +911,12 @@ export function serveUdsFront(a: {
         try { parsed = JSON.parse(line); }
         catch { try { sock.end(JSON.stringify({ status: "error", errorMessage: "bad invocation json" }) + "\n"); } catch { /* gone */ } read = false; return; }
         if (!sessionMode) {
+          if (!!parsed && typeof parsed === "object" && (parsed as { holder?: unknown }).holder === "?") { read = false; answerProbe(sock); return; }
           sessionMode = !!parsed && typeof parsed === "object" && (parsed as { op?: unknown }).op === "session:open";
           if (!sessionMode) read = false;
+          noteAsk(parsed, sock);
           hand(parsed, sock);
-        } else if (seat?.handleSessionFrame) seat.handleSessionFrame(parsed, sock);
+        } else if (seat?.handleSessionFrame) { noteAsk(parsed, sock); seat.handleSessionFrame(parsed, sock); }
         else { read = false; refuseSession(sock); }
       }
     });
