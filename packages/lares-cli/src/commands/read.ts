@@ -20,7 +20,7 @@ import { stopIncumbent, probePort } from "../port-control.js";
 import { udsAlive } from "../local-connector.js";
 import { existsSync, statSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import { palaceOrgans, organHealthy, guestMempalaceOrgan, readMemeticWikitextCoupling, runDoctor, formatDoctorReport, readFloorShadowFile, quarantineHolds, releaseQuarantinedDoc, QUARANTINE_RELEASE_ACT, type QuarantineReleaseAct } from "@lararium/node";
+import { palaceOrgans, organHealthy, guestMempalaceOrgan, readMemeticWikitextCoupling, runDoctor, formatDoctorReport, readFloorShadowFile, quarantineHolds, releaseQuarantinedDoc, QUARANTINE_RELEASE_ACT, type QuarantineReleaseAct, type EngineMeterReading } from "@lararium/node";
 import { floorShadowLine } from "@lararium/mesh";
 import { read as readIntent, Ledger } from "../reality-tunnel/engine.js";
 import { homeItems } from "../reality-tunnel/catalog.js";
@@ -115,8 +115,8 @@ export async function cmdStop(args: ParsedArgs): Promise<number> {
     holderAlive: () => udsAlive(dataDir, 300),
     onPastGrace: (pids) => console.log(
       pids.length > 0
-        ? `[lares] :${port} is past its grace, still held by pid(s) ${pids.join(", ")}${cut ? " — delivering the operator's cut signal now" : " — waiting on its own exit, never a forced kill"}`
-        : `[lares] :${port} is past its grace, held by no discoverable pid${cut ? " — cut has nobody to reach" : " — waiting on its own exit, never a forced kill"}`,
+        ? `[lares] :${port} runs past its grace, still held by pid(s) ${pids.join(", ")}${cut ? " — delivering the operator's cut signal now" : " — waiting on its own exit, never a forced kill"}`
+        : `[lares] :${port} runs past its grace, held by no discoverable pid${cut ? " — cut has nobody to reach" : " — waiting on its own exit, never a forced kill"}`,
     ),
   });
   emit(args, {
@@ -204,7 +204,7 @@ async function releaseHeldDoc(args: ParsedArgs, storageDir: string, documentId: 
       ? console.log(r.act === "restored"
         ? `[lares] released ${documentId}: the bytes returned from ${r.from}; the next stand probes them again`
         : r.act === "kept"
-          ? `[lares] released ${documentId}: what stands under the id stays; any moved-aside copy rests where it was`
+          ? `[lares] released ${documentId}: what stands under the id stays; any moved-aside copy rests where it lay`
           : `[lares] released ${documentId}: the id starts empty under its own name; the bytes stay aside`)
       : console.error(`lares vessel read vessel --release: ${r.why}`),
   });
@@ -221,7 +221,7 @@ export async function cmdRead(given: ParsedArgs): Promise<number> {
   // so it refuses by name rather than answering as the bare node read.
   const lens = args.positional[0];
   if (lens !== undefined && lens !== "vessel") {
-    console.error(`lares vessel read: unknown lens "${lens}" (the one lens is \`vessel\`; bare \`read\` is the node health reading)`);
+    console.error(`lares vessel read: unknown lens "${lens}" (the door answers one lens, \`vessel\`; bare \`read\` gives the node health reading)`);
     return 2;
   }
   // --palaces: the palace-organ health table (re-runnable; same registry as setup/teardown).
@@ -231,6 +231,44 @@ export async function cmdRead(given: ParsedArgs): Promise<number> {
   if (args.positional[0] === "vessel") return cmdReadVessel(args);
   // Bare `lares vessel read` — node health, the reading an operator wants most often.
   return cmdReadNode(args);
+}
+
+const MiB = 1024 * 1024;
+const GiB = 1024 * MiB;
+const size = (bytes: number): string => (bytes >= GiB ? `${Number((bytes / GiB).toFixed(2))} GiB` : `${Math.round(bytes / MiB)} MiB`);
+
+/** One line of the vessel's engine meter (`engine-meter`): the engine against its ceiling, node's heap, and the whole process's wasm. */
+export function engineMeterLine(r: EngineMeterReading): string {
+  const engine = r.wasm === null
+    ? `${r.isolate} engine unread`
+    : `${r.isolate} engine ${size(r.wasm.bytes)} of ${size(r.wasm.ceilingBytes)} (${Math.round(r.wasm.fraction * 100)}%, ${r.wasm.pages.toLocaleString("en-US")} pages)`;
+  const parts = [
+    engine,
+    `heap ${size(r.node.heapUsed)} of ${size(r.node.heapTotal)}`,
+    `external ${size(r.node.external)}`,
+    `rss ${size(r.node.rss)} (peak ${size(r.node.maxRss)})`,
+  ];
+  if (r.process !== null) {
+    parts.push("unread" in r.process
+      ? `process wasm unread (${r.process.unread})`
+      : `process wasm ${size(r.process.bytes)} in ${r.process.memories.length} memories, ${r.process.residentBytes === null ? "resident unread" : `${size(r.process.residentBytes)} resident`}`);
+  }
+  return parts.join(" · ");
+}
+
+/**
+ * THE ENGINE METER, read off the vessel's health face (`readiness-face`): its `engine` reading, or null where no vessel answers
+ * on the port, its answer carries none, or it answers past a short bound. A read that cannot reach it never fails.
+ */
+async function readEngineMeter(port: number): Promise<EngineMeterReading | null> {
+  try {
+    const res = await fetch(`http://127.0.0.1:${port}/api/health`, { signal: AbortSignal.timeout(2_000) });
+    const body = await res.json() as { engine?: unknown };
+    const engine = body.engine as EngineMeterReading | null | undefined;
+    return engine && typeof engine === "object" && typeof engine.node === "object" ? engine : null;
+  } catch {
+    return null;
+  }
 }
 
 /** Node health — bootstrap presence, storage size, port probe, retention. Pure local inspection. */
@@ -275,6 +313,9 @@ async function cmdReadNode(args: ParsedArgs): Promise<number> {
   // THE FLOOR SHADOW COUNT (backlog-awakens 3a): the tally each boot's mounts keep beside the vessel store, read from the
   // file whether or not the vessel stands, keyed by floor: the line names the current floor's count and sets older floors
   // aside. The operator flips mounts onto the floor once the current floor reads clean.
+  // THE ENGINE METER (`engine-meter`): where the vessel answers health on its port, its engine's wasm memory and node's heap.
+  const engine = portInUse ? await readEngineMeter(port) : null;
+  data["engine"] = engine;
   const shadow = readFloorShadowFile(storage);
   data["floorShadow"] = shadow;
   const shadowLine = floorShadowLine(shadow);
@@ -317,6 +358,7 @@ async function cmdReadNode(args: ParsedArgs): Promise<number> {
       console.log(`  storage:     ${storageStr}`);
       console.log(`  port ${port}:  ${portInUse ? "in use (node likely running)" : "free"}`);
       if (residencyLine) console.log(`  residency:   ${residencyLine}`);
+      if (engine) console.log(`  engine:      ${engineMeterLine(engine)}`);
       console.log(`  ${shadowLine}`);
       console.log(guards === null
         ? `  memory:      the retention guards read nowhere: ${guardsUnread ?? "unread"}`

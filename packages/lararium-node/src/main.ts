@@ -100,6 +100,7 @@ import { readBulbArtifact } from "./bulb.js";
 import { genesisSeedCid } from "./genesis-artifact.js";
 import { createReadinessState, mountReadinessFace, markReadyOnceStanding } from "./readiness-face.js";
 import { ISOLATE_ENGINE, tapRepoLogs } from "./engine-watch.js";
+import { createEngineMeter, readProcessWasm, type EngineMeter } from "./engine-meter.js";
 import { armFallKeeper, clearEngineFalls, heldInFlight, keepFallDown, readEngineFalls, HELD_HAND_ACT, type FallKeeper } from "./engine-fall.js";
 import { readVesselLife } from "./vessel-life.js";
 import type { ShoreFlushReading } from "./shore-verb.js";
@@ -213,6 +214,11 @@ interface ReceiptsRingConfig { readonly receipts?: { readonly ring?: { readonly 
  * fall (`engine-fall`): flush, then exit once, or stay down past the house's restart count.
  */
 const engineWatch = ISOLATE_ENGINE;
+/**
+ * THE ENGINE METER (`engine-meter`), armed at the top of `main` while the heap stays small (its one inspector walk finds the
+ * engine's memory then): health reads it as `engine`, and it logs a line as the engine crosses each mark of its ceiling.
+ */
+let engineMeter: EngineMeter | null = null;
 /** The fall's keeper, armed at the top of `main`; the boot's own rejection asks it first. */
 let fallKeeper: FallKeeper | null = null;
 /** The hold's tick: the longest a Node timer takes. It decides nothing; it only keeps a stayed-down process's loop open. */
@@ -221,6 +227,7 @@ const HOLD_TICK_MS = 2 ** 31 - 1;
 async function main(): Promise<void> {
   // The Repo catches an inbound message's throw and logs it; the tap hands that error to the watch (the network path).
   setLoggerFactory(tapRepoLogs(engineWatch));
+  engineMeter = createEngineMeter({ isolate: "main", processWasm: readProcessWasm, log: (line) => console.warn(`[lararium] ${line}`) }).arm();
   const { port, storageDir, genesisDir, genesis, wikiId, rootDir, catalogUrl, askedStanding, origins } = parseArgs();
   // A FALLEN ENGINE FLUSHES, STOPS AND RISES ONCE (`engine-fall`), armed before anything loads a document: every island that
   // mounts a disk shore flushes, then the process exits `ENGINE_FALL_EXIT` so the supervisor raises a fresh engine; past the
@@ -315,7 +322,7 @@ async function main(): Promise<void> {
   // Health names only the local boot posture. It carries no peer, document,
   // Oracle, Pronaos, or causal truth and begins unavailable until setup stands.
   // It binds on a lararium alone; a herm describes nothing to a stranger.
-  const readinessState = createReadinessState(engineWatch);
+  const readinessState = createReadinessState(engineWatch, () => engineMeter?.read() ?? null);
   const readinessFace = mountReadinessFace({ httpServer, state: readinessState, standing: askedStanding, dispatcher });
   // The Pronaos lights only from two explicit operator inputs, and only on a lararium. No build-dir
   // discovery occurs; absent inputs leave the existing Node faces unchanged.

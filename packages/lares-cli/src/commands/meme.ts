@@ -106,7 +106,7 @@ import { storeVerb } from "../store-door.js";
 import { LocalWaitExpired } from "../local-connector.js";
 import { readVerbOutcome, summaryOutput } from "../verb-result.js";
 import { emit, exitFor } from "../render.js";
-import { helpLines } from "../command-help.js";
+import { helpDoor, helpLines } from "../command-help.js";
 import {
   bccOffset, duplicateKeyOffsets, frameFaultOffset, headOffset, postEotOffset, problemLine, type ProblemSeverity,
 } from "../problems.js";
@@ -131,8 +131,10 @@ export interface ProjectPlan {
   readonly container: Record<string, string>;
 }
 
-const SUBS = ["normalize", "check", "sitting", "project", "promote", "offer"] as const;
-type Sub = typeof SUBS[number];
+/** Every verb the meme door answers; `offer` names its own (bare `offer <uri…>` makes one). */
+export const MEME_VERBS = { normalize: null, check: null, sitting: null, project: null, promote: null, offer: ["show", "promote"] } as const;
+const SUBS = Object.keys(MEME_VERBS) as ReadonlyArray<keyof typeof MEME_VERBS>;
+type Sub = keyof typeof MEME_VERBS;
 
 function usage(): void { for (const line of helpLines("meme")) console.error(line); }
 
@@ -146,7 +148,7 @@ function usage(): void { for (const line of helpLines("meme")) console.error(lin
  */
 export function projectPlan(args: ParsedArgs): ProjectPlan {
   const source = args.positional[1];
-  if (!source) throw new UsageError("a source is required: a file, or a lar: uri");
+  if (!source) throw new UsageError("the verb needs a source: a file, or a lar: uri");
   const to = typeof args.options["to"] === "string" ? args.options["to"].trim() : "";
   if (!(PROJECT_TARGETS as readonly string[]).includes(to)) {
     throw new UsageError(`--to names the target, one of ${PROJECT_TARGETS.join(" · ")}${to ? ` (got "${to}")` : ""}`);
@@ -187,7 +189,8 @@ export async function cmdMeme(args: ParsedArgs): Promise<number> {
     if (err instanceof UsageError) {
       const msg = err.message;
       const code = msg.startsWith("face-malformed:") ? "face-malformed" : "usage";
-      emit(args, { ok: false, error: { code, message: msg }, human: () => console.error(`lares meme ${sub}: ${msg}`) });
+      // A usage refusal ends with the door's own lines, so the cure sits under the fault (help-is-the-refusal).
+      emit(args, { ok: false, error: { code, message: msg }, human: () => { console.error(`lares meme ${sub}: ${msg}`); if (code === "usage") for (const line of helpLines(helpDoor("meme", args.positional))) console.error(line); } });
       return exitFor("usage");
     }
     // M3: a LOCAL WAIT ENDING (LocalWaitExpired, including the vessel's own folded-in
@@ -985,7 +988,7 @@ async function memePromote(args: ParsedArgs): Promise<number> {
       ok: false, error: { code, message: outcome.reason },
       human: () => {
         console.error(`lares meme promote: ${outcome.reason}`);
-        if (code === "cap-denied") console.error("  promotion-down is the kahu-cabal's act — nothing moved, and the carrier stands where it stood");
+        if (code === "cap-denied") console.error("  promotion-down belongs to the kahu-cabal's hand — nothing moved, and the carrier stands where it stood");
       },
     });
     return exitFor(code);

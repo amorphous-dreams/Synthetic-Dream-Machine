@@ -22,6 +22,12 @@ import { readKahuCabalBoard } from "./commands/nexus-cabal.js";
 import { heldCharterSeat } from "./commands/offer-retire.js";
 import { join } from "node:path";
 import { randomUUID } from "node:crypto";
+import { createEngineMeter } from "./engine-meter.js";
+
+// THE ISLAND'S OWN ENGINE METER (`engine-meter`): this worker runs its own isolate and so its own Automerge engine, the one
+// INGEST lands every wave in. Armed here, at load, while the heap stays small, it logs a line as that engine crosses each mark
+// of its ceiling; the vessel's health reads the main isolate's meter and every process wasm memory beside it.
+createEngineMeter({ isolate: "daemon island", log: (line) => console.warn(`[daemon] ${line}`) }).arm();
 
 // The Boundary-1 inversion, in the worker: keyhive stays fs-blind, node supplies the writer that lands the
 // keyhive Archive in the sovereign identity home. This island holds no vessel key, so the writer HANDS the bytes

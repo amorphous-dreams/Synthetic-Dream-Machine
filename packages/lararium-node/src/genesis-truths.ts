@@ -5,7 +5,7 @@
  * D1: a seed on disk that differs from the founding record stands as an OFFER. The boot names it and serves the
  * founding record unchanged; nothing moves at boot, and lay moves canon into the bags, never the founding record.
  * The comparison itself lives in the mesh (`genesis-compare`, pure); this file reads the seed off disk and words
- * the line the boot and `lares floor status` print. It moves nothing.
+ * the line the boot and `lares vessel floor status` print. It moves nothing.
  *
  * IT NEVER THROWS. The boot prints this read inline, and a read-only print must never stop a boot: a null record, a blob row
  * the fold cannot read, or a seed carrying one answers an unread reading (`unread: <reason>`), which the line prints as

@@ -136,7 +136,7 @@ export async function cmdFound(args: ParsedArgs): Promise<number> {
 async function foundHearth(args: ParsedArgs, at: { storageDir: string; genesisDir: string; slots: readonly SlotSpec[] }): Promise<number> {
   const name = typeof args.options["name"] === "string" ? args.options["name"].trim() : "";
   const restoreFile = typeof args.options["restore"] === "string" ? args.options["restore"] : undefined;
-  if (name.length === 0 && restoreFile === undefined) throw new HearthFoundingRefused("persona zero needs a private label: --name '<label>'. Nothing was written.");
+  if (name.length === 0 && restoreFile === undefined) throw new HearthFoundingRefused("persona zero needs a private label: --name '<label>'. Nothing landed on disk.");
   const restore = restoreFile === undefined ? undefined : await openRestoreBundle(restoreFile);
   const chair = typeof args.options["chair"] === "string" ? args.options["chair"].trim() : "";
   // The card's terminal read-back rides the one cold-card printer. It loads here, at the act, so a founding's
@@ -191,10 +191,10 @@ async function foundHearth(args: ParsedArgs, at: { storageDir: string; genesisDi
 async function openRestoreBundle(file: string): Promise<{ readonly sealedBody: Uint8Array; readonly bundleKey: Uint8Array }> {
   let bytes: Uint8Array;
   try { bytes = new Uint8Array(readFileSync(file)); }
-  catch (err) { throw new HearthFoundingRefused(`bundle-unreadable: no bundle reads at ${file} (${(err as NodeJS.ErrnoException).code ?? "unreadable"}). Nothing was written.`); }
+  catch (err) { throw new HearthFoundingRefused(`bundle-unreadable: no bundle reads at ${file} (${(err as NodeJS.ErrnoException).code ?? "unreadable"}). Nothing landed on disk.`); }
   const read = readFaceBundle(bytes);
-  if (read.reading !== "readable") throw new HearthFoundingRefused(`bundle-malformed: ${file} reads as no backup bundle (${read.why}). Nothing was written.`);
+  if (read.reading !== "readable") throw new HearthFoundingRefused(`bundle-malformed: ${file} reads as no backup bundle (${read.why}). Nothing landed on disk.`);
   const opened = await openBundleKey(read.tree, await gatherBundle(), nativeKdf);
-  if (opened.reading !== "opens") throw new HearthFoundingRefused(`no-slot-opens: no route of the bundle opens under what was presented${opened.notes.length ? ` (${opened.notes.join("; ")})` : ""}. Nothing was written.`);
+  if (opened.reading !== "opens") throw new HearthFoundingRefused(`no-slot-opens: no route of the bundle opens under what the hand presented${opened.notes.length ? ` (${opened.notes.join("; ")})` : ""}. Nothing landed on disk.`);
   return { sealedBody: read.sealedBody, bundleKey: opened.bundleKey };
 }

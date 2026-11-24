@@ -53,20 +53,25 @@ import { runVerb } from "../verb-call.js";
 import { summaryOutput } from "../verb-result.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
+import { tableCovers } from "../verb-table.js";
 
 function usage(args: ParsedArgs, detail?: string): number {
   return refuseUsage(args, "cabal", helpLines("cabal"), detail);
 }
 
+/** Every verb the cabal door answers. */
+export const CABAL_VERBS = ["face", "vouch", "join", "feed", "clock"] as const;
+
 /** `lares cabal …` — the realm doors: the JOIN axis, the offering, and the clock. */
 export async function cmdCabal(args: ParsedArgs): Promise<number> {
-  switch (args.positional[0]) {
+  const v = args.positional[0] as (typeof CABAL_VERBS)[number] | undefined;
+  switch (v) {
     case "face":  return await cmdFace(args);
     case "vouch": return await cmdVouch(args);
     case "join":  return await cmdJoin(args);
     case "feed":  return await cmdFeed(args);
     case "clock": return await cmdClock(args);
-    default:      return usage(args, args.positional[0] ? `unknown sub-verb "${args.positional[0]}"` : undefined);
+    default:      return usage(args, v ? `unknown sub-verb "${tableCovers(v)}"` : undefined);
   }
 }
 

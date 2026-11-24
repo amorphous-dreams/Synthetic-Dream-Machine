@@ -115,7 +115,7 @@ import { bootFacePlanes, bootDaemonUrl }               from "./boot-face-planes.
 import { seatHouseCanonFromCheckout, standKahuCanon, kahuHandAtWire, kahuProtectedHolder, kahuStandingBook, protectedDocsOver, watchKahuStanding, type KahuCanonDocs } from "./kahu-realm.js";
 import { dialRelationOf, seatDialPeer, unseatDialPeer, type DialRelation, type DialSeatMaps } from "./dial-relation.js";
 import { assemblePersonaGroupRing }       from "@lararium/keyhive";
-import { faceNamedCustodyWrite } from "./face-named-custody-write.js";
+import { custodyOpens, duringLight, faceNamedCustodyWrite } from "./face-named-custody-write.js";
 import { fenceReceiptAtStop } from "./stop-receipt-fence.js";
 import { daemonGenesisDir, daemonBagsDir, loadLaresConfig, tempConsentedSlugs } from "./lares-config.js";
 import { projectionRoots, workspaceRootsOf, workbenchFolders, litFaceDiskMirrors, FACES_PROJECTION_DIR, REALMS_PROJECTION_DIR, faceRoot, type WorkbenchFolder } from "./bag-paths.js";
@@ -178,7 +178,7 @@ import { readFacePersonaRecords, proveSiblingFromRest, SIBLING_PLANE_USE } from 
 import { personaGroupDigest } from "./persona-group-file.js";
 import { CustodyLocked, WardNeedsFreshUnlock } from "./custody-holder.js";
 import { servesFaceOfGroup, standingCustody, custodyFloorKeyDoor, unlockedFaceOrdinals, watchCustodyOpened } from "./custody-seat.js";
-import { joinedFaceAuth, type JoinedFaceAuthPorts } from "./joined-face-auth.js";
+import { joinedFaceAuth, refreshLitArchives, type JoinedFaceAuthPorts } from "./joined-face-auth.js";
 import { drainPlans, faceLives, type FaceLives, type FaceLit, type FacesClosed } from "./face-lifecycle.js";
 import { adoptFirstLit, faceLend } from "./face-lend.js";
 import { fleetLineageOf } from "./fleet-lineage.js";
@@ -1055,6 +1055,10 @@ async function prepareNodeBootOn(
     if (n > 0) console.log(`[faces] ${n} Synced tree base(s) move with ${from} -> ${to}`);
   };
   const siblingFaces = new Map<string, { readonly ordinal: number; readonly relation: string | null; readonly face: string | null }>();
+  /** THE FACES WHOSE ISLAND LIGHT IS IN FLIGHT, by PersonaGroup, each with its light's own `live()`: proved open by that light's
+   *  custody read, the face takes its Archive write while the island stands its hive and the light still reads live (the
+   *  sibling's archive floor rests after its card, before its session stands). Only the light that opened a window shuts it. */
+  const lightingCustody = new Map<string, () => boolean>();
   /** EACH LIT SIBLING'S PROVEN PLANES (sibling-plane-mount): its intents and persona planes file under its own face while it stands
    *  lit, under none once dark, and leave whole at its close; only a proof under its own log and KEL mounts them. */
   const siblingPlanes = siblingPlaneMounts();
@@ -1753,7 +1757,7 @@ async function prepareNodeBootOn(
   // that opens at that stand, through its seat's opener, stands the key too), so the island's floor gate, the host's working
   // layer and the floor verbs all read the key the control document read under.
   let floorKeyGrant = standFloorKey();
-  const stopFloorKeyOpened = standingCustody()?.onOpened?.(() => { try { standFloorKey(); } catch (e) { console.warn(`[floor] the floor's rest key did not stand at the custody's open: ${e instanceof Error ? e.message : String(e)}`); } }) ?? null;
+  const stopFloorKeyOpened = standingCustody()?.onOpened?.(() => { try { standFloorKey(); } catch (e) { console.warn(`[floor] the floor's rest key did not stand when the custody opened: ${e instanceof Error ? e.message : String(e)}`); } }) ?? null;
   stood.push({ what: "the floor key watch", down: () => { stopFloorKeyOpened?.(); } });
   // R2's booking, by the change's own writer (T4): a save of a sealed bag's document reads its change's actor off its
   // bytes; a change this replica made books the session whose call stands, and a peer's change books its peer writer
@@ -2822,12 +2826,13 @@ async function prepareNodeBootOn(
   // holds. The lift alone seats it; at the floor none stands, so an island's ask answers unwritten.
   // EACH ARCHIVE NAMES ITS FACE (`faceNamedCustodyWrite`): the island names the PersonaGroup of the hive that exported the
   // bytes, and the write lands in that face's own row or nowhere; the vessel never picks a row for a faceless ask. The
-  // mounted face (`openDaemon` names it) and each lit sibling with a session stand open; any other face takes no write. The
+  // mounted face (`openDaemon` names it), each lit sibling with a session, and a face whose island light is in flight (its
+  // archive floor rests after its card, before its session stands) stand open; any other face takes no write. The
   // seal itself proves the bytes are that face's own identity (`persistVeilArchive`), so a misnamed ask writes nothing either.
   let mountedCustodyGroup: string | null = null;
   const liftCustodyWrite: CustodyWriter | undefined = sovereign
     ? faceNamedCustodyWrite({
-      opens: (face) => face === mountedCustodyGroup || (siblingFaces.has(face) && siblingSessions.has(face)),
+      opens: (face) => custodyOpens(face, { mounted: mountedCustodyGroup, lighting: lightingCustody, siblingFaces, siblingSessions }),
       write: (bytes, face) => sovereign.writeVeilArchive(bytes, face),
     })
     : undefined;
@@ -3974,10 +3979,14 @@ async function prepareNodeBootOn(
       composedOnce = true;
       const ordinals = first ? siblingPorts.ordinals() : faceLife.lit().filter((o) => o !== mountedFace);
       const litNow = (ordinal: number): boolean => faceLife.state(ordinal).kind === "lit";
-      // THE SUPERVISOR'S OPEN READS NO CUSTODY: each lit face composes again from the entry its light proved, held in memory.
+      // THE SUPERVISOR'S OPEN READS NO CUSTODY OF ITS OWN: each lit face composes again from the entry its light proved, held
+      // in memory, with its Archive read again through that lit face's own holder (`refreshLitArchives`): the face rested a
+      // newer Archive after its card, and the one its light restored would bring back the lag that card cured.
       const faces = first
         ? await Promise.all((await joinedFaceAuth({ ...siblingPorts, ordinals: () => ordinals, current: () => true })).filter((face) => typeof face.handleIndex === "number").map(withFaceMirrors))
-        : ordinals.flatMap((ordinal) => { const entry = faceEntries.get(ordinal); return entry !== undefined && litNow(ordinal) ? [entry] : []; });
+        : await refreshLitArchives(ordinals.flatMap((ordinal) => { const entry = faceEntries.get(ordinal); return entry !== undefined && litNow(ordinal) ? [entry] : []; }),
+          siblingPorts.veilArchive, (line) => console.warn(line));
+      if (!first) for (const face of faces) if (faceEntries.has(face.handleIndex!) && litNow(face.handleIndex!)) faceEntries.set(face.handleIndex!, face);
       classDeviceLedgers(vesselPrivate, faces.map((face) => face.atom.key));
       const open = new Set(faces.map((f) => f.handleIndex!));
       // A face whose actor reads lit that did not compose again closes through its actor.
@@ -4018,7 +4027,7 @@ async function prepareNodeBootOn(
       try {
         if (!live()) throw new Error(`face h${ordinal} closed while it lit`);
         classDeviceLedgers(vesselPrivate, [entry.atom.key]);
-        await daemonVm.lightFace(entry);
+        await duringLight(lightingCustody, entry.personaGroupId, live, () => daemonVm.lightFace(entry));
       } catch (error) { dropSiblingPlanes(entry.personaGroupId); throw error; }
       faceEntries.set(ordinal, entry);
       const lit: FaceLit = { atomKey: entry.atom.key, custody };
@@ -4913,7 +4922,7 @@ async function prepareNodeBootOn(
     }
     void residency.pin(DAEMON_BAG_ID,       "boot:daemon");
     // Durable pin replay — BEFORE the sweeper starts, so a replayed pin never races the first
-    // idle-cool tick. Recovers whatever `lares pin` persisted under the daemon doc across a
+    // idle-cool tick. Recovers whatever `lares wiki pin` persisted under the daemon doc across a
     // restart (residency-tiers.mem#/pin-flag; see writePinTiddler/replayPinsFromDaemonDoc).
     void replayPinsFromDaemonDoc(daemonVm.daemonHandle, residency);
     residency.startSweeper();

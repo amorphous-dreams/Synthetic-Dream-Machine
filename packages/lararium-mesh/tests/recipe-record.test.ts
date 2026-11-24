@@ -12,6 +12,8 @@ import {
   parsePluginOfferings,
 } from "../src/index.js";
 import { buildGenesisSeed } from "../src/genesis-doc.js";
+import { houseCanonBagsSeated } from "../src/kahu-canon-reach.js";
+import { kahuaRecipe, CROSSROADS_BAG } from "../src/wiki-recipe.js";
 import { recipeUri } from "../src/lar-uris.js";
 import type { LarTiddlerRecord } from "../src/tiddler-store.js";
 
@@ -65,6 +67,44 @@ describe("★ the recipe record ↔ the mount struct ★", () => {
     expect(expandRecipe({ wikiSlug: "lares", libraryBags: [LARARIUM_BAG] })).toEqual(
       [wikiSlotUri("lares", "temp"), wikiSlotUri("lares", "draft"), wikiSlotUri("lares", "personal"), wikiSlotUri("lares", "working"), wikiBagUri("lares"), LARARIUM_BAG, ORACLE_BAG],
     );
+  });
+});
+
+/**
+ * ★ THE LARES WIKI MOUNTS LIVE CANON; THE DAEMON WIKI MOUNTS THE FLOOR (operator ruling, 2026-11-23) ★
+ *
+ * "Approve mounting a live lares and lararium layer for a kahu-cabal-shared `lares` wiki (in the kahu realm), not the daemon
+ * (daemon mounts the floor for these 2)." The pair reads from the one recipe each wiki stands: the `lares` system recipe the
+ * genesis carries lays EVERY house canon bag as a live layer above the oracle floor (its own canon slot plus the lararium
+ * library), and the daemon wiki's recipe, as the daemon VM composes it (kahua stack over crossroads), lays none, so the daemon
+ * reads `lares` and `lararium` through the floor's CID-pinned snapshots alone. The house canon set derives from the seated set,
+ * never a list here. Which vessel holds the live documents rides the cabal's admission (register-bags.test, W26 slice 3).
+ */
+describe("★ the lares wiki mounts live house canon above the floor; the daemon wiki mounts the floor alone ★", () => {
+  const genesisLares = () => {
+    const seed = buildGenesisSeed({ actorSeed: "00".repeat(32), coreBlob: new Uint8Array([1, 2, 3]), coreVersion: "0.0.0-test", plugins: [] });
+    const rec = seed.tiddlers[recipeUri("oracle", "lares")] as LarTiddlerRecord | undefined;
+    expect(rec, "genesis carries no lares recipe").toBeDefined();
+    return recipeFromRecord(rec!, "lares");
+  };
+
+  test("the lares wiki lays every house canon bag live, each above the oracle floor, and its working slot stands writable on top", () => {
+    const slots = expandRecipe(genesisLares());
+    const floorAt = slots.indexOf(ORACLE_BAG);
+    expect(floorAt, "the lares wiki lost its floor").toBe(slots.length - 1);
+    const live = houseCanonBagsSeated();
+    expect(live.length).toBeGreaterThan(0);
+    for (const bag of live) {
+      expect(slots, `the lares wiki lays no live ${bag}`).toContain(bag);
+      expect(slots.indexOf(bag)).toBeLessThan(floorAt);
+      expect(slots.indexOf(bag)).toBeGreaterThan(slots.indexOf(wikiSlotUri("lares", "working")));
+    }
+  });
+
+  test("the daemon wiki, as the daemon VM composes it, lays no house canon bag: it reads lares and lararium through the floor", () => {
+    const slots = expandRecipe(kahuaRecipe({ wikiSlug: "daemon", libraryBags: [CROSSROADS_BAG] }));
+    expect(slots[slots.length - 1]).toBe(ORACLE_BAG);
+    for (const bag of houseCanonBagsSeated()) expect(slots, `the daemon wiki mounts live ${bag}`).not.toContain(bag);
   });
 });
 
