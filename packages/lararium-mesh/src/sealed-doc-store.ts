@@ -649,9 +649,10 @@ export class SealedDocumentStore implements StorageAdapterInterface {
         }
         const first = this.waiting(key[0]) === 0;
         if (first) { this.#unnamedLocal.delete(key[0]); this.#unnamedSince.set(key[0], this.#saves); }
-        // FAIL CLOSED ON A LOCAL TOUCH: a save that carries this replica's own change, or whose origin reads unknown, marks the
-        // document owed; only a document whose every save carried a peer's changes alone reads as that peer's unasked push.
-        if ((this.#ports.ownChange?.(key[0], data) ?? null) !== false) this.#unnamedLocal.add(key[0]);
+        // FAIL CLOSED ON A LOCAL TOUCH: a content save (a change, a checkpoint) that carries this replica's own change, or whose
+        // origin reads unknown, marks the document owed; only a document whose every content save carried a peer's changes alone
+        // reads as that peer's unasked push. A sync state carries peers' heads and no change of anyone's, so it marks nothing.
+        if (ROLES[key[1] ?? ""] !== undefined && (this.#ports.ownChange?.(key[0], data) ?? null) !== false) this.#unnamedLocal.add(key[0]);
         this.#waiting.set(name, { key: [...key], data: Uint8Array.from(data), refusal: "save-unnamed" });
         if (first) this.#ports.onHeld?.({ refusal: "save-unnamed", documentId: key[0] });
         return;

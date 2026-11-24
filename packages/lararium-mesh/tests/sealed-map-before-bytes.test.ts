@@ -18,7 +18,7 @@
  *   M6  an unmapped load reads back an unnamed save alone, never a sealed-class save that waits unmapped.
  *   M7  an unnamed row reads its origin off its saves' own bytes: a peer's changes alone read `peerOnly` (that peer keeps its
  *       copy); a local find and a local change on the same document turn it owed, and a save whose origin reads unknown (no
- *       watch, bytes that name no actor) stays owed too. Each row names its bytes and its age in saves the store took since.
+ *       watch, change bytes that name no actor) stays owed too; a sync state, which carries no change, never marks it local. Each row names its bytes and its age in saves the store took since.
  *   M4  a catalog row alone names a held document at once: the catalog's own change moves the map (`watchCatalogNames`), so
  *       the held save lands clear with no other event.
  */
@@ -212,6 +212,12 @@ describe("a document named for a sealed bag before its first byte maps as the ba
       await f.rest.store.save([PUSH, "incremental", "b"], local);
       const [touched] = f.rest.store.held().filter((h) => h.documentId === PUSH);
       expect(touched).toMatchObject({ refusal: "save-unnamed", saves: 2, peerOnly: false, heldAcross: 1, bytes: pushed.byteLength + local.byteLength });
+
+      // A SYNC STATE carries peers' heads and no change of anyone's: it never marks a document local, so a peer's push whose
+      // content never arrived (its sync state alone waits) still reads peerOnly.
+      const HEADS_ONLY = "a-push-whose-sync-state-alone-waits";
+      await f.rest.store.save([HEADS_ONLY, "sync-state", "a-peer-storage-id"], Uint8Array.of(0x43, 0x00));
+      expect(f.rest.store.held().find((h) => h.documentId === HEADS_ONLY)).toMatchObject({ refusal: "save-unnamed", saves: 1, peerOnly: true });
 
       // AN ORIGIN THE STORE CANNOT READ (bytes that name no actor) stays owed.
       await f.rest.store.save(["bytes-that-name-no-actor", "incremental", "a"], Uint8Array.of(7));
