@@ -50,11 +50,25 @@ execute CAD and synthetic image tests without acquiring any third-party asset.
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/ci-gates`>>
+!! Gates, dependency evidence and the green claim
+
+CI checks the direct dependency pins, Python syntax and installed package
+consistency, and records resolved versions as evidence, NOT as a complete
+cryptographic dependency lock.
+
+A queued or cancelled CI job remains an open verification loop. Only the
+final published branch head may support a GREEN claim after dedicated Loom,
+whole-repository and held-out witnesses all pass; failures invite bisecting
+the stepwise red-first commits, not relaxing native evidence checks.
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/edges`>>
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/hybrid">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/projection-loom/index">>
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;JZQhU4VOXeA19OLQpwGk-3X-Jm7wKkBJWfeO5WbqGzE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;pazL1FfKXytYmjmzFP3xpVHy8aN0-Z9HbpLJe3FAimk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

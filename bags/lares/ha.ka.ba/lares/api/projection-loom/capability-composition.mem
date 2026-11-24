@@ -103,15 +103,9 @@ does not independently authenticate survey bytes.
 
 `scripts/check_architecture.py` MUST refuse duplicate OODA controllers,
 retired alpha module aliases, side effects inside `phase_rules.py` and
-back-edges from renderers to the helm. `fractal_ooda_ha.OODAJournal` remains
-the only active five-phase controller. CI checks the direct dependency pins,
-Python syntax and installed package consistency, and records resolved
-versions as evidence, NOT as a complete cryptographic dependency lock.
-
-A queued or cancelled CI job remains an open verification loop. Only the
-final published branch head may support a GREEN claim after dedicated Loom,
-whole-repository and held-out witnesses all pass; failures invite bisecting
-the stepwise red-first commits, not relaxing native evidence checks.
+back-edges from renderers to the helm. `fractal_ooda_ha.OODAHAJournal` remains
+the only active five-phase controller. The CI procedure that carries these
+gates rides `lar:///ha.ka.ba/lares/api/projection-loom/reference-ci`.
 
 <<~/ahu>>
 
@@ -130,6 +124,6 @@ The operator released this carrier's displaced historical ahu from the living te
 <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/ooda-ha">>
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;l5vOrnAXeRmnHPQGkFfVum4kg8hyz4RID0UmBjY1sH8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;HIik6I4nqWB0aYP1YTn2VxPXbrEiXAoj-pW_uXke7qI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

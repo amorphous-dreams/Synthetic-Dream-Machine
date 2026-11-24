@@ -51,7 +51,7 @@ children close. Reentry cannot duplicate previously completed actions.
 The code places phase law in `projection_loom/phase_rules.py`:
 `PHASES`, `next_phase_allowed`, and `child_phase_anchor` are pure
 decisions without durable state or operator power. The sole
-`fractal_ooda_ha.OODAJournal` MUST apply phase changes, append actual
+`fractal_ooda_ha.OODAHAJournal` MUST apply phase changes, append actual
 receipts and persist consequences; extracting validation MUST NOT create
 a second helm. `closed` marks completion after the five phases, not
 a sixth OODA action.
@@ -129,6 +129,6 @@ contract and safe-point controls.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;lXjGj17oP9s2wPBHD-7aV3g53kBXxH5sMrR3We9V6RQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;06EBlng5YHPSc94VfmKj_q2cQqa55dUwws0C_jUvXE8`>>
 
 <<^ code=`&#x0004;` to=`?`>>
