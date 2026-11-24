@@ -171,6 +171,9 @@ export interface FaceLives {
    * KEEPS every waiting save of its own held in memory for the seat its next light stands. A close already under way when
    * the refusal lands keeps the close's own law (its drain decides, no waiter resolves here); while it holds, `refusedCloses`
    * names it.
+   *
+   * WORK IN FLIGHT IS NOT WAITED ON: a verb or act admitted on the life before the refusal landed still runs to its own answer
+   * while the host side comes down. It reaches no island provider (none stood), and any save it writes joins the held ones.
    */
   composeRefused(ordinal: number, cause: string, at: { readonly opening: string }): void;
   /**
@@ -202,6 +205,8 @@ export interface FaceLives {
   ordinals(): number[];
   /** Each face dark here because its last light refused (not held), with the refusal's cause: the vessel names it served-but-dark. */
   refusedLights(): Array<{ readonly ordinal: number; readonly cause: string }>;
+  /** Why a dark face's last light refused, whether or not a lock holds it; null where it stands dark for no refusal, or stands otherwise. */
+  refusedCause(ordinal: number): string | null;
   /** Each face the island's open refused that still holds closing (its saves have not sealed), with the refusal's cause: its close wants driving again. */
   refusedCloses(): Array<{ readonly ordinal: number; readonly cause: string }>;
   /** The opening a face stands lit under now, or null. */
@@ -559,6 +564,7 @@ export function faceLives(effects: FaceLifeEffects, options: { readonly nonce: s
     ordinals: () => [...lives.keys()].sort((a, b) => a - b),
     refusedLights: () => [...lives].filter(([, a]) => a.life.kind === "dark" && !a.held && a.refused !== null)
       .map(([ordinal, a]) => ({ ordinal, cause: a.refused! })).sort((x, y) => x.ordinal - y.ordinal),
+    refusedCause: (ordinal) => { const a = lives.get(ordinal); return a !== undefined && a.life.kind === "dark" ? a.refused : null; },
     refusedCloses: () => [...lives].filter(([, a]) => a.life.kind === "closing" && a.life.quiet === true && a.refused !== null)
       .map(([ordinal, a]) => ({ ordinal, cause: a.refused! })).sort((x, y) => x.ordinal - y.ordinal),
     opening: (ordinal) => { const life = lives.get(ordinal)?.life; return life?.kind === "lit" ? life.opening : null; },

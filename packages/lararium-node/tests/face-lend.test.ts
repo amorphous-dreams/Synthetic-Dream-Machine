@@ -5,7 +5,7 @@ import { adoptFirstLit, composeRefusalHearing, faceLend, openingNewer, settleFac
 const settle = async (): Promise<void> => { for (let i = 0; i < 12; i++) await Promise.resolve(); };
 
 /** A vessel's lend over a scripted custody: the mount h0 (no island entry), siblings lit by hand, every drain answered by hand. */
-function vessel(opts: { served?: number[]; open?: Set<number>; standing?: FaceLendPorts["faceStanding"]; ordinalOf?: FaceLendPorts["ordinalOf"] } = {}) {
+function vessel(opts: { served?: number[]; open?: Set<number>; standing?: FaceLendPorts["faceStanding"]; ordinalOf?: FaceLendPorts["ordinalOf"]; heldSaves?: (ordinal: number) => number } = {}) {
   const served = opts.served ?? [0, 1];
   const open = opts.open ?? new Set(served);
   const drains = new Map<number, { resolve: () => void; reject: (e: unknown) => void }>();
@@ -36,6 +36,7 @@ function vessel(opts: { served?: number[]; open?: Set<number>; standing?: FaceLe
       return { ordinal, fcid: `f${ordinal}`, unlocked: open.has(ordinal) };
     }),
     ...(opts.ordinalOf ? { ordinalOf: opts.ordinalOf } : {}),
+    ...(opts.heldSaves ? { heldSaves: opts.heldSaves } : {}),
     faceClosed, lightFace, mountClosed, log: () => {},
   };
   lend = faceLend(ports);
@@ -76,19 +77,38 @@ describe("the island's refusal of a manifest face reaches that face's own life",
 describe("a face's waiting saves at its teardown", () => {
   const rest = () => {
     const waiting = new Map([["doc-a", 1], ["doc-b", 2], ["doc-c", 0]]);
-    const forgot: string[][] = [];
-    return { waiting, forgot, ports: { waiting: (id: string) => waiting.get(id) ?? 0, forget: (ids: readonly string[]) => { forgot.push([...ids]); let n = 0; for (const id of ids) { n += waiting.get(id) ?? 0; waiting.delete(id); } return n; } } };
+    const forgot: string[][] = [], kept: string[][] = [];
+    return { waiting, forgot, kept, ports: {
+      keep: (ids: readonly string[]) => { kept.push([...ids]); return ids.reduce((n, id) => n + (waiting.get(id) ?? 0), 0); },
+      forget: (ids: readonly string[]) => { forgot.push([...ids]); let n = 0; for (const id of ids) { n += waiting.get(id) ?? 0; waiting.delete(id); } return n; },
+    } };
   };
   test("RED: a REFUSED face's waiting saves stay held: nothing forgets them, and the count names what waits for its next light", () => {
     const r = rest();
     expect(settleFaceSaves(["doc-a", "doc-b", "doc-c"], "refused", r.ports)).toEqual({ dropped: 0, held: 3 });
     expect(r.forgot, "no save of a refused face leaves memory").toEqual([]);
-    expect(r.ports.waiting("doc-b")).toBe(2);
+    expect(r.kept, "the rest keeps them, recording each document's own actor before it leaves the cache").toEqual([["doc-a", "doc-b", "doc-c"]]);
+    expect(r.waiting.get("doc-b")).toBe(2);
   });
   test("CONTROL: a face that CLOSED (its drain answered) forgets what its documents still carry, as it did", () => {
     const r = rest();
     expect(settleFaceSaves(["doc-a", "doc-b", "doc-c"], undefined, r.ports)).toEqual({ dropped: 3, held: 0 });
     expect(r.forgot).toEqual([["doc-a", "doc-b", "doc-c"]]);
+    expect(r.kept).toEqual([]);
+  });
+});
+
+describe("a pūlama's close of a refused face that holds saves", () => {
+  test("P3 NO face.closed ANSWERS OVER HELD SAVES: the pūlama's key never locks while a refused face's saves wait unsealed in this vessel; CONTROL: with none held, the dark face answers at once", async () => {
+    const held = new Map([[1, 1]]);
+    const v = vessel({ served: [0, 1], heldSaves: (ordinal) => held.get(ordinal) ?? 0 });
+    v.lives.adopt(1, { atomKey: "k1", custody: null });
+    v.lives.composeRefused(1, "FaceHoldsNoPrekeySecret: stale", { opening: v.lives.opening(1)! });
+    await expect(v.lend.closing("f1", null)).rejects.toThrow(/h1.*1 save\(s\)/);
+    expect(v.faceClosed).not.toHaveBeenCalled();
+    held.set(1, 0);
+    await v.lend.closing("f1", null);
+    expect(v.faceClosed).toHaveBeenCalledOnce();
   });
 });
 

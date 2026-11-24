@@ -550,6 +550,7 @@ async function main(): Promise<void> {
     holdFaces: () => composition?.holdFaces?.() ?? true,
     refusedLights: () => composition?.refusedLights?.() ?? [],
     refusedCloses: () => composition?.refusedCloses?.() ?? [],
+    refusedHolds: () => composition?.refusedHolds?.() ?? [],
     replayLend: async () => { await composition?.replayLend?.(); },
     // A RECARD ARMS THE FACE'S NEXT LIGHT in the standing composition; the door then replays the lend (`face-recard`).
     armRecard: (ordinal) => { if (!composition?.armRecard) throw new Error("composition unavailable"); composition.armRecard(ordinal); },
@@ -645,6 +646,8 @@ interface StandingComposition {
   readonly refusedLights?: () => Array<{ readonly ordinal: number; readonly cause: string; readonly heldSaves?: number }>;
   /** Each face the island's open refused that still holds closing over unsealed saves, with its cause. Absent at the floor. */
   readonly refusedCloses?: () => Array<{ readonly ordinal: number; readonly cause: string }>;
+  /** Each refused face that holds unsealed saves in memory, with its cause and their count. Absent at the floor. */
+  readonly refusedHolds?: () => Array<{ readonly ordinal: number; readonly cause: string; readonly saves: number }>;
   /** Replay the lend now, awaited. Absent at the floor. */
   readonly replayLend?: () => Promise<void>;
   /** Arm a face's next light as a recard. Absent at the floor. */
@@ -1078,7 +1081,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     standing: "hearth",
     island: { state: result.daemonIslandState, restart: async (reason) => ({ ...(await result.restartDaemonIsland(reason)), leg: (await result.daemonIslandState()).leg }) },
     lightFace: result.lightFace, dropFace: result.dropFace,
-    releaseFace: result.releaseFace, releaseFaces: result.releaseFaces, holdFace: result.holdFace, holdFaces: result.holdFaces, refusedLights: result.refusedLights, refusedCloses: result.refusedCloses, replayLend: result.replayLend, armRecard: result.armRecard, disarmRecard: result.disarmRecard,
+    releaseFace: result.releaseFace, releaseFaces: result.releaseFaces, holdFace: result.holdFace, holdFaces: result.holdFaces, refusedLights: result.refusedLights, refusedCloses: result.refusedCloses, refusedHolds: result.refusedHolds, replayLend: result.replayLend, armRecard: result.armRecard, disarmRecard: result.disarmRecard,
     closeFaces: () => result.closeFaces("a whole lock closes every face", { strict: true }), onMountClosed: result.onMountClosed,
     onSignal: (sig) => void shutdown(sig),
     teardown: () => result.teardown(() => front.detach()),

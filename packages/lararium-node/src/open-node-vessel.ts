@@ -636,6 +636,8 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   refusedLights: () => Array<{ readonly ordinal: number; readonly cause: string; readonly heldSaves?: number }>;
   /** Each face the island's open refused that still holds closing over unsealed saves, with its cause (`FaceLives.refusedCloses`). */
   refusedCloses: () => Array<{ readonly ordinal: number; readonly cause: string }>;
+  /** Each refused face that holds unsealed saves in memory, with its cause and their count, held by a lock or not. */
+  refusedHolds: () => Array<{ readonly ordinal: number; readonly cause: string; readonly saves: number }>;
   /** Replay the lend now: every served face neither mounted, lit nor closing at its source lights (the served-but-dark clearing line). */
   replayLend: () => Promise<void>;
   /** Arm face `ordinal`'s next light as a recard (`face-recard`): one use, consumed by that light whether it stands or refuses. */
@@ -855,6 +857,8 @@ interface NodeBootPrep {
   holdFaces: () => boolean;
   refusedLights: () => Array<{ readonly ordinal: number; readonly cause: string; readonly heldSaves?: number }>;
   refusedCloses: () => Array<{ readonly ordinal: number; readonly cause: string }>;
+  /** Each refused face that holds unsealed saves in memory, with its cause and their count, held by a lock or not. */
+  refusedHolds: () => Array<{ readonly ordinal: number; readonly cause: string; readonly saves: number }>;
   replayLend: () => Promise<void>;
   armRecard: (ordinal: number) => void;
   disarmRecard: (ordinal: number) => boolean;
@@ -1077,13 +1081,14 @@ async function prepareNodeBootOn(
   /** EACH LIT SIBLING'S PROVEN PLANES (sibling-plane-mount): its intents and persona planes file under its own face while it stands
    *  lit, under none once dark, and leave whole at its close; only a proof under its own log and KEL mounts them. */
   const siblingPlanes = siblingPlaneMounts();
-  /** A sibling's plane mount leaves whole: its two documents leave the Repo's cache and any save of theirs waiting in memory
-   *  drops unwritten, so nothing of the pair stays decrypted or replicating while the face stands dark. */
+  /** A sibling's plane mount leaves whole: its two documents leave the Repo's cache, so nothing of the pair replicates while the
+   *  face stands dark, and any save of theirs waiting in memory drops unwritten. A REFUSED face's plane saves stay instead
+   *  (`why`): they wait in the sealed rest's memory as plain Automerge bytes behind the face gate, unwritten, for its next seat. */
   const dropSiblingPlanes = (group: string, why?: "refused"): string[] => {
     const unmounted = siblingPlanes.drop(group);
     if (unmounted.length === 0) return [];
     // A REFUSED FACE'S PLANE SAVES STAY HELD, as its own documents' do (`settleFaceSaves`).
-    settleFaceSaves(unmounted, why, { forget: (ids) => sealedRest.forget(ids), waiting: (id) => sealedRest.store.waiting(id) });
+    settleFaceSaves(unmounted, why, { forget: (ids) => sealedRest.forget(ids), keep: (ids) => sealedRest.keep(ids) });
     for (const id of unmounted) void repo.removeFromCache(id as never).catch(() => {});
     sealedRest.store.mapMoved();
     return [...unmounted];
@@ -2640,7 +2645,7 @@ async function prepareNodeBootOn(
     siblingFaces.delete(group);
     const planes = keepPlanes ? [] : dropSiblingPlanes(group, why);
     const owned = deviceDocs.ids().filter((id) => deviceDocs.bagOf(id, [{ group, relation: expected.relation, face: expected.face }])?.face === expected.face && expected.face !== null);
-    const { dropped, held } = settleFaceSaves(owned, why, { forget: (ids) => sealedRest.forget(ids), waiting: (id) => sealedRest.store.waiting(id) });
+    const { dropped, held } = settleFaceSaves(owned, why, { forget: (ids) => sealedRest.forget(ids), keep: (ids) => sealedRest.keep(ids) });
     for (const id of owned) void repo.removeFromCache(id as never).catch(() => {});
     if (why === "refused") refusedHeldDocs.set(expected.ordinal, [...new Set([...(refusedHeldDocs.get(expected.ordinal) ?? []), ...owned, ...planes])]);
     else refusedHeldDocs.delete(expected.ordinal);
@@ -4149,6 +4154,7 @@ async function prepareNodeBootOn(
       faceStanding: async (face) => await standingCustody()?.faceStanding(face) ?? null,
       faceClosed: async (fcid, opening) => { await standingCustody()?.faceClosed?.(fcid, opening); },
       lightFace: async (ordinal) => { await lightFace(ordinal); },
+      heldSaves: (ordinal) => heldSavesOf(ordinal),
       mountClosed,
       log: (line) => console.warn(line),
     });
@@ -5504,9 +5510,16 @@ async function prepareNodeBootOn(
     closeFaces: (reason, options) => { recardArmed.clearAll(); return faceLife.closeAll(reason, { hold: true, ...(options?.strict === true ? { strict: true } : {}), ...(options?.stop === true ? { stop: true } : {}) }); },
     releaseFace,
     releaseFaces: () => { for (const ordinal of faceLife.ordinals()) releaseFace(ordinal); },
-    holdFace: (ordinal) => { recardArmed.clear(ordinal); return faceLife.hold(ordinal); },
+    // A REFUSED FACE'S HELD SAVES HOLD THE KEY OPEN: a dark face reads past CLOSED, and its saves still wait unsealed here, so
+    // no lock lands over them (the custody door names the refusal and its cures first; this answers no behind it).
+    holdFace: (ordinal) => { recardArmed.clear(ordinal); return faceLife.hold(ordinal) && heldSavesOf(ordinal) === 0; },
     // Every face reads, none skipped: each past CLOSED takes its hold, and one standing lit answers no.
-    holdFaces: () => { recardArmed.clearAll(); return faceLife.ordinals().map((ordinal) => faceLife.hold(ordinal)).every(Boolean); },
+    holdFaces: () => { recardArmed.clearAll(); return faceLife.ordinals().map((ordinal) => faceLife.hold(ordinal) && heldSavesOf(ordinal) === 0).every(Boolean); },
+    // EACH REFUSED FACE THAT HOLDS SAVES, whether or not a lock holds it: the gate every composition-ending act reads.
+    refusedHolds: () => [...refusedHeldDocs.keys()].sort((a, b) => a - b).flatMap((ordinal) => {
+      const saves = heldSavesOf(ordinal), cause = faceLife.refusedCause(ordinal);
+      return saves > 0 && cause !== null ? [{ ordinal, cause, saves }] : [];
+    }),
     // EACH DARK ROW COUNTS ITS HELD SAVES: what a refused face's teardown kept in memory for its next light.
     refusedLights: () => faceLife.refusedLights().map((r) => ({ ...r, heldSaves: heldSavesOf(r.ordinal) })),
     refusedCloses: () => faceLife.refusedCloses(),
@@ -5649,7 +5662,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     daemon: p.daemonVm(),
     restartDaemonIsland: p.restartDaemonIsland,
     daemonIslandState: p.daemonIslandState,
-    lightFace: p.lightFace, dropFace: p.dropFace, mountOrdinal: p.mountOrdinal, litOrdinals: p.litOrdinals, faceLife: p.faceLife, closeFaces: p.closeFaces, releaseFace: p.releaseFace, releaseFaces: p.releaseFaces, holdFace: p.holdFace, holdFaces: p.holdFaces, refusedLights: p.refusedLights, refusedCloses: p.refusedCloses, replayLend: p.replayLend, armRecard: p.armRecard, disarmRecard: p.disarmRecard, onMountClosed: p.onMountClosed, siblingFaceOf: p.siblingFaceOf, restartWiki: p.restartWiki, promoteActs: p.promoteActs,
+    lightFace: p.lightFace, dropFace: p.dropFace, mountOrdinal: p.mountOrdinal, litOrdinals: p.litOrdinals, faceLife: p.faceLife, closeFaces: p.closeFaces, releaseFace: p.releaseFace, releaseFaces: p.releaseFaces, holdFace: p.holdFace, holdFaces: p.holdFaces, refusedLights: p.refusedLights, refusedCloses: p.refusedCloses, refusedHolds: p.refusedHolds, replayLend: p.replayLend, armRecard: p.armRecard, disarmRecard: p.disarmRecard, onMountClosed: p.onMountClosed, siblingFaceOf: p.siblingFaceOf, restartWiki: p.restartWiki, promoteActs: p.promoteActs,
     wikiDocUrl:       result.wikiHandle?.url ?? null,
     catalogHandleUrl: p.catalogHandle.url,
     daemonDocUrl:     p.daemonDocUrl(),

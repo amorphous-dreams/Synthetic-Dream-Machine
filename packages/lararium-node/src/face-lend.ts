@@ -40,6 +40,8 @@ export interface FaceLendPorts {
   /** The second phase: this vessel's face actor reached closed; the pūlama locks once every session it told answered. */
   readonly faceClosed?: (fcid: string, opening: string | null) => Promise<void>;
   readonly lightFace: (ordinal: number) => Promise<void>;
+  /** The saves a refused face holds in this vessel's memory, unsealed (`settleFaceSaves`); absent reads none. */
+  readonly heldSaves?: (ordinal: number) => number;
   /** The mount closed at its custody's word: the vessel stands again (main recomposes, once). */
   readonly mountClosed: () => void;
   readonly log: (line: string) => void;
@@ -72,12 +74,13 @@ export function composeRefusalHearing(manifest: readonly ComposedFace[], faceLif
 
 /**
  * A FACE'S WAITING SAVES AT ITS TEARDOWN. A face that closed drained first, so what its documents still carry leaves memory
- * (`forget`). A face the island REFUSED never held a seat to drain under: nothing forgets its saves, and they wait in memory,
- * unwritten, until the seat its next light stands books and seals them (`composeSealedRest.rebook`). Answers how many dropped
- * and how many stay held.
+ * (`forget`). A face the island REFUSED never held a seat to drain under: nothing forgets its saves. They wait in memory as
+ * plain Automerge bytes behind the face gate, unwritten (`keep`, which records each document's actor before it leaves the
+ * Repo's cache), until the seat its next light stands books and seals them (`composeSealedRest.rebook`). Answers how many
+ * dropped and how many stay held.
  */
-export function settleFaceSaves(owned: readonly string[], why: "refused" | undefined, rest: { readonly forget: (documentIds: readonly string[]) => number; readonly waiting: (documentId: string) => number }): { readonly dropped: number; readonly held: number } {
-  if (why === "refused") return { dropped: 0, held: owned.reduce((n, id) => n + rest.waiting(id), 0) };
+export function settleFaceSaves(owned: readonly string[], why: "refused" | undefined, rest: { readonly forget: (documentIds: readonly string[]) => number; readonly keep: (documentIds: readonly string[]) => number }): { readonly dropped: number; readonly held: number } {
+  if (why === "refused") return { dropped: 0, held: rest.keep(owned) };
   return { dropped: rest.forget(owned), held: 0 };
 }
 
@@ -154,6 +157,9 @@ export function faceLend(ports: FaceLendPorts): FaceLend {
           ports.log(`[lit-set] the pūlama's close of h${ordinal} names an opening before the one it lives under; no face.closed answers`);
           return;
         }
+        // A REFUSED FACE'S HELD SAVES HOLD ITS KEY OPEN: they wait in memory for its next seat, so no `face.closed` answers.
+        const held = ports.heldSaves?.(ordinal) ?? 0;
+        if (held > 0) throw new Error(`face h${ordinal} holds ${held} save(s) no seat has sealed (its light refused), so this vessel answers no face.closed and its key stays open: light it so its own seat seals them, or stop the vessel and accept the loss`);
         // A drain that faults rejects here: the vessel answers no `face.closed`, so the key never locks over unsealed saves.
         await faceLife.close(ordinal, "the pūlama closes it");
       }

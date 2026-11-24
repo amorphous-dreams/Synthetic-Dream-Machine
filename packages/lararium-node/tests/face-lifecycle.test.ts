@@ -436,9 +436,14 @@ describe("each face lives one life: the lifecycle actor", () => {
     expect(t.lives.state(2)).toEqual({ kind: "dark", held: false });
     expect(t.lives.refusedLights()).toEqual([{ ordinal: 2, cause: STALE }]);
     expect(t.lives.refusedCloses()).toEqual([]);
+    // A LOCK'S HOLD HIDES THE REFUSED LIGHT (no recard arms over a held face), and the cause still reads for the saves it holds.
+    expect(t.lives.hold(2)).toBe(true);
+    expect(t.lives.refusedLights()).toEqual([]);
+    expect(t.lives.refusedCause(2)).toBe(STALE);
+    t.lives.release(2);
     expect(t.lives.admitWork(2), "no work admits on a face the island never held").toBeNull();
     expect(refusedVisits).toEqual(["face-not-open"]);
-    expect(t.events, "the teardown names its cause, so the vessel keeps the face's waiting saves").toEqual(["teardown h2 refused"]);
+    expect(t.events, "the teardown names its cause, so the vessel keeps the face's waiting saves").toEqual(["teardown h2 refused", "dark h2"]);
     // THE RECARD'S LIGHT RUNS FROM HERE: the face lights as any dark face does, and the refusal clears.
     const again = t.lives.light(2);
     t.lights.get(2)!.resolve({ atomKey: "k2", custody: null });
