@@ -99,9 +99,9 @@ A spawn/handoff trips all three → ''node''. A structural link (`agent —membe
 wing`) stays an edge. The ''PROV gift'': every influence relation has a //qualified//
 //twin// — `actedOnBehalfOf` ⇄ ''`prov:Delegation`'', `wasInformedBy` ⇄
 ''`prov:Communication`'' — so the designed reified node instantiates `prov:Delegation` for a spawn
-or `prov:Communication` for a mid-flight injection; that node stands UNBUILT. `worldline-edge.ts`
-builds triples under those predicates, and a handback descriptor closes a spawn edge's
-valid-interval. ''PROV-AGENT'' (arXiv 2508.02866) extends
+or `prov:Communication` for a message; that node stands UNBUILT. `worldline-edge.ts`
+builds triples under those predicates: a handback rides a `prov:Communication` edge (child → parent)
+marked `round: "close"`, and a separate retirement descriptor closes a spawn edge's valid-interval. ''PROV-AGENT'' (arXiv 2508.02866) extends
 PROV for exactly this — direct prior art the model matches 1:1.
 
 ''Two reified edges per hop, never one'' (Fiduciary): ''appointed-by'' (the immediate
@@ -111,11 +111,11 @@ never severs the upward edge.
 
 !!! The handoff record ~ the edge as data
 
-<<~ scale name=`handoff` ranks=`correlation_id ~ groups the spawn-tree (trace-id / session) -> edge_id ~ this handoff (span-id) -> parent_edge_id ~ chains the tree (CHAIN it or grandchildren go dark) -> from_agent ~ delegator -> to_agent ~ delegate -> task ~ the prompt handed down -> result_ref ~ pointer to the child's output, never inlined -> status ~ spawned·running·handed-back·failed -> t_spawned · t_returned ~ the edge's valid-interval`>>
+<<~ scale name=`handoff` ranks=`correlation_id ~ groups the spawn-tree (trace-id / session) -> edge_id ~ this handoff (span-id) -> parent_edge_id ~ chains the tree (CHAIN it or grandchildren go dark) -> from_agent ~ delegator -> to_agent ~ delegate -> task ~ the prompt handed down -> result_ref ~ pointer to the child's output, never inlined -> status ~ spawned·running·round-closed·failed -> t_spawned · t_retirement ~ the edge's valid-interval, which the retirement act closes`>>
 
 The record becomes KG triples: `(parent) —spawned→ (child)`, `(child)
 —actedOnBehalfOf→ (parent)`, `(output) —wasGeneratedBy→ (task)`, each stamped
-`[t_spawned, t_returned)`. Querying `actedOnBehalfOf` transitively reconstructs the
+`[t_spawned, t_retirement)`. Querying `actedOnBehalfOf` transitively reconstructs the
 whole spawn-tree.
 
 !!! The same DAG CARRIES the worldline's happened-before
@@ -123,8 +123,10 @@ whole spawn-tree.
 ''One structure, two readings.'' The reified edge-DAG answers //whose-act// (attribution)
 AND //what-preceded-what// (causal order): a `spawned` edge means ''parent''
 ''happened-before child''; two children of one parent with ''no edge between them'' read
-''concurrent'' (the Lightcone "elsewhere"); the ''handback'' edge closes the
-valid-interval — the twin-reunion, the worldline's one sync point. So the worldline's
+''concurrent'' (the Lightcone "elsewhere"); a ''handback'' closes a ROUND — the child returns its
+result as a message, the parent's receipt reads after it, and the spirit persists to resume on its
+own stamp; ''retirement'', a separate act, closes the valid-interval and returns the child's
+ownership to the parent. So the worldline's
 partial causal order needs no separate structure: it ''projects from the provenance''
 ''DAG'' — the edge-DAG CARRIES the worldline's happened-before (FfzClock carries only its rhythmic grain: #time).
 
@@ -255,8 +257,8 @@ burden to it. ''The forks, operator-cut (2026-06-29):''
 ''chat-session data''; it serves only the DreamNet mesh + the operator's wiki-bags (which
 project to disk as markdown memes), so it never touches this plane (the two-domain cut,
 sharpened). A `prov:Communication` edge stamps at the injection-point, keyed turn-DAG;
-''Interval Tree Clocks'' (fork = spawn · event = inject · join = handback) model the
-worldline clock where plain vector-clocks bloat under spawning agents (`itc.ts` carries it). The
+''Interval Tree Clocks'' (fork = spawn · event = local work, send or receive · peek + join =
+message, a handback among them · join = retirement) model the worldline clock where plain vector-clocks bloat under spawning agents (`itc.ts` carries it). The
 cap-handoff design rides ''`@endo/captp` over the daemon UDS'' (`@endo/far` = the attenuated
 reference): UNBUILT, no `@endo` dependency stands. ''Migration comes cheap:'' the FFZ/DAG over past
 sessions stands as a ''re-derivable projection'' — nuke-and-pave + re-harvest from the transcripts
@@ -353,7 +355,7 @@ keys it on the handle.
 
 ''Build sequence — the handle first; the edge and the rhythm both ride it:''
 
-<<~ scale name=`build` ranks=```handle ~ DERIVED in `capture/branch-frontier.ts` (`deriveHandle` · `deriveRootHandle`; live-proven on real drawers, 2026-06-25): a SPIRIT reads `<run>.<agentId>` with parent and root = run; a MAIN reads handle = root = run (no parent — a root); a branch frontier rides the run component (`run~frontier`). A spirit's `lar_parent_handle` RESOLVES to its main agent's `lar_agent_handle` (both = the session run), so the attribution graph CLOSES. Derived from the staged source_file (in-process); the cross-surface launcher shim that mints trace-id/span-id reads UNBUILT — the keystone -> edge ~ PROJECTED form BUILT: the handle's run component names the appointed-by parent and the root-principal, single-source; no TypeScript writer stamps them onto drawers since the harvester burn (lar:///ha.ka.ba/lararium/api/ingest-canon#/the-harvester-burn). `worldline-edge.ts` builds "`prov:Delegation`" and "`prov:Communication`" triple descriptors with optional `turnKey` and `valid_from` fields; `handbackClose` builds a separate descriptor that closes the delegation interval. `worldline-kg.ts` exposes `persistWorldlineEdges` and `closeWorldlineEdges` through `kg_io.py`, and no production path calls either; `kapaeTurn` closes the rows of a gone turn, and no production path calls it either. `lares sense worldline` reads a different default KG path. End-to-end edge persistence and readback stand UNBUILT, as does a reified NODE carrying status and transaction-time; when the node lands the edge RE-PROJECTS from it (never a double-write) -> rhythm ~ MECHANISM BUILT AND TESTED (`worldline-clock.ts`); no production path constructs a per-handle clock (`worldlineClockFor`, `groundWorldlineEvent`): per-handle FfzClock keyed on the HANDLE (`actorId` carries the handle) · construct-on-first-event · grounding-tick (L1 Beat on the operator's acknowledging move, NEVER on emission) · rollover detection for a caller-owned LOCAL work-log (NOT the mesh SessionEventLog — work-memory rides a local island); durable checkpoint writing stands UNBUILT. GRAIN RESOLVED (Loom-grounded, 2026-06-25): the clock serializer `ffzAddress` yields a prefix-truncatable rhythmic ADDRESS `Theme.Arc.Measure.Beat.Segment[.block]` — ''L0 Pulse = one generation segment'' (`stop_reason`, = the OTel span), ''block = a sub-offset'' (index, not a tick); the clock's intended input comes from the HARNESS transcript, never the rendered grammar, and production harness wiring stands UNBUILT (lar:///ha.ka.ba/lararium/mesh/ffz-clock#/rhythmic-address). Address serializer + Claude-agent profile BUILT/TESTED (`ffzAddress`, `CLAUDE_AGENT_BOUNDS`). Separately, `ffzMembershipAddress` (`ffz-project.ts`) builds a drawer's `lar_ffz` as `<profile>/<Theme>.<Arc>.<Measure>.<Beat>.<Pulse>`, trailing absent cells trimmed; each cell names membership, never a count, and Pulse names the inscription atom. Arc derives from the source file; the caller may supply Theme, Measure, Beat and Pulse, and absent cells stay porous. `lares sense worldline enrich` (`lararium-sensorium/src/ffz-enrich.ts`, spawning `worldline_ffz.py enrich`) fills an absent Beat cell with the turn's identity label, idempotently; no harvest pass calls it. Grounded by the Horologe spirit — ITC identity/event split (bearer≠replica) · Clark-Brennan/Ginzburg grounding (Pending→Moves) · Automerge/Yjs ephemeral convention · event-sourcing checkpoints -> mandate ~ carry scope+TTL+revocability+duties; handback ratifies + filters the merge -> crypto ~ at the peer/founding boundary only, anchor to keyhive```>>
+<<~ scale name=`build` ranks=```handle ~ DERIVED in `capture/branch-frontier.ts` (`deriveHandle` · `deriveRootHandle`; live-proven on real drawers, 2026-06-25): a SPIRIT reads `<run>.<agentId>` with parent and root = run; a MAIN reads handle = root = run (no parent — a root); a branch frontier rides the run component (`run~frontier`). A spirit's `lar_parent_handle` RESOLVES to its main agent's `lar_agent_handle` (both = the session run), so the attribution graph CLOSES. Derived from the staged source_file (in-process); the cross-surface launcher shim that mints trace-id/span-id reads UNBUILT — the keystone -> edge ~ PROJECTED form BUILT: the handle's run component names the appointed-by parent and the root-principal, single-source; no TypeScript writer stamps them onto drawers since the harvester burn (lar:///ha.ka.ba/lararium/api/ingest-canon#/the-harvester-burn). `worldline-edge.ts` builds "`prov:Delegation`" and "`prov:Communication`" triple descriptors with optional `turnKey` and `valid_from` fields; `handbackEdge` builds the round-closing Communication descriptor and `retireClose` a separate descriptor that closes the delegation interval. The live registry (`worldline-causal.ts`) closes a round at `worldlineHandback`, which returns a receipt (the child's send key, the parent's receive key) and leaves the child live; `worldlineResume` continues the child's own stamp, so a later round never mints a fresh fork; `worldlineRetire` alone joins the child's ownership back and removes it; `worldlineInject(sender, target)` ticks the sender and joins its history into the recipient through an ownership-free peek, so the receive happens-after the send and both participants keep their ownership. `replayWorldlineEdges` applies the same four acts from durable edges in link order: an event applies only where its `parentKey` and the links order it after every applied event on a worldline it shares, so a replay never takes an order from content; an event the links leave unordered skips as `order-unlinked` — one at a time, an event that names no parent link giving way before a linked one, so a loose sibling message never refuses a linked handback — and every handle a skip touches (and every handle that took history from one) lands in `uncertain`, which `worldline-compare` carries beside its verdict. Uncertainty travels with history: a spirit that sent or took a refused sibling message hands its uncertain past back to the run, so the run and every spirit the run messages afterward read uncertain too. Only neighbouring events on one handle, in one topological order, need a link check, so the check costs each event its neighbours. A retirement carries its own `turnKey`; a spawn from a parent the record never holds skips as `parent-unrecorded`; a message whose sender holds no recorded worldline lands as the recipient's receive alone, named `unjoined`. The Python observer (`worldline_observe.py`) records a round close only on a real report — a `<task-notification>` reporting `completed` with a `<result>` report, an `<agent-message>` carrying `[Subagent hand-back]`, or an Agent result reporting `completed` — and reads a notification whose result says the agent has not reported yet (or relays to the agent-message) as nothing, and one reporting killed, failed or stopped as an end that moves no history. It records an `inform` row for each SendMessage reported a success (main to spirit, spirit to sibling), naming a `queued` delivery apart from a `resumed` one: the record places a queued receive at its send, an approximation, since the harness lands it at the agent's next tool round. Its `join` and `inform` rows record exchanges against one handle node per spirit, never an order. It records no retirement, since no transcript records one. The compare feed (`subagent-edges`) links every main-transcript event into one chain in the run's transcript order (each spawn at its Agent launch row), names a spirit with no launch row `unplaced` (and `worldline-compare` on such a handle refuses by that cause), and sends a spirit's sibling message unlinked, so the replay names it a gap. `worldline-kg.ts` exposes `persistWorldlineEdges` and `closeWorldlineEdges` through `kg_io.py`, and no production path calls either; `kapaeTurn` closes the rows of a gone turn, and no production path calls it either. `lares sense worldline` reads a different default KG path. End-to-end edge persistence and readback stand UNBUILT, as does a reified NODE carrying status and transaction-time; when the node lands the edge RE-PROJECTS from it (never a double-write) -> rhythm ~ MECHANISM BUILT AND TESTED (`worldline-clock.ts`); no production path constructs a per-handle clock (`worldlineClockFor`, `groundWorldlineEvent`): per-handle FfzClock keyed on the HANDLE (`actorId` carries the handle) · construct-on-first-event · grounding-tick (L1 Beat on the operator's acknowledging move, NEVER on emission) · rollover detection for a caller-owned LOCAL work-log (NOT the mesh SessionEventLog — work-memory rides a local island); durable checkpoint writing stands UNBUILT. GRAIN RESOLVED (Loom-grounded, 2026-06-25): the clock serializer `ffzAddress` yields a prefix-truncatable rhythmic ADDRESS `Theme.Arc.Measure.Beat.Segment[.block]` — ''L0 Pulse = one generation segment'' (`stop_reason`, = the OTel span), ''block = a sub-offset'' (index, not a tick); the clock's intended input comes from the HARNESS transcript, never the rendered grammar, and production harness wiring stands UNBUILT (lar:///ha.ka.ba/lararium/mesh/ffz-clock#/rhythmic-address). Address serializer + Claude-agent profile BUILT/TESTED (`ffzAddress`, `CLAUDE_AGENT_BOUNDS`). Separately, `ffzMembershipAddress` (`ffz-project.ts`) builds a drawer's `lar_ffz` as `<profile>/<Theme>.<Arc>.<Measure>.<Beat>.<Pulse>`, trailing absent cells trimmed; each cell names membership, never a count, and Pulse names the inscription atom. Arc derives from the source file; the caller may supply Theme, Measure, Beat and Pulse, and absent cells stay porous. `lares sense worldline enrich` (`lararium-sensorium/src/ffz-enrich.ts`, spawning `worldline_ffz.py enrich`) fills an absent Beat cell with the turn's identity label, idempotently; no harvest pass calls it. Grounded by the Horologe spirit — ITC identity/event split (bearer≠replica) · Clark-Brennan/Ginzburg grounding (Pending→Moves) · Automerge/Yjs ephemeral convention · event-sourcing checkpoints -> mandate ~ carry scope+TTL+revocability+duties; handback ratifies + filters the merge -> crypto ~ at the peer/founding boundary only, anchor to keyhive```>>
 
 <<~/ahu>>
 
@@ -368,9 +370,20 @@ keys it on the handle.
   rides the drawer, single-source. KG triple writing from production capture, matching CLI
   readback, and a reified `prov:Delegation` NODE carrying status and transaction-time stand
   UNBUILT (`worldline-kg.ts` exposes the writer; nothing in production capture calls it).
-* ''Injection merges no history'' — `worldlineInject` ticks the target alone
-  (`worldline-causal.ts`); joining the injector's causal history into the target, the
-  merge-where-messages-land the rhizome rules (#/time), stands UNBUILT.
+* ''One durable event contract'' — the live registry, the PROV edges, the mempalace KG and the
+  Python `WorldlineStore` each carry part of the event record: the KG row drops a handback's
+  `round` mark and every `parentKey`, and the Python store keys turns where the edges key handles.
+  Choosing one contract and deriving the rest stands open (the operator's fork 3,
+  `lar:///ha.ka.ba/kahua/memory/research/worldline-meets-the-swarm#/forks`).
+* ''Retirement from capture'' — no harness transcript records a retirement act, so a captured
+  spirit stays open across every round; a retire door (or a harness signal) stands UNBUILT.
+* ''A wide live fan'' — ITC grows a parent's id and event trees with every child it still holds, so a
+  parent fanning out to thousands of never-retired spirits costs each of its ops that depth (a replay of
+  2000 events over 666 live spirits runs well under two seconds; 6000 over 2000 takes seconds).
+  Retirement reclaims the depth; a capture that never retires keeps it.
+* ''Two-parent links'' — an edge names one `parentKey`, so a spirit's sibling message (or a grandchild's
+  spawn, launched from a spirit) cannot link to both lines it shares; the replay names it a gap. A
+  multi-parent link, or a per-spirit chain read from the spirit's own transcript, stands UNBUILT.
 * ''Cross-source join key'' — reconcile whether worldline correlation reuses `LarTickCounter`
   or rests on the edge-DAG alone.
 * ''Chain `parent_edge_id`'' or a grandchild generation goes dark.
@@ -419,6 +432,6 @@ attribute to the spirit that moved them.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;MDSRdVFE9SO5BU6eIIw0gXM_tcQ6p2JYlAhLWqoJVoI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;p0lspP3bCFxKsnkaK89O_9OHrQ9HThEYgYWg1T4ks44`>>
 
 <<^ code=`&#x0004;` to=`?`>>

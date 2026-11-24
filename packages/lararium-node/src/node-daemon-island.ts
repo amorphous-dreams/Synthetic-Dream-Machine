@@ -8,8 +8,8 @@
 import { parentPort } from "worker_threads";
 import { runSovereignWorker, vesselReceiptAsker, vesselCustodyWriter, vesselDyadAsker, vesselSessionDoor } from "./sovereign-island-model.js";
 import { makeOperatorDaemonBehavior } from "@lararium/keyhive/operator-daemon-behavior";
-import { mountDiskProjection, mountLitFaceProjection, mountedDiskProjector } from "./island-behaviors.js";
-import { answerShore } from "./shore-verb.js";
+import { litFaceProjector, litFaceProjectorFaces, mountDiskProjection, mountLitFaceProjection, mountedDiskProjector } from "./island-behaviors.js";
+import { answerShoreSeats } from "./shore-verb.js";
 import type { IslandContext } from "@lararium/tw5";
 import { makeBagTierReader } from "./vessel-bag-tier.js";
 import { HULLS_FULL, freshBasePort, islandLiveDocDoor, type JournalCursor, type JournalEntry, type JournalKind } from "@lararium/mesh";
@@ -110,12 +110,12 @@ runSovereignWorker((manifest) => {
     // A person's answers at this island's disk shore: the same door a wiki island stands (`claimShoreVerb`),
     // answered from the projector this island mounts. `lares shore` reaches it by this verb, beside the
     // `wiki-act` line into the active wiki's island (`shore-core.ts`).
-    shore:          async (args, asker) => {
-      const projector = mountedDiskProjector();
-      return projector === null
-        ? { ok: false, refusal: "no-disk-shore", why: "the daemon island mounts no disk projection" }
-        : answerShore(projector, args, asker);
-    },
+    // A LIT SIBLING'S SHORE ANSWERS BY ITS FACE (`answerShoreSeats`): an act naming `face` reaches that face's projector, so its
+    // standoffs read and answer without wearing it; a flush naming no face reaches the worn projector and every lit sibling's.
+    shore:          async (args, asker) => answerShoreSeats({
+      own: mountedDiskProjector(), worn: manifest.daemonAuth?.handleIndex ?? null,
+      lit: litFaceProjector, litFaces: litFaceProjectorFaces,
+    }, args, asker),
     events:         async (args, signal) => {
       const kindRaw = args["kind"];
       const wait = args["wait"] === true;

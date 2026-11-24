@@ -5,7 +5,7 @@ import { refuseUsage } from "../render.js";
 import { storeVerb, StoreDoorRefusal } from "../store-door.js";
 
 /** Every verb the intent door answers. */
-export const INTENT_VERBS = ["issue", "show", "ask", "answer", "claim", "takeover", "release", "cancel", "supersede", "release-root", "delegate", "delegate-revoke", "delegations"] as const;
+export const INTENT_VERBS = ["issue", "show", "ask", "answer", "claim", "takeover", "release", "cancel", "supersede", "release-root", "delegate", "delegate-revoke", "delegations", "keeper-cosign"] as const;
 const acts: ReadonlySet<string> = new Set(INTENT_VERBS);
 function faceOf(args: ParsedArgs): { face?: number } {
   const raw = args.options["face"];
@@ -22,6 +22,14 @@ export async function cmdIntent(args: ParsedArgs): Promise<number> {
     const face = faceOf(args);
     const root = act === "cancel" || act === "supersede" || act === "release-root" || act === "delegate" || act === "delegate-revoke";
     const steer = act === "claim" || act === "takeover" || act === "release";
+    if (act === "keeper-cosign") {
+      // `lares intent keeper-cosign <sha256:D′> --prev <chain head|none> --nonce <64 hex> [--face N]`: the keeper vest's co-sign over
+      // one commit; prints the face's carried co-sign as JSON (the host shim gathers each lit face's into the keeper commit).
+      if (!target || args.options["prev"] === undefined || args.options["nonce"] === undefined) throw new Error("keeper-cosign: name the successor closure, --prev <chain head|none> and --nonce <64 hex>");
+      const { output } = await storeVerb("intent-ask", { ...face, action: "keeper-cosign", next: target, prev: args.options["prev"], nonce: args.options["nonce"] });
+      console.log(JSON.stringify(output["cosign"]));
+      return 0;
+    }
     const door = act === "issue" ? "intent-issue" : act === "show" || act === "delegations" ? "intent-show" : act === "ask" ? "intent-ask"
       : act === "answer" ? "intent-answer" : root ? "intent-root" : "intent-steer";
     let jsonArgs: unknown;

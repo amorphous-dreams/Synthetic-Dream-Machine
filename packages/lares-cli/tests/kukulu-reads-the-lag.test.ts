@@ -5,7 +5,7 @@
  * After the restand, `lares rite kukulu` reads two gaps and names each: the canon bag behind the canon source (the
  * carriers in `bags/` the canon layers lack: canon fills through promote and the floor's sealed cut alone, so the raise
  * only names it) and each wiki's workbench behind the checkout's `wikis/<slug>`. Where the release the vessel runs
- * carries a newer sealed floor than it serves, the line names that too. Where the canon source stands in a checkout and
+ * carries a newer seed (the seed offer) than it serves, the line names that by its own word, the floor card's title and the runnable line. Where the canon source stands in a checkout and
  * the owner holds a terminal, the raise previews the workbench lay (each title a mounted workbench would take) and lays
  * it on an explicit yes, into each wiki's working layer the worn face mounts; a workbench that does not mount is named
  * and left. No prompt ever writes the canon bag. A seat (no terminal, or an AI launcher) names the lag and lays nothing.
@@ -128,14 +128,24 @@ describe("kukulu reads the lag on every raise and lays the workbench on the owne
     expect(f.said.join("\n")).toMatch(/\/elsewhere\/bags stands in no checkout, so the raise offers no lay/);
   });
 
-  it("RED: a newer sealed floor in the release names itself on the lag line; CONTROL: a floor that stands the same names nothing", async () => {
+  it("RED: a newer seed's floor names the seed offer by its own word, the card's title and the runnable line; CONTROL: a seed that stands the same names nothing", async () => {
+    const CARD = "lar:///ha.ka.ba/lares/floor/0123456789ab";
+    const offer = (floor: string) => async () => ({ record: { engine: "e", grammar: "g", plugins: "p", floor: "f1" }, seed: { cid: "bafyseed", digests: { engine: "e", grammar: "g", plugins: "p", floor } } });
     const f = fakes({ lag: { ...LAG, benches: [], benchLag: 0, holdings: [], lag: 0 } });
-    const out = await riteKukulu({ ...f.ports, seedOffer: async () => ({ record: { engine: "e", grammar: "g", plugins: "p", floor: "f1" }, seed: { cid: "bafyseed", digests: { engine: "e", grammar: "g", plugins: "p", floor: "f2" } } }) } as RitePorts, {});
-    expect(f.said.join("\n")).toMatch(/the release this vessel runs carries a newer sealed floor than the vessel serves \(floor moved\); the raise names it and stands no floor/);
-    expect(out).toMatchObject({ data: { lag: { floor: "moved" } } });
+    const out = await riteKukulu({ ...f.ports, seedOffer: offer("f2"), floorCard: async () => ({ title: CARD }) } as RitePorts, {});
+    const text = f.said.join("\n");
+    expect(text).toContain("the seed offer waits (the seed's floor moved)");
+    expect(text).toContain(CARD);
+    expect(text).toContain("`lares vessel floor status --grain seed`");
+    expect(text).not.toMatch(/newer sealed floor/);
+    expect(out).toMatchObject({ data: { lag: { floor: "moved", card: CARD } } });
+    // A vessel that answers no card still names the runnable line.
+    const bare = fakes({ lag: { ...LAG, benches: [], benchLag: 0, holdings: [], lag: 0 } });
+    await riteKukulu({ ...bare.ports, seedOffer: offer("f2"), floorCard: async () => null } as RitePorts, {});
+    expect(bare.said.join("\n")).toContain("`lares vessel floor status --grain seed`");
     const same = fakes({ lag: { ...LAG, benches: [], benchLag: 0, holdings: [], lag: 0 } });
-    await riteKukulu({ ...same.ports, seedOffer: async () => ({ record: { engine: "e", grammar: "g", plugins: "p", floor: "f1" }, seed: { cid: "bafyseed", digests: { engine: "e", grammar: "g", plugins: "p", floor: "f1" } } }) } as RitePorts, {});
-    expect(same.said.join("\n")).not.toMatch(/newer sealed floor/);
+    await riteKukulu({ ...same.ports, seedOffer: offer("f1"), floorCard: async () => ({ title: CARD }) } as RitePorts, {});
+    expect(same.said.join("\n")).not.toMatch(/seed offer waits/);
   });
 
   it("RED: level, and unread: each says so and asks nothing", async () => {
@@ -160,7 +170,7 @@ describe("kukulu reads the lag on every raise and lays the workbench on the owne
     const out = await riteKukulu(f.ports, {});
     // The --json answer names it by its own code (`refusal` feeds the error code), never `rite-stopped-at-landing` nor the failed lay's.
     expect(out).toMatchObject({ code: 1, data: { workbench: { laid: false, interrupted: true }, refusal: "kukulu-workbench-lay-interrupted" } });
-    expect(f.said.join("\n")).toMatch(/the workbench lay was interrupted; the house stands, and the lay reads diff-gated, so lares vessel lay --workbench --apply picks it up/);
+    expect(f.said.join("\n")).toMatch(/something interrupted the workbench lay; the house stands, and the lay reads diff-gated, so lares vessel lay --workbench --apply picks it up/);
   });
 
   it("CONTROL: a raise that fails reads no lag; ports with no lag read leave the answer as it stood", async () => {

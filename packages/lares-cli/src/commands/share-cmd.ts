@@ -208,7 +208,6 @@ export function cmdShare(kind: "bag" | "wiki", doors: ShareDoors = LIVE_SHARE_DO
         + (pending > 0 ? `; ${pending} wait for a shut face (\`lares vault unlock --face N\`, then share again)` : ""));
       for (const w of Array.isArray(applied["workbenches"]) ? applied["workbenches"] as Array<Record<string, unknown>> : []) {
         doors.out(`  workbench: wiki ${String(w["slug"])} rides realm ${String(w["realmId"]).slice(0, 12)}… (${Number(w["members"] ?? 0)} member face(s)${w["founded"] === true ? ", founded now" : ""})`);
-        if (w["restsUnderOwner"] === true && Number(w["members"] ?? 0) > 0) doors.out(`    its document rests sealed under its owner face on this vessel, so each seated face here writes its own personal layer of ${String(w["slug"])} and offers from there; the seats stand for the wire and for each face's own vessels`);
       }
       // THE ROW KEEPS ITS OWNER, by pet-name, in the vessel-local file: after a re-founding the seed re-stands the wiki at
       // that face's wear. The name is the human's own label, so it rests here and in the control document.

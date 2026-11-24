@@ -47,7 +47,9 @@ export interface KukuluOffer { readonly lei: readonly SignedSwarmAct[]; readonly
  * One face the offer asks lent: its group, the trust its own hand's records verify under, its ward witness, and the name the
  * answer gives it (`h<ordinal>`; its group where the caller names none).
  */
-export interface KukuluOfferFace { readonly group: string; readonly trust: SwarmTrust; readonly ward: WardActWitness; readonly name?: string }
+export interface KukuluOfferFace { readonly group: string; readonly trust: SwarmTrust; readonly ward: WardActWitness; readonly name?: string;
+  /** The devices this face holds, as this vessel read its signed admission fold; absent where it read none. */
+  readonly devices?: number }
 
 const IMAGE_DIGEST = /^[a-z0-9]+:[0-9a-f]{32,128}$/;
 
@@ -65,6 +67,9 @@ export async function writeKukuluOffer(a: {
   /** The holder whose custody root yields the vouch key: this vessel's seated one. */
   readonly holder: Pick<CustodyHolder, "derive">;
   readonly path: string;
+  /** THE KEEPER MOVE this rite carries (the keeper tally): the successor's announced key and the committed closure; each vouch
+   *  names them beside its face's device count, so the pūlama's vest proceeds only inside this rite. */
+  readonly keeper?: { readonly to: string; readonly next: string };
 }): Promise<{
   readonly path: string; readonly vouch: readonly string[]; readonly lei: number;
   /** Every face the offer vouches for, by name, in the order asked. */
@@ -88,7 +93,8 @@ export async function writeKukuluOffer(a: {
   if (lei.length === 0) throw new SwarmRefused("swarm-lei-absent", `no kukulu lei rests for "${a.branch}" on any face's line, so this kūkulu wears none`);
   const signer = await vouchSignerOf(a.holder);
   const vouch: SignedKukuluVouch[] = [];
-  for (const face of a.faces) vouch.push(await signKukuluVouch({ group: face.group, branch: a.branch, head: a.head, tree: a.tree, image: a.image }, signer));
+  for (const face of a.faces) vouch.push(await signKukuluVouch({ group: face.group, branch: a.branch, head: a.head, tree: a.tree, image: a.image,
+    ...(a.keeper === undefined ? {} : { keeper: { to: a.keeper.to, next: a.keeper.next, devices: face.devices ?? 0 } }) }, signer));
   const offer: KukuluOffer = { lei, unstrung, vouch };
   mkdirSync(dirname(a.path), { recursive: true });
   const tmp = `${a.path}.${process.pid}.tmp`;

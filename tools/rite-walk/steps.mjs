@@ -406,14 +406,14 @@ export const STEPS = Object.freeze([
     } },
 
   // Offer, promote, release, accept.
-  { id: "offer", prose: "''Offer, promote, release, accept.''", via: SC, needs: ["share-lares"], expect: "layer: personal, then the offer",
-    quoted: ["`layer: personal` on this vessel"],
+  { id: "offer", prose: "''Offer, promote, release, accept.''", via: SC, needs: ["share-lares"], expect: "layer: working, then the offer",
+    quoted: ["`layer: working`, the workbench the engineer's `write` seat reaches"],
     run: async (ctx) => {
       const worn = await ctx.wear(1);
       if (worn?.wears !== 1) return { ok: false, answer: `the engineer never stood worn: ${JSON.stringify(worn)}` };
       const file = ctx.file("offered.mem", memeText(OFFERED, "the engineer offers this record to house canon"));
       const put = await ctx.cli(["tiddler", "put", "--meme", OFFERED, "--recipe", "lares", "--file", file, "--json"]);
-      if (put.code !== 0 || !landing(put).startsWith("layer: personal")) return { ok: false, answer: `meme put: ${put.code === 0 ? landing(put) : refusalOf(put)}` };
+      if (put.code !== 0 || !landing(put).startsWith("layer: working")) return { ok: false, answer: `meme put: ${put.code === 0 ? landing(put) : refusalOf(put)}` };
       const offer = await ctx.cli(["meme", "offer", OFFERED, "--bag", "lares", "--no-json"]);
       return { ok: offer.code === 0, answer: `${landing(put)} · ${offer.code === 0 ? lineOf(`${offer.stdout}\n${offer.stderr}`, "offer") : refusalOf(offer)}` };
     } },

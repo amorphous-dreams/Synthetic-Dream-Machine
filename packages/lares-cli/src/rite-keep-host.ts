@@ -12,11 +12,10 @@
  *   2. the sessions  ON THE HOST: this device's Claude Code sessions mirror into `devices/<name>-<id8>/`
  *                    (`./keep-sessions.ts`), and the secret scan reads the mirror, a compressed transcript by its own bytes.
  *                    A dir another device owns, or a secret-shaped string, refuses here, before any return spends
- *   3. keep-cut      first the shore's flush (`lares shore flush`, through the bridge): the daemon island and the active wiki
- *                    write what they hold to their mirrors, and the rite says what each wrote or left. That door reaches those
- *                    two islands alone; every other resident wiki island stands outside it (the vessel's teardown flush reaches
- *                    them), and the line names that gap. A flush that leaves a carrier unwritten never stops the keep: the
- *                    bundle cuts from the records. Then IN THE VESSEL: the vessel half (`rite-keep.ts`): the lei's return, the
+ *   3. keep-cut      first the shore's flush (`lares shore flush`, through the bridge): the vessel flushes every island that
+ *                    mounts a disk shore (the daemon's with each lit face's, and every resident wiki's: the teardown's own
+ *                    flush), and the rite says what each wrote or left. A flush that leaves a carrier unwritten never stops
+ *                    the keep: the bundle cuts from the records. Then IN THE VESSEL: the vessel half (`rite-keep.ts`): the lei's return, the
  *                    cut, the guest half
  *   4. the guard     again over what the cut left: only `<into>` and the device's dir changed, the manifest the host reads
  *                    names the vessel's bundle id (the host's directory and the vessel's stand as one), and the secret scan
@@ -46,6 +45,7 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
 import { readFileSync, statSync } from "node:fs";
+import { secretShapes } from "@lararium/mesh";
 import { join } from "node:path";
 import { MANIFEST_FILE, unsafeRelPath } from "./bundle-manifest.js";
 import { configuredKeepSessions } from "./keep-config.js";
@@ -54,53 +54,9 @@ import { KEEP_INTO, KeepRefused, RITE_KEEP, codedMessage, keepFaceLine } from ".
 import { RETURNS_SPENT, type RefillPort, type RiteVerbAnswer } from "./rite-kukulu.js";
 import type { ShoreFlushReading } from "./shore-core.js";
 
-/**
- * The secret-shaped strings no keep pushes, the same list the operator's claude-backup sync scans with: an Anthropic key, a
- * GitHub token, an AWS access key id, a Slack token. A PEM private key reads apart (`KEEP_KEY_HEADER`): its header alone
- * names no secret, and a transcript that discusses one names it in prose.
- */
-export const KEEP_SECRET_PATTERN = /(sk-ant-[A-Za-z0-9_-]{10,}|gh[pousr]_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|xox[baprs]-[A-Za-z0-9-]{10,})/g;
-/**
- * A PEM private key's header. It trips the guard only where key material follows it: within `KEEP_KEY_BODY_LINES` lines,
- * before any END line, a run of body lines holding at least `KEEP_KEY_BODY_MIN` characters (a real key's body runs to
- * hundreds). The lines read through the carriages a file meets: real newlines, CRLF, and `\n` escaped once or more inside
- * JSONL; an encrypted PEM's header fields (`Proc-Type:`, `DEK-Info:`) and blank lines may stand before the body.
- *
- * A BODY LINE READS WHOLE: the entire trimmed line consists of base64 characters, reaches `KEEP_KEY_LINE_MIN` (OpenSSH and
- * PEM bodies wrap at 70 and 64), and holds an upper-case letter (random base64 that long always does; a hex digest, a
- * lower-case word or path never does). Only the run's last line may fall short, as a body's tail does. Anything else ends
- * the run: a path, prose, an identifier, or a short token after an escaped newline counts for nothing.
- */
-export const KEEP_KEY_HEADER = /-----BEGIN [A-Z ]*PRIVATE KEY-----/g;
-export const KEEP_KEY_BODY_MIN = 64;
-export const KEEP_KEY_BODY_LINES = 64;
-export const KEEP_KEY_LINE_MIN = 40;
-const KEY_BODY_WINDOW = 16384;
-const KEY_BREAK = /(?:\\+r)?\\+n|\r?\n|\r/g;
-const KEY_BASE64_LINE = /^[A-Za-z0-9+/]+={0,2}$/;
-const KEY_FIELD_LINE = /^(?:Proc-Type|DEK-Info): /;
-
-/** Does key material follow a private-key header? `after` holds the text right after the header's closing dashes. */
-function keyBodyFollows(after: string): boolean {
-  const lines = after.slice(0, KEY_BODY_WINDOW).replace(/\\+\//g, "/").split(KEY_BREAK).slice(0, KEEP_KEY_BODY_LINES);
-  let body = 0, started = false;
-  for (const raw of lines) {
-    // A body run on one line with its END: the base64 stops where the END line's dashes start.
-    const line = raw.split("-----END ")[0]!.trim();
-    const ends = raw.includes("-----END ");
-    if (line === "" || (!started && KEY_FIELD_LINE.test(line))) { if (ends || started) break; continue; }
-    if (!KEY_BASE64_LINE.test(line)) break;
-    const full = line.length >= KEEP_KEY_LINE_MIN && /[A-Z]/.test(line);
-    // A short line counts only as the tail of a run already started, and ends it.
-    if (!full) { if (started) body += line.length; break; }
-    started = true;
-    body += line.length;
-    if (ends) break;
-  }
-  return body >= KEEP_KEY_BODY_MIN;
-}
-/** Known fixtures a match may hold and still pass: the AWS documentation key, and the house's PLANTED test values. */
-export const KEEP_SECRET_ALLOW: readonly string[] = ["AKIAIOSFODNN7EXAMPLE", "PLANTED"];
+// THE SECRET-SHAPE SCAN has one owner, `@lararium/mesh` (`secret-shapes.ts`): the keep's guard and the house alert's read
+// redaction read the same list, so a shape added once guards both.
+export { KEEP_SECRET_PATTERN, KEEP_KEY_HEADER, KEEP_KEY_BODY_MIN, KEEP_KEY_BODY_LINES, KEEP_KEY_LINE_MIN, KEEP_SECRET_ALLOW, secretShapes } from "@lararium/mesh";
 
 /**
  * THE KEEP'S OWN NAME ON ITS COMMITS: a keep's remote crosses to another vessel, so its commits carry this fixed neutral author
@@ -128,21 +84,20 @@ export interface KeepHostPorts {
   /** Where a spent keep lei is offered its refill inline (a real terminal); absent, the refusal stands and names the plain line. */
   refill?: RefillPort;
   /**
-   * The shore's flush before the cut, through the existing hand door (`lares shore flush`): the daemon island and the active
-   * wiki alone. Null where the door answered no reading; absent, the keep asks none.
+   * The shore's flush before the cut, through the hand door (`lares shore flush`): every island that mounts a disk shore. Null
+   * where the door answered no reading; absent, the keep asks none.
    */
   flush?: () => Promise<ShoreFlushReading | null>;
 }
 
-/** The keep's lines over the shore's flush: what each island wrote or left, and the reach the door stops at. */
+/** The keep's lines over the shore's flush: what each island wrote or left. */
 export function keepFlushLines(reading: ShoreFlushReading | null): string[] {
   if (reading === null) return ["keep: the shore's flush answered nothing (`lares shore flush` reads it); the keep goes on"];
   const lines = reading.islands.map((p) => !p.answered
     ? `keep: the shore's flush: ${p.island} did not answer: ${p.refusal}: ${p.why}`
     : `keep: the shore's flush: ${p.island} wrote ${p.writtenCount} owed carrier(s)${p.unwrittenCount > 0 ? `; ${p.unwrittenCount} left unwritten: ${p.unwritten.map((u) => `${String(u["state"])} ${String(u["uri"])} (${String(u["why"])})`).join("; ")}` : ""}`);
-  if (reading.islands.length === 0) lines.push("keep: the shore's flush: neither the daemon nor the active wiki mounts a disk shore");
+  if (reading.islands.length === 0) lines.push("keep: the shore's flush: no island mounts a disk shore");
   if (!reading.whole) lines.push("keep: the bundle cuts from the records, and those mirrors stay behind until a flush writes them; the keep goes on");
-  lines.push(`keep: the shore's flush reaches the daemon and the active wiki alone; ${reading.unasked}`);
   return lines;
 }
 
@@ -194,14 +149,6 @@ export function workspaceFromPairs(name: string, configured: string): string {
 export const KEEP_VESSEL_UNREACHED: ReadonlySet<string> = new Set(["rite-row-unreached", "swarm-no-daemon", "daemon-unreachable", "vessel-silent", "store-door-timeout"]);
 export const KEEP_VESSEL_DOWN = "the keep lei lives in the vessel; up, then keep";
 
-/**
- * The secret-shaped strings one text holds, the allowed fixtures dropped. A private-key header counts only where key material
- * follows it, and reads as the header without its closing dashes.
- */
-export function secretShapes(text: string): string[] {
-  const keys = [...text.matchAll(KEEP_KEY_HEADER)].filter((m) => keyBodyFollows(text.slice(m.index + m[0].length))).map((m) => m[0].slice(0, -5));
-  return [...keys, ...[...text.matchAll(KEEP_SECRET_PATTERN)].map((m) => m[0])].filter((m) => !KEEP_SECRET_ALLOW.some((a) => m.includes(a)));
-}
 
 export async function riteKeepHost(ports: KeepHostPorts, opts: KeepHostOptions): Promise<KeepHostOutcome> {
   const name = opts.workspace, into = opts.into ?? KEEP_INTO;

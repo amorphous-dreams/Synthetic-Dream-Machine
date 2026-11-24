@@ -1,14 +1,16 @@
 /**
- * worldline-edge — the pure prov-triple builders (spawn → Delegation, inject → Communication,
- * handback → close). Descriptors only; the node shore (lararium-mempalace/worldline-kg) writes them.
+ * worldline-edge — the pure prov-triple builders (spawn → Delegation, message → Communication,
+ * handback → a round-closing Communication, retire → close). Descriptors only; the node shore (lararium-mempalace/worldline-kg) writes them.
  */
 import { describe, test, expect } from "vitest";
 import {
   delegationEdge,
   communicationEdge,
-  handbackClose,
+  handbackEdge,
+  retireClose,
   PRED_DELEGATION,
   PRED_COMMUNICATION,
+  ROUND_CLOSE,
 } from "../src/index.js";
 
 describe("delegationEdge — the SPAWN prov:Delegation triple (parent → child)", () => {
@@ -39,7 +41,7 @@ describe("delegationEdge — the SPAWN prov:Delegation triple (parent → child)
   });
 });
 
-describe("communicationEdge — the INJECT prov:Communication triple (injector → target)", () => {
+describe("communicationEdge — the MESSAGE prov:Communication triple (sender → recipient)", () => {
   test("the rhizome leg carries its own predicate", () => {
     const e = communicationEdge("operator", "run.grandchild", { validFrom: "2026-06-29T01:00:00Z", turnKey: "t2" });
     expect(e.predicate).toBe(PRED_COMMUNICATION);
@@ -50,18 +52,30 @@ describe("communicationEdge — the INJECT prov:Communication triple (injector �
   });
 });
 
-describe("handbackClose — the twin-reunion interval close (the spawn edge)", () => {
+describe("handbackEdge — the round-closing Communication (child → parent)", () => {
+  test("rides the Communication predicate with the round mark, child as sender", () => {
+    expect(handbackEdge("run.child", "run", { turnKey: "h1", parentKey: "s0" })).toEqual({
+      subject: "run.child", predicate: PRED_COMMUNICATION, object: "run", turnKey: "h1", parentKey: "s0", round: ROUND_CLOSE,
+    });
+  });
+
+  test("rejects empty handles", () => {
+    expect(() => handbackEdge("", "run")).toThrow();
+  });
+});
+
+describe("retireClose — the continuing spirit's explicit end (the spawn edge's interval close)", () => {
   test("closes the SAME parent→child Delegation edge, optional ended", () => {
-    const c = handbackClose("run", "run.child", "2026-06-29T02:00:00Z");
+    const c = retireClose("run", "run.child", "2026-06-29T02:00:00Z");
     expect(c).toEqual({ subject: "run", predicate: PRED_DELEGATION, object: "run.child", ended: "2026-06-29T02:00:00Z" });
   });
 
   test("ended omitted ⇒ the KG defaults it (today); not fabricated here", () => {
-    const c = handbackClose("run", "run.child");
+    const c = retireClose("run", "run.child");
     expect("ended" in c).toBe(false);
   });
 
-  test("carries the event that precedes a handback", () => {
-    expect(handbackClose("run", "run.child", undefined, "inject").parentKey).toBe("inject");
+  test("carries the event that precedes a retirement", () => {
+    expect(retireClose("run", "run.child", undefined, "inject").parentKey).toBe("inject");
   });
 });

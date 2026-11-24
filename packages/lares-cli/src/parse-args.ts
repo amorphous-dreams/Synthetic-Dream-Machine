@@ -31,8 +31,8 @@
  * one of `VALUE_OR_FLAG`.
  */
 export const BOOLEAN_FLAGS: ReadonlySet<string> = new Set([
-  "accept-omissions", "added", "all", "all-strata", "apply", "approve", "brief", "bulk", "cancel", "cards", "cosign", "confirm", "create", "cut", "drain",
-  "deny", "docs", "draft", "drop", "dry-run", "edge", "ephemeral", "every", "executable", "family", "force", "foreground", "from-persona", "held", "help", "help-mempalace", "history",
+  "accept-omissions", "added", "all", "all-strata", "apply", "approve", "brief", "bulk", "cancel", "cards", "collapse", "cosign", "confirm", "create", "cut", "drain",
+  "deny", "docs", "draft", "drop", "dry-run", "edge", "ephemeral", "every", "executable", "family", "force", "fresh", "foreground", "from-persona", "held", "help", "help-mempalace", "history",
   "hearth", "hold", "if-due", "in-wiki", "init", "join", "json", "keep", "keep-hooks", "keyhive-trace", "lag", "launch", "list", "meme", "memory", "observe", "orphans", "over-fresher",
   "page", "pair", "palaces", "paper", "partial", "passphrase", "pending", "probe", "quorum", "overwrite", "remove", "repour", "restart", "rotate", "seat", "sessions", "shadow", "skinny", "skip-build", "spectral", "split-root",
   "staged", "sweep", "tag-blobs", "tree", "verbose", "wait", "watch", "with-web", "workbench", "writeback", "yes",
@@ -41,11 +41,10 @@ export const BOOLEAN_FLAGS: ReadonlySet<string> = new Set([
 /**
  * Names a command reads as a flag in one spelling and as a valued option in another (`meme project --check`
  * alone or `--check <x>`; `--grammar`; `rite kukulu --rollback` alone or `--rollback <rev>`). The parser cannot tell which spelling comes, so these
- * stay greedy. `--face` takes a value (`fleet join offer --face 1`), and so does `--target` (`tiddler get T --target h1`),
- * and each `--release*` act on the deep vessel lens (`vessel read vessel --release <documentId>`); each flag read only
- * refuses the bare spelling.
+ * stay greedy. `--face` takes a value (`fleet join offer --face 1`), and so does `--target` (`tiddler get T --target h1`);
+ * each flag read only refuses the bare spelling.
  */
-export const VALUE_OR_FLAG: ReadonlySet<string> = new Set(["check", "face", "grammar", "rollback", "target", "recipe", "realm", "release", "release-keep", "release-fresh"]);
+export const VALUE_OR_FLAG: ReadonlySet<string> = new Set(["check", "face", "grammar", "rollback", "target", "recipe", "realm"]);
 
 
 /**

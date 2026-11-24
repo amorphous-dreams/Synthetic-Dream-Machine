@@ -510,8 +510,10 @@ export function registerActionReactors(table: VerbTable, opts: ActionHandlerOpti
   // serializer (the reciprocal of a multi-tiddler deserialize). Returns the bytes;
   // the gesture writes them to disk (for the operator's upstream PR). Read cap only.
   table.register("REPACK", async (args, ctx) => {
-    const bag = String(args["bag"] ?? "");
-    const packPath = String(args["pack-path"] ?? "");
+    // ROUTING FIELDS READ AS STRINGS OR REFUSE, never coerced (`routing-arg-malformed`).
+    for (const name of ["bag", "pack-path"]) if (args[name] !== undefined && typeof args[name] !== "string") throw new VerbRefusal("routing-arg-malformed", `routing-arg-malformed: REPACK: \`${name}\` names a string`);
+    const bag = (args["bag"] as string | undefined) ?? "";
+    const packPath = (args["pack-path"] as string | undefined) ?? "";
     if (!bag || !packPath) throw new Error("REPACK: `bag` and `pack-path` required");
     refuseTw5DocsReserved(bag, "REPACK");
     const proof = await ctx.cap("read", bag);
@@ -569,8 +571,13 @@ function awaitsHandRow(uri: string, key: string): Record<string, unknown> {
 
 export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOptions): VerbReactor {
   return async (args, ctx) => {
-    const action = residencyFromContext(verb, args, ctx.invocation);
-    if (!action) throw new Error(`action-handler/${verb}: malformed args — required fields missing or wrong type`);
+    const parsed = residencyFromContext(verb, args, ctx.invocation);
+    if (!parsed) throw new Error(`action-handler/${verb}: malformed args — required fields missing or wrong type`);
+    // A STAND-OFF SETTLES BY A PERSON, ON THIS LEG TOO: a wave's `unattended` flag comes from its caller, so a wave a seat
+    // asked rides unattended whatever it claims, and the gate's no-base verdict stands off rather than adopting a file over
+    // records that say something else. The socket stamps the same on every INGEST a seat or an unread peer sends
+    // (`stampUnattendedIngest`), so a wave routed into a wiki island, where no asker rides, stands off the same way.
+    const action = parsed.verb === "INGEST" && ctx.asker === "seat" && parsed.unattended !== true ? { ...parsed, unattended: true } : parsed;
     // THE TW5 DOCS LIBRARY'S NAME HOLDS ONE RELATION (`tw5-docs-name`): no CREATE mints a bag under it, and no verb writes it,
     // as a destination or as a source, before any cap ask, placement check or store reach.
     if (action.verb === "CREATE") refuseTw5DocsReserved(action.bag, "CREATE");

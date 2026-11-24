@@ -36,6 +36,7 @@
  * No route and no key rests in any row: each holds digests, faces' custody ids and a signature.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
  */
+import type { KeeperCosign } from "@lararium/mesh";
 import { randomUUID } from "node:crypto";
 import { PULAMA_TESSERA_DOMAIN, canonicalJsonBytes, sha256HexBytesSync, verifyEd25519, type SwarmWikiPort } from "@lararium/mesh";
 import { lentFacesOf, lentFacesWire, type LentFacesRefusal } from "@lararium/mesh/lent-faces";
@@ -67,17 +68,65 @@ export type PulamaAdmitBody =
   | { readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "image-reserved"; readonly image: string; readonly faces: readonly AdmittedFace[]; readonly n: number }
   | { readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "admit-begun"; readonly image: string; readonly faces: readonly AdmittedFace[]; readonly tessera: string }
   | { readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "admit-landed"; readonly image: string; readonly faces: readonly AdmittedFace[]; readonly tessera: string; readonly begun: string }
-  | { readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "image-unadmitted"; readonly image: string; readonly ends: string };
+  | { readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "image-unadmitted"; readonly image: string; readonly ends: string }
+  | KeeperBegunBody | KeeperVestedBody | KeeperLapsedBody | KeeperLandedBody | KeeperSlotBody;
+
+/** THE KEEPER TALLY's records (`pulama-keeper`): the budget a keeper spent, carried down the chain. */
+export interface KeeperBudget { readonly spent: number }
+/** What a landing received by vest: the slot's cid, the node key, and each face key by custody id. Null on a struck light. */
+export interface KeeperVest { readonly slot: string; readonly node: boolean; readonly faces: readonly string[] }
+/** The guest half: the lit keeper, under the operator's route, names ONE successor closure (`next`). A later commit supersedes. */
+export interface KeeperBegunBody {
+  readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "keeper-begun"; readonly tessera: string; readonly v: number; readonly prev: string | null;
+  readonly closure: string; readonly next: string; readonly image: string | null; readonly faces: readonly AdmittedFace[]; readonly worn: number | null;
+  readonly budget: KeeperBudget; readonly supersedes: string | null; readonly nonce: string;
+  /** Every live commit of a fork this commit read at its link: it settles them all and stands alone. */
+  readonly settles?: readonly string[];
+  /** The most devices any committed face holds, as the vessel read its signed admission fold at commit time; null where it read
+   *  none. The vest fails closed on either side of one: a face of two devices owes a co-sign path that does not stand yet. */
+  readonly devices: number | null;
+  /** THE CARRIED CO-SIGN (one per committed face, `KeeperCosign`): the face's roster as the vessel read it and, past one device, the
+   *  spent `ward-keeper-vest` co-sign over (`next`, `prev`, `nonce`). Null where the commit carries none (a one-device house). */
+  readonly cosigns?: readonly KeeperCosign[] | null;
+}
+/** The vest's spend mark: the lit keeper sealed the house's end of the bond to ONE successor key, once per commit. No key rests in it. */
+export interface KeeperVestedBody {
+  readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "keeper-vested"; readonly tessera: string; readonly begun: string; readonly next: string;
+  readonly to: string; readonly node: boolean; readonly faces: readonly string[]; readonly nonce: string;
+  /** The live kūkulu rite this vest rode: each lent face's rite tessera the vest's own begin claimed a lei return for. */
+  readonly rite: readonly string[];
+}
+/** THE COMMIT LAPSES after one rite attempt that refused: the mark rests where a vest's would, so the commit never vests later. */
+export interface KeeperLapsedBody {
+  readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "keeper-lapsed"; readonly tessera: string; readonly begun: string; readonly reason: string; readonly nonce: string;
+  /** The rite halves a begin rested before a later face refused (blind read L1): they rest unlanded, named here. */
+  readonly halves?: readonly string[];
+}
+/** The host half: the successor, lit by vest or by the hand, names what it stands on and what it received. */
+export interface KeeperLandedBody {
+  readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "keeper-landed"; readonly tessera: string; readonly v: number; readonly prev: string;
+  readonly begun: string; readonly closure: string; readonly image: string | null; readonly faces: readonly AdmittedFace[]; readonly worn: number | null;
+  readonly budget: KeeperBudget; readonly vestings: number; readonly vest: KeeperVest | null; readonly nonce: string;
+}
+/** THE KEEPER SLOT: the sealed vest, alive for one handoff. It crosses the host's pipe once and never rests on disk. */
+export interface KeeperSlotBody {
+  readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "keeper-slot"; readonly tessera: string; readonly begun: string; readonly next: string;
+  readonly to: string; readonly box: { readonly e: string; readonly n: string; readonly c: string };
+}
 export interface SignedPulamaAdmit { readonly body: PulamaAdmitBody; readonly signer: string; readonly sig: string }
 
-const cidOf = (act: { readonly body: PulamaAdmitBody; readonly signer: string }): string => sha256HexBytesSync(canonicalJsonBytes({ body: act.body, signer: act.signer }));
-type Parts<A extends PulamaAdmitBody["act"]> = Omit<Extract<PulamaAdmitBody, { act: A }>, "kind">;
+export const pulamaRecordCid = (act: { readonly body: PulamaAdmitBody; readonly signer: string }): string => sha256HexBytesSync(canonicalJsonBytes({ body: act.body, signer: act.signer }));
+export type PulamaRecordParts<A extends PulamaAdmitBody["act"]> = Omit<Extract<PulamaAdmitBody, { act: A }>, "kind">;
+type Parts<A extends PulamaAdmitBody["act"]> = PulamaRecordParts<A>;
+/** Sign one record of the pūlama's family under its key. */
+export async function signPulamaRecord<A extends PulamaAdmitBody["act"]>(parts: PulamaRecordParts<A>, by: KukuluSigner): Promise<SignedPulamaAdmit> { return sign(parts, by); }
 async function sign<A extends PulamaAdmitBody["act"]>(parts: Parts<A>, by: KukuluSigner): Promise<SignedPulamaAdmit> {
   const body = { kind: PULAMA_TESSERA_DOMAIN, ...parts } as unknown as PulamaAdmitBody;
   return { body, signer: by.key.toLowerCase(), sig: await by.sign(canonicalJsonBytes(body)) };
 }
 
 /** One row as the pūlama's own record, or null: its shape, its domain, its signature, and the pūlama's key as its signer. */
+export function verifiedPulamaRecord(text: string | null, pulamaKey: string): SignedPulamaAdmit | null { return verified(text, pulamaKey); }
 function verified(text: string | null, pulamaKey: string): SignedPulamaAdmit | null {
   if (text === null) return null;
   try {
@@ -186,7 +235,7 @@ export function pulamaAdmissions(records: SwarmWikiPort): PulamaAdmissions {
       const begun = await sign<"admit-begun">({ act: "admit-begun", image, faces, tessera }, by);
       await records.writeNew(pulamaAdmitTesseraTitle(tessera, "guest"), JSON.stringify(begun));
       await rest(image, faces, "hand", tessera, faces.map((f) => ({ ordinal: f.ordinal, tessera })), by);
-      const landed = await sign<"admit-landed">({ act: "admit-landed", image, faces, tessera, begun: cidOf(begun) }, by);
+      const landed = await sign<"admit-landed">({ act: "admit-landed", image, faces, tessera, begun: pulamaRecordCid(begun) }, by);
       await records.writeNew(pulamaAdmitTesseraTitle(tessera, "host"), JSON.stringify(landed));
       return { tessera };
     },
