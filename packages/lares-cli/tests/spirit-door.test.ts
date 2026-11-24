@@ -14,7 +14,10 @@ vi.mock("../src/verb-call.js", () => ({
   verbFailure: (err: unknown) => ({ code: "error", message: err instanceof Error ? err.message : String(err) }),
   runVerb: async (verb: string, args: Record<string, unknown>) => {
     h.calls.push({ verb, args });
-    return { status: "done", requestId: "r", results: { summary: { ok: true, output: h.answer(verb, args) } } };
+    const output = h.answer(verb, args);
+    // A refusal crosses as the vessel sends one: the verb's own code leads its message.
+    if (typeof output["refuse"] === "string") return { status: "error", requestId: "r", errorMessage: output["refuse"] };
+    return { status: "done", requestId: "r", results: { summary: { ok: true, output } } };
   },
   runVerbAsFace: async () => { throw new Error("no face session in these tests"); },
 }));
@@ -23,7 +26,8 @@ vi.mock("../src/env.js", async (orig) => ({
   vesselDid: async () => "0x" + "ab".repeat(32),
 }));
 
-import { cmdSpirit, omText, residueOf, slotBody, handbackPet, ashLedgerOf, OM_CAP_CHARS, SLOT_BUDGET_BYTES, MEMORY_PREFIX } from "../src/commands/spirit.js";
+import { cmdSpirit, omText, residueOf, slotBody, ashLedgerOf, OM_CAP_CHARS, SLOT_BUDGET_BYTES, MEMORY_PREFIX, RESIDUE_CAP_CHARS } from "../src/commands/spirit.js";
+import { COMPACTION_WORD } from "../src/spirit-words.js";
 import { COMMANDS } from "../src/bin/lares.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 
@@ -41,7 +45,7 @@ const slots = (over: Record<string, number> = {}) => [
 const framed = (slot: string, body: string) => `<<~ ahu slot=\`${slot}\`>>\n\n${body}\n\n<<~/ahu>>\n`;
 
 /** A stage holding one familiar record; `bodies` and `open` hold these words, every write answers by its verb. */
-function stage(opts: { kind?: "familiar" | "spirit"; slotBytes?: Record<string, number>; bodies?: string; open?: string; patch?: string; put?: string; titles?: string[] } = {}) {
+function stage(opts: { kind?: "familiar" | "spirit"; slotBytes?: Record<string, number>; bodies?: string; open?: string; patch?: string; put?: string; titles?: string[]; ledgerStands?: boolean } = {}) {
   const kind = opts.kind ?? "familiar";
   const texts: Record<string, string> = { "#/bodies": opts.bodies ?? "!! Bodies\n\n* one", "#/open": opts.open ?? "!! Open\n\n* a loop" };
   h.answer = (verb, args) => {
@@ -54,7 +58,14 @@ function stage(opts: { kind?: "familiar" | "spirit"; slotBytes?: Record<string, 
     }
     if (verb === "tiddler-get") return { tiddler: { fields: { title: args["title"], text: "first words\nmore" }, textHash: "sha256-ab" } };
     if (verb === "meme-patch") return { decision: opts.patch ?? "ingest", canonicalHash: "sha256:" + "11".repeat(32) };
-    if (verb === "tiddler-put") return { decision: opts.put ?? "put" };
+    if (verb === "tiddler-put") {
+      // The tiddler door's own law: an append to a title no record holds refuses unless `create` names it.
+      const ledger = String(args["title"]).startsWith(`${MEMORY_PREFIX}state/ashes-`);
+      if (ledger && typeof args["append"] === "string" && !opts.ledgerStands && args["create"] !== true) {
+        return { refuse: `append-target-missing: no record "${String(args["title"])}" stands to append to; name \`create\` (\`--create\`) to land the words as a new record. Nothing moved.` };
+      }
+      return { decision: opts.put ?? "put" };
+    }
     if (verb === "wiki-filter") return { titles: opts.titles ?? [] };
     if (verb === "tiddler-delete") return { decision: "removed" };
     return {};
@@ -82,8 +93,17 @@ afterEach(() => { h.calls.length = 0; });
 describe("the spirit door stands in the command table", () => {
   test("its row names every verb and every option its handler reads", () => {
     const row = COMMANDS.find((c) => c.name === "spirit")!;
-    expect(row.verbs).toEqual(["help", "om", "ah", "hum", "otakiage", "round", "residue"]);
+    expect(row.verbs).toEqual(["help", "om", "ah", "hum", "otakiage", COMPACTION_WORD, "residue"]);
     expect(row.accepts).toEqual(expect.arrayContaining(["add", "base", "file", "fold", "line", "slot", "text"]));
+  });
+});
+
+describe("the compaction's word stands in one place", () => {
+  test("the door's word and the hooks' twin read one word, and the verb table names it", async () => {
+    // The hooks ship as plain .mjs a harness runs unbuilt; the weld loads the module itself.
+    const twin = (await import(new URL("../.claude-plugin/hooks/lares-spirit-core.mjs", import.meta.url).href)) as { COMPACTION_WORD: string };
+    expect(twin.COMPACTION_WORD).toBe(COMPACTION_WORD);
+    expect(COMMANDS.find((c) => c.name === "spirit")!.verbs).toContain(COMPACTION_WORD);
   });
 });
 
@@ -127,6 +147,16 @@ describe("om wakes under the cap", () => {
     expect(text).toContain("#516 awaits CI");
     expect(text).toContain("lares spirit ah lares-alpha");
     expect(text.length).toBeLessThanOrEqual(OM_CAP_CHARS);
+    expect(text).toContain(`Latest ${COMPACTION_WORD}: none stands under lares-alpha yet.`);
+  });
+
+  test("the wake names the latest landing by title and hash, so the body checks what it inherited", async () => {
+    const landing = `${MEMORY_PREFIX}${COMPACTION_WORD}/lares-alpha-0123456789ab`;
+    stage({ titles: [landing, `${MEMORY_PREFIX}${COMPACTION_WORD}/lares-alpha-two-ba9876543210`] });
+    const r = await run(argv(["om", "lares-alpha"]));
+    expect(h.calls.find((c) => c.verb === "wiki-filter")!.args["filter"]).toBe(`[prefix[${MEMORY_PREFIX}${COMPACTION_WORD}/lares-alpha-]!sort[landed]]`);
+    expect(data(r)["latest"]).toBe(landing);
+    expect(String(data(r)["text"])).toContain(`Latest ${COMPACTION_WORD}: ${landing} (hash 0123456789ab)`);
   });
 
   test("an #/open past the cap cuts with a pointer to the whole slot", () => {
@@ -190,6 +220,13 @@ describe("ah trues one slot through the meme door", () => {
     expect(r.exit).toBe(0);
   });
 
+  test("secret-shaped words refuse under the strict reading, bare minted hex included", async () => {
+    stage();
+    const r = await run(argv(["ah", "lares-alpha"], { slot: "#/open", text: `a ward ticket ${"ab".repeat(32)}` }));
+    expect(error(r).code).toBe("spirit-secret-shaped");
+    expect(h.calls.some((c) => c.verb === "meme-patch")).toBe(false);
+  });
+
   test("a slot the record lacks refuses spirit-slot-missing and lists the slots", async () => {
     stage();
     const r = await run(argv(["ah", "lares-alpha"], { slot: "#/nope", text: "y" }));
@@ -218,6 +255,22 @@ describe("hum measures and folds", () => {
     expect(data(r)["lines"]).toEqual([{ n: 1, text: "!! Bodies" }, { n: 2, text: "" }, { n: 3, text: "* one" }, { n: 4, text: "* two" }]);
   });
 
+  test("the first fold of a month opens its ledger: the append names create, so the door's append-target-missing never answers", async () => {
+    stage({ bodies: "!! Bodies\n\n* one\n* two" });
+    const r = await run(argv(["hum", "lares-alpha"], { fold: "#/bodies", line: "3" }));
+    expect(r.exit).toBe(0);
+    const put = h.calls.find((c) => c.verb === "tiddler-put")!;
+    expect(put.args).toMatchObject({ title: `${MEMORY_PREFIX}state/ashes-2026-11`, create: true });
+    expect(h.calls.filter((c) => c.verb === "tiddler-put")).toHaveLength(1);
+  });
+
+  test("a ledger line carries a record's words redacted under the strict reading", async () => {
+    stage({ bodies: `!! Bodies\n\n* token ghp_${"A".repeat(36)}\n* two` });
+    await run(argv(["hum", "lares-alpha"], { fold: "#/bodies", line: "3" }));
+    const append = String(h.calls.find((c) => c.verb === "tiddler-put")!.args["append"]);
+    expect(append).not.toContain("ghp_");
+  });
+
   test("--fold --line moves the line to the month's ash ledger first, then out of the record", async () => {
     stage({ bodies: "!! Bodies\n\n* one\n* two" });
     const r = await run(argv(["hum", "lares-alpha"], { fold: "#/bodies", line: "3" }));
@@ -238,21 +291,21 @@ describe("hum measures and folds", () => {
   });
 });
 
-describe("round and residue land after the secret-shape guard", () => {
-  test("a round lands at round/<pet>-<hash12> and files one #/bodies line", async () => {
+describe("the compaction verb and residue land after the strict secret-shape guard", () => {
+  test("a compaction lands at <word>/<pet>-<hash12>, stamped landed, and files one #/bodies line", async () => {
     stage();
-    const r = await run(argv(["round", "lares-alpha"], { text: "the summary\nROUND\n* a loop" }));
+    const r = await run(argv([COMPACTION_WORD, "lares-alpha"], { text: "the summary\nclosing\n* a loop" }));
     expect(r.exit).toBe(0);
     const title = String(data(r)["title"]);
-    expect(title).toMatch(new RegExp(`^${MEMORY_PREFIX}round/lares-alpha-[0-9a-f]{12}$`));
-    expect(h.calls.find((c) => c.verb === "tiddler-put")!.args).toMatchObject({ title, create: true, text: "the summary\nROUND\n* a loop" });
-    expect(String(h.calls.at(-1)!.args["replace"])).toContain(`* ''2026-11-24 (round ${title.slice(-12)}):'' ${title}`);
+    expect(title).toMatch(new RegExp(`^${MEMORY_PREFIX}${COMPACTION_WORD}/lares-alpha-[0-9a-f]{12}$`));
+    expect(h.calls.find((c) => c.verb === "tiddler-put")!.args).toMatchObject({ title, create: true, text: "the summary\nclosing\n* a loop", fields: { landed: "2026-11-24T12:00:00.000Z" } });
+    expect(String(h.calls.at(-1)!.args["replace"])).toContain(`* ''2026-11-24 (${COMPACTION_WORD} ${title.slice(-12)}):'' ${title}`);
     expect(data(r)["filed"]).toBe(true);
   });
 
-  test("a round the bodies budget refuses lands unfiled and says which fold files it", async () => {
-    stage({ bodies: "b".repeat(1000), slotBytes: { "#/bodies": 1000 } });
-    const r = await run(argv(["round", "lares-alpha"], { text: "summary" }));
+  test("a compaction the bodies budget refuses lands unfiled and says which fold files it", async () => {
+    stage({ bodies: "w".repeat(1000), slotBytes: { "#/bodies": 1000 } });
+    const r = await run(argv([COMPACTION_WORD, "lares-alpha"], { text: "summary" }));
     expect(r.exit).toBe(0);
     expect(data(r)["filed"]).toBe(false);
     expect(String(data(r)["unfiled"])).toContain("spirit-slot-over-budget");
@@ -260,9 +313,16 @@ describe("round and residue land after the secret-shape guard", () => {
 
   test("a secret-shaped summary lands nothing", async () => {
     stage();
-    const r = await run(argv(["round", "lares-alpha"], { text: "token ghp_" + "A".repeat(36) }));
+    const r = await run(argv([COMPACTION_WORD, "lares-alpha"], { text: "token ghp_" + "A".repeat(36) }));
     expect(error(r).code).toBe("spirit-secret-shaped");
     expect(h.calls.some((c) => c.verb === "tiddler-put")).toBe(false);
+  });
+
+  test("the guard reads the uncut text: a secret past the cap still refuses", async () => {
+    stage();
+    const r = await run(argv(["residue", "om-wright"], { text: `${"x".repeat(RESIDUE_CAP_CHARS + 10)} ghp_${"A".repeat(36)}` }));
+    expect(error(r).code).toBe("spirit-secret-shaped");
+    expect(h.calls).toEqual([]);
   });
 
   test("a handback lands at spirit/<pet>-handback-<hash12> with no record behind it", async () => {
@@ -271,16 +331,12 @@ describe("round and residue land after the secret-shape guard", () => {
     expect(String(data(r)["title"])).toMatch(new RegExp(`^${MEMORY_PREFIX}spirit/om-wright-handback-[0-9a-f]{12}$`));
   });
 
-  test("a handback's pet name reads off its mask tag", () => {
-    expect(handbackPet("Om-Wright: Lares (Tasked Spirit)\n\nreport", "agent-1")).toBe("om-wright");
-    expect(handbackPet("no tag here", "Agent_7")).toBe("agent-7");
-  });
 });
 
 describe("otakiage burns the residue and keeps the card", () => {
-  const round = `${MEMORY_PREFIX}round/lares-alpha-0123456789ab`;
+  const round = `${MEMORY_PREFIX}${COMPACTION_WORD}/lares-alpha-0123456789ab`;
   const hand = `${MEMORY_PREFIX}spirit/lares-alpha-handback-ba9876543210`;
-  const other = `${MEMORY_PREFIX}round/lares-alpha-two-0123456789ab`;
+  const other = `${MEMORY_PREFIX}${COMPACTION_WORD}/lares-alpha-two-0123456789ab`;
 
   test("an AI seat refuses hand-act-only and names the command", async () => {
     stage({ titles: [round] });
@@ -290,7 +346,7 @@ describe("otakiage burns the residue and keeps the card", () => {
     expect(h.calls).toEqual([]);
   });
 
-  test("a hand burns the pet's residue to the ash ledger, then deletes each, never the record", async () => {
+  test("a hand deletes the pet's residue, then burns a line for each removal to the ash ledger, never the record", async () => {
     stage({ titles: [round, hand, other] });
     const r = await run(argv(["otakiage", "lares-alpha"]));
     expect(data(r)["burned"]).toEqual([round, hand]);
@@ -298,7 +354,8 @@ describe("otakiage burns the residue and keeps the card", () => {
     expect(deleted).toEqual([round, hand]);
     expect(deleted).not.toContain(URI);
     const verbs = h.calls.map((c) => c.verb);
-    expect(verbs.indexOf("tiddler-put")).toBeLessThan(verbs.indexOf("tiddler-delete"));
+    expect(verbs.lastIndexOf("tiddler-delete")).toBeLessThan(verbs.indexOf("tiddler-put"));
+    expect(h.calls.find((c) => c.verb === "tiddler-put")!.args["create"]).toBe(true);
   });
 
   test("the residue filter reaches no sibling pet's rounds", () => {

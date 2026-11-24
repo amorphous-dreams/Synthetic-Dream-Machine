@@ -298,7 +298,7 @@ function homeItem(
       const tail = pet === null ? [] : [pet];
       const command = str(s, "runner") === "node"
         ? { type: "command", command: "node", args: [script, ...tail], timeout }
-        : { type: "command", command: `bash "${[script, ...tail].join(" ")}"`, timeout };
+        : { type: "command", command: [`bash "${script}"`, ...tail.map((t) => `"${t}"`)].join(" "), timeout };
       const placing = { ...(typeof s["matcher"] === "string" ? { matcher: s["matcher"] } : {}), ...(s["first"] === true ? { first: true } : {}) };
       return base({ transform: claudeHook(str(s, "event"), script.slice(script.lastIndexOf("/") + 1), command, placing), foreign: jsonForeign });
     }

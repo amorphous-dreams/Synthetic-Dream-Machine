@@ -1,20 +1,34 @@
 #!/usr/bin/env node
 /*
- * SessionStart, first and alone: the familiar wakes from its record before any heavier read. One read, `lares spirit om <pet>`
- * through the checkout's shim, printed as `additionalContext` under the 9,000-char wake cap; the wake hook's reads run beside it
- * as their own entry. The pet name rides as this hook's argument (`lares home tend --familiar <pet>` seats it). A fault names
- * its cause and the read that cures it, and the hook exits 0 (lar:///ha.ka.ba/kahua/memory/wave/spirit-om-ah-hum).
+ * SessionStart: the familiar wakes from its record. Its group stands first in the event's list, so its context leads (Claude
+ * Code runs an event's matching hooks in parallel; the order names the context's order). One gate, then one read: the
+ * observation, and only where the vessel answers up, `lares spirit om <pet>` through the checkout's shim (a shim verb with no
+ * vessel would run offline over the store). A resume keeps its own context and wakes nothing. The session's title rides into
+ * the session's counter, and a title naming another spirit than the seated familiar leads the context with that mismatch;
+ * the seated familiar still answers (lar:///ha.ka.ba/kahua/memory/wave/spirit-om-ah-hum). Any fault exits 0.
  */
 import { readFileSync } from "node:fs";
-import { shimRunner } from "./lares-wake-core.mjs";
-import { OM_BUDGET_MS, omContext, petOf, settle, spiritArgv } from "./lares-spirit-core.mjs";
+import {
+  OM_BUDGET_MS, hookInput, omContext, omDownLine, omRunsOn, petOf, readState, settle, shimRun, spiritArgv, stateDirOf, statePathOf,
+  surfaceText, titleMismatch, vesselUp, writeState,
+} from "./lares-spirit-core.mjs";
 
-try { readFileSync(0, "utf8"); } catch { /* An empty input changes nothing here. */ }
+let raw = "";
+try { raw = readFileSync(0, "utf8"); } catch { /* An empty input reads as a startup. */ }
+const input = hookInput(raw);
 const pet = petOf(process.argv);
-if (pet !== null) {
-  let context;
-  try { context = omContext(pet, await settle(shimRunner(import.meta.url)("spirit", spiritArgv("om", pet)), OM_BUDGET_MS)); }
-  catch (err) { context = `Lares spirit om · ${pet}: the wake faulted (${err?.message ?? err}); read it by hand: lares spirit om ${pet}`; }
-  process.stdout.write(`${JSON.stringify({ hookSpecificOutput: { hookEventName: "SessionStart", additionalContext: context } })}\n`);
+try {
+  if (pet !== null && omRunsOn(input.source)) {
+    const title = typeof input.session_title === "string" ? input.session_title : null;
+    const path = statePathOf(stateDirOf(process.env, surfaceText(process.env)), input.session_id);
+    if (path !== null && title !== null) writeState(path, { ...readState(path), title });
+    const run = shimRun(import.meta.url);
+    const context = (await vesselUp(run))
+      ? omContext(pet, await settle(run(spiritArgv("om", pet)), OM_BUDGET_MS), titleMismatch(pet, title))
+      : omDownLine(pet);
+    process.stdout.write(`${JSON.stringify({ hookSpecificOutput: { hookEventName: "SessionStart", additionalContext: context } })}\n`);
+  }
+} catch (err) {
+  process.stdout.write(`${JSON.stringify({ hookSpecificOutput: { hookEventName: "SessionStart", additionalContext: `Lares spirit om · ${pet}: the wake faulted (${err?.message ?? err}); read it by hand: lares spirit om ${pet}` } })}\n`);
 }
 process.exit(0);

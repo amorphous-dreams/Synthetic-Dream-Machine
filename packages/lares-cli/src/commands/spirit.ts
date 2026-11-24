@@ -1,5 +1,5 @@
 /**
- * `lares spirit <om | ah | hum | otakiage | round | residue> <pet-name>` — A SPIRIT'S RECORD, BY ITS PET NAME.
+ * `lares spirit <om | ah | hum | otakiage | round | residue> <pet-name>` (the compaction verb's word: `COMPACTION_WORD`, `spirit-words.ts`) — A SPIRIT'S RECORD, BY ITS PET NAME.
  *
  * The pet name does the work: it resolves the record on the worn face's memory stage (recipe default), `familiar/<pet>` first,
  * then `spirit/<pet>`. Every read and write rides the tiddler door's own daemon verbs (`tiddler-get`, `meme-patch`,
@@ -16,9 +16,9 @@
  *   otakiage  (Aftermath ↺)         burn the residue under the pet name to the ash ledger; the card stays
  *
  * THE BUDGET REFUSES GROWTH, THE BODY CHOOSES WHAT FOLDS. A write that grows a slot past its budget, or the record past its
- * total, refuses by name and names `hum --fold`; a write that shrinks or holds a slot's size always lands. Residue and rounds
- * pass the keep's secret-shape guard before they land. `otakiage` runs on a person's hand alone (release by the hand); an
- * AI seat runs om, ah, hum, round and residue.
+ * total, refuses by name and names `hum --fold`; a write that shrinks or holds a slot's size always lands. Residue and landed compactions
+ * pass the strict secret-shape guard, read uncut, before they land. `otakiage` runs on a person's hand alone (release by the hand); an
+ * AI seat runs om, ah, hum, the compaction verb and residue.
  *
  * Meme: lar:///ha.ka.ba/kahua/memory/wave/spirit-om-ah-hum
  */
@@ -26,7 +26,8 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { stdin } from "node:process";
 import { readOwnHand, type HandReading } from "@lararium/node";
-import { secretShapes } from "@lararium/mesh";
+import { redactSecretShapes } from "@lararium/mesh";
+import { COMPACTION_WORD } from "../spirit-words.js";
 import { emit, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
 import { DoorUsage, guardDoor, runDoor, wordOf } from "./door-call.js";
@@ -34,7 +35,7 @@ import { tableCovers } from "../verb-table.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 /** Every verb the spirit door answers. */
-export const SPIRIT_VERBS = ["help", "om", "ah", "hum", "otakiage", "round", "residue"] as const;
+export const SPIRIT_VERBS = ["help", "om", "ah", "hum", "otakiage", COMPACTION_WORD, "residue"] as const;
 type Verb = (typeof SPIRIT_VERBS)[number];
 
 // ── THE BUDGETS AND THE ADDRESSES, IN ONE SPOT ───────────────────────────────────────────────────────────────────
@@ -48,7 +49,7 @@ export const OM_CAP_CHARS = 9000;
 export const SLOT_BUDGET_BYTES = 1024;
 /** The record's budget: the sum of its slots' bytes. */
 export const RECORD_BUDGET_BYTES = 6144;
-/** The longest residue a round or a handback lands; a longer text lands cut, and the answer says so. */
+/** The longest residue a compaction or a handback lands; a longer text lands cut (after the guard reads it whole), and the answer says so. */
 export const RESIDUE_CAP_CHARS = 60_000;
 const RECIPE = "default";
 const PET = /^[a-z0-9][a-z0-9-]{0,62}$/;
@@ -57,18 +58,18 @@ const PET = /^[a-z0-9][a-z0-9-]{0,62}$/;
 export function ashLedgerOf(now: Date): string {
   return `${MEMORY_PREFIX}state/ashes-${now.toISOString().slice(0, 7)}`;
 }
-/** A round's address: two segments under the stage, the pet name and the summary's hash. */
-export const roundTitle = (pet: string, hash: string): string => `${MEMORY_PREFIX}round/${pet}-${hash.slice(0, 12)}`;
+/** A landed compaction's address: two segments under the stage, the pet name and the summary's hash. */
+export const compactionTitle = (pet: string, hash: string): string => `${MEMORY_PREFIX}${COMPACTION_WORD}/${pet}-${hash.slice(0, 12)}`;
 /** A handback's address. */
 export const residueTitle = (pet: string, hash: string): string => `${MEMORY_PREFIX}spirit/${pet}-handback-${hash.slice(0, 12)}`;
 const sha256 = (text: string): string => createHash("sha256").update(text, "utf8").digest("hex");
 const bytesOf = (text: string): number => Buffer.byteLength(text, "utf8");
 const escapeRe = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-/** The residue under one pet name, by address alone (a pet `a` never reaches pet `a-b`'s rounds). */
+/** The residue under one pet name, by address alone (a pet `a` never reaches pet `a-b`'s landings). */
 export function residueOf(pet: string, titles: readonly string[]): string[] {
-  const round = new RegExp(`^${escapeRe(`${MEMORY_PREFIX}round/${pet}-`)}[0-9a-f]{12}$`);
+  const landed = new RegExp(`^${escapeRe(`${MEMORY_PREFIX}${COMPACTION_WORD}/${pet}-`)}[0-9a-f]{12}$`);
   const handback = new RegExp(`^${escapeRe(`${MEMORY_PREFIX}spirit/${pet}-handback-`)}[0-9a-f]{12}$`);
-  return titles.filter((t) => round.test(t) || handback.test(t));
+  return titles.filter((t) => landed.test(t) || handback.test(t));
 }
 
 /** A slot's body as `meme-patch` reads it: the slot text without its `<<~ ahu …>>` frame. */
@@ -78,6 +79,13 @@ export function slotBody(slotText: string): string {
   if (/^<<~\/ahu>>$/.test(lines.at(-1) ?? "")) lines.pop();
   return lines.join("\n").replace(/^\n+/, "").replace(/\s+$/, "");
 }
+/** THE STRICT READING (as the alert door reads, `stay-home.ts`): no fixture stands, bare minted hex and every private-key block go. */
+const STRICT = { allow: [], mintedHex: true, everyKeyBlock: true } as const;
+/** How many secret shapes a text holds under the strict reading. */
+export const secretCount = (text: string): number => redactSecretShapes(text, STRICT).redacted;
+/** A text with every strict secret shape redacted: what a ledger line copies out of a record. */
+const redacted = (text: string): string => redactSecretShapes(text, STRICT).text;
+
 /** The digest a base names, whatever its grain prefix (`skinny:`, `partial:#/x:`). */
 const digestOf = (base: string): string => /sha256[:-][0-9a-f]{64}$/.exec(base)?.[0]?.replace("-", ":") ?? base;
 
@@ -142,9 +150,15 @@ const slotMissing = (rec: Record_, slot: string): SpiritRefusal =>
 // ── om ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 /** The wake text: the skinny, then #/open, then the doors that read and true the rest; cut under `cap` chars. */
-export function omText(rec: Record_, open: string | null, cap = OM_CAP_CHARS): string {
+/** The line naming what the waking body inherited: the latest landed compaction, by title and hash, or that none stands. */
+export function inheritedLine(pet: string, latest: string | null): string {
+  if (latest === null) return `Latest ${COMPACTION_WORD}: none stands under ${pet} yet.`;
+  return `Latest ${COMPACTION_WORD}: ${latest} (hash ${latest.slice(-12)}); check what this body inherited: lares tiddler get ${latest} --recipe default`;
+}
+
+export function omText(rec: Record_, open: string | null, cap = OM_CAP_CHARS, inherited: string | null = null): string {
   const head = `Lares spirit om · ${rec.pet} (${rec.uri}): the record a waking body reads first, before any summary.`;
-  const doors = `Read a slot whole: lares tiddler get ${rec.uri} --recipe default --meme --slot '#/<name>' · true one: lares spirit ah ${rec.pet} --slot '#/<name>' --file <path> (or --add <line>) · fold: lares spirit hum ${rec.pet}`;
+  const doors = `${inherited === null ? "" : `${inherited}\n`}Read a slot whole: lares tiddler get ${rec.uri} --recipe default --meme --slot '#/<name>' · true one: lares spirit ah ${rec.pet} --slot '#/<name>' --file <path> (or --add <line>) · fold: lares spirit hum ${rec.pet}`;
   const fixed = [head, rec.has, "", doors].join("\n");
   if (open === null) return fixed.length <= cap ? fixed : `${fixed.slice(0, cap - 1)}…`;
   const room = cap - fixed.length - 2;
@@ -153,13 +167,21 @@ export function omText(rec: Record_, open: string | null, cap = OM_CAP_CHARS): s
   return [head, rec.has, "", body, doors].join("\n").slice(0, cap);
 }
 
+/** The latest compaction landed under a pet name, by its `landed` stamp, or null. */
+async function latestCompaction(args: ParsedArgs, pet: string): Promise<string | null> {
+  const listed = await door(args, "om", "wiki-filter", { recipe: RECIPE, filter: `[prefix[${MEMORY_PREFIX}${COMPACTION_WORD}/${pet}-]!sort[landed]]` });
+  const titles = Array.isArray(listed["titles"]) ? (listed["titles"] as string[]) : [];
+  return residueOf(pet, titles).find((t) => t.startsWith(`${MEMORY_PREFIX}${COMPACTION_WORD}/`)) ?? null;
+}
+
 async function om(args: ParsedArgs): Promise<number> {
   const pet = petOf(args, "om");
   const rec = await resolveRecord(args, "om", pet);
   const open = await readSlot(args, "om", rec, "#/open");
-  const text = omText(rec, open?.text ?? null);
+  const latest = await latestCompaction(args, pet);
+  const text = omText(rec, open?.text ?? null, OM_CAP_CHARS, inheritedLine(pet, latest));
   emit(args, {
-    ok: true, data: { pet, uri: rec.uri, kind: rec.kind, base: rec.base, chars: text.length, cap: OM_CAP_CHARS, text },
+    ok: true, data: { pet, uri: rec.uri, kind: rec.kind, base: rec.base, chars: text.length, cap: OM_CAP_CHARS, latest, text },
     human: () => console.log(text),
   });
   return 0;
@@ -196,6 +218,10 @@ async function trueSlot(args: ParsedArgs, label: string, rec: Record_, slot: str
     throw new SpiritRefusal("spirit-stale-base", `spirit-stale-base: ${rec.uri} moved past ${given}; it reads ${read.base} now and nothing landed. Read it again (\`lares spirit om ${rec.pet}\` or \`lares tiddler get ${rec.uri} --recipe default --meme --slot '${slot}'\`) and true it against that base`, 4);
   }
   const body = next(read.body).replace(/^\n+/, "").replace(/\s+$/, "");
+  const shapes = secretCount(body);
+  if (shapes > 0) {
+    throw new SpiritRefusal("spirit-secret-shaped", `spirit-secret-shaped: the words for ${rec.uri}${slot} hold ${shapes} secret-shaped string(s), so nothing landed; clear them, then true the slot again: \`lares spirit ah ${rec.pet} --slot '${slot}' --file <scrubbed path>\``, 4);
+  }
   const over = budgetRefusal(rec, slot, read.body, body);
   if (over) throw over;
   const receipt = await door(args, label, "meme-patch", { recipe: RECIPE, uri: rec.uri, slot, replace: body, base: given ?? read.base });
@@ -241,19 +267,16 @@ export function measure(rec: Pick<Record_, "slots">): { slots: Array<Slot & { bu
   return { slots, total, budget: RECORD_BUDGET_BYTES, over: total > RECORD_BUDGET_BYTES };
 }
 
-/** Append lines to the month's ash ledger, opening it where the month holds none yet. */
+/** Append lines to the month's ash ledger, each redacted under the strict reading; `create` opens the month's ledger where none stands. */
 async function burnToAshes(args: ParsedArgs, label: string, lines: readonly string[], now: Date): Promise<string> {
   const ledger = ashLedgerOf(now);
-  const words = lines.join("\n");
-  const appended = await door(args, label, "tiddler-put", { recipe: RECIPE, title: ledger, append: `\n${words}` });
-  const decision = String(appended["decision"] ?? "");
-  if (decision === "put" || decision === "noop") return ledger;
-  const opened = await door(args, label, "tiddler-put", {
-    recipe: RECIPE, title: ledger, create: true, text: `${words}\n`,
+  const receipt = await door(args, label, "tiddler-put", {
+    recipe: RECIPE, title: ledger, append: lines.map(redacted).join("\n"), create: true,
     fields: { description: `The ash ledger of the ${now.toISOString().slice(0, 7)} o-takiage sittings: each burned stage item with what landed it and the date.` },
   });
-  if (String(opened["decision"] ?? "") !== "put") {
-    throw new SpiritRefusal("spirit-ashes-refused", `spirit-ashes-refused: the ash ledger ${ledger} took nothing (${decision}, then ${String(opened["decision"] ?? "?")}); nothing left the record. Read it: \`lares tiddler get ${ledger} --recipe default\``, 4);
+  const decision = String(receipt["decision"] ?? "");
+  if (decision !== "put" && decision !== "noop") {
+    throw new SpiritRefusal("spirit-ashes-refused", `spirit-ashes-refused: the ash ledger ${ledger} answered ${decision || "nothing"}; read it: \`lares tiddler get ${ledger} --recipe default\`, then run \`lares spirit ${label} …\` again`, 4);
   }
   return ledger;
 }
@@ -308,43 +331,44 @@ async function hum(args: ParsedArgs, now: () => Date): Promise<number> {
   return 0;
 }
 
-// ── round · residue ─────────────────────────────────────────────────────────────────────────────────────────────────
+// ── the compaction verb · residue ─────────────────────────────────────────────────────────────────────────────────────────────────
 
-async function residueWords(args: ParsedArgs): Promise<{ text: string; cut: boolean }> {
+/** The residue's words, read whole: the strict guard reads the UNCUT text, and only then the text cuts at the cap. */
+async function residueWords(args: ParsedArgs, label: string): Promise<{ text: string; cut: boolean }> {
   const file = wordOf(args.options["file"]);
   const inline = typeof args.options["text"] === "string" ? args.options["text"] : null;
-  if (Number(file !== null) + Number(inline !== null) !== 1) throw new DoorUsage("name exactly one source: --text <words> or --file <path|->");
+  if (Number(file !== null) + Number(inline !== null) !== 1) throw new DoorUsage("name exactly one source: --file <path|-> (stdin carries a long text) or --text <words>");
   const raw = file !== null ? await sourceText("file", file) : inline!;
   if (raw.trim() === "") throw new DoorUsage("the residue holds no words; nothing lands");
+  const shapes = secretCount(raw);
+  if (shapes > 0) {
+    throw new SpiritRefusal("spirit-secret-shaped", `spirit-secret-shaped: the ${label} holds ${shapes} secret-shaped string(s), so nothing landed; clear them at the source, then land it by hand: \`lares spirit ${label} <pet> --file <scrubbed path>\``, 4);
+  }
   return raw.length > RESIDUE_CAP_CHARS ? { text: raw.slice(0, RESIDUE_CAP_CHARS), cut: true } : { text: raw, cut: false };
 }
 
-/** Land one residue record after the keep's secret-shape guard; a record already standing at the address lands nothing. */
-async function landResidue(args: ParsedArgs, label: string, title: string, text: string, description: string): Promise<"put" | "exists"> {
-  const shapes = secretShapes(text);
-  if (shapes.length > 0) {
-    throw new SpiritRefusal("spirit-secret-shaped", `spirit-secret-shaped: the ${label} holds ${shapes.length} secret-shaped string(s), so nothing landed at ${title}; clear them at the source, then land it by hand: \`lares spirit ${label} <pet> --file <scrubbed path>\``, 4);
-  }
-  const receipt = await door(args, label, "tiddler-put", { recipe: RECIPE, title, text, create: true, fields: { description } });
+/** Land one residue record, already guarded; a record already standing at the address lands nothing. */
+async function landResidue(args: ParsedArgs, label: string, title: string, text: string, description: string, now: Date): Promise<"put" | "exists"> {
+  const receipt = await door(args, label, "tiddler-put", { recipe: RECIPE, title, text, create: true, fields: { description, landed: now.toISOString() } });
   const decision = String(receipt["decision"] ?? "");
   if (decision === "put") return "put";
   if (decision === "exists") return "exists";
   throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${title}; read it: \`lares tiddler get ${title} --recipe default\``, 4);
 }
 
-async function round(args: ParsedArgs, now: () => Date): Promise<number> {
-  const pet = petOf(args, "round");
-  const rec = await resolveRecord(args, "round", pet);
-  const { text, cut } = await residueWords(args);
+async function landCompaction(args: ParsedArgs, now: () => Date): Promise<number> {
+  const pet = petOf(args, COMPACTION_WORD);
+  const rec = await resolveRecord(args, COMPACTION_WORD, pet);
+  const { text, cut } = await residueWords(args, COMPACTION_WORD);
   const hash = sha256(text);
-  const title = roundTitle(pet, hash);
+  const title = compactionTitle(pet, hash);
   const day = now().toISOString().slice(0, 10);
-  const landed = await landResidue(args, "round", title, text, `a compaction round of ${pet}, ${day}: the summary one body's context turned on`);
-  // One #/bodies line names the round; a budget that refuses leaves it unfiled, and the answer says which fold files it.
-  const line = `* ''${day} (round ${hash.slice(0, 12)}):'' ${title}`;
+  const landed = await landResidue(args, COMPACTION_WORD, title, text, `a compaction ${COMPACTION_WORD} of ${pet}, ${day}: the summary one body's context turned on`, now());
+  // One #/bodies line names the landing; a budget that refuses leaves it unfiled, and the answer says which fold files it.
+  const line = `* ''${day} (${COMPACTION_WORD} ${hash.slice(0, 12)}):'' ${title}`;
   let filed: true | string = true;
   if (landed === "put") {
-    try { await trueSlot(args, "round", rec, "#/bodies", (body) => `${body}\n${line}`, null); }
+    try { await trueSlot(args, COMPACTION_WORD, rec, "#/bodies", (body) => `${body}\n${line}`, null); }
     catch (e) { if (e instanceof SpiritRefusal) filed = e.message; else throw e; }
   }
   emit(args, {
@@ -357,19 +381,12 @@ async function round(args: ParsedArgs, now: () => Date): Promise<number> {
   return 0;
 }
 
-/** A pet name read off a handback: its mask tag (`Name: Lares (Tasked Spirit)`), else the fallback, slugged. */
-export function handbackPet(message: string, fallback: string): string {
-  const tag = /^\W*([A-Za-z][\w-]{0,40}):\s*Lares\s*\(Tasked Spirit\)/m.exec(message)?.[1] ?? fallback;
-  const slug = tag.toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 62);
-  return PET.test(slug) ? slug : "spirit";
-}
-
 async function residue(args: ParsedArgs, now: () => Date): Promise<number> {
   const pet = petOf(args, "residue");
-  const { text, cut } = await residueWords(args);
+  const { text, cut } = await residueWords(args, "residue");
   const hash = sha256(text);
   const title = residueTitle(pet, hash);
-  const landed = await landResidue(args, "residue", title, text, `a handback of the spirit ${pet}, ${now().toISOString().slice(0, 10)}`);
+  const landed = await landResidue(args, "residue", title, text, `a handback of the spirit ${pet}, ${now().toISOString().slice(0, 10)}`, now());
   emit(args, {
     ok: true, data: { pet, title, hash, landed, cut },
     human: () => console.log(`${landed === "put" ? "landed" : "already stands"}: ${title}${cut ? ` (cut at ${RESIDUE_CAP_CHARS} chars)` : ""}`),
@@ -383,25 +400,25 @@ async function otakiage(args: ParsedArgs, hand: HandRead, now: () => Date): Prom
   const pet = petOf(args, "otakiage");
   readHand(hand, `lares spirit otakiage ${pet}`);
   const rec = await resolveRecord(args, "otakiage", pet);
-  const filter = `[prefix[${MEMORY_PREFIX}round/${pet}-]] [prefix[${MEMORY_PREFIX}spirit/${pet}-handback-]]`;
+  const filter = `[prefix[${MEMORY_PREFIX}${COMPACTION_WORD}/${pet}-]] [prefix[${MEMORY_PREFIX}spirit/${pet}-handback-]]`;
   const listed = await door(args, "otakiage", "wiki-filter", { recipe: RECIPE, filter });
   const titles = residueOf(pet, Array.isArray(listed["titles"]) ? (listed["titles"] as string[]) : []);
   const stamp = now();
   const day = stamp.toISOString().slice(0, 10);
+  // Each residue reads first, then leaves; only a delete the door answers `removed` writes its burn line.
+  const burned: string[] = [];
   const lines: string[] = [];
   for (const title of titles) {
     const got = await door(args, "otakiage", "tiddler-get", { recipe: RECIPE, title });
     const t = got["tiddler"] as { fields?: Record<string, string>; textHash?: string | null } | null | undefined;
     const text = t?.fields?.["text"] ?? "";
     const first = text.split("\n").find((l) => l.trim() !== "")?.trim().slice(0, 200) ?? "";
+    const gone = await door(args, "otakiage", "tiddler-delete", { recipe: RECIPE, title });
+    if (String(gone["decision"] ?? "") !== "removed") continue;
+    burned.push(title);
     lines.push(`* ${day} · otakiage ${pet} burned ${title} (${bytesOf(text)} bytes, ${t?.textHash ?? "?"})${first ? `: ${first}` : ""}`);
   }
-  const ledger = titles.length > 0 ? await burnToAshes(args, "otakiage", lines, stamp) : null;
-  const burned: string[] = [];
-  for (const title of titles) {
-    const gone = await door(args, "otakiage", "tiddler-delete", { recipe: RECIPE, title });
-    if (String(gone["decision"] ?? "") === "removed") burned.push(title);
-  }
+  const ledger = lines.length > 0 ? await burnToAshes(args, "otakiage", lines, stamp) : null;
   emit(args, {
     ok: true, data: { pet, uri: rec.uri, kept: rec.uri, burned, ledger },
     human: () => {
@@ -434,7 +451,7 @@ export async function cmdSpirit(args: ParsedArgs, seams: SpiritSeams = {}): Prom
         case "om":       return await om(args);
         case "ah":       return await ah(args);
         case "hum":      return await hum(args, now);
-        case "round":    return await round(args, now);
+        case COMPACTION_WORD: return await landCompaction(args, now);
         case "residue":  return await residue(args, now);
         case "otakiage": return await otakiage(args, hand, now);
         default:         return refuseUsage(args, "spirit", helpLines("spirit"), `unknown verb "${tableCovers(v)}"`);
