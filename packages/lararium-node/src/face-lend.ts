@@ -54,8 +54,8 @@ export async function adoptFirstLit(faceLife: Pick<FaceLives, "adopt" | "noteCus
   faceLife.noteCustody(ordinal, await noteCustody(ordinal));
 }
 
-/** One face an open of the island composed with: its ordinal, its atom key, the opening it stood lit under, and whether this very open adopted it. */
-export interface ComposedFace { readonly ordinal: number; readonly atomKey: string; readonly opening: string; readonly fresh: boolean }
+/** One face an open of the island composed with: its ordinal, its atom key and the opening it stood lit under. */
+export interface ComposedFace { readonly ordinal: number; readonly atomKey: string; readonly opening: string }
 
 /**
  * THE ISLAND'S REFUSAL OF A MANIFEST FACE REACHES THAT FACE'S OWN LIFE (`daemon:face-settled`, op `composed`): the island
@@ -66,7 +66,7 @@ export interface ComposedFace { readonly ordinal: number; readonly atomKey: stri
 export function composeRefusalHearing(manifest: readonly ComposedFace[], faceLife: Pick<FaceLives, "composeRefused">): (atomKey: string, reason: string) => void {
   const bare = (key: string): string => key.toLowerCase().replace(/^0x/, "");
   return (atomKey, reason) => {
-    for (const face of manifest) if (bare(face.atomKey) === bare(atomKey)) faceLife.composeRefused(face.ordinal, reason, { opening: face.opening, fresh: face.fresh });
+    for (const face of manifest) if (bare(face.atomKey) === bare(atomKey)) faceLife.composeRefused(face.ordinal, reason, { opening: face.opening });
   };
 }
 

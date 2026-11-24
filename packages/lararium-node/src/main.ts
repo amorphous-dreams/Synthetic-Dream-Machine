@@ -549,6 +549,7 @@ async function main(): Promise<void> {
     holdFace: (ordinal) => composition?.holdFace?.(ordinal) ?? true,
     holdFaces: () => composition?.holdFaces?.() ?? true,
     refusedLights: () => composition?.refusedLights?.() ?? [],
+    refusedCloses: () => composition?.refusedCloses?.() ?? [],
     replayLend: async () => { await composition?.replayLend?.(); },
     // A RECARD ARMS THE FACE'S NEXT LIGHT in the standing composition; the door then replays the lend (`face-recard`).
     armRecard: (ordinal) => { if (!composition?.armRecard) throw new Error("composition unavailable"); composition.armRecard(ordinal); },
@@ -642,6 +643,8 @@ interface StandingComposition {
   readonly holdFaces?: () => boolean;
   /** Each face dark here because its last light refused, with its cause. Absent at the floor. */
   readonly refusedLights?: () => Array<{ readonly ordinal: number; readonly cause: string }>;
+  /** Each face the island's open refused that still holds closing over unsealed saves, with its cause. Absent at the floor. */
+  readonly refusedCloses?: () => Array<{ readonly ordinal: number; readonly cause: string }>;
   /** Replay the lend now, awaited. Absent at the floor. */
   readonly replayLend?: () => Promise<void>;
   /** Arm a face's next light as a recard. Absent at the floor. */
@@ -962,7 +965,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     faceLife:     result.faceLife,
     // A FACE DARK BECAUSE ITS LIGHT REFUSED ANSWERS BY NAME: the door's `face-not-open` carries the cause and the act that
     // lights it again (a recard, for a face that holds no prekey secret), so no verb or act waits on a face the island never held.
-    faceDark:     doorDarkLine(() => result.refusedLights(), namesPulama()),
+    faceDark:     doorDarkLine(() => result.refusedLights(), namesPulama(), () => result.refusedCloses()),
     // A LIT FACE RECEIVES VISITS (`seat-hand`): a read naming another face as its `target` (by ordinal, or by the pet name this
     // vessel holds) admits on that face's actor and delivers through its mailbox; the face the call wears stays worn.
     visitVerbs:   CROSS_FACE_READ_VERBS,
@@ -1075,7 +1078,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     standing: "hearth",
     island: { state: result.daemonIslandState, restart: async (reason) => ({ ...(await result.restartDaemonIsland(reason)), leg: (await result.daemonIslandState()).leg }) },
     lightFace: result.lightFace, dropFace: result.dropFace,
-    releaseFace: result.releaseFace, releaseFaces: result.releaseFaces, holdFace: result.holdFace, holdFaces: result.holdFaces, refusedLights: result.refusedLights, replayLend: result.replayLend, armRecard: result.armRecard, disarmRecard: result.disarmRecard,
+    releaseFace: result.releaseFace, releaseFaces: result.releaseFaces, holdFace: result.holdFace, holdFaces: result.holdFaces, refusedLights: result.refusedLights, refusedCloses: result.refusedCloses, replayLend: result.replayLend, armRecard: result.armRecard, disarmRecard: result.disarmRecard,
     closeFaces: () => result.closeFaces("a whole lock closes every face", { strict: true }), onMountClosed: result.onMountClosed,
     onSignal: (sig) => void shutdown(sig),
     teardown: () => result.teardown(() => front.detach()),

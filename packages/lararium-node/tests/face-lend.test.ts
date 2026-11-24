@@ -44,25 +44,27 @@ function vessel(opts: { served?: number[]; open?: Set<number>; standing?: FaceLe
 
 describe("the island's refusal of a manifest face reaches that face's own life", () => {
   const STALE = "FaceHoldsNoPrekeySecret: [daemon-keyhive] it holds none";
-  test("the hearing maps the island's atom key (any case, with or without 0x) to the ordinal the open composed, under the opening it composed", () => {
+  test("the hearing maps the island's atom key (any case, with or without 0x) to the ordinal the open composed, under the opening it composed", async () => {
     const v = vessel({ served: [0, 1, 2] });
     v.lives.adopt(1, { atomKey: "0xAbCd01", custody: null });
     v.lives.adopt(2, { atomKey: "ef02", custody: null });
     const hear = composeRefusalHearing([
-      { ordinal: 1, atomKey: "0xAbCd01", opening: v.lives.opening(1)!, fresh: true },
-      { ordinal: 2, atomKey: "ef02", opening: v.lives.opening(2)!, fresh: true },
+      { ordinal: 1, atomKey: "0xAbCd01", opening: v.lives.opening(1)! },
+      { ordinal: 2, atomKey: "ef02", opening: v.lives.opening(2)! },
     ], v.lives);
     hear("abcd01", STALE);
+    v.drains.get(1)!.resolve(); await settle();
     expect(v.lives.refusedLights()).toEqual([{ ordinal: 1, cause: STALE }]);
     expect(v.lives.state(2).kind, "another face of the same open keeps standing").toBe("lit");
     hear("0xEF02", STALE);
+    v.drains.get(2)!.resolve(); await settle();
     expect(v.lives.refusedLights().map((r) => r.ordinal)).toEqual([1, 2]);
   });
   test("CONTROLS: a key the open never composed changes nothing; a refusal from an open whose face has since lit anew names a life that left", async () => {
     const v = vessel({ served: [0, 1] });
     v.lives.adopt(1, { atomKey: "k1", custody: null });
-    const stale = composeRefusalHearing([{ ordinal: 1, atomKey: "k1", opening: v.lives.opening(1)!, fresh: true }], v.lives);
-    composeRefusalHearing([{ ordinal: 1, atomKey: "k1", opening: v.lives.opening(1)!, fresh: true }], v.lives)("someone-else", STALE);
+    const stale = composeRefusalHearing([{ ordinal: 1, atomKey: "k1", opening: v.lives.opening(1)! }], v.lives);
+    composeRefusalHearing([{ ordinal: 1, atomKey: "k1", opening: v.lives.opening(1)! }], v.lives)("someone-else", STALE);
     expect(v.lives.state(1).kind).toBe("lit");
     const closed = v.lives.close(1, "lock");
     v.drains.get(1)!.resolve(); await closed; await settle();

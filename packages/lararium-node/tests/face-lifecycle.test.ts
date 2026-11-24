@@ -16,6 +16,7 @@ const settle = async (): Promise<void> => { for (let i = 0; i < 8; i++) await Pr
 /** A scripted island: each effect records itself, and the test answers each one by hand. */
 function island() {
   const events: string[] = [];
+  const logs: string[] = [];
   const lights = new Map<number, Deferred<FaceLit> & { live: () => boolean; opening: string }>();
   const drains = new Map<number, Deferred<void>>();
   const drops = new Map<number, Deferred<void>>();
@@ -29,10 +30,10 @@ function island() {
     onDark(ordinal) { events.push(`dark h${ordinal}`); },
     // The island's open reads the actors' lit set at its start, and answers them with it once it stands.
     recompose(reason) { const d = { ...deferred(), litAtStart: lives.lit() }; events.push(`recompose (${reason})`); recomposes.push(d); return d.promise.then(() => lives.recomposed(new Set(d.litAtStart))); },
-    log: () => {},
+    log: (line) => { logs.push(line); },
   };
   lives = faceLives(effects, { nonce: "boot" });
-  return { lives, events, lights, drains, drops, recomposes };
+  return { lives, events, lights, drains, drops, recomposes, logs };
 }
 
 /** Light h<N> through to lit, under atom key `k<N>`. */
@@ -424,27 +425,43 @@ describe("each face lives one life: the lifecycle actor", () => {
   // The island's first open adopts each lent face lit before the island lights it; a face the island then refused held no
   // entry there, and read lit here all the same, so the recard guard read it healthy and every act on it rode to no provider.
   const STALE = "FaceHoldsNoPrekeySecret: [daemon-keyhive] face k2 holds no prekey secret";
-  test("R10 COMPOSED WITHOUT IT: a face adopted in this open that admitted no work, refused by the island's open, reads dark with the refusal's cause; its host side drops with no drain and no worker drop, no lend replays, and its next light runs", async () => {
+  test("R10 COMPOSED WITHOUT IT: a face adopted lit that the island's open refused closes by the close's own law (its drain first, no worker drop), reads dark with the refusal's cause, replays no lend, and its next light runs", async () => {
     const t = island();
     t.lives.adopt(2, { atomKey: "k2", custody: null });
-    t.lives.composeRefused(2, STALE, { opening: t.lives.opening(2)!, fresh: true });
+    t.lives.composeRefused(2, STALE, { opening: t.lives.opening(2)! });
+    expect(t.events, "nothing drops before the drain answers").toEqual(["drain h2"]);
+    expect(t.lives.admitWork(2), "no work admits on a face the island never held").toBeNull();
+    t.drains.get(2)!.resolve(); await settle();
     expect(t.lives.state(2)).toEqual({ kind: "dark", held: false });
     expect(t.lives.refusedLights()).toEqual([{ ordinal: 2, cause: STALE }]);
-    expect(t.lives.admitWork(2), "no work admits on a face the island never held").toBeNull();
-    // NO SEAT EVER STOOD IN THE ISLAND FOR THIS LIFE: nothing drains under it and no drop is asked; a refused light replays no lend.
-    expect(t.events).toEqual(["teardown h2"]);
+    expect(t.lives.refusedCloses()).toEqual([]);
+    // NO ENTRY STOOD IN THE ISLAND: no drop is asked; a refused light replays no lend.
+    expect(t.events).toEqual(["drain h2", "teardown h2"]);
     // THE RECARD'S LIGHT RUNS FROM HERE: the face lights as any dark face does, and the refusal clears.
     const again = t.lives.light(2);
     t.lights.get(2)!.resolve({ atomKey: "k2", custody: null });
     expect(await again).toBe("lit");
     expect(t.lives.refusedLights()).toEqual([]);
   });
+  test("R10 WITH A SAVE WAITING: the same adopted face, refused while one save of its own waits, keeps that save: its drain faults, it holds closing with its host side standing, and the hold names itself and the line that drives it again", async () => {
+    const t = island();
+    t.lives.adopt(2, { atomKey: "k2", custody: null });
+    t.lives.composeRefused(2, STALE, { opening: t.lives.opening(2)! });
+    t.drains.get(2)!.reject(new Error("face h2: 1 save(s) still wait unsealed")); await settle();
+    expect(t.lives.state(2)).toMatchObject({ kind: "closing", phase: "drain-failed" });
+    expect(t.events.filter((e) => e.startsWith("teardown") || e.startsWith("drop")), "the waiting save survives: nothing tore down").toEqual([]);
+    expect(t.lives.refusedLights(), "a face that holds closing reads no dark refusal, so no recard arms over it").toEqual([]);
+    expect(t.lives.refusedCloses()).toEqual([{ ordinal: 2, cause: STALE }]);
+    const held = t.logs.find((l) => l.includes("h2") && l.includes("lares vault lock --face 2"));
+    expect(held, "the hold names the face and the line that drives its close again").toBeTruthy();
+    expect(held).toContain("1 save(s) still wait unsealed");
+  });
   // A restart's open (kapae, promote, a refused drop) composes from faces that lit healthy and may hold unsealed saves: a refusal
   // there must never drop them, and no close over them may answer.
   test("R11 A DRAIN THAT FAILS HOLDS, HERE TOO: a face that lit by its own light, refused at a restart's open, drains before anything drops; its failed drain holds it closing, tears nothing down and resolves no close waiter", async () => {
     const t = island();
     const opening = await lit(t, 1);
-    t.lives.composeRefused(1, STALE, { opening, fresh: false });
+    t.lives.composeRefused(1, STALE, { opening });
     expect(t.events.filter((e) => !e.startsWith("light")), "the saves drain first; the host side still stands").toEqual(["drain h1"]);
     expect(t.lives.state(1)).toMatchObject({ kind: "closing", phase: "draining" });
     let answered: string | null = null;
@@ -461,19 +478,6 @@ describe("each face lives one life: the lifecycle actor", () => {
     expect(t.events.filter((e) => e.startsWith("teardown") || e.startsWith("dark"))).toEqual(["teardown h1"]);
     expect(t.lives.refusedLights()).toEqual([{ ordinal: 1, cause: STALE }]);
   });
-  test("R11 a face adopted in this open that already admitted work or a visit drains too: only a life nothing touched takes the bare drop", async () => {
-    for (const touch of ["work", "visit"] as const) {
-      const t = island();
-      t.lives.adopt(2, { atomKey: "k2", custody: null });
-      const refusedVisits: string[] = [];
-      if (touch === "work") t.lives.admitWork(2)!.done(); else expect(t.lives.admitVisit(2, (reason) => refusedVisits.push(reason.split(":")[0]!))).not.toBeNull();
-      t.lives.composeRefused(2, STALE, { opening: t.lives.opening(2)!, fresh: true });
-      await settle();
-      expect(t.events, touch).toEqual(["drain h2"]);
-      expect(t.lives.state(2).kind, touch).toBe("closing");
-      if (touch === "visit") expect(refusedVisits).toEqual(["face-not-open"]);
-    }
-  });
   test("R12 THE REFUSAL NAMES ONE LIFE: a refusal for an opening the face no longer lives under (it closed and lit again), a face still lighting, or a face this set never knew changes nothing", async () => {
     const t = island();
     t.lives.adopt(2, { atomKey: "k2", custody: null });
@@ -482,14 +486,14 @@ describe("each face lives one life: the lifecycle actor", () => {
     t.drains.get(2)!.resolve(); await closed; t.drops.get(2)!.resolve(); await settle();
     const second = await lit(t, 2);
     expect(second).not.toBe(first);
-    t.lives.composeRefused(2, STALE, { opening: first, fresh: true });
+    t.lives.composeRefused(2, STALE, { opening: first });
     expect(t.lives.state(2), "the new life keeps standing, with its island entry").toEqual({ kind: "lit", opening: second, atomKey: "k2", custody: null });
     const lighting = t.lives.light(1);
-    t.lives.composeRefused(1, STALE, { opening: t.lights.get(1)!.opening, fresh: true });
+    t.lives.composeRefused(1, STALE, { opening: t.lights.get(1)!.opening });
     expect(t.lives.state(1).kind).toBe("lighting");
     t.lights.get(1)!.resolve({ atomKey: "k1", custody: null });
     expect(await lighting).toBe("lit");
-    t.lives.composeRefused(7, STALE, { opening: "boot:99", fresh: true });
+    t.lives.composeRefused(7, STALE, { opening: "boot:99" });
     expect(t.lives.known(7)).toBe(false);
   });
   test("R13 A CLOSE UNDER WAY KEEPS ITS OWN LAW: the refusal resolves no waiter and tears nothing down; the drain decides, the island is asked no drop, and its dark replays no lend", async () => {
@@ -498,13 +502,28 @@ describe("each face lives one life: the lifecycle actor", () => {
     let answered = false;
     const closed = t.lives.close(3, "the pūlama closes it").then(() => { answered = true; });
     expect(t.events).toEqual(["drain h3"]);
-    t.lives.composeRefused(3, STALE, { opening: t.lives.state(3).kind === "closing" ? (t.lives.state(3) as { opening: string }).opening : "", fresh: true });
+    t.lives.composeRefused(3, STALE, { opening: t.lives.state(3).kind === "closing" ? (t.lives.state(3) as { opening: string }).opening : "" });
     await settle();
     expect(answered, "the close waits on its drain").toBe(false);
     expect(t.events).toEqual(["drain h3"]);
     t.drains.get(3)!.resolve(); await closed; await settle();
     expect(t.events, "no drop for an entry the island never held, and no lend replayed").toEqual(["drain h3", "teardown h3"]);
     expect(t.lives.refusedLights()).toEqual([{ ordinal: 3, cause: STALE }]);
+  });
+  test("R14 A REFUSAL ENDS WITH THE LIFE IT NAMED: a light asked during the refused close lights at its dark, and the old cause never reads again, at that light or at the next life's own dark", async () => {
+    const t = island();
+    t.lives.adopt(3, { atomKey: "k3", custody: null });
+    t.lives.composeRefused(3, STALE, { opening: t.lives.opening(3)! });
+    const relit = t.lives.light(3);
+    t.drains.get(3)!.resolve(); await settle();
+    expect(t.lives.state(3).kind).toBe("lighting");
+    expect(t.lives.refusedCloses()).toEqual([]);
+    t.lights.get(3)!.resolve({ atomKey: "k3", custody: null });
+    expect(await relit).toBe("lit");
+    const closed = t.lives.close(3, "lock");
+    t.drains.get(3)!.resolve(); await closed; t.drops.get(3)!.resolve(); await settle();
+    expect(t.lives.state(3).kind).toBe("dark");
+    expect(t.lives.refusedLights(), "a life that lit and closed clean carries no refusal of the life before it").toEqual([]);
   });
 });
 

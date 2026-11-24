@@ -125,9 +125,7 @@ interface Visit { readonly id: number; readonly refuse: (reason: string) => void
 type Life =
   | { kind: "dark" }
   | { kind: "lighting"; opening: string; waiters: Array<Waiter<LightAnswer>> }
-  | { kind: "lit"; opening: string; atomKey: string | null; custody: string | null; visits: Map<number, Visit>; work: Set<number>;
-      /** Whether this life admitted any work or visit: a life nothing touched holds no save of its own making. */
-      touched: boolean }
+  | { kind: "lit"; opening: string; atomKey: string | null; custody: string | null; visits: Map<number, Visit>; work: Set<number> }
   | { kind: "closing"; opening: string; atomKey: string | null; custody: string | null; phase: ClosingPhase; lightPending: boolean; work: Set<number>;
       closedWaiters: Closed[]; relight: Array<Waiter<LightAnswer>> | null;
       /** The island's open refused this life (`composeRefused`): its dark replays no lend, as a refused light replays none. */
@@ -137,7 +135,7 @@ type Message =
   | { t: "light"; waiter: Waiter<LightAnswer> }
   | { t: "adopt"; lit: FaceLit }
   | { t: "light-settled"; opening: string; lit: FaceLit | null; error?: unknown }
-  | { t: "compose-refused"; cause: string; opening: string; fresh: boolean }
+  | { t: "compose-refused"; cause: string; opening: string }
   | { t: "close"; reason: string; custody: string | null | undefined; hold: boolean; waiter: Closed }
   | { t: "release" }
   | { t: "hold"; answer: (held: boolean) => void }
@@ -163,13 +161,13 @@ export interface FaceLives {
    * drop. A refusal names ONE life: a face that closed and lit again since lives under another opening and hears nothing, as
    * does a face dark, lighting or never known.
    *
-   * A DRAIN THAT FAILS HOLDS, HERE TOO. Only a life this very open adopted (`at.fresh`) that admitted no work and no visit
-   * drops bare: nothing reached it, so nothing of its making waits. Every other life (a face that lit healthy and meets the
-   * refusal at a restart's open) closes by the close's own law: its saves drain first, a drain that faults holds it closing
-   * with its host side and its waiting saves standing, and no close waiter resolves over them. A close already under way
-   * keeps that law too. A life this refusal ended replays no lend at its dark (a refused light replays none).
+   * A DRAIN THAT FAILS HOLDS, HERE TOO: the refused life closes by the close's own law. Its saves drain first (a drain with
+   * nothing waiting answers at once); a drain that faults holds it closing with its host side and its waiting saves standing,
+   * no close waiter resolves over them, and the hold names itself (`refusedCloses`, and a log line naming the lock that drives
+   * the close again). A close already under way keeps that law too. A life this refusal ended replays no lend at its dark (a
+   * refused light replays none).
    */
-  composeRefused(ordinal: number, cause: string, at: { readonly opening: string; readonly fresh: boolean }): void;
+  composeRefused(ordinal: number, cause: string, at: { readonly opening: string }): void;
   /**
    * Close a face, resolving at CLOSED (saves drained, worker told, host torn down) and rejecting where its drain faulted (the
    * face holds closing); a dark or never-known face resolves at once. Where `custody` names the custody opening a close answers
@@ -199,6 +197,8 @@ export interface FaceLives {
   ordinals(): number[];
   /** Each face dark here because its last light refused (not held), with the refusal's cause: the vessel names it served-but-dark. */
   refusedLights(): Array<{ readonly ordinal: number; readonly cause: string }>;
+  /** Each face the island's open refused that still holds closing (its saves have not sealed), with the refusal's cause: its close wants driving again. */
+  refusedCloses(): Array<{ readonly ordinal: number; readonly cause: string }>;
   /** The opening a face stands lit under now, or null. */
   opening(ordinal: number): string | null;
   /** The custody opening a lit face lit under, or null. */
@@ -293,6 +293,8 @@ export function faceLives(effects: FaceLifeEffects, options: { readonly nonce: s
     const relight = life.kind === "closing" ? life.relight : null;
     if (relight !== null && !stopped && !actor.held) {
       const opening = fresh();
+      // A REFUSAL ENDS WITH THE LIFE IT NAMED: the light that starts here answers for itself.
+      actor.refused = null;
       actor.life = { kind: "lighting", opening, waiters: relight };
       return [startLight(ordinal, opening)];
     }
@@ -319,7 +321,7 @@ export function faceLives(effects: FaceLifeEffects, options: { readonly nonce: s
       case "adopt": {
         if (life.kind !== "dark" || actor.held) return [];
         actor.refused = null;
-        actor.life = { kind: "lit", opening: fresh(), atomKey: m.lit.atomKey, custody: m.lit.custody, visits: new Map(), work: new Set(), touched: false };
+        actor.life = { kind: "lit", opening: fresh(), atomKey: m.lit.atomKey, custody: m.lit.custody, visits: new Map(), work: new Set() };
         return [];
       }
       case "light-settled": {
@@ -333,7 +335,8 @@ export function faceLives(effects: FaceLifeEffects, options: { readonly nonce: s
             effects.log(`[face-life] h${ordinal} did not light: ${actor.refused}`);
             return waiters.map((w) => () => w("refused"));
           }
-          actor.life = { kind: "lit", opening: life.opening, atomKey: m.lit.atomKey, custody: m.lit.custody, visits: new Map(), work: new Set(), touched: false };
+          actor.refused = null;
+          actor.life = { kind: "lit", opening: life.opening, atomKey: m.lit.atomKey, custody: m.lit.custody, visits: new Map(), work: new Set() };
           return waiters.map((w) => () => w("lit"));
         }
         if (life.kind === "closing" && life.opening === m.opening && life.lightPending) {
@@ -355,19 +358,15 @@ export function faceLives(effects: FaceLifeEffects, options: { readonly nonce: s
           effects.log(`[face-life] h${ordinal} closes with no island entry: the island composed without it: ${m.cause}`);
           return [];
         }
-        if (m.fresh && !life.touched) {
-          // A LIFE THIS OPEN ADOPTED THAT NOTHING TOUCHED: no seat stood in the island for it and nothing reached it, so its
-          // host side drops bare. A refused light replays no lend: the next custody event, close or recard lights it.
-          const opening = life.opening;
-          actor.life = { kind: "dark" };
-          actor.refused = m.cause;
-          effects.log(`[face-life] h${ordinal} did not light: the island composed without it: ${m.cause}`);
-          return [() => effects.teardownHost(ordinal, opening)];
-        }
-        // ANY OTHER LIFE CLOSES BY THE CLOSE'S OWN LAW: its saves drain before anything drops, and a drain that faults holds it.
+        // THE REFUSED LIFE CLOSES BY THE CLOSE'S OWN LAW: its saves drain before anything drops (a drain with nothing waiting
+        // answers at once), a drain that faults holds it, and the island, which holds no entry, is asked no drop.
         life.atomKey = null;
         effects.log(`[face-life] h${ordinal}: the island composed without it (${m.cause}); it closes, its saves draining first`);
-        const out = handle(ordinal, actor, { t: "close", reason: "the island composed without it", custody: undefined, hold: false, waiter: { resolve: () => {}, reject: () => {} } });
+        const out = handle(ordinal, actor, { t: "close", reason: "the island composed without it", custody: undefined, hold: false, waiter: {
+          resolve: () => {},
+          // NO ASKER WAITS ON THIS CLOSE, so its hold names itself: the face, why, and the line that drives the close again.
+          reject: (error) => effects.log(`[face-life] h${ordinal} holds closing: the island composed without it, and its saves did not seal (${describe(error)}); nothing dropped. Drive its close again: \`lares vault lock --face ${ordinal}\``),
+        } });
         const closing = actor.life;
         if (closing.kind === "closing") closing.quiet = true;
         actor.refused = m.cause;
@@ -528,7 +527,7 @@ export function faceLives(effects: FaceLifeEffects, options: { readonly nonce: s
   return {
     light: (ordinal) => new Promise<LightAnswer>((resolve) => send(ordinal, { t: "light", waiter: resolve })),
     adopt: (ordinal, lit) => send(ordinal, { t: "adopt", lit }),
-    composeRefused: (ordinal, cause, at) => { if (lives.has(ordinal)) send(ordinal, { t: "compose-refused", cause, opening: at.opening, fresh: at.fresh }); },
+    composeRefused: (ordinal, cause, at) => { if (lives.has(ordinal)) send(ordinal, { t: "compose-refused", cause, opening: at.opening }); },
     close,
     release: (ordinal) => { if (lives.has(ordinal)) send(ordinal, { t: "release" }); },
     async closeAll(reason, opts) {
@@ -555,6 +554,8 @@ export function faceLives(effects: FaceLifeEffects, options: { readonly nonce: s
     ordinals: () => [...lives.keys()].sort((a, b) => a - b),
     refusedLights: () => [...lives].filter(([, a]) => a.life.kind === "dark" && !a.held && a.refused !== null)
       .map(([ordinal, a]) => ({ ordinal, cause: a.refused! })).sort((x, y) => x.ordinal - y.ordinal),
+    refusedCloses: () => [...lives].filter(([, a]) => a.life.kind === "closing" && a.life.quiet === true && a.refused !== null)
+      .map(([ordinal, a]) => ({ ordinal, cause: a.refused! })).sort((x, y) => x.ordinal - y.ordinal),
     opening: (ordinal) => { const life = lives.get(ordinal)?.life; return life?.kind === "lit" ? life.opening : null; },
     custodyOf: (ordinal) => { const life = lives.get(ordinal)?.life; return life?.kind === "lit" ? life.custody : null; },
     atomKeyOf: (ordinal) => { const life = lives.get(ordinal)?.life; return life?.kind === "lit" ? life.atomKey : null; },
@@ -568,7 +569,6 @@ export function faceLives(effects: FaceLifeEffects, options: { readonly nonce: s
       if (life?.kind !== "lit") return null;
       const id = nextId++, opening = life.opening;
       life.work.add(id);
-      life.touched = true;
       let done = false;
       return { opening, done: () => { if (done) return; done = true; send(ordinal, { t: "work-done", opening, id }); } };
     },
@@ -578,7 +578,6 @@ export function faceLives(effects: FaceLifeEffects, options: { readonly nonce: s
       const visit: Visit = { id: nextId++, refuse, answered: false };
       const opening = life.opening;
       life.visits.set(visit.id, visit);
-      life.touched = true;
       return {
         opening,
         deliver(write, refuseNow) { if (!visit.answered) send(ordinal, { t: "deliver", visit, opening, write, refuse: refuseNow }); },

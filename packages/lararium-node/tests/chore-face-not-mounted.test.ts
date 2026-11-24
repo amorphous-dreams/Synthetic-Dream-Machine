@@ -302,9 +302,18 @@ test("SOL R6 M (writes enter during the drain): a write dispatched before the cl
 // The live house: h2's light refused for want of a prekey secret, and a hand `lares rite land --face 2` waited sixty seconds on
 // an island that held no such face. The door reads the face's own actor and answers at once, with the cause and its cure.
 test("A DARK FACE'S ACT REFUSES AT THE DOOR BY NAME: a rite-land on a face whose light refused answers face-not-open with the cause and its clearing line, and no act runs; CONTROL: the lit face's act runs", async () => {
-  const { lives } = actors(0, 1);
-  lives.composeRefused(1, "FaceHoldsNoPrekeySecret: [daemon-keyhive] face k1 holds no prekey secret", { opening: lives.opening(1)!, fresh: true });
+  const { lives, drains } = actors(0, 1);
+  lives.composeRefused(1, "FaceHoldsNoPrekeySecret: [daemon-keyhive] face k1 holds no prekey secret", { opening: lives.opening(1)! });
   const acts: string[] = [];
+  // WHILE ITS SAVES STILL WAIT the face holds closing, and the door says so with the line that drives the close again.
+  const HELD = "h1 served by custody, closing here: drive its close again: lares vault lock --face 1";
+  const holding = await stand({ faceLife: lives, acts, faceDark: (face) => face === 1 ? HELD : null });
+  const envHeld = await holding.open("h1");
+  const closing = await holding.peer.ask({ op: "session:act", ...envHeld, requestId: "land-held", act: "rite-land", args: { tessera: "t", head: "h" } });
+  expect(closing).toMatchObject({ kind: "session:refused", refusal: "face-closing" });
+  expect(String(closing["message"])).toContain(HELD);
+  drains[0]!(); await new Promise((r) => setImmediate(r));
+  expect(lives.state(1).kind).toBe("dark");
   const NOTE = "h1 served by custody, dark here: its light refused (FaceHoldsNoPrekeySecret: …); recard it: lares vault recard --face 1";
   const v = await stand({ faceLife: lives, acts, faceDark: (face) => face === 1 ? NOTE : null });
   const env = await v.open("h1");

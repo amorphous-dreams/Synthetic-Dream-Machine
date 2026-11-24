@@ -255,6 +255,18 @@ test("R9 THE DOOR AND THE CENSUS SAY ONE LINE: the session door's dark line for 
   }
 });
 
+test("R9 A REFUSED FACE THAT HOLDS CLOSING NAMES ITSELF: the census and the door read one line for it, naming the saves that hold it and the lock that drives its close again", () => {
+  const cause = "FaceHoldsNoPrekeySecret: [daemon-keyhive] face abc… holds no prekey secret";
+  const [row] = servedDark([], [0, 2], true, [{ ordinal: 2, cause }]);
+  expect(row).toMatchObject({ face: 2, cause });
+  expect(row!.note).toContain("closing here");
+  expect(row!.note).toContain("lares vault lock --face 2");
+  expect(servedDark([], [0], true, [{ ordinal: 2, cause }]), "a face the custody does not serve reads nowhere").toEqual([]);
+  const line = doorDarkLine(() => [], true, () => [{ ordinal: 2, cause }]);
+  expect(line(2)).toBe(row!.note);
+  expect(line(1)).toBeNull();
+});
+
 test("R9 THE CLEARING LINE: an unlock over a held key replays the lend, so a served face whose light refused lights again", async () => {
   setMountedFace(0); const h = harness();
   expect(await h.send({ op: "unlock", credentials: [{ kind: "passphrase", passphrase: "x" }] })).toMatchObject({ op: "unlock" });

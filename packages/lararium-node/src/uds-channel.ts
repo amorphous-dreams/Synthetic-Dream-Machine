@@ -94,9 +94,10 @@ export interface UdsChannelOptions {
    */
   readonly faceLife?: Pick<FaceLives, "admitWork" | "admitVisit" | "state" | "known">;
   /**
-   * A face its custody serves that stands dark here because its light refused: the served-but-dark line (the cause and the act
-   * that lights it again), or null. The door's `face-not-open` carries it, so a verb or act aimed at such a face answers at
-   * once with its cure. Absent: a shut face reads shut, and no more.
+   * A face its custody serves that stands dark here because its light refused, or that holds closing after the island's open
+   * refused it: the census's own line for it (the cause and the act that clears it), or null. The door's `face-not-open` or
+   * `face-closing` carries it, so a verb or act aimed at such a face answers at once with its cure. Absent: a shut face reads
+   * shut, and no more.
    */
   readonly faceDark?: (face: number) => string | null;
   /**
@@ -1207,10 +1208,13 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
   const mountOf = (): number | null => opts.mountOrdinal?.() ?? null;
   /** The refusal a face the actor will not admit reads: closing while its close runs, dark by name where its light refused, shut otherwise. */
   const shutRefusal = (face: number, what: string): { readonly ok: false; readonly refusal: string; readonly message: string } => {
-    if (opts.faceLife?.state(face).kind === "closing") return { ok: false, refusal: "face-closing", message: `face-closing: face h${face} is closing on this vessel; its saves drain and it takes no new ${what}` };
-    let dark: string | null = null;
-    try { dark = opts.faceDark?.(face) ?? null; } catch { dark = null; }
-    return { ok: false, refusal: "face-not-open", message: dark !== null ? `face-not-open: ${dark}; no ${what} ran` : `face-not-open: face h${face} stands shut on this vessel, and no ${what} ran` };
+    let line: string | null = null;
+    try { line = opts.faceDark?.(face) ?? null; } catch { line = null; }
+    if (opts.faceLife?.state(face).kind === "closing") {
+      // A CLOSE THE ISLAND'S REFUSAL BEGAN THAT HOLDS OVER UNSEALED SAVES names itself and the line that drives it again.
+      return { ok: false, refusal: "face-closing", message: line !== null ? `face-closing: ${line}; no ${what} ran` : `face-closing: face h${face} is closing on this vessel; its saves drain and it takes no new ${what}` };
+    }
+    return { ok: false, refusal: "face-not-open", message: line !== null ? `face-not-open: ${line}; no ${what} ran` : `face-not-open: face h${face} stands shut on this vessel, and no ${what} ran` };
   };
   /** The face a call VISITS: a visit verb naming, as its numeric `target`, a face other than the one it wears; else null. */
   const visitTargetOf = (worn: number | null, verb: string, args: Record<string, unknown> | undefined): number | null =>

@@ -152,17 +152,36 @@ export const darkCure = (face: number, cause: string, pulama = false): string =>
 export const servedDarkNote = (face: number, cause: string, pulama = false): string =>
   `h${face} served by custody, dark here: its light refused (${cause}); ${darkCure(face, cause, pulama)}`;
 
-/** The served-but-dark set: each face whose light refused here that its custody serves (the lit set), with its note. */
-export const servedDark = (refused: ReadonlyArray<{ readonly ordinal: number; readonly cause: string }>, lit: readonly number[], pulama = false): ServedDark[] =>
-  refused.filter((r) => lit.includes(r.ordinal)).map((r) => ({ face: r.ordinal, cause: r.cause, note: servedDarkNote(r.ordinal, r.cause, pulama) }));
+/**
+ * The line for a face the island's open refused that still HOLDS CLOSING: saves of its own wait unsealed, so nothing of it
+ * dropped. It names the lock that drives the close again; once it reads dark, the served-but-dark line names what lights it.
+ */
+export const heldClosingNote = (face: number, cause: string): string =>
+  `h${face} served by custody, closing here: the island composed without it (${cause}), and saves of its own wait unsealed, so it holds closing and nothing dropped; drive its close again: \`lares vault lock --face ${face}\`, then \`lares vessel census\` reads what lights it`;
+
+type RefusedFace = { readonly ordinal: number; readonly cause: string };
 
 /**
- * THE DOOR AND THE CENSUS SAY ONE LINE: the session door's `face-not-open` for a face whose light refused carries the note the
- * census prints for it, read live from the refused lights; a face with no refused light reads none. `pulama` reads the one
- * fact both doors hold: whether this vessel's custody rests with a pūlama (`namesPulama`).
+ * The served-but-dark set: each face whose light refused here that its custody serves (the lit set), with its note; beside
+ * them each served face the island's open refused that still holds closing (`closing`), with the line that drives it again.
  */
-export const doorDarkLine = (refused: () => ReadonlyArray<{ readonly ordinal: number; readonly cause: string }>, pulama: boolean): ((face: number) => string | null) =>
-  (face) => { const dark = refused().find((r) => r.ordinal === face); return dark === undefined ? null : servedDarkNote(face, dark.cause, pulama); };
+export const servedDark = (refused: readonly RefusedFace[], lit: readonly number[], pulama = false, closing: readonly RefusedFace[] = []): ServedDark[] => [
+  ...refused.filter((r) => lit.includes(r.ordinal)).map((r) => ({ face: r.ordinal, cause: r.cause, note: servedDarkNote(r.ordinal, r.cause, pulama) })),
+  ...closing.filter((r) => lit.includes(r.ordinal)).map((r) => ({ face: r.ordinal, cause: r.cause, note: heldClosingNote(r.ordinal, r.cause) })),
+];
+
+/**
+ * THE DOOR AND THE CENSUS SAY ONE LINE: the session door's refusal for a face whose light refused, or that holds closing after
+ * the island's open refused it, carries the note the census prints for it, read live; any other face reads none. `pulama`
+ * reads the one fact both doors hold: whether this vessel's custody rests with a pūlama (`namesPulama`).
+ */
+export const doorDarkLine = (refused: () => readonly RefusedFace[], pulama: boolean, closing: () => readonly RefusedFace[] = () => []): ((face: number) => string | null) =>
+  (face) => {
+    const dark = refused().find((r) => r.ordinal === face);
+    if (dark !== undefined) return servedDarkNote(face, dark.cause, pulama);
+    const held = closing().find((r) => r.ordinal === face);
+    return held === undefined ? null : heldClosingNote(face, held.cause);
+  };
 
 export interface CustodyFrameDeps {
   readonly holder: CustodyHolder;
@@ -182,6 +201,8 @@ export interface CustodyFrameDeps {
   readonly holdFaces?: () => boolean;
   /** Each face dark here because its last light refused, with its cause. */
   readonly refusedLights?: () => ReadonlyArray<{ readonly ordinal: number; readonly cause: string }>;
+  /** Each face the island's open refused that still holds closing over unsealed saves, with its cause (`FaceLives.refusedCloses`). */
+  readonly refusedCloses?: () => ReadonlyArray<{ readonly ordinal: number; readonly cause: string }>;
   /** Replay the lend now (the served-but-dark clearing line), awaited. */
   readonly replayLend?: () => Promise<void>;
   /** Close every face through its actor (a whole lock): resolves once each closed; rejects where one did not close whole. */
@@ -993,7 +1014,7 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       const worn = holder.isUnlocked() ? mountedFaceOrdinal() : undefined;
       // `facesDark` names each face the custody serves (lit set) that stands dark here, its light refused, with its clearing line.
       let facesDark: ServedDark[] = [];
-      try { facesDark = servedDark(deps.refusedLights?.() ?? [], facesLit, deps.pulama !== undefined); } catch { facesDark = []; }
+      try { facesDark = servedDark(deps.refusedLights?.() ?? [], facesLit, deps.pulama !== undefined, deps.refusedCloses?.() ?? []); } catch { facesDark = []; }
       answer(sock, { op: "census", held, standing: deps.standing(), locked: !holder.isUnlocked(), ...(facesLocked.length > 0 ? { facesLocked } : {}), ...(facesLit.length > 0 ? { facesLit } : {}), ...(facesDark.length > 0 ? { facesDark } : {}), ...(worn !== undefined ? { worn } : {}) });
       return true;
     } else {

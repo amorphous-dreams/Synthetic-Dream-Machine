@@ -634,6 +634,8 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   holdFaces: () => boolean;
   /** Each face dark here because its last light refused, with its cause (the census names it served-but-dark). */
   refusedLights: () => Array<{ readonly ordinal: number; readonly cause: string }>;
+  /** Each face the island's open refused that still holds closing over unsealed saves, with its cause (`FaceLives.refusedCloses`). */
+  refusedCloses: () => Array<{ readonly ordinal: number; readonly cause: string }>;
   /** Replay the lend now: every served face neither mounted, lit nor closing at its source lights (the served-but-dark clearing line). */
   replayLend: () => Promise<void>;
   /** Arm face `ordinal`'s next light as a recard (`face-recard`): one use, consumed by that light whether it stands or refuses. */
@@ -852,6 +854,7 @@ interface NodeBootPrep {
   holdFace: (ordinal: number) => boolean;
   holdFaces: () => boolean;
   refusedLights: () => Array<{ readonly ordinal: number; readonly cause: string }>;
+  refusedCloses: () => Array<{ readonly ordinal: number; readonly cause: string }>;
   replayLend: () => Promise<void>;
   armRecard: (ordinal: number) => void;
   disarmRecard: (ordinal: number) => boolean;
@@ -4061,7 +4064,7 @@ async function prepareNodeBootOn(
       composedWith = new Set(standing.map((face) => face.handleIndex!));
       composedManifest = standing.flatMap((face) => {
         const ordinal = face.handleIndex!, opening = faceLife.opening(ordinal);
-        return ordinal !== mountedFace && opening !== null ? [{ ordinal, atomKey: face.atom.key, opening, fresh: first }] : [];
+        return ordinal !== mountedFace && opening !== null ? [{ ordinal, atomKey: face.atom.key, opening }] : [];
       });
       if (standing.length > 0) sealedRest.store.mapMoved();
       return standing;
@@ -5492,6 +5495,7 @@ async function prepareNodeBootOn(
     // Every face reads, none skipped: each past CLOSED takes its hold, and one standing lit answers no.
     holdFaces: () => { recardArmed.clearAll(); return faceLife.ordinals().map((ordinal) => faceLife.hold(ordinal)).every(Boolean); },
     refusedLights: () => faceLife.refusedLights(),
+    refusedCloses: () => faceLife.refusedCloses(),
     replayLend: () => replayLendNow(),
     armRecard: (ordinal) => { recardArmed.arm(ordinal); },
     disarmRecard: (ordinal) => { const left = recardArmed.armed(ordinal); recardArmed.clear(ordinal); return left; },
@@ -5631,7 +5635,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     daemon: p.daemonVm(),
     restartDaemonIsland: p.restartDaemonIsland,
     daemonIslandState: p.daemonIslandState,
-    lightFace: p.lightFace, dropFace: p.dropFace, mountOrdinal: p.mountOrdinal, litOrdinals: p.litOrdinals, faceLife: p.faceLife, closeFaces: p.closeFaces, releaseFace: p.releaseFace, releaseFaces: p.releaseFaces, holdFace: p.holdFace, holdFaces: p.holdFaces, refusedLights: p.refusedLights, replayLend: p.replayLend, armRecard: p.armRecard, disarmRecard: p.disarmRecard, onMountClosed: p.onMountClosed, siblingFaceOf: p.siblingFaceOf, restartWiki: p.restartWiki, promoteActs: p.promoteActs,
+    lightFace: p.lightFace, dropFace: p.dropFace, mountOrdinal: p.mountOrdinal, litOrdinals: p.litOrdinals, faceLife: p.faceLife, closeFaces: p.closeFaces, releaseFace: p.releaseFace, releaseFaces: p.releaseFaces, holdFace: p.holdFace, holdFaces: p.holdFaces, refusedLights: p.refusedLights, refusedCloses: p.refusedCloses, replayLend: p.replayLend, armRecard: p.armRecard, disarmRecard: p.disarmRecard, onMountClosed: p.onMountClosed, siblingFaceOf: p.siblingFaceOf, restartWiki: p.restartWiki, promoteActs: p.promoteActs,
     wikiDocUrl:       result.wikiHandle?.url ?? null,
     catalogHandleUrl: p.catalogHandle.url,
     daemonDocUrl:     p.daemonDocUrl(),
