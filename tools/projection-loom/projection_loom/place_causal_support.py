@@ -6,7 +6,6 @@ support_workspace APIs, never by copying a fake graph edge or editing
 the source workspace. Shelter and ascent have different evidence scopes.
 """
 from __future__ import annotations
-import json
 from pathlib import Path
 from .location_workspace import verify_workspace,support_workspace
 from .relational_ground import RelationalGround
@@ -14,12 +13,8 @@ from .place_genome import PlaceGenome,unique_walkway_chain
 from .spatial_intent import SpatialIntent
 from .place_affordances import assess_place
 from .native_support import propose_support
-from .receipt_store import save_once
+from .receipt_store import read_json as _json, save_once
 from .provenance_encoding import canonical_json_sha256
-
-
-def _json(path):
-    return json.loads(Path(path).read_text(encoding="utf8"))
 
 
 def materialize_crossing_support(source,genome,spatial,destination,*,actor):

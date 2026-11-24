@@ -5,7 +5,6 @@ audition. Comparing two bends never elects a winner or implies certified
 structural safety; an unsuccessful arm retains its negative testimony.
 """
 from __future__ import annotations
-import json
 from pathlib import Path
 from .place_composed_route import compose_operator_route
 from .place_genome import PlaceGenome
@@ -13,7 +12,7 @@ from .spatial_intent import SpatialIntent
 from .scene_usd import package_scene
 from .place_affordances import assess_place,verify_place_affordances
 from .provenance_encoding import canonical_json_sha256
-from .receipt_store import save_once
+from .receipt_store import read_json as _read, save_once
 from .study_reentry import replay_completed_or_require_fresh
 
 TURNS=("x-then-y","y-then-x")
@@ -53,10 +52,6 @@ def _observation(genome,spatial,selected,native):
             "body_placements":[{"entity_id":b.entity_id,
                                 "translation":list(b.translation)}
                                for b in genome.bodies]}
-
-
-def _read(path):
-    return json.loads(Path(path).read_text(encoding="utf8"))
 
 
 def _arm_receipt(proposed,child,spatial,selected,native,turn):

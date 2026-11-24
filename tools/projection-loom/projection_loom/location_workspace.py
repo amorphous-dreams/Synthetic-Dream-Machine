@@ -14,13 +14,12 @@ from __future__ import annotations
 from copy import deepcopy
 from dataclasses import replace
 from hashlib import sha256
-import json
 import shutil
 from pathlib import Path
 
 from .editor_proposals import apply_proposal, seed_editor_ground, verify_transfer_receipts
 from .fractal_ooda_ha import OODAHAJournal
-from .receipt_store import save_once
+from .receipt_store import read_json as _read, save_once
 from .location_stack import Element, LocationStack
 from .provenance_encoding import canonical_json_sha256
 from .relational_ground import IDENTITY, RelationalGround
@@ -28,10 +27,6 @@ from .scene_usd import _validate_declaration, package_scene, validate_scene
 from .native_support import native_support, verify_support_proposal
 
 SCHEMA = "projection-loom/location-workspace"
-
-
-def _read(path):
-    return json.loads(Path(path).read_text(encoding="utf8"))
 
 
 def _sha(value):

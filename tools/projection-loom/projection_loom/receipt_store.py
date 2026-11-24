@@ -38,3 +38,6 @@ def save_once(path, payload):
         Path(pending).unlink(missing_ok=True)
 
 
+def read_json(path):
+    """Read one JSON document as UTF-8; the single owner of the plain reader."""
+    return json.loads(Path(path).read_text(encoding="utf8"))

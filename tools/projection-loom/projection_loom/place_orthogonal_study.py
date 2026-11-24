@@ -1,21 +1,16 @@
 """Source-fixed, exact STEP comparison of two operator-authorized route bends."""
 from __future__ import annotations
-import json
 from pathlib import Path
 from .place_genome import PlaceGenome
 from .spatial_intent import SpatialIntent
 from .place_orthogonal_route import propose_orthogonal_route
 from .scene_usd import package_scene
 from .place_affordances import assess_place,verify_place_affordances
-from .receipt_store import save_once
+from .receipt_store import read_json as _read, save_once
 from .study_reentry import replay_completed_or_require_fresh
 from .provenance_encoding import canonical_json_sha256, first_json_difference
 
 _TURNS=("x-then-y","y-then-x")
-
-
-def _read(path):
-    return json.loads(Path(path).read_text(encoding="utf8"))
 
 
 def _preregister(genome,spatial,location,corner_id):

@@ -5,7 +5,6 @@ receive equal native audition budgets and honest, individually replayed
 positive or negative witnesses. No alternative wins by generator order.
 """
 from __future__ import annotations
-import json
 from pathlib import Path
 from .place_composed_route import compose_operator_route
 from .place_compound_routes import _arm_receipt
@@ -14,7 +13,7 @@ from .place_genome import PlaceGenome
 from .scene_usd import package_scene
 from .place_affordances import assess_place,verify_place_affordances
 from .provenance_encoding import canonical_json_sha256
-from .receipt_store import save_once
+from .receipt_store import read_json as _read, save_once
 from .study_reentry import replay_completed_or_require_fresh
 
 ALTERNATIVES=("x-then-y","y-then-x","x-y-x","y-x-y")
@@ -47,10 +46,6 @@ def _propose(original,spatial,pre,pattern):
         return propose_three_hop_route(original,spatial,**args,
                      pattern=pattern,corner_prefix=pre["operator_named_corners"])
     raise ValueError("Operator must select a supported explicit topology")
-
-
-def _read(path):
-    return json.loads(Path(path).read_text(encoding="utf8"))
 
 
 def _refusal(spatial,pattern,reason):

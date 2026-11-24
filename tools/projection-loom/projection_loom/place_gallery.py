@@ -4,7 +4,6 @@ This gallery only presents CAD. Mesh concatenation serves raster projection;
 it never fuses independent construction or promotes rendered images as source.
 """
 from pathlib import Path
-import json
 from hashlib import sha256
 import tempfile
 import cadquery as cq
@@ -14,12 +13,8 @@ from .place_genome import PlaceGenome
 from .developmental import compile_growth
 from .intent_evolution import fixed_inspection_cameras
 from .gallery_artifacts import VIEWS,native_six_view_sheet
-from .receipt_store import save_once
+from .receipt_store import read_json as _read, save_once
 from .provenance_encoding import canonical_json_sha256
-
-
-def _read(path):
-    return json.loads(Path(path).read_text(encoding="utf8"))
 
 
 def _joined_preview(meshes):

@@ -7,19 +7,14 @@ This establishes no structural engineering certificate.
 """
 from __future__ import annotations
 from pathlib import Path
-import json
 from .location_workspace import verify_workspace,support_workspace
 from .relational_ground import RelationalGround
 from .place_genome import PlaceGenome
 from .spatial_intent import SpatialIntent
 from .place_affordances import assess_place
 from .native_support import native_support,propose_support
-from .receipt_store import save_once
+from .receipt_store import read_json as _read, save_once
 from .provenance_encoding import canonical_json_sha256
-
-
-def _read(path):
-    return json.loads(Path(path).read_text(encoding="utf8"))
 
 
 def materialize_bearing_support(source,genome,spatial,destination,*,actor):

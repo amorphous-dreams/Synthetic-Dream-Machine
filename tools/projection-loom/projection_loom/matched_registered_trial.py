@@ -7,20 +7,15 @@ This comparison does not automatically select a winner or assert statistical
 significance from one trial.
 """
 from __future__ import annotations
-import json
 from pathlib import Path
 from .generalized_campaign import run_cohort, measured_view_scores
-from .receipt_store import save_once
+from .receipt_store import read_json as _read, save_once
 from .developmental import GrowthProgram, compile_growth
 from .intent_seed import IntentContract, SeedBundle
 from .seed_adapters import registered_views
 from .provenance_encoding import canonical_json_sha256
 
 SCHEMA = "projection-loom/registered-multiview-ablation"
-
-
-def _read(path):
-    return json.loads(Path(path).read_text(encoding="utf8"))
 
 
 def _read_epoch(out, index):

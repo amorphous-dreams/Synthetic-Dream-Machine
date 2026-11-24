@@ -7,10 +7,9 @@ promotion or automatic operator preference. No second OODA-HA helm exists.
 """
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
-from .receipt_store import save_once
+from .receipt_store import read_json as _load, save_once
 from .seed_adapters import image_group, registered_views
 from .location_stack import LocationStack
 from .location_workspace import (
@@ -22,10 +21,6 @@ from .scene_usd import _validate_declaration
 from .provenance_encoding import canonical_json_sha256
 
 SCHEMA="projection-loom/full-location-crucible"
-
-
-def _load(path):
-    return json.loads(Path(path).read_text(encoding="utf8"))
 
 
 def run_holistic(image_manifest, declaration, lower, upper, moved, delta, output):

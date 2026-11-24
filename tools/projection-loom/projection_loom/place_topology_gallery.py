@@ -7,7 +7,6 @@ original STEP audit, chooses an artistic winner, or suppresses a refusal.
 from __future__ import annotations
 from hashlib import sha256
 from html import escape
-import json
 from pathlib import Path
 import tempfile
 import cadquery as cq
@@ -15,12 +14,8 @@ from .place_gallery import _original_mesh,_native_mesh
 from .gallery_artifacts import VIEWS,native_six_view_sheet
 from .intent_evolution import fixed_inspection_cameras
 from .place_topology_study import verify_topology_study
-from .receipt_store import save_once
+from .receipt_store import read_json as _read, save_once
 from .provenance_encoding import canonical_json_sha256
-
-
-def _read(path):
-    return json.loads(Path(path).read_text(encoding="utf8"))
 
 
 def _page(pre,report,entries):
