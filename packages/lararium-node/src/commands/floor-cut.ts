@@ -2,7 +2,7 @@
  * floor-cut — `lares nexus release <manifest-file> --cut`: the node vessel's binding of the release wiring (`@lararium/mesh`
  * `cutReleaseFloor`). It cuts the floor the next release names from LIVE house canon, so a release after a promotion carries the
  * promoted rows (offering#/the-canon-offer). It seals nothing and lands nothing on any board: it writes the manifest file the
- * seats then approve (`lares nexus promote open <manifest-file> --purpose floor-release --surface floor-release`) and stages the
+ * seats then approve (`lares nexus approve open <manifest-file> --purpose floor-release --surface floor-release`) and stages the
  * floor's blobs in this hearth's CAS, where `nexus release` and the porch read them.
  *
  * The ports, by capability (`runFloorCutOver` binds them; `runFloorCut` resolves the charter, the board and the catalog first):
@@ -18,11 +18,11 @@
  */
 import { existsSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import type { AutomergeUrl, Repo } from "@automerge/automerge-repo";
+import type { Repo } from "@automerge/automerge-repo";
 import {
-  AutomergeDocStore, BAG_MANIFEST_FILE, FloorCutThin, bagUri, cutReleaseFloor, floorPinOf, floorReleaseEntriesFromBoard, foldFloorReleases,
-  FloorManifestRefusal, publicationDocUrl, materializeSharedLarDoc, readFloorManifest, realmStandingDocUrl, sha256HexBytesSync,
-  type CapTier, type LarDoc, type LarTiddlerRecord, type OfferRecordReader,
+  BAG_MANIFEST_FILE, FloorCutThin, cutReleaseFloor, floorPinOf, floorReleaseEntriesFromBoard, foldFloorReleases,
+  FloorManifestRefusal, publicationDocUrl, materializeSharedLarDoc, readFloorManifest, sha256HexBytesSync,
+  type CapTier,
 } from "@lararium/mesh";
 import { readBagManifest } from "../bag-declare.js";
 import { daemonBagsDir } from "../lares-config.js";
@@ -31,6 +31,7 @@ import { loadVesselVerifyingKey } from "../node-vessel-identity.js";
 import { nodeNexusIsland } from "../nexus-standing.js";
 import { FloorRefused, nodeFloorPorts } from "./floor.js";
 import { charterHomeFor } from "../carried-set.js";
+import { nodeCanonDocUrl, nodeCanonRows } from "./canon-rows.js";
 
 export interface FloorCutResult {
   readonly nexus?:      string;
@@ -48,23 +49,6 @@ export interface FloorCutResult {
 export function declaredBagTier(bagsDir: string, slug: string): CapTier | null {
   const dir = join(bagsDir, slug);
   return existsSync(join(dir, BAG_MANIFEST_FILE)) ? readBagManifest(dir, slug).tier : null;
-}
-
-/**
- * The live house-canon document a bag names on this vessel: the Kahu realm's bag row in the vessel's own catalog. `catalogUrl`
- * names that catalog as the store door holds it (`StoreDoorDeps.catalogUrl`: the standing vessel's own catalog handle, or the
- * pointer file beside a store a direct act opened, `readCatalogPointer`). Null where the store names no catalog or no row stands
- * for the bag. A read; it asks nothing.
- */
-export async function nodeCanonDocUrl(repo: Repo, catalogUrl: string | null | undefined): Promise<(bag: string) => string | null> {
-  const catalog = catalogUrl ? (await repo.find<LarDoc>(catalogUrl as AutomergeUrl)).doc() : null;
-  return (bag) => (catalog ? realmStandingDocUrl(catalog, bag) : null);
-}
-
-/** One canon bag's live store on this vessel, or null where no document stands for it. */
-export async function nodeCanonStore(repo: Repo, docUrlOf: (bag: string) => string | null, bag: string): Promise<(OfferRecordReader & { listVisible(): Promise<string[]> }) | null> {
-  const url = docUrlOf(bag);
-  return url ? new AutomergeDocStore(await repo.find<LarDoc>(url as AutomergeUrl), bag) : null;
 }
 
 /**
@@ -89,13 +73,7 @@ export async function runFloorCutOver(opts: {
       const bytes = cid ? readVerifiedCasBlobFromFs(cid, opts.casDir) : null;
       return cid && bytes ? { manifestCid: cid, bytes } : null;
     },
-    canonRows: async (slug) => {
-      const store = await nodeCanonStore(opts.repo, opts.canonDocUrl, bagUri(slug));
-      if (!store) return null;
-      const rows: Record<string, LarTiddlerRecord> = {};
-      for (const title of await store.listVisible()) { const r = await store.get(title); if (r) rows[title] = r; }
-      return rows;
-    },
+    canonRows: (slug) => nodeCanonRows(opts.repo, opts.canonDocUrl, slug),
     tier: opts.bagTier,
     blob: async (cid) => readVerifiedCasBlobFromFs(cid, opts.casDir),
     stage: async (blobs) => { writeCasEntriesFs(blobs.map((b) => ({ cid: b.cid, bytes: b.bytes })), opts.casDir); },

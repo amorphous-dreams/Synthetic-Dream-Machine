@@ -9,8 +9,8 @@
 //   K2  a wrong credential answers `no-slot-opens`, holds nothing, and moves no private row.
 //                                                            control: the right one opens
 //   K3  unlock, lock, unlock: each unlock stands a fresh composition and the vessel answers a verb after each.
-//   K4  three wrong credentials spend the boot's attempts: the right one then reads `attempts-spent`, and only a
-//       restart opens the door again.                        control: a fresh boot opens on the first right try
+//   K4  five wrong credentials spend the boot's attempts (four never do), each miss carrying the tries left: the right one
+//       then reads `attempts-spent` with 0 left, and only a restart opens the door again.                        control: a fresh boot opens on the first right try
 //   K6  the door reads an unlock whose composition refused (`reading: "opens"`, `held: false`) as a refusal.
 //                                                            control: the same answer with `held: true` lands
 //   K5  the harness door refuses an unmarked root (rc 2) before any socket opens.
@@ -34,6 +34,9 @@ const repo = fileURLToPath(new URL("../", import.meta.url));
 const cli = join(repo, "packages/lares-cli/dist/src/bin/lares.js");
 const nodeMain = join(repo, "packages/lararium-node/dist/src/main.js");
 const door = join(repo, "tools/unlock-test-custody.mjs");
+
+// THE BUDGET COMES FROM ITS ONE OWNER (the built @lararium/mesh attempt-budget), never a count pinned here.
+const { ATTEMPT_BUDGET } = await import(pathToFileURL(join(repo, "packages/lararium-mesh/dist/attempt-budget.js")).href);
 
 const freePort = () => new Promise((resolve) => {
   const s = createServer();
@@ -134,7 +137,7 @@ test("the custody door opens the vessel key and leaves no trace of the credentia
     assert.ok(Object.keys(before).length > 0, "the census finds private rows to compare (a silent census proves nothing)");
     const miss = await sendCustodyFrame(root, { op: "unlock", credentials: [{ kind: "passphrase", passphrase: WRONG }] });
     assert.equal(miss.reading, "no-slot-opens");
-    assert.equal(miss.attemptsLeft, 2);
+    assert.equal(miss.attemptsLeft, ATTEMPT_BUDGET - 1);
     assert.equal((await unlockTestCustody(root, "status")).unlocked, false, "K2: a miss holds nothing");
     assert.deepEqual(privateRows(node, root), before, "K2: a miss moves no private row");
     const livesBefore = vessel.lives();
@@ -151,7 +154,7 @@ test("the custody door opens the vessel key and leaves no trace of the credentia
     assert.equal(vessel.lives(), livesBefore + 1, "an unlock over a held key stands nothing new");
 
     // An ordinary verb after the unlock: the known positive for K1's search.
-    const put = vessel.verb(["meme", "list", "--bag", "lar:///ha.ka.ba/bags/lares", "--json"]);
+    const put = vessel.verb(["tiddler", "get", "--meme", "--bag", "lar:///ha.ka.ba/bags/lares", "--json"]);
     assert.equal(put.status, 0, `a verb answers after the unlock: ${put.stderr}${put.stdout}`);
     const KNOWN = JSON.parse(put.stdout.trim().split("\n").pop()).requestId;
     assert.equal(typeof KNOWN, "string", "the verb's answer names its request id");
@@ -164,7 +167,7 @@ test("the custody door opens the vessel key and leaves no trace of the credentia
     const again = await unlockTestCustody(root);
     assert.equal(again.reading, "opens");
     assert.equal(vessel.lives(), livesBefore + 3, "K3: the second unlock stood a fresh composition");
-    const after = vessel.verb(["meme", "list", "--bag", "lar:///ha.ka.ba/bags/lares"]);
+    const after = vessel.verb(["tiddler", "get", "--meme", "--bag", "lar:///ha.ka.ba/bags/lares"]);
     assert.equal(after.status, 0, `a verb answers after lock and unlock: ${after.stderr}${after.stdout}`);
 
     // ── K1: nothing kept carries the credential ──────────────────────────────────────────────────────────────
@@ -205,13 +208,15 @@ test("the custody door opens the vessel key and leaves no trace of the credentia
     assert.match(log, /\[custody\] unlocked: slot \S+ opened the node key/, "K1 control: the door logged the slot that opened");
     assert.match(log, /\[custody\] unlock: no-slot-opens/, "the miss logged its reading and nothing of what was sent");
 
-    // ── K4: three misses spend the boot's attempts; a restart opens the door again ───────────────────────────
+    // ── K4: five misses spend the boot's attempts; a restart opens the door again ────────────────────────────
     vessel = await stand(root);
-    for (const left of [2, 1, 0]) {
+    for (let left = ATTEMPT_BUDGET - 1; left >= 0; left--) {
       const m = await sendCustodyFrame(root, { op: "unlock", credentials: [{ kind: "passphrase", passphrase: `${WRONG}-${left}` }] });
       assert.deepEqual({ reading: m.reading, attemptsLeft: m.attemptsLeft }, { reading: "no-slot-opens", attemptsLeft: left });
     }
-    assert.equal((await unlockTestCustody(root)).reading, "attempts-spent", "K4: the right credential meets a spent bound");
+    const spentAnswer = await unlockTestCustody(root);
+    assert.equal(spentAnswer.reading, "attempts-spent", "K4: the right credential meets a spent bound");
+    assert.equal(spentAnswer.attemptsLeft, 0, "K4: the spent reading carries the count");
     assert.equal((await unlockTestCustody(root, "status")).unlocked, false);
     await vessel.stop();
     vessel = await stand(root);
@@ -225,7 +230,7 @@ test("the custody door opens the vessel key and leaves no trace of the credentia
     try {
       const plantPath = "t/custody-door/planted";
       writeFileSync(join(plantDir, "planted.mem"), `<<^ code=\`&#x0001;\` from=\`?\` to=\`lar:///${plantPath}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${plantPath}"\n\`\`\`\n\n${PLANTED}\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`);
-      const plant = vessel.verb(["meme", "put", `lar:///${plantPath}`, "--recipe", "lares", "--file", join(plantDir, "planted.mem"), "--json"]);
+      const plant = vessel.verb(["tiddler", "put", "--meme", `lar:///${plantPath}`, "--recipe", "lares", "--file", join(plantDir, "planted.mem"), "--json"]);
       assert.equal(plant.status, 0, `the plant lands through an ordinary verb: ${plant.stderr}${plant.stdout}`);
     } finally { rmSync(plantDir, { recursive: true, force: true }); }
     await vessel.stop();
@@ -265,7 +270,7 @@ test("the door reads a key that opened over a refused composition as a refusal",
   assert.equal(custodyActLanded("unlock", refused), false, "K6: held false reads as a refusal");
   assert.equal(custodyActLanded("unlock", { ...refused, held: true, refused: undefined }), true, "K6 control: a held key lands");
   assert.equal(custodyActLanded("unlock", { op: "unlock", reading: "already-unlocked" }), true);
-  assert.equal(custodyActLanded("unlock", { op: "unlock", reading: "no-slot-opens", attemptsLeft: 2 }), false);
+  assert.equal(custodyActLanded("unlock", { op: "unlock", reading: "no-slot-opens", attemptsLeft: ATTEMPT_BUDGET - 1 }), false);
   assert.equal(custodyActLanded("unlock", null), false);
   assert.equal(custodyActLanded("lock", { locked: true }), true);
   assert.equal(custodyActLanded("status", { unlocked: false }), true);

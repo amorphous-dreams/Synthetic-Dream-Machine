@@ -298,6 +298,7 @@ export function carriageCap(deps: {
       const seenDiscovered = new Set<string>();
       let rCurrent = deps.selfCoord?.r ?? 1; // the carriage's radial standing, low-pass damped from live degree
       let rPublished = rCurrent;
+      let firstTick = true;
       const pullFlow = deps.pullFlow;
       if (!pullFlow) deps.onLog?.("carriage: carriage-peering-shut — no gate-native pull is handed in, so this vessel carries in nothing");
       const pullOnce = async (): Promise<number> => {
@@ -306,7 +307,8 @@ export function carriageCap(deps: {
         // FFZ/Krioukov dynamic chart: damp r toward radialCoordinate(live-degree); re-publish the self-slot
         // ONLY past the deadband (hysteresis) — degree→r→re-publish never oscillates (PSO-β low-pass).
         if (deps.selfBearing && deps.selfCoord) {
-          rCurrent = dampedRadius(rCurrent, peers.length);
+          // A peerless boot starts at its target; later degree changes retain the low-pass.
+          rCurrent = firstTick && peers.length === 0 ? R_DISK : dampedRadius(rCurrent, peers.length);
           if (Math.abs(rCurrent - rPublished) > R_DEADBAND) {
             rPublished = rCurrent;
             const rec = routingSlotToRecord({ bearing: deps.selfBearing, r: rCurrent, theta: deps.selfCoord.theta }, "carriage-standing");
@@ -321,6 +323,7 @@ export function carriageCap(deps: {
             }
           }
         }
+        firstTick = false;
         if (!pullFlow) return merged;   // the route is shut: nothing crosses in
         for (const { endpoint: peer, gatePubKey } of peers) {
           if (!bootstrap.has(peer) && !seenDiscovered.has(peer)) {

@@ -236,7 +236,7 @@ export interface IngestCarrier {
   /** The MERGE BASE — the hash the writer last read, whichever door it wrote
    *  through: a disk gesture carries the Synced tree's last-projected hash; a
    *  text-writer (`meme put`) carries the `canonicalHash` it read back from
-   *  `meme get`. One slot, one truth: the Confluence gate reads it as the base
+   *  `tiddler get --meme`. One slot, one truth: the Confluence gate reads it as the base
    *  a writer stood on, so a stale base surfaces as a conflict rather than a
    *  silent overwrite. null = the writer read nothing (never projected / never
    *  read) → the gate adopts. */

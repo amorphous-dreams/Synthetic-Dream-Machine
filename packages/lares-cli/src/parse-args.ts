@@ -31,19 +31,20 @@
  * one of `VALUE_OR_FLAG`.
  */
 export const BOOLEAN_FLAGS: ReadonlySet<string> = new Set([
-  "accept-omissions", "added", "all", "all-strata", "apply", "approve", "brief", "cards", "cosign", "confirm", "create", "cut", "drain",
-  "deny", "docs", "drop", "dry-run", "edge", "ephemeral", "every", "executable", "family", "force", "foreground", "from-persona", "held", "help", "help-mempalace", "history",
-  "hearth", "hold", "if-due", "in-wiki", "init", "join", "json", "keep", "keep-hooks", "keyhive-trace", "launch", "list", "meme", "memory", "observe", "orphans", "over-fresher",
-  "page", "pair", "palaces", "paper", "partial", "passphrase", "pending", "probe", "quorum", "remove", "repour", "restart", "rotate", "seat", "sessions", "shadow", "skinny", "skip-build", "spectral", "split-root",
-  "staged", "sweep", "tag-blobs", "tree", "verbose", "wait", "with-web", "writeback", "yes",
+  "accept-omissions", "added", "all", "all-strata", "apply", "approve", "brief", "bulk", "cancel", "cards", "collapse", "cosign", "confirm", "create", "cut", "drain",
+  "deny", "docs", "draft", "drop", "dry-run", "edge", "ephemeral", "every", "executable", "family", "force", "fresh", "foreground", "from-persona", "held", "help", "help-mempalace", "history",
+  "hearth", "hold", "if-due", "in-wiki", "init", "join", "json", "keep", "keep-hooks", "keyhive-trace", "lag", "launch", "list", "meme", "memory", "observe", "orphans", "over-fresher",
+  "page", "pair", "palaces", "paper", "partial", "passphrase", "pending", "probe", "quorum", "overwrite", "remove", "repour", "restart", "rotate", "seat", "sessions", "shadow", "skinny", "skip-build", "spectral", "split-root",
+  "staged", "sweep", "tag-blobs", "tree", "verbose", "wait", "watch", "with-web", "workbench", "writeback", "yes",
 ]);
 
 /**
  * Names a command reads as a flag in one spelling and as a valued option in another (`meme project --check`
  * alone or `--check <x>`; `--grammar`; `rite kukulu --rollback` alone or `--rollback <rev>`). The parser cannot tell which spelling comes, so these
- * stay greedy. `--face` takes a value (`fleet join offer --face 1`); its flag read only refuses the bare spelling.
+ * stay greedy. `--face` takes a value (`fleet join offer --face 1`), and so does `--target` (`tiddler get T --target h1`);
+ * each flag read only refuses the bare spelling.
  */
-export const VALUE_OR_FLAG: ReadonlySet<string> = new Set(["check", "face", "grammar", "rollback"]);
+export const VALUE_OR_FLAG: ReadonlySet<string> = new Set(["check", "face", "grammar", "rollback", "target", "recipe", "realm"]);
 
 
 /**
@@ -97,7 +98,7 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
         options[key] = body.slice(eq + 1);
         continue;
       }
-      if (BOOLEAN_FLAGS.has(body)) { flags[body] = true; continue; }
+      if (BOOLEAN_FLAGS.has(body) || (command === "wiki" && positional[0] === "pin" && ["bag", "release"].includes(body)) || (command === "wiki" && positional[0] === "switch" && body === "next-boot")) { flags[body] = true; continue; }
       const next = tokens[0];
       // --key value form: peek; consume next token if it does not look like an option (a VALUE_FLAGS name consumes it whatever it starts with).
       if (next !== undefined && (VALUE_FLAGS.has(body) || !next.startsWith("--"))) {

@@ -21,6 +21,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI, sha256HexBytesSync, type GenesisSeed } from "@lararium/mesh";
 import { TW5Engine } from "../../lararium-tw5/src/tw5-vm.js";
+import { modulePinsOf } from "../../lararium-tw5/src/module-pins.js";
 import type { LaresMemeFace } from "../../lararium-tw5/src/types/lares-globals.js";
 
 // The repo's OWN tracked genesis, read off this file's path: a scratch `LAR_ROOT` never redirects it.
@@ -48,7 +49,8 @@ describe.skipIf(absent)(`the wiki booted from genesis bytes${absent ? ` [SKIPPED
     const core = genesisBlob(seed, ENGINE_BLOB_ID);
     const grammar = JSON.parse(new TextDecoder().decode(genesisBlob(seed, LARES_MEMETIC_WIKITEXT_PLUGIN_URI))) as Record<string, unknown>;
     engine = new TW5Engine();
-    await engine.boot(core, [grammar]);
+    // Each blob read only once it hashed to the seed's name for it: the core boots on that pin, the grammar's modules on theirs.
+    await engine.boot({ bytes: core, sha256: (seed.blobs as Record<string, { sha256: string }>)[ENGINE_BLOB_ID]!.sha256 }, [grammar], undefined, { modulePins: modulePinsOf([grammar]) });
     face = (engine.$tw as unknown as { lares: { meme: LaresMemeFace } }).lares.meme;
   }, 120_000);
 

@@ -302,7 +302,7 @@ export interface DaemonVmCore {
    * the island's `$tw.lares.worldlineCompareVm`; the worker projects the registry + runs the ITC
    * tree-leq. Rejects (the worker's error) on an unknown handle — the verb wraps the helpful message.
    */
-  worldlineCompare: (input: DaemonWorldlineCompareInput) => Promise<{ order: string }>;
+  worldlineCompare: (input: DaemonWorldlineCompareInput) => Promise<{ order: string; uncertain: readonly string[] }>;
   /**
    * Well 3 (THE CORE) + Well 4 (NULL-READY) — a handle's worldline-ordered form-vector path IN the
    * daemon VM. Round-trips the captured turns (form-vectors the host pre-fetched from the form store
@@ -413,7 +413,9 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
   // book by its request id, never the presenter the delegate names. Only a channel ask carrying a session's face books,
   // and a booking serves ONE delegate of the verb it booked: the first delegate consumes it, so no later ask reusing the
   // id (a summons, a replay) wears the face.
-  const sessionAsks = new Map<string, SessionWorn & { readonly act: string }>();
+  // The booking also keeps the asker's hand the vessel's door read (`cli`, `seat`, …): a delegate of the booked act runs with
+  // that asker (`ctx.asker`), so a hand verb answers a terminal's session and refuses every other (hitl-reads-a-hand).
+  const sessionAsks = new Map<string, SessionWorn & { readonly act: string; readonly asker?: Hand }>();
   // A booking names the exact act its session placed: its verb and its args, so no other invocation under the id wears it.
   const actOf = (verb: string, args: unknown): string => canonicalJson([verb, JSON.parse(JSON.stringify(args ?? {}))]);
   // Pool eviction mechanism — set via onEvictRequest() after the pool exists.
@@ -653,7 +655,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     if (raw.type === "daemon:worldline-compare-result") {
       const msg = raw as DaemonMsg_WorldlineCompareResult;
       if (msg.error) settleAsk(msg.requestId, undefined, msg.error);
-      else settleAsk(msg.requestId, { order: msg.order });
+      else settleAsk(msg.requestId, { order: msg.order, uncertain: msg.uncertain ?? [] });
       return;
     }
 
@@ -732,6 +734,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
       // the act booked spends the booking: one naming another verb or other args under that id leaves it standing.
       const booked = sessionAsks.get(msg.requestId);
       const worn: SessionWorn | undefined = booked && booked.act === actOf(msg.verb, msg.args) ? { ordinal: booked.ordinal, presenter: booked.presenter, ...(booked.group !== undefined ? { group: booked.group } : {}) } : undefined;
+      const asker: Hand | undefined = worn ? booked?.asker : undefined;
       if (worn) sessionAsks.delete(msg.requestId);
       const invocationLike = {
         title:       `${DAEMON_BAG_ID}/delegate/${msg.requestId}`,
@@ -748,6 +751,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
         daemon:   composite,
         registry: _registry,
         ...(worn ? { wornOf: () => worn, localOf: () => true } : {}),
+        ...(asker ? { askerOf: () => asker } : {}),
       }).then((result) => {
         worker.post(mkDaemonVerbResult({ requestId: msg.requestId, result }));
       }).catch((err: unknown) => {
@@ -915,7 +919,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     placeVerb: (o: VesselPlaceVerbRequest) => {
       if (o.origin === "channel" && o.face && o.requestId && o.requestedBy && o.ordinal !== undefined && Number.isSafeInteger(o.ordinal) && o.ordinal >= 0) {
         const group = opts.wornGroupOf?.(o.ordinal) ?? null;
-        sessionAsks.set(o.requestId, { ordinal: o.ordinal, presenter: o.requestedBy, ...(group !== null ? { group } : {}), act: actOf(o.verb, o.args) });
+        sessionAsks.set(o.requestId, { ordinal: o.ordinal, presenter: o.requestedBy, ...(group !== null ? { group } : {}), ...(o.asker ? { asker: o.asker } : {}), act: actOf(o.verb, o.args) });
         if (sessionAsks.size > 4096) sessionAsks.delete(sessionAsks.keys().next().value as string);
       }
       // THE SESSION'S FACE RIDES THE ACT INTO THE ISLAND: the ordinal, the presenter its door verified, and the group the
@@ -945,7 +949,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
       worker.post(mkStructurepalaceKapae({ turnKey, ...(ended ? { ended } : {}) }));
     },
     worldlineCompare: (input: DaemonWorldlineCompareInput) =>
-      askIsland<{ order: string }>("wl-cmp", (requestId) => mkDaemonWorldlineCompareRequest({
+      askIsland<{ order: string; uncertain: readonly string[] }>("wl-cmp", (requestId) => mkDaemonWorldlineCompareRequest({
         requestId, a: input.a, b: input.b, opens: input.opens,
         ...(input.closes !== undefined ? { closes: input.closes } : {}),
         ...(input.root   !== undefined ? { root: input.root }     : {}),

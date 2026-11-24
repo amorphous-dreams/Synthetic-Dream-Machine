@@ -157,6 +157,73 @@ export function releaseStandIn(handle: DocHandle<unknown>): void { STAND_INS.del
 /** Whether a handle still stands in for a document it has not read. */
 export function standsIn(handle: DocHandle<unknown>): boolean { return STAND_INS.has(handle); }
 
+/** A write into a sealed document held read-only over its own id (`waitHandle`): it refuses by this name, and lands nothing. */
+export const SEALED_DOCUMENT_UNOPENED = "sealed-document-unopened";
+/**
+ * THE SEALED DOCUMENTS HELD READ-ONLY OVER THEIR OWN IDS, each with why it stands so: a document of a sealed bag that missed
+ * the boot window waits for its keyed load under the real id (`waitHandle`), never under a writable fallback. A write into
+ * one refuses `sealed-document-unopened` naming why, so nothing lands clear, nothing lands under an id the bag map does not
+ * name, and nothing waits in memory to drop at a stand-down. The keyed load that opens releases it (`openSealed`).
+ */
+const SEALED_UNOPENED = new WeakMap<object, string>();
+/**
+ * THE HANDLE ITSELF HOLDS, NOT ONLY A STORE OVER IT. A held handle stands over an empty document while its keyed load waits, so
+ * a raw `change` that created `tiddlers` there would conflict with the loaded document's own and hide the sealed content
+ * behind the conflict once the load opened. While held, every mutator a caller reaches (`change`, `changeAt`, `merge`, `sub`
+ * and the sub-handles it would hand out, `remove`) refuses `sealed-document-unopened` before any byte moves, and a reader
+ * sees it held: `isReady()` answers false and `whenReady()` waits for the open. The engine's own `update` (the keyed load, a
+ * peer's sync) passes untouched, and the engine reads no handle's readiness.
+ *
+ * A DELETE BURNS THE WHOLE DOCUMENT, never a write into its held content: `Repo.delete` (a lift that burns its floor
+ * document) runs whole, the hold released first, so nothing refuses midway and leaves the repo half-deleted.
+ */
+const SEALED_GUARDS = new WeakMap<object, { readonly release: () => void }>();
+const SEALED_MUTATORS = ["change", "changeAt", "merge", "sub", "remove"] as const;
+function guardSealed(handle: DocHandle<unknown>): { readonly release: () => void } {
+  const own = handle as unknown as Record<string, unknown>;
+  const isReady = own["isReady"];
+  const whenReady = handle.whenReady.bind(handle);
+  let opened!: () => void;
+  const opens = new Promise<void>((resolve) => { opened = resolve; });
+  const refuse = (verb: string) => (): never => {
+    const why = SEALED_UNOPENED.get(handle) ?? "its keyed load has not opened";
+    throw new VerbRefusal(SEALED_DOCUMENT_UNOPENED, `${SEALED_DOCUMENT_UNOPENED}: ${handle.documentId} rests sealed and stands read-only over its own id (${why}); \`${verb}\` lands nothing, and lands once the keyed load opens the document`);
+  };
+  for (const verb of SEALED_MUTATORS) Object.defineProperty(handle, verb, { value: refuse(verb), configurable: true, writable: true });
+  Object.defineProperty(handle, "isReady", { value: () => false, configurable: true, writable: true });
+  Object.defineProperty(handle, "delete", {
+    value: () => { openSealed(handle); handle.delete(); },
+    configurable: true, writable: true,
+  });
+  Object.defineProperty(handle, "whenReady", {
+    value: (states?: Parameters<typeof handle.whenReady>[0]) => (states !== undefined && !states.includes("ready") ? whenReady(states) : opens.then(() => whenReady(states))),
+    configurable: true, writable: true,
+  });
+  return {
+    release: () => {
+      for (const verb of SEALED_MUTATORS) delete own[verb];
+      delete own["whenReady"];
+      delete own["delete"];
+      Object.defineProperty(handle, "isReady", { value: isReady, configurable: true, writable: true });
+      opened();
+    },
+  };
+}
+/** Hold a sealed document's handle read-only over its own id; `why` names what it waits on (or what ended its load). */
+export function holdSealedUnopened(handle: DocHandle<unknown>, why: string): void {
+  SEALED_UNOPENED.set(handle, why);
+  if (!SEALED_GUARDS.has(handle)) SEALED_GUARDS.set(handle, guardSealed(handle));
+}
+/** The keyed load opened the document: a write into it lands, under the real id, and seals there. */
+export function openSealed(handle: DocHandle<unknown>): void {
+  SEALED_UNOPENED.delete(handle);
+  const guard = SEALED_GUARDS.get(handle);
+  SEALED_GUARDS.delete(handle);
+  guard?.release();
+}
+/** Why a sealed document's handle stands read-only, or undefined where it takes writes. */
+export function sealedUnopened(handle: DocHandle<unknown>): string | undefined { return SEALED_UNOPENED.get(handle); }
+
 export class AutomergeDocStore implements LarTiddlerStore {
   readonly notifiesSynchronously = true;
   /** True while the handle stands in for a document the vessel has not read (`markStandIn`). */
@@ -184,7 +251,7 @@ export class AutomergeDocStore implements LarTiddlerStore {
     );
 
     const remoteOrigin: ChangeOrigin = { kind: "crdt-remote", edgeIsland: bagId ?? "automerge" };
-    handle.on("change", ({ patches }) => {
+    this._onChange = ({ patches }) => {
       // Re-map ["tiddlers", title, ...] → [title, ...] before fan-out.
       // Patches that touch doc-level fields (blobs, etc.) are dropped here
       // since MemeProvider only tracks tiddler-keyed URIs.
@@ -196,8 +263,15 @@ export class AutomergeDocStore implements LarTiddlerStore {
       const own = this._applying;
       this.provider.handleChange(remapped, own ?? remoteOrigin, own !== undefined);
       this._surfaceConflicts(remapped);
-    });
+    };
+    handle.on("change", this._onChange);
   }
+
+  /** The handle's change listener this store holds. */
+  private readonly _onChange: (payload: { patches?: readonly { path: unknown }[] }) => void;
+
+  /** Stop hearing the handle: a layer that leaves the cascade (a remount over the same handle) drops its listener. */
+  dispose(): void { this.handle.off("change", this._onChange as never); }
 
   /**
    * THE WORN FACE'S ACTOR for a write whose origin names one (undefined: the write names no face, and rides the engine's
@@ -215,6 +289,13 @@ export class AutomergeDocStore implements LarTiddlerStore {
       throw new VerbRefusal(WORN_FACE_UNWRITABLE, `${WORN_FACE_UNWRITABLE}: a write names ${who}, and the store of ${this.bagId ?? "this document"} holds no actor door to write under the face's actor; it refuses rather than land under the engine's actor`);
     }
     return wear.actor(origin.face, this.handle.documentId);
+  }
+
+  /** A SEALED DOCUMENT HELD READ-ONLY (`holdSealedUnopened`) takes no write: it refuses by name before any byte moves. */
+  private _refuseSealedUnopened(): void {
+    const why = sealedUnopened(this.handle);
+    if (why === undefined) return;
+    throw new VerbRefusal(SEALED_DOCUMENT_UNOPENED, `${SEALED_DOCUMENT_UNOPENED}: ${this.bagId ?? "this document"} rests sealed and stands read-only over its own id (${why}); the write lands nothing, and it lands once the keyed load opens the document`);
   }
 
   private _own<T>(origin: ChangeOrigin, apply: () => T): T {
@@ -418,6 +499,7 @@ export class AutomergeDocStore implements LarTiddlerStore {
     // refuses by name before any byte moves (`title-law.ts`).
     for (const record of puts) assertStorableTitle(record.tiddler.title);
     for (const title of tombstones) assertStorableTitle(title);
+    this._refuseSealedUnopened();
     const requestedBase = options?.base;
     // THE FACE'S ACTOR SETTLES FIRST, ahead of every read: no await stands between the read of the doc and the change,
     // and a write that names no face awaits nothing here (the store notifies synchronously).
@@ -588,6 +670,7 @@ export class AutomergeDocStore implements LarTiddlerStore {
   /** HARD-remove: delete the key so `get` returns null (ABSENT — falls through
    *  the cascade), never a kāpae tombstone. The MOVE/promotion source retract. */
   async remove(title: string, origin: ChangeOrigin, options?: LarRemoveOptions): Promise<void> {
+    this._refuseSealedUnopened();
     let removed = true;
     const faceActor = origin?.face === undefined ? undefined : await this._faceActor(origin, undefined);
     const removal = (doc: LarDoc) => {

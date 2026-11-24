@@ -18,14 +18,15 @@ import { addReadOnlyLayer } from "./vessel-steps.js";
 import {
   CATALOG_CORPUS_PREFIX, parseMeshScale, resolveBootDoc, isStillJoining,
   corpusBagId, corpusLarUri, catalogCorpusEntryUri, storedLarRecord, tiddlerText,
-  type MeshScale, type Repo, type DocHandle, type LarDoc, type AutomergeUrl, type CompositeStore, ownEntry} from "@lararium/mesh";
+  type MeshScale, type Repo, type DocHandle, type LarDoc, type AutomergeUrl, type CompositeStore, ownEntry, sealedUnopened} from "@lararium/mesh";
 import { plainField } from "@lararium/mesh";
 
 export interface CorpusLoaderDeps {
   readonly repo: Repo;
   readonly catalogHandle: DocHandle<LarDoc>;
   /** Per-vessel local mint: each vessel's `waitHandle` bound to its blank-doc factory. */
-  readonly mintLocalHandle: (docUrl: string) => Promise<DocHandle<LarDoc>>;
+  /** The corpus's own bag rides with its URL: the mint names the document for that bag before any byte moves. */
+  readonly mintLocalHandle: (docUrl: string, bagId: string) => Promise<DocHandle<LarDoc>>;
   /** Provenance stamped on the corpus + registry records (`"lararium-seed"` / `"browser-boot"`). */
   readonly source: string;
 }
@@ -54,14 +55,19 @@ export async function loadCatalogCorpora(deps: CorpusLoaderDeps, composite: Comp
       if (isStillJoining(resolved)) return;
       h = resolved;
     } else {
-      h = await mintLocalHandle(entry.docUrl);
+      h = await mintLocalHandle(entry.docUrl, corpusBagId(entry.id));
     }
     addReadOnlyLayer(composite, corpusBagId(entry.id), h);
 
     const cu = corpusLarUri(entry.id);
-    if (tiddlerText(ownEntry(h.doc()?.tiddlers, cu)) !== h.url) {
-      h.change((doc) => { doc.tiddlers[cu] = storedLarRecord(cu, { text: h.url }, source); });
-    }
+    const stamp = (): void => {
+      if (tiddlerText(ownEntry(h.doc()?.tiddlers, cu)) !== h.url) {
+        h.change((doc) => { doc.tiddlers[cu] = storedLarRecord(cu, { text: h.url }, source); });
+      }
+    };
+    // A SEALED CORPUS HELD READ-ONLY over its own id (`waitHandle`) takes its stamp once its keyed load opens it, never before.
+    if (sealedUnopened(h) === undefined) stamp();
+    else void h.whenReady().then(stamp, () => { /* the load never opened: no stamp, nothing written */ });
     const ru = catalogCorpusEntryUri(entry.id);
     if (tiddlerText(ownEntry(catalogHandle.doc()?.tiddlers, ru)) !== entry.docUrl) {
       catalogHandle.change((doc) => { doc.tiddlers[ru] = storedLarRecord(ru, { text: entry.docUrl }, source); });

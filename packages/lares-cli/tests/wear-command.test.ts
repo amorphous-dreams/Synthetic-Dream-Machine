@@ -30,6 +30,14 @@ vi.mock("../src/custody-door.js", async (real) => ({
   },
 }));
 vi.mock("../src/local-connector.js", async (real) => ({ ...(await real<typeof import("../src/local-connector.js")>()), udsAlive: async () => true }));
+// THE SHARE LANDING a wear replays: a stub that records each landing and answers what the test names.
+const landings: Array<Record<string, unknown>> = [];
+let landed: Record<string, unknown> | null = { granted: 0, lifted: 0, pending: 0 };
+vi.mock("../src/share-doors.js", async (real) => ({
+  ...(await real<typeof import("../src/share-doors.js")>()),
+  LIVE_SHARE_DOORS: { faces: async () => [{ handleIndex: 0, petname: "steward" }, { handleIndex: 2, petname: "referee" }], file: { read: () => null, write: () => {} }, verb: async () => null, out: () => {}, err: () => {} },
+  landShares: async (_doors: unknown, faces: unknown) => { landings.push({ faces }); return landed; },
+}));
 
 import { parseArgs } from "../src/parse-args.js";
 
@@ -50,7 +58,7 @@ let root: string;
 const ENV_KEYS = ["HOME", "LARES_PULAMA", "LAR_PULAMA_SOCKET", "CLAUDECODE", "CODEX_SANDBOX", "CODEX_SANDBOX_NETWORK_DISABLED"] as const;
 let priorEnv: Record<string, string | undefined> = {};
 beforeEach(() => {
-  prompts = 0; frames.length = 0; out = [];
+  prompts = 0; frames.length = 0; out = []; landings.length = 0; landed = { granted: 0, lifted: 0, pending: 0 };
   root = mkdtempSync(join(tmpdir(), "wear-command-"));
   process.env["LAR_ROOT"] = root;
   priorEnv = Object.fromEntries(ENV_KEYS.map((k) => [k, process.env[k]]));
@@ -87,7 +95,7 @@ describe("RED lares wear N", () => {
     } finally {
       delete (process.stdout as { isTTY?: boolean }).isTTY;
     }
-    expect(out).toEqual(["wearing h1: the vessel stands as hearth. No route was asked."]);
+    expect(out).toEqual(["wearing h1: the vessel stands as hearth. This verb asked for no route."]);
   });
 
   it("`--face N` names the face as well as the positional", async () => {
@@ -130,10 +138,39 @@ describe("RED lares wear N", () => {
     }
   });
 
-  it("the command table seats `wear`, accepting `face` alone", () => {
+  it("★ RED a wear onto the face already worn replays the share landing: the rows a grant carried for it lift, by name (the referee walk's `stands worn already` changed nothing) ★", async () => {
+    door = (frame) => frame["op"] === "custody" ? custody(true) : { op: "wear", face: 2, held: true, already: true, standing: "hearth" };
+    landed = { granted: 0, lifted: 1, pending: 0 };
+    expect(await cmdWear(parseArgs(["wear", "2", "--no-json"]))).toBe(0);
+    expect(landings, "one landing, naming every face by handle index and pet-name").toEqual([{ faces: [{ handleIndex: 0, petname: "steward" }, { handleIndex: 2, petname: "referee" }] }]);
+    expect(out.join("\n")).toMatch(/face h2 stands worn already/);
+    expect(out.join("\n")).toMatch(/shares: 1 granted row\(s\) now stand in h2's catalog/);
+    // The envelope carries the landing beside the wear's answer.
+    out = []; landings.length = 0;
+    expect(await wear("2")).toBe(0);
+    expect(answer()).toMatchObject({ ok: true, data: { op: "wear", face: 2, already: true, shares: { lifted: 1, granted: 0, pending: 0 } } });
+    expect(landings).toHaveLength(1);
+  });
+
+  it("a wear's replay that finds a face still shut names the wait; a replay that moves nothing says nothing; a refused wear lands nothing", async () => {
+    door = (frame) => frame["op"] === "custody" ? custody(true) : { op: "wear", face: 1, held: true, standing: "hearth" };
+    landed = { granted: 0, lifted: 0, pending: 1 };
+    expect(await cmdWear(parseArgs(["wear", "1", "--no-json"]))).toBe(0);
+    expect(out.join("\n")).toMatch(/shares: 1 grant\(s\) wait for a shut face/);
+    out = []; landed = { granted: 0, lifted: 0, pending: 0 };
+    expect(await cmdWear(parseArgs(["wear", "1", "--no-json"]))).toBe(0);
+    expect(out).toEqual(["wearing h1: the vessel stands as hearth. This verb asked for no route."]);
+    // CONTROL: a refused switch takes no landing.
+    landings.length = 0;
+    door = (frame) => frame["op"] === "custody" ? custody(true) : { op: "wear", face: 1, held: true, standing: "hearth", switchRefused: "h1 would not stand", wornAgain: 0 };
+    expect(await wear("1")).toBe(1);
+    expect(landings).toEqual([]);
+  });
+
+  it("the command table seats `wear`, accepting `face` and `yes` (turn over records the shore's flush left unwritten) alone", () => {
     const row = COMMANDS.find((c) => c.name === "wear");
     expect(row).toBeDefined();
-    expect(row!.accepts).toEqual(["face"]);
+    expect(row!.accepts).toEqual(["face", "yes"]);
   });
 });
 
@@ -155,6 +192,7 @@ describe("RED vault unlock gathers a route only while custody stays closed", () 
     expect(prompts).toBe(0);
     expect(frames).toEqual([{ op: "custody" }, { op: "census" }, { op: "wear", face: 1 }]);
     expect(answer()).toMatchObject({ ok: true, data: { op: "wear", face: 1 } });
+    expect(landings, "the unlock that wears an open face replays the share landing, as the wear does").toHaveLength(1);
   });
 
   it("`unlock --face N` on a held key where no face hN stands refuses by name and asks nothing", async () => {
@@ -197,5 +235,34 @@ describe("RED a seat wears on word (the command)", () => {
     door = (frame) => frame["op"] === "custody" ? custody(true) : { op: "wear", face: 1, held: true, standing: "hearth" };
     expect(await wear("1")).toBe(0);
     expect(frames.at(-1)).toEqual({ op: "wear", face: 1 });
+  });
+});
+
+describe("RED a wear flushes every shore before it turns the face (the vessel asks it in-process)", () => {
+  const STRANDS = { whole: false, islands: [
+    { island: "daemon", answered: true, written: [], writtenCount: 2, unwritten: [], unwrittenCount: 0, fileWrites: 2, drained: true },
+    { island: "wiki:sdm", answered: true, written: [], writtenCount: 0, unwritten: [{ state: "failed", uri: "lar:///a.b.c/stuck", why: "its reconcile threw again on the retry" }], unwrittenCount: 1, fileWrites: 0, drained: true },
+  ] };
+  const refused = { op: "wear", status: "error", errorMessage: "the shore's flush left records unwritten", refusal: { reason: "shore-unwritten", shore: STRANDS } };
+
+  it("WS1 a wear the vessel refuses over unwritten records names each record and the --yes that turns anyway, and sends no second frame", async () => {
+    door = (frame) => frame["op"] === "custody" ? custody(true) : refused;
+    expect(await wear("1")).toBe(1);
+    expect(frames).toEqual([{ op: "custody" }, { op: "wear", face: 1 }]);
+    const a = answer();
+    expect(a).toMatchObject({ ok: false, error: { code: "shore-unwritten" } });
+    expect(a.error!.message).toContain("lar:///a.b.c/stuck");
+    expect(a.error!.message).toContain("wiki:sdm");
+    expect(a.error!.message).toContain("lares wear 1 --yes");
+  });
+
+  it("WS2 `--yes` carries `yes: true` on the wear frame, and the wear prints the flush's reading beside its line", async () => {
+    door = (frame) => frame["op"] === "custody" ? custody(true) : { op: "wear", face: 1, held: true, standing: "hearth", shore: STRANDS };
+    expect(await cmdWear(parseArgs(["wear", "1", "--yes"]))).toBe(0);
+    expect(frames).toEqual([{ op: "custody" }, { op: "wear", face: 1, yes: true }]);
+    const text = out.join("\n");
+    expect(text).toContain("wearing h1: the vessel stands as hearth.");
+    expect(text).toMatch(/shore: daemon wrote 2 owed carrier\(s\)/);
+    expect(text).toMatch(/shore: wiki:sdm wrote 0 owed carrier\(s\); 1 left unwritten: failed lar:\/\/\/a\.b\.c\/stuck \(its reconcile threw again on the retry\)/);
   });
 });

@@ -53,7 +53,7 @@ export interface ReadBackPorts {
  * stopped hearing. A share landing founds a realm and seats faces, and may outrun the wait; so the door reads the landing's own
  * receipt by the SAME request id until the vessel answers `done` or `error`, and never dispatches the verb again. A vessel that
  * abandoned, interrupted or evicted the request says so by name; a landing still running when the patience ends names the
- * receipt door (`lares receipt <id>`).
+ * receipt door (`lares vessel request <id>`).
  */
 export async function readBackOnExpiry(verb: string, run: () => Promise<SubmitResult>, ports: ReadBackPorts): Promise<SubmitResult> {
   try { return await run(); }
@@ -68,7 +68,7 @@ export async function readBackOnExpiry(verb: string, run: () => Promise<SubmitRe
       }
       if (r.state === "abandoned" || r.state === "interrupted") throw new Error(`request-${r.state}: the vessel ${r.state} ${verb} (request ${id}); run it again`);
       if (r.state === "evicted") throw new Error(`retention-gap: the vessel no longer holds the outcome of ${verb} (request ${id})`);
-      if (ports.now() - started >= patience) throw new Error(`${verb} still lands after ${Math.round(patience / 1000)}s of reading its receipt; read its outcome with \`lares receipt ${id}\``);
+      if (ports.now() - started >= patience) throw new Error(`${verb} still lands after ${Math.round(patience / 1000)}s of reading its receipt; read its outcome with \`lares vessel request ${id}\``);
       await ports.pause(1_000);
     }
   }

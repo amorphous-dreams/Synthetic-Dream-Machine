@@ -13,8 +13,9 @@
  * working layer, a law title included (its copy shadows the canon record), never reaches the index; a pin naming one
  * prints nothing. The pin set itself may rest in the working layer: it orders canon law and adds none.
  *
- * {@link LAW_INDEX_FILTER} composes the two: the canon pins first, then the canon law the pins left out. Every surface that
- * offers the index (`lares law list`, the MCP seat's `law_index`, the SessionStart wake) runs that one filter.
+ * {@link LAW_INDEX_FILTER} calls `lares.law`, which composes the two: the canon pins first, then the canon law the pins left out.
+ * Every surface that offers the index (`lares law list`, the MCP seat's `law_index`, the SessionStart wake) runs that one call; the
+ * function lives in canon alone (`house-filters`), so no working-layer record redefines it.
  *
  * WHY A CONFIG TIDDLER AND NOT A `pin` FIELD. A field on a law meme patches house canon: the canon layer takes no put
  * (promotion-only), and a copy-up into the working layer would shadow the law's text with a copy the index then withholds.
@@ -38,22 +39,17 @@ export const LAW_MU_ROOT = "lar:///ha.ka.ba/lares/api/mu";
 
 /** The seeded pin set: the boot seed, the Mu root, then every Mu member root, derived by address and sorted by title. */
 export const LAW_PINS_DEFAULT = `[[${LAW_BOOT_SEED}]] [[${LAW_MU_ROOT}]] [prefix[${LAW_MU_ROOT}/]!regexp[#]sort[title]]`;
-/** What makes a title law: a root meme (no `#` slot) under any bag's `api/` tree, a hyphenated bag slug too. */
-export const LAW_STEPS = "regexp[^lar:///ha\\.ka\\.ba/(\\w|-)+/api/]!regexp[#]";
-/** The law, sorted by title. */
-export const LAW_FILTER = `[prefix[lar:///ha.ka.ba/]${LAW_STEPS}sort[title]]`;
-
 /** The layers a law row's record may rest in: the oracle floor and the system canon bags (`SYSTEM_CANON_SLUGS`). */
 export const LAW_CANON_BAG_PATTERN = "^lar:///ha\\.ka\\.ba/bags/(oracle|lares|lararium)$";
-/** A law title prints as one `lar:` address: no whitespace, no newline. */
-export const LAW_TITLE_PATTERN = "^lar:///\\S+$";
-/** The guard every law read ends on: the title reads as law, its record answers from a canon layer, and it reads as one address. */
-export const LAW_CANON_GUARD = `:filter[${LAW_STEPS}] :filter[get[$origin-bag]regexp[${LAW_CANON_BAG_PATTERN}]] :filter[regexp[${LAW_TITLE_PATTERN}]]`;
 
+// The filters read as calls: the function bodies stand in the canon carrier `lar:///ha.ka.ba/lares/api/filters` (what makes a
+// title law, the pin order, the canon guard), and every surface runs these calls, so no reader carries a copy.
 /** The pins that stand as canon law, in the pin set's order: a pin orders the law and adds none. */
-export const LAW_PINS_FILTER = `[subfilter{${LAW_PINS_TITLE}}] ${LAW_CANON_GUARD}`;
-/** The index: the canon pins first, then the canon law they left out (`unique` keeps each title's first place). */
-export const LAW_INDEX_FILTER = `[subfilter{${LAW_PINS_TITLE}}] =${LAW_FILTER} +[unique[]] ${LAW_CANON_GUARD}`;
+export const LAW_PINS_FILTER = "[lares.law.pins[]]";
+/** The index: the canon pins first, then the canon law they left out. */
+export const LAW_INDEX_FILTER = "[lares.law[]]";
+/** Whether one title stands as canon law: the title kept where the index holds it. */
+export const lawStandsFilter = (uri: string): string => `[lares.law[]match[${uri}]]`;
 
 /** The born-from-source pin set: a shadow a hand's save overrides. */
 export const DAEMON_LAW_TIDDLERS: readonly Readonly<Record<string, string>>[] = [

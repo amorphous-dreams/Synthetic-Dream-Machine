@@ -1,16 +1,16 @@
 // floor-unlock-door — the floor STANDS and the unlock mounts the marker's wiki, driven live through the built `lares` CLI
 // over a scratch root a harness staged (stable-founding-road#/cold-start: every boot rests at the floor).
 //
-// A founded vessel's daemon active-wiki marker names a user wiki (the operator's last `lares wiki open`). A fresh boot
+// A founded vessel's daemon active-wiki marker names a user wiki (the operator's last `lares wiki switch --next-boot`). A fresh boot
 // holds no key, so the process composes at the floor and lives; `lares vault unlock` hands the key in on the custody
 // door, and the composition that opens mounts the marker's wiki.
 //
-//   F0  the unlocked vessel takes `lares wiki init` + `lares wiki open`: the marker names the user wiki for the next boot.
+//   F0  the unlocked vessel takes `lares wiki init` + `lares wiki switch --next-boot`: the marker names the user wiki for the next boot.
 //   F1  a fresh `lares vessel stand` stands the floor: the process lives, the custody door reads the key not held, and
-//       the marker's wiki stands unmounted (`lares wiki active` names it not). The floor stands as the herm and names no
+//       the marker's wiki stands unmounted (`lares wiki status` names it not). The floor stands as the herm and names no
 //       wiki: the marker rests in the face's sealed daemon doc, behind the key the floor waits on.
 //   F2  `lares vault unlock` (the harness's test route, tools/unlock-test-custody.mjs) opens the key, the composition
-//       stands as the hearth, `lares wiki active` names the marker's wiki, and the custody door names none waiting.
+//       stands as the hearth, `lares wiki status` names the marker's wiki, and the custody door names none waiting.
 //
 // Run under bwrap with a scratch HOME and LAR_ROOT, LAR_BAGS unset: it stands real daemons.
 import "./test-ward-env.mjs";   // the CLI processes this test spawns take the harness's explicit routes
@@ -56,19 +56,19 @@ test("the floor stands over the marker's user wiki and lives; the unlock mounts 
     cpSync(join(repo, "genesis"), join(root, "genesis"), { recursive: true });
     ok("vessel", "found", "--hearth", "--name", "floor witness", "--root", root, "--skip-build");
 
-    // F0: the unlocked vessel takes `wiki open`, and the marker names the user wiki for the next boot.
+    // F0: the unlocked vessel takes `wiki switch --next-boot`, and the marker names the user wiki for the next boot.
     stand();
     const first = await unlockTestCustody(root);
     assert.equal(first?.reading, "opens", JSON.stringify(first));
     ok("wiki", "init", WIKI);
-    ok("wiki", "open", WIKI);
+    ok("wiki", "switch", WIKI, "--next-boot");
     ok("vessel", "stop", "--port", String(port));
 
     // F1: a fresh boot holds no key, so it stands at the floor, and the process lives.
     stand();
     const atFloor = door();
     assert.equal(atFloor?.unlocked, false, `the vessel stands at the floor: ${JSON.stringify(atFloor)}`);
-    assert.doesNotMatch(lares("wiki", "active").out, new RegExp(WIKI), "the floor mounts not the marker's wiki");
+    assert.doesNotMatch(lares("wiki", "status").out, new RegExp(WIKI), "the floor mounts not the marker's wiki");
     assert.equal(atFloor?.standing, "herm", JSON.stringify(atFloor));
     assert.ok(atFloor?.wikiAwaits == null, `the herm names no wiki: ${JSON.stringify(atFloor)}`);
 
@@ -77,7 +77,7 @@ test("the floor stands over the marker's user wiki and lives; the unlock mounts 
     assert.equal(opened?.reading, "opens", JSON.stringify(opened));
     assert.equal(opened?.held, true, `the sovereign composition stood: ${JSON.stringify(opened)}`);
     assert.equal(opened?.standing, "hearth", JSON.stringify(opened));
-    const active = ok("wiki", "active");
+    const active = ok("wiki", "status");
     assert.match(active, new RegExp(WIKI), `the unlock mounts the waiting wiki:\n${active}`);
     const after = door();
     assert.equal(after?.unlocked, true, JSON.stringify(after));

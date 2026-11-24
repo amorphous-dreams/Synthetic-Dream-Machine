@@ -14,12 +14,11 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { CompositeStore, emptyLarDoc, wikiSlotUri, type DocHandle, type LarDoc, type LarTiddlerRecord } from "@lararium/mesh";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { canonicalJsonBytes, sha256HexBytesSync } from "@lararium/mesh/crypto";
-import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { buildIslandRecipe, seedDrained } from "../src/island-recipe.js";
 import { TW5Engine } from "../src/tw5-vm.js";
 import LARES_MEMETIC_WIKITEXT_PLUGIN from "../plugins/lares-memetic-wikitext.json" with { type: "json" };
-import { CORE_PATH, bootTestWiki, skipNote, wikiSkip } from "./test-wiki.js";
+import { bootTestWiki, grammarPins, skipNote, vendoredCore, wikiSkip } from "./test-wiki.js";
 
 function handleOver(records: readonly LarTiddlerRecord[]): DocHandle<LarDoc> {
   const doc = emptyLarDoc();
@@ -58,8 +57,8 @@ describe.skipIf(wikiSkip)(`the island holds a document's code as data${skipNote}
     const granted = { title: "lar:///t/doc/granted", type: CARRIER_TYPE, tags: "lar:///ha.ka.ba/lararium/tw5/tw5-module", "module-type": "library",
       "source-sha256": `sha256:${createHash("sha256").update(body, "utf8").digest("hex")}`, text: body };
     engine = new TW5Engine();
-    await engine.boot(new Uint8Array(readFileSync(CORE_PATH)), [LARES_MEMETIC_WIKITEXT_PLUGIN as unknown as Record<string, unknown>, granted],
-      undefined, { grantedDigests: new Set([sha256HexBytesSync(canonicalJsonBytes(granted))]) });
+    await engine.boot(vendoredCore(), [LARES_MEMETIC_WIKITEXT_PLUGIN as unknown as Record<string, unknown>, granted],
+      undefined, { grantedDigests: new Set([sha256HexBytesSync(canonicalJsonBytes(granted))]), modulePins: grammarPins() });
     await seedInto(engine, "doc-code", records);
     const $tw = engine.$tw as unknown as { wiki: TW5Engine["wiki"]; modules: { titles: Record<string, unknown>; execute(t: string): Record<string, unknown> } };
     expect($tw.modules.execute("lar:///t/doc/granted")["granted"], "CONTROL: the granted preload defines").toBe(42);

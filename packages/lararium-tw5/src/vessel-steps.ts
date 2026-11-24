@@ -126,7 +126,7 @@ export interface PrimaryMountInputs {
   /** M2 — this wiki's recipe RECORD named a `plugin-offerings` field `recipeFromRecord` could not
    *  honestly parse. Threaded straight into the mount spec's `WikiRecipe` alongside `pluginOfferings`
    *  (never derived here): the resolver refuses ONLY this wiki's plugin resolution by name, while
-   *  everything else this mount carries — library bags, the grain swap, `meme get` — stays unaffected. */
+   *  everything else this mount carries — library bags, the grain swap, `tiddler get --meme` — stays unaffected. */
   pluginOfferingsFault?: string;
 }
 

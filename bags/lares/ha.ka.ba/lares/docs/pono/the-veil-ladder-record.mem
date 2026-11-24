@@ -15,7 +15,7 @@ uri-path    = "ha.ka.ba/lares/docs/pono/the-veil-ladder-record"
 
 ! The Veil-Ladder ~ the record
 
-The veil-ladder law speaks at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/the-veil-ladder`>>; its provisional in-house rulings stand in that meme's `#/rulings`, each open to the operator's overrule until the operator settles it. This record keeps the floor work still owed.
+The veil-ladder law speaks at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/the-veil-ladder`>>; its provisional in-house rulings stand in that meme's <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/the-veil-ladder#/rulings`>>, each open to the operator's overrule until the operator settles it. This record keeps the floor work still owed.
 
 <<~/ahu>>
 
@@ -27,6 +27,6 @@ the last-read replica beneath the fallen floor, by a named gap: a face's workben
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;dIwp8zq4ZZ7pNxfJVpD070XN_wSX54ZCwutaT5R0vJc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;xM08xt8l5VweYLiiuKFA7NZAlXddaEyYcj_9jeRyyGw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

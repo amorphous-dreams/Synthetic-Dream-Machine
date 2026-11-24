@@ -50,6 +50,8 @@ import {
 import { emit, exitFor, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
 import type { ParsedArgs } from "../parse-args.js";
+import { cmdRaiseSign } from "./raise.js";
+import { tableCovers } from "../verb-table.js";
 
 class UsageError extends Error {}
 
@@ -76,7 +78,7 @@ export function vesselCeiling(env: NodeJS.ProcessEnv = process.env): { cls: Vess
  * ceiling) and THIS VESSEL's slot ceiling (an operator turn, raisable, and the refusal says so).
  */
 export function parseIndex(raw: string | undefined, env: NodeJS.ProcessEnv = process.env): number {
-  if (raw === undefined) throw new UsageError("a handle-index is required (e.g. `lares persona new 1 --name '…'`)");
+  if (raw === undefined) throw new UsageError("new needs a handle-index (e.g. `lares persona new 1 --name '…'`)");
   const n = Number(raw);
   if (!Number.isSafeInteger(n) || n < 0 || n >= HANDLE_INDEX_CEILING) {
     throw new UsageError(`handle-index out of range: "${raw}" (expected 0 ≤ n < 0x80000000)`);
@@ -95,11 +97,19 @@ export function parseIndex(raw: string | undefined, env: NodeJS.ProcessEnv = pro
   return n;
 }
 
+/** Every verb the persona door answers; `recovery-contact` names its own. */
+export const PERSONA_VERBS = {
+  new: null, list: null, sync: null, reissue: null, lease: null,
+  "recovery-contact": ["offer", "show", "enrol", "view"], provisional: null, confirm: null, view: null, "raise-sign": null,
+} as const;
+type PersonaVerb = keyof typeof PERSONA_VERBS;
+
 export async function cmdPersona(args: ParsedArgs): Promise<number> {
   const sub = args.positional[0];
   if (!sub) { usage(args); return 2; }
   try {
-    switch (sub) {
+    const v = sub as PersonaVerb;
+    switch (v) {
       case "new":   return await personaNew(args);
       case "list":  return await personaList(args);
       case "sync":  return await personaSync(args);
@@ -109,8 +119,9 @@ export async function cmdPersona(args: ParsedArgs): Promise<number> {
       case "provisional": return await personaProvisional(args);
       case "confirm": return await personaConfirm(args);
       case "view": return await personaView(args);
+      case "raise-sign": return await cmdRaiseSign({ ...args, positional: args.positional.slice(1) });
       default:
-        console.error(`lares persona: unknown sub-verb "${sub}"`);
+        console.error(`lares persona: unknown sub-verb "${tableCovers(v)}"`);
         return usage(args, sub);
     }
   } catch (err) {
@@ -261,7 +272,7 @@ export function recoveryContactEnrolmentSpeech(): readonly string[] {
  * takes the recovery contacts' quorum. Three recovery contacts, a threshold of two: two of the three, together, restore your Handle.
  */
 async function personaRecoveryContact(args: ParsedArgs): Promise<number> {
-  const verb = args.positional[1];
+  const verb = args.positional[1] as (typeof PERSONA_VERBS)["recovery-contact"][number] | undefined;
   if (verb === "offer") {
     const prefix = typeof args.options["prefix"] === "string" ? args.options["prefix"].trim() : "";
     if (!/^persona-[0-9a-f]{64}$/.test(prefix)) throw new UsageError("`persona recovery-contact offer` names the face it guards: --prefix persona-<64 hex>");
@@ -306,7 +317,7 @@ async function personaRecoveryContact(args: ParsedArgs): Promise<number> {
     // The threshold is the law's two: absent, it reads two; named, the vessel's refusal answers any other (`threshold-not-two`).
     const raw = args.options["threshold"];
     const threshold = typeof raw === "string" ? Number(raw) : RECOVERY_CONTACT_THRESHOLD;
-    if (!Number.isFinite(threshold)) throw new UsageError("`persona recovery-contact enrol` reads --threshold as a number; the rule is two");
+    if (!Number.isFinite(threshold)) throw new UsageError("`persona recovery-contact enrol` reads --threshold as a number; the rule asks for two");
     const offers = args.positional.slice(3);
     if (offers.length === 0) throw new UsageError("`persona recovery-contact enrol` takes the three recovery contacts' offer lines");
     const r = await sealedAct("persona.recovery-contact.enrol", { handleIndex: index, offers: offers.join(" "), threshold, ward: await gatherWardRoute(`lares persona recovery-contact enrol ${index}`, index) });
@@ -343,7 +354,7 @@ async function personaRecoveryContact(args: ParsedArgs): Promise<number> {
     });
     return 0;
   }
-  return usage(args, "recovery-contact");
+  return refuseUsage(args, "persona recovery-contact", helpLines("persona recovery-contact"), verb ? `unknown sub-verb "${verb}"` : undefined);
 }
 
 /** The recovery contact's card, read hidden on a terminal; a test installs its own. */
@@ -367,7 +378,7 @@ export async function routeForPersonaNew(index: number, standing: VesselStanding
   if (index !== 0 && listFaceOrdinals().includes(index)) {
     const faces = await houseFaces();
     if (faces.shut.includes(index)) {
-      throw new UsageError(`face h${index} stands here and rests shut: open it (\`lares vault unlock --face ${index}\`), then run this again — no route was asked`);
+      throw new UsageError(`face h${index} stands here and rests shut: open it (\`lares vault unlock --face ${index}\`), then run this again — this verb asked for no route`);
     }
     // A ROSTER THAT CANNOT BE READ SETTLES NOTHING: the face's group reads unknown, so the existing route gets asked once (a ward
     // act under the route the face already binds), never a new one bound on an uncertain read.

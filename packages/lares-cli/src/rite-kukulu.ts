@@ -29,8 +29,19 @@
  *   6. rite-offer   IN THE STANDING VESSEL, over the image the host made: one vouch per face, rested for the next vessel to
  *                   carry to the pūlama (`kukulu-offer.json`), so the pūlama lends on it with no admit
  *   7. raise        the shim's restand: down (keep, census), the pūlama re-stood and lit ATTACHED on this terminal where its
- *                   code moved, up, its admit attached where owed, the vessel's unlock and the face last worn
+ *                   code moved, up, its admit attached where owed, the vessel's unlock and the face last worn. The down stops a
+ *                   standing vessel gracefully (SIGTERM under Docker's stop grace), and the node's teardown flushes every shore
+ *                   (every resident island with a mirror) before any island goes down; the rite names that before the raise
+ *                   ({@link STOP_FLUSHES_LINE})
  *   8. rite-land    IN THE NEW VESSEL: each face's host half (`rite-landed`); the rite reads par only where every pair reads par
+ *   9. lag          after a raise that stood, the lag reads aloud on every raise: the canon bag behind the canon source (the
+ *                   carriers in `bags/` the canon layers lack; canon fills through promote and the floor's sealed cut, never
+ *                   from a raise, so the line only names it), each wiki's workbench behind the checkout's `wikis/<slug>`, and a
+ *                   newer seed offer (the seed's floor) the release carries than the vessel serves, named by its card. Where the canon source stands in a checkout
+ *                   and the owner holds this terminal, the workbench lay's preview (each title a workbench the worn face mounts
+ *                   would take) asks once, and the lay (`lares vessel lay --workbench --apply`) runs only on an explicit yes; a
+ *                   workbench that does not mount is named and left. A seat (no terminal, or an AI launcher), a source in no
+ *                   checkout, or a vessel waiting on its unlock names the lag and lays nothing
  *
  * A QUIET DAY spends nothing: a vessel that already runs the image under a lit pūlama begins no rite; the raise only tops
  * up the unlock and the face worn.
@@ -85,6 +96,12 @@ export interface StandReading {
   /** A vessel already runs the image. */
   readonly current: boolean;
   readonly pulama: "off" | "absent" | "level" | "closure-level" | "moved" | "unread";
+  /**
+   * THE KEEPER TALLY, where the pūlama's code moved and it stands lit: `vests` where a keeper commit the hand made names the
+   * closure the new image carries (the raise hands the living fire to a successor, unattended, and asks no route); `struck-due`
+   * where the handed run reached its count (the hand lights the successor). Absent, or null, the light rides as it did.
+   */
+  readonly keeper?: "vests" | "struck-due" | null;
   readonly lit: boolean | null;
   readonly admitted: boolean | null;
   /** A kukulu offer resting from an earlier run names the image. */
@@ -125,8 +142,15 @@ export interface RitePorts {
   sync?(): Promise<SyncAnswer>;
   /** The shim's image step and its reading of the house (`rebuild --image`); the answer carries its exit code. */
   stage(target: StageTarget): Promise<{ readonly code: number; readonly reading: StandReading | null }>;
-  /** The shim's restand onto the image of the revision (`rebuild --at <rev>`); the answer carries its exit code. */
-  raise(revision: string): Promise<number>;
+  /** The shim's restand onto the image of the revision (`rebuild --at <rev>`, `--keeper-to <key>` where this rite carries a keeper
+   *  move); the answer carries its exit code. */
+  raise(revision: string, keeper?: { readonly to: string }): Promise<number>;
+  /**
+   * THE KEEPER MOVE (the keeper tally): stand the successor keeper beside the lit one and read the one-handoff key it offers and the
+   * closure its host reads (`keeper-stand`), before the offer, so the vouches name the move; null where none stood. Absent, no rite
+   * carries a keeper move and a moved closure relights struck.
+   */
+  keeperStand?(): Promise<{ readonly to: string; readonly closure: string } | null>;
   /** A terminal on both ends, where a route can be typed; absent, the rite reads one. */
   tty?(): boolean;
   /** One store row, answered by the vessel that stands. */
@@ -160,7 +184,40 @@ export interface RitePorts {
    * no founding record. Absent, the rite says nothing of the seed.
    */
   seedOffer?(head: string): Promise<SeedOffer | null>;
+  /**
+   * THE LAG after the raise (`lares vessel lay --lag` in the vessel that stands): canon behind the canon source, each workbench behind
+   * the checkout's `wikis/<slug>` and whether the worn face mounts it; null where the vessel reads none. Absent, the rite reads no lag.
+   */
+  houseLag?(): Promise<HouseLag | null>;
+  /** The floor card the vessel's status refreshed (title only), or null where no vessel answers one. */
+  floorCard?(): Promise<{ readonly title: string } | null>;
+  /** One yes-or-no on this terminal (a Ctrl+C reads as no); absent, the rite asks nothing and lays nothing. */
+  ask?(question: string): Promise<boolean>;
+  /** The workbench lay on this terminal (`lares vessel lay --workbench --apply`), run only after the owner's yes; its exit code. */
+  layWorkbench?(): Promise<number>;
+  /** Whether an AI seat launched this rite (the harness's mark, or a host chain that reads no person's hand); absent, false. */
+  seat?(): boolean;
 }
+
+/** One holding's lag: the titles its canon source holds that its canon bag lacks (`new`) or holds in other bytes (`changed`). */
+export interface LagHolding { readonly holding: string; readonly toBag: string; readonly new: readonly string[]; readonly changed: readonly string[] }
+/**
+ * One workbench's lag: the titles the checkout's `wikis/<slug>` holds new or moved against that wiki's working layer, and whether the
+ * worn face mounts the workbench (a writer's seat there); `why` names what keeps it from mounting, `mounts` null where the seat read nowhere.
+ */
+export interface BenchLag { readonly slug: string; readonly toBag: string; readonly planned: readonly string[]; readonly mounts: boolean | null; readonly why?: string }
+/**
+ * The house's lag as the vessel reads it: the canon source dir and whether it stands in a checkout (an SDM repo, read by the
+ * `pnpm-workspace.yaml` beside its `bags/`), each disk-sourced holding's canon lag and its total, the `wikis/` dir beside the source
+ * (null where none stands), and each workbench's lag and its total.
+ */
+export interface HouseLag {
+  readonly source: string; readonly checkout: boolean; readonly holdings: readonly LagHolding[]; readonly lag: number;
+  readonly wikis: string | null; readonly benches: readonly BenchLag[]; readonly benchLag: number;
+}
+
+/** The line that lays the checkout's workbench projection by hand. */
+export const WORKBENCH_LAY_LINE = "lares vessel lay --workbench --apply";
 
 /** The image a kūkulu replaced: its revision label and the tag the shim keeps it under. */
 export interface PriorImage {
@@ -178,6 +235,15 @@ export function priorImageRef(imageRef: string, revision: string, id: string): P
     ? { revision, tag: `${repo}:rev-${revision.slice(0, 12)}` }
     : { revision: "unlabeled", tag: `${repo}:rev-unlabeled-${id.replace(/^sha256:/, "").slice(0, 12)}` };
 }
+
+/**
+ * Whether the restand stops the standing vessel: the shim's down runs where a vessel stands on another image, or where the
+ * pūlama re-stands (absent, or its code moved); a vessel already on the image under a pūlama that only owes its light stays.
+ */
+export const restandStops = (r: StandReading): boolean => r.vessel === "standing" && (!r.current || r.pulama === "absent" || r.pulama === "moved");
+
+/** What the rite says before a raise that stops the standing vessel: the graceful stop's shore flush, and the cure past its grace. */
+export const STOP_FLUSHES_LINE = "kūkulu: the restand stops the standing vessel gracefully (compose stop, SIGTERM): its teardown flushes every shore (every resident island with a mirror) before any island goes down. A stop that runs past Docker's stop grace (20s) ends by SIGKILL, and an island that had not answered leaves its mirrors behind its records (they rest in the store): once the house stands, `lares shore flush` writes what the daemon and the active wiki owe (it reaches those two alone), and `lares shore` lists what stands";
 
 /** The one command that raises a replaced image again with no rebuild: the rite itself, rolled back to its revision. */
 export const wayBackCommand = (prior: PriorImage): string =>
@@ -226,8 +292,8 @@ export function leiClearing(refusal: string, branch: string, face?: number): str
   return `read the refusal with \`${show}\` and clear what it names before the rite runs`;
 }
 
-/** Whether the day owes the pūlama a light: none runs, its code moved, or it stands unlit. */
-export const owesLight = (r: StandReading): boolean => r.pulama === "absent" || r.pulama === "moved" || r.lit === false;
+/** Whether the day owes the pūlama a light: none runs, its code moved (unless a keeper commit vests it), or it stands unlit. */
+export const owesLight = (r: StandReading): boolean => r.pulama === "absent" || (r.pulama === "moved" && !(r.keeper === "vests" && r.lit === true)) || r.lit === false;
 
 /**
  * `face` names the face the begin's and the offer's sessions act as where several faces stand open; each row still gathers
@@ -235,18 +301,106 @@ export const owesLight = (r: StandReading): boolean => r.pulama === "absent" || 
  * wears. `rollback` stands the image that ran before (`true`) or the image of an older revision, with no checkout move.
  */
 export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: string; readonly face?: number; readonly rollback?: true | string }): Promise<{ code: number; data: Record<string, unknown> }> {
+  const out = await raiseHouse(ports, opts);
+  // THE LAG AND THE WORKBENCH LAY ride only a raise that stood: a run that stopped, or one that waits on the hand before any raise, reads no lag.
+  if (out.code !== 0 || out.data["awaits"] === "hand") return out;
+  return lagAfterRaise(ports, out);
+}
+
+/** Whether a seed line's ratchet words read the floor moved (`ratchetWords`: `… · floor moved`). */
+const floorMoved = (words: unknown): boolean => typeof words === "string" && /(?:^|· )floor moved(?: ·|$)/.test(words);
+
+/**
+ * AFTER THE RAISE, THE LAG (story U4, re-scoped under Mu, operator 2026-11-22). Every raise names how far the house stands behind
+ * what it carries: the canon bag behind the canon source, each workbench behind the checkout's `wikis/<slug>`, and a newer sealed
+ * floor the release carries. The raise never writes canon: canon fills through promote and the floor's sealed cut. Where the canon
+ * source stands in a checkout and the owner holds this terminal, the rite previews the workbench lay (each title a workbench the
+ * worn face mounts would take) and asks; the lay runs only on an explicit yes, and a no or a Ctrl+C leaves every layer as it stood.
+ * A seat (no terminal, or an AI launcher) names the lag and never lays; so does a source in no checkout, and a vessel that waits on
+ * its unlock.
+ */
+export async function lagAfterRaise(ports: RitePorts, out: { code: number; data: Record<string, unknown> }): Promise<{ code: number; data: Record<string, unknown> }> {
+  if (!ports.houseLag) return out;
+  // THE FLOOR the release carries, beside the floor the vessel serves: the seed line this run read, or a fresh read on a quiet day.
+  let seedWords = (out.data["seed"] as { ratchets?: unknown } | undefined)?.ratchets;
+  if (seedWords === undefined && out.data["rollback"] === undefined && ports.seedOffer && typeof out.data["head"] === "string") {
+    const offer = await ports.seedOffer(out.data["head"]).catch(() => null);
+    if (offer !== null) seedWords = ratchetWords(compareGenesisDigests(offer.record, offer.seed.digests));
+  }
+  const floor = floorMoved(seedWords);
+  const card = floor && ports.floorCard ? await ports.floorCard().catch(() => null) : null;
+  if (floor) ports.say(`kūkulu: the seed offer waits (the seed's floor moved); the raise stands no floor${card ? `; the card ${card.title} names each drift` : ""}: \`lares vessel floor status --grain seed\``);
+  const read = await ports.houseLag().catch(() => null);
+  if (read === null) {
+    ports.say("kūkulu: the lag reads nowhere (the vessel answered no reading); `lares vessel lay --lag` reads it");
+    return { ...out, data: { ...out.data, lag: { read: false, ...(floor ? { floor: "moved", ...(card ? { card: card.title } : {}) } : {}) } } };
+  }
+  const fresh = read.holdings.reduce((n, h) => n + h.new.length, 0), moved = read.holdings.reduce((n, h) => n + h.changed.length, 0);
+  ports.say(read.lag === 0
+    ? `kūkulu: canon stands level with ${read.source}`
+    : `kūkulu: canon lags the canon source by ${read.lag} carrier(s) (${fresh} new, ${moved} changed) in ${read.source}; canon fills through promote and the floor's sealed cut, never from a raise: \`lares meme offer promote <cid>\`, then \`lares nexus release <manifest-file> --cut\``);
+  const lagging = read.benches.filter((b) => b.planned.length > 0);
+  if (read.wikis !== null) {
+    ports.say(read.benchLag === 0
+      ? `kūkulu: the checkout's workbenches stand level with ${read.wikis}`
+      : `kūkulu: the workbenches lag the checkout's ${read.wikis} by ${read.benchLag} carrier(s): ${lagging.map((b) => `${b.slug} ${b.planned.length}`).join(", ")}`);
+  }
+  for (const b of lagging) {
+    if (b.mounts === true) continue;
+    ports.say(`kūkulu: workbench ${b.slug} does not mount under the worn face (${b.why ?? (b.mounts === null ? "its seat read nowhere" : "no writer's seat")}); nothing of it lays`);
+  }
+  const lag = { canon: read.lag, workbench: read.benchLag, checkout: read.checkout, source: read.source, ...(floor ? { floor: "moved", ...(card ? { card: card.title } : {}) } : {}) };
+  const mounted = lagging.filter((b) => b.mounts === true);
+  const offered = mounted.reduce((n, b) => n + b.planned.length, 0);
+  if (offered === 0) return { ...out, data: { ...out.data, lag } };
+  const tty = ports.tty ? ports.tty() : true, seat = ports.seat ? ports.seat() : false;
+  const why = !read.checkout ? `${read.source} stands in no checkout, so the raise offers no lay`
+    : out.data["awaits"] === "unlock" ? `the new vessel waits on its unlock, so nothing lays; once it opens: ${WORKBENCH_LAY_LINE}`
+    : seat ? `an AI seat launched this rite, so nothing lays; your hand: ${HAND_ACT} on a terminal (or ${WORKBENCH_LAY_LINE})`
+    : !tty ? `this seat holds no terminal, so nothing lays; your hand: ${HAND_ACT} on a terminal (or ${WORKBENCH_LAY_LINE})`
+    : !ports.ask || !ports.layWorkbench ? `this rite carries no lay, so nothing lays; your hand: ${WORKBENCH_LAY_LINE}`
+    : null;
+  if (why !== null) {
+    ports.say(`kūkulu: ${why}`);
+    return { ...out, data: { ...out.data, lag, workbench: { offered, laid: false, ...(seat || !tty ? { seat: true } : {}) } } };
+  }
+  // THE PREVIEW, before the question: where the files go (each wiki's working layer, canon untouched), then every title.
+  ports.say(`kūkulu: the workbench lay carries each file under ${read.wikis}/<slug> into that wiki's working layer; canon stays as it stands:`);
+  for (const b of mounted) {
+    ports.say(`  ${b.slug} -> ${b.toBag}: ${b.planned.length}`);
+    for (const t of b.planned) ports.say(`    ${t}`);
+  }
+  if (!(await ports.ask!(`lay these ${offered} carrier(s) into the workbench now?`))) {
+    ports.say(`kūkulu: nothing laid; the workbench stands as it stood: ${WORKBENCH_LAY_LINE} lays it later`);
+    return { ...out, data: { ...out.data, lag, workbench: { offered, laid: false } } };
+  }
+  const code = await ports.layWorkbench!();
+  if (code === INTERRUPTED) {
+    ports.say(`kūkulu: something interrupted the workbench lay; the house stands, and the lay reads diff-gated, so ${WORKBENCH_LAY_LINE} picks it up`);
+    return { code: 1, data: { ...out.data, lag, workbench: { offered, laid: false, interrupted: true }, refusal: "kukulu-workbench-lay-interrupted" } };
+  }
+  if (code !== 0) {
+    ports.say(`kūkulu: the workbench lay answered ${code}; the house stands, the lines above name what the lay refused, and the lay reads diff-gated, so ${WORKBENCH_LAY_LINE} runs again safely`);
+    return { code: 1, data: { ...out.data, lag, workbench: { offered, laid: false }, refusal: "kukulu-workbench-lay-failed" } };
+  }
+  ports.say(`kūkulu: the workbench laid: ${offered} carrier(s) from ${read.wikis}`);
+  return { ...out, data: { ...out.data, lag, workbench: { offered, laid: true } } };
+}
+
+async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; readonly face?: number; readonly rollback?: true | string }): Promise<{ code: number; data: Record<string, unknown> }> {
   const forward = opts.rollback === undefined;
   // THE LEI READS FIRST, before the fetch, the image step, the tag and the seed: where none stands the rite offers to string one
   // on the spot (as the unlock offers the keep lei), and a no names the plain line before anything slow runs.
-  let absentSaid = false;
+  let absentSaid = false, leiGone = false;
   if (ports.leiStands) {
     const line = opts.branch ?? (await ports.checkout()).branch;
     const stands = await ports.leiStands(line, opts.face).catch(() => null);
     if (stands === false || stands === "absent") {
       const offer = ports.refill ? await ports.refill({ rite: "kukulu", branch: line, absent: true, returns: KUKULU_LEI_RETURNS, ...(opts.face === undefined ? { all: true } : { face: opts.face }) }) : null;
       if (offer?.strung === true) ports.say(`kūkulu: a kukulu lei of ${KUKULU_LEI_RETURNS} returns per lent face stands on ${line}; the rite goes on`);
-      else { absentSaid = true; ports.say(`kūkulu: no kukulu lei stands on ${line}, so the restand goes on with no rite${offer ? `; string one by hand first: ${offer.remedy}` : ""}`); }
+      else { absentSaid = true; leiGone = true; ports.say(`kūkulu: no kukulu lei stands on ${line}, so the restand goes on with no rite${offer ? `; string one by hand first: ${offer.remedy}` : ""}`); }
     } else if (typeof stands === "string" && stands !== RETURNS_SPENT_REFUSAL) {
+      leiGone = true;
       // A LEI THAT STANDS NOT FOR ANOTHER CAUSE names its own clearing line and asks nothing: stringing over a fork or a ward
       // refusal would answer a question nobody asked. A spent lei waits for the begin's own refill prompt, so the person hears it once.
       ports.say(`kūkulu: the kukulu lei on ${line} stands not (${stands}); ${leiClearing(stands, line, opts.face)}`);
@@ -291,14 +445,17 @@ export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: str
     ports.say("kūkulu: whether the pūlama stands lit, or what it runs, reads unknown; read it with `tools/lares-container.sh pulama status`; nothing spent, nothing moved");
     return { code: 1, data: { ...base, begun: false, stopped: "pulama", refusal: "kukulu-pulama-unread" } };
   }
-  const light = owesLight(r);
+  // A KEEPER MOVE RIDES A LIVE RITE: with no lei to begin one, a moved closure relights struck, so the light stays owed.
+  const light = owesLight(leiGone || !ports.keeperStand ? { ...r, keeper: r.keeper === "vests" ? null : r.keeper ?? null } : r);
   const awaitsHand = (why: string, extra: Record<string, unknown> = {}) => {
     ports.say(`kūkulu: ${why}; the house stands as it stood, the image waits built, and nothing spent; your hand: ${HAND_ACT} on a terminal`);
     return { code: 0, data: { ...base, ...extra, begun: false, awaits: "hand", hand: HAND_ACT } };
   };
   if (light && !tty) {
-    const why = r.pulama === "moved" ? "the pūlama's code closure moved" : r.pulama === "absent" ? "no pūlama runs" : "the pūlama stands unlit";
-    return awaitsHand(`${why}, and its light reads your route on a terminal, which this seat holds none of`);
+    const why = r.pulama === "moved" ? (r.keeper === "struck-due" ? "the pūlama's code closure moved and the keeper's handed run owes the struck fire" : "the pūlama's code closure moved") : r.pulama === "absent" ? "no pūlama runs" : "the pūlama stands unlit";
+    // A MOVED CLOSURE NAMES THE HANDED FIRE TOO: a keeper commit on a terminal lets the next run vest the successor with no route.
+    const handed = r.pulama === "moved" && r.lit === true && r.keeper !== "struck-due" ? " (or name its successor ahead on a terminal: lares pulama keeper-commit, and the next run hands it the living fire with no route)" : "";
+    return awaitsHand(`${why}, and its light reads your route on a terminal, which this seat holds none of${handed}`);
   }
   const tesseraeOf = (faces: readonly StandingBegin[]) => faces.map((f) => ({ face: f.face, tessera: f.tessera }));
   const resumeLine = (faces: readonly StandingBegin[]): string =>
@@ -497,6 +654,7 @@ export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: str
   }
   const landCall = landCallOf(begunFaces);
   let offered = false;
+  let keeperMove: { readonly to: string; readonly closure: string } | null = null;
   if (begun) {
     // BEFORE THE LOWERING, the standing vessel writes what the next one carries to the pūlama, over the image the host made. A
     // resumed begin reuses the resting offer only where its vouches match every pending half (group, line, head, image); any
@@ -506,7 +664,13 @@ export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: str
       ports.say(`kūkulu: the offer the begin rested still vouches for each pending face over ${r.image}; reused, none written`);
     } else if (r.image === "") ports.say("kūkulu: the host names no digest for the image, so no offer rests for a pūlama; the rite goes on, and a vessel standing by a pūlama will wake at the floor.");
     else {
-      const offer = await ports.row("rite-offer", { branch, head, image: r.image, ...asFace });
+      // THE KEEPER MOVE rides this rite's vouches: the successor stands now and offers its key, before the offer is signed.
+      if (r.keeper === "vests" && r.lit === true && ports.keeperStand) {
+        const stood = await ports.keeperStand().catch(() => null);
+        if (stood === null) ports.say("kūkulu: no successor keeper stood beside the lit one, so this rite carries no keeper move and the raise relights the pūlama struck (your passphrase on a terminal)");
+        else { keeperMove = stood; ports.say(`kūkulu: the successor keeper stands and offers its one-handoff key; the vouches name the move to closure ${stood.closure.slice(0, 19)}`); }
+      }
+      const offer = await ports.row("rite-offer", { branch, head, image: r.image, ...asFace, ...(keeperMove ? { keeperTo: keeperMove.to, keeperNext: keeperMove.closure } : {}) });
       if (!offer.ok) {
         ports.say(`kūkulu: the standing vessel wrote no offer (${offer.message}); it still stands, the lei's return stays spent, and the begun half reads red until a vessel at ${head} lands it (${landCall}); \`${HAND_ACT}\` resumes it and spends no lei.`);
         return { code: 1, data: { ...base, ...spent, begun: true, landed: false, stopped: "offer", refusal: offer.code } };
@@ -518,7 +682,8 @@ export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: str
       for (const face of waits) ports.say(`kūkulu: ${face} carries no lei on this line and waits at the pūlama by name; the other faces' lend stands`);
     }
   }
-  const raised = await ports.raise(head);
+  if (restandStops(r)) ports.say(STOP_FLUSHES_LINE);
+  const raised = await ports.raise(head, keeperMove ? { to: keeperMove.to } : undefined);
   if (raised !== 0) {
     // A CTRL+C at a prompt the restand asks (accept-loss, the light, the admit) ends the shim by the signal: the begun halves and
     // the offer rest where they stood, and the next run reads them and resumes.

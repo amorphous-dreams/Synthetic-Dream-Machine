@@ -17,9 +17,10 @@ import { shutdownComposition, closeCompositionRepo, ownDialPresentation, IslandS
  * The node vessel holds no semantic privilege. It carries roads, docks, and sync; live VM state lives
  * in sovereign islands (daemon + wiki). FPI-5 (trim tab): all Node-specific code lives here.
  */
+import { provedLitRelation } from "./lit-relation.js";
 import { takeWardTicket, type WardCredential } from "./ward-credential.js";
-import { receiptInStore, WardRefused, wornAtOf, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, sealedBagMap, standingSessionSeat, vesselDocStoreDoor, DOCSTORE_SEAL_VERB, bindSecretHomeRest, vesselHeldHomes, enrollBesideSecretHome, releaseBesideSecretHome, standFloorKeyOn, floorKeyStandsOn, floorRestKey, type HeldRestKey, SecretHomeUnavailable, type SecretHome, type SealedBag, type BookedSession, type SessionOwnChain, preparePlaceFace, signAsFaceAtom, seatMintCensus, capMintsUnpointed } from "@lararium/mesh";
-import { wikiIslandWithholds, vesselDocBags, type WikiIslandMount } from "@lararium/mesh";
+import { receiptInStore, WardRefused, wornAtOf, composeSealedRest, clearRosterOf, watchCatalogNames, docStorePortCell, documentIdOfUrl, mountedDocumentId, sealedBagMap, standingSessionSeat, vesselDocStoreDoor, DOCSTORE_SEAL_VERB, bindSecretHomeRest, vesselHeldHomes, enrollBesideSecretHome, releaseBesideSecretHome, standFloorKeyOn, floorKeyStandsOn, floorRestKey, type HeldRestKey, SecretHomeUnavailable, type SecretHome, type SealedBag, type BookedSession, type SessionOwnChain, preparePlaceFace, signAsFaceAtom, seatMintCensus, capMintsUnpointed } from "@lararium/mesh";
+import { wikiIslandWithholds, vesselDocBags, refuseTw5DocsWrite, type WikiIslandMount } from "@lararium/mesh";
 import * as A from "@automerge/automerge";
 
 /** A summoned panel verb's ward: the ref the CLI parked, spent only on the verb and arguments it was bound to. */
@@ -34,6 +35,7 @@ import { provenPlaneUrls, registerFacePlanesForRelay } from "./face-plane-regist
 import { enabledIntentRelayFaces } from "./intent-relay-ring.js";
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
+import { publishWikiRender, trackedTreeRoots, type RenderFile } from "./render-output.js";
 import { larBootstrapPath, larCatalogUrlPath, larProjectionsHome, larConfigHome, larWorkspacesHome, larHearthHome } from "./vessel-paths.js";
 import { createAfterRoll } from "./after-roll-chain.js";
 import { basename, dirname, join } from "path";
@@ -62,13 +64,13 @@ import {
   DEVICE_DELEGATION_SELF_TIDDLER, type DeviceDelegationTiddler,
   ENGINE_CORE_ID, BagStowage,
   deriveRegisterBags, catalogNamedBags, catalogFaceSlotBags, wornFaceWikiBags, isFaceSlotBag, standingDaemonCanonBag, standFaceDaemonCanon, FACE_CATALOG_BAG_ID, faceViewBook, makeCatalogView, catalogViewOf, openFaceCatalog, faceCatalogDocUrl, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, liftFaceCatalogRows, catalogRowHalf, standLitFaceCatalog, faceCatalogUrlOf, wikiSlotUri, personaBagIdFor, personaSiblingBagIds,
-  coupleMesh, crystallize, guardHitl,
+  coupleMesh, crystallize,
   nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, nexusAidOf, foundingRoster, type NexusIdentityAt,
   climbNexusBoards, sha256HexBytesSync, RealmBoardGate,
-  faceAtomKeyFromSeed, type FaceAtomKey,
+  faceAtomKeyFromSeed, type FaceAtomKey, siblingPlaneMounts,
   carriageFloorDutyOf, type PlaceSigner,
   genesisCasCidsFromOracle, provenVesselKeyOf,
-  wikiSlugOfBag, gateSweep, promoteWiring, promoteWikiItems, promotePanelApi, isQuietSnapshot, promoteMainVerbs, promoteBoardDoor, promotions, promoteBoardRecords, writePromoteAct, type GateSweepSeat,
+  wikiSlugOfBag, resolveDiskMirrors, gateSweep, promoteWiring, promoteWikiItems, promotePanelApi, isQuietSnapshot, promoteMainVerbs, promoteBoardDoor, promotions, promoteBoardRecords, writePromoteAct, type GateSweepSeat,
 }                                       from "@lararium/mesh";
 import { resolveNodeIslandPluginCids, nodeOfferingLookup } from "./node-plugin-resolution.js";
 import { registerStoreDoorReactors } from "./store-door-registry.js";
@@ -113,12 +115,13 @@ import { bootFacePlanes, bootDaemonUrl }               from "./boot-face-planes.
 import { seatHouseCanonFromCheckout, standKahuCanon, kahuHandAtWire, kahuProtectedHolder, kahuStandingBook, protectedDocsOver, watchKahuStanding, type KahuCanonDocs } from "./kahu-realm.js";
 import { dialRelationOf, seatDialPeer, unseatDialPeer, type DialRelation, type DialSeatMaps } from "./dial-relation.js";
 import { assemblePersonaGroupRing }       from "@lararium/keyhive";
-import { faceNamedCustodyWrite } from "./face-named-custody-write.js";
+import { custodyOpens, duringLight, faceNamedCustodyWrite } from "./face-named-custody-write.js";
+import { armedLight, recardArms } from "./recard-arms.js";
 import { fenceReceiptAtStop } from "./stop-receipt-fence.js";
 import { daemonGenesisDir, daemonBagsDir, loadLaresConfig, tempConsentedSlugs } from "./lares-config.js";
-import { projectionRoots, workspaceRootsOf, workbenchFolders, FACES_PROJECTION_DIR, REALMS_PROJECTION_DIR, faceRoot, type WorkbenchFolder } from "./bag-paths.js";
+import { projectionRoots, workspaceRootsOf, workbenchFolders, litFaceDiskMirrors, FACES_PROJECTION_DIR, REALMS_PROJECTION_DIR, faceRoot, type WorkbenchFolder } from "./bag-paths.js";
 import { ensureRealmLabel, realmPlacement, settleRealmMoves } from "./realm-labels.js";
-import { ledgerWorkbenches, ledgerWorkbenchRealms } from "@lararium/mesh";
+import { ledgerWorkbenches, ledgerWorkbenchRealms, wikiSlotOf, workbenchSeats } from "@lararium/mesh";
 import { armFacePoolWatch, armWorkspaceWatch, tendLitFacePool, type FacePoolWatch } from "./watch-core.js";
 import { ensurePoolTree, faceShelvingLine, healPoolTrees, poolTreeLine, shelveFaceRoot } from "./pool-tree.js";
 import { islandIngestSubmit, openSyncedTree, poolIngestPorts, workspaceIngestPorts } from "./ingest-scan.js";
@@ -176,8 +179,8 @@ import { readFacePersonaRecords, proveSiblingFromRest, SIBLING_PLANE_USE } from 
 import { personaGroupDigest } from "./persona-group-file.js";
 import { CustodyLocked, WardNeedsFreshUnlock } from "./custody-holder.js";
 import { servesFaceOfGroup, standingCustody, custodyFloorKeyDoor, unlockedFaceOrdinals, watchCustodyOpened } from "./custody-seat.js";
-import { joinedFaceAuth, type JoinedFaceAuthPorts } from "./joined-face-auth.js";
-import { drainPlans, faceLives, type FaceLives, type FaceLit } from "./face-lifecycle.js";
+import { joinedFaceAuth, refreshLitArchives, type JoinedFaceAuthPorts } from "./joined-face-auth.js";
+import { drainPlans, faceLives, type FaceLives, type FaceLit, type FacesClosed, type LightAnswer } from "./face-lifecycle.js";
 import { adoptFirstLit, faceLend } from "./face-lend.js";
 import { fleetLineageOf } from "./fleet-lineage.js";
 import { hearthGatePins, hearthNameOf, dialDeadlines, chooseHearthDial, fileHearthPins, type HearthDialChoice } from "./hearth-gate-pins.js";
@@ -215,8 +218,8 @@ import {
 import { makeRecallHolder, type RecallHolder } from "./recall-holder.js";
 import { makeContentPalace, type ContentPalace } from "./sensorium.js";
 import { multiGraphRecall, makeFormSearch, makeStructureSearch }  from "./sensorium-recall.js";
-import { waitHandle, resolveBootDoc } from "./repo-helpers.js";
-import { makeChildProcessDocLoadProbe, quarantineDoc, recoverCleanTail } from "./doc-load-probe.js";
+import { waitHandle, resolveBootDoc, seatSealedRest, LOCAL_READY_MS } from "./repo-helpers.js";
+import { makeChildProcessDocLoadProbe, quarantineDoc, quarantineMoveLine, recoverCleanTail } from "./doc-load-probe.js";
 import { listFaceOrdinals, listAnchoredPersonas, loadIdentityAnchors, loadVeilArchive, persistVeilArchive } from "./identity-anchors.js";
 import { openOutboxKey } from "./outbox-key.js";
 import { sweepFoundingSeeds } from "./face-atom-store.js";
@@ -227,7 +230,12 @@ import { repoPersonaSelvesPlane }          from "./persona-selves-plane.js";
 import { makeSeatSettler, type SeatDutiesAnswer } from "./seat-settle.js";
 import { islandAsk } from "./daemon-island-ask.js";
 import { promoteActGate, type PromoteActGate } from "./promote-act-gate.js";
-import { askIslandMemory, askIslandVerb, askSeatDuties, type IslandAsk } from "./island-verb-ask.js";
+import { askIslandMemory, askIslandVerb, askSeatDuties, IslandVerbRefused, type IslandAsk } from "./island-verb-ask.js";
+import { islandAskRefusal, tapInboundDocs, ISOLATE_ENGINE } from "./engine-watch.js";
+import { fallAwareProbeDoors, heldBackReason, heldInFlight, holdBackStorage, readEngineFalls, type ProbeDoors } from "./engine-fall.js";
+import { ROUTING_ARG_MALFORMED, routingObject, routingString } from "./routing-arg.js";
+import { VerbRefusal } from "@lararium/mesh";
+import { flushEveryShore, shoreFlushStandDown, type ShoreFlushReading, type ShoreIslandAsk } from "./shore-verb.js";
 import { faceCanonThroughControl } from "./commands/kahua.js";
 import type { BackupDoor }                from "./face-bundle-cut.js";
 import { readLocalPersonaKelChain }       from "./local-persona-kel.js";
@@ -601,7 +609,7 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   promoteActs: PromoteActGate;
   restartDaemonIsland: (reason: string) => Promise<{ restarts: number }>;
   daemonIslandState: () => Promise<{ restarts: number; leg: string }>;
-  lightFace: (ordinal: number) => Promise<void>;
+  lightFace: (ordinal: number) => Promise<LightAnswer | void>;
   dropFace: (ordinal: number) => Promise<void>;
   /** THE WORN FACE's ordinal (the mounted face, lit), or null at the floor: the AI seat acts as it alone (`seat-hand`). */
   mountOrdinal: () => number | null;
@@ -613,7 +621,7 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
    * Close every face through its actor (a whole lock, ahead of the custody door's line; a stand-down): resolves once each closed or
    * faulted. Under `strict` (a whole lock) a face that did not close whole rejects, naming it, so the key stays open.
    */
-  closeFaces: (reason: string, options?: { readonly strict?: boolean; readonly stop?: boolean }) => Promise<void>;
+  closeFaces: (reason: string, options?: { readonly strict?: boolean; readonly stop?: boolean }) => Promise<FacesClosed>;
   /** Lift the hold a lock's close set on a face (`dropFace`), once its key locked or the lock let it be: a mount that went dark
    *  while its key still stands open reads lit again. */
   releaseFace: (ordinal: number) => void;
@@ -627,6 +635,9 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   refusedLights: () => Array<{ readonly ordinal: number; readonly cause: string }>;
   /** Replay the lend now: every served face neither mounted, lit nor closing at its source lights (the served-but-dark clearing line). */
   replayLend: () => Promise<void>;
+  /** Arm face `ordinal`'s next light as a recard (`face-recard`): one use, consumed by that light whether it stands or refuses. */
+  armRecard: (ordinal: number) => void;
+  disarmRecard: (ordinal: number) => boolean;
   /** Hear the mounted face close at its custody's word (a pūlama's close, a forced lock): the vessel stands again. Returns the unsubscribe. */
   onMountClosed: (listener: () => void) => () => void;
   /** The bare atom key of the lit sibling a verified presenter names (its place session stands), or undefined. */
@@ -638,7 +649,9 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   stopTick:  () => void;
   /** Tear this composition down whole: every island, timer, socket and listener it stood, then its Repo. The
    *  floor it was handed keeps standing; a floor it stood itself releases. */
-  teardown: (closeSessions?: () => Promise<void>) => Promise<void>;
+  /** Answers whether every face closed whole through its actor before the rest tore down: a stand-down that met a face
+   *  holding unsealed saves still tears down, and says so here. */
+  teardown: (closeSessions?: () => Promise<void>) => Promise<FacesClosed>;
   /** The oracle's floor gates, one per Nexus this vessel stands in — the read face a host mounts takes them. */
   floorGates: FlowGateArgs["gates"];
   /** The sibling channel as it stands — null when no channel was configured, its refusal when it refuses to stand. */
@@ -675,6 +688,8 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   heldSaves: () => readonly HeldSaves[];
   /** The document census of this vessel's stores, read-only (`lares vessel census --docs`). */
   docCensus: () => Promise<DocCensusReading>;
+  /** Ask every island that mounts a disk shore to flush (`shore` op `flush`), each on its own road (`flushEveryShore`). */
+  shoreFlush: () => Promise<ShoreFlushReading>;
 }
 
 /** A composed Herm (wiki-less): the daemon immune core + a served meshpalace FLOW-map, no pool. */
@@ -683,7 +698,7 @@ export interface NodeHermResult {
   readonly islandCaps: Readonly<CapabilityRecord>;
   restartDaemonIsland: (reason: string) => Promise<{ restarts: number }>;
   daemonIslandState: () => Promise<{ restarts: number; leg: string }>;
-  lightFace: (ordinal: number) => Promise<void>;
+  lightFace: (ordinal: number) => Promise<LightAnswer | void>;
   dropFace: (ordinal: number) => Promise<void>;
   repo:             Repo;
   store:            CompositeStore;
@@ -779,6 +794,8 @@ interface NodeBootPrep {
   facePoolStandDown: () => Promise<void>;
   /** The census of saves the sealed rest holds in memory, by document and never by body. */
   heldSaves: () => readonly HeldSaves[];
+  /** Ask every island that mounts a disk shore to flush (`shore` op `flush`): the daemon island and each resident wiki island. */
+  shoreFlush: () => Promise<ShoreFlushReading>;
   /** The document census of this vessel's stores, read-only (`lares vessel census --docs`). */
   docCensus: () => Promise<DocCensusReading>;
   /** The floor's rest key as this composition began with it (`standFloorKey`). */
@@ -823,18 +840,20 @@ interface NodeBootPrep {
    *  shore reads them to follow the realm's PUBLIC books, and the realm plane is the only hand that folds them. */
   realmStanding:    () => Promise<ReadonlyMap<string, RealmBagRegistration>>;
   /** Forward-ref reads — set as the closures run (the same `let vmManager!` pattern, surfaced). */
-  lightFace: (ordinal: number) => Promise<void>;
+  lightFace: (ordinal: number) => Promise<LightAnswer | void>;
   dropFace: (ordinal: number) => Promise<void>;
   mountOrdinal: () => number | null;
   litOrdinals: () => readonly number[];
   faceLife: Pick<FaceLives, "admitWork" | "admitVisit" | "state" | "known">;
-  closeFaces: (reason: string, options?: { readonly strict?: boolean; readonly stop?: boolean }) => Promise<void>;
+  closeFaces: (reason: string, options?: { readonly strict?: boolean; readonly stop?: boolean }) => Promise<FacesClosed>;
   releaseFace: (ordinal: number) => void;
   releaseFaces: () => void;
   holdFace: (ordinal: number) => boolean;
   holdFaces: () => boolean;
   refusedLights: () => Array<{ readonly ordinal: number; readonly cause: string }>;
   replayLend: () => Promise<void>;
+  armRecard: (ordinal: number) => void;
+  disarmRecard: (ordinal: number) => boolean;
   onMountClosed: (listener: () => void) => () => void;
   siblingFaceOf: (presenter: string) => string | undefined;
   daemonVm:         () => DaemonVmCore;
@@ -956,6 +975,8 @@ async function prepareNodeBootOn(
   // it lands (`SessionSignBook`'s hold), each save signs under the session that booked it, a save no session booked
   // waits `save-unbooked` in memory until the next session's call books it, and a session's signer drops only after the Repo and the rest flush (`beforeSignerDrops`).
   type NodeSaveSession = BookedSession & { readonly id: string };
+  /** The release of the catalog watch that moves the map (`watchCatalogNames`), re-seated with each daemon mount. */
+  let unwatchCatalogNames: () => void = () => {};
   const sealedCells: { face: () => string | null; wornAt: (face: string, subject: string) => boolean; bags: () => readonly string[]; catalog: () => LarDoc | undefined; mounted: (bagId: string) => string | null; book: SessionSignBook | null } = {
     face: () => null, wornAt: () => false, bags: () => [], catalog: () => undefined, mounted: () => null, book: null,
   };
@@ -994,6 +1015,7 @@ async function prepareNodeBootOn(
    *  workspace, then each `<projections>/realms/<realm pet name>/wikis/<slug>` a realm label holds that no workspace takes, read
    *  afresh at each after-live. */
   let readWorkbenches: () => WorkbenchFolder[] = () => [];
+  let renderWorkbenchOf: (slug: string) => Promise<string | null> = async () => null;
   /** THE QUIET POINT'S REALM MOVES (`settleRealmMoves`), set in makePool: run at the re-stand and at the last workbench watch's lock. */
   let settleRealmFolders: () => void = () => {};
   /** THE WATCHES over the workbench folders (`armWorkspaceWatch`): armed at after-live beside the face pool's, downed with it. */
@@ -1008,6 +1030,23 @@ async function prepareNodeBootOn(
     if ("refused" in read) { console.warn(`[faces] the face ${relation} makes no folder under ${FACES_PROJECTION_DIR}/ (${read.refused.code}: ${read.refused.why}); its private planes project nowhere until it does`); return null; }
     shelveFace(projections, read.site.segment);
     return read.site.segment;
+  };
+  /**
+   * EVERY LIT FACE PROJECTS ITS OWN WRITES: a sibling's light carries the mirror grants for its own root alone
+   * (`litFaceDiskMirrors`, `faces/<its pet name>/`), so the daemon island projects its writes while another face stands worn.
+   * A face that makes no folder carries none and projects nothing; only an unlocked face ever lights, so a shut one never does.
+   */
+  const withFaceMirrors = async (entry: JoinedFaceAuth): Promise<JoinedFaceAuth> => {
+    const relation = entry.faceRelation ?? null;
+    if (relation === null || typeof entry.handleIndex !== "number") return entry;
+    const segment = await faceSegmentOf(relation, entry.handleIndex).catch(() => null);
+    try {
+      const diskMirrors = litFaceDiskMirrors(larProjectionsHome(), segment === null ? null : { relation, segment });
+      return diskMirrors.length > 0 ? { ...entry, diskMirrors } : entry;
+    } catch (e) {
+      console.warn(`[faces] face h${entry.handleIndex} carries no mirror of its own (${e instanceof Error ? e.message : String(e)}); its writes rest unprojected until it is worn`);
+      return entry;
+    }
   };
   /** EVERY SHELF BEFORE ANY MIRROR (operator, 2026-11-20, "Approve model B"): a face root standing in the older shape (`wiki/`,
    *  `canon/`, `stage/`) moves onto its shelves before a mirror composes over it, its Synced tree bases moving with each folder,
@@ -1024,6 +1063,25 @@ async function prepareNodeBootOn(
     if (n > 0) console.log(`[faces] ${n} Synced tree base(s) move with ${from} -> ${to}`);
   };
   const siblingFaces = new Map<string, { readonly ordinal: number; readonly relation: string | null; readonly face: string | null }>();
+  /** THE FACES WHOSE ISLAND LIGHT IS IN FLIGHT, by PersonaGroup, each with its light's own `live()`: proved open by that light's
+   *  custody read, the face takes its Archive write while the island stands its hive and the light still reads live (the
+   *  sibling's archive floor rests after its card, before its session stands). Only the light that opened a window shuts it. */
+  const lightingCustody = new Map<string, () => boolean>();
+  /** THE FACES WHOSE NEXT LIGHT RECARDS (`lares vault recard --face N`, the custody door arms it): one use, taken the moment that
+   *  light starts, and cleared at the face's drop, its hold before a lock, or a whole close (`recard-arms`). */
+  const recardArmed = recardArms();
+  /** EACH LIT SIBLING'S PROVEN PLANES (sibling-plane-mount): its intents and persona planes file under its own face while it stands
+   *  lit, under none once dark, and leave whole at its close; only a proof under its own log and KEL mounts them. */
+  const siblingPlanes = siblingPlaneMounts();
+  /** A sibling's plane mount leaves whole: its two documents leave the Repo's cache and any save of theirs waiting in memory
+   *  drops unwritten, so nothing of the pair stays decrypted or replicating while the face stands dark. */
+  const dropSiblingPlanes = (group: string): void => {
+    const unmounted = siblingPlanes.drop(group);
+    if (unmounted.length === 0) return;
+    sealedRest.forget(unmounted);
+    for (const id of unmounted) void repo.removeFromCache(id as never).catch(() => {});
+    sealedRest.store.mapMoved();
+  };
   /**
    * EACH FACE LIVES ONE LIFE (`face-lifecycle`): one lifecycle actor per face this composition may light, the mount's beside each
    * sibling's. The actor alone holds a face's opening, its island atom key and its custody opening; the door admits work and
@@ -1054,6 +1112,15 @@ async function prepareNodeBootOn(
     ...(wornDeviceGroup !== null ? [{ group: wornDeviceGroup, relation: wornDeviceRelation, face: sealedCells.face() }] : []),
     ...[...siblingFaces].filter(([group]) => group !== wornDeviceGroup).map(([group, f]) => ({ group, relation: f.relation, face: f.face })),
   ];
+  /** The realm a working bag's workbench rests in, as the vessel's ledger binds its slug to ONE realm; null for any other bag. */
+  const realmOfBag = (bagId: string): { readonly realmId: string; readonly slug: string; readonly ledger: LarDoc | undefined } | null => {
+    const slot = wikiSlotOf(bagId);
+    if (slot === null || slot.kind !== "working") return null;
+    let ledger: LarDoc | undefined;
+    try { ledger = workbenchLedger?.doc(); } catch { return null; }   // the ledger stands later in the boot: no realm reads yet
+    const realms = ledgerWorkbenchRealms(ledger, slot.slug);
+    return realms.length === 1 ? { realmId: realms[0]!, slug: slot.slug, ledger } : null;
+  };
   const openFaceSubjects = (): string[] => litDevices().map((f) => f.face).filter((f): f is string => typeof f === "string");
   // V3: a bag's document by every name it carries: the layer the mount resolved (a working slot's derived address, a
   // draft binding: no catalog row names either), then the catalog's row.
@@ -1126,6 +1193,9 @@ async function prepareNodeBootOn(
     if (named.has(documentId)) return;
     named.add(documentId);
     slotDocsNamed.set(bagId, named);
+    // THE ANNOUNCEMENT NAMES THE DOCUMENT FOR ITS BAG: a clear bag's slot (the island minted it on its own Repo) joins the
+    // clear-name roster and its held saves land; a sealed bag's maps by that bag's row (`nameDocument`).
+    sealedRest.store.nameDocument(documentId, bagId);
     sealedRest.store.mapMoved();
     sealNowMapped(documentId);
   };
@@ -1144,6 +1214,8 @@ async function prepareNodeBootOn(
     // A device document files by its owner first, then the held homes (`vesselHeldBagOf`, the browser's one order).
     const held = vesselHeldBagOf(deviceDocs, secretHomes, litDevices(), documentId);
     if (held !== undefined) return held;
+    const mountedPlane = siblingPlanes.bagOf(documentId, litDevices());
+    if (mountedPlane !== null) return mountedPlane;
     const selves = selvesRecordBagOf(documentId, carriedSelves(), litDevices());
     if (selves !== null) return selves;
     const face = sealedCells.face();
@@ -1171,13 +1243,33 @@ async function prepareNodeBootOn(
   const docStoreDoor: NonNullable<CapabilityRecord["docStore"]> = (port) => docStorePort.attach(port);
   // V2: each island's own store rests no document this rest seals (`islandRestGuard`).
   const restsSealedDoor: NonNullable<CapabilityRecord["restsSealed"]> = (documentId) => sealedRest.restsSealed(documentId);
+  // THE TRAP-NAMED DOCUMENTS HOLD ON EVERY LOAD PATH (`engine-fall`): each document a resting engine fall names in flight
+  // reaches the engine through no path, the storage source's included, until the hand clears the count.
+  const heldBack = heldInFlight(readEngineFalls(storageDir));
   const sealedRest = composeSealedRest<NodeSaveSession>({
-    inner: new DurableNodeFSStorageAdapter(storageDir),
+    inner: holdBackStorage(new DurableNodeFSStorageAdapter(storageDir), heldBack, (line) => console.warn(`[lararium] ${line}`)),
     bagOf: sealedBagOf,
+    // THE MAP BEFORE THE BYTES: a document named for a sealed bag ahead of its first byte maps by that bag's row (`nameDocument`).
+    bagRow: (bagId) => sealedMap.bagRow(bagId),
+    // UNKNOWN MEANS HOLD: the clear-name roster reads the same bag registry the map reads (`sealedBagMap.names`); a document
+    // no bag carries and no local caller opened (an unsolicited peer push) waits in memory until a name arrives.
+    // The federatable shelf names too: a public board an admitted peer pushes rests clear and survives a restart (`clearRosterOf`).
+    namesClear: clearRosterOf({ names: (documentId) => sealedMap.names(documentId), shelf: () => clearShelf }),
     vesselKey: () => secretHomes.floorKey(),
     sessionFace: () => sealedCells.face(),
     openFaces: openFaceSubjects,
     wornAt: (face, subject) => sealedCells.wornAt(face, subject),
+    // THE REST SEALS FOR THE ROSTER (cabal-realm#/the-workbench): a realm workbench's working bag takes a save from any lit face
+    // the vessel's ledger seats in its realm, each under its own session and holder, and opens whichever writer the holder
+    // verified under the roster. The ledger's seat rows mirror the realm's key Document (`projectWorkbenchRoster`).
+    realm: {
+      keeps: (bagId) => realmOfBag(bagId) !== null,
+      wears: (bagId, subject) => {
+        const realm = realmOfBag(bagId);
+        const group = realm === null ? undefined : litDevices().find((f) => f.face === subject)?.group;
+        return realm !== null && typeof group === "string" && workbenchSeats(realm.ledger, realm.realmId, realm.slug).has(group);
+      },
+    },
     door: vesselDocStoreDoor<NodeSaveSession>(() => docStorePort.port(), {
       book: (ask, verb, session) => sealedCells.book?.hold(ask, verb, session) ?? (() => {}),
       idPrefix: `docstore-${process.pid}`,
@@ -1454,6 +1546,8 @@ async function prepareNodeBootOn(
   // below (the nexus pubkey it addresses the federatable planes from). Null keeps the pre-classification
   // boot window inert (no peer gated) — correct: no doc crosses to any WS peer until the gate arms anyway.
   let selfSlotFedGate: FederationGate | null = null;
+  /** The deterministic public boards of this vessel's Nexus (`DeterministicFederationGate`): what the clear-name roster reads. */
+  let clearShelf: FederationGate | null = null;
   // The SIBLING CHANNEL and the gate its peers pass — forward-declared (the sharePolicy closes over both) and
   // stood once the mounted face's KEL is walked, below. A sibling holds standing only: the gate is the PersonaGroup
   // ring's sibling path over the public boards, and null denies every doc (fail-closed).
@@ -1583,6 +1677,24 @@ async function prepareNodeBootOn(
       });
     }, wireProbe ?? undefined),
   });
+  // A SEALED BAG MOUNTS NO WRITABLE FALLBACK (`seatSealedRest`): every `waitHandle` over this Repo (the social planes, the
+  // wiki layers, the corpora) holds a sealed document read-only over its own id until its keyed load opens it. A load refused
+  // on integrity evidence moves the bytes aside through the probe's own quarantine, held across boots.
+  seatSealedRest(repo, {
+    // A HELD-BACK DOCUMENT (`engine-fall`) stands read-only and unread over its own id, never under a writable fallback.
+    heldBack: heldBackReason(heldBack),
+    restsSealed: (documentId) => sealedRest.restsSealed(documentId),
+    refusalOf: (documentId) => sealedRest.store.refusalOf(documentId),
+    nameDocument: (documentId, bagId) => sealedRest.store.nameDocument(documentId, bagId),
+    // THE ROSTER'S LOCAL HALF: every document a local caller of this Repo opens counts as named (`solicited`).
+    solicited: (documentId) => sealedRest.store.solicited(documentId),
+    quarantine: (documentId, reason) => {
+      const verdict = { documentId, status: "load-error" as const, reason };
+      const bagId = sealedBagOf(documentId)?.bagId;
+      console.warn(quarantineMoveLine(verdict, quarantineDoc(storageDir, verdict, bagId !== undefined ? { bagId } : {})));
+    },
+    onSettled: ({ documentId, status, reason }) => { if (status !== "mounted") console.warn(`[sealed-rest] ${documentId.slice(0, 12)}… stands ${status}, read-only: ${reason ?? ""}`); },
+  });
   // The Repo stands down after everything that writes through it: it flushes, then closes its storage and network.
   stood.push({ what: "the Repo", phase: "repo", down: () => closeCompositionRepo({
     flush: () => repo.flush(),
@@ -1602,6 +1714,10 @@ async function prepareNodeBootOn(
   // THE COMPOSITION'S ACTOR DOOR, seated on its Repo: every store over this Repo's documents (`wearOf(repo)`) writes a worn
   // face's change under the actor the wire identity derives, and the daemon island's own Repo asks for its actors here.
   seatRepoWear(repo, wire);
+  // THE DOCUMENT IN FLIGHT (`engine-watch`): each inbound message the Repo handles names its document to the isolate's watch,
+  // so a trap met there rests with the document a boot probe can hold back (`engine-fall`).
+  // A message naming a held-back document never reaches the engine.
+  tapInboundDocs(repo.networkSubsystem, ISOLATE_ENGINE, heldBack);
   // THE MINT CENSUS, seated on the same Repo: each document a cap creates while it builds and names under no pointer reads
   // as an unbound `cap-mint` once the composition stands (a compose mints nothing it cannot find again).
   seatMintCensus(repo);
@@ -1631,7 +1747,7 @@ async function prepareNodeBootOn(
   // reads as resting.
   let stopping = false;
   const receiptDoor: ReceiptIssuer = fenceReceiptAtStop(
-    (documentIds, heads) => receiptInStore(repo, documentIds, { ready: daemonVmStood.then(() => daemonVm.syncLegReady()), onClose: onReceiptClose }, heads),
+    (documentIds, heads) => receiptInStore(repo, documentIds, { ready: daemonVmStood.then(() => daemonVm.syncLegReady()), onClose: onReceiptClose }, heads, { name: (documentId) => sealedRest.store.solicited(documentId), heldOf: (documentId) => sealedRest.store.heldRefusalOf(documentId) }),
     { stopping: () => stopping, held: () => sealedRest.store.held() },
   );
   stood.push({ what: "the receipt waits", down: () => { for (const close of [...receiptClosers]) close(); receiptClosers.clear(); } });
@@ -1672,7 +1788,7 @@ async function prepareNodeBootOn(
   // that opens at that stand, through its seat's opener, stands the key too), so the island's floor gate, the host's working
   // layer and the floor verbs all read the key the control document read under.
   let floorKeyGrant = standFloorKey();
-  const stopFloorKeyOpened = standingCustody()?.onOpened?.(() => { try { standFloorKey(); } catch (e) { console.warn(`[floor] the floor's rest key did not stand at the custody's open: ${e instanceof Error ? e.message : String(e)}`); } }) ?? null;
+  const stopFloorKeyOpened = standingCustody()?.onOpened?.(() => { try { standFloorKey(); } catch (e) { console.warn(`[floor] the floor's rest key did not stand when the custody opened: ${e instanceof Error ? e.message : String(e)}`); } }) ?? null;
   stood.push({ what: "the floor key watch", down: () => { stopFloorKeyOpened?.(); } });
   // R2's booking, by the change's own writer (T4): a save of a sealed bag's document reads its change's actor off its
   // bytes; a change this replica made books the session whose call stands, and a peer's change books its peer writer
@@ -2155,6 +2271,9 @@ async function prepareNodeBootOn(
   // allow-list; the private planes (catalog/personal/daemon/home/wikis) fall outside the set → DENY.
   // A realm's own vouch board and edge board cross to a peer that holds standing in that realm, and to nobody else.
   selfSlotFedGate = new RealmBoardGate(new DeterministicFederationGate(nexusPubkey), shadowRing.realmBoards, shadowRing.standsInRealm);
+  // THE CLEAR SHELF reads the deterministic public boards alone: the share gate widens (realm boards, the identity ring, a
+  // realm plane), yet what it widens to may rest sealed, so the clear-name roster never reads those widenings.
+  clearShelf = new DeterministicFederationGate(nexusPubkey);
   ownCarriageBoard = interpretAsDocumentId(carriageDocUrl(nexusPubkey)) as DocumentId;
   for (const aid of await carriedSet(sealHome).catch(() => new Set<string>())) {
     ownHostingDocs.add(interpretAsDocumentId(hostingDocUrl(aid, vesselIdentity.verifyingKey)) as DocumentId);
@@ -2201,7 +2320,8 @@ async function prepareNodeBootOn(
   const corpusCasDir = corpusCasDirFromEnv();
   // THE HOUSE CANON SEATS HERE, off the checkout's disk-sourced holdings (`seatHouseCanonFromCheckout`), before any island
   // spawns: every island is handed the same slugs.
-  const casData: IslandCasData = { cidDir, corpusCasDir, houseCanon: seatHouseCanonFromCheckout() };
+  // The documents a resting engine fall names in flight ride in too: the daemon island's own store holds them back.
+  const casData: IslandCasData = { cidDir, corpusCasDir, houseCanon: seatHouseCanonFromCheckout(), heldBack };
   const hermShore = hermCasTransitFromEnv();
   const resolveCid = makeNodeCasResolver({ cidDir, corpusCasDir, shore: hermShore });
   // The floor stack carries `resolveCid` as the record's `cas` (below): a boot that refuses before it composes leaves no `cas` behind.
@@ -2497,13 +2617,17 @@ async function prepareNodeBootOn(
     if (!promoteActs.after(["promote-commit", "promote-drop", "promote-orphan"], restartDaemonDeferred)) restartDaemonDeferred();
   };
   let mailbox!: DurableMailbox;            // set in makePool — the durable park/drain lane (node-only capability)
-  let lightFace: (ordinal: number) => Promise<void> = async () => {};
+  let lightFace: (ordinal: number) => Promise<LightAnswer | void> = async () => {};
   /** THE LIT SET: a sibling face's relation, read off its own proved log once the boot proves the faces; null before. */
   let siblingRelationOf: (group: string) => Promise<string | null> = async () => null;
+  /** A LIT SIBLING'S PROVEN PLANES, proved at its light under its own custody opening and mounted for its lit life; null before the boot proves the faces. */
+  let siblingPlanesOf: (group: string) => Promise<{ readonly persona: string; readonly intents: string } | null> = async () => null;
   /** Remove the face's owned resources together; an obsolete failure cannot remove its replacement. */
-  const removeSibling = (group: string, expected = siblingFaces.get(group)): void => {
+  /** `keepPlanes`: the face's plane mount stays (a re-seat under a fresh entry, whose light just landed that mount). */
+  const removeSibling = (group: string, expected = siblingFaces.get(group), keepPlanes = false): void => {
     if (!expected || siblingFaces.get(group) !== expected) return;
     siblingFaces.delete(group);
+    if (!keepPlanes) dropSiblingPlanes(group);
     const owned = deviceDocs.ids().filter((id) => deviceDocs.bagOf(id, [{ group, relation: expected.relation, face: expected.face }])?.face === expected.face && expected.face !== null);
     const dropped = sealedRest.forget(owned);
     for (const id of owned) void repo.removeFromCache(id as never).catch(() => {});
@@ -2544,6 +2668,9 @@ async function prepareNodeBootOn(
   /** A closed face's host side drops: what still waits unsaved (from memory, never to disk), its cache, session and keepers. */
   const teardownFaceHost = (ordinal: number): void => {
     for (const [group, held] of [...siblingFaces]) if (held.ordinal === ordinal) removeSibling(group, held);
+    // THE LIT LIFE BOUNDS A SIBLING'S PLANE MOUNT: the close takes it whole, whether or not its host side ever stood.
+    const closing = faceEntries.get(ordinal);
+    if (closing) dropSiblingPlanes(closing.personaGroupId);
     // THE CUSTODY ID STAYS PAST DARK: the lend sweep the return to dark replays reads it to skip a face its pūlama names closing
     // (the next light reads it afresh).
     faceEntries.delete(ordinal);
@@ -2554,7 +2681,7 @@ async function prepareNodeBootOn(
    * A LOCK CLOSES THE FACE THROUGH ITS ACTOR: the promise answers at CLOSED (no visit or work admits, its saves drained, the
    * island told, the host side down), the moment a custody holder may lock the key; the island's ack is not waited on.
    */
-  const dropFace = (ordinal: number): Promise<void> => faceLife.close(ordinal, "the lock door closes it", { hold: true });
+  const dropFace = (ordinal: number): Promise<void> => { recardArmed.clear(ordinal); return faceLife.close(ordinal, "the lock door closes it", { hold: true }); };
   /** A dark mount whose key still stands open reads lit again (bound once the composition stands). */
   let readoptMount: (ordinal: number) => void = () => {};
   /**
@@ -2730,12 +2857,13 @@ async function prepareNodeBootOn(
   // holds. The lift alone seats it; at the floor none stands, so an island's ask answers unwritten.
   // EACH ARCHIVE NAMES ITS FACE (`faceNamedCustodyWrite`): the island names the PersonaGroup of the hive that exported the
   // bytes, and the write lands in that face's own row or nowhere; the vessel never picks a row for a faceless ask. The
-  // mounted face (`openDaemon` names it) and each lit sibling with a session stand open; any other face takes no write. The
+  // mounted face (`openDaemon` names it), each lit sibling with a session, and a face whose island light is in flight (its
+  // archive floor rests after its card, before its session stands) stand open; any other face takes no write. The
   // seal itself proves the bytes are that face's own identity (`persistVeilArchive`), so a misnamed ask writes nothing either.
   let mountedCustodyGroup: string | null = null;
   const liftCustodyWrite: CustodyWriter | undefined = sovereign
     ? faceNamedCustodyWrite({
-      opens: (face) => face === mountedCustodyGroup || (siblingFaces.has(face) && siblingSessions.has(face)),
+      opens: (face) => custodyOpens(face, { mounted: mountedCustodyGroup, lighting: lightingCustody, siblingFaces, siblingSessions }),
       write: (bytes, face) => sovereign.writeVeilArchive(bytes, face),
     })
     : undefined;
@@ -2818,7 +2946,7 @@ async function prepareNodeBootOn(
   const keel: VesselOrchestration<VesselIslandPool>["keel"] = {
     repo,
     catalogHandle,
-    waitHandle: <T>(url: AutomergeUrl, fallback: () => DocHandle<T>) => waitHandle<T>(repo, url, fallback),
+    waitHandle: <T>(url: AutomergeUrl, bagId: string, fallback: () => DocHandle<T>) => waitHandle<T>(repo, url, bagId, fallback, LOCAL_READY_MS),
 
     // Genesis island (required) + the social-plane bootstrap it carries.
     loadGenesis: async () => {
@@ -2921,28 +3049,36 @@ async function prepareNodeBootOn(
     // storageDir. Each social-plane doc materializes in a disposable process before the
     // live repo touches it; a condemned doc gets MOVED aside (never deleted) and its plane
     // mounts read-only, so a torn doc downgrades the vessel to degraded instead of aborting
-    // the whole boot.
-    docLoadProbe: makeChildProcessDocLoadProbe(storageDir),
-    // L3 — clean-tail recovery, tried AHEAD of quarantine: salvage the doc's verified clean
-    // record-prefix and drop only the torn tail, so a torn-tail doc promotes to a writable
-    // mount (a suffix of edits lost) instead of downgrading the vessel to degraded.
-    recoverCleanTail: async (verdict) => {
-      const promoted = await recoverCleanTail(storageDir, verdict);
-      if (promoted) {
-        console.warn(
-          `[lararium] PROMOTED plane — clean-tail recovered ${verdict.documentId} (${verdict.reason ?? "?"})` +
-          ` → ${promoted.reason ?? "recovered"}; the torn tail sits in quarantine-torn-tail-*`,
-        );
-      }
-      return promoted;
-    },
-    quarantineDoc: (verdict) => {
-      const moved = quarantineDoc(storageDir, verdict);
-      console.warn(
-        `[lararium] DEGRADED plane — quarantined ${verdict.documentId} (${verdict.status}: ${verdict.reason ?? "?"})` +
-        ` → ${moved ?? "already gone"}; the plane mounts read-only until a known-good document is restored`,
-      );
-    },
+    // the whole boot. L3 — clean-tail recovery, tried AHEAD of quarantine: salvage the doc's
+    // verified clean record-prefix and drop only the torn tail, so a torn-tail doc promotes to a
+    // writable mount (a suffix of edits lost) instead of downgrading the vessel to degraded.
+    // THE DOCUMENT IN FLIGHT AT AN ENGINE FALL runs this same probe (`fallAwareProbeDoors`): a torn one takes this same path,
+    // and a clean one stands held in the pending branch, read-only, its bytes in place.
+    // A SEALED PLANE'S KEYED LOAD names the refusal it ended on: only integrity evidence quarantines it (`isIntegrityRefusal`).
+    sealedRefusalOf: (documentId: string) => sealedRest.store.refusalOf(documentId),
+    ...((): ProbeDoors => {
+      const doors = fallAwareProbeDoors(readEngineFalls(storageDir), {
+        probe: makeChildProcessDocLoadProbe(storageDir),
+        recoverCleanTail: (verdict) => recoverCleanTail(storageDir, verdict),
+        quarantineDoc: (verdict, bagId) => {
+          const moved = quarantineDoc(storageDir, verdict, { bagId });
+          console.warn(quarantineMoveLine(verdict, moved));
+        },
+      });
+      return {
+        ...doors,
+        recoverCleanTail: async (verdict) => {
+          const promoted = await doors.recoverCleanTail(verdict);
+          if (promoted?.status === "ok" || promoted?.status === "sealed") {
+            console.warn(
+              `[lararium] PROMOTED plane — clean-tail recovered ${verdict.documentId} (${verdict.reason ?? "?"})` +
+              ` → ${promoted.reason ?? "recovered"}; the torn tail sits in quarantine-torn-tail-*`,
+            );
+          }
+          return promoted;
+        },
+      };
+    })(),
 
     // THE KAHU REALM'S LIVE CANON: the documents the cabal's registrations name, held only where the board carries a
     // counted admission for this vessel's group. A vessel outside the cabal names none and reads the floor.
@@ -2985,7 +3121,7 @@ async function prepareNodeBootOn(
     // Corpus capability piece — one top-level bag per catalog corpus entry (shared loader).
     loadCorpora: (composite) => loadCatalogCorpora({
       repo, catalogHandle,
-      mintLocalHandle: (docUrl) => waitHandle<LarDoc>(repo, docUrl as AutomergeUrl, blankMemeStore(repo)),
+      mintLocalHandle: (docUrl, bagId) => waitHandle<LarDoc>(repo, docUrl as AutomergeUrl, bagId, blankMemeStore(repo)),
       source: "lararium-seed",
     }, composite),
 
@@ -3024,6 +3160,9 @@ async function prepareNodeBootOn(
     // R1: the daemon mount's wiki bags rest sealed, each document by the catalog's name for it.
     sealedCells.catalog = () => assembly.catalogHandle.doc() as LarDoc | undefined;
     sealedCells.mounted = (bagId) => mountedDocumentId(assembly.composite.storeForBag(bagId));
+    // A CATALOG ROW NAMES A DOCUMENT AT ONCE: each catalog change moves the map, so a held save a new row alone names lands then.
+    unwatchCatalogNames();
+    unwatchCatalogNames = watchCatalogNames(assembly.catalogHandle, () => sealedRest.store.mapMoved());
     sealedRest.store.mapMoved();
     catalogForViews = () => assembly.catalogHandle.doc() as LarDoc | undefined;
     const daemonDoc = (await readDaemonDoc()).doc();
@@ -3275,7 +3414,7 @@ async function prepareNodeBootOn(
               // The panel carries no ward route (its verbs ride the daemon document), so a bound commit refuses by name, toward the terminal.
               wardSigner: async () => {
                 const held = takeSummonedWard(ward);
-                if (!held) throw new WardNeedsFreshUnlock(`the panel's commit in ${wiki} (the panel carries no ward route: run \`lares promote commit <digest> --wiki ${wiki}\` at a terminal)`);
+                if (!held) throw new WardNeedsFreshUnlock(`the panel's commit in ${wiki} (the panel carries no ward route: run \`lares trust commit <digest> --wiki ${wiki}\` at a terminal)`);
                 return wardRootSigner(wornMount?.handleIndex ?? 0, held, `a commit in ${wiki}`);
               },
               face: { grant: (key: string) => promoteFace.read()?.grant(key) ?? false },
@@ -3331,7 +3470,7 @@ async function prepareNodeBootOn(
     // ── THE REALM PLANE — the relation's shared CRDT, materialized on every member's boot ──────────────
     // The realm doc's id derives from the charter both stewards hold (its genesis epoch), so A and B compute
     // ONE address from the charter alone. A bag REGISTERS on it (`realm-bag`), and the daemon island's reach
-    // (`meme get --bag <x>`) walks this plane FIRST through the pointer this stand pins on the oracle plane.
+    // (`tiddler get --meme --bag <x>`) walks this plane FIRST through the pointer this stand pins on the oracle plane.
     // The wire gate widens the self-slot shelf by the member-read lane and nothing else: a stranger draws
     // the same denial as any private plane. A vessel with no primary or carried charter stands no realm.
     if (!realmPlane && nexusMembership && selfSlotFedGate) {
@@ -3581,6 +3720,13 @@ async function prepareNodeBootOn(
       const plane = bootstrap.personaPlanes.find((candidate) => candidate.personaGroupId === group);
       return plane ? (await proofOfOtherFace(plane))?.relation ?? null : null;
     };
+    siblingPlanesOf = async (group: string) => {
+      const plane = bootstrap.personaPlanes.find((candidate) => candidate.personaGroupId === group);
+      const proved = plane ? await proofOfOtherFace(plane) : null;
+      const intents = proved?.planes?.intents ?? null;
+      if (!plane || !intents) { console.log(`[lit-set] ${group.slice(0, 8)}…'s planes mount nothing: no proof of its pair stands`); return null; }
+      return { persona: plane.url, intents };
+    };
     async function proofOfOtherFace(plane: (typeof bootstrap.personaPlanes)[number]) {
       try {
         // THE BOOTSTRAP NAMES EVERY FACE; THE VESSEL SERVES ITS LEND. A face outside what this vessel serves proves nothing here,
@@ -3769,6 +3915,12 @@ async function prepareNodeBootOn(
       atomSeed: loadFaceAtomOfGroup, atomKey: (seed, group) => faceAtomKeyFromSeed(seed, group).key,
       addressSecret: readFaceAddressSecret, veilArchive: sovereign.veilArchive,
       relation: (group: string) => siblingRelationOf(group),
+      planes: (group: string) => siblingPlanesOf(group),
+      // The proven pair mounts after the face's last standing check; a refused pair mounts nothing.
+      mountPlanes: (group: string, planes: { readonly persona: string; readonly intents: string }) => {
+        const mounted = siblingPlanes.mount(group, { ok: true, planes });
+        if (!mounted.ok) console.log(`[lit-set] ${group.slice(0, 8)}…'s planes mount nothing: ${mounted.detail}`);
+      },
       log: (line: string) => console.log(`[lararium] ${line}`),
     } : null;
     // EVERY OPEN READS THE SIBLINGS' CURRENT CUSTODY STANDING (Sol train #1): a sibling that locked or dropped since boot never rides a
@@ -3781,7 +3933,8 @@ async function prepareNodeBootOn(
       const face = placeProofSubjectRef({ atomKey: entry.atom.key, place: placeAid } as never);
       let held = siblingFaces.get(group);
       if (held && (held.ordinal !== entry.handleIndex || held.relation !== relation || held.face !== face)) {
-        removeSibling(group, held);
+        // THE FRESH ENTRY KEEPS THE MOUNT ITS OWN LIGHT LANDED: the stale seat leaves, never the pair this light proved.
+        removeSibling(group, held, true);
         held = undefined;
       }
       if (!held) {
@@ -3857,10 +4010,14 @@ async function prepareNodeBootOn(
       composedOnce = true;
       const ordinals = first ? siblingPorts.ordinals() : faceLife.lit().filter((o) => o !== mountedFace);
       const litNow = (ordinal: number): boolean => faceLife.state(ordinal).kind === "lit";
-      // THE SUPERVISOR'S OPEN READS NO CUSTODY: each lit face composes again from the entry its light proved, held in memory.
+      // THE SUPERVISOR'S OPEN READS NO CUSTODY OF ITS OWN: each lit face composes again from the entry its light proved, held
+      // in memory, with its Archive read again through that lit face's own holder (`refreshLitArchives`): the face rested a
+      // newer Archive after its card, and the one its light restored would bring back the lag that card cured.
       const faces = first
-        ? (await joinedFaceAuth({ ...siblingPorts, ordinals: () => ordinals, current: () => true })).filter((face) => typeof face.handleIndex === "number")
-        : ordinals.flatMap((ordinal) => { const entry = faceEntries.get(ordinal); return entry !== undefined && litNow(ordinal) ? [entry] : []; });
+        ? await Promise.all((await joinedFaceAuth({ ...siblingPorts, ordinals: () => ordinals, current: () => true })).filter((face) => typeof face.handleIndex === "number").map(withFaceMirrors))
+        : await refreshLitArchives(ordinals.flatMap((ordinal) => { const entry = faceEntries.get(ordinal); return entry !== undefined && litNow(ordinal) ? [entry] : []; }),
+          siblingPorts.veilArchive, (line) => console.warn(line));
+      if (!first) for (const face of faces) if (faceEntries.has(face.handleIndex!) && litNow(face.handleIndex!)) faceEntries.set(face.handleIndex!, face);
       classDeviceLedgers(vesselPrivate, faces.map((face) => face.atom.key));
       const open = new Set(faces.map((f) => f.handleIndex!));
       // A face whose actor reads lit that did not compose again closes through its actor.
@@ -3891,14 +4048,20 @@ async function prepareNodeBootOn(
      * Each step reads `live()` (the actor still waits on this light); work cut short after the island took the face hands its
      * atom key back, so the close drops that entry.
      */
-    lightSlow = async (ordinal, _opening, live) => {
+    lightSlow = (ordinal, _opening, live) => armedLight(recardArmed, ordinal, async (recard) => {
       if (!siblingPorts) throw new Error(`face h${ordinal} cannot light without a mounted face`);
       const custody = await noteCustody(ordinal);
-      const [entry] = await joinedFaceAuth({ ...siblingPorts, ordinals: () => [ordinal], current: () => live() });
-      if (!entry) throw new Error(`face h${ordinal} stands shut, or proves nothing here`);
-      if (!live()) throw new Error(`face h${ordinal} closed while it lit`);
-      classDeviceLedgers(vesselPrivate, [entry.atom.key]);
-      await daemonVm.lightFace(entry);
+      const [proved] = await joinedFaceAuth({ ...siblingPorts, ordinals: () => [ordinal], current: () => live() });
+      if (!proved) throw new Error(`face h${ordinal} stands shut, or proves nothing here`);
+      const entry = await withFaceMirrors(proved);
+      // A LIGHT THAT REFUSES DROPS THE MOUNT ITS PROOF LANDED: a refused light reaches no close, so no teardown would.
+      try {
+        if (!live()) throw new Error(`face h${ordinal} closed while it lit`);
+        classDeviceLedgers(vesselPrivate, [entry.atom.key]);
+        // A RECARD RIDES THIS LIGHT ALONE (its arm taken as the light started): the entry the face keeps (`faceEntries`) never
+        // carries it, so no reopen recards again.
+        await duringLight(lightingCustody, entry.personaGroupId, live, () => daemonVm.lightFace(recard ? { ...entry, recard: true } : entry));
+      } catch (error) { dropSiblingPlanes(entry.personaGroupId); throw error; }
       faceEntries.set(ordinal, entry);
       const lit: FaceLit = { atomKey: entry.atom.key, custody };
       if (!live()) return lit;
@@ -3906,6 +4069,7 @@ async function prepareNodeBootOn(
       catch (error) {
         // The awaited mint refused: release its provider too, so nothing of the face stands in the island.
         await daemonVm.dropFace(entry.atom.key);
+        dropSiblingPlanes(entry.personaGroupId);
         throw error;
       }
       if (!live()) return lit;
@@ -3926,9 +4090,12 @@ async function prepareNodeBootOn(
       });
       if (live()) await intentRelay?.refresh();
       return lit;
-    };
+    });
+    // The answer rides back to a caller that must know it (the custody door's recard reads a held or refused light as no light).
     lightFace = async (ordinal) => {
-      if ((await faceLife.light(ordinal)) === "refused") console.warn(`[lit-set] face h${ordinal} did not light`);
+      const answer = await faceLife.light(ordinal);
+      if (answer === "refused") console.warn(`[lit-set] face h${ordinal} did not light`);
+      return answer;
     };
     // THE LEND WATCH AND THE MOUNT'S ONE LIFE (`face-lend`): the mount's actor reads lit from this turn on; every custody event
     // sweeps the served set; a pūlama's close closes a face through its actor before `face.closed`; a lock that did not lock its
@@ -3942,7 +4109,7 @@ async function prepareNodeBootOn(
       custodyOpeningNow, noteCustody,
       faceStanding: async (face) => await standingCustody()?.faceStanding(face) ?? null,
       faceClosed: async (fcid, opening) => { await standingCustody()?.faceClosed?.(fcid, opening); },
-      lightFace: (ordinal) => lightFace(ordinal),
+      lightFace: async (ordinal) => { await lightFace(ordinal); },
       mountClosed,
       log: (line) => console.warn(line),
     });
@@ -4462,10 +4629,10 @@ async function prepareNodeBootOn(
       worldlineTrajectory: (input) => daemonVm.worldlineTrajectory(input),
       // ── the DURABLE sensorium-lifecycle executors ─────────────────────────────────────────────────
       // These route over manifest.json alone (no store holder, no captureFor) — the SAME pure verb
-      // functions the CLI-direct door drives, now reachable over the daemon wire so the MCP surface
-      // mirrors the CLI three-way. The reversibility×trust seat rides guardHitl (the mesh grid): an
-      // HITL verb (promote·retire·purge) REFUSES without an operator-approval capability — the surface
-      // twin of the CLI's `--approve`, so an irreversible verb crosses the SAME gate on both surfaces.
+      // functions the CLI-direct door drives, reachable over the daemon wire, where the reads answer the
+      // MCP seat and the hand verbs answer a terminal's ask alone: they run only where the reactor (main, over the
+      // delegate route) read the booked asker as a terminal (`cli`) and handed `hand: "hand"` on; each store
+      // function re-reads that value itself, and no caller's approval value reaches this far (hitl-reads-a-hand).
       senseRoster: async () => ({ sensoria: rosterSensoria() }),
       senseInspect: async (input) => {
         const insp = inspectSensorium(input.name);
@@ -4482,22 +4649,23 @@ async function prepareNodeBootOn(
         return reconcileSensorium(sensoriumDir(input.name)) as unknown as Record<string, unknown>;
       },
       sensePromote: async (input) => {
-        // in-loop human graduation — one-way by intent → HITL. The gate mirrors the CLI's requireApprove.
-        guardHitl("promote", input.approve);
+        // in-loop human graduation — one-way by intent → a hand verb; the store function re-reads the hand itself.
         return promoteSensorium(
-          input.name, input.storeSwap ? { storeSwapTarget: input.storeSwap } : {},
+          input.name, input.hand, input.storeSwap ? { storeSwapTarget: input.storeSwap } : {},
         ) as unknown as Record<string, unknown>;
       },
       senseRetire: async (input) => {
-        // a JUDGED deaccession (grounds required; move-not-delete) → HITL. The gate mirrors requireApprove.
-        guardHitl("retire", input.approve);
-        return retireSensorium(input.name, input.grounds) as unknown as Record<string, unknown>;
+        // a JUDGED deaccession (grounds required; move-not-delete) → a hand verb.
+        return retireSensorium(input.name, input.grounds, input.hand) as unknown as Record<string, unknown>;
       },
-      senseUnRetire: async (input) => unRetireSensorium(input.name) as unknown as Record<string, unknown>,
+      senseUnRetire: async (input) => {
+        // a restore re-lights what the house treats as live → a hand verb, as its retire.
+        return unRetireSensorium(input.name, input.hand) as unknown as Record<string, unknown>;
+      },
       sensePurge: async (input) => {
-        // the irreversible byte GC → HITL. purgeSensorium ITSELF guardHitls (defense-in-depth) and refuses
-        // a live sensorium (only a tombstone GCs), so the approval rides through as the reclaim authority.
-        return purgeSensorium(input.name, input.approve) as unknown as Record<string, unknown>;
+        // the irreversible byte GC → a hand verb. purgeSensorium ITSELF guardHitls (defense-in-depth) and refuses
+        // a live sensorium (only a tombstone GCs), so the hand rides through as the reclaim authority.
+        return purgeSensorium(input.name, input.hand) as unknown as Record<string, unknown>;
       },
     };
     const telemetryImpl: TelemetryProvider = {
@@ -4544,8 +4712,12 @@ async function prepareNodeBootOn(
     // wiki-act places slot-targeted residency verbs in the slot's wiki.
     // Promotion from a working slot stays in that slot's wiki island.
     registry.register("wiki-act", async (args, ctx) => {
-      const verb = String(args["verb"]);
-      const innerArgs = (args["args"] as Record<string, unknown>) ?? {};
+      // THE INNER VERB ROUTES AS A STRING OR REFUSES, never coerced: the socket's per-op hand gate reads the same field strictly.
+      const verb = routingString(args, "verb", "wiki-act");
+      if (verb === "") throw new VerbRefusal(ROUTING_ARG_MALFORMED, `${ROUTING_ARG_MALFORMED}: wiki-act names the verb it carries (\`verb\`)`);
+      // NO NESTING: a wiki-act carries a wiki's verb, never another wiki-act, so no envelope wraps one past a gate that reads one level.
+      if (verb.toLowerCase() === "wiki-act") throw new VerbRefusal(ROUTING_ARG_MALFORMED, `${ROUTING_ARG_MALFORMED}: wiki-act carries a wiki's verb, never another wiki-act`);
+      const innerArgs = routingObject(args, "args", "wiki-act");
       const destination = innerArgs["to-bag"] ?? innerArgs["bag"];
       // The daemon wiki stands on the daemon's own reach, never a wiki island, so its slots route nowhere.
       const slot = (bag: string): boolean => /^lar:\/\/\/ha\.ka\.ba\/wikis\/[^/]+\/(?:temp|draft|personal|working)$/.test(bag) && wikiSlugOfBag(bag) !== "daemon";
@@ -4557,6 +4729,8 @@ async function prepareNodeBootOn(
         ? wikiSlugOfBag(source) : null;
       const target = typeof args["wiki"] === "string" && args["wiki"]
         ? args["wiki"] : sourceWiki ?? destinationWiki ?? slotActiveWikiId;
+      // THE TW5 DOCS LIBRARY TAKES NO WRITE: neither as the wiki an act lands in, nor as its destination or source bag.
+      for (const name of [target, destination, source]) refuseTw5DocsWrite(typeof name === "string" ? name : null, "wiki-act");
       const activation = await wikiActivation.ensureActive(target);
       if (!activation.ok) throw new Error(`wiki-act: ${activation.cause}: ${activation.detail}`);
       return vmManager.placeWikiVerb(target, {
@@ -4565,6 +4739,21 @@ async function prepareNodeBootOn(
         requestedBy: ctx.invocation.requestedBy,
       });
     });
+    registry.register("wiki-render-out", async (args, ctx) => {
+      const recipe = args["recipe"];
+      if (typeof recipe !== "string" || recipe === "default") throw new Error("render-workbench-unbound: name a selected wiki with a disk workbench");
+      if (args["target"] !== undefined) throw new Error("render-output-visit-refused: output cannot visit another face");
+      // The island's reader and output grant answer first: nothing on disk resolves, mints or lays before the cap check passes.
+      const prepared = await islandAsk(daemonHolder)((ports) => askIslandVerb({
+        ...ports, verb: "wiki-render-out-prepare", args: args as Record<string, unknown>, requestedBy: ctx.invocation.requestedBy, requestId: newRequestId(),
+      })).answer;
+      const files = prepared["files"];
+      if (!Array.isArray(files)) throw new Error("render-output-substrate-refused: the island answered no prepared files");
+      const workbench = await renderWorkbenchOf(recipe);
+      if (!workbench) throw new Error(`render-workbench-unbound: wiki ${recipe} holds no bound workbench`);
+      return { ...publishWikiRender({ workbench, hearth: larHearthHome(), tracked: trackedTreeRoots(daemonBagsDir(), dirname(larHearthHome())), files: files as RenderFile[],
+        skipped: Array.isArray(prepared["skipped"]) ? prepared["skipped"] as string[] : [], overwrite: args["overwrite"] === true }) };
+    }, { summary: "Publish native wiki render output inside the selected wiki's bound workbench.", surfaces: ["cli"] });
     registry.register("residency", makeResidencyStatsReactor({ residency }));
     // THE EXEC LEI'S MAIN HALF: the daemon island routes `exec-lei-spend` here (it holds no key); this vessel spends one return
     // of the standing exec lei over the control document's swarm wiki, under the mounted face's trust and its own atom.
@@ -4597,10 +4786,17 @@ async function prepareNodeBootOn(
       wornFleet: () => wornFleetOf().worn,
       // The face this composition wears (lit and proved): a stage read answers `worn` off it.
       mountFace: () => mountFace,
+      // The relation each lit face stands proved under (the worn face's and every lit sibling's): a stage read names it, so a
+      // lit face whose stage will not read here still names the relation its root carries.
+      // It reads the lit set's own test (`litOrdinals`): the actor reads lit, and a sibling's own place session stands.
+      litRelation: (ordinal: number) => provedLitRelation(ordinal, {
+        mount: mountFace, wornRelation: wornDeviceRelation, lit: (o) => faceLife.state(o).kind === "lit",
+        siblings: [...siblingFaces].map(([group, f]) => ({ ordinal: f.ordinal, relation: f.relation, session: siblingSessions.get(group)?.cell.session() != null })),
+      }),
       // A face's local canon `bags/daemon-<F>`, named by the control document: a kahua lift reads its staged row there.
       faceCanon: faceCanonThroughControl(repo, readControlDoc),
       // A face founded on this standing composition lights beside the worn one at its birth.
-      ...(sovereign ? { lightFace: (handleIndex: number) => lightFace(handleIndex) } : {}),
+      ...(sovereign ? { lightFace: async (handleIndex: number) => { await lightFace(handleIndex); } } : {}),
       // A feed asks the island's `realm-feed` as the face, from this thread, over the host channel.
       askIsland: (verb, args, requestedBy, requestId) => {
         if (!daemonVm) throw new Error("the daemon island does not stand yet");
@@ -4719,13 +4915,13 @@ async function prepareNodeBootOn(
     // control), budget-enforced by the cap (the daemon bag always + pinBudget rotatable).
     // Distinct from the recipe-bag `pin-wiki`: this pins the wiki GRAIN in the collector.
     registry.register("wiki-hold", async (args) => {
-      const slug = String(args["slug"] ?? "");
+      const slug = routingString(args, "slug", "wiki-hold");
       if (!slug) throw new Error("wiki-hold: `slug` required");
       const held = await wikiActivation.hold(slug);
       return { verb: "wiki-hold", slug, held, holds: [...wikiActivation.held()], budget: wikiActivation.grant.pinBudget };
     });
     registry.register("wiki-release", async (args) => {
-      const slug = String(args["slug"] ?? "");
+      const slug = routingString(args, "slug", "wiki-release");
       if (!slug) throw new Error("wiki-release: `slug` required");
       wikiActivation.release(slug);
       return { verb: "wiki-release", slug, holds: [...wikiActivation.held()] };
@@ -4766,7 +4962,7 @@ async function prepareNodeBootOn(
     }
     void residency.pin(DAEMON_BAG_ID,       "boot:daemon");
     // Durable pin replay — BEFORE the sweeper starts, so a replayed pin never races the first
-    // idle-cool tick. Recovers whatever `lares pin` persisted under the daemon doc across a
+    // idle-cool tick. Recovers whatever `lares wiki pin` persisted under the daemon doc across a
     // restart (residency-tiers.mem#/pin-flag; see writePinTiddler/replayPinsFromDaemonDoc).
     void replayPinsFromDaemonDoc(daemonVm.daemonHandle, residency);
     residency.startSweeper();
@@ -4944,6 +5140,19 @@ async function prepareNodeBootOn(
       // above, so resolveDiskMirrors skips this for them — no double-project.
       { bagId: "self",          mirrorRoot: join(projectionRoot, REALMS_PROJECTION_DIR), scope: "self",    perWikiSlug: true, selfCanon: true, sourcedRoots: projection.sourcedRoots("bags"), realmBase: realmBaseOf("bags") },
     ];
+    // THE RENDER WORKBENCH reads the wiki's own recipe placement (the mirror bags it designates), as its mount does; a slug whose
+    // named workspace refused or stands unbound takes no fallback folder for derived bytes.
+    renderWorkbenchOf = async (slug) => {
+      if (workspaces.closed.includes(slug)) return null;
+      if (!vmManager.knowsSpec(slug)) {
+        const activation = await wikiActivation.ensureActive(slug);
+        if (!activation.ok) return null;
+      }
+      const working = wikiSlotUri(slug, "working");
+      const designated = vmManager.mirrorBagsOf(slug) ?? [];
+      if (!designated.includes(working)) return null;
+      return resolveDiskMirrors(diskMirrorGrant, designated, slug).find((entry) => entry.bagId === working)?.mirrorRoot ?? null;
+    };
     // R3 — TWO WIKIS IN ONE VESSEL: each mount resolves its OWN recipe's plugin-offerings
     // through the selector + CAS (`resolveNodeIslandPluginCids`), never one vessel-wide floor.
     // The shared Crossroads board materializes once and is read fresh per mount (a
@@ -5008,6 +5217,26 @@ async function prepareNodeBootOn(
   };
 
   // After live: settle boot pinning after every island has reached live.
+  /**
+   * THE SHORE'S FLUSH, ASKED OF EVERY ISLAND THAT MOUNTS A DISK SHORE (`shore` op `flush`). The daemon island answers on the
+   * island-ask road, through the control document; each resident wiki island whose recipe grants a mirror answers on the
+   * pool's direct verb road (`placeWikiVerb`), which crosses no main-thread document. So after the main engine falls the wiki
+   * islands still flush, and the daemon island's part names `engine-terminated` (its answer rides the document the fallen
+   * engine holds). A flush places no record: it writes what an island already holds to its mirrors.
+   */
+  const flushShores = (): Promise<ShoreFlushReading> => {
+    const requestedBy = `0x${activeAtom?.key ?? ""}`;
+    const asks: ShoreIslandAsk[] = [];
+    if (daemonHolder) {
+      asks.push({ island: "daemon", ask: () => islandAsk(daemonHolder)((ports) => askIslandVerb({ ...ports, verb: "shore", args: { op: "flush" }, requestedBy, requestId: newRequestId() })).answer });
+    }
+    for (const { wikiId } of vmManager?.inspect() ?? []) {
+      if ((vmManager.mirrorBagsOf(wikiId) ?? []).length === 0) continue;
+      asks.push({ island: `wiki:${wikiId}`, ask: () => vmManager.placeWikiVerb(wikiId, { verb: "shore", args: { op: "flush" }, requestedBy }) });
+    }
+    return flushEveryShore(asks);
+  };
+
   const afterLive: VesselOrchestration<VesselIslandPool>["afterLive"] = ({ wikiHandle: _wikiHandle }) => {
     // Boot DEMOTED to a pin. The daemon island stays always-live on its own (never
     // pooled, never collected — the "daemon bag always there"). The home wiki (the ONE
@@ -5019,6 +5248,9 @@ async function prepareNodeBootOn(
     void pushPromoteSnapshot?.().catch(console.warn);
     const stopPromoteWatch = promoteWiringRef?.watch();
     if (stopPromoteWatch) stood.push({ what: "the promote watcher", phase: "producers", down: stopPromoteWatch });
+    // THE TEARDOWN'S FLUSH PHASE ASKS EVERY SHORE FIRST: pushed after the Repo's own flush entries, it runs ahead of them (the
+    // registry stands down in reverse), so what the islands hold reaches the mirrors while the islands still stand.
+    stood.push(shoreFlushStandDown(flushShores));
     // THE WATCH OVER THE WORN FACE'S POOL (face-pools W1, W2): armed here, off the boot path (the arm hands back at once), over
     // `faces/<pet name>/`. It names the wake's stage edits, catches up once, and lands each settled wave by itself
     // (`poolIngestPorts`): an UNATTENDED INGEST wave per plane on the daemon island (`islandIngestSubmit`), the working layer
@@ -5051,6 +5283,9 @@ async function prepareNodeBootOn(
       // stand-down runs the same as a down. A face that holds no writer's seat in the workbench lands nothing: the island refuses
       // the wave by name and the shore weighs its carriers.
       const inWiki = async (slug: string, verb: string, args: Record<string, unknown>): Promise<Record<string, unknown>> => {
+        // The same gate as the socket and `askIslandVerb`: a fallen engine or an overweight wave places nothing.
+        const gated = islandAskRefusal(verb, args);
+        if (gated !== null) throw new IslandVerbRefused(verb, gated.message, gated.refusal);
         const activation = await wikiActivation.ensureActive(slug);
         if (!activation.ok) throw new Error(`wiki-act: ${activation.cause}: ${activation.detail}`);
         return vmManager.placeWikiVerb(slug, { verb, args, requestedBy });
@@ -5058,7 +5293,7 @@ async function prepareNodeBootOn(
       for (const { slug, dir, name, tree } of readWorkbenches()) {
         const wsLog = (line: string): void => console.log(`[workspaces] ${line}`);
         // The submit port's `wiki-act` carries the INGEST and names this wiki: it places in that wiki's island alone.
-        const wsSubmit = islandIngestSubmit((_verb, args) => inWiki(slug, String(args["verb"]), (args["args"] as Record<string, unknown>) ?? {}));
+        const wsSubmit = islandIngestSubmit((_verb, args) => inWiki(slug, routingString(args, "verb", "wiki-act"), routingObject(args, "args", "wiki-act")));
         const wsSense = (uris?: readonly string[]): Promise<unknown> => inWiki(slug, "shore", { op: "sense", ...(uris !== undefined ? { uris: [...uris] } : {}) });
         const wsWatch = armWorkspaceWatch({ workspace: dir, tree, name, ports: workspaceIngestPorts({ workspace: dir, slug, submit: wsSubmit, sense: wsSense, did: requestedBy, heads: poolHeads(tree), log: wsLog }), log: wsLog });
         workspaceWatches.add(wsWatch);
@@ -5131,6 +5366,7 @@ async function prepareNodeBootOn(
     },
     facePoolStandDown: async () => { await facePoolWatch?.down("down"); await Promise.all([...workspaceWatches].map((w) => w.down("down"))); },
     heldSaves: () => sealedRest.store.held(),
+    shoreFlush: flushShores,
     // THE DOCUMENT CENSUS reads this vessel's own stores, read-only: the pointers this composition reads back, the roles
     // it knows its documents by, and the sealed rest under the worn session for a sealed document no handle holds.
     docCensus: () => {
@@ -5218,14 +5454,16 @@ async function prepareNodeBootOn(
     faceLife,
     // Every face closes held: none lights again on this composition, whose key drops or which stands down next. A whole lock
     // closes strict: a face whose saves did not seal rejects, and its key stays open.
-    closeFaces: async (reason, options) => { await faceLife.closeAll(reason, { hold: true, ...(options?.strict === true ? { strict: true } : {}), ...(options?.stop === true ? { stop: true } : {}) }); },
+    closeFaces: (reason, options) => { recardArmed.clearAll(); return faceLife.closeAll(reason, { hold: true, ...(options?.strict === true ? { strict: true } : {}), ...(options?.stop === true ? { stop: true } : {}) }); },
     releaseFace,
     releaseFaces: () => { for (const ordinal of faceLife.ordinals()) releaseFace(ordinal); },
-    holdFace: (ordinal) => faceLife.hold(ordinal),
+    holdFace: (ordinal) => { recardArmed.clear(ordinal); return faceLife.hold(ordinal); },
     // Every face reads, none skipped: each past CLOSED takes its hold, and one standing lit answers no.
-    holdFaces: () => faceLife.ordinals().map((ordinal) => faceLife.hold(ordinal)).every(Boolean),
+    holdFaces: () => { recardArmed.clearAll(); return faceLife.ordinals().map((ordinal) => faceLife.hold(ordinal)).every(Boolean); },
     refusedLights: () => faceLife.refusedLights(),
     replayLend: () => replayLendNow(),
+    armRecard: (ordinal) => { recardArmed.arm(ordinal); },
+    disarmRecard: (ordinal) => { const left = recardArmed.armed(ordinal); recardArmed.clear(ordinal); return left; },
     onMountClosed: (listener) => { mountClosedListeners.add(listener); return () => { mountClosedListeners.delete(listener); }; },
     siblingFaceOf: (presenter) => { const key = bareFaceKey(presenter); return siblingOfFace(key) !== null ? key : undefined; },
     daemonVm:         () => daemonVm,
@@ -5346,7 +5584,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
   // NO EARLY READY: the composition returns standing on its working layer (red 3).
   await p.hostWorkingMounted();
   sayCapMints(p.repo, (line) => console.log(`[lararium] ${line}`));
-  let down: Promise<void> | null = null;
+  let down: Promise<FacesClosed> | null = null;
   return {
     islandCaps: p.islandCaps,
     activeWikiId: p.slotActiveWikiId(),
@@ -5362,7 +5600,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     daemon: p.daemonVm(),
     restartDaemonIsland: p.restartDaemonIsland,
     daemonIslandState: p.daemonIslandState,
-    lightFace: p.lightFace, dropFace: p.dropFace, mountOrdinal: p.mountOrdinal, litOrdinals: p.litOrdinals, faceLife: p.faceLife, closeFaces: p.closeFaces, releaseFace: p.releaseFace, releaseFaces: p.releaseFaces, holdFace: p.holdFace, holdFaces: p.holdFaces, refusedLights: p.refusedLights, replayLend: p.replayLend, onMountClosed: p.onMountClosed, siblingFaceOf: p.siblingFaceOf, restartWiki: p.restartWiki, promoteActs: p.promoteActs,
+    lightFace: p.lightFace, dropFace: p.dropFace, mountOrdinal: p.mountOrdinal, litOrdinals: p.litOrdinals, faceLife: p.faceLife, closeFaces: p.closeFaces, releaseFace: p.releaseFace, releaseFaces: p.releaseFaces, holdFace: p.holdFace, holdFaces: p.holdFaces, refusedLights: p.refusedLights, replayLend: p.replayLend, armRecard: p.armRecard, disarmRecard: p.disarmRecard, onMountClosed: p.onMountClosed, siblingFaceOf: p.siblingFaceOf, restartWiki: p.restartWiki, promoteActs: p.promoteActs,
     wikiDocUrl:       result.wikiHandle?.url ?? null,
     catalogHandleUrl: p.catalogHandle.url,
     daemonDocUrl:     p.daemonDocUrl(),
@@ -5379,6 +5617,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     facePoolStandDown: p.facePoolStandDown,
     heldSaves:       p.heldSaves,
     docCensus:       p.docCensus,
+    shoreFlush:      p.shoreFlush,
     floorKey:        p.floorKey,
     backupDoor:      p.backupDoor,
     oracleDocUrl:     result.assembly.islandHandle.url,
@@ -5391,9 +5630,10 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     teardown: (closeSessions) => (down ??= (async () => {
       // EVERY FACE CLOSES THROUGH ITS ACTOR FIRST (a stop, a slide, a wear change): its visits refuse, its work settles and its
       // saves drain before anything below flushes or tears down, and before any next composition lights a face.
-      await p.closeFaces("the composition stands down", { stop: true });
+      const closed = await p.closeFaces("the composition stands down", { stop: true });
       if (closeSessions) p.onShutdown({ what: "the external sessions", phase: "flush", down: closeSessions });
       await p.teardown();
+      return closed;
     })()),
     floorGates: p.floorGates,
     siblingChannel: p.siblingChannel,

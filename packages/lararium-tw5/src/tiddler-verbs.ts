@@ -5,8 +5,10 @@
  *
  * The contract every skin (this, the CLI's `lares tiddler|wiki`, the MCP seat's `tiddler_*|wiki_*`) carries verbatim:
  *
- *   wiki-filter    { recipe, filter, fields?, after?, limit?, maxBytes? } → { recipe, filter, titles | rows, total, next, asOf, withheld? }
- *   tiddler-get    { recipe, title, slot?, fields?, text?, maxBytes? }    → { recipe, title, tiddler: { fields, hash, textHash, bag, position, family?, orphan?, omitted? } | null }
+ *   wiki-filter    { recipe, filter, fields?, collapse?, after?, limit?, maxBytes? } → { recipe, filter, titles | rows, total, next, asOf, withheld? }
+ *   tiddler-get    { recipe, title, meme?, grain?, slot?, after?, fields?, maxBytes? }
+ *                                                                         → { has, recipe, title, lens, tiddler?: { fields, hash, textHash, bag, position, family?, orphan?, omitted? } | null,
+ *                                                                             meme?: { uri, text?, canonicalHash, bytes, slots, slot?, page? }, grain, next, note? }
  *   wiki-render    { recipe, title | text, type?, form?, after?, maxBytes? } → { recipe, title, form, text, bytes, truncated, next }
  *   tiddler-put    { recipe, title, text?, fields?, unset?, tagsAdd?, tagsRemove?, base?, create? }
  *                                                                         → { recipe, title, decision: put|noop|conflict|exists, bag, created, changed, hash, textHash, position, family? }
@@ -42,7 +44,7 @@
  * so a record the face may not read enters no consequence. A plain tiddler leaves. A meme root or slot answers its
  * consequence and `decision: "refused"` (`refusal: "tiddler-delete-in-a-family"`) unless the call names the family act
  * (`family: true`); with it the consequence's acts land as ONE change per layer. A slot its parent
- * calls by `kahea` refuses even then, since the parent's text would have to move: that rides `meme put`.
+ * calls by `kahea` refuses even then, since the parent's text would have to move: that rides `tiddler put --meme`.
  *
  * A DELETE DELETES PLAINLY; ONLY A LOWER LAYER MAKES IT A CHOICE (lar:///ha.ka.ba/lares/api/pono/kapae #/core-cut). With
  * no `mode` named, each record leaves its own layer to absent (`mode: "plain"` in the answer): no tombstone rises and no
@@ -65,22 +67,28 @@
  */
 
 import {
-  NoWorkingLayerRefusal, VerbRefusal, canonicalJsonBytes, isVolatileVmUri, offerWithheldTitle, refuseEffectLedgerWrite, refuseRenderedWrite, admitSeatExecutable, renderedWriteFault, requireKahuReach, RENDERED_DERIVES_REASON, sha256HexBytesSync, wikiSlotKindOf, DAEMON_WIKI_SLUG,
+  NoWorkingLayerRefusal, VerbRefusal, verifyCidBytes, canonicalJsonBytes, refuseEffectLedgerWrite, refuseRenderedWrite, admitSeatExecutable, executableClassOf, renderedWriteFault, requireKahuReach, RENDERED_DERIVES_REASON, sha256HexBytesSync, wikiSlotKindOf, DAEMON_WIKI_SLUG,
   type ChangeOrigin, type CompositeStore, type KahuReachSource, type LarTiddlerStore,
 } from "@lararium/mesh";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { consequence, familyOf, retractsOf, rootAddressOf, tombstonesOf, type Consequence, type DeleteMode, type FamilyPosition, type FamilyView } from "@lararium/mesh/family";
-import { anchorBagOf, readContainer } from "./meme-verbs.js";
-import { wikiFamilyView, stageMemeTitle, STAGE_PATH_SHAPE_CODE, STAGE_MEME_PREFIX } from "./place-meme.js";
-import { localFilter } from "./record-port-projection.js";
-import { pageFilterAnswer, checkFilter, WIKI_FILTER_ROWS, WIKI_FILTER_BYTES, WIKI_ANSWER_BYTES_MAX, type FilterRow, type FilterWiki } from "./filter-page.js";
+import { anchorBagOf, readBagStore, readContainer, type MemeVerbOptions } from "./meme-verbs.js";
+import { isMemeRoot, readMeme, wikiFamilyView, stageMemeTitle, STAGE_PATH_SHAPE_CODE, STAGE_MEME_PREFIX, type MemeSink } from "./place-meme.js";
+import { READ_PAGE_BYTES, byteLength, cardBase, memeBase, readBase, grainOf, hasLine, memeGradient, param, slotHasLines, tagTokens, type CarrierSlot, type GrainEcho, type ReadGrain } from "./read-gradient.js";
+import { skinnyCid } from "./lazy-resolver.js";
+import { readCarrierShape } from "./carrier-shape.js";
+import type { TiddlerFields } from "./deserializer.js";
+import { alertNamedTitles, isHouseAlert, isOpenAlert, redactedAlertFields, staysHome, withheldFromReads } from "./stay-home.js";
+import { canonFiltersText, functionPragmasOf, houseWidgetOf, refuseUnknownHouseOperators } from "./house-filters.js";
+import { pageFilterAnswer, filterCursor, checkFilter, WIKI_FILTER_ROWS, WIKI_FILTER_BYTES, WIKI_ANSWER_BYTES_MAX, type FilterRow, type FilterWiki } from "./filter-page.js";
 import { optionalStringArg, stringArg } from "./handler-args.js";
 import type { TW5Engine } from "./tw5-vm.js";
 import { wornOrigin } from "./verb-dispatcher.js";
 import { wikiWearsNext } from "./island-recipe.js";
+import { isTw5DocsBag, refuseTw5DocsWrite } from "./tw5-docs-library.js";
 import type { VerbContext, VerbReactor } from "./verb-dispatcher.js";
 
-export interface TiddlerVerbOptions {
+export interface TiddlerVerbOptions extends Partial<Pick<MemeVerbOptions, "reach" | "slotStore" | "realmWritable" | "recipeOf" | "writeSlot" | "faceLane">> {
   readonly composite: CompositeStore;
   /** The daemon island's engine: its live `$tw.wiki` answers every verb here. Read lazily, at verb time. */
   readonly tw5: Pick<TW5Engine, "$tw">;
@@ -95,6 +103,8 @@ export interface TiddlerVerbOptions {
   readonly kahuReach?: KahuReachSource;
   /** A house canon bag's floor snapshot, where the floor this island mounted carries one (it rests public by CID). */
   readonly floorCanon?: (bag: string) => LarTiddlerStore | null;
+  /** The corpus CAS, by CID alone: the `resolved` grain reads a pointer's bytes here and verifies them. Absent: a pointer answers its handle. */
+  readonly resolveByCid?: (cid: string) => Promise<Uint8Array | null>;
 }
 
 /** What the named wikis' door answers: the wiki's own engine and composition, and the bag a read gates on where no write layer stands. */
@@ -127,14 +137,16 @@ function namesArg(raw: unknown): string[] | null {
   return list.map((name) => String(name).trim()).filter((name) => name !== "");
 }
 
-const flagOff = (raw: unknown): boolean => raw === false || raw === "false" || raw === "0";
 const flagOn = (raw: unknown): boolean => raw === true || raw === "true" || raw === "1";
 
 // ── THE ENGINE, AS THIS DOOR READS IT ─────────────────────────────────────────────────────────────────
 
 interface EngineTiddler { fields: Record<string, unknown>; getFieldStrings(): Record<string, string> }
 interface EngineWiki extends FilterWiki {
-  filterTiddlers(filter: string): string[];
+  filterTiddlers(filter: string, widget?: unknown, iterator?: unknown): string[];
+  makeTiddlerIterator(titles: string[]): unknown;
+  parseTiddler(title: string): unknown;
+  makeWidget(parser: unknown, options: { variables: Record<string, string> }): { render(container: unknown, nextSibling: null): void };
   getTiddler(title: string): EngineTiddler | undefined;
   tiddlerExists(title: string): boolean;
   addTiddler(tiddler: unknown): void;
@@ -149,6 +161,8 @@ interface EngineWiki extends FilterWiki {
 }
 interface Engine {
   wiki: EngineWiki;
+  rootWidget: unknown;
+  fakeDocument: { createElement(name: string): { innerHTML: string; textContent: string } };
   Tiddler: new (...fields: Array<Record<string, unknown>>) => EngineTiddler;
   utils: { parseStringArray(value: string): string[] | null; stringifyList(list: readonly string[]): string };
 }
@@ -187,7 +201,7 @@ interface Anchor {
 }
 
 const refuseUnreached = (verb: string, why: string): VerbRefusal =>
-  new VerbRefusal("wiki-unreached", `wiki-unreached: ${verb} — ${why}; \`lares wiki list\` names the wikis this face reaches, and \`--recipe default\` names its daemon wiki.`);
+  new VerbRefusal("wiki-unreached", `wiki-unreached: ${verb} — ${why}; \`lares wiki status\` names the wikis this face reaches, and \`--recipe default\` names its daemon wiki.`);
 
 /**
  * THE NAMED WIKI'S OPTIONS: where the call names a registered wiki, the options its own engine answers under, or null where
@@ -197,6 +211,8 @@ const refuseUnreached = (verb: string, why: string): VerbRefusal =>
 async function namedWikiOptions(opts: TiddlerVerbOptions, args: Readonly<Record<string, unknown>>, verb: string, write: boolean): Promise<TiddlerVerbOptions | null> {
   if (opts.wiki) return null;
   const target = readContainer(args, verb);
+  // THE TW5 DOCS LIBRARY TAKES NO WRITE, named as a wiki or as a bag (`tw5-docs-name`).
+  if (write) { refuseTw5DocsWrite(target.recipe, verb); refuseTw5DocsWrite(target.bag, verb); }
   if (target.recipe === null || target.recipe === "default") return null;
   const slug = target.recipe;
   if (slug === DAEMON_WIKI_SLUG) throw refuseUnreached(verb, `the daemon wiki answers to \`recipe: "default"\` alone`);
@@ -223,7 +239,12 @@ function wikiOf(opts: TiddlerVerbOptions, args: Readonly<Record<string, unknown>
   const target = readContainer(args, verb);
   const recipe = opts.wiki?.slug ?? "default";
   if (target.recipe !== recipe) {
-    throw new VerbRefusal("wiki-not-anchored", `wiki-not-anchored: ${verb} answers a wiki through its own engine; ${target.bag ? `bag "${target.bag}" names one bag and no wiki` : `wiki "${target.recipe}" names another engine than this one`}. Name the wiki: \`--recipe <slug>\` (\`recipe: "default"\` for the daemon wiki). The meme verbs read one bag's store.`);
+    const write = /^tiddler-(put|delete)$/.test(verb);
+    const door = write
+      ? "A bag takes a record through the meme door: `lares tiddler put --meme --bag <slug>` · `lares tiddler delete --meme --bag <slug>`."
+      : "A bag reads through its own doors: `lares tiddler get <title> --bag <slug>` (one record; `--meme` a meme) · `lares tiddler get --meme --bag <slug>` (its roots).";
+    const named = target.bag ? `bag "${target.bag}" names one bag and no wiki` : `wiki "${target.recipe}" names another engine than this one`;
+    throw new VerbRefusal("wiki-not-anchored", `wiki-not-anchored: ${verb} runs in a wiki's own engine; ${named}. ${door} To use ${verb}, name the wiki: \`--recipe <slug>\` (\`recipe: "default"\` for the daemon wiki).`);
   }
   return { recipe, slug: opts.wiki?.slug ?? DAEMON_WIKI_SLUG };
 }
@@ -252,10 +273,10 @@ function anchorOf(opts: TiddlerVerbOptions, args: Readonly<Record<string, unknow
  * trail among it (each call's invocation rests at `…/verbs/<requestId>` while its reactor runs), never shared truth.
  * A read that counted it would move the answer it reads, and a paged filter would refuse its own cursor on every call.
  */
-const staysHome = (title: string): boolean => offerWithheldTitle(title) || localFilter(title) || isVolatileVmUri(title);
 
-function refuseWithheld(title: string, verb: string): void {
-  if (staysHome(title)) throw new VerbRefusal("tiddler-withheld", `tiddler-withheld: "${title}" stays home (a temp, state, volatile-VM, control, secret or cap/** title); ${verb} neither reads nor writes it.`);
+
+function refuseWithheld(title: string, verb: string, read = false): void {
+  if (read ? withheldFromReads(title) : staysHome(title)) throw new VerbRefusal("tiddler-withheld", `tiddler-withheld: "${title}" stays home (a temp, state, volatile-VM, control, secret or cap/** title); ${verb} neither reads nor writes it.`);
 }
 
 /**
@@ -265,7 +286,8 @@ function refuseWithheld(title: string, verb: string): void {
  * A record with no stamp belongs to the engine itself (a shadow, a boot tiddler). One ask per bag per verb.
  */
 async function reachOf(opts: TiddlerVerbOptions, anchor: Anchor, cap: VerbContext["cap"]): Promise<(bag: string | null) => Promise<boolean>> {
-  const proof = await cap("read", anchor.bag);
+  // The TW5 docs library rests public: its bag carries no house record, so every face reads it without a cap ask.
+  const proof = isTw5DocsBag(anchor.bag) ? { ok: true as const } : await cap("read", anchor.bag);
   if (!proof.ok) throw new Error(`cap-denied: read on ${anchor.bag} required (${proof.reason ?? "no reason"})`);
   const memo = new Map<string, Promise<boolean>>([[anchor.bag, Promise.resolve(true)]]);
   return (bag) => {
@@ -292,21 +314,51 @@ type Visible = (title: string, tiddler: EngineTiddler | undefined) => boolean;
  * lives for one verb call. The wiki's indexes (tags, fields, backlinks) still name hidden TITLES; the verb's answer
  * gate drops those and counts them `withheld`. Writes never ride the view.
  */
-function readerView(wiki: EngineWiki, visible: Visible): EngineWiki {
+/**
+ * A house alert as the view answers it: its open fields alone, each secret shape redacted (`redactedAlertFields`). The view's
+ * `visible` already shut every alert whose kind stays home, or that names a record this reader may not read.
+ */
+function redactedAlert(tiddler: EngineTiddler): EngineTiddler {
+  const title = String(tiddler.fields["title"] ?? "");
+  const fields = redactedAlertFields(title, tiddler.fields as Record<string, unknown>) ?? { title };
+  const Make = (tiddler as unknown as { constructor: new (...fields: unknown[]) => EngineTiddler }).constructor;
+  return new Make(fields);
+}
+
+function readerView(wiki: EngineWiki, visible: Visible, house?: { text: string; document: { createElement(tag: string): unknown } } | null): EngineWiki {
   const view = Object.create(wiki) as EngineWiki & Record<string, unknown>;
   view["filterCache"] = Object.create(null);
   view["filterCacheCount"] = 0;
   view["caches"] = Object.create(null);
   view["globalCache"] = Object.create(null);
   const shown = (title: string): boolean => visible(title, wiki.getTiddler(title));
-  view.getTiddler = (title) => { const tiddler = wiki.getTiddler(title); return tiddler && visible(title, tiddler) ? tiddler : undefined; };
+  view.getTiddler = (title) => {
+    const tiddler = wiki.getTiddler(title);
+    if (!tiddler || !visible(title, tiddler)) return undefined;
+    return isHouseAlert(title) ? redactedAlert(tiddler) : tiddler;
+  };
   view.tiddlerExists = (title) => wiki.tiddlerExists(title) && shown(title);
-  view.each = (callback) => wiki.each((tiddler, title) => { if (visible(title, tiddler)) callback(tiddler, title); });
-  view.eachShadow = (callback) => wiki.eachShadow((tiddler, title) => { if (visible(title, tiddler)) callback(tiddler, title); });
-  view.eachTiddlerPlusShadows = (callback) => wiki.eachTiddlerPlusShadows((tiddler, title) => { if (visible(title, tiddler)) callback(tiddler, title); });
-  view.eachShadowPlusTiddlers = (callback) => wiki.eachShadowPlusTiddlers((tiddler, title) => { if (visible(title, tiddler)) callback(tiddler, title); });
+  view.each = (callback) => wiki.each((tiddler, title) => { if (visible(title, tiddler)) callback(isHouseAlert(title) ? redactedAlert(tiddler) : tiddler, title); });
+  view.eachShadow = (callback) => wiki.eachShadow((tiddler, title) => { if (visible(title, tiddler)) callback(isHouseAlert(title) ? redactedAlert(tiddler) : tiddler, title); });
+  view.eachTiddlerPlusShadows = (callback) => wiki.eachTiddlerPlusShadows((tiddler, title) => { if (visible(title, tiddler)) callback(isHouseAlert(title) ? redactedAlert(tiddler) : tiddler, title); });
+  view.eachShadowPlusTiddlers = (callback) => wiki.eachShadowPlusTiddlers((tiddler, title) => { if (visible(title, tiddler)) callback(isHouseAlert(title) ? redactedAlert(tiddler) : tiddler, title); });
   view.allTitles = () => wiki.allTitles().filter(shown);
   view.allShadowTitles = () => wiki.allShadowTitles().filter(shown);
+  if (house) {
+    // THE HOUSE'S FUNCTIONS COME FROM CANON ALONE: a filter run with no widget of its own runs under the widget the canon
+    // carrier's text builds (house-filters), never under the wiki's `$:/tags/Global` imports, which a working-layer record shadows.
+    let widget: unknown;
+    const run = wiki.filterTiddlers as unknown as (this: unknown, filter: string, widget?: unknown, source?: unknown) => string[];
+    view["filterTiddlers"] = (filter: string, given?: unknown, source?: unknown): string[] => {
+      refuseUnknownHouseOperators(filter);
+      if (given === undefined) {
+        // EVERY FILTER THE CALLER GIVES NO WIDGET RUNS UNDER THE HOUSE WIDGET, an indirect one (`[subfilter{$:/x}]`) included.
+        widget ??= houseWidgetOf(view as never, house.document, house.text);
+        given = widget;
+      }
+      return run.call(view, filter, given, source);
+    };
+  }
   return view;
 }
 
@@ -315,15 +367,29 @@ function readerView(wiki: EngineWiki, visible: Visible): EngineWiki {
  * each bag any record names answers the face's reach once, so the predicate itself reads no cap and stays synchronous
  * inside the engine.
  */
-async function viewFor(opts: TiddlerVerbOptions, anchor: Anchor, cap: VerbContext["cap"]): Promise<{ view: EngineWiki; visible: Visible; mayRead: (bag: string | null) => Promise<boolean> }> {
+async function viewFor(opts: TiddlerVerbOptions, anchor: Anchor, cap: VerbContext["cap"]): Promise<{ view: EngineWiki; visible: Visible; mayRead: (bag: string | null) => Promise<boolean>; pragmas: string }> {
   const mayRead = await reachOf(opts, anchor, cap);
   const wiki = anchor.engine.wiki;
   const bags = new Set<string>();
   wiki.each((tiddler) => { const bag = tiddler.fields[ORIGIN_BAG]; if (typeof bag === "string" && bag !== "") bags.add(bag); });
   const hidden = new Set<string>();
   for (const bag of bags) if (!(await mayRead(bag))) hidden.add(bag);
-  const visible: Visible = (title, tiddler) => !staysHome(title) && !hidden.has(String(tiddler?.fields[ORIGIN_BAG] ?? ""));
-  return { view: readerView(wiki, visible), visible, mayRead };
+  // AN ALERT ANSWERS ONLY A READER OF WHAT IT NAMES: each open alert that names a record reads absent where that record stands
+  // in a bag this reader may not read, or stands nowhere this reader can weigh (a title the wiki does not hold names no bag
+  // the door can check, so it shuts). The alert holds no bag of its own, so `hidden` alone never reaches it.
+  const shutAlerts = new Set<string>();
+  for (const title of wiki.allTitles()) {
+    if (!isOpenAlert(title)) continue;
+    for (const named of alertNamedTitles(title, wiki.getTiddler(title)?.fields ?? {})) {
+      const record = wiki.getTiddler(named);
+      const bag = record ? record.fields[ORIGIN_BAG] : undefined;
+      if (!record || (typeof bag === "string" && bag !== "" && hidden.has(bag))) { shutAlerts.add(title); break; }
+    }
+  }
+  const visible: Visible = (title, tiddler) => !withheldFromReads(title) && !shutAlerts.has(title) && !hidden.has(String(tiddler?.fields[ORIGIN_BAG] ?? ""));
+  const text = await canonFiltersText(opts.composite, wiki, mayRead);
+  const document = (engineOf(opts) as unknown as { fakeDocument?: { createElement(tag: string): unknown } }).fakeDocument;
+  return { view: readerView(wiki, visible, document ? { text, document } : null), visible, mayRead, pragmas: functionPragmasOf(text) };
 }
 
 /**
@@ -418,6 +484,25 @@ async function requireWrite(opts: TiddlerVerbOptions, anchor: Anchor, cap: VerbC
 
 // ── wiki-filter ───────────────────────────────────────────────────────────────────────────────────────
 
+/**
+ * ONE ROW'S COLLAPSED FORM. A meme root answers the bytes of its whole carrier and its slots (`{slot, bytes, first}`), built by the
+ * skinny grain of `memeGradient`, the builder `tiddler get --meme --skinny` reads; a pointer answers the `size` it names; any other
+ * record answers the bytes of its text. The slots unfold one at a time by `tiddler get <root> --meme --slot <name>`.
+ */
+async function collapseOf(
+  sink: Pick<MemeSink, "titles" | "read">, title: string, fields: Record<string, string>,
+): Promise<{ bytes: number; slots?: CarrierSlot[] }> {
+  if (isMemeRoot(title, fields) && !isPointer(fields)) {
+    const meme = await readMeme(title, sink);
+    if (meme !== null) {
+      const read = memeGradient(meme, { grain: "skinny" });
+      return { bytes: read.bytes, slots: read.slots };
+    }
+  }
+  if (isPointer(fields)) return { bytes: Number(fields["size"]) || 0 };
+  return { bytes: byteLength(fields["text"] ?? "") };
+}
+
 export const makeWikiFilterReactor = everyWiki("wiki-filter", false, (opts: TiddlerVerbOptions): VerbReactor => {
   return async (args, ctx) => {
     const anchor = anchorOf(opts, args, "wiki-filter");
@@ -435,16 +520,38 @@ export const makeWikiFilterReactor = everyWiki("wiki-filter", false, (opts: Tidd
       else withheld++;
     }
     const names = namesArg(args["fields"]);
-    const rowOf = names === null ? undefined : (title: string): FilterRow => {
+    const collapse = flagOn(args["collapse"]);
+    const limit = countArg(args["limit"], WIKI_FILTER_ROWS, 1, WIKI_FILTER_ROWS);
+    const after = optionalStringArg(args, "after");
+    // THE COLLAPSE LENS: each row of the page's window carries its bytes, and a meme root its slots, read through the one skinny
+    // builder (`collapseOf`: `readMeme` and `memeGradient` at the skinny grain, the has-stack `tiddler get --meme --skinny` answers).
+    // The window reads ahead of the page law, which stays sync; a row the byte cap leaves for the next page costs one wasted read.
+    const collapsed = new Map<string, { bytes: number; slots?: CarrierSlot[]; withheld?: number }>();
+    if (collapse) {
+      // The reader's titles and the wiki's read once for the whole window, never once per row.
+      const readable = view.allTitles();
+      const held = wiki.allTitles();
+      const sink = { titles: () => readable, read: (t: string) => (view.getTiddler(t) as { fields?: TiddlerFields } | undefined)?.fields };
+      const { offset } = filterCursor(titles, after);
+      const readableSet = new Set(readable);
+      for (const title of titles.slice(offset, offset + limit)) {
+        const row = await collapseOf(sink, title, readRecord(view.getTiddler(title)!).fields);
+        // As `tiddler get --meme` names it: slot records this face may not read never enter the slots, and the row says so.
+        const prefix = `${title}#`;
+        const withheldSlots = row.slots === undefined ? 0 : held.filter((t) => t.startsWith(prefix) && !staysHome(t) && !readableSet.has(t)).length;
+        collapsed.set(title, withheldSlots > 0 ? { ...row, withheld: withheldSlots } : row);
+      }
+    }
+    const rowOf = names === null && !collapse ? undefined : (title: string): FilterRow => {
       const tiddler = view.getTiddler(title);
       const held = tiddler ? readRecord(tiddler).fields : {};
       const fields: Record<string, string> = {};
-      for (const name of names) if (typeof held[name] === "string") fields[name] = held[name]!;
-      return { title, fields };
+      for (const name of names ?? []) if (typeof held[name] === "string") fields[name] = held[name]!;
+      return { title, fields, ...collapsed.get(title) };
     };
     const page = pageFilterAnswer(titles, {
-      after: optionalStringArg(args, "after"),
-      limit: countArg(args["limit"], WIKI_FILTER_ROWS, 1, WIKI_FILTER_ROWS),
+      after,
+      limit,
       maxBytes: countArg(args["maxBytes"], WIKI_FILTER_BYTES, 64, WIKI_ANSWER_BYTES_MAX),
       ...(rowOf ? { rowOf } : {}),
     });
@@ -464,45 +571,296 @@ function slotTitle(root: string, slot: string): string {
   return `${root}${slot.startsWith("#") ? slot : `#/${slot.replace(/^\/+/, "")}`}`;
 }
 
+/** What a get answers of a record: the named fields, or every field less the text the grain leaves home, under the byte cap (the largest fields leave first, by name). */
+function narrowRecord(fields: Record<string, string>, title: string, args: Readonly<Record<string, unknown>>, textHome: boolean, carryWhole = false): { shown: Record<string, string>; omitted: string[] } {
+  const names = namesArg(args["fields"]);
+  const omitted: string[] = [];
+  let shown: Record<string, string> = fields;
+  if (names !== null) {
+    shown = { title };
+    for (const name of names) if (typeof fields[name] === "string") shown[name] = fields[name]!;
+  } else if (textHome && typeof fields["text"] === "string") {
+    const { text: _text, ...rest } = fields;
+    shown = rest;
+    omitted.push("text");
+  }
+  // THE BYTE CAP: the largest fields leave first, by name, and the hashes still speak for the whole record. AN EXPLICIT FAT (or
+  // whole, or resolved) READ CARRIES THE RECORD WHOLE: the gradient's default answers the card past a page, so a caller who asks
+  // for the text gets it, unless it names its own cap.
+  const maxBytes = countArg(args["maxBytes"], WIKI_ANSWER_BYTES_MAX, 256, WIKI_ANSWER_BYTES_MAX);
+  if (!(carryWhole && args["maxBytes"] === undefined) && bytesOf(shown) > maxBytes) {
+    shown = { ...shown };
+    for (const name of Object.keys(shown).filter((n) => n !== "title").sort((x, y) => bytesOf(shown[y]) - bytesOf(shown[x]))) {
+      if (bytesOf(shown) <= maxBytes) break;
+      delete shown[name];
+      omitted.push(name);
+    }
+  }
+  return { shown, omitted };
+}
+
+/** Base64 of raw bytes, engine-agnostic (no Buffer on a browser island). */
+function base64Of(bytes: Uint8Array): string {
+  let bin = "";
+  for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return btoa(bin);
+}
+
+/** The pointer fields a has line carries verbatim. */
+const POINTER_FIELDS = ["_canonical_uri", "textCid", "_integrity", "size"] as const;
+
+/** A POINTER: a record that names its body by address (`_canonical_uri`, `textCid`, `_is_skinny`) and holds no text of it. */
+const isPointer = (fields: Record<string, string>): boolean =>
+  typeof fields["text"] !== "string" && (typeof fields["_canonical_uri"] === "string" || typeof fields["textCid"] === "string" || fields["_is_skinny"] !== undefined);
+
+/** A blob type: a body TiddlyWiki carries as base64 (an image, a font, a binary), which a read leaves home unless asked. */
+function isBlob(engine: Engine, fields: Record<string, string>): boolean {
+  const type = fields["type"] ?? "";
+  const info = (engine as unknown as { config?: { contentTypeInfo?: Record<string, { encoding?: string }> } }).config?.contentTypeInfo;
+  return info?.[type]?.encoding === "base64" || /^(image|audio|video|font)\//.test(type) || fields["encoding"] === "base64";
+}
+
+/** Where an answer came from, as the has line's provenance names it: the wiki (and the layer that answered) or the bag. */
+interface Provenance { readonly recipe?: string; readonly bag?: string; readonly layer?: string | null; readonly floor?: boolean }
+const provenanceParams = (from: Provenance): string[] => [
+  ...(from.recipe !== undefined ? [param("recipe", from.recipe)] : []),
+  ...(from.bag !== undefined ? [param("bag", from.bag)] : []),
+  ...(from.layer ? [param("layer", from.layer)] : []),
+  ...(from.floor ? [param("floor", true)] : []),
+];
+
+/** The record's has line: provenance, the record's own tags, the wire's measure keys, the pointer fields verbatim, the tagline. */
+function recordHas(title: string, fields: Record<string, string>, from: Provenance, place: { position: string; family?: string | null }, base: string): string {
+  const measures = [
+    ...(fields["type"] ? [param("type", fields["type"])] : []),
+    param("position", place.position),
+    ...(place.family && place.family !== title ? [param("family", place.family)] : []),
+    ...(typeof fields["text"] === "string" ? [param("bytes", byteLength(fields["text"]))] : []),
+    param("base", base),
+    ...POINTER_FIELDS.filter((name) => typeof fields[name] === "string" && fields[name] !== "").map((name) => param(name, fields[name]!)),
+  ];
+  return hasLine(title, [...provenanceParams(from), ...tagTokens(fields["tags"]), ...measures], fields["description"] ?? fields["role"] ?? fields["caption"]);
+}
+
+/** The ports a read reaches beyond the engine: the corpus CAS, by CID alone (a web2 address names its body and never fetches). */
+type CasPort = TiddlerVerbOptions["resolveByCid"];
+
+/** What the record lens answers: the fields it shows, what it left home, and the grain it applied and why. */
+interface RecordRead {
+  readonly fields: Record<string, string>;
+  readonly shown: Record<string, string>;
+  readonly omitted: string[];
+  readonly grain: GrainEcho;
+  readonly next: { readonly grain: ReadGrain } | null;
+}
+
+/**
+ * THE RECORD LENS ON THE GRADIENT. No grain named: a pointer answers its handle (the name travels, the body stays home); a blob
+ * answers skinny (the blob law); a record whose text fits one page answers fat; a longer one answers skinny, with `next` naming
+ * fat. `skinny` leaves the text home; `fat` (and `whole`) carries it; `handle` names a pointer's body; `resolved` (and `whole`) reads a pointer's
+ * bytes from the local CAS by CID and verifies them, and a web2 `_canonical_uri` stays named, never fetched. A body grain on a
+ * record that holds its text inline answers fat and says why; the record lens reads no slot grain beyond the slot's own record.
+ */
+async function recordRead(engine: Engine, held: Record<string, string>, title: string, args: Readonly<Record<string, unknown>>, asked: ReadGrain | null, cas: CasPort): Promise<RecordRead> {
+  const named = namesArg(args["fields"]) !== null;
+  const done = (fields: Record<string, string>, applied: ReadGrain, why: string, next: RecordRead["next"]): RecordRead => {
+    const carryWhole = asked === "fat" || asked === "whole" || applied === "resolved";
+    const { shown, omitted } = narrowRecord(fields, title, args, applied === "skinny", carryWhole);
+    // THE ECHO NAMES WHAT RODE. At the tiddler grain, fat only where the text rode (named fields or the byte cap may leave it home);
+    // a pointer's body grain (handle, resolved) stays its own word whatever the fields.
+    const tiddlerGrain = applied === "fat" || applied === "skinny";
+    const rode: ReadGrain = tiddlerGrain ? (typeof shown["text"] === "string" ? "fat" : "skinny") : applied;
+    return { fields, shown, omitted, grain: { asked, applied: rode, why: named ? `the named fields (${rode === "fat" ? "the text among them" : "the text left home"})` : rode === applied ? why : `${why}; the byte cap left the text home` }, next };
+  };
+  if (isPointer(held)) {
+    const cid = skinnyCid(held);
+    const web2 = cid === null && typeof held["_canonical_uri"] === "string";
+    // `whole` on a pointer asks for the whole body: the body grain's own word for it reads `resolved`.
+    if (asked === "resolved" || asked === "whole") {
+      if (web2) return done(held, "handle", `a web2 \`_canonical_uri\` names the body and the door never fetches it (web3 only): ${held["_canonical_uri"]}`, null);
+      if (cid === null) return done(held, "handle", "the pointer names no CID to resolve", null);
+      const bytes = cas ? await cas(cid) : null;
+      if (!bytes) return done(held, "handle", cas ? `the local CAS holds no bytes for ${cid}` : "this island holds no CAS shore to resolve from", null);
+      if (!verifyCidBytes(bytes, cid)) return done(held, "handle", `the bytes the local CAS holds for ${cid} hash otherwise: refused, never spliced`, null);
+      const text = isBlob(engine, held) ? base64Of(bytes) : new TextDecoder().decode(bytes);
+      return done({ ...held, text }, "resolved", `the body resolved from the local CAS by CID ${cid}, verified`, null);
+    }
+    const why = web2 ? "a pointer: its web2 `_canonical_uri` names the body, never fetched" : "a pointer: the handle names its body by CID";
+    return done(held, "handle", asked === null || asked === "handle" ? why : `${why}; the tiddler grain reads no body a record does not hold`, web2 || cid === null ? null : { grain: "resolved" });
+  }
+  if (asked === "skinny") return done(held, "skinny", "asked: the fields, the text left home", { grain: "fat" });
+  if (asked === "fat" || asked === "whole") return done(held, "fat", "asked: the record with its text", null);
+  if (asked === "handle" || asked === "resolved") return done(held, "fat", `the record holds its body inline: no handle to read, so the record whole`, null);
+  if (asked === "slot") return done(held, "fat", "the slot's own record", null);
+  if (isBlob(engine, held)) return done(held, "skinny", "a blob: its body stays home (the blob law)", { grain: "fat" });
+  const bytes = typeof held["text"] === "string" ? byteLength(held["text"]) : 0;
+  if (bytes <= READ_PAGE_BYTES) return done(held, "fat", `fits one page (${bytes} of ${READ_PAGE_BYTES} bytes)`, null);
+  return done(held, "skinny", `the text runs past one page (${bytes} of ${READ_PAGE_BYTES} bytes): the fields first`, { grain: "fat" });
+}
+
+/** A record lens answer: the has line first, then the record with its grain and next. */
+function recordAnswer(from: Provenance & { readonly answered: Record<string, unknown> }, title: string, read: RecordRead, bag: string | null, place: { position: TiddlerPosition; family?: string | null; orphan?: boolean }, note?: string): Record<string, unknown> {
+  // A CARD'S BASE NAMES THE CARD: an answer that left the text home hands a marked base, which no text write takes.
+  const hash = cardBase(hashOf(read.fields), typeof read.fields["text"] === "string" && typeof read.shown["text"] !== "string");
+  return {
+    has: recordHas(title, read.fields, from, place, hash),
+    ...from.answered, title, lens: "record",
+    tiddler: {
+      fields: read.shown, hash, textHash: textHashOf(read.fields), bag, position: place.position,
+      ...(place.family ? { family: place.family } : {}), ...(place.orphan ? { orphan: true } : {}),
+      ...(read.omitted.length > 0 ? { omitted: read.omitted } : {}),
+    },
+    grain: read.grain, next: read.next,
+    ...(note ? { note } : {}),
+  };
+}
+
+/**
+ * THE MEME LENS: the root and its slot children recomposed into one carrier, sealed by its bcc, on the gradient (`memeGradient`).
+ * A title that names a slot child recomposes from its root and points at the slot. A record that holds no meme answers the record
+ * with a plain line saying so (graceful, never a refusal); a pointer root answers its handle. Every answer carries `base/` (the
+ * canonical hash `tiddler put --meme --slot --base` takes); a skinny answer carries one has line per top-level slot beneath the root's.
+ */
+async function memeAnswer(
+  engine: Engine, sink: Pick<MemeSink, "titles" | "read">, from: Provenance & { readonly answered: Record<string, unknown> }, named: string,
+  args: Readonly<Record<string, unknown>>, asked: ReadGrain | null, cas: CasPort, placeOfTitle: (title: string, fields: Record<string, string>) => { position: TiddlerPosition; family?: string | null; orphan?: boolean },
+  withheld = 0,
+): Promise<Record<string, unknown>> {
+  const slotArg = optionalStringArg(args, "slot");
+  const root = rootAddressOf(named);
+  const pointed = named !== root && named.includes("#") ? named.slice(root.length) : null;
+  const slot = slotArg ? (slotArg.startsWith("#") ? slotArg : `#/${slotArg.replace(/^\/+/, "")}`) : pointed;
+  const rootHeld = await sink.read(root);
+  const fieldsOf = (record: Record<string, unknown>): Record<string, string> => {
+    const fields = new engine.Tiddler(record).getFieldStrings();
+    delete fields[ORIGIN_BAG];
+    return fields;
+  };
+  if (!rootHeld || !isMemeRoot(root, rootHeld)) {
+    const held = rootHeld ?? (await sink.read(named));
+    if (!held) return { ...from.answered, title: named, lens: "meme", tiddler: null };
+    const title = rootHeld ? root : named;
+    const fields = fieldsOf(held as Record<string, unknown>);
+    const read = await recordRead(engine, fields, title, args, asked === "whole" || asked === "slot" ? null : asked, cas);
+    return recordAnswer(from, title, read, from.layer ?? from.bag ?? null, placeOfTitle(title, fields), `${title} holds no meme: the record answers`);
+  }
+  const rootFields = fieldsOf(rootHeld as Record<string, unknown>);
+  if (isPointer(rootFields)) {
+    const read = await recordRead(engine, rootFields, root, args, asked === "resolved" ? "resolved" : "handle", cas);
+    return recordAnswer(from, root, read, from.layer ?? from.bag ?? null, placeOfTitle(root, rootFields), `${root} holds a pointer: its body rests in the content tier`);
+  }
+  const meme = await readMeme(root, sink);
+  if (meme === null) return { ...from.answered, title: root, lens: "meme", tiddler: null };
+  const read = memeGradient(meme, { grain: asked, after: optionalStringArg(args, "after"), slot });
+  const base = memeBase(meme.canonicalHash, read, slot);
+  const measures = [param("type", CARRIER_TYPE), param("position", "root"), param("slots", read.slots.length), param("bytes", read.bytes), param("base", base)];
+  const rootLine = hasLine(root, [...provenanceParams(from), ...tagTokens(rootFields["tags"]), ...measures], rootFields["description"] ?? rootFields["role"]);
+  const lines = read.grain.applied === "skinny" ? [rootLine, ...slotHasLines(read.slots)] : [rootLine];
+  // THE COMPOSITION READING rides a whole carrier answered in one: the join of a root and its slots is where a two-headed carrier
+  // comes into being, so the read names its faults (report, never refuse; `child-grade-decision.mem` #/measured rows 11, 13).
+  const shape = read.text !== undefined && !read.page && read.grain.applied === "whole" ? readCarrierShape(read.text) : null;
+  // A SLOT'S SPAN RIDES `slotText`, a name no JSON reader mistakes for the whole carrier; the whole (or a page of it) rides `text`.
+  const carried = read.text === undefined ? {} : read.grain.applied === "slot" ? { slotText: read.text } : { text: read.text };
+  return {
+    has: lines.join("\n"),
+    ...from.answered, title: root, lens: "meme",
+    meme: {
+      uri: root, ...carried, canonicalHash: base, bytes: read.bytes,
+      slots: read.slots, ...(slot ? { slot } : {}), ...(read.page ? { page: read.page } : {}),
+    },
+    grain: read.grain, next: read.next,
+    ...(shape && shape.faults.length > 0 ? { shape: { check: shape.marks.check, faults: shape.faults } } : {}),
+    // THE RECOMPOSITION NAMES WHAT IT LEFT OUT: slot records this face may not read never enter the carrier, and the answer says so.
+    ...(withheld > 0 ? { withheld, note: `${withheld} slot record${withheld === 1 ? "" : "s"} of this meme ${withheld === 1 ? "rests" : "rest"} in a layer this face may not read: withheld from the carrier, which reads short of them` } : {}),
+  };
+}
+
+/**
+ * A BAG'S RECORD, READ FROM THAT ONE BAG. The reach and the read gate are the meme door's own (`readBagStore`: a mounted layer, an
+ * instance slot, a bag by access, the floor snapshot where the face holds no read on a live house canon document, which the answer
+ * names with `floor: true`). The record answers as the wiki door answers one: fields as TiddlyWiki writes them, `hash`, `textHash`,
+ * the `bag`, and a `position` the bag's own titles decide (a title with `#` titles below it stands a root, one with `#/` in it a slot).
+ * The answer names the bag in place of a wiki (`recipe` stays out), since no engine ran.
+ */
+async function bagGet(
+  opts: TiddlerVerbOptions, container: ReturnType<typeof readContainer>, title: string, args: Readonly<Record<string, unknown>>, ctx: VerbContext, asked: ReadGrain | null,
+): Promise<Record<string, unknown>> {
+  const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };
+  const { bag, sink, floor } = await readBagStore(opts as unknown as MemeVerbOptions, container.bag!, container.realm, origin, ctx.cap);
+  const engine = engineOf(opts);
+  const from = { bag, floor: floor === true, answered: { bag, ...(floor ? { floor: true } : {}) } };
+  const titles = await sink.titles();
+  const placeIn = (t: string): { position: TiddlerPosition; family?: string | null } => {
+    const root = rootAddressOf(t);
+    const position: TiddlerPosition = titles.some((x) => x.startsWith(`${t}#`)) ? "root" : t.includes("#") && root !== t ? "slot" : "plain";
+    return { position, ...(position === "slot" ? { family: root } : {}) };
+  };
+  if (flagOn(args["meme"])) return memeAnswer(engine, sink, from, title, args, asked, opts.resolveByCid, placeIn);
+  const held = await sink.read(title);
+  if (!held) return { ...from.answered, title, tiddler: null };
+  const fields = new engine.Tiddler(held as Record<string, unknown>).getFieldStrings();
+  delete fields[ORIGIN_BAG];
+  const read = await recordRead(engine, fields, title, args, asked, opts.resolveByCid);
+  return recordAnswer(from, title, read, bag, placeIn(title));
+}
+
+/**
+ * A WORD THE LENS OR THE GRAIN DOES NOT READ REFUSES BY NAME (`read-word-unread`), before anything reads: an answer that silently
+ * dropped a word would misreport what it applied. `after` continues the meme's whole carrier alone; `fields` and `maxBytes` narrow a
+ * record and no carrier; a slot names one slot, which neither the has-stack (skinny) nor the whole carrier reads.
+ */
+function refuseUnreadWords(args: Readonly<Record<string, unknown>>, title: string, lens: boolean, asked: ReadGrain | null, slot: string | null): void {
+  const unread = (word: string, why: string): VerbRefusal =>
+    new VerbRefusal("read-word-unread", `read-word-unread: tiddler-get reads no \`${word}\` here; ${why}. Nothing was read.`);
+  if (!lens && optionalStringArg(args, "after")) throw unread("after", "a cursor continues a meme's whole carrier (`meme: true`, `--meme --all`), and a record answers in one");
+  if (lens && args["fields"] !== undefined) throw unread("fields", "the meme lens answers the carrier, never a field subset; drop `meme` to narrow the record");
+  if (lens && args["maxBytes"] !== undefined) throw unread("maxBytes", "the meme lens pages its carrier on slot boundaries; the byte cap narrows a record alone");
+  const slotted = slot !== null || (title.includes("#/") && rootAddressOf(title) !== title);
+  if (lens && slotted && (asked === "skinny" || asked === "whole")) throw unread("slot", `a slot names one slot, and the ${asked === "skinny" ? "has-stack" : "whole carrier"} reads them all; drop the slot, or the grain`);
+}
+
 export const makeTiddlerGetReactor = everyWiki("tiddler-get", false, (opts: TiddlerVerbOptions): VerbReactor => {
   return async (args, ctx) => {
-    const anchor = anchorOf(opts, args, "tiddler-get");
+    const container = readContainer(args, "tiddler-get");
     const named = stringArg(args, "title");
     if (!named) throw new Error("tiddler-get: args.title is required (the tiddler's title; a meme's root lar: URI beside `slot` reads one slot)");
+    const asked = grainOf(args["grain"]);
+    const lens = flagOn(args["meme"]);
     const slot = optionalStringArg(args, "slot");
-    const title = slot ? slotTitle(named, slot) : named;
-    refuseWithheld(title, "tiddler-get");
+    refuseUnreadWords(args, named, lens, asked, slot);
+    // The meme lens reads the slot inside the recomposed carrier; the record lens reads the slot's own record.
+    const title = slot && !lens ? slotTitle(named, slot) : named;
+    // A BAG NAMES ONE STORE AND NO WIKI: the record reads from that bag through the meme door's own reach and read gate.
+    if (container.bag !== null) {
+      refuseWithheld(title, "tiddler-get");
+      return await bagGet(opts, container, title, args, ctx, asked);
+    }
+    const anchor = anchorOf(opts, args, "tiddler-get");
+    // AN OPEN HOUSE ALERT READS here (`withheldFromReads`): the wiki's own engine holds it; a bag's store never does. The meme
+    // lens never reads one: an alert holds no meme, so the lens keeps the door's whole stay-home law.
+    refuseWithheld(title, "tiddler-get", !lens);
     const { view, mayRead } = await viewFor(opts, anchor, ctx.cap);
-    const wiki = anchor.engine.wiki;
-    const tiddler = wiki.getTiddler(title);
-    if (!tiddler) return { recipe: anchor.recipe, title, tiddler: null };
+    const engine = anchor.engine;
+    const wiki = engine.wiki;
+    const answered = { recipe: anchor.recipe };
+    const placeIn = (t: string): { position: TiddlerPosition; family?: string | null; orphan?: boolean } => placeOf(anchor, view, t);
+    if (lens) {
+      // The meme lens reads through the reader's view, so a record this face may not read enters no carrier.
+      const top = wiki.getTiddler(rootAddressOf(title)) ?? wiki.getTiddler(title);
+      const bag = top ? readRecord(top).bag : null;
+      if (top && !(await mayRead(bag))) throw new Error(`cap-denied: read on ${bag} required (the bag that answers "${title}")`);
+      const sink = { titles: () => view.allTitles(), read: (t: string) => (view.getTiddler(t) as { fields?: TiddlerFields } | undefined)?.fields };
+      const prefix = `${rootAddressOf(title)}#`;
+      const withheld = wiki.allTitles().filter((t) => t.startsWith(prefix) && !staysHome(t) && !view.tiddlerExists(t)).length;
+      return memeAnswer(engine, sink, { recipe: anchor.recipe, layer: bag, answered }, title, args, asked, opts.resolveByCid, placeIn, withheld);
+    }
+    // A HOUSE ALERT READS THROUGH THE VIEW, so it leaves redacted (`redactedAlert`); every other record reads as the engine holds it.
+    const tiddler = isHouseAlert(title) ? view.getTiddler(title) : wiki.getTiddler(title);
+    if (!tiddler) return { ...answered, title, tiddler: null };
     const { fields, bag } = readRecord(tiddler);
     if (!(await mayRead(bag))) throw new Error(`cap-denied: read on ${bag} required (the bag that answers "${title}")`);
-    const names = namesArg(args["fields"]);
-    const omitted: string[] = [];
-    let shown: Record<string, string> = fields;
-    if (names !== null) {
-      shown = { title };
-      for (const name of names) if (typeof fields[name] === "string") shown[name] = fields[name]!;
-    } else if (flagOff(args["text"]) && typeof fields["text"] === "string") {
-      const { text: _text, ...rest } = fields;
-      shown = rest;
-      omitted.push("text");
-    }
-    // THE BYTE CAP: the largest fields leave first, by name, and the hashes still speak for the whole record.
-    const maxBytes = countArg(args["maxBytes"], WIKI_ANSWER_BYTES_MAX, 256, WIKI_ANSWER_BYTES_MAX);
-    if (bytesOf(shown) > maxBytes) {
-      shown = { ...shown };
-      for (const name of Object.keys(shown).filter((n) => n !== "title").sort((a, b) => bytesOf(shown[b]) - bytesOf(shown[a]))) {
-        if (bytesOf(shown) <= maxBytes) break;
-        delete shown[name];
-        omitted.push(name);
-      }
-    }
-    return {
-      recipe: anchor.recipe, title,
-      tiddler: { fields: shown, hash: hashOf(fields), textHash: textHashOf(fields), bag, ...placeFields(placeOf(anchor, view, title)), ...(omitted.length > 0 ? { omitted } : {}) },
-    };
+    const read = await recordRead(engine, fields, title, args, asked, opts.resolveByCid);
+    return recordAnswer({ recipe: anchor.recipe, layer: bag, answered }, title, read, bag, placeIn(title));
   };
 });
 
@@ -513,6 +871,44 @@ const GLOBAL_IMPORT = "\\import [all[shadows+tiddlers]tag[$:/tags/Global]!is[dra
 const WIKITEXT = "text/vnd.tiddlywiki";
 const RENDER_FORMS: Readonly<Record<string, string>> = { text: "text/plain", html: "text/html" };
 
+/** Prepare native --render output inside the caller's permission-filtered wiki. A node shore publishes the bytes. */
+export const makeWikiRenderOutReactor = everyWiki("wiki-render-out-prepare", true, (opts: TiddlerVerbOptions): VerbReactor => async (args, ctx) => {
+  const anchor = anchorOf(opts, args, "wiki-render-out-prepare", true);
+  if (anchor.recipe === "default" || wikiSlotKindOf(anchor.slug, anchor.bag) !== "working") throw new VerbRefusal("render-output-grant-denied", "render-output-grant-denied: this face holds no writer's seat in the selected wiki's workbench");
+  const allowed = await ctx.cap("admin", anchor.bag);
+  if (!allowed.ok) throw new VerbRefusal("render-output-grant-denied", `render-output-grant-denied: write on ${anchor.bag} required`);
+  if (args["output"] !== "workbench") throw new VerbRefusal("render-output-substrate-refused", "render-output-substrate-refused: only a node workbench grants output");
+  const filter = stringArg(args, "filter");
+  const filename = optionalStringArg(args, "filename") ?? "[is[tiddler]addsuffix[.html]]";
+  const type = optionalStringArg(args, "type") ?? "text/html";
+  const template = optionalStringArg(args, "template");
+  const rawVariables = args["variables"];
+  if (rawVariables !== undefined && (!rawVariables || typeof rawVariables !== "object" || Array.isArray(rawVariables) || Object.values(rawVariables).some((v) => typeof v !== "string")))
+    throw new VerbRefusal("render-variables-malformed", "render-variables-malformed: variables must pair names with string values");
+  const variables = (rawVariables ?? {}) as Record<string, string>;
+  const { view } = await viewFor(opts, anchor, ctx.cap);
+  const engine = anchor.engine;
+  const titles = view.filterTiddlers(filter);
+  if (titles.length > 128) throw new VerbRefusal("render-count-budget", "render-count-budget: the selection exceeds 128 sources");
+  const files: Array<{ name: string; text: string; source: string }> = [];
+  const skipped: string[] = [];
+  let bytes = 0;
+  for (const title of titles) {
+    // The filename filter runs as the selection does: under the house widget over the reader's view, never the engine's root.
+    const names = view.filterTiddlers(filename, undefined, view.makeTiddlerIterator([title]));
+    if (names.length === 0 || names[0] === "") { skipped.push(title); continue; }
+    const parser = view.parseTiddler(template ?? title);
+    const widget = view.makeWidget(parser, { variables: { ...variables, currentTiddler: title, storyTiddler: title } });
+    const container = engine.fakeDocument.createElement("div");
+    widget.render(container, null);
+    const text = type === "text/html" ? container.innerHTML : container.textContent;
+    bytes += utf8.encode(text).length;
+    if (bytes > 4_194_304) throw new VerbRefusal("render-byte-budget", "render-byte-budget: output exceeds four MiB");
+    files.push({ name: names[0]!, text, source: title });
+  }
+  return { recipe: anchor.recipe, files, skipped };
+});
+
 export const makeWikiRenderReactor = everyWiki("wiki-render", false, (opts: TiddlerVerbOptions): VerbReactor => {
   return async (args, ctx) => {
     const anchor = anchorOf(opts, args, "wiki-render");
@@ -522,23 +918,26 @@ export const makeWikiRenderReactor = everyWiki("wiki-render", false, (opts: Tidd
     const form = optionalStringArg(args, "form") ?? "text";
     const outputType = RENDER_FORMS[form];
     if (!outputType) throw new Error(`wiki-render: args.form reads "text" or "html"; got "${form}"`);
-    if (title !== null) refuseWithheld(title, "wiki-render");
-    const { view, mayRead } = await viewFor(opts, anchor, ctx.cap);
+    if (title !== null) refuseWithheld(title, "wiki-render", true);
+    const { view, mayRead, pragmas } = await viewFor(opts, anchor, ctx.cap);
+    // THE HOUSE'S FUNCTIONS RIDE AFTER THE GLOBAL IMPORT, from canon alone: a working-layer `$:/tags/Global` tiddler never shadows one.
+    const globals = pragmas === "" ? GLOBAL_IMPORT : `${GLOBAL_IMPORT}${pragmas}\n\n`;
     const wiki = anchor.engine.wiki;
     let rendered: string;
     if (title !== null) {
-      const tiddler = wiki.getTiddler(title);
+      // An alert renders through the view, so one this reader may not read stands absent here too.
+      const tiddler = isHouseAlert(title) ? view.getTiddler(title) : wiki.getTiddler(title);
       if (!tiddler) throw new VerbRefusal("tiddler-absent", `tiddler-absent: no tiddler stands at "${title}" in wiki "${anchor.recipe}"; wiki-render renders a title that stands, or a span passed as args.text.`);
       const { bag } = readRecord(tiddler);
       if (!(await mayRead(bag))) throw new Error(`cap-denied: read on ${bag} required (the bag that answers "${title}")`);
       rendered = view.renderText(outputType, WIKITEXT,
         // The blank lines keep the wrapper in block mode, so no stray paragraph wraps the tiddler's own blocks.
-        `${GLOBAL_IMPORT}<$tiddler tiddler=<<lares-render-title>>>\n\n<$transclude $tiddler=<<lares-render-title>> $mode="block"/>\n\n</$tiddler>`,
+        `${globals}<$tiddler tiddler=<<lares-render-title>>>\n\n<$transclude $tiddler=<<lares-render-title>> $mode="block"/>\n\n</$tiddler>`,
         { variables: { "lares-render-title": title } });
     } else {
       const type = optionalStringArg(args, "type") ?? WIKITEXT;
       // The carrier type reads as a superset of wikitext, so the import pragma leads both; any other type renders as it stands.
-      rendered = view.renderText(outputType, type, type === WIKITEXT || type === CARRIER_TYPE ? `${GLOBAL_IMPORT}${span}` : span!);
+      rendered = view.renderText(outputType, type, type === WIKITEXT || type === CARRIER_TYPE ? `${globals}${span}` : span!);
     }
     // THE BYTE CAP, WITH A CURSOR: the cursor names the render it continues (an offset and the render's digest), so a
     // wiki that moved between two pages refuses by name and never splices two renders.
@@ -594,6 +993,15 @@ function patchArg(raw: unknown): Record<string, string> {
   return value as Record<string, string>;
 }
 
+/** THE APPEND JOIN: a standing text that does not end on a newline takes exactly one `\n` before the appended words; an empty
+ *  or newline-ended text takes them as they come. */
+export function appendedText(standing: string, words: string): string {
+  return standing === "" || standing.endsWith("\n") ? standing + words : `${standing}\n${words}`;
+}
+
+/** How many times one put re-reads a record that moved under its admission before it answers `conflict`. */
+const PUT_SETTLE_ROUNDS = 16;
+
 export const makeTiddlerPutReactor = everyWiki("tiddler-put", true, (opts: TiddlerVerbOptions): VerbReactor => {
   return async (args, ctx) => {
     const anchor = anchorOf(opts, args, "tiddler-put", true);
@@ -603,60 +1011,173 @@ export const makeTiddlerPutReactor = everyWiki("tiddler-put", true, (opts: Tiddl
     refuseEffectLedgerWrite(title, "tiddler-put");
     await requireWrite(opts, anchor, ctx.cap, "tiddler put", ctx.asker);
     const { wiki, utils, Tiddler } = anchor.engine;
-    const standing = wiki.getTiddler(title);
-    const held = standing ? readRecord(standing) : null;
+    const append = typeof args["append"] === "string" ? args["append"] : null;
+    if (append !== null) {
+      // AN APPEND NAMES ONLY ITS WORDS: it overwrites nothing, so it carries no base, no whole text and no field patch.
+      const crossed = ["text", "base", "fields", "unset"].filter((name) => args[name] !== undefined && args[name] !== null);
+      if (crossed.length > 0) throw new VerbRefusal("append-alone", `append-alone: an append lands its words at the end of the standing text and carries no ${crossed.map((n) => `\`${n}\``).join(", ")}; send those as their own put. Nothing moved.`);
+      if (append === "") throw new VerbRefusal("append-empty", "append-empty: an append names the words it lands. Nothing moved.");
+    }
     const { view, mayRead } = await viewFor(opts, anchor, ctx.cap);
-    if (held && !(await mayRead(held.bag))) throw new Error(`cap-denied: read on ${held.bag} required (the bag that answers "${title}")`);
-    const before = held?.fields ?? null;
-    const liveHash = before ? hashOf(before) : null;
-    const place = standing ? placeOf(anchor, view, title) : { position: "plain" as TiddlerPosition, family: null, orphan: false };
-    const answer = (decision: string, more: Record<string, unknown>): Record<string, unknown> =>
-      ({ recipe: anchor.recipe, title, decision, bag: anchor.bag, ...more, ...placeFields(place) });
 
-    // CREATE-ONLY ON REQUEST, and the base where one rides: either answers before any field moves.
-    if (flagOn(args["create"]) && wiki.tiddlerExists(title)) return answer("exists", { created: false, changed: [], hash: liveHash, textHash: before ? textHashOf(before) : null });
-    const base = optionalStringArg(args, "base");
-    if (base !== null && base !== liveHash) return answer("conflict", { created: false, changed: [], hash: liveHash, textHash: before ? textHashOf(before) : null });
+    // THE LANDING, AS A COMPARE-AND-SWAP ON THE LIVE WIKI. The wiki serializes every writer that passes through it in this
+    // process: its `addTiddler` runs synchronously on the event loop, and the shore's drain carries each title's wiki state to
+    // the store in the order the wiki took it. A writer that reaches the store directly (a meme door sink, INGEST, a face lane,
+    // a peer's wave) meets the drain's per-field merge instead, where two writes of one field resolve last-writer-wins. A round reads the record, decides, awaits admission, then re-reads it; only a record that
+    // still hashes as it read lands, in the same synchronous step as that re-read, so no other hand slips between the read
+    // and the write. A record that moved meanwhile sends the round back to read again (an append re-composes over the newer
+    // text; a base the moved record fails to match answers `conflict`), bounded, and a round that never settles answers `conflict`.
+    let admitted: string | null = null;
+    for (let round = 0; ; round++) {
+      const standing = wiki.getTiddler(title);
+      const held = standing ? readRecord(standing) : null;
+      if (held && !(await mayRead(held.bag))) throw new Error(`cap-denied: read on ${held.bag} required (the bag that answers "${title}")`);
+      const before = held?.fields ?? null;
+      const liveHash = before ? hashOf(before) : null;
+      const place = standing ? placeOf(anchor, view, title) : { position: "plain" as TiddlerPosition, family: null, orphan: false };
+      const answer = (decision: string, more: Record<string, unknown>): Record<string, unknown> =>
+        ({ recipe: anchor.recipe, title, decision, bag: anchor.bag, ...more, ...placeFields(place) });
+      if (round >= PUT_SETTLE_ROUNDS) return answer("conflict", { created: false, changed: [], hash: liveHash, textHash: before ? textHashOf(before) : null, unsettled: round });
 
-    // THE PATCH: named fields set, named fields unset, tags added and removed; the text moves only where the caller names it.
-    const patch = patchArg(args["fields"]);
-    if (patch["title"] !== undefined && patch["title"] !== title) throw new VerbRefusal("fields-malformed", "fields-malformed: a put never re-titles; `fields.title` must match args.title or stay absent.");
-    const next: Record<string, string> = { ...(before ?? {}), ...patch, title };
-    if (typeof args["text"] === "string") next["text"] = args["text"];
-    for (const name of namesArg(args["unset"]) ?? []) if (name !== "title") delete next[name];
-    const listArg = (raw: unknown): string[] => Array.isArray(raw) ? raw.map(String) : typeof raw === "string" ? (utils.parseStringArray(raw) ?? []) : [];
-    const add = listArg(args["tagsAdd"]);
-    const remove = new Set(listArg(args["tagsRemove"]));
-    let tags = utils.parseStringArray(next["tags"] ?? "") ?? [];
-    if (add.length > 0 || remove.size > 0) {
-      tags = [...tags.filter((tag) => !remove.has(tag)), ...add.filter((tag) => !tags.includes(tag) && !remove.has(tag))];
-      if (tags.length > 0) next["tags"] = utils.stringifyList(tags); else delete next["tags"];
+      // CREATE-ONLY ON REQUEST, and the base where one rides: either answers before any field moves. An append to a missing
+      // title refuses unless `create` names it; with `create`, an append lands a new record or joins the standing one.
+      if (append !== null) {
+        if (!standing && !flagOn(args["create"])) throw new VerbRefusal("append-target-missing", `append-target-missing: no record "${title}" stands to append to; name \`create\` (\`--create\`) to land the words as a new record. Nothing moved.`);
+      } else if (flagOn(args["create"]) && wiki.tiddlerExists(title)) return answer("exists", { created: false, changed: [], hash: liveHash, textHash: before ? textHashOf(before) : null });
+      // A TEXT WRITE BY ANY PATH: `text`, a field patch naming `text`, or an unset of it. A card's base takes none of them.
+      const writesText = append !== null || typeof args["text"] === "string" || Object.prototype.hasOwnProperty.call(patchArg(args["fields"]), "text") || (namesArg(args["unset"]) ?? []).includes("text");
+      const base = readBase(optionalStringArg(args, "base"), "tiddler-put", writesText);
+      if (base !== null && base !== liveHash) return answer("conflict", { created: false, changed: [], hash: liveHash, textHash: before ? textHashOf(before) : null });
+
+      // THE PATCH: named fields set, named fields unset, tags added and removed; the text moves only where the caller names it.
+      const patch = patchArg(args["fields"]);
+      if (patch["title"] !== undefined && patch["title"] !== title) throw new VerbRefusal("fields-malformed", "fields-malformed: a put never re-titles; `fields.title` must match args.title or stay absent.");
+      const next: Record<string, string> = { ...(before ?? {}), ...patch, title };
+      if (typeof args["text"] === "string") next["text"] = args["text"];
+      if (append !== null) next["text"] = appendedText(before?.["text"] ?? "", append);
+      for (const name of namesArg(args["unset"]) ?? []) if (name !== "title") delete next[name];
+      const listArg = (raw: unknown): string[] => Array.isArray(raw) ? raw.map(String) : typeof raw === "string" ? (utils.parseStringArray(raw) ?? []) : [];
+      const add = listArg(args["tagsAdd"]);
+      const remove = new Set(listArg(args["tagsRemove"]));
+      let tags = utils.parseStringArray(next["tags"] ?? "") ?? [];
+      if (add.length > 0 || remove.size > 0) {
+        tags = [...tags.filter((tag) => !remove.has(tag)), ...add.filter((tag) => !tags.includes(tag) && !remove.has(tag))];
+        if (tags.length > 0) next["tags"] = utils.stringifyList(tags); else delete next["tags"];
+      }
+      if (bytesOf(next) > 1_048_576) throw new VerbRefusal("fields-malformed", "fields-malformed: one record carries at most 1048576 bytes through this door.");
+
+      // THE FAMILY FENCE. A meme root or slot takes a field or tag patch here; its text, its type and its carriage fields
+      // move through the meme door, which re-splits the family and re-mints its block check. A new record never joins a
+      // family here either.
+      const moved = (name: string): boolean => (before?.[name] ?? undefined) !== (next[name] ?? undefined);
+      const structural = Object.keys({ ...(before ?? {}), ...next }).filter((name) => moved(name) && (name === "text" || name === "type" || name.startsWith("$")));
+      const joinsFamily = !standing && (next["type"] === CARRIER_TYPE || next["$fragment-parent"] !== undefined);
+      if ((place.position !== "plain" && structural.length > 0) || joinsFamily) {
+        throw new VerbRefusal("tiddler-put-in-a-family", `tiddler-put-in-a-family: use the meme door. "${title}" ${joinsFamily ? "would land as a carrier or a slot" : `stands as a meme ${place.position} and this put moves ${structural.map((n) => `\`${n}\``).join(", ")}`}; \`lares tiddler put --meme\` lands a family's text through the Confluence gate${append !== null ? " (`--slot '#/x' --append` appends to a slot)" : ""}. A field or tag patch on a standing root or slot lands here.`);
+      }
+      // ONLY THE RENDERER WRITES A RENDERED TIDDLER: a put over one, or one that would land carrying `rendered-from`, refuses.
+      refuseRenderedWrite(title, before, next, "tiddler put");
+      refuseMalformedStagePath(title);
+
+      const changed = Object.keys({ ...(before ?? {}), ...next }).filter(moved);
+      if (standing && changed.length === 0) return answer("noop", { created: false, changed, hash: liveHash, textHash: textHashOf(before!) });
+      // THE ONE WALL A SEAT KEEPS: a seat's executable record offers, or lands spending one return of a standing exec lei. A call
+      // spends once: a round the swap sent back re-admits only where the record it would land reads as another executable class.
+      const executable = executableClassOf(next);
+      const admits = executable === null ? null : `${executable.class}\u0000${executable.mark}`;
+      if (round === 0 || admits !== admitted) {
+        await admitSeatExecutable(title, next, "tiddler put", ctx.asker, { wiki: anchor.recipe, port: ctx.execLei });
+        admitted = admits;
+      }
+      // THE SWAP: from this re-read to `addTiddler` no await stands, so nothing else runs between them.
+      const now = wiki.getTiddler(title);
+      if ((now ? hashOf(readRecord(now).fields) : null) !== liveHash) continue;
+      // The record lands through the live wiki, so the in-wiki cascade routes it to the working layer as a person's edit would.
+      // THE FACE CROSSES THE HOP: the shore's write of this title carries the session's worn face on its origin.
+      wikiWearsNext(opts.tw5, title, wornOrigin(ctx.worn).face);
+      wiki.addTiddler(new Tiddler(next));
+      const landed = readRecord(wiki.getTiddler(title)!).fields;
+      const hash = hashOf(landed);
+      return {
+        ...(append !== null ? { has: hasLine(title, [param("recipe", anchor.recipe), param("decision", "put"), param("hash", hash)]) } : {}),
+        ...answer("put", { created: !standing, changed, hash, textHash: textHashOf(landed), ...(append !== null ? { appended: bytesOf(append) } : {}) }),
+      };
     }
-    if (bytesOf(next) > 1_048_576) throw new VerbRefusal("fields-malformed", "fields-malformed: one record carries at most 1048576 bytes through this door.");
+  };
+});
 
-    // THE FAMILY FENCE. A meme root or slot takes a field or tag patch here; its text, its type and its carriage fields
-    // move through the meme door, which re-splits the family and re-mints its block check. A new record never joins a
-    // family here either.
-    const moved = (name: string): boolean => (before?.[name] ?? undefined) !== (next[name] ?? undefined);
-    const structural = Object.keys({ ...(before ?? {}), ...next }).filter((name) => moved(name) && (name === "text" || name === "type" || name.startsWith("$")));
-    const joinsFamily = !standing && (next["type"] === CARRIER_TYPE || next["$fragment-parent"] !== undefined);
-    if ((place.position !== "plain" && structural.length > 0) || joinsFamily) {
-      throw new VerbRefusal("tiddler-put-in-a-family", `tiddler-put-in-a-family: use the meme door. "${title}" ${joinsFamily ? "would land as a carrier or a slot" : `stands as a meme ${place.position} and this put moves ${structural.map((n) => `\`${n}\``).join(", ")}`}; \`lares meme put\` (meme_put) lands a family's text through the Confluence gate. A field or tag patch on a standing root or slot lands here.`);
-    }
-    // ONLY THE RENDERER WRITES A RENDERED TIDDLER: a put over one, or one that would land carrying `rendered-from`, refuses.
-    refuseRenderedWrite(title, before, next, "tiddler put");
-    refuseMalformedStagePath(title);
+// A row names a verified floor shadow and the sole record its native action may change.
+// The caller supplies values only; no action text or message name crosses this door.
+interface AdmittedWikiAction {
+  readonly title: string;
+  readonly target: string;
+  readonly values: readonly string[];
+}
+const ADMITTED_WIKI_ACTIONS: Readonly<Record<string, AdmittedWikiAction>> = {
+  "sidebar-layout": {
+    title: "$:/core/ui/KeyboardShortcuts/change-sidebar-layout",
+    target: "$:/themes/tiddlywiki/vanilla/options/sidebarlayout",
+    values: ["fixed-fluid", "fluid-fixed"],
+  },
+};
 
-    const changed = Object.keys({ ...(before ?? {}), ...next }).filter(moved);
-    if (standing && changed.length === 0) return answer("noop", { created: false, changed, hash: liveHash, textHash: textHashOf(before!) });
-    // THE ONE WALL A SEAT KEEPS: a seat's executable record offers, or lands spending one return of a standing exec lei.
-    await admitSeatExecutable(title, next, "tiddler put", ctx.asker, { wiki: anchor.recipe, port: ctx.execLei });
-    // The record lands through the live wiki, so the in-wiki cascade routes it to the working layer as a person's edit would.
-    // THE FACE CROSSES THE HOP: the shore's write of this title carries the session's worn face on its origin.
-    wikiWearsNext(opts.tw5, title, wornOrigin(ctx.worn).face);
-    wiki.addTiddler(new Tiddler(next));
-    const landed = readRecord(wiki.getTiddler(title)!).fields;
-    return answer("put", { created: !standing, changed, hash: hashOf(landed), textHash: textHashOf(landed) });
+export const makeWikiActionReactor = everyWiki("wiki-action", true, (opts: TiddlerVerbOptions): VerbReactor => {
+  return async (args, ctx) => {
+    const allowed = new Set(["recipe", "name", "expected", "resulting"]);
+    const unknown = Object.keys(args).find((key) => !allowed.has(key));
+    if (unknown) throw new VerbRefusal("wiki-action-parameter", `wiki-action-parameter: unknown parameter "${unknown}"`);
+    const name = stringArg(args, "name");
+    const action = Object.hasOwn(ADMITTED_WIKI_ACTIONS, name) ? ADMITTED_WIKI_ACTIONS[name] : undefined;
+    if (!action) throw new VerbRefusal("wiki-action-unknown", `wiki-action-unknown: no admitted action "${name}"`);
+    const expected = stringArg(args, "expected");
+    const resulting = stringArg(args, "resulting");
+    if (!action.values.includes(expected) || !action.values.includes(resulting) || expected === resulting)
+      throw new VerbRefusal("wiki-action-parameter", `wiki-action-parameter: ${name} needs distinct admitted expected and resulting layout values`);
+    const anchor = anchorOf(opts, args, "wiki-action", true);
+    refuseWithheld(action.target, "wiki-action");
+    refuseEffectLedgerWrite(action.target, "wiki-action");
+    await requireWrite(opts, anchor, ctx.cap, "wiki action", ctx.asker);
+    const wiki = anchor.engine.wiki as EngineWiki & {
+      isShadowTiddler(title: string): boolean;
+      getShadowSource(title: string): string | undefined;
+      getTiddlerText(title: string, fallback?: string): string;
+    };
+    // A tiddler overriding the shadow would move the action bytes outside the pinned floor.
+    if (!wiki.isShadowTiddler(action.title) || wiki.tiddlerExists(action.title) || wiki.getShadowSource(action.title) !== "$:/core")
+      throw new VerbRefusal("wiki-action-origin", `wiki-action-origin: "${action.title}" needs its unoverridden floor shadow`);
+    const { view } = await viewFor(opts, anchor, ctx.cap);
+    const before = view.getTiddler(action.target);
+    const beforeFields = before ? readRecord(before).fields : null;
+    const observed = beforeFields?.["text"] ?? "";
+    if (observed !== expected)
+      return { has: hasLine(name, [param("recipe", anchor.recipe), param("decision", "conflict")]), recipe: anchor.recipe, name,
+        title: action.target, decision: "conflict", expected, observed, resulting: observed };
+
+    // The native widget receives a one-call copy-on-write view. Its add/delete ports can
+    // record only this row's target, so no mutation reaches the authoritative wiki yet.
+    let candidate: EngineTiddler | null = null;
+    let changed = 0;
+    const sandbox = Object.create(view) as EngineWiki;
+    sandbox.addTiddler = (record) => {
+      const next = record as EngineTiddler;
+      if (next.fields["title"] !== action.target || ++changed > 1)
+        throw new VerbRefusal("wiki-action-scope", `wiki-action-scope: ${name} tried a change outside its single admitted target`);
+      candidate = next;
+    };
+    sandbox.deleteTiddler = () => { throw new VerbRefusal("wiki-action-scope", `wiki-action-scope: ${name} tried to delete a record`); };
+    const root = (opts.tw5.$tw as unknown as { rootWidget: { wiki: EngineWiki; invokeActionString(s: string): void } }).rootWidget;
+    const widget = Object.create(root) as typeof root;
+    widget.wiki = sandbox;
+    widget.invokeActionString(wiki.getTiddlerText(action.title));
+    const nextFields = candidate ? readRecord(candidate).fields : null;
+    if (changed !== 1 || nextFields?.["text"] !== resulting)
+      throw new VerbRefusal("wiki-action-result", `wiki-action-result: ${name} did not produce the requested layout`);
+    const put = await makeTiddlerPutReactor(opts)({ recipe: anchor.recipe, title: action.target,
+      text: resulting, ...(beforeFields ? { base: hashOf(beforeFields) } : { create: true }) }, ctx);
+    return { has: hasLine(name, [param("recipe", anchor.recipe), param("decision", String(put["decision"]))]),
+      recipe: anchor.recipe, name, action: action.title, title: action.target, expected,
+      resulting: put["decision"] === "put" ? resulting : observed, decision: put["decision"],
+      receipt: ctx.invocation.requestId, change: put };
   };
 });
 
@@ -699,7 +1220,7 @@ export const makeTiddlerDeleteReactor = everyWiki("tiddler-delete", true, (opts:
     const retracts = retractsOf(read);
     const moves = tombstones.length + retracts.length;
     if (read.position !== "plain" && !flagOn(args["family"])) {
-      return refused("tiddler-delete-in-a-family", `"${title}" stands as a meme ${read.position} of ${read.family}; this delete would move ${moves} record${moves === 1 ? "" : "s"} (the consequence names each). Name the family act (\`family: true\`, \`--family\`) to land it as one change, or use \`lares meme delete ${read.family}\` (meme_delete).`);
+      return refused("tiddler-delete-in-a-family", `"${title}" stands as a meme ${read.position} of ${read.family}; this delete would move ${moves} record${moves === 1 ? "" : "s"} (the consequence names each). Name the family act (\`family: true\`, \`--family\`) to land it as one change, or use \`lares tiddler delete --meme ${read.family}\`.`);
     }
     const rendered = renderedWriteFault(title, fields, null, "tiddler delete");
     if (rendered !== null) return refused(RENDERED_DERIVES_REASON, rendered.slice(RENDERED_DERIVES_REASON.length + 2) + " Nothing moved.");
@@ -733,12 +1254,12 @@ export const makeTiddlerDeleteReactor = everyWiki("tiddler-delete", true, (opts:
     // A slot its parent calls leaves with the call: the parent's text would move, and a family's text moves through the meme door.
     const dangling = read.acts.find((row) => row.act === "put") ?? read.leaves.find((row) => row.why === "reference-dangles:kahea");
     if (dangling) {
-      return refused("tiddler-delete-in-a-family", `"${title}" stands as a slot "${dangling.title}" calls by \`kahea\`; the call leaves with the slot, and a family's text moves through the meme door: \`lares meme put ${read.family}\` (meme_put) with the slot's block gone.`);
+      return refused("tiddler-delete-in-a-family", `"${title}" stands as a slot "${dangling.title}" calls by \`kahea\`; the call leaves with the slot, and a family's text moves through the meme door: \`lares tiddler put --meme ${read.family}\` with the slot's block gone.`);
     }
     // A record no mounted layer holds (the engine's own, or a wiki with no store beneath it) has nothing to retract.
     const unheld = named === "reveal" ? read.acts.find((row) => row.act === "retract" && (row.holds?.length ?? 0) === 0) : undefined;
     if (unheld) return refused("reveal-top-unwritable", `no mounted layer holds a record of "${unheld.title}", so a reveal has nothing to retract; \`mode: "kapae"\` removes it. Nothing moved.`);
-    const base = optionalStringArg(args, "base");
+    const base = readBase(optionalStringArg(args, "base"), "tiddler-delete", false);
     if (base !== null && base !== hash) return { recipe: anchor.recipe, title, decision: "conflict", mode: modeName, tombstoned: [], retracted: [], hash };
 
     // THE LANDING: each layer takes its members as ONE change (tombstones and retracts together), and the shore lands
@@ -844,12 +1365,13 @@ export const makeWikiStatusReactor = everyWiki("wiki-status", false, (opts: Tidd
       // CANON TAKES NO LANE WRITE: it mounts writable so a promotion (an ACTION verb) can land in it, and `defaultWritable: false` keeps
       // every put off it (`recipe-layer-model` #/the-recipe-stack). Status names it `promotion-only`, never a writable door.
       if (isCanonLayer(opts, slug, bag) && opts.composite.hasWritableBag(bag)) {
-        const read = (await ctx.cap("read", bag)).ok || (opts.floorCanon?.(bag) ?? null) !== null;
+        const read = isTw5DocsBag(bag) || (await ctx.cap("read", bag)).ok || (opts.floorCanon?.(bag) ?? null) !== null;
         layers.push({ bag, mounted: "promotion-only", read, write: false });
         continue;
       }
       const mounted = opts.composite.hasWritableBag(bag);
-      const read = (await ctx.cap("read", bag)).ok || (opts.floorCanon?.(bag) ?? null) !== null || wikiSlotKindOf(slug, bag) === "temp";
+      // The TW5 docs library reads freely (`reachOf`), and its status says so.
+      const read = isTw5DocsBag(bag) || (await ctx.cap("read", bag)).ok || (opts.floorCanon?.(bag) ?? null) !== null || wikiSlotKindOf(slug, bag) === "temp";
       let write = false;
       let why: string | undefined;
       if (mounted) {

@@ -18,7 +18,7 @@ import threading
 import pytest
 
 import lares_uds as uds
-from lares_mcp import (LAW_CANON_GUARD, LAW_INDEX_FILTER, LAW_PINS_FILTER, LAW_PINS_TITLE, LAW_VERBS, SEAT_INSTRUCTIONS,
+from lares_mcp import (LAW_INDEX_FILTER, LAW_PINS_FILTER, LAW_PINS_TITLE, LAW_VERBS, SEAT_INSTRUCTIONS,
                        DaemonCoordinator, build_mcp, seat_of)
 
 API = "lar:///ha.ka.ba/lares/api"
@@ -63,10 +63,13 @@ class _PinDaemon:
         threading.Thread(target=self._serve, daemon=True).start()
 
     def answer(self, verb: str, args: dict) -> dict:
+        # THE DOOR'S GRADIENT, IN SMALL: an answer that left the text home hands a card's base, which no text put takes.
         if verb == "tiddler-get":
+            mark = "" if args.get("grain") == "fat" else "skinny:"
             return {"recipe": "default", "title": args["title"],
-                    "tiddler": None if self.pins is None else {"fields": {"title": LAW_PINS_TITLE, "text": self.pins}, "hash": f"h{self.hash}"}}
+                    "tiddler": None if self.pins is None else {"fields": {"title": LAW_PINS_TITLE, "text": self.pins}, "hash": f"{mark}h{self.hash}"}}
         if verb == "tiddler-put":
+            assert not str(args.get("base") or "").startswith("skinny:"), "base-from-skinny: the pin set's base came from a card"
             if self.put_decision != "put":
                 return {"decision": self.put_decision, "hash": f"h{self.hash}"}
             self.pins = args["text"]
@@ -80,7 +83,7 @@ class _PinDaemon:
             rows = [{"title": t, "fields": {} if t == BOOT else {"role": f"the  role\nof {t.rsplit('/', 1)[-1]}"}}
                     for t in pins + [t for t in LAW if t not in pins]]
             return {"rows": rows, "total": len(rows), "next": None}
-        m = re.match(r"\[\[(.+?)\]\] ", f) if f.endswith(" " + LAW_CANON_GUARD) else None
+        m = re.fullmatch(r"\[lares\.law\[\]match\[(.+?)\]\]", f)
         if m:
             return {"titles": [m.group(1)] if m.group(1) in STANDING else [], "total": 0, "next": None}
         return {"titles": evaluate(f), "total": 0, "next": None}
@@ -146,16 +149,12 @@ def test_the_seat_tells_a_client_to_read_the_law_first():
 
 
 # The same strings `@lararium/tw5`'s `daemon-law-tiddlers` exports and the wake hook runs (lares-cli's law-door suite welds those two).
-GUARD = (r":filter[regexp[^lar:///ha\.ka\.ba/(\w|-)+/api/]!regexp[#]] "
-         r":filter[get[$origin-bag]regexp[^lar:///ha\.ka\.ba/bags/(oracle|lares|lararium)$]] :filter[regexp[^lar:///\S+$]]")
-
-
-def test_the_filters_read_the_pin_set_and_end_on_the_canon_guard():
-    assert LAW_CANON_GUARD == GUARD
-    assert LAW_PINS_FILTER == "[subfilter{$:/config/lares/law/pins}] " + GUARD
-    assert LAW_INDEX_FILTER == ("[subfilter{$:/config/lares/law/pins}] =[prefix[lar:///ha.ka.ba/]regexp[^lar:///ha\\.ka\\.ba/(\\w|-)+/api/]"
-                                "!regexp[#]sort[title]] +[unique[]] " + GUARD)
-    assert "law/filter" not in LAW_INDEX_FILTER
+def test_the_filters_ride_as_calls_to_the_canon_functions_and_carry_no_body():
+    assert LAW_PINS_FILTER == "[lares.law.pins[]]"
+    assert LAW_INDEX_FILTER == "[lares.law[]]"
+    import lares_mcp
+    assert not hasattr(lares_mcp, "LAW_CANON_GUARD")
+    assert "regexp" not in LAW_INDEX_FILTER and "regexp" not in LAW_PINS_FILTER
 
 
 def test_law_index_answers_pins_first_marked_then_the_law_by_title(daemon):
@@ -209,7 +208,7 @@ def test_a_pin_keeps_the_operators_layout_and_the_unpin_returns_it_byte_for_byte
 
 def test_the_pins_standing_check_asks_the_canon_guard(daemon):
     _tools()["law_pin"](uri=LAW[0])
-    assert any(ln["args"].get("filter") == f"[[{LAW[0]}]] {LAW_CANON_GUARD}" for ln in daemon.lines)
+    assert any(ln["args"].get("filter") == f"[lares.law[]match[{LAW[0]}]]" for ln in daemon.lines)
 
 
 def test_a_moved_pin_set_refuses_and_a_bad_uri_refuses_before_the_wire(daemon):

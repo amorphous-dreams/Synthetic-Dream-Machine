@@ -8,6 +8,7 @@ import type { GlassDoor } from "./glass-root.js";
 import { mountGlassCamera } from "./glass-camera.js";
 import { openDefaultStory } from "./default-story.js";
 import { tendOrphanAlerts } from "./place-meme.js";
+import { modulePinsOf } from "./module-pins.js";
 
 export interface MirrorSeams {
   bootEngine?: () => void | Promise<void>; paint?: () => void;
@@ -211,8 +212,14 @@ export async function openMirror(options: Omit<GlassPortOptions, "wiki" | "Tiddl
       wikiCensus = options.opened ? censusRecords(options.opened.records, bootSetTitles(census.accepted), sealed, options.localFilter, bootSetModuleTitles(census.accepted), startupAdmitted) : null;
       // THE STORE A SERVER HANDS A BROWSER: the verified boot set, then the wiki's own records, all in `$tw.preloadTiddlers`
       // before TW5 unpacks a plugin or defines a module.
-      const store = [...census.accepted, ...(wikiCensus?.preloaded ?? []).map(record => ({ ...record.fields, title: record.title }))];
-      await engine.boot({ bytes: options.inputs.coreBytes, sha256: options.inputs.coreCid }, store, MIRROR_TOKEN);
+      const wikiPreloads: Record<string, unknown>[] = (wikiCensus?.preloaded ?? []).map(record => ({ ...record.fields, title: record.title }));
+      const store = [...census.accepted, ...wikiPreloads];
+      // THE MODULE PINS. The boot set's modules ride the CIDs the handoff verified. A person's plugin the census let through (it
+      // evaluates only on a vessel whose store rests sealed) carries no CID: the vessel's sealed-rest word admits it, and the pin
+      // gate takes that word as its pin (`island-host-contract#/ses-gate` names this path as one no hash covers).
+      const sealedPlugins = sealed ? wikiPreloads.filter(record => record["plugin-type"] !== undefined) : [];
+      const modulePins = new Set([...modulePinsOf(census.accepted), ...modulePinsOf(sealedPlugins)]);
+      await engine.boot({ bytes: options.inputs.coreBytes, sha256: options.inputs.coreCid }, store, MIRROR_TOKEN, { modulePins });
       const tw = engine.$tw;
       census.refused.push(...(wikiCensus?.refused ?? []));
       for (const refusal of census.refused) tw.wiki.addTiddler(new tw.Tiddler({ title: `$:/temp/lares/alert/refused/${refusal.kind}/${refusal.title}`, text: refusal.kind === "startup-offer" ? `Startup action offered, not run (another writer's, and no exec lei stands for it): ${refusal.title}` : `Plugin refused: ${refusal.title}`, tags: ["$:/tags/Alert"] }));

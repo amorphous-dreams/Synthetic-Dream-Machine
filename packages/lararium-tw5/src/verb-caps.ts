@@ -23,14 +23,13 @@
  * Canon: lar:///ha.ka.ba/lararium/api/composable-keel
  */
 
-import { composeVessel, type CapModule } from "@lararium/mesh";
+import { composeVessel, guardHitl, type CapModule, type SenseHand } from "@lararium/mesh";
 import type {
   SparseFormVector,
   WorldlineStubWire,
   WorldlineEdgeTriple,
-  WorldlineEdgeClose,
 } from "@lararium/mesh";
-import { VerbTable } from "./verb-dispatcher.js";
+import { VerbTable, type VerbContext } from "./verb-dispatcher.js";
 import type {
   DaemonWorldlineCompareInput,
   DaemonWorldlineTrajectoryInput,
@@ -42,6 +41,17 @@ import type {
 /** A verb-group cap's product: register its verb(s) into the host's VerbTable. The composed plane
  *  merges every group's contribution into one, applied once (synchronously) by the host. */
 export type VerbContribution = (registry: VerbTable) => void;
+
+/**
+ * THE HAND A SENSE HAND VERB READS (hitl-reads-a-hand): the asker the vessel's door booked, never an argument. A terminal's ask
+ * (`cli`: the door read no harness on the peer's branch) reads `"hand"`; a seat, a tab, the watcher and an ask no door read
+ * refuse `sense-needs-hand`, naming the command the operator runs on their own terminal (`guardHitl`).
+ */
+function senseHandOf(verb: string, ctx: VerbContext | undefined): SenseHand {
+  const hand: SenseHand | undefined = ctx?.asker === "cli" ? "hand" : undefined;
+  guardHitl(verb, hand);
+  return "hand";
+}
 
 // ── cap-ids — the names the nested #has-cap-stack routes over ─────────────────────────────────────
 
@@ -108,10 +118,27 @@ export interface FormPalaceProvider {
   ): Promise<Record<string, unknown>>;
 }
 
-/** A spirit's worldline edges derived from a transcript (the worldline-compare edge-DAG source). */
-export interface SubagentEdgePair {
+/**
+ * A spirit's worldline edges derived from a transcript (the worldline-compare edge-DAG source): its spawn,
+ * one round-closing handback edge per real report, every delivered message it received or sent to a
+ * sibling, and each killed/failed/stopped end (no edge). The run's own events share one parentKey chain;
+ * a sibling message rides unlinked. No retirement rides the feed; a transcript records none.
+ */
+export interface SpiritEdges {
   readonly spawn: WorldlineEdgeTriple;
-  readonly handback: WorldlineEdgeClose;
+  readonly handbacks: readonly WorldlineEdgeTriple[];
+  readonly messages: readonly WorldlineEdgeTriple[];
+  readonly ends: readonly { readonly turn: string; readonly status: string }[];
+}
+
+/**
+ * A session's spirit feed: the run the spawns fork from, each placed spirit's edges, and the agent ids of
+ * spirits whose transcript stands but whose launch row the main transcript lacks (no edges ride for them).
+ */
+export interface SpiritFeed {
+  readonly run: string;
+  readonly spirits: readonly SpiritEdges[];
+  readonly unplaced: readonly string[];
 }
 
 /** daemon-VM provider — the sovereign-worker reads + the capture FEED. The host supplies only the
@@ -178,18 +205,18 @@ export interface DaemonVerbProvider {
   /** REWIND (kapae) one turn's .structurepalace tally + salience down-weight, IN the daemon (warm holder).
    *  Fire-and-forget — the convergence twin of the CLI-side worldline KG valid-close. */
   placeStructurepalaceKapae(turnKey: string, ended?: string): void;
-  /** Derive a session transcript's spawn/handback edges (worldline-compare's edge-DAG source). The CRUNCH
+  /** Derive a session transcript's spirit edges — spawns, round closes, messages (worldline-compare's edge-DAG source). The CRUNCH
    *  lives in python (beside the transcript data) — this provider ROUTES to the capture holder's
    *  `subagent-edges` serve-op, so it reads async. `sensoriumRoot` addresses a holder (absent → memory). */
-  subagentEdges(input: { transcript: string; sensoriumRoot?: string }): Promise<readonly SubagentEdgePair[]>;
+  subagentEdges(input: { transcript: string; sensoriumRoot?: string }): Promise<SpiritFeed>;
   /** Well 1 — the concurrent-capable causal verdict between two handles, IN the daemon VM. */
-  worldlineCompare(input: DaemonWorldlineCompareInput): Promise<{ order: string }>;
+  worldlineCompare(input: DaemonWorldlineCompareInput): Promise<{ order: string; uncertain: readonly string[] }>;
   /** Well 3 + Well 4 — a handle's worldline-ordered form-vector path (+ optional null baseline). */
   worldlineTrajectory(input: DaemonWorldlineTrajectoryInput): Promise<DaemonWorldlineTrajectoryResult>;
   // ── the DURABLE sensorium-lifecycle verbs — pure manifest.json reducers (no store holder), routed over
-  //    the wire so the MCP surface mirrors the CLI `lares sense <verb>` three-way. The reversibility×trust
-  //    seat gates each: reads + reversible re-settle run HOTL; promote·retire·purge cross HITL (an operator-
-  //    approval capability, the surface twin of the CLI's `--approve`). ──
+  //    the wire. The reads + reversible re-settle answer every asker; the hand verbs (promote·retire·
+  //    un-retire·purge) take `hand`, the reading the reactor made of a terminal's asker, never a caller's
+  //    value (hitl-reads-a-hand). ──
   /** ROSTER — every sensorium + its lifecycle facet (a read; HOTL). */
   senseRoster(): Promise<Record<string, unknown>>;
   /** INSPECT one sensorium's manifest facets by name (a read; HOTL). Throws when the name has no manifest. */
@@ -199,14 +226,14 @@ export interface DaemonVerbProvider {
   /** RECONCILE — re-settle one sensorium (by `name`) or `all` against evidence (idempotent, reversible → HOTL). */
   senseReconcile(input: { name?: string; all?: boolean }): Promise<Record<string, unknown>>;
   /** PROMOTE — climb a rung (in-place field-flip; `storeSwap` re-points an alias, gated). A designed one-way
-   *  commitment → HITL: `approve` carries the operator-approval capability, else it refuses. */
-  sensePromote(input: { name: string; approve?: unknown; storeSwap?: string }): Promise<Record<string, unknown>>;
-  /** RETIRE — a JUDGED tombstone recording MUSTIE `grounds` (NO byte-delete; move-not-delete). → HITL. */
-  senseRetire(input: { name: string; grounds?: unknown; approve?: unknown }): Promise<Record<string, unknown>>;
-  /** UN-RETIRE — restore a tombstoned sensorium to its prior state (move-not-delete; reversible → HOTL). */
-  senseUnRetire(input: { name: string }): Promise<Record<string, unknown>>;
-  /** PURGE — the irreversible byte GC (tombstone-only; explicit HITL). `approve` carries the reclaim authority. */
-  sensePurge(input: { name: string; approve?: unknown }): Promise<Record<string, unknown>>;
+   *  commitment → a hand verb: `hand` carries the terminal's reading, else it refuses. */
+  sensePromote(input: { name: string; hand?: SenseHand; storeSwap?: string }): Promise<Record<string, unknown>>;
+  /** RETIRE — a JUDGED tombstone recording MUSTIE `grounds` (NO byte-delete; move-not-delete). → a hand verb. */
+  senseRetire(input: { name: string; grounds?: unknown; hand?: SenseHand }): Promise<Record<string, unknown>>;
+  /** UN-RETIRE — restore a tombstoned sensorium to its prior state (move-not-delete) → a hand verb, as its retire. */
+  senseUnRetire(input: { name: string; hand?: SenseHand }): Promise<Record<string, unknown>>;
+  /** PURGE — the irreversible byte GC (tombstone-only) → a hand verb. `hand` carries the reclaim authority. */
+  sensePurge(input: { name: string; hand?: SenseHand }): Promise<Record<string, unknown>>;
 }
 
 /** telemetry provider — the lar_* writeback shore. The impl owns the whole writeback +
@@ -401,8 +428,8 @@ export function captureVerbCap(): CapModule {
         registry.register("sweep", async (args) => {
           // BULK backfill — the holder discovers EVERY transcript itself and captures each through its ONE
           // warm stream (no pointer crosses; the holder owns discovery). `surface` `all` (default) folds
-          // claude+codex+copilot; `project`/`limit` narrow. The routed sweep spine `lares sense sweep` /
-          // `pour --all` / the MCP `sweep` all reach.
+          // claude+codex+copilot; `project`/`limit` narrow. The routed sweep spine `lares sense pour --bulk` /
+          // `pour --all` / the MCP `pour` with `bulk` all reach.
           const surface = typeof args["surface"] === "string" ? args["surface"] : "all";
           const wing = typeof args["wing"] === "string" ? args["wing"] : "";
           if (!wing) throw new Error("sweep: args.wing (a non-empty string) required");
@@ -551,8 +578,10 @@ export function captureVerbCap(): CapModule {
           return { ok: true, kapae: true, turnKey };
         });
         // ── the DURABLE sensorium-lifecycle sub-verbs — each mirrors `lares sense <verb>` and routes to the
-        //    pure manifest.json reducer on the daemon. The reversibility×trust seat lives in the executor
-        //    (guardHitl): promote·retire·purge REFUSE without the operator-approval capability. ──
+        //    pure manifest.json reducer on the daemon. The hand verbs (promote·retire·un-retire·purge) read
+        //    the asker the vessel's door booked: a terminal (`cli`) alone runs one, and every other asker (a
+        //    seat, a tab, the watcher, an ask no door read) refuses `sense-needs-hand` before anything routes.
+        //    An `approve` argument counts for nothing; the executor re-reads the hand this reactor hands on. ──
         registry.register("roster", async () => await daemon.senseRoster());
         registry.register("inspect", async (args) => {
           const name = typeof args["name"] === "string" ? (args["name"] as string) : "";
@@ -571,26 +600,30 @@ export function captureVerbCap(): CapModule {
           if (!all && !name) throw new Error("reconcile: args.name (a non-empty string) or args.all required");
           return await daemon.senseReconcile({ ...(all ? { all } : {}), ...(name ? { name } : {}) });
         });
-        registry.register("promote", async (args) => {
+        registry.register("promote", async (args, ctx) => {
           const name = typeof args["name"] === "string" ? (args["name"] as string) : "";
+          const hand = senseHandOf("promote", ctx);
           if (!name) throw new Error("promote: args.name (a non-empty string) required");
           const storeSwap = typeof args["storeSwap"] === "string" ? (args["storeSwap"] as string) : undefined;
-          return await daemon.sensePromote({ name, approve: args["approve"], ...(storeSwap ? { storeSwap } : {}) });
+          return await daemon.sensePromote({ name, hand, ...(storeSwap ? { storeSwap } : {}) });
         });
-        registry.register("retire", async (args) => {
+        registry.register("retire", async (args, ctx) => {
           const name = typeof args["name"] === "string" ? (args["name"] as string) : "";
+          const hand = senseHandOf("retire", ctx);
           if (!name) throw new Error("retire: args.name (a non-empty string) required");
-          return await daemon.senseRetire({ name, grounds: args["grounds"], approve: args["approve"] });
+          return await daemon.senseRetire({ name, grounds: args["grounds"], hand });
         });
-        registry.register("un-retire", async (args) => {
+        registry.register("un-retire", async (args, ctx) => {
           const name = typeof args["name"] === "string" ? (args["name"] as string) : "";
+          const hand = senseHandOf("un-retire", ctx);
           if (!name) throw new Error("un-retire: args.name (a non-empty string) required");
-          return await daemon.senseUnRetire({ name });
+          return await daemon.senseUnRetire({ name, hand });
         });
-        registry.register("purge", async (args) => {
+        registry.register("purge", async (args, ctx) => {
           const name = typeof args["name"] === "string" ? (args["name"] as string) : "";
+          const hand = senseHandOf("purge", ctx);
           if (!name) throw new Error("purge: args.name (a non-empty string) required");
-          return await daemon.sensePurge({ name, approve: args["approve"] });
+          return await daemon.sensePurge({ name, hand });
         });
       };
     },
@@ -619,13 +652,20 @@ export function worldlineVerbCap(): CapModule {
           if (!a || !b) throw new Error("worldline-compare: args.a + args.b (handles) required");
           const transcript = typeof args["transcript"] === "string" ? (args["transcript"] as string) : "";
           const sensoriumRoot = typeof args["sensoriumRoot"] === "string" ? (args["sensoriumRoot"] as string) : undefined;
-          const spirits = transcript
+          const feed = transcript
             ? await daemon.subagentEdges(sensoriumRoot !== undefined ? { transcript, sensoriumRoot } : { transcript })
-            : [];
-          const opens = spirits.map((s) => s.spawn);
-          const closes = spirits.map((s) => s.handback);
+            : undefined;
+          for (const handle of [a, b]) {
+            const agent = feed?.unplaced.find((id) => handle === `${feed.run}.${id}`);
+            if (agent) {
+              throw new Error(`worldline-compare: ${handle} stands unplaced — its spirit transcript exists, but the main transcript holds no launch row for agent ${agent}, so the feed carries no edges for it (compare a placed spirit, or capture the session that launched it)`);
+            }
+          }
+          const opens = (feed?.spirits ?? []).flatMap((s) => [s.spawn, ...s.handbacks, ...s.messages]);
+          // The feed names the run its spawns fork from; the registry seeds there.
+          const root = feed?.run;
           try {
-            return await daemon.worldlineCompare({ a, b, opens, closes });
+            return await daemon.worldlineCompare({ a, b, opens, ...(root !== undefined ? { root } : {}) });
           } catch (err) {
             throw new Error(`worldline-compare: ${err instanceof Error ? err.message : String(err)} (supply a transcript that names both handles)`);
           }

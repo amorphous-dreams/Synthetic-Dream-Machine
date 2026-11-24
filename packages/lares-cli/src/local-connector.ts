@@ -249,7 +249,7 @@ export class UdsUnreachable extends Error {}
  */
 export class LocalWaitExpired extends Error {
   constructor(verb: string, timeoutMs: number, readonly requestId: string) {
-    super(`local verb "${verb}" — stopped waiting after ${timeoutMs}ms; outcome unknown. Check request ${requestId}.`);
+    super(`local verb "${verb}" — stopped waiting after ${timeoutMs}ms; outcome unknown. Read it back: \`lares vessel request ${requestId}\`.`);
   }
 }
 
@@ -288,6 +288,8 @@ export interface ReceiptAnswer {
   readonly refusal?: { readonly reason: string };
   /** The chore's receipt mark the outcome rests with: the acting face, the asker's hand (`seat`, `cli`, `tab`), its session. */
   readonly chore?: { readonly acting: number; readonly asker: string; readonly session: string | null };
+  /** The engine's fall (`engine-watch` on the vessel), where the receipt came from the settled ledger after the engine stopped. */
+  readonly engine?: { readonly status?: string; readonly cause?: string; readonly [k: string]: unknown };
 }
 
 /** This READ's own patience ended with no line back — mirrors `LocalWaitExpired` for the dispatch

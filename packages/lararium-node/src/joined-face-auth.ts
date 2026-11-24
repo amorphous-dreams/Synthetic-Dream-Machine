@@ -1,4 +1,4 @@
-import { deriveRegisterBags, litFaceOwnBags, type IdentityAnchors, type JoinedFaceAuth } from "@lararium/mesh";
+import { deriveRegisterBags, litFaceOwnBags, personaScopedBagIds, type IdentityAnchors, type JoinedFaceAuth } from "@lararium/mesh";
 
 type FaceAnchor = JoinedFaceAuth["faceAnchor"];
 type Chain = JoinedFaceAuth["personaKel"]["chain"];
@@ -18,6 +18,12 @@ export interface JoinedFaceAuthPorts {
   readonly veilArchive: (group: string) => Promise<Uint8Array | null>;
   /** THE LIT SET: the face's relation, read off its own proved log (`faceRelationOf`); null where no proof names one. */
   readonly relation?: (group: string) => Promise<string | null>;
+  /** A LIT SIBLING'S PROVEN PLANES (sibling-plane-mount): its intents and persona planes as its own signed log names them; null
+   *  where no proof stands, and the sibling's door then stands none. The proof mounts nothing (`mountPlanes` does). */
+  readonly planes?: (group: string) => Promise<{ readonly persona: string; readonly intents: string } | null>;
+  /** Mount the proven pair for the face's lit life: called once, after the face's last standing check, with no await between,
+   *  so a close that lands while the proof reads mounts nothing. */
+  readonly mountPlanes?: (group: string, planes: { readonly persona: string; readonly intents: string }) => void;
   readonly log: (line: string) => void;
 }
 
@@ -39,6 +45,12 @@ export async function joinedFaceAuth(ports: JoinedFaceAuthPorts): Promise<Joined
   // EACH FACE READS ON ITS OWN: no face's custody-backed reads wait behind another's; the answer keeps ordinal order.
   const each = await Promise.all(ports.ordinals().map((ordinal) => ordinal === ports.mounted ? Promise.resolve(null) : oneJoinedFace(ports, ordinal)));
   return each.filter((face): face is JoinedFaceAuth => face !== null);
+}
+
+/** THE MOUNT LANDS AFTER THE LAST CHECK: the caller has just read the face current, and nothing awaits before this returns. */
+function mountAfterLastCheck(ports: JoinedFaceAuthPorts, group: string, facePlanes: { readonly persona: string; readonly intents: string } | null): Record<string, never> {
+  if (facePlanes) ports.mountPlanes?.(group, facePlanes);
+  return {};
 }
 
 /** One sibling's gate input, or null where it stands shut, moved, or reads torn (the log names it). */
@@ -68,15 +80,43 @@ async function oneJoinedFace(ports: JoinedFaceAuthPorts, ordinal: number): Promi
       if (!ports.current(ordinal)) return null;
       const relation = (await ports.relation?.(group)) ?? null;
       if (!ports.current(ordinal)) return null;
+      const facePlanes = (await ports.planes?.(group)) ?? null;
+      if (!ports.current(ordinal)) return null;
       return { atom: { seed: Buffer.from(seed).toString("hex"), key }, personaGroupId: group, faceAnchor: anchor, handleIndex: ordinal,
-        ...(relation ? { faceRelation: relation } : {}),
+        ...(relation ? { faceRelation: relation } : {}), ...(facePlanes ? { facePlanes } : {}),
         personaKel: { prefix: pins.personaKelPrefix, chain }, deviceEdge: pins.deviceEdge, signerDid: pins.signerDid,
         ...(pins.meshCabalDocIdHex ? { meshCabalDocIdHex: pins.meshCabalDocIdHex } : {}),
         ...(secret ? { faceAddressSecret: Buffer.from(secret).toString("hex") } : {}),
-        ...(archive ? { veilArchiveBytes: archive } : {}), registerBags: deriveRegisterBags({ fleets: [], wikiBags: litFaceOwnBags(relation, group) }) };
+        ...(archive ? { veilArchiveBytes: archive } : {}), ...mountAfterLastCheck(ports, group, facePlanes), registerBags: deriveRegisterBags({ fleets: [], wikiBags: [...litFaceOwnBags(relation, group),
+          // ITS PROVEN PLANES SEAL UNDER ITS OWN HIVE for its lit life: the intents and persona planes alone, and only where proved.
+          ...(facePlanes ? [personaScopedBagIds(group).persona, personaScopedBagIds(group).intents] : [])] }) };
     } catch (e) {
       ports.log(`joined face h${ordinal} skipped: ${e instanceof Error ? e.message : String(e)}`);
     } finally { seed?.fill(0); secret?.fill(0); }
   }
   return null;
+}
+
+/**
+ * THE SUPERVISOR'S REOPEN, ARCHIVES FRESH: each lit face composes again from the entry its light proved, with its Archive read
+ * again from its own row through that face's holder (`read`, the lit face's own open custody), because a lit sibling rests a
+ * newer Archive after its card than the one its light restored (`read` waits on that face's queued write). A row that reads
+ * none drops the entry's bytes (a rehive's marker means stand from the seed); a row that fails to read keeps them, says so by
+ * the face's handle, and refuses nothing.
+ */
+export async function refreshLitArchives(faces: readonly JoinedFaceAuth[], read: (group: string) => Promise<Uint8Array | null>,
+  log: (line: string) => void): Promise<JoinedFaceAuth[]> {
+  return Promise.all(faces.map(async (face) => {
+    try {
+      const bytes = await read(face.personaGroupId);
+      if (bytes) return { ...face, veilArchiveBytes: bytes };
+      // A ROW THAT READS NONE (no row, or a rehive's marker: stand from the seed) drops the held bytes, so the reopen stands
+      // as the face's next boot would.
+      const { veilArchiveBytes: _dropped, ...rest } = face;
+      return rest;
+    } catch (e) {
+      log(`[lit-set] the face h${face.handleIndex ?? "?"} reopens on the Archive its light restored: its row did not read (${e instanceof Error ? e.message : String(e)})`);
+      return face;
+    }
+  }));
 }

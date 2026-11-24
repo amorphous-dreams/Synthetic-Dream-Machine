@@ -7,7 +7,8 @@
  * thinks it already saw, and MCP servers holding the torn store open. Hand-`rm`-ing
  * the paths invites the confused-deputy trap (wipe an ambient default, miss the
  * watermark). This verb resolves every target explicitly, previews by default,
- * and removes only on `--confirm`.
+ * and removes only on `--confirm`, which a person's hand at a real terminal alone approves: the command reads its own branch
+ * through the house hand gate (`readOwnHand`), and an AI harness there refuses `hand-act-only` (hitl-reads-a-hand).
  *
  * Targets (resolved, never ambient) — the SOVEREIGN sensoriums only; the external guest
  * ~/.mempalace (a separate causal island) stands untouched. The targets SEPARATE by sensorium GROUP,
@@ -35,7 +36,8 @@
 import { existsSync, rmSync, statSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { larHarvestCheckpointDir, larHarvestStagingDir, larPort } from "../env.js";
-import { palaceOrgans, sensoriumTeardownDirs, memorySensoriumDir } from "@lararium/node";
+import { palaceOrgans, sensoriumTeardownDirs, memorySensoriumDir, readOwnHand } from "@lararium/node";
+import { handFor, HandActRefused, type HandRead } from "./sense-lifecycle.js";
 import { emit, exitFor } from "../render.js";
 import { livePalaceProcs, type PalaceProc } from "../palace-procs.js";
 import { portHolderPids } from "../port-control.js";
@@ -181,7 +183,7 @@ function describeProc(p: PalaceProc): string {
   return `pid ${p.pid} (${role}: ${p.serves}) — spawned by pid ${p.ppid}: ${p.spawnerCmd}`;
 }
 
-export async function cmdPalaceTeardown(args: ParsedArgs): Promise<number> {
+export async function cmdPalaceTeardown(args: ParsedArgs, hand: HandRead = () => readOwnHand({ proveRoute: false })): Promise<number> {
   const all       = resolveTargets();
   const allGroups = [...new Set(all.map((t) => t.group))].sort();
   // Group SELECTION — positional names tear ONLY those sensoriums; no name tears every group. An
@@ -253,6 +255,21 @@ export async function cmdPalaceTeardown(args: ParsedArgs): Promise<number> {
       },
     });
     return 0;
+  }
+
+  // THE TEAR READS A HAND (hitl-reads-a-hand): `--confirm` names the intent, and the hand behind this command approves it. An AI
+  // harness on the command's branch refuses `hand-act-only` before any drain or removal; the preview above stays open to it.
+  const line = `lares sense teardown ${[...requested, "--confirm"].join(" ")}`;
+  try {
+    handFor("lares sense teardown", line, hand);
+  } catch (e) {
+    if (!(e instanceof HandActRefused)) throw e;
+    emit(args, {
+      ok: false,
+      error: { code: e.code, message: e.message },
+      human: () => console.error(`lares sense teardown — ${e.message}`),
+    });
+    return exitFor(e.code);
   }
 
   // --drain: gracefully quiesce (pause hooks → drain warm daemons → confirm zero)

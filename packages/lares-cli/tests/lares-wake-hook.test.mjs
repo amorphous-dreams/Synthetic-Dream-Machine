@@ -15,10 +15,19 @@ test("wake observes the checkout shim and bounds failures", async (t) => {
   mkdirSync(hooks, { recursive: true });
   mkdirSync(bin, { recursive: true });
   mkdirSync(tools, { recursive: true });
-  for (const name of ["lares-wake-hook.mjs", "lares-wake-core.mjs", "lares-compact-hook.mjs"]) {
+  for (const name of ["lares-wake-hook.mjs", "lares-wake-core.mjs", "lares-compact-hook.mjs", "lares-menu-read.mjs"]) {
     if (existsSync(join(sourceDir, name))) copyFileSync(join(sourceDir, name), join(hooks, name));
   }
-  writeFileSync(join(bin, "lares.mjs"), 'console.log("home reading");\n');
+  writeFileSync(join(bin, "lares.mjs"), `
+if (process.argv[2] === "mcp") {
+  let pending = "";
+  process.stdin.on("data", chunk => { pending += chunk; let n; while ((n = pending.indexOf("\\n")) >= 0) {
+    const msg = JSON.parse(pending.slice(0, n)); pending = pending.slice(n + 1);
+    if (msg.id === 1) console.log(JSON.stringify({jsonrpc:"2.0", id:1, result:{}}));
+    if (msg.id === 2) console.log(JSON.stringify({jsonrpc:"2.0", id:2, result:{tools:[{name:"read", description:"Read a record."}]}}));
+  }});
+} else console.log("home reading");
+`);
   const shim = join(tools, "lares-container.sh");
   // The harness bounds a hook at 15 seconds (`hooks/hooks.json`); a run that outlasts it fails here as it would there.
   const spawnHook = (name, input = "") => {
@@ -37,7 +46,7 @@ test("wake observes the checkout shim and bounds failures", async (t) => {
     { title: "lar:///ha.ka.ba/kahua/memory/project/house-laws", fields: { title: "lar:///ha.ka.ba/kahua/memory/project/house-laws", description: "The seven house laws." } },
     { title: "lar:///ha.ka.ba/kahua/memory/state/open-ledger", fields: { title: "lar:///ha.ka.ba/kahua/memory/state/open-ledger", description: "What stands open." } },
   ] } });
-  const stateAnswer = JSON.stringify({ ok: true, requestId: "s", data: { recipe: "default", filter: "[prefix[lar:///ha.ka.ba/kahua/memory/state/]!regexp[#]]", total: 2, next: null, asOf: "90a1a6dbea5e1f15", rows: [
+  const stateAnswer = JSON.stringify({ ok: true, requestId: "s", data: { recipe: "default", filter: "[lares.stage[state]!regexp[#]]", total: 2, next: null, asOf: "90a1a6dbea5e1f15", rows: [
     { title: "lar:///ha.ka.ba/kahua/memory/state/open-ledger", fields: { title: "lar:///ha.ka.ba/kahua/memory/state/open-ledger", description: "What stands open." } },
     { title: "lar:///ha.ka.ba/kahua/memory/state/handoff", fields: { title: "lar:///ha.ka.ba/kahua/memory/state/handoff", description: "Start here." } },
   ] } });
@@ -53,7 +62,7 @@ test("wake observes the checkout shim and bounds failures", async (t) => {
     "#!/bin/sh",
     'case "$1 $2" in',
     `"vessel stand") printf '%s\\n' '{"data":{"node":{"up":true,"port":4321,"cap":"observe"}}}' ;;`,
-    `"wiki filter") case "$3" in "[prefix"*) printf '%s\\n' '${stateAnswer}' ;; *"=[prefix"*) printf '%s\\n' '${lawAnswer}' ;; "[subfilter"*) printf '%s\\n' '${lawPinsAnswer}' ;; *) printf '%s\\n' '${indexAnswer}' ;; esac ;;`,
+    `"wiki filter") case "$3" in "[lares.stage"*) printf '%s\\n' '${stateAnswer}' ;; "[lares.law.pins"*) printf '%s\\n' '${lawPinsAnswer}' ;; "[lares.law"*) printf '%s\\n' '${lawAnswer}' ;; *) printf '%s\\n' '${indexAnswer}' ;; esac ;;`,
     "*) exit 2 ;;",
     "esac",
     "",
@@ -74,6 +83,7 @@ test("wake observes the checkout shim and bounds failures", async (t) => {
       assert.match(context, /"port":4321/);
       assert.match(context, /"cap":"observe"/);
       assert.match(context, /Lares homes: home reading/);
+      assert.match(context, /Lares tool menu: sha256:[0-9a-f]{12}/);
     });
     await t.test("a staged hearth holding two index rows wakes with both in the context (L43)", () => {
       writeFileSync(shim, standingShim, { mode: 0o755 });
@@ -128,6 +138,7 @@ test("wake observes the checkout shim and bounds failures", async (t) => {
       assert.match(context, /vessel down \(the observation answered node\.up false\); stand it with tools\/lares-container\.sh up/);
       assert.equal(context.match(/memory index/g)?.length, 1);
       assert.match(context, /memory index skipped: no vessel answers/);
+      assert.doesNotMatch(context, /Lares tool menu:/);
     });
     await t.test("names a hung shim timeout, all three reads inside the harness's 15 seconds", () => {
       writeFileSync(shim, '#!/bin/sh\nsleep 30\n');

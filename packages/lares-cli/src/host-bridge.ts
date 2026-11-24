@@ -9,7 +9,7 @@
  * vessel's own /tmp.
  *
  * HOST VERBS STAY HOME. `home` and `repo` edit this machine's homes and checkout; `help` and every `--help` render
- * from the table; `wing-of` reads a transcript on this disk; `mempalace` tends the guest comparator in this home;
+ * from the table; `mempalace` tends the guest comparator in this home;
  * `meme normalize|check` and `meme project <file> --to md` run over a file with no daemon; `surface` keeps the face pools,
  * which rest on this disk, and asks the vessel only for the face no label settles. They never forward.
  *
@@ -35,6 +35,8 @@ import { existsSync, readFileSync, realpathSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
 import { parseArgs, ArgsError, BOOLEAN_FLAGS, type ParsedArgs } from "./parse-args.js";
 import { envValue, IN_CONTAINER_ENV, surfaceEnvPath } from "./surface-env.js";
+import { ownPeerKind } from "@lararium/node";
+type PeerKind = ReturnType<typeof ownPeerKind>;
 
 export { envValue, IN_CONTAINER_ENV, surfaceEnvPath };
 
@@ -63,6 +65,7 @@ const SHIM_VERB_HELP: Readonly<Record<string, { readonly usage: string; readonly
   found: { usage: "lares found [vessel-found args]", about: ["The founding act, at a terminal: it gathers the human route (a passphrase and/or a paper pin); `--hearth` prints the seed card and reads it back.", "Run it before `up`: the act holds the store. `lares vessel found --help` names its flags."] },
   logs:  { usage: "lares logs [compose-logs args]", about: ["Read the vessel's log (`-f` follows it)."] },
   build: { usage: "lares build [compose-build args]", about: ["Rebuild the vessel image from the committed checkout and stamp HEAD as its revision label.", "A dirty checkout, or none, refuses: the label must name a real commit."] },
+  pulama: { usage: "lares pulama light [--admit] | keeper-commit [<rev>] | keeper-land | status | lock | admit [face…] | …", about: ["The pūlama's hand verbs, on this terminal (the shim reads no route; the pūlama does). `light --admit` lights and admits the reported image under one route (the struck fire).", "`keeper-commit [<rev>]` names the keeper's successor: it prints the successor closure D′ and the source tree, offers the clean-tree re-check (tools/pulama-closure.mjs on a fresh archive), then the pūlama proves your route; the next `lares rite kukulu` then hands the living fire to it unattended."] },
   rebuild: { usage: "lares rebuild [--at <rev> | --prior] [--image]", about: ["The restand `lares rite kukulu` walks (run that one verb): the image of the revision (the tag, a kept image, or a build), then down (keep, census), the pūlama re-stood and lit on this terminal where its code moved or it stands unlit, up, its admit where owed, and the last face worn.", "It reads where the house stands each run, so a stopped run picks up from there; with no terminal, a light or admit owed stops it before anything moves. `--image` stops after the image and prints the reading."] },
 };
 export const SHIM_VERBS: ReadonlySet<string> = new Set(Object.keys(SHIM_VERB_HELP));
@@ -79,7 +82,7 @@ export function shimHelpLines(verb: string): string[] | null {
 }
 
 /** Commands that run on this machine whole. */
-const HOST_COMMANDS: ReadonlySet<string> = new Set(["home", "repo", "help", "wing-of", "ddate", "mempalace", "mcp", "surface"]);
+const HOST_COMMANDS: ReadonlySet<string> = new Set(["home", "repo", "help", "ddate", "mempalace", "mcp", "surface"]);
 
 /** Commands with some sub-verbs local and the rest in the vessel. */
 const MIXED_COMMANDS: ReadonlySet<string> = new Set(["meme", "rite"]);
@@ -133,8 +136,8 @@ function memeLocal(args: ParsedArgs): boolean {
 function readsCredential(args: ParsedArgs): boolean {
   const sub = args.positional[0];
   if (args.command === "found") return true;
-  // A rehive reads the face's own route at the terminal (`vault rehive --face N`).
-  if (args.command === "vault") return sub === "unlock" || sub === "bind" || sub === "unbind" || sub === "rehive";
+  // A rehive reads the face's own route at the terminal (`vault rehive --face N`); a recard the vessel's (`vault recard --face N`).
+  if (args.command === "vault") return sub === "unlock" || sub === "bind" || sub === "unbind" || sub === "rehive" || sub === "recard";
   if (args.command === "vessel") return sub === "found" || sub === "rotate";
   // A face founds under its own ward route, read at the terminal (`persona new N`, the face's custody born under it).
   if (args.command === "persona") return sub === "new";
@@ -196,7 +199,6 @@ export function decideRoute(input: RouteInput): Route {
 const PATH_OPTIONS: Readonly<Record<string, readonly string[]>> = {
   act:     ["out", "source"],                       // REPACK --source <bundle> [--out <file>]; --from names a bag
   ingest:  ["source"],
-  watch:   ["source"],
   meme:    ["file", "out", "root"],
   bag:     ["dir", "root"],                         // bag repo add --root <path>; --dir <bags dir>
   vault:   ["out"],
@@ -412,5 +414,16 @@ export async function bridge(argv: readonly string[], commands: readonly string[
     for (const line of translated.error.lines) console.error(line);
     return translated.error.code;
   }
-  return await forwardToShim(shim as string, translated.argv);
+  return await forwardToShim(shim as string, translated.argv, forwardEnvFor(process.env, ownPeerKind(process.env)));
+}
+
+/**
+ * THE HOST CHAIN CROSSES THE WALL AS THE SEAT MARK (hitl-reads-a-hand). Inside the vessel an exec'd process has no parent to
+ * walk (its parent pid reads 0), so neither the vessel's own CLI (`readOwnHand`) nor its socket (`peerKindOf`) can see a harness
+ * that launched the host `lares`. The forwarder reads its own host chain BEFORE it forwards any command, and anything but a
+ * person's hand (`ai`, or `unknown`: an unread chain never reads as a person) sends the forwarded child the seat mark
+ * (`CLAUDECODE=1`), which the shim hands into the vessel by name. Every hand verb inside then refuses as it refuses a seat.
+ */
+export function forwardEnvFor(env: NodeJS.ProcessEnv, kind: PeerKind): NodeJS.ProcessEnv {
+  return kind === "hand" ? env : { ...env, CLAUDECODE: "1" };
 }

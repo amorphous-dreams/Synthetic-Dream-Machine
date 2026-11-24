@@ -291,7 +291,7 @@ describe("meme-put then meme-get on a wiki with a working layer", () => {
   test("REFUSAL: meme-project over that pointer refuses under the same name, and the in-VM face read refuses too", async () => {
     const { opts, working } = wikiWithWorkingLayer("lares");
     await working.put({ tiddler: { title: URI, type: "image/png", _is_skinny: "yes", textCid: "ab".repeat(32) }, meta: {} }, { kind: "lares-verb", requestId: "seed" }, { bag: wikiSlotUri("lares", "working") });
-    const refusal = await makeMemeProjectReactor(opts)({ recipe: "lares", uri: URI, to: "mem" }, ctx("r2")).catch((e: unknown) => e) as { name?: string; reason?: string };
+    const refusal = await makeMemeProjectReactor(opts)({ recipe: "lares", uri: URI, to: "md" }, ctx("r2")).catch((e: unknown) => e) as { name?: string; reason?: string };
     expect(refusal.name).toBe("VerbRefusal");
     expect(refusal.reason).toBe("pointer-body");
 
@@ -304,7 +304,7 @@ describe("meme-put then meme-get on a wiki with a working layer", () => {
       ...opts,
       tw5: { $tw: { wiki: { ...w, getTiddlerText: () => "lar:///ha.ka.ba/wikis/daemon/working" }, lares: { meme: { project: () => { rendered++; return { text: "" }; } } } } },
     } as unknown as MemeVerbOptions;
-    const atAnchor = await makeMemeProjectReactor(anchorOpts)({ recipe: "default", uri: URI, to: "mem" }, ctx("r3")).catch((e: unknown) => e) as { name?: string; reason?: string };
+    const atAnchor = await makeMemeProjectReactor(anchorOpts)({ recipe: "default", uri: URI, to: "md" }, ctx("r3")).catch((e: unknown) => e) as { name?: string; reason?: string };
     expect(atAnchor.reason).toBe("pointer-body");
     expect(rendered).toBe(0);
     // CONTROL: the face reads a bare hold as its bytes.

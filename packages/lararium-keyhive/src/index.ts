@@ -10,18 +10,22 @@ export type {
   PeerDID, KeyhiveAccess, EventStoreRef,
 } from "./capability-provider.js";
 
-export { KeyhiveProvider, ArchiveIdentityMismatch, ensureKeyhiveWasm, setKeyhiveWasmBytes, KEYHIVE_TRACE_ENV, keyhiveTraceAsked } from "./keyhive-provider.js";
+export { KeyhiveProvider, ArchiveIdentityMismatch, PrekeySecretAbsent, SealedUnderLostDocument, ContentKeyNotHeld, ensureKeyhiveWasm, setKeyhiveWasmBytes, KEYHIVE_TRACE_ENV, keyhiveTraceAsked } from "./keyhive-provider.js";
 export { makeFaceBagDoor, faceOwnerVerifier } from "./face-bag-door.js";
 export type { FaceBagDoor } from "./face-bag-door.js";
 export { answerKahuaCap } from "./kahua-cap.js";
 export { proposeDraftsToKahua, pageTitleList, KahuaProposeRefused, type PageProposeInput } from "./kahua-page-propose.js";
 export { registerBagsDurably, daemonBagDocLedger, planeBagDocLedger } from "./bag-doc-ledger.js";
+export type { DurableRegistration } from "./bag-doc-ledger.js";
 export type { BagDocLedger } from "./bag-doc-ledger.js";
 export { keyhiveLockboxShore, encodeLockboxBox, readLockboxBox } from "./keyhive-lockbox.js";
 export type { LockboxProvider } from "./keyhive-lockbox.js";
 export { seatContentKeys } from "./content-key-seat.js";
+export { REALM_WORKBENCH_HISTORY, RealmWriterBook, realmRestBag, realmRestPort, realmWorkbenchFounding, rosterReaders, WAIT_FOR_OWNER_CURE } from "./realm-rest.js";
+export type { RealmFace, RealmRestBag, RealmRestPort } from "./realm-rest.js";
 export type { ContentKeySeat, ContentKeySeatInput, ContentKeyProvider, SessionProof } from "./content-key-seat.js";
-export { certificateUnderChain, ownChainStanding } from "./island-session-proof.js";
+export { certificateUnderChain, chainName, faceStanding, ownChainStanding } from "./island-session-proof.js";
+export type { RealmWriters } from "./island-session-proof.js";
 export type { IslandSessionProof, SessionAsk, SessionReading } from "./island-session-proof.js";
 export { islandSessionDoor } from "./island-session-proof.js";
 export type { ProviderChunkRest } from "./capability-provider.js";
@@ -50,8 +54,8 @@ export type { EventStore, EventRecord } from "./event-store.js";
 export { DaemonEventStore, capEventTitle } from "./daemon-event-store.js";
 export type { DaemonEventStoreOptions, SecretRestCapability } from "./daemon-event-store.js";
 
-export { bootDaemonKeyhive, FacelessKeyhiveRefused } from "./boot-daemon-keyhive.js";
-export type { BootDaemonKeyhiveInput, BootDaemonKeyhiveResult } from "./boot-daemon-keyhive.js";
+export { bootDaemonKeyhive, FacelessKeyhiveRefused, FaceHoldsNoPrekeySecret, FaceRecardRefused, recardCommand } from "./boot-daemon-keyhive.js";
+export type { BootDaemonKeyhiveInput, BootDaemonKeyhiveResult, BootDaemonKeyhiveRecard } from "./boot-daemon-keyhive.js";
 // THE ONE ROAD a daemon island reads its lease frontier by — its own daemon layer, two verdicts never merged.
 export { readLeaseFrontier, controlLayerOf } from "./lease-frontier.js";
 export type { LeaseFrontier, ControlLayerHolder } from "./lease-frontier.js";
@@ -86,6 +90,7 @@ export type {
 export { runReadmitEdge, type ReadmitEdgeInput } from "./recovery-core.js";
 export { faceOperationTitle, readFaceOperation, writeFaceOperation } from "./face-operation-record.js";
 export { runFaceJoinOperation } from "./face-join-operation.js";
+export { faceDoors, type FaceDoors, type FaceDoorHandle } from "./face-doors.js";
 export { makeFaceIntentDoor, requestFaceJoin, faceJoinNonce, makeFaceIntentReader, admitAgentEntry, witnessed, witnessedStandings, watchHandles, settledRunsOf } from "./face-intent-door.js";
 export { makeSeatSummons, foundingHearthOf, standingOfReading, standingOwnSummons, ownSummonsOf } from "./face-seat-summons.js";
 export type { SeatSummonsPorts, SeatSummonsAnswer } from "./face-seat-summons.js";

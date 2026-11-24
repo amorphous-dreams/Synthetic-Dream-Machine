@@ -2,7 +2,8 @@
 /*
  * SessionStart observes the container through the checkout's shim, reads the worn face's rows in play and memory index
  * through the same shim, and carries them into the wake beside the homes line (road `L43`). The home reading retains its own CLI
- * route. No read acts to stand a vessel. What the wake says lives in `lares-wake-core.mjs`.
+ * route. No read acts to stand a vessel. What the wake says lives in `lares-wake-core.mjs`, which spawns
+ * `lares-menu-read.mjs` for the menu read.
  */
 import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";

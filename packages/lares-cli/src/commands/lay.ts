@@ -25,18 +25,29 @@
  *
  *   lares vessel lay [--apply] [--yes] [--lift-kahua <N>]   — preview per holding by default (the ingest posture);
  *                                          a bare --yes lifts nothing in kahua: a typed count on a TTY, or --lift-kahua N
+ *   lares vessel lay --workbench [--apply]                  — the checkout's workbench folders alone (`<source>/../wikis/<slug>`)
+ *                                          into each wiki's working layer the worn face mounts; never canon, never a face root
+ *   lares vessel lay --lag                                  — the house's lag; writes nothing
+ *
+ * THE LAG (`readHouseLag`) reads what the kūkulu prints on every raise: each disk-sourced holding's titles its canon lacks (NEW)
+ * or holds in other bytes (CHANGED), scanned against the Synced tree the INGEST gate keeps; each checkout workbench folder's titles
+ * new or moved against its wiki's working layer, with whether the worn face mounts that workbench; and whether the canon source
+ * stands in a checkout (an SDM repo: `pnpm-workspace.yaml` beside its `bags/`), the one case where the raise offers the workbench
+ * lay on the owner's yes. Canon itself fills through promote and the floor's sealed cut: no raise lays it.
  */
 
-import { readdirSync, statSync } from "node:fs";
-import { join } from "node:path";
-import { houseCanonSlugs } from "@lararium/mesh";
+import { existsSync, readdirSync, statSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { houseCanonSlugs, namesTw5Docs, type FloorDriftReading } from "@lararium/mesh";
 import type { ParsedArgs } from "../parse-args.js";
 import { emit } from "../render.js";
-import { larBagsDir, vesselDid } from "../env.js";
+import { larBagsDir, larProjectionsDirOrNone, larRoot, larWikisDir, vesselDid } from "../env.js";
+import { fileToUriForSource, openSyncedTree, scanSource } from "../ingest-core.js";
+import type { HouseLag, LagHolding } from "../rite-kukulu.js";
 import { askShore, readShoreList } from "../shore-core.js";
-import { cmdIngest, type FresherCanonReading } from "./ingest.js";
+import { cmdIngest, type FresherCanonReading, type IngestSink } from "./ingest.js";
 import { cmdAct } from "./act.js";
-import { LIVE_MIRROR_DOORS, type MirrorDoors } from "../seed-mirrors.js";
+import { LIVE_MIRROR_DOORS, readBenchLag, type MirrorDoors } from "../seed-mirrors.js";
 import { runMirrors } from "../seed-mirror-leg.js";
 
 export interface LayHolding {
@@ -47,6 +58,24 @@ export interface LayHolding {
   readonly exitCode: number;              // the gesture's verdict for this holding
   readonly reason?: string;               // why a holding took no road
   readonly fresher?: FresherCanonReading; // working copies that shadow a canon record this lay moved past their base
+  readonly outcome?: { readonly state: "committed" | "unknown"; readonly requestId: string }; // a wave whose wait ended, read back
+}
+
+/** The one line a laid holding prints. */
+/**
+ * The one line a laid holding prints. A WAIT THAT ENDED IS NO FAILURE: a wave whose receipt read `committed` prints
+ * committed with its request id and the read-back, one that read nothing prints unknown with its id; ✗ stays for a
+ * gesture that failed.
+ */
+export function layHoldingLine(row: LayHolding, carriers: number, elapsed: string): string {
+  if (row.outcome !== undefined) {
+    const said = row.outcome.state === "committed"
+      ? "committed; its outcome had not landed when the wait ended"
+      : "outcome unknown";
+    return `◐ ${row.holding}: ${carriers} files · ${elapsed} · ${said} · read \`lares vessel request ${row.outcome.requestId}\` · retry safe (diff-gated)`;
+  }
+  const retry = row.exitCode === 0 ? "retry safe" : "retry safe (diff-gated)";
+  return `${row.exitCode === 0 ? "✓" : "✗"} ${row.holding}: ${carriers} files · ${elapsed} · ${retry}`;
 }
 
 export { discoverHoldings, canonIsDisk } from "../holdings.js";
@@ -54,6 +83,10 @@ export { discoverHoldings, canonIsDisk } from "../holdings.js";
 /** The lay's word for a house canon holding on a face outside the Kahu cabal (action-handler `HOUSE_CANON_READS_FLOOR`). */
 export const HOUSE_CANON_FLOOR_REASON = "house canon, written by the Kahu steward (h0); this face reads the floor";
 import { canonIsDisk, discoverHoldings } from "../holdings.js";
+import { pendingReceipts, retirementLine, type Retirement } from "../shore-retirement.js";
+import { storeVerb } from "../store-door.js";
+import { udsAlive } from "../local-connector.js";
+import { floorDriftNames, floorDriftTally } from "./floor.js";
 
 /**
  * Feed ONE holding into its canon. A disk-sourced holding: CREATE (applied runs only; it converges on the bag that
@@ -64,6 +97,11 @@ export async function layHolding(
   h: { holding: string; source: string; toBag: string },
   diskSourced: boolean = canonIsDisk(h),
 ): Promise<LayHolding> {
+  // A dir named for the TW5 docs library stands no bag (`tw5-docs-name`, `projectionRoots`): the lay names that, never the
+  // off-disk reason the sourced-slug reading would otherwise give it.
+  if (namesTw5Docs(h.holding)) {
+    return { ...h, gesture: "skip", exitCode: 0, reason: "tw5-docs-reserved: dir stands no bag (the name rests with the read-only TW5 docs library, `--recipe tw5-docs`)" };
+  }
   if (!diskSourced) {
     return { ...h, gesture: "skip", exitCode: 0, reason: "its canon source stands off disk (not under the canon source the daemon reads, or a private plane): the lay feeds disk canon alone" };
   }
@@ -84,14 +122,14 @@ export async function layHolding(
   }
   // New content SURFACES for the operator to grade: without `--yes` the ingest gate asks; `--yes` (the operator's
   // relayed approval) passes through.
-  const sink: { fresher?: FresherCanonReading } = {};
+  const sink: IngestSink = {};
   const exitCode = await withIngestTicks(h.holding, () => cmdIngest({
     command: "ingest",
     positional: [],
     options: { ...args.options, source: h.source, to: h.toBag },
     flags: args.flags,
   }, sink));
-  return { ...h, gesture: "ingest", exitCode, ...(sink.fresher ? { fresher: sink.fresher } : {}) };
+  return { ...h, gesture: "ingest", exitCode, ...(sink.fresher ? { fresher: sink.fresher } : {}), ...(exitCode !== 0 && sink.outcome ? { outcome: sink.outcome } : {}) };
 }
 
 /**
@@ -99,15 +137,29 @@ export async function layHolding(
  * stands pending at the shore. The lay counts what stands pending per bag it fed and prints the one batch answer per
  * bag, so a person answers once rather than carrier by carrier.
  */
-export function pendingRemovalLines(pending: ReadonlyArray<Record<string, unknown>>, bags: readonly string[]): string[] {
-  const counts = new Map<string, number>();
+export function pendingRemovalLines(pending: ReadonlyArray<Record<string, unknown>>, bags: readonly string[], receipts: ReadonlyMap<string, Retirement> = new Map()): string[] {
+  const rows = new Map<string, Array<Record<string, unknown>>>();
   for (const p of pending) {
     const bag = String(p["bagId"]);
-    if (bags.includes(bag)) counts.set(bag, (counts.get(bag) ?? 0) + 1);
+    if (bags.includes(bag)) rows.set(bag, [...(rows.get(bag) ?? []), p]);
   }
-  return [...counts].sort(([a], [b]) => (a < b ? -1 : 1)).map(([bag, n]) =>
-    `lay: ${n} pending removal(s) in ${bag}: the files left disk and nothing tombstoned; answer once with \`lares shore remove --all --count ${n} --bag ${bag}\` (or \`restore --all --count ${n} --bag ${bag}\`)`);
+  return [...rows].sort(([a], [b]) => (a < b ? -1 : 1)).flatMap(([bag, held]) => {
+    const n = held.length;
+    // THE RECEIPT: each carrier a commit took from the checkout carries that commit beneath its bag's count, up to a few; `lares shore` names each.
+    const retired = held.flatMap((p) => {
+      const r = typeof p["path"] === "string" ? receipts.get(p["path"]) : undefined;
+      return r === undefined ? [] : [`lay:   ${String(p["uri"])}: ${retirementLine(r)}`];
+    });
+    return [
+      `lay: ${n} pending removal(s) in ${bag}: the files left disk and nothing tombstoned; answer once with \`lares shore remove --all --count ${n} --bag ${bag}\` (or \`restore --all --count ${n} --bag ${bag}\`)`,
+      ...retired.slice(0, LAY_RECEIPT_NAMES),
+      ...(retired.length > LAY_RECEIPT_NAMES ? [`lay:   … ${retired.length - LAY_RECEIPT_NAMES} more retired carrier(s): \`lares shore\` names each`] : []),
+    ];
+  });
 }
+
+/** How many retired carriers a lay names beneath one bag's count before it counts the rest. */
+export const LAY_RECEIPT_NAMES = 8;
 
 /** How many fresher-canon titles a report names before it counts the rest. */
 export const SEED_FRESHER_NAMES = 8;
@@ -187,8 +239,81 @@ export function runMirrorLeg(args: ParsedArgs, doors: MirrorDoors, opts: { kahua
   return runMirrors({ apply: args.flags["apply"] === true, liftKahua: args.options["lift-kahua"], json: args.flags["json"] === true, ...(opts.kahuaOnly ? { kahuaOnly: true } : {}) }, doors);
 }
 
-export async function cmdLay(args: ParsedArgs, mirrorDoors: MirrorDoors = LIVE_MIRROR_DOORS): Promise<number> {
+/** Whether a canon source dir stands in a checkout of this repo: the `pnpm-workspace.yaml` the repo root carries beside `bags/`. */
+export const canonSourceIsCheckout = (bagsDir: string): boolean => existsSync(join(dirname(bagsDir), "pnpm-workspace.yaml"));
+
+/**
+ * THE HOUSE'S LAG, read and never written: every disk-sourced holding scanned against the Synced tree (the INGEST gate's own two
+ * cheap legs, no daemon). A title the tree never synced reads NEW; one whose bytes moved (or that moved home) reads CHANGED. A
+ * holding whose canon stands off disk takes no lay, so it counts no lag. Beside it, each checkout workbench's lag and seat
+ * (`readBenchLag`).
+ */
+export async function readHouseLag(doors: MirrorDoors = LIVE_MIRROR_DOORS, bagsDir: string = larBagsDir()): Promise<HouseLag> {
+  const root = larRoot();
+  const tree = openSyncedTree();
+  const projections = larProjectionsDirOrNone();
+  const dirs = { bags: bagsDir, wikis: larWikisDir(), ...(projections !== undefined ? { projections } : {}) };
+  const holdings: LagHolding[] = [];
+  for (const h of discoverHoldings(bagsDir)) {
+    if (!canonIsDisk(h)) continue;
+    const scan = scanSource(root, h.source, h.toBag, tree, fileToUriForSource(root, h.source, dirs, tree));
+    const rows = scan?.rows ?? [];
+    holdings.push({
+      holding: h.holding, toBag: h.toBag,
+      new: rows.filter((r) => r.status === "new").map((r) => r.uri),
+      changed: rows.filter((r) => r.status === "changed" || r.status === "renamed").map((r) => r.uri),
+    });
+  }
+  const benches = await readBenchLag(doors);
+  return {
+    source: bagsDir, checkout: canonSourceIsCheckout(bagsDir), holdings, lag: holdings.reduce((n, h) => n + h.new.length + h.changed.length, 0),
+    wikis: benches.dir, benches: benches.benches, benchLag: benches.benches.reduce((n, b) => n + b.planned.length, 0),
+  };
+}
+
+/**
+ * THE FLOOR'S DRIFT, as the standing vessel reads it (`floor-status`'s `floorDrift`): each live public-canon carrier the floor it
+ * serves misses or serves with older bytes. Asked of a standing vessel alone, since the lag reads off disk and opens no store. Where
+ * it does not read, it answers null with the reason by name: no vessel stands, the vessel answers no drift field (its build carries no
+ * drift reading), or the vessel's own reason. Never a zero it did not count.
+ */
+export async function liveFloorDrift(): Promise<FloorDriftReading> {
+  if (!(await udsAlive())) return { drift: null, why: "no standing vessel answers the floor read" };
+  const { output } = await storeVerb("floor-status", {});
+  if (typeof output["refused"] === "string") return { drift: null, why: `the floor read refused: ${output["refused"]}` };
+  const drift = output["floorDrift"];
+  if (drift !== null && typeof drift === "object") return { drift: drift as NonNullable<FloorDriftReading["drift"]> };
+  if (!("floorDrift" in output)) return { drift: null, why: "the standing vessel answers no drift reading (its build carries none; a refresh brings it)" };
+  return { drift: null, why: typeof output["floorDriftWhy"] === "string" ? output["floorDriftWhy"] : "the standing vessel reads the drift null and names no reason" };
+}
+
+export async function cmdLay(args: ParsedArgs, mirrorDoors: MirrorDoors = LIVE_MIRROR_DOORS, floorDrift: () => Promise<FloorDriftReading> = liveFloorDrift): Promise<number> {
   const bagsDir = larBagsDir();
+  if (args.flags["lag"]) {
+    const lag = await readHouseLag(mirrorDoors, bagsDir);
+    // THE FLOOR'S DRIFT RIDES BESIDE THE LAG, never inside it: lag counts disk against live canon, the drift live canon against
+    // the floor every recipe outside the cabal's `lares` stack reads.
+    const reading = await floorDrift().catch((e: unknown): FloorDriftReading => ({ drift: null, why: `the floor read faulted: ${(e instanceof Error ? e.message : String(e)).replace(/[\r\n]+/g, " ").trim()}` }));
+    const drift = reading.drift;
+    emit(args, {
+      ok: true,
+      data: { ...lag, floorDrift: drift, ...(reading.why !== undefined ? { floorDriftWhy: reading.why } : {}) } as unknown as Record<string, unknown>,
+      human: () => {
+        for (const h of lag.holdings) console.log(`canon ${h.holding}: ${h.new.length} new, ${h.changed.length} changed`);
+        for (const b of lag.benches) console.log(`workbench ${b.slug}: ${b.planned.length} new or moved${b.mounts === true ? "" : ` · does not mount (${b.why ?? "unread"})`}`);
+        console.log(`lay: canon lags ${lag.source} by ${lag.lag} carrier(s)${lag.wikis === null ? "" : ` · the workbenches lag ${lag.wikis} by ${lag.benchLag}`}${lag.checkout ? "" : " · the source stands in no checkout"}`);
+        if (drift === null) console.log(`floor: drift unread (${reading.why ?? "no reason named"})`);
+        else {
+          console.log(`floor: the floor this vessel serves trails live canon by ${drift.count} carrier(s) · ${floorDriftTally(drift)}`);
+          for (const line of floorDriftNames(drift, "  ")) console.log(line);
+        }
+      },
+    });
+    return 0;
+  }
+  // `--workbench` walks the checkout's workbench folders alone (the lay a kūkulu offers on the owner's yes): no holdings leg, no
+  // face root, no share, no kahua; each workbench lays only where the worn face holds a writer's seat.
+  if (args.flags["workbench"]) return runMirrors({ apply: args.flags["apply"] === true, json: args.flags["json"] === true, benchesOnly: true }, mirrorDoors);
   const holdings = discoverHoldings(bagsDir);
   if (holdings.length === 0) {
     emit(args, {
@@ -208,11 +333,14 @@ export async function cmdLay(args: ParsedArgs, mirrorDoors: MirrorDoors = LIVE_M
     ledger.push(row);
     if (row.gesture === "skip") { console.log(`- ${h.holding}: no road · ${row.reason}`); continue; }
     if (row.gesture === "floor") { console.log(`· ${h.holding}: ${row.reason}`); continue; }
-    const retry = row.exitCode === 0 ? "retry safe" : "retry safe (diff-gated)";
-    console.log(`${row.exitCode === 0 ? "✓" : "✗"} ${h.holding}: ${carriers} files · ${elapsedText(performance.now() - holdingStarted)} · ${retry}`);
+    console.log(layHoldingLine(row, carriers, elapsedText(performance.now() - holdingStarted)));
   }
   const failed = ledger.filter((h) => h.exitCode !== 0);
-  for (const h of failed) console.error(`  ${h.holding}: ${h.gesture} failed (exit ${h.exitCode})`);
+  // A WAVE WHOSE WAIT ENDED READS ITS RECEIPT'S STATE, NEVER "failed": committed or unknown, with its request id.
+  for (const h of failed) {
+    if (h.outcome !== undefined) console.error(`  ${h.holding}: ${h.gesture} ${h.outcome.state} (request ${h.outcome.requestId}); read it with \`lares vessel request ${h.outcome.requestId}\` before a re-run`);
+    else console.error(`  ${h.holding}: ${h.gesture} failed (exit ${h.exitCode})`);
+  }
   // THE FRESHER CANON: working copies keep shadowing the canon this lay moved; the word names them, nothing writes.
   const fresher = ledger.flatMap((h) => (h.fresher?.titles ?? []).map((t) => `${h.holding}:${t}`));
   const fresherCount = ledger.reduce((n, h) => n + (h.fresher?.count ?? 0), 0);
@@ -226,7 +354,7 @@ export async function cmdLay(args: ParsedArgs, mirrorDoors: MirrorDoors = LIVE_M
     try {
       const did = await vesselDid();
       const listed = await readShoreList((a) => askShore(a, did), { op: "list" });
-      if (listed.ok) for (const line of pendingRemovalLines(listed.pending, fed.map((h) => h.toBag))) console.log(line);
+      if (listed.ok) for (const line of pendingRemovalLines(listed.pending, fed.map((h) => h.toBag), pendingReceipts(listed.pending))) console.log(line);
     } catch { /* the shore unread: the lay's own verdict stands; `lares shore` reads it */ }
   }
   const offDisk = ledger.filter((h) => h.gesture === "skip").length;

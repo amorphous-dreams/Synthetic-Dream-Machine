@@ -23,7 +23,7 @@ from lares_mcp import TIDDLER_VERBS, VERB_SEATS, DaemonCoordinator, build_mcp, s
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 with open(os.path.join(_HERE, "fixtures", "tiddler-door-answers.json"), encoding="utf-8") as _f:
-    _ROWS = json.load(_f)["rows"]
+    _ROWS = [r for r in json.load(_f)["rows"] if r["tool"] in TIDDLER_VERBS or r["tool"] == "wiki"]
 
 
 class _FakeDaemon:
@@ -85,7 +85,7 @@ def _mcp():
 
 def _tools():
     mcp = _mcp()
-    return {name: mcp._tool_manager.get_tool(name).fn for name in TIDDLER_VERBS}  # noqa: SLF001 — the registered skins
+    return {name: mcp._tool_manager.get_tool(name).fn for name in (*TIDDLER_VERBS, "wiki")}  # noqa: SLF001 — the registered skins
 
 
 def test_tiddler_tools_register_and_seat_hotl(daemon):
@@ -101,14 +101,15 @@ def test_tiddler_tools_register_and_seat_hotl(daemon):
 
 def test_every_tiddler_tool_states_its_annotations_explicitly(daemon):
     # The schema's defaults read worst-case (destructive, open-world, non-idempotent, not read-only), so each tool
-    # states all four. Reads read-only; the put and the delete name what they move; no tool reaches the open world.
+    # states all four. Reads read-only; the put and the delete name what they move (a whole-text put destroys, an append repeats);
+    # no tool reaches the open world.
     tools = {t.name: t for t in asyncio.run(_mcp().list_tools())}
     want = {
         "wiki_filter":    (True, False, True),
         "tiddler_get":    (True, False, True),
         "wiki_render":    (True, False, True),
         "wiki_status":    (True, False, True),
-        "tiddler_put":    (False, False, True),
+        "tiddler_put":    (False, True, False),   # `text=` replaces the whole text; an append lands again on each call
         "tiddler_delete": (False, True, True),
     }
     for name, (read_only, destructive, idempotent) in want.items():
@@ -119,7 +120,7 @@ def test_every_tiddler_tool_states_its_annotations_explicitly(daemon):
 
 
 def test_the_table_names_every_tool():
-    assert {row["tool"] for row in _ROWS} == set(TIDDLER_VERBS)
+    assert {row["tool"] for row in _ROWS} == set(TIDDLER_VERBS) | {"wiki"}
 
 
 @pytest.mark.parametrize("row", _ROWS, ids=[f"{r['tool']}:{r['wire']['args'].get('title') or r['wire']['args'].get('filter') or 'status'}" for r in _ROWS])
@@ -134,8 +135,9 @@ def test_every_tiddler_tool_refuses_a_missing_container_before_the_wire(daemon):
     t = _tools()
     for call in (lambda: t["wiki_filter"](filter="[tag[x]]"), lambda: t["tiddler_get"](title="T"),
                  lambda: t["wiki_render"](title="T"), lambda: t["tiddler_put"](title="T", fields={"a": "b"}),
-                 lambda: t["tiddler_delete"](title="T"), lambda: t["wiki_status"](),
-                 lambda: t["tiddler_get"](title="T", recipe="default", bag="lares")):
+                 lambda: t["tiddler_delete"](title="T"),
+                 lambda: t["tiddler_get"](title="T", recipe="default", bag="lares"),
+                 lambda: t["wiki_filter"](filter="[tag[x]]", recipe=None)):
         with pytest.raises(ValueError, match="no-container"):
             call()
     assert daemon.lines == []
@@ -149,6 +151,8 @@ def test_arguments_refuse_before_the_wire(daemon):
         t["wiki_render"](recipe="default", title="T", text="span")
     with pytest.raises(ValueError, match="form"):
         t["wiki_render"](recipe="default", title="T", form="pdf")
+    with pytest.raises(ValueError, match="render-output-substrate-refused"):
+        t["wiki_render"](recipe="default", title="T", output="workbench")
     with pytest.raises(ValueError, match="string values"):
         t["tiddler_put"](recipe="default", title="T", fields={"n": 1})
     assert daemon.lines == []
@@ -232,3 +236,127 @@ def test_the_cards_name_the_rendered_read(daemon):
     assert "rendered-from" in filt and "slice" in filt, filt
     for name in ("tiddler_put", "tiddler_delete"):
         assert "rendered-derives" in tools[name].description, name
+
+
+def test_tiddler_get_reads_one_bag_and_the_engine_verbs_name_a_wiki_alone(daemon):
+    # `tiddler_get` reads a bag (one record, no engine) and names it on the wire; every engine verb names `recipe` alone,
+    # so a `bag` there never rides (the call refuses before the wire, the signature carries no `bag`).
+    import inspect
+    t = _tools()
+    daemon.output = {"bag": "lar:///ha.ka.ba/bags/lares", "title": "T", "tiddler": None}
+    assert t["tiddler_get"](title="T", bag="lares") == daemon.output
+    assert daemon.wire() == {"verb": "tiddler-get", "args": {"bag": "lares", "title": "T"}}
+    for name in ("wiki_filter", "wiki_render", "wiki_status"):
+        assert "bag" not in inspect.signature(t[name]).parameters, name
+    for name in ("tiddler_put", "tiddler_delete"):
+        with pytest.raises(ValueError):
+            t[name](title="T", bag="lares")
+    with pytest.raises(TypeError):
+        t["wiki_filter"](filter="[tag[x]]", bag="lares")
+    overview = t["wiki_status"]()
+    assert set(overview) == {"catalog", "activation", "residency"}
+    assert [line["verb"] for line in daemon.lines[-3:]] == ["list-wikis", "wiki-active", "residency"]
+
+
+def test_a_retired_parameter_refuses_aloud_before_the_wire(daemon):
+    # `text` retired into `grain` (the lens and the grain kept apart): a caller still naming it hears the refusal and the
+    # word that replaced it, and nothing crosses the wire; the SDK would otherwise drop it and answer a grain never asked.
+    mcp = _mcp()
+    for value in (False, True):
+        is_error, said = _call(mcp, "tiddler_get", {"title": "T", "recipe": "default", "text": value})
+        assert is_error and "param-retired: `text` retired" in said and 'grain="skinny"' in said, said
+    assert daemon.lines == []
+
+
+def test_title_less_family_listing_refuses_the_flags_it_does_not_read(daemon):
+    # The listing reads container, tree and cursor; a slot, grain, fields or max_bytes beside it refuses by name, as the CLI does.
+    t = _tools()
+    for stray in ({"slot": "#/a"}, {"grain": "fat"}, {"fields": ["text"]}, {"max_bytes": 10}):
+        with pytest.raises(ValueError, match="title-less meme listing"):
+            t["tiddler_get"](meme=True, recipe="default", **stray)
+    assert daemon.lines == []
+
+
+def test_an_append_rides_without_a_base_on_a_record_and_a_slot_and_names_its_words_alone(daemon):
+    t = _tools()
+    daemon.output = {"has": "<<~ has name=`Ledger` params=`recipe/default decision/put hash/sha256:2`>>", "recipe": "default", "title": "Ledger", "decision": "put", "hash": "sha256:2"}
+    assert t["tiddler_put"](title="Ledger", recipe="default", append="a dated note")["hash"] == "sha256:2"
+    assert daemon.wire() == {"verb": "tiddler-put", "args": {"recipe": "default", "title": "Ledger", "append": "a dated note"}}
+    assert t["tiddler_put"](title="Ledger", recipe="default", append="first", create=True)["decision"] == "put"
+    assert daemon.wire() == {"verb": "tiddler-put", "args": {"recipe": "default", "title": "Ledger", "append": "first", "create": True}}
+    before = len(daemon.lines)
+    for crossed in ({"text": "x"}, {"base": "sha256:1"}, {"fields": {"a": "b"}}, {"unset": ["a"]}):
+        with pytest.raises(ValueError, match="append names its words alone"):
+            t["tiddler_put"](title="Ledger", recipe="default", append="y", **crossed)
+    assert len(daemon.lines) == before
+    daemon.output = {"recipe": "default", "title": "Ledger", "decision": "conflict", "hash": "sha256:3"}
+    with pytest.raises(uds.LaresVerbError, match=r"kept moving under the append.*sha256:3"):
+        t["tiddler_put"](title="Ledger", recipe="default", append="y")
+    daemon.output = {"uri": "lar:///t/x", "slot": "#/a", "decision": "ingest", "landed": [], "warnings": []}
+    assert t["tiddler_put"](title="lar:///t/x", meme=True, recipe="default", slot="#/a", append="note")["decision"] == "ingest"
+    assert daemon.wire() == {"verb": "meme-patch", "args": {"recipe": "default", "uri": "lar:///t/x", "slot": "#/a", "append": "note"}}
+
+
+def test_slot_write_names_one_source_and_a_whole_body_write_names_a_base(daemon):
+    t = _tools()
+    for kwargs in ({"slot": "#/a", "base": "sha256:1"}, {"slot": "#/a", "text": "x", "append": "y", "base": "sha256:1"}, {"slot": "#/a", "text": "x"}):
+        with pytest.raises(ValueError):
+            t["tiddler_put"](title="lar:///t/x", meme=True, recipe="default", **kwargs)
+    assert daemon.lines == []
+
+
+def test_meme_all_joins_pages_and_retains_the_first_provenance(daemon):
+    daemon.output = {"has": "<<~ has name=`first`>>", "title": "lar:///t/x", "meme": {"uri": "lar:///t/x", "text": "aloha", "canonicalHash": "hash", "bytes": 5}, "grain": {"applied": "whole"}, "next": None}
+    answer = _tools()["tiddler_get"](title="lar:///t/x", recipe="default", meme=True, all=True)
+    assert answer == daemon.output
+    assert daemon.wire()["args"]["grain"] == "whole"
+
+
+def test_meme_all_joins_utf8_pages_and_refuses_changed_pages(monkeypatch):
+    parts = ['<<^ code=`&#x0001;`>>\n', '<<~ ahu slot=`#/a`>>\né\n<<~/ahu>>\n', '<<~ ahu slot=`#/b`>>\n<<~/ahu>>\n<<^ code=`&#x0004;`>>']
+    size = len(''.join(parts).encode('utf-8'))
+    def page(i):
+        return {"has": f"<<~ has name=`page{i + 1}` params=`layer/home base/partial:p{i + 1}:hash`>>", "title": "lar:///t/x", "recipe": "default", "lens": "meme", "meme": {"uri": "lar:///t/x", "text": parts[i], "canonicalHash": f"partial:p{i + 1}:hash" if i < 2 else "hash", "bytes": size, "page": {"page": i + 1, "pages": 3}}, "grain": {"applied": "whole"}, "next": {"grain": "whole", "after": str(i + 1)} if i < 2 else None}
+    pages = [page(i) for i in range(3)]
+    calls = []
+    def call(verb, args):
+        calls.append(args)
+        return {"results": {"summary": {"ok": True, "output": pages[int(args.get("after", "0"))]}}}
+    monkeypatch.setattr(uds, "call", call)
+    get = _tools()["tiddler_get"]
+    answer = get(title="lar:///t/x", recipe="default", meme=True, all=True)
+    assert answer["meme"]["text"].encode() == ''.join(parts).encode()
+    assert answer["meme"]["canonicalHash"] == "hash"
+    assert answer["has"] == "<<~ has name=`page1` params=`layer/home base/hash`>>"
+    assert answer["next"] is None
+    assert len(calls) == 3
+    pages[1]["meme"]["canonicalHash"] = "partial:p2:other"
+    with pytest.raises(ValueError, match="read-page-mismatch"):
+        get(title="lar:///t/x", recipe="default", meme=True, all=True)
+
+
+@pytest.mark.parametrize("fault", ["cycle", "origin", "page", "missing-text", "short"])
+def test_meme_all_refuses_inconsistent_continuations(monkeypatch, fault):
+    def page(i):
+        return {"has": "<<~ has name=`x`>>", "title": "lar:///t/x", "recipe": "default", "lens": "meme", "meme": {"uri": "lar:///t/x", "text": "x", "canonicalHash": f"partial:p{i}:hash" if i < 3 else "hash", "bytes": 3, "page": {"page": i, "pages": 3}}, "next": {"grain": "whole", "after": str(i)} if i < 3 else None}
+    pages = [page(i) for i in range(1, 4)]
+    if fault == "cycle": pages[1]["next"]["after"] = "1"
+    if fault == "origin": pages[1]["recipe"] = "other"
+    if fault == "page": pages[1]["meme"]["page"]["page"] = 3
+    if fault == "missing-text": del pages[1]["meme"]["text"]
+    if fault == "short": pages[1]["next"] = None
+    def call(verb, args):
+        return {"results": {"summary": {"ok": True, "output": pages[int(args.get("after", "0"))]}}}
+    monkeypatch.setattr(uds, "call", call)
+    with pytest.raises(ValueError, match="read-page-mismatch"):
+        _tools()["tiddler_get"](title="lar:///t/x", recipe="default", meme=True, all=True)
+
+
+def test_meme_all_propagates_a_stale_cursor_without_a_prefix(monkeypatch):
+    def call(verb, args):
+        if "after" in args:
+            raise uds.LaresVerbError("read-cursor-stale")
+        return {"results": {"summary": {"ok": True, "output": {"has": "<<~ has name=`x`>>", "title": "lar:///t/x", "meme": {"text": "prefix", "uri": "lar:///t/x", "canonicalHash": "partial:p1:hash", "bytes": 12, "page": {"page": 1, "pages": 2}}, "next": {"grain": "whole", "after": "1.hash"}}}}}
+    monkeypatch.setattr(uds, "call", call)
+    with pytest.raises(uds.LaresVerbError, match="read-cursor-stale"):
+        _tools()["tiddler_get"](title="lar:///t/x", recipe="default", meme=True, all=True)

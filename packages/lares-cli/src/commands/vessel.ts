@@ -20,6 +20,9 @@
  *   lay    lays every bags holding back into its doc, kind-routed, diff-gated — idempotent
  *   read   the pure inspection that starts nothing
  *
+ * `release` ends one quarantine hold (`<documentId> [--keep|--fresh]`): a hand's write over the stopped store, so it holds a
+ * door of its own rather than riding a flag on the read.
+ *
  * Re-deriving the genesis island is NOT a standalone door: advancing the composition is a MESH act that
  * rides `nexus kahuli` (the engine/grammar ratchet, past a single vessel), and the LOCAL re-derive lives
  * only as an internal step of the rebuild rite + the `build:genesis` build script.
@@ -42,7 +45,9 @@ import { cmdStand }     from "./stand.js";
 import { posturePlan, posturePlanNotice } from "./posture-plan.js";
 import { cmdLay }     from "./lay.js";
 import { cmdRead, cmdStop } from "./read.js";
+import { cmdRelease } from "./vessel-release.js";
 import { cmdRotatePlace } from "./rotate-place.js";
+import { cmdRequest } from "./receipt-cmd.js";
 import { cmdCensus } from "./census.js";
 import { cmdDocCensus } from "./doc-census.js";
 import { fresherBagOf, fresherLines, readFresher, type FresherAsk } from "./vessel-fresher.js";
@@ -52,6 +57,7 @@ import { runVerb } from "../verb-call.js";
 import { summaryOutput } from "../verb-result.js";
 
 import { cmdFloor } from "./floor.js";
+import { cmdHearthRoster } from "./hearth-roster.js";
 
 type Sub = (args: ParsedArgs) => Promise<number>;
 
@@ -182,8 +188,10 @@ const SUBS: Readonly<Record<string, { readonly summary: string; readonly run: Su
   stand: { summary: "bring the daemon up and report — [--foreground] [--with-web] [--restart]", run: standVessel },
   stop:  { summary: "halt the daemon on the port (graceful → forced); a free port reads as stopped",     run: (a) => cmdStop(under(a)) },
   lay:   { summary: "lay every bags/* holding back into its doc, kind-routed and diff-gated",           run: (a) => cmdLay(under(a)) },
-  read:  { summary: "inspect and start nothing — bootstrap, storage, port, seal, personas, quorum",      run: (a) => cmdRead(under(a)) },
-  floor: { summary: "the vessel's floor pin, one per Nexus: `status` (pinned, newest seen, fast-forward, fork) · `accept [<release>]` walks prior from the pin · `seed [--genesis <dir>]` the seed a genesis dir offers beside the founding record — [--nexus <aid>] [--porch <origin>]", run: (a) => cmdFloor(under(a)) },
+  read:  { summary: "inspect and start nothing — bootstrap, storage, port, resting engine falls and held ids (no verb, so it answers a fallen vessel)", run: (a) => cmdRead(under(a)) },
+  release: { summary: "end one quarantine hold, with the vessel stopped: <documentId> returns the bytes · --keep keeps what stands · --fresh starts the id empty", run: (a) => cmdRelease(under(a)) },
+  floor: { summary: "the vessel's floor pin, one per Nexus: `status` (pinned, newest seen, fast-forward, fork) · `accept [<release>]` walks prior from the pin · `seed [--genesis <dir>]` the seed a genesis dir offers beside the founding record — [--grain canon|seed|shadow|lag|all] [--nexus <aid>] [--porch <origin>]", run: (a) => cmdFloor(under(a)) },
+  roster: { summary: "who is home: the worn face and who holds it, the seats here (by presence) and far (by last signed act), the lanes and the open vota — [--json]", run: (a) => cmdHearthRoster(under(a)) },
   census: { summary: "name what a stop would drop: saves held in memory, carriers the projector owes — [--json]; --docs: every stored document, its class and who names it", run: (a) => (VESSEL_CENSUS_ROUTE(a) === "docs" ? cmdDocCensus(under(a)) : cmdCensus(under(a))) },
   fresher: { summary: "each working copy over a canon bag that shadows fresher canon: its base hash beside canon's; then each copy with no base that differs from canon (base unknown) — --bag <slug>", run: async (a) => {
     const named = a.options["bag"];
@@ -208,6 +216,7 @@ const SUBS: Readonly<Record<string, { readonly summary: string; readonly run: Su
     for (const line of fresherLines(bag, read.rows, unknown.rows)) console.log(line);
     return 0;
   } },
+  request: { summary: "read a verb request's receipt, dispatching nothing: <requestId>; --cancel withdraws it before it is read (your own hand, never a timeout's)", run: (a) => cmdRequest(under(a)) },
   rite:  { summary: "the pet-named procedures: founding · refresh · rebuild",                            run: runRite },
 };
 

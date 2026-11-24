@@ -4,15 +4,14 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-cacheable     = true
-hydrate       = true
-l-space       = "stable"
-revision-note = "the standing brief. Operator-stated and load-bearing: this infrastructure exists for groups that need shelter against empire. Every trade downstream re-weights against it"
-role          = "the WHY the rest of the graph reasons toward. Names who this serves, what empire does structurally, and the three design consequences that follow — the recently-arrived case as ACCEPTANCE TEST, categorisation as THE threat, and fluid-not-frozen rank as a survival property"
-tags          = ["api/pono/meme"]
-title         = "lar:///ha.ka.ba/lares/api/pono/shelter-against-empire"
-type          = "text/memetic-wikitext+tiddlywiki"
-uri-path      = "ha.ka.ba/lares/api/pono/shelter-against-empire"
+cacheable = true
+hydrate   = true
+l-space   = "stable"
+role      = "the WHY the rest of the graph reasons toward. Names who this serves, what empire does structurally, and the three design consequences that follow — the recently-arrived case as ACCEPTANCE TEST, categorisation as THE threat, and fluid-not-frozen rank as a survival property. Operator-stated and load-bearing: this infrastructure exists for groups that need shelter against empire, and every trade downstream re-weights against it"
+tags      = ["api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/api/pono/shelter-against-empire"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/pono/shelter-against-empire"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -163,6 +162,6 @@ on the ordering as a judgement across the cases; the individual attributions hol
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;jReuiXtnRwuB2hDHzYzLVpVmjOIlvLAFITq8IiAc52E`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;gwRJ6sdCEVTKqU4KqQhZCPst-TT60JhwSyb2IaGTnpQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

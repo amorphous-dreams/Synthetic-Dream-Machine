@@ -30,7 +30,7 @@ describe("wingFromDir ≡ wing_derive.py wing_from_dir", () => {
   }
 });
 
-describe("resolveTranscriptWing — the resolver `lares wing-of` and the capture share", () => {
+describe("resolveTranscriptWing — the resolver `tools/wing-of.mjs` and the capture share", () => {
   function scratchProject(): { dir: string; done: () => void } {
     const dir = mkdtempSync(join(tmpdir(), "wing-of-"));
     return { dir, done: () => rmSync(dir, { recursive: true, force: true }) };

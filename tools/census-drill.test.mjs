@@ -136,9 +136,9 @@ test("P1 RED: the census reads the face row the vessel answers `mounted`, and a 
     writeFileSync(fake, [
       "const [, , ...a] = process.argv; const s = a.join(' '); const out = (x) => console.log(JSON.stringify(x));",
       "if (s.startsWith('persona list')) out({ ok: true, data: { personas: [{ petname: 'steward', handleIndex: 0 }] } });",
-      "else if (s.startsWith('kahua list')) out({ [process.env.FAKE_FACE_WORD]: true, relation: 'rel-1', items: [] });",
-      "else if (s.startsWith('wiki list')) out({ ok: true, data: { wikis: [] } });",
-      "else if (s.startsWith('meme list')) out({ ok: true, data: { roots: [{ uri: 'lar:///ha.ka.ba/kahua/memory/state/heron', canonicalHash: 'sha256:aa' }] } });",
+      "else if (s.startsWith('kahua get')) out({ [process.env.FAKE_FACE_WORD]: true, relation: 'rel-1', items: [] });",
+      "else if (s.startsWith('wiki status')) out({ ok: true, data: { catalog: { wikis: [] } } });",
+      "else if (s.startsWith('tiddler get --meme')) out({ ok: true, data: { roots: [{ uri: 'lar:///ha.ka.ba/kahua/memory/state/heron', canonicalHash: 'sha256:aa' }] } });",
       "else if (s.startsWith('wiki filter')) out({ ok: true, data: { rows: [] } });",
       "else { console.error('unread door: ' + s); process.exit(9); }",
     ].join("\n"));
@@ -302,7 +302,7 @@ test("a-face-born-after-the-stand-exports: a face `persona new` founds on a stan
     house = await standHouse("late", "steward");
     house.must(["persona", "new", "1", "--name", "engineer"]);
     await house.unlock();
-    const stage = house.lares(["kahua", "list", "--face", "1"]);
+    const stage = house.lares(["kahua", "get", "--face", "1"]);
     assert.equal(stage.status, 0, `the late face's stage reads: ${stage.stdout}${stage.stderr}`);
     const exported = JSON.parse(house.must(["export", join(scratch, "bundle"), "--json"]).stdout.trim().split("\n").pop());
     assert.deepEqual(exported.data.faces, ["steward", "engineer"]);
@@ -322,23 +322,24 @@ test("P2 two real houses: export, import, par; then a deleted meme, a changed me
     const old = await standHouse("old", "steward");
     houses.push(old);
     old.must(["persona", "new", "1", "--name", "engineer"]);
+    // A share to a workbench that rests sealed needs a lit holder of its key to hand the new seat its lockbox: light first.
+    await old.unlock();
     old.must(["wiki", "init", "notes", "--json"]);
     old.must(["wiki", "share", "notes", "--read", "engineer"]);
     // A wiki that holds no page carries by its catalog row, beside its share row.
     old.must(["wiki", "init", "quiet", "--json"]);
     old.must(["wiki", "share", "quiet", "--read", "engineer"]);
-    await old.unlock();
     // The rite holds each workbench before the export (a cold wiki reads `document-unavailable`), and the wiki carries a page,
     // so its workbench travels and the import re-stands it (an empty wiki carries its share row alone).
-    old.must(["wiki", "hold", "notes"]);
-    old.must(["wiki", "hold", "quiet"]);
+    old.must(["wiki", "pin", "notes", "--rotate"]);
+    old.must(["wiki", "pin", "quiet", "--rotate"]);
     const page = join(scratch, "page.mem");
     writeFileSync(page, memeText(PAGE, "a page on the shared wiki", ""));
-    old.must(["meme", "put", PAGE, "--recipe", "notes", "--file", page, "--json"]);
+    old.must(["tiddler", "put", "--meme", PAGE, "--recipe", "notes", "--file", page, "--json"]);
     for (const [uri, body, meta] of [[HERON, "remember the heron", `tags = "stage/index"\ndescription = "the heron"\n`], [POND, "the pond at dusk", ""], [KITE, "fly the kite low", ""]]) {
       const file = join(scratch, `${uri.split("/").pop()}.mem`);
       writeFileSync(file, memeText(uri, body, meta));
-      old.must(["meme", "put", uri, "--recipe", "default", "--file", file, "--json"]);
+      old.must(["tiddler", "put", "--meme", uri, "--recipe", "default", "--file", file, "--json"]);
     }
     // Plain records (no uri-path): one under a stable name, and one under a free title, which the mirror sites at the flattened
     // default (`plain note.tid`) and the restore names by the title its own file states.
@@ -361,8 +362,8 @@ test("P2 two real houses: export, import, par; then a deleted meme, a changed me
     // The bundle carries the keep seat beside its roster: the staged root's route opens it at the import, and no file crosses.
     const imported = fresh.lares(["import", bundle, "--apply", "--json"]);
     assert.equal(JSON.parse(imported.stdout.trim().split("\n").pop()).data?.applied, true, `import: ${imported.stdout}\n${imported.stderr}`);
-    fresh.must(["wiki", "hold", "notes"]);
-    fresh.must(["wiki", "hold", "quiet"]);
+    fresh.must(["wiki", "pin", "notes", "--rotate"]);
+    fresh.must(["wiki", "pin", "quiet", "--rotate"]);
 
     // ── PAR over the real read doors ────────────────────────────────────────────────────────────────────────────
     const par = witness(snapshot, fresh);
@@ -375,11 +376,11 @@ test("P2 two real houses: export, import, par; then a deleted meme, a changed me
     assert.ok(parAnswer.counts.shares >= 2, `the reading saw both shares: ${JSON.stringify(parAnswer.counts)}`);
 
     // ── THE INSTRUMENT FAILS: delete one meme, change another, drop one share ───────────────────────────────────
-    fresh.must(["meme", "delete", POND, "--recipe", "default", "--json"]);
-    const kite = JSON.parse(fresh.must(["meme", "get", KITE, "--recipe", "default", "--json"]).stdout).data;
+    fresh.must(["tiddler", "delete", "--meme", POND, "--recipe", "default", "--json"]);
+    const kite = JSON.parse(fresh.must(["tiddler", "get", KITE, "--recipe", "default", "--meme", "--all", "--json"]).stdout).data.meme;
     const kiteFile = join(scratch, "kite-changed.mem");
     writeFileSync(kiteFile, memeText(KITE, "fly the kite high", ""));
-    fresh.must(["meme", "put", KITE, "--recipe", "default", "--file", kiteFile, "--base", kite.canonicalHash, "--json"]);
+    fresh.must(["tiddler", "put", "--meme", KITE, "--recipe", "default", "--file", kiteFile, "--base", kite.canonicalHash, "--json"]);
     // The share config's file is the person's own hand door (it wins at the next boot): drop the notes row from it.
     const mesh = await import(pathToFileURL(join(repo, "packages/lararium-mesh/dist/index.js")).href);
     const shareFile = join(fresh.root, "config", mesh.SHARE_CONFIG_FILE);

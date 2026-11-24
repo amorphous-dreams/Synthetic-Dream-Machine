@@ -97,6 +97,7 @@ export const HOLDER_REFUSALS = [
   "bag-malformed",            // the bag id reads as no well-formed text
   "bag-unfounded",            // no founding of this bag stands here
   "founding-forked",          // rival foundings stand, and this vessel wrote under none: a person chooses
+  "founding-owned-elsewhere", // another seat founds this bag (a realm workbench's owner), and this seat holds no lockbox of it yet
   "head-ambiguous",           // several heads held, none written under: a person chooses
   "join-across-spans",        // every head held, in unlike spans: that join opens on a fresh base
   "no-head-held",             // this vessel holds no head's key
@@ -146,6 +147,26 @@ export interface ContentKeyHolderPorts {
   readersOf(bagId: string): Promise<readonly ReaderId[]>;
   /** This vessel's own reading of who may write a bag. */
   readonly standing: WriterStanding;
+  /**
+   * ANOTHER SEAT FOUNDS THIS BAG (cabal-realm#/the-workbench): a realm workbench's working bag founds under its realm owner's
+   * holder alone, so a seated face whose holder holds no lockbox of it yet refuses rather than found a rival key. Answers the
+   * cure a person runs (a `lares …` line), or null where this seat may found. Absent: every seat founds its own bags.
+   */
+  readonly foundingOwnedElsewhere?: (bagId: string) => Promise<string | null>;
+  /**
+   * EACH NEW LOCKBOX CHAINS THE PREVIOUS KEYS (a realm workbench, cabal-realm#/the-workbench): a version minted in a span declared
+   * shareable carries every earlier key of the span in its box, so a reader seated later needs the head's box alone. Absent
+   * or false: a box carries its own key, and the past reaches a reader only by an explicit hand-over.
+   */
+  readonly chainsKeys?: (bagId: string) => Promise<boolean>;
+  /**
+   * THE ROSTER'S REMOVALS (a realm workbench): each removal the vessel's ledger counts for the bag's realm, with the reader it
+   * left out. A ROLL DERIVES FROM STATE (Keyhive's `has_pcs_key`): where a removed reader holds a box of the head this vessel
+   * writes under and the head follows no successor for that removal, the next seal mints one first, leaving that reader out
+   * (`rollRoster` runs the same act at once). The vessel notes which readers each of its boxes served. Absent or null: the
+   * bag rolls only on the counted raises a seat roll hands it.
+   */
+  readonly realmRemovals?: (bagId: string) => Promise<readonly { readonly act: string; readonly reader: ReaderId }[] | null>;
   evidenceOf(bagId: string): Promise<BagEvidence>;
   /** Does this vessel read a shadow over its own edge in the bag's scope? */
   ownEdgeShadowed(bagId: string): Promise<boolean>;
@@ -181,6 +202,8 @@ export interface FoundingReading {
   readonly forked:    boolean;
   /** Does this vessel write under this founding? */
   readonly written:   boolean;
+  /** The history its heads' span declared at its opening (`shareable` or `closed`); null where heads sit in unlike spans. */
+  readonly history:   HistoryDeclaration | null;
   /** The readers some counted version's mint could not serve. */
   readonly unserved:  readonly ReaderId[];
   /** Keys a lockbox delivered that no counted record names, with what stopped each record. */
@@ -192,6 +215,9 @@ export interface BagReading {
   /** More than one founding stands: rival foundings, shown at every door. */
   readonly rival:     boolean;
 }
+/** The act prefix of a roll the holder derives from the boxes it wrapped (a served reader the roster leaves out). */
+export const REALM_STATE_ROLL_ACT = "workbench-removal:roll:";
+
 export interface MintOutcome { readonly keyVersion: KeyVersionId; readonly founding: BagLocator; readonly unserved: readonly ReaderId[] }
 
 // ── The memory section ──────────────────────────────────────────────────────────────────────────
@@ -433,12 +459,14 @@ export class ContentKeyHolder {
       for (const lockbox of await store.lockboxes()) {
         const opened = await openLockbox({ lockbox, shore });
         if (!("payload" in opened)) continue;
-        const { bagId, locator, keyVersion, key } = opened.payload;
+        const { bagId, locator, keyVersion, key, chain } = opened.payload;
         let bag = bags.get(bagId);
         if (!bag) { bag = { bagId, lines: new Map() }; bags.set(bagId, bag); }
         let line = bag.lines.get(locator);
         if (!line) { line = { locator, lineage: KeyLineage.empty(), keys: new Map(), records: new Map(), carried: new Map(), why: new Map(), manifests: new Map(), heads: new Map() }; bag.lines.set(locator, line); }
         if (line.keys.has(keyVersion)) key.fill(0); else line.keys.set(keyVersion, key);
+        // A CHAINED BOX (a span declared shareable) delivers each earlier key of its span too: the records count each alike.
+        for (const link of chain ?? []) { if (line.keys.has(link.keyVersion)) link.key.fill(0); else line.keys.set(link.keyVersion, link.key); }
       }
       const records = await store.records("key-version");
       for (const bag of bags.values()) {
@@ -457,7 +485,7 @@ export class ContentKeyHolder {
 
   /** Count one founding's records, parents before children, until a pass counts none. */
   #count(bag: Bag, line: Line, records: readonly SealedRecord<"key-version">[], evidence: BagEvidence): void {
-    const reader = (key: ContentKey) => ({ bagId: bag.bagId, locator: line.locator, key, standing: this.#ports.standing, ...(this.#ports.apart ? { apart: this.#ports.apart } : {}) });
+    const reader = (key: ContentKey) => ({ bagId: bag.bagId, locator: line.locator, key, standing: this.#ports.standing, followsRemoval: this.#follows, ...(this.#ports.apart ? { apart: this.#ports.apart } : {}) });
     // Verify each record once, under the key its own lockbox delivered.
     const pending: { carried: SealedRecord<"key-version">; verified: VerifiedRecord<"key-version"> }[] = [];
     for (const carried of records) {
@@ -518,6 +546,13 @@ export class ContentKeyHolder {
     line.lineage = lineage;
   }
 
+  /** THE LINEAGE A STANDING READS (`WriterStanding.holdsWrite`): does `keyVersion` descend from a successor minted for the
+   *  removal `act`, in whichever founding this vessel counted it? A version no founding counted yet follows none. */
+  readonly #follows = (keyVersion: KeyVersionId, act: string): boolean => {
+    for (const bag of this.#bags?.values() ?? []) for (const line of bag.lines.values()) if (line.lineage.has(keyVersion)) return line.lineage.followsRemoval(keyVersion, act);
+    return false;
+  };
+
   /** The versions of one founding this vessel may seal or open under: counted, with the key in hand. */
   #usable(line: Line): Set<KeyVersionId> {
     return new Set([...line.keys.keys()].filter((version) => line.lineage.has(version)));
@@ -557,9 +592,13 @@ export class ContentKeyHolder {
       const out = new Set(leaveOut.map(bare));
       const readers = (await this.#ports.readersOf(bag.bagId)).filter((reader) => !out.has(bare(reader)));
       if (this.#locked) return refuse("holder-locked");
-      const wrapped = await wrapLockbox({ payload: { bagId: bag.bagId, locator: line.locator, keyVersion, key }, readers, shore, ...(random ? { random } : {}) });
+      // EACH NEW LOCKBOX CHAINS THE PREVIOUS KEYS of a span declared shareable (Keyhive's Envelope idea): a version that
+      // continues such a span carries every earlier key of it this vessel holds, so a late reader needs the head's box alone.
+      const chain = (await this.#ports.chainsKeys?.(bag.bagId)) === true ? this.#chainOf(line, fact.span === keyVersion ? null : fact.span, keyVersion) : [];
+      const wrapped = await wrapLockbox({ payload: { bagId: bag.bagId, locator: line.locator, keyVersion, key, ...(chain.length > 0 ? { chain } : {}) }, readers, shore, ...(random ? { random } : {}) });
       if (!("lockbox" in wrapped)) return refuse("wrap-failed", wrapped.cause ?? wrapped.refusal);
       await this.#rest(() => store.putLockbox(wrapped.lockbox));
+      if ((await this.#ports.realmRemovals?.(bag.bagId)) != null) await this.#noteServed(line, keyVersion, wrapped.served);
       const body: KeyVersionBody = { bag: line.locator, keyVersion, parents: fact.parents, span: fact.span };
       const joinProofs = plan.cause.kind === "join" ? fact.parents.map((parent) => joinProofOf(line.keys.get(parent)!, keyVersion)) : [];
       const secret: KeyVersionPrivate = { cause: plan.cause, history: plan.history, joinProofs, unserved: [...new Set(wrapped.unreached.map(bare))].sort(ascending) };
@@ -594,7 +633,7 @@ export class ContentKeyHolder {
     Promise<{ carried: SealedRecord<K>; verified: VerifiedRecord<K> } | HolderRefusal> {
     const signed = await signRecord({ kind, body, private: secret, bagId, key, signer, ...(this.#ports.random ? { random: this.#ports.random } : {}) });
     if (!("record" in signed)) return refuse("record-refused", signed.cause ? `${signed.refusal}:${signed.cause}` : signed.refusal);
-    const read = readRecord(kind, signed.record, { bagId, locator, key, standing: this.#ports.standing, ...(this.#ports.apart ? { apart: this.#ports.apart } : {}) });
+    const read = readRecord(kind, signed.record, { bagId, locator, key, standing: this.#ports.standing, followsRemoval: this.#follows, ...(this.#ports.apart ? { apart: this.#ports.apart } : {}) });
     if (!("record" in read)) return refuse("record-refused", read.cause ? `${read.refusal}:${read.cause}` : read.refusal);
     return { carried: signed.record, verified: read.record };
   }
@@ -634,7 +673,7 @@ export class ContentKeyHolder {
     for (const carried of await this.#ports.store.records("checkpoint")) {
       const { body } = carried;
       if (body.bag !== line.locator || body.keyVersion !== span || body.span !== span || body.base !== "fresh") continue;
-      const read = readRecord("checkpoint", carried, { bagId: bag.bagId, locator: line.locator, key, standing: this.#ports.standing, ...(this.#ports.apart ? { apart: this.#ports.apart } : {}) });
+      const read = readRecord("checkpoint", carried, { bagId: bag.bagId, locator: line.locator, key, standing: this.#ports.standing, followsRemoval: this.#follows, ...(this.#ports.apart ? { apart: this.#ports.apart } : {}) });
       if ("record" in read && (await this.#ports.values.read(body.address)) !== null) return true;
     }
     return false;
@@ -670,6 +709,65 @@ export class ContentKeyHolder {
     if (heads === undefined) return;
     for (const parent of manifest.body.parents) heads.delete(parent);
     heads.add(id);
+  }
+
+  /** The earlier keys of a shareable span this vessel holds, for a box that chains them; none for a closed span or none named. */
+  #chainOf(line: Line, span: KeyVersionId | null, except: KeyVersionId): { readonly keyVersion: KeyVersionId; readonly key: ContentKey }[] {
+    if (span === null || line.lineage.historyOfSpan(span) !== "shareable") return [];
+    return line.lineage.versionsOfSpan(span).filter((version) => version !== except && line.keys.has(version)).sort(ascending).map((version) => ({ keyVersion: version, key: line.keys.get(version)! }));
+  }
+  /** THE READERS A VERSION'S BOXES SERVED, as this vessel's own note (the roster's state-derived check reads it). Its name and
+   *  its bytes read opaque: a digest of the founding and the version names it, and it holds a digest of each served reader. */
+  async #noteServed(line: Line, keyVersion: KeyVersionId, served: readonly ReaderId[]): Promise<void> {
+    const name = ownNote("served", line.locator, keyVersion);
+    const known = new Set(digestsOf(await this.#ports.store.own(name)));
+    const before = known.size;
+    for (const reader of served) known.add(hex(sha256(utf8Bytes(bare(reader)))));
+    if (known.size !== before) await this.#rest(() => this.#ports.store.noteOwn(name, hexToBytes([...known].sort(ascending).join(""))));
+  }
+  /** Did a box of `keyVersion` (this vessel's own wrap) serve `reader`? */
+  async #served(line: Line, keyVersion: KeyVersionId, reader: ReaderId): Promise<boolean> {
+    return digestsOf(await this.#ports.store.own(ownNote("served", line.locator, keyVersion))).includes(hex(sha256(utf8Bytes(bare(reader)))));
+  }
+
+  /**
+   * THE ROLL THE ROSTER OWES, DERIVED FROM STATE: each removal the vessel's ledger counts for the bag whose reader a box of `head`
+   * served, and that `head` follows no successor for. Where any stands, one successor mints for the head's span, every such
+   * reader left out, and it becomes the head. Null: nothing owed. A vessel under its own shadow mints nothing.
+   */
+  async #rollForRoster(bag: Bag, line: Line, head: KeyVersionId, signer: RecordSigner): Promise<MintOutcome | HolderRefusal | null> {
+    const removals = (await this.#ports.realmRemovals?.(bag.bagId)) ?? null;
+    if (removals === null) return null;
+    const owed: { act: string; reader: ReaderId }[] = [];
+    for (const removal of removals) {
+      if (line.lineage.followsRemoval(head, removal.act)) continue;
+      if (await this.#served(line, head, removal.reader)) owed.push(removal);
+    }
+    // THE ROLL READS THE BOXES TOO: a reader a box of the head served that the roster leaves out owes a successor even where
+    // no removal row names it (a revoke whose row never landed), so the roll never rests on a note alone.
+    const acts = new Set(owed.map((o) => o.act));
+    // Only the realm's founder derives it: a seated face's replica may read a seat it never ingested as absent.
+    const gone = (await this.#ports.foundingOwnedElsewhere?.(bag.bagId)) == null ? await this.#goneReaders(bag.bagId, line, head) : [];
+    if (gone.length > 0) {
+      const act = `${REALM_STATE_ROLL_ACT}${hex(sha256(utf8Bytes(`${head}\n${gone.join("\n")}`)))}`;
+      if (!line.lineage.followsRemoval(head, act)) acts.add(act);
+    }
+    if (acts.size === 0) return null;
+    if (await this.#ports.ownEdgeShadowed(bag.bagId)) return refuse("own-edge-shadowed");
+    const span = line.lineage.fact(head)!.span;
+    const planned = planRemovalRolls(line.lineage, { acts: [...acts], held: this.#usable(line), ownEdgeShadowed: false });
+    if (!("plans" in planned)) return refuse("count-refused", planned.refusal);
+    const plan = planned.plans.find((one) => one.span === span);
+    if (plan === undefined) return null;
+    return this.#mint(bag, line, plan, signer, owed.map((o) => o.reader));
+  }
+
+  /** The digests of readers a box of `head` served that the roster's readers leave out, ascending. */
+  async #goneReaders(bagId: string, line: Line, head: KeyVersionId): Promise<string[]> {
+    const served = digestsOf(await this.#ports.store.own(ownNote("served", line.locator, head)));
+    if (served.length === 0) return [];
+    const standing = new Set((await this.#ports.readersOf(bagId)).map((reader) => hex(sha256(utf8Bytes(bare(reader))))));
+    return served.filter((digest) => !standing.has(digest)).sort(ascending);
   }
 
   /** Found a bag: its first version, under a locator its own key derives. */
@@ -764,13 +862,19 @@ export class ContentKeyHolder {
       if (line.refusal !== "bag-unfounded") return line;
       // A founding follows no removal: while a raise in the bag's scope stays owed, no first version mints.
       if ((owedActs?.() ?? []).length > 0) return refuse("roll-owed");
+      // ONE FOUNDER PER REALM BAG: a seat that does not found this bag waits for the founder's lockbox, never mints a rival.
+      const elsewhere = (await this.#ports.foundingOwnedElsewhere?.(bagId)) ?? null;
+      if (elsewhere !== null) return refuse("founding-owned-elsewhere", elsewhere);
       const made = await this.#found(bags, bagId, founding?.history ?? "closed", signer);
       if (isRefusal(made)) return made;
       line = made.line; founded = made.minted;
     }
     const bag = bags.get(bagId)!;
-    const at = await this.#head(bag, line, signer);
+    let at = await this.#head(bag, line, signer);
     if (isRefusal(at)) return at;
+    // A ROLL DERIVES FROM STATE: a removed reader still holding the head's box owes a successor before anything seals.
+    const rolled = await this.#rollForRoster(bag, line, at.head, signer);
+    if (rolled !== null) { if (isRefusal(rolled)) return rolled; at = { head: rolled.keyVersion }; }
     const written = line;
     const owesRoll = (): boolean => (owedActs?.() ?? []).some((act) => !written.lineage.followsRemoval(at.head, act));
     if (owesRoll()) return refuse("roll-owed");
@@ -875,7 +979,7 @@ export class ContentKeyHolder {
     const known = line.manifests.get(id);
     if (known) return known;
     for (const carried of await this.#ports.store.record("manifest", id)) {
-      const read = readRecord("manifest", carried, { bagId: bag.bagId, locator: line.locator, key, standing: this.#ports.standing, ...(this.#ports.apart ? { apart: this.#ports.apart } : {}) });
+      const read = readRecord("manifest", carried, { bagId: bag.bagId, locator: line.locator, key, standing: this.#ports.standing, followsRemoval: this.#follows, ...(this.#ports.apart ? { apart: this.#ports.apart } : {}) });
       if ("record" in read) { line.manifests.set(id, read.record); return read.record; }
     }
     return null;
@@ -979,7 +1083,7 @@ export class ContentKeyHolder {
         if (carried.body.bag !== written.locator || !this.#usable(written).has(under)) continue;
         if (under !== roll.keyVersion && !lineage.descends(under, roll.keyVersion)) continue;
         const underKey = written.keys.get(under)!;
-        const read = readRecord("re-seal", carried, { bagId: args.bagId, locator: written.locator, key: underKey, standing: this.#ports.standing, ...(this.#ports.apart ? { apart: this.#ports.apart } : {}) });
+        const read = readRecord("re-seal", carried, { bagId: args.bagId, locator: written.locator, key: underKey, standing: this.#ports.standing, followsRemoval: this.#follows, ...(this.#ports.apart ? { apart: this.#ports.apart } : {}) });
         if (!("record" in read) || read.record.private.ref !== args.ref || read.record.private.role !== "blob") continue;
         const rested = await this.#ports.values.read(carried.body.to);
         if (rested === null) return refuse("value-absent");
@@ -1056,7 +1160,7 @@ export class ContentKeyHolder {
         const counted = new Map([...this.#usable(line)].map((version) => [version, line.keys.get(version)!] as const));
         const key = counted.get(carried.body.keyVersion);
         if (key === undefined) { out.push({ id, verdict: "unverified", missing: ["successor", "replaced", "from", "to"] }); continue; }
-        const read = readRecord("re-seal", carried, { bagId, locator: line.locator, key, standing: this.#ports.standing, ...(this.#ports.apart ? { apart: this.#ports.apart } : {}) });
+        const read = readRecord("re-seal", carried, { bagId, locator: line.locator, key, standing: this.#ports.standing, followsRemoval: this.#follows, ...(this.#ports.apart ? { apart: this.#ports.apart } : {}) });
         if (!("record" in read)) { out.push({ id, verdict: "refused", refusal: read.refusal }); continue; }
         const manifests: VerifiedRecord<"manifest">[] = [];
         for (const version of [carried.body.replaced, carried.body.keyVersion]) {
@@ -1204,7 +1308,10 @@ export class ContentKeyHolder {
    * span to that reader alone, signs a hand-over record under the head, and answers one parcel for each
    * version. `missing` names the versions of the span this vessel holds no key for.
    */
-  handOver(args: { readonly bagId: string; readonly reader: ReaderId; readonly from?: KeyVersionId; readonly signer: RecordSigner | null }):
+  handOver(args: { readonly bagId: string; readonly reader: ReaderId; readonly from?: KeyVersionId; readonly signer: RecordSigner | null;
+    /** ONE BOX FOR THE SPAN: the head's lockbox carries every earlier key of the span (a chained box), in place of one box per
+     *  version. The hand-over record names every version alike. */
+    readonly chained?: boolean }):
     Promise<{ readonly parcels: readonly KeyParcel[]; readonly record: SealedRecord<"hand-over">; readonly missing: readonly KeyVersionId[] } | HolderRefusal> {
     return this.#inTurn<{ readonly parcels: readonly KeyParcel[]; readonly record: SealedRecord<"hand-over">; readonly missing: readonly KeyVersionId[] }>(async () => {
       if (!isWellFormedText(args.bagId)) return refuse("bag-malformed");
@@ -1235,8 +1342,9 @@ export class ContentKeyHolder {
       if (!(await this.#ports.readersOf(args.bagId)).some((one) => bare(one) === reader)) return refuse("reader-not-standing");
       const handed = planned.versions.filter((version) => usable.has(version));
       const lockboxes: { version: KeyVersionId; lockbox: LockboxRecord }[] = [];
-      for (const version of handed) {
-        const wrapped = await wrapLockbox({ payload: { bagId: args.bagId, locator: line.locator, keyVersion: version, key: line.keys.get(version)! }, readers: [args.reader], shore, ...(random ? { random } : {}) });
+      for (const version of args.chained === true ? [from!] : handed) {
+        const chain = args.chained === true ? handed.filter((one) => one !== version).sort(ascending).map((one) => ({ keyVersion: one, key: line.keys.get(one)! })) : [];
+        const wrapped = await wrapLockbox({ payload: { bagId: args.bagId, locator: line.locator, keyVersion: version, key: line.keys.get(version)!, ...(chain.length > 0 ? { chain } : {}) }, readers: [args.reader], shore, ...(random ? { random } : {}) });
         if (!("lockbox" in wrapped)) return refuse("wrap-failed", wrapped.cause ?? wrapped.refusal);
         // Nothing rests for a reader this vessel cannot seat: the first wrap says so, before any lockbox lands.
         if (wrapped.unreached.length > 0) return refuse("reader-unreached");
@@ -1247,6 +1355,7 @@ export class ContentKeyHolder {
       if (isRefusal(signed)) return signed;
       for (const { lockbox } of lockboxes) await this.#rest(() => store.putLockbox(lockbox));
       await this.#rest(() => store.putRecord(signed.carried));
+      if ((await this.#ports.realmRemovals?.(args.bagId)) != null) for (const { version } of lockboxes) await this.#noteServed(line, version, [args.reader]);
       const ops = await shore.opsFor(args.reader);
       const parcels = lockboxes.map(({ version, lockbox }): KeyParcel => ({ lockbox, record: line.carried.get(version)!, ops }));
       return { parcels, record: signed.carried, missing: planned.versions.filter((version) => !usable.has(version)) };
@@ -1499,6 +1608,7 @@ export class ContentKeyHolder {
     const foundings = [...bag.lines.values()].sort((a, b) => ascending(a.locator, b.locator)).map((line): FoundingReading => ({
       founding: line.locator, heads: line.lineage.heads(), held: [...this.#usable(line)].sort(ascending), forked: line.lineage.forked(),
       written: written === line.locator,
+      history: ((): HistoryDeclaration | null => { const spans = new Set(line.lineage.heads().map((head) => line.lineage.fact(head)!.span)); return spans.size === 1 ? line.lineage.historyOfSpan([...spans][0]!) : null; })(),
       unserved: [...new Set([...line.records.values()].flatMap((record) => [...record.private.unserved]))].sort(ascending),
       uncounted: [...line.why].filter(([version]) => !line.lineage.has(version)).map(([keyVersion, why]) => ({ keyVersion, why })).sort((a, b) => ascending(a.keyVersion, b.keyVersion)),
     }));
@@ -1514,6 +1624,26 @@ export class ContentKeyHolder {
   }
 
   /** What this vessel reads for one bag: each founding, its heads, what it holds, and what a door must show. */
+  /**
+   * ROLL NOW (Keyhive's `force_pcs_update`): run the roll the roster owes the bag's head at once, under `signer`, so an idle
+   * workbench rotates at the revoke rather than at its next write. Answers the successor it minted, or null where none was owed.
+   */
+  rollRoster(args: { readonly bagId: string; readonly signer: RecordSigner | null }): Promise<{ readonly rolled: MintOutcome | null } | HolderRefusal> {
+    return this.#inTurn<{ readonly rolled: MintOutcome | null }>(async () => {
+      if (!isWellFormedText(args.bagId)) return refuse("bag-malformed");
+      if (args.signer === null) return refuse("signer-unavailable");
+      const bag = (await this.#loaded()).get(args.bagId);
+      const line = await this.#writeLine(bag);
+      if (isRefusal(line)) return line.refusal === "bag-unfounded" ? { rolled: null } : line;
+      const choice = writeHead(line.lineage, this.#usable(line), (await this.#lastHead(line)) ?? undefined);
+      if (!("head" in choice)) return refuse("refusal" in choice ? choice.refusal : "head-ambiguous");
+      const rolled = await this.#rollForRoster(bag!, line, choice.head, args.signer);
+      if (rolled !== null && isRefusal(rolled)) return rolled;
+      if (rolled !== null) await this.#rest(() => this.#noteHead(line, rolled.keyVersion));
+      return { rolled };
+    });
+  }
+
   reading(bagId: string): Promise<BagReading | HolderRefusal> {
     return this.#inTurn<BagReading>(async () => {
       const bag = (await this.#loaded()).get(bagId) ?? { bagId, lines: new Map<BagLocator, Line>() };

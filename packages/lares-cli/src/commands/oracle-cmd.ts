@@ -14,7 +14,12 @@
  * The container law holds: name `--recipe <slug>` (`--recipe default`, the worn face's daemon wiki) or `--bag <slug>`.
  */
 
-import { parseCoins } from "@lararium/mesh/oracle-cast";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { repoRoot } from "@lararium/mesh/node";
+import { PLATFORM_ENTROPY } from "@lararium/mesh/entropy-door";
+import { ORACLE_WIDENS, castFromCoins, castThreeCoins, castReadingTitles, castRecord, castText, parseCoins } from "@lararium/mesh/oracle-cast";
+import { DaemonUnreachable } from "../verb-call.js";
 import { containerArgs } from "../container-target.js";
 import { emit, exitFor } from "../render.js";
 import { DoorUsage, guardDoor, runDoor, wordOf, type DoorPlan } from "./door-call.js";
@@ -38,9 +43,35 @@ export function oraclePlan(args: ParsedArgs, at: string): DoorPlan {
 
 interface Reading { title: string; absent?: boolean; caption?: string; attribution?: string; license?: string; source?: string; text?: string }
 
+/** Read the checkout's carrier families using the same deserializer as the vessel. */
+async function offlineCast(plan: DoorPlan): Promise<Record<string, unknown>> {
+  const ask = { caster: String(plan.args["caster"]), at: String(plan.args["at"]) };
+  const coins = plan.args["coins"] as readonly unknown[] | undefined;
+  const cast = coins ? castFromCoins(coins, ask) : castThreeCoins(PLATFORM_ENTROPY, ask);
+  const { deserializeCarrier } = await import("@lararium/tw5");
+  const readings = castReadingTitles(cast).map((title) => {
+    const relative = title.slice("lar:///ha.ka.ba/lares/library/oracles/".length);
+    const path = join(repoRoot, "bags/crossroads/ha.ka.ba/lares/library/oracles", `${relative}.mem`);
+    const records = deserializeCarrier(readFileSync(path, "utf8"), { title }).records;
+    const root = records.find((record) => record["title"] === title);
+    const slot = records.find((record) => record["title"] === `${title}#/reading`);
+    if (!root || !slot) throw new Error(`offline oracle: carrier lacks reading ${title}`);
+    const named: Record<string, unknown> = { title };
+    for (const key of ["caption", "source", "license", "attribution"]) if (root[key] !== undefined) named[key] = root[key];
+    if (slot["text"] !== undefined) named["text"] = slot["text"];
+    return named;
+  });
+  return { decision: "put", created: false, title: castRecord(cast)["title"], cast: castRecord(cast), text: castText(cast), readings, note: ORACLE_WIDENS, offline: true };
+}
+
 async function oracleCast(args: ParsedArgs): Promise<number> {
   const plan = oraclePlan(args, new Date().toISOString());
-  const ran = await runDoor(args, "oracle cast", plan);
+  let ran: Awaited<ReturnType<typeof runDoor>>;
+  try { ran = await runDoor(args, "oracle cast", plan); }
+  catch (error) {
+    if (!(error instanceof DaemonUnreachable) || plan.args["recipe"] !== "default" || args.options["face"] || args.options["realm"]) throw error;
+    ran = { ok: true, requestId: "", output: await offlineCast(plan) };
+  }
   if (!ran.ok) return ran.exit;
   const answer = ran.output;
   const decision = String(answer["decision"] ?? "");
@@ -61,14 +92,18 @@ async function oracleCast(args: ParsedArgs): Promise<number> {
       }
       console.log("");
       console.log(`cast: ${String(answer["title"])}`);
+      if (answer["offline"] === true) console.log("offline: this cast remains in this reply; no record was saved");
     },
   });
   return exitFor(ok ? "ok" : decision === "exists" ? "conflict" : "verb-error");
 }
 
+/** The one verb the oracle door answers. */
+export const CAST_DOOR_VERBS = ["cast"] as const;
+
 export async function cmdOracle(args: ParsedArgs): Promise<number> {
   const sub = args.positional[0];
-  if (sub !== "cast") {
+  if (sub !== CAST_DOOR_VERBS[0]) {
     if (sub) console.error(`lares oracle: unknown sub-verb "${sub}"`);
     for (const line of helpLines("oracle")) console.error(line);
     return 2;

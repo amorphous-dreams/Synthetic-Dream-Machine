@@ -31,6 +31,7 @@ import { join } from "node:path";
 import { openStaged, cliFor, foundStagedHearth, unlockStaged, type LarInstance, type CliResult } from "../harness/instance.js";
 import { unlockTestCustody } from "../harness/test-door.js";
 import { readFckCarrier } from "../../packages/lararium-mesh/src/fck-envelope.js";
+import { ATTEMPT_BUDGET } from "../../packages/lararium-mesh/src/attempt-budget.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const CLI_BIN   = join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js");
@@ -103,7 +104,7 @@ async function custodyReading(): Promise<Record<string, unknown>> {
 }
 
 /** A recipe read of the witness carrier, as the vessel answers it right now. */
-const readCarrier = (): Promise<CliResult> => cli(PLAIN, ["meme", "get", URI, ...WIKI, "--json"]);
+const readCarrier = (): Promise<CliResult> => cli(PLAIN, ["tiddler", "get", URI, ...WIKI, "--meme", "--all", "--json"]);
 
 /**
  * This suite's rite: the Stable founding act, then persona zero's root split, so a device share rests beside the sealed rows
@@ -158,12 +159,12 @@ describe.skipIf(gaps.length > 0)("★ a vessel sealed under its vessel key stand
 
     const f = join(lar!.root, "seal-carrier.mem");
     writeFileSync(f, meme());
-    const put = await cli(PLAIN, ["meme", "put", URI, ...WIKI, "--file", f, "--json"]);
+    const put = await cli(PLAIN, ["tiddler", "put", "--meme", URI, ...WIKI, "--file", f, "--json"]);
     expect(put.json?.["ok"], said(put)).toBe(true);
     carrierHash = String(dataOf(put)["canonicalHash"]);
     const got = await readCarrier();
     expect(got.json?.["ok"], said(got)).toBe(true);
-    expect(String(dataOf(got)["canonicalHash"])).toBe(carrierHash);
+    expect(String((dataOf(got)["meme"] as Record<string, unknown> | undefined)?.["canonicalHash"])).toBe(carrierHash);
 
     // The hearth's own archive export lands through the sealed writer: still the vessel key's seal, never bare.
     for (const [file, bytes] of Object.entries(rowsAtRest())) expect(sealOf(file, bytes), file).toBe("sealed");
@@ -192,7 +193,8 @@ describe.skipIf(gaps.length > 0)("★ a vessel sealed under its vessel key stand
     console.error(`vessel-sealed MEASURE ④ stand → exit ${stand.code} node=${JSON.stringify(dataOf(stand)["node"])}`);
     const reading = await custodyReading();
     expect(reading["unlocked"]).toBe(false);
-    expect(reading["attemptsLeft"]).toBe(3);
+    // A fresh boot grants the whole budget its owner names (attempt-budget), never a literal the budget can outgrow.
+    expect(reading["attemptsLeft"]).toBe(ATTEMPT_BUDGET);
     // THE FLOOR WRITES NO IDENTITY. A floor stand holds no archive; an export from it landing over the sealed
     // rows would replace the vessel's identity with an empty one. Every row stands exactly as the hearth left it.
     for (const [file, bytes] of Object.entries(rowsAtRest())) {
@@ -208,7 +210,7 @@ describe.skipIf(gaps.length > 0)("★ a vessel sealed under its vessel key stand
     expect(reading).toMatchObject({ unlocked: true, standing: "hearth" });
     const got = await readCarrier();
     expect(got.json?.["ok"], said(got)).toBe(true);
-    expect(String(dataOf(got)["canonicalHash"])).toBe(carrierHash);
+    expect(String((dataOf(got)["meme"] as Record<string, unknown> | undefined)?.["canonicalHash"])).toBe(carrierHash);
     for (const [file, bytes] of Object.entries(rowsAtRest())) expect(sealOf(file, bytes), file).toBe("sealed");
     expect(readFileSync(SHARE()).equals(shareAtFounding), "a stand re-minted the device share").toBe(true);
   }, 300_000);

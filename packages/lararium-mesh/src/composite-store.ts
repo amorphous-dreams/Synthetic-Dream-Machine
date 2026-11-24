@@ -34,7 +34,8 @@ import { buildEffectRecordTiddler, effectLedgerPrefix, effectRecordUri, isEffect
 /** Two flat field bags hold the same keys and the same values (each value read as its string). */
 /**
  * THE HAND'S ORIGINS: a page's save (`tw-local`), a tool's draft, a canvas's draft. None writes a residency ledger: the
- * house's effect recorder alone does (`refuseEffectLedgerWrite`), so a forged row never stands beside the real ones.
+ * house's effect recorder alone does (`refuseEffectLedgerWrite`), so a forged row never stands beside the real ones; nor does
+ * a hand write or remove a shell's record of leaving, the retire's carry alone does.
  */
 const HAND_ORIGINS: ReadonlySet<string> = new Set(["tw-local", "mcp-draft", "canvas-draft"]);
 function refuseHandOnLedger(origin: ChangeOrigin, titles: readonly string[], verb: string): void {

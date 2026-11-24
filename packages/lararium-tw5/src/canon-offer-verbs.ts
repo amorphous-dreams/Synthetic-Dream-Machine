@@ -25,6 +25,7 @@ import {
 } from "@lararium/mesh";
 import { makeBagAccess, type ActionHandlerOptions } from "./action-handler.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
+import { hasLine, pagePlaneRows, param } from "./read-gradient.js";
 
 /** What a host lends the offer verbs beyond the bag reach: the Nexus, its offer table, and the lit face's signer. */
 export interface CanonOfferVerbOptions extends ActionHandlerOptions {
@@ -65,7 +66,8 @@ async function portsOf(opts: CanonOfferVerbOptions, args: Readonly<Record<string
 
 /**
  * HOUSE CANON'S ONE DOCUMENT. Where the vessel names the Kahu realm's standing document for a bag (`reach.systemCanonUrl`), the
- * offer doors read and write THAT document: the one the charter seat's retire and the floor cut read (`nodeCanonStore`). A
+ * offer doors read and write THAT document: the one the charter seat's retire, the floor cut and the floor drift read
+ * (`nodeCanonStore` in `@lararium/node`'s `commands/canon-rows.ts`). A
  * registry row that names another document for the bag never answers here, so a promotion never lands where its retire cannot
  * see it. A vessel whose realm names none (a rig, a page with no realm reach) reaches the bag by access, as every action verb does.
  */
@@ -147,7 +149,11 @@ export function makeOfferListReactor(opts: CanonOfferVerbOptions): VerbReactor {
     const ports = await portsOf(opts, args);
     const bag = typeof args["bag"] === "string" && args["bag"] !== "" ? canonBagOf(args["bag"]) : undefined;
     const out = await readCanonOffers(ports, { ...(bag !== undefined ? { bag } : {}), all: args["all"] === true });
-    return { nexus: ports.nexus, offers: out.offers.map((o) => ({ ...o })), setAside: out.setAside.length };
+    const page = pagePlaneRows(out.offers, typeof args["after"] === "string" ? args["after"] : null,
+      typeof args["limit"] === "number" ? args["limit"] : undefined);
+    return { has: hasLine("offers", [param("source", "nexus-offer-table"), param("grain", "list"), param("count", page.count)]),
+      nexus: ports.nexus, offers: page.rows.map((o) => ({ ...o })), setAside: out.setAside.length,
+      source: "nexus-offer-table", grain: "list", count: page.count, next: page.next };
   });
 }
 
@@ -156,7 +162,9 @@ export function makeOfferShowReactor(opts: CanonOfferVerbOptions): VerbReactor {
   return async (args) => answered(async () => {
     const cid = typeof args["cid"] === "string" ? args["cid"] : "";
     const ports = await portsOf(opts, args);
-    return { nexus: ports.nexus, ...(await showCanonOffer(ports, cid)) };
+    const detail = await showCanonOffer(ports, cid);
+    return { has: hasLine(cid, [param("source", "nexus-offer-table"), param("grain", "item"), param("verified", true)]),
+      nexus: ports.nexus, ...detail, source: "nexus-offer-table", grain: "item", nextOperation: `lares meme offer promote ${cid}` };
   });
 }
 

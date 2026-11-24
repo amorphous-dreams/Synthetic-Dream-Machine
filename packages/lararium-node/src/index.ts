@@ -83,6 +83,8 @@ export {
 export type {
   LifecycleRow, ReconcileResult, BuildResult, PromoteResult, RetireResult, UnRetireResult, PurgeResult,
 } from "./sensorium-lifecycle-verbs.js";
+// THE HAND BEHIND A COMMAND WITH NO SOCKET: the sense lifecycle's hand verbs read the process that runs them (hitl-reads-a-hand).
+export { readOwnHand, ownPeerKind, type HandReading } from "./hand-act-gate.js";
 
 // The LI (sheaf) CONSISTENCY-RADIUS — the Robinson li-disagreement signal over content/structure/form
 // (0 ⟺ they glue; positive ⟺ a localizable obstruction), PAIRED with the KI (cosheaf) co-consistency —
@@ -186,8 +188,9 @@ export type { FaceGateServer, GateSessionRegistry, SeatedGateSession, StoodGate,
 export { openNodeVessel, openNodeHerm, standNodeFloor, seatedSovereignReaders } from "./open-node-vessel.js";
 export { openDaemonVm } from "./open-daemon-vm.js";
 export { runDoctor, formatDoctorReport, enumerateStoreDocs } from "./doctor.js";
-export { FLOOR_SHADOW_FILE, floorShadowFileStore, readFloorShadowFile } from "./floor-shadow-file.js";
-export { probeDocLoad, makeChildProcessDocLoadProbe, quarantineDoc } from "./doc-load-probe.js";
+export { FLOOR_SHADOW_FILE, floorShadowFileStore, readFloorShadowFile, readFloorShadowFileTold, type FloorShadowRead } from "./floor-shadow-file.js";
+export { probeDocLoad, makeChildProcessDocLoadProbe, quarantineDoc, quarantineHolds, quarantineHoldOf, readQuarantineManifests, releaseQuarantinedDoc, QUARANTINE_RELEASE_ACT } from "./doc-load-probe.js";
+export type { QuarantineHold, QuarantineRelease, QuarantineReleaseAct } from "./doc-load-probe.js";
 export { precheckDocStore, docStorePath } from "./store-integrity.js";
 export { persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas, listFaceOrdinals, persistVeilArchive, loadVeilArchive, veilArchivePath, veilArchiveFile, type IdentityAnchors } from "./identity-anchors.js";
 export { rehiveLines, type RehiveSeat, type RehiveAnswerReading } from "./face-rehive-lines.js";
@@ -196,6 +199,12 @@ export type { DaemonVmOptions } from "./open-daemon-vm.js";
 export type { NodeVesselOptions, NodeVesselResult, NodeHermResult, NodeFloor, SovereignReaders, NodeOpenPhase } from "./open-node-vessel.js";
 export { createReadinessState, mountReadinessFace, markReadyOnceStanding } from "./readiness-face.js";
 export type { NodeReadiness, ReadinessState, ReadinessFace } from "./readiness-face.js";
+export { createEngineWatch, engineFatalCauseOf, engineTerminatedRefusal, engineFallBody, tapRepoLogs, tapInboundDocs, islandAskRefusal, ISOLATE_ENGINE, ENGINE_TERMINATED, ENGINE_HAND_ACT } from "./engine-watch.js";
+export { answerEngineFall, armFallKeeper, fallAwareProbeDoors, heldBackReason, heldInFlight, holdBackStorage, keepFallDown, HELD_BACK, HELD_IN_FLIGHT, HELD_HAND_ACT, readEngineFalls, restEngineFall, clearEngineFalls, fallenHolder, engineFallsPath, ENGINE_FALL_EXIT, ENGINE_RESTART_CAP, ENGINE_DOWN_HAND_ACT } from "./engine-fall.js";
+export type { RestingFall, FallAnswer, FallPorts, FallKeeper, FallKeeperPorts, ProbeDoors } from "./engine-fall.js";
+export type { EngineWatch, EngineFall, EngineFatalCause, EnginePath, EngineSettled } from "./engine-watch.js";
+export { createEngineMeter, findEngineMemories, processWasmOf, readProcessWasm, ENGINE_WASM_CEILING_BYTES, WASM_PAGE_BYTES, ENGINE_METER_MARKS, ENGINE_METER_TICK_MS } from "./engine-meter.js";
+export type { EngineMeter, EngineMeterOptions, EngineMeterReading, EngineWasmReading, ProcessWasmReading } from "./engine-meter.js";
 
 export { SOCIAL_BOOTSTRAP_PLUGIN_TITLE } from "./open-node-vessel.js";
 export { SyncedTree, contentHash, syncedTreeKey, syncedTreeDir, type SyncedBase } from "./synced-tree.js";
@@ -203,7 +212,7 @@ export { workspaceRootsOf, workbenchFolders, type WorkbenchFolder, REALMS_PROJEC
 export { bagsFileToUri, wikisFileToUri, mirrorDirFileToUri, siteFileToTitle, type SiteMirror, type FileSiting, HOUSE_IGNORED, houseIgnored, houseExcludeLines, withExcludeBlock,
   POOL_EXCLUDE_OPEN, POOL_EXCLUDE_CLOSE, REALM_EXCLUDE_LINES, WORKSPACE_EXCLUDE_LINES, isTempLayerInternalTitle, TEMP_LAYER_DIR,
   isPrivateProjectionSlug, projectionRoots, type ProjectionRoots } from "./bag-paths.js";
-// The drain, one seat (face-pools W1, W2): the CLI's `lares watch` and the vessel's host over the worn face's pool.
+// The drain, one seat (face-pools W1, W2): the CLI's `lares ingest --watch` and the vessel's host over the worn face's pool.
 export { drainSeat, isWatchNoise, cookieSelfTest, COOKIE_WINDOW_MS, armFacePoolWatch, poolCommitSeam, tendPoolExclude, tendLitFacePool, type ExcludeTending, stageEditsSinceSitting, wakeStageLine, runGit,
   armWorkspaceWatch, workspaceCommitSeam, WORKSPACE_SKIP, WORKSPACE_CLOSE_PREFIX, type WorkspaceWatchOptions,
   WATCHED_PLANES, SITTING_CLOSE_PREFIX, POOL_SETTLE_MS, type DrainSeat, type FacePoolWatch, type FacePoolPorts, type FacePoolWatchOptions, type SeamReading,
@@ -222,6 +231,8 @@ export {
   standsClean, standingAfterFault, standingAfterWave, settleIngest, candidatesOf, applyConfirmedRenames, deletionsOf, pairedDeletions,
   carrierCasFlagged, declaredType, inlineStage, ridesInline, ingestWaveArgs, ingestWaveVerb, islandIngestSubmit, poolIngestPorts, workspaceIngestPorts,
   foldWaveRefusal, mirrorFiles, siteWaveFile, liveLay,
+  INGEST_WAVE_TARGET_MS, INGEST_WAIT_FLOOR_MS, INGEST_WAIT_PER_CARRIER_MS, INGEST_WAIT_PER_MIB_MS, INGEST_WAIT_CAP_MS, ingestWaitBudgetMs,
+  type IngestWaveRecord, type IngestPacing,
   type ScanStatus, type PendingDeletion, type ArmedDeletion, type ScanRow, type ScanSkip, type ScanResult, type FileToUriFn, type MirrorDirs,
   type CarrierAnswer, type AskingCarrier, type IngestSettlement, type IngestVerdict, type StandingAsks, type SubmitIngestOpts,
   type IngestSubmitResult, type IngestSubmit, type StagedCarrier, type CarrierStage, type IslandVerbAsk, type MirrorWave, type MirrorLaid,
@@ -582,3 +593,5 @@ export type { CustodyFrame, CustodyAnswer, CustodyFrameDeps } from "./custody-fr
 export { nodePromoteStores, nodePromoteCas, promotedFile, kapaeFile, PROMOTED_FILE, KAPAE_FILE } from "./promoted-store.js";
 
 export { seatReadBackStandIn, readBackStandInSeated } from "./seal-ceremony.js";
+
+export { FLOOR_WORDS, FLOOR_GRAINS, readFloorDrifts, rowInGrain, floorRowLine, floorCardFor, floorCardTitle, type FloorWord, type FloorGrain, type FloorDriftRow, type FloorCard, type FloorLagInput } from "./floor-card.js";

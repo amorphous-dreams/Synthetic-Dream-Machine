@@ -27,10 +27,14 @@
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane#/the-vessel-pin
  */
-import { ratchetWords, ratchetsDiffer, type FloorAcceptOutcome, type FloorStatus, type GenesisDigests, type RatchetDifference } from "@lararium/mesh";
-import { FloorRefused } from "@lararium/node";
+import { ratchetWords, ratchetsDiffer, type FloorAcceptOutcome, type FloorDrift, type FloorStatus, type GenesisDigests, type RatchetDifference } from "@lararium/mesh";
+import { FloorRefused, FLOOR_GRAINS, floorCardFor, floorRowLine, readFloorDrifts, rowInGrain, type FloorCard, type FloorDriftRow, type FloorGrain, type FloorLagInput } from "@lararium/node";
 import { emit, exitFor } from "../render.js";
 import { storeVerb, storeFailure } from "../store-door.js";
+import { runVerb } from "../verb-call.js";
+import { readVerbOutcome } from "../verb-result.js";
+import { vesselDid } from "../env.js";
+import { readHouseLag } from "./lay.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { HouseRootUnnamed, resolveGenesis } from "@lararium/node";
 import { repoRoot } from "@lararium/mesh/node";
@@ -51,11 +55,60 @@ export type FloorStatusOutput = Partial<FloorStatus> & {
     readonly unread?: string;
   };
   readonly nexusRefused?: { readonly refusal: string; readonly message: string };
+  /** How far the floor this vessel serves trails live public canon, by carrier; null (or absent, on a vessel older than the
+   *  reading) where it does not read. */
+  readonly floorDrift?: FloorDrift | null;
+  /** Why `floorDrift` reads null, by name, where the vessel names it. */
+  readonly floorDriftWhy?: string;
+  /** The five drifts, each by its own word (`@lararium/node` floor-card); absent on a vessel older than the reading. */
+  readonly drifts?: readonly FloorDriftRow[];
+  /** The one card the read refreshed in the daemon wiki's working layer. */
+  readonly card?: FloorCardReceipt;
 };
 
+/** What the card's write answered: its title and the door's decision (`put`, `noop`, or `unwritten` with the reason). */
+export interface FloorCardReceipt { readonly title: string; readonly decision: string; readonly state: string; readonly why?: string }
+
+/** The seed side speaks its floor by this name, so "the floor" names the canon floor alone. */
+const seedWords = (rs: readonly RatchetDifference[]): string => rs.map((r) => `${r.ratchet === "floor" ? "the seed's floor" : r.ratchet} ${r.reading}`).join(" · ");
+
+/** How many carrier names a drift line spells before it counts the rest. */
+const DRIFT_NAMES = 8;
+const named = (titles: readonly string[]): string =>
+  `${titles.slice(0, DRIFT_NAMES).join(", ")}${titles.length > DRIFT_NAMES ? `, … ${titles.length - DRIFT_NAMES} more` : ""}`;
+
+/** The drift's per-slug tally: `lararium 2 missing, 1 older · … · unread sdm`. */
+export function floorDriftTally(d: FloorDrift): string {
+  return [...d.slugs.map((s) => `${s.slug} ${s.missing.length} missing, ${s.older.length} older`), ...(d.unread.length > 0 ? [`unread ${d.unread.join(", ")}`] : [])].join(" · ");
+}
+
+/** The carrier names a drift reading spells, missing first, each line indented by `indent`. */
+export function floorDriftNames(d: FloorDrift, indent: string): string[] {
+  const missing = d.slugs.flatMap((s) => s.missing);
+  const older = d.slugs.flatMap((s) => s.older);
+  return [
+    ...(missing.length > 0 ? [`${indent}missing: ${named(missing)}`] : []),
+    ...(older.length > 0 ? [`${indent}older:   ${named(older)}`] : []),
+  ];
+}
+
+/** The floor drift's lines on the status: the count by carrier and the names, or why it reads unread. */
+function floorDriftLines(d: FloorDrift | null | undefined, why: string | undefined): string[] {
+  if (d === undefined) return ["  floor drift:     unread (the standing vessel answers no drift reading: its build carries none, and a refresh brings it)"];
+  if (d === null) return [`  floor drift:     unread (${why ?? "no reason named"})`];
+  return [`  floor drift:     ${d.count} carrier(s) behind live canon · ${floorDriftTally(d)}`, ...floorDriftNames(d, "    ")];
+}
+
+/** One line per drift, by its own word; the canon row spells its carriers beneath. */
+function driftRowLines(s: FloorStatusOutput, grain: FloorGrain): string[] {
+  return (s.drifts ?? []).filter((r) => rowInGrain(r, grain)).flatMap((r) =>
+    [floorRowLine(r), ...(r.word === "canon floor drift" && s.floorDrift ? [`    ${floorDriftTally(s.floorDrift)}`, ...floorDriftNames(s.floorDrift, "    ")] : [])]);
+}
+
 /** The human lines of `floor status`: both truths, then the Nexus part or its refusal by name. */
-export function floorStatusLines(s: FloorStatusOutput): string[] {
+export function floorStatusLines(s: FloorStatusOutput, grain: FloorGrain = "all"): string[] {
   const lines: string[] = [s.nexus !== undefined ? `floor status · nexus ${s.nexus}` : "floor status"];
+  if (grain !== "all" && s.drifts) return [...lines, ...driftRowLines(s, grain)];
   const g = s.genesis;
   if (g?.unread !== undefined) lines.push(`  founding record: unread here (${g.unread})`);
   else if (g) {
@@ -64,7 +117,7 @@ export function floorStatusLines(s: FloorStatusOutput): string[] {
     lines.push(g.seed === null
       ? "  seed (offered):  none reads"
       : ratchetsDiffer(g.seed.ratchets)
-        ? `  seed (offered):  ${g.seed.cid} — a newer seed waits: ${ratchetWords(g.seed.ratchets)}; the founding record keeps serving, and lay moves canon, never the founding record`
+        ? `  seed (offered):  ${g.seed.cid} — a newer seed waits: ${seedWords(g.seed.ratchets)}; the founding record keeps serving, and lay moves canon, never the founding record`
         : `  seed (offered):  ${g.seed.cid} — same on every ratchet`);
     lines.push(g.floorPin !== null
       ? `  floor pin:       ${g.floorPin.manifestCid} — ${ratchetWords(g.floorPin.ratchets)}`
@@ -72,6 +125,8 @@ export function floorStatusLines(s: FloorStatusOutput): string[] {
         ? "  floor pin:       none (no Nexus charter; the founding record's genesis floor serves)"
         : `  floor pin:       ${s.pinned?.manifest ?? "?"} — its manifest does not read from this vessel's CAS`);
   }
+  lines.push(...(s.drifts ? driftRowLines(s, "all") : floorDriftLines(s.floorDrift, s.floorDriftWhy)));
+  if (s.card) lines.push(`  card:            ${s.card.title} (${s.card.decision}${s.card.why ? `: ${s.card.why}` : ""})`);
   if (s.nexusRefused) {
     lines.push(`  nexus:           refused ${s.nexusRefused.refusal} — ${s.nexusRefused.message}`);
     return lines;
@@ -147,7 +202,57 @@ async function cmdFloorSeed(args: ParsedArgs): Promise<number> {
   return 0;
 }
 
-export async function cmdFloor(args: ParsedArgs): Promise<number> {
+/** The doors `floor status` reads and writes through: the vessel's status, the lay's lag, the card's landing. */
+export interface FloorDoors {
+  status(common: Record<string, unknown>): Promise<Record<string, unknown>>;
+  lag(): Promise<{ readonly lag: FloorLagInput | null; readonly why?: string }>;
+  vessel(): Promise<string>;
+  putCard(card: FloorCard): Promise<{ readonly decision: string; readonly why?: string }>;
+}
+
+/** Where the card lands unwritten, the cure rides the reason: a vessel standing, then the read again. */
+const UNWRITTEN_CURE = "stand the vessel with `lares vessel stand`, then read again with `lares vessel floor status`";
+const unwritten = (why: string): { decision: string; why: string } => ({ decision: "unwritten", why: `${why}; ${UNWRITTEN_CURE}` });
+
+/** Land the card in the worn face's daemon wiki working layer through the tiddler door, as any hand's put would. */
+async function putCardLive(card: FloorCard): Promise<{ decision: string; why?: string }> {
+  let out;
+  try { out = readVerbOutcome(await runVerb("tiddler-put", { recipe: "default", title: card.title, text: card.text, fields: card.fields }, await vesselDid())); }
+  catch (e) { return unwritten((e instanceof Error ? e.message : String(e)).replace(/[\r\n]+/g, " ").trim()); }
+  return out.ok ? { decision: String(out.output["decision"] ?? "put") } : unwritten(out.error ?? "the door refused and named no reason");
+}
+
+export const LIVE_FLOOR_DOORS: FloorDoors = {
+  status: async (common) => (await storeVerb("floor-status", common)).output,
+  lag: async () => {
+    try { return { lag: await readHouseLag() }; }
+    catch (e) { return { lag: null, why: `the lay's lag faulted: ${(e instanceof Error ? e.message : String(e)).replace(/[\r\n]+/g, " ").trim()}` }; }
+  },
+  vessel: () => vesselDid(),
+  putCard: putCardLive,
+};
+
+/**
+ * THE ONE READING: the five drifts into their five rows, and the one card they refresh. The vessel answers canon, seed and shadow;
+ * this door adds the lay's lag (the disk lives here). The card write never fails the read: a door that refuses leaves `unwritten`
+ * with its reason, and the rows still print.
+ */
+export async function readFloorStatus(common: Record<string, unknown>, doors: FloorDoors): Promise<FloorStatusOutput> {
+  const output = await doors.status(common);
+  if (typeof output["refused"] === "string") throw new FloorRefused(String(output["refusal"] ?? "floor-status-refused"), output["refused"]);
+  const s = output as unknown as FloorStatusOutput;
+  const lag = await doors.lag();
+  const rows = readFloorDrifts({
+    canon: { drift: s.floorDrift, ...(s.floorDriftWhy !== undefined ? { why: s.floorDriftWhy } : {}) },
+    seed: s.genesis?.seed ?? null, ...(s.genesis?.unread !== undefined ? { seedWhy: `the founding record reads unread here (${s.genesis.unread})` } : {}),
+    shadow: (output["floorShadow"] ?? null) as never, ...(typeof output["floorShadowWhy"] === "string" ? { shadowWhy: output["floorShadowWhy"] } : {}), lag: lag.lag, ...(lag.why !== undefined ? { lagWhy: lag.why } : {}),
+  });
+  const card = floorCardFor(rows, { vessel: await doors.vessel(), ...(s.nexus !== undefined ? { nexus: s.nexus } : {}) });
+  const put = await doors.putCard(card).catch((e: unknown) => unwritten((e instanceof Error ? e.message : String(e)).replace(/[\r\n]+/g, " ").trim()));
+  return { ...s, drifts: rows, card: { title: card.title, decision: put.decision, state: card.fields["floor-state"] ?? "level", ...("why" in put && put.why ? { why: put.why } : {}) } };
+}
+
+export async function cmdFloor(args: ParsedArgs, doors: FloorDoors = LIVE_FLOOR_DOORS): Promise<number> {
   const act = args.positional[0];
   if (act === "seed") return cmdFloorSeed(args);
   if (act !== "status" && act !== "accept") {
@@ -160,12 +265,15 @@ export async function cmdFloor(args: ParsedArgs): Promise<number> {
   };
   try {
     if (act === "status") {
-      const { output } = await storeVerb("floor-status", common);
-      if (typeof output["refused"] === "string") throw new FloorRefused(String(output["refusal"] ?? "floor-status-refused"), output["refused"]);
-      const s = output as unknown as FloorStatusOutput;
+      const grain = (args.options["grain"] ?? "all") as FloorGrain;
+      if (!(FLOOR_GRAINS as readonly string[]).includes(grain)) {
+        emit(args, { ok: false, error: { code: "usage", message: `--grain names one of ${FLOOR_GRAINS.join(" | ")}` }, human: () => console.error(`lares vessel floor status: --grain names one of ${FLOOR_GRAINS.join(" | ")} (got "${grain}")`) });
+        return 2;
+      }
+      const s = await readFloorStatus(common, doors);
       emit(args, {
-        ok: true, data: { ...s },
-        human: () => { for (const line of floorStatusLines(s)) console.log(line); },
+        ok: true, data: { ...s, ...(s.drifts ? { drifts: s.drifts.filter((r) => rowInGrain(r, grain)) } : {}) },
+        human: () => { for (const line of floorStatusLines(s, grain)) console.log(line); },
       });
       return 0;
     }

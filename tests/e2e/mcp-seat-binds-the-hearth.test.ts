@@ -5,7 +5,7 @@
  * A harness spawns the seat from the entry `lares home tend` writes, with nothing of its own in the
  * environment. So the walk spawns exactly what `resolveLaresMcp` hands back, under a process env that names
  * NO root, and speaks MCP to it over stdio as a harness does: `meme_put` with `recipe="default"` lands a
- * meme, and the CLI's `lares meme get --recipe default` reads the same bytes back from the staged hearth.
+ * meme, and the CLI's `lares tiddler get --recipe default --meme` reads the same bytes back from the staged hearth.
  *
  * CONTROLS: before the put the CLI answers `not-found`; and the same seat spawned WITHOUT the entry's
  * `LAR_ROOT` reaches no daemon at all: the aho resolves no child, and the call answers `hearth-sleeps` from
@@ -145,26 +145,27 @@ describe.skipIf(gaps.length > 0)("★ THE MCP SEAT BINDS THE HEARTH — a harnes
   });
 
   test("control: before the put, the CLI answers not-found", async () => {
-    const r = await lar.cli(["meme", "get", URI, "--recipe", "default", "--json"]);
+    const r = await lar.cli(["tiddler", "get", URI, "--recipe", "default", "--meme", "--all", "--json"]);
     expect(r.code).not.toBe(0);
     expect(`${r.stdout}${r.stderr}`).toMatch(/not-found/);
   });
 
-  test("meme_put with recipe=default through the seat, and `lares meme get --recipe default` read the same bytes", async () => {
+  test("tiddler_put with meme=true through the seat, and `lares tiddler get --recipe default --meme` read the same bytes", async () => {
     const projection = join(daemonWikiDir(lar.root), `${PATH}.mem`);
     expect(existsSync(projection), "control: the fresh daemon wiki has no seat tiddler yet").toBe(false);
     const said = await speak(entry, harnessEnv(entry.env), [
-      { name: "meme_put", arguments: { uri: URI, text: MEME, recipe: "default" } },
-      { name: "meme_get", arguments: { uri: URI, recipe: "default" } },
+      { name: "tiddler_put", arguments: { title: URI, text: MEME, recipe: "default", meme: true } },
+      { name: "tiddler_get", arguments: { title: URI, recipe: "default", meme: true, grain: "whole" } },
     ]);
     expect(said.results.length, `the seat answered ${said.results.length} of 2 calls; stderr:\n${said.stderr.slice(-1500)}`).toBe(2);
     const put = payload(said.results[0]);
-    const seatGet = payload(said.results[1]);
+    // The one door answers its whole envelope: the carrier rides `meme`.
+    const seatGet = payload(said.results[1])["meme"] as Record<string, unknown>;
     expect(put["decision"], JSON.stringify(put)).not.toBe("conflict");
 
-    const r = await lar.cli(["meme", "get", URI, "--recipe", "default", "--json"]);
+    const r = await lar.cli(["tiddler", "get", URI, "--recipe", "default", "--meme", "--all", "--json"]);
     expect(r.code, r.stderr).toBe(0);
-    const cli = (JSON.parse(r.stdout) as { data: { text: string; canonicalHash: string } }).data;
+    const cli = (JSON.parse(r.stdout) as { data: { meme: { text: string; canonicalHash: string } } }).data.meme;
     expect(cli.text).toBe(seatGet["text"]);
     expect(cli.canonicalHash).toBe(seatGet["canonicalHash"]);
     expect(cli.canonicalHash).toBe(put["canonicalHash"]);
@@ -188,7 +189,7 @@ describe.skipIf(gaps.length > 0)("★ THE MCP SEAT BINDS THE HEARTH — a harnes
 
   test("control: the same seat without the entry's LAR_ROOT names no house and reaches no daemon", async () => {
     const said = await speak(entry, harnessEnv({ ...entry.env, LAR_ROOT: "" }), [
-      { name: "meme_get", arguments: { uri: URI, recipe: "default" } },
+      { name: "tiddler_get", arguments: { title: URI, recipe: "default", meme: true } },
     ]);
     // No house root named: the aho resolves its child at each spawn and the resolver names none rather than guess a home,
     // so no child ever stands (`child-unresolved`, never `child-up`) and the call answers `hearth-sleeps`: it never left

@@ -26,7 +26,9 @@ import { helpLines } from "../command-help.js";
 import { refuseUsage } from "../render.js";
 import { storeVerb, StoreDoorRefusal } from "../store-door.js";
 
-const ACTS = new Set(["mint", "propose", "stage", "lift", "withdraw", "carry", "list", "get"]);
+/** Every verb the kahua door answers (`list` answers only to name its move to `get`). */
+export const KAHUA_VERBS = ["mint", "propose", "stage", "lift", "withdraw", "carry", "get"] as const;
+const ACTS: ReadonlySet<string> = new Set([...KAHUA_VERBS, "list"]);
 
 function faceOf(args: ParsedArgs): { face?: number } {
   const raw = args.options["face"];
@@ -117,7 +119,7 @@ function ttyAsk(): ((prompt: string) => Promise<string>) | null {
 
 export async function cmdKahua(args: ParsedArgs, ask: ((prompt: string) => Promise<string>) | null = ttyAsk()): Promise<number> {
   const [act, target] = args.positional;
-  if (!act || !ACTS.has(act)) return refuseUsage(args, "kahua", helpLines("kahua"));
+  if (!act || !ACTS.has(act)) return refuseUsage(args, "kahua", helpLines("kahua"), act ? `unknown sub-verb "${act}"` : "name a sub-verb");
   try {
     const face = faceOf(args);
     const need = (what: string): string => { if (!target) throw new Error(`${act}: name ${what}`); return target; };
@@ -149,8 +151,12 @@ export async function cmdKahua(args: ParsedArgs, ask: ((prompt: string) => Promi
         door = "kahua-carry"; payload = all ? { all: true } : { cids };
         break;
       }
-      case "list": door = "kahua-read"; payload = { action: "list" }; break;
-      default: door = "kahua-read"; payload = { action: "get", title: need("a title"), ...(args.flags["history"] === true ? { history: true } : {}) };
+      case "list": throw new Error("kahua list moved to `kahua get [<title>]`");
+      case "get":
+      default:
+        if (!target && args.flags["history"] === true) throw new Error("get --history needs a title");
+        door = "kahua-read";
+        payload = target ? { action: "get", title: target, ...(args.flags["history"] === true ? { history: true } : {}) } : { action: "list", ...(args.options["after"] ? { after: args.options["after"] } : {}), ...(args.options["limit"] ? { limit: Number(args.options["limit"]) } : {}) };
     }
     const { output } = await storeVerb(door, { ...face, ...payload });
     console.log(JSON.stringify(output));

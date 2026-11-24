@@ -41,16 +41,6 @@ The name borrows the Shinto return-rite (お焚き上げ), which //returns// a t
 
 !!! Axis A ~ standing: the stages, in order
 
-```
-<<~ has entity=`Stage` name=`fleeting` params=`tag/none holds/nothing-on-disk ~ a turn's scratch; the temp slot never persists`>>
-<<~ has entity=`Stage` name=`designed` params=`tag/lifecycle-designed holds/a-shape-argued ~ nothing enacted; status-why names what stands unbuilt`>>
-<<~ has entity=`Stage` name=`standing` params=`tag/lifecycle-standing holds/a-ruling-enacted ~ status-why names the witness that proves it`>>
-<<~ has entity=`Stage` name=`folded` params=`tag/lifecycle-folded holds/pointers-alone ~ every lean closed, every ruling rehomed, every inbound edge re-pointed`>>
-<<~ has entity=`Stage` name=`harvest` params=`tag/lifecycle-harvest holds/materials-awaiting-a-home ~ harvest-to names the living bag; the room's emptiness is the witness`>>
-<<~ has entity=`Stage` name=`retiring` params=`tag/lifecycle-retiring holds/a-last-check-in ~ welded, nothing names it, the commit explains its own ending`>>
-<<~ has entity=`Stage` name=`gone` params=`tag/none holds/git-alone ~ the shelf holds nothing; the commit holds the argument`>>
-```
-
 |! stage |! the tag |! what the carrier holds |! what `status-why` reads |! what `meme check` ENFORCES |
 | ''`fleeting`'' | ''none — no carrier exists'' | a turn's scratch: a `$:/temp` tiddler, a draft in the wiki island's `temp` slot (a `MemoryTiddlerStore`, `island-recipe.ts` `buildIslandRecipe`), a spirit's working note | //nothing — it never reaches a meta block// | ''nothing''. A fleeting thing that wants a check has stopped being fleeting |
 | ''`designed`'' | `lifecycle/designed` | a shape argued whole against the house and the field; leans open by design | what stands ''unbuilt'', in those words | open `-> ?` leans read ''correct''. An empty `#/leans` slot reads ''wrong'': a design with no open question has either been ruled or never argued |
@@ -60,20 +50,15 @@ The name borrows the Shinto return-rite (お焚き上げ), which //returns// a t
 | ''`retiring`'' | `lifecycle/retiring` | the last check-in: welded, nothing names it | the commit explains its own ending | as `folded`: zero inbound, or the sitting reads it `held` |
 | ''`gone`'' | ''none — no carrier exists'' | nothing; git holds the bytes, the commit holds the argument and its trailers (rendered by `tools/changelog-render.mjs`) | //nothing// | the shelf's ''global'' check: zero dangling edges gained |
 
-''A ROOM full of unread material reads `harvest`, never `folded`'' — folding follows the reading. ''The last check-in reads `retiring`'' — the state a reader bisecting the history lands on.
+''Unread material reads `harvest`, never `folded`.'' The last check-in reads `retiring`.
+
+''Each face's memory stage holds a catma store and a pattern-integrity store.'' The harvest reading asks whether a core already predicts each lifted rule. A predicting core carries it; a fresh tell sharpens it; an unpredicted rule becomes a candidate. A new core or changed reason waits for the operator's word under `rule`. The recursive reading follows <<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/pattern-integrity#/recursive-reading`>>; the engineer face's titles stand in the docs record.
 
 !!! Axis B ~ kind: what counts as enactment
 
-```
-<<~ has entity=`Kind` name=`build` params=`enactment/code-plus-a-red-first-witness ~ the default; a designed build owes a test`>>
-<<~ has entity=`Kind` name=`rite` params=`enactment/invocation ~ a practice convened, never built; it can never owe code`>>
-<<~ has entity=`Kind` name=`reading` params=`enactment/a-measurement-dated ~ a field scout or a census; it ages rather than breaks`>>
-<<~ has entity=`Kind` name=`floor` params=`enactment/an-exit ~ a talk-story floor; it closes by moʻolelo, hoike or honest suspension`>>
-```
-
 ''The kind rides `tags` too'' — `kind/rite` · `kind/build` · `kind/reading` · `kind/floor`. The prefixes keep the two questions apart on one key, so a filter never guesses which it answers.
 
-''The axes cross and answer different questions.'' `rite` × `standing` names a convened practice; `reading` × `standing` names a dated measurement, which goes ''stale'' rather than wrong and wants a re-date, never a fire; `floor` × `folded` names the class the fire governs. A ''`build`'' carrier reading `standing` with no witness reads wrong; a ''`rite`'' carrier reading `standing` with no witness reads fine, since invocation IS its witness. Fusing the axes makes one of those two rules unstatable. `talk-story`, `hoike`, both their skills and the runbooks carry `kind/rite` and stand ungoverned.
+''Kind and stage answer different questions.'' A `build` at `standing` owes a witness; a `rite` at `standing` carries its invocation as witness. A dated `reading` grows stale and wants re-dating, never fire. A `floor` closes by moʻolelo, hoike or honest suspension; `floor` × `folded` names the class the fire governs. `talk-story` and `hoike` carry `kind/rite` and stand ungoverned.
 
 !!! The transitions ~ six rites, each with a who, a witness and a record
 
@@ -83,14 +68,14 @@ The name borrows the Shinto return-rite (お焚き上げ), which //returns// a t
 | ''promote'' | `docs/pono/x` → `api/pono/x` | ''the kahu quorum'' — whoever holds `cap("admin", …)` on the canon bag (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/canon-boundary`>>) | the cap gate | the commit |
 | ''fold'' | standing → folded | ''the spirit that closed the last open lean'' — never the carrier's own author witnessing its own fold (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/hoike`>>) | `meme check --edges <carrier> $(git ls-files 'bags/*.mem')` shows ''zero inbound'', and a grep of the source tree and the CHANGELOG finds no `lar:` URI naming it; every ruling reachable at its new `standing` home | each slot rewritten to "folded to `lar:///…`"; `status-why` names the targets; the CHANGELOG names the fold |
 | ''otakiage'' | folded → gone | ''the operator CALLS it; any hand MAY carry it'' (#/the-fire) | the fold's weld still holds at the moment of the fire (re-run, never trusted from the fold commit); the house's checks green in the same commit | the last check-in commit, then the delete commit; ''git holds the argument'', the CHANGELOG holds the fact |
-| ''tombstone'' | //orthogonal — a live record leaving a live group// | `removeMeme` through any skin (`place-meme.ts`) or a person's `lares shore remove` answer (`commands/shore.ts`) | a vanished disk file stays pending; a person answers by name, or a signed standing instruction covers its bounded class (<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/projection-law`>>) | the synced tree's `null` (`synced-tree.ts`); the group's whole tombstone set in the result |
+| ''tombstone'' | //orthogonal — a live record leaving a live group// | the holder answers through the removal door under the tombstone rite | a vanished disk file stays pending; a person answers by name, or a signed standing instruction covers its bounded class (<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/projection-law`>>) | the synced tree's `null`; the group's whole tombstone set in the result |
 
-''The two-commit shape.'' The last check-in and the delete ride ''separate commits'', so the shelf carries one state in which the carrier stands complete, marked as ending, with every pointer re-aimed. A reader bisecting the history lands on a carrier that explains its own ending, never on a diff that removes it.
+''The two-commit shape.'' The last check-in and the burn ride separate commits in the git tree that holds the path — the repository for `bags/`, the face root's or realm root's tree for a wiki (<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection`>>) — so a reader bisecting lands on a carrier that explains its own ending, never on a diff that removes it.
 
 !!! The siblings ~ standings a carrier holds OUTSIDE the ladder
 
 # ''`kapu` — sealed, referee-side, never ended by another hand.'' No hand but the grant-holder's ends a kapu carrier, and a sweep that cannot read a carrier MUST NOT propose it (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kapu`>>; the grace table holds a VEIL blob eight rolls against PUBLIC's one, `cas-caps.ts` `GRACE_RATIO_BY_TIER`).
-# ''`tombstone` — a record removed inside a live group.'' The lifecycle governs a carrier's standing in the shelf; the tombstone governs a record's presence in a group (`removeMeme` takes the whole group; `tombstoneInBag` hides where `removeInBag` removes; `pairRenames` declines ambiguous matches). The two MUST NOT fuse, or a sync flake could burn a carrier.
+# ''`tombstone` — a record removed inside a live group.'' A vanished disk file or a sync flake never reads as a burn; the lifecycle governs a carrier's standing, the tombstone a record's presence in a group. A removal in a wiki held by more than one human asks its holders, who answer by name.
 
 <<~/ahu>>
 
@@ -116,6 +101,8 @@ The name borrows the Shinto return-rite (お焚き上げ), which //returns// a t
 
 !!! What NEVER burns
 
+A seat's fire never burns:
+
 # ''Canon under `api/pono/`.'' An address there has readers the house cannot enumerate; <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/meme#/retirement`>> governs the name, and the bytes at a canon address stay.
 # ''Anything a standing `loulou` still names.'' `meme check --edges` answers it mechanically. ''The weld comes first and the fire second, always.''
 # ''Anything under kapu, or sealed above the reader's tier.'' A sweep that cannot read a carrier cannot judge it.
@@ -125,23 +112,33 @@ The name borrows the Shinto return-rite (お焚き上げ), which //returns// a t
 # ''Any floor with an open lean.'' An unresolved argument holds a claim on the shelf that no tidiness outranks.
 # ''Anything a hoike contests.'' Burning the record a dissent hangs on would close its re-entry key by deletion.
 
-''The hard floor:'' ''the fire burns a path, never a pattern.'' An otakiage touches one path in one tree and reaches no copy anywhere; nothing here MAY reach a record on another vessel — that plane belongs to `removeMeme` and its grace, under the caps, and the two MUST NOT meet.
+''The hard floor:'' ''The fire burns a path, never a pattern'' — a rule leaves only after its home stands. A tiddler, a whole meme or ahu slot, counts as a path on the wiki plane. The fire reaches no copy on another human's vessel.
+
+''Holders choose the plane.'' Where every holder of a wiki stands as one human, whether through one face or many, that human MAY delete their own tiddlers when needed; git's history holds what the delete removed wherever the layer carries a mirror; a delete in a layer with no mirror stays final. This includes a face's memory stage and a domain wiki held only by that human's faces. Where a wiki's holders include another human, removal asks them and they answer by name through the tombstone rite, under grace and caps. A seat MAY propose that removal.
+
+`bags/` carriers keep canon's holders as before: the operator calls; the kahu quorum holds the canon bag.
+
+Where a lower layer holds the title, a seat's fire stops and names it to the holder; a human's own delete there chooses its mode knowingly.
+
+The rite governs a seat's burns; it never gates a human's own delete in a wiki they alone hold. An AI or tasked spirit burns only on the holder's (the operator, for a face they wear) call, through the stages, with the last check-in and delete commits and the gratitude line. A tiddler, whole meme or ahu slot carries its full title; a line in a standing meme gets trued by an edit under the evergreen rule (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/ever-speaking-present`>>). The stage reading and doors stand in the record (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/otakiage#/the-stage-ash`>>).
+
+''Migration reading:'' Road memes carry no landed state: a landed road burns, per state/road. The road reader yields no fold candidates: a road burns at its land, and `[lares.road[set-down]]` lists deferred work for review, never for the fire. `[lares.course[ash-ready]]` lists proved, uncited course items; a hand reads each for fold before naming it a candidate. Proof, weld and two commits govern each burn.
 
 !!! Who calls it
 
-''The operator calls; any hand may carry.'' A Nexus lives on traffic, so its silence ends it with no admin act (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-lifecycle`>>); a `.mem` file at a fixed path never goes quiet, and a stale carrier reads exactly like a standing one. ''The capability answers NONE where quiet does the work, and answers OPERATOR where quiet does nothing.''
+''The operator calls; any hand may carry.'' A fixed path never goes quiet. Its silence cannot answer for the operator, unlike a Nexus whose traffic ends (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-lifecycle`>>).
 
-A spirit MAY close a lean, run the weld and prepare the fold whole; it MUST NOT rule that the argument has ended, for the reason it may not witness its own block. ''An authored ending, ruled at pour time,'' stands as a call already made — the one shape that skips a fresh call. Judgement sits with the operator; mechanics sit with whoever runs the commands. What the carrier MUST NOT do is end in silence, and the two-commit shape enforces that.
+A spirit MAY close a lean, run the weld and prepare the fold whole; it MUST NOT rule its own argument ended. An authored ending, ruled by the operator, supplies the call for a covered carrier; the hand still records `mode=fire` and names that ruling in `caller` before the last check-in commit lands. Without that call, thanks stays a draft. Mechanics follow the operator's ruling.
 
 !!! How it convenes ~ never a calendar
 
-# ''The reading names candidates; it never burns.'' `lares meme sitting` (and `meme check --sitting`) holds the whole shelf at once and names every candidate — `lifecycle/folded` or `lifecycle/retiring` with nothing naming it, plus every harvest room still standing — then stops. ''A carrier any other carrier still names reads `held`, however its stage reads.'' The reading never exits non-zero, so a hook can run it.
-# ''The operator calls the season'' — one sitting, several carriers at once, at a moment the operator names: a phase boundary, a founding, a release. A wave shows its own shape.
+# ''The reading names candidates; it never burns.'' `lares meme sitting` (and `meme check --sitting`) names folded or retiring carriers with nothing naming them, and standing harvest rooms, then stops. ''A carrier any other carrier still names reads `held`, however its stage reads.'' The reading never exits non-zero, so a hook can run it.
+# ''The operator calls the season'' — one sitting, several carriers, at a named phase boundary, founding or release.
 # ''No sigil opens the sitting;'' it convenes as a talk-story floor, which carries the three exits it needs (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/talk-story`>>).
 
 !!! The gratitude line
 
-The last check-in commit's body says four things and stops:
+The thanks call drafts four lines. Only a burn call with `mode=fire` and named `caller` lets those lines land as the last check-in commit body:
 
 # ''What the carrier carried'' — in the present tense, as the thing it held.
 # ''Where each part went'' — the fold targets by `lar:` URI, one hop to the content.
@@ -152,12 +149,47 @@ The ending belongs to the thing's completion, never to its worthlessness — 「
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/sigils`>>
+
+!! Sigils ~ stage records inside a sitting
+
+The sitting convenes as a talk-story floor (#/the-fire). A seat declares these reference definitions in accessible wiki scope before calling them. The shelf call records the reading's candidates. Read inspects each whole carrier and layer; lift seeks each rule's home; weld checks inbound edges and owed homes; thanks drafts the four-line body; burn checks proof and layer; rest tallies committed paths. Each stage returns `output` and `aftermath`; the controller reads the aftermath before releasing the next input. A hand MAY pass one call at a time; a second hand or the operator reads its aftermath before the next input passes. `unchecked` exposes missing work. `mu` and `aperture` name the attention instruments (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot#/mu-five-tools`>>, <<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot#/aperture`>>).
+
+```memetic-wikitext
+\procedure ~otakiage-shelf(input:"unchecked" act:"unchecked" output:"unchecked" aftermath:"unchecked" then:"unchecked" mu:"00" aperture:"18/theme") Shelf (<<mu>>, <<aperture>>): input <<input>>; act <<act>>; output <<output>>. Aftermath: <<aftermath>>. Then <<then>> takes <<output>> as input.
+\procedure ~otakiage-read(input:"unchecked" act:"unchecked" output:"unchecked" aftermath:"unchecked" then:"unchecked" mu:"_!" aperture:"14/arc") Read (<<mu>>, <<aperture>>): input <<input>>; act <<act>>; output <<output>>. Aftermath: <<aftermath>>. Then <<then>> takes <<output>> as input.
+\procedure ~otakiage-lift(input:"unchecked" act:"unchecked" output:"unchecked" aftermath:"unchecked" then:"unchecked" mu:"!0" aperture:"10/measure") Lift (<<mu>>, <<aperture>>): input <<input>>; act <<act>>; output <<output>>. Aftermath: <<aftermath>>. Then <<then>> takes <<output>> as input.
+\procedure ~otakiage-weld(input:"unchecked" act:"unchecked" output:"unchecked" aftermath:"unchecked" then:"unchecked" mu:"?0" aperture:"14/arc") Weld (<<mu>>, <<aperture>>): input <<input>>; act <<act>>; output <<output>>. Aftermath: <<aftermath>>. Then <<then>> takes <<output>> as input.
+\procedure ~otakiage-thanks(input:"unchecked" carried:"unchecked" homes:"unchecked" clear:"unchecked" thanks:"unchecked" output:"unchecked" aftermath:"unchecked" then:"unchecked" mu:"_!" aperture:"6/beat")
+Thanks (<<mu>>, <<aperture>>). Commit body draft:
+Carried: <<carried>><br>
+Homes: <<homes>><br>
+Clear: <<clear>><br>
+Thanks: <<thanks>><br>
+Handoff: input <<input>>; output <<output>>. Aftermath: <<aftermath>>. Then <<then>> takes <<output>> as input.
+\end
+\procedure ~otakiage-burn(input:"unchecked" act:"unchecked" proof:"unchecked" hash:"unchecked" base:"unchecked" layers:"unchecked" commits:"unchecked" mode:"propose" caller:"unchecked" output:"unchecked" aftermath:"unchecked" then:"unchecked" mu:"_!" aperture:"2/pulse") Burn (<<mu>>, <<aperture>>): input <<input>>; act <<act>>; proof <<proof>>; hash <<hash>> or base <<base>>; layers <<layers>>; commits <<commits>>; caller <<caller>>; mode <<mode>>; output <<output>>. Aftermath: <<aftermath>>. Then <<then>> takes <<output>> as input.<$list filter="[<mode>match[fire]]"><$list filter="[<caller>match[unchecked]]"> VOID: mode=fire with caller unchecked; no fire may follow.</$list></$list>
+\procedure ~otakiage-rest(input:"unchecked" act:"unchecked" output:"unchecked" aftermath:"unchecked" then:"unchecked" mu:"_0" aperture:"10/measure") Rest (<<mu>>, <<aperture>>): input <<input>>; act <<act>>; output <<output>>. Aftermath: <<aftermath>>. Then <<then>> takes <<output>> as input.
+\procedure ~otakiage-brief(mask:"unchecked" lane:"lar:///ha.ka.ba/lares/api/pono/otakiage#/sigils" call:"unchecked" input:"unchecked" aftermath:"unchecked") <<mask>>: Lares (Tasked Spirit). Read <<lane>>. Run <<call>> with input <<input>>. Hand back its output and aftermath; reviewer checks <<aftermath>> before the next call.
+\procedure ~otakiage(stage:"unchecked" input:"unchecked" act:"unchecked" output:"unchecked" aftermath:"unchecked" then:"unchecked" mode:"propose" caller:"unchecked" proof:"unchecked" hash:"unchecked" base:"unchecked" layers:"unchecked" commits:"unchecked" carried:"unchecked" homes:"unchecked" clear:"unchecked" thanks:"unchecked")
+<$list filter="[<stage>regexp[^(shelf|read|lift|weld|thanks|burn|rest)$]]"><$transclude $variable={{{ [<stage>addprefix[~otakiage-]] }}} input=<<input>> act=<<act>> output=<<output>> aftermath=<<aftermath>> then=<<then>> mode=<<mode>> caller=<<caller>> proof=<<proof>> hash=<<hash>> base=<<base>> layers=<<layers>> commits=<<commits>> carried=<<carried>> homes=<<homes>> clear=<<clear>> thanks=<<thanks>>/></$list>
+\end
+```
+
+A call renders a record; it writes and deletes nothing. `mode=propose` names a burn proposal. `mode=fire` requires the operator's call and a named `caller`; the last check-in commit lands only after that call. #/the-fire governs the deletion doors. A wiki held by more than one human takes removal through the tombstone rite and its named answers. `proof` names completed work; `hash` carries the `base:` hash that `tiddler get --meme` prints; both family doors take it. `commits` names the separate last check-in and burn commits. The thanks call's four lines (carried, homes, clear, thanks) make the commit body alone; its input, output and aftermath ride the handoff.
+
+Worked calls and a single-stage invocation stand in <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/otakiage#/examples`>>.
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/rulings`>>
 
 !! Rulings
 
 # Operator ruling 2026-09-12: the lifecycle rides a tag family on governed memes only; `status` and `retain` leave the meta; `cacheable` stays as an API-server instruction; `lares-history` serves as the harvest room, emptied and deleted; the fire is called, never scheduled. The ruling stands verbatim, with its enactment and the walked room, at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/otakiage#/the-lifecycle`>>.
 # Operator ruling 2026-11-21 (the ever-speaking present): the law lifts from the docs record to this api meme; the record keeps the field, the house measurements, the rhymes, the examples, the leans and the questions (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/ever-speaking-present`>>).
+# Operator ruling 2026-11-22: holders choose the plane: one human may delete their own tiddlers across their faces and domain wikis, with git's history holding what the delete removed wherever the layer carries a mirror; a delete in a layer with no mirror stays final; a wiki held by another human takes removal through the tombstone rite and named answers; a seat burns only on the holder's (the operator, for a face they wear) call through the rite; no line burns in that rite; the controller reads each stage's aftermath; each face's memory stage holds a catma store and a pattern-integrity store.
+# Operator ruling 2026-11-22: o-takiage at every land stands as an authored ending once a road has routed, lifted and welded (folded); a landed road burns, per state/road, and carries no landed state. the road reader yields no fold candidates (`[lares.road[set-down]]` lists deferred work for review, never for the fire), and `[lares.course[ash-ready]]` lists course items; a hand reads each for fold before naming it a candidate.
 
 <<~/ahu>>
 
@@ -175,9 +207,11 @@ The ending belongs to the thing's completion, never to its worthlessness — 「
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/pattern-integrity`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/ever-speaking-present`>>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ByQyPsTg4AH8Rx5dbhmizEgiXJG_dlmj7MzjB3uJQeQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ezBp1QdwJ-4XX50Vyv2BEt2am15_9V1UVzRhkmvYhG4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

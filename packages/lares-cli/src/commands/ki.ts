@@ -1,9 +1,9 @@
 /**
- * `lares sense ki` — the Ki (氣) coupling verdict: do the ADDRESSED sensorium's coupled
+ * `lares sense analyze --lens couple` — the Ki (氣) coupling verdict: do the ADDRESSED sensorium's coupled
  * peers RECONCILE, and does the reconciliation hold power? Coupling is a GENERAL cap a sensorium `#has` —
  * any sensorium whose manifest declares `coupling.children` answers; one without reports the honest
- * "no coupling children". `lares sense <sensorium> ki` reads that sensorium (the memetic-wikitext testbed
- * carries formal ⋈ informal peers today); bare `lares sense ki` reads the memory default, which carries no
+ * "no coupling children". `lares sense <sensorium> analyze --lens couple` reads that sensorium (the memetic-wikitext testbed
+ * carries formal ⋈ informal peers today); bare `lares sense analyze --lens couple` reads the memory default, which carries no
  * coupling cap. No sensorium is hardcoded.
  *
  * The read is TS-NATIVE (no python, no daemon): `readCoupling` resolves the sensorium's `coupling.children`,
@@ -11,12 +11,11 @@
  * admit a global section) or HOLD-OPEN (H¹≠0: a genuine cocycle, routed to Talk-Story, never a silent
  * average). Until the child salience sidecars fill it reports the honest insufficient/no-coupling.
  *
- *   lares sense <sensorium> ki   the coupling verdict — readable peers · shared units · fuse|hold-open · note
+ *   lares sense <sensorium> analyze --lens couple   the coupling verdict — readable peers · shared units · fuse|hold-open · note
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/cohomological-gate
  *
- * OWED (operator, 2026-10-11): a house-grammar `|en` alias `couple` flowing to this same module — declared by
- * the house grammar's alias layer, never a hand-wired second entry in the `sense` door table.
+ * The plain lens name `couple` spells this read on the one `analyze` door (sense-analyze.ts); the house name `ki` answers as its alias, where li-ki-integrities pins it.
  */
 
 import { readCoupling, memorySensoriumDir } from "@lararium/node";
@@ -32,6 +31,7 @@ export function cmdKi(args: ParsedArgs): number {
   emit(args, {
     ok: true,
     data: {
+      lens: "couple",
       sensorium: coupling.sensorium,
       readable: coupling.readable,
       sharedUnits: coupling.sharedUnits,
@@ -42,7 +42,7 @@ export function cmdKi(args: ParsedArgs): number {
       note: coupling.note,
     },
     human: () => {
-      console.log(`lares sense ki — coupling (${coupling.sensorium})`);
+      console.log(`lares sense analyze --lens couple — coupling (${coupling.sensorium})`);
       console.log(`  verdict:      ${verdict}`);
       console.log(`  readable:     ${coupling.readable} peer(s) · ${coupling.sharedUnits} shared unit(s)`);
       if (coupling.fusion && coupling.fusion.verdict === "hold-open") {

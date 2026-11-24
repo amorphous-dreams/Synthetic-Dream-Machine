@@ -1,8 +1,8 @@
 // mesh-scenarios-probe.test.mjs — the held-out mesh-scenarios driver's readiness probe crosses the socket with a verb the
 // probed place ANSWERS. A herm stands as a place with no face, and a faceless place answers only its floor
-// (packages/lararium-node/src/floor-verbs.ts): `bag stats` (`residency`) refuses `control-home-unnamed` there on every poll,
+// (packages/lararium-node/src/floor-verbs.ts): `wiki status` (`residency`) refuses `control-home-unnamed` there on every poll,
 // which read as "the relay never answered" in realm-crossing, quorum-realm, meme and board. The probe asks a herm a floor
-// query (`vessel unbound` -> `unbound-docs`) and a hearth `bag stats`, each through `docker compose exec` (the socket).
+// query (`vessel unbound` -> `unbound-docs`) and a hearth `wiki status`, each through `docker compose exec` (the socket).
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync, chmodSync } from "node:fs";
@@ -33,21 +33,21 @@ function probe(svc) {
   } finally { rmSync(dir, { recursive: true, force: true }); }
 }
 
-test("a herm's probe rides a floor query across the socket; a hearth's rides bag stats", () => {
+test("a herm's probe rides a floor query across the socket; a hearth's rides wiki status", () => {
   const herm = probe("herm-source");
   assert.equal(herm.status, 0);
   assert.match(herm.calls, /^exec -T herm-source node packages\/lares-cli\/dist\/src\/bin\/lares\.js vessel unbound\n$/);
   const relay = probe("herm-relay-2");
   assert.match(relay.calls, /vessel unbound/);
   const hearth = probe("lararium-a");
-  assert.match(hearth.calls, /^exec -T lararium-a node packages\/lares-cli\/dist\/src\/bin\/lares\.js bag stats --json\n$/);
+  assert.match(hearth.calls, /^exec -T lararium-a node packages\/lares-cli\/dist\/src\/bin\/lares\.js wiki status --json\n$/);
 });
 
 test("the herm's verb stands on the floor, and `vessel unbound` names that verb", () => {
   const floor = readFileSync(join(ROOT, "packages/lararium-node/src/floor-verbs.ts"), "utf8");
   const queries = /FLOOR_QUERY_VERBS[^=]*=\s*\[([^\]]*)\]/.exec(floor)?.[1] ?? "";
   assert.match(queries, /"unbound-docs"/, "unbound-docs answers on the floor");
-  assert.doesNotMatch(queries, /"residency"/, "residency stays off the floor, so a herm never answers bag stats");
+  assert.doesNotMatch(queries, /"residency"/, "residency stays off the floor, so a herm never answers wiki status");
   const vessel = readFileSync(join(ROOT, "packages/lares-cli/src/commands/vessel.ts"), "utf8");
   assert.match(vessel, /unbound:[\s\S]{0,200}runVerb\("unbound-docs"/);
 });

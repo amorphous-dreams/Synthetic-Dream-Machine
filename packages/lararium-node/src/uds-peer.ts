@@ -62,6 +62,12 @@ const harnessName = (name: string): boolean => {
   return base === "claude" || base.startsWith("codex");
 };
 
+/** True where one environment entry carries a harness's own mark (`CLAUDECODE=1`, a non-empty Codex sandbox mark). */
+export function harnessMark(key: string, value: string | undefined): boolean {
+  if (value === undefined) return false;
+  return key === "CLAUDECODE" ? value === "1" : HARNESS_MARKS.includes(key) && value !== "";
+}
+
 /** True where one process reads as a harness: a harness mark in its launch environment, or a harness by name. */
 export function harnessProcess(pid: number, read: ProcReader = PROC): boolean {
   const environ = read.environ(pid);
@@ -69,9 +75,7 @@ export function harnessProcess(pid: number, read: ProcReader = PROC): boolean {
     for (const entry of environ.split("\0")) {
       const eq = entry.indexOf("=");
       if (eq === -1) continue;
-      const key = entry.slice(0, eq);
-      const value = entry.slice(eq + 1);
-      if (key === "CLAUDECODE" ? value === "1" : HARNESS_MARKS.includes(key) && value !== "") return true;
+      if (harnessMark(entry.slice(0, eq), entry.slice(eq + 1))) return true;
     }
   }
   const comm = statOf(read.stat(pid) ?? "")?.comm;
@@ -97,16 +101,27 @@ export function lineOf(pid: number, read: ProcReader = PROC): Set<number> {
  * on the vessel's own line (`self` and its ancestors) or at an unreadable entry.
  */
 export function harnessOnBranch(peer: number, self: number, read: ProcReader = PROC): boolean {
+  return branchKind(peer, self, read) === "ai";
+}
+
+/**
+ * How a branch reads, every link of it: `ai` where a harness stands on it; `hand` where the walk reached init (a parent pid of
+ * 0), the vessel's own line, or a loop, having read every link; `unknown` where a link's `stat` cannot be read (or the walk ran
+ * out of links), since whatever stands above that link reads nothing, and an unread link never reads as a person.
+ */
+export function branchKind(peer: number, self: number, read: ProcReader = PROC): PeerKind {
   const line = lineOf(self, read);
   const seen = new Set<number>();
-  for (let at = peer, n = 0; at > 0 && n < WALK_LIMIT && !line.has(at) && !seen.has(at); n += 1) {
+  let at = peer;
+  for (let n = 0; at > 0 && !line.has(at) && !seen.has(at); n += 1) {
+    if (n >= WALK_LIMIT) return "unknown";
     seen.add(at);
-    if (harnessProcess(at, read)) return true;
+    if (harnessProcess(at, read)) return "ai";
     const s = statOf(read.stat(at) ?? "");
-    if (s === null) return false;
+    if (s === null) return "unknown";
     at = s.ppid;
   }
-  return false;
+  return "hand";
 }
 
 /** The inode of the unix socket behind a node socket, off `/proc/self/fd`, or null where none reads. */
@@ -148,7 +163,14 @@ export type PeerKind = "ai" | "hand" | "unknown";
 export async function peerKindOf(sock: Socket): Promise<PeerKind> {
   const pids = await peerPidsOf(sock).catch(() => null);
   if (pids === null) return "unknown";
-  return pids.some((pid) => pid !== process.pid && harnessOnBranch(pid, process.pid)) ? "ai" : "hand";
+  return kindOfPids(pids);
+}
+
+/** The peer's processes, read as one: any branch with a harness reads `ai`, else any unread branch reads `unknown`, else `hand`. */
+function kindOfPids(pids: readonly number[], read: ProcReader = PROC): PeerKind {
+  const kinds = pids.filter((pid) => pid !== process.pid).map((pid) => branchKind(pid, process.pid, read));
+  if (kinds.includes("ai")) return "ai";
+  return kinds.includes("unknown") ? "unknown" : "hand";
 }
 
 /**

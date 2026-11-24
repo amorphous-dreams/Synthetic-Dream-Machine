@@ -21,5 +21,11 @@ allowBuilds:
 #
 # pnpm 11 reads settings HERE, not from package.json — a block left there resolves nothing and reads
 # as applied.
+#
+# THE ENGINE IS VENDORED. The override names the tarball in third-party/automerge/: the published 3.5.0 package rebuilt
+# with the one-line split-capacity fix (automerge/automerge#1738), so a loaded document's wasm memory holds steady across
+# edits. The fix lives in Rust inside the prebuilt wasm, which a pnpm patch over the published files cannot reach.
+# tools/engine-retention-witness.sh holds the pin, its sha256, the retention and the byte format; the README there
+# names the rebuild and the way back to a published release.
 overrides:
-  "@automerge/automerge": "3.5.0"
+  "@automerge/automerge": "file:third-party/automerge/automerge-3.5.0-split-capacity.tgz"

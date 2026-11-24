@@ -27,8 +27,9 @@ import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import { Repo }                              from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter }           from "@automerge/automerge-repo-storage-indexeddb";
 import { browserDeviceFiling } from "./browser-device-filing.js";
+import { browserRoutesVeilArchive } from "./browser-veil-archive-route.js";
 import { writeBrowserFaceLabel } from "./browser-face-labels.js";
-import { shoreStorage, composeSealedRest, docStorePortCell, documentIdOfUrl, mountedDocumentId, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, sealedBagMap, vesselDocStoreDoor, bindSecretHomeRest, nameControlHome, daemonFaceCanonBag, SecretHomeUnavailable, DAEMON_SLOT_PREFIX, type LitDeviceFaces, type SecretHome, type SealedBag, selvesRecordBagOf } from "@lararium/mesh";
+import { shoreStorage, composeSealedRest, clearRosterOf, watchCatalogNames, docStorePortCell, documentIdOfUrl, mountedDocumentId, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, sealedBagMap, vesselDocStoreDoor, bindSecretHomeRest, nameControlHome, daemonFaceCanonBag, SecretHomeUnavailable, DAEMON_SLOT_PREFIX, type LitDeviceFaces, type SecretHome, type SealedBag, selvesRecordBagOf } from "@lararium/mesh";
 import { openBrowserSecretHome, standBrowserSecretHome } from "./browser-secret-home.js";
 import { standBrowserFloorKey } from "./browser-floor-key.js";
 import { browserSeatKept, type SeatVerifyGround } from "./browser-fleet-seat.js";   // leaf-fleet (Leaf-Finisher)
@@ -141,7 +142,7 @@ import {
 }                                            from "./open-browser-daemon-vm.js";
 import type { WikiRecipe }                   from "@lararium/mesh";
 
-import { waitHandle } from "@lararium/mesh";
+import { LOCAL_READY_MS, seatSealedRest, waitHandle } from "@lararium/mesh";
 import { holdVesselLock, ambientLocks, type LockHost } from "./vessel-lock.js";
 import { BrowserCustodyRefused, CLEAR_CUSTODY_CLEARS, readBrowserCustody, onBrowserCustodyLock, lockBrowserCustody, refuseSharedTreeFaceRecords } from "./browser-custody.js";
 import { nameFace, faceTreeStands } from "./browser-face-custody.js";
@@ -720,6 +721,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // The wiki islands among them (the pool marks each): they render pages and receive no custody document.
   let wikiIslands: { has(peerId: string): boolean } = new Set<string>();
   let   fedGate: FederationGate | null = null;
+  /** The public boards and the admitted hearth canon alone (`hearthCrossingOf().clearShelf`): what the clear-name roster reads. */
+  let   clearShelf: FederationGate | null = null;
   // THE SIBLINGS — peers this face's sibling channel PROVED (below, once the KEL is walked). A sibling holds
   // standing, never the house: it never shares freely, and only `siblingGate` (the ring's sibling path over the
   // public boards) decides what reaches it. Null denies every doc.
@@ -773,6 +776,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   const filing = browserDeviceFiling({ repo: () => repo, litDevices });
   const deviceDocs = filing.deviceDocs;
   const secretHomes = filing.secretHomes;
+  /** The release of the catalog watch that moves the map (`watchCatalogNames`), re-seated with each face's mount. */
+  let unwatchCatalogNames: () => void = () => {};
   const sealedMap = sealedBagMap({
     face: () => sealedCells.face(),
     bags: () => sealedCells.bags(),
@@ -810,6 +815,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       if (named.has(documentId)) return;
       named.add(documentId);
       slotDocsNamed.set(bagId, named);
+      // THE ANNOUNCEMENT NAMES THE DOCUMENT FOR ITS BAG (the node's one order): a clear bag's slot joins the clear-name roster.
+      sealedRest.store.nameDocument(documentId, bagId);
       sealedRest.store.mapMoved();
       const session = sealedCells.session;
       if (session !== null) void sealedRest.sealMapped(documentId, session).catch(() => { /* it seals at its next booked save */ });
@@ -833,6 +840,12 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   const sealedRest = composeSealedRest<BrowserSaveSession>({
     inner: shoreStorage(new IndexedDBStorageAdapter(`${idbName}:repo`)),
     bagOf: sealedBagOf,
+    // THE MAP BEFORE THE BYTES: a document named for a sealed bag ahead of its first byte maps by that bag's row (`nameDocument`).
+    bagRow: (bagId) => sealedMap.bagRow(bagId),
+    // UNKNOWN MEANS HOLD: the clear-name roster reads the same bag registry the map reads (`sealedBagMap.names`); a document
+    // no bag carries and no local caller opened (an unsolicited peer push) waits in memory until a name arrives.
+    // The federatable shelf names too: a public board an admitted peer pushes rests clear and survives a restart (`clearRosterOf`).
+    namesClear: clearRosterOf({ names: (documentId) => sealedMap.names(documentId), shelf: () => clearShelf }),
     vesselKey: () => secretHomes.floorKey(),
     sessionFace: () => sealedCells.face(),
     door: docStoreDoor,
@@ -862,6 +875,17 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // THE DYAD'S SHADOW (kapae#/reach): a sibling whose device the fleet root set aside reaches nothing.
       aside: (peerId) => siblingAside(peerId),
     }, { has: (id) => vesselOnly.has(id) || secretHomes.has(id) }, { has: (peerId) => houseIslands.has(peerId) }, { has: (peerId) => wikiIslands.has(peerId) }, { has: (id) => deviceDocs.floorWiki(id) }, hearthDaemonDocs),
+  });
+  // A SEALED BAG MOUNTS NO WRITABLE FALLBACK (`seatSealedRest`): every `waitHandle` over this Repo holds a sealed document
+  // read-only over its own id until its keyed load opens it. This browser keeps no quarantine door: a load refused on
+  // integrity evidence stays read-only, its bytes in place, and the line names it.
+  seatSealedRest(repo, {
+    restsSealed: (documentId) => sealedRest.restsSealed(documentId),
+    refusalOf: (documentId) => sealedRest.store.refusalOf(documentId),
+    nameDocument: (documentId, bagId) => sealedRest.store.nameDocument(documentId, bagId),
+    // THE ROSTER'S LOCAL HALF: every document a local caller of this Repo opens counts as named (`solicited`).
+    solicited: (documentId) => sealedRest.store.solicited(documentId),
+    onSettled: ({ documentId, status, reason }) => { if (status !== "mounted") console.warn(`[sealed-rest] ${documentId.slice(0, 12)}… stands ${status}, read-only: ${reason ?? ""}`); },
   });
   // THE SECRET HOME'S REST, bound to this Repo: an enrollment or an open maps the home before its first byte.
   bindSecretHomeRest(repo, secretHomes.rest((documentId) => sealedRest.restsSealed(documentId), () => {
@@ -1399,6 +1423,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     // Arm the deny-by-default gate for the pinned crossing: the Nexus's deterministic crossroads doc and WHO board are
     // the public surface, widened at the face's own hearth by exactly the canon its admit names (`hearthCrossingOf`).
     fedGate = crossing.gate;
+    // THE CLEAR SHELF never widens with the face's planes or the hearth's daemon working document (`hearthCrossingOf`).
+    clearShelf = crossing.clearShelf;
     // CANON CROSSES HEARTH TO LEAF ALONE. The gate above decides which documents this leaf FETCHES from its
     // hearth; it says nothing about which way a change travels. The leg reads every sync message this Repo
     // sends toward the hearth and keeps back any that carries a change to a canon document the admit named.
@@ -1569,7 +1595,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     keel: {
       repo,
       catalogHandle,
-      waitHandle: <T>(url: AutomergeUrl, fallback: () => DocHandle<T>) => waitHandle<T>(repo, url, fallback),
+      waitHandle: <T>(url: AutomergeUrl, bagId: string, fallback: () => DocHandle<T>) => waitHandle<T>(repo, url, bagId, fallback, LOCAL_READY_MS),
       // THE SYSTEM CANON THE SHORE NAMES: this browser vessel reads no Kahu realm registration today, so it names none and
       // reads the floor through `@oracle`; a browser that stands the node's role later names its canon here.
       systemCanon: async () => ({}),
@@ -1627,7 +1653,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // Corpus capability (parity — browser syncs corpus bags too; shared loader).
       loadCorpora: (composite) => loadCatalogCorpora({
         repo, catalogHandle,
-        mintLocalHandle: (docUrl) => waitHandle<LarDoc>(repo, docUrl, () => repo.create<LarDoc>(emptyLarDoc())),
+        mintLocalHandle: (docUrl, bagId) => waitHandle<LarDoc>(repo, docUrl, bagId, () => repo.create<LarDoc>(emptyLarDoc())),
         source: "browser-boot",
       }, composite),
 
@@ -2076,7 +2102,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         receipt: browserIslandReceipt(repo, {
           ready: daemonIslandStood.then(() => daemon.syncLegReady()),
           onClose: (fn) => { receiptClosers.add(fn); return () => { receiptClosers.delete(fn); }; },
-        }),
+        }, { name: (documentId) => sealedRest.store.solicited(documentId), heldOf: (documentId) => sealedRest.store.heldRefusalOf(documentId) }),
         cas: readCasBlobFromOpfs,
         docStore: (port) => docStorePort.attach(port),
         // V2: the daemon island's own store rests no document this rest seals (`islandRestGuard`).
@@ -2121,7 +2147,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         // EACH ARCHIVE NAMES ITS FACE, and the seal proves it (`saveBrowserVeilArchive`): a write naming another face than the
         // worn one refuses, and bytes that restore another identity than the worn face's own atom refuse with the row unchanged.
         const lift = browserSessionLift(unlocked.session, async (_carrier, bytes, face) => {
-          if (face !== wornGroup) throw new Error("face-archive-unrouted: this browser vessel rests no sibling's Archive");
+          if (!browserRoutesVeilArchive(wornGroup)(face)) throw new Error("face-archive-unrouted: this browser vessel rests no sibling's Archive");
           await saveBrowserVeilArchive(idbName, wornGroup, bytes);
         });
         const lifted = await composeVessel(islandLiftStack(islandVessel, lift.lift));
@@ -2141,6 +2167,9 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         }).sealed;
         sealedCells.catalog = () => catalogHandle.doc() as LarDoc | undefined;
         sealedCells.mounted = (bagId) => mountedDocumentId(assembly.composite.storeForBag(bagId));
+        // A CATALOG ROW NAMES A DOCUMENT AT ONCE: each catalog change moves the map, so a held save a new row alone names lands then.
+        unwatchCatalogNames();
+        unwatchCatalogNames = watchCatalogNames(catalogHandle, () => sealedRest.store.mapMoved());
         sealedCells.hold = (ask, verb) => lift.hold(ask, verb);
         sealedCells.session = session;
         sealedRest.store.mapMoved();

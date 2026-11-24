@@ -25,7 +25,7 @@ const PLACE = "a row of the place: acts as the place, never as a face";
 export const CHORE_FREE_VERBS: Readonly<Record<string, string>> = Object.freeze({
   // The daemon island's reads (its content fence still judges each presenter).
   "where": READ, "resolve": READ, "unbound-docs": READ, "fresher-canon": READ,
-  "meme-get": READ, "meme-list": READ, "meme-project": "renders a meme root to text and answers it; writes nothing",
+  "meme-list": READ, "meme-project": "renders a meme root to text and answers it; writes nothing",
   "wiki-filter": READ, "tiddler-get": READ, "wiki-render": READ, "wiki-status": READ, "circle-list": READ,
   "list-wikis": READ, "share-list": READ, "workbench-seat": READ, "intent-view": READ, "sealed-reading": READ, "events": READ,
   "realm-clock": READ,
@@ -44,6 +44,21 @@ export const CHORE_FREE_VERBS: Readonly<Record<string, string>> = Object.freeze(
  * refuses from a sibling's session.
  */
 export const FACE_LANE_CHORES: ReadonlySet<string> = new Set(["meme-put", "meme-delete", "tiddler-put", "tiddler-delete", "oracle-cast"]);
+
+/**
+ * The chore-free verbs that still write into a face's daemon layer, each with its reason. A chore-free verb passes the chore
+ * gate (it spends no mounted face's material), but a write into the daemon layer can still enter that face's drain, so the
+ * one-shot line's work gate takes it ({@link entersADrain}). The house lean: a write takes the gate unless proven outside every
+ * face's drain.
+ */
+export const CHORE_FREE_WRITES: Readonly<Record<string, string>> = Object.freeze({
+  "realm-feed": "rolls the presenter's lease slot and lands its receipt in the daemon layer",
+});
+
+/** True for a verb whose one-shot dispatch writes into a face's layers: every chore, and each chore-free write. */
+export function entersADrain(verb: string): boolean {
+  return isChore(verb) || Object.hasOwn(CHORE_FREE_WRITES, verb);
+}
 
 /** True for a verb that writes or signs under the daemon mount's authority. */
 export function isChore(verb: string): boolean {

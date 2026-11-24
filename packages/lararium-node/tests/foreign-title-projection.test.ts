@@ -22,6 +22,7 @@
  * Meme: lar:///ha.ka.ba/lararium/api/disk-projection
  */
 
+import { vendoredCore } from "../../lararium-tw5/tests/test-wiki.js";
 import { describe, test, expect, afterEach } from "vitest";
 import { mkdtempSync, rmSync, existsSync, readFileSync, writeFileSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -603,7 +604,6 @@ test("recovery mount reads the draft bag's fields despite a shadow, and keeps ot
   const { CompositeStore } = await import("@lararium/mesh");
   const { MemoryTiddlerStore } = await import("../../lararium-tw5/src/memory-store.js");
   const { TW5Engine } = await import("../../lararium-tw5/src/tw5-vm.js");
-  const { TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME } = await import("../../lararium-tw5/src/generated-tw5-version.js");
   const { mountDiskProjection, mountedDiskProjector } = await import("../src/island-behaviors.js");
   root = mkdtempSync(join(tmpdir(), "lar-recovery-record-"));
   const recovery = join(root, "recovery");
@@ -622,7 +622,7 @@ test("recovery mount reads the draft bag's fields despite a shadow, and keeps ot
   await temp.put({ tiddler: { title: "temp-only", text: "private secret" } }, origin);
   await working.put({ tiddler: { title: "Working note", text: "ordinary words" } }, origin);
   const engine = new TW5Engine();
-  await engine.boot(new Uint8Array(readFileSync(join(TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME))));
+  await engine.boot(vendoredCore());
   const tw = engine.$tw;
   tw.wiki.addTiddler(new tw.Tiddler({ title, text: "shadow secret", "$origin-bag": "temp" }));
   tw.wiki.addTiddler(new tw.Tiddler({ title: "temp-only", text: "private secret", "$origin-bag": "temp" }));

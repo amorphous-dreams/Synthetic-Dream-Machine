@@ -4,21 +4,20 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-author        = "Joshua Fontany <joshua.fontany@gmail.com>"
-cacheable     = true
-cat           = "info"
-date          = "2026-10-03"
-docname       = "draft-fontany-memetic-wikitext-framing-00"
-ipr           = "trust200902"
-l-space       = "stable"
-namespace     = "&#x2299;"
-revision-note = "the transmission-frame half of the language spec and the carrier-sigils spine law stand as one carrier-framing specification — declaration register, control set, spine, resonance, trust tiers, authoring, block check, canonical form, carriage, gradient, frame security, byte law; weave/tangle pattern-integrity, the putback law, and the woven-dialect law added beside the projection-settles and one-mouth clauses"
-role          = "submittable specification for the memetic carrier frame — the declaration register, the SOH/STX/ETX/EOT control set, the ni:/// block check, canonical form, carriage, the health gradient, and frame security. The language it frames rides the sibling memetic-wikitext spec; the address rides lar-uri"
-status-why    = "submission-draft"
-tags          = ["lifecycle/standing"]
-title         = "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
-type          = "text/memetic-wikitext+tiddlywiki"
-uri-path      = "ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
+author     = "Joshua Fontany <joshua.fontany@gmail.com>"
+cacheable  = true
+cat        = "info"
+date       = "2026-10-03"
+docname    = "draft-fontany-memetic-wikitext-framing-00"
+ipr        = "trust200902"
+l-space    = "stable"
+namespace  = "&#x2299;"
+role       = "submittable specification for the memetic carrier frame — the declaration register, the SOH/STX/ETX/EOT control set, the ni:/// block check, canonical form, carriage, the health gradient, and frame security. The language it frames rides the sibling memetic-wikitext spec; the address rides lar-uri. The transmission-frame half of the language spec and the carrier-sigils spine law stand here as one carrier-framing specification; the weave/tangle pattern-integrity, the putback law and the woven-dialect law ride beside the projection-settles and one-mouth clauses"
+status-why = "submission-draft"
+tags       = ["lifecycle/standing"]
+title      = "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -1327,6 +1326,6 @@ The byte law lives at the BOUNDARY: every stratum inward (records, VM) sees norm
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;boBdIf5_7kl1utGj6Gn831FhqXBx1dZtyLmIyB5dA_s`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;jsBpuO24nnddRXA_zAnqGGhcUjQiiVkTtNdgERZKf_o`>>
 
 <<^ code=`&#x0004;` to=`?`>>

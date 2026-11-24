@@ -28,6 +28,9 @@
  *   rehive   stand a SHUT face's hive again from its own seed, where its veil-archive row holds another identity's Archive
  *            (`face-rehive`). The frame carries the face's own route and the face; the door refuses a face worn or lit
  *            (`face-open`) and opens the face's key for this act alone, outside the holder, so no composition hears it.
+ *   recard   light a face whose Archive fell behind its own cards (its last light here refused `FaceHoldsNoPrekeySecret`)
+ *            with its card minted before its bags, keeping its identity (`face-recard`). The frame carries the vessel's own
+ *            route and the face; the door refuses any face whose last light did not refuse for want of a prekey secret.
  *
  * ── A BACKUP ASKS THE VESSEL'S ROUTE AGAIN ──────────────────────────────────────────────────────
  * An unlocked vessel's door answers any process of its own user, and no act of the table hands out a root. A
@@ -49,33 +52,44 @@
  */
 import { dropWardTickets, parkWardTicket, wardCredential, type WardCredential } from "./ward-credential.js";
 import type { Socket } from "node:net";
-import type { Credential, DocCensusReading, HeldSaves, SlotSpec } from "@lararium/mesh";
+import { attemptWarning, type Credential, type DocCensusReading, type HeldSaves, type SlotSpec } from "@lararium/mesh";
 import { parkFaceRoute } from "./face-route.js";
 import { clearDaemonMount, daemonMountOrdinal, daemonMountState, mountedFaceOrdinal, restoreDaemonMount, setMountedFace, sovereignStands } from "./node-vessel-identity.js";
 import { listFaceOrdinals, listFaceCustodyIds } from "./identity-anchors.js";
-import { CustodyLocked, CustodyRecordUnavailable, type CustodyHolder, type HolderUnlock } from "./custody-holder.js";
+import { CustodyLocked, CustodyRecordUnavailable, UNLOCK_ATTEMPTS_PER_BOOT, type CustodyHolder, type HolderUnlock } from "./custody-holder.js";
+
+/** A face's refusal carries its own tries left and the climbing words (attempt-budget.ts); any other reading carries none. */
+const faceTries = (r: { readonly reading: string; readonly attemptsLeft?: number }): { attemptsLeft?: number; warning?: string } => {
+  const left = r.reading === "no-slot-opens" && typeof r.attemptsLeft === "number" ? r.attemptsLeft : r.reading === "attempts-spent" ? 0 : undefined;
+  return left === undefined ? {} : { attemptsLeft: left, warning: attemptWarning(left, "face", UNLOCK_ATTEMPTS_PER_BOOT) };
+};
 import { BackupRefused, type FaceBundleCut } from "./face-bundle-cut.js";
 import { SESSION_ACTS, SealedActRefused, isSealedActName } from "./sealed-acts.js";
 import { RehiveRefused, type RehiveOutcome } from "./face-rehive.js";
 import { readHand } from "./hand-act-gate.js";
 import type { PeerKind } from "./uds-peer.js";
+import { shoreFlushLines, shoreStuckFaces, type ShoreFlushReading } from "./shore-verb.js";
 
 export type CustodyFrame =
   | { readonly op: "unlock"; readonly credentials: readonly Credential[]; readonly face?: number; readonly all?: boolean }
   | { readonly op: "lock"; readonly face?: number }
   /** Wear face `face`: the session's choice among the faces standing open. No credential rides it; `seat: "ai"` marks a frame
    *  an AI seat sent, which the door answers as it answers the operator's own. */
-  | { readonly op: "wear"; readonly face: number; readonly seat?: "ai" }
+  | { readonly op: "wear"; readonly face: number; readonly seat?: "ai"; readonly yes?: true }
   | { readonly op: "custody" }
   /** The census of saves held in memory, read before a stop: no credential, no act, no chain. */
   | { readonly op: "census" }
   /** The document census: every document the stores hold and who names it, read-only (`lares vessel census --docs`). */
   | { readonly op: "doc-census" }
+  /** The shore's flush over every island the composition holds (`lares shore flush`): no credential; it places no record. */
+  | { readonly op: "shore-flush" }
   | { readonly op: "act"; readonly act: string; readonly args?: Readonly<Record<string, unknown>> }
   /** Cut face `face`'s bundle body, sealed under `key` (a bundle key, 64 lower hex), once `credentials` prove the vessel's own route. */
   | { readonly op: "backup"; readonly credentials: readonly Credential[]; readonly face: number; readonly key: string }
   /** Rehive SHUT face `face` from its own seed, under that face's own route (`credentials`). */
   | { readonly op: "rehive"; readonly credentials: readonly Credential[]; readonly face: number }
+  /** Recard face `face`, served here and dark for want of a prekey secret, once `credentials` prove the vessel's own route. */
+  | { readonly op: "recard"; readonly credentials: readonly Credential[]; readonly face: number }
   /** Park the human route a NEW face will ask for, for the next face this vessel founds (one use). */
   | { readonly op: "face-route"; readonly slots: readonly SlotSpec[]; readonly purpose: "persona-new" | "bundle.restore"; readonly argsDigest: string }
   /** One ward act's route: the door parks it under a one-use ticket a store verb then names (`ward-credential`). */
@@ -101,7 +115,7 @@ export type CustodyAnswer =
   /** The node key opened and a face did not (`face-refused`), or the vessel holds several faces and none was named (`face-not-named`): nothing stays open. */
   | { readonly op: "unlock"; readonly reading: "face-refused" | "face-not-named"; readonly standing: string; readonly face?: number; readonly faceReading?: string; readonly faces?: readonly unknown[]; readonly faceReadings?: ReadonlyArray<{ readonly face: number; readonly reading: string }> }
   /** A wear that stood: the face it wears, or (`switchRefused`) the face it named, why, and the face worn again. */
-  | ({ readonly op: "wear"; readonly face: number; readonly held: boolean; readonly already?: true; readonly switchRefused?: string; readonly wornAgain?: number } & Partial<CustodyStanding>)
+  | ({ readonly op: "wear"; readonly face: number; readonly held: boolean; readonly already?: true; readonly switchRefused?: string; readonly wornAgain?: number; readonly shore?: ShoreFlushReading } & Partial<CustodyStanding>)
   | ({ readonly op: "lock"; readonly locked: true; readonly was: "unlocked" | "locked"; readonly face?: number } & Partial<CustodyStanding>)
   | { readonly op: "custody"; readonly pulama?: { readonly session: boolean; readonly waits: string | null }; readonly unlocked: boolean; readonly slot: string | null; readonly attemptsLeft: number; readonly standing: string; readonly wikiAwaits: string | null; readonly testScratch: boolean; readonly composing: boolean; readonly facesOpen?: number }
   | { readonly op: "act"; readonly act: string; readonly result: Record<string, unknown> }
@@ -110,10 +124,14 @@ export type CustodyAnswer =
   | { readonly op: "census"; readonly held: readonly HeldSaves[] | null; readonly standing: string; readonly locked: boolean; readonly facesLocked?: readonly number[]; readonly facesLit?: readonly number[]; readonly facesDark?: readonly ServedDark[]; readonly worn?: number }
   /** Each document by id, its store, counts and class, and the names that reach it; never a body. */
   | { readonly op: "doc-census"; readonly census: DocCensusReading; readonly standing: string }
+  /** What each island the composition holds wrote to its mirrors, and what it left and why. */
+  | { readonly op: "shore-flush"; readonly reading: ShoreFlushReading; readonly standing: string }
   | { readonly op: "face-route"; readonly ref: string }
   | { readonly op: "ward"; readonly ref: string }
   | { readonly op: "backup"; readonly sealedBody: string; readonly holds: FaceBundleCut["holds"]; readonly face: FaceBundleCut["face"]; readonly carries: FaceBundleCut["carries"] }
   | ({ readonly op: "rehive"; readonly face: number } & RehiveOutcome)
+  /** A recard whose light stood: the face lit again under its own identity. What it reminted reads on the vessel's log. */
+  | { readonly op: "recard"; readonly face: number; readonly recarded: true }
   | { readonly op: string; readonly status: "error"; readonly errorMessage: string; readonly refusal: { readonly reason: string; readonly home?: string; readonly file?: string; readonly reading?: string; readonly attemptsLeft?: number } };
 
 /** A face its custody serves that stands dark here: its last light refused. The note names the cause and the clearing line. */
@@ -131,7 +149,8 @@ export interface CustodyFrameDeps {
   readonly holder: CustodyHolder;
   /** Tear the standing composition down and compose again: `sovereign` true with the private rows, false at the floor. */
   readonly recompose: (sovereign: boolean, ward?: WardCredential) => Promise<CustodyStanding>;
-  readonly lightFace?: (ordinal: number) => Promise<void>;
+  /** Light a face; the answer (`lit` or `refused`) rides back where the live composition gives it. */
+  readonly lightFace?: (ordinal: number) => Promise<"lit" | "refused" | void>;
   /** Close a face through its actor, holding it dark (no relight) until `releaseFace`; answers at CLOSED. */
   readonly dropFace?: (ordinal: number) => Promise<void>;
   /** Lift the hold `dropFace` set, once the lock locked the key or let it be. */
@@ -189,15 +208,32 @@ export interface CustodyFrameDeps {
   readonly backup?: (face: number, bundleKey: Uint8Array, ward: WardCredential) => Promise<FaceBundleCut>;
   /** Rehive one SHUT face under its own route (`rehiveShutFace`). Absent, every `rehive` frame refuses `rehive-unavailable`. */
   readonly rehive?: (face: number, credentials: readonly Credential[]) => Promise<RehiveOutcome>;
+  /** Arm face `ordinal`'s NEXT light as a recard (`face-recard`), one use. Absent, every `recard` frame refuses `recard-unavailable`. */
+  readonly armRecard?: (ordinal: number) => void;
+  /** Clear face `ordinal`'s recard arm: the door calls it once the awaited light settled, whether the light took the arm or never reached it. It answers true where an arm still stood (no light took it). */
+  readonly disarmRecard?: (ordinal: number) => boolean | void;
+  /**
+   * Ask every island of the standing composition that mounts a disk shore to flush (`flushEveryShore`, the same flush the
+   * teardown's flush phase runs). A wear that turns the face asks it first, in this process, and a hand's `shore-flush` frame
+   * asks it outright (`lares shore flush`, the keep's flush before its cut). Absent, or null while no composition sits, a wear
+   * turns with no flush reading and a `shore-flush` frame refuses `flush-unavailable`.
+   */
+  readonly shoreFlush?: () => Promise<ShoreFlushReading> | null;
   /** Who sent a hand act's frame (`hand-act-gate`); the test seam alone replaces it. */
   readonly peerOf?: (sock: Socket) => Promise<PeerKind>;
 }
 
-const OPS: ReadonlySet<string> = new Set(["unlock", "lock", "wear", "custody", "census", "doc-census", "act", "backup", "face-route", "ward", "prove", "rehive"]);
+const OPS: ReadonlySet<string> = new Set(["unlock", "lock", "wear", "custody", "census", "doc-census", "shore-flush", "act", "backup", "face-route", "ward", "prove", "rehive", "recard"]);
+/** The keys a `recard` frame may carry: the face's own route and the face, nothing beside them. */
+const RECARD_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "credentials", "face"]);
+/** A light refused for want of a prekey secret, read by the refusal's NAME (`FaceHoldsNoPrekeySecret`, as `String(error)` leads
+ *  with it), never by its prose: the one dark a recard cures. A recard that refused for its Archive (`archive-unrouted`,
+ *  `archive-unrested`) leaves the face as stale as before, so the next recard reads it the same. */
+export const STALE_LIGHT = /\bFaceHoldsNoPrekeySecret:|\bFaceRecardRefused:[^\n]*\brecard refused \(archive-un(?:routed|rested)\)/;
 /** The keys a `rehive` frame may carry: the face's own route and the face, nothing beside them. */
 const REHIVE_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "credentials", "face"]);
 /** The keys a `wear` frame may carry: a face, and the seat's mark; no route ever rides a wear. */
-const WEAR_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "face", "seat"]);
+const WEAR_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "face", "seat", "yes"]);
 const WARD_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "credentials", "verb", "argsDigest"]);
 /** The keys a `face-route` frame may carry. */
 const FACE_ROUTE_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "slots", "purpose", "argsDigest"]);
@@ -314,8 +350,11 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
   const unlock = composing(async (credentials: readonly Credential[], sel: { readonly face?: number; readonly all?: boolean }): Promise<CustodyAnswer> => {
     const u = await holder.unlock(credentials);
     if (u.reading !== "opens" && u.reading !== "already-unlocked") {
-      deps.onLog(`unlock: ${u.reading}${u.reading === "no-slot-opens" ? ` (${u.attemptsLeft} attempt(s) left this boot)` : ""}`);
-      return { op: "unlock", ...u, standing: deps.standing() };
+      // THE COUNT RIDES THE REFUSAL (attempt-budget.ts): a miss carries the tries left, the spent reading carries 0, and both
+      // carry the climbing words, so every surface (the CLI, the MCP door) speaks the same tier.
+      const tries = u.reading === "no-slot-opens" ? u.attemptsLeft : u.reading === "attempts-spent" ? 0 : undefined;
+      deps.onLog(`unlock: ${u.reading}${tries !== undefined ? ` (${tries} of ${UNLOCK_ATTEMPTS_PER_BOOT} tries left this boot)` : ""}`);
+      return { op: "unlock", ...u, ...(tries !== undefined ? { attemptsLeft: tries, warning: attemptWarning(tries, "vessel", UNLOCK_ATTEMPTS_PER_BOOT) } : {}), standing: deps.standing() };
     }
     const freshly = u.reading === "opens";
     const openBefore = new Set(holder.unlockedFaces());
@@ -367,12 +406,12 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       }
     } else if (sel.face !== undefined) {
       const r = await holder.unlockFace({ ordinal: sel.face }, credentials);
-      if (r.reading !== "opens" && r.reading !== "already-unlocked") return refuseFaces("face-refused", { face: sel.face, faceReading: r.reading });
+      if (r.reading !== "opens" && r.reading !== "already-unlocked") return refuseFaces("face-refused", { face: sel.face, faceReading: r.reading, ...faceTries(r) });
       openedOrdinals = [sel.face];
     } else if (standing.length === 1) {
       mounted = standing[0]!;
       const r = await holder.unlockFace({ ordinal: mounted }, credentials);
-      if (r.reading !== "opens" && r.reading !== "already-unlocked") return refuseFaces("face-refused", { face: mounted, faceReading: r.reading });
+      if (r.reading !== "opens" && r.reading !== "already-unlocked") return refuseFaces("face-refused", { face: mounted, faceReading: r.reading, ...faceTries(r) });
       openedOrdinals = [mounted];
     } else if (standing.length > 1) {
       return refuseFaces("face-not-named", { faces: standing });
@@ -428,8 +467,13 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
    * Under a pūlama, a wear that stands (or finds the face worn already) tells the pūlama the ordinal, which it keeps in
    * memory and hands back to this vessel's next session. The wear answers without waiting on the tell, so a pūlama that
    * never answers holds no custody act behind it; a tell the pūlama refuses names itself and leaves the wear standing.
+   *
+   * A WEAR THAT TURNS THE FACE FLUSHES EVERY SHORE FIRST (`shoreFlush`), while the face it leaves still stands mounted. Where
+   * the flush leaves a carrier unwritten, or an island gives no answer, the wear refuses `shore-unwritten` and names each one:
+   * those records rest in the store, and their mirrors stay behind until the face is worn again. The same frame carrying
+   * `yes: true` turns anyway. Either answer carries the flush's reading (`shore`).
    */
-  const wear = composing(async (face: number): Promise<CustodyAnswer> => {
+  const wear = composing(async (face: number, yes = false): Promise<CustodyAnswer> => {
     const tellWorn = (): void => {
       if (!deps.pulama) return;
       deps.pulama.tellWorn(face).catch((e: unknown) => deps.onLog(`wear h${face}: the pūlama did not keep the worn face (${(e as { reading?: unknown }).reading ?? (e instanceof Error ? e.name : "refused")}); a restart wears the lowest face served`));
@@ -453,6 +497,16 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     // A wear that names the face already worn names it by choice: the mount reads as named, and a lock of that face never slides it on as an opening's mount slides.
     if (before === face) { mountByOpening = false; tellWorn(); return { op: "wear", face, held: true, already: true, standing: deps.standing() }; }
     // THE ROLLBACK RESTORES THE MOUNT EXACTLY: a named face, the default rule, or NO MOUNT (never the default rule in NO MOUNT's place).
+    const shore = (await deps.shoreFlush?.()) ?? undefined;
+    if (shore !== undefined) {
+      for (const line of shoreFlushLines(shore)) deps.onLog(`wear h${face}: ${line}`);
+      if (!shore.whole && !yes) {
+        const strands = shoreFlushLines(shore).filter((_, i) => { const part = shore.islands[i]!; return !part.answered || part.unwrittenCount > 0; });
+        const stuck = shoreStuckFaces(shore, before ?? null);
+        const where = stuck.length > 0 ? `on ${stuck.map((f) => `h${f}`).join(", ")}` : "on an island that did not answer";
+        return refuse("shore-unwritten", `the shore's flush left records unwritten ${where} (${strands.join(" · ")}); they rest in the store, and their mirrors stay behind until a flush writes them (\`lares shore flush\`): wear again with --yes to turn anyway`, { shore });
+      }
+    }
     const priorMount = daemonMountState();
     const byOpeningBefore = mountByOpening;
     setMountedFace(face);
@@ -462,7 +516,8 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     // A RECOMPOSE THAT THROWS puts the mount back on the face it left before the fault names itself to the caller.
     try { stood = await deps.recompose(true); }
     catch (e) { restoreDaemonMount(priorMount); mountByOpening = byOpeningBefore; throw e; }
-    if (stood.refused === undefined) { tellWorn(); return { op: "wear", face, held: true, ...stood }; }
+    const read = shore !== undefined ? { shore } : {};
+    if (stood.refused === undefined) { tellWorn(); return { op: "wear", face, held: true, ...stood, ...read }; }
     restoreDaemonMount(priorMount);
     mountByOpening = byOpeningBefore;
     const back = await deps.recompose(true);
@@ -472,10 +527,10 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       clearDaemonMount();
       const floor = await deps.recompose(true);
       deps.onLog(`the composition wearing h${face} did not stand, nor ${before !== undefined ? `h${before} again` : "the mount before it"}; the vessel stands at the floor, every key held`);
-      return { op: "wear", face, held: true, ...floor, switchRefused: stood.refused };
+      return { op: "wear", face, held: true, ...floor, switchRefused: stood.refused, ...read };
     }
     deps.onLog(`the composition wearing h${face} did not stand; ${before !== undefined ? `h${before} worn again` : "no face named"}, the node key held`);
-    return { op: "wear", face, held: true, ...back, switchRefused: stood.refused, ...(before !== undefined ? { wornAgain: before } : {}) };
+    return { op: "wear", face, held: true, ...back, switchRefused: stood.refused, ...(before !== undefined ? { wornAgain: before } : {}), ...read };
   });
 
   /**
@@ -581,8 +636,8 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     const proof = await holder.proves(credentials);
     if (proof.reading !== "proves") {
       if (proof.reading === "locked") return refuse("custody-locked", new CustodyLocked().message);
-      if (proof.reading === "no-slot-opens") return refuse("no-slot-opens", `no slot of this vessel opens under what was presented; nothing was cut (${proof.attemptsLeft} attempt(s) left this boot)`, { attemptsLeft: proof.attemptsLeft });
-      if (proof.reading === "attempts-spent") return refuse("attempts-spent", "this vessel's unlock attempts for this boot stand spent; nothing was cut");
+      if (proof.reading === "no-slot-opens") return refuse("no-slot-opens", `no slot of this vessel opens under what was presented; nothing was cut. ${attemptWarning(proof.attemptsLeft, "vessel", UNLOCK_ATTEMPTS_PER_BOOT)}`, { attemptsLeft: proof.attemptsLeft });
+      if (proof.reading === "attempts-spent") return refuse("attempts-spent", `nothing was cut. ${attemptWarning(0, "vessel", UNLOCK_ATTEMPTS_PER_BOOT)}`, { attemptsLeft: 0 });
       return refuse(proof.reading, `the vessel's slot tree reads ${proof.reading}; nothing was cut`);
     }
     const bundleKey = Uint8Array.from(Buffer.from(keyHex, "hex"));
@@ -631,13 +686,72 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     }
   };
 
+  /**
+   * One recard, run on the door's one chain. THE FACE STANDS SERVED AND DARK for want of a prekey secret: its last light here
+   * refused `FaceHoldsNoPrekeySecret`. A face lit, shut, or dark for another cause refuses before anything moves. The face's
+   * own route proves a person stands here; the door arms the face's next light as a recard and awaits that face's own light.
+   */
+  const runRecard = (credentials: readonly Credential[], face: number, sock: Socket) => async (): Promise<CustodyAnswer> => {
+    const refuse = (reason: string, errorMessage: string, extra: { attemptsLeft?: number } = {}): CustodyAnswer => {
+      deps.onLog(`recard h${face}: refused (${reason})`);
+      return { op: "recard", status: "error", errorMessage, refusal: { reason, ...extra } };
+    };
+    const hand = await readHand(sock, { proveRoute: true }, deps.peerOf);
+    if ("refusal" in hand) return refuse(hand.refusal, "a recard asks a person at their terminal: a detected AI seat refuses, and the face's own route gates it; nothing moved");
+    if (!deps.armRecard || !deps.disarmRecard || !deps.refusedLights || !deps.lightFace) return refuse("recard-unavailable", "this vessel's custody door recards no face; nothing moved");
+    if (deps.pulama) return refuse("recard-under-pulama", `this vessel's custody rests with its pūlama, which lights faces on its own hand; nothing moved. Read the face there: tools/lares-container.sh pulama status`);
+    if (!holder.isUnlocked()) return refuse("custody-locked", `${new CustodyLocked().message}: unlock it (\`lares vault unlock\`), then \`lares vault recard --face ${face}\`; nothing moved`);
+    const at = await holder.faceStanding({ ordinal: face });
+    if (at === null) return refuse("face-not-standing", `no face h${face} stands on this vessel (\`lares vessel roster\` names each face); nothing moved`);
+    // THE NO-OP GUARD: only a face whose last light here refused for want of a prekey secret recards.
+    const dark = deps.refusedLights().find((r) => r.ordinal === face);
+    if (!at.unlocked) return refuse("face-shut", `face h${face} stands shut: open it (\`lares vault unlock --face ${face}\`); a face whose Archive fell behind its cards refuses its light by name, and the recard follows; nothing moved`);
+    if (dark === undefined) return refuse("face-not-stale", `the last light of face h${face} here did not refuse for want of a prekey secret (it stands lit, or still lighting): nothing needs a recard. Read it with \`lares vault status\`; nothing moved`);
+    if (!STALE_LIGHT.test(dark.cause)) return refuse("face-not-stale", `face h${face} stands dark for another cause (${dark.cause}): a recard cures only a face that holds no prekey secret; clear it with \`lares vault unlock\`; nothing moved`);
+    // THE FACE'S OWN ROUTE GATES, through the holder's per-face opening the rehive uses (one prover, the face's own attempt budget):
+    // the face's key stands open for this act, so it opens whileOpen, and the key opened for the proof zeroes at once.
+    if (!holder.openFaceForAct) return refuse("recard-unavailable", "this vessel's custody rests elsewhere: recard the face where its custody rests; nothing moved");
+    const proof = await holder.openFaceForAct({ ordinal: face }, credentials, { whileOpen: true });
+    if (proof.reading !== "opens") {
+      if (proof.reading === "no-slot-opens") return refuse("no-slot-opens", `no slot of face h${face} opens under what the holder presented: a recard asks the FACE's own route, never the vessel's; nothing moved (${proof.attemptsLeft} attempt(s) left this boot for this face)`, { attemptsLeft: proof.attemptsLeft });
+      if (proof.reading === "attempts-spent") return refuse("attempts-spent", `face h${face}'s unlock attempts for this boot stand spent; nothing moved. Stand the vessel again (\`lares vessel stand\`)`);
+      return refuse(proof.reading, `face h${face} did not open for the recard (${proof.reading}); nothing moved. Read it with \`lares vault status\``);
+    }
+    proof.fck.fill(0);
+    // THIS FACE'S LIGHT, AWAITED: the lend's sweep fires its lights and answers at once, so the door arms the face, asks its own
+    // light and reads the refusals only once that light settled. An arm no light took is cleared the same turn.
+    deps.armRecard(face);
+    let lightAnswer: "lit" | "refused" | void;
+    let untaken = false;
+    try { lightAnswer = await deps.lightFace(face); }
+    catch (e) { return refuse("recard-failed", `face h${face} failed to light (${e instanceof Error ? e.message : String(e)}): the recard clears its arm; read it with \`lares vault status --verbose\`, then \`lares vault recard --face ${face}\` again`); }
+    finally { untaken = deps.disarmRecard(face) === true; }
+    const after = deps.refusedLights().find((r) => r.ordinal === face);
+    // A HELD FACE READS NO REFUSAL (a lock ran ahead of the light): the light's own answer decides, never the refusal list alone.
+    if (lightAnswer === "refused" && after === undefined) return refuse("recard-refused", `face h${face} stays dark and held (a lock or a stand-down ran ahead of its light): the arm went untaken. Read it with \`lares vault status --verbose\`, unlock custody where it reads locked, then \`lares vault recard --face ${face}\` again`);
+    if (after !== undefined) return refuse("recard-refused", `face h${face} stayed dark and ${untaken ? "the arm went untaken (a light had run before the door armed)" : "the recard spent its arm"}: ${after.cause}. Read it with \`lares vault status --verbose\` and clear what that names, then \`lares vault recard --face ${face}\` again`);
+    deps.onLog(`recard h${face}: lit`);
+    return { op: "recard", face, recarded: true };
+  };
+
   const handler = (parsed: unknown, sock: Socket): boolean => {
     if (!isCustodyFrame(parsed)) return false;
     const op = parsed.op;
     let act: () => Promise<CustodyAnswer>;
     /** A close that runs ahead of the line, before the act takes its turn (a lock), or none. */
     let ahead: (() => Promise<void>) | null = null;
-    if (op === "rehive") {
+    if (op === "recard") {
+      const frame = parsed as Record<string, unknown>;
+      const stray = Object.keys(frame).find((k) => !RECARD_FRAME_KEYS.has(k));
+      const credentials = credentialsOf(frame["credentials"]);
+      const face = frame["face"];
+      if (stray !== undefined || !credentials || !Number.isSafeInteger(face) || (face as number) < 0) {
+        deps.onLog("recard: refused (bad-custody-frame)");
+        answer(sock, { op, status: "error", errorMessage: "a recard frame carries `op`, the vessel's own `credentials` and the `face` (a handle-index), and nothing beside them", refusal: { reason: "bad-custody-frame" } });
+        return true;
+      }
+      act = runRecard(credentials, face as number, sock);
+    } else if (op === "rehive") {
       const frame = parsed as Record<string, unknown>;
       const stray = Object.keys(frame).find((k) => !REHIVE_FRAME_KEYS.has(k));
       const credentials = credentialsOf(frame["credentials"]);
@@ -703,14 +817,14 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     } else if (op === "wear") {
       const frame = parsed as Record<string, unknown>;
       const face = frame["face"];
-      if (Object.keys(frame).some((k) => !WEAR_FRAME_KEYS.has(k)) || !Number.isSafeInteger(face) || (face as number) < 0 || (frame["seat"] !== undefined && frame["seat"] !== "ai")) {
+      if (Object.keys(frame).some((k) => !WEAR_FRAME_KEYS.has(k)) || !Number.isSafeInteger(face) || (face as number) < 0 || (frame["seat"] !== undefined && frame["seat"] !== "ai") || (frame["yes"] !== undefined && frame["yes"] !== true)) {
         deps.onLog("wear: refused (bad-custody-frame)");
-        answer(sock, { op, status: "error", errorMessage: "a wear frame carries `op`, a `face` (a handle index, a whole number from 0) and at most `seat: \"ai\"`, and nothing beside them: no route rides a wear", refusal: { reason: "bad-custody-frame" } });
+        answer(sock, { op, status: "error", errorMessage: "a wear frame carries `op`, a `face` (a handle index, a whole number from 0) at most `seat: \"ai\"` and `yes: true` (turn over records the shore's flush left unwritten), and nothing beside them: no route rides a wear", refusal: { reason: "bad-custody-frame" } });
         return true;
       }
       // A WEAR MOVES THE MOUNT FOR ANY SEAT: it asks no route and carries no key, and reaches only a face already standing open;
       // unlock and custody stay the operator's own acts.
-      act = () => wear(face as number);
+      act = () => wear(face as number, frame["yes"] === true);
     } else if (op === "unlock" && deps.pulama) {
       // A PŪLAMA HOLDS THIS VESSEL'S CUSTODY: the frame's credentials go unread (no route opens anything here), the vessel
       // dials the pūlama again, and the answer names a session or what the pūlama waits on.
@@ -793,6 +907,24 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
           const why = e instanceof Error ? e.message : String(e);
           deps.onLog(`doc-census: refused — ${why}`);
           answer(sock, { op, status: "error", errorMessage: why, refusal: { reason: "census-failed" } });
+        },
+      );
+      return true;
+    } else if (op === "shore-flush") {
+      // THE SHORE'S FLUSH, WHOLE ISLAND: every island the standing composition holds that mounts a disk shore (the daemon's, its
+      // lit siblings' and each resident wiki's) writes what it holds to its mirrors, the same flush the teardown runs. It places
+      // no record and moves no custody, so it rides beside the chain and asks no credential, as the census does.
+      const flushing = deps.shoreFlush?.() ?? null;
+      if (flushing === null) {
+        answer(sock, { op, status: "error", errorMessage: "no composition sits to flush its shores: stand the vessel (`lares vessel stand`), or unlock it (`lares vault unlock`) where it rests locked, then ask again", refusal: { reason: "flush-unavailable" } });
+        return true;
+      }
+      void flushing.then(
+        (reading) => answer(sock, { op: "shore-flush", reading, standing: deps.standing() }),
+        (e) => {
+          const why = e instanceof Error ? e.message : String(e);
+          deps.onLog(`shore-flush: refused — ${why}`);
+          answer(sock, { op, status: "error", errorMessage: why, refusal: { reason: "flush-failed" } });
         },
       );
       return true;

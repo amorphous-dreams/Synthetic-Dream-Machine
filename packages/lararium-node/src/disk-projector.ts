@@ -1979,6 +1979,16 @@ export class LarDiskProjector {
     };
   }
 
+  /** How many files this projector has written since it stood (a measure; `shoreFlush` reads its rise across one flush). */
+  fileWrites(): number { return this.measure.writes; }
+
+  /** Mark each carrier whose latest reconcile threw for one more reconcile (a flush's retry); answers how many it marked. */
+  retryFailed(): number {
+    if (!this.gate || this.stopping) return 0;
+    for (const rootUri of this.failedRoots) this.gate.mark(rootUri);
+    return this.failedRoots.size;
+  }
+
   unsettled(): { readonly pending: ReadonlyArray<{ readonly uri: string; readonly bagId: string | null }>; readonly failed: ReadonlyArray<{ readonly uri: string; readonly bagId: string | null }> } {
     const bagOf = (uri: string): string | null => {
       const origin = (this._tw5?.$tw.wiki.getTiddler?.(uri)?.fields as Record<string, unknown> | undefined)?.["$origin-bag"];

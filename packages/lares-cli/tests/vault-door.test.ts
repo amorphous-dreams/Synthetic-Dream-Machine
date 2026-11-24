@@ -347,9 +347,9 @@ describe("vault door — restore reads the bundle's route on a terminal", () => 
 });
 
 describe("the vault door answers its live verbs", () => {
-  const LIVE_VERBS = ["status", "unlock", "lock", "bind", "unbind", "backup", "restore", "rehive"];
+  const LIVE_VERBS = ["status", "unlock", "lock", "bind", "unbind", "backup", "restore", "rehive", "recard"];
 
-  it("★ the help names the eight live verbs ★", () => {
+  it("★ the help names the nine live verbs ★", () => {
     const text = helpLines("vault").join("\n");
     const usage = /usage: lares vault <([^>]*(?:<[^>]*>[^>]*)*)> /.exec(text.replace(/<(slot-id|N|file)>/g, "$1"));
     expect(usage, text).not.toBeNull();

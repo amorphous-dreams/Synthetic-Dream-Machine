@@ -57,7 +57,7 @@ const TW5  = join(REPO, "packages/lararium-tw5");
 const DIST = join(TW5, "dist");
 /** The frame package's built shore — marks, fence mask, head reader. */
 const FRAME = join(REPO, "packages/lararium-memetic-frame/dist/index.js");
-for (const need of ["carrier-files.js", "grammar-heads.js", "tw5-vm.js", "generated-tw5-version.js"]) {
+for (const need of ["carrier-files.js", "grammar-heads.js", "tw5-vm.js", "generated-tw5-version.js", "module-pins.js"]) {
   if (!existsSync(join(DIST, need))) {
     console.error(`[call-reach] no built shore at ${join(DIST, need)}\n  cure: pnpm --filter @lararium/tw5 build`);
     process.exit(2);
@@ -71,7 +71,8 @@ const { fencedSpans, inMask } = await import(FRAME);
 // malformed. This witness extracts a call exactly as the rule does, or it measures its own cut.
 const { sigilOpenEnd } = await import(join(DIST, "wikirules/lar-sigil-shared.js"));
 const { TW5Engine }           = await import(join(DIST, "tw5-vm.js"));
-const { TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME } = await import(join(DIST, "generated-tw5-version.js"));
+const { TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME, TW5_CORE_SHA256 } = await import(join(DIST, "generated-tw5-version.js"));
+const { casBlobPreloads, modulePinsOf } = await import(join(DIST, "module-pins.js"));
 
 const CORE   = join(TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME);
 const PLUGIN = join(TW5, "plugins/lares-memetic-wikitext.json");
@@ -80,7 +81,10 @@ if (!existsSync(CORE)) {
   process.exit(2);
 }
 const engine = new TW5Engine();
-await engine.boot(new Uint8Array(readFileSync(CORE)), [JSON.parse(readFileSync(PLUGIN, "utf8"))]);
+// Every blob carries its pin: the core the bake's, the grammar the tracked attestation's.
+const ATTESTATION = JSON.parse(readFileSync(join(TW5, "plugins/standalone/lares-memetic-wikitext.attestation.json"), "utf8"));
+const grammar = casBlobPreloads(new Uint8Array(readFileSync(PLUGIN)), ATTESTATION.pluginJsonSha256);
+await engine.boot({ bytes: new Uint8Array(readFileSync(CORE)), sha256: TW5_CORE_SHA256 }, grammar, undefined, { modulePins: modulePinsOf(grammar) });
 const wiki = engine.wiki ?? engine._tw?.wiki;
 
 // THE ONE DOOR. A wiki holding the grammar answers which heads it declares; nothing here re-derives it.

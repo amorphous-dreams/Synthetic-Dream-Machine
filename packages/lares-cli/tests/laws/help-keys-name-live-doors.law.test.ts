@@ -41,7 +41,8 @@ describe("the per-command help registry", () => {
   test("the registry stays SPARSE — a missing entry is legal, and this test never demands one", () => {
     // Stated so nobody later "fixes" the asymmetry by requiring an entry per command: the dispatch
     // summary is the fallback, and forcing a second description per verb is how two of them drift apart.
-    expect(Object.keys(COMMAND_HELP).length).toBeLessThan(COMMAND_NAMES.length);
+    // A sub-door key (`vessel lay`) answers one motion beneath its door, so only the door-level keys count against the doors.
+    expect(Object.keys(COMMAND_HELP).filter((k) => !k.includes(" ")).length).toBeLessThan(COMMAND_NAMES.length);
   });
 
   test("meme help publishes the required store target", () => {
@@ -50,7 +51,7 @@ describe("the per-command help registry", () => {
   });
 
   test("every verb the host shim answers holds a help row: `lares <shim verb> --help` reads it, never `unknown command`", async () => {
-    expect([...SHIM_VERBS].sort()).toEqual(["build", "down", "found", "logs", "rebuild", "reset", "up"]);
+    expect([...SHIM_VERBS].sort()).toEqual(["build", "down", "found", "logs", "pulama", "rebuild", "reset", "up"]);
     for (const verb of SHIM_VERBS) {
       const r = await said([verb, "--help"]);
       expect({ verb, code: r.code, err: r.err }).toEqual({ verb, code: 0, err: "" });
@@ -70,7 +71,7 @@ describe("the per-command help registry", () => {
     const wiki = COMMANDS.find((c) => c.name === "wiki")!;
     expect(flag.out).toBe(`${word.out}\n\nAbout:\n  ${wiki.summary}`);
     expect(word.out).not.toMatch(/^About:$/m);   // CONTROL: the bare table (`wiki help`) carries no account
-    for (const verb of ["init", "share", "switch", "active", "list"]) expect(flag.out).toMatch(new RegExp(`^  ${verb}\\s`, "m"));
+    for (const verb of ["init", "share", "switch", "pin", "status"]) expect(flag.out).toMatch(new RegExp(`^  ${verb}\\s`, "m"));
     expect(flag.code).toBe(0);
   });
 

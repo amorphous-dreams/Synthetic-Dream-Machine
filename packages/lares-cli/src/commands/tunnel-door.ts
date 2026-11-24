@@ -118,7 +118,7 @@ export function itemsFor(door: Door, staged = false, persist = false): { items: 
 export async function cmdTunnelDoor(door: Door, args: ParsedArgs): Promise<number> {
   const verb = args.positional[0];
   if (args.flags["help"] === true || verb === undefined || !(TUNNEL_VERBS as readonly string[]).includes(verb)) {
-    return refuseUsage(args, door, helpLines(door));
+    return refuseUsage(args, door, helpLines(door), args.flags["help"] === true ? undefined : verb === undefined ? "name a sub-verb" : `unknown sub-verb "${verb}"`);
   }
   if (args.flags["staged"] === true && !(door === "repo" && verb === "read")) {
     console.error(`lares ${door} ${verb}: --staged reads the index, and only \`lares repo read\` reads it`);

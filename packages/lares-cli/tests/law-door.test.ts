@@ -7,7 +7,7 @@
  * the order it prints, the one run a pin moves, and the round trip back to the seeded text.
  */
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { LAW_INDEX_FILTER, LAW_PINS_DEFAULT, LAW_PINS_FILTER, LAW_PINS_TITLE, LAW_BOOT_SEED, LAW_MU_ROOT, LAW_CANON_GUARD } from "@lararium/tw5";
+import { LAW_INDEX_FILTER, LAW_PINS_DEFAULT, LAW_PINS_FILTER, LAW_PINS_TITLE, LAW_BOOT_SEED, LAW_MU_ROOT, lawStandsFilter } from "@lararium/tw5";
 
 const API = "lar:///ha.ka.ba/lares/api";
 const MU = [`${API}/mu/chao`, `${API}/mu/the-four-tools`];
@@ -37,8 +37,10 @@ function evaluate(text: string): string[] {
 }
 
 function answer(verb: string, args: Record<string, unknown>): Record<string, unknown> {
-  if (verb === "tiddler-get") return { recipe: "default", title: args["title"], tiddler: h.pins === null ? null : { fields: { title: LAW_PINS_TITLE, text: h.pins }, hash: `h${h.hash}` } };
+  // THE DOOR'S GRADIENT, IN SMALL: an answer that left the text home hands a card's base, which no text put takes (base-from-skinny).
+  if (verb === "tiddler-get") return { recipe: "default", title: args["title"], tiddler: h.pins === null ? null : { fields: { title: LAW_PINS_TITLE, text: h.pins }, hash: `${args["grain"] === "fat" ? "" : "skinny:"}h${h.hash}` } };
   if (verb === "tiddler-put") {
+    if (String(args["base"] ?? "").startsWith("skinny:")) throw new Error("base-from-skinny: the pin set's base came from an answer that left the text home");
     if (h.putDecision !== "put") return { decision: h.putDecision, hash: `h${h.hash}` };
     h.pins = String(args["text"]);
     h.hash++;
@@ -51,7 +53,7 @@ function answer(verb: string, args: Record<string, unknown>): Record<string, unk
     const rows = [...pins, ...LAW.filter((t) => !pins.includes(t))].map((title) => ({ title, fields: title === LAW_BOOT_SEED ? {} : { role: `the  role\nof ${title.split("/").pop()}` } }));
     return { rows, total: rows.length, next: null };
   }
-  const stands = filter.endsWith(` ${LAW_CANON_GUARD}`) ? /^\[\[(.+?)\]\] /.exec(filter) : null;
+  const stands = /^\[lares\.law\[\]match\[(.+?)\]\]$/.exec(filter);
   if (stands) return { titles: STANDING.has(stands[1] as string) ? [stands[1]] : [], total: 0, next: null };
   return { titles: evaluate(filter), total: 0, next: null };
 }
@@ -171,7 +173,7 @@ describe("lares law pin | unpin", () => {
 
   test("the pin's standing check asks the canon guard, so a title a face wrote refuses law-pin-absent", async () => {
     await run(argv(["pin", LAW[0]!]));
-    expect(h.calls.find((c) => String(c.args["filter"]).startsWith(`[[${LAW[0]}]]`))!.args["filter"]).toBe(`[[${LAW[0]}]] ${LAW_CANON_GUARD}`);
+    expect(h.calls.find((c) => String(c.args["filter"]).includes("match["))!.args["filter"]).toBe(lawStandsFilter(LAW[0]!));
   });
 
   test("with no pin set standing, a pin writes the one run and names no base", async () => {
@@ -206,7 +208,7 @@ describe("the pin algebra and the command row", () => {
     expect(wake["LAW_INDEX_FILTER"]).toBe(LAW_INDEX_FILTER);
     expect(wake["LAW_PINS_FILTER"]).toBe(LAW_PINS_FILTER);
     expect(wake["LAW_PINS_TITLE"]).toBe(LAW_PINS_TITLE);
-    expect(wake["LAW_CANON_GUARD"]).toBe(LAW_CANON_GUARD);
+    expect(wake["LAW_CANON_GUARD"]).toBeUndefined();
   });
 
   test("the wake's law block frames its rows as data and prints a title only as one lar: address", async () => {

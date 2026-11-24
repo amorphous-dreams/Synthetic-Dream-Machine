@@ -154,6 +154,8 @@ export function parseRetirementRecord(value: unknown): RetirementRecord | null {
  *   promote·retire                     → HITL  (in-loop human: graduation is a designed one-way
  *                                               commitment; a retire is a judged deaccession)
  *   purge                              → HITL  (irreversible byte GC — explicit-only, no auto-reclaim)
+ * The grid reads what a move can undo; `SENSE_HAND_CODES` reads who may move it, so `un-retire` seats HOTL here and still runs
+ * on a person's hand alone.
  */
 export const LIFECYCLE_SEATS: Readonly<Record<string, readonly [boolean, boolean]>> = {
   roster:     [true, false],
@@ -174,14 +176,33 @@ export function seatOf(verb: string): "HOTL" | "HITL" {
   return reversible && !trustCrossing ? "HOTL" : "HITL";
 }
 
-/** Gate a verb by its seat: a HOTL verb passes freely; an HITL verb needs a truthy operator-approval
- *  capability. Throws when an HITL verb rides without one — the TS mirror of python `guard_hitl` (E5). */
-export function guardHitl(verb: string, approval?: unknown): void {
-  if (seatOf(verb) === "HITL" && !approval) {
-    const seat = LIFECYCLE_SEATS[verb];
-    const why = seat && !seat[0] ? "irreversible" : "trust-crossing";
-    throw new Error(`${verb} sits HITL (${why}) — an operator-approval capability is required; a reversible verb (e.g. reconcile) needs none.`);
-  }
+/**
+ * THE SENSE VERBS A PERSON'S HAND ALONE RUNS, each with the code it refuses under (hitl-reads-a-hand). The grid above reads what
+ * a move can undo; this table reads who may move it: `promote` changes what the house treats as durable, `retire` and `un-retire`
+ * move a sensorium out of and back into the live set, and `purge` deletes its bytes. Each runs on a person's hand at a real
+ * terminal (`lares sense <verb>`); the vessel refuses every other asker, and no MCP tool carries one.
+ */
+export const SENSE_HAND_CODES: Readonly<Record<string, string>> = {
+  promote: "sense-needs-hand", retire: "sense-needs-hand", "un-retire": "sense-needs-hand", purge: "sense-needs-hand",
+};
+
+/** The one value that approves a hand verb: the hand a door read off the process behind the ask, never a caller's value. */
+export type SenseHand = "hand";
+
+/**
+ * Gate a verb by its hand and its seat: a HOTL verb outside the hand table passes freely; a hand verb, or any HITL verb, needs
+ * `hand` to read exactly `"hand"`, the reading a door made (the CLI off its own branch, the vessel off the asker it booked). A
+ * seat's `approve: true`, a truthy string or a named cap approves nothing, and the refusal names the command to run on a
+ * real terminal. Throws `sense-needs-hand` (its `reason` carries the code).
+ */
+export function guardHitl(verb: string, hand?: SenseHand): void {
+  if (!Object.hasOwn(SENSE_HAND_CODES, verb) && seatOf(verb) === "HOTL") return;
+  if (hand === "hand") return;
+  const code = SENSE_HAND_CODES[verb] ?? "sense-needs-hand";
+  throw Object.assign(new Error(
+    `${code}: ${verb} runs on a person's hand at a real terminal alone; a seat's approval value counts for nothing. ` +
+    `Ask the operator to run \`lares sense ${verb} …\` on their own terminal.`,
+  ), { reason: code });
 }
 
 // ── feature gates — capability present, signal/path unflipped ("there and unused") ────────────────────

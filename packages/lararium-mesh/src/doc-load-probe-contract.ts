@@ -30,17 +30,27 @@ import type { StoreIntegrityReport } from "./store-integrity.js";
  *                 timer, and a timer must never mint a safety verdict (H2). NEVER condemned.
  *
  * No status reads `timeout`: a probe the window closed on reads `unresolved`.
+ *
+ *   sealed      — the doc's records rest sealed (a pointer the holder answers, or a sealed value under a keyed bag), and
+ *                 every envelope reads well-formed. The probe holds no key, so it never reads the inner bytes: this
+ *                 is NEITHER proof the doc opens NOR evidence against it. The key-less check catches a cut pointer,
+ *                 a short header and a last segment shorter than its tag; the KEYED LOAD at mount decides the rest.
+ *                 Never condemned; never mounted writable on its own word (the social mount waits for the keyed load).
+ *
+ * A broken sealed envelope reads `torn`.
  */
-export type ProbeStatus = "ok" | "torn" | "load-error" | "aborted" | "unresolved";
+export type ProbeStatus = "ok" | "sealed" | "torn" | "load-error" | "aborted" | "unresolved";
 
 /** A probe's verdict on one doc. */
 export interface ProbeResult {
   readonly documentId: string;
   readonly status: ProbeStatus;
-  /** the doc heads when status=ok. */
+  /** the doc heads when status=ok; a sealed doc names only its clear records' heads (none, resting wholly sealed). */
   readonly heads?: readonly string[];
   /** stored chunks seen (pre-check or boundary). */
   readonly chunks?: number;
+  /** the stored records that rest sealed, each with a well-formed envelope; present when any does. */
+  readonly sealed?: number;
   /** names why the doc was condemned (torn / load-error / aborted / timeout). */
   readonly reason?: string;
   /** the L5b framing report — rides along whenever the pre-check ran. */
@@ -49,6 +59,10 @@ export interface ProbeResult {
    *  torn tail files moved aside. A `status:"ok"` result carrying this names a PROMOTION
    *  (the doc reconstitutes from its verified clean prefix). */
   readonly cleanTail?: { readonly kept: number; readonly movedAside: readonly string[] };
+  /** Present when the id rests in quarantine from an earlier condemn: its bytes sit aside, so no load ran and the id
+   *  never reads as a fresh blank. The mount holds it read-only with no recovery and no second move, on every boot,
+   *  until a hand act restores the bytes or releases the id. */
+  readonly held?: { readonly movedTo: string; readonly quarantinedAt: string };
 }
 
 /** A doc counts as condemned only when the evidence is INTEGRITY evidence — torn bytes, a
@@ -62,6 +76,11 @@ export function isCondemned(r: ProbeResult): boolean {
  *  doc neither writable nor quarantined on this; a later re-probe decides. */
 export function isUnresolved(r: ProbeResult): boolean {
   return r.status === "unresolved";
+}
+
+/** The probe read sound envelopes and no inner byte: the keyed load at mount decides. Neither condemned nor unresolved. */
+export function isSealedVerdict(r: ProbeResult): boolean {
+  return r.status === "sealed";
 }
 
 /** Options a caller passes into a probe run. */
@@ -94,4 +113,9 @@ export interface QuarantineManifest {
   readonly integrity?: StoreIntegrityReport;
   readonly quarantinedAt: string;
   readonly movedTo: string;
+  /** The plane the document mounted as, where the mount named it: a release reads it to tell a plane a sibling carries. */
+  readonly bagId?: string;
+  /** The hand act that ended the hold: `restored` moved the bytes back into the store, `fresh` let the id start empty
+   *  while the bytes stay aside, `kept` left whatever stands under the id. Absent, the id stays held on every boot. */
+  readonly released?: { readonly act: "restored" | "fresh" | "kept" };
 }

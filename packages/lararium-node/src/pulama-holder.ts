@@ -79,6 +79,12 @@ export interface PulamaHolder extends CustodyHolder {
   worn(): number | undefined;
   /** Tell the pūlama the face this vessel now wears: one ordinal, nothing beside it. Only the wear door calls it. */
   tellWorn(ordinal: number): Promise<void>;
+  /**
+   * THE CLEAN GOODBYE: the vessel drained every save and leaves. It tells the pūlama so through its session, naming the life
+   * its hello named, and the session ends. Answers whether the pūlama heard it: with no session, no life to name, or a refusal,
+   * no goodbye stands, and the leaving reads as any dropped session does. Only a vessel's clean exit calls it.
+   */
+  goodbye(): Promise<boolean>;
 }
 
 interface Session {
@@ -111,6 +117,9 @@ const derivedOf = (raw: unknown): Record<string, Uint8Array> => {
   return out;
 };
 
+/** How long a vessel's goodbye waits on its pūlama before it leaves unheard: the exit's liveness bound, never a verdict. */
+export const GOODBYE_WAIT_MS = 2_000;
+
 export function makePulamaHolder(a: {
   readonly homes: CustodyHomes;
   /** Open one channel to the pūlama. A pūlama that does not answer rejects. */
@@ -123,6 +132,11 @@ export function makePulamaHolder(a: {
    * together by it; absent, the hello names no life and its session stands with none.
    */
   readonly life?: () => unknown;
+  /**
+   * How long a goodbye waits on the pūlama's answer before this side leaves unheard (default {@link GOODBYE_WAIT_MS}). A bound on
+   * the exit's liveness alone, never a verdict: an answer past it changes nothing here, and an unheard goodbye reads as a drop.
+   */
+  readonly goodbyeWaitMs?: number;
 }): PulamaHolder {
   let session: Session | null = null;
   let nextId = 1;
@@ -267,7 +281,7 @@ export function makePulamaHolder(a: {
 
   const faceOf = async (face: FaceRef) => await call("face.standing", { face }) as Awaited<ReturnType<CustodyHolder["faceStanding"]>>;
   const faceUnlock = (f: { readonly ordinal: number; readonly fcid: string; readonly unlocked: boolean }): FaceUnlock =>
-    f.unlocked ? { reading: "already-unlocked", fcid: f.fcid, ordinal: f.ordinal } : { reading: "attempts-spent", fcid: f.fcid };
+    f.unlocked ? { reading: "already-unlocked", fcid: f.fcid, ordinal: f.ordinal } : { reading: "attempts-spent", fcid: f.fcid, attemptsLeft: 0 };
 
   return {
     homes: a.homes,
@@ -290,6 +304,23 @@ export function makePulamaHolder(a: {
     waits: () => (session === null ? refused : null),
     worn: () => session?.standing.worn,
     async tellWorn(ordinal) { await call("face.worn", { ordinal }); },
+    async goodbye() {
+      const s = session, life = a.life?.();
+      // A GOODBYE WHILE A DIAL RUNS COUNTS AS LEAVING: the dial in flight seats no session after it.
+      if (s === null) { left += 1; return false; }
+      // THE GOODBYE IS THE SESSION'S LAST WORD: this side leaves too, heard or not. With no life to name, none is said, and the
+      // leaving reads as any dropped session does. A SILENT PŪLAMA HOLDS NO EXIT: past its bound the goodbye leaves unheard.
+      let bound: ReturnType<typeof setTimeout> | undefined;
+      try {
+        if (life === undefined) return false;
+        const unheard = new Promise<false>((resolve) => { bound = setTimeout(() => resolve(false), a.goodbyeWaitMs ?? GOODBYE_WAIT_MS); });
+        return await Promise.race([call("vessel.goodbye", { life }).then(() => true as const), unheard]);
+      } catch { return false; } finally {
+        clearTimeout(bound);
+        left += 1;
+        if (session === s) { s.channel.close(); drop(s); }
+      }
+    },
     async landRite() { return { par: (await call("rite.land") as { par?: unknown }).par === true }; },
     attemptsLeft: () => session?.standing.attemptsLeft ?? 0,
     openedSlot: () => session?.standing.slot ?? null,

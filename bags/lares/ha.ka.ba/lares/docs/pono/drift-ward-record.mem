@@ -15,7 +15,7 @@ uri-path    = "ha.ka.ba/lares/docs/pono/drift-ward-record"
 
 ! Drift-Ward ~ the record
 
-The gauge speaks at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/drift-ward`>>; its rulings stand in that meme's `#/rulings`.
+The gauge speaks at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/drift-ward`>>; its rulings stand in that meme's <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/drift-ward#/rulings`>>.
 
 <<~/ahu>>
 
@@ -29,12 +29,12 @@ The gauge's panel first rode a `hud` sigil; the boot seed's `set` sigil carries 
 >
 > ''`hud` carries the gauge'' ~ LAST at open, FIRST at close, so the panel mirrors itself and the chiasmus holds inside one sigil.
 >
-> ''Turn order:'' `lares aim` · `hud` · content · `oracle` · `hud` · `lares yield`.
+> ''Turn order:'' `aim` · `hud` · content · `oracle` · `hud` · `yield`.
 >
 > (operator ruling: canon writes no `Focus`/`Feedback` spelling; captured turns still carry it, and the harvester reads both)
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;SPyDPrzeIoIp8aqq_RQ1_UwZbydo-6rx92teczHR7oM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;xE5qNtO-yuqy-d5ErsQwMbIOBUuWz4Z_oHL5_QOE__0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

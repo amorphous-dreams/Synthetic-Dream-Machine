@@ -334,6 +334,7 @@ lands and what refuses follow from state alone (`lar:///ha.ka.ba/lares/docs/pono
 
 !! Edges
 
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/wave-crest`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/verse-task-tree`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/verse-event-lattice`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/vm-projection-bus`>>
@@ -343,6 +344,6 @@ lands and what refuses follow from state alone (`lar:///ha.ka.ba/lares/docs/pono
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;zsoECzVklmTLbQcMy-tIReWK9RRoVqnMxNfA0Pa-kEw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_bfl95B9BEWY9Zd4HxyRRBrevjG-bC7BE6v70JjbmO0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -1,5 +1,5 @@
 /**
- * `lares bag {list | show | declare | home | repo}` — the bag LIFECYCLE surface.
+ * `lares bag {show | declare | home | repo}` — the bag LIFECYCLE surface.
  *
  * WHAT THE SURVEY FOUND, and why these exist. `lares bag` carried five verbs and every one of them answered a
  * RUNTIME question — pin, unpin, stats, register-cold, epoch — all of the shape //is this doc in RAM//.
@@ -9,7 +9,7 @@
  * knew nothing about itself, so every answer came from whichever call site asked — which is exactly how a
  * Nexus seal came to rest inside a repository nobody chose.
  *
- *   list                          every bag, its declared tier + home, and whether it sits where it says
+ *   show                          every bag, its declared tier + home, and whether it sits where it says
  *   show <bag>                    one bag's declaration and where it resolves ON THIS VESSEL
  *   declare <bag> --tier <t>      write (or amend) a bag's own declaration
  *   home <bag> --to <home> [--repo <id>] --approve
@@ -35,13 +35,14 @@ import {
   readRepoRegistry, registerRepo, unregisterRepo, repoRegistryPath, realmFoldersOnDisk,
 } from "@lararium/node";
 import {
-  parseCapTier, isBagHome, bagUri, placeBag, BAG_HOMES, bagHomeTravelsWithAClone,
+  parseCapTier, isBagHome, bagUri, placeBag, BAG_HOMES, bagHomeTravelsWithAClone, refuseTw5DocsReserved,
   type BagHome, type BagManifest,
 } from "@lararium/mesh";
 import { join } from "node:path";
 import { larBagsDir, larProjectionsDirOrNone, vesselDid } from "../env.js";
 import { runVerb, verbFailure } from "../verb-call.js";
 import { emit, exitFor } from "../render.js";
+import { hasLine, pagePlaneRows, param } from "@lararium/tw5";
 import type { ParsedArgs } from "../parse-args.js";
 
 class BagUsageError extends Error {}
@@ -90,16 +91,20 @@ function bagArg(args: ParsedArgs, verb: string): string {
 /** One line per bag: what it declares, and whether its bytes sit where the declaration points. */
 export async function cmdBagList(args: ParsedArgs): Promise<number> {
   const roots = bagHomeRoots();
-  const rows  = surveyBags(surveyDir(args), roots).map((s) => ({
+  const allRows = surveyBags(surveyDir(args), roots).map((s) => ({
     bag: s.bag, tier: s.manifest.tier, home: s.manifest.home,
     repository: s.manifest.repository ?? null,
     declares: existsDeclaration(s.dir, s.bag),
     adrift: s.adrift, dir: s.dir,
   }));
+  const page = pagePlaneRows(allRows, args.options["after"], args.options["limit"] ? Number(args.options["limit"]) : undefined);
+  const rows = page.rows;
+  const has = hasLine("bags", [param("source", "local-survey"), param("grain", "list"), param("count", page.count)]);
   emit(args, {
     ok: true,
-    data: { dir: surveyDir(args), bags: rows },
+    data: { has, source: "local-survey", grain: "list", count: page.count, next: page.next, dir: surveyDir(args), bags: rows },
     human: () => {
+      console.log(has);
       if (rows.length === 0) { console.log(`no bags under ${surveyDir(args)}`); return; }
       console.log(`bags under ${surveyDir(args)}:`);
       for (const r of rows) {
@@ -128,16 +133,19 @@ export async function cmdBagShow(args: ParsedArgs): Promise<number> {
   const roots = bagHomeRoots();
   const found = findBag(args, bag, roots);
   const place = placeBag(found.manifest, roots);
+  const has = hasLine(bagUri(bag), [param("source", "local-survey"), param("grain", "item"), param("adrift", found.adrift)]);
 
   emit(args, {
     ok: true,
     data: {
+      has, source: "local-survey", grain: "item", nextOperation: `lares bag home ${bag} --to ${found.manifest.home}`,
       bag, dir: found.dir, manifest: found.manifest, adrift: found.adrift,
       resolves: place.resolution.ok ? place.resolution.dir : null,
       why: place.resolution.ok ? null : place.resolution.why,
       travelsWithAClone: bagHomeTravelsWithAClone(found.manifest.home),
     },
     human: () => {
+      console.log(has);
       console.log(`${bag}`);
       console.log(`  cap-tier:  ${found.manifest.tier}   (only ever TIGHTENS against the structural floor)`);
       console.log(`  home:      ${found.manifest.home}${found.manifest.repository ? ` → repo "${found.manifest.repository}"` : ""}`);
@@ -157,6 +165,7 @@ export async function cmdBagShow(args: ParsedArgs): Promise<number> {
 /** Write or amend a bag's own declaration. It moves no bytes — `bag home` does that. */
 export async function cmdBagDeclare(args: ParsedArgs): Promise<number> {
   const bag   = bagArg(args, "declare");
+  refuseTw5DocsReserved(bag, "bag declare");
   const roots = bagHomeRoots();
   const found = findBag(args, bag, roots);
 

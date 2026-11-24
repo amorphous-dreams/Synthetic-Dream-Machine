@@ -1,4 +1,4 @@
-import { yieldToHost, type HostTaskYield } from "@lararium/mesh";
+import { takeCrest, yieldToHost, type HostTaskYield, type WaveLimits } from "@lararium/mesh";
 import type { LarTiddlerChange } from "@lararium/mesh";
 
 export interface LandingQueueDoor {
@@ -19,6 +19,8 @@ export interface LandingQueueDoor {
  */
 export class WaveLanding {
   static readonly QUOTA = 200;
+  /** The slice bound on the one axis the landing queue weighs: changes. */
+  private static readonly LIMITS: WaveLimits = { count: WaveLanding.QUOTA, bytes: Number.POSITIVE_INFINITY, ops: Number.POSITIVE_INFINITY };
   private readonly queue: LarTiddlerChange[][] = [];
   private readonly owed = new Map<string, LarTiddlerChange>();
   private draining = false;
@@ -120,9 +122,9 @@ export class WaveLanding {
       }
     }
     while (!this.stopped && this.queue.length) {
-      // Whole families up to the quota; the first family of a slice lands whatever its size.
-      const slice: LarTiddlerChange[] = this.queue.shift()!;
-      while (this.queue.length && slice.length + this.queue[0]!.length <= WaveLanding.QUOTA) slice.push(...this.queue.shift()!);
+      // Whole families up to the quota; the first family of a slice lands whatever its size (`takeCrest`, the one slice
+      // rule the INGEST settle crests by too).
+      const slice: LarTiddlerChange[] = takeCrest(this.queue, (family) => ({ count: family.length }), WaveLanding.LIMITS).flat();
       const count = slice.length;
       const failed: Array<{ item: LarTiddlerChange; error: unknown; at: number }> = [];
       const landedAt = new Map<string, number>();

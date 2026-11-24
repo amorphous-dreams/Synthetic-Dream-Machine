@@ -1,4 +1,4 @@
-"""Witness — the `meme_put` / `meme_get` / `meme_list` / `meme_delete` / `meme_project` MCP tools: the MCP
+"""Witness — the `meme_put` / `meme_list` / `meme_delete` / `meme_project` MCP tools (a meme reads through `tiddler_get(meme=True)`): the MCP
 skin of the meme family's DAEMON-seated verbs.
 
 Each tool rides `lares_uds.call("meme-put" | "meme-get" | "meme-list" | "meme-delete" | "meme-project",
@@ -25,9 +25,6 @@ from lares_mcp import MEME_VERBS, VERB_SEATS, DaemonCoordinator, build_mcp, seat
 _URI = "lar:///ha.ka.ba/lares/api/pono/meme"
 _PUT_OUTPUT = {"uri": _URI, "decision": "ingest", "grade": "ok", "landed": [_URI], "tombstoned": [],
                "canonicalHash": "sha256-put", "warnings": [], "diagnostics": []}
-_GET_MEME = {"text": "the body", "canonicalHash": "sha256-get"}
-# The daemon's outcome envelope — a reactor never answers bare null, so the meme rides under `meme`.
-_GET_OUTPUT = {"uri": "lar:///ha.ka.ba/lares/api/pono/meme", "meme": _GET_MEME}
 _PROJECT_OUTPUT = {"uri": _URI, "to": "html", "text": "<p>the body</p>", "contentType": "text/html"}
 _LIST_OUTPUT = {"bag": "lar:///ha.ka.ba/bags/daemon", "roots": [{"uri": _URI, "canonicalHash": "sha256-get"}]}
 _DELETE_OUTPUT = {"uri": _URI, "decision": "removed", "tombstoned": [_URI], "canonicalHash": "sha256-get"}
@@ -93,15 +90,17 @@ def daemon(monkeypatch, tmp_path_factory):
 
 def _tools():
     mcp = build_mcp(DaemonCoordinator(wing="w"))
-    return {name: mcp._tool_manager.get_tool(name).fn for name in MEME_VERBS}  # noqa: SLF001 — the registered skins
+    return {name: mcp._tool_manager.get_tool(name).fn for name in (*MEME_VERBS, "tiddler_put", "tiddler_get", "tiddler_delete")}
 
 
 def _put(**kw):
-    return _tools()["meme_put"](**kw)
+    return _tools()["tiddler_put"](title=kw.pop("uri"), meme=True, **kw)
 
 
 def _get(**kw):
-    return _tools()["meme_get"](**kw)
+    # A meme READS through the one door: the tiddler tool's meme lens.
+    mcp = build_mcp(DaemonCoordinator(wing="w"))
+    return mcp._tool_manager.get_tool("tiddler_get").fn(**kw)  # noqa: SLF001 — the registered skin
 
 
 def _project(**kw):
@@ -109,17 +108,20 @@ def _project(**kw):
 
 
 def _list(**kw):
-    return _tools()["meme_list"](**kw)
+    return _tools()["tiddler_get"](meme=True, **kw)
 
 
 def _delete(**kw):
-    return _tools()["meme_delete"](**kw)
+    return _tools()["tiddler_delete"](title=kw.pop("uri"), meme=True, **kw)
 
 
 def test_meme_tools_register_and_seat_hotl(daemon):
     mcp = build_mcp(DaemonCoordinator(wing="w"))
     names = {t.name for t in asyncio.run(mcp.list_tools())}
-    assert set(MEME_VERBS) == {"meme_put", "meme_get", "meme_list", "meme_delete", "meme_project"} <= names
+    assert set(MEME_VERBS) == {"meme_project"} <= names
+    assert names.isdisjoint({"meme_put", "meme_list", "meme_delete"})
+    # ONE DOOR READS: `meme_get` retired into `tiddler_get(meme=True)`; no tool answers by its name.
+    assert "meme_get" not in names
     for v in MEME_VERBS:
         assert v in VERB_SEATS and seat_of(v) == "HOTL"
     # The LOCAL seats (`meme normalize` · `meme check`) hold no MCP tool: the MCP mirrors the CLI's
@@ -131,7 +133,7 @@ def test_every_meme_tool_refuses_a_missing_container_before_the_wire(daemon):
     # A content verb names its container: neither `recipe` nor `bag` refuses as `no-container`, the code
     # the CLI and the daemon door answer, and nothing reaches the wire. No default wiki exists.
     daemon.output = _PUT_OUTPUT
-    for call in (lambda: _put(uri=_URI, text="the body"), lambda: _get(uri=_URI), lambda: _list(),
+    for call in (lambda: _put(uri=_URI, text="the body"), lambda: _get(title=_URI, meme=True), lambda: _list(),
                  lambda: _delete(uri=_URI), lambda: _project(uri=_URI, to="html")):
         with pytest.raises(ValueError, match="no-container"):
             call()
@@ -160,7 +162,7 @@ def test_meme_put_bag(daemon):
 
 
 def test_meme_put_carries_the_base(daemon):
-    # `base` = the canonical hash the writer read back from meme_get — the merge base the gate reads.
+    # `base` = the canonical hash the writer read back from tiddler_get(meme=True) — the merge base the gate reads.
     daemon.output = _PUT_OUTPUT
     out = _put(uri=_URI, text="the body", recipe="sdm", base="sha256-get")
     assert daemon.wire() == {"verb": "meme-put",
@@ -213,36 +215,24 @@ def test_meme_tools_carry_a_slug_as_written(daemon):
     _put(uri=_URI, text="x", recipe="sdm")
     assert daemon.wire()["args"]["recipe"] == "sdm"
     with pytest.raises(ValueError, match="names no slug"):
-        _get(uri=_URI, bag="")
+        _get(title=_URI, bag="", meme=True)
     assert len(daemon.lines) == 1
 
 
-def test_meme_get_default_named_and_bag(daemon):
-    daemon.output = _GET_OUTPUT
-    assert _get(uri=_URI, recipe="default") == _GET_MEME
-    assert daemon.wire() == {"verb": "meme-get", "args": {"recipe": "default", "uri": _URI}}
-    _get(uri=_URI, recipe="sdm")
-    assert daemon.wire() == {"verb": "meme-get", "args": {"recipe": "sdm", "uri": _URI}}
-    _get(uri=_URI, bag="lares")
-    assert daemon.wire() == {"verb": "meme-get", "args": {"bag": "lares", "uri": _URI}}
-
-
-def test_meme_get_absent_meme_reads_null(daemon):
-    # an absent meme rides as `meme: null` in the outcome; the tool hands back None — never the envelope.
-    daemon.output = {"uri": _URI, "meme": None}
-    assert _get(uri=_URI, recipe="default") is None
-
-
-def test_meme_get_carries_the_floor_word_where_the_floor_snapshot_answered(daemon):
-    # A face outside the Kahu cabal reads house canon from the bag's floor snapshot, and the verb says so beside the
-    # meme (`{uri, meme, floor: true}`). The tool hands the meme back with the word on it; a live read names no floor.
-    daemon.output = {"uri": _URI, "meme": _GET_MEME, "floor": True}
-    assert _get(uri=_URI, bag="lararium") == {**_GET_MEME, "floor": True}
-    daemon.output = _GET_OUTPUT
-    assert _get(uri=_URI, bag="lararium") == _GET_MEME
-    # An absent meme stays null, whatever answered.
-    daemon.output = {"uri": _URI, "meme": None, "floor": True}
-    assert _get(uri=_URI, bag="lararium") is None
+def test_a_meme_reads_through_the_tiddler_door_lens(daemon):
+    # ONE DOOR: the meme lens rides `tiddler-get` with `meme: true`; the daemon's answer (has line, grain, next) crosses
+    # the seat untouched, the floor word with it.
+    answer = {"has": "<<~ has name=`lar:///ha.ka.ba/lares/api/pono/meme` params=`bag/lar:///ha.ka.ba/bags/lararium floor/true base/sha256-get`>>",
+              "bag": "lar:///ha.ka.ba/bags/lararium", "floor": True, "title": _URI, "lens": "meme",
+              "meme": {"uri": _URI, "text": "the body", "canonicalHash": "sha256-get", "bytes": 8, "slots": []},
+              "grain": {"asked": None, "applied": "whole", "why": "fits one page"}, "next": None}
+    daemon.output = answer
+    assert _get(title=_URI, bag="lararium", meme=True) == answer
+    assert daemon.wire() == {"verb": "tiddler-get", "args": {"bag": "lararium", "title": _URI, "meme": True}}
+    _get(title=_URI, recipe="default", meme=True, grain="whole", after="1.0123456789abcdef")
+    assert daemon.wire() == {"verb": "tiddler-get", "args": {"recipe": "default", "title": _URI, "meme": True, "grain": "whole", "after": "1.0123456789abcdef"}}
+    with pytest.raises(ValueError, match="no-container"):
+        _get(title=_URI, recipe="sdm", bag="lares", meme=True)
 
 
 def test_meme_list_carries_the_floor_word_on_the_seat_and_on_each_row(daemon):
@@ -254,12 +244,6 @@ def test_meme_list_carries_the_floor_word_on_the_seat_and_on_each_row(daemon):
                  "roots": [{"uri": _URI, "canonicalHash": "sha256-get", "bag": "lar:///ha.ka.ba/bags/lares", "floor": True}]}
     daemon.output = by_recipe
     assert _list(recipe="lares") == by_recipe
-
-
-def test_meme_get_refuses_recipe_and_bag_together(daemon):
-    with pytest.raises(ValueError, match="no-container"):
-        _get(uri=_URI, recipe="sdm", bag="lares")
-    assert daemon.lines == []
 
 
 def test_meme_project_wire_uri_to_and_container(daemon):
@@ -331,6 +315,11 @@ def _seat_call(name: str, args: dict, mcp=None):
     from mcp import Client
 
     server = mcp or build_mcp(DaemonCoordinator(wing="w"))
+    if name in ("meme_put", "meme_list", "meme_delete"):
+        name = {"meme_put": "tiddler_put", "meme_list": "tiddler_get", "meme_delete": "tiddler_delete"}[name]
+        args = {**args, "meme": True}
+        if "uri" in args:
+            args["title"] = args.pop("uri")
 
     async def ask():
         async with Client(server) as client:
@@ -354,20 +343,18 @@ def test_a_refused_write_reaches_the_caller_naming_decision_reason_and_live_hash
 
 
 def test_every_refusal_family_reaches_the_caller_by_name(daemon, monkeypatch):
-    # The seat's own refusal (`vessel-locked`), a tool's pre-wire refusal (`no-container`), a HITL guard, a shaping this
-    # seat never routes, and an absent daemon: each answers isError AND carries its own words.
+    # The seat's own refusal (`vessel-locked`), a tool's pre-wire refusal (`no-container`), a shaping this seat never
+    # routes, and an absent daemon: each answers isError AND carries its own words.
     daemon.error = {"errorMessage": "control-home-unavailable: vessel-locked: the vessel's key stays shut",
                     "refusal": {"reason": "vessel-locked"}}
-    locked = _seat_call("meme_get", {"uri": _URI, "recipe": "default"})
+    locked = _seat_call("tiddler_get", {"title": _URI, "recipe": "default", "meme": True})
     assert locked.is_error and "vessel-locked" in _said(locked) and "lares vault unlock" in _said(locked)
     bare = _seat_call("meme_list", {})
     assert bare.is_error and "no-container" in _said(bare)
-    guarded = _seat_call("purge", {"name": "x"})
-    assert guarded.is_error and "HITL" in _said(guarded)
     unshaped = _seat_call("pour", {"surface": "claude-code", "pointer": "p", "dry_run": True})
     assert unshaped.is_error and "carries no writeback/preview shaping" in _said(unshaped)
     monkeypatch.setattr(uds, "socket_path", lambda: "/nonexistent/lares.sock")
-    absent = _seat_call("meme_get", {"uri": _URI, "recipe": "default"})
+    absent = _seat_call("tiddler_get", {"title": _URI, "recipe": "default", "meme": True})
     assert absent.is_error and "no lares daemon" in _said(absent)
 
 
@@ -412,9 +399,8 @@ def test_a_stray_builtin_error_stays_unnamed_and_only_a_house_raised_refusal_cro
         assert crashed.is_error and _said(crashed) == f"Error executing tool {name}", _said(crashed)
         assert str(tmp_path) not in _said(crashed) and "the-private-row-text" not in _said(crashed)
     # CONTROL: the same three builtin families, raised by the house under its own refusal classes, still cross in their own
-    # words (an argument guard, the HITL guard, a shaping this seat never routes, an address that walks out of the shrine).
+    # words (an argument guard, a shaping this seat never routes, an address that walks out of the shrine).
     assert "no-container" in _said(_seat_call("meme_list", {}, mcp))
-    assert "HITL" in _said(_seat_call("purge", {"name": "x"}, mcp))
     assert "carries no writeback/preview shaping" in _said(_seat_call("pour", {"surface": "claude-code", "pointer": "p", "dry_run": True}, mcp))
     walked = _seat_call("recall", {"query": "q", "sensorium": "../abide"}, mcp)
     assert walked.is_error and "ONE path segment" in _said(walked)
@@ -422,6 +408,7 @@ def test_a_stray_builtin_error_stays_unnamed_and_only_a_house_raised_refusal_cro
 
 def _described(name: str) -> str:
     mcp = build_mcp(DaemonCoordinator(wing="w"))
+    name = {"meme_put": "tiddler_put", "meme_list": "tiddler_get", "meme_delete": "tiddler_delete"}.get(name, name)
     return next(t.description for t in asyncio.run(mcp.list_tools()) if t.name == name)
 
 
@@ -440,11 +427,11 @@ def test_meme_list_text_promises_a_row_bag_for_a_named_recipe_alone():
     assert 'under `recipe="default"` no row names a `bag`' in said
 
 
-def test_meme_get_and_meme_list_texts_name_the_floor_word():
+def test_tiddler_get_and_meme_list_texts_name_the_floor_word():
     # A caller learns from the tool's own text that `floor: true` marks a read the floor snapshot answered, and where
-    # the word rides: on the meme a get hands back, on a bag listing's seat, on each row of a recipe listing.
-    got = _described("meme_get")
-    assert "`floor: true`" in got and "floor snapshot" in got and "{text, canonicalHash, floor}" in got
+    # the word rides: on the answer a read hands back, on a bag listing's seat, on each row of a recipe listing.
+    got = _described("tiddler_get")
+    assert "`floor: true`" in got and "floor snapshot" in got
     listed = _described("meme_list")
     assert "`floor: true`" in listed and "floor snapshot" in listed
     assert "{bag, floor, roots, next}" in listed and "each row" in listed
@@ -456,9 +443,10 @@ def test_meme_put_text_names_the_seat_canon_refusal_and_the_true_layer():
     # layer, or the face's personal layer without a writer's seat), never "its top bag" (reach-mu decision 8).
     said = _described("meme_put")
     assert "seat-canon-reach" in said and "meme_offer" in said
-    assert "top bag" not in said and "personal" in said and "`layer`" in said
+    assert "personal" in said and "`layer`" in said
 
 
 def test_tiddler_put_text_names_the_seat_canon_refusal():
     said = _described("tiddler_put")
     assert "seat-canon-reach" in said
+

@@ -96,6 +96,8 @@ export interface PulamaServer {
   /** The faces closing now, each with how many sessions have not answered its close. */
   closing(): ReadonlyArray<{ readonly face: number; readonly unanswered: number; readonly note: string }>;
   sessions(): number;
+  /** The face the vessel's wear door last named here (`face.worn`); none since the last lock. */
+  worn?(): number | undefined;
 }
 
 /** What a face's close answers: locked now, closing (sessions still to answer), already shut, or no such face. */
@@ -254,7 +256,7 @@ export function servePulama(a: {
     }
     if (c.kind === "face") {
       const found = await holder.faceStanding(c.selector as FaceRef);
-      if (found !== null && closedTo(s, found.fcid)) throw new PulamaRefused("face-closing", `face h${found.ordinal} is closing, and this session stands outside its close`);
+      if (found !== null && closedTo(s, found.fcid)) throw new PulamaRefused("face-closing", `face h${found.ordinal} closes now, and this session stands outside its close`);
       if (found !== null && !lends(s, found)) {
         throw new PulamaRefused("outside-the-lei", `the pūlama lends this vessel ${renderLentFaces(s.scope.faces)}; this ${c.row} row selects ${JSON.stringify(c.selector)}, face h${found.ordinal}`);
       }
@@ -358,7 +360,7 @@ export function servePulama(a: {
         const { home, file } = recordOf(args);
         await guard(s, home, file, "hot");
         // The claim may have ended while the scope read: a row touched after it would move outside any claim.
-        if (s.claims.get(args["claim"] as number) !== claim) throw new PulamaRefused("pulama-claim-absent", "that claim ended before this row was reached");
+        if (s.claims.get(args["claim"] as number) !== claim) throw new PulamaRefused("pulama-claim-absent", "that claim ended before the pūlama reached this row");
         return op === "records.read" ? claim.records.read(home, file) : claim.records.remove(home, file);
       }
       case "face.standing": {
@@ -406,6 +408,36 @@ export function servePulama(a: {
         log(`worn: h${worn}`);
         return null;
       }
+      case "vessel.goodbye": {
+        // THE CLEAN GOODBYE (sealed-store#/the-lit-set): the vessel drained every save and leaves, saying so through its session
+        // and naming its life. Only the life the hearth confirmed at this session's hello speaks: a session seated with no life,
+        // or a goodbye naming another, changes nothing. The life answers every close it was told, clears every drop it left, and
+        // leaves the lend record, so a later first close need not wait for the next boot or a force. Its sessions end after the
+        // answer (`serve`); a session of the same life that comes back lends again and counts again.
+        const said = (args["life"] as { readonly id?: unknown } | null | undefined)?.id;
+        if (Object.keys(args).some((k) => k !== "life") || !isVesselLife(said)) {
+          throw new PulamaRefused("pulama-frame-malformed", "a goodbye names the life its hello named, as { life: { id } }, and nothing beside it");
+        }
+        if (s.life === null || said !== s.life) throw new PulamaRefused("goodbye-life-unread", "this session stands with no life the hearth confirmed, or its goodbye names another; nothing changes");
+        const life = s.life;
+        const leaving = [...live].filter((t) => t.life === life);
+        for (const [ordinal, lives] of lentLives) {
+          const kept = lives.filter((l) => l.life !== life);
+          if (kept.length > 0) lentLives.set(ordinal, kept); else lentLives.delete(ordinal);
+        }
+        const ready: string[] = [];
+        for (const [fcid, held] of closings) {
+          for (const t of leaving) held.awaiting.delete(t);
+          held.dropped = held.dropped.filter((d) => d.life !== life);
+          settleDrops(held);
+          if (held.awaiting.size === 0 && held.dropped.length === 0 && held.locking === null) ready.push(fcid);
+        }
+        farewells.set(s, leaving);
+        log(`${lifeShown(life)} said goodbye: every save drained; ${leaving.length} session(s) end`);
+        // A lock that throws leaves its face closing (`lockClosed`), and the heard goodbye stands.
+        for (const fcid of ready) void lockClosed(fcid).catch((e: unknown) => log(`face lock after a goodbye did not land: ${e instanceof Error ? e.message : String(e)}`));
+        return null;
+      }
       case "rite.land": {
         if (!s.scope.land) throw new PulamaRefused("rite-not-begun", "this session began under no rite, so no tessera waits on a host half");
         return s.scope.land();
@@ -415,14 +447,20 @@ export function servePulama(a: {
     }
   };
 
+  /** The sessions a heard goodbye ends, by the session that said it: each ends once the goodbye's answer left. */
+  const farewells = new Map<Session, Session[]>();
   const serve = (s: Session, f: PulamaFrame): void => {
     if (f.t !== "req" || typeof f["id"] !== "number" || typeof f["op"] !== "string") { end(s); return; }
     const id = f["id"], op = f["op"], args = (typeof f["a"] === "object" && f["a"] !== null ? f["a"] : {}) as Record<string, unknown>;
     run(s, op, args).then(
       (v) => {
-        if (!s.open) return;
-        try { s.channel.send({ t: "res", id, ok: true, v: v === undefined ? null : v }); }
-        finally { if (v instanceof Uint8Array) v.fill(0); else if (readingOf(v)?.reading === "opens") (v as { plaintext: Uint8Array }).plaintext.fill(0); }
+        const leaving = farewells.get(s);
+        farewells.delete(s);
+        try {
+          if (!s.open) return;
+          try { s.channel.send({ t: "res", id, ok: true, v: v === undefined ? null : v }); }
+          finally { if (v instanceof Uint8Array) v.fill(0); else if (readingOf(v)?.reading === "opens") (v as { plaintext: Uint8Array }).plaintext.fill(0); }
+        } finally { for (const t of leaving ?? []) end(t); }
       },
       (err: unknown) => {
         if (!s.open) return;
@@ -604,5 +642,6 @@ export function servePulama(a: {
           ? `face h${c.ordinal}: the vessel has not answered its close; close it again to tell the vessel again, or force it by hand`
           : `face h${c.ordinal}: no session still owes its close; close it again to lock it, or force it by hand` })),
     sessions: () => live.size,
+    worn: () => worn,
   };
 }

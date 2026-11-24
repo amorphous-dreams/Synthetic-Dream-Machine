@@ -12,6 +12,7 @@ import { personaGroupDigest } from "../src/persona-group-file.js";
 import type { CustodyHolder } from "../src/custody-holder.js";
 import { mountedFaceOrdinal, setMountedFace, sovereignStands } from "../src/node-vessel-identity.js";
 import type { WardCredential } from "../src/ward-credential.js";
+import type { ShoreFlushReading } from "../src/shore-verb.js";
 import { FIXTURE_PASSPHRASE, seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 
 const slot = (passphrase: string): SlotSpec => ({ t: 1, pins: [{ kind: "passphrase", passphrase }] });
@@ -30,7 +31,7 @@ function sender(handle: (parsed: unknown, sock: Socket) => boolean) {
 /** A scratch vessel with faces under the routes named; `refuseWearing` names a face whose composition refuses to stand. */
 /** What the stub composition does, settable mid-test: the mounts it refuses to stand on, and the mounts it throws on. */
 interface Composing { readonly refuse: Set<number>; readonly throwOn: Set<number> }
-async function vessel(faceRoutes: readonly string[], refuseWearing?: number, ctl: Composing = { refuse: new Set(), throwOn: new Set() }) {
+async function vessel(faceRoutes: readonly string[], refuseWearing?: number, ctl: Composing = { refuse: new Set(), throwOn: new Set() }, shoreFlush?: () => Promise<ShoreFlushReading>) {
   seat = await seatScratchCustody("wear-frame");
   const { holder } = seat;
   // EACH FACE LANDED: its group, and its anchors naming that group (a face whose join waits holds none, and never takes the mount).
@@ -43,6 +44,7 @@ async function vessel(faceRoutes: readonly string[], refuseWearing?: number, ctl
   const logs: string[] = [];
   const handle = custodyFrameHandler({
     holder, testScratch: false, standing: () => "hearth", onLog: (l) => logs.push(l),
+    ...(shoreFlush ? { shoreFlush } : {}),
     recompose: async (sovereign, ward) => {
       composed.push({ sovereign, ward, mount: mountedFaceOrdinal() });
       if (sovereign && refuseWearing !== undefined && mountedFaceOrdinal() === refuseWearing) return { standing: "herm", refused: `h${refuseWearing} would not stand` };
@@ -251,3 +253,57 @@ describe("RED lock of the mount after unlock --all slides to the next open face"
   });
 });
 
+
+describe("RED wear flushes every shore before it turns the face", () => {
+  const WHOLE: ShoreFlushReading = { whole: true, islands: [{ island: "daemon", answered: true, written: [{ uri: "lar:///a.b.c/kept" }] as never, writtenCount: 1, unwritten: [], unwrittenCount: 0, fileWrites: 1, drained: true }] };
+  const STRANDS: ShoreFlushReading = { whole: false, islands: [
+    { island: "daemon", answered: true, written: [], writtenCount: 0, unwritten: [], unwrittenCount: 0, fileWrites: 0, drained: true },
+    { island: "wiki:sdm", answered: true, written: [], writtenCount: 0, unwritten: [{ state: "failed", uri: "lar:///a.b.c/stuck", why: "its reconcile threw again on the retry" }] as never, unwrittenCount: 1, fileWrites: 0, drained: true },
+    { island: "wiki:lares", answered: false, why: "the island gave no answer within 15000ms" },
+  ] };
+
+  test("WF1 a wear that turns asks the whole-island flush while the old face still stands mounted, then turns, and its answer carries the reading", async () => {
+    const asked: Array<number | undefined> = [];
+    const v = await vessel([FIXTURE_PASSPHRASE, SECOND], undefined, undefined, async () => { asked.push(mountedFaceOrdinal()); return WHOLE; });
+    await v.send({ op: "unlock", credentials: [...cred(FIXTURE_PASSPHRASE), ...cred(SECOND)], all: true });
+    v.composed.length = 0;
+    const a = await v.send({ op: "wear", face: 1 });
+    expect(asked).toEqual([0]);
+    expect(a).toMatchObject({ op: "wear", face: 1, held: true, shore: WHOLE });
+    expect(v.composed.map((c) => c.mount)).toEqual([1]);
+  });
+
+  test("WF2 a flush that leaves carriers unwritten (or an island unanswered) refuses the turn by name, the mount stays and nothing recomposes", async () => {
+    const v = await vessel([FIXTURE_PASSPHRASE, SECOND], undefined, undefined, async () => STRANDS);
+    await v.send({ op: "unlock", credentials: [...cred(FIXTURE_PASSPHRASE), ...cred(SECOND)], all: true });
+    v.composed.length = 0;
+    const a = await v.send({ op: "wear", face: 1 });
+    expect(a).toMatchObject({ op: "wear", status: "error", refusal: { reason: "shore-unwritten", shore: STRANDS } });
+    expect(String(a["errorMessage"])).toContain("lar:///a.b.c/stuck");
+    expect(String(a["errorMessage"])).toContain("wiki:lares");
+    // The refusal names the face whose carrier stands stuck (the worn face's wiki holds it here), and the flush that writes it.
+    expect(String(a["errorMessage"])).toMatch(/records unwritten on h0 \(/);
+    expect(String(a["errorMessage"])).toContain("lares shore flush");
+    expect(String(a["errorMessage"])).not.toContain("turns away from");
+    expect(mountedFaceOrdinal()).toBe(0);
+    expect(v.composed).toEqual([]);
+  });
+
+  test("WF3 the same wear carrying `yes: true` turns over the unwritten carriers, and its answer still names them", async () => {
+    const v = await vessel([FIXTURE_PASSPHRASE, SECOND], undefined, undefined, async () => STRANDS);
+    await v.send({ op: "unlock", credentials: [...cred(FIXTURE_PASSPHRASE), ...cred(SECOND)], all: true });
+    v.composed.length = 0;
+    const a = await v.send({ op: "wear", face: 1, yes: true });
+    expect(a).toMatchObject({ op: "wear", face: 1, held: true, shore: STRANDS });
+    expect(mountedFaceOrdinal()).toBe(1);
+    expect(await v.send({ op: "wear", face: 0, yes: "sure" })).toMatchObject({ op: "wear", status: "error", refusal: { reason: "bad-custody-frame" } });
+  });
+
+  test("WF4 a wear of the face already worn turns nothing and asks no flush", async () => {
+    let asked = 0;
+    const v = await vessel([FIXTURE_PASSPHRASE, SECOND], undefined, undefined, async () => { asked += 1; return WHOLE; });
+    await v.send({ op: "unlock", credentials: [...cred(FIXTURE_PASSPHRASE), ...cred(SECOND)], all: true });
+    expect(await v.send({ op: "wear", face: 0 })).toMatchObject({ op: "wear", already: true });
+    expect(asked).toBe(0);
+  });
+});

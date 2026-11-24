@@ -118,3 +118,12 @@ export function openFromSender(args: {
     return null;   // withhold, never forge — and never name which gate refused
   }
 }
+
+/**
+ * A FRESH RECIPIENT KEYPAIR for one seal: the recipient keeps `secret` in memory alone and zero-fills it once it opens. For a
+ * one-handoff recipient (the pūlama keeper's vest) that publishes `pub` and opens exactly one box.
+ */
+export function mintSealedBoxRecipient(): { readonly secret: Uint8Array; readonly pub: Uint8Array } {
+  const secret = x25519.utils.randomSecretKey();
+  return { secret, pub: x25519.getPublicKey(secret) };
+}

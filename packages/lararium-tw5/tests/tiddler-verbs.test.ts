@@ -6,16 +6,16 @@
  * A real engine boots here (`bootTestWiki`), so a filter, a backlink and a render answer as TiddlyWiki answers them.
  */
 import { describe, test, expect } from "vitest";
-import { SwarmRefused } from "@lararium/mesh";
-import { CompositeStore, bagUri, VERB_URI_PREFIX, buildEffectRecordTiddler, effectRecordUri, LARES_EFFECT_RECORD_TAG } from "@lararium/mesh";
+import { SwarmRefused, sha256HexBytesSync } from "@lararium/mesh";
+import { CompositeStore, bagUri, wikiSlotUri, VERB_URI_PREFIX, buildEffectRecordTiddler, effectRecordUri, LARES_EFFECT_RECORD_TAG, buildRetiredShellRecord, retiredShellUri, unionRetiredShell } from "@lararium/mesh";
 import { CARRIER_TYPE as CARRIER } from "@lararium/mesh/carrier-type";
 import { retractsOf, tombstonesOf, type Consequence } from "@lararium/mesh/family";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { evaluateMeme, placeMeme, readMeme, wikiMemeSink } from "../src/place-meme.js";
 import { stampCarrier, verifyBcc } from "@lararium/memetic-frame";
 import {
-  makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor,
-  makeWikiStatusReactor, pageFilterAnswer, WIKI_FILTER_ROWS, type FilterPage, type TiddlerVerbOptions,
+  makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeWikiRenderOutReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor,
+  makeWikiStatusReactor, makeWikiActionReactor, pageFilterAnswer, WIKI_FILTER_ROWS, type FilterPage, type TiddlerVerbOptions,
 } from "../src/tiddler-verbs.js";
 import { AUDIT_ARRAY_CAP, boundOutcomeOutput, placeVerb, removeVerb } from "../src/verb-vm.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
@@ -77,7 +77,93 @@ async function rig(more: { personal?: boolean } = {}) {
 }
 const A = { recipe: "default" } as const;
 
+test("wiki action reactor stands as a separate admitted write door", () => {
+  expect(typeof makeWikiActionReactor).toBe("function");
+});
+
 describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
+  test("wiki action refuses a caller action string before any write", async () => {
+    const r = await rig();
+    const act = makeWikiActionReactor(r.opts);
+    await expect(act({ ...A, name: "sidebar-layout", expected: "fixed-fluid", resulting: "fluid-fixed", action: "<$action-setfield/>" }, ctx()))
+      .rejects.toThrow(/action|parameter/);
+  });
+
+  test("wiki action invokes the floor shadow on an isolated view and lands one gated layout change", async () => {
+    const r = await rig();
+    const title = "$:/themes/tiddlywiki/vanilla/options/sidebarlayout";
+    expect((r.engine.wiki as unknown as { getShadowSource(title: string): string }).getShadowSource("$:/core/ui/KeyboardShortcuts/change-sidebar-layout")).toBe("$:/core");
+    r.engine.wiki.addTiddler({ title, text: "fixed-fluid" });
+    await r.hold(DAEMON, [title]);
+    const out = await makeWikiActionReactor(r.opts)({ ...A, name: "sidebar-layout", expected: "fixed-fluid", resulting: "fluid-fixed" }, ctx());
+    await r.landed();
+    expect(out).toMatchObject({ decision: "put", title, resulting: "fluid-fixed", receipt: "r1" });
+    expect(r.engine.wiki.getTiddlerText(title)).toBe("fluid-fixed");
+    expect(r.engine.wiki.tiddlerExists("$:/core/ui/KeyboardShortcuts/change-sidebar-layout")).toBe(false);
+  });
+
+  test("wiki action keeps a denied or stale layout unchanged", async () => {
+    const r = await rig();
+    const title = "$:/themes/tiddlywiki/vanilla/options/sidebarlayout";
+    r.engine.wiki.addTiddler({ title, text: "fixed-fluid" });
+    await r.hold(DAEMON, [title]);
+    const act = makeWikiActionReactor(r.opts);
+    const ask = { ...A, name: "sidebar-layout", expected: "fixed-fluid", resulting: "fluid-fixed" };
+    await expect(act(ask, ctx(reader))).rejects.toThrow(/cap-denied/);
+    expect(r.engine.wiki.getTiddlerText(title)).toBe("fixed-fluid");
+    expect(await r.composite.storeForBag(DAEMON)!.get(title)).toMatchObject({ tiddler: { text: "fixed-fluid" } });
+    expect(await act({ ...ask, expected: "fluid-fixed", resulting: "fixed-fluid" }, ctx())).toMatchObject({ decision: "conflict", observed: "fixed-fluid" });
+    expect(r.engine.wiki.getTiddlerText(title)).toBe("fixed-fluid");
+  });
+
+  test("wiki action keeps the live wiki untouched when the put gate closes after native invocation", async () => {
+    const r = await rig();
+    const title = "$:/themes/tiddlywiki/vanilla/options/sidebarlayout";
+    r.engine.wiki.addTiddler({ title, text: "fixed-fluid" });
+    await r.hold(DAEMON, [title]);
+    let adminAsks = 0;
+    const cap: Cap = async (access) => access === "read" || ++adminAsks === 1 ? { ok: true } : { ok: false, reason: "closed" };
+    await expect(makeWikiActionReactor(r.opts)({ ...A, name: "sidebar-layout", expected: "fixed-fluid", resulting: "fluid-fixed" }, ctx(cap)))
+      .rejects.toThrow(/cap-denied/);
+    await r.landed();
+    expect(r.engine.wiki.getTiddlerText(title)).toBe("fixed-fluid");
+    expect((await r.composite.storeForBag(DAEMON)!.get(title))?.tiddler["text"]).toBe("fixed-fluid");
+  });
+
+  test("wiki action refuses a runtime plugin shadow of the admitted action and writes nothing", async () => {
+    const r = await rig();
+    const target = "$:/themes/tiddlywiki/vanilla/options/sidebarlayout";
+    r.engine.wiki.addTiddler({ title: target, text: "fixed-fluid" });
+    await r.hold(DAEMON, [target]);
+    const plugin = { tiddlers: { "$:/core/ui/KeyboardShortcuts/change-sidebar-layout": { title: "$:/core/ui/KeyboardShortcuts/change-sidebar-layout", text: "<$action-setfield $tiddler='Other' text='x'/>" } } };
+    await r.composite.storeForBag(DAEMON)!.put({ tiddler: { title: "$:/plugins/x/y", type: "application/json", "plugin-type": "plugin", text: JSON.stringify(plugin) }, meta: {} }, { kind: "lares-verb", requestId: "plug" }, { bag: DAEMON as never });
+    await r.landed();
+    // A runtime plugin registers as the engine registers one: read its info, then unpack its shadows.
+    const live = r.engine.wiki as unknown as { readPluginInfo(titles: string[]): void; registerPluginTiddlers(type: string, titles?: string[]): void; unpackPluginTiddlers(): void; getShadowSource(t: string): string | undefined };
+    live.readPluginInfo(["$:/plugins/x/y"]);
+    live.registerPluginTiddlers("plugin");
+    live.unpackPluginTiddlers();
+    expect(live.getShadowSource("$:/core/ui/KeyboardShortcuts/change-sidebar-layout")).not.toBe("$:/core");
+    await expect(makeWikiActionReactor(r.opts)({ ...A, name: "sidebar-layout", expected: "fixed-fluid", resulting: "fluid-fixed" }, ctx()))
+      .rejects.toThrow(/wiki-action-origin/);
+    expect(r.engine.wiki.getTiddlerText(target)).toBe("fixed-fluid");
+    expect(r.engine.wiki.getTiddlerText("Other")).toBe("untagged");
+  });
+
+  test("wiki action refuses names that only the prototype chain holds", async () => {
+    const r = await rig();
+    for (const name of ["constructor", "toString", "__proto__"])
+      await expect(makeWikiActionReactor(r.opts)({ ...A, name, expected: "fixed-fluid", resulting: "fluid-fixed" }, ctx()))
+        .rejects.toThrow(/wiki-action-unknown/);
+  });
+
+  test("wiki action refuses an ordinary override of the admitted floor shadow", async () => {
+    const r = await rig();
+    const title = "$:/core/ui/KeyboardShortcuts/change-sidebar-layout";
+    r.engine.wiki.addTiddler({ title, text: "<$action-setfield $tiddler='Other' text='wrong'/>" });
+    await expect(makeWikiActionReactor(r.opts)({ ...A, name: "sidebar-layout", expected: "fixed-fluid", resulting: "fluid-fixed" }, ctx()))
+      .rejects.toThrow(/wiki-action-origin/);
+  });
   test("wiki-filter-tag: a tag filter over a seeded daemon wiki answers its titles; CONTROL: an untagged title stays out", async () => {
     const r = await rig();
     const out = await makeWikiFilterReactor(r.opts)({ ...A, filter: "[tag[memory]sort[title]]" }, ctx());
@@ -196,6 +282,76 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     await expect(makeWikiRenderReactor(r.opts)({ ...A, title: "$:/temp/lares/secret" }, ctx())).rejects.toMatchObject({ reason: "tiddler-withheld" });
   });
 
+  test("RED: an alert the house raises (`$:/temp/lares/alert/…`) reads through the one door, a get, a filter and a render alike, and takes no write; CONTROL: every other temp title still stays home", async () => {
+    const r = await rig();
+    const ALERT = "$:/temp/lares/alert/refused/module-unpinned/$:/plugins/x/evil.js";
+    r.engine.wiki.addTiddler({ title: ALERT, tags: "$:/tags/Alert", text: "Module refused: its SHA-256 matches no pin" });
+    const got = await makeTiddlerGetReactor(r.opts)({ ...A, title: ALERT }, ctx());
+    expect((got["tiddler"] as { fields: Record<string, string> }).fields).toMatchObject({ title: ALERT, text: "Module refused: its SHA-256 matches no pin" });
+    const listed = await makeWikiFilterReactor(r.opts)({ ...A, filter: "[prefix[$:/temp/lares/alert/]]" }, ctx());
+    expect(listed).toMatchObject({ titles: [ALERT], total: 1 });
+    expect(String((await makeWikiRenderReactor(r.opts)({ ...A, title: ALERT }, ctx()))["text"] ?? "")).toContain("matches no pin");
+    // The alert reads and never writes: the house raises and clears it, never a door.
+    await expect(makeTiddlerPutReactor(r.opts)({ ...A, title: ALERT, text: "cleared" }, ctx())).rejects.toMatchObject({ reason: "tiddler-withheld" });
+    await expect(makeTiddlerDeleteReactor(r.opts)({ ...A, title: ALERT }, ctx())).rejects.toMatchObject({ reason: "tiddler-withheld" });
+    // CONTROL: the rest of the temp namespace stays home.
+    await expect(makeTiddlerGetReactor(r.opts)({ ...A, title: "$:/temp/lares/secret" }, ctx())).rejects.toMatchObject({ reason: "tiddler-withheld" });
+    expect((await makeWikiFilterReactor(r.opts)({ ...A, filter: "[prefix[$:/temp/lares/]]" }, ctx()))["titles"]).toEqual([ALERT]);
+  });
+
+  test("RED: a house alert carrying a secret-shaped string reads redacted through every read (get, filter, render), and only its kind's open fields leave; CONTROL: the engine keeps the alert as raised", async () => {
+    const r = await rig();
+    const TOKEN = "ghp_" + "Zx9".repeat(10);
+    const PAT = "github_pat_" + "A1b2".repeat(8);
+    const MINT = "ab".repeat(32);
+    const ALERT = "$:/temp/lares/alert/engine-waiting";
+    r.engine.wiki.addTiddler({ title: ALERT, tags: ["$:/tags/Alert", `tag ${TOKEN}`], text: `a fetch failed with token ${TOKEN}, ${PAT}, ticket ${MINT}, sha256:${MINT} and AKIAIOSFODNN7EXAMPLE`, detail: `retry with ${TOKEN}` });
+    const fields = ((await makeTiddlerGetReactor(r.opts)({ ...A, title: ALERT }, ctx()))["tiddler"] as { fields: Record<string, unknown> }).fields;
+    const said = JSON.stringify(fields);
+    for (const secret of [TOKEN, PAT, ` ${MINT}`, "AKIAIOSFODNN7EXAMPLE"]) expect(said, secret).not.toContain(secret);
+    expect(said, "a digest named by its scheme stands").toContain(`sha256:${MINT}`);
+    expect(fields["detail"], "a field the kind does not open never leaves").toBeUndefined();
+    expect(String(fields["tags"]), "a list field redacts element-wise").toContain("tag [redacted: secret-shaped]");
+    expect(JSON.stringify(await makeWikiFilterReactor(r.opts)({ ...A, filter: `[[${ALERT}]get[text]]` }, ctx()))).not.toContain(TOKEN);
+    expect(JSON.stringify(await makeWikiRenderReactor(r.opts)({ ...A, title: ALERT }, ctx()))).not.toContain(TOKEN);
+    expect(r.engine.wiki.getTiddler(ALERT)!.fields["text"]).toContain(TOKEN);
+    // A boot fault leaves as its component and one fixed line: a parse error's quoted record text never crosses the door.
+    const FAULT = "$:/temp/lares/alert/boot-fault/1";
+    r.engine.wiki.addTiddler({ title: FAULT, tags: "$:/tags/Alert", component: "island-boot", text: "SyntaxError: Unexpected token in JSON: {\"text\":\"a private note\"}" });
+    const fault = ((await makeTiddlerGetReactor(r.opts)({ ...A, title: FAULT }, ctx()))["tiddler"] as { fields: Record<string, unknown> }).fields;
+    expect(fault["component"]).toBe("island-boot");
+    expect(JSON.stringify(fault)).not.toContain("a private note");
+    // A refused module's digest leaves named by its scheme, so the strict hex rule keeps the one value a person compares.
+    const DIGEST = "ef".repeat(32);
+    const REFUSED = "$:/temp/lares/alert/refused/module-unpinned/$:/plugins/x/m.js";
+    r.engine.wiki.addTiddler({ title: REFUSED, tags: "$:/tags/Alert", text: `module-unpinned: $:/plugins/x/m.js (sha256:${DIGEST}) carries no pin` });
+    expect(JSON.stringify(await makeTiddlerGetReactor(r.opts)({ ...A, title: REFUSED }, ctx()))).toContain(`sha256:${DIGEST}`);
+  });
+
+  test("RED: an alert answers only a reader of the record it names: a reader without the bag reads the record cap-denied AND no alert about it; a parallel draft never opens; a dot-segment title opens nothing; the meme lens reads no alert; CONTROL: a reader with the bag reads the alert", async () => {
+    const r = await rig({ personal: true });
+    // The secret note rests in the personal layer; the alerts about it name it.
+    await r.composite.storeForBag(PERSONAL)!.put({ tiddler: { title: "Secret note", text: "the words" }, meta: {} }, { kind: "lares-verb", requestId: "seed" }, { bag: PERSONAL as never });
+    await r.landed();
+    const UNSAVED = "$:/temp/lares/alert/unsaved/Secret note";
+    const DRAFT = "$:/temp/lares/alert/parallel-draft/Draft of 'Secret note'";
+    r.engine.wiki.addTiddler({ title: UNSAVED, tags: "$:/tags/Alert", text: "Secret note did not save" });
+    r.engine.wiki.addTiddler({ title: DRAFT, tags: "$:/tags/Alert", text: "the draft's own words", "draft-text": "the draft's own words" });
+    const blind: Cap = async (_access, bag) => (bag === PERSONAL ? { ok: false, reason: "no-grant" } : { ok: true });
+    await expect(makeTiddlerGetReactor(r.opts)({ ...A, title: "Secret note" }, ctx(blind))).rejects.toThrow(/cap-denied/);
+    expect(await makeTiddlerGetReactor(r.opts)({ ...A, title: UNSAVED }, ctx(blind))).toMatchObject({ tiddler: null });
+    expect((await makeWikiFilterReactor(r.opts)({ ...A, filter: "[prefix[$:/temp/lares/alert/]]" }, ctx(blind)))["titles"]).toEqual([]);
+    await expect(makeWikiRenderReactor(r.opts)({ ...A, title: UNSAVED }, ctx(blind))).rejects.toMatchObject({ reason: "tiddler-absent" });
+    // A parallel draft holds the draft's own words: it never opens, whoever reads.
+    await expect(makeTiddlerGetReactor(r.opts)({ ...A, title: DRAFT }, ctx())).rejects.toMatchObject({ reason: "tiddler-withheld" });
+    await expect(makeTiddlerGetReactor(r.opts)({ ...A, title: "$:/temp/lares/alert/unsaved/../../secret" }, ctx())).rejects.toMatchObject({ reason: "tiddler-withheld" });
+    await expect(makeTiddlerGetReactor(r.opts)({ ...A, title: UNSAVED, meme: true }, ctx())).rejects.toMatchObject({ reason: "tiddler-withheld" });
+    // CONTROL: a reader of the personal layer reads the alert about its record.
+    const seen = await makeTiddlerGetReactor(r.opts)({ ...A, title: UNSAVED }, ctx());
+    expect((seen["tiddler"] as { fields: Record<string, string> }).fields["text"]).toBe("Secret note did not save");
+    expect((await makeWikiFilterReactor(r.opts)({ ...A, filter: "[prefix[$:/temp/lares/alert/]]" }, ctx()))["titles"]).toEqual([UNSAVED]);
+  });
+
   test("tiddler-get: a plain tiddler answers its fields (today's meme get drops them); fields-only leaves the text home", async () => {
     const r = await rig();
     const get = makeTiddlerGetReactor(r.opts);
@@ -205,11 +361,11 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     const t = whole["tiddler"] as { hash: string; textHash: string };
     expect(t.hash).toMatch(/^sha256-[0-9a-f]{64}$/);
     expect(t.textHash).toMatch(/^sha256-[0-9a-f]{64}$/);
-    const skinny = await get({ ...A, title: "Note 02", text: false }, ctx());
+    const skinny = await get({ ...A, title: "Note 02", grain: "skinny" }, ctx());
     const s = skinny["tiddler"] as { fields: Record<string, string>; hash: string; textHash: string; omitted: string[] };
     expect(s.fields).toEqual({ title: "Note 02", tags: "memory", priority: "low", type: "text/vnd.tiddlywiki" });
     expect(s.omitted).toEqual(["text"]);
-    expect(s.hash).toBe(t.hash);
+    expect(s.hash, "a card names its base as the card's").toBe(`skinny:${t.hash}`);
     const named = await get({ ...A, title: "Note 02", fields: ["priority"] }, ctx());
     expect((named["tiddler"] as { fields: Record<string, string> }).fields).toEqual({ title: "Note 02", priority: "low" });
     expect(await get({ ...A, title: "Nowhere" }, ctx())).toMatchObject({ title: "Nowhere", tiddler: null });
@@ -225,6 +381,293 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect((slot["tiddler"] as { fields: Record<string, string> }).fields["text"]).not.toContain("body of a");
     expect(await get({ ...A, title: MEME }, ctx())).toMatchObject({ tiddler: { position: "root", family: MEME } });
     expect(await get({ ...A, title: MEME, slot: "#/none" }, ctx())).toMatchObject({ title: `${MEME}#/none`, tiddler: null });
+  });
+
+  test("RED one-door-has: every answer leads with a `<<~ has …>>` line — provenance, the record's tags, the measure keys, base, a tagline — and echoes its grain", async () => {
+    const r = await rig();
+    r.engine.setTiddler({ title: "Card", tags: "road/kind/leap [[two words]]", type: "text/vnd.tiddlywiki", description: "One read door on a gradient", text: "small" });
+    const got = await makeTiddlerGetReactor(r.opts)({ ...A, title: "Card" }, ctx());
+    expect(Object.keys(got)[0]).toBe("has");
+    const hash = (got["tiddler"] as { hash: string }).hash;
+    expect(got["has"]).toBe(`<<~ has name=\`Card\` params=\`recipe/default road/kind/leap [[two words]] type/text/vnd.tiddlywiki position/plain bytes/5 base/${hash} ~ One read door on a gradient\`>>`);
+    expect(got).toMatchObject({ lens: "record", grain: { asked: null, applied: "fat" }, next: null });
+  });
+
+  test("RED one-door-record-gradient: a record past one page answers skinny with next fat; --grain fat carries the text; an unknown grain refuses loudly", async () => {
+    const r = await rig();
+    r.engine.setTiddler({ title: "Big", text: "x".repeat(70_000) });
+    const get = makeTiddlerGetReactor(r.opts);
+    const thin = await get({ ...A, title: "Big" }, ctx());
+    expect(thin).toMatchObject({ grain: { applied: "skinny" }, next: { grain: "fat" }, tiddler: { omitted: ["text"] } });
+    expect((thin["tiddler"] as { fields: Record<string, string> }).fields["text"]).toBeUndefined();
+    const fat = await get({ ...A, title: "Big", grain: "fat" }, ctx());
+    expect((fat["tiddler"] as { fields: Record<string, string> }).fields["text"]).toHaveLength(70_000);
+    expect(fat).toMatchObject({ grain: { asked: "fat", applied: "fat" }, next: null });
+    await expect(get({ ...A, title: "Big", grain: "thin" }, ctx())).rejects.toMatchObject({ reason: "grain-unknown" });
+  });
+
+  test("RED one-door-pointer: a pointer answers its handle (the fields verbatim on the has line); resolved reads the local CAS by CID and verifies; a web2 address stays named, never fetched", async () => {
+    const r = await rig();
+    const body = new TextEncoder().encode("the body the handle names");
+    const cid = sha256HexBytesSync(body);
+    r.engine.setTiddler({ title: "Pointer", _is_skinny: "yes", textCid: cid, size: String(body.length), type: "text/plain" });
+    r.engine.setTiddler({ title: "Web", _canonical_uri: "https://example.org/a.png", type: "image/png" });
+    const fetched: string[] = [];
+    const get = makeTiddlerGetReactor({ ...r.opts, resolveByCid: async (c) => { fetched.push(c); return c === cid ? body : null; } });
+    const handle = await get({ ...A, title: "Pointer" }, ctx());
+    expect(handle).toMatchObject({ grain: { applied: "handle" }, next: { grain: "resolved" } });
+    expect(handle["has"]).toContain(`textCid/${cid}`);
+    expect(handle["has"]).toContain(`size/${body.length}`);
+    expect(fetched).toEqual([]);
+    const resolved = await get({ ...A, title: "Pointer", grain: "resolved" }, ctx());
+    expect(resolved).toMatchObject({ grain: { applied: "resolved" }, tiddler: { fields: { text: "the body the handle names" } } });
+    // `whole` on a pointer (the CLI's `--all`) reads the body grain's whole: resolved.
+    expect(await get({ ...A, title: "Pointer", grain: "whole" }, ctx())).toMatchObject({ grain: { asked: "whole", applied: "resolved" } });
+    const web = await get({ ...A, title: "Web", grain: "resolved" }, ctx());
+    expect(web).toMatchObject({ grain: { applied: "handle", why: expect.stringMatching(/never fetch/) }, next: null });
+    expect(web["has"]).toContain("_canonical_uri/https://example.org/a.png");
+    expect(fetched).toEqual([cid, cid]);
+  });
+
+  test("RED M2 base-from-skinny: a skinny answer's base names the card, so a text put against it refuses by name (naming --all); a field patch against it lands", async () => {
+    const r = await rig();
+    const get = makeTiddlerGetReactor(r.opts);
+    const put = makeTiddlerPutReactor(r.opts);
+    const card = (await get({ ...A, title: "Note 04", grain: "skinny" }, ctx()))["tiddler"] as { hash: string };
+    expect(card.hash).toMatch(/^skinny:sha256-/);
+    await expect(put({ ...A, title: "Note 04", text: "a blind rewrite", base: card.hash }, ctx())).rejects.toMatchObject({ reason: "base-from-skinny", message: expect.stringMatching(/--all/) });
+    expect(await put({ ...A, title: "Note 04", fields: { status: "seen" }, base: card.hash }, ctx())).toMatchObject({ decision: "put" });
+    // CONTROL: a fat answer's base authorizes the text write.
+    const fat = (await get({ ...A, title: "Note 04" }, ctx()))["tiddler"] as { hash: string };
+    expect(fat.hash).toMatch(/^sha256-/);
+    expect(await put({ ...A, title: "Note 04", text: "a read rewrite", base: fat.hash }, ctx())).toMatchObject({ decision: "put" });
+  });
+
+  test("filter-collapse: a meme root's row carries the same slots and bytes the skinny get answers; a plain row carries its bytes alone; CONTROL: no collapse leaves the rows as they were", async () => {
+    const r = await rig();
+    expect((await placeMeme({ uri: MEME, text: memeText(["a", "b"]) }, wikiMemeSink(r.engine.wiki))).decision).toBe("ingest");
+    const filter = makeWikiFilterReactor(r.opts);
+    const get = makeTiddlerGetReactor(r.opts);
+    const skinny = (await get({ ...A, title: MEME, meme: true, grain: "skinny" }, ctx()))["meme"] as { bytes: number; slots: Array<{ slot: string; bytes: number; first: string | null }> };
+    const out = await filter({ ...A, filter: `[[${MEME}]] [[Other]]`, collapse: true }, ctx());
+    const rows = out["rows"] as Array<{ title: string; bytes: number; slots?: unknown[] }>;
+    expect(rows.map((x) => x.title)).toEqual([MEME, "Other"]);
+    expect(rows[0]).toMatchObject({ bytes: skinny.bytes, slots: skinny.slots });
+    expect(skinny.slots.map((s) => s.slot)).toEqual(["#/a", "#/b"]);
+    expect(rows[1]!.bytes).toBe(8);
+    expect(rows[1]!.slots, "a plain row carries no slots").toBeUndefined();
+    const plain = await filter({ ...A, filter: `[[${MEME}]] [[Other]]` }, ctx());
+    expect(plain["titles"]).toEqual([MEME, "Other"]);
+    expect(plain["rows"]).toBeUndefined();
+    const named = await filter({ ...A, filter: `[[${MEME}]]`, collapse: true, fields: ["description"] }, ctx());
+    expect((named["rows"] as Array<Record<string, unknown>>)[0]).toMatchObject({ title: MEME, fields: {}, slots: skinny.slots });
+  });
+
+  test("filter-collapse: the page law counts the collapsed rows' bytes; a cap cuts the page short and the cursor continues", async () => {
+    const r = await rig();
+    expect((await placeMeme({ uri: MEME, text: memeText(["a", "b", "c", "d"]) }, wikiMemeSink(r.engine.wiki))).decision).toBe("ingest");
+    const filter = makeWikiFilterReactor(r.opts);
+    const first = await filter({ ...A, filter: `[[${MEME}]] [tag[memory]sort[title]]`, collapse: true, maxBytes: 400 }, ctx());
+    const rows = first["rows"] as Array<{ title: string }>;
+    expect(rows[0]!.title).toBe(MEME);
+    expect(JSON.stringify(rows).length).toBeLessThanOrEqual(400);
+    expect(first["next"]).not.toBeNull();
+    expect(rows.length).toBeLessThan(first["total"] as number);
+    const second = await filter({ ...A, filter: `[[${MEME}]] [tag[memory]sort[title]]`, collapse: true, maxBytes: 400, after: first["next"] }, ctx());
+    expect((second["rows"] as Array<{ title: string }>)[0]!.title).not.toBe(MEME);
+  });
+
+  test("filter-collapse: a first row past the byte cap sheds its slots by name and keeps its bytes; the pages join with no title repeated or skipped", async () => {
+    const r = await rig();
+    const many = Array.from({ length: 24 }, (_, i) => `slot${i}`);
+    expect((await placeMeme({ uri: MEME, text: memeText(many) }, wikiMemeSink(r.engine.wiki))).decision).toBe("ingest");
+    const filter = makeWikiFilterReactor(r.opts);
+    const get = makeTiddlerGetReactor(r.opts);
+    const skinny = (await get({ ...A, title: MEME, meme: true, grain: "skinny" }, ctx()))["meme"] as { bytes: number; slots: unknown[] };
+    expect(skinny.slots).toHaveLength(24);
+    const cap = 160;
+    const first = await filter({ ...A, filter: `[[${MEME}]] [tag[memory]sort[title]]`, collapse: true, maxBytes: cap }, ctx());
+    const rows = first["rows"] as Array<{ title: string; bytes?: number; slots?: unknown[]; omitted?: string[] }>;
+    expect(rows[0]).toMatchObject({ title: MEME, bytes: skinny.bytes });
+    expect(rows[0]!.slots).toBeUndefined();
+    expect(rows[0]!.omitted).toContain("slots");
+    expect(JSON.stringify(rows).length).toBeLessThanOrEqual(cap);
+    const seen: string[] = rows.map((x) => x.title);
+    let after = first["next"] as string | null;
+    while (after) {
+      const page: Record<string, unknown> = await filter({ ...A, filter: `[[${MEME}]] [tag[memory]sort[title]]`, collapse: true, maxBytes: 4096, after }, ctx());
+      seen.push(...(page["rows"] as Array<{ title: string }>).map((x) => x.title));
+      after = page["next"] as string | null;
+    }
+    const whole = await filter({ ...A, filter: `[[${MEME}]] [tag[memory]sort[title]]`, limit: 32 }, ctx());
+    expect(seen).toEqual(whole["titles"]);
+  });
+
+  test("filter-collapse: a meme root whose slot records rest in an unreadable layer carries withheld on its row, as the meme get names it; CONTROL: a readable family withholds none", async () => {
+    const r = await rig();
+    expect((await placeMeme({ uri: MEME, text: memeText(["a", "b"]) }, wikiMemeSink(r.engine.wiki))).decision).toBe("ingest");
+    const filter = makeWikiFilterReactor(r.opts);
+    const open = await filter({ ...A, filter: `[[${MEME}]]`, collapse: true }, ctx());
+    expect((open["rows"] as Array<Record<string, unknown>>)[0]!["withheld"]).toBeUndefined();
+    const SECRET = "lar:///ha.ka.ba/bags/secret";
+    const held = r.engine.wiki.getTiddler(`${MEME}#/b`)!.getFieldStrings();
+    r.engine.wiki.addTiddler({ ...held, "$origin-bag": SECRET });
+    const partial: Cap = async (access, bag) => (bag === SECRET ? { ok: false, reason: "no-grant" } : access === "read" || bag === DAEMON ? { ok: true } : { ok: false, reason: "no-grant" });
+    const out = await filter({ ...A, filter: `[[${MEME}]]`, collapse: true }, ctx(partial));
+    const row = (out["rows"] as Array<{ withheld?: number; slots: Array<{ slot: string }> }>)[0]!;
+    expect(row.withheld).toBe(1);
+    expect(row.slots.map((x) => x.slot)).toEqual(["#/a"]);
+  });
+
+  test("RED L1: a word the lens or the grain does not read refuses by name, before anything reads", async () => {
+    const r = await rig();
+    expect((await placeMeme({ uri: MEME, text: memeText(["a", "b"]) }, wikiMemeSink(r.engine.wiki))).decision).toBe("ingest");
+    const get = makeTiddlerGetReactor(r.opts);
+    await expect(get({ ...A, title: "Note 02", after: "1.0123456789abcdef" }, ctx())).rejects.toMatchObject({ reason: "read-word-unread", message: expect.stringMatching(/after/) });
+    await expect(get({ ...A, title: MEME, meme: true, fields: ["title"] }, ctx())).rejects.toMatchObject({ reason: "read-word-unread", message: expect.stringMatching(/fields/) });
+    await expect(get({ ...A, title: MEME, meme: true, maxBytes: 4096 }, ctx())).rejects.toMatchObject({ reason: "read-word-unread", message: expect.stringMatching(/maxBytes/) });
+    await expect(get({ ...A, title: MEME, meme: true, grain: "skinny", slot: "#/a" }, ctx())).rejects.toMatchObject({ reason: "read-word-unread", message: expect.stringMatching(/slot/) });
+    await expect(get({ ...A, title: MEME, meme: true, grain: "whole", slot: "#/a" }, ctx())).rejects.toMatchObject({ reason: "read-word-unread" });
+    await expect(get({ ...A, title: `${MEME}#/a`, meme: true, grain: "whole" }, ctx())).rejects.toMatchObject({ reason: "read-word-unread" });
+    // CONTROL: the words each lens reads still answer.
+    expect(await get({ ...A, title: MEME, meme: true, slot: "#/a" }, ctx())).toMatchObject({ grain: { applied: "slot" } });
+    expect(await get({ ...A, title: "Note 02", fields: ["priority"] }, ctx())).toMatchObject({ lens: "record" });
+  });
+
+  test("RED L4: the echo names the grain that rode: named fields without the text read skinny; a pointer keeps its body grain under named fields", async () => {
+    const r = await rig();
+    r.engine.setTiddler({ title: "Handle2", _is_skinny: "yes", textCid: "cd".repeat(32), type: "text/plain" });
+    const get = makeTiddlerGetReactor(r.opts);
+    expect(await get({ ...A, title: "Note 02", fields: ["priority"] }, ctx())).toMatchObject({ grain: { applied: "skinny" } });
+    expect(await get({ ...A, title: "Note 02", fields: ["text"] }, ctx())).toMatchObject({ grain: { applied: "fat" } });
+    expect(await get({ ...A, title: "Handle2", fields: ["textCid"] }, ctx())).toMatchObject({ grain: { applied: "handle" } });
+  });
+
+  test("RED L3: a recomposition that leaves out slot children this face may not read says so (`withheld`), never a silent short carrier", async () => {
+    const r = await rig();
+    expect((await placeMeme({ uri: MEME, text: memeText(["a", "b"]) }, wikiMemeSink(r.engine.wiki))).decision).toBe("ingest");
+    const SECRET = "lar:///ha.ka.ba/bags/secret";
+    const held = r.engine.wiki.getTiddler(`${MEME}#/b`)!.getFieldStrings();
+    r.engine.wiki.addTiddler({ ...held, "$origin-bag": SECRET });
+    const partial: Cap = async (access, bag) => (bag === SECRET ? { ok: false, reason: "no-grant" } : access === "read" || bag === DAEMON ? { ok: true } : { ok: false, reason: "no-grant" });
+    const got = await makeTiddlerGetReactor(r.opts)({ ...A, title: MEME, meme: true }, ctx(partial));
+    expect(got).toMatchObject({ withheld: 1, note: expect.stringMatching(/1 slot record.*withheld/) });
+    expect((got["meme"] as { text: string }).text).not.toContain("body of b");
+  });
+
+  test("RED L6: resolved verifies a tagged or uppercase CID through the house verify", async () => {
+    const r = await rig();
+    const body = new TextEncoder().encode("tagged body");
+    const hex = sha256HexBytesSync(body);
+    r.engine.setTiddler({ title: "Tagged", _is_skinny: "yes", textCid: `sha256:${hex.toUpperCase()}`, type: "text/plain" });
+    const get = makeTiddlerGetReactor({ ...r.opts, resolveByCid: async () => body });
+    expect(await get({ ...A, title: "Tagged", grain: "resolved" }, ctx())).toMatchObject({ grain: { applied: "resolved" }, tiddler: { fields: { text: "tagged body" } } });
+  });
+
+  test("RED M2b: a card's base moves no text by any path: `fields.text` and `unset text` refuse base-from-skinny like `text`", async () => {
+    const r = await rig();
+    const get = makeTiddlerGetReactor(r.opts);
+    const put = makeTiddlerPutReactor(r.opts);
+    const card = (await get({ ...A, title: "Note 05", grain: "skinny" }, ctx()))["tiddler"] as { hash: string };
+    await expect(put({ ...A, title: "Note 05", fields: { text: "a blind rewrite" }, base: card.hash }, ctx())).rejects.toMatchObject({ reason: "base-from-skinny" });
+    await expect(put({ ...A, title: "Note 05", unset: ["text"], base: card.hash }, ctx())).rejects.toMatchObject({ reason: "base-from-skinny" });
+    // CONTROL: a field that is not the text still lands against the card.
+    expect(await put({ ...A, title: "Note 05", fields: { status: "seen" }, base: card.hash }, ctx())).toMatchObject({ decision: "put" });
+  });
+
+  test("RED partial-base: a slot answer and a page short of the end hand a partial base, which no meme put takes; the last page and the whole hand the bare base", async () => {
+    const r = await rig();
+    const big = (x: string): string => `body of ${x} ${"lorem ".repeat(5_000)}`;
+    const text = memeText(["a", "b", "c"]).replace(/body of (\w)/g, (_m, x: string) => big(x));
+    expect((await placeMeme({ uri: MEME, text }, wikiMemeSink(r.engine.wiki))).decision).toBe("ingest");
+    const get = makeTiddlerGetReactor(r.opts);
+    const slot = await get({ ...A, title: MEME, meme: true, slot: "#/a" }, ctx());
+    expect((slot["meme"] as { canonicalHash: string }).canonicalHash).toMatch(/^partial:/);
+    const first = await get({ ...A, title: MEME, meme: true, grain: "whole" }, ctx());
+    expect((first["meme"] as { canonicalHash: string }).canonicalHash).toMatch(/^partial:/);
+    let page = first;
+    while ((page["next"] as { after?: string } | null)?.after) page = await get({ ...A, title: MEME, meme: true, grain: "whole", after: (page["next"] as { after: string }).after }, ctx());
+    expect((page["meme"] as { canonicalHash: string }).canonicalHash).toMatch(/^sha256/);
+  });
+
+  test("RED fat-carries: an explicit fat or whole read of a record past the byte cap (a plugin-sized text) carries the text whole; a named --max-bytes still caps", async () => {
+    const r = await rig();
+    r.engine.setTiddler({ title: "lar:///ha.ka.ba/lararium/plugins/lares/big", type: "application/json", "plugin-type": "plugin", text: JSON.stringify({ tiddlers: { a: { text: "x".repeat(400_000) } } }) });
+    const get = makeTiddlerGetReactor(r.opts);
+    for (const grain of ["fat", "whole"]) {
+      const got = await get({ ...A, title: "lar:///ha.ka.ba/lararium/plugins/lares/big", grain }, ctx());
+      expect(got, grain).toMatchObject({ grain: { applied: "fat" } });
+      expect(((got["tiddler"] as { fields: Record<string, string> }).fields["text"] ?? "").length, grain).toBeGreaterThan(400_000);
+    }
+    const capped = await get({ ...A, title: "lar:///ha.ka.ba/lararium/plugins/lares/big", grain: "fat", maxBytes: 4096 }, ctx());
+    expect(capped).toMatchObject({ grain: { applied: "skinny" }, tiddler: { omitted: expect.arrayContaining(["text"]) } });
+  });
+
+  test("RED two-skinnies: `grain: skinny` (the CLI's --skinny) leaves a record's text home; `_is_skinny` marks a POINTER, which answers its handle, never the tiddler grain's card", async () => {
+    const r = await rig();
+    r.engine.setTiddler({ title: "Handle", _is_skinny: "yes", textCid: "ab".repeat(32), type: "text/plain" });
+    const get = makeTiddlerGetReactor(r.opts);
+    // The tiddler grain: the card, the text left home and named.
+    const card = await get({ ...A, title: "Note 02", grain: "skinny" }, ctx());
+    expect(card).toMatchObject({ grain: { asked: "skinny", applied: "skinny" }, tiddler: { omitted: ["text"] } });
+    // The body grain: a record that names its body by CID answers its handle at either ask; the two words never merge.
+    const handle = await get({ ...A, title: "Handle" }, ctx());
+    expect(handle).toMatchObject({ grain: { asked: null, applied: "handle" } });
+    const asked = await get({ ...A, title: "Handle", grain: "skinny" }, ctx());
+    expect(asked).toMatchObject({ grain: { asked: "skinny", applied: "handle", why: expect.stringMatching(/tiddler grain reads no body/) } });
+    expect((asked["tiddler"] as { omitted?: string[] }).omitted).toBeUndefined();
+  });
+
+  test("RED one-door-meme-lens: --meme on a meme within a page answers the whole carrier byte for byte, sealed, with base/ on its has line", async () => {
+    const r = await rig();
+    expect((await placeMeme({ uri: MEME, text: memeText(["a", "b"]) }, wikiMemeSink(r.engine.wiki))).decision).toBe("ingest");
+    const whole = await readMeme(MEME, wikiMemeSink(r.engine.wiki));
+    const got = await makeTiddlerGetReactor(r.opts)({ ...A, title: MEME, meme: true }, ctx());
+    expect(got).toMatchObject({ lens: "meme", title: MEME, grain: { applied: "whole" }, next: null, meme: { uri: MEME, text: whole!.text, canonicalHash: whole!.canonicalHash } });
+    expect(got["has"]).toMatch(new RegExp(`^<<~ has name=\`${MEME}\` params=\`recipe/default .*type/${CARRIER.replace(/[+/]/g, "\\$&")} position/root slots/2 bytes/\\d+ base/${whole!.canonicalHash}\``));
+  });
+
+  test("RED one-door-meme-gradient: past a page --meme answers the has-stack (root line plus one per slot); --all pages on slot boundaries and the pages join to the carrier", async () => {
+    const r = await rig();
+    const big = (s: string): string => `body of ${s} ${"lorem ".repeat(5_000)}`;
+    const text = memeText(["a", "b", "c"]).replace(/body of (\w)/g, (_m, s: string) => big(s));
+    expect((await placeMeme({ uri: MEME, text }, wikiMemeSink(r.engine.wiki))).decision).toBe("ingest");
+    const whole = await readMeme(MEME, wikiMemeSink(r.engine.wiki));
+    const get = makeTiddlerGetReactor(r.opts);
+    const stack = await get({ ...A, title: MEME, meme: true }, ctx());
+    expect(stack).toMatchObject({ grain: { applied: "skinny" }, next: { grain: "whole" } });
+    expect((stack["meme"] as { text?: string }).text).toBeUndefined();
+    const lines = String(stack["has"]).split("\n");
+    expect(lines).toHaveLength(4);
+    expect(lines.slice(1).map((l) => /name=`([^`]+)`/.exec(l)![1])).toEqual(["#/a", "#/b", "#/c"]);
+    const pages: string[] = [];
+    for (let page = await get({ ...A, title: MEME, meme: true, grain: "whole" }, ctx()); ; ) {
+      pages.push((page["meme"] as { text: string }).text);
+      const after = (page["next"] as { after?: string } | null)?.after;
+      if (!after) break;
+      page = await get({ ...A, title: MEME, meme: true, grain: "whole", after }, ctx());
+    }
+    expect(pages.length).toBeGreaterThan(1);
+    expect(pages.join("")).toBe(whole!.text);
+    expect(pages.slice(1).every((p) => p.startsWith("<<~ ahu slot="))).toBe(true);
+  });
+
+  test("RED one-door-meme-edges: a slot child recomposes from its root and points at the slot; a record that holds no meme answers itself and says so", async () => {
+    const r = await rig();
+    expect((await placeMeme({ uri: MEME, text: memeText(["a", "b"]) }, wikiMemeSink(r.engine.wiki))).decision).toBe("ingest");
+    const get = makeTiddlerGetReactor(r.opts);
+    const slot = await get({ ...A, title: `${MEME}#/b`, meme: true }, ctx());
+    expect(slot).toMatchObject({ lens: "meme", title: MEME, grain: { applied: "slot" }, meme: { uri: MEME, slot: "#/b" } });
+    // L2: a slot's span rides `slotText`, a name no JSON reader mistakes for the whole carrier (`text`).
+    expect((slot["meme"] as { text?: string }).text).toBeUndefined();
+    expect((slot["meme"] as { slotText: string }).slotText).toMatch(/^<<~ ahu slot=`#\/b`>>[\s\S]*body of b[\s\S]*<<~\/ahu>>\n$/);
+    expect((slot["meme"] as { slotText: string }).slotText).not.toContain("body of a");
+    const named = await get({ ...A, title: MEME, meme: true, slot: "#/a" }, ctx());
+    expect((named["meme"] as { slotText: string }).slotText).toContain("body of a");
+    await expect(get({ ...A, title: MEME, meme: true, slot: "#/none" }, ctx())).rejects.toMatchObject({ reason: "slot-missing" });
+    const plain = await get({ ...A, title: "Note 02", meme: true }, ctx());
+    expect(plain).toMatchObject({ lens: "record", note: expect.stringMatching(/holds no meme/), tiddler: { fields: { text: "see [[Note 01]] and note 2" } } });
+    expect(String(plain["has"])).toMatch(/^<<~ has name=`Note 02`/);
   });
 
   test("wiki-render-transclusion: a transcluding tiddler renders its transcluded text; CONTROL: a plain tiddler renders its own", async () => {
@@ -283,6 +726,47 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(r.engine.wiki.getTiddlerText("Room 4")).toBe("bed by the window");
   });
 
+  test("an append lands at the end with one joining newline, leads with its has line, and refuses a base, a text, a field patch or a missing title", async () => {
+    const r = await rig();
+    const put = makeTiddlerPutReactor(r.opts);
+    await expect(put({ ...A, title: "Ledger", append: "one" }, ctx())).rejects.toMatchObject({ reason: "append-target-missing" });
+    expect(r.engine.wiki.tiddlerExists("Ledger")).toBe(false);
+    expect(await put({ ...A, title: "Ledger", append: "one", create: true }, ctx())).toMatchObject({ decision: "put", created: true });
+    expect(r.engine.wiki.getTiddlerText("Ledger")).toBe("one");
+    const receipt = await put({ ...A, title: "Ledger", append: "two\n" }, ctx());
+    expect(String(receipt["has"])).toMatch(/^<<~ has name=`Ledger` params=`.*decision\/put hash\//);
+    expect(Object.keys(receipt)[0]).toBe("has");
+    await put({ ...A, title: "Ledger", append: "three", tagsAdd: "dated" }, ctx());
+    expect(r.engine.wiki.getTiddlerText("Ledger")).toBe("one\ntwo\nthree");
+    expect(r.engine.wiki.getTiddler("Ledger")!.fields["tags"]).toEqual(["dated"]);
+    for (const crossed of [{ text: "x" }, { base: String(receipt["hash"]) }, { fields: { kind: "x" } }]) {
+      await expect(put({ ...A, title: "Ledger", append: "four", ...crossed }, ctx())).rejects.toMatchObject({ reason: "append-alone" });
+    }
+    expect(r.engine.wiki.getTiddlerText("Ledger")).toBe("one\ntwo\nthree");
+  });
+
+  test("concurrent appends retain both texts and a stale whole-text put refuses", async () => {
+    const r = await rig();
+    const put = makeTiddlerPutReactor(r.opts);
+    const get = makeTiddlerGetReactor(r.opts);
+    for (let i = 0; i < 20; i++) {
+      const title = `Append race ${i}`;
+      await put({ ...A, title, create: true, text: "start" }, ctx());
+      const base = ((await get({ ...A, title }, ctx()))["tiddler"] as { hash: string }).hash;
+      const receipts = await Promise.all(["first", "second"].map(append => put({ ...A, title, append }, ctx())));
+      expect(receipts.map(x => x["decision"])).toEqual(["put", "put"]);
+      const text = r.engine.wiki.getTiddlerText(title);
+      expect(["start\nfirst\nsecond", "start\nsecond\nfirst"]).toContain(text);
+      // The order the record took: the receipt that names the standing hash landed last, and its words close the text.
+      const live = ((await get({ ...A, title }, ctx()))["tiddler"] as { hash: string }).hash;
+      const last = receipts.findIndex(x => x["hash"] === live);
+      expect(last).toBeGreaterThanOrEqual(0);
+      expect(text!.endsWith(["first", "second"][last]!)).toBe(true);
+      expect(await put({ ...A, title, text: "replacement", base }, ctx())).toMatchObject({ decision: "conflict" });
+      expect(r.engine.wiki.getTiddlerText(title)).toBe(text);
+    }
+  });
+
   test("tiddler-put stale base refuses: a moved record answers conflict with the live hash and nothing lands; CONTROL: the live base lands", async () => {
     const r = await rig();
     const put = makeTiddlerPutReactor(r.opts);
@@ -319,6 +803,21 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     await r.landed();
     await expect(makeTiddlerDeleteReactor(r.opts)({ ...A, title: effectRecordUri(DAEMON, "real") }, ctx())).rejects.toMatchObject({ reason: "effect-ledger-house-only" });
     expect(await r.composite.storeForBag(DAEMON)!.get(effectRecordUri(DAEMON, "real"))).not.toBeNull();
+  });
+
+  test("RED (the record of leaving stays): the tiddler door neither writes nor deletes a shell's record of leaving, for any asker", async () => {
+    const r = await rig();
+    const put = makeTiddlerPutReactor(r.opts);
+    const title = retiredShellUri("elyncia-referee");
+    for (const asker of [undefined, "seat", "cli"] as const) {
+      await expect(put({ ...A, title, text: "{}", fields: { type: "application/json" } }, { ...ctx(), ...(asker ? { asker } : {}) })).rejects.toMatchObject({ reason: "effect-ledger-house-only" });
+    }
+    expect(await r.composite.storeForBag(DAEMON)!.get(title)).toBeNull();
+    const rec = buildRetiredShellRecord(unionRetiredShell("elyncia-referee", null, [], { face: "0xface", realmId: null, forced: false, authored: 0, carried: [] }));
+    await r.composite.storeForBag(DAEMON)!.put(rec, { kind: "lares-verb", requestId: "retire-wiki" });
+    await r.landed();
+    await expect(makeTiddlerDeleteReactor(r.opts)({ ...A, title }, ctx())).rejects.toMatchObject({ reason: "effect-ledger-house-only" });
+    expect(await r.composite.storeForBag(DAEMON)!.get(title)).not.toBeNull();
   });
 
   test("RED: the seat wall reads the one executable-class list: a seat-asked module, script type, plugin, startup action, global, view template and an unlisted system tag each offer (seat-startup-offer) and land nothing; CONTROL plain `$:/config` lands for a seat, and the operator's hand and no asker land every class natively", async () => {
@@ -364,6 +863,39 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(spends).toEqual(["default|Lei startup|seat"]);
     await expect(put({ ...A, title: "Other startup", tagsAdd: "$:/tags/StartupAction" }, seat)).rejects.toMatchObject({ reason: "seat-startup-offer" });
     expect(r.engine.wiki.getTiddler("Other startup")).toBeUndefined();
+  });
+
+  test("racing seat appends to an executable record spend one exec-lei return each and both land", async () => {
+    const r = await rig();
+    const put = makeTiddlerPutReactor(r.opts);
+    let left = 2;
+    const execLei = { spend: async () => {
+      if (left === 0) throw new SwarmRefused("swarm-lei-spent", "the lei holds no return");
+      return { lei: "c".repeat(64), n: left-- };
+    } };
+    await put({ ...A, title: "Macro row", create: true, text: "\\define a() a", tagsAdd: "$:/tags/Macro" }, ctx());
+    const seat: VerbContext = { ...ctx(), asker: "seat", execLei };
+    const receipts = await Promise.all(["\\define b() b", "\\define c() c"].map((append) => put({ ...A, title: "Macro row", append }, seat)));
+    expect(receipts.map((x) => x["decision"])).toEqual(["put", "put"]);
+    expect(left).toBe(0);
+    const text = r.engine.wiki.getTiddlerText("Macro row")!;
+    for (const words of ["define b()", "define c()"]) expect(text).toContain(words);
+  });
+
+  test("a based whole-text put racing an append through admission refuses stale or lands beneath it, and the append survives", async () => {
+    const r = await rig();
+    const put = makeTiddlerPutReactor(r.opts);
+    const get = makeTiddlerGetReactor(r.opts);
+    for (let i = 0; i < 20; i++) {
+      const title = `Based race ${i}`;
+      await put({ ...A, title, create: true, text: "start" }, ctx());
+      const base = ((await get({ ...A, title }, ctx()))["tiddler"] as { hash: string }).hash;
+      const [appended, based] = await Promise.all([put({ ...A, title, append: "kept" }, ctx()), put({ ...A, title, text: "replacement", base }, ctx())]);
+      expect(appended["decision"]).toBe("put");
+      const text = r.engine.wiki.getTiddlerText(title);
+      if (based["decision"] === "put") expect(text).toBe("replacement\nkept");
+      else { expect(based["decision"]).toBe("conflict"); expect(text).toBe("start\nkept"); }
+    }
   });
 
   test("★ slot-level-put witness: a tiddler put on a meme family's `#/slot` either refuses by name or leaves the carrier sealed; it never lands bytes the block check no longer covers ★", async () => {
@@ -475,7 +1007,7 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     const del = makeTiddlerDeleteReactor(r.opts);
     const called = await del({ ...A, title: `${MEME}#/a`, family: true }, ctx());
     expect(called).toMatchObject({ decision: "refused", refusal: "tiddler-delete-in-a-family", tombstoned: [] });
-    expect(String(called["why"])).toContain("meme put");
+    expect(String(called["why"])).toContain("tiddler put --meme");
     expect(wiki.tiddlerExists(`${MEME}#/a`)).toBe(true);
     expect(await del({ ...A, title: "lar:///t/gone#/a", family: true }, ctx())).toMatchObject({ decision: "removed", retracted: ["lar:///t/gone#/a", "lar:///t/gone#/a/b"] });
     await r.landed();
@@ -749,6 +1281,39 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
 });
 
 describe.skipIf(wikiSkip)(`the reader's view: a filter and a render compute over what the face may read${skipNote}`, () => {
+  test("native output selects per source, applies a template and variables, and skips empty filenames", async () => {
+    const r = await rig();
+    const WORKING = wikiSlotUri("notes", "working");
+    r.engine.wiki.addTiddler({ title: WORKING_POINTER, text: WORKING });
+    const templateText = "<$text text=<<label>>/>:<$text text=<<currentTiddler>>/>:<$text text=<<storyTiddler>>/>:{{Note 01}}";
+    r.engine.wiki.addTiddler({ title: "ExportTemplate", type: "text/vnd.tiddlywiki", text: templateText });
+    r.engine.wiki.addTiddler({ title: "Sealed", text: "private words", "$origin-bag": bagUri("sealed") });
+    const output = makeWikiRenderOutReactor({ ...r.opts, wiki: { slug: "notes", gate: WORKING } });
+    const writing: Cap = async (access, bag) => (access === "read" && bag !== bagUri("sealed")) || (access === "admin" && bag === WORKING) ? { ok: true } : { ok: false, reason: "no-grant" };
+    const ask = { recipe: "notes", output: "workbench", filter: "[[Note 01]] [[Note 02]]", filename: "[is[tiddler]match[Note 01]addsuffix[.html]]", template: "ExportTemplate", variables: { label: "sent" } };
+    const answer = await output(ask, ctx(writing));
+    expect(answer).toMatchObject({ files: [{ name: "Note 01.html", source: "Note 01" }], skipped: ["Note 02"] });
+    const native = r.engine.$tw.wiki as unknown as { parseTiddler(title: string): object; makeWidget(parser: object, options: { variables: Record<string, string> }): { render(container: object, sibling: null): void } };
+    const container = r.engine.$tw.fakeDocument.createElement("div");
+    native.makeWidget(native.parseTiddler("ExportTemplate"), { variables: { label: "sent", currentTiddler: "Note 01", storyTiddler: "Note 01" } }).render(container, null);
+    expect((answer["files"] as Array<{ text: string }>)[0]!.text).toBe(container.innerHTML);
+    r.engine.wiki.addTiddler({ title: "ExportTemplate", type: "text/vnd.tiddlywiki", text: `${templateText} {{Sealed}}` });
+    const denied = await output(ask, ctx(writing));
+    expect((denied["files"] as Array<{ text: string }>)[0]!.text).not.toContain("private words");
+    expect(await output({ ...ask, filter: "[[Sealed]]", template: undefined }, ctx(writing))).toMatchObject({ files: [] });
+    await expect(output({ ...ask, filter: "[[Note 01]]" }, ctx(reader))).rejects.toThrow(/render-output-grant-denied/);
+  });
+  test("the filename filter runs under the house widget over the reader's view: a house function resolves in it as in the selection", async () => {
+    const r = await rig();
+    const WORKING = wikiSlotUri("notes", "working");
+    r.engine.wiki.addTiddler({ title: WORKING_POINTER, text: WORKING });
+    r.engine.wiki.addTiddler({ title: "Road A", tags: "stage/road road/state/open", text: "open road" });
+    const output = makeWikiRenderOutReactor({ ...r.opts, wiki: { slug: "notes", gate: WORKING } });
+    const writing: Cap = async (access, bag) => access === "read" || (access === "admin" && bag === WORKING) ? { ok: true } : { ok: false, reason: "no-grant" };
+    const answer = await output({ recipe: "notes", output: "workbench", filter: "[[Note 01]]", filename: "[is[tiddler]addsuffix[.html]] :filter[all[tiddlers]lares.road[open]count[]!match[0]]" }, ctx(writing));
+    expect(await makeWikiFilterReactor(r.opts)({ ...A, filter: "[lares.road[open]]" }, ctx(writing)), "the selection resolves the same house function").toMatchObject({ titles: ["Road A"] });
+    expect(answer).toMatchObject({ files: [{ name: "Note 01.html", source: "Note 01" }], skipped: [] });
+  });
   test("reach-holds-inside-the-engine: a filter that reads a withheld title's text by name, or by iteration, answers none of it; CONTROL: a readable title's text answers", async () => {
     const r = await rig();
     const filter = makeWikiFilterReactor(r.opts);
@@ -766,6 +1331,21 @@ describe.skipIf(wikiSkip)(`the reader's view: a filter and a render compute over
     expect(await titles("[[Sealed]get[text]]", only)).toEqual([]);
     expect(await titles("[tag[memory]get[text]search[theirs]]", only)).toEqual([]);
     expect(await titles("[[Sealed]get[text]]")).toEqual(["theirs"]);
+  });
+
+  test("hidden citers never reach a target through the reader view", async () => {
+    const r = await rig();
+    const base = "lar:///ha.ka.ba/kahua/memory/state/";
+    const target = `${base}target`, hidden = `${base}hidden`;
+    r.engine.wiki.addTiddler({ title: target, text: "", "$origin-bag": DAEMON });
+    r.engine.wiki.addTiddler({ title: hidden, text: `See ${target}`, "$origin-bag": bagUri("sealed") });
+    const only: Cap = async (_access, bag) => bag === DAEMON ? { ok: true } : { ok: false, reason: "no-grant" };
+    const filter = makeWikiFilterReactor(r.opts);
+    const titles = async (f: string, cap: Cap) => (await filter({ ...A, filter: f }, ctx(cap)))["titles"] as string[];
+    expect(await titles(`[[${target}]lar-refs:in[]]`, writer)).toContain(hidden);
+    expect(await titles(`[[${target}]lar-refs:in[]]`, only)).not.toContain(hidden);
+    expect(await titles("[lares.unreached[]]", only)).toContain(target);
+    expect(await titles("[lares.unreached[]]", writer)).not.toContain(target);
   });
 
   test("reach-holds-inside-the-engine: a render transcludes nothing the face may not read; CONTROL: a readable transclusion renders, and the wiki itself stays whole", async () => {
@@ -806,5 +1386,51 @@ describe("pageFilterAnswer — the one page law the daemon verb and the record p
     }
     expect(seen).toEqual(all);
     expect(() => pageFilterAnswer(all, { after: "not-a-cursor" })).toThrow(/filter-cursor-malformed/);
+  });
+});
+
+describe.skipIf(wikiSkip)(`a bag read through the tiddler door${skipNote}`, () => {
+  const seed = async (r: Awaited<ReturnType<typeof rig>>): Promise<void> => {
+    const store = r.composite.storeForBag(CANON)!;
+    await store.put({ tiddler: { title: "Canon Note", text: "canon words", tags: ["law", "two words"], type: "text/vnd.tiddlywiki" }, meta: {} }, { kind: "lares-verb", requestId: "seed" }, { bag: CANON as never });
+    await store.put({ tiddler: { title: "lar:///t/x", text: "root" }, meta: {} }, { kind: "lares-verb", requestId: "seed" }, { bag: CANON as never });
+    await store.put({ tiddler: { title: "lar:///t/x#/a", text: "slot a" }, meta: {} }, { kind: "lares-verb", requestId: "seed" }, { bag: CANON as never });
+  };
+
+  test("RED: tiddler-get with `bag` reads that one bag's record, with its fields, hash, bag and position; CONTROL: the anchor still answers a recipe", async () => {
+    const r = await rig();
+    await seed(r);
+    const get = makeTiddlerGetReactor(r.opts);
+    const got = await get({ bag: "lares", title: "Canon Note" }, ctx());
+    expect(got).toMatchObject({ title: "Canon Note", tiddler: { bag: CANON, position: "plain", fields: { text: "canon words", tags: "law [[two words]]" } } });
+    expect((got["tiddler"] as { hash: string }).hash).toMatch(/^sha256-/);
+    expect(await get({ bag: "lares", title: "lar:///t/x" }, ctx())).toMatchObject({ tiddler: { position: "root" } });
+    expect(await get({ bag: "lares", title: "lar:///t/x#/a" }, ctx())).toMatchObject({ tiddler: { position: "slot", family: "lar:///t/x" } });
+    expect(await get({ bag: "lares", title: "lar:///t/x", slot: "#/a" }, ctx())).toMatchObject({ tiddler: { fields: { text: "slot a" } } });
+    expect(await get({ bag: "lares", title: "Canon Note", fields: ["tags"] }, ctx())).toMatchObject({ tiddler: { fields: { title: "Canon Note", tags: "law [[two words]]" } } });
+    expect(await get({ bag: "lares", title: "Canon Note", grain: "skinny" }, ctx())).toMatchObject({ tiddler: { omitted: ["text"] } });
+    const noMeme = await get({ bag: "lares", title: "lar:///t/x", meme: true }, ctx());
+    expect(noMeme).toMatchObject({ bag: CANON, lens: "record", note: expect.stringMatching(/holds no meme/), tiddler: { fields: { text: "root" } } });
+    expect(String(noMeme["has"])).toContain(`bag/${CANON}`);
+    expect(await get({ ...A, title: "Note 01" }, ctx())).toMatchObject({ recipe: "default", tiddler: { fields: { text: "the first note" } } });
+  });
+
+  test("an absent title reads null; a face with no read on the bag refuses by name; a bag nothing reaches refuses by name; a stay-home title refuses", async () => {
+    const r = await rig();
+    await seed(r);
+    const get = makeTiddlerGetReactor(r.opts);
+    expect(await get({ bag: "lares", title: "Nowhere" }, ctx())).toMatchObject({ tiddler: null });
+    await expect(get({ bag: "lares", title: "Canon Note" }, ctx(stranger))).rejects.toThrow(/cap-denied: read/);
+    await expect(get({ bag: "nowhere", title: "x" }, ctx())).rejects.toThrow(/nothing reaches it/);
+    await expect(get({ bag: "lares", title: "$:/temp/lares/secret" }, ctx())).rejects.toMatchObject({ reason: "tiddler-withheld" });
+  });
+
+  test("the engine verbs and the writes name the right door where a bag stands: a refusal that points at `tiddler get --bag`, `tiddler get --meme --bag` and `tiddler put --meme --bag`", async () => {
+    const r = await rig();
+    await expect(makeWikiFilterReactor(r.opts)({ bag: "lares", filter: "[all[]]" }, ctx())).rejects.toMatchObject({ reason: "wiki-not-anchored", message: expect.stringMatching(/runs in a wiki's own engine.*tiddler get <title> --bag.*tiddler get --meme --bag.*--recipe/s) });
+    await expect(makeWikiRenderReactor(r.opts)({ bag: "lares", title: "x" }, ctx())).rejects.toMatchObject({ reason: "wiki-not-anchored" });
+    await expect(makeWikiStatusReactor(r.opts)({ bag: "lares" }, ctx())).rejects.toMatchObject({ reason: "wiki-not-anchored" });
+    await expect(makeTiddlerPutReactor(r.opts)({ bag: "lares", title: "x", text: "y" }, ctx())).rejects.toMatchObject({ reason: "wiki-not-anchored", message: expect.stringMatching(/tiddler put --meme --bag/) });
+    await expect(makeTiddlerDeleteReactor(r.opts)({ bag: "lares", title: "x" }, ctx())).rejects.toMatchObject({ reason: "wiki-not-anchored", message: expect.stringMatching(/tiddler delete --meme --bag/) });
   });
 });

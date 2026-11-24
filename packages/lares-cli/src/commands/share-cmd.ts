@@ -204,11 +204,10 @@ export function cmdShare(kind: "bag" | "wiki", doors: ShareDoors = LIVE_SHARE_DO
     if (applied !== null) {
       const carried = Number(applied["carried"] ?? 0), pending = Number(applied["pending"] ?? 0);
       doors.out(`  landed: ${Number(applied["granted"] ?? 0)} grant(s)`
-        + (carried > 0 ? `; ${carried} of them reach the grantee's catalog when the daemon mount next runs under that face (\`lares vault unlock --face N\`)` : "")
+        + (carried > 0 ? `; ${carried} of them reach the grantee's catalog at that face's next wear (\`lares wear N\`, or \`lares vault unlock --face N\`), which lifts them` : "")
         + (pending > 0 ? `; ${pending} wait for a shut face (\`lares vault unlock --face N\`, then share again)` : ""));
       for (const w of Array.isArray(applied["workbenches"]) ? applied["workbenches"] as Array<Record<string, unknown>> : []) {
         doors.out(`  workbench: wiki ${String(w["slug"])} rides realm ${String(w["realmId"]).slice(0, 12)}… (${Number(w["members"] ?? 0)} member face(s)${w["founded"] === true ? ", founded now" : ""})`);
-        if (w["restsUnderOwner"] === true && Number(w["members"] ?? 0) > 0) doors.out(`    its document rests sealed under its owner face on this vessel, so each seated face here writes its own personal layer of ${String(w["slug"])} and offers from there; the seats stand for the wire and for each face's own vessels`);
       }
       // THE ROW KEEPS ITS OWNER, by pet-name, in the vessel-local file: after a re-founding the seed re-stands the wiki at
       // that face's wear. The name is the human's own label, so it rests here and in the control document.
@@ -224,7 +223,14 @@ export function cmdShare(kind: "bag" | "wiki", doors: ShareDoors = LIVE_SHARE_DO
         for (const r of owned.filter((r, i) => r !== next[i])) await doors.verb("share-set", shareSetArgs(r));
       }
       for (const w of Array.isArray(applied["waiting"]) ? applied["waiting"] as string[] : []) doors.out(`  waits: "${w}" names no face here`);
-      for (const slug of Array.isArray(applied["unowned"]) ? applied["unowned"] as string[] : []) doors.out(`  waits: "${slug}" stands in no catalog the daemon mount reads: run the daemon mount under the face that owns it (\`lares vault unlock --face N\`) and share again, or stand it first (\`lares wiki init ${slug}\`)`);
+      for (const unownedSlug of Array.isArray(applied["unowned"]) ? applied["unowned"] as string[] : []) {
+        const ownerName = next.find((r) => r.slug === unownedSlug && r.kind === kind)?.owner;
+        const owners = ownerName ? faces.filter((f) => f.petname === ownerName) : [];
+        if (owners.length === 1) {
+          const at = owners[0]!.handleIndex;
+          doors.out(`  waits: h${at} owns ${unownedSlug}; run \`lares wear ${at}\`, then this share`);
+        } else doors.out(`  waits: "${unownedSlug}" stands in no catalog the daemon mount reads: run the daemon mount under the face that owns it (\`lares vault unlock --face N\`) and share again, or stand it first (\`lares wiki init ${unownedSlug}\`)`);
+      }
     }
     for (const w of resolveShare({ bag: shareEntryBag(row), rows: next, faces }).waiting) doors.err(`  "${w}" names no face here; the row keeps it, and it lands when a face carries that pet-name`);
     return 0;

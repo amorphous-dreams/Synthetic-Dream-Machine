@@ -43,6 +43,7 @@ import { dirname, join } from "node:path";
 import { BUNDLE_SCHEMA, MANIFEST_FILE, bundleIdOf, sha256Hex, zeroCounts, type BundleFile } from "../src/bundle-manifest.js";
 import { riteKeepHost, secretShapes, workspaceFromPairs, type GitAnswer, type KeepHostPorts } from "../src/rite-keep-host.js";
 import { KeepRefused } from "../src/rite-keep.js";
+import type { ShoreFlushReading } from "../src/shore-core.js";
 import { readOrMintDevice, sessionSources, type SessionSources } from "../src/keep-sessions.js";
 import { keepSessionsOn } from "../src/keep-config.js";
 import { keepPlan } from "../src/commands/rite.js";
@@ -625,5 +626,45 @@ describe("the keep rite, host half", () => {
     const line = r.said.find((l) => l.startsWith("keep: vessel-locked"));
     expect(line).toBe("keep: vessel-locked: run `lares vault unlock`, then run again");
     expect(String((out.data as { message?: unknown }).message)).not.toMatch(/vessel-locked: vessel-locked/);
+  });
+});
+
+describe("the keep rite flushes every shore before the cut", () => {
+  const reading = (over: Partial<ShoreFlushReading> = {}): ShoreFlushReading => ({
+    islands: [
+      { island: "daemon", answered: true, written: [{ uri: "lar:///a.b.c/one" }], writtenCount: 1, unwritten: [], unwrittenCount: 0, fileWrites: 1, drained: true },
+      { island: "wiki:home", answered: true, written: [], writtenCount: 0, unwritten: [], unwrittenCount: 0, fileWrites: 0, drained: true },
+      { island: "wiki:notes", answered: true, written: [{ uri: "lar:///a.b.c/two" }], writtenCount: 1, unwritten: [], unwrittenCount: 0, fileWrites: 1, drained: true },
+    ],
+    whole: true, ...over,
+  });
+
+  test("KF1 RED: the keep asks `lares shore flush` before the vessel cuts and says what every island wrote, a resident wiki beyond the active one among them; no reach gap rides the lines", async () => {
+    const r = rig();
+    const order: string[] = [];
+    const row = r.ports.row;
+    const out = await riteKeepHost({ ...r.ports, flush: async () => { order.push("flush"); return reading(); }, row: async (verb, args) => { order.push(verb); return row(verb, args); } }, { workspace: "backup" });
+    expect(out.code).toBe(0);
+    expect(order.slice(0, 2)).toEqual(["flush", "keep-cut"]);
+    const said = r.said.join("\n");
+    expect(said).toMatch(/keep: the shore's flush: daemon wrote 1 owed carrier\(s\)/);
+    expect(said).toMatch(/keep: the shore's flush: wiki:notes wrote 1 owed carrier\(s\)/);
+    expect(said).not.toMatch(/outside this door's reach|active wiki alone/);
+    expect(out.data["shore"]).toMatchObject({ whole: true });
+  });
+
+  test("KF2 RED: a flush that leaves carriers unwritten, or answers nothing, names that and the keep goes on as it would", async () => {
+    const r = rig();
+    const strands = reading({ whole: false, islands: [{ island: "wiki", answered: true, written: [], writtenCount: 0, unwritten: [{ state: "failed", uri: "lar:///a.b.c/stuck", why: "its reconcile threw" }], unwrittenCount: 1, fileWrites: 0, drained: true }, { island: "daemon", answered: false, refusal: "unanswered", why: "timed out" }] });
+    const out = await riteKeepHost({ ...r.ports, flush: async () => strands }, { workspace: "backup" });
+    expect(out.code).toBe(0);
+    const said = r.said.join("\n");
+    expect(said).toMatch(/keep: the shore's flush: wiki wrote 0 owed carrier\(s\); 1 left unwritten: failed lar:\/\/\/a\.b\.c\/stuck \(its reconcile threw\)/);
+    expect(said).toMatch(/keep: the shore's flush: daemon did not answer: unanswered: timed out/);
+    expect(said).toMatch(/the bundle cuts from the records, and those mirrors stay behind/);
+    const r2 = rig({ at: join(scratch, "second") });
+    const quiet = await riteKeepHost({ ...r2.ports, flush: async () => null }, { workspace: "backup" });
+    expect(quiet.code).toBe(0);
+    expect(r2.said.join("\n")).toMatch(/keep: the shore's flush answered nothing \(`lares shore flush` reads it\); the keep goes on/);
   });
 });

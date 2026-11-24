@@ -242,26 +242,34 @@ function fleetStores() {
   return { petnames: makeFleetPetnameStore(sealedPetnameStore()), declarations: makeFleetDeclarationStore(sealedDeclarationStore()) };
 }
 
+/**
+ * ONE FACE'S STAGE READ (`kahua-read`, list), as the bundle reads a face: its relation, its standing heads and whether it stands as
+ * the daemon mount. A lit face whose stage would not read here answers `stage: "unread"` beside the relation the composition
+ * proved it under (`litRelation`): it keeps that relation, so its root reads claimed, and its stage reads refused by the cause.
+ */
+export function faceStageRead(output: Readonly<Record<string, unknown>>): Pick<BundleVesselFace, "relation" | "kahua" | "kahuaRefusal" | "mounted"> {
+  const relation = typeof output["relation"] === "string" ? output["relation"] : null;
+  const mounted = typeof output["mounted"] === "boolean" ? { mounted: output["mounted"] } : {};
+  if (output["stage"] === "unread") return { relation, kahua: null, kahuaRefusal: typeof output["unread"] === "string" ? output["unread"] : "the face's stage would not read", ...mounted };
+  const items = Array.isArray(output["items"]) ? (output["items"] as Array<{ heads?: unknown }>) : [];
+  const kahua = items.flatMap((item) => (Array.isArray(item.heads) ? item.heads as BundleKahuaHead[] : []))
+    .map((h) => ({ title: h.title, cid: h.cid, text: h.text, fields: { ...h.fields }, taint: [...h.taint], sources: h.sources.map((s) => ({ title: s.title, revision: s.revision })) }));
+  return { relation, kahua, ...mounted };
+}
+
 async function liveFaces(): Promise<BundleVesselFace[]> {
   const { petnames, declarations } = fleetStores();
   const out: BundleVesselFace[] = [];
   for (const { handleIndex } of (await readPersonaRoots()).roots) {
     const declaration = await declarations.get(handleIndex);
-    let kahua: BundleKahuaHead[] | null = null, relation: string | null = null, kahuaRefusal: string | undefined, kahuaRefusalCode: string | undefined, mounted: boolean | undefined;
-    try {
-      const { output } = await storeVerb("kahua-read", { face: handleIndex, action: "list" });
-      relation = typeof output["relation"] === "string" ? output["relation"] : null;
-      if (typeof output["mounted"] === "boolean") mounted = output["mounted"];
-      const items = Array.isArray(output["items"]) ? (output["items"] as Array<{ heads?: unknown }>) : [];
-      kahua = items.flatMap((item) => (Array.isArray(item.heads) ? item.heads as BundleKahuaHead[] : []))
-        .map((h) => ({ title: h.title, cid: h.cid, text: h.text, fields: { ...h.fields }, taint: [...h.taint], sources: h.sources.map((s) => ({ title: s.title, revision: s.revision })) }));
-    } catch (e) { kahuaRefusal = e instanceof Error ? e.message : String(e); kahuaRefusalCode = storeFailure(e).code; }
+    let read: Pick<BundleVesselFace, "relation" | "kahua" | "kahuaRefusal" | "kahuaRefusalCode" | "mounted">;
+    try { read = faceStageRead((await storeVerb("kahua-read", { face: handleIndex, action: "list" })).output); }
+    catch (e) { read = { relation: null, kahua: null, kahuaRefusal: e instanceof Error ? e.message : String(e), kahuaRefusalCode: storeFailure(e).code }; }
     out.push({
-      handleIndex, petname: (await petnames.get(handleIndex)) ?? null, relation,
+      handleIndex, petname: (await petnames.get(handleIndex)) ?? null,
       handle: declaration?.handle ?? null, seat: declaration?.seat === true,
       chair: declaration?.seat === true ? declaration.chair?.trim() || defaultChairLabel(handleIndex) : null,
-      kahua, ...(kahuaRefusal !== undefined ? { kahuaRefusal } : {}), ...(kahuaRefusalCode !== undefined ? { kahuaRefusalCode } : {}),
-      ...(mounted !== undefined ? { mounted } : {}),
+      ...read,
     });
   }
   // THE FACE LABELS: each named face's relation and pet-name rest in plaintext outside the hearth, so a lay after a
@@ -427,7 +435,11 @@ const isStray = (rel: string): boolean => rel.includes(".lar-tmp-");
 // ── export ─────────────────────────────────────────────────────────────────────────────────────────────────────
 
 /** What an export wrote. */
-export interface HouseExportResult { readonly dest: string; readonly manifest: BundleManifest }
+export interface HouseExportResult {
+  readonly dest: string; readonly manifest: BundleManifest;
+  /** The faces (by handle index) whose standing heads stayed behind: the house's own terminal names them, the manifest never. */
+  readonly unreadFaces: readonly number[];
+}
 
 /**
  * Write a bundle at `dest`. Throws {@link BundleRefused} naming what stays unsettled, unclaimed or unkeyed; with
@@ -453,6 +465,7 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
   if (inside(repoRoot, target)) throw new BundleRefused("carry-dest-inside-workspace", `${target} stands inside the workspace ${repoRoot}; a bundle holds private memory and never rests in a tracked tree`);
   if (existsSync(target)) throw new BundleRefused("carry-dest-stands", `${target} already stands; name a fresh path, and the export never writes over one`);
   const omissions: BundleOmission[] = [];
+  const unreadFaces: number[] = [];
 
   // A SETTLED PROJECTION FIRST: what the census names would leave out of the copy.
   const census = await doors.census();
@@ -496,9 +509,11 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
     if (carries(f) && (f.petname === null || f.petname.trim() === "")) throw new BundleRefused("carry-face-unnamed", `the face at h${f.handleIndex} carries memory and no pet-name, and a bundle keys each face by its pet-name: name it (\`lares persona new ${f.handleIndex} --name '<label>'\`) and export again`);
     if (f.kahuaRefusal !== undefined && f.relation === null && !acceptOmissions) throw new BundleRefused("carry-face-unread", `the face at h${f.handleIndex} would not read its stage or relation (${f.kahuaRefusal}); unlock it, or export with --accept-omissions to leave its memory behind`);
     if (f.kahuaRefusal !== undefined) {
-      // THE FACE BY COUNT: its handle index and the stage's own refusal text name the face, and the bundle crosses to a remote.
+      // THE FACE BY COUNT: its handle index and the stage's own refusal text name the face, and the bundle crosses to a remote, so
+      // the manifest counts and the house's own terminal names it (`unreadFaces`). Its stage files on disk still travel.
+      unreadFaces.push(f.handleIndex);
       const at = omissions.find((o) => o.kind === "face-unread");
-      if (at === undefined) omissions.push({ kind: "face-unread", detail: "a face would not read its stage, so its stage stays behind: unlock each face and export again", count: 1 });
+      if (at === undefined) omissions.push({ kind: "face-unread", detail: "a face would not read its live stage, so its standing heads stay behind (its files travel): unlock each face and export again", count: 1 });
       else omissions[omissions.indexOf(at)] = { ...at, count: (at.count ?? 1) + 1 };
     }
   }
@@ -638,7 +653,7 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
   // A COLD WIKI'S PUTS RIDE NO MIRROR (cabal-realm#/the-workbench, OWED): the copy reads disk, so it names what disk cannot show.
   const woken = new Set(opts.woken ?? []);
   const cold = (doors.coldWikis ? await doors.coldWikis().catch(() => [] as readonly string[]) : []).filter((slug) => !woken.has(slug));
-  if (cold.length > 0) omissions.push({ kind: "cold-wikis", detail: `${[...cold].sort().join(", ")} stand${cold.length === 1 ? "s" : ""} cold (no island mounts ${cold.length === 1 ? "it" : "them"} now): a page a face put into a cold wiki since its last wake rests in its layer and projected nowhere, so no such page travels. Wearing each face that wrote there, wake the wiki (\`lares wiki hold <slug>\`), then export again`, items: [...cold].sort(), count: cold.length });
+  if (cold.length > 0) omissions.push({ kind: "cold-wikis", detail: `${[...cold].sort().join(", ")} stand${cold.length === 1 ? "s" : ""} cold (no island mounts ${cold.length === 1 ? "it" : "them"} now): a page a face put into a cold wiki since its last wake rests in its layer and projected nowhere, so no such page travels. Wearing each face that wrote there, wake the wiki (\`lares wiki pin <slug> --rotate\`), then export again`, items: [...cold].sort(), count: cold.length });
   // A WIKI THAT HOLDS NO PAGE carries by its catalog row alone; a sourced wiki rides git with its canon, and the daemon wiki is each face's own.
   let userWikis: string[] = [];
   if (doors.userWikis) {
@@ -711,7 +726,7 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
     readBundleSeat(verified);
     const opened = rosterView(verified, redeclare);
     renameSync(staging, target);
-    return { dest: target, manifest: opened.manifest };
+    return { dest: target, manifest: opened.manifest, unreadFaces };
   } catch (e) {
     rmSync(staging, { recursive: true, force: true });
     throw e;

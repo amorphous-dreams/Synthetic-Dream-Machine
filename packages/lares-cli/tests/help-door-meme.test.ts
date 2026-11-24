@@ -12,7 +12,7 @@
  *      one home and the refusal path draws from it.
  *
  * The registry stays PURE DATA: no `node:fs`, no imports, so any vessel that can hold the module can read
- * the door. The `--meme` reach rides the daemon verb rail (`lares meme get`), never a file read.
+ * the door. The `--meme` reach rides the one read door (`lares tiddler get --meme`), never a file read.
  */
 import { describe, test, expect, vi, afterEach } from "vitest";
 import { readFileSync, readdirSync } from "node:fs";
@@ -47,9 +47,9 @@ describe("★ the help registry names the meme behind each verb door ★", () =>
   test("store usage and examples require an explicit container", () => {
     const meme = COMMAND_HELP.meme!;
     expect(meme.usage).toContain("(--recipe <slug> | --bag <slug>)");
-    for (const verb of ["get", "put", "list", "delete"]) {
-      const example = meme.examples?.find((line) => new RegExp(`\\blares meme ${verb}\\b`).test(line));
-      expect(example, `${verb} example`).toMatch(/--(?:recipe|bag)\s+\S+/);
+    // The family verbs moved to the tiddler door: no meme example teaches a retired spelling.
+    for (const verb of ["put", "patch", "list", "delete"]) {
+      expect(meme.examples?.some((line) => new RegExp(`\\blares meme ${verb}\\b`).test(line)), `meme ${verb} example`).toBe(false);
     }
     expect(meme.synopsis).not.toMatch(/anchor|default wiki/i);
     const summary = COMMANDS.find((command) => command.name === "meme")!.summary;
@@ -147,7 +147,7 @@ describe("★ `--help --meme` reaches the wiki through the meme rail ★", () =>
     vi.spyOn(console, "error").mockImplementation((...a: unknown[]) => { errs.push(a.map(String).join(" ")); });
     vi.spyOn(console, "log").mockImplementation(() => {});
     vi.spyOn(process.stdout, "write").mockImplementation(() => true);
-    const code = await dispatch(["raise", "--help", "--meme"]);
+    const code = await dispatch(["persona", "raise-sign", "--help", "--meme"]);
     expect(code, "naming no meme is not a failure").toBe(0);
     expect(errs.join("\n")).toMatch(/names no meme/i);
   });
@@ -162,7 +162,7 @@ describe("★ `--help --meme` reaches the wiki through the meme rail ★", () =>
     );
     expect(code).toBe(0);
     expect(seen, "the help path never wrote a second meme reader").toHaveLength(1);
-    expect(seen[0]!.command).toBe("meme");
+    expect(seen[0]!.command).toBe("tiddler");
     expect(seen[0]!.positional).toEqual(["get", "lar:///ha.ka.ba/lares/cli/vessel-door"]);
     expect(seen[0]!.options).toEqual({ recipe: "lares" });
   });
@@ -173,8 +173,8 @@ describe("★ `--help --meme` reaches the wiki through the meme rail ★", () =>
     const push = async (a: { flags: Readonly<Record<string, boolean>> }) => { seen.push(a); return 0; };
     await reachHelpMeme("vessel", { command: "vessel", positional: [], options: {}, flags: { help: true, meme: true, json: true } }, push);
     await reachHelpMeme("vessel", { command: "vessel", positional: [], options: {}, flags: { help: true, meme: true } }, push);
-    expect(seen[0]!.flags).toEqual({ json: true });
-    expect(seen[1]!.flags, "CONTROL — nothing invents a --json the operator never typed").toEqual({});
+    expect(seen[0]!.flags).toEqual({ meme: true, all: true, json: true });
+    expect(seen[1]!.flags, "CONTROL — nothing invents a --json the operator never typed").toEqual({ meme: true, all: true });
   });
 
   test("CONTROL — a plain `--help` (no `--meme`) touches the meme rail not at all", async () => {

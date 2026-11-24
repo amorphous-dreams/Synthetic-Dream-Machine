@@ -346,6 +346,22 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
     } finally { await v.teardown(); }
   });
 
+  test("a wiki-action request replays its first receipt and a fresh request dispatches anew", async () => {
+    const counter = { n: 0 };
+    const v = await Vessel.boot({ placeVerbImpl: doneWorker(counter) });
+    try {
+      const args = { recipe: "default", name: "sidebar-layout", expected: "fixed-fluid", resulting: "fluid-fixed" };
+      const first = { verb: "wiki-action", args, requestedBy: "did:key:test", requestId: "wiki-action-first" };
+      expect((await sendLine(v.socketPath, first))["status"]).toBe("done");
+      await v.restart();
+      expect((await sendLine(v.socketPath, first))["status"]).toBe("done");
+      expect(counter.n).toBe(1);
+      expect((await sendLine(v.socketPath, { op: "receipt", requestId: first.requestId }))["state"]).toBe("done");
+      expect((await sendLine(v.socketPath, { ...first, requestId: "wiki-action-fresh" }))["status"]).toBe("done");
+      expect(counter.n).toBe(2);
+    } finally { await v.teardown(); }
+  });
+
   test("a fresh ledger reads receipts only from the control document", async () => {
     const v = await Vessel.boot({ placeVerbImpl: () => {} });
     try {
@@ -957,6 +973,46 @@ describe("the receipt ring bounds BYTES as well as count", () => {
     expect(await stateOf(b, 2)).toBe("torn");
     expect(await b.ledger.arbitrate(ID(2), DIGEST(2))).toEqual({ verdict: "refuse", reason: "receipt-fact-torn" });
     expect(await b.ledger.arbitrate(ID(1), DIGEST(1))).toEqual({ verdict: "refuse", reason: "already-committed" });
+    await s.repo.shutdown();
+  });
+
+  /** A committed fact an ended life wrote under the retired counter: it names `boot-epoch` and no `life`, so it reads torn. */
+  const epochFact = (n: number, seq: number) => ({
+    tiddler: { title: `${RECEIPT_FACT_URI_PREFIX}${ID(n)}`, "request-id": ID(n), state: "committed", seq: String(seq), "input-digest": DIGEST(n), "boot-epoch": "3" },
+    meta: { authority: "lares-daemon-channel" },
+  });
+
+  test("★ A TORN FACT LEAVES THE RING BY COUNT: a committed fact carrying only the retired boot-epoch reads torn, then past the count bound reads evicted (retention-gap), its body tombstoned, and a restart reads it evicted ★", async () => {
+    const s = stores();
+    const seed = s.ledgerAt(WEIGHT * 100, 2);
+    await seed.composite.put(epochFact(1, 0) as never, ORIGIN);
+    await seed.composite.put(outcomeOf(1), ORIGIN, { bag: DAEMON_BAG_ID });
+    const b = s.ledgerAt(WEIGHT * 100, 2);
+    expect(await stateOf(b, 1)).toBe("torn");
+    expect(await b.ledger.arbitrate(ID(1), DIGEST(1))).toEqual({ verdict: "refuse", reason: "receipt-fact-torn" });
+    await land(b, 2);
+    expect(await stateOf(b, 1), "within the bound the torn fact stands, never guessed").toBe("torn");
+    await land(b, 3);
+    expect(await Promise.all([1, 2, 3].map((n) => stateOf(b, n)))).toEqual(["evicted", "done", "done"]);
+    expect(await b.ledger.arbitrate(ID(1), DIGEST(1))).toEqual({ verdict: "refuse", reason: "retention-gap" });
+    expect(await keptOutcome(b, 1), "the torn id's body left with it").toBe(false);
+    const fields = plainRecord(s.workingHandle.doc()!.tiddlers[`${RECEIPT_FACT_URI_PREFIX}${ID(1)}`]!).tiddler as Record<string, unknown>;
+    expect(fields).toMatchObject({ state: "evicted", seq: "0", "input-digest": DIGEST(1) });
+    expect(fields["boot-epoch"], "the retired field leaves with the rewrite").toBeUndefined();
+    const again = s.ledgerAt(WEIGHT * 100, 2);
+    expect(await stateOf(again, 1)).toBe("evicted");
+    await s.repo.shutdown();
+  });
+
+  test("A TORN FACT LEAVES THE RING BY COUNT at seed: a boot whose bound the torn facts already pass evicts the oldest first; a torn record with no readable seq stays torn (it holds no place in the order)", async () => {
+    const s = stores();
+    const seed = s.ledgerAt(WEIGHT * 100, 1);
+    await seed.composite.put(epochFact(1, 0) as never, ORIGIN);
+    await seed.composite.put(epochFact(2, 1) as never, ORIGIN);
+    const seqless = epochFact(3, 0);
+    await seed.composite.put({ ...seqless, tiddler: { ...seqless.tiddler, seq: "unread" } } as never, ORIGIN);
+    const b = s.ledgerAt(WEIGHT * 100, 1);
+    expect(await Promise.all([1, 2, 3].map((n) => stateOf(b, n)))).toEqual(["evicted", "torn", "torn"]);
     await s.repo.shutdown();
   });
 

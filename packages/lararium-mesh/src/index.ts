@@ -38,6 +38,7 @@ export * from "./stored-value.js";
 export * from "./stored-record.js";
 export * from "./catalog-entry.js";
 export * from "./floor-manifest.js";
+export * from "./floor-drift.js";
 export * from "./floor-offering.js";
 export * from "./cas.js";
 export * from "./lar-camera.js";
@@ -81,9 +82,11 @@ export * from "./intent-entry.js";
 export * from "./intent-verbs.js";
 export * from "./intent-read.js";
 export * from "./intent-view.js";
+export * from "./hearth-roster.js";
 export * from "./intent-issue.js";
 export * from "./ward-cosign.js";
 export * from "./ward-cosign-gate.js";
+export * from "./keeper-cosign.js";
 export * from "./ward-answer.js";
 export * from "./vessel-face-tag.js";
 export * from "./kahua-stage.js";
@@ -115,6 +118,7 @@ export * from "./lease-advance.js";
 export * from "./charter-hand-lineage.js";
 export * from "./quorum-lease.js";
 export * from "./face-boot-proof.js";
+export * from "./sibling-plane-mount.js";
 export * from "./face-reading.js";
 export * from "./join-face-documents.js";
 export * from "./edge-frontier-board.js";
@@ -185,8 +189,11 @@ export * from "./capture-nalu.js";
 export * from "./capture/capture-engine.js";
 export * from "./projection-nalu.js";
 export * from "./host-task.js";
+export * from "./wave-crest.js";
+export * from "./ingest-wave-budget.js";
 export * from "./iris.js";
 export * from "./lent-faces.js";
+export * from "./cross-face-reach.js";
 export * from "./chore-ask.js";
 export * from "./gate-tuning.js";
 export * from "./lar-event-bus.js";
@@ -244,7 +251,7 @@ export type {
 export {
   sealChunk, openChunk, authorizeAddress, sealedAddressOf, keyVersionIdOf, contextDigest, mintContentKey,
   readContentKey, readKeyVersionId, readSealedAddress, isChunkRole, sealedImage, readSealedImage, isWellFormedText,
-  CHUNK_ROLES, ADDRESS_SOURCES, SEAL_REFUSALS, OPEN_REFUSALS, CONTENT_KEY_LEN, SEALED_HEADER_LEN, SEALED_SEGMENT_LEN, SEALED_TAG_LEN, SEALED_CHUNK_MARK, SEALED_MARK_LEN,
+  CHUNK_ROLES, ADDRESS_SOURCES, SEAL_REFUSALS, OPEN_REFUSALS, CONTENT_KEY_LEN, SEALED_HEADER_LEN, SEALED_SEGMENT_LEN, SEALED_TAG_LEN, SEALED_CHUNK_MARK, SEALED_MARK_LEN, SEALED_VALUE_POINTER, namesSealedPointer, bearsSealedMark,
 } from "./sealed-chunk.js";
 export type {
   ContentKey, KeyVersionId, SealedAddress, ChunkRole, SealContext, AuthorizedAddress, AddressSource,
@@ -299,6 +306,7 @@ export * from "./residency-actions.js";
 export * from "./verb-refusal.js";
 export * from "./content-handle.js";
 export * from "./effect-record.js";
+export * from "./shell-leaving-record.js";
 export * from "./kumu-device.js";
 export * from "./genesis-doc.js";
 export * from "./genesis-compare.js";
@@ -330,7 +338,7 @@ export { assembleVessel, mountWikiSlot } from "./open-vessel-core.js";
 export type { VesselKeel, VesselBootstrap, VesselCoreAssembly, MountManifest, MountEntry } from "./open-vessel-core.js";
 export { awaitIslandMsg } from "./vessel-host.js";
 export type { AwaitIslandMsgOpts, VesselWorkerHandle, VesselIslandHost } from "./vessel-host.js";
-export { VesselIslandPoolCore } from "./vessel-island-pool-core.js";
+export { VesselIslandPoolCore, resolveDiskMirrors } from "./vessel-island-pool-core.js";
 export { makeWikiActivationCap } from "./wiki-activation.js";
 export type { WikiActivationCap, WikiActivationGrant, ActivationResidency, ActivationPool, ResolveWikiSpec, WikiActivationResult, WikiSpecResolution } from "./wiki-activation.js";
 export type { VesselIslandPoolCoreOptions, VesselRestState, DiskMirrorGrant } from "./vessel-island-pool-core.js";
@@ -496,6 +504,7 @@ export * from "./chartered-classes.js";
 export * from "./promotion-approval.js";
 export * from "./kahu-cabal-admission.js";
 export * from "./kahu-canon-reach.js";
+export * from "./tw5-docs-name.js";
 export * from "./executable-class.js";
 export * from "./seat-startup-offer.js";
 export * from "./rendered-derives.js";
@@ -617,7 +626,7 @@ export * from "./pack-provenance.js";
 
 // One boot-time doc resolver for both vessels — races local readiness, then MERGES a late remote
 // into the fallback rather than dropping it.
-export { waitHandle, LOCAL_READY_MS } from "./wait-handle.js";
+export { waitHandle, nameDocumentFor, nameDerivedDocument, LOCAL_READY_MS, seatSealedRest, sealedLoadEnding, type SealedRestDoor, type SealedSettlement, type SealedLoadEnding } from "./wait-handle.js";
 
 // The registered bag set, derived from the persona BINDING — founded stays private, admitted carries the fleet's.
 export type { FleetMembership, RegisterBagsInput } from "./register-bags.js";
@@ -714,3 +723,5 @@ export * from "./promote-panel-api.js";
 export * from "./promote-main-verbs.js";
 export * from "./share-config.js";
 export * from "./face-label.js";
+export * from "./secret-shapes.js";
+export * from "./attempt-budget.js";

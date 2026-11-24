@@ -10,8 +10,9 @@
  *   put (three slots)        → one carrier file; no orphan folder; no flag            (CONTROL)
  *   delete                   → the family leaves whole; the carrier file leaves; nothing orphaned
  *   LOAD of a lone slot      → the child lands with no root above it: `<stem>.orphans/<slot>.tid` appears in
- *                              the daemon wiki's folder and the flag reads back through the wiki
- *   put (the root returns)   → the slot re-roots: the folder leaves and the flag clears
+ *                              the daemon wiki's folder and the flag reads back through the one read door
+ *                              (`tiddler get`: a house alert reads, though the rest of `$:/temp` stays home)
+ *   put (the root returns)   → the slot re-roots: the folder leaves and the flag clears, read through the same door
  *
  * A staged hearth holds no bare single-title delete door yet (the tiddler door lands it), so the orphan
  * arrives the second way the field makes one: a lone child landing by ingest.
@@ -47,6 +48,13 @@ function missing(): string[] {
   return out;
 }
 const said = (r: { stdout: string; stderr: string }): string => `${r.stdout}\n${r.stderr}`;
+/** The orphan flag as the one read door answers it: its fields where it stands, null where none stands. */
+const flagOf = (r: { json?: Record<string, unknown> | null; stdout: string; stderr: string }): Record<string, unknown> | null => {
+  // An absent title answers `not-found` with `tiddler: null`; any other refusal (a withhold among them) fails the walk.
+  const code = (r.json?.["error"] as { code?: unknown } | undefined)?.code;
+  if (r.json?.["ok"] !== true && code !== "not-found") throw new Error(`the read door refused the flag: ${said(r)}`);
+  return (((r.json?.["data"] ?? {}) as Record<string, unknown>)["tiddler"] as { fields?: Record<string, unknown> } | null)?.fields ?? null;
+};
 
 /** Wait for a condition the projector reaches on its own turn. */
 async function until(holds: () => boolean, timeoutMs = 30_000): Promise<boolean> {
@@ -90,18 +98,18 @@ describe.skipIf(gaps.length > 0)("★ the orphan gradient on a staged hearth ★
   afterAll(async () => { if (lar) await lar.stop(); });
 
   test("CONTROL: a meme with three slots projects ONE carrier file, no orphan folder, and raises no flag", async () => {
-    const r = await lar.cli(["meme", "put", URI, ...ANCHOR, "--file", join(scratch, "abc.mem"), "--json"]);
+    const r = await lar.cli(["tiddler", "put", "--meme", URI, ...ANCHOR, "--file", join(scratch, "abc.mem"), "--json"]);
     expect(r.json?.["ok"], said(r)).toBe(true);
     expect(((r.json?.["data"] as Record<string, unknown>)["landed"] as string[]).sort()).toEqual([URI, `${URI}#/a`, `${URI}#/b`, `${URI}#/c`]);
     expect(await until(() => existsSync(join(mirror, `${PATH}.mem`))), `no carrier file under ${mirror}: ${JSON.stringify(walkFiles())}`).toBe(true);
     console.error(`[walk] after put: ${JSON.stringify(walkFiles())}`);
     expect(walkFiles()).toEqual([`${PATH}.mem`]);
-    const flag = await lar.cli(["meme", "get", FLAG, ...ANCHOR, "--json"]);
-    expect(flag.json?.["ok"], "a whole family raises no flag").toBe(false);
+    // The flag, a house alert, reads through the one door: none stands over a whole family.
+    expect(flagOf(await lar.cli(["tiddler", "get", FLAG, ...ANCHOR, "--json"])), "no orphan flag over a whole family").toBeNull();
   });
 
   test("★ a delete takes the family whole: the answer names root and slots, the carrier file leaves, nothing orphans ★", async () => {
-    const r = await lar.cli(["meme", "delete", URI, ...ANCHOR, "--json"]);
+    const r = await lar.cli(["tiddler", "delete", "--meme", URI, ...ANCHOR, "--json"]);
     expect(r.json?.["ok"], said(r)).toBe(true);
     const d = r.json?.["data"] as Record<string, unknown>;
     console.error(`[walk] delete answered: ${JSON.stringify({ decision: d["decision"], tombstoned: d["tombstoned"] })}`);
@@ -125,20 +133,23 @@ describe.skipIf(gaps.length > 0)("★ the orphan gradient on a staged hearth ★
     console.error(`[walk] ${PATH}.orphans/a.tid reads:\n${readFileSync(orphanFile, "utf8")}`);
     expect(readFileSync(orphanFile, "utf8")).toContain(`title: ${URI}#/a`);
     expect(readFileSync(orphanFile, "utf8")).toContain("an orphaned slot body");
-    const flag = await lar.cli(["meme", "get", FLAG, ...ANCHOR, "--json"]);
-    console.error(`[walk] the flag reads: ${JSON.stringify((flag.json?.["data"] as Record<string, unknown> | undefined)?.["text"] ?? flag.json)}`);
-    expect(flag.json?.["ok"], said(flag)).toBe(true);
-    expect(String((flag.json?.["data"] as Record<string, unknown>)["text"])).toContain(`${URI}#/a`);
+    // THE OUTSIDE READ OF THE FLAG: the wiki's orphan alert reads through the one door (a house alert, the named exception to
+    // `$:/temp` staying home), beside the `<stem>.orphans/` folder above.
+    let flag: Record<string, unknown> | null = null;
+    for (let tries = 0; tries < 20 && flag === null; tries++) {
+      flag = flagOf(await lar.cli(["tiddler", "get", FLAG, ...ANCHOR, "--json"]));
+      if (flag === null) await new Promise((r) => setTimeout(r, 500));
+    }
+    expect(flag, "the orphan flag reads through the one door").not.toBeNull();
+    expect(String(flag!["title"])).toBe(FLAG);
   });
 
   test("★ the root returns: the slot re-roots, the orphan folder leaves and the flag clears ★", async () => {
-    const r = await lar.cli(["meme", "put", URI, ...ANCHOR, "--file", join(scratch, "abc.mem"), "--json"]);
+    const r = await lar.cli(["tiddler", "put", "--meme", URI, ...ANCHOR, "--file", join(scratch, "abc.mem"), "--json"]);
     expect(r.json?.["ok"], said(r)).toBe(true);
     expect(await until(() => existsSync(join(mirror, `${PATH}.mem`)) && !existsSync(join(mirror, `${PATH}.orphans`))), `the folder stayed: ${JSON.stringify(walkFiles())}`).toBe(true);
     console.error(`[walk] after the root returned: ${JSON.stringify(walkFiles())}`);
-    // The pass that removes the folder clears the flag first, so a folder that left names a flag that left.
-    const flag = await lar.cli(["meme", "get", FLAG, ...ANCHOR, "--json"]);
-    console.error(`[walk] the flag after the return: ${JSON.stringify(flag.json?.["error"] ?? flag.json?.["data"])}`);
-    expect(flag.json?.["ok"], "the flag clears with the folder").toBe(false);
+    // The pass that removes the folder clears the flag first, so a folder that left names a flag that left: the door reads none.
+    expect(flagOf(await lar.cli(["tiddler", "get", FLAG, ...ANCHOR, "--json"])), "the flag cleared with the folder").toBeNull();
   });
 });

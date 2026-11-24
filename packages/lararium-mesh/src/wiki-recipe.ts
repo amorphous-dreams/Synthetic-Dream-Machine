@@ -257,13 +257,13 @@ export interface WikiRecipe {
    * M2 — a `plugin-offerings` field this record cannot honestly parse (a bare number, an array
    * carrying a non-string entry, or any other shape `parsePluginOfferings` refuses) names its OWN
    * refusal here instead of THROWING `recipeFromRecord` itself. A throw there bricks every caller
-   * equally — the vessel's primary mount at boot, the grain swap, and `meme get`'s bag-cascade
+   * equally — the vessel's primary mount at boot, the grain swap, and the meme read's bag-cascade
    * walk — even though a torn plugin field belongs to THIS wiki's plugin resolution alone, never
    * to its bag reads or to the vessel as a whole.
    *
    * Present → the resolver (`node-plugin-resolution.ts`'s `resolveNodeIslandPluginCids`) refuses
    * THIS wiki's mount by name (`malformed-offerings-field`), and nothing else in the cascade
-   * notices: `expandRecipe` and `meme get`'s walk read the library bags exactly as they would with
+   * notices: `expandRecipe` and the meme read's walk read the library bags exactly as they would with
    * no fault at all. Absent = this record's `plugin-offerings` field parsed cleanly (whether it
    * named offerings or none).
    */

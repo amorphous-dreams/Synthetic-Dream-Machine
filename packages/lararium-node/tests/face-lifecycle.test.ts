@@ -1,5 +1,9 @@
 import { describe, expect, test } from "vitest";
+import { actCid, buildIntent, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, faceIntentVerbs, intentEntryRecordsOfGroup, intentId, mintPersonaInception,
+  signPersonaAct, writeIntentEntry, type DocHandle, type LarDoc } from "@lararium/mesh";
+import { makeFaceIntentDoor } from "@lararium/keyhive";
 import { drainPlans, faceLives, type FaceLifeEffects, type FaceLit } from "../src/face-lifecycle.js";
+import { taggedAdmission } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
 interface Deferred<T> { readonly promise: Promise<T>; resolve(value: T): void; reject(error: unknown): void }
 function deferred<T = void>(): Deferred<T> {
@@ -327,7 +331,7 @@ describe("each face lives one life: the lifecycle actor", () => {
     await lit(t2, 2);
     const loose = t2.lives.closeAll("the composition stands down");
     t2.drains.get(2)!.reject(new Error("seal refused"));
-    await expect(loose).resolves.toBeUndefined();
+    await expect(loose, "a stand-down carries on, and says the close was not whole").resolves.toEqual({ whole: false });
   });
 
   test("a close naming another custody opening holds nothing: the face keeps standing and a later dark lights again", async () => {
@@ -416,5 +420,84 @@ describe("each face lives one life: the lifecycle actor", () => {
     t.lights.get(1)!.resolve({ atomKey: "k1", custody: null });
     expect(await again).toBe("lit");
     expect(t.lives.refusedLights()).toEqual([]);
+  });
+});
+
+describe("the face gate feeds its intent door (vota answer on a pass the face admits)", () => {
+  const signer = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(n)) });
+  const plane = () => {
+    const doc = { tiddlers: {} } as LarDoc, listeners = new Set<() => void>();
+    const handle = { doc: () => doc, change: (edit: (draft: LarDoc) => void) => { edit(doc); for (const listener of listeners) listener(); },
+      on: (_event: string, listener: () => void) => listeners.add(listener), off: (_event: string, listener: () => void) => listeners.delete(listener) } as unknown as DocHandle<LarDoc>;
+    return { doc, handle };
+  };
+  const faceOf = async () => {
+    const group = "synthetic-face", root = await signer(9), issuer = await signer(1), executor = await signer(2);
+    const inception = mintPersonaInception(`0x${root.key}`, "recovery");
+    const records = [] as Awaited<ReturnType<typeof signPersonaAct>>[];
+    for (const [act, fields] of [["founding", { personaKelPrefix: inception.prefix, rootCommitment: "root" }],
+      ["admission", { ...(await taggedAdmission(10, group, issuer.key)) }], ["admission", { ...(await taggedAdmission(11, group, executor.key)) }]] as const) {
+      const last = records.at(-1);
+      records.push(await signPersonaAct(last ? { seq: last.body.seq, cid: actCid(last.body) } : null, { group, act, epoch: 0, fields }, root));
+    }
+    return { group, issuer, executor, inception, records };
+  };
+  const word = async (f: Awaited<ReturnType<typeof faceOf>>, shared: ReturnType<typeof plane>, day: number) => {
+    const votum = await buildIntent({ group: f.group, signer: f.issuer, verb: "ddate", args: { today: { year: 2026, month: 11, day } }, nonce: "",
+      audience: { mode: "pinned", atom: f.executor.key }, verbs: faceIntentVerbs() });
+    shared.handle.change((doc) => writeIntentEntry(doc, votum));
+    return intentId(votum.body as unknown as { issuer: string; verb: string; args: unknown; nonce: string });
+  };
+  const outcomes = (shared: ReturnType<typeof plane>, group: string) =>
+    (intentEntryRecordsOfGroup(shared.doc, group) as { body: { entry: string; cause?: string } }[]).filter((r) => r.body.entry === "outcome").map((r) => r.body.cause);
+
+  test("RED: a dark face answers no votum; CONTROL: its lit pass answers one votum at a time, and a close waits out the one in flight and admits no next; POSITIVE: the relight's pass answers what waited, and nothing twice", async () => {
+    const t = island(), f = await faceOf(), shared = plane();
+    const held: Deferred<Record<string, unknown>>[] = [];
+    let inFlight = 0, most = 0;
+    const effect = async (): Promise<Record<string, unknown>> => {
+      inFlight++; most = Math.max(most, inFlight);
+      const d = deferred<Record<string, unknown>>(); held.push(d);
+      try { return await d.promise; } finally { inFlight--; }
+    };
+    const until = async (ready: () => boolean): Promise<void> => { for (let i = 0; i < 500 && !ready(); i++) await new Promise((r) => setImmediate(r)); };
+    // The door asks the face's actor for each answer's turn (`admitWork`): a dark or closing face admits none.
+    const door = makeFaceIntentDoor({ group: f.group, atom: f.executor, plane: shared.handle, personaRecords: () => f.records, kelChain: () => [f.inception],
+      standing: () => "stands", verbs: faceIntentVerbs(), runDeclaredEffect: effect, admitTurn: () => t.lives.admitWork(1), log: () => {} });
+    const first = await word(f, shared, 21), second = await word(f, shared, 22);
+    await door.heed();
+    expect(held).toHaveLength(0);
+    // THE LIT PASS: the light settles, and the face gate admits a pass that heeds its door.
+    await lit(t, 1);
+    const pass = door.heed();
+    await until(() => held.length === 1);
+    expect(held).toHaveLength(1);
+    const closed = t.lives.close(1, "lock");
+    await settle();
+    expect(t.events, "the close waits out the votum in flight").not.toContain("drain h1");
+    held[0]!.resolve({ text: "one" });
+    await pass;
+    expect(held, "a closing face admits no next votum").toHaveLength(1);
+    const [answered] = outcomes(shared, f.group);
+    expect(outcomes(shared, f.group)).toHaveLength(1);
+    await until(() => t.events.includes("drain h1"));
+    expect(t.events).toContain("drain h1");
+    t.drains.get(1)!.resolve(); await closed;
+    t.drops.get(1)!.resolve(); await settle();
+    expect(t.lives.state(1).kind).toBe("dark");
+    // The answered votum worded again, then the relight's pass: the waiting votum answers, the answered one never twice.
+    expect(await word(f, shared, 21)).toBe(first);
+    expect(await word(f, shared, 22)).toBe(second);
+    await lit(t, 1);
+    const relit = door.heed();
+    await until(() => held.length === 2);
+    held[1]!.resolve({ text: "two" });
+    await relit;
+    await door.heed();
+    expect(held).toHaveLength(2);
+    expect(most, "one votum at a time").toBe(1);
+    expect(outcomes(shared, f.group)).toHaveLength(2);
+    expect(new Set(outcomes(shared, f.group))).toEqual(new Set([first, second]));
+    expect(outcomes(shared, f.group)[0]).toBe(answered);
   });
 });

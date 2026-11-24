@@ -180,6 +180,10 @@
       "import": "./dist/lent-faces.js",
       "types": "./dist/lent-faces.d.ts"
     },
+    "./cross-face-reach": {
+      "import": "./dist/cross-face-reach.js",
+      "types": "./dist/cross-face-reach.d.ts"
+    },
     "./chore-ask": {
       "import": "./dist/chore-ask.js",
       "types": "./dist/chore-ask.d.ts"
@@ -187,6 +191,10 @@
     "./host-task": {
       "import": "./dist/host-task.js",
       "types": "./dist/host-task.d.ts"
+    },
+    "./wave-crest": {
+      "import": "./dist/wave-crest.js",
+      "types": "./dist/wave-crest.d.ts"
     },
     "./tiddler-store": {
       "import": "./dist/tiddler-store.js",

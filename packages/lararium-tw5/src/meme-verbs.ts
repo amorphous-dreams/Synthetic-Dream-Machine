@@ -6,7 +6,7 @@
  *
  *   meme-put      { recipe?, bag?, uri, text, base? }   → PlaceMemeReceipt
  *   meme-get      { recipe?, bag?, uri }                → { uri, meme: { text, canonicalHash } | null }
- *   meme-patch    { recipe?, bag?, uri, slot, append | replace, base } → PlaceMemeReceipt & { slot } | { decision: absent }
+ *   meme-patch    { recipe?, bag?, uri, slot, append [base] | replace base } → PlaceMemeReceipt & { slot } | { decision: absent }
  *   meme-list     { recipe?, bag?, tree?, after?, limit? } → { bag | recipe, roots: MemeListing[], next }
  *   meme-delete   { recipe?, bag?, uri, base? }         → { uri, decision: removed|absent|conflict, tombstoned, retracted?, canonicalHash?, readFrom?, tombstonedIn?, unreached? }
  *   meme-project  { recipe?, bag?, uri, to, dialect?, tongue? } → { uri, to, text, contentType, meta? }
@@ -60,7 +60,8 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/meme-verbs
  */
 
-import { wearOf, refuseEffectLedgerWrite } from "@lararium/mesh";
+import { wearOf, refuseEffectLedgerWrite, refuseTw5DocsWrite } from "@lararium/mesh";
+import { staysHome } from "./stay-home.js";
 import {
   AutomergeDocStore, NoWorkingLayerRefusal, VerbRefusal, floorReadFace, isHouseCanonBag, refuseRenderedWrite, admitSeatExecutable, requireKahuReach, resolveHouseCanon, bagUri, designatedBagOf, expandRecipe, recipeFromRecord, wikiSlotKindOf, wikiSlotUri,
   REALM_ID_TIDDLER, realmDocPointer, realmDocUrl, realmStewardPointer, realmStandingPointer, readRealmStanding, mayWriteRealmBag, tiddlerText,
@@ -82,6 +83,17 @@ import { wikiWearsNext } from "./island-recipe.js";
 import type { LaresTw5Extension } from "./types/lares-globals.js";
 import type { VerbContext, VerbReactor } from "./verb-dispatcher.js";
 import { optionalStringArg, stringArg } from "./handler-args.js";
+import { grainOf, hasLine, param, memeBase, memeGradient, pageOfSlot, partialSpanOf, readBase } from "./read-gradient.js";
+
+/** Name the family source at the reactor that answered it. */
+function familyHas(name: string, source: Record<string, unknown>, kind: string): string {
+  const parts = [param("kind", kind)];
+  for (const key of ["recipe", "bag", "floor", "canonicalHash"]) {
+    const value = source[key];
+    if (typeof value === "string" || typeof value === "boolean") parts.push(param(key === "canonicalHash" ? "base" : key, value));
+  }
+  return hasLine(name, parts);
+}
 import { AUDIT_ARRAY_CAP } from "./verb-vm.js";
 import type { TiddlerFields } from "./deserializer.js";
 
@@ -494,10 +506,11 @@ async function resolveRead(
 export function makeMemePutReactor(opts: MemeVerbOptions): VerbReactor {
   return async (args, ctx) => {
     const target = readTarget(args, "meme-put");
+    refuseTw5DocsWrite(target.recipe, "meme put"); refuseTw5DocsWrite(target.bag, "meme put");
     refuseEffectLedgerWrite(target.uri, "meme put");
     const text = stringArg(args, "text");
     if (!text) throw new Error("meme-put: args.text is required (the whole meme, framed)");
-    const base = optionalStringArg(args, "base");
+    const base = readBase(optionalStringArg(args, "base"), "meme-put", true);
     const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };
     const { bag, sink, realmGrant } = await resolveSink(opts, target, origin, "put");
     await requireKahuReach(bag, opts.kahuReach, "meme put", ctx.asker);
@@ -537,35 +550,75 @@ export function makeMemePutReactor(opts: MemeVerbOptions): VerbReactor {
     // where the face holds no writer's seat in the wiki's workbench).
     const layer = target.recipe && target.recipe !== "default" ? wikiSlotKindOf(target.recipe, bag) : null;
     const landedIn = { bag, ...(layer ? { layer } : {}) };
-    return shown !== null && receipt.decision === "conflict" ? { ...receipt, ...landedIn, canonicalHash: shown } : { ...receipt, ...landedIn };
+    const answer = shown !== null && receipt.decision === "conflict" ? { ...receipt, ...landedIn, canonicalHash: shown } : { ...receipt, ...landedIn };
+    return { has: familyHas(target.uri, { ...target, ...answer }, "family-write"), ...answer };
   };
+}
+
+/**
+ * A TITLE THAT STAYS HOME answers no read at any door (the tiddler door's own law, `staysHome`): the temp and state namespaces,
+ * the control and secret homes, `cap/**`, the volatile VM plane. The internal reads refuse it by the same name.
+ */
+function refuseStayHome(title: string, verb: string): void {
+  if (staysHome(title)) {
+    throw new VerbRefusal("tiddler-withheld", `tiddler-withheld: "${title}" stays home (a temp, state, volatile-VM, control, secret or cap/** title); ${verb} reads none of it.`);
+  }
 }
 
 export function makeMemeGetReactor(opts: MemeVerbOptions): VerbReactor {
   return async (args, ctx) => {
     const target = readTarget(args, "meme-get");
+    refuseStayHome(target.uri, "meme-get");
     const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };
     const { sink, floor } = await resolveRead(opts, target, origin, ctx.cap);
     // The read hands a person the meme's TEXT: a pointer whose body rests in the content tier refuses by name.
     if (await holdsUnreadPointer(target.uri, sink)) {
       throw new VerbRefusal(POINTER_BODY_CODE, `${POINTER_BODY_CODE}: ${target.uri} holds a pointer whose body rests in the content tier; meme-get reads no pointer body.`);
     }
-    return { uri: target.uri, meme: await readMeme(target.uri, sink), ...(floor ? { floor: true } : {}) };
+    const meme = await readMeme(target.uri, sink);
+    if (meme === null) return { uri: target.uri, meme: null, ...(floor ? { floor: true } : {}) };
+    // ON A GRADIENT BY GRAIN (read-gradient): whole within a page, the has-stack past it, the whole paged on slot boundaries.
+    const requestedSlot = optionalStringArg(args, "slot");
+    const slot = requestedSlot && !requestedSlot.startsWith("#/") ? `#/${requestedSlot}` : requestedSlot;
+    const read = memeGradient(meme, { grain: grainOf(args["grain"]), after: optionalStringArg(args, "after"), slot });
+    return {
+      uri: target.uri,
+      meme: {
+        ...(read.text !== undefined ? { text: read.text } : {}),
+        canonicalHash: memeBase(meme.canonicalHash, read, slot), bytes: read.bytes, grain: read.grain, slots: read.slots,
+        ...(read.page ? { page: read.page } : {}), next: read.next,
+      },
+      ...(floor ? { floor: true } : {}),
+    };
   };
+}
+
+/**
+ * THE ONE-BAG READ, for the doors that read a record of one bag: the meme door's own reach and read gate (`resolveRead`: a mounted
+ * layer, an instance slot, a registered bag by access, the floor snapshot where the face holds no read on a live house canon
+ * document), handed back as the bag's sink beside the bag it answered from.
+ */
+export async function readBagStore(
+  opts: MemeVerbOptions, bag: string, realm: string | null, origin: ChangeOrigin, cap: VerbContext["cap"],
+): Promise<{ readonly bag: string; readonly sink: MemeSink; readonly floor?: true }> {
+  const { bag: answered, sink, floor } = await resolveRead(opts, { recipe: null, bag, realm }, origin, cap);
+  return { bag: answered, sink, ...(floor ? { floor } : {}) };
 }
 
 /**
  * `meme-patch` — ONE SLOT'S BODY, THROUGH THE PUT'S OWN GATE. The read walks what `meme-get` walks (the same container, the
  * same read gate); `patchSlotCarrier` edits the slot's record in a copy of the family and recomposes the carrier, which mints
  * the block check; the put reactor lands that text under the writer's base, so the patch passes every law a put passes: the
- * Confluence gate, the Kahu predicate, the admin cap, a recipe's copy-up, the layer the answer names. A base is required (a
- * blind patch would land over bytes the writer never read); a stale one refuses `stale-base` and names the live hash; a slot
+ * Confluence gate, the Kahu predicate, the admin cap, a recipe's copy-up, the layer the answer names. A replace carries a base
+ * (a blind replace would land over bytes the writer never read); an append overwrites nothing and may carry none, landing over
+ * the carrier as it reads and resealing the whole family; a stale base refuses `stale-base` and names the live hash; a slot
  * the meme does not hold refuses `slot-missing`. Its answer is the put's receipt with the slot named beside it.
  */
 export function makeMemePatchReactor(opts: MemeVerbOptions): VerbReactor {
   const put = makeMemePutReactor(opts);
   return async (args, ctx) => {
     const target = readTarget(args, "meme-patch");
+    refuseTw5DocsWrite(target.recipe, "meme patch"); refuseTw5DocsWrite(target.bag, "meme patch");
     refuseEffectLedgerWrite(target.uri, "meme patch");
     const slot = stringArg(args, "slot").trim();
     if (!slot) throw new Error("meme-patch: args.slot is required (`#/name`, the slot whose body moves)");
@@ -573,30 +626,58 @@ export function makeMemePatchReactor(opts: MemeVerbOptions): VerbReactor {
     const append = typeof args["append"] === "string" ? args["append"] : null;
     const replace = typeof args["replace"] === "string" ? args["replace"] : null;
     if ((append === null) === (replace === null)) throw new VerbRefusal("patch-malformed", "patch-malformed: meme-patch names exactly one of args.append (a paragraph at the end of the slot's body) or args.replace (the slot's whole body).");
-    const base = optionalStringArg(args, "base");
-    if (!base) throw new VerbRefusal("base-required", `base-required: meme-patch edits bytes the writer read; pass args.base, the canonical hash \`meme get\` answers for ${target.uri}.`);
+    const rawBase = optionalStringArg(args, "base");
+    const span = partialSpanOf(rawBase);
+    if (rawBase?.startsWith("partial:") && (!span || !/^partial:(?:#\/[^:]+|p[1-9][0-9]*):.+$/.test(rawBase))) {
+      throw new VerbRefusal("base-outside-span", "base-outside-span: this partial base names no readable span; read the slot or whole carrier again. The span guards honest base reuse and grants no authorization.");
+    }
+    const base = readBase(rawBase, "meme-patch", true, "accept");
+    // AN APPEND OVERWRITES NOTHING, so it lands without a base; a whole-slot replace edits bytes the writer read and keeps one.
+    if (!base && append === null) throw new VerbRefusal("base-required", `base-required: a slot replace edits bytes the writer read; pass args.base, the canonical hash \`tiddler get --meme\` answers for ${target.uri} (an append alone lands without one).`);
     const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };
     const { sink } = await resolveRead(opts, target, origin, ctx.cap);
     if (await holdsUnreadPointer(target.uri, sink)) {
       throw new VerbRefusal(POINTER_BODY_CODE, `${POINTER_BODY_CODE}: ${target.uri} holds a pointer whose body rests in the content tier; meme-patch reads no pointer body.`);
     }
-    const read = await patchSlotCarrier({ uri: target.uri, slot, mode: append !== null ? "append" : "replace", text: append ?? replace!, baseHash: base }, sink);
-    const none = { uri: target.uri, slot, landed: [], tombstoned: [], diagnostics: [] };
-    if (read.kind === "absent") return { ...none, decision: "absent", warnings: [] };
-    if (read.kind === "stale") {
-      return { ...none, decision: "conflict", grade: "clean", reason: STALE_BASE_CODE, canonicalHash: read.canonicalHash,
-        warnings: [`${STALE_BASE_CODE}: ${target.uri} moved past ${base}; it reads ${read.canonicalHash} now. Read it again (\`meme get\`) and patch against that base.`] };
-    }
-    if (read.kind === "slot-missing") {
-      const message = `${SLOT_MISSING_CODE}: ${target.uri} holds no slot ${slot}; \`meme list --tree\` names the slots it holds.`;
-      return { ...none, decision: "refuse", grade: "error", canonicalHash: read.canonicalHash, warnings: [message],
-        diagnostics: [{ from: 0, to: 0, severity: "error", source: MEMETIC_SOURCE, code: SLOT_MISSING_CODE, message }] };
+    // A PARTIAL BASE PATCHES WITHIN WHAT IT READ: a slot answer's base reaches that slot (and the slots nested in it), a page's base
+    // the slots that page carried, recomputed from the carrier the base names. A carrier that moved reads stale below.
+    if (span) {
+      const outside = (why: string): VerbRefusal => new VerbRefusal("base-outside-span", `base-outside-span: this base came from ${why}, and ${slot} lies outside it; read ${slot} (\`lares tiddler get ${target.uri} --meme --slot ${slot}\`) or the whole carrier and patch against that base. Nothing moved.`);
+      if ("slot" in span) {
+        if (slot !== span.slot && !slot.startsWith(`${span.slot}/`)) throw outside(`a read of the slot ${span.slot}`);
+      } else {
+        const standing = await readMeme(target.uri, sink);
+        if (standing && standing.canonicalHash === base && pageOfSlot(standing.text, slot) !== span.page) throw outside(`page ${span.page} of the whole carrier`);
+      }
     }
     const container: Record<string, string> = {};
     for (const key of ["recipe", "bag", "realm"]) if (typeof args[key] === "string") container[key] = args[key] as string;
-    return { ...(await put({ ...container, uri: target.uri, text: read.text, base }, ctx)), slot };
+    // A BASE-LESS APPEND COMPOSES OVER THE CARRIER AS IT READS, and the family put lands it under that read's own hash: the
+    // put's family turn (`placeMeme`) checks the hash and lands in one serialized step, so a carrier another hand moved in
+    // between answers `conflict`, and the append reads again and re-composes over the newer bytes, bounded. It never lands
+    // over bytes it did not compose on, and a round that never settles answers `conflict` with nothing moved.
+    for (let round = 0; ; round++) {
+      const read = await patchSlotCarrier({ uri: target.uri, slot, mode: append !== null ? "append" : "replace", text: append ?? replace!, baseHash: base }, sink);
+      const none = { uri: target.uri, slot, landed: [], tombstoned: [], diagnostics: [] };
+      if (read.kind === "absent") return { has: familyHas(target.uri, { ...target }, "family-patch"), ...none, decision: "absent", warnings: [] };
+      if (read.kind === "stale") {
+        return { has: familyHas(target.uri, { ...target, canonicalHash: read.canonicalHash }, "family-patch"), ...none, decision: "conflict", grade: "clean", reason: STALE_BASE_CODE, canonicalHash: read.canonicalHash,
+          warnings: [`${STALE_BASE_CODE}: ${target.uri} moved past ${base}; it reads ${read.canonicalHash} now. Read it again (\`tiddler get --meme --all\`) and patch against that base.`] };
+      }
+      if (read.kind === "slot-missing") {
+        const message = `${SLOT_MISSING_CODE}: ${target.uri} holds no slot ${slot}; \`tiddler get --meme --tree\` names the slots it holds.`;
+        return { has: familyHas(target.uri, { ...target, canonicalHash: read.canonicalHash }, "family-patch"), ...none, decision: "refuse", grade: "error", canonicalHash: read.canonicalHash, warnings: [message],
+          diagnostics: [{ from: 0, to: 0, severity: "error", source: MEMETIC_SOURCE, code: SLOT_MISSING_CODE, message }] };
+      }
+      const landed = await put({ ...container, uri: target.uri, text: read.text, base: base ?? read.canonicalHash }, ctx);
+      if (base === null && landed["decision"] === "conflict" && round + 1 < PATCH_SETTLE_ROUNDS) continue;
+      return { ...landed, slot };
+    }
   };
 }
+
+/** How many times a base-less slot append re-reads a carrier that moved under it before it answers `conflict`. */
+const PATCH_SETTLE_ROUNDS = 16;
 
 /**
  * THE PAGE A LISTING ANSWERS. A verb's outcome carries at most `AUDIT_ARRAY_CAP` rows of any array and
@@ -683,9 +764,13 @@ export function makeMemeListReactor(opts: MemeVerbOptions): VerbReactor {
     const tree = args["tree"] === true || args["tree"] === "1" || args["tree"] === "true";
     const page = { tree, after: optionalStringArg(args, "after") ?? null, limit: pageLimitOf(args["limit"]) };
     const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };
-    if (target.recipe && target.recipe !== "default" && !opts.faceLane) return listRecipeStack(opts, target.recipe, page, origin, ctx.cap);
+    if (target.recipe && target.recipe !== "default" && !opts.faceLane) {
+      const answer = await listRecipeStack(opts, target.recipe, page, origin, ctx.cap);
+      return { has: familyHas(target.recipe, answer, "family-list"), ...answer };
+    }
     const { bag, sink, floor } = await resolveRead(opts, target, origin, ctx.cap);
-    return { bag, ...(floor ? { floor: true } : {}), ...(await listMemePage(sink, page)) };
+    const answer = { bag, ...(floor ? { floor: true } : {}), ...(await listMemePage(sink, page)) };
+    return { has: familyHas(bag, answer, "family-list"), ...answer };
   };
 }
 
@@ -841,24 +926,38 @@ async function deleteThroughRecipe(
 export function makeMemeDeleteReactor(opts: MemeVerbOptions): VerbReactor {
   return async (args, ctx) => {
     const target = readTarget(args, "meme-delete");
+    refuseTw5DocsWrite(target.recipe, "meme delete"); refuseTw5DocsWrite(target.bag, "meme delete");
     refuseEffectLedgerWrite(target.uri, "meme delete");
-    const base = optionalStringArg(args, "base");
+    const base = readBase(optionalStringArg(args, "base"), "meme-delete", false, "refuse");
     const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };
-    if (target.recipe && target.recipe !== "default" && !opts.faceLane) return deleteThroughRecipe(opts, target.recipe, target.uri, base, origin, ctx.cap, ctx.asker);
+    if (target.recipe && target.recipe !== "default" && !opts.faceLane) {
+      const answer = await deleteThroughRecipe(opts, target.recipe, target.uri, base, origin, ctx.cap, ctx.asker);
+      return { has: familyHas(target.uri, { ...target, ...answer }, "family-delete"), ...answer };
+    }
     const { bag, sink, realmGrant } = await resolveSink(opts, target, origin, "put");
     await requireKahuReach(bag, opts.kahuReach, "meme delete", ctx.asker);
     const proof = await capOf(realmGrant, ctx.cap)("admin", bag);
     if (!proof.ok) throw new Error(`cap-denied: admin on ${bag} required (${proof.reason ?? "no reason"})`);
     const receipt = await removeMeme({ uri: target.uri, baseHash: base }, sink);
-    return { uri: target.uri, ...receipt };
+    const answer = { uri: target.uri, ...receipt };
+    return { has: familyHas(target.uri, { ...target, bag, ...answer }, "family-delete"), ...answer };
   };
 }
+
+/** The targets `meme-project` renders: every projection but the carrier itself, which reads through `tiddler-get`. */
+const PROJECT_VERB_TARGETS = ["md", "html", "tid", "json"] as const;
 
 export function makeMemeProjectReactor(opts: MemeVerbOptions): VerbReactor {
   return async (args, ctx) => {
     const target = readTarget(args, "meme-project");
+    refuseStayHome(target.uri, "meme-project");
     const to = stringArg(args, "to");
-    if (!to) throw new Error("meme-project: args.to is required (mem · md · html · tid · json)");
+    if (!to) throw new Error("meme-project: args.to is required (md · html · tid · json)");
+    // THE CARRIER ITSELF READS THROUGH THE ONE DOOR: `mem` left this verb's targets for `tiddler-get` with `meme: true` and
+    // `grain: "whole"` (`lares tiddler get <uri> --meme --all`), which pages the composed carrier on slot boundaries.
+    if (!(PROJECT_VERB_TARGETS as readonly string[]).includes(to)) {
+      throw new Error(`meme-project: unknown target "${to}"; it renders md · html · tid · json, and the carrier itself reads through tiddler-get (meme: true, grain: "whole")`);
+    }
     const projectTarget = projectTargetOf(to);
     const dialect = optionalStringArg(args, "dialect") ?? undefined;
     const tongue = optionalStringArg(args, "tongue") ?? undefined;
@@ -876,12 +975,11 @@ export function makeMemeProjectReactor(opts: MemeVerbOptions): VerbReactor {
       if (!face) throw new Error("meme-project: the anchor wiki publishes no $tw.lares.meme (the meme-face startup module is absent)");
       return { ...face.project(target.uri, projectTarget, { ...(dialect ? { dialect } : {}), ...(tongue ? { tongue } : {}) }) };
     }
-    if (projectTarget !== "mem" && projectTarget !== "md") {
-      throw new Error(`meme-project: "${projectTarget}" renders through a wiki and projects from the anchor only; a recipe or bag target projects mem · md`);
+    if (projectTarget !== "md") {
+      throw new Error(`meme-project: "${projectTarget}" renders through a wiki and projects from the anchor only; a recipe or bag target projects md`);
     }
     const meme = await readMeme(target.uri, sink);
     if (!meme) throw new Error(`meme-project: no meme stands under ${target.uri} in ${bag}`);
-    if (projectTarget === "mem") return { ...projectCarrierText(meme.text, target.uri, projectTarget) };
 
     // THE STORE PATH, `md`: the recorded-target record (`submissionTitleOf(uri)`) is a RENDERED
     // pair's sidecar, never a carrier a store's `readMeme` can answer — a store seat holds carrier

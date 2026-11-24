@@ -18,11 +18,12 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/daemon-law-tiddlers
  */
 
-import { LAW_CANON_GUARD, LAW_INDEX_FILTER, LAW_PINS_FILTER, LAW_PINS_TITLE } from "@lararium/tw5";
+import { LAW_INDEX_FILTER, LAW_PINS_FILTER, LAW_PINS_TITLE, lawStandsFilter } from "@lararium/tw5";
 import { emit, exitFor, proseFirst } from "../render.js";
 import { helpLines } from "../command-help.js";
 import { DoorUsage, countOf, guardDoor, runDoor, wordOf } from "./door-call.js";
 import type { ParsedArgs } from "../parse-args.js";
+import { tableCovers } from "../verb-table.js";
 
 /** The daemon wiki: the pin set and the law config live in the worn face's own. */
 const RECIPE = "default";
@@ -145,7 +146,7 @@ async function lawPin(args: ParsedArgs, mode: "pin" | "unpin"): Promise<number> 
   const label = `law ${mode}`;
   const uri = lawUriOf(args.positional[1]);
   if (mode === "pin") {
-    const stands = await filterAll(args, label, `[[${uri}]] ${LAW_CANON_GUARD}`);
+    const stands = await filterAll(args, label, lawStandsFilter(uri));
     if (!stands.ok) return stands.exit;
     if (stands.titles.length === 0) {
       const message = `law-pin-absent: no canon law stands at ${uri} in the worn face's daemon wiki (a pin orders canon law and adds none); nothing moved`;
@@ -153,7 +154,8 @@ async function lawPin(args: ParsedArgs, mode: "pin" | "unpin"): Promise<number> 
       return exitFor("not-found");
     }
   }
-  const got: Ran = await runDoor(args, label, { verb: "tiddler-get", args: { recipe: RECIPE, title: LAW_PINS_TITLE } });
+  // READ FAT: the pin set is a read-modify-write, and only an answer that carried the text hands a base a text put takes.
+  const got: Ran = await runDoor(args, label, { verb: "tiddler-get", args: { recipe: RECIPE, title: LAW_PINS_TITLE, grain: "fat" } });
   if (!got.ok) return got.exit;
   const held = got.output["tiddler"] as { hash?: string; fields?: Record<string, string> } | null | undefined;
   const text = String(held?.fields?.["text"] ?? "");
@@ -193,14 +195,18 @@ async function lawPin(args: ParsedArgs, mode: "pin" | "unpin"): Promise<number> 
   return 0;
 }
 
+/** Every verb the law door answers. */
+export const LAW_VERBS = ["list", "pin", "unpin"] as const;
+type LawVerb = (typeof LAW_VERBS)[number];
+
 export async function cmdLaw(args: ParsedArgs): Promise<number> {
-  const sub = args.positional[0];
+  const sub = args.positional[0] as LawVerb | undefined;
   switch (sub) {
     case "list":  return guardDoor(args, "law list", () => lawList(args));
     case "pin":   return guardDoor(args, "law pin", () => lawPin(args, "pin"));
     case "unpin": return guardDoor(args, "law unpin", () => lawPin(args, "unpin"));
     default:
-      if (sub) console.error(`lares law: unknown sub-verb "${sub}"`);
+      if (sub) console.error(`lares law: unknown sub-verb "${tableCovers(sub)}"`);
       for (const line of helpLines("law")) console.error(line);
       return 2;
   }

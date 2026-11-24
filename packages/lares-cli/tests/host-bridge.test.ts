@@ -15,9 +15,10 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   decideRoute, commandScope, CREDENTIAL_TTY_EXIT, HOUSE_ABSENT_EXIT, SHIM_ABSENT_EXIT, FORWARDED_ENV,
-  PATH_OUTSIDE_EXIT, mountsOf, translatePaths, type Mount, type RouteInput,
+  PATH_OUTSIDE_EXIT, mountsOf, translatePaths, forwardEnvFor, type Mount, type RouteInput,
 } from "../src/host-bridge.js";
 import { COMMAND_NAMES } from "../src/bin/lares.js";
+import { ownPeerKind } from "@lararium/node";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(HERE, "..", "..", "..");
@@ -41,24 +42,24 @@ function input(argv: string[], over: Partial<RouteInput> = {}, files: string[] =
 
 describe("decideRoute — every branch", () => {
   it("LAR_ROOT named: always local, even for a vessel verb and a shim verb", () => {
-    expect(decideRoute(input(["meme", "get", "x", "--bag", "b"], { env: { HOME, LAR_ROOT: "/h" } }))).toBe("local");
+    expect(decideRoute(input(["tiddler", "get", "x", "--bag", "b"], { env: { HOME, LAR_ROOT: "/h" } }))).toBe("local");
     expect(decideRoute(input(["up"], { env: { HOME, LAR_ROOT: "/h" } }))).toBe("local");
   });
 
   it("a blank LAR_ROOT reads as unset", () => {
-    expect(decideRoute(input(["meme", "get", "x", "--bag", "b"], { env: { HOME, LAR_ROOT: "  " } }))).toBe("forward");
+    expect(decideRoute(input(["tiddler", "get", "x", "--bag", "b"], { env: { HOME, LAR_ROOT: "  " } }))).toBe("forward");
   });
 
   it("inside the vessel (the image's marker) never forwards, so a missing LAR_ROOT cannot loop", () => {
-    expect(decideRoute(input(["meme", "get", "x", "--bag", "b"], { env: { HOME, LARES_IN_CONTAINER: "1" } }))).toBe("local");
+    expect(decideRoute(input(["tiddler", "get", "x", "--bag", "b"], { env: { HOME, LARES_IN_CONTAINER: "1" } }))).toBe("local");
   });
 
   it("a host that itself runs in a container (a CI job, a devcontainer: /.dockerenv stands) still forwards", () => {
-    expect(decideRoute(input(["meme", "get", "x", "--bag", "b"], {}, [ENV_FILE, SHIM, "/.dockerenv"]))).toBe("forward");
+    expect(decideRoute(input(["tiddler", "get", "x", "--bag", "b"], {}, [ENV_FILE, SHIM, "/.dockerenv"]))).toBe("forward");
   });
 
   it("a vessel verb with the container house standing forwards", () => {
-    for (const argv of [["meme", "get", "x", "--bag", "b"], ["vault", "status"], ["vessel", "read"], ["vessel", "stand"], ["persona", "list"]]) {
+    for (const argv of [["tiddler", "get", "x", "--bag", "b"], ["vault", "status"], ["vessel", "read"], ["vessel", "stand"], ["persona", "list"]]) {
       expect(decideRoute(input(argv)), argv.join(" ")).toBe("forward");
     }
   });
@@ -69,8 +70,8 @@ describe("decideRoute — every branch", () => {
     for (const argv of [["rebuild", "--at", "abc123"], ["rebuild", "--resume"]]) expect(decideRoute(input(argv)), argv.join(" ")).toBe("forward");
   });
 
-  it("host verbs stay local: home, repo, help, wing-of, mempalace, mcp", () => {
-    for (const argv of [["home", "read"], ["home", "tend"], ["repo", "tend"], ["help"], ["wing-of", "t.jsonl"], ["mempalace", "status"], ["mcp", "aho", "--", "surface"]]) {
+  it("host verbs stay local: home, repo, help, mempalace, mcp", () => {
+    for (const argv of [["home", "read"], ["home", "tend"], ["repo", "tend"], ["help"], ["mempalace", "status"], ["mcp", "aho", "--", "surface"]]) {
       expect(decideRoute(input(argv)), argv.join(" ")).toBe("local");
     }
   });
@@ -82,7 +83,7 @@ describe("decideRoute — every branch", () => {
   });
 
   it("a `--help` after `--` reads as a positional and the verb forwards", () => {
-    expect(decideRoute(input(["meme", "get", "x", "--bag", "b", "--", "--help"]))).toBe("forward");
+    expect(decideRoute(input(["tiddler", "get", "x", "--bag", "b", "--", "--help"]))).toBe("forward");
   });
 
   it("meme's local seats stay local; its store seats forward", () => {
@@ -99,7 +100,7 @@ describe("decideRoute — every branch", () => {
   });
 
   it("argv the grammar refuses stays local, where the dispatcher names the refusal", () => {
-    expect(decideRoute(input(["meme", "get", "x", "--bag", "b", "--=v"], {}, []))).toBe("local");
+    expect(decideRoute(input(["tiddler", "get", "x", "--bag", "b", "--=v"], {}, []))).toBe("local");
   });
 
   it("no env file: a vessel verb refuses with the distinct house-absent code, naming LAR_ROOT and the shim", () => {
@@ -116,18 +117,18 @@ describe("decideRoute — every branch", () => {
   });
 
   it("no HOME: the env file cannot be named, so it reads as absent", () => {
-    const r = decideRoute(input(["meme", "get", "x", "--bag", "b"], { env: {} }));
+    const r = decideRoute(input(["tiddler", "get", "x", "--bag", "b"], { env: {} }));
     expect(typeof r === "object" && r.error.code).toBe(HOUSE_ABSENT_EXIT);
   });
 
   it("the env file stands and the shim does not: the distinct shim-absent code", () => {
-    const r = decideRoute(input(["meme", "get", "x", "--bag", "b"], {}, [ENV_FILE]));
+    const r = decideRoute(input(["tiddler", "get", "x", "--bag", "b"], {}, [ENV_FILE]));
     expect(typeof r === "object" && r.error.code).toBe(SHIM_ABSENT_EXIT);
     expect(typeof r === "object" && r.error.lines.join("\n")).toContain(SHIM);
   });
 
   it("no shim located at all (an installed CLI outside a checkout): shim-absent", () => {
-    const r = decideRoute(input(["meme", "get", "x", "--bag", "b"], { shim: null }));
+    const r = decideRoute(input(["tiddler", "get", "x", "--bag", "b"], { shim: null }));
     expect(typeof r === "object" && r.error.code).toBe(SHIM_ABSENT_EXIT);
   });
 
@@ -209,7 +210,7 @@ describe("translatePaths — a host path in a forwarded argv reads as the vessel
 
   it("an argument that only looks like a path stays untouched", () => {
     expect(ok(["act", "REPACK", "--source", `${W}/b.tid`, "--from", "some/bag/like"])).toEqual(["act", "REPACK", "--source", "/workspace/b.tid", "--from", "some/bag/like"]);
-    expect(ok(["meme", "get", "lar:///a/b", "--bag", "./not/a/path"])).toEqual(["meme", "get", "lar:///a/b", "--bag", "./not/a/path"]);
+    expect(ok(["tiddler", "get", "lar:///a/b", "--bag", "./not/a/path"])).toEqual(["tiddler", "get", "lar:///a/b", "--bag", "./not/a/path"]);
     expect(ok(["meme", "project", "lar:///x/y", "--to", "html", "--bag", "b"])).toEqual(["meme", "project", "lar:///x/y", "--to", "html", "--bag", "b"]);
     expect(ok(["persona", "new", "0", "--name", "/etc/passwd"])).toEqual(["persona", "new", "0", "--name", "/etc/passwd"]);
   });
@@ -299,11 +300,19 @@ const execCall = (b: Bench): string[] | undefined => calls(b).find((c) => c.incl
 const builtExists = existsSync(join(HERE, "..", "dist", "src", "host-bridge.js"));
 const haveScript = spawnSync("script", ["--version"]).status === 0;
 
-describe.skipIf(!builtExists)("the built `lares` forwards through the real shim", () => {
+/**
+ * THE BUDGET A BUILT-CLI CASE NEEDS. Each case below spawns the built `lares` (a cold Node start that loads the whole command
+ * table) one to three times, each through the real shell shim and its fake docker. One cold start measured 4.0-4.5 s on a
+ * 10-core box at load 30 (2026-11-23), and these cases failed vitest's 5 s default on origin/develop and on this branch
+ * alike, a different set each run: the budget, never the code. Three spawns at that measure, with room: 60 s.
+ */
+const BUILT_CLI_BUDGET = { timeout: 60_000 };
+
+describe.skipIf(!builtExists)("the built `lares` forwards through the real shim", BUILT_CLI_BUDGET, () => {
   it("a vessel verb forwards: argv faithful (quotes, spaces, empty, --), stdout untouched, -T off a TTY", () => {
     const b = bench();
     try {
-      const argv = ["meme", "get", "lar:///a b", "--bag", "", "it's", "--", "--json"];
+      const argv = ["tiddler", "get", "lar:///a b", "--bag", "", "it's", "--", "--json"];
       const r = spawnSync(process.execPath, [BIN, ...argv], { env: b.env, encoding: "utf8" });
       expect(r.status, r.stderr).toBe(0);
       expect(r.stdout).toBe("stdout-from-the-vessel\n");
@@ -316,10 +325,44 @@ describe.skipIf(!builtExists)("the built `lares` forwards through the real shim"
     } finally { rmSync(b.dir, { recursive: true, force: true }); }
   });
 
+  // THE HOST CHAIN CROSSES THE WALL AS THE SEAT MARK (hitl-reads-a-hand). Inside the vessel an exec'd process has no parent to
+  // walk (ppid 0), so the forwarder reads its own host ancestry before it forwards, and a harness anywhere up that chain sends the
+  // forwarded child the seat mark, a stripped mark (`env -u CLAUDECODE`) included. The shell below carries the mark; the CLI it
+  // launches does not, and `; true` keeps the shell its parent.
+  const fromHarnessShell = (b: Bench, argv: string[]) => spawnSync("sh", ["-c", `env -u CLAUDECODE "$0" "$@"; true`, process.execPath, BIN, ...argv], {
+    env: { ...b.env, CLAUDECODE: "1" }, encoding: "utf8",
+  });
+  const marks = (exec: string[]): string[] => exec.flatMap((a, i) => a === "-e" && exec[i + 1] === "CLAUDECODE" ? ["CLAUDECODE"] : []);
+
+  it("RED: a sense hand verb forwarded from a harness shell with the mark stripped carries the seat mark into the vessel", () => {
+    const b = bench();
+    try {
+      const r = fromHarnessShell(b, ["sense", "purge", "x", "--approve"]);
+      expect(r.status, r.stderr).toBe(0);
+      expect(marks(execCall(b)!)).toEqual(["CLAUDECODE"]);
+    } finally { rmSync(b.dir, { recursive: true, force: true }); }
+  });
+
+  it("RED: a socket hand verb (wiki retire) forwarded the same way carries the seat mark, so the vessel's CLI asks as the seat", () => {
+    const b = bench();
+    try {
+      const r = fromHarnessShell(b, ["wiki", "retire", "x"]);
+      expect(r.status, r.stderr).toBe(0);
+      expect(marks(execCall(b)!)).toEqual(["CLAUDECODE"]);
+    } finally { rmSync(b.dir, { recursive: true, force: true }); }
+  });
+
+  it("CONTROL: the forwarder's seat mark follows its reading of the host chain alone", () => {
+    expect(forwardEnvFor({ PATH: "/bin" }, "hand")).toEqual({ PATH: "/bin" });
+    expect(forwardEnvFor({ PATH: "/bin" }, "ai")).toEqual({ PATH: "/bin", CLAUDECODE: "1" });
+    // An unread chain never reads as a person: the child carries the seat mark, so a hand verb inside refuses.
+    expect(forwardEnvFor({ PATH: "/bin" }, "unknown")).toEqual({ PATH: "/bin", CLAUDECODE: "1" });
+  });
+
   it("the vessel's exit code returns unchanged", () => {
     const b = bench();
     try {
-      const r = spawnSync(process.execPath, [BIN, "meme", "get", "x", "--bag", "b"], { env: { ...b.env, FAKE_EXEC_RC: "4" }, encoding: "utf8" });
+      const r = spawnSync(process.execPath, [BIN, "tiddler", "get", "x", "--bag", "b"], { env: { ...b.env, FAKE_EXEC_RC: "4" }, encoding: "utf8" });
       expect(r.status).toBe(4);
     } finally { rmSync(b.dir, { recursive: true, force: true }); }
   });
@@ -327,12 +370,14 @@ describe.skipIf(!builtExists)("the built `lares` forwards through the real shim"
   it("display and debug env ride by NAME alone; nothing else crosses", () => {
     const b = bench();
     try {
-      spawnSync(process.execPath, [BIN, "meme", "get", "x", "--bag", "b"], {
+      spawnSync(process.execPath, [BIN, "tiddler", "get", "x", "--bag", "b"], {
         env: { ...b.env, NO_COLOR: "1", TERM: "xterm-256color", LARES_DEBUG: "1", SOME_TOKEN: "s3cret" }, encoding: "utf8",
       });
       const exec = execCall(b)!;
       const named = exec.flatMap((a, i) => a === "-e" ? [exec[i + 1]] : []);
-      expect(named.sort()).toEqual(["LARES_DEBUG", "LARES_EXEC_TAG", "NO_COLOR", "TERM"]);
+      // The seat mark crosses too wherever this suite itself runs under a harness: the forwarder reads its own host chain.
+      const seat = ownPeerKind({}) !== "hand" ? ["CLAUDECODE"] : [];
+      expect(named.sort()).toEqual([...seat, "LARES_DEBUG", "LARES_EXEC_TAG", "NO_COLOR", "TERM"].sort());
       expect(exec.join(" ")).not.toMatch(/xterm-256color|s3cret|SOME_TOKEN/);
     } finally { rmSync(b.dir, { recursive: true, force: true }); }
   });
@@ -412,7 +457,7 @@ describe.skipIf(!builtExists)("the built `lares` forwards through the real shim"
   it("Ctrl+C ends the host process with the child: no orphan", async () => {
     const b = bench();
     try {
-      const child = spawn(process.execPath, [BIN, "meme", "get", "x", "--bag", "b"], { env: { ...b.env, FAKE_SLEEP: "1" }, stdio: "ignore", detached: true });
+      const child = spawn(process.execPath, [BIN, "tiddler", "get", "x", "--bag", "b"], { env: { ...b.env, FAKE_SLEEP: "1" }, stdio: "ignore", detached: true });
       const pidFile = `${b.log}.pid`;
       for (let i = 0; i < 100 && !existsSync(pidFile); i++) await new Promise((r) => setTimeout(r, 50));
       expect(existsSync(pidFile)).toBe(true);
@@ -428,7 +473,7 @@ describe.skipIf(!builtExists)("the built `lares` forwards through the real shim"
   });
 });
 
-describe.skipIf(!builtExists)("a lone SIGTERM to the host process leaves nothing running", () => {
+describe.skipIf(!builtExists)("a lone SIGTERM to the host process leaves nothing running", BUILT_CLI_BUDGET, () => {
   async function lone(sig: NodeJS.Signals, running: boolean): Promise<{ b: Bench; ended: { code: number | null; signal: NodeJS.Signals | null }; sleeperAlive: boolean }> {
     const b = bench({ running });
     const child = spawn(process.execPath, [BIN, "persona", "list"], { env: { ...b.env, FAKE_SLEEP: "1" }, stdio: "ignore" });
@@ -486,7 +531,7 @@ describe("crashReading — an unnamed house root reads in two lines, no stack", 
   });
 });
 
-describe.skipIf(!builtExists)("a local verb that reaches for the root inside the vessel", () => {
+describe.skipIf(!builtExists)("a local verb that reaches for the root inside the vessel", BUILT_CLI_BUDGET, () => {
   it("exits with the house-absent code and the short reading", () => {
     const env = { ...process.env, LARES_IN_CONTAINER: "1" } as Record<string, string>;
     delete env["LAR_ROOT"];

@@ -68,7 +68,9 @@ export type WorkbenchRefusalReason =
   /** A face the realm's Document does not hold writes nothing to its workbench. */
   | "workbench-not-a-member"
   /** A workspace name outside the name grammar. */
-  | "workbench-workspace-malformed";
+  | "workbench-workspace-malformed"
+  /** A face the landing would seat needs the workbench's key handed over, and no holder of that key stands lit to hand it. */
+  | "seat-needs-keyholder";
 
 export class WorkbenchRefusal extends Error {
   override readonly name = "WorkbenchRefusal";
@@ -220,7 +222,7 @@ export function dropWorkbench(draft: LarDoc, realmId: string, slug: string): str
   const realm = realmScope(realmId);
   const key = slugKey(slug);
   const binding = workbenchKey(realm, slug);
-  const under = [`${EDGE_LEDGER_PREFIX}${realm}/workbench-key/${key}/`, `${EDGE_LEDGER_PREFIX}${realm}/workbench-seat/${key}/`];
+  const under = [`${EDGE_LEDGER_PREFIX}${realm}/workbench-key/${key}/`, `${EDGE_LEDGER_PREFIX}${realm}/workbench-seat/${key}/`, `${EDGE_LEDGER_PREFIX}${realm}/workbench-removal/${key}/`];
   const dropped: string[] = [];
   for (const title of Object.keys(draft.tiddlers)) {
     if (title !== binding && !under.some((prefix) => title.startsWith(prefix))) continue;
@@ -228,6 +230,43 @@ export function dropWorkbench(draft: LarDoc, realmId: string, slug: string): str
     dropped.push(title);
   }
   return dropped.sort();
+}
+
+// ── THE REMOVALS THE ROSTER'S PROJECTION READ ──────────────────────────────────────────────────
+
+const removalPrefix = (realm: string, slug: string): string => `${EDGE_LEDGER_PREFIX}${realm}/workbench-removal/${slugKey(slug)}/`;
+
+/** One removal the projection read: the face, the agent its seat named, and the act a content-key roll answers. */
+export interface WorkbenchRemoval { readonly face: string; readonly agent: string; readonly act: string }
+
+/**
+ * NOTE A REMOVAL (the rest seals for the roster): the roster's projection drops a seat row the realm's key Document
+ * holds nowhere now, and notes ONE removal row beside it, naming the act a content-key roll of the workbench's bag answers (a digest of
+ * the realm, the slug, the agent and how many removals of that agent this ledger already holds, so a face seated again and
+ * removed again owes a roll of its own). The vessel's own ledger counts it: it carries the evidence a removal version counts by.
+ * Call INSIDE `handle.change()`. Answers the act.
+ */
+export function noteWorkbenchRemoval(draft: LarDoc, realmId: string, slug: string, face: string, agentHex: string): string {
+  const realm = realmScope(realmId);
+  const agent = agentHex.trim().toLowerCase().replace(/^0x/, "");
+  const prior = workbenchRemovals(draft, realm, slug).filter((r) => r.agent === agent).length;
+  const act = `workbench-removal:${sha256HexBytesSync(utf8Bytes(`${realm}\n${slug.normalize("NFC")}\n${agent}\n${prior}`))}`;
+  const key = `${removalPrefix(realm, slug)}${agent}/${prior}`;
+  if (ownEntry(draft.tiddlers, key) === undefined) draft.tiddlers[key] = storedLarRecord(key, { text: `${act}\n${face}` }, "workbench");
+  return act;
+}
+
+/** Every removal the ledger noted for a slug's workbench, in key order. */
+export function workbenchRemovals(ledger: LarDoc | undefined | null, realmId: string, slug: string): WorkbenchRemoval[] {
+  const prefix = removalPrefix(realmScope(realmId), slug);
+  const out: WorkbenchRemoval[] = [];
+  for (const [key, record] of Object.entries(ledger?.tiddlers ?? {}).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))) {
+    if (!key.startsWith(prefix)) continue;
+    const agent = key.slice(prefix.length).split("/")[0] ?? "";
+    const [act, face] = (tiddlerText(record as never) ?? "").split("\n");
+    if (/^[0-9a-f]+$/.test(agent) && act !== undefined && act.startsWith("workbench-removal:") && face !== undefined) out.push({ face, agent, act });
+  }
+  return out;
 }
 
 /** Whether a face holds a noted seat in any workbench of a realm: the wire guard's reading on a thread with no hive. */

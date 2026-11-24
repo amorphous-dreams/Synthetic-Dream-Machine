@@ -51,10 +51,12 @@ export async function runDoor(args: ParsedArgs, label: string, plan: DoorPlan): 
   catch (error) { if (error instanceof FaceOptionMalformed) throw new DoorUsage(error.message); throw error; }
   const result = face.face === undefined ? await runVerb(plan.verb, plan.args, await vesselDid()) : await runVerbAsFace(plan.verb, plan.args, face.face);
   const outcome = readVerbOutcome(result);
-  if (outcome.ok) return { ok: true, requestId: result.requestId, output: face.face === undefined ? outcome.output : { ...outcome.output, face: face.face } };
+  // The island names the face it answered from (a visit names the face it read): its word stands over the session's face.
+  if (outcome.ok) return { ok: true, requestId: result.requestId, output: face.face === undefined ? outcome.output : { face: face.face, ...outcome.output } };
   const message = outcome.error ?? "the verb refused";
   const named = /^([a-z][a-z0-9]*(?:-[a-z0-9]+)+):/.exec(message)?.[1];
   const code = named === "cap-denied" ? "cap-denied" : named === "face-not-open" ? "face-not-open" : "verb-error";
+  // A visit's refusals name themselves in the hint (`cross-face-private`, `cross-face-write-refused`, `target-unknown`, …).
   emit(args, {
     ok: false, requestId: result.requestId,
     error: { code, message, ...(named && named !== "cap-denied" ? { hint: `refusal: ${named}` } : {}) },
@@ -67,9 +69,9 @@ export async function runDoor(args: ParsedArgs, label: string, plan: DoorPlan): 
 export async function guardDoor(args: ParsedArgs, label: string, run: () => Promise<number>): Promise<number> {
   try { return await run(); }
   catch (err) {
-    if (typeof err === "object" && err !== null && (err as { code?: unknown }).code === "no-container") {
+    if (typeof err === "object" && err !== null && ((err as { code?: unknown }).code === "no-container" || (err as { code?: unknown }).code === "wiki-not-anchored")) {
       const msg = err instanceof Error ? err.message : String(err);
-      emit(args, { ok: false, error: { code: "no-container", message: msg }, human: () => console.error(msg) });
+      emit(args, { ok: false, error: { code: String((err as { code?: unknown }).code), message: msg }, human: () => console.error(msg) });
       return 2;
     }
     if (err instanceof DoorUsage) {

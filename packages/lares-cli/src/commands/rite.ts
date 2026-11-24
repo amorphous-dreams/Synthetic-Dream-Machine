@@ -34,18 +34,20 @@ import { fileURLToPath } from "node:url";
 import { helpLines } from "../command-help.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { emitAnswer, exitFor, refuseUsage } from "../render.js";
-import { INTERRUPTED, priorImageRef, riteKukulu, syncPlan, type PriorImage, type RefillPort, type RefillReq, type RitePorts, type RiteVerbAnswer, type OfferVouch, type PendingBegin, type StageTarget, type StandingBegin, type StandReading, type SyncAnswer } from "../rite-kukulu.js";
+import { INTERRUPTED, priorImageRef, riteKukulu, type HouseLag, syncPlan, type PriorImage, type RefillPort, type RefillReq, type RitePorts, type RiteVerbAnswer, type OfferVouch, type PendingBegin, type StageTarget, type StandingBegin, type StandReading, type SyncAnswer } from "../rite-kukulu.js";
 import { foundingRecordFromStatus, hostSeedOfferPort } from "../seed-offered.js";
 import { storeFailure, storeVerb } from "../store-door.js";
 import { KeepRefused, keepWorkspaceDir, keepFaceLine, riteKeep, type KeepPorts } from "../rite-keep.js";
 import { houseFaces } from "../custody-door.js";
 import { riteKeepHost, workspaceFromPairs, type GitAnswer, type KeepHostPorts } from "../rite-keep-host.js";
+import type { ShoreFlushReading } from "../shore-core.js";
 import { envValue, IN_CONTAINER_ENV, surfaceEnvPath } from "../surface-env.js";
 import { configuredKeepWorkspace } from "../keep-config.js";
 import { houseExport, bundleRefusal, LIVE_BUNDLE_DOORS } from "./house-bundle.js";
 import { runVerb } from "../verb-call.js";
 import { summaryOutput } from "../verb-result.js";
 import { vesselDid } from "../env.js";
+import { ownPeerKind } from "@lararium/node";
 
 export class RiteUsage extends Error {}
 
@@ -53,6 +55,9 @@ export type RiteVerb = "rite-begin" | "rite-land" | "rite-receipts" | "rite-offe
 export interface RitePlan { readonly verb: RiteVerb; readonly args: Record<string, unknown> }
 
 /** The host sub-verb's two spellings. */
+/** Every verb the rite door answers (`kūkulu` reads as `kukulu`). */
+export const RITE_VERBS = ["kukulu", "keep", "keep-cut", "begin", "offer", "land", "receipts"] as const;
+
 export const isKukulu = (word: string | undefined): boolean => word === "kukulu" || word === "kūkulu";
 
 /** One vessel sub-verb's store row and args, or a `RiteUsage` naming what the line lacks. */
@@ -88,7 +93,7 @@ export function ritePlan(args: ParsedArgs): RitePlan {
     if (tessera === undefined || head === undefined) throw new RiteUsage("land names its tessera and the head the vessel stands at: --tessera <id> --head <commit>");
     return { verb: "rite-land", args: { tessera, head, ...image, ...face } };
   }
-  throw new RiteUsage(isKukulu(act) ? "kukulu runs on the host and plans no single row" : act === "keep" || act === "keep-cut" ? `${act} runs several rows and plans no single one` : "name a sub-verb: kukulu, keep, keep-cut, begin, offer, land, receipts or receipt");
+  throw new RiteUsage(isKukulu(act) ? "kukulu runs on the host and plans no single row" : act === "keep" || act === "keep-cut" ? `${act} runs several rows and plans no single one` : `name a sub-verb: ${RITE_VERBS.join(", ")}`);
 }
 
 /** What a `rite keep` line names, or a `RiteUsage` naming what it lacks. */
@@ -112,7 +117,10 @@ const KEEP_PORTS: KeepPorts = {
   },
   // A KEEP NAMING NO FACE ACTS AS THE KEEP'S FACE, read over the faces the house holds (the custody door's census, open and shut).
   houseFaces: async () => houseFaces(),
-  cut: async (dest, opts) => (await houseExport(dest, { acceptOmissions: opts.acceptOmissions, doors: LIVE_BUNDLE_DOORS, workspace: opts.workspace, houseOnly: true, ...(opts.woken !== undefined ? { woken: opts.woken } : {}) })).manifest,
+  cut: async (dest, opts) => {
+    const r = await houseExport(dest, { acceptOmissions: opts.acceptOmissions, doors: LIVE_BUNDLE_DOORS, workspace: opts.workspace, houseOnly: true, ...(opts.woken !== undefined ? { woken: opts.woken } : {}) });
+    return { ...r.manifest, unreadFaces: r.unreadFaces };
+  },
   // THE WIKI SWITCHER the wake walks: the catalog (`list-wikis`), the live state (`wiki-active`), and the rotatable pin.
   wikis: {
     read: async () => {
@@ -157,6 +165,7 @@ async function runKeepCut(args: ParsedArgs): Promise<number> {
       if (!out.kept) { console.log(`keep: ${out.dest} already holds bundle ${out.bundleId.slice(0, 16)}; nothing spent and nothing moved`); return; }
       console.log(`keep: bundle ${out.bundleId.slice(0, 16)} rests at ${out.dest} (faces: ${out.faces.join(", ") || "(none)"}), return ${out.n} of the keep lei spent`);
       for (const o of out.omissions) console.log(`  left behind: ${o.kind}${o.count !== undefined ? ` (${o.count})` : ""} — ${o.detail}`);
+      if ((out.unreadFaces?.length ?? 0) > 0) console.log(`    standing heads left behind for ${out.unreadFaces!.map((i) => `h${i}`).join(", ")} (this terminal alone names them)`);
       console.log(`keep: the bundle rests unencrypted (private memory as plain files); the host half commits and pushes it, then lands the rite: lares rite land --tessera ${out.tessera} --head ${out.bundleId}`);
     } }, out.kept ? `keep: bundle ${out.bundleId.slice(0, 16)} rests at ${out.dest}, return ${out.n} of the keep lei spent; land it: lares rite land --tessera ${out.tessera} --head ${out.bundleId}` : `keep: ${out.dest} already holds bundle ${out.bundleId.slice(0, 16)}; nothing spent and nothing moved`);
     return 0;
@@ -202,6 +211,23 @@ const cliVerb = (line: readonly string[]): Promise<RiteVerbAnswer> => new Promis
     try { answer = JSON.parse(text.trim().split("\n").at(-1) ?? ""); } catch { answer = null; }
     if (answer?.ok === true && answer.data) resolve({ ok: true, output: answer.data });
     else resolve({ ok: false, code: answer?.error?.code ?? "rite-row-unreached", message: answer?.error?.message ?? `the row answered no reading (exit ${code ?? "none"})` });
+  });
+});
+
+/**
+ * The shore's flush through the existing hand door (`lares shore flush --json`, forwarded into the vessel by the bridge): its
+ * reading rides the envelope's `data` whether every island wrote (exit 0) or one fell short (3, 4); null where no reading came.
+ */
+const shoreFlushRow = (): Promise<ShoreFlushReading | null> => new Promise((resolve) => {
+  const child = spawn(process.execPath, [BIN, "shore", "flush", "--json"], { stdio: ["ignore", "pipe", "inherit"] });
+  let text = "";
+  child.stdout.setEncoding("utf8").on("data", (chunk: string) => { text += chunk; });
+  child.once("error", () => resolve(null));
+  child.once("close", () => {
+    try {
+      const data = (JSON.parse(text.trim().split("\n").at(-1) ?? "") as { data?: { islands?: unknown } }).data;
+      resolve(data !== undefined && Array.isArray(data.islands) ? data as unknown as ShoreFlushReading : null);
+    } catch { resolve(null); }
   });
 });
 
@@ -450,6 +476,42 @@ const readPriorImage = (): Promise<PriorImage | null> => new Promise((resolve) =
   });
 });
 
+/** THE LAG as the host reads it: the vessel's `vessel lay --lag` answer, null where it answers no reading of that shape. */
+export function houseLagOf(output: Record<string, unknown>): HouseLag | null {
+  const holdings = output["holdings"], benches = output["benches"];
+  if (typeof output["source"] !== "string" || typeof output["lag"] !== "number" || !Array.isArray(holdings) || !Array.isArray(benches)) return null;
+  const titles = (v: unknown): string[] => (Array.isArray(v) ? v.map(String) : []);
+  const bench = (b: Record<string, unknown>) => ({
+    slug: String(b["slug"]), toBag: String(b["toBag"]), planned: titles(b["planned"]),
+    mounts: b["mounts"] === true ? true : b["mounts"] === false ? false : null, ...(typeof b["why"] === "string" ? { why: b["why"] } : {}),
+  });
+  const read = (benches as Array<Record<string, unknown>>).map(bench);
+  return {
+    source: output["source"], checkout: output["checkout"] === true, lag: output["lag"],
+    holdings: (holdings as Array<Record<string, unknown>>).map((h) => ({ holding: String(h["holding"]), toBag: String(h["toBag"]), new: titles(h["new"]), changed: titles(h["changed"]) })),
+    wikis: typeof output["wikis"] === "string" ? output["wikis"] : null, benches: read, benchLag: read.reduce((n, b) => n + b.planned.length, 0),
+  };
+}
+
+/** One yes-or-no on this terminal, asked on stderr; a Ctrl+C at the question reads as no. */
+const askOnTerminal = (q: string): Promise<boolean> => new Promise((resolve) => {
+  const rl = createInterface({ input: process.stdin, output: process.stderr });
+  rl.once("SIGINT", () => { rl.close(); process.stderr.write("\n"); resolve(false); });
+  rl.question(`${q} [y/N] `, (a) => { rl.close(); resolve(/^y(es)?$/i.test(a.trim())); });
+});
+
+/**
+ * The workbench lay on this terminal, after the owner's yes: this CLI again (the bridge forwards it into the vessel), the checkout's
+ * workbench folders alone. A Ctrl+C reaches the lay, which shares this terminal; this process holds SIGINT until it ends.
+ */
+const layWorkbenchOnTerminal = (): Promise<number> => new Promise((resolve) => {
+  const hold = (): void => {};
+  process.on("SIGINT", hold);
+  const child = spawn(process.execPath, [BIN, "vessel", "lay", "--workbench", "--apply"], { stdio: "inherit" });
+  child.once("error", () => { process.off("SIGINT", hold); resolve(127); });
+  child.once("close", (code, signal) => { process.off("SIGINT", hold); resolve(signal === "SIGINT" ? INTERRUPTED : code ?? 1); });
+});
+
 /** The host's ports: git in this checkout, this CLI again for a vessel row (the bridge forwards it), and the checkout's shim. */
 function hostPorts(shim: string, say: (line: string) => void): RitePorts {
   return {
@@ -460,7 +522,15 @@ function hostPorts(shim: string, say: (line: string) => void): RitePorts {
     sync: () => syncCheckout(CHECKOUT),
     checkout: async () => ({ head: await git(["rev-parse", "HEAD"]), branch: await git(["rev-parse", "--abbrev-ref", "HEAD"]) }),
     stage: (target) => stageShim(shim, target),
-    raise: (revision) => runShim(shim, ["rebuild", "--at", revision, "--keep-after-landing"]),
+    raise: (revision, keeper) => runShim(shim, ["rebuild", "--at", revision, "--keep-after-landing", ...(keeper ? ["--keeper-to", keeper.to] : [])]),
+    // THE KEEPER MOVE: the shim stands the successor and prints one JSON line naming its key and closure.
+    keeperStand: async () => {
+      const line = await shimRead(shim, ["keeper-stand"]);
+      try {
+        const read = JSON.parse(line ?? "null") as { to?: unknown; closure?: unknown } | null;
+        return read !== null && typeof read.to === "string" && /^[0-9a-f]{64}$/.test(read.to) && typeof read.closure === "string" && /^sha256:[0-9a-f]{64}$/.test(read.closure) ? { to: read.to, closure: read.closure } : null;
+      } catch { return null; }
+    },
     tty: () => process.stdin.isTTY === true && process.stdout.isTTY === true,
     row: (verb, rowArgs) => cliVerb(hostRowLine(verb, rowArgs)),
     standing: async (branch, face) => {
@@ -470,6 +540,13 @@ function hostPorts(shim: string, say: (line: string) => void): RitePorts {
     ranImage: () => shimRead(shim, ["vessel-image"]),
     // THE KEEP AFTER THE LANDING: the raise defers the keep a down left owed (`--keep-after-landing`), and the rite runs it here.
     keepOwed: () => runShim(shim, ["keep-owed"]),
+    // THE LAG AFTER THE RAISE: read in the vessel that stands; the workbench lay rides the owner's yes on this terminal, never canon.
+    floorCard: async () => { const read = await cliVerb(["vessel", "floor", "status"]); const card = read.ok ? read.output["card"] as { title?: unknown } | undefined : undefined; return typeof card?.title === "string" ? { title: card.title } : null; },
+    houseLag: async () => { const read = await cliVerb(["vessel", "lay", "--lag"]); return read.ok ? houseLagOf(read.output) : null; },
+    ask: askOnTerminal,
+    layWorkbench: layWorkbenchOnTerminal,
+    // An AI launcher is a seat: the harness's mark, or a host chain that reads no person's hand (the bridge marks it the same way).
+    seat: () => ownPeerKind(process.env) !== "hand",
     say,
   };
 }
@@ -522,6 +599,8 @@ async function runKeepHost(args: ParsedArgs): Promise<number> {
     row: (verb, rowArgs) => cliVerb(["rite", verb, ...flagsOf(rowArgs)]),
     git: gitIn,
     say: (line) => console.error(line),
+    // THE SHORE'S FLUSH BEFORE THE CUT rides the hand door that stands (daemon and active wiki alone); no reach widens for it.
+    flush: shoreFlushRow,
     // The down path's `--if-due` keep asks nobody; a keep the operator runs by hand offers a spent lei's refill.
     ...(plan.ifDue === true ? {} : { refill: liveRefill }),
   };

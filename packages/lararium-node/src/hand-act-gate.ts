@@ -12,9 +12,15 @@
  *
  * The same gate serves every hand act on the custody door and the pūlama's hand door; `rite abandon`'s hand gate (#409) names the
  * same need and takes this helper when the two land.
+ *
+ * A COMMAND WITH NO SOCKET reads its own branch (`readOwnHand`): the sense lifecycle's hand verbs (`lares sense harden`,
+ * `retire`, `un-retire`, `purge`, `teardown --confirm`) run direct over the store, so the CLI asks the same three readings of the
+ * process that runs the command. A flag the command carries (`--approve`, `--confirm`) names the intent; only this reading
+ * approves. Like the peer reading it closes the honest road and the casual omission (a stripped harness mark), not a process
+ * that leaves the harness's branch on purpose.
  */
 import type { Socket } from "node:net";
-import { peerKindOf, type PeerKind } from "./uds-peer.js";
+import { branchKind, harnessMark, peerKindOf, PROC, type PeerKind, type ProcReader } from "./uds-peer.js";
 
 export type HandReading =
   | { readonly admit: "hand" | "route-proves" }
@@ -25,8 +31,27 @@ export type HandReading =
  * budget before anything moves (a rehive's face route): only such an act stands for an unknown peer.
  */
 export async function readHand(sock: Socket, opts: { readonly proveRoute: boolean }, read: (sock: Socket) => Promise<PeerKind> = peerKindOf): Promise<HandReading> {
-  const kind = await read(sock).catch((): PeerKind => "unknown");
+  return handOf(await read(sock).catch((): PeerKind => "unknown"), opts);
+}
+
+/** One reading's verdict: `ai` refuses, `hand` admits, `unknown` stands only for an act that proves a route by itself. */
+function handOf(kind: PeerKind, opts: { readonly proveRoute: boolean }): HandReading {
   if (kind === "ai") return { refusal: "hand-act-only" };
   if (kind === "hand") return { admit: "hand" };
   return opts.proveRoute ? { admit: "route-proves" } : { refusal: "hand-unattested" };
+}
+
+/**
+ * How the process running a command reads: `ai` where a harness mark stands in its own environment or a harness stands on its
+ * parent chain (up to init: no vessel line cuts this walk, since the command makes the whole act); `unknown` where any link
+ * of that chain cannot be read (`branchKind`); else `hand`.
+ */
+export function ownPeerKind(env: Readonly<Record<string, string | undefined>> = process.env, self: number = process.pid, read: ProcReader = PROC): PeerKind {
+  if (Object.entries(env).some(([key, value]) => harnessMark(key, value))) return "ai";
+  return branchKind(self, 0, read);
+}
+
+/** Read the hand behind a command that runs in its own process (no socket): the same verdicts `readHand` gives a peer. */
+export function readOwnHand(opts: { readonly proveRoute: boolean }, kind: PeerKind = ownPeerKind()): HandReading {
+  return handOf(kind, opts);
 }

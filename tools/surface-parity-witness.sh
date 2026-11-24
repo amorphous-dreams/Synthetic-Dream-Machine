@@ -38,7 +38,7 @@ if not CLI.exists():
     print(f"[surface-parity] no built CLI at {CLI} — run `pnpm build` first"); sys.exit(1)
 
 tools = [t.replace("_", "-") for t in
-         re.findall(r'@mcp\.tool\([^)\n]*\)\s*\n\s*(?:async )?def (\w+)', MCP.read_text())]
+         re.findall(r'@mcp\.tool\([^\n]*\)\s*\n\s*(?:async )?def (\w+)', MCP.read_text())]
 
 # A FLOOR ON THE SUBJECT'S SIZE. The decorator pattern binds `@mcp.tool(...)` with its arguments on ONE line
 # (the tiddler door's tools state their annotations there: `@mcp.tool(annotations=_READS)`), so a decorator
@@ -129,7 +129,7 @@ EXEMPT: dict[str, str] = {
 
 def daemon_verbs_mcp(name: str) -> set:
     """The daemon verbs an MCP tool routes to — read off its own `_call(...)`."""
-    body = re.search(rf'@mcp\.tool\([^)\n]*\)\s*\n\s*(?:async )?def {re.escape(name)}\b.*?(?=\n    @mcp\.tool|\Z)',
+    body = re.search(rf'@mcp\.tool\([^\n]*\)\s*\n\s*(?:async )?def {re.escape(name)}\b.*?(?=\n    @mcp\.tool|\Z)',
                      MCP.read_text(), re.S)
     found = set(re.findall(r'_call\(\s*"(\w+)"', body.group(0))) if body else set()
     return {v.replace("_", "-") for v in found}
@@ -150,10 +150,10 @@ def daemon_verbs_cli(name: str) -> set:
 # and says what each one writes — so a reader meeting either door learns the difference here rather
 # than by running both and comparing stores.
 SLICING: dict[str, str] = {
-    "pour": ("CLI `pour --all` walks the whole tending movement and `pour --writeback` runs its "
-             "bearing leg alone. The MCP tool captures one pointer's DRAWERS, and its `all` rides "
-             "the same sweep spine the CLI's drawers leg reaches. Both fill a sensorium; they "
-             "enter at different legs."),
+    "pour": ("CLI `pour --all` walks the whole tending movement, `pour --bulk` runs its drawers leg "
+             "alone and `pour --writeback` its bearing leg. The MCP tool captures one pointer's "
+             "DRAWERS, and its `bulk` rides the same sweep spine `pour --bulk` reaches. Both fill a "
+             "sensorium; they enter at different legs."),
 }
 
 drift = []

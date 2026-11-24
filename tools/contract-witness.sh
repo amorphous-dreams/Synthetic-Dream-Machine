@@ -33,7 +33,7 @@
 # @lararium/node) reads it against A's own replica with `verifyPresentedAdmit`: HELD after the admit, DENIED
 # after a descending revoke. It checks that B's own leaf opens a socket through the sealed face gate, that a stranger
 # carrying the same admit draws `arm-other-key`, and that the admit beside a root edge draws the gate's silence.
-# The raise door then walks: `lares raise sign` signs as a held persona's LEAF with the leaf's admit attached, and
+# The raise door then walks: `lares persona raise-sign` signs as a held persona's LEAF with the leaf's admit attached, and
 # `verifyRaiseGrant` raises it against A's readings; a foreign signer carrying the same admit refuses.
 #
 # ── ANCHORED ANCESTRY ──────────────────────────────────────────────────────────────────────────────────
@@ -587,9 +587,9 @@ CHALLENGE="$XFER/raise-challenge.json"; GRANT="$XFER/raise-grant.json"
 step "a challenge names A's Nexus by its AID"
 if s6_a challenge > "$CHALLENGE" 2>&1 && grep -q '"nexus"' "$CHALLENGE"; then ok; else bad "$(tail -1 "$CHALLENGE")"; fi
 
-step "lares raise sign signs as the LEAF, carrying its admit"
+step "lares persona raise-sign signs as the LEAF, carrying its admit"
 # stdout alone is the JSON: a runtime warning on stderr (node:sqlite's experimental notice) must not corrupt it.
-if as_a raise sign "$(cat "$CHALLENGE")" --as 0 --json > "$XFER/raise-sign.out" 2> "$XFER/raise-sign.err" \
+if as_a persona raise-sign "$(cat "$CHALLENGE")" --as 0 --json > "$XFER/raise-sign.out" 2> "$XFER/raise-sign.err" \
    && node -e 'const o=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")); if(!o.ok) process.exit(1); require("fs").writeFileSync(process.argv[2], JSON.stringify(o.data));' "$XFER/raise-sign.out" "$GRANT" \
    && grep -q "\"byNym\":\"$A_LEAF\"" "$GRANT"; then ok
 else bad "$(tail -c 300 "$XFER/raise-sign.out") $(tail -c 300 "$XFER/raise-sign.err")"; fi

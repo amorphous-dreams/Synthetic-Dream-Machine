@@ -9,12 +9,15 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/daemon-law-tiddlers
  */
 import { describe, test, expect } from "vitest";
+import { readFileSync } from "node:fs";
+import { carrierFiles } from "../src/carrier-files.js";
 import { CompositeStore, bagUri, ORACLE_BAG, SYSTEM_CANON_SLUGS, HULLS_TS_ONLY } from "@lararium/mesh";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
-import { makeWikiFilterReactor, makeTiddlerGetReactor, makeTiddlerPutReactor, type TiddlerVerbOptions } from "../src/tiddler-verbs.js";
+import { makeWikiFilterReactor, makeWikiRenderReactor, makeTiddlerGetReactor, makeTiddlerPutReactor, type TiddlerVerbOptions } from "../src/tiddler-verbs.js";
 import {
-  seedDaemonLawTiddlers, DAEMON_LAW_TIDDLERS, LAW_INDEX_FILTER, LAW_PINS_FILTER, LAW_PINS_TITLE, LAW_BOOT_SEED, LAW_MU_ROOT, LAW_CANON_BAG_PATTERN,
+  seedDaemonLawTiddlers, DAEMON_LAW_TIDDLERS, LAW_INDEX_FILTER, LAW_PINS_FILTER, LAW_PINS_TITLE, LAW_BOOT_SEED, LAW_MU_ROOT, LAW_CANON_BAG_PATTERN, lawStandsFilter,
 } from "../src/daemon-law-tiddlers.js";
+import { HOUSE_FILTERS_TITLE, HOUSE_FILTERS_FLOOR, HOUSE_FUNCTION_NAMES, functionPragmasOf, houseBlocksOf, refuseUnknownHouseOperators } from "../src/house-filters.js";
 import { seedDaemonProtocol } from "../src/daemon-protocol-seed.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
@@ -54,18 +57,57 @@ type Cap = VerbContext["cap"];
 const writer: Cap = async (access, bag) => (bag === DAEMON || access === "read" ? { ok: true } : { ok: false, reason: "no-grant" });
 const ctx = (): VerbContext => ({ daemon: {} as CompositeStore, invocation: { requestId: "r1" } as VerbContext["invocation"], cap: writer });
 
-async function rig(seed = true) {
+/** Load a declared canon carrier for execution in the test wiki. */
+const canonCarrier = (suffix: string): string => {
+  const repo = new URL("../../..", import.meta.url).pathname;
+  const listed = carrierFiles(repo).find((f) => f.endsWith(suffix));
+  if (!listed) throw new Error(`no carrier ends ${suffix}`);
+  return readFileSync(listed.startsWith("/") ? listed : `${repo}${listed}`, "utf8");
+};
+const CARRIER_TEXT = canonCarrier("api/filters.mem");
+
+async function rig(seed = true, carrier: boolean | string = true) {
   const engine = await bootTestWiki({ tiddlers: [{ title: WORKING_POINTER, text: DAEMON }, ...CANON_ROWS] });
   if (seed) seedDaemonLawTiddlers(engine);
   const composite = new CompositeStore();
-  composite.addLayer({ bagId: ORACLE_BAG, store: new MemoryTiddlerStore(ORACLE_BAG), writable: false });
+  const oracle = new MemoryTiddlerStore(ORACLE_BAG);
+  if (carrier) await oracle.put({ tiddler: { title: HOUSE_FILTERS_TITLE, text: typeof carrier === "string" ? carrier : CARRIER_TEXT, type: "text/vnd.tiddlywiki" } }, { kind: "boot" } as never);
+  composite.addLayer({ bagId: ORACLE_BAG, store: oracle, writable: false });
   composite.addLayer({ bagId: DAEMON, store: new MemoryTiddlerStore(DAEMON), writable: true });
   const opts: TiddlerVerbOptions = { composite, tw5: engine };
+  const render = async (text: string): Promise<string> => String((await makeWikiRenderReactor(opts)({ recipe: "default", text }, ctx()))["text"]).trim();
   const filter = async (f: string): Promise<string[]> => (await makeWikiFilterReactor(opts)({ recipe: "default", filter: f }, ctx()))["titles"] as string[];
   /** A record a face writes: it lands in the working layer, its stamp naming that layer. */
   const write = (title: string, fields: Record<string, string> = {}): void => { engine.wiki.addTiddler({ title, text: "", ...fields, "$origin-bag": WORKING }); };
-  return { engine, opts, filter, write };
+  return { engine, opts, oracle, filter, render, write };
 }
+
+describe("the house's function text, with no wiki booted", () => {
+  test("the floor stands welded to the canon carrier byte for byte, every house name", () => {
+    const carrier = houseBlocksOf(CARRIER_TEXT);
+    const floor = houseBlocksOf(HOUSE_FILTERS_FLOOR);
+    for (const name of HOUSE_FUNCTION_NAMES) {
+      expect(carrier.has(name), `${name} parses from the carrier`).toBe(true);
+      expect(floor.get(name)).toBe(carrier.get(name));
+    }
+    expect(functionPragmasOf(CARRIER_TEXT)).toBe(functionPragmasOf(HOUSE_FILTERS_FLOOR));
+  });
+
+  test("three spellings parse (multi-line, one-line, sigil), CRLF reads as LF, and a dropped name reads from the floor", () => {
+    const canonical = "\\function lares.course(standing)\n[tag[x]]\n\\end";
+    const forms = [canonical, "\\function lares.course(standing) [tag[x]]", "<<~ function name=`lares.course(standing)`>>[tag[x]]<<~/function>>", "\\function lares.course(standing)\r\n[tag[x]]\r\n\\end\r\n"];
+    for (const form of forms) expect(houseBlocksOf(form).get("lares.course")).toBe(canonical);
+    const pragmas = functionPragmasOf(forms[1]!);
+    expect(pragmas).toContain(houseBlocksOf(HOUSE_FILTERS_FLOOR).get("lares.stage")!);
+    expect(pragmas).toContain(canonical);
+  });
+
+  test("a lares. operator outside the house set refuses by name; a house name and a title naming lares. pass", () => {
+    expect(() => refuseUnknownHouseOperators("[lares.nope[]]")).toThrow(/house-filter-unknown/);
+    expect(() => refuseUnknownHouseOperators("[tag[a]] +[lares.lawx[]]")).toThrow(/house-filter-unknown/);
+    for (const ok of ["[lares.law[]]", "[lares.law.pins[]]", "[lares.course[open]]", "[lares.stage[state]!regexp[#]]", "[[lar:///ha.ka.ba/lares.x]]", "[prefix[lar:///ha.ka.ba/lares/api]]"]) expect(() => refuseUnknownHouseOperators(ok)).not.toThrow();
+  });
+});
 
 describe("the law seed and its canon set", () => {
   test("the seed lays the pin set as a shadow, beside the rest of the protocol seed; the law itself stands as no wiki record", () => {
@@ -146,5 +188,272 @@ describe.skipIf(wikiSkip)(`the law index in the wiki's own engine${skipNote}`, (
   test("with no pin set standing, the index answers the canon law alone and refuses nothing", async () => {
     const bare = await rig(false);
     expect(await bare.filter(LAW_INDEX_FILTER)).toEqual(CANON_LAW);
+  });
+});
+
+describe.skipIf(wikiSkip)(`the house's functions stand in canon alone${skipNote}`, () => {
+  const LAW_OVERRIDE = "\\function lares.law()\n[[lar:///planted/everything]]\n\\end\n";
+
+  test("RED: a working-layer tiddler that redefines lares.law (the carrier's own title, or any other tagged $:/tags/Global) changes no answer", async () => {
+    const r = await rig();
+    const before = await r.filter("[lares.law[]]");
+    expect(before).toEqual([...PINS, ...CANON_LAW.filter((t) => !PINS.includes(t))]);
+    r.write(HOUSE_FILTERS_TITLE, { text: LAW_OVERRIDE, tags: "$:/tags/Global" });
+    r.write("lar:///ha.ka.ba/wikis/daemon/working/mine", { text: LAW_OVERRIDE, tags: "$:/tags/Global", type: "text/vnd.tiddlywiki" });
+    r.write("$:/config/lares/mine", { text: LAW_OVERRIDE, tags: "$:/tags/Global", type: "text/vnd.tiddlywiki" });
+    expect(await r.filter("[lares.law[]]")).toEqual(before);
+    expect(await r.filter(LAW_INDEX_FILTER)).toEqual(before);
+    expect(await r.filter("[lares.law.pins[]]")).toEqual(PINS);
+    expect(await r.filter("[lares.law[]match[lar:///planted/everything]]")).toEqual([]);
+  });
+
+  test("RED: a render of a span holds the house's functions from canon too: a working-layer $:/tags/Global redefinition never shadows one", async () => {
+    const r = await rig();
+    const canon = await r.render("{{{ [lares.law[]count[]] }}}");
+    expect(canon).toBe(String(PINS.length + CANON_LAW.filter((t) => !PINS.includes(t)).length));
+    r.write("lar:///ha.ka.ba/wikis/daemon/working/mine", { text: LAW_OVERRIDE, tags: "$:/tags/Global", type: "text/vnd.tiddlywiki" });
+    expect(await r.render("{{{ [lares.law[]count[]] }}}")).toBe(canon);
+    expect(await r.render("{{{ [lares.law[]match[lar:///planted/everything]] }}}")).toBe("");
+  });
+
+  test("a vessel whose canon holds no carrier answers from the floor, and an override still changes nothing", async () => {
+    const r = await rig(true, false);
+    const answer = [...PINS, ...CANON_LAW.filter((t) => !PINS.includes(t))];
+    expect(await r.filter("[lares.law[]]")).toEqual(answer);
+    r.write("lar:///ha.ka.ba/wikis/daemon/working/mine", { text: LAW_OVERRIDE, tags: "$:/tags/Global", type: "text/vnd.tiddlywiki" });
+    expect(await r.filter("[lares.law[]]")).toEqual(answer);
+    expect(await r.render("{{{ [lares.law[]count[]] }}}")).toBe(String(answer.length));
+  });
+
+  test("H1: a carrier that stands but drops, renames or mis-spells a house function reads that name from the floor, never the field fallback", async () => {
+    const all = (await rig()).engine.wiki.filterTiddlers("[all[tiddlers]]").length;
+    const answer = [...PINS, ...CANON_LAW.filter((t) => !PINS.includes(t))];
+    const dropped = CARRIER_TEXT.replace(/\\function lares\.law\(\)[\s\S]*?\\end/, "");
+    const renamed = CARRIER_TEXT.replace("\\function lares.stage(name)", "\\function lares.stages(name)");
+    const oneLine = CARRIER_TEXT.replace(/\\function lares\.stage\(name\)\n(.*)\n\\end/, "\\function lares.stage(name) $1");
+    const sigil = CARRIER_TEXT.replace(/\\function lares\.stage\(name\)\n(.*)\n\\end/, "<<~ function name=`lares.stage(name)`>>$1<<~/function>>");
+    for (const text of [dropped, renamed, oneLine, sigil, CARRIER_TEXT.replace(/\n/g, "\r\n"), "garbage"]) {
+      const r = await rig(true, text);
+      expect(await r.filter("[lares.law[]]")).toEqual(answer);
+      expect((await r.filter("[lares.law[]]")).length).toBeLessThan(all);
+      expect(await r.filter("[lares.stage[state]!regexp[#]]")).toEqual(await r.filter("[prefix[lar:///ha.ka.ba/kahua/memory/state/]!regexp[#]]"));
+    }
+  });
+
+  test("H1b: a lares. operator the house leaves unresolved refuses by name and never answers the store", async () => {
+    const r = await rig();
+    await expect(r.filter("[lares.nope[]]")).rejects.toThrow(/house-filter-unknown/);
+  });
+
+  test("M2: a filter reached by indirection runs under the house widget too", async () => {
+    const r = await rig();
+    r.engine.wiki.addTiddler({ title: "$:/x", text: "[lares.law[]]", "$origin-bag": WORKING });
+    expect(await r.filter("[subfilter{$:/x}]")).toEqual([...PINS, ...CANON_LAW.filter((t) => !PINS.includes(t))]);
+  });
+
+  test("L1: the wiki-stamp seam: with no canon layer holding the carrier, a wiki record that carries a canon stamp serves; one stamped with a working layer never does", async () => {
+    const variant = "\\function lares.course(standing)\n[[lar:///seam/course]]\n\\end\n";
+    const canonStamped = await rig(true, false);
+    canonStamped.engine.wiki.addTiddler({ title: HOUSE_FILTERS_TITLE, text: variant, "$origin-bag": ORACLE_BAG });
+    expect(await canonStamped.filter("[lares.course[open]]")).toEqual(["lar:///seam/course"]);
+    const forged = await rig(true, false);
+    forged.engine.wiki.addTiddler({ title: HOUSE_FILTERS_TITLE, text: variant, "$origin-bag": WORKING });
+    expect(await forged.filter("[lares.course[open]]")).toEqual([]);
+  });
+
+  test("M1: a stamped-canon global carrying the Global tag and a raw span define cannot move a render of a title or the filter", async () => {
+    const r = await rig();
+    r.write("lar:///ha.ka.ba/wikis/daemon/working/forged", { text: LAW_OVERRIDE, tags: "$:/tags/Global", type: "text/vnd.tiddlywiki" });
+    r.engine.wiki.addTiddler({ title: "lar:///ha.ka.ba/wikis/daemon/working/page", text: "{{{ [lares.law[]count[]] }}}", type: "text/vnd.tiddlywiki", "$origin-bag": WORKING });
+    const n = String(PINS.length + CANON_LAW.filter((t) => !PINS.includes(t)).length);
+    const rendered = String((await makeWikiRenderReactor(r.opts)({ recipe: "default", title: "lar:///ha.ka.ba/wikis/daemon/working/page" }, ctx()))["text"]);
+    expect(rendered).toContain(n);
+  });
+
+  test("course standings derive from proof and other stage citations; waves list their tag", async () => {
+    const r = await rig();
+    const base = "lar:///ha.ka.ba/kahua/memory/";
+    const open = `${base}course/open.one.waits`;
+    const closed = `${base}course/closed.one.waits`;
+    const ready = `${base}course/ready.one.waits`;
+    const wave = `${base}wave/first`;
+    r.write(open, { tags: "stage/course", proof: "  " });
+    r.write(closed, { tags: "stage/course", proof: "git:abc" });
+    r.write(ready, { tags: "stage/course", proof: "git:def", text: ready });
+    r.write(`${base}state/reader`, { tags: "stage/state", text: `A bare cite ${closed}` });
+    r.write(wave, { tags: "stage/wave", list: `${open} ${closed} ${ready}` });
+    expect(await r.filter("[lares.course[open]]")).toEqual([open]);
+    expect(await r.filter("[lares.course[closed]]")).toEqual([closed, ready].sort());
+    expect(await r.filter("[lares.course[ash-ready]]")).toEqual([ready]);
+    expect(await r.filter("[lares.course[unknown]]")).toEqual([]);
+    expect(await r.filter("[lares.waves[]]")).toEqual([wave]);
+  });
+
+  test("road remains readable during migration", async () => {
+    const r = await rig();
+    r.write("road-open", { tags: "stage/road road/state/open" });
+    r.write("road-set-down", { tags: "stage/road road/state/set-down" });
+    expect(await r.filter("[lares.road[open]]")).toEqual(["road-open"]);
+    expect(await r.filter("[lares.road[set-down]]")).toEqual(["road-set-down"]);
+  });
+
+  test("only whole, case-sensitive citations from other stage records block ash", async () => {
+    const r = await rig();
+    const base = "lar:///ha.ka.ba/kahua/memory/";
+    const item = (name: string) => `${base}course/${name}.one.waits`;
+    for (const name of ["linked", "self", "external", "slot", "prefix", "case"]) r.write(item(name), { tags: "stage/course", proof: "git:abc" });
+    r.write(`${base}state/linker`, { text: `[[${item("linked")}]]` });
+    r.write(item("self"), { tags: "stage/course", proof: "git:abc", text: `[[${item("self")}]]` });
+    r.write("outside", { text: `[[${item("external")}]] ${item("external")}` });
+    r.write(`${item("slot")}#/entry`, { tags: "stage/course", proof: "git:abc", text: `[[${item("slot")}]] ${item("slot")}` });
+    r.write(`${base}state/prefix`, { text: `${item("prefix")}-two` });
+    r.write(`${base}state/case`, { text: item("case").toUpperCase() });
+    expect(await r.filter("[lares.course[ash-ready]]")).toEqual(["self", "external", "slot", "prefix", "case"].map(item).sort());
+    expect(await r.filter("[lares.course[closed]]")).not.toContain(`${item("slot")}#/entry`);
+  });
+
+  test("a sentence-ending period cites a course item without matching a longer dotted title", async () => {
+    const r = await rig();
+    const base = "lar:///ha.ka.ba/kahua/memory/";
+    const cited = `${base}course/period.one.lands`;
+    const longer = `${base}course/dotted.one.lands`;
+    for (const title of [cited, longer]) r.write(title, { tags: "stage/course", proof: "git:abc" });
+    r.write(`${base}state/period-reader`, { text: `Proof lands at ${cited}.` });
+    r.write(`${base}state/dotted-reader`, { text: `Proof lands at ${longer}.more` });
+    expect(await r.filter("[lares.course[ash-ready]]")).toEqual([longer]);
+  });
+
+  test("another stage record citing a slot holds its carrier", async () => {
+    const r = await rig();
+    const base = "lar:///ha.ka.ba/kahua/memory/";
+    const direct = `${base}course/slot.one.lands`;
+    const loulou = `${base}course/loulou.one.lands`;
+    for (const title of [direct, loulou]) r.write(title, { tags: "stage/course", proof: "git:abc" });
+    r.write(`${base}state/slot-reader`, { text: `Read ${direct}#/entry` });
+    r.write(`${base}state/loulou-reader`, { text: `<<~ loulou uri=\`${loulou}#/entry\`>>` });
+    expect(await r.filter("[lares.course[ash-ready]]")).toEqual([]);
+  });
+
+  test("the course board renders the chosen wave and each standing", async () => {
+    const r = await rig();
+    const base = "lar:///ha.ka.ba/kahua/memory/";
+    const wave = `${base}wave/first`;
+    const item = `${base}course/open.one.waits`;
+    const ready = `${base}course/ready.one.waits`;
+    const other = `${base}course/other.one.waits`;
+    const cited = `${base}course/cited.one.waits`;
+    const template = "lar:///ha.ka.ba/lares/api/course-board";
+    const source = canonCarrier("api/course-board.mem");
+    await r.oracle.put({ tiddler: { title: template, text: source, type: "text/memetic-wikitext+tiddlywiki" } }, { kind: "boot" } as never);
+    r.engine.wiki.addTiddler({ title: template, text: source, type: "text/memetic-wikitext+tiddlywiki", "$origin-bag": ORACLE_BAG });
+    r.write(item, { tags: "stage/course", question: "What comes next?", answer: "build" });
+    r.write(ready, { tags: "stage/course", proof: "git:abc", question: "What landed?", answer: "decision" });
+    r.write(cited, { tags: "stage/course", proof: "git:cited" });
+    r.write(`${base}state/citer`, { text: `[[${cited}]]` });
+    r.write(other, { tags: "stage/course", question: "Outside wave" });
+    r.write(wave, { tags: "stage/wave", list: `${item} ${ready} ${cited}` });
+    r.write(`${base}board`, { waves: "[lares.waves[]]", text: `{{||${template}}}`, type: "text/vnd.tiddlywiki" });
+    const rendered = String((await makeWikiRenderReactor(r.opts)({ recipe: "default", title: `${base}board`, form: "html" }, ctx()))["text"]);
+    for (const value of [wave, "open", "closed", "ash-ready", item, "What comes next?", "build", ready, "What landed?", "decision"]) expect(rendered).toContain(value);
+    expect(rendered).not.toContain(other);
+    const columns = [...rendered.matchAll(/<section class="course-column"[^>]*>([\s\S]*?)<\/section>/g)].map((m) => m[1]!);
+    expect(columns).toHaveLength(3);
+    for (const [i, expected] of [[0, [item]], [1, [ready, cited]], [2, [ready]]] as const) {
+      for (const title of [item, ready, cited]) {
+        expect(columns[i]!.includes(title), `${title} in column ${i}`).toBe((expected as readonly string[]).includes(title));
+      }
+    }
+  });
+
+  test("the call answers what the long form answered: the pins, the law, a title's standing", async () => {
+    const r = await rig();
+    expect(await r.filter(LAW_PINS_FILTER)).toEqual(PINS);
+    expect(await r.filter(lawStandsFilter(`${API}/pono/lar-uri`))).toEqual([`${API}/pono/lar-uri`]);
+    expect(await r.filter(lawStandsFilter(`${API}/pono/lar-uri#/anatomy`))).toEqual([]);
+  });
+
+  test("attractor stores follow convention order and ignore non-canon overrides", async () => {
+    const r = await rig();
+    const base = "lar:///ha.ka.ba/kahua/memory/reference/";
+    const titles = ["discordian-catmas", "pattern-integrities", "practices"].map((name) => base + name);
+    expect(await r.filter("[lares.attractors[]]")).toEqual([]);
+    for (const title of [...titles].reverse()) r.write(title);
+    r.write(base + "other");
+    r.write(HOUSE_FILTERS_TITLE, { text: "\\function lares.attractors()\n[[planted]]\n\\end", tags: "$:/tags/Global" });
+    expect(await r.filter("[lares.attractors[]]")).toEqual(titles);
+  });
+
+  test("attractor stores exclude a store hidden from the reader view", async () => {
+    const r = await rig();
+    const base = "lar:///ha.ka.ba/kahua/memory/reference/";
+    const visible = base + "discordian-catmas", hidden = base + "practices";
+    const sealed = bagUri("sealed");
+    r.write(visible);
+    r.engine.wiki.addTiddler({ title: hidden, text: "private", "$origin-bag": sealed });
+    const only: Cap = async (access, bag) => access === "read" && bag !== sealed ? { ok: true } : { ok: false, reason: "no-grant" };
+    const filter = makeWikiFilterReactor(r.opts);
+    expect((await filter({ recipe: "default", filter: "[lares.attractors[]]" }, ctx()))["titles"]).toEqual([visible, hidden]);
+    expect((await filter({ recipe: "default", filter: "[lares.attractors[]]" }, { ...ctx(), cap: only }))["titles"]).toEqual([visible]);
+  });
+
+  test("[lares.stage[state]] lists the stage's titles, root memes with !regexp[#]", async () => {
+    const r = await rig();
+    const stage = "lar:///ha.ka.ba/kahua/memory";
+    for (const t of [`${stage}/state/handoff`, `${stage}/state/other`, `${stage}/state/other#/entry`, `${stage}/statement/x`, `${stage}/index/y`]) r.engine.wiki.addTiddler({ title: t, text: "", tags: "stage/index" });
+    expect(await r.filter("[lares.stage[state]!regexp[#]]")).toEqual(await r.filter(`[prefix[${stage}/state/]!regexp[#]]`));
+    expect(await r.filter("[lares.stage[state]!regexp[#]]")).toEqual([`${stage}/state/handoff`, `${stage}/state/other`].sort());
+    expect(await r.filter("[lares.stage[state]]")).toContain(`${stage}/state/other#/entry`);
+    expect(await r.filter("[lares.stage[index]!regexp[#]]")).toEqual([`${stage}/index/y`]);
+    expect(await r.filter("[tag[stage/index]] -[lares.stage[state]]")).toEqual(await r.filter(`[tag[stage/index]!prefix[${stage}/state/]]`));
+  });
+});
+
+describe.skipIf(wikiSkip)(`stage reference reaches${skipNote}`, () => {
+  test("broken references retain fragments and trim punctuation", async () => {
+    const r = await rig();
+    const source = "lar:///ha.ka.ba/kahua/memory/state/source";
+    const missing = "lar:///ha.ka.ba/kahua/memory/state/missing#/slot";
+    r.write(source, { text: `See ${missing}.` });
+    expect(await r.filter("[lares.broken[]]")).toContain(missing);
+  });
+  test("broken considers only targets and sources inside memory", async () => {
+    const r = await rig();
+    const base = "lar:///ha.ka.ba/kahua/memory/state/";
+    r.write(`${base}source`, { text: `See ${base}missing and lar:///x.y.z/outside` });
+    r.write("lar:///x.y.z/source", { text: `See ${base}from-outside` });
+    const result = await r.filter("[lares.broken[]]");
+    expect(result).toContain(`${base}missing`);
+    expect(result).not.toContain("lar:///x.y.z/outside");
+    expect(result).not.toContain(`${base}from-outside`);
+  });
+  test("bare prose and tags reach stage roots, while another root stays unreached", async () => {
+    const r = await rig();
+    const base = "lar:///ha.ka.ba/kahua/memory/state/";
+    r.write(`${base}source`, { text: `See ${base}target#/slot,`, tags: `[[${base}tagged]]` });
+    r.write(`${base}target`);
+    r.write(`${base}tagged`);
+    r.write(`${base}alone`);
+    const result = await r.filter("[lares.unreached[]]");
+    expect(result).not.toContain(`${base}target`);
+    expect(result).not.toContain(`${base}tagged`);
+    expect(result).toContain(`${base}alone`);
+  });
+  test("unreached scans 1500 records within a practical bound", async () => {
+    const r = await rig();
+    const base = "lar:///ha.ka.ba/kahua/memory/benchmark/";
+    for (let i = 0; i < 1500; i++) r.write(base + i, { text: "lorem ipsum dolor ".repeat(150) + ` ${base}${(i + 1) % 1500}` });
+    const start = performance.now();
+    const result = await r.filter("[lares.unreached[]]");
+    const elapsed = performance.now() - start;
+    expect(result.filter((title: string) => title.startsWith(base))).toEqual([]);
+    expect(elapsed).toBeLessThan(1500);
+  }, 20_000);
+  test("working-layer function overrides cannot alter reach answers", async () => {
+    const r = await rig();
+    const title = "lar:///ha.ka.ba/kahua/memory/state/alone";
+    r.write(title);
+    r.write(HOUSE_FILTERS_TITLE, { text: "\\function lares.unreached()\n[[forged]]\n\\end\n\\function lares.broken()\n[[forged]]\n\\end", tags: "$:/tags/Global" });
+    expect(await r.filter("[lares.unreached[]]")).toContain(title);
+    expect(await r.filter("[lares.broken[]]")).not.toContain("forged");
   });
 });

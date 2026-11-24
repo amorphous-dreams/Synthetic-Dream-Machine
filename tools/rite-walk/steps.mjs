@@ -314,7 +314,7 @@ const liftKahua = async (ctx) => {
 };
 /** Whether the engineer's kahua stage reads the walk's pre-export item. */
 const engineerReads = async (ctx) => {
-  const list = await ctx.cli(["kahua", "list", "--face", "1", "--json"]);
+  const list = await ctx.cli(["kahua", "get", "--face", "1", "--json"]);
   return list.code === 0 && `${list.stdout}`.includes(STAGED);
 };
 /** The engineer's lift knows the item the walk staged before the export: its lay previews it (and the lift lands it), or the stage already reads it. Zero previews with no item standing fails by name. */
@@ -332,7 +332,7 @@ const found = cli((ctx) => ["vessel", "found", "--hearth", "--name", FACES.stewa
 const up = async (ctx) => ({ ok: true, answer: await ctx.up() });
 const down = async (ctx) => ({ ok: true, answer: await ctx.down() });
 const persona = (n, name) => cli(["persona", "new", String(n), "--name", name, "--no-json"], `persona h${n} minted`);
-const hold = cli(["wiki", "hold", "notes", "--no-json"]);
+const hold = cli(["wiki", "pin", "notes", "--rotate", "--no-json"]);
 
 const FOUND = "lares found --hearth --name 'joshua-fontany' --chair 'dreamnet-kahu-0'";
 const LAY = "lares vessel lay --apply --yes";
@@ -359,15 +359,17 @@ export const STEPS = Object.freeze([
     run: cli(["wiki", "share", "lares", "--write", FACES.engineer, "--read", FACES.referee, "--no-json"], ["workbench: wiki lares rides realm", "(2 member face(s))"]) },
 
   // Memory, the lift, another face.
-  { id: "memory", prose: "''Memory.''", via: "seat-stdio", needs: ["wear-steward"], expect: "meme_put lands a stage meme; meme_get reads it back",
+  { id: "memory", prose: "''Memory.''", via: "seat-stdio", needs: ["wear-steward"], expect: "meme_put lands a stage meme; tiddler_get(meme) reads it back",
     run: async (ctx) => {
       const text = memeText(MEMORY, MEMORY_LINE);
       const seat = await ctx.seat([
         { name: "meme_put", arguments: { uri: MEMORY, text, recipe: "default" } },
-        { name: "meme_get", arguments: { uri: MEMORY, recipe: "default" } },
+        { name: "tiddler_get", arguments: { title: MEMORY, recipe: "default", meme: true, grain: "whole" } },
       ]);
       if (seat.unreached) return seat;
-      const back = JSON.stringify(seat.results[1] ?? null);
+      // The one door answers its whole envelope; the read-back reads the carrier's own field (`meme.text`), never the has line or a slot row.
+      const answered = seat.results[1];
+      const back = typeof answered?.meme?.text === "string" ? answered.meme.text : "";
       return { ok: back.includes(MEMORY_LINE), answer: `meme_put → ${JSON.stringify(seat.results[0])}` };
     } },
   { id: "lift", prose: "''The lift.''", via: SC, needs: ["unlock-all"], expect: "the stage answers the row digest; the lift signs under the face's root",
@@ -396,7 +398,7 @@ export const STEPS = Object.freeze([
         const worn = await ctx.wear(face);
         if (worn?.wears !== face) return { ok: false, answer: `face ${face} never stood worn: ${JSON.stringify(worn)}` };
         const file = ctx.file(`note-${name}.mem`, memeText(NOTE(name), `the ${name} wrote this page`));
-        const put = await ctx.cli(["meme", "put", NOTE(name), "--recipe", "notes", "--file", file, "--json"]);
+        const put = await ctx.cli(["tiddler", "put", "--meme", NOTE(name), "--recipe", "notes", "--file", file, "--json"]);
         said.push(`${name}: ${put.code === 0 ? landing(put) : refusalOf(put)}`);
         if (put.code !== 0 || !landing(put).startsWith(layer)) return { ok: false, answer: said.join(" · ") };
       }
@@ -404,33 +406,33 @@ export const STEPS = Object.freeze([
     } },
 
   // Offer, promote, release, accept.
-  { id: "offer", prose: "''Offer, promote, release, accept.''", via: SC, needs: ["share-lares"], expect: "layer: personal, then the offer",
-    quoted: ["`layer: personal` on this vessel"],
+  { id: "offer", prose: "''Offer, promote, release, accept.''", via: SC, needs: ["share-lares"], expect: "layer: working, then the offer",
+    quoted: ["`layer: working`, the workbench the engineer's `write` seat reaches"],
     run: async (ctx) => {
       const worn = await ctx.wear(1);
       if (worn?.wears !== 1) return { ok: false, answer: `the engineer never stood worn: ${JSON.stringify(worn)}` };
       const file = ctx.file("offered.mem", memeText(OFFERED, "the engineer offers this record to house canon"));
-      const put = await ctx.cli(["meme", "put", OFFERED, "--recipe", "lares", "--file", file, "--json"]);
-      if (put.code !== 0 || !landing(put).startsWith("layer: personal")) return { ok: false, answer: `meme put: ${put.code === 0 ? landing(put) : refusalOf(put)}` };
+      const put = await ctx.cli(["tiddler", "put", "--meme", OFFERED, "--recipe", "lares", "--file", file, "--json"]);
+      if (put.code !== 0 || !landing(put).startsWith("layer: working")) return { ok: false, answer: `meme put: ${put.code === 0 ? landing(put) : refusalOf(put)}` };
       const offer = await ctx.cli(["meme", "offer", OFFERED, "--bag", "lares", "--no-json"]);
       return { ok: offer.code === 0, answer: `${landing(put)} · ${offer.code === 0 ? lineOf(`${offer.stdout}\n${offer.stderr}`, "offer") : refusalOf(offer)}` };
     } },
-  { id: "promote", prose: "Wearing the steward (`lares vault unlock --face 0`, the passphrase again)", via: SC, needs: ["offer"], expect: "the offer lists; the promotion writes the Kahu realm's standing document",
+  { id: "promote", prose: "Wearing the steward (`lares vault unlock --face 0`, the passphrase again)", via: SC, needs: ["offer"], expect: "the offer shows; the promotion writes the Kahu realm's standing document",
     run: async (ctx) => {
       const worn = await ctx.wear(0);
       if (worn?.wears !== 0) return { ok: false, answer: `the steward never stood worn: ${JSON.stringify(worn)}` };
-      const list = await ctx.cli(["meme", "offer", "list", "--bag", "lares", "--json"]);
+      const list = await ctx.cli(["meme", "offer", "show", "--bag", "lares", "--json"]);
       const cid = /"cid"\s*:\s*"([^"]+)"/.exec(list.stdout)?.[1];
-      if (list.code !== 0 || !cid) return { ok: false, answer: `meme offer list: ${list.code === 0 ? "names no offer" : refusalOf(list)}` };
+      if (list.code !== 0 || !cid) return { ok: false, answer: `meme offer show: ${list.code === 0 ? "names no offer" : refusalOf(list)}` };
       const promoted = await ctx.cli(["meme", "offer", "promote", cid, "--yes", "--no-json"]);
       return promoted.code === 0 ? { ok: true, answer: lineOf(promoted.stdout) } : { ok: false, answer: refusalOf(promoted) };
     } },
   { id: "release-cut", fence: "lares nexus release floor.json --cut", needs: ["lay", "wear-steward"], expect: "the manifest cuts from live canon",
     run: cli((ctx) => ["nexus", "release", ctx.path("floor.json"), "--cut", "--no-json"]) },
   { id: "down-to-sign", fence: "lares down", needs: ["up"], expect: "the vessel stops", run: down },
-  { id: "promote-open", fence: "lares nexus promote open floor.json --purpose floor-release --surface floor-release --class high-impact --out approval.json", via: SC, needs: ["release-cut", "down-to-sign"],
+  { id: "promote-open", fence: "lares nexus approve open floor.json --purpose floor-release --surface floor-release --class high-impact --out approval.json", via: SC, needs: ["release-cut", "down-to-sign"],
     expect: "ok — 1 of 1 seats", quoted: ["ok — 1 of 1 seats"],
-    run: cli((ctx) => ["nexus", "promote", "open", ctx.path("floor.json"), "--purpose", "floor-release", "--surface", "floor-release", "--class", "high-impact", "--out", ctx.path("approval.json"), "--no-json"], "1 of 1 seats") },
+    run: cli((ctx) => ["nexus", "approve", "open", ctx.path("floor.json"), "--purpose", "floor-release", "--surface", "floor-release", "--class", "high-impact", "--out", ctx.path("approval.json"), "--no-json"], "1 of 1 seats") },
   { id: "up-to-release", fence: "lares up", nth: 1, via: SC, needs: ["down-to-sign"], expect: "phase → live, then the unlock", run: up },
   { id: "release-land", fence: "lares nexus release floor.json --approval approval.json", needs: ["promote-open", "up-to-release"], expect: "the release lands on the publication board",
     run: cli((ctx) => ["nexus", "release", ctx.path("floor.json"), "--approval", ctx.path("approval.json"), "--no-json"]) },
@@ -440,9 +442,9 @@ export const STEPS = Object.freeze([
 
   // Carry across a re-founding.
   { id: "hold-wear-referee", fence: "lares vault unlock --face 2", via: SC, needs: ["up-to-release"], expect: "wears 2", run: wear(2) },
-  { id: "hold-referee", fence: "lares wiki hold notes", needs: ["hold-wear-referee", "notes-share"], run: hold },
+  { id: "hold-referee", fence: "lares wiki pin notes --rotate", needs: ["hold-wear-referee", "notes-share"], run: hold },
   { id: "hold-wear-steward", fence: "lares vault unlock --face 0", nth: 1, via: SC, needs: ["up-to-release"], expect: "wears 0", run: wear(0) },
-  { id: "hold-steward", fence: "lares wiki hold notes", nth: 1, needs: ["hold-wear-steward", "notes-share"], run: hold },
+  { id: "hold-steward", fence: "lares wiki pin notes --rotate", nth: 1, needs: ["hold-wear-steward", "notes-share"], run: hold },
   { id: "export", fence: "lares export ~/.lares/config/carry-2", needs: ["hold-wear-steward"], expect: "the bundle reads back against its manifest",
     run: cli((ctx) => ["export", ctx.carry(), "--no-json"]) },
   { id: "down-to-refound", fence: "lares down", nth: 1, needs: ["up-to-release"], expect: "the vessel stops", run: down },
@@ -468,7 +470,7 @@ export const STEPS = Object.freeze([
       for (const [face, name] of [[1, "engineer"], [2, "referee"]]) {
         const worn = await ctx.wear(face);
         if (worn?.wears !== face) return { ok: false, answer: `face ${face} never stood worn: ${JSON.stringify(worn)}` };
-        const got = await ctx.cli(["meme", "get", NOTE(name), "--recipe", "notes", "--no-json"]);
+        const got = await ctx.cli(["tiddler", "get", NOTE(name), "--recipe", "notes", "--meme", "--all", "--no-json"]);
         const ok = got.code === 0 && got.stdout.includes(`the ${name} wrote this page`);
         said.push(`${name}: ${ok ? "its page reads back" : refusalOf(got)}`);
         if (!ok) return { ok: false, answer: said.join(" · ") };

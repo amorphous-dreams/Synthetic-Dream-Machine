@@ -8,6 +8,11 @@
 import { describe, expect, test } from "vitest";
 import { bootWithHostBridge, escapeCssIdentifier, LENT_WINDOW_NAMES, makeProjectedViewContract, makeScopedWindowLend, prepareHostBootInstance } from "../src/tw5-host-bridge.js";
 
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
+
+/** A fixture core this suite authors, pinned by the suite that wrote it. */
+const pinned = (bytes: Uint8Array) => ({ bytes, sha256: sha256HexBytesSync(bytes) });
+
 const fixtureCore = new TextEncoder().encode(
   'exports.TiddlyWiki = () => ({ boot: {}, utils: {} });',
 );
@@ -33,7 +38,7 @@ describe("prepareHostBootInstance — browser Worker bridge boundary", () => {
       'window.sjcl = { ready: true }; exports.TiddlyWiki = () => ({ boot: {}, utils: {} });',
     );
     try {
-      const result = await prepareHostBootInstance({ bytes: core });
+      const result = await prepareHostBootInstance(pinned(core));
       expect(result.instance).toBeDefined();
       expect(Object.getOwnPropertyDescriptor(globals, "window")).toEqual(prior);
     } finally {
@@ -87,7 +92,7 @@ describe("prepareHostBootInstance — browser Worker bridge boundary", () => {
       'window.sjcl = { ready: true }; window.larSecond = 1; exports.TiddlyWiki = () => ({ boot: {}, utils: {} });',
     );
     try {
-      await expect(prepareHostBootInstance({ bytes: core })).rejects.toThrow(/CapabilityRefused: window\.larSecond \(write\)/);
+      await expect(prepareHostBootInstance(pinned(core))).rejects.toThrow(/CapabilityRefused: window\.larSecond \(write\)/);
       expect("larSecond" in globals).toBe(false);
       expect(Object.getOwnPropertyDescriptor(globals, "window")).toEqual(prior);
     } finally {
@@ -109,7 +114,7 @@ describe("prepareHostBootInstance — browser Worker bridge boundary", () => {
     const prior = globals["WorkerGlobalScope"];
     globals["WorkerGlobalScope"] = class WorkerGlobalScope {};
     try {
-      const result = await prepareHostBootInstance({ bytes: fixtureCore });
+      const result = await prepareHostBootInstance(pinned(fixtureCore));
       expect(result.isBrowser).toBe(true);
     } finally {
       if (prior === undefined) delete globals["WorkerGlobalScope"];
@@ -122,7 +127,7 @@ describe("prepareHostBootInstance — browser Worker bridge boundary", () => {
     const prior = globals["WorkerGlobalScope"];
     delete globals["WorkerGlobalScope"];
     try {
-      const result = await prepareHostBootInstance({ bytes: fixtureCore });
+      const result = await prepareHostBootInstance(pinned(fixtureCore));
       expect(result.isBrowser).toBe(false);
     } finally {
       if (prior !== undefined) globals["WorkerGlobalScope"] = prior;

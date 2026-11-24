@@ -312,6 +312,10 @@ export interface IslandMsg_Manifest {
     /** This face's relation (its face plane pin, `faceRelationOf`): its daemon canon (`bags/daemon-<relation>`) stands by
      *  it. Absent: the face's daemon canon waits until a proof names it. */
     faceRelation?:     string;
+    /** A LIT SIBLING'S PROVEN PLANES (sibling-plane-mount): its intent plane and the persona plane its roster folds from, as its
+     *  own signed log named them when the vessel proved it at its light. The island re-checks the pair against that log and KEL
+     *  before its door reads either; absent, the sibling's door stands none. */
+    facePlanes?:       { readonly persona: string; readonly intents: string };
     faceAnchor?: FaceAnchor | null;
     meshCabalDocIdHex?:    string;
     /** Writable bag URIs to register so verify/delegate resolve (lar: URIs). */
@@ -345,7 +349,22 @@ export interface IslandMsg_Manifest {
 /** Authentication material carried by one unlocked joined face. */
 export type JoinedFaceAuth = Required<Pick<NonNullable<IslandMsg_Manifest["daemonAuth"]>,
   "atom" | "personaGroupId" | "faceAnchor" | "personaKel" | "deviceEdge" | "signerDid" | "registerBags">> &
-  Pick<NonNullable<IslandMsg_Manifest["daemonAuth"]>, "meshCabalDocIdHex" | "veilArchiveBytes" | "faceAddressSecret" | "handleIndex" | "faceRelation">;
+  Pick<NonNullable<IslandMsg_Manifest["daemonAuth"]>, "meshCabalDocIdHex" | "veilArchiveBytes" | "faceAddressSecret" | "handleIndex" | "faceRelation" | "facePlanes"> & {
+    /**
+     * EVERY LIT FACE PROJECTS ITS OWN WRITES: the mirror grants the vessel names for this face alone, each under that face's own
+     * root (`<projections>/faces/<pet name>/`): its daemon working top, its daemon canon, its kahua stage. The daemon island
+     * mounts one projector over the face's own engine while the face stands lit, and stops it when the face drops. Absent (no
+     * pet name, or a face that makes no folder), the face projects nothing. Never a crossroads or a temp layer: those belong
+     * to the worn composition's own list.
+     */
+    readonly diskMirrors?: IslandMsg_Manifest["diskMirrors"];
+    /**
+     * THE RECARD (`lares vault recard --face N`), asked for this light alone: where the face's stand holds no prekey secret, it
+     * mints its card before it registers its bags and rests the Archive after that card, keeping the face's identity. A light
+     * that never meets the fault stands as it would. Never part of what the face lit from (`faceInputsDigest`).
+     */
+    readonly recard?: true;
+  };
 
 /**
  * Cool the wiki slot from `wela` (hot) to `anu` (cold) — teardown; thread
@@ -514,9 +533,9 @@ export interface DaemonMsg_WorldlineCompareRequest {
   requestId: string;
   a: string;
   b: string;
-  /** The durable edge-DAG opens (prov:Delegation spawn / prov:Communication inject), plain objects. */
+  /** The durable edge-DAG opens (prov:Delegation spawn / prov:Communication message or round-closing handback), plain objects. */
   opens: readonly WorldlineEdgeTriple[];
-  /** The edge-DAG closes (prov:Delegation handback) — absent when no handback edges stand. */
+  /** The edge-DAG closes (prov:Delegation retirement) — absent when no retirement edges stand. */
   closes?: readonly WorldlineEdgeClose[];
   /** The run-root / common-cause handle the registry seeds from (default "operator"). */
   root?: string;
@@ -528,6 +547,8 @@ export interface DaemonMsg_WorldlineCompareResult {
   requestId: string;
   /** "before" | "after" | "concurrent" | "equal" — the ItcOrder, carried as a plain string (GP-2). */
   order?: string;
+  /** Handles whose stamps rest on an incomplete record (the replay's `uncertain`); a verdict naming one reads partial. */
+  uncertain?: readonly string[];
   error?: string;
 }
 
@@ -1441,6 +1462,7 @@ export function mkDaemonWorldlineCompareRequest(opts: {
 export function mkDaemonWorldlineCompareResult(opts: {
   requestId: string;
   order?: string;
+  uncertain?: readonly string[];
   error?: string;
 }): DaemonMsg_WorldlineCompareResult {
   const msg: DaemonMsg_WorldlineCompareResult = {
@@ -1448,6 +1470,7 @@ export function mkDaemonWorldlineCompareResult(opts: {
     requestId: opts.requestId,
   };
   if (opts.order !== undefined) msg.order = opts.order;
+  if (opts.uncertain !== undefined) msg.uncertain = opts.uncertain;
   if (opts.error !== undefined) msg.error = opts.error;
   return msg;
 }

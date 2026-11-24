@@ -38,6 +38,8 @@ const VALUE = "the last daemon write";
 const core = new TextEncoder().encode("core");
 const hash = createHash("sha256").update(core).digest("hex");
 const plugin = new TextEncoder().encode('{"title":"plugin"}');
+// The plugin blob carries its pin as every blob does: its CID names its bytes.
+const pluginCid = createHash("sha256").update(plugin).digest("hex");
 
 async function scenario(responsive: boolean, opts: { reportUnsaved?: boolean } = {}) {
   const disk = new Map<string, string>();
@@ -95,7 +97,7 @@ async function scenario(responsive: boolean, opts: { reportUnsaved?: boolean } =
   const behavior: IslandBehavior = { onEa: async () => {}, onSignal: () => false, onHooAnu: async () => {} };
   runSovereignKernel(host, behavior, { caps: { receipt: true } });
   const port = { addEventListener() {} } as unknown as IslandMsg_Manifest["syncPort"];
-  deliver(mkManifest("lar:///test.kernel.drain/wiki", port, { wikiSlug: "daemon" }, { islandUrl: "automerge:oracle", workingUrl: "automerge:working" }, hash, { pluginCids: ["plugin"] }));
+  deliver(mkManifest("lar:///test.kernel.drain/wiki", port, { wikiSlug: "daemon" }, { islandUrl: "automerge:oracle", workingUrl: "automerge:working" }, hash, { pluginCids: [pluginCid] }));
   await ea;
   deliver(mkTeardown());
   await stopped;
@@ -154,7 +156,7 @@ describe("F1: the vessel's close answers this island's asks-done, and nothing el
     const behavior: IslandBehavior = { onEa: async () => {}, onSignal: () => false, onHooAnu: async () => {} };
     runSovereignKernel(host, behavior, { caps: { receipt: true } });
     const port = { addEventListener(type: string, listener: () => void) { if (type === "close") closePort = listener; } } as unknown as IslandMsg_Manifest["syncPort"];
-    deliver(mkManifest("lar:///test.kernel.drain/wiki", port, { wikiSlug: "daemon" }, { islandUrl: "automerge:oracle", workingUrl: "automerge:working" }, hash, { pluginCids: ["plugin"] }));
+    deliver(mkManifest("lar:///test.kernel.drain/wiki", port, { wikiSlug: "daemon" }, { islandUrl: "automerge:oracle", workingUrl: "automerge:working" }, hash, { pluginCids: [pluginCid] }));
     await ea;
     if (event === "bare-close") deliver({ type: "receipt:close" });
     else closePort?.();
@@ -203,7 +205,7 @@ describe("vessel stand-down releases receipt waits", () => {
     const behavior: IslandBehavior = { onEa: async () => {}, onSignal: () => false, onHooAnu: async () => {} };
     runSovereignKernel(host, behavior, { caps: { receipt: true } });
     const port = { addEventListener(type: string, listener: () => void) { if (type === "close") closePort = listener; } } as unknown as IslandMsg_Manifest["syncPort"];
-    deliver(mkManifest("lar:///test.kernel.drain/wiki", port, { wikiSlug: "daemon" }, { islandUrl: "automerge:oracle", workingUrl: "automerge:working" }, hash, { pluginCids: ["plugin"] }));
+    deliver(mkManifest("lar:///test.kernel.drain/wiki", port, { wikiSlug: "daemon" }, { islandUrl: "automerge:oracle", workingUrl: "automerge:working" }, hash, { pluginCids: [pluginCid] }));
     await ea;
     // A clock that never fires: no advance can manufacture the vessel's stand-down.
     const clock = vi.spyOn(globalThis, "setTimeout").mockImplementation((() => 1) as typeof setTimeout);

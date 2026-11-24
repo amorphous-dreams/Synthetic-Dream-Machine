@@ -15,6 +15,9 @@ async function cidOf(bytes: Uint8Array): Promise<string> {
   return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
 }
 
+/** The core with its pin: the guard refuses the main thread whatever the blob carries, so a pinned blob tests the guard alone. */
+async function pinnedCore(): Promise<{ bytes: Uint8Array; sha256: string }> { const bytes = await coreBytes(); return { bytes, sha256: await cidOf(bytes) }; }
+
 /** Run `act`, then wait for the wiki's own change event; the camera's listener stands ahead of this one. */
 function afterChange(tw: { wiki: { addEventListener(t: string, l: () => void): void; removeEventListener(t: string, l: () => void): void } }, act: () => void): Promise<void> {
   return new Promise<void>(resolve => {
@@ -26,13 +29,13 @@ function afterChange(tw: { wiki: { addEventListener(t: string, l: () => void): v
 
 describe("glass boot on the real page", () => {
   test("keeps the main thread guard for every caller outside the door", async () => {
-    await expect(new TW5Engine().boot(await coreBytes())).rejects.toThrow(/sovereignty violation/);
+    await expect(new TW5Engine().boot(await pinnedCore())).rejects.toThrow(/sovereignty violation/);
   });
 
   test("R2: a glass boolean cannot open the main-thread guard", async () => {
     const engine = new TW5Engine();
     try {
-      await expect(engine.boot(await coreBytes(), [], { glass: true } as never)).rejects.toThrow(/sovereignty violation/);
+      await expect(engine.boot(await pinnedCore(), [], { glass: true } as never)).rejects.toThrow(/sovereignty violation/);
     } finally { engine.dispose(); engine.releaseGlass(); }
   });
 

@@ -133,7 +133,7 @@ describe("local module grants", () => {
 vi.mock("../src/tw5-host-bridge.js", () => ({
   normalizeCoreBootBlob: () => undefined,
   verifyCoreBootBlob: () => {},
-  prepareHostBootInstance: async () => ({ instance: {}, isBrowser: false }),
+  prepareHostBootInstance: async () => ({ instance: { modules: { define: () => undefined } }, isBrowser: false }),
   bootWithHostBridge: async (_instance: unknown, _browser: boolean, ready: () => Promise<void>) => ready(),
 }));
 
@@ -170,13 +170,13 @@ describe("TW5Engine grant mapping", () => {
     try {
       await new TW5Engine().boot(undefined, [entry, other, { title: title + "-nonstring", text: body, extra: ["value"] }], undefined,
         { grantedDigests: new Set([digest]) });
-      expect(spy).toHaveBeenCalledWith(expect.anything(), expect.any(Set), new Map([[title, entry]]));
+      expect(spy).toHaveBeenCalledWith(expect.anything(), expect.any(Set), new Map([[title, entry]]), expect.any(Set));
       await new TW5Engine().boot(undefined, [entry, { ...entry, text: "replacement" }], undefined, { grantedDigests: new Set([digest]) });
-      expect(spy).toHaveBeenLastCalledWith(expect.anything(), expect.any(Set), new Map());
+      expect(spy).toHaveBeenLastCalledWith(expect.anything(), expect.any(Set), new Map(), expect.any(Set));
       await new TW5Engine().boot(undefined, [entry], undefined, { grantedDigests: new Set(["other-digest"]) });
-      expect(spy).toHaveBeenLastCalledWith(expect.anything(), expect.any(Set), new Map());
+      expect(spy).toHaveBeenLastCalledWith(expect.anything(), expect.any(Set), new Map(), expect.any(Set));
       await new TW5Engine().boot(undefined, [entry]);
-      expect(spy).toHaveBeenLastCalledWith(expect.anything(), expect.any(Set), new Map());
+      expect(spy).toHaveBeenLastCalledWith(expect.anything(), expect.any(Set), new Map(), expect.any(Set));
     } finally { spy.mockRestore(); }
   });
 });
