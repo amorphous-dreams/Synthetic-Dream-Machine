@@ -46,6 +46,7 @@ import { readFileSync } from "node:fs";
 import { stdin } from "node:process";
 import { readOwnHand, type HandReading } from "@lararium/node";
 import { redactSecretShapes } from "@lararium/mesh";
+import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
 import { stampCarrier } from "@lararium/memetic-frame";
 import { COMPACTION_DISPLAY, COMPACTION_WORD } from "../spirit-words.js";
@@ -367,7 +368,7 @@ export function shrineCarrier(pet: string, words: string): string {
     "<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>", "",
     `<<^ code=\`&#x0001;\` from=\`?\` to=\`${uri}\`>>`, "<<^ code=`&#x0002;`>>", "",
     "```toml meta", "cacheable = false", 'l-space   = "adjacent"', `role      = "the familiar spirit ${pet}'s record; a waking body reads this first"`, 'status    = "live"',
-    `title     = "${uri}"`, 'type      = "text/memetic-wikitext+tiddlywiki"', `uri-path  = "${uri.slice("lar:///".length)}"`, "```", "",
+    `title     = "${uri}"`, `type      = "${CARRIER_TYPE}"`, `uri-path  = "${uri.slice("lar:///".length)}"`, "```", "",
     words.replace(/^[\s\S]*?(?=<<~ ahu slot=)/, "").trim(), "",
     "<<^ code=`&#x0003;`>>", "", "<<^ code=`&#x0004;` to=`?`>>", "",
   ].join("\n");

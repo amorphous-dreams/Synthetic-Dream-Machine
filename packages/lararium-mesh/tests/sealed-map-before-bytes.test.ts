@@ -16,6 +16,9 @@
  *       until a bag names it, then lands clear.
  *   M5  the saves held unnamed stay bounded: past the bound a further unnamed save refuses by name (`unnamed-bound`).
  *   M6  an unmapped load reads back an unnamed save alone, never a sealed-class save that waits unmapped.
+ *   M7  an unnamed row reads `contentFree` only where its held saves are sync states alone (peers' heads, no change); any
+ *       held content save, a peer's push among them, keeps it owed. Each row names its bytes and its age in saves the store
+ *       took since its first held save, and the age leaves with its last save.
  *   M4  a catalog row alone names a held document at once: the catalog's own change moves the map (`watchCatalogNames`), so
  *       the held save lands clear with no other event.
  */
@@ -103,9 +106,11 @@ describe("a document named for a sealed bag before its first byte maps as the ba
     expect(f.bytes.has(join([CLEAR_DOC, "incremental", "first"]))).toBe(true);
 
     // UNKNOWN MEANS HOLD: no bag carries it, no caller opened it.
-    await f.rest.store.save(["an-unsolicited-push", "incremental", "first"], A.save(A.from({ note: SECRET })));
+    const pushed = A.save(A.from({ note: SECRET }));
+    await f.rest.store.save(["an-unsolicited-push", "incremental", "first"], pushed);
     expect([...f.bytes.keys()].filter((k) => k.startsWith("an-unsolicited-push"))).toEqual([]);
-    expect(f.rest.store.held()).toEqual([{ documentId: "an-unsolicited-push", refusal: "save-unnamed", saves: 1, bagId: null }]);
+    // A content save of an unnamed document stays owed (`contentFree` false), whoever wrote it.
+    expect(f.rest.store.held()).toEqual([{ documentId: "an-unsolicited-push", refusal: "save-unnamed", saves: 1, bagId: null, bytes: pushed.byteLength, contentFree: false, heldAcross: 0 }]);
     expect(await f.rest.store.load(["an-unsolicited-push", "incremental", "first"])).toBeDefined();
 
     // A HOUSE CANON BAG CARRIES IT under a lit face: it maps no seal, the roster names it, and it lands clear at the next move.
@@ -185,5 +190,35 @@ describe("a document named for a sealed bag before its first byte maps as the ba
     // AN UNNAMED SAVE reads back from memory.
     await store.save(["an-unnamed-push", "incremental", "a"], Uint8Array.of(7));
     expect(await store.load(["an-unnamed-push", "incremental", "a"])).toEqual(Uint8Array.of(7));
+  });
+
+  test("M7 RED — an unnamed row reads content-free only where its sync states alone wait; any held content save, a peer's push among them, keeps it owed; its age leaves with its last save", async () => {
+    const f = fixture();
+    // A PEER'S CONTENT PUSH: a replica of another actor wrote it, and it still counts as owed (no island keeps a store).
+    const PUSH = "a-peers-content-push";
+    const pushed = A.save(A.from({ note: "the-peers-own-words" }, { actor: "aa".repeat(16) as A.ActorId }));
+    await f.rest.store.save([PUSH, "snapshot", "a"], pushed);
+    expect(f.rest.store.held().find((h) => h.documentId === PUSH)).toEqual({ documentId: PUSH, refusal: "save-unnamed", saves: 1, bagId: null, bytes: pushed.byteLength, contentFree: false, heldAcross: 0 });
+
+    // A SYNC STATE ALONE: peers' heads, no change and no checkpoint, so the row reads content-free.
+    const HEADS_ONLY = "a-push-whose-sync-state-alone-waits";
+    await f.rest.store.save([HEADS_ONLY, "sync-state", "a-peer-storage-id"], Uint8Array.of(0x43, 0x00));
+    await f.rest.store.save([HEADS_ONLY, "sync-state", "another-peer-storage-id"], Uint8Array.of(0x43, 0x00));
+    expect(f.rest.store.held().find((h) => h.documentId === HEADS_ONLY)).toEqual({ documentId: HEADS_ONLY, refusal: "save-unnamed", saves: 2, bagId: null, bytes: 4, contentFree: true, heldAcross: 1 });
+
+    // A CONTENT SAVE BESIDE ITS SYNC STATE turns the row owed.
+    await f.rest.store.save([HEADS_ONLY, "incremental", "b"], A.save(A.from({ note: "content-arrives" })));
+    expect(f.rest.store.held().find((h) => h.documentId === HEADS_ONLY)).toMatchObject({ saves: 3, contentFree: false, heldAcross: 2 });
+
+    // THE AGE LEAVES WITH THE LAST SAVE: once named and landed, a later unnamed save of it ages from zero again.
+    f.rest.store.solicited(HEADS_ONLY);
+    await f.rest.store.reseal();
+    expect(f.rest.store.held().find((h) => h.documentId === HEADS_ONLY)).toBeUndefined();
+    const AGED = "an-unnamed-doc-that-leaves-and-returns";
+    await f.rest.store.save([AGED, "sync-state", "p"], Uint8Array.of(1));
+    await f.rest.store.save(["a-save-between", "sync-state", "p"], Uint8Array.of(1));
+    expect(f.rest.store.forget([AGED])).toBe(1);
+    await f.rest.store.save([AGED, "sync-state", "p"], Uint8Array.of(1));
+    expect(f.rest.store.held().find((h) => h.documentId === AGED)).toMatchObject({ saves: 1, heldAcross: 0 });
   });
 });

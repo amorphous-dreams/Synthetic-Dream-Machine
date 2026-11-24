@@ -31,6 +31,9 @@
  * document neither mapped sealed nor named clear, nor opened by a local caller of the Repo (`solicited`), saves nothing to
  * rest: its bytes wait in memory (`save-unnamed`), readable here, until a name arrives. The roster releases them clear
  * (`mapMoved`, `solicited`); the map seals them (`reseal`). No byte of an unnamed document lands clear on a guess.
+ * Each held unnamed row reads `contentFree` where every save it holds is a sync state (peers' heads, no change and no
+ * checkpoint): a stop drops no content there. Any held content save, whoever made it, keeps the row owed: an island keeps no
+ * store of its own, and a face writes under its own derived actor, so no origin read tells a copy that survives elsewhere.
  *
  * Platform-blind: the inner adapter, the bag map, the session's face, the book and the holder's seal and open ride ports.
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed (step three) · lar:///ha.ka.ba/lares/api/pono/session-contract#/the-document-view
@@ -98,6 +101,14 @@ export interface HeldSaves {
   readonly refusal: HeldRefusal;
   readonly saves: number;
   readonly bagId: string | null;
+  /** A `save-unnamed` row alone: the bytes its saves hold in memory. */
+  readonly bytes?: number;
+  /** A `save-unnamed` row alone: true only where every save it holds is a sync state, so it carries no change and no
+   *  checkpoint; any held content save leaves it false, and the census counts the row as owed. */
+  readonly contentFree?: boolean;
+  /** A `save-unnamed` row alone: how many saves this store took since the document's first save waited unnamed, the row's
+   *  age read causally (the house reads no wall clock). */
+  readonly heldAcross?: number;
 }
 
 /** A refusal by name: this store's own (`SEALED_DOCUMENT_REFUSALS`) or the holder's, passed through. */
@@ -263,6 +274,17 @@ export class SealedDocumentStore implements StorageAdapterInterface {
   /** The saves no session booked, by storage key, in arrival order: in memory alone, until a session books them. Each
    *  names the refusal that held it back. */
   readonly #waiting = new Map<string, { readonly key: StorageKey; readonly data: Uint8Array; readonly refusal: HeldRefusal }>();
+  /** Each document held unnamed, by the save count this store stood at when its first save waited. */
+  readonly #unnamedSince = new Map<string, number>();
+  /** How many saves this store took: the causal tick an unnamed row's age reads against. */
+  #saves = 0;
+  /** Drop one waiting save; once its document waits on nothing, its unnamed age leaves with it. */
+  #unwait(name: string): boolean {
+    const w = this.#waiting.get(name);
+    const gone = this.#waiting.delete(name);
+    if (w !== undefined && this.#unnamedSince.has(w.key[0]!) && ![...this.#waiting.values()].some((x) => x.key[0] === w.key[0])) this.#unnamedSince.delete(w.key[0]!);
+    return gone;
+  }
   /** The removals a compaction asked while its snapshot waits unbooked, by document. */
   readonly #deferred = new Map<string, StorageKey[]>();
   /** The documents whose rest this store already read for clear chunks, this process. */
@@ -334,7 +356,7 @@ export class SealedDocumentStore implements StorageAdapterInterface {
       if (this.bagOf(documentId) !== null || this.#classedSealed.has(documentId) || !(await this.#namedClear(documentId))) continue;
       // THE CLASS READS AGAIN AFTER THE ROSTER'S ANSWER: a map that named the document sealed meanwhile keeps it for `reseal`.
       if (!this.#landsClear(documentId) || this.#waiting.get(name) !== w) continue;
-      this.#waiting.delete(name);
+      this.#unwait(name);
       try { await this.#ports.inner.save(w.key, w.data); landed++; }
       catch (error) { if (!this.#waiting.has(name)) this.#waiting.set(name, w); throw error; }
     }
@@ -493,15 +515,25 @@ export class SealedDocumentStore implements StorageAdapterInterface {
    * stop that would drop these saves can list them first.
    */
   held(): HeldSaves[] {
-    const rows = new Map<string, { documentId: string; refusal: HeldRefusal; saves: number }>();
-    for (const { key, refusal } of this.#waiting.values()) {
+    const rows = new Map<string, { documentId: string; refusal: HeldRefusal; saves: number; bytes: number; contentFree: boolean }>();
+    for (const { key, data, refusal } of this.#waiting.values()) {
       const documentId = key[0]!;
       const name = `${documentId}\u0000${refusal}`;
+      // Only a sync state reads content-free; a change, a checkpoint, or any key this store does not know counts as content.
+      const content = key[1] !== "sync-state";
       const row = rows.get(name);
-      if (row) row.saves++;
-      else rows.set(name, { documentId, refusal, saves: 1 });
+      if (row) { row.saves++; row.bytes += data.byteLength; row.contentFree &&= !content; }
+      else rows.set(name, { documentId, refusal, saves: 1, bytes: data.byteLength, contentFree: !content });
     }
-    return [...rows.values()].map((row) => ({ ...row, bagId: this.bagOf(row.documentId)?.bagId ?? null }));
+    return [...rows.values()].map(({ bytes, contentFree, ...row }) => ({
+      ...row, bagId: this.bagOf(row.documentId)?.bagId ?? null,
+      // AN UNNAMED ROW NAMES ITS BYTES, WHETHER IT HOLDS ANY CONTENT, AND ITS AGE, so a census can tell heads alone from an owed save.
+      ...(row.refusal === "save-unnamed" ? {
+        bytes,
+        contentFree,
+        heldAcross: this.#saves - (this.#unnamedSince.get(row.documentId) ?? this.#saves),
+      } : {}),
+    }));
   }
 
   /**
@@ -511,7 +543,7 @@ export class SealedDocumentStore implements StorageAdapterInterface {
   forget(documentIds: readonly string[]): number {
     const gone = new Set(documentIds);
     let dropped = 0;
-    for (const [name, w] of [...this.#waiting]) if (gone.has(w.key[0]!)) { this.#waiting.delete(name); dropped++; }
+    for (const [name, w] of [...this.#waiting]) if (gone.has(w.key[0]!)) { this.#unwait(name); dropped++; }
     return dropped;
   }
 
@@ -527,15 +559,15 @@ export class SealedDocumentStore implements StorageAdapterInterface {
       if (only !== null && !only.has(key[0]!)) continue;
       const bag = this.#bagOf(key);
       // A KEY THAT NAMES NO SEALED ROLE (a peer's sync state held unnamed) never rests for a sealed bag: it drops.
-      if (bag !== null && ROLES[key[1] ?? ""] === undefined) { this.#waiting.delete(name); continue; }
+      if (bag !== null && ROLES[key[1] ?? ""] === undefined) { this.#unwait(name); continue; }
       // A HELD HOME WHOSE KEY NOW STANDS (the vessel's custody opened): its waiting saves seal under the held key, no session.
       if (bag !== null && isHeld(bag)) {
         const role = ROLES[key[1] ?? ""];
-        if (role === undefined) { this.#waiting.delete(name); continue; }
+        if (role === undefined) { this.#unwait(name); continue; }
         const out = sealHeld({ bagId: bag.bagId, held: bag.held, role, ref: logicalRefOf(key), plaintext: data });
         if (!("chunk" in out)) continue;
         await this.#ports.inner.save(key, out.chunk.sealed);
-        this.#waiting.delete(name);
+        this.#unwait(name);
         sealed++;
         continue;
       }
@@ -543,7 +575,7 @@ export class SealedDocumentStore implements StorageAdapterInterface {
       if (bag === null || isKeyed(bag) || session === null || !this.#wears(bag.face, session.subject, bag.bagId)) continue;
       try { await this.#inTurn(bag.bagId, () => this.#seal(bag, key, data, session)); }
       catch (error) { if (error instanceof SealedDocumentRefusal) continue; throw error; }
-      this.#waiting.delete(name);
+      this.#unwait(name);
       sealed++;
     }
     // A RELEASE THAT FAULTS NEVER SKIPS THE DEFERRED REMOVALS: they run, then the fault rises.
@@ -586,6 +618,7 @@ export class SealedDocumentStore implements StorageAdapterInterface {
   }
 
   async save(key: StorageKey, data: Uint8Array): Promise<void> {
+    this.#saves++;
     const bag = this.#bagOf(key);
     if (bag === null) {
       // A FALLBACK CARRYING A SEALED DOCUMENT'S MERGE LANDS NO CLEAR BYTE (`waitHandle`): its id names no bag, yet its history
@@ -618,6 +651,7 @@ export class SealedDocumentStore implements StorageAdapterInterface {
           }
         }
         const first = this.waiting(key[0]) === 0;
+        if (first) this.#unnamedSince.set(key[0], this.#saves);
         this.#waiting.set(name, { key: [...key], data: Uint8Array.from(data), refusal: "save-unnamed" });
         if (first) this.#ports.onHeld?.({ refusal: "save-unnamed", documentId: key[0] });
         return;
@@ -669,7 +703,7 @@ export class SealedDocumentStore implements StorageAdapterInterface {
       this.#ports.onHeld?.({ refusal: "save-unsealed", documentId: key[0]!, error: error.refusal, ...(error.why !== undefined ? { cause: error.why } : {}) });
       return;
     }
-    this.#waiting.delete(nameOf(key));
+    this.#unwait(nameOf(key));
   }
 
   /**
@@ -836,7 +870,7 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     // A DROPPED MAP REMOVES NO SEALED POINTER: an unmapped document that keeps its sealed class defers every removal
     // until the map stands again and its waiting saves seal.
     const unmappedSealed = typeof documentId === "string" && this.#bagOf(key) === null && this.#ports.waitOverSealed === true && await this.#keepsSealedClass(documentId);
-    if (unmappedSealed && this.#waiting.has(nameOf(key))) { this.#waiting.delete(nameOf(key)); return; }
+    if (unmappedSealed && this.#waiting.has(nameOf(key))) { this.#unwait(nameOf(key)); return; }
     if (typeof documentId === "string" && (unmappedSealed || (this.#bagOf(key) !== null && !this.#waiting.has(nameOf(key)) && this.waiting(documentId) > 0))) {
       const deferred = this.#deferred.get(documentId) ?? [];
       deferred.push([...key]);
@@ -844,7 +878,7 @@ export class SealedDocumentStore implements StorageAdapterInterface {
       return;
     }
     if (key.length >= 1) this.#held.get(key[0]!)?.delete(nameOf(key));
-    this.#waiting.delete(nameOf(key));
+    this.#unwait(nameOf(key));
     await this.#ports.inner.remove(key);
   }
 
@@ -859,7 +893,7 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     if (prefix.length >= 1) {
       const held = this.#held.get(prefix[0]!);
       for (const name of [...(held?.keys() ?? [])]) if (name.split("\u0000").slice(0, prefix.length).join("\u0000") === nameOf(prefix)) held!.delete(name);
-      for (const name of [...this.#waiting.keys()]) if (name.split("\u0000").slice(0, prefix.length).join("\u0000") === nameOf(prefix)) this.#waiting.delete(name);
+      for (const name of [...this.#waiting.keys()]) if (name.split("\u0000").slice(0, prefix.length).join("\u0000") === nameOf(prefix)) this.#unwait(name);
     }
     await this.#ports.inner.removeRange(prefix);
   }

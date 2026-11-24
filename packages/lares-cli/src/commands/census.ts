@@ -9,6 +9,13 @@
  * stopped container holds no memory to count, so the host shim
  * asks this census at `down`, while the vessel still stands, and refuses a silent stop over a non-empty answer.
  *
+ * AN UNASKED PUSH OF HEADS ALONE DROPS NO CONTENT. A `save-unnamed` row names a document no map, roster or local caller names
+ * here (sealed-doc-store, "unknown means hold"). Where the store reads it `contentFree` (every save it holds a sync state:
+ * peers' heads, no change, no checkpoint), the census names it (`unasked`: document, saves, bytes, and its age in saves the
+ * store took since) and never counts it as an item, so `down` stops over it naming it and the keep's manifest names it as an
+ * omission. Any held content save of an unnamed document counts as owed, whoever made it, as every `save-unbooked`,
+ * `save-unmapped` and `save-unsealed` does: an island keeps no store of its own, so no other copy answers for it.
+ *
  * Two lines carry it, both read-only and neither asking custody: the custody door's `census` frame (the saves, by
  * document id, never a body) and the `census` act of the shore verb on every island that mounts a disk shore (the
  * carriers, by title). Each wait carries its own bound; a line that cannot answer lands in `unanswered`, by name,
@@ -29,6 +36,9 @@ import { emit } from "../render.js";
 /** How long the custody door's census frame may take to answer. It answers at once, beside the custody chain. */
 export const CENSUS_CUSTODY_MS = 10_000;
 
+/** One unnamed document whose held saves carry no content (sync states alone): its saves and bytes, and its age in saves the store took since. */
+export interface UnaskedPush { readonly documentId: string; readonly saves: number; readonly bytes: number; readonly heldAcross: number }
+
 /** One item a stop would drop. */
 export type CensusItem =
   | { readonly kind: "held-save"; readonly refusal: string; readonly documentId: string; readonly saves: number; readonly bagId: string | null }
@@ -39,6 +49,9 @@ export interface CensusReading {
   readonly clean: boolean;
   readonly items: readonly CensusItem[];
   readonly unanswered: ReadonlyArray<{ readonly part: string; readonly why: string }>;
+  /** THE UNASKED ROWS (`save-unnamed`, sync states alone): a document waiting here for a name that holds no content, so a stop
+   *  drops no change and the census reads clean beside them (absent where none waits). */
+  readonly unasked?: readonly UnaskedPush[];
   /** THE LIT SET: each face whose key stands open, each sealing its own memory under its own key (absent where none reads). */
   readonly facesLit?: readonly number[];
   /** THE WORN FACE beside the lit set (present where the lit set reads): the daemon mount, or null where none wears. */
@@ -78,9 +91,14 @@ export const VESSEL_LOCKED_CENSUS = "vessel locked: run `lares vault unlock`, th
 /** The refusals that keep a save in memory: the sealed doc store owns the list (`HELD_REFUSALS`), so a new one never drifts past this door. */
 const HELD_REFUSAL_SET: ReadonlySet<string> = new Set<string>(HELD_REFUSALS);
 
+/** The one held refusal a stop may drop no content over: an unnamed document whose held saves are sync states alone. */
+const UNASKED_REFUSAL = "save-unnamed";
+const countOf = (v: unknown): number => (Number.isSafeInteger(v) && (v as number) >= 0 ? (v as number) : 0);
+
 /** Read both lines into one census. */
 export async function readCensus(lines: CensusLines = LIVE_LINES): Promise<CensusReading> {
   const items: CensusItem[] = [];
+  const unasked: UnaskedPush[] = [];
   const unanswered: Array<{ part: string; why: string }> = [];
   if (!lines.socketPresent()) {
     return { clean: false, items, unanswered: [{ part: "the vessel", why: "no vessel answers on this store's socket" }] };
@@ -101,7 +119,13 @@ export async function readCensus(lines: CensusLines = LIVE_LINES): Promise<Censu
         unanswered.push({ part: "the sealed rest", why: "a held-save row arrived in a shape this door cannot read" });
         continue;
       }
-      items.push({ kind: "held-save", refusal, documentId, saves: typeof row["saves"] === "number" ? row["saves"] : 1, bagId: typeof row["bagId"] === "string" ? row["bagId"] : null });
+      const saves = typeof row["saves"] === "number" ? row["saves"] : 1;
+      // ONLY A ROW OF SYNC STATES ALONE reads unasked; any held content save, or a row that names none, stays owed (fail closed).
+      if (refusal === UNASKED_REFUSAL && row["contentFree"] === true) {
+        unasked.push({ documentId, saves, bytes: countOf(row["bytes"]), heldAcross: countOf(row["heldAcross"]) });
+        continue;
+      }
+      items.push({ kind: "held-save", refusal, documentId, saves, bagId: typeof row["bagId"] === "string" ? row["bagId"] : null });
     }
   }
   // A FACE STANDING LOCKED under a held key holds memory no census can read: each reads unanswered, by name, with its cure.
@@ -126,15 +150,19 @@ export async function readCensus(lines: CensusLines = LIVE_LINES): Promise<Censu
     const r = d as { face?: unknown; cause?: unknown; note?: unknown };
     return Number.isSafeInteger(r.face) && typeof r.cause === "string" && typeof r.note === "string" ? [{ face: r.face as number, cause: r.cause, note: r.note }] : [];
   }) : [];
-  return { clean: items.length === 0 && unanswered.length === 0, items, unanswered, ...(facesLit.length > 0 ? { facesLit, worn } : {}), ...(facesDark.length > 0 ? { facesDark } : {}) };
+  return { clean: items.length === 0 && unanswered.length === 0, items, unanswered, ...(facesLit.length > 0 ? { facesLit, worn } : {}), ...(facesDark.length > 0 ? { facesDark } : {}), ...(unasked.length > 0 ? { unasked } : {}) };
 }
+
+/** One unasked push as one printed line: its document and count, and why a stop leaves it. Never a body. */
+export const unaskedLine = (u: UnaskedPush): string =>
+  `census: unasked  doc ${u.documentId}  ${u.saves} save(s), ${u.bytes} byte(s), held across ${u.heldAcross} later save(s): sync states alone, peers' heads and no change, so a stop drops no content here`;
 
 /** One item as one printed line: kind, state, name, and where it belongs. Never a body. */
 export function censusLine(item: CensusItem): string {
   if (item.kind === "held-save") {
     const line = `held-save  ${item.refusal}  doc ${item.documentId}  ${item.saves} save(s) in memory  bag ${item.bagId ?? "(none mapped)"}`;
-    // A peer pushed this document unasked: neither the bag map nor the clear-name roster names it, so its saves wait for a name.
-    return item.refusal === "save-unnamed" ? `${line}  (no map or roster names this document yet; its saves wait for a name)` : line;
+    // AN UNNAMED DOCUMENT HOLDING CONTENT: no map or roster names it, so the line names the ways on.
+    return item.refusal === "save-unnamed" ? `${line}  (no map or roster names it: read who carries it with \`lares vessel census --docs\`, then open the bag that owns it so its saves land, or type accept-loss at down)` : line;
   }
   if (item.kind === "untracked") return `untracked  ${item.path}  bag ${item.bagId ?? "(none named)"}  island ${item.island}  (an owed commit: commit it, or remove it by hand)`;
   return `carrier  ${item.state}  ${item.uri}  bag ${item.bagId ?? "(none named)"}  island ${item.island}`;
@@ -152,6 +180,8 @@ export async function cmdCensus(args: ParsedArgs, lines: CensusLines = LIVE_LINE
     human: () => {
       // A SERVED FACE DARK HERE drops no save, so it never turns the census red; its line names the cause and the clearing act.
       for (const d of reading.facesDark ?? []) console.error(`census: ${d.note}`);
+      // AN UNASKED ROW (sync states alone) names itself and never turns the census red: it holds no content.
+      for (const u of reading.unasked ?? []) console.error(unaskedLine(u));
       if (code === 0) { console.log("census: clean — no save waits in memory, and the disk projector owes no carrier"); return; }
       for (const item of reading.items) console.log(censusLine(item));
       for (const u of reading.unanswered) console.error(u.why === VESSEL_LOCKED_CENSUS ? `census: ${u.why}` : `census: unanswered — ${u.part}: ${u.why}`);
