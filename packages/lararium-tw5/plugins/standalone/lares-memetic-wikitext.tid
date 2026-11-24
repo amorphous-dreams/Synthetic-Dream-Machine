@@ -10,8 +10,8 @@ plugin-priority: 10
 dependents: 
 type: application/json
 lares-module-count: 50
-lares-module-manifest-sha256: a86759f88166460fa9476ceb236e80e847ba5754d069bcabe6ef1d1004ef4d48
-lares-source-manifest-sha256: ba18a64b986c9e5d4460cd6cd4bae4ae4f93078468de73bd4ebdb7e0944a6688
+lares-module-manifest-sha256: aab4c0af64184e4187667dfcb1c28f561749ca202d9de7b7f394ffb8e082eec1
+lares-source-manifest-sha256: 8dbc39ace182b29858d0bb641426faf1cc4cd4c778f19744a5382ce56c31d642
 lares-build-attestation-format: lararium-tw5-plugin-build
 lares-projection-of: lar:///ha.ka.ba/lararium/plugins/lares/memetic-wikitext
 
