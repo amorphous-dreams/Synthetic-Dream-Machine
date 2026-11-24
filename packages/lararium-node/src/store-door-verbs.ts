@@ -64,6 +64,7 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
 
+import { routingString } from "./routing-arg.js";
 import { takeWardTicket, type WardCredential } from "./ward-credential.js";
 import { WardRefused, CanonOfferRefused, type FloorRemount } from "@lararium/mesh";
 
@@ -477,7 +478,7 @@ function storeDoorVerbsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       const sight = deps.mountFace && face !== undefined ? { ...read, mount, mounted: mount === face } : read;
       if (args["action"] === "staged") return sight;
       if (args["action"] === "get") {
-        const title = String(args["title"]);
+        const title = routingString(args, "title", "kahua-read");
         return { has: hasLine(title, [param("source", "kahua-stage"), param("grain", "item"), param("verified", true)]), ...sight,
           source: "kahua-stage", grain: "item",
           ...(sight["item"] !== null && sight["item"] !== undefined ? { nextOperation: `lares kahua get ${JSON.stringify(title)} --history` } : {}) };
@@ -650,7 +651,7 @@ function storeDoorVerbsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     // THE VESSEL'S FLOOR PIN (w26-floor-lane#/the-vessel-pin): one pin per (vessel, Nexus) in the control home, moved only by
     // the accept, which walks `prior` from the pin. Both rows answer the mesh's own decision; a refusal rides as data.
     "floor-status": (args) => answer("floor-status", async () => ({
-      ...(await runFloorStatus({ repo, sealHome, casDir: deps.casDir ?? casDirForStorage(storageDir), ...opt("aid", str(args["aid"])), ...opt("porch", str(args["porch"])) })),
+      ...(await runFloorStatus({ repo, sealHome, casDir: deps.casDir ?? casDirForStorage(storageDir), ...opt("aid", str(args["aid"])), ...opt("porch", str(args["porch"])), ...opt("catalogUrl", deps.catalogUrl) })),
     })),
     "floor-accept": (args) => answer("floor-accept", async () => ({
       ...(await runFloorAccept({

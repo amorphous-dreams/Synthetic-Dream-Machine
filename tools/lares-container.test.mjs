@@ -71,6 +71,8 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       `for a in "$@"; do case "$a" in -f) :;; *override*|/tmp/*) [ -f "$a" ] && cat "$a" >> "$CALL_LOG";; esac; done\n` +
       `case " $* " in *" down --remove-orphans"*|*" stop "*lares*) : > "$CALL_LOG.down";; esac\n` +
       `case " $* " in *" ps -q --status running lares "*) printf '%s' "\${FAKE_RUNNING_ID:-}"; exit "\${FAKE_PS_RC:-0}";; esac\n` +
+      `case " $* " in *" ps -q --status paused lares "*) printf '%s' "\${FAKE_PAUSED_ID:-}"; exit "\${FAKE_PS_RC:-0}";; esac\n` +
+      `case " $* " in *" ps -q --status restarting lares "*) printf '%s' "\${FAKE_RESTARTING_ID:-}"; exit "\${FAKE_PS_RC:-0}";; esac\n` +
       `case " $* " in *" ps -q --status running pulama "*) printf '%s' "\${FAKE_PULAMA_ID:-}"; exit "\${FAKE_PULAMA_PS_RC:-0}";; esac\n` +
       `last=''; for a in "$@"; do last=$a; done\n` +
       // THE OUTGOING IMAGE (L4): its id and its revision label, one line, before a build moves the tag.
@@ -713,6 +715,94 @@ for (const [name, shim] of shims) {
     assert.equal(r.status, 0, r.stderr);
     assert.match(r.calls, /stop lares\s*$/m);
     assert.doesNotMatch(r.calls, /compose .*exec/);
+  });
+
+  // THE RELEASE HOLDS THE STORE, SO IT RUNS ONLY WITH THE VESSEL STOPPED: a standing container refuses by name, naming the
+  // exact stop, and nothing execs; a stopped one hands the act to the offline door, which claims the store for it.
+  test(`${name}: vessel release refuses while a vessel stands, naming the stop, and execs nothing`, async () => {
+    const r = await run(shim, ["vessel", "release", "4NMNnkMhL8jXrdJ9jamS2rUEaQDq", "--keep"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
+    assert.equal(r.status, 2, r.stderr);
+    assert.match(r.stderr, /`lares vessel stop`/);
+    assert.doesNotMatch(r.calls, /compose .*exec/);
+    assert.doesNotMatch(r.calls, /offline/);
+  });
+
+  test(`${name}: CONTROL vessel release with no vessel standing runs through the offline door`, async () => {
+    const r = await run(shim, ["vessel", "release", "4NMNnkMhL8jXrdJ9jamS2rUEaQDq", "--fresh"], { env: MOUNTS });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.calls, /--profile offline run --rm (?:--name lares-offline-[0-9a-f]+ )?-T offline vessel release 4NMNnkMhL8jXrdJ9jamS2rUEaQDq --fresh/);
+  });
+
+  // THE STEP-IN READ ANSWERS ON A FALLEN VESSEL: a fallen engine answers no standing verdict, so the read asks none; it
+  // reads its files inside the container and returns what it read.
+  test(`${name}: vessel read on a standing vessel asks no standing verdict after it`, async () => {
+    const r = await run(shim, ["vessel", "read"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_RC: "1" } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.calls, /exec (?:-e LARES_EXEC_TAG )?-T lares node packages\/lares-cli\/bin\/lares\.mjs vessel read$/m);
+    assert.doesNotMatch(r.calls, /vessel stand --observe/);
+  });
+
+  // THE STEP-IN READ ON THE HOST: where docker reaches no CLI, the shim reads the fall's files under the hearth bind itself.
+  const FALLS = JSON.stringify({ falls: [{ life: "a", pid: 7, cause: "wasm-unreachable", path: "boot", since: "2026-11-23T01:00:00.000Z", inFlight: "docInFlight" }] }, null, 2) + "\n";
+  const MANIFEST = JSON.stringify({ documentId: "4NMNnkMhL8jXrdJ9jamS2rUEaQDq", status: "torn", quarantinedAt: "2026-11-23T00:00:00.000Z", movedTo: "/lar/x" });
+  const RELEASED = JSON.stringify({ documentId: "releasedDoc", status: "torn", quarantinedAt: "2026-11-22T00:00:00.000Z", movedTo: "/lar/y", released: { act: "kept" } });
+  const fallen = {
+    "hearth/vessel/.engine-falls": FALLS,
+    "hearth/vessel/quarantine-torn-snapshots-2026-11-23/4N__MNnk.manifest.json": MANIFEST,
+    "hearth/vessel/quarantine-torn-snapshots-2026-11-22/re__leased.manifest.json": RELEASED,
+  };
+  const hostRead = (r, why) => {
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.stderr, why);
+    assert.match(r.stdout, /"cause": "wasm-unreachable"/);
+    assert.match(r.stdout, /^held in flight: docInFlight$/m);
+    assert.match(r.stdout, /^held in quarantine: 4NMNnkMhL8jXrdJ9jamS2rUEaQDq /m);
+    assert.doesNotMatch(r.stdout, /releasedDoc/);
+    assert.match(r.stdout, /`lares vessel stop`/);
+  };
+
+  test(`${name}: vessel read with docker's ps failing reads the falls on the host`, async () => {
+    const r = await run(shim, ["vessel", "read"], { env: { ...MOUNTS, FAKE_PS_RC: "1" }, houseFiles: fallen });
+    hostRead(r, /docker compose ps failed/);
+    assert.doesNotMatch(r.calls, / exec | run /);
+  });
+
+  test(`${name}: vessel read with the container mid-restart reads the falls on the host`, async () => {
+    const r = await run(shim, ["vessel", "read"], { env: { ...MOUNTS, FAKE_RESTARTING_ID: "cid" }, houseFiles: fallen });
+    hostRead(r, /restarts/);
+    assert.doesNotMatch(r.calls, / exec | run /);
+  });
+
+  test(`${name}: vessel read whose exec docker cannot run (126) reads the falls on the host`, async () => {
+    const r = await run(shim, ["vessel", "read"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_EXEC_RC: "126" }, houseFiles: fallen });
+    hostRead(r, /exit 126/);
+  });
+
+  test(`${name}: the host read names one line per held id, however many manifests hold it`, async () => {
+    const again = JSON.stringify({ documentId: "4NMNnkMhL8jXrdJ9jamS2rUEaQDq", status: "torn", quarantinedAt: "2026-11-23T05:00:00.000Z", movedTo: "/lar/z" });
+    const r = await run(shim, ["vessel", "read"], { env: { ...MOUNTS, FAKE_PS_RC: "1" }, houseFiles: { ...fallen, "hearth/vessel/quarantine-torn-snapshots-2026-11-23/4N__MNnk.1.manifest.json": again } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.equal(r.stdout.match(/^held in quarantine: 4NMNnkMhL8jXrdJ9jamS2rUEaQDq /gm)?.length, 1, r.stdout);
+  });
+
+  test(`${name}: the host read over a house with no store says the store stands absent, never "none resting"`, async () => {
+    const r = await run(shim, ["vessel", "read"], { env: { ...MOUNTS, FAKE_PS_RC: "1" } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.stdout, /^store absent: \S+\/hearth\/vessel/m);
+    assert.doesNotMatch(r.stdout, /none resting/);
+  });
+
+  test(`${name}: vessel release refuses while the vessel stands paused, naming the stop`, async () => {
+    const r = await run(shim, ["vessel", "release", "4NMNnkMhL8jXrdJ9jamS2rUEaQDq"], { env: { ...MOUNTS, FAKE_PAUSED_ID: "cid" } });
+    assert.equal(r.status, 2, r.stderr);
+    assert.match(r.stderr, /`lares vessel stop`/);
+    assert.doesNotMatch(r.calls, /offline|compose .*exec/);
+  });
+
+  test(`${name}: CONTROL a CLI refusal (exit 2) from the read stays the CLI's, and no host read runs`, async () => {
+    const r = await run(shim, ["vessel", "read", "nolens"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_EXEC_RC: "2" }, houseFiles: fallen });
+    assert.equal(r.status, 2);
+    assert.doesNotMatch(r.stdout, /engine falls/);
   });
 
   test(`${name}: unknown vessel sub-doors are handed to the CLI`, async () => {
@@ -1640,7 +1730,7 @@ test(`${name}: unlock-face-tells-the-pulama: under a pūlama, a vault unlock --f
 // `shore-unwritten` where records stay unwritten; the shim's post-unlock wears turn a face that was just opened (no hand
 // edited it), so they carry `--yes`. Should the refusal ever surface, the shim names it truly with the flush's reading,
 // never "outside the lent set or locked".
-const SHORE_UNWRITTEN = "lares wear: the shore's flush left records unwritten on the face this wear turns away from; they rest in the store, and their mirrors stay behind until that face is worn again:\n  shore: wiki:sdm wrote 0 owed carrier(s); 1 left unwritten: failed lar:///a.b.c/stuck (its reconcile threw)\nturn anyway: lares wear 2 --yes";
+const SHORE_UNWRITTEN = "lares wear: the shore's flush left records unwritten on the face this wear turns away from; they rest in the store, and their mirrors stay behind until a hand wears that face again:\n  shore: wiki:sdm wrote 0 owed carrier(s); 1 left unwritten: failed lar:///a.b.c/stuck (its reconcile threw)\nturn anyway: lares wear 2 --yes";
 test(`${name}: RED shim-wears-turn-over-the-shore: the post-unlock wears carry --yes, and a shore-unwritten refusal reads as itself with the flush's reading`, { skip }, async () => {
   const shut = await run(shim, ["up"], { envFile: PULAMA_ENV, wornFace: 2, env: { FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: '{"data":{"door":{"unlocked":false}}}' } });
   assert.equal(shut.status, 0, shut.stderr);

@@ -9,7 +9,7 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/browser/browser-boot-custody
  */
-import type { Credential } from "@lararium/mesh";
+import { ATTEMPT_BUDGET, attemptWarning, type Credential } from "@lararium/mesh";
 import type { BrowserCustodyClear, UnsettledRecord } from "./browser-custody.js";
 import {
   BrowserCustodyRefused,
@@ -22,9 +22,10 @@ import {
 } from "./browser-custody.js";
 import { heldUnnamedFace, standUnnamedFace } from "./browser-face-custody.js";
 
-/** What this tab's boot asks the person for. `attempt` counts from 1 within one stand. */
+/** What this tab's boot asks the person for. `attempt` counts from 1 within one stand; from the second ask, `warning` carries
+ *  the attempt budget's climbing words for the misses so far (attempt-budget.ts). */
 export type CustodyAsk =
-  | { readonly kind: "unlock"; readonly attempt: number; readonly of: number; readonly notes: readonly string[] }
+  | { readonly kind: "unlock"; readonly attempt: number; readonly of: number; readonly notes: readonly string[]; readonly warning?: string }
   | { readonly kind: "bind-first"; readonly why: "face-secret-mint-due" };
 
 /** The person's answer: a route, or null when they decline. */
@@ -36,7 +37,7 @@ export type BootCustodyVerdict =
   | { readonly reading: "opens"; readonly slot: string; readonly unsettled: readonly UnsettledRecord[] }
   | { readonly reading: "bound"; readonly slot: string; readonly unsettled: readonly UnsettledRecord[] }
   | { readonly reading: "declined" }
-  | { readonly reading: "no-slot-opens"; readonly attempts: number; readonly notes: readonly string[] }
+  | { readonly reading: "no-slot-opens"; readonly attempts: number; readonly attemptsLeft: 0; readonly warning: string; readonly notes: readonly string[] }
   | { readonly reading: "unreadable"; readonly why: string };
 
 export interface StandBrowserCustodyOptions {
@@ -44,12 +45,12 @@ export interface StandBrowserCustodyOptions {
   readonly ask: (question: CustodyAsk) => Promise<CustodyAnswer>;
   /** True when the boot is about to mint a face secret (a persona root, a face-scoped key, a per-Nexus key, a fleet-join or walk row) on a keystore that holds no slot. Default false. */
   readonly secretMintDue?: boolean;
-  /** How many routes one stand tries before it answers `no-slot-opens`. A count, never a clock. Default 3. */
+  /** How many routes one stand tries before it answers `no-slot-opens`. A count, never a clock. Default `ATTEMPT_BUDGET` (five). */
   readonly attempts?: number;
 }
 
 export async function standBrowserCustody(opts: StandBrowserCustodyOptions): Promise<BootCustodyVerdict> {
-  const attempts = opts.attempts ?? 3;
+  const attempts = opts.attempts ?? ATTEMPT_BUDGET;
   if (!Number.isSafeInteger(attempts) || attempts < 1) {
     throw new RangeError(`[browser-boot-custody] attempts must be a positive safe integer; got ${String(attempts)}`);
   }
@@ -77,17 +78,48 @@ export async function standBrowserCustody(opts: StandBrowserCustodyOptions): Pro
   }
   if (status.unlocked) return { reading: "held" };
 
+  const asked = await askRoutes({
+    attempts,
+    ask: (q) => opts.ask({ kind: "unlock", ...q }),
+    open: async (route) => {
+      const opened = await unlockBrowserCustody(opts.idbName, [route]);
+      return opened.reading === "opens" ? { opened: true, value: opened } : { opened: false, notes: opened.notes };
+    },
+  });
+  if (asked.reading !== "opens") return asked;
+  return { reading: "opens", slot: asked.value.slot, unsettled: asked.value.unsettled };
+}
+
+/** One unlock ask of a browser stand: the attempt (from 1), the budget, the last miss's notes, and from the second ask the
+ *  attempt budget's climbing words for the misses so far. */
+export interface RouteAsk { readonly attempt: number; readonly of: number; readonly notes: readonly string[]; readonly warning?: string }
+
+/** What the asks came to: the route that opened (and what it opened), a decline, or the budget spent. */
+export type RoutesAsked<R> =
+  | { readonly reading: "opens"; readonly route: Credential; readonly value: R }
+  | { readonly reading: "declined" }
+  | { readonly reading: "no-slot-opens"; readonly attempts: number; readonly attemptsLeft: 0; readonly warning: string; readonly notes: readonly string[] };
+
+/**
+ * THE ONE ASK LOOP of every browser unlock (the boot's stand, a session's own unlock, a face's own unlock): up to `attempts`
+ * routes (default `ATTEMPT_BUDGET`, five), each ask after a miss carrying the tries left in the climbing words, and the spent
+ * reading carrying `attemptsLeft: 0` and the spent words.
+ */
+export async function askRoutes<R>(opts: {
+  readonly attempts?: number;
+  readonly ask: (question: RouteAsk) => Promise<Credential | null>;
+  readonly open: (route: Credential) => Promise<{ readonly opened: true; readonly value: R } | { readonly opened: false; readonly notes: readonly string[] }>;
+}): Promise<RoutesAsked<R>> {
+  const attempts = opts.attempts ?? ATTEMPT_BUDGET;
   let notes: readonly string[] = [];
   for (let attempt = 1; attempt <= attempts; attempt++) {
-    const route = await opts.ask({ kind: "unlock", attempt, of: attempts, notes });
+    const route = await opts.ask({ attempt, of: attempts, notes, ...(attempt > 1 ? { warning: attemptWarning(attempts - attempt + 1, "browser-stand", attempts) } : {}) });
     if (route === null) return { reading: "declined" };
-    const opened = await unlockBrowserCustody(opts.idbName, [route]);
-    if (opened.reading === "opens") {
-      return { reading: "opens", slot: opened.slot, unsettled: opened.unsettled };
-    }
+    const opened = await opts.open(route);
+    if (opened.opened) return { reading: "opens", route, value: opened.value };
     notes = opened.notes;
   }
-  return { reading: "no-slot-opens", attempts, notes };
+  return { reading: "no-slot-opens", attempts, attemptsLeft: 0, warning: attemptWarning(0, "browser-stand", attempts), notes };
 }
 
 /**

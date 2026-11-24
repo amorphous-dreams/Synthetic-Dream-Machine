@@ -56,11 +56,15 @@ function refuse(args: ParsedArgs, verb: string, err: unknown): number {
   return exitFor(code);
 }
 
+/** Every verb the host door answers (bare, it reads the host's state). */
+export const HOST_VERBS = ["roll", "invite"] as const;
+
 export async function cmdHost(args: ParsedArgs): Promise<number> {
   const sub = args.positional[0];
   if (sub === undefined) return hostState(args);
-  if (sub === "roll") return hostRoll(args);
-  if (sub === "invite") return hostInvite(args);
+  const v = sub as (typeof HOST_VERBS)[number];
+  if (v === "roll") return hostRoll(args);
+  if (v === "invite") return hostInvite(args);
   return refuseUsage(args, "host", helpLines("host"), `unknown sub-verb "${sub}"`);
 }
 

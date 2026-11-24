@@ -144,7 +144,7 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
       error: { code: "FoundingRefused", message: `the founding refused (${refusedStep.detail}); nothing stands. The refusal leads the lines above.` },
       data: { founding, root, bootstrap: existsSync(bootstrap) ? "present" : "absent" },
       human: () => {
-        console.error(`lares vessel stand: FoundingRefused: ${refusedStep.detail}; no vessel was founded and no daemon was started.`);
+        console.error(`lares vessel stand: FoundingRefused: ${refusedStep.detail}; no vessel founded and no daemon started.`);
       },
     });
     return 1;

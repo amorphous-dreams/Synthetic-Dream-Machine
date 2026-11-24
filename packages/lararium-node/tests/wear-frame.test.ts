@@ -281,6 +281,10 @@ describe("RED wear flushes every shore before it turns the face", () => {
     expect(a).toMatchObject({ op: "wear", status: "error", refusal: { reason: "shore-unwritten", shore: STRANDS } });
     expect(String(a["errorMessage"])).toContain("lar:///a.b.c/stuck");
     expect(String(a["errorMessage"])).toContain("wiki:lares");
+    // The refusal names the face whose carrier stands stuck (the worn face's wiki holds it here), and the flush that writes it.
+    expect(String(a["errorMessage"])).toMatch(/records unwritten on h0 \(/);
+    expect(String(a["errorMessage"])).toContain("lares shore flush");
+    expect(String(a["errorMessage"])).not.toContain("turns away from");
     expect(mountedFaceOrdinal()).toBe(0);
     expect(v.composed).toEqual([]);
   });

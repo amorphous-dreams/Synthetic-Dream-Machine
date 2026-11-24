@@ -322,7 +322,7 @@ export async function lagAfterRaise(ports: RitePorts, out: { code: number; data:
   const fresh = read.holdings.reduce((n, h) => n + h.new.length, 0), moved = read.holdings.reduce((n, h) => n + h.changed.length, 0);
   ports.say(read.lag === 0
     ? `kūkulu: canon stands level with ${read.source}`
-    : `kūkulu: canon lags the canon source by ${read.lag} carrier(s) (${fresh} new, ${moved} changed) in ${read.source}; canon fills through promote and the floor's sealed cut, never from a raise`);
+    : `kūkulu: canon lags the canon source by ${read.lag} carrier(s) (${fresh} new, ${moved} changed) in ${read.source}; canon fills through promote and the floor's sealed cut, never from a raise: \`lares meme offer promote <cid>\`, then \`lares nexus release <manifest-file> --cut\``);
   const lagging = read.benches.filter((b) => b.planned.length > 0);
   if (read.wikis !== null) {
     ports.say(read.benchLag === 0
@@ -360,7 +360,7 @@ export async function lagAfterRaise(ports: RitePorts, out: { code: number; data:
   }
   const code = await ports.layWorkbench!();
   if (code === INTERRUPTED) {
-    ports.say(`kūkulu: the workbench lay was interrupted; the house stands, and the lay reads diff-gated, so ${WORKBENCH_LAY_LINE} picks it up`);
+    ports.say(`kūkulu: something interrupted the workbench lay; the house stands, and the lay reads diff-gated, so ${WORKBENCH_LAY_LINE} picks it up`);
     return { code: 1, data: { ...out.data, lag, workbench: { offered, laid: false, interrupted: true }, refusal: "kukulu-workbench-lay-interrupted" } };
   }
   if (code !== 0) {

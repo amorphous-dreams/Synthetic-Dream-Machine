@@ -8,7 +8,7 @@
  * Law: lar:///ha.ka.ba/lares/docs/pono/cli-test-laws#/L1
  */
 import { describe, expect, test } from "vitest";
-import { UNKNOWN, door, flagReadingCommands, verbTables } from "./harness.js";
+import { UNKNOWN, commands, door, flagReadingCommands, verbTables } from "./harness.js";
 
 describe("L1 · an unknown door, verb or flag refuses by name, exit 2", () => {
   test.each(flagReadingCommands().map((c) => [c.name]))("`%s --unknown` refuses, naming the flag and the door", async (name) => {
@@ -18,7 +18,9 @@ describe("L1 · an unknown door, verb or flag refuses by name, exit 2", () => {
     expect(r.err).toContain(`lares ${name}`);
   });
 
-  test.each(verbTables().map((t) => [t.door]))("`%s <unknown verb>` refuses with exit 2", async (name) => {
+  // A pass-through door hands an unknown word to another program's grammar, whose own parser owns that exit (`mempalace`).
+  const passes = new Set(commands().filter((c) => c.passesThrough !== undefined).map((c) => c.name));
+  test.each(verbTables().filter((t) => !passes.has(t.door.split(" ")[0]!)).map((t) => [t.door]))("`%s <unknown verb>` refuses with exit 2", async (name) => {
     expect((await door([name, UNKNOWN])).code).toBe(2);
   });
 

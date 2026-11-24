@@ -232,6 +232,8 @@ import { promoteActGate, type PromoteActGate } from "./promote-act-gate.js";
 import { askIslandMemory, askIslandVerb, askSeatDuties, IslandVerbRefused, type IslandAsk } from "./island-verb-ask.js";
 import { islandAskRefusal, tapInboundDocs, ISOLATE_ENGINE } from "./engine-watch.js";
 import { fallAwareProbeDoors, heldBackReason, heldInFlight, holdBackStorage, readEngineFalls, type ProbeDoors } from "./engine-fall.js";
+import { ROUTING_ARG_MALFORMED, routingObject, routingString } from "./routing-arg.js";
+import { VerbRefusal } from "@lararium/mesh";
 import { flushEveryShore, shoreFlushStandDown, type ShoreFlushReading, type ShoreIslandAsk } from "./shore-verb.js";
 import { faceCanonThroughControl } from "./commands/kahua.js";
 import type { BackupDoor }                from "./face-bundle-cut.js";
@@ -1744,7 +1746,7 @@ async function prepareNodeBootOn(
   // that opens at that stand, through its seat's opener, stands the key too), so the island's floor gate, the host's working
   // layer and the floor verbs all read the key the control document read under.
   let floorKeyGrant = standFloorKey();
-  const stopFloorKeyOpened = standingCustody()?.onOpened?.(() => { try { standFloorKey(); } catch (e) { console.warn(`[floor] the floor's rest key did not stand at the custody's open: ${e instanceof Error ? e.message : String(e)}`); } }) ?? null;
+  const stopFloorKeyOpened = standingCustody()?.onOpened?.(() => { try { standFloorKey(); } catch (e) { console.warn(`[floor] the floor's rest key did not stand when the custody opened: ${e instanceof Error ? e.message : String(e)}`); } }) ?? null;
   stood.push({ what: "the floor key watch", down: () => { stopFloorKeyOpened?.(); } });
   // R2's booking, by the change's own writer (T4): a save of a sealed bag's document reads its change's actor off its
   // bytes; a change this replica made books the session whose call stands, and a peer's change books its peer writer
@@ -4657,8 +4659,12 @@ async function prepareNodeBootOn(
     // wiki-act places slot-targeted residency verbs in the slot's wiki.
     // Promotion from a working slot stays in that slot's wiki island.
     registry.register("wiki-act", async (args, ctx) => {
-      const verb = String(args["verb"]);
-      const innerArgs = (args["args"] as Record<string, unknown>) ?? {};
+      // THE INNER VERB ROUTES AS A STRING OR REFUSES, never coerced: the socket's per-op hand gate reads the same field strictly.
+      const verb = routingString(args, "verb", "wiki-act");
+      if (verb === "") throw new VerbRefusal(ROUTING_ARG_MALFORMED, `${ROUTING_ARG_MALFORMED}: wiki-act names the verb it carries (\`verb\`)`);
+      // NO NESTING: a wiki-act carries a wiki's verb, never another wiki-act, so no envelope wraps one past a gate that reads one level.
+      if (verb.toLowerCase() === "wiki-act") throw new VerbRefusal(ROUTING_ARG_MALFORMED, `${ROUTING_ARG_MALFORMED}: wiki-act carries a wiki's verb, never another wiki-act`);
+      const innerArgs = routingObject(args, "args", "wiki-act");
       const destination = innerArgs["to-bag"] ?? innerArgs["bag"];
       // The daemon wiki stands on the daemon's own reach, never a wiki island, so its slots route nowhere.
       const slot = (bag: string): boolean => /^lar:\/\/\/ha\.ka\.ba\/wikis\/[^/]+\/(?:temp|draft|personal|working)$/.test(bag) && wikiSlugOfBag(bag) !== "daemon";
@@ -4856,13 +4862,13 @@ async function prepareNodeBootOn(
     // control), budget-enforced by the cap (the daemon bag always + pinBudget rotatable).
     // Distinct from the recipe-bag `pin-wiki`: this pins the wiki GRAIN in the collector.
     registry.register("wiki-hold", async (args) => {
-      const slug = String(args["slug"] ?? "");
+      const slug = routingString(args, "slug", "wiki-hold");
       if (!slug) throw new Error("wiki-hold: `slug` required");
       const held = await wikiActivation.hold(slug);
       return { verb: "wiki-hold", slug, held, holds: [...wikiActivation.held()], budget: wikiActivation.grant.pinBudget };
     });
     registry.register("wiki-release", async (args) => {
-      const slug = String(args["slug"] ?? "");
+      const slug = routingString(args, "slug", "wiki-release");
       if (!slug) throw new Error("wiki-release: `slug` required");
       wikiActivation.release(slug);
       return { verb: "wiki-release", slug, holds: [...wikiActivation.held()] };
@@ -4903,7 +4909,7 @@ async function prepareNodeBootOn(
     }
     void residency.pin(DAEMON_BAG_ID,       "boot:daemon");
     // Durable pin replay — BEFORE the sweeper starts, so a replayed pin never races the first
-    // idle-cool tick. Recovers whatever `lares pin` persisted under the daemon doc across a
+    // idle-cool tick. Recovers whatever `lares wiki pin` persisted under the daemon doc across a
     // restart (residency-tiers.mem#/pin-flag; see writePinTiddler/replayPinsFromDaemonDoc).
     void replayPinsFromDaemonDoc(daemonVm.daemonHandle, residency);
     residency.startSweeper();
@@ -5234,7 +5240,7 @@ async function prepareNodeBootOn(
       for (const { slug, dir, name, tree } of readWorkbenches()) {
         const wsLog = (line: string): void => console.log(`[workspaces] ${line}`);
         // The submit port's `wiki-act` carries the INGEST and names this wiki: it places in that wiki's island alone.
-        const wsSubmit = islandIngestSubmit((_verb, args) => inWiki(slug, String(args["verb"]), (args["args"] as Record<string, unknown>) ?? {}));
+        const wsSubmit = islandIngestSubmit((_verb, args) => inWiki(slug, routingString(args, "verb", "wiki-act"), routingObject(args, "args", "wiki-act")));
         const wsSense = (uris?: readonly string[]): Promise<unknown> => inWiki(slug, "shore", { op: "sense", ...(uris !== undefined ? { uris: [...uris] } : {}) });
         const wsWatch = armWorkspaceWatch({ workspace: dir, tree, name, ports: workspaceIngestPorts({ workspace: dir, slug, submit: wsSubmit, sense: wsSense, did: requestedBy, heads: poolHeads(tree), log: wsLog }), log: wsLog });
         workspaceWatches.add(wsWatch);

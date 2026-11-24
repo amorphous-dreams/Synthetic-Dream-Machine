@@ -358,7 +358,7 @@ Three research spirits (Keyhive/BeeKEM · object-capability theory · MLS/TreeKE
 
 ''Cap-rotation on PersonaGroup contraction.'' When the operator removes a device from the PersonaGroup, Keyhive's revocation propagates to the admin doc + all PersonaGroup-delegated bags. The removed device loses access to `@personal`/`@draft` at the same time it loses access to the admin doc — atomic by construction.
 
-''Long-term garbage collection.'' Not in scope for Sprint 7. A future sprint MAY add operator-facing inspection of binding tiddlers (`lares wiki personal --list`) and explicit revocation (`lares wiki personal --forget <fingerprint>`). For now, bindings accumulate forever and that reads as the correct default.
+''Long-term garbage collection.'' Not in scope for Sprint 7. A future sprint MAY add operator-facing inspection of binding tiddlers (`wiki personal --list`, not yet a door) and explicit revocation (`wiki personal --forget <fingerprint>`). For now, bindings accumulate forever and that reads as the correct default.
 
 <<~/ahu>>
 
@@ -462,7 +462,7 @@ Q7 (mint atomicity) ✅ resolved 2026-06-01 — ''orphan-tolerant idempotent min
 ''Subscription + linkage''
 
 Q8 (subscription gesture) ✅ deferred 2026-05-31 — S7.6 ships with implicit-on-PersonaGroup-membership as the default subscription gesture; the per-wiki explicit opt-out toggle becomes follow-up sprint scope once the operator has lived with the implicit default.
-Q9 (cross-fingerprint linkage) ✅ deferred 2026-06-01 — out of Sprint 7 scope; a future sprint MAY add `lares wiki personal --import-from <fingerprint>`.
+Q9 (cross-fingerprint linkage) ✅ deferred 2026-06-01 — out of Sprint 7 scope; a future sprint MAY add `wiki personal --import-from <fingerprint>` (not yet a door).
 
 ''@draft binding''
 
@@ -495,6 +495,6 @@ register's lived surface — the living grammar in use before curation lifts it 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;caT8pLst3KEdwwjO1YX4GLaOcX6Xvse1XRwxjGBFoYE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;lsRprAmj8ZBJIMWkW3Aaubt5Upgofiwjt7fjUxvRcCo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

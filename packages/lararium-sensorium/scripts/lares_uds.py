@@ -34,6 +34,7 @@ import os
 import socket
 
 import house_root
+import step_in
 
 
 class LaresDaemonUnreachable(Exception):
@@ -56,11 +57,28 @@ _REFUSAL_NEXT = {
 }
 
 
+def step_in_line() -> "str | None":
+    """THE STEP-IN READING, for a vessel that answers no verb: the falls and held ids its store leaves on disk (`step_in`),
+    or None where nothing rests or no house root names the store. It reads files and never opens the store."""
+    try:
+        return step_in.line(data_dir())
+    except Exception:  # noqa: BLE001 — an unnamed root or an unreadable dir leaves the refusal as the vessel spoke it
+        return None
+
+
+def _stepped_in(words: str) -> str:
+    extra = step_in_line()
+    return f"{words} — {extra}" if extra else words
+
+
 def refused(out: dict, fallback: str) -> LaresVerbError:
     """The error a seat's `{status: "error"}` answer raises: led by the refusal's name and its next step where the
-    vessel named one (`vessel-locked: run lares vault unlock, then ask again — <the vessel's words>`)."""
+    vessel named one (`vessel-locked: run lares vault unlock, then ask again — <the vessel's words>`). A fallen engine's
+    refusal (`engine-terminated`) also carries the step-in reading, so a seat sees the falls and held ids it cannot ask."""
     reason = (out.get("refusal") or {}).get("reason") if isinstance(out.get("refusal"), dict) else None
     words = out.get("errorMessage") or fallback
+    if reason == "engine-terminated":
+        words = _stepped_in(words)
     if reason in _REFUSAL_NEXT:
         return LaresVerbError(f"{reason}: {_REFUSAL_NEXT[reason]} — {words}", reason)
     if reason:
@@ -152,7 +170,8 @@ def call(verb: str, args: "dict | None" = None, *, timeout: float = 30.0,
     """
     path = socket_path()
     if not os.path.exists(path):
-        raise LaresDaemonUnreachable(f"no lares daemon at {path} — start one with `lares vessel stand --foreground`")
+        # A fall during boot closes the socket: the step-in reading names what the fall left, where it left anything.
+        raise LaresDaemonUnreachable(_stepped_in(f"no lares daemon at {path} — start one with `lares vessel stand --foreground`"))
 
     line = json.dumps({
         "verb": verb,
@@ -167,7 +186,7 @@ def call(verb: str, args: "dict | None" = None, *, timeout: float = 30.0,
         try:
             s.connect(path)
         except (ConnectionRefusedError, FileNotFoundError) as e:
-            raise LaresDaemonUnreachable(f"lares daemon not answering at {path}: {e}") from e
+            raise LaresDaemonUnreachable(_stepped_in(f"lares daemon not answering at {path}: {e}")) from e
         s.sendall(line.encode())
         buf = b""
         while b"\n" not in buf:
@@ -211,6 +230,30 @@ def _lines(sock: socket.socket):
             buf += chunk
         line, buf = buf.split(b"\n", 1)
         yield json.loads(line.decode())
+
+
+def custody_frame(frame: dict, *, timeout: float = 30.0) -> dict:
+    """Send ONE custody frame (a frame the custody door owns: `{"op": "shore-flush"}`, …) and return its one answer, whole.
+
+    Raises LaresDaemonUnreachable when no vessel holds the socket or it closes with no answer. A refusal comes back as the
+    answer itself (`status: "error"` with its `refusal`), for the caller to name."""
+    path = socket_path()
+    if not os.path.exists(path):
+        raise LaresDaemonUnreachable(f"no lares daemon at {path} — start one with `lares vessel stand --foreground`")
+    s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    s.settimeout(timeout)
+    try:
+        try:
+            s.connect(path)
+        except (ConnectionRefusedError, FileNotFoundError) as e:
+            raise LaresDaemonUnreachable(f"lares daemon not answering at {path}: {e}") from e
+        s.sendall((json.dumps(frame) + "\n").encode())
+        answer = next(_lines(s), None)
+    finally:
+        s.close()
+    if not isinstance(answer, dict):
+        raise LaresDaemonUnreachable(f"the vessel answered no {frame.get('op')!r} frame")
+    return answer
 
 
 def resolve_face(face: "int | None" = None, *, timeout: float = 30.0) -> int:

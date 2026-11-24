@@ -56,7 +56,7 @@ export async function cmdStandForeground(args: ParsedArgs): Promise<number> {
   const { existsSync } = await import("node:fs");
   const distMain = join(NODE_PKG, "dist", "src", "main.js");
   if (!existsSync(distMain)) {
-    console.error(`[lares vessel stand --foreground] ${distMain} not found — run \`pnpm build\` first (the island workers are compiled; tsx-source cannot spawn them).`);
+    console.error(`[lares vessel stand --foreground] ${distMain} not found — run \`pnpm build\` first (the island workers run compiled; tsx-source cannot spawn them).`);
     return 1;
   }
   const extraArgs: string[] = [];
@@ -125,8 +125,8 @@ async function stopIncumbentFor(args: ParsedArgs, label: string): Promise<number
     const r = await stopIncumbent(port, {
       onPastGrace: (pids) => console.log(
         pids.length > 0
-          ? `${label} :${port} is past its grace, still held by pid(s) ${pids.join(", ")} — waiting on its own exit`
-          : `${label} :${port} is past its grace, held by no discoverable pid — waiting on its own exit`,
+          ? `${label} :${port} runs past its grace, still held by pid(s) ${pids.join(", ")} — waiting on its own exit`
+          : `${label} :${port} runs past its grace, held by no discoverable pid — waiting on its own exit`,
       ),
     });
     if (r.stopped) console.log(`${label} stopped incumbent on :${port} (graceful)`);
@@ -173,8 +173,8 @@ export async function cmdRiteRebuild(args: ParsedArgs): Promise<number> {
     const r = await stopIncumbent(port, {
       onPastGrace: (pids) => console.log(
         pids.length > 0
-          ? `[lares vessel rite rebuild] :${port} is past its grace, still held by pid(s) ${pids.join(", ")} — waiting on its own exit`
-          : `[lares vessel rite rebuild] :${port} is past its grace, held by no discoverable pid — waiting on its own exit`,
+          ? `[lares vessel rite rebuild] :${port} runs past its grace, still held by pid(s) ${pids.join(", ")} — waiting on its own exit`
+          : `[lares vessel rite rebuild] :${port} runs past its grace, held by no discoverable pid — waiting on its own exit`,
       ),
     });
     if (r.stopped) console.log(`[lares vessel rite rebuild] stopped incumbent on :${port} (graceful)`);

@@ -25,11 +25,13 @@ export type CustodyFrame =
   | { readonly op: "census" }
   /** The document census: every document the stores hold and who names it, read-only (`vessel census --docs`). */
   | { readonly op: "doc-census" }
+  /** The shore's flush over every island the composition holds (`lares shore flush`): no credential; it places no record. */
+  | { readonly op: "shore-flush" }
   /** One act of the sealed-act table and its typed arguments; nothing rides beside them. */
   | { readonly op: "act"; readonly act: string; readonly args: Readonly<Record<string, unknown>> }
   /** One face's backup cut: the vessel's own route, the face's handle-index and the bundle key (64 lower hex). */
   | { readonly op: "backup"; readonly credentials: readonly Credential[]; readonly face: number; readonly key: string }
-  /** Rehive one SHUT face from its own seed: the face's own route and its handle-index (`lares face rehive`). */
+  /** Rehive one SHUT face from its own seed: the face's own route and its handle-index (`lares vault rehive`). */
   | { readonly op: "rehive"; readonly credentials: readonly Credential[]; readonly face: number }
   /** The human route the next new face this vessel founds will bind (passphrase pins; one use). */
   | { readonly op: "face-route"; readonly slots: readonly SlotSpec[]; readonly purpose: "persona-new" | "bundle.restore"; readonly argsDigest: string }
