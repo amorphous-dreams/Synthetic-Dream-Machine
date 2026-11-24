@@ -31,7 +31,7 @@ type Standing = "stands" | "aside" | "unknown";
 
 /** One ward act, as its digest names it: the verb, the wiki it binds and the head it acts over. */
 export interface WardCosignAct {
-  readonly verb: "ward-kapae-lower" | "ward-house-cap" | WardLeiVerb;
+  readonly verb: "ward-kapae-lower" | "ward-house-cap" | WardLeiVerb | "ward-keeper-vest";
   readonly wiki: string;
   readonly head: string;
 }

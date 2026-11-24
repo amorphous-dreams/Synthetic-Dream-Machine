@@ -58,6 +58,7 @@
  * and conferre then reads the pair `par`. A kūkulu that never composed leaves the guest half alone, which reads red.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
  */
+import type { KeeperRiteBegun, KeeperRiteReading, KeeperVouchedFace } from "./pulama-keeper.js";
 import { FLOOR_REST_KEY_INFO, GATE_BUNDLE_INFO, KUKULU_VOUCH_DOMAIN, PULAMA_TESSERA_DOMAIN, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, lentFacesOf, lentFacesWire, renderLentFaces, verifyKukuluVouch, type LentFaces } from "@lararium/mesh";
 import type { CustodyHolder } from "./custody-holder.js";
 import { personaGroupDigest } from "./persona-group-file.js";
@@ -238,5 +239,71 @@ export function kukuluGate(a: {
       };
       return { ok: true, scope };
     },
+  };
+}
+
+/**
+ * THE LIVE RITE A KEEPER'S VEST RIDES (the keeper tally): the kūkulu offer the standing vessel rested, read as the gate reads it, and
+ * bound to ONE keeper move. Each vouch verifies under the house's vouch key, walked the image the host reports, and names this move
+ * (the successor's one-handoff key and the committed closure). The reading begins nothing: once every check of the vest passes, its
+ * `begin` begins the kūkulu rite over the pūlama's records for each lit face, claiming one return of a lei the hand strung. The new vessel's hello finds that begun half and lands it, spending no
+ * second return. A bare frame with no such offer, or a lei with no return left, begins nothing, and the vest refuses by name. The
+ * reading names the faces' device count off the vouches (0 where a vouch read none, so the vest fails closed).
+ */
+export function keeperRiteOver(a: {
+  readonly holder: CustodyHolder;
+  readonly hand: (ordinal: number) => Promise<string | null | undefined>;
+  readonly rite: KukuluRitePort;
+  readonly image: () => string | null | Promise<string | null>;
+}): (offer: unknown, keeper: { readonly to: string; readonly next: string }) => Promise<KeeperRiteReading> {
+  return async (offer, keeper) => {
+    const no = (refusal: string, detail: string) => ({ ok: false as const, refusal, detail: `${detail}; nothing vests, and the old fire still burns: light the successor by hand with \`lares rite kukulu\` on a terminal` });
+    const o = (typeof offer === "object" && offer !== null && !Array.isArray(offer) ? offer : null) as { lei?: unknown; unstrung?: unknown; vouch?: unknown } | null;
+    if (o === null || !Array.isArray(o.vouch) || o.vouch.length === 0) return no("vest-rite-absent", "a vest rides a live kūkulu rite, and this frame carries no offer with a vouch");
+    if ((o.lei !== undefined && !Array.isArray(o.lei)) || (o.unstrung !== undefined && !Array.isArray(o.unstrung))) return no("vest-rite-absent", "the offer's lei and unstrung rows read as arrays");
+    const lei: readonly unknown[] = (o.lei as unknown[] | undefined) ?? [], unstrung: readonly unknown[] = (o.unstrung as unknown[] | undefined) ?? [];
+    const vouchKey = await vouchKeyOf(a.holder);
+    const raised = await a.image();
+    if (raised === null) return no("kukulu-image-unreported", "the host reported no image at this keeper's hand door");
+    const by = await pulamaSignerOf(a.holder);
+    // ONE PASS VERIFIES EVERY VOUCH AND NAMES ITS FACE; NOTHING BEGINS HERE (blind read F3). The vest runs every check over this
+    // reading first, and calls `begin` last, so a refusal claims no lei return and rests no begun half.
+    const faces: KeeperVouchedFace[] = [], ats: KukuluRiteAt[] = [];
+    let devices = Number.POSITIVE_INFINITY, most = 0, first: string | null = null;
+    for (const raw of o.vouch.slice(0, 64)) {
+      const vouched = verifyKukuluVouch(raw, vouchKey);
+      if (!vouched.ok) return no(`kukulu-vouch-${vouched.refusal}`, "a vouch the offer carries verifies under no key this house's custody root derives");
+      const body = vouched.vouch.body;
+      // THE VOUCH NAMES THIS KEEPER MOVE, or the vest rides another rite (or none).
+      if (body.keeper === undefined || body.keeper.to !== keeper.to || body.keeper.next !== keeper.next) return no("vest-rite-unbound", "a vouch the offer carries names no keeper move, or another successor key or closure, than this vest");
+      if (body.image !== raised) return no("kukulu-image-mismatch", "a vouch walked another image than the one the host raises");
+      devices = Math.min(devices, body.keeper.devices); most = Math.max(most, body.keeper.devices);
+      const face = await a.holder.faceStanding({ group: personaGroupDigest(body.group) });
+      if (face === null || !face.unlocked) { first ??= "kukulu-face-locked"; continue; }
+      // THE VOUCH MAPS ORDINAL TO GROUP: the vessel signed the group; this keeper's own holder names the ordinal.
+      faces.push({ ordinal: face.ordinal, group: body.group, devices: body.keeper.devices });
+      const handKey = (await a.hand(face.ordinal))?.toLowerCase();
+      if (!handKey) { first ??= "kukulu-hand-absent"; continue; }
+      ats.push({ group: body.group, branch: body.branch, head: body.head, tree: body.tree, image: raised, hand: (key) => key.toLowerCase() === handKey, by });
+    }
+    if (ats.length === 0) return no("vest-rite-absent", `no lit face's vouch can begin a rite for this vest (${first ?? "no face"})`);
+    const begin = async (): Promise<KeeperRiteBegun> => {
+      const tesserae: string[] = [];
+      let none: string | null = first;
+      for (const at of ats) {
+        // THE RETURN CLAIMS HERE: the vest is this rite's begin, and the next vessel's hello lands the half it rests.
+        const begun = await a.rite.begin({ lei, unstrung }, at);
+        if (begun.ok) tesserae.push(begun.tessera);
+        else if (begun.refusal === "swarm-lei-absent") none ??= begun.refusal;
+        // A BEGIN THAT FAILS PART WAY NAMES WHAT IT BEGAN (blind read L1): the halves earlier faces rested stay resting, named here and
+        // in the lapse the vest rests, so the hand reads them rather than finding them.
+        else if (tesserae.length > 0) return { ...no(begun.refusal, `the rite began ${tesserae.length} half(s) (${tesserae.join(", ")}) before a later face refused; they rest unlanded: read them with \`lares rite receipts --rite kukulu\``), begun: [...tesserae] };
+        else return no(begun.refusal, "the rite this vest rides begins nothing");
+      }
+      if (tesserae.length === 0) return no("vest-rite-absent", `no lit face's kukulu lei began a rite for this vest (${none ?? "no face"})`);
+      return { ok: true, rite: tesserae };
+    };
+    // THE FEWEST READ WINS where a face read none (0 fails closed); else the most any face holds.
+    return { ok: true, devices: devices === 0 ? 0 : most, faces, begin };
   };
 }

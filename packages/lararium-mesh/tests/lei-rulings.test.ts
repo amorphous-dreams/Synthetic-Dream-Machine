@@ -39,7 +39,7 @@ async function stand(cosign?: () => WardCosignPort | Promise<WardCosignPort>) {
 
 describe("the co-sign weighs reach: a kukulu lei stays home", () => {
   test("RED: `ward-kukulu-lei` stands in no co-sign table, and a kukulu lei reads with a witness that co-signs nothing; CONTROL: a push lei at the same witness stands on no chain", async () => {
-    expect(WARD_COSIGN_VERBS).toEqual(["ward-kapae-lower", "ward-house-cap", "ward-push-lei"]);
+    expect(WARD_COSIGN_VERBS).toEqual(["ward-kapae-lower", "ward-house-cap", "ward-push-lei", "ward-keeper-vest"]);
     expect(faceIntentVerbs().classOfVerb("ward-kukulu-lei")).toBeNull();
     expect(leiRiteCosigns("push")).toBe(true);
     expect(leiRiteCosigns("kukulu")).toBe(false);

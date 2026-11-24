@@ -305,6 +305,20 @@ export interface CustodyHolder {
   /** Test seam: watch each ward key this holder opens, to witness that it zeroes. The product seats none. */
   watchWardKeys(watch: ((key: WardKey) => void) | null): void;
   isFaceUnlocked(face: FaceRef): Promise<boolean>;
+  // ── vesting: a lit keeper hands the house's end of the bond to its successor (a pūlama's own holder alone) ─────────────
+  /**
+   * THE HANDED FIRE, OUTGOING: copies of the node key and every open face's key, for the vest to seal to the successor's
+   * ephemeral key. The caller zero-fills every copy once sealed. Null while no key stands. Never a passphrase, a slot or a ward key:
+   * those never rest in a holder's memory to hand.
+   */
+  handOver?(): { readonly treeKey: Uint8Array; readonly faces: ReadonlyArray<{ readonly fcid: string; readonly ordinal: number; readonly fck: Uint8Array; readonly spent: number }> } | null;
+  /**
+   * THE HANDED FIRE, INCOMING: seat one face's key a vest carried, as `adopt` seats the node key. The key must answer the floor
+   * index as an unlock's would (`face-owner`, anchors), or nothing seats and the copy zero-fills. Spends no attempt.
+   */
+  adoptFace?(fcid: string, fck: Uint8Array): Promise<FaceUnlock>;
+  /** THE BUDGET CARRIES: raise the spent unlock count, and each named face's, to what the keeper before spent (never lower one). */
+  seedSpent?(spent: number, faces?: ReadonlyArray<{ readonly fcid: string; readonly spent: number }>): void;
 }
 
 /** A key handed to `adopt` that the custody root does not open under. */
@@ -589,6 +603,41 @@ export function makeCustodyHolder(a: {
     keyOpened();
     return { reading: "opens", fcid: opened.fcid, ordinal: opened.ordinal, slot: opened.slot };
   };
+  /** A face key's checks against the floor index (`face-owner`, anchors): null where it answers the entry, else the refusal (the key zero-fills). */
+  const checkFaceKey = async (found: { readonly fcid: string; readonly ordinal: number; readonly group: string | null }, fck: FaceCustodyKey, opts: { readonly requireAnchors?: boolean } = {}): Promise<Exclude<FaceUnlock, { readonly reading: "opens" }> | null> => {
+    const { fcid, ordinal } = found;
+    // THE INDEX ROUTES AND NEVER DECIDES: the face's own D row must name the custody id and the group the index entry names.
+    const owner = await openFaceCarrier({ io: a.io, key: fck, carrier: ownerCarrier(fcid) });
+    const refuse = (why: string): Exclude<FaceUnlock, { readonly reading: "opens" }> => { fck.fill(0); return { reading: "index-mismatch", fcid, why }; };
+    if (owner.reading !== "opens") return refuse(`the face-owner row reads ${owner.reading}`);
+    const named = decodeOwner(owner.plaintext);
+    owner.plaintext.fill(0);
+    if (named === null) return refuse("the face-owner row is malformed");
+    if (named.fcid !== fcid) return refuse("the face-owner row names another custody id");
+    if (named.group !== found.group) return refuse("the face-owner row names another group than the floor index entry");
+    // ONCE THE FACE HOLDS ANCHORS, THEY AGREE TOO: the anchors row at the face's own handle index names a group, and that group
+    // answers the floor index entry. Either row disagreeing with the index refuses by name before anything seats.
+    const anchorsRow = carrierTable().find((r) => r.row === "anchors");
+    if (anchorsRow) {
+      const anchored = await openFaceCarrier({ io: a.io, key: fck, carrier: faceCarrierFor(a.homes, fcid, `anchors-h${ordinal}.json`, anchorsRow) });
+      if (anchored.reading === "opens") {
+        let group: unknown = null;
+        try { group = (JSON.parse(new TextDecoder().decode(anchored.plaintext)) as { personaGroupId?: unknown }).personaGroupId; } catch { /* unreadable */ }
+        anchored.plaintext.fill(0);
+        if (typeof group !== "string" || (found.group !== null && createHash("sha256").update(group).digest("hex") !== found.group)) {
+          return refuse("the anchors row names another group than the floor index entry");
+        }
+      } else if (anchored.reading !== "absent") {
+        return refuse(`the anchors row reads ${anchored.reading}`);
+      } else if (opts.requireAnchors === true) {
+        // AN ACT ON ONE FACE'S ROWS PROVES ITS ORDINAL: the anchors row at the handle the index routed by must stand and agree.
+        return refuse(`the anchors row at h${ordinal} stands absent, so nothing proves the handle names this face`);
+      }
+    } else if (opts.requireAnchors === true) {
+      return refuse("no anchors row stands in the carrier table to prove the handle");
+    }
+    return null;
+  };
   /** One face's key opened and checked (budget, `face-owner`, anchors), never seated: unlock seats it, an act holds it alone. */
   const doOpenVerified = async (by: FaceRef, credentials: readonly Credential[], opts: { readonly requireAnchors?: boolean } = {}): Promise<
     { readonly reading: "opens"; readonly fcid: string; readonly ordinal: number; readonly slot: string; readonly group: string | null; readonly fck: FaceCustodyKey }
@@ -609,36 +658,8 @@ export function makeCustodyHolder(a: {
     faceSpent.set(fcid, (faceSpent.get(fcid) ?? 0) - charge.cost);
     if (opened.reading === "tree-absent") return { reading: "tree-absent", fcid };
     if (opened.reading === "tree-unreadable") return { reading: "tree-unreadable", fcid, why: opened.why };
-    // THE INDEX ROUTES AND NEVER DECIDES: the face's own D row must name the custody id and the group the index entry names.
-    const owner = await openFaceCarrier({ io: a.io, key: opened.fck, carrier: ownerCarrier(fcid) });
-    const refuse = (why: string): Exclude<FaceUnlock, { readonly reading: "opens" }> => { opened.fck.fill(0); return { reading: "index-mismatch", fcid, why }; };
-    if (owner.reading !== "opens") return refuse(`the face-owner row reads ${owner.reading}`);
-    const named = decodeOwner(owner.plaintext);
-    owner.plaintext.fill(0);
-    if (named === null) return refuse("the face-owner row is malformed");
-    if (named.fcid !== fcid) return refuse("the face-owner row names another custody id");
-    if (named.group !== found.group) return refuse("the face-owner row names another group than the floor index entry");
-    // ONCE THE FACE HOLDS ANCHORS, THEY AGREE TOO: the anchors row at the face's own handle index names a group, and that group
-    // answers the floor index entry. Either row disagreeing with the index refuses by name before anything seats.
-    const anchorsRow = carrierTable().find((r) => r.row === "anchors");
-    if (anchorsRow) {
-      const anchored = await openFaceCarrier({ io: a.io, key: opened.fck, carrier: faceCarrierFor(a.homes, fcid, `anchors-h${ordinal}.json`, anchorsRow) });
-      if (anchored.reading === "opens") {
-        let group: unknown = null;
-        try { group = (JSON.parse(new TextDecoder().decode(anchored.plaintext)) as { personaGroupId?: unknown }).personaGroupId; } catch { /* unreadable */ }
-        anchored.plaintext.fill(0);
-        if (typeof group !== "string" || (found.group !== null && createHash("sha256").update(group).digest("hex") !== found.group)) {
-          return refuse("the anchors row names another group than the floor index entry");
-        }
-      } else if (anchored.reading !== "absent") {
-        return refuse(`the anchors row reads ${anchored.reading}`);
-      } else if (opts.requireAnchors === true) {
-        // AN ACT ON ONE FACE'S ROWS PROVES ITS ORDINAL: the anchors row at the handle the index routed by must stand and agree.
-        return refuse(`the anchors row at h${ordinal} stands absent, so nothing proves the handle names this face`);
-      }
-    } else if (opts.requireAnchors === true) {
-      return refuse("no anchors row stands in the carrier table to prove the handle");
-    }
+    const refused = await checkFaceKey(found, opened.fck, opts);
+    if (refused !== null) return refused;
     return { reading: "opens", fcid, ordinal, slot: opened.slot, group: found.group, fck: opened.fck };
   };
   const doUnlockFaces = async (credentials: readonly Credential[]): Promise<FaceUnlock[]> => {
@@ -699,6 +720,18 @@ export function makeCustodyHolder(a: {
     root = custodyRootFromBytes(opened.opened);
     slot = null;
     keyOpened();
+  };
+
+  const doAdoptFace = async (fcid: string, handed: Uint8Array): Promise<FaceUnlock> => {
+    const found = await resolveFace({ fcid });
+    if (!found) return { reading: "face-absent" };
+    if (faces.has(found.fcid)) return { reading: "already-unlocked", fcid: found.fcid, ordinal: found.ordinal };
+    const fck = Uint8Array.from(handed) as FaceCustodyKey;
+    const refused = await checkFaceKey(found, fck);
+    if (refused !== null) return refused;
+    faces.set(found.fcid, { fck, slot: null, ordinal: found.ordinal, opening: ++openings });
+    keyOpened();
+    return { reading: "opens", fcid: found.fcid, ordinal: found.ordinal, slot: "vested" };
   };
 
   const asReading = (standing: { readonly reading: string; readonly plaintext?: Uint8Array }): RecordReading =>
@@ -767,6 +800,21 @@ export function makeCustodyHolder(a: {
       const run = unlockChain.then(drop, drop);
       unlockChain = run.catch(() => undefined);
       return run;
+    },
+    handOver() {
+      if (treeKey === null || !accepting) return null;
+      return { treeKey: Uint8Array.from(treeKey), faces: [...faces].map(([fcid, seat]) => ({ fcid, ordinal: seat.ordinal, fck: Uint8Array.from(seat.fck), spent: faceSpent.get(fcid) ?? 0 })) };
+    },
+    adoptFace(fcid, handed) {
+      const run = unlockChain.then(() => doAdoptFace(fcid, handed), () => doAdoptFace(fcid, handed));
+      unlockChain = run.catch(() => undefined);
+      return run;
+    },
+    seedSpent(n, carried) {
+      if (Number.isSafeInteger(n) && n > spent) spent = Math.min(n, UNLOCK_ATTEMPTS_PER_BOOT);
+      for (const f of carried ?? []) {
+        if (typeof f.fcid === "string" && Number.isSafeInteger(f.spent) && f.spent > (faceSpent.get(f.fcid) ?? 0)) faceSpent.set(f.fcid, Math.min(f.spent, UNLOCK_ATTEMPTS_PER_BOOT));
+      }
     },
     isUnlocked: () => treeKey !== null,
     attemptsLeft: () => UNLOCK_ATTEMPTS_PER_BOOT - spent,
