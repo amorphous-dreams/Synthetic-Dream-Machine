@@ -96,12 +96,16 @@ const SUBCOMMANDS: Readonly<Record<string, { handler: BagSubcommand; summary: st
   "share":         { handler: cmdShare("bag"), summary: "Who reads and writes a bag, by face pet-name (--read <names> --write <names> --note <why> --face N). A line names its delta: --read and --write add names beside the standing ones, --read-remove and --write-remove take names out, and what it leaves unnamed stands, so the same line twice changes nothing. --read and --write add and never replace a list: narrowing one takes the -remove pair, which revokes each taken-out face's landed grant (a face standing shut keeps the row as it stood, named); --list shows the resolved answer per bag; --remove unshares it. A wiki row standing for the slug refuses (share-kind-standing). Sharing rides by reference and delegation, never a copy." },
 };
 
+/** Every verb the bag door answers (`help` prints this table). */
+export const BAG_VERBS: readonly string[] = ["help", ...Object.keys(SUBCOMMANDS)];
+
+/** The bag door's own account, drawn from its verb table: `lares bag --help` prints it, and a refusal ends with it. */
+export function bagHelpLines(): string[] {
+  return ["lares bag <verb> [args...]", "", "Verbs:", ...Object.entries(SUBCOMMANDS).map(([verb, entry]) => `  ${verb.padEnd(15)} ${entry.summary}`)];
+}
+
 function printBagHelp(): void {
-  console.log("lares bag <verb> [args...]\n");
-  console.log("Verbs:");
-  for (const [verb, entry] of Object.entries(SUBCOMMANDS)) {
-    console.log(`  ${verb.padEnd(15)} ${entry.summary}`);
-  }
+  for (const line of bagHelpLines()) console.log(line);
 }
 
 export async function cmdBag(args: ParsedArgs): Promise<number> {
@@ -110,15 +114,11 @@ export async function cmdBag(args: ParsedArgs): Promise<number> {
     printBagHelp();
     return verb ? 0 : 2;
   }
-  const moved: Record<string, string> = { pin: "wiki pin <url> --bag", unpin: "wiki pin <url> --bag --release", stats: "wiki status" };
-  if (moved[verb]) { console.error(`lares bag: moved to ` + "`lares " + moved[verb] + "`."); return 2; }
+  // The dispatcher's one MOVED table answers `bag pin`, `bag list` and kin before this door runs.
   const entry = SUBCOMMANDS[verb];
-  if (verb === "list") {
-    console.error("lares bag: `bag list` moved to `lares bag show [<slug>]`.");
-    return 2;
-  }
   if (!entry) {
-    console.error(`lares bag: unknown verb "${verb}". Run \`lares bag help\` for the list.`);
+    console.error(`lares bag: unknown verb "${verb}"`);
+    for (const line of bagHelpLines()) console.error(line);
     return 2;
   }
   // Shift positional so the inner handler sees args without the verb.

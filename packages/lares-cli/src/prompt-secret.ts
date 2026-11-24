@@ -15,6 +15,7 @@
  */
 
 import { stdin, stdout } from "node:process";
+import { ATTEMPT_BUDGET } from "@lararium/mesh";
 
 /** True when we can run an interactive no-echo prompt (a real TTY on both ends). */
 export function canPromptSecret(): boolean {
@@ -132,7 +133,7 @@ export function readWardPassphrase(verb: string, opts: { readonly stream?: TtySt
  * mismatch (up to `tries`), then rejects. Empty is refused (the core would refuse anyway; catch it here
  * with a friendly message).
  */
-export async function promptSecretConfirmed(label: string, tries = 3): Promise<string> {
+export async function promptSecretConfirmed(label: string, tries = ATTEMPT_BUDGET): Promise<string> {
   for (let i = 0; i < tries; i++) {
     const a = await promptSecret(`${label}: `);
     if (a.length === 0) { stdout.write("  (empty — try again)\n"); continue; }
@@ -140,5 +141,5 @@ export async function promptSecretConfirmed(label: string, tries = 3): Promise<s
     if (a === b) return a;
     stdout.write("  (entries did not match — try again)\n");
   }
-  throw new Error("passphrase confirmation failed after multiple attempts");
+  throw new Error(`passphrase confirmation failed after ${tries} tries; nothing was bound`);
 }

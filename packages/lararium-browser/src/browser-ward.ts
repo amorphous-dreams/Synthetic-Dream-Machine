@@ -66,7 +66,7 @@ export async function browserWardBindRoute<R>(ask: WardRouteAsk<R>, act: string)
 }
 
 const refusedBy = (e: unknown): never => {
-  if (e instanceof WardRefused) throw new BrowserWardRefused(e.reading, e.message);
+  if (e instanceof WardRefused) throw new BrowserWardRefused(e.reading, e.message, e.attemptsLeft);
   throw e;
 };
 

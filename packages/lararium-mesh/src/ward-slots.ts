@@ -36,10 +36,11 @@ const NONCE_LENGTH = 24;
 const TAG_LENGTH = 16;
 const MIN_LENGTH = WARD_SEAL_MAGIC.length + NONCE_LENGTH + TAG_LENGTH;
 
-/** A ward act the ward itself refuses. `reading` names why; no message quotes a credential. */
+/** A ward act the ward itself refuses. `reading` names why; no message quotes a credential. A refusal that spent a try carries
+ *  the tries left (`attemptsLeft`, attempt-budget.ts). */
 export class WardRefused extends Error {
   override readonly name = "WardRefused";
-  constructor(readonly reading: string, detail: string) { super(`${reading}: ${detail}`); }
+  constructor(readonly reading: string, detail: string, readonly attemptsLeft?: number) { super(`${reading}: ${detail}`); }
 }
 
 const passkeyRefused = (where: string): WardRefused =>

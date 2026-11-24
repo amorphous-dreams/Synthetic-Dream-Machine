@@ -147,7 +147,7 @@ export class ArchiveIdentityMismatch extends Error {
 export class PrekeySecretAbsent extends Error {
   override readonly name = "PrekeySecretAbsent";
   constructor(readonly what: string, cause?: unknown) {
-    super(`holds no prekey secret: its Archive was absent or older than its latest card, so no Document mints for ${what}`, { cause });
+    super(`holds no prekey secret: its Archive stood absent or older than its latest card, so no Document mints for ${what}`, { cause });
   }
 }
 

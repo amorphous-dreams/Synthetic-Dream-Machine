@@ -41,7 +41,7 @@ export async function cmdUnpin(args: ParsedArgs): Promise<number> {
 }
 
 /**
- * `lares register-cold <bag-url>` — mark a URL as known-but-not-loaded.
+ * `lares bag register-cold <bag-url>` — mark a URL as known-but-not-loaded.
  * Oracle traversal calls this for URLs it discovers but doesn't need to
  * fetch yet. Hydrate-on-read is wired: composite-store.ts's `attachResidency`
  * hook bumps `residency.touch()` on every read that resolves through a
@@ -50,7 +50,7 @@ export async function cmdUnpin(args: ParsedArgs): Promise<number> {
 export async function cmdRegisterCold(args: ParsedArgs): Promise<number> {
   const url = args.positional[0];
   if (!url) {
-    console.error("usage: lares register-cold <bag-url>");
+    console.error("usage: lares bag register-cold <bag-url>");
     return 2;
   }
   return await runResidencyCommand("register-cold", { url });

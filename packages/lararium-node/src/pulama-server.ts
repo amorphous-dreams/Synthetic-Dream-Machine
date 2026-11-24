@@ -254,7 +254,7 @@ export function servePulama(a: {
     }
     if (c.kind === "face") {
       const found = await holder.faceStanding(c.selector as FaceRef);
-      if (found !== null && closedTo(s, found.fcid)) throw new PulamaRefused("face-closing", `face h${found.ordinal} is closing, and this session stands outside its close`);
+      if (found !== null && closedTo(s, found.fcid)) throw new PulamaRefused("face-closing", `face h${found.ordinal} closes now, and this session stands outside its close`);
       if (found !== null && !lends(s, found)) {
         throw new PulamaRefused("outside-the-lei", `the pūlama lends this vessel ${renderLentFaces(s.scope.faces)}; this ${c.row} row selects ${JSON.stringify(c.selector)}, face h${found.ordinal}`);
       }
@@ -358,7 +358,7 @@ export function servePulama(a: {
         const { home, file } = recordOf(args);
         await guard(s, home, file, "hot");
         // The claim may have ended while the scope read: a row touched after it would move outside any claim.
-        if (s.claims.get(args["claim"] as number) !== claim) throw new PulamaRefused("pulama-claim-absent", "that claim ended before this row was reached");
+        if (s.claims.get(args["claim"] as number) !== claim) throw new PulamaRefused("pulama-claim-absent", "that claim ended before the pūlama reached this row");
         return op === "records.read" ? claim.records.read(home, file) : claim.records.remove(home, file);
       }
       case "face.standing": {

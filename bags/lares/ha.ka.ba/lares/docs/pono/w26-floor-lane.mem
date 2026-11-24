@@ -138,7 +138,7 @@ action reactors, `meme` and `where` by `systemCanonUrl`, and a recipe's library 
 * ''The announcements'' order by their links too: `foldFloorAnnouncements` reads one line (its head and order) or a fork (its heads named), never settled by recency.
 
 ''Moʻolelo, each overrulable.''
-* ''The CLI rides the vessel door.'' The ruling named `lares floor`; the help's one-screen law holds the top level full and the vessel door already names "a new cap-stack arrives as a rite, never another top-level verb", and the pin belongs to the vessel, so the verb reads `lares vessel floor status|accept`.
+* ''The CLI rides the vessel door.'' The ruling named a top-level `floor`; the help's one-screen law holds the top level full and the vessel door already names "a new cap-stack arrives as a rite, never another top-level verb", and the pin belongs to the vessel, so the verb reads `lares vessel floor status|accept`.
 * ''A genesis pin meets every chain.'' The genesis floor stands below any release, so from genesis every counted chain fast-forwards; the first release need not name the genesis manifest.
 * ''A fork refuses even a named descendant.'' Two heads stand unsettled for the Nexus; the accept waits for the cabal whatever release the person names.
 * ''A replay answers, it never refuses.'' An accept of the pinned release answers `moved: false` and lands nothing, so an act re-run after a restart reads clean.
@@ -202,6 +202,6 @@ action reactors, `meme` and `where` by `systemCanonUrl`, and a recipe's library 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;8ZM1bshCkzgshA2GwfjR2nyJoNbZGC6jvm1qz-9KcOo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_Sdx44iTIaQ2_LH1068jnkw_hXbTuWxplC9QQ7E8swg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -333,8 +333,8 @@ export async function cmdWorldline(args: ParsedArgs): Promise<number> {
     const msg = `no knowledge graph at ${kgPath}`;
     emit(args, {
       ok: false,
-      error: { code: "not-found", message: msg, hint: "Worldline edges project when a session's spirits are observed — run `lares sense subagents <transcript>` first." },
-      human: () => { console.error(`lares sense worldline: ${msg}`); console.error("  Worldline edges project when a session's spirits are observed — run `lares sense subagents <transcript>` first."); },
+      error: { code: "not-found", message: msg, hint: "Worldline edges project when a session's spirits are observed — run `lares sense capture <transcript>` first." },
+      human: () => { console.error(`lares sense worldline: ${msg}`); console.error("  Worldline edges project when a session's spirits are observed — run `lares sense capture <transcript>` first."); },
     });
     return exitFor("not-found");
   }
@@ -357,7 +357,7 @@ export async function cmdWorldline(args: ParsedArgs): Promise<number> {
     const msg = `no worldline edges match "${runArg}" (adapter lares-worldline)`;
     emit(args, {
       ok: false,
-      error: { code: "not-found", message: msg, hint: "Edges land when a session's spirits are observed — `lares sense subagents <transcript>`." },
+      error: { code: "not-found", message: msg, hint: "Edges land when a session's spirits are observed — `lares sense capture <transcript>`." },
       human: () => console.error(`lares sense worldline: ${msg}`),
     });
     return exitFor("not-found");

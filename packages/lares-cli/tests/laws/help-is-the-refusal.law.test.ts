@@ -15,7 +15,7 @@ import { mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { helpLines } from "../../src/command-help.js";
-import { door, helpKeys, UNKNOWN, verbTables } from "./harness.js";
+import { commands, door, helpKeys, UNKNOWN, verbTables } from "./harness.js";
 
 const SRC = join(import.meta.dirname, "..", "..", "src", "commands");
 
@@ -26,13 +26,30 @@ function refusingDoors(): string[] {
     if (!f.endsWith(".ts")) continue;
     for (const m of readFileSync(join(SRC, f), "utf8").matchAll(/refuseUsage\(args, "([a-z -]+)", helpLines\("\1"\)/g)) found.add(m[1]!);
   }
-  for (const { door: d } of verbTables()) if (d !== "vessel") found.add(d);
+  // A pass-through door hands an unknown word to another program's grammar, whose own parser refuses it.
+  const passes = new Set(commands().filter((c) => c.passesThrough !== undefined).map((c) => c.name));
+  for (const { door: d } of verbTables()) if (d !== "vessel" && !passes.has(d.split(" ")[0]!)) found.add(d);
   return [...found].sort();
+}
+
+/**
+ * The lines a door answers with, by the dispatcher's own rule: the longest registry key that leads the door (a sub-door with
+ * no row of its own answers with its parent's), else the sub-verb table the door keeps itself (`wiki`, `bag`, `shore`).
+ */
+function doorKey(key: string): string | null {
+  const words = key.split(" ");
+  for (let n = words.length; n > 0; n--) { const k = words.slice(0, n).join(" "); if (helpKeys().includes(k)) return k; }
+  return null;
+}
+function doorLines(key: string): string[] {
+  const k = doorKey(key);
+  if (k !== null) return helpLines(k);
+  return [...(commands().find((c) => c.name === key.split(" ")[0])?.help?.() ?? helpLines(key))];
 }
 
 /** A refusal reads true when it exits 2 and its stderr ends with the door's lines. */
 const refusalCarries = (r: { code: number; err: string }, key: string): boolean =>
-  r.code === 2 && r.err.trimEnd().endsWith(helpLines(key).join("\n").trimEnd());
+  r.code === 2 && r.err.trimEnd().endsWith(doorLines(key).join("\n").trimEnd());
 
 const saved: Record<string, string | undefined> = {};
 let scratch = "";
@@ -70,7 +87,8 @@ describe("L3 · help and refusal render the same bytes", () => {
   test("the source scan finds the refusing doors, and each names a registry key", () => {
     const doors = refusingDoors();
     expect(doors.length).toBeGreaterThan(10);
-    expect(doors.filter((d) => !helpKeys().includes(d))).toEqual([]);
+    // Each answers from a registry key, or from the sub-verb table it keeps itself.
+    expect(doors.filter((d) => doorKey(d) === null && commands().find((c) => c.name === d.split(" ")[0])?.help === undefined)).toEqual([]);
   });
 
   test("the root door: bare `lares` refuses with the menu `lares help` prints, exit 1 against 0", async () => {

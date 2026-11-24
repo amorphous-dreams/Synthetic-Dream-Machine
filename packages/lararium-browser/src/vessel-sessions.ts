@@ -59,7 +59,7 @@
 import {
   readBrowserCustody, unlockBrowserCustody, sealBrowserKeystore, BrowserCustodyRefused, overwriteBrowserCustody, browserCustodyKeysHeld,
 } from "./browser-custody.js";
-import { standBrowserCustody, type CustodyAnswer, type CustodyAsk } from "./browser-boot-custody.js";
+import { askRoutes, standBrowserCustody, type CustodyAnswer, type CustodyAsk } from "./browser-boot-custody.js";
 import { ambientLocks, type LockHost } from "./vessel-lock.js";
 import {
   FaceCustodyRefused, bindFirstFaceSlot, checkFaceName, clearFaceCustody, faceCustodyHeld, faceCustodyKeysHeld, heldFaceKeys,
@@ -186,7 +186,7 @@ export interface VesselHouseOptions<V extends LitVessel> {
   readonly now?: () => number;
   /** A session the house has not heard within this many ms of its own clock drops. Absent: no budget runs. */
   readonly livenessBudgetMs?: number;
-  /** How many routes one admission tries. A count, never a clock. Default 3. */
+  /** How many routes one admission tries. A count, never a clock. Default `ATTEMPT_BUDGET` (five, `askRoutes`). */
   readonly attempts?: number;
   readonly mint?: () => string;
   /** One Keyhive provider per unlocked face (K19); absent, the house lights none. */
@@ -834,16 +834,17 @@ export async function standVesselHouse<V extends LitVessel>(opts: VesselHouseOpt
 
   /** The session's own unlock of `face`'s tree: each face's unlock opens its own tree alone. */
   async function askOwnFaceUnlock(sessionId: string, face: string, ask: (q: HouseAsk) => Promise<CustodyAnswer>): Promise<{ readonly by: SessionAdmittedBy; readonly route: CustodyAnswer }> {
-    const attempts = opts.attempts ?? 3;
-    let notes: readonly string[] = [];
-    for (let attempt = 1; attempt <= attempts; attempt++) {
-      const route = await act(sessionId, ask({ kind: "unlock", attempt, of: attempts, notes, face }));
-      if (route === null) throw new VesselSessionRefused("admission-declined");
-      const opened = await act(sessionId, unlockFaceCustody(opts.idbName, face, [route]), true);
-      if (opened.reading === "opens") return { by: "unlock", route };
-      notes = opened.notes;
-    }
-    throw new VesselSessionRefused("no-slot-opens");
+    const asked = await askRoutes({
+      ...(opts.attempts !== undefined ? { attempts: opts.attempts } : {}),
+      ask: (q) => act(sessionId, ask({ kind: "unlock", ...q, face })),
+      open: async (route) => {
+        const opened = await act(sessionId, unlockFaceCustody(opts.idbName, face, [route]), true);
+        return opened.reading === "opens" ? { opened: true, value: null } : { opened: false, notes: opened.notes };
+      },
+    });
+    if (asked.reading === "declined") throw new VesselSessionRefused("admission-declined");
+    if (asked.reading === "no-slot-opens") throw new VesselSessionRefused("no-slot-opens", asked.warning);
+    return { by: "unlock", route: asked.route };
   }
 
   /**
@@ -860,16 +861,17 @@ export async function standVesselHouse<V extends LitVessel>(opts: VesselHouseOpt
   }
 
   async function askOwnUnlock(sessionId: string, a: AdmitOptions): Promise<SessionAdmittedBy> {
-    const attempts = opts.attempts ?? 3;
-    let notes: readonly string[] = [];
-    for (let attempt = 1; attempt <= attempts; attempt++) {
-      const route = await act(sessionId, a.ask({ kind: "unlock", attempt, of: attempts, notes, face: null }));
-      if (route === null) throw new VesselSessionRefused("admission-declined");
-      const opened = await act(sessionId, unlockBrowserCustody(opts.idbName, [route]), true);
-      if (opened.reading === "opens") return "unlock";
-      notes = opened.notes;
-    }
-    throw new VesselSessionRefused("no-slot-opens");
+    const asked = await askRoutes({
+      ...(opts.attempts !== undefined ? { attempts: opts.attempts } : {}),
+      ask: (q) => act(sessionId, a.ask({ kind: "unlock", ...q, face: null })),
+      open: async (route) => {
+        const opened = await act(sessionId, unlockBrowserCustody(opts.idbName, [route]), true);
+        return opened.reading === "opens" ? { opened: true, value: null } : { opened: false, notes: opened.notes };
+      },
+    });
+    if (asked.reading === "declined") throw new VesselSessionRefused("admission-declined");
+    if (asked.reading === "no-slot-opens") throw new VesselSessionRefused("no-slot-opens", asked.warning);
+    return "unlock";
   }
 }
 

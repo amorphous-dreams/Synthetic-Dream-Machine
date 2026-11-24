@@ -173,7 +173,7 @@ The vessel's code rides baked into its image, so a deep change rebuilds the imag
 
 ''What the code holds (measured, `L47a`).''
 * ''The port.'' `CustodyHolder` (`custody-holder.ts`) carries every door a sealed-record caller reaches, and `custody-seat.ts` routes all of them to one seated holder. Its doors sort five ways: key doors that take a human route (`unlock`, `proves`, `adopt`, `unlockFace`, `unlockFaces`, `foundFace`, `withWardKey`) or drop a key (`lock`, `lockFace`); hot record doors (`readRecord`, `writeRecord`, `updateRecord`, `moveRecord`, `removeRecord`, and the two claims `withRecords` and `exclusive`); cold record doors (`openColdRecord`, `updateColdRecord`, `removeColdRecord`); the derivation (`derive`); and readings (`isUnlocked`, `attemptsLeft`, `openedSlot`, `unlockedFaces`, `faceStanding`, `isFaceUnlocked`, `wardPublicKey`, `onOpened`).
-* ''What the holder keeps.'' Its closure holds the vessel key, the serving key, the custody root, the slot that opened, one custody key per open face, a ward key for the length of one ward act, and the attempt counts (three per boot for the vessel key, three per face). Nothing else in the vessel process holds a key. The vessel keeps what it asked for: the floor's rest key and the gate bundle root (children of the custody root), and the plaintext of each record it read.
+* ''What the holder keeps.'' Its closure holds the vessel key, the serving key, the custody root, the slot that opened, one custody key per open face, a ward key for the length of one ward act, and the attempt counts (five per boot for the vessel key, five per face: `UNLOCK_ATTEMPTS_PER_BOOT`, derived from the house's one `ATTEMPT_BUDGET`). Nothing else in the vessel process holds a key. The vessel keeps what it asked for: the floor's rest key and the gate bundle root (children of the custody root), and the plaintext of each record it read.
 * ''What the two processes share.'' The identity, storage and seal homes on disk, and the custody claim (`FsCustodyIo.exclusive`, a socket claim beside the slot tree that already serializes writers across containers). The vessel reads the floor index and the floor records itself; the pūlama opens no document and takes no store claim.
 * ''Synchronous doors.'' `derive`, `isUnlocked`, `unlockedFaces`, `attemptsLeft` and `openedSlot` answer without waiting, so the lend's frame carries the holder's standing, the lent set and the derived children, and the pūlama sends them again when a face lights. A session derives under three domains: the floor's rest key, the gate bundle root, and the vouch key.
 * ''Decisions.'' `updateRecord` runs its caller's decision inside the holder's claim. Across the socket the vessel reads the standing record, decides, and the pūlama writes only where the record still stands as decided over; a record that moved decides again.
@@ -239,6 +239,6 @@ Three different things answer to the word "row" in the design's talk-out; this c
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;wVAXmxtqaLQ3KbKGOQF-ZPyUwJ54v_svG80shVungfk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Np6jVEGBG2AP-aPpBGj4kg6H89NK5QLZcG_vXoZqEa4`>>
 
 <<^ code=`&#x0004;` to=`?`>>
