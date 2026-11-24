@@ -18,7 +18,7 @@
  * Preview by default. `--confirm` enacts. `--keep-hooks` leaves the hooks paused afterward (the
  * default resumes them, since the rite paused them).
  *
- * This tears the GUEST only. The sovereign sensorium keeps its own cadence (`lares palace-teardown`),
+ * This tears the GUEST only. The sovereign sensorium keeps its own cadence (`lares sense teardown`),
  * and the two rites share no path — the RUN never writes the comparator, and the comparator's rite
  * never reaches the RUN's planes.
  */

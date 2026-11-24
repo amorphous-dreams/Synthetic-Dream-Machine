@@ -226,6 +226,21 @@ export function openFloorSnapshot(bytes: Uint8Array, cid: string):
 }
 
 /**
+ * THE ROW A FLOOR CUTS FROM ONE LIVE CANON RECORD: its `tiddler` fields alone, the residency stamps (`bag`, `$origin-bag`) and
+ * absent fields left out, and null for a tombstone. One form for the cut (`cutCanonFloor`) and every reader that weighs live
+ * canon against a snapshot (`readFloorDrift`), so the two never disagree about what a moved row means.
+ */
+export function floorRowOf(title: string, record: LarTiddlerRecord | null | undefined): LarTiddlerRecord | null {
+  if (!record || record.meta?.deleted === true) return null;
+  const tiddler: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(record.tiddler as Record<string, unknown>)) {
+    if (k === "bag" || k === "$origin-bag" || v === undefined || v === null) continue;
+    tiddler[k] = Array.isArray(v) ? [...v] : v;
+  }
+  return { tiddler: { ...tiddler, title } as LarTiddlerRecord["tiddler"] };
+}
+
+/**
  * CUT A FLOOR FROM LIVE CANON: a fresh snapshot for each slug whose rows the caller read off its canon document (a promotion's
  * writes among them), every other slug keeping the prior floor's snapshot, and the engine CIDs carried from the prior manifest.
  * A live row keeps its `tiddler` fields alone (meta, residency stamps and tombstones stay out), so one canon cuts one CID on
@@ -249,13 +264,8 @@ export function cutCanonFloor(args: {
     if (!SLUG.test(slug)) throw new FloorManifestRefusal("floor-manifest-malformed", `Invalid floor manifest snapshot: ${slug}`);
     const rows: Record<string, LarTiddlerRecord> = {};
     for (const [title, record] of Object.entries(args.canon[slug]!)) {
-      if (!record || record.meta?.deleted === true) continue;
-      const tiddler: Record<string, unknown> = {};
-      for (const [k, v] of Object.entries(record.tiddler as Record<string, unknown>)) {
-        if (k === "bag" || k === "$origin-bag" || v === undefined || v === null) continue;
-        tiddler[k] = Array.isArray(v) ? [...v] : v;
-      }
-      rows[title] = { tiddler: { ...tiddler, title } as LarTiddlerRecord["tiddler"] };
+      const row = floorRowOf(title, record);
+      if (row) rows[title] = row;
     }
     snapshots[slug] = cutFloorSnapshot(rows);
     cids[slug] = snapshots[slug]!.cid;

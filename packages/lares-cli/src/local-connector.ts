@@ -249,7 +249,7 @@ export class UdsUnreachable extends Error {}
  */
 export class LocalWaitExpired extends Error {
   constructor(verb: string, timeoutMs: number, readonly requestId: string) {
-    super(`local verb "${verb}" — stopped waiting after ${timeoutMs}ms; outcome unknown. Check request ${requestId}.`);
+    super(`local verb "${verb}" — stopped waiting after ${timeoutMs}ms; outcome unknown. Read it back: \`lares vessel request ${requestId}\`.`);
   }
 }
 

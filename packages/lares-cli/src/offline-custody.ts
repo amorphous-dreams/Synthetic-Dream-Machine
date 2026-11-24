@@ -27,8 +27,9 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import {
-  FsCustodyIo, makeCustodyHolder, seatCustodyWhenNeeded, vesselCustodyHomes, type CustodyHolder,
+  FsCustodyIo, makeCustodyHolder, UNLOCK_ATTEMPTS_PER_BOOT, seatCustodyWhenNeeded, vesselCustodyHomes, type CustodyHolder,
 } from "@lararium/node";
+import { attemptWarning } from "@lararium/mesh";
 import { gatherCredentials } from "./custody-prompt.js";
 import { canPromptSecret } from "./prompt-secret.js";
 
@@ -54,7 +55,7 @@ export function testScratchRoot(env: NodeJS.ProcessEnv = process.env): boolean {
 function refusal(reading: string): OfflineCustodyRefused {
   switch (reading) {
     case "tree-absent":     return new OfflineCustodyRefused("no custody stands at this root (a founding seals custody from birth: `lares vessel found`).");
-    case "attempts-spent":  return new OfflineCustodyRefused("three routes failed in this run; run the command again.");
+    case "attempts-spent":  return new OfflineCustodyRefused(attemptWarning(0, "offline-run", UNLOCK_ATTEMPTS_PER_BOOT));
     case "root-unopenable": return new OfflineCustodyRefused("the vessel key opened and the custody root did not; recover the custody root from a backup.");
     default:                return new OfflineCustodyRefused(`the slot tree reads ${reading}.`);
   }
@@ -98,7 +99,7 @@ export async function openOfflineCustody(holder: CustodyHolder): Promise<void> {
     if (u.reading === "opens" || u.reading === "already-unlocked") { await holder.unlockFaces(typed); return; }
     if (u.reading !== "no-slot-opens") throw refusal(u.reading);
     if (u.attemptsLeft <= 0) throw refusal("attempts-spent");
-    process.stdout.write(`  no slot opens under that route; ${u.attemptsLeft} attempt(s) left.\n`);
+    process.stdout.write(`  ${attemptWarning(u.attemptsLeft, "offline-run", UNLOCK_ATTEMPTS_PER_BOOT)}\n`);
   }
 }
 

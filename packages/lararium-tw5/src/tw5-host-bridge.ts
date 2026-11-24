@@ -98,7 +98,8 @@ export function verifyCoreBootBlob(core: TW5CoreBootBlob | undefined): asserts c
   }
   const actual = sha256HexBytesSync(core.bytes);
   if (actual !== core.sha256.toLowerCase()) {
-    throw new Error(`${CORE_BLOB_PIN_MISMATCH}: TW5Engine coreBlob expected=${core.sha256} actual=${actual}${source}`);
+    // The bytes and their pin drifted apart: the vendor bake writes both in one pass, and the tree rebuilds over them.
+    throw new Error(`${CORE_BLOB_PIN_MISMATCH}: TW5Engine coreBlob expected=${core.sha256} actual=${actual}${source}; rebuild the core and its pin together: \`pnpm --filter @lararium/tw5 run build:tw5-vendor && pnpm -r build\``);
   }
 }
 

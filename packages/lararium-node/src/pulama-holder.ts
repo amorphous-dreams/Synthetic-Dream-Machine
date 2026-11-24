@@ -281,7 +281,7 @@ export function makePulamaHolder(a: {
 
   const faceOf = async (face: FaceRef) => await call("face.standing", { face }) as Awaited<ReturnType<CustodyHolder["faceStanding"]>>;
   const faceUnlock = (f: { readonly ordinal: number; readonly fcid: string; readonly unlocked: boolean }): FaceUnlock =>
-    f.unlocked ? { reading: "already-unlocked", fcid: f.fcid, ordinal: f.ordinal } : { reading: "attempts-spent", fcid: f.fcid };
+    f.unlocked ? { reading: "already-unlocked", fcid: f.fcid, ordinal: f.ordinal } : { reading: "attempts-spent", fcid: f.fcid, attemptsLeft: 0 };
 
   return {
     homes: a.homes,
