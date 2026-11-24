@@ -13,7 +13,7 @@
  */
 import { readFileSync } from "node:fs";
 import {
-  OM_BUDGET_MS, holdsPet, hookInput, houseSession, omContext, omDownLine, omSourceOf, parseAnswer, petOf, readState, sessionCounter,
+  OM_BUDGET_MS, digestsOf, holdsPet, hookInput, houseSession, omContext, omDownLine, omSourceOf, parseAnswer, petOf, readState, sessionCounter,
   settle, shimRun, spiritArgv, updateState, vesselUp, wakePet,
 } from "./lares-spirit-core.mjs";
 
@@ -42,6 +42,7 @@ try {
           ...cur, ...(worn !== null ? { pet: worn } : {}), ...(title !== null ? { title } : {}),
           ...(Number.isSafeInteger(answer.data?.epoch) ? { epoch: answer.data.epoch } : {}),
           ...(Number.isSafeInteger(answer.data?.every) ? { every: answer.data.every } : {}),
+          ...(answer.data?.digests && typeof answer.data.digests === "object" ? { digests: digestsOf(answer.data.digests) } : {}),
         }));
       }
       say(omContext(pet, result));

@@ -245,9 +245,15 @@ const SESSION = /^[A-Za-z0-9_-]{1,128}$/;
 /** One session's counter file, or null where the session id reads unsafe as a file name. */
 export const statePathOf = (dir, sessionId) => (typeof sessionId === "string" && SESSION.test(sessionId) ? join(dir, `stop-${sessionId}.json`) : null);
 
+/** The slot digests a wake handed back (`#/slot` -> 16 hex), each checked; anything else drops. */
+export function digestsOf(raw) {
+  if (!raw || typeof raw !== "object") return {};
+  return Object.fromEntries(Object.entries(raw).filter(([k, v]) => /^#\/[^\s]+$/.test(k) && typeof v === "string" && /^[0-9a-f]{16}$/.test(v)));
+}
+
 /** A session's counter: the stops seen, a landing left unfiled, the title the session carried. */
 export function readState(path) {
-  const none = { turns: 0, unfiled: null, title: null, pet: null, epoch: null, every: TRUE_UP_EVERY };
+  const none = { turns: 0, unfiled: null, title: null, pet: null, epoch: null, every: TRUE_UP_EVERY, digests: {} };
   if (path === null) return none;
   try {
     const s = JSON.parse(readFileSync(path, "utf8"));
@@ -255,6 +261,7 @@ export function readState(path) {
       turns: Number.isSafeInteger(s?.turns) ? s.turns : 0, unfiled: typeof s?.unfiled === "string" ? s.unfiled : null,
       title: typeof s?.title === "string" ? s.title : null, pet: typeof s?.pet === "string" && PET.test(s.pet) ? s.pet : null,
       epoch: Number.isSafeInteger(s?.epoch) ? s.epoch : null, every: Number.isSafeInteger(s?.every) && s.every > 0 ? s.every : TRUE_UP_EVERY,
+      digests: digestsOf(s?.digests),
     };
   } catch { return none; }
 }
@@ -308,10 +315,14 @@ export function trueUpText(pet, step, epoch = step?.state?.epoch ?? null, body =
     ? `the last ${COMPACTION_DISPLAY} landed unfiled (${String(step.unfiled).slice(0, 400)})`
     : `${step.state.turns} turns passed since the session began`;
   const self = typeof body === "string" && /^[A-Za-z0-9_-]{1,128}$/.test(body) ? ` --body ${body}` : "";
+  const stamp = Number.isSafeInteger(epoch) ? ` --epoch ${epoch}` : "";
+  const open = digestsOf(step?.state?.digests)["#/open"];
   return [
     `Lares spirit true-up · ${pet}: ${why}.`,
-    `True the record before the next move: lares spirit ah ${pet} --slot '#/open' --file <path> (or --add '<line>' on #/bodies or #/voice)${self}${Number.isSafeInteger(epoch) ? ` --epoch ${epoch}` : ""}; ` +
-      `measure and fold: lares spirit hum ${pet} (then --fold '<slot>' --line <n>${self}${Number.isSafeInteger(epoch) ? ` --epoch ${epoch}` : ""}). The budget refuses growth; you choose what folds.`,
+    `True the record before the next move: add a line with lares spirit ah ${pet} --slot '<slot>' --add '<line>' on #/bodies, #/open or #/voice${self}${stamp}; ` +
+      `rewrite a slot whole with lares spirit ah ${pet} --slot '#/open' --file <path> --base ${open ?? "<the slot digest your last om or ah handed back>"}${self}${stamp}` +
+      `${open ? " (the digest as of this session's wake; a later ah hands back the newer one)" : ""}; ` +
+      `measure and fold: lares spirit hum ${pet} (then --fold '<slot>' --line <n>${self}${stamp}). The budget refuses growth; you choose what folds.`,
   ].join("\n");
 }
 

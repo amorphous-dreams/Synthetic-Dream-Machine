@@ -71,7 +71,9 @@ test("the pure parts", async (t) => {
   });
   await t.test("the true-up names the lease epoch the card writes bear", () => {
     assert.match(trueUpText("p", { fire: "turns", state: { turns: 25, epoch: 4 } }), /--epoch 4/);
-    assert.match(trueUpText("p", { fire: "turns", state: { turns: 25 } }, null, "s-1"), /lares spirit ah p --slot '#\/open' --file <path> \(or --add '<line>' on #\/bodies or #\/voice\) --body s-1/);
+    const nudge = trueUpText("p", { fire: "turns", state: { turns: 25, digests: { "#/open": "0123456789abcdef" } } }, null, "s-1");
+    assert.match(nudge, /lares spirit ah p --slot '#\/open' --file <path> --base 0123456789abcdef --body s-1/);
+    assert.match(nudge, /--add '<line>' on #\/bodies, #\/open or #\/voice --body s-1/);
   });
   await t.test("the PreCompact text runs the crossing in order: the card first, the fixed-slot ask, the operator's instructions, then the carry, under the cap", () => {
     const text = precompactText({ pet: "p", shape: "keep what only this body knew", inherits: "0123456789ab", card: "the card's open loops", instructions: "focus on the tests", carry: "x".repeat(20_000) });
@@ -185,13 +187,14 @@ test("the hooks, spawned whole", async (t) => {
   try {
     await t.test("om: with the vessel up, the seated familiar wakes in one read beside the title; the counter keeps the pet, epoch, cadence and title", () => {
       reset();
-      plant({ "vessel stand": UP, "spirit om lares-alpha": om("Lares spirit om · lares-alpha: the card", { pet: "lares-alpha", epoch: 4, every: 10 }) });
+      plant({ "vessel stand": UP, "spirit om lares-alpha": om("Lares spirit om · lares-alpha: the card", { pet: "lares-alpha", epoch: 4, every: 10, digests: { "#/open": "0123456789abcdef", "bad": "x" } }) });
       const out = JSON.parse(spawn("lares-om-hook.mjs", ["lares-alpha"], at({ hook_event_name: "SessionStart", source: "startup", session_id: "s-om", session_title: "lares-alpha" })));
       assert.equal(out.hookSpecificOutput.hookEventName, "SessionStart");
       assert.equal(out.hookSpecificOutput.additionalContext, "Lares spirit om · lares-alpha: the card");
       assert.ok(calls().split("\n").includes("spirit om lares-alpha --source startup --body s-om --title lares-alpha --json"));
       assert.equal(calls().split("\n").filter((l) => l.startsWith("spirit om")).length, 1);
       assert.deepEqual([counter("s-om").pet, counter("s-om").epoch, counter("s-om").every, counter("s-om").title], ["lares-alpha", 4, 10, "lares-alpha"]);
+      assert.deepEqual(counter("s-om").digests, { "#/open": "0123456789abcdef" });
     });
     await t.test("om: a fresh titled session hands the seated pet and the title to the door; its starter offer records no pet", () => {
       reset();
