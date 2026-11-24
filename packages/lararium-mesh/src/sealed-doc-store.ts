@@ -155,6 +155,13 @@ export interface SealedDocumentPorts {
   /** The face the session wears (`faceProofSubjectRef`); null where no session stands. */
   sessionFace(): string | null;
   /**
+   * THE REALM WORKBENCH (cabal-realm#/the-workbench): `keeps` names a bag a realm's workbench rests in (its working slot, bound
+   * by the vessel's ledger), and `wears` reads whether a session's subject names a lit face that realm seats. A session of any
+   * seated face saves into such a bag through its own holder, and a value opens whichever seated writer signed it (the holder
+   * read that writer's standing under the roster). Absent: one bag, one face, as before.
+   */
+  readonly realm?: { keeps(bagId: string): boolean; wears(bagId: string, subject: string): boolean };
+  /**
    * THE LIT SET: every face that stands open on this vessel now (each a `faceProofSubjectRef`), the worn one among them. A
    * bag of any face in the set opens and saves under THAT face (its own key, through its own session), never under another
    * member's; a bag of a face outside the set still refuses `session-face-foreign`. Absent: the set holds the worn face
@@ -447,7 +454,7 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     const clear = (await this.#ports.inner.loadRange([documentId])).filter((c): c is Chunk & { data: Uint8Array } => ROLES[c.key[1] ?? ""] !== undefined && c.data !== undefined && readsClear(c.data));
     if (clear.length === 0) return false;
     const session = this.#ports.sessionOf(documentId);
-    if (session === null || !this.#wears(bag.face, session.subject)) return false;
+    if (session === null || !this.#wears(bag.face, session.subject, bag.bagId)) return false;
     this.#classedSealed.add(documentId);
     this.#swept.delete(documentId);
     await this.#inTurn(bag.bagId, () => this.#sweep(bag, documentId, clear[0]!.data, session));
@@ -467,7 +474,7 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     const under = (await this.#ports.inner.loadRange([documentId])).filter((c): c is Chunk & { data: Uint8Array } => ROLES[c.key[1] ?? ""] !== undefined && c.data !== undefined && readsSealed(c.data));
     if (under.length === 0) return 0;
     const session = this.#ports.sessionOf(documentId);
-    if (session === null || !this.#wears(bag.face, session.subject)) return 0;
+    if (session === null || !this.#wears(bag.face, session.subject, bag.bagId)) return 0;
     this.#classedSealed.add(documentId);
     let refiled = 0;
     for (const chunk of under) {
@@ -532,7 +539,7 @@ export class SealedDocumentStore implements StorageAdapterInterface {
         continue;
       }
       const session = this.#ports.sessionOf(key[0]!, data);
-      if (bag === null || isKeyed(bag) || session === null || !this.#wears(bag.face, session.subject)) continue;
+      if (bag === null || isKeyed(bag) || session === null || !this.#wears(bag.face, session.subject, bag.bagId)) continue;
       try { await this.#inTurn(bag.bagId, () => this.#seal(bag, key, data, session)); }
       catch (error) { if (error instanceof SealedDocumentRefusal) continue; throw error; }
       this.#waiting.delete(name);
@@ -551,8 +558,10 @@ export class SealedDocumentStore implements StorageAdapterInterface {
   }
 
   /** Does `subject` name `face`, the bag's own face: its own subject, or the worn face's subject at another anchor? */
-  #wears(face: string | null, subject: string): boolean {
-    return face !== null && (subject === face || (this.#ports.wornAt?.(face, subject) ?? false));
+  #wears(face: string | null, subject: string, bagId?: string): boolean {
+    if (face !== null && (subject === face || (this.#ports.wornAt?.(face, subject) ?? false))) return true;
+    // A REALM WORKBENCH'S BAG: any face the realm seats saves into it, under its own session and its own holder.
+    return face !== null && bagId !== undefined && (this.#ports.realm?.wears(bagId, subject) ?? false);
   }
 
   #bagOf(key: StorageKey): SealedBagRow | null {
@@ -650,7 +659,7 @@ export class SealedDocumentStore implements StorageAdapterInterface {
       this.#ports.onHeld?.({ refusal: "save-unbooked", documentId: key[0]! });
       return;
     }
-    if (!this.#wears(bag.face, session.subject)) throw new SealedDocumentRefusal("session-face-foreign");
+    if (!this.#wears(bag.face, session.subject, bag.bagId)) throw new SealedDocumentRefusal("session-face-foreign");
     // A SEAL THE HOLDER CANNOT ANSWER KEEPS ITS CHANGE: the save waits in memory, readable, and the next reseal seals it.
     try { await this.#inTurn(bag.bagId, () => this.#seal(bag, key, data, session)); }
     catch (error) {
@@ -787,7 +796,10 @@ export class SealedDocumentStore implements StorageAdapterInterface {
     }
     const opened = await this.#ports.open({ bagId: bag.bagId, role, ref: logicalRefOf(key), face });
     if ("refusal" in opened) throw new SealedDocumentRefusal(opened.refusal, opened.cause);
-    if (!this.#wears(face, opened.writer)) { opened.plaintext.fill(0); throw new SealedDocumentRefusal("writer-face-foreign"); }
+    // A REALM WORKBENCH'S VALUE opens whoever of its writers signed it: the holder already read that writer's standing under the
+    // realm's roster, keyed to the lineage, so a revoked writer's earlier writes still read and its later ones never verified.
+    const realmKept = this.#ports.realm?.keeps(bag.bagId) ?? false;
+    if (!realmKept && !this.#wears(face, opened.writer)) { opened.plaintext.fill(0); throw new SealedDocumentRefusal("writer-face-foreign"); }
     this.#heldOf(key[0]!).set(nameOf(key), opened.address);
     return opened.plaintext;
   }

@@ -106,8 +106,6 @@ export interface ShareWorkbenchLanded {
   readonly seated?: number;
   /** The handle index of the face that owns the workbench on this vessel: a vessel-local answer for the operator's own door. */
   readonly owner?: number;
-  /** The vessel seals this workbench's document under its owner face's key (the wiki it mounts): a seat another face holds writes `personal` on this vessel. */
-  readonly restsUnderOwner?: boolean;
 }
 
 export interface ShareApplied {

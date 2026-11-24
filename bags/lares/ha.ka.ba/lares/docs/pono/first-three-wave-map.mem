@@ -39,7 +39,7 @@ Each row reads its layers top to bottom in the order `expandRecipe` lays them (`
 
 |! slug |! class |! recipe (top first) |! owner · seats |! mirror · git |! holds |
 | `daemon` (one per face, `daemon-<F>`) | daemon | temp · working (the face's device slot) · `bags/daemon-<F>` (local canon, unsigned) · `bags/kahua-<F>` (the signed stage, lift-only) · the vessel's library bags · `bags/crossroads` · `bags/daemon` · `bags/oracle` | one face; refuses every share (`share-face-private`) | `<projections>/wikis/daemon-<F>` under the house root; no git | the face's memory memes (`lar:///ha.ka.ba/kahua/memory/<class>/<slug>`); in the steward's, the house laws (#/the-handoff-walk) and, until `works` opens, the wave's lane cards and handbacks (#/thing-two-the-work-as-tiddlers) |
-| `lares` | house canon | temp · draft · personal · working (the realm workbench, the steward's private cabal) · `bags/lares` (the Kahu realm's standing document) · the recipe's libraries · `bags/oracle` | the steward writes canon live (`requireKahuReach`); the rite seats the engineer `write` and the referee `read`, and on one vessel each seated face writes its own `personal` (the rest gate, `C2`) | the workbench in the checkout's `wikis/lares`, tracked by git; each face's `personal` under `<projections>/personal/<F>/lares`, untracked | the house's design canon: the road, the handoff meme, this map |
+| `lares` | house canon | temp · draft · personal · working (the realm workbench, the steward's private cabal) · `bags/lares` (the Kahu realm's standing document) · the recipe's libraries · `bags/oracle` | the steward writes canon live (`requireKahuReach`); the rite seats the engineer `write` and the referee `read`, and on one vessel each face seated `write` writes the workbench (its rest seals for the roster) | the workbench in the checkout's `wikis/lares`, tracked by git; each face's `personal` under `<projections>/personal/<F>/lares`, untracked | the house's design canon: the road, the handoff meme, this map |
 | `lararium` | house canon | as `lares`, its canon `bags/lararium`, and NEW: the derived library `codemap` beneath canon (decision 1 below) | as `lares` | the checkout's `wikis/lararium` once a steward write mints it (measured: `wikis/` holds `crossroads`, `elyncia`, `elyncia-referee`, `lares`, `sdm` and no `lararium` folder today); tracked | the mesh, node and runbook canon; the code map read beside it |
 | `elyncia` | house canon | as `lares`, canon `bags/elyncia` | the steward; never a lane's edit (controller-handoff #/the-lane-law) | `wikis/elyncia`, tracked | the fiction layer; out of this wave's work |
 | `sdm` | house canon | as `lares`, canon `bags/sdm` | the steward; never a lane's edit | `wikis/sdm`, tracked | the RPG corpus; out of this wave's work |
@@ -61,7 +61,7 @@ The operator leans the `lararium` bag. ''Weighed'' (measured): `bags/lararium/me
 
 !!! Decision 3 ~ shared house memory lives in the `house` topic wiki; until `C2` and `L17-2a`, in the steward's daemon wiki (overrulable)
 
-`L35` rules the reach: a face reads its own daemon wiki and every topic wiki shared to it. A topic wiki named `house` holds what every face shares (the house laws, the standing rulings, the open ledger), owned by the steward with every face seated `write`; a face's own memory stays in its daemon wiki. ''Measured blockers'': on one vessel a seated face mounts no workbench of another face's realm and writes its own `personal` (`cabal-realm` #/the-workbench, the rest gate; `C2`), so before `C2` the engineer would read none of the steward's house memory; and `wiki_filter` on `house` read `wiki-not-anchored` before every wiki stood its own engine (#390; an unreachable recipe now refuses `wiki-unreached`). So the handoff walk writes the house laws into the steward's daemon wiki first (rank 4 of the road already names that wiki), and they re-put into `house` once both items land. ''Its cost'': one carry step later, and until then the engineer's sessions read the house laws only while the steward wears.
+`L35` rules the reach: a face reads its own daemon wiki and every topic wiki shared to it. A topic wiki named `house` holds what every face shares (the house laws, the standing rulings, the open ledger), owned by the steward with every face seated `write`; a face's own memory stays in its daemon wiki. ''Measured blockers'': before the rest sealed for the roster (`cabal-realm` #/the-workbench, landed 2026-11-23) a seated face mounted no workbench of another face's realm on one vessel, so the engineer read none of the steward's house memory; and `wiki_filter` on `house` read `wiki-not-anchored` before every wiki stood its own engine (#390; an unreachable recipe now refuses `wiki-unreached`). So the handoff walk writes the house laws into the steward's daemon wiki first (rank 4 of the road already names that wiki), and they re-put into `house` once both items land. ''Its cost'': one carry step later, and until then the engineer's sessions read the house laws only while the steward wears.
 
 !!! The new classes, defined, with the true-up owed to `recipe-layer-model`
 
@@ -203,7 +203,7 @@ The store door hands the kahua memes the worn face, refuses a write for any othe
 !!! What blocks it today
 
 * ''Burned by #390'': `works` answers on the tiddler door through its own engine (an unreachable recipe refuses `wiki-unreached`).
-* The rest gate (`C2`): only the steward's wear writes `works`' workbench on one vessel.
+* The rest seals for the roster: every face seated `write` writes `works`' workbench on one vessel.
 * A cold wiki's put reaches disk only once the wiki wakes (`lares wiki pin works --rotate`, by a face that holds a writer's seat there; an export names a wiki that still stands cold as `cold-wikis`).
 * The road's slot law awaits a ruling before `L17-2d` writes road items.
 * No provenance tells one spirit's write from another's (`F11`); the `spirit` field designates.
@@ -390,6 +390,6 @@ Each step names the call, the answer expected, and a mark: ''day one'' (reachabl
 * ''The unit suites' JSON reporter'': a `ci.yml` edit. Default: the controller's hand, in `L42b`'s window.
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;yB8amv4S0nLtAjVFcTt-PgS_q-BFjvrbh5toL-rQ0YE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;1ijJSNp3gt_YOTmfXELoM6TqvcnNVvbR3OwvxWnxojQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

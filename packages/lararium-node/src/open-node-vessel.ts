@@ -121,7 +121,7 @@ import { fenceReceiptAtStop } from "./stop-receipt-fence.js";
 import { daemonGenesisDir, daemonBagsDir, loadLaresConfig, tempConsentedSlugs } from "./lares-config.js";
 import { projectionRoots, workspaceRootsOf, workbenchFolders, litFaceDiskMirrors, FACES_PROJECTION_DIR, REALMS_PROJECTION_DIR, faceRoot, type WorkbenchFolder } from "./bag-paths.js";
 import { ensureRealmLabel, realmPlacement, settleRealmMoves } from "./realm-labels.js";
-import { ledgerWorkbenches, ledgerWorkbenchRealms } from "@lararium/mesh";
+import { ledgerWorkbenches, ledgerWorkbenchRealms, wikiSlotOf, workbenchSeats } from "@lararium/mesh";
 import { armFacePoolWatch, armWorkspaceWatch, tendLitFacePool, type FacePoolWatch } from "./watch-core.js";
 import { ensurePoolTree, faceShelvingLine, healPoolTrees, poolTreeLine, shelveFaceRoot } from "./pool-tree.js";
 import { islandIngestSubmit, openSyncedTree, poolIngestPorts, workspaceIngestPorts } from "./ingest-scan.js";
@@ -1112,6 +1112,15 @@ async function prepareNodeBootOn(
     ...(wornDeviceGroup !== null ? [{ group: wornDeviceGroup, relation: wornDeviceRelation, face: sealedCells.face() }] : []),
     ...[...siblingFaces].filter(([group]) => group !== wornDeviceGroup).map(([group, f]) => ({ group, relation: f.relation, face: f.face })),
   ];
+  /** The realm a working bag's workbench rests in, as the vessel's ledger binds its slug to ONE realm; null for any other bag. */
+  const realmOfBag = (bagId: string): { readonly realmId: string; readonly slug: string; readonly ledger: LarDoc | undefined } | null => {
+    const slot = wikiSlotOf(bagId);
+    if (slot === null || slot.kind !== "working") return null;
+    let ledger: LarDoc | undefined;
+    try { ledger = workbenchLedger?.doc(); } catch { return null; }   // the ledger stands later in the boot: no realm reads yet
+    const realms = ledgerWorkbenchRealms(ledger, slot.slug);
+    return realms.length === 1 ? { realmId: realms[0]!, slug: slot.slug, ledger } : null;
+  };
   const openFaceSubjects = (): string[] => litDevices().map((f) => f.face).filter((f): f is string => typeof f === "string");
   // V3: a bag's document by every name it carries: the layer the mount resolved (a working slot's derived address, a
   // draft binding: no catalog row names either), then the catalog's row.
@@ -1250,6 +1259,17 @@ async function prepareNodeBootOn(
     sessionFace: () => sealedCells.face(),
     openFaces: openFaceSubjects,
     wornAt: (face, subject) => sealedCells.wornAt(face, subject),
+    // THE REST SEALS FOR THE ROSTER (cabal-realm#/the-workbench): a realm workbench's working bag takes a save from any lit face
+    // the vessel's ledger seats in its realm, each under its own session and holder, and opens whichever writer the holder
+    // verified under the roster. The ledger's seat rows mirror the realm's key Document (`projectWorkbenchRoster`).
+    realm: {
+      keeps: (bagId) => realmOfBag(bagId) !== null,
+      wears: (bagId, subject) => {
+        const realm = realmOfBag(bagId);
+        const group = realm === null ? undefined : litDevices().find((f) => f.face === subject)?.group;
+        return realm !== null && typeof group === "string" && workbenchSeats(realm.ledger, realm.realmId, realm.slug).has(group);
+      },
+    },
     door: vesselDocStoreDoor<NodeSaveSession>(() => docStorePort.port(), {
       book: (ask, verb, session) => sealedCells.book?.hold(ask, verb, session) ?? (() => {}),
       idPrefix: `docstore-${process.pid}`,

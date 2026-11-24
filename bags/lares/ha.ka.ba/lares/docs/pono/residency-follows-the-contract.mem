@@ -34,10 +34,10 @@ A moʻolelo of the talk-story between the operator and the house on 2026-11-14, 
 |! document |! held by |! folder |! seeded and carried |
 | a daemon wiki, a kahua stage | one face | the face's root, named by its pet name (`faces/<pet name>/wikis/daemon`, `.../bags/kahua`) | per face, where the root stands |
 | a face's `personal` layer of a wiki | one face | `faces/<pet name>/personal/<slug>` | per face |
-| a wiki's workbench (`wikis/<slug>/working`) | the realm: its owner and every seated face (OWED on one vessel: the rest gate, below) | one folder for the wiki | once per document, at any seated writer's wear |
+| a wiki's workbench (`wikis/<slug>/working`) | the realm: its owner and every seated face | one folder for the wiki | once per document, at any seated writer's wear |
 | house canon | the Kahu seat | `bags/<slug>` | at the steward |
 
-''The workbench row, as it stands.'' The realm holds the workbench across vessels, and on one vessel for a wiki the vessel does not mount as its own (a second wiki, reached by the store door or a pool island), where every seated face reads and writes the one document. On ONE vessel, a face seated in ANOTHER face's realm cannot yet open the mounted wiki's workbench: the vessel seals that working document under the worn face's own content key, so such a face mounts no workbench there and writes its own `personal` layer (`workbench-seat` answers `restsUnderOwner`). OWED: the rest gate, road item `C2` (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-leaps`>>), where the workbench bag's content key wraps for its realm's roster.
+''The workbench row, as it stands.'' The realm holds the workbench across vessels, and on one vessel for a wiki the vessel does not mount as its own (a second wiki, reached by the store door or a pool island), where every seated face reads and writes the one document. On ONE vessel, a face seated in ANOTHER face's realm mounts the workbench too: the working bag's content key wraps for the realm's roster, so each seated face's own holder opens the one document, a writer writes `working` and a reader `personal` (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench`>>, the rest seals for the roster). The roster's wrap reaches a member face's other vessels through the member lane, still owed (road `C2` wave two, with `K21`).
 
 ''Seed'' names the first pour of a document onto a place. Its source varies: the genesis floor for canon, the disk mirrors on a re-founding, a peer's CRDT on a fleet device. A shared wiki arrives once; a face-private document arrives for its face.
 
@@ -169,7 +169,7 @@ Each leap names a lane that can run beside the others.
 # ''The Handle.'' A collective Handle's key custody and a Handle seat that shows one member.
 # ''Recovery under random roots.'' What a recovery phrase restores under random roots, stated per face.
 # ''The seat for a face's second device.'' A workbench seat that reaches every device of the seated face.
-# ''The realm's key: the rest gate.'' The workbench bag's content key wraps for its realm's roster through the content-key seat's lockbox, so a face seated in another face's realm opens the mounted wiki's workbench on one vessel, and a wiki the vessel does not mount rests sealed for its roster (the house's decision, overrulable: only the roster's wrap carries to a second vessel and a second operator).
+# ''The realm's key across vessels.'' On one vessel the workbench bag's content key wraps for its realm's roster (landed 2026-11-23); the wrap reaches a member face's other devices and vessels through the member lane's parcels, so the roster's wrap carries to a second vessel and a second operator (the house's decision, overrulable).
 # ''The TiddlyWiki caps as phases.'' Phase 1 stands (one family law, the orphan folder and its flag, the tiddler door on the anchor); named wikis and the `act` ask follow, then the console and the live feeds (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-surface-scout#/phases`>>).
 # ''The memory stage goes primary.'' The wiki replaces the flat markdown memory once the hearth answers: a face reads its own daemon wiki and every topic wiki shared to it, so the house's shared memory lives in a shared topic wiki.
 
@@ -177,6 +177,6 @@ On the road (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/th
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Jf6R6jbI9mPsYINq7uT0gszUDfGe_nX4MYvfik6V_A0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;xXewsjRi5gjSOs7QcVQOtWGeneTGy49imjwmdEw8twQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>
