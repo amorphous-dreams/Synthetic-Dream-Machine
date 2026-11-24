@@ -57,6 +57,8 @@ export interface RealmRestPort {
   of(bagId: string): Promise<RealmRestBag | null>;
   /** Does a realm keep this bag while it seats this face's hive nowhere (a revoked face)? Its holder performs no key act there. */
   shadowed?(bagId: string): Promise<boolean>;
+  /** Does the vessel's ledger bind this bag's wiki to some realm, whether or not this face's reading names one (a face seated in two)? */
+  bound?(bagId: string): Promise<boolean>;
   /** The line a seated face's refusal names, where it waits on the owner's holder to found the bag. */
   readonly ownerCure?: (bag: RealmRestBag) => string;
 }
@@ -96,12 +98,26 @@ export async function rosterReaders(provider: KeyhiveProvider, ledger: LarDoc | 
 }
 
 /** The realm port over one face's hive and the vessel's ledger, as a seat composes it. */
-export function realmRestPort(input: { readonly provider: () => KeyhiveProvider | null | undefined; readonly ledger: () => Promise<LarDoc | undefined | null>; readonly face: string }): RealmRestPort {
+export function realmRestPort(input: {
+  readonly provider: () => KeyhiveProvider | null | undefined; readonly ledger: () => Promise<LarDoc | undefined | null>; readonly face: string;
+  /** The handle index of the lit face that owns a realm, where this vessel knows it: the wait's cure then names a runnable line. */
+  readonly ownerHandle?: (realmId: string, slug: string) => number | null | undefined;
+}): RealmRestPort {
   return {
+    ownerCure: (bag) => {
+      const handle = input.ownerHandle?.(bag.realmId, bag.slug);
+      return typeof handle === "number"
+        ? `light the realm's owner face (\`lares vault unlock --face ${handle}\`) so its holder founds the workbench's key and hands this face its lockbox, then save again`
+        : WAIT_FOR_OWNER_CURE;
+    },
     async of(bagId) {
       const hive = input.provider();
       if (!hive) return null;
       return realmRestBag(hive, await input.ledger(), bagId, input.face);
+    },
+    async bound(bagId) {
+      const slot = wikiSlotOf(bagId);
+      return slot !== null && slot.kind === "working" && ledgerWorkbenchRealms(await input.ledger(), slot.slug).length > 0;
     },
     async shadowed(bagId) {
       const hive = input.provider();

@@ -973,7 +973,14 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       session: { signer: () => null, standing: faceStanding({ own: () => entry.chain, bags: face.bags, realmWriters: (bagId) => realmBook.writers(bagId), realmMark: () => realmBook.mark() }) },
       // THE REST SEALS FOR THE ROSTER (cabal-realm#/the-workbench): a realm workbench's working bag wraps for every hive its
       // realm seats now, and founds only under the realm owner's seat; a wrap's operations reach each lit sibling's hive here.
-      ...(face.archiveFace ? { realm: realmRestPort({ provider: () => keyhive, ledger: async () => (await workbenchLedgerOf(ctx)).doc(), face: face.archiveFace }) } : {}),
+      ...(face.archiveFace ? { realm: realmRestPort({
+        provider: () => keyhive, ledger: async () => (await workbenchLedgerOf(ctx)).doc(), face: face.archiveFace,
+        // THE OWNER'S HANDLE, read off the lit faces: the face whose own derived realm this bag rests in, so the wait names a runnable line.
+        ownerHandle: (realmId, slug) => {
+          const lit = [{ group: daemonAuth.personaGroupId ?? null, handleIndex: daemonAuth.handleIndex }, ...litSiblingFaces().map((f) => ({ group: f.group as string | null, handleIndex: f.handleIndex as number | undefined }))];
+          return lit.find((f) => f.group !== null && privateCabalRealmId(f.group, slug) === realmId)?.handleIndex ?? null;
+        },
+      }) } : {}),
       handOn: (served, wrapper) => handRealmOpsOn(keyhive, served, wrapper),
       // A report names a result, a founding's opaque locator and a key version: no key, and no bag's name.
       report: (o) => console.log(`[daemon] content-key roll: ${o.result}${o.founding ? ` founding ${o.founding.slice(0, 12)}…` : ""}${o.keyVersion ? ` → version ${o.keyVersion.slice(0, 12)}…` : ""} (${o.raises.length} raise(s))`),

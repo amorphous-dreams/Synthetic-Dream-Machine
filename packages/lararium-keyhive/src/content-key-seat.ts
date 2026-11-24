@@ -29,7 +29,7 @@
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store · lar:///ha.ka.ba/lares/api/pono/kapae#/keys
  */
 import {
-  ContentKeyHolder, SealedStore, contentKeyRollSink, readsAsFreshBase, verifiedSeatRoll,
+  ContentKeyHolder, REALM_STATE_ROLL_ACT, SealedStore, contentKeyRollSink, readsAsFreshBase, verifiedSeatRoll,
   type ContentKeyHolderPorts, type EdgeStanding, type RecordSigner, type RollOutcome, type SealedStoreRest,
   type SeatRoll, type SeatRollSink, type WriterStanding,
 } from "@lararium/mesh";
@@ -183,7 +183,9 @@ export function seatContentKeys(input: ContentKeySeatInput): ContentKeySeat {
     ...(input.realm ? {
       foundingOwnedElsewhere: async (bagId: string) => {
         const realm = await input.realm!.of(bagId);
-        return realm === null || realm.owner ? null : (input.realm!.ownerCure?.(realm) ?? WAIT_FOR_OWNER_CURE);
+        // A bag the ledger binds to a realm that this face's reading names none of (seated in two, or in none) founds nothing either.
+        if (realm === null) return (await input.realm!.bound?.(bagId)) === true ? WAIT_FOR_OWNER_CURE : null;
+        return realm.owner ? null : (input.realm!.ownerCure?.(realm) ?? WAIT_FOR_OWNER_CURE);
       },
       chainsKeys: async (bagId: string) => (await input.realm!.of(bagId)) !== null,
       realmRemovals: async (bagId: string) => { const realm = await input.realm!.of(bagId); return realm === null ? null : realm.removals(); },
@@ -194,7 +196,7 @@ export function seatContentKeys(input: ContentKeySeatInput): ContentKeySeat {
       // A REALM'S REMOVAL COUNTS on the vessel's own ledger (the roster's projection noted it): the evidence its roll counts by.
       const realm = input.realm === undefined ? null : await input.realm.of(bagId);
       const removed = new Set(realm === null ? [] : (await realm.removals()).map((r) => r.act));
-      return { raiseCounts: (act) => answered.has(act) || counted.has(act) || removed.has(act), admissionVerifies: (act) => admitted.has(act) };
+      return { raiseCounts: (act) => answered.has(act) || counted.has(act) || removed.has(act) || (realm !== null && act.startsWith(REALM_STATE_ROLL_ACT)), admissionVerifies: (act) => admitted.has(act) };
     },
     // A face the realm seats nowhere performs no key act in its workbench's bag (the roster's own shadow).
     ownEdgeShadowed: async (bagId) => (input.ownEdgeShadowed !== undefined && (await input.ownEdgeShadowed()) === true) || (await input.realm?.shadowed?.(bagId)) === true,

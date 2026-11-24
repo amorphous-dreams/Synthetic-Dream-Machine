@@ -324,24 +324,32 @@ export async function landWorkbench(
   requireWorkbenchShareable({ slug: row.slug, ...(ports.checkoutSourced !== undefined ? { checkoutSourced: ports.checkoutSourced } : {}), ...(row.workspace !== undefined ? { workspace: row.workspace } : {}) });
   const { realmId, founded, keyDoc } = await standWorkbench(ports.provider, ports.ledger, row.slug, ports.ownerFace);
   const named = new Set(members.map((m) => m.face));
+  const fresh: WorkbenchMember[] = [];
+  for (const m of members) if (!(await workbenchFaceHolds(ports.provider, row.slug, m.agentHex, m.access))) fresh.push(m);
+  // A FACE SEATED NOW READS THE PAST ONLY FROM A HOLDER OF THE KEY (u3): with none lit to hand it over, no seat moves.
+  // A re-land reads the holder too: a seat a refused hand-over left lockbox-less takes its box at the next landing.
+  const keyholder = ports.keyholder && members.length > 0 ? await ports.keyholder() : null;
+  if (keyholder !== null && "cure" in keyholder && fresh.length > 0) {
+    throw new WorkbenchRefusal("seat-needs-keyholder", `the workbench of "${row.slug}" already rests sealed, and no holder of its key stands lit to hand the new seat its lockbox; ${keyholder.cure}`);
+  }
   const removed: string[] = [];
   for (const [face, agentHex] of workbenchSeats(ports.ledger.doc(), realmId, row.slug)) {
     if (face === ports.ownerFace || named.has(face)) continue;
     await removeWorkbenchFace(ports.provider, keyDoc, agentHex);
     removed.push(face);
   }
-  const fresh: WorkbenchMember[] = [];
-  for (const m of members) if (!(await workbenchFaceHolds(ports.provider, row.slug, m.agentHex, m.access))) fresh.push(m);
-  // A FACE SEATED NOW READS THE PAST ONLY FROM A HOLDER OF THE KEY (u3): with none lit to hand it over, no seat moves.
-  const keyholder = fresh.length > 0 && ports.keyholder ? await ports.keyholder() : null;
-  if (keyholder !== null && "cure" in keyholder) {
-    throw new WorkbenchRefusal("seat-needs-keyholder", `the workbench of "${row.slug}" already rests sealed, and no holder of its key stands lit to hand the new seat its lockbox; ${keyholder.cure}`);
-  }
   let seated = 0;
   for (const m of fresh) { await admitWorkbenchFace(ports.provider, row.slug, m.agentHex, m.access); seated++; }
   const candidates = new Map<string, string>([[ports.ownerFace, await ports.provider.whoami()], ...members.map((m) => [m.face, m.agentHex] as [string, string])]);
   await projectWorkbenchRoster(ports.provider, ports.ledger, realmId, row.slug, candidates, { notesRemovals: true });
   // THE HAND-OVER: each face seated now takes the head's one chained box (its history declared shareable at the founding).
-  if (keyholder !== null) for (const m of fresh) await keyholder.handOver(m.agentHex);
+  if (keyholder !== null && !("cure" in keyholder)) {
+    const freshHexes = new Set(fresh.map((m) => m.agentHex));
+    for (const m of members) {
+      if (freshHexes.has(m.agentHex)) { await keyholder.handOver(m.agentHex); continue; }
+      // A seat the roster already held: its box is handed again where the holder can (a lockbox a refused landing never gave).
+      try { await keyholder.handOver(m.agentHex); } catch { /* a shut or unreached face takes its box when it next lights */ }
+    }
+  }
   return { slug: row.slug, realmId, docUrl: realmWorkbenchDocUrl(realmId, row.slug), founded, members: members.length, seated, removed: removed.sort() };
 }

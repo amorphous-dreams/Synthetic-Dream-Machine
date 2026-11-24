@@ -215,6 +215,9 @@ export interface BagReading {
   /** More than one founding stands: rival foundings, shown at every door. */
   readonly rival:     boolean;
 }
+/** The act prefix of a roll the holder derives from the boxes it wrapped (a served reader the roster leaves out). */
+export const REALM_STATE_ROLL_ACT = "workbench-removal:roll:";
+
 export interface MintOutcome { readonly keyVersion: KeyVersionId; readonly founding: BagLocator; readonly unserved: readonly ReaderId[] }
 
 // ── The memory section ──────────────────────────────────────────────────────────────────────────
@@ -734,20 +737,37 @@ export class ContentKeyHolder {
    */
   async #rollForRoster(bag: Bag, line: Line, head: KeyVersionId, signer: RecordSigner): Promise<MintOutcome | HolderRefusal | null> {
     const removals = (await this.#ports.realmRemovals?.(bag.bagId)) ?? null;
-    if (removals === null || removals.length === 0) return null;
+    if (removals === null) return null;
     const owed: { act: string; reader: ReaderId }[] = [];
     for (const removal of removals) {
       if (line.lineage.followsRemoval(head, removal.act)) continue;
       if (await this.#served(line, head, removal.reader)) owed.push(removal);
     }
-    if (owed.length === 0) return null;
+    // THE ROLL READS THE BOXES TOO: a reader a box of the head served that the roster leaves out owes a successor even where
+    // no removal row names it (a revoke whose row never landed), so the roll never rests on a note alone.
+    const acts = new Set(owed.map((o) => o.act));
+    // Only the realm's founder derives it: a seated face's replica may read a seat it never ingested as absent.
+    const gone = (await this.#ports.foundingOwnedElsewhere?.(bag.bagId)) == null ? await this.#goneReaders(bag.bagId, line, head) : [];
+    if (gone.length > 0) {
+      const act = `${REALM_STATE_ROLL_ACT}${hex(sha256(utf8Bytes(`${head}\n${gone.join("\n")}`)))}`;
+      if (!line.lineage.followsRemoval(head, act)) acts.add(act);
+    }
+    if (acts.size === 0) return null;
     if (await this.#ports.ownEdgeShadowed(bag.bagId)) return refuse("own-edge-shadowed");
     const span = line.lineage.fact(head)!.span;
-    const planned = planRemovalRolls(line.lineage, { acts: [...new Set(owed.map((o) => o.act))], held: this.#usable(line), ownEdgeShadowed: false });
+    const planned = planRemovalRolls(line.lineage, { acts: [...acts], held: this.#usable(line), ownEdgeShadowed: false });
     if (!("plans" in planned)) return refuse("count-refused", planned.refusal);
     const plan = planned.plans.find((one) => one.span === span);
     if (plan === undefined) return null;
     return this.#mint(bag, line, plan, signer, owed.map((o) => o.reader));
+  }
+
+  /** The digests of readers a box of `head` served that the roster's readers leave out, ascending. */
+  async #goneReaders(bagId: string, line: Line, head: KeyVersionId): Promise<string[]> {
+    const served = digestsOf(await this.#ports.store.own(ownNote("served", line.locator, head)));
+    if (served.length === 0) return [];
+    const standing = new Set((await this.#ports.readersOf(bagId)).map((reader) => hex(sha256(utf8Bytes(bare(reader))))));
+    return served.filter((digest) => !standing.has(digest)).sort(ascending);
   }
 
   /** Found a bag: its first version, under a locator its own key derives. */

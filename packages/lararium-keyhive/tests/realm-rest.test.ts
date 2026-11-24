@@ -396,22 +396,38 @@ describe("A5 — a roll derives from state; a revoke rolls now", () => {
     expect(said(await seats.get("engineer")!.holder.openValue({ bagId: WORKING, role: "change", ref: w1.ref })), "and keeps what it held").toBe("OK");
   });
 
-  test("Y2: an unprojected revoke rolls nothing; once projected, the next seal rolls first", async () => {
+  test("Y2: a revoke no projection ever noted still rolls: the next seal reads the boxes and rolls first", async () => {
     const { v, a, b, realmId, bOnA } = await sharedWorkbench([0xe3, 0xe4]);
     const island = islandOf(v, [a, b]);
     let seats = await island.stand();
     const s1 = await seats.get("steward")!.sealValues({ bagId: WORKING, values: [change("y2 one")], signer: a.signer });
     await removeWorkbenchFace(a.hive, workbenchKeyDocs(v.ledger.d, realmId, SLUG)[0]!, bOnA);
     const s2 = await seats.get("steward")!.sealValues({ bagId: WORKING, values: [change("y2 two")], signer: a.signer });
-    expect(keyOf(s2), "no removal noted yet: the seal rides the same head").toBe(keyOf(s1));
+    expect(said(s2)).toBe("OK");
+    expect(keyOf(s2), "no removal row noted, yet the head's boxes served a reader the roster no longer seats: the seal rolled first").not.toBe(keyOf(s1));
     await projectWorkbenchRoster(a.hive, v.ledger, realmId, SLUG, new Map(), { notesRemovals: true });
     seats = await island.stand();
     const s3 = await seats.get("steward")!.sealValues({ bagId: WORKING, values: [change("y2 three")], signer: a.signer });
-    expect(said(s3)).toBe("OK");
-    expect(keyOf(s3), "the seal rolled first: never under the head the revoked face holds").not.toBe(keyOf(s1));
+    expect(keyOf(s3), "the noted removal owes nothing more: the same successor").toBe(keyOf(s2));
     const records = await new SealedStore(v.rest).records("key-version");
-    expect(records.length, "the founding and ONE removal successor").toBe(2);
+    expect(records.length, "the founding and ONE successor").toBe(2);
     void b;
+  });
+
+  test("Y2b (F1): a revoke whose removal row a non-noting projection dropped still rolls before the next seal", async () => {
+    const { v, a, b, realmId, bOnA } = await sharedWorkbench([0xe3, 0xf4]);
+    const island = islandOf(v, [a, b]);
+    const seats = await island.stand();
+    const s1 = await seats.get("steward")!.sealValues({ bagId: WORKING, values: [change("y2b one")], signer: a.signer });
+    await removeWorkbenchFace(a.hive, workbenchKeyDocs(v.ledger.d, realmId, SLUG)[0]!, bOnA);
+    // The mount's projection (no removals noted) drops the seat row; the later noting projection finds nothing to note.
+    await projectWorkbenchRoster(a.hive, v.ledger, realmId, SLUG, new Map(), {});
+    await projectWorkbenchRoster(a.hive, v.ledger, realmId, SLUG, new Map(), { notesRemovals: true });
+    expect(workbenchRemovals(v.ledger.d, realmId, SLUG), "the row never landed").toEqual([]);
+    const fresh = await island.stand();
+    const s2 = await fresh.get("steward")!.sealValues({ bagId: WORKING, values: [change("y2b two")], signer: a.signer });
+    expect(said(s2)).toBe("OK");
+    expect(keyOf(s2), "never sealed under the head the revoked face holds").not.toBe(keyOf(s1));
   });
 
   test("Y3: a revoke and a seat in one landing converge: the successor serves the newcomer, never the revoked face", async () => {
@@ -467,6 +483,28 @@ describe("A5 — a roll derives from state; a revoke rolls now", () => {
     const rolled = await seats.get("engineer")!.rollNow(WORKING, b.signer);
     expect("rolled" in rolled ? rolled.rolled : rolled, "and rolls nothing").toBe(null);
     expect((await new SealedStore(v.rest).records("key-version")).length, "no version minted by the revoked face").toBe(versions);
+  });
+});
+
+describe("A7 — a refused hand-over leaves no seat lockbox-less for good", () => {
+  test("F2: a landing whose hand-over refused hands over again when the share lands again", async () => {
+    const { v, a } = await sharedWorkbench([0xf5, 0xf6]);
+    const c = await face("referee", 0xf7);
+    const cOnA = (await a.hive.receiveContactCard(await c.hive.contactCard())).id;
+    await c.hive.receiveContactCard(await a.hive.contactCard());
+    const seats = await islandOf(v, [a, c]).stand();
+    expect(said(await seats.get("steward")!.sealValues({ bagId: WORKING, values: [change("f2 one")], signer: a.signer }))).toBe("OK");
+    const members = [{ face: "group-referee", agentHex: cOnA, access: "write" as const }];
+    let refuse = true;
+    const handed: string[] = [];
+    const ports = {
+      provider: a.hive, ledger: v.ledger, ownerFace: "group-steward",
+      keyholder: async () => ({ handOver: async (agentHex: string) => { if (refuse) throw new Error("hand-over refused"); handed.push(agentHex); } }),
+    };
+    await expect(landWorkbench({ slug: SLUG }, members, ports)).rejects.toThrow(/hand-over refused/);
+    refuse = false;
+    await landWorkbench({ slug: SLUG }, members, ports);
+    expect(handed, "the seat the refused landing moved takes its box at the next landing").toEqual([cOnA]);
   });
 });
 
