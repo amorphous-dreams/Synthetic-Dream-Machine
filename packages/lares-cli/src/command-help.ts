@@ -1134,7 +1134,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares vault restore <file> --memory    # land the bundle's content keys on the restored seat (vessel standing, unlocked on the face)",
       "lares vault restore --cards --face <key|persona-…> --as 1   # rebuild a face's root from two split cards: a root, never memory",
       "lares vault rehive --face <N>          # a SHUT face whose veil-archive row holds another identity's Archive stands from its own seed; the answer names the next acts",
-      "lares vault recard --face <N>          # a face whose light refused FaceHoldsNoPrekeySecret lights again under its own identity: card before bags, Archive after the card; names what it cannot recover",
+      "lares vault recard --face <N>          # a face whose light refused FaceHoldsNoPrekeySecret lights again under its own identity: asks the FACE's passphrase (as rehive does), card before bags, Archive after the card; names what it cannot recover",
     ],
     flags: [
       "--passphrase|--paper  (bind) which route the new slot carries; (unlock) skip the route question",

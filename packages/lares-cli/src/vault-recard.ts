@@ -2,7 +2,7 @@
  * `lares vault recard --face N` — a face whose Archive fell behind its own cards lights again under its own identity.
  *
  * A face that restored a stale Archive light after light walked its live prekeys past every secret it held: its light refuses
- * `FaceHoldsNoPrekeySecret`, and the vessel holds it served and dark. The recard proves the vessel's own route on a TTY (no flag,
+ * `FaceHoldsNoPrekeySecret`, and the vessel holds it served and dark. The recard proves the FACE's own route (as `vault rehive` does, never the vessel's) on a TTY (no flag,
  * variable or pipe carries one) and hands it to the standing vessel's custody door in a `recard` frame. The door refuses any face
  * whose last light here did not refuse for want of a prekey secret, then arms that face's next light: the stand mints its card
  * BEFORE its bags, so every Document it mints rides a prekey whose secret it holds, and its Archive rests after that card.
@@ -46,7 +46,7 @@ export async function vaultRecard(args: ParsedArgs): Promise<number> {
   const door = await sendCustodyFrame({ op: "custody" });
   if (door === null || door["op"] !== "custody") return refuse("daemon-unreachable", "no vessel answers its custody door: stand it (`lares vessel stand`) and unlock it (`lares vault unlock`), then recard");
   // THE VESSEL'S OWN ROUTE, read on this terminal alone: a person who holds the vessel stands at this act.
-  const credentials = await gatherCredentials(`lares vault recard --face ${face}`, { kind: "vessel" });
+  const credentials = await gatherCredentials(`lares vault recard --face ${face}`, { kind: "face", ordinal: face });
   const a = await sendCustodyFrame({ op: "recard", credentials, face });
   if (a === null) return refuse("daemon-unreachable", "the vessel stopped answering before the recard answered: read `lares vault status`, then recard again");
   if (a["status"] === "error") {

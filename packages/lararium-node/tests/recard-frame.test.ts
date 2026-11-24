@@ -19,7 +19,8 @@ import type { Credential } from "@lararium/mesh";
 import { custodyFrameHandler } from "../src/custody-frames.js";
 import type { CustodyHolder } from "../src/custody-holder.js";
 
-const ROUTE = "recard-frame-vessel-route";
+const ROUTE = "recard-frame-face-route";
+const VESSEL_ROUTE = "recard-frame-vessel-route";
 const STALE = "Error: face 0xabc refused: FaceHoldsNoPrekeySecret: [daemon-keyhive] face abc… holds no prekey secret: its Archive was absent or older than its latest card";
 
 function door(opts: { faces?: Record<number, { unlocked: boolean }>; refused?: Array<{ ordinal: number; cause: string }>; proves?: boolean;
@@ -29,6 +30,8 @@ function door(opts: { faces?: Record<number, { unlocked: boolean }>; refused?: A
   let taken = false;
   const lit: number[] = [];
   const proved: Array<readonly Credential[]> = [];
+  const vesselProved: Array<readonly Credential[]> = [];
+  const whileOpen: boolean[] = [];
   const logs: string[] = [];
   let refused = opts.refused ?? [{ ordinal: 2, cause: STALE }];
   const holder = {
@@ -37,7 +40,15 @@ function door(opts: { faces?: Record<number, { unlocked: boolean }>; refused?: A
       const f = (opts.faces ?? { 2: { unlocked: true } })[ordinal];
       return f ? { ordinal, fcid: `${ordinal}`.padStart(32, "0"), group: null, ask: null, unlocked: f.unlocked } : null;
     },
-    proves: async (credentials: readonly Credential[]) => { proved.push(credentials); return opts.proves === false ? { reading: "no-slot-opens", attemptsLeft: 4 } : { reading: "proves", opener: [] }; },
+    // THE VESSEL'S ROUTE OPENS THE VESSEL'S TREE, the face's route its own: the recard asks the face's, as the rehive does.
+    proves: async (credentials: readonly Credential[]) => { vesselProved.push(credentials); return { reading: "proves", opener: [] }; },
+    openFaceForAct: async ({ ordinal }: { ordinal: number }, credentials: readonly Credential[], act?: { whileOpen?: boolean }) => {
+      proved.push(credentials); whileOpen.push(act?.whileOpen === true);
+      const route = credentials.some((c) => c.kind === "passphrase" && c.passphrase === ROUTE);
+      return route && opts.proves !== false
+        ? { reading: "opens", fcid: `${ordinal}`.padStart(32, "0"), ordinal, groupDigest: null, fck: new Uint8Array(32).fill(7) }
+        : { reading: "no-slot-opens", fcid: `${ordinal}`.padStart(32, "0"), attemptsLeft: 4 };
+    },
   } as unknown as CustodyHolder;
   const handle = custodyFrameHandler({
     holder, testScratch: false, standing: () => "hearth", recompose: async () => ({ standing: "hearth" }), onLog: (l) => logs.push(l),
@@ -64,7 +75,7 @@ function door(opts: { faces?: Record<number, { unlocked: boolean }>; refused?: A
     const sock = Object.assign(new EventEmitter(), { end: (line: string) => resolve(JSON.parse(line) as Record<string, unknown>) }) as unknown as Socket;
     handle(frame, sock);
   });
-  return { send, armed, disarmed, lit, proved, logs };
+  return { send, armed, disarmed, lit, proved, vesselProved, whileOpen, logs };
 }
 const frame = (face: number, over: Record<string, unknown> = {}) => ({ op: "recard", credentials: [{ kind: "passphrase", passphrase: ROUTE }], face, ...over });
 
@@ -103,6 +114,19 @@ describe("the custody door's recard frame", () => {
     const d = door({ proves: false });
     expect(await d.send(frame(2))).toMatchObject({ refusal: { reason: "no-slot-opens", attemptsLeft: 4 } });
     expect(d.armed).toEqual([]);
+  });
+
+  test("C8 THE FACE'S ROUTE GATES, as the rehive's: the vessel's route refuses and arms nothing; the face's lands, one prover", async () => {
+    const d = door();
+    const vessel = await d.send(frame(2, { credentials: [{ kind: "passphrase", passphrase: VESSEL_ROUTE }] }));
+    expect(vessel).toMatchObject({ op: "recard", status: "error", refusal: { reason: "no-slot-opens", attemptsLeft: 4 } });
+    expect(String(vessel["errorMessage"])).toContain("face h2");
+    expect(d.armed).toEqual([]);
+    expect(await d.send(frame(2))).toEqual({ op: "recard", face: 2, recarded: true });
+    expect(d.armed).toEqual([2]);
+    // The proof rides the holder's per-face opening for an act (open face allowed), never the vessel's own `proves`.
+    expect(d.whileOpen).toEqual([true, true]);
+    expect(d.vesselProved).toEqual([]);
   });
 
   test("C4 a recarded face that stays dark refuses with its cause", async () => {

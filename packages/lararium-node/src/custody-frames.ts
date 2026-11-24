@@ -681,8 +681,8 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
 
   /**
    * One recard, run on the door's one chain. THE FACE STANDS SERVED AND DARK for want of a prekey secret: its last light here
-   * refused `FaceHoldsNoPrekeySecret`. A face lit, shut, or dark for another cause refuses before anything moves. The vessel's
-   * own route proves a person stands here; the door arms the face's next light as a recard and replays the lend, which lights it.
+   * refused `FaceHoldsNoPrekeySecret`. A face lit, shut, or dark for another cause refuses before anything moves. The face's
+   * own route proves a person stands here; the door arms the face's next light as a recard and awaits that face's own light.
    */
   const runRecard = (credentials: readonly Credential[], face: number, sock: Socket) => async (): Promise<CustodyAnswer> => {
     const refuse = (reason: string, errorMessage: string, extra: { attemptsLeft?: number } = {}): CustodyAnswer => {
@@ -690,7 +690,7 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       return { op: "recard", status: "error", errorMessage, refusal: { reason, ...extra } };
     };
     const hand = await readHand(sock, { proveRoute: true }, deps.peerOf);
-    if ("refusal" in hand) return refuse(hand.refusal, "a recard asks a person at their terminal: a detected AI seat refuses, and the vessel's own route gates it; nothing moved");
+    if ("refusal" in hand) return refuse(hand.refusal, "a recard asks a person at their terminal: a detected AI seat refuses, and the face's own route gates it; nothing moved");
     if (!deps.armRecard || !deps.disarmRecard || !deps.refusedLights || !deps.lightFace) return refuse("recard-unavailable", "this vessel's custody door recards no face; nothing moved");
     if (deps.pulama) return refuse("recard-under-pulama", `this vessel's custody rests with its pūlama, which lights faces on its own hand; nothing moved. Read the face there: tools/lares-container.sh pulama status`);
     if (!holder.isUnlocked()) return refuse("custody-locked", `${new CustodyLocked().message}: unlock it (\`lares vault unlock\`), then \`lares vault recard --face ${face}\`; nothing moved`);
@@ -701,12 +701,16 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
     if (!at.unlocked) return refuse("face-shut", `face h${face} stands shut: open it (\`lares vault unlock --face ${face}\`); a face whose Archive fell behind its cards refuses its light by name, and the recard follows; nothing moved`);
     if (dark === undefined) return refuse("face-not-stale", `the last light of face h${face} here did not refuse for want of a prekey secret (it stands lit, or still lighting): nothing needs a recard. Read it with \`lares vault status\`; nothing moved`);
     if (!STALE_LIGHT.test(dark.cause)) return refuse("face-not-stale", `face h${face} stands dark for another cause (${dark.cause}): a recard cures only a face that holds no prekey secret; clear it with \`lares vault unlock\`; nothing moved`);
-    const proof = await holder.proves(credentials);
-    if (proof.reading !== "proves") {
-      if (proof.reading === "no-slot-opens") return refuse("no-slot-opens", `no slot of this vessel opens under what the holder presented; nothing moved (${proof.attemptsLeft} attempt(s) left this boot)`, { attemptsLeft: proof.attemptsLeft });
-      if (proof.reading === "attempts-spent") return refuse("attempts-spent", "this vessel's unlock attempts for this boot stand spent; nothing moved. Stand the vessel again (`lares vessel stand`)");
-      return refuse(proof.reading, `the vessel's slot tree reads ${proof.reading}; nothing moved. Read it with \`lares vault status\``);
+    // THE FACE'S OWN ROUTE GATES, through the holder's per-face opening the rehive uses (one prover, the face's own attempt budget):
+    // the face's key stands open for this act, so it opens whileOpen, and the key opened for the proof zeroes at once.
+    if (!holder.openFaceForAct) return refuse("recard-unavailable", "this vessel's custody rests elsewhere: recard the face where its custody rests; nothing moved");
+    const proof = await holder.openFaceForAct({ ordinal: face }, credentials, { whileOpen: true });
+    if (proof.reading !== "opens") {
+      if (proof.reading === "no-slot-opens") return refuse("no-slot-opens", `no slot of face h${face} opens under what the holder presented: a recard asks the FACE's own route, never the vessel's; nothing moved (${proof.attemptsLeft} attempt(s) left this boot for this face)`, { attemptsLeft: proof.attemptsLeft });
+      if (proof.reading === "attempts-spent") return refuse("attempts-spent", `face h${face}'s unlock attempts for this boot stand spent; nothing moved. Stand the vessel again (\`lares vessel stand\`)`);
+      return refuse(proof.reading, `face h${face} did not open for the recard (${proof.reading}); nothing moved. Read it with \`lares vault status\``);
     }
+    proof.fck.fill(0);
     // THIS FACE'S LIGHT, AWAITED: the lend's sweep fires its lights and answers at once, so the door arms the face, asks its own
     // light and reads the refusals only once that light settled. An arm no light took is cleared the same turn.
     deps.armRecard(face);
