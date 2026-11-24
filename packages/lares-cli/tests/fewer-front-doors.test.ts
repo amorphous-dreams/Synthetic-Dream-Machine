@@ -57,8 +57,13 @@ describe("fewer front doors", () => {
     }
   });
 
-  test("the front door holds 44 top-level verbs", () => {
-    expect(COMMANDS.length).toBe(44);
+  // THE COUNT PINS THE FRONT DOOR, so a new top-level verb lands as a named choice, never a drift. 44 after the fold; 45 with
+  // `spirit` (a spirit's record by its pet name: om · ah · hum · hoʻoili · residue · otakiage). Its acts ride the `tiddler`
+  // door's daemon verbs beneath, yet it carries a lifecycle that door never reads (the card's lease and epoch, slot budgets,
+  // the ash ledger), and `sense`/`sensorium` read captured conversation, not a spirit's card; so it stands its own row.
+  test("the front door holds 45 top-level verbs, `spirit` the one named past the fold", () => {
+    expect(COMMANDS.map((c) => c.name)).toContain("spirit");
+    expect(COMMANDS.length).toBe(45);
   });
 
   test("★ the signing seats stay: vessel and persona sign, and ingest/act keep their own seat ★", () => {

@@ -8,7 +8,7 @@
     { "law": "L6", "why": "a TOML value of the wrong shape reads as the house's to change", "tests": ["tests/laws/reality-tunnel.law.test.ts", "tests/reality-tunnel.test.ts"], "file": "src/reality-tunnel/kinds.ts",
       "find": "  const fits = shape === \"number\" ? typeof held === \"number\" : held !== null && typeof held === \"object\" && !Array.isArray(held);", "replace": "  const fits = true;" },
     { "law": "L5", "why": "a Claude hook the house owes never lands", "tests": ["tests/laws/reality-tunnel.law.test.ts"], "file": "src/reality-tunnel/kinds.ts",
-      "find": "    if (!placed) next.push({ hooks: [command] });", "replace": "" },
+      "find": "      if (placing.first === true) next.unshift(group); else next.push(group);", "replace": "" },
     { "law": "memory guard", "why": "the TOML floor lowers a value above it", "tests": ["tests/laws/reality-tunnel.law.test.ts", "tests/reality-tunnel.test.ts"], "file": "src/reality-tunnel/kinds.ts",
       "find": "  if (typeof held === \"number\" && held >= floor) return cur;", "replace": "  if (typeof held === \"number\" && held <= floor) return cur;" },
     { "law": "L5", "why": "tend rewrites a target that already holds its tunnel", "tests": ["tests/laws/reality-tunnel.law.test.ts", "tests/reality-tunnel.test.ts"], "file": "src/reality-tunnel/engine.ts",

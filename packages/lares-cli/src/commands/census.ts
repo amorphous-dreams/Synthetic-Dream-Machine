@@ -9,6 +9,12 @@
  * stopped container holds no memory to count, so the host shim
  * asks this census at `down`, while the vessel still stands, and refuses a silent stop over a non-empty answer.
  *
+ * AN UNASKED PUSH DROPS NOTHING THIS HOUSE OWNS. A `save-unnamed` row names a document a peer pushed that no map, roster or
+ * local caller names here (sealed-doc-store, "unknown means hold"): its bytes wait in memory for a name, and the peer that
+ * pushed them keeps its own copy. The census names each one (`unasked`, by document and count) and never counts it as an
+ * item, so neither `down` nor the keep refuses over it; an owed save (`save-unbooked`, `save-unmapped`, `save-unsealed`)
+ * still does.
+ *
  * Two lines carry it, both read-only and neither asking custody: the custody door's `census` frame (the saves, by
  * document id, never a body) and the `census` act of the shore verb on every island that mounts a disk shore (the
  * carriers, by title). Each wait carries its own bound; a line that cannot answer lands in `unanswered`, by name,
@@ -39,6 +45,9 @@ export interface CensusReading {
   readonly clean: boolean;
   readonly items: readonly CensusItem[];
   readonly unanswered: ReadonlyArray<{ readonly part: string; readonly why: string }>;
+  /** THE UNASKED PUSHES (`save-unnamed`): a peer's document waiting here for a name; the peer keeps its copy, so a stop drops
+   *  nothing this house owns and the census reads clean beside them (absent where none waits). */
+  readonly unasked?: ReadonlyArray<{ readonly documentId: string; readonly saves: number }>;
   /** THE LIT SET: each face whose key stands open, each sealing its own memory under its own key (absent where none reads). */
   readonly facesLit?: readonly number[];
   /** THE WORN FACE beside the lit set (present where the lit set reads): the daemon mount, or null where none wears. */
@@ -78,9 +87,13 @@ export const VESSEL_LOCKED_CENSUS = "vessel locked: run `lares vault unlock`, th
 /** The refusals that keep a save in memory: the sealed doc store owns the list (`HELD_REFUSALS`), so a new one never drifts past this door. */
 const HELD_REFUSAL_SET: ReadonlySet<string> = new Set<string>(HELD_REFUSALS);
 
+/** The one held refusal a stop drops nothing over: a peer's unasked push, which that peer keeps. */
+const UNASKED_REFUSAL = "save-unnamed";
+
 /** Read both lines into one census. */
 export async function readCensus(lines: CensusLines = LIVE_LINES): Promise<CensusReading> {
   const items: CensusItem[] = [];
+  const unasked: Array<{ documentId: string; saves: number }> = [];
   const unanswered: Array<{ part: string; why: string }> = [];
   if (!lines.socketPresent()) {
     return { clean: false, items, unanswered: [{ part: "the vessel", why: "no vessel answers on this store's socket" }] };
@@ -101,7 +114,9 @@ export async function readCensus(lines: CensusLines = LIVE_LINES): Promise<Censu
         unanswered.push({ part: "the sealed rest", why: "a held-save row arrived in a shape this door cannot read" });
         continue;
       }
-      items.push({ kind: "held-save", refusal, documentId, saves: typeof row["saves"] === "number" ? row["saves"] : 1, bagId: typeof row["bagId"] === "string" ? row["bagId"] : null });
+      const saves = typeof row["saves"] === "number" ? row["saves"] : 1;
+      if (refusal === UNASKED_REFUSAL) { unasked.push({ documentId, saves }); continue; }
+      items.push({ kind: "held-save", refusal, documentId, saves, bagId: typeof row["bagId"] === "string" ? row["bagId"] : null });
     }
   }
   // A FACE STANDING LOCKED under a held key holds memory no census can read: each reads unanswered, by name, with its cure.
@@ -126,15 +141,17 @@ export async function readCensus(lines: CensusLines = LIVE_LINES): Promise<Censu
     const r = d as { face?: unknown; cause?: unknown; note?: unknown };
     return Number.isSafeInteger(r.face) && typeof r.cause === "string" && typeof r.note === "string" ? [{ face: r.face as number, cause: r.cause, note: r.note }] : [];
   }) : [];
-  return { clean: items.length === 0 && unanswered.length === 0, items, unanswered, ...(facesLit.length > 0 ? { facesLit, worn } : {}), ...(facesDark.length > 0 ? { facesDark } : {}) };
+  return { clean: items.length === 0 && unanswered.length === 0, items, unanswered, ...(facesLit.length > 0 ? { facesLit, worn } : {}), ...(facesDark.length > 0 ? { facesDark } : {}), ...(unasked.length > 0 ? { unasked } : {}) };
 }
+
+/** One unasked push as one printed line: its document and count, and why a stop leaves it. Never a body. */
+export const unaskedLine = (u: { readonly documentId: string; readonly saves: number }): string =>
+  `census: unasked  doc ${u.documentId}  ${u.saves} save(s) a peer pushed wait for a name; the peer keeps its copy, so a stop drops nothing here`;
 
 /** One item as one printed line: kind, state, name, and where it belongs. Never a body. */
 export function censusLine(item: CensusItem): string {
   if (item.kind === "held-save") {
-    const line = `held-save  ${item.refusal}  doc ${item.documentId}  ${item.saves} save(s) in memory  bag ${item.bagId ?? "(none mapped)"}`;
-    // A peer pushed this document unasked: neither the bag map nor the clear-name roster names it, so its saves wait for a name.
-    return item.refusal === "save-unnamed" ? `${line}  (no map or roster names this document yet; its saves wait for a name)` : line;
+    return `held-save  ${item.refusal}  doc ${item.documentId}  ${item.saves} save(s) in memory  bag ${item.bagId ?? "(none mapped)"}`;
   }
   if (item.kind === "untracked") return `untracked  ${item.path}  bag ${item.bagId ?? "(none named)"}  island ${item.island}  (an owed commit: commit it, or remove it by hand)`;
   return `carrier  ${item.state}  ${item.uri}  bag ${item.bagId ?? "(none named)"}  island ${item.island}`;
@@ -152,6 +169,8 @@ export async function cmdCensus(args: ParsedArgs, lines: CensusLines = LIVE_LINE
     human: () => {
       // A SERVED FACE DARK HERE drops no save, so it never turns the census red; its line names the cause and the clearing act.
       for (const d of reading.facesDark ?? []) console.error(`census: ${d.note}`);
+      // AN UNASKED PUSH names itself and never turns the census red: the peer that pushed it keeps its copy.
+      for (const u of reading.unasked ?? []) console.error(unaskedLine(u));
       if (code === 0) { console.log("census: clean — no save waits in memory, and the disk projector owes no carrier"); return; }
       for (const item of reading.items) console.log(censusLine(item));
       for (const u of reading.unanswered) console.error(u.why === VESSEL_LOCKED_CENSUS ? `census: ${u.why}` : `census: unanswered — ${u.part}: ${u.why}`);

@@ -397,7 +397,9 @@ describe("e2e/two-face-walk: a lit sibling writes into its own layers while anot
     writeFileSync(sibFile, memeText(SIB_MEME, "Before-stop"));
     const sibPut = await walk.cli(["tiddler", "put", "--meme", SIB_MEME, "--bag", faceZeroBag, "--file", sibFile, "--face", "0", "--json"]);
     expect(sibPut.code, out(sibPut)).toBe(0);
-    // Before the stop the sibling's save rests sealed: the census names no save held in memory.
+    // Before the stop the sibling's save rests sealed: the census names no save held in memory. A sibling's push this island
+    // never asked for may wait for a name (`save-unnamed`); it reads under `unasked`, never as an item, since the pushing
+    // face keeps its copy, and the read-back after the boot below proves that copy survived.
     const preStop = await walk.cli(["vessel", "census", "--json"]);
     const heldBefore = ((data(preStop)["census"] as { items?: Array<{ kind: string; bagId?: string | null }> } | undefined)?.items ?? []).filter((i) => i.kind === "held-save");
     expect(heldBefore, `a save waits in memory before the stop: ${out(preStop)}`).toEqual([]);

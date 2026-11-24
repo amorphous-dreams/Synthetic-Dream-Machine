@@ -2,6 +2,8 @@
  * `lares vessel census` — what a stop would drop, named item by item.
  *
  *   V1  a save held in memory and a carrier the projector has not settled each print one line; exit 3.
+ *   V1b a peer's unasked push (`save-unnamed`) reads under `unasked` by document, never as an item: clean, exit 0; beside it
+ *       an owed save still blocks (V1c).
  *   V2  a clean vessel answers clean; exit 0, and the JSON names empty lists.
  *   V3  a line that cannot answer (no socket, a silent custody door, an island that refuses) exits 2 by name and
  *       never reads clean.
@@ -49,15 +51,35 @@ describe("the vessel census", () => {
     expect(c.err.join("\n")).toMatch(/2 item\(s\) rest nowhere yet/);
   });
 
-  test("V1b — a save-unnamed row reads as a held-save item naming its document, never as an unreadable shape", async () => {
-    const reading = await readCensus(lines({
-      custody: async () => ({ op: "census", held: [{ documentId: "doc-peer", refusal: "save-unnamed", saves: 3, bagId: null }], standing: "hearth" }),
-    }));
+  test("V1b RED — a save-unnamed row reads as an unasked push naming its document: never an unreadable shape, never an item a stop drops", async () => {
+    const unnamed = lines({ custody: async () => ({ op: "census", held: [{ documentId: "doc-peer", refusal: "save-unnamed", saves: 3, bagId: null }], standing: "hearth" }) });
+    const reading = await readCensus(unnamed);
     expect(reading.unanswered).toEqual([]);
-    expect(reading.items).toEqual([{ kind: "held-save", refusal: "save-unnamed", documentId: "doc-peer", saves: 3, bagId: null }]);
+    // The peer that pushed it unasked keeps its own copy: a stop here drops nothing this house owns, so neither down nor the keep refuses.
+    expect(reading.items).toEqual([]);
+    expect(reading.clean).toBe(true);
+    expect(reading.unasked).toEqual([{ documentId: "doc-peer", saves: 3 }]);
     const c = capture();
-    await cmdCensus(args(false), lines({ custody: async () => ({ op: "census", held: [{ documentId: "doc-peer", refusal: "save-unnamed", saves: 3, bagId: null }], standing: "hearth" }) }));
-    expect(c.out.join("\n")).toContain("held-save  save-unnamed  doc doc-peer  3 save(s) in memory  bag (none mapped)  (no map or roster names this document yet; its saves wait for a name)");
+    expect(await cmdCensus(args(false), unnamed)).toBe(0);
+    expect(c.out).toEqual(["census: clean — no save waits in memory, and the disk projector owes no carrier"]);
+    expect(c.err.join("\n")).toContain("census: unasked  doc doc-peer  3 save(s) a peer pushed wait for a name; the peer keeps its copy, so a stop drops nothing here");
+    c.out.length = 0;
+    expect(await cmdCensus(args(true), unnamed)).toBe(0);
+    expect(JSON.parse(c.out.join("")).data.census).toEqual({ clean: true, items: [], unanswered: [], unasked: [{ documentId: "doc-peer", saves: 3 }] });
+  });
+
+  test("V1c CONTROL — beside an unasked push, a save this vessel owes still blocks: exit 3, the owed save alone an item", async () => {
+    const c = capture();
+    const code = await cmdCensus(args(false), lines({
+      custody: async () => ({ op: "census", standing: "hearth", held: [
+        { documentId: "doc-peer", refusal: "save-unnamed", saves: 1, bagId: null },
+        { documentId: "doc-heron", refusal: "save-unsealed", saves: 1, bagId: "lar:///ha.ka.ba/bags/notes" },
+      ] }),
+    }));
+    expect(code).toBe(3);
+    expect(c.out).toEqual(["held-save  save-unsealed  doc doc-heron  1 save(s) in memory  bag lar:///ha.ka.ba/bags/notes"]);
+    expect(c.err.join("\n")).toMatch(/1 item\(s\) rest nowhere yet/);
+    expect(c.err.join("\n")).toContain("census: unasked  doc doc-peer");
   });
 
   test("V7 — a file the checkout never tracked prints by path, an owed commit, and the census exits 3", async () => {

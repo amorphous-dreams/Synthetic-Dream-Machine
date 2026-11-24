@@ -169,7 +169,7 @@ if (process.argv.includes("--check")) {
   let onDisk = "";
   try { onDisk = readFileSync(OUT, "utf8"); } catch { /* absent → drift */ }
   if (onDisk !== rendered) {
-    console.error("cli-verbs.json DRIFT — re-run `node scripts/gen_cli_verbs.mjs` to sync.");
+    console.error("cli-verbs.json DRIFT — re-run `node packages/lararium-sensorium/scripts/gen_cli_verbs.mjs` (from the repo root) to sync.");
     process.exit(1);
   }
   console.log("cli-verbs.json up to date.");
