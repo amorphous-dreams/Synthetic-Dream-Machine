@@ -1362,7 +1362,7 @@ KV_OLD=""; KV_NEW=""; R_KEEPER_TO=""
 keeper_reading() { printf '%s' "$1" | tr -d ' \t\r\n' | sed -n 's/.*"reading":"\([a-z-]*\)".*/\1/p'; }
 # THE COMMIT THE KUKULU LEI LICENSES (internal: `lares rite kukulu` calls `pulama keeper-commit --lei <rev> <branch>`, never a person at a
 # terminal, and no help names it; no route; operator ruling 2026-11-24:
-# the keeper lei keeps no count of its own, it rides the wide kukulu lei the rite read standing on the branch with returns left, and
+# the keeper lei keeps no count of its own, it rides the kukulu lei the rite read standing on the branch with returns left, and
 # the vest's live rite spends that lei's return). The host's guards before the keeper rests the commit:
 # The revision reads reachable from origin/develop or origin/main as fetched (the rite's own fetch), the checkout's tracked tree
 # clean, its closure D′ off two fresh archives the same, the built image's closure label equal to D′, and the CI push run on the

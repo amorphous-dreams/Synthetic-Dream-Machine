@@ -88,7 +88,7 @@ export interface KeeperBegunBody {
   /** THE CARRIED CO-SIGN (one per committed face, `KeeperCosign`): the face's roster as the vessel read it and, past one device, the
    *  spent `ward-keeper-vest` co-sign over (`next`, `prev`, `nonce`). Null where the commit carries none (a one-device house). */
   readonly cosigns?: readonly KeeperCosign[] | null;
-  /** THE KUKULU LEI'S LICENSE (no route rode this commit): the branch whose wide kukulu lei held returns, and the host's testimony;
+  /** THE KUKULU LEI'S LICENSE (no route rode this commit): the branch whose standing kukulu lei held returns, and the host's testimony;
    *  absent on a routed commit. The vest names the lei return its live rite spent. */
   readonly licensed?: KeeperLicense;
 }

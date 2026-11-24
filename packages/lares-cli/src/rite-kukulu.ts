@@ -460,7 +460,8 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
   // THE KUKULU LEI LICENSES THE KEEPER COMMIT where no commit names the moved closure yet (no route): the commit then rests, and the
   // stand reads as a hand's commit would (`vests`); this rite's own begin spends the lei's return, and the vest names it. A refusal
   // names its guard and the light stays owed. With no kukulu lei holding returns, or no successor to stand, nothing licenses one.
-  if (r.keeper === "lei" && r.pulama === "moved" && r.lit === true && leiLicenses && ports.keeperStand && ports.keeperLeiSpend) {
+  // AT A TERMINAL the hand stands present and the light asks its route, so the rite takes no licensed step (the step refuses a terminal).
+  if (r.keeper === "lei" && r.pulama === "moved" && r.lit === true && !tty && leiLicenses && ports.keeperStand && ports.keeperLeiSpend) {
     const spent = await ports.keeperLeiSpend(head, branch).catch(() => false);
     if (spent) { ports.say(`kūkulu: the kukulu lei on ${branch} licenses a keeper commit naming the closure of ${short}; the rite's return spends on it, and the living fire passes with no route`); r = { ...r, keeper: "vests" }; }
     else ports.say("kūkulu: the keeper rested no commit under the kukulu lei (the lines above name the guard that refused), so the moved closure owes the light");

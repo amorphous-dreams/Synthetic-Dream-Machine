@@ -64,7 +64,7 @@
  * THE SCHEDULED STRUCK FIRE: after `KEEPER_STRUCK_EVERY` handed links in a row, the vest refuses `struck-due` and the hand lights the
  * successor by passphrase, which keeps the human's route practiced. Count-based down the chain, no clock.
  *
- * THE KEEPER LEI (operator ruling, 2026-11-24: the kukulu lei licenses it, no count of its own). Where a wide kukulu lei on the
+ * THE KEEPER LEI (operator ruling, 2026-11-24: the kukulu lei licenses it, no count of its own). Where a standing kukulu lei on the
  * branch holds returns, the host may rest ONE keeper commit with no route (`keeperCommitByLei`), over a revision it read reachable
  * from origin, green in CI and built into an image whose closure label equals `next`; the commit names that license and testimony.
  * The live rite the vest rides spends the lei's return (the same return the rite spends for the lent face), and the vest names each
@@ -496,7 +496,7 @@ export async function keeperSlotBinds(records: SwarmWikiPort, by: KukuluSigner, 
 // ── THE KEEPER LEI: the kukulu lei licenses the handed fire ─────────────────────────────────────────
 // Operator ruling, 2026-11-24: //"A keeper-lei should not have its own count (that's friction), it should just consume the kukulu
 // lei if that has uses available."// No record family and no tally of its own: a commit with no route rests where the host testifies
-// a wide kukulu lei on the branch holds returns, and the live rite the vest rides spends that lei's return (the SAME return the rite
+// a standing kukulu lei on the branch holds returns, and the live rite the vest rides spends that lei's return (the SAME return the rite
 // spends for the lent face; the keeper commit takes no extra one). The vest names each lei return that licensed it.
 // Meme: lar:///ha.ka.ba/kahua/memory/research/keeper-lei#/shape
 const REV = /^[0-9a-f]{40}$/, CI_GREEN = /^[0-9]+:success$/;

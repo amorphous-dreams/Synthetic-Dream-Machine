@@ -79,7 +79,7 @@
  *                  vest, or a passing one, refuses.
  *   take-fire      (a lit successor) claim the vessel socket; it refuses while another keeper still holds it.
  *   keeper-commit-lei  THE COMMIT THE KUKULU LEI LICENSES (no route; operator ruling 2026-11-24: no count of its own). The host,
- *                  having read a wide kukulu lei on the branch with returns left, testifies the branch, the revision, its tree, the
+ *                  having read a standing kukulu lei on the branch with returns left, testifies the branch, the revision, its tree, the
  *                  fresh-archive recheck, the built image's closure label (it must equal `next`), the CI push run and the device
  *                  count; the keeper refuses a face of more than one device, a fork, a live hand commit (a lei never supersedes
  *                  it), a vested commit unlanded, a red last pair and the struck fire due, then rests the same commit

@@ -161,6 +161,14 @@ describe("kukulu-asks-a-route-only-where-the-day-owes-one", () => {
     }
   });
 
+  it("RED (cold read P2): at a terminal the rite takes no licensed step (that step refuses a person at a terminal); the light rides as it did", async () => {
+    const to = "c".repeat(64), closure = "sha256:" + "9".repeat(64);
+    const t = fakes({ tty: true, reading: { pulama: "moved", lit: true, keeper: "lei" }, keeper: { to, closure }, leiSpend: true, leiStands: true });
+    expect((await riteKukulu(t.ports, {})).code).toBe(0);
+    expect(t.calls.filter((c) => c.startsWith("keeper-lei-spend"))).toEqual([]);
+    expect(t.calls).toContain(`raise ${HEAD}`);
+  });
+
   it("RED: a successor that stands no key leaves the rite with no keeper move: the offer names none and the raise carries none (it relights struck)", async () => {
     const f = fakes({ tty: true, reading: { pulama: "moved", lit: true, keeper: "vests" }, keeper: null });
     expect((await riteKukulu(f.ports, {})).code).toBe(0);
