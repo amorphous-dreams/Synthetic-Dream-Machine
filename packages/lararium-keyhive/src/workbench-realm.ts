@@ -35,7 +35,7 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench
  */
 import {
-  dropWorkbench, ledgerWorkbenchRealms, noteWorkbenchRemoval, noteWorkbench, noteWorkbenchKey, privateCabalRealmId, realmWorkbenchDocUrl, requireWorkbenchShareable,
+  REALM_ADMISSION_ACT, REALM_STATE_ROLL_ACT, dropWorkbench, ledgerWorkbenchRealms, noteWorkbenchRemoval, noteWorkbench, noteWorkbenchKey, privateCabalRealmId, realmWorkbenchDocUrl, requireWorkbenchShareable,
   wikiSlotUri, noteWorkbenchSeat, dropWorkbenchSeat, workbenchKeyDocs, workbenchSeats, WorkbenchRefusal,
   type AutomergeUrl, type CabalRealm, type LarDoc,
 } from "@lararium/mesh";
@@ -373,8 +373,19 @@ export function landsUnderAHand(context: { readonly asker?: string }): boolean {
  * EACH HAND-OVER REFUSAL NAMES ITS OWN CURE (a runnable `lares …` line): a span with no live document to open on, a member the
  * owner's hive cannot wrap for; any other refusal reads `ownerLine`, the owner's cure (wear the owner face, land again).
  */
-export function handOverCure(slug: string, refusal: string, ownerLine: string): string {
+export function handOverCure(slug: string, refusal: string, ownerLine: string, memberIndex?: number): string {
+  if (refusal === "no-head-held") return `the owner face's holder here holds no key of the workbench's head (another device of the face, or a version this holder never counted, wrote it): land the share from the device whose holder wrote under that head (\`lares wiki share ${slug}\`)`;
   if (refusal === "fresh-base-unavailable") return `open the wiki under the realm's owner face so its live working document stands (\`lares wiki switch ${slug}\`), then land the share again (\`lares wiki share ${slug}\`)`;
-  if (refusal === "wrap-failed" || refusal === "reader-unreached") return `the owner's hive holds no contact card it can wrap for that member: light the member face (\`lares vault unlock --face N\`), then land the share again (\`lares wiki share ${slug}\`)`;
+  if (refusal === "wrap-failed" || refusal === "reader-unreached") return `the owner's hive holds no contact card it can wrap for that member: light the member face (\`lares vault unlock --face ${memberIndex ?? "N"}\`), then land the share again (\`lares wiki share ${slug}\`)`;
   return ownerLine;
+}
+
+/**
+ * THE `sealed-admit` DOOR OPENS NO REALM-DERIVED ACT: a realm's from-now admission opens only at the share door, under the owner's
+ * hand (`handOverRealm`), and a state roll only in the owner's holder. An act under either prefix refuses `realm-act-reserved`
+ * before the holder reads it; null lets any other act through.
+ */
+export function sealedAdmitRefusal(act: string): { readonly refusal: "realm-act-reserved"; readonly cause: string } | null {
+  if (!act.startsWith(REALM_ADMISSION_ACT) && !act.startsWith(REALM_STATE_ROLL_ACT)) return null;
+  return { refusal: "realm-act-reserved", cause: "a realm workbench opens its admission at the share door alone, under the realm owner's hand (`lares wiki share <wiki>`)" };
 }

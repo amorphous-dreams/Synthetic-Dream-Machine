@@ -40,7 +40,7 @@ import {
 } from "@lararium/tw5";
 import { applyShares, liftCarriedShares } from "./share-apply.js";
 import { grantShare } from "./share-grant.js";
-import { adoptWorkbench, faceWorkbenchRealm, handOverCure, landWorkbench, landsUnderAHand, workbenchFoundsOnWrite, workbenchWriterSeat, type LedgerDoc } from "./workbench-realm.js";
+import { adoptWorkbench, faceWorkbenchRealm, handOverCure, landWorkbench, sealedAdmitRefusal, landsUnderAHand, workbenchFoundsOnWrite, workbenchWriterSeat, type LedgerDoc } from "./workbench-realm.js";
 import { daemonRetiredHome, faceOwnSlot, wikiShellPorts } from "./wiki-shell-ports.js";
 import { workbenchKeyDocs, ledgerWorkbenchRealms, privateCabalRealmId, bagUri as meshBagUri, shareCarryTitle, shareCarryOf, tiddlerText, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX } from "@lararium/mesh";
 import { DAEMON_WIKI_SLUG, daemonSlotTitle, stoodDocumentBytes, ACTION_VERBS, sha256HexBytesSync, canonicalJsonBytes, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, fleetEdgeBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc, wikiBagUri, recipeLayerIndex, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, ControlHomeUnavailable, canonOfferDocUrl, type ChangeOrigin } from "@lararium/mesh";
@@ -943,10 +943,11 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   const readRealmBook = async (ctx: IslandContext, slug: string): Promise<void> => {
     const hives: KeyhiveProvider[] = [];
     const lit: RealmFace[] = [];
-    for (const [key, { provider }] of providers) {
+    for (const [key, { provider, group }] of providers) {
       const mounted = provider === kh;
       hives.push(provider);
-      lit.push({ agent: await provider.vesselIdentifierHex(), chain: () => (mounted ? mountedFace.chain : faces.lit(key)?.chain ?? null) });
+      // EACH FACE NAMES ITS GROUP: the realm's owner reads as the lit face whose group derives the realm.
+      lit.push({ agent: await provider.vesselIdentifierHex(), group, chain: () => (mounted ? mountedFace.chain : faces.lit(key)?.chain ?? null) });
     }
     await realmBook.read(wikiSlotUri(slug, "working"), hives, (await workbenchLedgerOf(ctx)).doc(), lit);
   };
@@ -1722,6 +1723,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       });
       registry.register("sealed-admit", async (args, context) => {
         const act = typeof args["act"] === "string" ? args["act"] : "";
+        // A REALM-DERIVED ACT opens only at the share door, under the realm owner's hand: this door refuses it by name.
+        const reserved = sealedAdmitRefusal(act);
+        if (reserved !== null) return refusedBy("sealed-admit", reserved);
         const history = args["history"] === "shareable" ? "shareable" as const : "closed" as const;
         const holder = holderFor("sealed-admit").holder;
         const signer = await sessionOf("sealed-admit", context);
@@ -1995,7 +1999,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         const seat = ownerEntry?.seat;
         return seat && worn.face === ownerEntry ? { seat, signer: worn.signer } : null;
       };
-      const realmKeyholder = async (slug: string, owner: { readonly handleIndex: number; readonly group: string }, context: Parameters<typeof sessionOf>[1] & { readonly asker?: Hand }) => {
+      const realmKeyholder = async (slug: string, owner: { readonly handleIndex: number; readonly group: string }, context: Parameters<typeof sessionOf>[1] & { readonly asker?: Hand }, memberIndexOf: (agentHex: string) => number | undefined = () => undefined) => {
         const bagId = wikiSlotUri(slug, "working");
         const cure = ownerCure(slug, owner);
         const under = await ownerUnderSession(owner, context);
@@ -2010,7 +2014,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           handOver: async (agentHex: string) => {
             await readRealmBook(ctx, slug);
             const handed = await seat.handOverRealm(bagId, agentHex, signer);
-            if ("refusal" in handed) throw new VerbRefusal("seat-needs-keyholder", `seat-needs-keyholder: the owner's holder handed the new seat no lockbox (${handed.refusal}${handed.cause ? `: ${handed.cause}` : ""}); ${handOverCure(slug, handed.refusal, cure.cure)}`);
+            if ("refusal" in handed) throw new VerbRefusal("seat-needs-keyholder", `seat-needs-keyholder: the owner's holder handed the new seat no lockbox (${handed.refusal}${handed.cause ? `: ${handed.cause}` : ""}); ${handOverCure(slug, handed.refusal, cure.cure, memberIndexOf(agentHex))}`);
           },
         };
       };
@@ -2114,7 +2118,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             const landed = await landWorkbench(row, seats.map(({ face, agentHex, access }) => ({ face, agentHex, access })), {
               provider: ownerHive, ledger: asLedgerDoc(await workbenchLedgerOf(ctx)), ownerFace: owner.group,
               checkoutSourced: isHouseCanonBag(meshBagUri(row.slug)),
-              keyholder: () => realmKeyholder(row.slug, owner, context),
+              // A MEMBER'S CURE NAMES ITS OWN HANDLE: the seat's agent reads back to the member face that took it.
+              keyholder: () => realmKeyholder(row.slug, owner, context, (agentHex) => members.find((m) => m.group === seats.find((one) => one.agentHex === agentHex)?.face)?.handleIndex),
             });
             const keyDoc = workbenchKeyDocs((await workbenchLedgerOf(ctx)).doc(), landed.realmId, row.slug)[0];
             for (const seat of seats) {

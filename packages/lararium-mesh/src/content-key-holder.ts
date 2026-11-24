@@ -133,8 +133,9 @@ export interface HolderRefusal { readonly refusal: HolderRefusalName; readonly c
 // ── Ports ───────────────────────────────────────────────────────────────────────────────────────
 /** This vessel's own evidence for one bag's key transitions. */
 export interface BagEvidence {
-  /** This vessel's own ledger counts the raise, on an edge of the bag's own scope. */
-  raiseCounts(act: string): boolean;
+  /** This vessel's own ledger counts the raise, on an edge of the bag's own scope. `by` names the certificate the removal
+   *  version's record signed under, so an act a realm derives from its own state binds to who rolled. */
+  raiseCounts(act: string, by?: { readonly certificate: RecordCertificate }): boolean;
   /** This vessel verified the admission act. `by` names the version that cites it: its parents, the history its span
    *  declares, and the certificate its record signed under, so an act a realm derives binds to who opened what. */
   admissionVerifies(act: string, by?: AdmissionEvidence): boolean;
@@ -595,7 +596,7 @@ export class ContentKeyHolder {
         // Each cause answers to this reader's OWN evidence. A join proves under each parent this reader holds,
         // and with none held it proves nothing: no record another writer signed stands in for a proof.
         const result = lineage.count(fact, {
-          raiseCounts: (act) => evidence.raiseCounts(act),
+          raiseCounts: (act) => evidence.raiseCounts(act, { certificate: verified.certificate }),
           admissionVerifies: (act) => evidence.admissionVerifies(act, { parents: fact.parents, history: fact.history, certificate: verified.certificate }),
           joinProven: () => joinProven(verified, heldParents),
         }, unheld);
@@ -678,7 +679,7 @@ export class ContentKeyHolder {
       const heldParents = new Map(fact.parents.map((parent) => [parent, line.keys.get(parent)!] as const));
       const evidence = await this.#ports.evidenceOf(bag.bagId);
       const counted = line.lineage.count(factOfRecord(signed.verified), {
-        raiseCounts: (act) => evidence.raiseCounts(act),
+        raiseCounts: (act) => evidence.raiseCounts(act, { certificate: signed.verified.certificate }),
         admissionVerifies: (act) => evidence.admissionVerifies(act, { parents: fact.parents, history: fact.history, certificate: signed.verified.certificate }),
         joinProven: () => joinProven(signed.verified, heldParents),
       });
