@@ -86,7 +86,12 @@ export function ritePlan(args: ParsedArgs): RitePlan {
   if (act === "offer") {
     const branch = word(args.options["branch"]), image = word(args.options["image"]);
     if (branch === undefined || head === undefined || image === undefined) throw new RiteUsage("offer names its branch, its head and the image the host built: --branch <name> --head <commit> --image <digest>");
-    return { verb: "rite-offer", args: { branch, head, image, ...face } };
+    // THE KEEPER MOVE rides the offer as the vessel reads it (`keeperTo`, `keeperNext`): both or neither, each in its own shape.
+    const keeperTo = word(args.options["keeper-to"]), keeperNext = word(args.options["keeper-next"]);
+    if ((keeperTo === undefined) !== (keeperNext === undefined) || (keeperTo !== undefined && (!/^[0-9a-f]{64}$/.test(keeperTo) || !/^sha256:[0-9a-f]{64}$/.test(keeperNext ?? "")))) {
+      throw new RiteUsage("a keeper move names the successor's key and the committed closure together: --keeper-to <64 hex> --keeper-next sha256:<64 hex>, as `keeper-stand` printed them (or neither, and the offer carries no move)");
+    }
+    return { verb: "rite-offer", args: { branch, head, image, ...face, ...(keeperTo === undefined ? {} : { keeperTo, keeperNext }) } };
   }
   if (act === "land") {
     const tessera = word(args.options["tessera"]);
@@ -240,7 +245,11 @@ const shimRead = (shim: string, argv: readonly string[]): Promise<string | null>
 });
 
 /** Row args as flags: `true` rides as a bare flag, every other value as the next word. */
-const flagsOf = (rowArgs: Record<string, unknown>): string[] => Object.entries(rowArgs).flatMap(([k, v]) => (v === true ? [`--${k}`] : [`--${k}`, String(v)]));
+/** A row's args as the CLI line that plans them back: a camelCase key crosses as its kebab flag (`keeperTo` -> `--keeper-to`). */
+const flagsOf = (rowArgs: Record<string, unknown>): string[] => Object.entries(rowArgs).flatMap(([k, v]) => {
+  const flag = `--${k.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`;
+  return v === true ? [flag] : [flag, String(v)];
+});
 
 /**
  * One shim line on this terminal; the answer carries its exit code (a spawn that never ran reads as a failure). A CTRL+C reaches
