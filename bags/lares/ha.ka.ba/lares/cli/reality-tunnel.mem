@@ -44,7 +44,7 @@ An operator's machine holds what the operator declares, through one door per RAD
 
 !! The declared tunnel
 
-Each item names its radius, its host, its kind and the target it keeps. `{repo}` reads the checkout, `{clone}` the main clone a worktree belongs to, `{seed}` the boot seed's path. A `git-config` item keeps one key in the clone's shared git config through `git config --local`, so a tend from any worktree seats every worktree of the clone; `read` names the key unset, set to another value, or set, `tend` says `set` or `already set` beside the key and its value, and `undo` puts the prior value back. A commit carries no git config, so `lares repo read --staged` (the commit gate) and a tree outside any repository read these items absent. A home item names `homes = "all"` to reach every home on the device, or reaches the native home alone. `hooks` names the house's hooks folder: every script a home item names stands under it, and the catalog refuses a carrier where one stands outside. The house owns that folder's name in each host's hook file. A `*-hooks-owned` item keeps one hook file (Claude's `settings.json`, Codex's `config.toml`, Copilot's `hooks/lares.json`) free of every command that names a script under the folder which no `[[home]]` item declares for that host and file: `read` answers drift and names each such script, `lares home read --brief` (the wake's homes line) names the item beside the act that cures it, and `tend` lifts each such command under any event, keeps each other hand's command, and says `lifted <scripts> from <path> (<id>)`. The set derives from the `[[home]]` items alone, so a second `tend` writes nothing, a home that carries no such command takes nothing, and a command that names no script under the folder never moves. A Codex block that carries such a script beside another command reads foreign.
+Each item names its radius, its host, its kind and the target it keeps. `{repo}` reads the checkout, `{clone}` the main clone a worktree belongs to, `{seed}` the boot seed's path. A `git-config` item keeps one key in the clone's shared git config through `git config --local`, so a tend from any worktree seats every worktree of the clone; `read` names the key unset, set to another value, or set, `tend` says `set` or `already set` beside the key and its value, and `undo` puts the prior value back. A commit carries no git config, so `lares repo read --staged` (the commit gate) and a tree outside any repository read these items absent. A home item names `homes = "all"` to reach every home on the device, or reaches the native home alone. `hooks` names the house's hooks folder: every script a home item names stands under it, and the catalog refuses a carrier where one stands outside. The house owns that folder's name in each host's hook file. A `*-hooks-owned` item keeps one hook file (Claude's `settings.json`, Codex's `config.toml`, Copilot's `hooks/lares.json`) free of every command that names a script under the folder which no `[[home]]` item declares for that host and file: `read` answers drift and names each such script, `lares home read --brief` (the wake's homes line) names the item beside the act that cures it, and `tend` lifts each such command under any event, keeps each other hand's command, and says `lifted <scripts> from <path> (<id>)`. The set derives from the `[[home]]` items alone, so a second `tend` writes nothing, a home that carries no such command takes nothing, and a command that names no script under the folder never moves. A Codex block that carries such a script beside another command reads foreign. A `claude-hook` item that names `familiar` carries the familiar's pet name as its hook's argument, never an env var: `lares home tend --familiar <pet-name>` names it, and a tend that names none keeps the pet name a house hook in that file already carries. A `required` familiar stands absent until one is named, and its detail names that tend; an `optional` one runs bare. `matcher` seats the command under a tool matcher, and `first` places a fresh command's group at its event's head. Claude Code runs an event's matching hooks in parallel, so `first` orders the groups (the familiar's wake, `lares spirit om`, leads the context) and gates nothing (lar:///ha.ka.ba/kahua/memory/wave/spirit-om-ah-hum).
 
 ```toml reality-tunnel
 seed = "bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem"
@@ -162,6 +162,19 @@ floor = 99999
 what = "Claude keeps every session file: the conversation store seeds the operator's memory"
 
 [[home]]
+id = "claude.om-hook"
+host = "claude"
+kind = "claude-hook"
+file = ".claude/settings.json"
+event = "SessionStart"
+script = "packages/lares-cli/.claude-plugin/hooks/lares-om-hook.mjs"
+runner = "node"
+timeout = 12
+first = true
+familiar = "required"
+what = "a Claude session wakes its familiar from its record (`lares spirit om <pet>`, the skinny plus #/open), its context leading the wake's"
+
+[[home]]
 id = "claude.wake-hook"
 host = "claude"
 kind = "claude-hook"
@@ -181,7 +194,45 @@ event = "PreCompact"
 script = "packages/lares-cli/.claude-plugin/hooks/lares-compact-hook.mjs"
 runner = "node"
 timeout = 15
-what = "a compaction's summary keeps the memory index and the items in play by `lar:` address"
+familiar = "optional"
+what = "a compaction's summary keeps the memory index and the items in play by `lar:` address, and ends on the familiar's hoʻoili"
+
+[[home]]
+id = "claude.postcompact-hook"
+host = "claude"
+kind = "claude-hook"
+file = ".claude/settings.json"
+event = "PostCompact"
+script = "packages/lares-cli/.claude-plugin/hooks/lares-postcompact-hook.mjs"
+runner = "node"
+timeout = 30
+familiar = "required"
+what = "a compaction's summary lands as the carry, hoʻoili, under the familiar's pet name (`lares spirit hooili`), one #/bodies line filed"
+
+[[home]]
+id = "claude.true-up-hook"
+host = "claude"
+kind = "claude-hook"
+file = ".claude/settings.json"
+event = "Stop"
+script = "packages/lares-cli/.claude-plugin/hooks/lares-true-up-hook.mjs"
+runner = "node"
+timeout = 10
+familiar = "required"
+what = "every 25 turns, or while a hoʻoili stands unfiled, a stop names `lares spirit ah` and `hum` to true the familiar's record"
+
+[[home]]
+id = "claude.handback-hook"
+host = "claude"
+kind = "claude-hook"
+file = ".claude/settings.json"
+event = "PostToolUse"
+matcher = "SubagentHandback"
+script = "packages/lares-cli/.claude-plugin/hooks/lares-handback-hook.mjs"
+runner = "node"
+timeout = 20
+familiar = "required"
+what = "each spirit's handback inside the checkout or a bound workspace lands as residue under its pet name (`lares spirit residue`)"
 
 [[home]]
 id = "claude.loads-hook"
@@ -350,6 +401,6 @@ what = "Copilot's house hook file names no house hook script beyond the ones thi
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;bOsFq_GMqxlVqsZjNdW_ul9GstrB_MRrpWnLM9tH4ZI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;GCEZz1QXN_hn-9bvY_SDI2rkoOAQKzJb-6fiuz0wO5o`>>
 
 <<^ code=`&#x0004;` to=`?`>>

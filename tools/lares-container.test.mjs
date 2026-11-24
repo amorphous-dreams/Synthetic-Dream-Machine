@@ -121,7 +121,7 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       `case " $* " in *" logs --tail "*) printf '%s\\n' "\${FAKE_VESSEL_LOG:-}"; printf '%s\\n' "\${FAKE_VESSEL_LOG_ERR:-}" >&2; exit "\${FAKE_LOGS_RC:-0}";; esac\n` +
       `case " $* " in *" up -d --wait lares "*) [ "\${FAKE_UP_RC:-0}" = 0 ] || printf '%s\\n' 'compose readiness failed' >&2; exit "\${FAKE_UP_RC:-0}";; esac\n` +
       (refuseInput ? `case " $* " in *" tiddler put "*) printf "lares tiddler put: usage refusal\\n" >&2; exit 2;; esac\n` : "") +
-      `case " $* " in *" tiddler put "*" --file - "*|*" tiddler put "*" --file=- "*|*" tiddler put "*" --append - "*|*" tiddler put "*" --append=- "*) cat > "$CALL_LOG.stdin";; esac\n` +
+      `case " $* " in *" tiddler put "*" --file - "*|*" tiddler put "*" --file=- "*|*" tiddler put "*" --append - "*|*" tiddler put "*" --append=- "*|*" spirit "*" --file - "*) cat > "$CALL_LOG.stdin";; esac\n` +
       // A WEAR the vessel answers as a test scripts (its prose and its exit); unscripted, it answers as any exec does.
       `case " $* " in *" wear "*) if [ -n "\${FAKE_WEAR_OUT:-}" ]; then printf '%s\\n' "\${FAKE_WEAR_OUT}" >&2; exit "\${FAKE_WEAR_RC:-0}"; fi;; esac\n` +
       `case " $* " in *" exec "*) exit "\${FAKE_EXEC_RC:-0}";; esac\n`);
@@ -225,6 +225,24 @@ for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
       { env: { LARES_HOUSE: "@HOUSE@", LARES_WORKSPACE: "/w", FAKE_RUNNING_ID: "vessel" } });
     assert.notEqual(absent.status, 0);
     assert.doesNotMatch(absent.calls, / node .* tiddler put /);
+  });
+}
+for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
+  test(`${name}: a spirit verb streams a named host file whole as stdin, and a read verb streams none`, { skip }, async () => {
+    const env = { LARES_HOUSE: "@HOUSE@", LARES_WORKSPACE: "/w", FAKE_RUNNING_ID: "vessel" };
+    const bytes = Buffer.from("!! Open\n\n* a loop\n", "utf8");
+    // The carry's verb reads from the built table (`spirit-words.ts`), so a rename of the word reaches this match too.
+    const { COMPACTION_WORD } = await import("../packages/lares-cli/dist/src/spirit-words.js");
+    for (const wire of [["spirit", "ah", "lares-alpha", "--slot", "#/open"], ["spirit", COMPACTION_WORD, "lares-alpha"], ["spirit", "residue", "om-wright"]]) {
+      const r = await run(shim, [...wire, "--file", "@HOST_FILE@"], { env, hostInput: bytes });
+      assert.equal(r.status, 0, `${wire.join(" ")}: ${r.stderr}`);
+      assert.deepEqual(r.received, bytes, wire.join(" "));
+      assert.match(r.calls, /--file -/);
+    }
+    const absent = await run(shim, ["spirit", "ah", "lares-alpha", "--slot", "#/open", "--file", "@HOST_FILE@"], { env });
+    assert.notEqual(absent.status, 0);
+    const read = await run(shim, ["spirit", "hum", "lares-alpha", "--fold", "#/open"], { env });
+    assert.equal(read.received, null);
   });
 }
 for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {

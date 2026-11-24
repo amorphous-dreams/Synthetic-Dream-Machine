@@ -349,6 +349,44 @@ describe("the home radius", () => {
     expect(hooks["SessionStart"]).toEqual([{ hooks: [at("lares-wake-hook.mjs")] }]);
   });
 
+  it("a tend with a familiar seats the familiar's hooks: om's group first on SessionStart, the landing on PostCompact, the true-up on Stop, the pet name as each one's argument", async () => {
+    const root = clone();
+    const h = homes();
+    const l = ledger();
+    const items = (familiar?: string) => homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false, ...(familiar ? { familiar } : {}) });
+    await tend(items("lares-alpha"), l);
+    const hooks = JSON.parse(readFileSync(join(h.native, ".claude/settings.json"), "utf8")).hooks as Record<string, Array<{ matcher?: string; hooks: unknown[] }>>;
+    const at = (name: string, timeout: number, ...args: string[]) => ({ type: "command", command: "node", args: [`${root}/packages/lares-cli/.claude-plugin/hooks/${name}`, ...args], timeout });
+    expect(hooks["SessionStart"]).toEqual([{ hooks: [at("lares-om-hook.mjs", 12, "lares-alpha")] }, { hooks: [at("lares-wake-hook.mjs", 15)] }]);
+    expect(hooks["PreCompact"]).toEqual([{ hooks: [at("lares-compact-hook.mjs", 15, "lares-alpha")] }]);
+    expect(hooks["PostCompact"]).toEqual([{ hooks: [at("lares-postcompact-hook.mjs", 30, "lares-alpha")] }]);
+    expect(hooks["Stop"]).toEqual([{ hooks: [at("lares-true-up-hook.mjs", 10, "lares-alpha")] }]);
+    expect(hooks["PostToolUse"]).toEqual([{ matcher: "SubagentHandback", hooks: [at("lares-handback-hook.mjs", 20, "lares-alpha")] }]);
+    // The familiar stays where a tend seated it: a tend that names none writes nothing.
+    expect((await tend(items(), l)).wrote).toEqual([]);
+    // A tend naming another familiar re-aims each hook in its own place.
+    await tend(items("lares-awakens"), l);
+    const again = JSON.parse(readFileSync(join(h.native, ".claude/settings.json"), "utf8")).hooks as Record<string, Array<{ hooks: unknown[] }>>;
+    expect(again["SessionStart"]).toEqual([{ hooks: [at("lares-om-hook.mjs", 12, "lares-awakens")] }, { hooks: [at("lares-wake-hook.mjs", 15)] }]);
+  });
+
+  it("with no familiar named, the familiar's hooks stand absent and name the tend that seats them", () => {
+    const root = clone();
+    const h = homes();
+    const rows = read(homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false }), ledger());
+    for (const id of ["claude.om-hook", "claude.postcompact-hook", "claude.true-up-hook", "claude.handback-hook"]) {
+      const row = rows.find((r) => r.id === id)!;
+      expect(row.detail, id).toContain("lares home tend --familiar <pet-name> --yes");
+    }
+  });
+
+  it("a malformed familiar name seats nothing and names the cure", () => {
+    const root = clone();
+    const h = homes();
+    const rows = read(homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false, familiar: "Bad Name" }), ledger());
+    expect(rows.find((r) => r.id === "claude.om-hook")!.detail).toContain("reads as no pet name");
+  });
+
   it("a tend seats the keep hook on SessionEnd, so each session's end runs `lares rite keep --if-due` (cross-and-keep, K11)", async () => {
     const root = clone();
     const h = homes();

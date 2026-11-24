@@ -15,7 +15,7 @@ test("wake observes the checkout shim and bounds failures", async (t) => {
   mkdirSync(hooks, { recursive: true });
   mkdirSync(bin, { recursive: true });
   mkdirSync(tools, { recursive: true });
-  for (const name of ["lares-wake-hook.mjs", "lares-wake-core.mjs", "lares-compact-hook.mjs", "lares-menu-read.mjs"]) {
+  for (const name of ["lares-wake-hook.mjs", "lares-wake-core.mjs", "lares-compact-hook.mjs", "lares-menu-read.mjs", "lares-spirit-core.mjs"]) {
     if (existsSync(join(sourceDir, name))) copyFileSync(join(sourceDir, name), join(hooks, name));
   }
   writeFileSync(join(bin, "lares.mjs"), `

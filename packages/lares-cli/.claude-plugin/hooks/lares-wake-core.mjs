@@ -32,16 +32,22 @@ import { spawn } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+/** How long a stopped read's group holds after SIGTERM before SIGKILL: the shim's own trap stops its compose act inside it. */
+export const TERM_GRACE_MS = 2_000;
+
 /**
  * Start one read as a child in its own process group. `kill` stops the whole group, so a compose child cannot hold
- * the hook's pipes open past the read.
+ * the hook's pipes open past the read: SIGTERM first, so the shim's trap stops the act it waits on (an offline run's
+ * container leaves with it), then SIGKILL once `TERM_GRACE_MS` passes with the group still standing. `input`, where
+ * given, rides the child's stdin whole.
  */
-export function spawnRead(command, argv) {
+export function spawnRead(command, argv, input = null) {
   let child;
   let output = "";
   const done = new Promise((resolve) => {
     try {
-      child = spawn(command, argv, { detached: true, stdio: ["ignore", "pipe", "ignore"] });
+      child = spawn(command, argv, { detached: true, stdio: [input === null ? "ignore" : "pipe", "pipe", "ignore"] });
+      if (input !== null) { child.stdin.on("error", () => { /* a child that left early reads no more */ }); child.stdin.end(input); }
     } catch (err) {
       resolve({ stdout: "", code: null, signal: null, error: err?.code ?? err?.message ?? "spawn error" });
       return;
@@ -53,9 +59,11 @@ export function spawnRead(command, argv) {
   });
   const kill = () => {
     if (!child?.pid) return;
-    try { process.kill(-child.pid, "SIGKILL"); } catch { /* The process already left. */ }
+    const pid = child.pid;
+    try { process.kill(-pid, "SIGTERM"); } catch { /* The process already left. */ }
+    const hard = setTimeout(() => { try { process.kill(-pid, "SIGKILL"); } catch { /* The group already left. */ } }, TERM_GRACE_MS);
+    child.once("close", () => clearTimeout(hard));
     child.stdout?.destroy();
-    child.unref();
   };
   return { done, kill };
 }

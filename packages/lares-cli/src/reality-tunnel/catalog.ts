@@ -220,6 +220,8 @@ export interface HomeContext {
   readonly mcp?: LaresMcpCommand | null;
   /** False keeps Claude's seat to a read of its store (tests, and reads that must stay offline). */
   readonly claudeCli?: boolean;
+  /** The familiar's pet name a tend seats in the familiar's hooks (`lares home tend --familiar <pet>`); absent keeps the seated one. */
+  readonly familiar?: string | null;
 }
 
 /** Every operator home's items. A host whose home directory stands absent reads absent. */
@@ -250,6 +252,30 @@ export function homeItems(ctx: HomeContext, d: Declared = declared(ctx.repo)): I
   return out;
 }
 
+/** A pet name a familiar's hook carries. */
+const PET_NAME = /^[a-z0-9][a-z0-9-]{0,62}$/;
+
+/**
+ * The familiar a home's hooks carry: the tend's `--familiar`, else the pet name a house hook under the hooks folder already
+ * carries in this hook file (a tend that names none keeps the one seated), else none.
+ */
+function familiarFor(ctx: HomeContext, path: string, folder: string): string | null {
+  if (typeof ctx.familiar === "string" && ctx.familiar !== "") return ctx.familiar;
+  let held: unknown;
+  try { held = JSON.parse(readFileSync(path, "utf8")); } catch { return null; }
+  const events = (held as { hooks?: unknown } | null)?.hooks;
+  if (events === null || typeof events !== "object") return null;
+  for (const groups of Object.values(events as Record<string, unknown>)) {
+    for (const g of Array.isArray(groups) ? groups : []) {
+      for (const c of Array.isArray((g as { hooks?: unknown }).hooks) ? (g as { hooks: unknown[] }).hooks : []) {
+        const args = (c as { args?: unknown }).args;
+        if (Array.isArray(args) && typeof args[0] === "string" && args[0].includes(`${folder}/`) && typeof args[1] === "string" && PET_NAME.test(args[1])) return args[1];
+      }
+    }
+  }
+  return null;
+}
+
 /** The scripts under the house's hooks folder that a value names and no home row declares for this row's host and file. */
 const straysOf = (s: Spec, d: Declared) =>
   strays(d.hooks, d.home.filter((h) => h.host === s.host && h.file === s.file && typeof h["script"] === "string").map((h) => String(h["script"]).split("/").at(-1)!));
@@ -264,10 +290,17 @@ function homeItem(
     case "json-floor": return base({ transform: jsonFloor(str(s, "key"), Number(s["floor"])), foreign: jsonForeign });
     case "json-set": return base({ transform: jsonSet([str(s, "key")], s["value"]), foreign: jsonForeign });
     case "claude-hook": {
+      // A familiar's hook carries the pet name as its argument (no env var): the tend's `--familiar`, else the one a tend seated.
+      const wants = s["familiar"] === "required" || s["familiar"] === "optional";
+      const pet = wants ? familiarFor(ctx, path, d.hooks) : null;
+      if (pet !== null && !PET_NAME.test(pet)) return base({ unreachable: `the familiar "${pet}" reads as no pet name (lower-case letters, digits and hyphens); run \`lares home tend --familiar <pet-name> --yes\`` });
+      if (s["familiar"] === "required" && pet === null) return base({ absent: "no familiar named in this home; `lares home tend --familiar <pet-name> --yes` seats its hooks" });
+      const tail = pet === null ? [] : [pet];
       const command = str(s, "runner") === "node"
-        ? { type: "command", command: "node", args: [script], timeout }
-        : { type: "command", command: `bash "${script}"`, timeout };
-      return base({ transform: claudeHook(str(s, "event"), script.slice(script.lastIndexOf("/") + 1), command), foreign: jsonForeign });
+        ? { type: "command", command: "node", args: [script, ...tail], timeout }
+        : { type: "command", command: [`bash "${script}"`, ...tail.map((t) => `"${t}"`)].join(" "), timeout };
+      const placing = { ...(typeof s["matcher"] === "string" ? { matcher: s["matcher"] } : {}), ...(s["first"] === true ? { first: true } : {}) };
+      return base({ transform: claudeHook(str(s, "event"), script.slice(script.lastIndexOf("/") + 1), command, placing), foreign: jsonForeign });
     }
     case "copilot-hook":
       return base({ transform: copilotHook(str(s, "event"), script.slice(script.lastIndexOf("/") + 1), { type: "command", bash: script, timeoutSec: timeout }), foreign: jsonForeign });
