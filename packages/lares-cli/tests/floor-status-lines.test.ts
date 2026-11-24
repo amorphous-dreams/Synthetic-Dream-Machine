@@ -75,6 +75,6 @@ describe("an unread founding record", () => {
     expect(lines).toContain(`    older:   ${PLAN}`);
     expect(floorStatusLines({ ...base, floorDrift: null, floorDriftWhy: "no catalog names live canon beside this store, so no live canon reads here" }))
       .toContain("  floor drift:     unread (no catalog names live canon beside this store, so no live canon reads here)");
-    expect(floorStatusLines(base)).toContain("  floor drift:     unread (the standing vessel answers no drift reading; its build predates it, and a refresh carries it)");
+    expect(floorStatusLines(base)).toContain("  floor drift:     unread (the standing vessel answers no drift reading: its build carries none, and a refresh brings it)");
   });
 });
