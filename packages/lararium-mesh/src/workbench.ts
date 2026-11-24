@@ -260,10 +260,10 @@ export function noteWorkbenchRemoval(draft: LarDoc, realmId: string, slug: strin
 export function workbenchRemovals(ledger: LarDoc | undefined | null, realmId: string, slug: string): WorkbenchRemoval[] {
   const prefix = removalPrefix(realmScope(realmId), slug);
   const out: WorkbenchRemoval[] = [];
-  for (const key of Object.keys(ledger?.tiddlers ?? {}).sort()) {
+  for (const [key, record] of Object.entries(ledger?.tiddlers ?? {}).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))) {
     if (!key.startsWith(prefix)) continue;
     const agent = key.slice(prefix.length).split("/")[0] ?? "";
-    const [act, face] = (tiddlerText(ledger!.tiddlers[key] as never) ?? "").split("\n");
+    const [act, face] = (tiddlerText(record as never) ?? "").split("\n");
     if (/^[0-9a-f]+$/.test(agent) && act !== undefined && act.startsWith("workbench-removal:") && face !== undefined) out.push({ face, agent, act });
   }
   return out;

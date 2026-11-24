@@ -322,12 +322,13 @@ test("P2 two real houses: export, import, par; then a deleted meme, a changed me
     const old = await standHouse("old", "steward");
     houses.push(old);
     old.must(["persona", "new", "1", "--name", "engineer"]);
+    // A share to a workbench that rests sealed needs a lit holder of its key to hand the new seat its lockbox: light first.
+    await old.unlock();
     old.must(["wiki", "init", "notes", "--json"]);
     old.must(["wiki", "share", "notes", "--read", "engineer"]);
     // A wiki that holds no page carries by its catalog row, beside its share row.
     old.must(["wiki", "init", "quiet", "--json"]);
     old.must(["wiki", "share", "quiet", "--read", "engineer"]);
-    await old.unlock();
     // The rite holds each workbench before the export (a cold wiki reads `document-unavailable`), and the wiki carries a page,
     // so its workbench travels and the import re-stands it (an empty wiki carries its share row alone).
     old.must(["wiki", "pin", "notes", "--rotate"]);

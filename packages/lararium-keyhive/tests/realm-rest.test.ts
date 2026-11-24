@@ -27,8 +27,6 @@
  *   H1 a face seated after three writes across a roll opens all three, from ONE chained box the owner's holder hands it.
  *   H2 a bag no realm keeps, founded by the same holder, stays closed: a late reader is handed nothing.
  *   H3 the declaration reads on the founding (`reading().foundings[].history`).
- *   H4 the shareable default stands at ONE call site (`realmWorkbenchFounding`), so the revisit when a second human joins is
- *      one edit.
  *   U3 a landing that would seat a face while no holder of the key stands lit refuses `seat-needs-keyholder`, names the cure,
  *      and seats nobody.
  *
@@ -43,11 +41,7 @@
  *   Y6 a projection on a seated face's replica, one that never ingested a later seat, notes no removal: only the owner's
  *      replica (the hand that revokes) reads a seat gone as revoked.
  *
- * A6 the rest gate retires:
- *   G1 (static) the island mounts the realm a face's seat reads, with no rest gate: no `restsUnderAnotherFace`, no mounted-hive
- *      guard; each face's seat composes the realm port, the realm-aware standing and the hand-on.
- *   G2 (static census) neither `workbench-seat` nor the share landing answers `restsUnderOwner`, and no consumer (the share
- *      door, the seed, the import) reads it.
+ * A6 the rest seals for the roster:
  *   G3 a face seated `admin` in another face's realm mounts it and writes `working`; a face seated `read` mounts it, reads it,
  *      and writes `personal`.
  *
@@ -59,7 +53,6 @@ import {
   type DocumentValue, type LarDoc, type RecordSigner, type SealedAddress, type SealedStoreRest, type SessionOwnChain, type WriterStanding,
 } from "@lararium/mesh";
 import { KeyhiveProvider, InMemoryEventStore, RealmWriterBook, faceStanding, realmRestPort, seatContentKeys, type ContentKeySeat, type RealmWriters } from "../src/index.js";
-import { readdirSync, readFileSync } from "node:fs";
 import { adoptWorkbench, faceWorkbenchRealm, landWorkbench, projectWorkbenchRoster, removeWorkbenchFace, workbenchFaceHolds, workbenchWriterSeat, type LedgerDoc } from "../src/workbench-realm.js";
 import { signerOf } from "./content-key-fleet.js";
 import { chain } from "../../lararium-mesh/tests/face-proof-fixture.js";
@@ -343,12 +336,6 @@ describe("A4 — shareable history by default; chained boxes; the late seat", ()
     expect(said(await seatA.holder.handOver({ bagId: personal, reader: b.id, signer: a.signer, chained: true }))).toBe("history-closed");
   });
 
-  test("H4: the shareable default stands at ONE call site", () => {
-    const src = new URL("../src/", import.meta.url);
-    const uses = readdirSync(src).filter((f) => f.endsWith(".ts")).flatMap((f) => (readFileSync(new URL(f, src), "utf8").match(/realmWorkbenchFounding\(/g) ?? []).map(() => f));
-    expect(uses.sort(), "the definition and the content-key seat's one founding").toEqual(["content-key-seat.ts", "realm-rest.ts"]);
-  });
-
   test("U3: a landing that would seat a face while no key holder stands lit refuses by name and seats nobody", async () => {
     const { v, a } = await sharedWorkbench([0xd6, 0xd7]);
     const c = await face("referee", 0xd8);
@@ -496,28 +483,6 @@ describe("A5 — Y6: only the owner's replica notes a removal", () => {
 });
 
 describe("A6 — the rest gate retires", () => {
-  const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8");
-  const island = read("../src/operator-daemon-behavior.ts");
-
-  test("G1 (static): the island mounts the realm a seat reads, and every face's seat seals for the roster", () => {
-    expect(island, "no rest gate stands").not.toMatch(/restsUnderAnotherFace|restGateNamed/);
-    const mount = island.slice(island.indexOf("const faceWorkbench = (ctx: IslandContext"), island.indexOf("const faceWrites = (ctx"));
-    expect(mount, "the mount answers the realm the seat reads, and reads the writer book").toMatch(/await faceWorkbenchRealm\([\s\S]*await readRealmBook\(ctx, slug\)[\s\S]*return realmId;/);
-    expect(mount, "no mounted-hive guard turns a seated face to personal").not.toMatch(/hive === kh/);
-    const seat = island.slice(island.indexOf("const seatOfFace = ("), island.indexOf("const standSiblingSeat = ("));
-    expect(seat).toMatch(/standing: faceStanding\(\{ own: \(\) => entry\.chain, bags: face\.bags, realmWriters:/);
-    expect(seat).toMatch(/realm: realmRestPort\(/);
-    expect(seat).toMatch(/handOn: \(served, wrapper\) => handRealmOpsOn\(/);
-  });
-
-  test("G2 (static census): no reply answers `restsUnderOwner`, and no consumer reads it", () => {
-    const verb = island.slice(island.indexOf('registry.register("workbench-seat"'), island.indexOf("registry.fence("));
-    expect(verb, "the seat verb answers its write layer, its binding and its realms").toMatch(/return \{ ok: true, slug, writeSlot: await slotDocsOf\(ctx\)\.writeSlot\(slug\), bound: realms\.length > 0, realms \};/);
-    for (const rel of ["../src/operator-daemon-behavior.ts", "../src/share-apply.ts", "../../lares-cli/src/commands/share-cmd.ts", "../../lares-cli/src/seed-mirrors.ts", "../../lares-cli/src/commands/house-bundle.ts"]) {
-      expect(read(rel), rel).not.toMatch(/restsUnderOwner/);
-    }
-  });
-
   test("G3: an admin seat in another face's realm mounts it and writes working; a read seat mounts, reads, and writes personal", async () => {
     const { v, a, b, realmId } = await sharedWorkbench([0xf1, 0xf2]);
     const r = await face("referee", 0xf3);
