@@ -10,7 +10,7 @@ import { join, resolve } from "node:path";
 import { tmpdir } from "node:os";
 import { spawnSync } from "node:child_process";
 import {
-  COMPACTION_WORD, compactionAsk, handbackPetOf, inHouse, omContext, omRunsOn, petOf, stateDirOf, statePathOf, stopStep, titleMismatch,
+  COMPACTION_DISPLAY, COMPACTION_WORD, compactionAsk, handbackPetOf, inHouse, omContext, omRunsOn, petOf, stateDirOf, statePathOf, stopStep, titleMismatch,
   trueUpText, TRUE_UP_EVERY,
 } from "../.claude-plugin/hooks/lares-spirit-core.mjs";
 
@@ -42,7 +42,7 @@ test("the pure parts", async (t) => {
   });
   await t.test("the compaction asks for its closing section, under the word and the pet name", () => {
     const ask = compactionAsk("lares-alpha");
-    assert.ok(ask.includes(`"${COMPACTION_WORD.toUpperCase()} (lares-alpha)"`));
+    assert.ok(ask.includes(`"${COMPACTION_DISPLAY} (lares-alpha)"`));
     assert.ok(ask.includes(`memory/${COMPACTION_WORD}/lares-alpha-<hash12>`));
   });
   await t.test("the counter fires every N stops, and an unfiled mark holds until a nudge prints", () => {
@@ -53,7 +53,7 @@ test("the pure parts", async (t) => {
     const once = stopStep({ turns: 3, unfiled: "spirit-slot-over-budget: …", title: null });
     assert.equal(once.fire, "unfiled");
     assert.equal(once.state.unfiled, "spirit-slot-over-budget: …");
-    assert.match(trueUpText("p", once), new RegExp(`the last ${COMPACTION_WORD} landed unfiled \\(spirit-slot-over-budget`));
+    assert.match(trueUpText("p", once), new RegExp(`the last ${COMPACTION_DISPLAY} landed unfiled \\(spirit-slot-over-budget`));
   });
   await t.test("the counters rest in the house's run dir, else the state home", () => {
     assert.equal(stateDirOf({ LARES_HOUSE: "/house" }, null), "/house/run/familiar");
@@ -163,7 +163,7 @@ test("the hooks, spawned whole", async (t) => {
       plant({ "wiki filter": JSON.stringify({ ok: true, data: { rows: [], total: 0, next: null } }) });
       const text = spawn("lares-compact-hook.mjs", ["lares-alpha"], JSON.stringify({ hook_event_name: "PreCompact", trigger: "auto" }));
       assert.match(text, /^Lares compaction carry/);
-      assert.ok(text.includes(`${COMPACTION_WORD.toUpperCase()} (lares-alpha)`));
+      assert.ok(text.includes(`${COMPACTION_DISPLAY} (lares-alpha)`));
       assert.throws(() => JSON.parse(text));
     });
     await t.test("postcompact: compact_summary rides whole on stdin to the compaction verb, and an unfiled answer marks the counter", () => {

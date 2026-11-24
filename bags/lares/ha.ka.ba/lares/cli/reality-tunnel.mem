@@ -195,7 +195,7 @@ script = "packages/lares-cli/.claude-plugin/hooks/lares-compact-hook.mjs"
 runner = "node"
 timeout = 15
 familiar = "optional"
-what = "a compaction's summary keeps the memory index and the items in play by `lar:` address, and ends on the familiar's ROUND"
+what = "a compaction's summary keeps the memory index and the items in play by `lar:` address, and ends on the familiar's hoʻoili"
 
 [[home]]
 id = "claude.postcompact-hook"
@@ -207,7 +207,7 @@ script = "packages/lares-cli/.claude-plugin/hooks/lares-postcompact-hook.mjs"
 runner = "node"
 timeout = 30
 familiar = "required"
-what = "a compaction's summary lands as a round under the familiar's pet name (`lares spirit round`), one #/bodies line filed"
+what = "a compaction's summary lands as the carry, hoʻoili, under the familiar's pet name (`lares spirit hooili`), one #/bodies line filed"
 
 [[home]]
 id = "claude.true-up-hook"
@@ -219,7 +219,7 @@ script = "packages/lares-cli/.claude-plugin/hooks/lares-true-up-hook.mjs"
 runner = "node"
 timeout = 10
 familiar = "required"
-what = "every 25 turns, or while a round stands unfiled, a stop names `lares spirit ah` and `hum` to true the familiar's record"
+what = "every 25 turns, or while a hoʻoili stands unfiled, a stop names `lares spirit ah` and `hum` to true the familiar's record"
 
 [[home]]
 id = "claude.handback-hook"
@@ -401,6 +401,6 @@ what = "Copilot's house hook file names no house hook script beyond the ones thi
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;wK_NiGWrrI1e9n2lttnMLWKLeEs-tvB-04SvrDR4UV8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;GCEZz1QXN_hn-9bvY_SDI2rkoOAQKzJb-6fiuz0wO5o`>>
 
 <<^ code=`&#x0004;` to=`?`>>

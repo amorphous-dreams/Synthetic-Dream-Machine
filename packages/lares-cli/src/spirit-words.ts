@@ -1,9 +1,11 @@
 /**
- * THE WORDS A SPIRIT'S RESIDUE TAKES, IN ONE PLACE. The word a compaction's landed summary carries names the `lares spirit`
- * verb that lands it, the stage address it rests at (`<word>/<pet>-<hash12>`), the heading the compaction asks the summary
- * to end on, and the #/bodies line that files it. A rename of the word lands
- * here, and in the hooks' twin (`.claude-plugin/hooks/lares-spirit-core.mjs` `COMPACTION_WORD`), which a test welds to this one.
+ * THE WORDS A SPIRIT'S CARRY TAKES, IN ONE PLACE: each name rides as a pair, its command spelling (ASCII: the `lares spirit`
+ * verb, the stage address `<word>/<pet>-<hash12>`) and its display spelling (the full grammar people read: the heading the
+ * compaction asks the summary to end on, the #/bodies line, om's context, the help). A rename lands here, and in the hooks'
+ * twin (`.claude-plugin/hooks/lares-spirit-core.mjs` `COMPACTION_WORD` · `COMPACTION_DISPLAY`), which a test welds to this one.
  *
+ * The carry: hoʻoili (ili 3, a responsibility falls upon the next), a compaction's summary handed down under its lineage.
  * Wave: lar:///ha.ka.ba/kahua/memory/wave/spirit-om-ah-hum
  */
-export const COMPACTION_WORD = "round" as const;
+export const COMPACTION_WORD = "hooili" as const;
+export const COMPACTION_DISPLAY = "hoʻoili" as const;

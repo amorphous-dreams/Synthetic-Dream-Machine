@@ -1,5 +1,5 @@
 /**
- * `lares spirit <om | ah | hum | otakiage | round | residue> <pet-name>` (the compaction verb's word: `COMPACTION_WORD`, `spirit-words.ts`) — A SPIRIT'S RECORD, BY ITS PET NAME.
+ * `lares spirit <om | ah | hum | otakiage | hooili | residue> <pet-name>` (the compaction verb's word: `COMPACTION_WORD`, `spirit-words.ts`) — A SPIRIT'S RECORD, BY ITS PET NAME.
  *
  * The pet name does the work: it resolves the record on the worn face's memory stage (recipe default), `familiar/<pet>` first,
  * then `spirit/<pet>`. Every read and write rides the tiddler door's own daemon verbs (`tiddler-get`, `meme-patch`,
@@ -11,7 +11,7 @@
  *                                   base-checked, the slot's budget and the record's budget checked
  *   hum       (fold, Confusion ◇)   measure each slot against its budget; `--fold <slot> --line <n>` moves one line to the ash
  *                                   ledger and out of the record
- *   round     (residue)             land a compaction summary as `round/<pet>-<hash12>` and file one #/bodies line
+ *   hooili    (the carry, hoʻoili)  land a compaction summary as `hooili/<pet>-<hash12>` and file one #/bodies line
  *   residue   (residue)             land a spirit's handback as `spirit/<pet>-handback-<hash12>`
  *   otakiage  (Aftermath ↺)         burn the residue under the pet name to the ash ledger; the card stays
  *
@@ -27,7 +27,7 @@ import { readFileSync } from "node:fs";
 import { stdin } from "node:process";
 import { readOwnHand, type HandReading } from "@lararium/node";
 import { redactSecretShapes } from "@lararium/mesh";
-import { COMPACTION_WORD } from "../spirit-words.js";
+import { COMPACTION_DISPLAY, COMPACTION_WORD } from "../spirit-words.js";
 import { emit, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
 import { DoorUsage, guardDoor, runDoor, wordOf } from "./door-call.js";
@@ -152,8 +152,8 @@ const slotMissing = (rec: Record_, slot: string): SpiritRefusal =>
 /** The wake text: the skinny, then #/open, then the doors that read and true the rest; cut under `cap` chars. */
 /** The line naming what the waking body inherited: the latest landed compaction, by title and hash, or that none stands. */
 export function inheritedLine(pet: string, latest: string | null): string {
-  if (latest === null) return `Latest ${COMPACTION_WORD}: none stands under ${pet} yet.`;
-  return `Latest ${COMPACTION_WORD}: ${latest} (hash ${latest.slice(-12)}); check what this body inherited: lares tiddler get ${latest} --recipe default`;
+  if (latest === null) return `Latest ${COMPACTION_DISPLAY}: none stands under ${pet} yet.`;
+  return `Latest ${COMPACTION_DISPLAY}: ${latest} (hash ${latest.slice(-12)}); check what this body inherited: lares tiddler get ${latest} --recipe default`;
 }
 
 export function omText(rec: Record_, open: string | null, cap = OM_CAP_CHARS, inherited: string | null = null): string {
@@ -363,9 +363,9 @@ async function landCompaction(args: ParsedArgs, now: () => Date): Promise<number
   const hash = sha256(text);
   const title = compactionTitle(pet, hash);
   const day = now().toISOString().slice(0, 10);
-  const landed = await landResidue(args, COMPACTION_WORD, title, text, `a compaction ${COMPACTION_WORD} of ${pet}, ${day}: the summary one body's context turned on`, now());
+  const landed = await landResidue(args, COMPACTION_WORD, title, text, `a compaction ${COMPACTION_DISPLAY} of ${pet}, ${day}: the summary one body's context turned on`, now());
   // One #/bodies line names the landing; a budget that refuses leaves it unfiled, and the answer says which fold files it.
-  const line = `* ''${day} (${COMPACTION_WORD} ${hash.slice(0, 12)}):'' ${title}`;
+  const line = `* ''${day} (${COMPACTION_DISPLAY} ${hash.slice(0, 12)}):'' ${title}`;
   let filed: true | string = true;
   if (landed === "put") {
     try { await trueSlot(args, COMPACTION_WORD, rec, "#/bodies", (body) => `${body}\n${line}`, null); }

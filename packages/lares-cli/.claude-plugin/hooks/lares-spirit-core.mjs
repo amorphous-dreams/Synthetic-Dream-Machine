@@ -21,10 +21,12 @@ import { fileURLToPath } from "node:url";
 import { TERM_GRACE_MS, observation, observeArgv, spawnRead } from "./lares-wake-core.mjs";
 
 /**
- * The word a compaction's landed summary carries: the door's verb, its stage address, the closing heading the summary ends on.
- * The CLI's twin (`packages/lares-cli/src/spirit-words.ts` `COMPACTION_WORD`) holds the same word; a test welds the two.
+ * The carry's name, a pair: the command spelling (the door's verb, its stage address) and the display spelling people read
+ * (the closing heading the summary ends on, the true-up's line). The CLI's twin (`packages/lares-cli/src/spirit-words.ts`)
+ * holds the same pair; a test welds the two.
  */
-export const COMPACTION_WORD = "round";
+export const COMPACTION_WORD = "hooili";
+export const COMPACTION_DISPLAY = "hoʻoili";
 
 /** A pet name a hook carries; anything else reads as none. */
 export const PET = /^[a-z0-9][a-z0-9-]{0,62}$/;
@@ -130,7 +132,7 @@ export const omDownLine = (pet) => `Lares spirit om · ${pet}: the vessel answer
 
 /** What the compaction asks of its summary where a familiar stands: a closing section the PostCompact hook lands. */
 export function compactionAsk(pet) {
-  const heading = `${COMPACTION_WORD.toUpperCase()} (${pet})`;
+  const heading = `${COMPACTION_DISPLAY} (${pet})`;
   return [
     `End the summary with a section headed "${heading}", three short parts: the body's line (one sentence on what this body did), ` +
       "the open loops by name (PR numbers, heads, what each waits on), and any new tells (a joint to watch, never a debt).",
@@ -199,7 +201,7 @@ export function stopStep(state, every = TRUE_UP_EVERY) {
 /** The true-up's words: the doors that true and fold the record, and why they ask now. */
 export function trueUpText(pet, step) {
   const why = step.fire === "unfiled"
-    ? `the last ${COMPACTION_WORD} landed unfiled (${String(step.unfiled).slice(0, 400)})`
+    ? `the last ${COMPACTION_DISPLAY} landed unfiled (${String(step.unfiled).slice(0, 400)})`
     : `${step.state.turns} turns passed since the session began`;
   return [
     `Lares spirit true-up · ${pet}: ${why}.`,

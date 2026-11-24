@@ -27,7 +27,7 @@ vi.mock("../src/env.js", async (orig) => ({
 }));
 
 import { cmdSpirit, omText, residueOf, slotBody, ashLedgerOf, OM_CAP_CHARS, SLOT_BUDGET_BYTES, MEMORY_PREFIX, RESIDUE_CAP_CHARS } from "../src/commands/spirit.js";
-import { COMPACTION_WORD } from "../src/spirit-words.js";
+import { COMPACTION_DISPLAY, COMPACTION_WORD } from "../src/spirit-words.js";
 import { COMMANDS } from "../src/bin/lares.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 
@@ -101,8 +101,9 @@ describe("the spirit door stands in the command table", () => {
 describe("the compaction's word stands in one place", () => {
   test("the door's word and the hooks' twin read one word, and the verb table names it", async () => {
     // The hooks ship as plain .mjs a harness runs unbuilt; the weld loads the module itself.
-    const twin = (await import(new URL("../.claude-plugin/hooks/lares-spirit-core.mjs", import.meta.url).href)) as { COMPACTION_WORD: string };
-    expect(twin.COMPACTION_WORD).toBe(COMPACTION_WORD);
+    const twin = (await import(new URL("../.claude-plugin/hooks/lares-spirit-core.mjs", import.meta.url).href)) as { COMPACTION_WORD: string; COMPACTION_DISPLAY: string };
+    expect([twin.COMPACTION_WORD, twin.COMPACTION_DISPLAY]).toEqual([COMPACTION_WORD, COMPACTION_DISPLAY]);
+    expect(COMPACTION_WORD).toMatch(/^[a-z]+$/);
     expect(COMMANDS.find((c) => c.name === "spirit")!.verbs).toContain(COMPACTION_WORD);
   });
 });
@@ -147,7 +148,7 @@ describe("om wakes under the cap", () => {
     expect(text).toContain("#516 awaits CI");
     expect(text).toContain("lares spirit ah lares-alpha");
     expect(text.length).toBeLessThanOrEqual(OM_CAP_CHARS);
-    expect(text).toContain(`Latest ${COMPACTION_WORD}: none stands under lares-alpha yet.`);
+    expect(text).toContain(`Latest ${COMPACTION_DISPLAY}: none stands under lares-alpha yet.`);
   });
 
   test("the wake names the latest landing by title and hash, so the body checks what it inherited", async () => {
@@ -156,7 +157,7 @@ describe("om wakes under the cap", () => {
     const r = await run(argv(["om", "lares-alpha"]));
     expect(h.calls.find((c) => c.verb === "wiki-filter")!.args["filter"]).toBe(`[prefix[${MEMORY_PREFIX}${COMPACTION_WORD}/lares-alpha-]!sort[landed]]`);
     expect(data(r)["latest"]).toBe(landing);
-    expect(String(data(r)["text"])).toContain(`Latest ${COMPACTION_WORD}: ${landing} (hash 0123456789ab)`);
+    expect(String(data(r)["text"])).toContain(`Latest ${COMPACTION_DISPLAY}: ${landing} (hash 0123456789ab)`);
   });
 
   test("an #/open past the cap cuts with a pointer to the whole slot", () => {
@@ -299,7 +300,7 @@ describe("the compaction verb and residue land after the strict secret-shape gua
     const title = String(data(r)["title"]);
     expect(title).toMatch(new RegExp(`^${MEMORY_PREFIX}${COMPACTION_WORD}/lares-alpha-[0-9a-f]{12}$`));
     expect(h.calls.find((c) => c.verb === "tiddler-put")!.args).toMatchObject({ title, create: true, text: "the summary\nclosing\n* a loop", fields: { landed: "2026-11-24T12:00:00.000Z" } });
-    expect(String(h.calls.at(-1)!.args["replace"])).toContain(`* ''2026-11-24 (${COMPACTION_WORD} ${title.slice(-12)}):'' ${title}`);
+    expect(String(h.calls.at(-1)!.args["replace"])).toContain(`* ''2026-11-24 (${COMPACTION_DISPLAY} ${title.slice(-12)}):'' ${title}`);
     expect(data(r)["filed"]).toBe(true);
   });
 
