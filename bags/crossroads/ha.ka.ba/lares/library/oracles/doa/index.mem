@@ -47,8 +47,7 @@ tiddlers (`hexagram-01` through `hexagram-64`, and `hexagram-pi`), read from the
 each carrying `source`, `source-cid`, `license` (the page's Kopyleft; its quoted snippets ride under fair
 use, each kept as the page gives it) and `attribution`, with the figure bottom line first in `lines`
 (1 for yang); where the page draws another figure (hexagrams 23, 36 and 37 carry the figures of 29, 35
-and 36, and `000pi` draws one of its own) `page-lines` keeps the page's drawing. A house cast (`lares oracle cast`) names the readings of the hexagrams it lands on; the
-oracle widens attention and never decides.
+and 36, and `000pi` draws one of its own) `page-lines` keeps the page's drawing. A house cast (`lares oracle cast`) names the readings of the hexagrams it lands on. The cast gives the house a blind throw to collide uncertainty with: no faction, Persona or entity argues with it as a gut-lean, and its reading stays open (ruling/2026-11-24-the-throw-stands).
 
 <<~/ahu>>
 
@@ -76,6 +75,6 @@ oracle widens attention and never decides.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;KA7-kVk0VwK7DMNjtNw1-zh-Cj0rkQ01ab8oBtgQvQ0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;x-G4ihclRMc2anL2WpoHl1CK2Shbhp7y1GpQ0LRaT8o`>>
 
 <<^ code=`&#x0004;` to=`?`>>
