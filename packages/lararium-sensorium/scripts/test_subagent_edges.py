@@ -94,6 +94,7 @@ def test_subagent_edges_derives_spawn_rounds_and_messages(tmp_path):
     run = "sess-xyz"
     # ccc carries a transcript but no launch row in the main transcript: it rides no edge, named unplaced
     assert out["unplaced"] == ["ccc"]
+    assert out["run"] == run
     by_object = {p["spawn"]["object"]: p for p in out["spirits"]}
     assert set(by_object) == {f"{run}.aaa", f"{run}.bbb"}
 
@@ -120,7 +121,7 @@ def test_subagent_edges_empty_when_no_spirits(tmp_path):
     main.write_text(_line("u1", None, "user", "no spirits here", "2026-07-05T10:00:00Z") + "\n",
                     encoding="utf-8")
     server = CaptureSessionServer(str(tmp_path / ".mem"))
-    assert server.subagent_edges({"transcript": str(main)}) == {"spirits": [], "unplaced": []}
+    assert server.subagent_edges({"transcript": str(main)}) == {"run": "sess-solo", "spirits": [], "unplaced": []}
 
 
 def test_subagent_edges_requires_a_transcript(tmp_path):

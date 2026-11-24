@@ -526,7 +526,8 @@ class CaptureSessionServer:
                     entries[spirit.agent_id]["messages"].append({
                         "subject": spirit.handle, "predicate": _PRED_COMMUNICATION,
                         "object": handles[ev["agent"]], "turnKey": ev["turn"]})
-        return {"spirits": [entries[s.agent_id] for s in spirits if s.agent_id in entries],
+        return {"run": run,
+                "spirits": [entries[s.agent_id] for s in spirits if s.agent_id in entries],
                 "unplaced": [s.agent_id for s in spirits if s.agent_id not in entries]}
 
     def kapae(self, req: dict) -> dict:

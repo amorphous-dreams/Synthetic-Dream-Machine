@@ -204,3 +204,40 @@ describe("replay orders only what the links order", () => {
     expect(Object.keys(replay.causal.stamps)).toHaveLength(1);
   });
 });
+
+describe("replay refuses the unlinked event and scales with the feed", () => {
+  test("an unlinked sibling message gives way to a linked handback, and the main chain stands whole", () => {
+    const replay = replayWorldlineEdges(root, [
+      delegationEdge(root, "run.A", { turnKey: "sA" }),
+      delegationEdge(root, "run.B", { turnKey: "sB", parentKey: "sA" }),
+      handbackEdge("run.A", root, { turnKey: "hA", parentKey: "sB" }),
+      delegationEdge(root, "run.C", { turnKey: "sC", parentKey: "hA" }),
+      delegationEdge(root, "run.D", { turnKey: "sD", parentKey: "sC" }),
+      handbackEdge("run.D", root, { turnKey: "hD", parentKey: "sD" }),
+      communicationEdge("run.A", "run.B", { turnKey: "m1" }),
+    ]);
+    expect(replay.skipped.map((s) => [s.turnKey, s.reason])).toEqual([["m1", "order-unlinked"]]);
+    expect(worldlineStampFor(replay.causal, "run.D")).toBeDefined();
+  });
+
+  // The link checks cost each event its neighbours on a handle. ITC itself grows a parent's id and event
+  // trees with every live child it holds, so a fan of thousands of never-retired spirits costs each op that
+  // depth; the budget reads this session's own feed scale (about 1700 events) with room to spare.
+  test("a two-thousand-event main chain over 666 live spirits replays inside two seconds", () => {
+    const opens = [];
+    let prev: string | undefined;
+    let k = 0;
+    for (let i = 0; i < 666; i++) {
+      const h = `run.s${i}`;
+      for (const make of [
+        (p?: string) => delegationEdge(root, h, { turnKey: `k${++k}`, ...(p ? { parentKey: p } : {}) }),
+        (p?: string) => handbackEdge(h, root, { turnKey: `k${++k}`, ...(p ? { parentKey: p } : {}) }),
+        (p?: string) => communicationEdge(root, h, { turnKey: `k${++k}`, ...(p ? { parentKey: p } : {}) }),
+      ]) { const e = make(prev); opens.push(e); prev = e.turnKey; }
+    }
+    const t0 = performance.now();
+    const replay = replayWorldlineEdges(root, opens);
+    expect(performance.now() - t0).toBeLessThan(2000);
+    expect(replay.skipped).toEqual([]);
+  });
+});

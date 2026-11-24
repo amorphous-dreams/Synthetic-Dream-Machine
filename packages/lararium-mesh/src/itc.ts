@@ -120,12 +120,11 @@ function maxEvent(e: ItcEvent): number {
   return typeof e === "number" ? e : e[0] + Math.max(maxEvent(e[1]), maxEvent(e[2]));
 }
 
-/** Canonicalize an event tree: collapse equal flat children, sink shared depth into the base. */
-function normEvent(e: ItcEvent): ItcEvent {
-  if (typeof e === "number") return e;
-  const n = e[0];
-  const l = normEvent(e[1]);
-  const r = normEvent(e[2]);
+/**
+ * Canonicalize ONE node whose children already stand canonical (each recursive join/fill result does): the
+ * canonical rule (collapse equal flat children, sink shared depth into the base) read at the top alone, so a join or fill costs its path, not the tree.
+ */
+function normTop(n: number, l: ItcEvent, r: ItcEvent): ItcEvent {
   if (typeof l === "number" && typeof r === "number" && l === r) return n + l;
   const m = Math.min(minEvent(l), minEvent(r));
   return [n + m, sinkEvent(l, m), sinkEvent(r, m)];
@@ -138,7 +137,7 @@ function joinEvent(a: ItcEvent, b: ItcEvent): ItcEvent {
   if (typeof b === "number") return joinEvent(a, [b, 0, 0]);
   if (a[0] > b[0]) return joinEvent(b, a); // ensure a[0] <= b[0]
   const m = b[0] - a[0];
-  return normEvent([a[0], joinEvent(a[1], liftEvent(b[1], m)), joinEvent(a[2], liftEvent(b[2], m))]);
+  return normTop(a[0], joinEvent(a[1], liftEvent(b[1], m)), joinEvent(a[2], liftEvent(b[2], m)));
 }
 
 /** Partial-order on histories: a ≤ b iff every event a knows, b knows. */
@@ -170,13 +169,13 @@ function fill(i: ItcId, e: ItcEvent): ItcEvent {
   const [n, el, er] = e;
   if (il === 1) {
     const er2 = fill(ir, er);
-    return normEvent([n, Math.max(maxEvent(el), minEvent(er2)), er2]);
+    return normTop(n, Math.max(maxEvent(el), minEvent(er2)), er2);
   }
   if (ir === 1) {
     const el2 = fill(il, el);
-    return normEvent([n, el2, Math.max(maxEvent(er), minEvent(el2))]);
+    return normTop(n, el2, Math.max(maxEvent(er), minEvent(el2)));
   }
-  return normEvent([n, fill(il, el), fill(ir, er)]);
+  return normTop(n, fill(il, el), fill(ir, er));
 }
 
 /** A large constant biasing growth toward shallower (lower-cost) branches. */

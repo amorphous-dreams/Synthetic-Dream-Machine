@@ -276,7 +276,7 @@ export {
 export type {
   VerbContribution,
   MempalaceProvider, FormPalaceProvider, DaemonVerbProvider, TelemetryProvider,
-  RecallClient, RecalledTrajectoryStub, SpiritEdges,
+  RecallClient, RecalledTrajectoryStub, SpiritEdges, SpiritFeed,
 } from "./verb-caps.js";
 
 export * from "./memetic-wikitext-sensorium.js";

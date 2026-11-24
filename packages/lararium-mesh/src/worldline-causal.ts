@@ -98,28 +98,160 @@ interface Resolved {
   readonly stamp: ItcStamp;
 }
 
-/**
- * Resolve a reference — an EXACT composite key if one is present, else a bare HANDLE → its (latest)
- * live entry (the last-inserted `${handle}@…`, the current frontier of that handle). Returns undefined
- * when neither hits. Insertion order = event order, so "latest" reads the handle's most-advanced
- * frontier — the one a message/compare means by a bare handle.
- */
-function resolveRef(c: WorldlineCausal, ref: string): Resolved | undefined {
-  const exact = c.stamps[ref];
-  if (exact) return { key: ref, stamp: exact };
-  const prefix = ref + FRONTIER_SEP;
-  let found: Resolved | undefined;
-  for (const key of Object.keys(c.stamps)) {
-    if (key.startsWith(prefix)) found = { key, stamp: c.stamps[key]! }; // last wins → latest frontier
-  }
-  return found;
+/** One live entry: its stamp, its place in insertion order, and its composite key once something asks. */
+interface Entry {
+  readonly handle: string;
+  stamp: ItcStamp;
+  seq: number;
+  key?: string;
 }
 
-/** Set a stamp under its composite key, dropping a prior key when the frontier MOVED (re-key in place). */
-function rekey(stamps: Record<string, ItcStamp>, priorKey: string | null, handle: string, stamp: ItcStamp): void {
-  const key = stampKey(handle, stamp);
-  if (priorKey !== null && priorKey !== key) delete stamps[priorKey];
-  stamps[key] = stamp;
+/**
+ * The mutable working registry every op runs on: each handle's entries in insertion order, keyed by
+ * frontier only when a caller asks (an exact-key lookup, a spawn's collision guard, the freeze), so an
+ * op costs its own stamps — never a copy of every live worldline, never a hash of a history it left
+ * alone. A public op copies the registry into one draft and freezes it back; {@link worldlineDraft}
+ * lets a long replay run many ops on one draft.
+ */
+class Draft {
+  private readonly byHandle = new Map<string, Entry[]>();
+  private seq = 0;
+
+  constructor(from: Readonly<Record<string, ItcStamp>>) {
+    for (const [key, stamp] of Object.entries(from)) this.append(handleFromKey(key), stamp, key);
+  }
+
+  private append(handle: string, stamp: ItcStamp, key?: string): Entry {
+    const entry: Entry = { handle, stamp, seq: this.seq++, ...(key !== undefined ? { key } : {}) };
+    (this.byHandle.get(handle) ?? this.byHandle.set(handle, []).get(handle)!).push(entry);
+    return entry;
+  }
+
+  private keyOf(entry: Entry): string {
+    return (entry.key ??= stampKey(entry.handle, entry.stamp));
+  }
+
+  /** Re-stamp an entry; a moved frontier re-keys it to the end of insertion order, a held one keeps its place. */
+  private restamp(entry: Entry, stamp: ItcStamp, moved: boolean): void {
+    entry.stamp = stamp;
+    delete entry.key;
+    if (moved) {
+      const list = this.byHandle.get(entry.handle)!;
+      list.splice(list.indexOf(entry), 1);
+      list.push(entry);
+      entry.seq = this.seq++;
+    }
+  }
+
+  private drop(entry: Entry): void {
+    const list = this.byHandle.get(entry.handle)!;
+    list.splice(list.indexOf(entry), 1);
+    if (list.length === 0) this.byHandle.delete(entry.handle);
+  }
+
+  /**
+   * Resolve a reference — an EXACT composite key if one is present, else a bare HANDLE → its latest live
+   * entry (the last-inserted `${handle}@…`, the current frontier of that handle); undefined when neither
+   * hits. Insertion order = event order, so "latest" reads the frontier a message or compare means.
+   */
+  entry(ref: string): Entry | undefined {
+    if (ref.includes(FRONTIER_SEP)) {
+      const exact = this.byHandle.get(handleFromKey(ref))?.find((e) => this.keyOf(e) === ref);
+      if (exact) return exact;
+    }
+    const list = this.byHandle.get(ref);
+    return list && list.length > 0 ? list[list.length - 1] : undefined;
+  }
+
+  resolve(ref: string): Resolved | undefined {
+    const e = this.entry(ref);
+    return e ? { key: this.keyOf(e), stamp: e.stamp } : undefined;
+  }
+
+  freeze(): WorldlineCausal {
+    const all = [...this.byHandle.values()].flat().sort((x, y) => x.seq - y.seq);
+    const stamps: Record<string, ItcStamp> = {};
+    for (const e of all) stamps[this.keyOf(e)] = e.stamp;
+    return { stamps };
+  }
+
+  spawn(parent: string, child: string): void {
+    const p = this.entry(parent);
+    if (!p) throw new Error(`worldlineSpawn: unknown parent handle "${parent}"`);
+    const [pNext, cNext] = itcFork(p.stamp);
+    const prior = this.byHandle.get(child);
+    if (prior) {
+      const childKey = stampKey(child, cNext);
+      if (prior.some((e) => this.keyOf(e) === childKey)) throw new Error(`worldlineSpawn: child "${childKey}" already exists`);
+    }
+    this.restamp(p, pNext, false); // fork leaves the event unchanged → the parent's key and place hold
+    this.append(child, cNext);
+  }
+
+  tick(handle: string): void {
+    const t = this.entry(handle);
+    if (!t) throw new Error(`worldlineTick: unknown handle "${handle}"`);
+    this.restamp(t, itcEvent(t.stamp), true);
+  }
+
+  deliver(sender: string, target: string, verb: string, keys: boolean): { sent: string; received: string } {
+    const s = this.entry(sender);
+    if (!s) throw new Error(`${verb}: unknown sender "${sender}"`);
+    const t = this.entry(target);
+    if (!t) throw new Error(`${verb}: unknown target "${target}"`);
+    if (s === t) throw new Error(`${verb}: "${sender}" cannot message itself`);
+    const sentStamp = itcEvent(s.stamp);                                    // the send: an event at the sender
+    const receivedStamp = itcEvent(itcJoin(t.stamp, itcPeek(sentStamp)));   // the receive: join the sender's past, then tick
+    s.stamp = sentStamp; t.stamp = receivedStamp;
+    delete s.key; delete t.key;
+    for (const e of [s, t]) {
+      const list = this.byHandle.get(e.handle)!;
+      list.splice(list.indexOf(e), 1);
+      list.push(e);
+      e.seq = this.seq++;
+    }
+    return keys ? { sent: this.keyOf(s), received: this.keyOf(t) } : { sent: "", received: "" };
+  }
+
+  retire(parent: string, child: string): void {
+    const p = this.entry(parent);
+    const ch = this.entry(child);
+    if (!p) throw new Error(`worldlineRetire: unknown parent handle "${parent}"`);
+    if (!ch) throw new Error(`worldlineRetire: unknown child handle "${child}"`);
+    if (p === ch) throw new Error(`worldlineRetire: "${child}" cannot retire into itself`);
+    const joined = itcEvent(itcJoin(p.stamp, ch.stamp));
+    this.drop(ch);
+    this.restamp(p, joined, true);
+  }
+}
+
+/** A working registry a replay drives op by op; `freeze` yields the plain registry. */
+export interface WorldlineDraft {
+  spawn(parent: string, child: string): void;
+  tick(handle: string): void;
+  inject(sender: string, target: string): void;
+  handback(parent: string, child: string): void;
+  retire(parent: string, child: string): void;
+  stampFor(handle: string): ItcStamp | undefined;
+  freeze(): WorldlineCausal;
+}
+
+/** Open a working registry over `c` for many ops at the cost of each op alone (a replay's path). */
+export function worldlineDraft(c: WorldlineCausal): WorldlineDraft {
+  const d = new Draft(c.stamps);
+  return {
+    spawn: (parent, child) => d.spawn(parent, child),
+    tick: (handle) => d.tick(handle),
+    inject: (sender, target) => { d.deliver(sender, target, "worldlineInject", false); },
+    handback: (parent, child) => { d.deliver(child, parent, "worldlineHandback", false); },
+    retire: (parent, child) => d.retire(parent, child),
+    stampFor: (handle) => d.entry(handle)?.stamp,
+    freeze: () => d.freeze(),
+  };
+}
+
+function resolveRef(c: WorldlineCausal, ref: string): Resolved | undefined {
+  return new Draft(c.stamps).resolve(ref);
 }
 
 /** Seed the causal registry at the root worldline (the E-cut common cause — the operator). */
@@ -138,15 +270,9 @@ export function worldlineCausalSeed(rootHandle: string): WorldlineCausal {
  * (handle, frontier) entry rides alongside the earlier-frontier one.
  */
 export function worldlineSpawn(c: WorldlineCausal, parent: string, child: string): WorldlineCausal {
-  const p = resolveRef(c, parent);
-  if (!p) throw new Error(`worldlineSpawn: unknown parent handle "${parent}"`);
-  const [pNext, cNext] = itcFork(p.stamp);
-  const childKey = stampKey(child, cNext);
-  if (c.stamps[childKey]) throw new Error(`worldlineSpawn: child "${childKey}" already exists`);
-  const stamps = { ...c.stamps };
-  rekey(stamps, p.key, parent, pNext); // fork leaves the event unchanged → parent key holds
-  stamps[childKey] = cNext;
-  return { stamps };
+  const d = new Draft(c.stamps);
+  d.spawn(parent, child);
+  return d.freeze();
 }
 
 /**
@@ -154,34 +280,9 @@ export function worldlineSpawn(c: WorldlineCausal, parent: string, child: string
  * event advances → the frontier MOVES → the entry re-keys.
  */
 export function worldlineTick(c: WorldlineCausal, handle: string): WorldlineCausal {
-  const t = resolveRef(c, handle);
-  if (!t) throw new Error(`worldlineTick: unknown handle "${handle}"`);
-  const stamps = { ...c.stamps };
-  rekey(stamps, t.key, handleFromKey(t.key), itcEvent(t.stamp));
-  return { stamps };
-}
-
-/** The composite keys a message leaves: the sender's send event and the recipient's receive event. */
-interface Delivery {
-  readonly causal: WorldlineCausal;
-  readonly sent: string;
-  readonly received: string;
-}
-
-function deliver(c: WorldlineCausal, sender: string, target: string, verb: string): Delivery {
-  const s = resolveRef(c, sender);
-  if (!s) throw new Error(`${verb}: unknown sender "${sender}"`);
-  const t = resolveRef(c, target);
-  if (!t) throw new Error(`${verb}: unknown target "${target}"`);
-  if (s.key === t.key) throw new Error(`${verb}: "${sender}" cannot message itself`);
-  const sentStamp = itcEvent(s.stamp);                                    // the send: an event at the sender
-  const receivedStamp = itcEvent(itcJoin(t.stamp, itcPeek(sentStamp)));   // the receive: join the sender's past, then tick
-  const stamps = { ...c.stamps };
-  const sHandle = handleFromKey(s.key);
-  const tHandle = handleFromKey(t.key);
-  rekey(stamps, s.key, sHandle, sentStamp);
-  rekey(stamps, t.key, tHandle, receivedStamp);
-  return { causal: { stamps }, sent: stampKey(sHandle, sentStamp), received: stampKey(tHandle, receivedStamp) };
+  const d = new Draft(c.stamps);
+  d.tick(handle);
+  return d.freeze();
 }
 
 /**
@@ -192,7 +293,9 @@ function deliver(c: WorldlineCausal, sender: string, target: string, verb: strin
  * ticks: every message rides an event (the operator's D-cut).
  */
 export function worldlineInject(c: WorldlineCausal, sender: string, target: string): WorldlineCausal {
-  return deliver(c, sender, target, "worldlineInject").causal;
+  const d = new Draft(c.stamps);
+  d.deliver(sender, target, "worldlineInject", false);
+  return d.freeze();
 }
 
 /** The receipt a handback leaves: who returned to whom, at which send and receive frontiers. */
@@ -217,8 +320,9 @@ export interface WorldlineRound {
  * round resumes on its own stamp. Retirement takes its own act ({@link worldlineRetire}).
  */
 export function worldlineHandback(c: WorldlineCausal, parent: string, child: string): WorldlineRound {
-  const d = deliver(c, child, parent, "worldlineHandback");
-  return { causal: d.causal, receipt: { parent, child, sent: d.sent, received: d.received } };
+  const d = new Draft(c.stamps);
+  const keys = d.deliver(child, parent, "worldlineHandback", true);
+  return { causal: d.freeze(), receipt: { parent, child, ...keys } };
 }
 
 /**
@@ -227,10 +331,12 @@ export function worldlineHandback(c: WorldlineCausal, parent: string, child: str
  * spawn mints a worldline.
  */
 export function worldlineResume(c: WorldlineCausal, resumer: string, child: string): WorldlineCausal {
-  if (!resolveRef(c, child)) {
+  const d = new Draft(c.stamps);
+  if (!d.resolve(child)) {
     throw new Error(`worldlineResume: "${child}" stands retired or never spawned — spawn mints a worldline (worldlineSpawn), resume continues a live one`);
   }
-  return deliver(c, resumer, child, "worldlineResume").causal;
+  d.deliver(resumer, child, "worldlineResume", false);
+  return d.freeze();
 }
 
 /**
@@ -239,16 +345,9 @@ export function worldlineResume(c: WorldlineCausal, resumer: string, child: stri
  * leaves the registry; a later message to it refuses.
  */
 export function worldlineRetire(c: WorldlineCausal, parent: string, child: string): WorldlineCausal {
-  const p = resolveRef(c, parent);
-  const ch = resolveRef(c, child);
-  if (!p) throw new Error(`worldlineRetire: unknown parent handle "${parent}"`);
-  if (!ch) throw new Error(`worldlineRetire: unknown child handle "${child}"`);
-  if (p.key === ch.key) throw new Error(`worldlineRetire: "${child}" cannot retire into itself`);
-  const joined = itcEvent(itcJoin(p.stamp, ch.stamp));
-  const stamps = { ...c.stamps };
-  delete stamps[ch.key];
-  rekey(stamps, p.key, handleFromKey(p.key), joined);
-  return { stamps };
+  const d = new Draft(c.stamps);
+  d.retire(parent, child);
+  return d.freeze();
 }
 
 /**

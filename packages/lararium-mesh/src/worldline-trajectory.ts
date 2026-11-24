@@ -31,11 +31,7 @@ import { ffzAddress } from "./worldline-clock.js";
 import {
   worldlineCausalSeed,
   worldlineSpawn,
-  worldlineInject,
-  worldlineTick,
-  worldlineHandback,
-  worldlineRetire,
-  worldlineStampFor,
+  worldlineDraft,
   type WorldlineCausal,
 } from "./worldline-clock.js";
 import {
@@ -288,15 +284,42 @@ export function replayWorldlineEdges(
   }
   const links = new Map(dependencies);
 
-  // Ancestry over the links (memoized): does `a` come before `b` by links alone?
-  const ancestry = new Map<CausalEvent, Set<CausalEvent>>();
-  const ancestorsOf = (e: CausalEvent): Set<CausalEvent> => {
-    const known = ancestry.get(e);
-    if (known) return known;
-    const out = new Set<CausalEvent>();
-    ancestry.set(e, out);                         // a cycle reads its partial set; cycles never apply
-    for (const d of links.get(e) ?? []) { out.add(d); for (const x of ancestorsOf(d)) out.add(x); }
-    return out;
+  // One topological position per event (Kahn over the links, content breaking ties among the ready). An
+  // event caught in a cycle holds no position.
+  const position = new Map<CausalEvent, number>();
+  {
+    const open = new Map<CausalEvent, number>();
+    const after = new Map<CausalEvent, CausalEvent[]>();
+    for (const [e, deps] of links) {
+      open.set(e, deps.size);
+      for (const d of deps) (after.get(d) ?? after.set(d, []).get(d)!).push(e);
+    }
+    const queue = [...links.keys()].filter((e) => open.get(e) === 0).sort(compareEvent);
+    while (queue.length > 0) {
+      const e = queue.shift()!;
+      position.set(e, position.size);
+      const freed: CausalEvent[] = [];
+      for (const n of after.get(e) ?? []) { const left = open.get(n)! - 1; open.set(n, left); if (left === 0) freed.push(n); }
+      if (freed.length) { queue.push(...freed); queue.sort(compareEvent); }
+    }
+  }
+  // Does `a` come before `b` by links alone? A backward walk from `b` that never descends below `a`'s
+  // position (an ancestor always sits earlier), so a link to a near event answers in a few steps.
+  const precedes = (a: CausalEvent, b: CausalEvent): boolean => {
+    const pa = position.get(a), pb = position.get(b);
+    if (pa === undefined || pb === undefined || pa >= pb) return false;
+    const stack = [b];
+    const seen = new Set<CausalEvent>([b]);
+    while (stack.length > 0) {
+      for (const d of links.get(stack.pop()!) ?? []) {
+        if (d === a) return true;
+        const pd = position.get(d);
+        if (pd === undefined || pd < pa || seen.has(d)) continue;
+        seen.add(d);
+        stack.push(d);
+      }
+    }
+    return false;
   };
 
   // Only an event that can apply claims a worldline: a handle the record never holds (not the root, never
@@ -308,36 +331,51 @@ export function replayWorldlineEdges(
     if (e.op === "message" && !recorded.has(e.subject)) return { ticks: [e.object], reads: [] };
     return recorded.has(e.subject) ? touches(e) : { ticks: [], reads: [] };
   };
-  // Shared worldlines need link order: two events conflict when both touch one handle, at least one ticking
-  // it, and neither comes before the other by links. Refuse the most-conflicted event first (content breaks a
-  // tie between refusals, never an order) until no conflict stands.
-  const conflicts = new Map<CausalEvent, Set<CausalEvent>>();
+  // Each handle's events in topological order: a tick must follow the handle's last tick and every read
+  // since, a read must follow the last tick, so only neighbouring events on one handle can conflict.
   const byHandle = new Map<string, { e: CausalEvent; ticks: boolean }[]>();
-  for (const e of dependencies.keys()) {
+  for (const e of [...position.keys()].sort((x, y) => position.get(x)! - position.get(y)!)) {
     const { ticks, reads } = claims(e);
     for (const h of ticks) (byHandle.get(h) ?? byHandle.set(h, []).get(h)!).push({ e, ticks: true });
     for (const h of reads) (byHandle.get(h) ?? byHandle.set(h, []).get(h)!).push({ e, ticks: false });
   }
-  for (const members of byHandle.values()) {
-    for (let i = 0; i < members.length; i++) for (let j = i + 1; j < members.length; j++) {
-      const x = members[i]!, y = members[j]!;
-      if (x.e === y.e || (!x.ticks && !y.ticks)) continue;
-      if (ancestorsOf(x.e).has(y.e) || ancestorsOf(y.e).has(x.e)) continue;
-      (conflicts.get(x.e) ?? conflicts.set(x.e, new Set()).get(x.e)!).add(y.e);
-      (conflicts.get(y.e) ?? conflicts.set(y.e, new Set()).get(y.e)!).add(x.e);
-    }
-  }
   const unlinked = new Set<CausalEvent>();
-  for (;;) {
-    let worst: CausalEvent | undefined;
-    let degree = 0;
-    for (const [e, others] of conflicts) {
-      if (others.size > degree || (others.size === degree && degree > 0 && worst && compareEvent(e, worst) > 0)) { worst = e; degree = others.size; }
+  const scan = (): Map<CausalEvent, Set<CausalEvent>> => {
+    const conflicts = new Map<CausalEvent, Set<CausalEvent>>();
+    const clash = (x: CausalEvent, y: CausalEvent): void => {
+      (conflicts.get(x) ?? conflicts.set(x, new Set()).get(x)!).add(y);
+      (conflicts.get(y) ?? conflicts.set(y, new Set()).get(y)!).add(x);
+    };
+    for (const members of byHandle.values()) {
+      let last: CausalEvent | undefined;
+      let reads: CausalEvent[] = [];
+      for (const { e, ticks } of members) {
+        if (unlinked.has(e)) continue;
+        if (last && !precedes(last, e)) clash(last, e);
+        if (ticks) {
+          for (const r of reads) if (!precedes(r, e)) clash(r, e);
+          last = e;
+          reads = [];
+        } else reads.push(e);
+      }
     }
-    if (!worst || degree === 0) break;
-    for (const other of conflicts.get(worst)!) conflicts.get(other)?.delete(worst);
-    conflicts.delete(worst);
-    unlinked.add(worst);
+    return conflicts;
+  };
+  // Refuse one event at a time until no conflict stands: an event that names no parent link before a
+  // linked one (its place rests on nothing), then the most-conflicted; content breaks a tie between
+  // refusals only, never an order.
+  const rank = (e: CausalEvent, degree: number): [number, number] => [e.parentKey ? 0 : 1, degree];
+  for (let conflicts = scan(); conflicts.size > 0; conflicts = scan()) {
+    let worst: CausalEvent | undefined;
+    let best: [number, number] = [-1, -1];
+    for (const [e, others] of conflicts) {
+      const r = rank(e, others.size);
+      if (r[0] > best[0] || (r[0] === best[0] && (r[1] > best[1] || (r[1] === best[1] && compareEvent(e, worst!) > 0)))) {
+        worst = e;
+        best = r;
+      }
+    }
+    unlinked.add(worst!);
   }
 
   // Kahn's order over the links; the ready set yields its content-first event.
@@ -359,7 +397,7 @@ export function replayWorldlineEdges(
     ready.splice(lo, 0, e);
   };
 
-  let causal = worldlineCausalSeed(root);
+  const draft = worldlineDraft(worldlineCausalSeed(root));
   const spawned = new Set<string>();
   const activePairs = new Set<string>();
   const failed = new Set<CausalEvent>(invalid);
@@ -373,12 +411,11 @@ export function replayWorldlineEdges(
   // The links must order `ev` after every applied event on each worldline it shares.
   type Touch = { ticks: readonly string[]; reads: readonly string[] };
   const linkedAfterShared = (ev: CausalEvent, { ticks, reads }: Touch = touches(ev)): boolean => {
-    const before = ancestorsOf(ev);
     for (const h of [...ticks, ...reads]) {
       const last = lastTick.get(h);
-      if (last && !before.has(last)) return false;
+      if (last && !precedes(last, ev)) return false;
     }
-    for (const h of ticks) for (const r of readsSince.get(h) ?? []) if (r !== ev && !before.has(r)) return false;
+    for (const h of ticks) for (const r of readsSince.get(h) ?? []) if (r !== ev && !precedes(r, ev)) return false;
     return true;
   };
   const record = (ev: CausalEvent, { ticks, reads }: Touch = touches(ev)): void => {
@@ -400,43 +437,43 @@ export function replayWorldlineEdges(
     try {
       if (!ev.subject || !ev.object || ev.subject === ev.object) { refuse(ev, "malformed"); continue; }
       if (ev.op === "spawn") {
-        if (spawned.has(ev.object) || worldlineStampFor(causal, ev.object)) { refuse(ev, "child-already-spawned"); continue; }
-        if (!worldlineStampFor(causal, ev.subject)) { refuse(ev, "parent-unrecorded"); continue; }
+        if (spawned.has(ev.object) || draft.stampFor(ev.object)) { refuse(ev, "child-already-spawned"); continue; }
+        if (!draft.stampFor(ev.subject)) { refuse(ev, "parent-unrecorded"); continue; }
         if (!linkedAfterShared(ev)) { refuse(ev, "order-unlinked"); continue; }
-        causal = worldlineSpawn(causal, ev.subject, ev.object);
+        draft.spawn(ev.subject, ev.object);
         spawned.add(ev.object);
         activePairs.add(JSON.stringify([ev.subject, ev.object]));
       } else if (ev.op === "message") {
-        if (!worldlineStampFor(causal, ev.object)) { refuse(ev, "target-unspawned"); continue; }
-        if (worldlineStampFor(causal, ev.subject)) {
+        if (!draft.stampFor(ev.object)) { refuse(ev, "target-unspawned"); continue; }
+        if (draft.stampFor(ev.subject)) {
           if (!linkedAfterShared(ev)) { refuse(ev, "order-unlinked"); continue; }
-          causal = worldlineInject(causal, ev.subject, ev.object);
+          draft.inject(ev.subject, ev.object);
         } else if (spawned.has(ev.subject)) {
           refuse(ev, "sender-retired"); continue;
         } else {
           // The sender holds no recorded worldline: the recipient takes the receive alone, named unjoined.
           const alone: Touch = { ticks: [ev.object], reads: [] };
           if (!linkedAfterShared(ev, alone)) { refuse(ev, "order-unlinked"); continue; }
-          causal = worldlineTick(causal, ev.object);
+          draft.tick(ev.object);
           unjoined.push({ ...ev, reason: "sender-unrecorded" });
           record(ev, alone);
           continue;
         }
       } else if (ev.op === "handback") {
         // The edge runs child → parent; the spawn pair reads parent → child.
-        if (!activePairs.has(JSON.stringify([ev.object, ev.subject])) || !worldlineStampFor(causal, ev.subject) || !worldlineStampFor(causal, ev.object)) {
+        if (!activePairs.has(JSON.stringify([ev.object, ev.subject])) || !draft.stampFor(ev.subject) || !draft.stampFor(ev.object)) {
           refuse(ev, "pair-unknown"); continue;
         }
         if (!linkedAfterShared(ev)) { refuse(ev, "order-unlinked"); continue; }
-        causal = worldlineHandback(causal, ev.object, ev.subject).causal;
+        draft.handback(ev.object, ev.subject);
       } else {
         const pair = JSON.stringify([ev.subject, ev.object]);
-        if (!worldlineStampFor(causal, ev.object) && spawned.has(ev.object)) { refuse(ev, "target-unspawned"); continue; }
-        if (!activePairs.has(pair) || !worldlineStampFor(causal, ev.subject) || !worldlineStampFor(causal, ev.object)) {
+        if (!draft.stampFor(ev.object) && spawned.has(ev.object)) { refuse(ev, "target-unspawned"); continue; }
+        if (!activePairs.has(pair) || !draft.stampFor(ev.subject) || !draft.stampFor(ev.object)) {
           refuse(ev, "pair-unknown"); continue;
         }
         if (!linkedAfterShared(ev)) { refuse(ev, "order-unlinked"); continue; }
-        causal = worldlineRetire(causal, ev.subject, ev.object);
+        draft.retire(ev.subject, ev.object);
         activePairs.delete(pair);
       }
       record(ev);
@@ -458,7 +495,7 @@ export function replayWorldlineEdges(
       if (uncertain.has(from) && !uncertain.has(to)) { uncertain.add(to); grew = true; }
     }
   }
-  return { causal, skipped, unjoined, uncertain: [...uncertain].sort() };
+  return { causal: draft.freeze(), skipped, unjoined, uncertain: [...uncertain].sort() };
 }
 
 /** Project the ITC registry from causal edge links; valid-time rides as display metadata. */

@@ -131,6 +131,16 @@ export interface SpiritEdges {
   readonly ends: readonly { readonly turn: string; readonly status: string }[];
 }
 
+/**
+ * A session's spirit feed: the run the spawns fork from, each placed spirit's edges, and the agent ids of
+ * spirits whose transcript stands but whose launch row the main transcript lacks (no edges ride for them).
+ */
+export interface SpiritFeed {
+  readonly run: string;
+  readonly spirits: readonly SpiritEdges[];
+  readonly unplaced: readonly string[];
+}
+
 /** daemon-VM provider — the sovereign-worker reads + the capture FEED. The host supplies only the
  *  EXTERNAL data the worker can't reach (transcript edges, form-vector bytes); all COMPUTE is the
  *  worker's. The impl proxies to the live `DaemonVmCore`. */
@@ -198,7 +208,7 @@ export interface DaemonVerbProvider {
   /** Derive a session transcript's spirit edges — spawns, round closes, messages (worldline-compare's edge-DAG source). The CRUNCH
    *  lives in python (beside the transcript data) — this provider ROUTES to the capture holder's
    *  `subagent-edges` serve-op, so it reads async. `sensoriumRoot` addresses a holder (absent → memory). */
-  subagentEdges(input: { transcript: string; sensoriumRoot?: string }): Promise<readonly SpiritEdges[]>;
+  subagentEdges(input: { transcript: string; sensoriumRoot?: string }): Promise<SpiritFeed>;
   /** Well 1 — the concurrent-capable causal verdict between two handles, IN the daemon VM. */
   worldlineCompare(input: DaemonWorldlineCompareInput): Promise<{ order: string; uncertain: readonly string[] }>;
   /** Well 3 + Well 4 — a handle's worldline-ordered form-vector path (+ optional null baseline). */
@@ -642,12 +652,18 @@ export function worldlineVerbCap(): CapModule {
           if (!a || !b) throw new Error("worldline-compare: args.a + args.b (handles) required");
           const transcript = typeof args["transcript"] === "string" ? (args["transcript"] as string) : "";
           const sensoriumRoot = typeof args["sensoriumRoot"] === "string" ? (args["sensoriumRoot"] as string) : undefined;
-          const spirits = transcript
+          const feed = transcript
             ? await daemon.subagentEdges(sensoriumRoot !== undefined ? { transcript, sensoriumRoot } : { transcript })
-            : [];
-          const opens = spirits.flatMap((s) => [s.spawn, ...s.handbacks, ...s.messages]);
-          // The feed's spawns name the run they fork from; the registry seeds there.
-          const root = spirits[0]?.spawn.subject;
+            : undefined;
+          for (const handle of [a, b]) {
+            const agent = feed?.unplaced.find((id) => handle === `${feed.run}.${id}`);
+            if (agent) {
+              throw new Error(`worldline-compare: ${handle} stands unplaced — its spirit transcript exists, but the main transcript holds no launch row for agent ${agent}, so the feed carries no edges for it (compare a placed spirit, or capture the session that launched it)`);
+            }
+          }
+          const opens = (feed?.spirits ?? []).flatMap((s) => [s.spawn, ...s.handbacks, ...s.messages]);
+          // The feed names the run its spawns fork from; the registry seeds there.
+          const root = feed?.run;
           try {
             return await daemon.worldlineCompare({ a, b, opens, ...(root !== undefined ? { root } : {}) });
           } catch (err) {
