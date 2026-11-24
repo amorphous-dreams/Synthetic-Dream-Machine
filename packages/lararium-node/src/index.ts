@@ -594,4 +594,4 @@ export { nodePromoteStores, nodePromoteCas, promotedFile, kapaeFile, PROMOTED_FI
 
 export { seatReadBackStandIn, readBackStandInSeated } from "./seal-ceremony.js";
 export { COLLAPSE_CONFIG_PREFIX, COLLAPSE_RULES, collapseConfigOf, collapseRuleTitle, decideCollapse, isCollapseRule, memeSealer, noLineMerge, rulesFor, type CollapseConfig, type CollapseRule, type CollapseToward, type CollapseVerdict } from "./standoff-collapse.js";
-export { StandoffKeeper, keeperWikiOf, standoffActions, standoffAlertWords, standoffDraftTitle, STANDOFF_FIELD, STANDOFF_KEPT_FIELD, type KeeperOutcome, type StandoffAlert } from "./standoff-drafts.js";
+export { StandoffKeeper, keeperWikiOf, standoffActions, standoffAlertWords, standoffDraftTitle, STANDOFF_FIELD, STANDOFF_KEPT_FIELD, STANDOFF_LOADED_FIELD, standoffLoadedDigest, type KeeperOutcome, type StandoffAlert } from "./standoff-drafts.js";

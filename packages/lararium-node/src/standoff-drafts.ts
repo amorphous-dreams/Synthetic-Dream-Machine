@@ -162,14 +162,14 @@ export function movedFields(a: Fields | undefined, b: Fields | undefined): strin
 }
 
 /** The digest of a draft's words: every field but the bookkeeping, the draft book's own stamps and the loaded mark itself. */
-function loadedDigest(fields: Fields): string {
+export function standoffLoadedDigest(fields: Fields): string {
   const words = Object.keys(fields).filter((k) => !BOOKKEEPING.has(k) && k !== STANDOFF_LOADED_FIELD && k !== STANDOFF_KEPT_FIELD && !k.startsWith("lar-draft-")).sort();
   return contentHash(JSON.stringify(words.map((k) => [k, fieldValue(fields[k])])));
 }
 
 /** A draft the keeper may take away: nobody kept it, and its words still read as the keeper loaded them. */
 function untouched(fields: Fields | undefined): boolean {
-  return fields !== undefined && fields[STANDOFF_KEPT_FIELD] !== "yes" && fields[STANDOFF_LOADED_FIELD] === loadedDigest(fields);
+  return fields !== undefined && fields[STANDOFF_KEPT_FIELD] !== "yes" && fields[STANDOFF_LOADED_FIELD] === standoffLoadedDigest(fields);
 }
 
 const byTitle = (records: readonly Fields[] | null): Map<string, Fields> =>
@@ -298,7 +298,7 @@ export class StandoffKeeper {
         [STANDOFF_FIELD]: standoff, [STANDOFF_PATH_FIELD]: path, [STANDOFF_BAG_FIELD]: bagId,
         "lar-conflict-fields": moved.join(" "), "lar-conflict-live": "",
       });
-      draft[STANDOFF_LOADED_FIELD] = loadedDigest(draft);
+      draft[STANDOFF_LOADED_FIELD] = standoffLoadedDigest(draft);
       fresh.push(draft);
     }
     if (fresh.length > 0) await this.deps.wiki.act((put) => { for (const d of fresh) put(d); return fresh.length; });

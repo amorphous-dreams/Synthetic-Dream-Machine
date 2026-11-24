@@ -21,7 +21,7 @@ import { TW5Engine } from "../../lararium-tw5/src/tw5-vm.js";
 import LARES_MEMETIC_WIKITEXT_PLUGIN from "../../lararium-tw5/plugins/lares-memetic-wikitext.json" with { type: "json" };
 import { mountDiskProjection, mountedDiskProjector } from "../src/island-behaviors.js";
 import { collapseRuleTitle } from "../src/standoff-collapse.js";
-import { STANDOFF_FIELD, STANDOFF_KEPT_FIELD, standoffDraftTitle } from "../src/standoff-drafts.js";
+import { STANDOFF_FIELD, STANDOFF_KEPT_FIELD, STANDOFF_LOADED_FIELD, standoffDraftTitle, standoffLoadedDigest } from "../src/standoff-drafts.js";
 import { coreBlobSkip } from "./shore-rig.js";
 
 const SLUG = "notes";
@@ -96,7 +96,9 @@ describe.skipIf(coreBlobSkip)("one alert per stand-off, through the island's mou
 
   test("at mount the keeper sweeps the drafts of a stand-off that stands no longer, and keeps the one a person kept", async () => {
     const gone = "0123456789abcdef01234567";
-    const stale = { title: standoffDraftTitle(`${URI}#/edges`, gone), "draft.of": `${URI}#/edges`, "draft.title": `${URI}#/edges`, text: "stale", [STANDOFF_FIELD]: gone };
+    // The keeper's own draft of a stand-off gone: its words read as loaded (the digest it stamped at load).
+    const loaded = { title: standoffDraftTitle(`${URI}#/edges`, gone), "draft.of": `${URI}#/edges`, "draft.title": `${URI}#/edges`, text: "stale", [STANDOFF_FIELD]: gone };
+    const stale = { ...loaded, [STANDOFF_LOADED_FIELD]: standoffLoadedDigest(loaded) };
     const kept = { ...stale, title: standoffDraftTitle(URI, gone), "draft.of": URI, "draft.title": URI, [STANDOFF_KEPT_FIELD]: "yes" };
     const s = await island(async ({ $tw }) => {
       $tw.wiki.addTiddler(new $tw.Tiddler(stale));

@@ -40,7 +40,7 @@ async function standOff(): Promise<{ r: ShoreRig; uri: string; key: string; reco
 
 /** The wave a seat could forge: the mirror file, its base claimed as the records' present hash. */
 function forged(r: ShoreRig, uri: string, records: string) {
-  const scan = scanSource(r.scratch, r.fileOf(uri), RIG_BAG, r.tree)!;
+  const scan = scanSource(r.scratch, r.fileOf(uri), RIG_BAG, r.tree as unknown as Parameters<typeof scanSource>[3])!;
   const row = scan.rows.find((x) => x.uri === uri)!;
   const { syncedRecordsHash: _side, ...rest } = row;
   return { source: r.fileOf(uri), toBag: RIG_BAG, did: "did:test", candidates: [{ ...rest, status: "changed" as const, syncedHash: records }] };
@@ -60,7 +60,7 @@ describe.skipIf(coreBlobSkip)("the ingest door holds a stand-off for a hand", ()
     const { r, uri, records } = await standOff();
     const other = r.uris.find((u) => u !== uri && r.projector.standing().every((s) => s.uri !== u))!;
     r.write(other, r.read(other).replace(firstLine(r.read(other)), `${firstLine(r.read(other))} (a seat's ordinary edit)`));
-    const scan = scanSource(r.scratch, r.fileOf(other), RIG_BAG, r.tree)!;
+    const scan = scanSource(r.scratch, r.fileOf(other), RIG_BAG, r.tree as unknown as Parameters<typeof scanSource>[3])!;
     await expect(r.submitWave({ source: r.fileOf(other), toBag: RIG_BAG, did: "did:test", candidates: scan.rows.filter((x) => x.uri === other) }, "seat"))
       .rejects.toMatchObject({ reason: "seat-canon-reach" });
     const hand = await r.submitWave(forged(r, uri, records), "cli");
