@@ -30,7 +30,7 @@ import type { ParsedArgs } from "../src/parse-args.js";
 const URI = `${MEMORY_PREFIX}familiar/lares-alpha`;
 const FULL = "sha256:" + "f5".repeat(32);
 const NOW = () => new Date("2026-11-24T12:00:00Z");
-const HAND = () => ({ hand: "terminal" }) as never;
+const HAND = () => ({ admit: "hand" }) as never;
 const AI = () => ({ refusal: "hand-act-only" }) as never;
 
 const slots = (over: Record<string, number> = {}) => [

@@ -106,13 +106,13 @@ export const indexText = (repo: string) => (rel: string): string | null => {
   catch { return null; }
 };
 
-export function itemsFor(door: Door, staged = false, persist = false): { items: Item[]; ledger: Ledger; root: string } {
+export function itemsFor(door: Door, staged = false, persist = false, familiar: string | null = null): { items: Item[]; ledger: Ledger; root: string } {
   if (door === "repo") {
     // `--staged` reads the carrier and the seed the commit carries, never the working tree's.
     const items = staged ? repoItems(repoRoot, declared(repoRoot, indexText(repoRoot)), indexText(repoRoot), { staged: true }) : repoItems(repoRoot);
     return { items, ledger: new Ledger(repoLedgerDir(repoRoot)), root: repoRoot };
   }
-  return { items: homeItems({ repo: repoRoot, homes: resolveHomes({ persist }) }), ledger: new Ledger(homeLedgerDir()), root: homedir() };
+  return { items: homeItems({ repo: repoRoot, homes: resolveHomes({ persist }), familiar }), ledger: new Ledger(homeLedgerDir()), root: homedir() };
 }
 
 export async function cmdTunnelDoor(door: Door, args: ParsedArgs): Promise<number> {
@@ -124,7 +124,13 @@ export async function cmdTunnelDoor(door: Door, args: ParsedArgs): Promise<numbe
     console.error(`lares ${door} ${verb}: --staged reads the index, and only \`lares repo read\` reads it`);
     return EXIT.usage;
   }
-  const { items, ledger } = itemsFor(door, args.flags["staged"] === true, verb === "tend" || verb === "undo");
+  // `--familiar <pet>` names the familiar whose hooks a home tend seats; absent, the one already seated stands.
+  const familiar = typeof args.options["familiar"] === "string" && args.options["familiar"].trim() !== "" ? args.options["familiar"].trim() : null;
+  if (familiar !== null && door !== "home") {
+    console.error(`lares ${door} ${verb}: --familiar names a home's familiar; run \`lares home ${verb} --familiar ${familiar}\``);
+    return EXIT.usage;
+  }
+  const { items, ledger } = itemsFor(door, args.flags["staged"] === true, verb === "tend" || verb === "undo", familiar);
 
   if (verb === "read") {
     const reader = args.flags["staged"] === true ? indexReader(repoRoot) : undefined;

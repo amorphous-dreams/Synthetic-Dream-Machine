@@ -25,12 +25,11 @@
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { stdin } from "node:process";
-import { readOwnHand } from "@lararium/node";
+import { readOwnHand, type HandReading } from "@lararium/node";
 import { secretShapes } from "@lararium/mesh";
-import { emit, exitFor, refuseUsage } from "../render.js";
+import { emit, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
 import { DoorUsage, guardDoor, runDoor, wordOf } from "./door-call.js";
-import { handFor, HandActRefused, type HandRead } from "./sense-lifecycle.js";
 import { tableCovers } from "../verb-table.js";
 import type { ParsedArgs } from "../parse-args.js";
 
@@ -81,6 +80,18 @@ export function slotBody(slotText: string): string {
 }
 /** The digest a base names, whatever its grain prefix (`skinny:`, `partial:#/x:`). */
 const digestOf = (base: string): string => /sha256[:-][0-9a-f]{64}$/.exec(base)?.[0]?.replace("-", ":") ?? base;
+
+/** How otakiage reads the hand behind this command: the house gate over the command's own branch. A suite names its reading. */
+export type HandRead = () => HandReading;
+
+/** Release by the hand: an AI seat on this command's branch, or a branch nothing attests, refuses by the reading's own code. */
+function readHand(hand: HandRead, line: string): void {
+  const read = hand();
+  if (!("refusal" in read)) return;
+  throw new SpiritRefusal(read.refusal, read.refusal === "hand-act-only"
+    ? `hand-act-only: a release burns by a person's hand at a real terminal, and an AI harness stands on this command's branch. Ask the operator to run \`${line}\` on their own terminal.`
+    : `hand-unattested: a release burns by a person's hand at a real terminal, and this command's process chain reads nothing to attest one. Run \`${line}\` on a terminal whose processes the host can read.`, 5);
+}
 
 class SpiritRefusal extends Error {
   constructor(readonly code: string, message: string, readonly exit = 4) { super(message); }
@@ -370,7 +381,7 @@ async function residue(args: ParsedArgs, now: () => Date): Promise<number> {
 
 async function otakiage(args: ParsedArgs, hand: HandRead, now: () => Date): Promise<number> {
   const pet = petOf(args, "otakiage");
-  handFor("lares spirit otakiage", `lares spirit otakiage ${pet}`, hand);
+  readHand(hand, `lares spirit otakiage ${pet}`);
   const rec = await resolveRecord(args, "otakiage", pet);
   const filter = `[prefix[${MEMORY_PREFIX}round/${pet}-]] [prefix[${MEMORY_PREFIX}spirit/${pet}-handback-]]`;
   const listed = await door(args, "otakiage", "wiki-filter", { recipe: RECIPE, filter });
@@ -430,11 +441,9 @@ export async function cmdSpirit(args: ParsedArgs, seams: SpiritSeams = {}): Prom
       }
     } catch (e) {
       if (e instanceof Printed) return e.exit;
-      if (e instanceof SpiritRefusal || e instanceof HandActRefused) {
-        const code = e instanceof HandActRefused ? e.code : e.code;
-        const exit = e instanceof HandActRefused ? exitFor("cap-denied") : e.exit;
-        emit(args, { ok: false, error: { code, message: e.message }, human: () => console.error(`lares spirit ${verb}: ${e.message}`) });
-        return exit;
+      if (e instanceof SpiritRefusal) {
+        emit(args, { ok: false, error: { code: e.code, message: e.message }, human: () => console.error(`lares spirit ${verb}: ${e.message}`) });
+        return e.exit;
       }
       throw e;
     }

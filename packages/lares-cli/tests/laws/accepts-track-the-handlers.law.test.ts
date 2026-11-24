@@ -46,7 +46,7 @@ const HANDLER_FILE: Readonly<Record<string, string>> = {
   act: "commands/act", ingest: "commands/ingest", export: "commands/export", import: "commands/import", shore: "commands/shore", surface: "commands/surface", realm: "commands/realm",
   events: "commands/events", meme: "commands/meme", bag: "commands/bag",
   wiki: "commands/wiki", tiddler: "commands/tiddler", repo: "commands/tunnel-door", home: "commands/tunnel-door", sense: "commands/sense", flow: "commands/flow-run",
-  ddate: "commands/ddate-cmd", oracle: "commands/oracle-cmd", law: "commands/law", mempalace: "commands/mempalace", hooks: "commands/hooks", mcp: "commands/mcp", lei: "commands/lei", rite: "commands/rite",
+  ddate: "commands/ddate-cmd", oracle: "commands/oracle-cmd", law: "commands/law", mempalace: "commands/mempalace", hooks: "commands/hooks", spirit: "commands/spirit", mcp: "commands/mcp", lei: "commands/lei", rite: "commands/rite",
   sensorium: "commands/sensorium", vault: "commands/vault", wear: "commands/wear",
   library: "commands/library", persona: "commands/persona", circle: "commands/circle", cabal: "commands/cabal",
   edge: "commands/edge", nexus: "commands/nexus",
