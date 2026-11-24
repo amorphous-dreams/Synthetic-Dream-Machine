@@ -50,6 +50,9 @@ export function readKukuluOffer(path: string | undefined): unknown {
   } catch { return {}; }
 }
 
+/** Whether this vessel's environment names a pūlama: its custody rests there, and a face's own route proves at that hand door. */
+export const namesPulama = (env: Readonly<Record<string, string | undefined>> = process.env): boolean => Boolean(env[PULAMA_SOCKET_ENV]?.trim());
+
 /** The holder a vessel seats when its environment names a pūlama, or null where it names none. `life` names the vessel life
  *  each hello dials for: the life id this vessel's store claim minted. */
 export function vesselPulamaHolder(homes: CustodyHomes, env: Readonly<Record<string, string | undefined>> = process.env, life?: { readonly id: string }): PulamaHolder | null {

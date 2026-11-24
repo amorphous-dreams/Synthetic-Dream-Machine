@@ -139,13 +139,22 @@ export type CustodyAnswer =
 /** A face its custody serves that stands dark here: its last light refused. The note names the cause and the clearing line. */
 export interface ServedDark { readonly face: number; readonly cause: string; readonly note: string }
 
-/** The served-but-dark line: the face, why its light refused, and the act that lights it again (the lend's replay). */
-export const servedDarkNote = (face: number, cause: string): string =>
-  `h${face} served by custody, dark here: its light refused (${cause}); clear it with \`lares vault unlock\` (it replays the lend), or the next custody event`;
+/**
+ * The act that lights a served-but-dark face again. A face that holds no prekey secret (`STALE_LIGHT`) refuses every replay of
+ * the lend, so its line names the recard: under a pūlama the face's own route proves at the pūlama's hand door first.
+ */
+export const darkCure = (face: number, cause: string, pulama = false): string =>
+  !STALE_LIGHT.test(cause) ? "clear it with `lares vault unlock` (it replays the lend), or the next custody event"
+    : pulama ? `recard it at your own terminal, keeping its identity: tools/lares-container.sh pulama recard ${face} (the face's own passphrase), then lares vault recard --face ${face}`
+    : `recard it at your own terminal, keeping its identity: lares vault recard --face ${face} (the face's own passphrase)`;
+
+/** The served-but-dark line: the face, why its light refused, and the act that lights it again (`darkCure`). */
+export const servedDarkNote = (face: number, cause: string, pulama = false): string =>
+  `h${face} served by custody, dark here: its light refused (${cause}); ${darkCure(face, cause, pulama)}`;
 
 /** The served-but-dark set: each face whose light refused here that its custody serves (the lit set), with its note. */
-export const servedDark = (refused: ReadonlyArray<{ readonly ordinal: number; readonly cause: string }>, lit: readonly number[]): ServedDark[] =>
-  refused.filter((r) => lit.includes(r.ordinal)).map((r) => ({ face: r.ordinal, cause: r.cause, note: servedDarkNote(r.ordinal, r.cause) }));
+export const servedDark = (refused: ReadonlyArray<{ readonly ordinal: number; readonly cause: string }>, lit: readonly number[], pulama = false): ServedDark[] =>
+  refused.filter((r) => lit.includes(r.ordinal)).map((r) => ({ face: r.ordinal, cause: r.cause, note: servedDarkNote(r.ordinal, r.cause, pulama) }));
 
 export interface CustodyFrameDeps {
   readonly holder: CustodyHolder;
@@ -976,7 +985,7 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       const worn = holder.isUnlocked() ? mountedFaceOrdinal() : undefined;
       // `facesDark` names each face the custody serves (lit set) that stands dark here, its light refused, with its clearing line.
       let facesDark: ServedDark[] = [];
-      try { facesDark = servedDark(deps.refusedLights?.() ?? [], facesLit); } catch { facesDark = []; }
+      try { facesDark = servedDark(deps.refusedLights?.() ?? [], facesLit, deps.pulama !== undefined); } catch { facesDark = []; }
       answer(sock, { op: "census", held, standing: deps.standing(), locked: !holder.isUnlocked(), ...(facesLocked.length > 0 ? { facesLocked } : {}), ...(facesLit.length > 0 ? { facesLit } : {}), ...(facesDark.length > 0 ? { facesDark } : {}), ...(worn !== undefined ? { worn } : {}) });
       return true;
     } else {

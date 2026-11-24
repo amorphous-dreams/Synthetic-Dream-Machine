@@ -60,7 +60,7 @@ const cleanups: Array<() => Promise<void> | void> = [];
 afterEach(async () => { for (const c of cleanups.splice(0).reverse()) await c(); });
 
 /** A seat whose daemon mounts h0 and whose holder lends {h0, h1}; a session's `faceRef` (`h<N>`) names the face it wears. */
-async function stand(lane: { readonly lit?: readonly number[]; readonly signers?: SessionSignBook; readonly faceLife?: FaceLives; readonly visitVerbs?: ReadonlySet<string>; readonly hold?: ReadonlySet<string>; readonly timeoutMs?: number;
+async function stand(lane: { readonly faceDark?: (face: number) => string | null; readonly acts?: string[]; readonly lit?: readonly number[]; readonly signers?: SessionSignBook; readonly faceLife?: FaceLives; readonly visitVerbs?: ReadonlySet<string>; readonly hold?: ReadonlySet<string>; readonly timeoutMs?: number;
   readonly output?: (o: { verb: string; args: Record<string, unknown> }) => Record<string, unknown>; readonly petnames?: ReadonlyArray<readonly [number, string]> } = {}) {
   const repo = new Repo({ sharePolicy: async () => true });
   const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
@@ -83,6 +83,8 @@ async function stand(lane: { readonly lit?: readonly number[]; readonly signers?
     ...(lane.lit ? { litOrdinals: () => lane.lit!, siblingFaceOf: (presenter: string) => presenter === "verified-h1" && lane.lit!.includes(1) ? "atom-h1" : undefined } : {}),
     ...(lane.signers ? { signers: lane.signers } : {}),
     ...(lane.faceLife ? { faceLife: lane.faceLife } : {}),
+    ...(lane.faceDark ? { faceDark: lane.faceDark } : {}),
+    ...(lane.acts ? { sessionActs: { names: new Set(["rite-land"]), run: async (act: string) => { lane.acts!.push(act); return { status: "done", output: {} }; } } } : {}),
     ...(lane.visitVerbs ? { visitVerbs: lane.visitVerbs } : {}),
     ...(lane.timeoutMs !== undefined ? { timeoutMs: lane.timeoutMs } : {}),
     ...(lane.petnames ? { petnames: async () => lane.petnames! } : {}),
@@ -295,6 +297,28 @@ test("SOL R6 M (writes enter during the drain): a write dispatched before the cl
   expect(v.placed.map((p) => p.requestId).filter((id) => id.includes("put-during"))).toEqual([]);
   drains[0]!();
   await closed;
+});
+
+// The live house: h2's light refused for want of a prekey secret, and a hand `lares rite land --face 2` waited sixty seconds on
+// an island that held no such face. The door reads the face's own actor and answers at once, with the cause and its cure.
+test("A DARK FACE'S ACT REFUSES AT THE DOOR BY NAME: a rite-land on a face whose light refused answers face-not-open with the cause and its clearing line, and no act runs; CONTROL: the lit face's act runs", async () => {
+  const { lives } = actors(0, 1);
+  lives.composeRefused(1, "FaceHoldsNoPrekeySecret: [daemon-keyhive] face k1 holds no prekey secret");
+  const acts: string[] = [];
+  const NOTE = "h1 served by custody, dark here: its light refused (FaceHoldsNoPrekeySecret: …); recard it: lares vault recard --face 1";
+  const v = await stand({ faceLife: lives, acts, faceDark: (face) => face === 1 ? NOTE : null });
+  const env = await v.open("h1");
+  const started = Date.now();
+  const refused = await v.peer.ask({ op: "session:act", ...env, requestId: "land-h1", act: "rite-land", args: { tessera: "t", head: "h" } });
+  expect(Date.now() - started).toBeLessThan(5_000);
+  expect(refused).toMatchObject({ kind: "session:refused", requestId: "land-h1", refusal: "face-not-open" });
+  expect(String(refused["message"])).toContain(NOTE);
+  expect(String(refused["message"])).toContain("no act ran");
+  expect(acts).toEqual([]);
+  const other = await v.connect();
+  const env0 = await v.open("h0", other);
+  expect(await other.ask({ op: "session:act", ...env0, requestId: "land-h0", act: "rite-land", args: { tessera: "t", head: "h" } })).not.toMatchObject({ kind: "session:refused" });
+  expect(acts).toEqual(["rite-land"]);
 });
 
 test("SOL R6 H (a reply after close across an await): a visit whose reply is on its way when the target closes answers face-not-open once, and its body never leaves", async () => {

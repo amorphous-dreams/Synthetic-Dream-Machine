@@ -94,6 +94,12 @@ export interface UdsChannelOptions {
    */
   readonly faceLife?: Pick<FaceLives, "admitWork" | "admitVisit" | "state" | "known">;
   /**
+   * A face its custody serves that stands dark here because its light refused: the served-but-dark line (the cause and the act
+   * that lights it again), or null. The door's `face-not-open` carries it, so a verb or act aimed at such a face answers at
+   * once with its cure. Absent: a shut face reads shut, and no more.
+   */
+  readonly faceDark?: (face: number) => string | null;
+  /**
    * The verbs that VISIT another face when a session call names it as a numeric `target` (the cross-face reads). A visit admits
    * on the target's actor, its reply rides its own request id (the session reads its next frame meanwhile), and the actor
    * delivers it or refuses it. Absent: no call visits.
@@ -1199,11 +1205,13 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     sessionReply(sock, { kind: "session:refused", ...(requestId !== undefined && { requestId }), refusal, ...(message !== undefined && { message }) });
   /** The daemon mount's ordinal, or null where no mount reads (no reader, or the floor): the chore gate then stands aside. */
   const mountOf = (): number | null => opts.mountOrdinal?.() ?? null;
-  /** The refusal a face the actor will not admit reads: closing while its close runs, shut otherwise. */
-  const shutRefusal = (face: number, what: string): { readonly ok: false; readonly refusal: string; readonly message: string } =>
-    opts.faceLife?.state(face).kind === "closing"
-      ? { ok: false, refusal: "face-closing", message: `face-closing: face h${face} is closing on this vessel; its saves drain and it takes no new ${what}` }
-      : { ok: false, refusal: "face-not-open", message: `face-not-open: face h${face} stands shut on this vessel, and no ${what} ran` };
+  /** The refusal a face the actor will not admit reads: closing while its close runs, dark by name where its light refused, shut otherwise. */
+  const shutRefusal = (face: number, what: string): { readonly ok: false; readonly refusal: string; readonly message: string } => {
+    if (opts.faceLife?.state(face).kind === "closing") return { ok: false, refusal: "face-closing", message: `face-closing: face h${face} is closing on this vessel; its saves drain and it takes no new ${what}` };
+    let dark: string | null = null;
+    try { dark = opts.faceDark?.(face) ?? null; } catch { dark = null; }
+    return { ok: false, refusal: "face-not-open", message: dark !== null ? `face-not-open: ${dark}; no ${what} ran` : `face-not-open: face h${face} stands shut on this vessel, and no ${what} ran` };
+  };
   /** The face a call VISITS: a visit verb naming, as its numeric `target`, a face other than the one it wears; else null. */
   const visitTargetOf = (worn: number | null, verb: string, args: Record<string, unknown> | undefined): number | null =>
     opts.visitVerbs?.has(verb) && typeof args?.["target"] === "number" && args["target"] !== worn ? args["target"] : null;

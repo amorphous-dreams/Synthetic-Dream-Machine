@@ -4254,6 +4254,12 @@ async function prepareNodeBootOn(
           return null;
         },
         daemonAuth: daemonAuthNow(joinedFaces),
+        // THE ISLAND'S OPEN REFUSED A FACE ITS MANIFEST CARRIED: this composition adopted that face lit before the island
+        // opened, so its actor reads it dark from here, with the island's reason (the recard guard and the door read it).
+        onFaceRefused: (atomKey, reason) => {
+          const bare = atomKey.toLowerCase().replace(/^0x/, "");
+          for (const [ordinal, entry] of faceEntries) if (entry.atom.key.toLowerCase().replace(/^0x/, "") === bare) faceLife.composeRefused(ordinal, reason);
+        },
         storageDir,
         // D-VR-C: the daemon bag is the one explicit worker-owned durable scope;
         // ordinary oracle/recipe documents remain parent-attached in the primary worker Repo.

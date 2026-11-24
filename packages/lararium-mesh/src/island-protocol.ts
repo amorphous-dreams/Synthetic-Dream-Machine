@@ -614,8 +614,12 @@ export interface DaemonMsg_VerbResult {
 }
 
 
-/** The ops a face's settled answer names: the type and the door's runtime check both read this one tuple. */
-export const FACE_SETTLED_OPS = ["lit", "dropped", "bags"] as const;
+/**
+ * The ops a face's settled answer names: the type and the door's runtime check both read this one tuple. `lit`, `dropped` and
+ * `bags` each answer an ask of the vessel's; `composed` answers none: the island's open lights each face its manifest carried,
+ * and a face it refused there says so under this op, with its reason, so a vessel that adopted the face lit reads it dark.
+ */
+export const FACE_SETTLED_OPS = ["lit", "dropped", "bags", "composed"] as const;
 export interface DaemonMsg_FaceSettled { type: "daemon:face-settled"; atomKey: string; op: (typeof FACE_SETTLED_OPS)[number]; ok: boolean; reason?: string; }
 export const mkDaemonFaceSettled = (atomKey: string, op: DaemonMsg_FaceSettled["op"], ok: boolean, reason?: string): DaemonMsg_FaceSettled => ({ type: "daemon:face-settled", atomKey, op, ok, ...(reason === undefined ? {} : { reason }) });
 export const isDaemonFaceSettled = (v: IslandToVesselMsg): v is DaemonMsg_FaceSettled => v.type === "daemon:face-settled";

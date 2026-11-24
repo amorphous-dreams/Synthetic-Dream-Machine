@@ -228,6 +228,20 @@ test("R9 SERVED BUT DARK: the census names each face its custody serves that sta
   ]);
 });
 
+// An unlock replays the lend and the stale face refuses again: the note that sends a person there cures nothing.
+test("R9 A STALE FACE'S CLEARING LINE NAMES THE RECARD: a face dark for want of a prekey secret reads its recard, at the pūlama's hand door first where custody rests there; never the unlock", () => {
+  const cause = "Error: face 0xabc refused: FaceHoldsNoPrekeySecret: [daemon-keyhive] face abc… holds no prekey secret";
+  const [lent] = servedDark([{ ordinal: 2, cause }], [0, 2], true);
+  expect(lent!.note).toContain("tools/lares-container.sh pulama recard 2");
+  expect(lent!.note).toContain("lares vault recard --face 2");
+  expect(lent!.note.indexOf("pulama recard 2")).toBeLessThan(lent!.note.indexOf("lares vault recard --face 2"));
+  expect(lent!.note).not.toContain("lares vault unlock");
+  const [own] = servedDark([{ ordinal: 2, cause }], [0, 2]);
+  expect(own!.note).toContain("lares vault recard --face 2");
+  expect(own!.note).not.toContain("pulama recard");
+  expect(own!.note).not.toContain("lares vault unlock");
+});
+
 test("R9 THE CLEARING LINE: an unlock over a held key replays the lend, so a served face whose light refused lights again", async () => {
   setMountedFace(0); const h = harness();
   expect(await h.send({ op: "unlock", credentials: [{ kind: "passphrase", passphrase: "x" }] })).toMatchObject({ op: "unlock" });

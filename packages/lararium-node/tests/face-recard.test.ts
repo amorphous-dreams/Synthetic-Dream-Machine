@@ -20,6 +20,7 @@ import { ContentKeyNotHeld, InMemoryEventStore, KeyhiveProvider } from "@larariu
 import { operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
 import { BAG_IDS, DAEMON_BAG_ID } from "@lararium/mesh";
 import { standFoundedIsland } from "./stand-founded-island.js";
+import { STALE_LIGHT } from "../src/custody-frames.js";
 vi.setConfig({ testTimeout: 900_000, hookTimeout: 900_000 });
 const teardown: Array<() => void> = [];
 afterEach(() => { while (teardown.length) teardown.pop()!(); vi.restoreAllMocks(); });
@@ -50,15 +51,17 @@ async function standOnce(a: Awaited<ReturnType<typeof standFoundedIsland>>, join
   const lines: string[] = [];
   const hear = (...line: unknown[]) => { lines.push(line.map(String).join(" ")); };
   const quiet = (["log", "warn", "error", "info", "debug"] as const).map((level) => vi.spyOn(console, level).mockImplementation(hear));
+  // What the island posted to its vessel during this stand (a manifest face it refused says so, by name).
+  const posted: Array<Record<string, unknown>> = [];
   try {
     await operatorDaemonOptions({ daemonAuth: { ...a.daemonAuth, joinedFaces: [joined] } } as never,
-      { dyadReading: () => "clear", ...(persistVeilArchive ? { persistVeilArchive } : {}) }).verifierFactory!(a.ctx);
+      { dyadReading: () => "clear", ...(persistVeilArchive ? { persistVeilArchive } : {}) }).verifierFactory!({ ...(a.ctx as object), post: (msg: Record<string, unknown>) => { posted.push(msg); } } as never);
     let sibling: KeyhiveProvider | null = null;
     for (const p of providers) {
       try { if ((await p.whoami()).toLowerCase().endsWith(siblingKey.toLowerCase().replace(/^0x/, ""))) sibling = p; } catch { /* disposed: did not light */ }
     }
     const refused = lines.filter((w) => w.toLowerCase().includes("refused"));
-    return { sibling, providers, lines, refused, dispose: () => Promise.all(providers.map((p) => p.dispose().catch(() => {}))) };
+    return { sibling, providers, lines, refused, posted, dispose: () => Promise.all(providers.map((p) => p.dispose().catch(() => {}))) };
   } finally { spy.mockRestore(); for (const q of quiet) q.mockRestore(); }
 }
 
@@ -75,7 +78,7 @@ async function walkStale(f: Awaited<ReturnType<typeof twoFaces>>) {
   for (let i = 0; i < STANDS; i++) {
     const s = await standOnce(f.a, f.sibling(f.founded), f.siblingKey);
     try {
-      if (s.refused.length > 0) { expect(s.sibling, `stand ${i}`).toBeNull(); return { refusal: s.refused, lateSeal: lateSeal!, keptSeal: keptSeal!, peerShare: peerShare! }; }
+      if (s.refused.length > 0) { expect(s.sibling, `stand ${i}`).toBeNull(); return { refusal: s.refused, posted: s.posted, lateSeal: lateSeal!, keptSeal: keptSeal!, peerShare: peerShare! }; }
       lateSeal = await s.sibling!.encryptContent(LATE_BAG, text(`late at stand ${i}`));
       keptSeal = await s.sibling!.encryptContent(DAEMON_BAG_ID, text(`kept at stand ${i}`));
       const card = await s.sibling!.contactCard();
@@ -97,8 +100,14 @@ async function walkStale(f: Awaited<ReturnType<typeof twoFaces>>) {
 
 test("R1-R3, R6: a stale face recards under its own identity; its own seals and content after read, a peer's seal to a lost prekey reads unreadable by name, and no key reaches a log", async () => {
   const f = await twoFaces();
-  const { refusal, lateSeal, keptSeal, peerShare } = await walkStale(f);
+  const { refusal, posted, lateSeal, keptSeal, peerShare } = await walkStale(f);
   expect(peerShare).toBeTruthy();
+  // THE VESSEL HEARS THE REFUSAL (it adopted this manifest face lit before the island opened): the island answers under op
+  // `composed`, by the face's atom key, and its reason reads stale to the recard's guard.
+  const told = posted.filter((m) => m["type"] === "daemon:face-settled");
+  expect(told).toHaveLength(1);
+  expect(told[0]).toMatchObject({ atomKey: f.siblingKey, op: "composed", ok: false });
+  expect(STALE_LIGHT.test(String(told[0]!["reason"])), "the island's reason reads stale at the custody door").toBe(true);
   // THE STALE FACE REFUSES BY NAME, and the refusal names the command that recards it.
   expect(refusal.join(" ")).toContain("holds no prekey secret");
   expect(refusal.join(" ")).toContain(`lares vault recard --face ${HANDLE}`);

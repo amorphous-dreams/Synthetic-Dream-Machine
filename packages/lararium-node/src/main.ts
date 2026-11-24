@@ -72,7 +72,7 @@ import { makeCustodyHolder } from "./custody-holder.js";
 import { isTestScratchRoot, testScratchNotice } from "./test-scratch-notice.js";
 import { heldPlaneLines } from "./doc-load-probe.js";
 import { seatCustody, unlockedFaceOrdinals } from "./custody-seat.js";
-import { custodyFrameHandler, type CustodyDoor } from "./custody-frames.js";
+import { custodyFrameHandler, servedDarkNote, type CustodyDoor } from "./custody-frames.js";
 import { SESSION_ACTS, runSealedAct, type PersonaSelvesPlane, type SealedActContext } from "./sealed-acts.js";
 import { cutFaceBundle, type BackupDoor } from "./face-bundle-cut.js";
 import { rehiveShutFace } from "./face-rehive.js";
@@ -83,7 +83,7 @@ import { vesselCustodyHomes } from "./vault-carriers.js";
 import { rendezvousDir, standingPath, markerIsOurs } from "@lararium/mesh/rendezvous-path";
 import { loadVesselIdentity, vesselFloorKeyDoor, sovereignStands, makeNodePersonaPetnameStore } from "./node-vessel-identity.js";
 import { CROSS_FACE_READ_VERBS } from "@lararium/mesh/cross-face-reach";
-import { KUKULU_OFFER_ENV, cleanGoodbye, lifeCloses, pulamaStandBy, vesselPulamaHolder } from "./pulama-seat.js";
+import { KUKULU_OFFER_ENV, cleanGoodbye, lifeCloses, namesPulama, pulamaStandBy, vesselPulamaHolder } from "./pulama-seat.js";
 import { consumeKukuluOffer } from "./kukulu-offer.js";
 import { NoStoodNexus, stoodFloorPins } from "./hearth-sovereign-pin.js";
 import { getMempalaceClient }           from "@lararium/mempalace";
@@ -960,6 +960,9 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     litOrdinals:  () => result.litOrdinals(),
     // EACH FACE LIVES ONE LIFE: each session verb and act admits on its face's actor, so a face closing takes no new work.
     faceLife:     result.faceLife,
+    // A FACE DARK BECAUSE ITS LIGHT REFUSED ANSWERS BY NAME: the door's `face-not-open` carries the cause and the act that
+    // lights it again (a recard, for a face that holds no prekey secret), so no verb or act waits on a face the island never held.
+    faceDark:     (face) => { const dark = result.refusedLights().find((r) => r.ordinal === face); return dark === undefined ? null : servedDarkNote(face, dark.cause, namesPulama()); },
     // A LIT FACE RECEIVES VISITS (`seat-hand`): a read naming another face as its `target` (by ordinal, or by the pet name this
     // vessel holds) admits on that face's actor and delivers through its mailbox; the face the call wears stays worn.
     visitVerbs:   CROSS_FACE_READ_VERBS,

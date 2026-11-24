@@ -46,6 +46,8 @@ export interface DaemonVmOptions {
   repo:              Repo;
   /** The PersonaGroup a session's ordinal maps to (`DaemonVmCoreOptions.wornGroupOf`). */
   wornGroupOf?:      (ordinal: number) => string | null;
+  /** A manifest face the island's open refused, by its atom key and the island's reason (`DaemonVmCoreOptions.onFaceRefused`). */
+  onFaceRefused?:    (atomKey: string, reason: string) => void;
   /**
    * THE CAPABILITY RECORD the vessel hands its daemon island at the spawn (`receipt`, `cas`, `dyad`, `custodyWrite`).
    * The island reads each member from this record at ask time, so the vessel may stand a member after the spawn; a
@@ -225,5 +227,6 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
     },
     workerScriptUrl: workerScriptUrl ?? DEFAULT_ADMIN_WORKER_URL,
     ...(opts.wornGroupOf ? { wornGroupOf: opts.wornGroupOf } : {}),
+    ...(opts.onFaceRefused ? { onFaceRefused: opts.onFaceRefused } : {}),
   });
 }

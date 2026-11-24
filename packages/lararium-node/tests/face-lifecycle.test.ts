@@ -421,6 +421,46 @@ describe("each face lives one life: the lifecycle actor", () => {
     expect(await again).toBe("lit");
     expect(t.lives.refusedLights()).toEqual([]);
   });
+  // The island's first open adopts each lent face lit before the island lights it; a face the island then refused held no
+  // entry there, and read lit here all the same, so the recard guard read it healthy and every act on it rode to no provider.
+  test("R10 COMPOSED WITHOUT IT: a face adopted lit that the island's open refused reads dark with the refusal's cause; its host side drops with no drain and no worker drop, no lend replays, and its next light runs", async () => {
+    const t = island();
+    t.lives.adopt(2, { atomKey: "k2", custody: null });
+    const refusedVisits: string[] = [];
+    expect(t.lives.admitVisit(2, (reason) => refusedVisits.push(reason.split(":")[0]!))).not.toBeNull();
+    t.lives.composeRefused(2, "FaceHoldsNoPrekeySecret: [daemon-keyhive] face k2 holds no prekey secret");
+    expect(t.lives.state(2)).toEqual({ kind: "dark", held: false });
+    expect(t.lives.refusedLights()).toEqual([{ ordinal: 2, cause: "FaceHoldsNoPrekeySecret: [daemon-keyhive] face k2 holds no prekey secret" }]);
+    expect(t.lives.admitWork(2), "no work admits on a face the island never held").toBeNull();
+    expect(refusedVisits).toEqual(["face-not-open"]);
+    // NO SEAT EVER STOOD IN THE ISLAND: nothing drains under it and no drop is asked; a refused light replays no lend.
+    expect(t.events).toEqual(["teardown h2"]);
+    // THE RECARD'S LIGHT RUNS FROM HERE: the face lights as any dark face does, and the refusal clears.
+    const again = t.lives.light(2);
+    t.lights.get(2)!.resolve({ atomKey: "k2", custody: null });
+    expect(await again).toBe("lit");
+    expect(t.lives.refusedLights()).toEqual([]);
+  });
+  test("R10 CONTROLS: a refusal for a face still lighting or a face this set never knew changes nothing; a close in flight ends whole with no drain awaited and no drop", async () => {
+    const t = island();
+    // A light under way answers its own ask: the island's open spoke of no such life.
+    const lighting = t.lives.light(1);
+    t.lives.composeRefused(1, "FaceHoldsNoPrekeySecret: stale");
+    expect(t.lives.state(1).kind).toBe("lighting");
+    t.lights.get(1)!.resolve({ atomKey: "k1", custody: null });
+    expect(await lighting).toBe("lit");
+    t.lives.composeRefused(7, "FaceHoldsNoPrekeySecret: stale");
+    expect(t.lives.known(7)).toBe(false);
+    // A CLOSE ALREADY UNDER WAY ENDS WHOLE: its drain could never seal (no seat stood), so the refusal carries it to dark.
+    t.lives.adopt(3, { atomKey: "k3", custody: null });
+    const closed = t.lives.close(3, "lock", { hold: true });
+    expect(t.events).toContain("drain h3");
+    t.lives.composeRefused(3, "FaceHoldsNoPrekeySecret: stale");
+    await closed;
+    expect(t.lives.state(3)).toEqual({ kind: "dark", held: true });
+    expect(t.events.filter((e) => e.startsWith("drop h3"))).toEqual([]);
+    expect(t.lives.refusedLights(), "a held face names no refusal").toEqual([]);
+  });
 });
 
 describe("the face gate feeds its intent door (vota answer on a pass the face admits)", () => {

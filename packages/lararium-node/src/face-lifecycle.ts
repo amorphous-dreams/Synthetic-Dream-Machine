@@ -133,6 +133,7 @@ type Message =
   | { t: "light"; waiter: Waiter<LightAnswer> }
   | { t: "adopt"; lit: FaceLit }
   | { t: "light-settled"; opening: string; lit: FaceLit | null; error?: unknown }
+  | { t: "compose-refused"; cause: string }
   | { t: "close"; reason: string; custody: string | null | undefined; hold: boolean; waiter: Closed }
   | { t: "release" }
   | { t: "hold"; answer: (held: boolean) => void }
@@ -152,6 +153,13 @@ export interface FaceLives {
   light(ordinal: number): Promise<LightAnswer>;
   /** The composition stood with this face lit (the island's manifest carried it): the actor reads lit under a fresh opening. */
   adopt(ordinal: number, lit: FaceLit): void;
+  /**
+   * THE ISLAND'S OPEN REFUSED A FACE ITS MANIFEST CARRIED: the island holds no entry for it, so the face this set adopted lit
+   * reads dark with the refusal's `cause` (`refusedLights`). No seat ever stood in the island to seal under, so its host side
+   * drops with no drain and no worker drop, each admitted visit refuses, and (a refused light) no lend replays. A close already
+   * under way ends whole the same way. A face dark, lighting or never known hears nothing.
+   */
+  composeRefused(ordinal: number, cause: string): void;
   /**
    * Close a face, resolving at CLOSED (saves drained, worker told, host torn down) and rejecting where its drain faulted (the
    * face holds closing); a dark or never-known face resolves at once. Where `custody` names the custody opening a close answers
@@ -324,6 +332,32 @@ export function faceLives(effects: FaceLifeEffects, options: { readonly nonce: s
         }
         return [];
       }
+      case "compose-refused": {
+        if (life.kind === "lit") {
+          const out: Array<() => void> = [];
+          for (const visit of life.visits.values()) {
+            if (visit.answered) continue;
+            visit.answered = true;
+            out.push(() => visit.refuse(refusal(ordinal)));
+          }
+          const opening = life.opening;
+          actor.life = { kind: "dark" };
+          actor.refused = m.cause;
+          effects.log(`[face-life] h${ordinal} did not light: the island composed without it: ${m.cause}`);
+          // A REFUSED LIGHT REPLAYS NO LEND (as `light-settled` holds): the next custody event, close or recard lights it.
+          return [...out, () => effects.teardownHost(ordinal, opening)];
+        }
+        // A CLOSE UNDER WAY ENDS WHOLE: its drain had no seat to seal under and the island holds no entry to drop.
+        if (life.kind === "closing" && (life.phase === "settling" || life.phase === "draining" || life.phase === "drain-failed")) {
+          const { opening, closedWaiters } = life;
+          life.closedWaiters = [];
+          life.atomKey = null;
+          actor.refused = m.cause;
+          effects.log(`[face-life] h${ordinal} closes with no island entry: the island composed without it: ${m.cause}`);
+          return [() => effects.teardownHost(ordinal, opening), ...closedWaiters.map((w) => () => w.resolve()), ...toDark(ordinal, actor)];
+        }
+        return [];
+      }
       case "close": {
         // A close naming a custody opening this face did not light under (one it knows) answers at once and holds nothing: nothing serves it.
         if (life.kind === "lit" && m.custody !== undefined && m.custody !== null && life.custody !== null && life.custody !== m.custody) return [() => m.waiter.resolve()];
@@ -479,6 +513,7 @@ export function faceLives(effects: FaceLifeEffects, options: { readonly nonce: s
   return {
     light: (ordinal) => new Promise<LightAnswer>((resolve) => send(ordinal, { t: "light", waiter: resolve })),
     adopt: (ordinal, lit) => send(ordinal, { t: "adopt", lit }),
+    composeRefused: (ordinal, cause) => { if (lives.has(ordinal)) send(ordinal, { t: "compose-refused", cause }); },
     close,
     release: (ordinal) => { if (lives.has(ordinal)) send(ordinal, { t: "release" }); },
     async closeAll(reason, opts) {
