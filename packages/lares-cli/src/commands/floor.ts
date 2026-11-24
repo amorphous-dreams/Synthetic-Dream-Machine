@@ -80,7 +80,7 @@ export function floorDriftNames(d: FloorDrift, indent: string): string[] {
 
 /** The floor drift's lines on the status: the count by carrier and the names, or why it reads unread. */
 function floorDriftLines(d: FloorDrift | null | undefined, why: string | undefined): string[] {
-  if (d === undefined) return ["  floor drift:     unread (the standing vessel answers no drift reading; its build predates it, and a refresh carries it)"];
+  if (d === undefined) return ["  floor drift:     unread (the standing vessel answers no drift reading: its build carries none, and a refresh brings it)"];
   if (d === null) return [`  floor drift:     unread (${why ?? "no reason named"})`];
   return [`  floor drift:     ${d.count} carrier(s) behind live canon · ${floorDriftTally(d)}`, ...floorDriftNames(d, "    ")];
 }

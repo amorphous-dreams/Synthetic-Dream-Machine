@@ -7,7 +7,7 @@
  * REDS, each with its control:
  *   · no vessel stands: the drift reads null, names why, and the store door is never asked (the lag opens no store);
  *   · a standing vessel's reading passes through whole;
- *   · a vessel whose build predates the reading answers no `floorDrift` field: null, named as such, never 0;
+ *   · a vessel whose build carries no drift reading answers no `floorDrift` field: null, named as such, never 0;
  *   · a vessel that reads the drift null hands its own reason on; a refused or throwing read names its fault;
  *   · `vessel lay --lag --json` with the default reader carries the door's reading beside `lag`, lag untouched.
  *
