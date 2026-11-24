@@ -274,8 +274,8 @@ export async function readHouseLag(doors: MirrorDoors = LIVE_MIRROR_DOORS, bagsD
 /**
  * THE FLOOR'S DRIFT, as the standing vessel reads it (`floor-status`'s `floorDrift`): each live public-canon carrier the floor it
  * serves misses or serves with older bytes. Asked of a standing vessel alone, since the lag reads off disk and opens no store. Where
- * it does not read, it answers null with the reason by name: no vessel stands, the vessel answers no drift field (it predates the
- * reading), or the vessel's own reason. Never a zero it did not count.
+ * it does not read, it answers null with the reason by name: no vessel stands, the vessel answers no drift field (its build carries no
+ * drift reading), or the vessel's own reason. Never a zero it did not count.
  */
 export async function liveFloorDrift(): Promise<FloorDriftReading> {
   if (!(await udsAlive())) return { drift: null, why: "no standing vessel answers the floor read" };
@@ -283,7 +283,7 @@ export async function liveFloorDrift(): Promise<FloorDriftReading> {
   if (typeof output["refused"] === "string") return { drift: null, why: `the floor read refused: ${output["refused"]}` };
   const drift = output["floorDrift"];
   if (drift !== null && typeof drift === "object") return { drift: drift as NonNullable<FloorDriftReading["drift"]> };
-  if (!("floorDrift" in output)) return { drift: null, why: "the standing vessel answers no drift reading (its build predates it; a refresh carries it)" };
+  if (!("floorDrift" in output)) return { drift: null, why: "the standing vessel answers no drift reading (its build carries none; a refresh brings it)" };
   return { drift: null, why: typeof output["floorDriftWhy"] === "string" ? output["floorDriftWhy"] : "the standing vessel reads the drift null and names no reason" };
 }
 

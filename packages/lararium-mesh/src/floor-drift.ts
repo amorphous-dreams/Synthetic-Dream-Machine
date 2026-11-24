@@ -10,7 +10,7 @@
  * cut's own row form (`floorRowOf`: residency stamps and absent fields stay out), carrier by carrier (a title's family, the
  * part before `#`), so a meme with six slots counts once:
  *   · MISSING — live canon holds the carrier and the floor holds none of its rows;
- *   · OLDER   — the floor serves the carrier with bytes live canon no longer holds (a slot moved, arrived, or left; a carrier
+ *   · OLDER   — live canon holds other bytes for the carrier than the floor serves (a slot moved, arrived, or left; a carrier
  *               canon retired still rides the floor and reads here too).
  * Both sides pass through the cut's one row form, the floor's rows as well as live canon's: a genesis floor rests the carrier's
  * deserialized fields as the bake read them, live canon rests what INGEST landed, and neither residency stamps nor absent fields
