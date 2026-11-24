@@ -188,15 +188,23 @@ export function procHolderPids(prefix: string): number[] {
  *   - `timeout` after a successful `connect` but before any line arrives → WEDGED: something accepted
  *     the connection and then never answered. `socketHolderPids` names it when it can.
  *   - a parsed line within the timeout → PARKED: a vessel mid-boot, claimed but not yet serving verbs,
- *     answering its own `{holder:"?"}` probe live (the ordinary slow-but-live boot).
+ *     answering its own `{holder:"?"}` probe live (the ordinary slow-but-live boot);
+ *   - a line that says `serving: true` → SERVING: the live seat answered, naming its asks in flight and the
+ *     oldest one. The act this caller sent waits behind the island, and the vessel's own answer ends that wait.
  */
 export interface WhoHoldsAnswer {
-  readonly phase:   "parked" | "wedged";
+  readonly phase:   "parked" | "serving" | "wedged";
   readonly holder:  string | null;
   readonly message: string;
+  /** SERVING: the oldest ask the live seat holds in flight, where it names one (the act a caller waits behind); its
+   *  request id rides only to the asker whose id it holds. */
+  readonly oldest?: { readonly verb: string; readonly requestId?: string } | null;
+  readonly inFlight?: number;
+  /** SERVING, to a probe that named its request id: does the seat still hold that id in flight? */
+  readonly held?: boolean;
 }
 
-export function whoHolds(dataDir?: string | null, timeoutMs = 1_500): Promise<WhoHoldsAnswer | null> {
+export function whoHolds(dataDir?: string | null, timeoutMs = 1_500, requestId?: string): Promise<WhoHoldsAnswer | null> {
   const path = udsSocketPath(dataDir);
   return new Promise((resolve) => {
     let settled = false;
@@ -212,15 +220,24 @@ export function whoHolds(dataDir?: string | null, timeoutMs = 1_500): Promise<Wh
     sock.setTimeout(timeoutMs);
     sock.setEncoding("utf8");
     let buf = "";
-    sock.once("connect", () => { connected = true; sock.write(JSON.stringify({ holder: "?" }) + "\n"); });
+    sock.once("connect", () => { connected = true; sock.write(JSON.stringify({ holder: "?", ...(requestId !== undefined ? { requestId } : {}) }) + "\n"); });
     sock.on("data", (c: string) => {
       buf += c;
       const nl = buf.indexOf("\n");
       if (nl === -1) return;
       try {
-        const line = JSON.parse(buf.slice(0, nl)) as { holder?: unknown; errorMessage?: unknown };
+        const line = JSON.parse(buf.slice(0, nl)) as { holder?: unknown; errorMessage?: unknown; serving?: unknown; inFlight?: unknown; oldest?: unknown; held?: unknown };
         const holder = typeof line.holder === "string" ? line.holder : null;
-        done({ phase: "parked", holder, message: typeof line.errorMessage === "string" ? line.errorMessage : "" });
+        const message = typeof line.errorMessage === "string" ? line.errorMessage : "";
+        // THE LIVE SEAT ANSWERS `serving` (the front answers the probe itself): a vessel that serves verbs, its act in
+        // flight behind whatever the island runs. Only a holder that says it serves reads so; a park still reads parked.
+        if (line.serving === true) {
+          const o = line.oldest as { requestId?: unknown; verb?: unknown } | null | undefined;
+          const oldest = o && typeof o === "object" ? { verb: typeof o.verb === "string" ? o.verb : "?", ...(typeof o.requestId === "string" ? { requestId: o.requestId } : {}) } : null;
+          done({ phase: "serving", holder, message, oldest, ...(typeof line.inFlight === "number" ? { inFlight: line.inFlight } : {}), ...(typeof line.held === "boolean" ? { held: line.held } : {}) });
+          return;
+        }
+        done({ phase: "parked", holder, message });
       } catch { done(null); }
     });
     sock.once("error",   () => done(null));
@@ -393,7 +410,12 @@ export async function invokeLocal(
   verb:        string,
   args:        Record<string, unknown>,
   requestedBy: string,
-  opts:        SubmitOptions & { readonly dataDir?: string | null; readonly signal?: AbortSignal; readonly env?: NodeJS.ProcessEnv } = {},
+  opts:        SubmitOptions & {
+    readonly dataDir?: string | null; readonly signal?: AbortSignal; readonly env?: NodeJS.ProcessEnv;
+    /** NO LOCAL TIMER: the caller's own `signal` (a person's interrupt) ends this wait, or the vessel's answer does. The
+     *  `timeoutMs` still rides the wire as the vessel's own servo; this process reads no clock against it. */
+    readonly untimed?: true;
+  } = {},
 ): Promise<SubmitResult> {
   const socketPath = udsSocketPath(opts.dataDir);
   const seat = harnessSeatMarked(opts.env ?? process.env);
@@ -422,7 +444,7 @@ export async function invokeLocal(
     const onAbort = (): void => settle(() => reject(new LocalInvocationAborted(`local verb "${verb}" aborted by its own caller`)));
     opts.signal?.addEventListener("abort", onAbort, { once: true });
     // LIVENESS: a daemon may remain silent while the verb continues; reply or socket failure settles earlier.
-    const timer = setTimeout(
+    const timer = opts.untimed === true ? undefined : setTimeout(
       () => settle(() => reject(new LocalWaitExpired(verb, timeoutMs, requestId))),
       timeoutMs,
     );

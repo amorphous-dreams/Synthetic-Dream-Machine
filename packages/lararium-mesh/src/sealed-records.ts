@@ -563,6 +563,24 @@ export function readRecord<K extends RecordKind>(kind: K, carried: unknown, read
   } catch { return { refusal: "record-malformed" }; }
 }
 
+/**
+ * Does a record this reader verified still stand under the reader's standing as it reads NOW? The key, the sealed part,
+ * the certificate and the signature hold for good once `readRecord` verified them; the writer's standing alone moves with
+ * the reader's chain and register set, so a reading taken afresh asks it again here and need not open the record twice.
+ * A record `readRecord` never verified stands nowhere.
+ */
+export function writerStandsStill<K extends RecordKind>(record: VerifiedRecord<K>, reader: {
+  readonly bagId: string; readonly standing: WriterStanding;
+  readonly followsRemoval?: (keyVersion: KeyVersionId, act: string) => boolean;
+}): boolean {
+  if (!VERIFIED.has(record)) return false;
+  const keyVersion = record.body.keyVersion;
+  const follows = reader.followsRemoval;
+  try {
+    return reader.standing.holdsWrite({ certificate: record.certificate, bagId: reader.bagId, keyVersion, ...(follows ? { followsRemoval: (act: string) => follows(keyVersion, act) } : {}) }) === true;
+  } catch { return false; }
+}
+
 /** The fact a verified key version record states, for the lineage to judge. */
 export function factOfRecord(record: VerifiedRecord<"key-version">): KeyVersionFact {
   if (!VERIFIED.has(record)) throw new TypeError("sealed-records: only a verified record states a fact");

@@ -79,6 +79,8 @@ export interface Vessel {
   /** The versions a fresh base got cut under, in order, each with how many lockboxes rested at that moment. */
   readonly bases: { keyVersion: string; lockboxes: number }[];
   holder: ContentKeyHolder;
+  /** The host-task yield the holder's walks take, where a vector hands one (read at each restart); absent, the house's own. */
+  yieldHost?: () => Promise<void>;
   /** Stand a fresh holder over the same rest: a restart. */
   restart(): ContentKeyHolder;
 }
@@ -132,6 +134,7 @@ export async function vessel(w: World, name: string, over: { standing?: WriterSt
     ownEdgeShadowed: async () => v.shadowed,
     ownSeat: async () => (v.seated ? id : null),
     ...(v.basesFresh ? { readsAsFreshBase: v.basesFresh } : {}),
+    ...(v.yieldHost ? { yieldHost: v.yieldHost } : {}),
     ...(v.cutsBase === null ? {} : { freshBase: async ({ bagId, keyVersion }: { bagId: string; keyVersion: string }) => {
       v.bases.push({ keyVersion, lockboxes: [...rest.values.keys()].filter((k) => k.startsWith("lockbox/")).length });
       if (v.cutsBase !== true) return null;

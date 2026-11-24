@@ -18,10 +18,19 @@
  *
  * NO NAME FORMS A PATH BEFORE THE RULE READS IT: no separator, no `..`, no upper case.
  *
+ * A LOOKUP BY ONE ID READS NO WHOLE SHELF. The rest holds each shelf's sorted names in memory, beside the directory's own
+ * stamp (inode, modification and change marks), and a listing under a prefix reads that list by binary search. A stamp
+ * that moved (another writer, a file dropped in by hand) reads the directory again; this rest's own write adds its name
+ * and takes the new stamp only where the stamp stood as held before the write touched the shelf. A stamp answers to the
+ * file system's own tick, so a second writer's name that lands inside the tick this rest's write took may stay out of
+ * the held list: a prefix that finds no name there reads the directory once more before it answers empty, so no resting
+ * name reads as ABSENT, though a lookup that finds one copy under an id may miss a second copy until the stamp moves. A
+ * listing with no prefix reads the directory itself. The list holds names alone, and every name passes the rule.
+ *
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store
  */
 import { randomBytes } from "node:crypto";
-import { closeSync, existsSync, fsyncSync, mkdirSync, openSync, readFileSync, readdirSync, renameSync, rmSync, writeSync } from "node:fs";
+import { closeSync, existsSync, fsyncSync, mkdirSync, openSync, readFileSync, readdirSync, renameSync, rmSync, statSync, writeSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { isRestKind, isRestName, restNameHolds, type RestKind, type SealedStoreRest } from "@lararium/mesh";
 import type { ProviderChunkRest } from "@lararium/keyhive";
@@ -59,8 +68,40 @@ function writeWhole(fd: number, bytes: Uint8Array): void {
   }
 }
 
+/** A shelf directory's stamp: its inode and its modification and change marks, or null where it stands absent. */
+function stampOf(shelf: string): string | null {
+  try {
+    const st = statSync(shelf, { bigint: true });
+    return `${st.ino}:${st.mtimeNs}:${st.ctimeNs}`;
+  } catch (err) { if ((err as NodeJS.ErrnoException).code === "ENOENT") return null; throw err; }
+}
+/** The first index in sorted `names` whose name reads at or after `key`. */
+function lowerBound(names: readonly string[], key: string): number {
+  let lo = 0, hi = names.length;
+  while (lo < hi) { const mid = (lo + hi) >>> 1; if (names[mid]! < key) lo = mid + 1; else hi = mid; }
+  return lo;
+}
+
 /** The rest over files. `dir` names the sealed store's own directory (`sealedStoreDir`). */
 export function fsSealedStoreRest(dir: string): SealedStoreRest {
+  /** Each shelf's names as this rest last read them (sorted, the rule already passed), and the stamp they answer to. */
+  const held = new Map<RestKind, { names: string[]; stamp: string | null }>();
+  /** Read one shelf's directory and hold what it names. */
+  const readShelf = (kind: RestKind): string[] => {
+    const shelf = shelfOf(kind);
+    const stamp = stampOf(shelf);
+    let names: string[];
+    try { names = readdirSync(shelf); }
+    catch (err) { if ((err as NodeJS.ErrnoException).code === "ENOENT") { held.set(kind, { names: [], stamp: null }); return []; } throw err; }
+    names = names.filter((name) => isRestName(name)).sort();
+    held.set(kind, { names, stamp });
+    return names;
+  };
+  const underPrefix = (names: readonly string[], prefix: string): string[] => {
+    const out: string[] = [];
+    for (let at = lowerBound(names, prefix); at < names.length && names[at]!.startsWith(prefix); at++) out.push(names[at]!);
+    return out;
+  };
   const shelfOf = (kind: RestKind): string => {
     if (!isRestKind(kind)) throw new TypeError("sealed-store-fs: an unknown rest kind names no directory");
     return join(dir, kind);
@@ -76,6 +117,8 @@ export function fsSealedStoreRest(dir: string): SealedStoreRest {
       if (kind !== "own" && existsSync(target) && (restNameHolds(name, readFileSync(target)) || !restNameHolds(name, bytes))) return;
       const shelf = shelfOf(kind);
       makeDir(shelf);
+      // The shelf's stamp before this write touches it: the temporary file below moves it too.
+      const before = stampOf(shelf);
       // An upper-case lead keeps the temporary name outside the rule every listed name passes.
       const temp = join(shelf, `TMP-${randomBytes(12).toString("hex")}`);
       const fd = openSync(temp, "wx", 0o600);
@@ -90,6 +133,16 @@ export function fsSealedStoreRest(dir: string): SealedStoreRest {
       closeSync(fd);
       try { renameSync(temp, target); } catch (err) { rmSync(temp, { force: true }); throw err; }
       syncDir(shelf);
+      // THIS REST'S OWN NAME JOINS THE HELD LIST, where nothing else moved the shelf since this rest last read it;
+      // otherwise the list gives way and the next listing reads the directory.
+      const list = held.get(kind);
+      if (list !== undefined) {
+        if (list.stamp !== null && list.stamp === before) {
+          const at = lowerBound(list.names, name);
+          if (list.names[at] !== name) list.names.splice(at, 0, name);
+          list.stamp = stampOf(shelf);
+        } else held.delete(kind);
+      }
     },
     async get(kind, name) {
       const target = pathOf(kind, name);
@@ -97,10 +150,12 @@ export function fsSealedStoreRest(dir: string): SealedStoreRest {
       catch (err) { if ((err as NodeJS.ErrnoException).code === "ENOENT") return null; throw err; }
     },
     async list(kind, prefix = "") {
-      let names: string[];
-      try { names = readdirSync(shelfOf(kind)); }
-      catch (err) { if ((err as NodeJS.ErrnoException).code === "ENOENT") return []; throw err; }
-      return names.filter((name) => isRestName(name) && name.startsWith(prefix)).sort();
+      if (prefix === "") return [...readShelf(kind)];
+      const list = held.get(kind);
+      if (list === undefined || list.stamp !== stampOf(shelfOf(kind))) return underPrefix(readShelf(kind), prefix);
+      const found = underPrefix(list.names, prefix);
+      // A MISS READS THE DIRECTORY ONCE MORE: a stamp may hold across a write that landed inside its own tick.
+      return found.length > 0 ? found : underPrefix(readShelf(kind), prefix);
     },
   };
 }

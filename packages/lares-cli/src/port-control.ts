@@ -218,6 +218,12 @@ export async function stopIncumbent(
 export interface BootPhase {
   readonly name:     string;
   readonly budgetMs: number;
+  /**
+   * A PACED phase spends no budget: a resource that reads this phase stands live and answers for itself, so no clock
+   * decides when the wait ends (No Global Now). `budgetMs` then names the PACING alone: each time it runs out the waiter
+   * hands one progress line to `onPace` and waits on. The resource's own answer, or the caller's own interrupt, ends it.
+   */
+  readonly paced?:   true;
 }
 
 /**
@@ -261,10 +267,13 @@ export async function waitForResourceBudgeted(
     holderPids: () => readonly number[] | Promise<readonly number[]>;
     pollMs?: number;
     until?: () => boolean;
+    /** PACING: a paced phase's cadence ran out; the waiter says so and waits on. */
+    onPace?: (phase: string) => void;
   },
 ): Promise<void> {
   const pollMs = opts.pollMs ?? 200;
   const budgetOf = new Map(phases.map((p) => [p.name, p.budgetMs]));
+  const paced = new Set(phases.filter((p) => p.paced === true).map((p) => p.name));
 
   // Per-phase patience is this caller's OWN liveness wait — never a safety verdict — so it rides a
   // monotonic clock. `performance.now()` alone: a wall-clock set-back/set-forward moves neither which
@@ -276,8 +285,13 @@ export async function waitForResourceBudgeted(
     if (await opts.probe()) return;
     const name = await opts.phase();
     if (name !== curName) { curName = name; curDeadline = performance.now() + (budgetOf.get(curName) ?? 0); }
+    // PACING: a paced phase's cadence names a progress line and never a verdict; the wait goes on.
+    if (paced.has(curName) && performance.now() >= curDeadline) {
+      opts.onPace?.(curName);
+      curDeadline = performance.now() + (budgetOf.get(curName) ?? 0);
+    }
     // LIVENESS: a boot phase may stall without making the resource ready or advancing its phase.
-    if (performance.now() >= curDeadline) throw new SlowBootTimeout(curName, resource, await opts.holderPids());
+    else if (performance.now() >= curDeadline) throw new SlowBootTimeout(curName, resource, await opts.holderPids());
     await sleep(pollMs);
   }
 }
