@@ -1,0 +1,139 @@
+/**
+ * worldline rounds + messages — a handback closes a ROUND and the spirit stays addressable; retirement
+ * takes its own act; a message joins the sender's history into the recipient, so the receive event
+ * happens-after the send.
+ *
+ * Meme: lar:///ha.ka.ba/lararium/api/agent-worldline#/time
+ */
+import { describe, expect, test } from "vitest";
+import {
+  worldlineCausalSeed, worldlineSpawn, worldlineTick, worldlineInject, worldlineHandback,
+  worldlineResume, worldlineRetire, worldlineCompare, worldlineStampFor, worldlineFrontiersFor,
+  itcCompare, delegationEdge, communicationEdge, handbackEdge, retireClose, replayWorldlineEdges,
+} from "../src/index.js";
+
+const root = "run";
+const child = "run.child";
+
+function spawned() {
+  let c = worldlineCausalSeed(root);
+  c = worldlineSpawn(c, root, child);
+  return worldlineTick(c, child); // the child works its first round
+}
+
+describe("a handback closes a round; the spirit persists", () => {
+  test("the child stays addressable after its handback, and the parent's receipt reads after the child's return", () => {
+    const { causal, receipt } = worldlineHandback(spawned(), root, child);
+    expect(worldlineStampFor(causal, child)).toBeDefined();
+    expect(worldlineCompare(causal, child, root)).toBe("before");
+    expect(receipt.parent).toBe(root);
+    expect(receipt.child).toBe(child);
+    expect(causal.stamps[receipt.sent]).toEqual(worldlineStampFor(causal, child));
+    expect(causal.stamps[receipt.received]).toEqual(worldlineStampFor(causal, root));
+  });
+
+  test("a resumed round continues the child's own stamp: the same ownership, a later history, one frontier", () => {
+    const before = spawned();
+    const owned = worldlineStampFor(before, child)!.id;
+    const { causal: returned } = worldlineHandback(before, root, child);
+    const atReturn = worldlineStampFor(returned, child)!;
+    const resumed = worldlineResume(returned, root, child);
+    const now = worldlineStampFor(resumed, child)!;
+    expect(now.id).toEqual(owned);
+    expect(itcCompare(atReturn, now)).toBe("before");
+    expect(worldlineCompare(resumed, root, child)).toBe("before");
+    expect(worldlineFrontiersFor(resumed, child)).toHaveLength(1);
+  });
+
+  test("retirement takes its own act: the child leaves and its ownership returns to the parent", () => {
+    const { causal } = worldlineHandback(spawned(), root, child);
+    const retired = worldlineRetire(causal, root, child);
+    expect(worldlineStampFor(retired, child)).toBeUndefined();
+    expect(worldlineStampFor(retired, root)!.id).toBe(1);
+    expect(() => worldlineResume(retired, root, child)).toThrow(/retired or never spawned/);
+  });
+
+  test("replay carries round, resume, round, then retirement from durable edges", () => {
+    const opens = [
+      delegationEdge(root, child, { turnKey: "s0" }),
+      handbackEdge(child, root, { turnKey: "h1", parentKey: "s0" }),
+      communicationEdge(root, child, { turnKey: "m1", parentKey: "h1" }),
+      handbackEdge(child, root, { turnKey: "h2", parentKey: "m1" }),
+    ];
+    let expected = worldlineSpawn(worldlineCausalSeed(root), root, child);
+    expected = worldlineHandback(expected, root, child).causal;
+    expected = worldlineResume(expected, root, child);
+    expected = worldlineHandback(expected, root, child).causal;
+    const live = replayWorldlineEdges(root, opens);
+    expect(live.skipped).toEqual([]);
+    expect(live.causal).toEqual(expected);
+    expect(worldlineStampFor(live.causal, child)).toBeDefined();
+
+    const retired = replayWorldlineEdges(root, opens, [retireClose(root, child, undefined, "h2")]);
+    expect(retired.skipped).toEqual([]);
+    expect(retired.causal).toEqual(worldlineRetire(expected, root, child));
+  });
+
+  test("replay refuses a second spawn of a live spirit: a later round resumes, it never forks anew", () => {
+    const replay = replayWorldlineEdges(root, [
+      delegationEdge(root, child, { turnKey: "s0" }),
+      handbackEdge(child, root, { turnKey: "h1", parentKey: "s0" }),
+      delegationEdge(root, child, { turnKey: "s1", parentKey: "h1" }),
+    ]);
+    expect(replay.skipped.map((s) => s.reason)).toEqual(["child-already-spawned"]);
+  });
+});
+
+describe("a message carries the sender's past into the recipient", () => {
+  function siblings() {
+    let c = worldlineCausalSeed(root);
+    c = worldlineSpawn(c, root, "run.a");
+    c = worldlineSpawn(c, root, "run.b");
+    c = worldlineTick(c, "run.a");
+    return worldlineTick(c, "run.b");
+  }
+
+  test("the receive happens-after the send: a sibling's message orders the recipient after the sender", () => {
+    const c = siblings();
+    expect(worldlineCompare(c, "run.a", "run.b")).toBe("concurrent");
+    const sent = worldlineInject(c, "run.a", "run.b");
+    expect(worldlineCompare(sent, "run.a", "run.b")).toBe("before");
+  });
+
+  test("the message keeps each participant's ownership; a later sender event reads concurrent again", () => {
+    const c = siblings();
+    const ids = [worldlineStampFor(c, "run.a")!.id, worldlineStampFor(c, "run.b")!.id];
+    let sent = worldlineInject(c, "run.a", "run.b");
+    expect([worldlineStampFor(sent, "run.a")!.id, worldlineStampFor(sent, "run.b")!.id]).toEqual(ids);
+    sent = worldlineTick(sent, "run.a");
+    expect(worldlineCompare(sent, "run.a", "run.b")).toBe("concurrent");
+  });
+
+  test("a message from or to an unknown handle refuses", () => {
+    const c = siblings();
+    expect(() => worldlineInject(c, "ghost", "run.b")).toThrow(/unknown sender/);
+    expect(() => worldlineInject(c, "run.a", "ghost")).toThrow(/unknown target/);
+  });
+
+  test("replay joins the sender's history: a message between siblings orders the recipient after the sender", () => {
+    const replay = replayWorldlineEdges(root, [
+      delegationEdge(root, "run.a", { turnKey: "a0" }),
+      delegationEdge(root, "run.b", { turnKey: "b0" }),
+      communicationEdge(root, "run.a", { turnKey: "a1", parentKey: "a0" }),
+      communicationEdge("run.a", "run.b", { turnKey: "ab", parentKey: "a1" }),
+    ]);
+    expect(replay.skipped).toEqual([]);
+    expect(worldlineCompare(replay.causal, "run.a", "run.b")).toBe("before");
+  });
+
+  test("replay lands a message from an unrecorded sender as the recipient's receive and names it unjoined", () => {
+    const replay = replayWorldlineEdges(root, [
+      delegationEdge(root, "run.a", { turnKey: "a0" }),
+      communicationEdge("outside", "run.a", { turnKey: "o1", parentKey: "a0" }),
+    ]);
+    expect(replay.skipped).toEqual([]);
+    expect(replay.unjoined.map((u) => [u.subject, u.reason])).toEqual([["outside", "sender-unrecorded"]]);
+    expect(worldlineStampFor(replay.causal, "outside")).toBeUndefined();
+    expect(worldlineCompare(replay.causal, root, "run.a")).toBe("before");
+  });
+});

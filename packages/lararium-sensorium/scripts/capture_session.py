@@ -46,9 +46,12 @@ from holder_caps import idle_ttl_seconds, make_dispatch, run_holder
 
 _LOCK_PREFIX = "capture_session_serve"
 
-# The spawn relation the worldline-COMPARE worker matches (mesh/worldline-edge.ts PRED_DELEGATION). The
-# `subagent_edges` serve-op emits this EXACT casing so `worldlineCausalFromEdges` reads the spawn edge.
+# The relations the worldline-COMPARE worker matches (mesh/worldline-edge.ts PRED_DELEGATION,
+# PRED_COMMUNICATION, ROUND_CLOSE). The `subagent_edges` serve-op emits this EXACT casing so
+# `worldlineCausalFromEdges` reads the spawn, message and round-close edges.
 _PRED_DELEGATION = "prov:Delegation"
+_PRED_COMMUNICATION = "prov:Communication"
+_ROUND_CLOSE = "close"
 
 
 def worldline_path(sensorium_root: str) -> str:
@@ -458,31 +461,56 @@ class CaptureSessionServer:
             store.close()
 
     def subagent_edges(self, req: dict) -> dict:
-        """Derive a session transcript's spawn/handback edge-DAG for worldline comparison.
+        """Derive a session transcript's spirit edge-DAG for worldline comparison.
 
         The read uses `worldline_observe.derive_subagent_edges` over spirit transcripts under
-        `<session>/subagents/` and writes no store or worldline handle. The compare feed uses the
-        plain session basename as its run-root; the storage path carries its own veiled root. Each
-        pair carries these edge shapes:
-          spawn    = {subject: run, predicate: "prov:Delegation", object: handle, turnKey: <first turn uuid>}
-          handback = {subject: run, predicate: "prov:Delegation", object: handle, parentKey: <spawn turnKey>}
-        The edges carry causal turn links and no valid_from/ended. The spawn names the spirit's first
-        turn, and the handback follows that spawn for this capture path's one-handoff pair."""
-        from worldline_observe import derive_subagent_edges, run_id_of
+        `<session>/subagents/` and `read_spirit_events` over the transcripts, and writes no store or
+        worldline handle. The compare feed uses the plain session basename as its run-root; the storage
+        path carries its own veiled root. Each spirit carries these edge shapes:
+          spawn     = {subject: run, predicate: "prov:Delegation", object: handle, turnKey: <first turn uuid>}
+          handbacks = [{subject: handle, predicate: "prov:Communication", object: run, turnKey: <receipt
+                        turn>, parentKey: <prior event>, round: "close"}] — one per REAL handback event
+          messages  = [{subject: sender, predicate: "prov:Communication", object: handle, turnKey: <sending
+                        turn>, parentKey: <prior event>?}] — one per delivered SendMessage
+        A spirit's main-transcript events chain by parentKey in that transcript's order, from its spawn;
+        a sibling's message names no parentKey. The edges carry no valid_from/ended, and no retirement
+        rides the feed, since no transcript records one."""
+        from worldline_observe import derive_subagent_edges, read_spirit_events, run_id_of
         transcript = str(req.get("transcript") or "")
         if not transcript:
             raise ValueError("subagent_edges requires a non-empty transcript pointer")
         run = run_id_of(transcript)
-        pairs = []
-        for spirit in derive_subagent_edges(transcript, run):
+        spirits = derive_subagent_edges(transcript, run)
+        handles = {s.agent_id: s.handle for s in spirits}
+        entries: dict = {}
+        last: dict = {}
+        for spirit in spirits:
             spawn = {"subject": run, "predicate": _PRED_DELEGATION, "object": spirit.handle}
             if spirit.chain:
                 spawn["turnKey"] = spirit.chain[0].uuid   # the spawn anchor = the spirit's first turn uuid
-            handback = {"subject": run, "predicate": _PRED_DELEGATION, "object": spirit.handle}
-            if spirit.chain:
-                handback["parentKey"] = spirit.chain[0].uuid
-            pairs.append({"spawn": spawn, "handback": handback})
-        return {"pairs": pairs}
+                last[spirit.agent_id] = spirit.chain[0].uuid
+            entries[spirit.agent_id] = {"spawn": spawn, "handbacks": [], "messages": []}
+
+        def chained(agent_id: str, edge: dict, turn: str) -> dict:
+            prior = last.get(agent_id)
+            last[agent_id] = turn
+            return {**edge, "turnKey": turn, **({"parentKey": prior} if prior else {})}
+
+        for ev in read_spirit_events(transcript, handles):
+            handle = handles[ev["agent"]]
+            if ev["kind"] == "handback":
+                edge = {"subject": handle, "predicate": _PRED_COMMUNICATION, "object": run}
+                entries[ev["agent"]]["handbacks"].append({**chained(ev["agent"], edge, ev["turn"]), "round": _ROUND_CLOSE})
+            else:
+                edge = {"subject": run, "predicate": _PRED_COMMUNICATION, "object": handle}
+                entries[ev["agent"]]["messages"].append(chained(ev["agent"], edge, ev["turn"]))
+        for spirit in spirits:
+            for ev in read_spirit_events(spirit.agent_file, handles):
+                if ev["kind"] == "message" and ev["agent"] != spirit.agent_id:
+                    entries[spirit.agent_id]["messages"].append({
+                        "subject": spirit.handle, "predicate": _PRED_COMMUNICATION,
+                        "object": handles[ev["agent"]], "turnKey": ev["turn"]})
+        return {"spirits": [entries[s.agent_id] for s in spirits]}
 
     def kapae(self, req: dict) -> dict:
         """Mute a worldline branch + cascade the mute across THIS holder's content store (move-not-delete;
@@ -543,7 +571,7 @@ def _serve(sensorium_root: str) -> None:
             "forecast": server.forecast,           # the R early-warning plane (ews.R) — critical-slowing-down forecast
             "status": server.status,               # the taxonomy over the holder's content store
             "worldline": server.worldline,         # the fork-DAG rhizome read (fresh worldline handle)
-            "subagent-edges": server.subagent_edges,  # derive spawn/handback edges → worldline-compare's edge feed
+            "subagent-edges": server.subagent_edges,  # derive spawn/round/message edges → worldline-compare's edge feed
             "kapae": server.kapae,                 # mute a branch across the content store (serialized mutation)
             "un_kapae": server.un_kapae,           # restore a muted branch (serialized mutation)
             "plane_record": server.plane_record,   # the cross-plane witness (content · structure · form)

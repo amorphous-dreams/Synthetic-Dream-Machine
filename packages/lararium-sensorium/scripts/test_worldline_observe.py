@@ -1,7 +1,8 @@
 """Demux 1b witness — the worldline OBSERVER builds the fork-DAG from a captured transcript.
 
 Proves, over a SYNTHETIC session (a main transcript chained by parentUuid + a `subagents/agent-<id>.jsonl`):
-  · the wire builds  — the main linear-chain + a SPAWN fork (run -> `<run>.<agentId>`) + a HANDBACK close.
+  · the wire builds  — the main linear-chain + a SPAWN fork (run -> `<run>.<agentId>`); a session with no
+                       handback event records no round close, and the fork stays open.
   · worldline_of     — a spirit turn AND a main turn both climb to the SESSION root (the run braid-anchor).
   · roots()          — the session root stands alone (one braid).
   · idempotent       — a re-run mints no duplicate edges (worldline_io add_edge is sink-idempotent).
@@ -53,7 +54,7 @@ def _synth_session(tmp_path):
     return str(main)
 
 
-def test_wire_builds_fork_chain_and_handback(tmp_path):
+def test_wire_builds_fork_and_chain_with_no_invented_handback(tmp_path):
     main = _synth_session(tmp_path)
     store = wl.WorldlineStore(str(tmp_path / "worldline"))
     summary = observe_worldline(store, main, veil_secret=_SECRET)
@@ -62,7 +63,7 @@ def test_wire_builds_fork_chain_and_handback(tmp_path):
     handle = derive_handle(run, "aaa")
     assert run.startswith("wl-")      # opaque — the bare "sess-xyz" never rides the graph
     assert "sess-xyz" not in run
-    assert summary == {"run": run, "main_turns": 4, "spirits": [handle]}
+    assert summary == {"run": run, "main_turns": 4, "spirits": [handle], "rounds": [], "messages": []}
 
     edges = {(e["frm"], e["to"]): e for e in store.dag()["edges"]}
     # the SPAWN fork run -> handle (the task's edge)
@@ -74,9 +75,9 @@ def test_wire_builds_fork_chain_and_handback(tmp_path):
     # the spirit chain hangs off the HANDLE
     assert edges[(handle, "s1")]["relation"] == "linear"
     assert edges[("s1", "s2")]["relation"] == "linear"
-    # the HANDBACK: a join handle -> run AND the fork interval closed (bitemporal valid_to set)
-    assert edges[(handle, run)]["relation"] == "join"
-    assert edges[(run, handle)]["valid_to"] is not None
+    # no handback event in the session: no join, and the fork stays open (the spirit persists)
+    assert not [e for e in edges.values() if e["relation"] == "join"]
+    assert edges[(run, handle)]["valid_to"] is None
 
 
 def test_worldline_of_climbs_to_the_session_root(tmp_path):

@@ -3,8 +3,8 @@
  * (handle × FRONTIER). SEPARATE from the rhythmic clocks (worldline-clock.ts) by the PATH-B cut:
  * causal rides ITC / the edge-DAG, the FfzClock stays purely rhythmic.
  *
- * Happened-before projects from the spawn/inject/handback structure, so the order is
- * concurrent-capable: siblings of one spawn with no join between them read "concurrent"
+ * Happened-before projects from the spawn/message/handback/retire structure, so the order is
+ * concurrent-capable: siblings of one spawn with no message between them read "concurrent"
  * (agent-worldline #time, #attribution). Keyed turn-DAG (the operator's C-cut) — handles
  * survive rewind/fork because the turn-DAG node does.
  *
@@ -13,27 +13,28 @@
  * The registry key is `${handle}@${frontier}` — address = handle × FRONTIER, the frontier keyed
  * BY the handle, never smuggled INSIDE it. The handle stays a RIGID designator (baptized-fixed at
  * spawn); the frontier is the MOVING antichain — a short hash of the ITC event heads (the causal
- * history), so it advances on every inject/handback and holds across a bare fork. Same-session
+ * history), so it advances on every event (tick, message, retire) and holds across a bare fork. Same-session
  * forks never collide: two spawns of one child handle across a rewind carry DIFFERENT
  * re-projected histories → different frontiers → distinct keys, so `worldlineSpawn` never
  * throws when a handle re-appears on a rewound-then-re-forked branch. The frontier is DERIVED from
  * the stamp — never authoritative state, so the composite key holds only because causal-order rides
  * a re-derivable projection (else the global-now sneaks back in).
  *
- * NOTE — the edge-DAG home: the same spawn/inject/handback persist as
- * mempalace-KG triples (prov:Delegation + prov:Communication via kg_add / `kg_io.py`), and
- * kapae (rewind) closes them via kg_invalidate (valid_to set, never deleted). This in-memory
+ * NOTE — the edge-DAG home: spawns persist as prov:Delegation triples, messages and handbacks
+ * as prov:Communication triples (a handback marks `round: "close"`), and retirement closes the
+ * Delegation interval (kg_add / kg_invalidate via `kg_io.py`); kapae (rewind) closes a turn's
+ * triples (valid_to set, never deleted). This in-memory
  * ITC registry stays the live causal READ; the persisted edge-DAG is the durable home, and the
  * ITC verdict re-projects from those triples via worldline-trajectory's worldlineCausalFromEdges.
  *
  * Meme: lar:///ha.ka.ba/lararium/api/agent-worldline#/time
  */
 
-import { itcSeed, itcFork, itcEvent, itcJoin, itcCompare, type ItcStamp, type ItcOrder, type ItcEvent } from "./itc.js";
+import { itcSeed, itcFork, itcEvent, itcJoin, itcPeek, itcCompare, type ItcStamp, type ItcOrder, type ItcEvent } from "./itc.js";
 
 /**
  * The worldline's CAUSAL partial-order carrier — one ITC stamp per (handle × frontier). Concurrent-
- * capable: the happened-before projects from the spawn/inject/handback structure (the PATH-B cut keeps
+ * capable: the happened-before projects from the spawn/message/retire structure (the PATH-B cut keeps
  * this OFF the rhythmic FfzClock). The `stamps` keys are COMPOSITE (`${handle}@${frontier}`); read them
  * through {@link worldlineStampFor} / {@link worldlineHandles}, never by a bare-handle index.
  */
@@ -60,7 +61,7 @@ function fnv1a8(s: string): string {
 
 /**
  * The stamp's CAUSAL FRONTIER fingerprint — a short, stable hash of its ITC event heads (the causal
- * history). The MOVING antichain: it advances on every inject/handback and holds across a bare fork
+ * history). The MOVING antichain: it advances on every event (tick, message, retire) and holds across a bare fork
  * (which leaves the event unchanged). Two spawns of one handle across a rewind carry different
  * re-projected histories → different frontiers. Derived, never authoritative (the guard).
  */
@@ -101,7 +102,7 @@ interface Resolved {
  * Resolve a reference — an EXACT composite key if one is present, else a bare HANDLE → its (latest)
  * live entry (the last-inserted `${handle}@…`, the current frontier of that handle). Returns undefined
  * when neither hits. Insertion order = event order, so "latest" reads the handle's most-advanced
- * frontier — the one an inject/handback/compare means by a bare handle.
+ * frontier — the one a message/compare means by a bare handle.
  */
 function resolveRef(c: WorldlineCausal, ref: string): Resolved | undefined {
   const exact = c.stamps[ref];
@@ -149,36 +150,103 @@ export function worldlineSpawn(c: WorldlineCausal, parent: string, child: string
 }
 
 /**
- * INJECT (event) — the rhizome's prov:Communication leg. A mid-flight message (operator OR
- * parent reaching a RUNNING spirit) advances the target's history. FULL ticks: EVERY
- * injection is an event (the operator's D-cut — we cannot reliably detect a bearing-change,
- * so full ticks beat a lossy test). Merge-where-messages-land, not only at handback. The event
- * advances → the frontier MOVES → the entry re-keys.
+ * TICK (event) — one local event on a live worldline: the spirit's own work between messages. The
+ * event advances → the frontier MOVES → the entry re-keys.
  */
-export function worldlineInject(c: WorldlineCausal, target: string): WorldlineCausal {
-  const t = resolveRef(c, target);
-  if (!t) throw new Error(`worldlineInject: unknown handle "${target}"`);
-  const next = itcEvent(t.stamp);
+export function worldlineTick(c: WorldlineCausal, handle: string): WorldlineCausal {
+  const t = resolveRef(c, handle);
+  if (!t) throw new Error(`worldlineTick: unknown handle "${handle}"`);
   const stamps = { ...c.stamps };
-  rekey(stamps, t.key, handleFromKey(t.key), next);
+  rekey(stamps, t.key, handleFromKey(t.key), itcEvent(t.stamp));
   return { stamps };
 }
 
+/** The composite keys a message leaves: the sender's send event and the recipient's receive event. */
+interface Delivery {
+  readonly causal: WorldlineCausal;
+  readonly sent: string;
+  readonly received: string;
+}
+
+function deliver(c: WorldlineCausal, sender: string, target: string, verb: string): Delivery {
+  const s = resolveRef(c, sender);
+  if (!s) throw new Error(`${verb}: unknown sender "${sender}"`);
+  const t = resolveRef(c, target);
+  if (!t) throw new Error(`${verb}: unknown target "${target}"`);
+  if (s.key === t.key) throw new Error(`${verb}: "${sender}" cannot message itself`);
+  const sentStamp = itcEvent(s.stamp);                                    // the send: an event at the sender
+  const receivedStamp = itcEvent(itcJoin(t.stamp, itcPeek(sentStamp)));   // the receive: join the sender's past, then tick
+  const stamps = { ...c.stamps };
+  const sHandle = handleFromKey(s.key);
+  const tHandle = handleFromKey(t.key);
+  rekey(stamps, s.key, sHandle, sentStamp);
+  rekey(stamps, t.key, tHandle, receivedStamp);
+  return { causal: { stamps }, sent: stampKey(sHandle, sentStamp), received: stampKey(tHandle, receivedStamp) };
+}
+
 /**
- * HANDBACK (join) — the twin-reunion: sum the ids back, max-join the histories, retire the
- * child. After it, the parent is causally AFTER the child's pre-handback history. One merge
- * among many in the rhizome; the sealed-delegation case is just the merge where the only
- * messages were spawn + return. The join advances the parent's event → the parent re-keys; the
- * child dissolves (apoptosis).
+ * INJECT (message) — the rhizome's prov:Communication leg, between any two live worldlines (operator,
+ * mains, spirits, grandchildren). The send ticks the sender; the receive joins the sender's history
+ * into the recipient through an ownership-free peek, then ticks — so the receive happens-after the
+ * send and each participant keeps its own ownership (two continuing writers stay distinct). FULL
+ * ticks: every message rides an event (the operator's D-cut).
  */
-export function worldlineHandback(c: WorldlineCausal, parent: string, child: string): WorldlineCausal {
+export function worldlineInject(c: WorldlineCausal, sender: string, target: string): WorldlineCausal {
+  return deliver(c, sender, target, "worldlineInject").causal;
+}
+
+/** The receipt a handback leaves: who returned to whom, at which send and receive frontiers. */
+export interface WorldlineReceipt {
+  readonly parent: string;
+  readonly child: string;
+  /** The child's composite key at its return (the send event). */
+  readonly sent: string;
+  /** The parent's composite key at the receipt (the receive event). */
+  readonly received: string;
+}
+
+/** A closed round — the registry after the handback plus its receipt. */
+export interface WorldlineRound {
+  readonly causal: WorldlineCausal;
+  readonly receipt: WorldlineReceipt;
+}
+
+/**
+ * HANDBACK (round close) — the child returns its result to the parent as a message: the parent's
+ * receipt reads after the child's return, and the child stays live, owning its interval, so a later
+ * round resumes on its own stamp. Retirement takes its own act ({@link worldlineRetire}).
+ */
+export function worldlineHandback(c: WorldlineCausal, parent: string, child: string): WorldlineRound {
+  const d = deliver(c, child, parent, "worldlineHandback");
+  return { causal: d.causal, receipt: { parent, child, sent: d.sent, received: d.received } };
+}
+
+/**
+ * RESUME — a live spirit takes a new round from a message (the parent's, the operator's, a sibling's).
+ * The round continues the child's own stamp; a retired or never-spawned child refuses, since only a
+ * spawn mints a worldline.
+ */
+export function worldlineResume(c: WorldlineCausal, resumer: string, child: string): WorldlineCausal {
+  if (!resolveRef(c, child)) {
+    throw new Error(`worldlineResume: "${child}" stands retired or never spawned — spawn mints a worldline (worldlineSpawn), resume continues a live one`);
+  }
+  return deliver(c, resumer, child, "worldlineResume").causal;
+}
+
+/**
+ * RETIRE (join) — the explicit close of a continuing spirit: sum its ownership back into the parent
+ * and max-join the histories, so the parent reads after everything the child witnessed. The child
+ * leaves the registry; a later message to it refuses.
+ */
+export function worldlineRetire(c: WorldlineCausal, parent: string, child: string): WorldlineCausal {
   const p = resolveRef(c, parent);
   const ch = resolveRef(c, child);
-  if (!p) throw new Error(`worldlineHandback: unknown parent handle "${parent}"`);
-  if (!ch) throw new Error(`worldlineHandback: unknown child handle "${child}"`);
-  const joined = itcJoin(p.stamp, ch.stamp);
+  if (!p) throw new Error(`worldlineRetire: unknown parent handle "${parent}"`);
+  if (!ch) throw new Error(`worldlineRetire: unknown child handle "${child}"`);
+  if (p.key === ch.key) throw new Error(`worldlineRetire: "${child}" cannot retire into itself`);
+  const joined = itcEvent(itcJoin(p.stamp, ch.stamp));
   const stamps = { ...c.stamps };
-  delete stamps[ch.key]; // the child dissolves at handback
+  delete stamps[ch.key];
   rekey(stamps, p.key, handleFromKey(p.key), joined);
   return { stamps };
 }

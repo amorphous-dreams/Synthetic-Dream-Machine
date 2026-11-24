@@ -16,11 +16,11 @@ import {
   worldlineCompare,
   worldlineHandles,
   worldlineFrontiersFor,
-  worldlineInject,
+  worldlineTick,
   rewindThenFork,
   delegationEdge,
   communicationEdge,
-  handbackClose,
+  retireClose,
   type TrajectoryStep,
   type LarTickCounter,
 } from "../src/index.js";
@@ -102,9 +102,9 @@ describe("shuffleTrajectory — NULL-READY (scale-graded baseline, NOT the null 
 });
 
 describe("worldlineCausalFromEdges — project the ITC registry from the durable edge-DAG (Well 1)", () => {
-  test("spawn + inject edges → parent happened-before a working child, working siblings concurrent", () => {
-    // A bare fork shares history (→ "equal"); the happened-before manifests once a child does work
-    // (an inject / Communication edge), per ITC semantics (worldline-clock canon).
+  test("spawn + message edges → the sender happened-before its recipient, messaged siblings concurrent", () => {
+    // A bare fork shares history (→ "equal"); the happened-before manifests once a message lands
+    // (a Communication edge: the send ticks the sender, the receive joins it), per ITC semantics.
     const root = "run";
     const opens = [
       delegationEdge(root, "run.a", { validFrom: "2026-06-29T00:00:00Z" }),
@@ -113,7 +113,7 @@ describe("worldlineCausalFromEdges — project the ITC registry from the durable
       communicationEdge(root, "run.b", { validFrom: "2026-06-29T00:00:03Z" }), // b works
     ];
     const causal = worldlineCausalFromEdges(root, opens);
-    expect(worldlineCompare(causal, root, "run.a")).toBe("before");
+    expect(worldlineCompare(causal, root, "run.b")).toBe("before"); // root's last send reached b
     expect(worldlineCompare(causal, "run.a", "run.b")).toBe("concurrent");
   });
 
@@ -123,17 +123,17 @@ describe("worldlineCausalFromEdges — project the ITC registry from the durable
     expect(worldlineCompare(causal, root, "run.a")).toBe("equal");
   });
 
-  test("a handback close joins the child back — parent ends AFTER the child's pre-handback history", () => {
+  test("a retirement close joins the child back — only the parent stamp remains", () => {
     const root = "run";
     const opens = [delegationEdge(root, "run.a", { validFrom: "2026-06-29T00:00:00Z" })];
-    const closes = [handbackClose(root, "run.a", "2026-06-29T00:00:05Z")];
+    const closes = [retireClose(root, "run.a", "2026-06-29T00:00:05Z")];
     const causal = worldlineCausalFromEdges(root, opens, closes);
-    // the child dissolves at handback (apoptosis) — only the parent stamp remains
+    // the retired child leaves the registry — only the parent stamp remains
     expect(worldlineHandles(causal)).toEqual([root]);
     expect(() => worldlineCompare(causal, root, "run.a")).toThrow(); // child retired
   });
 
-  test("inject Communication edge advances the target's history (the rhizome leg)", () => {
+  test("a Communication edge advances the recipient's history (the rhizome leg)", () => {
     const root = "run";
     const opens = [
       delegationEdge(root, "run.a", { validFrom: "2026-06-29T00:00:00Z" }),
@@ -141,21 +141,20 @@ describe("worldlineCausalFromEdges — project the ITC registry from the durable
       communicationEdge(root, "run.b", { validFrom: "2026-06-29T00:00:03Z" }),
     ];
     const causal = worldlineCausalFromEdges(root, opens);
-    // root injected b after spawning both → root's pre-inject history ≤ b? the inject advances b,
-    // and the registry still holds both spirit stamps as live.
+    // root messaged b after spawning both → the receive advances b, and both spirits stay live.
     expect(worldlineHandles(causal).sort()).toEqual(["run", "run.a", "run.b"]);
   });
 
-  test("identical duplicate spawn collapses and an unknown-pair handback announces a skip", () => {
+  test("identical duplicate spawn collapses and an unknown-pair retirement announces a skip", () => {
     const root = "run";
     const opens = [
       delegationEdge(root, "run.a", { validFrom: "2026-06-29T00:00:00Z" }),
       delegationEdge(root, "run.a", { validFrom: "2026-06-29T00:00:00Z" }), // identical duplicate collapses
     ];
-    const closes = [handbackClose(root, "run.ghost", "2026-06-29T00:00:09Z")]; // unknown — skipped
+    const closes = [retireClose(root, "run.ghost", "2026-06-29T00:00:09Z")]; // unknown — skipped
     const { causal, skipped } = replayWorldlineEdges(root, opens, closes);
     expect(worldlineHandles(causal).sort()).toEqual(["run", "run.a"]);
-    expect(skipped).toMatchObject([{ op: "handback", reason: "pair-unknown" }]);
+    expect(skipped).toMatchObject([{ op: "retire", reason: "pair-unknown" }]);
   });
 });
 
@@ -183,7 +182,7 @@ describe("rewindThenFork — kapae (valid-close) → re-project → fork (edit-a
     expect(worldlineCompare(r.causal, root, "run.c")).toBe("equal");
     // The resubmitted branch does its own work (the edit-and-resubmit) → it grows an event run.a
     // never saw, while run.a carries an event run.c never saw → neither dominates → CONCURRENT.
-    const worked = worldlineInject(r.causal, "run.c");
+    const worked = worldlineTick(r.causal, "run.c");
     expect(worldlineCompare(worked, "run.a", "run.c")).toBe("concurrent");
   });
 

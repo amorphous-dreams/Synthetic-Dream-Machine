@@ -20,7 +20,8 @@
  * the shuffle primitive), NEVER the null TEST itself (that is the flow-lens instrument, deferred).
  *
  * Also here: {@link replayWorldlineEdges} orders durable edges by parent links and handle
- * dependencies. Valid-time rides as display provenance; it never orders replay.
+ * dependencies, and applies spawns, messages, round-closing handbacks and retirements. Valid-time
+ * rides as display provenance; it never orders replay.
  *
  * Meme: lar:///ha.ka.ba/lararium/api/agent-worldline#/time
  */
@@ -31,13 +32,16 @@ import {
   worldlineCausalSeed,
   worldlineSpawn,
   worldlineInject,
+  worldlineTick,
   worldlineHandback,
+  worldlineRetire,
   worldlineStampFor,
   type WorldlineCausal,
 } from "./worldline-clock.js";
 import {
   PRED_DELEGATION,
   PRED_COMMUNICATION,
+  ROUND_CLOSE,
   type WorldlineEdgeTriple,
   type WorldlineEdgeClose,
 } from "./worldline-edge.js";
@@ -166,7 +170,7 @@ export function shuffleTrajectory(
 
 /** One edge-DAG event, normalized for causal replay. */
 interface CausalEvent {
-  readonly op: "spawn" | "inject" | "handback";
+  readonly op: "spawn" | "message" | "handback" | "retire";
   readonly subject: string;
   readonly object: string;
   readonly turnKey?: string;
@@ -177,11 +181,19 @@ interface CausalEvent {
  * A replay gap announces the event and the failed causal condition.
  */
 export interface WorldlineReplaySkip extends CausalEvent {
-  readonly reason: "child-already-spawned" | "target-unspawned" | "pair-unknown" |
+  readonly reason: "child-already-spawned" | "target-unspawned" | "sender-retired" | "pair-unknown" |
     "parent-key-unknown" | "dependency-unapplied" | "cycle" | "malformed";
 }
 
-const opRank = { spawn: 0, inject: 1, handback: 2 } as const;
+/**
+ * A message the replay applied without its sender's past: the sender holds no recorded worldline (never
+ * spawned, never the root), so the recipient takes the receive event alone and the gap stays named.
+ */
+export interface WorldlineReplayUnjoined extends CausalEvent {
+  readonly reason: "sender-unrecorded";
+}
+
+const opRank = { spawn: 0, message: 1, handback: 2, retire: 3 } as const;
 
 /** Content order resolves concurrent events without using input position or wall time. */
 function compareEvent(a: CausalEvent, b: CausalEvent): number {
@@ -200,21 +212,23 @@ export function replayWorldlineEdges(
   root: string,
   opens: readonly WorldlineEdgeTriple[],
   closes: readonly WorldlineEdgeClose[] = [],
-): { causal: WorldlineCausal; skipped: readonly WorldlineReplaySkip[] } {
+): { causal: WorldlineCausal; skipped: readonly WorldlineReplaySkip[]; unjoined: readonly WorldlineReplayUnjoined[] } {
   const events: CausalEvent[] = [];
   const skipped: WorldlineReplaySkip[] = [];
+  const unjoined: WorldlineReplayUnjoined[] = [];
   const eventOf = (op: CausalEvent["op"], subject: string, object: string, turnKey?: string, parentKey?: string): CausalEvent => ({
     op, subject, object,
     ...(turnKey !== undefined ? { turnKey } : {}),
     ...(parentKey !== undefined ? { parentKey } : {}),
   });
   for (const e of opens) {
-    const event = eventOf(e.predicate === PRED_DELEGATION ? "spawn" : "inject", e.subject, e.object, e.turnKey, e.parentKey);
+    const op = e.predicate === PRED_DELEGATION ? "spawn" : e.round === ROUND_CLOSE ? "handback" : "message";
+    const event = eventOf(op, e.subject, e.object, e.turnKey, e.parentKey);
     if (e.predicate === PRED_DELEGATION || e.predicate === PRED_COMMUNICATION) events.push(event);
     else skipped.push({ ...event, reason: "malformed" });
   }
   for (const c of closes) {
-    const event = eventOf("handback", c.subject, c.object, undefined, c.parentKey);
+    const event = eventOf("retire", c.subject, c.object, undefined, c.parentKey);
     if (c.predicate === PRED_DELEGATION) events.push(event);
     else skipped.push({ ...event, reason: "malformed" });
   }
@@ -228,11 +242,13 @@ export function replayWorldlineEdges(
   }
   const spawns = unique.filter((e) => e.op === "spawn");
   const spawnedObjects = new Set(spawns.map((s) => s.object));
-  const injectsInto = new Map<string, CausalEvent[]>();
-  const handbacksFrom = new Map<string, CausalEvent[]>();
+  // Every message and handback a handle sends or receives, and every retirement it performs on its own
+  // children — a retirement of that handle waits on all of them.
+  const exchangesOf = new Map<string, CausalEvent[]>();
+  const push = (h: string, e: CausalEvent): void => { (exchangesOf.get(h) ?? exchangesOf.set(h, []).get(h)!).push(e); };
   for (const e of unique) {
-    if (e.op === "inject") (injectsInto.get(e.object) ?? injectsInto.set(e.object, []).get(e.object)!).push(e);
-    else if (e.op === "handback") (handbacksFrom.get(e.subject) ?? handbacksFrom.set(e.subject, []).get(e.subject)!).push(e);
+    if (e.op === "message" || e.op === "handback") { push(e.subject, e); push(e.object, e); }
+    else if (e.op === "retire") push(e.subject, e);
   }
   const firstSpawn = new Map<string, CausalEvent>();
   for (const spawn of spawns) if (!firstSpawn.has(spawn.object)) firstSpawn.set(spawn.object, spawn);
@@ -253,9 +269,8 @@ export function replayWorldlineEdges(
     const objectSpawn = firstSpawn.get(e.object);
     if (subjectSpawn && subjectSpawn !== e) deps.add(subjectSpawn);
     if (objectSpawn && objectSpawn !== e) deps.add(objectSpawn);
-    if (e.op === "handback") {
-      for (const prior of injectsInto.get(e.object) ?? []) deps.add(prior);
-      for (const prior of handbacksFrom.get(e.object) ?? []) if (prior !== e) deps.add(prior);
+    if (e.op === "retire") {
+      for (const prior of exchangesOf.get(e.object) ?? []) if (prior !== e) deps.add(prior);
     }
     dependencies.set(e, deps);
   }
@@ -316,20 +331,39 @@ export function replayWorldlineEdges(
         causal = worldlineSpawn(causal, ev.subject, ev.object);
         spawned.add(ev.object);
         activePairs.add(pair);
-      } else if (ev.op === "inject") {
+      } else if (ev.op === "message") {
         if (!worldlineStampFor(causal, ev.object)) {
           skipped.push({ ...ev, reason: "target-unspawned" });
           failed.add(ev);
           continue;
         }
-        causal = worldlineInject(causal, ev.object);
+        if (worldlineStampFor(causal, ev.subject)) {
+          causal = worldlineInject(causal, ev.subject, ev.object);
+        } else if (spawned.has(ev.subject)) {
+          skipped.push({ ...ev, reason: "sender-retired" });
+          failed.add(ev);
+          continue;
+        } else {
+          // The sender holds no recorded worldline: the recipient takes the receive alone, named unjoined.
+          causal = worldlineTick(causal, ev.object);
+          unjoined.push({ ...ev, reason: "sender-unrecorded" });
+        }
+      } else if (ev.op === "handback") {
+        // The edge runs child → parent; the spawn pair reads parent → child.
+        const spawnPair = JSON.stringify([ev.object, ev.subject]);
+        if (!activePairs.has(spawnPair) || !worldlineStampFor(causal, ev.subject) || !worldlineStampFor(causal, ev.object)) {
+          skipped.push({ ...ev, reason: "pair-unknown" });
+          failed.add(ev);
+          continue;
+        }
+        causal = worldlineHandback(causal, ev.object, ev.subject).causal;
       } else {
         if (!activePairs.has(pair) || !worldlineStampFor(causal, ev.subject) || !worldlineStampFor(causal, ev.object)) {
           skipped.push({ ...ev, reason: "pair-unknown" });
           failed.add(ev);
           continue;
         }
-        causal = worldlineHandback(causal, ev.subject, ev.object);
+        causal = worldlineRetire(causal, ev.subject, ev.object);
         activePairs.delete(pair);
       }
     } catch {
@@ -339,7 +373,7 @@ export function replayWorldlineEdges(
   }
   for (const ev of [...dependencies.keys()].sort(compareEvent)) skipped.push({ ...ev, reason: "cycle" });
   skipped.sort((a, b) => compareEvent(a, b) || (a.reason < b.reason ? -1 : a.reason > b.reason ? 1 : 0));
-  return { causal, skipped };
+  return { causal, skipped, unjoined };
 }
 
 /** Project the ITC registry from causal edge links; valid-time rides as display metadata. */
@@ -370,6 +404,7 @@ export interface RewindThenForkResult {
   /** The count of open edges the kapae filter dropped (the rewound turns' Delegation/Communication). */
   readonly dropped: number;
   readonly skipped: readonly WorldlineReplaySkip[];
+  readonly unjoined: readonly WorldlineReplayUnjoined[];
   readonly parent: string;
   readonly child: string;
 }
@@ -412,5 +447,5 @@ export function rewindThenFork(
   // Fork the new concurrent sibling off the rewound frontier (itcFork, via worldlineSpawn).
   const causal = worldlineSpawn(view, fork.parent, fork.child);
 
-  return { causal, view, dropped, skipped: replay.skipped, parent: fork.parent, child: fork.child };
+  return { causal, view, dropped, skipped: replay.skipped, unjoined: replay.unjoined, parent: fork.parent, child: fork.child };
 }

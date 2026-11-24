@@ -8,10 +8,13 @@
  *
  *   fork  = spawn   — split the id; both branches inherit the shared event history,
  *                     so the parent happened-before each child (the Delegation edge).
- *   event = inject  — advance one stamp's event (the rhizome's prov:Communication leg;
- *                     FULL ticks — EVERY injection is an event, the operator's D-cut).
- *   join  = handback — sum the ids + max-join the events (the twin-reunion merge; one
- *                     merge among many in the rhizome — merge-where-messages-land).
+ *   event = tick    — advance one stamp's event (local work, a send, a receive; FULL
+ *                     ticks — EVERY injection rides an event, the operator's D-cut).
+ *   peek  = message — an anonymous stamp (id 0) carrying the sender's history; joining it
+ *                     merges the history and leaves the recipient's ownership whole, so a
+ *                     message orders the receive after the send (merge-where-messages-land).
+ *   join  = retire  — sum the ids + max-join the events (the reunion that reclaims a
+ *                     retired spirit's ownership).
  *
  * Concurrency is FIRST-CLASS: two stamps that share no merge-ancestry compare
  * "concurrent" — the read the rhythmic FfzClock LWW can never give (the PATH-B cut:
@@ -222,7 +225,16 @@ export function itcEvent(s: ItcStamp): ItcStamp {
   return { id: s.id, event: grown };
 }
 
-/** join = HANDBACK — sum the ids, max-join the histories (the merge). */
+/**
+ * peek = MESSAGE — the anonymous stamp (id 0) carrying `s`'s history and no ownership (Almeida et al.
+ * §5). `itcJoin(recipient, itcPeek(sender))` merges the sender's history into the recipient while the
+ * recipient's ownership stays whole — the receive half of a message between two continuing writers.
+ */
+export function itcPeek(s: ItcStamp): ItcStamp {
+  return { id: 0, event: s.event };
+}
+
+/** join = RETIRE — sum the ids, max-join the histories (the reunion that reclaims ownership). */
 export function itcJoin(a: ItcStamp, b: ItcStamp): ItcStamp {
   return { id: normId(sumId(a.id, b.id)), event: joinEvent(a.event, b.event) };
 }

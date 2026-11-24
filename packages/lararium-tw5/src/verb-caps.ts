@@ -28,7 +28,6 @@ import type {
   SparseFormVector,
   WorldlineStubWire,
   WorldlineEdgeTriple,
-  WorldlineEdgeClose,
 } from "@lararium/mesh";
 import { VerbTable, type VerbContext } from "./verb-dispatcher.js";
 import type {
@@ -119,10 +118,15 @@ export interface FormPalaceProvider {
   ): Promise<Record<string, unknown>>;
 }
 
-/** A spirit's worldline edges derived from a transcript (the worldline-compare edge-DAG source). */
-export interface SubagentEdgePair {
+/**
+ * A spirit's worldline edges derived from a transcript (the worldline-compare edge-DAG source): its spawn,
+ * one round-closing handback edge per real handback event, and every delivered message it received or
+ * sent to a sibling. No retirement rides the feed; a transcript records none.
+ */
+export interface SpiritEdges {
   readonly spawn: WorldlineEdgeTriple;
-  readonly handback: WorldlineEdgeClose;
+  readonly handbacks: readonly WorldlineEdgeTriple[];
+  readonly messages: readonly WorldlineEdgeTriple[];
 }
 
 /** daemon-VM provider — the sovereign-worker reads + the capture FEED. The host supplies only the
@@ -189,10 +193,10 @@ export interface DaemonVerbProvider {
   /** REWIND (kapae) one turn's .structurepalace tally + salience down-weight, IN the daemon (warm holder).
    *  Fire-and-forget — the convergence twin of the CLI-side worldline KG valid-close. */
   placeStructurepalaceKapae(turnKey: string, ended?: string): void;
-  /** Derive a session transcript's spawn/handback edges (worldline-compare's edge-DAG source). The CRUNCH
+  /** Derive a session transcript's spirit edges — spawns, round closes, messages (worldline-compare's edge-DAG source). The CRUNCH
    *  lives in python (beside the transcript data) — this provider ROUTES to the capture holder's
    *  `subagent-edges` serve-op, so it reads async. `sensoriumRoot` addresses a holder (absent → memory). */
-  subagentEdges(input: { transcript: string; sensoriumRoot?: string }): Promise<readonly SubagentEdgePair[]>;
+  subagentEdges(input: { transcript: string; sensoriumRoot?: string }): Promise<readonly SpiritEdges[]>;
   /** Well 1 — the concurrent-capable causal verdict between two handles, IN the daemon VM. */
   worldlineCompare(input: DaemonWorldlineCompareInput): Promise<{ order: string }>;
   /** Well 3 + Well 4 — a handle's worldline-ordered form-vector path (+ optional null baseline). */
@@ -639,10 +643,9 @@ export function worldlineVerbCap(): CapModule {
           const spirits = transcript
             ? await daemon.subagentEdges(sensoriumRoot !== undefined ? { transcript, sensoriumRoot } : { transcript })
             : [];
-          const opens = spirits.map((s) => s.spawn);
-          const closes = spirits.map((s) => s.handback);
+          const opens = spirits.flatMap((s) => [s.spawn, ...s.handbacks, ...s.messages]);
           try {
-            return await daemon.worldlineCompare({ a, b, opens, closes });
+            return await daemon.worldlineCompare({ a, b, opens });
           } catch (err) {
             throw new Error(`worldline-compare: ${err instanceof Error ? err.message : String(err)} (supply a transcript that names both handles)`);
           }

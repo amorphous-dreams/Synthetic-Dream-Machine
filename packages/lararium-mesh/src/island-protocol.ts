@@ -527,9 +527,9 @@ export interface DaemonMsg_WorldlineCompareRequest {
   requestId: string;
   a: string;
   b: string;
-  /** The durable edge-DAG opens (prov:Delegation spawn / prov:Communication inject), plain objects. */
+  /** The durable edge-DAG opens (prov:Delegation spawn / prov:Communication message or round-closing handback), plain objects. */
   opens: readonly WorldlineEdgeTriple[];
-  /** The edge-DAG closes (prov:Delegation handback) — absent when no handback edges stand. */
+  /** The edge-DAG closes (prov:Delegation retirement) — absent when no retirement edges stand. */
   closes?: readonly WorldlineEdgeClose[];
   /** The run-root / common-cause handle the registry seeds from (default "operator"). */
   root?: string;
