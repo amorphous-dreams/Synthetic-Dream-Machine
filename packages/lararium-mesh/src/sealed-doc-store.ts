@@ -89,7 +89,8 @@ export interface HeldNotice {
 }
 
 /** The refusals that keep a save in memory rather than at rest. */
-export type HeldRefusal = "save-unbooked" | "save-unmapped" | "save-unsealed" | "save-unnamed";
+export const HELD_REFUSALS = ["save-unbooked", "save-unmapped", "save-unsealed", "save-unnamed"] as const;
+export type HeldRefusal = (typeof HELD_REFUSALS)[number];
 
 /** One document's saves held in memory under one refusal (`SealedDocumentStore.held`): its id, never its body. */
 export interface HeldSaves {
