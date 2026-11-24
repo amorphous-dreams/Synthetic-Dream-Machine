@@ -1345,7 +1345,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     synopsis:
       "THE HAND'S RELEASE OF ONE QUARANTINED ID, with the vessel stopped. It claims the store for its act and refuses by name " +
       "where a holder answers (a standing vessel, a command mid-act, or a fallen vessel whose process still lives), naming " +
-      "`lares vessel stop`. `lares vessel read` lists the held ids with no verb, a fallen vessel's included.",
+      "`lares vessel stop`. `lares vessel read` lists the held ids with no verb, and answers a fallen vessel too.",
     examples: [
       "lares vessel read                               # the held ids, and why each one holds",
       "lares vessel stop                               # the release runs with the vessel stopped",
