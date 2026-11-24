@@ -63,14 +63,21 @@
  *
  * THE SCHEDULED STRUCK FIRE: after `KEEPER_STRUCK_EVERY` handed links in a row, the vest refuses `struck-due` and the hand lights the
  * successor by passphrase, which keeps the human's route practiced. Count-based down the chain, no clock.
- * Meme: lar:///ha.ka.ba/kahua/memory/research/keeper-tessera#/vesting
+ *
+ * THE KEEPER LEI (operator ruling, 2026-11-24: the kukulu lei licenses it, no count of its own). Where a wide kukulu lei on the
+ * branch holds returns, the host may rest ONE keeper commit with no route (`keeperCommitByLei`), over a revision it read reachable
+ * from origin, green in CI and built into an image whose closure label equals `next`; the commit names that license and testimony.
+ * The live rite the vest rides spends the lei's return (the same return the rite spends for the lent face), and the vest names each
+ * return. A lei never supersedes a hand's commit; faces of one device alone. The bounds bind honest successor code only: the one bind
+ * against a familiar that means harm stands at the merge gate, the operator's consent.
+ * Meme: lar:///ha.ka.ba/kahua/memory/research/keeper-tessera#/vesting · lar:///ha.ka.ba/kahua/memory/research/keeper-lei#/shape
  */
 import { randomUUID } from "node:crypto";
 import { KEEPER_NONCE, canonicalJsonBytes, keeperCosignRefusal, mintSealedBoxRecipient, openFromSender, sealToRecipient, sha256HexBytesSync, type KeeperCosign, type SwarmWikiPort } from "@lararium/mesh";
 import type { KukuluSigner } from "./kukulu-gate.js";
 import {
   pulamaRecordCid, signPulamaRecord, verifiedPulamaRecord,
-  type AdmittedFace, type KeeperBegunBody, type KeeperLandedBody, type KeeperSlotBody, type KeeperVest, type KeeperVestedBody, type SignedPulamaAdmit,
+  type AdmittedFace, type KeeperBegunBody, type KeeperLicense, type KeeperLandedBody, type KeeperSlotBody, type KeeperVest, type KeeperVestedBody, type SignedPulamaAdmit,
 } from "./pulama-admit.js";
 
 /** Why a commit's carried co-signs do not cover its faces, or null where they do (or where none is owed and none rides). */
@@ -91,6 +98,13 @@ function cosignsRefusal(at: { readonly next: string; readonly prev: string | nul
 
 /** Handed links in a row before the vest refuses and the hand strikes the fire anew (the lei's explicit-confirm threshold). */
 export const KEEPER_STRUCK_EVERY = 12;
+/**
+ * THE KEEPER LEI'S FLOOR (alpha: on). A code constant inside the pūlama closure, never an env var and never a tiddler: the pūlama
+ * opens no document, and a flag the familiar could write would gate nothing. Turning it off moves D′, so the OFF switch itself lands
+ * through one keeper handoff; from then every commit the kukulu lei would license refuses `keeper-lei-floor-off`, and `status` reads
+ * `floor: false`.
+ */
+export const KEEPER_LEI_STANDS: boolean = true;
 const PREFIX = "$:/lares/pulama/keeper/";
 export const pulamaKeeperPrefix = (): string => PREFIX;
 export const pulamaKeeperTitle = (tessera: string, half: "guest" | "host" | "vest"): string => `${PREFIX}${tessera}/${half}`;
@@ -209,7 +223,7 @@ export interface KeeperStanding { readonly closure: string | null; readonly imag
  * KEEPER-COMMIT (the caller proved the operator's route first): rest the guest half naming `next` at the chain's next link. A live
  * commit there is superseded by this one. The keeper's own closure must stand reported, and `next` must read as a closure.
  */
-export async function keeperCommit(records: SwarmWikiPort, by: KukuluSigner, at: KeeperStanding & { readonly next: string; readonly devices: number | null; readonly cosign?: unknown }): Promise<{ readonly tessera: string; readonly v: number; readonly next: string; readonly supersedes: string | null } | KeeperRefusal> {
+export async function keeperCommit(records: SwarmWikiPort, by: KukuluSigner, at: KeeperStanding & { readonly next: string; readonly devices: number | null; readonly cosign?: unknown; readonly licensed?: KeeperLicense }): Promise<{ readonly tessera: string; readonly v: number; readonly next: string; readonly supersedes: string | null } | KeeperRefusal> {
   if (!CLOSURE.test(at.next)) return refuse("next-malformed", "the successor's closure reads `sha256:<64 hex>`, as tools/pulama-closure.mjs prints it");
   if (at.closure === null) return refuse("closure-unreported", "the host reported no closure for this keeper, so the chain cannot name what it hands from");
   const fold = await keeperFold(records, by);
@@ -228,7 +242,7 @@ export async function keeperCommit(records: SwarmWikiPort, by: KukuluSigner, at:
   if (wrong !== null) return wrong;
   const tessera = sha256HexBytesSync(canonicalJsonBytes({ v, prev: fold.tip, next: at.next, nonce }));
   const supersedes = fold.pending?.begun ?? null, settles = fold.forkCommits;
-  const act = await signPulamaRecord<"keeper-begun">({ act: "keeper-begun", tessera, v, prev: fold.tip, closure: at.closure, next: at.next, image: at.image, faces: at.faces, worn: at.worn, budget: { spent: at.spent }, supersedes, ...(settles.length > 0 ? { settles: [...settles] } : {}), nonce, devices, cosigns }, by);
+  const act = await signPulamaRecord<"keeper-begun">({ act: "keeper-begun", tessera, v, prev: fold.tip, closure: at.closure, next: at.next, image: at.image, faces: at.faces, worn: at.worn, budget: { spent: at.spent }, supersedes, ...(settles.length > 0 ? { settles: [...settles] } : {}), nonce, devices, cosigns, ...(at.licensed ? { licensed: at.licensed } : {}) }, by);
   if (!(await records.writeNew(pulamaKeeperTitle(tessera, "guest"), JSON.stringify(act)))) return cosigns !== null
     ? refuse("vest-cosign-spent", "this co-sign rode a commit already (its nonce names that commit's tessera), and a co-sign spends once; ask a fresh one: lares pulama keeper-commit")
     : refuse("keeper-begun-stands", `a guest half already rests for tessera ${tessera}`);
@@ -290,7 +304,7 @@ export function keeperPayloadDrop(p: VestPayload): void { p.node.fill(0); for (c
  *  and the device count the vouch carries. */
 export interface KeeperVouchedFace { readonly ordinal: number; readonly group: string; readonly devices: number }
 /** What a begun rite answers: the tesserae it rested, or why it began nothing. */
-export type KeeperRiteBegun = { readonly ok: true; readonly rite: readonly string[] } | { readonly ok: false; readonly refusal: string; readonly detail: string; readonly begun?: readonly string[] };
+export type KeeperRiteBegun = { readonly ok: true; readonly rite: readonly string[]; readonly leis?: readonly { readonly lei: string; readonly n: number }[] } | { readonly ok: false; readonly refusal: string; readonly detail: string; readonly begun?: readonly string[] };
 /** The live rite as the vest reads it: every vouch verified, each face it names, and a `begin` the vest calls only after every
  *  check passes, so a refusal spends no lei return and rests no begun half. */
 export type KeeperRiteReading = { readonly ok: true; readonly devices: number; readonly faces: readonly KeeperVouchedFace[]; readonly begin: () => Promise<KeeperRiteBegun> } | { readonly ok: false; readonly refusal: string; readonly detail: string };
@@ -383,7 +397,7 @@ export async function keeperVest(records: SwarmWikiPort, by: KukuluSigner, at: {
     // EVERY CHECK PASSED: only now does the rite begin (it claims a lei return and rests its begun half), and only then does a key leave.
     const started = await rite.begin();
     if (!started.ok) return lapse(refuse(started.refusal, started.detail), started.begun ?? []);
-    const mark = await signPulamaRecord<"keeper-vested">({ act: "keeper-vested", tessera, begun, next, to: sha256HexBytesSync(unhex(at.to)), node: true, faces: keys.faces.map((f) => f.fcid), nonce: randomUUID(), rite: [...started.rite] }, by);
+    const mark = await signPulamaRecord<"keeper-vested">({ act: "keeper-vested", tessera, begun, next, to: sha256HexBytesSync(unhex(at.to)), node: true, faces: keys.faces.map((f) => f.fcid), nonce: randomUUID(), rite: [...started.rite], ...(started.leis && started.leis.length > 0 ? { leis: started.leis.map((l) => ({ lei: l.lei, n: l.n })) } : {}) }, by);
     if (!(await records.writeNew(pulamaKeeperTitle(tessera, "vest"), JSON.stringify(mark)))) return refuse("vest-spent", "this commit already spent its one rite attempt; commit again on a terminal (`lares pulama keeper-commit`), or light the successor by hand: lares rite kukulu");
     const plain = packPayload({ node: keys.treeKey, faces: keys.faces.map((f) => ({ fcid: f.fcid, ordinal: f.ordinal, fck: f.fck, spent: f.spent ?? 0 })), spent: at.spent, worn: at.worn });
     let box;
@@ -464,4 +478,73 @@ export async function keeperSlotBinds(records: SwarmWikiPort, by: KukuluSigner, 
   const mark = verifiedPulamaRecord(await records.read(pulamaKeeperTitle(slot.body.tessera, "vest")), by.key);
   if (mark === null || mark.body.act !== "keeper-vested" || mark.body.begun !== slot.body.begun || mark.body.to !== sha256HexBytesSync(unhex(at.to))) return refuse("vest-unwitnessed", "no spend mark names this vest to this keeper's key");
   return null;
+}
+
+// ── THE KEEPER LEI: the kukulu lei licenses the handed fire ─────────────────────────────────────────
+// Operator ruling, 2026-11-24: //"A keeper-lei should not have its own count (that's friction), it should just consume the kukulu
+// lei if that has uses available."// No record family and no tally of its own: a commit with no route rests where the host testifies
+// a wide kukulu lei on the branch holds returns, and the live rite the vest rides spends that lei's return (the SAME return the rite
+// spends for the lent face; the keeper commit takes no extra one). The vest names each lei return that licensed it.
+// Meme: lar:///ha.ka.ba/kahua/memory/research/keeper-lei#/shape
+const REV = /^[0-9a-f]{40}$/, CI_GREEN = /^[0-9]+:success$/;
+
+/** What the host testifies beside a commit the kukulu lei licenses: it read the revision, the closure tool twice and the CI run;
+ *  the pūlama reads none of them. */
+export interface KeeperLeiTestimony { readonly branch: string; readonly rev: string; readonly tree: string; readonly recheck: string; readonly image: string; readonly ci: string }
+
+/** One keeper commit the kukulu lei licensed, as `status` names it: its link, its closure, the host's testimony, and (once vested)
+ *  each kukulu lei return the vest's live rite spent on it. */
+export interface KeeperLicensedCommit {
+  readonly tessera: string; readonly v: number; readonly next: string; readonly branch: string; readonly rev: string; readonly ci: string;
+  readonly vested: boolean; readonly leis: readonly { readonly lei: string; readonly n: number }[];
+}
+
+/** Every keeper commit the kukulu lei licensed, by link (status reads it; a routed commit names none). */
+export async function keeperLicensed(records: SwarmWikiPort, by: KukuluSigner): Promise<readonly KeeperLicensedCommit[]> {
+  const rows = await rowsOf(records, by);
+  const out: KeeperLicensedCommit[] = [];
+  for (const [tessera, b] of rows.begun) {
+    if (b === "refused" || b.body.licensed === undefined) continue;
+    const l = b.body.licensed, vest = rows.vested.get(tessera);
+    out.push({ tessera, v: b.body.v, next: b.body.next, branch: l.branch, rev: l.rev, ci: l.ci, vested: vest?.begun === b.cid, leis: vest?.begun === b.cid ? [...(vest.leis ?? [])] : [] });
+  }
+  return out.sort((x, y) => x.v - y.v || x.tessera.localeCompare(y.tessera));
+}
+
+/**
+ * THE COMMIT THE KUKULU LEI LICENSES (no route): rest ONE keeper commit naming `next`, as the routed path rests one, its body naming
+ * the license and the host's testimony. It refuses, before anything rests, on the floor off, a face of more than one device,
+ * testimony that does not hold (the image label must equal `next`, the recheck read the same, the CI run green), a fork, a live hand
+ * commit (a lei never supersedes a commit), a vested commit not yet landed, a red last pair, or the struck fire due. The kukulu lei's
+ * return binds at the vest: the vest rides a live rite whose begin claims that lei's return, and with none the commit lapses.
+ */
+export async function keeperCommitByLei(records: SwarmWikiPort, by: KukuluSigner, at: KeeperStanding & KeeperLeiTestimony & { readonly next: string; readonly devices: number | null; readonly floor?: boolean }): Promise<{ readonly tessera: string; readonly v: number; readonly next: string; readonly branch: string } | KeeperRefusal> {
+  const routed = "name the successor by hand: lares pulama keeper-commit on a terminal";
+  if (!(at.floor ?? KEEPER_LEI_STANDS)) return refuse("keeper-lei-floor-off", `the keeper lei's floor stands off in this keeper's code (KEEPER_LEI_STANDS), so no kukulu lei licenses a commit; ${routed}`);
+  if (!CLOSURE.test(at.next)) return refuse("next-malformed", "the successor's closure reads `sha256:<64 hex>`, as tools/pulama-closure.mjs prints it");
+  if (at.closure === null) return refuse("closure-unreported", "the host reported no closure for this keeper, so the chain cannot name what it hands from; tools/lares-container.sh up reports it");
+  if (at.devices === null) return refuse("keeper-lei-devices-unread", `the host read no device count for the lit faces, so the commit cannot tell whether it owes a co-sign; stand the vessel and run lares rite kukulu again, or ${routed}`);
+  if (at.devices !== 1) return refuse("keeper-lei-cosign-owed", `a lit face holds ${at.devices} devices, and the kukulu lei licenses the handed fire for one-device faces alone (a two-device face owes a co-sign over each D′); ${routed} (it asks the co-sign)`);
+  if (at.branch === "" || /\s/.test(at.branch)) return refuse("keeper-lei-testimony-malformed", `the host names the branch whose kukulu lei licenses the commit; run lares rite kukulu again, or ${routed}`);
+  if (!REV.test(at.rev) || !REV.test(at.tree)) return refuse("keeper-lei-testimony-malformed", `the host names the revision and its source tree as 40 hex each; run lares rite kukulu again, or ${routed}`);
+  if (at.recheck !== "same") return refuse("keeper-lei-recheck-differs", `the second fresh-archive closure of ${at.rev} did not read the same; ${routed}`);
+  if (at.image !== at.next) return refuse("keeper-lei-image-differs", `the built image's closure label reads ${at.image}, and the revision's archive reads ${at.next}; rebuild the image from that revision (lares rite kukulu), or ${routed}`);
+  if (!CI_GREEN.test(at.ci)) return refuse("keeper-lei-ci-red", `the CI push run on ${at.rev} reads ${at.ci || "none"}, never success; wait for it to land green (gh run list --commit ${at.rev} --workflow CI), or ${routed}`);
+  const fold = await keeperFold(records, by);
+  if (fold.fork) return refuse("fork", `the keeper chain reads a fork; read it with lares pulama status, and ${routed}`);
+  if (fold.pending !== null) return refuse("keeper-lei-hand-pending", `a live keeper commit already names ${fold.pending.next}, and a lei never supersedes a commit: the next lares rite kukulu that raises that closure vests it, or ${routed} (it supersedes)`);
+  if (fold.vested !== null) return refuse("keeper-lei-vested-unlanded", `the commit naming ${fold.vested.next} vested and no landing names it yet; finish the handoff: lares rite kukulu (or relight one keeper by passphrase on a terminal)`);
+  const last = fold.pairs.at(-1);
+  if (last !== undefined && !last.par) return refuse("keeper-lei-red", `the last keeper pair reads red (${last.red ?? "red"}); read it with lares pulama status, and light the successor by passphrase: lares rite kukulu on a terminal`);
+  if (fold.struckDue) return refuse("struck-due", `${fold.vestings} handed links stand in a row; light this successor by passphrase (the struck fire): lares rite kukulu on a terminal`);
+  const out = await keeperCommit(records, by, { ...at, cosign: null, licensed: { by: "kukulu-lei", branch: at.branch, rev: at.rev, tree: at.tree, recheck: "same", image: at.image, ci: at.ci } });
+  if ("refusal" in out) return out;
+  return { tessera: out.tessera, v: out.v, next: out.next, branch: at.branch };
+}
+
+/** Whether the kukulu lei could license a commit now (the `status` hint the host's stand reading follows): every pūlama-side bound
+ *  but the testimony and the lei itself, which the host reads (`lares lei show`) and the vest's rite spends. */
+export function keeperLeiReady(fold: KeeperFold, floor: boolean = KEEPER_LEI_STANDS): boolean {
+  const last = fold.pairs.at(-1);
+  return floor && !fold.fork && fold.pending === null && fold.vested === null && !fold.struckDue && (last === undefined || last.par);
 }

@@ -288,12 +288,12 @@ export function keeperRiteOver(a: {
     }
     if (ats.length === 0) return no("vest-rite-absent", `no lit face's vouch can begin a rite for this vest (${first ?? "no face"})`);
     const begin = async (): Promise<KeeperRiteBegun> => {
-      const tesserae: string[] = [];
+      const tesserae: string[] = [], leis: { lei: string; n: number }[] = [];
       let none: string | null = first;
       for (const at of ats) {
         // THE RETURN CLAIMS HERE: the vest is this rite's begin, and the next vessel's hello lands the half it rests.
         const begun = await a.rite.begin({ lei, unstrung }, at);
-        if (begun.ok) tesserae.push(begun.tessera);
+        if (begun.ok) { tesserae.push(begun.tessera); leis.push({ lei: begun.lei, n: begun.n }); }
         else if (begun.refusal === "swarm-lei-absent") none ??= begun.refusal;
         // A BEGIN THAT FAILS PART WAY NAMES WHAT IT BEGAN (blind read L1): the halves earlier faces rested stay resting, named here and
         // in the lapse the vest rests, so the hand reads them rather than finding them.
@@ -301,7 +301,8 @@ export function keeperRiteOver(a: {
         else return no(begun.refusal, "the rite this vest rides begins nothing");
       }
       if (tesserae.length === 0) return no("vest-rite-absent", `no lit face's kukulu lei began a rite for this vest (${none ?? "no face"})`);
-      return { ok: true, rite: tesserae };
+      // EACH KUKULU LEI RETURN THE RITE SPENT names itself on the vest: the license a keeper commit with no route rode.
+      return { ok: true, rite: tesserae, leis };
     };
     // THE FEWEST READ WINS where a face read none (0 fails closed); else the most any face holds.
     return { ok: true, devices: devices === 0 ? 0 : most, faces, begin };

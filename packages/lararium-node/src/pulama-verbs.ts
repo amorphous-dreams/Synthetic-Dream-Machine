@@ -19,6 +19,8 @@
  *            before any prompt), the prompt names the successor closure it commits, and the route proves against the lit holder.
  *            The host's consent screen (`tools/lares-container.sh pulama keeper-commit`) prints that closure and the source tree, and
  *            offers the clean-tree re-check, before it lands here
+ *   keeper-commit-lei '<json>'  (no route) the commit the kukulu lei licenses, as the host testifies it
+ *            (`tools/lares-container.sh pulama keeper-commit --lei <rev> <branch>` sends it)
  *   lock · status · tessera · keeper-offer · keeper-land · take-fire · closure <sha256:…> · keeper-vest '{"to","closure"}' ·
  *   keeper-receive '{"slot"}' · image <digest> | image '{"digest","seed","closure"}'   one frame each, no route
  *
@@ -87,7 +89,7 @@ export function readRoute(label: string, what: string, terminal: RouteTerminal =
   });
 }
 
-export const PULAMA_VERB_USAGE = `usage: pulama-main.js serve | light [--admit] | admit [face…] | unadmit <image digest> | rehive <face> | recard <face> | lei kui|restring|unstring '{"face":…,"rite":…,"branch":…,…}' | lei kui '{"faces":[…]}' | keep-seat | lock | status | image <digest> | image '{"digest":…,"seed":…,"closure":…}' | tessera | closure <sha256:…> | keeper-commit <sha256:…> [--devices <n>] [--cosign <json>] | keeper-offer | keeper-vest '{"to":…,"closure":…}' | keeper-receive '{"slot":…}' | keeper-land | take-fire`;
+export const PULAMA_VERB_USAGE = `usage: pulama-main.js serve | light [--admit] | admit [face…] | unadmit <image digest> | rehive <face> | recard <face> | lei kui|restring|unstring '{"face":…,"rite":…,"branch":…,…}' | lei kui '{"faces":[…]}' | keep-seat | lock | status | image <digest> | image '{"digest":…,"seed":…,"closure":…}' | tessera | closure <sha256:…> | keeper-commit <sha256:…> [--devices <n>] [--cosign <json>] | keeper-commit-lei '{"next":…,"branch":…,"rev":…,"tree":…,"recheck":…,"image":…,"ci":…,"devices":…}' | keeper-offer | keeper-vest '{"to":…,"closure":…}' | keeper-receive '{"slot":…}' | keeper-land | take-fire`;
 
 /** A verb line the hand door holds no act for. */
 export class PulamaVerbUsage extends Error { override readonly name = "PulamaVerbUsage"; constructor() { super(PULAMA_VERB_USAGE); } }
@@ -103,7 +105,7 @@ export function handVerbExit(verb: string, answer: PulamaHandAnswer): 0 | 1 {
 }
 /** The one reading each act that must land answers; any other reading exits 1, so the host shim never reads a refusal as done. */
 const HAND_VERB_LANDS: Readonly<Record<string, string>> = {
-  rehive: "rehived", recard: "granted", "keeper-commit": "committed", "keeper-offer": "offered", "keeper-vest": "vested", "keeper-receive": "landed", "keeper-land": "landed", "take-fire": "taken",
+  rehive: "rehived", recard: "granted", "keeper-commit": "committed", "keeper-commit-lei": "committed", "keeper-offer": "offered", "keeper-vest": "vested", "keeper-receive": "landed", "keeper-land": "landed", "take-fire": "taken",
 };
 
 /**
@@ -210,7 +212,7 @@ export async function runHandVerb(verb: string, arg: string | readonly string[] 
     return ports.ask({ op: "keeper-commit", next: digest, ...devices, credentials: [{ kind: "passphrase", passphrase }] });
   }
   if (verb === "closure" && typeof arg === "string") return ports.ask({ op: "closure", digest: arg });
-  if ((verb === "keeper-vest" || verb === "keeper-receive") && typeof arg === "string") {
+  if ((verb === "keeper-vest" || verb === "keeper-receive" || verb === "keeper-commit-lei") && typeof arg === "string") {
     let terms: unknown;
     try { terms = JSON.parse(arg); } catch { throw new PulamaVerbUsage(); }
     if (typeof terms !== "object" || terms === null || Array.isArray(terms) || "op" in terms || "credentials" in terms) throw new PulamaVerbUsage();
