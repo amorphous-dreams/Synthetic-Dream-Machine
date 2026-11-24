@@ -6,7 +6,7 @@
  *   scan    walk source for carriers, derive each uri by the address siting rule, NFC-assert at the shore, hash, diff the
  *           disk hash against the base's disk side
  *   submit  pack NEW+CHANGED carriers (hashes riding with the text) into one INGEST verb (`ingestWaveArgs`); the CLI submits
- *           it over the verb socket (`lares ingest`, `lares ingest --watch`, `lares lay`), the vessel to its own daemon island
+ *           it over the verb socket (`lares ingest`, `lares ingest --watch`, `lares vessel lay`), the vessel to its own daemon island
  *           (`islandIngestSubmit`)
  *
  * The gesture holds the disk grant and the Synced tree; the island holds neither (readiness reads local on both sides of

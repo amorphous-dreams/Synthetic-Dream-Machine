@@ -14,7 +14,7 @@ import {
   FsCustodyIo, unlockCustody, bindCustodySlot, unbindCustodySlot, custodyStatus, bindFaceSlot, unbindFaceSlot, openFaceTree, readFaceIndexSync,
   type CustodyHomes, type CustodyStatus, type CustodyStatusRow,
 } from "@lararium/node";
-import { openTreeKey, decodeSlotTree, slotsOpenedBy, type Credential, type SlotSpec, type SlotTree } from "@lararium/mesh";
+import { ATTEMPT_BUDGET, attemptWarning, openTreeKey, decodeSlotTree, slotsOpenedBy, type Credential, type SlotSpec, type SlotTree } from "@lararium/mesh";
 import { nativeKdf } from "@lararium/mesh/node";
 import { larIdentityDir, larDataDir, larSealHome } from "../env.js";
 import { askYesNo, gatherBundleRoute, gatherCards, gatherCredentials, gatherNewSlot, gatherStayingSlot } from "../custody-prompt.js";
@@ -37,6 +37,7 @@ import { keepSlotAtBind, provedRoutes, reseatKeepPair, seatKeepAtUnlock, type Cu
 import { configuredKeepWorkspace } from "../keep-config.js";
 import { canPromptSecret } from "../prompt-secret.js";
 import { storeFailure, storeVerb } from "../store-door.js";
+import { tableCovers } from "../verb-table.js";
 
 function usage(args: ParsedArgs, typed?: string): number {
   return refuseUsage(args, "vault", helpLines("vault"), typed ? `unknown sub-verb "${typed}"` : undefined);
@@ -62,6 +63,9 @@ const RELATION_LINE =
 /** The vault reads that answer a pipe in prose (render.ts `proseFirst`): the custody reading and the unlock the shim chains. */
 const PROSE_FIRST_SUBS: ReadonlySet<string> = new Set(["status", "unlock"]);
 
+/** Every verb the vault door answers. */
+export const VAULT_VERBS = ["status", "unlock", "lock", "bind", "unbind", "backup", "restore", "reseat", "rehive"] as const;
+
 export async function cmdVault(given: ParsedArgs): Promise<number> {
   const sub = given.positional[0];
   // The refusals below render through the same args, so a piped unlock refuses in prose too.
@@ -70,7 +74,8 @@ export async function cmdVault(given: ParsedArgs): Promise<number> {
   const daemonUp = await udsAlive();
 
   try {
-    switch (sub) {
+    const v = sub as (typeof VAULT_VERBS)[number];
+    switch (v) {
       case "status":     return await vaultStatus(args, daemonUp);
       case "unlock":     return await vaultUnlock(args, daemonUp);
       case "lock":       return await vaultLock(args, daemonUp);
@@ -81,7 +86,7 @@ export async function cmdVault(given: ParsedArgs): Promise<number> {
       case "reseat":     return await vaultReseat(args, daemonUp);
       case "rehive":     return await vaultRehive(args);
       default:
-        console.error(`lares vault: unknown sub-verb "${sub}"`);
+        console.error(`lares vault: unknown sub-verb "${tableCovers(v)}"`);
         return usage(args, sub);
     }
   } catch (err) {
@@ -112,7 +117,7 @@ async function vaultStatus(args: ParsedArgs, daemonUp: boolean): Promise<number>
       if (door && typeof door["unlocked"] === "boolean") {
         console.log(door["unlocked"]
           ? `vessel key     HELD by the standing vessel (slot ${String(door["slot"])}); it stands as ${String(door["standing"])}. \`lares vault lock\` drops it.`
-          : `vessel key     NOT held: the vessel stands as ${String(door["standing"])} with ${String(door["attemptsLeft"])} unlock attempt(s) left this boot. \`lares vault unlock\` opens it.`);
+          : `vessel key     NOT held: the vessel stands as ${String(door["standing"])} with ${String(door["attemptsLeft"])} of ${ATTEMPT_BUDGET} unlock tries left this boot. \`lares vault unlock\` opens it.`);
       } else {
         console.log("vessel key     no vessel stands on this store, so no process holds it.");
       }
@@ -223,7 +228,14 @@ export function unlockFaceLines(a: CustodyDoorAnswer): string {
   return parts.length > 0 ? ` ${parts.join("; ")}.` : "";
 }
 
-/** What the custody door's answer means to a person, one line per reading. */
+/** The climbing words for the tries an answer leaves, or a plain note where the door named no count: an unknown count reads
+ *  unknown, never a full budget. */
+const triesWords = (a: CustodyDoorAnswer, door: "vessel" | "face", spent = false): string =>
+  typeof a["attemptsLeft"] === "number" ? attemptWarning(a["attemptsLeft"], door)
+    : spent ? attemptWarning(0, door)
+    : `The door named no count of tries left (the budget grants ${ATTEMPT_BUDGET}); \`lares vault status\` reads the count.`;
+
+/** What the custody door's answer means to a person, one line per reading. A miss climbs the attempt budget's words. */
 export function unlockLine(a: CustodyDoorAnswer): string {
   const standing = typeof a["standing"] === "string" ? a["standing"] : "?";
   const refused = typeof a["refused"] === "string" ? ` The sovereign composition did not stand: ${a["refused"]}.` : "";
@@ -234,10 +246,10 @@ export function unlockLine(a: CustodyDoorAnswer): string {
       : `unlocked: slot ${String(a["slot"])} opened the vessel key; the vessel stands as ${standing}.${refused}${faces}`;
     case "already-unlocked": return `already unlocked: the vessel holds its key and stands as ${standing}.${faces}`;
     case "face-refused":     if (a["faceReading"] === "not-standing") return `no face h${String(a["face"])} stands on this vessel — nothing stays open; name a face it holds (\`lares persona list\`).`;
-                             return `the node key opened and ${a["face"] !== undefined ? `face h${String(a["face"])}` : "no face"} did not (${String(a["faceReading"] ?? "no face tree opens under it")}) — nothing stays open; a face opens under its own route, so present the route that face asked for.${faces}`;
+                             return `the node key opened and ${a["face"] !== undefined ? `face h${String(a["face"])}` : "no face"} did not (${String(a["faceReading"] ?? "no face tree opens under it")}) — nothing stays open; a face opens under its own route, so present the route that face asked for.${typeof a["attemptsLeft"] === "number" ? ` ${triesWords(a, "face")}` : ""}${faces}`;
     case "face-not-named":   return `this vessel holds several faces (${(Array.isArray(a["faces"]) ? a["faces"] : []).map((i) => `h${String(i)}`).join(", ")}) and none was named — nothing stays open: name one (\`lares vault unlock --face N\`) or try the credential on every face (\`--all\`).`;
-    case "no-slot-opens":    return `no slot opens under what was presented — nothing was changed; ${String(a["attemptsLeft"])} attempt(s) left before this vessel refuses every unlock until it restarts.`;
-    case "attempts-spent":   return "this vessel refuses every unlock until it restarts: its unlock attempts for this boot stand spent. Restart it (`lares vessel stand --restart`), then unlock.";
+    case "no-slot-opens":    return `no slot opens under what was presented — nothing was changed. ${triesWords(a, "vessel")}`;
+    case "attempts-spent":   return `nothing was changed. ${triesWords(a, "vessel", true)}`;
     case "tree-absent":      return "no slot tree stands at the identity home — nothing to unlock (a founding seals custody from birth).";
     case "tree-unreadable":  return `the slot tree reads unreadable: ${String(a["why"])} — a torn tree is not a credential error; nothing was changed.`;
     case "root-unopenable":  return `the vessel key opened and the custody root did not (${String(a["why"])}) — nothing stays held; recover the custody root from a backup.`;

@@ -291,7 +291,7 @@ already ships; the rhizome forks (C·D·E) stand operator-cut (turn-DAG · full-
 (operator ruling, 2026-06-24). Main session AND all subagents harvest by default — and
 we do NOT gate existing capture by a session toggle or a derived #has (not
 deterministically enforceable across handoffs). Instead, the ruling calls for
-''`lares ephemeral <task>`'' to ''LAUNCH the task into an ephemeral swarm born in a blind temp''
+''`ephemeral <task>`'' (the launcher, no CLI door) to ''LAUNCH the task into an ephemeral swarm born in a blind temp''
 ''dir — outside every harvested path'', so the run stays ephemeral //by construction//: its
 verbatim never enters `~/.claude/projects` or any mined wing; the dir persists for inspection by
 default, and `--cleanup` disposes (off by default). The lived reason: the operator drives
@@ -419,6 +419,6 @@ attribute to the spirit that moved them.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;PbMi0kYbJS_qJpBXg5YxIOmQWSDhoSSp0Y59TUpXlQw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MDSRdVFE9SO5BU6eIIw0gXM_tcQ6p2JYlAhLWqoJVoI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

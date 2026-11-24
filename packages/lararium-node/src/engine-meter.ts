@@ -17,8 +17,8 @@
  * memory; `maxRss` reads the process's peak resident size (`process.resourceUsage().maxRSS`, the kernel's VmHWM).
  *
  * THE WHOLE PROCESS (`processWasmOf`). The daemon island runs as a worker with its own isolate and its own engine, so one
- * isolate's meter never sees the other's memory. On Linux `/proc/self/smaps` does: V8 reserves 8 GiB of address space per
- * wasm32 memory (10 GiB on older builds), commits the linear size read-write and leaves the rest inaccessible, so each memory
+ * isolate's meter never sees the other's memory. On Linux `/proc/self/smaps` does: V8 reserves 8 GiB or 10 GiB of address space per
+ * wasm32 memory, commits the linear size read-write and leaves the rest inaccessible, so each memory
  * reads as an anonymous `rw-p` mapping followed at once by a `---p` one, the pair one reservation long. The reading lists each
  * memory's linear and resident bytes; it cannot name which engine owns which (the meter's own isolate reading can, for its own).
  * Text where no pair matches reads as unread with its reason, never as zero memories. A read reuses one process reading for a
@@ -38,14 +38,14 @@ export const WASM_PAGE_BYTES = 65_536;
 export const ENGINE_METER_MARKS = [0.5, 0.75, 0.9] as const;
 /** How often an armed meter checks the marks. */
 export const ENGINE_METER_TICK_MS = 15_000;
-/** V8's address-space reservation for one wasm32 memory with guard regions: 8 GiB now, 10 GiB on older builds. */
+/** V8's address-space reservation for one wasm32 memory with guard regions: 8 GiB or 10 GiB. */
 const WASM_RESERVATIONS: readonly bigint[] = [8n * 1024n ** 3n, 10n * 1024n ** 3n];
 
 /** One isolate's engine memory, read off its `WebAssembly.Memory`. */
 export interface EngineWasmReading {
   readonly bytes: number;
   readonly pages: number;
-  /** The most this meter has seen; a linear memory never shrinks, so it reads the current size unless the engine was replaced. */
+  /** The most this meter has seen; a linear memory never shrinks, so it reads the current size. */
   readonly highWaterBytes: number;
   readonly ceilingBytes: number;
   /** The largest memory's share of the ceiling: the ceiling binds each memory alone (an isolate that loaded the engine twice
