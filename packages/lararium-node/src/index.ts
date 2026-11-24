@@ -188,7 +188,7 @@ export type { FaceGateServer, GateSessionRegistry, SeatedGateSession, StoodGate,
 export { openNodeVessel, openNodeHerm, standNodeFloor, seatedSovereignReaders } from "./open-node-vessel.js";
 export { openDaemonVm } from "./open-daemon-vm.js";
 export { runDoctor, formatDoctorReport, enumerateStoreDocs } from "./doctor.js";
-export { FLOOR_SHADOW_FILE, floorShadowFileStore, readFloorShadowFile } from "./floor-shadow-file.js";
+export { FLOOR_SHADOW_FILE, floorShadowFileStore, readFloorShadowFile, readFloorShadowFileTold, type FloorShadowRead } from "./floor-shadow-file.js";
 export { probeDocLoad, makeChildProcessDocLoadProbe, quarantineDoc, quarantineHolds, quarantineHoldOf, readQuarantineManifests, releaseQuarantinedDoc, QUARANTINE_RELEASE_ACT } from "./doc-load-probe.js";
 export type { QuarantineHold, QuarantineRelease, QuarantineReleaseAct } from "./doc-load-probe.js";
 export { precheckDocStore, docStorePath } from "./store-integrity.js";
@@ -200,7 +200,7 @@ export type { NodeVesselOptions, NodeVesselResult, NodeHermResult, NodeFloor, So
 export { createReadinessState, mountReadinessFace, markReadyOnceStanding } from "./readiness-face.js";
 export type { NodeReadiness, ReadinessState, ReadinessFace } from "./readiness-face.js";
 export { createEngineWatch, engineFatalCauseOf, engineTerminatedRefusal, engineFallBody, tapRepoLogs, tapInboundDocs, islandAskRefusal, ISOLATE_ENGINE, ENGINE_TERMINATED, ENGINE_HAND_ACT } from "./engine-watch.js";
-export { answerEngineFall, armFallKeeper, fallAwareProbeDoors, heldBackReason, heldInFlight, holdBackStorage, keepFallDown, HELD_BACK, HELD_IN_FLIGHT, HELD_HAND_ACT, readEngineFalls, restEngineFall, clearEngineFalls, engineFallsPath, ENGINE_FALL_EXIT, ENGINE_RESTART_CAP, ENGINE_DOWN_HAND_ACT } from "./engine-fall.js";
+export { answerEngineFall, armFallKeeper, fallAwareProbeDoors, heldBackReason, heldInFlight, holdBackStorage, keepFallDown, HELD_BACK, HELD_IN_FLIGHT, HELD_HAND_ACT, readEngineFalls, restEngineFall, clearEngineFalls, fallenHolder, engineFallsPath, ENGINE_FALL_EXIT, ENGINE_RESTART_CAP, ENGINE_DOWN_HAND_ACT } from "./engine-fall.js";
 export type { RestingFall, FallAnswer, FallPorts, FallKeeper, FallKeeperPorts, ProbeDoors } from "./engine-fall.js";
 export type { EngineWatch, EngineFall, EngineFatalCause, EnginePath, EngineSettled } from "./engine-watch.js";
 export { createEngineMeter, findEngineMemories, processWasmOf, readProcessWasm, ENGINE_WASM_CEILING_BYTES, WASM_PAGE_BYTES, ENGINE_METER_MARKS, ENGINE_METER_TICK_MS } from "./engine-meter.js";
@@ -593,3 +593,5 @@ export type { CustodyFrame, CustodyAnswer, CustodyFrameDeps } from "./custody-fr
 export { nodePromoteStores, nodePromoteCas, promotedFile, kapaeFile, PROMOTED_FILE, KAPAE_FILE } from "./promoted-store.js";
 
 export { seatReadBackStandIn, readBackStandInSeated } from "./seal-ceremony.js";
+
+export { FLOOR_WORDS, FLOOR_GRAINS, readFloorDrifts, rowInGrain, floorRowLine, floorCardFor, floorCardTitle, type FloorWord, type FloorGrain, type FloorDriftRow, type FloorCard, type FloorLagInput } from "./floor-card.js";

@@ -62,7 +62,7 @@ function readCardFile(path: string): HandleCard {
   try { raw = readFileSync(path, "utf8"); }
   catch (err) { throw new UsageError(`cannot read --card file "${path}": ${err instanceof Error ? err.message : String(err)}`); }
   try { return JSON.parse(raw) as HandleCard; }
-  catch { throw new UsageError(`--card file "${path}" is not valid JSON`); }
+  catch { throw new UsageError(`--card file "${path}" holds no JSON that parses`); }
 }
 
 /** Every verb the circle door answers. */
@@ -92,7 +92,7 @@ export async function cmdCircle(args: ParsedArgs): Promise<number> {
 
 async function circleAdd(args: ParsedArgs): Promise<number> {
   const nym = args.positional[1];
-  if (!nym) throw new UsageError("a nym is required (e.g. `lares circle add <verifying-key-hex> --to following`)");
+  if (!nym) throw new UsageError("add needs a nym (e.g. `lares circle add <verifying-key-hex> --to following`)");
   const circleId = circleOf(args);
   const petname  = typeof args.options["petname"] === "string" ? args.options["petname"].trim() : undefined;
   const cardPath = typeof args.options["card"] === "string" ? args.options["card"] : undefined;
@@ -156,7 +156,7 @@ function readCarriageArg(raw: string): string {
  */
 async function circleCard(args: ParsedArgs): Promise<number> {
   const raw = args.positional[1];
-  if (!raw) throw new UsageError("a carriage is required (e.g. `lares circle card '#card=<base64url>'`, `@card.txt`, or `-` for stdin)");
+  if (!raw) throw new UsageError("card needs a carriage (e.g. `lares circle card '#card=<base64url>'`, `@card.txt`, or `-` for stdin)");
   const card = parseHandleCardCarriage(readCarriageArg(raw));
   if (!card) throw new UsageError("no self-certifying HandleCard in the carriage — the card did not arrive (re-carry a `#card=<base64url>` token).");
 
@@ -184,7 +184,7 @@ async function circleCard(args: ParsedArgs): Promise<number> {
 
 async function circleRemove(args: ParsedArgs): Promise<number> {
   const nym = args.positional[1];
-  if (!nym) throw new UsageError("a nym is required (e.g. `lares circle remove <verifying-key-hex> --to following`)");
+  if (!nym) throw new UsageError("remove needs a nym (e.g. `lares circle remove <verifying-key-hex> --to following`)");
   const circleId = circleOf(args);
   const result = await composeUnfollow({ circles: makeDaemonCircleStore(await vesselDid()), nym, circleId });
   emit(args, {

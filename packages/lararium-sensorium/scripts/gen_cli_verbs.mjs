@@ -81,6 +81,11 @@ const CLI_FORMS = {
   // THE HEARTH ROSTER — who is home, offered beside the law. The tool mirrors `lares vessel roster` (a `vessel` sub-door: the
   // top-level list holds its one screen); both ride the one `hearth-roster` verb the vessel's channel answers itself.
   vessel_roster:  "vessel roster",
+  // THE DISK SHORE — `shore` reads what stands for a hand (both islands, or one lit face's by `face`) and mirrors `lares shore`
+  // (its bare `list`); `shore_flush` asks the vessel's whole-island flush and mirrors `lares shore flush`. The answers that settle a
+  // row (`take-records`, `take-disk`, `restore`, `remove`) stay a person's hand at the CLI and hold no tool.
+  shore:          "shore",
+  shore_flush:    "shore flush",
   // The OFFERING door (offering#/the-canon-offer) — an AI seat offers toward house canon and reads the offer table; each
   // mirrors `lares meme offer …` under the one `meme` host. `lares meme offer promote` stays the Kahu steward's hand and
   // holds no MCP tool, the way `kahua lift` holds none.

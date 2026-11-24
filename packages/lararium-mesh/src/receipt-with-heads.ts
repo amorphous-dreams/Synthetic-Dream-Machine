@@ -79,7 +79,20 @@ export async function receiptInStore(
   documentIds: readonly string[],
   leg?: { readonly ready: Promise<unknown>; readonly onClose: (fn: () => void) => () => void },
   heads?: Readonly<Record<string, readonly string[]>>,
+  /**
+   * THE VESSEL'S REST, as the receipt reads it. `name`: the vessel's own house island asks this receipt, so each document it
+   * names is this vessel's own mint and joins the clear-name roster before the flush (`SealedDocumentStore#solicited`; the map
+   * still seals what it maps). `heldOf`: the refusal holding a save in memory (`SealedDocumentStore#heldRefusalOf`); a save
+   * held unnamed has not reached rest, so the flush that kept it acknowledges nothing.
+   */
+  rest?: { readonly name?: (documentId: string) => Promise<unknown> | void; readonly heldOf: (documentId: string) => string | null },
 ): Promise<void> {
+  for (const id of documentIds) await rest?.name?.(id);
+  // A FLUSH INTO MEMORY IS NO RECEIPT: a document whose save still waits unnamed (no bag and no roster names it) refuses by name.
+  const durable = (): void => {
+    const held = documentIds.filter((id) => rest?.heldOf(id) === "save-unnamed");
+    if (held.length > 0) throw new Error(`save-unnamed: ${held.join(", ")} waits in memory, unnamed; no receipt until a bag names it`);
+  };
   let islandPeer: string | undefined;
   if (leg) {
     // The teardown subscription leaves when the wait settles, so a completed ask holds nothing of the capability.
@@ -98,8 +111,10 @@ export async function receiptInStore(
     for (const id of documentIds) repo.findWithProgress(`automerge:${id}` as AutomergeUrl);
     const answer = await answerReceiptWithHeads(repo as unknown as Repo, receiptAskOf(documentIds, heads!), islandPeer);
     if (!answer.issued) throw new Error(answer.why ?? "the vessel's copy did not come to hold the island's heads");
+    durable();
     return;
   }
   for (const id of documentIds) await repo.find(`automerge:${id}` as AutomergeUrl);
   await repo.flush(documentIds as DocumentId[]);
+  durable();
 }

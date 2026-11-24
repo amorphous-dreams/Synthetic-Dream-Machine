@@ -13,8 +13,9 @@ export interface IntentVerbDeclaration {
   readonly class: IntentVerbClass; readonly fenced?: boolean; readonly cosign?: boolean; readonly fixes?: readonly string[];
   readonly bars?: Readonly<Record<string, string>>;
 }
-/** The ward verbs a second device of the face co-signs: a kapae lowered, the house cap, and a lei of each rite whose effect leaves the device (`ward-push-lei`; a kukulu lei stays home). */
-export const WARD_COSIGN_VERBS: readonly string[] = Object.freeze(["ward-kapae-lower", "ward-house-cap", ...SWARM_LEI_COSIGNED_RITES.map(wardLeiVerb)]);
+/** The ward verbs a second device of the face co-signs: a kapae lowered, the house cap, a lei of each rite whose effect leaves the device
+ *  (`ward-push-lei`; a kukulu lei stays home), and the keeper's vest (`ward-keeper-vest`: the house's end of the bond leaves this keeper). */
+export const WARD_COSIGN_VERBS: readonly string[] = Object.freeze(["ward-kapae-lower", "ward-house-cap", ...SWARM_LEI_COSIGNED_RITES.map(wardLeiVerb), "ward-keeper-vest"]);
 export interface IntentVerbRegistry {
   declareIntentVerb(verb: string, classification: IntentVerbClass | IntentVerbDeclaration): void;
   classOfVerb(verb: string): IntentVerbDeclaration | null;

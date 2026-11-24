@@ -4,7 +4,8 @@
  * The hand door answers on a socket of its own, inside the pūlama and mounted nowhere else; no vessel reaches it and no
  * session frame carries one of its acts. One frame in, one answer out.
  *
- *   light    the operator's route opens the vessel key and every face it fits, here, in the pūlama. ONLY THIS ACT LIGHTS
+ *   light    the operator's route opens the vessel key and every face it fits, here, in the pūlama (`admit: true` also admits
+ *            the reported image for every lit face under that one route: the struck fire costs one proof). ONLY THIS ACT LIGHTS
  *            THE PŪLAMA: no lei, no vouch and no session carries a route. The unlock bound holds as it does on a vessel's
  *            door, and a vessel's restart never resets it: the count rides the pūlama's own life.
  *   admit    THE HAND ADMITS AN IMAGE. The operator's route PROVES against the lit holder (`CustodyHolder.proves`: it opens
@@ -45,7 +46,33 @@
  *            An unlit pūlama, an unopened face, a face whose anchors name no group, malformed terms, a count above twelve
  *            without `confirm` and a restring naming no tip each refuse before the route reads.
  *
- * An answer names a reading, a count or a public digest. No answer and no log line carries a route or a key.
+ *   closure  THE HOST'S CLOSURE REPORT: the pūlama code closure of the image this keeper runs, as the host read its label. It
+ *            rests in this keeper's memory alone (two keepers share one state dir), and `image` may carry it too (`closure`).
+ *
+ * ── THE KEEPER TALLY (`pulama-keeper`): the keeper's own succession ─────────────────────────────
+ *   keeper-commit  THE HAND NAMES THE SUCCESSOR. The route proves against the lit holder (as `admit`'s does) and the guest half
+ *                  rests naming ONE successor closure (`next`); a later commit supersedes. Unlit, unreported or passing refuses
+ *                  before the route reads.
+ *   keeper-offer   (the successor, unlit) mint the one-handoff X25519 key and answer its public half beside the closure the host
+ *                  reported. A fresh offer drops the one before.
+ *   keeper-vest    (the lit keeper, no route: the consent rode the commit) seal the house's end of the bond (the node key and the
+ *                  open face keys) to the offered key, once per commit, only inside a live kūkulu rite (the frame's `offer`: its
+ *                  vouches name this move, and the vest begins the rite, claiming one lei return) and only where the successor's
+ *                  reported closure equals the committed `next`. One attempt spends the commit, vested or lapsed. The answer
+ *                  carries the slot for the host's pipe; it never rests. From then this keeper is PASSING THE FIRE: every hand
+ *                  act that writes (admit, unadmit, lei, keep-seat, rehive, close, keeper-commit, keeper-vest, keeper-land) refuses
+ *                  `fire-passing`. The vessel's sessions keep serving through it until the shim locks it, so the down's keep and
+ *                  census ride the keeper that still holds the fire; the successor holds no socket and serves nothing meanwhile.
+ *   keeper-receive (the successor) open the slot with its one-handoff key (spent on the open), adopt the node key and each face
+ *                  key, check the slot against this house's own key, the commit and its own closure, carry the budget, and land
+ *                  the host half naming what it received. Any refusal or a red pair locks it: the lit fire still burns.
+ *   keeper-land    (a keeper the hand lit by passphrase: the struck fire) land the live commit with no vest; a keeper lit by a
+ *                  vest, or a passing one, refuses.
+ *   take-fire      (a lit successor) claim the vessel socket; it refuses while another keeper still holds it.
+ *   `status` folds the chain while lit (`keeper`), and names `vestReady` where a live commit can vest.
+ *
+ * An answer names a reading, a count or a public digest. No answer and no log line carries a route or a key; a slot carries keys
+ * only sealed to one successor's key.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
  */
 import type { ExecLeiScope } from "@lararium/mesh";
@@ -55,8 +82,10 @@ import {
 } from "@lararium/mesh";
 import { lentFacesOf } from "@lararium/mesh/lent-faces";
 import { nativeKdf } from "@lararium/mesh/node";
-import type { CustodyHolder } from "./custody-holder.js";
+import { UNLOCK_ATTEMPTS_PER_BOOT, type CustodyHolder } from "./custody-holder.js";
 import { pulamaSignerOf } from "./kukulu-gate.js";
+import { pulamaRecordCid } from "./pulama-admit.js";
+import { CLOSURE, keeperCommit, keeperEphemeral, keeperFold, keeperLand, keeperPayloadDrop, keeperSlotBinds, keeperSlotOf, keeperVest, type KeeperEphemeral, type KeeperRiteReading, type KeeperStanding } from "./pulama-keeper.js";
 import type { PulamaAdmissions } from "./pulama-admit.js";
 import type { PulamaServer } from "./pulama-server.js";
 import type { RehiveOutcome } from "./face-rehive.js";
@@ -130,6 +159,12 @@ export function pulamaHandDoor(a: {
   readonly lei?: PulamaLeiHand;
   /** The rehive of one SHUT face under its own route (`rehiveShutFace` over this pūlama's holder). Absent, `rehive` refuses `rehive-unavailable`. */
   readonly rehive?: (ordinal: number, credentials: readonly Credential[]) => Promise<RehiveOutcome>;
+  /** The vessel socket: whether this keeper holds the fire, and the claim a lit successor takes. Absent, `take-fire` refuses `fire-unavailable`. */
+  readonly fire?: { holds(): boolean; take(): Promise<{ readonly taken: true } | { readonly refusal: string; readonly detail: string }> };
+  /** The face the vessel last wore here (`face.worn`); absent, the chain carries none. */
+  readonly worn?: () => number | undefined;
+  /** THE LIVE RITE a vest rides (`keeperRiteOver`): the offer read and bound to this keeper move, its return claimed. Absent, `keeper-vest` refuses `vest-rite-unavailable`. */
+  readonly keeperRite?: (offer: unknown, keeper: { readonly to: string; readonly next: string }) => Promise<KeeperRiteReading>;
   readonly onLog?: (line: string) => void;
 }): (frame: unknown) => Promise<PulamaHandAnswer> {
   const { holder, server } = a;
@@ -137,10 +172,37 @@ export function pulamaHandDoor(a: {
   let chain: Promise<unknown> = Promise.resolve();
   // THE SEED LINE the host reported beside the image; a later report with no line clears it.
   let seed: string | null = null;
+  // THE CLOSURE THIS KEEPER RUNS, as the host reported it: memory alone, since a successor shares the state dir.
+  let closure: string | null = null;
+  // THE SUCCESSOR'S ONE-HANDOFF KEY, and whether this keeper vested its fire away (every write act then refuses).
+  let ephemeral: KeeperEphemeral | null = null;
+  let passing = false;
+  // HOW THIS KEEPER STANDS LIT: by the hand's light (the struck fire), or by a vest; a lock clears it. Only a struck keeper lands struck.
+  let litBy: "hand" | "vest" | null = null;
   const status = () => {
     const closing = server.closing();
     return { lit: holder.isUnlocked(), faces: holder.unlockedFaces().length, sessions: server.sessions(), attemptsLeft: holder.attemptsLeft(), image: a.image.raised(),
-      ...(seed !== null ? { seed } : {}), ...(closing.length ? { closing } : {}) };
+      ...(seed !== null ? { seed } : {}), ...(closing.length ? { closing } : {}), ...(closure !== null ? { closure } : {}),
+      ...(a.fire ? { fire: a.fire.holds() } : {}), ...(passing ? { passing } : {}) };
+  };
+  const passingRefusal = (op: string): PulamaHandAnswer => ({ op, reading: "fire-passing", detail: "this keeper vested its fire to a successor, so its hand door writes nothing more; `lares rite kukulu` finishes the handoff (the successor takes the fire and this keeper locks) or, where the successor failed, relights one keeper by passphrase" });
+  const openFaces = async (): Promise<Array<{ fcid: string; ordinal: number }>> => {
+    const open: Array<{ fcid: string; ordinal: number }> = [];
+    for (const fcid of holder.unlockedFaces()) { const at = await holder.faceStanding({ fcid }); if (at !== null) open.push({ fcid: at.fcid, ordinal: at.ordinal }); }
+    return open.sort((x, y) => x.ordinal - y.ordinal);
+  };
+  const standing = async (): Promise<KeeperStanding> => ({ closure, image: a.image.raised(), faces: await openFaces(), worn: a.worn?.() ?? null, spent: UNLOCK_ATTEMPTS_PER_BOOT - holder.attemptsLeft() });
+  /** The chain, folded under this keeper's key: an unlit keeper names none. */
+  const keeperDigest = async () => {
+    if (!holder.isUnlocked()) return {};
+    const fold = await keeperFold(a.records, await pulamaSignerOf(holder));
+    const last = fold.pairs.at(-1);
+    return {
+      keeper: { v: fold.v, vestings: fold.vestings, struckDue: fold.struckDue, fork: fold.fork, tip: fold.tip, ...(fold.pending ? { pending: fold.pending.next } : {}), ...(last ? { last: last.par ? "par" : last.red } : {}) },
+      // VEST-READY ONLY WHERE A VEST COULD PROCEED: a live commit, no struck fire due, and a face of one device as the commit read it,
+      // or a face of two whose commit carries its co-sign.
+      ...(fold.pending && !fold.struckDue && !passing && (fold.pending.devices === 1 || (fold.pending.devices !== null && fold.pending.devices > 1 && Array.isArray(fold.pending.body.cosigns))) ? { vestReady: fold.pending.next } : {}),
+    };
   };
   /** The admitted digests and the ended ones, read under the pūlama's key: an unlit pūlama names none. */
   const admissionDigests = async () => {
@@ -157,11 +219,29 @@ export function pulamaHandDoor(a: {
         const opened = await holder.unlock(credentials);
         if (opened.reading !== "opens" && opened.reading !== "already-unlocked") { log(`light: ${opened.reading}`); return { op: "light", ...opened, ...status() }; }
         const faces = (await holder.unlockFaces(credentials)).map((r) => r.reading);
+        if (opened.reading === "opens") litBy = "hand";
         server.refresh();
         log(`lit: ${faces.filter((r) => r === "opens" || r === "already-unlocked").length} face(s) open`);
+        // THE STRUCK FIRE IS ONE PROOF: `admit: true` admits the reported image for every lit face under the route that just lit,
+        // so a moved closure asks the passphrase once. An image already admitted stays as it stands.
+        // A KEEPER THAT PASSED ITS FIRE NAMES IT (blind read F4), never a silent skip: its lock spends the passing, then a struck light admits.
+        if (f["admit"] === true && passing) return { op: "light", reading: opened.reading, faceReadings: faces, admit: "fire-passing", detail: "this keeper vested its fire to a successor, so it admits nothing; lock it (`lares pulama lock`) and light it again to strike the fire here, or finish the handoff: lares rite kukulu", ...status() };
+        if (f["admit"] === true && a.admissions) {
+          const image = a.image.raised();
+          if (image === null) return { op: "light", reading: opened.reading, faceReadings: faces, admit: "image-unreported", ...status() };
+          const by = await pulamaSignerOf(holder);
+          const standing = await a.admissions.admitted(image, by);
+          if (standing !== null && !("refusal" in standing)) return { op: "light", reading: opened.reading, faceReadings: faces, admit: "already-admitted", ...status() };
+          const open = await openFaces();
+          if (!open.length) return { op: "light", reading: opened.reading, faceReadings: faces, admit: "face-locked", ...status() };
+          const { tessera } = await a.admissions.admitByHand(image, open, by);
+          log(`admitted by hand at the light: the reported image now serves ${open.map((o) => `h${o.ordinal}`).join(", ")}`);
+          return { op: "light", reading: opened.reading, faceReadings: faces, admit: "admitted", admitted: image, tessera, ...status() };
+        }
         return { op: "light", reading: opened.reading, faceReadings: faces, ...status() };
       }
       case "admit": {
+        if (passing) return passingRefusal("admit");
         if (!a.admissions) return { op: "admit", reading: "admit-unavailable" };
         // UNLIT OR UNREPORTED REFUSES BEFORE THE ROUTE READS: nothing proves against a holder that holds no key, and no image stands to admit.
         if (!holder.isUnlocked()) return { op: "admit", reading: "pulama-locked", ...status() };
@@ -189,6 +269,7 @@ export function pulamaHandDoor(a: {
         return { op: "admit", reading: "admitted", admitted: image, tessera, ...status(), lent: ordinals };
       }
       case "unadmit": {
+        if (passing) return passingRefusal("unadmit");
         if (!a.admissions) return { op: "unadmit", reading: "admit-unavailable" };
         if (!holder.isUnlocked()) return { op: "unadmit", reading: "pulama-locked", ...status() };
         const image = f["image"];
@@ -208,6 +289,7 @@ export function pulamaHandDoor(a: {
         return { op: "unadmit", reading: "unadmitted", digest: image, ends: ended.ends, ...status() };
       }
       case "lei": {
+        if (passing) return passingRefusal("lei");
         if (!a.lei) return { op: "lei", reading: "lei-unavailable" };
         // UNLIT REFUSES BEFORE ANYTHING READS: no root rests open to sign under.
         if (!holder.isUnlocked()) return { op: "lei", reading: "pulama-locked", ...status() };
@@ -242,6 +324,7 @@ export function pulamaHandDoor(a: {
         return { op: "lei", act, reading: "signed", face, record, cid: swarmActCid(record), ...(act === "restring" ? { restrung: terms.after } : {}) };
       }
       case "keep-seat": {
+        if (passing) return passingRefusal("keep-seat");
         // THE KEEP SEAT AT THE PŪLAMA: a house the pūlama keeps reads its route here alone. The route PROVES against the lit
         // holder's key (it opens nothing new; a miss spends an attempt), and the pair mints under the credentials that proof names:
         // the seat (public half, the slot tree wrapping its secret) and the signing seed answer over this hand socket alone, to the
@@ -262,6 +345,7 @@ export function pulamaHandDoor(a: {
         return { op: "keep-seat", reading: "seated", seat: encodeKeepSeat(mint.seat), signingSeed, publicKey: Buffer.from(mint.seat.publicKey).toString("hex") };
       }
       case "rehive": {
+        if (passing) return passingRefusal("rehive");
         if (!a.rehive) return { op: "rehive", reading: "rehive-unavailable" };
         const face = f["face"];
         const credentials = credentialsOf(f["credentials"]);
@@ -281,8 +365,10 @@ export function pulamaHandDoor(a: {
           return { op: "rehive", reading, face, ...(typeof e.message === "string" ? { detail: e.message } : {}) };
         }
       }
-      case "lock": await server.lock(); return { op: "lock", ...status() };
+      // THE LOCK SPENDS THE PASSING (blind read F4): the slot already left, the keys zero here, and a later light strikes the fire anew.
+      case "lock": await server.lock(); litBy = null; passing = false; return { op: "lock", ...status() };
       case "close": {
+        if (passing) return passingRefusal("close");
         if (!holder.isUnlocked()) return { op: "close", reading: "pulama-locked", ...status() };
         const face = f["face"];
         if (typeof face !== "number" || !Number.isSafeInteger(face) || face < 0 || (f["force"] !== undefined && typeof f["force"] !== "boolean")) {
@@ -292,14 +378,119 @@ export function pulamaHandDoor(a: {
         log(`close: face h${face} ${closed.reading}`);
         return { op: "close", ...closed, ...status() };
       }
-      case "status": return { op: "status", ...status(), ...await admissionDigests() };
+      case "status": return { op: "status", ...status(), ...await admissionDigests(), ...await keeperDigest() };
+      case "closure": {
+        if (typeof f["digest"] !== "string" || !CLOSURE.test(f["digest"])) return { op: "closure", reading: "malformed", detail: "a closure reads `sha256:<64 hex>`" };
+        closure = f["digest"];
+        log("the host reported this keeper's code closure");
+        return { op: "closure", reading: "reported", closure };
+      }
+      case "keeper-commit": {
+        if (passing) return passingRefusal("keeper-commit");
+        if (!holder.isUnlocked()) return { op: "keeper-commit", reading: "pulama-locked", ...status() };
+        if (closure === null) return { op: "keeper-commit", reading: "closure-unreported", detail: "the host reported no closure for this keeper (`closure <digest>`), so the chain cannot name what it hands from" };
+        const next = f["next"];
+        if (typeof next !== "string" || !CLOSURE.test(next)) return { op: "keeper-commit", reading: "next-malformed", detail: "the successor's closure reads `sha256:<64 hex>`" };
+        const credentials = credentialsOf(f["credentials"]);
+        if (credentials === null) return { op: "keeper-commit", reading: "malformed" };
+        // THE ROUTE PROVES A PERSON STANDS HERE, as an admission's does: the human's consent names ONE successor closure.
+        const proof = await holder.proves(credentials);
+        if (proof.reading !== "proves") { log(`keeper-commit: ${proof.reading}`); return { op: "keeper-commit", ...proof, ...status() }; }
+        // THE DEVICE COUNT the vessel read at commit time rides the commit's own body; none read rides as null, and the vest fails closed on it.
+        const devices = typeof f["devices"] === "number" && Number.isSafeInteger(f["devices"]) && f["devices"] >= 1 ? f["devices"] : null;
+        // THE CARRIED CO-SIGN (`lares intent keeper-cosign`): the commit's nonce and each face's spent co-sign, read once at the vest.
+        const cosign = f["cosign"] === undefined ? null : f["cosign"];
+        const out = await keeperCommit(a.records, await pulamaSignerOf(holder), { ...await standing(), next, devices, cosign });
+        if ("refusal" in out) return { op: "keeper-commit", reading: out.refusal, detail: out.detail };
+        log(`keeper committed: v${out.v} names the successor closure${out.supersedes !== null ? ", superseding the commit before it" : ""}`);
+        return { op: "keeper-commit", reading: "committed", ...out };
+      }
+      case "keeper-offer": {
+        if (holder.isUnlocked()) return { op: "keeper-offer", reading: "keeper-lit", detail: "a lit keeper holds a fire already; only an unlit successor offers a key" };
+        ephemeral?.drop();
+        ephemeral = keeperEphemeral();
+        log("keeper-offer: a one-handoff key stands for one vest");
+        return { op: "keeper-offer", reading: "offered", to: ephemeral.pub, closure, image: a.image.raised() };
+      }
+      case "keeper-vest": {
+        if (passing) return passingRefusal("keeper-vest");
+        if (!holder.isUnlocked() || !holder.handOver) return { op: "keeper-vest", reading: "pulama-locked", ...status() };
+        const to = f["to"], theirs = f["closure"];
+        if (typeof to !== "string" || typeof theirs !== "string") return { op: "keeper-vest", reading: "malformed", detail: "a vest names the successor's key (`to`), the closure its host reported (`closure`) and the live rite's offer (`offer`)" };
+        // A VEST RIDES A LIVE RITE: the offer's vouches name this move, and the vest begins the rite itself (one lei return).
+        const ride = a.keeperRite;
+        const rite = ride ? (keeper: { readonly to: string; readonly next: string }) => ride(f["offer"], keeper)
+          : async () => ({ ok: false as const, refusal: "vest-rite-unavailable", detail: "this keeper reads no kūkulu rite, so nothing vests; light the successor by hand: lares rite kukulu on a terminal" });
+        const out = await keeperVest(a.records, await pulamaSignerOf(holder), { to, closure: theirs, rite, keys: () => holder.handOver!(), spent: UNLOCK_ATTEMPTS_PER_BOOT - holder.attemptsLeft(), worn: a.worn?.() ?? null });
+        if ("refusal" in out) { log(`keeper-vest: ${out.refusal}`); return { op: "keeper-vest", reading: out.refusal, detail: out.detail }; }
+        passing = true;
+        log(`keeper-vest: the fire vests to one successor key (${out.faces.map((n) => `h${n}`).join(", ") || "no face"}); this keeper passes it`);
+        return { op: "keeper-vest", reading: "vested", tessera: out.tessera, faces: out.faces, rite: out.rite, slot: out.slot };
+      }
+      case "keeper-receive": {
+        if (holder.isUnlocked()) return { op: "keeper-receive", reading: "keeper-lit", detail: "this keeper stands lit already; a slot opens only on an unlit successor" };
+        if (ephemeral === null) return { op: "keeper-receive", reading: "offer-absent", detail: "no one-handoff key stands here (`keeper-offer` first)" };
+        if (ephemeral.spent()) return { op: "keeper-receive", reading: "offer-spent", detail: "this keeper's one-handoff key opened a slot already; a slot spends once" };
+        const slot = keeperSlotOf(f["slot"]);
+        if (slot === null) return { op: "keeper-receive", reading: "malformed", detail: "a receive carries one keeper slot" };
+        if (slot.body.to !== ephemeral.pub) return { op: "keeper-receive", reading: "slot-names-another", detail: "the slot names another successor key than this keeper's offer" };
+        const payload = ephemeral.open(slot.body);
+        if (payload === null) return { op: "keeper-receive", reading: "slot-unopened", detail: "the slot opens under no key this keeper offered; nothing seats" };
+        // A RECEIVE THAT FAILS LOCKS THIS SUCCESSOR, and the fire-holder (which vested, so it passes the fire and writes nothing) still
+        // serves; the cure that runs from here is the struck fire, which relights one keeper by passphrase.
+        const cure = "this successor locks; the old keeper still holds the fire but passes it and writes nothing: relight one keeper by hand with `lares rite kukulu` on a terminal (the struck fire)";
+        const red = async (reading: string, detail: string): Promise<PulamaHandAnswer> => { await holder.lock(); litBy = null; log(`keeper-receive: ${reading}; nothing stays seated`); return { op: "keeper-receive", reading, detail: `${detail}; ${cure}`, ...status() }; };
+        // THE KEYS ARRIVE AS BYTES (blind read F8) and zero when the receive settles, whichever way it settles.
+        try {
+          try { await holder.adopt(payload.node as Parameters<CustodyHolder["adopt"]>[0]); }
+          catch { return red("slot-refused", "the node key the slot carried opens no custody root here"); }
+          const by = await pulamaSignerOf(holder);
+          const binds = await keeperSlotBinds(a.records, by, slot, { to: ephemeral.pub, closure });
+          if (binds !== null) return red(binds.refusal, binds.detail);
+          const adopted: string[] = [];
+          for (const face of payload.faces) {
+            const opened = await holder.adoptFace?.(face.fcid, face.fck);
+            if (opened?.reading === "opens") adopted.push(face.fcid);
+          }
+          holder.seedSpent?.(payload.spent, payload.faces.map((face) => ({ fcid: face.fcid, spent: face.spent })));
+          const landed = await keeperLand(a.records, by, { ...await standing(), worn: a.worn?.() ?? payload.worn, vest: { slot: pulamaRecordCid(slot), node: true, faces: adopted }, tessera: slot.body.tessera });
+          if ("refusal" in landed) return red(landed.refusal, landed.detail);
+          if (!landed.pair.par) return red(landed.pair.red ?? "keeper-red", `the keeper pair reads ${landed.pair.red ?? "red"}; the successor locks and the old fire still burns`);
+          litBy = "vest";
+          server.refresh();
+          log(`keeper landed by vest: v${landed.fold.v} par, ${adopted.length} face(s) carried`);
+          return { op: "keeper-receive", reading: "landed", pair: landed.pair, vestings: landed.fold.vestings, ...status() };
+        } finally { keeperPayloadDrop(payload); }
+      }
+      case "keeper-land": {
+        if (passing) return passingRefusal("keeper-land");
+        if (!holder.isUnlocked()) return { op: "keeper-land", reading: "pulama-locked", ...status() };
+        // ONLY THE STRUCK FIRE LANDS STRUCK: a keeper the hand lit (`light`) lands the live commit with no vest; a keeper lit by a vest
+        // landed already, and a replay never spends a successor's landing.
+        if (litBy !== "hand") return { op: "keeper-land", reading: "keeper-not-struck", detail: "only a keeper the hand lit by passphrase lands struck; a vested keeper landed at its receive. Read the chain with `lares pulama status`" };
+        const landed = await keeperLand(a.records, await pulamaSignerOf(holder), { ...await standing(), vest: null, ...(typeof f["tessera"] === "string" ? { tessera: f["tessera"] } : {}) });
+        if ("refusal" in landed) return { op: "keeper-land", reading: landed.refusal, detail: landed.detail };
+        log(`keeper landed by the hand's light: v${landed.fold.v} ${landed.pair.par ? "par" : landed.pair.red}`);
+        return { op: "keeper-land", reading: landed.pair.par ? "landed" : "red", pair: landed.pair, ...(landed.pair.red ? { red: landed.pair.red } : {}) };
+      }
+      case "take-fire": {
+        if (!a.fire) return { op: "take-fire", reading: "fire-unavailable" };
+        if (a.fire.holds()) return { op: "take-fire", reading: "fire-held-here" };
+        if (!holder.isUnlocked()) return { op: "take-fire", reading: "pulama-locked", ...status() };
+        const taken = await a.fire.take();
+        if ("refusal" in taken) return { op: "take-fire", reading: taken.refusal, detail: taken.detail };
+        log("take-fire: this keeper holds the vessel socket now");
+        return { op: "take-fire", reading: "taken", ...status() };
+      }
       case "image": {
         if (typeof f["digest"] !== "string") return { op: "image", reading: "malformed" };
         if (f["seed"] !== undefined && typeof f["seed"] !== "string") return { op: "image", reading: "malformed" };
+        if (f["closure"] !== undefined && (typeof f["closure"] !== "string" || !CLOSURE.test(f["closure"]))) return { op: "image", reading: "malformed" };
         try { a.image.report(f["digest"]); } catch { return { op: "image", reading: "malformed" }; }
+        if (typeof f["closure"] === "string") closure = f["closure"];
         seed = typeof f["seed"] === "string" && f["seed"].trim() !== "" ? f["seed"].trim() : null;
         log(seed !== null ? "the host reported an image digest and the seed it offers" : "the host reported an image digest");
-        return { op: "image", reading: "reported", image: a.image.raised(), ...(seed !== null ? { seed } : {}) };
+        return { op: "image", reading: "reported", image: a.image.raised(), ...(seed !== null ? { seed } : {}), ...(typeof f["closure"] === "string" ? { closure } : {}) };
       }
       case "tessera": {
         const halves: unknown[] = [];

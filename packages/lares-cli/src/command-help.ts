@@ -177,7 +177,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "day flows. --rollback stands the image that ran before (--rollback <rev>: an older revision's kept image, or a build from " +
       "that commit), with no checkout move. After a raise that stood, the rite reads the lag aloud: the canon bag behind the canon " +
       "source (canon fills through promote and the floor's sealed cut, never from a raise), each wiki's workbench behind the " +
-      "checkout's wikis/<slug>, and a newer sealed floor the release carries than the vessel serves. Where the canon source stands " +
+      "checkout's wikis/<slug>, and a newer seed offer the release carries (the seed's floor), named by its floor card and `lares vessel floor status --grain seed`. Where the canon source stands " +
       "in a checkout and the owner holds the terminal, it previews the workbench lay (each title a workbench the worn face mounts " +
       "would take) and lays it (`lares vessel lay --workbench --apply`) only on an explicit yes; a workbench that does not mount is " +
       "named and left, a no or a Ctrl+C leaves every layer as it stood, and a seat with no terminal, an AI launcher or a source in no " +
@@ -244,12 +244,13 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     flags: ["--face N   face index", "--text <body> | --file <path>   (stage) the row's body", "--fields <json>   (stage) the row's fields", "--digest <hex>   (lift) the staged row's row digest, as its preview printed it; it stands in for typing the digest back, and the passphrase prompt still needs a terminal", "--taint a,b | none   inputs from outside the face", "--sources <json>   further daemon sources the item distils (the staged row always rides)", "--parent <cid> | none   the revision a lift supersedes", "--proposal <id>   the proposal a lift answers", "--proposals <json>   a proposal batch", "--history   every revision of a title", "--all   (carry) every earlier head the history reads"],
   },
   intent: {
-    usage: "usage: lares intent issue|show|ask|answer|claim|takeover|release|cancel|supersede|release-root|delegate|delegate-revoke|delegations [verb-or-id] [--face N]",
+    usage: "usage: lares intent issue|show|ask|answer|claim|takeover|release|cancel|supersede|release-root|delegate|delegate-revoke|delegations|keeper-cosign [verb-or-id] [--face N]",
     synopsis: "Read and write one face's signed intent plane. Name --face N on every invocation when this vessel holds several faces; a sole face resolves itself.",
     examples: [
       "lares intent issue face-join --face 1 --to <atom> --args '{}'",
       "lares intent show --face 1",
       "lares intent ask <intent-id> --face 1",
+      "lares intent keeper-cosign sha256:<D′> --prev <chain head|none> --nonce <64 hex> --face 1",
       "lares intent answer <ask-cid> --face 1 --executor <atom>",
       "lares intent cancel <intent-id> --face 1",
     ],
@@ -574,18 +575,23 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     meme: "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite",
   },
   vessel: {
-    usage: "usage: lares vessel <unbound|found|rotate|stand|stop|lay|read|roster|census|fresher|floor|request|rite> [flags]",
+    usage: "usage: lares vessel <unbound|found|rotate|stand|stop|lay|read|release|roster|census|fresher|floor|request|rite> [flags]",
     synopsis:
       "THE VESSEL DOOR — one namespace over the vessel's own causal island. Four primitives and one " +
       "read: `found` mints identity + bootstrap · `stand` brings the daemon up and reports · `stop` " +
       "halts it on the port · `lay` lays every disk mirror back into the layer it mirrors (each disk-sourced " +
       "bags/* holding into its canon through INGEST, then every mirror under the projections root into its one layer, each face root " +
-      "(faces/<pet name>) laid where it stands; kahua lifts only on a typed count or --lift-kahua N; import carries a bundle onto this hearth's faces by pet-name) · `read` inspects and starts nothing. Compositions ride " +
+      "(faces/<pet name>) laid where it stands; kahua lifts only on a typed count or --lift-kahua N; import carries a bundle onto this hearth's faces by pet-name) · `read` inspects and starts nothing, and needs no verb, so it " +
+      "answers a fallen vessel too (the resting engine falls and every held id, read from the files) · `release <documentId>` " +
+      "ends one quarantine hold with the vessel stopped (`--keep` keeps what stands, `--fresh` starts the id empty). Compositions ride " +
       "`vessel rite <petname>`, so a new cap-stack arrives as a rite rather than another top-level verb. " +
       "Advancing the genesis composition is a MESH act — `nexus kahuli` — never a vessel door.",
     examples: [
       "lares vessel stand                      # idempotent boot, attach-or-start, and REPORT",
       "lares vessel read --palaces             # health, plus the palace-organ table",
+      "lares vessel read                       # the step-in reading: resting engine falls and held ids, with no verb (answers a fallen vessel)",
+      "lares vessel release <documentId>       # with the vessel stopped: the quarantined bytes return under the id",
+      "lares vessel release <documentId> --keep   # end the hold, keep what stands under the id",
       "lares vessel roster                     # who is home: the worn face, the seats here and far, the lanes, the open vota",
       "lares vessel lay --apply --yes          # lay every holding (idempotent)",
       "lares vessel lay --apply --verbose      # keep full CREATE detail",
@@ -594,7 +600,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares vessel rite refresh               # the post-code-change cure: build · stop · stand",
       "lares vessel request <requestId>        # read a request's receipt, dispatching nothing",
       "lares vessel request <requestId> --cancel  # withdraw it before it is read: your own hand, never a timeout's",
-      "lares vessel floor status               # the vessel's floor pin: pinned release, newest seen, fast-forward, fork",
+      "lares vessel floor status [--grain canon|seed|shadow|lag|all]  # the vessel's floor pin and the five drifts, one row each by its own word (disk lag, working ahead, canon floor drift, seed offer, shadow tally); refreshes the one floor card in the daemon wiki",
       "lares vessel floor accept [<release>]   # walk prior from the pin to the release (or the sole newest)",
       "lares vessel floor seed [--genesis <dir>]  # the seed a genesis dir offers (CID, digests) beside the founding record; moves nothing",
     ],
@@ -610,6 +616,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "read --json          the reading as one JSON object (every lens; `read vessel` names each document); a pipe reads the terminal's prose",
       "census --docs        every document the stores hold: its class (current · duplicate · orphan · last-version · sealed-unread), who names it, the unnamed list; removes nothing; --json the full rows",
       "request <requestId>  the receipt the vessel's ledger and durable outcome doc hold; reads, never dispatches; --cancel withdraws the request (the operator's own explicit act)",
+      "release <documentId> --keep   end the hold and keep what stands under the id; --fresh starts a plane no sibling carries empty (the bytes stay aside)",
       "rite <petname>       founding · refresh · rebuild — the pet-named cap-stacks",
       "lay --lift-kahua <N>  lift the kahua items the lay previewed when N equals their count (a bare --yes lifts none)",
       "floor seed --genesis <dir>  the genesis dir whose seed reads (else LAR_GENESIS through the one resolver; an image carries /app/genesis); --json carries `seed`, the line the pūlama takes",
@@ -1333,6 +1340,28 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--lag                read the house's lag (canon and workbench) and write nothing",
     ],
     next: ["lares shore", "lares vessel read"],
+    meme: "lar:///ha.ka.ba/lares/cli/vessel-door",
+  },
+
+  "vessel release": {
+    usage: "usage: lares vessel release <documentId> [--keep|--fresh]",
+    synopsis:
+      "THE HAND'S RELEASE OF ONE QUARANTINED ID, with the vessel stopped. It claims the store for its act and refuses by name " +
+      "where a holder answers (a standing vessel, a command mid-act, or a fallen vessel whose process still lives), naming " +
+      "`lares vessel stop`. `lares vessel read` lists the held ids with no verb, and answers a fallen vessel too.",
+    examples: [
+      "lares vessel read                               # the held ids, and why each one holds",
+      "lares vessel stop                               # the release runs with the vessel stopped",
+      "lares vessel release <documentId>               # the quarantined bytes return; the next stand probes them again",
+      "lares vessel release <documentId> --keep        # end the hold, keep what stands under the id",
+      "lares vessel release <documentId> --fresh       # a plane no sibling carries starts empty; the bytes stay aside",
+    ],
+    flags: [
+      "(bare)     the quarantined bytes return under the id",
+      "--keep     end the hold and keep what stands under the id; the moved-aside copy rests where it lies",
+      "--fresh    start the id empty under its own name (refused for a plane a sibling device carries); the bytes stay aside",
+    ],
+    next: ["lares vessel read", "lares vessel stand"],
     meme: "lar:///ha.ka.ba/lares/cli/vessel-door",
   },
 

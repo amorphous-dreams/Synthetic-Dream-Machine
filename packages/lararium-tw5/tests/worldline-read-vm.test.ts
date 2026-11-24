@@ -13,7 +13,7 @@ import { describe, test, expect, afterEach } from "vitest";
 import {
   delegationEdge,
   communicationEdge,
-  handbackClose,
+  retireClose,
   worldlineHandles,
   mkDaemonWorldlineCompareRequest,
   mkDaemonWorldlineTrajectoryRequest,
@@ -32,12 +32,12 @@ import type { IslandContext } from "../src/island-context.js";
 describe("computeWorldlineCompare — Well 1 (registry held in-VM, concurrent-capable verdict)", () => {
   test("project the edge-DAG, hold the registry, answer before/concurrent/equal", () => {
     const opens = [
-      delegationEdge("run", "run.a", { validFrom: "2026-06-29T00:00:00Z" }),
-      delegationEdge("run", "run.b", { validFrom: "2026-06-29T00:00:01Z" }),
-      communicationEdge("run", "run.a", { validFrom: "2026-06-29T00:00:02Z" }),
-      communicationEdge("run", "run.b", { validFrom: "2026-06-29T00:00:03Z" }),
+      delegationEdge("run", "run.a", { validFrom: "2026-06-29T00:00:00Z", turnKey: "s-a" }),
+      delegationEdge("run", "run.b", { validFrom: "2026-06-29T00:00:01Z", turnKey: "s-b", parentKey: "s-a" }),
+      communicationEdge("run", "run.a", { validFrom: "2026-06-29T00:00:02Z", turnKey: "m-a", parentKey: "s-b" }),
+      communicationEdge("run", "run.b", { validFrom: "2026-06-29T00:00:03Z", turnKey: "m-b", parentKey: "m-a" }),
     ];
-    expect(computeWorldlineCompare({ a: "run", b: "run.a", opens, root: "run" }).order).toBe("before");
+    expect(computeWorldlineCompare({ a: "run", b: "run.b", opens, root: "run" }).order).toBe("before"); // run's last send reached b
     expect(computeWorldlineCompare({ a: "run.a", b: "run.b", opens, root: "run" }).order).toBe("concurrent");
     expect(computeWorldlineCompare({ a: "run.a", b: "run.a", opens, root: "run" }).order).toBe("equal");
     // the registry is HELD in module state (the future read→filter-compute chain leans on it).
@@ -46,7 +46,7 @@ describe("computeWorldlineCompare — Well 1 (registry held in-VM, concurrent-ca
   });
 
   test("a compare with NO fresh edges reads the HELD registry (cross-read persistence)", () => {
-    // delegation (spawn) + communication (inject) → run is "before" run.a (a bare fork reads "equal").
+    // delegation (spawn) + communication (message) → run is "before" run.a (a bare fork reads "equal").
     const opens = [
       delegationEdge("run", "run.a", { validFrom: "2026-06-29T00:00:00Z" }),
       communicationEdge("run", "run.a", { validFrom: "2026-06-29T00:00:02Z" }),
@@ -56,9 +56,9 @@ describe("computeWorldlineCompare — Well 1 (registry held in-VM, concurrent-ca
     expect(computeWorldlineCompare({ a: "run", b: "run.a", opens: [], root: "run" }).order).toBe("before");
   });
 
-  test("a handback retires the child — an unknown handle THROWS (the host wraps the helpful error)", () => {
+  test("a retirement removes the child — an unknown handle THROWS (the host wraps the helpful error)", () => {
     const opens = [delegationEdge("run", "run.a", { validFrom: "2026-06-29T00:00:00Z" })];
-    const closes = [handbackClose("run", "run.a", "2026-06-29T00:00:05Z")];
+    const closes = [retireClose("run", "run.a", "2026-06-29T00:00:05Z")];
     expect(() => computeWorldlineCompare({ a: "run", b: "run.a", opens, closes, root: "run" })).toThrow();
   });
 });

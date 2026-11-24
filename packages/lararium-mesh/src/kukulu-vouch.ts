@@ -28,25 +28,41 @@ export interface KukuluVouchParts {
   readonly tree: string;
   /** The candidate image's digest, as its walker read it. */
   readonly image: string;
+  /**
+   * THE KEEPER MOVE this kūkulu carries (the keeper tally), where it hands the pūlama's fire: the successor's one-handoff key it
+   * announced through this same rite (`to`), the closure the hand committed (`next`), and the devices this face holds as the
+   * vessel read its signed admission fold (`devices`, 0 where it read none). A vest proceeds only inside a rite whose vouch names it.
+   */
+  readonly keeper?: KukuluVouchKeeper;
 }
+export interface KukuluVouchKeeper { readonly to: string; readonly next: string; readonly devices: number }
 export type KukuluVouchBody = KukuluVouchParts & { readonly kind: typeof KUKULU_VOUCH_DOMAIN; readonly act: "vouch" };
 export interface SignedKukuluVouch { readonly body: KukuluVouchBody; readonly signer: string; readonly sig: string }
 export type KukuluVouchRefusal = "shape" | "domain" | "signature" | "signer";
 
 const KEYS = ["act", "branch", "group", "head", "image", "kind", "tree"].join(",");
+const KEYS_KEEPER = ["act", "branch", "group", "head", "image", "keeper", "kind", "tree"].join(",");
+function keeperShape(k: unknown): k is KukuluVouchKeeper {
+  if (typeof k !== "object" || k === null || Array.isArray(k)) return false;
+  const v = k as Record<string, unknown>;
+  return Object.keys(v).sort().join(",") === "devices,next,to" && hex64(v["to"]) && typeof v["next"] === "string" && /^sha256:[0-9a-f]{64}$/.test(v["next"])
+    && typeof v["devices"] === "number" && Number.isSafeInteger(v["devices"]) && v["devices"] >= 0;
+}
 const text = (x: unknown): x is string => typeof x === "string" && x.length > 0 && x.length <= 512;
 const hex64 = (x: unknown): x is string => typeof x === "string" && /^[0-9a-f]{64}$/.test(x);
 
 function shape(b: unknown): b is KukuluVouchBody {
   if (typeof b !== "object" || b === null || Array.isArray(b)) return false;
   const v = b as Record<string, unknown>;
-  return Object.keys(v).sort().join(",") === KEYS && v["act"] === "vouch" && typeof v["kind"] === "string"
+  const keys = Object.keys(v).sort().join(",");
+  if (keys === KEYS_KEEPER ? !keeperShape(v["keeper"]) : keys !== KEYS) return false;
+  return v["act"] === "vouch" && typeof v["kind"] === "string"
     && text(v["group"]) && text(v["branch"]) && text(v["head"]) && text(v["tree"]) && text(v["image"]);
 }
 
 /** Sign a vouch under the vouch key (`key`: its verifying half, 64 lower hex). */
 export async function signKukuluVouch(parts: KukuluVouchParts, signer: { readonly key: string; readonly sign: (bytes: Uint8Array) => Promise<string> }): Promise<SignedKukuluVouch> {
-  const body: KukuluVouchBody = { kind: KUKULU_VOUCH_DOMAIN, act: "vouch", group: parts.group, branch: parts.branch, head: parts.head, tree: parts.tree, image: parts.image };
+  const body: KukuluVouchBody = { kind: KUKULU_VOUCH_DOMAIN, act: "vouch", group: parts.group, branch: parts.branch, head: parts.head, tree: parts.tree, image: parts.image, ...(parts.keeper === undefined ? {} : { keeper: { to: parts.keeper.to, next: parts.keeper.next, devices: parts.keeper.devices } }) };
   if (!shape(body)) throw new TypeError("vouch: the parts form no vouch");
   return { body, signer: signer.key.toLowerCase(), sig: await signer.sign(canonicalJsonBytes(body)) };
 }

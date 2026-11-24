@@ -220,8 +220,9 @@ coupling. One join, one direction, once.
 ''injection'' (`prov:Communication`, operator or parent reaching a running spirit) //also// makes a directed
 one-shot join, landing ''where the message lands'' (the vector-clock law), not only at reunion. Each join
 stays one-shot-directed (φ non-interference holds per-edge); ''many'' join-points stand, not
-one. (In code `worldlineInject` ticks the target alone; joining the injector's history stands UNBUILT —
-lar:///ha.ka.ba/lararium/api/agent-worldline#/open.) Mechanism: the worldline rides the ''edge-DAG stamped into the mempalace'' (the chat-session store —
+one. (In code `worldlineInject(sender, target)` ticks the sender and joins its history into the target
+through an ownership-free peek, so the receive orders after the send —
+lar:///ha.ka.ba/lararium/api/agent-worldline#/build-sequence.) Mechanism: the worldline rides the ''edge-DAG stamped into the mempalace'' (the chat-session store —
 Automerge serves only the DreamNet mesh + wiki-bags, never chat); ''Interval Tree Clocks'' (fork·event·join)
 model it, ''full ticks'' (every injection), ''turn-DAG-keyed''. Causal rides the edge-DAG; this clock stays
 purely rhythmic ([[agent-worldline|lar:///ha.ka.ba/lararium/api/agent-worldline#/time]], the kupono models).
@@ -468,6 +469,6 @@ targeted revocation MUST ride Keyhive's convergent removal, never the counter
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;4CMSCo06lOkegrfr_0bU9JIkK1U-YJYQpoItHFbB_po`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;C-YVJWxxo-39y9i5rn5wqspvsTn8S0Zs69OcZKv6mzk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -326,6 +326,19 @@ function rootsMeet(a: string, b: string, facesRoot: string | null): boolean {
 /** THE ROOTS EACH LIT FACE'S PROJECTION HOLDS NOW, by handle index: one island runs per worker, so one table serves it. */
 const litFaceRoots = new Map<number, readonly string[]>();
 
+/** EACH LIT FACE'S PROJECTOR, by handle index, while its projection stands: the island's shore answers a sibling's acts there. */
+const litFaceProjectors = new Map<number, LarDiskProjector>();
+
+/** The projector a lit sibling's projection holds now, or null where that face stands none. */
+export function litFaceProjector(handleIndex: number): LarDiskProjector | null {
+  return litFaceProjectors.get(handleIndex) ?? null;
+}
+
+/** The handle index of each lit sibling whose projector stands now, in order. */
+export function litFaceProjectorFaces(): number[] {
+  return [...litFaceProjectors.keys()].sort((a, b) => a - b);
+}
+
 /**
  * EVERY LIT FACE PROJECTS ITS OWN WRITES. A face that stands lit beside the worn one composes its own engine over its own daemon
  * documents (`face-engine`), and its writes land there; this mounts one projector over THAT engine, through the same mount the
@@ -365,13 +378,18 @@ export function mountLitFaceProjection(
       return undefined;
     }
   }
+  let projector: LarDiskProjector | null = null;
   const stop = mountDiskProjection({ diskMirrors: granted }, { ...ctx, tw5: engine.tw5, composite: engine.composite },
-    { ...(opts.journal ? { journal: opts.journal } : {}), projected: opts.projected ?? (() => {}) });
+    { ...(opts.journal ? { journal: opts.journal } : {}), projected: (p) => { projector = p; opts.projected?.(p); } });
   if (stop === undefined) return undefined;
   const roots = granted.map((def) => def.mirrorRoot);
   litFaceRoots.set(face.handleIndex, roots);
+  // The island's shore reaches this face's projector by its handle index (`lares shore --face N`), until it stops.
+  const seated = projector as LarDiskProjector | null;
+  if (seated !== null) litFaceProjectors.set(face.handleIndex, seated);
   return async () => {
     if (litFaceRoots.get(face.handleIndex) === roots) litFaceRoots.delete(face.handleIndex);
+    if (seated !== null && litFaceProjectors.get(face.handleIndex) === seated) litFaceProjectors.delete(face.handleIndex);
     await stop();
   };
 }

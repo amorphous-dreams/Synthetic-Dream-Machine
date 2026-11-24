@@ -45,7 +45,7 @@ import { connect, createServer } from "node:net";
 import { dirname } from "node:path";
 import { makeCustodyHolder } from "./custody-holder.js";
 import { FsCustodyIo } from "./custody-io.js";
-import { PULAMA_SESSION_DERIVES, kukuluGate } from "./kukulu-gate.js";
+import { PULAMA_SESSION_DERIVES, keeperRiteOver, kukuluGate } from "./kukulu-gate.js";
 import { kukuluRiteOver } from "./kukulu-lei-seat.js";
 import { seatCustody } from "./custody-seat.js";
 import { loadIdentityAnchors } from "./identity-anchors.js";
@@ -56,7 +56,7 @@ import { rehiveShutFace } from "./face-rehive.js";
 import { readHand } from "./hand-act-gate.js";
 import { PulamaVerbUsage, handVerbExit, keepSeatLine, readRoute, runHandVerb } from "./pulama-verbs.js";
 import { servePulama } from "./pulama-server.js";
-import { listenPulama, socketPathFits } from "./pulama-socket.js";
+import { listenPulama, pulamaAnswers, socketPathFits } from "./pulama-socket.js";
 import { pulamaImage, pulamaRecords } from "./pulama-state.js";
 import { vesselCustodyHomes } from "./vault-carriers.js";
 import { wardCredential } from "./ward-credential.js";
@@ -80,12 +80,16 @@ async function serve(): Promise<void> {
   // The pūlama's holder sits in this process's one custody seat, so the roster's reader reaches it and no other holder.
   seatCustody(holder);
   const records = pulamaRecords(state), image = pulamaImage(state), admissions = pulamaAdmissions(records);
+  const rite = kukuluRiteOver(records);
+  const handKey = (ordinal: number) => loadPersonaGroupRootVerifyingKey(ordinal);
   const log = (line: string): void => console.log(`[pulama] ${line}`);
   const server = servePulama({
     holder, derives: PULAMA_SESSION_DERIVES, onLog: log,
     // THE HAND'S KEY reads off the face's own roster row, through this pūlama's seated holder.
-    gate: kukuluGate({ holder, hand: (ordinal) => loadPersonaGroupRootVerifyingKey(ordinal), rite: kukuluRiteOver(records), image: () => image.raised(), admissions }),
+    gate: kukuluGate({ holder, hand: handKey, rite, image: () => image.raised(), admissions }),
   });
+  // THE LIVE RITE A VEST RIDES reads the same rite port the gate does, so the vest's begin and the next vessel's hello share one turn.
+  const keeperRite = keeperRiteOver({ holder, hand: handKey, rite, image: () => image.raised() });
   // THE LEI HAND reads the face's group off its anchors row and opens its root fresh under the route, through this seated holder.
   const lei = {
     group: async (ordinal: number) => (await loadIdentityAnchors(ordinal).catch(() => null))?.personaGroupId ?? null,
@@ -93,10 +97,21 @@ async function serve(): Promise<void> {
   };
   // THE REHIVE runs over this pūlama's own holder and custody files: the face's key opens for the act alone (`openFaceForAct`).
   const rehive = (ordinal: number, credentials: Parameters<typeof wardCredential>[0]) => rehiveShutFace({ holder, io: new FsCustodyIo(homes), ordinal, credentials });
-  const door = pulamaHandDoor({ holder, server, image, records, admissions, lei, rehive, onLog: log });
+  // THE FIRE IS THE VESSEL SOCKET, and exactly one keeper holds it. A keeper that finds another already answering there stands
+  // as its SUCCESSOR: unlit, on its own hand door alone, until a vest (or the hand's light) lights it and `take-fire` claims the
+  // socket once the keeper before it let go. The claim itself refuses a second holder (`listenPulama`).
+  let listener: { close(): Promise<void>; owns(): boolean } | null = null;
+  const claim = async (): Promise<{ readonly taken: true } | { readonly refusal: string; readonly detail: string }> => {
+    if (listener !== null) return { taken: true };
+    try { listener = await listenPulama(socket, (channel) => server.accept(channel)); return { taken: true }; }
+    catch (err) { return { refusal: "fire-held", detail: err instanceof Error ? err.message : String(err) }; }
+  };
+  // THIS KEEPER HOLDS THE FIRE while its claim still names the socket path (a claim another keeper displaced reads as none).
+  const fire = { holds: () => listener !== null && listener.owns(), take: claim };
+  const door = pulamaHandDoor({ holder, server, image, records, admissions, lei, rehive, fire, keeperRite, worn: () => server.worn?.(), onLog: log });
 
-  // THE VESSEL SOCKET CLAIMS FIRST: a second pūlama over the same socket refuses here, before it touches a hand door.
-  const listener = await listenPulama(socket, (channel) => server.accept(channel));
+  const successor = await pulamaAnswers(socket);
+  if (!successor) { const first = await claim(); if ("refusal" in first) throw new Error(first.detail); }
   mkdirSync(dirname(hand), { recursive: true, mode: 0o700 });
   rmSync(hand, { force: true });
   const handServer = createServer((sock) => {
@@ -122,7 +137,9 @@ async function serve(): Promise<void> {
   });
   await new Promise<void>((resolve, reject) => { handServer.once("error", reject); handServer.listen(hand, resolve); });
   chmodSync(hand, 0o600);
-  log(`standing unlit at ${socket}; the operator lights it by hand: node dist/src/pulama-main.js light`);
+  log(successor
+    ? `standing unlit as a successor beside the keeper that holds ${socket}; a vest lights it (keeper-offer, keeper-receive), or the hand does, then take-fire`
+    : `standing unlit at ${socket}; the operator lights it by hand: node dist/src/pulama-main.js light`);
 
   let leaving = false;
   const leave = (signal: string): void => {
@@ -131,7 +148,7 @@ async function serve(): Promise<void> {
     log(`${signal}: locking before the process leaves`);
     void (async () => {
       try { await server.lock(); } finally {
-        await listener.close().catch(() => undefined);
+        await listener?.close().catch(() => undefined);
         handServer.close();
         rmSync(hand, { force: true });
         process.exit(0);
@@ -166,7 +183,7 @@ async function main(): Promise<void> {
     process.exit(code);
   }
   try {
-    const answer = await runHandVerb(verb, verb === "admit" || verb === "lei" ? args : args.length === 1 ? args[0] : args.length === 0 ? undefined : args, { ask: askHand, route: (label, what) => readRoute(label, what)});
+    const answer = await runHandVerb(verb, verb === "admit" || verb === "lei" || (verb === "keeper-commit" && args.length > 1) ? args : args.length === 1 ? args[0] : args.length === 0 ? undefined : args, { ask: askHand, route: (label, what) => readRoute(label, what)});
     console.log(JSON.stringify(answer, null, 2));
     // A REFUSED REHIVE EXITS NON-ZERO: the JSON names the refusal, and the status keeps a script from reading it as landed.
     const exit = handVerbExit(verb, answer);

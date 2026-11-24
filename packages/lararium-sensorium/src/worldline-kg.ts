@@ -1,7 +1,8 @@
 /**
  * worldline-kg — the NODE shore that projects worldline edges onto the mempalace
  * knowledge graph. The durable twin of the in-memory ITC registry (mesh/worldline-clock):
- * spawn/inject persist as prov triples, handback closes the spawn interval, kapae closes a
+ * spawns, messages and round-closing handbacks persist as prov triples, retirement closes the spawn
+ * interval, kapae closes a
  * retracted turn's edges (rewind = set-aside, never erase).
  *
  * It CALLS the mempalace KG API through OUR `scripts/kg_io.py` (which calls the vendored
@@ -108,8 +109,11 @@ function runWithNdjson(r: Resolved, sub: string, records: readonly unknown[]): u
 }
 
 /**
- * PERSIST spawn/inject edges → `kg_add` a prov:Delegation / prov:Communication triple each.
- * Idempotent at the KG (an identical still-open triple returns the existing id). No-op on [].
+ * PERSIST spawn / message / handback edges → `kg_add` a prov:Delegation / prov:Communication triple
+ * each. The KG row carries S/P/O, valid_from and the turn key; a handback's `round` mark and an
+ * edge's `parentKey` stay off the row, so the KG reads a handback as a message (the one durable event
+ * contract, a named course row, carries them). Idempotent at the KG (an identical still-open triple
+ * returns the existing id). No-op on [].
  */
 export function persistWorldlineEdges(edges: readonly WorldlineEdgeTriple[], opts: WorldlineKgOptions = {}): { added: number } {
   if (edges.length === 0) return { added: 0 };
@@ -126,7 +130,7 @@ export function persistWorldlineEdges(edges: readonly WorldlineEdgeTriple[], opt
 }
 
 /**
- * CLOSE edges' valid-interval by S/P/O → `kg_invalidate` each (the HANDBACK twin-reunion:
+ * CLOSE edges' valid-interval by S/P/O → `kg_invalidate` each (the RETIREMENT reunion:
  * the spawn edge's valid_to closes at the merge). No-op on [].
  */
 export function closeWorldlineEdges(closes: readonly WorldlineEdgeClose[], opts: WorldlineKgOptions = {}): { invalidated: number } {

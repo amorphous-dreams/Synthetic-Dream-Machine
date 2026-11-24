@@ -93,7 +93,7 @@ test("a sibling whose Archive lags its log refuses by name: the face, and the ca
   }
   expect(refused).toHaveLength(1);
   expect(refused[0]).toContain(`face ${siblingKey}`);
-  expect(refused[0]).toContain("holds no prekey secret: its Archive was absent or older than its latest card");
+  expect(refused[0]).toContain("holds no prekey secret: its Archive stood absent or older than its latest card");
   expect(refused[0]).not.toMatch(/GenerateDocError/);
 });
 

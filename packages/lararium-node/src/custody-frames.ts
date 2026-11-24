@@ -65,7 +65,7 @@ import { SESSION_ACTS, SealedActRefused, isSealedActName } from "./sealed-acts.j
 import { RehiveRefused, type RehiveOutcome } from "./face-rehive.js";
 import { readHand } from "./hand-act-gate.js";
 import type { PeerKind } from "./uds-peer.js";
-import { shoreFlushLines, type ShoreFlushReading } from "./shore-verb.js";
+import { shoreFlushLines, shoreStuckFaces, type ShoreFlushReading } from "./shore-verb.js";
 
 export type CustodyFrame =
   | { readonly op: "unlock"; readonly credentials: readonly Credential[]; readonly face?: number; readonly all?: boolean }
@@ -78,6 +78,8 @@ export type CustodyFrame =
   | { readonly op: "census" }
   /** The document census: every document the stores hold and who names it, read-only (`lares vessel census --docs`). */
   | { readonly op: "doc-census" }
+  /** The shore's flush over every island the composition holds (`lares shore flush`): no credential; it places no record. */
+  | { readonly op: "shore-flush" }
   | { readonly op: "act"; readonly act: string; readonly args?: Readonly<Record<string, unknown>> }
   /** Cut face `face`'s bundle body, sealed under `key` (a bundle key, 64 lower hex), once `credentials` prove the vessel's own route. */
   | { readonly op: "backup"; readonly credentials: readonly Credential[]; readonly face: number; readonly key: string }
@@ -117,6 +119,8 @@ export type CustodyAnswer =
   | { readonly op: "census"; readonly held: readonly HeldSaves[] | null; readonly standing: string; readonly locked: boolean; readonly facesLocked?: readonly number[]; readonly facesLit?: readonly number[]; readonly facesDark?: readonly ServedDark[]; readonly worn?: number }
   /** Each document by id, its store, counts and class, and the names that reach it; never a body. */
   | { readonly op: "doc-census"; readonly census: DocCensusReading; readonly standing: string }
+  /** What each island the composition holds wrote to its mirrors, and what it left and why. */
+  | { readonly op: "shore-flush"; readonly reading: ShoreFlushReading; readonly standing: string }
   | { readonly op: "face-route"; readonly ref: string }
   | { readonly op: "ward"; readonly ref: string }
   | { readonly op: "backup"; readonly sealedBody: string; readonly holds: FaceBundleCut["holds"]; readonly face: FaceBundleCut["face"]; readonly carries: FaceBundleCut["carries"] }
@@ -198,15 +202,16 @@ export interface CustodyFrameDeps {
   readonly rehive?: (face: number, credentials: readonly Credential[]) => Promise<RehiveOutcome>;
   /**
    * Ask every island of the standing composition that mounts a disk shore to flush (`flushEveryShore`, the same flush the
-   * teardown's flush phase runs). A wear that turns the face asks it first, in this process. Absent, or null while no
-   * composition sits, a wear turns with no flush reading.
+   * teardown's flush phase runs). A wear that turns the face asks it first, in this process, and a hand's `shore-flush` frame
+   * asks it outright (`lares shore flush`, the keep's flush before its cut). Absent, or null while no composition sits, a wear
+   * turns with no flush reading and a `shore-flush` frame refuses `flush-unavailable`.
    */
   readonly shoreFlush?: () => Promise<ShoreFlushReading> | null;
   /** Who sent a hand act's frame (`hand-act-gate`); the test seam alone replaces it. */
   readonly peerOf?: (sock: Socket) => Promise<PeerKind>;
 }
 
-const OPS: ReadonlySet<string> = new Set(["unlock", "lock", "wear", "custody", "census", "doc-census", "act", "backup", "face-route", "ward", "prove", "rehive"]);
+const OPS: ReadonlySet<string> = new Set(["unlock", "lock", "wear", "custody", "census", "doc-census", "shore-flush", "act", "backup", "face-route", "ward", "prove", "rehive"]);
 /** The keys a `rehive` frame may carry: the face's own route and the face, nothing beside them. */
 const REHIVE_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "credentials", "face"]);
 /** The keys a `wear` frame may carry: a face, and the seat's mark; no route ever rides a wear. */
@@ -479,7 +484,9 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       for (const line of shoreFlushLines(shore)) deps.onLog(`wear h${face}: ${line}`);
       if (!shore.whole && !yes) {
         const strands = shoreFlushLines(shore).filter((_, i) => { const part = shore.islands[i]!; return !part.answered || part.unwrittenCount > 0; });
-        return refuse("shore-unwritten", `the shore's flush left records unwritten on the face this wear turns away from (${strands.join(" · ")}); they rest in the store, and their mirrors stay behind until that face is worn again: wear again with --yes to turn anyway`, { shore });
+        const stuck = shoreStuckFaces(shore, before ?? null);
+        const where = stuck.length > 0 ? `on ${stuck.map((f) => `h${f}`).join(", ")}` : "on an island that did not answer";
+        return refuse("shore-unwritten", `the shore's flush left records unwritten ${where} (${strands.join(" · ")}); they rest in the store, and their mirrors stay behind until a flush writes them (\`lares shore flush\`): wear again with --yes to turn anyway`, { shore });
       }
     }
     const priorMount = daemonMountState();
@@ -823,6 +830,24 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
           const why = e instanceof Error ? e.message : String(e);
           deps.onLog(`doc-census: refused — ${why}`);
           answer(sock, { op, status: "error", errorMessage: why, refusal: { reason: "census-failed" } });
+        },
+      );
+      return true;
+    } else if (op === "shore-flush") {
+      // THE SHORE'S FLUSH, WHOLE ISLAND: every island the standing composition holds that mounts a disk shore (the daemon's, its
+      // lit siblings' and each resident wiki's) writes what it holds to its mirrors, the same flush the teardown runs. It places
+      // no record and moves no custody, so it rides beside the chain and asks no credential, as the census does.
+      const flushing = deps.shoreFlush?.() ?? null;
+      if (flushing === null) {
+        answer(sock, { op, status: "error", errorMessage: "no composition sits to flush its shores: stand the vessel (`lares vessel stand`), or unlock it (`lares vault unlock`) where it rests locked, then ask again", refusal: { reason: "flush-unavailable" } });
+        return true;
+      }
+      void flushing.then(
+        (reading) => answer(sock, { op: "shore-flush", reading, standing: deps.standing() }),
+        (e) => {
+          const why = e instanceof Error ? e.message : String(e);
+          deps.onLog(`shore-flush: refused — ${why}`);
+          answer(sock, { op, status: "error", errorMessage: why, refusal: { reason: "flush-failed" } });
         },
       );
       return true;

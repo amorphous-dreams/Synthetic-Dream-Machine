@@ -1,7 +1,8 @@
 /**
  * pulama-verbs — the hand's verbs at the pūlama, as the operator types them inside the pūlama's own container.
  *
- *   light    read the route on a real terminal, hand it to the hand door: the one act that opens a key
+ *   light    read the route on a real terminal, hand it to the hand door: the one act that opens a key; `light --admit` also
+ *            admits the reported image under that one route, so a struck fire asks the passphrase once
  *   admit    read the route on a real terminal, hand it to the hand door: the route PROVES against the lit holder (it opens
  *            nothing), and the image the host reports rests admitted, so a vessel raised from it wakes served
  *   lei      `lei kui|restring|unstring '<terms>'`: read the route on a real terminal, hand it to the hand door with the lei's
@@ -14,7 +15,12 @@
  *            keep pair mints under it. The pūlama's container stands read-only with no config home, so the verb writes NOTHING:
  *            it prints exactly ONE stdout line (`keepSeatLine`) the host's shim writes to the house's `keep-seat.json` at 0600, or
  *            one refusal line and a nonzero exit
- *   lock · status · tessera · image <digest> | image '{"digest","seed"}'   one frame each, no route
+ *   keeper-commit <sha256:…>  THE HAND NAMES THE KEEPER'S SUCCESSOR: the door reads first (unlit, unreported or passing refuses
+ *            before any prompt), the prompt names the successor closure it commits, and the route proves against the lit holder.
+ *            The host's consent screen (`tools/lares-container.sh pulama keeper-commit`) prints that closure and the source tree, and
+ *            offers the clean-tree re-check, before it lands here
+ *   lock · status · tessera · keeper-offer · keeper-land · take-fire · closure <sha256:…> · keeper-vest '{"to","closure"}' ·
+ *   keeper-receive '{"slot"}' · image <digest> | image '{"digest","seed","closure"}'   one frame each, no route
  *
  * ── A ROUTE RIDES A REAL TERMINAL AND NOTHING ELSE ──────────────────────────────────────────────
  * `readRoute` reads with no echo from a terminal, and refuses anything else by name: no pipe, no flag, no argument and no
@@ -53,7 +59,7 @@ export class RouteNotGiven extends Error {
   constructor(readonly typed: boolean) {
     super(typed
       ? "the route reading stopped (Ctrl-C or Ctrl-D) before Enter, so what you typed never reached the pūlama: it opened nothing and spent no attempt; run it again and end the route with Enter"
-      : "no route was given, so nothing reached the pūlama: it opened nothing and spent no attempt; run it again and type the route, then Enter");
+      : "no route came, so nothing reached the pūlama: it opened nothing and spent no attempt; run it again and type the route, then Enter");
   }
 }
 
@@ -81,18 +87,24 @@ export function readRoute(label: string, what: string, terminal: RouteTerminal =
   });
 }
 
-export const PULAMA_VERB_USAGE = `usage: pulama-main.js serve | light | admit [face…] | unadmit <image digest> | rehive <face> | lei kui|restring|unstring '{"face":…,"rite":…,"branch":…,…}' | lei kui '{"faces":[…]}' | keep-seat | lock | status | image <digest> | image '{"digest":…,"seed":…}' | tessera`;
+export const PULAMA_VERB_USAGE = `usage: pulama-main.js serve | light [--admit] | admit [face…] | unadmit <image digest> | rehive <face> | lei kui|restring|unstring '{"face":…,"rite":…,"branch":…,…}' | lei kui '{"faces":[…]}' | keep-seat | lock | status | image <digest> | image '{"digest":…,"seed":…,"closure":…}' | tessera | closure <sha256:…> | keeper-commit <sha256:…> [--devices <n>] [--cosign <json>] | keeper-offer | keeper-vest '{"to":…,"closure":…}' | keeper-receive '{"slot":…}' | keeper-land | take-fire`;
 
 /** A verb line the hand door holds no act for. */
 export class PulamaVerbUsage extends Error { override readonly name = "PulamaVerbUsage"; constructor() { super(PULAMA_VERB_USAGE); } }
 
 /**
  * The exit a hand verb's answer leaves: a rehive that did not land (`face-open`, `face-refused`, `hand-act-only`, any reading
- * but `rehived`) exits 1, so a script reading the line's status never takes a refusal for a rehive. Every other verb exits 0.
+ * but `rehived`) exits 1, so a script reading the line's status never takes a refusal for a rehive; each keeper act that did not land
+ * exits 1 the same way. Every other verb exits 0.
  */
 export function handVerbExit(verb: string, answer: PulamaHandAnswer): 0 | 1 {
-  return verb === "rehive" && answer["reading"] !== "rehived" ? 1 : 0;
+  const lands = HAND_VERB_LANDS[verb];
+  return lands !== undefined && answer["reading"] !== lands ? 1 : 0;
 }
+/** The one reading each act that must land answers; any other reading exits 1, so the host shim never reads a refusal as done. */
+const HAND_VERB_LANDS: Readonly<Record<string, string>> = {
+  rehive: "rehived", "keeper-commit": "committed", "keeper-offer": "offered", "keeper-vest": "vested", "keeper-receive": "landed", "keeper-land": "landed", "take-fire": "taken",
+};
 
 /**
  * Run one hand verb: `ask` sends one frame to the hand door, `route` reads the operator's route. Answers the door's answer.
@@ -102,8 +114,10 @@ export async function runHandVerb(verb: string, arg: string | readonly string[] 
   readonly route: (label: string, what: string) => Promise<string>;
 }): Promise<PulamaHandAnswer> {
   if (verb === "light") {
-    const passphrase = await ports.route("pūlama route: ", "the pūlama's light");
-    return ports.ask({ op: "light", credentials: [{ kind: "passphrase", passphrase }] });
+    // `light --admit`: ONE ROUTE lights the keeper and admits the image the host reports (the struck fire's one proof).
+    if (arg !== undefined && arg !== "--admit") throw new PulamaVerbUsage();
+    const passphrase = await ports.route(arg === "--admit" ? "pūlama route, to light and admit the reported image: " : "pūlama route: ", "the pūlama's light");
+    return ports.ask({ op: "light", credentials: [{ kind: "passphrase", passphrase }], ...(arg === "--admit" ? { admit: true } : {}) });
   }
   if (verb === "admit") {
     const args = arg === undefined ? [] : typeof arg === "string" ? [arg] : arg;
@@ -162,15 +176,45 @@ export async function runHandVerb(verb: string, arg: string | readonly string[] 
     }
     return { op: "lei", act, reading: "signed", faces };
   }
-  if ((verb === "lock" || verb === "status" || verb === "tessera") && arg === undefined) return ports.ask({ op: verb });
+  if (verb === "keeper-commit") {
+    // `keeper-commit <sha256:…> [--devices <n>] [--cosign <json>]`: the host shim names the most devices any lit face holds, as the
+    // vessel read it, and the co-sign the vessel spent over this commit (`lares intent keeper-cosign`: its nonce and each face's proof).
+    const words = typeof arg === "string" ? [arg] : Array.isArray(arg) ? [...arg] : [];
+    const digest = words[0];
+    if (typeof digest !== "string" || !/^sha256:[0-9a-f]{64}$/.test(digest)) throw new PulamaVerbUsage();
+    const extra: Record<string, unknown> = {};
+    for (let i = 1; i < words.length; i += 2) {
+      const flag = words[i], value = words[i + 1];
+      if (typeof value !== "string") throw new PulamaVerbUsage();
+      if (flag === "--devices" && !("devices" in extra) && /^[1-9]\d{0,3}$/.test(value)) extra["devices"] = Number(value);
+      else if (flag === "--cosign" && !("cosign" in extra)) { try { extra["cosign"] = JSON.parse(value); } catch { throw new PulamaVerbUsage(); } }
+      else throw new PulamaVerbUsage();
+    }
+    const devices = extra;
+    // THE DOOR READS FIRST: an unlit, unreported or passing keeper refuses here, before anybody types a route.
+    const standing = await ports.ask({ op: "status" });
+    if (standing["lit"] !== true) return { op: "keeper-commit", reading: "pulama-locked", detail: "the pūlama stands unlit: light it first (`light`), then commit its successor" };
+    if (standing["passing"] === true) return { op: "keeper-commit", reading: "fire-passing", detail: "this keeper vested its fire already" };
+    if (typeof standing["closure"] !== "string") return { op: "keeper-commit", reading: "closure-unreported", detail: "the host reported no closure for this keeper; `tools/lares-container.sh up` reports it" };
+    const passphrase = await ports.route(`pūlama route, to hand this keeper's fire to the successor closure ${digest}: `, "a keeper commit");
+    return ports.ask({ op: "keeper-commit", next: digest, ...devices, credentials: [{ kind: "passphrase", passphrase }] });
+  }
+  if (verb === "closure" && typeof arg === "string") return ports.ask({ op: "closure", digest: arg });
+  if ((verb === "keeper-vest" || verb === "keeper-receive") && typeof arg === "string") {
+    let terms: unknown;
+    try { terms = JSON.parse(arg); } catch { throw new PulamaVerbUsage(); }
+    if (typeof terms !== "object" || terms === null || Array.isArray(terms) || "op" in terms || "credentials" in terms) throw new PulamaVerbUsage();
+    return ports.ask({ op: verb, ...(terms as Record<string, unknown>) });
+  }
+  if ((verb === "lock" || verb === "status" || verb === "tessera" || verb === "keeper-offer" || verb === "keeper-land" || verb === "take-fire") && arg === undefined) return ports.ask({ op: verb });
   if (verb === "image" && typeof arg === "string") {
     // `image '{"digest":…,"seed":…}'`: the host's structured frame, the seed line beside the digest; `image <digest>` carries none.
     if (!arg.trimStart().startsWith("{")) return ports.ask({ op: "image", digest: arg });
     let frame: unknown;
     try { frame = JSON.parse(arg); } catch { throw new PulamaVerbUsage(); }
     const f = (typeof frame === "object" && frame !== null && !Array.isArray(frame) ? frame : {}) as Record<string, unknown>;
-    if (typeof f["digest"] !== "string" || (f["seed"] !== undefined && typeof f["seed"] !== "string")) throw new PulamaVerbUsage();
-    return ports.ask({ op: "image", digest: f["digest"], ...(typeof f["seed"] === "string" ? { seed: f["seed"] } : {}) });
+    if (typeof f["digest"] !== "string" || (f["seed"] !== undefined && typeof f["seed"] !== "string") || (f["closure"] !== undefined && typeof f["closure"] !== "string")) throw new PulamaVerbUsage();
+    return ports.ask({ op: "image", digest: f["digest"], ...(typeof f["seed"] === "string" ? { seed: f["seed"] } : {}), ...(typeof f["closure"] === "string" ? { closure: f["closure"] } : {}) });
   }
   throw new PulamaVerbUsage();
 }
