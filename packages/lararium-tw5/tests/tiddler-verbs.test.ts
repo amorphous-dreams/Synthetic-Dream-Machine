@@ -282,6 +282,76 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     await expect(makeWikiRenderReactor(r.opts)({ ...A, title: "$:/temp/lares/secret" }, ctx())).rejects.toMatchObject({ reason: "tiddler-withheld" });
   });
 
+  test("RED: an alert the house raises (`$:/temp/lares/alert/…`) reads through the one door, a get, a filter and a render alike, and takes no write; CONTROL: every other temp title still stays home", async () => {
+    const r = await rig();
+    const ALERT = "$:/temp/lares/alert/refused/module-unpinned/$:/plugins/x/evil.js";
+    r.engine.wiki.addTiddler({ title: ALERT, tags: "$:/tags/Alert", text: "Module refused: its SHA-256 matches no pin" });
+    const got = await makeTiddlerGetReactor(r.opts)({ ...A, title: ALERT }, ctx());
+    expect((got["tiddler"] as { fields: Record<string, string> }).fields).toMatchObject({ title: ALERT, text: "Module refused: its SHA-256 matches no pin" });
+    const listed = await makeWikiFilterReactor(r.opts)({ ...A, filter: "[prefix[$:/temp/lares/alert/]]" }, ctx());
+    expect(listed).toMatchObject({ titles: [ALERT], total: 1 });
+    expect(String((await makeWikiRenderReactor(r.opts)({ ...A, title: ALERT }, ctx()))["text"] ?? "")).toContain("matches no pin");
+    // The alert reads and never writes: the house raises and clears it, never a door.
+    await expect(makeTiddlerPutReactor(r.opts)({ ...A, title: ALERT, text: "cleared" }, ctx())).rejects.toMatchObject({ reason: "tiddler-withheld" });
+    await expect(makeTiddlerDeleteReactor(r.opts)({ ...A, title: ALERT }, ctx())).rejects.toMatchObject({ reason: "tiddler-withheld" });
+    // CONTROL: the rest of the temp namespace stays home.
+    await expect(makeTiddlerGetReactor(r.opts)({ ...A, title: "$:/temp/lares/secret" }, ctx())).rejects.toMatchObject({ reason: "tiddler-withheld" });
+    expect((await makeWikiFilterReactor(r.opts)({ ...A, filter: "[prefix[$:/temp/lares/]]" }, ctx()))["titles"]).toEqual([ALERT]);
+  });
+
+  test("RED: a house alert carrying a secret-shaped string reads redacted through every read (get, filter, render), and only its kind's open fields leave; CONTROL: the engine keeps the alert as raised", async () => {
+    const r = await rig();
+    const TOKEN = "ghp_" + "Zx9".repeat(10);
+    const PAT = "github_pat_" + "A1b2".repeat(8);
+    const MINT = "ab".repeat(32);
+    const ALERT = "$:/temp/lares/alert/engine-waiting";
+    r.engine.wiki.addTiddler({ title: ALERT, tags: ["$:/tags/Alert", `tag ${TOKEN}`], text: `a fetch failed with token ${TOKEN}, ${PAT}, ticket ${MINT}, sha256:${MINT} and AKIAIOSFODNN7EXAMPLE`, detail: `retry with ${TOKEN}` });
+    const fields = ((await makeTiddlerGetReactor(r.opts)({ ...A, title: ALERT }, ctx()))["tiddler"] as { fields: Record<string, unknown> }).fields;
+    const said = JSON.stringify(fields);
+    for (const secret of [TOKEN, PAT, ` ${MINT}`, "AKIAIOSFODNN7EXAMPLE"]) expect(said, secret).not.toContain(secret);
+    expect(said, "a digest named by its scheme stands").toContain(`sha256:${MINT}`);
+    expect(fields["detail"], "a field the kind does not open never leaves").toBeUndefined();
+    expect(String(fields["tags"]), "a list field redacts element-wise").toContain("tag [redacted: secret-shaped]");
+    expect(JSON.stringify(await makeWikiFilterReactor(r.opts)({ ...A, filter: `[[${ALERT}]get[text]]` }, ctx()))).not.toContain(TOKEN);
+    expect(JSON.stringify(await makeWikiRenderReactor(r.opts)({ ...A, title: ALERT }, ctx()))).not.toContain(TOKEN);
+    expect(r.engine.wiki.getTiddler(ALERT)!.fields["text"]).toContain(TOKEN);
+    // A boot fault leaves as its component and one fixed line: a parse error's quoted record text never crosses the door.
+    const FAULT = "$:/temp/lares/alert/boot-fault/1";
+    r.engine.wiki.addTiddler({ title: FAULT, tags: "$:/tags/Alert", component: "island-boot", text: "SyntaxError: Unexpected token in JSON: {\"text\":\"a private note\"}" });
+    const fault = ((await makeTiddlerGetReactor(r.opts)({ ...A, title: FAULT }, ctx()))["tiddler"] as { fields: Record<string, unknown> }).fields;
+    expect(fault["component"]).toBe("island-boot");
+    expect(JSON.stringify(fault)).not.toContain("a private note");
+    // A refused module's digest leaves named by its scheme, so the strict hex rule keeps the one value a person compares.
+    const DIGEST = "ef".repeat(32);
+    const REFUSED = "$:/temp/lares/alert/refused/module-unpinned/$:/plugins/x/m.js";
+    r.engine.wiki.addTiddler({ title: REFUSED, tags: "$:/tags/Alert", text: `module-unpinned: $:/plugins/x/m.js (sha256:${DIGEST}) carries no pin` });
+    expect(JSON.stringify(await makeTiddlerGetReactor(r.opts)({ ...A, title: REFUSED }, ctx()))).toContain(`sha256:${DIGEST}`);
+  });
+
+  test("RED: an alert answers only a reader of the record it names: a reader without the bag reads the record cap-denied AND no alert about it; a parallel draft never opens; a dot-segment title opens nothing; the meme lens reads no alert; CONTROL: a reader with the bag reads the alert", async () => {
+    const r = await rig({ personal: true });
+    // The secret note rests in the personal layer; the alerts about it name it.
+    await r.composite.storeForBag(PERSONAL)!.put({ tiddler: { title: "Secret note", text: "the words" }, meta: {} }, { kind: "lares-verb", requestId: "seed" }, { bag: PERSONAL as never });
+    await r.landed();
+    const UNSAVED = "$:/temp/lares/alert/unsaved/Secret note";
+    const DRAFT = "$:/temp/lares/alert/parallel-draft/Draft of 'Secret note'";
+    r.engine.wiki.addTiddler({ title: UNSAVED, tags: "$:/tags/Alert", text: "Secret note did not save" });
+    r.engine.wiki.addTiddler({ title: DRAFT, tags: "$:/tags/Alert", text: "the draft's own words", "draft-text": "the draft's own words" });
+    const blind: Cap = async (_access, bag) => (bag === PERSONAL ? { ok: false, reason: "no-grant" } : { ok: true });
+    await expect(makeTiddlerGetReactor(r.opts)({ ...A, title: "Secret note" }, ctx(blind))).rejects.toThrow(/cap-denied/);
+    expect(await makeTiddlerGetReactor(r.opts)({ ...A, title: UNSAVED }, ctx(blind))).toMatchObject({ tiddler: null });
+    expect((await makeWikiFilterReactor(r.opts)({ ...A, filter: "[prefix[$:/temp/lares/alert/]]" }, ctx(blind)))["titles"]).toEqual([]);
+    await expect(makeWikiRenderReactor(r.opts)({ ...A, title: UNSAVED }, ctx(blind))).rejects.toMatchObject({ reason: "tiddler-absent" });
+    // A parallel draft holds the draft's own words: it never opens, whoever reads.
+    await expect(makeTiddlerGetReactor(r.opts)({ ...A, title: DRAFT }, ctx())).rejects.toMatchObject({ reason: "tiddler-withheld" });
+    await expect(makeTiddlerGetReactor(r.opts)({ ...A, title: "$:/temp/lares/alert/unsaved/../../secret" }, ctx())).rejects.toMatchObject({ reason: "tiddler-withheld" });
+    await expect(makeTiddlerGetReactor(r.opts)({ ...A, title: UNSAVED, meme: true }, ctx())).rejects.toMatchObject({ reason: "tiddler-withheld" });
+    // CONTROL: a reader of the personal layer reads the alert about its record.
+    const seen = await makeTiddlerGetReactor(r.opts)({ ...A, title: UNSAVED }, ctx());
+    expect((seen["tiddler"] as { fields: Record<string, string> }).fields["text"]).toBe("Secret note did not save");
+    expect((await makeWikiFilterReactor(r.opts)({ ...A, filter: "[prefix[$:/temp/lares/alert/]]" }, ctx()))["titles"]).toEqual([UNSAVED]);
+  });
+
   test("tiddler-get: a plain tiddler answers its fields (today's meme get drops them); fields-only leaves the text home", async () => {
     const r = await rig();
     const get = makeTiddlerGetReactor(r.opts);
