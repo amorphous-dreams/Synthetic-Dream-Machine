@@ -20,7 +20,7 @@ import { RiteUsage, hostRefill, leiReading, hostRowLine, ritePlan, rollbackOf, s
 import { storeVerbRidesWorn } from "../src/store-door.js";
 import { KUKULU_LEI_RETURNS, kukuluSeedLine, priorImageRef, riteKukulu, syncPlan, type RitePorts, type RiteVerbAnswer, type StandReading } from "../src/rite-kukulu.js";
 import { decideRoute } from "../src/host-bridge.js";
-import { COMMAND_NAMES } from "../src/bin/lares.js";
+import { COMMAND_NAMES, COMMANDS, unknownFlags } from "../src/bin/lares.js";
 
 const HEAD = "a".repeat(40), TESSERA = "c".repeat(64), IMAGE = "sha256:" + "ab".repeat(32);
 const plan = (...line: string[]) => ritePlan(parseArgs(["rite", ...line]));
@@ -564,6 +564,33 @@ describe("kukulu-offer-reaches-the-new-vessel (the host's step)", () => {
   it("the offer sub-verb plans its store row", () => {
     expect(plan("offer", "--branch", "main", "--head", HEAD, "--image", IMAGE)).toEqual({ verb: "rite-offer", args: { branch: "main", head: HEAD, image: IMAGE } });
     expect(() => plan("offer", "--branch", "main", "--head", HEAD)).toThrow(RiteUsage);
+  });
+
+  it("RED: the offer carries the keeper move the vessel reads: `--keeper-to <64 hex> --keeper-next sha256:<64 hex>` plan `keeperTo`/`keeperNext`; CONTROL: one without the other, or a malformed key or closure, refuses by usage and names the cure", () => {
+    const to = "d".repeat(64), closure = "sha256:" + "e".repeat(64);
+    expect(plan("offer", "--branch", "main", "--head", HEAD, "--image", IMAGE, "--keeper-to", to, "--keeper-next", closure))
+      .toEqual({ verb: "rite-offer", args: { branch: "main", head: HEAD, image: IMAGE, keeperTo: to, keeperNext: closure } });
+    const base = ["offer", "--branch", "main", "--head", HEAD, "--image", IMAGE];
+    for (const extra of [["--keeper-to", to], ["--keeper-next", closure], ["--keeper-to", "D".repeat(64), "--keeper-next", closure], ["--keeper-to", to, "--keeper-next", "e".repeat(64)]]) {
+      expect(() => plan(...base, ...extra), extra.join(" ")).toThrow(/--keeper-to <64 hex> --keeper-next sha256:<64 hex>/);
+    }
+  });
+
+  it("RED: every row the kūkulu sends crosses the CLI whole: the line the host writes passes the flag gate and plans back into the very args the rite sent (the keeper move included)", () => {
+    const rite = COMMANDS.find((c) => c.name === "rite")!;
+    const to = "d".repeat(64), closure = "sha256:" + "e".repeat(64);
+    const rows: Array<["rite-begin" | "rite-land" | "rite-offer" | "rite-receipts", Record<string, unknown>]> = [
+      ["rite-begin", { rite: "kukulu", branch: "main", head: HEAD, image: IMAGE, face: 0 }],
+      ["rite-offer", { branch: "main", head: HEAD, image: IMAGE, face: 0, keeperTo: to, keeperNext: closure }],
+      ["rite-offer", { branch: "main", head: HEAD, image: IMAGE }],
+      ["rite-land", { tessera: TESSERA, head: HEAD, image: IMAGE, face: 2 }],
+      ["rite-receipts", { rite: "kukulu", branch: "main", face: 0 }],
+    ];
+    for (const [verb, rowArgs] of rows) {
+      const parsed = parseArgs(hostRowLine(verb, rowArgs));
+      expect(unknownFlags(rite, parsed), verb).toEqual([]);
+      expect(ritePlan(parsed), verb).toEqual({ verb, args: rowArgs });
+    }
   });
 });
 

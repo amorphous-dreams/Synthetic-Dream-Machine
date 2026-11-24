@@ -165,7 +165,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--lei <cid>   (unstring) the lei to revoke", "--face N   face index", "--all   (kui, push or kukulu) one lei for every open face, under one route"],
   },
   rite: {
-    usage: "usage: lares rite kukulu [--branch <name>] [--face N] [--rollback [<rev>]] | keep --workspace <name> [--into <path>] [--accept-omissions] [--sessions|--no-sessions] | keep --if-due [--workspace <name>] | keep-cut --workspace <name> [--into <path>] [--accept-omissions] | begin --rite <r> --branch <name> --head <commit> [--staging <path>] [--image <digest>] | offer --branch <name> --head <commit> --image <digest> | land --tessera <id> --head <commit> [--image <digest>] | receipts [--rite kukulu [--branch <name>]]",
+    usage: "usage: lares rite kukulu [--branch <name>] [--face N] [--rollback [<rev>]] | keep --workspace <name> [--into <path>] [--accept-omissions] [--sessions|--no-sessions] | keep --if-due [--workspace <name>] | keep-cut --workspace <name> [--into <path>] [--accept-omissions] | begin --rite <r> --branch <name> --head <commit> [--staging <path>] [--image <digest>] | offer --branch <name> --head <commit> --image <digest> [--keeper-to <key> --keeper-next <closure>] | land --tessera <id> --head <commit> [--image <digest>] | receipts [--rite kukulu [--branch <name>]]",
     synopsis:
       "A rite spends a lei. kūkulu is the one verb that raises the house again around its hearth, and it picks up wherever the " +
       "house stands: it fast-forwards the checkout where it stands clean and behind its upstream (a dirty tree behind, a diverged " +
@@ -212,6 +212,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--accept-omissions   (keep, keep-cut) name the bundle partial where the census reads unsettled; a face whose live stage will not read needs no flag (its files travel, its standing heads stay behind, named)",
       "--if-due             (keep) keep only where the house moved since the pushed bundle; reads LARES_KEEP_WORKSPACE with no --workspace",
       "--image <digest>   (offer, begin, land) the digest of the image the host built",
+      "--keeper-to <key> --keeper-next <closure>   (offer) the keeper move the vouches name: the successor's one-handoff key (64 hex) and the committed closure (sha256:<64 hex>), together or neither",
       "--tessera <id>   (land) the tessera a begin answered", "--face N   face index (a kūkulu naming none acts as the worn face; a keep naming none acts as the keep's face and says so; the floor refuses by name)"],
   },
   kapae: {
