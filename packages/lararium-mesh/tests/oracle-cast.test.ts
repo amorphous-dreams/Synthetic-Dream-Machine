@@ -8,7 +8,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
-  CAST_METHOD, OPERATOR_COINS, ORACLE_WIDENS, castFields, castFromCoins, castReadingTitles, castText, castThreeCoins,
+  CAST_METHOD, OPERATOR_COINS, ORACLE_THROW_STANDS, castFields, castFromCoins, castReadingTitles, castText, castThreeCoins,
   castTitle, figureOf, hexagramOf, parseCoins, readingTitle, throwLine, type LineValue,
 } from "../src/oracle-cast.js";
 import { PLATFORM_ENTROPY, type EntropyDoor } from "../src/entropy-door.js";
@@ -181,7 +181,7 @@ describe("oracle-cast — the result as a tiddler, written once", () => {
       "cast-at": "2026-11-20T23:15:02.123Z",
     });
     expect(fields["readings"]).toBe(castReadingTitles(cast).map((t) => `[[${t}]]`).join(" "));
-    expect(fields["text"]).toContain(ORACLE_WIDENS);
+    expect(fields["text"]).toContain(ORACLE_THROW_STANDS);
     expect(fields["text"]).toContain(`{{${readingTitle("doa", 15)}#/reading}}`);
   });
 
@@ -199,7 +199,7 @@ describe("oracle-cast — the result as a tiddler, written once", () => {
     expect(text).toContain("Hexagram 15");
     expect(text).toContain("16");
     expect(text).toContain("operator:three-coins");
-    expect(text).toContain(ORACLE_WIDENS);
-    expect(ORACLE_WIDENS).toBe("a blind throw to collide uncertainty with: the throw stands, the reading stays open");
+    expect(text).toContain(ORACLE_THROW_STANDS);
+    expect(ORACLE_THROW_STANDS).toBe("a blind throw to collide uncertainty with: the throw stands, the reading stays open");
   });
 });

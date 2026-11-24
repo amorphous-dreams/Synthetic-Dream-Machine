@@ -33,7 +33,7 @@ export const CAST_METHOD = "three-coins";
 export const OPERATOR_COINS = "operator:three-coins";
 
 /** The oracle's pono place, said wherever it answers: a blind throw to collide uncertainty with. */
-export const ORACLE_WIDENS = "a blind throw to collide uncertainty with: the throw stands, the reading stays open";
+export const ORACLE_THROW_STANDS = "a blind throw to collide uncertainty with: the throw stands, the reading stays open";
 
 /** The prefix every cast tiddler's title sits under. */
 export const CAST_TITLE_PREFIX = "lar:///ha.ka.ba/lares/oracle/casts/";
@@ -204,7 +204,7 @@ export function castText(cast: OracleCast): string {
   out.push(`method: ${cast.method} · entropy: ${cast.entropy}`);
   out.push(`caster: ${cast.caster} · at: ${cast.at}`);
   out.push("");
-  out.push(`(${ORACLE_WIDENS})`);
+  out.push(`(${ORACLE_THROW_STANDS})`);
   return out.join("\n");
 }
 
@@ -224,7 +224,7 @@ export function castFields(cast: OracleCast): Record<string, string> {
     body.push("", `!!! ${label}: ${h.glyph} ${h.number}`);
     for (const source of READING_SOURCES) body.push("", `{{${readingTitle(source, h.number)}#/reading}}`);
   }
-  body.push("", `//(${ORACLE_WIDENS})//`);
+  body.push("", `//(${ORACLE_THROW_STANDS})//`);
   const fields: Record<string, string> = {
     title: castTitle(cast),
     type: "text/vnd.tiddlywiki",

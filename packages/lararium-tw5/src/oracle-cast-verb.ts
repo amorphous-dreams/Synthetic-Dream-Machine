@@ -20,7 +20,7 @@
 
 import { VerbRefusal } from "@lararium/mesh";
 import {
-  ORACLE_WIDENS, castFields, castFromCoins, castReadingTitles, castRecord, castText, castThreeCoins, parseCoins,
+  ORACLE_THROW_STANDS, castFields, castFromCoins, castReadingTitles, castRecord, castText, castThreeCoins, parseCoins,
   type OracleCast,
 } from "@lararium/mesh/oracle-cast";
 import { PLATFORM_ENTROPY } from "@lararium/mesh/entropy-door";
@@ -81,7 +81,7 @@ export function makeOracleCastReactor(opts: TiddlerVerbOptions): VerbReactor {
       decision: receipt["decision"], created: receipt["created"] === true, title,
       ...(receipt["bag"] !== undefined ? { bag: receipt["bag"] } : {}),
       ...(receipt["hash"] !== undefined ? { hash: receipt["hash"] } : {}),
-      cast: castRecord(cast), text: castText(cast), readings, note: ORACLE_WIDENS,
+      cast: castRecord(cast), text: castText(cast), readings, note: ORACLE_THROW_STANDS,
     };
   };
 }

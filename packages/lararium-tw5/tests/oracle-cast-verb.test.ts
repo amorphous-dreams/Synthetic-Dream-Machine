@@ -6,7 +6,7 @@
  */
 import { describe, test, expect } from "vitest";
 import { CompositeStore, bagUri, isVerbRefusal, type Verb } from "@lararium/mesh";
-import { ORACLE_WIDENS, readingTitle } from "@lararium/mesh/oracle-cast";
+import { ORACLE_THROW_STANDS, readingTitle } from "@lararium/mesh/oracle-cast";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { makeOracleCastReactor } from "../src/oracle-cast-verb.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
@@ -44,8 +44,8 @@ describe.skipIf(wikiSkip)(`oracle-cast — a cast writes its result as a tiddler
       method: "three-coins", entropy: "operator:three-coins", lines: "8 8 9 6 8 8", changing: "3 4",
       primary: "15", relating: "16", caster: "operator", "cast-at": AT, tags: ["oracle/cast"],
     });
-    expect(String(fields["text"])).toContain(ORACLE_WIDENS);
-    expect(out["note"]).toBe(ORACLE_WIDENS);
+    expect(String(fields["text"])).toContain(ORACLE_THROW_STANDS);
+    expect(out["note"]).toBe(ORACLE_THROW_STANDS);
   }, 60_000);
 
   test("the answer carries the readings the wiki holds, and names the ones it holds none of", async () => {

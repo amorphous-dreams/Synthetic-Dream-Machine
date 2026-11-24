@@ -4,7 +4,7 @@
  * wrote, casts nothing again.
  */
 import { describe, test, expect, beforeAll } from "vitest";
-import { ORACLE_WIDENS } from "@lararium/mesh/oracle-cast";
+import { ORACLE_THROW_STANDS } from "@lararium/mesh/oracle-cast";
 import { bootTestWiki, renderWikitext, wikiSkip, skipNote } from "./test-wiki.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
 
@@ -32,7 +32,7 @@ describe.skipIf(wikiSkip)(`<$action-oracle-cast> writes a cast as a tiddler${ski
       primary: "15", relating: "16", caster: "operator",
     });
     expect(typeof fields["cast-at"]).toBe("string");
-    expect(String(fields["text"])).toContain(ORACLE_WIDENS);
+    expect(String(fields["text"])).toContain(ORACLE_THROW_STANDS);
     // Rendering the cast it wrote re-casts nothing: the record holds the throw.
     renderWikitext(e, `{{${title}}}`);
     expect(e.wiki.getTiddler(title)!.fields["lines"]).toBe("8 8 9 6 8 8");

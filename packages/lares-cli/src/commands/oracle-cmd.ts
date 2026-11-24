@@ -18,7 +18,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
 import { PLATFORM_ENTROPY } from "@lararium/mesh/entropy-door";
-import { ORACLE_WIDENS, castFromCoins, castThreeCoins, castReadingTitles, castRecord, castText, parseCoins } from "@lararium/mesh/oracle-cast";
+import { ORACLE_THROW_STANDS, castFromCoins, castThreeCoins, castReadingTitles, castRecord, castText, parseCoins } from "@lararium/mesh/oracle-cast";
 import { DaemonUnreachable } from "../verb-call.js";
 import { containerArgs } from "../container-target.js";
 import { emit, exitFor } from "../render.js";
@@ -61,7 +61,7 @@ async function offlineCast(plan: DoorPlan): Promise<Record<string, unknown>> {
     if (slot["text"] !== undefined) named["text"] = slot["text"];
     return named;
   });
-  return { decision: "put", created: false, title: castRecord(cast)["title"], cast: castRecord(cast), text: castText(cast), readings, note: ORACLE_WIDENS, offline: true };
+  return { decision: "put", created: false, title: castRecord(cast)["title"], cast: castRecord(cast), text: castText(cast), readings, note: ORACLE_THROW_STANDS, offline: true };
 }
 
 async function oracleCast(args: ParsedArgs): Promise<number> {

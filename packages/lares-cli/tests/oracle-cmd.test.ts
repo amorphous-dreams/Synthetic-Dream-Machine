@@ -27,7 +27,7 @@ vi.mock("../src/env.js", async (orig) => ({
   vesselDid: async () => "0x" + "ab".repeat(32),
 }));
 
-import { ORACLE_WIDENS, castFromCoins, castRecord, castText } from "@lararium/mesh/oracle-cast";
+import { ORACLE_THROW_STANDS, castFromCoins, castRecord, castText } from "@lararium/mesh/oracle-cast";
 import { cmdOracle, oraclePlan } from "../src/commands/oracle-cmd.js";
 import { COMMANDS } from "../src/bin/lares.js";
 import { helpLines } from "../src/command-help.js";
@@ -55,8 +55,8 @@ describe("lares oracle cast", () => {
     expect(row).toBeDefined();
     expect(row?.accepts).toEqual(["bag", "caster", "coins", "face", "realm", "recipe"]);
     expect(commandScope("oracle")).toBe("vessel");
-    expect(row?.summary).toContain(ORACLE_WIDENS);
-    expect(helpLines("oracle").join("\n")).toContain(ORACLE_WIDENS);
+    expect(row?.summary).toContain(ORACLE_THROW_STANDS);
+    expect(helpLines("oracle").join("\n")).toContain(ORACLE_THROW_STANDS);
   });
 
   test("the plan names the container, the time the CLI read, and no coins for a house cast", () => {
@@ -77,7 +77,7 @@ describe("lares oracle cast", () => {
   test("the reading prints plainly by default: the cast and each reading the vessel answered", async () => {
     const cast = castFromCoins([8, 8, 9, 6, 8, 8], { caster: "operator", at: AT });
     h.reply = {
-      decision: "put", created: true, title: castRecord(cast)["title"], cast: castRecord(cast), text: castText(cast), note: ORACLE_WIDENS,
+      decision: "put", created: true, title: castRecord(cast)["title"], cast: castRecord(cast), text: castText(cast), note: ORACLE_THROW_STANDS,
       readings: [
         { title: "lar:///ha.ka.ba/lares/library/oracles/doa/hexagram-15", caption: "15. A Name", attribution: "DOA", license: "Kopyleft 2022", text: "! 15\n\nA reading." },
         { title: "lar:///ha.ka.ba/lares/library/oracles/e-jing/hexagram-15", absent: true },
@@ -91,11 +91,11 @@ describe("lares oracle cast", () => {
     expect(r.out).toContain("A reading.");
     expect(r.out).toContain("Kopyleft 2022");
     expect(r.out).toContain(String(castRecord(cast)["title"]));
-    expect(r.out).toContain(ORACLE_WIDENS);
+    expect(r.out).toContain(ORACLE_THROW_STANDS);
   });
 
   test("--json carries the verb's answer verbatim as data", async () => {
-    h.reply = { decision: "put", created: true, title: "t", note: ORACLE_WIDENS };
+    h.reply = { decision: "put", created: true, title: "t", note: ORACLE_THROW_STANDS };
     const r = await run(argv(["cast"], { recipe: "default" }, { json: true }));
     expect(JSON.parse(r.out)).toMatchObject({ ok: true, data: h.reply });
   });
@@ -132,6 +132,6 @@ describe("lares oracle cast", () => {
   test("a bare `lares oracle` prints its help, the limit included", async () => {
     const r = await run(argv([]));
     expect(r.exit).toBe(2);
-    expect(r.err).toContain(ORACLE_WIDENS);
+    expect(r.err).toContain(ORACLE_THROW_STANDS);
   });
 });
