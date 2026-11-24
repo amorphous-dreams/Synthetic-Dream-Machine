@@ -354,11 +354,11 @@ describe("the house bundle verbs", () => {
     await expect(houseExport(out, { acceptOmissions: true, doors: v.doors() })).rejects.toThrow(/carry-dest-stands/);
   });
 
-  test("C5b RED — a peer's unasked push never refuses the export, yet the manifest names it as an omission by kind and count, never by document", async () => {
+  test("C5b RED — an unasked row (sync states alone) never refuses the export, yet the manifest names it as an omission by kind and count, never by document", async () => {
     const v = oldVessel();
     v.census = { clean: true, items: [], unanswered: [], unasked: [{ documentId: "doc-a-peer-pushed", saves: 2, bytes: 300, heldAcross: 4 }] };
     const { manifest } = await houseExport(out, { acceptOmissions: false, doors: v.doors() });
-    expect(manifest.omissions.filter((o) => o.kind === "unasked-saves")).toEqual([{ kind: "unasked-saves", detail: expect.stringContaining("a peer pushed unasked"), count: 1 }]);
+    expect(manifest.omissions.filter((o) => o.kind === "unasked-saves")).toEqual([{ kind: "unasked-saves", detail: expect.stringContaining("sync states alone"), count: 1 }]);
     expect(JSON.stringify(manifest)).not.toContain("doc-a-peer-pushed");
   });
 

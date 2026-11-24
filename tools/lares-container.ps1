@@ -24,7 +24,7 @@
 # that one command. `vault lock` routes to the CLI like any other verb. No flag, env var or pipe carries a credential.
 # A STOP NEVER DROPS CONTENT SILENTLY. While a vessel stands, `down` asks it first (`vessel census`, by compose exec,
 # bounded): the saves its sealed rest holds in memory and the carriers its disk projector has not settled. A clean
-# answer stops as before, printing each peer's unasked push it names (`census: unasked`); any item, or a census that cannot answer, prints what it learned and refuses, naming two ways
+# answer stops as before, printing each unasked row it names (`census: unasked`: an unnamed document's sync states alone, no content); any item, or a census that cannot answer, prints what it learned and refuses, naming two ways
 # on: let it settle, by the way the vessel's state names (`wear N` where faces stand open and none worn, `vault unlock`
 # where the key stands shut, a wait where a worn face holds it), then `down` again; or type `accept-loss` on this terminal. With no
 # terminal it refuses. With no vessel standing, `down` runs as it always has.
@@ -651,7 +651,7 @@ function CensusBeforeStop {
   $c = RunCensus '--no-json'
   $out = $c.Out; $err = $c.Err; $rc = $c.Rc; $timedOut = $c.TimedOut
   if ($rc -eq 0 -and ($out -split "`r?`n" | Where-Object { $_ -like 'census: clean*' })) {
-    # A PEER'S UNASKED PUSH leaves with the stop (that peer keeps its copy): each line names it, never silent.
+    # AN UNASKED ROW (an unnamed document's sync states alone, no content) leaves with the stop: each line names it, never silent.
     foreach ($l in ($err -split "`r?`n" | Where-Object { $_ -like 'census: unasked*' })) { [Console]::Error.WriteLine($l) }
     return
   }
@@ -664,6 +664,8 @@ function CensusBeforeStop {
   if ($rc -eq 3 -and -not $timedOut) {
     [Console]::Error.WriteLine('lares-container: down refuses a silent stop: the census names content that rests nowhere yet, and a stop now drops it:')
     Indent $out
+    # Each unasked row beside the items (sync states alone, no content): named, never hidden.
+    foreach ($l in ($err -split "`r?`n" | Where-Object { $_ -like 'census: unasked*' })) { [Console]::Error.WriteLine("  $l") }
     HeldOnlyLine $out
   } else {
     $why = if ($timedOut) { "no answer within ${CensusWaitSeconds}s (the vessel may stand wedged)" } else { "the census exec ended with status $rc" }

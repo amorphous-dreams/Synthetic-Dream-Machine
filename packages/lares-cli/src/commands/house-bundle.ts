@@ -480,9 +480,9 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
     if (carriers.length > 0) omissions.push({ kind: "unsettled-carriers", detail: "carriers the disk projector had not settled (`lares vessel census` names them on the house)", count: carriers.length });
     if (census.unanswered.length > 0) omissions.push({ kind: "census-unanswered", detail: "census lines that could not answer (`lares vessel census` names them on the house)", count: census.unanswered.length });
   }
-  // A PEER'S UNASKED PUSH never refuses the copy (that peer keeps its own), yet it stays out of the bundle, so the manifest
-  // names it: kind and count alone, as every omission does.
-  if ((census.unasked?.length ?? 0) > 0) omissions.push({ kind: "unasked-saves", detail: "documents a peer pushed unasked that wait in memory for a name; the peer keeps its copy (`lares vessel census` names them on the house)", count: census.unasked!.length });
+  // AN UNASKED ROW (an unnamed document's sync states alone, no content) never refuses the copy, yet it stays out of the
+  // bundle, so the manifest names it: kind and count alone, as every omission does.
+  if ((census.unasked?.length ?? 0) > 0) omissions.push({ kind: "unasked-saves", detail: "unnamed documents holding sync states alone (peers' heads, no content) wait in memory for a name (`lares vessel census` names them on the house)", count: census.unasked!.length });
 
   const faces = await doors.faces();
   const projections = larProjectionsHome();

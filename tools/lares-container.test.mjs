@@ -907,13 +907,20 @@ for (const [name, shim] of shims) {
     assert.match(r.calls, /down --remove-orphans --timeout 5/);
   });
 
-  // AN UNASKED PUSH NEVER HIDES: a clean census over a peer's unasked push stops the vessel, and down prints each `census:
-  // unasked` line on the way, so the person sees what memory leaves with the stop (the peer keeps its own copy).
-  test(`${name}: down-names-unasked-pushes: a clean census beside a peer's unasked push stops, printing each unasked line`, async () => {
-    const UNASKED = "census: unasked  doc doc-peer  3 save(s), 412 byte(s), held across 9 later save(s): a peer pushed it unasked and keeps its copy, so a stop drops nothing here";
+  // AN UNASKED ROW NEVER HIDES: down prints each `census: unasked` line (an unnamed document's sync states alone, no content)
+  // on a clean census before the stop, and beside the items on a refusal, so the person sees all that memory holds.
+  const UNASKED = "census: unasked  doc doc-heads  3 save(s), 6 byte(s), held across 9 later save(s): sync states alone, peers' heads and no change, so a stop drops no content here";
+  test(`${name}: down-names-unasked-rows: a clean census beside an unasked row stops, printing each unasked line`, async () => {
     const r = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN, FAKE_CENSUS_ERR: UNASKED } });
     assert.equal(r.status, 0, r.stderr);
     assert.ok(stopped(r.calls), r.calls);
+    assert.ok(r.stderr.includes(UNASKED), r.stderr);
+  });
+  test(`${name}: down-names-unasked-rows-on-refusal: a census naming items beside an unasked row refuses, listing the items and the unasked line`, async () => {
+    const r = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_OUTPUT: ITEMS, FAKE_CENSUS_ERR: `${UNASKED}\ncensus: 2 item(s) rest nowhere yet; a stop now drops them`, FAKE_CENSUS_RC: "3" } });
+    assert.notEqual(r.status, 0, r.stderr);
+    assert.ok(!stopped(r.calls), r.calls);
+    assert.match(r.stderr, /held-save  save-unbooked  doc doc-heron/);
     assert.ok(r.stderr.includes(UNASKED), r.stderr);
   });
 

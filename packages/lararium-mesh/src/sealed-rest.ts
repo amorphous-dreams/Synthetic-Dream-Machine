@@ -555,16 +555,6 @@ export function composeSealedRest<S extends SaveSession>(input: {
     ...(input.wornAt ? { wornAt: input.wornAt } : {}),
     ...(input.realm ? { realm: input.realm } : {}),
     sessionOf,
-    // AN UNNAMED SAVE'S ORIGIN, off its own bytes: a change of this replica's actor reads local; with no watch, or bytes that
-    // name no actor, it reads unknown, and the store keeps the document owed.
-    ownChange: (documentId, data) => {
-      if (watched === null) return null;
-      const actors = chunkActors(data);
-      if (actors === null) return null;
-      const own = watched.actorOf(documentId);
-      // A handle not ready yet holds no change of this replica's own.
-      return own !== null && actors.includes(own);
-    },
     writerOf: (documentId) => book.writerOf(documentId),
     // P1: a vessel's rest keeps a document's sealed class across a map that drops; its save waits, never clear.
     waitOverSealed: true,
