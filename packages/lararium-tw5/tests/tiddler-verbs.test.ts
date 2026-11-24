@@ -407,6 +407,48 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect((second["rows"] as Array<{ title: string }>)[0]!.title).not.toBe(MEME);
   });
 
+  test("filter-collapse: a first row past the byte cap sheds its slots by name and keeps its bytes; the pages join with no title repeated or skipped", async () => {
+    const r = await rig();
+    const many = Array.from({ length: 24 }, (_, i) => `slot${i}`);
+    expect((await placeMeme({ uri: MEME, text: memeText(many) }, wikiMemeSink(r.engine.wiki))).decision).toBe("ingest");
+    const filter = makeWikiFilterReactor(r.opts);
+    const get = makeTiddlerGetReactor(r.opts);
+    const skinny = (await get({ ...A, title: MEME, meme: true, grain: "skinny" }, ctx()))["meme"] as { bytes: number; slots: unknown[] };
+    expect(skinny.slots).toHaveLength(24);
+    const cap = 160;
+    const first = await filter({ ...A, filter: `[[${MEME}]] [tag[memory]sort[title]]`, collapse: true, maxBytes: cap }, ctx());
+    const rows = first["rows"] as Array<{ title: string; bytes?: number; slots?: unknown[]; omitted?: string[] }>;
+    expect(rows[0]).toMatchObject({ title: MEME, bytes: skinny.bytes });
+    expect(rows[0]!.slots).toBeUndefined();
+    expect(rows[0]!.omitted).toContain("slots");
+    expect(JSON.stringify(rows).length).toBeLessThanOrEqual(cap);
+    const seen: string[] = rows.map((x) => x.title);
+    let after = first["next"] as string | null;
+    while (after) {
+      const page: Record<string, unknown> = await filter({ ...A, filter: `[[${MEME}]] [tag[memory]sort[title]]`, collapse: true, maxBytes: 4096, after }, ctx());
+      seen.push(...(page["rows"] as Array<{ title: string }>).map((x) => x.title));
+      after = page["next"] as string | null;
+    }
+    const whole = await filter({ ...A, filter: `[[${MEME}]] [tag[memory]sort[title]]`, limit: 32 }, ctx());
+    expect(seen).toEqual(whole["titles"]);
+  });
+
+  test("filter-collapse: a meme root whose slot records rest in an unreadable layer carries withheld on its row, as the meme get names it; CONTROL: a readable family withholds none", async () => {
+    const r = await rig();
+    expect((await placeMeme({ uri: MEME, text: memeText(["a", "b"]) }, wikiMemeSink(r.engine.wiki))).decision).toBe("ingest");
+    const filter = makeWikiFilterReactor(r.opts);
+    const open = await filter({ ...A, filter: `[[${MEME}]]`, collapse: true }, ctx());
+    expect((open["rows"] as Array<Record<string, unknown>>)[0]!["withheld"]).toBeUndefined();
+    const SECRET = "lar:///ha.ka.ba/bags/secret";
+    const held = r.engine.wiki.getTiddler(`${MEME}#/b`)!.getFieldStrings();
+    r.engine.wiki.addTiddler({ ...held, "$origin-bag": SECRET });
+    const partial: Cap = async (access, bag) => (bag === SECRET ? { ok: false, reason: "no-grant" } : access === "read" || bag === DAEMON ? { ok: true } : { ok: false, reason: "no-grant" });
+    const out = await filter({ ...A, filter: `[[${MEME}]]`, collapse: true }, ctx(partial));
+    const row = (out["rows"] as Array<{ withheld?: number; slots: Array<{ slot: string }> }>)[0]!;
+    expect(row.withheld).toBe(1);
+    expect(row.slots.map((x) => x.slot)).toEqual(["#/a"]);
+  });
+
   test("RED L1: a word the lens or the grain does not read refuses by name, before anything reads", async () => {
     const r = await rig();
     expect((await placeMeme({ uri: MEME, text: memeText(["a", "b"]) }, wikiMemeSink(r.engine.wiki))).decision).toBe("ingest");

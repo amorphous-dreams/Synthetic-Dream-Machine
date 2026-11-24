@@ -499,11 +499,21 @@ export const makeWikiFilterReactor = everyWiki("wiki-filter", false, (opts: Tidd
     // THE COLLAPSE LENS: each row of the page's window carries its bytes, and a meme root its slots, read through the one skinny
     // builder (`collapseOf`: `readMeme` and `memeGradient` at the skinny grain, the has-stack `tiddler get --meme --skinny` answers).
     // The window reads ahead of the page law, which stays sync; a row the byte cap leaves for the next page costs one wasted read.
-    const collapsed = new Map<string, { bytes: number; slots?: CarrierSlot[] }>();
+    const collapsed = new Map<string, { bytes: number; slots?: CarrierSlot[]; withheld?: number }>();
     if (collapse) {
-      const sink = { titles: () => view.allTitles(), read: (t: string) => (view.getTiddler(t) as { fields?: TiddlerFields } | undefined)?.fields };
+      // The reader's titles and the wiki's read once for the whole window, never once per row.
+      const readable = view.allTitles();
+      const held = wiki.allTitles();
+      const sink = { titles: () => readable, read: (t: string) => (view.getTiddler(t) as { fields?: TiddlerFields } | undefined)?.fields };
       const { offset } = filterCursor(titles, after);
-      for (const title of titles.slice(offset, offset + limit)) collapsed.set(title, await collapseOf(sink, title, readRecord(view.getTiddler(title)!).fields));
+      const readableSet = new Set(readable);
+      for (const title of titles.slice(offset, offset + limit)) {
+        const row = await collapseOf(sink, title, readRecord(view.getTiddler(title)!).fields);
+        // As `tiddler get --meme` names it: slot records this face may not read never enter the slots, and the row says so.
+        const prefix = `${title}#`;
+        const withheldSlots = row.slots === undefined ? 0 : held.filter((t) => t.startsWith(prefix) && !staysHome(t) && !readableSet.has(t)).length;
+        collapsed.set(title, withheldSlots > 0 ? { ...row, withheld: withheldSlots } : row);
+      }
     }
     const rowOf = names === null && !collapse ? undefined : (title: string): FilterRow => {
       const tiddler = view.getTiddler(title);

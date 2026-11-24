@@ -36,6 +36,8 @@ export interface FilterRow {
   title: string; fields: Record<string, string>; omitted?: string[];
   /** The collapse lens: the bytes the record (a meme root: its whole carrier) holds, and a meme root's slots, unfolded by `tiddler get --meme --slot`. */
   bytes?: number; slots?: Array<{ slot: string; bytes: number; first: string | null }>;
+  /** Slot records of a collapsed meme root that rest in a layer this face may not read, left out of its slots. */
+  withheld?: number;
 }
 export interface FilterPage {
   readonly titles: string[];
@@ -80,7 +82,7 @@ export function pageFilterAnswer(all: readonly string[], query: FilterPageQuery 
       if (titles.length > 0) break;
       // The first row alone outruns the cap: it sheds its largest fields, by name, until it fits.
       if (typeof row !== "string") {
-        const shed: FilterRow = { title: row.title, fields: { ...row.fields }, omitted: [...(row.omitted ?? [])] };
+        const shed: FilterRow = { ...row, fields: { ...row.fields }, omitted: [...(row.omitted ?? [])] };
         for (const name of Object.keys(shed.fields).sort((a, b) => bytesOf(shed.fields[b]) - bytesOf(shed.fields[a]))) {
           if (2 + bytesOf(shed) <= maxBytes) break;
           delete shed.fields[name];
@@ -88,6 +90,7 @@ export function pageFilterAnswer(all: readonly string[], query: FilterPageQuery 
         }
         // A collapsed row's slots shed last, by name: the meme unfolds by `tiddler get --meme --skinny`.
         if (2 + bytesOf(shed) > maxBytes && shed.slots) { delete shed.slots; shed.omitted!.push("slots"); }
+        if (2 + bytesOf(shed) > maxBytes && shed.bytes !== undefined) { delete shed.bytes; shed.omitted!.push("bytes"); }
         row = shed;
         cost = bytesOf(row);
       }
