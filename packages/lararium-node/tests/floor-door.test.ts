@@ -158,6 +158,18 @@ describe("the floor doors cross a founded hearth's own bootstrap", () => {
       // The live lares canon holds no row here, so every carrier the floor serves for it reads older: canon no longer holds those bytes.
       expect(drift!.slugs.find((s) => s.slug === "lares")!.older.length).toBeGreaterThan(0);
       expect(drift!.count).toBe(drift!.carriers.length);
+      // The canon floor drift reads as its own row: the carriers by name, the floor head it read, the runnable next line.
+      const canon = (status["drifts"] as Array<{ word: string; state: string; count: number; carriers: string[]; heads: string[]; next: string }>).find((x) => x.word === "canon floor drift")!;
+      expect(canon).toMatchObject({ state: "drifts", count: drift!.count, heads: [`floor ${genesisFloor}`], next: "lares nexus release floor-release.json --cut", act: "cure" });
+      expect(canon.carriers).toContain(CREST);
+      // A shadow tally with a mismatch reads as its own row, apart from the canon drift.
+      writeFileSync(join(larDataDir(), "floor-shadow.json"), JSON.stringify({ current: { floor: genesisFloor, cleanBoots: 1, mismatchBoots: 2, unreadBoots: 0, firstMismatch: { manifest: genesisFloor, moved: [{ field: "engine", floor: "a", island: "b" }] } }, prior: [] }));
+      const shadowed = await storeDoorDirect("floor-status", {}, { sealHome: larSealHome() });
+      writeFileSync(join(larDataDir(), "floor-shadow.json"), "{ not json");
+      const corrupt = await storeDoorDirect("floor-status", {}, { sealHome: larSealHome() });
+      expect(corrupt["floorShadowWhy"]).toMatch(/floor-shadow\.json will not read/);
+      expect((corrupt["drifts"] as Array<{ word: string; detail: string }>).find((x) => x.word === "shadow tally")!.detail).toContain("corrupt");
+      expect((shadowed["drifts"] as Array<{ word: string; state: string; carriers: string[] }>).find((x) => x.word === "shadow tally")).toMatchObject({ state: "drifts", carriers: ["engine"] });
       // A public bag the floor names whose live document this founding holds none of reads unread by name; the system canon reads.
       expect(drift!.unread).not.toContain("lares");
       expect(drift!.unread).not.toContain("lararium");
@@ -178,6 +190,13 @@ describe("the floor doors cross a founded hearth's own bootstrap", () => {
       // CONTROL: no catalog names live canon here, so the drift reads null, never a silent zero.
       expect(out).toHaveProperty("floorDrift", null);
       expect(out["floorDriftWhy"]).toMatch(/no catalog names live canon/);
+      // THE FIVE DRIFTS, each by its own word: the seed offer reads level and names its next line, the unread ones say so, never a zero.
+      const rows = out["drifts"] as Array<{ word: string; state: string; next: string; detail: string }>;
+      expect(rows.map((x) => x.word)).toEqual(["disk lag", "working ahead", "canon floor drift", "seed offer", "shadow tally"]);
+      expect(rows.find((x) => x.word === "seed offer")).toMatchObject({ state: "level", next: "lares vessel floor seed" });
+      expect(rows.find((x) => x.word === "canon floor drift")).toMatchObject({ state: "unread" });
+      expect(rows.find((x) => x.word === "shadow tally")).toMatchObject({ state: "unread" });
+      expect(rows.some((x) => /floor moved/.test(x.detail))).toBe(false);
     });
   });
 

@@ -202,8 +202,10 @@ function Act([string]$kind, [string[]]$more) {
       }
     }
   }
-  if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+  if ($LASTEXITCODE -ne 0 -and -not $script:ActKeepsExit) { exit $LASTEXITCODE }
 }
+# Set by the step-in read alone: Act hands a failed client's exit back in $LASTEXITCODE instead of ending the shim.
+$script:ActKeepsExit = $false
 
 # Whether a vessel stands. A `ps` that fails reads as UNKNOWN, never as "none stands": the offline door opens only
 # on a reading, so a broken engine never routes an act beside a live holder.
@@ -404,6 +406,51 @@ function LiftVessel([string[]]$output) {
   UnlockOrName
 }
 
+# THE STEP-IN READ ON THE HOST. A fallen engine answers no verb, and docker itself may reach no CLI (the daemon wedged, the
+# container mid-restart, an exec docker refuses). The fall rests its count beside the store and each quarantined id rests a
+# manifest, both plain files under the hearth bind, so the shim reads them here with no container. It opens no store and
+# writes nothing.
+function HostRead([string]$why) {
+  $store = Join-Path (Join-Path $House 'hearth') 'vessel'
+  [Console]::Error.WriteLine("lares-container: $why, so the read runs on the host over $store (no verb, nothing opened)")
+  if (-not (Test-Path -LiteralPath $store -PathType Container)) { "store absent: $store (no vessel founded at this house)"; return }
+  $falls = Join-Path $store '.engine-falls'
+  if (Test-Path -LiteralPath $falls -PathType Leaf) {
+    $text = [System.IO.File]::ReadAllText($falls)
+    "engine falls (${falls}):"
+    foreach ($ln in ($text -split "`n")) { if ($ln -ne '') { "  $ln" } }
+    $ids = [regex]::Matches($text, '"inFlight"\s*:\s*"([^"]*)"') | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique
+    foreach ($id in $ids) { "held in flight: $id" }
+  } else { 'engine falls: none resting' }
+  # One line per held id: an id held across several manifests names the last one read (dated dirs, oldest first).
+  $held = [ordered]@{}
+  foreach ($dir in @(Get-ChildItem -LiteralPath $store -Directory -Filter 'quarantine-torn-snapshots-*' -ErrorAction SilentlyContinue | Sort-Object Name)) {
+    foreach ($m in @(Get-ChildItem -LiteralPath $dir.FullName -File -Filter '*.manifest.json' | Sort-Object Name)) {
+      $body = [System.IO.File]::ReadAllText($m.FullName)
+      if ($body -match '"released"') { continue }
+      if ($body -match '"documentId"\s*:\s*"([^"]*)"') { $id = $Matches[1]; if ($held.Contains($id)) { $held.Remove($id) }; $held[$id] = $m.FullName }
+    }
+  }
+  foreach ($id in $held.Keys) { "held in quarantine: $id ($($held[$id]))" }
+  'hand act: `lares vessel stop` stops the vessel (a fallen engine reads the stop as the hand''s, clears the count and frees each id held in flight), then `lares vessel stand`; with the vessel stopped, `lares vessel release <documentId> [--keep|--fresh]` ends a quarantine hold'
+}
+
+# `vessel read`: inside the container where docker reaches one, on the host where it reaches none. A fallen engine answers
+# no standing verdict, so the read asks none after it.
+function VesselRead([string[]]$rest) {
+  $running = & docker compose @Base ps -q --status running lares
+  if ($LASTEXITCODE -ne 0) { HostRead 'docker compose ps failed'; exit 0 }
+  $restarting = & docker compose @Base ps -q --status restarting lares
+  if ([string]::IsNullOrWhiteSpace(($running -join '')) -and $LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace(($restarting -join ''))) {
+    HostRead 'the vessel container restarts, so no command reaches it'; exit 0
+  }
+  $script:ActKeepsExit = $true
+  RouteCli (@('vessel') + $rest) $false
+  $script:ActKeepsExit = $false
+  if ($LASTEXITCODE -in 125, 126, 127) { HostRead "docker could not run the read (exit $LASTEXITCODE)"; exit 0 }
+  exit $LASTEXITCODE
+}
+
 # Any CLI verb: inside the standing vessel, else through the offline door. A verb that succeeds inside a standing
 # vessel gets followed by one standing check, and the shim lifts the vessel when the verdict asks for it.
 function RouteCli([string[]]$argv, [bool]$followUp) {
@@ -411,7 +458,7 @@ function RouteCli([string[]]$argv, [bool]$followUp) {
   $isPut = $argv.Count -ge 3 -and $argv[0] -ceq 'tiddler' -and $argv[1] -ceq 'put'
   if ($argv.Count -gt 0) {
     $alwaysValued = @('--fields', '--note', '--reason', '--text')
-    $boolean = @('accept-omissions', 'added', 'all', 'all-strata', 'apply', 'approve', 'brief', 'bulk', 'cancel', 'cards', 'cosign', 'confirm', 'create', 'cut', 'drain', 'deny', 'docs', 'draft', 'drop', 'dry-run', 'edge', 'ephemeral', 'every', 'executable', 'family', 'force', 'foreground', 'from-persona', 'held', 'help', 'help-mempalace', 'history', 'hearth', 'hold', 'if-due', 'in-wiki', 'init', 'join', 'json', 'keep', 'keep-hooks', 'keyhive-trace', 'lag', 'launch', 'list', 'meme', 'memory', 'observe', 'orphans', 'over-fresher', 'page', 'pair', 'palaces', 'paper', 'partial', 'passphrase', 'pending', 'probe', 'quorum', 'overwrite', 'remove', 'repour', 'restart', 'rotate', 'seat', 'sessions', 'shadow', 'skinny', 'skip-build', 'spectral', 'split-root', 'staged', 'sweep', 'tag-blobs', 'tree', 'verbose', 'wait', 'watch', 'with-web', 'workbench', 'writeback', 'yes')
+    $boolean = @('accept-omissions', 'added', 'all', 'all-strata', 'apply', 'approve', 'brief', 'bulk', 'cancel', 'cards', 'cosign', 'confirm', 'create', 'cut', 'drain', 'deny', 'docs', 'draft', 'drop', 'dry-run', 'edge', 'ephemeral', 'every', 'executable', 'family', 'force', 'foreground', 'fresh', 'from-persona', 'held', 'help', 'help-mempalace', 'history', 'hearth', 'hold', 'if-due', 'in-wiki', 'init', 'join', 'json', 'keep', 'keep-hooks', 'keyhive-trace', 'lag', 'launch', 'list', 'meme', 'memory', 'observe', 'orphans', 'over-fresher', 'page', 'pair', 'palaces', 'paper', 'partial', 'passphrase', 'pending', 'probe', 'quorum', 'overwrite', 'remove', 'repour', 'restart', 'rotate', 'seat', 'sessions', 'shadow', 'skinny', 'skip-build', 'spectral', 'split-root', 'staged', 'sweep', 'tag-blobs', 'tree', 'verbose', 'wait', 'watch', 'with-web', 'workbench', 'writeback', 'yes')
     $sources = @()
     for ($i = 0; $i -lt $argv.Count; $i++) {
       $word = $argv[$i]
@@ -720,9 +767,24 @@ function ImageDigest {
   if ($LASTEXITCODE -ne 0) { Die "cannot read the vessel image's digest ($image); nothing raised" }
   return $d
 }
+# THE FIRE'S SERVICE (the keeper tally): two keeper services stand in the compose file, `pulama` and `pulama-b`, so a successor
+# can stand beside the lit keeper. Exactly one holds the fire: the vessel socket. PulamaSvc names the keeper that holds it, read
+# off each running keeper's own status (`"fire":true`); with one running it names that one, and with none `pulama`. OtherSvc names
+# the one a successor stands in.
+function SvcRunning([string]$svc) { return ((& docker compose @Base --profile pulama ps -q --status running $svc 2>$null) -join '').Trim() }
+function SvcStatus([string]$svc) { return ((($null | & docker compose @Base --profile pulama exec -T $svc node $PulamaMain status 2>$null) -join '') -replace '\s', '') }
+function PulamaSvc {
+  $a = SvcRunning 'pulama'; $b = SvcRunning 'pulama-b'
+  if ($b -and -not $a) { return 'pulama-b' }
+  if ($b -and $a -and (SvcStatus 'pulama-b').Contains('"fire":true')) { return 'pulama-b' }
+  return 'pulama'
+}
+function OtherSvc([string]$svc) { if ($svc -eq 'pulama') { return 'pulama-b' } else { return 'pulama' } }
 function StandPulama {
   if (-not $PulamaMode) { return }
-  & docker compose @Base --profile pulama up -d --no-recreate pulama
+  KeeperSettle
+  $svc = PulamaSvc
+  & docker compose @Base --profile pulama up -d --no-recreate $svc
   if ($LASTEXITCODE -ne 0) { Die 'the pūlama did not stand; nothing raised' }
   $digest = ImageDigest
   # The image offers its seed beside its digest: a one-shot of the image (no house mounted) prints the whole frame on one
@@ -731,13 +793,20 @@ function StandPulama {
   $frame = ''
   try { $frame = ((& docker run --rm -e LAR_ROOT=/lar $image node $Cli vessel floor seed --genesis /app/genesis --image $digest 2>$null) | Select-Object -Last 1) } catch { $frame = '' }
   $report = if ("$frame".StartsWith('{')) { "$frame" } else { $digest }
-  & docker compose @Base --profile pulama exec -T pulama node $PulamaMain image $report
+  & docker compose @Base --profile pulama exec -T $svc node $PulamaMain image $report
   if ($LASTEXITCODE -ne 0) { Die "the pūlama refused the image report for $digest; nothing raised" }
+  # THE KEEPER'S OWN CLOSURE, read off the container it runs (never the tag, which a build moved ahead of any restand).
+  $id = ((& docker compose @Base --profile pulama ps -q --status running $svc 2>$null) -join '').Trim()
+  $closure = if ($id) { ClosureLabel 'container' $id } else { '' }
+  if ($closure) {
+    $null | & docker compose @Base --profile pulama exec -T $svc node $PulamaMain closure $closure | Out-Null
+    if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine('lares-container: the pūlama refused its closure report, so no keeper commit names what it hands from') }
+  }
 }
 # Does a pūlama run beside the vessel? It reads the container itself, whatever LARES_PULAMA now says: running, absent, or
 # unknown where the ps fails.
 function PulamaState {
-  $id = & docker compose @Base --profile pulama ps -q --status running pulama
+  $id = & docker compose @Base --profile pulama ps -q --status running (PulamaSvc)
   if ($LASTEXITCODE -ne 0) { return 'unknown' }
   if ([string]::IsNullOrWhiteSpace(($id -join ''))) { return 'absent' }
   return 'running'
@@ -757,7 +826,7 @@ function ClosureLabel([string]$kind, [string]$ref) {
 $script:Pr = [pscustomobject]@{ State = 'unread'; Ran = ''; Stands = ''; Closure = '' }
 function PulamaReading {
   $script:Pr = [pscustomobject]@{ State = 'unread'; Ran = ''; Stands = ''; Closure = '' }
-  $id = ((& docker compose @Base --profile pulama ps -q --status running pulama 2>$null) -join '').Trim()
+  $id = ((& docker compose @Base --profile pulama ps -q --status running (PulamaSvc) 2>$null) -join '').Trim()
   if ($LASTEXITCODE -ne 0) { return }
   if (-not $id) { $script:Pr.State = 'absent'; return }
   $ran = ((& docker inspect --format '{{.Image}}' $id 2>$null) -join '').Trim()
@@ -1068,11 +1137,19 @@ function PulamaRestand {
   $state = PulamaState
   if ($state -eq 'unknown') { Die 'pulama restand refuses: docker compose ps failed for the pūlama, so whether it stands reads unknown; nothing recreated' }
   EnsureHouse
+  $svc = PulamaSvc
   if ($state -eq 'running') {
-    & docker compose @Base --profile pulama exec -T pulama node $PulamaMain lock
+    & docker compose @Base --profile pulama exec -T $svc node $PulamaMain lock
     if ($LASTEXITCODE -ne 0) { Die 'the pūlama refused the lock; nothing recreated' }
   }
-  & docker compose @Base --profile pulama up -d --force-recreate pulama
+  # A SUCCESSOR LEFT STANDING (a handoff that stopped) goes down first: the struck fire relights ONE keeper.
+  $other = OtherSvc $svc
+  $left = ((& docker compose @Base --profile pulama ps -q --status running $other 2>$null) -join '').Trim()
+  if ($left) {
+    & docker compose @Base --profile pulama stop $other | Out-Null
+    if ($LASTEXITCODE -ne 0) { Die "the successor keeper ($other) did not stop; nothing recreated" }
+  }
+  & docker compose @Base --profile pulama up -d --force-recreate $svc
   if ($LASTEXITCODE -ne 0) { Die 'the pūlama did not stand on the current image' }
   $image = ValueOf 'LARES_IMAGE'; if (-not $image) { $image = 'lares-surface:local' }
   $digest = ((& docker image inspect --format '{{.Id}}' $image 2>$null) -join '').Trim()
@@ -1169,12 +1246,17 @@ function ResolveImage([string]$want) {
 # THE PŪLAMA'S OWN STATUS (`pulama-main.js status`, read detached): whether it stands lit, and whether the admitted set it
 # reads under its key names the image and no tombstone ends it. An unlit pūlama lists no admission; a status that never
 # answers leaves both unread.
-$script:PsLit = ''; $script:PsAdmitted = ''
+$script:PsLit = ''; $script:PsAdmitted = ''; $script:PsVest = ''; $script:PsStruck = $false; $script:PsPending = ''
 function PulamaStatusRead([string]$digest) {
-  $script:PsLit = ''; $script:PsAdmitted = ''
-  $out = $null | & docker compose @Base --profile pulama exec -T pulama node $PulamaMain status 2>$null
+  $script:PsLit = ''; $script:PsAdmitted = ''; $script:PsVest = ''; $script:PsStruck = $false; $script:PsPending = ''; $script:PsClosure = ''
+  $out = $null | & docker compose @Base --profile pulama exec -T (PulamaSvc) node $PulamaMain status 2>$null
   if ($LASTEXITCODE -ne 0) { return }
   $flat = (($out -join '') -replace '\s', '')
+  # THE KEEPER TALLY: the live commit's successor closure where it can vest, whether the struck fire is due, and any live commit.
+  $script:PsVest = ([regex]::Match($flat, '"vestReady":"(sha256:[0-9a-f]{64})"')).Groups[1].Value
+  $script:PsPending = ([regex]::Match($flat, '"pending":"(sha256:[0-9a-f]{64})"')).Groups[1].Value
+  $script:PsClosure = ([regex]::Match($flat, '"closure":"(sha256:[0-9a-f]{64})"')).Groups[1].Value
+  $script:PsStruck = $flat.Contains('"struckDue":true')
   if ($flat.Contains('"lit":true')) { $script:PsLit = 'yes' }
   elseif ($flat.Contains('"lit":false')) { $script:PsLit = 'no'; return }
   else { return }
@@ -1207,13 +1289,17 @@ function PrintReading {
   $img = ImageId
   $current = if (VesselOnImage) { 'true' } else { 'false' }
   $vessel = if ($script:VoRunning) { 'standing' } else { 'down' }
-  $pul = 'off'; $lit = 'null'; $adm = 'null'
+  $pul = 'off'; $lit = 'null'; $adm = 'null'; $keeper = ''
   if ($PulamaMode) {
     PulamaReading; $pul = $script:Pr.State
     if ($pul -notin @('absent', 'unread')) {
       PulamaStatusRead $img
       if ($script:PsLit -eq 'yes') { $lit = 'true' } elseif ($script:PsLit -eq 'no') { $lit = 'false' }
       if ($script:PsAdmitted -eq 'yes') { $adm = 'true' } elseif ($script:PsAdmitted -eq 'no') { $adm = 'false' }
+      if ($pul -eq 'moved') {
+        if ($script:PsStruck) { $keeper = ',"keeper":"struck-due"' }
+        elseif ($script:PsVest -and $script:PsVest -eq (ClosureLabel 'image' $ImageRef)) { $keeper = ',"keeper":"vests"' }
+      }
     }
   }
   # An offer that rests names when it rested (its file's time, UTC), so a resumed rite names the begin it picks up.
@@ -1223,7 +1309,7 @@ function PrintReading {
     $f = Join-Path (Join-Path $House 'config') 'kukulu-offer.json'
     try { $at = ",`"offerAt`":`"$((Get-Item -LiteralPath $f).LastWriteTimeUtc.ToString('yyyy-MM-ddTHH:mm:ssZ', [System.Globalization.CultureInfo]::InvariantCulture))`"" } catch { $at = '' }
   }
-  [Console]::Out.WriteLine("{`"op`":`"rebuild-image`",`"revision`":`"$($script:RRev)`",`"image`":`"$img`",`"how`":`"$($script:RHow)`",`"vessel`":`"$vessel`",`"current`":$current,`"pulama`":`"$pul`",`"lit`":$lit,`"admitted`":$adm,`"offer`":$offer$at}")
+  [Console]::Out.WriteLine("{`"op`":`"rebuild-image`",`"revision`":`"$($script:RRev)`",`"image`":`"$img`",`"how`":`"$($script:RHow)`",`"vessel`":`"$vessel`",`"current`":$current,`"pulama`":`"$pul`",`"lit`":$lit,`"admitted`":$adm,`"offer`":$offer$keeper$at}")
 }
 $HandLine = 'your hand: lares rite kukulu on a terminal'
 # THE KEEP AFTER THE RAISE: a keep that refused before the down (its census named what rests nowhere yet) runs again once the
@@ -1240,23 +1326,130 @@ function KeepAfterRaise {
     $script:KeepSaid = 'deferred: the census after the raise still names what rests nowhere yet; `lares rite keep` keeps once it reads clean'
   }
 }
-function StandHouse {
+# THE HANDED FIRE (the keeper tally) rides a live rite. Before the vessel's offer, the rite stands a successor in the other keeper
+# service (`keeper-stand`): the host reports the image and the closure its container's label reads, and the successor offers a
+# one-handoff key, which the rite's vouches then name. Inside the raise (`rebuild --keeper-to <key>`), the lit keeper vests to that
+# key: the frame carries the rite's offer (`kukulu-offer.json`), the vest begins the rite itself (one lei return), and the successor
+# opens the slot and lands the pair. A refusal or a red pair stops the successor, leaves the lit fire burning and the vessel as it
+# stood, and names the cure that runs from there. The slot crosses this pipe once, sealed to the successor's key.
+$script:KvOld = ''; $script:KvNew = ''; $script:KeeperTo = ''
+function KeeperReading($out) { return ([regex]::Match((($out -join '') -replace '\s', ''), '"reading":"([a-z-]*)"')).Groups[1].Value }
+function KeeperFail([string]$why) {
+  & docker compose @Base --profile pulama stop $script:KvNew 2>$null | Out-Null
+  Die "$why; the successor stopped and the old fire still burns, the vessel as it stood. The cure that runs from here: ``lares rite kukulu`` on a terminal (the struck fire: one keeper relit by passphrase)"
+}
+function KeeperStand {
+  $old = PulamaSvc; $new = OtherSvc $old; $script:KvNew = $new
+  EnsureHouse
+  & docker compose @Base --profile pulama up -d --force-recreate $new | ForEach-Object { [Console]::Error.WriteLine($_) }
+  if ($LASTEXITCODE -ne 0) { KeeperFail "keeper-stand: the successor keeper ($new) did not stand" }
+  $closure = ClosureLabel 'container' (SvcRunning $new)
+  if (-not $closure) { KeeperFail "keeper-stand: the successor's container carries no pūlama closure label" }
   $digest = ImageId
-  $restand = $false; $light = $false; $admit = $false; $why = ''
+  if (-not $digest) { KeeperFail 'keeper-stand: the image the successor serves reads no digest' }
+  $null | & docker compose @Base --profile pulama exec -T $new node $PulamaMain image $digest | Out-Null
+  if ($LASTEXITCODE -ne 0) { KeeperFail 'keeper-stand: the successor refused the image report' }
+  $null | & docker compose @Base --profile pulama exec -T $new node $PulamaMain closure $closure | Out-Null
+  if ($LASTEXITCODE -ne 0) { KeeperFail 'keeper-stand: the successor refused its closure report' }
+  $offer = $null | & docker compose @Base --profile pulama exec -T $new node $PulamaMain keeper-offer
+  if ($LASTEXITCODE -ne 0) { KeeperFail "keeper-stand: the successor offered no key ($(KeeperReading $offer))" }
+  $to = ([regex]::Match((($offer -join '') -replace '\s', ''), '"to":"([0-9a-f]{64})"')).Groups[1].Value
+  if (-not $to) { KeeperFail "keeper-stand: the successor's offer named no key" }
+  [Console]::Out.WriteLine("{`"op`":`"keeper-stand`",`"to`":`"$to`",`"closure`":`"$closure`",`"svc`":`"$new`"}")
+}
+function KeeperVest {
+  $script:KvOld = PulamaSvc; $script:KvNew = OtherSvc $script:KvOld
+  $new = $script:KvNew; $old = $script:KvOld
+  [Console]::Error.WriteLine("lares-container: rebuild: a keeper commit names this closure and the rite carries the move, so the living fire passes to the successor ($new) with no route")
+  $id = SvcRunning $new
+  if (-not $id) { KeeperFail "no successor stands in $new (the rite stands one before its offer)" }
+  $closure = ClosureLabel 'container' $id
+  if (-not $closure) { KeeperFail "the successor's container carries no pūlama closure label" }
+  $file = Join-Path (Join-Path $House 'config') 'kukulu-offer.json'
+  if (-not (Test-Path -LiteralPath $file)) { KeeperFail "no kūkulu offer rests ($file), so no live rite carries the vest" }
+  try { $offerJson = Get-Content -Raw -LiteralPath $file | ConvertFrom-Json } catch { KeeperFail 'the kūkulu offer reads as no JSON' }
+  $frame = [ordered]@{ to = $script:KeeperTo; closure = $closure; offer = $offerJson } | ConvertTo-Json -Compress -Depth 40
+  $vested = $null | & docker compose @Base --profile pulama exec -T $old node $PulamaMain keeper-vest $frame
+  if ($LASTEXITCODE -ne 0) { KeeperFail "the lit keeper refused the vest ($(KeeperReading $vested))" }
+  $slot = ''
+  try { $answer = ($vested -join "`n") | ConvertFrom-Json; if ($answer.slot) { $slot = @{ slot = $answer.slot } | ConvertTo-Json -Compress -Depth 20 } } catch { $slot = '' }
+  if (-not $slot) { KeeperFail "the vest's answer carried no slot" }
+  $landed = $null | & docker compose @Base --profile pulama exec -T $new node $PulamaMain keeper-receive $slot
+  if ($LASTEXITCODE -ne 0) { KeeperFail "the successor read the keeper pair red ($(KeeperReading $landed)) and locked; the old keeper passes the fire and writes nothing" }
+  [Console]::Error.WriteLine("lares-container: rebuild: the keeper pair reads par; the successor ($new) stands lit by vest, and asked no route")
+}
+# After the down (the fire-holder still served the vessel's keep and census): the fire-holder locks and stops, then the successor
+# claims the vessel socket. Two keepers never both hold it: the claim refuses while the fire-holder still answers.
+function KeeperTakeFire {
+  $old = $script:KvOld; $new = $script:KvNew
+  $null | & docker compose @Base --profile pulama exec -T $old node $PulamaMain lock | Out-Null
+  if ($LASTEXITCODE -ne 0) { Die "the old keeper ($old) refused its lock; the successor stands lit beside it: ``lares rite kukulu`` again finishes the handoff" }
+  & docker compose @Base --profile pulama stop $old | Out-Null
+  if ($LASTEXITCODE -ne 0) { Die "the old keeper ($old) did not stop; ``lares rite kukulu`` again finishes the handoff" }
+  $null | & docker compose @Base --profile pulama exec -T $new node $PulamaMain take-fire | Out-Null
+  if ($LASTEXITCODE -ne 0) { Die "the successor ($new) could not take the vessel socket; ``lares rite kukulu`` again takes it once the old keeper lets go" }
+  [Console]::Error.WriteLine("lares-container: rebuild: the living fire passed to $new; it holds the vessel socket")
+}
+# THE HANDOFF SETTLES ON EVERY RUN: two keepers standing (a handoff cut short) finish where the successor stands lit and the
+# fire-holder passes it, and unwind otherwise (the successor stops), unless this run carries the move the rite stood the successor
+# for. One keeper lit and holding no socket takes the fire. So no state leaves the house with no keeper holding the fire.
+function KeeperSettle {
+  if (-not $PulamaMode) { return }
+  $a = SvcRunning 'pulama'; $b = SvcRunning 'pulama-b'
+  if ($a -and $b) {
+    $fa = SvcStatus 'pulama'; $fb = SvcStatus 'pulama-b'
+    if ($fb.Contains('"fire":true')) { $hold = 'pulama-b'; $hs = $fb; $other = 'pulama'; $os = $fa } else { $hold = 'pulama'; $hs = $fa; $other = 'pulama-b'; $os = $fb }
+    # THE LIT, PAR-LANDED SUCCESSOR WINS (blind read F5), as the sh twin settles it: an unlit fire-holder never keeps the fire from it.
+    if ($os.Contains('"lit":true') -and -not $hs.Contains('"lit":true') -and $os.Contains('"last":"par"')) {
+      [Console]::Error.WriteLine("lares-container: two keepers stand, the fire-holder ($hold) stands unlit, and $other stands lit and landed par; $other takes the fire")
+      $script:KvOld = $hold; $script:KvNew = $other; KeeperTakeFire; return
+    }
+    if ($os.Contains('"lit":true') -and $hs.Contains('"passing":true')) {
+      [Console]::Error.WriteLine("lares-container: two keepers stand and the handoff was cut short after the vest; it finishes: $other takes the fire from $hold")
+      $script:KvOld = $hold; $script:KvNew = $other; KeeperTakeFire; return
+    }
+    if (-not $os.Contains('"lit":true') -and $script:KeeperTo) { return }
+    [Console]::Error.WriteLine("lares-container: two keepers stand and no vest passed the fire; the successor ($other) stops and $hold keeps it")
+    & docker compose @Base --profile pulama stop $other | Out-Null
+    if ($LASTEXITCODE -ne 0) { Die "the successor keeper ($other) did not stop; ``lares pulama down``, then ``lares rite kukulu`` on a terminal" }
+    return
+  }
+  $one = if ($a) { 'pulama' } elseif ($b) { 'pulama-b' } else { '' }
+  if (-not $one) { return }
+  $st = SvcStatus $one
+  if ($st.Contains('"lit":true') -and $st.Contains('"fire":false')) {
+    [Console]::Error.WriteLine("lares-container: $one stands lit and holds no vessel socket (a handoff stopped before the take); it takes the fire")
+    $null | & docker compose @Base --profile pulama exec -T $one node $PulamaMain take-fire | Out-Null
+    if ($LASTEXITCODE -ne 0) { Die "the keeper ($one) could not take the vessel socket; ``lares pulama status`` names who holds it" }
+  }
+}
+function StandHouse {
+  KeeperSettle
+  $digest = ImageId
+  $restand = $false; $light = $false; $admit = $false; $why = ''; $vest = $false
   $stays = VesselOnImage
   if ($PulamaMode) {
     PulamaReading
     switch ($script:Pr.State) {
       'unread' { Die 'rebuild stops before anything moves: whether the pūlama stands, or what it runs, reads unknown (read it with `tools/lares-container.ps1 pulama status`)' }
       'absent' { $restand = $true; $light = $true; $why = 'no pūlama runs' }
-      'moved' { $restand = $true; $light = $true; $why = "the pūlama's code closure moved" }
+      'moved' {
+        # THE HANDED FIRE: a lit keeper whose live commit names the closure the new image carries vests its successor with no
+        # route; else (no commit, another closure, the struck fire due, an unlit keeper) the struck fire relights by hand.
+        PulamaStatusRead $digest
+        if ($script:KeeperTo -and $script:PsLit -eq 'yes' -and -not $script:PsStruck -and $script:PsVest -and $script:PsVest -eq (ClosureLabel 'image' $ImageRef)) { $vest = $true }
+        else {
+          $restand = $true; $light = $true; $why = "the pūlama's code closure moved"
+          if ($script:PsStruck) { $why = "the pūlama's code closure moved and the keeper's handed run owes the struck fire" }
+        }
+      }
       default {
         PulamaStatusRead $digest
         if ($script:PsLit -eq 'no') { $light = $true; $why = 'the pūlama stands unlit' }
         elseif ($script:PsLit -ne 'yes') { Die 'rebuild stops before anything moves: the pūlama answers no status, so whether it stands lit reads unknown (read it with `tools/lares-container.ps1 pulama status`)' }
       }
     }
-    if ($restand) { $stays = $false }
+    if ($restand -or $vest) { $stays = $false }
     if (-not $light -and -not $stays -and $script:PsAdmitted -ne 'yes' -and -not (OfferCarries $digest)) { $admit = $true }
     # A CTRL+C AT THE ADMIT left the vessel standing on the image at the floor, the image unadmitted and no offer carrying it:
     # the admit it never took is owed again, never a bare unlock that cannot open.
@@ -1266,6 +1459,8 @@ function StandHouse {
       if ($admit) { Die "rebuild stops before anything moves: the pūlama has not admitted this image and no kūkulu offer carries it, and its admit reads your route on a terminal; $HandLine (or string a kukulu lei first: lares lei kui --rite kukulu --branch <name> --returns <n> --all)" }
     }
   }
+  # THE VEST RUNS BEFORE THE DOWN: a red pair, or a crash, leaves the vessel standing on the old fire, and nothing moved.
+  if ($vest) { KeeperVest }
   if ($stays) {
     $script:KeepSaid = 'the vessel stayed standing, so no keep ran'
     [Console]::Error.WriteLine("lares-container: rebuild: the vessel runs $digest already and stays standing")
@@ -1273,19 +1468,37 @@ function StandHouse {
     [Console]::Error.WriteLine('lares-container: rebuild: the down path (keep, census)')
     DownVessel @()
   }
+  if ($vest) { KeeperTakeFire }
   if ($restand) { PulamaRestand }
   if ($light) {
     [Console]::Error.WriteLine("lares-container: rebuild: $why; the pūlama lights on this terminal (it reads your route, this shim never does)")
-    & docker compose @Base --profile pulama exec pulama node $PulamaMain light
+    # THE STRUCK FIRE IS ONE PROOF: where a new vessel rises on an image no offer carries, the light admits it under the same route.
+    $lightArgs = @('light')
+    if (-not $stays -and -not (OfferCarries $digest)) { $lightArgs += '--admit' }
+    & docker compose @Base --profile pulama exec (PulamaSvc) node $PulamaMain @lightArgs
     PulamaStatusRead $digest
     if ($script:PsLit -ne 'yes') { Die 'the pūlama did not light (above); run `lares rite kukulu` again on a terminal, and it picks up from here' }
+    # A LIVE KEEPER COMMIT LANDS STRUCK, ONLY ON ITS OWN CLOSURE (blind read F7), as the sh twin lands it: a plain relight on another
+    # closure leaves the commit standing for its own rite.
+    if ($script:PsPending -and $script:PsClosure -ne $script:PsPending) {
+      $runs = if ($script:PsClosure) { $script:PsClosure } else { 'no reported closure' }
+      [Console]::Error.WriteLine("lares-container: rebuild: the live keeper commit names $($script:PsPending) and this keeper runs $runs; the commit stays for its own rite")
+    }
+    if ($script:PsPending -and $script:PsClosure -eq $script:PsPending) {
+      $land = $null | & docker compose @Base --profile pulama exec -T (PulamaSvc) node $PulamaMain keeper-land 2>$null
+      if ($LASTEXITCODE -ne 0) {
+        $red = ([regex]::Match((($land -join '') -replace '\s', ''), '"red":"([a-z-]*)"')).Groups[1].Value
+        if (-not $red) { $red = 'unread' }
+        Die "the keeper pair reads red ($red) after the hand's light: the keeper stands lit and nothing locked; read it with ``lares pulama status``, then ``lares rite kukulu`` picks up from here"
+      }
+    }
     if (-not $stays -and $script:PsAdmitted -ne 'yes' -and -not (OfferCarries $digest)) { $admit = $true }
   }
   if (-not $stays) { $script:Rebuilding = $true; UpVerb @() }
   if ($PulamaMode) {
     if ($admit) {
       [Console]::Error.WriteLine('lares-container: rebuild: the pūlama admits the image; it reads your route on this terminal')
-      & docker compose @Base --profile pulama exec pulama node $PulamaMain admit
+      & docker compose @Base --profile pulama exec (PulamaSvc) node $PulamaMain admit
       if ($LASTEXITCODE -ne 0) { Die 'the pūlama admitted nothing (above); the vessel stands at the floor: `tools/lares-container.ps1 pulama admit`, then `tools/lares-container.ps1 vault unlock --all`' }
     }
     if ($stays) { UnlockOrName }
@@ -1314,7 +1527,11 @@ function RebuildVerb([string[]]$rargs) {
       '--prior' { $prior = $true; $i++ }
       '--image' { $imageOnly = $true; $i++ }
       '--keep-after-landing' { $script:KeepLater = $true; $i++ }
-      default { Die "rebuild takes --at <rev>, --prior, --image and --keep-after-landing, and `"$($rargs[$i])`" names none of them" }
+      '--keeper-to' {
+        if ($i + 1 -ge $rargs.Count -or [string]$rargs[$i + 1] -cnotmatch '^[0-9a-f]{64}$') { Die "rebuild --keeper-to wants the successor's key (64 hex), as keeper-stand printed it" }
+        $script:KeeperTo = [string]$rargs[$i + 1]; $i += 2
+      }
+      default { Die "rebuild takes --at <rev>, --prior, --image, --keep-after-landing and --keeper-to <key>, and `"$($rargs[$i])`" names none of them" }
     }
   }
   if ($prior -and $atGiven) { Die 'rebuild takes --at <rev> or --prior, never both' }
@@ -1349,6 +1566,12 @@ switch ($verb) {
   'up' { UpVerb $rest }
   'rebuild' { RebuildVerb $rest }
   'keep-owed' { KeepOwedVerb $rest }
+  'keeper-stand' {
+    # THE RITE'S STEP BEFORE ITS OFFER (the keeper tally): a successor keeper stands beside the lit one and offers its key.
+    if ($rest.Count -gt 0) { Die 'keeper-stand takes no argument' }
+    if (-not $PulamaMode) { Die 'keeper-stand needs LARES_PULAMA=1' }
+    KeeperStand
+  }
   'vessel-image' {
     # THE IMAGE THE RUNNING VESSEL RUNS, by digest (the rite lands over it, never over a tag that may have moved); none prints nothing.
     if ($rest.Count -gt 0) { Die 'vessel-image takes no argument' }
@@ -1365,30 +1588,151 @@ switch ($verb) {
     if (-not $PulamaMode) { Die "pulama needs LARES_PULAMA=1 in the environment or $EnvFile" }
     $sub = if ($rest.Count -gt 0) { $rest[0] } else { '' }
     switch ($sub) {
-      'up' { EnsureHouse; Compose @('--profile', 'pulama', 'up', '-d', '--no-recreate', 'pulama') }
-      'down' { Compose @('--profile', 'pulama', 'stop', 'pulama') }
+      'up' { EnsureHouse; Compose @('--profile', 'pulama', 'up', '-d', '--no-recreate', (PulamaSvc)) }
+      'down' { Compose @('--profile', 'pulama', 'stop', 'pulama', 'pulama-b') }
       'restand' {
         if ($rest.Count -ne 1) { Die 'pulama restand takes no arguments' }
         PulamaRestand
       }
-      { $_ -in @('light', 'lock', 'status', 'tessera') } { if ($sub -eq 'status') { WarnPulamaSkew }; Compose (@('--profile', 'pulama', 'exec') + $NoTty + @('pulama', 'node', $PulamaMain, $sub)) }
+      'light' {
+        # `light --admit`: one route lights the keeper and admits the reported image (the struck fire's one proof).
+        $extra = @($rest | Select-Object -Skip 1)
+        if ($extra.Count -gt 1 -or ($extra.Count -eq 1 -and $extra[0] -ne '--admit')) { Die 'pulama light takes only --admit' }
+        Compose (@('--profile', 'pulama', 'exec') + $NoTty + @((PulamaSvc), 'node', $PulamaMain, 'light') + $extra)
+      }
+      'keeper-land' {
+        if ($rest.Count -ne 1) { Die 'pulama keeper-land takes no arguments' }
+        $null | & docker compose @Base --profile pulama exec -T (PulamaSvc) node $PulamaMain keeper-land
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      }
+      'keeper-commit' {
+        # THE CONSENT SCREEN (the keeper tally, closure strength T1): the successor closure D′ of a revision, read on a clean
+        # archive of that commit (never the working tree), and the source tree it names; the clean-tree re-check archives it
+        # again and compares; then the pūlama proves the route on this terminal. Nothing here reads or types a route.
+        if ($rest.Count -gt 2) { Die 'pulama keeper-commit takes at most one revision' }
+        if (-not $Tty) { Die 'pulama keeper-commit reads your route on a terminal; run `lares pulama keeper-commit` on one (nothing committed)' }
+        if (-not (Get-Command node -ErrorAction SilentlyContinue)) { Die 'pulama keeper-commit reads the closure with the host''s node, and none answers here; nothing committed' }
+        $top = ((& git -C $PSScriptRoot rev-parse --show-toplevel 2>$null) -join '').Trim()
+        if ($LASTEXITCODE -ne 0 -or -not $top) { Die "pulama keeper-commit reads a revision from a checkout, and none answers at $PSScriptRoot" }
+        $at = if ($rest.Count -eq 2) { $rest[1] } else { 'HEAD' }
+        $rev = ((& git -C $top rev-parse --verify --quiet "$at^{commit}" 2>$null) -join '').Trim()
+        if ($LASTEXITCODE -ne 0 -or -not $rev) { Die "pulama keeper-commit: $at names no commit; nothing committed" }
+        $tree = ((& git -C $top rev-parse "$rev^{tree}" 2>$null) -join '').Trim()
+        function KcClosure {
+          EnsureHouse
+          $cache = Join-Path $House 'cache'; New-Item -ItemType Directory -Force -Path $cache | Out-Null
+          $ctx = Join-Path $cache ('keeper.' + [System.IO.Path]::GetRandomFileName()); New-Item -ItemType Directory -Force -Path $ctx | Out-Null
+          $tar = "$ctx.tar"
+          try {
+            & git -C $top archive --format=tar -o $tar $rev
+            if ($LASTEXITCODE -eq 0) { & tar -xf $tar -C $ctx }
+            if ($LASTEXITCODE -ne 0) { return '' }
+            $d = ((& node (Join-Path $PSScriptRoot 'pulama-closure.mjs') $ctx 2>$null) -join '').Trim()
+            if ($LASTEXITCODE -ne 0) { return '' } else { return $d }
+          } finally { Remove-Item -Recurse -Force $ctx, $tar -ErrorAction SilentlyContinue }
+        }
+        $d = KcClosure
+        if ($d -cnotmatch '^sha256:[0-9a-f]{64}$') { Die "pulama keeper-commit: no pūlama closure reads from a clean archive of $rev; nothing committed" }
+        [Console]::Error.WriteLine("lares-container: keeper-commit: the successor closure D′ = $d")
+        [Console]::Error.WriteLine("lares-container: keeper-commit: read from a clean archive of revision $rev, source tree $tree")
+        [Console]::Error.WriteLine('lares-container: keeper-commit: the next `lares rite kukulu` that raises an image with this closure hands the living fire to it with no route')
+        [Console]::Error.Write("run the clean-tree re-check (tools/pulama-closure.mjs on a fresh archive of $($rev.Substring(0, 12)))? [Y/n] ")
+        $ans = [Console]::In.ReadLine()
+        if ($null -eq $ans) { $ans = 'n' }
+        if ($ans -in @('', 'y', 'Y', 'yes')) {
+          $again = KcClosure
+          if ($again -ne $d) { Die "pulama keeper-commit: the re-check reads $(if ($again) { $again } else { 'no closure' }), not $d; nothing committed" }
+          [Console]::Error.WriteLine('lares-container: keeper-commit: the re-check reads the same closure')
+        } else { [Console]::Error.WriteLine('lares-container: keeper-commit: the re-check skipped by your word') }
+        # THE DEVICE COUNT rides the commit's own body (the co-sign fails closed): the standing vessel reads each lit face's signed
+        # admission fold (`lares intent show --face N`), and the most any face holds goes in; none read sends none.
+        $most = 0; $unread = $false
+        $census = RunCensus '--json'
+        $lit = ([regex]::Match((($census.Out) -replace '\s', ''), '"facesLit":\[([0-9,]*)\]')).Groups[1].Value
+        if ($census.Rc -ne 0 -or -not $lit) { $unread = $true }
+        foreach ($face in ($lit -split ',' | Where-Object { $_ })) {
+          $shown = $null | & docker compose @Base exec -T lares node $Cli intent show --face $face --json 2>$null
+          $m = [regex]::Match((($shown -join '') -replace '\s', ''), '"devices":([0-9]+)')
+          if (-not $m.Success) { $unread = $true } elseif ([int]$m.Groups[1].Value -gt $most) { $most = [int]$m.Groups[1].Value }
+        }
+        $devArgs = @()
+        if ($unread -or $most -lt 1) { [Console]::Error.WriteLine('lares-container: keeper-commit: the vessel read no device count for every lit face, so the commit carries none and the vest will refuse (vest-devices-unread); commit with the vessel standing to hand the fire unattended') }
+        else {
+          [Console]::Error.WriteLine("lares-container: keeper-commit: the lit faces hold at most $most device(s)")
+          $devArgs = @('--devices', "$most")
+        }
+        # THE CARRIED CO-SIGN (keeper-tessera#/vesting), as the sh twin carries it: past one device each lit face asks
+        # `ward-keeper-vest` over (D′, the chain head, the commit's nonce), and the commit carries the spends. The nonce rests in the
+        # house cache while the ask waits, so the re-run after the approve asks over the same commit.
+        $cosignArgs = @(); $held = $null
+        if ($devArgs.Count -gt 0 -and $most -gt 1) {
+          $status = (($null | & docker compose @Base --profile pulama exec -T (PulamaSvc) node $PulamaMain status 2>$null) -join '') -replace '\s', ''
+          if ($status -notmatch '"keeper":\{') { Die 'pulama keeper-commit: the lit keeper answered no chain head, so no co-sign can name the commit; read `lares pulama status`, then `lares pulama keeper-commit` again (nothing committed)' }
+          $tip = [regex]::Match($status, '"keeper":\{[^}]*"tip":"([0-9a-f]{64})"')
+          $prev = if ($tip.Success) { $tip.Groups[1].Value } else { 'none' }
+          New-Item -ItemType Directory -Force -Path (Join-Path $House 'cache') | Out-Null
+          $held = Join-Path $House "cache/keeper-cosign-$($d.Substring(7))-$prev"
+          if (-not (Test-Path $held) -or -not (Get-Content -Raw $held)) {
+            $bytes = [byte[]]::new(32); [System.Security.Cryptography.RandomNumberGenerator]::Fill($bytes)
+            Set-Content -NoNewline -Path $held -Value (($bytes | ForEach-Object { $_.ToString('x2') }) -join '')
+          }
+          $nonce = (Get-Content -Raw $held).Trim()
+          $faces = @()
+          foreach ($face in ($lit -split ',' | Where-Object { $_ })) {
+            $errFile = Join-Path $House 'cache/keeper-cosign.err'
+            $one = $null | & docker compose @Base exec -T lares node $Cli intent keeper-cosign $d --prev $prev --nonce $nonce --face $face 2>$errFile
+            $text = ($one -join '')
+            if ($LASTEXITCODE -ne 0) {
+              $why = if (Test-Path $errFile) { ((Get-Content -Raw $errFile) -replace '\s+', ' ').Trim() } else { '' }
+              Remove-Item -Force -ErrorAction SilentlyContinue $errFile
+              $text = $why
+              if ($text -match 'ward-awaiting-cosign: ([0-9a-f]{64})') { Die "pulama keeper-commit: face h$face asks a second device to co-sign the vest ($($Matches[1])); approve it on another device of the face (its ward dialog, or ``lares intent answer <ask> --face $face --executor <this vessel's atom>`` on a node), then run ``lares pulama keeper-commit`` again (nothing committed)" }
+              Die "pulama keeper-commit: the co-sign of face h$face refused ($text); nothing committed: read it with ``lares intent show --face $face``, or light the successor by hand: ``lares rite kukulu``"
+            }
+            $faces += $text.Trim()
+          }
+          Remove-Item -Force -ErrorAction SilentlyContinue (Join-Path $House 'cache/keeper-cosign.err')
+          $cosignArgs = @('--cosign', "{""nonce"":""$nonce"",""faces"":[$($faces -join ',')]}")
+          [Console]::Error.WriteLine('lares-container: keeper-commit: the co-sign of each face spent: another atom of the roster this vessel read approved the vest (the keeper checks the roster of this vessel, not the admission chain of the face); the commit carries the spends')
+        }
+        Compose (@('--profile', 'pulama', 'exec') + $NoTty + @((PulamaSvc), 'node', $PulamaMain, 'keeper-commit', $d) + $devArgs + $cosignArgs)
+        if ($LASTEXITCODE -eq 0 -and $held) { Remove-Item -Force $held }
+      }
+      'lock' {
+        # THE OPERATOR'S LOCK REACHES EVERY KEEPER THAT STANDS: the one holding the fire, and a successor lit beside it.
+        if ($rest.Count -ne 1) { Die 'pulama lock takes no arguments' }
+        $any = $false
+        foreach ($svc in @('pulama', 'pulama-b')) {
+          if (-not (SvcRunning $svc)) { continue }
+          $any = $true
+          $null | & docker compose @Base --profile pulama exec -T $svc node $PulamaMain lock
+          if ($LASTEXITCODE -ne 0) { Die "the keeper in $svc refused the lock" }
+        }
+        if (-not $any) { Die 'no keeper stands to lock' }
+      }
+      'take-fire' {
+        if ($rest.Count -ne 1) { Die 'pulama take-fire takes no arguments' }
+        KeeperSettle
+        $null | & docker compose @Base --profile pulama exec -T (PulamaSvc) node $PulamaMain status
+      }
+      { $_ -in @('status', 'tessera') } { if ($sub -eq 'status') { WarnPulamaSkew }; Compose (@('--profile', 'pulama', 'exec') + $NoTty + @((PulamaSvc), 'node', $PulamaMain, $sub)) }
       'admit' {
         # admit reads the route on a real terminal inside the pūlama; the face ordinals name the lent set (none names every lit face).
         $face = @($rest | Select-Object -Skip 1)
         foreach ($f in $face) { if ($f -notmatch '^[0-9]+$') { Die 'pulama admit takes face ordinals (numbers)' } }
-        Compose (@('--profile', 'pulama', 'exec') + $NoTty + @('pulama', 'node', $PulamaMain, 'admit') + $face)
+        Compose (@('--profile', 'pulama', 'exec') + $NoTty + @((PulamaSvc), 'node', $PulamaMain, 'admit') + $face)
       }
       'rehive' {
         # rehive stands a SHUT face's hive again from its own seed: the face's own route reads on a real terminal inside the
         # pūlama, which holds its keys; `pulama lock` shuts every face first.
         if ($rest.Count -ne 2 -or $rest[1] -notmatch '^[0-9]+$') { Die 'pulama rehive takes one face ordinal (a number)' }
-        Compose (@('--profile', 'pulama', 'exec') + $NoTty + @('pulama', 'node', $PulamaMain, 'rehive', $rest[1]))
+        Compose (@('--profile', 'pulama', 'exec') + $NoTty + @((PulamaSvc), 'node', $PulamaMain, 'rehive', $rest[1]))
       }
       'unadmit' {
         # unadmit ends one image's admission: the route proves on a real terminal inside the pūlama, and a signed
         # tombstone naming the admission's tessera rests; the gate then reads pulama-image-unadmitted.
         if ($rest.Count -ne 2 -or $rest[1] -cnotmatch '^sha256:[0-9a-f]{64}$') { Die 'pulama unadmit takes one image digest (sha256:<64 hex>)' }
-        Compose (@('--profile', 'pulama', 'exec') + $NoTty + @('pulama', 'node', $PulamaMain, 'unadmit', $rest[1]))
+        Compose (@('--profile', 'pulama', 'exec') + $NoTty + @((PulamaSvc), 'node', $PulamaMain, 'unadmit', $rest[1]))
       }
       'keep-seat' {
         # The keep seat on a pūlama house: the pūlama proves the steward's route on this terminal and answers the wrapped seat
@@ -1405,7 +1749,7 @@ switch ($verb) {
         # prompt and the seat line, folds into the capture, never the screen. The line below stands as the prompt.
         [Console]::Error.WriteLine("lares-container: the pūlama now reads the steward's route to seat the keep: type it, then Enter (typed, unseen)")
         $line = ''
-        & docker compose @Base --profile pulama exec --no-TTY=false pulama node $PulamaMain keep-seat | ForEach-Object {
+        & docker compose @Base --profile pulama exec --no-TTY=false (PulamaSvc) node $PulamaMain keep-seat | ForEach-Object {
           $l = "$_".Trim("`r")
           if ($l.StartsWith('{"op":"keep-seat"')) { $line = $l }
         }
@@ -1421,7 +1765,7 @@ switch ($verb) {
         Move-Item -Force -LiteralPath $tmp -Destination $seatFile
         [Console]::Error.WriteLine("lares-container: the keep seat rests at $seatFile (0600); a keep now seals under it")
       }
-      default { Die 'pulama takes up, down, restand, light, admit, unadmit, rehive, keep-seat, lock, status or tessera' }
+      default { Die 'pulama takes up, down, restand, light [--admit], admit, unadmit, rehive, keep-seat, keeper-commit [<rev>], keeper-land, take-fire, lock, status or tessera' }
     }
   }
   'logs'  { Compose (@('logs') + $rest + @('lares')) }
@@ -1451,6 +1795,15 @@ switch ($verb) {
     }
     # Stopping the daemon stops the container's main process: a host act.
     elseif ($sub -eq 'stop') { if ($rest.Count -ne 1) { Die 'vessel stop takes no option through this shim' }; Compose @('stop', 'lares') }
+    # The step-in read asks no standing verdict after it: a fallen engine answers none, and the read reads its files.
+    elseif ($sub -eq 'read') { VesselRead $rest }
+    # The release holds the store: a standing container refuses here, naming the stop; a stopped one takes the offline door.
+    elseif ($sub -eq 'release') {
+      # A paused container still holds the store (its process stands frozen mid-act), so it reads as standing here.
+      $paused = & docker compose @Base ps -q --status paused lares
+      if ((HasRunningVessel) -or -not [string]::IsNullOrWhiteSpace(($paused -join ''))) { Die 'vessel release holds the store, and a vessel stands; stop it first with `lares vessel stop`, then release again' }
+      RouteCli (@($verb) + $rest) $true
+    }
     else { RouteCli (@($verb) + $rest) (-not $observing) }
   }
   'lei' {
@@ -1465,7 +1818,7 @@ switch ($verb) {
       $answer = ''
       # The answer rides the pipeline, and a captured stdout makes compose drop the pty, so the exec forces one
       # (--no-TTY=false): the pūlama reads the route on the operator's terminal.
-      & docker compose @Base --profile pulama exec --no-TTY=false pulama node $PulamaMain lei $sub $terms | ForEach-Object {
+      & docker compose @Base --profile pulama exec --no-TTY=false (PulamaSvc) node $PulamaMain lei $sub $terms | ForEach-Object {
         [Console]::Error.WriteLine($_)
         $line = "$_".Trim("`r")
         if ($line.StartsWith('{')) { $answer = '' }

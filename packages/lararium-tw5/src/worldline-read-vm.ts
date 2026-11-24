@@ -100,13 +100,14 @@ export interface WorldlineTrajectoryInput {
 // read→filter-compute chain read the last-projected registry without re-shipping the edges.
 let _causal: WorldlineCausal | null = null;
 let _skipped: readonly WorldlineReplaySkip[] = [];
+let _uncertain: readonly string[] = [];
 
 /**
  * Well 1 — the ITC LIVE-READ. Project the registry from the edge-DAG (HOLD it), then compare.
  * `ingestEdges` + `compare` fuse into one read (the registry persists as a side
  * effect). THROWS when either handle is unknown to the registry (the host wraps the helpful error).
  */
-export function computeWorldlineCompare(input: WorldlineCompareInput): { order: ItcOrder; skipped: readonly WorldlineReplaySkip[] } {
+export function computeWorldlineCompare(input: WorldlineCompareInput): { order: ItcOrder; skipped: readonly WorldlineReplaySkip[]; uncertain: readonly string[] } {
   // Re-project the registry from the carried edge-DAG when fresh edges arrive (the idempotent
   // re-derive); else read the HELD registry (a compare riding a prior ingest — the cross-read
   // persistence the future read→filter chain leans on). No edges + no held registry → throws below.
@@ -114,8 +115,9 @@ export function computeWorldlineCompare(input: WorldlineCompareInput): { order: 
     const replay = replayWorldlineEdges(input.root ?? "operator", input.opens, input.closes ?? []);
     _causal = replay.causal;
     _skipped = replay.skipped;
+    _uncertain = replay.uncertain;
   }
-  return { order: worldlineCompare(_causal, input.a, input.b), skipped: _skipped };
+  return { order: worldlineCompare(_causal, input.a, input.b), skipped: _skipped, uncertain: _uncertain };
 }
 
 /** The held registry snapshot (read-only) — for inspection / a downstream re-projection. */
@@ -147,7 +149,7 @@ export function computeWorldlineTrajectory(
 
 export const name  = "lararium-worldline-read-vm";
 
-export type WorldlineCompareVm    = (input: WorldlineCompareInput) => { order: ItcOrder; skipped: readonly WorldlineReplaySkip[] };
+export type WorldlineCompareVm    = (input: WorldlineCompareInput) => { order: ItcOrder; skipped: readonly WorldlineReplaySkip[]; uncertain: readonly string[] };
 export type WorldlineTrajectoryVm = (input: WorldlineTrajectoryInput) => { trajectory: WorldlineTrajectory; nullBaseline?: WorldlineTrajectory };
 
 export function startup(): void {

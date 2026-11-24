@@ -16,6 +16,11 @@
  * restarts on exit, never on an unhealthy answer). A fall whose row cannot rest (a full or refusing disk) stays down too, so
  * no count it cannot keep feeds a loop.
  *
+ * THE HOLD RIDES THE COUNT. The held set derives from the resting falls (`heldInFlight`), so whatever clears the count frees
+ * every hold with it: the next stand mounts each document a fall named in flight writable, and a document that brings the
+ * engine down again falls once more, rises once, and stands held on that rise. The hand acts name the house's own commands
+ * (`lares vessel read`, which reads the falls from the files with the engine down; `lares vessel stop`; `lares vessel stand`).
+ *
  * ONLY TWO ACTS CLEAR THE COUNT: a clean stop (exit 0), and the hand's act (a signal reaching a fallen engine reads as the
  * hand having seen the named state, which grants one more rise, bounded by the count again). No run clears it by itself: a
  * trap outside the probe's guard (a peer's resync after any settle) would otherwise loop (fall, exit, boot, settle, clear,
@@ -54,14 +59,24 @@ export const ENGINE_RESTART_CAP = 1;
 /** The hand act a vessel that stays down names. */
 export const ENGINE_DOWN_HAND_ACT =
   "the vessel already rose once from an engine fall and fell again, so it stays down: health answers 503 (after a fall during boot "
-  + "no verb reaches it); stop the vessel by hand (the stop clears the count and exits 0), preserve the hearth (copy it aside), then "
-  + "repair or restore from a keep bundle; the next stand may rise once more, and a document a fall named in flight stays held";
+  + "no verb reaches it). `lares vessel read` reads the resting falls and every held id from the files beside the store, with no "
+  + "verb; `lares vessel stop` stops it by hand (the stop clears the count, and with it the hold on each document a fall named in "
+  + "flight, and exits 0); preserve the hearth (copy it aside); `lares vessel read vessel` probes every document, and "
+  + "`lares vessel lay --apply --yes` lays a torn one again from its disk holding; then `lares vessel stand`: the vessel may rise "
+  + "once more, and each document a fall named in flight mounts writable. A hearth past repair restores from its keep onto a "
+  + "brand-new house, the damaged one kept aside and never reset: walk founding runbook 11a "
+  + "(lar:///ha.ka.ba/lararium/mesh/founding-runbook#/carry-across-refound) whole, its lay and census steps with it; on the new "
+  + "house it opens with `LARES_HOUSE=<new root> lares found --hearth --name <pet> --chair <chair>`, binds the keep by "
+  + "`lares up --workspace house-backup=<keep checkout>`, and imports each worn face by "
+  + "`lares import /lar/workspaces/house-backup/house --apply`";
 
 const FALLS_FILE = ".engine-falls";
 
-/** One fall at rest: the life it ended, its cause, path and time, and the document in flight where the watch knew it. */
+/** One fall at rest: the life it ended, its cause, path and time, the document in flight where the watch knew it, and the
+ *  process that fell (`pid`, null where unknown), so a hand act can tell a husk that still stands from a fall long past. */
 export interface RestingFall {
   readonly life: string | null;
+  readonly pid: number | null;
   readonly cause: string;
   readonly path: string;
   readonly since: string;
@@ -77,7 +92,10 @@ const isRestingFall = (v: unknown): v is RestingFall => {
   const r = v as Record<string, unknown> | null;
   return r !== null && typeof r === "object" && typeof r["cause"] === "string" && typeof r["path"] === "string"
     && typeof r["since"] === "string" && (r["life"] === null || typeof r["life"] === "string")
-    && (r["inFlight"] === null || typeof r["inFlight"] === "string");
+    && (r["inFlight"] === null || typeof r["inFlight"] === "string")
+    // A row rested before falls named their pid carries no `pid` key: it reads whole, its pid null, so the hold it names
+    // stands across the upgrade. A pid of any other kind reads the file torn.
+    && (r["pid"] === undefined || r["pid"] === null || (typeof r["pid"] === "number" && Number.isSafeInteger(r["pid"]) && r["pid"] > 0));
 };
 
 /** The falls resting in a storage dir, oldest first; none where the file stands absent. A torn file reads as one fall of
@@ -87,21 +105,44 @@ export function readEngineFalls(storageDir: string): RestingFall[] {
   try { raw = readFileSync(engineFallsPath(storageDir), "utf8"); } catch { return []; }
   try {
     const parsed = JSON.parse(raw) as { falls?: unknown };
-    if (Array.isArray(parsed.falls) && parsed.falls.every(isRestingFall)) return parsed.falls;
+    if (Array.isArray(parsed.falls) && parsed.falls.every(isRestingFall)) return parsed.falls.map((f) => ({ ...f, pid: f.pid ?? null }));
   } catch { /* torn: read below */ }
-  return [{ life: null, cause: "unknown", path: "unknown", since: "unknown", inFlight: null }];
+  return [{ life: null, pid: null, cause: "unknown", path: "unknown", since: "unknown", inFlight: null }];
 }
 
-/** Rest one more fall (atomic: a reader never sees a torn file). Answers every fall now resting. */
-export function restEngineFall(storageDir: string, fall: EngineFall, life: string | null): RestingFall[] {
-  const falls = [...readEngineFalls(storageDir), { life, cause: fall.cause, path: fall.path, since: fall.since, inFlight: fall.inFlight }];
-  atomicWriteFileSync(engineFallsPath(storageDir), `${JSON.stringify({ falls }, null, 2)}\n`);
+/** Rest one more fall (atomic: a reader never sees a torn file), naming the process that fell. Answers every fall now resting. */
+export function restEngineFall(storageDir: string, fall: EngineFall, life: string | null, pid: number = process.pid): RestingFall[] {
+  const falls = [...readEngineFalls(storageDir), { life, pid, cause: fall.cause, path: fall.path, since: fall.since, inFlight: fall.inFlight }];
+  // THE CAP RIDES WITH THE COUNT: a reader outside this process (the MCP seat's `step_in.py`, the shim's host read) learns
+  // whether the count already keeps the vessel down from the file itself, and this constant stays its one owner.
+  atomicWriteFileSync(engineFallsPath(storageDir), `${JSON.stringify({ cap: ENGINE_RESTART_CAP, falls }, null, 2)}\n`);
   return falls;
 }
 
 /** Clear the count: a clean stop, or a hand's stop of a vessel that stays down. */
 export function clearEngineFalls(storageDir: string): void {
   rmSync(engineFallsPath(storageDir), { force: true });
+}
+
+/** Whether a process lives: signal 0 asks the kernel and delivers nothing; EPERM names a process that lives under another uid. */
+const processLives = (pid: number): boolean => {
+  try { process.kill(pid, 0); return true; }
+  catch (err) { return (err as NodeJS.ErrnoException).code === "EPERM"; }
+};
+
+/**
+ * THE FALLEN HOLDER. A fall during boot closes the verb socket and frees the store's claimed name, yet the husk process
+ * stays up (it serves 503 and holds the named state), so the claim alone reads the store free beside it. The newest
+ * resting fall whose process still lives, other than this one, answers that husk; null where none lives. A pid the
+ * kernel reused after the fall reads as living too: the refusal names the pid, so a hand can check it.
+ */
+export function fallenHolder(storageDir: string, lives: (pid: number) => boolean = processLives): RestingFall | null {
+  const falls = readEngineFalls(storageDir);
+  for (let i = falls.length - 1; i >= 0; i--) {
+    const f = falls[i]!;
+    if (f.pid !== null && f.pid !== process.pid && lives(f.pid)) return f;
+  }
+  return null;
 }
 
 /** What the vessel did with one fall. */
@@ -164,7 +205,7 @@ export interface ProbeDoors {
 export const HELD_IN_FLIGHT = "held: the document in flight at the last engine fall loads clean, so it stands read-only, its bytes in place";
 
 /** The hand act that releases a held document. */
-export const HELD_HAND_ACT = "the plane reads empty, read-only, while its bytes rest in place; stop the vessel by hand (a clean stop (exit 0) clears the restart count; an errored or killed stop keeps it) and stand it again: the document mounts writable";
+export const HELD_HAND_ACT = "the plane reads empty, read-only, while its bytes rest in place; stop the vessel by hand with `lares vessel stop` (a clean stop (exit 0) clears the restart count and the hold; an errored or killed stop keeps both), then `lares vessel stand`: the document mounts writable";
 
 /**
  * THE KEEL'S PROBE DOORS, AWARE OF THE RESTING FALLS. Each document a resting fall named in flight runs the REAL probe. A

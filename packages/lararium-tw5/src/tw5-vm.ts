@@ -69,7 +69,7 @@ export class TW5Engine {
         const tw = instance as unknown as { wiki?: { addTiddler?: (t: unknown) => void }; Tiddler?: new (f: Record<string, unknown>) => unknown };
         if (typeof tw.wiki?.addTiddler === "function" && typeof tw.Tiddler === "function") {
           tw.wiki.addTiddler(new tw.Tiddler({ title: `$:/temp/lares/alert/refused/module-unpinned/${title}`, tags: ["$:/tags/Alert"],
-            text: `${MODULE_UNPINNED}: ${title} (sha256 ${digest}) carries no pin the house holds; the island never evaluated it` }));
+            text: `${MODULE_UNPINNED}: ${title} (sha256:${digest}) carries no pin the house holds; the island never evaluated it` }));
         }
       };
       armModulePinGate(instance as unknown as Parameters<typeof armModulePinGate>[0], pins, (title, digest) => {

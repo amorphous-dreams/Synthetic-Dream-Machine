@@ -1,8 +1,8 @@
 import { describe, expect, test } from "vitest";
 import {
-  delegationEdge, communicationEdge, handbackClose, deriveInjectionEdges,
+  delegationEdge, communicationEdge, retireClose, deriveInjectionEdges,
   replayWorldlineEdges, worldlineCausalFromEdges, worldlineCausalSeed, worldlineSpawn, worldlineInject,
-  worldlineHandback, mulberry32,
+  worldlineRetire, mulberry32,
 } from "../src/index.js";
 
 const root = "run";
@@ -16,8 +16,8 @@ function fixture(spawnTime = "3000-01-01T00:00:00Z", injectTime = "1970-01-01T00
     delegationEdge(a, b, { turnKey: "b0", parentKey: "a1", validFrom: injectTime }),
   ];
   const closes = [
-    handbackClose(a, b, spawnTime, "b0"),
-    handbackClose(root, a, injectTime, "a1"),
+    retireClose(a, b, spawnTime, "b0", "rb"),
+    retireClose(root, a, injectTime, "rb", "ra"),
   ];
   return { opens, closes };
 }
@@ -25,10 +25,10 @@ function fixture(spawnTime = "3000-01-01T00:00:00Z", injectTime = "1970-01-01T00
 function expectedRegistry() {
   let causal = worldlineCausalSeed(root);
   causal = worldlineSpawn(causal, root, a);
-  causal = worldlineInject(causal, a);
+  causal = worldlineInject(causal, root, a);
   causal = worldlineSpawn(causal, a, b);
-  causal = worldlineHandback(causal, a, b);
-  return worldlineHandback(causal, root, a);
+  causal = worldlineRetire(causal, a, b);
+  return worldlineRetire(causal, root, a);
 }
 
 function shuffled<T>(items: readonly T[], rng: () => number): T[] {
@@ -41,14 +41,14 @@ function shuffled<T>(items: readonly T[], rng: () => number): T[] {
 }
 
 describe("causal worldline replay", () => {
-  test("parent links order spawn, inject, nested spawn, and handbacks across contradictory display times", () => {
+  test("parent links order spawn, message, nested spawn, and retirements across contradictory display times", () => {
     const { opens, closes } = fixture();
     const replay = replayWorldlineEdges(root, opens, closes);
     expect(replay.causal).toEqual(expectedRegistry());
     expect(replay.skipped).toEqual([]);
   });
 
-  test("worldlineCausalFromEdges applies the inject a contradictory display time once sorted before its spawn", () => {
+  test("worldlineCausalFromEdges applies the message a contradictory display time once sorted before its spawn", () => {
     const { opens, closes } = fixture();
     expect(worldlineCausalFromEdges(root, opens, closes)).toEqual(expectedRegistry());
     const swapped = fixture("1970-01-01T00:00:00Z", "3000-01-01T00:00:00Z");
@@ -59,8 +59,11 @@ describe("causal worldline replay", () => {
     const opens = [], closes = [];
     for (let i = 0; i < 200; i++) {
       const child = `run.s${String(i).padStart(4, "0")}`;
-      opens.push(delegationEdge(root, child, { turnKey: `s${i}` }), communicationEdge(root, child, { turnKey: `i${i}`, parentKey: `s${i}` }));
-      closes.push(handbackClose(root, child, undefined, `i${i}`));
+      opens.push(
+        delegationEdge(root, child, { turnKey: `s${i}`, ...(i > 0 ? { parentKey: `r${i - 1}` } : {}) }),
+        communicationEdge(root, child, { turnKey: `i${i}`, parentKey: `s${i}` }),
+      );
+      closes.push(retireClose(root, child, undefined, `i${i}`, `r${i}`));
     }
     const replay = replayWorldlineEdges(root, opens, closes);
     expect(replay.skipped).toEqual([]);
@@ -84,7 +87,7 @@ describe("causal worldline replay", () => {
 
   test("unspawned targets and unknown parent keys announce skips", () => {
     const unknownTarget = replayWorldlineEdges(root, [communicationEdge(root, "ghost", { turnKey: "g1" })]);
-    expect(unknownTarget.skipped).toMatchObject([{ op: "inject", reason: "target-unspawned" }]);
+    expect(unknownTarget.skipped).toMatchObject([{ op: "message", reason: "target-unspawned" }]);
     const unknownParent = replayWorldlineEdges(root, [delegationEdge(root, a, { turnKey: "a0", parentKey: "missing" })]);
     expect(unknownParent.skipped).toMatchObject([{ op: "spawn", reason: "parent-key-unknown" }]);
   });

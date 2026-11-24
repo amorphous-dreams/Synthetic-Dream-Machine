@@ -67,7 +67,7 @@ async function boot(storageDir: string, daemonUrl: string) {
   const assembly = await assembleVessel({
     repo,
     catalogHandle: repo.create<LarDoc>(emptyLarDoc()),
-    waitHandle: async (url, fallback) => {
+    waitHandle: async (url, _bagId, fallback) => {
       try { return (await repo.find(url as never)) as never; } catch { return fallback(); }
     },
     systemCanon: async () => ({}),
@@ -175,7 +175,7 @@ d("a quarantined document stays held across boots until a hand act releases it",
     const refused = releaseQuarantinedDoc(storageDir, docId, "fresh");
     expect(refused).toMatchObject({ ok: false });
     expect(refused.ok === false && refused.why).toMatch(/sibling/);
-    expect(refused.ok === false && refused.why).toMatch(/`--release \w|--release-keep/);
+    expect(refused.ok === false && refused.why).toMatch(/`lares vessel release \w+`|lares vessel release \w+ --keep/);
     expect(existsSync(docStorePath(storageDir, docId))).toBe(false);
     // A plane whose bag the manifest never named refuses too: fail-closed.
     const unnamed = mkdtempSync(join(tmpdir(), "lar-quarantine-held-"));
@@ -200,7 +200,7 @@ d("a quarantined document stays held across boots until a hand act releases it",
     for (const act of ["restored", "fresh"] as const) {
       const r = releaseQuarantinedDoc(storageDir, daemonId, act);
       expect(r).toMatchObject({ ok: false });
-      expect(r.ok === false && r.why).toMatch(/--release-keep/);
+      expect(r.ok === false && r.why).toMatch(/lares vessel release \w+ --keep/);
       expect(r.ok === false && r.why).not.toMatch(/by hand/);
     }
     expect(releaseQuarantinedDoc(storageDir, daemonId, "kept")).toMatchObject({ ok: true, act: "kept" });
@@ -233,16 +233,16 @@ d("a quarantined document stays held across boots until a hand act releases it",
     // The moved bytes still rest: keep refuses and names restore.
     const withBytes = releaseQuarantinedDoc(storageDir, daemonId, "kept");
     expect(withBytes).toMatchObject({ ok: false });
-    expect(withBytes.ok === false && withBytes.why).toMatch(/`--release \w/);
+    expect(withBytes.ok === false && withBytes.why).toMatch(/`lares vessel release \w+`/);
 
     // The moved bytes gone as well: restore and keep each name fresh alone, never each other.
     rmSync(movedTo, { recursive: true, force: true });
     const restore = releaseQuarantinedDoc(storageDir, daemonId, "restored");
-    expect(restore.ok === false && restore.why).toMatch(/--release-fresh/);
-    expect(restore.ok === false && restore.why).not.toMatch(/--release-keep/);
+    expect(restore.ok === false && restore.why).toMatch(/lares vessel release \w+ --fresh/);
+    expect(restore.ok === false && restore.why).not.toMatch(/lares vessel release \w+ --keep/);
     const keep = releaseQuarantinedDoc(storageDir, daemonId, "kept");
-    expect(keep.ok === false && keep.why).toMatch(/--release-fresh/);
-    expect(keep.ok === false && keep.why).not.toMatch(/`--release \w/);
+    expect(keep.ok === false && keep.why).toMatch(/lares vessel release \w+ --fresh/);
+    expect(keep.ok === false && keep.why).not.toMatch(/`lares vessel release \w+`/);
 
     // The hold still stands: the next boot holds the plane read-only, no blank.
     const held = await boot(storageDir, daemonUrl);

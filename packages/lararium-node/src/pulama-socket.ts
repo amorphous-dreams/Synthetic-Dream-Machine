@@ -6,7 +6,8 @@
  * A line longer than `PULAMA_MAX_LINE`, or one that forms no frame, closes the channel.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
  */
-import { chmodSync, rmSync } from "node:fs";
+import { randomBytes } from "node:crypto";
+import { chmodSync, linkSync, rmSync, statSync, unlinkSync } from "node:fs";
 import { connect, createServer, type Server, type Socket } from "node:net";
 import { PULAMA_MAX_LINE, PulamaRefused, decodeFrame, encodeFrame, type PulamaChannel, type PulamaFrame } from "./pulama-wire.js";
 
@@ -74,23 +75,57 @@ const answers = (path: string): Promise<boolean> => new Promise((resolve) => {
   probe.once("error", () => resolve(false));
 });
 
-/** Listen at `path` and hand each connection to `onChannel`. `close` ends the listener, every connection, and the socket file. */
-export async function listenPulama(path: string, onChannel: (channel: PulamaChannel) => void): Promise<{ close(): Promise<void> }> {
+/**
+ * THE FIRE: whether a live pūlama answers at `path`. Exactly one keeper holds the vessel socket; a successor stands beside it on its
+ * own hand door and claims the socket only once this reads false (`take-fire`).
+ */
+export const pulamaAnswers = (path: string): Promise<boolean> => answers(socketPathFits(path));
+
+/**
+ * Listen at `path` and hand each connection to `onChannel`. `close` ends the listener, every connection, and the socket file.
+ * THE CLAIM IS EXCLUSIVE, LINK THEN CHECK: the listener stands at a private path first, then LINKS into `path`, which fails where any
+ * file stands (`link` never replaces), so two keepers racing for one socket never both hold it. A leftover only gives way when it
+ * answers nothing, and only the very inode read dead is removed (never a blind remove before the link), so a keeper that claimed in
+ * between keeps its claim. After the link the path must name this listener's inode, or the claim refuses; `owns` re-reads it.
+ */
+export async function listenPulama(path: string, onChannel: (channel: PulamaChannel) => void): Promise<{ close(): Promise<void>; owns(): boolean }> {
   socketPathFits(path);
-  if (await answers(path)) throw new PulamaRefused("pulama-already-stands", `a pūlama already answers at ${path}`);
-  rmSync(path, { force: true });
+  const own = `${path}.${randomBytes(3).toString("hex")}`;
+  if (own.length > SOCKET_PATH_MAX) throw new PulamaRefused("pulama-socket-path", `the claim path ${own} runs past ${SOCKET_PATH_MAX} bytes`);
   const socks = new Set<Socket>();
   const server: Server = createServer((sock) => {
     socks.add(sock);
     sock.once("close", () => socks.delete(sock));
     onChannel(socketChannel(sock));
   });
-  await new Promise<void>((resolve, reject) => { server.once("error", reject); server.listen(path, () => { server.removeListener("error", reject); resolve(); }); });
-  chmodSync(path, 0o600);
+  await new Promise<void>((resolve, reject) => { server.once("error", reject); server.listen(own, () => { server.removeListener("error", reject); resolve(); }); });
+  chmodSync(own, 0o600);
+  const ino = statSync(own).ino;
+  const give = async (reading: string, why: string): Promise<never> => {
+    await new Promise<void>((resolve) => server.close(() => resolve()));
+    rmSync(own, { force: true });
+    throw new PulamaRefused(reading, why);
+  };
+  const inoAt = (): number | null => { try { return statSync(path).ino; } catch { return null; } };
+  for (let tries = 0; ; tries++) {
+    try { linkSync(own, path); break; }
+    catch (err) {
+      if ((err as NodeJS.ErrnoException).code !== "EEXIST") { await give("pulama-socket-claim", `the claim at ${path} failed: ${(err as Error).message}`); }
+      if (tries > 0) await give("pulama-already-stands", `another keeper claimed ${path} first`);
+      // A LEFTOVER GIVES WAY ONLY DEAD, and only the inode read dead goes: a live keeper, or one that claimed meanwhile, keeps it.
+      const before = inoAt();
+      if (await answers(path)) await give("pulama-already-stands", `a pūlama already answers at ${path}`);
+      if (before !== null && inoAt() === before) { try { unlinkSync(path); } catch { /* another keeper cleared it first */ } }
+    }
+  }
+  // THE CHECK AFTER THE LINK: the path names this listener, or another claim landed and this one refuses.
+  if (inoAt() !== ino) await give("pulama-already-stands", `another keeper claimed ${path} first`);
+  rmSync(own, { force: true });
   return {
+    owns: () => inoAt() === ino,
     close: () => new Promise<void>((resolve) => {
       for (const sock of socks) sock.destroy();
-      server.close(() => { rmSync(path, { force: true }); resolve(); });
+      server.close(() => { if (inoAt() === ino) rmSync(path, { force: true }); resolve(); });
     }),
   };
 }

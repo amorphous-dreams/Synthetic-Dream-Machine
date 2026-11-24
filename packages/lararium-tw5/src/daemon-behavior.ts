@@ -285,7 +285,7 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
         // answers the causal verdict; an unknown handle throws → a graceful `error` across the wire.
         const msg = raw as DaemonMsg_WorldlineCompareRequest;
         try {
-          const $tw = (tw5 as { $tw?: { lares?: { worldlineCompareVm?: (i: { a: string; b: string; opens: unknown; closes?: unknown; root?: string }) => { order: string } } } } | undefined)?.$tw;
+          const $tw = (tw5 as { $tw?: { lares?: { worldlineCompareVm?: (i: { a: string; b: string; opens: unknown; closes?: unknown; root?: string }) => { order: string; uncertain?: readonly string[] } } } } | undefined)?.$tw;
           const fn = $tw?.lares?.worldlineCompareVm;
           if (!fn) {
             console.warn("[daemon-behavior] $tw.lares.worldlineCompareVm absent (plugin not loaded) — worldline-compare unavailable");
@@ -296,7 +296,7 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
               ...(msg.closes !== undefined ? { closes: msg.closes } : {}),
               ...(msg.root   !== undefined ? { root: msg.root }     : {}),
             });
-            post(mkDaemonWorldlineCompareResult({ requestId: msg.requestId, order: r.order }));
+            post(mkDaemonWorldlineCompareResult({ requestId: msg.requestId, order: r.order, ...(r.uncertain !== undefined ? { uncertain: r.uncertain } : {}) }));
           }
         } catch (err) {
           post(mkDaemonWorldlineCompareResult({ requestId: msg.requestId, error: err instanceof Error ? err.message : String(err) }));
