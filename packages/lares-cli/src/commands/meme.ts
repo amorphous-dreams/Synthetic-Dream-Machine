@@ -148,7 +148,7 @@ function usage(): void { for (const line of helpLines("meme")) console.error(lin
  */
 export function projectPlan(args: ParsedArgs): ProjectPlan {
   const source = args.positional[1];
-  if (!source) throw new UsageError("a source is required: a file, or a lar: uri");
+  if (!source) throw new UsageError("the verb needs a source: a file, or a lar: uri");
   const to = typeof args.options["to"] === "string" ? args.options["to"].trim() : "";
   if (!(PROJECT_TARGETS as readonly string[]).includes(to)) {
     throw new UsageError(`--to names the target, one of ${PROJECT_TARGETS.join(" · ")}${to ? ` (got "${to}")` : ""}`);
@@ -988,7 +988,7 @@ async function memePromote(args: ParsedArgs): Promise<number> {
       ok: false, error: { code, message: outcome.reason },
       human: () => {
         console.error(`lares meme promote: ${outcome.reason}`);
-        if (code === "cap-denied") console.error("  promotion-down is the kahu-cabal's act — nothing moved, and the carrier stands where it stood");
+        if (code === "cap-denied") console.error("  promotion-down belongs to the kahu-cabal's hand — nothing moved, and the carrier stands where it stood");
       },
     });
     return exitFor(code);

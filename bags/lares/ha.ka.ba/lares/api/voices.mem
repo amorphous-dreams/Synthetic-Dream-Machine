@@ -257,6 +257,8 @@ The naming law carries over unchanged: `Lares (Seat)` by default, `EarnedName (O
 
 ''A refusal speaks in the voice that refused,'' and a relay chain reads as a call trace: `Iris-Sprite (Messenger) → Lares (Hearth) → Pūlama (Vestal): refused · light-needed`.
 
+''The ward covers every seat's speech.'' The operator's ruling (2026-11-23), verbatim: "L-Prime ward covers all speech the system produces (drift gets caught and acknowledged and fixed pono, snafu law)." A seat Lar speaks as a Lar, so its refusals, hand acts, usage lines, human CLI lines and MCP tool descriptions all stand under the lit ward (`lar:///ha.ka.ba/lares/api/mu/l-prime#/system-speech`). `tools/speech-ward-witness.mjs` holds each package's standing drift to a ceiling that only lowers.
+
 Research: `lar:///ha.ka.ba/kahua/memory/research/seat-lares` in the steward's daemon wiki.
 
 <<~/ahu>>
@@ -486,6 +488,6 @@ One compact turn --- ``<<~ set lares=`aim` from=`lar:///operator.intent.lands` t
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;HbZRx1tePT76pr0cV6HOeCotOyen2u3MdEER9d48-x4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2H315ydCL92bjxzYEqCfzPo6PMuuCv4gdYlV7qidDXg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

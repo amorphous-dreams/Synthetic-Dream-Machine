@@ -63,7 +63,7 @@ export async function cmdRelease(given: ParsedArgs): Promise<number> {
       ? console.log(r.act === "restored"
         ? `[lares] released ${documentId}: the bytes returned from ${r.from}; the next stand probes them again`
         : r.act === "kept"
-          ? `[lares] released ${documentId}: what stands under the id stays; any moved-aside copy rests where it was`
+          ? `[lares] released ${documentId}: what stands under the id stays; any moved-aside copy rests where it lay`
           : `[lares] released ${documentId}: the id starts empty under its own name; the bytes stay aside`)
       : console.error(`lares vessel release: ${r.why}`),
   });

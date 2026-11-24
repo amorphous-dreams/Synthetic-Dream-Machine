@@ -160,7 +160,7 @@ describe("kukulu reads the lag on every raise and lays the workbench on the owne
     const out = await riteKukulu(f.ports, {});
     // The --json answer names it by its own code (`refusal` feeds the error code), never `rite-stopped-at-landing` nor the failed lay's.
     expect(out).toMatchObject({ code: 1, data: { workbench: { laid: false, interrupted: true }, refusal: "kukulu-workbench-lay-interrupted" } });
-    expect(f.said.join("\n")).toMatch(/the workbench lay was interrupted; the house stands, and the lay reads diff-gated, so lares vessel lay --workbench --apply picks it up/);
+    expect(f.said.join("\n")).toMatch(/something interrupted the workbench lay; the house stands, and the lay reads diff-gated, so lares vessel lay --workbench --apply picks it up/);
   });
 
   it("CONTROL: a raise that fails reads no lag; ports with no lag read leave the answer as it stood", async () => {

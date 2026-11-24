@@ -115,8 +115,8 @@ export async function cmdStop(args: ParsedArgs): Promise<number> {
     holderAlive: () => udsAlive(dataDir, 300),
     onPastGrace: (pids) => console.log(
       pids.length > 0
-        ? `[lares] :${port} is past its grace, still held by pid(s) ${pids.join(", ")}${cut ? " — delivering the operator's cut signal now" : " — waiting on its own exit, never a forced kill"}`
-        : `[lares] :${port} is past its grace, held by no discoverable pid${cut ? " — cut has nobody to reach" : " — waiting on its own exit, never a forced kill"}`,
+        ? `[lares] :${port} runs past its grace, still held by pid(s) ${pids.join(", ")}${cut ? " — delivering the operator's cut signal now" : " — waiting on its own exit, never a forced kill"}`
+        : `[lares] :${port} runs past its grace, held by no discoverable pid${cut ? " — cut has nobody to reach" : " — waiting on its own exit, never a forced kill"}`,
     ),
   });
   emit(args, {
@@ -182,7 +182,7 @@ export async function cmdRead(given: ParsedArgs): Promise<number> {
   // so it refuses by name rather than answering as the bare node read.
   const lens = args.positional[0];
   if (lens !== undefined && lens !== "vessel") {
-    console.error(`lares vessel read: unknown lens "${lens}" (the one lens is \`vessel\`; bare \`read\` is the node health reading)`);
+    console.error(`lares vessel read: unknown lens "${lens}" (the door answers one lens, \`vessel\`; bare \`read\` gives the node health reading)`);
     return 2;
   }
   // --palaces: the palace-organ health table (re-runnable; same registry as setup/teardown).

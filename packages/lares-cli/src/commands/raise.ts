@@ -40,7 +40,7 @@ export async function cmdRaiseSign(args: ParsedArgs): Promise<number> {
   const idxRaw = args.options["as"];
   const handleIndex = idxRaw === undefined ? 0 : Number.parseInt(idxRaw, 10);
   if (!Number.isInteger(handleIndex) || handleIndex < 0) {
-    console.error(`--as must be a non-negative integer (got "${idxRaw}")`);
+    console.error(`--as takes a non-negative integer (got "${idxRaw}")`);
     return 2;
   }
 

@@ -259,7 +259,7 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
   // `--draft <uri>` pulls a lower-bag tiddler into a writable draft: the pull rides this door, the landing rides an ACTION verb.
   if (args.flags["draft"] === true) {
     if (args.positional[0] !== undefined && (isActionVerb(args.positional[0]) || args.positional[0] === "REPACK")) {
-      console.error(`lares act --draft: "${args.positional[0]}" is an ACTION verb; --draft takes the tiddler to pull (lares act --draft <uri>)`);
+      console.error(`lares act --draft: "${args.positional[0]}" names an ACTION verb; --draft takes the tiddler to pull (lares act --draft <uri>)`);
       return 2;
     }
     return await cmdDraft(args);
@@ -268,7 +268,7 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
   if (!verbRaw) { printUsage(); return 2; }
   if (verbRaw === "REPACK") return await actRepack(args);
   if (!isActionVerb(verbRaw)) {
-    console.error(`lares act: "${verbRaw}" is not an ACTION verb`);
+    console.error(`lares act: "${verbRaw}" names no ACTION verb`);
     printUsage();
     return 2;
   }
@@ -356,7 +356,7 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
     // An unrecognized value errors rather than silently coercing to catalog (a typo would mis-place the bag).
     const planeOpt = args.options["plane"];
     if (planeOpt !== undefined && planeOpt !== "catalog" && planeOpt !== "oracle") {
-      console.error(`lares act CREATE: --plane must be "catalog" or "oracle" (got "${planeOpt}")`);
+      console.error(`lares act CREATE: --plane takes "catalog" or "oracle" (got "${planeOpt}")`);
       return 2;
     }
     const plane = planeOpt === "oracle" ? "oracle" : "catalog";

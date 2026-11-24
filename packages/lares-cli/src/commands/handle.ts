@@ -119,7 +119,7 @@ async function handleVerifyAttestation(args: ParsedArgs): Promise<number> {
 
   let parsed: unknown;
   try { parsed = JSON.parse(text); }
-  catch { return refuse(args, "the statement is not valid JSON — carry the object `lares handle attest` printed"); }
+  catch { return refuse(args, "the statement holds no JSON that parses — carry the object `lares handle attest` printed"); }
   const statement = asAttestation(parsed);
   if (!statement) {
     return refuse(args, "the statement lacks prefix · headEventCid · sig, or its claim does not read as a structured edge (a known surface + its subject) — such a statement verifies nothing");
@@ -232,7 +232,7 @@ async function handleAttest(args: ParsedArgs): Promise<number> {
   }
   const claim = handleClaimFrom(surface, subject, typeof args.options["return-locator"] === "string" ? args.options["return-locator"] : undefined);
   if (!claim) {
-    return refuse(args, `no adapter answers surface "${surface}" with subject "${subject}" — the surfaces are ${HANDLE_CLAIM_SURFACES.join(" · ")}`);
+    return refuse(args, `no adapter answers surface "${surface}" with subject "${subject}" — the surfaces it answers: ${HANDLE_CLAIM_SURFACES.join(" · ")}`);
   }
   const statement = (await storeVerb("handle-attest", { claim, ...personaOf(args) })).output["statement"] as HandleAttestation;
   // A standalone signed statement the operator carries out-of-band; a reader verifies it against the surface.
@@ -260,7 +260,7 @@ export async function cmdHandle(args: ParsedArgs): Promise<number> {
         ...(args.flags["from-persona"] === true ? { fromPersona: true } : {}),   // owner-burn (from above)
       })).output["card"] as HandleCard;
       const hand = args.flags["from-persona"] === true ? "the persona buried it from above" : "the seated key buried it";
-      console.log(`[lares handle] burned "${card.glamour}" — nym ${card.nym.slice(0, 24)}… is terminal, readers refuse it (${hand})`);
+      console.log(`[lares handle] burned "${card.glamour}" — nym ${card.nym.slice(0, 24)}… ends here, and readers refuse it (${hand})`);
       return 0;
     }
     case "verify-attestation": return await handleVerifyAttestation(args);
