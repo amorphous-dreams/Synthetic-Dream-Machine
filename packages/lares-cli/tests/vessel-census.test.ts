@@ -49,6 +49,17 @@ describe("the vessel census", () => {
     expect(c.err.join("\n")).toMatch(/2 item\(s\) rest nowhere yet/);
   });
 
+  test("V1b — a save-unnamed row reads as a held-save item naming its document, never as an unreadable shape", async () => {
+    const reading = await readCensus(lines({
+      custody: async () => ({ op: "census", held: [{ documentId: "doc-peer", refusal: "save-unnamed", saves: 3, bagId: null }], standing: "hearth" }),
+    }));
+    expect(reading.unanswered).toEqual([]);
+    expect(reading.items).toEqual([{ kind: "held-save", refusal: "save-unnamed", documentId: "doc-peer", saves: 3, bagId: null }]);
+    const c = capture();
+    await cmdCensus(args(false), lines({ custody: async () => ({ op: "census", held: [{ documentId: "doc-peer", refusal: "save-unnamed", saves: 3, bagId: null }], standing: "hearth" }) }));
+    expect(c.out.join("\n")).toContain("held-save  save-unnamed  doc doc-peer  3 save(s) in memory  bag (none mapped)  (no map or roster names this document yet; its saves wait for a name)");
+  });
+
   test("V7 — a file the checkout never tracked prints by path, an owed commit, and the census exits 3", async () => {
     const c = capture();
     const PATH = "/lar/workspaces/sdm/wikis/lares/ha.ka.ba/lares/docs/history/first-contact.mem";

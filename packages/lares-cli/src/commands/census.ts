@@ -18,6 +18,7 @@
  *
  * Meme: lar:///ha.ka.ba/lares/cli/vessel-door
  */
+import { HELD_REFUSALS } from "@lararium/mesh";
 import type { ParsedArgs } from "../parse-args.js";
 import { sendCustodyFrame, type CustodyDoorAnswer } from "../custody-door.js";
 import { askShoreCensus, type ShoreCensus } from "../shore-core.js";
@@ -74,7 +75,8 @@ const LIVE_LINES: CensusLines = {
 /** The one line a locked hearth's census answers: the cure, in the order a person runs it. */
 export const VESSEL_LOCKED_CENSUS = "vessel locked: run `lares vault unlock`, then down";
 
-const HELD_REFUSALS: ReadonlySet<string> = new Set(["save-unbooked", "save-unmapped", "save-unsealed"]);
+/** The refusals that keep a save in memory: the sealed doc store owns the list (`HELD_REFUSALS`), so a new one never drifts past this door. */
+const HELD_REFUSAL_SET: ReadonlySet<string> = new Set<string>(HELD_REFUSALS);
 
 /** Read both lines into one census. */
 export async function readCensus(lines: CensusLines = LIVE_LINES): Promise<CensusReading> {
@@ -95,7 +97,7 @@ export async function readCensus(lines: CensusLines = LIVE_LINES): Promise<Censu
     for (const row of held as Array<Record<string, unknown>>) {
       const refusal = String(row["refusal"]);
       const documentId = row["documentId"];
-      if (!HELD_REFUSALS.has(refusal) || typeof documentId !== "string") {
+      if (!HELD_REFUSAL_SET.has(refusal) || typeof documentId !== "string") {
         unanswered.push({ part: "the sealed rest", why: "a held-save row arrived in a shape this door cannot read" });
         continue;
       }
@@ -129,7 +131,11 @@ export async function readCensus(lines: CensusLines = LIVE_LINES): Promise<Censu
 
 /** One item as one printed line: kind, state, name, and where it belongs. Never a body. */
 export function censusLine(item: CensusItem): string {
-  if (item.kind === "held-save") return `held-save  ${item.refusal}  doc ${item.documentId}  ${item.saves} save(s) in memory  bag ${item.bagId ?? "(none mapped)"}`;
+  if (item.kind === "held-save") {
+    const line = `held-save  ${item.refusal}  doc ${item.documentId}  ${item.saves} save(s) in memory  bag ${item.bagId ?? "(none mapped)"}`;
+    // A peer pushed this document unasked: neither the bag map nor the clear-name roster names it, so its saves wait for a name.
+    return item.refusal === "save-unnamed" ? `${line}  (no map or roster names this document yet; its saves wait for a name)` : line;
+  }
   if (item.kind === "untracked") return `untracked  ${item.path}  bag ${item.bagId ?? "(none named)"}  island ${item.island}  (an owed commit: commit it, or remove it by hand)`;
   return `carrier  ${item.state}  ${item.uri}  bag ${item.bagId ?? "(none named)"}  island ${item.island}`;
 }
