@@ -305,3 +305,10 @@ test("F3 RED: the gates read a skipped heavy job as red, never green by absence"
   // The heavy jobs wait on Quick, so a red Quick reaches them at all.
   for (const id of ["test-cells", "witness-cells", "e2e"]) assert.match(block(id), /^ {4}needs: \[scope, quick\]$/m, `${id} never waits on quick`);
 });
+
+test("F4 RED: held-out reads the newest develop/main head alone (a newer push cancels the older run) and runs nightly", () => {
+  const text = readFileSync(join(ROOT, ".github/workflows/held-out.yml"), "utf8").replace(/^\s*#.*$/gm, "");
+  assert.match(text, /^ {2}cancel-in-progress: true$/m, "held-out lets an older head's run finish beside the newest");
+  assert.match(text, /cron: "\d+ \d+ \* \* \*"/, "held-out carries no nightly schedule");
+  assert.ok(triggers(text).includes("workflow_dispatch"));
+});
