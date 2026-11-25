@@ -112,9 +112,9 @@ describe("newEventId", () => {
     expect(ids.size).toBe(50);
   });
 
-  test("matches timestamp-rand format (base-32 with hyphen)", () => {
+  test("carries 32 base-32 digits and no clock reading", () => {
     const id = newEventId();
-    expect(id).toMatch(/^[0-9a-v]+-[0-9a-v]+$/);
+    expect(id).toMatch(/^[0-9a-v]{32}$/);
   });
 });
 

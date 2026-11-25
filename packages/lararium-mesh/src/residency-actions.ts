@@ -36,6 +36,7 @@ import {
   VERB_URI_PREFIX, SUMMONS_URI_PREFIX,
 } from "./verb-tiddler.js";
 import type { Verb } from "./verb-tiddler.js";
+import { mintRandomId } from "./entropy-door.js";
 
 // ── ACTION verb set ────────────────────────────────────────────────────────
 
@@ -343,14 +344,11 @@ export type ResidencyAction =
  * Callers MUST pass through an existing changeId when lifting a tiddler that
  * already carries one in another bag; only mint fresh on first-write or LOAD.
  *
- * Format: base-32 timestamp + 8-char random (unlike verb-tiddler.newRequestId(), which carries no
- * time prefix — a changeId names a lineage, not an attempt, and MAY legitimately sort by mint time).
+ * Format: the shared random mint (`mintRandomId`), with no clock in it: the id names a lineage, never a moment,
+ * and refuses `entropy-absent` where the platform holds no `crypto.getRandomValues`.
  */
 export function newChangeId(): string {
-  const ms = Date.now().toString(32).padStart(9, "0");
-  let rand = "";
-  for (let i = 0; i < 8; i++) rand += Math.floor(Math.random() * 32).toString(32);
-  return `${ms}-${rand}`;
+  return mintRandomId();
 }
 
 // ── Args field encoding ────────────────────────────────────────────────────
