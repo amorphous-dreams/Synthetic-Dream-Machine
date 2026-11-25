@@ -1389,7 +1389,9 @@ export const makeTiddlerRenameReactor = everyWiki("tiddler-rename", true, (opts:
       }
       // RELINK'S IMPOSSIBLES: a reference the relinkers cannot rewrite (a new title that fits no delimiter the link stands in, a `lar:///`
       // title renamed to a non-URI) is marked impossible and left stale, silently. The door asks Relink's report and refuses by name.
-      const impossible = relinkImpossibles(wiki, opts.tw5.$tw, title, to).filter((name) => !staysHome(name));
+      const impossible = relinkImpossibles(wiki, opts.tw5.$tw, title, to).filter((name) => !staysHome(name) && wiki.getTiddler(name)?.fields["plugin-type"] === undefined);
+      // A PLUGIN IS NEVER REWRITTEN: Relink marks any plugin quoting the title impossible, and no hand edits a plugin in place (it moves
+      // through a rebuild or an offering), so the cure would name nothing runnable. The plugin keeps its quote, as under the core's own relink.
       if (impossible.length > 0) {
         const open = impossible.filter(seen);
         const closed = impossible.length - open.length;

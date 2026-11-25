@@ -1080,10 +1080,17 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(JSON.stringify(out)).not.toContain("Their Secret Shelf");
     expect(wiki.tiddlerExists("Hub ]] Two")).toBe(false);
     expect(wiki.getTiddler("Prose")!.fields["text"]).toBe("see [[Hub]] here");
+    expect(wiki.getTiddler("Shelf")!.fields["list"]).toEqual(["Hub"]);
     // CONTROL: a title the links can hold renames, and the referrers follow.
     wiki.deleteTiddler("Their Secret Shelf");
     expect(await makeTiddlerRenameReactor(r.opts)({ ...A, title: "Hub", to: "Hub Two" }, ctx())).toMatchObject({ decision: "renamed", relinked: expect.arrayContaining(["Shelf", "Prose"]) });
     expect(wiki.getTiddler("Prose")!.fields["text"]).toBe("see [[Hub Two]] here");
+    // CONTROL: a plugin quoting the title never refuses (no hand edits a plugin in place; Relink never rewrites one).
+    const withPlugin = await rig({ relink: true });
+    withPlugin.engine.wiki.addTiddler({ title: "Hub", text: "the hub", ...HOME });
+    withPlugin.engine.wiki.addTiddler({ title: "Plug", "plugin-type": "plugin", tags: "[[Hub]]", ...HOME });
+    rest(withPlugin.engine.wiki, DAEMON, ["Hub"]);
+    expect(await makeTiddlerRenameReactor(withPlugin.opts)({ ...A, title: "Hub", to: "Hub ]] Two" }, ctx())).toMatchObject({ decision: "renamed" });
     // CONTROL: the offering absent, the door answers as it always did.
     const bare = await rig();
     put(bare.engine.wiki, {});
