@@ -17,7 +17,8 @@
 import { afterEach, describe, expect, test } from "vitest";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
-import { makeTw5Deserializer, nativeCarrierLanding } from "@lararium/tw5";
+import { makeTw5Deserializer } from "@lararium/tw5";
+import { nativeCarrierLanding } from "../src/native-landing.js";
 import { readCarrierAt, pointerBodyAt } from "../src/standoff-drafts.js";
 import { canonicalizeCarrierText, carrierLanding, carrierRecords } from "@lararium/tw5/carrier-canonical";
 import { contentHash } from "../src/synced-tree.js";
