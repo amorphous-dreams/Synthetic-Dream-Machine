@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 /**
- * bench-gate — the one command a spirit runs in its own bench before it hands back (ruling/2026-11-25-branches-not-prs):
- * the cheap, deterministic laws that read the SUM of lanes, run on the lane with develop merged in.
+ * bench-gate — the cheap, deterministic laws that read the SUM of lanes, run on the lane with develop merged in
+ * (ruling/2026-11-25-branches-not-prs). Since mandate/floor-gate-1 only the familiar runs it, on the floor: a tasked spirit
+ * hands back a floor ticket naming it, and the familiar runs `node tools/floor-run.mjs --ticket <id> -- node tools/bench-gate.mjs`
+ * (outside the floor lock the gate refuses with exit 64; `--list` and `--weigh` read and run anywhere).
  *
  *   node tools/bench-gate.mjs [--list] [--base <ref>]
  *   node tools/bench-gate.mjs --weigh <vitest-report-dir> [--run <id>]   (re-measure tools/unit-weights.json)
@@ -19,13 +21,14 @@
  * step runs, none short-circuits, and the last line carries ONE verdict with the wall time, the line a hand-back quotes:
  *   BENCH GATE GREEN at <sha> over develop <sha> · <n> steps · <s> s
  *   BENCH GATE REFUSES: <step> (exit n), ... · <s> s           (exit 1; a usage fault exits 2)
- * It stands as a spirit's own step, never a git hook.
+ * It stands as the familiar's step on the floor, never a git hook.
  */
 import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { TEST_CELLS } from "./ci-cells.mjs";
+import { requireFloor } from "./floor-lock.mjs";
 
 export const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 export const WEIGHTS_FILE = join(ROOT, "tools/unit-weights.json");
@@ -207,6 +210,9 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     for (const s of steps) console.log(s.check ? `${s.name}: HEAD holds ${base}` : `${s.name}: ${s.cmd} ${s.args.length > 8 ? `${s.args.slice(0, 4).join(" ")} … (${s.args.length - 4} more)` : s.args.join(" ")} (in ${s.cwd})`);
     process.exit(0);
   }
+  // THE FLOOR (mandate/floor-gate-1): the gate builds and tests, so it runs only inside the one floor lock; the familiar runs
+  // it through `node tools/floor-run.mjs -- node tools/bench-gate.mjs`, and a tasked spirit hands that line back.
+  requireFloor("bench-gate.mjs", args);
   const head = git(["rev-parse", "--short", "HEAD"]).stdout.trim();
   const r = runGate(steps, (s) => (s.check ? checkDevelop(base) : exec(s)), console.log, { head, base: git(["rev-parse", "--short", base]).stdout.trim() });
   process.exit(r.code);

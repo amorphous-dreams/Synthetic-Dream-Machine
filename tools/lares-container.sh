@@ -1056,6 +1056,34 @@ prune_rev_tags() {
     else printf 'lares-container: %s:%s could not prune; it stands\n' "$IMAGE_REPO" "$p_tag" >&2; fi
   done
 }
+# THE FLOOR TAKES IMAGE BUILDS TOO (mandate/floor-gate-1, operator Q4). An image build writes as much as a test battery (the
+# box's docker held ~54G, 22G of it build cache, the night the VHD died), so it holds the one floor lock (tools/battery.sh's,
+# one slot, first come) for the build, and queues behind a run that holds it. A build already inside the held floor (a
+# kukulu run under tools/floor-run.mjs) runs on: tools/floor-lock.mjs reads an ancestor's lock off the kernel's table. With
+# no host node to read the table, it takes the lock outright. After each build the build CACHE prunes (`docker builder prune
+# --all`): cache only, never an image, so the kept revision tags still back `lares rite kukulu --rollback`.
+FLOOR_TAKEN=""
+floor_take() {
+  f_lock=$(bash "$HERE/battery.sh" --lock-path 2>/dev/null) || f_lock=""
+  [ -n "$f_lock" ] || die "build refuses: the floor lock reads nowhere (bash $HERE/battery.sh --lock-path failed); set an absolute LARES_BATTERY_LOCK"
+  if [ -e "$f_lock" ] && command -v node >/dev/null 2>&1 && node "$HERE/floor-lock.mjs" --held >/dev/null 2>&1; then
+    printf 'lares-container: the floor already stands held by this run; the image builds inside it\n' >&2; return 0
+  fi
+  { exec 8>"$f_lock"; } 2>/dev/null || die "build refuses: the floor lock $f_lock cannot open here; an image builds only on the floor"
+  printf 'lares-container: waiting for the floor (%s)\n' "$f_lock" >&2
+  flock 8 || die "build refuses: flock failed on $f_lock"
+  FLOOR_TAKEN=1
+  printf 'lares-container: holding the floor for the image build\n' >&2
+}
+floor_give() {
+  [ -n "$FLOOR_TAKEN" ] || return 0
+  exec 8>&-
+  FLOOR_TAKEN=""
+}
+prune_build_cache() {
+  if docker builder prune --all --force >/dev/null 2>&1; then printf 'lares-container: the build cache pruned (cache only; every image stands)\n' >&2
+  else printf 'lares-container: the build cache could not prune; it stands\n' >&2; fi
+}
 build_image() { # $1 = the revision; the rest = compose-build args
   b_at=$1; shift
   [ -n "$GIT_REV" ] || die "build refuses: no git checkout answers at $SHIM_DIR, so the image's revision label would name no commit; build from a checkout"
@@ -1107,7 +1135,10 @@ EOF
   tag_outgoing
   printf 'lares-container: building the vessel image (every package) from commit %s\n' "$b_short" >&2
   if [ -n "$ENV_ARGS" ]; then b_envf=$ENV_FILE; else b_envf=/dev/null; fi
+  floor_take
   if docker compose --env-file "$b_envf" -f "$COMPOSE_FILE_PATH" -f "$b_ov" build "$@" lares; then b_rc=0; else b_rc=$?; fi
+  prune_build_cache
+  floor_give
   rm -rf -- "$b_ctx" "$b_ov"
   [ "$b_rc" -eq 0 ] || die "the build failed (above); $IMAGE_REF stands as it stood"
   BUILT_REV=$b_rev
