@@ -130,7 +130,7 @@ export function shoreLogKey(kind: string, subject: string): string {
 export const shoreLogTitle = (key: string): string => `${SHORE_LOG_PREFIX}${key}`;
 
 /** A record as tiddler fields: every value a string, as the wiki keeps them. */
-export function shoreLogFields(rec: ShoreLogRecord): Record<string, string> {
+export function shoreLogFields(rec: ShoreLogRecord): Record<string, string> & { readonly title: string } {
   return {
     title: shoreLogTitle(rec.key),
     tags: `[[${SHORE_LOG_TAG}]]`,
@@ -203,7 +203,8 @@ export function closingSlice(lines: Iterable<string>): ShoreLogRecord[] {
 export interface ShoreLogRingOptions {
   readonly boot: string;
   readonly capacity?: number;
-  /** The annotation clock; never an order. */
+  /** The annotation stamp (`first-at` / `last-at`), handed in by the vessel's own clock seam; never an order, never a key.
+   *  Absent: the records carry no stamp, and this module reads no clock. */
   readonly now?: () => string;
 }
 
@@ -224,7 +225,7 @@ export class ShoreLogRing {
   constructor(opts: ShoreLogRingOptions) {
     this.boot = opts.boot;
     this.capacity = Math.max(2, opts.capacity ?? SHORE_LOG_CAPACITY);
-    this.#now = opts.now ?? (() => new Date().toISOString());
+    this.#now = opts.now ?? (() => "");
   }
 
   /** The last seq this ring minted. */

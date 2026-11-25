@@ -219,7 +219,7 @@ describe("the tap", () => {
     writeFileSync(blocked, "");
     const sink = openVesselLogSink({ runDir: blocked, boot: "b", yieldHost: handHost().yieldHost });
     const placed: number[] = [];
-    sink.attach((r) => placed.push(r.length));
+    sink.attach((r) => { placed.push(r.length); });
     sink.take(UNSEALED); sink.flush();
     expect(placed).toEqual([1]);
     expect(existsSync(join(blocked, VESSEL_LIVE_LOG))).toBe(false);
