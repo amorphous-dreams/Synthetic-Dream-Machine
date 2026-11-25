@@ -3,8 +3,13 @@
   "unbaked": [
     {
       "source": "packages/lararium-tw5/plugins/lares-lararium.json",
-      "sha256": "560dce01cff831359dee79f211f344898716b51a5b3010690fcc73819d1c2c33",
-      "why": "The door-gradient lane (the door bands, the oracle's asking and seed door), the family-turn-settle lane (the clock sweeper: a held family turn waits on its settle and answers owed, never on a timer), the in-flight backstop lane (a framed root edited during a held placement places again on settle), and the fold (the filter module lar:///ha.ka.ba/lararium/tw5/filters/meme-fold with the meme-fold and spirit-fold operators, the macro lar:///ha.ka.ba/lararium/tw5/macros/spirit-unfold and the code-meme lar:///ha.ka.ba/lararium/tw5/heleuma/meme-fold) re-pack the house skin. The next labelled GENESIS RE-BAKE carries these bytes and deletes this row; a standing house folds once it adopts that house skin, and until then lares spirit om and hum read unfolded and name the read that shows the absent fold."
+      "sha256": "18a09bbe150ebf6e1497ea0ba681c1c92218371d5e318314e387ce63312f7220",
+      "why": "The door-gradient lane (the door bands, the oracle's asking and seed door), the family-turn-settle lane (the clock sweeper: a held family turn waits on its settle and answers owed, never on a timer), the in-flight backstop lane (a framed root edited during a held placement places again on settle), and the fold (the filter module lar:///ha.ka.ba/lararium/tw5/filters/meme-fold with the meme-fold and spirit-fold operators, the macro lar:///ha.ka.ba/lararium/tw5/macros/spirit-unfold and the code-meme lar:///ha.ka.ba/lararium/tw5/heleuma/meme-fold), and the projection preference (the shipped `$:/config/lares/ProjectionFilter` withholds TW5's status prefix and the story and history lists) re-pack the house skin. The next labelled GENESIS RE-BAKE carries these bytes and deletes this row; a standing house folds once it adopts that house skin, and until then lares spirit om and hum read unfolded and name the read that shows the absent fold."
+    },
+    {
+      "source": "packages/lararium-tw5/plugins/lares-memetic-wikitext.json",
+      "sha256": "676da89d48e608265359ce4a32427029dd9646c1bc8db51248e02735bdfe3c17",
+      "why": "The projection preference: the grammar-cache module carries the shipped `$:/config/lares/ProjectionFilter` base text, which now withholds TW5's status prefix and the story and history lists (UI navigation state, as TW5's own SaverFilter keeps them unsaved). The next labelled GENESIS RE-BAKE carries these bytes and deletes this row; until then a founded vessel's in-VM wiki reads the earlier base, and the daemon-side projector reads the new one from dist."
     }
   ]
 }
