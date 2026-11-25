@@ -63,6 +63,20 @@ async function plantPulamaTree(root) {
   await put("packages/lararium-mesh/src/index.ts", "export const m = 2;\n");
   await put("packages/lararium-web/package.json", '{"name":"@lararium/web"}\n');
   await put("packages/lararium-web/src/index.ts", "export const w = 3;\n");
+  // THE LOCAL WITNESS (ruling 2026-11-25-web2-annotates): a planted bench gate that names its call and writes the verdict a test
+  // scripts (FAKE_BENCH green · red · none), over the tree it runs in, as `node tools/bench-gate.mjs --verdict <file>` does.
+  await put("tools/bench-gate.mjs", `import { appendFileSync, writeFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+const a = process.argv.slice(2);
+appendFileSync(process.env.CALL_LOG, "BENCH " + a.join(" ") + "\\n");
+const how = process.env.FAKE_BENCH ?? "green";
+const git = (r) => execFileSync("git", ["rev-parse", r], { encoding: "utf8" }).trim();
+const code = how === "red" ? 1 : 0;
+const line = code ? "BENCH GATE REFUSES: build (exit 1) · 4 s" : "BENCH GATE GREEN at " + git("HEAD").slice(0, 9) + " over develop - · 4 steps · 4 s";
+if (how !== "none") writeFileSync(a[a.indexOf("--verdict") + 1], JSON.stringify({ kind: "lares-bench-verdict", v: 1, rev: git("HEAD"), tree: git("HEAD^{tree}"), code, line, steps: [{ name: "build", code, secs: 4 }], secs: 4 }));
+console.log(line);
+process.exit(code);
+`);
 }
 
 async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, checkout, wornFace, keepSeat, houseFiles = {}, viaHarnessShell = false, rawSeat = false, hostInput, input, refuseInput = false, hostName = "host.mem", hostSibling, fifo = false, hostCwd = false, origin = false, sync, readFiles = [] } = {}) {
@@ -146,7 +160,7 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
     await writeFile(join(dir, "pnpm"), `#!/bin/sh\nprintf 'PNPM %s\\n' "$*" >> "$CALL_LOG"\nexit "\${FAKE_PNPM_RC:-0}"\n`);
     await chmod(join(dir, "pnpm"), 0o755);
     // THE CI READ (the keeper lei's spend): gh answers the `--jq` line a test scripts, `<run id>:<status>:<conclusion>`.
-    await writeFile(join(dir, "gh"), `#!/bin/sh\nprintf 'GH %s\\n' "$*" >> "$CALL_LOG"\nprintf '%s\\n' "\${FAKE_GH_RUN:-}"\nexit "\${FAKE_GH_RC:-0}"\n`);
+    await writeFile(join(dir, "gh"), `#!/bin/sh\n[ -z "\${FAKE_NO_GH:-}" ] || exit 127\nprintf 'GH %s\\n' "$*" >> "$CALL_LOG"\nprintf '%s\\n' "\${FAKE_GH_RUN:-}"\nexit "\${FAKE_GH_RC:-0}"\n`);
     await chmod(join(dir, "gh"), 0o755);
     const compose = join(dir, "docker-compose.surface.yml");
     await writeFile(compose, "services: {}\n");
@@ -172,6 +186,10 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       await writeFile(script, await readFile(shim, "utf8"));
       // The closure reader rides beside the shim, as it does in the checkout.
       await writeFile(join(repo, "tools", "pulama-closure.mjs"), await readFile(join(ROOT, "tools", "pulama-closure.mjs"), "utf8"));
+      // THE FLOOR rides beside the shim too (mandate/floor-gate-1): an image build takes the floor lock through battery.sh's
+      // lock path and floor-lock's ancestor read, as it does in the checkout.
+      await writeFile(join(repo, "tools", "battery.sh"), await readFile(join(ROOT, "tools", "battery.sh"), "utf8"));
+      await writeFile(join(repo, "tools", "floor-lock.mjs"), await readFile(join(ROOT, "tools", "floor-lock.mjs"), "utf8"));
       // "pulama": a clean checkout that carries a pūlama entry, so a build reads its code closure.
       if (checkout === "pulama") await plantPulamaTree(repo);
       gitEnv.GIT_CEILING_DIRECTORIES = dir;
@@ -213,7 +231,9 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
     const cmd0 = viaHarnessShell ? ["sh", ["-c", 'env -u CLAUDECODE "$0" "$@"; true', direct[0], ...direct[1]]] : direct;
     // A standing vessel answers a steady verdict unless a test scripts another answer.
     const steady = '{"data":{"standing":{"act":"attach","reason":"steady"}}}';
-    const base = { PATH: `${dir}:${process.env.PATH}`, CALL_LOG: log, HOME: home, LARES_COMPOSE_FILE: compose, FAKE_OBSERVE_OUTPUT: steady, ...gitEnv };
+    // Each run's floor lock stands in its own scratch dir: a build never queues on the box's real floor (a suite run under
+    // floor-run holds it, and a run in a fresh pid namespace cannot see that ancestor, so it would wait forever).
+    const base = { PATH: `${dir}:${process.env.PATH}`, CALL_LOG: log, HOME: home, LARES_COMPOSE_FILE: compose, FAKE_OBSERVE_OUTPUT: steady, LARES_BATTERY_LOCK: join(dir, "floor.lock"), ...gitEnv };
     // `@HEAD@` (and `@HEAD12@`, its first twelve) in an env value names the scratch checkout's own HEAD.
     const head = checkout && checkout !== "none" ? spawnSync("git", ["-C", join(dir, "repo"), "rev-parse", "HEAD"], { encoding: "utf8" }).stdout.trim() : "";
     const filled = Object.fromEntries(Object.entries(env).map(([k, v]) => [k, typeof v === "string" ? fill(v).replaceAll("@HEAD12@", head.slice(0, 12)).replaceAll("@HEAD@", head) : v]));
@@ -1368,6 +1388,22 @@ for (const [name, shim] of shims) {
     assert.match(failed.stderr, /the host CLI build failed \(above\); the image stands built from \w{12}/);
   });
 
+  // THE FLOOR TAKES IMAGE BUILDS (mandate/floor-gate-1). RED-FIRST: written by floor-warden#2, run by the familiar.
+  if (name === "sh") test(`${name}: build holds the floor lock around the compose build and prunes the build cache after; an unopenable lock refuses and builds nothing`, async () => {
+    const held = await run(shim, ["build"], { env: MOUNTS, checkout: "clean" });
+    assert.equal(held.status, 0, held.stderr);
+    assert.match(held.stderr, /holding the floor for the image build/);
+    assert.match(held.calls, /builder prune --all --force/);
+    assert.doesNotMatch(held.calls, /(^|\s)(rmi|image prune|system prune)(\s|$)/m);
+    const walled = await run(shim, ["build"], { env: { ...MOUNTS, LARES_BATTERY_LOCK: "/nonexistent-floor-dir/floor.lock" }, checkout: "clean" });
+    assert.notEqual(walled.status, 0);
+    assert.match(walled.stderr, /build refuses: the floor lock \/nonexistent-floor-dir\/floor\.lock cannot open here/);
+    assert.doesNotMatch(walled.calls, /GIT_REV=/, "no compose build ran unlocked");
+    // The refusal names itself under a POSIX sh: a failing `exec 8>` redirection there exits the shell silent, so the shim
+    // probes the open in a subshell first (the 2026-11-25 red: dash died at the exec and printed nothing).
+    assert.doesNotMatch(walled.stderr, /holding the floor/);
+  });
+
   // L4 (RD3): THE OUTGOING IMAGE KEEPS A REVISION TAG, and the newest three revision tags stand; the rest prune.
   test(`${name}: build tags the outgoing image lares-surface:rev-<short rev> before it moves the tag; an unlabeled one by its id; none standing tags nothing`, async () => {
     const labeled = await run(shim, ["build"], { env: { ...MOUNTS, FAKE_OUTGOING_REV: "0123456789abcdef0123456789abcdef01234567" }, checkout: "clean" });
@@ -2295,7 +2331,7 @@ test(`${name}: pulama-name-successor-reads-a-terminal: with no terminal the succ
   assert.equal(land.status, 0, land.stderr);
   assert.match(land.calls, /exec -T pulama node \S+ keeper-land/);
 });
-test(`${name}: RED name-successor-lei-guards-the-spend: with no terminal and no route, a revision unreachable from origin/develop, an image label that differs from D′, a red CI run and a face of two devices each refuse by name and send nothing to the pūlama; a green one sends one name-successor-lei frame naming D′, the branch whose kukulu lei licenses it, the revision, the run and one device`, { skip: skip || shim !== SH }, async () => {
+test(`${name}: RED name-successor-lei-guards-the-spend: with no terminal and no route, a revision unreachable from origin/develop, an image label that differs from D′, a face of two devices, and a missing or red LOCAL bench verdict each refuse by name and send nothing to the pūlama; a green one sends one name-successor-lei frame naming D′, the branch, the revision, the verdict the host ran over that tree, the CI run as annotation and one device`, { skip: skip || shim !== SH }, async () => {
   const LEI = { ...REBUILT, FAKE_INTENT_SHOW: '{"devices":1}', FAKE_GH_RUN: "77:completed:success" };
   const spend = (env, origin = true) => run(shim, ["pulama", "name-successor", "--lei", "HEAD", "develop"], { envFile: PULAMA_ENV, checkout: "pulama", origin, env: { ...LEI, ...env } });
   const quiet = (r) => assert.doesNotMatch(r.calls, /name-successor-lei/);
@@ -2308,21 +2344,50 @@ test(`${name}: RED name-successor-lei-guards-the-spend: with no terminal and no 
   const d = label.stderr.match(/reads (sha256:[0-9a-f]{64}) \(keeper-lei-image-differs\)/)?.[1];
   assert.ok(d, label.stderr);
   quiet(label);
-  const red = await spend({ FAKE_IMAGE_CLOSURE: d, FAKE_GH_RUN: "77:completed:failure" });
-  assert.notEqual(red.status, 0);
-  assert.match(red.stderr, /reads 77:completed:failure \(keeper-lei-ci-red\)[\s\S]*gh run list --commit [0-9a-f]{40} --workflow CI/);
-  assert.match(red.calls, /GH run list --commit [0-9a-f]{40} --workflow CI --event push/);
-  quiet(red);
+  // THE CHEAP GUARDS RUN FIRST: a face of two devices refuses before the bench gate runs at all.
   const two = await spend({ FAKE_IMAGE_CLOSURE: d, FAKE_INTENT_SHOW: '{"devices":2}' });
   assert.notEqual(two.status, 0);
   assert.match(two.stderr, /\(keeper-lei-cosign-owed\)[\s\S]*lares pulama name-successor/);
+  assert.doesNotMatch(two.calls, /^BENCH /m);
   quiet(two);
+  // THE LOCAL WITNESS DECIDES: a red verdict over the very tree refuses by name, quoting its line and the cure.
+  const red = await spend({ FAKE_IMAGE_CLOSURE: d, FAKE_BENCH: "red" });
+  assert.notEqual(red.status, 0);
+  assert.match(red.calls, /^BENCH --verdict \S+\/cache\/bench\/[0-9a-f]{40}\.json$/m);
+  assert.match(red.stderr.replace(/\s+/g, " "), /BENCH GATE REFUSES: build \(exit 1\)[\s\S]*\(keeper-lei-bench-red\)[\s\S]*lares rite kukulu again/);
+  quiet(red);
+  const none = await spend({ FAKE_IMAGE_CLOSURE: d, FAKE_BENCH: "none" });
+  assert.notEqual(none.status, 0);
+  assert.match(none.stderr.replace(/\s+/g, " "), /\(keeper-lei-bench-unread\)[\s\S]*node tools\/bench-gate\.mjs --verdict/);
+  quiet(none);
   const green = await spend({ FAKE_IMAGE_CLOSURE: d });
   assert.equal(green.status, 0, green.stderr);
   const frame = green.calls.match(/exec -T pulama node \S+ name-successor-lei (\{.*\})/)?.[1];
   assert.ok(frame, green.calls);
-  assert.deepEqual({ ...JSON.parse(frame), rev: "r", tree: "t" }, { next: d, branch: "develop", rev: "r", tree: "t", recheck: "same", image: d, ci: "77:success", devices: 1 });
-  assert.match(JSON.parse(frame).rev, /^[0-9a-f]{40}$/);
+  const f = JSON.parse(frame);
+  assert.deepEqual({ ...f, rev: "r", tree: "t", bench: "v" }, { next: d, branch: "develop", rev: "r", tree: "t", recheck: "same", image: d, bench: "v", ci: "77:completed:success", devices: 1 });
+  assert.match(f.rev, /^[0-9a-f]{40}$/);
+  assert.deepEqual({ kind: f.bench.kind, rev: f.bench.rev, tree: f.bench.tree, code: f.bench.code }, { kind: "lares-bench-verdict", rev: f.rev, tree: f.tree, code: 0 });
+  assert.match(green.stderr, /bench verdict sha256:[0-9a-f]{64} green/);
+});
+test(`${name}: RED web2-annotates-never-decides (ruling 2026-11-25): a red CI run prints loudly and still sends the frame, an unreachable gh reads unread and blocks nothing, and no gh on the PATH blocks nothing; the local verdict alone decides`, { skip: skip || shim !== SH }, async () => {
+  const LEI = { ...REBUILT, FAKE_INTENT_SHOW: '{"devices":1}' };
+  const first = await run(shim, ["pulama", "name-successor", "--lei", "HEAD", "develop"], { envFile: PULAMA_ENV, checkout: "pulama", origin: true, env: { ...LEI, FAKE_IMAGE_CLOSURE: CL("b") } });
+  const d = first.stderr.match(/reads (sha256:[0-9a-f]{64}) \(keeper-lei-image-differs\)/)?.[1];
+  assert.ok(d, first.stderr);
+  const frameOf = (r) => JSON.parse(r.calls.match(/exec -T pulama node \S+ name-successor-lei (\{.*\})/)?.[1] ?? "null");
+  const spend = (env) => run(shim, ["pulama", "name-successor", "--lei", "HEAD", "develop"], { envFile: PULAMA_ENV, checkout: "pulama", origin: true, env: { ...LEI, FAKE_IMAGE_CLOSURE: d, ...env } });
+  const redCi = await spend({ FAKE_GH_RUN: "77:completed:failure" });
+  assert.equal(redCi.status, 0, redCi.stderr);
+  assert.match(redCi.stderr, /CI RED[\s\S]*77:completed:failure[\s\S]*annotation, never a gate/);
+  assert.equal(frameOf(redCi)?.ci, "77:completed:failure");
+  const down = await spend({ FAKE_GH_RC: "1", FAKE_GH_RUN: "" });
+  assert.equal(down.status, 0, down.stderr);
+  assert.equal(frameOf(down)?.ci, "unread");
+  const noGh = await spend({ FAKE_NO_GH: "1" });
+  assert.equal(noGh.status, 0, noGh.stderr);
+  assert.equal(frameOf(noGh)?.ci, "unread");
+  assert.doesNotMatch(noGh.calls, /^GH /m);
 });
 test(`${name}: RED name-successor-lei-stays-internal: the rite's own step refuses a person at a terminal and names the rite; nothing reaches the pūlama`, { skip: skip || shim !== SH || !haveScript }, async () => {
   const r = await run(shim, ["pulama", "name-successor", "--lei", "HEAD", "develop"], { envFile: PULAMA_ENV, checkout: "pulama", origin: true, tty: "", env: { ...REBUILT } });

@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { PACKAGES, ROOT, SWIFT_SECONDS, VESSEL, plan, readWeights, runGate, tiers, touchedPackages, weigh } from "./bench-gate.mjs";
+import { PACKAGES, ROOT, SWIFT_SECONDS, VERDICT_KIND, VESSEL, plan, readWeights, runGate, tiers, touchedPackages, verdictOf, weigh } from "./bench-gate.mjs";
 
 test("RED: a red step refuses by name and the later steps still run; CONTROL: all ok reads one green verdict line", () => {
   const ran = [];
@@ -74,4 +74,24 @@ test("witnesses-fast carries the typecheck and the tests ratchet, so the gate ru
   const r = spawnSync("bash", ["tools/witness-all.sh", "--fast", "--list"], { cwd: ROOT, encoding: "utf8" });
   assert.equal(r.status, 0, r.stderr);
   for (const w of ["typecheck-witness", "typecheck-tests-witness"]) assert.match(r.stdout, new RegExp(`^\\s*${w}\\b`, "m"), `witness-all --fast leaves ${w} out`);
+});
+
+// THE KEEPER'S LOCAL WITNESS (ruling 2026-11-25-web2-annotates): `--verdict <file>` runs the gate over the exact tree the kūkulu built
+// and writes one verdict document the keeper names by hash. No fetch decides it: the tree IS the sum the image carries.
+test("RED verdict mode: the plan holds no merge-develop (no network decides), every other fixed step stands; runGate names each step's exit", () => {
+  const steps = plan({ touched: [], verdict: true });
+  assert.deepEqual(steps.slice(0, 4).map((s) => s.name), ["build", "witnesses-fast", "carrier-pins", "tool-tests"]);
+  assert.ok(!steps.some((s) => s.check), "a verdict run fetches nothing");
+  const r = runGate([{ name: "a" }, { name: "b" }], (s) => (s.name === "b" ? 2 : 0), () => {}, { head: "abc", clock: (() => { let t = 0; return () => (t += 1000); })() });
+  assert.deepEqual(r.steps.map(({ name, code }) => ({ name, code })), [{ name: "a", code: 0 }, { name: "b", code: 2 }]);
+  assert.ok(r.steps.every((s) => typeof s.secs === "number"));
+  assert.ok(Number.isFinite(r.secs));
+});
+
+test("RED verdictOf: one document over the revision and its tree, the gate's exit and line, each step's exit; a malformed revision throws", () => {
+  const rev = "a".repeat(40), tree = "b".repeat(40);
+  const green = verdictOf({ code: 0, line: "BENCH GATE GREEN at aaaaaaa over develop - · 2 steps · 3 s", steps: [{ name: "build", code: 0, secs: 1 }], secs: 3 }, { rev, tree });
+  assert.deepEqual(green, { kind: VERDICT_KIND, v: 1, rev, tree, code: 0, line: "BENCH GATE GREEN at aaaaaaa over develop - · 2 steps · 3 s", steps: [{ name: "build", code: 0, secs: 1 }], secs: 3 });
+  assert.deepEqual(Object.keys(green), ["kind", "v", "rev", "tree", "code", "line", "steps", "secs"], "the key order the keeper hashes stays fixed");
+  assert.throws(() => verdictOf({ code: 0, line: "", steps: [], secs: 0 }, { rev: "HEAD", tree }), /40 hex/);
 });

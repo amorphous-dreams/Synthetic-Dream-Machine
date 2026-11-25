@@ -1,0 +1,30 @@
+title: lar:///ha.ka.ba/lararium/tw5/floor/page
+type: text/vnd.tiddlywiki
+caption: Test floor
+
+\whitespace trim
+\procedure ledger() lar:///ha.ka.ba/kahua/memory/state/test-floor
+\procedure rows(view)
+<$list filter="[<ledger>floor-queue<view>]" emptyMessage="<em>none</em>">
+<div class="lar-floor-row"><code><$text text=<<currentTiddler>>/></code></div>
+</$list>
+\end
+
+<p>One heavy run at a time on this box; only the familiar holds the floor (operator, 2026-11-25). Tasked spirits hand back a floor ticket; the familiar runs it through <code>node tools/floor-run.mjs --ticket &lt;id&gt; -- &lt;command&gt;</code>. The ledger: <$link to=<<ledger>>><$text text=<<ledger>>/></$link>.</p>
+
+<h3>On the floor</h3>
+<<rows view:"taken">>
+
+<h3>Waiting (arrival order)</h3>
+<$list filter="[<ledger>floor-queue[waiting]]" variable="ticket" emptyMessage="<em>the queue stands empty</em>">
+<pre><$text text={{{ [<ledger>floor-queue[ticket],<ticket>] }}}/></pre>
+</$list>
+
+<h3>Covered by a green sha (drop unrun)</h3>
+<<rows view:"skip">>
+
+<h3>Verdicts and bytes</h3>
+<<rows view:"budget">>
+
+<h3>Dropped</h3>
+<<rows view:"dropped">>
