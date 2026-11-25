@@ -69,7 +69,7 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
   const dir = await mkdtemp(join(tmpdir(), "lares-container-"));
   try {
     const log = join(dir, "calls.log");
-    await writeFile(join(dir, "docker"), `#!/bin/sh\nprintf '%s\\n' "$*" >> "$CALL_LOG"\n[ -z "\${LAR_KUKULU_OFFER:-}" ] || printf 'LAR_KUKULU_OFFER=%s\\n' "$LAR_KUKULU_OFFER" >> "$CALL_LOG"\n` +
+    await writeFile(join(dir, "docker"), `#!/bin/sh\nprintf '%s\\n' "$*" >> "$CALL_LOG"\n[ -z "\${LAR_KUKULU_OFFER:-}" ] || printf 'LAR_KUKULU_OFFER=%s\\n' "$LAR_KUKULU_OFFER" >> "$CALL_LOG"\n[ -z "\${LAR_WORN_FACE:-}" ] || printf 'LAR_WORN_FACE=%s\\n' "$LAR_WORN_FACE" >> "$CALL_LOG"\n` +
       `for a in "$@"; do case "$a" in -f) :;; *override*|/tmp/*) [ -f "$a" ] && cat "$a" >> "$CALL_LOG";; esac; done\n` +
       `case " $* " in *" down --remove-orphans"*|*" stop "*lares*) : > "$CALL_LOG.down";; esac\n` +
       `case " $* " in *" ps -q --status running lares "*) printf '%s' "\${FAKE_RUNNING_ID:-}"; exit "\${FAKE_PS_RC:-0}";; esac\n` +
@@ -1923,7 +1923,7 @@ test(`${name}: CONTROL a house without LARES_PULAMA stands the vessel alone, and
 test(`${name}: pulama-follows-the-house: the env file's LARES_PULAMA=1 names its own house's pūlama, so a LARES_HOUSE naming another house stands that vessel alone and says so; CONTROL the env file's own house stands with its pūlama, and LARES_PULAMA in the environment speaks for any house`, { skip }, async () => {
   const other = await run(shim, ["up"], { envFile: PULAMA_ENV, env: { LARES_HOUSE: "@HOUSE@-next", FAKE_IMAGE_ID: "sha256:abc123" } });
   assert.equal(other.status, 0, other.stderr);
-  assert.doesNotMatch(other.calls, /pulama|LAR_PULAMA_SOCKET|LAR_KUKULU_OFFER/);
+  assert.doesNotMatch(other.calls, /pulama|LAR_PULAMA_SOCKET|LAR_KUKULU_OFFER|LAR_WORN_FACE/);
   assert.match(other.stderr, /LARES_PULAMA=1 in .* names the pūlama of .*; this house \(.*-next\) holds its own custody/);
   const own = await run(shim, ["up"], { envFile: PULAMA_ENV, env: { FAKE_IMAGE_ID: "sha256:abc123" } });
   assert.equal(own.status, 0, own.stderr);
@@ -1936,6 +1936,16 @@ test(`${name}: kukulu-offer-path: pulama mode hands the vessel the offer file's 
     const r = await run(shim, ["up"], { envFile: PULAMA_ENV, env: { FAKE_IMAGE_ID: "sha256:abc123" } });
     assert.equal(r.status, 0, r.stderr);
     assert.match(r.calls, /LAR_KUKULU_OFFER=\/lar\/config\/kukulu-offer\.json/);
+  });
+  // ONE COMPOSITION PER RAISE: the vessel reads the house's remembered face through the config bind and wears it from its
+  // first composition where the pūlama forgot it, so the census reads it worn and the shim sends no second wear.
+  test(`${name}: worn-face-path: pulama mode hands the vessel config/last-worn-face's path inside the config bind; a raise whose census reads the face worn sends no wear`, { skip }, async () => {
+    const r = await run(shim, ["up"], { envFile: PULAMA_ENV, wornFace: 1, env: { FAKE_IMAGE_ID: "sha256:abc123" } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.calls, /LAR_WORN_FACE=\/lar\/config\/last-worn-face/);
+    const worn = await run(shim, ["up"], { envFile: PULAMA_ENV, wornFace: 1, env: { FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: KEY_HELD, FAKE_CENSUS_JSON: WORN_JSON } });
+    assert.equal(worn.status, 0, worn.stderr);
+    assert.doesNotMatch(worn.calls, / wear \d+(?: --yes)?$/m);
   });
   test(`${name}: down-leaves-pulama-standing: with a pūlama running, down stops and removes the vessel alone`, { skip }, async () => {
   const r = await run(shim, ["down"], { envFile: PULAMA_ENV, env: { FAKE_PULAMA_ID: "p1" } });

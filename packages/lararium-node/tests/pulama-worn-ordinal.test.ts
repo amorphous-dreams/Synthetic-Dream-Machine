@@ -45,15 +45,16 @@ async function standThree(lent: { now: number[] }, dark: number[] = []) {
 }
 
 /** One vessel boot: a fresh process (no mount named), a holder seated over a new channel, the stand-by's one boot dial. */
-async function boot(refuseOn?: number) {
+async function boot(refuseOn?: number, house?: { worn?: number }) {
   setMountedFace(undefined);
   const vessel = fx!.vessel();
   seatCustody(vessel);
   seated = vessel;
   const lines: string[] = [];
-  const recompose = async (sovereign: boolean) => (sovereign && refuseOn !== undefined && mountedFaceOrdinal() === refuseOn
+  const composed: (number | undefined)[] = [];
+  const recompose = async (sovereign: boolean) => (composed.push(sovereign ? mountedFaceOrdinal() : -1), sovereign && refuseOn !== undefined && mountedFaceOrdinal() === refuseOn
     ? { standing: "herm", refused: `h${refuseOn} would not stand` } : { standing: sovereign ? "hearth" : "herm" });
-  const by = pulamaStandBy({ holder: vessel, recompose, onLog: (l) => lines.push(l) });
+  const by = pulamaStandBy({ holder: vessel, recompose, onLog: (l) => lines.push(l), ...(house ? { houseWorn: () => house.worn } : {}) });
   expect(await by.dial()).toEqual({ session: true, waits: null });
   const door = custodyFrameHandler({
     holder: vessel, testScratch: false, standing: () => "hearth", recompose, onLog: (l) => lines.push(l),
@@ -63,17 +64,66 @@ async function boot(refuseOn?: number) {
     const sock = Object.assign(new EventEmitter(), { end: (line: string) => resolve(JSON.parse(line) as Record<string, unknown>) }) as unknown as Socket;
     expect(door(frame, sock)).toBe(true);
   });
-  return { vessel, lines, send };
+  return { vessel, lines, send, composed };
 }
 
 /** Docker restarts the vessel: its process ends (the channel closes), and a new one boots. */
-async function restart(refuseOn?: number) {
+async function restart(refuseOn?: number, house?: { worn?: number }) {
   if (seated) { unseatCustody(seated); await seated.lock(); seated = null; }
-  return boot(refuseOn);
+  return boot(refuseOn, house);
 }
 
 /** Every line the vessels sent that names the worn op. */
 const wornLines = (): string[] => fx!.lines.fromVessel.filter((l) => l.includes("face.worn"));
+
+describe("RED one-composition-per-raise: a raise whose pūlama forgot the worn face composes once, on the face the house remembers", () => {
+  // A kūkulu that restands (or relights) the pūlama clears its memory, while the house keeps the face last worn
+  // (`config/last-worn-face`, named to the vessel by `LAR_WORN_FACE`). Before: the boot dial composed on the lowest face
+  // served, then the shim's wear tore that down and composed again worn (perf-pass-1 sink 1, ~2m50s per kūkulu).
+  test("the house remembers h1 and the pūlama nothing: the boot dial composes ONE sovereign composition, mounted on h1", async () => {
+    await standThree({ now: [0, 1, 2] });
+    const b = await boot(undefined, { worn: 1 });
+    expect(b.vessel.worn()).toBeUndefined();
+    expect(b.composed).toEqual([1]);
+    expect(mountedFaceOrdinal()).toBe(1);
+    expect(await daemonMountOrdinal()).toBe(1);
+    expect(b.lines.join("\n")).toMatch(/house remembers h1 worn/);
+    // The wear the shim used to send now finds the face worn already: it composes nothing more.
+    expect(await b.send({ op: "wear", face: 1 })).toMatchObject({ op: "wear", face: 1, already: true });
+    expect(b.composed).toEqual([1]);
+  });
+
+  test("the pūlama's own memory outranks the house's: a wear heard in this pūlama life names the face", async () => {
+    await standThree({ now: [0, 1, 2] });
+    const first = await boot();
+    expect(await first.send({ op: "wear", face: 2 })).toMatchObject({ op: "wear", face: 2, held: true });
+    const again = await restart(undefined, { worn: 1 });
+    expect(again.composed).toEqual([2]);
+    expect(mountedFaceOrdinal()).toBe(2);
+  });
+
+  test("CONTROL: a house-remembered face outside the lend, or dark, falls to the lowest face served and names why", async () => {
+    await standThree({ now: [0, 1] });
+    const b = await boot(undefined, { worn: 2 });
+    expect(b.composed).toEqual([undefined]);
+    expect(mountedFaceOrdinal()).toBeUndefined();
+    expect(b.lines.join("\n")).toMatch(/house remembers h2 worn.*outside the lent set/);
+  });
+
+  test("CONTROL: a house-remembered face whose composition refuses never refuses the boot", async () => {
+    await standThree({ now: [0, 1, 2] });
+    const b = await boot(1, { worn: 1 });
+    expect(b.vessel.isUnlocked()).toBe(true);
+    expect(b.composed).toEqual([1, undefined]);
+    expect(mountedFaceOrdinal()).toBeUndefined();
+  });
+
+  test("CONTROL: a house that remembers nothing leaves the boot as it stood", async () => {
+    await standThree({ now: [0, 1, 2] });
+    const b = await boot(undefined, {});
+    expect(b.composed).toEqual([undefined]);
+  });
+});
 
 describe("RED pulama-remembers-the-worn-face: a Docker-driven restart wears the face the operator last wore", () => {
   test("face 1 worn, the vessel restarts and re-dials the pūlama: the daemon mount reads h1, never h0", async () => {
