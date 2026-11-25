@@ -6,9 +6,9 @@
  * caller runs once the Archive rests, so a refused recard leaves the ledger as it stood.
  */
 import { describe, expect, test } from "vitest";
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { registerBagsDurably, type BagDocLedger } from "../src/index.js";
+import { landRecard, recardRegistration } from "../src/boot-daemon-keyhive.js";
+import { PrekeySecretAbsent } from "../src/keyhive-provider.js";
 import type { CapabilityProvider } from "../src/capability-provider.js";
 
 function ledgerOf(start: Record<string, string> = {}): BagDocLedger & { readonly rows: Map<string, string>; readonly puts: string[] } {
@@ -48,13 +48,38 @@ describe("a recard's ledger rows wait for its Archive", () => {
     expect(ledger.puts).toHaveLength(2);
   });
 
-  test("the wiring: the recard's stale pass holds its rows, and the light commits them only past the archive-unrested check", () => {
-    const boot = readFileSync(join(import.meta.dirname, "..", "src", "boot-daemon-keyhive.ts"), "utf8");
-    expect(boot).toMatch(/recard = \{ stale: true, \.\.\.\(await register\(true\)\) \}/);
-    const light = readFileSync(join(import.meta.dirname, "..", "src", "operator-daemon-behavior.ts"), "utf8");
-    const at = light.indexOf('new FaceRecardRefused("archive-unrested"');
-    const commit = light.indexOf("await recard.commit()", at);
-    expect(at, "the archive-unrested refusal stands").toBeGreaterThan(0);
-    expect(commit, "the commit runs after the refusal check, never before").toBeGreaterThan(at);
+  test("RED: the recard's stale pass holds its rows (the card first, then a held registration) and a refused landing commits none; past the archive check they rest", async () => {
+    const ledger = ledgerOf({ "lar:///old": "doc-old" });
+    const p = provider();
+    const passes: boolean[] = [];
+    let carded = false;
+    // The first pass meets the fault; after the card, the registration runs again under the hold it was handed.
+    const register = async (hold: boolean) => {
+      passes.push(hold);
+      if (!carded) throw new PrekeySecretAbsent("lar:///old");
+      return registerBagsDurably({ provider: p, bags: ["lar:///old"], ledger, hold });
+    };
+    const recard = await recardRegistration(register, async () => { carded = true; }, "f".repeat(64));
+    expect(passes, "an ordinary pass, then a held one after the card").toEqual([false, true]);
+    expect(recard).toMatchObject({ stale: true, reminted: ["lar:///old"] });
+    expect(ledger.puts, "the stale pass rested no row").toEqual([]);
+    // The Archive rested nothing: the landing refuses archive-unrested and the ledger stands as it stood.
+    await expect(landRecard(recard, { wrote: [], refusals: [], barred: true }, "h2", 2)).rejects.toThrow(/archive-unrested[\s\S]*lares vault recard --face 2/);
+    await expect(landRecard(recard, { wrote: [{}] as never, refusals: [{ message: "a row refused" }] as never, barred: false }, "h2", 2)).rejects.toThrow(/archive-unrested/);
+    expect(ledger.rows.get("lar:///old")).toBe("doc-old");
+    // The Archive rested: the held rows land.
+    await landRecard(recard, { wrote: [{}] as never, refusals: [], barred: false }, "h2", 2);
+    expect(ledger.rows.get("lar:///old")).toMatch(/^reminted-lar:\/\/\/old-/);
+  });
+
+  test("CONTROL: a recard that never meets the fault registers once, unheld, and lands whatever its floor reads; a second fault after the card refuses still-refuses", async () => {
+    const ledger = ledgerOf();
+    const passes: boolean[] = [];
+    const clean = await recardRegistration(async (hold) => { passes.push(hold); return registerBagsDurably({ provider: provider(), bags: ["lar:///new"], ledger, hold }); }, async () => { throw new Error("no card mints on a clean pass"); }, "f".repeat(64));
+    expect(passes).toEqual([false]);
+    expect(clean.stale).toBe(false);
+    expect(ledger.puts).toEqual(["lar:///new"]);
+    await landRecard(clean, { wrote: [], refusals: [], barred: true }, "h1", 1);
+    await expect(recardRegistration(async () => { throw new PrekeySecretAbsent("lar:///x"); }, async () => {}, "f".repeat(64))).rejects.toThrow(/still-refuses/);
   });
 });

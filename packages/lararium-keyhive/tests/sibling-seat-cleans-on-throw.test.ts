@@ -1,24 +1,44 @@
 /**
- * sibling-seat-cleans-on-throw — Hearth-Reader-II's F5 (course held-saves-edges): `standSiblingSeat` lit the face's entry, then
- * seated its holder, and only then registered the cleanup that drops the entry when the identity leaves. A `seatOfFace` that threw
- * left the half-made entry standing: the light's catch disposes the provider and clears its own maps, yet `faces` kept the entry,
- * whose `seat` never stood. The cleanup registers BEFORE the seat stands, so a throw there drops the entry with the identity.
- * The island composes this inside its behaviour (no port reaches it alone), so the weld reads the source order, as SH4 does.
+ * sibling-seat-cleans-on-throw — Hearth-Reader-II's F5 (course held-saves-edges): a sibling's entry lit, then its seat stood, and
+ * only then did the cleanup that drops the entry register on the identity. A seat that threw left a half-made entry standing (no
+ * seat), which the light's catch never cleared. `standSiblingEntry` registers the cleanup first, so the identity's disposal drops
+ * the entry, and only while the table still holds that very entry.
  */
 import { describe, expect, test } from "vitest";
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
+import { faceSeatTable, standSiblingEntry } from "../src/face-seat-table.js";
+import type { ContentKeySeat } from "../src/content-key-seat.js";
+
+const KEY = "ab".repeat(32);
+
+function identity() {
+  const leaving: Array<() => void> = [];
+  return { whenDisposed: (fn: () => void) => { leaving.push(fn); }, dispose: () => { for (const fn of leaving.splice(0)) fn(); } };
+}
 
 describe("a sibling's half-made seat leaves with its identity", () => {
-  test("RED: standSiblingSeat registers the entry's cleanup before seatOfFace runs", () => {
-    const src = readFileSync(join(import.meta.dirname, "..", "src", "operator-daemon-behavior.ts"), "utf8");
-    const at = src.indexOf("const standSiblingSeat = ");
-    expect(at, "standSiblingSeat stands").toBeGreaterThan(0);
-    const body = src.slice(at, src.indexOf("\n  };", at));
-    const cleanup = body.indexOf("keyhive.whenDisposed(() => { if (faces.lit(key) === entry) faces.drop(key); });");
-    const seat = body.indexOf("entry.seat = seatOfFace(");
-    expect(cleanup, "the cleanup registers").toBeGreaterThan(0);
-    expect(seat, "the seat stands").toBeGreaterThan(0);
-    expect(cleanup, "the cleanup registers before the seat can throw").toBeLessThan(seat);
+  test("RED: a seat that throws leaves the entry half-made; the identity's disposal drops it", () => {
+    const table = faceSeatTable({ proof: () => undefined });
+    const id = identity();
+    expect(() => standSiblingEntry(table, KEY, id, () => { throw new Error("the seat refused"); })).toThrow(/the seat refused/);
+    expect(table.lit(KEY)?.seat ?? null, "the entry stands half-made until the identity leaves").toBeNull();
+    id.dispose();
+    expect(table.lit(KEY), "the disposal dropped it").toBeUndefined();
+  });
+
+  test("CONTROL: a seat that stands keeps its entry until its identity leaves; an earlier identity's late disposal drops no later light's entry", () => {
+    const table = faceSeatTable({ proof: () => undefined });
+    const seat = (): ContentKeySeat => ({ lock: () => {} } as unknown as ContentKeySeat);
+    const first = identity();
+    const entry = standSiblingEntry(table, KEY, first, seat);
+    expect(table.lit(KEY)).toBe(entry);
+    expect(entry.seat).not.toBeNull();
+    // The face lights again under a second identity before the first one's disposal runs.
+    const second = identity();
+    const relit = standSiblingEntry(table, KEY, second, seat);
+    expect(relit).not.toBe(entry);
+    first.dispose();
+    expect(table.lit(KEY), "the first identity's cleanup finds another entry and drops nothing").toBe(relit);
+    second.dispose();
+    expect(table.lit(KEY)).toBeUndefined();
   });
 });

@@ -168,3 +168,15 @@ export function faceSeatTable(opts: { readonly proof: () => IslandSessionProof |
   };
   return table;
 }
+
+/**
+ * A SIBLING'S SEAT STANDS, OR ITS ENTRY LEAVES WITH ITS IDENTITY: the entry lights, the cleanup that drops it registers on the
+ * identity, and only then the seat stands. A seat that throws leaves the entry half-made, and the light's catch disposes the
+ * identity, which drops it (only while the table still holds that very entry).
+ */
+export function standSiblingEntry(table: Pick<FaceSeatTable, "light" | "lit" | "drop">, key: string, identity: { whenDisposed(fn: () => void): void }, seatOf: (entry: FaceSeat) => ContentKeySeat): FaceSeat {
+  const entry = table.light(key, null);
+  identity.whenDisposed(() => { if (table.lit(key) === entry) table.drop(key); });
+  entry.seat = seatOf(entry);
+  return entry;
+}
