@@ -21,9 +21,11 @@ import { closeScratch, openScratch, type Scratch } from "../../lararium-node/tes
 import { join } from "node:path";
 import { sha256HexBytesSync } from "@lararium/mesh/crypto";
 import { cmdNexus } from "../src/commands/nexus.js";
+import { publishLanding } from "../src/commands/nexus-publish.js";
 import { cmdVessel } from "../src/commands/vessel.js";
 import type { ParsedArgs } from "../src/parse-args.js";
-import { generateOrLoadPersonaGroupRoot } from "@lararium/node";
+import { generateOrLoadPersonaGroupRoot, wardRootSigner } from "@lararium/node";
+import { signPluginOffering, verifyPluginOffering } from "@lararium/mesh/plugin-offering";
 
 // The room each test and hook takes, stated where the file loads: a case founds a vessel, lights a face and seals rows under a derived key, so it runs for seconds. A timeout stated inside a hook reaches no
 // case the runner already collected.
@@ -106,6 +108,36 @@ describe("lares nexus publish — the operator's own collection, apart from the 
     expect(said).not.toMatch(/unknown/i);
   });
 
+  test("RED (under a pūlama): `--terms` prints ONE line, the face and the closed descriptor, through the store door; `--land` announces the offering the face root signed over it", async () => {
+    cpSync(join(import.meta.dirname, "..", "..", "..", "genesis"), join(root, "genesis"), { recursive: true });
+    const source = offeringSourceDir(root);
+    const out: string[] = [];
+    const write = vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { out.push(String(chunk)); return true; });
+    writeFileSync(join(process.env["LAR_ROOT"]!, ".lar-test-scratch"), "");
+    expect(await cmdVessel({ command: "vessel", positional: ["found"], options: {}, flags: { json: true } })).toBe(0);
+    await generateOrLoadPersonaGroupRoot(0);
+    out.length = 0; logs.length = 0;
+
+    // Off a TTY the terms line prints as the one JSON line the pūlama takes, never the envelope.
+    expect(await cmdNexus(args(["publish", "plugins"], { terms: true }, { source, face: "0" }))).toBe(0);
+    write.mockRestore();
+    expect(logs).toHaveLength(1);
+    const terms = JSON.parse(logs[0]!) as { face: number; offering: Parameters<typeof signPluginOffering>[0] };
+    expect(terms.face).toBe(0);
+    expect(Object.keys(terms.offering).sort()).toEqual(["blobs", "offeror", "pluginsCid"]);
+
+    // THE PŪLAMA'S HAND signs that descriptor; its answer lands through the vessel.
+    const offering = await signPluginOffering(terms.offering, (await wardRootSigner(0, undefined, "the test's hand")).sign);
+    const out2: string[] = [];
+    const write2 = vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { out2.push(String(chunk)); return true; });
+    const answer = JSON.stringify({ op: "publish", reading: "signed", face: 0, offering, cid: "x" });
+    expect(await cmdNexus(args(["publish", "plugins"], { json: true }, { source, land: answer }))).toBe(0);
+    write2.mockRestore();
+    const payload = JSON.parse(out2.join("")) as { ok: boolean; data: { offeror: string; blobCount: number } };
+    expect(payload).toMatchObject({ ok: true, data: { offeror: terms.offering.offeror, blobCount: 1 } });
+    expect(await verifyPluginOffering(offering)).toEqual({ ok: true });
+  });
+
   test("★ `--apply --json` emits the structured success boundary, without human-only prose ★", async () => {
     // Founding itself needs the genesis seed (the engine CID etc.) regardless of this door's own
     // source — that dependency is `vessel found`'s, not `nexus publish`'s (H3: publish reads a local
@@ -175,5 +207,32 @@ describe("lares nexus publish — the operator's own collection, apart from the 
     const said = [...errs, ...logs].join("\n");
     expect(said).toMatch(/grammarCid/);
     expect(said).toMatch(/engineCid/);
+  });
+});
+
+describe("lares nexus publish under a pūlama — the terms line and the land of the hand's signature", () => {
+  const offering = { kind: "k", offeror: "a".repeat(64), pluginsCid: "c", blobs: [], sig: "s" };
+  test("RED: `--land` takes the pūlama's signed publish answer and its face; a refusal, another act, or a face the line names otherwise lands nothing; CONTROL: the signed answer reads", () => {
+    expect(publishLanding(JSON.stringify({ op: "publish", reading: "signed", face: 1, offering }), undefined)).toEqual({ offering, face: 1 });
+    expect(publishLanding(JSON.stringify({ op: "publish", reading: "signed", face: 1, offering }), 1)).toEqual({ offering, face: 1 });
+    for (const [raw, named, said] of [
+      [JSON.stringify({ op: "publish", reading: "signed", face: 1, offering }), 0, /signed for h1/],
+      [JSON.stringify({ op: "publish", reading: "ward-no-slot-opens", face: 1 }), undefined, /signed nothing/],
+      [JSON.stringify({ op: "lei", reading: "signed", face: 1, record: {} }), undefined, /publish answer/],
+      [JSON.stringify({ op: "publish", reading: "signed", face: 1 }), undefined, /no signed offering/],
+      ["not json", undefined, /no JSON/],
+    ] as const) expect((publishLanding(raw, named) as { usage: string }).usage, raw).toMatch(said);
+  });
+
+  test("RED: `--apply`, `--terms` and `--land` name one mode, and a malformed land refuses through usage before any row runs", async () => {
+    const out: string[] = [];
+    const w = vi.spyOn(process.stdout, "write").mockImplementation((c: unknown) => { out.push(String(c)); return true; });
+    expect(await cmdNexus(args(["publish", "plugins"], { apply: true, terms: true }, { source: "x" }))).toBe(2);
+    expect(await cmdNexus(args(["publish", "plugins"], {}, { source: "x", land: JSON.stringify({ op: "publish", reading: "face-locked" }) }))).toBe(2);
+    w.mockRestore();
+    const payloads = out.join("").trim().split("\n").map((l) => JSON.parse(l) as { ok: boolean; error?: { code?: string; message?: string } });
+    expect(payloads.map((p) => p.error?.code)).toEqual(["usage", "usage"]);
+    expect(payloads[0]?.error?.message).toMatch(/one of --apply, --terms or --land/);
+    expect(payloads[1]?.error?.message).toMatch(/signed nothing \(face-locked\)/);
   });
 });

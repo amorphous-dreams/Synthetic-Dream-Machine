@@ -445,7 +445,7 @@ route_cli() {
         --) break ;;
         --file|--append) stream_want=$stream_arg ;;
         --file=*|--append=*) stream_n=$((stream_n + 1)); stream_kind=${stream_arg%%=*}; [ -n "${stream_arg#*=}" ] || stream_empty=yes ;;
-        --*) case "$stream_arg" in *=*|--no-*|--accept-omissions|--accept-loss|--abandon|--added|--all|--all-strata|--apply|--approve|--brief|--bulk|--cancel|--cards|--collapse|--cosign|--confirm|--create|--cut|--drain|--deny|--docs|--draft|--drop|--dry-run|--edge|--ephemeral|--every|--executable|--family|--force|--foreground|--fresh|--from-persona|--held|--help|--help-mempalace|--history|--hearth|--hold|--if-due|--in-wiki|--init|--join|--json|--keep|--keep-hooks|--keyhive-trace|--lag|--launch|--list|--meme|--memory|--new|--observe|--orphans|--over-fresher|--page|--pair|--palaces|--paper|--partial|--passphrase|--pending|--probe|--quorum|--overwrite|--remove|--repour|--restart|--rotate|--seat|--sessions|--shadow|--skinny|--skip-build|--spectral|--split-root|--staged|--sweep|--tag-blobs|--tree|--verbose|--wait|--watch|--with-web|--workbench|--writeback|--yes) ;; *) stream_want=$stream_arg ;; esac ;;
+        --*) case "$stream_arg" in *=*|--no-*|--accept-omissions|--accept-loss|--abandon|--added|--all|--all-strata|--apply|--approve|--brief|--bulk|--cancel|--cards|--collapse|--cosign|--confirm|--create|--cut|--drain|--deny|--docs|--draft|--drop|--dry-run|--edge|--ephemeral|--every|--executable|--family|--force|--foreground|--fresh|--from-persona|--held|--help|--help-mempalace|--history|--hearth|--hold|--if-due|--in-wiki|--init|--join|--json|--keep|--keep-hooks|--keyhive-trace|--lag|--launch|--list|--meme|--memory|--new|--observe|--orphans|--over-fresher|--page|--pair|--palaces|--paper|--partial|--passphrase|--pending|--probe|--quorum|--overwrite|--remove|--repour|--restart|--rotate|--seat|--sessions|--shadow|--skinny|--skip-build|--spectral|--split-root|--staged|--sweep|--tag-blobs|--terms|--tree|--verbose|--wait|--watch|--with-web|--workbench|--writeback|--yes) ;; *) stream_want=$stream_arg ;; esac ;;
       esac
     done
     if [ "$stream_n" -gt 1 ]; then printf 'lares-container: name one text source: --file or --append, once\n' >&2; return 2; fi
@@ -472,7 +472,7 @@ route_cli() {
             --file=*|--append=*)
               stream_value=${stream_arg#*=}
               if [ "$stream_value" != - ]; then stream_file=$stream_value; stream_arg="${stream_arg%%=*}=-"; fi ;;
-            --*) case "$stream_arg" in *=*|--no-*|--accept-omissions|--accept-loss|--abandon|--added|--all|--all-strata|--apply|--approve|--brief|--bulk|--cancel|--cards|--collapse|--cosign|--confirm|--create|--cut|--drain|--deny|--docs|--draft|--drop|--dry-run|--edge|--ephemeral|--every|--executable|--family|--force|--foreground|--fresh|--from-persona|--held|--help|--help-mempalace|--history|--hearth|--hold|--if-due|--in-wiki|--init|--join|--json|--keep|--keep-hooks|--keyhive-trace|--lag|--launch|--list|--meme|--memory|--new|--observe|--orphans|--over-fresher|--page|--pair|--palaces|--paper|--partial|--passphrase|--pending|--probe|--quorum|--overwrite|--remove|--repour|--restart|--rotate|--seat|--sessions|--shadow|--skinny|--skip-build|--spectral|--split-root|--staged|--sweep|--tag-blobs|--tree|--verbose|--wait|--watch|--with-web|--workbench|--writeback|--yes) ;; *) stream_want=$stream_arg ;; esac ;;
+            --*) case "$stream_arg" in *=*|--no-*|--accept-omissions|--accept-loss|--abandon|--added|--all|--all-strata|--apply|--approve|--brief|--bulk|--cancel|--cards|--collapse|--cosign|--confirm|--create|--cut|--drain|--deny|--docs|--draft|--drop|--dry-run|--edge|--ephemeral|--every|--executable|--family|--force|--foreground|--fresh|--from-persona|--held|--help|--help-mempalace|--history|--hearth|--hold|--if-due|--in-wiki|--init|--join|--json|--keep|--keep-hooks|--keyhive-trace|--lag|--launch|--list|--meme|--memory|--new|--observe|--orphans|--over-fresher|--page|--pair|--palaces|--paper|--partial|--passphrase|--pending|--probe|--quorum|--overwrite|--remove|--repour|--restart|--rotate|--seat|--sessions|--shadow|--skinny|--skip-build|--spectral|--split-root|--staged|--sweep|--tag-blobs|--terms|--tree|--verbose|--wait|--watch|--with-web|--workbench|--writeback|--yes) ;; *) stream_want=$stream_arg ;; esac ;;
           esac
         fi
         set -- "$@" "$stream_arg"
@@ -2144,6 +2144,55 @@ case "$verb" in
           exit $?
         fi ;;
     esac
+    route_cli "$verb" "$@" ;;
+  kahua)
+    # A KAHUA HAND ACT UNDER A PŪLAMA, in the lei pattern: the vessel holds no face root, so `kahua lift|withdraw|carry …` reads
+    # the terms in the vessel (`--terms`: every gate, the preview and the digest typed back on THIS terminal, then ONE line naming
+    # the face, the record's kind and the one unsigned act), the pūlama checks it, reads the route on this terminal and its face
+    # root signs that one record (`sign`), and the vessel lands it (`--land`), building the act afresh and landing it only over a
+    # byte-equal body. Neither vessel step asks a passphrase. Without a pūlama, or for any other kahua act, it routes as before.
+    if [ -n "$PULAMA_MODE" ] && { [ "${1:-}" = lift ] || [ "${1:-}" = withdraw ] || [ "${1:-}" = carry ]; }; then
+      kh_hand=""
+      for kh_arg do case "$kh_arg" in --terms|--land|--land=*) kh_hand=yes ;; esac; done
+      if [ -z "$kh_hand" ]; then
+        [ -n "$HAVE_TTY" ] || die "kahua $1 under a pūlama reads its route on a terminal; run it on one (nothing signed)"
+        # The terms read rides a pty (the preview and its typed-back digest read here); the terms line is the last `{"face":` line.
+        # shellcheck disable=SC2046
+        terms=$(compose exec --no-TTY=false $(pass_env) lares node "$CLI" kahua "$@" --terms | tee /dev/stderr | tr -d '\r' | awk '/^\{"face":/ { line = $0 } END { if (line != "") print line }')
+        [ -n "$terms" ] || die "the vessel named nothing for the pūlama to sign (its answer above); nothing signed"
+        answer=$(compose --profile pulama exec --no-TTY=false "$(pulama_svc)" node "$PULAMA_MAIN" sign "$terms" | tee /dev/stderr | tr -d '\r' | awk '/^\{/ { seen = 1; answer = "" } seen { answer = answer $0 } END { if (seen) print answer }')
+        [ -n "$answer" ] || die "the pūlama signed nothing; nothing lands"
+        # shellcheck disable=SC2046
+        waited_exec $(pass_env) -T lares node "$CLI" kahua "$@" --land "$answer" </dev/null
+        exit $?
+      fi
+    fi
+    route_cli "$verb" "$@" ;;
+  nexus)
+    # THE OFFERING'S SIGNATURE UNDER A PŪLAMA, in the lei pattern: the vessel holds no face root, so `nexus publish plugins …
+    # --apply` reads the terms in the vessel (the face and the closed descriptor its root signs: `--terms`), the pūlama reads
+    # the route on THIS terminal and its face root signs that one descriptor (`publish`), and the vessel lands the signed
+    # offering over the same source (`--land`). The answer is the last object the signing prints, joined onto one line; a
+    # signing that answers no offering lands nothing. Without a pūlama, or without --apply, every nexus act routes as before.
+    if [ -n "$PULAMA_MODE" ] && [ "${1:-}" = publish ] && [ "${2:-}" = plugins ]; then
+      np_apply=""
+      for np_arg do [ "$np_arg" = --apply ] && np_apply=yes; done
+      if [ -n "$np_apply" ]; then
+        [ -n "$HAVE_TTY" ] || die "nexus publish under a pūlama reads its route on a terminal; run it on one (nothing signed)"
+        np_count=$#; np_i=0
+        while [ "$np_i" -lt "$np_count" ]; do
+          np_arg=$1; shift; np_i=$((np_i + 1))
+          [ "$np_arg" = --apply ] || set -- "$@" "$np_arg"
+        done
+        # shellcheck disable=SC2046
+        terms=$(compose exec $(pass_env) -T lares node "$CLI" nexus "$@" --terms </dev/null) || exit $?
+        answer=$(compose --profile pulama exec --no-TTY=false "$(pulama_svc)" node "$PULAMA_MAIN" publish "$terms" | tee /dev/stderr | tr -d '\r' | awk '/^\{/ { seen = 1; answer = "" } seen { answer = answer $0 } END { if (seen) print answer }')
+        [ -n "$answer" ] || die "the pūlama signed nothing; nothing lands"
+        # shellcheck disable=SC2046
+        waited_exec $(pass_env) -T lares node "$CLI" nexus "$@" --land "$answer" </dev/null
+        exit $?
+      fi
+    fi
     route_cli "$verb" "$@" ;;
   wear)
     # `lares wear N` moves the daemon mount inside the lent set and asks no route; a wear that landed names the face the

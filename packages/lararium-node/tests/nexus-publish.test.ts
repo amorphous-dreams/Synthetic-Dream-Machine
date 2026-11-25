@@ -27,19 +27,25 @@ import {
 import { crossroadsDocUrl, publicationDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
 import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
 import { offeringAnnouncesFromDoc } from "@lararium/mesh/offering-announce";
-import { pluginOfferingCid, signPluginOffering, type OfferedBlob, type PluginProvenance } from "@lararium/mesh/plugin-offering";
+import { pluginOfferingBytes, pluginOfferingCid, signPluginOffering, verifyPluginOffering, type OfferedBlob, type PluginProvenance } from "@lararium/mesh/plugin-offering";
 import {
   runNexusPublishPlugins,
+  runNexusPublishTerms,
+  storeVerbNeedsWard,
   NexusPublishError,
   readCasBlobFromFs,
   casDirForStorage,
 } from "../src/index.js";
 import {
+  loadPersonaGroupRootVerifyingKey as loadPersonaRootKey,
   generateOrLoadPersonaGroupRoot,
   generateOrLoadVesselIdentity,
   loadVesselVerifyingKey,
 } from "../src/node-vessel-identity.js";
 import { larDataDir } from "../src/vessel-paths.js";
+import { wardRootSigner } from "../src/ward-signer.js";
+import { offeringTermsOf } from "../src/pulama-hand.js";
+import type { Repo as StoreRepo } from "@automerge/automerge-repo";
 import { direct } from "./direct-store.js";
 import { seedFaceAtom } from "./atom-fixture.js";
 
@@ -278,5 +284,70 @@ describe("runNexusPublishPlugins — immutable offering boundary (H3, F2-3)", ()
     await standPersona();
     await expect(direct(runNexusPublishPlugins)({ source, storageDir: larDataDir() }))
       .rejects.toThrow(/boot-set-collision/);
+  });
+});
+
+/** The terms read, through an owned store as every act here runs (it reads the face's roster and opens no ward). */
+const terms = direct(async (o: { readonly repo: StoreRepo; readonly source: string; readonly storageDir: string; readonly handleIndex?: number }) => runNexusPublishTerms(o));
+
+describe("UNDER A PŪLAMA: the terms the hand door signs, and the land of the offering it signed", () => {
+  it("RED: `terms` answers the face and the CLOSED descriptor the root signs (the hand door's own check reads it whole), and signs, writes and announces nothing", async () => {
+    const source = seedUnsignedSource();
+    seedMinimalGenesis();
+    await standPersona();
+    const read = await terms({ source, storageDir: larDataDir() });
+    expect(read.face).toBe(0);
+    expect(Object.keys(read.offering).sort()).toEqual(["blobs", "offeror", "pluginsCid"]);
+    expect(read.offering.offeror).toBe((await loadPersonaRootKey())!.toLowerCase());
+    expect(read.offering.pluginsCid).toBe(computePluginsCid(read.offering.blobs));
+    // THE DOOR'S CLOSED SHAPE takes exactly what the terms name, so no field the vessel adds reaches the root unsigned.
+    expect(await offeringTermsOf(read.offering)).toEqual({ terms: read.offering });
+    // The descriptor carries no LOCAL `file` path: what the root signs equals what the vessel's own signing would sign.
+    expect(JSON.stringify(read.offering)).not.toContain("plugin.bin");
+    expect(readCasBlobFromFs(read.offering.blobs[0]!.sha256, casDirForStorage(larDataDir()))).toBeNull();
+  });
+
+  it("RED: the offering the face root signed over the terms LANDS: it verifies, announces, and equals the one the vessel's own signing makes; CONTROL: the descriptor matches byte for byte", async () => {
+    const source = seedUnsignedSource();
+    seedMinimalGenesis();
+    await standPersona();
+    const read = await terms({ source, storageDir: larDataDir() });
+    // THE PŪLAMA'S HAND, as its door signs: the face root over the descriptor's offering preimage.
+    const signed = await signPluginOffering(read.offering, (await wardRootSigner(0, undefined, "the test's hand")).sign);
+    const landed = await direct(runNexusPublishPlugins)({ source, storageDir: larDataDir(), signed: JSON.parse(JSON.stringify(signed)) });
+    expect(await verifyPluginOffering(landed.offering)).toEqual({ ok: true });
+    expect(landed.offering).toEqual(signed);
+    expect(landed.offeringCid).toBe(pluginOfferingCid(signed));
+    expect(readCasBlobFromFs(read.offering.blobs[0]!.sha256, casDirForStorage(larDataDir()))).not.toBeNull();
+    // The vessel's own signing (no pūlama) makes the same descriptor: the hand door signs exactly what `--apply` would.
+    const own = await direct(runNexusPublishPlugins)({ source, storageDir: larDataDir() });
+    expect(Buffer.from(pluginOfferingBytes(own.offering)).equals(Buffer.from(pluginOfferingBytes(signed)))).toBe(true);
+  });
+
+  it("RED: a signature over another descriptor, under another key, or riding an extra field lands nothing; a signed gift asks no terms and lands no hand signature", async () => {
+    const source = seedUnsignedSource();
+    seedMinimalGenesis();
+    await standPersona();
+    const read = await terms({ source, storageDir: larDataDir() });
+    const root = (await wardRootSigner(0, undefined, "the test's hand")).sign;
+    const moved = await signPluginOffering({ ...read.offering, blobs: read.offering.blobs.map((b) => ({ ...b, version: "v2" })) }, root);
+    await expect(direct(runNexusPublishPlugins)({ source, storageDir: larDataDir(), signed: moved })).rejects.toThrow(/offering-mismatch/);
+    const stranger = new Uint8Array(32).fill(5);
+    const foreign = await signPluginOffering(read.offering, ed25519SignerFromSeed(stranger));
+    await expect(direct(runNexusPublishPlugins)({ source, storageDir: larDataDir(), signed: foreign })).rejects.toThrow(/does not self-verify/);
+    await expect(direct(runNexusPublishPlugins)({ source, storageDir: larDataDir(), signed: { blobs: "x" } })).rejects.toThrow(/offering-unsigned/);
+    // An extra field the answer carried never rides the announce: the record that lands is the source's descriptor and the signature.
+    const good = await signPluginOffering(read.offering, (await wardRootSigner(0, undefined, "the test's hand")).sign);
+    const landed = await direct(runNexusPublishPlugins)({ source, storageDir: larDataDir(), signed: { ...good, rider: "unsigned" } });
+    expect(Object.keys(landed.offering).sort()).toEqual(["blobs", "kind", "offeror", "pluginsCid", "sig"]);
+    const { dir: gift } = await seedSignedGift();
+    await expect(terms({ source: gift, storageDir: larDataDir() })).rejects.toThrow(/offering-signed/);
+    await expect(direct(runNexusPublishPlugins)({ source: gift, storageDir: larDataDir(), signed: good })).rejects.toThrow(/offering-signed/);
+  });
+
+  it("RED: the terms read and the land open no ward (the hand signed at the pūlama); CONTROL: the vessel's own publish stays a ward act", () => {
+    expect(storeVerbNeedsWard("nexus-publish", { source: "s", terms: true })).toBe(false);
+    expect(storeVerbNeedsWard("nexus-publish", { source: "s", signed: {} })).toBe(false);
+    expect(storeVerbNeedsWard("nexus-publish", { source: "s" })).toBe(true);
   });
 });
