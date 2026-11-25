@@ -516,7 +516,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "measures each slot and folds one line to the month's ash ledger; `hooili` (the carry, hoʻoili, which writes nothing to the card) and `residue` " +
       "land a compaction summary or a handback (`--file -` reads stdin) after the strict secret-shape guard; `otakiage` burns the residue and keeps the card, on a person's hand alone. " +
       "The stack reads and writes as the slot `#/has`, one cap per line (`<a.b.c> <value>`): `ah --slot '#/has' --add` strings a cap (its tag and its field, one write), `hum --fold '#/has'` unstrings one; a frame cap moves by a person's hand (`spirit-cap-held`), a bare feed tag by any body. " +
-      "A card alone (`spirit-card/<pet>`, or a mask's `mask-card/<pet>`) answers through its fields; `ah --offer` sets a summon's offering (ʻālana) on `alana/<pet>` before any body wakes, and a body echoes its hash (`ah --echo <hash> --body <id>`) before its slot writes land (`spirit-unechoed`).",
+      "A card alone (`spirit-card/<pet>`, or a mask's `mask-card/<pet>`) answers through its fields; `ah --offer` sets a summon's offering (ʻālana) on `alana/<pet>` before any body wakes, and a body echoes its hash (`ah --echo <hash> --body <id>`); a write from a body that has not echoed lands and carries an `unechoed:` notice (a receipt, never a gate).",
     examples: [
       "lares spirit om lares-alpha                                   # the wake text",
       "lares spirit ah lares-alpha --slot '#/open' --file open.txt     # true one slot",

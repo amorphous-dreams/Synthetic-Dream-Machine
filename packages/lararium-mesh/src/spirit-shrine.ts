@@ -631,8 +631,9 @@ export function cardRecordOf(pet: string, uri: string, out: Record<string, unkno
  * AN OFFERING CARRIES NO AUTHORITY BEYOND A NUDGE until per-summon seats get minted (spirit-circle #/admission, #/open): it
  * records its offerer, om names it, and a re-offer over a standing mandate lands only from the same offerer or a hand. HOʻĀLA, THE WAKING: a body's om pulls the mandate and its hash through the door, and the body echoes
  * the hash back (`ah <pet> --echo <hash> --body <id>`); the echo lands on the card's sibling record as `<pet>#<body> <hash>
- * <seq>`, the seq door-minted, so no clock orders an echo. Where an offering stands, the door refuses a body's slot writes
- * until that body's echo of the standing mandate stands (`spirit-unechoed`); a fresh offering asks every body to echo again.
+ * <seq>`, the seq door-minted, so no clock orders an echo. Where an offering stands, a slot write from a body that has not
+ * echoed the standing mandate lands and carries an `unechoed:` notice (`echoReceipt`: a receipt, never a gate); a fresh offering
+ * asks every body to echo again.
  * A spirit no summon offered (a familiar) writes as before. The grant rides as a declared slice: the leased register entry it
  * names waits on its own talk-story (ruling 2026-11-25-alana-circle-code).
  */
@@ -707,24 +708,19 @@ export function echoJoin(fields: Readonly<Record<string, string>>, pet: string, 
 export const echoStands = (sideFields: Readonly<Record<string, string>>, body: string, hash: string): boolean =>
   echoesOf(sideFields["echoes"]).some((e) => e.body === body && e.hash === hash);
 
-/** The two commands that cure an unechoed body: the om that hands the hash, the ah that echoes it. */
-const echoCure = (pet: string, body: string): string =>
-  `\`lares spirit om ${pet} --body ${body}\` (it hands the mandate's hash), then \`lares spirit ah ${pet} --echo <hash> --body ${body}\``;
-
 /**
- * The gate a slot write passes where an offering stands: a write naming a body lands once that body's echo of the standing
- * mandate stands; a write naming no body lands only from a person's hand (the hand gate's reading, never the harness mark
- * alone); a damaged shelf holds every other write closed. Null where it passes.
+ * A RECEIPT, NEVER A GATE (ruling 2026-11-25-one-spirit-record). Where an offering stands, a write naming a body whose echo of
+ * the standing mandate stands writes clean; any other write (a body that has not echoed, a seat naming no body) still lands and
+ * carries the notice this answers, and echoes stay recorded as lineage. A person's hand (the hand gate's reading, never the
+ * harness mark alone) naming no body writes clean. A damaged shelf alone holds closed: it answers the refusal. Null where the
+ * write lands clean.
  */
-export function echoRefusal(pet: string, offering: SpiritOffering | null, sideFields: Readonly<Record<string, string>>, body: string | null, hand: boolean): SpiritRefusal | null {
+export function echoReceipt(pet: string, offering: SpiritOffering | null, sideFields: Readonly<Record<string, string>>, body: string | null, hand: boolean): { refusal: SpiritRefusal } | { notice: string } | null {
   if (offering === null) return null;
   if (body === null && hand) return null;
-  if (offering.damaged) return offeringDamaged(pet, offering);
-  if (body === null) {
-    return new SpiritRefusal("spirit-unechoed", `spirit-unechoed: ${pet} stands under an ${ALANA_DISPLAY} (mandate ${offering.hash.slice(0, 12)}, seq ${offering.seq}), and an AI seat's slot write names the body that echoed it; nothing landed. Name your body: ${echoCure(pet, "<id>")}, then write with --body <id>`, 4);
-  }
-  if (echoStands(sideFields, body, offering.hash)) return null;
-  return new SpiritRefusal("spirit-unechoed", `spirit-unechoed: ${pet}#${body} has echoed no hash of the standing ${ALANA_DISPLAY} (mandate ${offering.hash.slice(0, 12)}, seq ${offering.seq}), so its slot writes wait; nothing landed. Wake and echo: ${echoCure(pet, body)}`, 4);
+  if (offering.damaged) return { refusal: offeringDamaged(pet, offering) };
+  if (body !== null && echoStands(sideFields, body, offering.hash)) return null;
+  return { notice: `unechoed: ${body === null ? `${pet} (a seat naming no body)` : `${pet}#${body}`} has not read mandate ${offering.hash}` };
 }
 
 /** The mandate a wake reads ahead of the carrier: its seq, hash, pointer, slice, words (cut) and the echo it asks. */

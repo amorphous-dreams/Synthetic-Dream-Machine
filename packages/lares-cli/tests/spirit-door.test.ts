@@ -1397,14 +1397,22 @@ describe("the ʻĀlana Circle: a card answers the slot verbs, a summon offers fi
     expect(String(data(r)["text"])).toContain(MANDATE);
   });
 
-  test("an unechoed body's slot write refuses spirit-unechoed, naming om and the echo; nothing lands", async () => {
+  test("a receipt, never a gate (ruling 2026-11-25-one-spirit-record): an unechoed body's slot write lands and carries the unechoed notice", async () => {
     const card = CARD_FIELDS();
     stage({ kind: "none", card, offering: offered() });
     const r = await run(argv(["ah", "lares-alpha"], { slot: "#/bodies", add: "x", body: "s-1" }));
-    expect(error(r).code).toBe("spirit-unechoed");
-    expect(error(r).message).toContain("lares spirit om lares-alpha --body s-1");
-    expect(error(r).message).toContain("--echo <hash> --body s-1");
-    expect(puts(CARD)).toEqual([]);
+    expect(r.exit, JSON.stringify(r.printed)).toBe(0);
+    expect(card["bodies"]).toContain("x");
+    expect(data(r)["unechoed"]).toBe(`unechoed: lares-alpha#s-1 has not read mandate ${sha(MANDATE)}`);
+  });
+
+  test("om names the unechoed notice for a body that has not echoed the standing mandate, and none once it has", async () => {
+    stage({ kind: "none", card: CARD_FIELDS(), offering: offered() });
+    const r = await run(argv(["om", "lares-alpha"], { body: "s-1" }));
+    expect(String(data(r)["text"])).toContain(`unechoed: lares-alpha#s-1 has not read mandate ${sha(MANDATE)}`);
+    stage({ kind: "none", card: CARD_FIELDS(), offering: offered(), side: { echoes: `lares-alpha#s-1 ${sha(MANDATE)} 1` } });
+    const echoed = await run(argv(["om", "lares-alpha"], { body: "s-1" }));
+    expect(String(data(echoed)["text"])).not.toContain("unechoed:");
   });
 
   test("a body echoes the hash: the echo lands as <pet>#<body> <hash> <seq> on the sibling record, beside its presence", async () => {
@@ -1417,15 +1425,17 @@ describe("the ʻĀlana Circle: a card answers the slot verbs, a summon offers fi
     expect(data(r)).toMatchObject({ body: "lares-alpha#s-1", echo: sha(MANDATE), seq: 1 });
   });
 
-  test("an echoed body writes; an echo of an older mandate refuses once a fresh offering stands", async () => {
+  test("an echoed body writes clean; an echo of an older mandate carries the notice once a fresh offering stands", async () => {
     const card = CARD_FIELDS();
     stage({ kind: "none", card, offering: offered(), side: { echoes: `lares-alpha#s-1 ${sha(MANDATE)} 1` } });
     const r = await run(argv(["ah", "lares-alpha"], { slot: "#/bodies", add: "x", body: "s-1" }));
     expect(r.exit, JSON.stringify(r.printed)).toBe(0);
+    expect(data(r)).not.toHaveProperty("unechoed");
     const fresh = "a fresh mandate";
     stage({ kind: "none", card, offering: { ...offered(), text: fresh, "mandate-hash": sha(fresh), "offer-seq": "2" }, side: { echoes: `lares-alpha#s-1 ${sha(MANDATE)} 1` } });
     const stale = await run(argv(["ah", "lares-alpha"], { slot: "#/bodies", add: "y", body: "s-1" }));
-    expect(error(stale).code).toBe("spirit-unechoed");
+    expect(stale.exit, JSON.stringify(stale.printed)).toBe(0);
+    expect(data(stale)["unechoed"]).toBe(`unechoed: lares-alpha#s-1 has not read mandate ${sha(fresh)}`);
   });
 
   test("an echo naming another hash refuses spirit-echo-mismatch; an echo with no offering refuses spirit-unoffered; an echo names its body", async () => {
@@ -1436,19 +1446,24 @@ describe("the ʻĀlana Circle: a card answers the slot verbs, a summon offers fi
     expect(error(await run(argv(["ah", "lares-alpha"], { echo: sha(MANDATE), body: "s-1" }))).code).toBe("spirit-unoffered");
   });
 
-  test("under an offering, an AI seat naming no body refuses; a person's terminal writes freely; a spirit no summon offered writes as before", async () => {
+  test("under an offering, an AI seat naming no body writes with the notice; a person's terminal writes clean; a spirit no summon offered writes as before", async () => {
     const card = CARD_FIELDS();
     stage({ kind: "none", card, offering: offered() });
-    expect(error(await run(argv(["ah", "lares-alpha"], { slot: "#/bodies", add: "x" }), { seat: () => true, hand: AI })).code).toBe("spirit-unechoed");
-    expect((await run(argv(["ah", "lares-alpha"], { slot: "#/bodies", add: "x" }))).exit).toBe(0);
+    const seat = await run(argv(["ah", "lares-alpha"], { slot: "#/bodies", add: "x" }), { seat: () => true, hand: AI });
+    expect(seat.exit).toBe(0);
+    expect(String(data(seat)["unechoed"])).toContain(`has not read mandate ${sha(MANDATE)}`);
+    const hand = await run(argv(["ah", "lares-alpha"], { slot: "#/bodies", add: "x" }));
+    expect(hand.exit).toBe(0);
+    expect(data(hand)).not.toHaveProperty("unechoed");
     stage();
     expect((await run(argv(["ah", "lares-alpha"], { slot: "#/open", add: "* y", body: "s-1" }))).exit).toBe(0);
   });
 
-  test("hum's fold of a line waits on the echo too", async () => {
+  test("hum's fold of a line carries the notice too", async () => {
     stage({ kind: "none", card: { ...CARD_FIELDS(), bodies: "one\ntwo" }, offering: offered() });
     const r = await run(argv(["hum", "lares-alpha"], { fold: "#/bodies", line: "1", expect: digest("one"), body: "s-1" }));
-    expect(error(r).code).toBe("spirit-unechoed");
+    expect(r.exit, JSON.stringify(r.printed)).toBe(0);
+    expect(data(r)["unechoed"]).toBe(`unechoed: lares-alpha#s-1 has not read mandate ${sha(MANDATE)}`);
   });
 
   test("the card's frame fields hold: lane, model, feeds, wave and waits refuse spirit-slot-held, so no slot write rewrites the lane a bare offer takes", async () => {
@@ -1499,10 +1514,11 @@ describe("the ʻĀlana Circle: a card answers the slot verbs, a summon offers fi
     expect(data(om)["mandate"]).toMatchObject({ damaged: true });
   });
 
-  test("the terminal's exemption reads the hand gate, never the harness mark alone: an unmarked seat the hand gate refuses still names its body", async () => {
+  test("the terminal's exemption reads the hand gate, never the harness mark alone: an unmarked seat the hand gate refuses carries the notice", async () => {
     stage({ kind: "none", card: CARD_FIELDS(), offering: offered() });
     const r = await run(argv(["ah", "lares-alpha"], { slot: "#/bodies", add: "x" }), { seat: () => false, hand: AI });
-    expect(error(r).code).toBe("spirit-unechoed");
+    expect(r.exit).toBe(0);
+    expect(String(data(r)["unechoed"])).toContain("has not read mandate");
   });
 });
 
