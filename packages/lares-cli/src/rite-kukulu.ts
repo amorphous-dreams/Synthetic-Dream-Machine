@@ -586,18 +586,17 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
     const heads = [...new Set(off.map(({ p }) => p.head))];
     const allStale = off.every(({ p }) => p.head !== head);
     const halves = off.map(({ p, w }) => `${p.face ?? p.group} tessera ${p.tessera} (begun at ${p.head.slice(0, 12)}${p.image === undefined ? "" : ` over ${p.image}`}: ${w})`).join(", ");
-    // THE CLEARING LINE: each half a lent face lands, landed by hand where the vessel stands (conferre reads it red, and the debt
-    // clears); a half no lent face lands waits for its face. The abandon that ends a half by name waits on its own branch.
-    const stands = prior !== null && /^[0-9a-f]{40}$/.test(prior.revision) ? prior.revision : "<the head the vessel runs>";
-    const landLine = (p: PendingBegin): string => {
+    // THE CLEARING LINE: each half a lent face holds, set down by the hand's abandon (a kāpae over it: it spends nothing, records
+    // no par over an image the vessel never ran, and conferre reads it abandoned); a half no lent face holds waits for its face.
+    const abandonLine = (p: PendingBegin): string => {
       const ordinal = landable.get(p.tessera)?.ordinal ?? opts.face;
-      return `lares rite land --tessera ${p.tessera} --head ${stands}${ordinal === undefined ? "" : ` --face ${ordinal}`}`;
+      return `lares rite land --abandon --tessera ${p.tessera}${ordinal === undefined ? "" : ` --face ${ordinal}`}`;
     };
-    const landed = off.filter(({ p }) => landable.has(p.tessera)), waiting = off.filter(({ p }) => !landable.has(p.tessera));
+    const held = off.filter(({ p }) => landable.has(p.tessera)), waiting = off.filter(({ p }) => !landable.has(p.tessera));
     const clear = [
-      ...(landed.length > 0 ? [`land each by hand where the vessel stands (conferre reads it red): ${landed.map(({ p }) => landLine(p)).join("; ")}`] : []),
+      ...(held.length > 0 ? [`set each down by hand (it spends nothing and records no par; conferre reads it abandoned): ${held.map(({ p }) => abandonLine(p)).join("; ")}`] : []),
       ...(waiting.length > 0 ? [`${waiting.map(({ p }) => `${p.face ?? p.group} tessera ${p.tessera}`).join(", ")} waits for its face to stand again`] : []),
-    ].join("; ") + "; the abandon that ends a half by name waits on its own branch (develop--a-begun-rite-sets-down)";
+    ].join("; ");
     // ONE OTHER HEAD for EVERY pending half, each landable there: the rite rolled back to it lands them at their own head instead.
     const back = allStale && heads.length === 1 && pending.every((p) => p.head === heads[0] && landable.has(p.tessera)) ? `; or land it at its own head: lares rite kukulu --rollback ${heads[0]!.slice(0, 12)} --branch ${branch}` : "";
     return {
