@@ -1069,7 +1069,10 @@ floor_take() {
   if [ -e "$f_lock" ] && command -v node >/dev/null 2>&1 && node "$HERE/floor-lock.mjs" --held >/dev/null 2>&1; then
     printf 'lares-container: the floor already stands held by this run; the image builds inside it\n' >&2; return 0
   fi
-  { exec 8>"$f_lock"; } 2>/dev/null || die "build refuses: the floor lock $f_lock cannot open here; an image builds only on the floor"
+  # Probe the open in a subshell first: under a POSIX sh (dash), a failing redirection on the special builtin `exec` exits the
+  # whole shell at once, so a bare `exec 8>… || die` would die silent and never name the refusal.
+  (exec 8>"$f_lock") 2>/dev/null || die "build refuses: the floor lock $f_lock cannot open here; an image builds only on the floor"
+  exec 8>"$f_lock" || die "build refuses: the floor lock $f_lock cannot open here; an image builds only on the floor"
   printf 'lares-container: waiting for the floor (%s)\n' "$f_lock" >&2
   flock 8 || die "build refuses: flock failed on $f_lock"
   FLOOR_TAKEN=1
