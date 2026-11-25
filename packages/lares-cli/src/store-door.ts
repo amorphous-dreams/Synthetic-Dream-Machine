@@ -17,7 +17,9 @@ import { storeDoorDirect, storeVerbFace, storeVerbGatesFirst, StoreHeld, STORE_D
 import { openLocalSession, SessionRefused } from "./session-connector.js";
 import { sealedAct } from "./sealed-act-door.js";
 import { vesselStanding, type VesselStanding } from "./custody-door.js";
-import { vesselDid, larSealHome } from "./env.js";
+import { vesselDid, larSealHome, larDataDir } from "./env.js";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { DaemonUnreachable, refusalCode, refusalHint, verbFailure } from "./verb-call.js";
 import { udsAlive, udsSocketPresent, udsSocketPath, whoHolds, invokeLocal, UdsUnreachable, LocalWaitExpired, type WhoHoldsAnswer } from "./local-connector.js";
 import { waitForResourceBudgeted, SlowBootTimeout, type BootPhase } from "./port-control.js";
@@ -220,10 +222,30 @@ function servingLine(verb: string, requestId: string, met: WhoHoldsAnswer | null
 }
 
 /** The progress line a parked wait prints: the vessel still boots, and the act stays owed. */
-function parkedLine(log: string): string {
+function parkedLine(log: string, holder: string): string {
   const at = bootStage(log);
   const stage = at >= 0 ? BOOT_MILESTONES[at]! : "unread";
-  return `[lares] the vessel still boots (stage ${stage}); the act stays owed.`;
+  const pids = pidsNamedIn(holder);
+  const named = pids.length > 0 ? ` (pid ${pids.join(", ")})` : "";
+  return `[lares] the vessel still boots (stage ${stage}); the act stays owed. To look: \`lares vessel read\` names the holder${named}. To stop waiting: interrupt this act; it stays owed.`;
+}
+
+/** The ask a paced door sends the vessel: its servo's own ceiling (one hour), the most patience the vessel holds, never the 30 s a missing figure defaults to. */
+const NO_SERVO_MS = 3_600_000;
+
+/** Does `pid` still run on this host? EPERM (another user's process) reads ALIVE; only ESRCH reads gone. */
+export function hostPidAlive(pid: number): boolean {
+  try { process.kill(pid, 0); return true; } catch (e) { return (e as NodeJS.ErrnoException).code === "EPERM"; }
+}
+
+/** The current boot's stretch of `<data dir>/stand.log`, from its last `phase → boot` line, so an earlier boot's fault never reads. Empty when the log stands unread. */
+export function standBootLog(): string {
+  try {
+    const lines = readFileSync(join(larDataDir(), "stand.log"), "utf8").split("\n");
+    let from = -1;
+    lines.forEach((line, i) => { if (/\bphase → boot\s*$/.test(line)) from = i; });
+    return from >= 0 ? lines.slice(from).join("\n") : "";
+  } catch { return ""; }
 }
 
 /** The pid(s) named in a `heldAs`/`whoHolds` message (`"a vessel (pid 1234) holds…"`, or M4's wedged
@@ -267,9 +289,12 @@ export async function throughStoreDoor(opts: {
     // adds none). It rides the wire; this process sets no timer against it.
     const anyPaced = phases.some((p) => p.paced === true);
     const totalBudgetMs = phases.reduce((sum, p) => sum + (p.paced === true ? 0 : p.budgetMs), 0);
-    const holderAlive = opts.holderAlive ?? ((pid: number): boolean => { try { process.kill(pid, 0); return true; } catch { return false; } });
-    const bootLog = opts.bootLog ?? ((): string => "");
+    const holderAlive = opts.holderAlive ?? hostPidAlive;
+    const bootLog = opts.bootLog ?? standBootLog;
     let holderGoneReads = 0;
+    // The named pid counts only once THIS host has read it alive: a vessel in another pid namespace names a pid the host never
+    // sees, and a host-side ESRCH there says nothing about the boot.
+    const seenAlive = new Set<number>();
     const progress = opts.progress ?? ((line: string) => { process.stderr.write(`${line}\n`); });
     const interactive = opts.interactive ?? process.stdin.isTTY === true;
     const requestId = newRequestId();
@@ -295,7 +320,7 @@ export async function throughStoreDoor(opts: {
     } else process.once("SIGINT", sigint);
     const verbPromise = (opts.face !== undefined
       ? invokeInSession(opts.verb, opts.args, opts.face, { signal: controller.signal, requestId })
-      : invokeAbortable(opts.verb, opts.args, await vesselDid(), { ...(anyPaced ? {} : { timeoutMs: totalBudgetMs }), signal: controller.signal, requestId }).then((r) => {
+      : invokeAbortable(opts.verb, opts.args, await vesselDid(), { timeoutMs: anyPaced ? NO_SERVO_MS : totalBudgetMs, signal: controller.signal, requestId }).then((r) => {
         // The vessel's own name for the refusal rides out with its words: a floor, a retired bag, an abandoned id.
         if (r.status === "error") throw new RoutedVerbRefused(r.errorMessage ?? "verb failed", r.refusal?.reason);
         return summaryOutput(r) ?? {};
@@ -324,7 +349,9 @@ export async function throughStoreDoor(opts: {
         // refusal, or the stand socket's exit; each names its refusal and its cure.
         if (met?.phase === "parked" && !settled) {
           const pids = pidsNamedIn(met.message);
-          holderGoneReads = pids.length > 0 && !pids.some(holderAlive) ? holderGoneReads + 1 : 0;
+          for (const pid of pids) if (holderAlive(pid)) seenAlive.add(pid);
+          const trusted = pids.some((pid) => seenAlive.has(pid));
+          holderGoneReads = trusted && !pids.some(holderAlive) ? holderGoneReads + 1 : 0;
           const log = bootLog();
           const refused = /uds error: (.+)/.exec(log);
           if (/fatal:/.test(log)) endWait(new StoreDoorEnded(opts.verb, "boot-fault", "the boot log attests `fatal:`"));
@@ -339,7 +366,7 @@ export async function throughStoreDoor(opts: {
       onPace: (phase) => {
         if (settled) return;
         if (phase === "serving") progress(servingLine(opts.verb, requestId, lastMet, interactive, opts.face));
-        else if (phase === "parked") progress(parkedLine(bootLog()));
+        else if (phase === "parked") progress(parkedLine(bootLog(), lastMessage));
       },
     }).then((): { readonly quiet: true } => ({ quiet: true }));
     let raced: { readonly quiet: true } | { readonly quiet: false; readonly v: Record<string, unknown> };
