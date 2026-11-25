@@ -158,11 +158,14 @@ describe("kukulu reads the lag on every raise and lays the workbench on the owne
     expect(unread.said.join("\n")).toMatch(/the lag reads nowhere/);
   });
 
-  it("RED: a workbench lay that fails after the yes names it, and the rite answers non-zero", async () => {
+  it("RED: a par landing reads green when the workbench lay after the yes answers non-zero: the lay waits, named, with its cure", async () => {
     const f = fakes({ yes: true, lay: 1 });
     const out = await riteKukulu(f.ports, {});
-    expect(out).toMatchObject({ code: 1, data: { workbench: { laid: false }, refusal: "kukulu-workbench-lay-failed" } });
+    // THE BALANCE ALREADY STANDS: the house landed par, so the lay's refusal reads as a warning, never the rite's red.
+    expect(out).toMatchObject({ code: 0, data: { workbench: { laid: false }, warnings: ["workbench-lay-waits"] } });
+    expect(out.data).not.toHaveProperty("refusal");
     expect(f.said.join("\n")).toMatch(/the workbench lay answered 1/);
+    expect(f.said.join("\n")).toContain("lares vessel lay --workbench --apply runs again safely");
   });
 
   it("RED: a Ctrl+C during the workbench lay (exit 130) reads as interrupted, never failed", async () => {
