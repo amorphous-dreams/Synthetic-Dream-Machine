@@ -1,0 +1,72 @@
+title: lar:///ha.ka.ba/lararium/tw5/heleuma/floor-queue
+type: text/memetic-wikitext+tiddlywiki
+
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/tw5/heleuma/floor-queue`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = true
+heleuma       = "ha"
+module-ref    = "lar:///ha.ka.ba/lararium/tw5/filters/floor-queue"
+role          = "code-meme: the floor-queue filter operator folds the test floor's ledger (QUEUE, RUN, WHY, TAKE, DONE, DROP) inside the wiki that holds it"
+source-file   = "packages/lararium-tw5/src/filters/floor-queue.ts"
+source-sha256 = "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+title         = "lar:///ha.ka.ba/lararium/tw5/heleuma/floor-queue"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lararium/tw5/heleuma/floor-queue"
+```
+
+<<~ ahu slot=`#/purpose`>>
+
+!! The Floor Queue
+
+Only the familiar runs builds and tests on this box, one heavy run at a time (operator, 2026-11-25, after the second WSL VHD crash). The queue the familiar drains stands as one append log, `lar:///ha.ka.ba/kahua/memory/state/test-floor`: `QUEUE` enters a tasked spirit's hand-back, `RUN` and `WHY` carry its ticket body, `TAKE` marks the floor held, `DONE` lands the bench gate's verdict with its byte rows (`wrote=`, `c-drop=`), `DROP` sets a ticket down unrun. `[[<ledger>]floor-queue[<view>],[<arg>]]` answers each view: waiting, next, skip, taken, green, red, stopped, dropped, budget, ticket, runs, sha, green-sha.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/law`>>
+
+!! The Queue Law Runs In The Wiki
+
+The placement law (mandate/floor-gate-1): code that CAN live in the wiki VM MUST. The fold (`packages/lararium-tw5/src/floor-ledger.ts`) orders tickets by their place in the log, never by a clock; a QUEUE over a waiting ticket folds to nothing, and a waiting ticket whose sha already holds a GREEN verdict reads `skip`. The host tools (`tools/floor-ledger.mjs`, `tools/floor-run.mjs`) append lines through the tiddler door and ask through the render door; while the doors stand dark they append to the flat mirror `<passwd home>/.lares-scratch/.floor/queue.log`, and `node tools/floor-ledger.mjs otakiage` folds it back in. The host gates (the one flock, the floor-guard hook, the C: sampler, source-only benches, the docker build lock) stay in `tools/`, because they gate host processes.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/callers`>>
+
+!! Callers
+
+The floor page (`lar:///ha.ka.ba/lararium/tw5/floor/page`) renders the views; `tools/floor-run.mjs --ticket <id>` asks `skip` before it runs, and `tools/floor-ledger.mjs ask <view> [<arg>]` asks any view.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/caps-cost`>>
+
+!! Caps and Cost
+
+The operator reads through the wiki it runs in and writes nothing; one call folds the ledger once.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/source`>>
+
+!! Source
+
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-tw5/src/filters/floor-queue.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#source-core` from=`?` to=`packages/lararium-tw5/src/floor-ledger.ts` family=`code` role=`has`>>
+
+<$transclude $tiddler="lar:///ha.ka.ba/lararium/tw5/filters/floor-queue"/>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/heleuma/meme-fold`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;fdTj4blmX2pQxGWBTKYcJB7CewPifHV_kOV-cpzInqs`>>
+
+<<^ code=`&#x0004;` to=`?`>>

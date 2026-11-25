@@ -7,9 +7,11 @@ import { fileURLToPath } from 'node:url';
 import { assertDisk } from './disk-guard.mjs';
 import { wasmStampBody } from './stamp-build.mjs';
 import { treeSharedInodes } from './module-inodes.mjs';
+import { requireFloor } from './floor-lock.mjs';
 
 export const USAGE_EXISTING = 'usage: provision-worktree.mjs --existing <worktree>';
-export const USAGE = `usage: provision-worktree.mjs <empty-dir>  |  ${USAGE_EXISTING}  (an existing branch worktree: submodules, then its own offline frozen pnpm install)`;
+export const USAGE_SOURCE_ONLY = 'usage: provision-worktree.mjs --source-only <empty-dir> [--branch <name>] [--base <ref>]';
+export const USAGE = `usage: provision-worktree.mjs <empty-dir>  |  ${USAGE_EXISTING}  (an existing branch worktree: submodules, then its own offline frozen pnpm install)  |  ${USAGE_SOURCE_ONLY}  (a tasked spirit's bench: the tracked tree alone)`;
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const WASM = 'tree-sitter-memetic-wikitext';
 const canNest = (a, b) => b === a || b.startsWith(a + sep);
@@ -175,6 +177,26 @@ export function provisionExisting({ worktree, run = defaultRun, log = console.lo
   return { worktree };
 }
 
+/**
+ * A SOURCE-ONLY BENCH (mandate/floor-gate-1, operator Q3): a tasked spirit edits, commits and pushes, and never builds or tests
+ * (only the familiar holds the floor), so its bench needs the tracked tree alone: `git worktree add` (a new `branch` off
+ * `base`, default `origin/develop`, or a detached `base` with no branch named) after the disk guard. No submodules, no
+ * install, no build, no node_modules: ~0.3G of source in place of ~0.5G of modules and 25-50k small files plus a whole build,
+ * and no heavy write ever stands concurrent. It takes no floor lock, since it writes nothing heavy.
+ */
+export function provisionSourceOnly({ source = ROOT, destination, branch, base = 'origin/develop', run = defaultRun, log = console.log, guard = assertDisk }) {
+  if (!destination) throw new Error(USAGE_SOURCE_ONLY);
+  source = realpathSync(source);
+  destination = assertDestination(source, destination);
+  guard();
+  if (branch !== undefined && !/^[A-Za-z0-9._/-]+$/.test(branch)) throw new Error(`--branch wants a branch name; got "${branch}"`);
+  const args = branch ? ['-C', source, 'worktree', 'add', '-b', branch, destination, base] : ['-C', source, 'worktree', 'add', '--detach', destination, base];
+  run('git', args, source);
+  const head = run('git', ['-C', destination, 'rev-parse', 'HEAD'], destination).trim();
+  log(`SOURCE-ONLY bench at ${destination} (${branch ? `branch ${branch}` : 'detached'} off ${base}, HEAD ${head}): no submodules, no install, no build; hand back a floor ticket for every run`);
+  return { destination, head };
+}
+
 /** `run` receives (executable, argv, cwd); injection lets tests avoid git, npm and network. `guard` reads the disk before any bulk lands. */
 export function provision({ source = ROOT, destination, run = defaultRun, log = console.log, guard = assertDisk }) {
   if (!destination) throw new Error(USAGE);
@@ -288,7 +310,16 @@ export function provision({ source = ROOT, destination, run = defaultRun, log = 
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  if (process.argv[2] === '--help') console.log(USAGE);
+  const argv = process.argv.slice(2);
+  if (argv[0] === '--help') console.log(USAGE);
+  else if (argv[0] === '--source-only') {
+    const opt = (name) => { const i = argv.indexOf(name); return i < 0 ? undefined : argv[i + 1]; };
+    const positional = argv.slice(1).filter((w, i, all) => !w.startsWith('--') && !['--branch', '--base'].includes(all[i - 1]));
+    if (positional.length !== 1) { console.error(USAGE_SOURCE_ONLY); process.exitCode = 1; }
+    else try { provisionSourceOnly({ destination: positional[0], branch: opt('--branch'), ...(opt('--base') ? { base: opt('--base') } : {}) }); } catch (error) { console.error(error.message); process.exitCode = 1; }
+  }
+  // THE FLOOR (mandate/floor-gate-1): a built bench installs and builds, so it runs only inside the one floor lock.
+  else if (requireFloor('provision-worktree.mjs', argv) !== true) { /* requireFloor exits 64 with the cure */ }
   else if (process.argv[2] === '--existing') {
     try { provisionExisting({ worktree: process.argv[3] }); } catch (error) { console.error(error.message); process.exitCode = 1; }
   } else if (process.argv.length !== 3) { console.error(USAGE); process.exitCode = 1; }

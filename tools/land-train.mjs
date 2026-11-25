@@ -28,7 +28,8 @@
  *           `.mem` carriers lands DIRECT over a moved span at once (merge-tree over the span head), riding its green ancestor.
  *   DIRECT  one lane whose head already holds the span head lands with no train: the land commit takes the lane head's tree,
  *           which the lane's own CI already read.
- *   --local today's battery verifies the train in a provisioned worktree instead of the cloud, and keeps the road walk: the
+ *   --local today's battery verifies the train in a provisioned worktree instead of the cloud (on the floor alone: outside the
+ *           one floor lock it exits 64, cure `node tools/floor-run.mjs -- node tools/land-train.mjs --local …`), and keeps the road walk: the
  *           span may stand past the lanes' base only by LANDS or by ROAD commits read GREEN (an ignored-only one carried by
  *           its nearest green ancestor).
  *   --plan  prints the commits it would write; it pushes nothing.
@@ -56,7 +57,8 @@
  *       · 6 disk floor, worktree cap or a run in flight on the span (--local, DIRECT), or the queue locked · 7 provision,
  *       install or build failed (--local) · 8 a lane not green · 10 UNREADABLE · 11 some landed, the rest dropped (each named)
  *       · 12 a security-class lane lacks its SHIP · 13 VOID (a train run cancelled clean, or its ref moved) · 14 some
- *       landed, dark queued entries skipped (kept queued) · 15 held-out red or lagging · 16 the span itself reads red.
+ *       landed, dark queued entries skipped (kept queued) · 15 held-out red or lagging · 16 the span itself reads red
+ *       · 64 --local outside the floor lock (mandate/floor-gate-1).
  *
  * Author identity reads `git config user.name/email`. Disk floor: LARES_DISK_MIN_C_GB (60) and 40 on /. The Docker prune
  * stays the controller's own (an operator-scoped standing permission), outside this tool.
@@ -151,6 +153,7 @@ export function verdictWords(stdout, status) {
 
 import { globToRegExp, onlyIgnoredPaths } from "./ci-ignored-paths.mjs";
 import { classifyFailure, POLL_FLOOR_S, pollRefusal } from "./ci-verdict.mjs";
+import { requireFloor } from "./floor-lock.mjs";
 
 export { POLL_FLOOR_S };
 /** The land's ops paced by its poll: `ops.wait()` sleeps the poll between two GitHub reads (tests inject `ops.sleep`). */
@@ -985,8 +988,11 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
   // The poll floor refuses before the tool reads anything: no git, no gh.
   { const under = pollRefusal(poll); if (under) { console.error(`land-train: ${under}`); process.exit(2); } }
   if (!(k >= 1) || !(depth >= 1)) { console.error(usage); process.exit(2); }
-  const cwd = process.cwd(), ops = realOps({ cwd, scratch });
   const [verb, ...rest] = argv;
+  // THE FLOOR (mandate/floor-gate-1): `--local` provisions, builds and runs suites on this box, so it runs only inside the one
+  // floor lock; the cloud train (the default) and `--plan` build nothing here and pass.
+  if (local && !plan && verb !== "status" && verb !== "enqueue") requireFloor("land-train.mjs", process.argv.slice(2));
+  const cwd = process.cwd(), ops = realOps({ cwd, scratch });
   let code;
   if (verb === "status") ({ code } = await queueStatus({ span, cwd, queueDir }, ops));
   else if (verb === "enqueue") ({ code } = rest.length ? await enqueue({ specs: rest, span, cwd, poll, shipDir, queueDir }, ops) : { code: 2 });
