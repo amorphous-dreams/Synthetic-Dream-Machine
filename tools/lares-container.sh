@@ -1641,7 +1641,7 @@ keeper_commit_lei() { # $1 = the revision, $2 = the branch whose kukulu lei lice
   # from bytes and its own chain, trusting no network; a CI verdict could only be re-asked of a web2 service. A green verdict
   # for this revision and tree rests under the house's cache and is reused; a red or missing one runs the gate again.
   kl_bench="$HOUSE/cache/bench/$kl_rev.json"
-  kl_bench_cure="cure it in the checkout (node tools/bench-gate.mjs --verdict $kl_bench, at $kl_rev with its tracked tree clean), then lares rite kukulu again, $kl_cure"
+  kl_bench_cure="cure it in the checkout (node tools/floor-run.mjs -- node tools/bench-gate.mjs --verdict $kl_bench, at $kl_rev with its tracked tree clean), then lares rite kukulu again, $kl_cure"
   kl_bench_read() { # one word: green <sha256:hex>, red, differs, or unread
     node -e 'const fs=require("fs"),c=require("crypto");const[f,rev,tree]=process.argv.slice(1);let b;try{b=fs.readFileSync(f,"utf8")}catch{console.log("unread");process.exit(0)}let v;try{v=JSON.parse(b)}catch{console.log("unread");process.exit(0)}if(!v||v.kind!=="lares-bench-verdict"||JSON.stringify(v)!==b){console.log("unread");process.exit(0)}if(v.rev!==rev||v.tree!==tree){console.log("differs");process.exit(0)}if(v.code!==0||!/^BENCH GATE GREEN/.test(String(v.line))){console.log("red");process.exit(0)}console.log("green sha256:"+c.createHash("sha256").update(b).digest("hex"))' "$kl_bench" "$kl_rev" "$kl_tree" 2>/dev/null | tr -d '\r'
   }
@@ -1653,7 +1653,7 @@ keeper_commit_lei() { # $1 = the revision, $2 = the branch whose kukulu lei lice
       mkdir -p -- "$HOUSE/cache/bench" || die "pulama name-successor --lei: cannot make $HOUSE/cache/bench (keeper-lei-bench-unread); no successor named: $kl_bench_cure"
       rm -f -- "$kl_bench"
       printf 'lares-container: name-successor --lei: the bench gate runs over %s, the tree the image carries (the local witness; CI annotates, never decides)\n' "$kl_rev" >&2
-      (cd "$kl_top" && node tools/bench-gate.mjs --verdict "$kl_bench" </dev/null >&2) || true
+      (cd "$kl_top" && node tools/floor-run.mjs -- node tools/bench-gate.mjs --verdict "$kl_bench" </dev/null >&2) || true   # on the floor: one heavy run at a time, the C: byte meter beside it
       [ -z "$(git -C "$kl_top" status --porcelain --untracked-files=no)" ] && [ "$(git -C "$kl_top" rev-parse HEAD 2>/dev/null)" = "$kl_rev" ] || die "pulama name-successor --lei: the checkout moved under the bench gate (keeper-lei-bench-differs); no successor named: $kl_bench_cure"
       kl_verdict=$(kl_bench_read) ;;
   esac
