@@ -16,7 +16,18 @@ import { createHash } from "node:crypto";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { CensusRefusal, OccupiedStoreRefusal, S_SEAL_MAGIC, DEVICE_DELEGATION_DOMAIN, floorRestKey, encodeIndexEntry, mintOutboxKey, readIndexEntry, readsAsOutboxSeal, restDigest, sealOutboxParcel, writeSealedCarrier } from "@lararium/mesh";
+import { CensusRefusal, OccupiedStoreRefusal, writeSealedCarrier } from "@lararium/mesh/sealed-writer";
+import { S_SEAL_MAGIC } from "@lararium/mesh/s-envelope";
+import { DEVICE_DELEGATION_DOMAIN } from "@lararium/mesh/domains";
+import { floorRestKey } from "@lararium/mesh/held-rest-key";
+import {
+  encodeIndexEntry,
+  mintOutboxKey,
+  readIndexEntry,
+  readsAsOutboxSeal,
+  restDigest,
+  sealOutboxParcel,
+} from "@lararium/mesh/sealed-store-rest";
 import { FsCustodyIo } from "../src/custody-io.js";
 import { appendFaceEntry } from "../src/face-index.js";
 import { handleRecordPathIn } from "./face-paths.js";

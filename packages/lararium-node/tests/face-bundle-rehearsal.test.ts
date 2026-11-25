@@ -24,9 +24,10 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, expect, test, vi } from "vitest";
 import { InMemoryEventStore, KeyhiveProvider } from "@lararium/keyhive";
-import {
-  MEMORY_CUT_SHADOW_READ, bundleMemoryKeypair, hex, hexToBytes, isVerbRefusal, mintBundleKey, openFaceBundleBody, openMemorySection, readFaceBundleBody,
-} from "@lararium/mesh";
+import { MEMORY_CUT_SHADOW_READ, openMemorySection } from "@lararium/mesh/memory-section";
+import { bundleMemoryKeypair, mintBundleKey, openFaceBundleBody, readFaceBundleBody } from "@lararium/mesh/face-bundle";
+import { hex, hexToBytes } from "@lararium/mesh/crypto";
+import { isVerbRefusal } from "@lararium/mesh/verb-refusal";
 import { runFoundTheFace } from "../src/commands/init.js";
 import { seatedCustody, unseatCustody } from "../src/custody-seat.js";
 import { loadFaceAtomOfGroup } from "../src/face-atom-store.js";

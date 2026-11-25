@@ -43,12 +43,10 @@
  * Platform-blind: rides @lararium/mesh's cabal-invite + admission-price only. NO node: imports.
  * Meme: lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-siege-gate
  */
-import {
-  decideCabalJoin, type CabalInvite, type CabalJoinPolicy, type JoinRefusal,
-  priceAdmission, type AdmissionDials, type AdmissionPrice,
-  canonicalIdentity, vouchDagFromInvites, type CappedVouch, type VouchKeyResolver,
-  type VouchEdge,
-} from "@lararium/mesh";
+import { decideCabalJoin, type CabalInvite, type CabalJoinPolicy, type JoinRefusal } from "@lararium/mesh/cabal-invite";
+import { priceAdmission, type AdmissionDials, type AdmissionPrice } from "@lararium/mesh/admission-price";
+import { canonicalIdentity, vouchDagFromInvites, type CappedVouch, type VouchKeyResolver } from "@lararium/mesh/vouch-dag";
+import { type VouchEdge } from "@lararium/mesh/lineage-rank";
 
 /** Why a crossing did not clear — the invite gate's own refusals, plus the one the price wall raises. */
 export type AdmissionRefusal =

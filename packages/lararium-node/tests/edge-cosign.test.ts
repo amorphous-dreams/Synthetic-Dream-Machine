@@ -9,11 +9,12 @@ import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import { Repo } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
-import {
-  DAEMON_BAG_ID, realmEdgeBoardDocUrl, materializeSharedLarDoc,
-  edgeKapaeActsFromBoard, foldEdgeReadings, countEdgeActs, hex,
-  charterHandLineage, readRealmFrontier, realmRaiseCids,
-} from "@lararium/mesh";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { realmEdgeBoardDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { edgeKapaeActsFromBoard, foldEdgeReadings, countEdgeActs } from "@lararium/mesh/edge-kapae";
+import { hex } from "@lararium/mesh/crypto";
+import { charterHandLineage } from "@lararium/mesh/charter-hand-lineage";
+import { readRealmFrontier, realmRaiseCids } from "@lararium/mesh/realm-frontier";
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { larDataDir, larSealHome, larBootstrapPath } from "../src/vessel-paths.js";
 import { writeNexusDoc } from "../src/nexus-doc.js";
@@ -23,7 +24,8 @@ import { noteVesselRealm, vesselEdgeCharter } from "../src/edge-board.js";
 import { carriedCharterHome, primaryNexusAid } from "../src/carried-set.js";
 import { runEdgePartial, runEdgeCosign, EdgeCosignError } from "../src/commands/edge-cosign.js";
 import { chairKey, chairSeed, seatChairs } from "./seat-fixture.js";
-import { ed25519SignerFromSeed, nexusAidOf } from "@lararium/mesh";
+import { ed25519SignerFromSeed } from "@lararium/mesh/ed25519-door";
+import { nexusAidOf } from "@lararium/mesh/nexus-seal-seed";
 import { foundRealmFrontier } from "./realm-frontier-fixture.js";
 import { seedFaceAtom, actingAtomKey } from "./atom-fixture.js";
 import { makeEdgeShadowRing } from "../src/edge-shadow-ring.js";
@@ -57,7 +59,7 @@ const houses = [0, 1].map((face) => keepHouse(`lares-edge-cosign-h${face}-`, asy
   await generateOrLoadPersonaGroupRoot(0);
   writeNexusDoc(larSealHome(), genesis!.doc());
   await ownedStore(larDataDir(), async (repo) => {
-    const daemon = await import("@lararium/mesh").then((m) => m.seedDaemonDoc(repo));
+    const daemon = await import("@lararium/mesh/social-seed").then((m) => m.seedDaemonDoc(repo));
     const { mkdirSync, writeFileSync } = await import("node:fs");
     const { dirname } = await import("node:path");
     mkdirSync(dirname(larBootstrapPath()), { recursive: true });

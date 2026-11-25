@@ -10,7 +10,7 @@
  * writes nothing either; this door names the refusal and the would-be writer in the log.
  */
 import { ArchiveIdentityMismatch } from "@lararium/keyhive";
-import type { CustodyWriter } from "@lararium/mesh";
+import type { CustodyWriter } from "@lararium/mesh/capability-record";
 
 export interface FaceNamedCustodyWriteDeps {
   /** Whether a face (by PersonaGroup) stands open to take its own Archive now: the mounted face, or a lit sibling with a session. */

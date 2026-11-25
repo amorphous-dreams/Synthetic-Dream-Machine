@@ -18,7 +18,7 @@
  * test would pass on a door that never calls it.
  */
 import { describe, test, expect, beforeAll } from "vitest";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, copyFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -77,5 +77,14 @@ describe.skipIf(skip)(`normalize names the dirty it did not stamp${note}`, () =>
   test("★ and says nothing when every dirty carrier was named ★", () => {
     const out = run("check", named, unnamed);
     expect(out).not.toMatch(/dirty and NOT named/);
+  });
+  test("★ a check from a cwd outside any git tree answers a verdict, with no git usage dump ★", () => {
+    const bare = mkdtempSync(path.join(tmpdir(), "lares-check-nogit-"));
+    const f = path.join(bare, "prism.mem");
+    copyFileSync(SOURCE, f);
+    const r = spawnSync("node", [BIN, "meme", "check", f], { cwd: bare, encoding: "utf8" });
+    const all = `${r.stdout}${r.stderr}`;
+    expect(all, "git's usage dump leaked into the verdict").not.toMatch(/git diff --no-index|Not a git repository/);
+    expect(r.stdout, "no verdict answered").toMatch(/canonical|prism\.mem/);
   });
 });

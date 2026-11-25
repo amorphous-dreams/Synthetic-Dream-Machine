@@ -6,7 +6,7 @@
  * content-born summon runs as a local ask whose `requestedBy` the content chose.
  */
 import { describe, expect, test } from "vitest";
-import { mkDaemonPlaceVerb } from "@lararium/mesh";
+import { mkDaemonPlaceVerb } from "@lararium/mesh/island-protocol";
 import { placedAskIsLocal } from "../src/daemon-behavior.js";
 
 describe("R1: the origin of a placed ask decides whether it reads local", () => {

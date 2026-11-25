@@ -10,7 +10,7 @@
  */
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { sha256HexSync } from "@lararium/mesh";
+import { sha256HexSync } from "@lararium/mesh/crypto";
 import { faceDir, listFaceFiles, readFaceIndexSync } from "./face-index.js";
 import { resolveFace } from "./face-selector.js";
 import { larIdentityDir } from "./vessel-paths.js";

@@ -62,7 +62,12 @@ import { dirname, isAbsolute, join } from "node:path";
 import { CROSSROADS_BAG, mintPromotionReceipt, promotionReceiptPath } from "../promotion-receipt.js";
 import { bccOf, frameShape, matchCarrierHead } from "@lararium/memetic-frame";
 import { memeticVerdict, rootMetaFields } from "@lararium/tw5";
-import { exactBytesHash, promotionApprovalBytes, readPromotionApproval, type PromotionApprovalVerdict } from "@lararium/mesh";
+import {
+  exactBytesHash,
+  promotionApprovalBytes,
+  readPromotionApproval,
+  type PromotionApprovalVerdict,
+} from "@lararium/mesh/promotion-approval";
 
 /** The residency MOVE this door asks for — `executeMove`'s own shape. The title never changes. */
 export interface PromotionMove {

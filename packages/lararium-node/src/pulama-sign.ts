@@ -12,10 +12,9 @@
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
  */
-import {
-  KAHUA_ACT_DOMAIN, PLUGIN_OFFERING_DOMAIN, kahuaActBodyFault, pluginOfferingCid, readKahuaAct, signKahuaActBody, signPluginOffering, verifyPluginOffering, kahuaActCid,
-  type KahuaActBody, type PluginOffering,
-} from "@lararium/mesh";
+import { KAHUA_ACT_DOMAIN, PLUGIN_OFFERING_DOMAIN } from "@lararium/mesh/domains";
+import { kahuaActBodyFault, readKahuaAct, signKahuaActBody, kahuaActCid, type KahuaActBody } from "@lararium/mesh/kahua-stage";
+import { pluginOfferingCid, signPluginOffering, verifyPluginOffering, type PluginOffering } from "@lararium/mesh/plugin-offering";
 import { offeringTermsOf, type PulamaOfferingTerms } from "./pulama-offering.js";
 
 /** What a kind's check reads beside the record: the face root's public key and the face's group (null where none reads). */

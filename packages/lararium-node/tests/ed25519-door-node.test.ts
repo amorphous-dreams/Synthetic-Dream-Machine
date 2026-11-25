@@ -11,7 +11,8 @@ import { describe, expect, test } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
-import { hex, hexToBytes, verifyEd25519 } from "@lararium/mesh";
+import { hex, hexToBytes } from "@lararium/mesh/crypto";
+import { verifyEd25519 } from "@lararium/mesh/ed25519-door";
 import { verifyNymSignature } from "../src/vessel-raise.js";
 import { IDENTITY_KEY, NOBODYS_SIGNATURE, torsionHand } from "../../lararium-mesh/tests/ed25519-torsion.js";
 
@@ -46,7 +47,7 @@ describe("the commands' verifiers hand the door their hex unread", () => {
   test.each(COMMANDS)("%s", (file) => {
     const source = readFileSync(join(import.meta.dirname, "..", "src", "commands", file), "utf8");
     expect(source).toMatch(/Promise\.resolve\(verifyEd25519\(sigHex, bytes, \w+\)\)/);
-    expect(source).toMatch(/import \{[^}]*\bverifyEd25519\b[^}]*\} from "@lararium\/mesh";/);   // the door, by name
+    expect(source).toMatch(/import \{[^}]*\bverifyEd25519\b[^}]*\} from "@lararium\/mesh\/ed25519-door";/);   // the door, by name
     expect(source).not.toMatch(/@noble\//);                                                     // and no curve library at all
   });
   test("the edge doors hold no verifier of their own: the mesh fold reads each signature through the door", () => {

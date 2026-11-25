@@ -24,7 +24,14 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/browser/surface-return-leg
  */
-import { LAR_CAMERA_STORY, mkLarControlResult, readLarControlEvent, type LarMsg_ControlEvent, type LarMsg_ControlResult, type LarRefusal } from "@lararium/mesh";
+import {
+  LAR_CAMERA_STORY,
+  mkLarControlResult,
+  readLarControlEvent,
+  type LarMsg_ControlEvent,
+  type LarMsg_ControlResult,
+  type LarRefusal,
+} from "@lararium/mesh/lar-camera";
 
 /** The daemon island's half of the return leg. */
 export interface DaemonReturnDoor {

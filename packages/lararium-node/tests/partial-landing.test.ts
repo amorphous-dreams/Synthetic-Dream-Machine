@@ -4,7 +4,7 @@
  * each saw the mark move. No clock enters.
  */
 import { describe, expect, test } from "vitest";
-import type { NexusPartialJudgement } from "@lararium/mesh";
+import type { NexusPartialJudgement } from "@lararium/mesh/nexus-partial";
 import { judgeStillBeforeWrite, LANDING_PASSES } from "../src/partial-landing.js";
 
 const refuse = (message: string): Error => new Error(message);

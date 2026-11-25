@@ -4,7 +4,11 @@
  * `rotation-gen`, no `generation` in the answer.
  */
 import { describe, expect, test } from "vitest";
-import { emptyLarDoc, recipeUri, storedRecord, wikiBagUri, type LarDoc, type LarTiddlerRecord } from "@lararium/mesh";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { recipeUri } from "@lararium/mesh/lar-uris";
+import { storedRecord } from "@lararium/mesh/stored-record";
+import { wikiBagUri } from "@lararium/mesh/wiki-recipe";
+import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { Repo } from "./wiki-shore-rig.js";
 import { makeRotateRecipeReactor } from "../src/compaction-handlers.js";
 import type { CatalogAccessor } from "../src/catalog-accessor.js";

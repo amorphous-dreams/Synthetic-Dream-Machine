@@ -67,7 +67,9 @@
 
 import { routingString } from "./routing-arg.js";
 import { takeWardTicket, type WardCredential } from "./ward-credential.js";
-import { WardRefused, CanonOfferRefused, type FloorRemount } from "@lararium/mesh";
+import { WardRefused } from "@lararium/mesh/ward-slots";
+import { CanonOfferRefused } from "@lararium/mesh/canon-offer";
+import { type FloorRemount } from "@lararium/mesh/floor-pin";
 
 /** The route a row's own ticket resolved to, carried beside its arguments under a key no wire spells (seat-harness#/the-ward). */
 const WARD_ARG: unique symbol = Symbol("ward");
@@ -89,14 +91,25 @@ import { unlockedFaceOrdinals } from "./custody-seat.js";
 import { runPromoteVerb } from "./commands/promote.js";
 import { runSwarmVerb } from "./commands/swarm.js";
 import { runRiteVerb, type RiteAction } from "./commands/rite.js";
-import { PromoteRefused, KapaeRefused, SwarmRefused, SWARM_VERB_HAND_CODES, SENSE_HAND_CODES, type PromoteCommandRequest, type SwarmWikiPort } from "@lararium/mesh";
+import { PromoteRefused } from "@lararium/mesh/promote";
+import { KapaeRefused } from "@lararium/mesh/promote-kapae";
+import { SwarmRefused, type SwarmWikiPort } from "@lararium/mesh/swarm-tiddlers";
+import { SWARM_VERB_HAND_CODES } from "@lararium/mesh/swarm-door";
+import { SENSE_HAND_CODES } from "@lararium/mesh/sensorium-lifecycle";
+import { type PromoteCommandRequest } from "@lararium/mesh/promote-command";
 import { faceRouteBindDigest, FaceRouteRefused, withFaceRoute } from "./face-route.js";
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
-import type { LarDoc } from "@lararium/mesh";
+import type { LarDoc } from "@lararium/mesh/base-doc";
 import { randomBytes } from "node:crypto";
 import { hasLine, pagePlaneRows, param, type VerbReactor } from "@lararium/tw5";
-import type { HandleClaim } from "@lararium/mesh";
-import { federationPostureFromDoc, isVerbRefusal, readNexusActPartial, type FederationPosture, type CarriageAction, type KahuQuorumSeats, type SealEpoch } from "@lararium/mesh";
+import type { HandleClaim } from "@lararium/mesh/handle-kel";
+import { federationPostureFromDoc } from "@lararium/mesh/nexus-seal-seed";
+import { isVerbRefusal } from "@lararium/mesh/verb-refusal";
+import { readNexusActPartial } from "@lararium/mesh/nexus-partial";
+import { type FederationPosture } from "@lararium/mesh/federation-gate";
+import { type CarriageAction } from "@lararium/mesh/carriage-registry";
+import { type KahuQuorumSeats } from "@lararium/mesh/kapae-antigen";
+import { type SealEpoch } from "@lararium/mesh/wax-stamp";
 import { runCabalAct, runCabalCosign, runCabalStanding, NexusCabalError } from "./commands/nexus-cabal.js";
 import { runFloorRelease } from "./commands/nexus-release.js";
 import { runFloorCut } from "./commands/floor-cut.js";
@@ -226,7 +239,7 @@ export const STORE_DOOR_VERBS = [
   "kahua-mint", "kahua-propose", "kahua-stage", "kahua-lift", "kahua-withdraw", "kahua-carry", "kahua-read",
   "promote-prepare", "promote-commit", "promote-drop", "promote-orphan", "promote-list", "kapae-raise", "kapae-lower", "kapae-flag",
   "swarm-show", "swarm-cap-set", "swarm-share-set", "swarm-lei-kui", "swarm-lei-unstring", "swarm-lei-restring",
-  "rite-begin", "rite-land", "rite-receipts", "rite-offer",
+  "rite-begin", "rite-land", "rite-abandon", "rite-receipts", "rite-offer",
 ] as const;
 export type StoreDoorVerb = (typeof STORE_DOOR_VERBS)[number];
 
@@ -248,7 +261,7 @@ export const STORE_DOOR_FACE_VERBS: ReadonlySet<StoreDoorVerb> = new Set<StoreDo
   "kahua-mint", "kahua-propose", "kahua-stage", "kahua-lift", "kahua-withdraw", "kahua-carry", "kahua-read",
   "promote-prepare", "promote-commit", "promote-drop", "promote-orphan", "promote-list", "kapae-raise", "kapae-lower", "kapae-flag",
   "swarm-show", "swarm-cap-set", "swarm-share-set", "swarm-lei-kui", "swarm-lei-unstring", "swarm-lei-restring",
-  "rite-begin", "rite-land", "rite-receipts", "rite-offer",
+  "rite-begin", "rite-land", "rite-abandon", "rite-receipts", "rite-offer",
 ]);
 
 /**
@@ -294,8 +307,14 @@ export const SENSE_HAND_DOOR_CODES: ReadonlyMap<string, string> = new Map(Object
  */
 export const DISK_WRITE_HAND_CODES: ReadonlyMap<string, string> = new Map([["wiki-render-out", "render-output-needs-hand"]]);
 
-/** The socket's one hand-only table: every code a seat session refuses, promote, swarm, floor, wiki, sense and disk writes together. */
-export const STORE_DOOR_HAND_CODES: ReadonlyMap<string, string> = new Map([...PROMOTE_HAND_CODES, ...SWARM_HAND_CODES, ...FLOOR_HAND_CODES, ...WIKI_HAND_CODES, ...SENSE_HAND_DOOR_CODES, ...DISK_WRITE_HAND_CODES]);
+/**
+ * The rite row a person's hand alone runs: `rite-abandon` sets a begun half down (a kāpae over it), so the socket refuses a seat's
+ * ask `hand-act-only`, the code every hand act answers an AI seat with (`hand-refusal`). The spending rows stay open to a seat.
+ */
+export const RITE_HAND_CODES: ReadonlyMap<string, string> = new Map([["rite-abandon", "hand-act-only"]]);
+
+/** The socket's one hand-only table: every code a seat session refuses, promote, swarm, floor, wiki, sense, disk writes and the rite's abandon together. */
+export const STORE_DOOR_HAND_CODES: ReadonlyMap<string, string> = new Map([...PROMOTE_HAND_CODES, ...SWARM_HAND_CODES, ...FLOOR_HAND_CODES, ...WIKI_HAND_CODES, ...SENSE_HAND_DOOR_CODES, ...DISK_WRITE_HAND_CODES, ...RITE_HAND_CODES]);
 /** The acts a seat session refuses at the socket: the kahua operator rows (`beyond-profile`) and every row of the code table. */
 export const STORE_DOOR_HAND_ONLY_ACTS: ReadonlySet<string> = new Set([...KAHUA_OPERATOR_VERBS, ...STORE_DOOR_HAND_CODES.keys()]);
 
@@ -439,6 +458,7 @@ function storeDoorVerbsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
   return {
     "rite-begin": (args) => answer("rite-begin", () => riteVerb("begin", args)),
     "rite-land": (args) => answer("rite-land", () => riteVerb("land", args)),
+    "rite-abandon": (args) => answer("rite-abandon", () => riteVerb("abandon", args)),
     "rite-receipts": (args) => answer("rite-receipts", () => riteVerb("receipts", args)),
     "rite-offer": (args) => answer("rite-offer", () => riteVerb("offer", args)),
     "swarm-show": (args) => answer("swarm-show", () => swarmVerb("show", args)),

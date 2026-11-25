@@ -6,7 +6,11 @@
  * the re-export hub it grew from collapsed (YIN).
  */
 
-import type { Repo, CompositeStore, KahuReachSource, SlotReach, CarriedEffectRecord, RetireOutcome } from "@lararium/mesh";
+import type { Repo } from "@lararium/mesh/automerge";
+import type { CompositeStore } from "@lararium/mesh/composite-store";
+import type { KahuReachSource } from "@lararium/mesh/kahu-canon-reach";
+import type { SlotReach } from "@lararium/mesh/wiki-recipe";
+import type { CarriedEffectRecord, RetireOutcome } from "@lararium/mesh/shell-leaving-record";
 import type { CatalogAccessor } from "./catalog-accessor.js";
 import type { ResidencyOpPost } from "./worker-data-verbs.js";
 

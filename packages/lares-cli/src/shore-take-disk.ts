@@ -35,7 +35,9 @@
 
 import { statSync } from "node:fs";
 import { atomicWriteFileSync, contentHash, poolHeadOf, syncedTreeKey, type GitRun, type SyncedTree } from "@lararium/node";
-import { carrierHash, digestsEqual, mediaTypeFromExt, ridesAsPointer } from "@lararium/mesh";
+import { carrierHash } from "@lararium/mesh/crypto";
+import { digestsEqual } from "@lararium/mesh/agile-digest";
+import { mediaTypeFromExt, ridesAsPointer } from "@lararium/mesh/content-handle";
 import { basePoolText, mergeStandoffSides } from "./shore-merge.js";
 import { carrierCasFlagged, declaredType } from "./cas-stage.js";
 import { scanFiles, settleIngest, submitIngest, type ScanRow, type SubmitIngestOpts } from "./ingest-core.js";

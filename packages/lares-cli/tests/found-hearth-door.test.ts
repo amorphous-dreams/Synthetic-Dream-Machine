@@ -21,7 +21,9 @@ import { setFoundingBundleRoute } from "../src/commands/found.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 import { larSealHome } from "../src/env.js";
 import { listPersonaRoots, readNexusDoc, seatReadBackStandIn } from "@lararium/node";
-import { NEXUS_AID_PATTERN, bindBundleRoutes, encodeFaceBundle, mintBundleKey, nexusAidOf, sealFaceBundleBody } from "@lararium/mesh";
+import { NEXUS_AID_PATTERN } from "@lararium/mesh/wax-stamp";
+import { bindBundleRoutes, encodeFaceBundle, mintBundleKey, sealFaceBundleBody } from "@lararium/mesh/face-bundle";
+import { nexusAidOf } from "@lararium/mesh/nexus-seal-seed";
 import { nativeKdf } from "@lararium/mesh/node";
 
 vi.setConfig({ testTimeout: 60_000, hookTimeout: 60_000 });

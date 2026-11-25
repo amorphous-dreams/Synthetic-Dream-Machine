@@ -8,7 +8,7 @@
  * A store that already carries either method keeps its own.
  */
 
-import type { ChangeOrigin, LarTiddlerRecord, LarTiddlerStore, LarWriteOptions } from "@lararium/mesh";
+import type { ChangeOrigin, LarTiddlerRecord, LarTiddlerStore, LarWriteOptions } from "@lararium/mesh/tiddler-store";
 import type { IslandStore } from "../src/island-adaptor.js";
 
 export function asIslandStore<T extends LarTiddlerStore>(store: T, working = "lar:///ha.ka.ba/wikis/test/working"): T & IslandStore {

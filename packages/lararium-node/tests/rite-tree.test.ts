@@ -8,7 +8,7 @@ import { execFileSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { SwarmRefused } from "@lararium/mesh";
+import { SwarmRefused } from "@lararium/mesh/swarm-tiddlers";
 import { gitTreeOf, keepStagedTree, riteTreeOf } from "../src/commands/rite.js";
 import { BUNDLE_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, bundleIdOf, sealRedeclare, sha256Hex, zeroCounts } from "../src/bundle-manifest.js";
 

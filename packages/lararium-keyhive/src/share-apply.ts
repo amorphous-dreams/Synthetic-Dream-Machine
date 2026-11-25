@@ -35,10 +35,22 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-share-config
  */
+import { isHouseCanonBag } from "@lararium/mesh/kahu-canon-reach";
 import {
-  isHouseCanonBag, owedGrants, ownEntry, plainRecordOrNull, recipeUri, resolveShare, sha256HexBytesSync, sharePendingTitle, shareEntryBag, storedRecord,
-  type LarDoc, type LarTiddlerRecord, type OwedGrant, type ShareFace, type ShareEntry, type StoredLarRecord,
-} from "@lararium/mesh";
+  owedGrants,
+  resolveShare,
+  sharePendingTitle,
+  shareEntryBag,
+  type OwedGrant,
+  type ShareFace,
+  type ShareEntry,
+} from "@lararium/mesh/share-config";
+import { ownEntry, plainRecordOrNull, type StoredLarRecord } from "@lararium/mesh/stored-value";
+import { recipeUri } from "@lararium/mesh/lar-uris";
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
+import { storedRecord } from "@lararium/mesh/stored-record";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 
 /** A face of the vessel as the share door reads it: its handle index, its pet-name, and, while lit, its group and catalog half. */
 export interface ShareLitFace extends ShareFace {

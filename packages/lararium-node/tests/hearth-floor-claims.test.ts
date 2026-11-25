@@ -11,10 +11,11 @@ import { afterAll, describe, expect, test, vi } from "vitest";
 import { cpSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import {
-  deriveGateBundle, floorGateRoot, floorKeyDoor, floorRoute, fileHearthFloorCard, hearthFloorCardText, hearthPinIndex, readHearthFloorCard,
-  verifyHearthFloorCard, verifyPlaceKel, hex, type RandomProvider,
-} from "@lararium/mesh";
+import { deriveGateBundle, floorGateRoot, floorKeyDoor, floorRoute } from "@lararium/mesh/gate-bundle-door";
+import { fileHearthFloorCard, hearthFloorCardText, readHearthFloorCard, verifyHearthFloorCard } from "@lararium/mesh/hearth-floor-pins";
+import { hearthPinIndex } from "@lararium/mesh/admit-gate-pin";
+import { verifyPlaceKel } from "@lararium/mesh/vessel-kel";
+import { hex, type RandomProvider } from "@lararium/mesh/crypto";
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
 import { foundDirect } from "./found-route.js";
 import { loadPlaceAid, loadVesselVerifyingKey, rotatePlace } from "../src/node-vessel-identity.js";

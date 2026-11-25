@@ -97,7 +97,7 @@ import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
 import { projectSubmission, PROFILES, profileOf, recordedTargetOf, resolveWeaveTarget, type WeaveProfile } from "@lararium/tw5/weave";
 import { homedInTheKahuWorkbench, readCarrierShape, readCarrierEdges, readCarrierLifecycle, checkCarrierLifecycle, memeticVerdict } from "@lararium/tw5";
 import { verifyBcc, classifyPostEot, stampCarrier } from "@lararium/memetic-frame";
-import { newChangeId } from "@lararium/mesh";
+import { newChangeId } from "@lararium/mesh/residency-actions";
 import { faceSigningSeat, listFaceOrdinals, runPromoteCheckBytes } from "@lararium/node";
 import { vesselDid, larSealHome } from "../env.js";
 import { containerArgs } from "../container-target.js";
@@ -331,10 +331,10 @@ function normalizeFiles(args: ParsedArgs, write: boolean, problems = false): num
   // would otherwise reach the matcher's stream).
   let unnamed: string[] = [];
   if (!problems) try {
-    const dirty = String(execFileSync("git", ["diff", "--name-only", "--", "*.mem"], { encoding: "utf8" }))
+    const dirty = String(execFileSync("git", ["diff", "--name-only", "--", "*.mem"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }))
       .split("\n").filter(Boolean);
     unnamed = dirty.filter((d: string) => !files.some((p) => p.endsWith(d) || d.endsWith(p)));
-  } catch { /* not a git tree, or git absent — the naming rule carries alone */ }
+  } catch { /* not a git tree (git's own usage stderr stays silent, so the verdict reads clean), or git absent — the naming rule carries alone */ }
 
   for (const f of files) {
     const src = readNamed(f);

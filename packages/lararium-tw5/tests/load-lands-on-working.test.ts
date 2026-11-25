@@ -1,5 +1,7 @@
 import { describe, expect, test } from "vitest";
-import { CompositeStore, type Verb, type VerbContext } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { type Verb } from "@lararium/mesh/verb-tiddler";
+import { type VerbContext } from "../src/verb-dispatcher.js";
 import { makeActionReactorFor } from "../src/action-handler.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 

@@ -1,11 +1,20 @@
 /** The daemon island tells its vessel which countersigned edge cleared its real Binding Gate. */
 import { afterAll, beforeAll, describe, expect, test, vi } from "vitest";
-import { deviceEdgeDigest, ed25519SignerFromSeed, makeIslandRepo, mintFaceAnchor, signLeaseAdvance, type AutomergeUrl, type DeviceDelegationTiddler } from "@lararium/mesh";
-import {
-  AutomergeDocStore, CompositeStore, DAEMON_BAG_ID, SECRET_HOME_ID, leaseEpochSlotUri, controlStoreOf,
-  emptyLarDoc, materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix,
-  wikiSlotUri, type LarDoc,
-} from "@lararium/mesh";
+import { deviceEdgeDigest, type DeviceDelegationTiddler } from "@lararium/mesh/device-delegation";
+import { ed25519SignerFromSeed } from "@lararium/mesh/ed25519-door";
+import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
+import { mintFaceAnchor } from "@lararium/mesh/face-anchor";
+import { signLeaseAdvance } from "@lararium/mesh/lease-advance";
+import { type AutomergeUrl } from "@lararium/mesh/automerge";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { DAEMON_BAG_ID, SECRET_HOME_ID } from "@lararium/mesh/lar-uris";
+import { leaseEpochSlotUri } from "@lararium/mesh/epoch-lease";
+import { controlStoreOf } from "@lararium/mesh/control-home";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { materializeSharedLarDoc, personaKelBoardDocUrl } from "@lararium/mesh/deterministic-doc";
+import { personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { KeyhiveProvider, runFoundingCeremony } from "../src/index.js";
 import { operatorDaemonOptions } from "../src/operator-daemon-behavior.js";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";

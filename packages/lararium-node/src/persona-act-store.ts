@@ -1,6 +1,14 @@
 /** Carry persona acts in LarDocs; proof decides which records count. */
 import type { DocHandle, Repo, AutomergeUrl, StorageAdapterInterface } from "@automerge/automerge-repo";
-import { heldDocOf, readRestingDoc, personaActRecordsOfGroup, writePersonaAct, type LarDoc, type RestingAbsence, type SignedAct } from "@lararium/mesh";
+import {
+  heldDocOf,
+  readRestingDoc,
+  personaActRecordsOfGroup,
+  writePersonaAct,
+  type RestingAbsence,
+} from "@lararium/mesh/persona-act-board";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { type SignedAct } from "@lararium/mesh/signed-act";
 
 export function appendPersonaActs(handle: DocHandle<LarDoc>, acts: readonly SignedAct[]): void {
   handle.change((draft) => { for (const act of acts) writePersonaAct(draft, act); });

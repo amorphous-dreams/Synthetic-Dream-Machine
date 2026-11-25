@@ -17,11 +17,22 @@
  */
 import { browserWardKeySign, type WardAskKind } from "./browser-ward.js";
 import type { WardRoute } from "./ward-core.js";
-import {
-  answerRefusal, askShown, buildAnswer, buildWardedAnswer, type SignedIntentEntry,
-  deviceEdgeId, faceIntentVerbs, faceRosterForIntents, fleetStoodAt, intentPlaneCosignPort, proveFaceFromLog, WardRefused, FLEET_HAND,
-  type EdgeReading, type FaceAnchor, type HandLineage, type IntentSigner, type LarDoc, type PersonaKelEvent, type PersonaProjection, type WardCosignPort, type WideningRead,
-} from "@lararium/mesh";
+import { answerRefusal, askShown, buildWardedAnswer } from "@lararium/mesh/ward-answer";
+import { buildAnswer, faceRosterForIntents, type IntentSigner } from "@lararium/mesh/intent-issue";
+import { type SignedIntentEntry } from "@lararium/mesh/intent-entry";
+import { deviceEdgeId } from "@lararium/mesh/dyad";
+import { faceIntentVerbs } from "@lararium/mesh/intent-verbs";
+import { fleetStoodAt, FLEET_HAND } from "@lararium/mesh/fleet-frontier";
+import { intentPlaneCosignPort, type WardCosignPort } from "@lararium/mesh/ward-cosign-gate";
+import { proveFaceFromLog } from "@lararium/mesh/face-boot-proof";
+import { WardRefused } from "@lararium/mesh/ward-slots";
+import { type EdgeReading } from "@lararium/mesh/edge-kapae";
+import { type FaceAnchor } from "@lararium/mesh/face-anchor";
+import { type HandLineage } from "@lararium/mesh/hand-lineage";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { type PersonaKelEvent } from "@lararium/mesh/persona-kel";
+import { type PersonaProjection } from "@lararium/mesh/persona-act";
+import { type WideningRead } from "@lararium/mesh/edge-frontier";
 
 export interface BrowserFleetShadows {
   readonly root: string; readonly readings: ReadonlyMap<string, EdgeReading>; readonly frontier: WideningRead;

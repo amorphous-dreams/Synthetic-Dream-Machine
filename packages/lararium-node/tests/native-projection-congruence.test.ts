@@ -23,7 +23,7 @@ import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { LarDiskProjector } from "../src/disk-projector.js";
 import { SyncedTree, syncedTreeKey } from "../src/synced-tree.js";
-import { carrierHash } from "@lararium/mesh";
+import { carrierHash } from "@lararium/mesh/crypto";
 import { canonicalizeNativeCarrierText } from "@lararium/tw5";
 import type { Tw5Deserializer } from "@lararium/tw5";
 import type { CarrierFile } from "@lararium/tw5";

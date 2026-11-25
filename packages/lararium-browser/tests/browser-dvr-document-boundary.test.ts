@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, test } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-indexeddb";
-import { emptyLarDoc, type LarDoc, type IslandMsg_Event } from "@lararium/mesh";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { type IslandMsg_Event } from "@lararium/mesh/island-protocol";
 import { openBrowserDaemonVm, ownedDaemonDbName } from "../src/open-browser-daemon-vm.js";
 
 const FIXTURE = new URL("./fixtures/browser-dvr-document-boundary.mjs", import.meta.url);

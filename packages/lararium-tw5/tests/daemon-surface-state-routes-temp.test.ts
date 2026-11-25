@@ -6,7 +6,7 @@
  * Driven over the REAL cascade the grammar plugin ships, with the slot pointers a recipe seeds.
  */
 import { beforeAll, describe, expect, test } from "vitest";
-import { wikiSlotUri } from "@lararium/mesh";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { routeBag, type CascadeWiki } from "../src/bag-cascade.js";
 import { LARES_SURFACE_STATE, PROJECT_STATE_TITLE } from "../src/daemon-ui-tiddlers.js";
 import { bootTestWiki, skipNote, wikiSkip } from "./test-wiki.js";

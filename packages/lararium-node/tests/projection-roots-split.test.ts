@@ -15,7 +15,8 @@ import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, statSync } fro
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, test } from "vitest";
-import { CROSSROADS_DOC_URI, DAEMON_BAG_ID, KAHUA_BAG, wikiSlotUri, CONTROL_HOME_ID } from "@lararium/mesh";
+import { CROSSROADS_DOC_URI, DAEMON_BAG_ID, CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
+import { KAHUA_BAG, wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import {
   projectionRoots, daemonWorkingMirror, kahuaStageMirror, daemonDiskMirrors, isPrivateProjectionSlug,
 } from "../src/bag-paths.js";

@@ -6,11 +6,18 @@
  * Each test file mocks those two modules itself, so the fixture takes the composition it drives as an argument.
  */
 import type { DocHandle } from "@automerge/automerge-repo";
-import {
-  AutomergeDocStore, CompositeStore, DAEMON_BAG_ID, deviceEdgeId, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed,
-  emptyLarDoc, fleetEdgeBoardDocUrl, makeIslandRepo, materializeSharedLarDoc, personaBagIdFor, signEdgeKapae,
-  storedLarRecord, wikiSlotUri, writeEdgeKapae, type LarDoc,
-} from "@lararium/mesh";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { deviceEdgeId } from "@lararium/mesh/dyad";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { fleetEdgeBoardDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
+import { personaBagIdFor } from "@lararium/mesh/persona-scope";
+import { signEdgeKapae, writeEdgeKapae } from "@lararium/mesh/edge-kapae";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { fleetFixture } from "./fleet-fixture.js";
 import { FACE_GRANT_PREFIX } from "../src/face-grant-record.js";
 

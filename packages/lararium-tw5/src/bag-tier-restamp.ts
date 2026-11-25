@@ -15,7 +15,12 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/catalog-view
  */
 
-import { CATALOG_ENTRY_TIER_FIELD, ownEntry, plainField, refuseTw5DocsReserved, storedLarRecord, tiddlerText, type CapTier } from "@lararium/mesh";
+import { CATALOG_ENTRY_TIER_FIELD } from "@lararium/mesh/catalog-view";
+import { ownEntry, plainField } from "@lararium/mesh/stored-value";
+import { refuseTw5DocsReserved } from "@lararium/mesh/tw5-docs-name";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
+import { tiddlerText } from "@lararium/mesh/base-doc";
+import { type CapTier } from "@lararium/mesh/cap-tier";
 import type { VerbReactor } from "./verb-dispatcher.js";
 import type { CatalogAccessor } from "./catalog-accessor.js";
 import { stringArg } from "./handler-args.js";

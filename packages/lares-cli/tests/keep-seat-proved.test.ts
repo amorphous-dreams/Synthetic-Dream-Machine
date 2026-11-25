@@ -31,7 +31,7 @@ vi.mock("../src/prompt-secret.js", () => {
 });
 
 import { FsCustodyIo, foundCustody, vesselCustodyHomes } from "@lararium/node";
-import { confirmPaperPin, draftPaperPin, type Credential } from "@lararium/mesh";
+import { confirmPaperPin, draftPaperPin, type Credential } from "@lararium/mesh/keyslot-door";
 import { parseArgs } from "../src/parse-args.js";
 
 let cmdVault: typeof import("../src/commands/vault.js").cmdVault;

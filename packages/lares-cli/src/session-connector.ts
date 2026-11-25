@@ -1,5 +1,6 @@
 import { createConnection } from "node:net";
-import { newRequestId, type SessionReceipt } from "@lararium/mesh";
+import { newRequestId } from "@lararium/mesh/verb-tiddler";
+import { type SessionReceipt } from "@lararium/mesh/session-receipt";
 import type { Hand } from "@lararium/mesh/session-contract";
 import { harnessSeatMarked, LocalWaitExpired, UdsUnreachable, udsSocketPath } from "./local-connector.js";
 

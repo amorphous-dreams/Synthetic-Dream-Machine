@@ -9,7 +9,11 @@
 import * as A from "@automerge/automerge";
 import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-indexeddb";
-import { ContentKeyHolder, SealedDocumentStore, SealedStore, type LockboxWrapShore, type RecordSigner } from "@lararium/mesh";
+import { ContentKeyHolder } from "@lararium/mesh/content-key-holder";
+import { SealedDocumentStore } from "@lararium/mesh/sealed-doc-store";
+import { SealedStore } from "@lararium/mesh/sealed-store-rest";
+import { type LockboxWrapShore } from "@lararium/mesh/lockbox-wrap";
+import { type RecordSigner } from "@lararium/mesh/sealed-records";
 import { utf8Bytes } from "@lararium/mesh/crypto";
 import { faceProofSubjectRef, sessionSignatureImage } from "@lararium/mesh/face-proof-subjects";
 import { idbSealedStoreShore } from "../../src/browser-sealed-store.js";

@@ -74,7 +74,10 @@
  * Meme: lar:///ha.ka.ba/kahua/memory/research/keeper-tessera#/vesting · lar:///ha.ka.ba/kahua/memory/research/keeper-lei#/shape
  */
 import { randomUUID } from "node:crypto";
-import { KEEPER_NONCE, canonicalJsonBytes, keeperCosignRefusal, mintSealedBoxRecipient, openFromSender, sealToRecipient, sha256HexBytesSync, type KeeperCosign, type SwarmWikiPort } from "@lararium/mesh";
+import { KEEPER_NONCE, keeperCosignRefusal, type KeeperCosign } from "@lararium/mesh/keeper-cosign";
+import { canonicalJsonBytes, sha256HexBytesSync } from "@lararium/mesh/crypto";
+import { mintSealedBoxRecipient, openFromSender, sealToRecipient } from "@lararium/mesh/sealed-box";
+import { type SwarmWikiPort } from "@lararium/mesh/swarm-tiddlers";
 import type { KukuluSigner } from "./kukulu-gate.js";
 import {
   pulamaRecordCid, signPulamaRecord, verifiedPulamaRecord,
@@ -232,7 +235,9 @@ export async function keeperCommit(records: SwarmWikiPort, by: KukuluSigner, at:
   // landings at one link settle nowhere on the chain: the struck fire keeps the house lit.
   // A COMMIT THAT MUST NOT SUPERSEDE (the kukulu lei's, blind read F5) refuses on this very fold, so no check-then-write gap lets it
   // replace a hand's commit that rested in between.
-  if (at.noSupersede === true && (fold.pending !== null || fold.forkCommits.length > 0)) return refuse("keeper-lei-hand-pending", `a live keeper commit already names ${fold.pending?.next ?? "a closure"}, and a lei never supersedes a commit: the next lares rite kukulu that raises that closure vests it, or name the successor by hand: lares pulama keeper-commit on a terminal (it supersedes)`);
+  // A STALE live commit (`keeperPendingStale`: a self-commit, or one a keeper of another closure rested) binds nothing the hand still
+  // stands behind, so a lei commit supersedes it on this same fold; a live, current commit still refuses.
+  if (at.noSupersede === true && ((fold.pending !== null && keeperPendingStale(fold.pending, at.closure) === null) || fold.forkCommits.length > 0)) return refuse("keeper-lei-hand-pending", `a live keeper commit already names ${fold.pending?.next ?? "a closure"}, and a lei never supersedes a commit: the next lares rite kukulu that raises that closure vests it, or name the successor by hand: lares pulama keeper-commit on a terminal (it supersedes)`);
   if (fold.fork && fold.forkCommits.length === 0) return refuse("fork", "the keeper chain reads two landings at one link, which no commit settles; read them with `lares pulama status`, and light the successor by hand (the struck fire): lares rite kukulu on a terminal");
   // THE CARRIED CO-SIGN names the commit's nonce (the co-sign's digest binds it), so the nonce comes with it; else the keeper mints one.
   const carried = at.cosign === undefined || at.cosign === null ? null : at.cosign as { readonly nonce?: unknown; readonly faces?: unknown };
@@ -545,7 +550,7 @@ export async function keeperCommitByLei(records: SwarmWikiPort, by: KukuluSigner
   if (!CI_GREEN.test(at.ci)) return refuse("keeper-lei-ci-red", `the CI push run on ${at.rev} reads ${at.ci || "none"}, never success; wait for it to land green (gh run list --commit ${at.rev} --workflow CI), or ${routed}`);
   const fold = await keeperFold(records, by);
   if (fold.fork) return refuse("fork", `the keeper chain reads a fork; read it with lares pulama status, and ${routed}`);
-  if (fold.pending !== null) return refuse("keeper-lei-hand-pending", `a live keeper commit already names ${fold.pending.next}, and a lei never supersedes a commit: the next lares rite kukulu that raises that closure vests it, or ${routed} (it supersedes)`);
+  if (fold.pending !== null && keeperPendingStale(fold.pending, at.closure) === null) return refuse("keeper-lei-hand-pending", `a live keeper commit already names ${fold.pending.next} from the closure this keeper runs, and a lei never supersedes a current commit: the next lares rite kukulu that raises that closure vests it, or ${routed} (it supersedes)`);
   if (fold.vested !== null) return refuse("keeper-lei-vested-unlanded", `the commit naming ${fold.vested.next} vested and no landing names it yet; finish the handoff: lares rite kukulu (or relight one keeper by passphrase on a terminal)`);
   const last = fold.pairs.at(-1);
   if (last !== undefined && !last.par) return refuse("keeper-lei-red", `the last keeper pair reads red (${last.red ?? "red"}); read it with lares pulama status, and light the successor by passphrase: lares rite kukulu on a terminal`);
@@ -555,9 +560,27 @@ export async function keeperCommitByLei(records: SwarmWikiPort, by: KukuluSigner
   return { tessera: out.tessera, v: out.v, next: out.next, branch: at.branch };
 }
 
+/**
+ * WHY A LIVE COMMIT READS STALE (closures and rows alone; no clock decides), or null where it still binds:
+ * - `self-commit`: its `next` equals the closure it handed from, so it moves nothing;
+ * - `keeper-moved`: the keeper now runs (`closure`) another closure than the one it handed from, and not the one it names (a
+ *   keeper that runs the named closure arrived there, and the commit waits for its landing).
+ * A lei commit supersedes a stale commit; a live, current hand commit (handed from the running closure, naming another) stays
+ * sovereign. An unreported running closure reads `self-commit` alone.
+ */
+export type KeeperStale = "self-commit" | "keeper-moved";
+export function keeperPendingStale(pending: KeeperFold["pending"], closure: string | null): KeeperStale | null {
+  if (pending === null) return null;
+  const from = pending.body.closure;
+  if (pending.next === from) return "self-commit";
+  if (closure !== null && closure !== from && closure !== pending.next) return "keeper-moved";
+  return null;
+}
+
 /** Whether the kukulu lei could license a commit now (the `status` hint the host's stand reading follows): every pūlama-side bound
- *  but the testimony and the lei itself, which the host reads (`lares lei show`) and the vest's rite spends. */
-export function keeperLeiReady(fold: KeeperFold, floor: boolean = KEEPER_LEI_STANDS): boolean {
+ *  but the testimony and the lei itself, which the host reads (`lares lei show`) and the vest's rite spends. A stale live commit
+ *  (`keeperPendingStale` over the running `closure`) reads as none, since the lei's commit supersedes it. */
+export function keeperLeiReady(fold: KeeperFold, floor: boolean = KEEPER_LEI_STANDS, closure: string | null = null): boolean {
   const last = fold.pairs.at(-1);
-  return floor && !fold.fork && fold.pending === null && fold.vested === null && !fold.struckDue && (last === undefined || last.par);
+  return floor && !fold.fork && (fold.pending === null || keeperPendingStale(fold.pending, closure) !== null) && fold.vested === null && !fold.struckDue && (last === undefined || last.par);
 }

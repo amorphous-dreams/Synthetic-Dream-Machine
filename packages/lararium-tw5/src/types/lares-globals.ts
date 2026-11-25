@@ -4,8 +4,8 @@
  * The engine applies inbound changes synchronously; the shore installs the queue door.
  */
 
-import type { LarTiddlerChange } from "@lararium/mesh";
-import type { MemeListing, PlaceMemeReceipt } from "../place-meme.js";
+import type { LarTiddlerChange } from "@lararium/mesh/tiddler-store";
+import type { MemeListing, PlaceMemeOwed, PlaceMemeReceipt } from "../place-meme.js";
 import type { NormalizeResult } from "../meme-normalize.js";
 import type { CarrierShape } from "../carrier-shape.js";
 import type { CarrierEdge } from "../carrier-edges.js";
@@ -33,7 +33,7 @@ export interface MemeCheck {
  */
 export interface LaresMemeFace {
   /** Place a framed meme through the Confluence gate; `base` = the canonical hash last read. */
-  place(uri: string, text: string, base?: string | null): Promise<PlaceMemeReceipt>;
+  place(uri: string, text: string, base?: string | null): Promise<PlaceMemeReceipt | PlaceMemeOwed>;
   /** The whole meme recomposed + the canonical hash a writer hands back; null under no record. */
   read(uri: string): Promise<{ text: string; canonicalHash: string } | null>;
   /** Every meme root the wiki holds with its canonical hash; `tree` nests each root's slot tree. */

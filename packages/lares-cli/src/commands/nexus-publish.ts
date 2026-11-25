@@ -32,7 +32,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { NexusPublishError, type NexusPublishPluginsResult, type NexusPublishTerms } from "@lararium/node";
-import { computePluginsCid } from "@lararium/mesh";
+import { computePluginsCid } from "@lararium/mesh/genesis-doc";
 import { storeVerb, storeFailure } from "../store-door.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";

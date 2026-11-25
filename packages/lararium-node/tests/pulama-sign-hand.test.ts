@@ -14,10 +14,13 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
-import {
-  KAHUA_ACT_DOMAIN, computePluginsCid, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, kahuaActBody, kahuaActBytes, pluginOfferingBytes, readKahuaAct, verifyPluginOffering, WardRefused,
-  type Credential, type KahuaActBody, type OfferedBlob,
-} from "@lararium/mesh";
+import { KAHUA_ACT_DOMAIN } from "@lararium/mesh/domains";
+import { computePluginsCid } from "@lararium/mesh/genesis-doc";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { kahuaActBody, kahuaActBytes, readKahuaAct, type KahuaActBody } from "@lararium/mesh/kahua-stage";
+import { pluginOfferingBytes, verifyPluginOffering, type OfferedBlob } from "@lararium/mesh/plugin-offering";
+import { WardRefused } from "@lararium/mesh/ward-slots";
+import { type Credential } from "@lararium/mesh/keyslot-door";
 import { FsCustodyIo } from "../src/custody-io.js";
 import { makeCustodyHolder } from "../src/custody-holder.js";
 import { pulamaHandDoor } from "../src/pulama-hand.js";

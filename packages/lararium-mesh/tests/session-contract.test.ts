@@ -281,7 +281,7 @@ describe("session contract", () => {
     expect(named.sort()).toEqual(["SessionBinding", "SessionTable", "sessionBinding"]);
     expect(barrel.match(/session-contract/g)?.length).toBe(2);
     const caller = readFileSync(resolve(here, "../../lararium-node/src/open-node-vessel.ts"), "utf8");
-    expect(caller).toMatch(/\bSessionTable, sessionBinding\b[^;]*from "@lararium\/mesh"/);
+    expect(caller).toMatch(/\bSessionTable, sessionBinding\b[^;]*from "@lararium\/mesh\/session-contract"/);
   });
 
   test("session source has no clock, timer, or platform imports", () => {

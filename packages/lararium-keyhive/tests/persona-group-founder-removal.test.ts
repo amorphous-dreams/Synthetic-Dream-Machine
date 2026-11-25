@@ -7,7 +7,7 @@
  * and the ledger marks the raise; a seat that still stands lets the throw ride out, and nothing gets marked.
  */
 import { describe, expect, test } from "vitest";
-import type { SeatDuty, SeatRoll } from "@lararium/mesh";
+import type { SeatDuty, SeatRoll } from "@lararium/mesh/seat-duties";
 import { KeyhiveProvider, InMemoryEventStore } from "../src/index.js";
 import { keyhiveSeatShore, runSeatDuties, type SeatKeyShore } from "../src/seat-duty-executor.js";
 

@@ -14,17 +14,11 @@ import { daemonGenesisDir } from "./lares-config.js";
 import { readFileSync, existsSync }  from "fs";
 import { join }                      from "path";
 import type { Repo, DocHandle }      from "@automerge/automerge-repo";
-import type { LarDoc }               from "@lararium/mesh";
-import {
-  materializeGenesisIsland,
-  genesisCasManifestFromSeed,
-  genesisCasCidsFromOracle,
-  GENESIS_SEED_FORMAT, genesisSeedCarriesAVersion,
-  sha256HexBytesSync,
-  utf8Bytes,
-  type GenesisCasManifest,
-  type GenesisSeed,
-} from "@lararium/mesh";
+import type { LarDoc } from "@lararium/mesh/base-doc";
+import { materializeGenesisIsland, genesisCasCidsFromOracle } from "@lararium/mesh/genesis-intake";
+import { genesisCasManifestFromSeed, GENESIS_SEED_FORMAT, genesisSeedCarriesAVersion, type GenesisSeed } from "@lararium/mesh/genesis-doc";
+import { sha256HexBytesSync, utf8Bytes } from "@lararium/mesh/crypto";
+import { type GenesisCasManifest } from "@lararium/mesh/cas";
 
 // ---------------------------------------------------------------------------
 // Genesis bytes source

@@ -30,11 +30,17 @@ interface Kept {
   readonly audits: CollapseAudit[];
   readonly alerts: StandoffAlert[];
   readonly outcomes: KeeperOutcome[];
+  /** The one line each keep of the disk printed. */
+  readonly notices: string[];
   settle(): Promise<void>;
 }
 
+/** The history the rig's document holds, as the projector's `lineageOf` door answers it; and why its saves cannot rest, if they cannot. */
+interface Told { lineage?: { heads: string[]; holds: string[]; quiet: boolean }; unrested?: string }
+
 /** The keeper the island wires, over the rig's wiki and projector; the base's words read from `bases`. */
-async function keep(r: ShoreRig, rules: ReadonlySet<CollapseRule>, bases: Map<string, string>): Promise<Kept> {
+async function keep(r: ShoreRig, rules: ReadonlySet<CollapseRule>, bases: Map<string, string>, told: Told = {}): Promise<Kept> {
+  const notices: string[] = [];
   const audits: CollapseAudit[] = [];
   const alerts: StandoffAlert[] = [];
   const outcomes: KeeperOutcome[] = [];
@@ -55,15 +61,19 @@ async function keep(r: ShoreRig, rules: ReadonlySet<CollapseRule>, bases: Map<st
     grants: (bag) => bag === RIG_BAG,
     audit: (row) => { audits.push(row); },
     alert: (a) => { alerts.push(a); },
+    notice: (line) => { notices.push(line); },
+    unrested: () => told.unrested ?? null,
   });
   await r.boot({
     extra: {
+      documentOf: () => "automerge:working",
+      lineageOf: () => (told.lineage === undefined ? null : { heads: told.lineage.heads, quiet: told.lineage.quiet, holds: (named: readonly string[]) => named.every((h) => told.lineage!.holds.includes(h)) }),
       onConflict: (info) => { r.conflicts.push(info); pending.push(keeper.weigh(info).then((o) => outcomes.push(o))); },
       onConflictResolved: (info) => { r.resolved.push(info); pending.push(keeper.resolved(info)); },
     },
   });
   return {
-    keeper, audits, alerts, outcomes,
+    keeper, audits, alerts, outcomes, notices,
     async settle() {
       // Each weighing may start a reconcile that raises the next stand-off: settle until the shore stands quiet.
       for (let seen = -1; seen !== pending.length;) {
@@ -191,3 +201,70 @@ describe.skipIf(coreBlobSkip)("a stand-off comes inside as drafts", () => {
     expect(kept.alerts.at(-1)).toEqual({ clear: true, standoff: key });
   });
 });
+
+describe.skipIf(coreBlobSkip)("records that fell behind their base keep the disk, with no hand", () => {
+  // OPERATOR'S TALK-OUT (2026-11-25): a document that LACKS the heads its base names went backwards (an older document
+  // loaded, a save lost), so it holds nothing newer than the base and the file carries the newest words the house holds.
+  // The house keeps the disk by itself and says so in one line; a person hears only where the answer cannot be read.
+  /** The file and the records agree at head `h2`; then the document reads back at `h1` with an older slot. */
+  const fallBehind = async (told: Told): Promise<{ kept: Kept; uri: string; slot: string; newest: string; file: string }> => {
+    rig = await ShoreRig.stand(6);
+    await rig.ingest();
+    const { uri, slots } = twoSlots(rig);
+    told.lineage = { heads: ["h2"], holds: ["h1", "h2"], quiet: true };
+    const kept = await keep(rig, new Set(), new Map([[uri, rig.read(uri)]]), told);
+    await kept.settle();
+    const file = rig.read(uri);
+    const newest = wikiText(rig, slots[1]!);
+    told.lineage = { ...told.lineage, heads: ["h1"], holds: ["h1"] };
+    await rig.save(slots[1]!, "What the older document said, before the write the file still carries.");
+    await kept.settle();
+    return { kept, uri, slot: slots[1]!, newest, file };
+  };
+
+  test("the file's words land back in the records, the base moves, and one notice names the document and the heads", async () => {
+    const { kept, uri, slot, newest, file } = await fallBehind({});
+    expect(rig!.read(uri), "the older render never wrote over the file").toBe(file);
+    expect(wikiText(rig!, slot), "the records say the file's words again").toBe(newest);
+    expect(rig!.projector.standing().filter((s) => s.uri === uri)).toEqual([]);
+    expect(kept.alerts.filter((a) => a.clear !== true), "no alert waits for a person").toEqual([]);
+    expect(kept.audits.map((a) => `${a.rule} -> ${a.toward}`)).toEqual(["records-behind-base -> disk"]);
+    expect(kept.notices).toHaveLength(1);
+    expect(kept.notices[0]).toContain(uri);
+    expect(kept.notices[0]).toContain("automerge:working");
+    expect(kept.notices[0]).toContain("h2");
+    expect(kept.notices[0]).toContain("kept the disk");
+  });
+
+  test("a write landed in that document since it mounted: it may hold words newer than the file, so a person picks", async () => {
+    const told: Told = {};
+    rig = await ShoreRig.stand(6);
+    await rig.ingest();
+    const { uri, slots } = twoSlots(rig);
+    told.lineage = { heads: ["h2"], holds: ["h1", "h2"], quiet: true };
+    const kept = await keep(rig, new Set(), new Map([[uri, rig.read(uri)]]), told);
+    await kept.settle();
+    const file = rig.read(uri);
+    told.lineage = { heads: ["h9"], holds: ["h1", "h9"], quiet: false };
+    await rig.save(slots[1]!, "Words a seat wrote into the document that fell behind.");
+    await kept.settle();
+    expect(rig.read(uri)).toBe(file);
+    expect(wikiText(rig, slots[1]!)).toBe("Words a seat wrote into the document that fell behind.");
+    expect(kept.notices).toEqual([]);
+    const waits = kept.alerts.filter((a) => a.clear !== true);
+    expect(waits).toHaveLength(1);
+    expect(standoffAlertWords(waits[0] as Extract<StandoffAlert, { readonly bagId: string }>).reason).toContain("since it mounted");
+  });
+
+  test("the document's saves cannot rest: the keep answers owed with that reason, and claims nothing landed", async () => {
+    const { kept, uri, slot, file } = await fallBehind({ unrested: "signer-refused: this face's saves of the document wait in memory" });
+    expect(rig!.read(uri)).toBe(file);
+    expect(wikiText(rig!, slot)).toBe("What the older document said, before the write the file still carries.");
+    expect(kept.notices).toEqual([]);
+    expect(kept.audits).toEqual([]);
+    const last = kept.outcomes.at(-1)!;
+    expect(last.kind).toBe("awaiting");
+    expect((last as Extract<KeeperOutcome, { kind: "awaiting" }>).why).toMatch(/^owed: .*signer-refused/);
+  });
+});
+

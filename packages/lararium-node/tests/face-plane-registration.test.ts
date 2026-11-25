@@ -1,5 +1,5 @@
 import { expect, test, vi } from "vitest";
-import { personaBagIdFor, personaSiblingBagIds } from "@lararium/mesh";
+import { personaBagIdFor, personaSiblingBagIds } from "@lararium/mesh/persona-scope";
 import { provenPlaneUrls, registerFacePlanesForRelay } from "../src/face-plane-registration.js";
 
 test("RED: an enabled proven sibling registers its four planes; CONTROL: disabled, unproven and absent planes register nothing extra", async () => {

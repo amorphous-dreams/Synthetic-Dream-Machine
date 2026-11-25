@@ -19,7 +19,7 @@
  *     wasted `ownedStore` act for a no-op row.
  */
 import { describe, expect, it, vi } from "vitest";
-import { ControlHomeUnavailable, VESSEL_LOCKED, CONTROL_HOME_UNNAMED } from "@lararium/mesh";
+import { ControlHomeUnavailable, VESSEL_LOCKED, CONTROL_HOME_UNNAMED } from "@lararium/mesh/control-home";
 
 vi.mock("../src/local-connector.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../src/local-connector.js")>();

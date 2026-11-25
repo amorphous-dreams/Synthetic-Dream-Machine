@@ -15,10 +15,12 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, test } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
-import {
-  AutomergeDocStore, bagUri, cutFloorSnapshot, emptyLarDoc, floorManifestBytes, resolveFloor, sha256HexBytesSync,
-  type FloorManifest, type LarDoc, type LarTiddlerRecord,
-} from "@lararium/mesh";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { bagUri } from "@lararium/mesh/lar-uris";
+import { cutFloorSnapshot, floorManifestBytes, resolveFloor, type FloorManifest } from "@lararium/mesh/floor-manifest";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
+import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { runFloorCutOver } from "../src/commands/floor-cut.js";
 import { readVerifiedCasBlobFromFs, writeCasEntriesFs } from "../src/node-cas.js";
 

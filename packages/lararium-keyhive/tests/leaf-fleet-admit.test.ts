@@ -18,7 +18,7 @@
  * in the same store, so nothing survives to restore INTO; the loss is total by construction, never partial.
  */
 import { describe, test, expect } from "vitest";
-import { buildDeviceDelegation } from "@lararium/mesh";
+import { buildDeviceDelegation } from "@lararium/mesh/device-delegation";
 import { KeyhiveProvider } from "../src/keyhive-provider.js";
 import { runFaceJoin, type FaceJoinContext } from "../src/face-join.js";
 

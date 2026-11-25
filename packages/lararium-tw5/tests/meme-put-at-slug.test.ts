@@ -10,7 +10,8 @@
  *   AT2 RED  recipe `@sdm` asks the registry for `sdm`, never `@sdm`
  */
 import { describe, test, expect } from "vitest";
-import { CompositeStore, bagUri } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { bagUri } from "@lararium/mesh/lar-uris";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { makeMemePutReactor, type MemeVerbOptions } from "../src/meme-verbs.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";

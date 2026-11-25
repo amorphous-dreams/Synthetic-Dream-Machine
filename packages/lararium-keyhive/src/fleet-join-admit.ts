@@ -9,7 +9,7 @@
  * Call it on an answer `readFleetJoinAnswer` verified, never on a carried file: the shape checks here guard the
  * founding, and the answer's signature makes the pin the hearth's own.
  */
-import { fleetJoinHearthOf, type FleetJoinAnswer } from "@lararium/mesh";
+import { fleetJoinHearthOf, type FleetJoinAnswer } from "@lararium/mesh/fleet-join";
 import type { CarriedAdmitPayload, DeviceAdmitPayload } from "./index.js";
 import { DEVICE_ADMIT_KIND } from "./device-admit-kind.js";
 

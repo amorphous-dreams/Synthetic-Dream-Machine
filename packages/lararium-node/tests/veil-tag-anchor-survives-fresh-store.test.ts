@@ -3,7 +3,8 @@ import { describe, test, expect } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import { foundThePlace, foundTheFace } from "@lararium/keyhive";
 import * as ed25519 from "@noble/ed25519";
-import { faceAtomKeyFromSeed, hex, mintFaceAtomSeed } from "@lararium/mesh";
+import { faceAtomKeyFromSeed, mintFaceAtomSeed } from "@lararium/mesh/face-atom";
+import { hex } from "@lararium/mesh/crypto";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 import { withMemorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";
 

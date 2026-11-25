@@ -5,9 +5,14 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
-import { CARRIAGE_CARRIER_DOMAIN, carrierContractBytes, hex, mintPlaceInception, placeSignerFromSeed, verifyPlaceDutyAtHead,
-  provisionThresholdRecoveryAtFounding, recoveryContactRegistrationCard, attestAndRotate, httpPersonaKelDropHerm,
-  depositPersonaKelChain, pullPersonaKelSuccessors } from "@lararium/mesh";
+import { CARRIAGE_CARRIER_DOMAIN } from "@lararium/mesh/domains";
+import { carrierContractBytes } from "@lararium/mesh/carriage-registry";
+import { hex } from "@lararium/mesh/crypto";
+import { mintPlaceInception } from "@lararium/mesh/vessel-kel";
+import { placeSignerFromSeed, verifyPlaceDutyAtHead } from "@lararium/mesh/place-signer";
+import { provisionThresholdRecoveryAtFounding, attestAndRotate } from "@lararium/mesh/recovery-keel-core";
+import { recoveryContactRegistrationCard } from "@lararium/mesh/recovery-registration";
+import { httpPersonaKelDropHerm, depositPersonaKelChain, pullPersonaKelSuccessors } from "@lararium/mesh/persona-kel-drop";
 import { startCarriageRelay } from "../src/carriage-relay.js";
 import { openRelayGateSeed, rotateRelayGateSeed, RELAY_GATE_SEED_FILE, RelayGateSeedRefused } from "../src/relay-gate-seed.js";
 import { larIdentityDir } from "../src/vessel-paths.js";

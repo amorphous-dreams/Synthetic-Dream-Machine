@@ -19,9 +19,7 @@ import { describe, expect } from "vitest";
 import { seatedCustody } from "../src/custody-seat.js";
 import { holdSealsUntilBothArrive } from "./custody-seat-fixture.js";
 import { chmodSync, statSync, readdirSync } from "node:fs";
-import {
-  encodeInvite, decodeInvite, mintHostToken, mintHostingAct, tokenVerifiesAt, type HostingEpoch,
-} from "@lararium/mesh";
+import { encodeInvite, decodeInvite, mintHostToken, mintHostingAct, tokenVerifiesAt, type HostingEpoch } from "@lararium/mesh/hosting";
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot } from "../src/node-vessel-identity.js";
 import { FaceNotNamed } from "../src/face-selector.js";
 import { handleRecordPath, faceRecordNames } from "./face-paths.js";

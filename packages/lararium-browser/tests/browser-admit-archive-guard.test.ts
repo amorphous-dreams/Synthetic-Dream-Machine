@@ -8,7 +8,7 @@
  *   G3  CONTROL: an admit over a kept Archive of B's atom restores from it
  */
 import { describe, expect, test, vi } from "vitest";
-import { faceAtomKeyFromSeed } from "@lararium/mesh";
+import { faceAtomKeyFromSeed } from "@lararium/mesh/face-atom";
 import { archiveIsOf, KeyhiveProvider, InMemoryEventStore } from "@lararium/keyhive";
 import { BootHalted, admitNaming } from "./wire-vessel-rig.js";
 import { bindSyntheticBrowserCustodySlot, bindSyntheticFace, fixtureWardDialog, foundedGroupOf } from "./browser-custody-fixture.js";

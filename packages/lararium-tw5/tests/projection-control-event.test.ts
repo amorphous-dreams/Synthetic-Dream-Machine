@@ -15,7 +15,7 @@
  *   - Every answered act posts its `lar:control-result` through `ctx.post`.
  */
 import { afterEach, describe, expect, test } from "vitest";
-import { mkLarResend, type LarMsg_ControlEvent } from "@lararium/mesh";
+import { mkLarResend, type LarMsg_ControlEvent } from "@lararium/mesh/lar-camera";
 import { dispatchLarControlEvent, resendLarCamera } from "../src/tw5-projection.js";
 import { mountSurface, type Surface } from "./projection-surface.js";
 import { skipNote, wikiSkip } from "./test-wiki.js";

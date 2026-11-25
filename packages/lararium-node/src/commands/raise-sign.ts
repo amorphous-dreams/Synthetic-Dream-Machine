@@ -25,11 +25,13 @@
  */
 
 import type { Repo } from "@automerge/automerge-repo";
-import {
-  signRaiseGrant, ed25519SignerFromSeed, foundingRoster, carriageDocUrl,
-  materializeSharedLarDoc, presentationFromBoardDoc, presentationFindingLine, admittedKeyOf,
-  type RaiseChallenge, type RaiseGrant, type PresentationFinding,
-} from "@lararium/mesh";
+import { signRaiseGrant, type RaiseChallenge, type RaiseGrant } from "@lararium/mesh/raise-challenge";
+import { ed25519SignerFromSeed } from "@lararium/mesh/ed25519-door";
+import { foundingRoster } from "@lararium/mesh/nexus-seal-seed";
+import { carriageDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { presentationFromBoardDoc } from "@lararium/mesh/carriage-board";
+import { presentationFindingLine, type PresentationFinding } from "@lararium/mesh/carriage-registry";
+import { admittedKeyOf } from "@lararium/mesh/nexus-key-line";
 
 import { loadVesselVerifyingKey } from "../node-vessel-identity.js";
 import { larSealHome } from "../vessel-paths.js";

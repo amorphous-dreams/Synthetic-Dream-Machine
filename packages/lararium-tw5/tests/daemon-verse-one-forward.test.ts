@@ -9,7 +9,8 @@
  */
 import { memoryControlStore } from "./control-store-fixture.js";
 import { describe, expect, test } from "vitest";
-import { CompositeStore, HULLS_TS_ONLY } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { HULLS_TS_ONLY } from "@lararium/mesh/flow";
 import { LARES_DISPATCH_FIELD, LARES_VERB_ARG_PREFIX } from "@lararium/mesh/lar-uris";
 import { IslandKernel } from "../src/island-kernel.js";
 import { makeDaemonBehavior } from "../src/daemon-behavior.js";

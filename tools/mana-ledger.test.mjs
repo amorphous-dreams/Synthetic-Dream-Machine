@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, readFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { aggregate, loadReadings, parseArgs, project, usageRecords, weigh } from './mana-ledger.mjs';
+import { aggregate, fileLines, loadReadings, parseArgs, project, usageRecords, weigh } from './mana-ledger.mjs';
 import { reading, tee } from './mana-statusline.mjs';
 
 const line = (id, ts, model, u, extra = {}) => JSON.stringify({
@@ -80,4 +80,42 @@ test('arguments refuse with the usage line', () => {
   assert.throws(() => parseArgs(['--calibrate', '2026-11-25T00:00Z=5..2026-11-24T00:00Z=9']), /later and higher/);
   assert.throws(() => parseArgs(['--reading', 'nope']), /usage/);
   assert.throws(() => parseArgs(['--bogus']), /unknown argument/);
+});
+
+test('the readings log defaults to the claude home\'s mana-readings.jsonl, and an explicit file wins', () => {
+  const home = mkdtempSync(join(tmpdir(), 'mana-home-'));
+  mkdirSync(join(home, '.claude'));
+  const log = join(home, '.claude', 'mana-readings.jsonl');
+  writeFileSync(log, JSON.stringify({ t: '2026-11-24T10:00:00Z', seven_day: { used_percentage: 40, resets_at: 1790000000 } }) + '\n');
+  const o = parseArgs([], home);
+  assert.equal(o.readingsFile, log);
+  assert.equal(o.readings.length, 1);
+  const none = parseArgs([], mkdtempSync(join(tmpdir(), 'mana-bare-')));
+  assert.equal(none.readings.length, 0);
+});
+
+test('a request keeps its LAST streamed usage block, and id-less records key on their own content', () => {
+  const a = line(1, '2026-11-24T10:00:00Z', 'm', { output_tokens: 5 });
+  const b = line(1, '2026-11-24T10:00:01Z', 'm', { output_tokens: 50 });
+  assert.equal(aggregate([...usageRecords([a, b])]).byModel.m.output, 50);
+  const bare = (ts, out) => JSON.stringify({ type: 'assistant', timestamp: ts, message: { model: 'm', usage: { output_tokens: out } } });
+  const agg = aggregate([...usageRecords([bare('2026-11-24T10:00:00Z', 7), bare('2026-11-24T10:00:02Z', 9), bare('2026-11-24T10:00:02Z', 9)])]);
+  assert.equal(agg.requests, 2, 'two distinct id-less records stand; the byte-identical repeat collapses');
+});
+
+test('a reading with no resets_at never wins the reset', () => {
+  const f = loadReadings([
+    JSON.stringify({ t: '2026-11-24T10:00:00Z', seven_day: { used_percentage: 10, resets_at: 1790000000 } }),
+    JSON.stringify({ t: '2026-11-24T11:00:00Z', seven_day: { used_percentage: 12 } }),
+  ].join('\n'));
+  assert.equal(f.readings.length, 2);
+  assert.ok(f.readings.every(r => r.reset === undefined || Number.isFinite(r.reset)));
+  assert.equal(f.readings.filter(r => Number.isFinite(r.reset)).at(-1).reset, 1790000000000);
+});
+
+test('fileLines streams a file line by line, across chunk edges', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'mana-lines-'));
+  const text = Array.from({ length: 5000 }, (_, i) => `line-${i}-${'x'.repeat(i % 40)}`).join('\n');
+  writeFileSync(join(dir, 'a.jsonl'), text);
+  assert.deepEqual([...fileLines(join(dir, 'a.jsonl'))], text.split('\n'));
 });

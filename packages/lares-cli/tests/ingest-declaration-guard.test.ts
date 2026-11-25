@@ -13,7 +13,7 @@ import { mkdtempSync, rmSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { listCarriers } from "../src/ingest-core.js";
-import { BAG_MANIFEST_FILE } from "@lararium/mesh";
+import { BAG_MANIFEST_FILE } from "@lararium/mesh/bag-manifest";
 
 describe("a bag's declaration never enters the store", () => {
   let bag: string;

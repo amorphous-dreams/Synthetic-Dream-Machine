@@ -6,10 +6,13 @@
  */
 import { Repo } from "@automerge/automerge-repo";
 import { describe, expect, test } from "vitest";
-import {
-  currentSignerOf, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, emptyLarDoc, leaseEpochSlotUri,
-  makeHandLineage, personaLineageFromKel, signLeaseAdvance, storedLarRecord, type LarDoc,
-} from "@lararium/mesh";
+import { currentSignerOf, makeHandLineage } from "@lararium/mesh/hand-lineage";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { leaseEpochSlotUri } from "@lararium/mesh/epoch-lease";
+import { personaLineageFromKel } from "@lararium/mesh/persona-act-board";
+import { signLeaseAdvance } from "@lararium/mesh/lease-advance";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
 import { realKel } from "../../lararium-mesh/tests/kel-fixture.js";
 import { rollSignedLeaseEpochOnBoard } from "../src/lease-rekey.js";
 

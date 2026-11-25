@@ -5,9 +5,10 @@
  */
 import { FIXTURE_WARD } from "./browser-custody-fixture.js";
 import * as ed25519 from "@noble/ed25519";
-import {
-  mintPersonaInception, mintFaceAnchor, writePersonaKelEvent, type LarDoc, type PersonaKelEvent,
-} from "@lararium/mesh";
+import { mintPersonaInception, type PersonaKelEvent } from "@lararium/mesh/persona-kel";
+import { mintFaceAnchor } from "@lararium/mesh/face-anchor";
+import { writePersonaKelEvent } from "@lararium/mesh/persona-kel-board";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { generateOrLoadBrowserPersonaRoot, loadBrowserPersonaRootSeed, makeBrowserIdbPersonaVault, wearFaceOfVessel } from "../src/browser-vessel-identity.js";
 import { bindSyntheticFace } from "./browser-custody-fixture.js";
 import { keepBrowserFaceAnchor } from "../src/browser-face-anchor.js";

@@ -14,9 +14,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createConnection } from "node:net";
 import { Repo } from "@automerge/automerge-repo";
-import {
-  emptyLarDoc, concludeVerb, OUTCOME_URI_PREFIX, controlStoreOf, type LarDoc,
-} from "@lararium/mesh";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { concludeVerb, OUTCOME_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
+import { controlStoreOf } from "@lararium/mesh/control-home";
 import { startUdsChannel } from "../src/uds-channel.js";
 import { askIslandVerb } from "../src/island-verb-ask.js";
 import { claimStore } from "../src/owned-store.js";

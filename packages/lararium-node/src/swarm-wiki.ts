@@ -4,4 +4,4 @@
  * which no recipe composes and no mirror names; `writeNew` claims a title inside one document change.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
-export { docSwarmWiki as controlSwarmWiki } from "@lararium/mesh";
+export { docSwarmWiki as controlSwarmWiki } from "@lararium/mesh/doc-swarm-wiki";

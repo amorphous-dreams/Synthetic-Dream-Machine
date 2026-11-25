@@ -37,14 +37,14 @@ import { readFileSync, mkdirSync } from "node:fs";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 import { join } from "node:path";
 import type { DocHandle } from "@automerge/automerge-repo";
-import {
-  FLOW_POINTER_FRAME,
-  type FaceGate, type GateBundlePin, type GateSessionChannel, type GateSessionTable, type FlowPointerFrame,
-} from "@lararium/mesh";
-import {
-  buildFlowPointer, flowPointerId, verifyFlowPointer, snapshotPublicFlowMap,
-  type FlowSnapshot, type FlowPointer, type LarDoc, type PlaceSigner,
-} from "@lararium/mesh";
+import { FLOW_POINTER_FRAME, type FlowPointerFrame } from "@lararium/mesh/flow-read-client";
+import { type FaceGate, type GateSessionTable } from "@lararium/mesh/face-gate-door";
+import { type GateBundlePin } from "@lararium/mesh/gate-bundle-door";
+import { type GateSessionChannel } from "@lararium/mesh/gate-session-channel";
+import { buildFlowPointer, flowPointerId, verifyFlowPointer, type FlowSnapshot, type FlowPointer } from "@lararium/mesh/flow-substrate";
+import { snapshotPublicFlowMap } from "@lararium/mesh/mesh-palace";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { type PlaceSigner } from "@lararium/mesh/place-signer";
 
 /** Persists the local causal head and exact publication so restart preserves the causal closure. */
 const STATE_FILE = "flow-pointer-state.json";

@@ -17,7 +17,7 @@ import {
   larLibraryHome, libraryCollectionDir, resolveLibraryRef, acquireIntoLibrary,
   listCollections, listCollection, verifyCollection, writeLibraryIndex, readLibraryMeta,
 } from "../src/library-store.js";
-import { sha256HexBytesSync } from "@lararium/mesh";
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
 import { larDataDir, larHearthHome, larLibraryRoot } from "../src/vessel-paths.js";
 
 const saved: Record<string, string | undefined> = {};

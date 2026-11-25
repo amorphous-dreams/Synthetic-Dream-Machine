@@ -6,7 +6,7 @@
 import { EventEmitter } from "node:events";
 import type { Socket } from "node:net";
 import { afterEach, describe, expect, test } from "vitest";
-import type { SlotSpec } from "@lararium/mesh";
+import type { SlotSpec } from "@lararium/mesh/keyslot-door";
 import { custodyFrameHandler } from "../src/custody-frames.js";
 import { personaGroupDigest } from "../src/persona-group-file.js";
 import type { CustodyHolder } from "../src/custody-holder.js";

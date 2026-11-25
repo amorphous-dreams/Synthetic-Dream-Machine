@@ -17,7 +17,7 @@
  */
 import { readFileSync } from "node:fs";
 import { runPromoteOpen, runPromoteSign, runPromoteCheck, PromoteError } from "@lararium/node";
-import type { PromotionApprovalVerdict } from "@lararium/mesh";
+import type { PromotionApprovalVerdict } from "@lararium/mesh/promotion-approval";
 import { larSealHome } from "../env.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";

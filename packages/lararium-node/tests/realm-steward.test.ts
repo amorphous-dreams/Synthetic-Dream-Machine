@@ -44,11 +44,18 @@
 import { describe, expect, test } from "vitest";
 import * as ed from "@noble/ed25519";
 import { Repo } from "@automerge/automerge-repo";
+import { deterministicDocUrl } from "@lararium/mesh/deterministic-doc";
+import { emptyLarDoc, mutableLarRecord, type LarDoc } from "@lararium/mesh/base-doc";
+import { hex } from "@lararium/mesh/crypto";
 import {
-  deterministicDocUrl, emptyLarDoc, hex, mutableLarRecord, proposeRealmBagRegistration, signRealmBagRegistration, writeRealmBagRegistration,
-  realmBagKey, realmBagProposalKey, type FederationGate, type LarDoc,
-  type NexusMembership, type StewardSigner,
-} from "@lararium/mesh";
+  proposeRealmBagRegistration,
+  signRealmBagRegistration,
+  writeRealmBagRegistration,
+  realmBagKey,
+  realmBagProposalKey,
+  type StewardSigner,
+} from "@lararium/mesh/realm-bag";
+import { type FederationGate, type NexusMembership } from "@lararium/mesh/federation-gate";
 import { makeRealmPlane } from "../src/realm-plane.js";
 import { runRealmBag, runRealmBags, stewardGuard, StewardRefused, faceStewardSigner, type StewardVault } from "../src/realm-steward.js";
 import { namedCharter } from "../../lararium-mesh/tests/charter-fixture.js";

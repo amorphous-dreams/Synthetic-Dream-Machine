@@ -32,7 +32,7 @@ import {
   larLibraryHome, libraryCollectionDir, acquireIntoLibrary,
   listCollections, listCollection, verifyCollection, writeLibraryIndex,
 } from "@lararium/node";
-import { libraryRef } from "@lararium/mesh";
+import { libraryRef } from "@lararium/mesh/library-tier";
 import { existsSync } from "node:fs";
 import { emit, exitFor, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";

@@ -11,7 +11,7 @@
  */
 import { closeSync, fstatSync, fsyncSync, mkdirSync, openSync, readFileSync, readSync, writeSync } from "node:fs";
 import { dirname } from "node:path";
-import type { CarriageLogJournal } from "@lararium/mesh";
+import type { CarriageLogJournal } from "@lararium/mesh/carriage-log";
 
 /** The place's carriage log under its store: the file a vessel keeps beside its drop journal. */
 export const CARRIAGE_LOG_FILE = "carriage-log.jsonl";

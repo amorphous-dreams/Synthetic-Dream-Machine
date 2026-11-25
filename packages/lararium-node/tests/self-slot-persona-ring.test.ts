@@ -19,15 +19,18 @@
  */
 import { describe, test, expect } from "vitest";
 import { Repo, interpretAsDocumentId, type DocumentId, type PeerId } from "@automerge/automerge-repo";
-import {
-  buildDeviceDelegation, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, personaScopedBagIds,
-  deriveSelfRecoveryKey, sealKeySetHash, mintPersonaInception, personaRotationSigningBytes, mintPersonaRotation,
-  hexToBytes, type FederationGate, type PersonaKelEvent,
-} from "@lararium/mesh";
+import { buildDeviceDelegation } from "@lararium/mesh/device-delegation";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { personaScopedBagIds } from "@lararium/mesh/persona-scope";
+import { deriveSelfRecoveryKey } from "@lararium/mesh/persona-identity";
+import { sealKeySetHash } from "@lararium/mesh/wax-stamp";
+import { mintPersonaInception, personaRotationSigningBytes, mintPersonaRotation, type PersonaKelEvent } from "@lararium/mesh/persona-kel";
+import { hexToBytes } from "@lararium/mesh/crypto";
+import { type FederationGate } from "@lararium/mesh/federation-gate";
 import {
   faceGrantTitle, signFaceGrantRecord, assemblePersonaGroupRing, FACE_GRANT_PREFIX, type FaceGrantRecord,
 } from "@lararium/keyhive";
-import { provenVesselKeyOf } from "@lararium/mesh";
+import { provenVesselKeyOf } from "@lararium/mesh/persona-group-ring";
 
 // ── The face + its founder, mirroring the keyhive grant recipe ──────────────────────────────────────────
 const ROOT_SEED     = new Uint8Array(32).fill(7);

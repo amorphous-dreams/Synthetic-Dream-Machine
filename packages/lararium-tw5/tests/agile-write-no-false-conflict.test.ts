@@ -20,7 +20,8 @@
  */
 
 import { describe, test, expect } from "vitest";
-import { carrierHash, parseDigest, SHA256_ALGO } from "@lararium/mesh";
+import { carrierHash } from "@lararium/mesh/crypto";
+import { parseDigest, SHA256_ALGO } from "@lararium/mesh/agile-digest";
 import { decideIngest } from "../src/ingest-gate.js";
 import type { IngestOps } from "../src/ingest-gate.js";
 

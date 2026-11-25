@@ -14,9 +14,14 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
-  compareGenesisDigests, foundingRecordDigests, genesisSeedCarriesAVersion, ratchetWords, ratchetsDiffer,
-  GENESIS_SEED_FORMAT, type GenesisDigests, type GenesisRecordLike,
-} from "@lararium/mesh";
+  compareGenesisDigests,
+  foundingRecordDigests,
+  ratchetWords,
+  ratchetsDiffer,
+  type GenesisDigests,
+  type GenesisRecordLike,
+} from "@lararium/mesh/genesis-compare";
+import { genesisSeedCarriesAVersion, GENESIS_SEED_FORMAT } from "@lararium/mesh/genesis-doc";
 import { genesisSeedCid } from "@lararium/node";
 import type { SeedOffer } from "./rite-kukulu.js";
 

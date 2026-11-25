@@ -7,7 +7,7 @@ import type { WikiMountSpec } from "../src/wiki-recipe.js";
 const CORE = "c".repeat(64);
 const PLUGIN = "a".repeat(64);
 const spec: WikiMountSpec = { coreHash: CORE, recipe: { wikiSlug: "wiki" }, grants: { islandUrl: "automerge:fixture", wikiUrl: null } };
-function rig(resolve: () => Promise<{ ok: true; pluginCids: readonly string[] } | { ok: false; error: string }>) {
+function rig(resolve: () => Promise<{ ok: true; pluginCids: readonly string[] } | { ok: false; error: string }>, founding?: () => unknown) {
   const listeners = new Set<(raw: unknown) => void>();
   const hear = (msg: unknown): void => { for (const fn of [...listeners]) fn(msg); };
   const host: VesselIslandHost = {
@@ -19,7 +19,7 @@ function rig(resolve: () => Promise<{ ok: true; pluginCids: readonly string[] } 
     },
     newSyncChannel() { const { port1, port2 } = new MessageChannel(); return { mainPort: port1, syncPort: port2 }; },
   };
-  return new VesselIslandPoolCore({ host, resolvePluginCids: resolve });
+  return new VesselIslandPoolCore({ host, resolvePluginCids: resolve, ...(founding ? { foundingRecord: founding as never } : {}) });
 }
 
 describe("a mounted wiki names the engine inputs its mirror reads", () => {
@@ -28,6 +28,13 @@ describe("a mounted wiki names the engine inputs its mirror reads", () => {
     await pool.mountWiki("wiki", spec);
     expect(await (pool as any).mountInputsOf("wiki")).toEqual({ coreCid: CORE, pluginCids: [PLUGIN] });
     expect(await (pool as any).mountInputsOf("other")).toBeNull();
+    await pool.disposeAll();
+  });
+  test("the inputs name the house skins by the CIDs the founding record's blob rows hold; CONTROL: no founding record names none", async () => {
+    const GRAMMAR = "lar:///ha.ka.ba/lararium/plugins/lares/memetic-wikitext";
+    const pool = rig(async () => ({ ok: true, pluginCids: [PLUGIN] }), () => ({ blobs: { g: { id: GRAMMAR, sha256: PLUGIN }, p: { id: "$:/plugins/x", sha256: "d".repeat(64) } } }));
+    await pool.mountWiki("wiki", spec);
+    expect(await (pool as any).mountInputsOf("wiki")).toEqual({ coreCid: CORE, pluginCids: [PLUGIN], skinCids: { [GRAMMAR]: PLUGIN } });
     await pool.disposeAll();
   });
   test("a wiki with no core hash, or a recipe whose plugins refuse, reads null and never a guess", async () => {

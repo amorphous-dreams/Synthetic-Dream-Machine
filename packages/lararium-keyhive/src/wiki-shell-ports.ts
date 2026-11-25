@@ -19,9 +19,21 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench
  */
 import {
-  buildRetiredShellRecord, carriedFields, holdsEvery, isHouseEffectRecordOf, parseRetiredShellRecord, plainRecord, retiredShellUri, RetiredShellCarryRefusal,
-  storedDeleted, unionRetiredShell, wikiBagUri, wikiSlotUri, workbenchSeats, DAEMON_WIKI_SLUG, type CarriedEffectRecord, type ChangeOrigin, type LarDoc, type LarTiddlerRecord, type StoredLarRecord,
-} from "@lararium/mesh";
+  buildRetiredShellRecord,
+  carriedFields,
+  holdsEvery,
+  parseRetiredShellRecord,
+  retiredShellUri,
+  RetiredShellCarryRefusal,
+  unionRetiredShell,
+  type CarriedEffectRecord,
+} from "@lararium/mesh/shell-leaving-record";
+import { isHouseEffectRecordOf } from "@lararium/mesh/effect-record";
+import { plainRecord, storedDeleted, type StoredLarRecord } from "@lararium/mesh/stored-value";
+import { wikiBagUri, wikiSlotUri, DAEMON_WIKI_SLUG } from "@lararium/mesh/wiki-recipe";
+import { workbenchSeats } from "@lararium/mesh/workbench";
+import { type ChangeOrigin, type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import type { WikiShellPorts } from "@lararium/tw5";
 import type { BagDocLedger } from "./bag-doc-ledger.js";
 import type { KeyhiveProvider } from "./keyhive-provider.js";

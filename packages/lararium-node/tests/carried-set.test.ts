@@ -20,10 +20,11 @@ import { createHash, createPrivateKey, createPublicKey } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import * as ed from "@noble/ed25519";
-import {
-  hex, emptyFoundingCharterDoc, signCarriageContract, ed25519SignerFromSeed,
-  nexusAidOf, type NexusDoc, type SealEpoch,
-} from "@lararium/mesh";
+import { hex } from "@lararium/mesh/crypto";
+import { emptyFoundingCharterDoc, nexusAidOf, type NexusDoc } from "@lararium/mesh/nexus-seal-seed";
+import { signCarriageContract } from "@lararium/mesh/carriage-registry";
+import { ed25519SignerFromSeed } from "@lararium/mesh/ed25519-door";
+import { type SealEpoch } from "@lararium/mesh/wax-stamp";
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed } from "../src/node-vessel-identity.js";
 import { renderNexusDoc, writeNexusDoc, nexusCharterDocPath, parseNexusDoc } from "../src/nexus-doc.js";
 import {

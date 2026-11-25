@@ -12,11 +12,15 @@
  *   G3 — a herm (`floor-unkeyed`: it derives no floor key) still refuses by naming the lift, and registers no floor row
  */
 import { describe, test, expect } from "vitest";
-import { makeIslandRepo } from "@lararium/mesh";
-import {
-  CompositeStore, CONTROL_HOME_ID, CONTROL_HOME_UNNAMED, ControlHomeUnavailable, DAEMON_BAG_ID, emptyLarDoc, floorAnswerStore, floorSlotTitle,
-  isVeilBagRow, isVerbRefusal, tiddlerText, wikiBagUri, type LarDoc,
-} from "@lararium/mesh";
+import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { CONTROL_HOME_ID, DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { CONTROL_HOME_UNNAMED, ControlHomeUnavailable, floorAnswerStore } from "@lararium/mesh/control-home";
+import { emptyLarDoc, tiddlerText, type LarDoc } from "@lararium/mesh/base-doc";
+import { floorSlotTitle } from "@lararium/mesh/device-daemon-docs";
+import { isVeilBagRow } from "@lararium/mesh/catalog-view";
+import { isVerbRefusal } from "@lararium/mesh/verb-refusal";
+import { wikiBagUri } from "@lararium/mesh/wiki-recipe";
 import { MemoryTiddlerStore, VerbTable } from "@lararium/tw5";
 import { operatorDaemonOptions } from "../src/operator-daemon-behavior.js";
 

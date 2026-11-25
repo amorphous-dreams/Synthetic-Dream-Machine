@@ -8,7 +8,8 @@
  *   control — with a face the real reactor registers (it fails on its own first line, not the floor's)
  */
 import { describe, test, expect } from "vitest";
-import { ACTION_VERBS, isVerbRefusal } from "@lararium/mesh";
+import { ACTION_VERBS } from "@lararium/mesh/residency-actions";
+import { isVerbRefusal } from "@lararium/mesh/verb-refusal";
 import { makeOperatorDaemonBehavior, operatorDaemonOptions } from "../src/operator-daemon-behavior.js";
 import { VerbTable } from "@lararium/tw5";
 

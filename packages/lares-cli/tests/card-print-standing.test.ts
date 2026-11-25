@@ -28,7 +28,8 @@ import { cmdNexus } from "../src/commands/nexus.js";
 import { cmdVessel } from "../src/commands/vessel.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 import { generateOrLoadPersonaGroupRoot, makeNodePersonaDeclarationStore, makeNodePersonaPetnameStore } from "@lararium/node";
-import { renameOwnPersona, standForKahuSeat } from "@lararium/mesh";
+import { renameOwnPersona } from "@lararium/mesh/persona-petname";
+import { standForKahuSeat } from "@lararium/mesh/persona-declare";
 import { seatScratchCustody, type ScratchCustody } from "./support/scratch-custody.js";
 
 vi.setConfig({ testTimeout: 120_000, hookTimeout: 120_000 });

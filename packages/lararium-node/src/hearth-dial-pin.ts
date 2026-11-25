@@ -23,7 +23,10 @@
  */
 
 import { readFileSync } from "node:fs";
-import { DAEMON_BAG_ID, readAdmitGatePin, type GateBundlePin, ownEntry } from "@lararium/mesh";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { readAdmitGatePin } from "@lararium/mesh/admit-gate-pin";
+import { type GateBundlePin } from "@lararium/mesh/gate-bundle-door";
+import { ownEntry } from "@lararium/mesh/stored-value";
 
 /** The hearth's `ws://…/ws` relay — where this joinee dials. */
 export const HEARTH_SYNC_URL_TIDDLER = `${DAEMON_BAG_ID}/hearth/sync-url`;

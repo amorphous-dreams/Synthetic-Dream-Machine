@@ -37,10 +37,17 @@
 import { createPrivateKey, createPublicKey } from "node:crypto";
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  assembleQuorum, bundleMemoryKeypair, decodeShareBytes, deriveSelfRecoveryKey, mintBundleKey, mintPersonaInception,
-  reconstructFromQuorum, sealKeySetHash, sealMemorySection,
-  type CustodianTag, type FaceBundleBody, type RecoveryShare,
-} from "@lararium/mesh";
+  assembleQuorum,
+  decodeShareBytes,
+  reconstructFromQuorum,
+  type CustodianTag,
+  type RecoveryShare,
+} from "@lararium/mesh/recovery-share";
+import { bundleMemoryKeypair, mintBundleKey, type FaceBundleBody } from "@lararium/mesh/face-bundle";
+import { deriveSelfRecoveryKey } from "@lararium/mesh/persona-identity";
+import { mintPersonaInception } from "@lararium/mesh/persona-kel";
+import { sealKeySetHash } from "@lararium/mesh/wax-stamp";
+import { sealMemorySection } from "@lararium/mesh/memory-section";
 import { restoreFaceBody, type FaceBundleRestored } from "./face-bundle-restore.js";
 
 /** The names the reader refuses under, beside the restore's own (`RESTORE_REFUSALS`), which pass through untouched. */

@@ -44,7 +44,7 @@
  * prompt: a route typed then would prove nothing and admit nothing.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
  */
-import { keepVerifyKeyOf } from "@lararium/mesh";
+import { keepVerifyKeyOf } from "@lararium/mesh/keep-seat-door";
 import { offeringTermsOf, type PulamaHandAnswer } from "./pulama-hand.js";
 
 /** The slice of a terminal a route reads through. */

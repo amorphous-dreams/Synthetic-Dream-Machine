@@ -10,7 +10,8 @@
  * Control: the same save into a working layer no DROP retired lands.
  */
 import { describe, expect, test } from "vitest";
-import { buildEffectRecordTiddler, RETIRED_EVENT_ID, type ChangeOrigin } from "@lararium/mesh";
+import { buildEffectRecordTiddler, RETIRED_EVENT_ID } from "@lararium/mesh/effect-record";
+import { type ChangeOrigin } from "@lararium/mesh/tiddler-store";
 import { unsavedHandAlertTitle } from "../src/island-adaptor.js";
 import { wikiSkip, skipNote } from "./test-wiki.js";
 import { afterDispatch, ManualBoundary, shoreRig, storeDeleted, storeText, turns, workingBag, type Rig } from "./wiki-shore-rig.js";

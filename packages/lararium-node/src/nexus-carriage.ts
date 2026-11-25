@@ -47,37 +47,29 @@
  */
 
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
-import type {
-  NexusMembership, LarDoc, RealmCharterConsult, PresentedAdmit,
-  SealEpoch, FederationPosture,
-} from "@lararium/mesh";
+import type { NexusMembership, FederationPosture } from "@lararium/mesh/federation-gate";
+import type { LarDoc } from "@lararium/mesh/base-doc";
+import type { RealmCharterConsult } from "@lararium/mesh/realm-bag";
+import type { PresentedAdmit } from "@lararium/mesh/leaf-presentation";
+import type { SealEpoch } from "@lararium/mesh/wax-stamp";
+import { nexusAidOf, federationPostureFromDoc, seatedKahuKeys, foundingRoster } from "@lararium/mesh/nexus-seal-seed";
 import {
-  nexusAidOf,
-  federationPostureFromDoc,
-  seatedKahuKeys,
-  foundingRoster,
   foldCarrierSet,
-  carriageAncestryFromBoard,
-  carriageEntriesFromBoard,
-  antigenEntriesFromBoard,
-  carriageDocUrl,
-  kapaeAntigenDocUrl,
-  materializeSharedLarDoc,
-  makeMultiSigQuorumVerifier,
-  heldNexusRoot, heldRootFor, readAdmitAtHeldRoot,
-  presentationFromBoardDoc,
   presentationFindingLine,
   carriageEntryActCid,
   presentedActCid,
-  nexusKeyHandOversFromBoard,
-  admittedKeyOf,
   type AdmitPresentation,
-  type NexusKeyHandOver,
   type PresentationFinding,
-} from "@lararium/mesh";
+} from "@lararium/mesh/carriage-registry";
+import { carriageAncestryFromBoard, carriageEntriesFromBoard, presentationFromBoardDoc } from "@lararium/mesh/carriage-board";
+import { antigenEntriesFromBoard } from "@lararium/mesh/antigen-board";
+import { carriageDocUrl, kapaeAntigenDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { makeMultiSigQuorumVerifier } from "@lararium/mesh/kapae-antigen";
+import { heldNexusRoot, heldRootFor, readAdmitAtHeldRoot } from "@lararium/mesh/held-nexus-root";
+import { nexusKeyHandOversFromBoard, admittedKeyOf, type NexusKeyHandOver } from "@lararium/mesh/nexus-key-line";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
 import { readNexusDoc } from "./nexus-doc.js";
-import type { HeldNexusRoot } from "@lararium/mesh";
+import type { HeldNexusRoot } from "@lararium/mesh/held-nexus-root";
 import { carriedReadings, charterHomeFor, readKeyLine } from "./carried-set.js";
 import { nodeNexusIsland } from "./nexus-standing.js";
 import { heldNexusLeaves, type NexusLeaf } from "./nexus-leaf.js";

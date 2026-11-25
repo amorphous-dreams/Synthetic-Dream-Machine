@@ -13,7 +13,9 @@
  * ports — the caller supplies `placeVerb` (its own live-delivery path).
  */
 
-import { CONTROL_HOME_ID, MAILBOX_URI_PREFIX, type CompositeStore } from "@lararium/mesh";
+import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
+import { MAILBOX_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
+import { type CompositeStore } from "@lararium/mesh/composite-store";
 
 const MAILBOX_PREFIX = MAILBOX_URI_PREFIX;
 

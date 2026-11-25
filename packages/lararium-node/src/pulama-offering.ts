@@ -3,7 +3,9 @@
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
  */
-import { PLUGIN_OFFERING_DOMAIN, computePluginsCid, verifyPluginOffering, type PluginOffering } from "@lararium/mesh";
+import { PLUGIN_OFFERING_DOMAIN } from "@lararium/mesh/domains";
+import { computePluginsCid } from "@lararium/mesh/genesis-doc";
+import { verifyPluginOffering, type PluginOffering } from "@lararium/mesh/plugin-offering";
 
 /** The ONE shape the hand door's `publish` signs: the `signPluginOffering` preimage's parts, and nothing beside them. */
 export type PulamaOfferingTerms = Omit<PluginOffering, "kind" | "sig">;

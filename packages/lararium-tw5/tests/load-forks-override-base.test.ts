@@ -8,7 +8,13 @@
  *   L3  CONTROL: a working-only title names no base; a LOAD into any other layer stamps nothing
  */
 import { describe, test, expect } from "vitest";
-import { AutomergeDocStore, CompositeStore, carrierHashOf, emptyLarDoc, overrideBaseOf, type CapabilityAccess, type CapabilityVerifyResult, type Verb } from "@lararium/mesh";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { carrierHashOf } from "@lararium/mesh/carrier-form";
+import { emptyLarDoc } from "@lararium/mesh/base-doc";
+import { overrideBaseOf } from "@lararium/mesh/override-base";
+import { type CapabilityAccess, type CapabilityVerifyResult } from "@lararium/mesh/capability";
+import { type Verb } from "@lararium/mesh/verb-tiddler";
 import { carrierHash } from "@lararium/mesh/crypto";
 import { Repo } from "./wiki-shore-rig.js";
 import { registerActionReactors } from "../src/action-handler.js";

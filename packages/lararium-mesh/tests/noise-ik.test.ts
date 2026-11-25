@@ -346,9 +346,9 @@ describe("the barrel names only what a caller consumes, and the module reads no 
     expect(named).toEqual(["NOISE_MAX_MESSAGE_BYTES", "MIN_MESSAGE1_BYTES", "MIN_MESSAGE2_BYTES"]);
     expect(barrel.match(/\.\/noise-ik\.js/g)?.length).toBe(1);
     const caller = readFileSync(new URL("../../lararium-node/src/face-gate-server.ts", import.meta.url), "utf8");
-    expect(caller).toMatch(/NOISE_MAX_MESSAGE_BYTES[^;]*from "@lararium\/mesh"/s);
+    expect(caller).toMatch(/NOISE_MAX_MESSAGE_BYTES[^;]*from "@lararium\/mesh\/noise-ik-door"/s);
     const relayDoor = readFileSync(new URL("../../lararium-node/src/intent-relay-door.ts", import.meta.url), "utf8");
-    expect(relayDoor).toMatch(/MIN_MESSAGE1_BYTES[^;]*MIN_MESSAGE2_BYTES[^;]*from "@lararium\/mesh"/s);
+    expect(relayDoor).toMatch(/MIN_MESSAGE1_BYTES[^;]*MIN_MESSAGE2_BYTES[^;]*from "@lararium\/mesh\/noise-ik-door"/s);
     expect(barrel).toContain("./crypto.js");                                 // KNOWN POSITIVE
     const source = readFileSync(new URL("../src/noise-ik.ts", import.meta.url), "utf8");
     for (const banned of [/\bDate\b/, /performance\./, /setTimeout|setInterval/, /node:/]) expect(banned.test(source)).toBe(false);

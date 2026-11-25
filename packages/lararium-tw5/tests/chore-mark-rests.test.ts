@@ -8,7 +8,12 @@
 import { memoryControlStore } from "./control-store-fixture.js";
 import { describe, test, expect } from "vitest";
 import { Repo } from "./wiki-shore-rig.js";
-import { AutomergeDocStore, CompositeStore, DAEMON_BAG_ID, OUTCOME_URI_PREFIX, emptyLarDoc, recipeUri, type LarTiddlerRecord } from "@lararium/mesh";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { DAEMON_BAG_ID, recipeUri } from "@lararium/mesh/lar-uris";
+import { OUTCOME_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
+import { emptyLarDoc } from "@lararium/mesh/base-doc";
+import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { VerbDispatcher, VerbTable } from "../src/verb-dispatcher.js";
 import { makeLocalAskBook } from "../src/daemon-behavior.js";

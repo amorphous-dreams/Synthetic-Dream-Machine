@@ -9,7 +9,7 @@
  *
  * Pure of I/O itself: the caller supplies the mark (what the head and board read now), the judge, and its refusal.
  */
-import type { NexusPartialJudgement } from "@lararium/mesh";
+import type { NexusPartialJudgement } from "@lararium/mesh/nexus-partial";
 
 /** How many whole judgements a landing runs before a board that keeps moving refuses. */
 export const LANDING_PASSES = 8;

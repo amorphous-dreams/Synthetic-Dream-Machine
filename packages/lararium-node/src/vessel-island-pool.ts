@@ -12,17 +12,14 @@
  * Meme: lar:///ha.ka.ba/lararium/node/vessel-island-pool
  */
 
-import {
-  VesselIslandPoolCore, houseCanonSlugsSeated,
-  type Repo,
-  type IslandMsg_Event,
-  type LarIslandToVesselMsg,
-  type WikiRecipe,
-  type PortIslandToVesselMsg,
-  type CapabilityRecord,
-  type LarDoc,
-  type WikiMountSpec,
-} from "@lararium/mesh";
+import { VesselIslandPoolCore } from "@lararium/mesh/vessel-island-pool-core-door";
+import { houseCanonSlugsSeated } from "@lararium/mesh/kahu-canon-reach";
+import { type Repo } from "@lararium/mesh/automerge";
+import { type IslandMsg_Event, type LarIslandToVesselMsg } from "@lararium/mesh/island-protocol";
+import { type WikiRecipe, type WikiMountSpec } from "@lararium/mesh/wiki-recipe";
+import { type PortIslandToVesselMsg } from "@lararium/mesh/record-port";
+import { type CapabilityRecord } from "@lararium/mesh/capability-record";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { islandStoreDir, islandStoreLeftLine } from "./island-store-left.js";
 import { floorShadowFileStore } from "./floor-shadow-file.js";
 import type { PortPolicy } from "@lararium/mesh/port-lease";

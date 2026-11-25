@@ -1,9 +1,10 @@
 /** lease-observation — the anchor rises only on a verified signed slot. Reds: unsigned, stranger, other group; control: the root's advance. */
 import { describe, expect, it } from "vitest";
-import {
-  ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, recoveryContactRegistrationCard, mintFaceAnchor,
-  provisionThresholdRecoveryAtFounding, signLeaseAdvance,
-} from "@lararium/mesh";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { recoveryContactRegistrationCard } from "@lararium/mesh/recovery-registration";
+import { mintFaceAnchor } from "@lararium/mesh/face-anchor";
+import { provisionThresholdRecoveryAtFounding } from "@lararium/mesh/recovery-keel-core";
+import { signLeaseAdvance } from "@lararium/mesh/lease-advance";
 import { realKel, forgedRotation } from "../../lararium-mesh/tests/kel-fixture.js";
 import { raiseAnchorFromSlots } from "../src/lease-observation.js";
 

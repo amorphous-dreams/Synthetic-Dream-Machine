@@ -19,12 +19,13 @@ import { afterEach, beforeEach, describe, test, expect, vi } from "vitest";
 import { cpSync, mkdirSync, writeFileSync } from "node:fs";
 import { closeScratch, openScratch, type Scratch } from "../../lararium-node/tests/support/scratch-fixture.js";
 import { join } from "node:path";
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
 import { cmdNexus } from "../src/commands/nexus.js";
 import { publishLanding } from "../src/commands/nexus-publish.js";
 import { cmdVessel } from "../src/commands/vessel.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 import { generateOrLoadPersonaGroupRoot, wardRootSigner } from "@lararium/node";
-import { sha256HexBytesSync, signPluginOffering, verifyPluginOffering } from "@lararium/mesh";
+import { signPluginOffering, verifyPluginOffering } from "@lararium/mesh/plugin-offering";
 
 // The room each test and hook takes, stated where the file loads: a case founds a vessel, lights a face and seals rows under a derived key, so it runs for seconds. A timeout stated inside a hook reaches no
 // case the runner already collected.

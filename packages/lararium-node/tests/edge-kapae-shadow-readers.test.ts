@@ -15,10 +15,14 @@ import { afterEach, beforeEach, describe, expect } from "vitest";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import * as ed from "@noble/ed25519";
-import {
-  hex, signCabalInvite, signEdgeKapae, writeEdgeKapae, vouchEdgeId, CABAL_INVITE_DOMAIN,
-  DAEMON_BAG_ID, seedDaemonDoc, realmEdgeBoardDocUrl, fleetEdgeBoardDocUrl, materializeSharedLarDoc, type CabalInvite,
-} from "@lararium/mesh";
+import { hex } from "@lararium/mesh/crypto";
+import { signCabalInvite, type CabalInvite } from "@lararium/mesh/cabal-invite";
+import { signEdgeKapae, writeEdgeKapae } from "@lararium/mesh/edge-kapae";
+import { vouchEdgeId } from "@lararium/mesh/vouch-board";
+import { CABAL_INVITE_DOMAIN } from "@lararium/mesh/domains";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { seedDaemonDoc } from "@lararium/mesh/social-seed";
+import { realmEdgeBoardDocUrl, fleetEdgeBoardDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot } from "../src/node-vessel-identity.js";
 import { nexusLeafFor } from "../src/nexus-leaf.js";
 import { primaryAid, seatOwnCharter, presentFace } from "./acting-face-fixture.js";

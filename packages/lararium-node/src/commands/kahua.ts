@@ -20,9 +20,14 @@ import { makeCatalogAccessor } from "@lararium/tw5";
 import type { WardCredential } from "../ward-credential.js";
 import { randomBytes } from "node:crypto";
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
-import {
-  faceRecordsOf, faceRelationOf, storedLarRecord, tiddlerText, ownEntry, CONTROL_HOME_ID, findOrThrow, DocumentUnavailableRefusal, type KahuaSource, type LarDoc,
-} from "@lararium/mesh";
+import { faceRecordsOf } from "@lararium/mesh/face-reading";
+import { faceRelationOf } from "@lararium/mesh/face-relation";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
+import { tiddlerText, type LarDoc } from "@lararium/mesh/base-doc";
+import { ownEntry } from "@lararium/mesh/stored-value";
+import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
+import { findOrThrow, DocumentUnavailableRefusal } from "@lararium/mesh/find-or-throw";
+import { type KahuaSource } from "@lararium/mesh/kahua-stage";
 import { loadIntentFace, IntentRefused } from "./intent.js";
 import { kahuaDoor, KahuaRefused, type KahuaDoorPorts, type KahuaHand } from "../kahua-door.js";
 

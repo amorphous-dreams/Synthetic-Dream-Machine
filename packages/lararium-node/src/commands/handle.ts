@@ -12,15 +12,25 @@
  */
 import type { WardCredential } from "../ward-credential.js";
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
+import { materializeSharedLarDoc, whoBoardDocUrl, personaKelBoardDocUrl } from "@lararium/mesh/deterministic-doc";
+import { publishHandleForFace } from "@lararium/mesh/handle-publish";
+import { readFaceOwner, type FaceOwner } from "@lararium/mesh/face-reading";
+import { resolveOwnHandleChain, boardHeadCid, burnOwnHandle, rotateOwnHandle } from "@lararium/mesh/handle-orchestration";
+import { signHandleCard, type HandleCard } from "@lararium/mesh/handle-card";
 import {
-  materializeSharedLarDoc, whoBoardDocUrl,
-  publishHandleForFace, readFaceOwner,
-  resolveOwnHandleChain, boardHeadCid, burnOwnHandle, rotateOwnHandle, signHandleCard,
-  attestUnderHead, normalizeHandleClaim, personaKelBoardDocUrl, personaKelChainForPrefix,
-  deriveVeiledUserKey, PERSONA_GLAMOUR_CONTEXT, ed25519SignerFromSeed, hexToBytes, hex,
-  type LarDoc, type HandleCard, type HandleKelEvent, type HandleAttestation, type HandleClaim,
-  type PersonaPublicHandleRecord, type FaceOwner, type PersonaKelEvent,
-} from "@lararium/mesh";
+  attestUnderHead,
+  normalizeHandleClaim,
+  type HandleKelEvent,
+  type HandleAttestation,
+  type HandleClaim,
+} from "@lararium/mesh/handle-kel";
+import { personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";
+import { deriveVeiledUserKey } from "@lararium/mesh/persona-identity";
+import { PERSONA_GLAMOUR_CONTEXT, type PersonaPublicHandleRecord } from "@lararium/mesh/persona-glamour";
+import { ed25519SignerFromSeed } from "@lararium/mesh/ed25519-door";
+import { hexToBytes, hex } from "@lararium/mesh/crypto";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { type PersonaKelEvent } from "@lararium/mesh/persona-kel";
 import * as ed25519 from "@noble/ed25519";
 import { loadIdentityAnchors } from "../identity-anchors.js";
 import { loadFaceAnchorOfGroup } from "../face-anchor-store.js";

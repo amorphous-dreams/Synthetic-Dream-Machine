@@ -16,12 +16,12 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import { Repo } from "@automerge/automerge-repo";
-import {
-  hex, signAntigenEntry, foldAntigenSet, makeMultiSigQuorumVerifier,
-  foundingRoster, carryContractShareDecision,
-  kapaeAntigenDocUrl, materializeSharedLarDoc, mutableLarRecord,
-  type KapaeAntigenEntry, type NexusDoc,
-} from "@lararium/mesh";
+import { hex } from "@lararium/mesh/crypto";
+import { signAntigenEntry, foldAntigenSet, makeMultiSigQuorumVerifier, type KapaeAntigenEntry } from "@lararium/mesh/kapae-antigen";
+import { foundingRoster, type NexusDoc } from "@lararium/mesh/nexus-seal-seed";
+import { carryContractShareDecision } from "@lararium/mesh/federation-gate";
+import { kapaeAntigenDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { mutableLarRecord } from "@lararium/mesh/base-doc";
 import { makeAntigenRingHolder } from "../src/antigen-ring.js";
 import { writeNexusDoc } from "../src/nexus-doc.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";

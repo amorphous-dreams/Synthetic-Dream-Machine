@@ -18,8 +18,15 @@
  * daemon decouple) and with `slot` present where one does.
  */
 
-import type { CompositeStore, Repo, DocHandle, LarDoc, LarOpenPhase, VesselKeel, VesselCoreAssembly } from "@lararium/mesh";
-import { assembleVessel, mountWikiSlot, LARES_DOC_URI, LARARIUM_DOC_URI, composeVessel, recipeFromRecord, type CapModule } from "@lararium/mesh";
+import type { CompositeStore } from "@lararium/mesh/composite-store";
+import type { Repo, DocHandle } from "@lararium/mesh/automerge";
+import type { LarDoc } from "@lararium/mesh/base-doc";
+import type { LarOpenPhase } from "@lararium/mesh/lararium-vessel";
+import type { VesselKeel, VesselCoreAssembly } from "@lararium/mesh/open-vessel-core";
+import { assembleVessel, mountWikiSlot } from "@lararium/mesh/open-vessel-core";
+import { LARES_DOC_URI, LARARIUM_DOC_URI } from "@lararium/mesh/lar-uris";
+import { composeVessel, type CapModule } from "@lararium/mesh/cap-compose";
+import { recipeFromRecord } from "@lararium/mesh/wiki-recipe";
 import { mountPrimaryWiki, recipeRecordOf, resolveSlotDocs, type PrimaryMountPool, type BindingResolver } from "./vessel-steps.js";
 import { VerbTable } from "./verb-dispatcher.js";
 

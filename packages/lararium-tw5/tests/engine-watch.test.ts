@@ -1,6 +1,10 @@
 import { describe, test, expect, vi } from "vitest";
-import { CompositeStore, BAG_IDS, ENGINE_CORE_ID, wikiSlotUri } from "@lararium/mesh";
-import type { DocHandle, LarDoc } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { BAG_IDS } from "@lararium/mesh/lar-uris";
+import { ENGINE_CORE_ID } from "@lararium/mesh/base-doc";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import type { DocHandle } from "@lararium/mesh/automerge";
+import type { LarDoc } from "@lararium/mesh/base-doc";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { startEngineWatch, ENGINE_WAITING_ALERT_TITLE } from "../src/engine-watch.js";
 import type { IslandContext } from "../src/island-context.js";

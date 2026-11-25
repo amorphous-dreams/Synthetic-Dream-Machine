@@ -28,8 +28,11 @@ import {
   runSovereignKernel,
   type IslandHostShore,
 } from "@lararium/tw5";
+import { makeCidResolver, type CasTransitTransport, verifyCidBytes } from "@lararium/mesh/cas-transit";
+import { islandRestGuard, vesselRestAsker } from "@lararium/mesh/sealed-rest";
+import { seatHouseCanon } from "@lararium/mesh/kahu-canon-reach";
+import { type StorageAdapterInterface } from "@lararium/mesh/automerge";
 import {
-  makeCidResolver, islandRestGuard, vesselRestAsker, seatHouseCanon, type StorageAdapterInterface,
   type IslandMsg_Manifest,
   type IslandStorageConfig,
   type IslandToVesselMsg,
@@ -37,15 +40,13 @@ import {
   type IslandMsg_CasBlock,
   type IslandMsg_DyadAsk,
   type IslandMsg_DyadRead,
-  type EdgeStanding,
   type IslandMsg_ReceiptRequest,
   type IslandMsg_ReceiptIssued,
   type CustodyWriteCarrier,
   type IslandMsg_CustodyWrite,
   type IslandMsg_CustodyWritten,
-  type CasTransitTransport,
-  verifyCidBytes,
-} from "@lararium/mesh";
+} from "@lararium/mesh/island-protocol";
+import { type EdgeStanding } from "@lararium/mesh/edge-kapae";
 import type { IslandBehavior } from "@lararium/tw5";
 import { islandSessionDoor, type IslandSessionProof } from "@lararium/keyhive";
 import { casDirFromIslandStorageDir, readCasBlobFromFs, type IslandCasData } from "./node-cas.js";

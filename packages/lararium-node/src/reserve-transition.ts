@@ -21,10 +21,11 @@
  */
 
 import * as ed25519 from "@noble/ed25519";
-import {
-  sha256HexSync, hex, canonicalJson, canonicalJsonBytes,
-  sealKeySetHash, verifyEd25519, weakSeatOf, RESERVE_TRANSITION_DOMAIN, type QuorumSignature,
-} from "@lararium/mesh";
+import { sha256HexSync, hex, canonicalJson, canonicalJsonBytes } from "@lararium/mesh/crypto";
+import { sealKeySetHash, weakSeatOf } from "@lararium/mesh/wax-stamp";
+import { verifyEd25519 } from "@lararium/mesh/ed25519-door";
+import { RESERVE_TRANSITION_DOMAIN } from "@lararium/mesh/domains";
+import { type QuorumSignature } from "@lararium/mesh/kapae-antigen";
 
 /** The authority fields the transition binds — both epochs, both key-set digests, and the rite walked. */
 export interface ReserveTransitionCore {

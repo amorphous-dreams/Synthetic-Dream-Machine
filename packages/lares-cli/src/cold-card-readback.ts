@@ -8,7 +8,14 @@
  * card's code. With no seat the answer carries the digest and the confirm phrase alone.
  * Every seed zero-fills before the printer returns.
  */
-import { ATTEMPT_BUDGET, attemptWarning, COLD_KEY_CARD_DEFAULT_FIELDS, coldKeyCardLines, coldKeyCode, coldKeyConfirm, coldKeySeedFromCode } from "@lararium/mesh";
+import { ATTEMPT_BUDGET, attemptWarning } from "@lararium/mesh/attempt-budget";
+import {
+  COLD_KEY_CARD_DEFAULT_FIELDS,
+  coldKeyCardLines,
+  coldKeyCode,
+  coldKeyConfirm,
+  coldKeySeedFromCode,
+} from "@lararium/mesh/cold-key-card";
 import type { ParsedArgs } from "./parse-args.js";
 import { readBackStandsIn } from "./sealed-records.js";
 import { canPromptSecret, promptSecret } from "./prompt-secret.js";

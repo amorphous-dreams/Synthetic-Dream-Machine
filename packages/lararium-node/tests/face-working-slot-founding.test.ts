@@ -16,7 +16,7 @@ import { cpSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { faceCatalogDocUrl } from "@lararium/mesh";
+import { faceCatalogDocUrl } from "@lararium/mesh/catalog-view";
 import * as init from "../src/commands/init.js";
 import { seatedCustody, unseatCustody } from "../src/custody-seat.js";
 import { landFaceAddressSecret, readFaceAddressSecret } from "../src/fleet-join-custody.js";

@@ -13,10 +13,11 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
-import {
-  computePluginsCid, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, pluginOfferingBytes, pluginOfferingCid, verifyPluginOffering, WardRefused,
-  type Credential, type OfferedBlob,
-} from "@lararium/mesh";
+import { computePluginsCid } from "@lararium/mesh/genesis-doc";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { pluginOfferingBytes, pluginOfferingCid, verifyPluginOffering, type OfferedBlob } from "@lararium/mesh/plugin-offering";
+import { WardRefused } from "@lararium/mesh/ward-slots";
+import { type Credential } from "@lararium/mesh/keyslot-door";
 import { FsCustodyIo } from "../src/custody-io.js";
 import { makeCustodyHolder } from "../src/custody-holder.js";
 import { offeringTermsOf, pulamaHandDoor } from "../src/pulama-hand.js";

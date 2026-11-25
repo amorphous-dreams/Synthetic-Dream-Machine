@@ -16,7 +16,7 @@ import { describe, test, expect, afterEach } from "vitest";
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
-import { serializeProvenance, ORIGINAL_TIDDLER_PATHS } from "@lararium/mesh";
+import { serializeProvenance, ORIGINAL_TIDDLER_PATHS } from "@lararium/mesh/pack-provenance";
 import { LarDiskProjector } from "../src/disk-projector.js";
 import type { TW5Engine } from "@lararium/tw5";
 

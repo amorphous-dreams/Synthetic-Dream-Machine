@@ -14,8 +14,11 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/verb-summons
  */
 
-import type { ChangeOrigin, CompositeStore, LarTiddlerChange } from "@lararium/mesh";
-import { CONTROL_HOME_ID, NoWorkingLayerRefusal, SUMMONS_URI_PREFIX, parseVerb } from "@lararium/mesh";
+import type { ChangeOrigin, LarTiddlerChange } from "@lararium/mesh/tiddler-store";
+import type { CompositeStore } from "@lararium/mesh/composite-store";
+import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
+import { NoWorkingLayerRefusal } from "@lararium/mesh/composite-store";
+import { SUMMONS_URI_PREFIX, parseVerb } from "@lararium/mesh/verb-tiddler";
 import type { VerbPlacement } from "./verb-vm.js";
 
 export type SummonsRequest = VerbPlacement;

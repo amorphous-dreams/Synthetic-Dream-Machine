@@ -39,15 +39,43 @@ import { optionKey, selectOptions, tw5ElementToHtml } from "./fake-dom.js";
 import { makeProjectedViewContract } from "./tw5-host-bridge.js";
 import { installLarFieldEngine, larFieldEngineOf } from "./lar-field-engine.js";
 import type { ReceiptCapability } from "./receipt.js";
+import { CoalesceGate } from "@lararium/mesh/projection-nalu";
 import {
-  CoalesceGate, LAR_CAMERA_STORY, LAR_KEY_MEMBERSHIP, LAR_KEY_STYLE, LAR_KEY_SURFACE, LAR_SERVICE_KINDS,
-  LAR_SURFACE_DEFAULT_SERVICES, LAR_WHOLE_BYTES_MAX, mkLarControlResult, mkLarFrame, mkLarService,
-  LAR_CONTROL_DOCUMENT, LAR_KEY_SHORTCUTS, LAR_KEY_STORY_ORDER, type LarShortcutChord, type LarStoryOrder,
-  type IslandToVesselMsg, type LarFrameKey, type LarMsg_ControlEvent, type LarMsg_ControlResult, type LarMsg_Frame,
-  type LarMsg_Resend, type LarMsg_Service, type LarRefusal, type LarResultStatus, type LarServiceKind, type LarSurfaceManifest,
-  LAR_STAMP_BUBBLE, LAR_STAMP_CANCEL, LAR_STAMP_KEYS, LAR_STAMP_LIVE, LAR_STAMP_ON, larKeyChordName,
-  larLogicalKeyCode, larReservedChord,
-} from "@lararium/mesh";
+  LAR_CAMERA_STORY,
+  LAR_KEY_MEMBERSHIP,
+  LAR_KEY_STYLE,
+  LAR_KEY_SURFACE,
+  LAR_SERVICE_KINDS,
+  LAR_SURFACE_DEFAULT_SERVICES,
+  LAR_WHOLE_BYTES_MAX,
+  mkLarControlResult,
+  mkLarFrame,
+  mkLarService,
+  LAR_CONTROL_DOCUMENT,
+  LAR_KEY_SHORTCUTS,
+  LAR_KEY_STORY_ORDER,
+  type LarShortcutChord,
+  type LarStoryOrder,
+  type LarFrameKey,
+  type LarMsg_ControlEvent,
+  type LarMsg_ControlResult,
+  type LarMsg_Frame,
+  type LarMsg_Resend,
+  type LarMsg_Service,
+  type LarRefusal,
+  type LarResultStatus,
+  type LarServiceKind,
+  type LarSurfaceManifest,
+  LAR_STAMP_BUBBLE,
+  LAR_STAMP_CANCEL,
+  LAR_STAMP_KEYS,
+  LAR_STAMP_LIVE,
+  LAR_STAMP_ON,
+  larKeyChordName,
+  larLogicalKeyCode,
+  larReservedChord,
+} from "@lararium/mesh/lar-camera";
+import { type IslandToVesselMsg } from "@lararium/mesh/island-protocol";
 import type { LaresServiceArgs, LaresServiceDoor } from "./types/lares-globals.js";
 
 /** Coalesce window (ms): a burst of wiki "change" events collapses to one posted frame. Small

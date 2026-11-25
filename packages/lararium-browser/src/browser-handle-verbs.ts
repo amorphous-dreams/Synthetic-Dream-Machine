@@ -7,13 +7,21 @@
  * sit at IndexedDB where node's sit at fs, and the mesh logic is shared.
  */
 import type { DocHandle } from "@automerge/automerge-repo";
+import { loadPersonaRootSeed } from "@lararium/mesh/persona-vault";
+import { resolveOwnHandleChain, boardHeadCid, burnOwnHandle } from "@lararium/mesh/handle-orchestration";
+import { signHandleCard, type HandleCard } from "@lararium/mesh/handle-card";
 import {
-  loadPersonaRootSeed, resolveOwnHandleChain, boardHeadCid, burnOwnHandle, signHandleCard,
-  attestUnderHead, normalizeHandleClaim,
-  deriveVeiledUserKey, PERSONA_GLAMOUR_CONTEXT, ed25519SignerFromSeed, hexToBytes, hex,
-  type LarDoc, type HandleCard, type HandleKelEvent, type HandleAttestation, type HandleClaim,
-  type PersonaPublicHandleRecord,
-} from "@lararium/mesh";
+  attestUnderHead,
+  normalizeHandleClaim,
+  type HandleKelEvent,
+  type HandleAttestation,
+  type HandleClaim,
+} from "@lararium/mesh/handle-kel";
+import { deriveVeiledUserKey } from "@lararium/mesh/persona-identity";
+import { PERSONA_GLAMOUR_CONTEXT, type PersonaPublicHandleRecord } from "@lararium/mesh/persona-glamour";
+import { ed25519SignerFromSeed } from "@lararium/mesh/ed25519-door";
+import { hexToBytes, hex } from "@lararium/mesh/crypto";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import * as ed25519 from "@noble/ed25519";
 import { makeBrowserIdbPersonaVault, makeBrowserPublicHandleStore } from "./browser-vessel-identity.js";
 import type { WardRoute } from "./ward-core.js";

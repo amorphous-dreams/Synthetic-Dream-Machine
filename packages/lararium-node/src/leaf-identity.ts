@@ -4,15 +4,15 @@
  * carriage uses the public place card and pin without a Keyhive leaf identity.
  */
 
-import type { LeafIdentity } from "@lararium/mesh";
+import type { LeafIdentity } from "@lararium/mesh/leaf-presentation";
 import { loadFaceAtomOfGroup } from "./face-atom-store.js";
 import { loadVeilArchive } from "./identity-anchors.js";
-import { faceAtomKeyFromSeed } from "@lararium/mesh";
+import { faceAtomKeyFromSeed } from "@lararium/mesh/face-atom";
 import { KeyhiveProvider, InMemoryEventStore } from "@lararium/keyhive";
 
 // LeafIdentity lifted to platform-blind mesh (both vessels + the isomorphic adapter share it);
 // re-exported here for node consumers.
-export type { LeafIdentity } from "@lararium/mesh";
+export type { LeafIdentity } from "@lararium/mesh/leaf-presentation";
 
 /**
  * Load the selected face's light leaf identity from its atom and veil archive.

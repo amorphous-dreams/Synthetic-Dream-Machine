@@ -35,6 +35,8 @@ export function memePlan(sub: "put" | "delete", args: ParsedArgs): MemePlan {
   if (sub === "put") {
     const base = typeof args.options["base"] === "string" ? args.options["base"].trim() : "";
     if (base) out["base"] = base;
+    // `--create` lands the family only where none stands; a family already there answers `exists` and nothing moves.
+    if (args.flags["create"] === true) out["create"] = "true";
     return { verb: "meme-put", args: out, ...face };
   }
   // The route spells the base as `If-Match`; the verb reads it as `base` — one hash, two spellings.
@@ -81,12 +83,12 @@ async function memePut(args: ParsedArgs): Promise<number> {
   const tombstoned = Array.isArray(receipt["tombstoned"]) ? (receipt["tombstoned"] as string[]) : [];
   const warnings = Array.isArray(receipt["warnings"]) ? (receipt["warnings"] as string[]) : [];
   const ok = decision === "ingest" || decision === "noop";
-  const code = ok ? "ok" : decision === "conflict" ? "conflict" : "verb-error";
+  const code = ok ? "ok" : decision === "conflict" || decision === "exists" ? "conflict" : "verb-error";
   emit(args, {
     ok,
     requestId: result.requestId,
     data: receipt,
-    ...(ok ? {} : { error: { code, message: `${decision}: ${warnings[0] ?? receipt["reason"] ?? plan.args["uri"]}` } }),
+    ...(ok ? {} : { error: { code, message: decision === "exists" ? `exists: a meme already stands at ${plan.args["uri"]} (--create lands only where none does; drop --create and pass --base <hash> to replace it)` : `${decision}: ${warnings[0] ?? receipt["reason"] ?? plan.args["uri"]}` } }),
     human: () => {
       if (typeof receipt["has"] === "string") console.log(receipt["has"]);
       console.log(`${decision}: ${plan.args["uri"]}`);

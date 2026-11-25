@@ -9,7 +9,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import { KeyhiveProvider } from "@lararium/keyhive";
 import { refreshLitArchives } from "../src/joined-face-auth.js";
 import { operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
-import { DAEMON_BAG_ID } from "@lararium/mesh";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
 import { standFoundedIsland } from "./stand-founded-island.js";
 vi.setConfig({ testTimeout: 900_000, hookTimeout: 900_000 });
 const teardown: Array<() => void> = [];

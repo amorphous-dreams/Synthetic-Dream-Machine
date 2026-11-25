@@ -18,7 +18,7 @@ import { asIslandStore } from "./island-store-double.js";
 import { bridgeWikiToAdaptor } from "../src/outbound-bridge.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
-import type { ChangeOrigin, LarTiddlerRecord, LarWriteOptions } from "@lararium/mesh";
+import type { ChangeOrigin, LarTiddlerRecord, LarWriteOptions } from "@lararium/mesh/tiddler-store";
 
 const POINTER_BAG   = "lar:///ha.ka.ba/lararium/config/current-wiki-bag";
 const POINTER_DRAFT = "lar:///ha.ka.ba/lararium/config/current-wiki-draft";

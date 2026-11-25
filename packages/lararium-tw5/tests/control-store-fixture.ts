@@ -1,5 +1,6 @@
 /** A memory control store: one `CONTROL_HOME_ID` layer, its own default writable, the shape `controlStoreOf` stands. */
-import { CompositeStore, CONTROL_HOME_ID } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 
 export function memoryControlStore(): CompositeStore {

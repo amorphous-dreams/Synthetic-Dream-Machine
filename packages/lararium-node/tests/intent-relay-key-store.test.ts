@@ -1,4 +1,4 @@
-import { readSCarrier, splitSFrame } from "@lararium/mesh";
+import { readSCarrier, splitSFrame } from "@lararium/mesh/s-envelope";
 import { openColdCustodyRecord } from "../src/custody-seat.js";
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
@@ -8,7 +8,7 @@ import { seatScratchCustody } from "./custody-seat-fixture.js";
 import { mintIntentRelayKey, heldIntentRelayKey, intentRelayPublicKey, rotateIntentRelayKey, signAsIntentRelay, INTENT_RELAY_KEY_FILE } from "../src/intent-relay-key-store.js";
 import { carrierTable } from "../src/vault-carriers.js";
 import { signAsCadence } from "../src/cadence-key-store.js";
-import { ed25519VerifyingKeyFromSeed } from "@lararium/mesh";
+import { ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
 
 const image = new TextEncoder().encode("one admission image");
 function verifies(key: string, signature: string): boolean {

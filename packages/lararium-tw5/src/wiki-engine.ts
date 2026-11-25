@@ -25,10 +25,21 @@
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/wiki-surface-scout
  */
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
 import {
-  DAEMON_BAG_ID, DAEMON_WIKI_SLUG, KAHUA_BAG, ORACLE_BAG, expandRecipe, recipeFromRecord, wikiCanonOf, wikiSlotKindOf,
-  type DocHandle, type FaceActorDoor, type LarDoc, type LarTiddlerRecord, type LarTiddlerStore, type WikiSlotKind,
-} from "@lararium/mesh";
+  DAEMON_WIKI_SLUG,
+  KAHUA_BAG,
+  ORACLE_BAG,
+  expandRecipe,
+  recipeFromRecord,
+  wikiCanonOf,
+  wikiSlotKindOf,
+  type WikiSlotKind,
+} from "@lararium/mesh/wiki-recipe";
+import { type DocHandle } from "@lararium/mesh/automerge";
+import { type FaceActorDoor } from "@lararium/mesh/automerge-doc-store";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
 import { composeFaceEngine, enginePool, type FaceEngine, type FaceEngineSource } from "./face-engine.js";
 import type { RecipeReadyBinding } from "./island-recipe.js";
 import type { TW5Engine } from "./tw5-vm.js";

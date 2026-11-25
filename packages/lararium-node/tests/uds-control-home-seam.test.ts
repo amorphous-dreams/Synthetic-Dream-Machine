@@ -3,7 +3,11 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
-import { AutomergeDocStore, CompositeStore, DAEMON_BAG_ID, controlStoreOf, emptyLarDoc, NoWorkingLayerRefusal, type LarDoc } from "@lararium/mesh";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { CompositeStore, NoWorkingLayerRefusal } from "@lararium/mesh/composite-store";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { controlStoreOf } from "@lararium/mesh/control-home";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
 import { claimStore } from "../src/owned-store.js";
 import { startUdsChannel } from "../src/uds-channel.js";
 

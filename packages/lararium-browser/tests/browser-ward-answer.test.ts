@@ -14,10 +14,15 @@
 import { bindFirstFaceSlot } from "../src/browser-face-custody.js";
 import { expect, test } from "vitest";
 import { seatWardWorkerSpawn } from "../src/testing.js";
-import {
-  buildAsks, buildIntent, faceIntentVerbs, intentEntryCid, intentEntryRecordsOfGroup, intentId, makeHandLineage, verifyEd25519, wardAnswerImage,
-  cosignDigest, intentPlaneCosignPort, type LarDoc,
-} from "@lararium/mesh";
+import { buildAsks, buildIntent } from "@lararium/mesh/intent-issue";
+import { faceIntentVerbs } from "@lararium/mesh/intent-verbs";
+import { intentEntryCid, intentEntryRecordsOfGroup, intentId } from "@lararium/mesh/intent-entry";
+import { makeHandLineage } from "@lararium/mesh/hand-lineage";
+import { verifyEd25519 } from "@lararium/mesh/ed25519-door";
+import { wardAnswerImage } from "@lararium/mesh/ward-answer";
+import { cosignDigest } from "@lararium/mesh/ward-cosign";
+import { intentPlaneCosignPort } from "@lararium/mesh/ward-cosign-gate";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { sealBrowserKeystore } from "../src/browser-custody.js";
 import { browserVesselFaceTagDoor } from "../src/browser-face-atom.js";
 import { runWardAct } from "../src/ward-core.js";
@@ -97,7 +102,7 @@ test("RED: two faces of one browser present one ward key; CONTROL: a re-read of 
 });
 
 test("RED: the browser's tag door names a ward key it proves nothing of, and a re-read answers with no fresh unlock; CONTROL: the minting read's pop holds (signed inside its ward act), a re-read under the typed passphrase signs inside the ward worker and holds, and a passkey refuses `ward-passkey-refused`", async () => {
-  const { wardKeyPopHolds } = await import("@lararium/mesh") as unknown as { wardKeyPopHolds?: (g: string, a: string, f: unknown) => boolean };
+  const { wardKeyPopHolds } = await import("@lararium/mesh/ward-answer") as unknown as { wardKeyPopHolds?: (g: string, a: string, f: unknown) => boolean };
   const idbName = `lares:pop-${globalThis.crypto.randomUUID()}`;
   await sealBrowserKeystore(idbName, { kind: "passphrase", passphrase: PASS });
   // The face's own tree binds before its first row (its tag secret rests there).

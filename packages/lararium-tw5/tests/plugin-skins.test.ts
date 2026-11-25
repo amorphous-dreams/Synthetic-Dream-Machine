@@ -13,7 +13,7 @@
 import { describe, test, expect, afterEach } from "vitest";
 import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { LARES_LARARIUM_PLUGIN_URI, LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "@lararium/mesh";
+import { LARES_LARARIUM_PLUGIN_URI, LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "@lararium/mesh/lar-uris";
 import { GRAMMAR_MODULES, LARARIUM_MODULES, grammarRequiresHouse } from "../plugin-build/skins.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
 import { bootTestWiki, skipNote, wikiSkip } from "./test-wiki.js";

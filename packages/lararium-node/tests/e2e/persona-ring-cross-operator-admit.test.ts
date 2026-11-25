@@ -49,10 +49,14 @@ import { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import { WebSocketServer } from "ws";
 import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
-import {
-  personaScopedBagIds, ed25519SignerFromSeed, DAEMON_BAG_ID, LarWSClientAdapter, hearthPinIndex, nexusAidOf,
-  type GateBundlePin, type LarDoc, type NexusDoc,
-} from "@lararium/mesh";
+import { personaScopedBagIds } from "@lararium/mesh/persona-scope";
+import { ed25519SignerFromSeed } from "@lararium/mesh/ed25519-door";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { LarWSClientAdapter } from "@lararium/mesh/lar-ws-client-adapter";
+import { hearthPinIndex } from "@lararium/mesh/admit-gate-pin";
+import { nexusAidOf, type NexusDoc } from "@lararium/mesh/nexus-seal-seed";
+import { type GateBundlePin } from "@lararium/mesh/gate-bundle-door";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { strangerFace, type CrossingFace } from "../../probes/crossing-synthetic-world.js";
 import { signFaceGrantRecord, faceGrantTitle } from "@lararium/keyhive";
 import { makeCatalogAccessor } from "@lararium/tw5";

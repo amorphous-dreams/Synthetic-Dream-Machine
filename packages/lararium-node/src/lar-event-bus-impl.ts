@@ -26,12 +26,7 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/lar-event-bus-impl
  */
 
-import type {
-  Cancelable,
-  LarEventStream,
-  IngressRingDescriptor,
-  LarEventBus,
-} from "@lararium/mesh";
+import type { Cancelable, LarEventStream, IngressRingDescriptor, LarEventBus } from "@lararium/mesh/lar-event-bus";
 
 // ---------------------------------------------------------------------------
 // Internal types

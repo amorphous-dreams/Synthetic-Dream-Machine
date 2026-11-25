@@ -13,7 +13,7 @@
 
 import { randomBytes } from "node:crypto";
 import * as ed from "@noble/ed25519";
-import { hex } from "@lararium/mesh";
+import { hex } from "@lararium/mesh/crypto";
 import { startCarriageRelay } from "../src/carriage-relay.js";
 
 const PORT = Number.parseInt(process.env["LAR_CARRIAGE_RELAY_PORT"] ?? "8091", 10);

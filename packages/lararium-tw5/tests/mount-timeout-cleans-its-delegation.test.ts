@@ -10,12 +10,15 @@
  */
 import { memoryControlStore } from "./control-store-fixture.js";
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { CompositeStore, DAEMON_BAG_ID, OUTCOME_URI_PREFIX, type CapabilityVerifier } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { OUTCOME_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
+import { type CapabilityVerifier } from "@lararium/mesh/capability";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { VerbDispatcher, VerbTable } from "../src/verb-dispatcher.js";
 import { makeDelegationBook } from "../src/delegation-book.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
-import type { Verb } from "@lararium/mesh";
+import type { Verb } from "@lararium/mesh/verb-tiddler";
 
 afterEach(() => vi.useRealTimers());
 

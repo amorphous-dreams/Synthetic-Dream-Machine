@@ -55,7 +55,7 @@
  * genesis island), ratchet by ratchet (`seedOffer`, `kukuluSeedLine`). The kūkulu moves no ratchet: the new vessel serves the
  * founding record it reloads, and the line only names what waits.
  */
-import { compareGenesisDigests, ratchetWords, ratchetsDiffer, type GenesisDigests } from "@lararium/mesh";
+import { compareGenesisDigests, ratchetWords, ratchetsDiffer, type GenesisDigests } from "@lararium/mesh/genesis-compare";
 
 export type RiteVerbAnswer =
   | { readonly ok: true; readonly output: Record<string, unknown> }
@@ -126,7 +126,9 @@ export interface OfferVouch { readonly face?: string; readonly group: string; re
  * `begins` alone.
  */
 export type StandingAnswer =
-  | { readonly ok: true; readonly begins: readonly StandingBegin[]; readonly pending?: readonly PendingBegin[]; readonly offer?: readonly OfferVouch[] | null }
+  | { readonly ok: true; readonly begins: readonly StandingBegin[]; readonly pending?: readonly PendingBegin[]; readonly offer?: readonly OfferVouch[] | null;
+      /** The resting offer's base (`sha256:<hex>`), null where none rests: an overwrite names it, or refuses `conflict`. */
+      readonly offerBase?: string | null }
   | { readonly ok: false; readonly code: string; readonly message: string };
 
 /** The refusal a run answers where a begin stands unlanded at another head than the one it raises. */
@@ -562,8 +564,9 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
   const tesseraeOf = (faces: readonly StandingBegin[]) => faces.map((f) => ({ face: f.face, tessera: f.tessera }));
   const resumeLine = (faces: readonly StandingBegin[]): string =>
     `kūkulu: resuming the begin ${r.offer && r.offerAt ? `of ${r.offerAt}` : `at ${short}`}; no lei spent (${faces.map((f) => `${f.face} tessera ${f.tessera}`).join(", ")})`;
+  /** The owed landing, by hand: it names the head and image each begun half names (a landing that names others refuses). */
   const landCallOf = (faces: readonly StandingBegin[]): string =>
-    faces.map((f) => `lares rite land --tessera ${f.tessera} --head ${head}${landImage === "" ? "" : ` --image ${landImage}`}${f.ordinal === undefined ? "" : ` --face ${f.ordinal}`}`).join("; ");
+    faces.map((f) => `lares rite land --tessera ${f.tessera} --head ${f.head}${f.image === undefined || f.image === "" ? "" : ` --image ${f.image}`}${f.ordinal === undefined ? "" : ` --face ${f.ordinal}`}`).join("; ");
   /** The debt this run reads: what it resumes, or the refusal that names what it cannot (and the one line that clears it). */
   const judge = (read: Extract<StandingAnswer, { ok: true }>, image: string = r.image): { resume: readonly StandingBegin[]; offerMatches: boolean; unread: boolean } | { refusal: string; stale: readonly PendingBegin[]; line: string } => {
     // A READ THAT NAMES NO RAW DEBT reads the debt as UNKNOWN, never as empty: a half whose face stands shut or was rehived may rest
@@ -586,18 +589,17 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
     const heads = [...new Set(off.map(({ p }) => p.head))];
     const allStale = off.every(({ p }) => p.head !== head);
     const halves = off.map(({ p, w }) => `${p.face ?? p.group} tessera ${p.tessera} (begun at ${p.head.slice(0, 12)}${p.image === undefined ? "" : ` over ${p.image}`}: ${w})`).join(", ");
-    // THE CLEARING LINE: each half a lent face lands, landed by hand where the vessel stands (conferre reads it red, and the debt
-    // clears); a half no lent face lands waits for its face. The abandon that ends a half by name waits on its own branch.
-    const stands = prior !== null && /^[0-9a-f]{40}$/.test(prior.revision) ? prior.revision : "<the head the vessel runs>";
-    const landLine = (p: PendingBegin): string => {
+    // THE CLEARING LINE: each half a lent face holds, set down by the hand's abandon (a kāpae over it: it spends nothing, records
+    // no par over an image the vessel never ran, and conferre reads it abandoned); a half no lent face holds waits for its face.
+    const abandonLine = (p: PendingBegin): string => {
       const ordinal = landable.get(p.tessera)?.ordinal ?? opts.face;
-      return `lares rite land --tessera ${p.tessera} --head ${stands}${ordinal === undefined ? "" : ` --face ${ordinal}`}`;
+      return `lares rite land --abandon --tessera ${p.tessera}${ordinal === undefined ? "" : ` --face ${ordinal}`}`;
     };
-    const landed = off.filter(({ p }) => landable.has(p.tessera)), waiting = off.filter(({ p }) => !landable.has(p.tessera));
+    const held = off.filter(({ p }) => landable.has(p.tessera)), waiting = off.filter(({ p }) => !landable.has(p.tessera));
     const clear = [
-      ...(landed.length > 0 ? [`land each by hand where the vessel stands (conferre reads it red): ${landed.map(({ p }) => landLine(p)).join("; ")}`] : []),
+      ...(held.length > 0 ? [`set each down by hand (it spends nothing and records no par; conferre reads it abandoned): ${held.map(({ p }) => abandonLine(p)).join("; ")}`] : []),
       ...(waiting.length > 0 ? [`${waiting.map(({ p }) => `${p.face ?? p.group} tessera ${p.tessera}`).join(", ")} waits for its face to stand again`] : []),
-    ].join("; ") + "; the abandon that ends a half by name waits on its own branch (develop--a-begun-rite-sets-down)";
+    ].join("; ");
     // ONE OTHER HEAD for EVERY pending half, each landable there: the rite rolled back to it lands them at their own head instead.
     const back = allStale && heads.length === 1 && pending.every((p) => p.head === heads[0] && landable.has(p.tessera)) ? `; or land it at its own head: lares rite kukulu --rollback ${heads[0]!.slice(0, 12)} --branch ${branch}` : "";
     return {
@@ -622,15 +624,27 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
       return { code: 1, data: { ...data, begun: true, landed: false, refusal: "kukulu-ran-image-unread" } };
     }
     let par = true;
+    const differs: string[] = [];
     for (const f of faces) {
       const landed = await ports.row("rite-land", { tessera: f.tessera, head, ...(landImage === "" ? {} : { image: landImage }), ...(f.ordinal === undefined ? {} : { face: f.ordinal }) });
       if (landed.ok) { par = landed.output["par"] === true && par; continue; }
+      // THE BEGUN HALF NAMES WHAT LANDS: a vessel that runs another head or image than the half began at (a tag that moved between
+      // the stage and the raise) lands nothing; the half stays red (landed-absent) and the rite reports it unlanded below.
+      if (landed.code === "rite-land-differs") { differs.push(f.face); continue; }
       if (landed.code === "vessel-locked") {
         ports.say(`kūkulu: the new vessel stands locked, so the host halves wait. Open it with \`lares vault unlock\`, then land the rite: ${landCallOf(faces)}`);
         return { code: 0, data: { ...data, begun: true, landed: false, awaits: "unlock" } };
       }
       ports.say(`kūkulu: the landing of ${f.face} refused: ${landed.message}`);
       return { code: 1, data: { ...data, begun: true, landed: false, refusal: landed.code } };
+    }
+    if (differs.length > 0) {
+      // NO RECORD COMES OUT FALSE: no host half rests over an image the vessel never ran, so the rite reads landed:false, red, with
+      // the way back where it names one.
+      ports.say(`kūkulu: the vessel runs another head or image (${landImage === "" ? "no digest" : landImage}) than the rite began at, so no host half rests for ${differs.join(", ")}; conferre reads the begun half red (landed-absent)`);
+      const wayBack = prior === null ? undefined : wayBackCommand(prior);
+      if (wayBack !== undefined) ports.say(`kūkulu: to raise the replaced image ${prior!.tag} again, run: ${wayBack}`);
+      return { code: 1, data: { ...data, begun: true, landed: false, par: false, refusal: "rite-land-differs", ...(wayBack === undefined ? {} : { wayBack }) } };
     }
     ports.say(par ? "kūkulu: landed; conferre reads every face's tessera par" : "kūkulu: landed at another head or image than the rite began at; conferre reads a tessera red");
     if (par || prior === null) return kept({ code: par ? 0 : 1, data: { ...data, begun: true, landed: true, par } });
@@ -666,6 +680,8 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
   // the admit) reads nothing yet: the restand opens it (its re-admit), and the rite reads the debt after.
   let resume: readonly StandingBegin[] = [];
   let offerMatches = false;
+  /** The resting offer's base as the standing read named it: the offer below overwrites only over it. */
+  let offerBase: string | null | undefined;
   let debtUnread = false;
   let readAfter = r.vessel === "down";
   if (r.vessel === "standing" && ports.standing) {
@@ -681,6 +697,7 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
       if ("refusal" in j) return refuseDebt(j);
       resume = j.resume;
       offerMatches = j.offerMatches;
+      offerBase = read.offerBase;
       if (j.unread) {
         debtUnread = true;
         ports.say("kūkulu: this vessel reads no raw debt, so a half whose face stands shut or was rehived reads nowhere; the rite resumes what it reads, and the debt beyond it stays unread");
@@ -772,7 +789,7 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
         if (stood === null) ports.say("kūkulu: no successor keeper stood beside the lit one, so this rite carries no keeper move and the raise relights the pūlama struck (your passphrase on a terminal)");
         else { keeperMove = stood; ports.say(`kūkulu: the successor keeper stands and offers its one-handoff key; the vouches name the move to closure ${stood.closure.slice(0, 19)}`); }
       }
-      const offer = await ports.row("rite-offer", { branch, head, image: r.image, ...asFace, ...(keeperMove ? { keeperTo: keeperMove.to, keeperNext: keeperMove.closure } : {}) });
+      const offer = await ports.row("rite-offer", { branch, head, image: r.image, ...asFace, ...(keeperMove ? { keeperTo: keeperMove.to, keeperNext: keeperMove.closure } : {}), ...(typeof offerBase === "string" ? { base: offerBase } : {}) });
       if (!offer.ok) {
         ports.say(`kūkulu: the standing vessel wrote no offer (${offer.message}); it still stands, the lei's return stays spent, and the begun half reads red until a vessel at ${head} lands it (${landCall}); \`${HAND_ACT}\` resumes it and spends no lei.`);
         return { code: 1, data: { ...base, ...spent, begun: true, landed: false, stopped: "offer", refusal: offer.code } };

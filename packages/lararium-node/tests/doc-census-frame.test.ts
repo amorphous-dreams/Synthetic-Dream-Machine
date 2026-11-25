@@ -7,7 +7,7 @@
 import { EventEmitter } from "node:events";
 import type { Socket } from "node:net";
 import { describe, expect, test } from "vitest";
-import type { DocCensusReading } from "@lararium/mesh";
+import type { DocCensusReading } from "@lararium/mesh/doc-census";
 import { custodyFrameHandler } from "../src/custody-frames.js";
 import type { CustodyHolder } from "../src/custody-holder.js";
 

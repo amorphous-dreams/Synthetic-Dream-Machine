@@ -13,7 +13,8 @@ import { mkdtempSync, rmSync, mkdirSync, readFileSync, existsSync } from "node:f
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { delegationEdge, communicationEdge, retireClose, worldlineHandles, worldlineCompare } from "@lararium/mesh";
+import { delegationEdge, communicationEdge, retireClose } from "@lararium/mesh/worldline-edge";
+import { worldlineHandles, worldlineCompare } from "@lararium/mesh/worldline-clock";
 import {
   persistWorldlineEdges,
   closeWorldlineEdges,

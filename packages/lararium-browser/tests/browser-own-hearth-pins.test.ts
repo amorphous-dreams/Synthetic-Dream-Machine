@@ -9,10 +9,17 @@
  *   O4  RED: a hearth the page holds no relation with reads pin-absent: the read names no Nexus there (ruling: narrowing)
  */
 import { describe, expect, test } from "vitest";
+import { FLOW_SOCKET_ROUTE } from "@lararium/mesh/flow-read-client";
 import {
-  FLOW_SOCKET_ROUTE, custodyRootDoor, deriveGateBundle, floorGateRoot, floorKeyDoor, floorRoute, sovereignGateRoot, sovereignRoute,
+  custodyRootDoor,
+  deriveGateBundle,
+  floorGateRoot,
+  floorKeyDoor,
+  floorRoute,
+  sovereignGateRoot,
+  sovereignRoute,
   type GateBundlePin,
-} from "@lararium/mesh";
+} from "@lararium/mesh/gate-bundle-door";
 import { browserGatePins, fileOwnHearthPins, hearthNameOf, flowNexusFor } from "../src/browser-gate-pins.js";
 
 const RELAY = "ws://hearth.synthetic:7777/ws";

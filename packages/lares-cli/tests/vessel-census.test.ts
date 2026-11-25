@@ -14,7 +14,7 @@
  *       unanswered by its root.
  */
 import { describe, test, expect, vi, afterEach } from "vitest";
-import { VERB_RESULT_KEY } from "@lararium/mesh";
+import { VERB_RESULT_KEY } from "@lararium/mesh/verb-tiddler";
 import { cmdCensus, readCensus, type CensusLines } from "../src/commands/census.js";
 import { askShoreCensus, type ShoreCensus } from "../src/shore-core.js";
 import type { ParsedArgs } from "../src/parse-args.js";
