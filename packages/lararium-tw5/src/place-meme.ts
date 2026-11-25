@@ -216,8 +216,13 @@ export interface PlaceMemeInput {
   /** True where no person stands behind the placement (a watcher's wave): with no base it never adopts
    *  over records that say something else, and answers `conflict`, `no-base` (`ingest-gate`, rule 4½). */
   readonly unattended?: boolean;
-  /** How long this write waits on the root's turn before it refuses `family-turn-held`; defaults to `FAMILY_TURN_WAIT_MS`. */
-  readonly turnWaitMs?: number;
+  /** How long this write waits on the root's turn before `onHeld` prints the owed note; defaults to `FAMILY_TURN_NOTICE_MS`.
+   *  A pace for the note only: no clock ends the wait. */
+  readonly heldNoticeMs?: number;
+  /** Prints "the family's turn is held; the write stays owed" once the notice pace passes; the write keeps waiting. */
+  readonly onHeld?: (note: string) => void;
+  /** An interrupt: aborting ends the wait by name (`family-turn-interrupted`) and moves nothing. */
+  readonly signal?: AbortSignal;
   /** Reads every record an `ingest` decision would land, before the first lands; a throw lands nothing (a door's own wall). */
   readonly vet?: (records: readonly Record<string, unknown>[]) => void | Promise<void>;
 }
@@ -534,7 +539,7 @@ function receiptOfNonIngest(
  * carries the refusal; a sink verb that throws propagates.
  */
 export function placeMeme(input: PlaceMemeInput, sink: MemeSink): Promise<PlaceMemeReceipt> {
-  return inFamilyTurn(input.uri, () => placeMemeNow(input, sink), input.turnWaitMs);
+  return inFamilyTurn(input.uri, () => placeMemeNow(input, sink), input);
 }
 
 /**
@@ -545,23 +550,36 @@ export function placeMeme(input: PlaceMemeInput, sink: MemeSink): Promise<PlaceM
  * one serialized step, and a write that read bytes the turn before it moved answers `conflict`. The turns live in this module
  * instance: the plugin bundle and the host's meme verbs each keep their own, and a writer that reaches the store directly meets
  * the shore drain's per-field merge, where two writes of one field resolve last-writer-wins. A turn that throws hands the root on
- * all the same; a write that waits past its bound on a turn that never settles refuses `family-turn-held` and moves nothing,
- * and the root stays held behind that turn, never skipping it.
+ * all the same: the next write reads the sink as it stands, and its own base check answers `conflict` where bytes moved. A write
+ * waits on the turn before it by that turn's SETTLE, a causal signal, never by a clock: a clock an attacker holds may pace and
+ * annotate (the notice below), never decide. The wait ends in one of two ways: the earlier turn settles and this write runs,
+ * or the caller interrupts (`signal`) and the write refuses `family-turn-interrupted`, moving nothing. Either way the root
+ * stays held behind the earlier turn, never skipping it.
  */
-export const FAMILY_TURN_WAIT_MS = 30_000;
-const FAMILY_TURN_HELD = "family-turn-held";
+export const FAMILY_TURN_NOTICE_MS = 30_000;
+const FAMILY_TURN_HELD_NOTE = "the family's turn is held; the write stays owed";
+const FAMILY_TURN_INTERRUPTED = "family-turn-interrupted";
 const familyTurns = new Map<string, Promise<void>>();
-function inFamilyTurn<T>(uri: string, act: () => Promise<T>, waitMs: number = FAMILY_TURN_WAIT_MS): Promise<T> {
+function inFamilyTurn<T>(uri: string, act: () => Promise<T>, wait: Pick<PlaceMemeInput, "heldNoticeMs" | "onHeld" | "signal"> = {}): Promise<T> {
   const key = rootAddressOf(uri);
   const before = familyTurns.get(key) ?? Promise.resolve();
   const turn = (async () => {
     let timer: ReturnType<typeof setTimeout> | undefined;
-    const bound = new Promise<false>((resolve) => { timer = setTimeout(() => resolve(false), waitMs); });
-    const ready = await Promise.race([before.then(() => true as const), bound]);
-    clearTimeout(timer);
+    let onAbort: (() => void) | undefined;
+    const interrupted = new Promise<false>((resolve) => {
+      const { signal } = wait;
+      if (!signal) return;
+      onAbort = () => resolve(false);
+      if (signal.aborted) onAbort(); else signal.addEventListener("abort", onAbort, { once: true });
+    });
+    // The pacing timer prints the owed note; it never settles the wait.
+    if (wait.onHeld) timer = setTimeout(() => wait.onHeld?.(FAMILY_TURN_HELD_NOTE), wait.heldNoticeMs ?? FAMILY_TURN_NOTICE_MS);
+    let ready: boolean;
+    try { ready = await Promise.race([before.then(() => true as const), interrupted]); }
+    finally { clearTimeout(timer); if (onAbort) wait.signal?.removeEventListener("abort", onAbort); }
     if (!ready) {
       // A refusal by name, in the shape every door reads (`isVerbRefusal`: the name and a string reason).
-      throw Object.assign(new Error(`${FAMILY_TURN_HELD}: another write of ${key} has held its turn past ${waitMs} ms; nothing moved. Try again once it settles.`), { name: "VerbRefusal", reason: FAMILY_TURN_HELD });
+      throw Object.assign(new Error(`${FAMILY_TURN_INTERRUPTED}: the wait on another write of ${key} was interrupted; nothing moved. The earlier turn still holds the root.`), { name: "VerbRefusal", reason: FAMILY_TURN_INTERRUPTED });
     }
     return act();
   })();
