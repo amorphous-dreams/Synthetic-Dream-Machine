@@ -291,8 +291,8 @@ export {
 } from "./hosting-store.js";
 export type { HostingState, SpendOutcome } from "./hosting-store.js";
 export type { NexusKapaeOptions, NexusKapaeResult, NexusKapaeListResult } from "./commands/nexus-kapae.js";
-export { runNexusPublishPlugins, NexusPublishError } from "./commands/nexus-publish.js";
-export type { NexusPublishPluginsOptions, NexusPublishPluginsResult } from "./commands/nexus-publish.js";
+export { runNexusPublishPlugins, runNexusPublishTerms, NexusPublishError } from "./commands/nexus-publish.js";
+export type { NexusPublishPluginsOptions, NexusPublishPluginsResult, NexusPublishTerms } from "./commands/nexus-publish.js";
 export { runNexusInspectOffering, NexusOfferingInspectError } from "./commands/nexus-offering-inspect.js";
 export type { NexusOfferingInspectOptions, NexusOfferingInspectResult } from "./commands/nexus-offering-inspect.js";
 
