@@ -77,7 +77,7 @@ test("the pure parts", async (t) => {
     assert.doesNotMatch(trueUpText("p", { fire: "turns", state: { turns: 25, epoch: 4 } }), /--epoch/);
     const nudge = trueUpText("p", { fire: "turns", state: { turns: 25, digests: { "#/open": "0123456789abcdef" } } }, "s-1");
     assert.match(nudge, /lares spirit ah p --slot '#\/open' --file <path> --base 0123456789abcdef --body s-1/);
-    assert.match(nudge, /--add '<line>' on #\/bodies, #\/open or #\/voice --body s-1/);
+    assert.match(nudge, /--add '<line>' on #\/bodies, #\/open or #\/kulana --body s-1/);
   });
   await t.test("the PreCompact text runs the crossing in order: the card first, the fixed-slot ask, the operator's instructions, then the carry, under the cap", () => {
     const text = precompactText({ pet: "p", shape: "keep what only this body knew", inherits: "0123456789ab", card: "the card's open loops", instructions: "focus on the tests", carry: "x".repeat(20_000) });
