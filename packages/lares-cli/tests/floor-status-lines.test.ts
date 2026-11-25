@@ -9,7 +9,7 @@ import type { GenesisRatchet, RatchetDifference } from "@lararium/mesh";
 import { floorStatusLines, readFloorStatus, type FloorDoors } from "../src/commands/floor.js";
 
 const same = (r: GenesisRatchet): RatchetDifference => ({ ratchet: r, record: "x", other: "x", reading: "same" });
-const record = { engine: "bafkreiengine000000000001", grammar: "bafkreigrammar00000000002", plugins: "bafkreiplugins00000000003", floor: "f".repeat(64) };
+const record = { engine: "bafkreiengine000000000001", grammar: "bafkreigrammar00000000002", lararium: "bafkreilararium0000000004", plugins: "bafkreiplugins00000000003", floor: "f".repeat(64) };
 
 describe("the floor status lines", () => {
   test("RED: a charterless place prints the founding record, the seed (offered), the floor pin's absence and the Nexus refusal by name", () => {
@@ -23,7 +23,7 @@ describe("the floor status lines", () => {
       nexusRefused: { refusal: "floor-no-charter", message: "this vessel stands in no Nexus charter, so it holds no floor pin past genesis" },
     });
     expect(lines[0]).toBe("floor status");
-    expect(lines).toContain(`  founding record: engine ${record.engine} · grammar ${record.grammar} · plugins ${record.plugins} · floor ${record.floor}`);
+    expect(lines).toContain(`  founding record: engine ${record.engine} · grammar ${record.grammar} · lararium ${record.lararium} · plugins ${record.plugins} · floor ${record.floor}`);
     expect(lines).toContain(`  seed (offered):  ${"c".repeat(64)} — a newer seed waits: engine same · plugins same · the seed's floor same · grammar moved; the founding record keeps serving, and lay moves canon, never the founding record`);
     expect(lines).toContain("  floor pin:       none (no Nexus charter; the founding record's genesis floor serves)");
     expect(lines).toContain("  nexus:           refused floor-no-charter — this vessel stands in no Nexus charter, so it holds no floor pin past genesis");
@@ -41,7 +41,7 @@ describe("the floor status lines", () => {
       },
     } as never);
     expect(lines).toContain(`  seed (offered):  ${"c".repeat(64)} — same on every ratchet`);
-    expect(lines).toContain(`  floor pin:       ${"f".repeat(64)} — engine same · grammar same · plugins same · floor same`);
+    expect(lines).toContain(`  floor pin:       ${"f".repeat(64)} — engine same · grammar same · lararium same · plugins same · floor same`);
     expect(lines).toContain("floor status · nexus aid-of-the-nexus");
     expect(lines.some((l) => l.startsWith("  pinned:  "))).toBe(true);
     expect(lines.some((l) => l.startsWith("  nexus:           refused"))).toBe(false);
@@ -51,7 +51,7 @@ describe("the floor status lines", () => {
 describe("an unread founding record", () => {
   test("RED: the status prints the founding record unread with its reason, and no ratchet words", () => {
     const lines = floorStatusLines({
-      genesis: { record: { engine: null, grammar: null, plugins: null, floor: null }, seed: null, floorPin: null, line: "", unread: "the fold refused a blob row" },
+      genesis: { record: { engine: null, grammar: null, lararium: null, plugins: null, floor: null }, seed: null, floorPin: null, line: "", unread: "the fold refused a blob row" },
       nexusRefused: { refusal: "floor-no-charter", message: "no charter" },
     });
     expect(lines).toContain("  founding record: unread here (the fold refused a blob row)");

@@ -32,14 +32,14 @@ describe("the founding record beside the seed (offered)", () => {
   test("a founding record laid from the shipped seed reads same on every ratchet against it", () => {
     const line = foundingRecordLine(readFoundingRecordTruths({ record: shipped(), genesisDir: SHIPPED }));
     const cid = genesisSeedCid(readGenesisSeedBytes(SHIPPED)!);
-    expect(line).toMatch(/^\[genesis\] founding record: engine \S+ · grammar \S+ · plugins \S+ · floor \S+/);
+    expect(line).toMatch(/^\[genesis\] founding record: engine \S+ · grammar \S+ · lararium \S+ · plugins \S+ · floor \S+/);
     expect(line).toContain(`seed (offered) ${cid}: same on every ratchet`);
     expect(line).not.toContain("a newer seed waits");
   });
 
   test("CONTROL: a seed whose grammar moved names the newer seed ratchet by ratchet, and says nothing moves", () => {
     const line = foundingRecordLine(readFoundingRecordTruths({ record: shipped(), genesisDir: grammarMovedDir() }));
-    expect(line).toContain("a newer seed waits: engine same · grammar moved · plugins same · floor same");
+    expect(line).toContain("a newer seed waits: engine same · grammar moved · lararium same · plugins same · floor same");
     expect(line).toContain("the founding record keeps serving; lay moves canon, never the founding record");
   });
 
@@ -62,7 +62,7 @@ describe("the founding record beside the seed (offered)", () => {
       record: shipped(), genesisDir: SHIPPED,
       floorPin: { manifestCid: "a".repeat(64), manifest: { engine: record.engine!, plugins: offered.cid }, offering: offered.offering },
     });
-    expect(foundingRecordLine(truths)).toContain(`floor pin ${"a".repeat(64)}: engine same · grammar moved · plugins moved · floor moved`);
+    expect(foundingRecordLine(truths)).toContain(`floor pin ${"a".repeat(64)}: engine same · grammar moved · lararium same · plugins moved · floor moved`);
     // CONTROL: with no pin handed in, the line names the pin unread, never same.
     expect(foundingRecordLine(readFoundingRecordTruths({ record: shipped(), genesisDir: SHIPPED }))).toContain("floor pin: unread here");
   });

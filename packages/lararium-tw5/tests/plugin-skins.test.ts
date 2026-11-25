@@ -25,7 +25,7 @@ const packedOf = (stem: string): Packed => (JSON.parse(envelopeOf(stem)["text"]!
 const modulesOf = (packed: Packed): string[] => Object.keys(packed).filter((t) => packed[t]!["type"] === "application/javascript" && !t.startsWith("$:/core/"));
 
 const ROUTE = "lar:///ha.ka.ba/lararium/tw5/routes/get-meme";
-const ORACLE_WIDGET = "lar:///ha.ka.ba/lararium/tw5/widgets/action-oracle-cast";
+const CAST_WIDGET = "lar:///ha.ka.ba/lararium/tw5/widgets/action-oracle-cast";
 
 describe("two skins: the grammar and the house", () => {
   test("S1: the packed grammar holds no house module, and none of its modules requires one", () => {
@@ -67,8 +67,8 @@ describe.skipIf(wikiSkip)(`a wiki boots with the skins it loads${skipNote}`, () 
     const mods = modules(engine);
     expect(mods.titles[ROUTE], "the get-meme route module loads").toBeDefined();
     expect(Object.keys(mods.types["route"] ?? {}), "the route registers").toContain(ROUTE);
-    expect(mods.titles[ORACLE_WIDGET], "the oracle widget module loads").toBeDefined();
-    expect(Object.keys(mods.types["widget"] ?? {}).some((t) => t === ORACLE_WIDGET), "the oracle widget registers").toBe(true);
+    expect(mods.titles[CAST_WIDGET], "the oracle widget module loads").toBeDefined();
+    expect(Object.keys(mods.types["widget"] ?? {}).some((t) => t === CAST_WIDGET), "the oracle widget registers").toBe(true);
     expect(engine.wiki.isShadowTiddler(LARES_LARARIUM_PLUGIN_URI) || Boolean(engine.wiki.getTiddler(LARES_LARARIUM_PLUGIN_URI))).toBe(true);
   }, 120_000);
 
@@ -77,6 +77,6 @@ describe.skipIf(wikiSkip)(`a wiki boots with the skins it loads${skipNote}`, () 
     const mods = modules(engine);
     expect(mods.titles["lar:///ha.ka.ba/lararium/tw5/parsers/memetic-parser"], "the parser loads").toBeDefined();
     expect(mods.titles[ROUTE], "no route loads without the house").toBeUndefined();
-    expect(mods.titles[ORACLE_WIDGET], "no oracle widget loads without the house").toBeUndefined();
+    expect(mods.titles[CAST_WIDGET], "no oracle widget loads without the house").toBeUndefined();
   }, 120_000);
 });

@@ -8,7 +8,7 @@ import { describe, expect, test } from "vitest";
 import { sha256HexBytesSync } from "../src/crypto.js";
 import { cutFloorSnapshot, floorManifestBytes, floorManifestCid, type FloorManifest } from "../src/floor-manifest.js";
 import { floorRequiredBlobIds, resolveFloorWhole, signFloorOffering } from "../src/floor-offering.js";
-import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "../src/lar-uris.js";
+import { LARES_LARARIUM_PLUGIN_URI, LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "../src/lar-uris.js";
 import { ENGINE_CORE_ID } from "../src/base-doc.js";
 
 const provenance = { source: "https://example.test", commit: "0".repeat(40), path: "p.json", licence: "MIT" };
@@ -36,6 +36,15 @@ describe("the blobs every mount needs", () => {
     };
     expect(floorRequiredBlobIds(island)).toEqual([LARES_MEMETIC_WIKITEXT_PLUGIN_URI, BASE_ID].sort());
     expect(floorRequiredBlobIds(undefined)).toEqual([LARES_MEMETIC_WIKITEXT_PLUGIN_URI]);
+  });
+
+  test("an island declaring the house skin requires it beside the parser and the base seed", () => {
+    const island = {
+      [LARES_MEMETIC_WIKITEXT_PLUGIN_URI]: { id: LARES_MEMETIC_WIKITEXT_PLUGIN_URI, kind: "grammar" },
+      [LARES_LARARIUM_PLUGIN_URI]: { id: LARES_LARARIUM_PLUGIN_URI, kind: "lararium" },
+      [BASE_ID]: { id: BASE_ID, kind: "base" },
+    };
+    expect(floorRequiredBlobIds(island)).toEqual([LARES_MEMETIC_WIKITEXT_PLUGIN_URI, LARES_LARARIUM_PLUGIN_URI, BASE_ID].sort());
   });
 
   test("an offering that drops a required id refuses floor-offering-incomplete, naming it; one that keeps them resolves (CONTROL)", async () => {

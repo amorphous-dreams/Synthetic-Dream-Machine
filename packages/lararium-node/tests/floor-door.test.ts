@@ -113,7 +113,7 @@ describe("the floor doors cross a founded hearth's own bootstrap", () => {
       const truths = status["genesis"] as { line?: string } | undefined;
       expect(truths?.line).toContain("seed (offered) ");
       expect(truths?.line).toContain(": same on every ratchet");
-      expect(truths?.line).toContain(`floor pin ${genesisFloor}: engine same · grammar same · plugins same · floor same`);
+      expect(truths?.line).toContain(`floor pin ${genesisFloor}: engine same · grammar same · lararium same · plugins same · floor same`);
 
       // The cut reads the founding's own realm documents through the catalog the pointer file names. They hold no row yet (no
       // seed ran), so the steward names both thin; every other slug the genesis floor names holds no document here and keeps its snapshot.
