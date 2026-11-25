@@ -564,8 +564,9 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
   const tesseraeOf = (faces: readonly StandingBegin[]) => faces.map((f) => ({ face: f.face, tessera: f.tessera }));
   const resumeLine = (faces: readonly StandingBegin[]): string =>
     `kūkulu: resuming the begin ${r.offer && r.offerAt ? `of ${r.offerAt}` : `at ${short}`}; no lei spent (${faces.map((f) => `${f.face} tessera ${f.tessera}`).join(", ")})`;
+  /** The owed landing, by hand: it names the head and image each begun half names (a landing that names others refuses). */
   const landCallOf = (faces: readonly StandingBegin[]): string =>
-    faces.map((f) => `lares rite land --tessera ${f.tessera} --head ${head}${landImage === "" ? "" : ` --image ${landImage}`}${f.ordinal === undefined ? "" : ` --face ${f.ordinal}`}`).join("; ");
+    faces.map((f) => `lares rite land --tessera ${f.tessera} --head ${f.head}${f.image === undefined || f.image === "" ? "" : ` --image ${f.image}`}${f.ordinal === undefined ? "" : ` --face ${f.ordinal}`}`).join("; ");
   /** The debt this run reads: what it resumes, or the refusal that names what it cannot (and the one line that clears it). */
   const judge = (read: Extract<StandingAnswer, { ok: true }>, image: string = r.image): { resume: readonly StandingBegin[]; offerMatches: boolean; unread: boolean } | { refusal: string; stale: readonly PendingBegin[]; line: string } => {
     // A READ THAT NAMES NO RAW DEBT reads the debt as UNKNOWN, never as empty: a half whose face stands shut or was rehived may rest
@@ -624,18 +625,27 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
       return { code: 1, data: { ...data, begun: true, landed: false, refusal: "kukulu-ran-image-unread" } };
     }
     let par = true;
+    const differs: string[] = [];
     for (const f of faces) {
       const landed = await ports.row("rite-land", { tessera: f.tessera, head, ...(landImage === "" ? {} : { image: landImage }), ...(f.ordinal === undefined ? {} : { face: f.ordinal }) });
       if (landed.ok) { par = landed.output["par"] === true && par; continue; }
-      // THE BEGUN HALF NAMES WHAT LANDS: a vessel that runs another head or image than the half began at lands nothing, and the
-      // rite reads off par (the half stays red, landed-absent) with the way back below.
-      if (landed.code === "rite-land-differs") { par = false; continue; }
+      // THE BEGUN HALF NAMES WHAT LANDS: a vessel that runs another head or image than the half began at (a tag that moved between
+      // the stage and the raise) lands nothing; the half stays red (landed-absent) and the rite reports it unlanded below.
+      if (landed.code === "rite-land-differs") { differs.push(f.face); continue; }
       if (landed.code === "vessel-locked") {
         ports.say(`kūkulu: the new vessel stands locked, so the host halves wait. Open it with \`lares vault unlock\`, then land the rite: ${landCallOf(faces)}`);
         return { code: 0, data: { ...data, begun: true, landed: false, awaits: "unlock" } };
       }
       ports.say(`kūkulu: the landing of ${f.face} refused: ${landed.message}`);
       return { code: 1, data: { ...data, begun: true, landed: false, refusal: landed.code } };
+    }
+    if (differs.length > 0) {
+      // NO RECORD COMES OUT FALSE: no host half rests over an image the vessel never ran, so the rite reads landed:false, red, with
+      // the way back where it names one.
+      ports.say(`kūkulu: the vessel runs another head or image (${landImage === "" ? "no digest" : landImage}) than the rite began at, so no host half rests for ${differs.join(", ")}; conferre reads the begun half red (landed-absent)`);
+      const wayBack = prior === null ? undefined : wayBackCommand(prior);
+      if (wayBack !== undefined) ports.say(`kūkulu: to raise the replaced image ${prior!.tag} again, run: ${wayBack}`);
+      return { code: 1, data: { ...data, begun: true, landed: false, par: false, refusal: "rite-land-differs", ...(wayBack === undefined ? {} : { wayBack }) } };
     }
     ports.say(par ? "kūkulu: landed; conferre reads every face's tessera par" : "kūkulu: landed at another head or image than the rite began at; conferre reads a tessera red");
     if (par || prior === null) return kept({ code: par ? 0 : 1, data: { ...data, begun: true, landed: true, par } });

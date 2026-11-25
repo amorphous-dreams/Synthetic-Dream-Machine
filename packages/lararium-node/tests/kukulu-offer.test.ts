@@ -2,7 +2,8 @@
  * kukulu-offer — the standing vessel rests what a kūkulu carries, and the next vessel offers it to the pūlama once: the line's
  * lei out of the vessel's own control records, the vouch it signs over the image the host named, one file in the config home.
  */
-import { existsSync, mkdtempSync, readFileSync, rmSync, statSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { dirname } from "node:path";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
@@ -242,5 +243,50 @@ describe("RED rite-offer-binds-its-vouch-to-the-lei", () => {
     // THE TRUE PATH still serves: the pūlama opens on the offer.
     s.raise(IMAGE2);
     expect(await s.hello(readKukuluOffer(s.path))).toBe("opens");
+  });
+});
+
+/** The cold read's findings on 4837a7480 (F2, F3, F5): the honest paths the binding must not stick. */
+describe("RED rite-offer-keeps-the-honest-paths", () => {
+  test("RED F2 a lei restrung after an interrupted begin moves the tip past the lei that paid: the offer binds the begun half that lei's return paid for, unstrung or not", async () => {
+    const s = await stand();
+    const paid = await s.string({ reach: "wide", returns: 2 });
+    await s.begin();
+    await s.string({ reach: "wide", returns: 2 }, swarmActCid(paid));
+    expect((await s.offer()).lei).toBe(2);
+    const t = await stand();
+    const ended = await t.string({ reach: "wide", returns: 2 });
+    await t.begin();
+    await t.wiki.write(swarmLeiUnstrungTitle(swarmActCid(ended)), JSON.stringify(await signSwarmAct({ act: "lei-unstrung", group: GROUP, rite: "kukulu", branch: BRANCH, lei: swarmActCid(ended) }, t.hand)));
+    await t.string({ reach: "wide", returns: 2 }, swarmActCid(ended));
+    const wrote = await t.offer();
+    expect(wrote.lei).toBe(2);
+    expect((JSON.parse(readFileSync(t.path, "utf8")) as KukuluOffer).unstrung).toHaveLength(1);
+  });
+
+  test("RED F5 a face whose lei rows stand on no chain from the line's root waits by name, as the begin waits it; CONTROL: the other face's lend stands", async () => {
+    const s = await stand();
+    await s.string({ reach: "wide", returns: 2 });
+    await s.begin();
+    const orphan = await signSwarmAct({ act: "lei", group: "group-two", rite: "kukulu", branch: BRANCH, after: "f".repeat(64), reach: "wide", returns: 2 }, s.hand);
+    await s.wiki.write(swarmLeiRecordTitle("kukulu", BRANCH, swarmActCid(orphan)), JSON.stringify(orphan));
+    const all: SwarmTrust = { hand: () => true, vessel: () => true, lead: () => false };
+    const wrote = await writeKukuluOffer({ wiki: s.wiki, faces: [{ group: GROUP, trust: all, ward: NO_COSIGN, name: "h0" }, { group: "group-two", trust: all, ward: NO_COSIGN, name: "h1" }],
+      branch: BRANCH, head: HEAD, tree: TREE, image: IMAGE, holder: s.fx.local, path: s.path, base: null });
+    expect(wrote).toMatchObject({ lei: 1, faces: ["h0", "h1"], waits: ["h1"] });
+  });
+
+  test("RED F3 an offer some other hand rests while this one signs is never written over: the base re-reads just before the rename and refuses conflict", async () => {
+    const s = await stand();
+    await s.string({ reach: "wide", returns: 2 });
+    await s.begin();
+    let raced = false;
+    const holder = { derive: (domain: Parameters<typeof s.fx.local.derive>[0]) => {
+      if (!raced) { raced = true; mkdirSync(dirname(s.path), { recursive: true }); writeFileSync(s.path, "another hand's offer"); }
+      return s.fx.local.derive(domain);
+    } };
+    await expect(writeKukuluOffer({ wiki: s.wiki, faces: [{ group: GROUP, trust: { hand: () => true, vessel: () => true, lead: () => false }, ward: NO_COSIGN }],
+      branch: BRANCH, head: HEAD, tree: TREE, image: IMAGE, holder, path: s.path, base: null })).rejects.toMatchObject({ code: "conflict" });
+    expect(readFileSync(s.path, "utf8")).toBe("another hand's offer");
   });
 });

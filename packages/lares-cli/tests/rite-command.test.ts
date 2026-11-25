@@ -504,6 +504,15 @@ describe("the vessel that stands locked lands later", () => {
     expect(f.said.join("\n")).toMatch(new RegExp(`lares vault unlock[\\s\\S]*lares rite land --tessera ${TESSERA} --head ${HEAD} --image ${IMAGE} --face 0`));
   });
 
+  it("RED F4: after a tag move the locked vessel's owed landing names the begun half's head and image, never the image that runs (which refuses `rite-land-differs`), and says the tag moved", async () => {
+    const f = fakes({ land: { ok: false, code: "vessel-locked", message: "this vessel's key rests unopened" } });
+    f.ports.ranImage = async () => "sha256:" + "d2".repeat(32);
+    await riteKukulu(f.ports, {});
+    const said = f.said.join("\n");
+    expect(said).toMatch(new RegExp(`lares rite land --tessera ${TESSERA} --head ${HEAD} --image ${IMAGE} --face 0`));
+    expect(said).not.toMatch(/lares rite land [^\n]*--image sha256:(d2)+/);
+  });
+
   it("RED: any other landing refusal ends the rite red under its own code", async () => {
     const out = await riteKukulu(fakes({ land: { ok: false, code: "rite-begun-absent", message: "rite-begun-absent: none" } }).ports, {});
     expect(out).toMatchObject({ code: 1, data: { landed: false, refusal: "rite-begun-absent" } });
@@ -606,10 +615,19 @@ describe("kukulu-offer-reaches-the-new-vessel (the host's step)", () => {
     const off = await riteKukulu(red.ports, {});
     expect(off).toMatchObject({ code: 1, data: { landed: true, par: false, prior: PRIOR, wayBack: "lares rite kukulu --rollback bbbbbbbbbbbb" } });
     expect(red.said.join("\n")).toMatch(/run: lares rite kukulu --rollback bbbbbbbbbbbb/);
-    // A VESSEL RUNNING ANOTHER HEAD OR IMAGE lands nothing now (`rite-land-differs`): the rite reads off par with the same way back.
-    const differs = fakes({ land: { ok: false, code: "rite-land-differs", message: "the landing names another head" } });
-    differs.ports.prior = async () => PRIOR;
-    expect(await riteKukulu(differs.ports, {})).toMatchObject({ code: 1, data: { par: false, wayBack: "lares rite kukulu --rollback bbbbbbbbbbbb" } });
+    // F1: THE TAG MOVED between the stage and the raise, so the vessel runs another image than the begun half names: the landing
+    // refuses `rite-land-differs` and rests no host half, and the rite reports landed:false with that refusal, never `landed: true`,
+    // keeping the red reading and the way back.
+    const D2 = "sha256:" + "d2".repeat(32);
+    const moved = fakes();
+    moved.ports.prior = async () => PRIOR;
+    moved.ports.ranImage = async () => D2;
+    const movedRow = moved.ports.row;
+    moved.ports.row = async (verb, args) => verb === "rite-land" && args["image"] !== IMAGE ? { ok: false, code: "rite-land-differs", message: "the landing names another image" } : movedRow(verb, args);
+    const out = await riteKukulu(moved.ports, {});
+    expect(out).toMatchObject({ code: 1, data: { begun: true, landed: false, par: false, refusal: "rite-land-differs", wayBack: "lares rite kukulu --rollback bbbbbbbbbbbb" } });
+    expect(moved.said.join("\n")).not.toMatch(/landed at another head/);
+    expect(moved.said.join("\n")).toMatch(/no host half rests[\s\S]*run: lares rite kukulu --rollback bbbbbbbbbbbb/);
     const stopped = fakes({ raise: 9 });
     stopped.ports.prior = async () => PRIOR;
     expect((await riteKukulu(stopped.ports, {})).data).toMatchObject({ stopped: "raise", prior: PRIOR });

@@ -21,7 +21,8 @@
  * ── THE VOUCH BINDS TO THE LEI (operator ruling 2026-11-25) ─────────────────────────────────────
  * The vessel signs no head, tree or image its caller picks. Per face it reads the LIVE lei that ends the line (`readLei`, its
  * spent return allowed: the begin just spent it for this very rite) and the unlanded begun half that lei's return paid for, and
- * the vouch names that half's head, tree and image. Each refuses by the pūlama gate's own name before anything rests:
+ * the vouch names that half's head, tree and image (a lei restrung after an interrupted begin moves the tip past the lei that
+ * paid: the half that lei's return rested still binds). A line with no chain from its root waits by name, as the begin waits it. Each refuses by the pūlama gate's own name before anything rests:
  * `swarm-lei-unstrung`, `swarm-lei-forked`, `swarm-lei-head-mismatch` (a lei that pins another head), `rite-begun-absent` (no
  * begin spent the lei), `rite-offer-differs` (a caller's head or tree the begun half never named), `kukulu-image-mismatch` (an
  * image the begun half never named). Earlier lei on the line whose unstringing rests still ride whole, so the pūlama reads them
@@ -125,6 +126,8 @@ export async function writeKukuluOffer(a: {
     // THE LIVE LEI: the line's one tip, never unstrung, pinning this head where it pins one. Its return stays spent: the begin
     // spent it for this very rite, and the pūlama counts its own.
     const live = await readLei(a.wiki, { rite: "kukulu", branch: a.branch, head: a.head }, face.trust, face.group, face.ward, { spent: true });
+    // A LINE WITH NO CHAIN FROM ITS ROOT (orphan rows alone) holds no lei for this face: it waits by name, as the begin waits it.
+    if (!live.ok && (live.refusal === "absent" || live.refusal === "group")) { waits.push(nameOf(face)); continue; }
     if (!live.ok) {
       const why = live.refusal === "unstrung" ? `the hand unstrung the lei that ends ${nameOf(face)}'s line, so no vouch rides it; string a fresh one: ${kui}`
         : live.refusal === "forked" ? `${nameOf(face)}'s line reads two lei at one link, and neither stands; a fresh lei names one tip: ${kui}`
@@ -132,9 +135,14 @@ export async function writeKukuluOffer(a: {
         : `${nameOf(face)}'s lei does not stand (${live.refusal}); string a fresh one: ${kui}`;
       throw new SwarmRefused(`swarm-lei-${live.refusal}`, why);
     }
-    const returns = live.reach === "wide" ? (live.act.body as { readonly returns: number }).returns : 1;
-    const begun = await begunOf(a.wiki, face, { cid: live.cid, returns }, a.branch);
-    if (begun === null) throw new SwarmRefused("rite-begun-absent", `no begun half of ${nameOf(face)}'s lei rests unlanded on "${a.branch}", so no head binds its vouch; begin the rite first: lares rite kukulu`);
+    // THE HALF THE RITE BEGAN: the tip's own where it paid, else the half any lei on this chain paid for (a lei restrung after an
+    // interrupted begin moves the tip past the lei whose return paid; the half that return rested still binds the vouch).
+    let begun: SwarmRiteBegunBody | null = null;
+    for (const row of [...chain.cosigned].sort((x, y) => Number(y.cid === live.cid) - Number(x.cid === live.cid))) {
+      begun = await begunOf(a.wiki, face, { cid: row.cid, returns: row.body.reach === "wide" ? row.body.returns : 1 }, a.branch);
+      if (begun !== null) break;
+    }
+    if (begun === null) throw new SwarmRefused("rite-begun-absent", `no begun half of any lei on ${nameOf(face)}'s line rests unlanded on "${a.branch}", so no head binds its vouch; begin the rite first: lares rite kukulu`);
     if (begun.head !== a.head || begun.tree !== a.tree) {
       throw new SwarmRefused("rite-offer-differs", `${nameOf(face)}'s begun half names head ${begun.head} (tree ${begun.tree}), and the offer names ${a.head} (tree ${a.tree}); the vessel vouches only for what the rite began: run \`lares rite kukulu\`, which offers over the head it began at`);
     }
@@ -149,15 +157,16 @@ export async function writeKukuluOffer(a: {
     }
   }
   if (lei.length === 0) throw new SwarmRefused("swarm-lei-absent", `no kukulu lei rests for "${a.branch}" on any face's line, so this kūkulu wears none; string one: ${kui}`);
-  const resting = kukuluOfferBase(a.path);
-  if (resting !== null && resting !== (a.base ?? null)) {
-    throw new SwarmRefused("conflict", `an offer rests at ${a.path} as ${resting}, and this offer names ${a.base ? `base ${a.base}` : "no base"}; read it again (\`lares rite receipts --rite kukulu --branch ${a.branch}\` answers its offerBase) and offer over that base, or run \`lares rite kukulu\`, which reads it first`);
-  }
   const signer = await vouchSignerOf(a.holder);
   const vouch: SignedKukuluVouch[] = [];
   for (const face of a.faces) vouch.push(await signKukuluVouch({ group: face.group, branch: a.branch, head: a.head, tree: a.tree, image: a.image,
     ...(a.keeper === undefined ? {} : { keeper: { to: a.keeper.to, next: a.keeper.next, devices: face.devices ?? 0 } }) }, signer));
   const offer: KukuluOffer = { lei, unstrung, vouch };
+  // THE BASE, COMPARED AND SWAPPED: read after every await, so from this read to the rename nothing else in this process runs.
+  const resting = kukuluOfferBase(a.path);
+  if (resting !== null && resting !== (a.base ?? null)) {
+    throw new SwarmRefused("conflict", `an offer rests at ${a.path} as ${resting}, and this offer names ${a.base ? `base ${a.base}` : "no base"}; read it again (\`lares rite receipts --rite kukulu --branch ${a.branch}\` answers its offerBase) and offer over that base, or run \`lares rite kukulu\`, which reads it first`);
+  }
   mkdirSync(dirname(a.path), { recursive: true });
   const tmp = `${a.path}.${process.pid}.tmp`;
   const fd = openSync(tmp, "w", 0o600);
