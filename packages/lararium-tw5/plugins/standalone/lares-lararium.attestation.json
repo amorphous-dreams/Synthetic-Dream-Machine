@@ -1,0 +1,15 @@
+{
+  "format": "lararium-tw5-plugin-build",
+  "canonicalTitle": "lar:///ha.ka.ba/lararium/plugins/lares/lararium",
+  "compatibilityTitle": "$:/plugins/lares/lararium",
+  "moduleManifestPath": "dist-plugin/lararium/module-manifest.json",
+  "moduleManifestSha256": "53aaeb96860ccabdea0df786b6e641084e5c1dc73e1859c26157acb7b6ad6651",
+  "sourceManifestPath": "dist-plugin/lararium/plugin-source-manifest.json",
+  "sourceManifestSha256": "2f57c5448afb6ef098bfd8e6ad70c96d55f6eaba9f1d18900c4c0d26bd1d7ded",
+  "packTranscriptPath": "dist-plugin/lararium/pack-transcript.json",
+  "packTranscriptSha256": "500915df6d3a73150a60057afdd2e1a82f43cf42b3089909cf916200a17286db",
+  "moduleCount": 26,
+  "packedTiddlerCount": 36,
+  "pluginJsonSha256": "017da8bba2727109061ed5e5c3dcec1d362e4aa38d82bbd64966e3bd8dd472eb",
+  "pluginTw5Sha256": "2486818b8710f7acc0d74dceb4ccaeacef2fdc5eb5ed940065031eac5cd9dcf5"
+}

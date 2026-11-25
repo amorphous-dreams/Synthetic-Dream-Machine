@@ -24,6 +24,7 @@ import {
 import {
   emptyLarDoc,
   ENGINE_CORE_ID,
+  LARES_LARARIUM_PLUGIN_URI,
   LARES_MEMETIC_WIKITEXT_PLUGIN_URI,
   type LarDoc,
 } from "../src/index.js";
@@ -133,6 +134,21 @@ describe("genesis-intake — the one intake core", () => {
     const bytes  = new Uint8Array((await repo.export(handle.url))!);
 
     expect(() => validateGenesisBytes(bytes, "test-intake")).toThrow(new RegExp(ENGINE_CORE_ID));
+  });
+
+  test("RED: a held split grammar (it packs no route) with no house skin refuses, naming the house; CONTROL: beside its house row, or a grammar packing its own route, it validates", async () => {
+    const packedPlugin = (title: string, shadows: Record<string, Record<string, string>>) =>
+      new TextEncoder().encode(JSON.stringify({ title, "plugin-type": "plugin", type: "application/json", text: JSON.stringify({ tiddlers: shadows }) }));
+    const split = packedPlugin(LARES_MEMETIC_WIKITEXT_PLUGIN_URI, { "lar:///x/parser": { title: "lar:///x/parser", "module-type": "parser", text: "" } });
+    const whole = packedPlugin(LARES_MEMETIC_WIKITEXT_PLUGIN_URI, { "lar:///x/route": { title: "lar:///x/route", "module-type": "route", text: "" } });
+    const torn = await genesisBytes();
+    expect(() => validateGenesisBytes(torn, "test-intake", () => split)).toThrow(new RegExp(LARES_LARARIUM_PLUGIN_URI));
+    expect(validateGenesisBytes(torn, "test-intake", () => whole).blobs?.[ENGINE_CORE_ID]).toBeTruthy();
+    expect(validateGenesisBytes(torn, "test-intake").blobs?.[ENGINE_CORE_ID], "no bytes held: the row check alone").toBeTruthy();
+    const housed = await genesisBytes((d) => {
+      (d as { blobs: Record<string, unknown> }).blobs[LARES_LARARIUM_PLUGIN_URI] = { ...blobEntry(LARES_LARARIUM_PLUGIN_URI, "fake-house"), kind: "lararium" };
+    });
+    expect(validateGenesisBytes(housed, "test-intake", () => split).blobs?.[LARES_LARARIUM_PLUGIN_URI]).toBeTruthy();
   });
 
 });

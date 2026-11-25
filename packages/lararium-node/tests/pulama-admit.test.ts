@@ -421,7 +421,7 @@ describe("RED unadmit-never-answers-unadmitted-with-no-tombstone-resting", () =>
 });
 
 describe("RED pulama-admit-names-the-seed-the-image-offers (D1)", () => {
-  const SEED = "seed (offered) " + "5".repeat(64) + ": a newer seed waits: engine same · grammar moved · plugins same · floor same";
+  const SEED = "seed (offered) " + "5".repeat(64) + ": a newer seed waits: engine same · grammar moved · lararium same · plugins same · floor same";
 
   test("the host's report carries the seed line beside the image; status and the admission answer name it before and after the route; the admitted row carries none of it", async () => {
     const s = await stand();

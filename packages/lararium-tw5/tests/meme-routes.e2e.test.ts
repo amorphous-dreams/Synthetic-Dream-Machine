@@ -34,6 +34,8 @@ const REPO = path.resolve(PKG, "../..");
 // plugin proves it drops into stock, not only into the fork.
 const TW5_JS = process.env["LARES_TW5_JS"] ?? path.join(REPO, "TiddlyWiki5/tiddlywiki.js");
 const PLUGIN_TID = path.join(PKG, "dist-plugin/lares-memetic-wikitext.tid");
+// The meme routes ride the house skin, which loads over the grammar: a server answering them carries both.
+const HOUSE_TID = path.join(PKG, "dist-plugin/lares-lararium.tid");
 
 const URI = "lar:///t/x";
 const meme = (slots: readonly string[]): string =>
@@ -55,7 +57,7 @@ function freePort(): Promise<number> {
 
 interface Reply { status: number; headers: Headers; body: string }
 
-const forkPresent = existsSync(TW5_JS) && existsSync(PLUGIN_TID);
+const forkPresent = existsSync(TW5_JS) && existsSync(PLUGIN_TID) && existsSync(HOUSE_TID);
 if (!forkPresent) {
   console.error(`meme-routes.e2e: SKIPPED — fork or plugin missing (${TW5_JS} · ${PLUGIN_TID})`);
 }
@@ -67,6 +69,7 @@ async function bootFork(wiki: string, args: readonly string[], files: Record<str
   mkdirSync(path.join(wiki, "tiddlers"), { recursive: true });
   writeFileSync(path.join(wiki, "tiddlywiki.info"), JSON.stringify({ description: "meme-routes e2e", plugins, themes: [], build: {} }));
   copyFileSync(PLUGIN_TID, path.join(wiki, "tiddlers/lares-memetic-wikitext.tid"));
+  copyFileSync(HOUSE_TID, path.join(wiki, "tiddlers/lares-lararium.tid"));
   for (const [name, text] of Object.entries(files)) writeFileSync(path.join(wiki, name), text);
   const port = await freePort();
   const base = `http://127.0.0.1:${port}`;
@@ -383,6 +386,7 @@ describe.skipIf(!forkPresent)("★ THE CONTACT — meme routes on a live plain-T
     mkdirSync(path.join(renderWiki, "tiddlers"), { recursive: true });
     writeFileSync(path.join(renderWiki, "tiddlywiki.info"), JSON.stringify({ description: "render door", plugins: [], themes: [], build: {} }));
     copyFileSync(PLUGIN_TID, path.join(renderWiki, "tiddlers/lares-memetic-wikitext.tid"));
+    copyFileSync(HOUSE_TID, path.join(renderWiki, "tiddlers/lares-lararium.tid"));
     writeFileSync(path.join(renderWiki, "tiddlers/records.json"), JSON.stringify(records));
 
     const T = "lar:///ha.ka.ba/lararium/templates/meme";

@@ -33,6 +33,9 @@ export const GENERATED = [
   "packages/lararium-tw5/plugins/lares-memetic-wikitext.json",
   "packages/lararium-tw5/plugins/standalone/lares-memetic-wikitext.attestation.json",
   "packages/lararium-tw5/plugins/standalone/lares-memetic-wikitext.tid",
+  "packages/lararium-tw5/plugins/lares-lararium.json",
+  "packages/lararium-tw5/plugins/standalone/lares-lararium.attestation.json",
+  "packages/lararium-tw5/plugins/standalone/lares-lararium.tid",
   "packages/lararium-tw5/src/plugin-tiddler.generated.ts",
 ];
 export const EVERGREEN = "tools/evergreen-boundary.mjs";
