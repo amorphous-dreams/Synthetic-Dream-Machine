@@ -1,9 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { PACKAGES, ROOT, SWIFT_SECONDS, VESSEL, plan, readWeights, runGate, tiers, touchedPackages, weigh } from "./bench-gate.mjs";
+import { PACKAGES, ROOT, SWIFT_SECONDS, VESSEL, coldReadHash, coldReadOwed, parseRawZ, plan, readWeights, runGate, tiers, touchedPackages, weigh } from "./bench-gate.mjs";
 
 test("RED: a red step refuses by name and the later steps still run; CONTROL: all ok reads one green verdict line", () => {
   const ran = [];
@@ -74,4 +74,42 @@ test("witnesses-fast carries the typecheck and the tests ratchet, so the gate ru
   const r = spawnSync("bash", ["tools/witness-all.sh", "--fast", "--list"], { cwd: ROOT, encoding: "utf8" });
   assert.equal(r.status, 0, r.stderr);
   for (const w of ["typecheck-witness", "typecheck-tests-witness"]) assert.match(r.stdout, new RegExp(`^\\s*${w}\\b`, "m"), `witness-all --fast leaves ${w} out`);
+});
+
+test("RED: a diff touching the security class adds COLD READ OWED to the one verdict line and prints the record-hash line; CONTROL: a clean diff prints neither", () => {
+  const steps = [{ name: "a" }];
+  const lines = [];
+  const owed = [".github/ci.yml", "packages/x/package.json"];
+  const hash = coldReadHash("f".repeat(40), owed);
+  const g = runGate(steps, () => 0, (l) => lines.push(l), { head: "abc1234", base: "def5678", cold: owed, hash });
+  assert.match(g.line, /^BENCH GATE GREEN at abc1234 over develop def5678 · 1 steps · \d+ s · COLD READ OWED: \.github\/ci\.yml, packages\/x\/package\.json$/);
+  assert.equal(lines.at(-1), `cold-read: owed · head abc1234 · paths 2 · record-hash ${hash}`);
+  const red = runGate(steps, () => 2, () => {}, { cold: owed, hash });
+  assert.match(red.line, /^BENCH GATE REFUSES: a \(exit 2\) · \d+ s · COLD READ OWED: /, "an owed read rides a refusal too");
+  const clean = [];
+  const c = runGate(steps, () => 0, (l) => clean.push(l), { head: "abc1234", base: "def5678" });
+  assert.ok(!/COLD READ/.test(c.line) && !clean.some((l) => l.startsWith("cold-read:")));
+  assert.match(coldReadHash("a", ["p"]), /^[0-9a-f]{64}$/);
+  assert.notEqual(coldReadHash("a", ["p"]), coldReadHash("b", ["p"]), "the hash binds the exact head");
+});
+
+test("parseRawZ reads every path of a --no-ff raw -z diff and no mode or sha", () => {
+  const raw = ":100644 100644 aaa bbb M\0tools/a.mjs\0:000000 100644 000 ccc A\0packages/x/new.ts\0:100644 000000 ddd 000 D\0gone.txt\0";
+  assert.deepEqual(parseRawZ(raw), ["tools/a.mjs", "packages/x/new.ts", "gone.txt"]);
+  assert.deepEqual(parseRawZ(""), []);
+});
+
+test("coldReadOwed asks the door; a dark door falls to the module over the same list; an empty diff asks neither", () => {
+  const list = JSON.stringify({ paths: [".github/**"], tokens: [] });
+  const asked = [];
+  assert.deepEqual(coldReadOwed(["a", ".github/x"], list, { door: (p, l) => { asked.push(["door", l]); return [".github/x"]; }, local: () => assert.fail("the door answered") }), [".github/x"]);
+  assert.deepEqual(coldReadOwed(["a", ".github/x"], list, { door: () => { throw new Error("dark"); }, local: (p, l) => { asked.push(["local", l]); return [".github/x"]; } }), [".github/x"]);
+  assert.deepEqual(asked.map((a) => a[1]), [list, list], "one list rides both paths, never a second");
+  assert.deepEqual(coldReadOwed([], list, { door: () => assert.fail("no diff, no ask"), local: () => assert.fail("no diff, no ask") }), []);
+});
+
+test("the live list holds the familiar's wording: land-train gone, the --no-ff merge reads it", () => {
+  const about = JSON.parse(readFileSync(join(ROOT, "tools/security-class-paths.json"), "utf8")).about;
+  assert.ok(!/land-train/.test(about));
+  assert.match(about, /COLD READ OWED/);
 });

@@ -19,10 +19,18 @@
  * step runs, none short-circuits, and the last line carries ONE verdict with the wall time, the line a hand-back quotes:
  *   BENCH GATE GREEN at <sha> over develop <sha> · <n> steps · <s> s
  *   BENCH GATE REFUSES: <step> (exit n), ... · <s> s           (exit 1; a usage fault exits 2)
+ * When the lane's diff touches the security class (tools/security-class-paths.json, read from develop's tree) either verdict
+ * line ends ` · COLD READ OWED: <paths>`, and one more line follows it, the one the familiar quotes in the --no-ff merge message:
+ *   cold-read: owed · head <sha> · paths <n> · record-hash <sha256 of head, then each path, newline-joined>
+ * The familiar's cold Opus read of that head files its record under that hash; the merge message carries `Cold-Read: <hash>`.
+ * The matcher lives in the wiki (packages/lararium-tw5/src/filters/security-class.ts): the host reads the git diff and asks
+ * `lares wiki filter` through the doors; where the doors stand dark the same module's built form answers in-process.
  * It stands as a spirit's own step, never a git hook.
  */
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { TEST_CELLS } from "./ci-cells.mjs";
@@ -119,8 +127,44 @@ export function readWeights(file = WEIGHTS_FILE) {
   return Object.fromEntries(Object.entries(all).filter(([k]) => !k.startsWith("_")));
 }
 
+export const SECURITY_CLASS_FILE = "tools/security-class-paths.json";
+
+/** The paths a `git diff --no-renames --raw -z` answer names (each record: `:modes shas status NUL path NUL`). */
+export function parseRawZ(out) {
+  const f = out.split("\0");
+  const paths = [];
+  for (let i = 0; i + 1 < f.length; i += 2) if (f[i].startsWith(":")) paths.push(f[i + 1]);
+  return paths;
+}
+
+/** The record hash the familiar quotes: SHA-256 of the head, then each owed path, newline-joined. */
+export const coldReadHash = (head, paths) => createHash("sha256").update([head, ...paths].join("\n")).digest("hex");
+
+/** The security class's own answer over a diff's paths: the wiki door first (the matcher lives there), the module's built
+ *  form in-process where the doors stand dark; the one list rides both, read by the caller from develop's tree. */
+export function coldReadOwed(paths, listJson, { door = askDoor, local = askLocal } = {}) {
+  if (paths.length === 0) return [];
+  try { return door(paths, listJson); } catch { return local(paths, listJson); }
+}
+
+function askDoor(paths, listJson) {
+  if (paths.some((p) => /[\][\n]/.test(p))) throw new Error("a path the filter cannot carry");
+  const filter = `${paths.map((p) => `[[${p}]]`).join(" ")} +[security-class[${encodeURIComponent(JSON.stringify(JSON.parse(listJson)))}]]`;
+  const r = spawnSync(process.env.LARES_BIN ? "node" : "lares", [...(process.env.LARES_BIN ? [process.env.LARES_BIN] : []), "wiki", "filter", filter, "--recipe", "default", "--all", "--fields", "title"], { cwd: ROOT, encoding: "utf8", input: "" });
+  if (r.status !== 0) throw new Error(`the wiki door stands dark: ${r.stderr.trim()}`);
+  const answered = r.stdout.split("\n").map((l) => l.trim()).filter(Boolean);
+  return paths.filter((p) => answered.includes(p));
+}
+
+function askLocal(paths, listJson) {
+  const built = join(ROOT, "packages/lararium-tw5/dist/filters/security-class.js");
+  if (!existsSync(built)) throw new Error(`bench-gate: the doors stand dark and ${relative(ROOT, built)} stands unbuilt; run \`pnpm build\``);
+  const { readSecurityClass, securityClassPaths } = createRequire(import.meta.url)(built);
+  return securityClassPaths(paths, readSecurityClass(JSON.parse(listJson)));
+}
+
 /** Runs every step through `run(step) -> exit code`; a red `stop` step ends the run. Returns { code, red, line }. */
-export function runGate(steps, run, say = console.log, { head = "", base = "", clock = () => performance.now() } = {}) {
+export function runGate(steps, run, say = console.log, { head = "", base = "", clock = () => performance.now(), cold = [], hash = "" } = {}) {
   const red = [];
   const t0 = clock();
   for (const s of steps) {
@@ -137,9 +181,11 @@ export function runGate(steps, run, say = console.log, { head = "", base = "", c
   const line = red.length
     ? `BENCH GATE REFUSES: ${red.join(", ")} · ${secs}`
     : `BENCH GATE GREEN at ${head || "?"} over develop ${base || "?"} · ${steps.length} steps · ${secs}`;
-  say(line);
+  const owed = cold.length ? ` · COLD READ OWED: ${cold.join(", ")}` : "";
+  say(line + owed);
+  if (cold.length) say(`cold-read: owed · head ${head || "?"} · paths ${cold.length} · record-hash ${hash}`);
   if (red.length) say("pono: cure each named step's finding (a red merge-develop: `git fetch origin && git merge origin/develop`), then run the gate again");
-  return { code: red.length ? 1 : 0, red, line };
+  return { code: red.length ? 1 : 0, red, line: line + owed };
 }
 
 const git = (args) => spawnSync("git", args, { cwd: ROOT, encoding: "utf8" });
@@ -208,6 +254,12 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     process.exit(0);
   }
   const head = git(["rev-parse", "--short", "HEAD"]).stdout.trim();
-  const r = runGate(steps, (s) => (s.check ? checkDevelop(base) : exec(s)), console.log, { head, base: git(["rev-parse", "--short", base]).stdout.trim() });
+  // The class reads from develop's tree, never the lane's; the diff is the sum of the lane against develop, renames unfollowed.
+  const listed = git(["show", `${base}:${SECURITY_CLASS_FILE}`]);
+  const rawDiff = git(["diff", "--no-renames", "--raw", "-z", `${base}..HEAD`]);
+  if (listed.status !== 0 || rawDiff.status !== 0) { console.error(`bench-gate: the security class reads ${SECURITY_CLASS_FILE} and the diff of ${base}..HEAD; one refused: ${(listed.stderr || rawDiff.stderr).trim()}`); process.exit(2); }
+  const cold = coldReadOwed(parseRawZ(rawDiff.stdout), listed.stdout);
+  const full = git(["rev-parse", "HEAD"]).stdout.trim();
+  const r = runGate(steps, (s) => (s.check ? checkDevelop(base) : exec(s)), console.log, { head, base: git(["rev-parse", "--short", base]).stdout.trim(), cold, hash: coldReadHash(full, cold) });
   process.exit(r.code);
 }
