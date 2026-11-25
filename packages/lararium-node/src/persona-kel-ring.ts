@@ -24,16 +24,10 @@
  */
 
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
-import {
-  type LarDoc,
-  type PersonaKelEvent,
-  type PersonaKelFold,
-  foldPersonaContests,
-  headOpKey,
-  materializeSharedLarDoc,
-  personaKelBoardDocUrl,
-  personaKelEventsFromBoard,
-} from "@lararium/mesh";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { type PersonaKelEvent, type PersonaKelFold, foldPersonaContests, headOpKey } from "@lararium/mesh/persona-kel";
+import { materializeSharedLarDoc, personaKelBoardDocUrl } from "@lararium/mesh/deterministic-doc";
+import { personaKelEventsFromBoard } from "@lararium/mesh/persona-kel-board";
 
 /**
  * ── THE CLIMB'S CARRY LIVES IN MESH, because both shores compose it ──────────────────────────────
@@ -47,7 +41,7 @@ import {
  * Re-exported HERE so the node boot's import and its vectors keep naming one door. The ruling, the
  * refusals and the at-boot-not-at-the-rite reasoning live in the mesh module's header — read it there.
  */
-export { carryPersonaKelUpTheGradient, type PersonaKelCarry } from "@lararium/mesh";
+export { carryPersonaKelUpTheGradient, type PersonaKelCarry } from "@lararium/mesh/persona-kel-climb";
 
 export interface PersonaKelRingHolder {
   /** Resolves once the board has materialized + the first fold has run — boot AWAITS this before it reads a chain. */

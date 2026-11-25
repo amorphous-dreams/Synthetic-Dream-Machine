@@ -1,6 +1,6 @@
 import { afterEach, expect, test, vi } from "vitest";
 import { operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
-import { DAEMON_BAG_ID } from "@lararium/mesh";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
 import { standFoundedIsland } from "./stand-founded-island.js";
 
 vi.setConfig({ testTimeout: 900_000, hookTimeout: 900_000 });

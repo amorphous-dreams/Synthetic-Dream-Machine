@@ -27,7 +27,7 @@ import { LarDiskProjector } from "../src/disk-projector.js";
 import { SyncedTree, syncedTreeKey, syncedPath } from "../src/synced-tree.js";
 import { checkoutTracking, type CarrierTracking } from "../src/checkout-carriers.js";
 import { untrackedCarrierAlertTitle } from "../src/disk-projector.js";
-import { carrierHash } from "@lararium/mesh";
+import { carrierHash } from "@lararium/mesh/crypto";
 import type { TW5Engine, CarrierFile } from "@lararium/tw5";
 
 let root = "";

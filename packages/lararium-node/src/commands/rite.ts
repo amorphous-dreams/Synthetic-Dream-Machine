@@ -1,5 +1,5 @@
 /**
- * rite — the store holder runs a rite's rows against the daemon wiki: `begin`, `land`, `receipts`.
+ * rite — the store holder runs a rite's rows against the daemon wiki: `begin`, `land`, `abandon`, `receipts`.
  *
  * A rite that takes the vessel down keeps a tessera (a kūkulu keeps one per lent face and begins every face or none, `beginLentFaces`): `begin` derives the head's tree (out of the checkout's object store, `gitTreeOf`, no git binary; a `keep` derives its bundle id from the staged bundle itself, `riteTreeOf`), returns the
  * rite's lei at that head (the count and the reach judged in the mesh core; the signed lei, with a `push` lei's ward co-sign, stands as the consent) and rests the guest half BEFORE the caller takes the vessel down; `land` rests the
@@ -9,8 +9,14 @@
  * kūkulu carries to the pūlama (the line's lei and this vessel's vouch over the image the host built) and rests it in the
  * house's config home for the next vessel (`kukulu-offer`).
  *
- * THE LEI CARRIES THE GRANT. No row here reads hand-only: the hand strung the lei under the ward, and any seat holding the
- * line may spend it.
+ * THE LEI CARRIES THE GRANT. No spending row here reads hand-only: the hand strung the lei under the ward, and any seat holding
+ * the line may spend it.
+ *
+ * A BEGUN RITE SETS DOWN BY THE HAND. `abandon` sets one stale begun half down (`abandonRite`, a kāpae over it): the mark rests
+ * beside the half naming the hand, no return spends, no host half rests, and the line frees for a fresh begin. It stays the
+ * hand's act: the socket's one hand gate refuses a seat `hand-act-only` (`STORE_DOOR_HAND_CODES`) before this row runs, and the
+ * CLI reads its own branch the same way (`lares rite land --abandon`). So a stale half (a tag-moved one) never clears by a hand
+ * landing that records par over an image the vessel never ran.
  *
  * THE VESSEL SIGNS AS THIS DEVICE'S ATOM IN THE FACE. A return and each tessera half rest as the vessel's
  * witness, and a swarm record stays device-local, so the trust names this device's own atom as the vessel and no other key.
@@ -21,10 +27,20 @@
 import type { Repo } from "@automerge/automerge-repo";
 import { lstatSync, readFileSync, realpathSync } from "node:fs";
 import { join, sep } from "node:path";
+import { WORKSPACE_NAME_RE } from "@lararium/mesh/workbench";
+import { SwarmRefused, checkReturn, type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort } from "@lararium/mesh/swarm-tiddlers";
 import {
-  WORKSPACE_NAME_RE, SwarmRefused, beginChecked, beginRite, checkReturn, conferre, cosignPortWitness, isSwarmLeiRite, landRite, pendingBegins, riteReceipts,
-  type SwarmLeiRite, type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort, type TesseraReading,
-} from "@lararium/mesh";
+  abandonRite,
+  beginChecked,
+  beginRite,
+  conferre,
+  landRite,
+  pendingBegins,
+  riteReceipts,
+  type TesseraReading,
+} from "@lararium/mesh/swarm-tessera";
+import { cosignPortWitness } from "@lararium/mesh/ward-cosign-gate";
+import { isSwarmLeiRite, type SwarmLeiRite } from "@lararium/mesh/swarm-lei-rite";
 import { loadFaceFold, nodeWardCosignPortOf, IntentRefused, type FaceFold } from "./intent.js";
 import { treeOfHead } from "../git-tree-reader.js";
 import { openedCustody, unlockedFaceOrdinals } from "../custody-seat.js";
@@ -32,7 +48,7 @@ import { kukuluOfferBase, kukuluOfferPath, writeKukuluOffer, type KukuluOfferFac
 import { larWorkspacesHome } from "../vessel-paths.js";
 import { BundleVerifyRefused, unsafeRelPath, verifyBundle } from "../bundle-manifest.js";
 
-export type RiteAction = "begin" | "land" | "receipts" | "offer";
+export type RiteAction = "begin" | "land" | "abandon" | "receipts" | "offer";
 
 /** Where the vessel looks for the checkout a rite's head belongs to: its own working directory, then the house's workspace mount. */
 export const RITE_CHECKOUTS: readonly string[] = [process.cwd(), "/workspace"];
@@ -163,13 +179,13 @@ export async function standingKukuluBegins(lent: readonly number[], red: (ordina
  * ONE BEGIN PER RAISE. A kūkulu begun on this line and never landed already spent each face's return; a second begin would
  * spend another and mint new tesserae beside the first. So the begin refuses `rite-begun-stands` over the raw debt (a half whose
  * face stands shut or was rehived counts too), naming each half by its face or its group, and `lares rite kukulu` resumes it
- * (where it matches the run) or names the hand landing that sets it down.
+ * (where it matches the run) or names the hand's abandon that sets it down (`lares rite land --abandon`).
  */
 export function refuseStandingBegin(standing: ReadonlyArray<{ readonly tessera: string; readonly branch: string; readonly head: string; readonly face?: string; readonly group?: string }>): void {
   if (standing.length === 0) return;
   const heads = [...new Set(standing.map((s) => s.head.slice(0, 12)))].join(", ");
   const branch = standing[0]!.branch;
-  throw new SwarmRefused("rite-begun-stands", `a kūkulu begun at ${heads} on "${branch}" stands unlanded (${standing.map((s) => `${s.face ?? s.group ?? "a face"} tessera ${s.tessera}`).join(", ")}); \`lares rite kukulu\` resumes it and spends no second return, or land it by hand where the vessel stands (\`lares rite land --tessera <tessera>\`, which rests the head and image the half began at)`);
+  throw new SwarmRefused("rite-begun-stands", `a kūkulu begun at ${heads} on "${branch}" stands unlanded (${standing.map((s) => `${s.face ?? s.group ?? "a face"} tessera ${s.tessera}`).join(", ")}); \`lares rite kukulu\` resumes it and spends no second return, land it by hand where the vessel stands (\`lares rite land --tessera <tessera>\`, which rests the head and image the half began at), or set a stale half down by hand (\`lares rite land --abandon --tessera <tessera>\`; it spends nothing, records no par, and conferre reads it abandoned)`);
 }
 
 /** One vouch the resting offer carries: the face whose group it names (where a lent face carries it), and its line, head and image. */
@@ -301,6 +317,11 @@ export async function runRiteVerb(opts: {
     // THE BEGUN HALF NAMES WHAT LANDS: a head or image the caller names must match it (`rite-land-differs`), and may be left out.
     if (!/^[0-9a-f]{64}$/.test(str("tessera"))) throw new SwarmRefused("rite-malformed", "a landing names its tessera: lares rite land --tessera <64 hex>");
     return { ...await landRite(opts.wiki, { tessera: str("tessera"), ...(str("head") === "" ? {} : { head: str("head") }), ...(str("image") === "" ? {} : { image: str("image") }) }, trust, group, vessel) };
+  }
+  if (opts.action === "abandon") {
+    // THE HAND SETS A BEGUN HALF DOWN: the socket's hand gate admitted the act; the vessel witnesses the mark and spends nothing.
+    if (!/^[0-9a-f]{64}$/.test(str("tessera"))) throw new SwarmRefused("rite-malformed", "an abandon names the tessera it sets down");
+    return { ...await abandonRite(opts.wiki, { tessera: str("tessera") }, trust, group, vessel) };
   }
   const rite = opts.args["rite"];
   if (!isSwarmLeiRite(rite) || !str("branch") || !str("head")) throw new SwarmRefused("rite-malformed", "a rite names its rite, its branch and the head it runs at");

@@ -25,7 +25,8 @@
  */
 import { createPrivateKey, createPublicKey, randomFillSync, sign } from "node:crypto";
 import { faceFileNames } from "./face-index.js";
-import { cadenceNextDigest, sha256HexBytesSync, type CadenceHolder } from "@lararium/mesh";
+import { cadenceNextDigest, type CadenceHolder } from "@lararium/mesh/cadence-lineage";
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
 import { CustodyRecordUnavailable } from "./custody-holder.js";
 import { openColdCustodyRecord, openFaceFileNames, removeColdCustodyRecord, updateColdCustodyRecord } from "./custody-seat.js";
 import { larIdentityDir } from "./vessel-paths.js";

@@ -59,7 +59,10 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
  */
 import type { KeeperRiteBegun, KeeperRiteReading, KeeperVouchedFace } from "./pulama-keeper.js";
-import { FLOOR_REST_KEY_INFO, GATE_BUNDLE_INFO, KUKULU_VOUCH_DOMAIN, PULAMA_TESSERA_DOMAIN, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, lentFacesOf, lentFacesWire, renderLentFaces, verifyKukuluVouch, type LentFaces } from "@lararium/mesh";
+import { FLOOR_REST_KEY_INFO, GATE_BUNDLE_INFO, KUKULU_VOUCH_DOMAIN, PULAMA_TESSERA_DOMAIN } from "@lararium/mesh/domains";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { lentFacesOf, lentFacesWire, renderLentFaces, type LentFaces } from "@lararium/mesh/lent-faces";
+import { verifyKukuluVouch } from "@lararium/mesh/kukulu-vouch";
 import type { CustodyHolder } from "./custody-holder.js";
 import { personaGroupDigest } from "./persona-group-file.js";
 import type { AdmittedFace, PulamaAdmissions } from "./pulama-admit.js";

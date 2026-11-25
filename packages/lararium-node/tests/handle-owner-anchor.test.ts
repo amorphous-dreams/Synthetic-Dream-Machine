@@ -9,7 +9,9 @@
  */
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import * as ed from "@noble/ed25519";
-import { hex, mintFaceAnchor, mintPersonaInception, type PersonaKelEvent } from "@lararium/mesh";
+import { hex } from "@lararium/mesh/crypto";
+import { mintFaceAnchor } from "@lararium/mesh/face-anchor";
+import { mintPersonaInception, type PersonaKelEvent } from "@lararium/mesh/persona-kel";
 import { readHandleOwnerOf } from "../src/commands/handle.js";
 import { persistIdentityAnchors } from "../src/identity-anchors.js";
 import { ensureFaceCustodyOfGroup } from "../src/face-route.js";

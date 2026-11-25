@@ -7,7 +7,9 @@
  * Canon: lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift#/the-slices (slice 5b)
  */
 import { describe, expect, it } from "vitest";
-import { answerIslandAsks, composeVessel, islandFloorStack, islandLiftStack, larVesselOf } from "@lararium/mesh";
+import { answerIslandAsks } from "@lararium/mesh/capability-record";
+import { composeVessel } from "@lararium/mesh/cap-compose";
+import { islandFloorStack, islandLiftStack, larVesselOf } from "@lararium/mesh/lar-vessel";
 import { islandSessionDoor } from "@lararium/keyhive";
 import { browserSessionLift } from "../src/browser-island-caps.js";
 import { said, vessel, world } from "../../lararium-mesh/tests/content-key-fixture.js";

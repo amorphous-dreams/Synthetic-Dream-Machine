@@ -1,5 +1,6 @@
 import { expect } from "vitest";
-import { CompositeStore, type IslandToVesselMsg } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { type IslandToVesselMsg } from "@lararium/mesh/island-protocol";
 import { AtomicMemoryStore } from "./atomic-memory-store.js";
 import { hasRecordPort, type RecordPortOptions } from "../src/record-port-handler.js";
 import type { IslandContext } from "../src/island-context.js";

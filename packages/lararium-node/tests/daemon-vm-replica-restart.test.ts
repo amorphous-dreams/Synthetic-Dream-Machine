@@ -15,7 +15,8 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
-import { emptyLarDoc, type IslandMsg_Event, type LarDoc } from "@lararium/mesh";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { type IslandMsg_Event } from "@lararium/mesh/island-protocol";
 import { openDaemonVm } from "../src/open-daemon-vm.js";
 
 const PROBE = new URL("./fixtures/daemon-replay-probe.mjs", import.meta.url);

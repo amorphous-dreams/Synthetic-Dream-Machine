@@ -10,7 +10,10 @@
  *   CONTROL  without `unshare`, the same landing delegates and revokes nothing
  */
 import { describe, expect, test } from "vitest";
-import { bagUri, emptyLarDoc, storedLarRecord, type LarDoc, type ShareEntry } from "@lararium/mesh";
+import { bagUri } from "@lararium/mesh/lar-uris";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
+import { type ShareEntry } from "@lararium/mesh/share-config";
 import { applyShares, type ShareLitFace } from "../src/share-apply.js";
 import { InMemoryEventStore, KeyhiveProvider } from "../src/index.js";
 

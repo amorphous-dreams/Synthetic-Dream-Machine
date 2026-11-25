@@ -29,10 +29,9 @@
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-key-hierarchy
  */
-import {
-  faceKeyGrantRevision, readFaceKeyGrant,
-  type FaceGrantReading, type FaceScope,
-} from "@lararium/mesh";
+import { faceKeyGrantRevision, readFaceKeyGrant } from "@lararium/mesh/fleet-join";
+import { type FaceGrantReading } from "@lararium/mesh/session-face";
+import { type FaceScope } from "@lararium/mesh/face-proof-subjects";
 import type { FaceJoinRecord } from "./fleet-join-custody.js";
 
 /** A face whose root this vessel holds, and the scopes the face stands at here. */

@@ -1,6 +1,10 @@
 import { describe, expect, test } from "vitest";
 import { memoryControlStore } from "./control-store-fixture.js";
-import { CompositeStore, DAEMON_BAG_ID, type CapabilityAccess, type CapabilityVerifyResult, type Verb, type VerbContext } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { type CapabilityAccess, type CapabilityVerifyResult } from "@lararium/mesh/capability";
+import { type Verb } from "@lararium/mesh/verb-tiddler";
+import { type VerbContext } from "../src/verb-dispatcher.js";
 import { LOAD_YIELD_QUANTUM, registerActionReactors } from "../src/action-handler.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { VerbDispatcher, VerbTable } from "../src/verb-dispatcher.js";

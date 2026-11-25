@@ -1,4 +1,4 @@
-import { faceAtomKeyFromSeed } from "@lararium/mesh";
+import { faceAtomKeyFromSeed } from "@lararium/mesh/face-atom";
 import { resolveFace } from "./face-selector.js";
 import { loadIdentityAnchors } from "./identity-anchors.js";
 import { loadFaceAtomOfGroup } from "./face-atom-store.js";

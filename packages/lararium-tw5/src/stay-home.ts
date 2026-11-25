@@ -8,7 +8,9 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/tiddler-verbs
  */
 
-import { isVolatileVmUri, offerWithheldTitle, redactSecretShapes } from "@lararium/mesh";
+import { isVolatileVmUri } from "@lararium/mesh/lar-uris";
+import { offerWithheldTitle } from "@lararium/mesh/canon-offer";
+import { redactSecretShapes } from "@lararium/mesh/secret-shapes";
 import { localFilter } from "./record-port-projection.js";
 
 /** True for a title that stays home: it answers no read and takes no write at any door. */

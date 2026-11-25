@@ -18,7 +18,8 @@ import {
   foundCabalRealm, foundCabalRealmWithGlamour, openDwelling, dwellersHolding, cabalRealmLiveness,
 } from "../src/cabal-realm-ceremony.js";
 import { forkCabalRealm } from "../src/fork-realm-ceremony.js";
-import { BagStowage, cabalRealmLeaseSlot, feedCabalRealm, type CabalRealm } from "@lararium/mesh";
+import { BagStowage } from "@lararium/mesh/bag-residency";
+import { cabalRealmLeaseSlot, feedCabalRealm, type CabalRealm } from "@lararium/mesh/cabal-realm";
 
 const URI       = "lar:///crossroads.cabal.gathers/test-realm";
 const SUBSTRATE = "automerge:cabal-realm-substrate-test";

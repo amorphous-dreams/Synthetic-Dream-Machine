@@ -1,5 +1,5 @@
 import type { BrowserConnectionSnapshot, BrowserConnectionState } from "@lararium/browser/page";
-import type { FloorAnchor, HearthFloorCard } from "@lararium/mesh";
+import type { FloorAnchor, HearthFloorCard } from "@lararium/mesh/hearth-floor-pins";
 import { ARRIVAL_FORMAT } from "@lararium/mesh/wire-names";
 
 export interface ServedLocation {

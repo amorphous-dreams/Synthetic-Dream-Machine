@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
-import { SECRET_HOME_ID, toLarTiddlerRecord } from "@lararium/mesh";
+import { SECRET_HOME_ID } from "@lararium/mesh/lar-uris";
+import { toLarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { DaemonEventStore } from "../src/daemon-event-store.js";
 
 test("cap events belong only to their face", async () => {

@@ -8,19 +8,21 @@
  * foreign-titled members — the map is their only prior record).
  */
 
-import { grammarPins, vendoredCore } from "../../lararium-tw5/tests/test-wiki.js";
+import { houseSkins, skinPins, vendoredCore } from "../../lararium-tw5/tests/test-wiki.js";
 import { describe, test, expect, beforeAll } from "vitest";
 import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
 import path from "node:path";
-import { CompositeStore, ORIGINAL_TIDDLER_PATHS, parseProvenance, membersOfPack } from "@lararium/mesh";
-import type { VerbContext, Verb, CapabilityAccess, CapabilityVerifyResult } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { ORIGINAL_TIDDLER_PATHS, parseProvenance, membersOfPack } from "@lararium/mesh/pack-provenance";
+import type { VerbContext } from "@lararium/tw5";
+import type { Verb } from "@lararium/mesh/verb-tiddler";
+import type { CapabilityAccess, CapabilityVerifyResult } from "@lararium/mesh/capability";
 import { MemoryTiddlerStore } from "../../lararium-tw5/src/memory-store.js";
 import { VerbTable } from "../../lararium-tw5/src/verb-dispatcher.js";
 import { registerActionReactors, makeTw5Deserializer } from "../../lararium-tw5/src/action-handler.js";
 import { kahuHand } from "../../lararium-mesh/tests/kahu-reach-fixture.js";
 import { TW5Engine } from "../../lararium-tw5/src/tw5-vm.js";
-import LARES_MEMETIC_WIKITEXT_PLUGIN from "../../lararium-tw5/plugins/lares-memetic-wikitext.json" with { type: "json" };
 import { TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME } from "../../lararium-tw5/src/generated-tw5-version.js";
 
 /** `bags/lares` is system canon: the suite stands as a Kahu hand (a counted admission AND a sentinel membership). */
@@ -82,7 +84,7 @@ describe.skipIf(coreBlobSkip)(
   let engine: TW5Engine;
   beforeAll(async () => {
     engine = new TW5Engine();
-    await engine.boot(vendoredCore(), [LARES_MEMETIC_WIKITEXT_PLUGIN as unknown as Record<string, unknown>], undefined, { modulePins: grammarPins() });
+    await engine.boot(vendoredCore(), houseSkins(), undefined, { modulePins: skinPins() });
   }, 60_000);
 
   test("a 3-tiddler bundle lands all three + maps each to the pack file", async () => {

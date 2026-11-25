@@ -17,7 +17,7 @@
  * The row counts among the S-sealed carriers, so a rotation re-seals it under the new S key with its bytes unchanged.
  * The parcels rest under the outbox key's own seal, which the rotation never reads.
  */
-import { readOutboxKey, mintOutboxKey, type OutboxKey } from "@lararium/mesh";
+import { readOutboxKey, mintOutboxKey, type OutboxKey } from "@lararium/mesh/sealed-store-rest";
 import { updateCustodyRecord } from "./custody-seat.js";
 
 /** One outbox key per SENDING FACE: `outbox-key-h<N>.bin`, in that face's own directory under its key. */

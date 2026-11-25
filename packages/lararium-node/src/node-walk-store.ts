@@ -31,7 +31,9 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
 
-import { decodeInvite, isWalkRecord, sha256HexSync, type WalkRecord, type WalkStore } from "@lararium/mesh";
+import { decodeInvite } from "@lararium/mesh/hosting";
+import { isWalkRecord, type WalkRecord, type WalkStore } from "@lararium/mesh/walk-client";
+import { sha256HexSync } from "@lararium/mesh/crypto";
 import { CustodyRecordUnavailable } from "./custody-holder.js";
 import { readCustodyRecord, unlockedFaceOrdinals, updateCustodyRecord } from "./custody-seat.js";
 import { faceFileNames } from "./face-index.js";

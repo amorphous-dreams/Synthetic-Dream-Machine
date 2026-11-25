@@ -1,6 +1,9 @@
 import { describe, expect, test } from "vitest";
 import * as bindingModule from "../src/resolve-binding.js";
-import { DAEMON_BAG_ID, mutableLarRecord, slotBindingKey, type CompositeStore, type LarTiddlerRecord } from "@lararium/mesh";
+import { DAEMON_BAG_ID, slotBindingKey } from "@lararium/mesh/lar-uris";
+import { mutableLarRecord } from "@lararium/mesh/base-doc";
+import { type CompositeStore } from "@lararium/mesh/composite-store";
+import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { resolveOrMintBinding, restingMinter, unboundMints } from "../src/resolve-binding.js";
 import { makeFaceBagDoor } from "../src/face-bag-door.js";
 

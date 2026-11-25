@@ -31,10 +31,10 @@ seatSuiteWard();
 import { copyFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, test } from "vitest";
-import {
-  HOSTING_GRANT_SESSION_KIND, decodeInvite, encodeInvite, issueGrant, mintHostToken, mintHostingAct, popInvite, readFckCarrier, walkOver,
-  type LarSessionMsg, type LeafIdentity, type WalkFault, type WalkRecord,
-} from "@lararium/mesh";
+import { HOSTING_GRANT_SESSION_KIND, popInvite, walkOver, type WalkFault, type WalkRecord } from "@lararium/mesh/walk-client";
+import { decodeInvite, encodeInvite, issueGrant, mintHostToken, mintHostingAct } from "@lararium/mesh/hosting";
+import { readFckCarrier } from "@lararium/mesh/fck-envelope";
+import { type LarSessionMsg, type LeafIdentity } from "@lararium/mesh/leaf-presentation";
 import { CustodyLocked, CustodyRecordUnavailable } from "../src/custody-holder.js";
 import { writeCustodyRecord } from "../src/custody-seat.js";
 import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity } from "../src/node-vessel-identity.js";

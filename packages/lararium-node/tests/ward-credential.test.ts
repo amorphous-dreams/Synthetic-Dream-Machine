@@ -115,7 +115,7 @@ describe("the ward's token and signer (S2 cold read, P3)", () => {
     const { seatScratchCustody } = await import("./custody-seat-fixture.js");
     const { generateOrLoadPersonaGroupRoot, setMountedFace } = await import("../src/node-vessel-identity.js");
     const { wardRootSigner } = await import("../src/ward-signer.js");
-    const { verifyEd25519 } = await import("@lararium/mesh");
+    const { verifyEd25519 } = await import("@lararium/mesh/ed25519-door");
     const seat = await seatScratchCustody("ward-signer-once");
     try {
       setMountedFace(undefined);

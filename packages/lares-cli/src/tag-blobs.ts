@@ -30,7 +30,8 @@
  */
 
 import { writeFileSync, existsSync, readFileSync } from "node:fs";
-import { utf8Bytes, ridesAsPointer, isOversizedBody, mediaTypeFromExt, SKINNY_CARRIER_THRESHOLD } from "@lararium/mesh";
+import { utf8Bytes } from "@lararium/mesh/crypto";
+import { ridesAsPointer, isOversizedBody, mediaTypeFromExt, SKINNY_CARRIER_THRESHOLD } from "@lararium/mesh/content-handle";
 import { findTopLevelAhuBlocks } from "@lararium/tw5/meme-ast";
 import { metaFenceAt } from "@lararium/tw5";
 import { carrierCasFlagged, declaredType } from "./cas-stage.js";

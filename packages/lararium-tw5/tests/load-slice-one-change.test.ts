@@ -10,7 +10,14 @@
  */
 import { describe, expect, test } from "vitest";
 import { createRequire } from "node:module";
-import { AutomergeDocStore, CompositeStore, emptyLarDoc, plainEntries, type CapabilityAccess, type CapabilityVerifyResult, type LarDoc, type Repo as RepoType, type Verb, type VerbContext } from "@lararium/mesh";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { plainEntries } from "@lararium/mesh/stored-value";
+import { type CapabilityAccess, type CapabilityVerifyResult } from "@lararium/mesh/capability";
+import { type Repo as RepoType } from "@lararium/mesh/automerge";
+import { type Verb } from "@lararium/mesh/verb-tiddler";
+import { type VerbContext } from "../src/verb-dispatcher.js";
 import { LOAD_YIELD_QUANTUM, registerActionReactors } from "../src/action-handler.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { VerbTable } from "../src/verb-dispatcher.js";

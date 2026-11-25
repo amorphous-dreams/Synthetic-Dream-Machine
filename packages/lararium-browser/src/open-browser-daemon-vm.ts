@@ -17,20 +17,15 @@
  * Meme: lar:///ha.ka.ba/lararium/browser/open-browser-daemon-vm
  */
 
-import {
-  emptyLarDoc,
-  daemonFaceCanonBag,
-  standControlHome,
-  floorCidToMount,
-  DAEMON_BAG_ID,
-  type Repo, type AutomergeUrl, type LarDoc,
-  type WikiRecipe,
-  type IslandMsg_Manifest,
-  type IslandGrants,
-  type VesselWorkerHandle,
-  type CapabilityRecord,
-  answerIslandAsks,
-} from "@lararium/mesh";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { daemonFaceCanonBag, type WikiRecipe } from "@lararium/mesh/wiki-recipe";
+import { standControlHome } from "@lararium/mesh/control-home";
+import { floorCidToMount } from "@lararium/mesh/floor-pin";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { type Repo, type AutomergeUrl } from "@lararium/mesh/automerge";
+import { type IslandMsg_Manifest, type IslandGrants } from "@lararium/mesh/island-protocol";
+import { type VesselWorkerHandle } from "@lararium/mesh/vessel-host";
+import { type CapabilityRecord, answerIslandAsks } from "@lararium/mesh/capability-record";
 import {
   openDaemonVmCore,
   VerbTable,

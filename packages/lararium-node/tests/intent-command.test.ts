@@ -1,10 +1,13 @@
 import { describe, expect, test } from "vitest";
 import { resolveIntentFaceIndex, intentAudience, askShown, answerRefusal } from "../src/commands/intent.js";
-import {
-  buildAnswer, buildAsks, buildCancel, buildIntent, buildOutcome, cosignDigest, faceIntentVerbs, ed25519SignerFromSeed,
-  ed25519VerifyingKeyFromSeed, fixtureIntentVerbs, intentEntryCid, intentId, intentPaneModel,
-  makeHandLineage, readIntentPlane, type SignedIntentEntry,
-} from "@lararium/mesh";
+import { buildAnswer, buildAsks, buildCancel, buildIntent, buildOutcome } from "@lararium/mesh/intent-issue";
+import { cosignDigest } from "@lararium/mesh/ward-cosign";
+import { faceIntentVerbs, fixtureIntentVerbs } from "@lararium/mesh/intent-verbs";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { intentEntryCid, intentId, type SignedIntentEntry } from "@lararium/mesh/intent-entry";
+import { intentPaneModel } from "@lararium/mesh/intent-view";
+import { makeHandLineage } from "@lararium/mesh/hand-lineage";
+import { readIntentPlane } from "@lararium/mesh/intent-read";
 
 const who = async (n: number) => {
   const seed = new Uint8Array(32).fill(n);

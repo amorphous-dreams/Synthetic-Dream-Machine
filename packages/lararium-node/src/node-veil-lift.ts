@@ -9,7 +9,7 @@
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/the-veil-ladder#/the-base-model
  */
-import { signVeilLift, verifyVeilLift, type VeilLiftRecord } from "@lararium/mesh";
+import { signVeilLift, verifyVeilLift, type VeilLiftRecord } from "@lararium/mesh/veil-lift";
 import { readCustodyRecord, updateCustodyRecord } from "./custody-seat.js";
 import { loadVesselVerifyingKey } from "./node-vessel-identity.js";
 import { personaGroupDigest } from "./persona-group-file.js";

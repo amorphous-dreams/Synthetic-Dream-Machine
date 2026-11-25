@@ -22,17 +22,32 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as A from "@automerge/automerge";
 import type { Repo } from "@automerge/automerge-repo";
-import {
-  AutomergeDocStore, REALM_BAG_DOMAIN, REALM_ID_TIDDLER, bagUri, canonOfferDocUrl, emptyLarDoc, foldCanonOffers, nexusAidOf, nexusOfferSigner,
-  offerCanonRecords, promoteCanonOffer, realmDocPointer, realmDocUrl, realmStandingPointer, storedLarRecord, type LarDoc, type LarTiddlerRecord,
-} from "@lararium/mesh";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { REALM_BAG_DOMAIN } from "@lararium/mesh/domains";
+import { REALM_ID_TIDDLER, realmDocPointer, realmDocUrl, realmStandingPointer } from "@lararium/mesh/realm-bag";
+import { bagUri } from "@lararium/mesh/lar-uris";
+import { canonOfferDocUrl } from "@lararium/mesh/deterministic-doc";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { foldCanonOffers, nexusOfferSigner, offerCanonRecords, promoteCanonOffer } from "@lararium/mesh/canon-offer";
+import { nexusAidOf } from "@lararium/mesh/nexus-seal-seed";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
+import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { storeDoorReactors } from "../src/store-door-verbs.js";
 import { runOfferRetire } from "../src/commands/offer-retire.js";
+import { crossroadsDocUrl, publicationDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
 import {
-  crossroadsDocUrl, publicationDocUrl, floorReleaseEntriesFromBoard, materializeSharedLarDoc, sha256HexBytesSync, verifyFloorRelease, writeFloorRelease,
-  assembleFloorRelease, openFloorReleaseBody, foundingRoster, readPromotionApproval, FLOOR_RELEASE_SURFACE, cutFloorSnapshot, floorManifestBytes,
-  signFloorOffering,
-} from "@lararium/mesh";
+  floorReleaseEntriesFromBoard,
+  verifyFloorRelease,
+  writeFloorRelease,
+  assembleFloorRelease,
+  openFloorReleaseBody,
+  FLOOR_RELEASE_SURFACE,
+} from "@lararium/mesh/floor-release";
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
+import { foundingRoster } from "@lararium/mesh/nexus-seal-seed";
+import { readPromotionApproval } from "@lararium/mesh/promotion-approval";
+import { cutFloorSnapshot, floorManifestBytes } from "@lararium/mesh/floor-manifest";
+import { signFloorOffering } from "@lararium/mesh/floor-offering";
 import { readCasBlobFromFs, writeCasEntriesFs } from "../src/node-cas.js";
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { larDataDir, larSealHome } from "../src/vessel-paths.js";
@@ -82,8 +97,8 @@ afterEach(async () => {
   for (const root of [...roots, work]) rmSync(root, { recursive: true, force: true });
 });
 
-/** The blobs every mount needs, as the shipped genesis seed declares them: every floor here offers them, so its release door passes. */
-const REQUIRED_IDS = ["lar:///ha.ka.ba/lararium/plugins/lares/memetic-wikitext", "lararium-boot-shadows"];
+/** The blobs every mount needs, as the shipped genesis seed declares them (grammar, house, base): every floor here offers them, so its release door passes. */
+const REQUIRED_IDS = ["lar:///ha.ka.ba/lararium/plugins/lares/memetic-wikitext", "lar:///ha.ka.ba/lararium/plugins/lares/lararium", "lararium-boot-shadows"];
 const PROVENANCE = { source: "https://example.test", commit: "0".repeat(40), path: "plugin.json", licence: "MIT" };
 const casOf = () => join(work, "cas");
 
@@ -129,7 +144,7 @@ describe("a release names a floor this hearth holds whole", () => {
     writeCasEntriesFs([f.snapshots[1]!], cas);                                                            // every snapshot
     await expect(go()).rejects.toThrow(/offering absent/);
     writeCasEntriesFs([f.offering], cas);                                                                 // the offering, not its blobs
-    await expect(go()).rejects.toThrow(/memetic-wikitext absent/);
+    await expect(go()).rejects.toThrow(/Floor blob lar:\/\/\/ha\.ka\.ba\/lararium\/plugins\/lares\/\S+ absent/);
     expect(readCasBlobFromFs(f.cid, cas), "a refused release stages nothing").toBeNull();
     writeCasEntriesFs(f.blobs, cas);                                                                      // the whole floor
     const landed = await go();

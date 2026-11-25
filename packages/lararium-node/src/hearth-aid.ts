@@ -4,7 +4,7 @@
  * seed) commits to it, so a relation minted at one of a human's hearths names that hearth and no other.
  * Null where neither stands: a place with no seed charter holds no hearth for a face to bind to.
  */
-import { nexusAidOf } from "@lararium/mesh";
+import { nexusAidOf } from "@lararium/mesh/nexus-seal-seed";
 import { listAnchoredPersonas, loadIdentityAnchors } from "./identity-anchors.js";
 import { readHearthDialPin } from "./hearth-dial-pin.js";
 import { readNexusDoc } from "./nexus-doc.js";

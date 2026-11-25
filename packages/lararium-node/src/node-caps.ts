@@ -38,15 +38,14 @@
 
 import type { Server } from "node:http";
 import type { Repo } from "@automerge/automerge-repo";
-import {
-  composeVessel, type CapModule, type ComposedVessel,
-  type VesselKeel, type VesselCoreAssembly,
-  type BagStowage,
-  // ── the lifted carriage machinery, now mesh-floor (re-exported below) ──
-  CARRIAGE_CAP, genesisCasCidsFromOracle,
-  carriageStack, type MeshSelf, type MeshPalaceComponent,
-  type MeshPalaceDoc, type FlowPullResult, type PlaceSigner,
-} from "@lararium/mesh";
+import { composeVessel, type CapModule, type ComposedVessel } from "@lararium/mesh/cap-compose";
+import { type VesselKeel, type VesselCoreAssembly } from "@lararium/mesh/open-vessel-core";
+import { type BagStowage } from "@lararium/mesh/bag-residency";
+import { CARRIAGE_CAP, carriageStack, type MeshSelf, type MeshPalaceComponent } from "@lararium/mesh/carriage-caps";
+import { genesisCasCidsFromOracle } from "@lararium/mesh/genesis-intake";
+import { type MeshPalaceDoc } from "@lararium/mesh/mesh-palace";
+import { type FlowPullResult } from "@lararium/mesh/flow-read-client";
+import { type PlaceSigner } from "@lararium/mesh/place-signer";
 import {
   composeCoreVessel, substrateCap, daemonCap, CORE_CAP,
   type DaemonCapDeps, type VesselDaemonVm,
@@ -62,10 +61,16 @@ import type { BulbArtifact } from "./bulb.js";
  * carriage. Each name below has a caller; a symbol nothing reaches belongs in mesh alone.
  */
 export {
-  meshPalaceCap, carriageCap, carriageStack, discoverPeers, dampedRadius, incommensurablePullMs,
+  meshPalaceCap,
+  carriageCap,
+  carriageStack,
+  discoverPeers,
+  dampedRadius,
+  incommensurablePullMs,
   deriveMeshSelf,
-  type MeshSelf, type MeshPalaceComponent,
-} from "@lararium/mesh";
+  type MeshSelf,
+  type MeshPalaceComponent,
+} from "@lararium/mesh/carriage-caps";
 
 /**
  * The cap-ids that name a node cap-module in a #has-cap-stack. substrate + daemon ride the SHARED

@@ -14,7 +14,14 @@
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
-import { FACE_LABELS_DIR, readFaceLabelFrom, writeFaceLabelTo, type FaceLabel, type FaceLabelInput, type FaceLabelShelf } from "@lararium/mesh";
+import {
+  FACE_LABELS_DIR,
+  readFaceLabelFrom,
+  writeFaceLabelTo,
+  type FaceLabel,
+  type FaceLabelInput,
+  type FaceLabelShelf,
+} from "@lararium/mesh/face-label";
 
 /** The slice of an OPFS directory handle the shelf drives. */
 export interface OpfsDirectoryLike {

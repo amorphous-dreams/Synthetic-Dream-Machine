@@ -7,7 +7,7 @@
 
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { precheckBlobs, type BlobRef, type StoreIntegrityReport } from "@lararium/mesh";
+import { precheckBlobs, type BlobRef, type StoreIntegrityReport } from "@lararium/mesh/store-integrity";
 
 /** The on-disk shard path for a documentId under a NodeFS store root. */
 export function docStorePath(storageDir: string, documentId: string): string {

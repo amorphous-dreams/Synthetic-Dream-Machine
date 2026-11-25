@@ -8,7 +8,10 @@
  * draft and personal slots stay this device's own; a resolver handed no hearth document mints its own working slot.
  */
 import { describe, expect, test } from "vitest";
-import { CompositeStore, CONTROL_HOME_ID, didFromVerifyingKey, makeIslandRepo } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
+import { didFromVerifyingKey } from "@lararium/mesh/lar-did";
+import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
 import { MemoryTiddlerStore } from "@lararium/tw5";
 import { makeSlotDocResolver } from "../src/slot-doc-resolver.js";
 

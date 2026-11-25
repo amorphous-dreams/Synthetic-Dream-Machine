@@ -11,7 +11,16 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/browser/browser-gate-pins
  */
-import { fileHearthFloorCard, hearthPinIndex, readHearthFloorPins, type FloorAnchor, type FloorCardFiling, type GateBundlePin, type HearthFloorCard, type HearthPinIndex, type LarWSClientOptions } from "@lararium/mesh";
+import {
+  fileHearthFloorCard,
+  readHearthFloorPins,
+  type FloorAnchor,
+  type FloorCardFiling,
+  type HearthFloorCard,
+} from "@lararium/mesh/hearth-floor-pins";
+import { hearthPinIndex, type HearthPinIndex } from "@lararium/mesh/admit-gate-pin";
+import { type GateBundlePin } from "@lararium/mesh/gate-bundle-door";
+import { type LarWSClientOptions } from "@lararium/mesh/lar-ws-client-adapter";
 
 export type BrowserFacePresentation = LarWSClientOptions["presentation"];
 

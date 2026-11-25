@@ -9,7 +9,11 @@
  * surface as a conflict nobody caused.
  */
 import { describe, test, expect } from "vitest";
-import { CompositeStore, parseResidencyAction, type CapabilityAccess, type CapabilityVerifyResult, type Verb, type VerbContext } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { parseResidencyAction } from "@lararium/mesh/residency-actions";
+import { type CapabilityAccess, type CapabilityVerifyResult } from "@lararium/mesh/capability";
+import { type Verb } from "@lararium/mesh/verb-tiddler";
+import { type VerbContext } from "../src/verb-dispatcher.js";
 import { carrierHash } from "@lararium/mesh/crypto";
 import { decideIngest } from "../src/ingest-gate.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";

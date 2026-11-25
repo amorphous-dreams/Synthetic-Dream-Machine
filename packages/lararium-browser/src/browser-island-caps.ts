@@ -14,10 +14,12 @@
  *
  * Canon: lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift#/the-slices (slices 5a, 5b) · lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store
  */
-import {
-  receiptInStore, SessionSignBook,
-  type BookedSessionSigner, type CustodyWriter, type IslandLift, type ReceiptIssuer, type Repo, type SessionOwnChain,
-} from "@lararium/mesh";
+import { receiptInStore } from "@lararium/mesh/receipt-with-heads";
+import { SessionSignBook, type BookedSessionSigner } from "@lararium/mesh/session-sign-book";
+import { type CustodyWriter, type ReceiptIssuer } from "@lararium/mesh/capability-record";
+import { type IslandLift } from "@lararium/mesh/lar-vessel";
+import { type Repo } from "@lararium/mesh/automerge";
+import { type SessionOwnChain } from "@lararium/mesh/island-protocol";
 import { faceProofSubjectRef, placeProofSubjectRef } from "@lararium/mesh/face-proof-subjects";
 
 /**

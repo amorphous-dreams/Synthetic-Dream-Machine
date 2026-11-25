@@ -8,7 +8,12 @@
  */
 import { memoryControlStore } from "./control-store-fixture.js";
 import { describe, test, expect } from "vitest";
-import { CompositeStore, DAEMON_BAG_ID, EXEC_LEI_SPEND_VERB, SwarmRefused, bagUri, type ExecLeiPort, type Verb } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { DAEMON_BAG_ID, bagUri } from "@lararium/mesh/lar-uris";
+import { EXEC_LEI_SPEND_VERB } from "@lararium/mesh/exec-lei";
+import { SwarmRefused } from "@lararium/mesh/swarm-tiddlers";
+import { type ExecLeiPort } from "@lararium/mesh/seat-startup-offer";
+import { type Verb } from "@lararium/mesh/verb-tiddler";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { VerbDispatcher, VerbTable } from "../src/verb-dispatcher.js";
 import { DAEMON_HAND_ONLY_CODES, makeLocalAskBook } from "../src/daemon-behavior.js";

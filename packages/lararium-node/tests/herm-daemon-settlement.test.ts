@@ -14,7 +14,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { nodeSpawnDaemonWorker } from "../src/worker-handle.js";
-import type { CapabilityRecord, VesselWorkerHandle } from "@lararium/mesh";
+import type { CapabilityRecord } from "@lararium/mesh/capability-record";
+import type { VesselWorkerHandle } from "@lararium/mesh/vessel-host";
 
 const src = (file: string): string => readFileSync(new URL(`../src/${file}`, import.meta.url), "utf8");
 

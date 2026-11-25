@@ -9,11 +9,11 @@
 import { describe, expect, test } from "vitest";
 import { Repo, generateAutomergeUrl, interpretAsDocumentId, type AutomergeUrl, type DocumentId, type PeerId } from "@automerge/automerge-repo";
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
-import {
-  DeterministicFederationGate, LARES_DOC_URI, LARARIUM_DOC_URI, CATALOG_DOC_URI, DAEMON_BAG_ID,
-  crossroadsDocUrl, whoBoardDocUrl, materializeSharedLarDoc, mutableLarRecord, oracleGenesisDocUrl, emptyLarDoc, tiddlerText,
-  type FederationGate, type LarDoc,
-} from "@lararium/mesh";
+import { DeterministicFederationGate, type FederationGate } from "@lararium/mesh/federation-gate";
+import { LARES_DOC_URI, LARARIUM_DOC_URI, CATALOG_DOC_URI, DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { crossroadsDocUrl, whoBoardDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { mutableLarRecord, emptyLarDoc, tiddlerText, type LarDoc } from "@lararium/mesh/base-doc";
+import { oracleGenesisDocUrl } from "@lararium/mesh/genesis-doc";
 import { HearthCanonGate, admittedCanonDocs, hearthCanonDocIds, hearthCrossingOf, isOwnHearthCrossing, provenCrossingPlanes, seatHearthCanon } from "../src/hearth-canon.js";
 import { browserShareConfig } from "../src/open-browser-vessel.js";
 

@@ -6,7 +6,7 @@
  * its tree, and no row of the place tree, no board and no boot record carries it. The landing of an overlay keeps it once;
  * a replay keeps the record it holds.
  */
-import { signVeilLift, verifyVeilLift, type VeilLiftRecord } from "@lararium/mesh";
+import { signVeilLift, verifyVeilLift, type VeilLiftRecord } from "@lararium/mesh/veil-lift";
 import { readKeystoreRecord, writeKeystoreRecord } from "./browser-custody.js";
 
 /** The face row a PersonaGroup's veil-lift link rests in. */

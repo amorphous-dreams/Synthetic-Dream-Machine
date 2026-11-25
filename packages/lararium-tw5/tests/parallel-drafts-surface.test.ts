@@ -12,7 +12,8 @@
  * CONTROL: a routed draft persists in its slot and raises nothing.
  */
 import { describe, test, expect, vi, afterEach } from "vitest";
-import type { ChangeOrigin, LarTiddlerRecord, ParallelDraftsChange } from "@lararium/mesh";
+import type { ChangeOrigin, LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
+import type { ParallelDraftsChange } from "@lararium/mesh/parallel-drafts";
 import { IslandAdaptor, parallelDraftAlertTitle, type IslandStore } from "../src/island-adaptor.js";
 import { quoteblockFence } from "../src/deserializer.js";
 import type { TW5Engine } from "../src/tw5-vm.js";

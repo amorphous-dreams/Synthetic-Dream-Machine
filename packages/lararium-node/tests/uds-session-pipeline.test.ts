@@ -2,15 +2,19 @@
  * uds-session-pipeline — frames on one session socket answer in the order they arrived, a close queues behind the call
  * in flight, and a socket that goes while its call runs ends its session without disturbing a sibling.
  */
-import { controlStoreOf } from "@lararium/mesh";
+import { controlStoreOf } from "@lararium/mesh/control-home";
 import { describe, expect, test } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createConnection, type Socket } from "node:net";
 import { Repo } from "@automerge/automerge-repo";
-import { AutomergeDocStore, CompositeStore, DAEMON_BAG_ID, emptyLarDoc, concludeVerb, wikiSlotUri,
-  type LarDoc } from "@lararium/mesh";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { concludeVerb } from "@lararium/mesh/verb-tiddler";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import type { SessionFace } from "@lararium/mesh/session-contract";
 import { startUdsChannel, type UdsSessionDoor } from "../src/uds-channel.js";
 import { claimStore } from "../src/owned-store.js";

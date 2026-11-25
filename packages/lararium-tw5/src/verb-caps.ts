@@ -23,12 +23,11 @@
  * Canon: lar:///ha.ka.ba/lararium/api/composable-keel
  */
 
-import { composeVessel, guardHitl, type CapModule, type SenseHand } from "@lararium/mesh";
-import type {
-  SparseFormVector,
-  WorldlineStubWire,
-  WorldlineEdgeTriple,
-} from "@lararium/mesh";
+import { composeVessel, type CapModule } from "@lararium/mesh/cap-compose";
+import { guardHitl, type SenseHand } from "@lararium/mesh/sensorium-lifecycle";
+import type { SparseFormVector } from "@lararium/mesh/worldline-trajectory";
+import type { WorldlineStubWire } from "@lararium/mesh/island-protocol";
+import type { WorldlineEdgeTriple } from "@lararium/mesh/worldline-edge";
 import { VerbTable, type VerbContext } from "./verb-dispatcher.js";
 import type {
   DaemonWorldlineCompareInput,

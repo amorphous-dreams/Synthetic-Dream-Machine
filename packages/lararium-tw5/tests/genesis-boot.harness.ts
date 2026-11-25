@@ -18,7 +18,7 @@
  */
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
-import { bootSetPluginCids } from "@lararium/mesh";
+import { bootSetPluginCids } from "@lararium/mesh/cas";
 import { TW5Engine } from "../src/tw5-vm.js";
 import { casBlobPreloads, modulePinsOf } from "../src/module-pins.js";
 

@@ -1,6 +1,8 @@
 import { describe, expect, test, vi } from "vitest";
 import { memoryControlStore } from "./control-store-fixture.js";
-import { CompositeStore, DAEMON_BAG_ID, NoWorkingLayerRefusal, OUTCOME_URI_PREFIX } from "@lararium/mesh";
+import { CompositeStore, NoWorkingLayerRefusal } from "@lararium/mesh/composite-store";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { OUTCOME_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { makeMemeDeleteReactor, makeMemePatchReactor, makeMemePutReactor } from "../src/meme-verbs.js";
 import { VerbDispatcher, VerbTable, type VerbContext } from "../src/verb-dispatcher.js";

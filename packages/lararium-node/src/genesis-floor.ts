@@ -10,7 +10,21 @@ import { join } from "node:path";
 import { carrierFiles, declaresCarrier, rootMetaFields, deserializeCarrier } from "@lararium/tw5";
 import { verdict } from "@lararium/memetic-frame";
 import { carrierBaseRelPath, isPrivateProjectionSlug } from "./bag-paths.js";
-import { cutFloorSnapshot, floorCarriesTier, floorManifestBytes, floorManifestCid, houseCanonSlugs, openFloorSnapshot, ownEntry, readFloorManifest, sha256HexBytesSync, FLOOR_MANIFEST_FORMAT, FLOOR_REQUIRED_SLUGS, type FloorManifest, type FloorSnapshot } from "@lararium/mesh";
+import {
+  cutFloorSnapshot,
+  floorCarriesTier,
+  floorManifestBytes,
+  floorManifestCid,
+  openFloorSnapshot,
+  readFloorManifest,
+  FLOOR_MANIFEST_FORMAT,
+  FLOOR_REQUIRED_SLUGS,
+  type FloorManifest,
+  type FloorSnapshot,
+} from "@lararium/mesh/floor-manifest";
+import { houseCanonSlugs } from "@lararium/mesh/kahu-canon-reach";
+import { ownEntry } from "@lararium/mesh/stored-value";
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
 import { readBagManifest } from "./bag-declare.js";
 import { genesisCasDir, readGenesisSeed } from "./genesis-artifact.js";
 

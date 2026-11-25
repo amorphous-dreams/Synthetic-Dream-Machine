@@ -9,16 +9,17 @@
  * The stand-off here stands with no base: the file says one thing and the records another, and nothing names which moved
  * last (`no-base`), so the island's first pass meets it at once.
  */
-import { grammarPins, vendoredCore } from "../../lararium-tw5/tests/test-wiki.js";
+import { houseSkins, skinPins, vendoredCore } from "../../lararium-tw5/tests/test-wiki.js";
 import { describe, expect, test } from "vitest";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { CompositeStore, bagUri, wikiSlotUri } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { bagUri } from "@lararium/mesh/lar-uris";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { carrierRecords } from "@lararium/tw5/carrier-canonical";
 import { MemoryTiddlerStore } from "../../lararium-tw5/src/memory-store.js";
 import { TW5Engine } from "../../lararium-tw5/src/tw5-vm.js";
-import LARES_MEMETIC_WIKITEXT_PLUGIN from "../../lararium-tw5/plugins/lares-memetic-wikitext.json" with { type: "json" };
 import { mountDiskProjection, mountedDiskProjector } from "../src/island-behaviors.js";
 import { collapseRuleTitle } from "../src/standoff-collapse.js";
 import { STANDOFF_FIELD, STANDOFF_KEPT_FIELD, STANDOFF_LOADED_FIELD, standoffDraftTitle, standoffLoadedDigest } from "../src/standoff-drafts.js";
@@ -50,7 +51,7 @@ async function island(before: (s: { $tw: Wiki; working: MemoryTiddlerStore }) =>
   composite.addLayer({ bagId: DAEMON_WORKING, store: working, writable: true });
   composite.addLayer({ bagId: TEMP, store: temp, writable: true });
   const engine = new TW5Engine();
-  await engine.boot(vendoredCore(), [LARES_MEMETIC_WIKITEXT_PLUGIN as unknown as Record<string, unknown>], undefined, { modulePins: grammarPins() });
+  await engine.boot(vendoredCore(), houseSkins(), undefined, { modulePins: skinPins() });
   const $tw = engine.$tw as unknown as Wiki;
   for (const fields of carrierRecords(URI, words)!) {
     await store.put({ tiddler: fields as never }, ORIGIN);

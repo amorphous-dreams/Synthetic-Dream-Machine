@@ -1,14 +1,16 @@
 import { readdirSync, readFileSync } from "fs";
 import path from "path";
 import { packagePath, packageRelative, TIDDLERS_DIR } from "./paths.js";
+
+// Each reader takes the source island it walks (a skin's `tiddlersDir`); the grammar's `tiddlers/` stands as the default.
 import { sha256 } from "./module-manifest.js";
 import { parseTidFile } from "./tid-file.js";
 import { type SourceManifestFile, type StaticTiddlerSource } from "./source-manifest.js";
 
 export type PluginInfoSource = SourceManifestFile & { title: string };
 
-export function witnessPluginInfo(): PluginInfoSource {
-  const tiddlersAbs = packagePath(TIDDLERS_DIR);
+export function witnessPluginInfo(tiddlersDir: string = TIDDLERS_DIR): PluginInfoSource {
+  const tiddlersAbs = packagePath(tiddlersDir);
   const pluginInfoAbs = path.join(tiddlersAbs, "plugin.info");
   const pluginInfoPath = packageRelative(pluginInfoAbs);
   const pluginInfoText = readFileSync(pluginInfoAbs, "utf8");
@@ -23,8 +25,8 @@ export function witnessPluginInfo(): PluginInfoSource {
   };
 }
 
-export function witnessStaticTiddlers(): StaticTiddlerSource[] {
-  const tiddlersAbs = packagePath(TIDDLERS_DIR);
+export function witnessStaticTiddlers(tiddlersDir: string = TIDDLERS_DIR): StaticTiddlerSource[] {
+  const tiddlersAbs = packagePath(tiddlersDir);
   const staticTiddlers: StaticTiddlerSource[] = [];
 
   for (const entry of readdirSync(tiddlersAbs, { withFileTypes: true })) {

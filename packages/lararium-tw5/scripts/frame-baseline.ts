@@ -21,7 +21,8 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { performance } from "node:perf_hooks";
-import { LAR_KEY_STYLE, LAR_KEY_SURFACE, bootSetPluginCids, readLarFrame } from "@lararium/mesh";
+import { LAR_KEY_STYLE, LAR_KEY_SURFACE, readLarFrame } from "@lararium/mesh/lar-camera";
+import { bootSetPluginCids } from "@lararium/mesh/cas";
 import { TW5Engine } from "../src/tw5-vm.js";
 import { casBlobPreloads, modulePinsOf } from "../src/module-pins.js";
 import { mountProjection, renderIdCensus } from "../src/tw5-projection.js";

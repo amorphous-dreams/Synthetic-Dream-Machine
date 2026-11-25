@@ -15,7 +15,9 @@ import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "nod
 import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { carrierHash, VERB_RESULT_KEY, wikiSlotUri } from "@lararium/mesh";
+import { carrierHash } from "@lararium/mesh/crypto";
+import { VERB_RESULT_KEY } from "@lararium/mesh/verb-tiddler";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { stampCarrier } from "@lararium/memetic-frame";
 import * as node from "@lararium/node";
 import { SyncedTree, syncedTreeKey } from "@lararium/node";

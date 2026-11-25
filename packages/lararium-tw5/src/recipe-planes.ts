@@ -10,7 +10,14 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/recipe-planes
  */
 
-import { RECIPE_PLANES, effectiveRecipe, recipeRecordStands as standing, recipeUri, type EffectiveRecipe, type RecipePlane } from "@lararium/mesh";
+import {
+  RECIPE_PLANES,
+  effectiveRecipe,
+  recipeRecordStands as standing,
+  type EffectiveRecipe,
+  type RecipePlane,
+} from "@lararium/mesh/recipe-planes";
+import { recipeUri } from "@lararium/mesh/lar-uris";
 import type { CatalogAccessor } from "./catalog-accessor.js";
 
 // The reader itself stands in mesh, where the surface mount's resolver reads it too; this module keeps the

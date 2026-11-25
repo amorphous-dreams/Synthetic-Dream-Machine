@@ -25,7 +25,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { FACES_PROJECTION_DIR } from "./bag-paths.js";
-import { digestsEqual } from "@lararium/mesh";
+import { digestsEqual } from "@lararium/mesh/agile-digest";
 import { contentHash } from "./synced-tree.js";
 import type { GitRun } from "./watch-core.js";
 

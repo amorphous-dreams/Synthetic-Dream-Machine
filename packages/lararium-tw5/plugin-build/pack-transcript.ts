@@ -17,7 +17,7 @@
  * pack-step shape live here.
  */
 
-import { sha256HexSync } from "@lararium/mesh";
+import { sha256HexSync } from "@lararium/mesh/crypto";
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
 

@@ -11,10 +11,8 @@
  */
 
 import { stdout } from "node:process";
-import {
-  ATTEMPT_BUDGET, attemptWarning, confirmHeldPaper, confirmPaperPin, draftPaperPin,
-  type Credential, type SlotSpec, type PinSpec,
-} from "@lararium/mesh";
+import { ATTEMPT_BUDGET, attemptWarning } from "@lararium/mesh/attempt-budget";
+import { confirmHeldPaper, confirmPaperPin, draftPaperPin, type Credential, type SlotSpec, type PinSpec } from "@lararium/mesh/keyslot-door";
 import { canPromptSecret, promptLine, promptSecret, promptSecretConfirmed } from "./prompt-secret.js";
 
 /** The refusal of a verb that needs a credential and has no TTY to read one from. */

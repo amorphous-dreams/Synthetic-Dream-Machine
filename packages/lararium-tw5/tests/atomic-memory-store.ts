@@ -1,5 +1,5 @@
 import { MemoryTiddlerStore } from "../src/memory-store.js";
-import type { ChangeOrigin, LarTiddlerChange, LarTiddlerRecord, LarWriteOptions } from "@lararium/mesh";
+import type { ChangeOrigin, LarTiddlerChange, LarTiddlerRecord, LarWriteOptions } from "@lararium/mesh/tiddler-store";
 import { assertStorableTitle } from "@lararium/mesh/lar-uris";
 
 /**

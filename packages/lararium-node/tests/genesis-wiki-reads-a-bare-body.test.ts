@@ -19,7 +19,9 @@ import { describe, test, expect, beforeAll } from "vitest";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI, sha256HexBytesSync, type GenesisSeed } from "@lararium/mesh";
+import { LARES_LARARIUM_PLUGIN_URI, LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "@lararium/mesh/lar-uris";
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
+import { type GenesisSeed } from "@lararium/mesh/genesis-doc";
 import { TW5Engine } from "../../lararium-tw5/src/tw5-vm.js";
 import { modulePinsOf } from "../../lararium-tw5/src/module-pins.js";
 import type { LaresMemeFace } from "../../lararium-tw5/src/types/lares-globals.js";
@@ -47,10 +49,12 @@ describe.skipIf(absent)(`the wiki booted from genesis bytes${absent ? ` [SKIPPED
   beforeAll(async () => {
     const seed = JSON.parse(readFileSync(SEED_PATH, "utf8")) as GenesisSeed;
     const core = genesisBlob(seed, ENGINE_BLOB_ID);
-    const grammar = JSON.parse(new TextDecoder().decode(genesisBlob(seed, LARES_MEMETIC_WIKITEXT_PLUGIN_URI))) as Record<string, unknown>;
+    // The two skins: the grammar parses, the house carries the meme face.
+    const skins = [LARES_MEMETIC_WIKITEXT_PLUGIN_URI, LARES_LARARIUM_PLUGIN_URI]
+      .map((id) => JSON.parse(new TextDecoder().decode(genesisBlob(seed, id))) as Record<string, unknown>);
     engine = new TW5Engine();
-    // Each blob read only once it hashed to the seed's name for it: the core boots on that pin, the grammar's modules on theirs.
-    await engine.boot({ bytes: core, sha256: (seed.blobs as Record<string, { sha256: string }>)[ENGINE_BLOB_ID]!.sha256 }, [grammar], undefined, { modulePins: modulePinsOf([grammar]) });
+    // Each blob read only once it hashed to the seed's name for it: the core boots on that pin, each skin's modules on theirs.
+    await engine.boot({ bytes: core, sha256: (seed.blobs as Record<string, { sha256: string }>)[ENGINE_BLOB_ID]!.sha256 }, skins, undefined, { modulePins: modulePinsOf(skins) });
     face = (engine.$tw as unknown as { lares: { meme: LaresMemeFace } }).lares.meme;
   }, 120_000);
 

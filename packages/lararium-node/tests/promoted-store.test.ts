@@ -11,7 +11,8 @@ import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync } 
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
-import { EMPTY_KAPAE_LOCAL, EMPTY_LEDGER, ledgerCommit, promoteDigest, promoteEdgeKey, type PromoteWho } from "@lararium/mesh";
+import { EMPTY_KAPAE_LOCAL } from "@lararium/mesh/promote-kapae";
+import { EMPTY_LEDGER, ledgerCommit, promoteDigest, promoteEdgeKey, type PromoteWho } from "@lararium/mesh/promote";
 import { seatHostingCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 import { PROMOTED_FILE, KAPAE_FILE, promotedFile, kapaeFile, nodePromoteCas, nodePromoteStores } from "../src/promoted-store.js";
 import { readCasPins, readVerifiedCasBlobFromFs } from "../src/node-cas.js";

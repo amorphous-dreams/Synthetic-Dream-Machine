@@ -14,7 +14,7 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, test, expect } from "vitest";
-import type { ChangeOrigin } from "@lararium/mesh";
+import type { ChangeOrigin } from "@lararium/mesh/tiddler-store";
 import {
   runWikiSensoriumWitness,
   createWikiSensorium,

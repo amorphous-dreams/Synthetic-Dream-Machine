@@ -34,17 +34,18 @@
 import type { Repo, DocHandle } from "@automerge/automerge-repo";
 import { bulbBlobRoute } from "./bulb-routes.js";
 import { ARRIVAL_FORMAT, ARRIVAL_WELL_KNOWN_ROUTE, type ArrivalDescriptor } from "./pronaos-adapter.js";
-import {
-  genesisCasManifestFromSeed, sha256HexBytesSync,
-  materializeGenesisDoc, materializeGenesisIsland, validateGenesisBytes,
-  buildCeremonyTiddlers, didKeyFromVerifyingKey,
-  emptyLarDoc, IDENTITIES_NAMESPACE,
-  type LarDoc, ownEntry} from "@lararium/mesh";
-import { storedRecord } from "@lararium/mesh";
+import { genesisCasManifestFromSeed, materializeGenesisDoc } from "@lararium/mesh/genesis-doc";
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
+import { materializeGenesisIsland, validateGenesisBytes } from "@lararium/mesh/genesis-intake";
+import { buildCeremonyTiddlers, didKeyFromVerifyingKey } from "@lararium/mesh/cold-boot-ceremony";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { IDENTITIES_NAMESPACE } from "@lararium/mesh/lar-uris";
+import { ownEntry } from "@lararium/mesh/stored-value";
+import { storedRecord } from "@lararium/mesh/stored-record";
 import { assembleBulb, bulbSeed, bulbSeedInventory, type BulbArtifact } from "./bulb.js";
 import { parseGenesisSeed } from "./genesis-artifact.js";
 import { generateOrLoadVesselIdentity } from "./node-vessel-identity.js";
-import type { PlaceFoundingCard } from "@lararium/mesh";
+import type { PlaceFoundingCard } from "@lararium/mesh/place-founding-card";
 import { openedCustody } from "./custody-seat.js";
 import { writeCasEntriesFs, casDirForStorage } from "./node-cas.js";
 
@@ -166,9 +167,10 @@ export async function kindleFromBulb(args: {
   //    custody refuses here, by name, with no blob mirrored and no island materialized.
   await openedCustody();
 
-  // 1. VALIDATE the genesis the bulb carries (Automerge-loadable, TW5 core + packed Lares plugin present).
+  // 1. VALIDATE the genesis the bulb carries (Automerge-loadable, TW5 core + packed Lares plugin present, and the house skin
+  //    beside a split grammar: the bulb holds the bytes, so a grammar that packs no route and stands alone refuses).
   const bytes = materializeGenesisDoc(seed);
-  validateGenesisBytes(bytes, "kindle");
+  validateGenesisBytes(bytes, "kindle", (sha256) => bulb.casEntries.find((e) => e.cid === sha256)?.bytes);
 
   // Mirror the FIRE bytes (engine + plugins) into the device's runtime CAS so its island boots on them.
   writeCasEntriesFs(bulb.casEntries, casDirForStorage(storageDir));

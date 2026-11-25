@@ -25,10 +25,11 @@
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-records
  */
 import { hkdf } from "@noble/hashes/hkdf.js";
+import { hmac } from "@noble/hashes/hmac.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { canonicalJson, hex, hexToBytes, utf8Bytes, type RandomProvider } from "./crypto.js";
 import {
-  CONTENT_KEY_JOIN_PROOF_INFO, CONTENT_KEY_VERSION_DOMAIN, SEALED_BAG_LOCATOR_INFO, SEALED_CHECKPOINT_DOMAIN,
+  CONTENT_KEY_JOIN_PROOF_INFO, CONTENT_KEY_VERSION_DOMAIN, HEADS_NOTE_KEY_INFO, SEALED_BAG_LOCATOR_INFO, SEALED_CHECKPOINT_DOMAIN,
   SEALED_ENTRY_LOCATOR_INFO, SEALED_HAND_OVER_DOMAIN, SEALED_LOCKBOX_CHAIN_DOMAIN, SEALED_LOCKBOX_DOMAIN, SEALED_MANIFEST_DOMAIN, SEALED_MEMORY_IMPORT_DOMAIN,
   SEALED_RECORD_AUTHORSHIP_DOMAIN, SEALED_RESEAL_DOMAIN,
 } from "./domains.js";
@@ -76,6 +77,14 @@ export function bagLocatorOf(foundingKey: ContentKey, bagId: string): BagLocator
 export function entryLocatorOf(key: ContentKey, context: SealContext): string {
   if (readContentKey(key) === null) throw new TypeError("sealed-records: an entry locator derives under a content key");
   return keyed(key, sealedImage(SEALED_ENTRY_LOCATOR_INFO, contextDigest(context)));
+}
+/** A HEADS NOTE's tag: an HMAC over the note's body under a key derived from the version's content key, bound to the
+ *  founding and the version. A hand that holds no content key mints no tag, and a note of one version never reads as
+ *  another's. */
+export function headsNoteTagOf(key: ContentKey, locator: BagLocator, keyVersion: KeyVersionId, body: Uint8Array): string {
+  if (readContentKey(key) === null || readBagLocator(locator) === null || readKeyVersionId(keyVersion) === null) throw new TypeError("sealed-records: a heads note's tag derives under a content key over a founding and a version");
+  const tagKey = hkdf(sha256, key, undefined, sealedImage(HEADS_NOTE_KEY_INFO, utf8Bytes(locator), utf8Bytes(keyVersion)), 32);
+  try { return hex(hmac(sha256, tagKey, body)); } finally { tagKey.fill(0); }
 }
 /** A join's proof that its minter held one parent's key: a keyed digest of the joining version's id. */
 export function joinProofOf(parentKey: ContentKey, joining: KeyVersionId): string {

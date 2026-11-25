@@ -15,7 +15,10 @@ import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { makeCircleReactors, foldMembers, foldMembersDetailed } from "../src/circle-verbs.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
-import { circleTiddlerUri, CIRCLES_INNER, MEMBER_ADD_PREFIX, mutableLarRecord, buildCeremonyTiddlers } from "@lararium/mesh";
+import { circleTiddlerUri, CIRCLES_INNER } from "@lararium/mesh/lar-uris";
+import { MEMBER_ADD_PREFIX } from "@lararium/mesh/social-tiddlers";
+import { mutableLarRecord } from "@lararium/mesh/base-doc";
+import { buildCeremonyTiddlers } from "@lararium/mesh/cold-boot-ceremony";
 
 const CTX = {} as VerbContext;
 const NYM_A = "aa".repeat(32);

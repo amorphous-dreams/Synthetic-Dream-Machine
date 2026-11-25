@@ -4,7 +4,7 @@
  * Every red pairs with a CONTROL. Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
 import { describe, expect, test } from "vitest";
-import { PROMOTE_PANEL_OWNED_VERBS } from "@lararium/mesh";
+import { PROMOTE_PANEL_OWNED_VERBS } from "@lararium/mesh/promote-main-verbs";
 import { VerbTable } from "@lararium/tw5";
 import { registerStoreDoorReactors } from "../src/store-door-registry.js";
 

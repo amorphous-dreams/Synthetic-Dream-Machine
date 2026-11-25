@@ -15,7 +15,7 @@ import { asIslandStore } from "./island-store-double.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { storeMemeSink } from "../src/meme-sinks.js";
 import { placeMeme } from "../src/place-meme.js";
-import type { LarTiddlerChange, ChangeOrigin } from "@lararium/mesh";
+import type { LarTiddlerChange, ChangeOrigin } from "@lararium/mesh/tiddler-store";
 
 const INVENTORY = "backpack: rope, lantern, 3 torches";
 const URI = "lar:///t/npc";

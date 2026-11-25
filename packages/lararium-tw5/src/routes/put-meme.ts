@@ -64,7 +64,7 @@ export const info = { priority: 100 };
 
 export const bodyFormat = "string";
 
-const STATUS = { ingest: 200, noop: 200, conflict: 412, refuse: 422 } as const;
+const STATUS = { ingest: 200, noop: 200, owed: 202, conflict: 412, refuse: 422 } as const;
 
 /** Strip the entity-tag quotes and any weak marker: `W/"abc"` → `abc`. */
 function baseHashOf(header: string | string[] | undefined): string | null {

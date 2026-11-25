@@ -15,7 +15,9 @@
  *   · the READ path is unmoved — a get still reaches the realm doc by access.
  */
 import { describe, test, expect } from "vitest";
-import { CompositeStore, bagUri, type LarTiddlerStore } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { bagUri } from "@lararium/mesh/lar-uris";
+import { type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { makeMemePutReactor, makeMemeGetReactor, type MemeVerbOptions } from "../src/meme-verbs.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";

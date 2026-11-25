@@ -8,7 +8,7 @@
  * bytes: a leg that read short, or read stale, mints a different address.
  */
 import { describe, expect, test } from "vitest";
-import { cidV1Sha256 } from "@lararium/mesh";
+import { cidV1Sha256 } from "@lararium/mesh/crypto";
 
 import { readCasFileBytes, type CasFileHandleLike } from "../src/browser-genesis.js";
 

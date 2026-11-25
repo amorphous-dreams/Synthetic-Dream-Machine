@@ -21,17 +21,17 @@
 import { describe, test, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { sha256HexSync } from "@lararium/mesh";
-import { LARES_MEMETIC_WIKITEXT_PLUGIN } from "../src/plugin-tiddler.generated.js";
+import { sha256HexSync } from "@lararium/mesh/crypto";
+import * as GENERATED from "../src/plugin-tiddler.generated.js";
 import { parseTidFile } from "../plugin-build/tid-file.js";
+import { PLUGIN_SKINS } from "../plugin-build/skins.js";
 
-const TID_TITLE = "$:/plugins/lares/memetic-wikitext";
-
-const tidPath = fileURLToPath(new URL("../plugins/standalone/lares-memetic-wikitext.tid", import.meta.url));
-const attestationPath = fileURLToPath(new URL("../plugins/standalone/lares-memetic-wikitext.attestation.json", import.meta.url));
-
-describe("standalone plugin parity — committed .tid ≡ generated .ts (title + compatibility field swapped)", () => {
-  const lar = LARES_MEMETIC_WIKITEXT_PLUGIN as Record<string, unknown>;
+// Each skin ships its own standalone `.tid` and attestation; each answers the same derivation.
+describe.each(PLUGIN_SKINS.map((skin) => [skin.name, skin] as const))("standalone plugin parity (%s) — committed .tid ≡ generated .ts (title + compatibility field swapped)", (_name, skin) => {
+  const TID_TITLE = skin.tw5Title;
+  const tidPath = fileURLToPath(new URL(`../plugins/standalone/${skin.stem}.tid`, import.meta.url));
+  const attestationPath = fileURLToPath(new URL(`../plugins/standalone/${skin.stem}.attestation.json`, import.meta.url));
+  const lar = (GENERATED as Record<string, unknown>)[skin.exportName] as Record<string, unknown>;
   const parsed = parseTidFile(readFileSync(tidPath, "utf8"), tidPath);
   const attestation = JSON.parse(readFileSync(attestationPath, "utf8")) as Record<string, unknown>;
 

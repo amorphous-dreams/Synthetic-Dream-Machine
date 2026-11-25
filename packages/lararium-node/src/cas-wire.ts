@@ -28,12 +28,18 @@
  */
 
 import {
-  carrierShareDecision, muVoidBytes, verifyCidBytes, cidDigestClass,
-  type MembershipChannel, type MembershipEnvelope,
-  type AntigenRing, type CarriageLog, type FederationGate, type NexusMembership, type PlaneSeal,
-} from "@lararium/mesh";
+  carrierShareDecision,
+  type AntigenRing,
+  type FederationGate,
+  type NexusMembership,
+  type PlaneSeal,
+} from "@lararium/mesh/federation-gate";
+import { muVoidBytes } from "@lararium/mesh/mu-void";
+import { verifyCidBytes, cidDigestClass } from "@lararium/mesh/cas-transit";
+import { type MembershipChannel, type MembershipEnvelope } from "@lararium/mesh/membership-channel";
+import { type CarriageLog } from "@lararium/mesh/carriage-log";
 import type { DocumentId } from "@automerge/automerge-repo";
-import type { ShadowConsult } from "@lararium/mesh";
+import type { ShadowConsult } from "@lararium/mesh/federation-gate";
 import { docIdForCiphertextCid } from "./ciphertext-cas-seal.js";
 import { readVerifiedCasBlobFromFs } from "./node-cas.js";
 

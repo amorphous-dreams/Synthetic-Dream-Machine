@@ -57,7 +57,11 @@ import { appendFileSync, copyFileSync, existsSync, lstatSync, mkdirSync, readFil
 import { randomBytes } from "node:crypto";
 import { basename, dirname, extname, join, relative, resolve, sep } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
-import { wikiBagUri, wikiSlotUri, daemonFaceCanonBag, KAHUA_BAG, defaultChairLabel, declarePersonaHandle, renameOwnPersona, ownPersonaPetname, standForKahuSeat, carrierFormOf, parseShareFile, serializeShareFile, SHARE_CONFIG_FILE, type ShareEntry } from "@lararium/mesh";
+import { wikiBagUri, wikiSlotUri, daemonFaceCanonBag, KAHUA_BAG } from "@lararium/mesh/wiki-recipe";
+import { defaultChairLabel, declarePersonaHandle, standForKahuSeat } from "@lararium/mesh/persona-declare";
+import { renameOwnPersona, ownPersonaPetname } from "@lararium/mesh/persona-petname";
+import { carrierFormOf } from "@lararium/mesh/carrier-form";
+import { parseShareFile, serializeShareFile, SHARE_CONFIG_FILE, type ShareEntry } from "@lararium/mesh/share-config";
 import {
   larHouseRoot, larProjectionsHome, larConfigHome, mirrorDirFileToUri, projectedFileTitle, SyncedTree, TEMP_LAYER_DIR,
   KAPAE_EXT, readKapaeShadow, isPrivateProjectionSlug, loadLaresConfig, tempConsentedSlugs, daemonBagsDir, FACES_PROJECTION_DIR, FACE_PLANES, faceRoot, faceSegmentRefusal,
@@ -71,7 +75,8 @@ import { discoverHoldings, canonIsDisk } from "../holdings.js";
 import { summaryOutput } from "../verb-result.js";
 import { vesselDid, larBagsDir } from "../env.js";
 import { runVerb } from "../verb-call.js";
-import { newChangeId, newRequestId, taskContentId } from "@lararium/mesh";
+import { newChangeId } from "@lararium/mesh/residency-actions";
+import { newRequestId, taskContentId } from "@lararium/mesh/verb-tiddler";
 import { storeVerb, storeFailure } from "../store-door.js";
 import { readPersonaRoots, sealedPetnameStore, sealedDeclarationStore } from "../sealed-records.js";
 import { writeFaceLabels, readFaceBases, labelFaceAtNaming, faceRelationOnStage } from "../face-labels.js";
@@ -83,7 +88,8 @@ import {
 } from "../bundle-manifest.js";
 import { LIVE_SHARE_DOORS, landShares, shareSetArgs, unhandedLine } from "../share-doors.js";
 import { KeepSeatRefused, adoptKeepSeat, isTestRoute, bundleSeatText, keepSeatForCut, liveKeepRoute, openKeepSeat, sealRosterForCut, signCut } from "../keep-seat.js";
-import { verifyKeepCut, type Credential } from "@lararium/mesh";
+import { verifyKeepCut } from "@lararium/mesh/keep-seat-door";
+import { type Credential } from "@lararium/mesh/keyslot-door";
 
 /** A keep seat refusal, as the bundle verbs name it. */
 async function seatAct<T>(act: () => Promise<T>): Promise<T> {

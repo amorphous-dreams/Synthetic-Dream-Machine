@@ -16,7 +16,7 @@
  * keyhive did not accept (a bundle carries more than any one receiver takes) as the honest backstop.
  */
 import { describe, test, expect } from "vitest";
-import { buildDeviceDelegation } from "@lararium/mesh";
+import { buildDeviceDelegation } from "@lararium/mesh/device-delegation";
 import { KeyhiveProvider } from "../src/keyhive-provider.js";
 import { runFaceJoin, type FaceJoinContext } from "../src/face-join.js";
 import { absorbCapEvents } from "../src/daemon-event-store.js";

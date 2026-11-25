@@ -44,9 +44,12 @@ import { createHash } from "node:crypto";
 import { closeSync, fsyncSync, mkdirSync, openSync, readFileSync, renameSync, rmSync, writeSync } from "node:fs";
 import { dirname, join } from "node:path";
 import {
-  SwarmRefused, kukuluVouchDigest, readLei, readLeiChain, signKukuluVouch, swarmLeiUnstrungTitle, swarmTesseraTitle, tesseraOf, verifySwarmRecord,
-  type SignedKukuluVouch, type SwarmRiteBegunBody, type SignedSwarmAct, type SwarmTrust, type SwarmWikiPort, type WardActWitness,
-} from "@lararium/mesh";
+  SwarmRefused, readLei, readLeiChain, swarmLeiUnstrungTitle, swarmTesseraTitle, verifySwarmRecord,
+  type SignedSwarmAct, type SwarmRiteBegunBody, type SwarmTrust, type SwarmWikiPort,
+} from "@lararium/mesh/swarm-tiddlers";
+import { tesseraOf } from "@lararium/mesh/swarm-tessera";
+import { kukuluVouchDigest, signKukuluVouch, type SignedKukuluVouch } from "@lararium/mesh/kukulu-vouch";
+import { type WardActWitness } from "@lararium/mesh/ward-cosign";
 import type { CustodyHolder } from "./custody-holder.js";
 import { vouchSignerOf } from "./kukulu-gate.js";
 import { larConfigHome } from "./vessel-paths.js";

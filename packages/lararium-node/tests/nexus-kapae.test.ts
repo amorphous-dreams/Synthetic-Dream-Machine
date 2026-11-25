@@ -20,7 +20,10 @@ seatSuiteWard();
 import { afterEach, beforeEach, describe, expect } from "vitest";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
-import { hex, kapaeAntigenDocUrl, materializeSharedLarDoc, mutableLarRecord, signAntigenEntry } from "@lararium/mesh";
+import { hex } from "@lararium/mesh/crypto";
+import { kapaeAntigenDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { mutableLarRecord } from "@lararium/mesh/base-doc";
+import { signAntigenEntry } from "@lararium/mesh/kapae-antigen";
 import { Repo } from "@automerge/automerge-repo";
 import { restEvery, restingRepo } from "./resting-repo.js";
 import {

@@ -7,7 +7,7 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
 import { describe, expect, test } from "vitest";
-import { PROMOTE_PANEL_VERBS } from "@lararium/mesh";
+import { PROMOTE_PANEL_VERBS } from "@lararium/mesh/promote-main-verbs";
 import { bootTestWiki, renderWikitext, skipNote, wikiSkip } from "./test-wiki.js";
 import { PROMOTE_PANEL_TITLE, PROMOTE_STATE_TITLE, makePromoteStateReactor, seedPromoteUiTiddlers } from "../src/promote-ui-tiddlers.js";
 

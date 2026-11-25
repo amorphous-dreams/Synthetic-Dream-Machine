@@ -9,7 +9,10 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import { join } from "node:path";
 import { afterEach, describe, expect, test } from "vitest";
 import { repoRoot } from "@lararium/mesh/node";
-import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI, floorMountBlobRows, foundingRecordDigests, signFloorOffering, type GenesisSeed } from "@lararium/mesh";
+import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "@lararium/mesh/lar-uris";
+import { floorMountBlobRows, signFloorOffering } from "@lararium/mesh/floor-offering";
+import { foundingRecordDigests } from "@lararium/mesh/genesis-compare";
+import { type GenesisSeed } from "@lararium/mesh/genesis-doc";
 import { foundingRecordLine, readFoundingRecordTruths } from "../src/genesis-truths.js";
 import { genesisSeedCid, readGenesisSeedBytes } from "../src/genesis-artifact.js";
 
@@ -32,14 +35,14 @@ describe("the founding record beside the seed (offered)", () => {
   test("a founding record laid from the shipped seed reads same on every ratchet against it", () => {
     const line = foundingRecordLine(readFoundingRecordTruths({ record: shipped(), genesisDir: SHIPPED }));
     const cid = genesisSeedCid(readGenesisSeedBytes(SHIPPED)!);
-    expect(line).toMatch(/^\[genesis\] founding record: engine \S+ · grammar \S+ · plugins \S+ · floor \S+/);
+    expect(line).toMatch(/^\[genesis\] founding record: engine \S+ · grammar \S+ · lararium \S+ · plugins \S+ · floor \S+/);
     expect(line).toContain(`seed (offered) ${cid}: same on every ratchet`);
     expect(line).not.toContain("a newer seed waits");
   });
 
   test("CONTROL: a seed whose grammar moved names the newer seed ratchet by ratchet, and says nothing moves", () => {
     const line = foundingRecordLine(readFoundingRecordTruths({ record: shipped(), genesisDir: grammarMovedDir() }));
-    expect(line).toContain("a newer seed waits: engine same · grammar moved · plugins same · floor same");
+    expect(line).toContain("a newer seed waits: engine same · grammar moved · lararium same · plugins same · floor same");
     expect(line).toContain("the founding record keeps serving; lay moves canon, never the founding record");
   });
 
@@ -62,7 +65,7 @@ describe("the founding record beside the seed (offered)", () => {
       record: shipped(), genesisDir: SHIPPED,
       floorPin: { manifestCid: "a".repeat(64), manifest: { engine: record.engine!, plugins: offered.cid }, offering: offered.offering },
     });
-    expect(foundingRecordLine(truths)).toContain(`floor pin ${"a".repeat(64)}: engine same · grammar moved · plugins moved · floor moved`);
+    expect(foundingRecordLine(truths)).toContain(`floor pin ${"a".repeat(64)}: engine same · grammar moved · lararium same · plugins moved · floor moved`);
     // CONTROL: with no pin handed in, the line names the pin unread, never same.
     expect(foundingRecordLine(readFoundingRecordTruths({ record: shipped(), genesisDir: SHIPPED }))).toContain("floor pin: unread here");
   });

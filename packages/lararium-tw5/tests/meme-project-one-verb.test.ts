@@ -7,7 +7,7 @@
  * `meme-project` filter the face's `md` template renders through — with no verb hop out to the host.
  */
 import { describe, test, expect, beforeAll } from "vitest";
-import { CompositeStore } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
 import { registerActionReactors } from "../src/action-handler.js";
 import { VerbTable } from "../src/verb-dispatcher.js";
 import { DAEMON_UI_TIDDLERS, PROJECT_ACTION, PROJECT_STATE_TITLE } from "../src/daemon-ui-tiddlers.js";

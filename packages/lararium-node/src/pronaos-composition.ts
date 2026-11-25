@@ -14,10 +14,7 @@
 import type { Server } from "node:http";
 import type { HttpFaceDispatcher } from "./http-face-dispatcher.js";
 import { readFileSync } from "node:fs";
-import {
-  validatePronaosArtifactRecord,
-  type PronaosArtifactRecord,
-} from "@lararium/mesh";
+import { validatePronaosArtifactRecord, type PronaosArtifactRecord } from "@lararium/mesh/pronaos";
 import {
   type ArrivalMirror,
   type PronaosMount,

@@ -17,7 +17,10 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set
  */
-import { CONTROL_HOME_ID, documentIdOfUrl, tiddlerText, type LarTiddlerStore } from "@lararium/mesh";
+import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
+import { documentIdOfUrl } from "@lararium/mesh/sealed-rest";
+import { tiddlerText } from "@lararium/mesh/base-doc";
+import { type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
 import type { FaceTargetResolver } from "@lararium/tw5";
 
 /** One face of the lit set as the island holds it. */

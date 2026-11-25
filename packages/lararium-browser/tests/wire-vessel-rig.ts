@@ -9,7 +9,7 @@
 import { NetworkAdapter, generateAutomergeUrl, type DocumentId, type PeerId } from "@automerge/automerge-repo";
 import type { PeerMetadata } from "@automerge/automerge-repo";
 import type { CarriedAdmitPayload } from "@lararium/keyhive";
-import type { HearthPinIndex } from "@lararium/mesh";
+import type { HearthPinIndex } from "@lararium/mesh/admit-gate-pin";
 import type { BrowserVesselOptions } from "../src/open-browser-vessel.js";
 
 type SharePolicy = (peerId: PeerId, documentId?: DocumentId) => boolean | Promise<boolean>;

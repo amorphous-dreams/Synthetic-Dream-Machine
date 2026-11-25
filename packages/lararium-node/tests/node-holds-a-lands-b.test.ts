@@ -9,11 +9,19 @@ import type { AutomergeUrl } from "@automerge/automerge-repo";
 import { afterAll, describe, expect, test } from "vitest";
 import { runDeviceAdmitEdge, foundTheFace, foundThePlace } from "@lararium/keyhive";
 import {
-  DAEMON_BAG_ID, DEVICE_DELEGATION_SELF_TIDDLER, HEARTH_TRUE_NAME_TIDDLER,
-  PERSONA_GROUP_ID_TIDDLER, PERSONA_KEL_PREFIX_TIDDLER, SIGNER_DID_TIDDLER,
-  faceAtomKeyFromSeed, makeIslandRepo, materializeSharedLarDoc, personaKelBoardDocUrl,
-  personaKelChainForPrefix, personaScopedBagIds, type LarDoc,
-} from "@lararium/mesh";
+  DAEMON_BAG_ID,
+  DEVICE_DELEGATION_SELF_TIDDLER,
+  HEARTH_TRUE_NAME_TIDDLER,
+  PERSONA_GROUP_ID_TIDDLER,
+  PERSONA_KEL_PREFIX_TIDDLER,
+  SIGNER_DID_TIDDLER,
+} from "@lararium/mesh/lar-uris";
+import { faceAtomKeyFromSeed } from "@lararium/mesh/face-atom";
+import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
+import { materializeSharedLarDoc, personaKelBoardDocUrl } from "@lararium/mesh/deterministic-doc";
+import { personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";
+import { personaScopedBagIds } from "@lararium/mesh/persona-scope";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
 import { runFoundTheFace, runInit } from "../src/commands/init.js";
 import { seatedCustody, unseatCustody } from "../src/custody-seat.js";

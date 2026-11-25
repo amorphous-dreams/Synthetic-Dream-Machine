@@ -28,16 +28,39 @@
  */
 
 import { interpretAsDocumentId, type Repo, type DocHandle, type AutomergeUrl, type DocumentId } from "@automerge/automerge-repo";
+import { materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
+import { tiddlerText, type LarDoc } from "@lararium/mesh/base-doc";
+import { type NexusDoc, nexusAidOf } from "@lararium/mesh/nexus-seal-seed";
+import { type FederationGate, type NexusMembership } from "@lararium/mesh/federation-gate";
+import { type CapTier } from "@lararium/mesh/cap-tier";
 import {
-  materializeSharedLarDoc, storedLarRecord, tiddlerText, type LarDoc,
-  type NexusDoc, type FederationGate, type NexusMembership, type CapTier,
-  REALM_ID_TIDDLER, CABAL_REALM_RE, realmDocPointer, realmStewardPointer, realmStandingPointer,
-  writeRealmStanding, nexusAidOf, realmDocUrl, RealmBagGate,
-  signRealmBagRegistration, proposeRealmBagRegistration, coSignRealmBagRegistration,
-  realmBagRegistrationCounts, writeRealmBagRegistration, realmBagRegistrationsFromDoc, foldRealmBags,
-  realmBagBytes, realmBagSealedBy, stewardSealedHere, hex,
-  writeRealmBagAnnounce, type RealmBagRegistration, type RealmCharterConsult, type StewardSigner,
-  type RealmBagFoldOptions, ownEntry} from "@lararium/mesh";
+  REALM_ID_TIDDLER,
+  CABAL_REALM_RE,
+  realmDocPointer,
+  realmStewardPointer,
+  realmStandingPointer,
+  writeRealmStanding,
+  realmDocUrl,
+  RealmBagGate,
+  signRealmBagRegistration,
+  proposeRealmBagRegistration,
+  coSignRealmBagRegistration,
+  realmBagRegistrationCounts,
+  writeRealmBagRegistration,
+  realmBagRegistrationsFromDoc,
+  foldRealmBags,
+  realmBagBytes,
+  realmBagSealedBy,
+  stewardSealedHere,
+  writeRealmBagAnnounce,
+  type RealmBagRegistration,
+  type RealmCharterConsult,
+  type StewardSigner,
+  type RealmBagFoldOptions,
+} from "@lararium/mesh/realm-bag";
+import { hex } from "@lararium/mesh/crypto";
+import { ownEntry } from "@lararium/mesh/stored-value";
 
 /** Why a seal on this vessel refused. */
 /** One realm the vessel's ledger notes, and the Nexus it stands under there (null where no act named one);

@@ -20,7 +20,7 @@
  */
 import { randomBytes } from "node:crypto";
 import { mkdirSync } from "node:fs";
-import { vesselFaceTagFields, type VesselFaceTagDoor } from "@lararium/mesh";
+import { vesselFaceTagFields, type VesselFaceTagDoor } from "@lararium/mesh/vessel-face-tag";
 import { CustodyRecordUnavailable } from "./custody-holder.js";
 import type { FaceRef } from "./custody-holder.js";
 import { faceStandingCustody, faceWardKeyCustody, moveCustodyRecord, readCustodyRecord, updateCustodyRecord, withWardKeyCustody } from "./custody-seat.js";

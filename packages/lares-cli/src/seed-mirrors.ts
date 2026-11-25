@@ -61,12 +61,12 @@
  */
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { daemonFaceCanonBag, wikiBagUri, wikiSlotUri } from "@lararium/mesh";
+import { daemonFaceCanonBag, wikiBagUri, wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import {
   larProjectionsHome, larConfigHome, isPrivateProjectionSlug, KAPAE_EXT, TEMP_LAYER_DIR, parseTidCarrier, atomicWriteFileSync, daemonBagsDir,
   FACES_PROJECTION_DIR, FACE_PLANES, faceSegmentRefusal, labelledRelations, readFaceLabel, readFaceBases,
   mirrorFiles, siteWaveFile, liveLay as layWave, type MirrorWave, type MirrorLaid, realmFoldersOnDisk } from "@lararium/node";
-import { parseShareFile, type ShareEntry } from "@lararium/mesh";
+import { parseShareFile, type ShareEntry } from "@lararium/mesh/share-config";
 import { LIVE_BUNDLE_DOORS, mountFaceOf, unlockItLine, FACE_LAYER_WAITS, type BundleDoors, type BundleVesselFace } from "./commands/house-bundle.js";
 import { LIVE_SHARE_DOORS, landShares, unhandedLine } from "./share-doors.js";
 import { runVerb } from "./verb-call.js";

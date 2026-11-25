@@ -23,11 +23,15 @@ import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import { Repo, interpretAsDocumentId, type AutomergeUrl, type DocumentId, type PeerId } from "@automerge/automerge-repo";
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
-import * as mesh from "@lararium/mesh";
-import {
-  LARES_DOC_URI, attachMessageChannelSync, emptyLarDoc, hex, protectedDocGuard, shareConfigOf, signRealmBagRegistration,
-  type FederationGate, type LarDoc, type ProtectedDocClass,
-} from "@lararium/mesh";
+import * as mesh from "@lararium/mesh/deterministic-doc";
+import * as islandRepo from "@lararium/mesh/island-repo-door";
+import { LARES_DOC_URI } from "@lararium/mesh/lar-uris";
+import { attachMessageChannelSync } from "@lararium/mesh/island-repo-door";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { hex } from "@lararium/mesh/crypto";
+import { protectedDocGuard, type ProtectedDocClass } from "@lararium/mesh/protected-doc-guard";
+import { shareConfigOf, type FederationGate } from "@lararium/mesh/federation-gate";
+import { signRealmBagRegistration } from "@lararium/mesh/realm-bag";
 import * as kahuRealm from "../src/kahu-realm.js";
 import { kahuProtectedDocIds } from "../src/kahu-realm.js";
 import { selfSlotShareDecision, NO_BANS, NOBODY_ASIDE, NOTHING_CLASSED } from "../src/self-slot-share.js";
@@ -35,7 +39,7 @@ import { selfSlotShareDecision, NO_BANS, NOBODY_ASIDE, NOTHING_CLASSED } from ".
 vi.setConfig({ testTimeout: 60_000 });
 const roots: string[] = [];
 afterAll(() => { for (const r of roots) rmSync(r, { recursive: true, force: true }); });
-const islandPeersOf = (mesh as unknown as { islandPeersOf?: (repo: Repo) => ReadonlySet<string> }).islandPeersOf;
+const islandPeersOf = (islandRepo as unknown as { islandPeersOf?: (repo: Repo) => ReadonlySet<string> }).islandPeersOf;
 type Holder = { ids(): ReadonlyMap<string, ProtectedDocClass>; recount(): Promise<void>; settled(): Promise<void>; close(): void };
 const holderOf = (kahuRealm as unknown as { kahuProtectedHolder?: (o: { sealHome: string; canon: () => object }) => Holder }).kahuProtectedHolder;
 const keepKahu = (kahuRealm as unknown as { keepKahuRegistration?: (sealHome: string, rec: unknown) => void }).keepKahuRegistration;

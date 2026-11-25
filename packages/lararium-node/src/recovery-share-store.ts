@@ -22,7 +22,8 @@
  */
 
 import { join } from "node:path";
-import type { RecoveryShare, CustodianTag, RecoveryShareStore } from "@lararium/mesh";
+import type { RecoveryShare, CustodianTag } from "@lararium/mesh/recovery-share";
+import type { RecoveryShareStore } from "@lararium/mesh/recovery-keel-core";
 import { CustodyRecordUnavailable } from "./custody-holder.js";
 import { updateColdCustodyRecord } from "./custody-seat.js";
 import { larIdentityDir } from "./vessel-paths.js";

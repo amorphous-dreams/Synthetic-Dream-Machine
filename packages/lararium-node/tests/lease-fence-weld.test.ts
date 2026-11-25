@@ -1,8 +1,11 @@
 /** The realm admission fence reads signed quorum advances on the daemon board, apart from the feed. */
 import { describe, it, expect, afterEach } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
-import { emptyLarDoc, charterHandLineage, leaseEpochPrefix, leaseEpochSlotUri, storedLarRecord,
-  realmMaintenanceFromBoard, realmFeedWrite, type LarDoc } from "@lararium/mesh";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { charterHandLineage } from "@lararium/mesh/charter-hand-lineage";
+import { leaseEpochPrefix, leaseEpochSlotUri } from "@lararium/mesh/epoch-lease";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
+import { realmMaintenanceFromBoard, realmFeedWrite } from "@lararium/mesh/cabal-realm-clock";
 import { seatedCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { rollQuorumLeaseOnBoard } from "../src/lease-rekey.js";
 import { cabalAdmissionEpoch } from "../src/commands/cabal-join.js";

@@ -24,6 +24,7 @@ export const ENTRIES = [
     { rule: 'allowed', file: 'packages/lararium-browser/src/browser-vessel-identity.ts', match: 'loadBrowserSigningSeed', count: 2, reason: 'The browser keystore reader and its one consumer inside the key door: the place KEL inception. The vessel key signs no face act: the veil-lift link takes its signature from the face atom.' },
   { rule: 'allowed', file: 'packages/lararium-mesh/src/gate-bundle.ts', match: 'floorKeyDoor', count: 1, reason: 'The mesh floor derivation adapter.' },
   { rule: 'allowed', file: 'packages/lararium-mesh/src/index.ts', match: 'floorKeyDoor', count: 1, reason: 'The mesh barrel exposes the floor adapter.' },
+  { rule: 'allowed', file: 'packages/lararium-mesh/src/gate-bundle-door.ts', match: 'floorKeyDoor', count: 1, reason: 'The gate bundle door lends the barrel\'s names on a subpath, the floor adapter among them.' },
   { rule: 'allowed', file: 'packages/lararium-mesh/src/place-signer.ts', match: 'placeSignerFromSeed', count: 1, reason: 'The scoped five-duty place signer.' },
   { rule: 'allowed', file: 'packages/lararium-node/src/index.ts', match: 'vesselFloorKeyDoor', count: 1, reason: 'The node barrel exposes the scoped floor door.' },
   { rule: 'allowed', file: 'packages/lararium-node/src/main.ts', match: 'vesselFloorKeyDoor', count: 2, reason: 'The main floor pin uses the scoped floor door.' },

@@ -26,6 +26,13 @@
  * again where the lend holds it standing lit; otherwise the line names why and the composition names its own daemon mount
  * as a pūlama that heard no wear leaves it. A remembered face never refuses the boot.
  *
+ * ONE COMPOSITION PER RAISE. A kūkulu that restands or relights the pūlama clears that memory, while the house still keeps
+ * the face last worn: the host shim writes `config/last-worn-face` in the house's config home, which the vessel sees
+ * through its config bind, and the dial reads that same file. Where the pūlama remembers none, the dial wears the house's face from the FIRST
+ * composition, under the same lend checks, so the shim's census reads it worn and sends no wear that would tear the
+ * composition down and stand it again. The pūlama's own memory outranks the house's: it heard a later wear. The order rides
+ * the events (the session's lend, then the one composition); no clock decides it.
+ *
  * When the session drops (the pūlama locked, its process ended, the socket went), the vessel composes at the floor.
  *
  * The stand-by keeps why its last dial stood no session (`waits()`): a composition the vessel refused over a session reads
@@ -33,6 +40,7 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
  */
 import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { mountedFaceOrdinal, setMountedFace } from "./node-vessel-identity.js";
 import { makePulamaHolder, type PulamaHolder } from "./pulama-holder.js";
 import { dialPulama } from "./pulama-socket.js";
@@ -40,6 +48,16 @@ import type { CustodyHomes } from "./vault-carriers.js";
 
 export const PULAMA_SOCKET_ENV = "LAR_PULAMA_SOCKET";
 export const KUKULU_OFFER_ENV = "LAR_KUKULU_OFFER";
+/** The file in the house's config home where the host shim keeps the face last worn (one ordinal). */
+export const HOUSE_WORN_FACE_FILE = "last-worn-face";
+
+/** The face the house last wore, read from `<configHome>/last-worn-face`; an unreadable file, or one holding no ordinal, names none. */
+export function readHouseWornFace(configHome: () => string): number | undefined {
+  try {
+    const raw = readFileSync(join(configHome(), HOUSE_WORN_FACE_FILE), "utf8").trim();
+    return /^[0-9]+$/.test(raw) ? Number(raw) : undefined;
+  } catch { return undefined; }
+}
 
 /** What the kūkulu wears, read from the offer file; an unset name or an unreadable file offers nothing. */
 export function readKukuluOffer(path: string | undefined): unknown {
@@ -80,6 +98,8 @@ export function pulamaStandBy(a: {
   readonly onLog: (line: string) => void;
   /** Remove the offer this vessel just spent; answers whether a file went. Absent, the offer stays where it rests. */
   readonly consumeOffer?: () => boolean;
+  /** The face the house last wore (`readHouseWornFace` over the config home), read at each dial; absent, the house names none. */
+  readonly houseWorn?: () => number | undefined;
 }): { dial(): Promise<PulamaStandingBy>; waits(): string | null; goodbye(): Promise<boolean> } {
   let leaving = false;
   /** Why the last dial stood no session (`composition-refused` among the pūlama's own readings); null while a session stands. */
@@ -89,17 +109,21 @@ export function pulamaStandBy(a: {
     a.onLog("the pūlama session dropped; composing at the floor");
     a.recompose(false).catch((err: unknown) => a.onLog(`the floor did not compose after the session dropped: ${err instanceof Error ? err.message : String(err)}`));
   });
-  /** Wear the face the pūlama remembers, where this vessel names no mount and the lend holds that face lit; answers whether it did. */
+  /** Wear the face the pūlama remembers (else the face the house remembers), where this vessel names no mount and the lend
+   *  holds that face lit; answers whether it did. */
   const rewearRemembered = (): boolean => {
-    const remembered = a.holder.worn();
-    if (remembered === undefined || mountedFaceOrdinal() !== undefined) return false;
+    if (mountedFaceOrdinal() !== undefined) return false;
+    const kept = a.holder.worn();
+    const remembered = kept ?? a.houseWorn?.();
+    if (remembered === undefined) return false;
+    const who = kept !== undefined ? "the pūlama" : "the house";
     const lends = a.holder.lends(), waiting = a.holder.waiting();
     if (!lends.includes(remembered) || waiting.includes(remembered)) {
-      a.onLog(`the pūlama remembers h${remembered} worn, but ${lends.includes(remembered) ? "it waits dark in the lend" : `it stands outside the lent set (${lends.map((o) => `h${o}`).join(", ")})`}; the daemon mount falls to the lowest face served`);
+      a.onLog(`${who} remembers h${remembered} worn, but ${lends.includes(remembered) ? "it waits dark in the lend" : `it stands outside the lent set (${lends.map((o) => `h${o}`).join(", ")})`}; the daemon mount falls to the lowest face served`);
       return false;
     }
     setMountedFace(remembered);
-    a.onLog(`the pūlama remembers h${remembered} worn; wearing it again`);
+    a.onLog(kept !== undefined ? `the pūlama remembers h${remembered} worn; wearing it again` : `the house remembers h${remembered} worn and the pūlama none; wearing it from the first composition`);
     return true;
   };
   // ONE DIAL AT A TIME: a second caller waits on the dial in flight, so nobody reads a session the composition has yet to stand on.

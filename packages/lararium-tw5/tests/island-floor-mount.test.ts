@@ -1,9 +1,10 @@
 import { describe, expect, test } from "vitest";
 import { buildIslandRecipe } from "../src/island-recipe.js";
-import {
-  CompositeStore, ORACLE_BAG, wikiSlotUri,
-  type DocHandle, type LarDoc, type LarTiddlerRecord,
-} from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { ORACLE_BAG, wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import { type DocHandle } from "@lararium/mesh/automerge";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import type { TW5Engine } from "../src/tw5-vm.js";
 
 const title = "lar:///ha.ka.ba/lares/api/floor-carrier";

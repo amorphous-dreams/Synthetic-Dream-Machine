@@ -13,7 +13,7 @@
  *            unregistered on the grantee
  */
 import { describe, expect, test } from "vitest";
-import { bagUri } from "@lararium/mesh";
+import { bagUri } from "@lararium/mesh/lar-uris";
 import { InMemoryEventStore, KeyhiveProvider, registerBagsDurably, type BagDocLedger } from "../src/index.js";
 import { grantShare } from "../src/share-grant.js";
 

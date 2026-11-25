@@ -7,7 +7,10 @@
  * The rotation leg (a new S key re-seals the same root) reads in `custody-session.test.ts`.
  */
 import { afterEach, describe, expect, test } from "vitest";
-import { FLOOR_REST_KEY_INFO, GATE_BUNDLE_INFO, floorRestKey, mintSecretHomeAddress, type SlotSpec } from "@lararium/mesh";
+import { FLOOR_REST_KEY_INFO, GATE_BUNDLE_INFO } from "@lararium/mesh/domains";
+import { floorRestKey } from "@lararium/mesh/held-rest-key";
+import { mintSecretHomeAddress } from "@lararium/mesh/secret-home";
+import { type SlotSpec } from "@lararium/mesh/keyslot-door";
 import { CustodyLocked } from "../src/custody-holder.js";
 import { CustodyRootRefused } from "../src/custody-root.js";
 import { custodyFloorKeyDoor, custodyGateDoor, unseatCustody } from "../src/custody-seat.js";

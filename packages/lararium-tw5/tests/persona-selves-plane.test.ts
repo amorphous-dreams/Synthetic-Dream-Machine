@@ -17,7 +17,8 @@
 import { describe, expect, test } from "vitest";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { readPersonaSelves, writePersonaSelfName } from "../src/persona-selves-plane.js";
-import { personaSelfTiddlerUri, PERSONA_NAMESPACE, mutableLarRecord } from "@lararium/mesh";
+import { personaSelfTiddlerUri, PERSONA_NAMESPACE } from "@lararium/mesh/lar-uris";
+import { mutableLarRecord } from "@lararium/mesh/base-doc";
 
 const store = (): MemoryTiddlerStore => new MemoryTiddlerStore(PERSONA_NAMESPACE);
 const fieldsOf = async (s: MemoryTiddlerStore, handleIndex: number): Promise<Record<string, unknown>> =>

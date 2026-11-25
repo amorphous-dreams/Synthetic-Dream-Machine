@@ -12,9 +12,14 @@
  */
 
 import {
-  splitToShares, assembleQuorum, reconstructFromQuorum,
-  encodeShareBytes, decodeShareBytes, type RecoveryShare, type CustodianTag,
-} from "@lararium/mesh";
+  splitToShares,
+  assembleQuorum,
+  reconstructFromQuorum,
+  encodeShareBytes,
+  decodeShareBytes,
+  type RecoveryShare,
+  type CustodianTag,
+} from "@lararium/mesh/recovery-share";
 import { envOf, ProbeVolume, runProbeRole } from "./probe-ceremony.js";
 
 const SHARED = envOf("LAR_KAHU_SHARED");

@@ -8,7 +8,7 @@ seatSuiteWard();
 import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, test } from "vitest";
-import { HandleBook } from "@lararium/mesh";
+import { HandleBook } from "@lararium/mesh/handle-book";
 import { generateOrLoadPersonaGroupRoot, listPersonaRoots, makeNodePersonaPetnameStore } from "../src/node-vessel-identity.js";
 import { FaceNotNamed, resolveFace } from "../src/face-selector.js";
 import { loadNodeHandleBook, saveNodeHandleBook, handleBookFile } from "../src/node-circle-store.js";

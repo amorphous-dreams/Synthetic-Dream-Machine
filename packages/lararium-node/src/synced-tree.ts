@@ -57,7 +57,8 @@
 import { readFileSync, writeFileSync, renameSync, mkdirSync, readdirSync, unlinkSync, statSync } from "fs";
 import { join, resolve, sep } from "path";
 import { randomBytes } from "crypto";
-import { tagDigest, formatDigest, sha256HexSync } from "@lararium/mesh";
+import { tagDigest, formatDigest } from "@lararium/mesh/agile-digest";
+import { sha256HexSync } from "@lararium/mesh/crypto";
 
 /** A text's tagged sha256 digest (`sha256:<hex>`) — the body-only hash the projector's byte-skip compares. */
 export function contentHash(text: string): string {

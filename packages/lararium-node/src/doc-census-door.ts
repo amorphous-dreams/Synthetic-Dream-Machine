@@ -14,7 +14,16 @@
  */
 import { readdirSync, readFileSync, statSync, type Stats } from "node:fs";
 import { join } from "node:path";
-import { capMintsAll, censusDocuments, decodeChunks, derivedDocAddresses, type DocCensusReading, type DocContent, type DocRef, type StoreDocRow } from "@lararium/mesh";
+import { capMintsAll } from "@lararium/mesh/mint-census";
+import {
+  censusDocuments,
+  decodeChunks,
+  type DocCensusReading,
+  type DocContent,
+  type DocRef,
+  type StoreDocRow,
+} from "@lararium/mesh/doc-census";
+import { derivedDocAddresses } from "@lararium/mesh/deterministic-doc";
 
 /** The root store's name in every census row. */
 export const ROOT_STORE = "(root)";

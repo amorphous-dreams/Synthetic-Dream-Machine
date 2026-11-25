@@ -7,10 +7,11 @@
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-records (the lockbox)
  */
 import { describe, expect, test } from "vitest";
-import {
-  bagLocatorOf, encodeKeyParcel, encodeLockboxRecord, hex, keyVersionIdOf, mintContentKey, openLockbox, readKeyParcel, signRecord, wrapLockbox,
-  type KeyParcel, type KeyVersionId, type LockboxRecord, type RecordSigner, type SealedRecord,
-} from "@lararium/mesh";
+import { bagLocatorOf, signRecord, type LockboxRecord, type RecordSigner, type SealedRecord } from "@lararium/mesh/sealed-records";
+import { encodeKeyParcel, openLockbox, readKeyParcel, wrapLockbox, type KeyParcel } from "@lararium/mesh/lockbox-wrap";
+import { encodeLockboxRecord } from "@lararium/mesh/sealed-store-rest";
+import { hex } from "@lararium/mesh/crypto";
+import { keyVersionIdOf, mintContentKey, type KeyVersionId } from "@lararium/mesh/sealed-chunk-door";
 import { InMemoryEventStore, KeyhiveProvider, encodeLockboxBox, keyhiveLockboxShore, memoryProviderChunkRest, readLockboxBox, type LockboxProvider } from "../src/index.js";
 import { sessionSignatureImage } from "../../lararium-mesh/src/face-proof-subjects.js";
 import { chain, signHex } from "../../lararium-mesh/tests/face-proof-fixture.js";
@@ -49,7 +50,9 @@ describe("the box holds a wrap document's id and a ciphertext, and nothing else"
     const sound = encodeLockboxBox(id(1), new Uint8Array([7]));
     expect(readLockboxBox(sound)).toEqual({ docIdHex: id(1), ciphertext: new Uint8Array([7]) });
     // The same image with its ciphertext field emptied: decode the box, rebuild it by hand, assert the bytes moved.
-    const { sealedImage, SEALED_LOCKBOX_BOX_DOMAIN, hexToBytes } = await import("@lararium/mesh");
+    const { sealedImage } = await import("@lararium/mesh/sealed-chunk-door");
+    const { SEALED_LOCKBOX_BOX_DOMAIN } = await import("@lararium/mesh/domains");
+    const { hexToBytes } = await import("@lararium/mesh/crypto");
     const emptied = sealedImage(SEALED_LOCKBOX_BOX_DOMAIN, hexToBytes(id(1).slice(2)), new Uint8Array(0));
     expect(hex(emptied)).not.toBe(hex(sound));
     expect(readLockboxBox(emptied)).toBeNull();
@@ -130,7 +133,7 @@ describe("a lockbox that reads malformed opens nothing", () => {
   });
 
   test("A BOX MOVED UNDER ANOTHER VERSION'S CLEAR PART REFUSES `lockbox-other-version`: two versions of one bag under ONE locator", async () => {
-    const { encodeLockboxPayload } = await import("@lararium/mesh");
+    const { encodeLockboxPayload } = await import("@lararium/mesh/sealed-records");
     const founding = mintContentKey(), next = mintContentKey();
     const locator = bagLocatorOf(founding, BAG);
     const one = { bagId: BAG, locator, keyVersion: keyVersionIdOf(founding, BAG), key: founding };
@@ -211,7 +214,9 @@ describe("a key parcel binds its lockbox to its record", () => {
     // A manifest in the record's slot.
     const c = await chain("guards", "nexus-test-one");
     void c;
-    const { encodeCarriedRecord, sealedImage, SEALED_KEY_PARCEL_DOMAIN } = await import("@lararium/mesh");
+    const { encodeCarriedRecord } = await import("@lararium/mesh/sealed-store-rest");
+    const { sealedImage } = await import("@lararium/mesh/sealed-chunk-door");
+    const { SEALED_KEY_PARCEL_DOMAIN } = await import("@lararium/mesh/domains");
     const manifestish = { kind: "manifest" as const, body: { bag: one.lockbox.bag, keyVersion: one.keyVersion, parents: [], entries: [{ role: "blob" as const, address: `blake3:${"ab".repeat(32)}`, locator: "cd".repeat(32), parents: [] }] }, sealed: new Uint8Array([1]) };
     const wrongKind = sealedImage(SEALED_KEY_PARCEL_DOMAIN, encodeLockboxRecord(one.lockbox), encodeCarriedRecord(manifestish as never), sealedImage(""));
     expect(readKeyParcel(wrongKind)).toBeNull();

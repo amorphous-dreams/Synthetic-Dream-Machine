@@ -8,7 +8,8 @@
  * ask on a user bag never consult the source.
  */
 import { describe, test, expect } from "vitest";
-import { BAG_IDS, bagUri, type CapabilityVerifier } from "@lararium/mesh";
+import { BAG_IDS, bagUri } from "@lararium/mesh/lar-uris";
+import { type CapabilityVerifier } from "@lararium/mesh/capability";
 import { withKahuReach } from "../src/kahu-reach-source.js";
 import { kahuHand, strangerHand } from "../../lararium-mesh/tests/kahu-reach-fixture.js";
 

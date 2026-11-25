@@ -31,10 +31,13 @@ import { seatSuiteWard } from "./support/scratch-custody-setup.js";
 seatSuiteWard();
 import { afterEach, beforeEach, describe, expect } from "vitest";
 import { join } from "node:path";
-import {
-  DAEMON_BAG_ID, edgeKapaeActsFromBoard, edgeLedgerDocUrl, ledgerRealmNexus, materializeSharedLarDoc, memberEdgeId,
-  nexusAidOf, realmEdgeBoardDocUrl, seedDaemonDoc, signEdgeKapae, writeEdgeKapae, type NexusDoc,
-} from "@lararium/mesh";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { edgeKapaeActsFromBoard, signEdgeKapae, writeEdgeKapae } from "@lararium/mesh/edge-kapae";
+import { edgeLedgerDocUrl, materializeSharedLarDoc, realmEdgeBoardDocUrl } from "@lararium/mesh/deterministic-doc";
+import { ledgerRealmNexus } from "@lararium/mesh/edge-ledger";
+import { memberEdgeId } from "@lararium/mesh/realm-edges";
+import { nexusAidOf, type NexusDoc } from "@lararium/mesh/nexus-seal-seed";
+import { seedDaemonDoc } from "@lararium/mesh/social-seed";
 import { restEvery, restingRepo } from "./resting-repo.js";
 import {
   generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey,
@@ -219,13 +222,14 @@ describe("a realm stands under one Nexus", () => {
     await primaryQuorumSetsAside(REALM);
     // Keep the hand-written act in the ledger as a count under the primary would (the pre-reading's shape).
     await ownedStore(larDataDir(), async (repo) => {
-      const { keepInLedger, edgeKapaeActsFromBoard: acts } = await import("@lararium/mesh");
+      const { keepInLedger } = await import("@lararium/mesh/edge-ledger");
+      const { edgeKapaeActsFromBoard: acts } = await import("@lararium/mesh/edge-kapae");
       const board = await materializeSharedLarDoc(repo, realmEdgeBoardDocUrl(REALM), "board:edge-kapae");
       const ledger = await materializeSharedLarDoc(repo, edgeLedgerDocUrl(await vesselKey()), "ledger:edge");
       ledger.change((d) => { keepInLedger(d, REALM, { acts: acts(board.doc()), anchors: [] }); });
       await repo.flush();
     });
-    const { foundingRoster } = await import("@lararium/mesh");
+    const { foundingRoster } = await import("@lararium/mesh/nexus-seal-seed");
     const closing = foundingRoster(primary.doc);
     const opened = await rolling.roll((await seatChairs([0], { generation: 1 })).hands);
     const anchored = await direct(runEdgeRollAnchors)({ face: F, closing, opened: opened.roster, openedEpoch: opened.head });
@@ -236,7 +240,8 @@ describe("a realm stands under one Nexus", () => {
     await primaryQuorumSetsAside(REALM);
     // Two replicas of the ledger that each pinned a different Nexus, merged: both pins rest side by side.
     await ownedStore(larDataDir(), async (repo) => {
-      const { noteRealm, EDGE_LEDGER_PREFIX, storedLarRecord } = await import("@lararium/mesh");
+      const { noteRealm, EDGE_LEDGER_PREFIX } = await import("@lararium/mesh/edge-ledger");
+      const { storedLarRecord } = await import("@lararium/mesh/stored-record");
       const ledger = await materializeSharedLarDoc(repo, edgeLedgerDocUrl(await vesselKey()), "ledger:edge");
       ledger.change((d) => {
         noteRealm(d, REALM, primary.aid);

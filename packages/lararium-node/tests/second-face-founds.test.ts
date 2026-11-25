@@ -20,12 +20,17 @@ import { describe, test, expect } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import { foundThePlace, foundTheFace } from "@lararium/keyhive";
 import * as ed25519 from "@noble/ed25519";
+import { hex } from "@lararium/mesh/crypto";
+import { tiddlerText, type LarDoc } from "@lararium/mesh/base-doc";
+import { personaScopedBagIds } from "@lararium/mesh/persona-scope";
+import { personaMembershipEntries, readPersonaPlanes, type PlaneEntry } from "@lararium/mesh/persona-planes";
 import {
-  hex, tiddlerText, type LarDoc,
-  personaScopedBagIds, personaMembershipEntries, readPersonaPlanes, type PlaneEntry,
-  PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER, PERSONA_KEL_PREFIX_TIDDLER,
-  SIGNER_DID_TIDDLER, DEVICE_DELEGATION_SELF_TIDDLER,
-} from "@lararium/mesh";
+  PERSONA_GROUP_ID_TIDDLER,
+  MESH_CABAL_DOC_ID_TIDDLER,
+  PERSONA_KEL_PREFIX_TIDDLER,
+  SIGNER_DID_TIDDLER,
+  DEVICE_DELEGATION_SELF_TIDDLER,
+} from "@lararium/mesh/lar-uris";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 import { memorySecretHome, withMemorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";
 

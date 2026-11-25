@@ -7,7 +7,7 @@
  */
 import { describe, expect, test } from "vitest";
 import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "../src/ed25519-door.js";
-import { beginRite, conferre, landRite, pendingBegins, riteReceipts, tesseraOf } from "../src/swarm-tessera.js";
+import { abandonRite, beginRite, conferre, landRite, pendingBegins, riteReceipts, tesseraOf } from "../src/swarm-tessera.js";
 import {
   checkReturn, claimReturn, putSwarmAct, readSwarmRecord, signSwarmAct, swarmActCid, swarmLeiReturnedTitle, swarmLeiRecordTitle, swarmTesseraTitle,
   type SwarmBodyParts, type SwarmWikiPort,
@@ -80,7 +80,7 @@ describe("rite-landed-names-begun", () => {
     const host = await readSwarmRecord(f.wiki, swarmTesseraTitle(begun.tessera, "host"), f.trust, GROUP);
     expect(host).toMatchObject({ ok: true, cid: landed.landed, act: { signer: f.vessel.key, body: { act: "rite-landed", rite: "kukulu", tessera: begun.tessera, begun: begun.begun, head: HEAD } } });
     await expect(f.land(begun.tessera)).rejects.toMatchObject({ code: "rite-already-landed" });
-    expect(await conferre(f.wiki, f.trust, GROUP)).toEqual({ par: [{ tessera: begun.tessera, rite: "kukulu", begun: begun.begun, landed: landed.landed, branch: BRANCH, head: HEAD, par: true }], red: [] });
+    expect(await conferre(f.wiki, f.trust, GROUP)).toEqual({ par: [{ tessera: begun.tessera, rite: "kukulu", begun: begun.begun, landed: landed.landed, branch: BRANCH, head: HEAD, par: true }], red: [], abandoned: [] });
   });
 });
 
@@ -224,5 +224,64 @@ describe("RED rite-land-reads-the-begun-half", () => {
     const host = await readSwarmRecord(f.wiki, swarmTesseraTitle(one.tessera, "host"), f.trust, GROUP);
     expect(host).toMatchObject({ ok: true, act: { body: { head: HEAD, image: D1 } } });
     expect((await conferre(f.wiki, f.trust, GROUP)).red).toEqual([]);
+  });
+});
+
+/**
+ * A BEGUN RITE SETS DOWN (ruling 2026-11-25, the abandon verb; the kāpae shape): a stale begun half (a tag-moved one) clears
+ * honestly by the hand's abandon, never by a hand landing that records par over an image the vessel never ran. The mark rests
+ * beside the half (a tombstone, never a delete), names the hand that set it down, spends no return, writes no host half, and frees
+ * the line for a fresh begin. Conferre and the receipts read it `abandoned`, never red `landed-absent`, never par.
+ */
+describe("a-begun-rite-sets-down", () => {
+  const D1 = "sha256:" + "d1".repeat(32);
+
+  test("RED: the hand sets down a stale half: the mark rests beside it naming the guest cid and the hand, no return spends, no host half rests, a landing after refuses `rite-abandoned`; CONTROL: conferre and the receipts read it abandoned, the debt passes it, and a fresh begin proceeds", async () => {
+    const f = await fixture();
+    const cid = await f.kui("kukulu", { reach: "wide", returns: 3 });
+    const stale = await beginRite(f.wiki, { rite: "kukulu", branch: BRANCH, head: HEAD, tree: TREE, image: D1 }, f.trust, GROUP, f.vessel, ONE_DEVICE);
+    const returned = () => [...f.rows.keys()].filter((t) => t.includes("lei-returned")).length;
+    const spent = returned();
+    const down = await abandonRite(f.wiki, { tessera: stale.tessera }, f.trust, GROUP, f.vessel);
+    expect(down).toMatchObject({ tessera: stale.tessera, rite: "kukulu", begun: stale.begun, by: "hand" });
+    const mark = await readSwarmRecord(f.wiki, swarmTesseraTitle(stale.tessera, "abandoned"), f.trust, GROUP);
+    expect(mark).toMatchObject({ ok: true, cid: down.abandoned, act: { signer: f.vessel.key, body: { act: "rite-abandoned", rite: "kukulu", branch: BRANCH, tessera: stale.tessera, begun: stale.begun, by: "hand" } } });
+    // THE TOMBSTONE KEEPS THE HALF: the guest half still rests, and nothing spent.
+    expect(f.rows.has(swarmTesseraTitle(stale.tessera, "guest"))).toBe(true);
+    expect(f.rows.has(swarmTesseraTitle(stale.tessera, "host"))).toBe(false);
+    expect(returned()).toBe(spent);
+    // NO PAR RECORDS OVER IT: the hand cure finds the half set down.
+    await expect(landRite(f.wiki, { tessera: stale.tessera, head: HEAD, image: D1 }, f.trust, GROUP, f.vessel)).rejects.toMatchObject({ code: "rite-abandoned" });
+    expect(f.rows.has(swarmTesseraTitle(stale.tessera, "host"))).toBe(false);
+    const read = await conferre(f.wiki, f.trust, GROUP);
+    expect(read).toEqual({ par: [], red: [], abandoned: [{ tessera: stale.tessera, rite: "kukulu", begun: stale.begun, landed: null, abandoned: down.abandoned, branch: BRANCH, head: HEAD, image: D1, par: false }] });
+    expect((await riteReceipts(f.wiki, f.trust, GROUP)).map((r) => r.act).sort()).toEqual(["rite-abandoned", "rite-begun"]);
+    expect(await pendingBegins(f.wiki, "kukulu", BRANCH)).toEqual([]);
+    // THE FACE BEGINS FRESH: a new begin takes the next return and lands par.
+    const fresh = await f.begin();
+    expect([fresh.lei, fresh.n]).toEqual([cid, 2]);
+    expect((await f.land(fresh.tessera)).par).toBe(true);
+  });
+
+  test("RED: an abandon over no begun half, over a landed half, a second abandon, and one a non-vessel key signs each refuse by name and rest no mark; CONTROL: a mark another key signed, or one over another guest, ends no debt", async () => {
+    const f = await fixture();
+    await f.kui("kukulu", { reach: "wide", returns: 3 });
+    await expect(abandonRite(f.wiki, { tessera: "9".repeat(64) }, f.trust, GROUP, f.vessel)).rejects.toMatchObject({ code: "rite-begun-absent" });
+    const landed = await f.begin(), open = await f.begin(HEAD2), other = await f.begin(HEAD2);
+    await f.land(landed.tessera);
+    await expect(abandonRite(f.wiki, { tessera: landed.tessera }, f.trust, GROUP, f.vessel)).rejects.toMatchObject({ code: "rite-already-landed" });
+    await expect(abandonRite(f.wiki, { tessera: open.tessera }, f.trust, GROUP, f.outsider)).rejects.toMatchObject({ code: "rite-abandon-role" });
+    expect(f.rows.has(swarmTesseraTitle(landed.tessera, "abandoned")) || f.rows.has(swarmTesseraTitle(open.tessera, "abandoned"))).toBe(false);
+    // A FORGED MARK ends nothing: the outsider's, and the vessel's mark over another guest.
+    f.rows.set(swarmTesseraTitle(open.tessera, "abandoned"), JSON.stringify(await signSwarmAct({ act: "rite-abandoned", group: GROUP, rite: "kukulu", branch: BRANCH, tessera: open.tessera, begun: open.begun, by: "hand" }, f.outsider)));
+    f.rows.set(swarmTesseraTitle(other.tessera, "abandoned"), JSON.stringify(await signSwarmAct({ act: "rite-abandoned", group: GROUP, rite: "kukulu", branch: BRANCH, tessera: other.tessera, begun: open.begun, by: "hand" }, f.vessel)));
+    expect((await pendingBegins(f.wiki, "kukulu", BRANCH)).map((p) => p.tessera).sort()).toEqual([open.tessera, other.tessera].sort());
+    const read = await conferre(f.wiki, f.trust, GROUP);
+    expect(read.abandoned).toEqual([]);
+    expect(read.red.filter((r) => r.red === "landed-absent").map((r) => r.tessera).sort()).toEqual([open.tessera, other.tessera].sort());
+    // THE HAND'S TRUE MARK takes the slot a forged one holds; a second abandon refuses.
+    await abandonRite(f.wiki, { tessera: open.tessera }, f.trust, GROUP, f.vessel);
+    await expect(abandonRite(f.wiki, { tessera: open.tessera }, f.trust, GROUP, f.vessel)).rejects.toMatchObject({ code: "rite-already-abandoned" });
+    expect((await pendingBegins(f.wiki, "kukulu", BRANCH)).map((p) => p.tessera)).toEqual([other.tessera]);
   });
 });

@@ -9,10 +9,18 @@
  */
 import { describe, test, expect, beforeAll } from "vitest";
 import { createRequire } from "node:module";
-import {
-  AutomergeDocStore, CompositeStore, bagUri, emptyLarDoc, isEffectRecordUri, isVerbRefusal, recipeUri, wikiSlotUri,
-  type CapabilityAccess, type CapabilityVerifyResult, type LarDoc, type LarTiddlerRecord, type LarTiddlerStore, type Repo as RepoType, type Verb, type VerbContext,
-} from "@lararium/mesh";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { bagUri, recipeUri } from "@lararium/mesh/lar-uris";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { isEffectRecordUri } from "@lararium/mesh/effect-record";
+import { isVerbRefusal } from "@lararium/mesh/verb-refusal";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import { type CapabilityAccess, type CapabilityVerifyResult } from "@lararium/mesh/capability";
+import { type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
+import { type Repo as RepoType } from "@lararium/mesh/automerge";
+import { type Verb } from "@lararium/mesh/verb-tiddler";
+import { type VerbContext } from "../src/verb-dispatcher.js";
 import { carrierHash } from "@lararium/mesh/crypto";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { makeMemePutReactor, makeMemeGetReactor, makeMemeDeleteReactor, type MemeVerbOptions } from "../src/meme-verbs.js";

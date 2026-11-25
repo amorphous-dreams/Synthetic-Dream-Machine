@@ -21,7 +21,7 @@
  */
 import { describe, it, expect } from "vitest";
 import { foreignSeats } from "../src/seal-import.js";
-import { seatFingerprint } from "@lararium/mesh";
+import { seatFingerprint } from "@lararium/mesh/nexus-seal-seed";
 
 const held = ["aa".repeat(32), "bb".repeat(32), "cc".repeat(32)];
 

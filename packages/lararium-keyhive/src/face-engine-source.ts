@@ -17,10 +17,15 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set
  */
-import {
-  CONTROL_HOME_ID, DAEMON_BAG_ID, KAHUA_BAG, PRIVATE_SLOT_KINDS, daemonFaceCanonBag, documentIdOfUrl, expandRecipe, sha256HexBytesSync,
-  tiddlerText, wikiSlotUri, type DocHandle, type FaceActorDoor, type LarDoc, type LarTiddlerStore, type WikiRecipe,
-} from "@lararium/mesh";
+import { CONTROL_HOME_ID, DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { KAHUA_BAG, daemonFaceCanonBag, expandRecipe, wikiSlotUri, type WikiRecipe } from "@lararium/mesh/wiki-recipe";
+import { PRIVATE_SLOT_KINDS } from "@lararium/mesh/cross-face-reach";
+import { documentIdOfUrl } from "@lararium/mesh/sealed-rest";
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
+import { tiddlerText, type LarDoc } from "@lararium/mesh/base-doc";
+import { type DocHandle } from "@lararium/mesh/automerge";
+import { type FaceActorDoor } from "@lararium/mesh/automerge-doc-store";
+import { type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
 import { TW5Engine, crossFaceViewSource, modulePinsOf, preloadsFromCasBlob, type CrossFaceViewSource, type FaceEngineSource, type RecipeReadyBinding } from "@lararium/tw5";
 import type { LitFace, LitFaceDocs } from "./lit-face-target.js";
 import type { BindingKind } from "./resolve-binding.js";

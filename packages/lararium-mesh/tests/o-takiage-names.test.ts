@@ -21,7 +21,7 @@ import { describe, expect, test } from "vitest";
 
 const REPO = join(import.meta.dirname, "..", "..", "..");
 const ROOTS = ["packages", "tools", "tests", "deploy", ".github"];
-const SKIP_DIRS = new Set(["node_modules", "dist", ".git", "fixtures", "VSCode-TW5-Syntax", "tiddlers", "lararium-sensorium"]);
+const SKIP_DIRS = new Set(["node_modules", "dist", ".git", "fixtures", "VSCode-TW5-Syntax", "tiddlers", "tiddlers-lararium", "lararium-sensorium"]);
 const CODE = /\.(ts|mjs|js|sh|yml|conf)$/;
 
 const SLICE5 = "slice 5 (w26-floor-lane #/owed): the genesis island doc keeps its name until the floor read-face replaces its layer";
@@ -39,7 +39,7 @@ const TOKENS: Record<string, string> = Object.fromEntries([
   // The seed law that checks each `<<~ oracle>>` throw (die == face == tail) names the live blind gauge itself.
   ["oracleCrossCheck", OTHER],
   // The I Ching cast: its core, its verb, its widget and its CLI door each name the divination sense.
-  ...["ORACLE_THROW_STANDS", "OracleCast", "makeOracleCastReactor", "ActionOracleCast", "ActionOracleCastWidget", "oracleCastFor",
+  ...["ORACLE_THROW_STANDS", "OracleCast", "OracleAsking", "makeOracleCastReactor", "ActionOracleCast", "ActionOracleCastWidget", "oracleCastFor",
     "cmdOracle", "oraclePlan", "oracleCast"].map((t) => [t, DIVINATION] as const),
 ]);
 

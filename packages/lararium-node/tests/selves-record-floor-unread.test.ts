@@ -8,7 +8,8 @@
  *   F2  CONTROL: the same rest restarted with the face lit reads the name back through its seat.
  */
 import { afterEach, describe, expect, test } from "vitest";
-import { tiddlerText, SIGNER_DID_TIDDLER, type LarDoc } from "@lararium/mesh";
+import { tiddlerText, type LarDoc } from "@lararium/mesh/base-doc";
+import { SIGNER_DID_TIDDLER } from "@lararium/mesh/lar-uris";
 import { faceProofSubjectRef } from "../../lararium-mesh/src/face-proof-subjects.js";
 import { chain } from "../../lararium-mesh/tests/face-proof-fixture.js";
 import { FLEET_NEXUS, fleet } from "../../lararium-keyhive/tests/content-key-fleet.js";

@@ -14,7 +14,9 @@
  */
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { ENGINE_CORE_ID, GENESIS_FLOOR_TIDDLER, LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "@lararium/mesh";
+import { ENGINE_CORE_ID } from "@lararium/mesh/base-doc";
+import { GENESIS_FLOOR_TIDDLER } from "@lararium/mesh/floor-manifest";
+import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "@lararium/mesh/lar-uris";
 import { afterEach, describe, expect, test } from "vitest";
 import { checkGenesisPin, genesisFoundingLine, pinGenesisSeed, resolveGenesis } from "../src/genesis-resolve.js";
 import { genesisSeedCid, readGenesisSeedBytes } from "../src/genesis-artifact.js";
@@ -82,7 +84,7 @@ describe("every founding records the seed witness; a differing seed reads as an 
     pinGenesisSeed(storage, resolveGenesis({ corpusRoot: root, shippedRoot: buildA }));
     let line = "";
     expect(() => { line = checkGenesisPin(storage, resolveGenesis({ corpusRoot: root, shippedRoot: buildB })); }).not.toThrow();
-    expect(line).toContain("[genesis seed] a newer seed waits: engine same · grammar moved · plugins same · floor moved");
+    expect(line).toContain("[genesis seed] a newer seed waits: engine same · grammar moved · lararium same · plugins same · floor moved");
     expect(line).toContain(`seed (offered) ${cidOf(buildB)} (shipped at ${join(buildB, "genesis")})`);
     expect(line).toContain(`seed witness ${cidOf(buildA)}`);
     expect(line).toContain("the founding record keeps serving");
@@ -111,7 +113,7 @@ describe("every founding records the seed witness; a differing seed reads as an 
       expect(checkGenesisPin(storage, resolution)).toBe(`[genesis seed] witnessed ${cidOf(held)} — this boot's seed matches the seed witness (self-consistency)`);
       // Another seed now reads as an offer against this founding's witness.
       expect(checkGenesisPin(storage, resolveGenesis({ explicit: join(shipped, "genesis"), corpusRoot: dirWithSeed(null), shippedRoot: shipped })))
-        .toContain("a newer seed waits: engine same · grammar moved · plugins same · floor same");
+        .toContain("a newer seed waits: engine same · grammar moved · lararium same · plugins same · floor same");
     }
   });
 
@@ -139,7 +141,7 @@ describe("every founding records the seed witness; a differing seed reads as an 
     expect(line).toContain(`seed (offered) ${cidOf(override)} (explicit at ${join(override, "genesis")})`);
     expect(line).toContain(`seed witness ${cidOf(buildA)} (founded at ${join(buildA, "genesis")}; ${join(storage, "genesis-pin.json")})`);
     // Seeds that differ only in their actor seed differ on no ratchet: the offer names that plainly.
-    expect(line).toContain("engine same · grammar same · plugins same · floor same");
+    expect(line).toContain("engine same · grammar same · lararium same · plugins same · floor same");
   });
 
   test("R4: the check reads back witnessed or unwitnessed, and a hearth with no witness says unwitnessed", () => {

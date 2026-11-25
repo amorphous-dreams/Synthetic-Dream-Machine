@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { wikiSlotUri } from "@lararium/mesh";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { makeDaemonBehavior } from "../src/daemon-behavior.js";
 import type { IslandContext } from "../src/island-context.js";
 

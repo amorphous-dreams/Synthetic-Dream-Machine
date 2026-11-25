@@ -40,15 +40,9 @@
 
 import { TW5Engine } from "./tw5-vm.js";
 import type { TW5CoreBootBlob } from "./tw5-host-bridge.js";
-import type {
-  IslandToVesselMsg,
-  IslandMsg_Event,
-} from "@lararium/mesh";
-import {
-  mkEa,
-  mkFault,
-  LARES_VERB_ARGS_WIRE_FIELD,
-} from "@lararium/mesh";
+import type { IslandToVesselMsg, IslandMsg_Event } from "@lararium/mesh/island-protocol";
+import { mkEa, mkFault } from "@lararium/mesh/island-protocol";
+import { LARES_VERB_ARGS_WIRE_FIELD } from "@lararium/mesh/lar-uris";
 
 export class IslandKernel {
   private _tw5:        TW5Engine | null = null;

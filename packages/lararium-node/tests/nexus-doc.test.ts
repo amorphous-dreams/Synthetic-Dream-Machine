@@ -14,7 +14,7 @@
 import { seatSuiteWard } from "./support/scratch-custody-setup.js";
 // This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
 seatSuiteWard();
-import { NEXUS_DOC_DOMAIN } from "@lararium/mesh";
+import { NEXUS_DOC_DOMAIN } from "@lararium/mesh/domains";
 import { afterEach, beforeEach, describe, test, expect } from "vitest";
 import { mkdtempSync, rmSync, writeFileSync, existsSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -23,11 +23,20 @@ import * as ed from "@noble/ed25519";
 import { verifyBcc } from "@lararium/memetic-frame";
 import { readCarrierShape, rootMetaFields } from "@lararium/tw5";
 import {
-  emptyFoundingCharterDoc, foundingRoster, foundingQuorumSeated,
-  rotateSealEpoch, sealLineageHead, ed25519SignerFromSeed, hex, UNARMED, seatNextDigest,
-  renameOwnPersona, ownPersonaPetname, declarePersonaHandle, standForKahuSeat,
-  personasStandingForSeat, majorityThreshold, type NexusDoc, type NexusCharterKahu,
-} from "@lararium/mesh";
+  emptyFoundingCharterDoc,
+  foundingRoster,
+  foundingQuorumSeated,
+  sealLineageHead,
+  majorityThreshold,
+  type NexusDoc,
+  type NexusCharterKahu,
+} from "@lararium/mesh/nexus-seal-seed";
+import { rotateSealEpoch, UNARMED } from "@lararium/mesh/wax-stamp";
+import { ed25519SignerFromSeed } from "@lararium/mesh/ed25519-door";
+import { hex } from "@lararium/mesh/crypto";
+import { seatNextDigest } from "@lararium/mesh/cold-key-card";
+import { renameOwnPersona, ownPersonaPetname } from "@lararium/mesh/persona-petname";
+import { declarePersonaHandle, standForKahuSeat, personasStandingForSeat } from "@lararium/mesh/persona-declare";
 import {
   readNexusDoc, writeNexusDoc, nexusCharterDocPath, renderNexusDoc, parseNexusDoc,
   writeNexusSeal, writeNexusKahu, writeNexusPractice, nexusCharterShape,

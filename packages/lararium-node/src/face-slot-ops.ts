@@ -5,10 +5,9 @@
  * its own slot ids. A bind, an unbind or a rotation here moves no byte of the node (S) tree, and the same acts on the node
  * tree move no byte of a face tree, so one typed credential may open both and neither tree depends on the other.
  */
-import {
-  bindSlot, commitFaceTree, mintFck, rotateFck, unbindSlot,
-  type CustodyIo, type FaceCustodyKey, type SlotSpec, type SlotTree,
-} from "@lararium/mesh";
+import { bindSlot, unbindSlot, type SlotSpec, type SlotTree } from "@lararium/mesh/keyslot-door";
+import { commitFaceTree, rotateFck, type CustodyIo } from "@lararium/mesh/sealed-writer";
+import { mintFck, type FaceCustodyKey } from "@lararium/mesh/fck";
 import { nativeKdf } from "@lararium/mesh/node";
 import { faceCarriersOf, readFaceTree } from "./face-custody.js";
 import { faceTreePath } from "./face-index.js";

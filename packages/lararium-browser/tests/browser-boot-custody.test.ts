@@ -5,7 +5,7 @@ import { generateOrLoadBrowserVesselIdentity } from "../src/browser-vessel-ident
 import { holdVesselLock, type LockHost } from "../src/vessel-lock.js";
 import { clearCustodyVerb, standBrowserCustody, standFounderFace } from "../src/browser-boot-custody.js";
 import { CLEAR_CUSTODY_CLEARS, CLEAR_CUSTODY_QUESTION } from "../src/browser-custody.js";
-import { VESSEL_LOCKED, vesselLockedRefusal } from "@lararium/mesh";
+import { VESSEL_LOCKED, vesselLockedRefusal } from "@lararium/mesh/control-home";
 
 let serial = 0;
 const vessel = () => `lares:test-boot-custody:${Date.now()}:${serial++}`;

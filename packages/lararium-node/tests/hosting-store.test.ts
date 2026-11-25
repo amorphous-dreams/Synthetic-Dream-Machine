@@ -25,7 +25,8 @@
 import { describe, test, expect, afterEach } from "vitest";
 import { copyFileSync, existsSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { hostingActCid, claimDigest, lineageOf, mintHostingAct, readFckCarrier, redeemClaim } from "@lararium/mesh";
+import { hostingActCid, claimDigest, lineageOf, mintHostingAct, redeemClaim } from "@lararium/mesh/hosting";
+import { readFckCarrier } from "@lararium/mesh/fck-envelope";
 import { CustodyLocked, CustodyRecordUnavailable, FaceLocked } from "../src/custody-holder.js";
 import { seatedCustody, writeCustodyRecord } from "../src/custody-seat.js";
 import {

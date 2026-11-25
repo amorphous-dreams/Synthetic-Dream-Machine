@@ -11,7 +11,7 @@ import { dirname, join, relative } from "node:path";
 import { parse as parseToml } from "smol-toml";
 import type { External, Item, Radius } from "./engine.js";
 import {
-  claudeHook, copilotHook, headLine, jsonFloor, jsonForeign, jsonHooksOwned, jsonIncludes, jsonListForeign, jsonSet, owned, seedless, strays,
+  claudeHook, claudeStatusLine, claudeStatusLineTaking, copilotHook, headLine, jsonFloor, jsonForeign, jsonHooksOwned, jsonIncludes, jsonIncludesTaking, jsonListForeign, jsonSet, owned, seedless, statusLineForeign, strays,
   tomlHook, tomlHookForeign, tomlHooksOwned, tomlMcpServer, tomlShapeForeign, tomlTableForeign, tomlTableKey, tomlTableUnset, tomlTopFloor,
 } from "./kinds.js";
 import { homesOf, type Homes } from "./homes.js";
@@ -87,14 +87,14 @@ export function projectScout(seedPath: string, seed: string, s: Spec): string {
  * A `json-includes` row, for either radius: `key` names the list by a dotted path (`permissions.allow`), and `values` names
  * every member it keeps. One row per list keeps the whole set; the operator's other members stand.
  */
-function includes(s: Spec): Pick<Item, "transform" | "foreign"> {
+function includes(s: Spec): Pick<Item, "transform" | "taking" | "foreign"> {
   const values = s["values"];
   if (!Array.isArray(values) || values.length === 0 || !values.every((v) => typeof v === "string" && v !== "")) {
     throw new Error(`${CARRIER}: item ${s.id} names no \`values\` list of strings`);
   }
   const path = str(s, "key").split(".");
   if (path.some((k) => k === "")) throw new Error(`${CARRIER}: item ${s.id} names a key path with an empty segment`);
-  return { transform: jsonIncludes(path, values as string[]), foreign: jsonListForeign(path) };
+  return { transform: jsonIncludes(path, values as string[]), taking: jsonIncludesTaking(path, values as string[]), foreign: jsonListForeign(path) };
 }
 
 const item = (radius: Radius, s: Spec, path: string, rest: Partial<Item>): Item =>
@@ -256,7 +256,8 @@ export function homeItems(ctx: HomeContext, d: Declared = declared(ctx.repo)): I
           ? (existsSync(join(h.dir, root)) ? null : `${join(h.dir, root)} absent; this variant stands unset here`)
           : dir && !existsSync(join(h.dir, dir)) ? `${join(h.dir, dir)} absent; ${s.host} stands unset in this home` : null;
         const script = join(clone, str(s, "script")).replace(/\\/g, "/");
-        const needsScript = s["script"] !== undefined && !existsSync(script) ? `${script} absent in the main clone` : null;
+        const tool = join(clone, str(s, "script") || str(s, "tool")).replace(/\\/g, "/");
+        const needsScript = (s["script"] !== undefined || s["tool"] !== undefined) && !existsSync(tool) ? `${tool} absent in the main clone` : null;
         const needsMcp = /mcp/.test(s.kind) && mcp === null ? seatAbsentCause() : null;
         const common = { absent, unreachable: needsScript ?? needsMcp };
         out.push(homeItem(base, path, h.dir, clone, d, script, mcp, common, ctx));
@@ -304,6 +305,14 @@ function homeItem(
     case "json-floor": return base({ transform: jsonFloor(str(s, "key"), Number(s["floor"])), foreign: jsonForeign });
     case "json-set": return base({ transform: jsonSet([str(s, "key")], s["value"]), foreign: jsonForeign });
     case "json-includes": return base(includes(s));
+    case "claude-statusline": {
+      // The tool aims at the main clone; its log stands in the home that holds the line (`log` reads relative to it).
+      const tool = join(clone, str(s, "tool")).replace(/\\/g, "/");
+      // Claude runs the command through a shell: every path rides double-quoted, with the four characters the shell reads escaped.
+      const quote = (p: string): string => `"${p.replace(/[\\"$`]/g, "\\$&")}"`;
+      const command = `node ${quote(tool)} ${quote(join(home, str(s, "log")))}`;
+      return base({ transform: claudeStatusLine(str(s, "tool"), command), taking: claudeStatusLineTaking(command), foreign: statusLineForeign(str(s, "tool")) });
+    }
     case "claude-hook": {
       // A familiar's hook carries the pet name as its argument (no env var): the tend's `--familiar`, else the one a tend seated.
       const wants = s["familiar"] === "required" || s["familiar"] === "optional";

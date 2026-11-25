@@ -16,10 +16,18 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
 import type { IslandSessionProof } from "@lararium/keyhive";
+import { ed25519SignerFromSeed } from "@lararium/mesh/ed25519-door";
+import { hex, hexToBytes } from "@lararium/mesh/crypto";
+import { isVerbRefusal } from "@lararium/mesh/verb-refusal";
 import {
-  ed25519SignerFromSeed, hex, hexToBytes, isVerbRefusal, memoryKeypairOf, mintMemoryKeypair, openMemorySection, sealMemorySecret,
-  signMemoryAsk, type MemoryAct, type RecordSigner,
-} from "@lararium/mesh";
+  memoryKeypairOf,
+  mintMemoryKeypair,
+  openMemorySection,
+  sealMemorySecret,
+  signMemoryAsk,
+  type MemoryAct,
+} from "@lararium/mesh/memory-section";
+import { type RecordSigner } from "@lararium/mesh/sealed-records";
 import { VerbTable } from "@lararium/tw5";
 import { faceProofSubjectRef, sessionSignatureImage } from "../../lararium-mesh/src/face-proof-subjects.js";
 import { chain, signHex } from "../../lararium-mesh/tests/face-proof-fixture.js";

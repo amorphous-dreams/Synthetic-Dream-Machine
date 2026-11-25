@@ -4,7 +4,7 @@
  * ways. Each routing field (an inner verb, a slug, a title, a bag) reads here: a string stands, absence reads as `fallback`, and
  * any other shape refuses `routing-arg-malformed` by name, before it routes anywhere.
  */
-import { VerbRefusal } from "@lararium/mesh";
+import { VerbRefusal } from "@lararium/mesh/verb-refusal";
 
 /** The refusal a routing field of the wrong shape reads. */
 export const ROUTING_ARG_MALFORMED = "routing-arg-malformed";

@@ -26,7 +26,7 @@
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/session-contract#/the-owner
  */
-import { SwitchActsSetAsideFull, type SwitchIntent, type SwitchOutcome } from "@lararium/mesh";
+import { SwitchActsSetAsideFull, type SwitchIntent, type SwitchOutcome } from "@lararium/mesh/session-switch";
 import { existsSync, mkdirSync, renameSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { readCustodyRecord, updateCustodyRecord } from "./custody-seat.js";

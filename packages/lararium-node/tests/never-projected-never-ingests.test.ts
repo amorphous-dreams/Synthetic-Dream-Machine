@@ -1,9 +1,10 @@
 /** Placement governs whether a carrier reaches disk; its title and record flags do not. */
 import { describe, expect, test } from "vitest";
-import {
-  CompositeStore, RECEIPT_FACT_URI_PREFIX, buildReceiptFact,
-} from "@lararium/mesh";
-import type { CapabilityAccess, CapabilityVerifyResult, Verb, VerbContext } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { RECEIPT_FACT_URI_PREFIX, buildReceiptFact } from "@lararium/mesh/verb-tiddler";
+import type { CapabilityAccess, CapabilityVerifyResult } from "@lararium/mesh/capability";
+import type { Verb } from "@lararium/mesh/verb-tiddler";
+import type { VerbContext } from "@lararium/tw5";
 import { MemoryTiddlerStore } from "../../lararium-tw5/src/memory-store.js";
 import { VerbTable } from "../../lararium-tw5/src/verb-dispatcher.js";
 import { registerActionReactors } from "../../lararium-tw5/src/action-handler.js";

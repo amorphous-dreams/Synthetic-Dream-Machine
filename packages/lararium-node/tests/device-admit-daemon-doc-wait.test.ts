@@ -3,7 +3,8 @@
  * step 3): ready opens it, unavailable refuses by name at once, and no clock of the admit's own decides.
  */
 import { Repo } from "@automerge/automerge-repo";
-import { DocumentUnavailableRefusal, emptyLarDoc, type LarDoc } from "@lararium/mesh";
+import { DocumentUnavailableRefusal } from "@lararium/mesh/find-or-throw";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
 import { expect, test } from "vitest";
 import { openHearthDaemonDoc } from "../src/commands/device-admit.js";
 

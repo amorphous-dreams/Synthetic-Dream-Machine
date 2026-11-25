@@ -11,7 +11,7 @@
  * island answers never reaches the daemon island.
  */
 import { describe, test, expect } from "vitest";
-import { VERB_RESULT_KEY } from "@lararium/mesh";
+import { VERB_RESULT_KEY } from "@lararium/mesh/verb-tiddler";
 import { askShore, readShoreList, askSettle, SETTLE_PAGE } from "../src/shore-core.js";
 import type { SubmitResult } from "../src/verb-result.js";
 

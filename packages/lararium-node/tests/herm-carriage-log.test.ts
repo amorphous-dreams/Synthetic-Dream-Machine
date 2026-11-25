@@ -12,10 +12,14 @@ import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
-import {
-  DeterministicFederationGate, attestAndRotate, depositPersonaKelChain, hex, httpPersonaKelDropHerm, makeCarriageLog, placeSignerFromSeed,
-  provisionThresholdRecoveryAtFounding, readCarriageReceipt, recoveryContactRegistrationCard, utf8Bytes, type CarriageLog, type PersonaKelEvent,
-} from "@lararium/mesh";
+import { DeterministicFederationGate } from "@lararium/mesh/federation-gate";
+import { attestAndRotate, provisionThresholdRecoveryAtFounding } from "@lararium/mesh/recovery-keel-core";
+import { depositPersonaKelChain, httpPersonaKelDropHerm } from "@lararium/mesh/persona-kel-drop";
+import { hex, utf8Bytes } from "@lararium/mesh/crypto";
+import { makeCarriageLog, readCarriageReceipt, type CarriageLog } from "@lararium/mesh/carriage-log";
+import { placeSignerFromSeed } from "@lararium/mesh/place-signer";
+import { recoveryContactRegistrationCard } from "@lararium/mesh/recovery-registration";
+import { type PersonaKelEvent } from "@lararium/mesh/persona-kel";
 import { startHermRelayPort, type HermRelayPort } from "../src/herm-relay-port.js";
 import { fileCarriageJournal } from "../src/carriage-log-file.js";
 import { decideAndServeWantBlock } from "../src/cas-wire.js";

@@ -16,17 +16,23 @@
  * design banks on) and the same on-disk store directory. Anything the second channel answers
  * correctly, it answers from the FACT, never from memory the first channel happened to keep warm.
  */
-import { controlStoreOf } from "@lararium/mesh";
+import { controlStoreOf } from "@lararium/mesh/control-home";
 import { describe, test, expect, onTestFinished } from "vitest";
 import { mkdtempSync, existsSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createConnection } from "node:net";
 import { Repo, type DocHandle } from "@automerge/automerge-repo";
-import { emptyLarDoc, NoWorkingLayerRefusal, buildReceiptFact, concludeVerb, verbInputDigest, RECEIPT_FACT_URI_PREFIX, OUTCOME_URI_PREFIX, DAEMON_BAG_ID, CONTROL_HOME_ID, AutomergeDocStore, CompositeStore, wikiSlotUri, type LarDoc } from "@lararium/mesh";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { NoWorkingLayerRefusal, CompositeStore } from "@lararium/mesh/composite-store";
+import { buildReceiptFact, concludeVerb, verbInputDigest, RECEIPT_FACT_URI_PREFIX, OUTCOME_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
+import { DAEMON_BAG_ID, CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { FactLedger, startUdsChannel, type UdsChannel } from "../src/uds-channel.js";
 import { claimStore, type StoreClaim } from "../src/owned-store.js";
-import { plainRecord, outcomeBytesOf } from "@lararium/mesh";
+import { plainRecord } from "@lararium/mesh/stored-value";
+import { outcomeBytesOf } from "@lararium/mesh/verb-tiddler";
 import { arrival } from "../../lararium-mesh/tests/handshake.js";
 
 interface Placed { verb: string; args: Record<string, unknown>; requestedBy: string; requestId: string; effectKey?: string; }

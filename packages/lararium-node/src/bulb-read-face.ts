@@ -32,11 +32,12 @@
 
 import type { Server, IncomingMessage, ServerResponse } from "node:http";
 import { BULB_ROUTE_PREFIX, CAS_ROUTE_PREFIX, BULB_BLOB_RE, CAS_BLOB_RE, answerClosedDoor, bulbBlobRoute } from "./bulb-routes.js";
-import {
-  canonicalJsonBytes, casReferences, publicRealmBooksFromDoc,
-  type CasReferenceEntry, type CapTier, type LarDoc,
-} from "@lararium/mesh";
-import { plainRecord } from "@lararium/mesh";
+import { canonicalJsonBytes } from "@lararium/mesh/crypto";
+import { casReferences, type CasReferenceEntry } from "@lararium/mesh/cas";
+import { publicRealmBooksFromDoc } from "@lararium/mesh/realm-bag";
+import { type CapTier } from "@lararium/mesh/cap-tier";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { plainRecord } from "@lararium/mesh/stored-value";
 import { readVerifiedCasBlobFromFs } from "./node-cas.js";
 import { buildBulb, type BulbArtifact } from "./bulb.js";
 import { ARRIVAL_WELL_KNOWN_ROUTE, WELL_KNOWN_LAR_ROUTE_KEY } from "./pronaos-adapter.js";

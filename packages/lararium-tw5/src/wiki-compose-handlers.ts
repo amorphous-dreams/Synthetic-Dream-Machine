@@ -1,14 +1,10 @@
-import type { LarTiddlerRecord } from "@lararium/mesh";
-import { storedRecord } from "@lararium/mesh";
-import {
-  bagStackFromRec,
-  mutableLarRecord,
-  recipeUri,
-  SYSTEM_BAGS,
-  wikiBagUri,
-  mkDaemonResidencyOp,
-  mkDaemonWikiAlert,
-} from "@lararium/mesh";
+import type { LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
+import { storedRecord } from "@lararium/mesh/stored-record";
+import { bagStackFromRec } from "@lararium/mesh/bag-stack-from-rec";
+import { mutableLarRecord } from "@lararium/mesh/base-doc";
+import { recipeUri } from "@lararium/mesh/lar-uris";
+import { SYSTEM_BAGS, wikiBagUri } from "@lararium/mesh/wiki-recipe";
+import { mkDaemonResidencyOp, mkDaemonWikiAlert } from "@lararium/mesh/island-protocol";
 import { effectiveRecipeOf, type RecipePlane } from "./recipe-planes.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
 import { makeRequestId, stringArg } from "./handler-args.js";

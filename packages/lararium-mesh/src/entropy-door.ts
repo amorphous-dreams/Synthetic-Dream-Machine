@@ -13,7 +13,8 @@
  * Web Crypto port.
  */
 
-import { webGetRandomValues } from "./crypto.js";
+import { sha256BytesSync, sha256HexBytesSync, utf8Bytes, webGetRandomValues } from "./crypto.js";
+import { VerbRefusal } from "./verb-refusal.js";
 
 /** A source of bytes, named. `fill` overwrites the whole view and hands it back. */
 export interface EntropyDoor {
@@ -51,4 +52,57 @@ export function entropyBelow(door: EntropyDoor, bound: number): number {
 export function entropyPick<T>(door: EntropyDoor, list: readonly T[]): T {
   if (list.length === 0) throw new RangeError("entropyPick: the list holds nothing to pick");
   return list[entropyBelow(door, list.length)] as T;
+}
+
+/**
+ * A SEEDED DOOR, by a person's hand: the same seed hands back the same bytes, a sha256 counter stream over the seed. It
+ * names itself by the seed's digest (`seed:sha256:<16 hex>`), never the seed, so a record says a seed threw it without
+ * printing the words a person chose.
+ */
+export function seededEntropy(seed: string): EntropyDoor {
+  const key = utf8Bytes(seed);
+  const name = sha256HexBytesSync(key).slice(0, 16);
+  let block: Uint8Array = new Uint8Array(0);
+  let used = 0;
+  let counter = 0;
+  return {
+    source: `seed:sha256:${name}`,
+    fill: (bytes) => {
+      for (let i = 0; i < bytes.length; i += 1) {
+        if (used >= block.length) {
+          const input = new Uint8Array(key.length + 4);
+          input.set(key, 0);
+          new DataView(input.buffer).setUint32(key.length, counter);
+          counter += 1;
+          block = sha256BytesSync(input);
+          used = 0;
+        }
+        bytes[i] = block[used] as number;
+        used += 1;
+      }
+      return bytes;
+    },
+  };
+}
+
+/**
+ * One fresh random id: 16 bytes from the platform's `crypto.getRandomValues`, each written as two base-32 digits.
+ *
+ * The id names an attempt or a lineage, never a moment: it carries no clock reading (an attacker holding a machine
+ * sets its clock at will, so a clock decides nothing), and it never falls back to `Math.random`. Where the platform
+ * holds no `crypto.getRandomValues`, the mint refuses by name.
+ */
+export function mintRandomId(): string {
+  const bytes = new Uint8Array(16);
+  if (typeof globalThis.crypto?.getRandomValues !== "function") {
+    throw new VerbRefusal(
+      "entropy-absent",
+      "entropy-absent: this runtime holds no crypto.getRandomValues, and the house mints no id from Math.random or the clock. " +
+        "cure: run on Node 19+ or a browser with Web Crypto.",
+    );
+  }
+  webGetRandomValues(bytes);
+  let out = "";
+  for (const b of bytes) out += b.toString(32).padStart(2, "0");
+  return out;
 }

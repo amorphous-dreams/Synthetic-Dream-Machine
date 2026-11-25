@@ -22,11 +22,22 @@ import { Repo } from "@automerge/automerge-repo";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
 import { runFoundingCeremony } from "@lararium/keyhive";
 import { operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
-import {
-  CompositeStore, AutomergeDocStore, DAEMON_BAG_ID, controlStoreOf, standControlHome, hex, leaseEpochSlotUri, wikiBagUri, makeIslandRepo, attachMessageChannelSync,
-  materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix, type LarDoc,
-  mintFaceAnchor, signLeaseAdvance, ed25519SignerFromSeed, faceAtomPublicKey, signAsFaceAtom, signFaceLeafBond, hexToBytes, realmFeedAskImage,
-} from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { controlStoreOf, standControlHome } from "@lararium/mesh/control-home";
+import { hex, hexToBytes } from "@lararium/mesh/crypto";
+import { leaseEpochSlotUri } from "@lararium/mesh/epoch-lease";
+import { wikiBagUri } from "@lararium/mesh/wiki-recipe";
+import { makeIslandRepo, attachMessageChannelSync } from "@lararium/mesh/island-repo-door";
+import { materializeSharedLarDoc, personaKelBoardDocUrl } from "@lararium/mesh/deterministic-doc";
+import { personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { mintFaceAnchor } from "@lararium/mesh/face-anchor";
+import { signLeaseAdvance } from "@lararium/mesh/lease-advance";
+import { ed25519SignerFromSeed } from "@lararium/mesh/ed25519-door";
+import { faceAtomPublicKey, signAsFaceAtom } from "@lararium/mesh/face-atom";
+import { signFaceLeafBond, realmFeedAskImage } from "@lararium/mesh/face-leaf-bond";
 import { VerbTable } from "@lararium/tw5";
 import * as ed25519 from "@noble/ed25519";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
