@@ -5,7 +5,7 @@ import { cpSync, mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } fr
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { runGate } from './pre-push-gate.mjs';
+import { runGate } from './bench-gate.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const run = (cmd, args, options = {}) => spawnSync(cmd, args, { cwd: root, encoding: 'utf8', ...options });
@@ -18,10 +18,10 @@ test('stash refusal teaches a procedure', () => {
   endsInPono(r.stderr);
 });
 
-test('pre-push refusal teaches a procedure', () => {
+test('bench-gate refusal teaches a procedure', () => {
   const lines = [];
   assert.equal(runGate([{ name: 'fixture' }], () => 1, line => lines.push(line)).code, 1);
-  assert.match(lines.join('\n'), /PRE-PUSH GATE REFUSES/);
+  assert.match(lines.join('\n'), /BENCH GATE REFUSES/);
   endsInPono(lines.join('\n'));
 });
 
