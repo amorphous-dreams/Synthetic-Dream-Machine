@@ -21,6 +21,7 @@
  * Platform-blind and pure.
  */
 
+import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
 import { entropyBelow, type EntropyDoor } from "./entropy-door.js";
 
 /** One line's sum of three coins: 6 old yin · 7 young yang · 8 young yin · 9 old yang. */
@@ -148,6 +149,12 @@ export function castThreeCoins(door: EntropyDoor, ask: CastAsk): OracleCast {
   return castOf(lines, door.source, ask);
 }
 
+/** A standing cast read back: its six lines and the door they came through, the same figure the throw named. */
+export function castFromLines(lines: readonly LineValue[], entropy: string, ask: CastAsk): OracleCast {
+  requireAsk(ask);
+  return castOf(lines, entropy, ask);
+}
+
 /** The operator's own throw: six line values cast with real coins, bottom line first. */
 export function castFromCoins(values: readonly unknown[], ask: CastAsk): OracleCast {
   requireAsk(ask);
@@ -176,6 +183,32 @@ export function readingTitle(source: ReadingSource, n: number): string {
 export function castReadingTitles(cast: OracleCast): string[] {
   const numbers = cast.relating ? [cast.primary.number, cast.relating.number] : [cast.primary.number];
   return numbers.flatMap((n) => READING_SOURCES.map((source) => readingTitle(source, n)));
+}
+
+/**
+ * ONE ASKING, ONE THROW. An asking names who asks (`caster`), in what words (`asking`, empty where the asker named
+ * none), with the nonce the caller minted at the word (a bare cast, or a person's fresh re-ask), the seed a person
+ * named, and the coins a person threw. The time never enters: a clock annotates a cast and never names it.
+ */
+export interface OracleAsking {
+  readonly caster: string;
+  readonly asking?: string;
+  readonly nonce?: string;
+  readonly seed?: string;
+  readonly coins?: readonly LineValue[];
+}
+
+/** The asking's id: sha256 over its canonical form, so the same asking lands on the same id in any seat. */
+export function askingId(a: OracleAsking): string {
+  return sha256HexBytesSync(canonicalJsonBytes({
+    verb: "oracle-cast", caster: a.caster, asking: a.asking ?? "", nonce: a.nonce ?? "", seed: a.seed ?? "",
+    coins: a.coins ? [...a.coins] : [],
+  }));
+}
+
+/** The title an asking's cast lands under: a second ask of the same asking finds the first throw standing there. */
+export function askingCastTitle(id: string): string {
+  return `${CAST_TITLE_PREFIX}asked-${id.slice(0, 16)}`;
 }
 
 /** The cast's tiddler title: the caller's time, then the primary and the relating number. */
@@ -209,7 +242,7 @@ export function castText(cast: OracleCast): string {
 }
 
 /** The tiddler a cast writes: its facts as flat fields, its body naming and transcluding the readings. */
-export function castFields(cast: OracleCast): Record<string, string> {
+export function castFields(cast: OracleCast, asked?: { readonly title: string; readonly intent: string; readonly asking?: string }): Record<string, string> {
   const readings = castReadingTitles(cast);
   const body: string[] = [
     `!! ${cast.primary.glyph} Hexagram ${cast.primary.number}${cast.relating ? ` changing to ${cast.relating.glyph} ${cast.relating.number}` : ""}`,
@@ -243,6 +276,11 @@ export function castFields(cast: OracleCast): Record<string, string> {
   if (cast.relating) {
     fields["relating"] = String(cast.relating.number);
     fields["relating-figure"] = cast.relating.figure;
+  }
+  if (asked) {
+    fields["title"] = asked.title;
+    fields["intent"] = asked.intent;
+    if (asked.asking) fields["asking"] = asked.asking;
   }
   return fields;
 }
