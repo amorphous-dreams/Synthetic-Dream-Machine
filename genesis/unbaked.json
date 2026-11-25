@@ -1,0 +1,10 @@
+{
+  "format": "lararium-genesis-unbaked",
+  "unbaked": [
+    {
+      "source": "packages/lararium-tw5/plugins/lares-lararium.json",
+      "sha256": "820feac50214c7e2606bcb90ba08ea2a0c7cbacd4cb2a330ac3f4f0bc0693b5a",
+      "why": "The door-gradient lane (the door bands, the oracle's asking and seed door) re-packs the house skin through oracle-cast-verb: one asking, one throw, with --fresh and --seed on a person's hand. The next labelled GENESIS RE-BAKE carries these bytes and deletes this row."
+    }
+  ]
+}
