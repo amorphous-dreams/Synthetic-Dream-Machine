@@ -10,8 +10,8 @@
  *            only where it proves a person by itself, through a typed route its holder checks against an attempt budget
  *            (`proveRoute`); an act that proves no route refuses `hand-unattested`. Unknown never reads as allowed.
  *
- * The same gate serves every hand act on the custody door and the pūlama's hand door; `rite abandon`'s hand gate (#409) names the
- * same need and takes this helper when the two land.
+ * The same gate serves every hand act on the custody door and the pūlama's hand door, and the rite's abandon (`rite-abandon`, a
+ * seat refused `hand-act-only` at the socket; `lares rite land --abandon` reads its own branch through `readOwnHand`).
  *
  * THE VERB SOCKET'S BOOKED ASKER STANDS AS THIS GATE'S CACHED READING. The socket (`uds-channel`) reads each line's or session's peer
  * once, through the same `peerKindOf` (or the reader a suite names), and books what it read: `ai` books the seat's hand and

@@ -28,7 +28,8 @@ import { claimStore } from "../src/owned-store.js";
 
 const KAHUA_ROWS = ["kahua-mint", "kahua-propose", "kahua-lift", "kahua-withdraw", "kahua-carry", "kahua-read",
   "promote-prepare", "promote-commit", "promote-drop", "promote-orphan", "promote-list", "kapae-raise", "kapae-lower", "kapae-flag",
-  "swarm-show", "swarm-cap-set", "swarm-share-set", "swarm-lei-kui", "swarm-lei-unstring", "swarm-lei-restring"] as const;
+  "swarm-show", "swarm-cap-set", "swarm-share-set", "swarm-lei-kui", "swarm-lei-unstring", "swarm-lei-restring",
+  "rite-land", "rite-abandon"] as const;
 
 const face = (name: string): SessionFace => ({
   personaGroup: `group-${name}`, proofSubject: `proof-${name}`, admitRef: `admit-${name}`, causalRevision: `revision-${name}`,
@@ -171,6 +172,22 @@ test("RED: a seat session's swarm cap-set, share-set and lei-kui refuse `swarm-n
     expect(await w.peer.ask({ op: "session:act", ...cli, requestId: `cli-${act}`, act, args: { value: 1 } }), act)
       .toMatchObject({ kind: "session:act-result", answer: { verb: act, ran: true } });
   }
+});
+
+test("RED: a seat session's rite abandon refuses `hand-act-only` and runs nothing (setting a begun half down stays the hand's act); CONTROL: the seat still lands a rite, and the cli hand runs the abandon", async () => {
+  const v = await stand();
+  const seat = await v.open("hint-a", "seat");
+  const tessera = { tessera: "c".repeat(64) };
+  expect(await v.peer.ask({ op: "session:act", ...seat, requestId: "seat-rite-abandon", act: "rite-abandon", args: tessera }))
+    .toMatchObject({ kind: "session:refused", refusal: "hand-act-only" });
+  expect(v.ran).toEqual([]);
+  expect(STORE_DOOR_HAND_CODES.get("rite-abandon")).toBe("hand-act-only");
+  expect(await v.peer.ask({ op: "session:act", ...seat, requestId: "seat-rite-land", act: "rite-land", args: { ...tessera, head: "a".repeat(40) } }))
+    .toMatchObject({ kind: "session:act-result", answer: { verb: "rite-land", ran: true } });
+  const w = await stand();
+  const cli = await w.open("hint-a", "cli");
+  expect(await w.peer.ask({ op: "session:act", ...cli, requestId: "cli-rite-abandon", act: "rite-abandon", args: tessera }))
+    .toMatchObject({ kind: "session:act-result", answer: { verb: "rite-abandon", ran: true } });
 });
 
 test("CONTROL: the operator's hand (a cli session) runs the promote commit and the kapae raise", async () => {

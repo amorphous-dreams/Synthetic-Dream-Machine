@@ -5,7 +5,7 @@
  * Every red pairs with a CONTROL. Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
 import { expect, test } from "vitest";
-import { STORE_DOOR_FACE_VERBS, STORE_DOOR_HAND_ONLY_ACTS, STORE_DOOR_VERBS, rowRefusalName, storeDoorReactors, type StoreDoorDeps } from "../src/store-door-verbs.js";
+import { STORE_DOOR_FACE_VERBS, STORE_DOOR_HAND_CODES, STORE_DOOR_HAND_ONLY_ACTS, STORE_DOOR_VERBS, rowRefusalName, storeDoorReactors, type StoreDoorDeps } from "../src/store-door-verbs.js";
 import { storeVerbGatesFirst, storeVerbNeedsWard } from "../src/ward-credential.js";
 import { beginLentFaces, lentOfferFaces, offerVouchesOf, refuseStandingBegin, standingKukuluBegins } from "../src/commands/rite.js";
 import { kukuluRiteOver } from "../src/kukulu-lei-seat.js";
@@ -20,10 +20,19 @@ import {
   type SwarmTrust,
   type SwarmWikiPort,
 } from "@lararium/mesh/swarm-tiddlers";
-import { beginChecked, conferre, landRite, pendingBegins } from "@lararium/mesh/swarm-tessera";
+import { abandonRite, beginChecked, conferre, landRite, pendingBegins } from "@lararium/mesh/swarm-tessera";
 import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
 
 const ROWS = ["rite-begin", "rite-land", "rite-receipts", "rite-offer"] as const;
+
+test("RED: the abandon is a store-door row acting as a face that a seat refuses `hand-act-only` (the one hand gate), asking no ward route; CONTROL: the four spending rows stay open to a seat", () => {
+  expect(STORE_DOOR_VERBS as readonly string[]).toContain("rite-abandon");
+  expect(STORE_DOOR_FACE_VERBS.has("rite-abandon")).toBe(true);
+  expect(STORE_DOOR_HAND_ONLY_ACTS.has("rite-abandon")).toBe(true);
+  expect(STORE_DOOR_HAND_CODES.get("rite-abandon")).toBe("hand-act-only");
+  expect(storeVerbNeedsWard("rite-abandon", {})).toBe(false);
+  for (const row of ROWS) expect(STORE_DOOR_HAND_ONLY_ACTS.has(row), row).toBe(false);
+});
 
 test("RED: every rite row is a store-door verb, each acting as a face; CONTROL: a seat may run each, and none asks a ward route", () => {
   for (const row of ROWS) {
@@ -40,7 +49,7 @@ test("RED: with no standing daemon wiki every rite row refuses by name and loads
   const deps: StoreDoorDeps = { storageDir: "/tmp/unused", sealHome: "/tmp/unused-seal", repo: {} as StoreDoorDeps["repo"] };
   const rows = storeDoorReactors(deps);
   const worn = { worn: { ordinal: 0 } } as never;
-  for (const [row, args] of [["rite-begin", { rite: "kukulu", branch: "main", head: "a".repeat(40) }], ["rite-land", { tessera: "c".repeat(64), head: "a".repeat(40) }], ["rite-receipts", {}]] as const) {
+  for (const [row, args] of [["rite-begin", { rite: "kukulu", branch: "main", head: "a".repeat(40) }], ["rite-land", { tessera: "c".repeat(64), head: "a".repeat(40) }], ["rite-abandon", { tessera: "c".repeat(64) }], ["rite-receipts", {}]] as const) {
     const out = await rows[row](args, worn);
     expect(out["refused"], row).toContain("no standing daemon: a rite's records need the founded wiki");
     expect(out["refusal"], row).toBe(`${row}-refused`);
@@ -157,7 +166,18 @@ test("RED: a kūkulu begun and never landed reads each lent face's guest half st
   await landRite(wiki, { tessera: first.faces[1]!.tessera, head }, faces[1]!.trust, faces[1]!.group, faces[1]!.atom);
   expect(await standingKukuluBegins([0, 1], red, "develop")).toEqual([]);
   // CONTROL: once every half landed, the next raise begins afresh (one return more per face).
-  expect((await begin()).faces.map((f) => f.n)).toEqual([2, 2]);
+  const second = await begin();
+  expect(second.faces.map((f) => f.n)).toEqual([2, 2]);
+  // RED: THE HAND SETS A STALE HALF DOWN: no return spends, the line frees, and conferre reads it abandoned, never landed-absent.
+  for (const f of second.faces) await abandonRite(wiki, { tessera: f.tessera }, faces[f.ordinal]!.trust, faces[f.ordinal]!.group, faces[f.ordinal]!.atom);
+  expect(claimed()).toEqual([2, 2]);
+  expect(await standingKukuluBegins([0, 1], red, "develop")).toEqual([]);
+  expect(await pendingBegins(wiki, "kukulu", "develop")).toEqual([]);
+  const read = await conferre(wiki, faces[0]!.trust, faces[0]!.group);
+  expect(read.red.filter((t) => t.red === "landed-absent")).toEqual([]);
+  expect(read.abandoned.map((t) => t.tessera)).toEqual([second.faces[0]!.tessera]);
+  // CONTROL: the fresh begin proceeds over the set-down halves, one return more per face.
+  expect((await begin()).faces.map((f) => f.n)).toEqual([3, 3]);
 });
 
 /**
@@ -166,7 +186,7 @@ test("RED: a kūkulu begun and never landed reads each lent face's guest half st
  * halves; and the pūlama's begin over one offer is idempotent, so a refused composition
  * and its retry spend one return.
  */
-test("RED: a face rehived since its begin (its old half verifies under no trust it holds now) still refuses a second begin by its raw row, naming the group and the hand landing that sets it down", async () => {
+test("RED: a face rehived since its begin (its old half verifies under no trust it holds now) still refuses a second begin by its raw row, naming the group and the hand's abandon that sets it down", async () => {
   const keyed = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(n)) });
   const rows = new Map<string, string>();
   const wiki: SwarmWikiPort = { read: async (t) => rows.get(t) ?? null, write: async (t, x) => { rows.set(t, x); }, writeNew: async (t, x) => (rows.has(t) ? false : (rows.set(t, x), true)),
@@ -181,7 +201,7 @@ test("RED: a face rehived since its begin (its old half verifies under no trust 
   const rehivedRed = async () => (await conferre(wiki, { hand: () => false, vessel: () => false, lead: () => false }, "new-group")).red;
   expect(await standingKukuluBegins([0], rehivedRed, "develop")).toEqual([]);
   const debt = await pendingBegins(wiki, "kukulu", "develop");
-  expect(() => refuseStandingBegin(debt)).toThrow(expect.objectContaining({ code: "rite-begun-stands", message: expect.stringMatching(new RegExp(`old-group tessera ${begun.tessera}[\\s\\S]*lares rite land --tessera`)) }));
+  expect(() => refuseStandingBegin(debt)).toThrow(expect.objectContaining({ code: "rite-begun-stands", message: expect.stringMatching(new RegExp(`old-group tessera ${begun.tessera}[\\s\\S]*lares rite land --abandon --tessera`)) }));
 });
 
 test("RED: the resting offer reads back as its vouches, each named by the lent face whose group it carries; CONTROL: a vouch for a group no lent face carries stays unnamed, and a file that reads as no offer reads none", () => {

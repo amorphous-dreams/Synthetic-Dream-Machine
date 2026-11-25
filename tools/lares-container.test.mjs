@@ -1937,6 +1937,16 @@ test(`${name}: kukulu-offer-path: pulama mode hands the vessel the offer file's 
     assert.equal(r.status, 0, r.stderr);
     assert.match(r.calls, /LAR_KUKULU_OFFER=\/lar\/config\/kukulu-offer\.json/);
   });
+  // ONE COMPOSITION PER RAISE: the vessel reads config/last-worn-face through its config bind and wears that face from its
+  // first composition where the pūlama forgot it, so the census reads it worn and the shim sends no second wear; no new env.
+  test(`${name}: worn-face-rides-the-config-bind: pulama mode names no worn-face env, and a raise whose census reads the face worn sends no wear`, { skip }, async () => {
+    const r = await run(shim, ["up"], { envFile: PULAMA_ENV, wornFace: 1, env: { FAKE_IMAGE_ID: "sha256:abc123" } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.doesNotMatch(r.calls, /LAR_WORN_FACE/);
+    const worn = await run(shim, ["up"], { envFile: PULAMA_ENV, wornFace: 1, env: { FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: KEY_HELD, FAKE_CENSUS_JSON: WORN_JSON } });
+    assert.equal(worn.status, 0, worn.stderr);
+    assert.doesNotMatch(worn.calls, / wear \d+(?: --yes)?$/m);
+  });
   test(`${name}: down-leaves-pulama-standing: with a pūlama running, down stops and removes the vessel alone`, { skip }, async () => {
   const r = await run(shim, ["down"], { envFile: PULAMA_ENV, env: { FAKE_PULAMA_ID: "p1" } });
   assert.equal(r.status, 0, r.stderr);

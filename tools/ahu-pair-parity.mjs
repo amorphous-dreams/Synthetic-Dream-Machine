@@ -90,7 +90,9 @@ function where(file, text, at) {
 const glimpse = (text, at) => JSON.stringify(text.slice(at, at + 48).split("\n")[0]);
 
 const EXCLUDED = /(^|\/)(scratch|tmp)(\/|$)/;
-const files = carrierFiles(REPO).filter((f) => f.startsWith("bags/") && f.endsWith(".mem") && !EXCLUDED.test(f));
+// Both disk homes a carrier rests in: a bag's canon (`bags/`) and a wiki's working layer (`wikis/`).
+const HOME = /^(bags|wikis)\//;
+const files = carrierFiles(REPO).filter((f) => HOME.test(f) && f.endsWith(".mem") && !EXCLUDED.test(f));
 
 let total = 0;
 let reproduced = 0;

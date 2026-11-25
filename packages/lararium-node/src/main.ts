@@ -86,11 +86,11 @@ import { vesselCustodyHomes } from "./vault-carriers.js";
 import { rendezvousDir, standingPath, markerIsOurs } from "@lararium/mesh/rendezvous-path";
 import { loadVesselIdentity, vesselFloorKeyDoor, sovereignStands, makeNodePersonaPetnameStore } from "./node-vessel-identity.js";
 import { CROSS_FACE_READ_VERBS } from "@lararium/mesh/cross-face-reach";
-import { KUKULU_OFFER_ENV, cleanGoodbye, lifeCloses, namesPulama, pulamaStandBy, vesselPulamaHolder } from "./pulama-seat.js";
+import { KUKULU_OFFER_ENV, cleanGoodbye, lifeCloses, namesPulama, pulamaStandBy, readHouseWornFace, vesselPulamaHolder } from "./pulama-seat.js";
 import { consumeKukuluOffer } from "./kukulu-offer.js";
 import { NoStoodNexus, stoodFloorPins } from "./hearth-sovereign-pin.js";
 import { getMempalaceClient }           from "@lararium/mempalace";
-import { larDataDir }                   from "./vessel-paths.js";
+import { larConfigHome, larDataDir }    from "./vessel-paths.js";
 import { mkdirSync, writeFileSync, rmSync, readFileSync } from "fs";
 import { REPO_ROOT }   from "./node-host.js";
 import { resolveGenesis, checkGenesisPin, type GenesisResolution } from "./genesis-resolve.js";
@@ -543,6 +543,7 @@ async function main(): Promise<void> {
   const standBy = pulama === null ? null : pulamaStandBy({
     holder: pulama, recompose: (sovereign) => recompose(sovereign), onLog: (line) => console.log(`[pulama] ${line}`),
     consumeOffer: () => consumeKukuluOffer(process.env[KUKULU_OFFER_ENV]),
+    houseWorn: () => readHouseWornFace(larConfigHome),
   });
   custodyDoor = custodyFrameHandler({
     holder, recompose, testScratch,
