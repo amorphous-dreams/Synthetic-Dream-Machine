@@ -57,6 +57,7 @@ import {
   testimonyLines, titleSlug, titlesOf, wakingCap, writerField,
   type SideWrite, type SlotWrite, type SpiritAwake, type SpiritCarry, type SpiritRecord, type SpiritRow, type SpiritSource,
 } from "@lararium/mesh/spirit-shrine";
+import { UNFOLD_LAYER, UNFOLD_MACRO, UNFOLD_RANKS, spiritCardOf, unfoldCall, unfoldRank, type UnfoldLayer, type UnfoldRank } from "@lararium/mesh/spirit-unfold";
 import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
 import { stampCarrier } from "@lararium/memetic-frame";
 import { COMPACTION_DISPLAY, COMPACTION_WORD } from "../spirit-words.js";
@@ -143,6 +144,45 @@ async function resolveRecord(args: ParsedArgs, label: string, pet: string, soft 
   const sideFields = await fieldsOf(args, label, sideOf(pet));
   return spiritRecordOf({ pet, ...hit }, fields, sideFields);
 }
+
+// ── THE UNFOLD ─────────────────────────────────────────────────────────────────────────────────────────────────────
+
+/** The module title the lares-lararium skin packs the unfold macro under. */
+const UNFOLD_MODULE = `lar:///ha.ka.ba/lararium/tw5/macros/${UNFOLD_MACRO}`;
+
+/** The rank `--aperture` names (a rank, a level 0..20, or the gauge's pair), else the verb's own. */
+function apertureOf(args: ParsedArgs, fallback: UnfoldRank): UnfoldRank {
+  const word = wordOf(args.options["aperture"]);
+  if (word === null) return fallback;
+  const rank = unfoldRank(word);
+  if (rank === null) throw new DoorUsage(`--aperture names one of ${UNFOLD_RANKS.join(" · ")}, a level 0..20, or the pair (10/measure); got "${word}"`);
+  return rank;
+}
+
+/** A card's unfold as the wiki rendered it: `text` null where the card stands and the wiki's skin holds no unfold macro. */
+interface Unfold { readonly card: string; readonly rank: UnfoldRank; readonly layer: UnfoldLayer; readonly text: string | null; readonly uncut: string }
+
+/**
+ * THE CARD UNFOLDS IN THE WIKI. Where `spirit-card/<pet>` stands, this door sends the wiki's render verb ONE macro call and
+ * prints what the engine answers: the macro, the template and every transclusion run inside the wiki that holds the records
+ * (the lares-lararium skin's `<<spirit-unfold>>`). Null where no card stands, so a spirit holding a slot shrine alone reads as
+ * it always read.
+ */
+async function unfoldCard(args: ParsedArgs, label: string, pet: string, rank: UnfoldRank): Promise<Unfold | null> {
+  const card = spiritCardOf(pet);
+  if ((await fieldsOf(args, label, card))["title"] !== card) return null;
+  const call = unfoldCall(pet, rank)!;
+  const uncut = `lares wiki render --recipe ${RECIPE} --form text --text ${shq(call)}`;
+  const out = await door(args, label, "wiki-render", { recipe: RECIPE, text: call, form: "text" });
+  const rendered = typeof out["text"] === "string" ? out["text"].replace(/\s+$/, "") : "";
+  const text = rendered === "" ? null : out["truncated"] === true ? `${rendered}\n… the render pages past here; read it whole: ${uncut}` : rendered;
+  return { card, rank, layer: UNFOLD_LAYER[rank], text, uncut };
+}
+/** What an answer carries of an unfold. */
+const unfoldData = (u: Unfold): Record<string, unknown> => ({ card: u.card, aperture: u.rank, layer: u.layer, unfolded: u.text !== null });
+/** A card stands and the wiki rendered nothing for it: the loaded house skin holds no unfold macro. Names the read that shows it and the card's own render. */
+const unfoldAbsentLine = (u: Unfold): string =>
+  `The card ${u.card} stands, and this wiki's lares-lararium skin rendered no ${UNFOLD_MACRO} for it (a skin adopted before the macro holds none). Read whether the skin holds it: lares wiki filter '[[${UNFOLD_MODULE}]is[shadow]]' --recipe ${RECIPE} · read the card by title meanwhile: lares wiki render ${u.card} --recipe ${RECIPE} --form text`;
 
 /**
  * A COMPARE-AND-SWAP ON THE RECORD'S FIELDS. Each round reads the fields and their live hash, asks `change` what to write over
@@ -343,6 +383,7 @@ async function readTitle(args: ParsedArgs, rec: Record_ | null, pet: string, tit
 
 async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
   const given = petOf(args, "om");
+  const rank = apertureOf(args, "beat");
   const sourceWord = wordOf(args.options["source"]) ?? "startup";
   if (!(SOURCES as readonly string[]).includes(sourceWord)) throw new DoorUsage(`--source names one of ${SOURCES.join(", ")}; got "${sourceWord}"`);
   const source = sourceWord as Source;
@@ -350,6 +391,16 @@ async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
   if (body !== null && !BODY.test(body)) throw new DoorUsage("--body names a session id (letters, digits, '-' and '_')");
   const title = typeof args.options["title"] === "string" ? args.options["title"] : null;
   const seated = await resolveRecord(args, "om", given, true);
+  // A CARD WITH NO SHRINE wakes on the card alone: the unfold stands as the whole read, and nothing writes (presence and the
+  // wake epoch rest on a shrine's sibling record).
+  if (seated === null && source !== "precompact") {
+    const alone = await unfoldCard(args, "om", given, rank);
+    if (alone !== null) {
+      const text = alone.text ?? unfoldAbsentLine(alone);
+      emit(args, { ok: true, data: { pet: given, uri: alone.card, kind: "card", source, ...unfoldData(alone), chars: text.length, text }, human: () => console.log(text) });
+      return 0;
+    }
+  }
   // The session's own counter decides held (`--held`); the card's lease orders bodies and decides nothing here.
   const held = args.flags["held"] === true ? "held" : body === null ? null : "fresh";
   const turn = source === "precompact" ? { to: null, starter: null, line: null } : await readTitle(args, seated, given, title, held, source);
@@ -406,6 +457,8 @@ async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
   ].flatMap((l) => (l === null ? [] : [l])).join("\n") || null;
   const open = await readSlot(args, "om", rec, "#/open");
   const attention = await attentionUnfold(args, rec);
+  const unfold = await unfoldCard(args, "om", pet, rank);
+  if (unfold !== null && unfold.text === null) testimony.push(unfoldAbsentLine(unfold));
   // Each slot's digest, the view this body woke on: a whole-slot write names its slot's as --base, so a sibling's write since reads.
   const digests: Record<string, string> = {};
   for (const s of rec.slots) {
@@ -415,9 +468,9 @@ async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
   testimony.push(`Slot digests (a whole-slot ah names its slot's as --base; --add needs none): ${Object.entries(digests).map(([k, v]) => `${k}=${v}`).join(" ")}`);
   const advisory = advisoryLine(rec);
   if (advisory !== null) testimony.push(advisory);
-  const text = omText(rec, { open: open?.text ?? null, testimony, attention, lead });
+  const text = omText(rec, { open: open?.text ?? null, testimony, attention, lead, card: unfold === null || unfold.text === null ? null : { text: unfold.text, uncut: unfold.uncut } });
   emit(args, {
-    ok: true, data: { ...data, latest: carry?.title ?? null, digests, chars: text.length, cap: OM_CAP_CHARS, text },
+    ok: true, data: { ...data, ...(unfold === null ? {} : unfoldData(unfold)), latest: carry?.title ?? null, digests, chars: text.length, cap: OM_CAP_CHARS, text },
     human: () => console.log(text),
   });
   return 0;
@@ -540,16 +593,27 @@ async function burnToAshes(args: ParsedArgs, label: string, lines: readonly stri
 
 async function hum(args: ParsedArgs, ctx: Ctx): Promise<number> {
   const pet = petOf(args, "hum");
-  const rec = (await resolveRecord(args, "hum", pet))!;
+  const rank = apertureOf(args, "measure");
   const fold = wordOf(args.options["fold"]);
   const lineWord = wordOf(args.options["line"]);
   if (lineWord !== null && fold === null) throw new DoorUsage(`--line <n> rides beside --fold '#/<slot>' (\`lares spirit hum ${pet} --fold '#/bodies' --line 3\`)`);
+  // A fold needs the shrine it folds; a bare hum reads a card where one stands, with or without a shrine beneath it.
+  const found = await resolveRecord(args, "hum", pet, fold === null);
+  const unfold = fold === null ? await unfoldCard(args, "hum", pet, rank) : null;
+  if (found === null) {
+    if (unfold === null) throw spiritUnknown(pet);
+    const shown = unfold.text ?? unfoldAbsentLine(unfold);
+    emit(args, { ok: true, data: { pet, uri: unfold.card, kind: "card", ...unfoldData(unfold), unfold: unfold.text }, human: () => console.log(shown) });
+    return 0;
+  }
+  const rec = found;
   if (fold === null) {
     const m = measure(rec);
     const over = m.slots.filter((s) => s.over);
     emit(args, {
-      ok: true, data: { pet, uri: rec.uri, ...m, advisory: advisoryLine(rec), every: rec.every, oversize: over.map((s) => s.slot) },
+      ok: true, data: { pet, uri: rec.uri, ...m, advisory: advisoryLine(rec), every: rec.every, oversize: over.map((s) => s.slot), ...(unfold === null ? {} : { ...unfoldData(unfold), unfold: unfold.text }) },
       human: () => {
+        if (unfold !== null) console.log(`${unfold.text ?? unfoldAbsentLine(unfold)}\n`);
         console.log(`lares spirit hum ${pet} · ${rec.uri}`);
         for (const s of m.slots) console.log(`  ${s.over ? "⚠" : " "} ${s.slot.padEnd(14)} ${String(s.bytes).padStart(5)}${s.budget === null ? "" : ` / ${s.budget}`}`);
         console.log(`  ${advisoryLine(rec, true)}`);

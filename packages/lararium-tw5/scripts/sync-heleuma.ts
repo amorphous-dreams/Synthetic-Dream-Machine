@@ -46,6 +46,7 @@ import { sha256HexSync } from "@lararium/mesh";
 import { frameCarrier, headUriOf } from "@lararium/memetic-frame";
 import { moduleBodyDigest, applySourceSha256Patch, sourceTiddlerMatches, stampSourceAnchor } from "./heleuma-digest.js";
 import { rootMetaFields } from "../src/root-meta.js";
+import { PLUGIN_SKINS, type PluginSkin } from "../plugin-build/skins.js";
 
 const root     = repoRoot;
 const pkgsRoot = resolve(root, "packages");
@@ -468,6 +469,72 @@ function runSyncModules(): { drift: number; missing: number; patched: number } {
 }
 
 // ---------------------------------------------------------------------------
+// SKIN CODE-MEMES: a code-meme resting INSIDE a plugin skin, beside the module tiddler it windows.
+//   A skin's source island holds the meme as a `.tid` whose type names the carrier and whose body holds it; the pack
+//   ships meme and module together, so a wiki that loads the skin reads both. Its `module-ref` names a module the SAME
+//   skin packs, and its `source-sha256` names that module's packed bytes (the module manifest's own digest).
+// ---------------------------------------------------------------------------
+
+const tw5Pkg = resolve(pkgsRoot, "lararium-tw5");
+const CARRIER_TID_TYPE = "type: text/memetic-wikitext+tiddlywiki";
+
+interface SkinCodeMeme { path: string; head: string; body: string; skin: PluginSkin }
+
+function skinCodeMemes(): SkinCodeMeme[] {
+  const found: SkinCodeMeme[] = [];
+  for (const skin of PLUGIN_SKINS) {
+    const dir = resolve(tw5Pkg, skin.tiddlersDir);
+    for (const entry of readdirSync(dir).sort()) {
+      if (!entry.endsWith(".tid")) continue;
+      const path = resolve(dir, entry);
+      const tid = readFileSync(path, "utf8");
+      const split = tid.indexOf("\n\n");
+      if (split < 0) continue;
+      const head = tid.slice(0, split);
+      if (!head.split("\n").includes(CARRIER_TID_TYPE)) continue;
+      const body = tid.slice(split + 2);
+      const mode = rootMetaFields(body)["heleuma"];
+      if (mode === "ha" || mode === "ka" || mode === "ba") found.push({ path, head, body, skin });
+    }
+  }
+  return found;
+}
+
+function runSkinCodeMemeSync(commit: boolean): { drift: number; missing: number; patched: number } {
+  let drift = 0, missing = 0, patched = 0;
+  for (const meme of skinCodeMemes()) {
+    const toml = rootMetaFields(meme.body);
+    const uri = asStr(toml["title"]);
+    const moduleRef = asStr(toml["module-ref"]);
+    if (!meme.head.split("\n").includes(`title: ${uri}`)) {
+      console.warn(`[skin-memes] MISSING  ${relative(root, meme.path)}: the tiddler's title and the carrier's title name one address`);
+      missing++;
+      continue;
+    }
+    let modules: Array<{ title: string; sha256: string }> = [];
+    try { modules = (JSON.parse(readFileSync(resolve(tw5Pkg, meme.skin.moduleManifest), "utf8")) as { modules: typeof modules }).modules; }
+    catch { /* no manifest yet: the module reads as missing below */ }
+    const packed = modules.find((m) => m.title === moduleRef);
+    if (!packed) {
+      console.warn(`[skin-memes] MISSING  ${uri}: module-ref ${moduleRef || "(none)"} names no module the ${meme.skin.stem} skin packs (build first: pnpm --filter @lararium/tw5 build:plugin)`);
+      missing++;
+      continue;
+    }
+    const live = formatDigest("sha256", packed.sha256);
+    if (digestsEqual(live, asStr(toml["source-sha256"]))) { console.log(`[skin-memes] ok   ${uri}`); continue; }
+    if (commit) {
+      writeFileSync(meme.path, `${meme.head}\n\n${applySourceSha256Patch(meme.body, live)}`, "utf8");
+      console.log(`[skin-memes] patched  ${uri}  source-sha256`);
+      patched++;
+    } else {
+      console.warn(`[skin-memes] DRIFT  ${uri}: source-sha256 ${asStr(toml["source-sha256"]) || "(missing)"} · packed module ${live} (cure: pnpm --filter @lararium/tw5 build:heleuma:commit)`);
+      drift++;
+    }
+  }
+  return { drift, missing, patched };
+}
+
+// ---------------------------------------------------------------------------
 // --scan-decorators: convention-based decorator file discovery
 //
 // Detects files following the Lararium decorator convention:
@@ -677,7 +744,9 @@ if (SCAN_DECORATORS) {
 
 if (SYNC_MODULES) {
   console.log("[sync-modules] checking anchor source-sha256 against module tiddler bodies\n");
-  const { drift, missing, patched } = runSyncModules();
+  const bags = runSyncModules();
+  const skins = runSkinCodeMemeSync(COMMIT);
+  const drift = bags.drift + skins.drift, missing = bags.missing + skins.missing, patched = bags.patched + skins.patched;
   if (COMMIT) {
     console.log(`\n[sync-modules] patched ${patched}, missing ${missing}`);
   } else {
@@ -695,6 +764,9 @@ if (COMMIT) {
   const scriptsDir = dirname(fileURLToPath(import.meta.url));
   console.log("[heleuma] --commit: building plugin CJS tiddlers and patching anchor hashes…\n");
   execSync(`tsx ${resolve(scriptsDir, "build-plugin-tiddler.ts")}`, { stdio: "inherit" });
+  // A skin code-meme names its module's packed bytes and rides the pack itself: a patched meme moves the plugin, never the
+  // module, so one more pack settles it.
+  if (runSkinCodeMemeSync(true).patched > 0) execSync(`tsx ${resolve(scriptsDir, "build-plugin-tiddler.ts")}`, { stdio: "inherit" });
   const waveContent = readFileSync(meshWaveAnchor, "utf8");
   const waveSource = readFileSync(resolve(root, "packages/lararium-mesh/src/wave-crest.ts"), "utf8");
   const waveDigest = formatDigest("sha256", sha256HexSync(waveSource));
@@ -712,9 +784,11 @@ let totalDrift   = 0;
 let totalMissing = 0;
 let totalPatched = 0;
 
-for (const mdPath of [...walkExt(tw5MemesRoot, ".mem"), meshWaveAnchor]) {
-  const content = readFileSync(mdPath, "utf8");
-
+const windowed: Array<{ mdPath: string; content: string }> = [
+  ...[...walkExt(tw5MemesRoot, ".mem"), meshWaveAnchor].map((mdPath) => ({ mdPath, content: readFileSync(mdPath, "utf8") })),
+  ...skinCodeMemes().map((meme) => ({ mdPath: meme.path, content: meme.body })),
+];
+for (const { mdPath, content } of windowed) {
   const toml = rootMetaFields(content);
   if (Object.keys(toml).length === 0) continue;
 
@@ -781,6 +855,8 @@ if (!COMMIT) {
   if (modResult.drift > 0 || modResult.missing > 0) {
     console.warn(`[sync-modules] run with --sync-modules --commit to update source-sha256 fields`);
   }
+  const skinResult = runSkinCodeMemeSync(false);
+  if (skinResult.drift > 0 || skinResult.missing > 0) process.exitCode = 1;
 }
 
 // This Node source travels as a text tiddler, never as a TW5 module. Keep the

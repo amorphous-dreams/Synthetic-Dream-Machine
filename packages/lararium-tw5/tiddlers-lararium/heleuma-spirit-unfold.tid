@@ -1,0 +1,72 @@
+title: lar:///ha.ka.ba/lararium/tw5/heleuma/spirit-unfold
+type: text/memetic-wikitext+tiddlywiki
+
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/tw5/heleuma/spirit-unfold`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = true
+heleuma       = "ha"
+module-ref    = "lar:///ha.ka.ba/lararium/tw5/macros/spirit-unfold"
+role          = "code-meme: the spirit-unfold macro unfolds a tasked spirit by aperture inside the wiki that holds its card"
+source-file   = "packages/lararium-tw5/src/macros/spirit-unfold.ts"
+source-sha256 = "sha256:327f8b97e5ddc000bb8e6dd7202b513763c570565c47549268cddd28dad36bb5"
+title         = "lar:///ha.ka.ba/lararium/tw5/heleuma/spirit-unfold"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lararium/tw5/heleuma/spirit-unfold"
+```
+
+<<~ ahu slot=`#/purpose`>>
+
+!! The Unfold
+
+`<<spirit-unfold pet aperture>>` renders a tasked spirit progressively, inside the wiki that holds its records. A spirit's metadata rests as fields on its card (`lar:///ha.ka.ba/kahua/memory/spirit-card/<pet>`), whose text transcludes the card template; its slots rest on its shrine (`spirit/<pet>` or `familiar/<pet>`). The aperture names how far the unfold opens: the card's fields at pulse, the card through its template at beat, the shrine's slots by name, size and heading at measure (arc reads the same layer), and the whole shrine carrier at theme. With no aperture the macro reads beat. Where no card stands for the pet it renders nothing.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/law`>>
+
+!! The Render Runs In The Wiki
+
+The macro hands the engine wikitext and the engine renders it: every field read, the template transclusion, the slot listing and the carrier recompose run as filters and widgets over the wiki's own records. No door builds the card's words outside the engine. The pure core (the rank an aperture names, the wikitext a rank unfolds) stands in `packages/lararium-mesh/src/spirit-unfold.ts` and rides bundled into this module; it reads no wiki, no clock and no env, so the host door reads the same core for the one macro call it sends. The design: <<~ loulou uri=`lar:///ha.ka.ba/kahua/memory/reference/tasked-spirit`>>.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/callers`>>
+
+!! Callers
+
+`lares spirit om <pet>` and `lares spirit hum <pet>` send the wiki's `wiki-render` verb this one call where a card stands, by `--aperture`; `lares wiki render --text '<<spirit-unfold pet:"<pet>" aperture:"measure">>' --recipe default --form text` reads the same render; a browser tab calls the macro in any tiddler. The whole layer reads the shrine through the grammar skin's `meme-project` filter, so this module loads over the grammar and never the other way.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/caps-cost`>>
+
+!! Caps and Cost
+
+The macro reads through the wiki it renders in, so a reader's view decides what it shows; it writes nothing. One call renders one card, at most two shrines and their slots. The values of a card's fields ride as text at pulse and never wikify; the card's own text renders as wikitext at beat and wider, as any tiddler a reader opens.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/source`>>
+
+!! Source
+
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-tw5/src/macros/spirit-unfold.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#source-core` from=`?` to=`packages/lararium-mesh/src/spirit-unfold.ts` family=`code` role=`has`>>
+
+<$transclude $tiddler="lar:///ha.ka.ba/lararium/tw5/macros/spirit-unfold"/>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+<<~ loulou uri=`lar:///ha.ka.ba/kahua/memory/reference/tasked-spirit`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;RCYMQK7h6m64UtsokplAecAF7yY9iltoyF89cCjucE0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

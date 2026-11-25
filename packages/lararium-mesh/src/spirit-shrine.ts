@@ -317,22 +317,25 @@ export function testimonyLines(rec: Pick<SpiritRecord, "base">, carry: SpiritCar
 }
 
 /** Fit the wake's sections under the cap: the fixed lines whole, then #/open, then the attention unfold, each cut where it runs over. */
-export function omText(rec: Pick<SpiritRecord, "pet" | "uri" | "has">, parts: { open: string | null; testimony?: readonly string[]; attention?: string | null; lead?: string | null }, cap = OM_CAP_CHARS): string {
+export function omText(rec: Pick<SpiritRecord, "pet" | "uri" | "has">, parts: { open: string | null; testimony?: readonly string[]; attention?: string | null; lead?: string | null; card?: { text: string; uncut: string } | null }, cap = OM_CAP_CHARS): string {
   const head = `Lares spirit om · ${rec.pet} (${rec.uri}): the card a waking body reads first, before any summary.`;
-  const doors = `Read a slot whole: lares tiddler get ${rec.uri} --recipe default --meme --slot '#/<name>' · true one: lares spirit ah ${rec.pet} --slot '#/<name>' --file <path> (or --add <line>) · fold: lares spirit hum ${rec.pet}`;
+  const doors = `Read a slot whole: lares tiddler get ${rec.uri} --recipe default --meme --slot '#/<name>' · true one: lares spirit ah ${rec.pet} --slot '#/<name>' --file <path> (or --add <line>) · fold: lares spirit hum ${rec.pet}${parts.card ? ` · unfold: lares spirit om ${rec.pet} --aperture <pulse|beat|measure|theme>` : ""}`;
   const fixed = [parts.lead ?? null, head, rec.has, ...(parts.testimony ?? [])].flatMap((l) => (l === null ? [] : [l])).join("\n");
   let room = cap - fixed.length - doors.length - 4;
-  const fit = (text: string | null | undefined, what: string): string | null => {
+  const fit = (text: string | null | undefined, what: string, pointer = ""): string | null => {
     if (!text) return null;
     if (room <= 0) return null;
-    const cut = `\n… ${what} cut at the ${cap}-char wake cap`;
+    const cut = `\n… ${what} cut at the ${cap}-char wake cap${pointer}`;
     const kept = text.length <= room ? text : `${text.slice(0, Math.max(0, room - cut.length))}${cut}`;
     room -= kept.length + 1;
     return kept;
   };
+  // THE WAKING SLOT FITS FIRST: #/open rides under its own cap, so a long card render never crowds it out; the card takes the
+  // room left and prints ahead of it.
   const open = fit(parts.open, "#/open");
+  const card = fit(parts.card?.text, "the card", parts.card ? `; the uncut render: ${parts.card.uncut}` : "");
   const attention = fit(parts.attention, "the attention unfold");
-  return [fixed, "", open, attention, doors].flatMap((l) => (l === null ? [] : [l])).join("\n").slice(0, cap);
+  return [fixed, "", card, open, attention, doors].flatMap((l) => (l === null ? [] : [l])).join("\n").slice(0, cap);
 }
 
 /** The titles a record's #/attention body names, at most `ATTENTION_TITLES`, each once. */

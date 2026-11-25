@@ -33,12 +33,14 @@ import { cmdSpirit, omText, residueOf, slotBody, ashLedgerOf, OM_CAP_CHARS, WAKI
 import { COMPACTION_DISPLAY, COMPACTION_WORD } from "../src/spirit-words.js";
 import { COMMANDS } from "../src/bin/lares.js";
 import { CompositeStore, bagUri } from "@lararium/mesh";
-import { MemoryTiddlerStore, makeTiddlerPutReactor } from "@lararium/tw5";
+import { MemoryTiddlerStore, makeTiddlerPutReactor, makeWikiRenderReactor } from "@lararium/tw5";
 import { bootTestWiki, skipNote, wikiSkip } from "../../lararium-tw5/tests/test-wiki.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 
 const URI = `${MEMORY_PREFIX}familiar/lares-alpha`;
 const SIDE = `${MEMORY_PREFIX}presence/lares-alpha`;
+const CARD_PREFIX = `${MEMORY_PREFIX}spirit-card/`;
+const CARD = `${CARD_PREFIX}lares-alpha`;
 /** A slot's digest as the door hands it back: the first 16 hex of the sha256 of its body. */
 const digest = (body: string): string => createHash("sha256").update(body).digest("hex").slice(0, 16);
 const OPEN_CAP = WAKING_SLOT_BUDGETS["#/open"]!;
@@ -72,6 +74,10 @@ interface StageOpts {
   side?: Record<string, string>;
   /** The ash ledger's appends answer `refused` this many times before they land. */
   ledgerRefuse?: number;
+  /** The spirit's card (`spirit-card/<pet>`): its fields; absent, no card stands. */
+  card?: Record<string, string>;
+  /** What the wiki's render answers the unfold call; absent, the render names the call it read. */
+  unfold?: string;
   /** Slot patches answer `conflict` this many times, a sibling body's words landing first (`sibling`, by slot) at each. */
   patchConflicts?: number;
   sibling?: Record<string, string>;
@@ -106,6 +112,10 @@ function stage(opts: StageOpts = {}) {
         return { has: "has", meme: { uri: args["title"], slotText: framed(String(args["slot"]), text), canonicalHash: `partial:${String(args["slot"])}:${o !== null ? FULL : live()}`, bytes: 1600, slots: slots(opts.slotBytes, extra) } };
       }
       return { has: "<<~ has name=`rec`>>\n<<~ has name=`#/open`>>", meme: { uri: args["title"], canonicalHash: `skinny:${other(args["title"]) !== null ? FULL : live()}`, bytes: 1600, slots: slots(opts.slotBytes, extra) } };
+    }
+    if (verb === "wiki-render") return { recipe: args["recipe"], form: args["form"], text: opts.unfold ?? `rendered ${String(args["text"])}`, truncated: false, next: null };
+    if (verb === "tiddler-get" && String(args["title"]).startsWith(CARD_PREFIX)) {
+      return { tiddler: opts.card && args["title"] === CARD ? { fields: { title: CARD, text: "{{||template}}", ...opts.card }, hash: "sha256-card" } : null };
     }
     if (verb === "tiddler-get") {
       if (isSide(args["title"])) return { tiddler: opts.side ? { fields: { title: args["title"], ...opts.side }, hash: "sha256-side" } : null };
@@ -178,7 +188,7 @@ describe("the spirit door stands in the command table", () => {
   test("its row names every verb and every option its handler reads", () => {
     const row = COMMANDS.find((c) => c.name === "spirit")!;
     expect(row.verbs).toEqual(["help", "om", "ah", "hum", "otakiage", COMPACTION_WORD, "residue"]);
-    expect(row.accepts).toEqual(expect.arrayContaining(["add", "base", "file", "fold", "line", "slot", "text"]));
+    expect(row.accepts).toEqual(expect.arrayContaining(["add", "aperture", "base", "file", "fold", "line", "slot", "text"]));
   });
 });
 
@@ -1006,6 +1016,123 @@ describe("bunrei: many bodies wear one pet, and none locks another out", () => {
     stage({ side: { "bodies-awake": "lares-alpha#body-a00-full 2026-11-24T11:50:00.000Z" }, titles: [a], residue: { [a]: { body: "body-a00-full", depth: "2" } } });
     const r = await run(argv(["om", "lares-alpha"], { body: "body-b00" }));
     expect(String(data(r)["text"])).toContain(`#body-a00's chain: ${a}`);
+  });
+});
+
+describe("om and hum unfold a spirit's card through the wiki's own render", () => {
+  const renders = () => h.calls.filter((c) => c.verb === "wiki-render");
+  const call = (rank: string) => ({ verb: "wiki-render", args: { recipe: "default", text: `<<spirit-unfold pet:"lares-alpha" aperture:"${rank}">>`, form: "text" } });
+
+  test("a spirit holding a slot shrine alone wakes and hums with no render call", async () => {
+    stage();
+    const om = await run(argv(["om", "lares-alpha"]));
+    const hum = await run(argv(["hum", "lares-alpha"]));
+    expect([om.exit, hum.exit]).toEqual([0, 0]);
+    expect(renders()).toEqual([]);
+    expect(data(om)).not.toHaveProperty("card");
+    expect(data(hum)).not.toHaveProperty("card");
+  });
+
+  test("om on a carded spirit sends one macro call at beat and leads the wake with the render", async () => {
+    stage({ card: { pet: "lares-alpha", lane: "a lane" }, unfold: "lares-alpha ~ a tasked spirit\nLane: a lane" });
+    const r = await run(argv(["om", "lares-alpha"]));
+    expect(r.exit).toBe(0);
+    expect(renders()).toEqual([call("beat")]);
+    expect(data(r)).toMatchObject({ card: CARD, aperture: "beat", layer: "card" });
+    const text = String(data(r)["text"]);
+    expect(text).toContain("lares-alpha ~ a tasked spirit\nLane: a lane");
+    expect(text.indexOf("Lane: a lane")).toBeLessThan(text.indexOf("* a loop"));
+    expect(text).toContain("--aperture");
+    expect(text.length).toBeLessThanOrEqual(OM_CAP_CHARS);
+  });
+
+  test("--aperture names the rank the call carries, by word, level or pair", async () => {
+    stage({ card: { pet: "lares-alpha" } });
+    await run(argv(["om", "lares-alpha"], { aperture: "theme" }));
+    await run(argv(["om", "lares-alpha"], { aperture: "3" }));
+    await run(argv(["hum", "lares-alpha"], { aperture: "10/measure" }));
+    expect(renders()).toEqual([call("theme"), call("pulse"), call("measure")]);
+  });
+
+  test("an aperture naming no rank refuses before any door opens", async () => {
+    stage({ card: { pet: "lares-alpha" } });
+    for (const verb of ["om", "hum"]) {
+      const r = await run(argv([verb, "lares-alpha"], { aperture: "wide" }));
+      expect(r.exit).toBe(2);
+      expect(error(r).message).toContain("pulse · beat · measure · arc · theme");
+    }
+    expect(h.calls).toEqual([]);
+  });
+
+  test("a render past the wake cap keeps #/open whole and cuts the card with a pointer to the uncut render", async () => {
+    stage({ card: { pet: "lares-alpha" }, unfold: "c".repeat(20_000), open: "!! Open\n\n* the loop a wake must read" });
+    const text = String(data(await run(argv(["om", "lares-alpha"])))["text"]);
+    expect(text.length).toBeLessThanOrEqual(OM_CAP_CHARS);
+    expect(text).toContain("* the loop a wake must read");
+    expect(text).toContain("the card cut at the 9000-char wake cap");
+    expect(text).toContain(`lares wiki render --recipe default --form text --text '<<spirit-unfold pet:"lares-alpha" aperture:"beat">>'`);
+  });
+
+  test("a card with no shrine wakes on the card alone: no starter, no presence write", async () => {
+    stage({ kind: "none", card: { pet: "lares-alpha" }, unfold: "lares-alpha ~ a tasked spirit" });
+    const r = await run(argv(["om", "lares-alpha"], { body: "s-1" }));
+    expect(r.exit).toBe(0);
+    expect(data(r)).toMatchObject({ pet: "lares-alpha", kind: "card", card: CARD, uri: CARD, aperture: "beat" });
+    expect(String(data(r)["text"])).toContain("lares-alpha ~ a tasked spirit");
+    expect(data(r)).not.toHaveProperty("starter");
+    expect(h.calls.filter((c) => c.verb === "tiddler-put" || c.verb === "meme-put")).toEqual([]);
+  });
+
+  test("a card standing where the wiki's skin holds no unfold macro wakes as before and names the cure", async () => {
+    stage({ card: { pet: "lares-alpha" }, unfold: "" });
+    const r = await run(argv(["om", "lares-alpha"]));
+    expect(r.exit).toBe(0);
+    const text = String(data(r)["text"]);
+    expect(text).toContain("* a loop");
+    expect(text).toContain("spirit-unfold");
+    expect(text).toContain("lares wiki filter '[[lar:///ha.ka.ba/lararium/tw5/macros/spirit-unfold]is[shadow]]' --recipe default");
+    expect(data(r)["unfolded"]).toBe(false);
+  });
+
+  test("hum on a carded spirit unfolds at measure beside the slot measures", async () => {
+    stage({ card: { pet: "lares-alpha" }, unfold: "lares-alpha ~ slots at measure" });
+    const r = await run(argv(["hum", "lares-alpha"]));
+    expect(renders()).toEqual([call("measure")]);
+    expect(data(r)).toMatchObject({ card: CARD, aperture: "measure", layer: "slots", unfold: "lares-alpha ~ slots at measure", total: 1600 });
+  });
+
+  test("hum on a card with no shrine answers the unfold alone, and a fold there names the shrine it lacks", async () => {
+    stage({ kind: "none", card: { pet: "lares-alpha" }, unfold: "lares-alpha ~ slots at measure" });
+    const r = await run(argv(["hum", "lares-alpha"]));
+    expect(r.exit).toBe(0);
+    expect(data(r)).toMatchObject({ pet: "lares-alpha", kind: "card", uri: CARD, unfold: "lares-alpha ~ slots at measure" });
+    const fold = await run(argv(["hum", "lares-alpha"], { fold: "#/bodies" }));
+    expect(error(fold).code).toBe("spirit-unknown");
+  });
+});
+
+describe.skipIf(wikiSkip)(`the unfold renders through the real wiki-render verb${skipNote}`, () => {
+  test("om's one call renders the card through its template in the wiki's own engine", async () => {
+    const DAEMON = bagUri("daemon");
+    const TEMPLATE = `${MEMORY_PREFIX}template/tasked-spirit`;
+    const engine = await bootTestWiki({ tiddlers: [
+      { title: "lar:///ha.ka.ba/lararium/config/current-wiki-bag", text: DAEMON },
+      { title: TEMPLATE, text: "!! <$text text={{!!pet}}/> ~ a tasked spirit\n\n''Lane:'' {{!!lane}}" },
+      { title: CARD, pet: "lares-alpha", lane: "the verbs render", text: `{{||${TEMPLATE}}}` },
+    ] });
+    const composite = new CompositeStore();
+    composite.addLayer({ bagId: DAEMON, store: new MemoryTiddlerStore(DAEMON), writable: true });
+    const render = makeWikiRenderReactor({ composite, tw5: engine } as never);
+    const ctx = { daemon: composite, invocation: { requestId: "r1" }, cap: async () => ({ ok: true }) } as never;
+    stage({ card: { pet: "lares-alpha", lane: "the verbs render" } });
+    const mocked = h.answer;
+    h.answer = (verb, args) => (verb === "wiki-render" ? (render(args, ctx) as Promise<Record<string, unknown>>) : mocked(verb, args));
+    const beat = await run(argv(["om", "lares-alpha"]));
+    expect(beat.exit, JSON.stringify(beat.printed)).toBe(0);
+    expect(String(data(beat)["text"])).toContain("lares-alpha ~ a tasked spirit");
+    expect(String(data(beat)["text"])).toContain("Lane: the verbs render");
+    const pulse = await run(argv(["om", "lares-alpha"], { aperture: "pulse" }));
+    expect(String(data(pulse)["text"])).toContain("lane: the verbs render\n");
   });
 });
 

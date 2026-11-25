@@ -28,6 +28,10 @@
       "import": "./dist/spirit-shrine.js",
       "types": "./dist/spirit-shrine.d.ts"
     },
+    "./spirit-unfold": {
+      "import": "./dist/spirit-unfold.js",
+      "types": "./dist/spirit-unfold.d.ts"
+    },
     "./hand-refusal": {
       "import": "./dist/hand-refusal.js",
       "types": "./dist/hand-refusal.d.ts"
