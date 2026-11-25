@@ -722,9 +722,9 @@ jobs:
     # input then reads code, and the shards answer (a lane still answers on its doorstep).
     needs: [scope, quick]
     if: ${{ !cancelled() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork) }}
+    # A lane whose Quick gates read red walks the doorstep too: the shards spend no runner on a head already red (the Quick
+    # check carries the red); develop, main and merge_group walk every shard whatever Quick answered.
     uses: ./.github/workflows/e2e-shards.yml
     with:
-      # A lane whose Quick gates read red walks the doorstep too: the shards spend no runner on a head already red (the Quick
-      # check carries the red); develop, main and merge_group walk every shard whatever Quick answered.
       doorstep: ${{ (github.event_name == 'push' && (startsWith(github.ref, 'refs/heads/develop--') || startsWith(github.ref, 'refs/heads/lane/') || needs.scope.outputs.canon == 'true')) || !(needs.quick.result == 'success' || !(!startsWith(github.ref, 'refs/heads/gh-readonly-queue/') && github.ref != 'refs/heads/develop' && github.ref != 'refs/heads/main')) }}
 

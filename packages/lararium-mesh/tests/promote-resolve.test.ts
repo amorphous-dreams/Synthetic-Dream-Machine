@@ -18,15 +18,17 @@ describe("promoted digests join a wiki's plugin selection", () => {
     const store = new Map([[digest, bytes]]);
     const base = await resolveRecipePluginCids(recipe("field-notes"), inputs(store));
     expect(base.ok).toBe(true);
+    if (!base.ok) throw new Error(base.error);
     const withHook = await resolveRecipePluginCids(recipe("field-notes"), { ...inputs(store), promoted: async (slug) => { asked.push(slug); return [digest, digest]; } });
     expect(asked).toEqual(["field-notes"]);
-    expect(withHook).toMatchObject({ ok: true, pluginCids: [...(base as { pluginCids: string[] }).pluginCids, digest] });
+    expect(withHook).toMatchObject({ ok: true, pluginCids: [...base.pluginCids, digest] });
   });
 
   test("RED: a promoted digest whose bytes the store lacks or holds corrupt DROPS out of the union and is reported by name, while the rest of the selection still boots; CONTROL: sound bytes pass, and a failing offering selection keeps the whole-recipe refusal", async () => {
     const voided: Array<{ wiki: string; digests: readonly string[] }> = [];
     const onPromotedVoided = (wiki: string, digests: readonly string[]) => { voided.push({ wiki, digests }); };
-    const base = (await resolveRecipePluginCids(recipe("field-notes"), inputs(new Map()))) as { ok: true; pluginCids: string[] };
+    const base = await resolveRecipePluginCids(recipe("field-notes"), inputs(new Map()));
+    if (!base.ok) throw new Error(base.error);
     const missing = await resolveRecipePluginCids(recipe("field-notes"), { ...inputs(new Map()), promoted: async () => [digest], onPromotedVoided });
     expect(missing).toMatchObject({ ok: true, pluginCids: base.pluginCids });
     const corrupt = await resolveRecipePluginCids(recipe("field-notes"), { ...inputs(new Map([[digest, new TextEncoder().encode("evil")]])), promoted: async () => [digest], onPromotedVoided });

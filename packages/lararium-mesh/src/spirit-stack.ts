@@ -5,7 +5,7 @@
  * name, holding a stack of what it holds, in the seed's own shape (`<<~ has entity=`spirit` name=`<pet>` params=`…`>>`). The three
  * kinds (familiar, tasked, masked) read as PROFILES off the caps a record holds, never as three record shapes; a spirit may hold
  * several at once. The records that stood before the one address (`familiar/<pet>`, `spirit/<pet>`, `spirit-card/<pet>`,
- * `mask-card/<pet>` on the memory stage) read through the same stack: each legacy address signs its profile's cap, and no
+ * `mask-card/<pet>` on the memory stage) read through the same stack: each seat address signs its profile's cap, and no
  * record moves.
  *
  * THE STACK, IN TWO GRAINS A FILTER CAN GATHER. A CAP rides as a three-term `lar:///` address in the record's `tags` and, where
@@ -75,7 +75,7 @@ export const LEGACY_SEATS: ReadonlyArray<{ readonly prefix: string; readonly sig
   { prefix: `${STAGE}spirit-card/`, signs: "lar:///spirit.lane.holds" },
   { prefix: `${STAGE}mask-card/`, signs: "lar:///spirit.canon.transcludes" },
 ]);
-/** The cap a record's own address signs: a legacy address signs its profile's; the one address signs none. */
+/** The cap a record's own address signs: a seat address signs its profile's; the one address signs none. */
 export const seatedCap = (uri: string): string | null => LEGACY_SEATS.find((s) => uri.startsWith(s.prefix))?.signs ?? null;
 /** The mask card a pet name's fields rest on, before the one record. */
 export const maskCardOf = (pet: string): string => `${STAGE}mask-card/${pet}`;
@@ -105,9 +105,9 @@ export interface SpiritHold {
   readonly value: string;
   /** The record seals this cap's field: the cap names itself and nothing more. */
   readonly sealed: boolean;
-  /** Does the cap's address stand in `tags` (so a filter gathers it)? A legacy field or seat alone reads untagged. */
+  /** Does the cap's address stand in `tags` (so a filter gathers it)? A field or seat alone reads untagged. */
   readonly tagged: boolean;
-  /** The record's own address signs this cap (a legacy seat): it leaves when the record moves, never by an unstring. */
+  /** The record's own address signs this cap (a seat address): it leaves when the record moves, never by an unstring. */
   readonly seated: boolean;
   readonly held: CapHolder;
   readonly profile: SpiritProfile | null;
@@ -117,7 +117,7 @@ const oneLine = (value: string): string => value.replace(/\s+/g, " ").trim();
 
 /**
  * THE STACK A RECORD HOLDS, read off its fields and its address: each named cap stands where its tag stands, its field holds
- * a value, or the record's own (legacy) address signs it; every other three-term address in `tags` stands as a bare cap.
+ * a value, or the record's own seat address signs it; every other three-term address in `tags` stands as a bare cap.
  */
 export function stackOf(fields: Readonly<Record<string, string>>, uri: string): SpiritHold[] {
   const tags = tagsOf(fields["tags"]);

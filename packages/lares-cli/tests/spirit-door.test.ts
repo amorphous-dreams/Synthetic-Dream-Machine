@@ -1495,7 +1495,7 @@ describe("the ʻĀlana Circle: a card answers the slot verbs, a summon offers fi
     const r = await run(flagged(["ah", "lares-alpha"], { text: MANDATE, instance: "s-9" }, { offer: true }), { hand: AI });
     expect(r.exit, JSON.stringify(r.printed)).toBe(0);
     expect(o.offering).toMatchObject({ "offered-by": "seat#s-9" });
-    stage({ kind: "none", card: CARD_FIELDS(), offering: o.offering });
+    stage({ kind: "none", card: CARD_FIELDS(), ...(o.offering !== undefined ? { offering: o.offering } : {}) });
     const om = await run(argv(["om", "lares-alpha"], { instance: "s-1" }));
     expect(data(om)["mandate"]).toMatchObject({ offeredBy: "seat#s-9" });
     expect(String(data(om)["text"])).toContain("offered by seat#s-9");
@@ -1725,7 +1725,7 @@ describe("the instance names a spirit's model stream (ruling 2026-11-25-body-bec
   const offered = (): Record<string, string> => ({ pet: "lares-alpha", text: MANDATE, "mandate-hash": sha(MANDATE), "offer-seq": "1", lane: CARD, grant: "read-only", "offered-by": "hand" });
   const card = (): Record<string, string> => ({ pet: "lares-alpha", lane: "read a PR cold", text: "{{||lar:///ha.ka.ba/kahua/memory/template/tasked-spirit}}", tags: "stage/spirit-card" });
 
-  test("the spirit row accepts --instance and refuses --body by name (alpha line, no alias)", () => {
+  test("the spirit row accepts --instance and refuses --body by name", () => {
     const row = COMMANDS.find((c) => c.name === "spirit") as unknown as { accepts: string[] };
     expect(row.accepts).toContain("instance");
     expect(row.accepts).not.toContain("body");
@@ -1741,7 +1741,7 @@ describe("the instance names a spirit's model stream (ruling 2026-11-25-body-bec
   });
 
   test("a card's legacy bodies field reads through as #/instances, and the write lands on instances and unsets bodies", async () => {
-    const held = { ...card(), bodies: "2026-11-24 · one" };
+    const held: Record<string, string> = { ...card(), bodies: "2026-11-24 · one" };
     stage({ kind: "none", card: held });
     const r = await run(argv(["ah", "lares-alpha"], { slot: "#/instances", add: "2026-11-25 · circle-keeper#4" }));
     expect(r.exit, JSON.stringify(r.printed)).toBe(0);

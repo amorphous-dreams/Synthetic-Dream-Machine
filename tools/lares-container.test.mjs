@@ -2719,10 +2719,15 @@ for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
 
 test("the hand verbs the shims send to the pūlama stay the names it dispatches (name-successor, name-successor-lei)", async () => {
   const { readFileSync } = await import("node:fs");
-  const verbs = readFileSync(new URL("../packages/lararium-node/src/pulama-verbs.ts", import.meta.url), "utf8");
+  const { handVerbExit } = await import("../packages/lararium-node/dist/src/pulama-verbs.js");
   const sh = readFileSync(new URL("./lares-container.sh", import.meta.url), "utf8");
   const ps = readFileSync(new URL("./lares-container.ps1", import.meta.url), "utf8");
-  for (const op of ["name-successor", "name-successor-lei"]) assert.ok(verbs.includes(`"${op}"`), `the pūlama dispatches ${op}`);
+  // The pūlama knows each op as an act that must land: its landing reading exits 0 and a refusal exits 1 (an op it never
+  // dispatches exits 0 on any reading, so a renamed op reads red here).
+  for (const op of ["name-successor", "name-successor-lei"]) {
+    assert.equal(handVerbExit(op, { reading: "named" }), 0, `the pūlama lands ${op} on "named"`);
+    assert.equal(handVerbExit(op, { reading: "pulama-locked" }), 1, `the pūlama dispatches ${op}`);
+  }
   assert.match(sh, /node "\$PULAMA_MAIN" name-successor "/);
   assert.match(sh, /node "\$PULAMA_MAIN" name-successor-lei "/);
   assert.match(ps, /\$PulamaMain, 'name-successor'/);

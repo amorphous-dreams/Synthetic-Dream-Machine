@@ -36,6 +36,8 @@ import { ratchetWords, ratchetsDiffer, type GenesisDigests, type RatchetDifferen
 import { type FloorAcceptOutcome, type FloorStatus, type FloorAdoptOutcome, type FloorLocalAct, type FloorPin } from "@lararium/mesh/floor-pin";
 import { type FloorDrift } from "@lararium/mesh/floor-drift";
 import { GENESIS_FLOOR_TIDDLER } from "@lararium/mesh/floor-manifest";
+import { type GenesisSeed } from "@lararium/mesh/genesis-doc";
+import { ownEntry } from "@lararium/mesh/stored-value";
 import { FloorRefused, FLOOR_GRAINS, floorCardFor, floorRowLine, readFloorDrifts, rowInGrain, type FloorCard, type FloorDriftRow, type FloorGrain, type FloorLagInput } from "@lararium/node";
 import { emit, exitFor } from "../render.js";
 import { storeVerb, storeFailure } from "../store-door.js";
@@ -266,9 +268,11 @@ export async function readFloorStatus(common: Record<string, unknown>, doors: Fl
 export function seedFloorOf(genesisDir: string): { readonly seedCid: string; readonly seedFloor: string } | { readonly why: string } {
   let bytes: Buffer;
   try { bytes = readFileSync(join(genesisDir, "seed.json")); } catch { return { why: `no seed.json reads at ${genesisDir}` }; }
-  let seed: { tiddlers?: Record<string, { tiddler?: { cid?: unknown } }> };
-  try { seed = JSON.parse(bytes.toString("utf8")) as typeof seed; } catch { return { why: `the seed at ${genesisDir} reads as no JSON` }; }
-  const floor = seed?.tiddlers?.[GENESIS_FLOOR_TIDDLER]?.tiddler?.cid;
+  let seed: Partial<GenesisSeed> | null;
+  try { seed = JSON.parse(bytes.toString("utf8")) as Partial<GenesisSeed> | null; } catch { return { why: `the seed at ${genesisDir} reads as no JSON` }; }
+  // The seed stands as plain data (genesis-doc builds it so): its floor row reads as an own entry, never through the prototype.
+  const row = ownEntry(seed?.tiddlers, GENESIS_FLOOR_TIDDLER) as { readonly tiddler?: { readonly cid?: unknown } } | undefined;
+  const floor = row?.tiddler?.cid;
   if (typeof floor !== "string" || !/^[0-9a-f]{64}$/.test(floor)) return { why: `the seed at ${genesisDir} names no floor (${GENESIS_FLOOR_TIDDLER})` };
   return { seedCid: genesisSeedCid(new Uint8Array(bytes)), seedFloor: floor };
 }
