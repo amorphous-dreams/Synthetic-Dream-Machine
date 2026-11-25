@@ -41,11 +41,11 @@ describe("the stack reads off the record", () => {
     expect(K.profilesOf(K.stackOf({ canon: "lar:///ha.ka.ba/elyncia/lindwyrm" }, K.maskCardOf("lindwyrm")))).toEqual(["masked"]);
     expect(K.stackOf({}, ONE)).toEqual([]);
   });
-  test("who strings a cap: any body, a profile's cap included; the mandate's cap lands by the door's own act", () => {
-    expect(K.capHolder(LANE)).toBe("body");
-    expect(K.capHolder(FACE)).toBe("body");
+  test("who strings a cap: any instance, a profile's cap included; the mandate's cap lands by the door's own act", () => {
+    expect(K.capHolder(LANE)).toBe("instance");
+    expect(K.capHolder(FACE)).toBe("instance");
     expect(K.capHolder("lar:///spirit.mandate.offers")).toBe("door");
-    expect(K.capHolder("lar:///custody.hand.admits")).toBe("body");
+    expect(K.capHolder("lar:///custody.hand.admits")).toBe("instance");
   });
 });
 
@@ -98,8 +98,8 @@ describe("a sealed hold names itself and nothing more", () => {
 
 describe("the stack line", () => {
   test("the whole stack rides one has line in the seed's shape: profiles, caps, then the record's other fields", () => {
-    const line = K.stackLine("cold-reader", { title: ONE, pet: "cold-reader", tags: `stage/x ${LANE}`, lane: "read a PR cold", model: "sonnet", bodies: "one\ntwo", description: "a cold reader", text: "{{||t}}" }, ONE);
-    expect(line).toBe("<<~ has entity=`spirit` name=`cold-reader` params=`kind/tasked lane.holds/[[read a PR cold]] bodies/[[one two]] model/sonnet ~ a cold reader`>>");
+    const line = K.stackLine("cold-reader", { title: ONE, pet: "cold-reader", tags: `stage/x ${LANE}`, lane: "read a PR cold", model: "sonnet", instances: "one\ntwo", description: "a cold reader", text: "{{||t}}" }, ONE);
+    expect(line).toBe("<<~ has entity=`spirit` name=`cold-reader` params=`kind/tasked lane.holds/[[read a PR cold]] instances/[[one two]] model/sonnet ~ a cold reader`>>");
   });
   test("a sealed field rides as its name alone, and a long value cuts", () => {
     const line = K.stackLine("lindwyrm", { tags: CANON, canon: "lar:///ha.ka.ba/elyncia/lindwyrm", hoard: "the true name", sealed: "hoard", look: "x".repeat(200) }, ONE);

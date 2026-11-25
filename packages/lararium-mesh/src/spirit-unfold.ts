@@ -9,7 +9,7 @@
  *   pulse    the envelope, the meta and every slot folded
  *   beat     the entry slot unfolded
  *   measure  the entry, attention and open slots unfolded
- *   arc      measure plus #/bodies, the path across turns: a reader sees the spirit's lineage (ruling 2026-11-25-the-open-items-decided)
+ *   arc      measure plus #/instances, the path across turns: a reader sees the spirit's lineage (ruling 2026-11-25-the-open-items-decided)
  *   theme    the whole carrier
  *
  * A spirit holding a card alone (`spirit-card/<pet>`: fields, and a text that transcludes the card template) folds the same way:
@@ -42,9 +42,9 @@ export const FOLD_OPERATOR = "spirit-fold";
 export const UNFOLD_RANKS = ["pulse", "beat", "measure", "arc", "theme"] as const;
 export type UnfoldRank = (typeof UNFOLD_RANKS)[number];
 
-/** The slots each rank reads unfolded; `null` unfolds every slot. Arc reads measure plus #/bodies, the spirit's lineage across turns. */
+/** The slots each rank reads unfolded; `null` unfolds every slot. Arc reads measure plus #/instances, the spirit's lineage across turns. */
 export const UNFOLD_OPEN: Readonly<Record<UnfoldRank, readonly string[] | null>> = Object.freeze({
-  pulse: [], beat: ["#/entry"], measure: ["#/entry", "#/attention", "#/open"], arc: ["#/entry", "#/attention", "#/open", "#/bodies"], theme: null,
+  pulse: [], beat: ["#/entry"], measure: ["#/entry", "#/attention", "#/open"], arc: ["#/entry", "#/attention", "#/open", "#/instances"], theme: null,
 });
 /** Does a rank read this slot unfolded? */
 export const unfoldsSlot = (rank: UnfoldRank, slot: string): boolean => UNFOLD_OPEN[rank]?.includes(slot) ?? true;

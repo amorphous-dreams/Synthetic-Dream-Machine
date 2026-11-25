@@ -518,19 +518,19 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "cap (#/open 2,048 bytes, #/attention 1,024; field `slot-budget` replaces both) while `hum` and `om` name the record's weight past `record-budget` (6,144) as advice, and `ah --new` lands a first shrine; `hum` (what remains after the fold) " +
       "measures each slot and folds one line to the month's ash ledger; `hooili` (the carry, hoʻoili, which writes nothing to the card) and `residue` " +
       "land a compaction summary or a handback (`--file -` reads stdin) after the strict secret-shape guard; `otakiage` burns the residue and keeps the card, on a person's hand alone. " +
-      "The stack reads and writes as the slot `#/has`, one cap per line (`<a.b.c> <value>`): `ah --slot '#/has' --add` strings a cap (its tag and its field, one write), `hum --fold '#/has'` unstrings one; a cap names what the spirit holds and grants nothing, so any body strings one (the mandate's cap alone lands by `--offer`), and a field named in `sealed` rides as its name alone. " +
-      "A card alone (`spirit-card/<pet>`, or a mask's `mask-card/<pet>`) answers through its fields; `ah --offer` sets a summon's offering (ʻālana) on `alana/<pet>` before any body wakes, and a body echoes its hash (`ah --echo <hash> --body <id>`); a write from a body that has not echoed lands and carries an `unechoed:` notice (a receipt, never a gate).",
+      "The stack reads and writes as the slot `#/has`, one cap per line (`<a.b.c> <value>`): `ah --slot '#/has' --add` strings a cap (its tag and its field, one write), `hum --fold '#/has'` unstrings one; a cap names what the spirit holds and grants nothing, so any instance strings one (the mandate's cap alone lands by `--offer`), and a field named in `sealed` rides as its name alone. " +
+      "A card alone (`spirit-card/<pet>`, or a mask's `mask-card/<pet>`) answers through its fields; `ah --offer` sets a summon's offering (ʻālana) on `alana/<pet>` before any instance wakes, and an instance echoes its hash (`ah --echo <hash> --instance <id>`); a write from an instance that has not echoed lands and carries an `unechoed:` notice (a receipt, never a gate).",
     examples: [
       "lares spirit om lares-alpha                                   # the wake text",
       "lares spirit ah lares-alpha --slot '#/open' --file open.txt     # true one slot",
       "lares spirit ah lares-alpha --slot '#/kulana' --add '* a tell'  # one line at its end",
       "lares spirit hum lares-alpha                                  # each waking slot against its cap, the record against its advisory weight",
-      "lares spirit hum lares-alpha --fold '#/bodies' --line 3       # move a line to the ash ledger",
+      "lares spirit hum lares-alpha --fold '#/instances' --line 3    # move a line to the ash ledger",
       "lares spirit ah cold-reader --slot '#/has' --add 'spirit.lane.holds read a PR cold'   # string one cap on the stack (a cap gathers; it grants nothing)",
       "lares spirit hum cold-reader --fold '#/has'                   # the stack, cap by cap; --line <n> --expect <digest> unstrings one",
       "lares spirit otakiage lares-alpha                             # burn the residue (your hand)",
-      "lares spirit ah blind-reader --offer --file mandate.txt        # ʻālana: the offering lands before any body wakes",
-      "lares spirit ah blind-reader --echo <hash> --body <id>         # hoʻāla: a body echoes the mandate's hash om handed it",
+      "lares spirit ah blind-reader --offer --file mandate.txt        # ʻālana: the offering lands before any instance wakes",
+      "lares spirit ah blind-reader --echo <hash> --instance <id>     # hoʻāla: an instance echoes the mandate's hash om handed it",
     ],
   },
   hooks: {

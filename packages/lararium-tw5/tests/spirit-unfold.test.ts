@@ -109,11 +109,11 @@ describe.skipIf(wikiSkip)(`a spirit folds as a carrier by aperture${skipNote}`, 
     expect(commandsIn(text)).toEqual(SLOTS.filter((slot) => !["#/entry", "#/attention", "#/open"].includes(slot)).map((slot) => slotCommand(SHRINE, slot)));
   });
 
-  test("arc unfolds measure plus #/bodies, the path across turns, so a reader sees the spirit's lineage (ruling 2026-11-25-the-open-items-decided)", () => {
+  test("arc unfolds measure plus #/instances, the path across turns, so a reader sees the spirit's lineage (ruling 2026-11-25-the-open-items-decided)", () => {
     const text = unfold("verb-wright", "arc");
     canonical(text);
-    for (const slot of ["#/entry", "#/attention", "#/open", "#/bodies"]) expect(text).toContain(carrierSlotText(CARRIER, slot)!);
-    expect(commandsIn(text)).toEqual(SLOTS.filter((slot) => !["#/entry", "#/attention", "#/open", "#/bodies"].includes(slot)).map((slot) => slotCommand(SHRINE, slot)));
+    for (const slot of ["#/entry", "#/attention", "#/open", "#/instances"]) expect(text).toContain(carrierSlotText(CARRIER, slot)!);
+    expect(commandsIn(text)).toEqual(SLOTS.filter((slot) => !["#/entry", "#/attention", "#/open", "#/instances"].includes(slot)).map((slot) => slotCommand(SHRINE, slot)));
   });
 
   test("theme unfolds every slot: each slot's span rides byte for byte and no slot command stands", () => {
@@ -147,20 +147,20 @@ describe.skipIf(wikiSkip)(`a spirit folds as a carrier by aperture${skipNote}`, 
   });
 
   test("meme-fold folds any carrier by the slots its operand opens, and any plain record as a carrier", () => {
-    const [folded] = e.wiki.filterTiddlers(`[[${SHRINE}]meme-fold[#/open #/bodies],[1]]`);
+    const [folded] = e.wiki.filterTiddlers(`[[${SHRINE}]meme-fold[#/open #/instances],[1]]`);
     canonical(folded!);
     expect(folded).toContain(carrierSlotText(CARRIER, "#/open")!);
-    expect(commandsIn(folded!)).toEqual(SLOTS.filter((slot) => !["#/open", "#/bodies"].includes(slot)).map((slot) => slotCommand(SHRINE, slot, "1")));
+    expect(commandsIn(folded!)).toEqual(SLOTS.filter((slot) => !["#/open", "#/instances"].includes(slot)).map((slot) => slotCommand(SHRINE, slot, "1")));
     expect(commandsIn(e.wiki.filterTiddlers(`[[${SHRINE}]meme-fold[*]]`)[0]!)).toEqual([]);
     expect(commandsIn(e.wiki.filterTiddlers(`[[${SHRINE}#/open]meme-fold[]]`)[0]!)).toEqual(SLOTS.map((slot) => slotCommand(SHRINE, slot)));
 
     const HANDBACK = `${MEM}spirit/verb-wright-handback-0123456789ab`;
     const report = ["Verb-Wright: Lares (Tasked Spirit)", "", ...Array.from({ length: 40 }, (_, i) => `* line ${i} of a long report`)].join("\n");
-    e.setTiddler({ title: HANDBACK, body: "s-1", description: "the handback of body s-1", text: report });
+    e.setTiddler({ title: HANDBACK, instance: "s-1", description: "the handback of instance s-1", text: report });
     const [message] = e.wiki.filterTiddlers(`[[${HANDBACK}]meme-fold[],[1]]`);
     canonical(message!);
-    expect(message).toMatch(/^body\s+= "s-1"$/m);
-    expect(message).toContain(`<<~ has name=\`${HANDBACK}\` params=\`bytes/${new TextEncoder().encode(report).length} ~ the handback of body s-1\`>>\n\n\`${recordCommand(HANDBACK, "1")}\``);
+    expect(message).toMatch(/^instance\s+= "s-1"$/m);
+    expect(message).toContain(`<<~ has name=\`${HANDBACK}\` params=\`bytes/${new TextEncoder().encode(report).length} ~ the handback of instance s-1\`>>\n\n\`${recordCommand(HANDBACK, "1")}\``);
     expect(message).not.toContain("line 7 of a long report");
     expect(e.wiki.filterTiddlers("[[lar:///nobody.stands.here]meme-fold[]]")).toEqual([]);
   });
@@ -186,7 +186,7 @@ describe("the fold's pure core", () => {
   });
 
   test("each rank names the slots it unfolds, and each rank narrows one grain at a time", () => {
-    expect(UNFOLD_OPEN).toEqual({ pulse: [], beat: ["#/entry"], measure: ["#/entry", "#/attention", "#/open"], arc: ["#/entry", "#/attention", "#/open", "#/bodies"], theme: null });
+    expect(UNFOLD_OPEN).toEqual({ pulse: [], beat: ["#/entry"], measure: ["#/entry", "#/attention", "#/open"], arc: ["#/entry", "#/attention", "#/open", "#/instances"], theme: null });
     expect(UNFOLD_RANKS.map((rank) => narrowerRank(rank))).toEqual([null, "pulse", "beat", "measure", "arc"]);
   });
 
@@ -215,7 +215,7 @@ describe("the fold's pure core", () => {
     canonical(folded);
     expect(folded).toContain(carrierSlotText(CARRIER, "#/open")!);
     expect(folded.slice(0, folded.indexOf("<<~ ahu"))).toBe(CARRIER.slice(0, CARRIER.indexOf("<<~ ahu")));
-    expect(folded).toContain("`unfold #/bodies`");
+    expect(folded).toContain("`unfold #/instances`");
     expect(foldCarrier(CARRIER, { open: () => true, buttons: () => [] })).toBe(CARRIER);
     expect(foldCarrier("plain words", { open: () => false, buttons: () => [] })).toBe("plain words");
   });

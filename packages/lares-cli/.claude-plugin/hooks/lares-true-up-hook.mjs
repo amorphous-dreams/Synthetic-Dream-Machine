@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /*
  * Stop, counter-gated: every N stops of a session (the record's `true-up-every`, carried in the counter, 25 by default), or
- * while a carry stands unfiled, the hook returns `additionalContext` naming `lares spirit ah` and `hum`, so the body trues its
+ * while a carry stands unfiled, the hook returns `additionalContext` naming `lares spirit ah` and `hum`, so the instance trues its
  * card and chooses what folds. It steps aside silently while the harness already continues a stop (`stop_hook_active`), while
  * background tasks or crons still run, outside the house, on a session id it cannot key a counter by, where no familiar wears
  * the session, and where the vessel answers no up; an unfiled mark clears only once its nudge prints. Any fault exits 0

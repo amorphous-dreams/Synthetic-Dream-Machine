@@ -11,7 +11,7 @@
  * THE STACK, IN TWO GRAINS A FILTER CAN GATHER. A CAP rides as a three-term `lar:///` address in the record's `tags` and, where
  * the table below names one, a value in a field; every other field the record holds rides as plain metadata, so the stack
  * derives from the record and never from a list. TAGS GATHER, OCAPS AUTHORIZE (the affordance map's first law): a cap on the
- * stack names what the spirit holds and grants nothing, so ANY BODY strings one, a profile's cap included (a spirit that reads
+ * stack names what the spirit holds and grants nothing, so ANY INSTANCE strings one, a profile's cap included (a spirit that reads
  * as a familiar only asks for the operator's attention; operator, 2026-11-25). Authority rides a lei, never a tag.
  *
  * THE SLOT. The stack reads and writes as the slot `#/has`, one cap per line (`<address> <value>`), so the door's own slot
@@ -34,8 +34,8 @@ export const STACK_SLOT = "#/has";
 
 export const SPIRIT_PROFILES = ["familiar", "tasked", "masked"] as const;
 export type SpiritProfile = (typeof SPIRIT_PROFILES)[number];
-/** Who strings a cap: any body, or the door's own act alone (the mandate lands by `--offer`, never by a slot verb). */
-export type CapHolder = "door" | "body";
+/** Who strings a cap: any instance, or the door's own act alone (the mandate lands by `--offer`, never by a slot verb). */
+export type CapHolder = "door" | "instance";
 
 export interface SpiritCapKind {
   /** The cap's address: the tag a filter gathers by. */
@@ -49,23 +49,23 @@ export interface SpiritCapKind {
 
 /** THE CAPS THE HOUSE NAMES, in the order a stack reads them. Any other three-term address rides as a bare tag (a feed). */
 export const SPIRIT_CAPS: readonly SpiritCapKind[] = Object.freeze([
-  { cap: "lar:///spirit.face.serves", field: "face", profile: "familiar", held: "body" },
-  { cap: "lar:///spirit.lane.holds", field: "lane", profile: "tasked", held: "body" },
-  { cap: "lar:///spirit.canon.transcludes", field: "canon", profile: "masked", held: "body" },
+  { cap: "lar:///spirit.face.serves", field: "face", profile: "familiar", held: "instance" },
+  { cap: "lar:///spirit.lane.holds", field: "lane", profile: "tasked", held: "instance" },
+  { cap: "lar:///spirit.canon.transcludes", field: "canon", profile: "masked", held: "instance" },
   { cap: "lar:///spirit.mandate.offers", field: "mandate-hash", profile: null, held: "door" },
-  { cap: "lar:///spirit.grant.attenuates", field: "grant", profile: null, held: "body" },
-  { cap: "lar:///spirit.message.receives", field: "inbox", profile: null, held: "body" },
-  { cap: "lar:///spirit.message.sends", field: "outbox", profile: null, held: "body" },
+  { cap: "lar:///spirit.grant.attenuates", field: "grant", profile: null, held: "instance" },
+  { cap: "lar:///spirit.message.receives", field: "inbox", profile: null, held: "instance" },
+  { cap: "lar:///spirit.message.sends", field: "outbox", profile: null, held: "instance" },
 ] as const);
 
 const TERM = "[a-z0-9]+(?:-[a-z0-9]+)*";
 /** A cap's address: a three-term root and no path (the root segment law). */
 export const CAP_ADDRESS = new RegExp(`^lar:///${TERM}\\.${TERM}\\.${TERM}$`);
 const kindOf = (cap: string): SpiritCapKind | undefined => SPIRIT_CAPS.find((k) => k.cap === cap);
-/** Who strings this cap: the table's holder, and any body for a bare tag. */
+/** Who strings this cap: the table's holder, and any instance for a bare tag. */
 /** The fields a record seals (`sealed` names them, as a title list). */
 export const sealedOf = (fields: Readonly<Record<string, unknown>>): Set<string> => new Set(tagsOf(typeof fields["sealed"] === "string" ? fields["sealed"] : ""));
-export const capHolder = (cap: string): CapHolder => kindOf(cap)?.held ?? "body";
+export const capHolder = (cap: string): CapHolder => kindOf(cap)?.held ?? "instance";
 
 /** The memory-stage addresses that stood before the one record, each with the cap its address signs. */
 const STAGE = "lar:///ha.ka.ba/kahua/memory/";
@@ -131,7 +131,7 @@ export function stackOf(fields: Readonly<Record<string, string>>, uri: string): 
     return tagged || seated || value.trim() !== "" ? [{ cap: k.cap, field: k.field, value: sealed ? "" : value, sealed, tagged, seated, held: k.held, profile: k.profile }] : [];
   });
   const bare = tags.filter((t) => CAP_ADDRESS.test(t) && kindOf(t) === undefined)
-    .map((cap): SpiritHold => ({ cap, field: null, value: "", sealed: false, tagged: true, seated: false, held: "body", profile: null }));
+    .map((cap): SpiritHold => ({ cap, field: null, value: "", sealed: false, tagged: true, seated: false, held: "instance", profile: null }));
   return [...named, ...bare];
 }
 
