@@ -184,7 +184,7 @@ describe("the floor doors cross a founded hearth's own bootstrap", () => {
       expect(out["refusal"]).toBeUndefined();
       expect(out["nexusRefused"]).toMatchObject({ refusal: "floor-no-charter" });
       const line = String((out["genesis"] as { line?: string } | undefined)?.line);
-      expect(line).toMatch(/^\[genesis\] founding record: engine \S+ · grammar \S+ · plugins \S+ · floor \S+/);
+      expect(line).toMatch(/^\[genesis\] founding record: engine \S+ · grammar \S+ · lararium \S+ · plugins \S+ · floor \S+/);
       expect(line).toContain(": same on every ratchet");
       expect(line).toContain("floor pin: none — this vessel stands in no Nexus charter");
       // CONTROL: no catalog names live canon here, so the drift reads null, never a silent zero.

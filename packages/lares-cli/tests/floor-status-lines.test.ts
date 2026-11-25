@@ -35,8 +35,8 @@ describe("the floor status lines", () => {
       board: "absent", newest: null, heads: [], descends: null, fastForward: false, path: [], refused: [],
       genesis: {
         record,
-        seed: { cid: "c".repeat(64), ratchets: (["engine", "grammar", "plugins", "floor"] as const).map(same) },
-        floorPin: { manifestCid: "f".repeat(64), ratchets: (["engine", "grammar", "plugins", "floor"] as const).map(same) },
+        seed: { cid: "c".repeat(64), ratchets: (["engine", "grammar", "lararium", "plugins", "floor"] as const).map(same) },
+        floorPin: { manifestCid: "f".repeat(64), ratchets: (["engine", "grammar", "lararium", "plugins", "floor"] as const).map(same) },
         line: "",
       },
     } as never);
@@ -176,7 +176,7 @@ describe("the five drifts, each by its own word, and the one card", () => {
 
   test("RED: the not-yet-counted working-ahead row stays out of the state fold, so a healthy vessel's card reads level", async () => {
     const level = driftedStatus({
-      genesis: { record, seed: { cid: "c".repeat(64), ratchets: (["engine", "grammar", "plugins", "floor"] as const).map(same) }, floorPin: null, line: "" },
+      genesis: { record, seed: { cid: "c".repeat(64), ratchets: (["engine", "grammar", "lararium", "plugins", "floor"] as const).map(same) }, floorPin: null, line: "" },
       floorDrift: { manifest: "f".repeat(64), count: 0, carriers: [], slugs: [], unread: [] },
       floorShadow: { current: { floor: "f".repeat(64), cleanBoots: 2, mismatchBoots: 0, unreadBoots: 0, firstMismatch: null }, prior: [] },
     });
