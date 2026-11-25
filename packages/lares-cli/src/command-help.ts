@@ -515,7 +515,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "cap (#/open 2,048 bytes, #/attention 1,024; field `slot-budget` replaces both) while `hum` and `om` name the record's weight past `record-budget` (6,144) as advice, and `ah --new` lands a first shrine; `hum` (what remains after the fold) " +
       "measures each slot and folds one line to the month's ash ledger; `hooili` (the carry, hoʻoili, which writes nothing to the card) and `residue` " +
       "land a compaction summary or a handback (`--file -` reads stdin) after the strict secret-shape guard; `otakiage` burns the residue and keeps the card, on a person's hand alone. " +
-      "A card alone (`spirit-card/<pet>`) answers through its fields; `ah --offer` sets a summon's offering (ʻālana) on `alana/<pet>` before any body wakes, and a body echoes its hash (`ah --echo <hash> --body <id>`) before its slot writes land (`spirit-unechoed`).",
+      "A card alone (`spirit-card/<pet>`) answers through its fields; `ah --offer` sets a summon's offering (ʻālana) on `alana/<pet>` before any body wakes, and a body echoes its hash (`ah --echo <hash> --body <id>`); a write from a body that has not echoed lands and carries an `unechoed:` notice (a receipt, never a gate).",
     examples: [
       "lares spirit om lares-alpha                                   # the wake text",
       "lares spirit ah lares-alpha --slot '#/open' --file open.txt     # true one slot",

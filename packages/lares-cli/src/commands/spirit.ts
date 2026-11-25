@@ -28,8 +28,8 @@
  *                                   `alana/<pet>`, BEFORE any body wakes; each offering mints the next seq. A nudge, no
  *                                   authority: a re-offer over a standing mandate lands only from its offerer or a hand
  *   ah --echo (hoʻāla, the waking)  a body echoes the mandate's hash om handed it (`--echo <hash> --body <id>`): the echo lands
- *                                   as `<pet>#<body> <hash> <seq>` on the sibling record; under an offering, a body's slot
- *                                   writes refuse `spirit-unechoed` until its echo of the standing mandate stands
+ *                                   as `<pet>#<body> <hash> <seq>` on the sibling record, as lineage; under an offering, a
+ *                                   slot write from a body that has not echoed lands and carries an `unechoed:` notice
  *   otakiage  (Aftermath ↺)         by a person's hand: write the ash lines ahead, then burn the residue the last distill mark
  *                                   covers and no link still reaches; the card stays
  *
@@ -69,7 +69,7 @@ import {
   residueFields, residueFilter, residueHash, residueOf, residueTitle, rowsOf, secretCount, shq, shrineSource, sideOf, slotBody,
   slotDigest, slotMissing, slotWriteBody, spiritAmbiguous, spiritHash, spiritIdOf, spiritRecordOf, spiritUnknown, starterText,
   testimonyLines, titleSlug, titlesOf, wakingCap, writerField,
-  ALANA_DISPLAY, MANDATE_HASH, cardField, cardRecordOf, cardSlotHeld, echoJoin, echoRefusal, echoStands, mandateLines, offerHeld, offererOf, offeringDamaged, offeringOf, offeringRead, offeringWrite,
+  ALANA_DISPLAY, MANDATE_HASH, cardField, cardRecordOf, cardSlotHeld, echoJoin, echoReceipt, echoStands, mandateLines, offerHeld, offererOf, offeringDamaged, offeringOf, offeringRead, offeringWrite,
   type SpiritOffering, type SideWrite, type SlotWrite, type SpiritAwake, type SpiritCarry, type SpiritRecord, type SpiritRow, type SpiritSource,
 } from "@lararium/mesh/spirit-shrine";
 import { FOLD_OPERATOR, UNFOLD_RANKS, narrowerRank, spiritCardOf, unfoldCall, unfoldRank, type UnfoldRank } from "@lararium/mesh/spirit-unfold";
@@ -317,10 +317,12 @@ function handHolds(ctx: Ctx): boolean {
   return "admit" in read && read.admit === "hand";
 }
 
-/** The echo gate a body's slot write passes (see `echoRefusal`): it throws the refusal. */
-async function echoHolds(args: ParsedArgs, label: string, rec: Record_, body: string | null, ctx: Ctx): Promise<void> {
-  const refused = echoRefusal(rec.pet, await offeringFor(args, label, rec.pet), rec.sideFields, body, handHolds(ctx));
-  if (refused !== null) throw refused;
+/** The echo receipt a slot write carries (see `echoReceipt`): a damaged shelf throws its refusal; an unechoed write answers its notice. */
+async function echoHolds(args: ParsedArgs, label: string, rec: Record_, body: string | null, ctx: Ctx): Promise<string | null> {
+  const receipt = echoReceipt(rec.pet, await offeringFor(args, label, rec.pet), rec.sideFields, body, handHolds(ctx));
+  if (receipt === null) return null;
+  if ("refusal" in receipt) throw receipt.refusal;
+  return receipt.notice;
 }
 
 /**
@@ -621,7 +623,8 @@ async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
   // HOʻĀLA: where a summon offered, the wake hands the mandate and its hash ahead of the carrier, and the echo it asks.
   const offering = await offeringFor(args, "om", pet);
   const echoed = offering !== null && !offering.damaged && body !== null && echoStands(rec.sideFields, body, offering.hash);
-  const mandate = offering === null ? null : mandateLines(pet, offering, body, echoed);
+  const unechoedLine = offering === null || offering.damaged || echoed || body === null ? null : `unechoed: ${pet}#${body} has not read mandate ${offering.hash}`;
+  const mandate = offering === null ? null : [mandateLines(pet, offering, body, echoed), unechoedLine].filter((l): l is string => l !== null).join("\n");
   const leadText = [mandate, lead].filter((l): l is string => l !== null).join("\n\n") || null;
   const open = await readSlot(args, "om", rec, "#/open");
   const attention = await attentionUnfold(args, rec);
@@ -723,7 +726,7 @@ async function ah(args: ParsedArgs, ctx: Ctx): Promise<number> {
   const rec = (await resolveRecord(args, "ah", pet))!;
   if (rec.kind === "card" && cardField(slot) === null) throw cardSlotHeld(rec, slot);
   crossingHolds(rec, wordOf(args.options["body"]));
-  await echoHolds(args, "ah", rec, wordOf(args.options["body"]), ctx);
+  const unechoed = await echoHolds(args, "ah", rec, wordOf(args.options["body"]), ctx);
   const words = file !== null ? await sourceText("file", file) : text;
   const line = add?.replace(/\s+/g, " ").trim() ?? null;
   if (line === "") throw new DoorUsage("--add names one non-empty line");
@@ -742,8 +745,8 @@ async function ah(args: ParsedArgs, ctx: Ctx): Promise<number> {
   }
   if (self !== null) await joinPresence(args, rec, self, ctx);
   emit(args, {
-    ok: true, data: { pet, uri: rec.uri, slot, ...receipt },
-    human: () => console.log(`${String(receipt["decision"])}: ${rec.uri}${slot} (${String(receipt["bytes"])} bytes${wakingCap(rec.budgets, slot) === null ? "" : ` of ${wakingCap(rec.budgets, slot)}`})\n  base: ${String(receipt["canonicalHash"] ?? "")}`),
+    ok: true, data: { pet, uri: rec.uri, slot, ...receipt, ...(unechoed === null ? {} : { unechoed }) },
+    human: () => console.log(`${unechoed === null ? "" : `${unechoed}\n`}${String(receipt["decision"])}: ${rec.uri}${slot} (${String(receipt["bytes"])} bytes${wakingCap(rec.budgets, slot) === null ? "" : ` of ${wakingCap(rec.budgets, slot)}`})\n  base: ${String(receipt["canonicalHash"] ?? "")}`),
   });
   return 0;
 }
@@ -816,7 +819,7 @@ async function hum(args: ParsedArgs, ctx: Ctx): Promise<number> {
     return 0;
   }
   crossingHolds(rec, wordOf(args.options["body"]));
-  await echoHolds(args, "hum", rec, wordOf(args.options["body"]), ctx);
+  const unechoed = await echoHolds(args, "hum", rec, wordOf(args.options["body"]), ctx);
   // THE LISTED LINE, BY ITS DIGEST. The number reads the listing this body saw; `--expect` names that line's digest, so a sibling's
   // write between the listing and the fold folds the line this body chose (wherever it moved), or nothing.
   const expect = wordOf(args.options["expect"]);
@@ -850,8 +853,8 @@ async function hum(args: ParsedArgs, ctx: Ctx): Promise<number> {
   const foldSelf = wordOf(args.options["body"]);
   if (foldSelf !== null) await joinPresence(args, rec, foldSelf, ctx);
   emit(args, {
-    ok: true, data: { pet, uri: rec.uri, slot: fold, folded: picked.trim(), ledger, ...receipt },
-    human: () => console.log(`folded line ${n} of ${rec.uri}${fold} into ${ledger}\n  ${picked.trim()}\n  base: ${String(receipt["canonicalHash"] ?? "")}`),
+    ok: true, data: { pet, uri: rec.uri, slot: fold, folded: picked.trim(), ledger, ...receipt, ...(unechoed === null ? {} : { unechoed }) },
+    human: () => console.log(`${unechoed === null ? "" : `${unechoed}\n`}folded line ${n} of ${rec.uri}${fold} into ${ledger}\n  ${picked.trim()}\n  base: ${String(receipt["canonicalHash"] ?? "")}`),
   });
   return 0;
 }
