@@ -5,7 +5,7 @@
  * name, holding a stack of what it holds, in the seed's own shape (`<<~ has entity=`spirit` name=`<pet>` params=`…`>>`). The three
  * kinds (familiar, tasked, masked) read as PROFILES off the caps a record holds, never as three record shapes; a spirit may hold
  * several at once. The records that stood before the one address (`familiar/<pet>`, `spirit/<pet>`, `spirit-card/<pet>`,
- * `mask-card/<pet>` on the memory stage) read through the same stack: each legacy address signs its profile's cap, and no
+ * `mask-card/<pet>` on the memory stage) read through the same stack: each seat address signs its profile's cap, and no
  * record moves.
  *
  * THE STACK, IN TWO GRAINS A FILTER CAN GATHER. A CAP rides as a three-term `lar:///` address in the record's `tags` and, where

@@ -12,7 +12,7 @@ heleuma       = "ha"
 module-ref    = "lar:///ha.ka.ba/lararium/tw5/filters/meme-fold"
 role          = "code-meme: the meme-fold and spirit-fold filter operators answer any record as a folded carrier, inside the wiki that holds it"
 source-file   = "packages/lararium-tw5/src/filters/meme-fold.ts"
-source-sha256 = "sha256:6fc39eb83c2612d71c5cdaf6143c94fc23946f91843c1de2645df093f99a8d7a"
+source-sha256 = "sha256:b36eb056cd9a355c2e439ca0cce670882b59170d3f2db058b5d2e36b078500f8"
 title         = "lar:///ha.ka.ba/lararium/tw5/heleuma/meme-fold"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/tw5/heleuma/meme-fold"
@@ -70,6 +70,6 @@ The operators read through the wiki they run in, so a reader's view decides what
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;9v2WhAlurDhnMCdWjBlkBWRLSr_S6N1br2PkPuhJfAU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;of08U_ZHhQSN1zvVQ69V7zMel_KcRoQA02zRz6LhfFU`>>
 
 <<^ code=`&#x0004;` to=`?`>>
