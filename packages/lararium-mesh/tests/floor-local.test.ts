@@ -8,7 +8,7 @@
 import { describe, expect, test } from "vitest";
 import { sha256HexBytesSync, utf8Bytes } from "../src/crypto.js";
 import { emptyLarDoc, type LarDoc } from "../src/base-doc.js";
-import { FLOOR_MANIFEST_FORMAT, floorManifestBytes, readFloorManifest, type FloorManifest } from "../src/floor-manifest.js";
+import { FLOOR_MANIFEST_FORMAT, cutFloorSnapshot, floorManifestBytes, readFloorManifest, type FloorManifest } from "../src/floor-manifest.js";
 import { signFloorOffering } from "../src/floor-offering.js";
 import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "../src/lar-uris.js";
 import {
@@ -24,7 +24,9 @@ const G1 = blob("grammar-1"), G2 = blob("grammar-2");
 const offerOf = (b: { sha256: string }) => signFloorOffering({ seed: new Uint8Array(32).fill(5), blobs: [{ id: LARES_MEMETIC_WIKITEXT_PLUGIN_URI, version: "1", sha256: b.sha256, provenance }] });
 const OFFER1 = await offerOf(G1), OFFER2 = await offerOf(G2);
 const ENGINE = "e".repeat(64);
-const SNAPS = { lares: "a".repeat(64), lararium: "b".repeat(64) };
+const SNAP_LARES = cutFloorSnapshot({ "lar:///t/lares": { tiddler: { title: "lar:///t/lares", text: "lares" } } });
+const SNAP_LARARIUM = cutFloorSnapshot({ "lar:///t/lararium": { tiddler: { title: "lar:///t/lararium", text: "lararium" } } });
+const SNAPS = { lares: SNAP_LARES.cid, lararium: SNAP_LARARIUM.cid };
 const manifestOf = (m: FloorManifest) => { const bytes = floorManifestBytes(m); return { m, bytes, cid: sha256HexBytesSync(bytes) }; };
 const BASE = manifestOf({ format: FLOOR_MANIFEST_FORMAT, engine: ENGINE, plugins: OFFER1.cid, snapshots: SNAPS });
 /** The seed's own floor: a newer offering, its own snapshots (never carried), the same engine. */
@@ -36,7 +38,7 @@ const genesisPin: FloorPin = { kind: FLOOR_PIN_KIND, nexus: NEXUS, release: null
 function memoryHome(doc: LarDoc = emptyLarDoc()) { return { changes: 0, doc: () => doc, change(fn: (d: LarDoc) => void) { this.changes += 1; fn(doc); } }; }
 function portsOver(home: ReturnType<typeof memoryHome>) {
   const cas = new Map<string, Uint8Array>([[BASE.cid, BASE.bytes], [SEED.cid, SEED.bytes], [SEED_ENGINE_MOVED.cid, SEED_ENGINE_MOVED.bytes],
-    [OFFER1.cid, OFFER1.bytes], [OFFER2.cid, OFFER2.bytes], [G1.sha256, G1.bytes], [G2.sha256, G2.bytes]]);
+    [OFFER1.cid, OFFER1.bytes], [OFFER2.cid, OFFER2.bytes], [G1.sha256, G1.bytes], [G2.sha256, G2.bytes], [SNAP_LARES.cid, SNAP_LARES.bytes], [SNAP_LARARIUM.cid, SNAP_LARARIUM.bytes]]);
   const staged: string[] = []; const alerts: string[] = [];
   const ports: FloorPinPorts = {
     home, nexus: NEXUS, genesisManifest: BASE.cid, requiredBlobIds: [LARES_MEMETIC_WIKITEXT_PLUGIN_URI],
@@ -131,6 +133,40 @@ describe("the adopt door: previews, then applies by hand", () => {
     const home = memoryHome();
     const { ports } = portsOver(home);
     const out = await adoptFloorSeed(ports, { seedCid: RECEIPT, seedFloor: "0".repeat(64), apply: true });
+    expect(out).toMatchObject({ ok: false, refusal: "floor-bytes-absent" });
+    expect(home.changes).toBe(0);
+  });
+});
+
+describe("the cold read's answers (#577, S2)", () => {
+  test("RED: a bare accept never lets a local floor go; only the named release does", () => {
+    const releaseCid = "7".repeat(64);
+    const standing = { standing: "released", head: { cid: releaseCid, body: { manifest: BASE.cid, prior: null } }, counted: [{ cid: releaseCid, body: { manifest: BASE.cid, prior: null } }], refused: [] } as unknown as FloorReleaseStanding;
+    const first = decideFloorAdopt({ pin: { ...genesisPin, release: releaseCid }, base: BASE.m, seed: { cid: RECEIPT, manifest: SEED.m } });
+    if (!first.ok || !first.moved) throw new Error("adopt");
+    expect(decideFloorAccept({ pin: first.pin, standing })).toMatchObject({ ok: true, moved: false });
+    expect(decideFloorAccept({ pin: first.pin, standing, target: releaseCid })).toMatchObject({ ok: true, moved: true });
+  });
+
+  test("RED: a local row whose prior names another release reads torn", () => {
+    const local: FloorPin = { ...genesisPin, manifest: "9".repeat(64), local: { base: BASE.cid, receipt: RECEIPT, prior: { release: "1".repeat(64), manifest: BASE.cid, base: null, receipt: null }, state: "staged" } };
+    expect(readFloorPin(JSON.parse(JSON.stringify(local)), NEXUS)).toBeNull();
+  });
+
+  test("RED: an adopt refuses where the vessel holds pins at another Nexus (the mount would drop to genesis)", async () => {
+    const home = memoryHome();
+    writeFloorPin(home.doc(), { kind: FLOOR_PIN_KIND, nexus: "other-nexus", release: "2".repeat(64), manifest: BASE.cid });
+    const { ports } = portsOver(home);
+    const before = home.changes;
+    expect(await adoptFloorSeed(ports, { seedCid: RECEIPT, seedFloor: SEED.cid, apply: true })).toMatchObject({ ok: false, refusal: "adopt-many-floors" });
+    expect(home.changes).toBe(before);
+  });
+
+  test("RED: an adopt whose local manifest would not resolve whole (a base snapshot absent) refuses before the pin moves", async () => {
+    const home = memoryHome();
+    const { ports, cas } = portsOver(home);
+    cas.delete(SNAP_LARARIUM.cid);
+    const out = await adoptFloorSeed(ports, { seedCid: RECEIPT, seedFloor: SEED.cid, apply: true });
     expect(out).toMatchObject({ ok: false, refusal: "floor-bytes-absent" });
     expect(home.changes).toBe(0);
   });

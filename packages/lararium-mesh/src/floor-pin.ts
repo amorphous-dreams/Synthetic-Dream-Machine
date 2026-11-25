@@ -116,7 +116,9 @@ export function readFloorPin(value: unknown, nexus: string): FloorPin | null {
   const pin = { kind: FLOOR_PIN_KIND, nexus, release: v["release"] as string | null, manifest: v["manifest"] as string };
   if (!Object.hasOwn(v, "local")) return Object.freeze(pin);
   const local = readLocalFloor(v["local"]);
-  return local ? Object.freeze({ ...pin, local }) : null;
+  // A local floor keeps its prior on the same release: an adopt never moves the release, so a prior naming another reads torn.
+  if (!local || (local.prior !== null && local.prior.release !== pin.release) || local.base === pin.manifest) return null;
+  return Object.freeze({ ...pin, local });
 }
 
 const isPlain = (v: unknown): v is Record<string, unknown> => v !== null && typeof v === "object" && !Array.isArray(v);
@@ -279,7 +281,8 @@ export function decideFloorAccept(args: { readonly pin: FloorPin; readonly stand
   if (target === pin.release) {
     // THE LET-GO (3d): a local floor over the release it already stands on accepts back onto that release's own floor, a move.
     const held = counted.get(target) ?? null;
-    if (!pin.local || held === null) return { ok: true, moved: false, prior: pin, pin, path: [], release: held };
+    // A bare accept (no release named) never lets a local floor go: the hand names the release to leave the adoption behind.
+    if (!pin.local || held === null || args.target === undefined) return { ok: true, moved: false, prior: pin, pin, path: [], release: held };
     return { ok: true, moved: true, prior: pin, pin: Object.freeze({ kind: FLOOR_PIN_KIND, nexus: pin.nexus, release: target, manifest: held.body.manifest }), path: [], release: held };
   }
   const release = counted.get(target);
@@ -302,6 +305,7 @@ export const FLOOR_ADOPT_REFUSALS = [
   "adopt-uncommitted",   // a staged adoption stands uncommitted: no second adoption stacks on it (commit at par, or revert)
   "adopt-none-local",    // commit or revert asked of a pin that stands on no local floor
   "adopt-no-prior",      // a revert asked of a local floor that kept no prior pin
+  "adopt-many-floors",   // the vessel holds pins at more than one Nexus: a local floor at one would drop the mount to genesis
 ] as const;
 export type FloorAdoptRefusal = (typeof FLOOR_ADOPT_REFUSALS)[number];
 
@@ -490,6 +494,10 @@ export type FloorAdoptOutcome =
  */
 export async function adoptFloorSeed(ports: FloorPinPorts, args: { readonly seedCid: string; readonly seedFloor: string; readonly apply: boolean }): Promise<FloorAdoptOutcome> {
   const { pin } = floorPinOf(ports.home.doc(), ports.nexus, ports.genesisManifest);
+  const others = floorPinsOf(ports.home.doc()).filter((p) => p.nexus !== ports.nexus);
+  if (others.length > 0) {
+    return { ok: false, refusal: "adopt-many-floors", detail: `this vessel holds pins at ${others.length + 1} Nexuses; the mount reads a sole pin (\`floorCidToMount\`), so a local floor at one would drop every mount to the genesis floor` };
+  }
   const readManifest = async (cid: string): Promise<FloorManifest | string> => {
     const bytes = await ports.fetchCas(cid).catch(() => null);
     if (!bytes) return `manifest bytes absent from this vessel's CAS: ${cid}`;
@@ -511,6 +519,9 @@ export async function adoptFloorSeed(ports: FloorPinPorts, args: { readonly seed
   const staged = [decision.pin.manifest, seed.plugins, ...floorOfferingBlobsOf(offered.offering).map((b) => b.sha256)];
   if (!args.apply) return { ...decision, applied: false, staged, remount: null };
   await ports.stage([{ cid: decision.pin.manifest, bytes: decision.manifestBytes }]);
+  // The local manifest resolves whole (its base's snapshots, the offering and every blob) before the pin moves, as an accept's does.
+  const whole = await resolveFloorWhole(decision.pin.manifest, async (cid) => ports.fetchCas(cid).catch(() => null), { required: ports.requiredBlobIds });
+  if ("refusal" in whole) return { ok: false, refusal: whole.refusal === "floor-offering-refused" || whole.refusal === "floor-offering-incomplete" ? whole.refusal : "floor-bytes-absent", detail: `the local floor: ${whole.refusal}: ${whole.reason}` };
   ports.home.change((draft) => { writeFloorPin(draft, decision.pin); });
   const remount = floorRemountDecision({ floorSwap: ports.mount.floorSwap === true && ports.mount.swap !== undefined }, decision.pin.manifest);
   if (remount.act === "swap-live" && ports.mount.swap) await ports.mount.swap(decision.pin.manifest);
