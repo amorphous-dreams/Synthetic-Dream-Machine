@@ -8,15 +8,20 @@
  * THE DOOR ANSWERS ON A BAND (`@lararium/mesh` door-band): `answered` carries the cast inline; `asks` names the hand
  * that gives a fresh throw or a seed; a refusal (`void`) crosses as a named `VerbRefusal`.
  *
- * ONE ASKING, ONE THROW (idempotent per asking, the default). The asking's id hashes who asks (`caster`), in what
- * words (`asking`), the nonce the caller minted at the word, the seed and any typed coins (`askingId`), and its cast
- * lands under a title that id names. A second ask of the same asking (a retry after a lost answer, or the same words
- * again) finds that cast standing and answers it, `replayed`, with no new draw: a retried cast never commits twice. A
- * call naming no asking, nonce or seed mints its own nonce, so each bare cast stands as its own asking.
+ * ONE ASKING, ONE THROW (idempotent per asking, the default). The asking's id hashes who asks (`bookedAsker`: the hand
+ * and presenter the vessel's door booked, never the caller's `caster`, which rides as annotation alone), the asking's
+ * words normalized (`normalizeAsking`: case, spacing, Unicode form and trailing punctuation never re-roll), the nonce
+ * the caller minted at the word, the seed and any typed coins (`askingId`), and its cast lands under a title that id
+ * names. A second ask of the same asking (a retry after a lost answer, or the same words again) finds that cast
+ * standing and answers it, `replayed`, with no new draw: a retried cast never commits twice.
+ *
+ * NAME THE QUERY BEFORE THE CAST. A seat's bare cast (no asking, nonce or seed) answers `asks`, its cure naming
+ * `--asking '<the fork>'`, so a seat never re-rolls by asking nothing. A person's bare cast mints its own nonce.
  *
  * THE PERSON'S HAND opens the second mode: `fresh` (a new nonce minted at the word, so the same words throw again) and
  * `seed` (the coins draw from a door seeded by the person's words). A seat asks either and the door answers `asks`,
- * naming the line a person runs; nothing moves.
+ * naming the line a person runs; nothing moves. A LOW-ENTROPY SEED READS BACK: the record names the seed by a 16-hex
+ * digest and the asking by a 16-hex id, so a short or common seed can be guessed from them; choose a strong one.
  *
  * ONE DOOR FOR CHANCE. A draw takes the platform's entropy door (`crypto.getRandomValues`), or the seeded door; six
  * typed `coins` (bottom line first) stand as the operator's own throw, named `operator:three-coins`. THE CLOCK SEAM
@@ -35,7 +40,7 @@ import {
 } from "@lararium/mesh/oracle-cast";
 import { PLATFORM_ENTROPY, seededEntropy } from "@lararium/mesh/entropy-door";
 import { makeTiddlerGetReactor, makeTiddlerPutReactor, type TiddlerVerbOptions } from "./tiddler-verbs.js";
-import type { VerbReactor } from "./verb-dispatcher.js";
+import type { VerbContext, VerbReactor } from "./verb-dispatcher.js";
 
 /** The caster a call names none for: the seat that placed it. */
 const DEFAULT_CASTER = "lares";
@@ -79,6 +84,11 @@ function standingCast(fields: Readonly<Record<string, string>>): OracleCast | nu
   return castFromLines(lines, String(fields["entropy"] ?? ""), { caster, at });
 }
 
+/** Who asks, as the vessel's door booked it: the hand (`seat`, `cli`, `tab`) and the presenter, never a caller's word. */
+export function bookedAsker(ctx: Pick<VerbContext, "asker" | "presenter" | "worn">): string {
+  return `${ctx.asker ?? "unbooked"}:${ctx.worn?.presenter ?? ctx.presenter ?? ""}`;
+}
+
 /** The line a person runs to give what the seat asked: the asking's own words, with the hand's flag. */
 function handLine(args: Readonly<Record<string, unknown>>, asking: string, mode: "fresh" | "seed"): string {
   const container = typeof args["bag"] === "string" ? `--bag ${args["bag"]}` : `--recipe ${typeof args["recipe"] === "string" ? args["recipe"] : "default"}`;
@@ -109,8 +119,19 @@ export function makeOracleCastReactor(opts: TiddlerVerbOptions): VerbReactor {
         note: ORACLE_THROW_STANDS,
       };
     }
-    if (asking === "" && nonce === "" && seed === "") nonce = mintNonce();
-    const intent = askingId({ caster, asking, nonce, seed, ...(coins ? { coins } : {}) });
+    if (asking === "" && nonce === "" && seed === "") {
+      if (ctx.asker === "seat") {
+        const band: DoorBand = "asks";
+        const container = typeof args["bag"] === "string" ? `--bag ${args["bag"]}` : `--recipe ${typeof args["recipe"] === "string" ? args["recipe"] : "default"}`;
+        return {
+          band, decision: "asks",
+          asks: { who: "the seat itself", answer: `lares oracle cast ${container} --asking '<the fork>'`, why: "name your query before the cast; a seat's throw stands on its asking" },
+          note: ORACLE_THROW_STANDS,
+        };
+      }
+      nonce = mintNonce();
+    }
+    const intent = askingId({ asker: bookedAsker(ctx), asking, nonce, seed, ...(coins ? { coins } : {}) });
     const title = askingCastTitle(intent);
     const container = containerOf(args);
 

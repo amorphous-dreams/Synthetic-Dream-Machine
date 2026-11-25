@@ -186,22 +186,34 @@ export function castReadingTitles(cast: OracleCast): string[] {
 }
 
 /**
- * ONE ASKING, ONE THROW. An asking names who asks (`caster`), in what words (`asking`, empty where the asker named
- * none), with the nonce the caller minted at the word (a bare cast, or a person's fresh re-ask), the seed a person
- * named, and the coins a person threw. The time never enters: a clock annotates a cast and never names it.
+ * ONE ASKING, ONE THROW. An asking names who asks (`asker`: the identity the vessel's door booked, never a name the
+ * caller supplies), in what words (`asking`, empty where the asker named none), with the nonce the caller minted at the
+ * word (a person's bare cast, or a person's fresh re-ask), the seed a person named, and the coins a person threw. The
+ * time never enters: a clock annotates a cast and never names it.
+ *
+ * A LOW-ENTROPY SEED READS BACK. A cast names its seed by a 16-hex digest and its asking by a 16-hex id, so anyone who
+ * reads the record can test a short or common seed (or asking) against them; a person choosing a seed chooses a strong one.
  */
 export interface OracleAsking {
-  readonly caster: string;
+  readonly asker: string;
   readonly asking?: string;
   readonly nonce?: string;
   readonly seed?: string;
   readonly coins?: readonly LineValue[];
 }
 
+/**
+ * The asking's words as they key the throw: Unicode NFC, lower case, every run of whitespace one space, trimmed, and
+ * trailing punctuation dropped, so a trivial edit (case, spacing, a final "?" or ".") replays the same throw.
+ */
+export function normalizeAsking(words: string): string {
+  return words.normalize("NFC").toLowerCase().replace(/\s+/gu, " ").trim().replace(/[\p{P}\s]+$/u, "");
+}
+
 /** The asking's id: sha256 over its canonical form, so the same asking lands on the same id in any seat. */
 export function askingId(a: OracleAsking): string {
   return sha256HexBytesSync(canonicalJsonBytes({
-    verb: "oracle-cast", caster: a.caster, asking: a.asking ?? "", nonce: a.nonce ?? "", seed: a.seed ?? "",
+    verb: "oracle-cast", asker: a.asker, asking: normalizeAsking(a.asking ?? ""), nonce: a.nonce ?? "", seed: a.seed ?? "",
     coins: a.coins ? [...a.coins] : [],
   }));
 }

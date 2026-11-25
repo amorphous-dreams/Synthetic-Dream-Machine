@@ -8,7 +8,7 @@ import { describe, test, expect } from "vitest";
 import { CompositeStore, bagUri, isVerbRefusal, type Verb } from "@lararium/mesh";
 import { ORACLE_THROW_STANDS, askingCastTitle, askingId, readingTitle } from "@lararium/mesh/oracle-cast";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
-import { makeOracleCastReactor } from "../src/oracle-cast-verb.js";
+import { bookedAsker, makeOracleCastReactor } from "../src/oracle-cast-verb.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
 import { bootTestWiki, skipNote, wikiSkip } from "./test-wiki.js";
 
@@ -38,7 +38,7 @@ describe.skipIf(wikiSkip)(`oracle-cast — a cast writes its result as a tiddler
   test("RED: an operator's typed throw writes one cast tiddler naming method, entropy, lines, both hexagrams, caster and time", async () => {
     const r = await rig();
     const out = await r.cast({ recipe: "default", coins: [8, 8, 9, 6, 8, 8], caster: "operator", at: AT, nonce: "n1" }, r.ctx);
-    const intent = askingId({ caster: "operator", nonce: "n1", coins: [8, 8, 9, 6, 8, 8] });
+    const intent = askingId({ asker: bookedAsker(r.ctx), nonce: "n1", coins: [8, 8, 9, 6, 8, 8] });
     expect(out).toMatchObject({ band: "answered", intent, decision: "put", created: true, title: askingCastTitle(intent) });
     const fields = r.engine.wiki.getTiddler(String(out["title"]))!.fields as Record<string, unknown>;
     expect(fields).toMatchObject({
@@ -81,14 +81,34 @@ describe.skipIf(wikiSkip)(`oracle-cast — a cast writes its result as a tiddler
     expect(r.engine.wiki.filterTiddlers("[prefix[lar:///ha.ka.ba/lares/oracle/casts/]]")).toEqual([first["title"]]);
   }, 60_000);
 
-  test("another asker, other words, or a fresh nonce stands as another asking and throws its own cast", async () => {
+  test("another booked asker, other words, or a fresh nonce stands as another asking and throws its own cast", async () => {
     const r = await rig();
     const base = { recipe: "default", caster: "operator", asking: "which road first?", at: AT };
+    const other = { ...r.ctx, presenter: "0x" + "cd".repeat(32) } as VerbContext;
     const titles = new Set<unknown>();
-    for (const args of [base, { ...base, caster: "agent" }, { ...base, asking: "which road last?" }, { ...base, nonce: "fresh-1", fresh: true }]) {
-      titles.add((await r.cast(args, r.ctx))["title"]);
-    }
+    titles.add((await r.cast(base, r.ctx))["title"]);
+    titles.add((await r.cast(base, other))["title"]);
+    titles.add((await r.cast({ ...base, asking: "which road last?" }, r.ctx))["title"]);
+    titles.add((await r.cast({ ...base, nonce: "fresh-1", fresh: true }, r.ctx))["title"]);
     expect(titles.size).toBe(4);
+  }, 60_000);
+
+  test("the throw stands against the asker's own words: a caller-named caster or a trivial edit replays it", async () => {
+    const r = await rig();
+    const first = await r.cast({ recipe: "default", caster: "operator", asking: "which road first?", at: AT }, r.ctx);
+    for (const edit of [{ caster: "someone else" }, { asking: "Which  road FIRST" }, { asking: "which road first?!." }]) {
+      const again = await r.cast({ recipe: "default", caster: "operator", asking: "which road first?", at: AT, ...edit }, r.ctx);
+      expect(again).toMatchObject({ band: "answered", replayed: true, title: first["title"] });
+    }
+  }, 60_000);
+
+  test("a seat's bare cast asks for its query first: nothing moves, and the cure names --asking", async () => {
+    const r = await rig();
+    const seat = { ...r.ctx, asker: "seat" } as VerbContext;
+    const out = await r.cast({ recipe: "default", caster: "agent", at: AT }, seat);
+    expect(out).toMatchObject({ band: "asks", decision: "asks" });
+    expect(String((out["asks"] as Record<string, unknown>)["answer"])).toContain("--asking");
+    expect(r.engine.wiki.filterTiddlers("[prefix[lar:///ha.ka.ba/lares/oracle/casts/]]")).toEqual([]);
   }, 60_000);
 
   test("a bare cast (no asking, nonce or seed) mints its own nonce: two bare casts stand as two", async () => {

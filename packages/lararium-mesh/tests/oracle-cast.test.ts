@@ -9,7 +9,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   CAST_METHOD, CAST_TITLE_PREFIX, OPERATOR_COINS, ORACLE_THROW_STANDS, askingCastTitle, askingId, castFields, castFromCoins,
-  castFromLines, castReadingTitles, castText, castThreeCoins, castTitle, figureOf, hexagramOf, parseCoins, readingTitle,
+  castFromLines, castReadingTitles, castText, castThreeCoins, castTitle, figureOf, hexagramOf, normalizeAsking, parseCoins, readingTitle,
   throwLine, type LineValue,
 } from "../src/oracle-cast.js";
 import { PLATFORM_ENTROPY, seededEntropy, type EntropyDoor } from "../src/entropy-door.js";
@@ -206,17 +206,26 @@ describe("oracle-cast — the result as a tiddler, written once", () => {
 });
 
 describe("oracle-cast — one asking, one throw", () => {
-  const asking = { caster: "operator", asking: "which road first?" };
+  const asking = { asker: "cli:0xab", asking: "which road first?" };
 
-  test("the asking's id hashes who asks, what, the nonce, the seed and typed coins, and never the time", () => {
+  test("the asking's id hashes the booked asker, what, the nonce, the seed and typed coins, and never the time", () => {
     const id = askingId(asking);
     expect(id).toMatch(/^[0-9a-f]{64}$/);
     expect(askingId({ ...asking })).toBe(id);
-    expect(askingId({ ...asking, caster: "agent" })).not.toBe(id);
+    expect(askingId({ ...asking, asker: "seat:0xab" })).not.toBe(id);
     expect(askingId({ ...asking, asking: "which road last?" })).not.toBe(id);
     expect(askingId({ ...asking, nonce: "n1" })).not.toBe(id);
     expect(askingId({ ...asking, seed: "s1" })).not.toBe(id);
     expect(askingId({ ...asking, coins: [7, 7, 7, 7, 7, 7] })).not.toBe(id);
+  });
+
+  test("trivial edits to the words replay the same asking: case, spacing, Unicode form and trailing punctuation", () => {
+    const id = askingId(asking);
+    for (const words of ["Which Road First?", "  which   road\tfirst ", "which road first", "which road first?!.", "WHICH ROAD FIRST…"]) {
+      expect(normalizeAsking(words)).toBe("which road first");
+      expect(askingId({ ...asking, asking: words })).toBe(id);
+    }
+    expect(normalizeAsking("café")).toBe(normalizeAsking("café"));
   });
 
   test("an asking's title sits under casts/ and names the asking, so a second ask finds the first throw", () => {
