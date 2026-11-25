@@ -4,7 +4,7 @@
  */
 
 import { describe, test, expect } from "vitest";
-import { consistencyRadius } from "@lararium/mesh";
+import { consistencyRadius } from "@lararium/mesh/sensorium-consistency";
 import { stratify, stratificationRestrictions } from "../src/memetic-wikitext-sensorium.js";
 
 // ── the ENGINEERED overlap over a REAL skeletal tier (caution a, made concrete) ────────────────────

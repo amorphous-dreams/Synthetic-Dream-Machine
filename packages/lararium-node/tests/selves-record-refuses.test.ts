@@ -9,7 +9,8 @@
  */
 import { describe, expect, test } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
-import { emptyLarDoc, selvesRecordOf, type LarDoc } from "@lararium/mesh";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { selvesRecordOf } from "@lararium/mesh/persona-planes";
 import { repoPersonaSelvesPlane } from "../src/persona-selves-plane.js";
 import type { PlaneRest } from "../src/sealed-acts.js";
 

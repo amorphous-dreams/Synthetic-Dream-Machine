@@ -4,7 +4,9 @@
  * delivery may place it.
  */
 import { describe, expect, test } from "vitest";
-import { CompositeStore, CONTROL_HOME_ID, DAEMON_BAG_ID, NoWorkingLayerRefusal, summon } from "@lararium/mesh";
+import { CompositeStore, NoWorkingLayerRefusal } from "@lararium/mesh/composite-store";
+import { CONTROL_HOME_ID, DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { summon } from "@lararium/mesh/verb-tiddler";
 import { heedSummons } from "../src/verb-summons.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { VerbDispatcher, VerbTable } from "../src/verb-dispatcher.js";

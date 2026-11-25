@@ -32,10 +32,20 @@ import { afterAll, describe, expect, test, vi } from "vitest";
 import { cpSync, existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { LARARIUM_DOC_URI, LARES_DOC_URI } from "@lararium/mesh/lar-uris";
+import { deterministicDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
 import {
-  LARARIUM_DOC_URI, LARES_DOC_URI, deterministicDocUrl, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, emptyLarDoc, foldRealmBags, materializeSharedLarDoc,
-  realmBagKey, realmBagProposalKey, realmDocUrl, signRealmBagRegistration, writeRealmBagRegistration, type LarDoc, type RealmBagRegistration, type StewardSigner,
-} from "@lararium/mesh";
+  foldRealmBags,
+  realmBagKey,
+  realmBagProposalKey,
+  realmDocUrl,
+  signRealmBagRegistration,
+  writeRealmBagRegistration,
+  type RealmBagRegistration,
+  type StewardSigner,
+} from "@lararium/mesh/realm-bag";
 import { kahuBagDocUrl, landKahuRealm, standKahuCanon } from "../src/kahu-realm.js";
 
 /** The address any peer that knows the Nexus can compute for a bag (the realm doc's own seeding). */
@@ -48,7 +58,7 @@ import { larBootstrapPath, larDataDir, larSealHome } from "../src/vessel-paths.j
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
 import { foundHearthDirect } from "./found-route.js";
 import { readFileSync } from "node:fs";
-import { PERSONA_GROUP_ID_TIDDLER } from "@lararium/mesh";
+import { PERSONA_GROUP_ID_TIDDLER } from "@lararium/mesh/lar-uris";
 
 vi.setConfig({ testTimeout: 300_000, hookTimeout: 300_000 });
 const GENESIS = join(import.meta.dirname, "..", "..", "..", "genesis");

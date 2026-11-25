@@ -1,4 +1,4 @@
-import { placeSignerFromSeed } from "@lararium/mesh";
+import { placeSignerFromSeed } from "@lararium/mesh/place-signer";
 /**
  * carriage-cap — the composable Herm's carriage: pull a source's public FLOW-map, merge it into the
  * meshpalace doc the cap was wired to, so the Herm CARRIES (and re-serves) what it cannot author. The
@@ -15,10 +15,11 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
 import { getHeads } from "@automerge/automerge";
-import { composeVessel, dialEntryToRecord, routingSlotToRecord, radialCoordinate, type MeshPalaceDoc, type CapModule } from "@lararium/mesh";
+import { composeVessel, type CapModule } from "@lararium/mesh/cap-compose";
+import { dialEntryToRecord, routingSlotToRecord, radialCoordinate, type MeshPalaceDoc } from "@lararium/mesh/mesh-palace";
 import { mountFlowMapReadFace } from "../src/flow-read-face.js";
 import { carriageCap, CAP, incommensurablePullMs, discoverPeers, dampedRadius, type MeshPalaceComponent } from "../src/node-caps.js";
-import { ed25519VerifyingKeyFromSeed } from "@lararium/mesh";
+import { ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
 import { floorGates, flowPuller, presenter } from "./flow-floor-rig.js";
 
 const SEED_A = new Uint8Array(32).fill(7);

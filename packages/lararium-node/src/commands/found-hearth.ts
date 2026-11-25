@@ -38,10 +38,17 @@
  */
 import { wardCredentialOfRoute, type WardCredential } from "../ward-credential.js";
 import { ensureFaceCustodyAtHandle } from "../face-route.js";
+import { charterInceptionBytes, charterInceptionImage, genesisOfInception, sealKeySetHash } from "@lararium/mesh/wax-stamp";
 import {
-  charterInceptionBytes, charterInceptionImage, emptyFoundingCharterDoc, federationPostureFromDoc, genesisOfInception, mintColdKey, nexusAidOf, sealKeySetHash, seatedKahuKeys, standForKahuSeat,
-  renameOwnPersona, type NexusDoc,
-} from "@lararium/mesh";
+  emptyFoundingCharterDoc,
+  federationPostureFromDoc,
+  nexusAidOf,
+  seatedKahuKeys,
+  type NexusDoc,
+} from "@lararium/mesh/nexus-seal-seed";
+import { mintColdKey } from "@lararium/mesh/cold-key-card";
+import { standForKahuSeat } from "@lararium/mesh/persona-declare";
+import { renameOwnPersona } from "@lararium/mesh/persona-petname";
 import { aFaceBinds } from "../hearth-aid.js";
 import { RestoreRefused, openRestoreBody, restoreFaceBody, restorePendingRoot, type FaceBundleRestored, type RestoreRefusal } from "../face-bundle-restore.js";
 import { heldSeatKey } from "../seat-key-store.js";

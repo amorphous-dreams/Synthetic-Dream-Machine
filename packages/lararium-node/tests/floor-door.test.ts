@@ -23,10 +23,23 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, describe, expect, test, vi } from "vitest";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { BAG_IDS, DAEMON_BAG_ID, bagUri } from "@lararium/mesh/lar-uris";
 import {
-  AutomergeDocStore, BAG_IDS, DAEMON_BAG_ID, bagUri, realmStandingDocUrl, REALM_ID_TIDDLER, emptyLarDoc, foldRealmBags, genesisFloorCidOf, materializeSharedLarDoc, realmDocPointer, realmDocUrl, resolveFloor,
-  sha256HexBytesSync, storedLarRecord, writeRealmStanding, type FloorDrift, type LarDoc,
-} from "@lararium/mesh";
+  realmStandingDocUrl,
+  REALM_ID_TIDDLER,
+  foldRealmBags,
+  realmDocPointer,
+  realmDocUrl,
+  writeRealmStanding,
+} from "@lararium/mesh/realm-bag";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { genesisFloorCidOf } from "@lararium/mesh/floor-pin";
+import { materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { resolveFloor } from "@lararium/mesh/floor-manifest";
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
+import { type FloorDrift } from "@lararium/mesh/floor-drift";
 import { STORE_DOOR_FACE_VERBS, STORE_DOOR_HAND_CODES, STORE_DOOR_HAND_ONLY_ACTS, STORE_DOOR_VERBS, storeDoorDirect } from "../src/store-door-verbs.js";
 import { genesisCasDir, loadOrMaterializeOracle, readGenesisCasManifest } from "../src/genesis-artifact.js";
 import { casDirForStorage, mirrorGenesisCasFs, readVerifiedCasBlobFromFs } from "../src/node-cas.js";
@@ -113,7 +126,7 @@ describe("the floor doors cross a founded hearth's own bootstrap", () => {
       const truths = status["genesis"] as { line?: string } | undefined;
       expect(truths?.line).toContain("seed (offered) ");
       expect(truths?.line).toContain(": same on every ratchet");
-      expect(truths?.line).toContain(`floor pin ${genesisFloor}: engine same · grammar same · plugins same · floor same`);
+      expect(truths?.line).toContain(`floor pin ${genesisFloor}: engine same · grammar same · lararium same · plugins same · floor same`);
 
       // The cut reads the founding's own realm documents through the catalog the pointer file names. They hold no row yet (no
       // seed ran), so the steward names both thin; every other slug the genesis floor names holds no document here and keeps its snapshot.
@@ -184,7 +197,7 @@ describe("the floor doors cross a founded hearth's own bootstrap", () => {
       expect(out["refusal"]).toBeUndefined();
       expect(out["nexusRefused"]).toMatchObject({ refusal: "floor-no-charter" });
       const line = String((out["genesis"] as { line?: string } | undefined)?.line);
-      expect(line).toMatch(/^\[genesis\] founding record: engine \S+ · grammar \S+ · plugins \S+ · floor \S+/);
+      expect(line).toMatch(/^\[genesis\] founding record: engine \S+ · grammar \S+ · lararium \S+ · plugins \S+ · floor \S+/);
       expect(line).toContain(": same on every ratchet");
       expect(line).toContain("floor pin: none — this vessel stands in no Nexus charter");
       // CONTROL: no catalog names live canon here, so the drift reads null, never a silent zero.

@@ -1,12 +1,19 @@
 /** Realm frontier writers sign before the board change and land their act with its signed head. */
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
 import {
-  prepareRealmFrontier, registerRealmFrontierInto,
-  readRealmFrontier, realmRaiseCids, readFrontierPins, writeFrontierPin, REALM_HAND,
-  type LarDoc, type EdgeKapae, type HandLineage, type WideningRead,
-} from "@lararium/mesh";
+  prepareRealmFrontier,
+  registerRealmFrontierInto,
+  readRealmFrontier,
+  realmRaiseCids,
+  REALM_HAND,
+} from "@lararium/mesh/realm-frontier";
+import { readFrontierPins, writeFrontierPin } from "@lararium/mesh/edge-frontier-board";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { type EdgeKapae } from "@lararium/mesh/edge-kapae";
+import { type HandLineage } from "@lararium/mesh/hand-lineage";
+import { type WideningRead } from "@lararium/mesh/edge-frontier";
 import { leaseCharterOf } from "./lease-charter.js";
-export { prepareRealmFrontier, registerRealmFrontierInto, type PreparedRealmFrontier } from "@lararium/mesh";
+export { prepareRealmFrontier, registerRealmFrontierInto, type PreparedRealmFrontier } from "@lararium/mesh/realm-frontier";
 import { heldSeatSigners } from "./held-quorum.js";
 
 /** One realm read for both the ring and admission; only a known head raises this vessel's pin. */

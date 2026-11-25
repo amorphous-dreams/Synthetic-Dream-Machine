@@ -9,7 +9,8 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/tiddler-verbs
  */
 
-import { VerbRefusal, canonicalJsonBytes, sha256HexBytesSync } from "@lararium/mesh";
+import { VerbRefusal } from "@lararium/mesh/verb-refusal";
+import { canonicalJsonBytes, sha256HexBytesSync } from "@lararium/mesh/crypto";
 
 // ── THE BOUNDS ────────────────────────────────────────────────────────────────────────────────────────
 

@@ -30,10 +30,10 @@
 import { describe, test, expect } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import { runFoundingCeremony } from "@lararium/keyhive";
-import {
-  hex, materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix,
-  personaKelEventsFromBoard, nexusIdentity, nexusIslandsBelow, nexusScopeOrThrow,
-} from "@lararium/mesh";
+import { hex } from "@lararium/mesh/crypto";
+import { materializeSharedLarDoc, personaKelBoardDocUrl } from "@lararium/mesh/deterministic-doc";
+import { personaKelChainForPrefix, personaKelEventsFromBoard } from "@lararium/mesh/persona-kel-board";
+import { nexusIdentity, nexusIslandsBelow, nexusScopeOrThrow } from "@lararium/mesh/nexus-identity";
 import * as ed25519 from "@noble/ed25519";
 import { carryPersonaKelUpTheGradient, makePersonaKelRingHolder } from "../src/persona-kel-ring.js";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";

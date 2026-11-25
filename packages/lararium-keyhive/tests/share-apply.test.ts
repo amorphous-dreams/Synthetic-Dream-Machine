@@ -16,7 +16,11 @@
  *         grantee's open half takes it, or its next wear lifts it over the stale copy); an unchanged row moves nothing
  */
 import { describe, expect, test } from "vitest";
-import { bagUri, recipeUri, emptyLarDoc, seatHouseCanon, storedLarRecord, SHARE_PENDING_PREFIX, type LarDoc, type ShareEntry } from "@lararium/mesh";
+import { bagUri, recipeUri } from "@lararium/mesh/lar-uris";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { seatHouseCanon } from "@lararium/mesh/kahu-canon-reach";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
+import { SHARE_PENDING_PREFIX, type ShareEntry } from "@lararium/mesh/share-config";
 import { applyShares, type ShareLitFace } from "../src/share-apply.js";
 
 const NOTES = bagUri("notes"), SDM = bagUri("sdm");

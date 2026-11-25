@@ -20,10 +20,11 @@ import { keepHouse } from "./support/kept-house.js";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import {
-  deviceEdgeId, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, fleetEdgeBoardDocUrl, materializeSharedLarDoc, signEdgeKapae,
-  signSeatRoll, writeEdgeKapae,
-} from "@lararium/mesh";
+import { deviceEdgeId } from "@lararium/mesh/dyad";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { fleetEdgeBoardDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { signEdgeKapae, writeEdgeKapae } from "@lararium/mesh/edge-kapae";
+import { signSeatRoll } from "@lararium/mesh/seat-duties";
 import { restEvery, restingRepo } from "./resting-repo.js";
 import { generateOrLoadVesselIdentity } from "../src/node-vessel-identity.js";
 import { larDataDir } from "../src/vessel-paths.js";
@@ -71,7 +72,7 @@ async function raiseOnBoard(fleetRoot: string): Promise<{ actCid: string; edgeId
   return { actCid: act.actCid, edgeId: act.edgeId };
 }
 const wornOf = async (): Promise<Worn> => {
-  const { faceAtomKeyFromSeed } = await import("@lararium/mesh");
+  const { faceAtomKeyFromSeed } = await import("@lararium/mesh/face-atom");
   return { fleetRoot: await ed25519VerifyingKeyFromSeed(ROOT_SEED), atomKey: faceAtomKeyFromSeed(await atomSeedOf(0), "group-fixture-h0").key };
 };
 

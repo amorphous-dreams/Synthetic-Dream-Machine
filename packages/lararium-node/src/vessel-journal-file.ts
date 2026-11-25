@@ -19,7 +19,7 @@ import {
   type VesselJournal,
   type JournalCursor,
   type JournalWaiter,
-} from "@lararium/mesh";
+} from "@lararium/mesh/vessel-journal";
 
 const ENTRY_KINDS: ReadonlySet<JournalKind> = new Set(["bag-projected", "verb-receipt"]);
 

@@ -61,29 +61,42 @@ vi.mock("../src/fleet-join-custody.js", () => ({
 }));
 vi.mock("@noble/ed25519", () => ({ signAsync: async () => new Uint8Array(64) }));
 vi.mock("@lararium/keyhive", () => ({}));
-vi.mock("@lararium/mesh", async () => {
-  const { composerOverStubs } = await import("./fixtures/fleet-join-composer-seam.js");
-  const stubs = {
-  // The own-property door, as `stored-value.ts` spells it: the bootstrap read asks it by name.
-  ownEntry: (map: Record<string, unknown> | null | undefined, key: string) => (map && key !== "__proto__" && Object.hasOwn(map, key) ? map[key] : undefined),
-  gateBundleDigest: (pin: unknown) => JSON.stringify(pin),
-  nexusAidOf: () => "nexus-a",
-  heldNexusRoot: () => ({ nexus: "nexus-a" }),
-  makeMultiSigQuorumVerifier: () => ({}),
-  verifySignedAdmitBundle: async () => ({ carriage: {} }),
-  readGateBundlePin: () => ({ refusal: "pin-malformed" }),
-  PERSONA_GROUP_ID_TIDDLER: "lar:///ha.ka.ba/lares/persona-group-id",
-  fleetJoinOffer: (offer: unknown) => offer,
-  readFleetJoinRequest: () => ({ vesselKey: "c".repeat(64), requests: [{ scope: { faceKey: "d", nexus: "nexus-a" } }] }),
-  foldWithdrawals: () => ({ memory: {} }),
-  issueCertificate: async () => { seam.certificate(); return { certificate: { kind: "certificate" } }; },
-  faceKeyGrantImage: () => { seam.grant(); return new Uint8Array(); },
-  fleetJoinAnswerImage: () => { seam.answer(); return new Uint8Array(); },
-  sealAddressSecret: () => ({ sealed: true }),
-  hex: (bytes: Uint8Array) => Buffer.from(bytes).toString("hex"),
-};
-  return { ...stubs, ...composerOverStubs(stubs) };
+// The suite's mesh primitives, built ONCE and shared by every mesh module mock below (each module carries its own names).
+const meshStubs = vi.hoisted(() => {
+  let made: Promise<Record<string, unknown>> | undefined;
+  return (): Promise<Record<string, unknown>> => (made ??= (async () => {
+    const { composerOverStubs } = await import("./fixtures/fleet-join-composer-seam.js");
+    const stubs: Record<string, unknown> = {
+      // The own-property door, as `stored-value.ts` spells it: the bootstrap read asks it by name.
+      ownEntry: (map: Record<string, unknown> | null | undefined, key: string) => (map && key !== "__proto__" && Object.hasOwn(map, key) ? map[key] : undefined),
+      gateBundleDigest: (pin: unknown) => JSON.stringify(pin),
+      nexusAidOf: () => "nexus-a",
+      heldNexusRoot: () => ({ nexus: "nexus-a" }),
+      makeMultiSigQuorumVerifier: () => ({}),
+      verifySignedAdmitBundle: async () => ({ carriage: {} }),
+      readGateBundlePin: () => ({ refusal: "pin-malformed" }),
+      PERSONA_GROUP_ID_TIDDLER: "lar:///ha.ka.ba/lares/persona-group-id",
+      fleetJoinOffer: (offer: unknown) => offer,
+      readFleetJoinRequest: () => ({ vesselKey: "c".repeat(64), requests: [{ scope: { faceKey: "d", nexus: "nexus-a" } }] }),
+      foldWithdrawals: () => ({ memory: {} }),
+      issueCertificate: async () => { seam.certificate(); return { certificate: { kind: "certificate" } }; },
+      faceKeyGrantImage: () => { seam.grant(); return new Uint8Array(); },
+      fleetJoinAnswerImage: () => { seam.answer(); return new Uint8Array(); },
+      sealAddressSecret: () => ({ sealed: true }),
+      hex: (bytes: Uint8Array) => Buffer.from(bytes).toString("hex"),
+    };
+    return { ...stubs, ...composerOverStubs(stubs) };
+  })());
 });
+vi.mock("@lararium/mesh/stored-value", async (real) => { const all = await meshStubs(); return { ...(await real<Record<string, unknown>>()), ...Object.fromEntries(["ownEntry"].map((key) => [key, all[key]])) }; });
+vi.mock("@lararium/mesh/gate-bundle-door", async (real) => { const all = await meshStubs(); return { ...(await real<Record<string, unknown>>()), ...Object.fromEntries(["gateBundleDigest","readGateBundlePin"].map((key) => [key, all[key]])) }; });
+vi.mock("@lararium/mesh/nexus-seal-seed", async (real) => { const all = await meshStubs(); return { ...(await real<Record<string, unknown>>()), ...Object.fromEntries(["nexusAidOf"].map((key) => [key, all[key]])) }; });
+vi.mock("@lararium/mesh/held-nexus-root", async (real) => { const all = await meshStubs(); return { ...(await real<Record<string, unknown>>()), ...Object.fromEntries(["heldNexusRoot","verifySignedAdmitBundle"].map((key) => [key, all[key]])) }; });
+vi.mock("@lararium/mesh/kapae-antigen", async (real) => { const all = await meshStubs(); return { ...(await real<Record<string, unknown>>()), ...Object.fromEntries(["makeMultiSigQuorumVerifier"].map((key) => [key, all[key]])) }; });
+vi.mock("@lararium/mesh/lar-uris", async (real) => { const all = await meshStubs(); return { ...(await real<Record<string, unknown>>()), ...Object.fromEntries(["PERSONA_GROUP_ID_TIDDLER"].map((key) => [key, all[key]])) }; });
+vi.mock("@lararium/mesh/fleet-join", async (real) => { const all = await meshStubs(); return { ...(await real<Record<string, unknown>>()), ...Object.fromEntries(["fleetJoinOffer","readFleetJoinRequest","faceKeyGrantImage","fleetJoinAnswerImage","sealAddressSecret","FleetJoinRootRefused","fleetJoinHearthOf","composeFleetJoinOffer","composeFleetJoinAnswer"].map((key) => [key, all[key]])) }; });
+vi.mock("@lararium/mesh/face-authority-door", async (real) => { const all = await meshStubs(); return { ...(await real<Record<string, unknown>>()), ...Object.fromEntries(["foldWithdrawals","issueCertificate"].map((key) => [key, all[key]])) }; });
+vi.mock("@lararium/mesh/crypto", async (real) => { const all = await meshStubs(); return { ...(await real<Record<string, unknown>>()), ...Object.fromEntries(["hex"].map((key) => [key, all[key]])) }; });
 
 import { FleetJoinRefused, runFleetJoinAnswer, runFleetJoinOffer } from "../src/commands/fleet-join.js";
 

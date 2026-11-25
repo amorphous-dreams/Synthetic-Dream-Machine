@@ -6,13 +6,18 @@
  * mint-and-append path with the system floor carried through @oracle.
  */
 import { describe, test, expect } from "vitest";
-import { recipeUri, wikiBagUri, wikiUri, type LarDoc, type LarTiddlerRecord, type Repo, type DocHandle } from "@lararium/mesh";
+import { recipeUri, wikiUri } from "@lararium/mesh/lar-uris";
+import { wikiBagUri } from "@lararium/mesh/wiki-recipe";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
+import { type Repo, type DocHandle } from "@lararium/mesh/automerge";
 import { makeInitWikiReactor } from "../src/wiki-mint-handlers.js";
 import { makeAddBagReactor, makeRemoveBagReactor } from "../src/wiki-compose-handlers.js";
 import { makeListWikisReactor, makeWikiPinReactor, makeWikiUnpinReactor } from "../src/worker-data-verbs.js";
 import type { CatalogAccessor } from "../src/catalog-accessor.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
-import { plainField, plainRecord, plainRecordOrNull, tiddlerText } from "@lararium/mesh";
+import { plainField, plainRecord, plainRecordOrNull } from "@lararium/mesh/stored-value";
+import { tiddlerText } from "@lararium/mesh/base-doc";
 
 type Tiddlers = Record<string, LarTiddlerRecord>;
 const rec = (title: string, fields: Record<string, string>): LarTiddlerRecord => ({ tiddler: { title, ...fields } });

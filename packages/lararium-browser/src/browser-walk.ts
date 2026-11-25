@@ -13,7 +13,8 @@
  */
 
 import * as ed25519 from "@noble/ed25519";
-import { hex, type WalkLeaf, type WalkRecord, type WalkStore } from "@lararium/mesh";
+import { hex } from "@lararium/mesh/crypto";
+import { type WalkLeaf, type WalkRecord, type WalkStore } from "@lararium/mesh/walk-client";
 import type { CarriedAdmitPayload } from "@lararium/keyhive";
 import { browserPersonaRootHeld, faceOfVessel } from "./browser-vessel-identity.js";
 import { readKeystoreRecord, withCustodyRecords } from "./browser-custody.js";

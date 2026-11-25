@@ -23,11 +23,12 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/node/uds-session-door
  */
-import {
-  faceAtomPublicKey, signAsFaceAtom, HANDLE_INDEX_CEILING, nexusAidOfPin, preparePlaceFace, type GateBundlePin, type JoinedFaceTarget, type PlaceReading,
-} from "@lararium/mesh";
+import { faceAtomPublicKey, signAsFaceAtom } from "@lararium/mesh/face-atom";
+import { HANDLE_INDEX_CEILING } from "@lararium/mesh/persona-vault";
+import { nexusAidOfPin, type GateBundlePin } from "@lararium/mesh/gate-bundle-door";
+import { preparePlaceFace, type JoinedFaceTarget, type PlaceReading } from "@lararium/mesh/session-face";
 import type { Hand } from "@lararium/mesh/session-contract";
-import type { NexusOwnChain } from "@lararium/mesh";
+import type { NexusOwnChain } from "@lararium/mesh/island-protocol";
 import { HAND_PROFILES } from "@lararium/mesh/session-contract";
 import { CustodyLocked } from "./custody-holder.js";
 import { composeFaceTarget } from "./dial-presentation.js";

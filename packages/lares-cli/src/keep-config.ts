@@ -14,7 +14,7 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
 import { readFileSync } from "node:fs";
-import { WORKSPACE_NAME_RE } from "@lararium/mesh";
+import { WORKSPACE_NAME_RE } from "@lararium/mesh/workbench";
 import { envValue, surfaceEnvPath } from "./surface-env.js";
 
 export const KEEP_WORKSPACE_ENV = "LARES_KEEP_WORKSPACE";

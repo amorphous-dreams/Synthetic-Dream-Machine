@@ -10,7 +10,9 @@
  * a peer's document carries it, and a `lar:` title lands as it always did.
  */
 import { describe, expect, test } from "vitest";
-import { AutomergeDocStore, volatileVmUri, type LarDoc } from "@lararium/mesh";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { volatileVmUri } from "@lararium/mesh/lar-uris";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { wikiSkip, skipNote } from "./test-wiki.js";
 import { Repo, peerWrite, personalBag, landingDeadline, shoreRig, turns, workingBag, type Rig } from "./wiki-shore-rig.js";
 

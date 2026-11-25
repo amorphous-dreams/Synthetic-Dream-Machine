@@ -8,7 +8,9 @@
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store
  */
 import { describe, expect, it } from "vitest";
-import { docStorePortCell, vesselDocStoreDoor, type CapabilityRecord, type VesselWorkerHandle } from "@lararium/mesh";
+import { docStorePortCell, vesselDocStoreDoor } from "@lararium/mesh/sealed-rest";
+import { type CapabilityRecord } from "@lararium/mesh/capability-record";
+import { type VesselWorkerHandle } from "@lararium/mesh/vessel-host";
 import { islandAskingThroughRecord } from "../src/open-browser-daemon-vm.js";
 
 type Session = { readonly id: string; readonly subject: string };

@@ -1,6 +1,13 @@
 import { describe, expect, test } from "vitest";
-import { actCid, buildIntent, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, faceIntentVerbs, intentEntryRecordsOfGroup, intentId, mintPersonaInception,
-  signPersonaAct, writeIntentEntry, type DocHandle, type LarDoc } from "@lararium/mesh";
+import { actCid } from "@lararium/mesh/signed-act";
+import { buildIntent } from "@lararium/mesh/intent-issue";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { faceIntentVerbs } from "@lararium/mesh/intent-verbs";
+import { intentEntryRecordsOfGroup, intentId, writeIntentEntry } from "@lararium/mesh/intent-entry";
+import { mintPersonaInception } from "@lararium/mesh/persona-kel";
+import { signPersonaAct } from "@lararium/mesh/persona-act-board";
+import { type DocHandle } from "@lararium/mesh/automerge";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { makeFaceIntentDoor } from "@lararium/keyhive";
 import { drainPlans, faceLives, type FaceLifeEffects, type FaceLit } from "../src/face-lifecycle.js";
 import { taggedAdmission } from "../../lararium-mesh/tests/vessel-tag-fixture.js";

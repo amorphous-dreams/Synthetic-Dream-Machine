@@ -1,0 +1,36 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/harness-pr1`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — PR body, 2026-11-07 (file date) — source `.lares-scratch/harness-pr1.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/harness-pr1"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/harness-pr1"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! harness-pr1.md — PR body, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/harness-pr1.md` (PR body, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Harness row 1: lane state carries the session's commit trailers as a required key, and the lead-step brief writes them under COMMIT TRAILERS, so a Codex lead no longer stops at the commit wall for lines it never sees (lease-end step 10). Red-first with control; lane-state 8/8, launch-codex 99/99; pre-push gate green.
+
+🤖 Generated with [[Claude Code|https://claude.com/claude-code]]
+
+https://claude.ai/code/session_01V63vwNsTbwswaievYNJosw
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;jSAiO5T8-I0yiclwRG5Wt-6GLl7b86uqYXm2ENOm-nE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

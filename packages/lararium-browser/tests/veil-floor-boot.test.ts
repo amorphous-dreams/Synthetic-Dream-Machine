@@ -20,7 +20,9 @@ import { openBrowserVessel, readBrowserVesselFaces, type BrowserVesselOptions } 
 import { openVesselIdb, idbKeys, loadBrowserPlaceKel } from "../src/browser-vessel-identity.js";
 import { readBrowserCustody } from "../src/browser-custody.js";
 import { clearFaceCustody, lockFaceCustody } from "../src/browser-face-custody.js";
-import { controlHomeUrlOf, verifyVeilLift, type LarDoc, type VeilLiftRecord } from "@lararium/mesh";
+import { controlHomeUrlOf } from "@lararium/mesh/control-home";
+import { verifyVeilLift, type VeilLiftRecord } from "@lararium/mesh/veil-lift";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { Repo } from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-indexeddb";
 import { keepBrowserVeilLift, readBrowserVeilLift } from "../src/browser-veil-lift.js";

@@ -14,7 +14,8 @@
 
 import { describe, test, expect, afterEach, vi } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
-import { emptyLarDoc, mkTeardownAck, type LarDoc, type IslandMsg_Manifest } from "@lararium/mesh";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { mkTeardownAck, type IslandMsg_Manifest } from "@lararium/mesh/island-protocol";
 import { openDaemonVmCore, type DaemonVmHost } from "@lararium/tw5";
 
 /** A scripted island: it records what crosses its boundary, in order, and answers when told. */

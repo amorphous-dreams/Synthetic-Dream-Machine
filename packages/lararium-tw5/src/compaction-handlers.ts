@@ -18,14 +18,15 @@
  * the Epoch or the deletion gets lost on restart.
  */
 
-import type { Repo, AutomergeUrl } from "@lararium/mesh";
-import { plainEntries, plainRecordOrNull, storedRecord, ownEntry } from "@lararium/mesh";
-import {
-  type LarDoc,
-  emptyLarDoc, storedLarRecord, mkDaemonResidencyOp, mkDaemonWikiAlert,
-  wikiBagUri, recipeUri,
-} from "@lararium/mesh";
-import { bagStackFromRec } from "@lararium/mesh";
+import type { Repo, AutomergeUrl } from "@lararium/mesh/automerge";
+import { plainEntries, plainRecordOrNull, ownEntry } from "@lararium/mesh/stored-value";
+import { storedRecord } from "@lararium/mesh/stored-record";
+import { type LarDoc, emptyLarDoc } from "@lararium/mesh/base-doc";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
+import { mkDaemonResidencyOp, mkDaemonWikiAlert } from "@lararium/mesh/island-protocol";
+import { wikiBagUri } from "@lararium/mesh/wiki-recipe";
+import { recipeUri } from "@lararium/mesh/lar-uris";
+import { bagStackFromRec } from "@lararium/mesh/bag-stack-from-rec";
 import type { VerbReactor } from "./verb-dispatcher.js";
 import type { CatalogAccessor } from "./catalog-accessor.js";
 import type { ResidencyOpPost } from "./worker-data-verbs.js";

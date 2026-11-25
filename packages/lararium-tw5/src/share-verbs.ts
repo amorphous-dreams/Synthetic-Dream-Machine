@@ -14,9 +14,19 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-share-config
  */
 import {
-  assertShareKindFree, mutableLarRecord, parseShareFilter, shareEntryFields, shareEntryOf, shareEntryTitle, shareEntryWorkspace, ShareConfigRefusal, SHARE_CONFIG_PREFIX, VerbRefusal,
-  type CompositeStore, type ShareEntry,
-} from "@lararium/mesh";
+  assertShareKindFree,
+  parseShareFilter,
+  shareEntryFields,
+  shareEntryOf,
+  shareEntryTitle,
+  shareEntryWorkspace,
+  ShareConfigRefusal,
+  SHARE_CONFIG_PREFIX,
+  type ShareEntry,
+} from "@lararium/mesh/share-config";
+import { mutableLarRecord } from "@lararium/mesh/base-doc";
+import { VerbRefusal } from "@lararium/mesh/verb-refusal";
+import { type CompositeStore } from "@lararium/mesh/composite-store";
 import type { VerbReactor } from "./verb-dispatcher.js";
 
 const ORIGIN = { kind: "lares-verb", requestId: "share-config" } as const;

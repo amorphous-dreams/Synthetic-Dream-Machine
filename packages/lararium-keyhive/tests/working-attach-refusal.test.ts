@@ -12,7 +12,9 @@ vi.mock("../src/slot-doc-resolver.js", () => ({
   makeSlotDocResolver: (args: never) => (harness.resolverArgs = args, { bindings: (...args: unknown[]) => harness.bindings(...args), slotDoc: (...args: unknown[]) => harness.slotDoc(...args) }),
 }));
 
-import { AutomergeDocStore, CompositeStore, wikiBagUri, wikiSlotUri } from "@lararium/mesh";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { wikiBagUri, wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { makeOperatorDaemonBehavior, operatorDaemonOptions } from "../src/operator-daemon-behavior.js";
 
 const working = wikiSlotUri("daemon", "working");

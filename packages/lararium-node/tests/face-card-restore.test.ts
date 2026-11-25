@@ -28,10 +28,12 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import * as ed from "@noble/ed25519";
-import {
-  CUSTODIAN_SLOT_TAG, attestAndRotate, deriveSelfRecoveryKey, faceAtomKeyFromSeed, hex, splitToCustodianCards,
-  type PersonaKelEvent, type RandomProvider,
-} from "@lararium/mesh";
+import { CUSTODIAN_SLOT_TAG, splitToCustodianCards } from "@lararium/mesh/custodian-card";
+import { attestAndRotate } from "@lararium/mesh/recovery-keel-core";
+import { deriveSelfRecoveryKey } from "@lararium/mesh/persona-identity";
+import { faceAtomKeyFromSeed } from "@lararium/mesh/face-atom";
+import { hex, type RandomProvider } from "@lararium/mesh/crypto";
+import { type PersonaKelEvent } from "@lararium/mesh/persona-kel";
 import * as init from "../src/commands/init.js";
 import { armRecoveryAtFounding } from "../src/commands/init.js";
 import { seatedCustody, unseatCustody } from "../src/custody-seat.js";

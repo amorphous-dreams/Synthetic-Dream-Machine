@@ -19,7 +19,12 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
 import { announceSeatRoll, type IslandSessionProof, type SessionReading } from "@lararium/keyhive";
-import { hex, isVerbRefusal, mintOutboxKey, openOutboxParcel, readKeyParcel, readsAsOutboxSeal, restDigest, sha256HexBytesSync, utf8Bytes, type OutboxKey, type RecordSigner, type SeatRoll } from "@lararium/mesh";
+import { hex, sha256HexBytesSync, utf8Bytes } from "@lararium/mesh/crypto";
+import { isVerbRefusal } from "@lararium/mesh/verb-refusal";
+import { mintOutboxKey, openOutboxParcel, readsAsOutboxSeal, restDigest, type OutboxKey } from "@lararium/mesh/sealed-store-rest";
+import { readKeyParcel } from "@lararium/mesh/lockbox-wrap";
+import { type RecordSigner } from "@lararium/mesh/sealed-records";
+import { type SeatRoll } from "@lararium/mesh/seat-duties";
 import { VerbTable } from "@lararium/tw5";
 import { faceProofSubjectRef, sessionSignatureImage } from "../../lararium-mesh/src/face-proof-subjects.js";
 import { chain, signHex } from "../../lararium-mesh/tests/face-proof-fixture.js";
@@ -141,10 +146,10 @@ describe("a private body seals on a real founded vessel, end to end", () => {
 
     // AT REST: the sealed store's own tier and the sealed values' tier hold no plaintext and no bag name.
     const sealedTier = [...tree(sealedStoreDir(root)), ...tree(cadSealDir(root))];
-    expect(sealedTier.map((f) => f.path.split("/").at(-2)).sort()).toEqual(["cad", "index", "key-version", "lockbox", "manifest", "own"]);
-    // The one own note names the founding's write head: a manifest cites every manifest its writer verified, so no
-    // manifest-head note rests beside it.
-    expect(sealedTier.filter((f) => f.path.split("/").at(-2) === "own").map((f) => f.path.split("/").at(-1)!.split(".")[0])).toEqual(["write-head"]);
+    expect(sealedTier.map((f) => f.path.split("/").at(-2)).sort()).toEqual(["cad", "index", "key-version", "lockbox", "manifest", "own", "own"]);
+    // Two own notes rest: the founding's write head, and the heads note (heads.<digest>) the holder rests ahead of each
+    // manifest. A manifest cites every manifest its writer verified, so no manifest-head note rests beside them.
+    expect(sealedTier.filter((f) => f.path.split("/").at(-2) === "own").map((f) => f.path.split("/").at(-1)!.split(".")[0]).sort()).toEqual(["heads", "write-head"]);
     expect(holds(sealedTier, "SEARCH-ME")).toBe(false);
     expect(sealedTier.some((f) => f.path.includes("SEARCH-ME"))).toBe(false);
     // CONTROL: the same hunt finds the text in a buffer that does hold it.
@@ -340,7 +345,7 @@ describe("the vessel registers only what rests sealed in the cad tier", () => {
     expect(refusal(sha256HexBytesSync(utf8Bytes(BODY)))).toBe("address-malformed");
     // A cleartext body under a true blake3 address of its own bytes: it rests, it recomputes, and it reads as no sealed value.
     const { writeCasEntriesFs } = await import("../src/node-cas.js");
-    const { sealedAddressOf } = await import("@lararium/mesh");
+    const { sealedAddressOf } = await import("@lararium/mesh/sealed-chunk-door");
     const clear = utf8Bytes(BODY.repeat(8));
     const clearCid = sealedAddressOf(clear);
     writeCasEntriesFs([{ cid: clearCid, bytes: clear }], cadSealDir(root));

@@ -27,10 +27,17 @@
 
 import { hostingFaceHolding } from "../hosting-face.js";
 import type { Repo } from "@automerge/automerge-repo";
+import { hostingDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
 import {
-  hostingDocUrl, materializeSharedLarDoc, writeHostingAct, hostingActsFromBoard, hostingActCid, mintHostToken, encodeInvite,
-  verifyHostingAct, type HostingAct, type LarDoc,
-} from "@lararium/mesh";
+  writeHostingAct,
+  hostingActsFromBoard,
+  hostingActCid,
+  mintHostToken,
+  encodeInvite,
+  verifyHostingAct,
+  type HostingAct,
+} from "@lararium/mesh/hosting";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 
 /** The acts on a hosting doc that `hearthLeaf` itself signed FOR this Nexus. `hostingActsFromBoard` reads shape
  *  alone, and an act the leaf signed for another Nexus, copied here, says nothing about this one. */

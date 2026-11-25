@@ -4,7 +4,30 @@
  */
 
 import { Worker, MessageChannel } from "worker_threads";
-import { answerReceipt, receiptSettlement, answerDyad, answerCustodyWrite, answerSessionSign, answerRestAsk, type IslandMsg_RestAsk, type VesselWorkerHandle, type CapabilityRecord, type CustodyWriteCarrier, type IslandMsg_CasWant, type IslandMsg_CasBlock, type IslandMsg_DyadAsk, type IslandMsg_DyadRead, type IslandMsg_ReceiptRequest, type IslandMsg_ReceiptIssued, type IslandMsg_CustodyWrite, type IslandMsg_CustodyWritten, type IslandMsg_SessionSign, type IslandMsg_SessionSigned } from "@lararium/mesh";
+import {
+  answerReceipt,
+  receiptSettlement,
+  answerDyad,
+  answerCustodyWrite,
+  answerSessionSign,
+  answerRestAsk,
+  type CapabilityRecord,
+} from "@lararium/mesh/capability-record";
+import {
+  type IslandMsg_RestAsk,
+  type CustodyWriteCarrier,
+  type IslandMsg_CasWant,
+  type IslandMsg_CasBlock,
+  type IslandMsg_DyadAsk,
+  type IslandMsg_DyadRead,
+  type IslandMsg_ReceiptRequest,
+  type IslandMsg_ReceiptIssued,
+  type IslandMsg_CustodyWrite,
+  type IslandMsg_CustodyWritten,
+  type IslandMsg_SessionSign,
+  type IslandMsg_SessionSigned,
+} from "@lararium/mesh/island-protocol";
+import { type VesselWorkerHandle } from "@lararium/mesh/vessel-host";
 
 // The answers stand once on the mesh floor (`capability-record.ts`), so the node and the browser answer one ask alike.
 export { answerReceipt, answerDyad, answerCustodyWrite, answerSessionSign };

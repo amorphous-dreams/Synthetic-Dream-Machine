@@ -17,7 +17,7 @@
 import { describe, it, expect } from "vitest";
 import { readVerbOutcome } from "../src/verb-result.js";
 import type { SubmitResult } from "../src/verb-result.js";
-import { VERB_RESULT_KEY } from "@lararium/mesh";
+import { VERB_RESULT_KEY } from "@lararium/mesh/verb-tiddler";
 
 const done = (output: Record<string, unknown>): SubmitResult =>
   ({ status: "done", results: { [VERB_RESULT_KEY]: { ok: true, output } }, requestId: "r" });

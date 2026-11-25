@@ -2,9 +2,9 @@
   "format": "lararium-genesis-unbaked",
   "unbaked": [
     {
-      "source": "packages/lararium-tw5/plugins/lares-memetic-wikitext.json",
-      "sha256": "8e50944c86077acc4b82d122ddfcfc5e437035940e50424d244cfc7521a518e2",
-      "why": "The worldline-truths lane re-packs the memetic-wikitext bundle: its in-VM worldline read carries the round-closing handback, explicit retirement, sender-joining messages and link-order replay with its uncertain handles (@lararium/mesh worldline-causal and replay). The oracle-cast lane (the throw stands) renames the cast footer and ORACLE_THROW_STANDS in the same bundle. The next labelled GENESIS RE-BAKE carries these bytes and deletes this row."
+      "source": "packages/lararium-tw5/plugins/lares-lararium.json",
+      "sha256": "4f1caf4c086f4ec12aae0154a16798a1310cf606a2773fa2cd1b7956bbe122d6",
+      "why": "The door-gradient lane (the door bands, the oracle's asking and seed door), the family-turn-settle lane (the clock sweeper: a held family turn waits on its settle and answers owed, never on a timer), and the in-flight backstop lane (a framed root edited during a held placement places again on settle) re-pack the house skin. The next labelled GENESIS RE-BAKE carries these bytes and deletes this row."
     }
   ]
 }

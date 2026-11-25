@@ -9,7 +9,11 @@
 
 import { resolve as resolvePath, join as joinPath, dirname, basename, extname, isAbsolute, sep } from "path";
 import { existsSync, readFileSync, readdirSync, realpathSync, statSync } from "fs";
-import { stripMemeExt, wikiSlotUri, projectionWithheld, daemonFaceCanonBag, namesTw5Docs, KAHUA_BAG, CROSSROADS_DOC_URI, type ProjectionClass } from "@lararium/mesh";
+import { stripMemeExt } from "@lararium/mesh/mirror-paths";
+import { wikiSlotUri, daemonFaceCanonBag, KAHUA_BAG } from "@lararium/mesh/wiki-recipe";
+import { projectionWithheld, type ProjectionClass } from "@lararium/mesh/projection-filter";
+import { namesTw5Docs } from "@lararium/mesh/tw5-docs-name";
+import { CROSSROADS_DOC_URI } from "@lararium/mesh/lar-uris";
 import { ORPHAN_FOLDER_SUFFIX } from "@lararium/mesh/family";
 
 export interface BagMirrorConfig {

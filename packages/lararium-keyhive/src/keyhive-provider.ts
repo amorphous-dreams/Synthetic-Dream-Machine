@@ -25,7 +25,9 @@
 // its wasm as CONTENT (off the module graph), the same law the engine bytes obey.
 import * as KH from "@keyhive/keyhive/slim";
 import { wasmBase64 } from "@keyhive/keyhive/wasm-base64";
-import { adaptGate, PONO_FLUSH_GATE, hex as hexEncode, hexToBytes as hexDecode, sha256HexBytesSync, webDigest } from "@lararium/mesh";
+import { adaptGate } from "@lararium/mesh/gate-tuning";
+import { PONO_FLUSH_GATE } from "@lararium/mesh/capture-nalu";
+import { hex as hexEncode, hexToBytes as hexDecode, sha256HexBytesSync, webDigest } from "@lararium/mesh/crypto";
 import { base64ToBytes } from "./bytes-base64.js";
 import { ingestTolerant } from "./ingest-tolerant.js";
 import { inSelfSlice } from "./event-store.js";

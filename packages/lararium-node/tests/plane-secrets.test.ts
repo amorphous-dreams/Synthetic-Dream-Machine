@@ -8,7 +8,7 @@
 import { describe, expect, test } from "vitest";
 
 import type { DocumentId } from "@automerge/automerge-repo";
-import { makeTierFloorSource, structuralFloorFor, resolveTierForDoc, type CapTierRing } from "@lararium/mesh";
+import { makeTierFloorSource, structuralFloorFor, resolveTierForDoc, type CapTierRing } from "@lararium/mesh/cap-tier";
 import { makeContractSecretsRegistry, NO_CONTRACT_SECRETS_PLANE } from "../src/plane-secrets.js";
 
 const CREDS = "creds-doc" as DocumentId;

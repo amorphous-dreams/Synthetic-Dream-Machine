@@ -17,7 +17,8 @@ import { mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSyn
 import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { carrierHash, VERB_RESULT_KEY } from "@lararium/mesh";
+import { carrierHash } from "@lararium/mesh/crypto";
+import { VERB_RESULT_KEY } from "@lararium/mesh/verb-tiddler";
 import { stampCarrier } from "@lararium/memetic-frame";
 import { SyncedTree, syncedTreeKey } from "@lararium/node";
 import { takeDisk, type TakeDiskDeps } from "../src/shore-take-disk.js";

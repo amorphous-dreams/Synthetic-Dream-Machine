@@ -20,6 +20,10 @@
       "import": "./dist/entropy-door.js",
       "types": "./dist/entropy-door.d.ts"
     },
+    "./door-band": {
+      "import": "./dist/door-band.js",
+      "types": "./dist/door-band.d.ts"
+    },
     "./oracle-cast": {
       "import": "./dist/oracle-cast.js",
       "types": "./dist/oracle-cast.d.ts"
@@ -219,6 +223,1286 @@
     "./projection-filter": {
       "import": "./dist/projection-filter.js",
       "types": "./dist/projection-filter.d.ts"
+    },
+    "./admission-price": {
+      "import": "./dist/admission-price.js",
+      "types": "./dist/admission-price.d.ts"
+    },
+    "./admit-gate-pin": {
+      "import": "./dist/admit-gate-pin.js",
+      "types": "./dist/admit-gate-pin.d.ts"
+    },
+    "./ahi-ka": {
+      "import": "./dist/ahi-ka.js",
+      "types": "./dist/ahi-ka.d.ts"
+    },
+    "./anchor-store": {
+      "import": "./dist/anchor-store.js",
+      "types": "./dist/anchor-store.d.ts"
+    },
+    "./antigen-board": {
+      "import": "./dist/antigen-board.js",
+      "types": "./dist/antigen-board.d.ts"
+    },
+    "./arl-dial": {
+      "import": "./dist/arl-dial.js",
+      "types": "./dist/arl-dial.d.ts"
+    },
+    "./attempt-budget": {
+      "import": "./dist/attempt-budget.js",
+      "types": "./dist/attempt-budget.d.ts"
+    },
+    "./automerge": {
+      "import": "./dist/automerge.js",
+      "types": "./dist/automerge.d.ts"
+    },
+    "./automerge-doc-store": {
+      "import": "./dist/automerge-doc-store.js",
+      "types": "./dist/automerge-doc-store.d.ts"
+    },
+    "./bag-home": {
+      "import": "./dist/bag-home.js",
+      "types": "./dist/bag-home.d.ts"
+    },
+    "./bag-manifest": {
+      "import": "./dist/bag-manifest.js",
+      "types": "./dist/bag-manifest.d.ts"
+    },
+    "./bag-residency": {
+      "import": "./dist/bag-residency.js",
+      "types": "./dist/bag-residency.d.ts"
+    },
+    "./bag-stack-from-rec": {
+      "import": "./dist/bag-stack-from-rec.js",
+      "types": "./dist/bag-stack-from-rec.d.ts"
+    },
+    "./base-doc": {
+      "import": "./dist/base-doc.js",
+      "types": "./dist/base-doc.d.ts"
+    },
+    "./boot-resolver": {
+      "import": "./dist/boot-resolver.js",
+      "types": "./dist/boot-resolver.d.ts"
+    },
+    "./cabal-invite": {
+      "import": "./dist/cabal-invite.js",
+      "types": "./dist/cabal-invite.d.ts"
+    },
+    "./cabal-realm": {
+      "import": "./dist/cabal-realm.js",
+      "types": "./dist/cabal-realm.d.ts"
+    },
+    "./cabal-realm-clock": {
+      "import": "./dist/cabal-realm-clock.js",
+      "types": "./dist/cabal-realm-clock.d.ts"
+    },
+    "./cadence-lineage": {
+      "import": "./dist/cadence-lineage.js",
+      "types": "./dist/cadence-lineage.d.ts"
+    },
+    "./canon-offer": {
+      "import": "./dist/canon-offer.js",
+      "types": "./dist/canon-offer.d.ts"
+    },
+    "./cap-compose": {
+      "import": "./dist/cap-compose.js",
+      "types": "./dist/cap-compose.d.ts"
+    },
+    "./cap-tier": {
+      "import": "./dist/cap-tier.js",
+      "types": "./dist/cap-tier.d.ts"
+    },
+    "./capability": {
+      "import": "./dist/capability.js",
+      "types": "./dist/capability.d.ts"
+    },
+    "./capability-record": {
+      "import": "./dist/capability-record.js",
+      "types": "./dist/capability-record.d.ts"
+    },
+    "./capture-nalu": {
+      "import": "./dist/capture-nalu.js",
+      "types": "./dist/capture-nalu.d.ts"
+    },
+    "./capture/branch-frontier": {
+      "import": "./dist/capture/branch-frontier.js",
+      "types": "./dist/capture/branch-frontier.d.ts"
+    },
+    "./capture/capture-engine": {
+      "import": "./dist/capture/capture-engine.js",
+      "types": "./dist/capture/capture-engine.d.ts"
+    },
+    "./carriage-board": {
+      "import": "./dist/carriage-board.js",
+      "types": "./dist/carriage-board.d.ts"
+    },
+    "./carriage-caps": {
+      "import": "./dist/carriage-caps.js",
+      "types": "./dist/carriage-caps.d.ts"
+    },
+    "./carriage-log": {
+      "import": "./dist/carriage-log.js",
+      "types": "./dist/carriage-log.d.ts"
+    },
+    "./carriage-pull": {
+      "import": "./dist/carriage-pull.js",
+      "types": "./dist/carriage-pull.d.ts"
+    },
+    "./carriage-registry": {
+      "import": "./dist/carriage-registry.js",
+      "types": "./dist/carriage-registry.d.ts"
+    },
+    "./cas-caps": {
+      "import": "./dist/cas-caps.js",
+      "types": "./dist/cas-caps.d.ts"
+    },
+    "./catalog-view": {
+      "import": "./dist/catalog-view.js",
+      "types": "./dist/catalog-view.d.ts"
+    },
+    "./charter-hand-lineage": {
+      "import": "./dist/charter-hand-lineage.js",
+      "types": "./dist/charter-hand-lineage.d.ts"
+    },
+    "./chartered-classes": {
+      "import": "./dist/chartered-classes.js",
+      "types": "./dist/chartered-classes.d.ts"
+    },
+    "./ciphertext-cas": {
+      "import": "./dist/ciphertext-cas.js",
+      "types": "./dist/ciphertext-cas.d.ts"
+    },
+    "./cofound": {
+      "import": "./dist/cofound.js",
+      "types": "./dist/cofound.d.ts"
+    },
+    "./cold-boot-ceremony": {
+      "import": "./dist/cold-boot-ceremony.js",
+      "types": "./dist/cold-boot-ceremony.d.ts"
+    },
+    "./cold-key-card": {
+      "import": "./dist/cold-key-card.js",
+      "types": "./dist/cold-key-card.d.ts"
+    },
+    "./compose-follow": {
+      "import": "./dist/compose-follow.js",
+      "types": "./dist/compose-follow.d.ts"
+    },
+    "./composite-store": {
+      "import": "./dist/composite-store.js",
+      "types": "./dist/composite-store.d.ts"
+    },
+    "./conformance-verb-breathing": {
+      "import": "./dist/conformance-verb-breathing.js",
+      "types": "./dist/conformance-verb-breathing.d.ts"
+    },
+    "./content-key-holder": {
+      "import": "./dist/content-key-holder.js",
+      "types": "./dist/content-key-holder.d.ts"
+    },
+    "./content-key-lineage": {
+      "import": "./dist/content-key-lineage.js",
+      "types": "./dist/content-key-lineage.d.ts"
+    },
+    "./control-home": {
+      "import": "./dist/control-home.js",
+      "types": "./dist/control-home.d.ts"
+    },
+    "./conviction-dial": {
+      "import": "./dist/conviction-dial.js",
+      "types": "./dist/conviction-dial.d.ts"
+    },
+    "./crossing-direction": {
+      "import": "./dist/crossing-direction.js",
+      "types": "./dist/crossing-direction.d.ts"
+    },
+    "./crystallization": {
+      "import": "./dist/crystallization.js",
+      "types": "./dist/crystallization.d.ts"
+    },
+    "./custodian-card": {
+      "import": "./dist/custodian-card.js",
+      "types": "./dist/custodian-card.d.ts"
+    },
+    "./deterministic-doc": {
+      "import": "./dist/deterministic-doc.js",
+      "types": "./dist/deterministic-doc.d.ts"
+    },
+    "./device-daemon-docs": {
+      "import": "./dist/device-daemon-docs.js",
+      "types": "./dist/device-daemon-docs.d.ts"
+    },
+    "./device-delegation": {
+      "import": "./dist/device-delegation.js",
+      "types": "./dist/device-delegation.d.ts"
+    },
+    "./device-removal": {
+      "import": "./dist/device-removal.js",
+      "types": "./dist/device-removal.d.ts"
+    },
+    "./device-seat": {
+      "import": "./dist/device-seat.js",
+      "types": "./dist/device-seat.d.ts"
+    },
+    "./doc-census": {
+      "import": "./dist/doc-census.js",
+      "types": "./dist/doc-census.d.ts"
+    },
+    "./doc-load-probe-contract": {
+      "import": "./dist/doc-load-probe-contract.js",
+      "types": "./dist/doc-load-probe-contract.d.ts"
+    },
+    "./doc-swarm-wiki": {
+      "import": "./dist/doc-swarm-wiki.js",
+      "types": "./dist/doc-swarm-wiki.d.ts"
+    },
+    "./doctor-sweep": {
+      "import": "./dist/doctor-sweep.js",
+      "types": "./dist/doctor-sweep.d.ts"
+    },
+    "./domains": {
+      "import": "./dist/domains.js",
+      "types": "./dist/domains.d.ts"
+    },
+    "./durability-receipt": {
+      "import": "./dist/durability-receipt.js",
+      "types": "./dist/durability-receipt.d.ts"
+    },
+    "./dyad": {
+      "import": "./dist/dyad.js",
+      "types": "./dist/dyad.d.ts"
+    },
+    "./ed25519-door": {
+      "import": "./dist/ed25519-door.js",
+      "types": "./dist/ed25519-door.d.ts"
+    },
+    "./edge-frontier": {
+      "import": "./dist/edge-frontier.js",
+      "types": "./dist/edge-frontier.d.ts"
+    },
+    "./edge-frontier-board": {
+      "import": "./dist/edge-frontier-board.js",
+      "types": "./dist/edge-frontier-board.d.ts"
+    },
+    "./edge-kapae": {
+      "import": "./dist/edge-kapae.js",
+      "types": "./dist/edge-kapae.d.ts"
+    },
+    "./edge-ledger": {
+      "import": "./dist/edge-ledger.js",
+      "types": "./dist/edge-ledger.d.ts"
+    },
+    "./edge-partial": {
+      "import": "./dist/edge-partial.js",
+      "types": "./dist/edge-partial.d.ts"
+    },
+    "./effect-record": {
+      "import": "./dist/effect-record.js",
+      "types": "./dist/effect-record.d.ts"
+    },
+    "./epoch-lease": {
+      "import": "./dist/epoch-lease.js",
+      "types": "./dist/epoch-lease.d.ts"
+    },
+    "./exec-lei": {
+      "import": "./dist/exec-lei.js",
+      "types": "./dist/exec-lei.d.ts"
+    },
+    "./face-anchor": {
+      "import": "./dist/face-anchor.js",
+      "types": "./dist/face-anchor.d.ts"
+    },
+    "./face-anchor-custody": {
+      "import": "./dist/face-anchor-custody.js",
+      "types": "./dist/face-anchor-custody.d.ts"
+    },
+    "./face-atom": {
+      "import": "./dist/face-atom.js",
+      "types": "./dist/face-atom.d.ts"
+    },
+    "./face-atom-custody": {
+      "import": "./dist/face-atom-custody.js",
+      "types": "./dist/face-atom-custody.d.ts"
+    },
+    "./face-boot-proof": {
+      "import": "./dist/face-boot-proof.js",
+      "types": "./dist/face-boot-proof.d.ts"
+    },
+    "./face-bundle": {
+      "import": "./dist/face-bundle.js",
+      "types": "./dist/face-bundle.d.ts"
+    },
+    "./face-daemon-canon": {
+      "import": "./dist/face-daemon-canon.js",
+      "types": "./dist/face-daemon-canon.d.ts"
+    },
+    "./face-dial": {
+      "import": "./dist/face-dial.js",
+      "types": "./dist/face-dial.d.ts"
+    },
+    "./face-label": {
+      "import": "./dist/face-label.js",
+      "types": "./dist/face-label.d.ts"
+    },
+    "./face-leaf-bond": {
+      "import": "./dist/face-leaf-bond.js",
+      "types": "./dist/face-leaf-bond.d.ts"
+    },
+    "./face-log-view": {
+      "import": "./dist/face-log-view.js",
+      "types": "./dist/face-log-view.d.ts"
+    },
+    "./face-reading": {
+      "import": "./dist/face-reading.js",
+      "types": "./dist/face-reading.d.ts"
+    },
+    "./face-relation": {
+      "import": "./dist/face-relation.js",
+      "types": "./dist/face-relation.d.ts"
+    },
+    "./face-scoped-id": {
+      "import": "./dist/face-scoped-id.js",
+      "types": "./dist/face-scoped-id.d.ts"
+    },
+    "./fck": {
+      "import": "./dist/fck.js",
+      "types": "./dist/fck.d.ts"
+    },
+    "./fck-envelope": {
+      "import": "./dist/fck-envelope.js",
+      "types": "./dist/fck-envelope.d.ts"
+    },
+    "./federation-gate": {
+      "import": "./dist/federation-gate.js",
+      "types": "./dist/federation-gate.d.ts"
+    },
+    "./find-or-throw": {
+      "import": "./dist/find-or-throw.js",
+      "types": "./dist/find-or-throw.d.ts"
+    },
+    "./fleet-frontier": {
+      "import": "./dist/fleet-frontier.js",
+      "types": "./dist/fleet-frontier.d.ts"
+    },
+    "./fleet-join": {
+      "import": "./dist/fleet-join.js",
+      "types": "./dist/fleet-join.d.ts"
+    },
+    "./floor-answer": {
+      "import": "./dist/floor-answer.js",
+      "types": "./dist/floor-answer.d.ts"
+    },
+    "./floor-drift": {
+      "import": "./dist/floor-drift.js",
+      "types": "./dist/floor-drift.d.ts"
+    },
+    "./floor-manifest": {
+      "import": "./dist/floor-manifest.js",
+      "types": "./dist/floor-manifest.d.ts"
+    },
+    "./floor-offering": {
+      "import": "./dist/floor-offering.js",
+      "types": "./dist/floor-offering.d.ts"
+    },
+    "./floor-pin": {
+      "import": "./dist/floor-pin.js",
+      "types": "./dist/floor-pin.d.ts"
+    },
+    "./floor-registry": {
+      "import": "./dist/floor-registry.js",
+      "types": "./dist/floor-registry.d.ts"
+    },
+    "./floor-release": {
+      "import": "./dist/floor-release.js",
+      "types": "./dist/floor-release.d.ts"
+    },
+    "./floor-shadow": {
+      "import": "./dist/floor-shadow.js",
+      "types": "./dist/floor-shadow.d.ts"
+    },
+    "./flow": {
+      "import": "./dist/flow.js",
+      "types": "./dist/flow.d.ts"
+    },
+    "./flow-read-client": {
+      "import": "./dist/flow-read-client.js",
+      "types": "./dist/flow-read-client.d.ts"
+    },
+    "./flow-substrate": {
+      "import": "./dist/flow-substrate.js",
+      "types": "./dist/flow-substrate.d.ts"
+    },
+    "./frontier-carry": {
+      "import": "./dist/frontier-carry.js",
+      "types": "./dist/frontier-carry.d.ts"
+    },
+    "./gate-session-channel": {
+      "import": "./dist/gate-session-channel.js",
+      "types": "./dist/gate-session-channel.d.ts"
+    },
+    "./gate-sweep": {
+      "import": "./dist/gate-sweep.js",
+      "types": "./dist/gate-sweep.d.ts"
+    },
+    "./gate-tuning": {
+      "import": "./dist/gate-tuning.js",
+      "types": "./dist/gate-tuning.d.ts"
+    },
+    "./genesis-compare": {
+      "import": "./dist/genesis-compare.js",
+      "types": "./dist/genesis-compare.d.ts"
+    },
+    "./genesis-doc": {
+      "import": "./dist/genesis-doc.js",
+      "types": "./dist/genesis-doc.d.ts"
+    },
+    "./genesis-intake": {
+      "import": "./dist/genesis-intake.js",
+      "types": "./dist/genesis-intake.d.ts"
+    },
+    "./hand-lineage": {
+      "import": "./dist/hand-lineage.js",
+      "types": "./dist/hand-lineage.d.ts"
+    },
+    "./handle-book": {
+      "import": "./dist/handle-book.js",
+      "types": "./dist/handle-book.d.ts"
+    },
+    "./handle-card": {
+      "import": "./dist/handle-card.js",
+      "types": "./dist/handle-card.d.ts"
+    },
+    "./handle-kel": {
+      "import": "./dist/handle-kel.js",
+      "types": "./dist/handle-kel.d.ts"
+    },
+    "./handle-orchestration": {
+      "import": "./dist/handle-orchestration.js",
+      "types": "./dist/handle-orchestration.d.ts"
+    },
+    "./handle-publish": {
+      "import": "./dist/handle-publish.js",
+      "types": "./dist/handle-publish.d.ts"
+    },
+    "./hearth-roster": {
+      "import": "./dist/hearth-roster.js",
+      "types": "./dist/hearth-roster.d.ts"
+    },
+    "./held-nexus-root": {
+      "import": "./dist/held-nexus-root.js",
+      "types": "./dist/held-nexus-root.d.ts"
+    },
+    "./held-rest-key": {
+      "import": "./dist/held-rest-key.js",
+      "types": "./dist/held-rest-key.d.ts"
+    },
+    "./hosting": {
+      "import": "./dist/hosting.js",
+      "types": "./dist/hosting.d.ts"
+    },
+    "./house-canon-doc": {
+      "import": "./dist/house-canon-doc.js",
+      "types": "./dist/house-canon-doc.d.ts"
+    },
+    "./identity-slot": {
+      "import": "./dist/identity-slot.js",
+      "types": "./dist/identity-slot.d.ts"
+    },
+    "./ingest-wave-budget": {
+      "import": "./dist/ingest-wave-budget.js",
+      "types": "./dist/ingest-wave-budget.d.ts"
+    },
+    "./intent-admission": {
+      "import": "./dist/intent-admission.js",
+      "types": "./dist/intent-admission.d.ts"
+    },
+    "./intent-delegation": {
+      "import": "./dist/intent-delegation.js",
+      "types": "./dist/intent-delegation.d.ts"
+    },
+    "./intent-entry": {
+      "import": "./dist/intent-entry.js",
+      "types": "./dist/intent-entry.d.ts"
+    },
+    "./intent-issue": {
+      "import": "./dist/intent-issue.js",
+      "types": "./dist/intent-issue.d.ts"
+    },
+    "./intent-read": {
+      "import": "./dist/intent-read.js",
+      "types": "./dist/intent-read.d.ts"
+    },
+    "./intent-relay-door": {
+      "import": "./dist/intent-relay-door.js",
+      "types": "./dist/intent-relay-door.d.ts"
+    },
+    "./intent-rubric": {
+      "import": "./dist/intent-rubric.js",
+      "types": "./dist/intent-rubric.d.ts"
+    },
+    "./intent-verbs": {
+      "import": "./dist/intent-verbs.js",
+      "types": "./dist/intent-verbs.d.ts"
+    },
+    "./intent-view": {
+      "import": "./dist/intent-view.js",
+      "types": "./dist/intent-view.d.ts"
+    },
+    "./island-protocol": {
+      "import": "./dist/island-protocol.js",
+      "types": "./dist/island-protocol.d.ts"
+    },
+    "./join-face-documents": {
+      "import": "./dist/join-face-documents.js",
+      "types": "./dist/join-face-documents.d.ts"
+    },
+    "./kahu-cabal-admission": {
+      "import": "./dist/kahu-cabal-admission.js",
+      "types": "./dist/kahu-cabal-admission.d.ts"
+    },
+    "./kahu-canon-reach": {
+      "import": "./dist/kahu-canon-reach.js",
+      "types": "./dist/kahu-canon-reach.d.ts"
+    },
+    "./kahua-adopt": {
+      "import": "./dist/kahua-adopt.js",
+      "types": "./dist/kahua-adopt.d.ts"
+    },
+    "./kahua-stage": {
+      "import": "./dist/kahua-stage.js",
+      "types": "./dist/kahua-stage.d.ts"
+    },
+    "./kahua-stage-store": {
+      "import": "./dist/kahua-stage-store.js",
+      "types": "./dist/kahua-stage-store.d.ts"
+    },
+    "./kahua-staged": {
+      "import": "./dist/kahua-staged.js",
+      "types": "./dist/kahua-staged.d.ts"
+    },
+    "./kapae-antigen": {
+      "import": "./dist/kapae-antigen.js",
+      "types": "./dist/kapae-antigen.d.ts"
+    },
+    "./keeper-cosign": {
+      "import": "./dist/keeper-cosign.js",
+      "types": "./dist/keeper-cosign.d.ts"
+    },
+    "./key-class": {
+      "import": "./dist/key-class.js",
+      "types": "./dist/key-class.d.ts"
+    },
+    "./kukulu-vouch": {
+      "import": "./dist/kukulu-vouch.js",
+      "types": "./dist/kukulu-vouch.d.ts"
+    },
+    "./lar-did": {
+      "import": "./dist/lar-did.js",
+      "types": "./dist/lar-did.d.ts"
+    },
+    "./lar-event-bus": {
+      "import": "./dist/lar-event-bus.js",
+      "types": "./dist/lar-event-bus.d.ts"
+    },
+    "./lar-vessel": {
+      "import": "./dist/lar-vessel.js",
+      "types": "./dist/lar-vessel.d.ts"
+    },
+    "./lar-ws-client-adapter": {
+      "import": "./dist/lar-ws-client-adapter.js",
+      "types": "./dist/lar-ws-client-adapter.d.ts"
+    },
+    "./lararium-vessel": {
+      "import": "./dist/lararium-vessel.js",
+      "types": "./dist/lararium-vessel.d.ts"
+    },
+    "./leaf-presentation": {
+      "import": "./dist/leaf-presentation.js",
+      "types": "./dist/leaf-presentation.d.ts"
+    },
+    "./lease-advance": {
+      "import": "./dist/lease-advance.js",
+      "types": "./dist/lease-advance.d.ts"
+    },
+    "./library-tier": {
+      "import": "./dist/library-tier.js",
+      "types": "./dist/library-tier.d.ts"
+    },
+    "./lineage-rank": {
+      "import": "./dist/lineage-rank.js",
+      "types": "./dist/lineage-rank.d.ts"
+    },
+    "./lockbox-wrap": {
+      "import": "./dist/lockbox-wrap.js",
+      "types": "./dist/lockbox-wrap.d.ts"
+    },
+    "./me-circle": {
+      "import": "./dist/me-circle.js",
+      "types": "./dist/me-circle.d.ts"
+    },
+    "./membership-channel": {
+      "import": "./dist/membership-channel.js",
+      "types": "./dist/membership-channel.d.ts"
+    },
+    "./memory-section": {
+      "import": "./dist/memory-section.js",
+      "types": "./dist/memory-section.d.ts"
+    },
+    "./mesh-couple": {
+      "import": "./dist/mesh-couple.js",
+      "types": "./dist/mesh-couple.d.ts"
+    },
+    "./mesh-coupling-mv": {
+      "import": "./dist/mesh-coupling-mv.js",
+      "types": "./dist/mesh-coupling-mv.d.ts"
+    },
+    "./mesh-palace": {
+      "import": "./dist/mesh-palace.js",
+      "types": "./dist/mesh-palace.d.ts"
+    },
+    "./mint-census": {
+      "import": "./dist/mint-census.js",
+      "types": "./dist/mint-census.d.ts"
+    },
+    "./mu-void": {
+      "import": "./dist/mu-void.js",
+      "types": "./dist/mu-void.d.ts"
+    },
+    "./nexus-board-climb": {
+      "import": "./dist/nexus-board-climb.js",
+      "types": "./dist/nexus-board-climb.d.ts"
+    },
+    "./nexus-doc-text": {
+      "import": "./dist/nexus-doc-text.js",
+      "types": "./dist/nexus-doc-text.d.ts"
+    },
+    "./nexus-identity": {
+      "import": "./dist/nexus-identity.js",
+      "types": "./dist/nexus-identity.d.ts"
+    },
+    "./nexus-key-line": {
+      "import": "./dist/nexus-key-line.js",
+      "types": "./dist/nexus-key-line.d.ts"
+    },
+    "./nexus-partial": {
+      "import": "./dist/nexus-partial.js",
+      "types": "./dist/nexus-partial.d.ts"
+    },
+    "./nexus-seal-seed": {
+      "import": "./dist/nexus-seal-seed.js",
+      "types": "./dist/nexus-seal-seed.d.ts"
+    },
+    "./null-harness": {
+      "import": "./dist/null-harness.js",
+      "types": "./dist/null-harness.d.ts"
+    },
+    "./offering-announce": {
+      "import": "./dist/offering-announce.js",
+      "types": "./dist/offering-announce.d.ts"
+    },
+    "./offering-inspection": {
+      "import": "./dist/offering-inspection.js",
+      "types": "./dist/offering-inspection.d.ts"
+    },
+    "./open-vessel-core": {
+      "import": "./dist/open-vessel-core.js",
+      "types": "./dist/open-vessel-core.d.ts"
+    },
+    "./override-base": {
+      "import": "./dist/override-base.js",
+      "types": "./dist/override-base.d.ts"
+    },
+    "./pack-provenance": {
+      "import": "./dist/pack-provenance.js",
+      "types": "./dist/pack-provenance.d.ts"
+    },
+    "./parallel-drafts": {
+      "import": "./dist/parallel-drafts.js",
+      "types": "./dist/parallel-drafts.d.ts"
+    },
+    "./peer-arrivals": {
+      "import": "./dist/peer-arrivals.js",
+      "types": "./dist/peer-arrivals.d.ts"
+    },
+    "./persistence-keel": {
+      "import": "./dist/persistence-keel.js",
+      "types": "./dist/persistence-keel.d.ts"
+    },
+    "./persona-act": {
+      "import": "./dist/persona-act.js",
+      "types": "./dist/persona-act.d.ts"
+    },
+    "./persona-act-board": {
+      "import": "./dist/persona-act-board.js",
+      "types": "./dist/persona-act-board.d.ts"
+    },
+    "./persona-declare": {
+      "import": "./dist/persona-declare.js",
+      "types": "./dist/persona-declare.d.ts"
+    },
+    "./persona-glamour": {
+      "import": "./dist/persona-glamour.js",
+      "types": "./dist/persona-glamour.d.ts"
+    },
+    "./persona-group-ring": {
+      "import": "./dist/persona-group-ring.js",
+      "types": "./dist/persona-group-ring.d.ts"
+    },
+    "./persona-group-secret": {
+      "import": "./dist/persona-group-secret.js",
+      "types": "./dist/persona-group-secret.d.ts"
+    },
+    "./persona-hd": {
+      "import": "./dist/persona-hd.js",
+      "types": "./dist/persona-hd.d.ts"
+    },
+    "./persona-identity": {
+      "import": "./dist/persona-identity.js",
+      "types": "./dist/persona-identity.d.ts"
+    },
+    "./persona-kel": {
+      "import": "./dist/persona-kel.js",
+      "types": "./dist/persona-kel.d.ts"
+    },
+    "./persona-kel-board": {
+      "import": "./dist/persona-kel-board.js",
+      "types": "./dist/persona-kel-board.d.ts"
+    },
+    "./persona-kel-climb": {
+      "import": "./dist/persona-kel-climb.js",
+      "types": "./dist/persona-kel-climb.d.ts"
+    },
+    "./persona-kel-drop": {
+      "import": "./dist/persona-kel-drop.js",
+      "types": "./dist/persona-kel-drop.d.ts"
+    },
+    "./persona-petname": {
+      "import": "./dist/persona-petname.js",
+      "types": "./dist/persona-petname.d.ts"
+    },
+    "./persona-planes": {
+      "import": "./dist/persona-planes.js",
+      "types": "./dist/persona-planes.d.ts"
+    },
+    "./persona-scope": {
+      "import": "./dist/persona-scope.js",
+      "types": "./dist/persona-scope.d.ts"
+    },
+    "./persona-vault": {
+      "import": "./dist/persona-vault.js",
+      "types": "./dist/persona-vault.d.ts"
+    },
+    "./pinned-doc": {
+      "import": "./dist/pinned-doc.js",
+      "types": "./dist/pinned-doc.d.ts"
+    },
+    "./place-founding-card": {
+      "import": "./dist/place-founding-card.js",
+      "types": "./dist/place-founding-card.d.ts"
+    },
+    "./place-kel-board": {
+      "import": "./dist/place-kel-board.js",
+      "types": "./dist/place-kel-board.d.ts"
+    },
+    "./place-signer": {
+      "import": "./dist/place-signer.js",
+      "types": "./dist/place-signer.d.ts"
+    },
+    "./plugin-offering": {
+      "import": "./dist/plugin-offering.js",
+      "types": "./dist/plugin-offering.d.ts"
+    },
+    "./plugin-offering-selector": {
+      "import": "./dist/plugin-offering-selector.js",
+      "types": "./dist/plugin-offering-selector.d.ts"
+    },
+    "./projection-nalu": {
+      "import": "./dist/projection-nalu.js",
+      "types": "./dist/projection-nalu.d.ts"
+    },
+    "./promote": {
+      "import": "./dist/promote.js",
+      "types": "./dist/promote.d.ts"
+    },
+    "./promote-board": {
+      "import": "./dist/promote-board.js",
+      "types": "./dist/promote-board.d.ts"
+    },
+    "./promote-board-door": {
+      "import": "./dist/promote-board-door.js",
+      "types": "./dist/promote-board-door.d.ts"
+    },
+    "./promote-command": {
+      "import": "./dist/promote-command.js",
+      "types": "./dist/promote-command.d.ts"
+    },
+    "./promote-door": {
+      "import": "./dist/promote-door.js",
+      "types": "./dist/promote-door.d.ts"
+    },
+    "./promote-kapae": {
+      "import": "./dist/promote-kapae.js",
+      "types": "./dist/promote-kapae.d.ts"
+    },
+    "./promote-main-verbs": {
+      "import": "./dist/promote-main-verbs.js",
+      "types": "./dist/promote-main-verbs.d.ts"
+    },
+    "./promote-panel-api": {
+      "import": "./dist/promote-panel-api.js",
+      "types": "./dist/promote-panel-api.d.ts"
+    },
+    "./promote-wiki-items": {
+      "import": "./dist/promote-wiki-items.js",
+      "types": "./dist/promote-wiki-items.d.ts"
+    },
+    "./promote-wiring": {
+      "import": "./dist/promote-wiring.js",
+      "types": "./dist/promote-wiring.d.ts"
+    },
+    "./promotion-approval": {
+      "import": "./dist/promotion-approval.js",
+      "types": "./dist/promotion-approval.d.ts"
+    },
+    "./pronaos": {
+      "import": "./dist/pronaos.js",
+      "types": "./dist/pronaos.d.ts"
+    },
+    "./protected-doc-guard": {
+      "import": "./dist/protected-doc-guard.js",
+      "types": "./dist/protected-doc-guard.d.ts"
+    },
+    "./quorum-lease": {
+      "import": "./dist/quorum-lease.js",
+      "types": "./dist/quorum-lease.d.ts"
+    },
+    "./raise-challenge": {
+      "import": "./dist/raise-challenge.js",
+      "types": "./dist/raise-challenge.d.ts"
+    },
+    "./readiness": {
+      "import": "./dist/readiness.js",
+      "types": "./dist/readiness.d.ts"
+    },
+    "./realm-admit-bundle": {
+      "import": "./dist/realm-admit-bundle.js",
+      "types": "./dist/realm-admit-bundle.d.ts"
+    },
+    "./realm-bag": {
+      "import": "./dist/realm-bag.js",
+      "types": "./dist/realm-bag.d.ts"
+    },
+    "./realm-edges": {
+      "import": "./dist/realm-edges.js",
+      "types": "./dist/realm-edges.d.ts"
+    },
+    "./realm-frontier": {
+      "import": "./dist/realm-frontier.js",
+      "types": "./dist/realm-frontier.d.ts"
+    },
+    "./realm-standing": {
+      "import": "./dist/realm-standing.js",
+      "types": "./dist/realm-standing.d.ts"
+    },
+    "./realm-steward-map": {
+      "import": "./dist/realm-steward-map.js",
+      "types": "./dist/realm-steward-map.d.ts"
+    },
+    "./receipt-with-heads": {
+      "import": "./dist/receipt-with-heads.js",
+      "types": "./dist/receipt-with-heads.d.ts"
+    },
+    "./recipe": {
+      "import": "./dist/recipe.js",
+      "types": "./dist/recipe.d.ts"
+    },
+    "./recipe-planes": {
+      "import": "./dist/recipe-planes.js",
+      "types": "./dist/recipe-planes.d.ts"
+    },
+    "./recovery-keel-core": {
+      "import": "./dist/recovery-keel-core.js",
+      "types": "./dist/recovery-keel-core.d.ts"
+    },
+    "./recovery-registration": {
+      "import": "./dist/recovery-registration.js",
+      "types": "./dist/recovery-registration.d.ts"
+    },
+    "./recovery-share": {
+      "import": "./dist/recovery-share.js",
+      "types": "./dist/recovery-share.d.ts"
+    },
+    "./register-bags": {
+      "import": "./dist/register-bags.js",
+      "types": "./dist/register-bags.d.ts"
+    },
+    "./rendered-derives": {
+      "import": "./dist/rendered-derives.js",
+      "types": "./dist/rendered-derives.d.ts"
+    },
+    "./repo-wear": {
+      "import": "./dist/repo-wear.js",
+      "types": "./dist/repo-wear.d.ts"
+    },
+    "./residency-actions": {
+      "import": "./dist/residency-actions.js",
+      "types": "./dist/residency-actions.d.ts"
+    },
+    "./resolver": {
+      "import": "./dist/resolver.js",
+      "types": "./dist/resolver.d.ts"
+    },
+    "./roll-circle": {
+      "import": "./dist/roll-circle.js",
+      "types": "./dist/roll-circle.d.ts"
+    },
+    "./s-envelope": {
+      "import": "./dist/s-envelope.js",
+      "types": "./dist/s-envelope.d.ts"
+    },
+    "./sealed-box": {
+      "import": "./dist/sealed-box.js",
+      "types": "./dist/sealed-box.d.ts"
+    },
+    "./sealed-carriage": {
+      "import": "./dist/sealed-carriage.js",
+      "types": "./dist/sealed-carriage.d.ts"
+    },
+    "./sealed-doc-store": {
+      "import": "./dist/sealed-doc-store.js",
+      "types": "./dist/sealed-doc-store.d.ts"
+    },
+    "./sealed-records": {
+      "import": "./dist/sealed-records.js",
+      "types": "./dist/sealed-records.d.ts"
+    },
+    "./sealed-rest": {
+      "import": "./dist/sealed-rest.js",
+      "types": "./dist/sealed-rest.d.ts"
+    },
+    "./sealed-store-rest": {
+      "import": "./dist/sealed-store-rest.js",
+      "types": "./dist/sealed-store-rest.d.ts"
+    },
+    "./sealed-writer": {
+      "import": "./dist/sealed-writer.js",
+      "types": "./dist/sealed-writer.d.ts"
+    },
+    "./seat-duties": {
+      "import": "./dist/seat-duties.js",
+      "types": "./dist/seat-duties.d.ts"
+    },
+    "./seat-startup-offer": {
+      "import": "./dist/seat-startup-offer.js",
+      "types": "./dist/seat-startup-offer.d.ts"
+    },
+    "./secret-home": {
+      "import": "./dist/secret-home.js",
+      "types": "./dist/secret-home.d.ts"
+    },
+    "./secret-shapes": {
+      "import": "./dist/secret-shapes.js",
+      "types": "./dist/secret-shapes.d.ts"
+    },
+    "./sensorium-efe": {
+      "import": "./dist/sensorium-efe.js",
+      "types": "./dist/sensorium-efe.d.ts"
+    },
+    "./sensorium-lifecycle": {
+      "import": "./dist/sensorium-lifecycle.js",
+      "types": "./dist/sensorium-lifecycle.d.ts"
+    },
+    "./sensorium-pc": {
+      "import": "./dist/sensorium-pc.js",
+      "types": "./dist/sensorium-pc.d.ts"
+    },
+    "./serving-key": {
+      "import": "./dist/serving-key.js",
+      "types": "./dist/serving-key.d.ts"
+    },
+    "./session-receipt": {
+      "import": "./dist/session-receipt.js",
+      "types": "./dist/session-receipt.d.ts"
+    },
+    "./session-sign-book": {
+      "import": "./dist/session-sign-book.js",
+      "types": "./dist/session-sign-book.d.ts"
+    },
+    "./session-switch": {
+      "import": "./dist/session-switch.js",
+      "types": "./dist/session-switch.d.ts"
+    },
+    "./share-config": {
+      "import": "./dist/share-config.js",
+      "types": "./dist/share-config.d.ts"
+    },
+    "./shell-leaving-record": {
+      "import": "./dist/shell-leaving-record.js",
+      "types": "./dist/shell-leaving-record.d.ts"
+    },
+    "./sibling-channel": {
+      "import": "./dist/sibling-channel.js",
+      "types": "./dist/sibling-channel.d.ts"
+    },
+    "./sibling-plane-mount": {
+      "import": "./dist/sibling-plane-mount.js",
+      "types": "./dist/sibling-plane-mount.d.ts"
+    },
+    "./signed-act": {
+      "import": "./dist/signed-act.js",
+      "types": "./dist/signed-act.d.ts"
+    },
+    "./signer-class": {
+      "import": "./dist/signer-class.js",
+      "types": "./dist/signer-class.d.ts"
+    },
+    "./social-seed": {
+      "import": "./dist/social-seed.js",
+      "types": "./dist/social-seed.d.ts"
+    },
+    "./social-tiddlers": {
+      "import": "./dist/social-tiddlers.js",
+      "types": "./dist/social-tiddlers.d.ts"
+    },
+    "./standoff-watch": {
+      "import": "./dist/standoff-watch.js",
+      "types": "./dist/standoff-watch.d.ts"
+    },
+    "./stood-document": {
+      "import": "./dist/stood-document.js",
+      "types": "./dist/stood-document.d.ts"
+    },
+    "./store-integrity": {
+      "import": "./dist/store-integrity.js",
+      "types": "./dist/store-integrity.d.ts"
+    },
+    "./stored-record": {
+      "import": "./dist/stored-record.js",
+      "types": "./dist/stored-record.d.ts"
+    },
+    "./stored-value": {
+      "import": "./dist/stored-value.js",
+      "types": "./dist/stored-value.d.ts"
+    },
+    "./stream-adapter": {
+      "import": "./dist/stream-adapter.js",
+      "types": "./dist/stream-adapter.d.ts"
+    },
+    "./swarm-board": {
+      "import": "./dist/swarm-board.js",
+      "types": "./dist/swarm-board.d.ts"
+    },
+    "./swarm-door": {
+      "import": "./dist/swarm-door.js",
+      "types": "./dist/swarm-door.d.ts"
+    },
+    "./swarm-lei-rite": {
+      "import": "./dist/swarm-lei-rite.js",
+      "types": "./dist/swarm-lei-rite.d.ts"
+    },
+    "./swarm-tessera": {
+      "import": "./dist/swarm-tessera.js",
+      "types": "./dist/swarm-tessera.d.ts"
+    },
+    "./swarm-tiddlers": {
+      "import": "./dist/swarm-tiddlers.js",
+      "types": "./dist/swarm-tiddlers.d.ts"
+    },
+    "./text-stream-adapter": {
+      "import": "./dist/text-stream-adapter.js",
+      "types": "./dist/text-stream-adapter.d.ts"
+    },
+    "./tw5-docs-name": {
+      "import": "./dist/tw5-docs-name.js",
+      "types": "./dist/tw5-docs-name.d.ts"
+    },
+    "./veil-lift": {
+      "import": "./dist/veil-lift.js",
+      "types": "./dist/veil-lift.d.ts"
+    },
+    "./verb-refusal": {
+      "import": "./dist/verb-refusal.js",
+      "types": "./dist/verb-refusal.d.ts"
+    },
+    "./verb-tiddler": {
+      "import": "./dist/verb-tiddler.js",
+      "types": "./dist/verb-tiddler.d.ts"
+    },
+    "./vessel-face-tag": {
+      "import": "./dist/vessel-face-tag.js",
+      "types": "./dist/vessel-face-tag.d.ts"
+    },
+    "./vessel-host": {
+      "import": "./dist/vessel-host.js",
+      "types": "./dist/vessel-host.d.ts"
+    },
+    "./vessel-identity-core": {
+      "import": "./dist/vessel-identity-core.js",
+      "types": "./dist/vessel-identity-core.d.ts"
+    },
+    "./vessel-journal": {
+      "import": "./dist/vessel-journal.js",
+      "types": "./dist/vessel-journal.d.ts"
+    },
+    "./vessel-kel": {
+      "import": "./dist/vessel-kel.js",
+      "types": "./dist/vessel-kel.d.ts"
+    },
+    "./vessel-only-book": {
+      "import": "./dist/vessel-only-book.js",
+      "types": "./dist/vessel-only-book.d.ts"
+    },
+    "./vessel-standing": {
+      "import": "./dist/vessel-standing.js",
+      "types": "./dist/vessel-standing.d.ts"
+    },
+    "./vouch-board": {
+      "import": "./dist/vouch-board.js",
+      "types": "./dist/vouch-board.d.ts"
+    },
+    "./vouch-dag": {
+      "import": "./dist/vouch-dag.js",
+      "types": "./dist/vouch-dag.d.ts"
+    },
+    "./walk-carry": {
+      "import": "./dist/walk-carry.js",
+      "types": "./dist/walk-carry.d.ts"
+    },
+    "./walk-client": {
+      "import": "./dist/walk-client.js",
+      "types": "./dist/walk-client.d.ts"
+    },
+    "./ward-answer": {
+      "import": "./dist/ward-answer.js",
+      "types": "./dist/ward-answer.d.ts"
+    },
+    "./ward-cosign": {
+      "import": "./dist/ward-cosign.js",
+      "types": "./dist/ward-cosign.d.ts"
+    },
+    "./ward-cosign-gate": {
+      "import": "./dist/ward-cosign-gate.js",
+      "types": "./dist/ward-cosign-gate.d.ts"
+    },
+    "./ward-slots": {
+      "import": "./dist/ward-slots.js",
+      "types": "./dist/ward-slots.d.ts"
+    },
+    "./wax-stamp": {
+      "import": "./dist/wax-stamp.js",
+      "types": "./dist/wax-stamp.d.ts"
+    },
+    "./who-face": {
+      "import": "./dist/who-face.js",
+      "types": "./dist/who-face.d.ts"
+    },
+    "./who-face-cap": {
+      "import": "./dist/who-face-cap.js",
+      "types": "./dist/who-face-cap.d.ts"
+    },
+    "./wiki-activation": {
+      "import": "./dist/wiki-activation.js",
+      "types": "./dist/wiki-activation.d.ts"
+    },
+    "./wiki-island-reach": {
+      "import": "./dist/wiki-island-reach.js",
+      "types": "./dist/wiki-island-reach.d.ts"
+    },
+    "./wiki-recipe": {
+      "import": "./dist/wiki-recipe.js",
+      "types": "./dist/wiki-recipe.d.ts"
+    },
+    "./workbench": {
+      "import": "./dist/workbench.js",
+      "types": "./dist/workbench.d.ts"
+    },
+    "./worldline-clock": {
+      "import": "./dist/worldline-clock.js",
+      "types": "./dist/worldline-clock.d.ts"
+    },
+    "./worldline-edge": {
+      "import": "./dist/worldline-edge.js",
+      "types": "./dist/worldline-edge.d.ts"
+    },
+    "./worldline-trajectory": {
+      "import": "./dist/worldline-trajectory.js",
+      "types": "./dist/worldline-trajectory.d.ts"
+    },
+    "./face-authority-door": {
+      "import": "./dist/face-authority-door.js",
+      "types": "./dist/face-authority-door.d.ts"
+    },
+    "./face-gate-door": {
+      "import": "./dist/face-gate-door.js",
+      "types": "./dist/face-gate-door.d.ts"
+    },
+    "./gate-bundle-door": {
+      "import": "./dist/gate-bundle-door.js",
+      "types": "./dist/gate-bundle-door.d.ts"
+    },
+    "./gate-exchange-door": {
+      "import": "./dist/gate-exchange-door.js",
+      "types": "./dist/gate-exchange-door.d.ts"
+    },
+    "./gate-withdrawal-store-door": {
+      "import": "./dist/gate-withdrawal-store-door.js",
+      "types": "./dist/gate-withdrawal-store-door.d.ts"
+    },
+    "./gated-sync-leg-door": {
+      "import": "./dist/gated-sync-leg-door.js",
+      "types": "./dist/gated-sync-leg-door.d.ts"
+    },
+    "./island-repo-door": {
+      "import": "./dist/island-repo-door.js",
+      "types": "./dist/island-repo-door.d.ts"
+    },
+    "./keep-seat-door": {
+      "import": "./dist/keep-seat-door.js",
+      "types": "./dist/keep-seat-door.d.ts"
+    },
+    "./noise-ik-door": {
+      "import": "./dist/noise-ik-door.js",
+      "types": "./dist/noise-ik-door.d.ts"
+    },
+    "./place-floor-pin-door": {
+      "import": "./dist/place-floor-pin-door.js",
+      "types": "./dist/place-floor-pin-door.d.ts"
+    },
+    "./prototype-key-shore-door": {
+      "import": "./dist/prototype-key-shore-door.js",
+      "types": "./dist/prototype-key-shore-door.d.ts"
+    },
+    "./sealed-chunk-door": {
+      "import": "./dist/sealed-chunk-door.js",
+      "types": "./dist/sealed-chunk-door.d.ts"
+    },
+    "./session-document-view-door": {
+      "import": "./dist/session-document-view-door.js",
+      "types": "./dist/session-document-view-door.d.ts"
+    },
+    "./surface-recipe-door": {
+      "import": "./dist/surface-recipe-door.js",
+      "types": "./dist/surface-recipe-door.d.ts"
+    },
+    "./tree-key-door": {
+      "import": "./dist/tree-key-door.js",
+      "types": "./dist/tree-key-door.d.ts"
+    },
+    "./vessel-island-pool-core-door": {
+      "import": "./dist/vessel-island-pool-core-door.js",
+      "types": "./dist/vessel-island-pool-core-door.d.ts"
+    },
+    "./wait-handle-door": {
+      "import": "./dist/wait-handle-door.js",
+      "types": "./dist/wait-handle-door.d.ts"
+    },
+    "./wire-identity-door": {
+      "import": "./dist/wire-identity-door.js",
+      "types": "./dist/wire-identity-door.d.ts"
+    },
+    "./ws-dial-socket-door": {
+      "import": "./dist/ws-dial-socket-door.js",
+      "types": "./dist/ws-dial-socket-door.d.ts"
     }
   },
   "main": "./dist/index.js",

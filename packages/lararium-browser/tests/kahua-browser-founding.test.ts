@@ -15,10 +15,12 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
 import { describe, expect, test, vi } from "vitest";
-import {
-  heldDocOf, KAHUA_PLANE, kahuaPlaneUrl, kahuaStageDocUrl, makeHandLineage, personaActRecordsOfGroup, projectPersonaLog, verifyingKeyFromDid,
-  type LarDoc,
-} from "@lararium/mesh";
+import { heldDocOf, personaActRecordsOfGroup } from "@lararium/mesh/persona-act-board";
+import { KAHUA_PLANE, kahuaPlaneUrl, kahuaStageDocUrl } from "@lararium/mesh/kahua-stage";
+import { makeHandLineage } from "@lararium/mesh/hand-lineage";
+import { projectPersonaLog } from "@lararium/mesh/persona-act";
+import { verifyingKeyFromDid } from "@lararium/mesh/lar-did";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { openBrowserVessel, type BrowserVesselOptions } from "../src/open-browser-vessel.js";
 import { bindSyntheticBrowserCustodySlot, fixtureWardDialog } from "./browser-custody-fixture.js";
 import { BootHalted } from "./wire-vessel-rig.js";

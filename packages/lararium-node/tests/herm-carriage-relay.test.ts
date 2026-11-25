@@ -1,4 +1,4 @@
-import { placeSignerFromSeed } from "@lararium/mesh";
+import { placeSignerFromSeed } from "@lararium/mesh/place-signer";
 /**
  * herm-carriage-relay.test.ts — CARRIAGE PEERING AND THE HERM RELAY OF THE PUBLIC MAP, gate-native (the shut-routes house ruling, stable-founding-road #/rulings: "an explicit Nexus opens the herm relay"; each shut route "flips on a proven gate-native caller").
  *
@@ -24,11 +24,17 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import { Repo } from "@automerge/automerge-repo";
-import {
-  composeVessel, dialEntryToRecord, deriveGateBundle, floorGateRoot, floorKeyDoor, floorRoute, hearthPinIndex, filePlaceFloorPins, placeFloorPinsFromBoard, placeKelEntriesFromBoard, memoryBackedWithdrawals,
-  FLOW_SOCKET_ROUTE, pullAndVerifyFlow, CARRIAGE_PIN_ABSENT,
-  type CapModule, type CarriageEntry, type HearthPinIndex, type LarDoc, type MeshPalaceDoc,
-} from "@lararium/mesh";
+import { composeVessel, type CapModule } from "@lararium/mesh/cap-compose";
+import { dialEntryToRecord, type MeshPalaceDoc } from "@lararium/mesh/mesh-palace";
+import { deriveGateBundle, floorGateRoot, floorKeyDoor, floorRoute } from "@lararium/mesh/gate-bundle-door";
+import { hearthPinIndex, type HearthPinIndex } from "@lararium/mesh/admit-gate-pin";
+import { filePlaceFloorPins, placeFloorPinsFromBoard } from "@lararium/mesh/place-floor-pin-door";
+import { placeKelEntriesFromBoard } from "@lararium/mesh/place-kel-board";
+import { memoryBackedWithdrawals } from "@lararium/mesh/face-gate-door";
+import { FLOW_SOCKET_ROUTE, pullAndVerifyFlow } from "@lararium/mesh/flow-read-client";
+import { CARRIAGE_PIN_ABSENT } from "@lararium/mesh/carriage-pull";
+import { type CarriageEntry } from "@lararium/mesh/carriage-registry";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { mountFlowMapReadFace } from "../src/flow-read-face.js";
 import { carriageCap, CAP, type MeshPalaceComponent } from "../src/node-caps.js";
 import { vesselGate } from "../src/vessel-gates.js";

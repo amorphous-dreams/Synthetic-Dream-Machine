@@ -10,10 +10,13 @@
  *   · where the browser cannot run the door (no control document stood, no Nexus known), it refuses by name, saying why.
  */
 import { describe, expect, test } from "vitest";
-import {
-  acceptFloorRelease, assembleFloorRelease, cutFloorSnapshot, emptyLarDoc, floorAnswerOf, floorManifestBytes, openFloorReleaseBody,
-  readFloorStatus, sha256HexBytesSync, signFloorOffering, type FloorPinHome, type FloorPinPorts, type FloorRelease, type FloorRemount, type LarDoc,
-} from "@lararium/mesh";
+import { acceptFloorRelease, readFloorStatus, type FloorPinHome, type FloorPinPorts, type FloorRemount } from "@lararium/mesh/floor-pin";
+import { assembleFloorRelease, openFloorReleaseBody, type FloorRelease } from "@lararium/mesh/floor-release";
+import { cutFloorSnapshot, floorManifestBytes } from "@lararium/mesh/floor-manifest";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { floorAnswerOf } from "@lararium/mesh/floor-answer";
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
+import { signFloorOffering } from "@lararium/mesh/floor-offering";
 import { browserFloorAccept, browserFloorStatus, type BrowserFloorBinding } from "../src/browser-floor-pin.js";
 import { oneSeatCharter, type OneSeat } from "./browser-charter.js";
 

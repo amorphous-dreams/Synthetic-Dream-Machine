@@ -1,5 +1,8 @@
 /** A single sealed submission at one face's relay gate. */
-import { MIN_MESSAGE1_BYTES, MIN_MESSAGE2_BYTES, encodeIntentRelayResult, readIntentRelaySubmit, type GateBundle, type GateDeadlines, type GateOutcome, type GateSocket, type IntentRelayResult } from "@lararium/mesh";
+import { MIN_MESSAGE1_BYTES, MIN_MESSAGE2_BYTES } from "@lararium/mesh/noise-ik-door";
+import { encodeIntentRelayResult, readIntentRelaySubmit, type IntentRelayResult } from "@lararium/mesh/intent-relay-door";
+import { type GateBundle } from "@lararium/mesh/gate-bundle-door";
+import { type GateDeadlines, type GateOutcome, type GateSocket } from "@lararium/mesh/face-gate-door";
 import type { IntentRelayOutcome, StandableGate } from "./face-gate-server.js";
 
 const accepted = new WeakSet<GateSocket>();

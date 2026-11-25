@@ -255,7 +255,7 @@ export function armBackstop(tw: TwBackstop, options: BackstopOptions = {}): void
   const placeRoot = (title: string, placedText: string): void => {
     const door = tw.boot?.files && Object.prototype.hasOwnProperty.call(tw.boot.files, title) ? "the wiki folder" : "a native write";
     inFlight.add(title);
-    placeMeme({ uri: title, text: placedText }, sink).then((receipt) => {
+    placeMeme({ uri: title, text: placedText, holdAnswer: true }, sink).then((receipt) => {
       if (receipt.decision === "ingest") {
         log(`[memetic-wikitext] re-stamped ${title} (landed via ${door})`);
       } else if (receipt.decision !== "noop") {

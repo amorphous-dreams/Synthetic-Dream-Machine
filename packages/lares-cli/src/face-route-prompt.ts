@@ -6,7 +6,7 @@
  * answers with a prompt; a harness seats its own route explicitly (`tools/test-ward-route.mjs`); with neither, the act
  * refuses by name and founds nothing. No marker file ever answers for a route.
  */
-import type { SlotSpec } from "@lararium/mesh";
+import type { SlotSpec } from "@lararium/mesh/keyslot-door";
 import { faceRouteBindDigest, faceRouteSeated, gatherFaceRoute, seatFaceRoute } from "@lararium/node";
 import { sendCustodyFrame } from "./custody-door.js";
 import { askYesNo, gatherFoundingRoute, requireTty } from "./custody-prompt.js";

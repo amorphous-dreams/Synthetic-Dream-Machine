@@ -17,7 +17,8 @@
 
 import { describe, expect, test } from "vitest";
 import { interpretAsDocumentId, type DocumentId } from "@automerge/automerge-repo";
-import { DeterministicFederationGate, crossroadsDocUrl } from "@lararium/mesh";
+import { DeterministicFederationGate } from "@lararium/mesh/federation-gate";
+import { crossroadsDocUrl } from "@lararium/mesh/deterministic-doc";
 import { selfSlotShareDecision, NO_BANS, NOBODY_ASIDE, NOTHING_CLASSED } from "../src/self-slot-share.js";
 
 const NEXUS   = "ab".repeat(32);           // this operator's Nexus key

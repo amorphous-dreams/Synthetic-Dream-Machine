@@ -13,19 +13,21 @@
  */
 
 import type { WardCredential } from "./ward-credential.js";
-import type { RandomProvider, ReadmissionSecret } from "@lararium/mesh";
+import type { RandomProvider } from "@lararium/mesh/crypto";
+import type { ReadmissionSecret } from "@lararium/mesh/recovery-share";
 import {
   reconstructAndReadmit as coreReconstructAndReadmit,
   provisionRecoveryAtFounding as coreProvisionRecoveryAtFounding,
   provisionRecoveryCardsAtFounding as coreProvisionRecoveryCardsAtFounding,
-  type RecoveryShare, type RecoveryCardsAtFounding,
-} from "@lararium/mesh";
+  type RecoveryCardsAtFounding,
+} from "@lararium/mesh/recovery-keel-core";
+import { type RecoveryShare } from "@lararium/mesh/recovery-share";
 import { runReadmitEdge, type ReadmitEdgeInput } from "@lararium/keyhive";
 import type { DeviceAdmitPayload } from "@lararium/keyhive";
 import { makeNodeFsPersonaVault } from "./node-vessel-identity.js";
 
 // splitRootAtFounding + FoundingShares are pure crypto flow — re-exported straight from the core.
-export { splitRootAtFounding, type FoundingShares } from "@lararium/mesh";
+export { splitRootAtFounding, type FoundingShares } from "@lararium/mesh/recovery-keel-core";
 
 /**
  * Reconstruct the root from a recovery quorum (≥ 2 distinct custodians) and re-admit a fresh device. Binds
@@ -74,7 +76,8 @@ export async function provisionRecoveryAtFounding(
   return coreProvisionRecoveryAtFounding(await makeNodeFsPersonaVault(ward), rng, recoveryEpoch, handleIndex, handOut);
 }
 
-export type { CustodianCard, RecoveryCardsAtFounding } from "@lararium/mesh";
+export type { CustodianCard } from "@lararium/mesh/custodian-card";
+export type { RecoveryCardsAtFounding } from "@lararium/mesh/recovery-keel-core";
 
 /**
  * Provision identity recovery at founding as the SHARED custodian cards — the pattern-integrity twin of the

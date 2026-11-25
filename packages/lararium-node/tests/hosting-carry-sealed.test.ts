@@ -23,7 +23,9 @@
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { afterEach, describe, expect, test } from "vitest";
-import { carryRecordKey, ciphertextCid, readFckCarrier } from "@lararium/mesh";
+import { carryRecordKey } from "@lararium/mesh/hosting";
+import { ciphertextCid } from "@lararium/mesh/ciphertext-cas";
+import { readFckCarrier } from "@lararium/mesh/fck-envelope";
 import { CustodyLocked, CustodyRecordUnavailable } from "../src/custody-holder.js";
 import { writeCustodyRecord } from "../src/custody-seat.js";
 import { depositCarried, fetchCarried, noteContact, readCarryRecord, type CarryLimits } from "../src/hosting-carry.js";

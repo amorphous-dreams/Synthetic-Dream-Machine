@@ -1,0 +1,36 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/landmark-map-pr`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — PR body, 2026-11-07 (file date) — source `.lares-scratch/landmark-map-pr.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/landmark-map-pr"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/landmark-map-pr"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! landmark-map-pr.md — PR body, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/landmark-map-pr.md` (PR body, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+A Sol read walked the road backwards from M4 through the code at e1d801042; this carrier distills its landmarks: on-path and off-path rows, the broken L23 drop floor, L24's standing writer, the four P27 crossings, K22 against M7, the M4 primitive route and the M3 proof checklist. Full hand-back with citations: ~/.lares-scratch/reverse-walk/seats/sol-1/final.md.
+
+🤖 Generated with [[Claude Code|https://claude.com/claude-code]]
+
+https://claude.ai/code/session_01V63vwNsTbwswaievYNJosw
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;mmKZazhUSKZDVjLP0XVJSKwG_em5wQaBv1HxKcZXUrk`>>
+
+<<^ code=`&#x0004;` to=`?`>>

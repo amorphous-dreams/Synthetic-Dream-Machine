@@ -32,10 +32,17 @@ import {
   generateOrLoadPersonaGroupRoot, makeNodePersonaPetnameStore, makeNodePersonaDeclarationStore, readNexusDoc, nexusCharterDocPath,
   heldSeatKey, listSeatKeys, seatReadBackStandIn, signAsSeat, writeNexusDoc,
 } from "@lararium/node";
+import { renameOwnPersona } from "@lararium/mesh/persona-petname";
+import { declarePersonaHandle, standForKahuSeat } from "@lararium/mesh/persona-declare";
 import {
-  renameOwnPersona, declarePersonaHandle, standForKahuSeat, sealKeySetHash, sealLineageHead, verifySealLineage,
-  charterInceptionBytes, charterInceptionImage, genesisOfInception, type SealEpoch,
-} from "@lararium/mesh";
+  sealKeySetHash,
+  verifySealLineage,
+  charterInceptionBytes,
+  charterInceptionImage,
+  genesisOfInception,
+  type SealEpoch,
+} from "@lararium/mesh/wax-stamp";
+import { sealLineageHead } from "@lararium/mesh/nexus-seal-seed";
 import { seatScratchCustody, type ScratchCustody } from "./support/scratch-custody.js";
 
 /** A genesis over the vault's own seat keys, each seat signing its inception by hand, outside the door: the head

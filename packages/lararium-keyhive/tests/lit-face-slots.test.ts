@@ -16,8 +16,13 @@
  *        face's own (owner the sibling); a kind its wear never named still resolves nothing and mints no row
  */
 import { describe, expect, test } from "vitest";
-import { makeIslandRepo } from "@lararium/mesh";
-import { CompositeStore, CONTROL_HOME_ID, AutomergeDocStore, daemonFaceCanonBag, emptyLarDoc, mutableLarRecord, wikiSlotUri, realmWorkbenchDocUrl, computeRecipeFingerprint, bagUri, type LarDoc } from "@lararium/mesh";
+import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { CONTROL_HOME_ID, bagUri } from "@lararium/mesh/lar-uris";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { daemonFaceCanonBag, wikiSlotUri, computeRecipeFingerprint } from "@lararium/mesh/wiki-recipe";
+import { emptyLarDoc, mutableLarRecord, type LarDoc } from "@lararium/mesh/base-doc";
+import { realmWorkbenchDocUrl } from "@lararium/mesh/deterministic-doc";
 import { MemoryTiddlerStore } from "@lararium/tw5";
 import { litFaceSlotDocs } from "../src/slot-doc-resolver.js";
 import { makeLitFaceTarget, type LitFace } from "../src/lit-face-target.js";

@@ -19,7 +19,7 @@
  */
 
 import type { DocumentId } from "@automerge/automerge-repo";
-import type { PlaneSeal } from "@lararium/mesh";
+import type { PlaneSeal } from "@lararium/mesh/federation-gate";
 
 /**
  * The fail-closed floor: NO plane is provably sealed, so nothing blind-transits (the whole private surface

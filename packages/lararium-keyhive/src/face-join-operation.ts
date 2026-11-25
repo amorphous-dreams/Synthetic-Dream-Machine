@@ -7,7 +7,9 @@
  * the issue re-enters to the very record it issued, and a crash after the publish returns the outcome it published.
  */
 
-import type { DeviceDelegationTiddler, EdgeStanding, LarTiddlerRecord, LarTiddlerStore } from "@lararium/mesh";
+import type { DeviceDelegationTiddler } from "@lararium/mesh/device-delegation";
+import type { EdgeStanding } from "@lararium/mesh/edge-kapae";
+import type { LarTiddlerRecord, LarTiddlerStore } from "@lararium/mesh/tiddler-store";
 import { faceGrantRecordCid, faceGrantTitle, signFaceGrantRecord, verifyFaceGrantRecord, verifyFounderAuthority, type FaceGrantRecord, type FounderLineage } from "./face-grant-record.js";
 import { runFaceJoin, type FaceJoinContext, type FaceJoinOutcome, type FaceJoinProvider, type FaceJoinSummons } from "./face-join.js";
 import { readFaceOperation, writeFaceOperation } from "./face-operation-record.js";

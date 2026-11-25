@@ -8,14 +8,18 @@
  * flat verb name none, and a wiki island composed with no gate flag still refuses a stranger by itself.
  */
 import { describe, test, expect } from "vitest";
-import type { Verb } from "@lararium/mesh";
-import { BAG_IDS, bagUri, storedLarRecord, REALM_ID_TIDDLER, REALM_BAG_DOMAIN, realmDocPointer, realmDocUrl, realmStandingPointer } from "@lararium/mesh";
+import type { Verb } from "@lararium/mesh/verb-tiddler";
+import { BAG_IDS, bagUri } from "@lararium/mesh/lar-uris";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
+import { REALM_ID_TIDDLER, realmDocPointer, realmDocUrl, realmStandingPointer } from "@lararium/mesh/realm-bag";
+import { REALM_BAG_DOMAIN } from "@lararium/mesh/domains";
 import { gateRoutedVerb, routedInnerBags } from "../src/verb-local-dispatch.js";
-import { requireKahuReach, type CapabilityVerifier } from "@lararium/mesh";
+import { requireKahuReach } from "@lararium/mesh/kahu-canon-reach";
+import { type CapabilityVerifier } from "@lararium/mesh/capability";
 import { kahuHand, strangerHand } from "../../lararium-mesh/tests/kahu-reach-fixture.js";
 import { makeActionReactorFor } from "../src/action-handler.js";
 import { libraryDocUrl, type CatalogAccessor } from "../src/catalog-accessor.js";
-import { CompositeStore } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
 
 const verb = (args: Record<string, unknown>): Verb => ({ requestId: "r", title: "t", action: "wiki-act", args, targets: [], batchMode: "best-effort", status: "pending", requestedBy: "test", requestedAt: "2026-10-21" } as unknown as Verb);
 

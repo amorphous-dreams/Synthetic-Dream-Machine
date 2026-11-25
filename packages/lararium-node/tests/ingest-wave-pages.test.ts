@@ -11,7 +11,8 @@ import { afterEach, describe, expect, test } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { INGEST_WAVE_LIMITS, VERB_RESULT_KEY, ingestWaveRefusal } from "@lararium/mesh";
+import { INGEST_WAVE_LIMITS, ingestWaveRefusal } from "@lararium/mesh/ingest-wave-budget";
+import { VERB_RESULT_KEY } from "@lararium/mesh/verb-tiddler";
 import { SyncedTree } from "../src/synced-tree.js";
 import { ingestVerdict, ingestWaveArgs, settleIngest, type IngestSubmitResult, type ScanRow, type SubmitIngestOpts } from "../src/ingest-scan.js";
 

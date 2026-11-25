@@ -54,11 +54,26 @@ import { createPrivateKey, createPublicKey } from "node:crypto";
 import { existsSync } from "node:fs";
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  RECOVERY_CONTACT_ENROLMENT_KIND, HANDLE_BOOK_SNAPSHOT_ERA, bundleMemoryKeypair, canonicalJsonBytes, deriveSelfRecoveryKey,
-  foldPersonaContests, recoveryContactCompartmentCheck, mintPersonaInception, openFaceBundleBody, readFaceBundleBody, recoverySetCommitment, sealKeySetHash,
-  sealMemorySecret, verifyPersonaKelFull,
-  type FaceBundleBody, type FaceBundleHolding, type PersonaKelEvent,
-} from "@lararium/mesh";
+  RECOVERY_CONTACT_ENROLMENT_KIND,
+  foldPersonaContests,
+  mintPersonaInception,
+  recoverySetCommitment,
+  verifyPersonaKelFull,
+  type PersonaKelEvent,
+} from "@lararium/mesh/persona-kel";
+import { HANDLE_BOOK_SNAPSHOT_ERA } from "@lararium/mesh/handle-book";
+import {
+  bundleMemoryKeypair,
+  openFaceBundleBody,
+  readFaceBundleBody,
+  type FaceBundleBody,
+  type FaceBundleHolding,
+} from "@lararium/mesh/face-bundle";
+import { canonicalJsonBytes } from "@lararium/mesh/crypto";
+import { deriveSelfRecoveryKey } from "@lararium/mesh/persona-identity";
+import { recoveryContactCompartmentCheck } from "@lararium/mesh/recovery-keel-core";
+import { sealKeySetHash } from "@lararium/mesh/wax-stamp";
+import { sealMemorySecret } from "@lararium/mesh/memory-section";
 import { faceStands, runFoundTheFace } from "./commands/init.js";
 import type { BackupDoor } from "./face-bundle-cut.js";
 import { IslandVerbRefused } from "./island-verb-ask.js";

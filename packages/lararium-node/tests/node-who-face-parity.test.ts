@@ -13,13 +13,12 @@
  */
 import { describe, test, expect } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
-import {
-  whoFaceCap, WHO_FACE_CAP, type WhoFaceComponent,
-  composeVessel, type CapModule,
-  CompositeStore, HandleBook,
-  materializeSharedLarDoc, crossroadsDocUrl,
-  nexusHandlesUri, whoBoardDocUrl,
-} from "@lararium/mesh";
+import { whoFaceCap, WHO_FACE_CAP, type WhoFaceComponent } from "@lararium/mesh/who-face-cap";
+import { composeVessel, type CapModule } from "@lararium/mesh/cap-compose";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { HandleBook } from "@lararium/mesh/handle-book";
+import { materializeSharedLarDoc, crossroadsDocUrl, whoBoardDocUrl } from "@lararium/mesh/deterministic-doc";
+import { nexusHandlesUri } from "@lararium/mesh/lar-uris";
 
 /** The node's own gate key — the island its admitted leaves resolve. */
 const ANCHOR_GATE_KEY = "9f3c1a77b20e4d6688aa5510cc73ef02";

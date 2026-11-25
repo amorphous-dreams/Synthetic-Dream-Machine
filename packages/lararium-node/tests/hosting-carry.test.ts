@@ -28,11 +28,12 @@ import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
-import {
-  sealPrivateBody, openPrivateBody, authorizeAddress, readContentKey, ciphertextCid, walkCarriageBagId, walkCarryDocumentKey, sha256HexBytesSync,
-  walkCarrySecret, carryRecordKey, hex,
-  hexToBytes, PERSONA_GLAMOUR_CONTEXT, utf8Bytes,
-} from "@lararium/mesh";
+import { sealPrivateBody, openPrivateBody, ciphertextCid } from "@lararium/mesh/ciphertext-cas";
+import { authorizeAddress, readContentKey } from "@lararium/mesh/sealed-chunk-door";
+import { walkCarriageBagId, walkCarryDocumentKey } from "@lararium/mesh/walk-carry";
+import { sha256HexBytesSync, hex, hexToBytes, utf8Bytes } from "@lararium/mesh/crypto";
+import { walkCarrySecret, carryRecordKey } from "@lararium/mesh/hosting";
+import { PERSONA_GLAMOUR_CONTEXT } from "@lararium/mesh/persona-glamour";
 import { depositCarried, noteContact, fetchCarried, readCarryRecord, type CarryLimits } from "../src/hosting-carry.js";
 import { hostingDirPath } from "../src/hosting-face.js";
 import { seatHostingCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";

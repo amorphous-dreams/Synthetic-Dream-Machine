@@ -1,5 +1,12 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { mkLarControlEvent, mkLarResend, readLarControlResult, readLarFrame, type LarMsg_ControlResult, type LarMsg_Frame } from "@lararium/mesh";
+import {
+  mkLarControlEvent,
+  mkLarResend,
+  readLarControlResult,
+  readLarFrame,
+  type LarMsg_ControlResult,
+  type LarMsg_Frame,
+} from "@lararium/mesh/lar-camera";
 import { createEpochMint, mountProjection } from "../src/tw5-projection.js";
 import type { IslandContext } from "../src/island-context.js";
 import { bootTestWiki, skipNote, wikiSkip } from "./test-wiki.js";

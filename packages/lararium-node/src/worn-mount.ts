@@ -6,7 +6,7 @@
  * bug and its cure belong to neither. This file is the node shore — the fs vault — and nothing else.
  */
 
-import { readWornPersonaMount as readWornMountFromVault, type WornPersonaMount } from "@lararium/mesh";
+import { readWornPersonaMount as readWornMountFromVault, type WornPersonaMount } from "@lararium/mesh/persona-vault";
 import { makeNodeFsPersonaVault } from "./node-vessel-identity.js";
 
 export type { WornPersonaMount };

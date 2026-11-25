@@ -33,9 +33,8 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/persona-policy
  */
 
-import type {
-  OwnPersonaPetnameStore, PersonaDeclaration, PersonaDeclarationStore,
-} from "@lararium/mesh";
+import type { OwnPersonaPetnameStore } from "@lararium/mesh/persona-petname";
+import type { PersonaDeclaration, PersonaDeclarationStore } from "@lararium/mesh/persona-declare";
 import { sealedAct } from "./sealed-act-door.js";
 
 /** One own persona as the fleet reads it: the two names that ride, keyed by handle-index. */

@@ -8,10 +8,18 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
+import { canonicalJsonBytes } from "@lararium/mesh/crypto";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, verifyEd25519 } from "@lararium/mesh/ed25519-door";
+import { signKukuluVouch } from "@lararium/mesh/kukulu-vouch";
 import {
-  canonicalJsonBytes, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, signKukuluVouch, signSwarmAct, swarmActCid, swarmLeiReturnedPrefix, verifyEd25519,
-  PULAMA_TESSERA_DOMAIN, type SignedSwarmAct, type SwarmSignerPort, type SwarmWikiPort,
-} from "@lararium/mesh";
+  signSwarmAct,
+  swarmActCid,
+  swarmLeiReturnedPrefix,
+  type SignedSwarmAct,
+  type SwarmSignerPort,
+  type SwarmWikiPort,
+} from "@lararium/mesh/swarm-tiddlers";
+import { PULAMA_TESSERA_DOMAIN } from "@lararium/mesh/domains";
 import type { CustodyHolder } from "../src/custody-holder.js";
 import { kukuluGate, pulamaSignerOf, vouchSignerOf } from "../src/kukulu-gate.js";
 import { kukuluRiteOver } from "../src/kukulu-lei-seat.js";
@@ -421,7 +429,7 @@ describe("RED unadmit-never-answers-unadmitted-with-no-tombstone-resting", () =>
 });
 
 describe("RED pulama-admit-names-the-seed-the-image-offers (D1)", () => {
-  const SEED = "seed (offered) " + "5".repeat(64) + ": a newer seed waits: engine same · grammar moved · plugins same · floor same";
+  const SEED = "seed (offered) " + "5".repeat(64) + ": a newer seed waits: engine same · grammar moved · lararium same · plugins same · floor same";
 
   test("the host's report carries the seed line beside the image; status and the admission answer name it before and after the route; the admitted row carries none of it", async () => {
     const s = await stand();

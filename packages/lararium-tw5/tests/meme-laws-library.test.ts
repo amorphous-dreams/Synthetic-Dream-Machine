@@ -14,10 +14,13 @@ import path from "node:path";
 import { bootTestWiki, wikiSkip, skipNote, REPO } from "./test-wiki.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
 import LARES_MEMETIC_WIKITEXT_PLUGIN from "../plugins/lares-memetic-wikitext.json" with { type: "json" };
+import LARES_LARARIUM_PLUGIN from "../plugins/lares-lararium.json" with { type: "json" };
 
 const LAWS = "lar:///ha.ka.ba/lararium/tw5/modules/meme-laws";
 const FRAME = "lar:///ha.ka.ba/lararium/tw5/lib/memetic-frame";
-const packed = JSON.parse((LARES_MEMETIC_WIKITEXT_PLUGIN as { text: string }).text).tiddlers as Record<string, Record<string, string>>;
+// Both skins pack the libraries' consumers (the grammar's deserializer, the house's face and placement): one law, one copy across both.
+const packedOf = (plugin: unknown): Record<string, Record<string, string>> => JSON.parse((plugin as { text: string }).text).tiddlers as Record<string, Record<string, string>>;
+const packed = { ...packedOf(LARES_MEMETIC_WIKITEXT_PLUGIN), ...packedOf(LARES_LARARIUM_PLUGIN) };
 
 describe("the meme laws pack as ONE library tiddler", () => {
   test("the packed plugin holds the library, module-type library", () => {

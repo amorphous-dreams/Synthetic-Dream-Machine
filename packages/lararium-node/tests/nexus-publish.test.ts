@@ -19,21 +19,15 @@ import { Repo } from "@automerge/automerge-repo";
 import { restEvery, restingRepo } from "./resting-repo.js";
 import {
   computePluginsCid,
-  crossroadsDocUrl,
-  publicationDocUrl,
-  ed25519SignerFromSeed,
-  ed25519VerifyingKeyFromSeed,
   GENESIS_CID_ENGINE_TIDDLER,
   GENESIS_CID_GRAMMAR_TIDDLER,
   GENESIS_CID_PLUGINS_TIDDLER,
-  materializeSharedLarDoc,
-  offeringAnnouncesFromDoc,
-  pluginOfferingCid,
-  signPluginOffering,
   type GenesisSeed,
-  type OfferedBlob,
-  type PluginProvenance,
-} from "@lararium/mesh";
+} from "@lararium/mesh/genesis-doc";
+import { crossroadsDocUrl, publicationDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { offeringAnnouncesFromDoc } from "@lararium/mesh/offering-announce";
+import { pluginOfferingCid, signPluginOffering, type OfferedBlob, type PluginProvenance } from "@lararium/mesh/plugin-offering";
 import {
   runNexusPublishPlugins,
   NexusPublishError,

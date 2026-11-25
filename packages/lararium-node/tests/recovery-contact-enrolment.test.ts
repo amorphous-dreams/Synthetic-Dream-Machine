@@ -22,9 +22,10 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import * as ed from "@noble/ed25519";
-import {
-  RECOVERY_CONTACT_ENROLMENT_KIND, coldKeySeedFromCode, foldPersonaContests, recoveryContactPossessionBytes, hex, recoverySetCommitment,
-} from "@lararium/mesh";
+import { RECOVERY_CONTACT_ENROLMENT_KIND, foldPersonaContests, recoverySetCommitment } from "@lararium/mesh/persona-kel";
+import { coldKeySeedFromCode } from "@lararium/mesh/cold-key-card";
+import { recoveryContactPossessionBytes } from "@lararium/mesh/recovery-keel-core";
+import { hex } from "@lararium/mesh/crypto";
 import * as init from "../src/commands/init.js";
 import { seatedCustody, unseatCustody, writeCustodyRecord } from "../src/custody-seat.js";
 import {

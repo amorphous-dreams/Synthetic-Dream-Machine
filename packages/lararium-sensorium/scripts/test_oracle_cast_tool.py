@@ -52,6 +52,21 @@ def test_a_house_cast_rides_the_wire_with_the_container_the_caster_and_the_seats
     assert "coins" not in args
 
 
+def test_the_asking_rides_as_its_words_so_a_retry_answers_the_standing_throw(daemon):
+    daemon.output = {"band": "answered", "replayed": True}
+    out = _tool()(recipe="default", asking="which road first?")
+    assert out["band"] == "answered"
+    args = daemon.wire()["args"]
+    assert args["asking"] == "which road first?"
+    assert "fresh" not in args and "seed" not in args and "nonce" not in args
+
+
+def test_a_blank_asking_rides_as_none(daemon):
+    daemon.output = {"band": "answered"}
+    _tool()(recipe="default", asking="   ")
+    assert "asking" not in daemon.wire()["args"]
+
+
 def test_the_operators_coins_ride_as_six_values(daemon):
     daemon.output = {"decision": "put"}
     _tool()(recipe="default", coins=[7, 8, 9, 6, 7, 7], caster="operator")

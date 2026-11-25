@@ -12,10 +12,10 @@ import { Repo } from "@automerge/automerge-repo";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
 import { runFoundingCeremony, replayCapEvents, KeyhiveProvider, InMemoryEventStore, packPersonaCrossing, applyPersonaCrossing } from "@lararium/keyhive";
 import * as ed25519 from "@noble/ed25519";
-import {
-  hex, faceAtomKeyFromSeed, vesselDyads,
-  type LarDoc,
-} from "@lararium/mesh";
+import { hex } from "@lararium/mesh/crypto";
+import { faceAtomKeyFromSeed } from "@lararium/mesh/face-atom";
+import { vesselDyads } from "@lararium/mesh/dyad";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 import { memorySecretHome, MEMORY_SEALED } from "../../lararium-mesh/tests/secret-home-fixture.js";
 

@@ -10,7 +10,9 @@
  * Canon: lar:///ha.ka.ba/lares/docs/device-capabilities-2026#/device-seats
  */
 import { describe, expect, test } from "vitest";
-import { tiddlerText, type DeviceDelegationTiddler, type DocHandle, type LarDoc } from "@lararium/mesh";
+import { tiddlerText, type LarDoc } from "@lararium/mesh/base-doc";
+import { type DeviceDelegationTiddler } from "@lararium/mesh/device-delegation";
+import { type DocHandle } from "@lararium/mesh/automerge";
 import { keepCarriedSeatGrant, seatGrantsReader, type FleetSeatGrant } from "../src/carried-seat.js";
 import { faceGrantTitle, type FaceGrantRecord } from "../src/face-grant-record.js";
 import { makeFaceSeat } from "../src/face-seat.js";

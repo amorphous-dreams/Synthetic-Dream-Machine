@@ -22,7 +22,7 @@
  */
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { generateAutomergeUrl, type PeerId, type PeerMetadata } from "@automerge/automerge-repo";
-import { LARES_DOC_URI, LARARIUM_DOC_URI } from "@lararium/mesh";
+import { LARES_DOC_URI, LARARIUM_DOC_URI } from "@lararium/mesh/lar-uris";
 import { BootHalted, admitNaming, bootOptions, observed, resetObserved } from "./wire-vessel-rig.js";
 import { bindSyntheticBrowserCustodySlot, bindSyntheticFace } from "./browser-custody-fixture.js";
 import { openBrowserVessel } from "../src/open-browser-vessel.js";

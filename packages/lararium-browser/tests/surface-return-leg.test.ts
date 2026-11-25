@@ -10,7 +10,13 @@
  * island does: a live id under the current epoch applies, a retired id or another epoch answers `stale-target`.
  */
 import { describe, expect, test } from "vitest";
-import { LAR_CAMERA_STORY, mkLarControlEvent, readLarControlResult, type LarMsg_ControlEvent, type LarMsg_ControlResult } from "@lararium/mesh";
+import {
+  LAR_CAMERA_STORY,
+  mkLarControlEvent,
+  readLarControlResult,
+  type LarMsg_ControlEvent,
+  type LarMsg_ControlResult,
+} from "@lararium/mesh/lar-camera";
 import { makeSurfaceReturnLeg } from "../src/surface-return-leg.js";
 
 const DAEMON = "daemon";

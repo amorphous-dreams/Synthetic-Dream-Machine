@@ -5,7 +5,9 @@ import { join } from "node:path";
 import { FACE_LANE_VERBS, FACE_NEUTRAL_VERBS, operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
 import { VerbDispatcher, VerbTable } from "@lararium/tw5";
 import * as ed25519 from "@noble/ed25519";
-import { hex, hexToBytes, realmFeedAskImage, signAsFaceAtom, signFaceLeafBond } from "@lararium/mesh";
+import { hex, hexToBytes } from "@lararium/mesh/crypto";
+import { realmFeedAskImage, signFaceLeafBond } from "@lararium/mesh/face-leaf-bond";
+import { signAsFaceAtom } from "@lararium/mesh/face-atom";
 import { standFoundedIsland } from "./stand-founded-island.js";
 import { nodeSealedStoreShore } from "../src/sealed-store-island.js";
 

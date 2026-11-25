@@ -21,14 +21,31 @@ import * as ed from "@noble/ed25519";
 import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
 import { restEvery, restingRepo } from "./resting-repo.js";
+import { antigenEntriesFromBoard } from "@lararium/mesh/antigen-board";
+import { edgeKapaeActsFromBoard } from "@lararium/mesh/edge-kapae";
+import { offeringAnnouncesFromDoc } from "@lararium/mesh/offering-announce";
+import { verifiedVouchesFromBoard } from "@lararium/mesh/vouch-board";
+import { hexToBytes, hex, sha256HexBytesSync } from "@lararium/mesh/crypto";
 import {
-  antigenEntriesFromBoard, edgeKapaeActsFromBoard, offeringAnnouncesFromDoc,
-  verifiedVouchesFromBoard, hexToBytes, hex, materializeSharedLarDoc, kapaeAntigenDocUrl, sha256HexBytesSync,
-  fleetEdgeBoardDocUrl, realmVouchBoardDocUrl, publicationDocUrl, computePluginsCid, DAEMON_BAG_ID, seedDaemonDoc,
-  GENESIS_CID_ENGINE_TIDDLER, GENESIS_CID_GRAMMAR_TIDDLER, GENESIS_CID_PLUGINS_TIDDLER,
-  nexusAidOf, custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute, signCarriageQuorum, signCarriageContract, admitCarriageCommit, openAdmitCarriage, federationPostureFromDoc,
-  type NexusDoc, type LarDoc, type GenesisSeed,
-} from "@lararium/mesh";
+  materializeSharedLarDoc,
+  kapaeAntigenDocUrl,
+  fleetEdgeBoardDocUrl,
+  realmVouchBoardDocUrl,
+  publicationDocUrl,
+} from "@lararium/mesh/deterministic-doc";
+import {
+  computePluginsCid,
+  GENESIS_CID_ENGINE_TIDDLER,
+  GENESIS_CID_GRAMMAR_TIDDLER,
+  GENESIS_CID_PLUGINS_TIDDLER,
+  type GenesisSeed,
+} from "@lararium/mesh/genesis-doc";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { seedDaemonDoc } from "@lararium/mesh/social-seed";
+import { nexusAidOf, federationPostureFromDoc, type NexusDoc } from "@lararium/mesh/nexus-seal-seed";
+import { custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute } from "@lararium/mesh/gate-bundle-door";
+import { signCarriageQuorum, signCarriageContract, admitCarriageCommit, openAdmitCarriage } from "@lararium/mesh/carriage-registry";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import {
   generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadVesselVerifyingKey, loadPersonaGroupRootVerifyingKey,
   loadPersonaGroupRootSeed,

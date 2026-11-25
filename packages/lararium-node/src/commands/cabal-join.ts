@@ -20,20 +20,32 @@
 
 import { readFileSync } from "node:fs";
 import type { Repo } from "@automerge/automerge-repo";
-import {
-  readLedgeredVouches, materializeSharedLarDoc,
-  vouchEdgeId, realmEdgeBoardDocUrl, memberEdgeId, realmEdgeAuthority, type EdgeKapaeVerdict,
-  quorumLeaseEpochOnBoard, DAEMON_BAG_ID, charterHandLineage, type HandLineage, type WideningRead,
-  DEFAULT_JOIN_POLICY, alphaFromHalfLife, writeEdgeKapae,
-  readRealmAdmitBundle, readRealmBoardFrontiers, readFrontierPins, writeFrontierPin, holderHand, type RealmAdmitBundle,
-  type CabalInvite, type CabalJoinPolicy, type AdmissionDials, ownEntry, readControlHome } from "@lararium/mesh";
-import { type LarDoc } from "@lararium/mesh";
+import { readLedgeredVouches } from "@lararium/mesh/edge-ledger";
+import { materializeSharedLarDoc, realmEdgeBoardDocUrl } from "@lararium/mesh/deterministic-doc";
+import { vouchEdgeId } from "@lararium/mesh/vouch-board";
+import { memberEdgeId, realmEdgeAuthority } from "@lararium/mesh/realm-edges";
+import { type EdgeKapaeVerdict, writeEdgeKapae } from "@lararium/mesh/edge-kapae";
+import { quorumLeaseEpochOnBoard } from "@lararium/mesh/quorum-lease";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { charterHandLineage } from "@lararium/mesh/charter-hand-lineage";
+import { type HandLineage } from "@lararium/mesh/hand-lineage";
+import { type WideningRead } from "@lararium/mesh/edge-frontier";
+import { DEFAULT_JOIN_POLICY, type CabalInvite, type CabalJoinPolicy } from "@lararium/mesh/cabal-invite";
+import { alphaFromHalfLife } from "@lararium/mesh/conviction-dial";
+import { readRealmAdmitBundle, type RealmAdmitBundle } from "@lararium/mesh/realm-admit-bundle";
+import { readRealmBoardFrontiers, holderHand } from "@lararium/mesh/realm-frontier";
+import { readFrontierPins, writeFrontierPin } from "@lararium/mesh/edge-frontier-board";
+import { type AdmissionDials } from "@lararium/mesh/admission-price";
+import { ownEntry } from "@lararium/mesh/stored-value";
+import { readControlHome } from "@lararium/mesh/control-home";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { admitOnLineage, type LineageAdmission } from "../realm-admission.js";
 import { larBootstrapPath } from "../vessel-paths.js";
 import { loadFaceAtomKey } from "../face-atom-store.js";
 import { readVesselEdgeBoard, readRealmNexus, vesselEdgeCharter } from "../edge-board.js";
 import { leaseLineageOfNexus } from "../lease-charter.js";
-import { verifyEd25519, cabalInviteBytes } from "@lararium/mesh";
+import { verifyEd25519 } from "@lararium/mesh/ed25519-door";
+import { cabalInviteBytes } from "@lararium/mesh/cabal-invite";
 
 const NYM_RE = /^[0-9a-f]{64}$/;
 

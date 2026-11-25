@@ -23,7 +23,7 @@
  * one walk — and neither reads from a list, because a list of files would drift from the barrel it names.
  */
 import { describe, test, expect } from "vitest";
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, readdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -145,6 +145,29 @@ describe("the isomorphic hull — @lararium/mesh carries no platform", () => {
 
   test("the walk actually reaches modules — an empty graph would pass both guards vacuously", () => {
     expect(barrelModules(join(SRC, "index.ts")).length).toBeGreaterThan(30);
+  });
+
+  test("every mesh subpath the browser vessel names stands on the hull too", () => {
+    // Readers name subpaths now, not the barrel, so the browser's reach into mesh reads off its own imports:
+    // each `@lararium/mesh/<module>` its source names gets the same platform walk the barrel gets.
+    const BROWSER_SRC = resolve(SRC, "../../lararium-browser/src");
+    const subpaths = new Set<string>();
+    const walk = (dir: string): void => {
+      for (const e of readdirSync(dir, { withFileTypes: true })) {
+        const p = join(dir, e.name);
+        if (e.isDirectory()) { if (e.name !== "__stubs__") walk(p); }
+        else if (e.name.endsWith(".ts")) for (const m of readFileSync(p, "utf8").matchAll(/["']@lararium\/mesh\/([\w./-]+)["']/g)) subpaths.add(m[1]!);
+      }
+    };
+    walk(BROWSER_SRC);
+    expect(subpaths.size, "the browser names mesh subpaths; an empty read would pass vacuously").toBeGreaterThan(20);
+    const breaches: string[] = [];
+    for (const sub of subpaths) {
+      const entry = toSource(join(SRC, "index.ts"), `./${sub}.js`);
+      expect(entry, `the browser names @lararium/mesh/${sub}, and no mesh source stands there`).not.toBeNull();
+      for (const b of platformBreaches(entry as string)) breaches.push(`${sub} -> ${b.file}: ${b.line}`);
+    }
+    expect(breaches, "a subpath the browser vessel imports reaches a platform builtin; it breaches the browser at load").toEqual([]);
   });
 
   test("the host door stays a separate door — the barrel never re-exports it", () => {

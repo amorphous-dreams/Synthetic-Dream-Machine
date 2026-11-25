@@ -12,11 +12,20 @@
 import { describe, test, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { buildDeviceDelegation, type DeviceDelegationTiddler } from "@lararium/mesh/device-delegation";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { hexToBytes } from "@lararium/mesh/crypto";
+import { deriveSelfRecoveryKey } from "@lararium/mesh/persona-identity";
+import { sealKeySetHash } from "@lararium/mesh/wax-stamp";
 import {
-  buildDeviceDelegation, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, hexToBytes,
-  deriveSelfRecoveryKey, sealKeySetHash, mintPersonaInception, personaRotationSigningBytes, mintPersonaRotation,
-  enrolmentDigestOf, personaEventCidOf, DEVICE_DELEGATION_DOMAIN, DEVICE_ATOM_COUNTERSIGN_DOMAIN, type DeviceDelegationTiddler, type PersonaKelEvent,
-} from "@lararium/mesh";
+  mintPersonaInception,
+  personaRotationSigningBytes,
+  mintPersonaRotation,
+  enrolmentDigestOf,
+  personaEventCidOf,
+  type PersonaKelEvent,
+} from "@lararium/mesh/persona-kel";
+import { DEVICE_DELEGATION_DOMAIN, DEVICE_ATOM_COUNTERSIGN_DOMAIN } from "@lararium/mesh/domains";
 import { faceGrantTitle, faceGrantRecordCid, signFaceGrantRecord, verifyFaceGrantRecord, type FaceGrantRecord } from "../src/face-grant-record.js";
 
 const ROOT_SEED    = new Uint8Array(32).fill(7);

@@ -29,7 +29,7 @@ import { join } from "node:path";
 import {
   FsCustodyIo, makeCustodyHolder, UNLOCK_ATTEMPTS_PER_BOOT, seatCustodyWhenNeeded, vesselCustodyHomes, type CustodyHolder,
 } from "@lararium/node";
-import { attemptWarning } from "@lararium/mesh";
+import { attemptWarning } from "@lararium/mesh/attempt-budget";
 import { gatherCredentials } from "./custody-prompt.js";
 import { canPromptSecret } from "./prompt-secret.js";
 

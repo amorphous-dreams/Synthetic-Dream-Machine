@@ -5,10 +5,16 @@
  * seats nobody and appends nothing. Control: the pinned hearth seats. Positive: a replay re-keys nothing.
  */
 import { describe, expect, test } from "vitest";
-import {
-  actCid, buildDeviceDelegation, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, faceIntentVerbs, intentEntryRecordsOfGroup,
-  mintPersonaInception, signPersonaAct, type DocHandle, type LarDoc, type LarTiddlerRecord, type LarTiddlerStore,
-} from "@lararium/mesh";
+import { actCid } from "@lararium/mesh/signed-act";
+import { buildDeviceDelegation } from "@lararium/mesh/device-delegation";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { faceIntentVerbs } from "@lararium/mesh/intent-verbs";
+import { intentEntryRecordsOfGroup } from "@lararium/mesh/intent-entry";
+import { mintPersonaInception } from "@lararium/mesh/persona-kel";
+import { signPersonaAct } from "@lararium/mesh/persona-act-board";
+import { type DocHandle } from "@lararium/mesh/automerge";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
 import { InMemoryEventStore, KeyhiveProvider, runFaceJoinOperation, type FaceJoinContext } from "../src/index.js";
 import { makeFaceIntentDoor, requestFaceJoin } from "../src/face-intent-door.js";
 import { taggedAdmission } from "../../lararium-mesh/tests/vessel-tag-fixture.js";

@@ -9,7 +9,7 @@ import { describe, expect, it, afterEach } from "vitest";
 import { mkdtempSync, rmSync, readdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { MEMBERSHIP_BROADCAST, type MembershipEnvelope } from "@lararium/mesh";
+import { MEMBERSHIP_BROADCAST, type MembershipEnvelope } from "@lararium/mesh/membership-channel";
 import { FileMembershipChannel } from "../src/file-membership-channel.js";
 
 let dir: string;

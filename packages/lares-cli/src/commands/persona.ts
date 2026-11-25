@@ -30,11 +30,13 @@ import { faceOption } from "../face-option.js";
 import {
   faceStands, compartmentStands, armRecoveryAtFounding, recoveryContactOffer, listFaceOrdinals, CustodyLocked, type FoundFaceResult,
 } from "@lararium/node";
-import {
-  renameOwnPersona, ownPersonaPetname, HANDLE_INDEX_CEILING, RECOVERY_CONTACT_THRESHOLD,
-  declarePersonaHandle, standForKahuSeat,
-  refuseSlot, personaSlotCeiling, defaultChairLabel, faceLogViewLine, coldKeySeedFromCode, signFaceLogView, type VesselClass,
-} from "@lararium/mesh";
+import { renameOwnPersona, ownPersonaPetname } from "@lararium/mesh/persona-petname";
+import { HANDLE_INDEX_CEILING } from "@lararium/mesh/persona-vault";
+import { RECOVERY_CONTACT_THRESHOLD } from "@lararium/mesh/persona-kel";
+import { declarePersonaHandle, standForKahuSeat, defaultChairLabel } from "@lararium/mesh/persona-declare";
+import { refuseSlot, personaSlotCeiling, type VesselClass } from "@lararium/mesh/vessel-standing";
+import { faceLogViewLine, signFaceLogView } from "@lararium/mesh/face-log-view";
+import { coldKeySeedFromCode } from "@lararium/mesh/cold-key-card";
 import { requireTty } from "../custody-prompt.js";
 import { handExistingFaceRouteToVessel, handFaceRouteToVessel, seatNewFaceRoute } from "../face-route-prompt.js";
 import { promptSecret } from "../prompt-secret.js";

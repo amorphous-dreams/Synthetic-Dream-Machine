@@ -9,7 +9,9 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/working-procedures
  */
 
-import { taskContentId, digestsEqual, ingestWaveWeight } from "@lararium/mesh";
+import { taskContentId } from "@lararium/mesh/verb-tiddler";
+import { digestsEqual } from "@lararium/mesh/agile-digest";
+import { ingestWaveWeight } from "@lararium/mesh/ingest-wave-budget";
 import {
   syncedTreeKey, ingestWaveVerb, ingestWaitBudgetMs, listSourceFiles, scanFiles, fileToUriForSource, settleIngest as settleIngestVia,
   type SyncedTree, type ScanRow, type ScanStatus, type ScanResult, type PendingDeletion, type FileToUriFn, type SubmitIngestOpts, type IngestSettlement,

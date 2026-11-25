@@ -20,19 +20,19 @@ import { from as from_, save } from "@automerge/automerge";
 import { mkdirSync, mkdtempSync, renameSync, existsSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import { join, basename, dirname, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import { emptyLarDoc } from "@lararium/mesh/base-doc";
+import { isFaceScopedBag } from "@lararium/mesh/persona-scope";
 import {
-  emptyLarDoc,
-  isFaceScopedBag,
   isCondemned,
   isUnresolved,
   type DocLoadProbe,
-  type MountManifest,
   type ProbeOptions,
   type ProbeResult,
   type ProbeStatus,
   type QuarantineManifest,
-  type StoreIntegrityReport,
-} from "@lararium/mesh";
+} from "@lararium/mesh/doc-load-probe-contract";
+import { type MountManifest } from "@lararium/mesh/open-vessel-core";
+import { type StoreIntegrityReport } from "@lararium/mesh/store-integrity";
 import { docStorePath, precheckDocStore } from "./store-integrity.js";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 

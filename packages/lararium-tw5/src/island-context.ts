@@ -16,8 +16,14 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/island-context
  */
 
-import type { DocHandle }                        from "@lararium/mesh";
-import type { CompositeStore, IslandToVesselMsg, LarDoc, LarTiddlerRecord, Repo, SecretHomeStore, SecretRestAnswer, WikiRecipe } from "@lararium/mesh";
+import type { DocHandle } from "@lararium/mesh/automerge";
+import type { CompositeStore } from "@lararium/mesh/composite-store";
+import type { IslandToVesselMsg } from "@lararium/mesh/island-protocol";
+import type { LarDoc } from "@lararium/mesh/base-doc";
+import type { LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
+import type { Repo } from "@lararium/mesh/automerge";
+import type { SecretHomeStore, SecretRestAnswer } from "@lararium/mesh/secret-home";
+import type { WikiRecipe } from "@lararium/mesh/wiki-recipe";
 import type { TW5Engine }                        from "./tw5-vm.js";
 import type { ReceiptCapability }                        from "./receipt.js";
 
@@ -57,7 +63,7 @@ export interface IslandContext {
    *  wiki's working slot mounts it where it stands. */
   hearthWorkingUrl?: string | null;
   /** The face the kahua stage folds under (its group and its grant); null or absent, the stage reads empty. */
-  kahuaFace?: () => import("@lararium/mesh").KahuaStageFace | null;
+  kahuaFace?: () => import("@lararium/mesh/kahua-stage-store").KahuaStageFace | null;
   /** Wakes the kahua layer's re-fold when the face's lineage moves under the running island (`liveKahuaFace`). */
   kahuaFaceWatch?: (fn: () => void) => () => void;
   /**

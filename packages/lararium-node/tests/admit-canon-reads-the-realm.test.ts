@@ -16,13 +16,13 @@ const seam = vi.hoisted(() => ({ standing: {} as { lares?: string; lararium?: st
 vi.mock("../src/commands/nexus-cabal.js", () => ({ NexusCabalError: class extends Error {}, cabalCore: () => ({}), readKahuCabalBoard: async () => null }));
 vi.mock("../src/face-atom-store.js", () => ({ loadFaceAtomOfGroup: async () => (seam.atom ? new Uint8Array(32).fill(7) : null) }));
 vi.mock("../src/nexus-leaf.js", () => ({ mintNexusLeaf: async () => ({ verifyingKey: "k", seed: new Uint8Array(32) }) }));
-vi.mock("@lararium/mesh", async (importActual) => ({
+vi.mock("@lararium/mesh/face-atom", async (importActual) => ({
   ...(await importActual<Record<string, unknown>>()),
   faceAtomKeyFromSeed: () => ({ key: "atom-key" }),
 }));
 
 import * as realm from "../src/kahu-realm.js";
-import { LARARIUM_DOC_URI, LARES_DOC_URI } from "@lararium/mesh";
+import { LARARIUM_DOC_URI, LARES_DOC_URI } from "@lararium/mesh/lar-uris";
 
 type Stand = (opts: { repo: unknown; sealHome: string; vesselKey: string; personaGroupId: string | null }) => Promise<{ lares?: string; lararium?: string }>;
 const read = () => (realm as unknown as { admitCanonDocs: (repo: unknown, sealHome: string, group: string | null, stand?: Stand) => Promise<Record<string, string>> }).admitCanonDocs;

@@ -10,10 +10,8 @@
  */
 import { bindSyntheticBrowserCustodySlot, FIXTURE_WARD } from "./browser-custody-fixture.js";
 import { describe, test, expect, afterEach } from "vitest";
-import {
-  currentOwnerSet, isBurned, headHandleKey, verifyAttestation,
-  type LarDoc, type HandleKelEvent,
-} from "@lararium/mesh";
+import { currentOwnerSet, isBurned, headHandleKey, verifyAttestation, type HandleKelEvent } from "@lararium/mesh/handle-kel";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { generateOrLoadBrowserPersonaRoot } from "../src/browser-vessel-identity.js";
 import { sealOwnerFace } from "./handle-owner-fixture.js";
 import { publishHandleBrowser } from "../src/browser-handle-publish.js";

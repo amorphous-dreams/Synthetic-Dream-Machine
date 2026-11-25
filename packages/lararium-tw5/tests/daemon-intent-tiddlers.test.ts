@@ -1,12 +1,16 @@
 import { describe, expect, test, vi } from "vitest";
-import { buildCancel, buildIntent, buildOutcome, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed,
-  faceIntentVerbs, intentEntryCid, intentId, intentPaneModel, makeHandLineage, readIntentPlane,
-  type IntentPaneModel } from "@lararium/mesh";
+import { buildCancel, buildIntent, buildOutcome } from "@lararium/mesh/intent-issue";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { faceIntentVerbs } from "@lararium/mesh/intent-verbs";
+import { intentEntryCid, intentId } from "@lararium/mesh/intent-entry";
+import { intentPaneModel, type IntentPaneModel } from "@lararium/mesh/intent-view";
+import { makeHandLineage } from "@lararium/mesh/hand-lineage";
+import { readIntentPlane } from "@lararium/mesh/intent-read";
 import type { TW5Engine } from "../src/tw5-vm.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
 import { DAEMON_INTENT_TIDDLERS, INTENT_PANE_TITLE, INTENT_STATE_TITLE, INTENT_VIEW_CAP, makeIntentViewReactor, seedDaemonIntentTiddlers } from "../src/daemon-intent-tiddlers.js";
 import { seedDaemonProtocol } from "../src/daemon-protocol-seed.js";
-import { HULLS_TS_ONLY } from "@lararium/mesh";
+import { HULLS_TS_ONLY } from "@lararium/mesh/flow";
 import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
 
 const pane: IntentPaneModel = { rows: [{ id: "1234567890abcdef", verb: "MOVE", status: "unknown-frontier", winner: null,

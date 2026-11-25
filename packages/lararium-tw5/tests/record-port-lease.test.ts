@@ -1,10 +1,11 @@
 import { describe, expect, test } from "vitest";
-import { CompositeStore, type IslandToVesselMsg } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { type IslandToVesselMsg } from "@lararium/mesh/island-protocol";
 import type { PortMsg_Open, PortMsg_Write, PortMsg_Ask } from "@lararium/mesh/record-port";
 import { AtomicMemoryStore as MemoryTiddlerStore } from "./atomic-memory-store.js";
 import { hasRecordPort } from "../src/record-port-handler.js";
 import type { PortGrant } from "@lararium/mesh/record-port";
-import { bagUri } from "@lararium/mesh";
+import { bagUri } from "@lararium/mesh/lar-uris";
 import { kahuHand } from "../../lararium-mesh/tests/kahu-reach-fixture.js";
 import type { IslandContext } from "../src/island-context.js";
 import type { IslandCap } from "../src/island-caps.js";

@@ -12,7 +12,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { buildSensoriumManifest, writeManifest } from "../src/sensorium.js";
 import { readCohere, readCohereAcrossContexts, type PlaneReader, type CohereContext } from "../src/sensorium-cohere.js";
-import type { PlaneRestriction } from "@lararium/mesh";
+import type { PlaneRestriction } from "@lararium/mesh/sensorium-consistency";
 
 let root: string;
 beforeEach(() => { root = mkdtempSync(join(tmpdir(), "lar-cohere-")); });

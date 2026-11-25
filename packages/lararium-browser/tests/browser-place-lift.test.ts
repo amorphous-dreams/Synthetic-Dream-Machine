@@ -19,7 +19,9 @@
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store · lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift
  */
 import { describe, expect, test } from "vitest";
-import { answerIslandAsks, composeVessel, islandCustodyWriter, islandFloorStack, islandLiftStack, larVesselOf } from "@lararium/mesh";
+import { answerIslandAsks, islandCustodyWriter } from "@lararium/mesh/capability-record";
+import { composeVessel } from "@lararium/mesh/cap-compose";
+import { islandFloorStack, islandLiftStack, larVesselOf } from "@lararium/mesh/lar-vessel";
 import { islandSessionDoor } from "@lararium/keyhive";
 import { browserSessionLift } from "../src/browser-island-caps.js";
 import { browserLiftsAtPlace, mintBrowserPlaceSession } from "../src/browser-place-session.js";

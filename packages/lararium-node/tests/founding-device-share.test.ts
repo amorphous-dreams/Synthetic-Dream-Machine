@@ -17,7 +17,7 @@ import { mkdtempSync, rmSync, existsSync, readFileSync, readdirSync } from "node
 import { tmpdir } from "node:os";
 import { basename, dirname, join } from "node:path";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { readFckCarrier } from "@lararium/mesh";
+import { readFckCarrier } from "@lararium/mesh/fck-envelope";
 import { generateOrLoadPersonaGroupRoot } from "../src/node-vessel-identity.js";
 import { loadRecoveryDeviceShare, deviceShareFile } from "../src/recovery-share-store.js";
 import { armRecoveryAtFounding } from "../src/commands/init.js";

@@ -5,4 +5,4 @@
  *
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store
  */
-export { SessionSignBook, type BookedSession } from "@lararium/mesh";
+export { SessionSignBook, type BookedSession } from "@lararium/mesh/session-sign-book";

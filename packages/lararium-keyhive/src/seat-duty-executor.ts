@@ -15,7 +15,7 @@
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/kapae#/keys
  */
-import type { SeatDuty, SeatRef, SeatRoll, SeatRollSink } from "@lararium/mesh";
+import type { SeatDuty, SeatRef, SeatRoll, SeatRollSink } from "@lararium/mesh/seat-duties";
 
 /** What the executor asks of a key group. `keyhiveSeatShore` answers it over a `KeyhiveProvider`. */
 export interface SeatKeyShore {

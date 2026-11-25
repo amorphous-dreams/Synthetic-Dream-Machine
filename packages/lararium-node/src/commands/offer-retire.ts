@@ -20,7 +20,10 @@
  */
 import * as A from "@automerge/automerge";
 import type { AutomergeUrl, DocHandle, Repo } from "@automerge/automerge-repo";
-import { canonOfferDocUrl, foundingRoster, materializeSharedLarDoc, retireCanonOffer, type CanonRetireOutcome, type LarDoc, type OfferSeat } from "@lararium/mesh";
+import { canonOfferDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { foundingRoster } from "@lararium/mesh/nexus-seal-seed";
+import { retireCanonOffer, type CanonRetireOutcome, type OfferSeat } from "@lararium/mesh/canon-offer";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { readNexusDoc } from "../nexus-doc.js";
 import { heldSeatSigners, type HeldQuorumSigner } from "../held-quorum.js";
 import { NexusCabalError, cabalCore } from "./nexus-cabal.js";

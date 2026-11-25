@@ -23,7 +23,13 @@ import { mkdtempSync, readdirSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
-import { ALL_DOMAINS, GATE_BUNDLE_INFO, GATE_FLOOR_BUNDLE_INFO, VESSEL_FACE_TAG_PROOF_DOMAIN, VESSEL_FACE_TAG_SEED_DOMAIN } from "@lararium/mesh";
+import {
+  ALL_DOMAINS,
+  GATE_BUNDLE_INFO,
+  GATE_FLOOR_BUNDLE_INFO,
+  VESSEL_FACE_TAG_PROOF_DOMAIN,
+  VESSEL_FACE_TAG_SEED_DOMAIN,
+} from "@lararium/mesh/domains";
 import {
   GateBundleRefused, custodyRootDoor, deriveGateBundle, floorGateRoot, floorKeyDoor, floorRoute, sovereignGateRoot, sovereignRoute,
 } from "../../lararium-mesh/src/gate-bundle.js";

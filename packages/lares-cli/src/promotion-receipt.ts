@@ -44,7 +44,9 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/canon-boundary
  */
 
-import { canonicalJsonBytes, verifyEd25519, PROMOTION_RECEIPT_DOMAIN } from "@lararium/mesh";
+import { canonicalJsonBytes } from "@lararium/mesh/crypto";
+import { verifyEd25519 } from "@lararium/mesh/ed25519-door";
+import { PROMOTION_RECEIPT_DOMAIN } from "@lararium/mesh/domains";
 
 export { PROMOTION_RECEIPT_DOMAIN };
 

@@ -58,15 +58,22 @@
 
 import { mkdirSync, readdirSync } from "node:fs";
 import { join } from "node:path";
+import { verifyCiphertextCid } from "@lararium/mesh/ciphertext-cas";
+import { lapseRatio, foldRhythm, carryRecordKey, grantVerifiesAt, RECLAIM_RATIO } from "@lararium/mesh/hosting";
+import { base64UrlEncode, base64UrlDecode } from "@lararium/mesh/crypto";
 import {
-  verifyCiphertextCid, lapseRatio, foldRhythm, carryRecordKey, grantVerifiesAt, base64UrlEncode, base64UrlDecode,
-  RECLAIM_RATIO, HOSTING_CARRY_SESSION_KIND, HOSTING_CARRIED_SESSION_KIND, HOSTING_FETCH_SESSION_KIND, HOSTING_FETCHED_SESSION_KIND,
-} from "@lararium/mesh";
+  HOSTING_CARRY_SESSION_KIND,
+  HOSTING_CARRIED_SESSION_KIND,
+  HOSTING_FETCH_SESSION_KIND,
+  HOSTING_FETCHED_SESSION_KIND,
+} from "@lararium/mesh/walk-carry";
 import { CustodyRecordUnavailable } from "./custody-holder.js";
 import { readCustodyRecord, removeCustodyRecord, updateCustodyRecord, writeCustodyRecord } from "./custody-seat.js";
 import { readHostingState, liveEpochs } from "./hosting-store.js";
 import { hostingDirPath, hostingFaceOf, hostingRecordDir } from "./hosting-face.js";
-import type { HostingGrant, LarSessionMsg, PeerClass } from "@lararium/mesh";
+import type { HostingGrant } from "@lararium/mesh/hosting";
+import type { LarSessionMsg } from "@lararium/mesh/leaf-presentation";
+import type { PeerClass } from "@lararium/mesh/island-protocol";
 
 /**
  * THE WALKER'S SESSION DOOR: a gate's authenticated sessions, each with its class and the hosting grant it stands

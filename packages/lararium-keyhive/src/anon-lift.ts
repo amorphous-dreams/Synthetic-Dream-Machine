@@ -40,10 +40,18 @@
  * `lifted-from-url`. The floor index keeps no mark and no link to the face: once the lift lands the floor record is gone. A pass
  * that finds a binding still holding `lifted-from-url` finishes the burn and moves nothing a second time.
  */
-import {
-  FloorUnavailable, floorDaemonSlotTitle, DAEMON_BAG_ID, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX, slotBindingKey, canonicalJson, emptyLarDoc,
-  mutableLarRecord, tiddlerText, FLOOR_SLOT_ROOT, floorSlotOf, sha256HexBytesSync, utf8Bytes, wikiBagUri, wikiDraftDocKey, requireLarDid, plainEntries, storedRecord,
-  type ChangeOrigin, type CompositeStore, type FloorRegistry, type LarDoc, ownEntry, DOCUMENT_READY_TIMEOUT_MS} from "@lararium/mesh";
+import { FloorUnavailable, type FloorRegistry } from "@lararium/mesh/floor-registry";
+import { floorDaemonSlotTitle, FLOOR_SLOT_ROOT, floorSlotOf } from "@lararium/mesh/device-daemon-docs";
+import { DAEMON_BAG_ID, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX, slotBindingKey } from "@lararium/mesh/lar-uris";
+import { canonicalJson, sha256HexBytesSync, utf8Bytes } from "@lararium/mesh/crypto";
+import { emptyLarDoc, mutableLarRecord, tiddlerText, type LarDoc } from "@lararium/mesh/base-doc";
+import { wikiBagUri, wikiDraftDocKey } from "@lararium/mesh/wiki-recipe";
+import { requireLarDid } from "@lararium/mesh/lar-did";
+import { plainEntries, ownEntry } from "@lararium/mesh/stored-value";
+import { storedRecord } from "@lararium/mesh/stored-record";
+import { type ChangeOrigin } from "@lararium/mesh/tiddler-store";
+import { type CompositeStore } from "@lararium/mesh/composite-store";
+import { DOCUMENT_READY_TIMEOUT_MS } from "@lararium/mesh/find-or-throw";
 import type { CatalogAccessor } from "@lararium/tw5";
 import type { FaceBagDoor } from "./face-bag-door.js";
 

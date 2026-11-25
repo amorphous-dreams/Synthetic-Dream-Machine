@@ -4,7 +4,8 @@
  * grant record on the face's own plane.
  */
 import { describe, expect, test } from "vitest";
-import { buildDeviceDelegation, type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh";
+import { buildDeviceDelegation } from "@lararium/mesh/device-delegation";
+import { type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
 import { InMemoryEventStore, KeyhiveProvider, faceOperationTitle, readFaceOperation, runFaceJoin, runFaceJoinOperation } from "../src/index.js";
 import type { FaceJoinContext } from "../src/index.js";
 
@@ -35,7 +36,10 @@ function memoryStore() {
 
 /** The founder's anchor-pinned persona lineage: an inception under ROOT's op-key (1-of-1 self-recovery). */
 async function founderLineage() {
-  const { ed25519VerifyingKeyFromSeed, deriveSelfRecoveryKey, mintPersonaInception, sealKeySetHash } = await import("@lararium/mesh");
+  const { ed25519VerifyingKeyFromSeed } = await import("@lararium/mesh/ed25519-door");
+  const { deriveSelfRecoveryKey } = await import("@lararium/mesh/persona-identity");
+  const { mintPersonaInception } = await import("@lararium/mesh/persona-kel");
+  const { sealKeySetHash } = await import("@lararium/mesh/wax-stamp");
   const selfRecovery = await deriveSelfRecoveryKey(ROOT);
   const inception = mintPersonaInception(`0x${await ed25519VerifyingKeyFromSeed(ROOT)}`, sealKeySetHash([selfRecovery.verifyingKey], 1));
   return { prefix: inception.prefix, chain: [inception] };
@@ -55,7 +59,7 @@ async function stand() {
   const input = {
     provider: founder, summons, ctx, founderEdge, founderProof,
     fence: { intentId: "join-106", pinnedAtom: founderEdge.deviceVerifyingKey, ownAtom: founderEdge.deviceVerifyingKey },
-    signGrant: async (bytes: Uint8Array) => (await import("@lararium/mesh")).faceAtomKeyFromSeed(seedOf(7), group.groupId).sign(bytes),
+    signGrant: async (bytes: Uint8Array) => (await import("@lararium/mesh/face-atom")).faceAtomKeyFromSeed(seedOf(7), group.groupId).sign(bytes),
     atomSeed: seedOf(7),
     operationStore: operations.store,
     grantPlane: { store: plane.store, heads: () => [String(plane.records.size)] },
@@ -87,7 +91,10 @@ describe("a face-join re-enters to one seat, one seal and one grant", () => {
       return typeof v === "function" ? (...args: unknown[]) => { providerCalls += 1; return (v as (...a: unknown[]) => unknown).apply(target, args); } : v;
     } });
     const otherRoot = await (async () => {
-      const { ed25519VerifyingKeyFromSeed, deriveSelfRecoveryKey, mintPersonaInception, sealKeySetHash } = await import("@lararium/mesh");
+      const { ed25519VerifyingKeyFromSeed } = await import("@lararium/mesh/ed25519-door");
+      const { deriveSelfRecoveryKey } = await import("@lararium/mesh/persona-identity");
+      const { mintPersonaInception } = await import("@lararium/mesh/persona-kel");
+      const { sealKeySetHash } = await import("@lararium/mesh/wax-stamp");
       const r = await deriveSelfRecoveryKey(seedOf(201));
       const inception = mintPersonaInception(`0x${await ed25519VerifyingKeyFromSeed(seedOf(201))}`, sealKeySetHash([r.verifyingKey], 1));
       return { prefix: inception.prefix, chain: [inception] };

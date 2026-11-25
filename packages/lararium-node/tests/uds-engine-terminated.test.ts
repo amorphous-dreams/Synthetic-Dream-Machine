@@ -14,14 +14,15 @@
  *   - an INGEST wave past one document's budget refuses `ingest-wave-over-budget` before arbitration, so a direct client
  *     that bypasses the CLI's paging meets the daemon's bound.
  */
-import { controlStoreOf } from "@lararium/mesh";
+import { controlStoreOf } from "@lararium/mesh/control-home";
 import { describe, test, expect } from "vitest";
 import { mkdtempSync, existsSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createConnection } from "node:net";
 import { Repo } from "@automerge/automerge-repo";
-import { emptyLarDoc, concludeVerb, type LarDoc } from "@lararium/mesh";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { concludeVerb } from "@lararium/mesh/verb-tiddler";
 import { startUdsChannel } from "../src/uds-channel.js";
 import { claimStore } from "../src/owned-store.js";
 import { createEngineWatch, ENGINE_HAND_ACT, type EngineWatch } from "../src/engine-watch.js";

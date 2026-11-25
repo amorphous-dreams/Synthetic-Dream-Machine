@@ -1,6 +1,10 @@
 /** A Nexus or realm lease answers to the verified seal lineage of the charter this vessel holds. */
 import type { Repo } from "@automerge/automerge-repo";
-import { charterHandLineage, foundingRoster, NEXUS_AID_PATTERN, type HandLineage, type KahuQuorumSeats } from "@lararium/mesh";
+import { charterHandLineage } from "@lararium/mesh/charter-hand-lineage";
+import { foundingRoster } from "@lararium/mesh/nexus-seal-seed";
+import { NEXUS_AID_PATTERN } from "@lararium/mesh/wax-stamp";
+import { type HandLineage } from "@lararium/mesh/hand-lineage";
+import { type KahuQuorumSeats } from "@lararium/mesh/kapae-antigen";
 import { charterHomeFor } from "./carried-set.js";
 import { readNexusDoc } from "./nexus-doc.js";
 import { actingRealmNexus, readRealmNexus } from "./edge-board.js";

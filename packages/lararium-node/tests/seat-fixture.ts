@@ -13,7 +13,8 @@
  *     a test that asks a door to sign leaves them alone.
  *   · `generation` names a later key for the same chair: a roll's successors, held beside the keys it retires.
  */
-import { ed25519SignerFromSeed, hex, sha256BytesSync, utf8Bytes } from "@lararium/mesh";
+import { ed25519SignerFromSeed } from "@lararium/mesh/ed25519-door";
+import { hex, sha256BytesSync, utf8Bytes } from "@lararium/mesh/crypto";
 import { storeSeatKey } from "../src/seat-key-store.js";
 import { bookSeat } from "../../lararium-mesh/tests/charter-fixture.js";
 

@@ -33,7 +33,7 @@
  *       own write refuses too, the record's document holds neither name, and the sealed rows keep both.
  *       CONTROL: a clear still runs there, and removes a name an older vessel of the face left in the record.
  */
-import { controlStoreOf } from "@lararium/mesh";
+import { controlStoreOf } from "@lararium/mesh/control-home";
 import { seatSuiteWard } from "./support/scratch-custody-setup.js";
 // This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
 seatSuiteWard();
@@ -43,10 +43,12 @@ import { join } from "node:path";
 import { createConnection, type Socket } from "node:net";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
-import {
-  emptyLarDoc, concludeVerb, verbInputDigest, RECEIPT_FACT_URI_PREFIX, OUTCOME_URI_PREFIX, DAEMON_BAG_ID, AutomergeDocStore,
-  CompositeStore, wikiSlotUri, type LarDoc,
-} from "@lararium/mesh";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { concludeVerb, verbInputDigest, RECEIPT_FACT_URI_PREFIX, OUTCOME_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { custodyFrameHandler } from "../src/custody-frames.js";
 import type { CustodyHolder } from "../src/custody-holder.js";
 import { claimStore, type StoreClaim } from "../src/owned-store.js";

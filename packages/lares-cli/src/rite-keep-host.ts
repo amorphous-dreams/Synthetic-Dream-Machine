@@ -45,18 +45,26 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
 import { existsSync, readFileSync, statSync } from "node:fs";
-import { secretShapes } from "@lararium/mesh";
+import { secretShapes } from "@lararium/mesh/secret-shapes";
 import { join } from "node:path";
 import { MANIFEST_FILE, unsafeRelPath } from "./bundle-manifest.js";
 import { configuredKeepSessions } from "./keep-config.js";
 import { DEVICES_DIR, SessionsRefused, mirrorSessions, readDevice, readOrMintDevice, sessionSources, type KeepDevice, type SessionSources } from "./keep-sessions.js";
-import { KEEP_INTO, KeepRefused, RITE_KEEP, codedMessage, keepFaceLine } from "./rite-keep.js";
+import { KEEP_INTO, KeepRefused, RITE_KEEP, codedMessage, keepFaceLine, keepLeiGate } from "./rite-keep.js";
 import { RETURNS_SPENT, type RefillPort, type RiteVerbAnswer } from "./rite-kukulu.js";
 import type { ShoreFlushReading } from "./shore-core.js";
 
 // THE SECRET-SHAPE SCAN has one owner, `@lararium/mesh` (`secret-shapes.ts`): the keep's guard and the house alert's read
 // redaction read the same list, so a shape added once guards both.
-export { KEEP_SECRET_PATTERN, KEEP_KEY_HEADER, KEEP_KEY_BODY_MIN, KEEP_KEY_BODY_LINES, KEEP_KEY_LINE_MIN, KEEP_SECRET_ALLOW, secretShapes } from "@lararium/mesh";
+export {
+  KEEP_SECRET_PATTERN,
+  KEEP_KEY_HEADER,
+  KEEP_KEY_BODY_MIN,
+  KEEP_KEY_BODY_LINES,
+  KEEP_KEY_LINE_MIN,
+  KEEP_SECRET_ALLOW,
+  secretShapes,
+} from "@lararium/mesh/secret-shapes";
 
 /**
  * THE KEEP'S OWN NAME ON ITS COMMITS: a keep's remote crosses to another vessel, so its commits carry this fixed neutral author
@@ -78,6 +86,11 @@ export interface KeepHostPorts {
    * decides (`configuredKeepSessions`) and the sources read this process's own environment.
    */
   readonly sessions?: SessionSources | null;
+  /**
+   * The keep line as `lares lei show --rite keep --branch <name> [--face N] --json` reads it (one `{ lei }`, or `{ faces }`),
+   * asked FIRST, so a spent lei refuses in seconds, before the mirror, the scan or the flush. Absent, the vessel half decides alone.
+   */
+  leiShow?(branch: string, face?: number): Promise<RiteVerbAnswer>;
   /** git in `dir`; never throws. */
   git(dir: string, argv: readonly string[]): Promise<GitAnswer>;
   say(line: string): void;
@@ -111,6 +124,17 @@ export interface KeepHostOutcome { readonly code: number; readonly data: Record<
 /** A refusal the host half raises by name; the message carries the cure. */
 class HostRefused extends Error {
   constructor(readonly code: string, message: string, readonly extra: Record<string, unknown> = {}) { super(codedMessage(code, message)); }
+}
+
+/** A secret-shaped match by its FAMILY name alone: no character of the secret itself ever prints (a secret never transcludes). */
+function shapeFamily(raw: string): string {
+  if (raw.startsWith("sk-ant-")) return "anthropic-key";
+  if (/^gh[pousr]_/.test(raw) || raw.startsWith("github_pat_")) return "github-token";
+  if (raw.startsWith("AKIA")) return "aws-access-key";
+  if (raw.startsWith("xox")) return "slack-token";
+  if (/PRIVATE KEY/.test(raw)) return "private-key";
+  if (/secret_access_key|SecretAccessKey/i.test(raw)) return "aws-secret-key";
+  return "secret-shaped";
 }
 
 const under = (path: string, into: string): boolean => path === into || path.startsWith(`${into}/`);
@@ -201,10 +225,22 @@ export async function riteKeepHost(ports: KeepHostPorts, opts: KeepHostOptions):
       for (const rel of (await git(["ls-files", "-mo", "--exclude-standard", "-z", "--", place], "keep-status-unread")).split("\0").filter((p) => p !== "")) {
         const text = textOf(rel);
         const shapes = text === null ? [] : secretShapes(text);
-        if (shapes.length > 0) found.push({ rel, shape: shapes[0]!.slice(0, 8) });
+        if (shapes.length > 0) found.push({ rel, shape: shapeFamily(shapes[0]!) });
       }
       return found;
     };
+
+    // ── 1b. THE KEEP LEI, before the mirror, the scan and the flush spend their minutes ────────────────────────
+    if (ports.leiShow) {
+      let spent = keepLeiGate(await ports.leiShow(name, opts.face), name, opts.face);
+      if (spent !== null && ports.refill) {
+        // A SPENT KEEP LEI OFFERS ITS OWN REFILL on a terminal; the keep goes on once strung.
+        const returns = /--returns (\d+)/.exec(spent.message)?.[1], at = /--face (\d+)/.exec(spent.message)?.[1];
+        const again = await ports.refill({ rite: "keep", branch: name, ...(returns ? { returns: Number(returns) } : {}), ...(at ? { face: Number(at) } : opts.face !== undefined ? { face: opts.face } : {}) });
+        if (again.strung) spent = keepLeiGate(await ports.leiShow(name, opts.face), name, opts.face);
+      }
+      if (spent !== null) throw new HostRefused(spent.code, spent.message);
+    }
 
     // ── 2. THE SESSIONS, on the host, before anything spends ──────────────────────────────────────────────────
     let sessionsMoved = false;
@@ -223,7 +259,7 @@ export async function riteKeepHost(ports: KeepHostPorts, opts: KeepHostOptions):
       });
       for (const h of hits) withheld.push(h.rel);
       if (hits.length > 0) {
-        const named = hits.slice(0, 8).map((h) => `${h.rel} (${h.shape}…)`).join(", ") + (hits.length > 8 ? `, … (${hits.length} files)` : "");
+        const named = hits.slice(0, 8).map((h) => `${h.rel} (${h.shape})`).join(", ") + (hits.length > 8 ? `, … (${hits.length} files)` : "");
         ports.say(`keep: withheld from the commit, secret-shaped, left in place: ${named}; clear each at its source under ${sources.claudeHome} (the mirror follows), and a later keep carries it`);
       }
       const st = await ports.git(dir, ["status", "--porcelain=v1", "-z", "--untracked-files=all", "--", devRel]);
@@ -276,7 +312,7 @@ export async function riteKeepHost(ports: KeepHostPorts, opts: KeepHostOptions):
     if (seen !== bundleId) throw new HostRefused("keep-workspace-differs", `the vessel cut bundle ${bundleId} and ${join(dir, into)} holds ${seen === null ? "no bundle" : String(seen)}; the host's workspace "${name}" and the vessel's stand as two directories`);
     const after = await outside();
     if (after.length > 0) throw new HostRefused("keep-tree-unclean", `the keep left changes outside ${kept2} (${after.slice(0, 5).join(", ")}); nothing commits`, { outside: after });
-    const hits = (await scan(into, (rel) => { try { return readFileSync(join(dir, rel), "utf8"); } catch { return null; } })).map((h) => `${h.rel} (${h.shape}…)`);
+    const hits = (await scan(into, (rel) => { try { return readFileSync(join(dir, rel), "utf8"); } catch { return null; } })).map((h) => `${h.rel} (${h.shape})`);
     if (hits.length > 0) throw new HostRefused("keep-secret-shaped", `the bundle holds secret-shaped strings: ${hits.join(", ")}; nothing commits. Inspect them, clear the record from the house, and keep again`, { secrets: hits });
 
     // ── IF DUE: an unmoved house whose bundle the remote-tracking branch holds, with nothing owed, stops here ──────

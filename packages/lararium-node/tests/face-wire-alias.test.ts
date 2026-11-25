@@ -33,7 +33,7 @@ import { WebSocketServer } from "ws";
 import { Repo, type AutomergeUrl, type Chunk, type DocHandle, type NetworkAdapterInterface, type PeerId, type StorageAdapterInterface, type StorageKey } from "@automerge/automerge-repo";
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
 import { NodeWSServerAdapter, WebSocketClientAdapter } from "@automerge/automerge-repo-network-websocket";
-import { wireIdentityOf } from "@lararium/mesh";
+import { wireIdentityOf } from "@lararium/mesh/wire-identity-door";
 import { DurableNodeFSStorageAdapter } from "../src/durable-storage-adapter.js";
 
 type Doc = { marks: Record<string, number> };

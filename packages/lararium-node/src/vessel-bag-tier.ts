@@ -17,7 +17,8 @@
 
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import type { BagHomeRoots, CapTier } from "@lararium/mesh";
+import type { BagHomeRoots } from "@lararium/mesh/bag-home";
+import type { CapTier } from "@lararium/mesh/cap-tier";
 import { bagHomeRoots, readBagManifest } from "./bag-declare.js";
 
 /** The exact address shape a bag manifest mints for itself (`renderBagManifest`). Nothing looser. */

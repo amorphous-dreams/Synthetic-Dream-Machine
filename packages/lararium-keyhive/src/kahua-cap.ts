@@ -8,7 +8,8 @@
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage#/caps
  */
-import { KAHUA_BAG, type CapabilityVerifyArgs, type CapabilityVerifyResult } from "@lararium/mesh";
+import { KAHUA_BAG } from "@lararium/mesh/wiki-recipe";
+import { type CapabilityVerifyArgs, type CapabilityVerifyResult } from "@lararium/mesh/capability";
 import type { FaceBagDoor } from "./face-bag-door.js";
 
 export async function answerKahuaCap(input: {

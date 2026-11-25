@@ -20,13 +20,28 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/node/herm-carriage
  */
+import { carriageAncestryFromBoard } from "@lararium/mesh/carriage-board";
+import { foldCarriageDetails, foldCarrierSet } from "@lararium/mesh/carriage-registry";
 import {
-  carriageAncestryFromBoard, foldCarriageDetails, foldCarrierSet, filePlaceFloorPins, gateNativeCarriagePull, placeArmFor, placeFloorPinKey, placeFloorPinsFromBoard,
-  placeKelEntriesFromBoard, placeKelKey, verifyPlaceKel, writePlaceKelEvent,
-  signPlaceFloorPin, tiddlerText, writePlaceFloorPin, carriageDocUrl, FLOW_SOCKET_ROUTE,
-  deriveGateBundle, floorGateRoot, floorRoute,
-  type DialSocket, type FloorKeyDoor, type FacePresentation, type GateBundlePin, type HearthPinIndex, type LarDoc,
-  type FlowPullResult, type PlaceFloorPinStatement, type PlaceKelEvent, ownEntry} from "@lararium/mesh";
+  filePlaceFloorPins,
+  placeArmFor,
+  placeFloorPinKey,
+  placeFloorPinsFromBoard,
+  signPlaceFloorPin,
+  writePlaceFloorPin,
+  type PlaceFloorPinStatement,
+} from "@lararium/mesh/place-floor-pin-door";
+import { gateNativeCarriagePull } from "@lararium/mesh/carriage-pull";
+import { placeKelEntriesFromBoard, placeKelKey, writePlaceKelEvent } from "@lararium/mesh/place-kel-board";
+import { verifyPlaceKel, type PlaceKelEvent } from "@lararium/mesh/vessel-kel";
+import { tiddlerText, type LarDoc } from "@lararium/mesh/base-doc";
+import { carriageDocUrl } from "@lararium/mesh/deterministic-doc";
+import { FLOW_SOCKET_ROUTE, type FlowPullResult } from "@lararium/mesh/flow-read-client";
+import { deriveGateBundle, floorGateRoot, floorRoute, type FloorKeyDoor, type GateBundlePin } from "@lararium/mesh/gate-bundle-door";
+import { type DialSocket } from "@lararium/mesh/face-dial";
+import { type FacePresentation } from "@lararium/mesh/lar-ws-client-adapter";
+import { type HearthPinIndex } from "@lararium/mesh/admit-gate-pin";
+import { ownEntry } from "@lararium/mesh/stored-value";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
 import type { CarriedNexusReading } from "./nexus-carriage.js";
 import type { PlaceClass } from "./socket-sorter.js";

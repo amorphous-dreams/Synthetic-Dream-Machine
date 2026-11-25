@@ -65,7 +65,7 @@ async function plantPulamaTree(root) {
   await put("packages/lararium-web/src/index.ts", "export const w = 3;\n");
 }
 
-async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, checkout, wornFace, keepSeat, houseFiles = {}, viaHarnessShell = false, rawSeat = false, hostInput, input, refuseInput = false, hostName = "host.mem", hostSibling, fifo = false, hostCwd = false, origin = false, sync } = {}) {
+async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, checkout, wornFace, keepSeat, houseFiles = {}, viaHarnessShell = false, rawSeat = false, hostInput, input, refuseInput = false, hostName = "host.mem", hostSibling, fifo = false, hostCwd = false, origin = false, sync, readFiles = [] } = {}) {
   const dir = await mkdtemp(join(tmpdir(), "lares-container-"));
   try {
     const log = join(dir, "calls.log");
@@ -228,8 +228,9 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
     for (const c of ["hearth", "sensoriums", "projections", "library", "config", "pulama/socket"]) { try { await readdir(join(house, c)); made[c] = true; } catch { made[c] = false; } }
     let cacheLeft = null; try { cacheLeft = await readdir(join(house, "cache")); } catch {}
     let vesselLog = null; try { vesselLog = await readFile(join(house, "run", "vessel-last.log"), "utf8"); } catch {}
+    const read = {}; for (const rel of readFiles) { try { read[rel] = await readFile(join(house, rel), "utf8"); read[`${rel}:mode`] = (await stat(join(house, rel))).mode & 0o777; } catch {} }
     let keepOwed = false; try { await stat(join(house, "run", "keep-owed")); keepOwed = true; } catch {}
-    return { ...r, calls, received, dir, made, worn, seat, seatMode, cacheLeft, vesselLog, keepOwed, house };
+    return { ...r, read, calls, received, dir, made, worn, seat, seatMode, cacheLeft, vesselLog, keepOwed, house };
   } finally { await rm(dir, { recursive: true, force: true }); }
 }
 
@@ -1056,6 +1057,17 @@ for (const [name, shim] of shims) {
     assert.equal(r.status, 0, r.stderr);
     assert.match(r.stderr, /the keep did not complete/);
     assert.match(r.calls, /down --remove-orphans/);
+  });
+  test(`${name}: keep-leaves-its-words: a refused keep's stderr rests at run/keep-last.log, and still reaches the terminal`, async () => {
+    const d = await mkdtemp(join(tmpdir(), "lares-keep-cli-"));
+    const cli = join(d, "lares");
+    await writeFile(cli, `#!/bin/sh\nprintf 'HOSTCLI %s\\n' "$*" >> "$CALL_LOG"\nprintf '%s\\n' 'keep: swarm-lei-returns-spent: the hand strings one' >&2\nexit 1\n`);
+    await chmod(cli, 0o755);
+    const r = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN, LARES_KEEP_WORKSPACE: "house-backup", LARES_HOST_CLI: cli }, readFiles: ["run/keep-last.log"] });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.stderr, /swarm-lei-returns-spent: the hand strings one/);
+    assert.match(r.read?.["run/keep-last.log"] ?? "", /swarm-lei-returns-spent: the hand strings one/);
+    if (name === "sh") { const m = (r.read["run/keep-last.log:mode"] ?? 0o777) & 0o077; assert.equal(m, 0, "the log carries no group or world access"); }
   });
   test(`${name}: CONTROL down with no keep workspace named runs no keep`, async () => {
     const cli = await fakeHostCli(0);
@@ -1937,6 +1949,16 @@ test(`${name}: kukulu-offer-path: pulama mode hands the vessel the offer file's 
     assert.equal(r.status, 0, r.stderr);
     assert.match(r.calls, /LAR_KUKULU_OFFER=\/lar\/config\/kukulu-offer\.json/);
   });
+  // ONE COMPOSITION PER RAISE: the vessel reads config/last-worn-face through its config bind and wears that face from its
+  // first composition where the pūlama forgot it, so the census reads it worn and the shim sends no second wear; no new env.
+  test(`${name}: worn-face-rides-the-config-bind: pulama mode names no worn-face env, and a raise whose census reads the face worn sends no wear`, { skip }, async () => {
+    const r = await run(shim, ["up"], { envFile: PULAMA_ENV, wornFace: 1, env: { FAKE_IMAGE_ID: "sha256:abc123" } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.doesNotMatch(r.calls, /LAR_WORN_FACE/);
+    const worn = await run(shim, ["up"], { envFile: PULAMA_ENV, wornFace: 1, env: { FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: KEY_HELD, FAKE_CENSUS_JSON: WORN_JSON } });
+    assert.equal(worn.status, 0, worn.stderr);
+    assert.doesNotMatch(worn.calls, / wear \d+(?: --yes)?$/m);
+  });
   test(`${name}: down-leaves-pulama-standing: with a pūlama running, down stops and removes the vessel alone`, { skip }, async () => {
   const r = await run(shim, ["down"], { envFile: PULAMA_ENV, env: { FAKE_PULAMA_ID: "p1" } });
   assert.equal(r.status, 0, r.stderr);
@@ -2227,11 +2249,14 @@ test(`${name}: RED keeper-commit-lei-stays-internal: the rite's own step refuses
   assert.match(r.stdout, /the rite's own step[\s\S]*lares rite kukulu/);
   assert.doesNotMatch(r.calls, /keeper-commit-lei/);
 });
-test(`${name}: RED rebuild-image-names-the-keeper-lei: a moved closure the keeper's lei could spend on reads keeper lei; CONTROL: a live hand commit or the struck fire due reads no lei`, { skip: skip || shim !== SH }, async () => {
+test(`${name}: RED rebuild-image-names-the-keeper-lei: a moved closure the keeper's lei could spend on reads keeper lei, a stale live commit too; CONTROL: a live, current hand commit or the struck fire due reads no lei`, { skip: skip || shim !== SH }, async () => {
   const lei = await run(shim, ["rebuild", "--image"], { envFile: PULAMA_ENV, checkout: "clean", env: { ...VESTS, FAKE_PULAMA_STATUS: '{"op":"status","lit":true,"keeper":{"v":1},"keeperLei":{"left":3,"floor":true},"leiReady":true}' } });
   assert.match(lei.stdout, /"keeper":"lei"/);
   const pending = await run(shim, ["rebuild", "--image"], { envFile: PULAMA_ENV, checkout: "clean", env: { ...VESTS, FAKE_PULAMA_STATUS: `{"op":"status","lit":true,"keeper":{"pending":"${CL("c")}"},"leiReady":true}` } });
   assert.doesNotMatch(pending.stdout, /"keeper":"lei"/);
+  // A STALE live commit (the pūlama reads `stalePending`) binds nothing current: the lei supersedes it, so the reading names lei.
+  const stale = await run(shim, ["rebuild", "--image"], { envFile: PULAMA_ENV, checkout: "clean", env: { ...VESTS, FAKE_PULAMA_STATUS: `{"op":"status","lit":true,"keeper":{"pending":"${CL("c")}","stalePending":true,"staleWhy":"self-commit"},"leiReady":true}` } });
+  assert.match(stale.stdout, /"keeper":"lei"/);
   const due = await run(shim, ["rebuild", "--image"], { envFile: PULAMA_ENV, checkout: "clean", env: { ...VESTS, FAKE_PULAMA_STATUS: '{"op":"status","lit":true,"keeper":{"struckDue":true},"leiReady":true}' } });
   assert.match(due.stdout, /"keeper":"struck-due"/);
 });

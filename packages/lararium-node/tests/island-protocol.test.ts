@@ -15,7 +15,8 @@
 import { describe, test, expect, afterEach } from "vitest";
 import { Worker, MessageChannel } from "worker_threads";
 import {
-  isSensoriumSignalType, isVesselToIslandMsg,
+  isSensoriumSignalType,
+  isVesselToIslandMsg,
   isIslandToVesselMsg,
   mkTeardown,
   mkManifest,
@@ -23,20 +24,16 @@ import {
   mkDaemonWorldlineCompareResult,
   mkDaemonWorldlineTrajectoryRequest,
   mkDaemonWorldlineTrajectoryResult,
-  delegationEdge,
-  signPluginOffering,
-  pluginOfferingCid,
-  selectPluginBlobs,
-  selectedPluginCids,
-  computePluginsCid,
   type IslandMsg_TeardownAck,
   type IslandMsg_Ea,
   type IslandMsg_Event,
   type IslandStorageConfig,
-  type WikiRecipe,
-  type OfferedBlob,
-  type OfferingLookup,
-} from "@lararium/mesh";
+} from "@lararium/mesh/island-protocol";
+import { delegationEdge } from "@lararium/mesh/worldline-edge";
+import { signPluginOffering, pluginOfferingCid, type OfferedBlob } from "@lararium/mesh/plugin-offering";
+import { selectPluginBlobs, selectedPluginCids, type OfferingLookup } from "@lararium/mesh/plugin-offering-selector";
+import { computePluginsCid } from "@lararium/mesh/genesis-doc";
+import { type WikiRecipe } from "@lararium/mesh/wiki-recipe";
 import * as ed25519 from "@noble/ed25519";
 import { hex } from "@lararium/mesh/crypto";
 

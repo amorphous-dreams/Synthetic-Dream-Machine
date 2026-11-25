@@ -34,13 +34,25 @@ import { wardRootSession } from "../ward-signer.js";
 import type { WardCredential } from "../ward-credential.js";
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  signEdgeKapae, writeEdgeKapae, edgeLineHeads, nextFleetFrontier, landFleetFrontier, fleetRaiseCids, realmRaiseCids,
-  realmEdgeBoardDocUrl, fleetEdgeBoardDocUrl, ed25519SignerFromSeed, memberEdgeId, deviceEdgeId,
-  realmEdgeAuthority, readLedgeredVouches, withdrawForRemoval,
-  prepareHolderFrontier, holderRaiseCids, registerHandFrontierInto, vouchEdgeId,
-  faceAtomKeyFromSeed,
-  type DeviceCertificateHeld, type DeviceWithdrawalReport, type FaceWithdrawal, type EdgeAuthority, type EdgeHand, type EdgeKapaeVerdict, type EdgeSigner,
-} from "@lararium/mesh";
+  signEdgeKapae,
+  writeEdgeKapae,
+  edgeLineHeads,
+  type EdgeAuthority,
+  type EdgeHand,
+  type EdgeKapaeVerdict,
+  type EdgeSigner,
+} from "@lararium/mesh/edge-kapae";
+import { nextFleetFrontier, landFleetFrontier, fleetRaiseCids } from "@lararium/mesh/fleet-frontier";
+import { realmRaiseCids, prepareHolderFrontier, holderRaiseCids, registerHandFrontierInto } from "@lararium/mesh/realm-frontier";
+import { realmEdgeBoardDocUrl, fleetEdgeBoardDocUrl } from "@lararium/mesh/deterministic-doc";
+import { ed25519SignerFromSeed } from "@lararium/mesh/ed25519-door";
+import { memberEdgeId, realmEdgeAuthority } from "@lararium/mesh/realm-edges";
+import { deviceEdgeId } from "@lararium/mesh/dyad";
+import { readLedgeredVouches } from "@lararium/mesh/edge-ledger";
+import { withdrawForRemoval, type DeviceCertificateHeld, type DeviceWithdrawalReport } from "@lararium/mesh/device-removal";
+import { vouchEdgeId } from "@lararium/mesh/vouch-board";
+import { faceAtomKeyFromSeed } from "@lararium/mesh/face-atom";
+import { type FaceWithdrawal } from "@lararium/mesh/face-proof-subjects";
 import {
   listPersonaRoots, loadPersonaGroupRootVerifyingKey,
 } from "../node-vessel-identity.js";

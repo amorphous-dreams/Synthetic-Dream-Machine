@@ -287,9 +287,12 @@ jobs:
       - name: Stamp the dependency build for the pristine suites
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: node tools/stamp-build.mjs .
-      - name: Point dist-plugin at the committed standalone artifact
+      # Both skins: the meme routes ride the house (`lares-lararium`), which loads over the grammar.
+      - name: Point dist-plugin at the committed standalone artifacts
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cp packages/lararium-tw5/plugins/standalone/lares-memetic-wikitext.tid packages/lararium-tw5/dist-plugin/lares-memetic-wikitext.tid
+        run: |
+          cp packages/lararium-tw5/plugins/standalone/lares-memetic-wikitext.tid packages/lararium-tw5/dist-plugin/lares-memetic-wikitext.tid
+          cp packages/lararium-tw5/plugins/standalone/lares-lararium.tid packages/lararium-tw5/dist-plugin/lares-lararium.tid
       # THE PUBLISHED ENGINE IS A DEPENDENCY. `tiddlywiki-pristine` (packages/lararium-tw5 devDependencies, an npm alias of the stock
       # release) lands in the lockfile with its integrity hash and in the install above; the contact reads its version off the
       # installed package, so nothing here restates it.
@@ -341,8 +344,11 @@ jobs:
   # named `Test` below is the gate: it fails closed on any missing, empty, red or unexpected cell.
   test-cells:
     name: Test cell ${{ matrix.cell }}
-    needs: scope
-    if: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork) && !(github.event_name == 'push' && (needs.scope.outputs.canon == 'true')) }}
+    needs: [scope, quick]
+    # LANE FAIL-FAST: on a lane ref a red Quick gate stops the heavy cells before they spend a runner (the Test gate below reads the
+    # skipped cells as red); develop, main and merge_group still run every cell whatever Quick answered, so each merged head
+    # keeps a full run. `!cancelled()` plus the scope's own success skips the heavy cells behind a failed scope.
+    if: ${{ !cancelled() && needs.scope.result == 'success' && (needs.quick.result == 'success' || !(!startsWith(github.ref, 'refs/heads/gh-readonly-queue/') && github.ref != 'refs/heads/develop' && github.ref != 'refs/heads/main')) && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork) && !(github.event_name == 'push' && (needs.scope.outputs.canon == 'true')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
     container: ${{ matrix.container }}
@@ -571,8 +577,9 @@ jobs:
   # them and fails closed on any missing, red or unexpected cell log.
   witness-cells:
     name: Witness cell ${{ matrix.cell }}
-    needs: scope
-    if: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork) && !(github.event_name == 'push' && (needs.scope.outputs.canon == 'true' || needs.scope.outputs.witnesses == 'false')) }}
+    needs: [scope, quick]
+    # LANE FAIL-FAST: see test-cells; the Witnesses gate reads these skipped cells as red.
+    if: ${{ !cancelled() && needs.scope.result == 'success' && (needs.quick.result == 'success' || !(!startsWith(github.ref, 'refs/heads/gh-readonly-queue/') && github.ref != 'refs/heads/develop' && github.ref != 'refs/heads/main')) && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork) && !(github.event_name == 'push' && (needs.scope.outputs.canon == 'true' || needs.scope.outputs.witnesses == 'false')) }}
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     strategy:
@@ -713,9 +720,11 @@ jobs:
     name: E2E
     # `!cancelled()` keeps the required `E2E / Merge shard reports` standing when the scope read itself fails: the doorstep
     # input then reads code, and the shards answer (a lane still answers on its doorstep).
-    needs: scope
+    needs: [scope, quick]
     if: ${{ !cancelled() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork) }}
     uses: ./.github/workflows/e2e-shards.yml
     with:
-      doorstep: ${{ (github.event_name == 'push' && (startsWith(github.ref, 'refs/heads/develop--') || startsWith(github.ref, 'refs/heads/lane/') || needs.scope.outputs.canon == 'true')) }}
+      # A lane whose Quick gates read red walks the doorstep too: the shards spend no runner on a head already red (the Quick
+      # check carries the red); develop, main and merge_group walk every shard whatever Quick answered.
+      doorstep: ${{ (github.event_name == 'push' && (startsWith(github.ref, 'refs/heads/develop--') || startsWith(github.ref, 'refs/heads/lane/') || needs.scope.outputs.canon == 'true')) || !(needs.quick.result == 'success' || !(!startsWith(github.ref, 'refs/heads/gh-readonly-queue/') && github.ref != 'refs/heads/develop' && github.ref != 'refs/heads/main')) }}
 

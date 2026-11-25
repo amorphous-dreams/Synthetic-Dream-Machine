@@ -9,7 +9,7 @@
  *   C5  the vessel door routes `census --docs` here and `census` alone to the stop census.
  */
 import { afterEach, describe, expect, test, vi } from "vitest";
-import type { DocCensusReading } from "@lararium/mesh";
+import type { DocCensusReading } from "@lararium/mesh/doc-census";
 import { cmdDocCensus } from "../src/commands/doc-census.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 

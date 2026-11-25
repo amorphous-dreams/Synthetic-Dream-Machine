@@ -10,11 +10,17 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
 import { describe, expect, test } from "vitest";
-import {
-  groupSecretOpenerFromSeed, makeIslandRepo, materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix,
-  personaLineageFromKel, personaActRecordsOfGroup, projectPersonaLog, seedDaemonDoc, signPersonaAct, ed25519SignerFromSeed,
-  ed25519VerifyingKeyFromSeed, actCid, FACE_PLANE, faceRelationOf, writePersonaAct, type LarDoc,
-} from "@lararium/mesh";
+import { groupSecretOpenerFromSeed } from "@lararium/mesh/persona-group-secret";
+import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
+import { materializeSharedLarDoc, personaKelBoardDocUrl } from "@lararium/mesh/deterministic-doc";
+import { personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";
+import { personaLineageFromKel, personaActRecordsOfGroup, signPersonaAct, writePersonaAct } from "@lararium/mesh/persona-act-board";
+import { projectPersonaLog } from "@lararium/mesh/persona-act";
+import { seedDaemonDoc } from "@lararium/mesh/social-seed";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { actCid } from "@lararium/mesh/signed-act";
+import { FACE_PLANE, faceRelationOf } from "@lararium/mesh/face-relation";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { foundTheFace, foundThePlace, runApplyAdmitPayload, runDeviceAdmitEdge } from "../src/index.js";
 import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";

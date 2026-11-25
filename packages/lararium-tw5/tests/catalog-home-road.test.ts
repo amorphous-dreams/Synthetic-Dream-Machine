@@ -9,7 +9,8 @@
  */
 import { Repo } from "./wiki-shore-rig.js";
 import { describe, expect, test } from "vitest";
-import { emptyLarDoc, storedLarRecord, type LarDoc } from "@lararium/mesh";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
 import { makeCatalogAccessorOver } from "../src/catalog-accessor.js";
 
 describe("the private-synced home's road", () => {

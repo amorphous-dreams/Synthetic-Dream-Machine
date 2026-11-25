@@ -12,9 +12,9 @@ vi.mock("../src/sealed-act-door.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../src/sealed-act-door.js")>();
   return { ...actual, sealedAct: vi.fn(async (act: string, args: Record<string, unknown>) => { seam.calls.push([act, args]); return { face: 0 }; }) };
 });
-vi.mock("@lararium/mesh", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@lararium/mesh")>();
-  return { ...actual, ownPersonaPetname: vi.fn(async () => "Heron Lantern") };
+vi.mock("@lararium/mesh/persona-petname", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@lararium/mesh/persona-petname")>();
+  return { ...actual, ownPersonaPetname: vi.fn(async () => "Heron Lantern"), };
 });
 
 import { LIVE_SURFACE_DOORS } from "../src/commands/surface.js";

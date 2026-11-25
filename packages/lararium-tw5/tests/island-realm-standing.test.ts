@@ -9,11 +9,21 @@
  */
 import { describe, expect, test } from "vitest";
 import { createRequire } from "node:module";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { REALM_BAG_DOMAIN } from "@lararium/mesh/domains";
 import {
-  CompositeStore, REALM_BAG_DOMAIN, REALM_ID_TIDDLER, deterministicDocUrl, emptyLarDoc, materializeSharedLarDoc,
-  realmDocPointer, realmDocUrl, realmStandingPointer, realmStewardPointer, storedLarRecord, writeRealmStanding,
-  type LarDoc, type RealmBagRegistration, type Repo as RepoType,
-} from "@lararium/mesh";
+  REALM_ID_TIDDLER,
+  realmDocPointer,
+  realmDocUrl,
+  realmStandingPointer,
+  realmStewardPointer,
+  writeRealmStanding,
+  type RealmBagRegistration,
+} from "@lararium/mesh/realm-bag";
+import { deterministicDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
+import { type Repo as RepoType } from "@lararium/mesh/automerge";
 import { memeVerbOptions } from "../src/meme-verbs.js";
 
 const Repo = createRequire(import.meta.resolve("@lararium/mesh"))("@automerge/automerge-repo").Repo as new (options: { network: unknown[] }) => RepoType;

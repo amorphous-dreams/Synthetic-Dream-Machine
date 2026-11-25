@@ -6,7 +6,7 @@ import {
   type PronaosFile, type PronaosPreparedProjection, type PronaosProjection,
   type ArrivalOptions, type ArrivalDescriptor, type ArrivalMirror,
 } from "../src/pronaos-adapter.js";
-import { sha256HexBytesSync } from "@lararium/mesh";
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
 
 const bytes = (text: string, contentType: string): PronaosFile => ({
   bytes: new TextEncoder().encode(text), contentType,

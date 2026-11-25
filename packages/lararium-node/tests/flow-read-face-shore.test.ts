@@ -1,4 +1,4 @@
-import { placeSignerFromSeed } from "@lararium/mesh";
+import { placeSignerFromSeed } from "@lararium/mesh/place-signer";
 /**
  * flow-read-face-shore — the read-face serves what its export shore projects and nothing else: the rows the
  * projection names, at their live values, as ONE change with no history. A vessel's private keys and the values they
@@ -13,10 +13,11 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as A from "@automerge/automerge";
 import { Repo, type DocHandle } from "@automerge/automerge-repo";
-import {
-  materializeGenesisDoc, exportFlowSnapshot, pinnedDoc, plainRecord,
-  type GenesisSeed, type LarDoc,
-} from "@lararium/mesh";
+import { materializeGenesisDoc, type GenesisSeed } from "@lararium/mesh/genesis-doc";
+import { exportFlowSnapshot } from "@lararium/mesh/flow-substrate";
+import { pinnedDoc } from "@lararium/mesh/pinned-doc";
+import { plainRecord } from "@lararium/mesh/stored-value";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { mountFlowReadFace } from "../src/flow-read-face.js";
 import { floorGates, presenter, pullFloor as pullFromFloor } from "./flow-floor-rig.js";
 

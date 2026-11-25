@@ -8,10 +8,13 @@
  * Canon: lar:///ha.ka.ba/lares/docs/device-capabilities-2026#/device-seats
  */
 import { describe, expect, test } from "vitest";
-import {
-  buildDeviceDelegation, buildOutcome, deriveSelfRecoveryKey, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, intentId,
-  mintPersonaInception, sealKeySetHash, type DeviceDelegationTiddler,
-} from "@lararium/mesh";
+import { buildDeviceDelegation, type DeviceDelegationTiddler } from "@lararium/mesh/device-delegation";
+import { buildOutcome } from "@lararium/mesh/intent-issue";
+import { deriveSelfRecoveryKey } from "@lararium/mesh/persona-identity";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { intentId } from "@lararium/mesh/intent-entry";
+import { mintPersonaInception } from "@lararium/mesh/persona-kel";
+import { sealKeySetHash } from "@lararium/mesh/wax-stamp";
 import { composeSeatRequest, verifyCarriedSeatGrant, type FleetSeatGrant, type FleetSeatRequest } from "../src/carried-seat.js";
 import { faceGrantRecordCid, faceGrantTitle, signFaceGrantRecord, type FaceGrantRecord } from "../src/face-grant-record.js";
 

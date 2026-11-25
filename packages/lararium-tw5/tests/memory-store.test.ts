@@ -13,7 +13,7 @@
 
 import { describe, test, expect } from "vitest";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
-import type { ChangeOrigin } from "@lararium/mesh";
+import type { ChangeOrigin } from "@lararium/mesh/tiddler-store";
 
 // ---------------------------------------------------------------------------
 // All valid ChangeOrigin kinds
