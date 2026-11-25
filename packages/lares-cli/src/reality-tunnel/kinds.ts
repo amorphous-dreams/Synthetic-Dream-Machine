@@ -53,6 +53,46 @@ export const jsonFloor = (key: string, floor: number): Transform =>
 export const jsonSet = (path: readonly string[], value: unknown): Transform =>
   jsonEdit((o) => { at(o, path.slice(0, -1))[path.at(-1)!] = structuredClone(value); });
 
+/** The words of a `node <tool> <log>` command, each bare or double-quoted with backslash escapes; null for any other shape. */
+function commandWords(command: string): string[] | null {
+  const m = /^node ((?:"(?:[^"\\]|\\.)*"|\S+)) ((?:"(?:[^"\\]|\\.)*"|\S+))$/.exec(command);
+  if (!m) return null;
+  return [m[1]!, m[2]!].map((w) => (w.startsWith('"') ? w.slice(1, -1).replace(/\\(.)/g, "$1") : w));
+}
+
+/** A statusLine that runs the house's tool: `node <anywhere>/<tool> <log>`, wherever its clone stood. */
+const namesTool = (tool: string) => (v: unknown): boolean => {
+  if (!isObject(v) || v["type"] !== "command" || typeof v["command"] !== "string") return false;
+  const words = commandWords(v["command"]);
+  return words !== null && words[0]!.endsWith(`/${tool}`);
+};
+
+/**
+ * Claude's `statusLine`: the house's command for the tool stands whole. A statusLine that already runs the tool
+ * (a moved clone's stale path) yields to the resolved command and keeps its other keys; one that runs another
+ * command stands outside the house's ownership, and `taking` (a forced tend) replaces that one key alone.
+ */
+export const claudeStatusLine = (tool: string, command: string): Transform => {
+  const edit = jsonEdit((o) => {
+    const held = o["statusLine"];
+    o["statusLine"] = { ...(namesTool(tool)(held) ? (held as Json) : {}), type: "command", command };
+  });
+  const foreign = statusLineForeign(tool);
+  return (cur) => (foreign(cur) ? cur : edit(cur));
+};
+
+/** The forced form: whatever statusLine stands gives way to the house's, and every other key stands. */
+export const claudeStatusLineTaking = (command: string): Transform =>
+  jsonEdit((o) => { o["statusLine"] = { type: "command", command }; });
+
+export const statusLineForeign = (tool: string) => (cur: string | null): string | null => {
+  const why = jsonForeign(cur);
+  if (why || cur === null || cur.trim() === "") return why;
+  const held = (JSON.parse(cur) as Json)["statusLine"];
+  if (held === undefined || namesTool(tool)(held)) return null;
+  return "holds a statusLine another hand set; the house changes none of it (`lares home tend --force` takes that key alone and the ledger keeps the old bytes)";
+};
+
 /**
  * A JSON target whose list path holds another shape: an object that is no object along the way, or a list that is no list
  * at its end. An absent key anywhere on the path reads as the house's to write.
@@ -86,6 +126,22 @@ export const jsonIncludes = (path: readonly string[], values: readonly string[])
   });
   const foreign = jsonListForeign(path);
   return (cur) => (foreign(cur) ? cur : edit(cur));
+};
+
+/**
+ * The forced form of `jsonIncludes`: where the path holds another shape, replace that one key alone, the list at its end
+ * with the house's values, or the value that is no object on the way with an object; every other key and every list member
+ * stands. Bytes that do not parse as an object rebuild from nothing, since no key survives there to keep.
+ */
+export const jsonIncludesTaking = (path: readonly string[], values: readonly string[]): Transform => {
+  const edit = jsonEdit((o) => {
+    const parent = at(o, path.slice(0, -1));
+    const key = path.at(-1)!;
+    const list = Array.isArray(parent[key]) ? (parent[key] as unknown[]) : [];
+    const missing = [...new Set(values)].filter((v) => !list.includes(v));
+    if (!Array.isArray(parent[key]) || missing.length > 0) parent[key] = [...list, ...missing];
+  });
+  return (cur) => edit(jsonForeign(cur) ? null : cur);
 };
 
 /**
