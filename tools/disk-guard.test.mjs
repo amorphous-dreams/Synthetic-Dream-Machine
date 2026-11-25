@@ -23,11 +23,11 @@ function porcelain(built, prunable, root = '/home/u/.lares-scratch/wt') {
   return out.join('\n');
 }
 
-test('C: at 59G refuses, naming C:; 61G passes (the known positive and its control)', () => {
-  const red = checkDisk(reading({ c: 59 }));
+test('C: at 34G refuses, naming C:; 36G passes (the known positive and its control)', () => {
+  const red = checkDisk(reading({ c: 34 }));
   assert.equal(red.ok, false);
-  assert.match(red.reasons.join('\n'), /C: has 59\.0G available, under the 60G floor/);
-  const green = checkDisk(reading({ c: 61 }));
+  assert.match(red.reasons.join('\n'), /C: has 34\.0G available, under the 35G floor/);
+  const green = checkDisk(reading({ c: 36 }));
   assert.equal(green.ok, true);
   assert.deepEqual(green.reasons, []);
 });
@@ -90,7 +90,7 @@ test('absent /mnt/c skips the C: check by name, never silently', () => {
 });
 
 test('limits come from env; defaults hold without it', () => {
-  assert.deepEqual(readLimits({}), { minC: 60, minRoot: 40, maxBuilt: 6, maxCodex: 12 });
+  assert.deepEqual(readLimits({}), { minC: 35, minRoot: 40, maxBuilt: 6, maxCodex: 12 });
   assert.deepEqual(readLimits({ LARES_DISK_MIN_C_GB: '10', LARES_DISK_MIN_ROOT_GB: '5', LARES_DISK_MAX_WORKTREES: '2', LARES_DISK_MAX_CODEX: '3' }), { minC: 10, minRoot: 5, maxBuilt: 2, maxCodex: 3 });
   assert.equal(checkDisk(reading({ c: 59, env: { LARES_DISK_MIN_C_GB: '50' } })).ok, true);
   assert.equal(checkDisk(reading({ built: 3, env: { LARES_DISK_MAX_WORKTREES: '2' } })).ok, false);
