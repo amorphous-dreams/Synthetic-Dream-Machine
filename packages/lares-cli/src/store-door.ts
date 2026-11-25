@@ -182,9 +182,9 @@ export class StoreDoorEnded extends Error {
 }
 const endedCure: Record<StoreDoorEndCause, string> = {
   "holder-gone":  "the holder left; run again to stand a fresh door, or read what held the store with `lares vessel read`.",
-  "boot-fault":   "the boot attested a fault; read it with `lares vessel read`, then stand the vessel again with `lares vessel up`.",
-  "boot-refused": "the boot's verb channel refused; read the cause with `lares vessel read`, then stand the vessel again with `lares vessel up`.",
-  "stand-exited": "the node that was standing exited; stand it again with `lares vessel up`, then run again.",
+  "boot-fault":   "the boot attested a fault; read it with `lares vessel read`, then stand the vessel again with `lares vessel stand`.",
+  "boot-refused": "the boot's verb channel refused; read the cause with `lares vessel read`, then stand the vessel again with `lares vessel stand`.",
+  "stand-exited": "the node that was standing exited; stand it again with `lares vessel stand`, then run again.",
 };
 
 /**
