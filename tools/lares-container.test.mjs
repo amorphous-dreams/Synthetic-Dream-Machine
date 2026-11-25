@@ -44,6 +44,7 @@ function suiteChainKind() {
   return "hand";
 }
 const SUITE_SEAT = suiteChainKind() !== "hand";
+const HAVE_UNSHARE = spawnSync("unshare", ["-U", "--map-current-user", "-p", "-f", "--mount-proc", "true"]).status === 0;
 
 /**
  * THE ENV FILE RESTS AT `~/.lares/lares-surface.env`, outside every bind, the same file `resolveLaresMcp` reads, and
@@ -200,13 +201,17 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
     const direct = shim === SH ? ["sh", [script, ...args]] : ["pwsh", ["-NoProfile", "-File", script, ...args]];
     // `viaHarnessShell`: a shell carrying the harness mark launches the shim with the mark stripped (`env -u CLAUDECODE`), and
     // `; true` keeps that shell its parent, so only the chain, never the shim's own environment, carries the harness.
-    const cmd = viaHarnessShell ? ["sh", ["-c", 'env -u CLAUDECODE "$0" "$@"; true', direct[0], ...direct[1]]] : direct;
+    const cmd0 = viaHarnessShell ? ["sh", ["-c", 'env -u CLAUDECODE "$0" "$@"; true', direct[0], ...direct[1]]] : direct;
     // A standing vessel answers a steady verdict unless a test scripts another answer.
     const steady = '{"data":{"standing":{"act":"attach","reason":"steady"}}}';
     const base = { PATH: `${dir}:${process.env.PATH}`, CALL_LOG: log, HOME: home, LARES_COMPOSE_FILE: compose, FAKE_OBSERVE_OUTPUT: steady, ...gitEnv };
     // `@HEAD@` (and `@HEAD12@`, its first twelve) in an env value names the scratch checkout's own HEAD.
     const head = checkout && checkout !== "none" ? spawnSync("git", ["-C", join(dir, "repo"), "rev-parse", "HEAD"], { encoding: "utf8" }).stdout.trim() : "";
     const filled = Object.fromEntries(Object.entries(env).map(([k, v]) => [k, typeof v === "string" ? fill(v).replaceAll("@HEAD12@", head.slice(0, 12)).replaceAll("@HEAD@", head) : v]));
+    // A run that is no seat case reads as a hand where a harness stands above the suite: the shim runs as pid 1 of a fresh pid
+    // namespace, so its own host chain reaches pid 0 with no harness in it (the seat gate of the restand verbs reads that chain).
+    const asHand = SUITE_SEAT && HAVE_UNSHARE && !rawSeat && !viaHarnessShell && filled.CLAUDECODE === undefined;
+    const cmd = asHand ? ["unshare", ["-U", "--map-current-user", "-p", "-f", "--mount-proc", cmd0[0], ...cmd0[1]]] : cmd0;
     // `tty` names the bytes typed on a pseudo-terminal (`script`), which then carries stdout and stderr as one stream.
     const shellMark = viaHarnessShell ? { CLAUDECODE: "1" } : {};
     const r = tty === undefined
@@ -330,6 +335,66 @@ test("sh: RED reset under an AI seat refuses hand-act-only by name before the te
 // A reset under a harness refuses hand-act-only before its other refusals read, so the two cases below that walk those refusals
 // and the clearing itself run where this suite's chain reads a person (CI, the operator's shell); the seat's own refusal runs
 // everywhere, its mark carried in the shim's environment.
+// THE RESTAND SPENDS THE LEI (course ai-restand-spends-lei): an AI seat's up, down, vessel stop, vessel stand and build refuse
+// without a standing kukulu lei (a return left) on the checkout's branch, naming the cure; a hand passes untouched. The seat
+// rides the mark in the shim's own environment; the hand control needs a suite chain that reads a person (CI, the operator).
+{
+  const MOUNT = { LARES_HOUSE: "@HOUSE@", LARES_WORKSPACE: "/w" };
+  const AI = { CLAUDECODE: "1", ...MOUNT };
+  const leiOf = (...faces) => JSON.stringify({ ok: true, data: { faces: faces.map((lei) => ({ lei })) } });
+  const standingLei = { standing: true, returnsLeft: 2 };
+  const verbs = [["up"], ["down"], ["vessel", "stop"], ["vessel", "stand"], ["build"]];
+  const acted = (calls) => / up -d | down --remove-orphans| stop lares| build /.test(calls);
+  for (const argv of verbs) {
+    const label = argv.join(" ");
+    test(`sh: RED ai-restand-spends-the-lei: ${label} refuses an AI seat with no standing kukulu lei, names the cure, and runs nothing`, async () => {
+      for (const [lei, why] of [[undefined, /answered no reading/], [leiOf({ standing: false, refusal: "absent" }), /no standing kukulu lei on \S+ \(absent\)/], [leiOf({ standing: true, returnsLeft: 0 }), /no return left/]]) {
+        const r = await run(SH, argv, { checkout: "clean", env: { ...AI, FAKE_RUNNING_ID: "cid", ...(lei ? { FAKE_LEI_SHOW: lei } : {}) }, rawSeat: true });
+        assert.equal(r.status, 2, r.stderr);
+        assert.match(r.stderr, new RegExp(`${label} refused to an AI seat`));
+        assert.match(r.stderr, why);
+        assert.match(r.stderr, /lares lei kui --rite kukulu --branch \S+ --returns <n> --all/);
+        assert.equal(acted(r.calls), false, r.calls);
+      }
+    });
+    test(`sh: RED ai-restand-spends-the-lei: ${label} under an AI seat with no vessel standing names that the lei reads nowhere`, async () => {
+      const r = await run(SH, argv, { checkout: "clean", env: { ...AI }, rawSeat: true });
+      assert.equal(r.status, 2, r.stderr);
+      assert.match(r.stderr, new RegExp(`${label} refused to an AI seat`));
+      assert.match(r.stderr, /the lei reads nowhere while no vessel stands; a hand runs/);
+      assert.equal(acted(r.calls), false, r.calls);
+    });
+  }
+  test("sh: ai-restand-spends-the-lei: one standing lei among the vessel's faces licenses an AI seat's vessel stop; the lei is read on the checkout's branch", async () => {
+    const r = await run(SH, ["vessel", "stop"], { checkout: "clean", env: { ...AI, FAKE_RUNNING_ID: "cid", FAKE_LEI_SHOW: leiOf({ standing: false, refusal: "absent" }, standingLei) }, rawSeat: true });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.calls, / lei show --rite kukulu --branch \S+ --json/);
+    assert.match(r.calls, / stop lares/);
+  });
+  test("sh: ai-restand-spends-the-lei: a standing lei lets an AI seat's down, vessel stand and build through their own paths", async () => {
+    const lei = { FAKE_RUNNING_ID: "cid", FAKE_LEI_SHOW: leiOf(standingLei) };
+    const down = await run(SH, ["down"], { checkout: "clean", env: { ...AI, ...lei, FAKE_CENSUS_OUTPUT: "census: clean" }, rawSeat: true });
+    assert.doesNotMatch(down.stderr, /refused to an AI seat/);
+    const stand = await run(SH, ["vessel", "stand"], { checkout: "clean", env: { ...AI, ...lei }, rawSeat: true });
+    assert.doesNotMatch(stand.stderr, /refused to an AI seat/);
+    const build = await run(SH, ["build"], { checkout: "clean", env: { ...AI, ...lei }, rawSeat: true });
+    assert.doesNotMatch(build.stderr, /refused to an AI seat/);
+  });
+  test("sh: ai-restand-spends-the-lei: a read verb stays open to an AI seat (vessel stand --observe asks no lei)", async () => {
+    const r = await run(SH, ["vessel", "stand", "--observe", "--json"], { checkout: "clean", env: { ...AI, FAKE_RUNNING_ID: "cid" }, rawSeat: true });
+    assert.doesNotMatch(r.stderr, /refused to an AI seat/);
+  });
+  test("sh: CONTROL a hand (a chain that reads a person) passes up, down, vessel stop and build with no lei", { skip: SUITE_SEAT }, async () => {
+    const stop = await run(SH, ["vessel", "stop"], { checkout: "clean", env: { ...MOUNT, FAKE_RUNNING_ID: "cid" } });
+    assert.equal(stop.status, 0, stop.stderr);
+    assert.doesNotMatch(stop.stderr, /refused to an AI seat/);
+    assert.doesNotMatch(stop.calls, / lei show /);
+    for (const argv of [["up"], ["down"], ["build"]]) {
+      const r = await run(SH, argv, { checkout: "clean", env: { ...MOUNT } });
+      assert.doesNotMatch(r.stderr, /refused to an AI seat/);
+    }
+  });
+}
 test("sh: reset clears the hearth alone, after its refusals; sensoriums, projections, library, config and the env file stay", { skip: !haveScript || SUITE_SEAT }, async () => {
   const dir = await mkdtemp(join(tmpdir(), "lares-reset-"));
   try {
