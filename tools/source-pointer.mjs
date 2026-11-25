@@ -23,9 +23,9 @@
 // so one more pass over the tracked index gives every path a KIND (by rule, from its path alone) and a
 // STATE: `wiki` (a carrier, a tiddler, or a bare entry with its sidecar, standing in a wiki home or
 // shipping as a plugin tiddler), `bound` (a file outside the wiki that a wiki carrier names by
-// `source-file` or a `#source` edge), or `unbound`. The census REPORTS and never refuses: an unbound file
-// breaks nothing today, and the count only helps while it stays honest. `--census` prints the kind table
-// and every unbound path; `--json` beside it prints the rows. A path no rule names reads `unclassified`.
+// `source-file` or a `#source` edge), or `unbound`. The census REPORTS unbound and refuses on an UNCLASSIFIED path or a stale exemption: an unbound file
+// breaks nothing today, and the count only helps while it stays honest; the one exemption list rides `docs/pono/molt-census.mem`. `--census` prints the kind table
+// and every unbound path; `--json` beside it prints the rows. A path no rule names reads `unclassified` and turns the witness red.
 import { execFileSync } from "child_process";
 import { existsSync } from "fs";
 import { fileURLToPath } from "url";
@@ -56,7 +56,10 @@ export function pointersOf(text) {
 /** A wiki home in the tracked tree: a canon bag or a wiki's own mirror. */
 const WIKI_HOME = /^(bags|wikis)\//;
 /** The seats that boot the house before any wiki stands. */
-const SEED_SEAT = /^(?:\.claude|\.codex)\/|^(?:CLAUDE|AGENTS)[^/]*\.md$/;
+const SEED_SEAT = /^(?:CLAUDE|AGENTS(?:\.override)?)\.md$|^\.claude\/(?:noosphere-boot|agents\/(?:Explore|Plan)\.md)$/;
+/** A host skill vendored into the checkout, and the host's own config beside the seat. */
+const SKILL     = /^\.claude\/skills\//;
+const HOST_CONFIG = /^\.(?:claude|codex)\//;
 const FIXTURE   = /(?:^|\/)(?:fixtures?|goldens?|specimens|__snapshots__|testdata)\//;
 const TEST      = /(?:^|\/)(?:tests?|e2e)\/|(?:^|[.\/_-])(?:test|spec)\.[cm]?[jt]sx?$|(?:^|\/)(?:test_[^/]+|[^/]+_test|conftest)\.py$/;
 const CONFIG    = /^(?:\.github|\.vscode|\.githooks|\.playwright|deploy)\/|(?:^|\/)(?:package\.json|pnpm-lock\.yaml|tsconfig[^/]*\.json|\.mcp\.json|\.git[a-z]+|\.npmrc|\.nvmrc|\.dockerignore|\.editorconfig|Dockerfile[^/]*|Makefile|setup\.cfg|requirements[^/]*\.txt|[^/]+\.config\.[cm]?[jt]s)$|\.(?:ya?ml|toml|webmanifest|ini|cfg|conf)$/;
@@ -81,6 +84,9 @@ export function kindOf(path, { gitlink = false, hasMeta = false } = {}) {
   }
   if (SEED_SEAT.test(path)) return "seed-seat";
   if (path.startsWith("genesis/")) return "genesis";
+  if (SKILL.test(path)) return "skill";
+  if (HOST_CONFIG.test(path)) return "config";
+  if (path.endsWith(".md")) return "flat-doc";   // a `.md` under tests/, .github/ or deploy/ reads a doc, never test or config
   if (FIXTURE.test(path)) return "fixture";
   if (path.endsWith(".tid")) return "tiddler";
   if (TEST.test(path)) return "test";
@@ -102,11 +108,29 @@ export function kindOf(path, { gitlink = false, hasMeta = false } = {}) {
 /** The kinds that already stand as something in a wiki. */
 const WIKI_KINDS = new Set(["carrier", "tiddler", "sidecar", "bare-entry"]);
 
+/** The one carrier that names the exemptions: path, reason and bound law, one line each in its `census-exempt` fence. */
+export const EXEMPT_CARRIER = "bags/lares/ha.ka.ba/lares/docs/pono/molt-census.mem";
+const EXEMPT_FENCE = /```census-exempt[^\n]*\n([\s\S]*?)```/g;
+
+/** The exempt paths a carrier names: `path | reason` per line inside each `census-exempt` fence, mapped to the reason. */
+export function exemptionsOf(text) {
+  const out = new Map();
+  if (text === null || text === undefined) return out;
+  for (const m of text.matchAll(EXEMPT_FENCE)) {
+    for (const line of m[1].split("\n")) {
+      const at = line.indexOf(" | ");
+      if (at < 0 || line.trimStart().startsWith("#")) continue;
+      out.set(line.slice(0, at).trim(), line.slice(at + 3).trim());
+    }
+  }
+  return out;
+}
+
 /**
  * Read every tracked entry (`{ path, mode }`) into a kind and a state. `textOf(path)` answers a carrier's
  * text or `null`; only a carrier standing in a wiki home binds a file.
  */
-export function census(entries, textOf) {
+export function census(entries, textOf, exempt = new Map()) {
   const paths = new Set(entries.map(e => e.path));
   const named = new Set();
   let codeMemes = 0;
@@ -119,16 +143,17 @@ export function census(entries, textOf) {
     for (const t of targets) named.add(t);
   }
   const rows = [], byKind = {}, unclassified = [];
-  const tally = { wiki: 0, bound: 0, unbound: 0 };
+  const tally = { wiki: 0, bound: 0, unbound: 0, exempt: 0 };
   for (const { path, mode } of entries) {
-    const kind = kindOf(path, { gitlink: mode === "160000", hasMeta: paths.has(`${path}.meta`) });
-    const state = WIKI_KINDS.has(kind) ? "wiki" : named.has(path) ? "bound" : "unbound";
+    const kind = exempt.has(path) ? "exempt" : kindOf(path, { gitlink: mode === "160000", hasMeta: paths.has(`${path}.meta`) });
+    const state = kind === "exempt" ? "exempt" : WIKI_KINDS.has(kind) ? "wiki" : named.has(path) ? "bound" : "unbound";
     rows.push({ path, kind, state });
-    (byKind[kind] ??= { wiki: 0, bound: 0, unbound: 0 })[state]++;
+    (byKind[kind] ??= { wiki: 0, bound: 0, unbound: 0, exempt: 0 })[state]++;
     tally[state]++;
     if (kind === "unclassified") unclassified.push(path);
   }
-  return { total: rows.length, ...tally, codeMemes, byKind, unclassified, rows };
+  const stale = [...exempt.keys()].filter(path => !paths.has(path));
+  return { total: rows.length, ...tally, codeMemes, byKind, unclassified, stale, rows };
 }
 
 /** The tracked index as `{ path, mode }` rows; the mode tells a gitlink from a file. */
@@ -140,10 +165,13 @@ function trackedEntries(repo) {
     });
 }
 
+/** The census turns red on an unclassified path or an exemption naming a path that left the tree; unbound only reports. */
+const redCensus = result => result.unclassified.length > 0 || result.stale.length > 0;
+
 function printCensus(result, table) {
-  console.log(`[molt-census] ${result.total} tracked file(s) · ${result.wiki} in a wiki · ${result.bound} bound by a carrier · ${result.unbound} unbound · ${result.unclassified.length} unclassified · ${result.codeMemes} carrier(s) binding a file${vanishedNote()}`);
+  console.log(`[molt-census] ${result.total} tracked file(s) · ${result.wiki} in a wiki · ${result.bound} bound by a carrier · ${result.unbound} unbound · ${result.exempt} exempt · ${result.unclassified.length} unclassified · ${result.codeMemes} carrier(s) binding a file${vanishedNote()}`);
   if (!table) {
-    console.log("  the census reports and never refuses; `node tools/source-pointer.mjs --census` prints the kind table and every unbound path");
+    console.log("  unbound reports; an unclassified path or a stale exemption reads red; `node tools/source-pointer.mjs --census` prints the kind table and every unbound path");
     return;
   }
   const kinds = Object.keys(result.byKind).sort((a, b) => result.byKind[b].unbound - result.byKind[a].unbound || a.localeCompare(b));
@@ -182,10 +210,10 @@ function main(args) {
     }
   }
 
-  const result = census(trackedEntries(REPO), path => texts.get(path) ?? null);
+  const result = census(trackedEntries(REPO), path => texts.get(path) ?? null, exemptionsOf(texts.get(EXEMPT_CARRIER)));
   if (json) {
     console.log(JSON.stringify(result, null, 2));
-    return result.total === 0 ? 1 : 0;
+    return result.total === 0 || redCensus(result) ? 1 : 0;
   }
 
   console.log(`[source-pointer] ${pointers} carrier→code pointer(s) across ${mems.length} carriers · ${dangling.length} dangling`);
@@ -197,6 +225,11 @@ function main(args) {
   if (dangling.length > 0) {
     console.log("\n  A CARRIER POINTS AT CODE THAT IS GONE — re-aim it, or retire the carrier:");
     for (const [mem, target] of dangling) console.log(`    ${mem}\n      -> ${target}`);
+    return 1;
+  }
+  if (redCensus(result)) {
+    for (const path of result.unclassified) console.log(`  UNCLASSIFIED  ${path}\n    cure: add a rule to \`kindOf\` in tools/source-pointer.mjs, name the path in ${EXEMPT_CARRIER}, or move the file`);
+    for (const path of result.stale) console.log(`  STALE EXEMPTION  ${path}\n    cure: drop the line from ${EXEMPT_CARRIER}; the path no longer stands in the tree`);
     return 1;
   }
   console.log("  every carrier that names its code names code that stands");

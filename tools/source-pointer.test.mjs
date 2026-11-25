@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
-import { census, kindOf, pointersOf } from './source-pointer.mjs';
+import { census, exemptionsOf, kindOf, pointersOf, EXEMPT_CARRIER } from './source-pointer.mjs';
 
 const TOOL = fileURLToPath(new URL('./source-pointer.mjs', import.meta.url));
 const FILE = '100644', LINK = '160000';
@@ -60,6 +60,15 @@ test('each tracked path reads one kind by rule', () => {
     'packages/a/package.json': 'config',
     'tools/capability-inventory.json': 'registry',
     'sdm/art/cover.png': 'binary',
+    'AGENTS.override.md': 'seed-seat',
+    '.claude/agents/Plan.md': 'seed-seat',
+    '.claude/settings.json': 'config',
+    '.codex/config.toml': 'config',
+    '.codex/rules/stash.rules': 'config',
+    '.claude/skills/playwright-cli/SKILL.md': 'skill',
+    'tests/TEST-ARCHITECTURE.md': 'flat-doc',
+    '.github/ROSTER.md': 'flat-doc',
+    'deploy/x/README.md': 'flat-doc',
   };
   for (const [path, kind] of Object.entries(kinds)) assert.equal(kindOf(path), kind, path);
   assert.equal(kindOf('TiddlyWiki5', { gitlink: true }), 'submodule');
@@ -91,7 +100,7 @@ test('a wiki resident reads wiki, a named file reads bound, the rest read unboun
   assert.equal(stateOf(result, 'TiddlyWiki5'), 'unbound');
   assert.deepEqual([result.total, result.wiki, result.bound, result.unbound], [8, 4, 1, 3]);
   assert.equal(result.codeMemes, 1);
-  assert.deepEqual(result.byKind.source, { wiki: 0, bound: 1, unbound: 1 });
+  assert.deepEqual(result.byKind.source, { wiki: 0, bound: 1, unbound: 1, exempt: 0 });
 });
 
 test('a carrier outside every wiki binds nothing', () => {
@@ -125,13 +134,62 @@ test('the witness reports the unbound count and stays green on it', () => {
     'bags/lararium/ha.ka.ba/lararium/mesh/one.mem': codeMeme('packages/a/src/one.ts'),
     'packages/a/src/one.ts': 'export const one = 1;\n',
     'packages/a/src/two.ts': 'export const two = 2;\n',
-    'strange/thing.xyz': 'x\n',
   });
   try {
     const out = run(root);
     assert.equal(out.status, 0, out.stdout + out.stderr);
-    assert.match(out.stdout, /\[molt-census\] 4 tracked file\(s\) · 1 in a wiki · 1 bound by a carrier · 2 unbound · 1 unclassified/);
+    assert.match(out.stdout, /\[molt-census\] 3 tracked file\(s\) · 1 in a wiki · 1 bound by a carrier · 1 unbound · 0 exempt · 0 unclassified/);
   } finally { rmSync(root, { recursive: true, force: true }); }
+});
+
+test('the witness reads red on an unclassified path and names its cure', () => {
+  const root = tree({
+    'bags/lararium/ha.ka.ba/lararium/mesh/one.mem': codeMeme('packages/a/src/one.ts'),
+    'packages/a/src/one.ts': 'export const one = 1;\n',
+    'strange/thing.xyz': 'x\n',
+  });
+  try {
+    const out = run(root);
+    assert.equal(out.status, 1, out.stdout + out.stderr);
+    assert.match(out.stdout, /UNCLASSIFIED  strange\/thing\.xyz/);
+    assert.match(out.stdout, /cure: add a rule to `kindOf`/);
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});
+
+const exemptCarrier = lines => '```census-exempt\n' + lines.join('\n') + '\n```\n';
+
+test('the exemption list reads path and reason, and a named path reads exempt', () => {
+  const list = exemptionsOf(exemptCarrier(['vendor/blob.xyz | vendored kit', '# a comment | skipped']));
+  assert.deepEqual([...list], [['vendor/blob.xyz', 'vendored kit']]);
+  const result = read(['vendor/blob.xyz', 'strange/thing.xyz'], {}).unclassified;
+  assert.deepEqual(result, ['vendor/blob.xyz', 'strange/thing.xyz']);
+  const exempted = census([{ path: 'vendor/blob.xyz', mode: FILE }, { path: 'strange/thing.xyz', mode: FILE }], () => null, list);
+  assert.deepEqual(exempted.unclassified, ['strange/thing.xyz']);
+  assert.equal(exempted.exempt, 1);
+  assert.equal(stateOf(exempted, 'vendor/blob.xyz'), 'exempt');
+});
+
+test('the witness stays green on a listed path and reads red on a stale line', () => {
+  const root = tree({
+    'bags/lares/ha.ka.ba/lares/docs/pono/molt-census.mem': exemptCarrier(['vendor/blob.xyz | vendored kit']),
+    'bags/lararium/ha.ka.ba/lararium/mesh/one.mem': codeMeme('packages/a/src/one.ts'),
+    'packages/a/src/one.ts': 'export const one = 1;\n',
+    'vendor/blob.xyz': 'x\n',
+  });
+  const stale = tree({
+    'bags/lares/ha.ka.ba/lares/docs/pono/molt-census.mem': exemptCarrier(['vendor/gone.xyz | vendored kit']),
+    'bags/lararium/ha.ka.ba/lararium/mesh/one.mem': codeMeme('packages/a/src/one.ts'),
+    'packages/a/src/one.ts': 'export const one = 1;\n',
+  });
+  try {
+    assert.equal(EXEMPT_CARRIER, 'bags/lares/ha.ka.ba/lares/docs/pono/molt-census.mem');
+    const ok = run(root);
+    assert.equal(ok.status, 0, ok.stdout + ok.stderr);
+    assert.match(ok.stdout, /1 exempt · 0 unclassified/);
+    const bad = run(stale);
+    assert.equal(bad.status, 1, bad.stdout + bad.stderr);
+    assert.match(bad.stdout, /STALE EXEMPTION  vendor\/gone\.xyz/);
+  } finally { rmSync(root, { recursive: true, force: true }); rmSync(stale, { recursive: true, force: true }); }
 });
 
 test('the census flag prints the kind table and the json flag the rows', () => {
