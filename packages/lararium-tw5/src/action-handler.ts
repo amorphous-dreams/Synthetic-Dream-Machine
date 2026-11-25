@@ -1561,6 +1561,9 @@ async function executeIngest(action: IngestAction, access: BagAccess, opts: Acti
       // An `ingest` receipt carries the placement's warnings — the quoteblock floor's account of a fence
       // it laid, which a bag sink has no rail to raise. An `ingest` and a `noop` row each carry the hash
       // of the render the records hold after the decision: the records side of the base the gesture pins.
+      // A HELD FAMILY TURN NEVER PARKS THE WAVE: the carrier answers `owed` (the write stays queued behind the held turn and lands
+      // when it settles) and the loop moves on to the next carrier, whatever family it holds.
+      if (placed.decision === "owed") { results.push({ uri, decision: "owed", reason: placed.reason, root: placed.root, ...(placed.canonicalHash ? { canonicalHash: placed.canonicalHash } : {}) }); continue; }
       results.push(
         placed.decision === "ingest"  ? withWarnings({ uri, decision: "ingest", grade: placed.grade, landed: placed.landed.length, tombstoned: placed.tombstoned, ...recordsSide(placed.canonicalHash), ...(await landedHeads(access, action.toBag)) }, placed.warnings) :
         placed.decision === "noop"    ? { uri, decision: "noop", reason: placed.reason, ...recordsSide(placed.canonicalHash) } :
