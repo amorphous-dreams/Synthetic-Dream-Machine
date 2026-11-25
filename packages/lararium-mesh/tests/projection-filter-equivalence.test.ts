@@ -2,11 +2,19 @@ import { describe, expect, test } from "vitest";
 import { PROJECTION_FILTER_TEXT, filterSelects, projectionWithheld, projectionFilterTitle } from "../src/projection-filter.js";
 
 describe("projection filters hold operator preferences only", () => {
-  test("the shipped base carries only TW5 temp and state namespaces", () => {
-    expect(PROJECTION_FILTER_TEXT.base).toBe("[prefix[$:/temp/]]\n[prefix[$:/state/]]");
-    for (const title of ["$:/temp/draft", "$:/state/tab", "lar:///ha.ka.ba/bags/daemon/receipts/r1", "lar:///ha.ka.ba/bags/daemon/outcomes/o1", "dreamnet/realm-bag-announce/r1"]) {
-      expect(projectionWithheld(title), title).toBe(title.startsWith("$:/temp/") || title.startsWith("$:/state/"));
+  test("the shipped base carries only TW5's volatile namespaces: temp, state, status and the story and history lists", () => {
+    expect(PROJECTION_FILTER_TEXT.base).toBe("[prefix[$:/temp/]]\n[prefix[$:/state/]]\n[prefix[$:/status/]]\n[prefix[$:/StoryList]]\n[prefix[$:/HistoryList]]");
+    const volatile = (title: string): boolean => ["$:/temp/", "$:/state/", "$:/status/", "$:/StoryList", "$:/HistoryList"].some((p) => title.startsWith(p));
+    for (const title of ["$:/temp/draft", "$:/state/tab", "$:/status/UserName", "lar:///ha.ka.ba/bags/daemon/receipts/r1", "lar:///ha.ka.ba/bags/daemon/outcomes/o1", "dreamnet/realm-bag-announce/r1", "A Plain Note", "$:/config/lares/ProjectionFilter"]) {
+      expect(projectionWithheld(title), title).toBe(volatile(title));
     }
+  });
+
+  test("RED: TW5's story and history lists (UI navigation state) never project, as TW5's own SaverFilter keeps them unsaved", () => {
+    for (const title of ["$:/StoryList", "$:/HistoryList"]) expect(projectionWithheld(title), title).toBe(true);
+    // CONTROL: a plain record and a house config record still project from the base class.
+    expect(projectionWithheld("A Plain Note")).toBe(false);
+    expect(projectionWithheld("lar:///ha.ka.ba/lararium/config/projection")).toBe(false);
   });
 
   test("a mirror's temp class can withhold house config while custom operator filters stay available", () => {

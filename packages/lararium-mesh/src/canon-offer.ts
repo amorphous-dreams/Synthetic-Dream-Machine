@@ -162,11 +162,11 @@ const HOME_PREFIXES = [CONTROL_HOME_ID, SECRET_HOME_ID];
 const CAP_PATH = /^lar:\/\/\/ha\.ka\.ba\/bags\/[^/]+\/cap(?:\/|$)/;
 
 /**
- * Whether a title stays home: the projection filter's base (TW5's temp and state namespaces), the control and secret homes,
- * the swarm's records (`$:/lares/swarm/`, which rest in the control document alone), and every `cap/**` row under a bag home
- * (`bags/<home>/cap/…`), read on the title's resolved path so no spelling slips past. The swarm prefix holds by name, never by
- * a header comment: the kāpae read of an unstring row trusts that no door writes one, so no wiki layer may carry a row a swarm
- * reader could mistake for the control document's.
+ * Whether a title stays home: the projection filter's base (TW5's volatile namespaces: temp, state, status, story, history), the
+ * control and secret homes, the swarm's records (`$:/lares/swarm/`, which rest in the control document alone), and every `cap/**`
+ * row under a bag home (`bags/<home>/cap/…`), read on the title's resolved path so no spelling slips past. The swarm prefix holds
+ * by name, never by a header comment: the kāpae read of an unstring row trusts that no door writes one, so no wiki layer may carry
+ * a row a swarm reader could mistake for the control document's.
  */
 export function offerWithheldTitle(title: string): boolean {
   if (projectionWithheld(title)) return true;

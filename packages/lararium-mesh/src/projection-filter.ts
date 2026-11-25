@@ -6,7 +6,7 @@
  * rule takes the same shape: filter tiddlers in TiddlyWiki's own `$:/config/` namespace, shipped in the memetic-wikitext
  * plugin (so each wiki reads them as shadows an operator may override):
  *
- *   $:/config/lares/ProjectionFilter                  every mirror: TW5's own volatile temp and state namespaces
+ *   $:/config/lares/ProjectionFilter                  every mirror: TW5's own volatile namespaces (temp, state, status, story, history)
  *   $:/config/lares/ProjectionFilter/temp             a wiki's user temp layer: the system namespace and the house config
  *
  * The filter carries operator preferences for TW5's temp/state namespaces and the user temp class. It does not choose a
@@ -34,9 +34,15 @@ export const projectionFilterTitle = (cls: ProjectionClass): string => `${PROJEC
  * (`tiddlers/config-projection-filter*.tid`), so the shipped shadow and this default read one source.
  */
 export const PROJECTION_FILTER_TEXT: Readonly<Record<"base" | ProjectionClass, string>> = {
+  // TW5's own volatile namespaces, as its `$:/config/SyncFilter` and `$:/config/SaverFilter` keep them unsaved: the temp,
+  // state and status prefixes, and the story and history lists (UI navigation state: a tab that opens a tiddler rewrites
+  // `$:/StoryList`, so a projected one stands off against every edit the disk carries).
   base: [
     "[prefix[$:/temp/]]",
     "[prefix[$:/state/]]",
+    "[prefix[$:/status/]]",
+    "[prefix[$:/StoryList]]",
+    "[prefix[$:/HistoryList]]",
   ].join("\n"),
   temp: "[prefix[lar:///ha.ka.ba/lararium/config/]]",
 };
