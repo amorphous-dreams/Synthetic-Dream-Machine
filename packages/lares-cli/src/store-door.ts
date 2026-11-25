@@ -21,6 +21,7 @@ import { vesselDid, larSealHome } from "./env.js";
 import { DaemonUnreachable, refusalCode, refusalHint, verbFailure } from "./verb-call.js";
 import { udsAlive, udsSocketPresent, udsSocketPath, whoHolds, invokeLocal, UdsUnreachable, LocalWaitExpired, type WhoHoldsAnswer } from "./local-connector.js";
 import { waitForResourceBudgeted, SlowBootTimeout, type BootPhase } from "./port-control.js";
+import { BOOT_MILESTONES, bootStage } from "./stand-socket-wait.js";
 import { summaryOutput } from "./verb-result.js";
 import type { SubmitResult } from "./verb-result.js";
 
@@ -32,7 +33,7 @@ import type { SubmitResult } from "./verb-result.js";
  */
 async function invokeAbortable(
   verb: string, args: Record<string, unknown>, requestedBy: string,
-  opts: { readonly timeoutMs: number; readonly signal: AbortSignal; readonly requestId: string },
+  opts: { readonly timeoutMs?: number; readonly signal: AbortSignal; readonly requestId: string },
 ): Promise<SubmitResult> {
   if (!udsSocketPresent()) throw new DaemonUnreachable(udsSocketPath());
   // UNTIMED HERE: the door's own wait reads the holder, and the vessel's answer (or a person's interrupt) ends it.
@@ -154,13 +155,35 @@ export type StoreDoorVia = "daemon" | "direct";
  */
 export const STORE_DOOR_PHASES: readonly BootPhase[] = [
   { name: "unbound", budgetMs: 10_000 },
-  { name: "parked",  budgetMs: 45_000 },
+  // PARKED spends no budget either (No Global Now): the boot still advances, and a clock never decides it failed. The figure
+  // paces the "still boots" line alone; the holder gone, a boot-log fault or refusal, a stand-socket exit, the seat's serving
+  // answer, or a person's interrupt ends the wait.
+  { name: "parked",  budgetMs: 45_000, paced: true },
   { name: "wedged",  budgetMs: 10_000 },
   // SERVING spends no budget (No Global Now): the live seat took the act and answers for it, however long the island
   // runs ahead of it. The figure names the PACING of the progress lines alone; the vessel's answer, its named refusal,
   // or a person's interrupt ends the wait.
   { name: "serving", budgetMs: 15_000, paced: true },
 ];
+
+/**
+ * A CAUSE ENDED THE WAIT on a parked vessel, never a clock: the holder named at the park left the process table, the boot
+ * log attested `fatal:` or a `uds error:`, or the stand socket's child exited. The act never reached the store; the cure
+ * names the command that reads or restarts what stood there.
+ */
+export type StoreDoorEndCause = "holder-gone" | "boot-fault" | "boot-refused" | "stand-exited";
+export class StoreDoorEnded extends Error {
+  override readonly name = "StoreDoorEnded";
+  constructor(readonly verb: string, readonly ended: StoreDoorEndCause, readonly detail: string) {
+    super(`"${verb}": the vessel's boot ended before it served (${detail}); the act never reached the store.`);
+  }
+}
+const endedCure: Record<StoreDoorEndCause, string> = {
+  "holder-gone":  "the holder left; run again to stand a fresh door, or read what held the store with `lares vessel read`.",
+  "boot-fault":   "the boot attested a fault; read it with `lares vessel read`, then stand the vessel again with `lares vessel up`.",
+  "boot-refused": "the boot's verb channel refused; read the cause with `lares vessel read`, then stand the vessel again with `lares vessel up`.",
+  "stand-exited": "the node that was standing exited; stand it again with `lares vessel up`, then run again.",
+};
 
 /**
  * A PERSON ENDED THE WAIT (an interrupt), never a clock and never a verdict on the act: the vessel took it under
@@ -196,6 +219,13 @@ function servingLine(verb: string, requestId: string, met: WhoHoldsAnswer | null
   return `[lares] the vessel serves; your act "${verb}" (request ${requestId}) waits behind the island${ahead}.${exit} ${readBack(requestId, face)}`;
 }
 
+/** The progress line a parked wait prints: the vessel still boots, and the act stays owed. */
+function parkedLine(log: string): string {
+  const at = bootStage(log);
+  const stage = at >= 0 ? BOOT_MILESTONES[at]! : "unread";
+  return `[lares] the vessel still boots (stage ${stage}); the act stays owed.`;
+}
+
 /** The pid(s) named in a `heldAs`/`whoHolds` message (`"a vessel (pid 1234) holds…"`, or M4's wedged
  *  `"…still held by pid(s) 1234, 5678"`), or none. */
 const pidsNamedIn = (message: string): readonly number[] => {
@@ -224,12 +254,22 @@ export async function throughStoreDoor(opts: {
   /** Does a person sit at the keys? Absent, read from stdin's TTY. Without one, the wait goes on only while the vessel
    *  confirms it holds the act. Test seam. */
   readonly interactive?: boolean;
+  /** Test seam — does this pid still answer a signal-0 probe? Defaults to the process table. */
+  readonly holderAlive?: (pid: number) => boolean;
+  /** The vessel's boot log as it stands now (milestones, `fatal:`, `uds error:`); absent, no log reads. */
+  readonly bootLog?: () => string;
+  /** Has the stand socket's node exited? Absent, never. */
+  readonly standExited?: () => boolean;
 }): Promise<{ readonly output: Record<string, unknown>; readonly via: StoreDoorVia }> {
   if (opts.daemonUp ?? (await udsAlive())) {
     const phases = opts.phases ?? STORE_DOOR_PHASES;
     // The vessel's own servo for the maintenance frame: the budgets of the phases a clock still bounds (a paced phase
     // adds none). It rides the wire; this process sets no timer against it.
+    const anyPaced = phases.some((p) => p.paced === true);
     const totalBudgetMs = phases.reduce((sum, p) => sum + (p.paced === true ? 0 : p.budgetMs), 0);
+    const holderAlive = opts.holderAlive ?? ((pid: number): boolean => { try { process.kill(pid, 0); return true; } catch { return false; } });
+    const bootLog = opts.bootLog ?? ((): string => "");
+    let holderGoneReads = 0;
     const progress = opts.progress ?? ((line: string) => { process.stderr.write(`${line}\n`); });
     const interactive = opts.interactive ?? process.stdin.isTTY === true;
     const requestId = newRequestId();
@@ -255,7 +295,7 @@ export async function throughStoreDoor(opts: {
     } else process.once("SIGINT", sigint);
     const verbPromise = (opts.face !== undefined
       ? invokeInSession(opts.verb, opts.args, opts.face, { signal: controller.signal, requestId })
-      : invokeAbortable(opts.verb, opts.args, await vesselDid(), { timeoutMs: totalBudgetMs, signal: controller.signal, requestId }).then((r) => {
+      : invokeAbortable(opts.verb, opts.args, await vesselDid(), { ...(anyPaced ? {} : { timeoutMs: totalBudgetMs }), signal: controller.signal, requestId }).then((r) => {
         // The vessel's own name for the refusal rides out with its words: a floor, a retired bag, an abandoned id.
         if (r.status === "error") throw new RoutedVerbRefused(r.errorMessage ?? "verb failed", r.refusal?.reason);
         return summaryOutput(r) ?? {};
@@ -280,11 +320,27 @@ export async function throughStoreDoor(opts: {
             if (goneReads >= 2) endWait(new RequestLost(opts.verb, requestId, opts.face));
           }
         }
+        // PARKED: only a cause ends the wait. The holder named at the park gone (read twice), the boot log's own fault or
+        // refusal, or the stand socket's exit; each names its refusal and its cure.
+        if (met?.phase === "parked" && !settled) {
+          const pids = pidsNamedIn(met.message);
+          holderGoneReads = pids.length > 0 && !pids.some(holderAlive) ? holderGoneReads + 1 : 0;
+          const log = bootLog();
+          const refused = /uds error: (.+)/.exec(log);
+          if (/fatal:/.test(log)) endWait(new StoreDoorEnded(opts.verb, "boot-fault", "the boot log attests `fatal:`"));
+          else if (refused) endWait(new StoreDoorEnded(opts.verb, "boot-refused", `the verb channel logged \`uds error: ${refused[1]!.trim()}\``));
+          else if (opts.standExited?.() === true) endWait(new StoreDoorEnded(opts.verb, "stand-exited", "the stand socket's node exited"));
+          else if (holderGoneReads >= 2) endWait(new StoreDoorEnded(opts.verb, "holder-gone", `pid(s) ${pids.join(", ")} no longer run`));
+        }
         // A serving reading prints nothing yet: a verb that answers inside one cadence leaves no line behind.
         return met === null ? "unbound" : met.phase;
       },
       holderPids: () => pidsNamedIn(lastMessage),
-      onPace: (phase) => { if (phase === "serving" && !settled) progress(servingLine(opts.verb, requestId, lastMet, interactive, opts.face)); },
+      onPace: (phase) => {
+        if (settled) return;
+        if (phase === "serving") progress(servingLine(opts.verb, requestId, lastMet, interactive, opts.face));
+        else if (phase === "parked") progress(parkedLine(bootLog()));
+      },
     }).then((): { readonly quiet: true } => ({ quiet: true }));
     let raced: { readonly quiet: true } | { readonly quiet: false; readonly v: Record<string, unknown> };
     try {
@@ -392,6 +448,7 @@ export function storeFailure(err: unknown, fallback = "error"): { readonly code:
   }
   if (err instanceof StoreHeld) return { code: "store-held", message, hint: "another holder holds this store: a standing vessel, or a command mid-act. Run again once it has gone." };
   if (err instanceof SlowBootTimeout) return { code: "store-door-timeout", message, hint: "the vessel's store door gave no answer inside its budget. `lares vessel read` names what holds it." };
+  if (err instanceof StoreDoorEnded) return { code: "store-door-ended", message, hint: endedCure[err.ended] };
   if (err instanceof RequestLost) {
     return { code: "request-lost", message, hint: err.face === undefined
       ? `the act may have run; read it back with \`lares vessel request ${err.requestId}\` before running it again.`

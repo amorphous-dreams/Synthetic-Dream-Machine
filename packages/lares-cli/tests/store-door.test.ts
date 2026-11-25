@@ -56,7 +56,7 @@ describe("throughStoreDoor — a budgeted, holder-named wait on a parked vessel 
     }));
 
     await expect(
-      throughStoreDoor({ verb: "nexus-kapae", args: {}, direct: async () => ({}), phases: FAST_PHASES }),
+      throughStoreDoor({ verb: "nexus-kapae", args: {}, direct: async () => ({}), phases: FAST_PHASES, holderAlive: () => true }),
     ).rejects.toSatisfy((e: unknown) => {
       expect(e).toBeInstanceOf(SlowBootTimeout);
       const err = e as SlowBootTimeout;
