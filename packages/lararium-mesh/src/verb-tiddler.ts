@@ -43,6 +43,7 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/verb-tiddler
  */
 
+import { mintRandomId } from "./entropy-door.js";
 import {
   CONTROL_HOME_ID, VOLATILE_VM_PREFIX,
   LARES_VERB_EVENT_TAG, LARES_VERB_TAG,
@@ -488,21 +489,13 @@ export function concludeVerb(opts: {
 // ── Builders ───────────────────────────────────────────────────────────────
 
 /**
- * A fresh request id — 16 cryptographically-random bytes, base32-encoded. No time prefix: a request
+ * A fresh request id — 16 cryptographically-random bytes, base32-encoded; refuses `entropy-absent` where the platform holds no `crypto.getRandomValues`. No time prefix: a request
  * id names an ATTEMPT, never a moment, and carrying `Date.now()` in it invited readers to treat
  * ordering or freshness as derivable from the id itself (it never was — see L1,
  * project_no_global_now_timers).
  */
 export function newRequestId(): string {
-  const bytes = new Uint8Array(16);
-  if (typeof crypto !== "undefined" && typeof crypto.getRandomValues === "function") {
-    crypto.getRandomValues(bytes);
-  } else {
-    for (let i = 0; i < bytes.length; i++) bytes[i] = Math.floor(Math.random() * 256);
-  }
-  let out = "";
-  for (const b of bytes) out += b.toString(32).padStart(2, "0");
-  return out;
+  return mintRandomId();
 }
 
 export function isVerbTitle(title: string): boolean {
