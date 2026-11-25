@@ -24,6 +24,8 @@ import { WardRefused } from "@lararium/mesh/ward-slots";
 import { wornAtOf } from "@lararium/mesh/sealed-doc-store";
 import {
   composeSealedRest,
+  restOwedWatch,
+  type RestOwed,
   clearRosterOf,
   watchCatalogNames,
   docStorePortCell,
@@ -823,6 +825,9 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   /** The lock ritual's first move for one session (sealed-store#/owed, R2): flush the Repo and the sealed rest, so every
    *  save that session booked lands sealed, then drop its bookings. The UDS seat awaits it before the signer drops. */
   sealedRestLock: (signer: object) => Promise<void>;
+  /** NO SILENT LOSS at a write door: the count of held saves as a call begins (`mark`), and after its answer, the Repo's
+   *  flush and the documents that held a save since the mark and still wait unsealed (`owed`; null: every save sealed). */
+  restOwed: { mark(): number; owed(since: number): Promise<RestOwed | null> };
   /** The stand-down's last flush of the sealed rest (T3), after every session closed and before the daemon island goes:
    *  answers how many saves still wait unbooked (each rests nowhere new; its change returns by sync). */
   sealedRestStandDown: () => Promise<number>;
@@ -932,6 +937,7 @@ interface NodeBootPrep {
   sessionDoor:     UdsSessionDoor;
   /** The sealed rest's lock for one session's signer: the Repo and the rest flush, then its bookings drop. */
   sealedRestLock:  (signer: object) => Promise<void>;
+  restOwed: { mark(): number; owed(since: number): Promise<RestOwed | null> };
   /** The stand-down's last flush of the sealed rest (T3), after every session closed: answers how many saves still wait. */
   sealedRestStandDown: () => Promise<number>;
   /** The stand-down's watch close over the worn face's pool: the final wave, then the commit seam, as a down. */
@@ -1289,9 +1295,11 @@ async function prepareNodeBootOn(
       : [...deviceDocs.docsOf(bagId, litDevices()), sealedCells.mounted(bagId), ...(slotDocsNamed.get(bagId) ?? []), documentIdOfUrl(tiddlerText(ownEntry(sealedCells.catalog()?.tiddlers, bagId)))],
   });
   // The session that stands for the daemon mount now: a call's, else a seated one (the dial's own, V6).
+  // A dropped signer never stands, and a call of another face that merely stands first never stands for the worn face.
   const standingSaveSession = (): NodeSaveSession | null => {
     const face = sealedCells.face();
-    const standing = sealedCells.book?.standing()[0] ?? sealedCells.book?.seated().find((s) => s.subject === face);
+    if (face === null) return null;
+    const standing = sealedCells.book?.standingFor((s) => s.subject === face || sealedCells.wornAt(face, s.subject)) ?? null;
     return standing ? saveSessionOf(standing) : null;
   };
   // THE SESSION OF A FACE (the lit set): the daemon mount's standing session for its own bags; a sibling's seated session for a
@@ -1402,6 +1410,9 @@ async function prepareNodeBootOn(
   // THE TRAP-NAMED DOCUMENTS HOLD ON EVERY LOAD PATH (`engine-fall`): each document a resting engine fall names in flight
   // reaches the engine through no path, the storage source's included, until the hand clears the count.
   const heldBack = heldInFlight(readEngineFalls(storageDir));
+  // THE REST-OWED WATCH (No silent loss): every save held back numbers here, so a write door reads, after its flush, which
+  // documents its call wrote still wait unsealed, and answers `owed` rather than a bare ok (`restOwedAfter`).
+  const owedWatch = restOwedWatch((documentId) => sealedRest.store.waiting(documentId));
   const sealedRest = composeSealedRest<NodeSaveSession>({
     inner: holdBackStorage(new DurableNodeFSStorageAdapter(storageDir), heldBack, (line) => console.warn(`[lararium] ${line}`)),
     bagOf: sealedBagOf,
@@ -1432,8 +1443,11 @@ async function prepareNodeBootOn(
       faceKeyOf: (subject) => faceKeyOfSubject(subject),
     }),
     flushRepo: async (documentIds) => { await repo.flush(documentIds as never); },
+    // A DROPPED SIGNER STANDS FOR NOTHING: a booking whose session's signer dropped (a place session's re-mint, an anchor
+    // move, a switch) gives way to the session standing now, or waits `save-unbooked`, never `signer-refused`.
+    stands: (session) => !session.signer.dropped,
     // A SAVE HELD BACK NAMES WHY: the store's refusal, and for a seal the holder refused, the holder's own refusal and cause.
-    onHeld: ({ refusal, documentId, error, cause }) => console.log(`[sealed-rest] ${refusal}${error ? ` (${error}${cause ? `: ${cause}` : ""})` : ""}: ${documentId.slice(0, 12)}… waits in memory, never clear, until a session seals it`),
+    onHeld: (held) => { owedWatch.notice(held); const { refusal, documentId, error, cause } = held; console.log(`[sealed-rest] ${refusal}${error ? ` (${error}${cause ? `: ${cause}` : ""})` : ""}: ${documentId.slice(0, 12)}… waits in memory, never clear, until a session seals it`); },
     // A HYDRATING LOAD THAT WAITS NAMES WHAT IT WAITS ON, once per document and refusal: the refusal and the bag holding it.
     onHydrationWait: ({ documentId, refusal, bagId }) => console.log(`[sealed-rest] ${documentId.slice(0, 12)}… waits to hydrate on ${refusal}${bagId ? ` in ${bagId}` : " (no bag names it yet)"}; it reads again at the next map move`),
     // A restart's hydration: a sealed document the engine asks for ahead of the dial waits for its map, never strands;
@@ -5555,6 +5569,13 @@ async function prepareNodeBootOn(
       if (session) { try { await sealedRest.rebook(session); } catch { /* it keeps waiting */ } }
       await sealedRest.lock(session?.id ?? "no-session-booked-here");
     },
+    restOwed: {
+      mark: () => owedWatch.mark(),
+      owed: async (since) => {
+        try { await repo.flush(); } catch { /* a save that refused keeps its change in the store's memory, and the watch heard it */ }
+        return owedWatch.owed(since);
+      },
+    },
     sealedRestStandDown: async () => {
       const waiting = await sealedRest.standDown((sealedCells.book?.seated() ?? []).map(saveSessionOf));
       if (waiting > 0) nameHeldSaves(waiting);
@@ -5817,6 +5838,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     sessionDoor:     p.sessionDoor,
     sessionSigns:    sessionSign.book,
     sealedRestLock:  p.sealedRestLock,
+    restOwed:        p.restOwed,
     sealedRestStandDown: p.sealedRestStandDown,
     facePoolStandDown: p.facePoolStandDown,
     heldSaves:       p.heldSaves,

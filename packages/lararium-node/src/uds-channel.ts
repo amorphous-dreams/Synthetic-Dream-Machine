@@ -74,6 +74,14 @@ import { ingestWaveRefusal } from "@lararium/mesh/ingest-wave-budget";
 import type { CapabilityProfile, Hand, Session, SessionFace } from "@lararium/mesh/session-contract";
 import type { SwitchIntent, SwitchOutcome } from "@lararium/mesh/session-switch";
 import type { SwitchActLog } from "./switch-act-log.js";
+
+/** The band a write door's answer carries where a document its call wrote still waits unsealed (`RestOwed`, sealed-rest). */
+export interface RestOwedBand {
+  readonly band: "owed";
+  readonly documents: ReadonlyArray<{ readonly documentId: string; readonly refusal: string; readonly error?: string; readonly cause?: string }>;
+}
+/** The verbs that write a record: each answer reads whether its saves sealed (`restOwed`). */
+export const REST_OWED_VERBS: ReadonlySet<string> = new Set(["tiddler-put", "tiddler-delete", "meme-put", "meme-delete", "meme-patch"]);
 // The adaptive-timeout SERVO (fail on a GRADIENT, never a cliff): a per-verb wait that GROWS with the
 // observed durations and clamps FLOOR..CEIL. The machine-code work stays Python; this is the
 // coordinator's PATIENCE, servo'd so a long-but-honest verb (a big-session capture, a refresh queued
@@ -176,6 +184,9 @@ export interface UdsChannelOptions {
   /** The lock ritual's first move, before a session's signer drops (sealed-store#/owed, R2): the vessel flushes its Repo
    *  and its sealed rest, so every save the session booked lands sealed under it. Absent → the signer drops at once. */
   readonly beforeSignerDrops?: (signer: UdsSessionSigner) => Promise<void>;
+  /** NO SILENT LOSS (sealed-store#/owed): a write verb's answer reads, after the Repo's flush, which documents held a save
+   *  since its call began and still wait unsealed; a `done` answer then carries `rest: { band: "owed", … }`. */
+  readonly restOwed?: { mark(): number; owed(since: number): Promise<RestOwedBand | null> };
   /** The vessel's control document (`standControlHome`): its heads name a receipt's durability. */
   readonly controlHandle: DocHandle<LarDoc>;
   /** The verbs a one-shot runs while the control document stands as a stand-in (`floor-verbs`); every other refuses by its name. */
@@ -1702,6 +1713,9 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     if (inFlight.delete(sock) && idle()) drained?.();
   };
   const handle = (parsed: unknown, sock: Socket, sessionRequestId?: string, onSessionReply?: () => void, mark?: ChoreReceiptMark, gate?: DoorGate): void => {
+    // THE REST-OWED MARK: a write verb's call notes the held saves standing as it begins, so its answer names what it left owed.
+    const parsedVerb = parsed && typeof parsed === "object" ? (parsed as Record<string, unknown>)["verb"] : undefined;
+    const owedSince = typeof parsedVerb === "string" && REST_OWED_VERBS.has(parsedVerb) && opts.restOwed ? opts.restOwed.mark() : null;
     // The receipt mark of a dispatched chore (`ChoreReceiptMark`: the acting face, the asker's hand, its session), carried on
     // its answer as `chore`; unset for a read or a refusal. A session's door hands it in; a one-shot's deferred tick reads it.
     let choreMark: ChoreReceiptMark | undefined = mark;
@@ -1755,7 +1769,13 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     };
     const respond = (answer: Record<string, unknown>): void => {
       void (async () => {
-        const named = choreMark !== undefined ? { ...answer, chore: choreMark } : answer;
+        // A WRITE THAT CANNOT SEAL ANSWERS `owed`, NEVER A BARE OK: the change stands in memory and rests nowhere yet.
+        let rest: RestOwedBand | null = null;
+        if (owedSince !== null && answer["status"] === "done") {
+          try { rest = await opts.restOwed!.owed(owedSince); } catch (error) { log(`rest-owed read failed: ${error instanceof Error ? error.message : String(error)}`); }
+        }
+        const stamped = rest !== null ? { ...answer, rest } : answer;
+        const named = choreMark !== undefined ? { ...stamped, chore: choreMark } : stamped;
         const payload = sessionRequestId === undefined ? named : {
           kind: "session:result", ...named, requestId: sessionRequestId,
           ...((answer["status"] === "done" || answer["status"] === "error") && controlHomeRefusal(controlHandle) === null ? { durable: await settleDurably() } : {}),

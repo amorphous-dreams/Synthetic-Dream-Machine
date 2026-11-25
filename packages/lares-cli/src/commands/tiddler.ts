@@ -28,6 +28,7 @@ import { readFileSync } from "node:fs";
 import { stdin, stdout } from "node:process";
 import { containerArgs, engineContainerArgs } from "../container-target.js";
 import { emit, exitFor, proseFirst } from "../render.js";
+import { owedLine } from "../verb-result.js";
 import { DoorUsage, countOf, guardDoor, namesOf, runDoor, wordOf, type DoorPlan } from "./door-call.js";
 import { targetOf, targetOnWriteRefusal } from "../target-option.js";
 import { helpLines } from "../command-help.js";
@@ -258,9 +259,11 @@ async function tiddlerPut(args: ParsedArgs): Promise<number> {
   const receipt = ran.output;
   const decision = String(receipt["decision"] ?? "");
   const changed = Array.isArray(receipt["changed"]) ? (receipt["changed"] as string[]) : [];
-  const ok = decision === "put" || decision === "noop";
-  const code = ok ? "ok" : decision === "conflict" || decision === "exists" ? "conflict" : "verb-error";
-  const message = decision === "conflict" && words !== null && "append" in words ? `conflict: ${plan.args["title"]} kept moving under the append; it reads ${receipt["hash"] ?? "absent"} now and nothing landed. Send the append again`
+  // NO SILENT LOSS: a put the vessel answers `owed` landed in memory alone; it answers owed, never a bare ok.
+  const owed = owedLine(receipt);
+  const ok = (decision === "put" || decision === "noop") && owed === null;
+  const code = ok ? "ok" : owed !== null && (decision === "put" || decision === "noop") ? "owed" : decision === "conflict" || decision === "exists" ? "conflict" : "verb-error";
+  const message = code === "owed" ? `${owed}` : decision === "conflict" && words !== null && "append" in words ? `conflict: ${plan.args["title"]} kept moving under the append; it reads ${receipt["hash"] ?? "absent"} now and nothing landed. Send the append again`
                 : decision === "conflict" ? `conflict: the record moved past ${plan.args["base"] ?? "the base"}; it reads ${receipt["hash"] ?? "absent"} now. Read again and hand back the live hash`
                 : decision === "exists" ? `exists: a tiddler already stands at ${plan.args["title"]} (--create lands only where none does)`
                 : `${decision}: ${plan.args["title"]}`;
@@ -285,10 +288,11 @@ async function tiddlerDelete(args: ParsedArgs): Promise<number> {
   if (!ran.ok) return ran.exit;
   const receipt = ran.output;
   const decision = String(receipt["decision"] ?? "");
-  const code = decision === "removed" ? "ok" : decision === "conflict" ? "conflict" : decision === "absent" ? "not-found" : "verb-error";
+  const owed = owedLine(receipt);
+  const code = decision === "removed" ? (owed === null ? "ok" : "owed") : decision === "conflict" ? "conflict" : decision === "absent" ? "not-found" : "verb-error";
   // A refusal the family law answers rides the receipt with the consequence it read: the code leads the message.
   const refusal = decision === "refused" && typeof receipt["refusal"] === "string" ? receipt["refusal"] : null;
-  const message = decision === "conflict" ? `conflict: the record moved past ${plan.args["base"] ?? "the base"}; it reads ${receipt["hash"] ?? "absent"} now`
+  const message = code === "owed" ? `${owed}` : decision === "conflict" ? `conflict: the record moved past ${plan.args["base"] ?? "the base"}; it reads ${receipt["hash"] ?? "absent"} now`
                 : decision === "absent" ? `no tiddler at ${plan.args["title"]}`
                 : refusal ? String(receipt["why"] ?? `${refusal}: ${plan.args["title"]}`) : `${decision}: ${plan.args["title"]}`;
   const read = receipt["consequence"] as { acts?: Array<{ title: string; act: string; bag?: string | null; shadowed?: string[]; reveals?: string | null }>; leaves?: Array<{ title: string; why: string }> } | undefined;
