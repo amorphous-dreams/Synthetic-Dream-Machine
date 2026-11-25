@@ -1080,11 +1080,13 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   const standSiblingSeat = (ctx: IslandContext, key: string, face: JoinedFaceAuth, keyhive: KeyhiveProvider): void => {
     if (!sealedStore || faces.lit(key)?.seat) return;
     const entry = faces.light(key, null);
+    // THE CLEANUP REGISTERS FIRST: a seat that throws leaves the entry half-made, and the light's catch disposes the identity,
+    // which drops it here (Hearth-Reader-II F5).
+    keyhive.whenDisposed(() => { if (faces.lit(key) === entry) faces.drop(key); });
     entry.seat = seatOfFace(ctx, keyhive, entry, {
       groupId: face.personaGroupId, fleetRoot: face.deviceEdge.personaRootDid, atomKey: () => face.atom.key,
       bags: () => face.registerBags, dyad: () => dyadReader(ctx, { ...daemonAuth, ...face }), archiveFace: face.personaGroupId,
     });
-    keyhive.whenDisposed(() => { if (faces.lit(key) === entry) faces.drop(key); });
   };
   // THE HOLDER AND ITS DOOR STAND BEFORE ANY READ OF A SEALED DOCUMENT (the working-layer-first rule, red 3): the face's
   // catalog rests sealed, and the vessel opens its chunks only through this door, so a boot that read the catalog
