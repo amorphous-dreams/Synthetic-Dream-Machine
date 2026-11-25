@@ -609,9 +609,9 @@ async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
     if (body !== null) await markCrossing(args, rec, body, ctx, true);
     const shape = await readSlot(args, "om", rec, "#/carry-shape");
     const open = await readSlot(args, "om", rec, "#/open");
-    const voice = await readSlot(args, "om", rec, "#/kulana");
+    const kulana = await readSlot(args, "om", rec, "#/kulana");
     const { carry } = await latestCarry(args, "om", [key, pet], false, body);
-    const text = [open?.body, voice?.body].filter(Boolean).join("\n\n").slice(0, PRECOMPACT_CARD_CHARS);
+    const text = [open?.body, kulana?.body].filter(Boolean).join("\n\n").slice(0, PRECOMPACT_CARD_CHARS);
     emit(args, { ok: true, data: { ...data, carryShape: shape?.body ?? null, inherits: carry === null ? null : carry.title.slice(-12), chars: text.length, text }, human: () => console.log(text) });
     return 0;
   }
