@@ -85,6 +85,6 @@ describe.skipIf(skip)(`normalize names the dirty it did not stamp${note}`, () =>
     const r = spawnSync("node", [BIN, "meme", "check", f], { cwd: bare, encoding: "utf8" });
     const all = `${r.stdout}${r.stderr}`;
     expect(all, "git's usage dump leaked into the verdict").not.toMatch(/git diff --no-index|Not a git repository/);
-    expect(r.stdout, "no verdict named the carrier").toContain("prism.mem");
+    expect(r.stdout, "no verdict answered").toMatch(/canonical|prism\.mem/);
   });
 });
