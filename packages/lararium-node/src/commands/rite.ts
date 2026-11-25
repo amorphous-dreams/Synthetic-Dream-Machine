@@ -44,7 +44,7 @@ import { isSwarmLeiRite, type SwarmLeiRite } from "@lararium/mesh/swarm-lei-rite
 import { loadFaceFold, nodeWardCosignPortOf, IntentRefused, type FaceFold } from "./intent.js";
 import { treeOfHead } from "../git-tree-reader.js";
 import { openedCustody, unlockedFaceOrdinals } from "../custody-seat.js";
-import { kukuluOfferPath, writeKukuluOffer, type KukuluOfferFace } from "../kukulu-offer.js";
+import { kukuluOfferBase, kukuluOfferPath, writeKukuluOffer, type KukuluOfferFace } from "../kukulu-offer.js";
 import { larWorkspacesHome } from "../vessel-paths.js";
 import { BundleVerifyRefused, unsafeRelPath, verifyBundle } from "../bundle-manifest.js";
 
@@ -185,7 +185,7 @@ export function refuseStandingBegin(standing: ReadonlyArray<{ readonly tessera: 
   if (standing.length === 0) return;
   const heads = [...new Set(standing.map((s) => s.head.slice(0, 12)))].join(", ");
   const branch = standing[0]!.branch;
-  throw new SwarmRefused("rite-begun-stands", `a kūkulu begun at ${heads} on "${branch}" stands unlanded (${standing.map((s) => `${s.face ?? s.group ?? "a face"} tessera ${s.tessera}`).join(", ")}); \`lares rite kukulu\` resumes it and spends no second return, or set a stale half down by hand (\`lares rite land --abandon --tessera <tessera>\`; it spends nothing, records no par, and conferre reads it abandoned)`);
+  throw new SwarmRefused("rite-begun-stands", `a kūkulu begun at ${heads} on "${branch}" stands unlanded (${standing.map((s) => `${s.face ?? s.group ?? "a face"} tessera ${s.tessera}`).join(", ")}); \`lares rite kukulu\` resumes it and spends no second return, land it by hand where the vessel stands (\`lares rite land --tessera <tessera>\`, which rests the head and image the half began at), or set a stale half down by hand (\`lares rite land --abandon --tessera <tessera>\`; it spends nothing, records no par, and conferre reads it abandoned)`);
 }
 
 /** One vouch the resting offer carries: the face whose group it names (where a lent face carries it), and its line, head and image. */
@@ -261,6 +261,8 @@ export async function runRiteVerb(opts: {
       wiki: opts.wiki, faces, branch: str("branch"), head: str("head"), tree: offerTree, image: str("image"),
       holder: await openedCustody(), path: opts.offerPath ?? kukuluOfferPath(),
       ...(keeperTo !== "" ? { keeper: { to: keeperTo, next: keeperNext } } : {}),
+      // THE BASE the host last read of the resting offer (`offerBase` off `rite receipts --rite kukulu`); none where it read none.
+      base: str("base") === "" ? null : str("base"),
     }) };
   }
   const wiki = opts.wiki;
@@ -284,7 +286,8 @@ export async function runRiteVerb(opts: {
     const pending = (await pendingBegins(wiki, "kukulu", branchOrAll)).map((p) => ({ ...p, ...(faceOf.has(p.group) ? { face: faceOf.get(p.group)! } : {}) }));
     let offerText: string | null = null;
     try { offerText = readFileSync(opts.offerPath ?? kukuluOfferPath(), "utf8"); } catch { offerText = null; }
-    return { rite: "kukulu", standing: await standingKukuluBegins(lent, redOf, branchOrAll), pending, offer: offerVouchesOf(offerText, faceOf) };
+    // THE BASE an overwrite names: the hash of the resting file's bytes, null where none rests.
+    return { rite: "kukulu", standing: await standingKukuluBegins(lent, redOf, branchOrAll), pending, offer: offerVouchesOf(offerText, faceOf), offerBase: kukuluOfferBase(opts.offerPath ?? kukuluOfferPath()) };
   }
   if (opts.action === "begin" && opts.args["rite"] === "kukulu") {
     // A KŪKULU BEGINS FOR EVERY LENT FACE OR FOR NONE: every face's return checks first, then each claims and rests its guest half.
@@ -311,8 +314,9 @@ export async function runRiteVerb(opts: {
   const trust: SwarmTrust = { hand: (key) => face.currentSigner(key), vessel: (key) => key === vesselKey, lead: () => false };
   if (opts.action === "receipts") return { receipts: await riteReceipts(opts.wiki, trust, group), conferre: await conferre(opts.wiki, trust, group) };
   if (opts.action === "land") {
-    if (!/^[0-9a-f]{64}$/.test(str("tessera")) || !str("head")) throw new SwarmRefused("rite-malformed", "a landing names its tessera and the head the vessel stands at");
-    return { ...await landRite(opts.wiki, { tessera: str("tessera"), head: str("head"), ...(str("image") === "" ? {} : { image: str("image") }) }, trust, group, vessel) };
+    // THE BEGUN HALF NAMES WHAT LANDS: a head or image the caller names must match it (`rite-land-differs`), and may be left out.
+    if (!/^[0-9a-f]{64}$/.test(str("tessera"))) throw new SwarmRefused("rite-malformed", "a landing names its tessera: lares rite land --tessera <64 hex>");
+    return { ...await landRite(opts.wiki, { tessera: str("tessera"), ...(str("head") === "" ? {} : { head: str("head") }), ...(str("image") === "" ? {} : { image: str("image") }) }, trust, group, vessel) };
   }
   if (opts.action === "abandon") {
     // THE HAND SETS A BEGUN HALF DOWN: the socket's hand gate admitted the act; the vessel witnesses the mark and spends nothing.

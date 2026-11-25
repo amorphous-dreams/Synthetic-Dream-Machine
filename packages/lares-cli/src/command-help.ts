@@ -179,7 +179,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--lei <cid>   (unstring) the lei to revoke", "--face N   face index", "--all   (kui, push or kukulu) one lei for every open face, under one route"],
   },
   rite: {
-    usage: "usage: lares rite kukulu [--branch <name>] [--face N] [--rollback [<rev>]] | keep --workspace <name> [--into <path>] [--accept-omissions] [--sessions|--no-sessions] | keep --if-due [--workspace <name>] | keep-cut --workspace <name> [--into <path>] [--accept-omissions] | begin --rite <r> --branch <name> --head <commit> [--staging <path>] [--image <digest>] | offer --branch <name> --head <commit> --image <digest> [--keeper-to <key> --keeper-next <closure>] | land --tessera <id> --head <commit> [--image <digest>] | land --abandon --tessera <id> [--face N] | receipts [--rite kukulu [--branch <name>]]",
+    usage: "usage: lares rite kukulu [--branch <name>] [--face N] [--rollback [<rev>]] | keep --workspace <name> [--into <path>] [--accept-omissions] [--sessions|--no-sessions] | keep --if-due [--workspace <name>] | keep-cut --workspace <name> [--into <path>] [--accept-omissions] | begin --rite <r> --branch <name> --head <commit> [--staging <path>] [--image <digest>] | offer --branch <name> --head <commit> --image <digest> [--keeper-to <key> --keeper-next <closure>] [--base <offerBase>] | land --tessera <id> [--head <commit>] [--image <digest>] | land --abandon --tessera <id> [--face N] | receipts [--rite kukulu [--branch <name>]]",
     synopsis:
       "A rite spends a lei. kūkulu is the one verb that raises the house again around its hearth, and it picks up wherever the " +
       "house stands: it fast-forwards the checkout where it stands clean and behind its upstream (a dirty tree behind, a diverged " +
@@ -201,6 +201,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "shut or rehived since) refuses by name with the line that clears it: each half a lent face holds, set down by the hand " +
       "(`lares rite land --abandon --tessera <id>`: a hand act an AI seat cannot run; it spends nothing, records no par over an image " +
       "the vessel never ran, frees the face to begin fresh, and conferre reads the half abandoned). " +
+      "The offer binds its vouch to the lei: the face's live lei and the " +
+      "begun half its return paid for name the head and image, and an overwrite of a resting offer names its base (conflict otherwise). " +
       "keep lays the house's authored memory, cut as a cleartext house bundle a new house imports, into a workspace the operator " +
       "bound, and keeps it in the operator's repo: on the host it guards the workspace clone (only <into> changes; a committed `* -text` " +
       ".gitattributes; no secret-shaped string), runs keep-cut in the vessel (a return of the keep lei strung for that workspace; the " +
@@ -217,12 +219,12 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares rite keep --workspace house-backup                # guard, cut into <workspace>/house, commit, push, land: par",
       "lares rite keep-cut --workspace house-backup            # the vessel half alone: cut, verify, spend a return, rest the bundle",
       "lares rite offer --branch main --head <commit> --image <digest>   # the standing vessel rests what the next one carries to a pūlama",
-      "lares rite land --tessera <id> --head <commit>          # land a rite whose vessel came back locked",
+      "lares rite land --tessera <id>                          # land a rite whose vessel came back locked (at the head its half began at)",
       "lares rite land --abandon --tessera <id>                # the hand sets a stale begun half down: nothing spent, no par",
       "lares rite receipts --json                              # data.receipts, data.conferre",
       "lares rite receipts --rite kukulu --branch main --json  # data.standing: each lent face's begun half resting unlanded",
     ],
-    flags: ["--branch <name>   the line the kukulu lei binds (the checkout's branch where absent)", "--rollback [<rev>]   (kukulu) the image that ran before, or an older revision's", "--rite <r>   (begin) the rite; (receipts) kukulu reads every lent face's unlanded begin", "--head <commit>   (begin, offer, land) the head",
+    flags: ["--branch <name>   the line the kukulu lei binds (the checkout's branch where absent)", "--rollback [<rev>]   (kukulu) the image that ran before, or an older revision's", "--rite <r>   (begin) the rite; (receipts) kukulu reads every lent face's unlanded begin", "--head <commit>   (begin, offer, land) the head; a landing's must match its begun half", "--base <offerBase>   (offer) the resting offer's hash as `receipts --rite kukulu` answered it",
       "--staging <path>   (begin, a keep) the bundle the keep staged inside its workspace; the vessel derives the id from it",
       "--workspace <name>   (keep, keep-cut) the bound workspace the bundle rests in", "--into <path>   (keep, keep-cut) the place inside it (house where absent)",
       "--accept-omissions   (keep, keep-cut) name the bundle partial where the census reads unsettled; a face whose live stage will not read needs no flag (its files travel, its standing heads stay behind, named)",
