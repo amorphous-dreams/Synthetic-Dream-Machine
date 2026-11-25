@@ -88,7 +88,7 @@ function stand(mirrorRoots: Record<string, string> = { [BAG]: BAG, [OTHER]: OTHE
       documentOf: (bagId: string) => s.docs[bagId] ?? null,
       lineageOf: (bagId: string) => {
         const held = s.lineage[bagId];
-        return held === undefined ? null : { heads: held.heads, holds: (named: readonly string[]) => named.every((head) => held.holds.includes(head)) };
+        return held === undefined ? null : { heads: held.heads, quiet: true, holds: (named: readonly string[]) => named.every((head) => held.holds.includes(head)) };
       },
       syncedTree: tree(),
       onConflict: (info) => { s.conflicts.push(info); },
@@ -559,6 +559,22 @@ describe("a base names the history its records side read: records that fell behi
     await s.projector.sense([URI]);
     expect(s.conflicts).toHaveLength(1);
     expect(read(s.at("a/note.md"))).toBe(NEWER);
+  });
+
+  test("the standoff names what the keeper needs to keep the disk: the document, the heads it lacks, and whether it stood quiet since it mounted", async () => {
+    const s = await agreeThenFallBehind();
+    await s.reboot();
+    expect(s.projector.standing().find((x) => x.uri === URI)?.behind).toEqual({ doc: "automerge:working", heads: ["h2"], quiet: true });
+  });
+
+  test("the file moved too while the records fell behind: still no both-moved, the file holds the newest words", async () => {
+    const s = await agreeThenFallBehind();
+    writeFileSync(s.at("a/note.md"), HAND, "utf-8");
+    await s.reboot();
+    expect(read(s.at("a/note.md"))).toBe(HAND);
+    expect(s.conflicts).toHaveLength(1);
+    expect(s.conflicts[0]!.reason).toContain("fell behind");
+    expect(s.projector.standing().find((x) => x.uri === URI)?.behind?.heads).toEqual(["h2"]);
   });
 
   test("a person who names that standoff and takes the records' side lands the older render, by their own word", async () => {

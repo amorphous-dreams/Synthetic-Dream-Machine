@@ -139,7 +139,12 @@ export interface LarDiskProjectorOptions {
    * document stands now, and every base this projector pins carries them; `holds` answers whether the document still
    * holds a base's heads. A document that lacks them fell behind that agreement (`pastRecords`).
    */
-  readonly lineageOf?: (bagId: string) => { readonly heads: readonly string[] | null; holds(heads: readonly string[]): boolean } | null;
+  readonly lineageOf?: (bagId: string) => {
+    readonly heads: readonly string[] | null;
+    holds(heads: readonly string[]): boolean;
+    /** No write landed in the document since it mounted: it reads exactly as it loaded. Absent reads false. */
+    readonly quiet?: boolean;
+  } | null;
   readonly recoveryFileFn?: (fields: Record<string, unknown>) => Promise<CarrierFile | null>;
   /**
    * Render a mirrored bag's OWN record of a carrier root — off that bag's records, never the resolved view. Present, an
@@ -449,6 +454,12 @@ export interface StandoffSides {
   readonly disk: string | null;
   readonly records: string;
   readonly base?: { readonly disk: string; readonly records: string };
+  /**
+   * THE RECORDS FELL BEHIND THE BASE (`pastRecords`): the document the base names, the heads it lacks, and whether the
+   * document stood quiet since it mounted (no write landed, so it holds nothing newer than what it loaded). The keeper
+   * reads this to keep the disk with no hand (`standoff-drafts.ts`).
+   */
+  readonly behind?: { readonly doc?: string; readonly heads: readonly string[]; readonly quiet: boolean };
 }
 
 interface StandoffEntry extends Partial<StandoffSides> {
@@ -2300,7 +2311,9 @@ export class LarDiskProjector {
         // ONE SURFACING PER STANDOFF: the key names the bag, the carrier and the two states. A reconcile
         // that meets the standoff it already raised stays quiet; the write still stands down.
         this._enterStandoff(mirror.bagId, tiddlerUri, standoff, "sides", reason,
-          { path: candidate, disk: diskHash, records: gateRecords, ...(base !== null ? { base: { disk: base.disk, records: base.records } } : {}) });
+          { path: candidate, disk: diskHash, records: gateRecords, ...(base !== null ? { base: { disk: base.disk, records: base.records } } : {}),
+            ...(decision.reason === "records-behind-base" && base?.heads !== undefined
+              ? { behind: { ...(base.doc !== undefined ? { doc: base.doc } : {}), heads: base.heads, quiet: this.lineageOf?.(bagId)?.quiet === true } } : {}) });
         if (renderText !== undefined && !another) this.standoffRenders.set(key, { standoff, text: renderText });
         return;
       }

@@ -101,7 +101,12 @@ export interface KeeperStandoff {
   readonly disk?: string | null;
   readonly records?: string;
   readonly base?: { readonly disk: string; readonly records: string };
+  /** The records fell behind the base: the document, the heads it lacks, and whether it stood quiet since it mounted. */
+  readonly behind?: { readonly doc?: string; readonly heads: readonly string[]; readonly quiet: boolean };
 }
+
+/** The law that keeps the disk where the records fell behind their base: the house's own, never a person's rule. */
+export const BEHIND_RULE = "records-behind-base";
 
 export interface StandoffKeeperDeps {
   readonly wiki: KeeperWiki;
@@ -124,12 +129,16 @@ export interface StandoffKeeperDeps {
   readonly grants: (bagId: string, path: string) => boolean;
   /** One audit row per collapse. */
   readonly audit: (row: CollapseAudit) => void;
+  /** One line per keep of the disk the keeper landed with no hand: no silent act. */
+  readonly notice?: (line: string, kept: { readonly bagId: string; readonly uri: string }) => void;
+  /** Why a write to `bagId`'s document could not rest right now (its saves wait unsealed), or null where it can. */
+  readonly unrested?: (bagId: string) => string | null;
   /** Raise, or clear, the awaiting alert of one stand-off. */
   readonly alert: (a: StandoffAlert) => void | Promise<void>;
 }
 
 export interface CollapseAudit {
-  readonly rule: CollapseRule;
+  readonly rule: CollapseRule | typeof BEHIND_RULE;
   readonly toward: CollapseToward;
   readonly bagId: string;
   readonly uri: string;
@@ -143,7 +152,7 @@ export type StandoffAlert =
   | { readonly clear?: false; readonly standoff: string; readonly bagId: string; readonly uri: string; readonly path: string; readonly drafts: readonly string[]; readonly why: string };
 
 export type KeeperOutcome =
-  | { readonly kind: "collapsed"; readonly rule: CollapseRule; readonly toward: CollapseToward; readonly drafts: readonly string[] }
+  | { readonly kind: "collapsed"; readonly rule: CollapseRule | typeof BEHIND_RULE; readonly toward: CollapseToward; readonly drafts: readonly string[] }
   | { readonly kind: "awaiting"; readonly drafts: readonly string[]; readonly why: string }
   | { readonly kind: "passed"; readonly why: string };
 
@@ -276,6 +285,8 @@ export class StandoffKeeper {
     if (recordsSaid === null) return this.awaiting(entry, path, [], "the records' render fails the ingest grade, so nothing collapses");
     const diskRecs = byTitle(diskSaid);
     const recordRecs = byTitle(recordsSaid);
+    // THE RECORDS FELL BEHIND THEIR BASE: no draft loads and no person's rule runs. The file holds the newest words.
+    if (entry.behind !== undefined) return this.keepDisk(entry, path, diskText, memetic, recordRecs, stands);
     const baseText = entry.base ? this.deps.baseText(path, entry.base.disk) : null;
     const baseSaid = baseText !== null && memetic ? this.deps.deserialize(uri, baseText) : null;
     const baseRecs = baseSaid ? byTitle(baseSaid) : null;
@@ -319,22 +330,40 @@ export class StandoffKeeper {
     if (verdict.toward === "records") return this.settleTowardRecords(entry, path, drafts, verdict.rule);
 
     // 3 — TOWARD THE DISK OR A MERGE: the landing passes the ingest grade, the grant, the key and the save bag, or waits.
-    const landed = this.deps.land(uri, verdict.text);
-    if ("why" in landed) return this.awaiting(entry, path, drafts, `${verdict.rule} merged words the ingest gate refuses: ${landed.why}`);
-    if (!this.deps.grants(bagId, path)) return this.awaiting(entry, path, drafts, `${verdict.rule} would land words from ${path}, which ${bagId}'s grant does not reach`);
+    const plan = this.planLanding(entry, path, verdict.rule, verdict.text, recordRecs);
+    if ("why" in plan) return this.awaiting(entry, path, drafts, plan.why);
+    const { writes } = plan;
+    // The landing says what the records say already: nothing lands in the records, and the file takes their render.
+    if (writes.length === 0) return this.settleTowardRecords(entry, path, drafts, verdict.rule);
+    if (stands() === undefined) return { kind: "passed", why: "the stand-off moved while the keeper weighed it" };
+    await this.writeLanding(writes, recordRecs, drafts);
+    this.deps.audit({ rule: verdict.rule, toward: verdict.toward, bagId, uri, path, standoff, drafts });
+    this.rounds.set(uri, round);
+    return { kind: "collapsed", rule: verdict.rule, toward: verdict.toward, drafts };
+  }
+
+  /**
+   * THE WRITES A LANDING WOULD MAKE, or why it may not land: the words pass the ingest grade, the file's path stands
+   * inside the bag's grant, and a save of each target lands in the stand-off's own bag.
+   */
+  private planLanding(entry: KeeperStandoff, path: string, rule: string, text: string, recordRecs: Map<string, Fields>):
+    { readonly writes: Array<{ readonly title: string; readonly fields: Fields | null }> } | { readonly why: string } {
+    const landed = this.deps.land(entry.uri, text);
+    if ("why" in landed) return { why: `${rule} would land words the ingest gate refuses: ${landed.why}` };
+    if (!this.deps.grants(entry.bagId, path)) return { why: `${rule} would land words from ${path}, which ${entry.bagId}'s grant does not reach` };
     const landing = byTitle(landed.records);
     const writes: Array<{ readonly title: string; readonly fields: Fields | null }> = [];
     for (const [title, fields] of landing) if (movedFields(fields, recordRecs.get(title)).length > 0) writes.push({ title, fields });
     for (const title of recordRecs.keys()) if (!landing.has(title) && this.deps.wiki.get(title) !== undefined) writes.push({ title, fields: null });
-    // The landing says what the records say already: nothing lands in the records, and the file takes their render.
-    if (writes.length === 0) return this.settleTowardRecords(entry, path, drafts, verdict.rule);
     for (const w of writes) {
       const lands = this.deps.saveBag(w.title);
-      if (lands !== bagId) {
-        return this.awaiting(entry, path, drafts, `${verdict.rule} would land ${w.title} in ${lands ?? "no layer this face mounts"}, not in ${bagId} where the stand-off stands`);
-      }
+      if (lands !== entry.bagId) return { why: `${rule} would land ${w.title} in ${lands ?? "no layer this face mounts"}, not in ${entry.bagId} where the stand-off stands` };
     }
-    if (stands() === undefined) return { kind: "passed", why: "the stand-off moved while the keeper weighed it" };
+    return { writes };
+  }
+
+  /** One wiki act lands the writes and takes the untouched drafts away: the shape the wiki shore reads as a SAVE. */
+  private async writeLanding(writes: ReadonlyArray<{ readonly title: string; readonly fields: Fields | null }>, recordRecs: Map<string, Fields>, drafts: readonly string[]): Promise<void> {
     await this.deps.wiki.act((put, del) => {
       for (const w of writes) {
         if (w.fields === null) { del(w.title); continue; }
@@ -346,9 +375,39 @@ export class StandoffKeeper {
       for (const d of drafts) if (untouched(this.deps.wiki.get(d))) del(d);
       return writes.length + drafts.length;
     });
-    this.deps.audit({ rule: verdict.rule, toward: verdict.toward, bagId, uri, path, standoff, drafts });
-    this.rounds.set(uri, round);
-    return { kind: "collapsed", rule: verdict.rule, toward: verdict.toward, drafts };
+  }
+
+  /**
+   * KEEP THE DISK, WITH NO HAND (operator's talk-out, 2026-11-25). A document that lacks the heads its base names went
+   * backwards: an older document loaded, or a save never rested. Where it also stood quiet since it mounted, it holds
+   * nothing newer than that base, so the file carries the newest words the house holds and the answer needs no person:
+   * the file's words land whole in the records (the road `lares shore keep-disk` takes), the projector's next weighing
+   * finds both sides agreed and moves the base, and ONE notice line names the document, the heads and the act.
+   *
+   * A PERSON STILL HEARS where the answer cannot be read: a write landed in that document since it mounted (it may hold
+   * words newer than the file), or the landing cannot stand. A landing that cannot stand answers `owed:` with its
+   * reason and claims nothing: a native carrier, words the ingest grade refuses, a save no layer takes, or a document
+   * whose saves cannot rest (`unrested`). The older render never writes over the file on any of these roads.
+   */
+  private async keepDisk(entry: KeeperStandoff, path: string, diskText: string, memetic: boolean, recordRecs: Map<string, Fields>, stands: () => KeeperStandoff | undefined): Promise<KeeperOutcome> {
+    const behind = entry.behind!;
+    const named = `${behind.doc ?? "its document"} lacks the heads its base names (${behind.heads.join(", ")})`;
+    if (!behind.quiet) {
+      return this.awaiting(entry, path, [], `the records fell behind their last agreement with the file (${named}), and a write landed in that document since it mounted, so it may hold words newer than the file; a person picks`);
+    }
+    const owed = (why: string): Promise<KeeperOutcome> =>
+      this.awaiting(entry, path, [], `owed: the records fell behind their last agreement with the file (${named}) and the file's words did not land back: ${why}. The file stays whole; \`lares shore keep-disk ${entry.uri} --key ${entry.standoff}\` lands them by hand`);
+    if (!memetic) return owed("a native carrier's raw bytes land through the ingest gesture alone");
+    const unrested = this.deps.unrested?.(entry.bagId) ?? null;
+    if (unrested !== null) return owed(`a write to ${entry.bagId} cannot rest (${unrested})`);
+    const plan = this.planLanding(entry, path, BEHIND_RULE, diskText, recordRecs);
+    if ("why" in plan) return owed(plan.why);
+    if (stands() === undefined) return { kind: "passed", why: "the stand-off moved while the keeper weighed it" };
+    if (plan.writes.length > 0) await this.writeLanding(plan.writes, recordRecs, []);
+    this.rounds.delete(entry.uri);
+    this.deps.audit({ rule: BEHIND_RULE, toward: "disk", bagId: entry.bagId, uri: entry.uri, path, standoff: entry.standoff, drafts: [] });
+    this.deps.notice?.(`[shore] kept the disk: ${entry.uri} (${path}) in ${entry.bagId} — ${named}, so the records went backwards and the file holds the newest words; ${plan.writes.length} record(s) took the file's words and the older render wrote nothing`, { bagId: entry.bagId, uri: entry.uri });
+    return { kind: "collapsed", rule: BEHIND_RULE, toward: "disk", drafts: [] };
   }
 
   /** The records' render writes over the file under the stand-off's key; the drafts leave only once it landed. */

@@ -84,7 +84,8 @@
  *       INGEST — it ADOPTS the disk edit — so the projecting leg MUST stand
  *       down rather than race it. Deciding otherwise would make the two legs
  *       disagree about one state, which is how a round trip eats an edit.)
- *   7. both moved               → CONFLICT `both-moved` (surface, never overwrite)
+ *   7. both moved               → CONFLICT `both-moved` (surface, never overwrite); where the records fell behind
+ *      the base they moved backwards, so this reads `records-behind-base` too: the file holds the newest words
  *
  * A PERSON'S ANSWER TAKES A SIDE. Where a standoff stands (clause 4 or 7) and the
  * caller hands in `answer: "take-records"`, the gate answers PROJECT `records-taken`.
@@ -214,6 +215,8 @@ export function decideProjection(input: ProjectionGateInput): ProjectionDecision
     return { kind: "noop", reason: "records-unmoved" };
   }
 
-  // 7 — both moved since the merge base: surface, never overwrite.
-  return taken ? { kind: "project", reason: "records-taken" } : { kind: "conflict", reason: "both-moved" };
+  // 7 — both moved since the merge base: surface, never overwrite. Records that fell behind the base moved backwards,
+  // not on: the file alone holds newer words, and the standoff says so (the keeper then keeps the disk).
+  if (taken) return { kind: "project", reason: "records-taken" };
+  return { kind: "conflict", reason: input.recordsBehindBase === true ? "records-behind-base" : "both-moved" };
 }
