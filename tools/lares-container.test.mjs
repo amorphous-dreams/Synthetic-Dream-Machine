@@ -133,6 +133,8 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       `case " $* " in *" build "*) printf 'GIT_REV=%s\\n' "\${GIT_REV:-}" >> "$CALL_LOG"; for a in "$@"; do if [ -f "$a" ] && grep -q 'context:' "$a"; then ctx=$(sed -n "s/^ *context: '\\\\(.*\\\\)'$/\\\\1/p" "$a"); (cd "$ctx" && find . -type f | LC_ALL=C sort | sed 's/^/CTX /') >> "$CALL_LOG"; for f in "$ctx"/tools/lares-container.*; do [ ! -f "$f" ] || grep -c 'edited' "$f" | sed 's/^/EDITED /' >> "$CALL_LOG"; done; fi; done; exit "\${FAKE_BUILD_RC:-0}";; esac\n` +
       // THE VESSEL'S LOG before a down removes it: stdout and stderr both, as the engine writes them.
       `case " $* " in *" logs --tail "*) printf '%s\\n' "\${FAKE_VESSEL_LOG:-}"; printf '%s\\n' "\${FAKE_VESSEL_LOG_ERR:-}" >&2; exit "\${FAKE_LOGS_RC:-0}";; esac\n` +
+      // THE VESSEL'S LIVE LOG (its tmpfs /lar/run/vessel-live.log): one JSON line per event change, as the sink writes them.
+      `case " $* " in *" exec "*"/lar/run/vessel-live.log"*) [ -z "\${FAKE_VESSEL_LIVE:-}" ] || printf '%s\\n' "\${FAKE_VESSEL_LIVE}"; exit "\${FAKE_LIVE_RC:-0}";; esac\n` +
       `case " $* " in *" up -d --wait lares "*) [ "\${FAKE_UP_RC:-0}" = 0 ] || printf '%s\\n' 'compose readiness failed' >&2; exit "\${FAKE_UP_RC:-0}";; esac\n` +
       (refuseInput ? `case " $* " in *" tiddler put "*) printf "lares tiddler put: usage refusal\\n" >&2; exit 2;; esac\n` : "") +
       `case " $* " in *" tiddler put "*" --file - "*|*" tiddler put "*" --file=- "*|*" tiddler put "*" --append - "*|*" tiddler put "*" --append=- "*|*" spirit "*" --file - "*) cat > "$CALL_LOG.stdin";; esac\n` +
@@ -1036,6 +1038,25 @@ for (const [name, shim] of shims) {
     assert.match(refused.calls, /down --remove-orphans/);
     const none = await run(shim, ["down"], { env: { ...MOUNTS } });
     assert.doesNotMatch(none.calls, /logs --tail/, "no vessel stood, so no log is read");
+  });
+
+  // THE CLOSING SLICE: where the vessel folds its log into records (its live log, one JSON line per event change), the down
+  // writes each event's last line to run/vessel-last.log, one per event in the order each last changed, and names it in one
+  // line; the raw tail is read only where no live log answers.
+  test(`${name}: down-saves-the-closing-slice: the vessel's live log lands in run/vessel-last.log as one line per event`, async () => {
+    const live = [
+      '{"key":"a","kind":"sealed-rest/save-unsealed","count":1,"boot":"b1"}',
+      '{"key":"b","kind":"faces/skips","count":1,"boot":"b1"}',
+      '{"key":"a","kind":"sealed-rest/save-unsealed","count":7,"boot":"b1"}',
+    ].join("\n");
+    const r = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN, FAKE_VESSEL_LIVE: live, FAKE_VESSEL_LOG: "[wire] raw line" }, houseFiles: { "run/vessel-last.log": "an older down's log\n" } });
+    assert.equal(r.status, 0, r.stderr);
+    const lines = (r.vesselLog ?? "").split("\n").filter((l) => l.trim() !== "");
+    assert.deepEqual(lines, ['{"key":"b","kind":"faces/skips","count":1,"boot":"b1"}', '{"key":"a","kind":"sealed-rest/save-unsealed","count":7,"boot":"b1"}']);
+    assert.doesNotMatch(r.vesselLog ?? "", /\[wire\] raw line/, "the raw tail stays unread where the live log answers");
+    assert.doesNotMatch(r.calls, /^logs --tail/m);
+    assert.equal(r.stderr.split("\n").filter((l) => /vessel-last\.log/.test(l)).length, 1, r.stderr);
+    assert.match(r.stderr, /lares-container: the vessel's closing slice \(2 event\(s\), one line each\) rests at .*\/run\/vessel-last\.log/);
   });
 
   // THE HOUSE KEEPS ITSELF: where a keep workspace stands named, down runs the host's `rite keep --if-due` while the vessel

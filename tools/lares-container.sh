@@ -929,13 +929,25 @@ warn_pulama_skew() {
 }
 
 # THE VESSEL'S LOG OUTLIVES THE DOWN. A down removes the container, and its log leaves with it, so the down path saves
-# the last VESSEL_LOG_LINES lines (stdout and stderr) to the house's run/vessel-last.log first, overwritten each down,
-# and names the file. A log that cannot be read is named and never blocks the down.
+# the vessel's log to the house's run/vessel-last.log first, overwritten each down, and names the file. Where the vessel
+# folds its log into records (`vessel-log-sink`: one JSON line per event change in its tmpfs /lar/run/vessel-live.log),
+# the file takes the CLOSING SLICE: each event's last line, one per event, in the order each last changed. Where no live
+# log reads, it takes the last VESSEL_LOG_LINES raw lines (stdout and stderr). A log that cannot be read is named and
+# never blocks the down.
 VESSEL_LOG_LINES=20000
+# The closing slice of a live log on stdin: each (boot, key)'s last line, ordered by where it last stood.
+closing_slice() {
+  awk '{ if (match($0, /"key":"[^"]*"/)) { k = substr($0, RSTART, RLENGTH); b = ""; if (match($0, /"boot":"[^"]*"/)) b = substr($0, RSTART, RLENGTH); last[b k] = $0; pos[b k] = NR } }
+       END { for (k in last) printf "%d\t%s\n", pos[k], last[k] }' | sort -n | cut -f2-
+}
 save_vessel_log() { # $1 = the running vessel's container id
   sv_id=$(printf '%s\n' "$1" | tr -d '\r' | sed -n '1p')
   sv_file="$HOUSE/run/vessel-last.log"
-  if mkdir -p -- "$HOUSE/run" && docker logs --tail "$VESSEL_LOG_LINES" "$sv_id" > "$sv_file" 2>&1; then
+  mkdir -p -- "$HOUSE/run" 2>/dev/null || true
+  if sv_live=$(docker exec "$sv_id" cat /lar/run/vessel-live.log 2>/dev/null) && [ -n "$sv_live" ] \
+     && printf '%s\n' "$sv_live" | closing_slice > "$sv_file" && [ -s "$sv_file" ]; then
+    printf "lares-container: the vessel's closing slice (%s event(s), one line each) rests at %s\n" "$(wc -l < "$sv_file" | tr -d ' ')" "$sv_file" >&2
+  elif docker logs --tail "$VESSEL_LOG_LINES" "$sv_id" > "$sv_file" 2>&1; then
     printf "lares-container: the vessel's log (its last %s lines) rests at %s\n" "$VESSEL_LOG_LINES" "$sv_file" >&2
   else
     printf '%s\n' "lares-container: the vessel's log could not be read; the down goes on" >&2
