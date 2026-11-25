@@ -25,11 +25,11 @@
  *            keep pair mints under it. The pūlama's container stands read-only with no config home, so the verb writes NOTHING:
  *            it prints exactly ONE stdout line (`keepSeatLine`) the host's shim writes to the house's `keep-seat.json` at 0600, or
  *            one refusal line and a nonzero exit
- *   keeper-commit <sha256:…>  THE HAND NAMES THE KEEPER'S SUCCESSOR: the door reads first (unlit, unreported or passing refuses
+ *   name-successor <sha256:…>  THE HAND NAMES THE KEEPER'S SUCCESSOR: the door reads first (unlit, unreported or passing refuses
  *            before any prompt), the prompt names the successor closure it commits, and the route proves against the lit holder.
- *            The host's consent screen (`tools/lares-container.sh pulama keeper-commit`) prints that closure and the source tree, and
+ *            The host's consent screen (`tools/lares-container.sh pulama name-successor`) prints that closure and the source tree, and
  *            offers the clean-tree re-check, before it lands here
- *   (internal, never a hand verb) `keeper-commit-lei '<json>'`: the commit the kukulu lei licenses, as the host testifies it from
+ *   (internal, never a hand verb) `name-successor-lei '<json>'`: the commit the kukulu lei licenses, as the host testifies it from
  *            inside `lares rite kukulu`; it stays out of the usage line
  *   lock · status · tessera · keeper-offer · keeper-land · take-fire · closure <sha256:…> · keeper-vest '{"to","closure"}' ·
  *   keeper-receive '{"slot"}' · image <digest> | image '{"digest","seed","closure"}'   one frame each, no route
@@ -99,7 +99,7 @@ export function readRoute(label: string, what: string, terminal: RouteTerminal =
   });
 }
 
-export const PULAMA_VERB_USAGE = `usage: pulama-main.js serve | light [--admit] | admit [face…] | unadmit <image digest> | rehive <face> | recard <face> | lei kui|restring|unstring '{"face":…,"rite":…,"branch":…,…}' | lei kui '{"faces":[…]}' | publish '{"face":…,"offering":{"offeror":…,"pluginsCid":…,"blobs":[…]}}' | sign '{"face":…,"kind":"kahua-act"|"plugin-offering","record":{…}}' | keep-seat | lock | status | image <digest> | image '{"digest":…,"seed":…,"closure":…}' | tessera | closure <sha256:…> | keeper-commit <sha256:…> [--devices <n>] [--cosign <json>] | keeper-offer | keeper-vest '{"to":…,"closure":…}' | keeper-receive '{"slot":…}' | keeper-land | take-fire`;
+export const PULAMA_VERB_USAGE = `usage: pulama-main.js serve | light [--admit] | admit [face…] | unadmit <image digest> | rehive <face> | recard <face> | lei kui|restring|unstring '{"face":…,"rite":…,"branch":…,…}' | lei kui '{"faces":[…]}' | publish '{"face":…,"offering":{"offeror":…,"pluginsCid":…,"blobs":[…]}}' | sign '{"face":…,"kind":"kahua-act"|"plugin-offering","record":{…}}' | keep-seat | lock | status | image <digest> | image '{"digest":…,"seed":…,"closure":…}' | tessera | closure <sha256:…> | name-successor <sha256:…> [--devices <n>] [--cosign <json>] | keeper-offer | keeper-vest '{"to":…,"closure":…}' | keeper-receive '{"slot":…}' | keeper-land | take-fire`;
 
 /** A verb line the hand door holds no act for. */
 export class PulamaVerbUsage extends Error { override readonly name = "PulamaVerbUsage"; constructor() { super(PULAMA_VERB_USAGE); } }
@@ -115,7 +115,7 @@ export function handVerbExit(verb: string, answer: PulamaHandAnswer): 0 | 1 {
 }
 /** The one reading each act that must land answers; any other reading exits 1, so the host shim never reads a refusal as done. */
 const HAND_VERB_LANDS: Readonly<Record<string, string>> = {
-  rehive: "rehived", recard: "granted", publish: "signed", sign: "signed", "keeper-commit": "committed", "keeper-commit-lei": "committed", "keeper-offer": "offered", "keeper-vest": "vested", "keeper-receive": "landed", "keeper-land": "landed", "take-fire": "taken",
+  rehive: "rehived", recard: "granted", publish: "signed", sign: "signed", "name-successor": "named", "name-successor-lei": "named", "keeper-offer": "offered", "keeper-vest": "vested", "keeper-receive": "landed", "keeper-land": "landed", "take-fire": "taken",
 };
 
 /**
@@ -231,8 +231,8 @@ export async function runHandVerb(verb: string, arg: string | readonly string[] 
     const passphrase = await ports.route(`pūlama route, to sign ${what} for h${t["face"]}: `, String(what));
     return ports.ask({ op: "sign", face: t["face"], kind: t["kind"], record: t["record"], credentials: [{ kind: "passphrase", passphrase }] });
   }
-  if (verb === "keeper-commit") {
-    // `keeper-commit <sha256:…> [--devices <n>] [--cosign <json>]`: the host shim names the most devices any lit face holds, as the
+  if (verb === "name-successor") {
+    // `name-successor <sha256:…> [--devices <n>] [--cosign <json>]`: the host shim names the most devices any lit face holds, as the
     // vessel read it, and the co-sign the vessel spent over this commit (`lares intent keeper-cosign`: its nonce and each face's proof).
     const words = typeof arg === "string" ? [arg] : Array.isArray(arg) ? [...arg] : [];
     const digest = words[0];
@@ -248,14 +248,14 @@ export async function runHandVerb(verb: string, arg: string | readonly string[] 
     const devices = extra;
     // THE DOOR READS FIRST: an unlit, unreported or passing keeper refuses here, before anybody types a route.
     const standing = await ports.ask({ op: "status" });
-    if (standing["lit"] !== true) return { op: "keeper-commit", reading: "pulama-locked", detail: "the pūlama stands unlit: light it first (`light`), then commit its successor" };
-    if (standing["passing"] === true) return { op: "keeper-commit", reading: "fire-passing", detail: "this keeper vested its fire already" };
-    if (typeof standing["closure"] !== "string") return { op: "keeper-commit", reading: "closure-unreported", detail: "the host reported no closure for this keeper; `tools/lares-container.sh up` reports it" };
-    const passphrase = await ports.route(`pūlama route, to hand this keeper's fire to the successor closure ${digest}: `, "a keeper commit");
-    return ports.ask({ op: "keeper-commit", next: digest, ...devices, credentials: [{ kind: "passphrase", passphrase }] });
+    if (standing["lit"] !== true) return { op: "name-successor", reading: "pulama-locked", detail: "the pūlama stands unlit: light it first (`light`), then commit its successor" };
+    if (standing["passing"] === true) return { op: "name-successor", reading: "fire-passing", detail: "this keeper vested its fire already" };
+    if (typeof standing["closure"] !== "string") return { op: "name-successor", reading: "closure-unreported", detail: "the host reported no closure for this keeper; `tools/lares-container.sh up` reports it" };
+    const passphrase = await ports.route(`pūlama route, to hand this keeper's fire to the successor closure ${digest}: `, "a successor");
+    return ports.ask({ op: "name-successor", next: digest, ...devices, credentials: [{ kind: "passphrase", passphrase }] });
   }
   if (verb === "closure" && typeof arg === "string") return ports.ask({ op: "closure", digest: arg });
-  if ((verb === "keeper-vest" || verb === "keeper-receive" || verb === "keeper-commit-lei") && typeof arg === "string") {
+  if ((verb === "keeper-vest" || verb === "keeper-receive" || verb === "name-successor-lei") && typeof arg === "string") {
     let terms: unknown;
     try { terms = JSON.parse(arg); } catch { throw new PulamaVerbUsage(); }
     if (typeof terms !== "object" || terms === null || Array.isArray(terms) || "op" in terms || "credentials" in terms) throw new PulamaVerbUsage();

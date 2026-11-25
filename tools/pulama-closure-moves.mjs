@@ -49,7 +49,7 @@ if (a.why || b.why) {
 } else if (a.digest === b.digest) {
   process.stdout.write(`moves the pūlama closure: no (${short(b.digest)})\n`);
 } else {
-  const lines = [`moves the pūlama closure: yes (${short(a.digest)} -> ${short(b.digest)}); the first kūkulu after it relights the pūlama unless a keeper commit names the new closure`, ""];
+  const lines = [`moves the pūlama closure: yes (${short(a.digest)} -> ${short(b.digest)}); the first kūkulu after it relights the pūlama unless a successor names the new closure`, ""];
   for (const path of [...new Set([...a.members.keys(), ...b.members.keys()])].sort()) {
     const was = a.members.get(path), now = b.members.get(path);
     if (was === now) continue;

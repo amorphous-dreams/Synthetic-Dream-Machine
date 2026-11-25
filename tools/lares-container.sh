@@ -445,7 +445,7 @@ route_cli() {
         --) break ;;
         --file|--append) stream_want=$stream_arg ;;
         --file=*|--append=*) stream_n=$((stream_n + 1)); stream_kind=${stream_arg%%=*}; [ -n "${stream_arg#*=}" ] || stream_empty=yes ;;
-        --*) case "$stream_arg" in *=*|--no-*|--accept-omissions|--accept-loss|--abandon|--added|--all|--all-strata|--apply|--approve|--brief|--bulk|--cancel|--cards|--collapse|--cosign|--confirm|--create|--cut|--drain|--deny|--docs|--draft|--drop|--dry-run|--edge|--ephemeral|--every|--executable|--family|--force|--foreground|--fresh|--from-persona|--held|--help|--help-mempalace|--history|--hearth|--hold|--if-due|--in-wiki|--init|--join|--json|--keep|--keep-hooks|--keyhive-trace|--lag|--launch|--list|--meme|--memory|--new|--observe|--orphans|--over-fresher|--page|--pair|--palaces|--paper|--partial|--passphrase|--pending|--probe|--quorum|--overwrite|--remove|--repour|--restart|--rotate|--seat|--sessions|--shadow|--skinny|--skip-build|--spectral|--split-root|--staged|--sweep|--tag-blobs|--terms|--tree|--verbose|--wait|--watch|--with-web|--workbench|--writeback|--yes) ;; *) stream_want=$stream_arg ;; esac ;;
+        --*) case "$stream_arg" in *=*|--no-*|--accept-omissions|--accept-loss|--abandon|--added|--all|--all-strata|--apply|--approve|--brief|--bulk|--cancel|--cards|--collapse|--commit|--cosign|--confirm|--create|--cut|--drain|--deny|--docs|--draft|--drop|--dry-run|--edge|--ephemeral|--every|--executable|--family|--force|--foreground|--fresh|--from-persona|--held|--help|--help-mempalace|--history|--hearth|--hold|--if-due|--in-wiki|--init|--join|--json|--keep|--keep-hooks|--keyhive-trace|--lag|--launch|--list|--meme|--memory|--new|--observe|--offer|--orphans|--over-fresher|--page|--pair|--palaces|--paper|--partial|--passphrase|--pending|--probe|--quorum|--overwrite|--remove|--repour|--restart|--revert|--rotate|--seat|--sessions|--shadow|--skinny|--skip-build|--spectral|--split-root|--staged|--sweep|--tag-blobs|--terms|--tree|--verbose|--wait|--watch|--with-web|--workbench|--writeback|--yes) ;; *) stream_want=$stream_arg ;; esac ;;
       esac
     done
     if [ "$stream_n" -gt 1 ]; then printf 'lares-container: name one text source: --file or --append, once\n' >&2; return 2; fi
@@ -472,7 +472,7 @@ route_cli() {
             --file=*|--append=*)
               stream_value=${stream_arg#*=}
               if [ "$stream_value" != - ]; then stream_file=$stream_value; stream_arg="${stream_arg%%=*}=-"; fi ;;
-            --*) case "$stream_arg" in *=*|--no-*|--accept-omissions|--accept-loss|--abandon|--added|--all|--all-strata|--apply|--approve|--brief|--bulk|--cancel|--cards|--collapse|--cosign|--confirm|--create|--cut|--drain|--deny|--docs|--draft|--drop|--dry-run|--edge|--ephemeral|--every|--executable|--family|--force|--foreground|--fresh|--from-persona|--held|--help|--help-mempalace|--history|--hearth|--hold|--if-due|--in-wiki|--init|--join|--json|--keep|--keep-hooks|--keyhive-trace|--lag|--launch|--list|--meme|--memory|--new|--observe|--orphans|--over-fresher|--page|--pair|--palaces|--paper|--partial|--passphrase|--pending|--probe|--quorum|--overwrite|--remove|--repour|--restart|--rotate|--seat|--sessions|--shadow|--skinny|--skip-build|--spectral|--split-root|--staged|--sweep|--tag-blobs|--terms|--tree|--verbose|--wait|--watch|--with-web|--workbench|--writeback|--yes) ;; *) stream_want=$stream_arg ;; esac ;;
+            --*) case "$stream_arg" in *=*|--no-*|--accept-omissions|--accept-loss|--abandon|--added|--all|--all-strata|--apply|--approve|--brief|--bulk|--cancel|--cards|--collapse|--commit|--cosign|--confirm|--create|--cut|--drain|--deny|--docs|--draft|--drop|--dry-run|--edge|--ephemeral|--every|--executable|--family|--force|--foreground|--fresh|--from-persona|--held|--help|--help-mempalace|--history|--hearth|--hold|--if-due|--in-wiki|--init|--join|--json|--keep|--keep-hooks|--keyhive-trace|--lag|--launch|--list|--meme|--memory|--new|--observe|--offer|--orphans|--over-fresher|--page|--pair|--palaces|--paper|--partial|--passphrase|--pending|--probe|--quorum|--overwrite|--remove|--repour|--restart|--revert|--rotate|--seat|--sessions|--shadow|--skinny|--skip-build|--spectral|--split-root|--staged|--sweep|--tag-blobs|--terms|--tree|--verbose|--wait|--watch|--with-web|--workbench|--writeback|--yes) ;; *) stream_want=$stream_arg ;; esac ;;
           esac
         fi
         set -- "$@" "$stream_arg"
@@ -854,7 +854,7 @@ stand_pulama() {
   # THE KEEPER'S OWN CLOSURE, read off the container it runs (never the tag, which a build moved ahead of any restand).
   sp_id=$(compose --profile pulama ps -q --status running "$sp_svc" 2>/dev/null) || sp_id=""
   sp_closure=$(closure_label container "$sp_id")
-  [ -z "$sp_closure" ] || compose --profile pulama exec -T "$sp_svc" node "$PULAMA_MAIN" closure "$sp_closure" </dev/null >/dev/null || printf '%s\n' 'lares-container: the pūlama refused its closure report, so no keeper commit names what it hands from' >&2
+  [ -z "$sp_closure" ] || compose --profile pulama exec -T "$sp_svc" node "$PULAMA_MAIN" closure "$sp_closure" </dev/null >/dev/null || printf '%s\n' 'lares-container: the pūlama refused its closure report, so no successor names what it hands from' >&2
 }
 # Does a pūlama run beside the vessel? It reads the container itself, whatever LARES_PULAMA now says: running, absent, or
 # unknown where the ps fails.
@@ -1293,17 +1293,17 @@ resolve_image() { # $1 = a revision, or nothing for the prior image
 # THE PŪLAMA'S OWN STATUS (`pulama-main.js status`, read detached): whether it stands lit, and whether the admitted set it
 # reads under its key names the image and no tombstone ends it. An unlit pūlama lists no admission; a status that never
 # answers leaves both unread.
-ps_lit=""; ps_admitted=""; ps_vest=""; ps_struck=""; ps_pending=""; ps_stale=""; ps_lei=""
+ps_lit=""; ps_admitted=""; ps_vest=""; ps_struck=""; ps_successor=""; ps_stale=""; ps_lei=""
 pulama_status_read() { # $1 = the image digest
-  ps_lit=""; ps_admitted=""; ps_vest=""; ps_struck=""; ps_pending=""; ps_stale=""; ps_closure=""; ps_lei=""
+  ps_lit=""; ps_admitted=""; ps_vest=""; ps_struck=""; ps_successor=""; ps_stale=""; ps_closure=""; ps_lei=""
   ps_flat=$(compose --profile pulama exec -T "$(pulama_svc)" node "$PULAMA_MAIN" status </dev/null 2>/dev/null | tr -d ' \t\r\n') || return 0
-  # THE KEEPER TALLY: the live commit's successor closure where it can vest, whether the struck fire is due, and any live commit.
+  # THE KEEPER TALLY: the live successor's successor closure where it can vest, whether the struck fire is due, and any live successor.
   ps_vest=$(printf '%s' "$ps_flat" | sed -n 's/.*"vestReady":"\(sha256:[0-9a-f]\{64\}\)".*/\1/p')
-  ps_pending=$(printf '%s' "$ps_flat" | sed -n 's/.*"pending":"\(sha256:[0-9a-f]\{64\}\)".*/\1/p')
+  ps_successor=$(printf '%s' "$ps_flat" | sed -n 's/.*"successor":"\(sha256:[0-9a-f]\{64\}\)".*/\1/p')
   ps_closure=$(printf '%s' "$ps_flat" | sed -n 's/.*"closure":"\(sha256:[0-9a-f]\{64\}\)".*/\1/p')
-  # A STALE live commit (`stalePending`: a self-commit, or one a keeper of another closure rested) binds nothing current: the
+  # A STALE live successor (`staleSuccessor`: a self-successor, or one a keeper of another closure rested) binds nothing current: the
   # lei's commit supersedes it, so the lei reading treats it as none (the pūlama decides by closures and rows, never a clock).
-  case "$ps_flat" in *'"stalePending":true'*) ps_stale=$(printf '%s' "$ps_flat" | sed -n 's/.*"staleWhy":"\([a-z-]*\)".*/\1/p'); ps_stale=${ps_stale:-stale} ;; esac
+  case "$ps_flat" in *'"staleSuccessor":true'*) ps_stale=$(printf '%s' "$ps_flat" | sed -n 's/.*"staleSuccessorWhy":"\([a-z-]*\)".*/\1/p'); ps_stale=${ps_stale:-stale} ;; esac
   case "$ps_flat" in *'"struckDue":true'*) ps_struck=yes ;; esac
   # THE KEEPER LEI: a return could spend (the keeper's own bounds; the host adds its testimony at the spend).
   case "$ps_flat" in *'"leiReady":true'*) ps_lei=yes ;; esac
@@ -1343,7 +1343,7 @@ print_reading() {
          if [ "$pr_state" = moved ]; then
            if [ -n "$ps_struck" ]; then rd_keeper=',"keeper":"struck-due"'
            elif [ -n "$ps_vest" ] && [ "$ps_vest" = "$(closure_label image "$IMAGE_REF")" ]; then rd_keeper=',"keeper":"vests"'
-           elif [ -n "$ps_lei" ] && [ "$ps_lit" = yes ] && { [ -z "$ps_pending" ] || [ -n "$ps_stale" ]; }; then rd_keeper=',"keeper":"lei"'; fi
+           elif [ -n "$ps_lei" ] && [ "$ps_lit" = yes ] && { [ -z "$ps_successor" ] || [ -n "$ps_stale" ]; }; then rd_keeper=',"keeper":"lei"'; fi
          fi ;;
     esac
   fi
@@ -1401,7 +1401,7 @@ ai_restand_gate() { # $1 = the verb as typed
 }
 # THE KŪKULU READING (course pulama-unblur): before any rite, one line says whether the next `lares rite kukulu` runs alone or
 # needs a hand, read off the sync the rite reads first, the closure of the head it would build (tools/pulama-closure.mjs over a
-# fresh archive of it) against the running pūlama's label, the pūlama's own status (lit, struckDue, vestReady, leiReady, pending),
+# fresh archive of it) against the running pūlama's label, the pūlama's own status (lit, struckDue, vestReady, leiReady, successor),
 # the kukulu lei on the checkout's branch (`lei show` in the standing vessel), the image the vessel runs and the image of the head
 # where one stands already (its admission, a resting offer). The verdict walks the gates the rite
 # walks with no terminal (packages/lares-cli/src/rite-kukulu.ts `kukuluHand`); one table welds the two (lares-container.test.mjs).
@@ -1492,7 +1492,7 @@ kukulu_reading() {
        if [ "$kr_pulama" = moved ]; then
          if [ -n "$ps_struck" ]; then kr_keeper=struck-due
          elif [ -n "$ps_vest" ] && [ "$ps_vest" = "$kr_mine" ]; then kr_keeper=vests
-         elif [ -n "$ps_lei" ] && [ "$ps_lit" = yes ] && { [ -z "$ps_pending" ] || [ -n "$ps_stale" ]; }; then kr_keeper=lei; fi
+         elif [ -n "$ps_lei" ] && [ "$ps_lit" = yes ] && { [ -z "$ps_successor" ] || [ -n "$ps_stale" ]; }; then kr_keeper=lei; fi
        fi ;;
   esac
   # THE KUKULU LEI on the checkout's branch, as the rite's leiStands reads it: yes (a return left), or the cause it stands not.
@@ -1525,7 +1525,7 @@ kukulu_reading() {
     elif [ -z "$kr_lei" ]; then kr_say=$kr_lei_unread
     else kr_say="needs your hand: no standing kukulu lei (the pūlama's admit of the new image reads your route)"; fi
   elif [ -n "$kr_by_lei" ]; then kr_say='keeper vests under the standing lei'
-  elif [ "$kr_pulama" = moved ] && [ "$kr_keeper" = vests ]; then kr_say='keeper vests under your keeper commit'
+  elif [ "$kr_pulama" = moved ] && [ "$kr_keeper" = vests ]; then kr_say='keeper vests under your successor'
   else kr_say='runs alone'; fi
   kr_say="$kr_say$kr_suffix"
   printf 'lares-container: kūkulu at %s: %s · closure %s · pūlama %s\n' "$kr_at" "$kr_say" "$(printf '%s' "$kr_mine" | cut -c1-19)" "$(if [ -n "$kr_ran" ]; then printf '%s' "$kr_ran" | cut -c1-19; else printf none; fi)" >&2
@@ -1554,7 +1554,7 @@ keep_after_raise() {
 # vessel as it stood, and names the cure that runs from there. The slot crosses this pipe once, sealed to the successor's key.
 KV_OLD=""; KV_NEW=""; R_KEEPER_TO=""
 keeper_reading() { printf '%s' "$1" | tr -d ' \t\r\n' | sed -n 's/.*"reading":"\([a-z-]*\)".*/\1/p'; }
-# THE COMMIT THE KUKULU LEI LICENSES (internal: `lares rite kukulu` calls `pulama keeper-commit --lei <rev> <branch>`, never a person at a
+# THE SUCCESSOR THE KUKULU LEI LICENSES, PANI (internal: `lares rite kukulu` calls `pulama name-successor --lei <rev> <branch>`, never a person at a
 # terminal, and no help names it; no route; operator ruling 2026-11-24:
 # the keeper lei keeps no count of its own, it rides the kukulu lei the rite read standing on the branch with returns left, and
 # the vest's live rite spends that lei's return). The host's guards before the keeper rests the commit:
@@ -1562,22 +1562,22 @@ keeper_reading() { printf '%s' "$1" | tr -d ' \t\r\n' | sed -n 's/.*"reading":"\
 # clean, its closure D′ off two fresh archives the same, the built image's closure label equal to D′, and the CI push run on the
 # revision green (read with `gh … --jq`, no jq on host); each lit face holds one device. Then the keeper checks its own bounds
 # (no fork, no hand commit, no vested commit unlanded, the last pair par, struck-due false) and
-# rests the same commit `keeper-commit` rests, naming the license. These guards bind against accident: a host can send the commit
+# rests the same commit `name-successor` rests, naming the license. These guards bind against accident: a host can send the commit
 # itself, so the real gate stands at host access plus a standing kukulu lei.
 keeper_commit_lei() { # $1 = the revision, $2 = the branch whose kukulu lei licenses it
-  kl_cure='or name the successor by hand on a terminal: lares pulama keeper-commit'
-  printf '%s' "$2" | grep -Eq '^[A-Za-z0-9._/-]+$' || die "pulama keeper-commit --lei: \"$2\" names no branch (keeper-lei-testimony-malformed); nothing committed: run lares rite kukulu again, $kl_cure"
-  command -v node >/dev/null 2>&1 || die "pulama keeper-commit --lei reads the closure with the host's node, and none answers here; nothing committed: install node on the host, $kl_cure"
-  kl_top=$(git -C "$SHIM_DIR" rev-parse --show-toplevel) || die "pulama keeper-commit --lei reads a revision from a checkout, and none answers at $SHIM_DIR; nothing committed: $kl_cure"
-  kl_rev=$(git -C "$kl_top" rev-parse --verify --quiet "$1^{commit}") || die "pulama keeper-commit --lei: $1 names no commit; nothing committed: lares rite kukulu names the revision it raised, $kl_cure"
-  kl_tree=$(git -C "$kl_top" rev-parse "$kl_rev^{tree}") || die "pulama keeper-commit --lei: the tree of $kl_rev reads nowhere; nothing committed: $kl_cure"
+  kl_cure='or name the successor by hand on a terminal: lares pulama name-successor'
+  printf '%s' "$2" | grep -Eq '^[A-Za-z0-9._/-]+$' || die "pulama name-successor --lei: \"$2\" names no branch (keeper-lei-testimony-malformed); no successor named: run lares rite kukulu again, $kl_cure"
+  command -v node >/dev/null 2>&1 || die "pulama name-successor --lei reads the closure with the host's node, and none answers here; no successor named: install node on the host, $kl_cure"
+  kl_top=$(git -C "$SHIM_DIR" rev-parse --show-toplevel) || die "pulama name-successor --lei reads a revision from a checkout, and none answers at $SHIM_DIR; no successor named: $kl_cure"
+  kl_rev=$(git -C "$kl_top" rev-parse --verify --quiet "$1^{commit}") || die "pulama name-successor --lei: $1 names no commit; no successor named: lares rite kukulu names the revision it raised, $kl_cure"
+  kl_tree=$(git -C "$kl_top" rev-parse "$kl_rev^{tree}") || die "pulama name-successor --lei: the tree of $kl_rev reads nowhere; no successor named: $kl_cure"
   kl_reach=""
   for kl_ref in refs/remotes/origin/develop refs/remotes/origin/main; do
     git -C "$kl_top" rev-parse --verify --quiet "$kl_ref" >/dev/null || continue
     if git -C "$kl_top" merge-base --is-ancestor "$kl_rev" "$kl_ref"; then kl_reach=${kl_ref#refs/remotes/}; break; fi
   done
-  [ -n "$kl_reach" ] || die "pulama keeper-commit --lei: $kl_rev reads reachable from neither origin/develop nor origin/main as fetched (keeper-lei-unreachable), so the kukulu lei licenses no commit on it; land it through the merge gate, then lares rite kukulu again, $kl_cure"
-  [ -z "$(git -C "$kl_top" status --porcelain --untracked-files=no)" ] || die "pulama keeper-commit --lei: the checkout carries uncommitted tracked changes (keeper-lei-tree-dirty); commit or drop them (git -C $kl_top status), then lares rite kukulu again, $kl_cure"
+  [ -n "$kl_reach" ] || die "pulama name-successor --lei: $kl_rev reads reachable from neither origin/develop nor origin/main as fetched (keeper-lei-unreachable), so the kukulu lei licenses no commit on it; land it through the merge gate, then lares rite kukulu again, $kl_cure"
+  [ -z "$(git -C "$kl_top" status --porcelain --untracked-files=no)" ] || die "pulama name-successor --lei: the checkout carries uncommitted tracked changes (keeper-lei-tree-dirty); commit or drop them (git -C $kl_top status), then lares rite kukulu again, $kl_cure"
   kl_closure() {
     ensure_house; mkdir -p -- "$HOUSE/cache" || return 1
     kl_ctx=$(mktemp -d "$HOUSE/cache/keeper.XXXXXX") || return 1
@@ -1585,16 +1585,16 @@ keeper_commit_lei() { # $1 = the revision, $2 = the branch whose kukulu lei lice
     kl_rc=$?; rm -rf -- "$kl_ctx"; return "$kl_rc"
   }
   kl_d=$(kl_closure) || kl_d=""
-  printf '%s' "$kl_d" | grep -Eq '^sha256:[0-9a-f]{64}$' || die "pulama keeper-commit --lei: no pūlama closure reads from a clean archive of $kl_rev; nothing committed: $kl_cure"
+  printf '%s' "$kl_d" | grep -Eq '^sha256:[0-9a-f]{64}$' || die "pulama name-successor --lei: no pūlama closure reads from a clean archive of $kl_rev; no successor named: $kl_cure"
   kl_again=$(kl_closure) || kl_again=""
-  [ "$kl_again" = "$kl_d" ] || die "pulama keeper-commit --lei: the fresh-archive re-check reads ${kl_again:-no closure}, not $kl_d (keeper-lei-recheck-differs); nothing committed: $kl_cure"
+  [ "$kl_again" = "$kl_d" ] || die "pulama name-successor --lei: the fresh-archive re-check reads ${kl_again:-no closure}, not $kl_d (keeper-lei-recheck-differs); no successor named: $kl_cure"
   kl_label=$(closure_label image "$IMAGE_REF")
-  [ "$kl_label" = "$kl_d" ] || die "pulama keeper-commit --lei: the built image's closure label reads ${kl_label:-nothing}, and the archive of $kl_rev reads $kl_d (keeper-lei-image-differs); nothing committed: rebuild the image from that revision with lares rite kukulu, $kl_cure"
-  command -v gh >/dev/null 2>&1 || die "pulama keeper-commit --lei reads the CI push run with gh, and none answers here (keeper-lei-ci-unread); nothing committed: install gh and run gh auth login, $kl_cure"
+  [ "$kl_label" = "$kl_d" ] || die "pulama name-successor --lei: the built image's closure label reads ${kl_label:-nothing}, and the archive of $kl_rev reads $kl_d (keeper-lei-image-differs); no successor named: rebuild the image from that revision with lares rite kukulu, $kl_cure"
+  command -v gh >/dev/null 2>&1 || die "pulama name-successor --lei reads the CI push run with gh, and none answers here (keeper-lei-ci-unread); no successor named: install gh and run gh auth login, $kl_cure"
   kl_ci=$(cd "$kl_top" && gh run list --commit "$kl_rev" --workflow CI --event push --limit 1 --json databaseId,status,conclusion --jq '.[0] | "\(.databaseId):\(.status):\(.conclusion)"' 2>/dev/null | tr -d '\r') || kl_ci=""
   case "$kl_ci" in
     [0-9]*:completed:success) kl_run=${kl_ci%%:*} ;;
-    *) die "pulama keeper-commit --lei: the CI push run on $kl_rev reads ${kl_ci:-none} (keeper-lei-ci-red), never success; nothing committed: wait for it green (gh run list --commit $kl_rev --workflow CI), then lares rite kukulu again, $kl_cure" ;;
+    *) die "pulama name-successor --lei: the CI push run on $kl_rev reads ${kl_ci:-none} (keeper-lei-ci-red), never success; no successor named: wait for it green (gh run list --commit $kl_rev --workflow CI), then lares rite kukulu again, $kl_cure" ;;
   esac
   # ONE DEVICE PER LIT FACE: the standing vessel reads each lit face's signed admission fold, as the routed commit's count does.
   kl_most=""; kl_unread=""
@@ -1606,11 +1606,11 @@ keeper_commit_lei() { # $1 = the revision, $2 = the branch whose kukulu lei lice
       if [ -z "$kl_n" ]; then kl_unread=yes; elif [ -z "$kl_most" ] || [ "$kl_n" -gt "$kl_most" ]; then kl_most=$kl_n; fi
     done
   else kl_unread=yes; fi
-  if [ -n "$kl_unread" ] || [ -z "$kl_most" ]; then die "pulama keeper-commit --lei: the vessel read no device count for every lit face (keeper-lei-devices-unread); nothing committed: stand the vessel (lares up), then lares rite kukulu again, $kl_cure"; fi
-  [ "$kl_most" -eq 1 ] || die "pulama keeper-commit --lei: a lit face holds $kl_most devices (keeper-lei-cosign-owed), and a keeper lei hands the fire for one-device faces alone; nothing committed: name the successor by hand on a terminal, which asks the co-sign: lares pulama keeper-commit"
-  printf 'lares-container: keeper-commit --lei: %s reads reachable from %s, clean, closure %s twice, the image labelled the same, CI run %s green, every lit face of one device; the keeper rests the commit the kukulu lei of %s licenses\n' "$kl_rev" "$kl_reach" "$kl_d" "$kl_run" "$2" >&2
+  if [ -n "$kl_unread" ] || [ -z "$kl_most" ]; then die "pulama name-successor --lei: the vessel read no device count for every lit face (keeper-lei-devices-unread); no successor named: stand the vessel (lares up), then lares rite kukulu again, $kl_cure"; fi
+  [ "$kl_most" -eq 1 ] || die "pulama name-successor --lei: a lit face holds $kl_most devices (keeper-lei-cosign-owed), and a keeper lei hands the fire for one-device faces alone; no successor named: name the successor by hand on a terminal, which asks the co-sign: lares pulama name-successor"
+  printf 'lares-container: name-successor --lei: %s reads reachable from %s, clean, closure %s twice, the image labelled the same, CI run %s green, every lit face of one device; the keeper rests the commit the kukulu lei of %s licenses\n' "$kl_rev" "$kl_reach" "$kl_d" "$kl_run" "$2" >&2
   kl_frame=$(printf '{"next":"%s","branch":"%s","rev":"%s","tree":"%s","recheck":"same","image":"%s","ci":"%s:success","devices":%s}' "$kl_d" "$2" "$kl_rev" "$kl_tree" "$kl_label" "$kl_run" "$kl_most")
-  compose --profile pulama exec -T "$(pulama_svc)" node "$PULAMA_MAIN" keeper-commit-lei "$kl_frame" </dev/null
+  compose --profile pulama exec -T "$(pulama_svc)" node "$PULAMA_MAIN" name-successor-lei "$kl_frame" </dev/null
 }
 # STAND THE SUCCESSOR (`keeper-stand`, the rite's step before its offer): one JSON line on stdout, {"to","closure","svc"}.
 keeper_stand() {
@@ -1637,7 +1637,7 @@ keeper_vest() {
     compose --profile pulama stop "$KV_NEW" >/dev/null 2>&1 || true
     die "$1; the successor stopped and the old fire still burns, the vessel as it stood. The cure that runs from here: \`lares rite kukulu\` on a terminal (the struck fire: one keeper relit by passphrase)"
   }
-  printf 'lares-container: rebuild: a keeper commit names this closure and the rite carries the move, so the living fire passes to the successor (%s) with no route\n' "$KV_NEW" >&2
+  printf 'lares-container: rebuild: a successor names this closure and the rite carries the move, so the living fire passes to the successor (%s) with no route\n' "$KV_NEW" >&2
   kv_id=$(svc_running "$KV_NEW") || kv_id=""
   [ -n "$kv_id" ] || kv_fail "no successor stands in $KV_NEW (the rite stands one before its offer)"
   kv_closure=$(closure_label container "$kv_id")
@@ -1712,7 +1712,7 @@ stand_house() {
       unread) die "rebuild stops before anything moves: whether the pūlama stands, or what it runs, reads unknown (read it with \`tools/lares-container.sh pulama status\`)" ;;
       absent) s_restand=yes; s_light=yes; s_why="no pūlama runs" ;;
       moved)
-         # THE HANDED FIRE: a lit keeper whose live commit names the closure the new image carries vests its successor with no
+         # THE HANDED FIRE: a lit keeper whose live successor names the closure the new image carries vests its successor with no
          # route; else (no commit, another closure, the struck fire due, an unlit keeper) the struck fire relights by hand.
          pulama_status_read "$s_digest"
          if [ -n "$R_KEEPER_TO" ] && [ "$ps_lit" = yes ] && [ -z "$ps_struck" ] && [ -n "$ps_vest" ] && [ "$ps_vest" = "$(closure_label image "$IMAGE_REF")" ]; then s_vest=yes
@@ -1757,14 +1757,14 @@ stand_house() {
     compose --profile pulama exec "$(pulama_svc)" node "$PULAMA_MAIN" light $s_light_admit || true
     pulama_status_read "$s_digest"
     [ "$ps_lit" = yes ] || die "the pūlama did not light (above); run \`lares rite kukulu\` again on a terminal, and it picks up from here"
-    # A LIVE KEEPER COMMIT LANDS STRUCK, ONLY ON ITS OWN CLOSURE (blind read F7): the chain records the hand's relight where the keeper
+    # A LIVE SUCCESSOR LANDS STRUCK, ONLY ON ITS OWN CLOSURE (blind read F7): the chain records the hand's relight where the keeper
     # now runs the closure the commit names, and a red pair stops loudly (it locks nothing). A plain relight on another closure leaves
     # the commit standing for its own rite.
-    if [ -n "$ps_pending" ] && [ "$ps_closure" != "$ps_pending" ]; then
-      if [ -n "$ps_stale" ]; then printf 'lares-container: rebuild: the live keeper commit names %s and reads stale (%s); the next kukulu lei commit supersedes it\n' "$ps_pending" "$ps_stale" >&2
-      else printf 'lares-container: rebuild: the live keeper commit names %s and this keeper runs %s; the commit stays for its own rite\n' "$ps_pending" "${ps_closure:-no reported closure}" >&2; fi
+    if [ -n "$ps_successor" ] && [ "$ps_closure" != "$ps_successor" ]; then
+      if [ -n "$ps_stale" ]; then printf 'lares-container: rebuild: a successor pūlama stands pending, naming %s, and reads stale (%s; a self-successor moves nothing); the next kukulu lei successor supersedes it\n' "$ps_successor" "$ps_stale" >&2
+      else printf 'lares-container: rebuild: a successor pūlama stands pending, naming %s, and this keeper runs %s; it stays for its own rite\n' "$ps_successor" "${ps_closure:-no reported closure}" >&2; fi
     fi
-    if [ -n "$ps_pending" ] && [ "$ps_closure" = "$ps_pending" ]; then
+    if [ -n "$ps_successor" ] && [ "$ps_closure" = "$ps_successor" ]; then
       kl_out=$(compose --profile pulama exec -T "$(pulama_svc)" node "$PULAMA_MAIN" keeper-land </dev/null 2>/dev/null) || {
         kl_why=$(printf '%s' "$kl_out" | tr -d ' \t\r\n' | sed -n 's/.*"red":"\([a-z-]*\)".*/\1/p')
         die "the keeper pair reads red (${kl_why:-unread}) after the hand's light: the keeper stands lit and nothing locked; read it with \`lares pulama status\`, then \`lares rite kukulu\` picks up from here"
@@ -1871,22 +1871,22 @@ case "$verb" in
       keeper-land)
         [ "$#" -eq 1 ] || die "pulama keeper-land takes no arguments"
         compose --profile pulama exec -T "$(pulama_svc)" node "$PULAMA_MAIN" keeper-land </dev/null ;;
-      keeper-commit)
+      name-successor)
         if [ "${2:-}" = --lei ]; then
           # INTERNAL: the rite's own step (`lares rite kukulu` calls it with no terminal); a person at a terminal is refused.
-          [ -z "$HAVE_TTY" ] || die "pulama keeper-commit --lei is the rite's own step, never a hand verb; run lares rite kukulu (nothing committed)"
-          [ "$#" -eq 4 ] || die "pulama keeper-commit --lei takes the revision and the branch whose kukulu lei licenses it, as lares rite kukulu names them"
+          [ -z "$HAVE_TTY" ] || die "pulama name-successor --lei is the rite's own step, never a hand verb; run lares rite kukulu (no successor named)"
+          [ "$#" -eq 4 ] || die "pulama name-successor --lei takes the revision and the branch whose kukulu lei licenses it, as lares rite kukulu names them"
           keeper_commit_lei "$3" "$4"
         else
         # THE CONSENT SCREEN (the keeper tally, closure strength T1): the successor closure D′ of a revision, read on a clean
         # archive of that commit (never the working tree), and the source tree it names; the clean-tree re-check archives it
         # again and compares; then the pūlama proves the route on this terminal. Nothing here reads or types a route.
-        [ "$#" -le 2 ] || die "pulama keeper-commit takes at most one revision"
-        [ -n "$HAVE_TTY" ] || die "pulama keeper-commit reads your route on a terminal; run \`lares pulama keeper-commit\` on one (nothing committed)"
-        command -v node >/dev/null 2>&1 || die "pulama keeper-commit reads the closure with the host's node, and none answers here; nothing committed"
-        kc_top=$(git -C "$SHIM_DIR" rev-parse --show-toplevel) || die "pulama keeper-commit reads a revision from a checkout, and none answers at $SHIM_DIR"
-        kc_rev=$(git -C "$kc_top" rev-parse --verify --quiet "${2:-HEAD}^{commit}") || die "pulama keeper-commit: ${2:-HEAD} names no commit; nothing committed"
-        kc_tree=$(git -C "$kc_top" rev-parse "$kc_rev^{tree}") || die "pulama keeper-commit: the tree of $kc_rev reads nowhere; nothing committed"
+        [ "$#" -le 2 ] || die "pulama name-successor takes at most one revision"
+        [ -n "$HAVE_TTY" ] || die "pulama name-successor reads your route on a terminal; run \`lares pulama name-successor\` on one (no successor named)"
+        command -v node >/dev/null 2>&1 || die "pulama name-successor reads the closure with the host's node, and none answers here; no successor named"
+        kc_top=$(git -C "$SHIM_DIR" rev-parse --show-toplevel) || die "pulama name-successor reads a revision from a checkout, and none answers at $SHIM_DIR"
+        kc_rev=$(git -C "$kc_top" rev-parse --verify --quiet "${2:-HEAD}^{commit}") || die "pulama name-successor: ${2:-HEAD} names no commit; no successor named"
+        kc_tree=$(git -C "$kc_top" rev-parse "$kc_rev^{tree}") || die "pulama name-successor: the tree of $kc_rev reads nowhere; no successor named"
         kc_closure() {
           ensure_house; mkdir -p -- "$HOUSE/cache" || return 1
           kc_ctx=$(mktemp -d "$HOUSE/cache/keeper.XXXXXX") || return 1
@@ -1894,18 +1894,18 @@ case "$verb" in
           kc_rc=$?; rm -rf -- "$kc_ctx"; return "$kc_rc"
         }
         kc_d=$(kc_closure) || kc_d=""
-        printf '%s' "$kc_d" | grep -Eq '^sha256:[0-9a-f]{64}$' || die "pulama keeper-commit: no pūlama closure reads from a clean archive of $kc_rev; nothing committed"
-        printf 'lares-container: keeper-commit: the successor closure D′ = %s\n' "$kc_d" >&2
-        printf 'lares-container: keeper-commit: read from a clean archive of revision %s, source tree %s\n' "$kc_rev" "$kc_tree" >&2
-        printf 'lares-container: keeper-commit: the next `lares rite kukulu` that raises an image with this closure hands the living fire to it with no route\n' >&2
+        printf '%s' "$kc_d" | grep -Eq '^sha256:[0-9a-f]{64}$' || die "pulama name-successor: no pūlama closure reads from a clean archive of $kc_rev; no successor named"
+        printf 'lares-container: name-successor: the successor closure D′ = %s\n' "$kc_d" >&2
+        printf 'lares-container: name-successor: read from a clean archive of revision %s, source tree %s\n' "$kc_rev" "$kc_tree" >&2
+        printf 'lares-container: name-successor: the next `lares rite kukulu` that raises an image with this closure hands the living fire to it with no route\n' >&2
         printf 'run the clean-tree re-check (tools/pulama-closure.mjs on a fresh archive of %s)? [Y/n] ' "$(printf '%s' "$kc_rev" | cut -c1-12)" >&2
         kc_ans=""; read -r kc_ans || kc_ans=n
         case "$kc_ans" in
           ''|y|Y|yes)
             kc_again=$(kc_closure) || kc_again=""
-            [ "$kc_again" = "$kc_d" ] || die "pulama keeper-commit: the re-check reads ${kc_again:-no closure}, not $kc_d; nothing committed"
-            printf '%s\n' 'lares-container: keeper-commit: the re-check reads the same closure' >&2 ;;
-          *) printf '%s\n' 'lares-container: keeper-commit: the re-check skipped by your word' >&2 ;;
+            [ "$kc_again" = "$kc_d" ] || die "pulama name-successor: the re-check reads ${kc_again:-no closure}, not $kc_d; no successor named"
+            printf '%s\n' 'lares-container: name-successor: the re-check reads the same closure' >&2 ;;
+          *) printf '%s\n' 'lares-container: name-successor: the re-check skipped by your word' >&2 ;;
         esac
         # THE DEVICE COUNT rides the commit's own body (the co-sign fails closed): the standing vessel reads each lit face's signed
         # admission fold (`lares intent show --face N`), and the most any face holds goes in. A vessel down, or a face unread, sends
@@ -1920,10 +1920,10 @@ case "$verb" in
           done
         else kc_unread=yes; fi
         if [ -n "$kc_unread" ] || [ -z "$kc_most" ]; then
-          printf '%s\n' 'lares-container: keeper-commit: the vessel read no device count for every lit face, so the commit carries none and the vest will refuse (vest-devices-unread); commit with the vessel standing to hand the fire unattended' >&2
+          printf '%s\n' 'lares-container: name-successor: the vessel read no device count for every lit face, so the commit carries none and the vest will refuse (vest-devices-unread); commit with the vessel standing to hand the fire unattended' >&2
           kc_dev=""
         else
-          printf 'lares-container: keeper-commit: the lit faces hold at most %s device(s)\n' "$kc_most" >&2
+          printf 'lares-container: name-successor: the lit faces hold at most %s device(s)\n' "$kc_most" >&2
           kc_dev="--devices $kc_most"
         fi
         # THE CARRIED CO-SIGN (keeper-tessera#/vesting): past one device the vessel asks `ward-keeper-vest` over (D′, the chain head,
@@ -1934,30 +1934,30 @@ case "$verb" in
         if [ -n "$kc_dev" ] && [ "$kc_most" -gt 1 ]; then
           kc_status=$(compose --profile pulama exec -T "$(pulama_svc)" node "$PULAMA_MAIN" status </dev/null 2>/dev/null | tr -d ' \t\r\n')
           kc_prev=$(printf '%s' "$kc_status" | sed -n 's/.*"keeper":{[^}]*"tip":"\([0-9a-f]\{64\}\)".*/\1/p'); [ -n "$kc_prev" ] || kc_prev=none
-          printf '%s' "$kc_status" | grep -q '"keeper":{' || die "pulama keeper-commit: the lit keeper answered no chain head, so no co-sign can name the commit; read \`lares pulama status\`, then \`lares pulama keeper-commit\` again (nothing committed)"
+          printf '%s' "$kc_status" | grep -q '"keeper":{' || die "pulama name-successor: the lit keeper answered no chain head, so no co-sign can name the commit; read \`lares pulama status\`, then \`lares pulama name-successor\` again (no successor named)"
           kc_held="$HOUSE/cache/keeper-cosign-${kc_d#sha256:}-$kc_prev"
-          [ -s "$kc_held" ] || { mkdir -p "$HOUSE/cache" && od -An -tx1 -N32 /dev/urandom | tr -d ' \n' > "$kc_held"; } || die "pulama keeper-commit: the house cache took no nonce; nothing committed"
+          [ -s "$kc_held" ] || { mkdir -p "$HOUSE/cache" && od -An -tx1 -N32 /dev/urandom | tr -d ' \n' > "$kc_held"; } || die "pulama name-successor: the house cache took no nonce; no successor named"
           kc_nonce=$(cat "$kc_held")
           kc_faces=""
           for kc_face in $kc_lit; do
             kc_one=$(compose exec -T lares node "$CLI" intent keeper-cosign "$kc_d" --prev "$kc_prev" --nonce "$kc_nonce" --face "$kc_face" </dev/null 2>"$HOUSE/cache/keeper-cosign.err") || {
               kc_why=$(tr '\n' ' ' < "$HOUSE/cache/keeper-cosign.err"); rm -f "$HOUSE/cache/keeper-cosign.err"
               case "$kc_why" in
-                *ward-awaiting-cosign*) die "pulama keeper-commit: face h$kc_face asks a second device to co-sign the vest (${kc_why##*ward-awaiting-cosign: }); approve it on another device of the face (its ward dialog, or \`lares intent answer <ask> --face $kc_face --executor <this vessel's atom>\` on a node), then run \`lares pulama keeper-commit\` again (nothing committed)" ;;
-                *) die "pulama keeper-commit: the co-sign of face h$kc_face refused ($kc_why); nothing committed: read it with \`lares intent show --face $kc_face\`, or light the successor by hand: \`lares rite kukulu\`" ;;
+                *ward-awaiting-cosign*) die "pulama name-successor: face h$kc_face asks a second device to co-sign the vest (${kc_why##*ward-awaiting-cosign: }); approve it on another device of the face (its ward dialog, or \`lares intent answer <ask> --face $kc_face --executor <this vessel's atom>\` on a node), then run \`lares pulama name-successor\` again (no successor named)" ;;
+                *) die "pulama name-successor: the co-sign of face h$kc_face refused ($kc_why); no successor named: read it with \`lares intent show --face $kc_face\`, or light the successor by hand: \`lares rite kukulu\`" ;;
               esac
             }
             kc_faces="${kc_faces:+$kc_faces,}$kc_one"
           done
           rm -f "$HOUSE/cache/keeper-cosign.err"
           kc_cosign="{\"nonce\":\"$kc_nonce\",\"faces\":[$kc_faces]}"
-          printf '%s\n' 'lares-container: keeper-commit: the co-sign of each face spent: another atom of the roster this vessel read approved the vest (the keeper checks the roster of this vessel, not the admission chain of the face); the commit carries the spends' >&2
+          printf '%s\n' 'lares-container: name-successor: the co-sign of each face spent: another atom of the roster this vessel read approved the vest (the keeper checks the roster of this vessel, not the admission chain of the face); the commit carries the spends' >&2
         fi
         # shellcheck disable=SC2046,SC2086
         if [ -n "$kc_cosign" ]; then
-          compose --profile pulama exec $(tty_flag) "$(pulama_svc)" node "$PULAMA_MAIN" keeper-commit "$kc_d" $kc_dev --cosign "$kc_cosign" && rm -f "$kc_held"
+          compose --profile pulama exec $(tty_flag) "$(pulama_svc)" node "$PULAMA_MAIN" name-successor "$kc_d" $kc_dev --cosign "$kc_cosign" && rm -f "$kc_held"
         else
-          compose --profile pulama exec $(tty_flag) "$(pulama_svc)" node "$PULAMA_MAIN" keeper-commit "$kc_d" $kc_dev
+          compose --profile pulama exec $(tty_flag) "$(pulama_svc)" node "$PULAMA_MAIN" name-successor "$kc_d" $kc_dev
         fi
         fi ;;
       lock)
@@ -2042,7 +2042,7 @@ case "$verb" in
         tmp="$seat_file.$$.tmp"
         ( umask 077; printf '%s\n' "$file" > "$tmp" ) && chmod 600 "$tmp" && mv -f -- "$tmp" "$seat_file" || { rm -f -- "$tmp"; die "the seat could not be written to $seat_file"; }
         printf 'lares-container: the keep seat rests at %s (0600); a keep now seals under it\n' "$seat_file" >&2 ;;
-      *) die "pulama takes up, down, restand, light [--admit], admit, unadmit, rehive, recard, keep-seat, keeper-commit [<rev>], keeper-land, take-fire, lock, status or tessera" ;;
+      *) die "pulama takes up, down, restand, light [--admit], admit, unadmit, rehive, recard, keep-seat, name-successor [<rev>], keeper-land, take-fire, lock, status or tessera" ;;
     esac ;;
   reset)
     [ "$#" -eq 0 ] || die "reset takes no arguments"

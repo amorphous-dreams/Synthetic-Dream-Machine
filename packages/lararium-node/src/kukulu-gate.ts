@@ -304,7 +304,7 @@ export function keeperRiteOver(a: {
         else return no(begun.refusal, "the rite this vest rides begins nothing");
       }
       if (tesserae.length === 0) return no("vest-rite-absent", `no lit face's kukulu lei began a rite for this vest (${none ?? "no face"})`);
-      // EACH KUKULU LEI RETURN THE RITE SPENT names itself on the vest: the license a keeper commit with no route rode.
+      // EACH KUKULU LEI RETURN THE RITE SPENT names itself on the vest: the license a successor with no route rode.
       return { ok: true, rite: tesserae, leis };
     };
     // THE FEWEST READ WINS where a face read none (0 fails closed); else the most any face holds.
