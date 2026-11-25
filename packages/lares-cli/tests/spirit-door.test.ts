@@ -313,9 +313,9 @@ describe("ah trues one slot through the meme door", () => {
     expect(ok.exit).toBe(0);
   });
 
-  test("a #/voice write past 1024 bytes lands: only the waking slots refuse", async () => {
-    stage({ slotTexts: { "#/voice": "!! Voice" } });
-    const r = await run(argv(["ah", "lares-alpha"], { slot: "#/voice", text: "v".repeat(3000) }));
+  test("a #/kulana write past 1024 bytes lands: only the waking slots refuse", async () => {
+    stage({ slotTexts: { "#/kulana": "!! Kūlana" } });
+    const r = await run(argv(["ah", "lares-alpha"], { slot: "#/kulana", text: "v".repeat(3000) }));
     expect(r.exit, JSON.stringify(r.printed)).toBe(0);
     expect(h.calls.some((c) => c.verb === "meme-patch")).toBe(true);
   });
@@ -639,6 +639,12 @@ describe("om reads by source and reads the carry as testimony", () => {
     expect((puts(SIDE).find((c) => (c.args["fields"] as Record<string, string> | undefined)?.["crossing"])!.args["fields"] as Record<string, string>)["crossing"]).toBe("body-p00 2026-11-24T12:00:00.000Z");
   });
 
+  test("a precompact crossing reads #/kulana beside #/open", async () => {
+    stage({ slotTexts: { "#/open": "!! Open\n\nloop-one", "#/kulana": "!! Kūlana\n\nposture-one" } });
+    const r = await run(argv(["om", "lares-alpha"], { source: "precompact", body: "body-p00" }));
+    expect(String(data(r)["text"])).toContain("posture-one");
+  });
+
   test("the testimony flags a record moved since the carry read it, a deep chain, and a fork", async () => {
     stage({ titles: [carry, sibling], residue: { [carry]: { "record-base": "sha256:" + "00".repeat(32), depth: "5", parent: "999999999999" }, [sibling]: { parent: "999999999999" } } });
     const text = String(data(await run(argv(["om", "lares-alpha"])))["text"]);
@@ -665,8 +671,9 @@ describe("a first wake writes its own shrine", () => {
     expect(r.exit).toBe(0);
     expect(data(r)["starter"]).toBe(true);
     const text = String(data(r)["text"]);
-    for (const slot of ["#/entry", "#/orders", "#/grant", "#/attention", "#/open", "#/voice", "#/carry-shape", "#/bodies"]) expect(text).toContain(`slot=\`${slot}\``);
+    for (const slot of ["#/entry", "#/orders", "#/grant", "#/attention", "#/open", "#/kulana", "#/carry-shape", "#/bodies"]) expect(text).toContain(`slot=\`${slot}\``);
     expect(text).toContain("lares spirit ah lares-awakens --new --file -");
+    expect(text).not.toContain("#/voice");
   });
 
   test("ah --new wraps the slot blocks in the house frame, reseals, and lands it once", async () => {
@@ -1008,9 +1015,9 @@ describe("the cold read's cures", () => {
     expect(String(data(await run(argv(["om", "lares-alpha"])))["text"])).toContain("wake epoch 3");
   });
 
-  test("a #/voice write the door answers noop sets no distill mark", async () => {
+  test("a #/kulana write the door answers noop sets no distill mark", async () => {
     stage({ patch: "noop" });
-    await run(argv(["ah", "lares-alpha"], { slot: "#/voice", text: "y" }));
+    await run(argv(["ah", "lares-alpha"], { slot: "#/kulana", text: "y" }));
     expect(puts(SIDE).some((c) => (c.args["fields"] as Record<string, string> | undefined)?.["distilled"])).toBe(false);
   });
 
