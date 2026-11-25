@@ -39,6 +39,8 @@ The herm already rests, by CID, every byte a clear wiki needs: the bulb (the gen
 * Only PUBLIC-tier bags and the system canon ride a floor, so the clear wiki stays clear by construction.
 * A faceless herm mounts the genesis floor alone: the floor pin rests in the control document, which mints with a face. A locked lararium mounts the same genesis floor, the herm beneath it made visible.
 
+''"Names no house" reads as identity, never as prose.'' The bulb law (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/pronaos#/the-rung-ladder`>>: "nothing that names a house or a Nexus", so two houses holding one genesis hold one bulb CID) guards the bulb's BYTES against carrying a particular house's identity: an AID, a key, a charter epoch, joining pointers, a Nexus's own release. Stock canon that speaks OF houses and Nexuses in general names none of them in that sense, and re-derives identically for every house from the published build, so it rides the bulb; the genesis floor already carries it. What stays off the bulb: a particular Nexus's released floor, which names that Nexus and answers only at `/floor/<Nexus AID>`.
+
 So the herm's wiki names no new thing. ''The clear wiki = the floor, rendered, with nothing sealed above it.'' One cap serves the crossroads herm and the locked lararium's waking floor alike.
 
 <<~/ahu>>
@@ -149,6 +151,6 @@ S5 and S6 both touch `composeHerm` and the public shore: they run in sequence, n
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;uOzP3ZO3KAhy2RyehlPWRV4oplOn6Yckk5UFGbFECk0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;pAn5crQnjvpcMN1CpRvly31RLOWUlT8tD33LZa_p_a0`>>
 
 <<^ code=`&#x0004;` to=`?`>>
