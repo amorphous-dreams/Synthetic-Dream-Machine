@@ -11,6 +11,11 @@
  *            of `{ "faces": [ … ] }` (one terms object per face, `lares lei terms kui --all`) read the route ONCE and sign one
  *            record per face, each by that face's own root, stopping at the first face that refuses; the answer lists each
  *            face's (`faces`)
+ *   publish  `publish '<terms>'`: the terms `lares nexus publish plugins --source <dir> --face N --terms` prints (`face` and the
+ *            closed `offering` descriptor: offeror, pluginsCid, blobs). The descriptor's shape reads first (`offeringTermsOf`, the
+ *            door's own check), then the door (an unlit pūlama asks no route), then the route on a real terminal, naming the face,
+ *            the region and the blob count; the face root signs that one offering at the door, and the answer carries it for the
+ *            vessel to land (`lares nexus publish plugins --source <dir> --land '<answer>'`)
  *   keep-seat  read the route on a real terminal, hand it to the hand door: the route proves against the lit holder and a fresh
  *            keep pair mints under it. The pūlama's container stands read-only with no config home, so the verb writes NOTHING:
  *            it prints exactly ONE stdout line (`keepSeatLine`) the host's shim writes to the house's `keep-seat.json` at 0600, or
@@ -35,7 +40,7 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
  */
 import { keepVerifyKeyOf } from "@lararium/mesh";
-import type { PulamaHandAnswer } from "./pulama-hand.js";
+import { offeringTermsOf, type PulamaHandAnswer } from "./pulama-hand.js";
 
 /** The slice of a terminal a route reads through. */
 export interface RouteTerminal {
@@ -89,7 +94,7 @@ export function readRoute(label: string, what: string, terminal: RouteTerminal =
   });
 }
 
-export const PULAMA_VERB_USAGE = `usage: pulama-main.js serve | light [--admit] | admit [face…] | unadmit <image digest> | rehive <face> | recard <face> | lei kui|restring|unstring '{"face":…,"rite":…,"branch":…,…}' | lei kui '{"faces":[…]}' | keep-seat | lock | status | image <digest> | image '{"digest":…,"seed":…,"closure":…}' | tessera | closure <sha256:…> | keeper-commit <sha256:…> [--devices <n>] [--cosign <json>] | keeper-offer | keeper-vest '{"to":…,"closure":…}' | keeper-receive '{"slot":…}' | keeper-land | take-fire`;
+export const PULAMA_VERB_USAGE = `usage: pulama-main.js serve | light [--admit] | admit [face…] | unadmit <image digest> | rehive <face> | recard <face> | lei kui|restring|unstring '{"face":…,"rite":…,"branch":…,…}' | lei kui '{"faces":[…]}' | publish '{"face":…,"offering":{"offeror":…,"pluginsCid":…,"blobs":[…]}}' | keep-seat | lock | status | image <digest> | image '{"digest":…,"seed":…,"closure":…}' | tessera | closure <sha256:…> | keeper-commit <sha256:…> [--devices <n>] [--cosign <json>] | keeper-offer | keeper-vest '{"to":…,"closure":…}' | keeper-receive '{"slot":…}' | keeper-land | take-fire`;
 
 /** A verb line the hand door holds no act for. */
 export class PulamaVerbUsage extends Error { override readonly name = "PulamaVerbUsage"; constructor() { super(PULAMA_VERB_USAGE); } }
@@ -105,7 +110,7 @@ export function handVerbExit(verb: string, answer: PulamaHandAnswer): 0 | 1 {
 }
 /** The one reading each act that must land answers; any other reading exits 1, so the host shim never reads a refusal as done. */
 const HAND_VERB_LANDS: Readonly<Record<string, string>> = {
-  rehive: "rehived", recard: "granted", "keeper-commit": "committed", "keeper-commit-lei": "committed", "keeper-offer": "offered", "keeper-vest": "vested", "keeper-receive": "landed", "keeper-land": "landed", "take-fire": "taken",
+  rehive: "rehived", recard: "granted", publish: "signed", "keeper-commit": "committed", "keeper-commit-lei": "committed", "keeper-offer": "offered", "keeper-vest": "vested", "keeper-receive": "landed", "keeper-land": "landed", "take-fire": "taken",
 };
 
 /**
@@ -187,6 +192,23 @@ export async function runHandVerb(verb: string, arg: string | readonly string[] 
       if (answer["reading"] !== "signed") return { op: "lei", act, reading: answer["reading"], faces };
     }
     return { op: "lei", act, reading: "signed", faces };
+  }
+  if (verb === "publish") {
+    // THE LINE: one JSON object of terms (the face and the closed descriptor), nothing more; a route never rides it.
+    if (typeof arg !== "string") throw new PulamaVerbUsage();
+    let terms: unknown;
+    try { terms = JSON.parse(arg); } catch { throw new PulamaVerbUsage(); }
+    if (typeof terms !== "object" || terms === null || Array.isArray(terms) || Object.keys(terms).some((k) => k !== "face" && k !== "offering")) throw new PulamaVerbUsage();
+    const face = (terms as Record<string, unknown>)["face"];
+    if (typeof face !== "number" || !Number.isSafeInteger(face) || face < 0) throw new PulamaVerbUsage();
+    // THE DESCRIPTOR READS FIRST, by the door's own check: a shape the root would never sign asks no route.
+    const read = await offeringTermsOf((terms as Record<string, unknown>)["offering"]);
+    if ("reading" in read) return { op: "publish", face, ...read };
+    // THE DOOR READS NEXT: an unlit pūlama refuses here, before anybody types a route.
+    const standing = await ports.ask({ op: "status" });
+    if (standing["lit"] !== true) return { op: "publish", reading: "pulama-locked", detail: "the pūlama stands unlit: light it first (`light`), then publish" };
+    const passphrase = await ports.route(`pūlama route, to sign the plugin offering ${read.terms.pluginsCid} (${read.terms.blobs.length} blob(s)) for h${face}: `, "a plugin offering");
+    return ports.ask({ op: "publish", face, offering: read.terms, credentials: [{ kind: "passphrase", passphrase }] });
   }
   if (verb === "keeper-commit") {
     // `keeper-commit <sha256:…> [--devices <n>] [--cosign <json>]`: the host shim names the most devices any lit face holds, as the

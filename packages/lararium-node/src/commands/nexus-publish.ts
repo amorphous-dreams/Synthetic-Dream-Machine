@@ -23,6 +23,14 @@
  * own CAS, so `nexus offering inspect` reads them held and a joinee can take them. A boot-set id never
  * verifies (`boot-set-collision`); an empty source never verifies (`empty-offering`).
  *
+ * UNDER A PŪLAMA the vessel holds no face root, so the signature comes from the pūlama's hand door, in the lei pattern:
+ *   - `terms` (`runNexusPublishTerms`): every check above runs, and the read answers the face and the CLOSED descriptor the
+ *     root would sign (`offeror` · `pluginsCid` · `blobs`), signing nothing, writing nothing and asking no route.
+ *   - the pūlama's `publish '<terms>'` signs that one descriptor under the face's root (`pulama-hand`).
+ *   - `signed` (the land): every check runs again over the same source, the descriptor it folds to is derived afresh, and the
+ *     signed offering lands only where its signed preimage equals that descriptor's byte for byte, under the face's own root
+ *     key, and verifies; then CAS and the announce run as for any signing. The land opens no ward.
+ *
  * The active persona is explicit custody. A faceless Node can carry a publication board, but it cannot
  * publish in a human's name; an unset selector therefore refuses instead of choosing handle zero.
  */
@@ -35,6 +43,8 @@ import type { Repo } from "@automerge/automerge-repo";
 import {
   publicationDocUrl,
   materializeSharedLarDoc,
+  PLUGIN_OFFERING_DOMAIN,
+  pluginOfferingBytes,
   pluginOfferingCid,
   signPluginOffering,
   verifyPluginOffering,
@@ -71,6 +81,15 @@ export interface NexusPublishPluginsOptions {
   readonly genesisDir?: string;
   /** The face that signs the offering: named by the caller, else the one face standing open. */
   readonly handleIndex?: number;
+  /** THE HAND'S SIGNATURE, from the pūlama's hand door: the offering the face root signed over this source's descriptor. It lands
+   *  only where its signed preimage equals the descriptor this source folds to, under the face's own root key; it opens no ward. */
+  readonly signed?: unknown;
+}
+
+/** What the pūlama's `publish` act takes: the face, and the CLOSED descriptor its root signs (the `signPluginOffering` parts). */
+export interface NexusPublishTerms {
+  readonly face: number;
+  readonly offering: Omit<PluginOffering, "kind" | "sig">;
 }
 
 export interface NexusPublishPluginsResult {
@@ -104,10 +123,49 @@ function sourceBlobPath(sourceDir: string, blob: { readonly sha256: string; read
   return join(sourceDir, blob.file ?? blob.sha256);
 }
 
-/** Sign and announce an offering source on this vessel's Nexus publication board. */
-export async function runNexusPublishPlugins(
-  opts: NexusPublishPluginsOptions,
-): Promise<NexusPublishPluginsResult> {
+/** One offering source, read and judged: the face, the blobs as the descriptor names them, their verified bytes, and a gift. */
+interface ReadSource {
+  readonly handleIndex: number;
+  readonly blobsIn: readonly SourceDescriptorBlob[];
+  readonly bytesByCid: ReadonlyMap<string, Uint8Array>;
+  readonly parsedGift: PluginOffering | null;
+}
+
+/** The descriptor this face's root signs over an unsigned source: its own root key as offeror, the region its blobs fold to. */
+async function descriptorOf(src: ReadSource): Promise<Omit<PluginOffering, "kind" | "sig">> {
+  const offeror = await loadPersonaGroupRootVerifyingKey(src.handleIndex);
+  if (!offeror) {
+    throw new NexusPublishError(
+      `the active persona h${src.handleIndex} has no readable public root — publishing refuses`,
+    );
+  }
+  const blobs: readonly OfferedBlob[] = src.blobsIn.map((b) => ({
+    id: b.id, version: b.version, sha256: b.sha256, ...(b.provenance ? { provenance: b.provenance } : {}),
+  }));
+  return { offeror: offeror.toLowerCase(), pluginsCid: computePluginsCid(blobs), blobs };
+}
+
+/**
+ * THE TERMS READ (under a pūlama): every check a publish runs over the source, and the face and the CLOSED descriptor its root
+ * would sign, for the pūlama's hand door. It signs nothing, writes nothing and asks no route. A signed gift needs no hand
+ * signature, so it refuses: `--apply` announces it as signed.
+ */
+export async function runNexusPublishTerms(opts: Omit<NexusPublishPluginsOptions, "repo" | "signed" | "ward">): Promise<NexusPublishTerms> {
+  const src = await readSource(opts);
+  if (src.parsedGift) throw new NexusPublishError("this source carries a signed gift (offering-signed): it announces exactly as signed with --apply, and no hand signs it again");
+  const offering = await descriptorOf(src);
+  return { face: src.handleIndex, offering: { offeror: offering.offeror, pluginsCid: offering.pluginsCid, blobs: canonicalBlobsOf(offering) } };
+}
+
+/** The blobs in the canonical order and shape the signed preimage carries, so the terms name exactly what the root signs. */
+function canonicalBlobsOf(parts: Omit<PluginOffering, "kind" | "sig">): readonly OfferedBlob[] {
+  return (JSON.parse(new TextDecoder().decode(pluginOfferingBytes(parts))) as { blobs: OfferedBlob[] }).blobs;
+}
+
+const sameBytes = (x: Uint8Array, y: Uint8Array): boolean => x.length === y.length && x.every((b, i) => b === y[i]);
+
+/** Read one offering source and judge it: the face, the descriptor, the boot set and every blob's bytes, before any signature. */
+async function readSource(opts: Omit<NexusPublishPluginsOptions, "repo" | "signed" | "ward">): Promise<ReadSource> {
   // The face the act names, else the one face standing open; several and none named refuse by name (--face N).
   const handleIndex = await resolveFace(opts.handleIndex).catch((e: unknown) => {
     if (e instanceof FaceNotNamed) throw new NexusPublishError(`publishing requires a face to sign as — ${e.message}`);
@@ -162,7 +220,6 @@ export async function runNexusPublishPlugins(
   // THE BYTES, HASH-CHECKED, BEFORE ANYTHING IS SIGNED OR ANNOUNCED. `missing-bytes`/`corrupt-bytes`,
   // fail-closed by name — a signature over a declared sha256 nobody can produce the bytes for proves
   // nothing a taker could ever redeem.
-  const casDir = casDirForStorage(opts.storageDir);
   const bytesByCid = new Map<string, Uint8Array>();
   const verdict = verifyCasBytes(
     blobsIn.map((b) => b.sha256),
@@ -182,27 +239,40 @@ export async function runNexusPublishPlugins(
     throw new NexusPublishError(`refusing to announce an offering whose bytes fail closed (${code}): ${cid}`);
   }
 
-  const parsedGift = isSignedGift(parsed) ? (parsed as PluginOffering) : null;
+  return { handleIndex, blobsIn, bytesByCid, parsedGift: isSignedGift(parsed) ? (parsed as PluginOffering) : null };
+}
+
+/** Sign and announce an offering source on this vessel's Nexus publication board. */
+export async function runNexusPublishPlugins(
+  opts: NexusPublishPluginsOptions,
+): Promise<NexusPublishPluginsResult> {
+  const src = await readSource(opts);
+  const { parsedGift, bytesByCid } = src;
+  const casDir = casDirForStorage(opts.storageDir);
 
   let offering: PluginOffering;
-  if (parsedGift) {
+  if (opts.signed !== undefined) {
+    // THE HAND'S SIGNATURE FROM THE PŪLAMA lands only over THIS source's own descriptor, under THIS face's root: the land
+    // derives the descriptor afresh and compares the signed preimage byte for byte, so a signature over anything else lands nothing.
+    if (parsedGift) throw new NexusPublishError("this source carries a signed gift (offering-signed): it announces exactly as signed with --apply, and lands no hand signature");
+    const signed = opts.signed as PluginOffering;
+    if (typeof signed !== "object" || signed === null || typeof signed.sig !== "string") throw new NexusPublishError("the hand's answer carries no signed offering (offering-unsigned)");
+    const expected = await descriptorOf(src);
+    let same = false;
+    try { same = signed.kind === PLUGIN_OFFERING_DOMAIN && sameBytes(pluginOfferingBytes(signed), pluginOfferingBytes(expected)); } catch { same = false; }
+    if (!same) {
+      throw new NexusPublishError(`the signed offering names another descriptor than this source folds to under h${src.handleIndex}'s root (offering-mismatch): sign the terms this source prints`);
+    }
+    // THE RECORD THAT LANDS is this source's own descriptor beside the hand's signature, and nothing else the answer carried.
+    offering = { kind: PLUGIN_OFFERING_DOMAIN, offeror: expected.offeror, pluginsCid: expected.pluginsCid, blobs: canonicalBlobsOf(expected), sig: signed.sig };
+  } else if (parsedGift) {
     // A FRIEND'S GIFT — kept EXACTLY as signed, never re-signed, never re-derived.
     offering = parsedGift;
   } else {
-    const offeror = await loadPersonaGroupRootVerifyingKey(handleIndex);
-    if (!offeror) {
-      throw new NexusPublishError(
-        `the active persona h${handleIndex} has no readable public root — publishing refuses`,
-      );
-    }
-    const blobs: readonly OfferedBlob[] = blobsIn.map((b) => ({
-      id: b.id, version: b.version, sha256: b.sha256, ...(b.provenance ? { provenance: b.provenance } : {}),
-    }));
-    const pluginsCid = computePluginsCid(blobs);
     offering = await signPluginOffering(
-      { offeror: offeror.toLowerCase(), pluginsCid, blobs },
+      await descriptorOf(src),
       // The root signs this one offering under the ward, its seed opened fresh and zeroed after the signature.
-      (await wardRootSigner(handleIndex, opts.ward, "a nexus publish")).sign,
+      (await wardRootSigner(src.handleIndex, opts.ward, "a nexus publish")).sign,
     );
   }
 

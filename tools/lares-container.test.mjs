@@ -112,6 +112,8 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       `case " $* " in *"pulama-main.js status"*) lit='{"op":"status","lit":true}'; if [ -e "$CALL_LOG.lit" ] && [ -n "\${FAKE_PULAMA_STATUS_AFTER:-}" ]; then printf '%s\\n' "\${FAKE_PULAMA_STATUS_AFTER}"; else printf '%s\\n' "\${FAKE_PULAMA_STATUS-$lit}"; fi; exit 0;; esac\n` +
       // THE KUKULU LEI on a branch, as the standing vessel's `lei show --json` answers it (the kūkulu reading reads it).
       `case " $* " in *" lei show --rite kukulu "*) printf '%s\\n' "\${FAKE_LEI_SHOW:-}"; exit 0;; esac\n` +
+      `case " $* " in *" nexus publish plugins "*" --terms "*) printf '%s\\n' "\${FAKE_PUBLISH_TERMS:-}"; exit "\${FAKE_TERMS_RC:-0}";; esac\n` +
+      `case " $* " in *"pulama-main.js publish "*) case " $* " in *" exec --no-TTY=false pulama "*) ;; *) printf '%s\\n' '[pulama] an offering reads its route from a real terminal alone'; exit 1;; esac; printf '%s\\r\\n' 'pūlama route, to sign the plugin offering: '; [ -z "\${FAKE_PUBLISH_ANSWER:-}" ] || printf '%s\\n' "\${FAKE_PUBLISH_ANSWER}" | node -e 'let s="";process.stdin.on("data",(d)=>s+=d).on("end",()=>process.stdout.write(JSON.stringify(JSON.parse(s),null,2).split("\\n").join("\\r\\n")+"\\r\\n"))'; exit "\${FAKE_PUBLISH_RC:-0}";; esac\n` +
       `case " $* " in *" lei terms "*) printf '%s\\n' "\${FAKE_LEI_TERMS:-}"; exit "\${FAKE_TERMS_RC:-0}";; esac\n` +
       `case " $* " in *" rite receipts "*) printf '%s\\n' "\${FAKE_RECEIPTS:-}"; exit "\${FAKE_RECEIPTS_RC:-0}";; esac\n` +
       `case " $* " in *"pulama-main.js lei "*) case " $* " in *" exec --no-TTY=false pulama "*) ;; *) printf '%s\\n' '[pulama] a lei reads its route from a real terminal alone'; exit 1;; esac; printf '%s\\r\\n' 'pūlama route, to kui a push lei: '; [ -z "\${FAKE_LEI_ANSWER:-}" ] || printf '%s\\n' "\${FAKE_LEI_ANSWER}" | node -e 'let s="";process.stdin.on("data",(d)=>s+=d).on("end",()=>process.stdout.write(JSON.stringify(JSON.parse(s),null,2).split("\\n").join("\\r\\n")+"\\r\\n"))'; exit "\${FAKE_LEI_RC:-0}";; esac\n` +
@@ -1799,6 +1801,33 @@ test(`${name}: lei-hand-door-chain: under a pūlama, lei kui reads the terms in 
   const plain = await run(shim, ["lei", "show", "--rite", "push", "--branch", "x"], { envFile: PULAMA_ENV, env: { FAKE_RUNNING_ID: "cid" } });
   assert.match(plain.calls, /lares node \S+ lei show --rite push --branch x/);
   assert.doesNotMatch(plain.calls, /pulama-main\.js lei/);
+});
+test(`${name}: publish-hand-door-chain: under a pūlama, nexus publish plugins --apply reads the terms in the vessel, the pūlama signs the offering on this terminal, and the vessel lands it; a refused signing lands nothing; no pūlama or no --apply routes as before`, { skip }, async () => {
+  const terms = '{"face":0,"offering":{"offeror":"aa","pluginsCid":"c","blobs":[]}}';
+  const answer = '{"op":"publish","reading":"signed","face":0,"offering":{"kind":"k","sig":"s"}}';
+  const argv = ["nexus", "publish", "plugins", "--source", "offerings/relink", "--face", "0", "--apply"];
+  const r = await run(shim, argv, { envFile: PULAMA_ENV, tty: "", env: { FAKE_RUNNING_ID: "cid", FAKE_PUBLISH_TERMS: terms, FAKE_PUBLISH_ANSWER: answer } });
+  assert.equal(r.status, 0, r.stdout);
+  const lines = r.calls.split("\n");
+  // --apply never reaches the vessel: the terms read signs nothing, and the land carries the hand's signature.
+  const read = lines.findIndex((l) => /exec (?:-e \S+ )*-T lares node \S+ nexus publish plugins --source offerings\/relink --face 0 --terms$/.test(l));
+  const sign = lines.findIndex((l) => l.includes(`--profile pulama exec --no-TTY=false pulama node packages/lararium-node/dist/src/pulama-main.js publish ${terms}`));
+  const land = lines.findIndex((l) => l.includes(" --land "));
+  assert.ok(land >= 0, r.calls);
+  assert.match(lines[land], /nexus publish plugins --source offerings\/relink --face 0 --land /);
+  assert.deepEqual(JSON.parse(lines[land].slice(lines[land].indexOf(" --land ") + " --land ".length)), JSON.parse(answer), "the landed answer reads as the whole signed object");
+  assert.ok(read >= 0 && sign > read && land > sign, `order terms, sign (attached), land:\n${r.calls}`);
+  assert.doesNotMatch(r.calls, /--apply/);
+  const refused = await run(shim, argv, { envFile: PULAMA_ENV, tty: "", env: { FAKE_RUNNING_ID: "cid", FAKE_PUBLISH_TERMS: terms } });
+  assert.notEqual(refused.status, 0);
+  assert.match(refused.stdout, /the pūlama signed nothing; nothing lands/);
+  assert.doesNotMatch(refused.calls, / --land /);
+  const noTty = await run(shim, argv, { envFile: PULAMA_ENV, env: { FAKE_RUNNING_ID: "cid", FAKE_PUBLISH_TERMS: terms, FAKE_PUBLISH_ANSWER: answer } });
+  assert.notEqual(noTty.status, 0);
+  assert.match(noTty.stderr, /nexus publish under a pūlama reads its route on a terminal/);
+  const read2 = await run(shim, ["nexus", "publish", "plugins", "--source", "x"], { envFile: PULAMA_ENV, env: { FAKE_RUNNING_ID: "cid" } });
+  assert.match(read2.calls, /lares node \S+ nexus publish plugins --source x/);
+  assert.doesNotMatch(read2.calls, /pulama-main\.js publish/);
 });
 test(`${name}: pulama-keep-seat-writes-the-seat: the pūlama's seat line lands verbatim as config/keep-seat.json (0600), the signer never shown; an existing seat refuses without --reseat; a refusal writes nothing`, { skip }, async () => {
   const seat = { publicKey: "ab".repeat(32), stretchSalt: "11".repeat(16), tree: { slots: [{ kind: "passphrase", salt: "s1" }] }, verifyKey: "cd".repeat(32) };

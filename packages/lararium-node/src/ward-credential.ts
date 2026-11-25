@@ -146,6 +146,8 @@ export function storeVerbNeedsWard(verb: string, args: Readonly<Record<string, u
   if (verb === "edge-kapae") return typeof args["realm"] !== "string";
   // A HAND RECORD carries its own root signature (the hand signed it at the pūlama's hand door), so landing it opens no ward.
   if ((verb === "swarm-lei-kui" || verb === "swarm-lei-unstring") && args["signed"] !== undefined) return false;
+  // A PUBLISH'S TERMS read the descriptor and sign nothing, and its land carries the root signature the hand made at the pūlama.
+  if (verb === "nexus-publish" && (args["terms"] === true || args["signed"] !== undefined)) return false;
   return WARD_VERBS.has(verb);
 }
 

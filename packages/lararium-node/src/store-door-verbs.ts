@@ -36,7 +36,8 @@
  *   persona-new                                  a face onto a standing place (`commands/init`)
  *   persona-lease                                a signed lease advance for a face (`commands/persona-lease`)
  *   persona-kel-head                             a persona-KEL head off the local board (`local-persona-kel`)
- *   nexus-publish                                an offering onto the publication board (`commands/nexus-publish`)
+ *   nexus-publish                                an offering onto the publication board (`commands/nexus-publish`); `terms` reads
+ *                                                the descriptor a pūlama's hand signs, `signed` lands the offering it signed
  *   nexus-offering-inspect                       one carried offering, read off the publication board
  *                                                (`commands/nexus-offering-inspect`)
  *   raise-sign                                   a raise grant off the carriage board (`commands/raise-sign`)
@@ -119,7 +120,7 @@ import { runCabalJoin, CabalJoinError } from "./commands/cabal-join.js";
 import { runFleetJoinAnswer, runFleetJoinOffer, FleetJoinRefused } from "./commands/fleet-join.js";
 import { runHandlePublish, runHandleBurn, runHandleRotate, runHandleAttest } from "./commands/handle.js";
 import { runFoundTheFace } from "./commands/init.js";
-import { runNexusPublishPlugins, NexusPublishError } from "./commands/nexus-publish.js";
+import { runNexusPublishPlugins, runNexusPublishTerms, NexusPublishError } from "./commands/nexus-publish.js";
 import { runNexusInspectOffering, NexusOfferingInspectError } from "./commands/nexus-offering-inspect.js";
 import { runRaiseSign, RaiseSignError } from "./commands/raise-sign.js";
 import { makeLocalPersonaKelHeadAndSeqResolver } from "./local-persona-kel.js";
@@ -849,9 +850,10 @@ function storeDoorVerbsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       const { head, seq } = await (await makeLocalPersonaKelHeadAndSeqResolver(repo))(prefix);
       return { head, ...(seq !== null ? { seq } : {}) };
     }),
-    "nexus-publish": (args) => answer("nexus-publish", async () => ({
-      ...(await runNexusPublishPlugins({ repo, storageDir, source: need("nexus-publish", args, "source"), ...opt("handleIndex", int(args["handleIndex"])), ...opt("ward", wardOf(args)) })),
-    })),
+    // `terms: true` reads the face and the closed descriptor the pūlama's hand door signs; `signed` lands the offering it signed.
+    "nexus-publish": (args) => answer("nexus-publish", async () => (args["terms"] === true
+      ? { ...(await runNexusPublishTerms({ storageDir, source: need("nexus-publish", args, "source"), ...opt("handleIndex", int(args["handleIndex"])) })) }
+      : { ...(await runNexusPublishPlugins({ repo, storageDir, source: need("nexus-publish", args, "source"), ...opt("handleIndex", int(args["handleIndex"])), ...opt("ward", wardOf(args)), ...(args["signed"] !== undefined ? { signed: args["signed"] } : {}) })) })),
     "nexus-offering-inspect": (args) => answer("nexus-offering-inspect", async () => ({
       ...(await runNexusInspectOffering({ offeringCid: need("nexus-offering-inspect", args, "offeringCid"), storageDir, repo })),
     })),

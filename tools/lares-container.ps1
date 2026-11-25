@@ -462,7 +462,7 @@ function RouteCli([string[]]$argv, [bool]$followUp) {
   $isPut = $argv.Count -ge 3 -and (($argv[0] -ceq 'tiddler' -and $argv[1] -ceq 'put') -or ($argv[0] -ceq 'spirit' -and $argv[1] -cin @('ah', 'hooili', 'residue')))
   if ($argv.Count -gt 0) {
     $alwaysValued = @('--fields', '--note', '--reason', '--text')
-    $boolean = @('accept-loss', 'accept-omissions', 'added', 'all', 'all-strata', 'apply', 'approve', 'brief', 'bulk', 'cancel', 'cards', 'collapse', 'cosign', 'confirm', 'create', 'cut', 'drain', 'deny', 'docs', 'draft', 'drop', 'dry-run', 'edge', 'ephemeral', 'every', 'executable', 'family', 'force', 'foreground', 'fresh', 'from-persona', 'held', 'help', 'help-mempalace', 'history', 'hearth', 'hold', 'if-due', 'in-wiki', 'init', 'join', 'json', 'keep', 'keep-hooks', 'keyhive-trace', 'lag', 'launch', 'list', 'meme', 'memory', 'new', 'observe', 'orphans', 'over-fresher', 'page', 'pair', 'palaces', 'paper', 'partial', 'passphrase', 'pending', 'probe', 'quorum', 'overwrite', 'remove', 'repour', 'restart', 'rotate', 'seat', 'sessions', 'shadow', 'skinny', 'skip-build', 'spectral', 'split-root', 'staged', 'sweep', 'tag-blobs', 'tree', 'verbose', 'wait', 'watch', 'with-web', 'workbench', 'writeback', 'yes')
+    $boolean = @('accept-loss', 'accept-omissions', 'added', 'all', 'all-strata', 'apply', 'approve', 'brief', 'bulk', 'cancel', 'cards', 'collapse', 'cosign', 'confirm', 'create', 'cut', 'drain', 'deny', 'docs', 'draft', 'drop', 'dry-run', 'edge', 'ephemeral', 'every', 'executable', 'family', 'force', 'foreground', 'fresh', 'from-persona', 'held', 'help', 'help-mempalace', 'history', 'hearth', 'hold', 'if-due', 'in-wiki', 'init', 'join', 'json', 'keep', 'keep-hooks', 'keyhive-trace', 'lag', 'launch', 'list', 'meme', 'memory', 'new', 'observe', 'orphans', 'over-fresher', 'page', 'pair', 'palaces', 'paper', 'partial', 'passphrase', 'pending', 'probe', 'quorum', 'overwrite', 'remove', 'repour', 'restart', 'rotate', 'seat', 'sessions', 'shadow', 'skinny', 'skip-build', 'spectral', 'split-root', 'staged', 'sweep', 'tag-blobs', 'terms', 'tree', 'verbose', 'wait', 'watch', 'with-web', 'workbench', 'writeback', 'yes')
     $sources = @()
     for ($i = 0; $i -lt $argv.Count; $i++) {
       $word = $argv[$i]
@@ -1842,6 +1842,29 @@ switch ($verb) {
       }
       if (-not $answer.StartsWith('{')) { Die 'the pūlama signed nothing; nothing lands' }
       $null | & docker compose @Base exec -e LARES_EXEC_TAG @PassEnv -T lares node $Cli lei land $answer
+      exit $LASTEXITCODE
+    }
+    RouteCli (@($verb) + $rest) $true
+  }
+  'nexus' {
+    # The offering's signature under a pūlama, in the lei pattern: the vessel holds no face root, so `nexus publish plugins …
+    # --apply` reads the terms in the vessel (`--terms`), the pūlama reads the route on this terminal and its face root signs
+    # that one descriptor (`publish`), and the vessel lands the signed offering over the same source (`--land`). A signing that
+    # answers no offering lands nothing. Without a pūlama, or without --apply, every nexus act routes as before.
+    if ($PulamaMode -and $rest.Count -ge 2 -and $rest[0] -eq 'publish' -and $rest[1] -eq 'plugins' -and ($rest -contains '--apply')) {
+      if (-not $script:Tty) { Die 'nexus publish under a pūlama reads its route on a terminal; run it on one (nothing signed)' }
+      $line = @($rest | Where-Object { $_ -ne '--apply' })
+      $terms = ($null | & docker compose @Base exec @PassEnv -T lares node $Cli nexus @line --terms) -join ''
+      if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      $answer = ''
+      & docker compose @Base --profile pulama exec --no-TTY=false (PulamaSvc) node $PulamaMain publish $terms | ForEach-Object {
+        [Console]::Error.WriteLine($_)
+        $l = "$_".Trim("`r")
+        if ($l.StartsWith('{')) { $answer = '' }
+        $answer += $l
+      }
+      if (-not $answer.StartsWith('{')) { Die 'the pūlama signed nothing; nothing lands' }
+      $null | & docker compose @Base exec -e LARES_EXEC_TAG @PassEnv -T lares node $Cli nexus @line --land $answer
       exit $LASTEXITCODE
     }
     RouteCli (@($verb) + $rest) $true

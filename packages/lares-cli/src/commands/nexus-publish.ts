@@ -19,11 +19,19 @@
  * ── TIER-PARAMETERIZED, THE SHAPE `kahuli` ALREADY READS ─────────────────────────────────────────
  * `publish <what>` takes one case per publishable thing, so a second cap arrives as a CASE rather than as
  * another door. `plugins` stands first because the region already exists and already gets folded.
+ *
+ * ── UNDER A PŪLAMA THE HAND SIGNS AT THE PŪLAMA'S HAND DOOR ──────────────────────────────────────
+ * The vessel under a pūlama holds no face root, so `--apply` there finds no ward to open. The signing runs in the lei
+ * pattern, and the host shim walks it for `--apply` (`tools/lares-container.sh nexus publish plugins …`): `--terms` prints
+ * ONE stdout line (the face and the CLOSED descriptor the root signs: offeror, pluginsCid, blobs), signing nothing and asking
+ * no route; the pūlama's `publish '<terms>'` reads the route on the operator's terminal and its face root signs that one
+ * descriptor; `--land '<answer>'` lands the signed offering, where the vessel derives the descriptor afresh from the same
+ * source and announces it only over a byte-equal signed preimage.
  */
 
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { NexusPublishError, type NexusPublishPluginsResult } from "@lararium/node";
+import { NexusPublishError, type NexusPublishPluginsResult, type NexusPublishTerms } from "@lararium/node";
 import { computePluginsCid } from "@lararium/mesh";
 import { storeVerb, storeFailure } from "../store-door.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
@@ -33,7 +41,7 @@ import type { ParsedArgs } from "../parse-args.js";
 export const PUBLISHABLE = ["plugins"] as const;
 
 const PUBLISH_USAGE: readonly string[] = [
-  "usage: lares nexus publish plugins --source <dir> [--apply]",
+  "usage: lares nexus publish plugins --source <dir> [--face N] [--apply | --terms | --land '<pūlama answer>']",
   "",
   "  THE OFFERING DOOR — what THIS operator publishes for others to take. Held apart from",
   "  `nexus kahuli`, which overturns what the MESH must agree on (engine · grammar).",
@@ -44,7 +52,24 @@ const PUBLISH_USAGE: readonly string[] = [
   "",
   "  --source   the offering source directory (required).",
   "  --apply    sign the offering (when unsigned) + announce it on the Nexus's publication board.",
+  "  --terms    (under a pūlama) print ONE line: the face and the descriptor the pūlama's hand signs",
+  "             (`pulama-main.js publish '<terms>'`); signs nothing, asks no route.",
+  "  --land     land the offering the pūlama's hand signed over this source's own descriptor.",
 ];
+
+/** One pūlama `publish` answer's signed offering and the face it signed for; a refusal or another act lands nothing. */
+export function publishLanding(raw: string, named: number | undefined): { readonly offering: Record<string, unknown>; readonly face: number } | { readonly usage: string } {
+  let read: unknown;
+  try { read = JSON.parse(raw); } catch { return { usage: "--land's answer reads as no JSON" }; }
+  if (typeof read !== "object" || read === null || Array.isArray(read)) return { usage: "--land's answer reads as no object" };
+  const r = read as Record<string, unknown>;
+  if (r["op"] !== "publish") return { usage: "--land takes the pūlama's publish answer" };
+  if (r["reading"] !== "signed") return { usage: `the pūlama signed nothing (${String(r["reading"])}), so nothing lands` };
+  const face = r["face"], offering = r["offering"];
+  if (typeof face !== "number" || !Number.isSafeInteger(face) || face < 0 || typeof offering !== "object" || offering === null || Array.isArray(offering)) return { usage: "the pūlama's answer names no face and no signed offering" };
+  if (named !== undefined && named !== face) return { usage: `the pūlama signed for h${face}, and the line names h${named}` };
+  return { offering: offering as Record<string, unknown>, face };
+}
 
 /**
  * `lares nexus publish plugins --source <dir>` — READ a local offering source.
@@ -58,9 +83,42 @@ async function publishPlugins(args: ParsedArgs): Promise<number> {
   const source = args.options["source"];
   if (!source) return refuseUsage(args, "nexus publish", PUBLISH_USAGE, "publishing plugins needs --source <dir>");
 
-  if (args.flags["apply"]) {
+  const rawFace = args.options["face"];
+  const named = typeof rawFace === "string" ? (/^(?:0|[1-9][0-9]*)$/.test(rawFace.trim()) ? Number(rawFace.trim()) : NaN) : undefined;
+  if (named !== undefined && !Number.isSafeInteger(named)) return refuseUsage(args, "nexus publish", PUBLISH_USAGE, "--face takes a whole count from 0");
+  const land = args.options["land"];
+  const modes = [args.flags["apply"] === true, args.flags["terms"] === true, typeof land === "string"].filter(Boolean).length;
+  if (modes > 1) return refuseUsage(args, "nexus publish", PUBLISH_USAGE, "name one of --apply, --terms or --land");
+
+  // THE TERMS LINE (under a pūlama): exactly one stdout line, the terms `pulama-main.js publish` takes, unless `--json` asks the envelope.
+  if (args.flags["terms"] === true) {
+    const line: ParsedArgs = { ...args, flags: { ...args.flags, json: args.flags["json"] === true } };
     try {
-      const result = (await storeVerb("nexus-publish", { source, ...(typeof args.options["face"] === "string" ? { handleIndex: Number(args.options["face"]) } : {}) }, NexusPublishError)).output as unknown as NexusPublishPluginsResult;
+      const terms = (await storeVerb("nexus-publish", { source, terms: true, ...(named !== undefined ? { handleIndex: named } : {}) }, NexusPublishError)).output as unknown as NexusPublishTerms;
+      const out = { face: terms.face, offering: terms.offering };
+      emit(line, { ok: true, data: out, human: () => console.log(JSON.stringify(out)) });
+      return 0;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      const failure = storeFailure(err, err instanceof NexusPublishError ? "refused" : "error");
+      emit(line, { ok: false, error: failure, human: () => console.error(`lares nexus publish plugins: ${message}`) });
+      return exitFor(failure.code);
+    }
+  }
+
+  let landing: { readonly offering: Record<string, unknown>; readonly face: number } | null = null;
+  if (typeof land === "string") {
+    const read = publishLanding(land, named);
+    if ("usage" in read) return refuseUsage(args, "nexus publish", PUBLISH_USAGE, read.usage);
+    landing = read;
+  }
+
+  if (args.flags["apply"] || landing !== null) {
+    try {
+      const rowArgs = landing !== null
+        ? { source, handleIndex: landing.face, signed: landing.offering }
+        : { source, ...(named !== undefined ? { handleIndex: named } : {}) };
+      const result = (await storeVerb("nexus-publish", rowArgs, NexusPublishError)).output as unknown as NexusPublishPluginsResult;
       emit(args, {
         ok: true,
         data: {
