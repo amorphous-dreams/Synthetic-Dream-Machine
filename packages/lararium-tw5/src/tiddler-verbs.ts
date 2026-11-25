@@ -1301,8 +1301,9 @@ export const makeTiddlerRenameReactor = everyWiki("tiddler-rename", true, (opts:
         for (const other of readable) {
           if (other === anchor.bag) continue;
           const held = await opts.composite.storeForBag(other)?.get(named);
-          if (held && !held.meta?.deleted && ctx.asker !== "cli" && ctx.asker !== "tab") {
-            const code = ctx.asker === "seat" ? "hand-act-only" : "hand-unattested";
+          // The booked asker reads as the hand gate's verdict (`askerRefusal`), never a bare compare.
+          const code = held && !held.meta?.deleted ? askerRefusal(ctx.asker) : null;
+          if (code !== null) {
             throw new VerbRefusal(code, `${code}: "${named}" also stands in ${other}, a layer a rename would shadow, so a person alone renames it; a seat proposes. Ask the operator to run \`lares tiddler rename "${title}" "${to}" --recipe ${anchor.recipe}\` on their own terminal.`);
           }
         }
