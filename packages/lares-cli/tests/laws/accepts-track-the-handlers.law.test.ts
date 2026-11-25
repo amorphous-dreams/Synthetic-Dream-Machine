@@ -100,6 +100,8 @@ const COMPUTED_READS: Readonly<Record<string, { readonly sites: number; readonly
   // `posturePlan(Object.keys(a.flags).filter((k) => a.flags[k] === true))` hands on the names PRESENT on the
   // line; it reads no name of its own, and the posture table it feeds holds its own vectors.
   "commands/vessel": { sites: 1, names: () => [] },
+  // `(["apply", "commit", "revert"] as const).filter((f) => args.flags[f] === true)` reads the floor's one-act choice.
+  "commands/floor":  { sites: 1, names: () => listAfter(code(resolve(SRC, "commands/floor.ts")), "const flags = ([", "]") },
 };
 
 const relOf = (f: string): string => relative(SRC, f).replace(/\.ts$/, "");

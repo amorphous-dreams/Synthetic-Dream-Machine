@@ -84,7 +84,7 @@ export type {
   LifecycleRow, ReconcileResult, BuildResult, PromoteResult, RetireResult, UnRetireResult, PurgeResult,
 } from "./sensorium-lifecycle-verbs.js";
 // THE HAND BEHIND A COMMAND WITH NO SOCKET: the sense lifecycle's hand verbs read the process that runs them (hitl-reads-a-hand).
-export { readOwnHand, ownPeerKind, askerRefusal, handRefusalOf, type HandReading, type HandReads, type HandRefusal, type HandRefusalCode } from "./hand-act-gate.js";
+export { readOwnHand, ownPeerKind, askerRefusal, handRefusalOf, handCodeOf, HAND_ADMITS, type HandReading, type HandReads, type HandRefusal, type HandRefusalCode } from "./hand-act-gate.js";
 
 // The LI (sheaf) CONSISTENCY-RADIUS — the Robinson li-disagreement signal over content/structure/form
 // (0 ⟺ they glue; positive ⟺ a localizable obstruction), PAIRED with the KI (cosheaf) co-consistency —
@@ -291,8 +291,8 @@ export {
 } from "./hosting-store.js";
 export type { HostingState, SpendOutcome } from "./hosting-store.js";
 export type { NexusKapaeOptions, NexusKapaeResult, NexusKapaeListResult } from "./commands/nexus-kapae.js";
-export { runNexusPublishPlugins, NexusPublishError } from "./commands/nexus-publish.js";
-export type { NexusPublishPluginsOptions, NexusPublishPluginsResult } from "./commands/nexus-publish.js";
+export { runNexusPublishPlugins, runNexusPublishTerms, NexusPublishError } from "./commands/nexus-publish.js";
+export type { NexusPublishPluginsOptions, NexusPublishPluginsResult, NexusPublishTerms } from "./commands/nexus-publish.js";
 export { runNexusInspectOffering, NexusOfferingInspectError } from "./commands/nexus-offering-inspect.js";
 export type { NexusOfferingInspectOptions, NexusOfferingInspectResult } from "./commands/nexus-offering-inspect.js";
 
@@ -310,7 +310,7 @@ export { runEdgePartial, runEdgeCosign, EdgeCosignError, type EdgePartialResult,
 export { runPromoteOpen, runPromoteSign, runPromoteCheck, runPromoteCheckBytes, promotionStatementDigest, PromoteError, type PromoteOpenResult, type PromoteSignResult } from "./commands/nexus-promote.js";
 export { runCabalAct, runCabalCosign, runCabalStanding, readKahuCabalBoard, landFoundingAdmission, NexusCabalError, type NexusCabalActResult } from "./commands/nexus-cabal.js";
 export { runFloorRelease, runFloorReleaseStanding, type NexusReleaseResult } from "./commands/nexus-release.js";
-export { runFloorStatus, runFloorAccept, nodeFloorPorts, FloorRefused, type NodeFloorOptions } from "./commands/floor.js";
+export { runFloorStatus, runFloorAccept, runFloorAdopt, runFloorSettle, nodeFloorPorts, FloorRefused, type NodeFloorOptions } from "./commands/floor.js";
 export { runFloorCut, runFloorCutOver, type FloorCutResult } from "./commands/floor-cut.js";
 export { runOfferRetire, heldCharterSeat, OFFER_RETIRE_WAIT_MS } from "./commands/offer-retire.js";
 export type { CabalVouchOptions, CabalVouchResult } from "./commands/cabal-vouch.js";

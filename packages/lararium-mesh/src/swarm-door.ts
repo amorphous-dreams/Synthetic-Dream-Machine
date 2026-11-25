@@ -25,12 +25,10 @@ import { execLeiBranch, execLeiScopeRefusal, type ExecLeiScope } from "./exec-le
 import { cosignPortWitness, WardActAlreadyRun, wardCosignGate, type WardCosignAct, type WardCosignPort } from "./ward-cosign-gate.js";
 import { WARD_GATE_DECIDED } from "./ward-door-decided.js";
 import { WardRefused } from "./ward-slots.js";
+import { handCodesOf } from "./hand-refusal.js";
 
-/** The verbs only a hand runs, by the code each refuses under. `swarm-show` stays open to a seat. */
-export const SWARM_VERB_HAND_CODES: Readonly<Record<string, string>> = {
-  "swarm-cap-set": "swarm-needs-hand", "swarm-share-set": "swarm-needs-hand", "swarm-lei-kui": "swarm-needs-hand",
-  "swarm-lei-unstring": "swarm-needs-hand", "swarm-lei-restring": "swarm-needs-hand",
-};
+/** The verbs only a hand runs, by the code each refuses under: the swarm wing's view of the one hand table. `swarm-show` stays open to a seat. */
+export const SWARM_VERB_HAND_CODES: Readonly<Record<string, string>> = Object.freeze(Object.fromEntries(handCodesOf("swarm")));
 
 /** A wide lei's returns hold no hard cap; a kui of more than this many asks an explicit confirm. */
 export const LEI_RETURNS_ASK_ABOVE = 12;

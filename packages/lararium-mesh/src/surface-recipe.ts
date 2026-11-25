@@ -33,7 +33,9 @@ import type { LarTiddlerRecord } from "./tiddler-store.js";
 import { bootSetIds, bootSetPluginCids, verifyCasBytesAsync, type CasBlobLike } from "./cas.js";
 import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
 import { GENESIS_FLOOR_TIDDLER, floorBlobCids, readFloorManifest } from "./floor-manifest.js";
-import { readFloorOffering } from "./floor-offering.js";
+import { floorRequiredBlobIds, readFloorOffering, resolveFloorOffering } from "./floor-offering.js";
+import { ENGINE_CORE_ID } from "./base-doc.js";
+import { computeEngineCid } from "./genesis-doc.js";
 import { wikiUri } from "./lar-uris.js";
 import { selectPluginBlobs, selectedPluginCids, type OfferingLookup } from "./plugin-offering-selector.js";
 import { effectiveRecipe, type RecipePlane } from "./recipe-planes.js";
@@ -74,6 +76,53 @@ export interface SurfacePluginInputs {
   promoted?: (wikiSlug: string) => Promise<readonly string[]>;
   /** Promoted digests whose bytes failed the local store check: dropped from the union and named here. */
   onPromotedVoided?: (wikiSlug: string, digests: readonly string[]) => void;
+  /** THE FLIP (3c): the floor manifest this mount stands on (the vessel's pin, else the genesis floor the founding record names).
+   *  Absent or null, no floor stands named and the founding record's own boot set serves. */
+  readonly floorCid?: string | null;
+  /** A named floor that did not serve (unresolved, or its engine moved): the island's set served instead, and this names why. */
+  onFloorFallback?: (wikiSlug: string, reading: FloorMountReading) => void;
+}
+
+/** Where a mount's plugin set came from: the floor it stands on, or the founding record's own boot set and why. */
+export type FloorMountReading =
+  | { readonly source: "floor"; readonly manifest: string }
+  | { readonly source: "island"; readonly manifest: string | null; readonly why: string };
+
+/**
+ * THE FLIP (3c, follow-lei S1): the plugin set a mount loads beside the core, off the floor it stands on. The floor's plugins
+ * offering resolves (verified, every id a mount needs present, every blob re-hashed; the snapshots stay the island's to read).
+ * The engine stays island-supplied under a mount check: the island's core must fold to the floor's `engine`, else the island's
+ * set serves and the reading names `engine-moved` (the engine stays behind its own cadence threshold). A floor that does not
+ * resolve serves the island's set and names why (fork F3, default (a)). Never throws.
+ */
+export async function floorMountSet(args: {
+  readonly floorCid: string | null | undefined;
+  readonly islandBlobs: Record<string, CasBlobLike> | undefined;
+  readBytes(cid: string): Uint8Array | null | Promise<Uint8Array | null>;
+}): Promise<{ readonly reading: FloorMountReading; readonly cids: readonly string[]; readonly ids: ReadonlySet<string> }> {
+  const island = (manifest: string | null, why: string) => ({ reading: { source: "island" as const, manifest, why }, cids: bootSetPluginCids(args.islandBlobs), ids: bootSetIds(args.islandBlobs) });
+  const cid = args.floorCid;
+  if (typeof cid !== "string" || cid.length === 0) return island(null, "no floor named");
+  try {
+    const bytes = await args.readBytes(cid);
+    if (!bytes) return island(cid, `floor-absent: manifest bytes absent: ${cid}`);
+    if (sha256HexBytesSync(bytes) !== cid) return island(cid, `floor-manifest-malformed: manifest bytes differ from their CID: ${cid}`);
+    const opened = readFloorManifest(bytes);
+    if ("refusal" in opened) return island(cid, `${opened.refusal}: ${opened.reason}`);
+    const core = Object.values(args.islandBlobs ?? {}).find((b) => b?.id === ENGINE_CORE_ID)?.sha256;
+    const engine = typeof core === "string" ? computeEngineCid(core) : null;
+    if (engine !== opened.manifest.engine) {
+      return island(cid, `engine-moved: the floor names engine ${opened.manifest.engine}, the island's core folds to ${engine ?? "(no core)"}; the engine stays behind its own cadence threshold`);
+    }
+    const rows = Object.values(args.islandBlobs ?? {}).filter((b): b is CasBlobLike & { id: string } => typeof b?.id === "string")
+      .map((b) => { const kind = (b as { readonly kind?: unknown }).kind; return { id: b.id, ...(typeof kind === "string" ? { kind } : {}) }; });
+    const offered = await resolveFloorOffering(opened.manifest, async (c) => args.readBytes(c), { required: floorRequiredBlobIds(Object.fromEntries(rows.map((r) => [r.id, r]))) });
+    if ("refusal" in offered) return island(cid, `${offered.refusal}: ${offered.reason}`);
+    const blobs = offered.offering.blobs;
+    return { reading: { source: "floor", manifest: cid }, cids: blobs.map((b) => b.sha256), ids: new Set([ENGINE_CORE_ID, ...bootSetIds(args.islandBlobs), ...blobs.map((b) => b.id)]) };
+  } catch (error) {
+    return island(cid, `floor-absent: ${String(error)}`);
+  }
 }
 
 export interface SurfaceRecipeInput {
@@ -165,13 +214,16 @@ function documentIdOf(document: string): string | null {
  */
 export async function resolveRecipePluginCids(
   recipe: Pick<WikiRecipe, "wikiSlug" | "pluginOfferings" | "pluginOfferingsFault">,
-  inputs: Pick<SurfacePluginInputs, "islandBlobs" | "lookup" | "readBytes" | "promoted" | "onPromotedVoided">,
-): Promise<{ readonly ok: true; readonly pluginCids: readonly string[] } | { readonly ok: false; readonly error: string }> {
+  inputs: Pick<SurfacePluginInputs, "islandBlobs" | "lookup" | "readBytes" | "promoted" | "onPromotedVoided" | "floorCid" | "onFloorFallback">,
+): Promise<{ readonly ok: true; readonly pluginCids: readonly string[]; readonly floor: FloorMountReading } | { readonly ok: false; readonly error: string }> {
   if (recipe.pluginOfferingsFault) {
     return { ok: false, error: `${recipe.wikiSlug}: malformed-offerings-field: ${recipe.pluginOfferingsFault}` };
   }
-  const floorCids = bootSetPluginCids(inputs.islandBlobs);
-  const selection = await selectPluginBlobs(recipe.pluginOfferings ?? [], inputs.lookup, bootSetIds(inputs.islandBlobs));
+  // THE FLIP: the floor this mount stands on supplies the set; the founding record's boot set serves only where none resolves.
+  const mounted = await floorMountSet({ floorCid: inputs.floorCid, islandBlobs: inputs.islandBlobs, readBytes: (cid) => inputs.readBytes(cid) });
+  if (mounted.reading.source === "island" && mounted.reading.manifest !== null) inputs.onFloorFallback?.(recipe.wikiSlug, mounted.reading);
+  const floorCids = mounted.cids;
+  const selection = await selectPluginBlobs(recipe.pluginOfferings ?? [], inputs.lookup, mounted.ids);
   if (!selection.ok) return { ok: false, error: `${recipe.wikiSlug}: offering selection ${JSON.stringify(selection.failure)}` };
   const selectedCids = selectedPluginCids(selection.blobs);
   const bytes = await verifyCasBytesAsync(selectedCids, async (cid) => inputs.readBytes(cid), (b) => sha256HexBytesSync(b));
@@ -185,7 +237,7 @@ export async function resolveRecipePluginCids(
     (checked.ok ? sound : voided).push(cid);
   }
   if (voided.length > 0) inputs.onPromotedVoided?.(recipe.wikiSlug, voided);
-  return { ok: true, pluginCids: [...new Set([...floorCids, ...selectedCids, ...sound])] };
+  return { ok: true, pluginCids: [...new Set([...floorCids, ...selectedCids, ...sound])], floor: mounted.reading };
 }
 
 /** Resolve a session's effective recipe for one surface mount. */
@@ -258,12 +310,12 @@ export async function resolveSurfaceRecipe(input: SurfaceRecipeInput): Promise<S
     facePlanes.push(Object.freeze({ name: plane.name, document: `automerge:${documentId}`, layer: "plane" as const }));
   }
 
-  const plugins = await resolveRecipePluginCids(recipe, input.plugins);
+  // The seed's floor witness admits the manifest, each house-canon snapshot it keys, its plugins offering record and each blob
+  // the offering carries to the session's content view; the same floor supplies the plugin set the mount loads (the flip).
+  const floorCid = input.floorCid ?? plainRecordOrNull(planes.read("oracle", GENESIS_FLOOR_TIDDLER))?.tiddler.cid;
+  const plugins = await resolveRecipePluginCids(recipe, { ...input.plugins, floorCid: typeof floorCid === "string" ? floorCid : null });
   if (!plugins.ok) return refused("plugins-refused", plugins.error);
 
-  // The seed's floor witness admits the manifest, each house-canon snapshot it keys, its plugins offering record and each blob
-  // the offering carries to the session's content view.
-  const floorCid = input.floorCid ?? plainRecordOrNull(planes.read("oracle", GENESIS_FLOOR_TIDDLER))?.tiddler.cid;
   const floorCids: string[] = [];
   if (typeof floorCid === "string" && floorCid.length > 0) {
     let bytes: Uint8Array | null;

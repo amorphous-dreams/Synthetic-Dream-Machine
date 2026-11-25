@@ -31,7 +31,7 @@
 import type { Socket } from "node:net";
 import { branchKind, harnessMark, peerKindOf, PROC, type PeerKind, type ProcReader } from "./uds-peer.js";
 
-export { askerRefusal, handRefusalOf, type HandReads, type HandRefusal, type HandRefusalCode } from "@lararium/mesh/hand-refusal";
+export { askerRefusal, handRefusalOf, handCodeOf, handCodesOf, HAND_ADMITS, type HandReads, type HandRefusal, type HandRefusalCode } from "@lararium/mesh/hand-refusal";
 
 export type HandReading =
   | { readonly admit: "hand" | "route-proves" }

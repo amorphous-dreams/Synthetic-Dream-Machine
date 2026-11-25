@@ -175,7 +175,9 @@ export interface UdsChannelOptions {
    * How the door reads a connection's peer (`uds-peer`'s `peerKindOf`, the hand gate's own reader; a suite names another). Only a
    * peer that reads `hand` books the `cli` asker; one that reads `unknown` books none, and a hand-only act from it refuses
    * `hand-unattested`. The booking stands as the hand gate's CACHED reading (`hand-act-gate`): read once per line or session,
-   * carried downstream as `ctx.asker`, never re-read and never a word of the frame.
+   * carried downstream as `ctx.asker`, never re-read. The frame's own words only NARROW it: a seat mark (`seat: "ai"`) or a
+   * session's `seat` hand books the seat without a peer read, and a peer that reads `hand` keeps the hand kind the session frame
+   * names (`cli`, `tab`, `watcher`); no word of the frame lifts a peer the reading refused, or books a hand where it read nothing.
    */
   readonly peerKind?: (sock: Socket) => Promise<PeerKind>;
   /** Per-act refusal codes for the hand-only gate; other rows use beyond-profile. */

@@ -27,7 +27,7 @@ const FACES: ShareFace[] = [{ handleIndex: 0, petname: "joshua-fontany" }, { han
 const SCRATCH: string[] = [];
 afterAll(() => { for (const d of SCRATCH) rmSync(d, { recursive: true, force: true }); });
 
-function fake(opts: { vessel?: boolean; file?: string | null; applied?: Record<string, unknown>; seat?: boolean; refuseSet?: boolean } = {}) {
+function fake(opts: { vessel?: boolean; file?: string | null; applied?: Record<string, unknown>; seat?: boolean; unread?: boolean; refuseSet?: boolean } = {}) {
   let file: string | null = opts.file ?? null;
   const projections = mkdtempSync(join(tmpdir(), "lar-share-cmd-"));
   SCRATCH.push(projections);
@@ -38,7 +38,7 @@ function fake(opts: { vessel?: boolean; file?: string | null; applied?: Record<s
     file: { read: () => file, write: (t) => { file = t; } },
     verb: async (name, args) => { verbs.push({ name, args }); if (opts.refuseSet === true && name === "share-set") throw new Error("share-needs-hand: refused"); return opts.vessel === false ? null : (name === "share-apply" ? opts.applied ?? { granted: 1, pending: 1, waiting: [] } : { ok: true }); },
     out: (l) => out.push(l), err: (l) => err.push(l),
-    seat: () => opts.seat === true,
+    hand: () => (opts.seat === true ? { refusal: "hand-act-only" } : opts.unread === true ? { refusal: "hand-unattested" } : { admit: "hand" }),
     projections: () => projections,
   };
   return { doors, verbs, out, err, file: () => file, projections };
@@ -60,11 +60,19 @@ describe("the share door keeps the file with the door", () => {
     expect(await cmdShare("bag", f.doors)(args(["notes"], { read: "h1" }))).toBe(1);
     expect(f.file()).toBeNull();
     expect(f.verbs).toEqual([]);
-    expect(f.err.join("\n")).toMatch(/share-needs-hand: .*terminal outside any agent harness/);
+    expect(f.err.join("\n")).toMatch(/share-needs-hand: hand-act-only: .*`lares bag share notes …` on their own terminal/);
     const g = fake({ seat: true, file: null });
     expect(await cmdShare("bag", g.doors)(args(["notes"], {}, { remove: true }))).toBe(1);
     expect(g.verbs).toEqual([]);
     expect(await cmdShare("bag", g.doors)(args([], {}, { list: true })), "a read stays open to a seat").toBe(0);
+  });
+
+  test("RED: W1 — a run whose chain reads nothing writes nothing either: the gate reads the chain, never the mark alone", async () => {
+    const f = fake({ unread: true });
+    expect(await cmdShare("bag", f.doors)(args(["notes"], { read: "h1" }))).toBe(1);
+    expect(f.file()).toBeNull();
+    expect(f.verbs).toEqual([]);
+    expect(f.err.join("\n")).toMatch(/share-needs-hand: hand-unattested: /);
   });
 });
 

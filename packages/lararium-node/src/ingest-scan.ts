@@ -425,7 +425,11 @@ export function recordLandedCarriers(
     const answered = typeof c["canonicalHash"] === "string" && c["canonicalHash"] ? (c["canonicalHash"] as string) : null;
     const recordsHash = headEcho ? (cand.syncedRecordsHash ?? cand.syncedHash!)
       : answered ?? (standing !== null && digestsEqual(standing.disk, cand.diskHash) ? standing.records : cand.diskHash);
-    tree.set(key, cand.file, cand.diskHash, recordsHash);
+    // A BASE THAT ALREADY NAMES THIS AGREEMENT STAYS PUT. The projector may have pinned it first, with the document and
+    // the heads its records side read (`SyncedBase.heads`); this gesture names neither, and a row it rewrote would drop them.
+    if (!(standing !== null && digestsEqual(standing.disk, cand.diskHash) && digestsEqual(standing.records, recordsHash))) {
+      tree.set(key, cand.file, cand.diskHash, recordsHash);
+    }
     recorded++;
   }
   return recorded;

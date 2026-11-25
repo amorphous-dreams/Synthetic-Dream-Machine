@@ -46,6 +46,7 @@ import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
 import { cmdTiddler, tiddlerPlan } from "../src/commands/tiddler.js";
 import { cmdWiki, wikiFilterPlan, wikiRenderPlan } from "../src/commands/wiki.js";
 import { cmdKahua } from "../src/commands/kahua.js";
+import { memePlan } from "../src/commands/family.js";
 import { cmdMeme } from "../src/commands/meme.js";
 import { COMMANDS, dispatch, unknownFlags } from "../src/bin/lares.js";
 import type { ParsedArgs } from "../src/parse-args.js";
@@ -146,6 +147,13 @@ describe("the argument law, no daemon", () => {
     expect(unknownFlags(door, argv("tiddler", ["put", "T"], { recipe: "default", file: "x", fields: "{}" }, { meme: true })).map((x) => x.name)).toContain("fields");
     expect(unknownFlags(door, argv("tiddler", ["delete", "T"], { recipe: "default", mode: "reveal" }, { meme: true })).map((x) => x.name)).toContain("mode");
     expect(unknownFlags(door, argv("tiddler", ["get", "T"], { recipe: "default" }, { meme: true, tree: true })).map((x) => x.name)).toContain("tree");
+  });
+  test("put --meme --create is accepted for a whole-family put and rides to the verb; a slot patch still refuses it", async () => {
+    const door = COMMANDS.find((row) => row.name === "tiddler")!;
+    expect(unknownFlags(door, argv("tiddler", ["put", "lar:///t/x"], { recipe: "default", file: "x" }, { meme: true, create: true })).map((x) => x.name)).not.toContain("create");
+    expect(unknownFlags(door, argv("tiddler", ["put", "lar:///t/x"], { recipe: "default", slot: "#/a", text: "w" }, { meme: true, create: true })).map((x) => x.name)).toContain("create");
+    expect(memePlan("put", argv("tiddler", ["put", "lar:///t/x"], { recipe: "default" }, { meme: true, create: true })).args).toEqual({ uri: "lar:///t/x", recipe: "default", create: "true" });
+    expect(memePlan("put", argv("tiddler", ["put", "lar:///t/x"], { recipe: "default" }, { meme: true })).args).toEqual({ uri: "lar:///t/x", recipe: "default" });
   });
   test("family writes and listing use the tiddler door while an unqualified empty get refuses", async () => {
     expect((await run(argv("tiddler", ["get"], { recipe: "default" }))).exit).toBe(2);

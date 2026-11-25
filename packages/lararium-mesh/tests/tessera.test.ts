@@ -90,8 +90,11 @@ describe("wake-reads-unmatched-half-red", () => {
     await f.kui("kukulu", { reach: "wide", returns: 3 });
     const matched = await f.begin(), other = await f.begin(), open = await f.begin();
     const landed = await f.land(matched.tessera);
-    const drifted = await f.land(other.tessera, HEAD2);
-    expect(drifted.par).toBe(false);
+    // A landing at another head refuses now (rite-land-differs); a host half an older vessel rested off par still reads red.
+    await expect(f.land(other.tessera, HEAD2)).rejects.toMatchObject({ code: "rite-land-differs" });
+    const off = await signSwarmAct({ act: "rite-landed", group: GROUP, rite: "kukulu", tessera: other.tessera, begun: other.begun, head: HEAD2 }, f.vessel);
+    await putSwarmAct(f.wiki, swarmTesseraTitle(other.tessera, "host"), off);
+    const drifted = { landed: swarmActCid(off) };
     const read = await conferre(f.wiki, f.trust, GROUP);
     expect(read.par).toEqual([{ tessera: matched.tessera, rite: "kukulu", begun: matched.begun, landed: landed.landed, branch: BRANCH, head: HEAD, par: true }]);
     expect([...read.red].sort((a, b) => String(a.red).localeCompare(String(b.red)))).toEqual([
@@ -145,8 +148,9 @@ describe("kukulu-binds-its-image-and-spends-once", () => {
     const one = await beginRite(f.wiki, { rite: "kukulu", branch: BRANCH, head: HEAD, tree: TREE, image: D1 }, f.trust, GROUP, f.vessel, ONE_DEVICE);
     const guest = await readSwarmRecord(f.wiki, swarmTesseraTitle(one.tessera, "guest"), f.trust, GROUP);
     expect(guest).toMatchObject({ ok: true, act: { body: { image: D1 } } });
-    const off = await landRite(f.wiki, { tessera: one.tessera, head: HEAD, image: D2 }, f.trust, GROUP, f.vessel);
-    expect(off.par).toBe(false);
+    await expect(landRite(f.wiki, { tessera: one.tessera, head: HEAD, image: D2 }, f.trust, GROUP, f.vessel)).rejects.toMatchObject({ code: "rite-land-differs" });
+    const off = await signSwarmAct({ act: "rite-landed", group: GROUP, rite: "kukulu", tessera: one.tessera, begun: one.begun, head: HEAD, image: D2 }, f.vessel);
+    await putSwarmAct(f.wiki, swarmTesseraTitle(one.tessera, "host"), off);
     expect((await conferre(f.wiki, f.trust, GROUP)).red).toEqual([expect.objectContaining({ tessera: one.tessera, red: "image-differs", image: D1 })]);
     const two = await beginRite(f.wiki, { rite: "kukulu", branch: BRANCH, head: HEAD, tree: TREE, image: D1 }, f.trust, GROUP, f.vessel, ONE_DEVICE);
     expect((await landRite(f.wiki, { tessera: two.tessera, head: HEAD, image: D1 }, f.trust, GROUP, f.vessel)).par).toBe(true);
@@ -200,6 +204,27 @@ describe("kukulu-reuses-its-own-return", () => {
     await expect(beginRite(f.wiki, at, f.trust, GROUP, f.vessel, ONE_DEVICE)).rejects.toMatchObject({ code: "swarm-lei-returns-spent" });
   });
 
+});
+
+/**
+ * THE LANDING READS THE BEGUN HALF (operator ruling 2026-11-25): the host half names the head and image the verified guest half
+ * names, never the caller's; a caller that names another refuses, so no seat lands a wrong head first and blocks the true landing.
+ */
+describe("RED rite-land-reads-the-begun-half", () => {
+  const D1 = "sha256:" + "d1".repeat(32), D2 = "sha256:" + "d2".repeat(32);
+  test("RED a landing whose args name another head or image refuses rite-land-differs and rests no host half; CONTROL: a landing naming no head lands at the begun head and image, par", async () => {
+    const f = await fixture();
+    await f.kui("kukulu", { reach: "wide", returns: 2 });
+    const one = await beginRite(f.wiki, { rite: "kukulu", branch: BRANCH, head: HEAD, tree: TREE, image: D1 }, f.trust, GROUP, f.vessel, ONE_DEVICE);
+    await expect(landRite(f.wiki, { tessera: one.tessera, head: HEAD2, image: D1 }, f.trust, GROUP, f.vessel)).rejects.toMatchObject({ code: "rite-land-differs", message: expect.stringMatching(/lares rite land --tessera/) });
+    await expect(landRite(f.wiki, { tessera: one.tessera, head: HEAD, image: D2 }, f.trust, GROUP, f.vessel)).rejects.toMatchObject({ code: "rite-land-differs" });
+    expect(f.rows.has(swarmTesseraTitle(one.tessera, "host"))).toBe(false);
+    const landed = await landRite(f.wiki, { tessera: one.tessera }, f.trust, GROUP, f.vessel);
+    expect(landed.par).toBe(true);
+    const host = await readSwarmRecord(f.wiki, swarmTesseraTitle(one.tessera, "host"), f.trust, GROUP);
+    expect(host).toMatchObject({ ok: true, act: { body: { head: HEAD, image: D1 } } });
+    expect((await conferre(f.wiki, f.trust, GROUP)).red).toEqual([]);
+  });
 });
 
 /**

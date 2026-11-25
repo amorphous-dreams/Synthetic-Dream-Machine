@@ -42,7 +42,7 @@ module-type: widget
  * Meme: lar:///ha.ka.ba/lararium/tw5/modules/meme-face
  */
 
-import type { PlaceMemeReceipt } from "../place-meme.js";
+import type { PlaceMemeOwed, PlaceMemeReceipt } from "../place-meme.js";
 import type { LaresMemeFace, LaresTw5Extension } from "../types/lares-globals.js";
 import type { TW5Instance, TW5Wiki } from "../types/tiddlywiki.js";
 
@@ -58,14 +58,14 @@ export function memePlaceReceiptTitle(uri: string): string {
 export function memePlaceReceiptFields(
   uri: string,
   container: string,
-  receipt: PlaceMemeReceipt,
+  receipt: PlaceMemeReceipt | PlaceMemeOwed,
 ): Record<string, string> {
   const fields: Record<string, string> = {
     title: memePlaceReceiptTitle(uri),
     type: "application/json",
     uri,
     decision: receipt.decision,
-    grade: receipt.grade,
+    grade: receipt.grade ?? "",
     text: JSON.stringify(receipt, null, 2),
   };
   if (receipt.canonicalHash) fields["canonical-hash"] = receipt.canonicalHash;

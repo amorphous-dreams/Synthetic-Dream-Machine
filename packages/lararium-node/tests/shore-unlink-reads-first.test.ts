@@ -51,6 +51,8 @@ interface Stand {
   holding: Set<string>;
   /** The document each bag's records rest in, as the projector's `documentOf` door answers it (none named: none answered). */
   docs: Record<string, string>;
+  /** The history each bag's document holds, as the projector's `lineageOf` door answers it: the heads it stands at, and every head it holds. */
+  lineage: Record<string, { heads: string[]; holds: string[] }>;
   /** The alerts the projector raised in the wiki, by title. */
   alerts: Map<string, Record<string, unknown>>;
   /** The Synced tree as the directory holds it now. */
@@ -67,6 +69,7 @@ function stand(mirrorRoots: Record<string, string> = { [BAG]: BAG, [OTHER]: OTHE
     file: { ext: ".md", body: BODY, metaBody: META, relPath: "a/note.md", encoding: "utf8" } as CarrierFile,
     owner: { bag: BAG as string | null }, holding: new Set<string>([BAG]),
     docs: {} as Record<string, string>,
+    lineage: {} as Stand["lineage"],
     alerts: new Map<string, Record<string, unknown>>(),
   };
   const engine = { $tw: { wiki: {
@@ -83,6 +86,10 @@ function stand(mirrorRoots: Record<string, string> = { [BAG]: BAG, [OTHER]: OTHE
       carrierFileFn: async () => out.file,
       bagsHolding: async () => [...s.holding],
       documentOf: (bagId: string) => s.docs[bagId] ?? null,
+      lineageOf: (bagId: string) => {
+        const held = s.lineage[bagId];
+        return held === undefined ? null : { heads: held.heads, quiet: true, holds: (named: readonly string[]) => named.every((head) => held.holds.includes(head)) };
+      },
       syncedTree: tree(),
       onConflict: (info) => { s.conflicts.push(info); },
       onConflictResolved: (info) => { s.resolved.push(info.standoff); },
@@ -512,6 +519,128 @@ describe("a file answers only to the document whose records its base read", () =
     s.file = { ...s.file, body: "# what the records say now\n" };
     await s.reboot();
     expect(read(s.at("a/note.md"))).toBe("# what the records say now\n");
+    expect(s.conflicts).toEqual([]);
+  });
+});
+
+describe("a base names the history its records side read: records that fell behind it write nothing", () => {
+  // THE WORN-HOUSE LOSS (2026-11-25). A put landed newer words in a wiki's working document and the file agreed; that
+  // save never rested. The vessel stood again, the document read back as it stood before the put, and the projector
+  // read `disk == base, records != base` as records that moved on: it wrote the older render over the tracked file.
+  // Two hashes cannot tell records that moved on from records that lost history. The base's heads can.
+  const KEY = syncedTreeKey(BAG, URI);
+  const NEWER = "# what the records say, with a bullet a later write added\n";
+  /** A write lands in the records at head `h2` and the file takes it; then the document reads back at `h1`, without it. */
+  const agreeThenFallBehind = async (): Promise<Stand> => {
+    const s = stand();
+    s.docs[BAG] = "automerge:working";
+    s.lineage[BAG] = { heads: ["h1"], holds: ["h1"] };
+    await s.projector.idle();
+    s.file = { ...s.file, body: NEWER };
+    s.lineage[BAG] = { heads: ["h2"], holds: ["h1", "h2"] };
+    await s.projector.sense([URI]);
+    expect(read(s.at("a/note.md"))).toBe(NEWER);
+    expect(s.tree().baseAt(KEY, s.at("a/note.md"))?.heads).toEqual(["h2"]);
+    s.file = { ...s.file, body: BODY };
+    s.lineage[BAG] = { heads: ["h1"], holds: ["h1"] };
+    return s;
+  };
+
+  test("the document reads back without the agreed write: the file keeps its newer words and one standoff names the cure", async () => {
+    const s = await agreeThenFallBehind();
+    await s.reboot();
+    expect(read(s.at("a/note.md"))).toBe(NEWER);
+    expect(s.tree().baseAt(KEY, s.at("a/note.md"))?.heads).toEqual(["h2"]);
+    expect(s.conflicts).toHaveLength(1);
+    expect(s.conflicts[0]!.reason).toContain("fell behind");
+    expect(s.conflicts[0]!.reason).toContain(`lares shore keep-disk ${URI} --key ${s.conflicts[0]!.standoff}`);
+    expect(s.conflicts[0]!.reason).toContain(`lares shore take-records ${URI} --key ${s.conflicts[0]!.standoff}`);
+    // Level-triggered: the same states raise nothing more and still write nothing.
+    await s.projector.sense([URI]);
+    expect(s.conflicts).toHaveLength(1);
+    expect(read(s.at("a/note.md"))).toBe(NEWER);
+  });
+
+  test("the standoff names what the keeper needs to keep the disk: the document, the heads it lacks, and whether it stood quiet since it mounted", async () => {
+    const s = await agreeThenFallBehind();
+    await s.reboot();
+    expect(s.projector.standing().find((x) => x.uri === URI)?.behind).toEqual({ doc: "automerge:working", heads: ["h2"], quiet: true });
+  });
+
+  test("the file moved too while the records fell behind: still no both-moved, the file holds the newest words", async () => {
+    const s = await agreeThenFallBehind();
+    writeFileSync(s.at("a/note.md"), HAND, "utf-8");
+    await s.reboot();
+    expect(read(s.at("a/note.md"))).toBe(HAND);
+    expect(s.conflicts).toHaveLength(1);
+    expect(s.conflicts[0]!.reason).toContain("fell behind");
+    expect(s.projector.standing().find((x) => x.uri === URI)?.behind?.heads).toEqual(["h2"]);
+  });
+
+  test("a person who names that standoff and takes the records' side lands the older render, by their own word", async () => {
+    const s = await agreeThenFallBehind();
+    await s.reboot();
+    expect((await s.projector.takeRecords(BAG, URI, s.conflicts[0]!.standoff)).took).toBe(true);
+    expect(read(s.at("a/note.md"))).toBe(BODY);
+    expect(s.tree().baseAt(KEY, s.at("a/note.md"))?.heads).toEqual(["h1"]);
+  });
+
+  test("a blank document stands in for one that failed to load: the file its base agrees with stays, and one standoff names it", async () => {
+    const s = await agreeThenFallBehind();
+    s.owner.bag = null; s.holding.clear();                      // the stand-in holds no such carrier
+    s.lineage[BAG] = { heads: ["blank"], holds: ["blank"] };
+    await s.reboot();
+    await s.projector.sense([URI]);
+    expect(read(s.at("a/note.md"))).toBe(NEWER);
+    expect(s.tree().baseAt(KEY, s.at("a/note.md"))?.heads).toEqual(["h2"]);
+    expect(s.conflicts).toHaveLength(1);
+    expect(s.conflicts[0]!.reason).toContain("fell behind");
+  });
+
+  test("the lost history returns (the document hydrates late): the standoff clears and nothing wrote meanwhile", async () => {
+    const s = await agreeThenFallBehind();
+    await s.reboot();
+    expect(s.conflicts).toHaveLength(1);
+    s.file = { ...s.file, body: NEWER };
+    s.lineage[BAG] = { heads: ["h2"], holds: ["h1", "h2"] };
+    await s.projector.sense([URI]);
+    expect(read(s.at("a/note.md"))).toBe(NEWER);
+    expect(s.resolved).toEqual([s.conflicts[0]!.standoff]);
+  });
+
+  test("CONTROL: records that moved on from the agreement still hold its heads: the file takes the new render", async () => {
+    const s = stand();
+    s.docs[BAG] = "automerge:working";
+    s.lineage[BAG] = { heads: ["h1"], holds: ["h1"] };
+    await s.projector.idle();
+    s.file = { ...s.file, body: NEWER };
+    s.lineage[BAG] = { heads: ["h2"], holds: ["h1", "h2"] };
+    await s.reboot();
+    expect(read(s.at("a/note.md"))).toBe(NEWER);
+    expect(s.conflicts).toEqual([]);
+  });
+
+  test("CONTROL: records that dropped a carrier after the agreement still hold its heads: the untouched file leaves", async () => {
+    const s = stand();
+    s.docs[BAG] = "automerge:working";
+    s.lineage[BAG] = { heads: ["h1"], holds: ["h1"] };
+    await s.projector.idle();
+    s.owner.bag = null; s.holding.clear();
+    s.lineage[BAG] = { heads: ["h2"], holds: ["h1", "h2"] };
+    await s.projector.sense([URI]);
+    expect(existsSync(s.at("a/note.md"))).toBe(false);
+    expect(s.conflicts).toEqual([]);
+  });
+
+  test("CONTROL: a base that names no heads vouches as before, and a store that answers no history pins none", async () => {
+    const s = stand();
+    s.docs[BAG] = "automerge:working";
+    await s.projector.idle();
+    expect("heads" in s.tree().baseAt(KEY, s.at("a/note.md"))!).toBe(false);
+    s.file = { ...s.file, body: NEWER };
+    s.lineage[BAG] = { heads: ["h9"], holds: ["h9"] };
+    await s.reboot();
+    expect(read(s.at("a/note.md"))).toBe(NEWER);
     expect(s.conflicts).toEqual([]);
   });
 });

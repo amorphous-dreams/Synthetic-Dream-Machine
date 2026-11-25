@@ -62,6 +62,7 @@ import { foundingRecordLine, readFoundingRecordTruths, type FoundingRecordTruths
 import { nodeCanonDocUrl, nodeCanonRows } from "./canon-rows.js";
 import { readFloorDrifts, type FloorDriftRow } from "../floor-card.js";
 import { readFloorShadowFileTold } from "../floor-shadow-file.js";
+import { adoptFloorSeed, settleLocalFloor, type FloorAdoptOutcome, type FloorLocalAct, type FloorPin } from "@lararium/mesh/floor-pin";
 
 /** A floor door refused by name. */
 export class FloorRefused extends Error {
@@ -238,4 +239,21 @@ export async function runFloorAccept(opts: NodeFloorOptions & { readonly target?
   const ports = await nodeFloorPorts(opts);
   const out = await acceptFloorRelease(ports, opts.target);
   return { ...out, alerted: ports.alerted };
+}
+
+/**
+ * `lares vessel floor adopt [--apply | --commit | --revert]` (3d, follow-lei S2): the seed the genesis dir offers, adopted over the
+ * pin's base as a local floor. `seedFloor` names the seed's floor manifest (its genesis witness) and `seedCid` the receipt; the
+ * vessel reads both floors from its own CAS (the boot mirrors a newer seed's blobs there). Bare it previews; `apply` lands it.
+ */
+export async function runFloorAdopt(opts: NodeFloorOptions & { readonly seedCid: string; readonly seedFloor: string; readonly apply: boolean }): Promise<FloorAdoptOutcome & { readonly alerted: readonly string[] }> {
+  const ports = await nodeFloorPorts(opts);
+  const out = await adoptFloorSeed(ports, { seedCid: opts.seedCid, seedFloor: opts.seedFloor, apply: opts.apply });
+  return { ...out, alerted: ports.alerted };
+}
+
+/** `floor adopt --commit | --revert`: the local floor settles by the hand's act, a forward row either way. */
+export async function runFloorSettle(opts: NodeFloorOptions & { readonly act: "commit" | "revert" }): Promise<FloorLocalAct & { readonly prior?: FloorPin }> {
+  const ports = await nodeFloorPorts(opts);
+  return settleLocalFloor(ports, opts.act);
 }
