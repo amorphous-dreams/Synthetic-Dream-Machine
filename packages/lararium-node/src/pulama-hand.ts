@@ -68,7 +68,8 @@
  *                  vouches name this move, and the vest begins the rite, claiming one lei return) and only where the successor's
  *                  reported closure equals the committed `next`. One attempt spends the commit, vested or lapsed. The answer
  *                  carries the slot for the host's pipe; it never rests. From then this keeper is PASSING THE FIRE: every hand
- *                  act that writes (admit, unadmit, lei, keep-seat, rehive, close, keeper-commit, keeper-vest, keeper-land) refuses
+ *                  act that writes (admit, unadmit, lei, keep-seat, rehive, close, keeper-commit, keeper-commit-lei, keeper-vest,
+ *                  keeper-land) refuses
  *                  `fire-passing`. The vessel's sessions keep serving through it until the shim locks it, so the down's keep and
  *                  census ride the keeper that still holds the fire; the successor holds no socket and serves nothing meanwhile.
  *   keeper-receive (the successor) open the slot with its one-handoff key (spent on the open), adopt the node key and each face
@@ -77,7 +78,15 @@
  *   keeper-land    (a keeper the hand lit by passphrase: the struck fire) land the live commit with no vest; a keeper lit by a
  *                  vest, or a passing one, refuses.
  *   take-fire      (a lit successor) claim the vessel socket; it refuses while another keeper still holds it.
- *   `status` folds the chain while lit (`keeper`), and names `vestReady` where a live commit can vest.
+ *   keeper-commit-lei  THE COMMIT THE KUKULU LEI LICENSES (no route; operator ruling 2026-11-24: no count of its own). The host,
+ *                  having read a standing kukulu lei on the branch with returns left, testifies the branch, the revision, its tree, the
+ *                  fresh-archive recheck, the built image's closure label (it must equal `next`), the CI push run and the device
+ *                  count; the keeper refuses a face of more than one device, a fork, a live hand commit (a lei never supersedes
+ *                  it), a vested commit unlanded, a red last pair and the struck fire due, then rests the same commit
+ *                  `keeper-commit` rests, naming the license. The vest's live rite spends that lei's return (the same return the
+ *                  rite spends for the lent face) and names it. `KEEPER_LEI_STANDS` (a code constant inside the closure) turns it off.
+ *   `status` folds the chain while lit (`keeper`), and names `vestReady` where a live commit can vest; `keeperLei` names the floor
+ *   and each licensed commit (branch, revision, CI run, the lei returns its vest spent), and `leiReady` where one could rest now.
  *
  * An answer names a reading, a count or a public digest. No answer and no log line carries a route or a key; a slot carries keys
  * only sealed to one successor's key.
@@ -93,7 +102,10 @@ import { nativeKdf } from "@lararium/mesh/node";
 import { UNLOCK_ATTEMPTS_PER_BOOT, type CustodyHolder } from "./custody-holder.js";
 import { pulamaSignerOf } from "./kukulu-gate.js";
 import { pulamaRecordCid } from "./pulama-admit.js";
-import { CLOSURE, keeperCommit, keeperEphemeral, keeperFold, keeperLand, keeperPayloadDrop, keeperSlotBinds, keeperSlotOf, keeperVest, type KeeperEphemeral, type KeeperRiteReading, type KeeperStanding } from "./pulama-keeper.js";
+import {
+  CLOSURE, KEEPER_LEI_STANDS, keeperCommit, keeperCommitByLei, keeperEphemeral, keeperFold, keeperLand, keeperLeiReady, keeperLicensed,
+  keeperPayloadDrop, keeperSlotBinds, keeperSlotOf, keeperVest, type KeeperEphemeral, type KeeperRiteReading, type KeeperStanding,
+} from "./pulama-keeper.js";
 import type { PulamaAdmissions } from "./pulama-admit.js";
 import type { PulamaServer } from "./pulama-server.js";
 import type { RehiveOutcome } from "./face-rehive.js";
@@ -173,6 +185,8 @@ export function pulamaHandDoor(a: {
   readonly worn?: () => number | undefined;
   /** THE LIVE RITE a vest rides (`keeperRiteOver`): the offer read and bound to this keeper move, its return claimed. Absent, `keeper-vest` refuses `vest-rite-unavailable`. */
   readonly keeperRite?: (offer: unknown, keeper: { readonly to: string; readonly next: string }) => Promise<KeeperRiteReading>;
+  /** THE KEEPER LEI'S FLOOR, a test seam alone: `pulama-main` passes none, so the floor reads `KEEPER_LEI_STANDS` (a code constant). */
+  readonly keeperLeiStands?: boolean;
   readonly onLog?: (line: string) => void;
 }): (frame: unknown) => Promise<PulamaHandAnswer> {
   const { holder, server } = a;
@@ -187,6 +201,7 @@ export function pulamaHandDoor(a: {
   let passing = false;
   // HOW THIS KEEPER STANDS LIT: by the hand's light (the struck fire), or by a vest; a lock clears it. Only a struck keeper lands struck.
   let litBy: "hand" | "vest" | null = null;
+  const leiFloor = a.keeperLeiStands ?? KEEPER_LEI_STANDS;
   const status = () => {
     const closing = server.closing();
     return { lit: holder.isUnlocked(), faces: holder.unlockedFaces().length, sessions: server.sessions(), attemptsLeft: holder.attemptsLeft(), image: a.image.raised(),
@@ -203,9 +218,15 @@ export function pulamaHandDoor(a: {
   /** The chain, folded under this keeper's key: an unlit keeper names none. */
   const keeperDigest = async () => {
     if (!holder.isUnlocked()) return {};
-    const fold = await keeperFold(a.records, await pulamaSignerOf(holder));
+    const by = await pulamaSignerOf(holder);
+    const fold = await keeperFold(a.records, by);
+    const licensed = await keeperLicensed(a.records, by);
     const last = fold.pairs.at(-1);
     return {
+      // THE KEEPER LEI: the floor, and each commit a kukulu lei licensed with no route (its branch, revision, CI run and, once vested,
+      // the lei returns its rite spent); `leiReady` where the kukulu lei could license one now (the host's stand reading follows it).
+      keeperLei: { floor: leiFloor, licensed },
+      ...(keeperLeiReady(fold, leiFloor) && !passing ? { leiReady: true } : {}),
       keeper: { v: fold.v, vestings: fold.vestings, struckDue: fold.struckDue, fork: fold.fork, tip: fold.tip, ...(fold.pending ? { pending: fold.pending.next } : {}), ...(last ? { last: last.par ? "par" : last.red } : {}) },
       // VEST-READY ONLY WHERE A VEST COULD PROCEED: a live commit, no struck fire due, and a face of one device as the commit read it,
       // or a face of two whose commit carries its co-sign.
@@ -443,6 +464,21 @@ export function pulamaHandDoor(a: {
         log(`keeper committed: v${out.v} names the successor closure${out.supersedes !== null ? ", superseding the commit before it" : ""}`);
         return { op: "keeper-commit", reading: "committed", ...out };
       }
+      case "keeper-commit-lei": {
+        // THE COMMIT THE KUKULU LEI LICENSES (no route: the consent rode the hand's kukulu lei, whose return the vest's rite spends).
+        // The host testifies what it read (the branch, the revision, its tree, the recheck, the image's closure label, the CI run, the
+        // device count); the keeper checks its own bounds and rests the commit.
+        if (passing) return passingRefusal("keeper-commit-lei");
+        if (!holder.isUnlocked()) return { op: "keeper-commit-lei", reading: "pulama-locked", ...status() };
+        const next = f["next"];
+        if (typeof next !== "string" || !CLOSURE.test(next)) return { op: "keeper-commit-lei", reading: "next-malformed", detail: "the successor's closure reads `sha256:<64 hex>`" };
+        const word = (k: string): string => (typeof f[k] === "string" ? f[k] : "");
+        const devices = typeof f["devices"] === "number" && Number.isSafeInteger(f["devices"]) && f["devices"] >= 1 ? f["devices"] : null;
+        const out = await keeperCommitByLei(a.records, await pulamaSignerOf(holder), { ...await standing(), next, devices, branch: word("branch"), rev: word("rev"), tree: word("tree"), recheck: word("recheck"), image: word("image"), ci: word("ci"), floor: leiFloor });
+        if ("refusal" in out) { log(`keeper-commit-lei: ${out.refusal}`); return { op: "keeper-commit-lei", reading: out.refusal, detail: out.detail }; }
+        log(`keeper committed under the kukulu lei of ${out.branch}: v${out.v} names the successor closure; the vest's rite spends the lei's return`);
+        return { op: "keeper-commit-lei", reading: "committed", ...out };
+      }
       case "keeper-offer": {
         if (holder.isUnlocked()) return { op: "keeper-offer", reading: "keeper-lit", detail: "a lit keeper holds a fire already; only an unlit successor offers a key" };
         ephemeral?.drop();
@@ -459,7 +495,7 @@ export function pulamaHandDoor(a: {
         const ride = a.keeperRite;
         const rite = ride ? (keeper: { readonly to: string; readonly next: string }) => ride(f["offer"], keeper)
           : async () => ({ ok: false as const, refusal: "vest-rite-unavailable", detail: "this keeper reads no kūkulu rite, so nothing vests; light the successor by hand: lares rite kukulu on a terminal" });
-        const out = await keeperVest(a.records, await pulamaSignerOf(holder), { to, closure: theirs, rite, keys: () => holder.handOver!(), spent: UNLOCK_ATTEMPTS_PER_BOOT - holder.attemptsLeft(), worn: a.worn?.() ?? null });
+        const out = await keeperVest(a.records, await pulamaSignerOf(holder), { to, closure: theirs, rite, keys: () => holder.handOver!(), spent: UNLOCK_ATTEMPTS_PER_BOOT - holder.attemptsLeft(), worn: a.worn?.() ?? null, leiFloor });
         if ("refusal" in out) { log(`keeper-vest: ${out.refusal}`); return { op: "keeper-vest", reading: out.refusal, detail: out.detail }; }
         passing = true;
         log(`keeper-vest: the fire vests to one successor key (${out.faces.map((n) => `h${n}`).join(", ") || "no face"}); this keeper passes it`);

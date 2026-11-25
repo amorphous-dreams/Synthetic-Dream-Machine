@@ -88,6 +88,16 @@ export interface KeeperBegunBody {
   /** THE CARRIED CO-SIGN (one per committed face, `KeeperCosign`): the face's roster as the vessel read it and, past one device, the
    *  spent `ward-keeper-vest` co-sign over (`next`, `prev`, `nonce`). Null where the commit carries none (a one-device house). */
   readonly cosigns?: readonly KeeperCosign[] | null;
+  /** THE KUKULU LEI'S LICENSE (no route rode this commit): the branch whose standing kukulu lei held returns, and the host's testimony;
+   *  absent on a routed commit. The vest names the lei return its live rite spent. */
+  readonly licensed?: KeeperLicense;
+}
+/** What licensed a commit with no route (operator ruling, 2026-11-24): the kukulu lei on `branch`, and what the host read. */
+export interface KeeperLicense {
+  readonly by: "kukulu-lei"; readonly branch: string;
+  /** The revision, its source tree, the second fresh-archive closure (`same`), the built image's closure label (it equals `next`),
+   *  and the CI push run on the revision as the host read it (`<run id>:success`). */
+  readonly rev: string; readonly tree: string; readonly recheck: "same"; readonly image: string; readonly ci: string;
 }
 /** The vest's spend mark: the lit keeper sealed the house's end of the bond to ONE successor key, once per commit. No key rests in it. */
 export interface KeeperVestedBody {
@@ -95,6 +105,8 @@ export interface KeeperVestedBody {
   readonly to: string; readonly node: boolean; readonly faces: readonly string[]; readonly nonce: string;
   /** The live kūkulu rite this vest rode: each lent face's rite tessera the vest's own begin claimed a lei return for. */
   readonly rite: readonly string[];
+  /** Each kukulu lei return the live rite spent (`lei` cid, `n`): what licensed a commit that rode no route. */
+  readonly leis?: readonly { readonly lei: string; readonly n: number }[];
 }
 /** THE COMMIT LAPSES after one rite attempt that refused: the mark rests where a vest's would, so the commit never vests later. */
 export interface KeeperLapsedBody {

@@ -19,6 +19,8 @@
  *            before any prompt), the prompt names the successor closure it commits, and the route proves against the lit holder.
  *            The host's consent screen (`tools/lares-container.sh pulama keeper-commit`) prints that closure and the source tree, and
  *            offers the clean-tree re-check, before it lands here
+ *   (internal, never a hand verb) `keeper-commit-lei '<json>'`: the commit the kukulu lei licenses, as the host testifies it from
+ *            inside `lares rite kukulu`; it stays out of the usage line
  *   lock · status · tessera · keeper-offer · keeper-land · take-fire · closure <sha256:…> · keeper-vest '{"to","closure"}' ·
  *   keeper-receive '{"slot"}' · image <digest> | image '{"digest","seed","closure"}'   one frame each, no route
  *
@@ -103,7 +105,7 @@ export function handVerbExit(verb: string, answer: PulamaHandAnswer): 0 | 1 {
 }
 /** The one reading each act that must land answers; any other reading exits 1, so the host shim never reads a refusal as done. */
 const HAND_VERB_LANDS: Readonly<Record<string, string>> = {
-  rehive: "rehived", recard: "granted", "keeper-commit": "committed", "keeper-offer": "offered", "keeper-vest": "vested", "keeper-receive": "landed", "keeper-land": "landed", "take-fire": "taken",
+  rehive: "rehived", recard: "granted", "keeper-commit": "committed", "keeper-commit-lei": "committed", "keeper-offer": "offered", "keeper-vest": "vested", "keeper-receive": "landed", "keeper-land": "landed", "take-fire": "taken",
 };
 
 /**
@@ -210,7 +212,7 @@ export async function runHandVerb(verb: string, arg: string | readonly string[] 
     return ports.ask({ op: "keeper-commit", next: digest, ...devices, credentials: [{ kind: "passphrase", passphrase }] });
   }
   if (verb === "closure" && typeof arg === "string") return ports.ask({ op: "closure", digest: arg });
-  if ((verb === "keeper-vest" || verb === "keeper-receive") && typeof arg === "string") {
+  if ((verb === "keeper-vest" || verb === "keeper-receive" || verb === "keeper-commit-lei") && typeof arg === "string") {
     let terms: unknown;
     try { terms = JSON.parse(arg); } catch { throw new PulamaVerbUsage(); }
     if (typeof terms !== "object" || terms === null || Array.isArray(terms) || "op" in terms || "credentials" in terms) throw new PulamaVerbUsage();

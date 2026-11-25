@@ -63,7 +63,7 @@ async function plantPulamaTree(root) {
   await put("packages/lararium-web/src/index.ts", "export const w = 3;\n");
 }
 
-async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, checkout, wornFace, keepSeat, houseFiles = {}, viaHarnessShell = false, rawSeat = false, hostInput, input, refuseInput = false, hostName = "host.mem", hostSibling, fifo = false, hostCwd = false } = {}) {
+async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, checkout, wornFace, keepSeat, houseFiles = {}, viaHarnessShell = false, rawSeat = false, hostInput, input, refuseInput = false, hostName = "host.mem", hostSibling, fifo = false, hostCwd = false, origin = false } = {}) {
   const dir = await mkdtemp(join(tmpdir(), "lares-container-"));
   try {
     const log = join(dir, "calls.log");
@@ -109,6 +109,7 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       `case " $* " in *"pulama-main.js lei "*) case " $* " in *" exec --no-TTY=false pulama "*) ;; *) printf '%s\\n' '[pulama] a lei reads its route from a real terminal alone'; exit 1;; esac; printf '%s\\r\\n' 'pūlama route, to kui a push lei: '; [ -z "\${FAKE_LEI_ANSWER:-}" ] || printf '%s\\n' "\${FAKE_LEI_ANSWER}" | node -e 'let s="";process.stdin.on("data",(d)=>s+=d).on("end",()=>process.stdout.write(JSON.stringify(JSON.parse(s),null,2).split("\\n").join("\\r\\n")+"\\r\\n"))'; exit "\${FAKE_LEI_RC:-0}";; esac\n` +
       `case " $* " in *" vessel floor seed "*) [ -z "\${FAKE_SEED_FRAME:-}" ] || printf '%s\\n' "\${FAKE_SEED_FRAME}"; printf '%s\\n' 'rebuild chatter' >&2; exit "\${FAKE_SEED_RC:-0}";; esac\n` +
       `case " $* " in *" --observe --json "*) printf '%s\\n' "\${FAKE_OBSERVE_OUTPUT:-}"; exit "\${FAKE_OBSERVE_RC:-0}";; esac\n` +
+      `case " $* " in *" intent show "*) printf '%s\\n' "\${FAKE_INTENT_SHOW:-}"; exit 0;; esac\n` +
       `case " $* " in *" vessel census --json "*) printf '%s\\n' "\${FAKE_CENSUS_JSON:-}"; exit 0;; esac\n` +
       // After a stop (a down marks the run), the census answers FAKE_CENSUS_AFTER where a test names one: the new vessel's census.
       `case " $* " in *" vessel census "*) if [ -e "$CALL_LOG.down" ] && [ -n "\${FAKE_CENSUS_AFTER:-}" ]; then printf '%s\\n' "\${FAKE_CENSUS_AFTER}"; exit "\${FAKE_CENSUS_AFTER_RC:-0}"; fi; [ -z "\${FAKE_CENSUS_OUTPUT:-}" ] || printf '%s\\n' "\${FAKE_CENSUS_OUTPUT}"; [ -z "\${FAKE_CENSUS_ERR:-}" ] || printf '%s\\n' "\${FAKE_CENSUS_ERR}" >&2; exit "\${FAKE_CENSUS_RC:-0}";; esac\n` +
@@ -129,6 +130,9 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
     // The host's own build answers through pnpm: the fake names each call and fails where a test asks it to.
     await writeFile(join(dir, "pnpm"), `#!/bin/sh\nprintf 'PNPM %s\\n' "$*" >> "$CALL_LOG"\nexit "\${FAKE_PNPM_RC:-0}"\n`);
     await chmod(join(dir, "pnpm"), 0o755);
+    // THE CI READ (the keeper lei's spend): gh answers the `--jq` line a test scripts, `<run id>:<status>:<conclusion>`.
+    await writeFile(join(dir, "gh"), `#!/bin/sh\nprintf 'GH %s\\n' "$*" >> "$CALL_LOG"\nprintf '%s\\n' "\${FAKE_GH_RUN:-}"\nexit "\${FAKE_GH_RC:-0}"\n`);
+    await chmod(join(dir, "gh"), 0o755);
     const compose = join(dir, "docker-compose.surface.yml");
     await writeFile(compose, "services: {}\n");
     const house = join(dir, "house");
@@ -159,6 +163,8 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       if (checkout !== "none") {
         const git = (...a) => spawnSync("git", ["-C", repo, "-c", "user.name=t", "-c", "user.email=t@t", ...a], { encoding: "utf8" });
         git("init", "-q"); git("add", "."); git("commit", "-qm", "seed");
+        // `origin`: the revision reads as fetched from origin/develop (the keeper lei's reach).
+        if (origin) git("update-ref", "refs/remotes/origin/develop", "HEAD");
         // "dirty": a tracked edit uncommitted and an untracked file beside it, neither of which may ride a build.
         if (checkout === "dirty") { await writeFile(script, (await readFile(script, "utf8")) + "\n# edited\n"); await writeFile(join(repo, "stray-untracked.txt"), "never built\n"); }
         // "submodule": a submodule pinned at one commit, whose own checkout has since moved past the pin.
@@ -2104,6 +2110,49 @@ test(`${name}: pulama-keeper-commit-reads-a-terminal: with no terminal the keepe
   const land = await run(shim, ["pulama", "keeper-land"], { envFile: PULAMA_ENV });
   assert.equal(land.status, 0, land.stderr);
   assert.match(land.calls, /exec -T pulama node \S+ keeper-land/);
+});
+test(`${name}: RED keeper-commit-lei-guards-the-spend: with no terminal and no route, a revision unreachable from origin/develop, an image label that differs from D′, a red CI run and a face of two devices each refuse by name and send nothing to the pūlama; a green one sends one keeper-commit-lei frame naming D′, the branch whose kukulu lei licenses it, the revision, the run and one device`, { skip: skip || shim !== SH }, async () => {
+  const LEI = { ...REBUILT, FAKE_INTENT_SHOW: '{"devices":1}', FAKE_GH_RUN: "77:completed:success" };
+  const spend = (env, origin = true) => run(shim, ["pulama", "keeper-commit", "--lei", "HEAD", "develop"], { envFile: PULAMA_ENV, checkout: "pulama", origin, env: { ...LEI, ...env } });
+  const quiet = (r) => assert.doesNotMatch(r.calls, /keeper-commit-lei/);
+  const far = await spend({ FAKE_IMAGE_CLOSURE: CL("b") }, false);
+  assert.notEqual(far.status, 0);
+  assert.match(far.stderr, /\(keeper-lei-unreachable\)[\s\S]*lares pulama keeper-commit/);
+  quiet(far);
+  const label = await spend({ FAKE_IMAGE_CLOSURE: CL("b") });
+  assert.notEqual(label.status, 0);
+  const d = label.stderr.match(/reads (sha256:[0-9a-f]{64}) \(keeper-lei-image-differs\)/)?.[1];
+  assert.ok(d, label.stderr);
+  quiet(label);
+  const red = await spend({ FAKE_IMAGE_CLOSURE: d, FAKE_GH_RUN: "77:completed:failure" });
+  assert.notEqual(red.status, 0);
+  assert.match(red.stderr, /reads 77:completed:failure \(keeper-lei-ci-red\)[\s\S]*gh run list --commit [0-9a-f]{40} --workflow CI/);
+  assert.match(red.calls, /GH run list --commit [0-9a-f]{40} --workflow CI --event push/);
+  quiet(red);
+  const two = await spend({ FAKE_IMAGE_CLOSURE: d, FAKE_INTENT_SHOW: '{"devices":2}' });
+  assert.notEqual(two.status, 0);
+  assert.match(two.stderr, /\(keeper-lei-cosign-owed\)[\s\S]*lares pulama keeper-commit/);
+  quiet(two);
+  const green = await spend({ FAKE_IMAGE_CLOSURE: d });
+  assert.equal(green.status, 0, green.stderr);
+  const frame = green.calls.match(/exec -T pulama node \S+ keeper-commit-lei (\{.*\})/)?.[1];
+  assert.ok(frame, green.calls);
+  assert.deepEqual({ ...JSON.parse(frame), rev: "r", tree: "t" }, { next: d, branch: "develop", rev: "r", tree: "t", recheck: "same", image: d, ci: "77:success", devices: 1 });
+  assert.match(JSON.parse(frame).rev, /^[0-9a-f]{40}$/);
+});
+test(`${name}: RED keeper-commit-lei-stays-internal: the rite's own step refuses a person at a terminal and names the rite; nothing reaches the pūlama`, { skip: skip || shim !== SH || !haveScript }, async () => {
+  const r = await run(shim, ["pulama", "keeper-commit", "--lei", "HEAD", "develop"], { envFile: PULAMA_ENV, checkout: "pulama", origin: true, tty: "", env: { ...REBUILT } });
+  assert.notEqual(r.status, 0);
+  assert.match(r.stdout, /the rite's own step[\s\S]*lares rite kukulu/);
+  assert.doesNotMatch(r.calls, /keeper-commit-lei/);
+});
+test(`${name}: RED rebuild-image-names-the-keeper-lei: a moved closure the keeper's lei could spend on reads keeper lei; CONTROL: a live hand commit or the struck fire due reads no lei`, { skip: skip || shim !== SH }, async () => {
+  const lei = await run(shim, ["rebuild", "--image"], { envFile: PULAMA_ENV, checkout: "clean", env: { ...VESTS, FAKE_PULAMA_STATUS: '{"op":"status","lit":true,"keeper":{"v":1},"keeperLei":{"left":3,"floor":true},"leiReady":true}' } });
+  assert.match(lei.stdout, /"keeper":"lei"/);
+  const pending = await run(shim, ["rebuild", "--image"], { envFile: PULAMA_ENV, checkout: "clean", env: { ...VESTS, FAKE_PULAMA_STATUS: `{"op":"status","lit":true,"keeper":{"pending":"${CL("c")}"},"leiReady":true}` } });
+  assert.doesNotMatch(pending.stdout, /"keeper":"lei"/);
+  const due = await run(shim, ["rebuild", "--image"], { envFile: PULAMA_ENV, checkout: "clean", env: { ...VESTS, FAKE_PULAMA_STATUS: '{"op":"status","lit":true,"keeper":{"struckDue":true},"leiReady":true}' } });
+  assert.match(due.stdout, /"keeper":"struck-due"/);
 });
 test(`${name}: rebuild-stops-before-the-down-with-no-terminal: a moved closure, an unlit pūlama, or an image neither admitted nor offered names the hand act and moves nothing`, { skip }, async () => {
   for (const [env, why] of [

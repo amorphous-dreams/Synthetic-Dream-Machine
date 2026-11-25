@@ -30,7 +30,7 @@ const READING: StandReading = { revision: HEAD, image: IMAGE, how: "built", vess
 const LIT: Partial<StandReading> = { pulama: "closure-level", lit: true, admitted: false };
 
 /** Ports that record every call in order and answer from a script. */
-function fakes(over: { begin?: RiteVerbAnswer; land?: RiteVerbAnswer; reading?: Partial<StandReading>; stage?: number; raise?: number; tty?: boolean; keeper?: { to: string; closure: string } | null; leiStands?: boolean | string } = {}) {
+function fakes(over: { begin?: RiteVerbAnswer; land?: RiteVerbAnswer; reading?: Partial<StandReading>; stage?: number; raise?: number; tty?: boolean; keeper?: { to: string; closure: string } | null; leiStands?: boolean | string; leiSpend?: boolean } = {}) {
   const calls: string[] = [], said: string[] = [];
   const ports: RitePorts = {
     checkout: async () => { calls.push("checkout"); return { head: HEAD, branch: "main" }; },
@@ -38,6 +38,7 @@ function fakes(over: { begin?: RiteVerbAnswer; land?: RiteVerbAnswer; reading?: 
     raise: async (rev, keeper) => { calls.push(`raise ${rev}${keeper ? ` --keeper-to ${keeper.to}` : ""}`); return over.raise ?? 0; },
     ...(over.keeper === undefined ? {} : { keeperStand: async () => { calls.push("keeper-stand"); return over.keeper ?? null; } }),
     ...(over.leiStands === undefined ? {} : { leiStands: async () => over.leiStands as boolean | string }),
+    ...(over.leiSpend === undefined ? {} : { keeperLeiSpend: async (rev: string, branch: string) => { calls.push(`keeper-lei-spend ${rev} ${branch}`); return over.leiSpend as boolean; } }),
     ...(over.tty === undefined ? {} : { tty: () => over.tty as boolean }),
     row: async (verb, args) => {
       calls.push(`${verb} ${JSON.stringify(args)}`);
@@ -140,6 +141,32 @@ describe("kukulu-asks-a-route-only-where-the-day-owes-one", () => {
       expect(await riteKukulu(g.ports, {}), JSON.stringify(over)).toMatchObject({ code: 0, data: { begun: false, awaits: "hand" } });
       expect(g.calls.filter((c) => c.startsWith("raise") || c === "keeper-stand")).toEqual([]);
     }
+  });
+
+  it("RED: a moved closure no commit names yet rests a keeper commit the standing kukulu lei licenses, with no terminal and no count of its own, then rides the keeper move as a hand's commit would; CONTROL: a refused commit names the hand line and raises nothing, and a kukulu lei absent or spent licenses none", async () => {
+    const to = "c".repeat(64), closure = "sha256:" + "9".repeat(64);
+    const f = fakes({ tty: false, reading: { pulama: "moved", lit: true, keeper: "lei" }, keeper: { to, closure }, leiSpend: true, leiStands: true });
+    expect((await riteKukulu(f.ports, {})).code).toBe(0);
+    const offer = `rite-offer ${JSON.stringify({ branch: "main", head: HEAD, image: IMAGE, keeperTo: to, keeperNext: closure })}`;
+    expect(f.calls).toEqual(["checkout", "checkout", STAGE, `keeper-lei-spend ${HEAD} main`, BEGIN, "keeper-stand", offer, `raise ${HEAD} --keeper-to ${to}`, LAND]);
+    expect(f.said.join("\n")).toMatch(/the kukulu lei on main licenses a keeper commit naming the closure of a{12}; the rite's return spends on it, and the living fire passes with no route/);
+    const refused = fakes({ tty: false, reading: { pulama: "moved", lit: true, keeper: "lei" }, keeper: { to, closure }, leiSpend: false, leiStands: true });
+    expect(await riteKukulu(refused.ports, {})).toMatchObject({ code: 0, data: { begun: false, awaits: "hand" } });
+    expect(refused.calls).toEqual(["checkout", "checkout", STAGE, `keeper-lei-spend ${HEAD} main`]);
+    expect(refused.said.join("\n")).toMatch(/the keeper rested no commit under the kukulu lei[\s\S]*lares pulama keeper-commit[\s\S]*your hand: lares rite kukulu on a terminal/);
+    for (const leiStands of ["absent", "returns-spent"]) {
+      const dry = fakes({ tty: false, reading: { pulama: "moved", lit: true, keeper: "lei" }, keeper: { to, closure }, leiSpend: true, leiStands });
+      expect(await riteKukulu(dry.ports, {}), leiStands).toMatchObject({ code: 0, data: { begun: false, awaits: "hand" } });
+      expect(dry.calls.filter((c) => c.startsWith("keeper-lei-spend") || c.startsWith("raise")), leiStands).toEqual([]);
+    }
+  });
+
+  it("RED (cold read P2): at a terminal the rite takes no licensed step (that step refuses a person at a terminal); the light rides as it did", async () => {
+    const to = "c".repeat(64), closure = "sha256:" + "9".repeat(64);
+    const t = fakes({ tty: true, reading: { pulama: "moved", lit: true, keeper: "lei" }, keeper: { to, closure }, leiSpend: true, leiStands: true });
+    expect((await riteKukulu(t.ports, {})).code).toBe(0);
+    expect(t.calls.filter((c) => c.startsWith("keeper-lei-spend"))).toEqual([]);
+    expect(t.calls).toContain(`raise ${HEAD}`);
   });
 
   it("RED: a successor that stands no key leaves the rite with no keeper move: the offer names none and the raise carries none (it relights struck)", async () => {

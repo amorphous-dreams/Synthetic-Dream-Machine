@@ -1275,15 +1275,17 @@ resolve_image() { # $1 = a revision, or nothing for the prior image
 # THE PŪLAMA'S OWN STATUS (`pulama-main.js status`, read detached): whether it stands lit, and whether the admitted set it
 # reads under its key names the image and no tombstone ends it. An unlit pūlama lists no admission; a status that never
 # answers leaves both unread.
-ps_lit=""; ps_admitted=""; ps_vest=""; ps_struck=""; ps_pending=""
+ps_lit=""; ps_admitted=""; ps_vest=""; ps_struck=""; ps_pending=""; ps_lei=""
 pulama_status_read() { # $1 = the image digest
-  ps_lit=""; ps_admitted=""; ps_vest=""; ps_struck=""; ps_pending=""; ps_closure=""
+  ps_lit=""; ps_admitted=""; ps_vest=""; ps_struck=""; ps_pending=""; ps_closure=""; ps_lei=""
   ps_flat=$(compose --profile pulama exec -T "$(pulama_svc)" node "$PULAMA_MAIN" status </dev/null 2>/dev/null | tr -d ' \t\r\n') || return 0
   # THE KEEPER TALLY: the live commit's successor closure where it can vest, whether the struck fire is due, and any live commit.
   ps_vest=$(printf '%s' "$ps_flat" | sed -n 's/.*"vestReady":"\(sha256:[0-9a-f]\{64\}\)".*/\1/p')
   ps_pending=$(printf '%s' "$ps_flat" | sed -n 's/.*"pending":"\(sha256:[0-9a-f]\{64\}\)".*/\1/p')
   ps_closure=$(printf '%s' "$ps_flat" | sed -n 's/.*"closure":"\(sha256:[0-9a-f]\{64\}\)".*/\1/p')
   case "$ps_flat" in *'"struckDue":true'*) ps_struck=yes ;; esac
+  # THE KEEPER LEI: a return could spend (the keeper's own bounds; the host adds its testimony at the spend).
+  case "$ps_flat" in *'"leiReady":true'*) ps_lei=yes ;; esac
   case "$ps_flat" in *'"lit":true'*) ps_lit=yes ;; *'"lit":false'*) ps_lit=no; return 0 ;; *) return 0 ;; esac
   ps_list=$(printf '%s' "$ps_flat" | sed -n 's/.*"admitted":\[\([^]]*\)\].*/\1/p')
   ps_ended=$(printf '%s' "$ps_flat" | sed -n 's/.*"ended":\[\([^]]*\)\].*/\1/p')
@@ -1319,7 +1321,8 @@ print_reading() {
          case "$ps_admitted" in yes) rd_admitted=true ;; no) rd_admitted=false ;; esac
          if [ "$pr_state" = moved ]; then
            if [ -n "$ps_struck" ]; then rd_keeper=',"keeper":"struck-due"'
-           elif [ -n "$ps_vest" ] && [ "$ps_vest" = "$(closure_label image "$IMAGE_REF")" ]; then rd_keeper=',"keeper":"vests"'; fi
+           elif [ -n "$ps_vest" ] && [ "$ps_vest" = "$(closure_label image "$IMAGE_REF")" ]; then rd_keeper=',"keeper":"vests"'
+           elif [ -n "$ps_lei" ] && [ "$ps_lit" = yes ] && [ -z "$ps_pending" ]; then rd_keeper=',"keeper":"lei"'; fi
          fi ;;
     esac
   fi
@@ -1357,6 +1360,64 @@ keep_after_raise() {
 # vessel as it stood, and names the cure that runs from there. The slot crosses this pipe once, sealed to the successor's key.
 KV_OLD=""; KV_NEW=""; R_KEEPER_TO=""
 keeper_reading() { printf '%s' "$1" | tr -d ' \t\r\n' | sed -n 's/.*"reading":"\([a-z-]*\)".*/\1/p'; }
+# THE COMMIT THE KUKULU LEI LICENSES (internal: `lares rite kukulu` calls `pulama keeper-commit --lei <rev> <branch>`, never a person at a
+# terminal, and no help names it; no route; operator ruling 2026-11-24:
+# the keeper lei keeps no count of its own, it rides the kukulu lei the rite read standing on the branch with returns left, and
+# the vest's live rite spends that lei's return). The host's guards before the keeper rests the commit:
+# The revision reads reachable from origin/develop or origin/main as fetched (the rite's own fetch), the checkout's tracked tree
+# clean, its closure D′ off two fresh archives the same, the built image's closure label equal to D′, and the CI push run on the
+# revision green (read with `gh … --jq`, no jq on host); each lit face holds one device. Then the keeper checks its own bounds
+# (no fork, no hand commit, no vested commit unlanded, the last pair par, struck-due false) and
+# rests the same commit `keeper-commit` rests, naming the license. These guards bind against accident: a host can send the commit
+# itself, so the real gate stands at host access plus a standing kukulu lei.
+keeper_commit_lei() { # $1 = the revision, $2 = the branch whose kukulu lei licenses it
+  kl_cure='or name the successor by hand on a terminal: lares pulama keeper-commit'
+  printf '%s' "$2" | grep -Eq '^[A-Za-z0-9._/-]+$' || die "pulama keeper-commit --lei: \"$2\" names no branch (keeper-lei-testimony-malformed); nothing committed: run lares rite kukulu again, $kl_cure"
+  command -v node >/dev/null 2>&1 || die "pulama keeper-commit --lei reads the closure with the host's node, and none answers here; nothing committed: install node on the host, $kl_cure"
+  kl_top=$(git -C "$SHIM_DIR" rev-parse --show-toplevel) || die "pulama keeper-commit --lei reads a revision from a checkout, and none answers at $SHIM_DIR; nothing committed: $kl_cure"
+  kl_rev=$(git -C "$kl_top" rev-parse --verify --quiet "$1^{commit}") || die "pulama keeper-commit --lei: $1 names no commit; nothing committed: lares rite kukulu names the revision it raised, $kl_cure"
+  kl_tree=$(git -C "$kl_top" rev-parse "$kl_rev^{tree}") || die "pulama keeper-commit --lei: the tree of $kl_rev reads nowhere; nothing committed: $kl_cure"
+  kl_reach=""
+  for kl_ref in refs/remotes/origin/develop refs/remotes/origin/main; do
+    git -C "$kl_top" rev-parse --verify --quiet "$kl_ref" >/dev/null || continue
+    if git -C "$kl_top" merge-base --is-ancestor "$kl_rev" "$kl_ref"; then kl_reach=${kl_ref#refs/remotes/}; break; fi
+  done
+  [ -n "$kl_reach" ] || die "pulama keeper-commit --lei: $kl_rev reads reachable from neither origin/develop nor origin/main as fetched (keeper-lei-unreachable), so the kukulu lei licenses no commit on it; land it through the merge gate, then lares rite kukulu again, $kl_cure"
+  [ -z "$(git -C "$kl_top" status --porcelain --untracked-files=no)" ] || die "pulama keeper-commit --lei: the checkout carries uncommitted tracked changes (keeper-lei-tree-dirty); commit or drop them (git -C $kl_top status), then lares rite kukulu again, $kl_cure"
+  kl_closure() {
+    ensure_house; mkdir -p -- "$HOUSE/cache" || return 1
+    kl_ctx=$(mktemp -d "$HOUSE/cache/keeper.XXXXXX") || return 1
+    git -C "$kl_top" archive --format=tar "$kl_rev" | tar -xf - -C "$kl_ctx" && node "$HERE/pulama-closure.mjs" "$kl_ctx" | tr -d '\r'
+    kl_rc=$?; rm -rf -- "$kl_ctx"; return "$kl_rc"
+  }
+  kl_d=$(kl_closure) || kl_d=""
+  printf '%s' "$kl_d" | grep -Eq '^sha256:[0-9a-f]{64}$' || die "pulama keeper-commit --lei: no pūlama closure reads from a clean archive of $kl_rev; nothing committed: $kl_cure"
+  kl_again=$(kl_closure) || kl_again=""
+  [ "$kl_again" = "$kl_d" ] || die "pulama keeper-commit --lei: the fresh-archive re-check reads ${kl_again:-no closure}, not $kl_d (keeper-lei-recheck-differs); nothing committed: $kl_cure"
+  kl_label=$(closure_label image "$IMAGE_REF")
+  [ "$kl_label" = "$kl_d" ] || die "pulama keeper-commit --lei: the built image's closure label reads ${kl_label:-nothing}, and the archive of $kl_rev reads $kl_d (keeper-lei-image-differs); nothing committed: rebuild the image from that revision with lares rite kukulu, $kl_cure"
+  command -v gh >/dev/null 2>&1 || die "pulama keeper-commit --lei reads the CI push run with gh, and none answers here (keeper-lei-ci-unread); nothing committed: install gh and run gh auth login, $kl_cure"
+  kl_ci=$(cd "$kl_top" && gh run list --commit "$kl_rev" --workflow CI --event push --limit 1 --json databaseId,status,conclusion --jq '.[0] | "\(.databaseId):\(.status):\(.conclusion)"' 2>/dev/null | tr -d '\r') || kl_ci=""
+  case "$kl_ci" in
+    [0-9]*:completed:success) kl_run=${kl_ci%%:*} ;;
+    *) die "pulama keeper-commit --lei: the CI push run on $kl_rev reads ${kl_ci:-none} (keeper-lei-ci-red), never success; nothing committed: wait for it green (gh run list --commit $kl_rev --workflow CI), then lares rite kukulu again, $kl_cure" ;;
+  esac
+  # ONE DEVICE PER LIT FACE: the standing vessel reads each lit face's signed admission fold, as the routed commit's count does.
+  kl_most=""; kl_unread=""
+  if run_census --json >/dev/null 2>&1; then
+    kl_lit=$(printf '%s\n' "$census_out" | tr -d ' \t\r\n' | sed -n 's/.*"facesLit":\[\([0-9,]*\)\].*/\1/p' | tr ',' ' ')
+    [ -n "$kl_lit" ] || kl_unread=yes
+    for kl_face in $kl_lit; do
+      kl_n=$(compose exec -T lares node "$CLI" intent show --face "$kl_face" --json </dev/null 2>/dev/null | tr -d ' \t\r\n' | sed -n 's/.*"devices":\([0-9][0-9]*\).*/\1/p')
+      if [ -z "$kl_n" ]; then kl_unread=yes; elif [ -z "$kl_most" ] || [ "$kl_n" -gt "$kl_most" ]; then kl_most=$kl_n; fi
+    done
+  else kl_unread=yes; fi
+  if [ -n "$kl_unread" ] || [ -z "$kl_most" ]; then die "pulama keeper-commit --lei: the vessel read no device count for every lit face (keeper-lei-devices-unread); nothing committed: stand the vessel (lares up), then lares rite kukulu again, $kl_cure"; fi
+  [ "$kl_most" -eq 1 ] || die "pulama keeper-commit --lei: a lit face holds $kl_most devices (keeper-lei-cosign-owed), and a keeper lei hands the fire for one-device faces alone; nothing committed: name the successor by hand on a terminal, which asks the co-sign: lares pulama keeper-commit"
+  printf 'lares-container: keeper-commit --lei: %s reads reachable from %s, clean, closure %s twice, the image labelled the same, CI run %s green, every lit face of one device; the keeper rests the commit the kukulu lei of %s licenses\n' "$kl_rev" "$kl_reach" "$kl_d" "$kl_run" "$2" >&2
+  kl_frame=$(printf '{"next":"%s","branch":"%s","rev":"%s","tree":"%s","recheck":"same","image":"%s","ci":"%s:success","devices":%s}' "$kl_d" "$2" "$kl_rev" "$kl_tree" "$kl_label" "$kl_run" "$kl_most")
+  compose --profile pulama exec -T "$(pulama_svc)" node "$PULAMA_MAIN" keeper-commit-lei "$kl_frame" </dev/null
+}
 # STAND THE SUCCESSOR (`keeper-stand`, the rite's step before its offer): one JSON line on stdout, {"to","closure","svc"}.
 keeper_stand() {
   ks_old=$(pulama_svc); ks_new=$(other_svc "$ks_old")
@@ -1616,6 +1677,12 @@ case "$verb" in
         [ "$#" -eq 1 ] || die "pulama keeper-land takes no arguments"
         compose --profile pulama exec -T "$(pulama_svc)" node "$PULAMA_MAIN" keeper-land </dev/null ;;
       keeper-commit)
+        if [ "${2:-}" = --lei ]; then
+          # INTERNAL: the rite's own step (`lares rite kukulu` calls it with no terminal); a person at a terminal is refused.
+          [ -z "$HAVE_TTY" ] || die "pulama keeper-commit --lei is the rite's own step, never a hand verb; run lares rite kukulu (nothing committed)"
+          [ "$#" -eq 4 ] || die "pulama keeper-commit --lei takes the revision and the branch whose kukulu lei licenses it, as lares rite kukulu names them"
+          keeper_commit_lei "$3" "$4"
+        else
         # THE CONSENT SCREEN (the keeper tally, closure strength T1): the successor closure D′ of a revision, read on a clean
         # archive of that commit (never the working tree), and the source tree it names; the clean-tree re-check archives it
         # again and compares; then the pūlama proves the route on this terminal. Nothing here reads or types a route.
@@ -1696,6 +1763,7 @@ case "$verb" in
           compose --profile pulama exec $(tty_flag) "$(pulama_svc)" node "$PULAMA_MAIN" keeper-commit "$kc_d" $kc_dev --cosign "$kc_cosign" && rm -f "$kc_held"
         else
           compose --profile pulama exec $(tty_flag) "$(pulama_svc)" node "$PULAMA_MAIN" keeper-commit "$kc_d" $kc_dev
+        fi
         fi ;;
       lock)
         # THE OPERATOR'S LOCK REACHES EVERY KEEPER THAT STANDS: the one holding the fire, and a successor lit beside it.
