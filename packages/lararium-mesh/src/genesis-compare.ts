@@ -151,6 +151,43 @@ export function ratchetsDiffer(differences: readonly RatchetDifference[]): boole
   return differences.some((d) => d.reading !== "same");
 }
 
+/**
+ * THE SEED'S STANCES (the follow lei, S0; operator ruling 2026-11-25 follow-lei-lands). Each ratchet a newer seed moves reads one
+ * of two stances, each with the one runnable line that acts on it:
+ *
+ *   · `offer` ~ a skin (grammar, lararium, plugins, and the seed's floor that names them): a forward-only offer the ruling lets
+ *     the vessel adopt over a local floor at a boot; the founding record never moves.
+ *   · `held (engine)` ~ the engine stays behind its own cadence threshold, never the kahu quorum (kahu.mem #/engine-cadence);
+ *     each device takes it only by its own reboot onto it, so a re-found takes it today.
+ *
+ * Absent reads as moved: a seed that names no digest for a ratchet offers no proof it stands same. Pure.
+ */
+export type SeedStance = "offer" | "held (engine)";
+export interface SeedRatchetStance { readonly ratchet: GenesisRatchet; readonly stance: SeedStance; readonly next: string }
+
+/** The line that reads an offered skin: the seed beside the founding record, ratchet by ratchet. */
+export const SEED_OFFER_NEXT = "lares vessel floor seed";
+/** The line that reads the held engine: the seed row of the floor status. */
+export const SEED_HELD_NEXT = "lares vessel floor status --grain seed";
+
+/** Each ratchet the seed moves, with its stance and its line; a same ratchet leaves the list. */
+export function seedRatchetStances(differences: readonly RatchetDifference[]): readonly SeedRatchetStance[] {
+  return Object.freeze(differences.filter((d) => d.reading !== "same").map((d) => Object.freeze(d.ratchet === "engine"
+    ? { ratchet: d.ratchet, stance: "held (engine)" as const, next: SEED_HELD_NEXT }
+    : { ratchet: d.ratchet, stance: "offer" as const, next: SEED_OFFER_NEXT })));
+}
+
+/** The stances in words: `offer: grammar, the seed's floor (\`<line>\`) · held (engine): …`; empty where none stands. */
+export function seedStanceWords(stances: readonly SeedRatchetStance[]): string {
+  const name = (r: GenesisRatchet): string => (r === "floor" ? "the seed's floor" : r);
+  const offers = stances.filter((s) => s.stance === "offer");
+  const held = stances.filter((s) => s.stance === "held (engine)");
+  return [
+    ...(offers.length > 0 ? [`offer: ${offers.map((s) => name(s.ratchet)).join(", ")} wait as a forward-only offer, and the founding record never moves (\`${SEED_OFFER_NEXT}\`)`] : []),
+    ...(held.length > 0 ? [`held (engine): the engine stays behind its own cadence threshold, never the kahu quorum, and a re-found takes it today (\`${SEED_HELD_NEXT}\`)`] : []),
+  ].join(" · ");
+}
+
 export interface SeedToFoundingRecord {
   /** The founding record's own digests, recomputed from its blobs. */
   readonly record: GenesisDigests;
