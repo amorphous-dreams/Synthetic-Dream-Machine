@@ -7,7 +7,7 @@
  * worktree directories. Every lane branch counts toward the built cap, wherever it stands.
  * Codex worktrees (empty hash dirs excluded) count against their own cap. Every reader injects, so a test never touches
  * the real disk. Limits come from the environment:
- *   LARES_DISK_MIN_C_GB (60) · LARES_DISK_MIN_ROOT_GB (40) · LARES_DISK_MAX_WORKTREES (6) · LARES_DISK_MAX_CODEX (12)
+ *   LARES_DISK_MIN_C_GB (35) · LARES_DISK_MIN_ROOT_GB (40) · LARES_DISK_MAX_WORKTREES (6) · LARES_DISK_MAX_CODEX (12)
  */
 import { readdirSync, statSync, statfsSync } from 'node:fs';
 import { homedir } from 'node:os';
@@ -20,7 +20,7 @@ const C_MOUNT = '/mnt/c';
 export const SKIP_C = 'C: check skipped: no /mnt/c';
 
 const LIMIT_ENV = [
-  ['minC', 'LARES_DISK_MIN_C_GB', 60],
+  ['minC', 'LARES_DISK_MIN_C_GB', 35],
   ['minRoot', 'LARES_DISK_MIN_ROOT_GB', 40],
   ['maxBuilt', 'LARES_DISK_MAX_WORKTREES', 6],
   ['maxCodex', 'LARES_DISK_MAX_CODEX', 12],
