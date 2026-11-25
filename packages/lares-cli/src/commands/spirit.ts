@@ -95,11 +95,13 @@ type Awake = SpiritAwake;
 /** How otakiage reads the hand behind this command: the house gate over the command's own branch. A suite names its reading. */
 export type HandRead = () => HandReading;
 
-/** Release by the hand: an AI seat on this command's branch, or a branch nothing attests, refuses by the reading's own code. */
-function readHand(hand: HandRead, line: string): void {
+/**
+ * Release by the hand: the gate's reading (`ctx.hand`, the house gate over this command's own branch) stands, or refuses by its
+ * own code, an AI seat on the branch `hand-act-only` and a branch nothing attests `hand-unattested`.
+ */
+function releaseByHand(hand: HandRead, line: string): void {
   const read = hand();
-  if (!("refusal" in read)) return;
-  throw handRefusal(read.refusal, line);
+  if ("refusal" in read) throw handRefusal(read.refusal, line);
 }
 
 function petOf(args: ParsedArgs, verb: string): string {
@@ -687,7 +689,7 @@ async function residue(args: ParsedArgs, ctx: Ctx): Promise<number> {
 
 async function otakiage(args: ParsedArgs, ctx: Ctx): Promise<number> {
   const pet = petOf(args, "otakiage");
-  readHand(ctx.hand, `lares spirit otakiage ${pet}`);
+  releaseByHand(ctx.hand, `lares spirit otakiage ${pet}`);
   const rec = (await resolveRecord(args, "otakiage", pet))!;
   const key = await keyOf(args, "otakiage", rec);
   const keys = [...new Set([key, pet])];

@@ -986,7 +986,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     sessionVerbs: STORE_DOOR_FACE_VERBS,
     handOnlyActs: STORE_DOOR_HAND_ONLY_ACTS,
     handOnlyCodes: STORE_DOOR_HAND_CODES,
-    // THE SHORE SETTLES BY A PERSON: a seat's take-records, restore or remove refuses `shore-needs-hand`, per op (`shoreHandCode`).
+    // THE SHORE SETTLES BY A PERSON: a seat's take-records, restore or remove refuses `hand-act-only`, per op (`shoreHandCode`).
     handOnlyOp:   shoreHandCode,
     // AN INGEST NO PERSON ASKED RIDES UNATTENDED (`stampUnattendedIngest`): a seat's or an unread peer's wave stands off.
     unattendedIngest: stampUnattendedIngest,

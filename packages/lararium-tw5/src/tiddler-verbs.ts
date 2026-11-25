@@ -71,6 +71,7 @@ import {
   type ChangeOrigin, type CompositeStore, type KahuReachSource, type LarTiddlerStore,
 } from "@lararium/mesh";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
+import { askerRefusal, handRefusalOf } from "@lararium/mesh/hand-refusal";
 import { consequence, familyOf, retractsOf, rootAddressOf, tombstonesOf, type Consequence, type DeleteMode, type FamilyPosition, type FamilyView } from "@lararium/mesh/family";
 import { anchorBagOf, readBagStore, readContainer, type MemeVerbOptions } from "./meme-verbs.js";
 import { isMemeRoot, readMeme, wikiFamilyView, stageMemeTitle, STAGE_PATH_SHAPE_CODE, STAGE_MEME_PREFIX, type MemeSink } from "./place-meme.js";
@@ -282,14 +283,15 @@ function anchorOf(opts: TiddlerVerbOptions, args: Readonly<Record<string, unknow
 export const SHORE_COLLAPSE_CONFIG_PREFIX = "$:/config/lares/shore/collapse/";
 
 /**
- * A COLLAPSE RULE TAKES A HAND'S WRITE ALONE: a seat refuses `hand-act-only`, a line no door read (no asker) refuses
+ * A COLLAPSE RULE TAKES A HAND'S WRITE ALONE: the asker the vessel's door booked (the hand gate's cached reading of the line's
+ * peer) reads as the gate's verdict (`askerRefusal`): a seat refuses `hand-act-only`, a line no door read (no asker) refuses
  * `hand-unattested`, and the refusal names the command the operator runs. The operator's line (`cli`) and a tab write.
  */
 function refuseUnhandedCollapseRule(title: string, verb: string, asker: VerbContext["asker"]): void {
-  if (!title.startsWith(SHORE_COLLAPSE_CONFIG_PREFIX) || asker === "cli" || asker === "tab") return;
-  const line = `lares ${verb} "${title}"`;
-  if (asker === "seat") throw new VerbRefusal("hand-act-only", `hand-act-only: "${title}" names a rule that settles stand-offs with no hand present, so a person alone writes it; a seat proposes. Ask the operator to run \`${line}\` on their own terminal.`);
-  throw new VerbRefusal("hand-unattested", `hand-unattested: "${title}" names a rule that settles stand-offs with no hand present, and this line's asker reads nothing to attest a person. Run \`${line}\` on a terminal whose processes the host can read.`);
+  const code = title.startsWith(SHORE_COLLAPSE_CONFIG_PREFIX) ? askerRefusal(asker) : null;
+  if (code === null) return;
+  const refused = handRefusalOf(code, { act: `writing "${title}" (a rule that settles stand-offs with no hand present)`, reads: "peer", line: `lares ${verb} "${title}"` });
+  throw new VerbRefusal(code, refused.message);
 }
 
 function refuseWithheld(title: string, verb: string, read = false): void {

@@ -33,10 +33,10 @@ describe("lares shore keep-disk | keep-records | keep-both | drafts", () => {
 describe("settling a stand-off stays a hand act at the command", () => {
   const SETTLES = ["take-records", "take-disk", "keep-disk", "keep-records", "keep-both"] as const;
 
-  test("an AI harness on the command's branch refuses shore-needs-hand, naming the command the operator runs", () => {
+  test("an AI harness on the command's branch refuses hand-act-only (the siblings' code), naming the command the operator runs", () => {
     for (const act of SETTLES) {
       const refused = shoreHandRefusal(act, { uri: URI, key: "k1" }, () => ({ refusal: "hand-act-only" }));
-      expect(refused?.code, act).toBe("shore-needs-hand");
+      expect(refused?.code, act).toBe("hand-act-only");
       expect(refused?.message, act).toContain(`lares shore ${act} ${URI} --key k1`);
     }
     expect(shoreHandRefusal("keep-both", { uri: URI, key: "k1" }, () => ({ refusal: "hand-unattested" }))?.code).toBe("hand-unattested");
@@ -56,7 +56,7 @@ describe("settling a stand-off stays a hand act at the command", () => {
       const code = await cmdShore(parsed(["keep-both", URI], { key: "k1" }, { yes: true, json: true }), () => ({ refusal: "hand-act-only" }));
       expect(code).not.toBe(0);
     } finally { out.mockRestore(); err.mockRestore(); wrote.mockRestore(); }
-    expect(said.join("\n")).toContain("shore-needs-hand");
+    expect(said.join("\n")).toContain("hand-act-only");
     expect(said.join("\n")).toContain(`lares shore keep-both ${URI} --key k1`);
   });
 });

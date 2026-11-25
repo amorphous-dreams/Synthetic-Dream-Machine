@@ -12,7 +12,7 @@ import { execFileSync } from "node:child_process";
 import { homedir } from "node:os";
 import { createInterface } from "node:readline/promises";
 import { repoRoot } from "@lararium/mesh/node";
-import { ownPeerKind } from "@lararium/node";
+import { handRefusalOf, readOwnHand, type HandReading } from "@lararium/node";
 import { EXIT, Ledger, exitOf, read, tend, undoLocked, type Item, type Reader, type Row, type TendResult } from "../reality-tunnel/engine.js";
 import { homeLedgerDir, repoLedgerDir } from "../reality-tunnel/places.js";
 import { declared, homeItems, repoItems } from "../reality-tunnel/catalog.js";
@@ -103,13 +103,15 @@ async function consent(writes: readonly Row[], args: ParsedArgs): Promise<boolea
 
 /**
  * THE HOME UNDO'S CONSENT. An undo puts back the bytes a tend replaced in the operator's homes, a settings file that lacks the
- * doors' deny list among them, so it takes `tend`'s consent and one gate more: an AI seat refuses by name before any home or
- * ledger is read, a terminal asks, and no terminal needs `--yes`.
+ * doors' deny list among them, so it takes `tend`'s consent and one gate more: the house hand gate reads the command's branch
+ * before it reads any home or ledger (an AI seat refuses `hand-act-only`, an unread chain `hand-unattested`), a terminal asks,
+ * and no terminal needs `--yes`.
  */
-async function undoConsent(args: ParsedArgs, seat: () => boolean): Promise<boolean> {
-  if (seat()) {
-    console.error("lares home undo: refused hand-act-only: an undo puts back the bytes a tend replaced in the operator's homes, a settings file that lacks the doors' deny list among them, so an AI seat never runs it");
-    console.error("  the cure: the operator runs `lares home undo [gen]` at their own terminal");
+async function undoConsent(args: ParsedArgs, hand: () => HandReading): Promise<boolean> {
+  const read = hand();
+  if ("refusal" in read) {
+    const refused = handRefusalOf(read.refusal, { act: "an undo (it puts back the bytes a tend replaced in the operator's homes, a settings file that lacks the doors' deny list among them)", reads: "branch", line: "lares home undo [gen]" });
+    console.error(`lares home undo: refused ${refused.message}`);
     return false;
   }
   if (args.flags["yes"] === true) return true;
@@ -138,13 +140,10 @@ export function itemsFor(door: Door, staged = false, persist = false, familiar: 
   return { items: homeItems({ repo: repoRoot, homes: resolveHomes({ persist }), familiar }), ledger: new Ledger(homeLedgerDir()), root: homedir() };
 }
 
-/**
- * Whether an AI seat runs this command: a harness mark in its environment, a harness on its parent chain, or a chain that
- * cannot be read (an unread chain never reads as a person).
- */
-const harnessSeat = (): boolean => ownPeerKind(process.env) !== "hand";
+/** How the house hand gate reads the command's own branch (`readOwnHand`); a suite names another reading. */
+const ownHand = (): HandReading => readOwnHand({ proveRoute: false });
 
-export async function cmdTunnelDoor(door: Door, args: ParsedArgs, seat: () => boolean = harnessSeat): Promise<number> {
+export async function cmdTunnelDoor(door: Door, args: ParsedArgs, hand: () => HandReading = ownHand): Promise<number> {
   const verb = args.positional[0];
   if (args.flags["help"] === true || verb === undefined || !(TUNNEL_VERBS as readonly string[]).includes(verb)) {
     return refuseUsage(args, door, helpLines(door), args.flags["help"] === true ? undefined : verb === undefined ? "name a sub-verb" : `unknown sub-verb "${verb}"`);
@@ -159,7 +158,7 @@ export async function cmdTunnelDoor(door: Door, args: ParsedArgs, seat: () => bo
     console.error(`lares ${door} ${verb}: --familiar names a home's familiar; run \`lares home ${verb} --familiar ${familiar}\``);
     return EXIT.usage;
   }
-  if (door === "home" && verb === "undo" && !(await undoConsent(args, seat))) return EXIT.usage;
+  if (door === "home" && verb === "undo" && !(await undoConsent(args, hand))) return EXIT.usage;
   const { items, ledger } = itemsFor(door, args.flags["staged"] === true, verb === "tend" || verb === "undo", familiar);
 
   if (verb === "read") {
