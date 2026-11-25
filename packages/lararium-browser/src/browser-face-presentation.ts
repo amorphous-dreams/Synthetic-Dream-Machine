@@ -23,12 +23,20 @@
  * Meme: lar:///ha.ka.ba/lararium/browser/browser-face-presentation
  */
 import * as ed25519 from "@noble/ed25519";
-import {
-  admittedKeyOf, checkVesselChain, faceKeyGrantRevision, foldWithdrawals, heldNexusRoot, hex,
-  makeMultiSigQuorumVerifier, nexusAidOf, nexusAidOfPin, openJoinedFaceSession, parseNexusDoc, presentedAdmitReader, readFaceKeyGrant,
-  sessionBinding, SessionTable,
-  type FacePresentation, type FaceScope, type GateBundlePin, type SessionBinding,
-} from "@lararium/mesh";
+import { admittedKeyOf } from "@lararium/mesh/nexus-key-line";
+import { checkVesselChain, foldWithdrawals } from "@lararium/mesh/face-authority";
+import { faceKeyGrantRevision, readFaceKeyGrant } from "@lararium/mesh/fleet-join";
+import { heldNexusRoot } from "@lararium/mesh/held-nexus-root";
+import { hex } from "@lararium/mesh/crypto";
+import { makeMultiSigQuorumVerifier } from "@lararium/mesh/kapae-antigen";
+import { nexusAidOf } from "@lararium/mesh/nexus-seal-seed";
+import { nexusAidOfPin, type GateBundlePin } from "@lararium/mesh/gate-bundle";
+import { openJoinedFaceSession } from "@lararium/mesh/session-face";
+import { parseNexusDoc } from "@lararium/mesh/nexus-doc-text";
+import { presentedAdmitReader } from "@lararium/mesh/face-gate";
+import { sessionBinding, SessionTable, type SessionBinding } from "@lararium/mesh/session-contract";
+import { type FacePresentation } from "@lararium/mesh/lar-ws-client-adapter";
+import { type FaceScope } from "@lararium/mesh/face-proof-subjects";
 import { browserVesselFaceKeyCustody, dialRecord, faceKeyRecord, type KeptFleetJoinDial } from "./browser-fleet-join.js";
 import { FaceCustodyRefused } from "./browser-face-custody.js";
 import { FLEET_JOIN_STORE, idbGet, openVesselIdb } from "./browser-vessel-identity.js";

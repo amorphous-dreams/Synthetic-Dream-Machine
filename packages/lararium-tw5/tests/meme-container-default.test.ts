@@ -1,5 +1,7 @@
 import { describe, expect, test } from "vitest";
-import { CompositeStore, DAEMON_BAG_ID, wikiSlotUri } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import {
   makeMemeDeleteReactor, makeMemeGetReactor, makeMemeListReactor, makeMemeProjectReactor, makeMemePutReactor,

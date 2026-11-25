@@ -9,9 +9,12 @@ import { describe, expect, test } from "vitest";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { generateAutomergeUrl, interpretAsDocumentId, type AutomergeUrl } from "@automerge/automerge-repo";
-import {
-  DAEMON_BAG_ID, KAHUA_BAG, PERSONA_GROUP_ID_TIDDLER, isSovereignBag, personaMembershipEntries, storedLarRecord, type LarDoc,
-} from "@lararium/mesh";
+import { DAEMON_BAG_ID, PERSONA_GROUP_ID_TIDDLER } from "@lararium/mesh/lar-uris";
+import { KAHUA_BAG } from "@lararium/mesh/wiki-recipe";
+import { isSovereignBag } from "@lararium/mesh/mesh-palace";
+import { personaMembershipEntries } from "@lararium/mesh/persona-planes";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { bridgeBooks, faceFleetFacets, faceFleetViews } from "../src/face-fleet-view.js";
 
 const groupA = "0x" + "55".repeat(16), groupB = "0x" + "66".repeat(16);

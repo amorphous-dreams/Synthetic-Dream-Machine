@@ -20,7 +20,7 @@
  *
  * Canon: lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings ("A device set aside")
  */
-import { withdrawnKeyDigest, type FaceScope, type VesselFaceKey } from "@lararium/mesh";
+import { withdrawnKeyDigest, type FaceScope, type VesselFaceKey } from "@lararium/mesh/face-proof-subjects";
 import type { FaceJoinRecord } from "./fleet-join-custody.js";
 import type { FaceDeviceReading } from "./gate-shadow-ring.js";
 

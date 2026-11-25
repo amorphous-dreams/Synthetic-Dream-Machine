@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
-import { makeIslandRepo, groupSecretOpenerFromSeed, mintFaceAtomSeed, groupSecretSealTitle, DYAD_SLOT_PREFIX } from "@lararium/mesh";
+import { makeIslandRepo } from "@lararium/mesh/island-repo";
+import { groupSecretOpenerFromSeed, groupSecretSealTitle } from "@lararium/mesh/persona-group-secret";
+import { mintFaceAtomSeed } from "@lararium/mesh/face-atom";
+import { DYAD_SLOT_PREFIX } from "@lararium/mesh/dyad";
 import { foundTheFace, foundThePlace, replayCapEvents, runApplyAdmitPayload, runFoundingCeremony } from "../src/index.js";
 import { KeyhiveProvider } from "../src/keyhive-provider.js";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";

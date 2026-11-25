@@ -34,7 +34,9 @@ import { join, dirname } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 
-import { nexusIdentity, nexusScopeOrThrow, personaKelBoardDocUrl, nexusAidOf } from "@lararium/mesh";
+import { nexusIdentity, nexusScopeOrThrow } from "@lararium/mesh/nexus-identity";
+import { personaKelBoardDocUrl } from "@lararium/mesh/deterministic-doc";
+import { nexusAidOf } from "@lararium/mesh/nexus-seal-seed";
 
 import { writeNexusDoc, readNexusDoc, nexusCharterStands } from "../src/nexus-doc.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";

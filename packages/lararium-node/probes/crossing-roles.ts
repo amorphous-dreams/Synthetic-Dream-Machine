@@ -22,9 +22,11 @@
 import { createServer, type Server } from "node:http";
 import { Repo, type AutomergeUrl, type DocHandle } from "@automerge/automerge-repo";
 import { NodeWSServerAdapter } from "@automerge/automerge-repo-network-websocket";
-import { LarWSClientAdapter, hearthPinIndex, type FederationPosture } from "@lararium/mesh";
+import { LarWSClientAdapter } from "@lararium/mesh/lar-ws-client-adapter";
+import { hearthPinIndex } from "@lararium/mesh/admit-gate-pin";
+import { type FederationPosture } from "@lararium/mesh/federation-gate";
 import { CROSSING_AUDIENCE, crossingFace, forgedFace, standCrossingGate, type CrossingFace } from "./crossing-synthetic-world.js";
-import type { GateBundlePin } from "@lararium/mesh";
+import type { GateBundlePin } from "@lararium/mesh/gate-bundle";
 import { faceGateServer, gateSessionRegistry } from "../src/face-gate-server.js";
 import { gateSyncServer } from "../src/gate-sync-server.js";
 

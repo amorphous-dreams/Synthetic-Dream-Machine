@@ -27,11 +27,18 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
-  mintHandleInception, mintHandleRotation, mintHandleBurn, attestUnderHead, handleKeyDigestOf,
-  ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, sealKeySetHash,
+  mintHandleInception,
+  mintHandleRotation,
+  mintHandleBurn,
+  attestUnderHead,
+  handleKeyDigestOf,
   HANDLE_CLAIM_SURFACES,
-  type HandleKelEvent, type HandleAttestation, type HandleClaim,
-} from "@lararium/mesh";
+  type HandleKelEvent,
+  type HandleAttestation,
+  type HandleClaim,
+} from "@lararium/mesh/handle-kel";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { sealKeySetHash } from "@lararium/mesh/wax-stamp";
 import { dispatch } from "../src/bin/lares.js";
 import { generateOrLoadPersonaGroupRoot } from "@lararium/node";
 import { seatScratchCustody, type ScratchCustody } from "./support/scratch-custody.js";

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { CompositeStore } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
 import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
 import { IslandAdaptor, LandingDoorOccupiedError } from "../src/island-adaptor.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";

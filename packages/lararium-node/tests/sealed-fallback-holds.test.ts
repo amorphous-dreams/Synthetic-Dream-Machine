@@ -29,10 +29,15 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Repo, type DocHandle, type StorageAdapterInterface } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
-import {
-  assembleVessel, AutomergeDocStore, CompositeStore, emptyLarDoc, mountWikiSlot, personaScopedBagIds, sealedAddressOf, SealedDocumentStore,
-  seatSealedRest, waitHandle, type ChangeOrigin, type LarDoc, type LarTiddlerRecord, type SealedSettlement,
-} from "@lararium/mesh";
+import { assembleVessel, mountWikiSlot } from "@lararium/mesh/open-vessel-core";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { personaScopedBagIds } from "@lararium/mesh/persona-scope";
+import { sealedAddressOf } from "@lararium/mesh/sealed-chunk";
+import { SealedDocumentStore } from "@lararium/mesh/sealed-doc-store";
+import { seatSealedRest, waitHandle, type SealedSettlement } from "@lararium/mesh/wait-handle";
+import { type ChangeOrigin, type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { MemoryTiddlerStore } from "../../lararium-tw5/src/memory-store.js";
 import { quarantineDoc, quarantineHoldOf } from "../src/doc-load-probe.js";
 import { docStorePath } from "../src/store-integrity.js";

@@ -29,13 +29,25 @@
  * bare under; a hot or cold row that reads anything but `sealed` reads as a fault.
  */
 
-import type { ProvedSlot } from "@lararium/mesh";
+import type { ProvedSlot } from "@lararium/mesh/keyslot-door";
 import { mkdirSync } from "node:fs";
+import { assertStoreUnoccupied, commitSlotTree, settleRotation, type CustodyIo } from "@lararium/mesh/sealed-writer";
 import {
-  assertStoreUnoccupied, bindSlot, commitSlotTree, decodeSlotTree, mintServingKey, mintTreeKey,
-  openTreeKey, slotsOpenedBy, readFckCarrier, readWardCarrier, readSCarrier, settleRotation, unbindSlot,
-  type Credential, type CustodyIo, type KdfPort, type ServingKey, type SlotSpec, type SlotTree, type TreeKey, type SCarrierReading,
-} from "@lararium/mesh";
+  bindSlot,
+  decodeSlotTree,
+  openTreeKey,
+  slotsOpenedBy,
+  unbindSlot,
+  type Credential,
+  type KdfPort,
+  type SlotSpec,
+  type SlotTree,
+} from "@lararium/mesh/keyslot-door";
+import { mintServingKey, type ServingKey } from "@lararium/mesh/serving-key";
+import { mintTreeKey, type TreeKey } from "@lararium/mesh/tree-key";
+import { readFckCarrier } from "@lararium/mesh/fck-envelope";
+import { readWardCarrier } from "@lararium/mesh/ward-slots";
+import { readSCarrier, type SCarrierReading } from "@lararium/mesh/s-envelope";
 import { nativeKdf } from "@lararium/mesh/node";
 import { mintCustodyRoot, sealCustodyRoot, type CustodyRoot } from "./custody-root.js";
 import {

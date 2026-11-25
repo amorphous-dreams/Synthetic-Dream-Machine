@@ -1,5 +1,15 @@
 /** Stand the operator-enabled relay route beside the sealed face gates. */
-import { deriveGateBundle, sovereignGateRoot, sovereignRoute, utf8Bytes, INTENT_RELAY_ROUTE, type CustodyRootDoor, type GateBundle, type GateBundlePin, type GateDeadlines, type IntentRelayResult } from "@lararium/mesh";
+import {
+  deriveGateBundle,
+  sovereignGateRoot,
+  sovereignRoute,
+  type CustodyRootDoor,
+  type GateBundle,
+  type GateBundlePin,
+} from "@lararium/mesh/gate-bundle";
+import { utf8Bytes } from "@lararium/mesh/crypto";
+import { INTENT_RELAY_ROUTE, type IntentRelayResult } from "@lararium/mesh/intent-relay-door";
+import { type GateDeadlines } from "@lararium/mesh/face-gate";
 import type { FaceGateServer, StoodGate } from "./face-gate-server.js";
 import type { HttpFaceDispatcher } from "./http-face-dispatcher.js";
 import { makeIntentRelayGate } from "./intent-relay-door.js";

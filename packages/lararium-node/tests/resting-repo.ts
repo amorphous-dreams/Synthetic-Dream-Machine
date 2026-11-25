@@ -18,7 +18,8 @@
  * path claims the store's name as well.
  */
 import { Repo, type RepoConfig, type StorageAdapterInterface } from "@automerge/automerge-repo";
-import { SealedDocumentStore, bindSecretHomeRest, vesselHeldHomes } from "@lararium/mesh";
+import { SealedDocumentStore } from "@lararium/mesh/sealed-doc-store";
+import { bindSecretHomeRest, vesselHeldHomes } from "@lararium/mesh/secret-home";
 import { DurableNodeFSStorageAdapter } from "../src/durable-storage-adapter.js";
 
 /** A Repo over a store on disk, with the one act that lets its directory leave. */

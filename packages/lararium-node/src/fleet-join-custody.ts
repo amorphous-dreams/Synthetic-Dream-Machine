@@ -27,7 +27,7 @@
 import { randomBytes } from "node:crypto";
 import { mkdirSync } from "node:fs";
 import { personaGroupDigest } from "./persona-group-file.js";
-import { bytesEqual } from "@lararium/mesh";
+import { bytesEqual } from "@lararium/mesh/crypto";
 import { CustodyRecordUnavailable } from "./custody-holder.js";
 import { openFaceFileNames, readCustodyRecord, removeCustodyRecord, updateCustodyRecord } from "./custody-seat.js";
 import { larIdentityDir } from "./vessel-paths.js";

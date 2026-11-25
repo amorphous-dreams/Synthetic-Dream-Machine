@@ -14,7 +14,8 @@ import { createServer, type Server } from "node:http";
 import { existsSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { makeCidResolver, sha256HexBytesSync, utf8Bytes, type CasTransitTransport } from "@lararium/mesh";
+import { makeCidResolver, type CasTransitTransport } from "@lararium/mesh/cas-transit";
+import { sha256HexBytesSync, utf8Bytes } from "@lararium/mesh/crypto";
 import { hermCasTransit, composeCasTransits, readCasBlobFromFs, writeCasEntriesFs } from "../src/node-cas.js";
 import { answerClosedDoor } from "../src/bulb-routes.js";
 

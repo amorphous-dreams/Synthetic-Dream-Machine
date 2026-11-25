@@ -30,7 +30,7 @@ import { cmdPin, cmdUnpin, cmdResidency } from "./residency.js";
 import { ensureWikiRealm, labelRealmOf, LIVE_REALM_DOORS, placeWikiInRealm, releaseWikiRealm, setAsideWikiFolder, type RealmDoors } from "./realm-doors.js";
 import { sealedAct } from "../sealed-act-door.js";
 import { RealmRefused, loadLaresConfig, tempConsentedSlugs } from "@lararium/node";
-import { wikiSlotKindOf } from "@lararium/mesh";
+import { wikiSlotKindOf } from "@lararium/mesh/wiki-recipe";
 import { engineContainerArgs } from "../container-target.js";
 import { DoorUsage, countOf, guardDoor, namesOf, runDoor, wordOf, type DoorPlan } from "./door-call.js";
 import { targetOf } from "../target-option.js";

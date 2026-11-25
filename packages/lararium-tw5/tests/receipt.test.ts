@@ -5,7 +5,10 @@
  */
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { createRequire } from "node:module";
-import { emptyLarDoc, replicaHeads, type IslandToVesselMsg, type LarDoc, type Repo as RepoType } from "@lararium/mesh";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { replicaHeads } from "@lararium/mesh/island-repo";
+import { type IslandToVesselMsg } from "@lararium/mesh/island-protocol";
+import { type Repo as RepoType } from "@lararium/mesh/automerge";
 import { makeReceiptCapability, type ReceiptCapability } from "../src/receipt.js";
 import { mountSurface, settle, type Surface } from "./projection-surface.js";
 import { skipNote, wikiSkip } from "./test-wiki.js";

@@ -13,7 +13,7 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/flow
  */
 
-import { enactableFlows, buildFlowTiddler, HULLS_TS_ONLY, type RunnableHulls } from "@lararium/mesh";
+import { enactableFlows, buildFlowTiddler, HULLS_TS_ONLY, type RunnableHulls } from "@lararium/mesh/flow";
 import type { TW5Engine } from "./tw5-vm.js";
 import { seedShadows } from "./daemon-ui-tiddlers.js";
 

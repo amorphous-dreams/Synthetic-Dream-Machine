@@ -15,10 +15,11 @@ seatSuiteWard();
 import { afterEach, beforeEach, describe, expect } from "vitest";
 import * as ed from "@noble/ed25519";
 import { restEvery, restingRepo } from "./resting-repo.js";
-import {
-  hex, hexToBytes, realmVouchBoardDocUrl, verifiedVouchesFromBoard, materializeSharedLarDoc, vouchDagFromInvites,
-  decideCabalJoin, DEFAULT_JOIN_POLICY,
-} from "@lararium/mesh";
+import { hex, hexToBytes } from "@lararium/mesh/crypto";
+import { realmVouchBoardDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { verifiedVouchesFromBoard } from "@lararium/mesh/vouch-board";
+import { vouchDagFromInvites } from "@lararium/mesh/vouch-dag";
+import { decideCabalJoin, DEFAULT_JOIN_POLICY } from "@lararium/mesh/cabal-invite";
 import {
   generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot,
   loadPersonaGroupRootVerifyingKey,

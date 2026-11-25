@@ -14,10 +14,21 @@
  * Meme: lar:///ha.ka.ba/lararium/node/vessel-gates
  */
 import {
-  makeFaceGate, presentedAdmitReader,
-  type FaceGate, type FederationPosture, type GateAdmitReader, type GateBundle, type GateDeadlines, type GateFaceGrantRing, type GateShadowRing,
-  type FaceGateDeps, type GateSilenceDetail, type GateSilenceReason, type GateSessionTable, type GateWithdrawalMemory,
-} from "@lararium/mesh";
+  makeFaceGate,
+  presentedAdmitReader,
+  type FaceGate,
+  type GateAdmitReader,
+  type GateDeadlines,
+  type GateFaceGrantRing,
+  type GateShadowRing,
+  type FaceGateDeps,
+  type GateSilenceDetail,
+  type GateSilenceReason,
+  type GateSessionTable,
+  type GateWithdrawalMemory,
+} from "@lararium/mesh/face-gate";
+import { type FederationPosture } from "@lararium/mesh/federation-gate";
+import { type GateBundle } from "@lararium/mesh/gate-bundle";
 import { gateHeldRoot, type CarriedNexusReading } from "./nexus-carriage.js";
 import { makeGateSorter, type ShutArm } from "./socket-sorter.js";
 

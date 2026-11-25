@@ -9,9 +9,10 @@
  * Test support. No source file imports it.
  */
 import WsSocket from "ws";
-import {
-  pullAndVerifyFlow, ed25519VerifyingKeyFromSeed, FLOW_SOCKET_ROUTE, type FederationPosture, type GateSessionTable,
-} from "@lararium/mesh";
+import { pullAndVerifyFlow, FLOW_SOCKET_ROUTE } from "@lararium/mesh/flow-read-client";
+import { ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { type FederationPosture } from "@lararium/mesh/federation-gate";
+import { type GateSessionTable } from "@lararium/mesh/face-gate";
 import { wsDialSocket, type WsLike } from "../../lararium-mesh/src/ws-dial-socket.js";
 import { world, presenter, place, AUDIENCE, type World, type Presenter, type Place } from "../../lararium-mesh/tests/face-gate-fixture.js";
 

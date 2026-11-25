@@ -50,13 +50,19 @@ vi.mock("../src/commands/nexus-contract.js", () => ({
     return { bundle: bundleWith(PIN, opts["canonGroup"] === undefined || opts["canonGroup"] === "group-0" ? { ...seam.realmCanon } : {}) };
   },
 }));
-vi.mock("@lararium/mesh", async (importActual) => ({
+vi.mock("@lararium/mesh/gate-bundle", async (importActual) => ({
   ...(await importActual<Record<string, unknown>>()),
   // The pin stands as a plain object here; its digest is its shape (the fleet-join witnesses read it the same way).
   gateBundleDigest: (pin: unknown) => JSON.stringify(pin),
+}));
+vi.mock("@lararium/mesh/held-nexus-root", async (importActual) => ({
+  ...(await importActual<Record<string, unknown>>()),
   heldNexusRoot: () => ({ nexus: AID }),
-  makeMultiSigQuorumVerifier: () => ({}),
   verifySignedAdmitBundle: async () => ({ carriage: {} }),
+}));
+vi.mock("@lararium/mesh/kapae-antigen", async (importActual) => ({
+  ...(await importActual<Record<string, unknown>>()),
+  makeMultiSigQuorumVerifier: () => ({}),
 }));
 
 import { ensureFaceHouseholdAdmit, faceHouseholdAdmitPath } from "../src/face-household-admit.js";

@@ -28,11 +28,27 @@
  */
 import type { AutomergeUrl, DocHandle, Repo } from "@automerge/automerge-repo";
 import {
-  acceptFloorRelease, floorReleaseEntriesFromBoard, floorRequiredBlobIds, genesisFloorCidOf, materializeSharedLarDoc, nexusAidOf,
-  oracleGenesisDocUrl, publicationDocUrl, readControlHome, readFloorDriftReading, readFloorManifest, readFloorOffering, readFloorStatus, resolveBootDoc, sha256HexBytesSync,
-  type FloorDrift, type FloorDriftReading, type FloorShadowTally, type FloorPinLike,
-  type FloorAcceptOutcome, type FloorPinPorts, type FloorRemount, type FloorStatus, type LarDoc,
-} from "@lararium/mesh";
+  acceptFloorRelease,
+  genesisFloorCidOf,
+  readFloorStatus,
+  type FloorAcceptOutcome,
+  type FloorPinPorts,
+  type FloorRemount,
+  type FloorStatus,
+} from "@lararium/mesh/floor-pin";
+import { floorReleaseEntriesFromBoard } from "@lararium/mesh/floor-release";
+import { floorRequiredBlobIds, readFloorOffering } from "@lararium/mesh/floor-offering";
+import { materializeSharedLarDoc, publicationDocUrl } from "@lararium/mesh/deterministic-doc";
+import { nexusAidOf } from "@lararium/mesh/nexus-seal-seed";
+import { oracleGenesisDocUrl } from "@lararium/mesh/genesis-doc";
+import { readControlHome } from "@lararium/mesh/control-home";
+import { readFloorDriftReading, type FloorDrift, type FloorDriftReading } from "@lararium/mesh/floor-drift";
+import { readFloorManifest } from "@lararium/mesh/floor-manifest";
+import { resolveBootDoc } from "@lararium/mesh/boot-resolver";
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
+import { type FloorShadowTally } from "@lararium/mesh/floor-shadow";
+import { type FloorPinLike } from "@lararium/mesh/genesis-compare";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { bootDaemonUrl } from "../boot-face-planes.js";
 import { readBootTiddlers } from "../vessel-private.js";
 import { readNexusDoc } from "../nexus-doc.js";

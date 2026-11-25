@@ -27,12 +27,23 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import * as ed from "@noble/ed25519";
+import { hex } from "@lararium/mesh/crypto";
+import { nexusAidOf, type NexusDoc } from "@lararium/mesh/nexus-seal-seed";
+import { presentedAdmitReader } from "@lararium/mesh/face-gate";
 import {
-  hex, nexusAidOf, presentedAdmitReader, signCarriageQuorum, signCarriageContract, admitCarriageCommit, signCarrierContract, makeMultiSigQuorumVerifier,
-  carriageEntryActCid, carriageDocUrl, writeCarriageEntry, emptyLarDoc, heldNexusRoot,
-  custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute,
-  type NexusDoc, type CarriageEntry, type LarDoc, type GateBundlePin,
-} from "@lararium/mesh";
+  signCarriageQuorum,
+  signCarriageContract,
+  admitCarriageCommit,
+  signCarrierContract,
+  carriageEntryActCid,
+  type CarriageEntry,
+} from "@lararium/mesh/carriage-registry";
+import { makeMultiSigQuorumVerifier } from "@lararium/mesh/kapae-antigen";
+import { carriageDocUrl } from "@lararium/mesh/deterministic-doc";
+import { writeCarriageEntry } from "@lararium/mesh/carriage-board";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { heldNexusRoot } from "@lararium/mesh/held-nexus-root";
+import { custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute, type GateBundlePin } from "@lararium/mesh/gate-bundle";
 import { takeAdmitBundle, admitBundleHolds, admitBundlePathFor, AdmitBundleError, type AdmitBundle } from "../src/admit-bundle.js";
 import {
   leafReadingFor, leafStandingFor, makeNexusMembership, gateHeldRoot, type CarriedNexusReading, type SocketBinding,

@@ -3,11 +3,14 @@
  * face's folder. Their names carry the PersonaGroup digest; they ride no CRDT document and no face bundle.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
-import { EMPTY_LEDGER, EMPTY_KAPAE_LOCAL, decodeLedger, decodeKapaeLocal, encodeLedger, encodeKapaeLocal, sha256HexBytesSync } from "@lararium/mesh";
+import { EMPTY_LEDGER, decodeLedger, encodeLedger } from "@lararium/mesh/promote";
+import { EMPTY_KAPAE_LOCAL, decodeKapaeLocal, encodeKapaeLocal } from "@lararium/mesh/promote-kapae";
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
 import { readCustodyRecord, updateCustodyRecord, writeCustodyRecord } from "./custody-seat.js";
 import { personaGroupDigest } from "./persona-group-file.js";
 import { pinCas, writeCasEntriesFs } from "./node-cas.js";
-import type { KapaeLocal, PromotionLedger } from "@lararium/mesh";
+import type { KapaeLocal } from "@lararium/mesh/promote-kapae";
+import type { PromotionLedger } from "@lararium/mesh/promote";
 
 type Rows<T> = { read(): Promise<T>; write(value: T): Promise<void>; update(fn: (standing: T) => T): Promise<T> };
 

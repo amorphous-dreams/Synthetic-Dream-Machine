@@ -11,7 +11,8 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026#/moves
  */
 
-import type { DeviceDelegationTiddler, VesselWorkerHandle } from "@lararium/mesh";
+import type { DeviceDelegationTiddler } from "@lararium/mesh/device-delegation";
+import type { VesselWorkerHandle } from "@lararium/mesh/vessel-host";
 import { signHolderSessionProof } from "@lararium/mesh/holder-session-proof";
 import { validateSessionEnvelope, type SessionEnvelope } from "@lararium/mesh/session-contract";
 import { type HolderHello, type HolderRefused } from "./shared-holder-core.js";

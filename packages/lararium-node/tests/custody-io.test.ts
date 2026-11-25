@@ -13,9 +13,19 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, 
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
-  CustodyRefusal, OccupiedStoreRefusal, SEALING_SUFFIX, ROTATING_SUFFIX, bindSlot, commitSlotTree, decodeSlotTree, mintTreeKey,
-  openSealedCarrier, openTreeKey, readSCarrier, writeSealedCarrier, type CustodyIo, type SealedCarrier, type TreeKey,
-} from "@lararium/mesh";
+  CustodyRefusal,
+  OccupiedStoreRefusal,
+  SEALING_SUFFIX,
+  ROTATING_SUFFIX,
+  commitSlotTree,
+  openSealedCarrier,
+  writeSealedCarrier,
+  type CustodyIo,
+  type SealedCarrier,
+} from "@lararium/mesh/sealed-writer";
+import { bindSlot, decodeSlotTree, openTreeKey } from "@lararium/mesh/keyslot-door";
+import { mintTreeKey, type TreeKey } from "@lararium/mesh/tree-key";
+import { readSCarrier } from "@lararium/mesh/s-envelope";
 import { CustodyLockRefused, FsCustodyIo } from "../src/custody-io.js";
 import { rotateNodeKey, vesselCustodyHomes, sSealedCarriers, sSlotsPath, type CustodyHomes } from "../src/vault-carriers.js";
 import { nativeKdf } from "@lararium/mesh/node";

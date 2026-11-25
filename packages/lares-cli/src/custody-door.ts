@@ -7,7 +7,7 @@
  * no digest, receipt or outcome behind. This module never logs what it sends.
  */
 import { createConnection } from "node:net";
-import type { Credential, SlotSpec } from "@lararium/mesh";
+import type { Credential, SlotSpec } from "@lararium/mesh/keyslot-door";
 import { udsSocketPath } from "./local-connector.js";
 
 export type CustodyFrame =

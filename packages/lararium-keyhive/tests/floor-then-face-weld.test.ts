@@ -13,11 +13,22 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, test } from "vitest";
+import { makeIslandRepo } from "@lararium/mesh/island-repo";
+import { CompositeStore } from "@lararium/mesh/composite-store";
 import {
-  makeIslandRepo, CompositeStore, CONTROL_HOME_ID, DAEMON_BAG_ID, HEARTH_TRUE_NAME_TIDDLER, MESH_CABAL_SENTINEL_URI, PERSONA_GROUP_ID_TIDDLER, SIGNER_DID_TIDDLER,
-  PERSONA_KEL_PREFIX_TIDDLER, DEVICE_DELEGATION_SELF_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER, HEARTH_DAEMON_URL_TIDDLER, didFromVerifyingKey, emptyLarDoc,
-  type LarDoc,
-} from "@lararium/mesh";
+  CONTROL_HOME_ID,
+  DAEMON_BAG_ID,
+  HEARTH_TRUE_NAME_TIDDLER,
+  MESH_CABAL_SENTINEL_URI,
+  PERSONA_GROUP_ID_TIDDLER,
+  SIGNER_DID_TIDDLER,
+  PERSONA_KEL_PREFIX_TIDDLER,
+  DEVICE_DELEGATION_SELF_TIDDLER,
+  MESH_CABAL_DOC_ID_TIDDLER,
+  HEARTH_DAEMON_URL_TIDDLER,
+} from "@lararium/mesh/lar-uris";
+import { didFromVerifyingKey } from "@lararium/mesh/lar-did";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
 import { MemoryTiddlerStore, makeCatalogAccessor } from "@lararium/tw5";
 import { foundThePlace, meshCabalSentinelUriFor } from "../src/ceremony-core.js";
 import { KeyhiveProvider } from "../src/keyhive-provider.js";

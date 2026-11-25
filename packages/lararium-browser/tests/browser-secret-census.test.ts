@@ -20,10 +20,17 @@ import { browserFleetJoinLand, browserFleetJoinRequest } from "../src/browser-fl
 import { browserWalkLeaf, browserWalkStore } from "../src/browser-walk.js";
 import { lockBrowserCustody, readBrowserCustody, readKeystoreRecord, unlockBrowserCustody } from "../src/browser-custody.js";
 import { bindFirstFaceSlot, lockFaceCustody, unlockFaceCustody } from "../src/browser-face-custody.js";
+import { admitCarriageCommit } from "@lararium/mesh/carriage-registry";
+import { custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute } from "@lararium/mesh/gate-bundle";
+import { encodeInvite } from "@lararium/mesh/hosting";
 import {
-  admitCarriageCommit, custodyRootDoor, deriveGateBundle, encodeInvite, faceKeyGrantImage, fleetJoinAnswerImage, fleetJoinOffer,
-  sealAddressSecret, sovereignGateRoot, sovereignRoute, type FleetJoinRequest, type VesselFaceKey,
-} from "@lararium/mesh";
+  faceKeyGrantImage,
+  fleetJoinAnswerImage,
+  fleetJoinOffer,
+  sealAddressSecret,
+  type FleetJoinRequest,
+} from "@lararium/mesh/fleet-join";
+import { type VesselFaceKey } from "@lararium/mesh/face-proof-subjects";
 import { certificateImage } from "../../lararium-mesh/src/face-proof-subjects.js";
 import { chain, pair, signHex } from "../../lararium-mesh/tests/face-proof-fixture.js";
 

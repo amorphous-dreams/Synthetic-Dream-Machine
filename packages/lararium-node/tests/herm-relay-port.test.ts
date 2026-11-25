@@ -16,11 +16,17 @@ import * as ed from "@noble/ed25519";
 import WS from "ws";
 import * as net from "node:net";
 import { request as httpRequest, Agent } from "node:http";
+import { provisionThresholdRecoveryAtFounding, attestAndRotate } from "@lararium/mesh/recovery-keel-core";
+import { recoveryContactRegistrationCard } from "@lararium/mesh/recovery-registration";
+import { enrolmentDigestOf, personaEventCidOf, type PersonaKelEvent } from "@lararium/mesh/persona-kel";
 import {
-  provisionThresholdRecoveryAtFounding, recoveryContactRegistrationCard, attestAndRotate, enrolmentDigestOf,
-  personaEventCidOf, personaKelDropName, httpPersonaKelDropHerm, pullPersonaKelSuccessors, depositPersonaKelChain,
-  sha256HexSync, hex, knockSegment, type PersonaKelEvent,
-} from "@lararium/mesh";
+  personaKelDropName,
+  httpPersonaKelDropHerm,
+  pullPersonaKelSuccessors,
+  depositPersonaKelChain,
+} from "@lararium/mesh/persona-kel-drop";
+import { sha256HexSync, hex } from "@lararium/mesh/crypto";
+import { knockSegment } from "@lararium/mesh/gate-bundle";
 import { startHermRelayPort, DROP_CONNECTION_BUDGET, type HermRelayPort } from "../src/herm-relay-port.js";
 
 const pubOf = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);

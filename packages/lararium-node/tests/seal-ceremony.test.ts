@@ -34,11 +34,23 @@ seatSuiteWard();
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
+import { NEXUS_DOC_DOMAIN, RESERVE_TRANSITION_DOMAIN } from "@lararium/mesh/domains";
+import { canonicalJsonBytes, hex } from "@lararium/mesh/crypto";
 import {
-  NEXUS_DOC_DOMAIN, RESERVE_TRANSITION_DOMAIN, canonicalJsonBytes, charterInceptionBytes, charterInceptionImage, genesisOfInception, verifySealLineage, ed25519SignerFromSeed, hex, mintCharterEpoch, readSCarrier,
-  rotateSealEpoch, sealKeySetHash, sealLineageHead, sealRollBytes, seatNextDigest, verifyEd25519,
-  type NexusDoc, type SealEpoch,
-} from "@lararium/mesh";
+  charterInceptionBytes,
+  charterInceptionImage,
+  genesisOfInception,
+  verifySealLineage,
+  mintCharterEpoch,
+  rotateSealEpoch,
+  sealKeySetHash,
+  sealRollBytes,
+  type SealEpoch,
+} from "@lararium/mesh/wax-stamp";
+import { ed25519SignerFromSeed, verifyEd25519 } from "@lararium/mesh/ed25519-door";
+import { readSCarrier } from "@lararium/mesh/s-envelope";
+import { sealLineageHead, type NexusDoc } from "@lararium/mesh/nexus-seal-seed";
+import { seatNextDigest } from "@lararium/mesh/cold-key-card";
 import { CustodyLocked, CustodyRecordUnavailable } from "../src/custody-holder.js";
 import { nexusCharterDocPath, readNexusDoc, writeNexusDoc } from "../src/nexus-doc.js";
 import { generateOrLoadPersonaGroupRoot } from "../src/node-vessel-identity.js";

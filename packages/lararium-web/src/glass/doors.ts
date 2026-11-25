@@ -1,5 +1,5 @@
 import type { GlassDoor } from "@lararium/tw5/glass";
-import type { LarServiceKind } from "@lararium/mesh";
+import type { LarServiceKind } from "@lararium/mesh/lar-camera";
 import { PAGE_DOORS } from "../page-doors.js";
 
 /** What the mirror's `route` door moves: the surface owns the address and the mirror's own life, never TW5's hash handling. */

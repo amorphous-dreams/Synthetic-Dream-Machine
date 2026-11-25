@@ -4,7 +4,8 @@
  * admission's price) reads there and refuses where nothing names one.
  */
 import type { Repo } from "@automerge/automerge-repo";
-import { nameControlHome, seedDaemonDoc } from "@lararium/mesh";
+import { nameControlHome } from "@lararium/mesh/control-home";
+import { seedDaemonDoc } from "@lararium/mesh/social-seed";
 import { standVesselSecretHome } from "../src/secret-home-store.js";
 
 export async function seedFoundedDaemonDoc(repo: Repo): Promise<ReturnType<typeof seedDaemonDoc>> {

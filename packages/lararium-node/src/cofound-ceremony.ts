@@ -30,10 +30,26 @@
  * Node-main only: a worker never imports this module.
  */
 import {
-  CofoundRefusal, canonicalJson, cofoundCharterDoc, cofoundJoin, cofoundOffer, composeCharterInception, heardSeatFingerprint, judgeCharterInception,
-  judgeCofoundJoin, offerFingerprint, readCofoundInception, readCofoundJoin, readCofoundOffer, sealCofound,
-  type CofoundInception, type CofoundJoin, type CofoundOffer, type ReleaseManifestAddresses, type SealRollSigner,
-} from "@lararium/mesh";
+  CofoundRefusal,
+  cofoundCharterDoc,
+  cofoundJoin,
+  cofoundOffer,
+  composeCharterInception,
+  heardSeatFingerprint,
+  judgeCharterInception,
+  judgeCofoundJoin,
+  offerFingerprint,
+  readCofoundInception,
+  readCofoundJoin,
+  readCofoundOffer,
+  sealCofound,
+  type CofoundInception,
+  type CofoundJoin,
+  type CofoundOffer,
+  type ReleaseManifestAddresses,
+} from "@lararium/mesh/cofound";
+import { canonicalJson } from "@lararium/mesh/crypto";
+import { type SealRollSigner } from "@lararium/mesh/wax-stamp";
 import { importCarriedCharter, type CarriedImportResult } from "./carried-set.js";
 import { mintCadenceKey, retireCadenceKey, signAsCadence } from "./cadence-key-store.js";
 import { cofoundRecordFingerprints, dropCofoundRecord, readCofoundRecord, sameInceptionImage, updateCofoundRecord, type CofoundRecord } from "./cofound-record.js";

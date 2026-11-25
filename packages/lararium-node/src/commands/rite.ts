@@ -21,10 +21,19 @@
 import type { Repo } from "@automerge/automerge-repo";
 import { lstatSync, readFileSync, realpathSync } from "node:fs";
 import { join, sep } from "node:path";
+import { WORKSPACE_NAME_RE } from "@lararium/mesh/workbench";
+import { SwarmRefused, checkReturn, type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort } from "@lararium/mesh/swarm-tiddlers";
 import {
-  WORKSPACE_NAME_RE, SwarmRefused, beginChecked, beginRite, checkReturn, conferre, cosignPortWitness, isSwarmLeiRite, landRite, pendingBegins, riteReceipts,
-  type SwarmLeiRite, type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort, type TesseraReading,
-} from "@lararium/mesh";
+  beginChecked,
+  beginRite,
+  conferre,
+  landRite,
+  pendingBegins,
+  riteReceipts,
+  type TesseraReading,
+} from "@lararium/mesh/swarm-tessera";
+import { cosignPortWitness } from "@lararium/mesh/ward-cosign-gate";
+import { isSwarmLeiRite, type SwarmLeiRite } from "@lararium/mesh/swarm-lei-rite";
 import { loadFaceFold, nodeWardCosignPortOf, IntentRefused, type FaceFold } from "./intent.js";
 import { treeOfHead } from "../git-tree-reader.js";
 import { openedCustody, unlockedFaceOrdinals } from "../custody-seat.js";

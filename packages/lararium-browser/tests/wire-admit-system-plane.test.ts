@@ -8,7 +8,9 @@
  */
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { generateAutomergeUrl } from "@automerge/automerge-repo";
-import { LARES_DOC_URI, LARARIUM_DOC_URI, admittedJoineeIsland, crossroadsDocUrl } from "@lararium/mesh";
+import { LARES_DOC_URI, LARARIUM_DOC_URI } from "@lararium/mesh/lar-uris";
+import { admittedJoineeIsland } from "@lararium/mesh/nexus-identity";
+import { crossroadsDocUrl } from "@lararium/mesh/deterministic-doc";
 import { BootHalted, admitNaming, bootOptions, observed, resetObserved } from "./wire-vessel-rig.js";
 import { openBrowserVessel } from "../src/open-browser-vessel.js";
 import { bindSyntheticBrowserCustodySlot, bindSyntheticFace } from "./browser-custody-fixture.js";

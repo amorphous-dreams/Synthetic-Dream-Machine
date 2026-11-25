@@ -8,7 +8,7 @@ import { describe, test, expect } from "vitest";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute, type GateBundlePin } from "@lararium/mesh";
+import { custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute, type GateBundlePin } from "@lararium/mesh/gate-bundle";
 import { HEARTH_DOC_URL_TIDDLER, HEARTH_GATE_PIN_TIDDLER, hearthDialTiddlers, readHearthDialPin } from "../src/hearth-dial-pin.js";
 
 const pinAt = (nexus: string, tag = 4): GateBundlePin => {

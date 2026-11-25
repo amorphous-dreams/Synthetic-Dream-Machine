@@ -6,7 +6,10 @@
  */
 import { afterEach, describe, expect, test } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
-import { DAEMON_BAG_ID, emptyLarDoc, mkDaemonResolveBindingResult, mkEa, mkFault, wikiSlotUri, type IslandMsg_Manifest, type LarDoc } from "@lararium/mesh";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { mkDaemonResolveBindingResult, mkEa, mkFault, type IslandMsg_Manifest } from "@lararium/mesh/island-protocol";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { HostWorkingBindingRefusal, openDaemonVmCore, type DaemonVmHost } from "@lararium/tw5";
 
 const cleanups: Array<() => Promise<void> | void> = [];

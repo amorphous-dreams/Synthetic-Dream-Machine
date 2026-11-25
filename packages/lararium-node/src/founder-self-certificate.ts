@@ -28,10 +28,10 @@
  */
 import { mkdirSync } from "node:fs";
 import * as ed25519 from "@noble/ed25519";
-import {
-  faceKeyGrantImage, foldWithdrawals, hex, issueCertificate, mintVesselFaceKey, readFaceKeyGrant, requestCertificate,
-  type FaceScope,
-} from "@lararium/mesh";
+import { faceKeyGrantImage, readFaceKeyGrant } from "@lararium/mesh/fleet-join";
+import { foldWithdrawals, issueCertificate, mintVesselFaceKey, requestCertificate } from "@lararium/mesh/face-authority";
+import { hex } from "@lararium/mesh/crypto";
+import { type FaceScope } from "@lararium/mesh/face-proof-subjects";
 import { CustodyRecordUnavailable } from "./custody-holder.js";
 import { nodeFaceKeyCustody, nodeVesselFaceKeyCustody, readVesselFaceKeyPublic, storeVesselFaceKey } from "./face-key-custody.js";
 import { FaceProvisional, refuseWhileProvisional } from "./face-provisional.js";

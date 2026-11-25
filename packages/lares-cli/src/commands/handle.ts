@@ -24,9 +24,15 @@ import type { ParsedArgs } from "../parse-args.js";
 import { bookFace, loadHandleBook } from "../sealed-records.js";
 import { actingFace } from "../face-option.js";
 import {
-  verifyAttestation, normalizeHandleClaim, handleClaimFrom, handleClaimSubject, HANDLE_CLAIM_SURFACES,
-  type HandleAttestation, type HandleKelEvent, type HandleCard,
-} from "@lararium/mesh";
+  verifyAttestation,
+  normalizeHandleClaim,
+  handleClaimFrom,
+  handleClaimSubject,
+  HANDLE_CLAIM_SURFACES,
+  type HandleAttestation,
+  type HandleKelEvent,
+} from "@lararium/mesh/handle-kel";
+import { type HandleCard } from "@lararium/mesh/handle-card";
 import { storeVerb } from "../store-door.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";

@@ -41,7 +41,7 @@
  * The holder names no host: `dial` hands it a channel.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
  */
-import { lentFacesOf, type LentFaces } from "@lararium/mesh";
+import { lentFacesOf, type LentFaces } from "@lararium/mesh/lent-faces";
 import {
   CustodyLocked, CustodyRecordUnavailable,
   type CustodyHolder, type FaceRef, type FaceUnlock, type HolderUnlock, type RecordReading, type RecordUpdate,

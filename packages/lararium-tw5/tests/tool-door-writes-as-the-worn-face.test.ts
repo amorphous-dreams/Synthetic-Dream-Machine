@@ -18,7 +18,12 @@
  */
 import { afterEach, describe, expect, test } from "vitest";
 import { createRequire } from "node:module";
-import { AutomergeDocStore, CompositeStore, emptyLarDoc, wikiBagUri, wikiSlotUri, wireIdentityOf, type DocHandle, type LarDoc, type Repo as RepoType, type StorageAdapterInterface } from "@lararium/mesh";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { wikiBagUri, wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import { wireIdentityOf } from "@lararium/mesh/wire-identity";
+import { type DocHandle, type Repo as RepoType, type StorageAdapterInterface } from "@lararium/mesh/automerge";
 import { buildIslandRecipe, seedDrained } from "../src/island-recipe.js";
 import { bridgeWikiToAdaptor } from "../src/outbound-bridge.js";
 import { makeTiddlerPutReactor } from "../src/tiddler-verbs.js";

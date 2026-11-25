@@ -19,7 +19,10 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { Repo, type Chunk, type StorageAdapterInterface, type StorageKey } from "@automerge/automerge-repo";
 import { cbor } from "@automerge/automerge-repo/slim";
-import { wireIdentityOf, type GateSession, type GateSessionChannel, type SealedMessage } from "@lararium/mesh";
+import { wireIdentityOf } from "@lararium/mesh/wire-identity";
+import { type GateSession } from "@lararium/mesh/face-gate";
+import { type GateSessionChannel } from "@lararium/mesh/gate-session-channel";
+import { type SealedMessage } from "@lararium/mesh/sealed-carriage";
 import { ListeningWSServerAdapter } from "../src/open-node-vessel.js";
 import { gateSyncServer } from "../src/gate-sync-server.js";
 

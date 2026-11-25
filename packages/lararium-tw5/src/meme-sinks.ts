@@ -24,7 +24,9 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/meme-sinks
  */
 
-import { OVERRIDE_BASE_META, type ChangeOrigin, type CompositeStore, type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh";
+import { OVERRIDE_BASE_META } from "@lararium/mesh/override-base";
+import { type ChangeOrigin, type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
+import { type CompositeStore } from "@lararium/mesh/composite-store";
 import type { TiddlerFields } from "./deserializer.js";
 import type { MemeSink } from "./place-meme.js";
 

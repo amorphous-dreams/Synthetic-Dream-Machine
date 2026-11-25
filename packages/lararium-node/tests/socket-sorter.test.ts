@@ -16,7 +16,11 @@
  *     longer holds — never a same-operator one, and nothing at all under OPEN.
  */
 import { describe, test, expect } from "vitest";
-import type { FederationPosture, GateSortInput, PeerClass, FaceAdmitReading, FaceGrantReading, PlaceContractReading, CarriageEntry } from "@lararium/mesh";
+import type { FederationPosture } from "@lararium/mesh/federation-gate";
+import type { GateSortInput, PlaceContractReading } from "@lararium/mesh/face-gate";
+import type { PeerClass } from "@lararium/mesh/island-protocol";
+import type { FaceAdmitReading, FaceGrantReading } from "@lararium/mesh/session-face";
+import type { CarriageEntry } from "@lararium/mesh/carriage-registry";
 import { makeGateSorter, socketsNoLongerHeld, ownPlacePosture, SHUT_ARMS } from "../src/socket-sorter.js";
 import { world, presenter, dial, GROUP } from "../../lararium-mesh/tests/face-gate-fixture.js";
 

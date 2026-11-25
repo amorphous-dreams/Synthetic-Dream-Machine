@@ -6,10 +6,15 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import { restEvery, restingRepo } from "./resting-repo.js";
-import {
-  deviceEdgeId, edgeKapaeKey, fleetEdgeBoardDocUrl, materializeSharedLarDoc, edgeLedgerDocUrl, keptSeatRolls, signSeatRoll, ed25519SignerFromSeed, foldWithdrawals, hex,
-  EDGE_LEDGER_PREFIX, storedLarRecord, verifiedSeatRoll,
-} from "@lararium/mesh";
+import { deviceEdgeId } from "@lararium/mesh/dyad";
+import { edgeKapaeKey } from "@lararium/mesh/edge-kapae";
+import { fleetEdgeBoardDocUrl, materializeSharedLarDoc, edgeLedgerDocUrl } from "@lararium/mesh/deterministic-doc";
+import { keptSeatRolls, EDGE_LEDGER_PREFIX } from "@lararium/mesh/edge-ledger";
+import { signSeatRoll, verifiedSeatRoll } from "@lararium/mesh/seat-duties";
+import { ed25519SignerFromSeed } from "@lararium/mesh/ed25519-door";
+import { foldWithdrawals } from "@lararium/mesh/face-authority";
+import { hex } from "@lararium/mesh/crypto";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
 import { ownedStore } from "../src/owned-store.js";
 import {
   generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadVesselVerifyingKey,

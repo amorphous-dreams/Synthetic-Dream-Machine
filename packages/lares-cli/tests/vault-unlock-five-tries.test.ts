@@ -4,7 +4,7 @@
  * back. A face's refusal carrying its own count climbs the same way.
  */
 import { describe, expect, test } from "vitest";
-import { ATTEMPT_BUDGET } from "@lararium/mesh";
+import { ATTEMPT_BUDGET } from "@lararium/mesh/attempt-budget";
 import { unlockLine } from "../src/commands/vault.js";
 
 const miss = (attemptsLeft: number): string => unlockLine({ op: "unlock", reading: "no-slot-opens", attemptsLeft, warning: "", standing: "herm" });

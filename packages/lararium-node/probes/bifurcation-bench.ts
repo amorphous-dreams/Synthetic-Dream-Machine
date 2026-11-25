@@ -23,14 +23,20 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/li-ki-integrities#/crucible-tested
  */
 
+import { makeArlDial, type ArlDialOpts } from "@lararium/mesh/arl-dial";
+import { freeEnergy } from "@lararium/mesh/sensorium-pc";
 import {
-  makeArlDial, freeEnergy, iidShuffle, makeRng,
-  surrogateNull, maxTNull, phaseScramble, timeReversalAsymmetry,
-  type ArlDialOpts, type MaxTVerdict,
-} from "@lararium/mesh";
-import { cohomologyObstruction, type SheafAssignment } from "@lararium/mesh";
-import { efeGate, efeSelect, type VerbDelta, type CVector } from "@lararium/mesh";
-import type { PlaneRestriction, ComparisonStalk } from "@lararium/mesh";
+  iidShuffle,
+  makeRng,
+  surrogateNull,
+  maxTNull,
+  phaseScramble,
+  timeReversalAsymmetry,
+  type MaxTVerdict,
+} from "@lararium/mesh/null-harness";
+import { cohomologyObstruction, type SheafAssignment } from "@lararium/mesh/sensorium-fusion";
+import { efeGate, efeSelect, type VerbDelta, type CVector } from "@lararium/mesh/sensorium-efe";
+import type { PlaneRestriction, ComparisonStalk } from "@lararium/mesh/sensorium-consistency";
 
 // ── the CONTRACT: one scalar order parameter per α, over a corpus ───────────────────────────────────
 

@@ -10,7 +10,7 @@
  * Meme: lar:///ha.ka.ba/lararium/api/disk-projection#/bag-roles
  */
 import { describe, expect, test } from "vitest";
-import { HULLS_FULL, HULLS_TS_ONLY, type RunnableHulls } from "@lararium/mesh";
+import { HULLS_FULL, HULLS_TS_ONLY, type RunnableHulls } from "@lararium/mesh/flow";
 import { seedDaemonProtocol } from "../src/daemon-protocol-seed.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
 import { bootTestWiki, skipNote, wikiSkip } from "./test-wiki.js";

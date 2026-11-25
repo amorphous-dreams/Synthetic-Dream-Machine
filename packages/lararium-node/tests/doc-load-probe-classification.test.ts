@@ -19,7 +19,7 @@
  */
 import { EventEmitter } from "node:events";
 import { describe, expect, it, vi } from "vitest";
-import { isCondemned, isUnresolved } from "@lararium/mesh";
+import { isCondemned, isUnresolved } from "@lararium/mesh/doc-load-probe-contract";
 
 vi.mock("node:child_process", async (importOriginal) => {
   const actual = await importOriginal<typeof import("node:child_process")>();

@@ -51,11 +51,20 @@
 
 import { mkdirSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
+import { isPresentedAdmit } from "@lararium/mesh/leaf-presentation";
+import { makeMultiSigQuorumVerifier } from "@lararium/mesh/kapae-antigen";
+import { NEXUS_AID_PATTERN } from "@lararium/mesh/wax-stamp";
 import {
-  isPresentedAdmit, makeMultiSigQuorumVerifier, NEXUS_AID_PATTERN, carriageEntryActCid, heldNexusRoot, readAdmitAtHeldRoot, admittedKeyOf,
-  verifySignedAdmitBundle, readAdmitOpening, admitCarriageCommit, type AdmitOpening,
-  type CarriageEntry, type PresentedLineageAct, type NexusDoc,
-} from "@lararium/mesh";
+  carriageEntryActCid,
+  readAdmitOpening,
+  admitCarriageCommit,
+  type AdmitOpening,
+  type CarriageEntry,
+  type PresentedLineageAct,
+} from "@lararium/mesh/carriage-registry";
+import { heldNexusRoot, readAdmitAtHeldRoot, verifySignedAdmitBundle } from "@lararium/mesh/held-nexus-root";
+import { admittedKeyOf } from "@lararium/mesh/nexus-key-line";
+import { type NexusDoc } from "@lararium/mesh/nexus-seal-seed";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 import { readNexusDoc } from "./nexus-doc.js";
 import { charterHomeFor, readKeyLine } from "./carried-set.js";

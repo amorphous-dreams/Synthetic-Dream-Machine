@@ -22,11 +22,21 @@
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-chain · lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings
  */
 import * as ed25519 from "@noble/ed25519";
+import { bytesEqual, hex, hexToBytes } from "@lararium/mesh/crypto";
 import {
-  bytesEqual, composeFleetJoinRequest, fleetJoinHearthOf, fleetJoinSealPair, hex, hexToBytes, readFleetJoinAnswer, readFleetJoinOffer,
+  composeFleetJoinRequest,
+  fleetJoinHearthOf,
+  fleetJoinSealPair,
+  readFleetJoinAnswer,
+  readFleetJoinOffer,
   readFleetJoinRequest,
-  type FaceScope, type FleetJoinAnswer, type FleetJoinHearthDial, type FleetJoinOffer, type FleetJoinRequest, type VesselFaceKeyCustody,
-} from "@lararium/mesh";
+  type FleetJoinAnswer,
+  type FleetJoinHearthDial,
+  type FleetJoinOffer,
+  type FleetJoinRequest,
+} from "@lararium/mesh/fleet-join";
+import { type FaceScope } from "@lararium/mesh/face-proof-subjects";
+import { type VesselFaceKeyCustody } from "@lararium/mesh/face-authority";
 import { carriedAdmitOfFleetJoin, type CarriedAdmitPayload } from "@lararium/keyhive";
 import {
   FLEET_JOIN_STORE, idbGet, openVesselIdb,

@@ -15,9 +15,10 @@ import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
-import {
-  custodyRootDoor, deriveGateBundle, hex, nexusAidOf, sovereignGateRoot, sovereignRoute, SOVEREIGN_SYNC_ROUTE,
-} from "@lararium/mesh";
+import { custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute } from "@lararium/mesh/gate-bundle";
+import { hex } from "@lararium/mesh/crypto";
+import { nexusAidOf } from "@lararium/mesh/nexus-seal-seed";
+import { SOVEREIGN_SYNC_ROUTE } from "@lararium/mesh/admit-gate-pin";
 import { writeNexusDoc } from "../src/nexus-doc.js";
 import { NoStoodNexus, stoodSovereignPin } from "../src/hearth-sovereign-pin.js";
 import { hearthAid } from "../src/hearth-aid.js";

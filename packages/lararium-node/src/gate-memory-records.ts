@@ -46,7 +46,8 @@
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-withdrawal-proof
  */
-import { GATE_MEMORY_RECORD_MAX_BYTES, canonicalJson, type GateMemoryRecords } from "@lararium/mesh";
+import { GATE_MEMORY_RECORD_MAX_BYTES, type GateMemoryRecords } from "@lararium/mesh/gate-withdrawal-store";
+import { canonicalJson } from "@lararium/mesh/crypto";
 import { CustodyRecordUnavailable, type CustodyHolder } from "./custody-holder.js";
 import { readCustodyRecord, standingCustody, updateCustodyRecord } from "./custody-seat.js";
 

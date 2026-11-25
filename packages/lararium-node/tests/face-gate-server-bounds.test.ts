@@ -16,7 +16,10 @@
  */
 import { createServer, type Server } from "node:http";
 import { afterEach, describe, expect, test } from "vitest";
-import { dialFaceGate, dialedChannel, gateFlightProtocols, type GateSession, type GateSessionChannel } from "@lararium/mesh";
+import { dialFaceGate } from "@lararium/mesh/face-dial";
+import { dialedChannel, type GateSessionChannel } from "@lararium/mesh/gate-session-channel";
+import { gateFlightProtocols } from "@lararium/mesh/gate-exchange";
+import { type GateSession } from "@lararium/mesh/face-gate";
 import { faceGateServer, gateSessionRegistry, type FaceGateServer, type FaceGateServerOptions } from "../src/face-gate-server.js";
 import { AUDIENCE, presenter, validFlight, world, type Presenter, type World } from "../../lararium-mesh/tests/face-gate-fixture.js";
 import { wsDialSocket, type WsLike } from "../../lararium-mesh/src/ws-dial-socket.js";

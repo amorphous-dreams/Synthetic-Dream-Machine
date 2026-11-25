@@ -12,7 +12,7 @@ import { createServer, type Server } from "node:http";
 import { createHash } from "node:crypto";
 import type { Duplex } from "node:stream";
 import { afterEach, describe, expect, test } from "vitest";
-import { NOISE_MAX_MESSAGE_BYTES } from "@lararium/mesh";
+import { NOISE_MAX_MESSAGE_BYTES } from "@lararium/mesh/noise-ik";
 import { nodeDialSocket } from "../src/node-dial-socket.js";
 
 const servers: Server[] = [];

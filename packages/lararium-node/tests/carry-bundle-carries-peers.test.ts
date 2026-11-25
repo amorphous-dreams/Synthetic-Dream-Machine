@@ -1,7 +1,8 @@
 import { seatSuiteWard } from "./support/scratch-custody-setup.js";
 // This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
 seatSuiteWard();
-import { CARRIAGE_CARRIER_DOMAIN, DAEMON_BAG_ID } from "@lararium/mesh";
+import { CARRIAGE_CARRIER_DOMAIN } from "@lararium/mesh/domains";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
 /**
  * carry-bundle-carries-peers.test.ts — a place carried LAST (a reader that runs no daemon and syncs no board) files the
  * floor pin of a herm the same quorum carried EARLIER, off the counted carry its own bundle hands it; and never the pin
@@ -15,11 +16,25 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { carriageDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { carriageEntriesFromBoard, rollAnchorsFromBoard } from "@lararium/mesh/carriage-board";
+import { filePlaceFloorPins, placeFloorPinsFromBoard } from "@lararium/mesh/place-floor-pin";
 import {
-  carriageDocUrl, carriageEntriesFromBoard, filePlaceFloorPins, foldCarrierSet, foundingRoster, hearthPinIndex, materializeSharedLarDoc,
-  placeFloorPinsFromBoard, placeKelEntriesFromBoard, signCarriageQuorum, signCarrierContract, carriageEntryCounts, carriageEntryActCid, FLOW_SOCKET_ROUTE, type LarDoc,
-  ed25519SignerFromSeed, epochSeats, rollAnchorCounts, rollAnchorsFromBoard, signRollAnchor,
-} from "@lararium/mesh";
+  foldCarrierSet,
+  signCarriageQuorum,
+  signCarrierContract,
+  carriageEntryCounts,
+  carriageEntryActCid,
+  rollAnchorCounts,
+  signRollAnchor,
+} from "@lararium/mesh/carriage-registry";
+import { foundingRoster } from "@lararium/mesh/nexus-seal-seed";
+import { hearthPinIndex } from "@lararium/mesh/admit-gate-pin";
+import { placeKelEntriesFromBoard } from "@lararium/mesh/place-kel-board";
+import { FLOW_SOCKET_ROUTE } from "@lararium/mesh/flow-read-client";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { ed25519SignerFromSeed } from "@lararium/mesh/ed25519-door";
+import { epochSeats } from "@lararium/mesh/wax-stamp";
 import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, loadPlaceAid, vesselPlaceSignerDoor, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { readNexusDoc, writeNexusDoc } from "../src/nexus-doc.js";
 import { runNexusCarryFor, runNexusContract } from "../src/commands/nexus-contract.js";

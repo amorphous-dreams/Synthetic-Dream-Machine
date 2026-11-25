@@ -8,11 +8,18 @@
 import { Repo } from "@automerge/automerge-repo";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
 import { runFoundingCeremony } from "@lararium/keyhive";
-import {
-  CompositeStore, AutomergeDocStore, DAEMON_BAG_ID, SECRET_HOME_ID, controlStoreOf, standControlHome, faceAtomKeyFromSeed, hex, makeIslandRepo, attachMessageChannelSync,
-  mintFaceAnchor,
-  materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix, wikiBagUri, type LarDoc,
-} from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { DAEMON_BAG_ID, SECRET_HOME_ID } from "@lararium/mesh/lar-uris";
+import { controlStoreOf, standControlHome } from "@lararium/mesh/control-home";
+import { faceAtomKeyFromSeed } from "@lararium/mesh/face-atom";
+import { hex } from "@lararium/mesh/crypto";
+import { makeIslandRepo, attachMessageChannelSync } from "@lararium/mesh/island-repo";
+import { mintFaceAnchor } from "@lararium/mesh/face-anchor";
+import { materializeSharedLarDoc, personaKelBoardDocUrl } from "@lararium/mesh/deterministic-doc";
+import { personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";
+import { wikiBagUri } from "@lararium/mesh/wiki-recipe";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import * as ed25519 from "@noble/ed25519";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 import { memorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";

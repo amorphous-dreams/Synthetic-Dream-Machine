@@ -23,15 +23,37 @@
  * Meme: lar:///ha.ka.ba/lararium/node/carry-bundle
  */
 import type { Repo } from "@automerge/automerge-repo";
+import { carriageDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
 import {
-  carriageDocUrl, carriageEntriesFromBoard, carriageEntryActCid, coerceCarriageEntry, foldCarriageDetails, foldCarrierSet,
-  foundingRoster, materializeSharedLarDoc, placeArmFor, placeFloorPinsFromBoard, readPlaceFloorPin, writeCarriageEntry,
-  writePlaceFloorPin, writeRollAnchor, rollAnchorsFromBoard, isRollAnchor, carriageAncestryFromBoard,
-  epochSeats, rollAnchorCounts, verifySealLineage,
-  decodePlaceKelEvent, foldPlaceKel, placeKelEventDigest, placeKelEntriesFromBoard, writePlaceKelEvent,
-  CARRY_BUNDLE_DOMAIN, NEXUS_AID_PATTERN, FLOW_SOCKET_ROUTE,
-  type CarriageEntry, type PlaceFloorPinStatement, type RollAnchor, type SealEpoch, type PlaceKelEvent,
-} from "@lararium/mesh";
+  carriageEntriesFromBoard,
+  coerceCarriageEntry,
+  writeCarriageEntry,
+  writeRollAnchor,
+  rollAnchorsFromBoard,
+  carriageAncestryFromBoard,
+} from "@lararium/mesh/carriage-board";
+import {
+  carriageEntryActCid,
+  foldCarriageDetails,
+  foldCarrierSet,
+  isRollAnchor,
+  rollAnchorCounts,
+  type CarriageEntry,
+  type RollAnchor,
+} from "@lararium/mesh/carriage-registry";
+import { foundingRoster } from "@lararium/mesh/nexus-seal-seed";
+import {
+  placeArmFor,
+  placeFloorPinsFromBoard,
+  readPlaceFloorPin,
+  writePlaceFloorPin,
+  type PlaceFloorPinStatement,
+} from "@lararium/mesh/place-floor-pin";
+import { epochSeats, verifySealLineage, NEXUS_AID_PATTERN, type SealEpoch } from "@lararium/mesh/wax-stamp";
+import { decodePlaceKelEvent, foldPlaceKel, placeKelEventDigest, type PlaceKelEvent } from "@lararium/mesh/vessel-kel";
+import { placeKelEntriesFromBoard, writePlaceKelEvent } from "@lararium/mesh/place-kel-board";
+import { CARRY_BUNDLE_DOMAIN } from "@lararium/mesh/domains";
+import { FLOW_SOCKET_ROUTE } from "@lararium/mesh/flow-read-client";
 import { charterHomeFor } from "./carried-set.js";
 import { readNexusDoc } from "./nexus-doc.js";
 import { nodeNexusIsland } from "./nexus-standing.js";

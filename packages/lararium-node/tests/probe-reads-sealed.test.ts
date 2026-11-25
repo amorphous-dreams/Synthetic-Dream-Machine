@@ -43,10 +43,15 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Repo, type DocHandle, type StorageAdapterInterface } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
-import {
-  assembleVessel, emptyLarDoc, isCondemned, mintHeldRestKey, personaScopedBagIds, sealedAddressOf, SealedDocumentStore, waitHandle,
-  SEALED_CHUNK_MARK, SEALED_HEADER_LEN, DAEMON_BAG_ID, type LarDoc, type SealedBagRow,
-} from "@lararium/mesh";
+import { assembleVessel } from "@lararium/mesh/open-vessel-core";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { isCondemned } from "@lararium/mesh/doc-load-probe-contract";
+import { mintHeldRestKey } from "@lararium/mesh/held-rest-key";
+import { personaScopedBagIds } from "@lararium/mesh/persona-scope";
+import { sealedAddressOf, SEALED_CHUNK_MARK, SEALED_HEADER_LEN } from "@lararium/mesh/sealed-chunk";
+import { SealedDocumentStore, type SealedBagRow } from "@lararium/mesh/sealed-doc-store";
+import { waitHandle } from "@lararium/mesh/wait-handle";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
 import { makeChildProcessDocLoadProbe, probeDocLoad, quarantineDoc, quarantineHoldOf, readQuarantineManifests, recoverCleanTail, releaseQuarantinedDoc, resolveChildPath } from "../src/doc-load-probe.js";
 import { formatDoctorReport, runDoctor } from "../src/doctor.js";
 import { fallAwareProbeDoors } from "../src/engine-fall.js";

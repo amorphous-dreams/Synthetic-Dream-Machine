@@ -18,7 +18,7 @@ import { mkdtempSync, rmSync, readdirSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed25519 from "@noble/ed25519";
-import { assembleQuorum, reconstructFromQuorum, decodeShareBytes, type RecoveryShare } from "@lararium/mesh";
+import { assembleQuorum, reconstructFromQuorum, decodeShareBytes, type RecoveryShare } from "@lararium/mesh/recovery-share";
 import {
   generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed,
   personaRootExists, listPersonaRoots,
@@ -27,7 +27,8 @@ import {
 import { FaceNotNamed, FaceNotOpen, resolveFace } from "../src/face-selector.js";
 import { persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas, type IdentityAnchors } from "../src/identity-anchors.js";
 import { readWornPersonaMount } from "../src/worn-mount.js";
-import type { DeviceDelegationTiddler, LarDid } from "@lararium/mesh";
+import type { DeviceDelegationTiddler } from "@lararium/mesh/device-delegation";
+import type { LarDid } from "@lararium/mesh/lar-did";
 import { provisionRecoveryAtFounding } from "../src/recovery-keel.js";
 import { loadRecoveryDeviceShare } from "../src/recovery-share-store.js";
 import { larIdentityDir } from "../src/vessel-paths.js";

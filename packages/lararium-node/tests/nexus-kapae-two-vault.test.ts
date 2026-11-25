@@ -36,8 +36,13 @@ vi.mock("../src/seat-key-store.js", async (importOriginal) => {
     },
   };
 });
-import { mintColdKey, seatFingerprint, cidV1Sha256, foundingRoster, kapaeAntigenDocUrl, materializeSharedLarDoc,
-  antigenEntriesFromBoard, foldAntigenSet, isKapaed, makeMultiSigQuorumVerifier, type CofoundOffer } from "@lararium/mesh";
+import { mintColdKey } from "@lararium/mesh/cold-key-card";
+import { seatFingerprint, foundingRoster } from "@lararium/mesh/nexus-seal-seed";
+import { cidV1Sha256 } from "@lararium/mesh/crypto";
+import { kapaeAntigenDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { antigenEntriesFromBoard } from "@lararium/mesh/antigen-board";
+import { foldAntigenSet, isKapaed, makeMultiSigQuorumVerifier } from "@lararium/mesh/kapae-antigen";
+import { type CofoundOffer } from "@lararium/mesh/cofound";
 import { charterHomeFor } from "../src/carried-set.js";
 import { NexusKapaeError, runNexusKapaeList, runNexusKapaeOpen, runNexusKapaePartial } from "../src/commands/nexus-kapae.js";
 import { runNexusContractOpen } from "../src/commands/nexus-contract.js";

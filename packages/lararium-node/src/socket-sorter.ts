@@ -18,11 +18,17 @@
  * Meme: lar:///ha.ka.ba/lararium/node/socket-sorter
  */
 
+import { federationPostureFromDoc, type NexusDoc } from "@lararium/mesh/nexus-seal-seed";
+import { type FederationPosture } from "@lararium/mesh/federation-gate";
 import {
-  federationPostureFromDoc,
-  type FederationPosture, type GateSorter, type GateSortInput, type GateSortVerdict, type NexusDoc, type PeerClass,
-  type FaceScope, type GateAdmitReader, type GateSession,
-} from "@lararium/mesh";
+  type GateSorter,
+  type GateSortInput,
+  type GateSortVerdict,
+  type GateAdmitReader,
+  type GateSession,
+} from "@lararium/mesh/face-gate";
+import { type PeerClass } from "@lararium/mesh/island-protocol";
+import { type FaceScope } from "@lararium/mesh/face-proof-subjects";
 import type { FaceDeviceReading } from "./gate-shadow-ring.js";
 
 /** The arms that ship SHUT by name: a walker's hosting grant and its invite claim. */

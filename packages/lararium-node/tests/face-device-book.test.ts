@@ -11,7 +11,7 @@
  *   · through the shadow ring: the joinee's mapped device decides `fleetAside`, and an unbound one reads aside.
  */
 import { describe, expect, test } from "vitest";
-import type { FaceScope, VesselFaceKey } from "@lararium/mesh";
+import type { FaceScope, VesselFaceKey } from "@lararium/mesh/face-proof-subjects";
 import { faceDeviceBook, faceDeviceBindings } from "../src/face-device-book.js";
 import { gateShadowRing } from "../src/gate-shadow-ring.js";
 import type { FaceJoinRecord } from "../src/fleet-join-custody.js";

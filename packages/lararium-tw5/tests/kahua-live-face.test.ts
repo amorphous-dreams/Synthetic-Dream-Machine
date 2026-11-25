@@ -13,12 +13,19 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
 import { describe, expect, test } from "vitest";
-import {
-  CompositeStore, KAHUA_BAG, ORACLE_BAG, attestAndRotate, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, emptyLarDoc, kahuaActCid, makeIslandRepo,
-  kahuaRecipe, kahuaStageDocUrl, materializeSharedLarDoc, provisionThresholdRecoveryAtFounding, recoveryContactRegistrationCard,
-  signKahuaCarry, signKahuaLift, storedLarRecord, wikiSlotUri, writeKahuaAct, writePersonaKelEvent,
-  type DocHandle, type LarDoc, type LarTiddlerChange, type SlotUri,
-} from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { KAHUA_BAG, ORACLE_BAG, kahuaRecipe, wikiSlotUri, type SlotUri } from "@lararium/mesh/wiki-recipe";
+import { attestAndRotate, provisionThresholdRecoveryAtFounding } from "@lararium/mesh/recovery-keel-core";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { kahuaActCid, kahuaStageDocUrl, signKahuaCarry, signKahuaLift, writeKahuaAct } from "@lararium/mesh/kahua-stage";
+import { makeIslandRepo } from "@lararium/mesh/island-repo";
+import { materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { recoveryContactRegistrationCard } from "@lararium/mesh/recovery-registration";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
+import { writePersonaKelEvent } from "@lararium/mesh/persona-kel-board";
+import { type DocHandle } from "@lararium/mesh/automerge";
+import { type LarTiddlerChange } from "@lararium/mesh/tiddler-store";
 import * as tw5src from "../src/index.js";
 import { buildIslandRecipe, type TW5Engine } from "../src/index.js";
 

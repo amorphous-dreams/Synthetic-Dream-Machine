@@ -16,15 +16,22 @@ import {
   type CustodyHomes, type CustodyClass,
 } from "../src/vault-carriers.js";
 import { custodyRootCarrier } from "../src/custody-root.js";
+import { bindSlot, openTreeKey, decodeSlotTree } from "@lararium/mesh/keyslot-door";
 import {
-  bindSlot, commitSlotTree, mintTreeKey, openSealedCarrier, openTreeKey, decodeSlotTree, writeSealedCarrier, CensusRefusal,
-  TreeKeyRefusal, openOutboxParcel, readOutboxKey, restDigest, sealOutboxParcel, type SealedCarrier, type TreeKey,
-} from "@lararium/mesh";
+  commitSlotTree,
+  openSealedCarrier,
+  writeSealedCarrier,
+  CensusRefusal,
+  TreeKeyRefusal,
+  type SealedCarrier,
+} from "@lararium/mesh/sealed-writer";
+import { mintTreeKey, type TreeKey } from "@lararium/mesh/tree-key";
+import { openOutboxParcel, readOutboxKey, restDigest, sealOutboxParcel } from "@lararium/mesh/sealed-store-rest";
 import { ScratchCustodyIo, scratchHomes } from "./custody-io-fixture.js";
 import { seatScratchCustody } from "./custody-seat-fixture.js";
 import { openOutboxKey, outboxKeyFile } from "../src/outbox-key.js";
 import { handleRecordPathIn } from "./face-paths.js";
-import { readFckCarrier } from "@lararium/mesh";
+import { readFckCarrier } from "@lararium/mesh/fck-envelope";
 import { nativeKdf } from "@lararium/mesh/node";
 
 const HOST = "0123456789abcdef0123456789abcdef";
@@ -490,7 +497,9 @@ describe("the ward's rows (row 7, S2)", () => {
 
   test("RED: the census faults an FCK-framed root where a warded one belongs; CONTROL: a ward-framed root reads sealed and faults nothing", async () => {
     const { custodyStatus } = await import("../src/custody-session.js");
-    const { sealUnderFck, sealUnderWard, mintTreeKey: mint } = await import("@lararium/mesh");
+    const { sealUnderFck } = await import("@lararium/mesh/fck");
+    const { sealUnderWard } = await import("@lararium/mesh/ward-slots");
+    const { mintTreeKey: mint } = await import("@lararium/mesh/tree-key");
     const seat = await seatScratchCustody("ward-census");
     try {
       const file = `faces/${WFCID}/.persona-group-root-h0.json`;

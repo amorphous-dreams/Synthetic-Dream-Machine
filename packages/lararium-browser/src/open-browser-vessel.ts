@@ -1,6 +1,8 @@
 import { browserPromoteStores, browserPromoteCas } from "./browser-promoted-store.js";
 import { mirrorInputsAt } from "./mirror-rest-verdict.js";
-import { admitStartupRecords, docSwarmWiki, execLeiPortOver, tabStartupOwn, type ExecLeiPort } from "@lararium/mesh";
+import { admitStartupRecords, execLeiPortOver, tabStartupOwn } from "@lararium/mesh/exec-lei";
+import { docSwarmWiki } from "@lararium/mesh/doc-swarm-wiki";
+import { type ExecLeiPort } from "@lararium/mesh/seat-startup-offer";
 import { browserWardBindRoute, BrowserWardRefused, browserWardSigner, type WardAskKind } from "./browser-ward.js";
 import type { WardRoute } from "./ward-core.js";
 import { holdDaemonVm, DaemonRestarting, KAPAE_EMERGENCY_REASON, type DaemonVmHolder } from "@lararium/tw5";
@@ -22,58 +24,129 @@ import { holdDaemonVm, DaemonRestarting, KAPAE_EMERGENCY_REASON, type DaemonVmHo
 
 import { pagePortGrant } from "./page-port-grant.js";
 import { DAEMON_SURFACE_ID } from "./daemon-surface.js";
-import type { PortIslandToVesselMsg, VesselRestState } from "@lararium/mesh";
+import type { PortIslandToVesselMsg } from "@lararium/mesh/record-port";
+import type { VesselRestState } from "@lararium/mesh/vessel-island-pool-core";
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import { Repo }                              from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter }           from "@automerge/automerge-repo-storage-indexeddb";
 import { browserDeviceFiling } from "./browser-device-filing.js";
 import { browserRoutesVeilArchive } from "./browser-veil-archive-route.js";
 import { writeBrowserFaceLabel } from "./browser-face-labels.js";
-import { shoreStorage, composeSealedRest, clearRosterOf, watchCatalogNames, docStorePortCell, documentIdOfUrl, mountedDocumentId, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, sealedBagMap, vesselDocStoreDoor, bindSecretHomeRest, nameControlHome, daemonFaceCanonBag, SecretHomeUnavailable, DAEMON_SLOT_PREFIX, type LitDeviceFaces, type SecretHome, type SealedBag, selvesRecordBagOf } from "@lararium/mesh";
+import { shoreStorage } from "@lararium/mesh/prototype-key-shore";
+import {
+  composeSealedRest,
+  clearRosterOf,
+  watchCatalogNames,
+  docStorePortCell,
+  documentIdOfUrl,
+  mountedDocumentId,
+  sealedBagMap,
+  vesselDocStoreDoor,
+  type SealedBag,
+} from "@lararium/mesh/sealed-rest";
+import { facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal } from "@lararium/mesh/catalog-view";
+import { bindSecretHomeRest, SecretHomeUnavailable, type SecretHome } from "@lararium/mesh/secret-home";
+import { nameControlHome } from "@lararium/mesh/control-home";
+import { daemonFaceCanonBag } from "@lararium/mesh/wiki-recipe";
+import { DAEMON_SLOT_PREFIX, type LitDeviceFaces } from "@lararium/mesh/device-daemon-docs";
+import { selvesRecordBagOf } from "@lararium/mesh/persona-planes";
 import { openBrowserSecretHome, standBrowserSecretHome } from "./browser-secret-home.js";
 import { standBrowserFloorKey } from "./browser-floor-key.js";
 import { browserSeatKept, type SeatVerifyGround } from "./browser-fleet-seat.js";   // leaf-fleet (Leaf-Finisher)
 import { keepBrowserVeilLift } from "./browser-veil-lift.js";
 import * as A from "@automerge/automerge";
 import type { DocHandle, AutomergeUrl, PeerId } from "@automerge/automerge-repo";
+import { emptyLarDoc, ENGINE_CORE_ID, tiddlerText, type LarDoc } from "@lararium/mesh/base-doc";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
+import { cosignPortWitness, WARD_WITNESS_CLOSED } from "@lararium/mesh/ward-cosign-gate";
+import { CATALOG_DOC_URI, DAEMON_BAG_ID, BAG_IDS, islandEventAsk } from "@lararium/mesh/lar-uris";
+import { resolveRecipePluginCids } from "@lararium/mesh/surface-recipe";
+import { offeringAnnouncesFromDoc } from "@lararium/mesh/offering-announce";
+import { type OfferingLookup } from "@lararium/mesh/plugin-offering-selector";
+import { personaMultitudeView, renameOwnPersona } from "@lararium/mesh/persona-petname";
 import {
-  emptyLarDoc, storedLarRecord, cosignPortWitness, WARD_WITNESS_CLOSED,
-  CATALOG_DOC_URI, DAEMON_BAG_ID,
-  ENGINE_CORE_ID,
-  resolveRecipePluginCids, offeringAnnouncesFromDoc, type OfferingLookup,
-  personaMultitudeView, renameOwnPersona,
-  DeterministicFederationGate, federationShareDecision, shareConfigOf, wireIdentityOf, seatDialLeg, type FederationGate,
-  GatedSyncLeg, oneWayDocumentsGate,
-  LarWSClientAdapter,
-  standSiblingChannel, siblingRefusalLine, groupSecretSealTitle, verifyGroupSecretSeal,
-  leaseEpochPrefix, controlHomeUrlOf, tiddlerText, vesselOnlyBook, islandPeersOf, wikiIslandPeersOf, type SiblingNetworkAdapter, type SiblingShare, type SiblingChannelStatus,
-  BAG_IDS, slugFromUri, islandEventAsk, bagStackFromRec, recipeHostFacets, type WikiActivationCap,
-  materializeGenesisIsland, genesisCasManifestFromSeed, genesisCasCidsFromOracle, sha256HexBytesSync,
-  whoFaceCap, materializeSharedLarDoc, crossroadsDocUrl, publicationDocUrl, whoBoardDocUrl, registerCrossroadsPointer,
-  personaKelBoardDocUrl, personaKelChainForPrefix,
-  deriveRegisterBags, catalogNamedBags, catalogFaceSlotBags, wornFaceWikiBags, personaBagIdFor, personaSiblingBagIds,
-  handleClaimFrom, HANDLE_CLAIM_SURFACES,
-  nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, admittedJoineeIsland, type NexusIdentityAt,
-  climbNexusBoards, carryPersonaKelUpTheGradient,
-  readLedgeredEdgeBoard, fleetEdgeBoardDocUrl, fleetEdgeAuthority, deviceEdgeId, raisesSeenThrough, type EdgeReading,
-  type CapModule,
-  type LarDoc, type LarariumVesselOptions, type VesselResult, type HearthPinIndex, type FloorAnchor,
-  type VesselBootstrap, type VesselCoreAssembly, type GateBundlePin, type DeviceDelegationTiddler,
-  type GenesisSeed, type IslandMsg_Manifest,
-  takeInvite, popInvite, hex,
-  type WalkRecord, type CarryOutcome,
-  readHearthFloorCard, provenPlaneUrls, adoptKahuaStage,
-}                                            from "@lararium/mesh";
+  DeterministicFederationGate,
+  federationShareDecision,
+  shareConfigOf,
+  type FederationGate,
+  type SiblingShare,
+} from "@lararium/mesh/federation-gate";
+import { wireIdentityOf, seatDialLeg } from "@lararium/mesh/wire-identity";
+import { GatedSyncLeg, oneWayDocumentsGate } from "@lararium/mesh/gated-sync-leg";
+import { LarWSClientAdapter } from "@lararium/mesh/lar-ws-client-adapter";
+import {
+  standSiblingChannel,
+  siblingRefusalLine,
+  type SiblingNetworkAdapter,
+  type SiblingChannelStatus,
+} from "@lararium/mesh/sibling-channel";
+import { groupSecretSealTitle, verifyGroupSecretSeal } from "@lararium/mesh/persona-group-secret";
+import { leaseEpochPrefix } from "@lararium/mesh/epoch-lease";
+import { controlHomeUrlOf } from "@lararium/mesh/control-home";
+import { vesselOnlyBook } from "@lararium/mesh/vessel-only-book";
+import { islandPeersOf, wikiIslandPeersOf } from "@lararium/mesh/island-repo";
+import { slugFromUri, recipeHostFacets } from "@lararium/mesh/wiki-recipe";
+import { bagStackFromRec } from "@lararium/mesh/bag-stack-from-rec";
+import { type WikiActivationCap } from "@lararium/mesh/wiki-activation";
+import { materializeGenesisIsland, genesisCasCidsFromOracle } from "@lararium/mesh/genesis-intake";
+import { genesisCasManifestFromSeed, type GenesisSeed } from "@lararium/mesh/genesis-doc";
+import { sha256HexBytesSync, hex } from "@lararium/mesh/crypto";
+import { whoFaceCap } from "@lararium/mesh/who-face-cap";
+import {
+  materializeSharedLarDoc,
+  crossroadsDocUrl,
+  publicationDocUrl,
+  whoBoardDocUrl,
+  personaKelBoardDocUrl,
+  fleetEdgeBoardDocUrl,
+} from "@lararium/mesh/deterministic-doc";
+import { registerCrossroadsPointer } from "@lararium/mesh/who-face";
+import { personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";
+import { deriveRegisterBags, catalogNamedBags, catalogFaceSlotBags, wornFaceWikiBags } from "@lararium/mesh/register-bags";
+import { personaBagIdFor, personaSiblingBagIds } from "@lararium/mesh/persona-scope";
+import { handleClaimFrom, HANDLE_CLAIM_SURFACES } from "@lararium/mesh/handle-kel";
+import {
+  nexusIdentity,
+  nexusScopeOrThrow,
+  nexusIslandsBelow,
+  admittedJoineeIsland,
+  type NexusIdentityAt,
+} from "@lararium/mesh/nexus-identity";
+import { climbNexusBoards } from "@lararium/mesh/nexus-board-climb";
+import { carryPersonaKelUpTheGradient } from "@lararium/mesh/persona-kel-climb";
+import { readLedgeredEdgeBoard, raisesSeenThrough } from "@lararium/mesh/edge-ledger";
+import { fleetEdgeAuthority, deviceEdgeId } from "@lararium/mesh/dyad";
+import { type EdgeReading } from "@lararium/mesh/edge-kapae";
+import { type CapModule } from "@lararium/mesh/cap-compose";
+import { type LarariumVesselOptions, type VesselResult } from "@lararium/mesh/lararium-vessel";
+import { type HearthPinIndex } from "@lararium/mesh/admit-gate-pin";
+import { type FloorAnchor, readHearthFloorCard } from "@lararium/mesh/hearth-floor-pins";
+import { type VesselBootstrap, type VesselCoreAssembly } from "@lararium/mesh/open-vessel-core";
+import { type GateBundlePin } from "@lararium/mesh/gate-bundle";
+import { type DeviceDelegationTiddler } from "@lararium/mesh/device-delegation";
+import { type IslandMsg_Manifest } from "@lararium/mesh/island-protocol";
+import { takeInvite, popInvite, type WalkRecord } from "@lararium/mesh/walk-client";
+import { type CarryOutcome } from "@lararium/mesh/walk-carry";
+import { provenPlaneUrls } from "@lararium/mesh/face-boot-proof";
+import { adoptKahuaStage } from "@lararium/mesh/kahua-stage";
 import { browserGatePins, type BrowserFacePresentation, dialDeadlines, fileFloorCard, fileOwnHearthPins, hearthNameOf, flowNexusFor } from "./browser-gate-pins.js";
 import { readHearthFloor, type HearthFloorRead } from "./browser-floor-read.js";
 import { browserFloorAccept, browserFloorStatus, type BrowserFloorBinding } from "./browser-floor-pin.js";
 import { composeBrowserFacePresentation } from "./browser-face-presentation.js";
 import { browserIslandReceipt, browserSessionLift, type BrowserUnlockedSession } from "./browser-island-caps.js";
 import { browserLiftsAtPlace, mintBrowserPlaceSession, type PlaceLiftReading } from "./browser-place-session.js";
-import { composeVessel, islandFloorStack, islandLiftStack, larVesselOf } from "@lararium/mesh";
+import { composeVessel } from "@lararium/mesh/cap-compose";
+import { islandFloorStack, islandLiftStack, larVesselOf } from "@lararium/mesh/lar-vessel";
 import { admittedCanonDocs, hearthCanonDocIds, hearthCrossingOf, provenCrossingPlanes, provenHearthDaemon, seatHearthCanon, type HearthCanonDocs } from "./hearth-canon.js";
 import { makeSurfaceReturnLeg, type ReturnLegVerdict } from "./surface-return-leg.js";
-import { readLarControlResult, readLarFrame, type LarMsg_ControlEvent, type LarMsg_ControlResult, type LarMsg_Frame, ownEntry } from "@lararium/mesh";
+import {
+  readLarControlResult,
+  readLarFrame,
+  type LarMsg_ControlEvent,
+  type LarMsg_ControlResult,
+  type LarMsg_Frame,
+} from "@lararium/mesh/lar-camera";
+import { ownEntry } from "@lararium/mesh/stored-value";
 import { createBrowserConnectionState, crossingStandingOf, observeRelayConnection } from "./browser-connection-state.js";
 import type { BrowserConnectionState } from "./browser-connection-state.js";
 import { browserWalkStore, requireAdmittedFaceIsland } from "./browser-walk.js";
@@ -95,20 +168,46 @@ import type { CoherenceFrameWithRev } from "./wiki-coherence-frame.js";
 import { composeBrowser }                    from "./browser-caps.js";
 import type { VesselWikiSlot, DaemonVmCore } from "@lararium/tw5";
 import { foundTheFace, runApplyAdmitPayload, foundThePlace, assemblePersonaGroupRing, archiveIsOf } from "@lararium/keyhive";
+import { standControlHome } from "@lararium/mesh/control-home";
+import { vesselFloorCid, raiseFloorAlert, genesisFloorCidOf } from "@lararium/mesh/floor-pin";
+import { floorRequiredBlobIds } from "@lararium/mesh/floor-offering";
+import { promotePanelApi, isQuietSnapshot } from "@lararium/mesh/promote-panel-api";
+import { promoteMainVerbs } from "@lararium/mesh/promote-main-verbs";
+import { promoteBoardDoor } from "@lararium/mesh/promote-board-door";
+import { promotions } from "@lararium/mesh/promote-door";
 import {
-  standControlHome, vesselFloorCid, raiseFloorAlert, genesisFloorCidOf, floorRequiredBlobIds, promotePanelApi, isQuietSnapshot, promoteMainVerbs, promoteBoardDoor, promotions, promoteBoardRecords, writePromoteAct, promoteWiring, promoteWikiItems, faceAtomKeyFromSeed, faceRootCommitment, heldDocOf, readFace, faceRecordsOf, adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard, KAHUA_BAG, joinFaceDocumentsOnArrival, mintFaceAnchor, raiseFaceFrontier, proveFaceFromLog,
-  readFleetFrontier, fleetFrontierLinks, fleetRaiseCids, readFrontierPins, writeFrontierPin, FLEET_HAND, faceRelationOf,
-  standFaceDaemonCanon, type FaceDaemonCanon, type WideningRead,
-} from "@lararium/mesh";
+  promoteBoardRecords,
+  writePromoteAct,
+  adoptPromotePlane,
+  adoptedPromoteUrl,
+  adoptPromoteBoard,
+} from "@lararium/mesh/promote-board";
+import { promoteWiring } from "@lararium/mesh/promote-wiring";
+import { promoteWikiItems } from "@lararium/mesh/promote-wiki-items";
+import { faceAtomKeyFromSeed } from "@lararium/mesh/face-atom";
+import { faceRootCommitment, mintFaceAnchor, raiseFaceFrontier } from "@lararium/mesh/face-anchor";
+import { heldDocOf } from "@lararium/mesh/persona-act-board";
+import { readFace, faceRecordsOf } from "@lararium/mesh/face-reading";
+import { adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow } from "@lararium/mesh/kahua-adopt";
+import { KAHUA_BAG } from "@lararium/mesh/wiki-recipe";
+import { joinFaceDocumentsOnArrival } from "@lararium/mesh/join-face-documents";
+import { proveFaceFromLog } from "@lararium/mesh/face-boot-proof";
+import { readFleetFrontier, fleetFrontierLinks, fleetRaiseCids, FLEET_HAND } from "@lararium/mesh/fleet-frontier";
+import { readFrontierPins, writeFrontierPin } from "@lararium/mesh/edge-frontier-board";
+import { faceRelationOf } from "@lararium/mesh/face-relation";
+import { standFaceDaemonCanon, type FaceDaemonCanon } from "@lararium/mesh/face-daemon-canon";
+import { type WideningRead } from "@lararium/mesh/edge-frontier";
 import { keepBrowserFaceAnchor, loadBrowserFaceAnchor, requireBrowserFaceAnchor } from "./browser-face-anchor.js";
 import { browserVesselFaceTagDoor, keepBrowserFaceAtomSeed, mintBrowserFaceAddressSecret, readBrowserFaceAddressSecret, requireBrowserFaceAtomSeed, standBrowserFaceAtomSeed } from "./browser-face-atom.js";
 import {
   loadBrowserVeilArchive, saveBrowserVeilArchive,
 } from "./browser-keyhive-archive.js";
-import { vesselDyads, verifiedFleetOfGroup, type LarDid } from "@lararium/mesh";
+import { vesselDyads, verifiedFleetOfGroup } from "@lararium/mesh/dyad";
+import { type LarDid } from "@lararium/mesh/lar-did";
 import type { CarriedAdmitPayload } from "@lararium/keyhive";
-import type { LarOpenPhase, PlaceFoundingCard } from "@lararium/mesh";
-import { readWornPersonaMount }              from "@lararium/mesh";
+import type { LarOpenPhase } from "@lararium/mesh/lararium-vessel";
+import type { PlaceFoundingCard } from "@lararium/mesh/place-founding-card";
+import { readWornPersonaMount } from "@lararium/mesh/persona-vault";
 import { browserFaceFold, browserWardAnswer, browserWardCosignPort } from "./browser-ward-cosign.js";
 import {
   generateOrLoadBrowserVesselIdentity,
@@ -140,9 +239,9 @@ import {
 import {
   openBrowserDaemonVm,
 }                                            from "./open-browser-daemon-vm.js";
-import type { WikiRecipe }                   from "@lararium/mesh";
+import type { WikiRecipe } from "@lararium/mesh/wiki-recipe";
 
-import { LOCAL_READY_MS, seatSealedRest, waitHandle } from "@lararium/mesh";
+import { LOCAL_READY_MS, seatSealedRest, waitHandle } from "@lararium/mesh/wait-handle";
 import { holdVesselLock, ambientLocks, type LockHost } from "./vessel-lock.js";
 import { BrowserCustodyRefused, CLEAR_CUSTODY_CLEARS, readBrowserCustody, onBrowserCustodyLock, lockBrowserCustody, refuseSharedTreeFaceRecords } from "./browser-custody.js";
 import { nameFace, faceTreeStands } from "./browser-face-custody.js";
@@ -152,7 +251,7 @@ import { guardedBoot, takeDownBoot, BootTeardownRefusal, type BootHold } from ".
 import { attachSharedHolder, holderWorkerHandle, houseName } from "./shared-holder.js";
 import { browserSpawnWorker } from "./worker-handle.js";
 import { daemonIslandDown } from "./daemon-island-down.js";
-import { shoreInbound } from "@lararium/mesh";
+import { shoreInbound } from "@lararium/mesh/prototype-key-shore";
 // ── Bootstrap artifact (IDB-persisted) ──────────────────────────────────────────
 
 const BOOTSTRAP_KEY  = "social-bootstrap";

@@ -1,5 +1,6 @@
 /** Refuse a wiki island's dyad ask; only the daemon island reads its fleet board. */
-import type { IslandMsg_DyadRead, VesselWorkerHandle } from "@lararium/mesh";
+import type { IslandMsg_DyadRead } from "@lararium/mesh/island-protocol";
+import type { VesselWorkerHandle } from "@lararium/mesh/vessel-host";
 
 export function refuseBrowserDyadAsks(handle: Pick<VesselWorkerHandle, "post" | "listen">): () => void {
   let logged = false;

@@ -10,9 +10,18 @@ import { storeVerbGatesFirst, storeVerbNeedsWard } from "../src/ward-credential.
 import { beginLentFaces, lentOfferFaces, offerVouchesOf, refuseStandingBegin, standingKukuluBegins } from "../src/commands/rite.js";
 import { kukuluRiteOver } from "../src/kukulu-lei-seat.js";
 import {
-  SwarmRefused, beginChecked, checkReturn, conferre, landRite, pendingBegins, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, signSwarmAct, swarmActCid, swarmLeiRecordTitle, swarmLeiReturnedPrefix, swarmLeiReturnedTitle,
-  type SwarmTrust, type SwarmWikiPort,
-} from "@lararium/mesh";
+  SwarmRefused,
+  checkReturn,
+  signSwarmAct,
+  swarmActCid,
+  swarmLeiRecordTitle,
+  swarmLeiReturnedPrefix,
+  swarmLeiReturnedTitle,
+  type SwarmTrust,
+  type SwarmWikiPort,
+} from "@lararium/mesh/swarm-tiddlers";
+import { beginChecked, conferre, landRite, pendingBegins } from "@lararium/mesh/swarm-tessera";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
 
 const ROWS = ["rite-begin", "rite-land", "rite-receipts", "rite-offer"] as const;
 

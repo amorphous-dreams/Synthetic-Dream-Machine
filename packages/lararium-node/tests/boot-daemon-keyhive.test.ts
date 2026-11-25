@@ -19,13 +19,16 @@
 import { describe, test, expect, beforeAll } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
-import {
-  type LarDoc, type PersonaKelEvent,
-  CompositeStore, AutomergeDocStore, DAEMON_BAG_ID,
-  materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix, enrolmentDigestOf, personaEventCidOf,
-  mintFaceAnchor,
-  ed25519SignerFromSeed, deviceAtomProofBytes,
-} from "@lararium/mesh";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { type PersonaKelEvent, enrolmentDigestOf, personaEventCidOf } from "@lararium/mesh/persona-kel";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { materializeSharedLarDoc, personaKelBoardDocUrl } from "@lararium/mesh/deterministic-doc";
+import { personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";
+import { mintFaceAnchor } from "@lararium/mesh/face-anchor";
+import { ed25519SignerFromSeed } from "@lararium/mesh/ed25519-door";
+import { deviceAtomProofBytes } from "@lararium/mesh/device-delegation";
 import {
   KeyhiveProvider, DaemonEventStore, bootDaemonKeyhive, FacelessKeyhiveRefused, runFoundingCeremony,
   type BootDaemonKeyhiveInput } from "@lararium/keyhive";

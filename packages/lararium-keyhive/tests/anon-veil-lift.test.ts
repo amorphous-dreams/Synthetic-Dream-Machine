@@ -19,12 +19,18 @@
  *       document is registered under the face and the same verdict allows it.
  */
 import { describe, test, expect } from "vitest";
-import { identityShareDecision, makeIslandRepo, type DocumentId, type Repo } from "@lararium/mesh";
-import {
-  CompositeStore, DAEMON_BAG_ID, DRAFT_BINDINGS_PREFIX, slotBindingKey, computeRecipeFingerprint, didFromVerifyingKey,
-  emptyLarDoc, mutableLarRecord, plainField, storedLarRecord, wikiBagUri, wikiDraftDocKey,
-  type LarDoc, type LarTiddlerRecord,
-} from "@lararium/mesh";
+import { identityShareDecision } from "@lararium/mesh/federation-gate";
+import { makeIslandRepo } from "@lararium/mesh/island-repo";
+import { type DocumentId } from "@automerge/automerge-repo";
+import { type Repo } from "@lararium/mesh/automerge";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { DAEMON_BAG_ID, DRAFT_BINDINGS_PREFIX, slotBindingKey } from "@lararium/mesh/lar-uris";
+import { computeRecipeFingerprint, wikiBagUri, wikiDraftDocKey } from "@lararium/mesh/wiki-recipe";
+import { didFromVerifyingKey } from "@lararium/mesh/lar-did";
+import { emptyLarDoc, mutableLarRecord, type LarDoc } from "@lararium/mesh/base-doc";
+import { plainField } from "@lararium/mesh/stored-value";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
+import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { MemoryTiddlerStore, makeCatalogAccessor } from "@lararium/tw5";
 import { KeyhiveProvider } from "../src/keyhive-provider.js";
 import { makeSlotDocResolver, type SlotDocResolver } from "../src/slot-doc-resolver.js";

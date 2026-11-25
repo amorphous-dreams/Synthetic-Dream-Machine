@@ -27,7 +27,10 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
-import { assembleVessel, emptyLarDoc, personaScopedBagIds, DAEMON_BAG_ID, type LarDoc } from "@lararium/mesh";
+import { assembleVessel } from "@lararium/mesh/open-vessel-core";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { personaScopedBagIds } from "@lararium/mesh/persona-scope";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
 import { makeChildProcessDocLoadProbe, quarantineDoc, readQuarantineManifests, recoverCleanTail, releaseQuarantinedDoc, resolveChildPath } from "../src/doc-load-probe.js";
 import { docStorePath } from "../src/store-integrity.js";
 

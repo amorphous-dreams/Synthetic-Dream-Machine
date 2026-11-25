@@ -1,7 +1,7 @@
 /** The CLI owns its terminal read-back; a standing daemon's harness seat grants no waiver here. */
 import { afterEach, expect, test, vi } from "vitest";
 import { seatReadBackStandIn } from "@lararium/node";
-import { coldKeyCode } from "@lararium/mesh";
+import { coldKeyCode } from "@lararium/mesh/cold-key-card";
 import { sealedAct } from "../src/sealed-act-door.js";
 import { readBackStandsIn } from "../src/sealed-records.js";
 import { CardReadBackRefused, readBack } from "../src/cold-card-readback.js";

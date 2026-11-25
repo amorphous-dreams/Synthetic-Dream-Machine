@@ -13,7 +13,10 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/keyhive/lease-frontier
  */
-import { CONTROL_HOME_ID, leaseEpochPrefix, signedLeaseEpoch, type LarTiddlerStore } from "@lararium/mesh";
+import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
+import { leaseEpochPrefix } from "@lararium/mesh/epoch-lease";
+import { signedLeaseEpoch } from "@lararium/mesh/lease-advance";
+import { type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
 
 /** What a lease read yields: the current epoch, or a named reason the frontier cannot be read. */
 export type LeaseFrontier =

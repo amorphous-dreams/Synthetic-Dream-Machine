@@ -9,18 +9,13 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/verb-local-dispatch
  */
 
-import {
-  DAEMON_BAG_ID,
-  isHouseCanonBag,
-  refuseSeatCanonReach,
-  type CapabilityAccess,
-  type CapabilityVerifyResult,
-  type CapabilityVerifier,
-  type CompositeStore,
-  type Verb,
-} from "@lararium/mesh";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { isHouseCanonBag, refuseSeatCanonReach } from "@lararium/mesh/kahu-canon-reach";
+import { type CapabilityAccess, type CapabilityVerifyResult, type CapabilityVerifier } from "@lararium/mesh/capability";
+import { type CompositeStore } from "@lararium/mesh/composite-store";
+import { type Verb } from "@lararium/mesh/verb-tiddler";
 import type { Hand } from "@lararium/mesh/session-contract";
-import { wikiSlugOfBag } from "@lararium/mesh";
+import { wikiSlugOfBag } from "@lararium/mesh/surface-recipe";
 import type { SessionWorn, VerbReactor, VerbTable } from "./verb-dispatcher.js";
 
 export type CapVerify = (access: CapabilityAccess, bagUrl: string) => Promise<CapabilityVerifyResult>;
@@ -39,7 +34,7 @@ export interface RunLocalVerbOptions {
   /** The asker's hand the island booked for this ask (`VerbContext.asker`); absent where none. */
   readonly askerOf?: (invocation: Verb) => Hand | undefined;
   /** The vessel's exec-lei port (`VerbContext.execLei`): a write door spends a standing exec lei's return through it. */
-  readonly execLei?: import("@lararium/mesh").ExecLeiPort;
+  readonly execLei?: import("@lararium/mesh/seat-startup-offer").ExecLeiPort;
 }
 
 export function makeCapVerify(verifier: CapabilityVerifier | undefined, requestedBy: string, local = false): CapVerify {

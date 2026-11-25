@@ -92,11 +92,20 @@
  * only sealed to one successor's key.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
  */
-import type { ExecLeiScope } from "@lararium/mesh";
+import type { ExecLeiScope } from "@lararium/mesh/exec-lei";
+import { LEI_RETURNS_ASK_ABOVE } from "@lararium/mesh/swarm-door";
+import { encodeKeepSeat, mintKeepSeatUnder } from "@lararium/mesh/keep-seat";
+import { isSwarmLeiRite } from "@lararium/mesh/swarm-lei-rite";
 import {
-  LEI_RETURNS_ASK_ABOVE, encodeKeepSeat, isSwarmLeiRite, mintKeepSeatUnder, signSwarmAct, swarmActCid, swarmLeiUnstrungTitle, swarmTesseraPrefix,
-  type Credential, type SwarmBodyParts, type SwarmSignerPort, type SwarmWikiPort,
-} from "@lararium/mesh";
+  signSwarmAct,
+  swarmActCid,
+  swarmLeiUnstrungTitle,
+  swarmTesseraPrefix,
+  type SwarmBodyParts,
+  type SwarmSignerPort,
+  type SwarmWikiPort,
+} from "@lararium/mesh/swarm-tiddlers";
+import { type Credential } from "@lararium/mesh/keyslot-door";
 import { lentFacesOf } from "@lararium/mesh/lent-faces";
 import { nativeKdf } from "@lararium/mesh/node";
 import { UNLOCK_ATTEMPTS_PER_BOOT, type CustodyHolder } from "./custody-holder.js";

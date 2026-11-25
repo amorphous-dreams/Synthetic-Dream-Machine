@@ -7,7 +7,12 @@
  * CGKA behaviour to keyhive's tests.
  */
 import { describe, test, expect } from "vitest";
-import { buildDeviceDelegation, hexToBytes, makeIslandRepo, materializeSharedLarDoc, fleetEdgeBoardDocUrl, emptyLarDoc, ed25519VerifyingKeyFromSeed } from "@lararium/mesh";
+import { buildDeviceDelegation } from "@lararium/mesh/device-delegation";
+import { hexToBytes } from "@lararium/mesh/crypto";
+import { makeIslandRepo } from "@lararium/mesh/island-repo";
+import { materializeSharedLarDoc, fleetEdgeBoardDocUrl } from "@lararium/mesh/deterministic-doc";
+import { emptyLarDoc } from "@lararium/mesh/base-doc";
+import { ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
 import { runFaceJoin, gateFaceJoin, type FaceJoinProvider, type FaceJoinContext } from "../src/face-join.js";
 import { boardDyadReader } from "../src/board-dyad-reader.js";
 import { fleetFixture } from "./fleet-fixture.js";

@@ -40,7 +40,9 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/cabal-realm
  */
 
-import { pinnedDoc, exportFlowSnapshot, type FlowSnapshot, type CabalRealm } from "@lararium/mesh";
+import { pinnedDoc } from "@lararium/mesh/pinned-doc";
+import { exportFlowSnapshot, type FlowSnapshot } from "@lararium/mesh/flow-substrate";
+import { type CabalRealm } from "@lararium/mesh/cabal-realm";
 
 /**
  * A cabal-realm's CHARTER — its PUBLIC face, the only projection that ever crosses

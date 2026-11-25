@@ -4,7 +4,9 @@
  * signed row whose tesserae miss a face, add one, or name another set refuses `admission-tesserae-mismatch` by name.
  */
 import { describe, expect, test } from "vitest";
-import { canonicalJsonBytes, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, sha256HexBytesSync, type SwarmWikiPort } from "@lararium/mesh";
+import { canonicalJsonBytes, sha256HexBytesSync } from "@lararium/mesh/crypto";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { type SwarmWikiPort } from "@lararium/mesh/swarm-tiddlers";
 import { pulamaAdmissions, pulamaAdmittedTitle, type SignedPulamaAdmit } from "../src/pulama-admit.js";
 
 const T0 = "0a".repeat(32), T2 = "2b".repeat(32);

@@ -20,7 +20,10 @@
  *
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store
  */
-import { VerbRefusal, answerDocStoreAsks, type RecordSigner, type SessionOwnChain } from "@lararium/mesh";
+import { VerbRefusal } from "@lararium/mesh/verb-refusal";
+import { answerDocStoreAsks } from "@lararium/mesh/sealed-rest";
+import { type RecordSigner } from "@lararium/mesh/sealed-records";
+import { type SessionOwnChain } from "@lararium/mesh/island-protocol";
 import type { ContentKeySeat } from "./content-key-seat.js";
 import { chainSubjectAt, type IslandSessionProof, type SessionAsk } from "./island-session-proof.js";
 

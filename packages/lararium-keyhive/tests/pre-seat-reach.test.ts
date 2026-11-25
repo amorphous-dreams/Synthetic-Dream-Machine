@@ -10,7 +10,7 @@
  * its own PersonaGroup, seals, then seats) mirrors leaf-fleet-admit, where the seat holds the group itself.
  */
 import { describe, test, expect } from "vitest";
-import { buildDeviceDelegation } from "@lararium/mesh";
+import { buildDeviceDelegation } from "@lararium/mesh/device-delegation";
 import { KeyhiveProvider } from "../src/keyhive-provider.js";
 import { runFaceJoin, type FaceJoinContext, type FaceJoinGrant } from "../src/face-join.js";
 

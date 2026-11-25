@@ -11,7 +11,7 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/hearth-roster
  */
-import { renderHearthRoster, type HearthRoster } from "@lararium/mesh";
+import { renderHearthRoster, type HearthRoster } from "@lararium/mesh/hearth-roster";
 import { vesselDid } from "../env.js";
 import { runVerb, verbFailure } from "../verb-call.js";
 import { readVerbOutcome } from "../verb-result.js";

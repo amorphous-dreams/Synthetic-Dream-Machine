@@ -25,7 +25,8 @@
  * Canon: lar:///ha.ka.ba/lares/docs/pono/residency-follows-the-contract#/faces-sit-flat
  */
 import type { PeerId } from "@automerge/automerge-repo";
-import type { GateSession, WireIdentity, WireLegAt, WireLegRefusal } from "@lararium/mesh";
+import type { GateSession } from "@lararium/mesh/face-gate";
+import type { WireIdentity, WireLegAt, WireLegRefusal } from "@lararium/mesh/wire-identity";
 
 /** The (face, Nexus) a gate session faces on this vessel wearing `worn` (null at the veil floor). */
 export function gateLegAt(session: GateSession, worn: string | null): WireLegAt {

@@ -10,12 +10,19 @@
 import { describe, expect } from "vitest";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
+import { hex } from "@lararium/mesh/crypto";
+import { nexusAidOf, type NexusDoc } from "@lararium/mesh/nexus-seal-seed";
 import {
-  hex, nexusAidOf, signCarriageQuorum, signCarriageContract, admitCarriageCommit,
-  carriageEntryActCid, carriageDocUrl, writeCarriageEntry, emptyLarDoc,
-  custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute, type GateBundlePin,
-  type NexusDoc, type CarriageEntry, type LarDoc,
-} from "@lararium/mesh";
+  signCarriageQuorum,
+  signCarriageContract,
+  admitCarriageCommit,
+  carriageEntryActCid,
+  type CarriageEntry,
+} from "@lararium/mesh/carriage-registry";
+import { carriageDocUrl } from "@lararium/mesh/deterministic-doc";
+import { writeCarriageEntry } from "@lararium/mesh/carriage-board";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute, type GateBundlePin } from "@lararium/mesh/gate-bundle";
 import { dialPresentation } from "../src/nexus-carriage.js";
 import { takeAdmitBundle } from "../src/admit-bundle.js";
 import { writeNexusDoc } from "../src/nexus-doc.js";

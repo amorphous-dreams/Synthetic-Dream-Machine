@@ -9,7 +9,8 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/browser/browser-boot-custody
  */
-import { ATTEMPT_BUDGET, attemptWarning, type Credential } from "@lararium/mesh";
+import { ATTEMPT_BUDGET, attemptWarning } from "@lararium/mesh/attempt-budget";
+import { type Credential } from "@lararium/mesh/keyslot-door";
 import type { BrowserCustodyClear, UnsettledRecord } from "./browser-custody.js";
 import {
   BrowserCustodyRefused,

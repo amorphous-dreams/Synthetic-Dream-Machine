@@ -64,11 +64,25 @@
 import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import {
-  LAR_CAMERA_STORY, LAR_CONTROL_EVENT, LAR_KEY_SURFACE, LAR_RESEND,
-  mkLarControlEvent, mkLarResend, readLarControlResult, readLarFrame, readLarService,
-  type LarGeometry, type LarKeyChord, type LarMsg_ControlEvent, type LarModifiers, type LarMsg_ControlResult, type LarMsg_Frame, type LarMsg_Service,
-  type LarServiceKind, type LarWholeValue,
-} from "@lararium/mesh";
+  LAR_CAMERA_STORY,
+  LAR_CONTROL_EVENT,
+  LAR_KEY_SURFACE,
+  LAR_RESEND,
+  mkLarControlEvent,
+  mkLarResend,
+  readLarControlResult,
+  readLarFrame,
+  readLarService,
+  type LarGeometry,
+  type LarKeyChord,
+  type LarMsg_ControlEvent,
+  type LarModifiers,
+  type LarMsg_ControlResult,
+  type LarMsg_Frame,
+  type LarMsg_Service,
+  type LarServiceKind,
+  type LarWholeValue,
+} from "@lararium/mesh/lar-camera";
 import { mountProjection } from "../../../src/tw5-projection.js";
 import { neverPersists } from "../../../src/island-adaptor.js";
 import { hasProjection } from "../../../src/has-island-watches.js";

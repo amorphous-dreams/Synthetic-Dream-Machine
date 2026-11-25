@@ -4,7 +4,10 @@
  * reading (`lent-faces-empty`, `lent-faces-malformed`), never read as no admission.
  */
 import { describe, expect, test } from "vitest";
-import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, canonicalJsonBytes, PULAMA_TESSERA_DOMAIN, type SwarmWikiPort } from "@lararium/mesh";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { canonicalJsonBytes } from "@lararium/mesh/crypto";
+import { PULAMA_TESSERA_DOMAIN } from "@lararium/mesh/domains";
+import { type SwarmWikiPort } from "@lararium/mesh/swarm-tiddlers";
 import { pulamaAdmissions, pulamaAdmittedTitle } from "../src/pulama-admit.js";
 
 describe("RED pulama-admission-names-a-set", () => {

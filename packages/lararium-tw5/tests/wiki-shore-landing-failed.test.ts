@@ -1,5 +1,5 @@
 import { describe, expect, test, vi } from "vitest";
-import type { LarTiddlerChange } from "@lararium/mesh";
+import type { LarTiddlerChange } from "@lararium/mesh/tiddler-store";
 import { WaveLanding } from "../src/wave-landing.js";
 import { landingFailedAlertTitle } from "../src/island-adaptor.js";
 import { wikiSkip, skipNote } from "./test-wiki.js";

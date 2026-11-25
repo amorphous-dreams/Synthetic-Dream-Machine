@@ -21,9 +21,15 @@
  * Meme: lar:///ha.ka.ba/lares/api/wiki-store-adapter
  */
 
-import type { CompositeStore, CompositeEntry, ChangeOrigin } from "@lararium/mesh";
-import { consistencyRadius, type ConsistencyRadius, type ComparisonStalk, type PlaneRestriction } from "@lararium/mesh";
-import { CompositeStore as CompositeStoreCtor } from "@lararium/mesh";
+import type { CompositeStore, CompositeEntry } from "@lararium/mesh/composite-store";
+import type { ChangeOrigin } from "@lararium/mesh/tiddler-store";
+import {
+  consistencyRadius,
+  type ConsistencyRadius,
+  type ComparisonStalk,
+  type PlaneRestriction,
+} from "@lararium/mesh/sensorium-consistency";
+import { CompositeStore as CompositeStoreCtor } from "@lararium/mesh/composite-store";
 import { MemoryTiddlerStore } from "./memory-store.js";
 import { foldCorpus, corpusPlanes, type CorpusFold } from "./wiki-sense-fold.js";
 import { compositeCorpusReader, senseDocOfEntry, type WikiCorpusReader } from "./wiki-corpus-reader.js";

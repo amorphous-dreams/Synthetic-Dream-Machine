@@ -15,7 +15,7 @@
  */
 
 import { stdin, stdout } from "node:process";
-import { ATTEMPT_BUDGET } from "@lararium/mesh";
+import { ATTEMPT_BUDGET } from "@lararium/mesh/attempt-budget";
 
 /** True when we can run an interactive no-echo prompt (a real TTY on both ends). */
 export function canPromptSecret(): boolean {

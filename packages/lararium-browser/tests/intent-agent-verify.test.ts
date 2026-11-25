@@ -1,5 +1,10 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { buildAgentIntent, buildDelegation, buildDelegationRevoke, buildOutcome, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, fixtureIntentVerbs, intentEntryCid, intentId, makeHandLineage, mayAct, readIntentPlane, signIntentEntry } from "@lararium/mesh";
+import { buildAgentIntent, buildDelegation, buildDelegationRevoke, buildOutcome } from "@lararium/mesh/intent-issue";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { fixtureIntentVerbs } from "@lararium/mesh/intent-verbs";
+import { intentEntryCid, intentId, signIntentEntry } from "@lararium/mesh/intent-entry";
+import { makeHandLineage } from "@lararium/mesh/hand-lineage";
+import { mayAct, readIntentPlane } from "@lararium/mesh/intent-read";
 import { decideAdmission } from "../../lararium-mesh/src/intent-admission.js";
 
 const who = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(n)) });

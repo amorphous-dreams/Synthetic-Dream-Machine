@@ -1,9 +1,7 @@
-import {
-  DAEMON_BAG_ID,
-  tiddlerText,
-  type LarTiddlerRecord,
-  type StoredLarRecord,
-} from "@lararium/mesh";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { tiddlerText } from "@lararium/mesh/base-doc";
+import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
+import { type StoredLarRecord } from "@lararium/mesh/stored-value";
 
 export const ACTIVE_WIKI_URI = `${DAEMON_BAG_ID}/active-wiki`;
 

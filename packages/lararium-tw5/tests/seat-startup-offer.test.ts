@@ -11,7 +11,12 @@
  * user tag lands.
  */
 import { describe, test, expect } from "vitest";
-import { CompositeStore, SwarmRefused, bagUri, isVerbRefusal, type ExecLeiPort, type Verb } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { SwarmRefused } from "@lararium/mesh/swarm-tiddlers";
+import { bagUri } from "@lararium/mesh/lar-uris";
+import { isVerbRefusal } from "@lararium/mesh/verb-refusal";
+import { type ExecLeiPort } from "@lararium/mesh/seat-startup-offer";
+import { type Verb } from "@lararium/mesh/verb-tiddler";
 import type { Hand } from "@lararium/mesh/session-contract";
 import { makeMemePutReactor, type MemeVerbOptions } from "../src/meme-verbs.js";
 import { makeActionReactorFor } from "../src/action-handler.js";

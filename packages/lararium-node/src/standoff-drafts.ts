@@ -48,7 +48,7 @@
 
 import { extname } from "node:path";
 import { contentHash } from "./synced-tree.js";
-import { digestsEqual } from "@lararium/mesh";
+import { digestsEqual } from "@lararium/mesh/agile-digest";
 import { decideCollapse, type CollapseRule, type CollapseToward } from "./standoff-collapse.js";
 
 /**

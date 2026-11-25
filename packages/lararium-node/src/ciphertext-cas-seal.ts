@@ -34,9 +34,16 @@ import {
   type BinaryDocumentId, type DocumentId,
 } from "@automerge/automerge-repo";
 import {
-  SEALED_CHUNK_MARK, SEALED_HEADER_LEN, SEALED_MARK_LEN, SEALED_TAG_LEN, sealPrivateBody, parseDigest, hexToBytes, readSealedAddress,
-  type PrivateBodyKey, type KeyVersionId,
-} from "@lararium/mesh";
+  SEALED_CHUNK_MARK,
+  SEALED_HEADER_LEN,
+  SEALED_MARK_LEN,
+  SEALED_TAG_LEN,
+  readSealedAddress,
+  type KeyVersionId,
+} from "@lararium/mesh/sealed-chunk";
+import { sealPrivateBody, type PrivateBodyKey } from "@lararium/mesh/ciphertext-cas";
+import { parseDigest } from "@lararium/mesh/agile-digest";
+import { hexToBytes } from "@lararium/mesh/crypto";
 import { readVerifiedCasBlobFromFs, writeCasEntriesFs } from "./node-cas.js";
 import type { SealedPlaneRegistry } from "./plane-seal.js";
 import type { NexusEpochName } from "./plane-seal.js";

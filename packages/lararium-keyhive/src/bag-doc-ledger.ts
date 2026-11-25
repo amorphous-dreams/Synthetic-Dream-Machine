@@ -1,4 +1,8 @@
-import { DAEMON_BAG_ID, hex, mutableLarRecord, type LarTiddlerStore, type CompositeStore, type ChangeOrigin } from "@lararium/mesh";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { hex } from "@lararium/mesh/crypto";
+import { mutableLarRecord } from "@lararium/mesh/base-doc";
+import { type LarTiddlerStore, type ChangeOrigin } from "@lararium/mesh/tiddler-store";
+import { type CompositeStore } from "@lararium/mesh/composite-store";
 import type { CapabilityProvider } from "./capability-provider.js";
 
 export interface BagDocLedger {

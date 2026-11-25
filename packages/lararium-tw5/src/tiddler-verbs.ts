@@ -66,10 +66,17 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/tiddler-verbs
  */
 
-import {
-  NoWorkingLayerRefusal, VerbRefusal, verifyCidBytes, canonicalJsonBytes, refuseEffectLedgerWrite, refuseRenderedWrite, admitSeatExecutable, executableClassOf, renderedWriteFault, requireKahuReach, RENDERED_DERIVES_REASON, sha256HexBytesSync, wikiSlotKindOf, DAEMON_WIKI_SLUG,
-  type ChangeOrigin, type CompositeStore, type KahuReachSource, type LarTiddlerStore,
-} from "@lararium/mesh";
+import { NoWorkingLayerRefusal, type CompositeStore } from "@lararium/mesh/composite-store";
+import { VerbRefusal } from "@lararium/mesh/verb-refusal";
+import { verifyCidBytes } from "@lararium/mesh/cas-transit";
+import { canonicalJsonBytes, sha256HexBytesSync } from "@lararium/mesh/crypto";
+import { refuseEffectLedgerWrite } from "@lararium/mesh/effect-record";
+import { refuseRenderedWrite, renderedWriteFault, RENDERED_DERIVES_REASON } from "@lararium/mesh/rendered-derives";
+import { admitSeatExecutable } from "@lararium/mesh/seat-startup-offer";
+import { executableClassOf } from "@lararium/mesh/executable-class";
+import { requireKahuReach, type KahuReachSource } from "@lararium/mesh/kahu-canon-reach";
+import { wikiSlotKindOf, DAEMON_WIKI_SLUG } from "@lararium/mesh/wiki-recipe";
+import { type ChangeOrigin, type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { askerRefusal, handRefusalOf } from "@lararium/mesh/hand-refusal";
 import { consequence, familyOf, retractsOf, rootAddressOf, tombstonesOf, type Consequence, type DeleteMode, type FamilyPosition, type FamilyView } from "@lararium/mesh/family";

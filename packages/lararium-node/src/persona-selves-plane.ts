@@ -28,7 +28,10 @@
  * clear runs on a clear rest, since it moves no name onto it, and refuses on a shut one, which opens for nothing.
  */
 import type { Repo, AutomergeUrl } from "@automerge/automerge-repo";
-import { AutomergeDocStore, materializeSharedLarDoc, selvesRecordOf, type LarTiddlerStore } from "@lararium/mesh";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { selvesRecordOf } from "@lararium/mesh/persona-planes";
+import { type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
 import { readPersonaSelves, writePersonaSelfName } from "@lararium/tw5";
 import type { PersonaSelfLine, PersonaSelvesPlane, PlaneRest } from "./sealed-acts.js";
 

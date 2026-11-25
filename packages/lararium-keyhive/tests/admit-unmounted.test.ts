@@ -1,11 +1,20 @@
 import { describe, expect, test } from "vitest";
 import {
-  DEVICE_DELEGATION_SELF_TIDDLER, HEARTH_DAEMON_URL_TIDDLER, HEARTH_TRUE_NAME_TIDDLER,
-  MESH_CABAL_DOC_ID_TIDDLER, PERSONA_GROUP_ID_TIDDLER, PERSONA_KEL_PREFIX_TIDDLER,
-  SIGNER_DID_TIDDLER, groupSecretOpenerFromSeed, makeIslandRepo, materializeSharedLarDoc,
-  personaKelBoardDocUrl, personaKelChainForPrefix, seedDaemonDoc, vesselDyads,
-  groupSecretSealTitle, PERSONA_ACT_ENTRY_PREFIX,
-} from "@lararium/mesh";
+  DEVICE_DELEGATION_SELF_TIDDLER,
+  HEARTH_DAEMON_URL_TIDDLER,
+  HEARTH_TRUE_NAME_TIDDLER,
+  MESH_CABAL_DOC_ID_TIDDLER,
+  PERSONA_GROUP_ID_TIDDLER,
+  PERSONA_KEL_PREFIX_TIDDLER,
+  SIGNER_DID_TIDDLER,
+} from "@lararium/mesh/lar-uris";
+import { groupSecretOpenerFromSeed, groupSecretSealTitle } from "@lararium/mesh/persona-group-secret";
+import { makeIslandRepo } from "@lararium/mesh/island-repo";
+import { materializeSharedLarDoc, personaKelBoardDocUrl } from "@lararium/mesh/deterministic-doc";
+import { personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";
+import { seedDaemonDoc } from "@lararium/mesh/social-seed";
+import { vesselDyads } from "@lararium/mesh/dyad";
+import { PERSONA_ACT_ENTRY_PREFIX } from "@lararium/mesh/persona-act-board";
 import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
 import { foundTheFace, foundThePlace, runApplyAdmitPayload, runDeviceAdmitEdge } from "../src/index.js";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";

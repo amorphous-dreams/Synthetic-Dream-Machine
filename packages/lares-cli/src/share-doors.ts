@@ -8,7 +8,7 @@
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { larConfigHome, larProjectionsHome } from "@lararium/node";
-import { SHARE_CONFIG_FILE, type ShareEntry, type ShareFace } from "@lararium/mesh";
+import { SHARE_CONFIG_FILE, type ShareEntry, type ShareFace } from "@lararium/mesh/share-config";
 import { vesselDid } from "./env.js";
 import { DaemonUnreachable, runVerb } from "./verb-call.js";
 import { sealedAct } from "./sealed-act-door.js";

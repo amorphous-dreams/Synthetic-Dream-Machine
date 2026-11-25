@@ -49,12 +49,20 @@ import type { IncomingMessage } from "node:http";
 import type { Duplex } from "node:stream";
 import { randomInt } from "node:crypto";
 import { WebSocketServer, type WebSocket } from "ws";
+import { GATE_PROTOCOL, readGateFlightHeader, type GateFlightRefusal } from "@lararium/mesh/gate-exchange";
+import { NOISE_MAX_MESSAGE_BYTES } from "@lararium/mesh/noise-ik";
+import { channelSessionTable, type GateChannelBounds, type GateSessionChannel } from "@lararium/mesh/gate-session-channel";
+import { gateKnock, readGateBundlePin, type GateBundlePin } from "@lararium/mesh/gate-bundle";
 import {
-  GATE_PROTOCOL, NOISE_MAX_MESSAGE_BYTES, channelSessionTable, gateKnock, readGateBundlePin, readGateFlightHeader,
-  type FaceGate, type GateBundlePin, type GateChannelBounds, type GateDeadlines, type GateFlightRefusal, type GateOutcome, type GateSeat, type GateSession,
-  type GateSessionChannel, type GateSessionTable, type GateSocket,
-  type IntentRelayResult,
-} from "@lararium/mesh";
+  type FaceGate,
+  type GateDeadlines,
+  type GateOutcome,
+  type GateSeat,
+  type GateSession,
+  type GateSessionTable,
+  type GateSocket,
+} from "@lararium/mesh/face-gate";
+import { type IntentRelayResult } from "@lararium/mesh/intent-relay-door";
 
 export type IntentRelayOutcome = { readonly outcome: "relay-answered"; readonly status: IntentRelayResult["status"] };
 export interface StandableGate extends Pick<FaceGate, "preflight" | "pending"> {

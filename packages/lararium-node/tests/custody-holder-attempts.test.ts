@@ -10,7 +10,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { draftPaperPin, confirmPaperPin, type Credential, type SlotSpec } from "@lararium/mesh";
+import { draftPaperPin, confirmPaperPin, type Credential, type SlotSpec } from "@lararium/mesh/keyslot-door";
 import { FsCustodyIo } from "../src/custody-io.js";
 import { foundCustody } from "../src/custody-session.js";
 import { makeCustodyHolder, seatFaceAutoFounder, UNLOCK_ATTEMPTS_PER_BOOT as BOUND } from "../src/custody-holder.js";

@@ -6,7 +6,9 @@
  */
 import { createPrivateKey, createPublicKey } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { withdrawForRemoval, foldWithdrawals, FACE_KEY_RESTS_ELSEWHERE, type FaceScope, type WithdrawalMemory } from "@lararium/mesh";
+import { withdrawForRemoval, FACE_KEY_RESTS_ELSEWHERE } from "@lararium/mesh/device-removal";
+import { foldWithdrawals, type WithdrawalMemory } from "@lararium/mesh/face-authority";
+import { type FaceScope } from "@lararium/mesh/face-proof-subjects";
 import { storeFaceProofKey, nodeFaceKeyCustody } from "../src/face-key-custody.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 

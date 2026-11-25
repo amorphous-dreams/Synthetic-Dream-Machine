@@ -16,11 +16,18 @@
  *       no dial pin none file
  */
 import { describe, expect, it } from "vitest";
+import { admitCarriageCommit, type AdmitOpening } from "@lararium/mesh/carriage-registry";
 import {
-  admitCarriageCommit, custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute, hearthPinIndex,
-  floorGateRoot, floorKeyDoor, floorRoute,
-  type AdmitOpening, type GateBundlePin,
-} from "@lararium/mesh";
+  custodyRootDoor,
+  deriveGateBundle,
+  sovereignGateRoot,
+  sovereignRoute,
+  floorGateRoot,
+  floorKeyDoor,
+  floorRoute,
+  type GateBundlePin,
+} from "@lararium/mesh/gate-bundle";
+import { hearthPinIndex } from "@lararium/mesh/admit-gate-pin";
 import { chooseHearthDial, fileHearthPins, hearthNameOf } from "../src/hearth-gate-pins.js";
 import type { AdmitBundle } from "../src/admit-bundle.js";
 

@@ -5,11 +5,11 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import type { SwitchIntent, SwitchOutcome } from "@lararium/mesh";
+import type { SwitchIntent, SwitchOutcome } from "@lararium/mesh/session-switch";
 import { updateCustodyRecord } from "../src/custody-seat.js";
 import { larIdentityDir } from "../src/vessel-paths.js";
 import { nodeSwitchActLog, readSwitchActs, SWITCH_ACT_RING, SWITCH_ACTS_FILE, SWITCH_ACTS_SET_ASIDE_CAP, SwitchActRowMalformed, switchActsSetAsideDir, trimSwitchActs } from "../src/switch-act-log.js";
-import { SwitchActsSetAsideFull } from "@lararium/mesh";
+import { SwitchActsSetAsideFull } from "@lararium/mesh/session-switch";
 import { CustodyRecordUnavailable } from "../src/custody-holder.js";
 import { seatScratchCustody, FIXTURE_PASSPHRASE, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 import { rotateCustody } from "../src/custody-session.js";

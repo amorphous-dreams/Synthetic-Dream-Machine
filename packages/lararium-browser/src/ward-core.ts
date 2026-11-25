@@ -21,10 +21,30 @@
  * derivation.
  */
 import {
-  bindWardSlot, confirmHeldPaper, constantTimeBytesEqual, decodeSlotTree, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, encodeSlotTree, mintWardKey, nobleKdf, openUnderWard,
-  openWardKey, sealUnderWard, signingSeedFromHex, treeKeyEquals, wardKeyPopImage, WARD_STORE, WardRefused,
-  type Credential, type FaceCarrier, type KdfPort, type PinSpec, type WardKey,
-} from "@lararium/mesh";
+  bindWardSlot,
+  mintWardKey,
+  openUnderWard,
+  openWardKey,
+  sealUnderWard,
+  WARD_STORE,
+  WardRefused,
+  type WardKey,
+} from "@lararium/mesh/ward-slots";
+import {
+  confirmHeldPaper,
+  decodeSlotTree,
+  encodeSlotTree,
+  nobleKdf,
+  type Credential,
+  type KdfPort,
+  type PinSpec,
+} from "@lararium/mesh/keyslot-door";
+import { constantTimeBytesEqual } from "@lararium/mesh/crypto";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { signingSeedFromHex } from "@lararium/mesh/vessel-identity-core";
+import { treeKeyEquals } from "@lararium/mesh/tree-key";
+import { wardKeyPopImage } from "@lararium/mesh/ward-answer";
+import { type FaceCarrier } from "@lararium/mesh/fck";
 
 /** The keystore rows a face's ward holds: its tree, and its root under it. Every name starts `ward/`. */
 export const WARD_RECORD_PREFIX = "ward/";

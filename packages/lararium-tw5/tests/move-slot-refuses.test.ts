@@ -9,7 +9,11 @@
  */
 import { describe, expect, test } from "vitest";
 import { Repo } from "./wiki-shore-rig.js";
-import { AutomergeDocStore, CompositeStore, emptyLarDoc, type CapabilityAccess, type CapabilityVerifyResult, type Verb } from "@lararium/mesh";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { emptyLarDoc } from "@lararium/mesh/base-doc";
+import { type CapabilityAccess, type CapabilityVerifyResult } from "@lararium/mesh/capability";
+import { type Verb } from "@lararium/mesh/verb-tiddler";
 import { carrierHash } from "@lararium/mesh/crypto";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { makeActionReactorFor, registerActionReactors } from "../src/action-handler.js";

@@ -9,7 +9,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { confirmPaperPin, draftPaperPin, type Credential } from "@lararium/mesh";
+import { confirmPaperPin, draftPaperPin, type Credential } from "@lararium/mesh/keyslot-door";
 
 vi.setConfig({ testTimeout: 180_000 });
 

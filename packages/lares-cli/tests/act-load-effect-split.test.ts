@@ -24,7 +24,7 @@ import { mkdtempSync, rmSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { rendezvousPath } from "@lararium/mesh/rendezvous-path";
-import { VERB_RESULT_KEY } from "@lararium/mesh";
+import { VERB_RESULT_KEY } from "@lararium/mesh/verb-tiddler";
 
 vi.mock("../src/env.js", async (orig) => ({
   ...(await orig<typeof import("../src/env.js")>()),

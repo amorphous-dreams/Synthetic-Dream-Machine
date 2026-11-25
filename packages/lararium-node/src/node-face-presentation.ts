@@ -15,7 +15,11 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/node/node-face-presentation
  */
-import { checkVesselChain, foldWithdrawals, openJoinedFaceSession, prepareJoinedFace, type FaceScope, type JoinedFaceTarget, type LarWSClientOptions, type PresentationArm } from "@lararium/mesh";
+import { checkVesselChain, foldWithdrawals } from "@lararium/mesh/face-authority";
+import { openJoinedFaceSession, prepareJoinedFace, type JoinedFaceTarget } from "@lararium/mesh/session-face";
+import { type FaceScope } from "@lararium/mesh/face-proof-subjects";
+import { type LarWSClientOptions } from "@lararium/mesh/lar-ws-client-adapter";
+import { type PresentationArm } from "@lararium/mesh/gate-exchange";
 import { readFounderFaceProof, type FounderCertificateDoors } from "./founder-self-certificate.js";
 import { readJoinedFaceProof } from "./joined-face-proof.js";
 

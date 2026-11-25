@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
-import { makeIslandRepo } from "@lararium/mesh";
+import { makeIslandRepo } from "@lararium/mesh/island-repo";
 import { foundThePlace, foundTheFace, retireFaceCheckpoint, KeyhiveProvider } from "../src/index.js";
-import { faceAtomKeyFromSeed, groupSecretOpenerFromSeed, mintFaceAtomSeed, sealGroupSecret, verifyDeviceDelegation, personaGroupSecret } from "@lararium/mesh";
+import { faceAtomKeyFromSeed, mintFaceAtomSeed } from "@lararium/mesh/face-atom";
+import { groupSecretOpenerFromSeed, sealGroupSecret, personaGroupSecret } from "@lararium/mesh/persona-group-secret";
+import { verifyDeviceDelegation } from "@lararium/mesh/device-delegation";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 import { withMemorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";
 

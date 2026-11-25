@@ -77,10 +77,18 @@
 import { closeSync, openSync, readdirSync, readSync, statSync, type Dirent } from "node:fs";
 import { basename, join } from "node:path";
 import {
-  REST_KINDS, ROTATING_SUFFIX, SEALING_SUFFIX, S_SEAL_MIN_LENGTH,
-  readCarriedRecord, readIndexEntry, readLockboxRecord, readsAsOutboxSeal, readSCarrier, restNameHolds, rotateTreeKey,
-  type CustodyIo, type KeyClass, type SealedCarrier, type SlotSpec, type SlotTree, type TreeKey,
-} from "@lararium/mesh";
+  REST_KINDS,
+  readCarriedRecord,
+  readIndexEntry,
+  readLockboxRecord,
+  readsAsOutboxSeal,
+  restNameHolds,
+} from "@lararium/mesh/sealed-store-rest";
+import { ROTATING_SUFFIX, SEALING_SUFFIX, rotateTreeKey, type CustodyIo, type SealedCarrier } from "@lararium/mesh/sealed-writer";
+import { S_SEAL_MIN_LENGTH, readSCarrier } from "@lararium/mesh/s-envelope";
+import { type KeyClass } from "@lararium/mesh/key-class";
+import { type SlotSpec, type SlotTree } from "@lararium/mesh/keyslot-door";
+import { type TreeKey } from "@lararium/mesh/tree-key";
 import { nativeKdf } from "@lararium/mesh/node";
 import { custodyRootPath } from "./custody-root.js";
 import { VEIL_ARCHIVE_ASIDE_FILE, VEIL_ARCHIVE_FILE, VEIL_ARCHIVE_PREV_FILE } from "./identity-anchors.js";

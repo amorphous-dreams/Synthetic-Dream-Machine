@@ -1,7 +1,16 @@
 import { describe, expect, test, vi } from "vitest";
 import { readFileSync } from "node:fs";
-import { fixtureIntentVerbs, signIntentEntry, buildAnswer, buildAsks, buildIntent, intentEntryCid, writeIntentEntry, actCid, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, faceIntentVerbs, intentEntryRecordsOfGroup, intentId,
-  mintPersonaInception, signPersonaAct, personaBagIdFor, personaSiblingBagIds, storedLarRecord, type DocHandle, type LarDoc } from "@lararium/mesh";
+import { fixtureIntentVerbs, faceIntentVerbs } from "@lararium/mesh/intent-verbs";
+import { signIntentEntry, intentEntryCid, writeIntentEntry, intentEntryRecordsOfGroup, intentId } from "@lararium/mesh/intent-entry";
+import { buildAnswer, buildAsks, buildIntent } from "@lararium/mesh/intent-issue";
+import { actCid } from "@lararium/mesh/signed-act";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { mintPersonaInception } from "@lararium/mesh/persona-kel";
+import { signPersonaAct } from "@lararium/mesh/persona-act-board";
+import { personaBagIdFor, personaSiblingBagIds } from "@lararium/mesh/persona-scope";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
+import { type DocHandle } from "@lararium/mesh/automerge";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { faceDoors } from "../src/face-doors.js";
 import { makeFaceIntentDoor, requestFaceJoin, witnessedStandings } from "../src/face-intent-door.js";
 import { taggedAdmission } from "../../lararium-mesh/tests/vessel-tag-fixture.js";

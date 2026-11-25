@@ -22,7 +22,7 @@ vi.mock("../src/vessel-paths.js", () => ({ larBootstrapPath: () => seam.bootstra
 // The admit pins the Nexus the vessel's sovereign gate stands at (`stoodSovereignPin`, hearth-stood-pin P1-P3); this
 // suite reads the edge alone, so the stood pin is a fixed one read at the seal home the paths name.
 vi.mock("../src/hearth-sovereign-pin.js", async () => {
-  const mesh = await vi.importActual<typeof import("@lararium/mesh")>("@lararium/mesh");
+  const mesh = { ...(await vi.importActual<typeof import("@lararium/mesh/admit-gate-pin")>("@lararium/mesh/admit-gate-pin")), ...(await vi.importActual<typeof import("@lararium/mesh/gate-bundle")>("@lararium/mesh/gate-bundle")) };
   return {
     stoodSovereignPin: (sealHome: string) => {
       if (sealHome !== "seal-home-under-test") throw new Error(`stood pin read at ${sealHome}`);
@@ -63,7 +63,7 @@ vi.mock("../src/lan-address.js", () => ({ wsUrlForOrigin: () => null }));
 // The payload carries the edge the real producer would mint from these args (the door reads its digest on a replay).
 // The root seed zero-fills once the admit settles (seat-harness#/the-ward), so the seam keeps its own copy of what it saw.
 vi.mock("@lararium/keyhive", async () => {
-  const mesh = await vi.importActual<typeof import("@lararium/mesh")>("@lararium/mesh");
+  const mesh = await vi.importActual<typeof import("@lararium/mesh/device-delegation")>("@lararium/mesh/device-delegation");
   return {
     runDeviceAdmitEdge: async (args: Record<string, unknown>) => {
       seam.edge = { ...args, ...(args["signerSeed"] instanceof Uint8Array ? { signerSeed: Uint8Array.from(args["signerSeed"]) } : {}) };
@@ -73,21 +73,69 @@ vi.mock("@lararium/keyhive", async () => {
     },
   };
 });
-vi.mock("@lararium/mesh", async (real) => {
+vi.mock("@lararium/mesh/lar-uris", async (real) => {
   const mesh = await real<Record<string, unknown>>();
   return {
     ...mesh,
     DAEMON_BAG_ID: T.daemon, PERSONA_GROUP_ID_TIDDLER: T.group, MESH_CABAL_DOC_ID_TIDDLER: T.cabal, PERSONA_KEL_PREFIX_TIDDLER: T.kel,
+  };
+});
+vi.mock("@lararium/mesh/persona-scope", async (real) => {
+  const mesh = await real<Record<string, unknown>>();
+  return {
+    ...mesh,
     personaBagIdFor: (group: string) => `plane:${group}`,
+  };
+});
+vi.mock("@lararium/mesh/automerge-doc-store", async (real) => {
+  const mesh = await real<Record<string, unknown>>();
+  return {
+    ...mesh,
     // The admit's act store opens over the plane the bootstrap names; this suite reads which root signs, never the store's writes.
     AutomergeDocStore: class { constructor(_handle: unknown, readonly bagId: string) {} },
+  };
+});
+vi.mock("@lararium/mesh/device-delegation", async (real) => {
+  const mesh = await real<Record<string, unknown>>();
+  return {
+    ...mesh,
     // Counts every root signature over a joinee's edge: a refusal must reach none.
     buildDeviceDelegationRootHalf: async (...args: unknown[]) => { seam.rootHalves++; return (mesh["buildDeviceDelegationRootHalf"] as (...a: unknown[]) => unknown)(...args); },
+  };
+});
+vi.mock("@lararium/mesh/deterministic-doc", async (real) => {
+  const mesh = await real<Record<string, unknown>>();
+  return {
+    ...mesh,
     materializeSharedLarDoc: async () => ({ doc: () => ({}) }),
-    personaKelChainForPrefix: (_doc: unknown, prefix: string) => [`chain-of-${prefix}`],
     personaKelBoardDocUrl: () => "board",
+  };
+});
+vi.mock("@lararium/mesh/persona-kel-board", async (real) => {
+  const mesh = await real<Record<string, unknown>>();
+  return {
+    ...mesh,
+    personaKelChainForPrefix: (_doc: unknown, prefix: string) => [`chain-of-${prefix}`],
+  };
+});
+vi.mock("@lararium/mesh/base-doc", async (real) => {
+  const mesh = await real<Record<string, unknown>>();
+  return {
+    ...mesh,
     tiddlerText: (entry: { text?: string } | undefined) => entry?.text,
+  };
+});
+vi.mock("@lararium/mesh/genesis-doc", async (real) => {
+  const mesh = await real<Record<string, unknown>>();
+  return {
+    ...mesh,
     oracleGenesisDocUrl: () => "oracle",
+  };
+});
+vi.mock("@lararium/mesh/face-reading", async (real) => {
+  const mesh = await real<Record<string, unknown>>();
+  return {
+    ...mesh,
     // This suite reads WHICH face's root signs; the signed log's own proofs have their reds elsewhere (persona-act-boot).
     // The one door (`readFace`) stands mocked: this suite reads WHICH face's root signs and what the door is asked, not the KEL fold.
     readFace: (_chain: unknown, anchor?: { frontier: { leaseEpoch: number; actSeq: number } }) => ({
@@ -108,7 +156,8 @@ vi.mock("@lararium/mesh", async (real) => {
 vi.mock("../src/persona-act-store.js", () => ({ readFacePersonaRecords: async () => seam.records, appendPersonaActs: (_handle: unknown, acts: unknown[]) => { seam.appended.push(...acts); } }));
 
 import { DeviceAdmitTagRefused, runDeviceAdmit } from "../src/commands/device-admit.js";
-import { actCid, CONTROL_HOME_ID } from "@lararium/mesh";
+import { actCid } from "@lararium/mesh/signed-act";
+import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
 import { testVesselTag } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
 // The daemon doc names the vessel's control document, where the lease slots rest (a fence read refuses where it names none).

@@ -34,7 +34,7 @@ import { existsSync, lstatSync, mkdirSync, readFileSync, realpathSync, renameSyn
 import { randomBytes } from "node:crypto";
 import { basename, dirname, join, relative, sep } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
-import { WORKSPACE_NAME_RE } from "@lararium/mesh";
+import { WORKSPACE_NAME_RE } from "@lararium/mesh/workbench";
 import { larHearthHome, larWorkspacesHome } from "@lararium/node";
 import { BUNDLE_SCHEMA, MANIFEST_FILE, unsafeRelPath, verifyBundle, type BundleManifest } from "./bundle-manifest.js";
 import type { RiteVerbAnswer } from "./rite-kukulu.js";

@@ -5,7 +5,12 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/offering#/the-canon-offer
  */
 import type { AutomergeUrl, Repo } from "@automerge/automerge-repo";
-import { AutomergeDocStore, bagUri, realmStandingDocUrl, type LarDoc, type LarTiddlerRecord, type OfferRecordReader } from "@lararium/mesh";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { bagUri } from "@lararium/mesh/lar-uris";
+import { realmStandingDocUrl } from "@lararium/mesh/realm-bag";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
+import { type OfferRecordReader } from "@lararium/mesh/canon-offer";
 
 /**
  * The live house-canon document a bag names on this vessel: the Kahu realm's bag row in the vessel's own catalog. `catalogUrl`

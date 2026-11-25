@@ -11,10 +11,13 @@
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store · lar:///ha.ka.ba/lares/api/pono/kapae#/keys
  */
 import { describe, expect, it } from "vitest";
-import {
-  ScriptedSeatRolls, SealedStore, memorySealedStoreRest, utf8Bytes,
-  type RecordSigner, type RollOutcome, type SealedAddress, type SealedStoreRest, type SeatRoll, type SessionOwnChain,
-} from "@lararium/mesh";
+import { ScriptedSeatRolls, type RollOutcome } from "@lararium/mesh/content-key-lineage";
+import { SealedStore, memorySealedStoreRest, type SealedStoreRest } from "@lararium/mesh/sealed-store-rest";
+import { utf8Bytes } from "@lararium/mesh/crypto";
+import { type RecordSigner } from "@lararium/mesh/sealed-records";
+import { type SealedAddress } from "@lararium/mesh/sealed-chunk";
+import { type SeatRoll } from "@lararium/mesh/seat-duties";
+import { type SessionOwnChain } from "@lararium/mesh/island-protocol";
 import { KeyhiveProvider, InMemoryEventStore, seatContentKeys, ownChainStanding, type ContentKeySeat } from "../src/index.js";
 import { sessionSignatureImage } from "../../lararium-mesh/src/face-proof-subjects.js";
 import { chain, signHex } from "../../lararium-mesh/tests/face-proof-fixture.js";

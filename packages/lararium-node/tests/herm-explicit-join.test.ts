@@ -19,10 +19,16 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import {
-  carriageDocUrl, carriageEntriesFromBoard, filePlaceFloorPins, writeCarriageEntry, foldCarrierSet, foundingRoster, hearthPinIndex, materializeSharedLarDoc,
-  placeFloorPinsFromBoard, placeKelEntriesFromBoard, verifyPlaceKel, FLOW_SOCKET_ROUTE, type LarDoc, type PlaceFloorPinStatement,
-} from "@lararium/mesh";
+import { carriageDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { carriageEntriesFromBoard, writeCarriageEntry } from "@lararium/mesh/carriage-board";
+import { filePlaceFloorPins, placeFloorPinsFromBoard, type PlaceFloorPinStatement } from "@lararium/mesh/place-floor-pin";
+import { foldCarrierSet } from "@lararium/mesh/carriage-registry";
+import { foundingRoster } from "@lararium/mesh/nexus-seal-seed";
+import { hearthPinIndex } from "@lararium/mesh/admit-gate-pin";
+import { placeKelEntriesFromBoard } from "@lararium/mesh/place-kel-board";
+import { verifyPlaceKel } from "@lararium/mesh/vessel-kel";
+import { FLOW_SOCKET_ROUTE } from "@lararium/mesh/flow-read-client";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { generateOrLoadVesselIdentity, loadPlaceAid, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { readNexusDoc, writeNexusDoc } from "../src/nexus-doc.js";
 import { runNexusCarryFor, runNexusContract, NexusContractError } from "../src/commands/nexus-contract.js";

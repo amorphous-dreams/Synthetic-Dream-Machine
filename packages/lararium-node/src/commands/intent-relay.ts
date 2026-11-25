@@ -1,5 +1,7 @@
 /** Operator acts over the vessel's relay enablement and admission key. */
-import { deriveGateBundle, gateKnock, sovereignGateRoot, sovereignRoute, utf8Bytes, INTENT_RELAY_ROUTE, type GateBundlePin } from "@lararium/mesh";
+import { deriveGateBundle, gateKnock, sovereignGateRoot, sovereignRoute, type GateBundlePin } from "@lararium/mesh/gate-bundle";
+import { utf8Bytes } from "@lararium/mesh/crypto";
+import { INTENT_RELAY_ROUTE } from "@lararium/mesh/intent-relay-door";
 import { listAnchoredPersonas, loadIdentityAnchors } from "../identity-anchors.js";
 import { resolveIntentFaceIndex, IntentRefused } from "./intent.js";
 import { custodyGateDoor, unlockedFaceOrdinals } from "../custody-seat.js";

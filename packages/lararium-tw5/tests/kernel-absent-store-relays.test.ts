@@ -12,7 +12,7 @@
  */
 import { describe, expect, test } from "vitest";
 import { MessageChannel } from "worker_threads";
-import { mkManifest, mkTeardown, type IslandMsg_Manifest, type IslandToVesselMsg } from "@lararium/mesh";
+import { mkManifest, mkTeardown, type IslandMsg_Manifest, type IslandToVesselMsg } from "@lararium/mesh/island-protocol";
 import { runSovereignKernel, type IslandHostShore } from "../src/sovereign-kernel.js";
 import type { IslandBehavior } from "../src/island-context.js";
 

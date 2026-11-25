@@ -11,10 +11,12 @@ import { describe, expect, test } from "vitest";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { buildIslandRecipe } from "../src/island-recipe.js";
-import {
-  CompositeStore, GENESIS_FLOOR_TIDDLER, ORACLE_BAG, floorRecordsInOrder, resolveFloor, wikiSlotUri,
-  type DocHandle, type LarDoc, type LarTiddlerChange, type LarTiddlerRecord,
-} from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { GENESIS_FLOOR_TIDDLER, floorRecordsInOrder, resolveFloor } from "@lararium/mesh/floor-manifest";
+import { ORACLE_BAG, wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import { type DocHandle } from "@lararium/mesh/automerge";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { type LarTiddlerChange, type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import type { TW5Engine } from "../src/tw5-vm.js";
 
 function fakeTw5(): TW5Engine {

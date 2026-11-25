@@ -6,7 +6,7 @@
  * messages read in `vessel-protocol.ts`. Nothing here holds a key, a store or a ceremony.
  */
 import type { BrowserConnectionListener, BrowserConnectionSnapshot, HearthFloorRead, PageLife, ProjectionSurfaceFrame } from "@lararium/browser/page";
-import type { LarMsg_ControlEvent, LarMsg_ControlResult } from "@lararium/mesh";
+import type { LarMsg_ControlEvent, LarMsg_ControlResult } from "@lararium/mesh/lar-camera";
 import type { PortTransportDoors } from "./port-transport.js";
 import type { CeremonyAskKind } from "./ceremony-protocol.js";
 import type {

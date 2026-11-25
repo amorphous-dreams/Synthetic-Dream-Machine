@@ -38,7 +38,7 @@ import { describe, test, expect } from "vitest";
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
 import { verifyPromotionReceipt, promotionReceiptPath } from "../src/promotion-receipt.js";
 import { promoteCarrier, type PromotionSeat } from "../src/commands/meme-promote.js";
 import { dispatch, COMMANDS } from "../src/bin/lares.js";

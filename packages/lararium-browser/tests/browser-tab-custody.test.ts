@@ -21,7 +21,7 @@
  */
 import { readyWorker } from "./fixtures/ready-worker.js";
 import { describe, expect, test } from "vitest";
-import { decodeSlotTree, nobleKdf, openTreeKey } from "@lararium/mesh";
+import { decodeSlotTree, nobleKdf, openTreeKey } from "@lararium/mesh/keyslot-door";
 import { attachSharedHolder, holderWorkerHandle, type SharedWorkerHost } from "../src/shared-holder.js";
 import { vesselLockName } from "../src/vessel-lock.js";
 import { faceFixture } from "./holder-session-fixture.js";

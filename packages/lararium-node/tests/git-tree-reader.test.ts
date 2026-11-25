@@ -11,7 +11,7 @@ import { execFileSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { SwarmRefused } from "@lararium/mesh";
+import { SwarmRefused } from "@lararium/mesh/swarm-tiddlers";
 import { readGitObject, treeOfHead } from "../src/git-tree-reader.js";
 import { gitTreeOf } from "../src/commands/rite.js";
 

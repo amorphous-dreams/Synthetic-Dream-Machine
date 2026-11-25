@@ -16,7 +16,9 @@
  * A real engine boots here (`bootTestWiki`), so the render answers as TiddlyWiki answers it.
  */
 import { describe, test, expect } from "vitest";
-import { CompositeStore, bagUri, wikiSlotUri, type CompositeStore as Composite } from "@lararium/mesh";
+import { CompositeStore, type CompositeStore as Composite } from "@lararium/mesh/composite-store";
+import { bagUri } from "@lararium/mesh/lar-uris";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { exportCarrierFile } from "../src/meme-write.js";
 import { makeTiddlerGetReactor, makeWikiFilterReactor, makeWikiRenderOutReactor } from "../src/tiddler-verbs.js";

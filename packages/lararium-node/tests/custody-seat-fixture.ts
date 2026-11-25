@@ -10,7 +10,7 @@
 import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { TreeKey } from "@lararium/mesh";
+import type { TreeKey } from "@lararium/mesh/tree-key";
 import { FsCustodyIo } from "../src/custody-io.js";
 import { foundCustody } from "../src/custody-session.js";
 import { makeCustodyHolder, seatFaceAutoFounder, type CustodyHolder } from "../src/custody-holder.js";

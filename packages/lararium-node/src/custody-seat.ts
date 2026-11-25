@@ -36,7 +36,9 @@
  *
  * Node-main only: a worker never imports this module.
  */
-import { FLOOR_REST_KEY_INFO, GATE_FLOOR_BUNDLE_INFO, WardRefused, custodyRootDoor, type CustodyRootDoor } from "@lararium/mesh";
+import { FLOOR_REST_KEY_INFO, GATE_FLOOR_BUNDLE_INFO } from "@lararium/mesh/domains";
+import { WardRefused } from "@lararium/mesh/ward-slots";
+import { custodyRootDoor, type CustodyRootDoor } from "@lararium/mesh/gate-bundle";
 import { CustodyLocked, CustodyRecordUnavailable, FaceLocked, type CustodyHolder, type FaceRef, type RecordUpdate, type WardSeat } from "./custody-holder.js";
 import { wardCredentialsOf, wardOrGather, type WardCredential } from "./ward-credential.js";
 import { CustodyRootRefused } from "./custody-root.js";

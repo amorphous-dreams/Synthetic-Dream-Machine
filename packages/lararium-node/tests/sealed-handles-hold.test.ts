@@ -36,10 +36,24 @@ import * as A from "@automerge/automerge";
 import { interpretAsDocumentId, Repo, type DocHandle, type StorageAdapterInterface } from "@automerge/automerge-repo";
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { clearRosterOf } from "@lararium/mesh/sealed-rest";
+import { CompositeStore } from "@lararium/mesh/composite-store";
 import {
-  AutomergeDocStore, clearRosterOf, CompositeStore, crossroadsDocUrl, DeterministicFederationGate, emptyLarDoc, fleetEdgeBoardDocUrl, materializeSharedLarDoc, mountWikiSlot, nameDocumentFor, realmEdgeBoardDocUrl, realmVouchBoardDocUrl, receiptInStore, sealedAddressOf, SealedDocumentStore, seatSealedRest, waitHandle,
-  type ChangeOrigin, type LarDoc, type LarTiddlerRecord, type SealedBagRow, type SealedSettlement,
-} from "@lararium/mesh";
+  crossroadsDocUrl,
+  fleetEdgeBoardDocUrl,
+  materializeSharedLarDoc,
+  realmEdgeBoardDocUrl,
+  realmVouchBoardDocUrl,
+} from "@lararium/mesh/deterministic-doc";
+import { DeterministicFederationGate } from "@lararium/mesh/federation-gate";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { mountWikiSlot } from "@lararium/mesh/open-vessel-core";
+import { nameDocumentFor, seatSealedRest, waitHandle, type SealedSettlement } from "@lararium/mesh/wait-handle";
+import { receiptInStore } from "@lararium/mesh/receipt-with-heads";
+import { sealedAddressOf } from "@lararium/mesh/sealed-chunk";
+import { SealedDocumentStore, type SealedBagRow } from "@lararium/mesh/sealed-doc-store";
+import { type ChangeOrigin, type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { MemoryTiddlerStore } from "../../lararium-tw5/src/memory-store.js";
 import { docStorePath } from "../src/store-integrity.js";
 

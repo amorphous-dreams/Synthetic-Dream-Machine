@@ -1,6 +1,16 @@
 /** fleet-join-admit — the admit a verified fleet-join answer carries, in the shape a vessel founds a face by. */
 import { describe, expect, test } from "vitest";
-import { custodyRootDoor, deriveGateBundle, floorGateRoot, floorKeyDoor, floorRoute, sovereignGateRoot, sovereignRoute, type FleetJoinAnswer, type GateBundlePin } from "@lararium/mesh";
+import {
+  custodyRootDoor,
+  deriveGateBundle,
+  floorGateRoot,
+  floorKeyDoor,
+  floorRoute,
+  sovereignGateRoot,
+  sovereignRoute,
+  type GateBundlePin,
+} from "@lararium/mesh/gate-bundle";
+import { type FleetJoinAnswer } from "@lararium/mesh/fleet-join";
 import { carriedAdmitOfFleetJoin } from "../src/fleet-join-admit.js";
 
 const pinAt = (nexus: string): GateBundlePin => {

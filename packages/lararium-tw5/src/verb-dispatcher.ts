@@ -43,19 +43,19 @@
 
 import {
   type Verb,
-  type ChoreReceiptMark,
-  type CompositeStore,
-  type CapabilityVerifier,
   type VerbTargetResult,
-  type LarTiddlerChange,
   parseVerb,
   VERB_URI_PREFIX,
   OUTCOME_URI_PREFIX,
   SUMMONS_URI_PREFIX,
   verbInputDigest,
-  wikiSlugOfBag,
-  ControlHomeUnavailable,
-} from "@lararium/mesh";
+} from "@lararium/mesh/verb-tiddler";
+import { type ChoreReceiptMark } from "@lararium/mesh/chore-ask";
+import { type CompositeStore } from "@lararium/mesh/composite-store";
+import { type CapabilityVerifier } from "@lararium/mesh/capability";
+import { type LarTiddlerChange } from "@lararium/mesh/tiddler-store";
+import { wikiSlugOfBag } from "@lararium/mesh/surface-recipe";
+import { ControlHomeUnavailable } from "@lararium/mesh/control-home";
 import type { Hand } from "@lararium/mesh/session-contract";
 import { dispatchVerb, placeVerb, copyEffectOutcome, writeOutcome, removeVerb, isVisitResults, EFFECT_URI_PREFIX } from "./verb-vm.js";
 import type { TW5Engine } from "./tw5-vm.js";
@@ -88,8 +88,8 @@ export interface VerbContext {
    * The vessel's exec-lei port (`ExecLeiPort`): a write door asks it to spend one return of a standing executable-record lei
    * before a seat's executable record lands. Absent, every seat's executable record offers.
    */
-  readonly execLei?: import("@lararium/mesh").ExecLeiPort;
-  readonly cap:   (access: import("@lararium/mesh").CapabilityAccess, bagUrl: string) => Promise<import("@lararium/mesh").CapabilityVerifyResult>;
+  readonly execLei?: import("@lararium/mesh/seat-startup-offer").ExecLeiPort;
+  readonly cap:   (access: import("@lararium/mesh/capability").CapabilityAccess, bagUrl: string) => Promise<import("@lararium/mesh/capability").CapabilityVerifyResult>;
 }
 
 /** What a session wore: its face's ordinal on this vessel, the presenter its door verified, and the PersonaGroup the
@@ -284,7 +284,7 @@ export class VerbTable {
 export interface VerbDispatcherOptions {
   readonly daemonVm:   TW5Engine;
   /** The vessel's exec-lei port (`islandExecLeiPort` in a daemon island): every local reactor reads it as `ctx.execLei`. */
-  readonly execLei?: import("@lararium/mesh").ExecLeiPort;
+  readonly execLei?: import("@lararium/mesh/seat-startup-offer").ExecLeiPort;
   readonly daemon:    CompositeStore;
   /**
    * The vessel's CONTROL document as a store (`controlStoreOf`): the summons this dispatcher heeds, the outcome ledger and

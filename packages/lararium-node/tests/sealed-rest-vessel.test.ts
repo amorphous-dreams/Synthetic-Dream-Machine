@@ -15,9 +15,11 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Repo, type AutomergeUrl, type Chunk, type StorageAdapterInterface, type StorageKey } from "@automerge/automerge-repo";
 import { islandSessionDoor, operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
-import {
-  answerIslandAsks, composeSealedRest, SessionSignBook, utf8Bytes, vesselDocStoreDoor, type CapabilityRecord, type RecordSigner,
-} from "@lararium/mesh";
+import { answerIslandAsks, type CapabilityRecord } from "@lararium/mesh/capability-record";
+import { composeSealedRest, vesselDocStoreDoor } from "@lararium/mesh/sealed-rest";
+import { SessionSignBook } from "@lararium/mesh/session-sign-book";
+import { utf8Bytes } from "@lararium/mesh/crypto";
+import { type RecordSigner } from "@lararium/mesh/sealed-records";
 import { VerbTable } from "@lararium/tw5";
 import { faceProofSubjectRef, sessionSignatureImage } from "../../lararium-mesh/src/face-proof-subjects.js";
 import { chain, signHex } from "../../lararium-mesh/tests/face-proof-fixture.js";

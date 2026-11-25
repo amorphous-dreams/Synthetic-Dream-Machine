@@ -3,7 +3,10 @@
  * proof at the Nexus the vessel dials; the hint grants nothing, and a session's presenter names the face's own atom.
  */
 import { describe, expect, test } from "vitest";
-import { faceAtomKeyFromSeed, readPlaceSessionCertificate, SessionTable, sessionBinding, type GateBundlePin, type SessionFace } from "@lararium/mesh";
+import { faceAtomKeyFromSeed } from "@lararium/mesh/face-atom";
+import { readPlaceSessionCertificate } from "@lararium/mesh/face-proof-subjects";
+import { SessionTable, sessionBinding, type SessionFace } from "@lararium/mesh/session-contract";
+import { type GateBundlePin } from "@lararium/mesh/gate-bundle";
 import { CustodyLocked, FaceLocked } from "../src/custody-holder.js";
 import { dialAnchorCell, nodeSessionDoor, readFaceHint } from "../src/uds-session-door.js";
 

@@ -20,26 +20,19 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/daemon-vm-core
  */
 
-import { wearOf } from "@lararium/mesh";
+import { wearOf } from "@lararium/mesh/repo-wear";
+import { canonicalJson } from "@lararium/mesh/crypto";
+import { DAEMON_BAG_ID, CROSSROADS_DOC_URI, verbArgsFromPayload } from "@lararium/mesh/lar-uris";
+import { NoWorkingLayerRefusal, CompositeStore } from "@lararium/mesh/composite-store";
+import { WorkingDocumentUnavailableRefusal, DOCUMENT_HANG_BOUND_MS, findOrThrow } from "@lararium/mesh/find-or-throw";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { computeRecipeFingerprint, wikiSlotUri, kahuaRecipe, type WikiRecipe } from "@lararium/mesh/wiki-recipe";
+import { documentIdOfUrl, mountedDocumentId, rebindWorkingLayer } from "@lararium/mesh/sealed-rest";
+import { attachMessageChannelSync } from "@lararium/mesh/island-repo";
+import { controlStoreOf, controlHomeRefusal } from "@lararium/mesh/control-home";
+import { floorRefusalOf } from "@lararium/mesh/floor-registry";
+import { awaitIslandMsg, type VesselWorkerHandle } from "@lararium/mesh/vessel-host";
 import {
-  canonicalJson,
-  DAEMON_BAG_ID,
-  NoWorkingLayerRefusal,
-  WorkingDocumentUnavailableRefusal,
-  DOCUMENT_HANG_BOUND_MS,
-  findOrThrow,
-  CompositeStore,
-  AutomergeDocStore,
-  computeRecipeFingerprint,
-  documentIdOfUrl,
-  mountedDocumentId,
-  rebindWorkingLayer,
-  wikiSlotUri,
-  attachMessageChannelSync,
-  controlStoreOf,
-  controlHomeRefusal,
-  floorRefusalOf,
-  awaitIslandMsg,
   mkManifest,
   mkDaemonPlaceVerb,
   mkDaemonFaceLit,
@@ -51,28 +44,13 @@ import {
   mkDaemonVerbResult,
   mkDaemonResolveBindingRequest,
   mkDaemonGateVerbRequest,
-  newRequestId,
   mkDaemonWorldlineCompareRequest,
   mkDaemonWorldlineTrajectoryRequest,
   mkDaemonEvictResult,
   mkDaemonResidencyOpResult,
   mkTeardown,
   isIslandToVesselMsg,
-  CROSSROADS_DOC_URI,
-  kahuaRecipe,
-  verbArgsFromPayload,
-  mkLarResend,
-  readLarControlResult,
-  readLarFrame,
-  type LarMsg_ControlEvent,
-  type LarMsg_ControlResult,
-  type LarMsg_Frame,
   type IslandMsg_Event,
-  type VesselWorkerHandle,
-  type Repo,
-  type DocHandle,
-  type LarDoc,
-  type WikiRecipe,
   type IslandStorageConfig,
   type IslandMsg_Manifest,
   type IslandGrants,
@@ -80,23 +58,32 @@ import {
   type DaemonMsg_ResolveBindingResult,
   type DaemonMsg_GateVerbResult,
   type DaemonMsg_FloorAnswer,
-  type LarTiddlerRecord,
   type DaemonMsg_WorldlineCompareResult,
   type DaemonMsg_WorldlineTrajectoryResult,
   type WorldlineStubWire,
-  type WorldlineEdgeTriple,
-  type WorldlineEdgeClose,
   type DaemonMsg_EvictRequest,
   type DaemonMsg_ResidencyOp,
   type DaemonMsg_WearActorRequest,
   type DaemonMsg_WikiAlert,
-  type BatchMode,
-  type ChoreReceiptMark,
   type IslandMsg_Ea,
   type IslandMsg_TeardownAck,
   isTeardownFault,
-  landBindingDocuments,
-} from "@lararium/mesh";
+} from "@lararium/mesh/island-protocol";
+import { newRequestId, type BatchMode } from "@lararium/mesh/verb-tiddler";
+import {
+  mkLarResend,
+  readLarControlResult,
+  readLarFrame,
+  type LarMsg_ControlEvent,
+  type LarMsg_ControlResult,
+  type LarMsg_Frame,
+} from "@lararium/mesh/lar-camera";
+import { type Repo, type DocHandle } from "@lararium/mesh/automerge";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
+import { type WorldlineEdgeTriple, type WorldlineEdgeClose } from "@lararium/mesh/worldline-edge";
+import { type ChoreReceiptMark } from "@lararium/mesh/chore-ask";
+import { landBindingDocuments } from "@lararium/mesh/stood-document";
 import type { Hand } from "@lararium/mesh/session-contract";
 import { runLocalVerb } from "./verb-local-dispatch.js";
 import type { SessionWorn, VerbTable } from "./verb-dispatcher.js";

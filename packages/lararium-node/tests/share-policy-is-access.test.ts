@@ -15,7 +15,7 @@
 import { describe, test, expect } from "vitest";
 import { Repo, type DocumentId, type PeerId } from "@automerge/automerge-repo";
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
-import { shareConfigOf } from "@lararium/mesh";
+import { shareConfigOf } from "@lararium/mesh/federation-gate";
 import { vesselOnlyShareVerdict } from "../src/vessel-only-share.js";
 import { selfSlotShareDecision, NO_BANS, NOBODY_ASIDE, NOTHING_CLASSED } from "../src/self-slot-share.js";
 

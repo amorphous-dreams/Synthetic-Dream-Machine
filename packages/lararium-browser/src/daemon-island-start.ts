@@ -1,11 +1,14 @@
 import { runBrowserSovereignWorker, type BrowserIslandScope } from "./browser-sovereign-island-model.js";
 import { islandSessionDoor, makeOperatorDaemonBehavior } from "@lararium/keyhive/operator-daemon-behavior";
 import { mountProjection } from "@lararium/tw5";
-import { HULLS_TS_ONLY, freshBasePort, islandCustodyWriter, islandLiveDocDoor } from "@lararium/mesh";
-import { edgeLedgerDocUrl, materializeSharedLarDoc } from "@lararium/mesh";
+import { HULLS_TS_ONLY } from "@lararium/mesh/flow";
+import { freshBasePort } from "@lararium/mesh/sealed-doc-store";
+import { islandCustodyWriter } from "@lararium/mesh/capability-record";
+import { islandLiveDocDoor } from "@lararium/mesh/sealed-rest";
+import { edgeLedgerDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
 import { Repo } from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-indexeddb";
-import { shoreStorage } from "@lararium/mesh";
+import { shoreStorage } from "@lararium/mesh/prototype-key-shore";
 import { idbSealedStoreShore, sealedStoreDbName } from "./browser-sealed-store.js";
 import { browserVeilArchiveWriters } from "./browser-veil-archive-route.js";
 

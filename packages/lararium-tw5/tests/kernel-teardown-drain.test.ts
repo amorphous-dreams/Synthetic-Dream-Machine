@@ -1,13 +1,14 @@
 /** L29: the kernel must let the adaptor drain while the vessel can still issue receipts. */
 import { createHash } from "node:crypto";
 import { describe, expect, test, vi } from "vitest";
-import { mkManifest, mkTeardown, wikiSlotUri, type IslandMsg_Manifest, type IslandToVesselMsg } from "@lararium/mesh";
+import { mkManifest, mkTeardown, type IslandMsg_Manifest, type IslandToVesselMsg } from "@lararium/mesh/island-protocol";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { runSovereignKernel, type IslandHostShore } from "../src/sovereign-kernel.js";
 import type { IslandBehavior } from "../src/island-context.js";
 
 const fake = vi.hoisted(() => ({ adaptor: null as any, handle: null as any }));
-vi.mock("@lararium/mesh", async (original) => {
-  const mesh = await original<typeof import("@lararium/mesh")>();
+vi.mock("@lararium/mesh/island-repo", async (original) => {
+  const mesh = await original<typeof import("@lararium/mesh/island-repo")>();
   return { ...mesh, makeIslandRepo: () => ({ flush: async () => {}, shutdown: async () => {} }), replicaHeads: () => ["head-1"] };
 });
 vi.mock("../src/slot-wait.js", () => ({ waitForSlotDocument: async () => ({ outcome: "ready", handle: fake.handle }) }));

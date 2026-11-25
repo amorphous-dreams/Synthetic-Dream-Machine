@@ -13,10 +13,13 @@
  */
 import { describe, test, expect } from "vitest";
 import { afterEach } from "vitest";
-import {
-  AutomergeDocStore, CompositeStore, emptyLarDoc, makeIslandRepo, wikiSlotUri,
-  type ChangeOrigin, type DocHandle, type LarDoc, type LarTiddlerChange, type LarTiddlerRecord,
-} from "@lararium/mesh";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { makeIslandRepo } from "@lararium/mesh/island-repo";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import { type ChangeOrigin, type LarTiddlerChange, type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
+import { type DocHandle } from "@lararium/mesh/automerge";
 import { IslandAdaptor } from "../src/island-adaptor.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import type { TW5Engine } from "../src/tw5-vm.js";

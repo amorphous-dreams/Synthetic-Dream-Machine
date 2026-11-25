@@ -1,5 +1,7 @@
 import { describe, expect, test, vi } from "vitest";
-import { CompositeStore, VerbRefusal, type IslandToVesselMsg } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { VerbRefusal } from "@lararium/mesh/verb-refusal";
+import { type IslandToVesselMsg } from "@lararium/mesh/island-protocol";
 import { readPortIslandMsg, type PortMsg_Open, type PortMsg_Write, type PortMsg_Ask } from "@lararium/mesh/record-port";
 import { AtomicMemoryStore as MemoryTiddlerStore } from "./atomic-memory-store.js";
 import { hasRecordPort } from "../src/record-port-handler.js";

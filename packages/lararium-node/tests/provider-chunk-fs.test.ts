@@ -9,7 +9,7 @@ import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, w
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { InMemoryEventStore, KeyhiveProvider } from "@lararium/keyhive";
-import { hex, utf8Bytes } from "@lararium/mesh";
+import { hex, utf8Bytes } from "@lararium/mesh/crypto";
 import { fsProviderChunkRest } from "../src/sealed-store-fs.js";
 
 const BAG = "lar:///ha.ka.ba/@test/bags/SEARCH-ME-chunks";

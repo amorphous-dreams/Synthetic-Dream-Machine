@@ -11,7 +11,7 @@ import { afterAll, describe, expect, test, vi } from "vitest";
 import { cpSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { RandomProvider } from "@lararium/mesh";
+import type { RandomProvider } from "@lararium/mesh/crypto";
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
 import { foundDirect } from "./found-route.js";
 import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, loadVesselIdentity } from "../src/node-vessel-identity.js";

@@ -16,10 +16,17 @@ import type { AutomergeUrl, Repo } from "@automerge/automerge-repo";
 import { join } from "node:path";
 import { operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
 import type { IslandSessionProof } from "@lararium/keyhive";
-import {
-  AutomergeDocStore, CompositeStore, DAEMON_BAG_ID, SECRET_HOME_ID, controlStoreOf, standControlHome, attachMessageChannelSync, faceAtomKeyFromSeed, hex, makeIslandRepo, signMemoryAsk, wikiBagUri,
-  type LarDoc, type MemoryAct, type RecordSigner,
-} from "@lararium/mesh";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { DAEMON_BAG_ID, SECRET_HOME_ID } from "@lararium/mesh/lar-uris";
+import { controlStoreOf, standControlHome } from "@lararium/mesh/control-home";
+import { attachMessageChannelSync, makeIslandRepo } from "@lararium/mesh/island-repo";
+import { faceAtomKeyFromSeed } from "@lararium/mesh/face-atom";
+import { hex } from "@lararium/mesh/crypto";
+import { signMemoryAsk, type MemoryAct } from "@lararium/mesh/memory-section";
+import { wikiBagUri } from "@lararium/mesh/wiki-recipe";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { type RecordSigner } from "@lararium/mesh/sealed-records";
 import { VerbTable } from "@lararium/tw5";
 import { faceProofSubjectRef, sessionSignatureImage } from "../../lararium-mesh/src/face-proof-subjects.js";
 import { chain, signHex } from "../../lararium-mesh/tests/face-proof-fixture.js";

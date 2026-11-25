@@ -9,7 +9,12 @@
  * cannot write fails loud, naming the bag. `base` carries the writer's merge base; stale reads CONFLICT.
  */
 import { describe, test, expect } from "vitest";
-import { CompositeStore, NoWorkingLayerRefusal, bagUri, carrierHashOf, overrideBaseOf, recipeUri, wikiSlotUri, type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh";
+import { CompositeStore, NoWorkingLayerRefusal } from "@lararium/mesh/composite-store";
+import { bagUri, recipeUri } from "@lararium/mesh/lar-uris";
+import { carrierHashOf } from "@lararium/mesh/carrier-form";
+import { overrideBaseOf } from "@lararium/mesh/override-base";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import { type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
 import { effectiveRecipe } from "../src/recipe-planes.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { memeVerbOptions, makeMemePutReactor, makeMemeGetReactor, makeMemePatchReactor, makeMemeProjectReactor, makeMemeListReactor, makeMemeDeleteReactor, MEME_LIST_PAGE, type MemeVerbOptions } from "../src/meme-verbs.js";

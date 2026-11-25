@@ -1,5 +1,6 @@
-import { takeCrest, yieldToHost, type HostTaskYield, type WaveLimits } from "@lararium/mesh";
-import type { LarTiddlerChange } from "@lararium/mesh";
+import { takeCrest, type WaveLimits } from "@lararium/mesh/wave-crest";
+import { yieldToHost, type HostTaskYield } from "@lararium/mesh/host-task";
+import type { LarTiddlerChange } from "@lararium/mesh/tiddler-store";
 
 export interface LandingQueueDoor {
   enqueue(change: LarTiddlerChange): void;

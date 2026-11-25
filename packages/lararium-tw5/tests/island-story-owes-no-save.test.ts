@@ -17,7 +17,7 @@ import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { openIslandStory, HISTORY_LIST_TITLE } from "../src/island-story.js";
 import { STORY_LIST_TITLE } from "../src/default-story.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
-import type { ChangeOrigin, LarTiddlerRecord, LarWriteOptions } from "@lararium/mesh";
+import type { ChangeOrigin, LarTiddlerRecord, LarWriteOptions } from "@lararium/mesh/tiddler-store";
 
 const POINTER_PERSONAL = "lar:///ha.ka.ba/lararium/config/current-wiki-personal";
 const POINTER_TEMP     = "lar:///ha.ka.ba/lararium/config/current-wiki-temp";

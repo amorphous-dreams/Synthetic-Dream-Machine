@@ -19,7 +19,12 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
 import { announceSeatRoll, type IslandSessionProof, type SessionReading } from "@lararium/keyhive";
-import { hex, isVerbRefusal, mintOutboxKey, openOutboxParcel, readKeyParcel, readsAsOutboxSeal, restDigest, sha256HexBytesSync, utf8Bytes, type OutboxKey, type RecordSigner, type SeatRoll } from "@lararium/mesh";
+import { hex, sha256HexBytesSync, utf8Bytes } from "@lararium/mesh/crypto";
+import { isVerbRefusal } from "@lararium/mesh/verb-refusal";
+import { mintOutboxKey, openOutboxParcel, readsAsOutboxSeal, restDigest, type OutboxKey } from "@lararium/mesh/sealed-store-rest";
+import { readKeyParcel } from "@lararium/mesh/lockbox-wrap";
+import { type RecordSigner } from "@lararium/mesh/sealed-records";
+import { type SeatRoll } from "@lararium/mesh/seat-duties";
 import { VerbTable } from "@lararium/tw5";
 import { faceProofSubjectRef, sessionSignatureImage } from "../../lararium-mesh/src/face-proof-subjects.js";
 import { chain, signHex } from "../../lararium-mesh/tests/face-proof-fixture.js";
@@ -340,7 +345,7 @@ describe("the vessel registers only what rests sealed in the cad tier", () => {
     expect(refusal(sha256HexBytesSync(utf8Bytes(BODY)))).toBe("address-malformed");
     // A cleartext body under a true blake3 address of its own bytes: it rests, it recomputes, and it reads as no sealed value.
     const { writeCasEntriesFs } = await import("../src/node-cas.js");
-    const { sealedAddressOf } = await import("@lararium/mesh");
+    const { sealedAddressOf } = await import("@lararium/mesh/sealed-chunk");
     const clear = utf8Bytes(BODY.repeat(8));
     const clearCid = sealedAddressOf(clear);
     writeCasEntriesFs([{ cid: clearCid, bytes: clear }], cadSealDir(root));

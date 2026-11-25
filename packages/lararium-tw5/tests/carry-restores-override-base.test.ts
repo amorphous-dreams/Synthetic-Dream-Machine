@@ -14,7 +14,15 @@
  *       that fragment; a malformed family base refuses at the parse
  */
 import { describe, test, expect } from "vitest";
-import { AutomergeDocStore, CompositeStore, carrierHashOf, emptyLarDoc, overrideBaseOf, parseResidencyAction, type CapabilityAccess, type CapabilityVerifyResult, type Verb, type VerbContext } from "@lararium/mesh";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { carrierHashOf } from "@lararium/mesh/carrier-form";
+import { emptyLarDoc } from "@lararium/mesh/base-doc";
+import { overrideBaseOf } from "@lararium/mesh/override-base";
+import { parseResidencyAction } from "@lararium/mesh/residency-actions";
+import { type CapabilityAccess, type CapabilityVerifyResult } from "@lararium/mesh/capability";
+import { type Verb } from "@lararium/mesh/verb-tiddler";
+import { type VerbContext } from "../src/verb-dispatcher.js";
 import { carrierHash } from "@lararium/mesh/crypto";
 import { Repo } from "./wiki-shore-rig.js";
 import { registerActionReactors, makeOverrideBasesReactor, makeFresherCanonReactor } from "../src/action-handler.js";

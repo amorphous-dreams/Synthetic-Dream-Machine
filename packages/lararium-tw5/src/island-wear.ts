@@ -8,7 +8,9 @@
  * actor it writes under is its own: the vessel's Repo and the island's never hand one actor's sequence out twice, and an
  * island that boots again writes under fresh actors. Each (face, document) settles once for the island's life.
  */
-import { VerbRefusal, type DaemonMsg_WearActorRequest, type DaemonMsg_WearActorResult, type FaceActorDoor } from "@lararium/mesh";
+import { VerbRefusal } from "@lararium/mesh/verb-refusal";
+import { type DaemonMsg_WearActorRequest, type DaemonMsg_WearActorResult } from "@lararium/mesh/island-protocol";
+import { type FaceActorDoor } from "@lararium/mesh/automerge-doc-store";
 
 export interface IslandWearDoor {
   /** The door the island Repo seats (`seatRepoWear`): every store over its documents writes a worn face's change through it. */

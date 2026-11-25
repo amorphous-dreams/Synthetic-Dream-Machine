@@ -35,14 +35,31 @@ import { wardCredentialOfRoute, type WardCredential } from "../ward-credential.j
 import { existsSync, readFileSync, unlinkSync } from "node:fs";
 import type { Repo } from "@automerge/automerge-repo";
 import * as ed25519 from "@noble/ed25519";
+import { PERSONA_GROUP_ID_TIDDLER } from "@lararium/mesh/lar-uris";
 import {
-  PERSONA_GROUP_ID_TIDDLER, composeFleetJoinAnswer, composeFleetJoinOffer, composeFleetJoinRequest, fleetJoinHearthOf,
-  fleetJoinSealPair, foldWithdrawals, hex, issueCertificate, mintVesselFaceKey, readFleetJoinAnswer, readFleetJoinOffer,
-  readFleetJoinRequest, heldNexusRoot, FleetJoinRootRefused, makeMultiSigQuorumVerifier, nexusAidOf, verifySignedAdmitBundle,
-  gateBundleDigest, admitGatePinDigest,
-  type FleetJoinAnswer, type FleetJoinOffer, type FleetJoinRequest, type FleetJoinRootDoors,
-  faceAtomKeyFromSeed, ownEntry,
-} from "@lararium/mesh";
+  composeFleetJoinAnswer,
+  composeFleetJoinOffer,
+  composeFleetJoinRequest,
+  fleetJoinHearthOf,
+  fleetJoinSealPair,
+  readFleetJoinAnswer,
+  readFleetJoinOffer,
+  readFleetJoinRequest,
+  FleetJoinRootRefused,
+  type FleetJoinAnswer,
+  type FleetJoinOffer,
+  type FleetJoinRequest,
+  type FleetJoinRootDoors,
+} from "@lararium/mesh/fleet-join";
+import { foldWithdrawals, issueCertificate, mintVesselFaceKey } from "@lararium/mesh/face-authority";
+import { hex } from "@lararium/mesh/crypto";
+import { heldNexusRoot, verifySignedAdmitBundle } from "@lararium/mesh/held-nexus-root";
+import { makeMultiSigQuorumVerifier } from "@lararium/mesh/kapae-antigen";
+import { nexusAidOf } from "@lararium/mesh/nexus-seal-seed";
+import { gateBundleDigest } from "@lararium/mesh/gate-bundle";
+import { admitGatePinDigest } from "@lararium/mesh/admit-gate-pin";
+import { faceAtomKeyFromSeed } from "@lararium/mesh/face-atom";
+import { ownEntry } from "@lararium/mesh/stored-value";
 import { takeAdmitBundle, type AdmitBundle } from "../admit-bundle.js";
 import { importCarriedCharter, primaryNexusAid } from "../carried-set.js";
 import { FaceHouseholdAdmitRefused, ensureFaceHouseholdAdmit, ensureFaceHouseholdLeaf } from "../face-household-admit.js";

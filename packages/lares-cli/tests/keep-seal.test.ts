@@ -20,7 +20,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import type { ShareEntry } from "@lararium/mesh";
+import type { ShareEntry } from "@lararium/mesh/share-config";
 import { houseExport, houseImport, type BundleDoors, type BundleVesselFace } from "../src/commands/house-bundle.js";
 import { walkBundle, bundleBytes, MANIFEST_FILE } from "../src/bundle-manifest.js";
 

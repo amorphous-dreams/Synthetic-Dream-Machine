@@ -5,7 +5,11 @@
  * rides inert on every wiki: it runs in the tab alone.
  */
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { CompositeStore, emptyLarDoc, wikiSlotUri, type DocHandle, type LarDoc, type LarTiddlerRecord } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import { type DocHandle } from "@lararium/mesh/automerge";
+import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { buildIslandRecipe, seedDrained } from "../src/island-recipe.js";
 import { bootTestWiki, skipNote, wikiSkip } from "./test-wiki.js";
 import type { TW5Engine } from "../src/tw5-vm.js";

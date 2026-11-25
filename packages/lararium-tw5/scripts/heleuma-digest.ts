@@ -15,7 +15,7 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/tw5-module
  */
 import { tagDigest, formatDigest, digestsEqual, SHA256_ALGO } from "@lararium/mesh/agile-digest";
-import { sha256HexSync } from "@lararium/mesh";
+import { sha256HexSync } from "@lararium/mesh/crypto";
 import { stampCarrier } from "@lararium/memetic-frame";
 import { memeticWikitextDeserializer } from "../src/deserializer.js";
 import { alignMetaTomlColumns } from "../src/meme-normalize.js";

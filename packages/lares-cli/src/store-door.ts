@@ -12,7 +12,10 @@
  */
 
 import { wardTicketFor } from "./ward-door.js";
-import { ControlHomeUnavailable, newRequestId, VESSEL_LOCKED, type Credential, type SessionReceipt } from "@lararium/mesh";
+import { ControlHomeUnavailable, VESSEL_LOCKED } from "@lararium/mesh/control-home";
+import { newRequestId } from "@lararium/mesh/verb-tiddler";
+import { type Credential } from "@lararium/mesh/keyslot-door";
+import { type SessionReceipt } from "@lararium/mesh/session-receipt";
 import { storeDoorDirect, storeVerbFace, storeVerbGatesFirst, StoreHeld, STORE_DOOR_FACE_VERBS, type StoreDoorVerb } from "@lararium/node";
 import { openLocalSession, SessionRefused } from "./session-connector.js";
 import { sealedAct } from "./sealed-act-door.js";

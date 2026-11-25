@@ -14,17 +14,33 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import * as ed from "@noble/ed25519";
 import { interpretAsDocumentId, type DocumentId, type PeerId } from "@automerge/automerge-repo";
+import { hex } from "@lararium/mesh/crypto";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { seedDaemonDoc } from "@lararium/mesh/social-seed";
 import {
-  hex, DAEMON_BAG_ID, seedDaemonDoc, materializeSharedLarDoc,
-  RealmBoardGate, RealmBagGate, realmDocUrl, realmEdgeBoardDocUrl, realmVouchBoardDocUrl, fleetEdgeBoardDocUrl,
-  deviceEdgeId, DeterministicFederationGate, crossroadsDocUrl,
-  nexusAidOf,
-  type FederationGate, type NexusMembership, type PlaneSeal, type AntigenRing,
-} from "@lararium/mesh";
+  materializeSharedLarDoc,
+  realmEdgeBoardDocUrl,
+  realmVouchBoardDocUrl,
+  fleetEdgeBoardDocUrl,
+  crossroadsDocUrl,
+} from "@lararium/mesh/deterministic-doc";
+import { RealmBoardGate, RealmBagGate, realmDocUrl } from "@lararium/mesh/realm-bag";
+import { deviceEdgeId } from "@lararium/mesh/dyad";
+import {
+  DeterministicFederationGate,
+  type FederationGate,
+  type NexusMembership,
+  type PlaneSeal,
+  type AntigenRing,
+} from "@lararium/mesh/federation-gate";
+import { nexusAidOf } from "@lararium/mesh/nexus-seal-seed";
 import {
   generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadVesselVerifyingKey,
 } from "../src/node-vessel-identity.js";
-import { signCabalInvite, writeVouch, prepareHolderFrontier, registerHandFrontierInto, type NexusDoc } from "@lararium/mesh";
+import { signCabalInvite } from "@lararium/mesh/cabal-invite";
+import { writeVouch } from "@lararium/mesh/vouch-board";
+import { prepareHolderFrontier, registerHandFrontierInto } from "@lararium/mesh/realm-frontier";
+import { type NexusDoc } from "@lararium/mesh/nexus-seal-seed";
 import { larDataDir, larSealHome, larBootstrapPath } from "../src/vessel-paths.js";
 import { writeNexusDoc } from "../src/nexus-doc.js";
 import { noteVesselRealm } from "../src/edge-board.js";
@@ -33,14 +49,16 @@ import { runCabalVouch } from "../src/commands/cabal-vouch.js";
 import { runCabalJoin } from "../src/commands/cabal-join.js";
 import { runEdgeKapae } from "../src/commands/edge-kapae-cmd.js";
 import { runEdgeSeatMarks } from "../src/commands/edge-seats.js";
-import { signSeatRoll, ed25519SignerFromSeed } from "@lararium/mesh";
+import { signSeatRoll } from "@lararium/mesh/seat-duties";
+import { ed25519SignerFromSeed } from "@lararium/mesh/ed25519-door";
 import { makeEdgeShadowRing, type EdgeShadowRing } from "../src/edge-shadow-ring.js";
 import { floorShadowRing } from "../src/floor-fleet-lanes.js";
 import { makeGateSorter } from "../src/socket-sorter.js";
 import { gateShadowRing } from "../src/gate-shadow-ring.js";
 import { selfSlotShareDecision, NO_BANS, NOBODY_ASIDE, NOTHING_CLASSED } from "../src/self-slot-share.js";
 import { decideAndServeWantBlock, type CasWireServerDeps } from "../src/cas-wire.js";
-import type { FaceScope, GateSortInput, VesselFaceKey } from "@lararium/mesh";
+import type { FaceScope, VesselFaceKey } from "@lararium/mesh/face-proof-subjects";
+import type { GateSortInput } from "@lararium/mesh/face-gate";
 import { direct } from "./direct-store.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { chairKey, seatChairs } from "./seat-fixture.js";

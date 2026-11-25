@@ -2,11 +2,16 @@ import { describe, expect, test } from "vitest";
 import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
 import {
-  ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, exactBytesHash,
-  openPromotionApproval, promotionApprovalBytes, signPromotionApproval, verifyPromotionApproval,
-  type KahuQuorumSeats, type PromotionApproval,
-} from "@lararium/mesh";
+  exactBytesHash,
+  openPromotionApproval,
+  promotionApprovalBytes,
+  signPromotionApproval,
+  verifyPromotionApproval,
+  type PromotionApproval,
+} from "@lararium/mesh/promotion-approval";
+import { type KahuQuorumSeats } from "@lararium/mesh/kapae-antigen";
 import { promoteCarrier, type PromotionSeat } from "../src/commands/meme-promote.js";
 import { CROSSROADS_BAG, verifyPromotionReceipt } from "../src/promotion-receipt.js";
 

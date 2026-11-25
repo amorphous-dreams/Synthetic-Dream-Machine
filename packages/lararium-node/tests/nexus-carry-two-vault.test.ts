@@ -28,8 +28,17 @@ vi.mock("../src/seat-key-store.js", async (importOriginal) => {
     },
   };
 });
-import { mintColdKey, seatFingerprint, cidV1Sha256, foldCarrierSet, carriageEntriesFromBoard, carriageDocUrl, materializeSharedLarDoc,
-  foundingRoster, placeFloorPinsFromBoard, placeKelEntriesFromBoard, filePlaceFloorPins, hearthPinIndex, FLOW_SOCKET_ROUTE, type CofoundOffer } from "@lararium/mesh";
+import { mintColdKey } from "@lararium/mesh/cold-key-card";
+import { seatFingerprint, foundingRoster } from "@lararium/mesh/nexus-seal-seed";
+import { cidV1Sha256 } from "@lararium/mesh/crypto";
+import { foldCarrierSet } from "@lararium/mesh/carriage-registry";
+import { carriageEntriesFromBoard } from "@lararium/mesh/carriage-board";
+import { carriageDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { placeFloorPinsFromBoard, filePlaceFloorPins } from "@lararium/mesh/place-floor-pin";
+import { placeKelEntriesFromBoard } from "@lararium/mesh/place-kel-board";
+import { hearthPinIndex } from "@lararium/mesh/admit-gate-pin";
+import { FLOW_SOCKET_ROUTE } from "@lararium/mesh/flow-read-client";
+import { type CofoundOffer } from "@lararium/mesh/cofound";
 import { charterHomeFor, carriedCharterHome } from "../src/carried-set.js";
 import { NexusContractError, runNexusCarryFor, runNexusContractOpen, runNexusContractPartial } from "../src/commands/nexus-contract.js";
 import { takeCarryBundle, type CarryBundle } from "../src/carry-bundle.js";

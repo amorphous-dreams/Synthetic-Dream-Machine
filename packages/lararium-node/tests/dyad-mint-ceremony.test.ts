@@ -14,11 +14,14 @@ import { Repo } from "@automerge/automerge-repo";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
 import { KeyhiveProvider, runFoundingCeremony, runDeviceAdmitEdge, runApplyAdmitPayload } from "@lararium/keyhive";
 import * as ed25519 from "@noble/ed25519";
-import {
-  hex, faceAtomKeyFromSeed, vesselDyads, DYAD_SLOT_PREFIX, seedDaemonDoc, type DyadRecord,
-  personaKelBoardDocUrl, materializeSharedLarDoc, personaKelChainForPrefix, MESH_CABAL_SENTINEL_URI,
-} from "@lararium/mesh";
-import type { LarDoc } from "@lararium/mesh";
+import { hex } from "@lararium/mesh/crypto";
+import { faceAtomKeyFromSeed } from "@lararium/mesh/face-atom";
+import { vesselDyads, DYAD_SLOT_PREFIX, type DyadRecord } from "@lararium/mesh/dyad";
+import { seedDaemonDoc } from "@lararium/mesh/social-seed";
+import { personaKelBoardDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";
+import { MESH_CABAL_SENTINEL_URI } from "@lararium/mesh/lar-uris";
+import type { LarDoc } from "@lararium/mesh/base-doc";
 
 import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";

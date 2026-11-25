@@ -39,40 +39,39 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/sovereign-kernel
  */
 
-import { wearOf } from "@lararium/mesh";
+import { wearOf } from "@lararium/mesh/repo-wear";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { ENGINE_CORE_ID, type LarDoc } from "@lararium/mesh/base-doc";
 import {
-  CompositeStore,
-  ENGINE_CORE_ID,
   ORACLE_BAG,
   wikiBagUri,
   wikiSlotUri,
   expandRecipe,
   recipeLayerIndex,
+  type SlotUri,
+  slotLayerFlags,
+} from "@lararium/mesh/wiki-recipe";
+import {
   mkBreath,
   mkFault,
   isVesselToIslandMsg,
   mkTeardownAck,
   TEARDOWN_FAULT,
-  makeIslandRepo,
-  replicaHeads,
-  sha256HexBytesSync,
-  GENESIS_FLOOR_TIDDLER,
-  plainRecordOrNull,
-  resolveFloor,
-  floorRecordsInOrder,
-  floorCanonReader,
-  islandSecretHome,
-  type KahuaStageFace,
-  type Repo,
-  type DocHandle,
-  type AutomergeUrl,
-  type StorageAdapterInterface,
-  type LarDoc,
   type IslandMsg_Manifest,
   type IslandToVesselMsg,
-  type SlotUri,
-  type LarTiddlerRecord, ownEntry, CONTROL_HOME_ID, controlStoreOf, floorAnswerStore, mkDaemonFloorAnswer, ControlHomeUnavailable,
-  AutomergeDocStore, slotLayerFlags } from "@lararium/mesh";
+  mkDaemonFloorAnswer,
+} from "@lararium/mesh/island-protocol";
+import { makeIslandRepo, replicaHeads } from "@lararium/mesh/island-repo";
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
+import { GENESIS_FLOOR_TIDDLER, resolveFloor, floorRecordsInOrder, floorCanonReader } from "@lararium/mesh/floor-manifest";
+import { plainRecordOrNull, ownEntry } from "@lararium/mesh/stored-value";
+import { islandSecretHome } from "@lararium/mesh/secret-home";
+import { type KahuaStageFace } from "@lararium/mesh/kahua-stage-store";
+import { type Repo, type DocHandle, type AutomergeUrl, type StorageAdapterInterface } from "@lararium/mesh/automerge";
+import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
+import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
+import { controlStoreOf, floorAnswerStore, ControlHomeUnavailable } from "@lararium/mesh/control-home";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
 import { IslandKernel } from "./island-kernel.js";
 import { waitForSlotDocument } from "./slot-wait.js";
 import { storeLiveness, type StoreLiveness } from "./store-liveness.js";

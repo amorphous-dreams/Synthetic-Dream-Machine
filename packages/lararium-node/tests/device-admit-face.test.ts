@@ -19,22 +19,31 @@ vi.mock("../src/edge-board.js", () => ({
     return { handle: { doc: () => ({}) }, counted: { acts: [] }, ledger: { doc: () => ({}) }, readings: new Map([[`edge:${scope}:device`, { stands: scope === seam.asideOn, verdict: "raised" }]]) };
   },
 }));
-vi.mock("@lararium/mesh", async (real) => ({
+vi.mock("@lararium/mesh/deterministic-doc", async (real) => ({
   ...(await real<object>()),
   fleetEdgeBoardDocUrl: (root: string) => `board:${root}`,
+}));
+vi.mock("@lararium/mesh/dyad", async (real) => ({
+  ...(await real<object>()),
   fleetEdgeAuthority: () => ({}),
+  deviceEdgeId: (root: string, device: string) => `edge:${root}:${device}`,
+}));
+vi.mock("@lararium/mesh/fleet-frontier", async (real) => ({
+  ...(await real<object>()),
   readFleetFrontier: () => seam.frontier === "known"
     ? { status: "known", asOf: {} }
     : { status: "unknown", missing: [{ hand: "fleet", why: "no-frontier" }] },
   fleetRaiseCids: () => [],
+}));
+vi.mock("@lararium/mesh/edge-frontier-board", async (real) => ({
+  ...(await real<object>()),
   readFrontierPins: () => ({}),
-  deviceEdgeId: (root: string, device: string) => `edge:${root}:${device}`,
 }));
 
 vi.mock("../src/fleet-lineage.js", () => ({ fleetLineageForVessel: async () => ({}) }));
 
 import { assertDyadBinds } from "../src/commands/device-admit.js";
-import { faceAtomKeyFromSeed } from "@lararium/mesh";
+import { faceAtomKeyFromSeed } from "@lararium/mesh/face-atom";
 
 describe("the dyad consult reads the signing face's fleet", () => {
   test("CONTROL: no face named reads the founding face's fleet", async () => {

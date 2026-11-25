@@ -31,18 +31,8 @@
  *     callback receiving (tiddler | undefined, title) for each input tiddler.
  */
 
-import type {
-  ITW5TiddlerInputFields,
-  TW5TiddlerInputFields,
-  ITW5TiddlerFields,
-  TW5TiddlerFields,
-} from "@lararium/mesh";
-export type {
-  ITW5TiddlerInputFields,
-  TW5TiddlerInputFields,
-  ITW5TiddlerFields,
-  TW5TiddlerFields,
-} from "@lararium/mesh";
+import type { ITW5TiddlerInputFields, TW5TiddlerInputFields, ITW5TiddlerFields, TW5TiddlerFields } from "@lararium/mesh/tiddler-store";
+export type { ITW5TiddlerInputFields, TW5TiddlerInputFields, ITW5TiddlerFields, TW5TiddlerFields } from "@lararium/mesh/tiddler-store";
 
 // ---------------------------------------------------------------------------
 // Parse tree nodes (produced by parsers, consumed by widget engine)

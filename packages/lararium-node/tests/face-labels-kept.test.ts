@@ -14,7 +14,10 @@ import { describe, expect, test, beforeEach, afterEach } from "vitest";
 import { mkdtempSync, rmSync, existsSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { deviceDaemonDocs, CONTROL_HOME_ID, emptyLarDoc, storedLarRecord, type LarDoc } from "@lararium/mesh";
+import { deviceDaemonDocs } from "@lararium/mesh/device-daemon-docs";
+import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
 import { writeFaceLabel, readFaceLabel, keepFaceBases, readFaceBases, writeFaceBases, faceBasesPath, faceLabelPath, type KeptDoc, type KeptDocState } from "../src/face-labels.js";
 import { listStage, KahuaRefused } from "../src/commands/kahua.js";
 

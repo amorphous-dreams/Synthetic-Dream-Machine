@@ -18,7 +18,7 @@
  * reading stays open.
  */
 
-import { VerbRefusal } from "@lararium/mesh";
+import { VerbRefusal } from "@lararium/mesh/verb-refusal";
 import {
   ORACLE_THROW_STANDS, castFields, castFromCoins, castReadingTitles, castRecord, castText, castThreeCoins, parseCoins,
   type OracleCast,

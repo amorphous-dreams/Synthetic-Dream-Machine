@@ -6,11 +6,17 @@
  * Control: a vessel with no PersonaGroup holds only the floor, with no face documents.
  */
 import { describe, expect, test } from "vitest";
-import {
-  groupSecretOpenerFromSeed, makeIslandRepo, materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix, personaActRecordsOfGroup,
-  mintFaceAnchor, proveFaceFromLog, seedDaemonDoc, signPersonaAct, writePersonaAct, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, actCid,
-  type LarDoc,
-} from "@lararium/mesh";
+import { groupSecretOpenerFromSeed } from "@lararium/mesh/persona-group-secret";
+import { makeIslandRepo } from "@lararium/mesh/island-repo";
+import { materializeSharedLarDoc, personaKelBoardDocUrl } from "@lararium/mesh/deterministic-doc";
+import { personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";
+import { personaActRecordsOfGroup, signPersonaAct, writePersonaAct } from "@lararium/mesh/persona-act-board";
+import { mintFaceAnchor } from "@lararium/mesh/face-anchor";
+import { proveFaceFromLog } from "@lararium/mesh/face-boot-proof";
+import { seedDaemonDoc } from "@lararium/mesh/social-seed";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { actCid } from "@lararium/mesh/signed-act";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { foundTheFace, foundThePlace, runApplyAdmitPayload, runDeviceAdmitEdge } from "../src/index.js";
 import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";

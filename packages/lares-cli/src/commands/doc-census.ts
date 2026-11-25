@@ -16,7 +16,7 @@
  *
  * Meme: lar:///ha.ka.ba/lares/cli/vessel-door
  */
-import type { DocCensusReading, DocClass } from "@lararium/mesh";
+import type { DocCensusReading, DocClass } from "@lararium/mesh/doc-census";
 import type { ParsedArgs } from "../parse-args.js";
 import { sendCustodyFrame, type CustodyDoorAnswer } from "../custody-door.js";
 import { emit, proseFirst } from "../render.js";

@@ -16,7 +16,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
 import { restEvery, restingRepo } from "./resting-repo.js";
-import { emptyLarDoc, type IslandMsg_Event, type LarDoc } from "@lararium/mesh";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { type IslandMsg_Event } from "@lararium/mesh/island-protocol";
 import { openDaemonVm } from "../src/open-daemon-vm.js";
 import { docStorePath } from "../src/store-integrity.js";
 

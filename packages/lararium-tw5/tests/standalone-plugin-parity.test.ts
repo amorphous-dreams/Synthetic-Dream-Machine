@@ -21,7 +21,7 @@
 import { describe, test, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { sha256HexSync } from "@lararium/mesh";
+import { sha256HexSync } from "@lararium/mesh/crypto";
 import * as GENERATED from "../src/plugin-tiddler.generated.js";
 import { parseTidFile } from "../plugin-build/tid-file.js";
 import { PLUGIN_SKINS } from "../plugin-build/skins.js";

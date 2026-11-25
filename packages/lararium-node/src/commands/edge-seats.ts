@@ -14,10 +14,12 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/kapae#/keys
  */
 import type { Repo } from "@automerge/automerge-repo";
-import {
-  fleetEdgeBoardDocUrl, fleetEdgeAuthority, deviceEdgeId, faceAtomKeyFromSeed, raisesSeenThrough, raisesMarkedAnswered, markRaiseRolled, verifiedSeatRoll,
-  type EdgeKapae, type SignedSeatRoll,
-} from "@lararium/mesh";
+import { fleetEdgeBoardDocUrl } from "@lararium/mesh/deterministic-doc";
+import { fleetEdgeAuthority, deviceEdgeId } from "@lararium/mesh/dyad";
+import { faceAtomKeyFromSeed } from "@lararium/mesh/face-atom";
+import { raisesSeenThrough, raisesMarkedAnswered, markRaiseRolled } from "@lararium/mesh/edge-ledger";
+import { verifiedSeatRoll, type SignedSeatRoll } from "@lararium/mesh/seat-duties";
+import { type EdgeKapae } from "@lararium/mesh/edge-kapae";
 import { listPersonaRoots, loadPersonaGroupRootVerifyingKey } from "../node-vessel-identity.js";
 import { loadIdentityAnchors } from "../identity-anchors.js";
 import { loadFaceAtomOfGroup } from "../face-atom-store.js";

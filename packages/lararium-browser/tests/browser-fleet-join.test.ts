@@ -16,10 +16,20 @@
 import { bindFirstFaceSlot } from "../src/browser-face-custody.js";
 import { describe, expect, test } from "vitest";
 import { seatWardWorkerSpawn } from "../src/testing.js";
+import { admitCarriageCommit } from "@lararium/mesh/carriage-registry";
+import { custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute, type GateBundlePin } from "@lararium/mesh/gate-bundle";
 import {
-  admitCarriageCommit, custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute, type GateBundlePin, faceKeyGrantImage, fleetJoinAnswerImage, fleetJoinOffer, sealAddressSecret,
-  DOMAIN_ROOT, readFleetJoinRequest, vesselFaceTagFields, vesselFaceTagHolds, type FleetJoinOffer, type FleetJoinRequest, type VesselFaceKey,
-} from "@lararium/mesh";
+  faceKeyGrantImage,
+  fleetJoinAnswerImage,
+  fleetJoinOffer,
+  sealAddressSecret,
+  readFleetJoinRequest,
+  type FleetJoinOffer,
+  type FleetJoinRequest,
+} from "@lararium/mesh/fleet-join";
+import { DOMAIN_ROOT } from "@lararium/mesh/domains";
+import { vesselFaceTagFields, vesselFaceTagHolds } from "@lararium/mesh/vessel-face-tag";
+import { type VesselFaceKey } from "@lararium/mesh/face-proof-subjects";
 import { certificateImage } from "../../lararium-mesh/src/face-proof-subjects.js";
 import { generateOrLoadBrowserVesselIdentity, openVesselIdb, idbGet, FLEET_JOIN_STORE } from "../src/browser-vessel-identity.js";
 import { readKeystoreRecord, withCustodyRecords } from "../src/browser-custody.js";
@@ -42,7 +52,7 @@ seatWardWorkerSpawn(spawn);
 const FIXTURE_WARD = { route: async () => "browser fixture custody slot" };
 /** The tag reads apart from the pop: these reads compare tags alone, so the pop's signer answers nothing. */
 const NO_POP = async (): Promise<string> => "";
-import { placeSignerFromSeed } from "@lararium/mesh";
+import { placeSignerFromSeed } from "@lararium/mesh/place-signer";
 
 const GROUP = "0xb7f1c2a9d4e60381";
 const HEARTH_NEXUS = "nexus-hearth.synthetic";

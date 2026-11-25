@@ -22,11 +22,21 @@ import { seatSuiteWard } from "./support/scratch-custody-setup.js";
 seatSuiteWard();
 import { afterEach, beforeEach, describe, expect, vi } from "vitest";
 import * as ed from "@noble/ed25519";
+import { HandleBook } from "@lararium/mesh/handle-book";
 import {
-  HandleBook, bundleMemoryKeypair, recoveryContactRegistrationCard, hex, mintRecoveryContactEnrolment, sealKeySetHash, mintBundleKey, mintHandleInception, mintPersonaInception, openFaceBundleBody,
-  openMemorySection, readFaceBundleBody, sealMemorySection, signHandleCard,
-  type FaceBundleBody, type HandleCard, type HandleKelEvent, type PersonaKelEvent,
-} from "@lararium/mesh";
+  bundleMemoryKeypair,
+  mintBundleKey,
+  openFaceBundleBody,
+  readFaceBundleBody,
+  type FaceBundleBody,
+} from "@lararium/mesh/face-bundle";
+import { recoveryContactRegistrationCard } from "@lararium/mesh/recovery-registration";
+import { hex } from "@lararium/mesh/crypto";
+import { mintRecoveryContactEnrolment, mintPersonaInception, type PersonaKelEvent } from "@lararium/mesh/persona-kel";
+import { sealKeySetHash } from "@lararium/mesh/wax-stamp";
+import { mintHandleInception, type HandleKelEvent } from "@lararium/mesh/handle-kel";
+import { openMemorySection, sealMemorySection } from "@lararium/mesh/memory-section";
+import { signHandleCard, type HandleCard } from "@lararium/mesh/handle-card";
 import { BUNDLE_EXTRACTOR_CARRIERS, BackupRefused, CUT_REFUSALS, cutFaceBundle, type BackupDoor } from "../src/face-bundle-cut.js";
 import { storeFaceProofKey, storeVesselFaceKey } from "../src/face-key-custody.js";
 import { persistIdentityAnchors } from "../src/identity-anchors.js";

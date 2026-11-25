@@ -20,10 +20,14 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/node/dial-presentation
  */
-import {
-  admittedKeyOf, heldNexusRoot, makeMultiSigQuorumVerifier, nexusAidOfPin, presentedAdmitReader, readFaceScope,
-  type FaceScope, type GateBundlePin, type JoinedFaceTarget, type PresentationArm,
-} from "@lararium/mesh";
+import { admittedKeyOf } from "@lararium/mesh/nexus-key-line";
+import { heldNexusRoot } from "@lararium/mesh/held-nexus-root";
+import { makeMultiSigQuorumVerifier } from "@lararium/mesh/kapae-antigen";
+import { nexusAidOfPin, type GateBundlePin } from "@lararium/mesh/gate-bundle";
+import { presentedAdmitReader } from "@lararium/mesh/face-gate";
+import { readFaceScope, type FaceScope } from "@lararium/mesh/face-proof-subjects";
+import { type JoinedFaceTarget } from "@lararium/mesh/session-face";
+import { type PresentationArm } from "@lararium/mesh/gate-exchange";
 import { readKeptAdmitBundle } from "./admit-bundle.js";
 import { charterHomeFor, readKeyLine } from "./carried-set.js";
 import { readFaceJoinRecord } from "./fleet-join-custody.js";

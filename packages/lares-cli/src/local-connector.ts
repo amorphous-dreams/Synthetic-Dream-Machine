@@ -17,7 +17,7 @@ import { createConnection } from "node:net";
 import { existsSync, readdirSync, readFileSync, readlinkSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { rendezvousPath } from "@lararium/mesh/rendezvous-path";
-import { newRequestId } from "@lararium/mesh";
+import { newRequestId } from "@lararium/mesh/verb-tiddler";
 import { larDataDir } from "./env.js";
 import type { SubmitResult, SubmitOptions } from "./verb-result.js";
 

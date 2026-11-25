@@ -17,7 +17,8 @@
  * Canon: lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings ("A device set aside");
  *        lar:///ha.ka.ba/lares/api/pono/kapae#/reach
  */
-import type { FaceScope, GateShadowRing, VesselFaceKey } from "@lararium/mesh";
+import type { FaceScope, VesselFaceKey } from "@lararium/mesh/face-proof-subjects";
+import type { GateShadowRing } from "@lararium/mesh/face-gate";
 import type { EdgeShadowRing } from "./edge-shadow-ring.js";
 
 /** The device edge a presenting vessel face key stands certified under, or why the binding reads nothing. */

@@ -16,7 +16,10 @@
  *
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-records (the lockbox)
  */
-import { SEALED_LOCKBOX_BOX_DOMAIN, hex, hexToBytes, readSealedImage, sealedImage, type LockboxWrapShore } from "@lararium/mesh";
+import { SEALED_LOCKBOX_BOX_DOMAIN } from "@lararium/mesh/domains";
+import { hex, hexToBytes } from "@lararium/mesh/crypto";
+import { readSealedImage, sealedImage } from "@lararium/mesh/sealed-chunk";
+import { type LockboxWrapShore } from "@lararium/mesh/lockbox-wrap";
 
 /** The slice of a `KeyhiveProvider` the shore rides. */
 export interface LockboxProvider {

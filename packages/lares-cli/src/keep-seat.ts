@@ -35,9 +35,25 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import { mkdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
-  bindKeepSlot, confirmHeldPaper, decodeKeepSeat, decodeSlotTree, openTreeKey, encodeKeepSeat, keepVerifyKeyOf, mintKeepSeat, openKeepSecret, signKeepCut,
-  type ConfirmedPaperPin, type Credential, type KeepSeat, type KeepSecretOpening, type PinSpec, type SlotSpec,
-} from "@lararium/mesh";
+  bindKeepSlot,
+  decodeKeepSeat,
+  encodeKeepSeat,
+  keepVerifyKeyOf,
+  mintKeepSeat,
+  openKeepSecret,
+  signKeepCut,
+  type KeepSeat,
+  type KeepSecretOpening,
+} from "@lararium/mesh/keep-seat";
+import {
+  confirmHeldPaper,
+  decodeSlotTree,
+  openTreeKey,
+  type ConfirmedPaperPin,
+  type Credential,
+  type PinSpec,
+  type SlotSpec,
+} from "@lararium/mesh/keyslot-door";
 import { nativeKdf } from "@lararium/mesh/node";
 import { FsCustodyIo, atomicWriteFileSync, larConfigHome, sSlotsPath, vesselCustodyHomes } from "@lararium/node";
 import { KEEP_SEAT_FILE, REDECLARE_FILE, redeclareBytes, sealRedeclare, type BundleRedeclare } from "./bundle-manifest.js";

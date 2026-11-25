@@ -64,10 +64,32 @@
  * Meme: lar:///ha.ka.ba/lararium/browser/browser-custody
  */
 import {
-  bindSlot, unbindSlot, openTreeKey, nobleKdf, encodeSlotTree, decodeSlotTree, confirmHeldPaper, mintTreeKey, treeKeyEquals,
-  writeSealedCarrier, openSealedCarrier, removeSealedCarrier, commitSlotTree, settleRotation, SEALING_SUFFIX, ROTATING_SUFFIX,
-  constantTimeBytesEqual, isWalkRecord, VESSEL_LOCKED, type CustodyIo, type SealedCarrier, type Credential, type PinSpec, type SlotTree, type TreeKey,
-} from "@lararium/mesh";
+  bindSlot,
+  unbindSlot,
+  openTreeKey,
+  nobleKdf,
+  encodeSlotTree,
+  decodeSlotTree,
+  confirmHeldPaper,
+  type Credential,
+  type PinSpec,
+  type SlotTree,
+} from "@lararium/mesh/keyslot-door";
+import { mintTreeKey, treeKeyEquals, type TreeKey } from "@lararium/mesh/tree-key";
+import {
+  writeSealedCarrier,
+  openSealedCarrier,
+  removeSealedCarrier,
+  commitSlotTree,
+  settleRotation,
+  SEALING_SUFFIX,
+  ROTATING_SUFFIX,
+  type CustodyIo,
+  type SealedCarrier,
+} from "@lararium/mesh/sealed-writer";
+import { constantTimeBytesEqual } from "@lararium/mesh/crypto";
+import { isWalkRecord } from "@lararium/mesh/walk-client";
+import { VESSEL_LOCKED } from "@lararium/mesh/control-home";
 import { openVesselIdb } from "./browser-vessel-identity.js";
 import { clearCustodyQuestion } from "@lararium/mesh/lar-uris";
 import { readFaceRecord, removeFaceRecord, writeFaceRecord } from "./browser-face-custody.js";

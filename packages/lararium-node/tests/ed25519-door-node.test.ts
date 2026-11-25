@@ -11,7 +11,8 @@ import { describe, expect, test } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
-import { hex, hexToBytes, verifyEd25519 } from "@lararium/mesh";
+import { hex, hexToBytes } from "@lararium/mesh/crypto";
+import { verifyEd25519 } from "@lararium/mesh/ed25519-door";
 import { verifyNymSignature } from "../src/vessel-raise.js";
 import { IDENTITY_KEY, NOBODYS_SIGNATURE, torsionHand } from "../../lararium-mesh/tests/ed25519-torsion.js";
 

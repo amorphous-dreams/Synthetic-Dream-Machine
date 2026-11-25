@@ -11,13 +11,19 @@
  *   V5 — a title the workbench already holds otherwise stays at the floor and gets named; a replay still moves nothing
  */
 import { describe, test, expect } from "vitest";
-import { makeIslandRepo, liftFaceCatalogRows, catalogRowHalf } from "@lararium/mesh";
-import {
-  CompositeStore, CONTROL_HOME_ID, DAEMON_BAG_ID, PERSONAL_BINDINGS_PREFIX, slotBindingKey, computeRecipeFingerprint, didFromVerifyingKey, emptyLarDoc,
-  floorSlotTitle, mutableLarRecord, wikiBagUri, realmWorkbenchDocUrl, privateCabalRealmId, ledgerWorkbenches, materializeSharedLarDoc,
-  tiddlerText, floorAnswerStore, ControlHomeUnavailable, CONTROL_HOME_UNNAMED, floorRegistryOf, floorDaemonSlotTitle, FLOOR_UNKEYED, VESSEL_LOCKED,
-  type FloorKeyRefusal, type LarDoc, type LarTiddlerRecord,
-} from "@lararium/mesh";
+import { makeIslandRepo } from "@lararium/mesh/island-repo";
+import { liftFaceCatalogRows, catalogRowHalf } from "@lararium/mesh/catalog-view";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { CONTROL_HOME_ID, DAEMON_BAG_ID, PERSONAL_BINDINGS_PREFIX, slotBindingKey } from "@lararium/mesh/lar-uris";
+import { computeRecipeFingerprint, wikiBagUri } from "@lararium/mesh/wiki-recipe";
+import { didFromVerifyingKey } from "@lararium/mesh/lar-did";
+import { emptyLarDoc, mutableLarRecord, tiddlerText, type LarDoc } from "@lararium/mesh/base-doc";
+import { floorSlotTitle, floorDaemonSlotTitle } from "@lararium/mesh/device-daemon-docs";
+import { realmWorkbenchDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { privateCabalRealmId, ledgerWorkbenches } from "@lararium/mesh/workbench";
+import { floorAnswerStore, ControlHomeUnavailable, CONTROL_HOME_UNNAMED, VESSEL_LOCKED } from "@lararium/mesh/control-home";
+import { floorRegistryOf, FLOOR_UNKEYED, type FloorKeyRefusal } from "@lararium/mesh/floor-registry";
+import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { MemoryTiddlerStore, makeCatalogAccessor } from "@lararium/tw5";
 import { KeyhiveProvider } from "../src/keyhive-provider.js";
 import { makeSlotDocResolver } from "../src/slot-doc-resolver.js";

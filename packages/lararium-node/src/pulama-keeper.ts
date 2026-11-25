@@ -74,7 +74,10 @@
  * Meme: lar:///ha.ka.ba/kahua/memory/research/keeper-tessera#/vesting · lar:///ha.ka.ba/kahua/memory/research/keeper-lei#/shape
  */
 import { randomUUID } from "node:crypto";
-import { KEEPER_NONCE, canonicalJsonBytes, keeperCosignRefusal, mintSealedBoxRecipient, openFromSender, sealToRecipient, sha256HexBytesSync, type KeeperCosign, type SwarmWikiPort } from "@lararium/mesh";
+import { KEEPER_NONCE, keeperCosignRefusal, type KeeperCosign } from "@lararium/mesh/keeper-cosign";
+import { canonicalJsonBytes, sha256HexBytesSync } from "@lararium/mesh/crypto";
+import { mintSealedBoxRecipient, openFromSender, sealToRecipient } from "@lararium/mesh/sealed-box";
+import { type SwarmWikiPort } from "@lararium/mesh/swarm-tiddlers";
 import type { KukuluSigner } from "./kukulu-gate.js";
 import {
   pulamaRecordCid, signPulamaRecord, verifiedPulamaRecord,

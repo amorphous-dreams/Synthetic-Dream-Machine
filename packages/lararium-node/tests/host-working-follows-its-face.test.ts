@@ -18,7 +18,10 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set
  */
 import { afterEach, describe, expect, test } from "vitest";
-import { CompositeStore, CONTROL_HOME_ID, announceSlotDoc, docStorePortCell, makeIslandRepo } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
+import { announceSlotDoc, docStorePortCell } from "@lararium/mesh/sealed-rest";
+import { makeIslandRepo } from "@lararium/mesh/island-repo";
 import { MemoryTiddlerStore } from "@lararium/tw5";
 import { litFaceSlotDocs, slotAnnouncer } from "@lararium/keyhive";
 import { hostWorkingFollower } from "../src/host-working-follow.js";

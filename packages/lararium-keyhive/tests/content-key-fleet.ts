@@ -8,10 +8,11 @@
  *
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store
  */
-import {
-  ScriptedSeatRolls, memorySealedStoreRest,
-  type EdgeStanding, type RecordSigner, type RollOutcome, type SealedAddress, type SealedStoreRest,
-} from "@lararium/mesh";
+import { ScriptedSeatRolls, type RollOutcome } from "@lararium/mesh/content-key-lineage";
+import { memorySealedStoreRest, type SealedStoreRest } from "@lararium/mesh/sealed-store-rest";
+import { type EdgeStanding } from "@lararium/mesh/edge-kapae";
+import { type RecordSigner } from "@lararium/mesh/sealed-records";
+import { type SealedAddress } from "@lararium/mesh/sealed-chunk";
 import { KeyhiveProvider, InMemoryEventStore, seatContentKeys, type ContentKeySeat } from "../src/index.js";
 import { sessionSignatureImage } from "../../lararium-mesh/src/face-proof-subjects.js";
 import { chain, signHex, type Chain } from "../../lararium-mesh/tests/face-proof-fixture.js";

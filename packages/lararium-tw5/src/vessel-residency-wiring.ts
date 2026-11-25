@@ -29,15 +29,26 @@
 
 import {
   BagStowage,
-  makeWikiActivationCap,
-  slugFromUri, wikiBagUri, tiddlerText, recipeUri, deriveWikiRecipe,
-  DEFAULT_HOT_CAP, DEFAULT_IDLE_MS, DEFAULT_SWEEP_INTERVAL_MS,
-  pinTiddlerUri, pinTiddlerRecord, scanPinTiddlers, ownEntry, realmStandingDocUrl, wikiCanonAddress} from "@lararium/mesh";
-import { plainRecordOrNull, plainField, storedRecord } from "@lararium/mesh";
-import type {
-  ActivationPool, WikiActivationCap, ResolveWikiSpec,
-  LarDoc, DocHandle,
-} from "@lararium/mesh";
+  DEFAULT_HOT_CAP,
+  DEFAULT_IDLE_MS,
+  DEFAULT_SWEEP_INTERVAL_MS,
+  pinTiddlerUri,
+  pinTiddlerRecord,
+  scanPinTiddlers,
+} from "@lararium/mesh/bag-residency";
+import { makeWikiActivationCap } from "@lararium/mesh/wiki-activation";
+import { slugFromUri, wikiBagUri } from "@lararium/mesh/wiki-recipe";
+import { tiddlerText } from "@lararium/mesh/base-doc";
+import { recipeUri } from "@lararium/mesh/lar-uris";
+import { deriveWikiRecipe } from "@lararium/mesh/surface-recipe";
+import { ownEntry } from "@lararium/mesh/stored-value";
+import { realmStandingDocUrl } from "@lararium/mesh/realm-bag";
+import { wikiCanonAddress } from "@lararium/mesh/house-canon-doc";
+import { plainRecordOrNull, plainField } from "@lararium/mesh/stored-value";
+import { storedRecord } from "@lararium/mesh/stored-record";
+import type { ActivationPool, WikiActivationCap, ResolveWikiSpec } from "@lararium/mesh/wiki-activation";
+import type { LarDoc } from "@lararium/mesh/base-doc";
+import type { DocHandle } from "@lararium/mesh/automerge";
 import { buildWikiMountSpec } from "./vessel-steps.js";
 import type { DaemonVmCore } from "./daemon-vm-core.js";
 

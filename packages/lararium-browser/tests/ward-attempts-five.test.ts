@@ -7,7 +7,8 @@
  *   CONTROL: an act that opens earns its charge back; another keystore's count stands apart.
  */
 import { describe, expect, test } from "vitest";
-import { ATTEMPT_BUDGET, WardRefused } from "@lararium/mesh";
+import { ATTEMPT_BUDGET } from "@lararium/mesh/attempt-budget";
+import { WardRefused } from "@lararium/mesh/ward-slots";
 import { chargeWardAttempt, WARD_ATTEMPTS_PER_PAGE } from "../src/browser-ward-tree.js";
 
 let serial = 0;

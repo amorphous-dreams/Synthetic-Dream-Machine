@@ -45,7 +45,10 @@ const projectionsDirs = (): { projections?: string } => { const p = larProjectio
 import { readCarrierText, fileToUriForSource } from "../ingest-core.js";
 import { stageBodyToCas, carrierCasFlagged, declaredType } from "../cas-stage.js";
 import { metaTableFromBody } from "@lararium/node";
-import { bagManifestUri, BAG_MANIFEST_FILE, ACTION_VERBS, isActionVerb, isTransferVerb, isBagVerb, newChangeId, newRequestId, taskContentId, OUTCOME_URI_PREFIX, wikiSlugOfBag } from "@lararium/mesh";
+import { bagManifestUri, BAG_MANIFEST_FILE } from "@lararium/mesh/bag-manifest";
+import { ACTION_VERBS, isActionVerb, isTransferVerb, isBagVerb, newChangeId } from "@lararium/mesh/residency-actions";
+import { newRequestId, taskContentId, OUTCOME_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
+import { wikiSlugOfBag } from "@lararium/mesh/surface-recipe";
 import { summaryOutput, type SubmitResult } from "../verb-result.js";
 import { runVerb } from "../verb-call.js";
 import { LocalWaitExpired, queryReceipt, type ReceiptAnswer } from "../local-connector.js";
