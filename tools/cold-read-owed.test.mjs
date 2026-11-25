@@ -10,7 +10,7 @@ import { createHash } from "node:crypto";
 import { copyFileSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { LIST, MATCHER, ROOT, SELF, coldRead, gitAt, lines, parseRawZ, recordHash, shown } from "./cold-read-owed.mjs";
+import { DEVELOP, LIST, MATCHER, ROOT, SELF, checkMerge, coldRead, gitAt, lines, parseRawZ, recordHash, shown } from "./cold-read-owed.mjs";
 
 const LISTED = { paths: [LIST, SELF, MATCHER, "tools/ci-verdict.mjs", ".github/**", "vendor/**"], tokens: ["custody"] };
 const ENV = Object.fromEntries(Object.entries(process.env).filter(([k]) => !k.startsWith("GIT_")));
@@ -19,9 +19,13 @@ const sh = (cwd, ...args) => {
   assert.equal(r.status, 0, `git ${args.join(" ")}: ${r.stderr}`);
   return r.stdout.trim();
 };
+const GIT = ["-c", "user.name=fixture", "-c", "user.email=fixture@example.invalid", "-c", "commit.gpgsign=false", "-c", "core.hooksPath=/dev/null"];
+/** A git call allowed to refuse (a merge that conflicts): its exit status. */
+const shStatus = (cwd, ...args) => spawnSync("git", [...GIT, ...args], { cwd, encoding: "utf8", env: ENV }).status;
 const put = (root, path, text) => { mkdirSync(dirname(join(root, path)), { recursive: true }); writeFileSync(join(root, path), text); };
 
-/** A fixture repo on `develop`: the judge's own bytes, `list` (text or object; null leaves it out), the real matcher (false leaves it out). */
+/** A fixture repo on `develop`, its `refs/remotes/origin/develop` standing at the same commit (`sync()` brings it along after
+ *  develop moves; `commit(message)` commits the whole bench tree and syncs): the judge's own bytes, `list` (text or object; null leaves it out), the real matcher (false leaves it out). */
 function fixture(t, { list = LISTED, matcher = true, judge = true } = {}) {
   const root = mkdtempSync(join(tmpdir(), "cold-read-fixture-"));
   t.after(() => rmSync(root, { recursive: true, force: true }));
@@ -34,6 +38,9 @@ function fixture(t, { list = LISTED, matcher = true, judge = true } = {}) {
   sh(root, "add", "-A");
   sh(root, "commit", "-q", "-m", "base");
   const base = sh(root, "rev-parse", "HEAD");
+  const sync = () => { sh(root, "update-ref", DEVELOP, "HEAD"); return sh(root, "rev-parse", "HEAD"); };
+  const commit = (message) => { sh(root, "add", "-A"); sh(root, "commit", "-q", "-m", message); return sync(); };
+  sync();
   /** A lane branch off develop: `edit(root)` moves the tree, the commit takes all of it (`addAll: false` commits the index as
    *  the edit left it, for a pointer no working file backs), the bench returns to develop. */
   const lane = (name, edit, { addAll = true } = {}) => {
@@ -45,7 +52,17 @@ function fixture(t, { list = LISTED, matcher = true, judge = true } = {}) {
     sh(root, "checkout", "-q", "develop");
     return head;
   };
-  return { root, base, lane };
+  /** One more commit on an existing lane branch. */
+  const advance = (name, edit) => {
+    sh(root, "checkout", "-q", name);
+    edit(root);
+    sh(root, "add", "-A");
+    sh(root, "commit", "-q", "-m", `${name} moves`);
+    const head = sh(root, "rev-parse", "HEAD");
+    sh(root, "checkout", "-q", "develop");
+    return head;
+  };
+  return { root, base, lane, advance, sync, commit };
 }
 
 test("RED: a lane touching a globbed path and a token path owes those, in the diff's order; CONTROL: a plain path owes nothing", (t) => {
@@ -60,6 +77,9 @@ test("RED: a lane touching a globbed path and a token path owes those, in the di
   const [verdict, record] = lines(r);
   assert.equal(verdict, "COLD READ OWED: .github/workflows/ci.yml, docs/Custody-notes.md");
   assert.equal(record, `cold-read: owed · head ${head} · base ${f.base} · list ${r.listSha} · paths 2 · record-hash ${r.hash}`);
+  assert.equal(lines(r).length, 3);
+  assert.ok(lines(r)[2].startsWith(`land: git merge --no-ff ${head} `), "the landing command names the pinned sha, never the branch");
+  assert.ok(lines(r)[2].includes(`"Cold-Read: ${r.hash}"`) && lines(r)[2].includes(`--check-merge HEAD ${head}`));
 
   f.lane("plain", (r2) => put(r2, "notes/plain.md", "moved\n"));
   const clean = coldRead({ root: f.root, lane: "plain" });
@@ -141,10 +161,45 @@ test("RED: a matcher that answers a non-list, or a path nobody asked, reads unre
   }
 });
 
-test("a lane owes nothing only where its tree equals the base's: the same commit, an empty commit, a change and its undoing", (t) => {
+test("RED: a lane head that equals the base refuses, by name or by sha, with or without --base: nothing stands there to merge", (t) => {
   const f = fixture(t);
-  assert.deepEqual(coldRead({ root: f.root, lane: "develop" }).paths, []);
-  assert.deepEqual(coldRead({ root: f.root, lane: f.base }).paths, []);
+  for (const r of [coldRead({ root: f.root, lane: "develop" }), coldRead({ root: f.root, lane: f.base }), coldRead({ root: f.root, lane: "HEAD", base: "HEAD" }), coldRead({ root: f.root, lane: f.base, base: f.base })]) {
+    assert.equal(r.unread, true);
+    assert.equal(r.owed, true);
+    assert.match(r.paths[0], /equals the base/);
+    assert.equal(lines(r).length, 2, "no landing command rides a refusal of place");
+  }
+});
+
+test("RED: run from the lane's own worktree the judge refuses: the lane never judges itself against itself", (t) => {
+  const f = fixture(t);
+  const head = f.lane("lane", (r) => put(r, ".github/a.yml", "a\n"));
+  const laneTree = mkdtempSync(join(tmpdir(), "cold-read-lane-"));
+  t.after(() => { rmSync(laneTree, { recursive: true, force: true }); });
+  const wt = join(laneTree, "wt");
+  sh(f.root, "worktree", "add", "-q", wt, "lane");
+  for (const lane of ["HEAD", "lane", head]) {
+    const r = coldRead({ root: wt, lane });
+    assert.equal(r.unread, true, lane);
+    assert.match(r.paths[0], /differs from refs\/remotes\/origin\/develop/);
+    assert.equal(r.landable, false);
+  }
+  // The lane's own copy of the judge, run as a command from the lane's tree: the same refusal.
+  const ran = spawnSync(process.execPath, [join(wt, SELF), "HEAD"], { encoding: "utf8", env: ENV, cwd: wt });
+  assert.equal(ran.status, 0, ran.stderr);
+  assert.match(ran.stdout, /^COLD READ OWED: \(unread: this bench's HEAD /);
+  assert.ok(!ran.stdout.includes("none owed") && !ran.stdout.includes("land: "));
+  assert.deepEqual(coldRead({ root: f.root, lane: "lane" }).paths, [".github/a.yml"], "CONTROL: the landing bench reads it");
+  // A lane that drags the shared develop ref onto its own head lands on the other refusal.
+  sh(f.root, "update-ref", DEVELOP, head);
+  const dragged = coldRead({ root: wt, lane: "HEAD" });
+  assert.equal(dragged.unread, true);
+  assert.match(dragged.paths[0], /equals the base/);
+  assert.match(coldRead({ root: f.root, lane: "lane" }).paths[0], /differs from refs\/remotes\/origin\/develop/, "and the landing bench, now off that ref, refuses too");
+});
+
+test("a lane owes nothing only where its tree equals the base's: an empty commit, a change and its undoing", (t) => {
+  const f = fixture(t);
   f.lane("empty", () => {});
   assert.deepEqual(coldRead({ root: f.root, lane: "empty" }).paths, []);
   sh(f.root, "checkout", "-q", "-b", "undone", "develop");
@@ -164,8 +219,7 @@ test("RED: the two-tree read owes a path the lane holds apart from the base even
   const f = fixture(t);
   f.lane("behind", (r) => put(r, "notes/plain.md", "moved\n"));
   put(f.root, ".github/a.yml", "a\n");
-  sh(f.root, "add", "-A");
-  sh(f.root, "commit", "-q", "-m", "develop moves");
+  f.commit("develop moves");
   assert.deepEqual(coldRead({ root: f.root, lane: "behind" }).paths, [".github/a.yml"]);
   sh(f.root, "checkout", "-q", "behind");
   sh(f.root, "merge", "-q", "--no-edit", "develop");
@@ -199,11 +253,13 @@ test("RED: the judge reads the lane through git objects alone: a lane worktree's
   }
   const asked = [];
   const real = gitAt(f.root);
-  const r = coldRead({ root: f.root, lane: "lane", git: (args) => { asked.push(args); return real(args); } });
+  const r = coldRead({ root: f.root, lane: "lane", git: (args, o) => { asked.push(args); return real(args, o); } });
   assert.deepEqual(r.paths, [".github/a.yml"]);
   const names = asked.map((a) => a[0]);
-  assert.deepEqual([...new Set(names)].sort(), ["cat-file", "diff-tree", "rev-parse"]);
-  assert.equal(names.filter((n) => n === "rev-parse").length, 2, "each end pins once");
+  assert.deepEqual([...new Set(names)].sort(), ["cat-file", "diff-tree", "merge-tree", "rev-parse"]);
+  assert.deepEqual(asked.filter((a) => a[0] === "rev-parse").map((a) => a.at(-1)), [`${DEVELOP}^{commit}`, "HEAD^{commit}", "lane^{commit}"], "the base, the bench and the lane each pin once");
+  assert.deepEqual(asked.find((a) => a[0] === "merge-tree").slice(-2), [f.base, r.head], "the trial merge names the two pinned shas");
+  for (const a of asked.filter((x) => x[0] === "diff-tree")) assert.equal(a.at(-2), f.base, "every diff starts at the pinned base");
   for (const a of asked.filter((x) => x[0] === "cat-file")) assert.ok(a.at(-1).startsWith(`${f.base}:`), `every blob comes from the pinned base: ${a.at(-1)}`);
   assert.deepEqual(asked.find((a) => a[0] === "diff-tree").slice(-2), [f.base, r.head], "the diff names the two pinned shas, never a ref");
 });
@@ -213,18 +269,19 @@ test("RED: a ref or a HEAD that moves after the pin changes nothing: both ends s
   const head = f.lane("lane", (r) => put(r, ".github/a.yml", "a\n"));
   const real = gitAt(f.root);
   let pins = 0;
-  const git = (args) => {
-    const out = real(args);
-    if (args[0] === "rev-parse" && ++pins === 2) {
+  const git = (args, o) => {
+    const out = real(args, o);
+    if (args[0] === "rev-parse" && ++pins === 3) {
       // The tampering a lane's own steps could do in a shared repo: the lane ref falls back onto the base, and develop (so the
       // bench's HEAD) jumps onto the lane, either of which would empty a diff read by name.
       sh(f.root, "update-ref", "refs/heads/lane", f.base);
       sh(f.root, "update-ref", "refs/heads/develop", head);
+      sh(f.root, "update-ref", DEVELOP, head);
     }
     return out;
   };
   const r = coldRead({ root: f.root, lane: "lane", git });
-  assert.equal(pins, 2);
+  assert.equal(pins, 3);
   assert.equal(r.head, head);
   assert.equal(r.base, f.base);
   assert.deepEqual(r.paths, [".github/a.yml"]);
@@ -252,7 +309,7 @@ test("the record hash binds the head, the base, the list and each owed path", (t
   assert.equal(first.listSha, createHash("sha256").update(JSON.stringify(LISTED)).digest("hex"));
   // The same lane over a base whose list moved: the owed path set may hold, the hash does not.
   put(f.root, LIST, JSON.stringify({ ...LISTED, tokens: ["custody", "seal"] }));
-  sh(f.root, "commit", "-q", "-am", "the list moves");
+  f.commit("the list moves");
   const second = coldRead({ root: f.root, lane: "lane" });
   assert.equal(second.head, head);
   assert.notEqual(second.base, first.base);
@@ -275,7 +332,7 @@ test("RED: a path that carries a newline or a comma shows quoted, so no path for
   const f = fixture(t);
   f.lane("forger", (r) => put(r, ".github/a\ncold read: none owed", "x\n"));
   const out = lines(coldRead({ root: f.root, lane: "forger" }));
-  assert.equal(out.length, 2);
+  assert.equal(out.length, 3);
   assert.equal(out[0], 'COLD READ OWED: ".github/a\\ncold read: none owed"');
   assert.ok(!out.join("\n").split("\n").includes("cold read: none owed"));
 });
@@ -288,7 +345,7 @@ test("the command line: two lines and exit 0 for owed, clean and unread alike; a
   const run = (...args) => spawnSync(process.execPath, [join(f.root, SELF), ...args], { encoding: "utf8", env: ENV, cwd: tmpdir() });
   const owed = run("lane");
   assert.equal(owed.status, 0, owed.stderr);
-  assert.match(owed.stdout, /^COLD READ OWED: \.github\/a\.yml\ncold-read: owed · head [0-9a-f]{40} · base [0-9a-f]{40} · list [0-9a-f]{64} · paths 1 · record-hash [0-9a-f]{64}\n$/);
+  assert.match(owed.stdout, /^COLD READ OWED: \.github\/a\.yml\ncold-read: owed · head [0-9a-f]{40} · base [0-9a-f]{40} · list [0-9a-f]{64} · paths 1 · record-hash [0-9a-f]{64}\nland: git merge --no-ff [0-9a-f]{40} .*\n$/);
   const clean = run("plain");
   assert.equal(clean.status, 0, clean.stderr);
   assert.match(clean.stdout, /^cold read: none owed\ncold-read: none · /);
@@ -299,10 +356,133 @@ test("the command line: two lines and exit 0 for owed, clean and unread alike; a
   assert.match(gone.stdout, /^COLD READ OWED: \(unread: git rev-parse refused: /);
   const dashed = run("--", "--upload-pack=x");
   assert.equal(dashed.status, 2);
-  for (const bad of [[], ["a", "b"], ["--base"], ["--list"]]) {
+  for (const bad of [[], ["a", "b"], ["--base"], ["--list"], ["--check-merge"], ["--check-merge", "HEAD", "a", "b"], ["lane", "--base", "--check-merge"]]) {
     const r = run(...bad);
     assert.equal(r.status, 2, bad.join(" "));
     assert.match(r.stdout, /^COLD READ OWED: \(unread: /);
     assert.match(r.stderr, /usage: cold-read-owed\.mjs/);
   }
+});
+
+test("RED: a lane pushed after the read lands another head, and --check-merge catches it by the message's hash and by the pinned sha", (t) => {
+  const f = fixture(t);
+  const read = f.lane("lane", (r) => put(r, "notes/plain.md", "moved\n"));
+  const r = coldRead({ root: f.root, lane: "lane" });
+  assert.deepEqual(r.paths, [], "the read saw a plain lane");
+  const late = f.advance("lane", (r2) => put(r2, ".github/late.yml", "late\n"));
+  // The landing by BRANCH NAME takes the later head; the message still quotes the read's hash.
+  sh(f.root, "merge", "-q", "--no-ff", "-m", "land the lane", "-m", `Cold-Read: ${r.hash}`, "lane");
+  const byMessage = checkMerge({ root: f.root, merge: "HEAD" });
+  assert.equal(byMessage.unread, true);
+  assert.equal(byMessage.head, late);
+  assert.match(byMessage.paths[0], /quotes another read's hash/);
+  const bySha = checkMerge({ root: f.root, merge: "HEAD", head: read });
+  assert.equal(bySha.unread, true);
+  assert.match(bySha.paths[0], /lane moved after the read/);
+  assert.match(lines(bySha)[0], /^COLD READ OWED: \(unread: /);
+  assert.match(checkMerge({ root: f.root, merge: "HEAD", head: "lane" }).paths.join(), /\.github\/late\.yml/, "CONTROL: held to the head it truly merged, the judge names what that head owes");
+
+  // CONTROL: the landing by the pinned sha, message intact, reads through, and its record covers the merge sha.
+  sh(f.root, "reset", "-q", "--hard", f.base);
+  sh(f.root, "merge", "-q", "--no-ff", "-m", "land the lane", "-m", `Cold-Read: ${r.hash}`, read);
+  const merge = sh(f.root, "rev-parse", "HEAD");
+  for (const ok of [checkMerge({ root: f.root, merge: "HEAD" }), checkMerge({ root: f.root, merge, head: read })]) {
+    assert.equal(ok.unread, false, ok.paths[0]);
+    assert.deepEqual(ok.paths, []);
+    assert.deepEqual([ok.merge, ok.base, ok.head], [merge, f.base, read]);
+    assert.equal(ok.hash, recordHash({ head: merge, base: f.base, listSha: ok.listSha, paths: [] }));
+    assert.deepEqual(lines(ok), ["cold read: none owed", `cold-read: none · merge ${merge} · head ${read} · base ${f.base} · list ${ok.listSha} · paths 0 · record-hash ${ok.hash}`]);
+  }
+  // A message carrying no line, and no sha handed over: nothing ties the merge to a read.
+  sh(f.root, "reset", "-q", "--hard", f.base);
+  sh(f.root, "merge", "-q", "--no-ff", "-m", "land the lane", read);
+  assert.match(checkMerge({ root: f.root, merge: "HEAD" }).paths[0], /quotes 0 Cold-Read lines/);
+  // A commit of another shape, and a merge whose first parent no longer stands as the base.
+  assert.match(checkMerge({ root: f.root, merge: read, head: read }).paths[0], /holds 1 parent/);
+  const landed = f.sync();
+  assert.match(checkMerge({ root: f.root, merge: landed, head: read }).paths[0], /first parent .* differs from the base/);
+  assert.equal(checkMerge({ root: f.root, merge: landed, head: read, base: f.base }).unread, false, "--base names the first parent on the caller's own word");
+});
+
+test("RED: a directory renamed on the lane carries develop's new file to a path neither tree holds, and the class still names it", (t) => {
+  const f = fixture(t, { list: { paths: [LIST, SELF, MATCHER, "e/x.txt"], tokens: [] } });
+  put(f.root, "d/a.txt", "first file, long enough to pair\n");
+  put(f.root, "d/b.txt", "second file, long enough to pair\n");
+  f.commit("a directory");
+  const head = f.lane("lane", (r) => sh(r, "mv", "d", "e"));
+  put(f.root, "d/x.txt", "develop's new file\n");
+  const base = f.commit("develop adds d/x.txt");
+  // The two trees alone: develop holds d/x.txt, the lane holds no x.txt anywhere, so e/x.txt appears in neither.
+  assert.ok(!parseRawZ(gitAt(f.root)(["diff-tree", "-r", "--no-renames", "--raw", "-z", base, head])).includes("e/x.txt"), "CONTROL: the two-tree diff never names e/x.txt");
+  // git's default asks a hand to place the file: a conflict, so unread.
+  const asked = coldRead({ root: f.root, lane: head });
+  assert.equal(asked.unread, true);
+  assert.match(asked.paths[0], /conflicts or refuses/);
+  assert.equal(asked.landable, true, "the familiar still lands it by hand, by the pinned sha");
+  // Where the bench's git places the file itself, the trial merge's tree names e/x.txt; a git whose plumbing reads no such
+  // setting keeps answering the conflict. Either way the read never comes back clean.
+  sh(f.root, "config", "merge.directoryRenames", "true");
+  const placed = coldRead({ root: f.root, lane: head });
+  assert.equal(placed.owed, true);
+  if (!placed.unread) assert.deepEqual(placed.paths, ["e/x.txt"]);
+  // The real merge, re-judged against its own tree.
+  sh(f.root, "merge", "-q", "--no-ff", "-m", "land the rename", head);
+  assert.equal(sh(f.root, "ls-files", "e/x.txt"), "e/x.txt", "CONTROL: the merge did place the file there");
+  const merged = checkMerge({ root: f.root, merge: "HEAD", head });
+  assert.equal(merged.unread, false, merged.paths[0]);
+  assert.deepEqual(merged.paths, ["e/x.txt"]);
+});
+
+test("RED: a hand-resolved merge whose resolution touches a class path owes that path, and a quiet extra in a clean merge reads as beyond the read", (t) => {
+  const f = fixture(t);
+  const head = f.lane("lane", (r) => put(r, "notes/plain.md", "the lane's line\n"));
+  put(f.root, "notes/plain.md", "develop's line\n");
+  const base = f.commit("develop moves the same line");
+  const read = coldRead({ root: f.root, lane: head });
+  assert.equal(read.unread, true);
+  assert.match(read.paths[0], /conflicts or refuses/);
+  assert.ok(lines(read)[2].startsWith(`land: git merge --no-ff ${head} `));
+  assert.notEqual(shStatus(f.root, "merge", "-q", "--no-ff", "-m", "land by hand", head), 0, "CONTROL: the real merge conflicts too");
+  put(f.root, "notes/plain.md", "both lines, by hand\n");
+  put(f.root, ".github/slipped-in.yml", "on: push\n");
+  sh(f.root, "add", "-A");
+  sh(f.root, "commit", "-q", "-m", "land by hand");
+  const resolved = checkMerge({ root: f.root, merge: "HEAD", head });
+  assert.equal(resolved.unread, false, resolved.paths[0]);
+  assert.deepEqual(resolved.paths, [".github/slipped-in.yml"]);
+  assert.deepEqual([resolved.base, resolved.head], [base, head]);
+  assert.deepEqual(resolved.beyond, [], "an unread read named no paths to stand beyond");
+
+  // A clean merge that a hand amends before committing: the read owed nothing, the merge owes the extra.
+  const next = f.sync();
+  const plain = f.lane("plain", (r) => put(r, "notes/other.md", "other\n"));
+  const clean = coldRead({ root: f.root, lane: plain });
+  assert.deepEqual(clean.paths, []);
+  sh(f.root, "merge", "-q", "--no-ff", "--no-commit", plain);
+  put(f.root, ".github/amended.yml", "on: push\n");
+  sh(f.root, "add", "-A");
+  sh(f.root, "commit", "-q", "-m", "land plain", "-m", `Cold-Read: ${clean.hash}`);
+  for (const amended of [checkMerge({ root: f.root, merge: "HEAD" }), checkMerge({ root: f.root, merge: "HEAD", head: plain })]) {
+    assert.equal(amended.unread, false, amended.paths[0]);
+    assert.equal(amended.base, next);
+    assert.deepEqual(amended.paths, [".github/amended.yml"]);
+    assert.deepEqual(amended.beyond, [".github/amended.yml"]);
+    assert.equal(lines(amended)[0], "COLD READ OWED: .github/amended.yml");
+    assert.equal(lines(amended)[2], "cold-read: beyond the read: .github/amended.yml");
+  }
+});
+
+test("the command line re-judges a merge: `--check-merge HEAD <head-sha>` after the landing, from the bench", (t) => {
+  const f = fixture(t);
+  const head = f.lane("lane", (r) => put(r, ".github/a.yml", "a\n"));
+  sh(f.root, "merge", "-q", "--no-ff", "-m", "land", head);
+  const run = (...args) => spawnSync(process.execPath, [join(f.root, SELF), ...args], { encoding: "utf8", env: ENV, cwd: tmpdir() });
+  const ok = run("--check-merge", "HEAD", head);
+  assert.equal(ok.status, 0, ok.stderr);
+  assert.match(ok.stdout, /^COLD READ OWED: \.github\/a\.yml\ncold-read: owed · merge [0-9a-f]{40} · head [0-9a-f]{40} · base [0-9a-f]{40} · list [0-9a-f]{64} · paths 1 · record-hash [0-9a-f]{64}\n$/);
+  const unbound = run("--check-merge", "HEAD");
+  assert.equal(unbound.status, 0);
+  assert.match(unbound.stdout, /^COLD READ OWED: \(unread: .*quotes 0 Cold-Read lines/);
+  const wrong = run("--check-merge", "HEAD", f.base);
+  assert.match(wrong.stdout, /^COLD READ OWED: \(unread: .*lane moved after the read/);
 });
