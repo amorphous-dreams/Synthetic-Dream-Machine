@@ -629,7 +629,7 @@ test("ci.yml takes its e2e verdict from the shard workflow, and runs no unsharde
   assert.match(shards, /^  workflow_call:\n    inputs:\n      doorstep:\n        type: boolean\n        default: false$/m, "e2e-shards.yml declares no workflow_call with its doorstep input: ci.yml's call would refuse at startup");
   assert.match(block, /^    with:\n      doorstep: \$\{\{ .+ \}\}$/m, "the e2e job hands the shard workflow no doorstep verdict");
   assert.match(shards, /^  push:\n    branches: \["ci\/\*\*"\]$/m, "the lane push trigger left");
-  const group = (yml) => /^concurrency:\n(?:\s*#.*\n)*  group: (\S+)-\$\{\{ github\.ref \}\}$/m.exec(yml)?.[1];
+  const group = (yml) => /^concurrency:\n(?:\s*#.*\n)*  group: ([a-z0-9-]+?)-\$\{\{ github\.ref \}\}/m.exec(yml)?.[1];
   assert.equal(group(ci), "ci");
   assert.equal(group(shards), "e2e-shards", "caller and callee sharing one concurrency group wait on each other");
   // CONTROL: the comment filter left the workflow's real commands in place.

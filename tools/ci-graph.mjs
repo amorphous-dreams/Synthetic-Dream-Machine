@@ -220,6 +220,12 @@ function tokens(src) {
  * job the one asked about needs ran; `failure()` and `cancelled()` read false (the plan reads a run with no red in it).
  */
 export function evalExpr(text, ctx) {
+  return Boolean(evalValue(text, ctx));
+}
+
+/** One `${{ }}` expression's VALUE, the way Actions yields it: `a && b` hands back b when a holds, `a || b` the first
+ *  truthy operand, so `cond && format('-{0}', github.run_id) || ''` reads as a string. */
+export function evalValue(text, ctx) {
   const src = text.trim().replace(/^\$\{\{\s*/, "").replace(/\s*\}\}$/, "");
   const t = tokens(src);
   let i = 0;
@@ -232,6 +238,7 @@ export function evalExpr(text, ctx) {
     startsWith: (a, b) => String(a ?? "").toLowerCase().startsWith(String(b ?? "").toLowerCase()),
     endsWith: (a, b) => String(a ?? "").toLowerCase().endsWith(String(b ?? "").toLowerCase()),
     contains: (a, b) => String(a ?? "").toLowerCase().includes(String(b ?? "").toLowerCase()),
+    format: (f, ...a) => String(f).replace(/\{(\d+)\}/g, (_, n) => String(a[Number(n)] ?? "")),
   };
   let or;
   const primary = () => {
@@ -267,11 +274,16 @@ export function evalExpr(text, ctx) {
     }
     return v;
   };
-  const and = () => { let v = cmp(); while (peek()?.op === "&&") { i++; const w = cmp(); v = Boolean(v) && Boolean(w); } return v; };
-  or = () => { let v = and(); while (peek()?.op === "||") { i++; const w = and(); v = Boolean(v) || Boolean(w); } return v; };
+  const and = () => { let v = cmp(); while (peek()?.op === "&&") { i++; const w = cmp(); v = v ? w : v; } return v; };
+  or = () => { let v = and(); while (peek()?.op === "||") { i++; const w = and(); v = v ? v : w; } return v; };
   const v = or();
   if (i !== t.length) throw new Error(`ci-graph: the expression reader stopped short in ${src}`);
-  return Boolean(v);
+  return v;
+}
+
+/** A workflow string with its `${{ }}` spans read to their values (a concurrency group, a run name). */
+export function interpolate(text, ctx) {
+  return text.replace(/\$\{\{([\s\S]*?)\}\}/g, (_, e) => String(evalValue(e, ctx) ?? ""));
 }
 
 /** One job's display name, its `with:` map and its steps (name and `if:` text), off the workflow text. */

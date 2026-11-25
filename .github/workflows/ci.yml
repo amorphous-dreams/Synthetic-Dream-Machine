@@ -93,11 +93,15 @@ on:
   # runs the doorstep alone, and the land guard reads a head's verdict, not its ancestor's alone.
   workflow_dispatch:
 
-# A newer push to a lane or a feature span supersedes its older run. On `develop` and `main` the run in flight finishes: a
-# canon push there raises a run of its own (THE CANON DOORSTEP), and its doorstep must never cancel the battery a
+# A newer push to a lane or a feature span supersedes its older run. On `develop` and `main` EVERY run reaches its verdict:
+# a canon push there raises a run of its own (THE CANON DOORSTEP), and its doorstep must never cancel the battery a
 # code push before it raised, the way a canon push that raised no run never did (tools/span-push.mjs pushes canon on it).
+# `cancel-in-progress: false` alone never held that: GitHub keeps ONE pending run per group and cancels the older pending
+# run when a newer one queues, whatever the flag says. So each develop/main run holds a group of its own (its run id) and
+# never waits on, or cancels, another (tools/ci-graph.test.mjs G1; runs 45643576902 and 45645396427 read `cancelled`
+# with zero jobs run, each pending behind a two-hour run when the next merge queued).
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-${{ github.ref }}${{ (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main') && format('-{0}', github.run_id) || '' }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/develop' && github.ref != 'refs/heads/main' }}
 
 jobs:
