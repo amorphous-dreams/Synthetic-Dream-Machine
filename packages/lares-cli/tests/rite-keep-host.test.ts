@@ -544,7 +544,7 @@ describe("the keep rite, host half", () => {
   test("KH14b RED: a spent keep lei refuses first, before the mirror, the secret scan or the shore flush run, and names the cure; CONTROL: a standing lei lets the same keep through", async () => {
     const r = rig();
     const touched: string[] = [];
-    const lei = (standing: boolean): KeepHostPorts["leiShow"] => async () => ({ ok: true, output: { lei: standing ? { standing: true } : { standing: false, refusal: "returns-spent", after: "a".repeat(64), returns: 12 } } });
+    const lei = (standing: boolean): NonNullable<KeepHostPorts["leiShow"]> => async () => ({ ok: true, output: { lei: standing ? { standing: true } : { standing: false, refusal: "returns-spent", after: "a".repeat(64), returns: 12 } } });
     const watched = (standing: boolean): KeepHostPorts => ({
       ...r.ports, leiShow: lei(standing),
       sessions: { ...r.sessions.sources, unzstd: (f) => { touched.push("scan"); return r.sessions.sources.unzstd(f); } },
