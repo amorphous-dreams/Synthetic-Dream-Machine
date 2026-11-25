@@ -3,13 +3,13 @@
   "canonicalTitle": "lar:///ha.ka.ba/lararium/plugins/lares/lararium",
   "compatibilityTitle": "$:/plugins/lares/lararium",
   "moduleManifestPath": "dist-plugin/lararium/module-manifest.json",
-  "moduleManifestSha256": "724153bac6055472a77597935e4258f0c4f996a997c00e4741abcb57a26b4482",
+  "moduleManifestSha256": "f57c28ef454f90cd30d61eaca8a8e8904dd28ef93d3e3a525d14ac153ad66c93",
   "sourceManifestPath": "dist-plugin/lararium/plugin-source-manifest.json",
-  "sourceManifestSha256": "8f6287b47c2722afda4ea6895f05971556c135c76b1cc839e30cee0814e2ab1f",
+  "sourceManifestSha256": "ef286faa6f10021f5bb6a04c2707c707eaba89efacb1e2e1fef5e9e0fb8afb62",
   "packTranscriptPath": "dist-plugin/lararium/pack-transcript.json",
-  "packTranscriptSha256": "e31ab365ed8a5c6df0257d84e46a204bd5299e201c90a4e3c4e78231f3c16ffb",
+  "packTranscriptSha256": "b097229fd817ea9782559ef43edb8eda3c9c5a520d327cc2c9156f7de29d57ad",
   "moduleCount": 26,
   "packedTiddlerCount": 36,
-  "pluginJsonSha256": "f4e9e9ab9e9a7b680bb4643d1e6ece1aae702e2cdacec602ccfc669f994c4842",
-  "pluginTw5Sha256": "6dfa37fc7db8cf602e9cc0995f2cc1e8f4e9417847a6ae278c55009910b909f7"
+  "pluginJsonSha256": "4f1caf4c086f4ec12aae0154a16798a1310cf606a2773fa2cd1b7956bbe122d6",
+  "pluginTw5Sha256": "55b997f0480f12a221ba1bd3d2395534e50ac16f2ca7de8410de98b0fe2ec75a"
 }
