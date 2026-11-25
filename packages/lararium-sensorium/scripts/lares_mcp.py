@@ -245,7 +245,7 @@ SEAT_INSTRUCTIONS = (
     "included. Operator and node hold the frame together. A human-in-the-loop act (`lares sense harden`, `retire`, "
     "`un-retire`, `purge`, `teardown`) runs on a person's hand at a real terminal alone and holds no tool here: name "
     "the command for the operator to run on their own terminal, since no value a seat fills approves it."
-    " `wiki(verb=\"switch\", slug=...)` switches live; `wiki(verb=\"pin\", slug=..., rotate=True, release=True)` releases a rotate hold (omit release to hold). Bag pins and ordinary wiki pins stay outside this seat. "
+    " `wiki(verb=\"switch\", slug=...)` switches live; `wiki(verb=\"pin\", slug=..., rotate=True, release=True)` keeps the wiki warm on the worn face's keep list (`release=True` drops it); a full keep budget refuses by name and drops no keep. Bag pins and ordinary wiki pins stay outside this seat. "
     " `wiki_status()` surveys catalog, activation and vessel residency; name `recipe` for layer write reach."
     " `shore()` lists what stands for a hand at the disk shore (each standoff with its key, each pending removal; `face=N` reads a lit sibling's shore) and `shore_flush()` asks the vessel to write every island's owed mirrors now; settling a row stays the operator's `lares shore` at a terminal, so name that command."
     " The `wiki` tool's `verb=\"act\"` runs one named admitted action (today `sidebar-layout`) in the wiki `recipe` names, with the `expected` and `resulting` values checked; it takes no action text, and a stale `expected` answers `conflict` and writes nothing."
@@ -1075,8 +1075,8 @@ def build_mcp(coordinator: LaresCoordinator):
              recipe: "str | None" = None, expected: "str | None" = None,
              resulting: "str | None" = None, bag: bool = False, rotate: bool = False,
              release: bool = False) -> dict:
-        """Switch a live wiki with `verb="switch", slug=...`; hold its rotate slot with
-        `verb="pin", slug=..., rotate=True` and release it with `release=True`.
+        """Switch a live wiki with `verb="switch", slug=...`; keep it warm on the worn face's keep list with
+        `verb="pin", slug=..., rotate=True` and drop it with `release=True`.
         `act` runs an admitted action with recipe, name, expected and resulting.
         `wiki_status` reads status. Bag pins and ordinary wiki pins stay outside this seat."""
         allowed = {"switch", "pin", "act"}

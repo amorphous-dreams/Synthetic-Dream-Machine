@@ -47,7 +47,7 @@ function countingHost(): { host: VesselIslandHost; spawns: () => number } {
 // requires every pool to carry a resolver, so a no-offerings floor stands in.
 const NO_OFFERINGS = async () => ({ ok: true as const, pluginCids: [] });
 
-function makeVesselTrio(wikiCap: number, resolveSpec?: ResolveWikiSpec) {
+function makeVesselTrio(wikiCap: number, resolveSpec?: ResolveWikiSpec, keepBudget = 1) {
   const { host, spawns } = countingHost();
   const pool = new VesselIslandPoolCore({ host, resolvePluginCids: NO_OFFERINGS });
   const residency = new BagStowage({
@@ -55,7 +55,7 @@ function makeVesselTrio(wikiCap: number, resolveSpec?: ResolveWikiSpec) {
     onHydrate: async (id, t) => { if (t === "wiki") await pool.ensureWiki(id); },
     onEvict:   async (id, t) => { if (t === "wiki") await pool.unmountWiki(id); },
   });
-  const cap = makeWikiActivationCap(residency, pool, { activationCap: wikiCap, pinBudget: 1 }, resolveSpec);
+  const cap = makeWikiActivationCap(residency, pool, { activationCap: wikiCap, keepBudget }, resolveSpec);
   return { pool, residency, cap, spawns };
 }
 
@@ -158,42 +158,60 @@ describe("wiki-activation cap — activation-on-reference over the one collector
   });
 });
 
-describe("wiki-activation cap — rotatable pins + pin-budget (the switcher's hold)", () => {
+describe("wiki-activation cap — the keep-warm budget over every face's keep list", () => {
   const W1 = "lar:///wiki/one", W2 = "lar:///wiki/two", W3 = "lar:///wiki/three";
   const anySpec: ResolveWikiSpec = async () => ({ ok: true, spec: spec() });
 
-  // makeVesselTrio wires pinBudget 1 (the browser gradient: the daemon bag always + ONE rotatable).
-  test("hold pins a live wiki; release unpins it; held() tracks the set", async () => {
+  test("keep pins a live wiki for its holder; unkeep unpins it; kept() tracks the holder's set", async () => {
     const { residency, cap } = makeVesselTrio(4, anySpec);
-    expect(cap.grant.pinBudget).toBe(1);
-    expect(await cap.hold(W1)).toBe(true);
+    expect(cap.grant.keepBudget).toBe(1);
+    expect(await cap.keep(W1, "face-0")).toEqual({ ok: true });
     expect(residency.isPinned(W1)).toBe(true);           // exempt from collection
-    expect([...cap.held()]).toEqual([W1]);
+    expect([...cap.kept("face-0")]).toEqual([W1]);
 
-    cap.release(W1);
+    cap.unkeep(W1, "face-0");
     expect(residency.isPinned(W1)).toBe(false);
-    expect([...cap.held()]).toEqual([]);
+    expect([...cap.kept()]).toEqual([]);
   });
 
-  test("pin-budget 1 rotates: W1 → W2 → W3 keeps exactly the newest held, releases the rest", async () => {
+  test("a full budget refuses keep-full by name and moves no hold", async () => {
     const { residency, cap } = makeVesselTrio(4, anySpec);
-    await cap.hold(W1);
-    await cap.hold(W2);   // budget full → W1 (LRU) releases
-    expect(residency.isPinned(W1)).toBe(false);
-    expect(residency.isPinned(W2)).toBe(true);
-    expect([...cap.held()]).toEqual([W2]);
+    await cap.keep(W1, "face-0");
+    const refused = await cap.keep(W2, "face-1");
+    expect(refused).toMatchObject({ ok: false, cause: "keep-full" });
+    expect(refused.ok ? "" : refused.detail).toContain("face-0");
+    expect(residency.isPinned(W1)).toBe(true);
+    expect(residency.isPinned(W2)).toBe(false);
+    expect([...cap.kept()]).toEqual([W1]);
+  });
 
-    await cap.hold(W3);   // W2 (LRU) releases
+  test("a second holder shares a kept grain; it unpins only when the last holder lets go", async () => {
+    const { residency, cap } = makeVesselTrio(4, anySpec);
+    await cap.keep(W1, "face-0");
+    expect(await cap.keep(W1, "face-1")).toEqual({ ok: true });   // the same grain costs no second slot
+    cap.unkeep(W1, "face-0");
+    expect(residency.isPinned(W1)).toBe(true);
+    expect([...cap.kept("face-0")]).toEqual([]);
+    expect([...cap.kept("face-1")]).toEqual([W1]);
+    cap.unkeep(W1, "face-1");
+    expect(residency.isPinned(W1)).toBe(false);
+  });
+
+  test("unkeepAll frees every keep a holder carries and leaves another holder's", async () => {
+    const { residency, cap } = makeVesselTrio(4, anySpec, 3);
+    await cap.keep(W1, "face-0");
+    await cap.keep(W2, "face-0");
+    await cap.keep(W3, "face-1");
+    cap.unkeepAll("face-0");
+    expect(residency.isPinned(W1)).toBe(false);
     expect(residency.isPinned(W2)).toBe(false);
     expect(residency.isPinned(W3)).toBe(true);
-    expect([...cap.held()]).toEqual([W3]);
+    expect([...cap.kept()]).toEqual([W3]);
   });
 
-  test("re-holding an already-held grain refreshes recency, never self-evicts", async () => {
-    const { residency, cap } = makeVesselTrio(4, anySpec);
-    await cap.hold(W1);
-    await cap.hold(W1);                            // idempotent — still held, still one
-    expect([...cap.held()]).toEqual([W1]);
-    expect(residency.isPinned(W1)).toBe(true);
+  test("a keep on a grain that will not activate refuses with the activation cause and holds nothing", async () => {
+    const { cap } = makeVesselTrio(4, async () => ({ ok: false, cause: "no-such-bag", detail: W1 }));
+    expect(await cap.keep(W1, "face-0")).toMatchObject({ ok: false, cause: "no-such-bag" });
+    expect([...cap.kept()]).toEqual([]);
   });
 });

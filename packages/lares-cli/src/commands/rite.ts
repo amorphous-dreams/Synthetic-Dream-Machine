@@ -139,7 +139,7 @@ const KEEP_PORTS: KeepPorts = {
     const r = await houseExport(dest, { acceptOmissions: opts.acceptOmissions, doors: LIVE_BUNDLE_DOORS, workspace: opts.workspace, houseOnly: true, ...(opts.woken !== undefined ? { woken: opts.woken } : {}) });
     return { ...r.manifest, unreadFaces: r.unreadFaces };
   },
-  // THE WIKI SWITCHER the wake walks: the catalog (`list-wikis`), the live state (`wiki-active`), and the rotatable pin.
+  // THE WIKI SWITCHER the wake walks: the catalog (`list-wikis`), the live state (`wiki-active`), and the keep list.
   wikis: {
     read: async () => {
       const did = await vesselDid();

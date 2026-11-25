@@ -21,7 +21,7 @@ afterEach(() => vi.restoreAllMocks());
 
 describe("a folded sub-path refuses the flags it does not read", () => {
   test("wiki residency paths refuse sibling flags and moved doors name their destination", async () => {
-    for (const argv of [["wiki", "pin", "x", "--next-boot"], ["wiki", "switch", "x", "--release"], ["wiki", "pin", "x", "--reason", "why"], ["wiki", "pin", "x", "--bag", "--release", "--reason", "why"]]) {
+    for (const argv of [["wiki", "switch", "x", "--rotate"], ["wiki", "switch", "x", "--release"], ["wiki", "pin", "x", "--reason", "why"], ["wiki", "pin", "x", "--bag", "--release", "--reason", "why"]]) {
       const r = await run([...argv, "--no-json"]);
       expect(r.code).toBe(2);
       expect(r.err).toContain("unknown flag");
@@ -30,7 +30,7 @@ describe("a folded sub-path refuses the flags it does not read", () => {
       const r = await run([...argv, "--no-json"]);
       expect(r.err).toContain("moved to");
     }
-    for (const [door, verb, destination] of [["wiki", "unpin", "wiki pin"], ["wiki", "hold", "wiki pin"], ["wiki", "release", "wiki pin"], ["wiki", "open", "wiki switch"], ["wiki", "list", "wiki status"], ["wiki", "active", "wiki status"], ["bag", "pin", "wiki pin"], ["bag", "unpin", "wiki pin"], ["bag", "stats", "wiki status"]] as const) {
+    for (const [door, verb, destination] of [["wiki", "unpin", "wiki pin"], ["wiki", "hold", "wiki pin"], ["wiki", "release", "wiki pin"], ["wiki", "list", "wiki status"], ["wiki", "active", "wiki status"], ["bag", "pin", "wiki pin"], ["bag", "unpin", "wiki pin"], ["bag", "stats", "wiki status"]] as const) {
       const r = await run([door, verb, "x", "--face", "1", "--no-json"]);
       expect(r.code).toBe(2);
       expect(r.err).toContain(destination);

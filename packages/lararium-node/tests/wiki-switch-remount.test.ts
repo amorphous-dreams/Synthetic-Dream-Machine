@@ -26,7 +26,7 @@ describe("wiki-switch — the operator's remount", () => {
     pool = new VesselIslandPool({ caps: {}, workerScriptUrl: SILENT_FIXTURE_URL, mountSilenceMs: 150, maxMountFailures: 3, resolvePluginCids: NO_OFFERINGS });
     pool.registerSpec(WIKI_ID, spec());
     const p = pool;
-    const activation = makeWikiActivationCap({ touch: async (url) => { await p.ensureWiki(url); }, pin: async () => {}, unpin: () => {} }, p, { activationCap: 4, pinBudget: 2 });
+    const activation = makeWikiActivationCap({ touch: async (url) => { await p.ensureWiki(url); }, pin: async () => {}, unpin: () => {} }, p, { activationCap: 4, keepBudget: 2 });
     return { p, activation };
   }
 

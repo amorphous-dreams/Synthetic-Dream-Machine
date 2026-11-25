@@ -20,5 +20,5 @@ export async function wikiSwitchVerb(args: Record<string, unknown>, deps: WikiSw
   if (!slug) throw new Error("wiki-switch: `slug` required");
   if (args["remount"] === true) deps.pool.forgetMountFailures(slug);
   const active = await deps.activation.ensureActive(slug);
-  return { verb: "wiki-switch", slug, active: active.ok, ...(!active.ok ? { cause: active.cause, detail: active.detail } : {}), held: [...deps.activation.held()] };
+  return { verb: "wiki-switch", slug, active: active.ok, ...(!active.ok ? { cause: active.cause, detail: active.detail } : {}), held: [...deps.activation.kept()] };
 }

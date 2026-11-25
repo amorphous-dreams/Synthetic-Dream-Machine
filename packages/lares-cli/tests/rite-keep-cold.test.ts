@@ -1,7 +1,7 @@
 /**
  * rite-keep-cold — THE KEEP WAKES COLD WIKIS (K1). A page a face put into a wiki no island mounts rests in its layer and
  * projects nowhere, and the cut reads disk; so the keep's vessel half holds each cold wiki the house lists in turn (the daemon
- * aside) before it cuts, then hands the pins back to what stood held before.
+ * aside) before it cuts, then hands the keeps back to what stood kept before.
  *
  *   C1  a lei standing: every cold listed wiki holds, in slug order, AFTER the line reads and BEFORE the cut; the cut hears the
  *       slugs that woke; after the cut the pins the walk added release and the pins that stood re-hold in their own order;
@@ -35,7 +35,7 @@ function writeBundle(dest: string): BundleManifest {
   return manifest;
 }
 
-/** A vessel with a pin budget of `budget`: `listed` wikis, `active` running now, `held` its rotatable pins (oldest first). */
+/** A vessel with a keep budget of `budget`: `listed` wikis, `active` running now, `held` its kept wikis (oldest first); a keep past the budget refuses. */
 function rig(over: { listed?: string[]; active?: string[]; held?: string[]; budget?: number; refuse?: string[]; lei?: boolean; cutThrows?: boolean } = {}) {
   const calls: string[] = [];
   const state = { held: [...(over.held ?? [])], active: new Set(over.active ?? []), budget: over.budget ?? 2 };
@@ -57,9 +57,8 @@ function rig(over: { listed?: string[]; active?: string[]; held?: string[]; budg
       hold: async (slug) => {
         calls.push(`hold ${slug}`);
         if ((over.refuse ?? []).includes(slug)) return false;
-        state.held = state.held.filter((s) => s !== slug);
-        while (state.held.length >= state.budget) state.held.shift();
-        state.held.push(slug);
+        if (!state.held.includes(slug) && state.held.length >= state.budget) return false;
+        if (!state.held.includes(slug)) state.held.push(slug);
         state.active.add(slug);
         return true;
       },
@@ -80,29 +79,29 @@ afterEach(() => { closeScratch(house); });
 
 describe("the keep wakes cold wikis", () => {
   test("C1 RED: each cold listed wiki holds in turn after the line and before the cut, the cut hears the woken slugs, and the pins that stood come back; CONTROL: the daemon and a running wiki take no hold", async () => {
-    const r = rig({ active: ["bravo"], held: ["bravo"] });
+    const r = rig({ active: ["bravo"], held: ["bravo"], budget: 4 });
     const out = await riteKeep(r.ports, { workspace: "backup" });
     expect(out.kept).toBe(true);
-    expect(r.calls.slice(0, 6)).toEqual(["swarm-show", "read", "hold alpha", "hold charlie", "hold delta", "cut woken=alpha,charlie,delta held=charlie,delta"]);
+    expect(r.calls.slice(0, 6)).toEqual(["swarm-show", "read", "hold alpha", "hold charlie", "hold delta", "cut woken=alpha,charlie,delta held=bravo,alpha,charlie,delta"]);
     expect(r.calls).not.toContain("hold daemon");
-    // The walk's own pins release, and bravo, held before, holds again.
-    expect(r.calls.slice(6, 10)).toEqual(["read", "release charlie", "release delta", "hold bravo"]);
+    // The walk's own keeps release, and bravo, kept before, stays kept.
+    expect(r.calls.slice(6, 10)).toEqual(["read", "release alpha", "release charlie", "release delta"]);
     expect(r.state.held).toEqual(["bravo"]);
     expect(r.calls.slice(10)).toEqual(["rite-begin"]);
   });
 
   test("C2 RED: a hold that never lands stays out of the woken set, and the walk goes on; CONTROL: the pins still come back", async () => {
-    const r = rig({ held: ["alpha", "bravo"], active: ["alpha", "bravo"], refuse: ["charlie"] });
+    const r = rig({ held: ["alpha", "bravo"], active: ["alpha", "bravo"], refuse: ["charlie"], budget: 3 });
     await riteKeep(r.ports, { workspace: "backup" });
-    expect(r.calls).toContain("cut woken=delta held=bravo,delta");
+    expect(r.calls).toContain("cut woken=delta held=alpha,bravo,delta");
     expect(r.state.held).toEqual(["alpha", "bravo"]);
   });
 
   test("C3 RED: a cut that throws still hands the pins back", async () => {
-    const r = rig({ held: ["alpha"], active: ["alpha"], cutThrows: true });
+    const r = rig({ held: ["alpha"], active: ["alpha"], cutThrows: true, budget: 4 });
     await expect(riteKeep(r.ports, { workspace: "backup" })).rejects.toThrow("the cut fell over");
     expect(r.state.held).toEqual(["alpha"]);
-    expect(r.calls.filter((c) => c.startsWith("release"))).toEqual(["release charlie", "release delta"]);
+    expect(r.calls.filter((c) => c.startsWith("release"))).toEqual(["release bravo", "release charlie", "release delta"]);
   });
 
   test("C4 RED: with no lei standing no pin moves and no wiki list reads", async () => {

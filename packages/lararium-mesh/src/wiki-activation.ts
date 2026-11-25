@@ -11,11 +11,12 @@
  * pool.unmountWiki the LRU wiki), all single-flight (one sovereign body per stream).
  *
  * ONE cap, a SPECTRUM of grants (the vessel gradient): a resource-rich vessel
- * (node) advertises a high `activationCap` + `pinBudget` (concurrent multi-wiki);
+ * (node) advertises a high `activationCap` + `keepBudget` (concurrent multi-wiki);
  * a constrained vessel (browser) advertises a minimal grant (the daemon bag always + a
  * small active set), degrading gracefully — the resolver honors whatever grant the
- * vessel carries. The daemon bag's always-there pin holds on every grant level; the user
- * MAY hold up to `pinBudget` further rotatable wiki pins (vessel-resource scaled).
+ * vessel carries. The daemon bag's always-there pin holds on every grant level; the faces
+ * together MAY keep up to `keepBudget` further wiki grains warm (vessel-resource scaled): each
+ * keep belongs to the face that asked, and a full budget refuses by name, never dropping a hold.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/wiki-activation
  */
@@ -53,12 +54,17 @@ export type ResolveWikiSpec = (wikiId: string) => Promise<WikiSpecResolution>;
 /**
  * The vessel's activation GRANT — the spectrum point this vessel advertises.
  * `activationCap` bounds the concurrent live-wiki set (the collector's `wiki`
- * typeCap); `pinBudget` bounds the user's rotatable wiki pins BESIDES the daemon bag.
+ * typeCap); `keepBudget` bounds the wiki grains the faces keep warm BESIDES the daemon bag.
  */
 export interface WikiActivationGrant {
   readonly activationCap: number;
-  readonly pinBudget:     number;
+  readonly keepBudget:    number;
 }
+
+/** The refusal a keep answers when the vessel's budget stands full: no hold moves, and the detail names who holds what. */
+export type WikiKeepResult =
+  | { readonly ok: true }
+  | { readonly ok: false; readonly cause: "keep-full" | "no-such-bag" | "record-unparsable" | "no-read-grant" | "unmounted"; readonly detail: string };
 
 export interface WikiActivationCap {
   /**
@@ -68,19 +74,19 @@ export interface WikiActivationCap {
    */
   ensureActive(wikiId: string): Promise<WikiActivationResult>;
   /**
-   * HOLD a wiki as a rotatable user pin (exempt from collection) — the switcher's
-   * pin control. Activates it first (a pin means nothing on a dead grain), then pins
-   * it in the collector, ENFORCING the vessel's `pinBudget`: when the budget is full,
-   * the LEAST-recently-held rotatable pin releases first (the rotation the grant
-   * promised — the daemon bag is never in this set, so it always stays). Returns true when
-   * the grain ends held + live. Idempotent for an already-held grain (refreshes it).
+   * KEEP a wiki warm for one holder (a face, by its ordinal text): the grain stays exempt from collection while any holder
+   * keeps it. Activates it first (a keep means nothing on a dead grain), then pins it in the collector. The vessel's
+   * `keepBudget` bounds the distinct kept grains: past it the keep REFUSES `keep-full`, naming the holders, and no hold
+   * moves, so one face never loses a keep to seat another's. Idempotent for a grain the holder keeps already.
    */
-  hold(wikiId: string): Promise<boolean>;
-  /** RELEASE a rotatable pin — the grain stays live (a cooling candidate again), just
-   *  loses its exemption. No-op for a grain that was not held. */
-  release(wikiId: string): void;
-  /** The wiki grains currently held (rotatable pins), most-recently-held last. */
-  held(): readonly string[];
+  keep(wikiId: string, holder: string): Promise<WikiKeepResult>;
+  /** END one holder's keep on a grain. The grain stays live (a cooling candidate again) once no holder keeps it; a no-op
+   *  for a grain the holder never kept. */
+  unkeep(wikiId: string, holder: string): void;
+  /** END every keep a holder carries: the end of a face's lit life. */
+  unkeepAll(holder: string): void;
+  /** The wiki grains a holder keeps (every distinct kept grain where no holder names), in the order first kept. */
+  kept(holder?: string): readonly string[];
   /** This vessel's advertised grant (the gradient point the resolver honors). */
   readonly grant: WikiActivationGrant;
 }
@@ -96,12 +102,22 @@ export function makeWikiActivationCap(
   grant:     WikiActivationGrant,
   resolveSpec?: ResolveWikiSpec,
 ): WikiActivationCap {
-  // Rotatable pins (besides the daemon bag), wikiId → hold order (a monotone counter). The
-  // budget bounds this set; the least-recently-held releases when a new hold overflows.
-  const holds = new Map<string, number>();
-  let holdSeq = 0;
+  // Kept grains (besides the daemon bag): wikiId -> the holders that keep it. The Map's insertion order carries first-kept order.
+  const keeps = new Map<string, Set<string>>();
+  const full = (wikiId: string): WikiKeepResult | null => {
+    if (keeps.has(wikiId) || keeps.size < grant.keepBudget) return null;
+    const roll = [...keeps].map(([id, who]) => `${id} (${[...who].join(", ")})`).join("; ");
+    return { ok: false, cause: "keep-full", detail: `the keep budget stands full (${keeps.size}/${grant.keepBudget}): ${roll}` };
+  };
+  const unkeep = (wikiId: string, holder: string): void => {
+    const holders = keeps.get(wikiId);
+    if (!holders?.delete(holder)) return;
+    if (holders.size > 0) return;
+    residency.unpin(wikiId);
+    keeps.delete(wikiId);
+  };
 
-  // The one activation chokepoint — closed over so `hold` and the method share it
+  // The one activation chokepoint — closed over so `keep` and the method share it
   // (destructure-safe: no `this`).
   const ensureActive = async (wikiId: string): Promise<WikiActivationResult> => {
     // Already live → done (cheap, the common case for a pinned/active wiki).
@@ -127,30 +143,27 @@ export function makeWikiActivationCap(
   return {
     grant,
     ensureActive,
-    async hold(wikiId: string): Promise<boolean> {
-      // A pin means nothing on a dead grain — activate first (resolves + mounts).
-      if (!(await ensureActive(wikiId)).ok) return false;
-      // Already held → refresh its recency (so a re-hold never self-evicts).
-      if (!holds.has(wikiId)) {
-        // Budget-enforce: while full, RELEASE the least-recently-held rotatable pin.
-        while (holds.size >= grant.pinBudget && holds.size > 0) {
-          let lruId = "", lruAt = Infinity;
-          for (const [id, at] of holds) if (at < lruAt) { lruAt = at; lruId = id; }
-          residency.unpin(lruId);
-          holds.delete(lruId);
-        }
-      }
-      holds.set(wikiId, ++holdSeq);
-      await residency.pin(wikiId, "user:hold", "wiki");
-      return true;
+    async keep(wikiId: string, holder: string): Promise<WikiKeepResult> {
+      const before = full(wikiId);
+      if (before) return before;
+      // A keep means nothing on a dead grain: activate first (resolves + mounts).
+      const active = await ensureActive(wikiId);
+      if (!active.ok) return active;
+      // The budget reads again past the await: a keep that landed meanwhile may have filled it.
+      const after = full(wikiId);
+      if (after) return after;
+      const holders = keeps.get(wikiId) ?? new Set<string>();
+      holders.add(holder);
+      keeps.set(wikiId, holders);
+      await residency.pin(wikiId, "face:keep", "wiki");
+      return { ok: true };
     },
-    release(wikiId: string): void {
-      if (!holds.has(wikiId)) return;
-      residency.unpin(wikiId);
-      holds.delete(wikiId);
+    unkeep,
+    unkeepAll(holder: string): void {
+      for (const wikiId of [...keeps.keys()]) unkeep(wikiId, holder);
     },
-    held(): readonly string[] {
-      return [...holds.entries()].sort((a, b) => a[1] - b[1]).map(([id]) => id);
+    kept(holder?: string): readonly string[] {
+      return [...keeps].filter(([, who]) => holder === undefined || who.has(holder)).map(([id]) => id);
     },
   };
 }

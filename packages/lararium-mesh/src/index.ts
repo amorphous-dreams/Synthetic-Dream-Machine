@@ -335,7 +335,7 @@ export { awaitIslandMsg } from "./vessel-host.js";
 export type { AwaitIslandMsgOpts, VesselWorkerHandle, VesselIslandHost } from "./vessel-host.js";
 export { VesselIslandPoolCore, resolveDiskMirrors } from "./vessel-island-pool-core.js";
 export { makeWikiActivationCap } from "./wiki-activation.js";
-export type { WikiActivationCap, WikiActivationGrant, ActivationResidency, ActivationPool, ResolveWikiSpec, WikiActivationResult, WikiSpecResolution } from "./wiki-activation.js";
+export type { WikiActivationCap, WikiActivationGrant, ActivationResidency, ActivationPool, ResolveWikiSpec, WikiActivationResult, WikiKeepResult, WikiSpecResolution } from "./wiki-activation.js";
 export type { VesselIslandPoolCoreOptions, VesselRestState, DiskMirrorGrant } from "./vessel-island-pool-core.js";
 export { isPresentedAdmit, isPresented, mkLarSessionMsg, isLarSessionMsg } from "./leaf-presentation.js";
 export type { LarSessionMsg, LeafIdentity, PresentedAdmit, PresentedAdmitArm, PresentedGrantArm, PresentedTokenArm, Presented, UnsignedPresented } from "./leaf-presentation.js";

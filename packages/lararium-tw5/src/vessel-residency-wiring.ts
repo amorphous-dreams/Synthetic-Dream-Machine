@@ -91,7 +91,7 @@ export interface VesselResidencyConfig {
   /** Concurrent live-wiki cap — the collector's `wiki` typeCap (node 4, browser 2). */
   wikiActivationCap: number;
   /** Rotatable wiki-pin budget BESIDES the daemon bag (node 3, browser 1). */
-  wikiPinBudget: number;
+  wikiKeepBudget: number;
   /** Bag hot-cap override (default DEFAULT_HOT_CAP). */
   hotCap?: number;
   /** Idle-cool threshold override on the wall floor (default DEFAULT_IDLE_MS). Read only without `clock`. */
@@ -262,7 +262,7 @@ export function makeVesselResidency(
     const wikiActivation = makeWikiActivationCap(
       residency,
       pool,
-      { activationCap: config.wikiActivationCap, pinBudget: config.wikiPinBudget },
+      { activationCap: config.wikiActivationCap, keepBudget: config.wikiKeepBudget },
       resolveWikiSpec,
     );
 

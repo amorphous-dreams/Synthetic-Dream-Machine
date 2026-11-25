@@ -111,7 +111,7 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
         setOption(options, key, body.slice(eq + 1));
         continue;
       }
-      if (BOOLEAN_FLAGS.has(body) || (command === "wiki" && positional[0] === "pin" && ["bag", "release"].includes(body)) || (command === "wiki" && positional[0] === "switch" && body === "next-boot")) { flags[body] = true; continue; }
+      if (BOOLEAN_FLAGS.has(body) || (command === "wiki" && positional[0] === "pin" && ["bag", "release"].includes(body))) { flags[body] = true; continue; }
       const next = tokens[0];
       // --key value form: peek; consume next token if it does not look like an option (a VALUE_FLAGS name consumes it whatever it starts with).
       if (next !== undefined && (VALUE_FLAGS.has(body) || !next.startsWith("--"))) {

@@ -1,4 +1,4 @@
-/** `lares wiki init` holds the wiki it mints, within the face's hold budget; a full budget is named, never silent, and nothing is evicted. */
+/** `lares wiki init` holds the wiki it mints, within the face's keep budget; a full budget is named, never silent, and nothing is evicted. */
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 
 const sent: string[] = [];
@@ -6,14 +6,15 @@ let minted = "minted";
 let held: string[] = [];
 let budget = 3;
 let extra: Record<string, unknown> = {};
+let holdOut: Record<string, unknown> | null = null;
 vi.mock("../src/verb-call.js", () => ({
   DaemonUnreachable: class extends Error {},
   verbFailure: () => null,
   runVerb: async (name: string) => {
     sent.push(name);
     const output = name === "init-wiki" ? { status: minted, ...extra, wikiUri: "u", wikiDocUrl: "d", draftBagId: "b", draftDocUrl: "e", recipeUri: "r" }
-      : name === "wiki-active" ? { active: [], held, pinBudget: budget, activationCap: 4 }
-      : { held: true, holds: [...held, "fresh"], budget };
+      : name === "wiki-active" ? { active: [], held, keepBudget: budget, activationCap: 4 }
+      : holdOut ?? { held: true, holds: [...held, "fresh"], budget };
     return { status: "done", requestId: "r", results: { summary: { ok: true, output } } };
   },
 }));
@@ -24,7 +25,7 @@ import { parseArgs } from "../src/parse-args.js";
 
 let text = "";
 beforeEach(() => {
-  sent.length = 0; text = ""; minted = "minted"; held = []; budget = 3; extra = {};
+  sent.length = 0; text = ""; minted = "minted"; held = []; budget = 3; extra = {}; holdOut = null;
   vi.spyOn(console, "log").mockImplementation((...a: unknown[]) => { text += a.join(" ") + "\n"; });
   vi.spyOn(process.stdout, "write").mockImplementation(((s: string | Uint8Array) => { text += String(s); return true; }) as typeof process.stdout.write);
 });
@@ -64,4 +65,12 @@ test("RED (referee walk #1) a workbench this face cannot stand reads as a named 
   extra = { bagsRegistered: [], workbench: { realmId: null, founded: false } };
   expect(await cmdWikiInit(parseArgs(["wiki", "fresh", "--no-json"]))).toBe(0);
   expect(text).toMatch(/workbench: none stands for this face/);
+});
+
+test("a keep the vessel refuses names its cause and its detail, and the mint still stands", async () => {
+  holdOut = { held: false, cause: "keep-full", detail: "the keep budget stands full (3/3): a (face-0)", holds: [], budget };
+  expect(await cmdWikiInit(parseArgs(["wiki", "fresh", "--no-json"]))).toBe(0);
+  expect(sent).toContain("wiki-hold");
+  expect(text).toContain("keep-full");
+  expect(text).toContain("face-0");
 });

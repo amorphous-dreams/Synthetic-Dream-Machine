@@ -827,13 +827,11 @@ def test_wiki_seat_reach_stays_on_switch_rotate_and_act(monkeypatch):
         ({"verb": "pin", "slug": "w", "release": True}, "rotate"),
         ({"verb": "pin", "slug": "w", "bag": True}, "bag"),
         ({"verb": "pin", "slug": "w", "bag": True, "release": True}, "bag"),
-        ({"verb": "pin", "slug": "w", "next_boot": True}, "next_boot"),
         ({"verb": "switch", "slug": "w", "rotate": True}, "rotate"),
         ({"verb": "switch", "slug": "w", "release": True}, "release"),
         ({"verb": "hold", "slug": "w"}, "verb"),
         ({"verb": "pin", "rotate": True}, "slug"),
         ({"verb": "pin", "slug": "w", "rotate": True, "recipe": "default"}, "action"),
-        ({"verb": "switch", "slug": "w", "next_boot": True}, "next_boot"),
         ({"verb": "act", "name": "a", "recipe": "default", "expected": "a", "resulting": "b", "bag": True}, "bag"),
     ]:
         with pytest.raises(Exception, match=name):

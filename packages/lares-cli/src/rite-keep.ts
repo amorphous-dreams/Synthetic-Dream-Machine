@@ -56,8 +56,8 @@ export class KeepRefused extends Error {
 }
 
 /**
- * The vessel's wiki switcher, as the wake reads it: what the catalog lists, which wikis run now, and the rotatable pins (oldest
- * first). `hold` answers whether the wiki ends held and live; a pin past the budget releases the least recently held.
+ * The vessel's wiki switcher, as the wake reads it: what the catalog lists, which wikis run now, and the kept wikis (oldest
+ * first). `hold` answers whether the wiki ends kept and live; a keep past the budget refuses, and the wiki stays cold.
  */
 export interface KeepWikiPorts {
   read(): Promise<{ readonly listed: readonly string[]; readonly active: readonly string[]; readonly held: readonly string[] }>;
@@ -176,7 +176,7 @@ export function keepWorkspaceDir(name: string): string {
   return dir;
 }
 
-/** The daemon wiki always stands and never takes a rotatable pin. */
+/** The daemon wiki always stands and never takes a keep. */
 const DAEMON_WIKI = "daemon";
 
 /**

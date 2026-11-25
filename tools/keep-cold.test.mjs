@@ -40,7 +40,7 @@ async function standHouse(tag, name) {
   const lares = (args) => spawnSync(process.execPath, [cli, ...args], { cwd: repo, encoding: "utf8", env });
   const found = lares(["vessel", "found", "--hearth", "--name", name, "--root", root, "--skip-build"]);
   assert.equal(found.status, 0, `found ${tag}: ${found.stdout}${found.stderr}`);
-  // The daemon stands, then the custody opens; a restart walks both again (rotatable holds live in the daemon alone).
+  // The daemon stands, then the custody opens; a restart walks both again (kept wikis live in the daemon alone).
   let child;
   let log = "";   // the running daemon's own words, read afresh at each boot
   const boot = async () => {
@@ -80,7 +80,7 @@ test("W1 the keep wakes each cold wiki before it cuts, so a page put into a cold
       writeFileSync(file, memeText(pageUri(slug), `a page in ${slug}`));
       h.must(["tiddler", "put", "--meme", pageUri(slug), "--recipe", slug, "--file", file, "--json"]);
     }
-    /** The rotatable pins `wiki status` marks, in its own order. */
+    /** The kept wikis `wiki status` marks, in its own order. */
     const held = () => (h.answer(h.must(["wiki", "status", "--json"])).data.activation.held ?? []).slice().sort();
     // A minted wiki stands in its own realm under its slug, the realm's default pet name, so its workbench mirror rests at
     // `projections/realms/<slug>/wikis/<slug>`.
