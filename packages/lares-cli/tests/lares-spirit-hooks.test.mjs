@@ -73,19 +73,19 @@ test("the pure parts", async (t) => {
       assert.equal(existsSync(`${path}.lock`), false);
     } finally { rmSync(dir, { recursive: true, force: true }); }
   });
-  await t.test("the true-up bears the body and no epoch (an ordering stamp the door ignores)", () => {
+  await t.test("the true-up bears the instance and no epoch (an ordering stamp the door ignores)", () => {
     assert.doesNotMatch(trueUpText("p", { fire: "turns", state: { turns: 25, epoch: 4 } }), /--epoch/);
     const nudge = trueUpText("p", { fire: "turns", state: { turns: 25, digests: { "#/open": "0123456789abcdef" } } }, "s-1");
-    assert.match(nudge, /lares spirit ah p --slot '#\/open' --file <path> --base 0123456789abcdef --body s-1/);
-    assert.match(nudge, /--add '<line>' on #\/bodies, #\/open or #\/kulana --body s-1/);
+    assert.match(nudge, /lares spirit ah p --slot '#\/open' --file <path> --base 0123456789abcdef --instance s-1/);
+    assert.match(nudge, /--add '<line>' on #\/instances, #\/open or #\/kulana --instance s-1/);
   });
   await t.test("the PreCompact text runs the crossing in order: the card first, the fixed-slot ask, the operator's instructions, then the carry, under the cap", () => {
-    const text = precompactText({ pet: "p", shape: "keep what only this body knew", inherits: "0123456789ab", card: "the card's open loops", instructions: "focus on the tests", carry: "x".repeat(20_000) });
-    assert.ok(text.startsWith("The card, read to the outgoing body before it folds"));
+    const text = precompactText({ pet: "p", shape: "keep what only this instance knew", inherits: "0123456789ab", card: "the card's open loops", instructions: "focus on the tests", carry: "x".repeat(20_000) });
+    assert.ok(text.startsWith("The card, read to the outgoing instance before it folds"));
     const ask = text.indexOf(`End the summary with a section headed "${COMPACTION_DISPLAY} (p)", in these fixed slots`);
     assert.ok(ask > text.indexOf("the card's open loops"));
-    for (const slot of ["\npet: p\n", "\ninherits: 0123456789ab", "\nopen: ", "\ntells: ", "\nbody: "]) assert.ok(text.includes(slot), slot);
-    assert.ok(text.includes("The familiar's own carry-shape:\nkeep what only this body knew"));
+    for (const slot of ["\npet: p\n", "\ninherits: 0123456789ab", "\nopen: ", "\ntells: ", "\ninstance: "]) assert.ok(text.includes(slot), slot);
+    assert.ok(text.includes("The familiar's own carry-shape:\nkeep what only this instance knew"));
     assert.ok(text.indexOf("The operator's own instructions for this compaction: focus on the tests") > ask);
     assert.ok(text.length <= PRECOMPACT_CHARS);
     assert.ok(!precompactText({ pet: null, carry: "c" }).includes(COMPACTION_DISPLAY));
@@ -195,7 +195,7 @@ test("the hooks, spawned whole", async (t) => {
       const out = JSON.parse(spawn("lares-om-hook.mjs", ["lares-alpha"], at({ hook_event_name: "SessionStart", source: "startup", session_id: "s-om", session_title: "lares-alpha" })));
       assert.equal(out.hookSpecificOutput.hookEventName, "SessionStart");
       assert.equal(out.hookSpecificOutput.additionalContext, "Lares spirit om · lares-alpha: the card");
-      assert.ok(calls().split("\n").includes("spirit om lares-alpha --source startup --body s-om --title lares-alpha --json"));
+      assert.ok(calls().split("\n").includes("spirit om lares-alpha --source startup --instance s-om --title lares-alpha --json"));
       assert.equal(calls().split("\n").filter((l) => l.startsWith("spirit om")).length, 1);
       assert.deepEqual([counter("s-om").pet, counter("s-om").epoch, counter("s-om").every, counter("s-om").title], ["lares-alpha", 4, 10, "lares-alpha"]);
       assert.deepEqual(counter("s-om").digests, { "#/open": "0123456789abcdef" });
@@ -205,7 +205,7 @@ test("the hooks, spawned whole", async (t) => {
       plant({ "vessel stand": UP, "spirit om lares-alpha": STARTER });
       const out = JSON.parse(spawn("lares-om-hook.mjs", ["lares-alpha"], at({ source: "startup", session_id: "s-aw", session_title: "Lares-Awakens" })));
       assert.equal(out.hookSpecificOutput.additionalContext, "the starter shrine");
-      assert.ok(calls().split("\n").includes("spirit om lares-alpha --source startup --body s-aw --title Lares-Awakens --json"));
+      assert.ok(calls().split("\n").includes("spirit om lares-alpha --source startup --instance s-aw --title Lares-Awakens --json"));
       assert.equal(counter("s-aw").pet, null);
       assert.equal(counter("s-aw").title, "Lares-Awakens");
       assert.equal(counter("s-aw").offer, "lares-awakens");
@@ -229,21 +229,21 @@ test("the hooks, spawned whole", async (t) => {
       plant({ "vessel stand": UP, "spirit om lares-alpha": om("the alpha card", { pet: "lares-alpha" }) });
       const out = JSON.parse(spawn("lares-om-hook.mjs", ["lares-alpha"], at({ source: "startup", session_id: "s-untitled" })));
       assert.equal(out.hookSpecificOutput.additionalContext, "the alpha card");
-      assert.ok(calls().includes("spirit om lares-alpha --source startup --body s-untitled --json"));
+      assert.ok(calls().includes("spirit om lares-alpha --source startup --instance s-untitled --json"));
     });
     await t.test("om: a held session names itself held to the door, so a retitle reads as its rename", () => {
       reset();
       writeFileSync(join(counters, "stop-s-held.json"), JSON.stringify({ turns: 3, pet: "lares-alpha", title: "lares-alpha" }));
       plant({ "vessel stand": UP, "spirit om lares-alpha": om("the alpha card", { pet: "lares-alpha" }) });
       spawn("lares-om-hook.mjs", ["lares-alpha"], at({ source: "compact", session_id: "s-held", session_title: "Lares-Awakens" }));
-      assert.ok(calls().includes("spirit om lares-alpha --source compact --body s-held --held --title Lares-Awakens --json"));
+      assert.ok(calls().includes("spirit om lares-alpha --source compact --instance s-held --held --title Lares-Awakens --json"));
     });
     await t.test("om: any source but a startup keeps the pet the session already wears", () => {
       reset();
       writeFileSync(join(counters, "stop-s-keep.json"), JSON.stringify({ turns: 3, pet: "lares-awakens" }));
       plant({ "vessel stand": UP, "spirit om lares-awakens": om("the awakens card", { pet: "lares-awakens" }) });
       spawn("lares-om-hook.mjs", ["lares-alpha"], at({ source: "compact", session_id: "s-keep" }));
-      assert.ok(calls().includes("spirit om lares-awakens --source compact --body s-keep --held --json"));
+      assert.ok(calls().includes("spirit om lares-awakens --source compact --instance s-keep --held --json"));
       assert.ok(!calls().includes("spirit om lares-alpha"));
     });
     await t.test("om: with no familiar seated or held, the title's slug proposes itself", () => {
@@ -265,7 +265,7 @@ test("the hooks, spawned whole", async (t) => {
         plant({ "vessel stand": UP, "spirit om": om(`a ${source}`) });
         const out = JSON.parse(spawn("lares-om-hook.mjs", ["lares-alpha"], at({ source, session_id: `s-${source}` })));
         assert.equal(out.hookSpecificOutput.additionalContext, `a ${source}`);
-        assert.ok(calls().includes(`spirit om lares-alpha --source ${source} --body s-${source} --json`));
+        assert.ok(calls().includes(`spirit om lares-alpha --source ${source} --instance s-${source} --json`));
       }
     });
     await t.test("compact: the precompact claim's epoch lands in the counter; the true-up never carries it to the door", () => {
@@ -306,26 +306,26 @@ test("the hooks, spawned whole", async (t) => {
     await t.test("compact: the card reads first, the fixed-slot ask follows naming the inherited hash and the record's carry-shape, a manual /compact's instructions echo, the crossing marks", () => {
       reset();
       writeFileSync(join(counters, "stop-s-c.json"), JSON.stringify({ turns: 0, pet: "lares-awakens" }));
-      plant({ "vessel stand": UP, "spirit om lares-awakens --source precompact": om("the card read out", { carryShape: "keep what only this body knew", inherits: "0123456789ab" }), "wiki filter": JSON.stringify({ ok: true, data: { rows: [], total: 0, next: null } }) });
+      plant({ "vessel stand": UP, "spirit om lares-awakens --source precompact": om("the card read out", { carryShape: "keep what only this instance knew", inherits: "0123456789ab" }), "wiki filter": JSON.stringify({ ok: true, data: { rows: [], total: 0, next: null } }) });
       const text = spawn("lares-compact-hook.mjs", ["lares-alpha"], at({ hook_event_name: "PreCompact", trigger: "manual", session_id: "s-c", custom_instructions: "focus on the tests" }));
-      assert.ok(text.startsWith("The card, read to the outgoing body before it folds (the record outranks this summary):\nthe card read out"));
+      assert.ok(text.startsWith("The card, read to the outgoing instance before it folds (the record outranks this summary):\nthe card read out"));
       assert.ok(text.includes(`End the summary with a section headed "${COMPACTION_DISPLAY} (lares-awakens)", in these fixed slots`));
       assert.ok(text.includes("inherits: 0123456789ab"));
-      assert.ok(text.includes("The familiar's own carry-shape:\nkeep what only this body knew"));
+      assert.ok(text.includes("The familiar's own carry-shape:\nkeep what only this instance knew"));
       assert.ok(text.includes("The operator's own instructions for this compaction: focus on the tests"));
       assert.ok(text.indexOf("focus on the tests") < text.indexOf("Lares compaction carry"));
-      assert.ok(calls().includes("spirit om lares-awakens --source precompact --body s-c --json"));
+      assert.ok(calls().includes("spirit om lares-awakens --source precompact --instance s-c --json"));
       assert.throws(() => JSON.parse(text));
     });
-    await t.test("postcompact: the summary rides whole on stdin bearing the body alone; the line the card awaits marks the counter unfiled", () => {
+    await t.test("postcompact: the summary rides whole on stdin bearing the instance alone; the line the card awaits marks the counter unfiled", () => {
       reset();
       writeFileSync(join(counters, "stop-s-1.json"), JSON.stringify({ turns: 0, pet: "lares-alpha", epoch: 4 }));
-      plant({ "vessel stand": UP, [`spirit ${COMPACTION_WORD}`]: JSON.stringify({ ok: true, data: { filed: false, unfiled: "file the #/bodies line: lares spirit ah lares-alpha --slot #/bodies --add x" } }) });
+      plant({ "vessel stand": UP, [`spirit ${COMPACTION_WORD}`]: JSON.stringify({ ok: true, data: { filed: false, unfiled: "file the #/instances line: lares spirit ah lares-alpha --slot #/instances --add x" } }) });
       const summary = `the summary\n${"x".repeat(70_000)}\nclosing (lares-alpha)`;
       spawn("lares-postcompact-hook.mjs", [], at({ hook_event_name: "PostCompact", session_id: "s-1", compact_summary: summary }));
-      assert.ok(calls().split("\n").includes(`spirit ${COMPACTION_WORD} lares-alpha --file - --body s-1 --json`));
+      assert.ok(calls().split("\n").includes(`spirit ${COMPACTION_WORD} lares-alpha --file - --instance s-1 --json`));
       assert.equal(readFileSync(fed, "utf8"), summary);
-      assert.match(counter("s-1").unfiled, /lares spirit ah lares-alpha --slot #\/bodies --add/);
+      assert.match(counter("s-1").unfiled, /lares spirit ah lares-alpha --slot #\/instances --add/);
     });
     await t.test("postcompact: with the vessel down nothing lands, nothing runs offline, and the counter names the hand landing", () => {
       reset();

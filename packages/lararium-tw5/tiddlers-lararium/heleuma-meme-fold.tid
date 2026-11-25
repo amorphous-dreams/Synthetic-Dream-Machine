@@ -1,0 +1,75 @@
+title: lar:///ha.ka.ba/lararium/tw5/heleuma/meme-fold
+type: text/memetic-wikitext+tiddlywiki
+
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/tw5/heleuma/meme-fold`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = true
+heleuma       = "ha"
+module-ref    = "lar:///ha.ka.ba/lararium/tw5/filters/meme-fold"
+role          = "code-meme: the meme-fold and spirit-fold filter operators answer any record as a folded carrier, inside the wiki that holds it"
+source-file   = "packages/lararium-tw5/src/filters/meme-fold.ts"
+source-sha256 = "sha256:6fc39eb83c2612d71c5cdaf6143c94fc23946f91843c1de2645df093f99a8d7a"
+title         = "lar:///ha.ka.ba/lararium/tw5/heleuma/meme-fold"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lararium/tw5/heleuma/meme-fold"
+```
+
+<<~ ahu slot=`#/purpose`>>
+
+!! The Fold
+
+A folded carrier reads as the meme file rests on disk (the declaration, the head, the meta, each slot's `ahu` pair) with a folded slot's body standing as its `has` line (bytes, first line) and the one command that fetches it. `[[<uri>]meme-fold[<open slots>],[<face>]]` folds any meme root, and answers a plain record as a carrier too: its fields ride the meta, a short text rides whole (a transclusion stays a transclusion, folded and renderable), a longer one folds to its `has` line and its read command. `[[<pet>]spirit-fold[<rank>],[<face>]]` folds a tasked spirit's shrine by aperture: every slot folded at pulse, the entry slot unfolded at beat, the attention and open slots at measure (arc reads the same), the whole carrier at theme; it names the pet's card and its render command where one stands, and answers a card with no shrine as a carrier.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/law`>>
+
+!! The Fold Runs In The Wiki
+
+The operators read the wiki's own records, recompose through the deserializer's recompose, cut at the decomposer's top-level slot scan, write each `has` line through the read gradient and re-stamp the block check through the frame writer (`packages/lararium-tw5/src/carrier-fold.ts`). So `lares meme check` passes on a fold, an unfolded slot rides byte for byte, and no door builds the grammar outside the engine. The rank an aperture names and every command a fold carries stand in the pure core `packages/lararium-mesh/src/spirit-unfold.ts`, bundled here and read by the host door for the one call it sends. One render serves a shrine, a card, a handback record and any message between streams of thought (the design rests on the memory stage at `lar:///ha.ka.ba/kahua/memory/reference/tasked-spirit`).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/callers`>>
+
+!! Callers
+
+The `<<spirit-unfold pet aperture face>>` macro (`lar:///ha.ka.ba/lararium/tw5/macros/spirit-unfold`) hands the engine one text node whose value `spirit-fold` answers, so the carrier rides out byte for byte. `lares spirit om <pet>` and `lares spirit hum <pet>` send the wiki's `wiki-render` verb that one macro call, by `--aperture`; `lares wiki render --recipe default --form text --text '<<spirit-unfold pet:"<pet>" aperture:"pulse">>'` reads the same fold; a browser tab calls the macro or either operator in any tiddler. The operators load over the grammar skin's deserializer, meme-ast and frame libraries, and never the other way.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/caps-cost`>>
+
+!! Caps and Cost
+
+The operators read through the wiki they run in, so a reader's view decides what a fold shows; they write nothing. One fold recomposes one carrier once. A plain record's text past 256 bytes folds; under it the text rides whole.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/source`>>
+
+!! Source
+
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-tw5/src/filters/meme-fold.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#source-fold` from=`?` to=`packages/lararium-tw5/src/carrier-fold.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#source-core` from=`?` to=`packages/lararium-mesh/src/spirit-unfold.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#source-macro` from=`?` to=`packages/lararium-tw5/src/macros/spirit-unfold.ts` family=`code` role=`has`>>
+
+<$transclude $tiddler="lar:///ha.ka.ba/lararium/tw5/filters/meme-fold"/>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/hydration-grain`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9v2WhAlurDhnMCdWjBlkBWRLSr_S6N1br2PkPuhJfAU`>>
+
+<<^ code=`&#x0004;` to=`?`>>
