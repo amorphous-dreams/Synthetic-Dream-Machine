@@ -341,7 +341,7 @@ describe("the home radius", () => {
 
   describe("the mana statusline rides the tunnel", () => {
     const WANT = (root: string, home: string): unknown =>
-      ({ type: "command", command: `node ${realpathSync(root)}/tools/mana-statusline.mjs ${home}/.claude/mana-readings.jsonl` });
+      ({ type: "command", command: `node "${realpathSync(root)}/tools/mana-statusline.mjs" "${home}/.claude/mana-readings.jsonl"` });
     const settingsOf = (home: string): Record<string, unknown> => JSON.parse(readFileSync(join(home, ".claude/settings.json"), "utf8"));
 
     it("read shows the item off-tunnel, a tend writes it aimed at the main clone, and a second tend writes nothing", async () => {
@@ -381,6 +381,51 @@ describe("the home radius", () => {
       expect(settingsOf(h.native)["statusLine"]).toEqual(WANT(root, h.native));
       undo(l);
       expect(readFileSync(join(h.native, ".claude/settings.json"), "utf8")).toBe(held);
+    });
+  });
+
+  describe("the mana statusline: a forced tend, a shell-read command, a foreign mention", () => {
+    const settingsOf = (home: string): Record<string, unknown> => JSON.parse(readFileSync(join(home, ".claude/settings.json"), "utf8"));
+    const id = "claude.mana-statusline";
+
+    it("--force over a foreign statusLine replaces that key alone: every other key and hook stands", async () => {
+      const root = clone();
+      const h = homes();
+      const mine = {
+        model: "m", permissions: { allow: ["Bash(git:*)"], deny: ["Bash(rm -rf:*)"] }, mcpServers: { x: { command: "x" } },
+        hooks: { Stop: [{ hooks: [{ type: "command", command: "mine.sh" }] }] }, statusLine: { type: "command", command: "~/my-line.sh" },
+      };
+      writeFileSync(join(h.native, ".claude/settings.json"), JSON.stringify(mine));
+      const l = ledger();
+      const items = () => homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false });
+      await tend(items(), l, { force: true });
+      const o = settingsOf(h.native);
+      const perms = o["permissions"] as { allow: string[]; deny: string[] };
+      expect(o["model"]).toBe("m");
+      expect(o["mcpServers"]).toEqual(mine.mcpServers);
+      expect(perms.allow[0]).toBe("Bash(git:*)");
+      expect(perms.deny[0]).toBe("Bash(rm -rf:*)");
+      expect((o["statusLine"] as { command: string }).command).toContain("mana-statusline.mjs");
+      expect(JSON.stringify((o["hooks"] as { Stop: unknown[] }).Stop)).toContain("mine.sh");
+    });
+
+    it("every path rides double-quoted and a path holding a quote, a dollar, a backtick or a backslash reads back whole under a shell", async () => {
+      const root = clone();
+      const native = join(dir, 'h $x"q`b\\s');
+      mkdirSync(join(native, ".claude"), { recursive: true });
+      const h = { native, windows: null };
+      await tend(homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false }), ledger());
+      const command = (settingsOf(native)["statusLine"] as { command: string }).command;
+      const out = execFileSync("sh", ["-c", `set -- ${command.slice("node ".length)}; printf '%s\\n' "$2"`], { encoding: "utf8" }).trim();
+      expect(out).toBe(join(native, ".claude/mana-readings.jsonl"));
+    });
+
+    it("a foreign command that merely mentions the tool reads foreign", async () => {
+      const root = clone();
+      const h = homes();
+      writeFileSync(join(h.native, ".claude/settings.json"), JSON.stringify({ statusLine: { type: "command", command: "sh -c 'echo tools/mana-statusline.mjs'" } }));
+      const rows = read(homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false }), ledger());
+      expect(rows.find((r) => r.id === id)!.state).toBe("foreign");
     });
   });
 

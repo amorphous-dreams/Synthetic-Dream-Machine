@@ -11,7 +11,7 @@ import { dirname, join, relative } from "node:path";
 import { parse as parseToml } from "smol-toml";
 import type { External, Item, Radius } from "./engine.js";
 import {
-  claudeHook, claudeStatusLine, copilotHook, headLine, jsonFloor, jsonForeign, jsonHooksOwned, jsonIncludes, jsonListForeign, jsonSet, owned, seedless, statusLineForeign, strays,
+  claudeHook, claudeStatusLine, claudeStatusLineTaking, copilotHook, headLine, jsonFloor, jsonForeign, jsonHooksOwned, jsonIncludes, jsonListForeign, jsonSet, owned, seedless, statusLineForeign, strays,
   tomlHook, tomlHookForeign, tomlHooksOwned, tomlMcpServer, tomlShapeForeign, tomlTableForeign, tomlTableKey, tomlTableUnset, tomlTopFloor,
 } from "./kinds.js";
 import { homesOf, type Homes } from "./homes.js";
@@ -308,8 +308,10 @@ function homeItem(
     case "claude-statusline": {
       // The tool aims at the main clone; its log stands in the home that holds the line (`log` reads relative to it).
       const tool = join(clone, str(s, "tool")).replace(/\\/g, "/");
-      const quote = (p: string): string => (/\s/.test(p) ? `"${p}"` : p);
-      return base({ transform: claudeStatusLine(str(s, "tool"), `node ${quote(tool)} ${quote(join(home, str(s, "log")))}`), foreign: statusLineForeign(str(s, "tool")) });
+      // Claude runs the command through a shell: every path rides double-quoted, with the four characters the shell reads escaped.
+      const quote = (p: string): string => `"${p.replace(/[\\"$`]/g, "\\$&")}"`;
+      const command = `node ${quote(tool)} ${quote(join(home, str(s, "log")))}`;
+      return base({ transform: claudeStatusLine(str(s, "tool"), command), taking: claudeStatusLineTaking(command), foreign: statusLineForeign(str(s, "tool")) });
     }
     case "claude-hook": {
       // A familiar's hook carries the pet name as its argument (no env var): the tend's `--familiar`, else the one a tend seated.
