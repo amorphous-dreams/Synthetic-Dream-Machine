@@ -47,7 +47,7 @@ import { houseExport, bundleRefusal, LIVE_BUNDLE_DOORS } from "./house-bundle.js
 import { runVerb } from "../verb-call.js";
 import { summaryOutput } from "../verb-result.js";
 import { vesselDid } from "../env.js";
-import { ownPeerKind } from "@lararium/node";
+import { readOwnHand } from "@lararium/node";
 
 export class RiteUsage extends Error {}
 
@@ -556,8 +556,9 @@ function hostPorts(shim: string, say: (line: string) => void): RitePorts {
     houseLag: async () => { const read = await cliVerb(["vessel", "lay", "--lag"]); return read.ok ? houseLagOf(read.output) : null; },
     ask: askOnTerminal,
     layWorkbench: layWorkbenchOnTerminal,
-    // An AI launcher is a seat: the harness's mark, or a host chain that reads no person's hand (the bridge marks it the same way).
-    seat: () => ownPeerKind(process.env) !== "hand",
+    // An AI launcher seats the rite: the house hand gate reads this command's branch (`readOwnHand`), and any refusal (a harness's
+    // mark or chain, or a chain that reads no person's hand; the bridge marks it the same way) reads as a seat that never lays.
+    seat: () => "refusal" in readOwnHand({ proveRoute: false }),
     say,
   };
 }

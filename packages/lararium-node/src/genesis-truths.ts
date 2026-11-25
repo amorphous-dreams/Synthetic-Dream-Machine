@@ -29,7 +29,7 @@ export interface FoundingRecordTruths {
   readonly unread?: string;
 }
 
-const NO_DIGESTS: GenesisDigests = Object.freeze({ engine: null, grammar: null, plugins: null, floor: null });
+const NO_DIGESTS: GenesisDigests = Object.freeze({ engine: null, grammar: null, lararium: null, plugins: null, floor: null });
 
 /** Read the seed at `genesisDir` (the genesis artifact's own default where unnamed), or null where none reads. */
 function seedAt(genesisDir: string | undefined): { cid: string; body: GenesisRecordLike } | null {
@@ -65,14 +65,14 @@ export function readFoundingRecordTruths(input: {
 const short = (digest: string | null): string => (digest === null ? "absent" : digest.length > 14 ? `…${digest.slice(-12)}` : digest);
 
 /**
- * The one line: `[genesis] founding record: engine … · grammar … · plugins … · floor …; seed (offered) <cid>: same on
+ * The one line: `[genesis] founding record: engine … · grammar … · lararium … · plugins … · floor …; seed (offered) <cid>: same on
  * every ratchet` or `… a newer seed waits: <ratchet words> — the founding record keeps serving; lay moves canon, never
  * the founding record`, then the floor pin, per ratchet where held, else `pinNote` (the boot's own default: `unread here`).
  */
 export function foundingRecordLine(truths: FoundingRecordTruths, opts: { readonly pinNote?: string } = {}): string {
   if (truths.unread !== undefined) return `[genesis] founding record: unread here (${truths.unread})`;
   const r = truths.record;
-  const record = `founding record: engine ${short(r.engine)} · grammar ${short(r.grammar)} · plugins ${short(r.plugins)} · floor ${short(r.floor)}`;
+  const record = `founding record: engine ${short(r.engine)} · grammar ${short(r.grammar)} · lararium ${short(r.lararium)} · plugins ${short(r.plugins)} · floor ${short(r.floor)}`;
   const seed = truths.seed === null
     ? "seed (offered): none reads"
     : ratchetsDiffer(truths.seed.ratchets)

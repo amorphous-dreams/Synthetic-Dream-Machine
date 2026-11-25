@@ -166,9 +166,10 @@ export async function kindleFromBulb(args: {
   //    custody refuses here, by name, with no blob mirrored and no island materialized.
   await openedCustody();
 
-  // 1. VALIDATE the genesis the bulb carries (Automerge-loadable, TW5 core + packed Lares plugin present).
+  // 1. VALIDATE the genesis the bulb carries (Automerge-loadable, TW5 core + packed Lares plugin present, and the house skin
+  //    beside a split grammar: the bulb holds the bytes, so a grammar that packs no route and stands alone refuses).
   const bytes = materializeGenesisDoc(seed);
-  validateGenesisBytes(bytes, "kindle");
+  validateGenesisBytes(bytes, "kindle", (sha256) => bulb.casEntries.find((e) => e.cid === sha256)?.bytes);
 
   // Mirror the FIRE bytes (engine + plugins) into the device's runtime CAS so its island boots on them.
   writeCasEntriesFs(bulb.casEntries, casDirForStorage(storageDir));

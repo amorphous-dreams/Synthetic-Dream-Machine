@@ -21,11 +21,11 @@ import { describe, test, expect, beforeAll } from "vitest";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { TW5Engine } from "../src/tw5-vm.js";
-import { LARES_MEMETIC_WIKITEXT_PLUGIN } from "../src/plugin-tiddler.generated.js";
+import { LARES_LARARIUM_PLUGIN, LARES_MEMETIC_WIKITEXT_PLUGIN } from "../src/plugin-tiddler.generated.js";
 import { TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME } from "../src/generated-tw5-version.js";
 import { buildFixtureIsland, GLUE_SEEDS, type FixtureTiddler } from "../src/wiki-store-adapter.js";
 import { createWikiSensorium } from "../src/wiki-sensorium-cap.js";
-import { grammarPins, vendoredCore } from "./test-wiki.js";
+import { houseSkins, skinPins, vendoredCore } from "./test-wiki.js";
 import { summarizeCoherence, type WikiCoherenceSummary } from "../src/wiki-sense-fold.js";
 
 const CORE_PATH = path.join(TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME);
@@ -63,7 +63,7 @@ describe.skipIf(coreBlobSkip)(
   beforeAll(async () => {
     engine = new TW5Engine();
     const coreBlob = vendoredCore();
-    await engine.boot(coreBlob, [LARES_MEMETIC_WIKITEXT_PLUGIN as unknown as Record<string, unknown>], undefined, { modulePins: grammarPins() });
+    await engine.boot(coreBlob, houseSkins(), undefined, { modulePins: skinPins() });
     for (const s of GLUE_SEEDS) engine.setTiddler({ title: s.title, text: s.text });
   }, 60_000);
 
@@ -110,8 +110,8 @@ describe.skipIf(coreBlobSkip)(
   test("cohere speaks from wikitext-land — whole-by-default senses shadows + system; ordinary narrows", () => {
     const wiki = engine.wiki;
     const ordinary = JSON.parse(wiki.filterTiddlers("[wikisense:cohere:ordinary[]]")[0]!) as WikiCoherenceSummary;
-    // seeds + the plugin container tiddler — the whole ordinary non-system universe of this island.
-    expect(ordinary.corpusSize).toBe(GLUE_SEEDS.length + 1);
+    // seeds + the two skins' plugin container tiddlers (grammar, house) — the whole ordinary non-system universe of this island.
+    expect(ordinary.corpusSize).toBe(GLUE_SEEDS.length + 2);
     expect(ordinary.vacuous).toBe(false);
     const whole = JSON.parse(wiki.filterTiddlers("[wikisense:cohere[]]")[0]!) as WikiCoherenceSummary;
     // the whole universe folds ordinary + shadow/plugin-bundled + $:/ system tiddlers (operator law).
@@ -121,15 +121,12 @@ describe.skipIf(coreBlobSkip)(
 
   test("THE CROSS-BEAT AGREEMENT — the same corpus through the wiki face and the composite face", async () => {
     const wiki = engine.wiki;
-    // the wiki face's ordinary universe = the seeds + the plugin container; seed the composite face
-    // with the IDENTICAL corpus (the container's packed JSON counts as a sensed entity — open-record law).
-    const pluginDoc: FixtureTiddler = {
-      title: LARES_MEMETIC_WIKITEXT_PLUGIN.title,
-      text: LARES_MEMETIC_WIKITEXT_PLUGIN.text,
-    };
+    // the wiki face's ordinary universe = the seeds + the two skins' plugin containers; seed the composite face
+    // with the IDENTICAL corpus (each container's packed JSON counts as a sensed entity — open-record law).
+    const pluginDocs: FixtureTiddler[] = [LARES_MEMETIC_WIKITEXT_PLUGIN, LARES_LARARIUM_PLUGIN].map((p) => ({ title: p.title, text: p.text }));
 
     const wikiBeat = JSON.parse(wiki.filterTiddlers("[wikisense:cohere:ordinary[]]")[0]!) as WikiCoherenceSummary;
-    const compositeBeat = await compositeSummary("lar:///ha.ka.ba/bags/cross-beat-glue", [...GLUE_SEEDS, pluginDoc]);
+    const compositeBeat = await compositeSummary("lar:///ha.ka.ba/bags/cross-beat-glue", [...GLUE_SEEDS, ...pluginDocs]);
     // the two beats agree on the WHOLE verdict — radius, glue, vacuity, loci, gate, grain.
     expect(wikiBeat).toEqual(compositeBeat);
 
@@ -142,7 +139,7 @@ describe.skipIf(coreBlobSkip)(
     try {
       const wikiObstruct = JSON.parse(wiki.filterTiddlers("[wikisense:cohere:ordinary[]]")[0]!) as WikiCoherenceSummary;
       const compositeObstruct = await compositeSummary(
-        "lar:///ha.ka.ba/bags/cross-beat-obstruct", [...GLUE_SEEDS, pluginDoc, ORNATE_NOVEL],
+        "lar:///ha.ka.ba/bags/cross-beat-obstruct", [...GLUE_SEEDS, ...pluginDocs, ORNATE_NOVEL],
       );
       expect(wikiObstruct).toEqual(compositeObstruct);
       expect(wikiObstruct.radius).toBeGreaterThan(0);

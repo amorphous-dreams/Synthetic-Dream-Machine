@@ -113,7 +113,7 @@ export function floorStatusLines(s: FloorStatusOutput, grain: FloorGrain = "all"
   if (g?.unread !== undefined) lines.push(`  founding record: unread here (${g.unread})`);
   else if (g) {
     const d = (v: string | null) => v ?? "absent";
-    lines.push(`  founding record: engine ${d(g.record.engine)} · grammar ${d(g.record.grammar)} · plugins ${d(g.record.plugins)} · floor ${d(g.record.floor)}`);
+    lines.push(`  founding record: engine ${d(g.record.engine)} · grammar ${d(g.record.grammar)} · lararium ${d(g.record.lararium)} · plugins ${d(g.record.plugins)} · floor ${d(g.record.floor)}`);
     lines.push(g.seed === null
       ? "  seed (offered):  none reads"
       : ratchetsDiffer(g.seed.ratchets)
@@ -145,12 +145,12 @@ export function floorSeedLines(r: FloorSeedRead): string[] {
   const d = (v: string | null) => v ?? "absent";
   const o = r.offered.digests;
   const lines = ["floor seed", `  seed (offered):  ${r.offered.cid} at ${r.genesis}`,
-    `  seed digests:    engine ${d(o.engine)} · grammar ${d(o.grammar)} · plugins ${d(o.plugins)} · floor ${d(o.floor)}`];
+    `  seed digests:    engine ${d(o.engine)} · grammar ${d(o.grammar)} · lararium ${d(o.lararium)} · plugins ${d(o.plugins)} · floor ${d(o.floor)}`];
   if (r.noHouse === true) lines.push("  founding record: reads at boot (no house answers here)");
   else if (r.offer === null) lines.push(`  founding record: unread here (${r.recordUnread ?? "no house answers"})`);
   else {
     const g = r.offer.record;
-    lines.push(`  founding record: engine ${d(g.engine)} · grammar ${d(g.grammar)} · plugins ${d(g.plugins)} · floor ${d(g.floor)}`);
+    lines.push(`  founding record: engine ${d(g.engine)} · grammar ${d(g.grammar)} · lararium ${d(g.lararium)} · plugins ${d(g.plugins)} · floor ${d(g.floor)}`);
   }
   lines.push(`  ${r.seed}`);
   return lines;

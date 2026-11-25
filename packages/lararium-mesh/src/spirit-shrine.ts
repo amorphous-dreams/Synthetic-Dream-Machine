@@ -19,6 +19,7 @@
 
 import { sha256HexSync, utf8Bytes } from "./crypto.js";
 import { redactSecretShapes } from "./secret-shapes.js";
+import { handRefusalOf, type HandRefusalCode } from "./hand-refusal.js";
 
 // ── THE CARRY'S WORDS ─────────────────────────────────────────────────────────────────────────────────────────────
 /**
@@ -64,12 +65,8 @@ export const TRUE_UP_EVERY = 25;
 export const RESIDUE_CAP_CHARS = 60_000;
 /** A carry past this depth outranks nothing: its chain remembers only itself. */
 export const DEEP_CARRY = 3;
-/** How long a body's `bodies-awake` entry stands without a wake refreshing it before it drops as stale. */
-export const PRESENCE_STALE_MS = 30 * 60_000;
-/** At most this many bodies stand in a card's presence; the newest wakes keep their places. */
+/** At most this many bodies stand in a card's presence, a cap by count and never by age: a clock only sorts siblings, it drops none. */
 export const PRESENCE_CAP = 16;
-/** How long a crossing mark holds ah and hum before it reads stale. */
-export const CROSSING_MS = 10 * 60_000;
 /** The card's #/open and #/kulana, read to the outgoing body at PreCompact, cut here so the carry ask still lands inside 10,000 chars. */
 export const PRECOMPACT_CARD_CHARS = 4000;
 /** How many titles #/attention names the wake unfolds. */
@@ -142,10 +139,8 @@ export class SpiritRefusal extends Error {
 }
 
 /** A release by the hand refused: an AI seat on the command's branch (`hand-act-only`), or a branch nothing attests. */
-export function handRefusal(code: string, line: string): SpiritRefusal {
-  return new SpiritRefusal(code, code === "hand-act-only"
-    ? `hand-act-only: a release burns by a person's hand at a real terminal, and an AI harness stands on this command's branch. Ask the operator to run \`${line}\` on their own terminal.`
-    : `hand-unattested: a release burns by a person's hand at a real terminal, and this command's process chain reads nothing to attest one. Run \`${line}\` on a terminal whose processes the host can read.`, 5);
+export function handRefusal(code: HandRefusalCode, line: string): SpiritRefusal {
+  return new SpiritRefusal(code, handRefusalOf(code, { act: "a release", reads: "branch", line }).message, 5);
 }
 
 // ── THE RECORD ─────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -207,37 +202,42 @@ export const writerField = (slot: string): string => `writer-${slot.replace(/^#\
 
 // ── THE CROSSING ───────────────────────────────────────────────────────────────────────────────────────────────────
 
-/** The `crossing` field read: one `<body> <iso>` per line, keyed on the full body id; a bare iso (a mark naming no body) reads as expired and drops. */
-export function crossingsOf(raw: string | null | undefined): Array<{ who: string; at: string }> {
+/**
+ * The `crossing` field read: one `<body> <iso> <seq>` per line, keyed on the full body id. The iso annotates; the door-minted `seq`
+ * (max + 1 inside the CAS write) orders the marks, so a skewed stamp never moves one. A line without a seq reads seq 0 (the oldest);
+ * a bare iso (a mark naming no body) reads as no mark and drops.
+ */
+export function crossingsOf(raw: string | null | undefined): Array<{ who: string; at: string; seq: number }> {
   return String(raw ?? "").split("\n").flatMap((line) => {
-    const m = /^([A-Za-z0-9_-]{1,128}) (\S+)$/.exec(line.trim());
-    return m ? [{ who: m[1]!, at: m[2]! }] : [];
+    const m = /^([A-Za-z0-9_-]{1,128}) (\S+)(?: ([0-9]{1,15}))?$/.exec(line.trim());
+    return m ? [{ who: m[1]!, at: m[2]!, seq: m[3] === undefined ? 0 : Number(m[3]) }] : [];
   });
 }
-/** Does a crossing mark still hold at `nowMs`? */
-export const crossingLive = (c: { at: string }, nowMs: number): boolean => { const t = Date.parse(c.at); return Number.isFinite(t) && nowMs - t <= CROSSING_MS; };
+/** At most this many crossing marks stand on a card; a mark drops only once this many later marks (by seq) have landed, never by age. */
+export const CROSSING_CAP = 64;
 
 /**
- * THE CROSSING RUNS PER BODY, AND STAYS ADVISORY. Between a body's PreCompact mark and its own next wake (or the mark lapsing)
+ * THE CROSSING RUNS PER BODY, AND STAYS ADVISORY. Between a body's PreCompact mark and its own next wake (the one event that lifts it; no timer does)
  * a write naming that body refuses; a sibling, or a write naming no body, writes freely. Answers the refusal, or null.
  */
-export function crossingRefusal(rec: Pick<SpiritRecord, "crossing" | "uri" | "pet">, body: string | null, nowMs: number): SpiritRefusal | null {
+export function crossingRefusal(rec: Pick<SpiritRecord, "crossing" | "uri" | "pet">, body: string | null): SpiritRefusal | null {
   if (body === null) return null;
-  const mark = crossingsOf(rec.crossing).find((c) => c.who === body && crossingLive(c, nowMs));
+  const mark = crossingsOf(rec.crossing).find((c) => c.who === body);
   if (mark === undefined) return null;
-  return new SpiritRefusal("spirit-crossing", `spirit-crossing: body #${body.slice(0, 8)} stands in the crossing of its own compaction on ${rec.uri}, marked at ${mark.at}; nothing landed. The mark advises only and holds this body alone (advisory); sibling bodies write on. This body's next wake clears it (\`lares spirit om ${rec.pet} --body ${body}\`), or it lapses ${CROSSING_MS / 60_000} minutes on`, 4);
+  return new SpiritRefusal("spirit-crossing", `spirit-crossing: body #${body.slice(0, 8)} stands in the crossing of its own compaction on ${rec.uri}, marked at ${mark.at} (an annotation); nothing landed. The mark advises only and holds this body alone (advisory); sibling bodies write on. Only this body's next wake or resume clears it, and no clock does; if this body crashed after its PreCompact and never wakes, the hand clears it: \`lares spirit om ${rec.pet} --body ${body}\``, 4);
 }
 
 /** A field write over the sibling record: what to patch and what to unset; null writes nothing. */
 export type SideWrite = { patch?: Record<string, string>; unset?: readonly string[] } | null;
 
-/** Mark (or clear) the crossing one body holds, keeping each live mark a sibling holds: the write over the fields read. */
+/** Mark (or clear) the crossing one body holds, keeping each mark a sibling holds (at most `CROSSING_CAP`, the highest seq; by the minted counter, never by clock): the write over the fields read. */
 export function crossingWrite(fields: Readonly<Record<string, string>>, body: string, now: Date, mark: boolean): SideWrite {
   const was = crossingsOf(fields["crossing"]);
-  const kept = was.filter((c) => c.who !== body && crossingLive(c, now.getTime()));
-  const next = mark ? [...kept, { who: body, at: now.toISOString() }] : kept;
+  const kept = was.filter((c) => c.who !== body);
+  const seq = was.reduce((m, c) => Math.max(m, c.seq), 0) + 1;
+  const next = (mark ? [...kept, { who: body, at: now.toISOString(), seq }] : kept).sort((x, y) => x.seq - y.seq).slice(-CROSSING_CAP);
   if (!mark && next.length === was.length && (fields["crossing"] ?? "").split("\n").filter((l) => l.trim() !== "").length === was.length) return null;
-  return next.length > 0 ? { patch: { crossing: next.map((c) => `${c.who} ${c.at}`).join("\n") } } : { unset: ["crossing"] };
+  return next.length > 0 ? { patch: { crossing: next.map((c) => `${c.who} ${c.at} ${c.seq}`).join("\n") } } : { unset: ["crossing"] };
 }
 
 // ── THE STARTER SHRINE ─────────────────────────────────────────────────────────────────────────────────────────────
@@ -349,26 +349,25 @@ export function attentionLines(titles: readonly string[], listed: Record<string,
 // ── BUNREI: PRESENCE AND THE WAKE EPOCH ───────────────────────────────────────────────────────────────────────────
 
 /** One body awake on a card: its tag (`<pet>#<body>`), its full body id, and when it last woke. */
-export interface SpiritAwake { readonly tag: string; readonly body: string; readonly at: string }
-/** The `bodies-awake` field read: one `<pet>#<body> <iso>` per line, keyed on the full body id; a line that parses not drops. */
+export interface SpiritAwake { readonly tag: string; readonly body: string; readonly at: string; readonly seq: number }
+/** The `bodies-awake` field read: one `<pet>#<body> <iso> <seq>` per line, keyed on the full body id (the iso annotates, the minted seq orders; no seq reads 0); a line that parses not drops. */
 export function presenceOf(raw: string | undefined): SpiritAwake[] {
   return String(raw ?? "").split("\n").flatMap((line) => {
-    const m = /^(\S+#([A-Za-z0-9_-]{1,128})) (\S+)$/.exec(line.trim());
-    return m ? [{ tag: m[1]!, body: m[2]!, at: m[3]! }] : [];
+    const m = /^(\S+#([A-Za-z0-9_-]{1,128})) (\S+)(?: ([0-9]{1,15}))?$/.exec(line.trim());
+    return m ? [{ tag: m[1]!, body: m[2]!, at: m[3]!, seq: m[4] === undefined ? 0 : Number(m[4]) }] : [];
   });
 }
-/** Does a body's presence still stand at `nowMs`? */
-export const presenceLive = (a: SpiritAwake, nowMs: number): boolean => { const t = Date.parse(a.at); return Number.isFinite(t) && nowMs - t <= PRESENCE_STALE_MS; };
 
 /**
- * A waking body joins the card's presence: it refreshes its own entry, drops the stale, and keeps at most `PRESENCE_CAP`, the
- * newest. Answers who stands awake, this body first, and the write over the sibling's fields read.
+ * A waking body joins the card's presence: it refreshes its own entry and keeps at most `PRESENCE_CAP`, the
+ * highest minted seq (the door mints seq = max + 1 inside the CAS write; the stamp annotates and never orders or drops). Answers who stands awake, this body first, and the write over the sibling's fields read.
  */
 export function presenceJoin(fields: Readonly<Record<string, string>>, pet: string, body: string, now: Date): { awake: SpiritAwake[]; write: SideWrite } {
-  const me: SpiritAwake = { tag: `${pet}#${body}`, body, at: now.toISOString() };
-  const others = presenceOf(fields["bodies-awake"]).filter((a) => a.body !== body && presenceLive(a, now.getTime())).sort((x, y) => y.at.localeCompare(x.at));
+  const was = presenceOf(fields["bodies-awake"]);
+  const me: SpiritAwake = { tag: `${pet}#${body}`, body, at: now.toISOString(), seq: was.reduce((m, a) => Math.max(m, a.seq), 0) + 1 };
+  const others = was.filter((a) => a.body !== body).sort((x, y) => y.seq - x.seq);
   const awake = [me, ...others].slice(0, PRESENCE_CAP);
-  return { awake, write: { patch: { "bodies-awake": awake.map((a) => `${a.tag} ${a.at}`).join("\n") } } };
+  return { awake, write: { patch: { "bodies-awake": awake.map((a) => `${a.tag} ${a.at} ${a.seq}`).join("\n") } } };
 }
 
 /** The presence line: how many bodies wear the pet, this one first. */

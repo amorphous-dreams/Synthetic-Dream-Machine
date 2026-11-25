@@ -20,17 +20,17 @@ import { load as automergeLoad } from "@automerge/automerge";
 import type { LarDoc } from "./base-doc.js";
 import { ENGINE_CORE_ID } from "./base-doc.js";
 import { ownEntry } from "./stored-value.js";
-import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "./lar-uris.js";
+import { LARES_LARARIUM_PLUGIN_URI, LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "./lar-uris.js";
 import { materializeGenesisDoc, oracleGenesisDocUrl, type GenesisSeed } from "./genesis-doc.js";
 import { resolveBootDoc } from "./boot-resolver.js";
 import { assertNoPrototypeKeys } from "./prototype-key-shore.js";
 
 /**
  * Validate genesis bytes before any import: Automerge format, TW5 core blob,
- * packed Lares plugin. Throws loudly with `label` naming the calling intake;
- * returns the previewed doc for further inspection.
+ * packed Lares plugin, and (where `readBlob` hands the blob bytes) a house skin beside a split grammar. Throws loudly with
+ * `label` naming the calling intake; returns the previewed doc for further inspection.
  */
-export function validateGenesisBytes(bytes: Uint8Array, label: string): LarDoc {
+export function validateGenesisBytes(bytes: Uint8Array, label: string, readBlob?: (sha256: string) => Uint8Array | undefined): LarDoc {
   let preview: LarDoc;
   try {
     preview = automergeLoad<LarDoc>(bytes);
@@ -50,7 +50,32 @@ export function validateGenesisBytes(bytes: Uint8Array, label: string): LarDoc {
       `[${label}] genesis artifact missing packed Lares TW5 plugin — rebuild genesis after build:plugin`,
     );
   }
+  // A GRAMMAR WITH NO DOORS NEEDS ITS HOUSE. Where the caller holds the blob bytes (a kindle holds the bulb's), a genesis with no
+  // house row reads its grammar: a grammar that packs no route module rode the split, so standing it alone mounts a wiki with no
+  // meme doors, no face and no widgets (a hand-made or half-copied bulb). A grammar that packs its own routes stands whole.
+  if (readBlob && !ownEntry(preview.blobs, LARES_LARARIUM_PLUGIN_URI)) {
+    const grammarRow = ownEntry(preview.blobs, LARES_MEMETIC_WIKITEXT_PLUGIN_URI)!;
+    const grammarBytes = readBlob(grammarRow.sha256);
+    if (grammarBytes && packsARoute(grammarBytes) === false) {
+      throw new Error(
+        `[${label}] genesis artifact carries the split grammar (it packs no meme route) but no house skin ` +
+        `(${LARES_LARARIUM_PLUGIN_URI}) — rebuild genesis after build:plugin: pnpm --filter @lararium/node build:genesis`,
+      );
+    }
+  }
   return preview;
+}
+
+/** Whether packed plugin bytes carry a `route` module among their shadows; null where they do not parse as a packed plugin (the
+ *  engine reads those, and this check claims nothing about them). */
+function packsARoute(bytes: Uint8Array): boolean | null {
+  try {
+    const plugin = JSON.parse(new TextDecoder().decode(bytes)) as { text?: unknown };
+    if (typeof plugin.text !== "string") return null;
+    const shadows = (JSON.parse(plugin.text) as { tiddlers?: Record<string, { "module-type"?: unknown }> }).tiddlers;
+    if (!shadows || typeof shadows !== "object") return null;
+    return Object.values(shadows).some((t) => !!t && typeof t === "object" && t["module-type"] === "route");
+  } catch { return null; }
 }
 
 /**

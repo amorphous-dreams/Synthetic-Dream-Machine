@@ -65,6 +65,7 @@
 import type { ShutdownEntry } from "./composition-shutdown.js";
 import { sha256HexBytesSync } from "@lararium/mesh";
 import type { Hand } from "@lararium/mesh/session-contract";
+import { askerRefusal, handRefusalOf } from "./hand-act-gate.js";
 import type { LarDiskProjector } from "./disk-projector.js";
 
 /** The verb an island answers at its disk shore. */
@@ -340,8 +341,8 @@ export function shoreFlushLines(reading: ShoreFlushReading): string[] {
  * `shore` verb itself or `wiki-act` into the active wiki. A seat lists, reads a render and flushes; it never takes a side.
  */
 export const SHORE_HAND_OPS: ReadonlySet<string> = new Set(["take-records", "keep-both", "restore", "remove"]);
-/** The refusal a seat's settling act reads. */
-export const SHORE_HAND_CODE = "shore-needs-hand";
+/** The refusal a seat's settling act reads: the siblings' code, as every hand act answers an AI seat. */
+export const SHORE_HAND_CODE = "hand-act-only";
 
 /** The hand code a call's shore op reads, or null where the call settles nothing: per op, never per verb. */
 export function shoreHandCode(verb: string, args: unknown): string | null {
@@ -432,11 +433,11 @@ export async function answerShoreSeats(seats: ShoreSeats, args: Readonly<Record<
 export async function answerShore(projector: LarDiskProjector, args: Readonly<Record<string, unknown>>, asker?: Hand): Promise<Record<string, unknown>> {
   const op = text(args["op"]) ?? "list";
   const bag = text(args["bag"]);
-  if (HAND_OPS.has(op) && asker !== "cli" && asker !== "tab") {
-    const line = `lares shore ${op === "take-records" ? "take-records" : op} ${text(args["uri"]) ?? "<uri>"} --key ${text(args["key"]) ?? "<key>"}${bag !== null ? ` --bag ${bag}` : ""}`;
-    return asker === "seat"
-      ? { ok: false, op, refusal: SHORE_HAND_CODE, why: `settling a stand-off runs on a person's hand, and a seat asked; ask the operator to run \`${line}\` on their own terminal` }
-      : { ok: false, op, refusal: "hand-unattested", why: `settling a stand-off runs on a person's hand, and this line's peer reads nothing to attest one; run \`${line}\` on a terminal whose processes the host can read` };
+  // THE ASKER THE DOOR BOOKED reads as the hand gate's verdict (`askerRefusal`): the socket's cached reading of the peer.
+  const unhanded = HAND_OPS.has(op) ? askerRefusal(asker) : null;
+  if (unhanded !== null) {
+    const line = `lares shore ${op} ${text(args["uri"]) ?? "<uri>"} --key ${text(args["key"]) ?? "<key>"}${bag !== null ? ` --bag ${bag}` : ""}`;
+    return { ok: false, op, refusal: unhanded, why: handRefusalOf(unhanded, { act: "settling a stand-off", reads: "peer", line }).message };
   }
   if (op === "list") {
     // WHAT A PERSON READS STANDS TRUE TO THE DISK: the first page looks first, at every carrier that stands

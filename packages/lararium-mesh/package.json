@@ -28,6 +28,10 @@
       "import": "./dist/spirit-shrine.js",
       "types": "./dist/spirit-shrine.d.ts"
     },
+    "./hand-refusal": {
+      "import": "./dist/hand-refusal.js",
+      "types": "./dist/hand-refusal.d.ts"
+    },
     "./bures-metric": {
       "import": "./dist/bures-metric.js",
       "types": "./dist/bures-metric.d.ts"

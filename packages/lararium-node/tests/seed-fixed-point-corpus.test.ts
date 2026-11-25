@@ -18,7 +18,7 @@
  * The run never writes into the tracked tree: every path it writes sits under one scratch directory.
  */
 
-import { grammarPins, vendoredCore } from "../../lararium-tw5/tests/test-wiki.js";
+import { houseSkins, skinPins, vendoredCore } from "../../lararium-tw5/tests/test-wiki.js";
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { execFileSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from "node:fs";
@@ -35,7 +35,6 @@ import { exportCarrierFile } from "../../lararium-tw5/src/meme-write.js";
 import { canonicalizeCarrierText } from "../../lararium-tw5/src/carrier-canonical.js";
 import { canonicalizeNativeCarrierText } from "../../lararium-tw5/src/native-canonical.js";
 import { parseTaploFields } from "../../lararium-tw5/src/toml-ast.js";
-import LARES_MEMETIC_WIKITEXT_PLUGIN from "../../lararium-tw5/plugins/lares-memetic-wikitext.json" with { type: "json" };
 import { TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME } from "../../lararium-tw5/src/generated-tw5-version.js";
 import { candidatesOf, scanSource, settleIngest, type ScanRow, type SubmitIngestOpts } from "../../lares-cli/src/ingest-core.js";
 import type { SubmitResult } from "../../lares-cli/src/verb-result.js";
@@ -165,7 +164,7 @@ describe.skipIf(coreBlobSkip)(
       }
     }
     engine = new TW5Engine();
-    await engine.boot(vendoredCore(), [LARES_MEMETIC_WIKITEXT_PLUGIN as unknown as Record<string, unknown>], undefined, { modulePins: grammarPins() });
+    await engine.boot(vendoredCore(), houseSkins(), undefined, { modulePins: skinPins() });
     tree = new SyncedTree(path.join(scratch, "state", "synced-tree"));
 
     // THE SEED'S GESTURE, one bag at a time: scan, INGEST, record what landed.

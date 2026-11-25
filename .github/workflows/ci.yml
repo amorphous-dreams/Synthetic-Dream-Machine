@@ -287,9 +287,12 @@ jobs:
       - name: Stamp the dependency build for the pristine suites
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: node tools/stamp-build.mjs .
-      - name: Point dist-plugin at the committed standalone artifact
+      # Both skins: the meme routes ride the house (`lares-lararium`), which loads over the grammar.
+      - name: Point dist-plugin at the committed standalone artifacts
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cp packages/lararium-tw5/plugins/standalone/lares-memetic-wikitext.tid packages/lararium-tw5/dist-plugin/lares-memetic-wikitext.tid
+        run: |
+          cp packages/lararium-tw5/plugins/standalone/lares-memetic-wikitext.tid packages/lararium-tw5/dist-plugin/lares-memetic-wikitext.tid
+          cp packages/lararium-tw5/plugins/standalone/lares-lararium.tid packages/lararium-tw5/dist-plugin/lares-lararium.tid
       # THE PUBLISHED ENGINE IS A DEPENDENCY. `tiddlywiki-pristine` (packages/lararium-tw5 devDependencies, an npm alias of the stock
       # release) lands in the lockfile with its integrity hash and in the install above; the contact reads its version off the
       # installed package, so nothing here restates it.

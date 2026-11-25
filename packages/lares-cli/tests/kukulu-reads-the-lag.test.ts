@@ -130,7 +130,7 @@ describe("kukulu reads the lag on every raise and lays the workbench on the owne
 
   it("RED: a newer seed's floor names the seed offer by its own word, the card's title and the runnable line; CONTROL: a seed that stands the same names nothing", async () => {
     const CARD = "lar:///ha.ka.ba/lares/floor/0123456789ab";
-    const offer = (floor: string) => async () => ({ record: { engine: "e", grammar: "g", plugins: "p", floor: "f1" }, seed: { cid: "bafyseed", digests: { engine: "e", grammar: "g", plugins: "p", floor } } });
+    const offer = (floor: string) => async () => ({ record: { engine: "e", grammar: "g", lararium: "l", plugins: "p", floor: "f1" }, seed: { cid: "bafyseed", digests: { engine: "e", grammar: "g", lararium: "l", plugins: "p", floor } } });
     const f = fakes({ lag: { ...LAG, benches: [], benchLag: 0, holdings: [], lag: 0 } });
     const out = await riteKukulu({ ...f.ports, seedOffer: offer("f2"), floorCard: async () => ({ title: CARD }) } as RitePorts, {});
     const text = f.said.join("\n");
