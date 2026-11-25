@@ -99,6 +99,8 @@ export const LARARIUM_MODULES: readonly string[] = Object.freeze([
   "modules/wiki-sense-indexer", "lib/wiki-sense-fold", "filters/wikisense", "filters/kahua-shadow",
   "macros/ddate",
   "widgets/action-oracle-cast", "widgets/action-meme-place",
+  // the house's handlers under Relink's own API: inert unless the Relink offering loads
+  "relink/relink-sigil", "relink/relink-memetic",
 ].map((rest) => `${TW5}${rest}`));
 
 const GRAMMAR_SET = new Set(GRAMMAR_MODULES);

@@ -1,0 +1,49 @@
+title: lar:///ha.ka.ba/lararium/tw5/heleuma/relink
+type: text/memetic-wikitext+tiddlywiki
+heleuma: ka
+module-ref: lar:///ha.ka.ba/lararium/tw5/relink/relink-sigil lar:///ha.ka.ba/lararium/tw5/relink/relink-memetic
+role: the house's handlers under Relink's own API: a rename's relink reaches meme slots and the sigils' lar: values
+source-file: packages/lararium-tw5/src/relink/relink-sigil.ts packages/lararium-tw5/src/relink/relink-memetic.ts packages/lararium-tw5/src/relink-sigil-core.ts
+uri-path: ha.ka.ba/lararium/tw5/heleuma/relink
+
+<<~ ahu slot=`#/contract`>>
+
+!! Contract
+
+The rename door hands references to TiddlyWiki's own `relinkTiddler`, and the Relink offering (flibbles, BSD-3-Clause) walks wikitext, filters and fields through it. Two house modules carry the house's own syntax into that walk, through Relink's own handler API, so the door's dry-run capture sees every edit:
+
+* `relink/relink-memetic` (`relinktext`) hands the carrier type `text/memetic-wikitext+tiddlywiki` Relink's wikitext handler, honouring `lar:///ha.ka.ba/config/memetic-rules-except` through a `\rules except` line.
+* `relink/relink-sigil` (`relinkwikitextrule`) gives the `lar-sigil` and `lar-declaration` rules a report and a relink: a named value holding a `lar:///` local URI that names the moved record, or a slot of it, follows the rename; a container pair's body walks on as wikitext.
+
+Both stand inert where Relink stands absent: only Relink reads their module types.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/unrelinked`>>
+
+!! What Stays
+
+* The session form `lar://alias:grant@host/…`: it names an exchange, never a record.
+* A digest (`bcc=`): the seal re-mints, it never relinks.
+* A positional value and a bare word (`<<~ has name=…>>`): a word reads the same as a title.
+* A typed value inside a sigil (`{{…}}`, `{{{…}}}`, `<<…>>`): it keeps its own grammar.
+* The TOML meta `title` and `uri-path`: the family law's rename moves them.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/source`>>
+
+!! Source
+
+{{lar:///ha.ka.ba/lararium/tw5/relink/relink-sigil}}
+
+{{lar:///ha.ka.ba/lararium/tw5/relink/relink-memetic}}
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+<<~ loulou uri=`lar:///ha.ka.ba/kahua/memory/research/adopt-relink`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/vendor/flibbles-relink`>>
+
+<<~/ahu>>
