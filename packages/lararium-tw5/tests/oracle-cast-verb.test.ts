@@ -102,6 +102,26 @@ describe.skipIf(wikiSkip)(`oracle-cast — a cast writes its result as a tiddler
     }
   }, 60_000);
 
+  test("a seat's own nonce re-rolls nothing: it answers asks with the person's line, and nothing moves", async () => {
+    const r = await rig();
+    const seat = { ...r.ctx, asker: "seat" } as VerbContext;
+    for (const extra of [{ nonce: "n1" }, { nonce: "n2", asking: "which road first?" }]) {
+      const out = await r.cast({ recipe: "default", caster: "agent", at: AT, ...extra }, seat);
+      expect(out).toMatchObject({ band: "asks", decision: "asks" });
+      expect(String((out["asks"] as Record<string, unknown>)["answer"])).toContain("--fresh");
+    }
+    expect(r.engine.wiki.filterTiddlers("[prefix[lar:///ha.ka.ba/lares/oracle/casts/]]")).toEqual([]);
+  }, 60_000);
+
+  test("two worn faces key apart: the same words from each throw their own cast", async () => {
+    const r = await rig();
+    const face = (ordinal: number, presenter: string): VerbContext => ({ ...r.ctx, asker: "seat", worn: { ordinal, presenter } } as VerbContext);
+    const one = await r.cast({ recipe: "default", asking: "which road first?", at: AT }, face(0, "0x" + "01".repeat(32)));
+    const two = await r.cast({ recipe: "default", asking: "which road first?", at: AT }, face(1, "0x" + "02".repeat(32)));
+    expect(one["title"]).not.toBe(two["title"]);
+    expect(bookedAsker(face(0, "a"))).not.toBe(bookedAsker(face(1, "b")));
+  }, 60_000);
+
   test("a seat's bare cast asks for its query first: nothing moves, and the cure names --asking", async () => {
     const r = await rig();
     const seat = { ...r.ctx, asker: "seat" } as VerbContext;

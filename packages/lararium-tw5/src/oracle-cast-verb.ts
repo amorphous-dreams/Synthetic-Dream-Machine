@@ -19,7 +19,7 @@
  * `--asking '<the fork>'`, so a seat never re-rolls by asking nothing. A person's bare cast mints its own nonce.
  *
  * THE PERSON'S HAND opens the second mode: `fresh` (a new nonce minted at the word, so the same words throw again) and
- * `seed` (the coins draw from a door seeded by the person's words). A seat asks either and the door answers `asks`,
+ * `seed` (the coins draw from a door seeded by the person's words). A seat asks either, or names a nonce of its own, and the door answers `asks`,
  * naming the line a person runs; nothing moves. A LOW-ENTROPY SEED READS BACK: the record names the seed by a 16-hex
  * digest and the asking by a 16-hex id, so a short or common seed can be guessed from them; choose a strong one.
  *
@@ -110,8 +110,9 @@ export function makeOracleCastReactor(opts: TiddlerVerbOptions): VerbReactor {
     let nonce = wordArg(args["nonce"]);
     if (fresh && nonce === "") throw new VerbRefusal("oracle-cast-fresh-unminted", "oracle-cast-fresh-unminted: a fresh throw carries the nonce its caller minted at the word; run `lares oracle cast --fresh`, which mints one");
     // THE PERSON'S HAND: a seat never re-throws an asking or seeds the coins; it asks, and nothing moves.
-    if ((fresh || seed !== "") && ctx.asker === "seat") {
-      const mode = fresh ? "fresh" : "seed";
+    // A seat's own nonce re-throws as surely as `fresh`, so it meets the same hand.
+    if ((fresh || seed !== "" || nonce !== "") && ctx.asker === "seat") {
+      const mode = seed !== "" && !fresh ? "seed" : "fresh";
       const band: DoorBand = "asks";
       return {
         band, decision: "asks",
