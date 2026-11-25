@@ -518,7 +518,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     examples: [
       "lares spirit om lares-alpha                                   # the wake text",
       "lares spirit ah lares-alpha --slot '#/open' --file open.txt     # true one slot",
-      "lares spirit ah lares-alpha --slot '#/voice' --add '* a tell'  # one line at its end",
+      "lares spirit ah lares-alpha --slot '#/kulana' --add '* a tell'  # one line at its end",
       "lares spirit hum lares-alpha                                  # each waking slot against its cap, the record against its advisory weight",
       "lares spirit hum lares-alpha --fold '#/bodies' --line 3       # move a line to the ash ledger",
       "lares spirit otakiage lares-alpha                             # burn the residue (your hand)",

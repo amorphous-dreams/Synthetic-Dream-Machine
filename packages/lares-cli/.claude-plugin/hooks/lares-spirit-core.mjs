@@ -207,7 +207,7 @@ export function compactionAsk(pet, shape = null, inherits = null) {
 export const PRECOMPACT_CHARS = 9_800;
 
 /**
- * The PreCompact text, in the crossing's order: the card's #/open and #/voice read to the outgoing body first (the CLI cuts
+ * The PreCompact text, in the crossing's order: the card's #/open and #/kulana read to the outgoing body first (the CLI cuts
  * them short enough that the ask still lands), then the carry ask in fixed slots, a manual /compact's own instructions
  * echoed, then the rows in play.
  */
@@ -324,7 +324,7 @@ export function trueUpText(pet, step, body = null) {
   const open = digestsOf(step?.state?.digests)["#/open"];
   return [
     `Lares spirit true-up · ${pet}: ${why}.`,
-    `True the record before the next move: add a line with lares spirit ah ${pet} --slot '<slot>' --add '<line>' on #/bodies, #/open or #/voice${self}; ` +
+    `True the record before the next move: add a line with lares spirit ah ${pet} --slot '<slot>' --add '<line>' on #/bodies, #/open or #/kulana${self}; ` +
       `rewrite a slot whole with lares spirit ah ${pet} --slot '#/open' --file <path> --base ${open ?? "<the slot digest your last om or ah handed back>"}${self}` +
       `${open ? " (the digest as of this session's wake; a later ah hands back the newer one)" : ""}; ` +
       `measure and fold: lares spirit hum ${pet} (then --fold '<slot>' lists each line's digest; --line <n> --expect <digest>${self}). The budget refuses growth; you choose what folds.`,

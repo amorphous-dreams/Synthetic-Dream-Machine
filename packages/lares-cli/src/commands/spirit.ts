@@ -95,7 +95,7 @@ export const PRESENCE_STALE_MS = 30 * 60_000;
 export const PRESENCE_CAP = 16;
 /** How long a crossing mark holds ah and hum before it reads stale. */
 export const CROSSING_MS = 10 * 60_000;
-/** The card's #/open and #/voice, read to the outgoing body at PreCompact, cut here so the carry ask still lands inside 10,000 chars. */
+/** The card's #/open and #/kulana, read to the outgoing body at PreCompact, cut here so the carry ask still lands inside 10,000 chars. */
 export const PRECOMPACT_CARD_CHARS = 4000;
 /** How many titles #/attention names the wake unfolds. */
 export const ATTENTION_TITLES = 12;
@@ -349,7 +349,7 @@ export const SHRINE_SLOTS: ReadonlyArray<readonly [string, string]> = [
   ["#/grant", "!! The grant\n\nWhat it covers; what it never covers (the hand acts stay the operator's)."],
   ["#/attention", "!! Where attention starts\n\nThe canon and stage titles to read first, by lar:/// address."],
   ["#/open", "!! Open loops\n\nPR numbers, heads, what each waits on and whose hand it needs."],
-  ["#/voice", "!! Tells to catch\n\nA joint to watch, never a debt."],
+  ["#/kulana", "!! Kūlana ~ the posture this spirit stands in\n\nCatmas held loosely, joints to watch, and outside memes transcluded in place."],
   ["#/carry-shape", `!! The carry's shape\n\nWhat a compaction hands down as the ${COMPACTION_DISPLAY}; the PreCompact hook reads this to the summarizer.`],
   ["#/bodies", "!! Bodies\n\nOne line each; fold the oldest when a new one lands."],
 ];
@@ -605,13 +605,13 @@ async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
     return 0;
   }
   if (source === "precompact") {
-    // The crossing: the card's #/open and #/voice, read to the outgoing body, and the mark that holds slot writes until a body wakes.
+    // The crossing: the card's #/open and #/kulana, read to the outgoing body, and the mark that holds slot writes until a body wakes.
     if (body !== null) await markCrossing(args, rec, body, ctx, true);
     const shape = await readSlot(args, "om", rec, "#/carry-shape");
     const open = await readSlot(args, "om", rec, "#/open");
-    const voice = await readSlot(args, "om", rec, "#/voice");
+    const kulana = await readSlot(args, "om", rec, "#/kulana");
     const { carry } = await latestCarry(args, "om", [key, pet], false, body);
-    const text = [open?.body, voice?.body].filter(Boolean).join("\n\n").slice(0, PRECOMPACT_CARD_CHARS);
+    const text = [open?.body, kulana?.body].filter(Boolean).join("\n\n").slice(0, PRECOMPACT_CARD_CHARS);
     emit(args, { ok: true, data: { ...data, carryShape: shape?.body ?? null, inherits: carry === null ? null : carry.title.slice(-12), chars: text.length, text }, human: () => console.log(text) });
     return 0;
   }
@@ -813,9 +813,9 @@ async function ah(args: ParsedArgs, ctx: Ctx): Promise<number> {
   const who = self !== null ? `${pet}#${self}` : "a hand at the terminal";
   const receipt = await mergeSlot(args, rec, slot, line !== null ? { add: line } : { words: words!, base, who });
   if (receipt["decision"] === "ingest") {
-    // The slot's last writer names a later clash's other side; a tell distilled into #/voice sets the distill mark (otakiage burns
+    // The slot's last writer names a later clash's other side; a tell distilled into #/kulana sets the distill mark (otakiage burns
     // only residue that landed before it). Both ride the sibling record, so the card's base holds.
-    await writeSide(args, "ah", rec, { [writerField(slot)]: who, ...(slot === "#/voice" ? { distilled: ctx.now().toISOString() } : {}) });
+    await writeSide(args, "ah", rec, { [writerField(slot)]: who, ...(slot === "#/kulana" ? { distilled: ctx.now().toISOString() } : {}) });
   }
   emit(args, {
     ok: true, data: { pet, uri: rec.uri, slot, ...receipt },
@@ -1060,7 +1060,7 @@ async function otakiage(args: ParsedArgs, ctx: Ctx): Promise<number> {
       for (const title of burned) console.log(`  burned ${title}`);
       for (const h of held) console.log(`  held ${h.title}: ${h.why}`);
       if (ledger) console.log(`  ashes: ${ledger}`);
-      console.log(`  distill what the residue taught into #/voice (it sets the distill mark): lares spirit ah ${pet} --slot '#/voice' --add '<tell>'`);
+      console.log(`  distill what the residue taught into #/kulana (it sets the distill mark): lares spirit ah ${pet} --slot '#/kulana' --add '<tell>'`);
     },
   });
   return 0;
