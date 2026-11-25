@@ -1846,6 +1846,32 @@ switch ($verb) {
     }
     RouteCli (@($verb) + $rest) $true
   }
+  'kahua' {
+    # A kahua hand act under a pūlama, in the lei pattern: `kahua lift|withdraw|carry …` reads the terms in the vessel on this
+    # terminal (`--terms`: the preview, the digest typed back, then one `{"face":…}` line), the pūlama checks it, reads the route
+    # here and its face root signs that one record (`sign`), and the vessel lands it (`--land`) over the act it builds afresh.
+    if ($PulamaMode -and $rest.Count -ge 1 -and @('lift', 'withdraw', 'carry') -contains $rest[0] -and -not ($rest | Where-Object { $_ -eq '--terms' -or $_ -like '--land*' })) {
+      if (-not $script:Tty) { Die "kahua $($rest[0]) under a pūlama reads its route on a terminal; run it on one (nothing signed)" }
+      $terms = ''
+      & docker compose @Base exec --no-TTY=false @PassEnv lares node $Cli kahua @rest --terms | ForEach-Object {
+        [Console]::Error.WriteLine($_)
+        $l = "$_".Trim("`r")
+        if ($l.StartsWith('{"face":')) { $terms = $l }
+      }
+      if (-not $terms) { Die 'the vessel named nothing for the pūlama to sign (its answer above); nothing signed' }
+      $answer = ''
+      & docker compose @Base --profile pulama exec --no-TTY=false (PulamaSvc) node $PulamaMain sign $terms | ForEach-Object {
+        [Console]::Error.WriteLine($_)
+        $l = "$_".Trim("`r")
+        if ($l.StartsWith('{')) { $answer = '' }
+        $answer += $l
+      }
+      if (-not $answer.StartsWith('{')) { Die 'the pūlama signed nothing; nothing lands' }
+      $null | & docker compose @Base exec -e LARES_EXEC_TAG @PassEnv -T lares node $Cli kahua @rest --land $answer
+      exit $LASTEXITCODE
+    }
+    RouteCli (@($verb) + $rest) $true
+  }
   'nexus' {
     # The offering's signature under a pūlama, in the lei pattern: the vessel holds no face root, so `nexus publish plugins …
     # --apply` reads the terms in the vessel (`--terms`), the pūlama reads the route on this terminal and its face root signs

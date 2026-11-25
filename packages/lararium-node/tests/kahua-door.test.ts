@@ -11,9 +11,10 @@ import {
   DAEMON_BAG_ID, KAHUA_BAG, KAHUA_PLANE, isFaceScopedBag, personaMembershipEntries, PERSONA_GROUP_ID_TIDDLER, SessionDocumentView, emptyLarDoc, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed,
   FACE_PLANE, kahuaMemeDigest, readKahuaStagedMeme, stageKahuaMeme,
   faceIntentVerbs, intentEntryRecordsOfGroup, materializeSharedLarDoc, kahuaBodyDigest, kahuaPlaneUrl, kahuaStageDocUrl, makeHandLineage, personaActRecordsOfGroup, personaBagIdFor,
-  personaSiblingBagIds, projectPersonaLog, signFoundingLog, signPersonaAct, signsAtEpoch, buildKahuaProposal, intentId, writeIntentEntry, storedLarRecord, tiddlerText, writePersonaAct, type LarDoc,
+  personaSiblingBagIds, projectPersonaLog, signKahuaActBody, kahuaActBody, type KahuaActBody, signFoundingLog, signPersonaAct, signsAtEpoch, buildKahuaProposal, intentId, writeIntentEntry, storedLarRecord, tiddlerText, writePersonaAct, type LarDoc,
 } from "@lararium/mesh";
 import { kahuaDoor, KahuaRefused, type KahuaDoorPorts } from "../src/kahua-door.js";
+import { storeVerbNeedsWard } from "../src/ward-credential.js";
 import { bridgeBooks, faceFleetFacets, faceFleetViews } from "../src/face-fleet-view.js";
 import { taggedAdmission, testVesselTag } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
@@ -489,3 +490,61 @@ describe("a face that stands open and unworn (the wedge: a walked hearth parked 
 });
 
 export { KahuaRefused };
+
+describe("the hand at the pūlama (gate-unifier: a lift under a pūlama refused `operator-grant-absent … needs-the-human`)", () => {
+  const src = [{ title: "daemon/t", revision: "r1" }];
+  const recordOf = (out: object): KahuaActBody => (out as { terms: { record: KahuaActBody } }).terms.record;
+
+  test("RED: a lift's terms run every gate, answer the ONE unsigned body naming the root as seat, open no root and land nothing; the record the pūlama signs lands over the body built afresh, under another session's door; CONTROL: the stage reads the lift", async () => {
+    const f = await face();
+    const door = kahuaDoor(f.ports({ rootKey: async () => f.root.key }));
+    const row = f.st("t", "a hand-lifted body");
+    const terms = await door.liftByHand({ ...row, taint: [], sources: src }, { terms: true });
+    expect(terms).toMatchObject({ terms: { hand: "terms", kind: "kahua-act", key: f.root.key, record: { act: "lift", title: "t", text: "a hand-lifted body", origin: { seat: f.root.key, session: "cli-session-1" } } } });
+    expect(f.roots.n).toBe(0);
+    expect(await door.list()).toEqual([]);
+    // THE PŪLAMA SIGNS the one body (its `sign` door); the vessel lands it, even from a door whose session reads otherwise.
+    const signed = await signKahuaActBody(recordOf(terms), f.root);
+    const landed = await kahuaDoor(f.ports({ session: () => "cli-session-2" })).liftByHand({ ...row, taint: [], sources: src }, { signed });
+    expect(landed).toMatchObject({ landed: true, parent: null });
+    expect((await door.get("t"))?.heads[0]).toMatchObject({ cid: (landed as { cid: string }).cid, text: "a hand-lifted body" });
+    expect(f.roots.n).toBe(0);
+  });
+
+  test("RED: a signed record whose body differs from the act built now refuses `kahua-hand-moved`, one signed by a key outside the roster `operator-grant-absent`, and terms with no root key read `operator-grant-absent`; each lands nothing", async () => {
+    const f = await face();
+    const door = kahuaDoor(f.ports({ rootKey: async () => f.root.key }));
+    const row = f.st("t", "x");
+    const body = recordOf(await door.liftByHand({ ...row, taint: [], sources: src }, { terms: true }));
+    const moved = await signKahuaActBody(kahuaActBody({ ...body, taint: ["outside"] } as Parameters<typeof kahuaActBody>[0]), f.root);
+    await expect(door.liftByHand({ ...row, taint: [], sources: src }, { signed: moved })).rejects.toThrow(/^kahua-hand-moved: /);
+    const stranger = await signKahuaActBody(body, f.atomA);
+    await expect(door.liftByHand({ ...row, taint: [], sources: src }, { signed: stranger })).rejects.toThrow(/^operator-grant-absent: /);
+    await expect(door.liftByHand({ ...row, taint: [], sources: src }, { signed: "bytes" })).rejects.toThrow(/^kahua-hand-malformed: /);
+    await expect(kahuaDoor(f.ports()).liftByHand({ ...row, taint: [], sources: src }, { terms: true })).rejects.toThrow(/^operator-grant-absent: /);
+    await expect(kahuaDoor(f.ports({ rootKey: async () => f.atomA.key })).liftByHand({ ...row, taint: [], sources: src }, { terms: true })).rejects.toThrow(/^operator-grant-absent: /);
+    expect(await door.list()).toEqual([]);
+    expect(f.roots.n).toBe(0);
+  });
+
+  test("RED: a withdraw and a carry ride the same hand: terms name one body, the signed record lands; CONTROL: the stage reads the withdraw", async () => {
+    const f = await face();
+    const door = kahuaDoor(f.ports({ rootKey: async () => f.root.key }));
+    const lifted = await door.lift({ ...f.st("t", "x"), taint: [], sources: src });
+    const terms = await door.withdrawByHand(lifted.cid, { terms: true });
+    expect(recordOf(terms)).toMatchObject({ act: "withdraw", target: lifted.cid });
+    await door.withdrawByHand(lifted.cid, { signed: await signKahuaActBody(recordOf(terms), f.root) });
+    expect(await door.get("t")).toBeNull();
+    await expect(door.carryByHand({ cids: [lifted.cid] }, { terms: true })).rejects.toThrow(/carry-nothing/);
+  });
+});
+
+describe("a kahua hand act opens no ward on the vessel", () => {
+  test("RED: a lift's, a withdraw's and a carry's terms and their land each open no ward (the root signs at the pūlama, so the vessel asks no passphrase); CONTROL: the vessel's own lift stays a ward act", () => {
+    for (const verb of ["kahua-lift", "kahua-withdraw", "kahua-carry"]) {
+      expect(storeVerbNeedsWard(verb, { face: 1, terms: true }), verb).toBe(false);
+      expect(storeVerbNeedsWard(verb, { face: 1, signed: {} }), verb).toBe(false);
+      expect(storeVerbNeedsWard(verb, { face: 1 }), verb).toBe(true);
+    }
+  });
+});

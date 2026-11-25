@@ -15,6 +15,7 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
 import { wardRootSigner } from "../ward-signer.js";
+import { loadPersonaGroupRootVerifyingKey } from "../node-vessel-identity.js";
 import { makeCatalogAccessor } from "@lararium/tw5";
 import type { WardCredential } from "../ward-credential.js";
 import { randomBytes } from "node:crypto";
@@ -23,7 +24,7 @@ import {
   faceRecordsOf, faceRelationOf, storedLarRecord, tiddlerText, ownEntry, CONTROL_HOME_ID, findOrThrow, DocumentUnavailableRefusal, type KahuaSource, type LarDoc,
 } from "@lararium/mesh";
 import { loadIntentFace, IntentRefused } from "./intent.js";
-import { kahuaDoor, KahuaRefused, type KahuaDoorPorts } from "../kahua-door.js";
+import { kahuaDoor, KahuaRefused, type KahuaDoorPorts, type KahuaHand } from "../kahua-door.js";
 
 export { KahuaRefused };
 
@@ -46,6 +47,12 @@ export type KahuaCapPort = (presenter: string) => Promise<{ readonly held: boole
 export interface KahuaCommandOptions {
   /** The face's ward route for this act (seat-harness#/the-ward): the root signs only under a fresh ward unlock. */
   readonly ward?: WardCredential;
+  /**
+   * THE HAND AT THE PŪLAMA (lift, withdraw, carry): `terms` answers the face and the ONE unsigned body its root signs at the
+   * pūlama's `sign` door, opening no route; `signed` lands the record that door signed (`kahua-door.ts`, `KahuaHand`).
+   */
+  readonly terms?: boolean;
+  readonly signed?: unknown;
   readonly repo: Repo;
   readonly catalogUrl?: string;
   readonly face?: number;
@@ -113,6 +120,8 @@ export async function runKahuaCommand(opts: KahuaCommandOptions): Promise<Record
     atom: signer, intents: plane as DocHandle<LarDoc>,
     // The root signs ONE act here, opening fresh under the act's ward route and zeroing after it (seat-harness#/the-ward).
     rootSigner: () => wardRootSigner(index, opts.ward, "a kahua hand act"),
+    // The root's PUBLIC key off its roster row (no route opens): the key a hand act's terms name as their signer.
+    rootKey: () => loadPersonaGroupRootVerifyingKey(index),
     cap: opts.cap ?? null,
     register: (bagId, url) => catalog.change((d) => { d.tiddlers[bagId] = storedLarRecord(bagId, { text: url, kind: "oracle" }, "kahua-pin"); }),
     session: () => session,
@@ -122,6 +131,11 @@ export async function runKahuaCommand(opts: KahuaCommandOptions): Promise<Record
     ...(opts.mount ? { chore: { face: index, mount: opts.mount, lent: opts.lent ?? (async () => null), asker: { hand: "cli" as const, session: opts.session ?? null, generation: null } } } : {}),
   };
   const door = kahuaDoor(ports);
+  if (opts.terms === true && opts.signed !== undefined) throw new KahuaRefused(`${opts.action}: name the terms or a signed record, never both`);
+  const hand: KahuaHand | undefined = opts.terms === true ? { terms: true } : opts.signed !== undefined ? { signed: opts.signed } : undefined;
+  if (hand && opts.action !== "lift" && opts.action !== "withdraw" && opts.action !== "carry") throw new KahuaRefused(`${opts.action}: only a lift, a withdraw or a carry signs at the pūlama's hand`);
+  /** A terms answer names the face the pūlama's root signs for beside the record. */
+  const faced = (out: object): Record<string, unknown> => ("terms" in out ? { ...out, face: index } : { ...out });
   const need = (v: string | undefined, what: string): string => { if (!v) throw new KahuaRefused(`${opts.action}: name ${what}`); return v; };
   switch (opts.action) {
     case "mint": return { ...(await door.mint()) };
@@ -144,16 +158,18 @@ export async function runKahuaCommand(opts: KahuaCommandOptions): Promise<Record
     }
     case "lift": {
       if (opts.taint === undefined) throw new KahuaRefused("kahua-act-refused: taint: name --taint (`none` when every input came from inside the face)");
-      return { ...(await door.lift({
+      const input = {
         title: need(opts.title, "a title"), digest: need(opts.digest, "the staged row's digest"), taint: opts.taint,
         ...(opts.sources ? { sources: opts.sources } : {}),
         ...(opts.parent !== undefined ? { parent: opts.parent } : {}), ...(opts.proposal ? { proposal: opts.proposal } : {}),
-      })) };
+      };
+      return faced(hand ? await door.liftByHand(input, hand) : await door.lift(input));
     }
-    case "withdraw": return { ...(await door.withdraw(need(opts.target, "a revision cid"))) };
+    case "withdraw": return faced(hand ? await door.withdrawByHand(need(opts.target, "a revision cid"), hand) : await door.withdraw(need(opts.target, "a revision cid")));
     case "carry": {
       if (!opts.all && (opts.cids ?? []).length === 0) throw new KahuaRefused("carry: name the revision cids that keep standing, or `all`");
-      return { ...(await door.carry(opts.all ? { all: true } : { cids: opts.cids ?? [] })) };
+      const named = opts.all ? { all: true } : { cids: opts.cids ?? [] };
+      return faced(hand ? await door.carryByHand(named, hand) : await door.carry(named));
     }
     // The list names the face's relation F beside its items: the identity its daemon canon bag carries (`bags/daemon-<F>`),
     // read off the verified log (its folders take its pet name, `faces/<pet name>/`).

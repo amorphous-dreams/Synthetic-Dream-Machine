@@ -64,6 +64,14 @@
  *            closed shape (an extra field, a blob without provenance, a region its blobs do not fold to) and an offeror that
  *            names another key than the face's root each refuse before the route reads.
  *
+ *   sign     THE HAND SIGNS ONE RECORD OF A CLOSED SET under a face root, SIGN-ONLY, in the lei pattern: every ward act that signs
+ *            as the face under a pūlama rides here (`lares kahua lift|withdraw|carry`, and `publish` beneath it), each by its
+ *            record KIND (`pulama-sign`: a closed table, each kind its own shape check and domain-tagged preimage). The vessel
+ *            reads the terms (`--terms`: the face, the kind, the one unsigned record), the route opens the face root for ONE
+ *            signature and zeroes, and the vessel lands the record (`--land`) over the record it builds afresh. An unlit
+ *            pūlama, an unopened face, a kind outside the table, a record outside its kind's shape and a record naming another
+ *            root or group each refuse before the route reads; `check: true` answers `ready` there and reads no route.
+ *
  *   closure  THE HOST'S CLOSURE REPORT: the pūlama code closure of the image this keeper runs, as the host read its label. It
  *            rests in this keeper's memory alone (two keepers share one state dir), and `image` may carry it too (`closure`).
  *
@@ -78,7 +86,7 @@
  *                  vouches name this move, and the vest begins the rite, claiming one lei return) and only where the successor's
  *                  reported closure equals the committed `next`. One attempt spends the commit, vested or lapsed. The answer
  *                  carries the slot for the host's pipe; it never rests. From then this keeper is PASSING THE FIRE: every hand
- *                  act that writes (admit, unadmit, lei, publish, keep-seat, rehive, close, keeper-commit, keeper-commit-lei, keeper-vest,
+ *                  act that writes (admit, unadmit, lei, publish, sign, keep-seat, rehive, close, keeper-commit, keeper-commit-lei, keeper-vest,
  *                  keeper-land) refuses
  *                  `fire-passing`. The vessel's sessions keep serving through it until the shim locks it, so the down's keep and
  *                  census ride the keeper that still holds the fire; the successor holds no socket and serves nothing meanwhile.
@@ -104,10 +112,11 @@
  */
 import type { ExecLeiScope } from "@lararium/mesh";
 import {
-  LEI_RETURNS_ASK_ABOVE, PLUGIN_OFFERING_DOMAIN, computePluginsCid, encodeKeepSeat, pluginOfferingCid, signPluginOffering, verifyPluginOffering, isSwarmLeiRite, mintKeepSeatUnder, signSwarmAct, swarmActCid, swarmLeiUnstrungTitle, swarmTesseraPrefix,
-  type Credential, type PluginOffering, type SwarmBodyParts, type SwarmSignerPort, type SwarmWikiPort,
+  LEI_RETURNS_ASK_ABOVE, encodeKeepSeat, isSwarmLeiRite, mintKeepSeatUnder, signSwarmAct, swarmActCid, swarmLeiUnstrungTitle, swarmTesseraPrefix,
+  type Credential, type SwarmBodyParts, type SwarmSignerPort, type SwarmWikiPort,
 } from "@lararium/mesh";
 import { lentFacesOf } from "@lararium/mesh/lent-faces";
+import { PULAMA_SIGN_KINDS, pulamaSignKind, type PulamaSignContext } from "./pulama-sign.js";
 import { nativeKdf } from "@lararium/mesh/node";
 import { UNLOCK_ATTEMPTS_PER_BOOT, type CustodyHolder } from "./custody-holder.js";
 import { pulamaSignerOf } from "./kukulu-gate.js";
@@ -153,32 +162,16 @@ export interface PulamaPublishHand {
   signer(ordinal: number, credentials: readonly Credential[]): Promise<{ readonly key: string; sign(bytes: Uint8Array): Promise<string> }>;
 }
 
-/** The ONE shape the hand door's `publish` signs: the `signPluginOffering` preimage's parts, and nothing beside them. */
-export type PulamaOfferingTerms = Omit<PluginOffering, "kind" | "sig">;
-const OFFERING_TERMS_FIELDS: ReadonlySet<string> = new Set(["offeror", "pluginsCid", "blobs"]);
+export { offeringTermsOf, type PulamaOfferingTerms } from "./pulama-offering.js";
 
-/**
- * The descriptor a `publish` frame asks the hand to sign, or the refusal its shape reads. CLOSED: exactly `offeror` (the face
- * root's lowercase hex), `pluginsCid` and a non-empty `blobs`, each blob the taker's own closed shape with its provenance (the
- * same checks `verifyPluginOffering` runs, short of the signature), and the region its blobs fold to. Arbitrary bytes never
- * reach the root through this act: the root signs `pluginOfferingBytes` of a descriptor that passed here.
- */
-export async function offeringTermsOf(raw: unknown): Promise<{ readonly terms: PulamaOfferingTerms } | { readonly reading: "publish-malformed"; readonly detail: string }> {
-  const malformed = (detail: string) => ({ reading: "publish-malformed" as const, detail });
-  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return malformed("a publish names its offering: one object of offeror, pluginsCid and blobs");
-  const extra = Object.keys(raw).filter((k) => !OFFERING_TERMS_FIELDS.has(k));
-  if (extra.length > 0) return malformed(`an offering names offeror, pluginsCid and blobs alone, never ${extra.join(", ")}`);
-  const terms = raw as PulamaOfferingTerms;
-  if (typeof terms.offeror !== "string" || !/^[0-9a-f]{64}$/.test(terms.offeror)) return malformed("an offering names its offeror as the face root's lowercase hex key");
-  // THE TAKER'S OWN SHAPE CHECKS, short of the signature: a placeholder signature leaves `bad-signature` as the one verdict a whole shape reads.
-  let verdict: Awaited<ReturnType<typeof verifyPluginOffering>>;
-  try { verdict = await verifyPluginOffering({ kind: PLUGIN_OFFERING_DOMAIN, ...terms, sig: "0".repeat(128) }); }
-  catch { return malformed("the offering forms no plugin offering"); }
-  if (verdict.ok || verdict.code !== "bad-signature") return malformed(verdict.ok ? "the offering forms no plugin offering" : `${verdict.code}: ${verdict.reason}`);
-  // THE FOLD the taker recomputes reads here too: a descriptor whose region its blobs do not fold to signs nothing.
-  const folded = computePluginsCid(terms.blobs);
-  if (folded !== terms.pluginsCid) return malformed(`fold-mismatch: the blobs fold to ${folded}, not the declared region ${terms.pluginsCid}`);
-  return { terms: { offeror: terms.offeror, pluginsCid: terms.pluginsCid, blobs: terms.blobs } };
+/** The face root the hand's `sign` act signs ONE record under (every registered kind), read in the pūlama, where the root rests. */
+export interface PulamaSignHand {
+  /** The face root's PUBLIC key at this ordinal (its roster row; no route opens for it); absent where none reads. */
+  key(ordinal: number): Promise<string | null | undefined>;
+  /** The PersonaGroup the face at this ordinal names (its anchors row); null where none reads. */
+  group(ordinal: number): Promise<string | null>;
+  /** The face root's signer for ONE record, opened fresh under the operator's route (a ward act). */
+  signer(ordinal: number, credentials: readonly Credential[]): Promise<{ readonly key: string; sign(bytes: Uint8Array): Promise<string> }>;
 }
 
 type LeiAct = "kui" | "restring" | "unstring";
@@ -226,6 +219,8 @@ export function pulamaHandDoor(a: {
   readonly lei?: PulamaLeiHand;
   /** The face root the `publish` act signs one offering under. Absent, `publish` refuses `publish-unavailable`. */
   readonly publish?: PulamaPublishHand;
+  /** The face root the `sign` act signs one record of the closed set under (`pulama-sign`). Absent, `sign` refuses `sign-unavailable`. */
+  readonly sign?: PulamaSignHand;
   /** The rehive of one SHUT face under its own route (`rehiveShutFace` over this pūlama's holder). Absent, `rehive` refuses `rehive-unavailable`. */
   readonly rehive?: (ordinal: number, credentials: readonly Credential[]) => Promise<RehiveOutcome>;
   /** The vessel socket: whether this keeper holds the fire, and the claim a lit successor takes. Absent, `take-fire` refuses `fire-unavailable`. */
@@ -287,6 +282,45 @@ export function pulamaHandDoor(a: {
     if (!a.admissions || !holder.isUnlocked()) return {};
     const by = await pulamaSignerOf(holder);
     return { admitted: (await a.admissions.list(by)).map((r) => r.image), ended: [...await a.admissions.ended(by)] };
+  };
+  /**
+   * THE ONE SIGNING PATH (`sign`, and `publish` beneath it): unlit, an unopened face, a kind outside the closed set, a record
+   * outside its kind's shape and a face whose root key or group differs from the record's each refuse BEFORE the route reads;
+   * `check: true` answers `ready` there and asks for no route (the verb asks it before a person types one). Then the root opens
+   * fresh under the route for ONE signature, signs the kind's own preimage and zeroes; the reader's verdict runs over the record,
+   * and the answer carries it for the vessel to land. The door writes nothing.
+   */
+  const signOne = async (op: string, kindName: unknown, faceRaw: unknown, raw: unknown, f: Record<string, unknown>, port: PulamaSignHand): Promise<PulamaHandAnswer> => {
+    if (!holder.isUnlocked()) return { op, reading: "pulama-locked", ...status() };
+    const face = faceRaw;
+    if (typeof face !== "number" || !Number.isSafeInteger(face) || face < 0) return { op, reading: "sign-malformed", detail: "a signing names the face by its whole ordinal" };
+    if (!(await openFaces()).some((o) => o.ordinal === face)) return { op, reading: "face-locked", face, ...status() };
+    const kind = pulamaSignKind(kindName);
+    if (kind === null) return { op, reading: "sign-kind-unknown", face, detail: `the hand signs ${Object.keys(PULAMA_SIGN_KINDS).join(", ")} alone, never ${JSON.stringify(kindName)}` };
+    const key = await port.key(face);
+    if (typeof key !== "string" || key === "") return { op, reading: "face-root-unread", face, detail: `face h${face} names no root key on its roster row, so nothing signs for it` };
+    const ctx: PulamaSignContext = { key: key.toLowerCase(), group: await port.group(face).catch(() => null) };
+    // THE CLOSED RECORD READS BEFORE THE ROUTE: the root signs a registered kind's preimage, never bytes a frame names.
+    const read = await kind.termsOf(raw, ctx);
+    if ("detail" in read) return { op, reading: read.mismatch ? "sign-key-mismatch" : "sign-malformed", face, kind: kindName, detail: read.detail };
+    if (f["check"] === true) return { op, reading: "ready", face, kind: kindName, describe: kind.describe(read.terms) };
+    const credentials = credentialsOf(f["credentials"]);
+    if (credentials === null) return { op, reading: "malformed" };
+    let signed: { readonly record: unknown; readonly cid: string };
+    try {
+      const signer = await port.signer(face, credentials);
+      if (signer.key.toLowerCase() !== ctx.key) return { op, reading: "sign-key-mismatch", face, detail: `h${face}'s root signer names another key than its roster row` };
+      signed = await kind.sign(read.terms, signer);
+    } catch (err) {
+      const e = err as { reading?: unknown; code?: unknown; message?: unknown };
+      const reading = typeof e.reading === "string" ? e.reading : typeof e.code === "string" ? e.code : "sign-refused";
+      log(`${op}: ${reading}`);
+      return { op, reading, face, ...(typeof e.message === "string" ? { detail: e.message } : {}) };
+    }
+    const fault = await kind.verify(signed.record, ctx);
+    if (fault !== null) return { op, reading: "sign-unverified", face, detail: fault };
+    log(`signed by hand: ${kind.describe(read.terms)} for h${face}; the vessel lands it`);
+    return { op, reading: "signed", face, kind: kindName, record: signed.record, cid: signed.cid };
   };
   const act = async (frame: unknown): Promise<PulamaHandAnswer> => {
     const f = (typeof frame === "object" && frame !== null ? frame : {}) as Record<string, unknown>;
@@ -402,39 +436,20 @@ export function pulamaHandDoor(a: {
         return { op: "lei", act, reading: "signed", face, record, cid: swarmActCid(record), ...(act === "restring" ? { restrung: terms.after } : {}) };
       }
       case "publish": {
+        // THE OFFERING'S OWN ACT rides the one `sign` path under kind `plugin-offering`; its answer keeps its own words.
         if (passing) return passingRefusal("publish");
         if (!a.publish) return { op: "publish", reading: "publish-unavailable" };
-        // UNLIT REFUSES BEFORE ANYTHING READS: no root rests open to sign under.
-        if (!holder.isUnlocked()) return { op: "publish", reading: "pulama-locked", ...status() };
-        const face = f["face"];
-        if (typeof face !== "number" || !Number.isSafeInteger(face) || face < 0) return { op: "publish", reading: "publish-malformed", detail: "a publish names the face by its whole ordinal" };
-        let open = false;
-        for (const fcid of holder.unlockedFaces()) { if ((await holder.faceStanding({ fcid }))?.ordinal === face) { open = true; break; } }
-        if (!open) return { op: "publish", reading: "face-locked", face, ...status() };
-        // THE CLOSED DESCRIPTOR READS BEFORE THE ROUTE: the root signs an offering's preimage, never bytes a frame names.
-        const read = await offeringTermsOf(f["offering"]);
-        if ("reading" in read) return { op: "publish", face, ...read };
-        const key = await a.publish.key(face);
-        if (typeof key !== "string" || key === "") return { op: "publish", reading: "face-root-unread", face, detail: `face h${face} names no root key on its roster row, so no offering signs for it` };
-        if (key.toLowerCase() !== read.terms.offeror) return { op: "publish", reading: "publish-offeror-mismatch", face, detail: `the offering names offeror ${read.terms.offeror}, and h${face}'s root reads ${key.toLowerCase()}` };
-        const credentials = credentialsOf(f["credentials"]);
-        if (credentials === null) return { op: "publish", reading: "malformed" };
-        // THE ROUTE OPENS THE FACE ROOT FOR THIS ONE SIGNATURE, here in the pūlama; the offering leaves, the root never does.
-        let offering: PluginOffering;
-        try {
-          const signer = await a.publish.signer(face, credentials);
-          if (signer.key.toLowerCase() !== read.terms.offeror) return { op: "publish", reading: "publish-offeror-mismatch", face, detail: `h${face}'s root signer names another key than the offering's offeror` };
-          offering = await signPluginOffering(read.terms, (bytes) => signer.sign(bytes));
-        } catch (err) {
-          const e = err as { reading?: unknown; code?: unknown; message?: unknown };
-          const reading = typeof e.reading === "string" ? e.reading : typeof e.code === "string" ? e.code : "publish-sign-refused";
-          log(`publish: ${reading}`);
-          return { op: "publish", reading, face, ...(typeof e.message === "string" ? { detail: e.message } : {}) };
-        }
-        const verified = await verifyPluginOffering(offering);
-        if (!verified.ok) return { op: "publish", reading: "publish-unverified", face, detail: `${verified.code}: ${verified.reason}` };
-        log(`signed by hand: an offering for h${face} (${offering.pluginsCid}); the vessel lands it`);
-        return { op: "publish", reading: "signed", face, offering, cid: pluginOfferingCid(offering) };
+        const out = await signOne("publish", "plugin-offering", f["face"], f["offering"], f, { key: a.publish.key, group: async () => null, signer: a.publish.signer });
+        const { record, kind: _kind, ...rest } = out as Record<string, unknown>;
+        if (rest["reading"] === "sign-malformed") rest["reading"] = "publish-malformed";
+        if (rest["reading"] === "sign-key-mismatch") rest["reading"] = "publish-offeror-mismatch";
+        if (rest["reading"] === "sign-unverified") rest["reading"] = "publish-unverified";
+        return { ...rest, op: "publish", ...(record !== undefined ? { offering: record } : {}) } as PulamaHandAnswer;
+      }
+      case "sign": {
+        if (passing) return passingRefusal("sign");
+        if (!a.sign) return { op: "sign", reading: "sign-unavailable" };
+        return signOne("sign", f["kind"], f["face"], f["record"], f, a.sign);
       }
       case "keep-seat": {
         if (passing) return passingRefusal("keep-seat");

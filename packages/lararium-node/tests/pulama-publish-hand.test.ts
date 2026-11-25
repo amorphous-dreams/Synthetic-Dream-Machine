@@ -148,16 +148,17 @@ describe("the hand's publish verb at the pūlama", () => {
     const frames: Array<Record<string, unknown>> = [], asked: string[] = [];
     return {
       frames, asked,
-      ask: async (frame: Readonly<Record<string, unknown>>) => { frames.push({ ...frame }); return frame["op"] === "status" ? { op: "status", lit } : { op: String(frame["op"]), reading: "signed" }; },
+      // THE DOOR'S CHECK answers `ready` on a lit pūlama and `pulama-locked` on an unlit one; the signing answers `signed`.
+      ask: async (frame: Readonly<Record<string, unknown>>) => { frames.push({ ...frame }); return frame["check"] === true ? { op: String(frame["op"]), reading: lit ? "ready" : "pulama-locked" } : { op: String(frame["op"]), reading: "signed" }; },
       route: async (label: string) => { asked.push(label); return "the-route"; },
     };
   }
 
-  test("RED: `publish '<terms>'` reads the descriptor, then the door, asks the route naming the region, its blobs and the face, and hands one publish frame with the descriptor and the route", async () => {
+  test("RED: `publish '<terms>'` reads the descriptor, then the door's check, asks the route naming the region, its blobs and the face, and hands one publish frame with the descriptor and the route", async () => {
     const p = ports(true);
     const terms = await termsFor();
     expect(await runHandVerb("publish", JSON.stringify({ face: 0, offering: terms }), p)).toEqual({ op: "publish", reading: "signed" });
-    expect(p.frames).toEqual([{ op: "status" }, { op: "publish", face: 0, offering: terms, credentials: [{ kind: "passphrase", passphrase: "the-route" }] }]);
+    expect(p.frames).toEqual([{ op: "publish", face: 0, offering: terms, check: true }, { op: "publish", face: 0, offering: terms, credentials: [{ kind: "passphrase", passphrase: "the-route" }] }]);
     expect(p.asked).toHaveLength(1);
     expect(p.asked[0]).toContain(terms.pluginsCid);
     expect(p.asked[0]).toContain("h0");

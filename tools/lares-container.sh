@@ -2123,6 +2123,29 @@ case "$verb" in
         fi ;;
     esac
     route_cli "$verb" "$@" ;;
+  kahua)
+    # A KAHUA HAND ACT UNDER A PŪLAMA, in the lei pattern: the vessel holds no face root, so `kahua lift|withdraw|carry …` reads
+    # the terms in the vessel (`--terms`: every gate, the preview and the digest typed back on THIS terminal, then ONE line naming
+    # the face, the record's kind and the one unsigned act), the pūlama checks it, reads the route on this terminal and its face
+    # root signs that one record (`sign`), and the vessel lands it (`--land`), building the act afresh and landing it only over a
+    # byte-equal body. Neither vessel step asks a passphrase. Without a pūlama, or for any other kahua act, it routes as before.
+    if [ -n "$PULAMA_MODE" ] && { [ "${1:-}" = lift ] || [ "${1:-}" = withdraw ] || [ "${1:-}" = carry ]; }; then
+      kh_hand=""
+      for kh_arg do case "$kh_arg" in --terms|--land|--land=*) kh_hand=yes ;; esac; done
+      if [ -z "$kh_hand" ]; then
+        [ -n "$HAVE_TTY" ] || die "kahua $1 under a pūlama reads its route on a terminal; run it on one (nothing signed)"
+        # The terms read rides a pty (the preview and its typed-back digest read here); the terms line is the last `{"face":` line.
+        # shellcheck disable=SC2046
+        terms=$(compose exec --no-TTY=false $(pass_env) lares node "$CLI" kahua "$@" --terms | tee /dev/stderr | tr -d '\r' | awk '/^\{"face":/ { line = $0 } END { if (line != "") print line }')
+        [ -n "$terms" ] || die "the vessel named nothing for the pūlama to sign (its answer above); nothing signed"
+        answer=$(compose --profile pulama exec --no-TTY=false "$(pulama_svc)" node "$PULAMA_MAIN" sign "$terms" | tee /dev/stderr | tr -d '\r' | awk '/^\{/ { seen = 1; answer = "" } seen { answer = answer $0 } END { if (seen) print answer }')
+        [ -n "$answer" ] || die "the pūlama signed nothing; nothing lands"
+        # shellcheck disable=SC2046
+        waited_exec $(pass_env) -T lares node "$CLI" kahua "$@" --land "$answer" </dev/null
+        exit $?
+      fi
+    fi
+    route_cli "$verb" "$@" ;;
   nexus)
     # THE OFFERING'S SIGNATURE UNDER A PŪLAMA, in the lei pattern: the vessel holds no face root, so `nexus publish plugins …
     # --apply` reads the terms in the vessel (the face and the closed descriptor its root signs: `--terms`), the pūlama reads

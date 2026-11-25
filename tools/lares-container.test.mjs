@@ -114,6 +114,9 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       `case " $* " in *" lei show --rite kukulu "*) printf '%s\\n' "\${FAKE_LEI_SHOW:-}"; exit 0;; esac\n` +
       `case " $* " in *" nexus publish plugins "*" --terms "*) printf '%s\\n' "\${FAKE_PUBLISH_TERMS:-}"; exit "\${FAKE_TERMS_RC:-0}";; esac\n` +
       `case " $* " in *"pulama-main.js publish "*) case " $* " in *" exec --no-TTY=false pulama "*) ;; *) printf '%s\\n' '[pulama] an offering reads its route from a real terminal alone'; exit 1;; esac; printf '%s\\r\\n' 'pūlama route, to sign the plugin offering: '; [ -z "\${FAKE_PUBLISH_ANSWER:-}" ] || printf '%s\\n' "\${FAKE_PUBLISH_ANSWER}" | node -e 'let s="";process.stdin.on("data",(d)=>s+=d).on("end",()=>process.stdout.write(JSON.stringify(JSON.parse(s),null,2).split("\\n").join("\\r\\n")+"\\r\\n"))'; exit "\${FAKE_PUBLISH_RC:-0}";; esac\n` +
+      // A KAHUA HAND ACT's terms (read on a pty: the preview's digest types back there) and the pūlama's `sign` (attached).
+      `case " $* " in *" kahua "*" --terms "*) case " $* " in *" exec --no-TTY=false "*) ;; *) printf '%s\\n' '[lares kahua] the digest reads on a terminal alone'; exit 1;; esac; printf '%s\\r\\n' 'lift preview — T'; printf '%s\\r\\n' "\${FAKE_KAHUA_TERMS:-}"; exit "\${FAKE_TERMS_RC:-0}";; esac\n` +
+      `case " $* " in *"pulama-main.js sign "*) case " $* " in *" exec --no-TTY=false pulama "*) ;; *) printf '%s\\n' '[pulama] a signing reads its route from a real terminal alone'; exit 1;; esac; printf '%s\\r\\n' 'pūlama route, to sign a kahua lift: '; [ -z "\${FAKE_SIGN_ANSWER:-}" ] || printf '%s\\n' "\${FAKE_SIGN_ANSWER}"; exit "\${FAKE_SIGN_RC:-0}";; esac\n` +
       `case " $* " in *" lei terms "*) printf '%s\\n' "\${FAKE_LEI_TERMS:-}"; exit "\${FAKE_TERMS_RC:-0}";; esac\n` +
       `case " $* " in *" rite receipts "*) printf '%s\\n' "\${FAKE_RECEIPTS:-}"; exit "\${FAKE_RECEIPTS_RC:-0}";; esac\n` +
       `case " $* " in *"pulama-main.js lei "*) case " $* " in *" exec --no-TTY=false pulama "*) ;; *) printf '%s\\n' '[pulama] a lei reads its route from a real terminal alone'; exit 1;; esac; printf '%s\\r\\n' 'pūlama route, to kui a push lei: '; [ -z "\${FAKE_LEI_ANSWER:-}" ] || printf '%s\\n' "\${FAKE_LEI_ANSWER}" | node -e 'let s="";process.stdin.on("data",(d)=>s+=d).on("end",()=>process.stdout.write(JSON.stringify(JSON.parse(s),null,2).split("\\n").join("\\r\\n")+"\\r\\n"))'; exit "\${FAKE_LEI_RC:-0}";; esac\n` +
@@ -1828,6 +1831,34 @@ test(`${name}: publish-hand-door-chain: under a pūlama, nexus publish plugins -
   const read2 = await run(shim, ["nexus", "publish", "plugins", "--source", "x"], { envFile: PULAMA_ENV, env: { FAKE_RUNNING_ID: "cid" } });
   assert.match(read2.calls, /lares node \S+ nexus publish plugins --source x/);
   assert.doesNotMatch(read2.calls, /pulama-main\.js publish/);
+});
+test(`${name}: kahua-sign-hand-chain: under a pūlama, kahua lift reads the terms in the vessel on a pty (its digest types back there), the pūlama signs the one record on this terminal, and the vessel lands it; a refused signing lands nothing; no pūlama, or another kahua act, routes as before`, { skip }, async () => {
+  const terms = '{"face":1,"kind":"kahua-act","record":{"act":"lift","title":"T"}}';
+  const answer = '{"op":"sign","reading":"signed","face":1,"kind":"kahua-act","record":{"body":{"act":"lift"},"signer":"s","sig":"x"}}';
+  const argv = ["kahua", "lift", "T", "--face", "1", "--taint", "none"];
+  const r = await run(shim, argv, { envFile: PULAMA_ENV, tty: "", env: { FAKE_RUNNING_ID: "cid", FAKE_KAHUA_TERMS: terms, FAKE_SIGN_ANSWER: answer } });
+  assert.equal(r.status, 0, r.stdout);
+  const lines = r.calls.split("\n");
+  const read = lines.findIndex((l) => /exec --no-TTY=false (?:-e \S+ )*lares node \S+ kahua lift T --face 1 --taint none --terms$/.test(l));
+  const sign = lines.findIndex((l) => l.includes(`--profile pulama exec --no-TTY=false pulama node packages/lararium-node/dist/src/pulama-main.js sign ${terms}`));
+  const land = lines.findIndex((l) => l.includes(" --land "));
+  assert.ok(land >= 0, r.calls);
+  assert.match(lines[land], /-T lares node \S+ kahua lift T --face 1 --taint none --land /);
+  assert.deepEqual(JSON.parse(lines[land].slice(lines[land].indexOf(" --land ") + " --land ".length)), JSON.parse(answer));
+  assert.ok(read >= 0 && sign > read && land > sign, `order terms, sign (attached), land:\n${r.calls}`);
+  const refused = await run(shim, argv, { envFile: PULAMA_ENV, tty: "", env: { FAKE_RUNNING_ID: "cid", FAKE_KAHUA_TERMS: terms } });
+  assert.notEqual(refused.status, 0);
+  assert.match(refused.stdout, /the pūlama signed nothing; nothing lands/);
+  assert.doesNotMatch(refused.calls, / --land /);
+  const nothing = await run(shim, argv, { envFile: PULAMA_ENV, tty: "", env: { FAKE_RUNNING_ID: "cid", FAKE_SIGN_ANSWER: answer } });
+  assert.notEqual(nothing.status, 0);
+  assert.doesNotMatch(nothing.calls, /pulama-main\.js sign/);
+  const noTty = await run(shim, argv, { envFile: PULAMA_ENV, env: { FAKE_RUNNING_ID: "cid", FAKE_KAHUA_TERMS: terms, FAKE_SIGN_ANSWER: answer } });
+  assert.notEqual(noTty.status, 0);
+  assert.match(noTty.stderr, /kahua lift under a pūlama reads its route on a terminal/);
+  const staged = await run(shim, ["kahua", "get", "T"], { envFile: PULAMA_ENV, env: { FAKE_RUNNING_ID: "cid" } });
+  assert.match(staged.calls, /lares node \S+ kahua get T/);
+  assert.doesNotMatch(staged.calls, /pulama-main\.js sign/);
 });
 test(`${name}: pulama-keep-seat-writes-the-seat: the pūlama's seat line lands verbatim as config/keep-seat.json (0600), the signer never shown; an existing seat refuses without --reseat; a refusal writes nothing`, { skip }, async () => {
   const seat = { publicKey: "ab".repeat(32), stretchSalt: "11".repeat(16), tree: { slots: [{ kind: "passphrase", salt: "s1" }] }, verifyKey: "cd".repeat(32) };

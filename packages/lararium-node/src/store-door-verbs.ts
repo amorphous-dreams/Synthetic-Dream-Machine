@@ -414,6 +414,8 @@ function storeDoorVerbsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     const list = (v: unknown): string[] | undefined => (Array.isArray(v) && v.every((x) => typeof x === "string") ? v as string[] : undefined);
     const parent = args["parent"] === null || args["parent"] === "none" ? null : str(args["parent"]);
     return runKahuaCommand({ repo, ...opt("catalogUrl", deps.catalogUrl), action, ...opt("ward", wardOf(args)),
+      // THE HAND AT THE PŪLAMA: `terms` reads the one body the pūlama's root signs; `signed` lands the record it signed.
+      ...opt("terms", args["terms"] === true ? true : undefined), ...(args["signed"] !== undefined ? { signed: args["signed"] } : {}),
       ...opt("face", int(args["face"])), ...opt("title", str(args["title"])),
       ...opt("text", typeof args["text"] === "string" ? args["text"] : undefined), ...opt("digest", str(args["digest"])),
       ...opt("fields", args["fields"] && typeof args["fields"] === "object" && !Array.isArray(args["fields"]) ? args["fields"] as Record<string, string> : undefined),

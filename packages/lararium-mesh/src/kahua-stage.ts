@@ -130,6 +130,29 @@ async function sign(body: Record<string, unknown>, signer: Signer): Promise<Sign
   return { body: body as unknown as KahuaActBody, signer: signer.key.toLowerCase(), sig: await signer.sign(canonicalJsonBytes(body)) };
 }
 
+/**
+ * The fault one UNSIGNED act body reads (its domain, then its act's closed shape), or null where a root may sign it. A hand that
+ * signs a body it did not build (the pūlama's `sign` door) reads this first: it never signs a body the stage's reader would refuse.
+ */
+export function kahuaActBodyFault(raw: unknown): KahuaActRefusal | null {
+  if (!object(raw)) return "shape";
+  if (raw.kind !== KAHUA_ACT_DOMAIN) return "domain";
+  return bodyFault(raw);
+}
+/** The exact bytes a root signs for one act body (its canonical JSON, the domain tag inside it). */
+export function kahuaActBytes(body: KahuaActBody): Uint8Array { return canonicalJsonBytes(body); }
+/** Sign ONE already-built act body (its fault reads first); the pūlama's `sign` door signs a lift, withdraw or carry this way. */
+export function signKahuaActBody(body: KahuaActBody, signer: Signer): Promise<SignedKahuaAct> {
+  return sign(body as unknown as Record<string, unknown>, signer);
+}
+/** The unsigned body a lift, a withdraw or a carry would sign: built and judged here, signed nowhere (the pūlama's terms). */
+export function kahuaActBody(parts: Omit<KahuaLiftBody, "kind"> | Omit<KahuaWithdrawBody, "kind"> | Omit<KahuaCarryBody, "kind">): KahuaActBody {
+  const body = { ...parts, ...("carries" in parts ? { carries: [...parts.carries] } : {}), kind: KAHUA_ACT_DOMAIN } as Record<string, unknown>;
+  const fault = bodyFault(body);
+  if (fault) throw new Error(`kahua-act: ${fault}`);
+  return body as unknown as KahuaActBody;
+}
+
 export function signKahuaLift(parts: Omit<KahuaLiftBody, "kind" | "act">, signer: Signer): Promise<SignedKahuaAct> {
   return sign({ ...parts, kind: KAHUA_ACT_DOMAIN, act: "lift" }, signer);
 }
