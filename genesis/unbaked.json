@@ -3,8 +3,8 @@
   "unbaked": [
     {
       "source": "packages/lararium-tw5/plugins/lares-memetic-wikitext.json",
-      "sha256": "8e50944c86077acc4b82d122ddfcfc5e437035940e50424d244cfc7521a518e2",
-      "why": "The worldline-truths lane re-packs the memetic-wikitext bundle: its in-VM worldline read carries the round-closing handback, explicit retirement, sender-joining messages and link-order replay with its uncertain handles (@lararium/mesh worldline-causal and replay). The oracle-cast lane (the throw stands) renames the cast footer and ORACLE_THROW_STANDS in the same bundle. The next labelled GENESIS RE-BAKE carries these bytes and deletes this row."
+      "sha256": "ab0b22fcb67f14e668a0ed01e916cfd58b6beefdd516ebaa75fcf60cf1757c0d",
+      "why": "The worldline-truths lane re-packs the memetic-wikitext bundle: its in-VM worldline read carries the round-closing handback, explicit retirement, sender-joining messages and link-order replay with its uncertain handles (@lararium/mesh worldline-causal and replay). The oracle-cast lane (the throw stands) renames the cast footer and ORACLE_THROW_STANDS in the same bundle. The family-turn lane (no clock decides) packs the owed answer and the interrupt of a held family write into the same bundle. The next labelled GENESIS RE-BAKE carries these bytes and deletes this row."
     }
   ]
 }

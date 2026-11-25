@@ -623,7 +623,7 @@ function inFamilyTurn<T>(uri: string, act: () => Promise<T>, wait: Pick<PlaceMem
     finally { clearTimeout(timer); if (onAbort) wait.signal?.removeEventListener("abort", onAbort); }
     if (!ready) {
       // A refusal by name, in the shape every door reads (`isVerbRefusal`: the name and a string reason).
-      throw Object.assign(new Error(`${FAMILY_TURN_INTERRUPTED}: the wait on another write of ${key} was interrupted; nothing moved. The earlier turn still holds the root.`), { name: "VerbRefusal", reason: FAMILY_TURN_INTERRUPTED });
+      throw Object.assign(new Error(`${FAMILY_TURN_INTERRUPTED}: the caller interrupted the wait on another write of ${key}; nothing moved. The earlier turn still holds the root.`), { name: "VerbRefusal", reason: FAMILY_TURN_INTERRUPTED });
     }
     return act();
   })();

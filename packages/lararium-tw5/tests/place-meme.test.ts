@@ -51,7 +51,7 @@ describe("★ placeMeme lands a meme from text alone ★", () => {
     const notes: string[] = [];
     // No signal passed: the door still hears the held note, and the pace only times the answer.
     const answer = await placeMeme({ uri: root, text: meme(["a", "b"]), heldNoticeMs: 20, onHeld: (n) => notes.push(n) }, sink);
-    expect(answer.decision).toBe("owed");
+    if (answer.decision !== "owed") throw new Error(`expected owed, read ${answer.decision}`);
     expect(answer.root).toBe(root);
     expect(answer.reason).toBe("the family's turn is held; the write stays owed");
     expect(notes).toEqual([answer.reason]);
@@ -60,7 +60,7 @@ describe("★ placeMeme lands a meme from text alone ★", () => {
     const third = placeMeme({ uri: root, text: meme(["a", "b", "c"]), holdAnswer: true }, sink);
     release();
     expect((await hung).decision).toBe("ingest");
-    expect((await answer.settled!).decision).toBe("ingest");
+    expect((await answer.settled)!.decision).toBe("ingest");
     expect((await third).decision).toBe("ingest");
     expect(sink.store.has(`${root}#/b`)).toBe(true);
     expect(sink.store.has(`${root}#/c`)).toBe(true);
