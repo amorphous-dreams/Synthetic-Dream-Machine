@@ -105,7 +105,10 @@ describe("no silent loss at the UDS seat: one stamp for every call whose own cha
       placeVerb: (o) => {
         // A concurrent writer outside the call changes the held document while this verb runs: it never reads as this call's.
         setTimeout(() => heldHandle.change((d) => { d.n = (d.n ?? 0) + 1; }), 0);
-        const touched = o.verb === "tiddler-put" ? { touched: { "island-doc": ["aa"] } } : o.verb === "tiddler-delete" ? { touched: { "island-sealed": ["bb"] } } : {};
+        // The island reports every write's changes (even none); a path that reports nothing (here `rite-begin`, as a seat
+        // that never carried the report would read) answers untracked. A read reports nothing and stays clean.
+        const touched = o.verb === "tiddler-put" ? { touched: { "island-doc": ["aa"] } } : o.verb === "tiddler-delete" ? { touched: { "island-sealed": ["bb"] } }
+          : o.verb === "kahua-propose" ? { touched: {} } : {};
         const outcome = concludeVerb({ requestId: o.requestId, verb: o.verb, status: "done", ...(o.face !== undefined && { face: o.face }),
           cause: "test-worker", batchMode: "best-effort", results: { summary: { ok: true, output: { decision: "put" } } }, ...touched });
         daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
@@ -125,6 +128,10 @@ describe("no silent loss at the UDS seat: one stamp for every call whose own cha
       const n = asked.length;
       expect(await a.ask(call("get-1", "tiddler-get"))).not.toHaveProperty("rest");
       expect(asked.length).toBe(n);
+      // FAIL-SAFE: a write verb whose answer carries no change report answers owed `untracked`, naming the verb; a write that
+      // reported nothing changed answers bare.
+      expect(await a.ask(call("rite-1", "rite-begin"))).toMatchObject({ rest: { band: "owed", documents: [{ documentId: "untracked", refusal: "untracked", error: expect.stringMatching(/^rite-begin: /) }] } });
+      expect(await a.ask(call("prop-1", "kahua-propose"))).not.toHaveProperty("rest");
       // KAHUA-STAGE: the act answers staged: true over a held save today; the stamp names its own document.
       const staged = await a.ask({ op: "session:act", ...env, requestId: "stage-1", act: "kahua-stage", args: {} });
       expect(staged).toMatchObject({ kind: "session:act-result", answer: { output: { staged: true }, rest: { band: "owed", documents: [{ documentId: stageHandle.documentId }] } } });

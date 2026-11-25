@@ -611,6 +611,8 @@ export interface DaemonMsg_VerbResult {
   requestId: string;
   result?: Record<string, unknown>;
   error?: string;
+  /** What main's run of the delegated verb changed (`call-touches`): the island folds it into the call's tally. */
+  touched?: Readonly<Record<string, readonly string[]>>;
 }
 
 
@@ -1193,6 +1195,8 @@ export interface WikiMsg_VerbResult {
   requestId:      string;
   result?:        Record<string, unknown>;
   error?:         string;
+  /** What the wiki island's verb changed (`call-touches`); present (even empty) wherever the island tracked the call. */
+  touched?:       Readonly<Record<string, readonly string[]>>;
 }
 
 /**
@@ -1553,6 +1557,7 @@ export function mkDaemonVerbResult(opts: {
   requestId: string;
   result?: Record<string, unknown>;
   error?: string;
+  touched?: Readonly<Record<string, readonly string[]>>;
 }): DaemonMsg_VerbResult {
   const msg: DaemonMsg_VerbResult = {
     type: "daemon:verb-result",
@@ -1560,6 +1565,7 @@ export function mkDaemonVerbResult(opts: {
   };
   if (opts.result !== undefined) msg.result = opts.result;
   if (opts.error  !== undefined) msg.error  = opts.error;
+  if (opts.touched !== undefined) msg.touched = opts.touched;
   return msg;
 }
 
@@ -1708,6 +1714,7 @@ export function mkWikiVerbResult(opts: {
   requestId: string;
   result?: Record<string, unknown>;
   error?: string;
+  touched?: Readonly<Record<string, readonly string[]>>;
 }): WikiMsg_VerbResult {
   const msg: WikiMsg_VerbResult = {
     type: "wiki:verb-result",
@@ -1715,6 +1722,7 @@ export function mkWikiVerbResult(opts: {
   };
   if (opts.result !== undefined) msg.result = opts.result;
   if (opts.error  !== undefined) msg.error  = opts.error;
+  if (opts.touched !== undefined) msg.touched = opts.touched;
   return msg;
 }
 

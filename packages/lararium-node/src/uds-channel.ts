@@ -73,7 +73,7 @@ import { switchSession } from "@lararium/mesh/session-switch";
 import { ingestWaveRefusal } from "@lararium/mesh/ingest-wave-budget";
 import type { CapabilityProfile, Hand, Session, SessionFace } from "@lararium/mesh/session-contract";
 import type { SwitchIntent, SwitchOutcome } from "@lararium/mesh/session-switch";
-import { inCallScope, takeCallTouches, type CallTouches } from "@lararium/mesh/call-touches";
+import { answersUntracked, inCallScope, takeCallTouches, takeCallUntracked, type CallTouches } from "@lararium/mesh/call-touches";
 import type { SwitchActLog } from "./switch-act-log.js";
 
 /** The band a write door's answer carries where a document its call wrote still waits unsealed (`RestOwed`, sealed-rest). */
@@ -1633,7 +1633,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         log(`session act ${name} faulted for ${requestId}: ${error instanceof Error ? error.message : String(error)}`);
         answer = { status: "error", reason: "act-faulted" };
       }
-      const actRest = await owedFor(owedSince, touchesOf(scoped, undefined));
+      const actRest = await owedFor(owedSince, touchesOf(scoped, undefined), takeCallUntracked(scoped));
       if (actRest !== null) answer = { ...answer, rest: actRest };
       const status = answer["status"] === "error" ? "error" : "done";
       try {
@@ -1749,15 +1749,23 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     const { [controlHandle.documentId]: _control, ...rest } = merged;
     return Object.keys(rest).length > 0 ? rest : null;
   };
-  /** The owed band for one call's own changes; a reading that fails answers owed by name, never sealed. */
-  const owedFor = async (since: number | null, touches: CallTouches | null): Promise<RestOwedBand | null> => {
-    if (since === null || touches === null || !opts.restOwed) return null;
-    try { return await opts.restOwed.owed(since, touches); }
-    catch (error) { return { band: "owed", documents: Object.keys(touches).map((documentId) => ({ documentId, refusal: "owed-unread", error: error instanceof Error ? error.message : String(error) })) }; }
+  /** The owed band for one call's own changes; a reading that fails answers owed by name, never sealed. A path that ran
+   *  for the call and reported nothing (`untracked`) joins the band by its verb: visible, never ok. */
+  const owedFor = async (since: number | null, touches: CallTouches | null, untracked: readonly string[] = []): Promise<RestOwedBand | null> => {
+    if (since === null || !opts.restOwed) return null;
+    let band: RestOwedBand | null = null;
+    if (touches !== null) {
+      try { band = await opts.restOwed.owed(since, touches); }
+      catch (error) { band = { band: "owed", documents: Object.keys(touches).map((documentId) => ({ documentId, refusal: "owed-unread", error: error instanceof Error ? error.message : String(error) })) }; }
+    }
+    if (untracked.length === 0) return band;
+    return { band: "owed", documents: [...(band?.documents ?? []), ...untracked.map((what) => ({ documentId: "untracked", refusal: "untracked", error: `${what}: no change report reached the seat, so whether its writes rest stands unread` }))] };
   };
   const handleCall = (parsed: unknown, sock: Socket, callId: string | null, sessionRequestId?: string, onSessionReply?: () => void, mark?: ChoreReceiptMark, gate?: DoorGate): void => {
     // THE REST-OWED MARK: every call notes the held saves standing as it begins; its answer names what its own changes left owed.
     const owedSince = opts.restOwed ? opts.restOwed.mark() : null;
+    /** The verb this call dispatched to the island (its answer carries the island's change report, or reads untracked). */
+    let dispatched: string | null = null;
     // The receipt mark of a dispatched chore (`ChoreReceiptMark`: the acting face, the asker's hand, its session), carried on
     // its answer as `chore`; unset for a read or a refusal. A session's door hands it in; a one-shot's deferred tick reads it.
     let choreMark: ChoreReceiptMark | undefined = mark;
@@ -1815,7 +1823,10 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         // ONE PLACE FOR EVERY VERB: whatever the call changed (on the island, or here) reads its rest before the answer leaves.
         const { touched: islandTouched, ...plain } = answer;
         const terminal = answer["status"] === "done" || answer["status"] === "error";
-        const rest = terminal ? await owedFor(owedSince, touchesOf(callId, islandTouched)) : null;
+        // FAIL-SAFE: a dispatched verb no read allow-list names, whose answer carries no change report, reads untracked.
+        const untracked = callId !== null ? takeCallUntracked(callId) : [];
+        if (terminal && dispatched !== null && answersUntracked(dispatched, islandTouched !== undefined)) untracked.push(dispatched);
+        const rest = terminal ? await owedFor(owedSince, touchesOf(callId, islandTouched), untracked) : null;
         const stamped = rest !== null ? { ...plain, rest } : plain;
         const named = choreMark !== undefined ? { ...stamped, chore: choreMark } : stamped;
         const payload = sessionRequestId === undefined ? named : {
@@ -2020,6 +2031,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
           }
           const held = await retrievedOutcome(requestId);
           if (held) return respond(held);
+          dispatched = inv.verb;
           runVerb(inv, requestId).then(
             (outcome) => { respond(outcome); },
             (err) => {
@@ -2072,6 +2084,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
           // A genuine concurrent re-read of an id THIS process already dispatched OR a same-digest
           // dispatch attempt reaching a fact a PRIOR process already drove to `done`/`error` (H1R,
           // across a restart) — answer the existing outcome, never a second `placeVerb`.
+          dispatched = inv.verb;
           const awaited = awaitOutcome(inv.verb, requestId, inv.timeoutMs);
           releaseWhenSettled(awaited, requestId);
           // A RE-ASK READS BACK, never the live answer: a visit's body stays withheld under a reused id.
@@ -2097,6 +2110,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         // THE ADMISSION SETTLED DURABLY (its committed fact flushed): the last settled wave a fall names.
         try { opts.engine?.settled(controlHandle.heads()); } catch { /* heads unread: the admission still landed */ }
         // The work releases when the verb itself settles, never when this caller's wait gives up.
+        dispatched = inv.verb;
         const running = runVerb(inv, requestId);
         releaseWhenSettled(running, requestId);
         running.then(

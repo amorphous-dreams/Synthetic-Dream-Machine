@@ -256,6 +256,8 @@ export async function copyEffectOutcome(
     inputDigest: opts.inputDigest,
     ...(invocation.effectKey !== undefined && { effectKey: invocation.effectKey }),
     effectOf:    opts.priorRequestId,
+    // A COPY RAN NOTHING: it reports an empty tally, tracked.
+    touched:     {},
     ...(opts.chore !== undefined && { chore: opts.chore }),
   });
   await control.put(outcome, origin);
@@ -292,7 +294,8 @@ export async function dispatchVerb(
 
   // THE CALL'S OWN CHANGES TAG AT THE CHANGE (`call-touches`): the handler runs inside its call's scope, and the outcome
   // names the documents it changed, so the seat owes this call's writes alone (sealed-store#/owed).
-  const touchedOf = (): { touched?: CallTouches } => { const t = takeCallTouches(invocation.requestId); return t !== null ? { touched: t } : {}; };
+  // ALWAYS A REPORT, EVEN EMPTY: the seat reads an outcome with no `touched` as untracked (owed), never as sealed.
+  const touchedOf = (): { touched: CallTouches } => ({ touched: takeCallTouches(invocation.requestId) ?? {} });
   try {
     const result = await inCallScope(invocation.requestId, run);
     await writeOutcome(control, { invocation, status: "done", result, ...mark, ...touchedOf() });

@@ -13,6 +13,6 @@ export function seatNodeCallScope(): void {
   if (seated) return;
   seated = true;
   const store = new AsyncLocalStorage<string>();
-  const runner: CallScopeRunner = { run: (id, fn) => store.run(id, fn), current: () => store.getStore() };
+  const runner: CallScopeRunner = { run: (id, fn) => store.run(id, fn), current: () => store.getStore(), exit: (fn) => store.exit(fn) };
   seatCallScope(runner);
 }

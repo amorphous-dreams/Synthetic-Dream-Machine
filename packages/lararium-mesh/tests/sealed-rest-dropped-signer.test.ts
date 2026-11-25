@@ -194,10 +194,36 @@ describe("a dropped signer signs nothing, and no save waits on one", () => {
     expect(watch.owed(mark, ["mine"])?.documents).toEqual([{ documentId: "mine", refusal: "save-unbooked" }]);
   });
 
+  it("DS11 (guard; the drain race does not reproduce here) — a call's find runs outside its scope: the peer messages its synchronizer drains tag no call; the call's own change after it does", async () => {
+    const { AsyncLocalStorage } = await import("node:async_hooks");
+    const { MessageChannelNetworkAdapter } = await import("@automerge/automerge-repo-network-messagechannel");
+    const store = new AsyncLocalStorage<string>();
+    seatCallScope({ run: (id, fn) => store.run(id, fn), current: () => store.getStore(), exit: (fn) => store.exit(fn) });
+    const { port1, port2 } = new MessageChannel();
+    try {
+      const peer = new Repo({ network: [new MessageChannelNetworkAdapter(port1)], peerId: "peer" as never });
+      const mine = new Repo({ network: [new MessageChannelNetworkAdapter(port2)], peerId: "mine" as never });
+      watchCallTouches(mine as never);
+      const theirs = peer.create<{ n?: number }>();
+      theirs.change((d) => { d.n = 1; });
+      const before = takeCallTouches("call-find");
+      expect(before).toBeNull();
+      const other = mine.create<{ n?: number }>();
+      await inCallScope("call-find", async () => {
+        const found = await mine.find<{ n?: number }>(theirs.url);   // drains the peer's queued sync inside this chain
+        await new Promise((r) => setTimeout(r, 50));
+        void found;
+        other.change((d) => { d.n = 9; });                           // the call's own write
+      });
+      expect(Object.keys(takeCallTouches("call-find") ?? {})).toEqual([other.documentId]);
+      await peer.shutdown(); await mine.shutdown();
+    } finally { seatCallScope(null); port1.close(); port2.close(); }
+  });
+
   it("DS10 — call touches tag at the change: two concurrent calls each own their own documents, and a peer's change tags neither", async () => {
     const { AsyncLocalStorage } = await import("node:async_hooks");
     const store = new AsyncLocalStorage<string>();
-    seatCallScope({ run: (id, fn) => store.run(id, fn), current: () => store.getStore() });
+    seatCallScope({ run: (id, fn) => store.run(id, fn), current: () => store.getStore(), exit: (fn) => store.exit(fn) });
     try {
       const repo = new Repo({ network: [] });
       watchCallTouches(repo as never);

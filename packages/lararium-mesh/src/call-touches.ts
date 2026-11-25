@@ -21,6 +21,8 @@ import * as A from "@automerge/automerge";
 export interface CallScopeRunner {
   run<T>(id: string, fn: () => T): T;
   current(): string | undefined;
+  /** Run `fn` outside every call: the Repo's own sync work (a find's drain of queued peer messages) tags no call. */
+  exit<T>(fn: () => T): T;
 }
 
 /** What one call changed: each document's heads (hex, `A.getHeads`) after its latest change inside the call. */
@@ -36,6 +38,11 @@ const syncRunner: CallScopeRunner = {
     try { return fn(); } finally { syncCurrent = held; }
   },
   current: () => syncCurrent,
+  exit(fn) {
+    const held = syncCurrent;
+    syncCurrent = undefined;
+    try { return fn(); } finally { syncCurrent = held; }
+  },
 };
 let runner: CallScopeRunner = syncRunner;
 const tallies = new Map<string, Map<string, readonly string[]>>();
@@ -66,6 +73,40 @@ export function noteCallChange(documentId: string, heads: readonly string[]): vo
   tally.set(documentId, [...heads]);
 }
 
+/** Fold what another isolate reported for call `id` (main's run of a delegated verb, a wiki island's verb) into its tally. */
+export function addCallTouches(id: string, touches: CallTouches | null | undefined): void {
+  if (!touches) return;
+  let tally = tallies.get(id);
+  if (tally === undefined) { tally = new Map(); tallies.set(id, tally); }
+  for (const [documentId, heads] of Object.entries(touches)) if (Array.isArray(heads)) tally.set(documentId, [...heads]);
+}
+
+/** A report read off the wire with no trust: a malformed one reads as none. */
+export function readCallTouches(raw: unknown): CallTouches | null {
+  const value = typeof raw === "string" ? (() => { try { return JSON.parse(raw) as unknown; } catch { return null; } })() : raw;
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const out: Record<string, readonly string[]> = {};
+  for (const [id, heads] of Object.entries(value as Record<string, unknown>)) {
+    if (Array.isArray(heads) && heads.every((h: unknown) => typeof h === "string")) out[id] = heads as string[];
+  }
+  return out;
+}
+
+const untracked = new Map<string, Set<string>>();
+/** A path that ran for call `id` and reported no changes (an isolate that tracked nothing): its door answers `untracked`. */
+export function markCallUntracked(id: string, what: string): void {
+  let set = untracked.get(id);
+  if (set === undefined) { set = new Set(); untracked.set(id, set); }
+  set.add(what);
+  while (untracked.size > CALL_TOUCHES_BOUND) { untracked.delete(untracked.keys().next().value as string); dropped += 1; }
+}
+/** Take (and forget) the untracked paths call `id` met; empty where every path reported. */
+export function takeCallUntracked(id: string): string[] {
+  const set = untracked.get(id);
+  untracked.delete(id);
+  return set === undefined ? [] : [...set];
+}
+
 /** Take (and forget) what call `id` changed; null where it changed nothing. */
 export function takeCallTouches(id: string): CallTouches | null {
   const tally = tallies.get(id);
@@ -77,7 +118,7 @@ export function takeCallTouches(id: string): CallTouches | null {
 /** How many open tallies the bound dropped, for a census. */
 export function callTouchesDropped(): number { return dropped; }
 
-interface WatchedHandle { readonly documentId: string; doc(): unknown; on(event: "change", fn: (e: { readonly doc: unknown }) => void): unknown }
+interface WatchedHandle { readonly documentId: string; doc(): unknown; on(event: "change" | "heads-changed", fn: (e: { readonly doc: unknown }) => void): unknown }
 interface WatchedRepo { readonly handles: Record<string, WatchedHandle | undefined>; on(event: "document", fn: (e: { readonly handle: WatchedHandle }) => void): unknown }
 
 /**
@@ -90,10 +131,13 @@ export function watchCallTouches(repo: WatchedRepo): void {
     // Only a real handle attaches: a progress reading or a stand-in that carries no event door is left as it stands.
     if (handle === undefined || handle === null || typeof handle !== "object" || typeof (handle as { on?: unknown }).on !== "function" || seen.has(handle)) return;
     seen.add(handle);
-    handle.on("change", (e) => {
+    // `heads-changed` fires on every move of the heads, a change that carries no patch included; `change` beside it.
+    const note = (e: { readonly doc: unknown }): void => {
       if (runner.current() === undefined) return;
       try { noteCallChange(handle.documentId, A.getHeads(e.doc as A.Doc<unknown>)); } catch { /* a change that will not read tags nothing */ }
-    });
+    };
+    handle.on("change", note);
+    handle.on("heads-changed", note);
   };
   for (const handle of Object.values(repo.handles)) attach(handle);
   repo.on("document", (e) => attach(e.handle));
@@ -108,8 +152,10 @@ export function watchCallTouches(repo: WatchedRepo): void {
   for (const name of ["find", "findWithProgress"]) {
     const original = r[name];
     if (typeof original !== "function") continue;
+    // A FIND RUNS OUTSIDE THE CALL: its sync work (the queued peer messages its synchronizer drains as the document opens)
+    // is a peer's change, never the call's; the handle it answers comes back into the call's own continuation.
     r[name] = function (this: unknown, ...args: unknown[]) {
-      const out = (original as (...a: unknown[]) => unknown).apply(this, args);
+      const out = runner.exit(() => (original as (...a: unknown[]) => unknown).apply(this, args));
       if (out && typeof (out as Promise<unknown>).then === "function") void (out as Promise<WatchedHandle>).then((h) => attach(h), () => {});
       else if (out && typeof out === "object" && "documentId" in (out as object)) attach(out as WatchedHandle);
       else if (out && typeof out === "object" && "handle" in (out as object)) attach((out as { handle: WatchedHandle }).handle);
@@ -121,3 +167,19 @@ export function watchCallTouches(repo: WatchedRepo): void {
 
 /** Each watched Repo's sweep of its handle table, run as every call's scope opens. */
 const sweeps = new Set<() => void>();
+
+/**
+ * THE READ VERBS, an allow-list (fail-safe): a verb named here writes nothing, so an answer that reaches the seat with no
+ * change report reads clean. Every other verb (any verb this list does not name, a new one included) that answers with no
+ * report reads `untracked`, owed by name, never ok. A verb joins only when its handler provably writes no document.
+ */
+export const READ_VERBS: ReadonlySet<string> = new Set([
+  "tiddler-get", "wiki-filter", "wiki-render", "wiki-status", "meme-get", "meme-list", "list-wikis", "where", "ddate",
+  "events", "offer-list", "offer-show", "persona-state", "promote-state", "switcher-state", "share-list", "circle-list",
+  "circle-state", "intent-view", "unbound-docs", "sealed-reading",
+]);
+
+/** Does an answer of `verb` that carried `reported` (a change report, even empty) read untracked? */
+export function answersUntracked(verb: string, reported: boolean): boolean {
+  return !reported && !READ_VERBS.has(verb);
+}

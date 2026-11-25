@@ -21,6 +21,9 @@
  */
 
 import { runSovereignWorker }      from "./sovereign-island-model.js";
+import { seatNodeCallScope } from "./node-call-scope.js";
+// A wiki verb's changes tag its call across every await (`call-touches`): its answer reports them, even none.
+seatNodeCallScope();
 import { makeWikiPrimaryBehavior } from "./island-behaviors.js";
 
 runSovereignWorker((manifest) => {
