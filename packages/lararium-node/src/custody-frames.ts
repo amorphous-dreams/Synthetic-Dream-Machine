@@ -71,7 +71,7 @@ const faceTries = (r: { readonly reading: string; readonly attemptsLeft?: number
 import { BackupRefused, type FaceBundleCut } from "./face-bundle-cut.js";
 import { SESSION_ACTS, SealedActRefused, isSealedActName } from "./sealed-acts.js";
 import { RehiveRefused, type RehiveOutcome } from "./face-rehive.js";
-import { readHand } from "./hand-act-gate.js";
+import { handCodeOf, handRefusalOf, readHand } from "./hand-act-gate.js";
 import type { PeerKind } from "./uds-peer.js";
 import { shoreFlushLines, shoreStuckFaces, type ShoreFlushReading } from "./shore-verb.js";
 
@@ -951,12 +951,25 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       // A WEAR MOVES THE MOUNT FOR ANY SEAT: it asks no route and carries no key, and reaches only a face already standing open;
       // unlock and custody stay the operator's own acts.
       // THE LOSS IS A PERSON'S WORD: an AI seat's frame never carries it (the CLI asks a person to type it at a terminal).
+      // The frame's `seat` word only NARROWS: `seat: "ai"` refuses outright, and its absence lifts nothing, since the door
+      // reads the line's PEER (the hand gate, as a rehive does) and an AI seat or a chain nothing attests refuses alike.
+      const lossCode = handCodeOf("wear accept-loss")!;
       if (frame["acceptLoss"] === true && frame["seat"] === "ai") {
-        deps.onLog("wear: refused (accept-loss-needs-hand)");
-        answer(sock, { op, status: "error", errorMessage: "dropping the saves a refused face holds takes a person's own word, typed at their terminal: an AI seat's wear never carries it; nothing moved", refusal: { reason: "accept-loss-needs-hand" } });
+        deps.onLog(`wear: refused (${lossCode})`);
+        answer(sock, { op, status: "error", errorMessage: "dropping the saves a refused face holds takes a person's own word, typed at their terminal: an AI seat's wear never carries it; nothing moved", refusal: { reason: lossCode } });
         return true;
       }
-      act = () => wear(face as number, frame["yes"] === true, frame["acceptLoss"] === true);
+      act = frame["acceptLoss"] === true
+        ? async (): Promise<CustodyAnswer> => {
+          const hand = await readHand(sock, { proveRoute: false }, deps.peerOf);
+          if ("refusal" in hand) {
+            deps.onLog(`wear: refused (${lossCode}: ${hand.refusal})`);
+            const refused = handRefusalOf(hand.refusal, { act: "dropping the saves a refused face holds", reads: "peer", line: `lares wear ${String(face)} --accept-loss` });
+            return { op: "wear", status: "error", errorMessage: `${refused.message} Nothing moved.`, refusal: { reason: lossCode, reading: hand.refusal } };
+          }
+          return await wear(face as number, frame["yes"] === true, true);
+        }
+        : () => wear(face as number, frame["yes"] === true, false);
     } else if (op === "unlock" && deps.pulama) {
       // A PŪLAMA HOLDS THIS VESSEL'S CUSTODY: the frame's credentials go unread (no route opens anything here), the vessel
       // dials the pūlama again, and the answer names a session or what the pūlama waits on.

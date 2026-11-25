@@ -60,7 +60,6 @@ import {
 import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
 import { stampCarrier } from "@lararium/memetic-frame";
 import { COMPACTION_DISPLAY, COMPACTION_WORD } from "../spirit-words.js";
-import { harnessSeatMarked } from "../local-connector.js";
 import { emit, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
 import { DoorUsage, guardDoor, runDoor, wordOf } from "./door-call.js";
@@ -194,9 +193,9 @@ async function readSlot(args: ParsedArgs, label: string, rec: Record_, slot: str
 
 // ── the crossing ──────────────────────────────────────────────────────────────────────────────────────────────────────
 
-/** The seams a suite names: the hand reading, the clock, and whether an AI seat asks. */
-export interface SpiritSeams { readonly hand?: HandRead; readonly now?: () => Date; readonly seat?: () => boolean }
-interface Ctx { readonly now: () => Date; readonly seat: () => boolean; readonly hand: HandRead }
+/** The seams a suite names: the hand reading (the house gate over this command's own branch) and the clock. */
+export interface SpiritSeams { readonly hand?: HandRead; readonly now?: () => Date }
+interface Ctx { readonly now: () => Date; readonly hand: HandRead }
 
 /**
  * THE CROSSING RUNS PER BODY, AND STAYS ADVISORY. Only the PreCompact hook marks it (`om --source precompact --body <id>`), and
@@ -500,7 +499,8 @@ async function ah(args: ParsedArgs, ctx: Ctx): Promise<number> {
   const self = wordOf(args.options["body"]);
   const base = line !== null ? null : wordOf(args.options["base"]);
   if (base !== null && !SLOT_DIGEST.test(base)) throw new DoorUsage(`--base names the slot digest this body read (16 hex; \`lares spirit om ${pet}\` or the last ah hands it back)`);
-  if (line === null && base === null && ctx.seat()) {
+  // THE GATE READS THE CHAIN: an AI seat and a branch nothing attests alike name the digest they read; a mark alone decides nothing.
+  if (line === null && base === null && "refusal" in ctx.hand()) {
     throw new SpiritRefusal("spirit-base-needed", `spirit-base-needed: a whole-slot write from an AI seat names the slot digest it read, so a sibling's write since never drops: --base <slot digest> (om's wake lists each slot's; the last ah hands back its own). Nothing landed. To add one line, --add needs none`, 2);
   }
   const who = self !== null ? `${pet}#${self}` : "a hand at the terminal";
@@ -753,7 +753,6 @@ export async function cmdSpirit(args: ParsedArgs, seams: SpiritSeams = {}): Prom
   const ctx: Ctx = {
     hand: seams.hand ?? (() => readOwnHand({ proveRoute: false })),
     now: seams.now ?? (() => new Date()),
-    seat: seams.seat ?? (() => harnessSeatMarked()),
   };
   return guardDoor(args, `spirit ${verb}`, async () => {
     try {

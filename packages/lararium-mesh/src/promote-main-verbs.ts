@@ -1,12 +1,12 @@
 import { PromoteRefused } from "./promote.js";
 import type { PromotePanelApi } from "./promote-panel-api.js";
+import { handCodeOf } from "./hand-refusal.js";
 
 export const PROMOTE_PANEL_VERBS = ["promote-commit", "promote-drop", "promote-keep", "promote-orphan-drop", "kapae-raise", "kapae-lower"] as const;
-export const PROMOTE_PANEL_HAND_CODES: Readonly<Record<typeof PROMOTE_PANEL_VERBS[number], string>> = {
-  "promote-commit": "promote-needs-hand", "promote-drop": "promote-needs-hand",
-  "promote-keep": "promote-needs-hand", "promote-orphan-drop": "promote-needs-hand",
-  "kapae-raise": "kapae-needs-hand", "kapae-lower": "kapae-needs-hand",
-};
+/** The panel's verbs by the code each refuses under: a view of the one hand table (every panel verb stands in it). */
+export const PROMOTE_PANEL_HAND_CODES: Readonly<Record<typeof PROMOTE_PANEL_VERBS[number], string>> = Object.freeze(
+  Object.fromEntries(PROMOTE_PANEL_VERBS.map((verb) => [verb, handCodeOf(verb)!])) as Record<typeof PROMOTE_PANEL_VERBS[number], string>,
+);
 
 /** The island admits the gesture; these handlers act and return a fresh view. */
 export function promoteMainVerbs({ api, push }: { api: PromotePanelApi; push: (data: string) => Promise<void> }): Record<string, (args: Record<string, unknown>) => Promise<Record<string, unknown>>> {

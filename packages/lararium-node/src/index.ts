@@ -84,7 +84,7 @@ export type {
   LifecycleRow, ReconcileResult, BuildResult, PromoteResult, RetireResult, UnRetireResult, PurgeResult,
 } from "./sensorium-lifecycle-verbs.js";
 // THE HAND BEHIND A COMMAND WITH NO SOCKET: the sense lifecycle's hand verbs read the process that runs them (hitl-reads-a-hand).
-export { readOwnHand, ownPeerKind, askerRefusal, handRefusalOf, type HandReading, type HandReads, type HandRefusal, type HandRefusalCode } from "./hand-act-gate.js";
+export { readOwnHand, ownPeerKind, askerRefusal, handRefusalOf, handCodeOf, HAND_ADMITS, type HandReading, type HandReads, type HandRefusal, type HandRefusalCode } from "./hand-act-gate.js";
 
 // The LI (sheaf) CONSISTENCY-RADIUS — the Robinson li-disagreement signal over content/structure/form
 // (0 ⟺ they glue; positive ⟺ a localizable obstruction), PAIRED with the KI (cosheaf) co-consistency —

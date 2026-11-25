@@ -33,6 +33,7 @@
  * Meme:    lar:///ha.ka.ba/lararium/api/residency-model
  */
 
+import { askerRefusal } from "@lararium/mesh/hand-refusal";
 import { refuseTw5DocsReserved, refuseTw5DocsWrite } from "@lararium/mesh/tw5-docs-name";
 import { wearOf } from "@lararium/mesh/repo-wear";
 import type { CompositeStore } from "@lararium/mesh/composite-store";
@@ -640,7 +641,7 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
     // A STAND-OFF SETTLES ON A HAND (operator ruling, 2026-11-23): a carrier that stands off at this island's disk shore names
     // a base the gate would trust, so it lands only from a person's line (`take-disk` and `keep-disk` ride exactly such a wave).
     // From any other asker, and whatever the frame says of itself, THAT carrier answers `conflict` and the rest of the wave lands.
-    if (action.verb === "INGEST" && ctx.asker !== "cli" && ctx.asker !== "tab") holdStandoffsForHand(action);
+    if (action.verb === "INGEST" && askerRefusal(ctx.asker) !== null) holdStandoffsForHand(action);
     if (action.verb === "LOAD" && (action.toBag === CONTROL_HOME_ID || action.toBag === SECRET_HOME_ID)) {
       throw new VerbRefusal("private-home-load", "private-home-load: LOAD cannot target the control or secret home; land through a working layer");
     }
