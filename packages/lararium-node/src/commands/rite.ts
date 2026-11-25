@@ -30,7 +30,6 @@ import { join, sep } from "node:path";
 import { WORKSPACE_NAME_RE } from "@lararium/mesh/workbench";
 import { SwarmRefused, checkReturn, type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort } from "@lararium/mesh/swarm-tiddlers";
 import {
-import {
   abandonRite,
   beginChecked,
   beginRite,
