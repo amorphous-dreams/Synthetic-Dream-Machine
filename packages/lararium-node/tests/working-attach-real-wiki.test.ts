@@ -6,14 +6,13 @@
  * slot, and a hand save lands in the working document and not in the daemon bag. Nothing replaces the
  * wiki's reader.
  */
-import { grammarPins, vendoredCore } from "../../lararium-tw5/tests/test-wiki.js";
+import { houseSkins, skinPins, vendoredCore } from "../../lararium-tw5/tests/test-wiki.js";
 import { afterEach, beforeAll, describe, expect, test } from "vitest";
 import { operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
 import { CompositeStore, wikiBagUri, wikiSlotUri, type LarDoc } from "@lararium/mesh";
 import { TW5Engine } from "../../lararium-tw5/src/tw5-vm.js";
 import { bridgeWikiToAdaptor } from "../../lararium-tw5/src/outbound-bridge.js";
 import { buildIslandRecipe, seedDrained } from "../../lararium-tw5/src/island-recipe.js";
-import LARES_MEMETIC_WIKITEXT_PLUGIN from "../../lararium-tw5/plugins/lares-memetic-wikitext.json" with { type: "json" };
 import { standFoundedIsland } from "./stand-founded-island.js";
 
 const POINTER = "lar:///ha.ka.ba/lararium/config/current-wiki-bag";
@@ -22,7 +21,7 @@ let engine: TW5Engine;
 
 beforeAll(async () => {
   engine = new TW5Engine();
-  await engine.boot(vendoredCore(), [LARES_MEMETIC_WIKITEXT_PLUGIN as unknown as Record<string, unknown>], undefined, { modulePins: grammarPins() });
+  await engine.boot(vendoredCore(), houseSkins(), undefined, { modulePins: skinPins() });
 }, 60_000);
 afterEach(() => { while (teardown.length) { try { teardown.pop()!(); } catch { /* best-effort */ } } });
 

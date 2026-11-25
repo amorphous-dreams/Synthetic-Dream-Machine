@@ -25,7 +25,9 @@ const PKG = new URL("..", import.meta.url).pathname;
 const REPO = path.resolve(PKG, "../..");
 const TW5_JS = path.join(REPO, "TiddlyWiki5/tiddlywiki.js");
 const PLUGIN_TID = path.join(PKG, "dist-plugin/lares-memetic-wikitext.tid");
-const forkPresent = existsSync(TW5_JS) && existsSync(PLUGIN_TID);
+// Both skins load, so every module either skin packs evaluates under the stock server.
+const HOUSE_TID = path.join(PKG, "dist-plugin/lares-lararium.tid");
+const forkPresent = existsSync(TW5_JS) && existsSync(PLUGIN_TID) && existsSync(HOUSE_TID);
 
 describe("the lend lands the globals where the sandbox lacks them, invisibly to globalCheck", () => {
   test("a bare vm context gains TextEncoder/TextDecoder/crypto as NON-enumerable properties", () => {
@@ -69,6 +71,7 @@ describe.skipIf(!forkPresent)("a stock server with the plugin evaluates every mo
       mkdirSync(path.join(wiki, "tiddlers"), { recursive: true });
       writeFileSync(path.join(wiki, "tiddlywiki.info"), JSON.stringify({ description: "host-globals witness", plugins: [], themes: [], build: {} }));
       copyFileSync(PLUGIN_TID, path.join(wiki, "tiddlers/lares-memetic-wikitext.tid"));
+      copyFileSync(HOUSE_TID, path.join(wiki, "tiddlers/lares-lararium.tid"));
       writeFileSync(path.join(wiki, "tiddlers/hello.tid"), "title: hello\n\nhello");
       const ran = spawnSync(process.execPath, [TW5_JS, wiki, "--output", path.join(root, "out"), "--render", "[[hello]]", "hello.txt", "text/plain"], { encoding: "utf8" });
       expect(ran.status, ran.stderr).toBe(0);

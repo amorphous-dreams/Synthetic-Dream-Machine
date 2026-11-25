@@ -10,7 +10,7 @@
  * projector's own idle handshake.
  */
 
-import { grammarPins, vendoredCore } from "../../lararium-tw5/tests/test-wiki.js";
+import { houseSkins, skinPins, vendoredCore } from "../../lararium-tw5/tests/test-wiki.js";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -24,7 +24,6 @@ import { TW5Engine } from "../../lararium-tw5/src/tw5-vm.js";
 import { exportCarrierFile } from "../../lararium-tw5/src/meme-write.js";
 import { canonicalizeCarrierText } from "../../lararium-tw5/src/carrier-canonical.js";
 import { canonicalizeNativeCarrierText } from "../../lararium-tw5/src/native-canonical.js";
-import LARES_MEMETIC_WIKITEXT_PLUGIN from "../../lararium-tw5/plugins/lares-memetic-wikitext.json" with { type: "json" };
 import { TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME } from "../../lararium-tw5/src/generated-tw5-version.js";
 import { candidatesOf, scanSource, settleIngest, type IngestSettlement, type ScanRow, type SubmitIngestOpts } from "../../lares-cli/src/ingest-core.js";
 import type { SubmitResult } from "../../lares-cli/src/verb-result.js";
@@ -103,7 +102,7 @@ export class ShoreRig {
   /** A rig over `count` tracked carriers, its wiki booted with the grammar plugin. */
   static async stand(count = 3): Promise<ShoreRig> {
     const engine = new TW5Engine();
-    await engine.boot(vendoredCore(), [LARES_MEMETIC_WIKITEXT_PLUGIN as unknown as Record<string, unknown>], undefined, { modulePins: grammarPins() });
+    await engine.boot(vendoredCore(), houseSkins(), undefined, { modulePins: skinPins() });
     return new ShoreRig(engine, count);
   }
 

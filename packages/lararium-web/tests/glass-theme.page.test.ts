@@ -7,6 +7,8 @@ import { afterEach, beforeEach, expect, test } from "vitest";
 import { standMirror } from "../src/glass/stand.js";
 import { forgetEvidence, rig } from "./glass-rig.js";
 import housePlugin from "../../lararium-tw5/plugins/lares-memetic-wikitext.json";
+// The house skin loads over the grammar: a face-daemon or domain wiki boots with both.
+import larariumPlugin from "../../lararium-tw5/plugins/lares-lararium.json";
 import bootShadows from "../../lararium-tw5/plugins/lararium-boot-shadows.json";
 import vanilla from "../../lararium-tw5/plugins/tiddlywiki-vanilla.json";
 import snowwhite from "../../lararium-tw5/plugins/tiddlywiki-snowwhite.json";
@@ -22,7 +24,7 @@ const paletteRecord = () => {
   return { title: PALETTE, fields: { type: "application/x-tiddler-dictionary", tags: ["$:/tags/Palette"], text: rows } };
 };
 const welcomeRecord = { title: WELCOME, fields: { type: "text/vnd.tiddlywiki", tags: ["$:/tags/lares/Landing"], text: "Welcome." } };
-const preloads = (stock: boolean) => [housePlugin, ...(bootShadows as Record<string, unknown>[]), ...(stock ? [vanilla, snowwhite] : [])] as Record<string, unknown>[];
+const preloads = (stock: boolean) => [housePlugin, larariumPlugin, ...(bootShadows as Record<string, unknown>[]), ...(stock ? [vanilla, snowwhite] : [])] as Record<string, unknown>[];
 
 async function stand(stock: boolean, records: Array<{ title: string; fields: Record<string, unknown> }>) {
   const r = await rig({ preloads: preloads(stock), records });

@@ -3,18 +3,32 @@ import path from "path";
 
 import { build } from "vite";
 import { discoverModules } from "./discover-modules.js";
-import { MODULE_MANIFEST, packagePath, packageRelative, ROOT, TIDDLER_SRC_DIR } from "./paths.js";
+import { packagePath, packageRelative, ROOT } from "./paths.js";
 import { MODULE_MANIFEST_FORMAT, type ModuleManifestEntry, sha256, writeModuleManifest } from "./module-manifest.js";
+import { grammarRequiresHouse, PLUGIN_SKINS, skinOfModule, type SkinName } from "./skins.js";
 
-export async function buildPluginCjsTiddlers(outDir = TIDDLER_SRC_DIR): Promise<void> {
-  const outDirAbs = packagePath(outDir);
-  rmSync(outDirAbs, { recursive: true, force: true });
-  mkdirSync(outDirAbs, { recursive: true });
+/**
+ * Compile every plugin-owned TS module into a CJS module tiddler, each written into the source island of the skin the
+ * membership table classes it under (`skins.ts`), with one module manifest per skin. A module no skin classes, or a grammar
+ * bundle requiring a house title, refuses the build.
+ */
+export async function buildPluginCjsTiddlers(): Promise<void> {
+  for (const skin of PLUGIN_SKINS) {
+    const outDirAbs = packagePath(skin.tiddlerSrcDir);
+    rmSync(outDirAbs, { recursive: true, force: true });
+    mkdirSync(outDirAbs, { recursive: true });
+  }
 
   const modules = discoverModules();
-  const manifest: ModuleManifestEntry[] = [];
+  // Class every module before any compile, so an unclassed one refuses before Vite spends a minute.
+  const skinOf = new Map(modules.map((mod) => [mod, skinOfModule(mod.fields["title"]!, mod.sourcePath)]));
+  const manifests = new Map<SkinName, ModuleManifestEntry[]>(PLUGIN_SKINS.map((s) => [s.name, []]));
+  const bundles: Array<{ title: string; text: string }> = [];
 
   for (const mod of modules) {
+    const skin = skinOf.get(mod)!;
+    const outDir = skin.tiddlerSrcDir;
+    const outDirAbs = packagePath(outDir);
     await build({
       configFile: false,
       logLevel: "warn",
@@ -155,23 +169,36 @@ export async function buildPluginCjsTiddlers(outDir = TIDDLER_SRC_DIR): Promise<
     const raw = readFileSync(outputPath, "utf8");
     const outputText = mod.banner + raw;
     writeFileSync(outputPath, outputText, "utf8");
-    manifest.push({
+    manifests.get(skin.name)!.push({
       title: mod.fields["title"]!,
       moduleType: mod.fields["module-type"]!,
       sourcePath: mod.sourcePath,
       outputPath: packageRelative(outputPath),
       sha256: sha256(outputText),
     });
+    bundles.push({ title: mod.fields["title"]!, text: outputText });
     console.log(`[plugin-build] ${outDir}/${mod.name}.js`);
   }
 
-  const manifestPath = packagePath(MODULE_MANIFEST);
-  writeModuleManifest(manifestPath, {
-    format: MODULE_MANIFEST_FORMAT,
-    generatedBy: "packages/lararium-tw5/vite.plugin.config.ts",
-    outDir,
-    modules: manifest,
-  });
-  console.log(`✓ Vite emitted ${modules.length} plugin module bundles to ${outDir}/`);
-  console.log(`✓ Vite wrote ${packageRelative(manifestPath)}`);
+  // THE ONE-WAY CUT: the house requires the grammar, never the reverse.
+  const breaches = grammarRequiresHouse(bundles);
+  if (breaches.length > 0) {
+    throw new Error(
+      `[plugin-build] the grammar skin requires the house, and a grammar-only wiki would boot torn:\n  ${breaches.join("\n  ")}\n` +
+      `  cure: move the required module into GRAMMAR_MODULES (plugin-build/skins.ts), or lift the shared code out of the house module`,
+    );
+  }
+
+  for (const skin of PLUGIN_SKINS) {
+    const manifestPath = packagePath(skin.moduleManifest);
+    const entries = manifests.get(skin.name)!;
+    writeModuleManifest(manifestPath, {
+      format: MODULE_MANIFEST_FORMAT,
+      generatedBy: "packages/lararium-tw5/vite.plugin.config.ts",
+      outDir: skin.tiddlerSrcDir,
+      modules: entries,
+    });
+    console.log(`✓ Vite emitted ${entries.length} ${skin.name} module bundles to ${skin.tiddlerSrcDir}/`);
+    console.log(`✓ Vite wrote ${packageRelative(manifestPath)}`);
+  }
 }

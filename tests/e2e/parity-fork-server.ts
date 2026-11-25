@@ -16,12 +16,15 @@ import { join } from "node:path";
 export const REPO_ROOT  = new URL("../..", import.meta.url).pathname;
 export const TW5_JS     = join(REPO_ROOT, "TiddlyWiki5/tiddlywiki.js");
 export const PLUGIN_TID = join(REPO_ROOT, "packages/lararium-tw5/dist-plugin/lares-memetic-wikitext.tid");
+// The meme doors ride the house skin, which loads over the grammar: the fork server carries both.
+export const HOUSE_TID = join(REPO_ROOT, "packages/lararium-tw5/dist-plugin/lares-lararium.tid");
 
 /** What the fork door needs before it can open; empty when everything stands. */
 export function forkMissing(): string[] {
   const out: string[] = [];
   if (!existsSync(TW5_JS))     out.push(`the fork at ${TW5_JS}`);
   if (!existsSync(PLUGIN_TID)) out.push(`the packed plugin at ${PLUGIN_TID} (pnpm --filter @lararium/tw5 build:plugin)`);
+  if (!existsSync(HOUSE_TID)) out.push(`the packed house plugin at ${HOUSE_TID} (pnpm --filter @lararium/tw5 build:plugin)`);
   return out;
 }
 
@@ -62,6 +65,7 @@ export function layWikiFolder(root: string, extraTiddlerFiles: Record<string, st
   // `$:/config/OriginalTiddlerPaths` (boot.js:2348, :2369) — the aside the island keeps always.
   writeFileSync(join(wiki, "tiddlywiki.info"), JSON.stringify({ description: "parity witness", plugins: [], themes: [], build: {}, config: { "retain-original-tiddler-path": true } }));
   copyFileSync(PLUGIN_TID, join(wiki, "tiddlers/lares-memetic-wikitext.tid"));
+  copyFileSync(HOUSE_TID, join(wiki, "tiddlers/lares-lararium.tid"));
   writeFileSync(join(wiki, "tiddlers/allow-filters.tid"), "title: $:/config/Server/AllowAllExternalFilters\n\nyes");
   writeFileSync(join(wiki, "tiddlers/sync-system.tid"), "title: $:/config/SyncSystemTiddlersFromServer\n\nyes");
   for (const [rel, text] of Object.entries(extraTiddlerFiles)) {
