@@ -18,7 +18,7 @@ import { openLocalSession, SessionRefused } from "./session-connector.js";
 import { sealedAct } from "./sealed-act-door.js";
 import { vesselStanding, type VesselStanding } from "./custody-door.js";
 import { vesselDid, larSealHome, larDataDir } from "./env.js";
-import { readFileSync } from "node:fs";
+import { readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { DaemonUnreachable, refusalCode, refusalHint, verbFailure } from "./verb-call.js";
 import { udsAlive, udsSocketPresent, udsSocketPath, whoHolds, invokeLocal, UdsUnreachable, LocalWaitExpired, type WhoHoldsAnswer } from "./local-connector.js";
@@ -238,10 +238,34 @@ export function hostPidAlive(pid: number): boolean {
   try { process.kill(pid, 0); return true; } catch (e) { return (e as NodeJS.ErrnoException).code === "EPERM"; }
 }
 
-/** The current boot's stretch of `<data dir>/stand.log`, from its last `phase → boot` line, so an earlier boot's fault never reads. Empty when the log stands unread. */
-export function standBootLog(): string {
+/** When `pid` started, in epoch ms, read off `/proc` (boot time plus the stat's start ticks at 100 Hz); null where no `/proc` names it. */
+function procStartMs(pid: number): number | null {
   try {
-    const lines = readFileSync(join(larDataDir(), "stand.log"), "utf8").split("\n");
+    const btime = /^btime (\d+)$/m.exec(readFileSync("/proc/stat", "utf8"));
+    const stat = readFileSync(`/proc/${pid}/stat`, "utf8");
+    const ticks = Number(stat.slice(stat.lastIndexOf(")") + 2).split(" ")[19]);
+    return btime && Number.isFinite(ticks) ? Number(btime[1]) * 1000 + ticks * 10 : null;
+  } catch { return null; }
+}
+
+/**
+ * The current boot's stretch of `<data dir>/stand.log`, or "" when this log cannot be the held vessel's. Only a HOST stand
+ * writes that file, so it reads only when a held pid runs on this host and the file was written after that pid started: a
+ * container vessel (a pid the host never sees) and a stale log from an earlier failed stand both read nothing. Then from its
+ * last `phase → boot` line, so an earlier boot's fault in the same file never reads. `seam` lets a test name the facts.
+ */
+export function standBootLog(holderPids: readonly number[], seam: {
+  readonly alive?: (pid: number) => boolean; readonly startMs?: (pid: number) => number | null;
+  readonly logMtimeMs?: () => number; readonly readLog?: () => string;
+} = {}): string {
+  try {
+    const alive = seam.alive ?? hostPidAlive;
+    const startOf = seam.startMs ?? procStartMs;
+    const mtime = seam.logMtimeMs ?? ((): number => statSync(join(larDataDir(), "stand.log")).mtimeMs);
+    const written = mtime();
+    const bound = holderPids.some((pid) => { const start = alive(pid) ? startOf(pid) : null; return start !== null && written >= start; });
+    if (!bound) return "";
+    const lines = (seam.readLog ?? ((): string => readFileSync(join(larDataDir(), "stand.log"), "utf8")))().split("\n");
     let from = -1;
     lines.forEach((line, i) => { if (/\bphase → boot\s*$/.test(line)) from = i; });
     return from >= 0 ? lines.slice(from).join("\n") : "";
@@ -279,7 +303,7 @@ export async function throughStoreDoor(opts: {
   /** Test seam — does this pid still answer a signal-0 probe? Defaults to the process table. */
   readonly holderAlive?: (pid: number) => boolean;
   /** The vessel's boot log as it stands now (milestones, `fatal:`, `uds error:`); absent, no log reads. */
-  readonly bootLog?: () => string;
+  readonly bootLog?: (holderPids: readonly number[]) => string;
   /** Has the stand socket's node exited? Absent, never. */
   readonly standExited?: () => boolean;
 }): Promise<{ readonly output: Record<string, unknown>; readonly via: StoreDoorVia }> {
@@ -290,7 +314,7 @@ export async function throughStoreDoor(opts: {
     const anyPaced = phases.some((p) => p.paced === true);
     const totalBudgetMs = phases.reduce((sum, p) => sum + (p.paced === true ? 0 : p.budgetMs), 0);
     const holderAlive = opts.holderAlive ?? hostPidAlive;
-    const bootLog = opts.bootLog ?? standBootLog;
+    const bootLog = opts.bootLog ?? ((pids: readonly number[]): string => standBootLog(pids));
     let holderGoneReads = 0;
     // The named pid counts only once THIS host has read it alive: a vessel in another pid namespace names a pid the host never
     // sees, and a host-side ESRCH there says nothing about the boot.
@@ -352,7 +376,7 @@ export async function throughStoreDoor(opts: {
           for (const pid of pids) if (holderAlive(pid)) seenAlive.add(pid);
           const trusted = pids.some((pid) => seenAlive.has(pid));
           holderGoneReads = trusted && !pids.some(holderAlive) ? holderGoneReads + 1 : 0;
-          const log = bootLog();
+          const log = bootLog(pids);
           const refused = /uds error: (.+)/.exec(log);
           if (/fatal:/.test(log)) endWait(new StoreDoorEnded(opts.verb, "boot-fault", "the boot log attests `fatal:`"));
           else if (refused) endWait(new StoreDoorEnded(opts.verb, "boot-refused", `the verb channel logged \`uds error: ${refused[1]!.trim()}\``));
@@ -366,7 +390,7 @@ export async function throughStoreDoor(opts: {
       onPace: (phase) => {
         if (settled) return;
         if (phase === "serving") progress(servingLine(opts.verb, requestId, lastMet, interactive, opts.face));
-        else if (phase === "parked") progress(parkedLine(bootLog(), lastMessage));
+        else if (phase === "parked") progress(parkedLine(bootLog(pidsNamedIn(lastMessage)), lastMessage));
       },
     }).then((): { readonly quiet: true } => ({ quiet: true }));
     let raced: { readonly quiet: true } | { readonly quiet: false; readonly v: Record<string, unknown> };
