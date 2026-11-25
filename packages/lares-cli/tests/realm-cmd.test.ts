@@ -13,6 +13,7 @@
  *   RC4 `wiki init <slug> --realm <pet>` places the wiki into an existing realm before the mint (an unknown realm refuses before
  *       anything mints); with no `--realm` the wiki takes its own realm under its slug
  *   RC5 the help: `realm` stands in the table with its accepts row, and the top-level list keeps its 66-line ceiling
+ *   RC6 `realm list` reads a label whose slug the catalog holds no row for as `(no workbench)`, never `(realm id unread)`
  */
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
@@ -35,6 +36,7 @@ beforeEach(() => {
   doors = {
     projections: () => p,
     seat: async (slug) => (live ? { answered: true, realms: slug === "notes" ? [ID] : [] } : { answered: false, realms: [] }),
+    wikis: async () => (live ? ["notes", "elyncia"] : null),
     out: (l) => { said.push(l); },
     err: (l) => { said.push(l); },
   };
@@ -45,6 +47,19 @@ const args = (positional: string[], options: Record<string, string> = {}): Parse
 const run = (positional: string[], options: Record<string, string> = {}): Promise<number> => cmdRealm(args(positional, options), doors);
 
 describe("lares realm", () => {
+  test("RC6 list names a label whose slug the catalog holds no row for as `(no workbench)`; a catalogued slug with no id read yet stays `(realm id unread)`", async () => {
+    ensureRealmLabel(p, "works", null);     // an orphan label: no wiki in the catalog, no workbench, no realm
+    ensureRealmLabel(p, "elyncia", null);   // a real wiki whose id the label has not read yet
+    live = true;
+    expect(await run(["list"])).toBe(0);
+    const lines = said.join("\n").split("\n");
+    expect(lines.find((l) => l.includes("wiki works")), "the orphan reads no workbench").toContain("(no workbench)");
+    expect(lines.find((l) => l.includes("wiki elyncia")), "a catalogued wiki reads its id unread").toContain("(realm id unread)");
+    said = []; live = false;
+    expect(await run(["list"])).toBe(0);
+    expect(said.join("\n"), "no vessel answers the catalog: nothing reads as no workbench").not.toContain("(no workbench)");
+  });
+
   test("RC1 move names the realm, gathers the wiki, drops the label it empties; list reads it back", async () => {
     ensureRealmLabel(p, "notes", null);   // the default every realm carries: its slug
     live = true;

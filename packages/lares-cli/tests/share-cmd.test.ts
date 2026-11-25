@@ -9,17 +9,27 @@
  *   SH4 — a filter operator refuses by name and writes nothing
  *   SH6 — a row of the other kind standing for the slug refuses `share-kind-standing`, writes nothing and rides no verb;
  *         `--remove` unshares the row (file and control document), and the other kind then shares
+ *   SH14 — a share that founds the workbench writes the realm id back to its realm label; `realm list` reads it (weld)
  */
-import { describe, expect, test } from "vitest";
+import { afterAll, describe, expect, test } from "vitest";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { parseShareFile, serializeShareFile, type ShareFace } from "@lararium/mesh";
 import { cmdShare, petnamesOf, shareListJson, shareListLines } from "../src/commands/share-cmd.js";
+import { cmdRealm } from "../src/commands/realm.js";
 import { readBackOnExpiry, unhandedLine, type ShareDoors } from "../src/share-doors.js";
 import { LocalWaitExpired, type ReceiptAnswer } from "../src/local-connector.js";
 
 const FACES: ShareFace[] = [{ handleIndex: 0, petname: "joshua-fontany" }, { handleIndex: 1, petname: "joshua-fontany-engineer" }, { handleIndex: 2, petname: "the referee" }];
 
+const SCRATCH: string[] = [];
+afterAll(() => { for (const d of SCRATCH) rmSync(d, { recursive: true, force: true }); });
+
 function fake(opts: { vessel?: boolean; file?: string | null; applied?: Record<string, unknown>; seat?: boolean; refuseSet?: boolean } = {}) {
   let file: string | null = opts.file ?? null;
+  const projections = mkdtempSync(join(tmpdir(), "lar-share-cmd-"));
+  SCRATCH.push(projections);
   const verbs: Array<{ name: string; args: Record<string, unknown> }> = [];
   const out: string[] = [], err: string[] = [];
   const doors: ShareDoors = {
@@ -28,8 +38,9 @@ function fake(opts: { vessel?: boolean; file?: string | null; applied?: Record<s
     verb: async (name, args) => { verbs.push({ name, args }); if (opts.refuseSet === true && name === "share-set") throw new Error("share-needs-hand: refused"); return opts.vessel === false ? null : (name === "share-apply" ? opts.applied ?? { granted: 1, pending: 1, waiting: [] } : { ok: true }); },
     out: (l) => out.push(l), err: (l) => err.push(l),
     seat: () => opts.seat === true,
+    projections: () => projections,
   };
-  return { doors, verbs, out, err, file: () => file };
+  return { doors, verbs, out, err, file: () => file, projections };
 }
 const args = (positional: string[], options: Record<string, string> = {}, flags: Record<string, boolean> = {}) => ({ command: "bag", positional, options, flags });
 
@@ -172,6 +183,17 @@ describe("the share door", () => {
     const plain = fake();
     await cmdShare("bag", plain.doors)(args(["notes"], { read: "h1" }));
     expect(plain.verbs.map((v) => v.name), "CONTROL: a landing that names no owner sets nothing again").toEqual(["share-set", "share-apply"]);
+  });
+
+  test("SH14 (weld) — a share that founds the workbench writes the realm id back to the realm label, and `realm list` reads it", async () => {
+    const ID = "cd".repeat(32);
+    const f = fake({ applied: { granted: 1, carried: 0, pending: 0, waiting: [], workbenches: [{ slug: "garden", realmId: ID, members: 2, owner: 0, founded: true }] } });
+    expect(await cmdShare("wiki", f.doors)(args(["garden"], { write: "h1" }))).toBe(0);
+    const out: string[] = [];
+    const realmDoors = { projections: () => f.projections, seat: async () => ({ answered: true, realms: [ID] }), wikis: async () => ["garden"], out: (l: string) => out.push(l), err: (l: string) => out.push(l) };
+    expect(await cmdRealm({ command: "realm", positional: ["list"], options: {}, flags: { json: false } }, realmDoors)).toBe(0);
+    expect(out.join("\n"), "the label records the realm the share founded").toContain(`realm ${ID.slice(0, 12)}`);
+    expect(out.join("\n")).not.toContain("(realm id unread)");
   });
 
   test("SH12 — a seated face whose hand-over refused reads by name with its cure, and the line exits 1, never a bare landing", async () => {

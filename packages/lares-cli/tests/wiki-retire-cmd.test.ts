@@ -33,7 +33,7 @@ let projections = "";
 let bound: string[] = [];
 let answer: { status: string; errorMessage?: string; output?: Record<string, unknown> } = { status: "done" };
 const calls: Array<{ verb: string; args: Record<string, unknown>; face: number }> = [];
-const realmDoors = (): RealmDoors => ({ projections: () => projections, seat: async () => ({ answered: true, realms: bound }), out: () => {}, err: () => {} });
+const realmDoors = (): RealmDoors => ({ projections: () => projections, seat: async () => ({ answered: true, realms: bound }), wikis: async () => null, out: () => {}, err: () => {} });
 const retireDoors: RetireDoors = {
   wornFace: async () => 2,
   call: async (verb, args, face) => {

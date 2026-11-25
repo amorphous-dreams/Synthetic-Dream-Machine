@@ -25,6 +25,8 @@ export interface RealmDoors {
   projections(): string;
   /** Ask the vessel a wiki's workbench seat (`workbench-seat`); `answered: false` where no vessel answers. */
   seat(slug: string): Promise<RealmSeat>;
+  /** The slugs the vessel's catalog holds (`list-wikis`); null where no vessel answers. */
+  wikis(): Promise<readonly string[] | null>;
   out(line: string): void;
   err(line: string): void;
 }
@@ -43,6 +45,16 @@ export const LIVE_REALM_DOORS: RealmDoors = {
     } catch (e) {
       if (UNREACHED.test(e instanceof Error ? `${e.name} ${e.message}` : String(e))) return { answered: false, realms: [] };
       return { answered: true, realms: [] };
+    }
+  },
+  wikis: async () => {
+    try {
+      const r = await runVerb("list-wikis", {}, await vesselDid());
+      if (r.status === "error") return null;
+      const out = summaryOutput(r) as { wikis?: unknown } | null;
+      return Array.isArray(out?.wikis) ? out.wikis.flatMap((w) => (typeof (w as { slug?: unknown })?.slug === "string" ? [(w as { slug: string }).slug] : [])) : null;
+    } catch {
+      return null;
     }
   },
   out: (line) => console.log(line),

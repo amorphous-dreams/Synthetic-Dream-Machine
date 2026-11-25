@@ -7,7 +7,7 @@
  */
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { larConfigHome } from "@lararium/node";
+import { larConfigHome, larProjectionsHome } from "@lararium/node";
 import { SHARE_CONFIG_FILE, type ShareEntry, type ShareFace } from "@lararium/mesh";
 import { vesselDid } from "./env.js";
 import { DaemonUnreachable, runVerb } from "./verb-call.js";
@@ -28,6 +28,8 @@ export interface ShareDoors {
   readonly err: (line: string) => void;
   /** Does this run stand under an agent harness's mark? Absent: the process environment answers. */
   readonly seat?: () => boolean;
+  /** The house's projections home, where a founded workbench's realm id reaches its realm label (`realm-labels/<pet>.json`). */
+  readonly projections: () => string;
 }
 
 const shareFilePath = (): string => join(larConfigHome(), SHARE_CONFIG_FILE);
@@ -151,6 +153,7 @@ function refusedLanding(face: number, refusal: string): SubmitResult {
 }
 
 export const LIVE_SHARE_DOORS: ShareDoors = {
+  projections: () => larProjectionsHome(),
   faces: async () => {
     const petnames = makeFleetPetnameStore(sealedPetnameStore());
     const out: ShareFace[] = [];
