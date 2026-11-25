@@ -20,6 +20,8 @@
  * checkpoints, each under its own logical reference with its own parent addresses), signs one manifest, and that
  * manifest cites the heads of what this vessel verified under the same key version: the verified manifests no other
  * verified manifest cites, which carry every one it read and keep a seal's work flat as the bag's ledger grows.
+ * The heads rest in an own note per founding and key version, so a fresh reading reads them without walking the
+ * manifest shelf; the note caches and authorizes nothing (`#notedHeads`).
  *
  * A FROM-NOW ADMISSION OPENS ON A FRESH CHECKPOINT. The document store cuts the base (present values alone) under
  * the drawn version before any lockbox wraps; once the version's record rests the base seals there as a `fresh`
@@ -82,13 +84,13 @@ import {
 } from "./sealed-chunk.js";
 import {
   authorizeFromManifest, bagLocatorOf, entryLocatorOf, factOfRecord, indexEntriesOf, joinProofOf, joinProven, judgeReseal, readBagLocator, readRecord,
-  recordIdOf, recordWriterSubject, signRecord, writerStandsStill,
+  readRecordId, recordIdOf, recordWriterSubject, signRecord, writerStandsStill,
   type BagLocator, type CheckpointBody, type HandOverBody, type KeyVersionBody, type KeyVersionPrivate, type LockboxRecord, type ManifestBody, type ManifestEntry,
   type ReadRecordRefusalName, type RecordBodies, type RecordId, type RecordKind, type RecordPrivates, type RecordSigner, type ResealBody,
   type RecordCertificate, type ResealVerdict, type SealedRecord, type VerifiedRecord, type WriterStanding,
 } from "./sealed-records.js";
 import type { SeatRoll } from "./seat-duties.js";
-import type { SealedStore } from "./sealed-store-rest.js";
+import { indexEntryNameOf, type SealedStore } from "./sealed-store-rest.js";
 import { yieldToHost, type HostTaskYield } from "./host-task.js";
 
 // ── Refusals ────────────────────────────────────────────────────────────────────────────────────
@@ -364,6 +366,10 @@ interface Line {
    *  count from rest at the next seal. No third door writes a manifest, so the cache never stands stale; a new door
    *  MUST do one of the two (sealed-doc-store test H1 holds the arrival leg). */
   readonly heads:    Map<KeyVersionId, Set<RecordId>>;
+  /** Beside each counted heads set: the manifests the count read and refused (no verified manifest cites them), and how
+   *  many index rows rested under the version when the count stood. Both ride the heads note (`#notedHeads`). */
+  readonly refused:  Map<KeyVersionId, Set<RecordId>>;
+  readonly rows:     Map<KeyVersionId, number>;
   /** A removal version stands in this founding's rest, verified under its own key, whether or not this reader's
    *  evidence counted it: the seat rolled here once (`holdsRemoval`). */
   rolled?: boolean;
@@ -418,6 +424,30 @@ const digestsOf = (note: Uint8Array | null): string[] => {
   return out;
 };
 
+/** THE HEADS NOTE of one founding and one key version: the heads a count stood on, the manifests it refused, and the
+ *  index rows that rested under the version then. Its name reads opaque (a digest of the founding and the version). It
+ *  caches and authorizes nothing: every id it names verifies again before it counts, and any doubt walks the shelf. */
+interface HeadsNote { readonly rows: number; readonly heads: readonly RecordId[]; readonly refused: readonly RecordId[] }
+const headsNote = (locator: BagLocator, keyVersion: KeyVersionId): string => ownNote("heads", locator, keyVersion);
+/** The bytes that clear a heads note: an own note's latest write replaces, and empty bytes read as no note. */
+const NO_NOTE = new Uint8Array(0);
+/** How many index rows a manifest rests: each row's name carries the manifest's id, so none repeats another's. */
+const rowsOf = (manifest: VerifiedRecord<"manifest">): number => new Set(indexEntriesOf(manifest).map(indexEntryNameOf)).size;
+const encodeHeadsNote = (note: HeadsNote): Uint8Array =>
+  utf8Bytes(JSON.stringify({ rows: note.rows, heads: [...note.heads].sort(ascending), refused: [...note.refused].sort(ascending) }));
+function readHeadsNote(bytes: Uint8Array | null): HeadsNote | null {
+  if (bytes === null || bytes.length === 0) return null;
+  let raw: unknown;
+  try { raw = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)); } catch { return null; }
+  if (typeof raw !== "object" || raw === null) return null;
+  const { rows, heads, refused } = raw as Record<string, unknown>;
+  const ids = (value: unknown): RecordId[] | null =>
+    Array.isArray(value) && value.every((id) => readRecordId(id) !== null) ? [...new Set(value as RecordId[])] : null;
+  const h = ids(heads), r = ids(refused);
+  if (typeof rows !== "number" || !Number.isSafeInteger(rows) || rows < 0 || h === null || r === null) return null;
+  return { rows, heads: h, refused: r };
+}
+
 /** The one content-key holder of an unlocked vessel. */
 export class ContentKeyHolder {
   readonly #ports: ContentKeyHolderPorts;
@@ -438,7 +468,7 @@ export class ContentKeyHolder {
     this.#locked = true;
     for (const bag of this.#bags?.values() ?? []) for (const line of bag.lines.values()) {
       for (const key of line.keys.values()) key.fill(0);
-      line.keys.clear(); line.records.clear(); line.carried.clear(); line.manifests.clear(); line.heads.clear(); line.why.clear();
+      line.keys.clear(); line.records.clear(); line.carried.clear(); line.manifests.clear(); line.heads.clear(); line.refused.clear(); line.rows.clear(); line.why.clear();
     }
     this.#bags?.clear();
     this.#bags = null;
@@ -525,7 +555,7 @@ export class ContentKeyHolder {
         let bag = bags.get(bagId);
         if (!bag) { bag = { bagId, lines: new Map() }; bags.set(bagId, bag); }
         let line = bag.lines.get(locator);
-        if (!line) { line = { locator, lineage: KeyLineage.empty(), keys: new Map(), records: new Map(), carried: new Map(), why: new Map(), manifests: new Map(), heads: new Map() }; bag.lines.set(locator, line); }
+        if (!line) { line = { locator, lineage: KeyLineage.empty(), keys: new Map(), records: new Map(), carried: new Map(), why: new Map(), manifests: new Map(), heads: new Map(), refused: new Map(), rows: new Map() }; bag.lines.set(locator, line); }
         if (line.keys.has(keyVersion)) key.fill(0); else line.keys.set(keyVersion, key);
         // A CHAINED BOX (a span declared shareable) delivers each earlier key of its span too: the records count each alike.
         for (const link of chain ?? []) { if (line.keys.has(link.keyVersion)) link.key.fill(0); else line.keys.set(link.keyVersion, link.key); }
@@ -545,7 +575,11 @@ export class ContentKeyHolder {
         if (standingMoved && !writerStandsStill(manifest, { bagId: bag.bagId, standing: this.#ports.standing, followsRemoval: this.#follows })) continue;
         line.manifests.set(id, manifest);
       }
-      if (!standingMoved && !arrived) for (const [version, heads] of was.heads) line.heads.set(version, new Set(heads));
+      if (!standingMoved && !arrived) for (const [version, heads] of was.heads) {
+        line.heads.set(version, new Set(heads));
+        line.refused.set(version, new Set(was.refused.get(version) ?? []));
+        if (was.rows.has(version)) line.rows.set(version, was.rows.get(version)!);
+      }
     }
     // Keys the earlier reading held leave with it.
     for (const bag of this.#bags?.values() ?? []) for (const line of bag.lines.values()) for (const key of line.keys.values()) key.fill(0);
@@ -727,6 +761,7 @@ export class ContentKeyHolder {
     // THE CHECKPOINT RECORD RESTS LAST (P2-6): the base's standing reads that record, so it stands only once its value,
     // its manifest and their index rows rest; a stop before it leaves the base unstood, and the repair cuts it afresh.
     await this.#rest(() => this.#ports.values.write(sealed.chunk.address, sealed.chunk.sealed));
+    await this.#noteAhead(line, named.verified);
     const id = await this.#rest(() => store.putRecord(named.carried));
     await this.#rest(() => store.putIndexEntries(indexEntriesOf(named.verified)));
     this.#rested(line, id, named.verified);
@@ -764,9 +799,20 @@ export class ContentKeyHolder {
    * manifest cites, or whose every citer failed its reading, verifies, and stands a head where it holds. The ids hash
    * their parents, so the citations run acyclic and the walk ends. Over an honest ledger it verifies the heads alone; a
    * reading of every manifest at rest costs ~5.5 ms apiece, ~48 s over 8,797 manifests inside the island.
+   *
+   * THE NOTE COMES FIRST. A count rests its heads in the version's own note, and each manifest this vessel rests moves
+   * it; a fresh reading reads the note and verifies the ids it names (`#notedHeads`), and walks only where the note
+   * stands absent or in doubt. Even the one pass reads, parses and hashes every manifest's bytes: ~14 s over 102 MB.
    */
   async #cited(bag: Bag, line: Line, key: ContentKey, keyVersion: KeyVersionId): Promise<RecordId[]> {
     let heads = line.heads.get(keyVersion);
+    const noted = heads === undefined ? await this.#notedHeads(bag, line, key, keyVersion) : null;
+    if (noted !== null) {
+      heads = new Set(noted.heads);
+      line.heads.set(keyVersion, heads);
+      line.refused.set(keyVersion, new Set(noted.refused));
+      line.rows.set(keyVersion, noted.rows);
+    }
     if (heads === undefined) {
       // ONE PASS: the copies the shelf's one listing carries verify here, by id, and no manifest asks the store again.
       const mine = new Map<RecordId, SealedRecord<"manifest">[]>();
@@ -784,13 +830,14 @@ export class ContentKeyHolder {
       }
       const todo = [...mine.keys()].filter((id) => !citedBy.has(id)).sort(ascending);
       heads = new Set<RecordId>();
+      const refused = new Set<RecordId>();
       let walked = 0;
       while (todo.length > 0) {
         const id = todo.pop()!;
         const copies = mine.get(id)!;
         if (++walked % WALK_STRIDE === 0) await this.#yieldHost();
         const manifest = await this.#manifest(bag, line, key, id, copies);
-        if (manifest !== null) heads.add(id);
+        if (manifest !== null) heads.add(id); else refused.add(id);
         for (const parent of new Set(copies[0]!.body.parents)) {
           const tally = citedBy.get(parent);
           if (tally === undefined) continue;
@@ -801,18 +848,67 @@ export class ContentKeyHolder {
         }
       }
       line.heads.set(keyVersion, heads);
+      line.refused.set(keyVersion, refused);
+      // The note rests ahead of the manifest this count serves (`#noteAhead`).
+      line.rows.set(keyVersion, (await this.#ports.store.heldNames(line.locator, keyVersion)).rows.length);
     }
     return [...heads].sort(ascending);
   }
 
+  /**
+   * THE HEADS A NOTE NAMES, where every check holds; null sends the count to the walk. The note stands current where the
+   * version's index rows still number what the note saw (every manifest this vessel rests under the version adds rows),
+   * every head it names verifies under this founding and version and no other named head cites it, and every manifest
+   * it names refused still fails its reading (a standing that moved may admit one, and then the heads move under it).
+   * The walk visits the heads and the refused alone, so a note whose every visit reads alike stands for the walk.
+   * A forged or stale note can only send the count to the walk: it never admits a manifest that fails its reading.
+   */
+  async #notedHeads(bag: Bag, line: Line, key: ContentKey, keyVersion: KeyVersionId): Promise<HeadsNote | null> {
+    const { store } = this.#ports;
+    const note = readHeadsNote(await store.own(headsNote(line.locator, keyVersion)));
+    if (note === null || (await store.heldNames(line.locator, keyVersion)).rows.length !== note.rows) return null;
+    const cited = new Set<RecordId>();
+    for (const id of note.heads) {
+      const manifest = await this.#manifest(bag, line, key, id);
+      if (manifest === null || manifest.body.bag !== line.locator || manifest.body.keyVersion !== keyVersion) return null;
+      for (const parent of manifest.body.parents) cited.add(parent);
+    }
+    if (note.heads.some((id) => cited.has(id))) return null;
+    for (const id of note.refused) if ((await this.#manifest(bag, line, key, id)) !== null) return null;
+    return note;
+  }
+
+  /**
+   * THE NOTE RESTS AHEAD OF ITS MANIFEST: the heads and rows the version will hold once this manifest and its rows rest,
+   * written before either does, or a clear where no count stands. Every stop between then reads as doubt: a manifest that
+   * never rested fails the noted head's reading, and one whose rows never rested leaves fewer rows than the note counts;
+   * either sends the next count to the walk. A note that fails to rest leaves the seal standing: the rows the manifest
+   * adds outnumber the earlier note's, and the next count walks.
+   */
+  async #noteAhead(line: Line, manifest: VerifiedRecord<"manifest">): Promise<void> {
+    const version = manifest.body.keyVersion;
+    const heads = line.heads.get(version), rows = line.rows.get(version);
+    let bytes: Uint8Array = NO_NOTE;
+    if (heads !== undefined && rows !== undefined) {
+      const after = new Set(heads);
+      for (const parent of manifest.body.parents) after.delete(parent);
+      after.add(manifest.id);
+      bytes = encodeHeadsNote({ rows: rows + rowsOf(manifest), heads: [...after], refused: [...(line.refused.get(version) ?? [])] });
+    }
+    try { await this.#rest(() => this.#ports.store.noteOwn(headsNote(line.locator, version), bytes)); }
+    catch (err) { if (this.#locked) throw err; }
+  }
+
   /** A manifest this vessel rested and verified: it joins the reading, and where the heads stand counted it takes the
-   *  place of every head it cites. */
+   *  place of every head it cites, and its rows join the count the note keeps (`#noteAhead` wrote that note already). */
   #rested(line: Line, id: RecordId, manifest: VerifiedRecord<"manifest">): void {
     line.manifests.set(id, manifest);
-    const heads = line.heads.get(manifest.body.keyVersion);
-    if (heads === undefined) return;
+    const version = manifest.body.keyVersion;
+    const heads = line.heads.get(version), rows = line.rows.get(version);
+    if (heads === undefined || rows === undefined) { line.heads.delete(version); line.rows.delete(version); return; }
     for (const parent of manifest.body.parents) heads.delete(parent);
     heads.add(id);
+    line.rows.set(version, rows + rowsOf(manifest));
   }
 
   /** The earlier keys of a shareable span this vessel holds, for a box that chains them; none for a closed span or none named. */
@@ -882,7 +978,7 @@ export class ContentKeyHolder {
     if (await this.#ports.ownEdgeShadowed(bagId)) return refuse("own-edge-shadowed");
     const key = mintContentKey(this.#ports.random);
     const bag = bags.get(bagId) ?? { bagId, lines: new Map<BagLocator, Line>() };
-    const line: Line = { locator: bagLocatorOf(key, bagId), lineage: KeyLineage.empty(), keys: new Map(), records: new Map(), carried: new Map(), why: new Map(), manifests: new Map(), heads: new Map() };
+    const line: Line = { locator: bagLocatorOf(key, bagId), lineage: KeyLineage.empty(), keys: new Map(), records: new Map(), carried: new Map(), why: new Map(), manifests: new Map(), heads: new Map(), refused: new Map(), rows: new Map() };
     const minted = await this.#mint(bag, line, planned.plan, signer, [], key);
     if (isRefusal(minted)) return minted;
     bag.lines.set(line.locator, line);
@@ -947,6 +1043,7 @@ export class ContentKeyHolder {
       if (owesRoll()) return refuse("roll-owed");
       // A lock that landed while the manifest signed overwrote the key, so the record above never read back.
       await this.#rest(() => this.#ports.values.write(body.cid, body.ciphertext));
+      await this.#noteAhead(line, signed.verified);
       const id = await this.#rest(() => store.putRecord(signed.carried));
       await this.#rest(() => store.putIndexEntries(indexEntriesOf(signed.verified)));
       await this.#rest(() => this.#noteHead(line, at.head));
@@ -1034,6 +1131,7 @@ export class ContentKeyHolder {
       for (const { address, bytes } of sealed) await this.#rest(() => this.#ports.values.write(address, bytes));
       const checkpointIds: RecordId[] = [];
       for (const record of checkpoints) checkpointIds.push(await this.#rest(() => store.putRecord(record)));
+      await this.#noteAhead(line, signed.verified);
       const id = await this.#rest(() => store.putRecord(signed.carried));
       await this.#rest(() => store.putIndexEntries(indexEntriesOf(signed.verified)));
       await this.#rest(() => this.#noteHead(line, at.head));
@@ -1199,6 +1297,7 @@ export class ContentKeyHolder {
         };
         const named = await this.#sign("manifest", manifest, { writer: sessionWriter(signer) }, args.bagId, written.locator, underKey, signer);
         if (isRefusal(named)) return named;
+        await this.#noteAhead(written, named.verified);
         const id = await this.#rest(() => store.putRecord(named.carried));
         await this.#rest(() => store.putIndexEntries(indexEntriesOf(named.verified)));
         this.#rested(written, id, named.verified);
@@ -1238,6 +1337,7 @@ export class ContentKeyHolder {
       // unverified (the safe direction), and the next try finishes it.
       await this.#rest(() => this.#ports.values.write(body.cid, body.ciphertext));
       const resealId = await this.#rest(() => store.putRecord(reseal.carried));
+      await this.#noteAhead(line, named.verified);
       const id = await this.#rest(() => store.putRecord(named.carried));
       await this.#rest(() => store.putIndexEntries(indexEntriesOf(named.verified)));
       await this.#rest(() => this.#noteHead(line, at.head));
@@ -1501,7 +1601,15 @@ export class ContentKeyHolder {
       await shore.ingest(args.parcels.flatMap((parcel) => [...parcel.ops]));
       for (const parcel of args.parcels) { await this.#rest(() => store.putLockbox(parcel.lockbox)); await this.#rest(() => store.putRecord(parcel.record)); }
       const arrived = new Set<RecordId>();
-      for (const record of args.records ?? []) { const id = await this.#rest(() => store.putRecord(record)); if (record.kind === "manifest") arrived.add(id); }
+      for (const record of args.records ?? []) {
+        // AN ARRIVAL CLEARS THE HEADS NOTE of its founding and version before it rests: the next count walks once.
+        if (record.kind === "manifest") {
+          const { bag, keyVersion } = (record as SealedRecord<"manifest">).body;
+          await this.#rest(() => store.noteOwn(headsNote(bag, keyVersion), NO_NOTE));
+        }
+        const id = await this.#rest(() => store.putRecord(record));
+        if (record.kind === "manifest") arrived.add(id);
+      }
       const before = new Set<KeyVersionId>();
       for (const bag of this.#bags?.values() ?? []) for (const line of bag.lines.values()) for (const version of this.#usable(line)) before.add(version);
       const bags = await this.#reload(arrived.size > 0);
@@ -1598,7 +1706,7 @@ export class ContentKeyHolder {
           const bagId = name.slice(0, name.indexOf("\n")), locator = name.slice(name.indexOf("\n") + 1) as BagLocator;
           const bag: Bag = bags.get(bagId) ?? { bagId, lines: new Map() };
           const standing = bag.lines.get(locator);
-          const scratch: Line = { locator, lineage: KeyLineage.empty(), keys: new Map(standing?.keys ?? []), records: new Map(), carried: new Map(), why: new Map(), manifests: new Map(), heads: new Map() };
+          const scratch: Line = { locator, lineage: KeyLineage.empty(), keys: new Map(standing?.keys ?? []), records: new Map(), carried: new Map(), why: new Map(), manifests: new Map(), heads: new Map(), refused: new Map(), rows: new Map() };
           for (const at of indexes) {
             const version = entries[at]!.keyVersion as KeyVersionId;
             if (!scratch.keys.has(version)) scratch.keys.set(version, entries[at]!.key as ContentKey);
