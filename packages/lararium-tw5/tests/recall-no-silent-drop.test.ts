@@ -53,7 +53,7 @@ describe("a burned filter refuses in any spelling", () => {
 describe("a fusion-only knob refuses off the dual fuse", () => {
   const knobs: ReadonlyArray<readonly [string, unknown]> = [
     ["register", "r"], ["grammarLayer", "wikitext"], ["grammar_layer", "wikitext"], ["formWeight", 2],
-    ["apertureGrain", 10], ["aperture_grain", 10], ["aperture", "paragraph"], ["apertureWidth", 5], ["aperture_width", 5],
+    ["apertureGrain", 10], ["aperture", "paragraph"], ["apertureWidth", 5],
   ];
   const paths: ReadonlyArray<readonly [string, Record<string, unknown>]> = [
     ["search", { query: "q" }], ["list", {}], ["imago", { imago: "cid-1" }],

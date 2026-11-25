@@ -1772,13 +1772,13 @@ describe("the instance names a spirit's model stream (ruling 2026-11-25-body-bec
     expect(fields.some((f) => String(f["instances-awake"] ?? "").startsWith("lares-alpha#s-1 "))).toBe(true);
   });
 
-  test("a card's legacy bodies field reads through as #/instances, and the write lands on instances and unsets bodies", async () => {
+  test("a card's #/instances reads and writes its `instances` field alone: a `bodies` field stays an ordinary field", async () => {
     const held: Record<string, string> = { ...card(), bodies: "2026-11-24 · one" };
     stage({ kind: "none", card: held });
     const r = await run(argv(["ah", "lares-alpha"], { slot: "#/instances", add: "2026-11-25 · circle-keeper#4" }));
     expect(r.exit, JSON.stringify(r.printed)).toBe(0);
-    expect(held["instances"]).toBe("2026-11-24 · one\n2026-11-25 · circle-keeper#4");
-    expect(held["bodies"]).toBeUndefined();
+    expect(held["instances"]).toBe("2026-11-25 · circle-keeper#4");
+    expect(held["bodies"]).toBe("2026-11-24 · one");
   });
 
   test("om under an offering names the unechoed instance and asks for --instance", async () => {
