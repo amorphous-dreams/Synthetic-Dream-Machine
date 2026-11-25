@@ -1,7 +1,7 @@
 /**
  * keeper-cosign-fixture — one face's plane and gate port, and the keeper vest's co-sign driven through the real gate: the issuer's
  * first reach lands its intent and ask and waits; a device answers the ask (under its own atom and its own ward key, or a forger's
- * choice of both); the issuer's second reach spends it and hands back the proof a keeper commit carries.
+ * choice of both); the issuer's second reach spends it and hands back the proof a successor carries.
  */
 import type { LarDoc } from "../src/base-doc.js";
 import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "../src/ed25519-door.js";

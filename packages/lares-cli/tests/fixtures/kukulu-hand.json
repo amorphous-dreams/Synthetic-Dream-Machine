@@ -12,7 +12,7 @@
     { "name": "moved-lei-path-off", "facts": { "pulama": "moved", "lit": true, "keeper": null, "lei": true }, "line": "needs your hand: closure moved; keeper lei path off" },
     { "name": "moved-no-lei", "facts": { "pulama": "moved", "lit": true, "keeper": null, "lei": "absent" }, "line": "needs your hand: closure moved; no standing kukulu lei" },
     { "name": "moved-struck", "facts": { "pulama": "moved", "lit": true, "keeper": "struck-due", "lei": true }, "line": "needs your hand: closure moved; struck due" },
-    { "name": "moved-vests", "facts": { "pulama": "moved", "lit": true, "keeper": "vests", "lei": true }, "line": "keeper vests under your keeper commit" },
+    { "name": "moved-vests", "facts": { "pulama": "moved", "lit": true, "keeper": "vests", "lei": true }, "line": "keeper vests under your successor" },
     { "name": "moved-vests-no-lei", "facts": { "pulama": "moved", "lit": true, "keeper": "vests", "lei": "absent" }, "line": "needs your hand: closure moved; no standing kukulu lei" },
     { "name": "moved-keeper-lei", "facts": { "pulama": "moved", "lit": true, "keeper": "lei", "lei": true }, "line": "keeper vests under the standing lei" },
     { "name": "moved-keeper-lei-no-lei", "facts": { "pulama": "moved", "lit": true, "keeper": "lei", "lei": "absent" }, "line": "needs your hand: closure moved; no standing kukulu lei" },

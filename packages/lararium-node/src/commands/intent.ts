@@ -289,7 +289,7 @@ export async function loadNodeWardCosignPort(repo: Repo, catalogUrl: string | un
 }
 
 /**
- * THE KEEPER VEST'S CO-SIGN, VESSEL SIDE (`lares intent keeper-cosign`): run `ward-keeper-vest` over one keeper commit (the successor
+ * THE KEEPER VEST'S CO-SIGN, VESSEL SIDE (`lares intent keeper-cosign`): run `ward-keeper-vest` over one successor (the successor
  * closure D′, the chain head it links to, its nonce) through this face's ward co-sign gate, and answer what the commit carries: the
  * face's roster and, past one device, the spent co-sign (`keeperCosignGate`). An unanswered ask refuses `ward-awaiting-cosign`.
  * The co-sign's group reads `loadFaceFold().group` (the PersonaGroup id), the owner the kūkulu offer's face reads too (`riteFaceOf`),
