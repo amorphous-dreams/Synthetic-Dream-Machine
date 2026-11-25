@@ -221,6 +221,8 @@ async function putCardLive(card: FloorCard): Promise<{ decision: string; why?: s
   let out;
   try { out = readVerbOutcome(await runVerb("tiddler-put", { recipe: "default", title: card.title, text: card.text, fields: card.fields }, await vesselDid())); }
   catch (e) { return unwritten((e instanceof Error ? e.message : String(e)).replace(/[\r\n]+/g, " ").trim()); }
+  // AN OWED CARD LANDED IN THE VESSEL'S MEMORY AND WAITS ON A SESSION'S SEAL: the reason names that wait, never a vessel to stand.
+  if (out.code === "owed") return { decision: "owed", why: out.error ?? "owed: the card's save waits unsealed" };
   return out.ok ? { decision: String(out.output["decision"] ?? "put") } : unwritten(out.error ?? "the door refused and named no reason");
 }
 

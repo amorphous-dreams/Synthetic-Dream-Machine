@@ -43,7 +43,9 @@ export function namesOf(raw: string | undefined): string[] | null {
  * the house's own code where the vessel named one (`filter-malformed`, `tiddler-delete-in-a-family`, `cap-denied`, …):
  * the code leads the message, so a script branches on it.
  */
-export async function runDoor(args: ParsedArgs, label: string, plan: DoorPlan): Promise<{ ok: true; requestId: string; output: Record<string, unknown> } | { ok: false; exit: number }> {
+/** `carryOwed`: an owed answer hands back its receipt (with `rest`) unprinted, for a caller that names the band itself in its
+ *  own testimony (the wake's bookkeeping writes): the band still rides the output, never dropped. */
+export async function runDoor(args: ParsedArgs, label: string, plan: DoorPlan, opts: { readonly carryOwed?: boolean } = {}): Promise<{ ok: true; requestId: string; output: Record<string, unknown> } | { ok: false; exit: number }> {
   // EACH HAT REACHED BY NAME: `--face N` rides a session of face N (the island answers the mount's engine alone for now, so a
   // lit sibling refuses by name there); with none, the one-shot acts for the worn face.
   let face: { face?: number };
@@ -52,7 +54,7 @@ export async function runDoor(args: ParsedArgs, label: string, plan: DoorPlan): 
   const result = face.face === undefined ? await runVerb(plan.verb, plan.args, await vesselDid()) : await runVerbAsFace(plan.verb, plan.args, face.face);
   const outcome = readVerbOutcome(result);
   // The island names the face it answered from (a visit names the face it read): its word stands over the session's face.
-  if (outcome.ok) return { ok: true, requestId: result.requestId, output: face.face === undefined ? outcome.output : { face: face.face, ...outcome.output } };
+  if (outcome.ok || (outcome.code === "owed" && opts.carryOwed === true)) return { ok: true, requestId: result.requestId, output: face.face === undefined ? outcome.output : { face: face.face, ...outcome.output } };
   const message = outcome.error ?? "the verb refused";
   const named = /^([a-z][a-z0-9]*(?:-[a-z0-9]+)+):/.exec(message)?.[1];
   const code = outcome.code === "owed" ? "owed" : named === "cap-denied" ? "cap-denied" : named === "face-not-open" ? "face-not-open" : "verb-error";

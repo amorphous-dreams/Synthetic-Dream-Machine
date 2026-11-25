@@ -201,6 +201,48 @@ def test_a_write_the_vessel_answers_owed_raises_owed_with_the_band_never_ok(daem
     assert t["tiddler_put"](title="T", recipe="lares", text="x")["decision"] == "put"
 
 
+def test_an_act_the_vessel_answers_owed_raises_owed_at_the_session_door(monkeypatch, tmp_path_factory):
+    """KAHUA-STAGE answers staged: true over a held save; the seat stamps `rest` on the act's answer, and
+    `uds.session_act` (every MCP act rides it) raises `owed` naming the band, never the bare row."""
+    d = tmp_path_factory.mktemp("uds-act")
+    path = os.path.join(d, "daemon.sock")
+    srv = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    srv.bind(path)
+    srv.listen(2)
+
+    def serve() -> None:
+        conn, _ = srv.accept()
+        with conn:
+            buf = b""
+            while True:
+                chunk = conn.recv(65536)
+                if not chunk:
+                    return
+                buf += chunk
+                while b"\n" in buf:
+                    line, buf = buf.split(b"\n", 1)
+                    frame = json.loads(line.decode())
+                    if frame.get("op") == "session:open":
+                        reply = {"kind": "session:opened", "requestId": frame["requestId"], "ownerEpoch": "e", "sessionId": "s", "generation": 0, "faceRef": "f"}
+                    elif frame.get("op") == "session:act":
+                        reply = {"kind": "session:act-result", "requestId": frame["requestId"], "answer": {
+                            "status": "done", "output": {"title": "memo", "staged": True}, "rest": _OWED}}
+                    else:
+                        return
+                    conn.sendall((json.dumps(reply) + "\n").encode())
+
+    threading.Thread(target=serve, daemon=True).start()
+    monkeypatch.setattr(uds, "socket_path", lambda: path)
+    monkeypatch.setattr(uds, "resolve_face", lambda face, timeout=30.0: 1)
+    try:
+        with pytest.raises(uds.LaresVerbError, match=r"^owed: the kahua-stage landed .*2hUgpNYoRGAk") as staged:
+            uds.session_act("kahua-stage", {"title": "memo", "text": "body"})
+        assert staged.value.refusal == "owed"
+        assert '"staged":true' in str(staged.value)
+    finally:
+        srv.close()
+
+
 def test_tiddler_delete_raises_on_a_stale_base_and_answers_absent(daemon):
     t = _tools()
     daemon.output = {"recipe": "default", "title": "T", "decision": "conflict", "tombstoned": [], "hash": "sha256-live"}

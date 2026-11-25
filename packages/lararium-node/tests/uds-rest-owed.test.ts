@@ -19,6 +19,8 @@ import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import type { SessionFace } from "@lararium/mesh/session-contract";
 import { startUdsChannel, type UdsSessionDoor } from "../src/uds-channel.js";
 import { claimStore } from "../src/owned-store.js";
+import { watchCallTouches } from "@lararium/mesh/call-touches";
+import { seatNodeCallScope } from "../src/node-call-scope.js";
 
 /** The fixture door's mint: a signer the seat can drop, holding no key. */
 const fixtureMint = async () => ({ ok: true as const, signer: { dropped: false, drop() { (this as { dropped: boolean }).dropped = true; } } });
@@ -60,11 +62,15 @@ class Peer {
   ask(frame: Record<string, unknown>): Promise<Record<string, unknown>> { const reply = this.next(); this.send(frame); return reply; }
 }
 
-describe("no silent loss at the UDS seat: a write verb's done answer carries the owed band", () => {
-  test("a write stamps `rest` from the vessel's reading; a read never asks it; a reading that fails still answers owed", async () => {
+describe("no silent loss at the UDS seat: one stamp for every call whose own changes wait", () => {
+  test("a verb's island changes (its outcome's `touched`) and an act's own changes here read their rest; a call that changed nothing never asks", async () => {
+    seatNodeCallScope();
     const repo = new Repo({ sharePolicy: async () => true });
+    watchCallTouches(repo as never);
     const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
     const workingHandle = repo.create<LarDoc>(emptyLarDoc());
+    const stageHandle = repo.create<{ rows?: Record<string, string> }>();   // the kahua stage's local canon
+    const heldHandle = repo.create<{ n?: number }>();                        // a document another call left waiting
     const composite = new CompositeStore();
     composite.addLayer({ bagId: DAEMON_BAG_ID, store: new AutomergeDocStore(daemonHandle as never, DAEMON_BAG_ID), writable: true, defaultWritable: false });
     composite.addLayer({ bagId: wikiSlotUri("daemon", "working"), store: new AutomergeDocStore(workingHandle, wikiSlotUri("daemon", "working")), writable: true });
@@ -72,17 +78,36 @@ describe("no silent loss at the UDS seat: a write verb's done answer carries the
     const claim = await claimStore(dir, { holder: "vessel" });
     const door: UdsSessionDoor = { anchorNow: async () => ({ kind: "place" as const, aid: "place-fixture", head: "place-head" }), open: async ({ faceRef }) => ({ ok: true, supply: {
       face: face(faceRef), ordinal: 0, profile: "seat", presenter: `verified-${faceRef}`, anchor: { kind: "place" as const, aid: "place-fixture", head: "place-head" }, mint: fixtureMint } }) };
-    const band = { band: "owed" as const, documents: [{ documentId: "2hUgpNYoRGAkCcCXTgZGecaQBXsp", refusal: "save-unsealed", error: "record-refused", cause: "signer-refused" }] };
-    const marks: string[] = [];
-    let reading: "band" | "none" | "throws" = "band";
+    // The vessel's reading, as the real one answers: every document the call changed that the held set names waits.
+    const waiting = new Set<string>([heldHandle.documentId, stageHandle.documentId, "island-doc"]);
+    const asked: Array<string[]> = [];
+    let throws = false;
     const channel = startUdsChannel({ controlHandle: daemonHandle, control: controlStoreOf(daemonHandle), claim, repo, sessions: door,
       restOwed: {
-        mark: () => { marks.push("mark"); return { at: marks.length }; },
-        owed: async () => { if (reading === "throws") throw new Error("flush threw"); return reading === "band" ? band : null; },
+        mark: () => 0,
+        owed: async (_since, touches) => {
+          const ids = Object.keys(touches ?? {});
+          asked.push(ids);
+          if (throws) throw new Error("flush threw");
+          const docs = ids.filter((id) => waiting.has(id)).map((documentId) => ({ documentId, refusal: "save-unsealed", error: "record-refused", cause: "signer-refused" }));
+          return docs.length > 0 ? { band: "owed" as const, documents: docs } : null;
+        },
+      },
+      sessionActs: {
+        names: new Set(["kahua-stage"]),
+        // THE KAHUA STAGE'S SHAPE (kahua-door.ts): the act changes the local canon here and answers staged: true.
+        run: async () => {
+          await new Promise((r) => setTimeout(r, 1));
+          stageHandle.change((d) => { d.rows = { ...(d.rows ?? {}), memo: "body" }; });
+          return { status: "done", output: { title: "memo", staged: true } };
+        },
       },
       placeVerb: (o) => {
+        // A concurrent writer outside the call changes the held document while this verb runs: it never reads as this call's.
+        setTimeout(() => heldHandle.change((d) => { d.n = (d.n ?? 0) + 1; }), 0);
+        const touched = o.verb === "tiddler-put" ? { touched: { "island-doc": ["aa"] } } : o.verb === "tiddler-delete" ? { touched: { "island-sealed": ["bb"] } } : {};
         const outcome = concludeVerb({ requestId: o.requestId, verb: o.verb, status: "done", ...(o.face !== undefined && { face: o.face }),
-          cause: "test-worker", batchMode: "best-effort", results: { summary: { ok: true, output: { decision: "put" } } } });
+          cause: "test-worker", batchMode: "best-effort", results: { summary: { ok: true, output: { decision: "put" } } }, ...touched });
         daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
       } });
     const a = await Peer.connect(claim.socketPath);
@@ -90,16 +115,23 @@ describe("no silent loss at the UDS seat: a write verb's done answer carries the
       const opened = await a.ask({ op: "session:open", requestId: "open-a", faceRef: "a", hand: "seat" });
       const env = { ownerEpoch: opened["ownerEpoch"], sessionId: opened["sessionId"], generation: opened["generation"], faceRef: opened["faceRef"] };
       const call = (requestId: string, verb: string) => ({ op: "session:call", ...env, requestId, verb, args: { recipe: "lares", title: "T" } });
-      expect(await a.ask(call("put-1", "tiddler-put"))).toMatchObject({ kind: "session:result", status: "done", rest: band });
-      expect(marks).toEqual(["mark"]);
-      const read = await a.ask(call("get-1", "tiddler-get"));
-      expect(read).toMatchObject({ kind: "session:result", status: "done" });
-      expect(read).not.toHaveProperty("rest");
-      expect(marks).toEqual(["mark"]);
-      reading = "none";
-      expect(await a.ask(call("put-2", "tiddler-put"))).not.toHaveProperty("rest");
-      reading = "throws";
-      expect(await a.ask(call("put-3", "meme-delete"))).toMatchObject({ rest: { band: "owed", documents: [{ refusal: "owed-unread", error: "flush threw" }] } });
+      // A verb the island answered with its changed document: owed names that document alone, never the concurrent held one.
+      const put = await a.ask(call("put-1", "tiddler-put"));
+      expect(put).toMatchObject({ kind: "session:result", status: "done", rest: { band: "owed", documents: [{ documentId: "island-doc" }] } });
+      expect(put).not.toHaveProperty("touched");
+      expect(asked.at(-1)).toEqual(["island-doc"]);
+      // A verb whose changes sealed answers bare; a verb that changed nothing never asks.
+      expect(await a.ask(call("del-1", "tiddler-delete"))).not.toHaveProperty("rest");
+      const n = asked.length;
+      expect(await a.ask(call("get-1", "tiddler-get"))).not.toHaveProperty("rest");
+      expect(asked.length).toBe(n);
+      // KAHUA-STAGE: the act answers staged: true over a held save today; the stamp names its own document.
+      const staged = await a.ask({ op: "session:act", ...env, requestId: "stage-1", act: "kahua-stage", args: {} });
+      expect(staged).toMatchObject({ kind: "session:act-result", answer: { output: { staged: true }, rest: { band: "owed", documents: [{ documentId: stageHandle.documentId }] } } });
+      expect(asked.at(-1)).toEqual([stageHandle.documentId]);
+      // A reading that fails answers owed by name for the call's own documents, never ok.
+      throws = true;
+      expect(await a.ask(call("put-2", "tiddler-put"))).toMatchObject({ rest: { band: "owed", documents: [{ documentId: "island-doc", refusal: "owed-unread", error: "flush threw" }] } });
     } finally {
       a.sock.destroy(); channel.close(); await claim.release(); rmSync(dir, { recursive: true, force: true });
     }

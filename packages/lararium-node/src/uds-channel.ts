@@ -73,6 +73,7 @@ import { switchSession } from "@lararium/mesh/session-switch";
 import { ingestWaveRefusal } from "@lararium/mesh/ingest-wave-budget";
 import type { CapabilityProfile, Hand, Session, SessionFace } from "@lararium/mesh/session-contract";
 import type { SwitchIntent, SwitchOutcome } from "@lararium/mesh/session-switch";
+import { inCallScope, takeCallTouches, type CallTouches } from "@lararium/mesh/call-touches";
 import type { SwitchActLog } from "./switch-act-log.js";
 
 /** The band a write door's answer carries where a document its call wrote still waits unsealed (`RestOwed`, sealed-rest). */
@@ -80,8 +81,25 @@ export interface RestOwedBand {
   readonly band: "owed";
   readonly documents: ReadonlyArray<{ readonly documentId: string; readonly refusal: string; readonly error?: string; readonly cause?: string }>;
 }
-/** The verbs that write a record: each answer reads whether its saves sealed (`restOwed`). */
-export const REST_OWED_VERBS: ReadonlySet<string> = new Set(["tiddler-put", "tiddler-delete", "meme-put", "meme-delete", "meme-patch"]);
+/** Merge the documents a call changed on the island (its outcome's `touched`) with those it changed here: the later heads win. */
+export function mergeCallTouches(...parts: ReadonlyArray<CallTouches | null | undefined>): CallTouches | null {
+  const out: Record<string, readonly string[]> = {};
+  for (const part of parts) if (part) for (const [id, heads] of Object.entries(part)) out[id] = heads;
+  return Object.keys(out).length > 0 ? out : null;
+}
+/** An outcome's `touched` field, read with no trust: a malformed one reads as none. */
+export function touchedOfField(raw: unknown): CallTouches | null {
+  if (typeof raw !== "string" || raw.length === 0) return null;
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return null;
+    const out: Record<string, readonly string[]> = {};
+    for (const [id, heads] of Object.entries(parsed as Record<string, unknown>)) {
+      if (Array.isArray(heads) && heads.every((h: unknown) => typeof h === "string")) out[id] = heads as string[];
+    }
+    return Object.keys(out).length > 0 ? out : null;
+  } catch { return null; }
+}
 // The adaptive-timeout SERVO (fail on a GRADIENT, never a cliff): a per-verb wait that GROWS with the
 // observed durations and clamps FLOOR..CEIL. The machine-code work stays Python; this is the
 // coordinator's PATIENCE, servo'd so a long-but-honest verb (a big-session capture, a refresh queued
@@ -186,7 +204,7 @@ export interface UdsChannelOptions {
   readonly beforeSignerDrops?: (signer: UdsSessionSigner) => Promise<void>;
   /** NO SILENT LOSS (sealed-store#/owed): a write verb's answer reads, after the Repo's flush, which documents held a save
    *  since its call began and still wait unsealed; a `done` answer then carries `rest: { band: "owed", … }`. */
-  readonly restOwed?: { mark(): unknown; owed(since: never): Promise<RestOwedBand | null> };
+  readonly restOwed?: { mark(): number; owed(since: number, touches: CallTouches | null): Promise<RestOwedBand | null> };
   /** The vessel's control document (`standControlHome`): its heads name a receipt's durability. */
   readonly controlHandle: DocHandle<LarDoc>;
   /** The verbs a one-shot runs while the control document stands as a stand-in (`floor-verbs`); every other refuses by its name. */
@@ -1076,6 +1094,8 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       // concurrent re-read of an id this process already committed) can tell a dedup answer from a
       // verb this attempt actually ran.
       ...(typeof fields["effect-of"] === "string" ? { effectOf: fields["effect-of"] } : {}),
+      // THE CALL'S OWN CHANGES on the island (`call-touches`): the seat reads them for the owed band and strips them.
+      ...(typeof fields["touched"] === "string" ? { touched: fields["touched"] } : {}),
     };
   };
 
@@ -1605,12 +1625,16 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       if (verdict.verdict === "refuse") return sessionRefuse(sock, verdict.reason, requestId);
       let answer: Record<string, unknown>;
       ran = true;
+      const owedSince = opts.restOwed ? opts.restOwed.mark() : null;
       try {
-        answer = await run(name, bound, worn);
+        // AN ACT RUNS IN ITS OWN SCOPE (`call-touches`): what it changes here tags it, and its answer carries the owed band.
+        answer = await inCallScope(scoped, () => run(name, bound, worn));
       } catch (error) {
         log(`session act ${name} faulted for ${requestId}: ${error instanceof Error ? error.message : String(error)}`);
         answer = { status: "error", reason: "act-faulted" };
       }
+      const actRest = await owedFor(owedSince, touchesOf(scoped, undefined));
+      if (actRest !== null) answer = { ...answer, rest: actRest };
       const status = answer["status"] === "error" ? "error" : "done";
       try {
         await ledger.observeOutcome(scoped, status, digest, 0, face, action);
@@ -1712,10 +1736,28 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
   const settleOne = (sock: Socket): void => {
     if (inFlight.delete(sock) && idle()) drained?.();
   };
+  /** EVERY CALL RUNS IN ITS OWN SCOPE (`call-touches`): what the vessel's main thread changes for it tags the call's id. */
   const handle = (parsed: unknown, sock: Socket, sessionRequestId?: string, onSessionReply?: () => void, mark?: ChoreReceiptMark, gate?: DoorGate): void => {
-    // THE REST-OWED MARK: a write verb's call notes the held saves standing as it begins, so its answer names what it left owed.
-    const parsedVerb = parsed && typeof parsed === "object" ? (parsed as Record<string, unknown>)["verb"] : undefined;
-    const owedSince = typeof parsedVerb === "string" && REST_OWED_VERBS.has(parsedVerb) && opts.restOwed ? opts.restOwed.mark() : null;
+    const callId = parsed && typeof parsed === "object" ? (parsed as Record<string, unknown>)["requestId"] : undefined;
+    if (typeof callId !== "string" || callId.length === 0) return handleCall(parsed, sock, null, sessionRequestId, onSessionReply, mark, gate);
+    return inCallScope(callId, () => handleCall(parsed, sock, callId, sessionRequestId, onSessionReply, mark, gate));
+  };
+  /** The documents a call changed here and on the island, the control document's own bookkeeping left out. */
+  const touchesOf = (callId: string | null, island: unknown): CallTouches | null => {
+    const merged = mergeCallTouches(touchedOfField(island), callId !== null ? takeCallTouches(callId) : null);
+    if (merged === null) return null;
+    const { [controlHandle.documentId]: _control, ...rest } = merged;
+    return Object.keys(rest).length > 0 ? rest : null;
+  };
+  /** The owed band for one call's own changes; a reading that fails answers owed by name, never sealed. */
+  const owedFor = async (since: number | null, touches: CallTouches | null): Promise<RestOwedBand | null> => {
+    if (since === null || touches === null || !opts.restOwed) return null;
+    try { return await opts.restOwed.owed(since, touches); }
+    catch (error) { return { band: "owed", documents: Object.keys(touches).map((documentId) => ({ documentId, refusal: "owed-unread", error: error instanceof Error ? error.message : String(error) })) }; }
+  };
+  const handleCall = (parsed: unknown, sock: Socket, callId: string | null, sessionRequestId?: string, onSessionReply?: () => void, mark?: ChoreReceiptMark, gate?: DoorGate): void => {
+    // THE REST-OWED MARK: every call notes the held saves standing as it begins; its answer names what its own changes left owed.
+    const owedSince = opts.restOwed ? opts.restOwed.mark() : null;
     // The receipt mark of a dispatched chore (`ChoreReceiptMark`: the acting face, the asker's hand, its session), carried on
     // its answer as `chore`; unset for a read or a refusal. A session's door hands it in; a one-shot's deferred tick reads it.
     let choreMark: ChoreReceiptMark | undefined = mark;
@@ -1770,13 +1812,11 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     const respond = (answer: Record<string, unknown>): void => {
       void (async () => {
         // A WRITE THAT CANNOT SEAL ANSWERS `owed`, NEVER A BARE OK: the change stands in memory and rests nowhere yet.
-        let rest: RestOwedBand | null = null;
-        if (owedSince !== null && answer["status"] === "done") {
-          // A READING THAT FAILS NEVER READS AS SEALED: the answer names the failure as owed.
-          try { rest = await opts.restOwed!.owed(owedSince as never); }
-          catch (error) { rest = { band: "owed", documents: [{ documentId: "unread", refusal: "owed-unread", error: error instanceof Error ? error.message : String(error) }] }; }
-        }
-        const stamped = rest !== null ? { ...answer, rest } : answer;
+        // ONE PLACE FOR EVERY VERB: whatever the call changed (on the island, or here) reads its rest before the answer leaves.
+        const { touched: islandTouched, ...plain } = answer;
+        const terminal = answer["status"] === "done" || answer["status"] === "error";
+        const rest = terminal ? await owedFor(owedSince, touchesOf(callId, islandTouched)) : null;
+        const stamped = rest !== null ? { ...plain, rest } : plain;
         const named = choreMark !== undefined ? { ...stamped, chore: choreMark } : stamped;
         const payload = sessionRequestId === undefined ? named : {
           kind: "session:result", ...named, requestId: sessionRequestId,

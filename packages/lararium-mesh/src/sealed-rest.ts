@@ -899,43 +899,38 @@ export interface RestOwed {
 /** What the watch hears about one document's save: a hold (`onHeld`) or an outright refusal (`onRefused`, `save-refused`). */
 export interface RestNotice { readonly documentId: string; readonly refusal: string; readonly error?: string; readonly cause?: string }
 
-/** Where a call began: the notice count, and each document's heads as the Repo held them. */
-export interface RestOwedMark { readonly seq: number; readonly heads: ReadonlyMap<string, string> }
-
 /**
- * THE REST-OWED WATCH, SCOPED TO THE CALL. A write door marks as its call begins (the notice count and every document's
- * heads); after its answer and the Repo's flush it reads the documents whose heads moved since the mark, the ones this
- * call wrote (a noop moves none, so it owes nothing), and names each that still waits in the sealed rest, or whose save
- * refused outright since the mark, or every moved one where the flush itself failed (`flushError`). Notices fold into one
- * latest reading per document, counted, never sampled: no storm of notices drops a hold. Null: nothing owed.
+ * THE REST-OWED WATCH, SCOPED TO THE CALL'S OWN CHANGES. A door marks the notice count as its call begins; when it
+ * answers, it hands the documents that call changed (`call-touches`: tagged at the change, so a concurrent call's write, a
+ * peer's sync or a document that waited long before never reads as this call's debt). After the vessel's flush of those
+ * documents alone, each owes where it still waits, refused outright since the mark, failed its flush (`flushError`), or
+ * never reached this vessel's replica within the bound (`unsynced`). Notices fold into one latest reading per document,
+ * counted, never sampled. Null: the call changed nothing, or every change it made sealed.
  */
-export function restOwedWatch(ports: {
-  readonly waiting: (documentId: string) => number;
-  /** Each document the Repo holds, by its heads joined (a stable string); read at the mark and again after the flush. */
-  readonly heads: () => ReadonlyMap<string, string>;
-}): {
+export function restOwedWatch(ports: { readonly waiting: (documentId: string) => number }): {
   notice(notice: RestNotice): void;
-  mark(): RestOwedMark;
-  owed(mark: RestOwedMark, flushError?: string): RestOwed | null;
+  mark(): number;
+  owed(since: number, touched: readonly string[], opts?: { readonly flushError?: string; readonly unsynced?: readonly string[] }): RestOwed | null;
 } {
   let seq = 0;
   const latest = new Map<string, { readonly seq: number; readonly notice: RestNotice }>();
   return {
     notice(notice) { latest.set(notice.documentId, { seq: ++seq, notice }); },
-    mark: () => ({ seq, heads: new Map(ports.heads()) }),
-    owed(mark, flushError) {
+    mark: () => seq,
+    owed(since, touched, opts = {}) {
+      const unsynced = new Set(opts.unsynced ?? []);
       const documents: Array<RestOwed["documents"][number]> = [];
-      for (const [documentId, heads] of ports.heads()) {
-        if (mark.heads.get(documentId) === heads) continue;
+      for (const documentId of new Set(touched)) {
         const heard = latest.get(documentId);
-        const since = heard !== undefined && heard.seq > mark.seq ? heard.notice : null;
+        const fresh = heard !== undefined && heard.seq > since ? heard.notice : null;
         const waits = ports.waiting(documentId) > 0;
-        if (flushError === undefined && !waits && since?.refusal !== "save-refused") continue;
-        const named = since ?? heard?.notice ?? null;
+        if (unsynced.has(documentId)) { documents.push({ documentId, refusal: "save-unsynced", error: "the change never reached this vessel's replica within the bound" }); continue; }
+        if (opts.flushError === undefined && !waits && fresh?.refusal !== "save-refused") continue;
+        const named = fresh ?? (waits ? heard?.notice ?? null : null);
         documents.push({
           documentId,
-          refusal: flushError !== undefined && named === null ? "flush-refused" : named?.refusal ?? "save-waiting",
-          ...(named?.error !== undefined ? { error: named.error } : flushError !== undefined ? { error: flushError } : {}),
+          refusal: opts.flushError !== undefined && named === null ? "flush-refused" : named?.refusal ?? "save-waiting",
+          ...(named?.error !== undefined ? { error: named.error } : opts.flushError !== undefined ? { error: opts.flushError } : {}),
           ...(named?.cause !== undefined ? { cause: named.cause } : {}),
         });
       }

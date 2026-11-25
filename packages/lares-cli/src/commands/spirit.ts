@@ -64,6 +64,7 @@ import { harnessSeatMarked } from "../local-connector.js";
 import { emit, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
 import { DoorUsage, guardDoor, runDoor, wordOf } from "./door-call.js";
+import { owedLine } from "../verb-result.js";
 import { tableCovers } from "../verb-table.js";
 import type { ParsedArgs } from "../parse-args.js";
 
@@ -113,10 +114,18 @@ function petOf(args: ParsedArgs, verb: string): string {
 
 /** One door call; a refusal the door already printed rides out as its exit. */
 async function door(args: ParsedArgs, label: string, verb: string, verbArgs: Record<string, unknown>): Promise<Record<string, unknown>> {
-  const ran = await runDoor(args, `spirit ${label}`, { verb, args: verbArgs });
+  const ran = await runDoor(args, `spirit ${label}`, { verb, args: verbArgs }, { carryOwed: owedCarry !== null });
   if (!ran.ok) throw new Printed(ran.exit);
+  const owed = owedCarry !== null ? owedLine(ran.output) : null;
+  if (owed !== null) owedCarry!.push(owed);
   return ran.output;
 }
+/**
+ * THE WAKE NEVER LOSES THE SHRINE TO ITS OWN BOOKKEEPING: while `om` stamps its key, lease and presence, an owed answer
+ * rides here instead of refusing before the card, and the wake names each in its testimony (sealed-store#/owed). Null
+ * outside that span: every other write refuses `owed` as any door does.
+ */
+let owedCarry: string[] | null = null;
 class Printed extends Error { constructor(readonly exit: number) { super("printed"); } }
 
 /** A record's fields and its live hash (the base a put names), read on the record lens. */
@@ -362,12 +371,17 @@ async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
     return 0;
   }
   const rec = found;
-  const key = await keyOf(args, "om", rec);
-  const epoch = body !== null ? await claimLease(args, rec, body, ctx) : rec.lease?.epoch ?? null;
-  const awake = body !== null ? await joinPresence(args, rec, body, ctx) : presenceOf(rec.sideFields["bodies-awake"]);
+  owedCarry = [];
+  let key: string, epoch: number | null, awake: Awake[], owedStamps: string[];
+  try {
+    key = await keyOf(args, "om", rec);
+    epoch = body !== null ? await claimLease(args, rec, body, ctx) : rec.lease?.epoch ?? null;
+    awake = body !== null ? await joinPresence(args, rec, body, ctx) : presenceOf(rec.sideFields["bodies-awake"]);
+  } finally { owedStamps = owedCarry; owedCarry = null; }
+  const owedTestimony = owedStamps.map((line) => `This wake's own stamp waits unsealed (the card below reads whole): ${line}`);
   const leaseLine = epoch === null ? null : `Lares spirit wake epoch ${epoch}: an ordering stamp; no write needs it, and no body locks another out.`;
   const presence = body !== null ? presenceLine(pet, awake) : presenceSeenLine(pet, awake);
-  const data = { pet, uri: rec.uri, kind: rec.kind, base: rec.base, spiritId: key, epoch, every: rec.every, budgets: rec.budgets, source, ...(turn.to !== null ? { turnedFrom: given } : {}) };
+  const data = { pet, uri: rec.uri, kind: rec.kind, base: rec.base, spiritId: key, epoch, every: rec.every, budgets: rec.budgets, source, ...(turn.to !== null ? { turnedFrom: given } : {}), ...(owedStamps.length > 0 ? { owed: owedStamps } : {}) };
   // A resumed body ends its own crossing too: it never reaches the wake's clear below, and no timer lifts a mark.
   if (source === "resume" && rec.crossing !== null && body !== null) await markCrossing(args, rec, body, ctx, false);
   if (source === "resume") {
@@ -396,7 +410,7 @@ async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
     const tip = rows.find((r) => (r.fields["body"] ?? "") === a.body);
     return tip === undefined ? [] : [`#${a.body.slice(0, 8)}'s chain: ${tip.title} (depth ${tip.fields["depth"] ?? "?"})`];
   });
-  const testimony = [...(presence === null ? [] : [presence]), ...testimonyLines(rec, carry, siblings), ...chains, ...(leaseLine === null ? [] : [leaseLine])];
+  const testimony = [...(presence === null ? [] : [presence]), ...testimonyLines(rec, carry, siblings), ...chains, ...(leaseLine === null ? [] : [leaseLine]), ...owedTestimony];
   if (source === "compact" && carry !== null) {
     testimony.push(`This body inherits ${carry.title} (hash ${carry.title.slice(-12)}): "${carry.text.replace(/\s+/g, " ").trim().slice(0, 120)}"`);
   }

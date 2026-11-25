@@ -1176,6 +1176,10 @@
       "import": "./dist/sealed-records.js",
       "types": "./dist/sealed-records.d.ts"
     },
+    "./call-touches": {
+      "import": "./dist/call-touches.js",
+      "types": "./dist/call-touches.d.ts"
+    },
     "./sealed-rest": {
       "import": "./dist/sealed-rest.js",
       "types": "./dist/sealed-rest.d.ts"

@@ -18,6 +18,7 @@
  *   DS6 — a save refused outright, and a flush that failed, read owed
  *   DS7 — a storm of notices drops no hold (counted per document, never a sampled tail)
  *   DS8 — the store tells every refusal it throws (session-face-foreign), so none passes silent
+ *   DS10 — call touches tag at the change: concurrent calls own their own documents; a long-held one never blames another call
  *   DS9 — two faces: a dead booking never falls to the other face's live session
  *
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed · lar:///ha.ka.ba/kahua/memory/research/signer-refused
@@ -28,6 +29,7 @@ import { faceProofSubjectRef } from "../src/face-proof-subjects.js";
 import type { RecordSigner } from "../src/sealed-records.js";
 import { composeSealedRest, restOwedWatch } from "../src/sealed-rest.js";
 import { SessionSignBook, type BookedSession } from "../src/session-sign-book.js";
+import { inCallScope, seatCallScope, takeCallTouches, watchCallTouches } from "../src/call-touches.js";
 import { vessel, world } from "./content-key-fixture.js";
 
 const BAG = "lar:///ha.ka.ba/wikis/daemon/working";
@@ -161,43 +163,60 @@ describe("a dropped signer signs nothing, and no save waits on one", () => {
     expect(book.standingFor((s) => s.subject === "face-a")).toBeNull();
   });
 
-  it("DS5 — the rest-owed watch names only the documents this call moved that still wait; a noop owes nothing", () => {
+  it("DS5 — the rest-owed watch names only the documents this call changed that still wait; a call that changed nothing owes nothing", () => {
     const waiting = new Map<string, number>([["other-call", 3]]);
-    const heads = new Map<string, string>([["doc-1", "h1"], ["other-call", "o1"], ["sealed", "s1"]]);
-    const watch = restOwedWatch({ waiting: (id) => waiting.get(id) ?? 0, heads: () => heads });
+    const watch = restOwedWatch({ waiting: (id) => waiting.get(id) ?? 0 });
     watch.notice({ refusal: "save-unsealed", documentId: "other-call", error: "signer-refused" });
-    // A noop: nothing moved, so another call's waiting document never reads as this call's debt.
-    const noop = watch.mark();
-    expect(watch.owed(noop)).toBeNull();
     const mark = watch.mark();
-    heads.set("doc-1", "h2"); heads.set("sealed", "s2");
+    expect(watch.owed(mark, [])).toBeNull();
     watch.notice({ refusal: "save-unsealed", documentId: "doc-1", error: "record-refused", cause: "signer-refused" });
     waiting.set("doc-1", 2);
-    // `sealed` moved and sealed: it owes nothing; `other-call` waits but this call never moved it.
-    expect(watch.owed(mark)).toEqual({ band: "owed", documents: [{ documentId: "doc-1", refusal: "save-unsealed", error: "record-refused", cause: "signer-refused" }] });
+    // `sealed` changed and sealed: it owes nothing; `other-call` waits, and this call never changed it.
+    expect(watch.owed(mark, ["doc-1", "sealed"])).toEqual({ band: "owed", documents: [{ documentId: "doc-1", refusal: "save-unsealed", error: "record-refused", cause: "signer-refused" }] });
   });
 
-  it("DS6 — a save refused outright (no hold, nothing waits) reads owed; a flush that failed reads owed for every moved document", () => {
-    const heads = new Map<string, string>([["doc-1", "a"], ["doc-2", "b"]]);
-    const watch = restOwedWatch({ waiting: () => 0, heads: () => heads });
+  it("DS6 — a save refused outright reads owed; a failed flush and a change that never synced read owed by name", () => {
+    const watch = restOwedWatch({ waiting: () => 0 });
     const mark = watch.mark();
-    heads.set("doc-1", "a2");
     watch.notice({ refusal: "save-refused", documentId: "doc-1", error: "session-face-foreign" });
-    expect(watch.owed(mark)).toEqual({ band: "owed", documents: [{ documentId: "doc-1", refusal: "save-refused", error: "session-face-foreign" }] });
-    heads.set("doc-2", "b2");
-    expect(watch.owed(mark, "flush threw")?.documents.map((d) => [d.documentId, d.refusal])).toEqual([["doc-1", "save-refused"], ["doc-2", "flush-refused"]]);
+    expect(watch.owed(mark, ["doc-1"])).toEqual({ band: "owed", documents: [{ documentId: "doc-1", refusal: "save-refused", error: "session-face-foreign" }] });
+    expect(watch.owed(mark, ["doc-1", "doc-2"], { flushError: "flush threw" })?.documents.map((d) => [d.documentId, d.refusal])).toEqual([["doc-1", "save-refused"], ["doc-2", "flush-refused"]]);
+    expect(watch.owed(mark, ["doc-3"], { unsynced: ["doc-3"] })?.documents.map((d) => d.refusal)).toEqual(["save-unsynced"]);
   });
 
   it("DS7 — a storm of notices drops no hold: the watch counts each document's latest reading, never a sampled tail", () => {
-    const heads = new Map<string, string>([["mine", "a"]]);
     const waiting = new Map<string, number>();
-    const watch = restOwedWatch({ waiting: (id) => waiting.get(id) ?? 0, heads: () => heads });
+    const watch = restOwedWatch({ waiting: (id) => waiting.get(id) ?? 0 });
     const mark = watch.mark();
-    heads.set("mine", "b");
     watch.notice({ refusal: "save-unbooked", documentId: "mine" });
     waiting.set("mine", 1);
     for (let i = 0; i < 5000; i++) watch.notice({ refusal: "save-unnamed", documentId: `storm-${i}` });
-    expect(watch.owed(mark)?.documents).toEqual([{ documentId: "mine", refusal: "save-unbooked" }]);
+    expect(watch.owed(mark, ["mine"])?.documents).toEqual([{ documentId: "mine", refusal: "save-unbooked" }]);
+  });
+
+  it("DS10 — call touches tag at the change: two concurrent calls each own their own documents, and a peer's change tags neither", async () => {
+    const { AsyncLocalStorage } = await import("node:async_hooks");
+    const store = new AsyncLocalStorage<string>();
+    seatCallScope({ run: (id, fn) => store.run(id, fn), current: () => store.getStore() });
+    try {
+      const repo = new Repo({ network: [] });
+      watchCallTouches(repo as never);
+      const held = repo.create<{ n?: number }>();   // a document that waits long, from an earlier call
+      const mine = repo.create<{ n?: number }>();
+      const tick = () => new Promise<void>((r) => setTimeout(r, 1));
+      await Promise.all([
+        inCallScope("call-a", async () => { await tick(); held.change((d) => { d.n = 1; }); await tick(); held.change((d) => { d.n = 2; }); }),
+        inCallScope("call-b", async () => { await tick(); mine.change((d) => { d.n = 1; }); }),
+      ]);
+      held.change((d) => { d.n = 3; });            // outside every call: a peer's sync, a timer
+      expect(Object.keys(takeCallTouches("call-b") ?? {})).toEqual([mine.documentId]);
+      expect(Object.keys(takeCallTouches("call-a") ?? {})).toEqual([held.documentId]);
+      expect(takeCallTouches("call-c")).toBeNull();
+      // The held document waits, and call b's band never names it.
+      const watch = restOwedWatch({ waiting: (id) => (id === held.documentId ? 4 : 0) });
+      expect(watch.owed(watch.mark(), [mine.documentId])).toBeNull();
+      await repo.shutdown();
+    } finally { seatCallScope(null); }
   });
 
   it("DS8 — the store tells a refusal it throws (session-face-foreign), so no outright refusal passes silent", async () => {

@@ -26,7 +26,6 @@ import {
   composeSealedRest,
   restOwedWatch,
   type RestOwed,
-  type RestOwedMark,
   clearRosterOf,
   watchCatalogNames,
   docStorePortCell,
@@ -56,6 +55,9 @@ import { seatMintCensus, capMintsUnpointed } from "@lararium/mesh/mint-census";
 import { wikiIslandWithholds, vesselDocBags, type WikiIslandMount } from "@lararium/mesh/wiki-island-reach";
 import { refuseTw5DocsWrite } from "@lararium/mesh/tw5-docs-name";
 import * as A from "@automerge/automerge";
+import { watchCallTouches, type CallTouches } from "@lararium/mesh/call-touches";
+import { awaitCallHeads, REST_OWED_SYNC_BOUND_MS } from "./call-heads.js";
+import { seatNodeCallScope } from "./node-call-scope.js";
 
 /** A summoned panel verb's ward: the ref the CLI parked, spent only on the verb and arguments it was bound to. */
 function takeSummonedWard(raw: unknown): WardCredential | undefined {
@@ -828,7 +830,7 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   sealedRestLock: (signer: object) => Promise<void>;
   /** NO SILENT LOSS at a write door: the count of held saves as a call begins (`mark`), and after its answer, the Repo's
    *  flush and the documents that held a save since the mark and still wait unsealed (`owed`; null: every save sealed). */
-  restOwed: { mark(): RestOwedMark; owed(since: RestOwedMark): Promise<RestOwed | null> };
+  restOwed: { mark(): number; owed(since: number, touches: CallTouches | null): Promise<RestOwed | null> };
   /** The stand-down's last flush of the sealed rest (T3), after every session closed and before the daemon island goes:
    *  answers how many saves still wait unbooked (each rests nowhere new; its change returns by sync). */
   sealedRestStandDown: () => Promise<number>;
@@ -938,7 +940,7 @@ interface NodeBootPrep {
   sessionDoor:     UdsSessionDoor;
   /** The sealed rest's lock for one session's signer: the Repo and the rest flush, then its bookings drop. */
   sealedRestLock:  (signer: object) => Promise<void>;
-  restOwed: { mark(): RestOwedMark; owed(since: RestOwedMark): Promise<RestOwed | null> };
+  restOwed: { mark(): number; owed(since: number, touches: CallTouches | null): Promise<RestOwed | null> };
   /** The stand-down's last flush of the sealed rest (T3), after every session closed: answers how many saves still wait. */
   sealedRestStandDown: () => Promise<number>;
   /** The stand-down's watch close over the worn face's pool: the final wave, then the commit seam, as a down. */
@@ -1413,17 +1415,7 @@ async function prepareNodeBootOn(
   const heldBack = heldInFlight(readEngineFalls(storageDir));
   // THE REST-OWED WATCH (No silent loss): every save held back numbers here, so a write door reads, after its flush, which
   // documents its call wrote still wait unsealed, and answers `owed` rather than a bare ok (`restOwedAfter`).
-  const owedWatch = restOwedWatch({
-    waiting: (documentId) => sealedRest.store.waiting(documentId),
-    // Each ready document's heads: the documents a call moved read as the ones whose heads differ after its flush.
-    heads: () => {
-      const out = new Map<string, string>();
-      for (const [id, handle] of Object.entries(repo.handles as Record<string, { isReady(): boolean; doc(): unknown } | undefined>)) {
-        try { if (handle?.isReady()) out.set(id, A.getHeads(handle.doc() as A.Doc<unknown>).join(",")); } catch { /* a handle that will not read moved nothing we can name */ }
-      }
-      return out;
-    },
-  });
+  const owedWatch = restOwedWatch({ waiting: (documentId) => sealedRest.store.waiting(documentId) });
   const sealedRest = composeSealedRest<NodeSaveSession>({
     inner: holdBackStorage(new DurableNodeFSStorageAdapter(storageDir), heldBack, (line) => console.warn(`[lararium] ${line}`)),
     bagOf: sealedBagOf,
@@ -1863,6 +1855,10 @@ async function prepareNodeBootOn(
       });
     }, wireProbe ?? undefined),
   });
+  // THE CALL'S OWN CHANGES TAG AT THE CHANGE (`call-touches`): a seat's act or verb runs in its call's scope, and every change
+  // this Repo makes inside it names that call's documents, so the door owes the call's own writes alone (sealed-store#/owed).
+  seatNodeCallScope();
+  watchCallTouches(repo as never);
   // A SEALED BAG MOUNTS NO WRITABLE FALLBACK (`seatSealedRest`): every `waitHandle` over this Repo (the social planes, the
   // wiki layers, the corpora) holds a sealed document read-only over its own id until its keyed load opens it. A load refused
   // on integrity evidence moves the bytes aside through the probe's own quarantine, held across boots.
@@ -5587,11 +5583,16 @@ async function prepareNodeBootOn(
     },
     restOwed: {
       mark: () => owedWatch.mark(),
-      // A FLUSH THAT FAILS NEVER READS AS SEALED: every document the call moved answers owed, naming the failure.
-      owed: async (since) => {
-        try { await repo.flush(); }
-        catch (error) { return owedWatch.owed(since, error instanceof Error ? error.message : String(error)); }
-        return owedWatch.owed(since);
+      // THE CALL'S OWN CHANGES (`call-touches`): each document waits until this replica holds the heads the call reached
+      // (an island's change crosses its sync leg first), then those documents alone flush. A change that never arrives
+      // within the bound, and a flush that fails, answer owed by name, never sealed.
+      owed: async (since, touches) => {
+        const ids = Object.keys(touches ?? {});
+        if (ids.length === 0) return null;
+        const unsynced = await awaitCallHeads(repo, touches!, REST_OWED_SYNC_BOUND_MS);
+        try { await repo.flush(ids.filter((id) => !unsynced.includes(id)) as never); }
+        catch (error) { return owedWatch.owed(since, ids, { flushError: error instanceof Error ? error.message : String(error), unsynced }); }
+        return owedWatch.owed(since, ids, { unsynced });
       },
     },
     sealedRestStandDown: async () => {
