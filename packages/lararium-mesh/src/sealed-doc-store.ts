@@ -868,9 +868,12 @@ export class SealedDocumentStore implements StorageAdapterInterface {
       const data = await this.#open(bag, chunk.key, face ?? this.#face(bag), chunk.data);
       if (data !== undefined) out.push({ key: chunk.key, data });
     }
-    for (const { key, data } of this.#waiting.values()) {
+    for (const { key, data, refusal } of this.#waiting.values()) {
       if (key.slice(0, prefix.length).join("\u0000") !== nameOf(prefix)) continue;
       const bag = this.#bagOf(key);
+      // THE RANGE READ KEEPS THE ONE-KEY LAW (`#load`): unmapped, an unnamed save reads back from memory, and a sealed-class save
+      // that waits unmapped never rides out as if it were clear.
+      if (bag === null && refusal !== "save-unnamed") continue;
       if (bag !== null && !isKeyed(bag)) this.#face(bag);
       out.push({ key: [...key], data: Uint8Array.from(data) });
     }
