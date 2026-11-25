@@ -52,7 +52,8 @@
  *            (`lares lei land`), where the chain's tip, the returns left and the push co-sign gate judge it. A restring rides
  *            kui: it names the line's tip it follows (`after`, as `lares lei show` reads it), and signs a lei after that tip.
  *            An unlit pūlama, an unopened face, a face whose anchors name no group, malformed terms, a count above twelve
- *            without `confirm` and a restring naming no tip each refuse before the route reads.
+ *            without `confirm` and a restring naming no tip each refuse before the route reads; `check: true` answers `ready`
+ *            there and reads no route.
  *
  *   publish  THE HAND SIGNS ONE PLUGIN OFFERING (`lares nexus publish plugins … --apply` under a pūlama), SIGN-ONLY, in the lei
  *            pattern. The vessel under a pūlama holds no face root, so the offering's signature comes here: the vessel reads the
@@ -430,6 +431,9 @@ export function pulamaHandDoor(a: {
         // THE SHAPE READS BEFORE THE ROUTE: a body no swarm control forms signs nothing, so a probe that signs nothing judges it.
         try { await signSwarmAct(terms.parts, { key: "", sign: async () => "" }); }
         catch { return { op: "lei", act, reading: "lei-malformed", detail: "the lei's terms form no swarm record (its branch reads as no name)" }; }
+        // EVERY CHECK SHORT OF THE ROUTE has run: `check: true` answers `ready` here and reads no route (the verb asks it before a
+        // person types one, as `sign` and `publish` do).
+        if (f["check"] === true) return { op: "lei", act, reading: "ready", face };
         const credentials = credentialsOf(f["credentials"]);
         if (credentials === null) return { op: "lei", act, reading: "malformed" };
         // THE ROUTE OPENS THE FACE ROOT FOR THIS ONE SIGNATURE, here in the pūlama; the record leaves, the root never does.
