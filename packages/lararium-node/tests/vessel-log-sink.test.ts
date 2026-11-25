@@ -27,7 +27,9 @@ function handHost() {
   const turn = async (times = 1): Promise<void> => {
     for (let i = 0; i < times; i++) { const next = waiting.shift(); if (!next) return; next(); await new Promise<void>((r) => setImmediate(r)); }
   };
-  const settle = async (): Promise<void> => { while (waiting.length > 0) await turn(); };
+  // A drain a landing just released resumes on a microtask and only then asks its next host turn: one host turn passes
+  // first, so the ask stands queued before the loop reads it (else the loop reads empty and leaves the drain waiting).
+  const settle = async (): Promise<void> => { await new Promise<void>((r) => setImmediate(r)); while (waiting.length > 0) await turn(); };
   return { yieldHost, waiting, turn, settle };
 }
 const liveLines = (run: string): string[] => existsSync(join(run, VESSEL_LIVE_LOG)) ? readFileSync(join(run, VESSEL_LIVE_LOG), "utf8").split("\n").filter((l) => l !== "") : [];
