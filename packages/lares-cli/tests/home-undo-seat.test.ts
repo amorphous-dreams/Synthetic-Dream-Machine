@@ -10,6 +10,10 @@ import { cmdTunnelDoor } from "../src/commands/tunnel-door.js";
 import { EXIT } from "../src/reality-tunnel/engine.js";
 import { parseArgs } from "../src/parse-args.js";
 
+const AI = () => ({ refusal: "hand-act-only" }) as const;
+const UNREAD = () => ({ refusal: "hand-unattested" }) as const;
+const HAND = () => ({ admit: "hand" }) as const;
+
 let said: string[];
 beforeEach(() => {
   said = [];
@@ -26,21 +30,30 @@ describe("lares home undo — the operator's hand, at a terminal or by --yes", (
     [["home", "--json", "undo"]],
     [["home", "undo", "--yes"]],
   ])("RED: an AI seat's %j refuses hand-act-only by name and names the cure", async (argv) => {
-    expect(await cmdTunnelDoor("home", parseArgs(argv), () => true)).toBe(EXIT.usage);
+    expect(await cmdTunnelDoor("home", parseArgs(argv), AI)).toBe(EXIT.usage);
     const text = said.join("\n");
     expect(text).toMatch(/lares home undo: refused hand-act-only/);
-    expect(text).toMatch(/runs `lares home undo/);
+    expect(text).toMatch(/run `lares home undo/);
     expect(text).toMatch(/own terminal/);
+  });
+
+  it("RED: a branch the gate reads nothing on refuses hand-unattested by name and names a readable terminal", async () => {
+    expect(await cmdTunnelDoor("home", parseArgs(["home", "undo", "--yes"]), UNREAD)).toBe(EXIT.usage);
+    const text = said.join("\n");
+    expect(text).toMatch(/lares home undo: refused hand-unattested/);
+    expect(text).not.toMatch(/hand-act-only/);
+    expect(text).toMatch(/Run `lares home undo/);
+    expect(text).toMatch(/whose processes the host can read/);
   });
 
   it("RED: a hand with no terminal and no --yes refuses and names --yes", async () => {
     if (process.stdin.isTTY) return;
-    expect(await cmdTunnelDoor("home", parseArgs(["home", "undo"]), () => false)).toBe(EXIT.usage);
+    expect(await cmdTunnelDoor("home", parseArgs(["home", "undo"]), HAND)).toBe(EXIT.usage);
     expect(said.join("\n")).toMatch(/pass --yes/);
   });
 
   it("CONTROL: the repo door's undo reads no seat (the checkout stays the spirit's working ground)", async () => {
-    const seat = vi.fn(() => true);
+    const seat = vi.fn(AI);
     // A generation that reads no whole number refuses before anything moves, past the seat gate the home door alone keeps.
     expect(await cmdTunnelDoor("repo", parseArgs(["repo", "undo", "x"]), seat)).toBe(EXIT.usage);
     expect(seat).not.toHaveBeenCalled();

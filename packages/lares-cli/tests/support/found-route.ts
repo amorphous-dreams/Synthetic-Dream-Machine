@@ -6,7 +6,7 @@
  * as the founding route for every suite. The passphrase guards nothing: every founding runs under a scratch root.
  */
 import { seatFaceRoute } from "@lararium/node";
-import { setFoundingRoute, setFoundingSeat } from "../../src/commands/found.js";
+import { setFoundingRoute, setFoundingHand } from "../../src/commands/found.js";
 
 export const TEST_PASSPHRASE = "test-founding-passphrase";
 setFoundingRoute(async () => [{ t: 1, pins: [{ kind: "passphrase", passphrase: TEST_PASSPHRASE }] }]);
@@ -14,6 +14,6 @@ setFoundingRoute(async () => [{ t: 1, pins: [{ kind: "passphrase", passphrase: T
 // A new face asks its own route as well; the suites answer it with the same test passphrase.
 seatFaceRoute(async () => [{ t: 1, pins: [{ kind: "passphrase", passphrase: TEST_PASSPHRASE }] }]);
 
-// A suite runs under whatever launched it (a harness on the operator's machine, a CI runner), so the re-seed's seat reads a
-// person's hand; a case that proves the seat's refusal installs its own reading.
-setFoundingSeat(() => false);
+// A suite runs under whatever launched it (a harness on the operator's machine, a CI runner), so the re-seed's hand reads a
+// person's; a case that proves the gate's refusal installs its own reading.
+setFoundingHand(() => ({ admit: "hand" }));

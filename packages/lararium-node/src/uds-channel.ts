@@ -40,6 +40,7 @@
 
 import { crossFaceTargetAtDoor, faceRefOrdinal, namedFaceOf, seatFaceRefusal, seatKindOf, seatRefusalClass } from "./seat-hand.js";
 import { peerKindOf, peerSeatOf, type PeerKind } from "./uds-peer.js";
+import { handRefusalOf } from "./hand-act-gate.js";
 import { HEARTH_CLOSING, HEARTH_ROSTER_VERB, hearthRosterOf, type HearthPlanes } from "./hearth-roster-read.js";
 import { choreAtDoor, entersADrain, isChore } from "./chore-face.js";
 import { choreReceiptMarkOf, type ChoreReceiptMark } from "@lararium/mesh/chore-ask";
@@ -131,8 +132,10 @@ export interface UdsChannelOptions {
    */
   readonly handOnlyActs?: ReadonlySet<string>;
   /**
-   * How the door reads a connection's peer (`uds-peer`'s `peerKindOf`; a suite names another). Only a peer that reads `hand`
-   * books the `cli` asker; one that reads `unknown` books none, and a hand-only act from it refuses `hand-unattested`.
+   * How the door reads a connection's peer (`uds-peer`'s `peerKindOf`, the hand gate's own reader; a suite names another). Only a
+   * peer that reads `hand` books the `cli` asker; one that reads `unknown` books none, and a hand-only act from it refuses
+   * `hand-unattested`. The booking stands as the hand gate's CACHED reading (`hand-act-gate`): read once per line or session,
+   * carried downstream as `ctx.asker`, never re-read and never a word of the frame.
    */
   readonly peerKind?: (sock: Socket) => Promise<PeerKind>;
   /** Per-act refusal codes for the hand-only gate; other rows use beyond-profile. */
@@ -1262,6 +1265,8 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     signer.drop();
   };
   const sessionSockets = new Map<Socket, { binding: SessionBinding; sessionId?: string; hand?: Hand; unattested?: boolean; anchor?: SessionAnchor; supply?: UdsSessionSupply; signer?: UdsSessionSigner }>();
+  // THE HAND GATE'S READER (`hand-act-gate` reads the same `peerKindOf`): each line or session reads its peer once here and books
+  // the reading (the seat's hand, the `cli` asker, or none and unattested), the gate's cached reading for every verb downstream.
   const kindOfPeer = opts.peerKind ?? peerKindOf;
   const sessionTurns = new Map<Socket, Promise<void>>();
   const sessionReply = (sock: Socket, answer: Record<string, unknown>): void => {
@@ -1878,14 +1883,15 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
           if (seat !== null) inv.asker = "seat";
           else if (peer === "unknown") {
             delete inv.asker;
-            if (opts.handOnlyActs?.has(inv.verb) || opts.handOnlyOp?.(inv.verb, inv.args) != null) return fail(`"${inv.verb}" runs on a person's hand, and this line's peer reads nothing to attest one`, "hand-unattested");
+            if (opts.handOnlyActs?.has(inv.verb) || opts.handOnlyOp?.(inv.verb, inv.args) != null) return fail(handRefusalOf("hand-unattested", { act: `"${inv.verb}"`, reads: "peer" }).message, "hand-unattested");
           } else inv.asker = "cli";
         }
         const named = namedFaceOf(inv.args);
         // THE AI SEAT PROPOSES on a one-shot line as on a session: a hand-only verb refuses the seat by its code before it places.
         if (sessionRequestId === undefined && seat !== null && opts.handOnlyActs?.has(inv.verb)) return fail(`"${inv.verb}" runs on a person's hand; a seat proposes`, opts.handOnlyCodes?.get(inv.verb) ?? "beyond-profile");
         const opCode = sessionRequestId === undefined && seat !== null ? opts.handOnlyOp?.(inv.verb, inv.args) ?? null : null;
-        if (opCode !== null) return fail(`"${inv.verb}" settles a standoff, a person's hand alone (\`lares shore\` at a terminal); a seat lists and reads`, opCode);
+        if (opCode === "hand-act-only") return fail(handRefusalOf(opCode, { act: `"${inv.verb}" (it settles a stand-off; a seat lists and reads)`, reads: "peer", line: "lares shore <act> <uri> --key <key>" }).message, opCode);
+        if (opCode !== null) return fail(`"${inv.verb}" names a routing field of the wrong shape`, opCode);
         // A malformed routing field refuses whoever asks: the handler would refuse it too, and no shape slips the gate.
         if (sessionRequestId === undefined && opts.handOnlyOp?.(inv.verb, inv.args) === "routing-arg-malformed") return fail(`"${inv.verb}" names a routing field of the wrong shape`, "routing-arg-malformed");
         if (sessionRequestId === undefined && opts.unattendedIngest && (seat !== null || peer === "unknown")) inv.args = opts.unattendedIngest(inv.verb, inv.args) as Record<string, unknown>;
