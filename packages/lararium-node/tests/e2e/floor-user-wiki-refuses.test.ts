@@ -11,10 +11,10 @@
  *
  *   W1  RED: a floor node (no face founded) asked for a user wiki (`--wiki floor-user`, no floor row) stands on `lares`
  *       and names `floor-user` waiting (`wiki-awaits-face`, chosen by the boot's own ask), never mounting it.
- *   W2  RED: a founded node whose daemon active-wiki marker names a user wiki stands at the floor on `lares` and names
- *       that wiki waiting, chosen by the marker.
- *   W3  CONTROL: the same root after the unlock (the test custody route): the composition mounts the marker's wiki and
- *       names none waiting.
+ *   W2  RED: a founded node whose daemon document still carries a `bags/daemon/active-wiki` row (the burned boot pointer) reads
+ *       it nowhere: the floor stands on `lares` and names no wiki waiting (pin migration step 1; research/pin-mu#S2).
+ *   W3  CONTROL: the same root after the unlock (the test custody route): the composition stands on its boot ask and names none
+ *       waiting; a lit face's home preference selects its wiki at light, never at the boot.
  *   W0  CONTROL: a floor node asked for a floor row's wiki (`lares`) boots at the floor and names none waiting.
  *
  * THE VEIL SPLIT (the-veil-ladder#/the-base-model, in-house rulings of 2026-11-12). "A floor" names three states now, and W0-W3
@@ -43,7 +43,6 @@ import { cpSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
-import { buildActiveWikiRecord } from "@lararium/tw5";
 import { withLarRoot } from "../../../../tests/harness/with-lar-root.js";
 import { direct } from "../direct-store.js";
 import { TEST_CUSTODY, TEST_PASSPHRASE, TEST_SLOT } from "../found-route.js";
@@ -107,11 +106,11 @@ async function compose(at: Staged, wikiId: string, floor: boolean): Promise<{ ph
   return { phases, vessel, down };
 }
 
-/** A founded root whose daemon active-wiki marker names a user wiki (the operator's last `wiki open`), every composition down. */
+/** A founded root whose daemon document carries the burned boot pointer's row (`bags/daemon/active-wiki` naming a user wiki), every composition down. */
 async function markedRoot(): Promise<Staged> {
   const at = await stage(true);
   const first = await compose(at, "lares", false);
-  await withLarRoot(at.root, () => first.vessel.daemon.composite.put(buildActiveWikiRecord("marker-user", "lares-cli:wiki-open"),
+  await withLarRoot(at.root, () => first.vessel.daemon.composite.put({ tiddler: { title: `${DAEMON_BAG_ID}/active-wiki`, text: "marker-user" } },
     { kind: "lares-verb", requestId: "floor-user-wiki-marker" } as never, { bag: DAEMON_BAG_ID }));
   await first.down();
   return at;
@@ -150,22 +149,22 @@ describe("a floor asked for a user wiki stands and names the wiki that waits", (
     expect((w as Waiting).message, "the line names the wiki and the unlock").toMatch(/floor-user.*awaits your face.*lares vault unlock/);
   }, 300_000);
 
-  test("W2 RED: the marker's user wiki waits by name at the floor; the floor stands on `lares`", async () => {
+  test("W2 RED: a stale boot-pointer row names nothing: the floor stands on `lares` and no wiki waits", async () => {
     const at = await markedRoot();
     // A fresh boot holds no key: the floor composes.
     await withLarRoot(at.root, async () => { lockedCustody(); });
     const { phases, vessel } = await compose(at, "lares", true);
     expect(vessel.activeWikiId, "the floor mounts its floor wiki").toBe("lares");
     expect(phases, "the floor wiki mounted").toContain("wiki-ready");
-    expect(waiting(vessel)).toMatchObject({ name: "FloorWikiRefusal", reason: "wiki-awaits-face", wikiId: "marker-user", source: "daemon-marker" });
+    expect([null, "absent"], "the burned boot pointer names no waiting wiki").toContain(waiting(vessel));
   }, 600_000);
 
-  test("W3 CONTROL: after the unlock, the marker's wiki mounts and nothing waits", async () => {
+  test("W3 CONTROL: after the unlock, the boot's own ask mounts and nothing waits", async () => {
     const at = await markedRoot();
     // `lares vault unlock`: the test custody route opens the vessel key and its faces, and the vessel composes again.
     await withLarRoot(at.root, () => unlockTestCustody());
     const { phases, vessel } = await compose(at, "lares", false);
-    expect(vessel.activeWikiId, "the unlock mounts the waiting wiki").toBe("marker-user");
+    expect(vessel.activeWikiId, "the unlock reads no boot pointer").toBe("lares");
     expect(phases).toContain("wiki-ready");
     expect([null, "absent"], "nothing waits once the face stands").toContain(waiting(vessel));
   }, 600_000);

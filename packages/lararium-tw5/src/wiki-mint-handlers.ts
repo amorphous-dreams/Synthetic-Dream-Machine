@@ -1,22 +1,19 @@
 import { askerRefusal } from "@lararium/mesh/hand-refusal";
 import type { AutomergeUrl } from "@lararium/mesh/automerge";
-import type { ChangeOrigin, LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { catalogViewOf } from "@lararium/mesh/catalog-view";
 import { houseCanonUrl, resolveHouseCanon } from "@lararium/mesh/house-canon-doc";
 import { isFacePrivateSlug } from "@lararium/mesh/workbench";
 import { ownEntry } from "@lararium/mesh/stored-value";
 import { refuseTw5DocsReserved } from "@lararium/mesh/tw5-docs-name";
 import { tiddlerText } from "@lararium/mesh/base-doc";
-import { ACTIVE_WIKI_URI, buildActiveWikiRecord, readActiveWikiSlug } from "./active-wiki.js";
-import { DAEMON_BAG_ID, recipeUri, wikiUri } from "@lararium/mesh/lar-uris";
+import { recipeUri, wikiUri } from "@lararium/mesh/lar-uris";
 import { emptyLarDoc } from "@lararium/mesh/base-doc";
 import { storedLarRecord } from "@lararium/mesh/stored-record";
-import { mkDaemonWikiAlert } from "@lararium/mesh/island-protocol";
 import { recipeRecordFields, SYSTEM_BAGS, wikiBagUri, wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { effectiveRecipeOf } from "./recipe-planes.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
-import { makeRequestId, stringArg } from "./handler-args.js";
-import type { RetiredShellCarry, WikiHandlerOptions, WikiMintHandlerOptions, WikiRetireOptions, WikiShellCounts } from "./wiki-handler-options.js";
+import { stringArg } from "./handler-args.js";
+import type { RetiredShellCarry, WikiMintHandlerOptions, WikiRetireOptions, WikiShellCounts } from "./wiki-handler-options.js";
 
 // makeListWikisReactor RELOCATED to @lararium/tw5 (worker-data-verbs) — list-wikis now
 // runs in every vessel's daemon worker (sovereign-worker, verify-then-delegate gated).
@@ -297,44 +294,5 @@ export function makeRetireWikiReactor(opts: WikiRetireOptions): VerbReactor {
     if (rows.length > 0) half.change((doc) => { for (const title of rows) delete doc.tiddlers[title]; });
 
     return { slug, status: "retired", catalogRows: rows, ledgerRows, realmId, keyhiveBindings, slotBindings, records: counts, forced: total > 0, carried, leftBehind, kept: { canonBag, canonDoc } };
-  };
-}
-
-export function makeOpenWikiReactor(opts: WikiHandlerOptions): VerbReactor {
-  return async (args) => {
-    const slug = stringArg(args, "slug");
-    if (!slug) throw new Error("args.slug is required");
-
-    const canonBag = wikiBagUri(slug);
-    // Wiki oracle lives in the catalog registry — read via the accessor, not the composite.
-    const wikiUrl = await opts.catalog.urlOf(canonBag);
-    if (!wikiUrl) {
-      throw new Error(`no-such-bag: ${canonBag}`);
-    }
-
-    const marker = await opts.composite.get(ACTIVE_WIKI_URI);
-    const currentSlug = readActiveWikiSlug(marker);
-    if (currentSlug === slug) {
-      return { slug, status: "already-active", liveApplied: true };
-    }
-
-    const origin: ChangeOrigin = { kind: "lares-verb", requestId: makeRequestId("wiki") };
-    const record: LarTiddlerRecord = buildActiveWikiRecord(slug, "lares-cli:wiki-open");
-    await opts.composite.put(record, origin, { bag: DAEMON_BAG_ID });
-
-    // Reboot-pending: the active-wiki marker lives in the daemon bag (the running wiki doesn't
-    // load it) — the switch only takes effect on next boot. Alert the wiki being
-    // switched AWAY from (the one currently live), if any.
-    if (currentSlug) {
-      opts.post(mkDaemonWikiAlert({ wikiSlug: currentSlug, message: `Active wiki will switch to "${slug}" — reboot to load it.`, cause: "open-wiki" }));
-    }
-
-    return {
-      slug,
-      status: "selected-for-next-boot",
-      liveApplied: false,
-      rebootRequired: true,
-      note: "active wiki marker updated; the current wiki keeps mounted until the next `lares vessel stand --foreground` boot (alert seeded)",
-    };
   };
 }

@@ -14,14 +14,6 @@ import type { CarriedEffectRecord, RetireOutcome } from "@lararium/mesh/shell-le
 import type { CatalogAccessor } from "./catalog-accessor.js";
 import type { ResidencyOpPost } from "./worker-data-verbs.js";
 
-export interface WikiHandlerOptions {
-  readonly composite: CompositeStore;
-  /** Catalog accessor — wiki oracles live in the catalog registry (access≠load). */
-  readonly catalog:   CatalogAccessor;
-  /** Worker→main poster — open-wiki alerts the wiki being switched away from. */
-  readonly post:      ResidencyOpPost;
-}
-
 /** Options for handlers that need raw repo access to mint new docs.
  *  `catalog` is the one catalog-driven accessor (access≠load): the registry
  *  doc itself via `catalog.handle()`, any registered bag via `catalog.find()`

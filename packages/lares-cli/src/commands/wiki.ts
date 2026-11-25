@@ -36,6 +36,7 @@ import { DoorUsage, countOf, guardDoor, namesOf, runDoor, wordOf, type DoorPlan 
 import { targetOf } from "../target-option.js";
 import { stdout } from "node:process";
 import type { ParsedArgs } from "../parse-args.js";
+import { HOME_WIKI_TITLE } from "@lararium/tw5";
 
 type WikiSubcommand = (args: ParsedArgs) => Promise<number>;
 
@@ -341,24 +342,11 @@ export async function cmdWikiRetire(args: ParsedArgs, realmDoors: RealmDoors = L
   return 0;
 }
 
-export async function cmdWikiOpen(args: ParsedArgs): Promise<number> {
-  const slug = args.positional[0];
-  if (!slug) {
-    console.error("usage: lares wiki switch <slug> --next-boot");
-    return 2;
-  }
-  const did    = await vesselDid();
-  const r = await call("open-wiki", { slug }, did);
-  if (r.status === "error") {
-    console.error(`open failed: ${r.errorMessage ?? "unknown"}`);
-    return 4;
-  }
-  const result = summaryOutput(r) ?? {};
-  console.log("");
-  console.log(`wiki: ${slug}  status: ${result["status"]}`);
-  if (typeof result["note"] === "string") console.log(`  ${result["note"]}`);
-  console.log("");
-  return 0;
+/** The refusal the burned boot pointer answers (`lares wiki switch <slug> --next-boot`, `wiki open`): no vessel-scope boot pointer
+ *  stands (research/pin-mu#S2), so the cure names the live switch and the face's own home-preference write. */
+export function nextBootRefusal(slug: string | undefined): string {
+  const s = slug ?? "<slug>";
+  return `next-boot-burned: no boot pointer stands; every boot rests on its floor. Switch live with \`lares wiki switch ${s}\`, or write this face's home preference (read at light): \`lares tiddler put ${HOME_WIKI_TITLE} --recipe default --text "[[${s}]]"\``;
 }
 
 export async function cmdWikiSync(args: ParsedArgs): Promise<number> {
@@ -436,11 +424,13 @@ export async function cmdWikiUnpin(args: ParsedArgs): Promise<number> {
   return 0;
 }
 
-/** `lares wiki switch <slug>` — LIVE-activate a wiki (no reboot; the true swap).
- *  Distinct from `open`, which sets the next-boot pointer. On the browser this also
+/** `lares wiki switch <slug>` — LIVE-activate a wiki (no reboot; the true swap). On the browser this also
  *  flips the #projection surface to the newly-live wiki. */
 export async function cmdWikiSwitch(args: ParsedArgs): Promise<number> {
-  if (args.flags["next-boot"]) return cmdWikiOpen(args);
+  if (args.flags["next-boot"]) {
+    console.error(nextBootRefusal(args.positional[0]));
+    return 2;
+  }
   const slug = args.positional[0];
   if (!slug) {
     console.error("usage: lares wiki switch <slug>");
@@ -1006,7 +996,7 @@ const SUBCOMMANDS: Readonly<Record<string, { handler: WikiSubcommand; summary: s
   "init":  { handler: (a) => cmdWikiInit(a),  summary: "Mint a fresh wiki: wiki canonical + per-wiki draft + recipe. Idempotent: over a shell a partial init left it stands what is missing (the recipe row, this face's bag registrations, its workbench) and answers `completed` naming each; run again, it answers `already-exists` and changes nothing. Its workbench lays at projections/realms/<slug>/wikis/<slug>/ (the realm's default pet name, the slug); `--realm <pet>` places it in an existing realm instead (`lares realm list`)." },
   "retire": { handler: (a) => cmdWikiRetire(a), summary: "Unmint a wiki shell the worn face minted (`lares wiki retire <slug> [--face N] [--dry-run] [--force --count <records>]`), a person's hand alone (a seat session refuses): its catalog rows, its workbench's ledger rows and its slot and Keyhive bindings leave, its workbench folder steps aside by rename, the slug's realm label forgets the realm id, and the slug mints again under another face. The canon bag and its files stay. A face that does not own the shell refuses `not-the-owner`; a shared shell refuses `wiki-shared` (remove the shares first); `--dry-run` reads the record counts, the authored records apart from the house's effect records (a gated ingest's residency rows, which the retire carries, verbatim, into one retirement record per slug in the face's daemon wiki working layer before the shell goes, refusing `retire-carry-unlanded` with nothing erased where that carry cannot land); a shell holding authored records refuses `wiki-not-empty` unless `--force --count` names that count." },
   "share": { handler: cmdShare("wiki"), summary: "Share a wiki with sibling faces through a private cabal: its canon by reference and its working layer as ONE shared workbench every member face syncs (--read <names> --write <names> --note <why> --face N --workspace <name>). A line names its delta: --read and --write add names beside the standing ones, --read-remove and --write-remove take names out, and what it leaves unnamed stands, so the same line twice changes nothing. --read and --write add and never replace a list: narrowing one takes the -remove pair, which revokes each taken-out face's landed grant (a face standing shut keeps the row as it stood, named); --list shows the resolved answer; --remove unshares it. A bag row standing for the slug refuses (share-kind-standing). The daemon wiki never shares." },
-  "switch": { handler: cmdWikiSwitch, summary: "Switch a live wiki, or set the boot pointer with --next-boot." },
+  "switch": { handler: cmdWikiSwitch, summary: "Switch a live wiki." },
   "sync":  { handler: cmdWikiSync,  summary: "Walk wikis/<slug>/memes/** and ingest into the canonical bag. Idempotent." },
   "pin":        { handler: cmdWikiPin,       summary: "Pin a recipe, --bag or --rotate; --release reverses the named pin." },
   "add-bag":    { handler: cmdWikiAddBag,    summary: "Add a bag to the wiki's recipe at runtime. Hot-reload via composite.addLayer." },

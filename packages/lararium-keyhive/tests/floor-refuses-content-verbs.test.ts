@@ -109,9 +109,11 @@ describe("the faceless floor refuses content verbs by name", () => {
 
   test("carrying and serving stay registered on the floor", () => {
     const registry = wire(false);
-    for (const v of ["where", "resolve", "list-wikis", "open-wiki", "meme-get"]) {
+    for (const v of ["where", "resolve", "list-wikis", "meme-get"]) {
       expect(registry.get(v), v).toBeTypeOf("function");
     }
+    // The boot pointer burned whole (pin migration step 1): no `open-wiki` verb stands on any seat.
+    expect(registry.get("open-wiki"), "open-wiki burned").toBeUndefined();
   });
 
   test("a public resolve read runs at the floor without asking Keyhive", async () => {

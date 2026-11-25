@@ -152,7 +152,6 @@ import type { BrowserConnectionState } from "./browser-connection-state.js";
 import { browserWalkStore, requireAdmittedFaceIsland } from "./browser-walk.js";
 import {
   MemoryTiddlerStore,
-  selectActiveWikiSlug,
   loadCatalogCorpora, seedVesselDefaults,
   makeResidencyStatsReactor,
   makeVesselResidency, type VesselResidency,
@@ -621,8 +620,8 @@ export interface BrowserVesselResult extends VesselResult<BrowserVesselIslandPoo
   /** The surface id the projection gate shows now: the daemon's, or a wiki's slug. */
   activeSurface: () => string;
   /** The uniform pin-selector: flip which VM owns the singleton #projection sink. DAEMON_SURFACE_ID summons the
-   *  daemon; a wiki slug surfaces that wiki. LIVE (synchronous gate flip); the durable bags/daemon/active-wiki
-   *  marker persists fire-and-forget, consulted only at next cold boot ("live process state is the boundary"). */
+   *  daemon; a wiki slug surfaces that wiki. LIVE (synchronous gate flip) and nothing more: no boot pointer
+   *  persists the choice; a face's home preference (`$:/config/lares/home/wiki`) is the face's own record, read at light. */
   setActiveSurface: (surfaceId: string) => void;
 }
 
@@ -1774,7 +1773,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     },
 
     wikiSlot: (assembly: VesselCoreAssembly): VesselWikiSlot => {
-      const sel = selectActiveWikiSlug(wikiId, undefined);
+      const sel = { slug: wikiId, source: "boot-arg" as const };   // every boot stands on its own ask; a lit face's home preference reads at light
       // A page that wears no face boots no user wiki (the sealing scope), and its floor stands all the same: it refuses THAT
       // wiki by name before the wiki mounts, stands on its floor wiki, and names the one that waits on the page's status.
       wikiAwaitsFace = facelessWikiWaits({ wikiId: sel.slug, source: sel.source, wikiBagId: recipeHostFacets(slugFromUri(sel.slug)).wikiBagId,
@@ -2467,10 +2466,9 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       registry.register("residency", makeResidencyStatsReactor({ residency }));
 
       // ── The wiki-SWITCHER surface (the FACE over the activation cap) ────────────
-      // The LIVE swap (distinct from boot-time `open-wiki`): ACTIVATE the grain
-      // (resolveWikiSpec wakes ANY registered wiki cold, single-flight) THEN flip the
-      // singleton #projection gate to it — the summon, mount-then-flip. Persist the
-      // choice fire-and-forget to the boot pointer (read only at next cold boot).
+      // The LIVE swap: ACTIVATE the grain (resolveWikiSpec wakes ANY registered wiki cold,
+      // single-flight) THEN flip the singleton #projection gate to it — the summon,
+      // mount-then-flip. No boot pointer keeps the choice.
       registry.register("wiki-switch", async (args) => {
         // slug rides as a structured `slug` arg — from the CLI / MCP, OR from a DOM
         // verse-event whose `arg-slug` field the reaction-router lifted into the args
@@ -2480,12 +2478,11 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         const active = await wikiActivation.ensureActive(slug);
         if (active) {
           activeSurfaceId = slug;   // flip the projection gate to the now-live wiki
-          void daemon.placeVerb({ origin: "channel", verb: "open-wiki", args: { slug }, requestedBy: "wiki-switch" });
           pushSwitcherState();      // reflect the new surface into the daemon widget
         }
         return { verb: "wiki-switch", slug, active, held: [...wikiActivation.held()] };
       });
-      // wiki-hold / wiki-release — the ROTATABLE active-wiki pin (budget-enforced by the
+      // wiki-hold / wiki-release — the ROTATABLE keep-warm hold (budget-enforced by the
       // cap: the daemon bag always + pinBudget rotatable; browser grant = one). The switcher's pin.
       registry.register("wiki-hold", async (args) => {
         const slug = String(args["slug"] ?? "");
@@ -2813,11 +2810,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // being-as-place costs nothing civic, so a vessel key is the right thing to be seen by here.
       // Carried in the canonical DID form (`0x` + verifying key) so the field holds what it names.
       wikiHandle?.broadcast({ did: `0x${vesselVerifyingKey}` });
-      // Boot DEMOTED to a pin (browser gradient): the daemon surface stays always-live
-      // on its own; the home wiki registers in the ONE collector as a PINNED `wiki` grain
-      // (the single rotatable pin this constrained vessel grants besides the daemon bag).
-      // mountPrimaryWiki already mounted + spec-retained it → onHydrate no-ops.
-      if (slotActiveWikiId) void residency.pin(slotActiveWikiId, "boot:home-wiki", "wiki");
+      // No boot pin names the home wiki: the daemon surface stays always-live on its own, and a face's home
+      // preference (its own record) selects its wiki at light.
     },
   }, whoExtraCaps);
 
@@ -2907,19 +2901,13 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     startupAdmit: async (surface, records) => [...(await admitStartupRecords(records, { wiki: surface, own: tabStartupOwn(surface), port: execLeiPortRef ?? undefined })).admitted],
     resend: (surface: string) => returnLeg.resend(surface),
     activeSurface: () => activeSurfaceId,
-    // The uniform pin-selector: flip the live gate synchronously (mount-then-flip — daemon + the pinned wiki
-    // are already mounted), then persist the choice fire-and-forget to bags/daemon/active-wiki (read only at next
-    // cold boot). No reboot — an active-surface change is a projection-gate flip, not a manifest rebuild.
+    // The uniform surface-selector: flip the live gate synchronously (mount-then-flip — daemon + the home wiki
+    // are already mounted). No reboot — an active-surface change is a projection-gate flip, not a manifest rebuild.
     setActiveSurface: (surfaceId: string) => {
       const moved = surfaceId !== activeSurfaceId;
       activeSurfaceId = surfaceId;
       // Its frames dropped at the gate until now: ask it to paint whole under a fresh epoch.
       if (moved) returnLeg.resend(surfaceId);
-      void daemon.placeVerb({ origin: "channel",
-        verb: "open-wiki",
-        args: { slug: surfaceId },
-        requestedBy: "summon",
-      });
       // Summoning the daemon: seed its switcher list + persona multitude with the live state so
       // the projected widgets paint a current view the moment the daemon becomes the surface.
       if (surfaceId === DAEMON_SURFACE_ID) { pushSwitcherState(); void pushPersonaState(); void pushCircleState(); }
