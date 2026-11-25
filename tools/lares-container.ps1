@@ -573,8 +573,14 @@ function KeepBeforeDown {
   # SAID UP FRONT: a house that moved cuts and pushes a keep inside the stop, which can take minutes.
   [Console]::Error.WriteLine('lares-container: keeping first (rite keep --if-due): a house that moved cuts and pushes its keep before the stop')
   # THE MARK CLEARS ON A REAL KEEP: an answer naming no workspace (`"workspace":null`) kept nothing, and the keep stays owed.
-  $kbLines = @(& $cmd @pre rite keep --if-due --json)
+  # THE KEEP'S WORDS OUTLIVE THE PASTE: its stderr rests at the house's run/keep-last.log (overwritten each keep), then reaches the terminal.
+  $kbLog = Join-Path (Join-Path $House 'run') 'keep-last.log'
+  New-Item -ItemType Directory -Force -Path (Join-Path $House 'run') -ErrorAction SilentlyContinue | Out-Null
+  # No world-read: on a POSIX pwsh the log is created empty at 0600 before the keep writes it.
+  if (-not $IsWindows -and (Get-Command chmod -ErrorAction SilentlyContinue)) { New-Item -ItemType File -Force -Path $kbLog -ErrorAction SilentlyContinue | Out-Null; & chmod 600 $kbLog 2>$null }
+  $kbLines = @(& $cmd @pre rite keep --if-due --json 2> $kbLog)
   $kbRc = $LASTEXITCODE
+  if (Test-Path -LiteralPath $kbLog) { $kbSaid = Get-Content -LiteralPath $kbLog -Raw; if ($kbSaid) { [Console]::Error.Write($kbSaid) } }
   # THE MARK CLEARS ON A REAL KEEP alone: a successful envelope (`"ok":true`) naming its workspace (`data.workspace`, non-empty),
   # parsed as JSON; an answer that parses as none reads nothing kept.
   if ($kbRc -eq 0) {
@@ -604,7 +610,7 @@ function KeepBeforeDown {
     $script:KeepSaid = 'the keep did not complete'
     New-Item -ItemType Directory -Force -Path (Join-Path $House 'run') | Out-Null
     New-Item -ItemType File -Force -Path (KeepOwedMark) | Out-Null
-    [Console]::Error.WriteLine('lares-container: the keep did not complete (above); down goes on, and `lares rite keep` keeps by hand')
+    [Console]::Error.WriteLine('lares-container: the keep did not complete (above, and in run/keep-last.log of the house); down goes on, and `lares rite keep` keeps by hand')
   }
   else { $script:KeepSaid = 'kept (rite keep --if-due)'; Remove-Item -LiteralPath (KeepOwedMark) -Force -ErrorAction SilentlyContinue }
 }
