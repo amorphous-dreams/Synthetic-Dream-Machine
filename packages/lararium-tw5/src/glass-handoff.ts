@@ -8,11 +8,20 @@ export interface GlassBootInputs {
   preloadedTiddlers: Record<string, unknown>[];
   /** The vessel's word that its store rests sealed (S's row): the plugin gate opens on it and on nothing else. */
   sealedRest: boolean;
+  /**
+   * The house skins whose bytes hash to the CID the attested genesis names for them (`names.skinCids`): content identity, never the
+   * title. The mirror's census admits a skin plugin only from this set.
+   */
+  attestedSkins?: ReadonlySet<string>;
   /** The vessel's answer to which of the wiki's startup records this tab runs (`admitStartupRecords` behind it); absent, none runs. */
   startupAdmit?: (records: readonly PortWireRecord[]) => Promise<ReadonlySet<string>>;
 }
 /** The names the vessel gives for a wiki's boot set: the CIDs its island booted from. The bytes come from the island, over the port. */
-export interface GlassBootNames { coreCid: string; pluginCids: readonly string[]; sealedRest?: boolean }
+export interface GlassBootNames {
+  coreCid: string; pluginCids: readonly string[]; sealedRest?: boolean;
+  /** Skin title -> the CID the attested genesis names for that skin's bytes (`floorSkinCids`, off the island's blob rows). */
+  skinCids?: Readonly<Record<string, string>>;
+}
 
 const bytesOf = (base64: string): Uint8Array => {
   const binary = atob(base64);
@@ -80,11 +89,20 @@ export function makeBootHandoff(names: GlassBootNames | null, portId: string, ha
       };
       const coreBytes = whole(wanted[0]!);
       const preloadedTiddlers: Record<string, unknown>[] = [];
+      const attestedSkins = new Set<string>();
       for (const cid of wanted.slice(1)) {
-        try { preloadedTiddlers.push(...preloadsFromCasBlob(whole(cid))); }
+        try {
+          const preloads = preloadsFromCasBlob(whole(cid));
+          // A skin is attested when the blob carrying it hashes (it just did) to the CID the genesis names for that title.
+          for (const preload of preloads) {
+            const title = preload["title"];
+            if (typeof title === "string" && Object.hasOwn(names.skinCids ?? {}, title) && names.skinCids![title]!.toLowerCase() === cid) attestedSkins.add(title);
+          }
+          preloadedTiddlers.push(...preloads);
+        }
         catch (error) { if (error instanceof Error && error.message.startsWith("mirror-boot-member-")) throw error; throw new Error(`mirror-boot-member-unreadable:${cid}`); }
       }
-      return { coreBytes, coreCid: wanted[0]!, preloadedTiddlers, sealedRest: names.sealedRest === true };
+      return { coreBytes, coreCid: wanted[0]!, preloadedTiddlers, sealedRest: names.sealedRest === true, attestedSkins };
     },
   };
 }

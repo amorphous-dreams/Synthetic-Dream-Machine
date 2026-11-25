@@ -29,10 +29,10 @@ test("RED: a theme carrying a saver refuses even under the seal; CONTROL: a pers
   expect(censusPreloads([plain], false).refused).toEqual([{ title: "$:/plugins/someone/plain", kind: "plugin-gate" }]);
 });
 
-test("RED: both house skins pass the closed gate (a veil floor or an unlit face still boots the grammar and the house); CONTROL: a person's code plugin beside them still waits", () => {
+test("RED: both ATTESTED house skins pass the closed gate (a veil floor or an unlit face still boots the grammar and the house); CONTROL: a person's code plugin beside them still waits", () => {
   const grammar = stock("lares-memetic-wikitext.json"), house = stock("lares-lararium.json");
   const person = packed("$:/plugins/someone/code", "plugin", { "$:/plugins/someone/code/run.js": { title: "$:/plugins/someone/code/run.js", type: "application/javascript", "module-type": "startup", text: "" } });
-  const closed = censusPreloads([grammar, house, person], false);
+  const closed = censusPreloads([grammar, house, person], false, new Set([String(grammar.title), String(house.title)]));
   expect(closed.accepted.map(p => p.title)).toEqual(["lar:///ha.ka.ba/lararium/plugins/lares/memetic-wikitext", "lar:///ha.ka.ba/lararium/plugins/lares/lararium"]);
   expect(closed.refused).toEqual([{ title: "$:/plugins/someone/code", kind: "plugin-gate" }]);
 });

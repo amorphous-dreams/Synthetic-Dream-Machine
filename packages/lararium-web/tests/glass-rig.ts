@@ -48,11 +48,14 @@ export async function rig(options: { gate?: Promise<void>; chunks?: number; seal
     }, close() {},
   } });
   // A test's boot set in place of the port's handoff: the house plugin rides as the vessel's own preload; `sealedRest` is the vessel's word, false unless a test stands for a sealed vessel.
-  const seams = { readInputs: async () => ({ coreBytes: bytes, coreCid, preloadedTiddlers: options.preloads ?? [housePlugin as Record<string, unknown>, larariumPlugin as Record<string, unknown>], sealedRest: options.sealedRest === true }) };
+  // The vessel attests the shipped skins by their bytes; a preload that merely wears a skin title stands unattested.
+  const preloadedTiddlers = options.preloads ?? [housePlugin as Record<string, unknown>, larariumPlugin as Record<string, unknown>];
+  const attestedSkins = new Set(preloadedTiddlers.filter(p => p === (housePlugin as unknown) || p === (larariumPlugin as unknown)).map(p => String(p["title"])));
+  const seams = { readInputs: async () => ({ coreBytes: bytes, coreCid, preloadedTiddlers, sealedRest: options.sealedRest === true, attestedSkins }) };
   const options2 = { host, port, inputs: { coreCid: "0".repeat(64), pluginCids: [] as string[] }, wikiUri: "wiki", actor: "actor" };
   return { host, port, messages, seams, options: options2, onPlace: (watcher: (msg: Record<string, any>) => void) => { placed.push(watcher); },
     /** The names a vessel gives for this stub's boot set: with them and no `readInputs` seam, the mirror boots from the port's own handoff. */
-    names: { coreCid, pluginCids: [houseCid], sealedRest: options.sealedRest === true },
+    names: { coreCid, pluginCids: [houseCid], sealedRest: options.sealedRest === true, skinCids: { [String(housePlugin["title" as keyof typeof housePlugin])]: houseCid } },
     opens: () => messages.filter(m => m.type === "port:open") };
 }
 
