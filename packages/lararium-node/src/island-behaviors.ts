@@ -196,6 +196,13 @@ export function mountDiskProjection(
   // THE DOCUMENT EACH MIRRORED BAG RESTS IN: every base names it, so a file another face's workbench document mirrored
   // under the same bag id answers to that document alone.
   documentOf: (bagId) => (ctx.composite.storeForBag(bagId) as { readonly documentId?: unknown } | null)?.documentId as string | undefined ?? null,
+  // THE HISTORY EACH MIRRORED BAG'S DOCUMENT HOLDS: every base names the heads it read, so a document that reads back
+  // without them (a save that never rested, a blank doc standing in for one that failed to load) writes nothing over a file.
+  lineageOf: (bagId) => {
+    const store = ctx.composite.storeForBag(bagId) as { headsNow?: () => readonly string[] | null; holdsHeads?: (named: readonly string[]) => boolean } | null;
+    if (!store || typeof store.headsNow !== "function" || typeof store.holdsHeads !== "function") return null;
+    return { heads: store.headsNow(), holds: (named) => store.holdsHeads!(named) };
+  },
   recoveryFileFn: async (fields) => {
     const title = fields["title"];
     if (typeof title !== "string") return null;

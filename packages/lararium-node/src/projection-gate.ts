@@ -69,7 +69,12 @@
  *       thing, or by taking the records' side by name (`answer`). Clauses 2 and 3
  *       ride ahead, so a first projection onto an empty path still writes, and a
  *       first seed of an unchanged corpus pins its bases and surfaces nothing.)
- *   5. disk == base's disk side → PROJECT `disk-unmoved`
+ *   5. disk == base's disk side:
+ *        the records fell BEHIND the base → CONFLICT `records-behind-base`
+ *          (the caller holds the base's heads and the document lacks them: it reads back without the
+ *           write the agreement saw. The records did not move on; they lost history, so their render
+ *           over the file would drown the newer words the file alone still carries. Surface it.)
+ *        otherwise                → PROJECT `disk-unmoved`
  *      (the operator's hands never touched the file since the last agreement;
  *       only the records moved, so the write applies cleanly, and it writes the
  *       canonical render: a real change normalizes the framing as it lands.
@@ -111,7 +116,7 @@ export type ProjectionDecision =
   | { readonly kind: "noop"; readonly reason: "disk-matches-records" | "canonical-equivalent" | "records-unmoved" }
   | { readonly kind: "project"; readonly reason: "absent-on-disk" | "disk-unmoved" | "records-taken" | "restore-answered" }
   | { readonly kind: "pending-removal"; readonly reason: "vanished" }
-  | { readonly kind: "conflict"; readonly reason: "no-base" | "both-moved" };
+  | { readonly kind: "conflict"; readonly reason: "no-base" | "both-moved" | "records-behind-base" };
 
 export interface ProjectionGateInput {
   /**
@@ -142,6 +147,12 @@ export interface ProjectionGateInput {
    * therefore never gains a quiet equivalence.
    */
   readonly diskCanonicalHash?: string | null;
+  /**
+   * THE RECORDS FELL BEHIND THE BASE: the base names the heads its document stood at, and the document the caller
+   * reads now lacks them (it read back without the write the agreement saw). True turns clause 5's write into a
+   * standoff; absent or false reads as records that moved on from the agreement.
+   */
+  readonly recordsBehindBase?: boolean;
   /**
    * A person's answer for this carrier. `take-records` settles the standoff these very states stand in
    * (the caller hands it in only where the person named that standoff by its key); `restore` answers a
@@ -189,7 +200,9 @@ export function decideProjection(input: ProjectionGateInput): ProjectionDecision
   }
 
   // 5 — the disk stands where the last agreement left it; only the records moved.
+  // Where the document lacks the history that agreement read, the records fell behind it and nothing writes.
   if (digestsEqual(diskHash, syncedHash)) {
+    if (input.recordsBehindBase === true) return taken ? { kind: "project", reason: "records-taken" } : { kind: "conflict", reason: "records-behind-base" };
     return { kind: "project", reason: "disk-unmoved" };
   }
 
