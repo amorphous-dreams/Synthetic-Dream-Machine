@@ -342,7 +342,7 @@ export async function cmdWikiRetire(args: ParsedArgs, realmDoors: RealmDoors = L
   return 0;
 }
 
-/** The refusal the burned boot pointer answers (`lares wiki switch <slug> --next-boot`, `lares wiki open`): no vessel-scope boot pointer
+/** The refusal the burned boot pointer answers (`lares wiki switch <slug> --next-boot`, `wiki open`): no vessel-scope boot pointer
  *  stands (research/pin-mu#S2), so the cure names the live switch and the face's own home-preference write. */
 export function nextBootRefusal(slug: string | undefined): string {
   const s = slug ?? "<slug>";
