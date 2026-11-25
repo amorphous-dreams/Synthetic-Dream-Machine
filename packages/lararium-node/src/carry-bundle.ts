@@ -48,7 +48,7 @@ import {
   readPlaceFloorPin,
   writePlaceFloorPin,
   type PlaceFloorPinStatement,
-} from "@lararium/mesh/place-floor-pin";
+} from "@lararium/mesh/place-floor-pin-door";
 import { epochSeats, verifySealLineage, NEXUS_AID_PATTERN, type SealEpoch } from "@lararium/mesh/wax-stamp";
 import { decodePlaceKelEvent, foldPlaceKel, placeKelEventDigest, type PlaceKelEvent } from "@lararium/mesh/vessel-kel";
 import { placeKelEntriesFromBoard, writePlaceKelEvent } from "@lararium/mesh/place-kel-board";

@@ -520,10 +520,6 @@
       "import": "./dist/face-atom-custody.js",
       "types": "./dist/face-atom-custody.d.ts"
     },
-    "./face-authority": {
-      "import": "./dist/face-authority.js",
-      "types": "./dist/face-authority.d.ts"
-    },
     "./face-boot-proof": {
       "import": "./dist/face-boot-proof.js",
       "types": "./dist/face-boot-proof.d.ts"
@@ -539,10 +535,6 @@
     "./face-dial": {
       "import": "./dist/face-dial.js",
       "types": "./dist/face-dial.d.ts"
-    },
-    "./face-gate": {
-      "import": "./dist/face-gate.js",
-      "types": "./dist/face-gate.d.ts"
     },
     "./face-label": {
       "import": "./dist/face-label.js",
@@ -640,14 +632,6 @@
       "import": "./dist/frontier-carry.js",
       "types": "./dist/frontier-carry.d.ts"
     },
-    "./gate-bundle": {
-      "import": "./dist/gate-bundle.js",
-      "types": "./dist/gate-bundle.d.ts"
-    },
-    "./gate-exchange": {
-      "import": "./dist/gate-exchange.js",
-      "types": "./dist/gate-exchange.d.ts"
-    },
     "./gate-session-channel": {
       "import": "./dist/gate-session-channel.js",
       "types": "./dist/gate-session-channel.d.ts"
@@ -659,14 +643,6 @@
     "./gate-tuning": {
       "import": "./dist/gate-tuning.js",
       "types": "./dist/gate-tuning.d.ts"
-    },
-    "./gate-withdrawal-store": {
-      "import": "./dist/gate-withdrawal-store.js",
-      "types": "./dist/gate-withdrawal-store.d.ts"
-    },
-    "./gated-sync-leg": {
-      "import": "./dist/gated-sync-leg.js",
-      "types": "./dist/gated-sync-leg.d.ts"
     },
     "./genesis-compare": {
       "import": "./dist/genesis-compare.js",
@@ -772,10 +748,6 @@
       "import": "./dist/island-protocol.js",
       "types": "./dist/island-protocol.d.ts"
     },
-    "./island-repo": {
-      "import": "./dist/island-repo.js",
-      "types": "./dist/island-repo.d.ts"
-    },
     "./join-face-documents": {
       "import": "./dist/join-face-documents.js",
       "types": "./dist/join-face-documents.d.ts"
@@ -807,10 +779,6 @@
     "./kapae-antigen": {
       "import": "./dist/kapae-antigen.js",
       "types": "./dist/kapae-antigen.d.ts"
-    },
-    "./keep-seat": {
-      "import": "./dist/keep-seat.js",
-      "types": "./dist/keep-seat.d.ts"
     },
     "./keeper-cosign": {
       "import": "./dist/keeper-cosign.js",
@@ -920,10 +888,6 @@
       "import": "./dist/nexus-seal-seed.js",
       "types": "./dist/nexus-seal-seed.d.ts"
     },
-    "./noise-ik": {
-      "import": "./dist/noise-ik.js",
-      "types": "./dist/noise-ik.d.ts"
-    },
     "./null-harness": {
       "import": "./dist/null-harness.js",
       "types": "./dist/null-harness.d.ts"
@@ -1028,10 +992,6 @@
       "import": "./dist/pinned-doc.js",
       "types": "./dist/pinned-doc.d.ts"
     },
-    "./place-floor-pin": {
-      "import": "./dist/place-floor-pin.js",
-      "types": "./dist/place-floor-pin.d.ts"
-    },
     "./place-founding-card": {
       "import": "./dist/place-founding-card.js",
       "types": "./dist/place-founding-card.d.ts"
@@ -1107,10 +1067,6 @@
     "./protected-doc-guard": {
       "import": "./dist/protected-doc-guard.js",
       "types": "./dist/protected-doc-guard.d.ts"
-    },
-    "./prototype-key-shore": {
-      "import": "./dist/prototype-key-shore.js",
-      "types": "./dist/prototype-key-shore.d.ts"
     },
     "./quorum-lease": {
       "import": "./dist/quorum-lease.js",
@@ -1208,10 +1164,6 @@
       "import": "./dist/sealed-carriage.js",
       "types": "./dist/sealed-carriage.d.ts"
     },
-    "./sealed-chunk": {
-      "import": "./dist/sealed-chunk.js",
-      "types": "./dist/sealed-chunk.d.ts"
-    },
     "./sealed-doc-store": {
       "import": "./dist/sealed-doc-store.js",
       "types": "./dist/sealed-doc-store.d.ts"
@@ -1263,10 +1215,6 @@
     "./serving-key": {
       "import": "./dist/serving-key.js",
       "types": "./dist/serving-key.d.ts"
-    },
-    "./session-document-view": {
-      "import": "./dist/session-document-view.js",
-      "types": "./dist/session-document-view.d.ts"
     },
     "./session-receipt": {
       "import": "./dist/session-receipt.js",
@@ -1336,10 +1284,6 @@
       "import": "./dist/stream-adapter.js",
       "types": "./dist/stream-adapter.d.ts"
     },
-    "./surface-recipe": {
-      "import": "./dist/surface-recipe.js",
-      "types": "./dist/surface-recipe.d.ts"
-    },
     "./swarm-board": {
       "import": "./dist/swarm-board.js",
       "types": "./dist/swarm-board.d.ts"
@@ -1363,10 +1307,6 @@
     "./text-stream-adapter": {
       "import": "./dist/text-stream-adapter.js",
       "types": "./dist/text-stream-adapter.d.ts"
-    },
-    "./tree-key": {
-      "import": "./dist/tree-key.js",
-      "types": "./dist/tree-key.d.ts"
     },
     "./tw5-docs-name": {
       "import": "./dist/tw5-docs-name.js",
@@ -1396,10 +1336,6 @@
       "import": "./dist/vessel-identity-core.js",
       "types": "./dist/vessel-identity-core.d.ts"
     },
-    "./vessel-island-pool-core": {
-      "import": "./dist/vessel-island-pool-core.js",
-      "types": "./dist/vessel-island-pool-core.d.ts"
-    },
     "./vessel-journal": {
       "import": "./dist/vessel-journal.js",
       "types": "./dist/vessel-journal.d.ts"
@@ -1423,10 +1359,6 @@
     "./vouch-dag": {
       "import": "./dist/vouch-dag.js",
       "types": "./dist/vouch-dag.d.ts"
-    },
-    "./wait-handle": {
-      "import": "./dist/wait-handle.js",
-      "types": "./dist/wait-handle.d.ts"
     },
     "./walk-carry": {
       "import": "./dist/walk-carry.js",
@@ -1476,10 +1408,6 @@
       "import": "./dist/wiki-recipe.js",
       "types": "./dist/wiki-recipe.d.ts"
     },
-    "./wire-identity": {
-      "import": "./dist/wire-identity.js",
-      "types": "./dist/wire-identity.d.ts"
-    },
     "./workbench": {
       "import": "./dist/workbench.js",
       "types": "./dist/workbench.d.ts"
@@ -1496,9 +1424,81 @@
       "import": "./dist/worldline-trajectory.js",
       "types": "./dist/worldline-trajectory.d.ts"
     },
-    "./ws-dial-socket": {
-      "import": "./dist/ws-dial-socket.js",
-      "types": "./dist/ws-dial-socket.d.ts"
+    "./face-authority-door": {
+      "import": "./dist/face-authority-door.js",
+      "types": "./dist/face-authority-door.d.ts"
+    },
+    "./face-gate-door": {
+      "import": "./dist/face-gate-door.js",
+      "types": "./dist/face-gate-door.d.ts"
+    },
+    "./gate-bundle-door": {
+      "import": "./dist/gate-bundle-door.js",
+      "types": "./dist/gate-bundle-door.d.ts"
+    },
+    "./gate-exchange-door": {
+      "import": "./dist/gate-exchange-door.js",
+      "types": "./dist/gate-exchange-door.d.ts"
+    },
+    "./gate-withdrawal-store-door": {
+      "import": "./dist/gate-withdrawal-store-door.js",
+      "types": "./dist/gate-withdrawal-store-door.d.ts"
+    },
+    "./gated-sync-leg-door": {
+      "import": "./dist/gated-sync-leg-door.js",
+      "types": "./dist/gated-sync-leg-door.d.ts"
+    },
+    "./island-repo-door": {
+      "import": "./dist/island-repo-door.js",
+      "types": "./dist/island-repo-door.d.ts"
+    },
+    "./keep-seat-door": {
+      "import": "./dist/keep-seat-door.js",
+      "types": "./dist/keep-seat-door.d.ts"
+    },
+    "./noise-ik-door": {
+      "import": "./dist/noise-ik-door.js",
+      "types": "./dist/noise-ik-door.d.ts"
+    },
+    "./place-floor-pin-door": {
+      "import": "./dist/place-floor-pin-door.js",
+      "types": "./dist/place-floor-pin-door.d.ts"
+    },
+    "./prototype-key-shore-door": {
+      "import": "./dist/prototype-key-shore-door.js",
+      "types": "./dist/prototype-key-shore-door.d.ts"
+    },
+    "./sealed-chunk-door": {
+      "import": "./dist/sealed-chunk-door.js",
+      "types": "./dist/sealed-chunk-door.d.ts"
+    },
+    "./session-document-view-door": {
+      "import": "./dist/session-document-view-door.js",
+      "types": "./dist/session-document-view-door.d.ts"
+    },
+    "./surface-recipe-door": {
+      "import": "./dist/surface-recipe-door.js",
+      "types": "./dist/surface-recipe-door.d.ts"
+    },
+    "./tree-key-door": {
+      "import": "./dist/tree-key-door.js",
+      "types": "./dist/tree-key-door.d.ts"
+    },
+    "./vessel-island-pool-core-door": {
+      "import": "./dist/vessel-island-pool-core-door.js",
+      "types": "./dist/vessel-island-pool-core-door.d.ts"
+    },
+    "./wait-handle-door": {
+      "import": "./dist/wait-handle-door.js",
+      "types": "./dist/wait-handle-door.d.ts"
+    },
+    "./wire-identity-door": {
+      "import": "./dist/wire-identity-door.js",
+      "types": "./dist/wire-identity-door.d.ts"
+    },
+    "./ws-dial-socket-door": {
+      "import": "./dist/ws-dial-socket-door.js",
+      "types": "./dist/ws-dial-socket-door.d.ts"
     }
   },
   "main": "./dist/index.js",

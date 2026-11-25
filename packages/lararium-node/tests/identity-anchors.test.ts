@@ -28,7 +28,7 @@ import { copyFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { mintFck } from "@lararium/mesh/fck";
-import { mintTreeKey } from "@lararium/mesh/tree-key";
+import { mintTreeKey } from "@lararium/mesh/tree-key-door";
 import { readFckCarrier } from "@lararium/mesh/fck-envelope";
 import { writeFaceCarrier, TreeKeyRefusal } from "@lararium/mesh/sealed-writer";
 import { type DeviceDelegationTiddler } from "@lararium/mesh/device-delegation";

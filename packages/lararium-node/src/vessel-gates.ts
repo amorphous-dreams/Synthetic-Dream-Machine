@@ -26,9 +26,9 @@ import {
   type GateSilenceReason,
   type GateSessionTable,
   type GateWithdrawalMemory,
-} from "@lararium/mesh/face-gate";
+} from "@lararium/mesh/face-gate-door";
 import { type FederationPosture } from "@lararium/mesh/federation-gate";
-import { type GateBundle } from "@lararium/mesh/gate-bundle";
+import { type GateBundle } from "@lararium/mesh/gate-bundle-door";
 import { gateHeldRoot, type CarriedNexusReading } from "./nexus-carriage.js";
 import { makeGateSorter, type ShutArm } from "./socket-sorter.js";
 

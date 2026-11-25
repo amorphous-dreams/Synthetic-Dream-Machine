@@ -42,7 +42,7 @@ import {
 import { constantTimeBytesEqual } from "@lararium/mesh/crypto";
 import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
 import { signingSeedFromHex } from "@lararium/mesh/vessel-identity-core";
-import { treeKeyEquals } from "@lararium/mesh/tree-key";
+import { treeKeyEquals } from "@lararium/mesh/tree-key-door";
 import { wardKeyPopImage } from "@lararium/mesh/ward-answer";
 import { type FaceCarrier } from "@lararium/mesh/fck";
 

@@ -12,7 +12,7 @@
  *
  * Canon: lar:///ha.ka.ba/lares/docs/pono/dreamdom#/what-a-sink-keeps
  */
-import { replicaHeads } from "@lararium/mesh/island-repo";
+import { replicaHeads } from "@lararium/mesh/island-repo-door";
 import { type IslandMsg_ReceiptRequest, type IslandToVesselMsg } from "@lararium/mesh/island-protocol";
 
 export interface ReceiptCapabilityDeps {

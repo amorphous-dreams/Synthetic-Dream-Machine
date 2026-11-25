@@ -7,7 +7,7 @@
  */
 import { describe, expect, test } from "vitest";
 import { groupSecretOpenerFromSeed } from "@lararium/mesh/persona-group-secret";
-import { makeIslandRepo } from "@lararium/mesh/island-repo";
+import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
 import { materializeSharedLarDoc, personaKelBoardDocUrl } from "@lararium/mesh/deterministic-doc";
 import { personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";
 import { personaActRecordsOfGroup, signPersonaAct, writePersonaAct } from "@lararium/mesh/persona-act-board";

@@ -51,12 +51,12 @@ import {
   type FleetJoinRequest,
   type FleetJoinRootDoors,
 } from "@lararium/mesh/fleet-join";
-import { foldWithdrawals, issueCertificate, mintVesselFaceKey } from "@lararium/mesh/face-authority";
+import { foldWithdrawals, issueCertificate, mintVesselFaceKey } from "@lararium/mesh/face-authority-door";
 import { hex } from "@lararium/mesh/crypto";
 import { heldNexusRoot, verifySignedAdmitBundle } from "@lararium/mesh/held-nexus-root";
 import { makeMultiSigQuorumVerifier } from "@lararium/mesh/kapae-antigen";
 import { nexusAidOf } from "@lararium/mesh/nexus-seal-seed";
-import { gateBundleDigest } from "@lararium/mesh/gate-bundle";
+import { gateBundleDigest } from "@lararium/mesh/gate-bundle-door";
 import { admitGatePinDigest } from "@lararium/mesh/admit-gate-pin";
 import { faceAtomKeyFromSeed } from "@lararium/mesh/face-atom";
 import { ownEntry } from "@lararium/mesh/stored-value";

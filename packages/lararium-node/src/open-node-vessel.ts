@@ -82,7 +82,7 @@ import type { LarDoc } from "@lararium/mesh/base-doc";
 import type { LarariumVesselOptions, VesselResult, LarOpenPhase } from "@lararium/mesh/lararium-vessel";
 import type { VesselBootstrap, VesselCoreAssembly } from "@lararium/mesh/open-vessel-core";
 import type { CompositeStore } from "@lararium/mesh/composite-store";
-import type { DiskMirrorGrant } from "@lararium/mesh/vessel-island-pool-core";
+import type { DiskMirrorGrant } from "@lararium/mesh/vessel-island-pool-core-door";
 import { emptyLarDoc, tiddlerText, ENGINE_CORE_ID } from "@lararium/mesh/base-doc";
 import { storedLarRecord } from "@lararium/mesh/stored-record";
 import { plainRecord, plainRecordOrNull } from "@lararium/mesh/stored-value";
@@ -142,8 +142,8 @@ import { siblingPlaneMounts } from "@lararium/mesh/sibling-plane-mount";
 import { carriageFloorDutyOf, type PlaceSigner } from "@lararium/mesh/place-signer";
 import { genesisCasCidsFromOracle } from "@lararium/mesh/genesis-intake";
 import { provenVesselKeyOf } from "@lararium/mesh/persona-group-ring";
-import { wikiSlugOfBag } from "@lararium/mesh/surface-recipe";
-import { resolveDiskMirrors } from "@lararium/mesh/vessel-island-pool-core";
+import { wikiSlugOfBag } from "@lararium/mesh/surface-recipe-door";
+import { resolveDiskMirrors } from "@lararium/mesh/vessel-island-pool-core-door";
 import { gateSweep, type GateSweepSeat } from "@lararium/mesh/gate-sweep";
 import { promoteWiring } from "@lararium/mesh/promote-wiring";
 import { promoteWikiItems } from "@lararium/mesh/promote-wiki-items";
@@ -175,11 +175,11 @@ import { workbenchDocIds, workbenchDecider, workbenchSeatHolds } from "@lararium
 import { edgeLedgerDocUrl } from "@lararium/mesh/deterministic-doc";
 import { realmMaintenanceFromBoard } from "@lararium/mesh/cabal-realm-clock";
 import { shareConfigOf } from "@lararium/mesh/federation-gate";
-import { wireIdentityOf, seatDialLeg } from "@lararium/mesh/wire-identity";
+import { wireIdentityOf, seatDialLeg } from "@lararium/mesh/wire-identity-door";
 import { seatRepoWear } from "@lararium/mesh/repo-wear";
 import { SessionTable, sessionBinding } from "@lararium/mesh/session-contract";
 import { protectedDocGuard } from "@lararium/mesh/protected-doc-guard";
-import { islandPeersOf, wikiIslandPeersOf } from "@lararium/mesh/island-repo";
+import { islandPeersOf, wikiIslandPeersOf } from "@lararium/mesh/island-repo-door";
 import { peerArrivals } from "@lararium/mesh/peer-arrivals";
 import { admitGatePinDigest } from "@lararium/mesh/admit-gate-pin";
 import { ownEntry, plainField, plainValue } from "@lararium/mesh/stored-value";
@@ -413,9 +413,9 @@ import {
   sovereignRoute,
   floorRoute,
   type GateBundle,
-} from "@lararium/mesh/gate-bundle";
-import { storedWithdrawals } from "@lararium/mesh/gate-withdrawal-store";
-import { memoryBackedWithdrawals, type GateSession, type GateSessionTable } from "@lararium/mesh/face-gate";
+} from "@lararium/mesh/gate-bundle-door";
+import { storedWithdrawals } from "@lararium/mesh/gate-withdrawal-store-door";
+import { memoryBackedWithdrawals, type GateSession, type GateSessionTable } from "@lararium/mesh/face-gate-door";
 import { SOVEREIGN_SYNC_ROUTE } from "@lararium/mesh/admit-gate-pin";
 import { FLOW_SOCKET_ROUTE } from "@lararium/mesh/flow-read-client";
 import { cosignPortWitness, WARD_WITNESS_CLOSED } from "@lararium/mesh/ward-cosign-gate";
@@ -430,7 +430,7 @@ import { controlSwarmWiki }                       from "./swarm-wiki.js";
 import { carriedSet, readCarriedCharters }       from "./carried-set.js";
 import { composeLararium, composeHerm, carriageStack, type MeshSelf } from "./node-caps.js";
 import { PLANE_LABELS } from "@lararium/mesh/plane-labels";
-import { shoreInbound } from "@lararium/mesh/prototype-key-shore";
+import { shoreInbound } from "@lararium/mesh/prototype-key-shore-door";
 
 /** The genesis dir when a caller sites none — resolves through the composable genesis cap
  *  (`LAR_GENESIS` → `<root>/config/config.json` → repo-relative `<corpus>/genesis`). Genesis stays

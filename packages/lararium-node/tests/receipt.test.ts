@@ -23,7 +23,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Repo, type DocumentId } from "@automerge/automerge-repo";
-import { attachMessageChannelSync, makeIslandRepo, replicaHeads } from "@lararium/mesh/island-repo";
+import { attachMessageChannelSync, makeIslandRepo, replicaHeads } from "@lararium/mesh/island-repo-door";
 import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
 import { DurableNodeFSStorageAdapter } from "../src/durable-storage-adapter.js";
 import { restEvery, restingRepo } from "./resting-repo.js";

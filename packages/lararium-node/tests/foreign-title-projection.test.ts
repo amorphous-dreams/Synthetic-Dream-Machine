@@ -33,7 +33,7 @@ import type { CarrierFile } from "@lararium/tw5";
 import { createHash } from "node:crypto";
 import { afterDispatch, draftBag, openDraft, shoreRig, turns, typeInto } from "../../lararium-tw5/tests/wiki-shore-rig.js";
 import { makeReceiptCapability } from "../../lararium-tw5/src/receipt.js";
-import { attachMessageChannelSync } from "@lararium/mesh/island-repo";
+import { attachMessageChannelSync } from "@lararium/mesh/island-repo-door";
 import { DurableNodeFSStorageAdapter } from "../src/durable-storage-adapter.js";
 import { receiptInStore } from "@lararium/mesh/receipt-with-heads";
 import { answerReceipt } from "../src/worker-handle.js";

@@ -41,7 +41,7 @@ import { Repo, type Chunk, type StorageAdapterInterface, type StorageKey } from 
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
 import { sealedUnopened, standsIn } from "@lararium/mesh/automerge-doc-store";
-import { seatSealedRest, waitHandle } from "@lararium/mesh/wait-handle";
+import { seatSealedRest, waitHandle } from "@lararium/mesh/wait-handle-door";
 import { createEngineWatch, tapInboundDocs, tapRepoLogs } from "../src/engine-watch.js";
 import { createReadinessState } from "../src/readiness-face.js";
 import {

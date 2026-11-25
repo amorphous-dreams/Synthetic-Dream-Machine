@@ -24,7 +24,7 @@ import {
   type SealedCarrier,
 } from "@lararium/mesh/sealed-writer";
 import { bindSlot, decodeSlotTree, openTreeKey } from "@lararium/mesh/keyslot-door";
-import { mintTreeKey, type TreeKey } from "@lararium/mesh/tree-key";
+import { mintTreeKey, type TreeKey } from "@lararium/mesh/tree-key-door";
 import { readSCarrier } from "@lararium/mesh/s-envelope";
 import { CustodyLockRefused, FsCustodyIo } from "../src/custody-io.js";
 import { rotateNodeKey, vesselCustodyHomes, sSealedCarriers, sSlotsPath, type CustodyHomes } from "../src/vault-carriers.js";

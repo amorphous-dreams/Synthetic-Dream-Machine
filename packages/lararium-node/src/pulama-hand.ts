@@ -94,7 +94,7 @@
  */
 import type { ExecLeiScope } from "@lararium/mesh/exec-lei";
 import { LEI_RETURNS_ASK_ABOVE } from "@lararium/mesh/swarm-door";
-import { encodeKeepSeat, mintKeepSeatUnder } from "@lararium/mesh/keep-seat";
+import { encodeKeepSeat, mintKeepSeatUnder } from "@lararium/mesh/keep-seat-door";
 import { isSwarmLeiRite } from "@lararium/mesh/swarm-lei-rite";
 import {
   signSwarmAct,

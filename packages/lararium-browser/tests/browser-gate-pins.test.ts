@@ -4,7 +4,7 @@
  * page's timer.
  */
 import { describe, expect, test } from "vitest";
-import { deriveGateBundle, floorGateRoot, floorKeyDoor, floorRoute, type GateBundlePin } from "@lararium/mesh/gate-bundle";
+import { deriveGateBundle, floorGateRoot, floorKeyDoor, floorRoute, type GateBundlePin } from "@lararium/mesh/gate-bundle-door";
 import { hex } from "@lararium/mesh/crypto";
 import { browserGatePins, dialDeadlines, fileFloorCard, hearthNameOf } from "../src/browser-gate-pins.js";
 import { claimAt, floorPinFor, foundPlace, headOf, rotatePlace, type TestPlace } from "../../lararium-mesh/tests/place-claim-fixture.js";

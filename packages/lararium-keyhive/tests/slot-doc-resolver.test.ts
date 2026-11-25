@@ -18,7 +18,7 @@
  *        floor's own wiki boots on its canon with no default writable (the herm's floor never breaks over the workbench law)
  */
 import { describe, test, expect } from "vitest";
-import { makeIslandRepo } from "@lararium/mesh/island-repo";
+import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
 import { type Repo } from "@lararium/mesh/automerge";
 import { CompositeStore } from "@lararium/mesh/composite-store";
 import { CONTROL_HOME_ID, DAEMON_BAG_ID, DRAFT_BINDINGS_PREFIX, slotBindingKey } from "@lararium/mesh/lar-uris";

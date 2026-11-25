@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { makeIslandRepo } from "@lararium/mesh/island-repo";
+import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
 import { groupSecretOpenerFromSeed } from "@lararium/mesh/persona-group-secret";
 import { materializeSharedLarDoc, personaKelBoardDocUrl } from "@lararium/mesh/deterministic-doc";
 import { personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";

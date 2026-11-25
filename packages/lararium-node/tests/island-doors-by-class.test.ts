@@ -24,7 +24,7 @@ import { join } from "node:path";
 import { describe, expect, test, vi, afterEach } from "vitest";
 import { next as A } from "@automerge/automerge";
 import { Repo, type DocHandle } from "@automerge/automerge-repo";
-import { VesselIslandPoolCore } from "@lararium/mesh/vessel-island-pool-core";
+import { VesselIslandPoolCore } from "@lararium/mesh/vessel-island-pool-core-door";
 import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
 import { mkEa, mkTeardownAck } from "@lararium/mesh/island-protocol";
 import { type CapabilityRecord } from "@lararium/mesh/capability-record";

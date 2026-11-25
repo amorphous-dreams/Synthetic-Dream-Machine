@@ -13,7 +13,7 @@ import {
   sovereignGateRoot,
   sovereignRoute,
   type GateBundlePin,
-} from "@lararium/mesh/gate-bundle";
+} from "@lararium/mesh/gate-bundle-door";
 import { hex } from "@lararium/mesh/crypto";
 import { SessionTable, sessionBinding } from "../../lararium-mesh/src/session-contract.js";
 import { admitBundlePathFor } from "../src/admit-bundle.js";

@@ -7,8 +7,8 @@ import { runSovereignKernel, type IslandHostShore } from "../src/sovereign-kerne
 import type { IslandBehavior } from "../src/island-context.js";
 
 const fake = vi.hoisted(() => ({ adaptor: null as any, handle: null as any }));
-vi.mock("@lararium/mesh/island-repo", async (original) => {
-  const mesh = await original<typeof import("@lararium/mesh/island-repo")>();
+vi.mock("@lararium/mesh/island-repo-door", async (original) => {
+  const mesh = await original<typeof import("@lararium/mesh/island-repo-door")>();
   return { ...mesh, makeIslandRepo: () => ({ flush: async () => {}, shutdown: async () => {} }), replicaHeads: () => ["head-1"] };
 });
 vi.mock("../src/slot-wait.js", () => ({ waitForSlotDocument: async () => ({ outcome: "ready", handle: fake.handle }) }));

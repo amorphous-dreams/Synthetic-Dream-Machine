@@ -4,7 +4,7 @@ import { afterEach, describe, expect, test } from "vitest";
 import { WebSocket } from "ws";
 import { dialFaceGate } from "@lararium/mesh/face-dial";
 import { dialIntentRelay, INTENT_RELAY_ROUTE } from "@lararium/mesh/intent-relay-door";
-import { deriveGateBundle, sovereignGateRoot, sovereignRoute } from "@lararium/mesh/gate-bundle";
+import { deriveGateBundle, sovereignGateRoot, sovereignRoute } from "@lararium/mesh/gate-bundle-door";
 import { utf8Bytes } from "@lararium/mesh/crypto";
 import { type SignedIntentEntry } from "@lararium/mesh/intent-entry";
 import { wsDialSocket, type WsLike } from "../../lararium-mesh/src/ws-dial-socket.js";

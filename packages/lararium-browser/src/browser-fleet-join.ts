@@ -36,7 +36,7 @@ import {
   type FleetJoinRequest,
 } from "@lararium/mesh/fleet-join";
 import { type FaceScope } from "@lararium/mesh/face-proof-subjects";
-import { type VesselFaceKeyCustody } from "@lararium/mesh/face-authority";
+import { type VesselFaceKeyCustody } from "@lararium/mesh/face-authority-door";
 import { carriedAdmitOfFleetJoin, type CarriedAdmitPayload } from "@lararium/keyhive";
 import {
   FLEET_JOIN_STORE, idbGet, openVesselIdb,

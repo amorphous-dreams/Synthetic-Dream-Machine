@@ -44,7 +44,7 @@ import {
   type SlotTree,
 } from "@lararium/mesh/keyslot-door";
 import { mintServingKey, type ServingKey } from "@lararium/mesh/serving-key";
-import { mintTreeKey, type TreeKey } from "@lararium/mesh/tree-key";
+import { mintTreeKey, type TreeKey } from "@lararium/mesh/tree-key-door";
 import { readFckCarrier } from "@lararium/mesh/fck-envelope";
 import { readWardCarrier } from "@lararium/mesh/ward-slots";
 import { readSCarrier, type SCarrierReading } from "@lararium/mesh/s-envelope";

@@ -48,7 +48,7 @@ import { fleetEdgeBoardDocUrl } from "@lararium/mesh/deterministic-doc";
 import { fleetEdgeAuthority, deviceEdgeId } from "@lararium/mesh/dyad";
 import { readFleetFrontier, fleetFrontierCarriage, fleetRaiseCids } from "@lararium/mesh/fleet-frontier";
 import { readFrontierPins } from "@lararium/mesh/edge-frontier-board";
-import { type CustodyRootDoor, type GateBundlePin } from "@lararium/mesh/gate-bundle";
+import { type CustodyRootDoor, type GateBundlePin } from "@lararium/mesh/gate-bundle-door";
 import { stoodSovereignPin } from "../hearth-sovereign-pin.js";
 import { nodeNexusIsland, nodeNexusIslandsBelow, nodeNexusStanding } from "../nexus-standing.js";
 import { carryPersonaKelUpTheGradient } from "../persona-kel-ring.js";

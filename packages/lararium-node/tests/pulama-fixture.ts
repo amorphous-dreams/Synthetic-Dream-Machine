@@ -5,7 +5,7 @@
 import { FLOOR_REST_KEY_INFO, GATE_BUNDLE_INFO, KUKULU_VOUCH_DOMAIN } from "@lararium/mesh/domains";
 import { lentFacesOf, type LentFaces } from "@lararium/mesh/lent-faces";
 import { mintFck, type FaceCustodyKey } from "@lararium/mesh/fck";
-import { type TreeKey } from "@lararium/mesh/tree-key";
+import { type TreeKey } from "@lararium/mesh/tree-key-door";
 import { makeCustodyHolder, type CustodyHolder } from "../src/custody-holder.js";
 import { makePulamaHolder, type PulamaHolder } from "../src/pulama-holder.js";
 import { servePulama, type PulamaGate, type PulamaScope, type PulamaServer } from "../src/pulama-server.js";

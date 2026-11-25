@@ -16,7 +16,7 @@ import { faceAtomKeyFromSeed, mintFaceAtomSeed } from "@lararium/mesh/face-atom"
 import { groupSecretOpenerFromSeed } from "@lararium/mesh/persona-group-secret";
 import { bindSlot } from "@lararium/mesh/keyslot-door";
 import { commitSlotTree, writeSealedCarrier } from "@lararium/mesh/sealed-writer";
-import { mintTreeKey, type TreeKey } from "@lararium/mesh/tree-key";
+import { mintTreeKey, type TreeKey } from "@lararium/mesh/tree-key-door";
 import {
   CUSTODY_ROOT_BYTES, CustodyRootRefused, custodyDerive, custodyRootCarrier, custodyRootFromBytes, custodyRootPath,
   isCustodyRoot, mintCustodyRoot, openCustodyRootCarrier, sealCustodyRoot, type CustodyRoot,

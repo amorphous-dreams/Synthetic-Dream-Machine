@@ -20,7 +20,7 @@ import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
 import { CompositeStore } from "@lararium/mesh/composite-store";
 import { DAEMON_BAG_ID, SECRET_HOME_ID } from "@lararium/mesh/lar-uris";
 import { controlStoreOf, standControlHome } from "@lararium/mesh/control-home";
-import { attachMessageChannelSync, makeIslandRepo } from "@lararium/mesh/island-repo";
+import { attachMessageChannelSync, makeIslandRepo } from "@lararium/mesh/island-repo-door";
 import { faceAtomKeyFromSeed } from "@lararium/mesh/face-atom";
 import { hex } from "@lararium/mesh/crypto";
 import { signMemoryAsk, type MemoryAct } from "@lararium/mesh/memory-section";

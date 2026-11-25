@@ -21,12 +21,12 @@ import { SealedStore, memorySealedStoreRest } from "@lararium/mesh/sealed-store-
 import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
 import { hex, utf8Bytes } from "@lararium/mesh/crypto";
 import { signSeatRoll, type SeatRoll } from "@lararium/mesh/seat-duties";
-import { makeIslandRepo } from "@lararium/mesh/island-repo";
+import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
 import { materializeSharedLarDoc, fleetEdgeBoardDocUrl } from "@lararium/mesh/deterministic-doc";
 import { emptyLarDoc } from "@lararium/mesh/base-doc";
 import { type RecordSigner } from "@lararium/mesh/sealed-records";
 import { type RollOutcome } from "@lararium/mesh/content-key-lineage";
-import { type SealedAddress } from "@lararium/mesh/sealed-chunk";
+import { type SealedAddress } from "@lararium/mesh/sealed-chunk-door";
 import { KeyhiveProvider, InMemoryEventStore, announceSeatRoll, keyhiveSeatShore, runSeatDuties, seatContentKeys, type ContentKeySeat } from "../src/index.js";
 import { boardDyadReader } from "../src/board-dyad-reader.js";
 import { fleetFixture } from "./fleet-fixture.js";

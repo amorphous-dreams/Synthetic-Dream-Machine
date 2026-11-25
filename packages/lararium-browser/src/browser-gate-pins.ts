@@ -19,7 +19,7 @@ import {
   type HearthFloorCard,
 } from "@lararium/mesh/hearth-floor-pins";
 import { hearthPinIndex, type HearthPinIndex } from "@lararium/mesh/admit-gate-pin";
-import { type GateBundlePin } from "@lararium/mesh/gate-bundle";
+import { type GateBundlePin } from "@lararium/mesh/gate-bundle-door";
 import { type LarWSClientOptions } from "@lararium/mesh/lar-ws-client-adapter";
 
 export type BrowserFacePresentation = LarWSClientOptions["presentation"];

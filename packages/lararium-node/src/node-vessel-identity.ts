@@ -80,7 +80,7 @@ import {
 import { mintColdKey } from "@lararium/mesh/cold-key-card";
 import { canonicalJson, hex, type RandomProvider } from "@lararium/mesh/crypto";
 import { ALL_DOMAINS, GATE_BUNDLE_INFO } from "@lararium/mesh/domains";
-import { floorKeyDoor, type FloorKeyDoor } from "@lararium/mesh/gate-bundle";
+import { floorKeyDoor, type FloorKeyDoor } from "@lararium/mesh/gate-bundle-door";
 import { placeSignerFromSeed, type PlaceSigner } from "@lararium/mesh/place-signer";
 import { readBackStandsIn } from "./seal-ceremony.js";
 import { nodeAnchorStore } from "./identity-anchors.js";

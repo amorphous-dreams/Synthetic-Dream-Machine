@@ -28,7 +28,7 @@ import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/me
 import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
 import { faceRecordsOf, readFace } from "@lararium/mesh/face-reading";
 import { groupSecretOpenerFromSeed } from "@lararium/mesh/persona-group-secret";
-import { makeIslandRepo } from "@lararium/mesh/island-repo";
+import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
 import { materializeSharedLarDoc, personaKelBoardDocUrl } from "@lararium/mesh/deterministic-doc";
 import { mintFaceAnchor } from "@lararium/mesh/face-anchor";
 import { personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";

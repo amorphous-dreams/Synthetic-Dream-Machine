@@ -14,7 +14,7 @@ import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { Credential } from "@lararium/mesh/keyslot";
-import type { TreeKey } from "@lararium/mesh/tree-key";
+import type { TreeKey } from "@lararium/mesh/tree-key-door";
 import { mintKdfPort } from "@lararium/mesh/keyslot";
 import { FsCustodyIo } from "../src/custody-io.js";
 import { foundCustody, openCustodyNodeKey, openServingTree, unlockCustody } from "../src/custody-session.js";

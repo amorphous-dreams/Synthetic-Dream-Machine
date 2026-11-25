@@ -26,7 +26,7 @@ import {
   floorKeyDoor,
   floorRoute,
   type GateBundlePin,
-} from "@lararium/mesh/gate-bundle";
+} from "@lararium/mesh/gate-bundle-door";
 import { hearthPinIndex } from "@lararium/mesh/admit-gate-pin";
 import { chooseHearthDial, fileHearthPins, hearthNameOf } from "../src/hearth-gate-pins.js";
 import type { AdmitBundle } from "../src/admit-bundle.js";

@@ -6,7 +6,7 @@ import { readFleetFrontier, fleetRaiseCids, FLEET_HAND } from "@lararium/mesh/fl
 import { readFrontierPins, writeFrontierPin } from "@lararium/mesh/edge-frontier-board";
 import { fleetEdgeBoardDocUrl } from "@lararium/mesh/deterministic-doc";
 import { keptFromLedger, keepInLedger, restoreToBoard, raisesSeenThrough } from "@lararium/mesh/edge-ledger";
-import { replicaHeads } from "@lararium/mesh/island-repo";
+import { replicaHeads } from "@lararium/mesh/island-repo-door";
 import type { Repo, DocHandle } from "@lararium/mesh/automerge";
 import type { LarDoc } from "@lararium/mesh/base-doc";
 import type { HandLineage } from "@lararium/mesh/hand-lineage";

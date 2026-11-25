@@ -18,7 +18,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { carriageDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
 import { carriageEntriesFromBoard, rollAnchorsFromBoard } from "@lararium/mesh/carriage-board";
-import { filePlaceFloorPins, placeFloorPinsFromBoard } from "@lararium/mesh/place-floor-pin";
+import { filePlaceFloorPins, placeFloorPinsFromBoard } from "@lararium/mesh/place-floor-pin-door";
 import {
   foldCarrierSet,
   signCarriageQuorum,

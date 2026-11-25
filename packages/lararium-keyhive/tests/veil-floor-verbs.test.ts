@@ -12,7 +12,7 @@
  *   G3 — a herm (`floor-unkeyed`: it derives no floor key) still refuses by naming the lift, and registers no floor row
  */
 import { describe, test, expect } from "vitest";
-import { makeIslandRepo } from "@lararium/mesh/island-repo";
+import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
 import { CompositeStore } from "@lararium/mesh/composite-store";
 import { CONTROL_HOME_ID, DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
 import { CONTROL_HOME_UNNAMED, ControlHomeUnavailable, floorAnswerStore } from "@lararium/mesh/control-home";

@@ -29,7 +29,7 @@ import { controlStoreOf, standControlHome } from "@lararium/mesh/control-home";
 import { hex, hexToBytes } from "@lararium/mesh/crypto";
 import { leaseEpochSlotUri } from "@lararium/mesh/epoch-lease";
 import { wikiBagUri } from "@lararium/mesh/wiki-recipe";
-import { makeIslandRepo, attachMessageChannelSync } from "@lararium/mesh/island-repo";
+import { makeIslandRepo, attachMessageChannelSync } from "@lararium/mesh/island-repo-door";
 import { materializeSharedLarDoc, personaKelBoardDocUrl } from "@lararium/mesh/deterministic-doc";
 import { personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";
 import { type LarDoc } from "@lararium/mesh/base-doc";

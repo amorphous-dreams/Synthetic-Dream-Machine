@@ -16,7 +16,7 @@
  *        face's own (owner the sibling); a kind its wear never named still resolves nothing and mints no row
  */
 import { describe, expect, test } from "vitest";
-import { makeIslandRepo } from "@lararium/mesh/island-repo";
+import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
 import { CompositeStore } from "@lararium/mesh/composite-store";
 import { CONTROL_HOME_ID, bagUri } from "@lararium/mesh/lar-uris";
 import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";

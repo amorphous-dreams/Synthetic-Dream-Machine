@@ -29,7 +29,7 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import { sealPrivateBody, openPrivateBody, ciphertextCid } from "@lararium/mesh/ciphertext-cas";
-import { authorizeAddress, readContentKey } from "@lararium/mesh/sealed-chunk";
+import { authorizeAddress, readContentKey } from "@lararium/mesh/sealed-chunk-door";
 import { walkCarriageBagId, walkCarryDocumentKey } from "@lararium/mesh/walk-carry";
 import { sha256HexBytesSync, hex, hexToBytes, utf8Bytes } from "@lararium/mesh/crypto";
 import { walkCarrySecret, carryRecordKey } from "@lararium/mesh/hosting";

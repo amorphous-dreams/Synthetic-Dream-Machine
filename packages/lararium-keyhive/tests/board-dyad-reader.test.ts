@@ -6,7 +6,7 @@ import { deviceEdgeId } from "@lararium/mesh/dyad";
 import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
 import { emptyLarDoc } from "@lararium/mesh/base-doc";
 import { fleetEdgeBoardDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
-import { makeIslandRepo } from "@lararium/mesh/island-repo";
+import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
 import { signEdgeKapae, writeEdgeKapae } from "@lararium/mesh/edge-kapae";
 import { edgeKapaeKey } from "../../lararium-mesh/src/edge-kapae.js";
 import { markRaiseRolled } from "../../lararium-mesh/src/edge-ledger.js";

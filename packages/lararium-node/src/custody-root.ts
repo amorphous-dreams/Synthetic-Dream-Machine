@@ -33,7 +33,7 @@ import { hkdfSync, randomBytes } from "node:crypto";
 import { join } from "node:path";
 import { ALL_DOMAINS } from "@lararium/mesh/domains";
 import { openSealedCarrier, writeSealedCarrier, type CustodyIo, type SealedCarrier } from "@lararium/mesh/sealed-writer";
-import { type TreeKey, type TreeKeyOpening } from "@lararium/mesh/tree-key";
+import { type TreeKey, type TreeKeyOpening } from "@lararium/mesh/tree-key-door";
 import { larIdentityDir } from "./vessel-paths.js";
 
 /** A custody root's length: one 32-byte secret. */

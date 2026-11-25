@@ -47,7 +47,7 @@ import { createHash } from "node:crypto";
 import { lstatSync, readdirSync, readFileSync } from "node:fs";
 import { join, posix, sep } from "node:path";
 import { canonicalJson } from "@lararium/mesh/crypto";
-import { decodeKeepSeat, openFromKeep, sealToKeep, type KeepSeat } from "@lararium/mesh/keep-seat";
+import { decodeKeepSeat, openFromKeep, sealToKeep, type KeepSeat } from "@lararium/mesh/keep-seat-door";
 
 /** The schema a bundle names; an import refuses any other. */
 export const BUNDLE_SCHEMA = "lar-house-bundle";

@@ -48,7 +48,7 @@ import { metaTableFromBody } from "@lararium/node";
 import { bagManifestUri, BAG_MANIFEST_FILE } from "@lararium/mesh/bag-manifest";
 import { ACTION_VERBS, isActionVerb, isTransferVerb, isBagVerb, newChangeId } from "@lararium/mesh/residency-actions";
 import { newRequestId, taskContentId, OUTCOME_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
-import { wikiSlugOfBag } from "@lararium/mesh/surface-recipe";
+import { wikiSlugOfBag } from "@lararium/mesh/surface-recipe-door";
 import { summaryOutput, type SubmitResult } from "../verb-result.js";
 import { runVerb } from "../verb-call.js";
 import { LocalWaitExpired, queryReceipt, type ReceiptAnswer } from "../local-connector.js";

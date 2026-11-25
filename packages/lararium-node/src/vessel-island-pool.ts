@@ -12,7 +12,7 @@
  * Meme: lar:///ha.ka.ba/lararium/node/vessel-island-pool
  */
 
-import { VesselIslandPoolCore } from "@lararium/mesh/vessel-island-pool-core";
+import { VesselIslandPoolCore } from "@lararium/mesh/vessel-island-pool-core-door";
 import { houseCanonSlugsSeated } from "@lararium/mesh/kahu-canon-reach";
 import { type Repo } from "@lararium/mesh/automerge";
 import { type IslandMsg_Event, type LarIslandToVesselMsg } from "@lararium/mesh/island-protocol";

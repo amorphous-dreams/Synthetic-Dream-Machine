@@ -18,7 +18,7 @@ import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/me
 import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
 import { faceIntentVerbs } from "@lararium/mesh/intent-verbs";
 import { intentEntryRecordsOfGroup, readIntentEntry } from "@lararium/mesh/intent-entry";
-import { makeIslandRepo } from "@lararium/mesh/island-repo";
+import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
 import { type ChangeOrigin } from "@lararium/mesh/tiddler-store";
 import { proposeDraftsToKahua, KahuaProposeRefused } from "../src/kahua-page-propose.js";
 

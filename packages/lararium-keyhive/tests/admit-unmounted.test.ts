@@ -9,7 +9,7 @@ import {
   SIGNER_DID_TIDDLER,
 } from "@lararium/mesh/lar-uris";
 import { groupSecretOpenerFromSeed, groupSecretSealTitle } from "@lararium/mesh/persona-group-secret";
-import { makeIslandRepo } from "@lararium/mesh/island-repo";
+import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
 import { materializeSharedLarDoc, personaKelBoardDocUrl } from "@lararium/mesh/deterministic-doc";
 import { personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";
 import { seedDaemonDoc } from "@lararium/mesh/social-seed";

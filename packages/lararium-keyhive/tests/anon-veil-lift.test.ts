@@ -20,7 +20,7 @@
  */
 import { describe, test, expect } from "vitest";
 import { identityShareDecision } from "@lararium/mesh/federation-gate";
-import { makeIslandRepo } from "@lararium/mesh/island-repo";
+import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
 import { type DocumentId } from "@automerge/automerge-repo";
 import { type Repo } from "@lararium/mesh/automerge";
 import { CompositeStore } from "@lararium/mesh/composite-store";

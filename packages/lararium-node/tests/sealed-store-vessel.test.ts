@@ -345,7 +345,7 @@ describe("the vessel registers only what rests sealed in the cad tier", () => {
     expect(refusal(sha256HexBytesSync(utf8Bytes(BODY)))).toBe("address-malformed");
     // A cleartext body under a true blake3 address of its own bytes: it rests, it recomputes, and it reads as no sealed value.
     const { writeCasEntriesFs } = await import("../src/node-cas.js");
-    const { sealedAddressOf } = await import("@lararium/mesh/sealed-chunk");
+    const { sealedAddressOf } = await import("@lararium/mesh/sealed-chunk-door");
     const clear = utf8Bytes(BODY.repeat(8));
     const clearCid = sealedAddressOf(clear);
     writeCasEntriesFs([{ cid: clearCid, bytes: clear }], cadSealDir(root));

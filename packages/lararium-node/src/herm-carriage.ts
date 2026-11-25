@@ -30,14 +30,14 @@ import {
   signPlaceFloorPin,
   writePlaceFloorPin,
   type PlaceFloorPinStatement,
-} from "@lararium/mesh/place-floor-pin";
+} from "@lararium/mesh/place-floor-pin-door";
 import { gateNativeCarriagePull } from "@lararium/mesh/carriage-pull";
 import { placeKelEntriesFromBoard, placeKelKey, writePlaceKelEvent } from "@lararium/mesh/place-kel-board";
 import { verifyPlaceKel, type PlaceKelEvent } from "@lararium/mesh/vessel-kel";
 import { tiddlerText, type LarDoc } from "@lararium/mesh/base-doc";
 import { carriageDocUrl } from "@lararium/mesh/deterministic-doc";
 import { FLOW_SOCKET_ROUTE, type FlowPullResult } from "@lararium/mesh/flow-read-client";
-import { deriveGateBundle, floorGateRoot, floorRoute, type FloorKeyDoor, type GateBundlePin } from "@lararium/mesh/gate-bundle";
+import { deriveGateBundle, floorGateRoot, floorRoute, type FloorKeyDoor, type GateBundlePin } from "@lararium/mesh/gate-bundle-door";
 import { type DialSocket } from "@lararium/mesh/face-dial";
 import { type FacePresentation } from "@lararium/mesh/lar-ws-client-adapter";
 import { type HearthPinIndex } from "@lararium/mesh/admit-gate-pin";

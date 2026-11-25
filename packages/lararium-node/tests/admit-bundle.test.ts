@@ -38,7 +38,7 @@ import { makeMultiSigQuorumVerifier } from "@lararium/mesh/kapae-antigen";
 import { carriageDocUrl } from "@lararium/mesh/deterministic-doc";
 import { writeCarriageEntry, writeRollAnchor } from "@lararium/mesh/carriage-board";
 import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
-import { custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute, type GateBundlePin } from "@lararium/mesh/gate-bundle";
+import { custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute, type GateBundlePin } from "@lararium/mesh/gate-bundle-door";
 import { takeAdmitBundle, readKeptAdmitBundle, admitBundlePathFor, dialedNexusAid, AdmitBundleError, type AdmitBundle } from "../src/admit-bundle.js";
 import { dialPresentation, makeNexusMembership, type CarriedNexusReading } from "../src/nexus-carriage.js";
 import { writeNexusDoc } from "../src/nexus-doc.js";

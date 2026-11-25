@@ -9,7 +9,7 @@ import {
   sovereignGateRoot,
   sovereignRoute,
   type GateBundlePin,
-} from "@lararium/mesh/gate-bundle";
+} from "@lararium/mesh/gate-bundle-door";
 import { type FleetJoinAnswer } from "@lararium/mesh/fleet-join";
 import { carriedAdmitOfFleetJoin } from "../src/fleet-join-admit.js";
 

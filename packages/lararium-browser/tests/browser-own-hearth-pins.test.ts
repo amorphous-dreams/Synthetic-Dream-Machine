@@ -19,7 +19,7 @@ import {
   sovereignGateRoot,
   sovereignRoute,
   type GateBundlePin,
-} from "@lararium/mesh/gate-bundle";
+} from "@lararium/mesh/gate-bundle-door";
 import { browserGatePins, fileOwnHearthPins, hearthNameOf, flowNexusFor } from "../src/browser-gate-pins.js";
 
 const RELAY = "ws://hearth.synthetic:7777/ws";

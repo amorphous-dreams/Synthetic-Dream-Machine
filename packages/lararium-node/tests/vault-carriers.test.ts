@@ -25,7 +25,7 @@ import {
   TreeKeyRefusal,
   type SealedCarrier,
 } from "@lararium/mesh/sealed-writer";
-import { mintTreeKey, type TreeKey } from "@lararium/mesh/tree-key";
+import { mintTreeKey, type TreeKey } from "@lararium/mesh/tree-key-door";
 import { openOutboxParcel, readOutboxKey, restDigest, sealOutboxParcel } from "@lararium/mesh/sealed-store-rest";
 import { ScratchCustodyIo, scratchHomes } from "./custody-io-fixture.js";
 import { seatScratchCustody } from "./custody-seat-fixture.js";
@@ -499,7 +499,7 @@ describe("the ward's rows (row 7, S2)", () => {
     const { custodyStatus } = await import("../src/custody-session.js");
     const { sealUnderFck } = await import("@lararium/mesh/fck");
     const { sealUnderWard } = await import("@lararium/mesh/ward-slots");
-    const { mintTreeKey: mint } = await import("@lararium/mesh/tree-key");
+    const { mintTreeKey: mint } = await import("@lararium/mesh/tree-key-door");
     const seat = await seatScratchCustody("ward-census");
     try {
       const file = `faces/${WFCID}/.persona-group-root-h0.json`;

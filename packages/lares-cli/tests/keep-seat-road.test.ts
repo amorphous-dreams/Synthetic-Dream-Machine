@@ -11,7 +11,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { mintKeepSeatUnder, encodeKeepSeat, keepVerifyKeyOf } from "@lararium/mesh/keep-seat";
+import { mintKeepSeatUnder, encodeKeepSeat, keepVerifyKeyOf } from "@lararium/mesh/keep-seat-door";
 import { nobleKdf } from "@lararium/mesh/keyslot-door";
 import { houseExport, type BundleDoors } from "../src/commands/house-bundle.js";
 import { MANIFEST_FILE } from "../src/bundle-manifest.js";

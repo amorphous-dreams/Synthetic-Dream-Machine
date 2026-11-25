@@ -11,7 +11,7 @@
  *   V5 — a title the workbench already holds otherwise stays at the floor and gets named; a replay still moves nothing
  */
 import { describe, test, expect } from "vitest";
-import { makeIslandRepo } from "@lararium/mesh/island-repo";
+import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
 import { liftFaceCatalogRows, catalogRowHalf } from "@lararium/mesh/catalog-view";
 import { CompositeStore } from "@lararium/mesh/composite-store";
 import { CONTROL_HOME_ID, DAEMON_BAG_ID, PERSONAL_BINDINGS_PREFIX, slotBindingKey } from "@lararium/mesh/lar-uris";

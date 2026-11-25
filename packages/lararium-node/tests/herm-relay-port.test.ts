@@ -26,7 +26,7 @@ import {
   depositPersonaKelChain,
 } from "@lararium/mesh/persona-kel-drop";
 import { sha256HexSync, hex } from "@lararium/mesh/crypto";
-import { knockSegment } from "@lararium/mesh/gate-bundle";
+import { knockSegment } from "@lararium/mesh/gate-bundle-door";
 import { startHermRelayPort, DROP_CONNECTION_BUDGET, type HermRelayPort } from "../src/herm-relay-port.js";
 
 const pubOf = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);

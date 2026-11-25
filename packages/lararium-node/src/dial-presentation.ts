@@ -23,11 +23,11 @@
 import { admittedKeyOf } from "@lararium/mesh/nexus-key-line";
 import { heldNexusRoot } from "@lararium/mesh/held-nexus-root";
 import { makeMultiSigQuorumVerifier } from "@lararium/mesh/kapae-antigen";
-import { nexusAidOfPin, type GateBundlePin } from "@lararium/mesh/gate-bundle";
-import { presentedAdmitReader } from "@lararium/mesh/face-gate";
+import { nexusAidOfPin, type GateBundlePin } from "@lararium/mesh/gate-bundle-door";
+import { presentedAdmitReader } from "@lararium/mesh/face-gate-door";
 import { readFaceScope, type FaceScope } from "@lararium/mesh/face-proof-subjects";
 import { type JoinedFaceTarget } from "@lararium/mesh/session-face";
-import { type PresentationArm } from "@lararium/mesh/gate-exchange";
+import { type PresentationArm } from "@lararium/mesh/gate-exchange-door";
 import { readKeptAdmitBundle } from "./admit-bundle.js";
 import { charterHomeFor, readKeyLine } from "./carried-set.js";
 import { readFaceJoinRecord } from "./fleet-join-custody.js";

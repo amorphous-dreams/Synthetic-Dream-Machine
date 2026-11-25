@@ -17,7 +17,7 @@ import {
   SIGNER_DID_TIDDLER,
 } from "@lararium/mesh/lar-uris";
 import { faceAtomKeyFromSeed } from "@lararium/mesh/face-atom";
-import { makeIslandRepo } from "@lararium/mesh/island-repo";
+import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
 import { materializeSharedLarDoc, personaKelBoardDocUrl } from "@lararium/mesh/deterministic-doc";
 import { personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";
 import { personaScopedBagIds } from "@lararium/mesh/persona-scope";

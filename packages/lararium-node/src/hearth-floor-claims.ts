@@ -9,10 +9,10 @@
  * Meme: lar:///ha.ka.ba/lararium/node/hearth-floor-claims
  */
 import { hexToBytes } from "@lararium/mesh/crypto";
-import { signPlaceFloorPin, type PlaceFloorPinStatement } from "@lararium/mesh/place-floor-pin";
+import { signPlaceFloorPin, type PlaceFloorPinStatement } from "@lararium/mesh/place-floor-pin-door";
 import { verifyPlaceKel, type PlaceKelEvent } from "@lararium/mesh/vessel-kel";
 import { PLACE_FLOOR_PIN_DOMAIN } from "@lararium/mesh/domains";
-import { type GateBundlePin } from "@lararium/mesh/gate-bundle";
+import { type GateBundlePin } from "@lararium/mesh/gate-bundle-door";
 import { type HearthFloorProof } from "@lararium/mesh/hearth-floor-pins";
 import { loadPlaceKelChain, vesselPlaceSignerDoor } from "./node-vessel-identity.js";
 

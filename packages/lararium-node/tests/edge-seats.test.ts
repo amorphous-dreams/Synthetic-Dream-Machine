@@ -12,7 +12,7 @@ import { fleetEdgeBoardDocUrl, materializeSharedLarDoc, edgeLedgerDocUrl } from 
 import { keptSeatRolls, EDGE_LEDGER_PREFIX } from "@lararium/mesh/edge-ledger";
 import { signSeatRoll, verifiedSeatRoll } from "@lararium/mesh/seat-duties";
 import { ed25519SignerFromSeed } from "@lararium/mesh/ed25519-door";
-import { foldWithdrawals } from "@lararium/mesh/face-authority";
+import { foldWithdrawals } from "@lararium/mesh/face-authority-door";
 import { hex } from "@lararium/mesh/crypto";
 import { storedLarRecord } from "@lararium/mesh/stored-record";
 import { ownedStore } from "../src/owned-store.js";

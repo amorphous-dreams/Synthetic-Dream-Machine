@@ -61,7 +61,7 @@ import {
   type IslandToVesselMsg,
   mkDaemonFloorAnswer,
 } from "@lararium/mesh/island-protocol";
-import { makeIslandRepo, replicaHeads } from "@lararium/mesh/island-repo";
+import { makeIslandRepo, replicaHeads } from "@lararium/mesh/island-repo-door";
 import { sha256HexBytesSync } from "@lararium/mesh/crypto";
 import { GENESIS_FLOOR_TIDDLER, resolveFloor, floorRecordsInOrder, floorCanonReader } from "@lararium/mesh/floor-manifest";
 import { plainRecordOrNull, ownEntry } from "@lararium/mesh/stored-value";

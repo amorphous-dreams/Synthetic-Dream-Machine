@@ -43,7 +43,7 @@ import {
 import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
 import { seedDaemonDoc } from "@lararium/mesh/social-seed";
 import { nexusAidOf, federationPostureFromDoc, type NexusDoc } from "@lararium/mesh/nexus-seal-seed";
-import { custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute } from "@lararium/mesh/gate-bundle";
+import { custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute } from "@lararium/mesh/gate-bundle-door";
 import { signCarriageQuorum, signCarriageContract, admitCarriageCommit, openAdmitCarriage } from "@lararium/mesh/carriage-registry";
 import { type LarDoc } from "@lararium/mesh/base-doc";
 import {

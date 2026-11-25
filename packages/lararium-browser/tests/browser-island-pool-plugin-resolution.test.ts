@@ -26,7 +26,7 @@ import { type CasBlobLike } from "@lararium/mesh/cas";
 import { type OfferingLookup } from "@lararium/mesh/plugin-offering-selector";
 import { mkEa, mkTeardownAck, type IslandMsg_Manifest } from "@lararium/mesh/island-protocol";
 import { type VesselIslandHost, type VesselWorkerHandle } from "@lararium/mesh/vessel-host";
-import { VesselIslandPoolCore } from "@lararium/mesh/vessel-island-pool-core";
+import { VesselIslandPoolCore } from "@lararium/mesh/vessel-island-pool-core-door";
 import { writeBlobsToCasOpfs } from "../src/browser-genesis.js";
 import { resolveBrowserIslandPluginCids } from "../src/open-browser-vessel.js";
 import { BrowserVesselIslandPool } from "../src/browser-vessel-island-pool.js";

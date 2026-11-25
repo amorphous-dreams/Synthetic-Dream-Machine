@@ -28,7 +28,7 @@ import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
 import { LarWSClientAdapter } from "@lararium/mesh/lar-ws-client-adapter";
 import { hearthPinIndex } from "@lararium/mesh/admit-gate-pin";
 import { hex } from "@lararium/mesh/crypto";
-import { type GateBundlePin } from "@lararium/mesh/gate-bundle";
+import { type GateBundlePin } from "@lararium/mesh/gate-bundle-door";
 import { type NexusDoc } from "@lararium/mesh/nexus-seal-seed";
 import { strangerFace, type CrossingFace } from "../../probes/crossing-synthetic-world.js";
 import { heldCharter } from "../../../lararium-mesh/tests/charter-fixture.js";

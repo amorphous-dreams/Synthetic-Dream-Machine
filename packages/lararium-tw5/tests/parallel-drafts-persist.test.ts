@@ -16,7 +16,7 @@ import { afterEach } from "vitest";
 import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
 import { CompositeStore } from "@lararium/mesh/composite-store";
 import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
-import { makeIslandRepo } from "@lararium/mesh/island-repo";
+import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
 import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { type ChangeOrigin, type LarTiddlerChange, type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { type DocHandle } from "@lararium/mesh/automerge";

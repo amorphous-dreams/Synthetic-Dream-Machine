@@ -4,7 +4,7 @@ import { rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { WebSocket } from 'ws';
 import { dialIntentRelay, INTENT_RELAY_ROUTE } from '@lararium/mesh/intent-relay-door';
-import { deriveGateBundle, sovereignGateRoot, sovereignRoute } from '@lararium/mesh/gate-bundle';
+import { deriveGateBundle, sovereignGateRoot, sovereignRoute } from '@lararium/mesh/gate-bundle-door';
 import { utf8Bytes } from '@lararium/mesh/crypto';
 import { wsDialSocket, type WsLike } from '../../lararium-mesh/src/ws-dial-socket.js';
 import { handDeadlines } from '../../lararium-mesh/tests/face-gate-fixture.js';

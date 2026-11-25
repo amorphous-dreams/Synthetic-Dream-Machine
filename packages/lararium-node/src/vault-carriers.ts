@@ -88,7 +88,7 @@ import { ROTATING_SUFFIX, SEALING_SUFFIX, rotateTreeKey, type CustodyIo, type Se
 import { S_SEAL_MIN_LENGTH, readSCarrier } from "@lararium/mesh/s-envelope";
 import { type KeyClass } from "@lararium/mesh/key-class";
 import { type SlotSpec, type SlotTree } from "@lararium/mesh/keyslot-door";
-import { type TreeKey } from "@lararium/mesh/tree-key";
+import { type TreeKey } from "@lararium/mesh/tree-key-door";
 import { nativeKdf } from "@lararium/mesh/node";
 import { custodyRootPath } from "./custody-root.js";
 import { VEIL_ARCHIVE_ASIDE_FILE, VEIL_ARCHIVE_FILE, VEIL_ARCHIVE_PREV_FILE } from "./identity-anchors.js";

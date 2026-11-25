@@ -112,7 +112,7 @@ import {
   frontierCarryStands,
   landFrontierCarry,
 } from "@lararium/mesh/frontier-carry";
-import { type CustodyRootDoor, type FloorKeyDoor } from "@lararium/mesh/gate-bundle";
+import { type CustodyRootDoor, type FloorKeyDoor } from "@lararium/mesh/gate-bundle-door";
 import { type KahuQuorumSeats, type QuorumSignature } from "@lararium/mesh/kapae-antigen";
 import {
   signPlaceFloorPin,
@@ -120,7 +120,7 @@ import {
   writePlaceFloorPin,
   foldClaimHead,
   type PlaceFloorPinStatement,
-} from "@lararium/mesh/place-floor-pin";
+} from "@lararium/mesh/place-floor-pin-door";
 import { hexToBytes } from "@lararium/mesh/crypto";
 import { FLOW_SOCKET_ROUTE } from "@lararium/mesh/flow-read-client";
 import { CARRIAGE_CARRIER_DOMAIN, PLACE_FLOOR_PIN_DOMAIN } from "@lararium/mesh/domains";

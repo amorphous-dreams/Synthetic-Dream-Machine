@@ -5,7 +5,7 @@ import {
   decodeLanPacket, candidatePin, type LanSocket,
 } from "../src/lan-discovery.js";
 import { parseMeshPeer } from "@lararium/mesh/carriage-caps";
-import { knockSegment } from "@lararium/mesh/gate-bundle";
+import { knockSegment } from "@lararium/mesh/gate-bundle-door";
 
 type Receiver = (bytes: Uint8Array, from: { address: string }) => void;
 class Bus {

@@ -18,7 +18,7 @@
  */
 import { SEALED_LOCKBOX_BOX_DOMAIN } from "@lararium/mesh/domains";
 import { hex, hexToBytes } from "@lararium/mesh/crypto";
-import { readSealedImage, sealedImage } from "@lararium/mesh/sealed-chunk";
+import { readSealedImage, sealedImage } from "@lararium/mesh/sealed-chunk-door";
 import { type LockboxWrapShore } from "@lararium/mesh/lockbox-wrap";
 
 /** The slice of a `KeyhiveProvider` the shore rides. */

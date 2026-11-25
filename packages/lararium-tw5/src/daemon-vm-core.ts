@@ -28,7 +28,7 @@ import { WorkingDocumentUnavailableRefusal, DOCUMENT_HANG_BOUND_MS, findOrThrow 
 import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
 import { computeRecipeFingerprint, wikiSlotUri, kahuaRecipe, type WikiRecipe } from "@lararium/mesh/wiki-recipe";
 import { documentIdOfUrl, mountedDocumentId, rebindWorkingLayer } from "@lararium/mesh/sealed-rest";
-import { attachMessageChannelSync } from "@lararium/mesh/island-repo";
+import { attachMessageChannelSync } from "@lararium/mesh/island-repo-door";
 import { controlStoreOf, controlHomeRefusal } from "@lararium/mesh/control-home";
 import { floorRefusalOf } from "@lararium/mesh/floor-registry";
 import { awaitIslandMsg, type VesselWorkerHandle } from "@lararium/mesh/vessel-host";

@@ -6,7 +6,7 @@ import { describe, expect, test } from "vitest";
 import { faceAtomKeyFromSeed } from "@lararium/mesh/face-atom";
 import { readPlaceSessionCertificate } from "@lararium/mesh/face-proof-subjects";
 import { SessionTable, sessionBinding, type SessionFace } from "@lararium/mesh/session-contract";
-import { type GateBundlePin } from "@lararium/mesh/gate-bundle";
+import { type GateBundlePin } from "@lararium/mesh/gate-bundle-door";
 import { CustodyLocked, FaceLocked } from "../src/custody-holder.js";
 import { dialAnchorCell, nodeSessionDoor, readFaceHint } from "../src/uds-session-door.js";
 

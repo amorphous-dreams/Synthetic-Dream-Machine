@@ -33,7 +33,7 @@
 import { interpretAsDocumentId, type AutomergeUrl, type DocumentId, type PeerId } from "@automerge/automerge-repo";
 import { KAHUA_BAG } from "@lararium/mesh/wiki-recipe";
 import { PERSONA_GROUP_ID_TIDDLER } from "@lararium/mesh/lar-uris";
-import { SessionDocumentView, type DocumentFacet, type SessionDocumentFacets } from "@lararium/mesh/session-document-view";
+import { SessionDocumentView, type DocumentFacet, type SessionDocumentFacets } from "@lararium/mesh/session-document-view-door";
 import { isFaceScopedBag } from "@lararium/mesh/persona-scope";
 import { tiddlerText, type LarDoc } from "@lararium/mesh/base-doc";
 import { type FaceGrantReading } from "@lararium/mesh/session-face";

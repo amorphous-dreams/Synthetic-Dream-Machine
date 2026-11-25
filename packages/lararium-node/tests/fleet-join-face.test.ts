@@ -98,13 +98,13 @@ const meshStubs = vi.hoisted(() => {
   })());
 });
 vi.mock("@lararium/mesh/stored-value", async (real) => { const all = await meshStubs(); return { ...(await real<Record<string, unknown>>()), ...Object.fromEntries(["ownEntry"].map((key) => [key, all[key]])) }; });
-vi.mock("@lararium/mesh/gate-bundle", async (real) => { const all = await meshStubs(); return { ...(await real<Record<string, unknown>>()), ...Object.fromEntries(["gateBundleDigest","readGateBundlePin"].map((key) => [key, all[key]])) }; });
+vi.mock("@lararium/mesh/gate-bundle-door", async (real) => { const all = await meshStubs(); return { ...(await real<Record<string, unknown>>()), ...Object.fromEntries(["gateBundleDigest","readGateBundlePin"].map((key) => [key, all[key]])) }; });
 vi.mock("@lararium/mesh/nexus-seal-seed", async (real) => { const all = await meshStubs(); return { ...(await real<Record<string, unknown>>()), ...Object.fromEntries(["nexusAidOf"].map((key) => [key, all[key]])) }; });
 vi.mock("@lararium/mesh/held-nexus-root", async (real) => { const all = await meshStubs(); return { ...(await real<Record<string, unknown>>()), ...Object.fromEntries(["heldNexusRoot","verifySignedAdmitBundle"].map((key) => [key, all[key]])) }; });
 vi.mock("@lararium/mesh/kapae-antigen", async (real) => { const all = await meshStubs(); return { ...(await real<Record<string, unknown>>()), ...Object.fromEntries(["makeMultiSigQuorumVerifier"].map((key) => [key, all[key]])) }; });
 vi.mock("@lararium/mesh/lar-uris", async (real) => { const all = await meshStubs(); return { ...(await real<Record<string, unknown>>()), ...Object.fromEntries(["PERSONA_GROUP_ID_TIDDLER"].map((key) => [key, all[key]])) }; });
 vi.mock("@lararium/mesh/fleet-join", async (real) => { const all = await meshStubs(); return { ...(await real<Record<string, unknown>>()), ...Object.fromEntries(["fleetJoinOffer","readFleetJoinRequest","faceKeyGrantImage","fleetJoinAnswerImage","sealAddressSecret","FleetJoinRootRefused","fleetJoinHearthOf","composeFleetJoinOffer","composeFleetJoinAnswer"].map((key) => [key, all[key]])) }; });
-vi.mock("@lararium/mesh/face-authority", async (real) => { const all = await meshStubs(); return { ...(await real<Record<string, unknown>>()), ...Object.fromEntries(["foldWithdrawals","issueCertificate"].map((key) => [key, all[key]])) }; });
+vi.mock("@lararium/mesh/face-authority-door", async (real) => { const all = await meshStubs(); return { ...(await real<Record<string, unknown>>()), ...Object.fromEntries(["foldWithdrawals","issueCertificate"].map((key) => [key, all[key]])) }; });
 vi.mock("@lararium/mesh/crypto", async (real) => { const all = await meshStubs(); return { ...(await real<Record<string, unknown>>()), ...Object.fromEntries(["hex"].map((key) => [key, all[key]])) }; });
 
 import { FleetJoinRefused, runFleetJoinAnswer, runFleetJoinOffer } from "../src/commands/fleet-join.js";

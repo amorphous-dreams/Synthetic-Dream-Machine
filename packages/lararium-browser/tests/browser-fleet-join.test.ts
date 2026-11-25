@@ -17,7 +17,7 @@ import { bindFirstFaceSlot } from "../src/browser-face-custody.js";
 import { describe, expect, test } from "vitest";
 import { seatWardWorkerSpawn } from "../src/testing.js";
 import { admitCarriageCommit } from "@lararium/mesh/carriage-registry";
-import { custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute, type GateBundlePin } from "@lararium/mesh/gate-bundle";
+import { custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute, type GateBundlePin } from "@lararium/mesh/gate-bundle-door";
 import {
   faceKeyGrantImage,
   fleetJoinAnswerImage,

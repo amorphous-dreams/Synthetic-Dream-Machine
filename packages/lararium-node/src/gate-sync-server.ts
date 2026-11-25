@@ -25,8 +25,8 @@
 import { EventEmitter } from "node:events";
 import { HEARTH_FLOOR_PINS_SESSION_KIND, hearthFloorPinsBody, type HearthFloorProof } from "@lararium/mesh/hearth-floor-pins";
 import { mkLarSessionMsg } from "@lararium/mesh/leaf-presentation";
-import { type GateBundlePin } from "@lararium/mesh/gate-bundle";
-import { type GateSession } from "@lararium/mesh/face-gate";
+import { type GateBundlePin } from "@lararium/mesh/gate-bundle-door";
+import { type GateSession } from "@lararium/mesh/face-gate-door";
 import { type GateSessionChannel } from "@lararium/mesh/gate-session-channel";
 
 const OPEN = 1;

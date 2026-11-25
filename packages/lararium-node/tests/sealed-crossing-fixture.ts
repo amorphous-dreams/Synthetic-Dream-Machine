@@ -12,7 +12,7 @@ import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-
 import { REST_KINDS, type SealedStoreRest } from "@lararium/mesh/sealed-store-rest";
 import { answerDocStoreAsks, composeSealedRest, vesselDocStoreDoor, type SealedBag } from "@lararium/mesh/sealed-rest";
 import { utf8Bytes } from "@lararium/mesh/crypto";
-import { type SealedAddress } from "@lararium/mesh/sealed-chunk";
+import { type SealedAddress } from "@lararium/mesh/sealed-chunk-door";
 import type { Device } from "../../lararium-keyhive/tests/content-key-fleet.js";
 
 /** What each test stood, torn down after it (`afterEach(drain)`). */

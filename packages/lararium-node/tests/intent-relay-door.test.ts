@@ -5,7 +5,7 @@ import { faceGateServer } from "../src/face-gate-server.js";
 import { gateKnock } from "../../lararium-mesh/src/gate-bundle.js";
 import { NOISE_MAX_MESSAGE_BYTES } from "../../lararium-mesh/src/noise-ik.js";
 import { describe, expect, test } from "vitest";
-import { deriveGateBundle, sovereignGateRoot, custodyRootDoor, sovereignRoute } from "@lararium/mesh/gate-bundle";
+import { deriveGateBundle, sovereignGateRoot, custodyRootDoor, sovereignRoute } from "@lararium/mesh/gate-bundle-door";
 import { utf8Bytes } from "@lararium/mesh/crypto";
 import { dialIntentRelay, INTENT_RELAY_ROUTE } from "@lararium/mesh/intent-relay-door";
 import { type SignedIntentEntry } from "@lararium/mesh/intent-entry";

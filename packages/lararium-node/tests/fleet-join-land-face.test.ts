@@ -69,7 +69,7 @@ const meshStubs = vi.hoisted(() => {
 });
 vi.mock("@lararium/mesh/face-atom", async (real) => { const all = await meshStubs(); return { ...(await real<Record<string, unknown>>()), ...Object.fromEntries(["faceAtomKeyFromSeed"].map((key) => [key, all[key]])) }; });
 vi.mock("@lararium/mesh/stored-value", async (real) => { const all = await meshStubs(); return { ...(await real<Record<string, unknown>>()), ...Object.fromEntries(["ownEntry"].map((key) => [key, all[key]])) }; });
-vi.mock("@lararium/mesh/gate-bundle", async (real) => { const all = await meshStubs(); return { ...(await real<Record<string, unknown>>()), ...Object.fromEntries(["gateBundleDigest","readGateBundlePin"].map((key) => [key, all[key]])) }; });
+vi.mock("@lararium/mesh/gate-bundle-door", async (real) => { const all = await meshStubs(); return { ...(await real<Record<string, unknown>>()), ...Object.fromEntries(["gateBundleDigest","readGateBundlePin"].map((key) => [key, all[key]])) }; });
 vi.mock("@lararium/mesh/admit-gate-pin", async (real) => { const all = await meshStubs(); return { ...(await real<Record<string, unknown>>()), ...Object.fromEntries(["admitGatePinDigest"].map((key) => [key, all[key]])) }; });
 vi.mock("@lararium/mesh/nexus-seal-seed", async (real) => { const all = await meshStubs(); return { ...(await real<Record<string, unknown>>()), ...Object.fromEntries(["nexusAidOf"].map((key) => [key, all[key]])) }; });
 vi.mock("@lararium/mesh/held-nexus-root", async (real) => { const all = await meshStubs(); return { ...(await real<Record<string, unknown>>()), ...Object.fromEntries(["heldNexusRoot","verifySignedAdmitBundle"].map((key) => [key, all[key]])) }; });

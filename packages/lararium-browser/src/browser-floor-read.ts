@@ -20,7 +20,7 @@
  */
 import { NEXUS_AID_PATTERN } from "@lararium/mesh/wax-stamp";
 import { lastSyncNote } from "@lararium/mesh/hearth-floor-pins";
-import { nexusAidOfPin } from "@lararium/mesh/gate-bundle";
+import { nexusAidOfPin } from "@lararium/mesh/gate-bundle-door";
 import { readFloorAnswer, type FloorRead } from "@lararium/mesh/floor-answer";
 import { type PlaceClaimStand } from "@lararium/mesh/admit-gate-pin";
 

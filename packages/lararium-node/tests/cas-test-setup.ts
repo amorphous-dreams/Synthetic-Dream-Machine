@@ -21,7 +21,7 @@ import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import { randomBytes } from "crypto";
 import { bootSetPluginCids } from "@lararium/mesh/cas";
-import { authorizeAddress, readContentKey } from "@lararium/mesh/sealed-chunk";
+import { authorizeAddress, readContentKey } from "@lararium/mesh/sealed-chunk-door";
 import { openPrivateBody, type PrivateBodyKey } from "@lararium/mesh/ciphertext-cas";
 import { type AntigenRing, type NexusMembership } from "@lararium/mesh/federation-gate";
 import { type LarDoc } from "@lararium/mesh/base-doc";

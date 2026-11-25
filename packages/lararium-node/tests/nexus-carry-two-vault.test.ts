@@ -34,7 +34,7 @@ import { cidV1Sha256 } from "@lararium/mesh/crypto";
 import { foldCarrierSet } from "@lararium/mesh/carriage-registry";
 import { carriageEntriesFromBoard } from "@lararium/mesh/carriage-board";
 import { carriageDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
-import { placeFloorPinsFromBoard, filePlaceFloorPins } from "@lararium/mesh/place-floor-pin";
+import { placeFloorPinsFromBoard, filePlaceFloorPins } from "@lararium/mesh/place-floor-pin-door";
 import { placeKelEntriesFromBoard } from "@lararium/mesh/place-kel-board";
 import { hearthPinIndex } from "@lararium/mesh/admit-gate-pin";
 import { FLOW_SOCKET_ROUTE } from "@lararium/mesh/flow-read-client";

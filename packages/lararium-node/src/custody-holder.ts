@@ -55,7 +55,7 @@ import {
   updateWardCarrier,
   type CustodyIo,
 } from "@lararium/mesh/sealed-writer";
-import { treeKeyEquals, type TreeKey } from "@lararium/mesh/tree-key";
+import { treeKeyEquals, type TreeKey } from "@lararium/mesh/tree-key-door";
 import { bindSlot, decodeSlotTree, type Credential, type SlotSpec, type SlotTree } from "@lararium/mesh/keyslot-door";
 import { mintFck, type FaceCarrier, type FaceCustodyKey } from "@lararium/mesh/fck";
 import { bindWardSlot, mintWardKey, openWardKey, WardRefused, type WardKey } from "@lararium/mesh/ward-slots";

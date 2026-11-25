@@ -37,7 +37,7 @@ import { LarWSClientAdapter } from "@lararium/mesh/lar-ws-client-adapter";
 import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
 import { nodeDialSocket } from "./node-dial-socket.js";
 import type { LarWSClientOptions } from "@lararium/mesh/lar-ws-client-adapter";
-import { shoreInbound } from "@lararium/mesh/prototype-key-shore";
+import { shoreInbound } from "@lararium/mesh/prototype-key-shore-door";
 
 /** What a dial presents: the face's certificate, the session's signer, at most one arm and the withdrawal history. */
 export type DialFacePresentation = LarWSClientOptions["presentation"];

@@ -12,7 +12,7 @@ import { ScriptedSeatRolls, type RollOutcome } from "@lararium/mesh/content-key-
 import { memorySealedStoreRest, type SealedStoreRest } from "@lararium/mesh/sealed-store-rest";
 import { type EdgeStanding } from "@lararium/mesh/edge-kapae";
 import { type RecordSigner } from "@lararium/mesh/sealed-records";
-import { type SealedAddress } from "@lararium/mesh/sealed-chunk";
+import { type SealedAddress } from "@lararium/mesh/sealed-chunk-door";
 import { KeyhiveProvider, InMemoryEventStore, seatContentKeys, type ContentKeySeat } from "../src/index.js";
 import { sessionSignatureImage } from "../../lararium-mesh/src/face-proof-subjects.js";
 import { chain, signHex, type Chain } from "../../lararium-mesh/tests/face-proof-fixture.js";

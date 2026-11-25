@@ -49,9 +49,9 @@ import {
 import { DeterministicFederationGate } from "@lararium/mesh/federation-gate";
 import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
 import { mountWikiSlot } from "@lararium/mesh/open-vessel-core";
-import { nameDocumentFor, seatSealedRest, waitHandle, type SealedSettlement } from "@lararium/mesh/wait-handle";
+import { nameDocumentFor, seatSealedRest, waitHandle, type SealedSettlement } from "@lararium/mesh/wait-handle-door";
 import { receiptInStore } from "@lararium/mesh/receipt-with-heads";
-import { sealedAddressOf } from "@lararium/mesh/sealed-chunk";
+import { sealedAddressOf } from "@lararium/mesh/sealed-chunk-door";
 import { SealedDocumentStore, type SealedBagRow } from "@lararium/mesh/sealed-doc-store";
 import { type ChangeOrigin, type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { MemoryTiddlerStore } from "../../lararium-tw5/src/memory-store.js";

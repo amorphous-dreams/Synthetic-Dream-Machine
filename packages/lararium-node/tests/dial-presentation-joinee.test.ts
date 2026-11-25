@@ -33,12 +33,12 @@ import {
   type AdmitOpening,
   type CarriageEntry,
 } from "@lararium/mesh/carriage-registry";
-import { custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute, type GateBundle } from "@lararium/mesh/gate-bundle";
+import { custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute, type GateBundle } from "@lararium/mesh/gate-bundle-door";
 import { hearthPinIndex } from "@lararium/mesh/admit-gate-pin";
 import { heldNexusRoot } from "@lararium/mesh/held-nexus-root";
 import { hex } from "@lararium/mesh/crypto";
 import { makeMultiSigQuorumVerifier } from "@lararium/mesh/kapae-antigen";
-import { memoryBackedWithdrawals, type GateSession } from "@lararium/mesh/face-gate";
+import { memoryBackedWithdrawals, type GateSession } from "@lararium/mesh/face-gate-door";
 import { nexusAidOf, type NexusDoc } from "@lararium/mesh/nexus-seal-seed";
 import { type FaceScope } from "@lararium/mesh/face-proof-subjects";
 import { SessionTable, sessionBinding } from "../../lararium-mesh/src/session-contract.js";

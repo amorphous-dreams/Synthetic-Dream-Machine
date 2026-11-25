@@ -44,7 +44,7 @@ import {
   signKeepCut,
   type KeepSeat,
   type KeepSecretOpening,
-} from "@lararium/mesh/keep-seat";
+} from "@lararium/mesh/keep-seat-door";
 import {
   confirmHeldPaper,
   decodeSlotTree,

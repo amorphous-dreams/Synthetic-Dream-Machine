@@ -75,7 +75,7 @@ import {
   type PinSpec,
   type SlotTree,
 } from "@lararium/mesh/keyslot-door";
-import { mintTreeKey, treeKeyEquals, type TreeKey } from "@lararium/mesh/tree-key";
+import { mintTreeKey, treeKeyEquals, type TreeKey } from "@lararium/mesh/tree-key-door";
 import {
   writeSealedCarrier,
   openSealedCarrier,

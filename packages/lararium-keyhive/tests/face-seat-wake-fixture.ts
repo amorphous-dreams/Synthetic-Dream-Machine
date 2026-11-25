@@ -13,7 +13,7 @@ import { deviceEdgeId } from "@lararium/mesh/dyad";
 import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
 import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
 import { fleetEdgeBoardDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
-import { makeIslandRepo } from "@lararium/mesh/island-repo";
+import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
 import { personaBagIdFor } from "@lararium/mesh/persona-scope";
 import { signEdgeKapae, writeEdgeKapae } from "@lararium/mesh/edge-kapae";
 import { storedLarRecord } from "@lararium/mesh/stored-record";

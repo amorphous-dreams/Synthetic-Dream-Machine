@@ -6,7 +6,7 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { createRequire } from "node:module";
 import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
-import { replicaHeads } from "@lararium/mesh/island-repo";
+import { replicaHeads } from "@lararium/mesh/island-repo-door";
 import { type IslandToVesselMsg } from "@lararium/mesh/island-protocol";
 import { type Repo as RepoType } from "@lararium/mesh/automerge";
 import { makeReceiptCapability, type ReceiptCapability } from "../src/receipt.js";

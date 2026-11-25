@@ -17,7 +17,7 @@
  */
 import { admitCarriageCommit } from "@lararium/mesh/carriage-registry";
 import { admitGatePinDigest, hearthPinIndex, readAdmitGatePinAt, type HearthPinIndex } from "@lararium/mesh/admit-gate-pin";
-import { readGateBundlePin, type GateBundlePin } from "@lararium/mesh/gate-bundle";
+import { readGateBundlePin, type GateBundlePin } from "@lararium/mesh/gate-bundle-door";
 import type { AdmitBundle } from "./admit-bundle.js";
 
 /** The vessel's pair index: one per boot, empty until the admit repin seeds it. */

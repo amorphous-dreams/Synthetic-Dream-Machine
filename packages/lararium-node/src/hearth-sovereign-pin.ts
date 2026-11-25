@@ -33,7 +33,7 @@ import {
   type CustodyRootDoor,
   type FloorKeyDoor,
   type GateBundlePin,
-} from "@lararium/mesh/gate-bundle";
+} from "@lararium/mesh/gate-bundle-door";
 import { custodyGateDoor } from "./custody-seat.js";
 import { primaryNexusAid } from "./carried-set.js";
 

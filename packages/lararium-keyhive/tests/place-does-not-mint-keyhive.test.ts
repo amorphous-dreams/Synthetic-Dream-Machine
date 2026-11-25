@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { makeIslandRepo } from "@lararium/mesh/island-repo";
+import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
 import { groupSecretOpenerFromSeed, groupSecretSealTitle } from "@lararium/mesh/persona-group-secret";
 import { mintFaceAtomSeed } from "@lararium/mesh/face-atom";
 import { DYAD_SLOT_PREFIX } from "@lararium/mesh/dyad";

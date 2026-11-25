@@ -40,7 +40,7 @@ import {
   SEALED_TAG_LEN,
   readSealedAddress,
   type KeyVersionId,
-} from "@lararium/mesh/sealed-chunk";
+} from "@lararium/mesh/sealed-chunk-door";
 import { sealPrivateBody, type PrivateBodyKey } from "@lararium/mesh/ciphertext-cas";
 import { parseDigest } from "@lararium/mesh/agile-digest";
 import { hexToBytes } from "@lararium/mesh/crypto";

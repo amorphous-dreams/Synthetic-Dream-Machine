@@ -204,7 +204,7 @@ export function requireDyadReader(reader: DyadReader | undefined, gate: "the Bin
 import { bootDaemonKeyhive, FaceHoldsNoPrekeySecret, FaceRecardRefused, recardCommand, type BootDaemonKeyhiveRecard } from "./boot-daemon-keyhive.js";
 import { daemonBagDocLedger, planeBagDocLedger, registerBagsDurably, type BagDocLedger } from "./bag-doc-ledger.js";
 import { persistArchiveFloor } from "./archive-floor-write.js";
-import { replicaHeads } from "@lararium/mesh/island-repo";
+import { replicaHeads } from "@lararium/mesh/island-repo-door";
 import { hexToBytes as meshHexToBytes } from "@lararium/mesh/crypto";
 import { faceAtomKeyFromSeed } from "@lararium/mesh/face-atom";
 import { nexusOfferSigner } from "@lararium/mesh/canon-offer";
@@ -262,7 +262,7 @@ export { islandSessionDoor } from "./island-session-proof.js";
 import type { RecordSigner } from "@lararium/mesh/sealed-records";
 import { SealedStore, readOutboxKey, readCarriedRecord, type SealedStoreRest } from "@lararium/mesh/sealed-store-rest";
 import { readKeyParcel, encodeKeyParcel, type KeyParcel } from "@lararium/mesh/lockbox-wrap";
-import { readKeyVersionId } from "@lararium/mesh/sealed-chunk";
+import { readKeyVersionId } from "@lararium/mesh/sealed-chunk-door";
 import { utf8Bytes } from "@lararium/mesh/crypto";
 import { type ContentKeyHolderPorts } from "@lararium/mesh/content-key-holder";
 import { type SealedRecord } from "@lararium/mesh/sealed-records";

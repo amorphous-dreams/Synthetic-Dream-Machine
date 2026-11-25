@@ -25,7 +25,7 @@
 
 import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-indexeddb";
 import { islandRestGuard, vesselRestAsker } from "@lararium/mesh/sealed-rest";
-import { shoreStorage } from "@lararium/mesh/prototype-key-shore";
+import { shoreStorage } from "@lararium/mesh/prototype-key-shore-door";
 import {
   runSovereignKernel,
   type IslandHostShore,

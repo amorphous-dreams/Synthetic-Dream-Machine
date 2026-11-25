@@ -41,7 +41,7 @@ import { readFrontierPins } from "@lararium/mesh/edge-frontier-board";
 import { personaBagIdFor, personaSiblingBagIds } from "@lararium/mesh/persona-scope";
 import { intentPlaneCosignPort, type WardCosignPort } from "@lararium/mesh/ward-cosign-gate";
 import { personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";
-import { replicaHeads } from "@lararium/mesh/island-repo";
+import { replicaHeads } from "@lararium/mesh/island-repo-door";
 import { WardRefused } from "@lararium/mesh/ward-slots";
 import { KEEPER_NONCE, keeperCosignGate } from "@lararium/mesh/keeper-cosign";
 import { askShown, answerRefusal, buildWardedAnswer, type AskShown } from "@lararium/mesh/ward-answer";

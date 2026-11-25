@@ -27,7 +27,7 @@ import { carriageEntryActCid } from "@lararium/mesh/carriage-registry";
 import { personaBagIdFor, personaSiblingBagIds } from "@lararium/mesh/persona-scope";
 import { personaMembershipEntries } from "@lararium/mesh/persona-planes";
 import { shareConfigOf, type FederationGate, type ShadowConsult } from "@lararium/mesh/federation-gate";
-import { type GateSession } from "@lararium/mesh/face-gate";
+import { type GateSession } from "@lararium/mesh/face-gate-door";
 import { LarWSClientAdapter } from "../../lararium-mesh/src/lar-ws-client-adapter.js";
 import { wsDialSocket, type WsLike } from "../../lararium-mesh/src/ws-dial-socket.js";
 import { AUDIENCE, GROUP, presenter, sibling, world, type Presenter, type World } from "../../lararium-mesh/tests/face-gate-fixture.js";

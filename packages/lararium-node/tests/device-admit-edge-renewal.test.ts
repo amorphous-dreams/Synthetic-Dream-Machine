@@ -24,7 +24,7 @@ const seam = vi.hoisted(() => ({
 
 vi.mock("../src/vessel-paths.js", () => ({ larBootstrapPath: () => seam.bootstrapPath, larSealHome: () => "seal-home-under-test" }));
 vi.mock("../src/hearth-sovereign-pin.js", async () => {
-  const mesh = { ...(await vi.importActual<typeof import("@lararium/mesh/admit-gate-pin")>("@lararium/mesh/admit-gate-pin")), ...(await vi.importActual<typeof import("@lararium/mesh/gate-bundle")>("@lararium/mesh/gate-bundle")) };
+  const mesh = { ...(await vi.importActual<typeof import("@lararium/mesh/admit-gate-pin")>("@lararium/mesh/admit-gate-pin")), ...(await vi.importActual<typeof import("@lararium/mesh/gate-bundle-door")>("@lararium/mesh/gate-bundle-door")) };
   return {
     stoodSovereignPin: () => {
       const bundle = mesh.deriveGateBundle(mesh.sovereignGateRoot(mesh.custodyRootDoor({ derive: () => new Uint8Array(32).fill(7) })), new TextEncoder().encode("hearth-aid"), mesh.sovereignRoute(mesh.SOVEREIGN_SYNC_ROUTE));

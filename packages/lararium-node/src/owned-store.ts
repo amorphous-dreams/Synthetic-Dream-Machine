@@ -37,7 +37,7 @@ import { Repo } from "@automerge/automerge-repo";
 import { rendezvousPath } from "@lararium/mesh/rendezvous-path";
 import { SealedDocumentStore } from "@lararium/mesh/sealed-doc-store";
 import { bindSecretHomeRest, vesselHeldHomes } from "@lararium/mesh/secret-home";
-import { wireIdentityOf } from "@lararium/mesh/wire-identity";
+import { wireIdentityOf } from "@lararium/mesh/wire-identity-door";
 
 import { DurableNodeFSStorageAdapter } from "./durable-storage-adapter.js";
 import { claimName, anchoredName, NameHeld, answers, letGo, type ClaimedName, type ReapWord } from "./socket-claim.js";

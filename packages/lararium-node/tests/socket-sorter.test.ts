@@ -17,7 +17,7 @@
  */
 import { describe, test, expect } from "vitest";
 import type { FederationPosture } from "@lararium/mesh/federation-gate";
-import type { GateSortInput, PlaceContractReading } from "@lararium/mesh/face-gate";
+import type { GateSortInput, PlaceContractReading } from "@lararium/mesh/face-gate-door";
 import type { PeerClass } from "@lararium/mesh/island-protocol";
 import type { FaceAdmitReading, FaceGrantReading } from "@lararium/mesh/session-face";
 import type { CarriageEntry } from "@lararium/mesh/carriage-registry";

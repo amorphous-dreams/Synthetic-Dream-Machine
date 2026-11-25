@@ -19,7 +19,7 @@
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store · #/owed (the browser shore)
  */
 import { isRestKind, isRestName, restNameHolds, type RestKind, type SealedStoreRest } from "@lararium/mesh/sealed-store-rest";
-import { sealedAddressOf } from "@lararium/mesh/sealed-chunk";
+import { sealedAddressOf } from "@lararium/mesh/sealed-chunk-door";
 import { sha256HexBytesSync } from "@lararium/mesh/crypto";
 import type { ProviderChunkRest } from "@lararium/keyhive";
 import type { SealedStoreShore } from "@lararium/keyhive/operator-daemon-behavior";

@@ -16,7 +16,7 @@
 import { faceKeyGrantRevision, readFaceKeyGrant } from "@lararium/mesh/fleet-join";
 import { type FaceGrantReading } from "@lararium/mesh/session-face";
 import { type FaceScope } from "@lararium/mesh/face-proof-subjects";
-import { type VesselFaceKeyCustody } from "@lararium/mesh/face-authority";
+import { type VesselFaceKeyCustody } from "@lararium/mesh/face-authority-door";
 import { nodeVesselFaceKeyCustody, readVesselFaceKeyPublic } from "./face-key-custody.js";
 import { readFaceJoinRecord } from "./fleet-join-custody.js";
 

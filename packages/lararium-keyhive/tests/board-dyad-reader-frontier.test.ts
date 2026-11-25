@@ -5,7 +5,7 @@ import { emptyLarDoc } from "@lararium/mesh/base-doc";
 import { fleetEdgeBoardDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
 import { landFleetGenesis, FLEET_HAND } from "@lararium/mesh/fleet-frontier";
 import { makeHandLineage } from "@lararium/mesh/hand-lineage";
-import { makeIslandRepo } from "@lararium/mesh/island-repo";
+import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
 import { signEdgeKapae, writeEdgeKapae } from "@lararium/mesh/edge-kapae";
 import { writeEdgeFrontier, writeFrontierSnapshot, readFrontierPins } from "@lararium/mesh/edge-frontier-board";
 import { boardDyadReader } from "../src/board-dyad-reader.js";

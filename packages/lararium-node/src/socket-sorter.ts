@@ -26,7 +26,7 @@ import {
   type GateSortVerdict,
   type GateAdmitReader,
   type GateSession,
-} from "@lararium/mesh/face-gate";
+} from "@lararium/mesh/face-gate-door";
 import { type PeerClass } from "@lararium/mesh/island-protocol";
 import { type FaceScope } from "@lararium/mesh/face-proof-subjects";
 import type { FaceDeviceReading } from "./gate-shadow-ring.js";

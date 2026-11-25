@@ -5,7 +5,7 @@ export { DEVICE_ADMIT_KIND } from "./device-admit-kind.js";
 import type { DeviceDelegationRootHalf } from "@lararium/mesh/device-delegation";
 import type { PersonaKelEvent } from "@lararium/mesh/persona-kel";
 import type { GroupSecretSeal } from "@lararium/mesh/persona-group-secret";
-import type { GateBundlePin } from "@lararium/mesh/gate-bundle";
+import type { GateBundlePin } from "@lararium/mesh/gate-bundle-door";
 
 export type {
   CapabilityProvider, CapabilityProviderInitOpts,

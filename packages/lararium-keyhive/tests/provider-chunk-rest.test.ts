@@ -5,7 +5,7 @@
  */
 import { describe, expect, test } from "vitest";
 import { InMemoryEventStore, KeyhiveProvider, memoryProviderChunkRest, keyhiveLockboxShore } from "../src/index.js";
-import { mintContentKey, keyVersionIdOf } from "@lararium/mesh/sealed-chunk";
+import { mintContentKey, keyVersionIdOf } from "@lararium/mesh/sealed-chunk-door";
 import { bagLocatorOf } from "@lararium/mesh/sealed-records";
 import { wrapLockbox } from "@lararium/mesh/lockbox-wrap";
 

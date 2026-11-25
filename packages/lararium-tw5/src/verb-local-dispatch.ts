@@ -15,7 +15,7 @@ import { type CapabilityAccess, type CapabilityVerifyResult, type CapabilityVeri
 import { type CompositeStore } from "@lararium/mesh/composite-store";
 import { type Verb } from "@lararium/mesh/verb-tiddler";
 import type { Hand } from "@lararium/mesh/session-contract";
-import { wikiSlugOfBag } from "@lararium/mesh/surface-recipe";
+import { wikiSlugOfBag } from "@lararium/mesh/surface-recipe-door";
 import type { SessionWorn, VerbReactor, VerbTable } from "./verb-dispatcher.js";
 
 export type CapVerify = (access: CapabilityAccess, bagUrl: string) => Promise<CapabilityVerifyResult>;

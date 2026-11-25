@@ -46,7 +46,7 @@ import { buildEffectRecordTiddler, effectRecordUri, LARES_EFFECT_RECORD_TAG } fr
 import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
 import { ledgerWorkbenchRealms, noteWorkbench, noteWorkbenchSeat, privateCabalRealmId, workbenchSeats } from "@lararium/mesh/workbench";
 import { makeCatalogView } from "@lararium/mesh/catalog-view";
-import { makeIslandRepo } from "@lararium/mesh/island-repo";
+import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
 import { materializeSharedLarDoc, realmWorkbenchDocUrl } from "@lararium/mesh/deterministic-doc";
 import { parseRetiredShellRecord, retiredShellUri } from "@lararium/mesh/shell-leaving-record";
 import { plainRecord } from "@lararium/mesh/stored-value";

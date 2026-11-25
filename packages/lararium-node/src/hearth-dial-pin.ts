@@ -25,7 +25,7 @@
 import { readFileSync } from "node:fs";
 import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
 import { readAdmitGatePin } from "@lararium/mesh/admit-gate-pin";
-import { type GateBundlePin } from "@lararium/mesh/gate-bundle";
+import { type GateBundlePin } from "@lararium/mesh/gate-bundle-door";
 import { ownEntry } from "@lararium/mesh/stored-value";
 
 /** The hearth's `ws://…/ws` relay — where this joinee dials. */

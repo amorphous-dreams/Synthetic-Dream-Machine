@@ -18,7 +18,7 @@
  *        lar:///ha.ka.ba/lares/api/pono/kapae#/reach
  */
 import type { FaceScope, VesselFaceKey } from "@lararium/mesh/face-proof-subjects";
-import type { GateShadowRing } from "@lararium/mesh/face-gate";
+import type { GateShadowRing } from "@lararium/mesh/face-gate-door";
 import type { EdgeShadowRing } from "./edge-shadow-ring.js";
 
 /** The device edge a presenting vessel face key stands certified under, or why the binding reads nothing. */

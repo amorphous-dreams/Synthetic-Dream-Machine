@@ -21,7 +21,7 @@ import { join } from "node:path";
 import type { Duplex } from "node:stream";
 import { Repo } from "@automerge/automerge-repo";
 import { FLOW_SOCKET_ROUTE } from "@lararium/mesh/flow-read-client";
-import { type GateSessionTable } from "@lararium/mesh/face-gate";
+import { type GateSessionTable } from "@lararium/mesh/face-gate-door";
 import { type MeshPalaceDoc } from "@lararium/mesh/mesh-palace";
 import { mountFlowMapReadFace, type FlowFloorFace, type FlowReadGate } from "../src/flow-read-face.js";
 import { gatePath } from "../src/face-gate-server.js";

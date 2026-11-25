@@ -18,7 +18,7 @@ import { SealedDocumentStore } from "@lararium/mesh/sealed-doc-store";
 import { bindSecretHomeRest, vesselHeldHomes } from "@lararium/mesh/secret-home";
 import { faceAtomKeyFromSeed } from "@lararium/mesh/face-atom";
 import { groupSecretSealTitle } from "@lararium/mesh/persona-group-secret";
-import { makeIslandRepo } from "@lararium/mesh/island-repo";
+import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
 import { materializeSharedLarDoc, personaKelBoardDocUrl } from "@lararium/mesh/deterministic-doc";
 import { controlHomeUrlOf, controlHomeRefusal, standControlHome, CONTROL_HOME_UNNAMED } from "@lararium/mesh/control-home";
 import { personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";

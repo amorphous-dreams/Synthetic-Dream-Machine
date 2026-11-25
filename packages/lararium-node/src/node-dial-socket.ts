@@ -9,7 +9,7 @@
  * Called by the Nexus sync dial (`nexus-client-dial`) and the carriage pull the vessel stands (`open-node-vessel`).
  */
 import { WebSocket } from "ws";
-import { wsDialSocket, type WsFactory, type WsLike } from "@lararium/mesh/ws-dial-socket";
+import { wsDialSocket, type WsFactory, type WsLike } from "@lararium/mesh/ws-dial-socket-door";
 import { type DialSocket } from "@lararium/mesh/face-dial";
 
 /** The `ws` client as the door's factory: the door's payload cap rides the client itself. */

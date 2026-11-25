@@ -8,7 +8,7 @@ import { islandLiveDocDoor } from "@lararium/mesh/sealed-rest";
 import { edgeLedgerDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
 import { Repo } from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-indexeddb";
-import { shoreStorage } from "@lararium/mesh/prototype-key-shore";
+import { shoreStorage } from "@lararium/mesh/prototype-key-shore-door";
 import { idbSealedStoreShore, sealedStoreDbName } from "./browser-sealed-store.js";
 import { browserVeilArchiveWriters } from "./browser-veil-archive-route.js";
 

@@ -15,7 +15,7 @@
  * Meme: lar:///ha.ka.ba/lararium/browser/browser-vessel-island-pool
  */
 
-import { VesselIslandPoolCore, type VesselRestState } from "@lararium/mesh/vessel-island-pool-core";
+import { VesselIslandPoolCore, type VesselRestState } from "@lararium/mesh/vessel-island-pool-core-door";
 import { type Repo } from "@lararium/mesh/automerge";
 import { type IslandMsg_Event, type LarIslandToVesselMsg } from "@lararium/mesh/island-protocol";
 import { type WikiRecipe } from "@lararium/mesh/wiki-recipe";

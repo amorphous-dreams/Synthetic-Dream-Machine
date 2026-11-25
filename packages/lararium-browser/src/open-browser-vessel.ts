@@ -25,14 +25,14 @@ import { holdDaemonVm, DaemonRestarting, KAPAE_EMERGENCY_REASON, type DaemonVmHo
 import { pagePortGrant } from "./page-port-grant.js";
 import { DAEMON_SURFACE_ID } from "./daemon-surface.js";
 import type { PortIslandToVesselMsg } from "@lararium/mesh/record-port";
-import type { VesselRestState } from "@lararium/mesh/vessel-island-pool-core";
+import type { VesselRestState } from "@lararium/mesh/vessel-island-pool-core-door";
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import { Repo }                              from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter }           from "@automerge/automerge-repo-storage-indexeddb";
 import { browserDeviceFiling } from "./browser-device-filing.js";
 import { browserRoutesVeilArchive } from "./browser-veil-archive-route.js";
 import { writeBrowserFaceLabel } from "./browser-face-labels.js";
-import { shoreStorage } from "@lararium/mesh/prototype-key-shore";
+import { shoreStorage } from "@lararium/mesh/prototype-key-shore-door";
 import {
   composeSealedRest,
   clearRosterOf,
@@ -60,7 +60,7 @@ import { emptyLarDoc, ENGINE_CORE_ID, tiddlerText, type LarDoc } from "@lararium
 import { storedLarRecord } from "@lararium/mesh/stored-record";
 import { cosignPortWitness, WARD_WITNESS_CLOSED } from "@lararium/mesh/ward-cosign-gate";
 import { CATALOG_DOC_URI, DAEMON_BAG_ID, BAG_IDS, islandEventAsk } from "@lararium/mesh/lar-uris";
-import { resolveRecipePluginCids } from "@lararium/mesh/surface-recipe";
+import { resolveRecipePluginCids } from "@lararium/mesh/surface-recipe-door";
 import { offeringAnnouncesFromDoc } from "@lararium/mesh/offering-announce";
 import { type OfferingLookup } from "@lararium/mesh/plugin-offering-selector";
 import { personaMultitudeView, renameOwnPersona } from "@lararium/mesh/persona-petname";
@@ -71,8 +71,8 @@ import {
   type FederationGate,
   type SiblingShare,
 } from "@lararium/mesh/federation-gate";
-import { wireIdentityOf, seatDialLeg } from "@lararium/mesh/wire-identity";
-import { GatedSyncLeg, oneWayDocumentsGate } from "@lararium/mesh/gated-sync-leg";
+import { wireIdentityOf, seatDialLeg } from "@lararium/mesh/wire-identity-door";
+import { GatedSyncLeg, oneWayDocumentsGate } from "@lararium/mesh/gated-sync-leg-door";
 import { LarWSClientAdapter } from "@lararium/mesh/lar-ws-client-adapter";
 import {
   standSiblingChannel,
@@ -84,7 +84,7 @@ import { groupSecretSealTitle, verifyGroupSecretSeal } from "@lararium/mesh/pers
 import { leaseEpochPrefix } from "@lararium/mesh/epoch-lease";
 import { controlHomeUrlOf } from "@lararium/mesh/control-home";
 import { vesselOnlyBook } from "@lararium/mesh/vessel-only-book";
-import { islandPeersOf, wikiIslandPeersOf } from "@lararium/mesh/island-repo";
+import { islandPeersOf, wikiIslandPeersOf } from "@lararium/mesh/island-repo-door";
 import { slugFromUri, recipeHostFacets } from "@lararium/mesh/wiki-recipe";
 import { bagStackFromRec } from "@lararium/mesh/bag-stack-from-rec";
 import { type WikiActivationCap } from "@lararium/mesh/wiki-activation";
@@ -122,7 +122,7 @@ import { type LarariumVesselOptions, type VesselResult } from "@lararium/mesh/la
 import { type HearthPinIndex } from "@lararium/mesh/admit-gate-pin";
 import { type FloorAnchor, readHearthFloorCard } from "@lararium/mesh/hearth-floor-pins";
 import { type VesselBootstrap, type VesselCoreAssembly } from "@lararium/mesh/open-vessel-core";
-import { type GateBundlePin } from "@lararium/mesh/gate-bundle";
+import { type GateBundlePin } from "@lararium/mesh/gate-bundle-door";
 import { type DeviceDelegationTiddler } from "@lararium/mesh/device-delegation";
 import { type IslandMsg_Manifest } from "@lararium/mesh/island-protocol";
 import { takeInvite, popInvite, type WalkRecord } from "@lararium/mesh/walk-client";
@@ -241,7 +241,7 @@ import {
 }                                            from "./open-browser-daemon-vm.js";
 import type { WikiRecipe } from "@lararium/mesh/wiki-recipe";
 
-import { LOCAL_READY_MS, seatSealedRest, waitHandle } from "@lararium/mesh/wait-handle";
+import { LOCAL_READY_MS, seatSealedRest, waitHandle } from "@lararium/mesh/wait-handle-door";
 import { holdVesselLock, ambientLocks, type LockHost } from "./vessel-lock.js";
 import { BrowserCustodyRefused, CLEAR_CUSTODY_CLEARS, readBrowserCustody, onBrowserCustodyLock, lockBrowserCustody, refuseSharedTreeFaceRecords } from "./browser-custody.js";
 import { nameFace, faceTreeStands } from "./browser-face-custody.js";
@@ -251,7 +251,7 @@ import { guardedBoot, takeDownBoot, BootTeardownRefusal, type BootHold } from ".
 import { attachSharedHolder, holderWorkerHandle, houseName } from "./shared-holder.js";
 import { browserSpawnWorker } from "./worker-handle.js";
 import { daemonIslandDown } from "./daemon-island-down.js";
-import { shoreInbound } from "@lararium/mesh/prototype-key-shore";
+import { shoreInbound } from "@lararium/mesh/prototype-key-shore-door";
 // ── Bootstrap artifact (IDB-persisted) ──────────────────────────────────────────
 
 const BOOTSTRAP_KEY  = "social-bootstrap";

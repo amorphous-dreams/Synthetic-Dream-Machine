@@ -9,7 +9,7 @@
  */
 import { mkdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { readGateBundlePin, type GateBundlePin } from "@lararium/mesh/gate-bundle";
+import { readGateBundlePin, type GateBundlePin } from "@lararium/mesh/gate-bundle-door";
 import { admitBundlePathFor } from "./admit-bundle.js";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 

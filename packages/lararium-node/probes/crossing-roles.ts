@@ -26,7 +26,7 @@ import { LarWSClientAdapter } from "@lararium/mesh/lar-ws-client-adapter";
 import { hearthPinIndex } from "@lararium/mesh/admit-gate-pin";
 import { type FederationPosture } from "@lararium/mesh/federation-gate";
 import { CROSSING_AUDIENCE, crossingFace, forgedFace, standCrossingGate, type CrossingFace } from "./crossing-synthetic-world.js";
-import type { GateBundlePin } from "@lararium/mesh/gate-bundle";
+import type { GateBundlePin } from "@lararium/mesh/gate-bundle-door";
 import { faceGateServer, gateSessionRegistry } from "../src/face-gate-server.js";
 import { gateSyncServer } from "../src/gate-sync-server.js";
 

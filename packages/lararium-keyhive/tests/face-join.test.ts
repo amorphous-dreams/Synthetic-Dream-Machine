@@ -9,7 +9,7 @@
 import { describe, test, expect } from "vitest";
 import { buildDeviceDelegation } from "@lararium/mesh/device-delegation";
 import { hexToBytes } from "@lararium/mesh/crypto";
-import { makeIslandRepo } from "@lararium/mesh/island-repo";
+import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
 import { materializeSharedLarDoc, fleetEdgeBoardDocUrl } from "@lararium/mesh/deterministic-doc";
 import { emptyLarDoc } from "@lararium/mesh/base-doc";
 import { ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";

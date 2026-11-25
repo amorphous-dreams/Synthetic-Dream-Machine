@@ -24,7 +24,7 @@ import { join } from "node:path";
 import * as A from "@automerge/automerge";
 import { Repo, type AutomergeUrl, type Chunk, type DocHandle, type StorageAdapterInterface, type StorageKey } from "@automerge/automerge-repo";
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
-import { wireIdentityOf } from "@lararium/mesh/wire-identity";
+import { wireIdentityOf } from "@lararium/mesh/wire-identity-door";
 import { DurableNodeFSStorageAdapter } from "../src/durable-storage-adapter.js";
 
 type Doc = { marks: Record<string, number> };

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { makeIslandRepo } from "@lararium/mesh/island-repo";
+import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
 import { foundThePlace, foundTheFace, retireFaceCheckpoint, KeyhiveProvider } from "../src/index.js";
 import { faceAtomKeyFromSeed, mintFaceAtomSeed } from "@lararium/mesh/face-atom";
 import { groupSecretOpenerFromSeed, sealGroupSecret, personaGroupSecret } from "@lararium/mesh/persona-group-secret";

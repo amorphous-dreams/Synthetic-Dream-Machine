@@ -135,9 +135,43 @@ test("LIVE: no reader loads the barrel beyond the named exceptions, and each exc
 
 test("LIVE: every subpath a reader names stands in mesh's exports map", () => {
   const exportsMap = JSON.parse(readFileSync(join(ROOT, "packages/lararium-mesh/package.json"), "utf8")).exports;
-  const named = new Map();
-  for (const [rel, text] of liveTree()) if (!SUBPATH_FIXTURES.has(rel)) for (const sub of subpathsNamed(text)) if (!named.has(sub)) named.set(sub, rel);
-  assert.ok(named.size > 100, `the scan reads only ${named.size} subpaths; an empty scan would pass vacuously`);
-  const missing = [...named].filter(([sub, rel]) => !(`./${sub}` in exportsMap) && !(INTERNAL_SUBPATHS.has(sub) && !rel.includes("/src/"))).map(([sub, rel]) => `${sub} (first named in ${rel})`);
-  assert.deepEqual(missing, [], "add each to packages/lararium-mesh/package.json `exports`: { import: ./dist/<sub>.js, types: ./dist/<sub>.d.ts }");
+  // Every (subpath, file) pair is judged: an internal subpath a suite may reach stays barred from every src file.
+  const named = [];
+  for (const [rel, text] of liveTree()) if (!SUBPATH_FIXTURES.has(rel)) for (const sub of new Set(subpathsNamed(text))) named.push([sub, rel]);
+  assert.ok(new Set(named.map(([sub]) => sub)).size > 100, "the scan reads too few subpaths; an empty scan would pass vacuously");
+  const missing = named.filter(([sub, rel]) => !(`./${sub}` in exportsMap) && !(INTERNAL_SUBPATHS.has(sub) && !rel.includes("/src/"))).map(([sub, rel]) => `${sub} (named in ${rel})`);
+  assert.deepEqual(missing, [], "add each to packages/lararium-mesh/package.json `exports`, or name the module's door (`<module>-door`) when the module holds more than the barrel lends");
+});
+
+/**
+ * Subpaths that stood public BEFORE the rewrite, each lending more than the barrel did. The rewrite widened none of
+ * them; this list only shrinks (a door or a ruling takes a row off).
+ */
+const PRE_REWRITE_WIDE = new Map([
+  ["./spirit-shrine", "the spirit verbs' own door (#545), read by lares-cli"], ["./hand-refusal", "a host door the cli reads"],
+  ["./wire-names", "the wire-name table"], ["./carrier-type", "the carrier family table"], ["./meme-merge", "the merge driver's door"],
+  ["./meme-merge-git", "the git merge driver (node)"], ["./node", "the HOST door: nothing on it rides the barrel by law"],
+  ["./face-proof-subjects", "a seated door"], ["./session-face", "a seated door"], ["./session-signer", "a seated door"],
+  ["./session-contract", "a seated door"], ["./rendezvous-path", "a seated door"],
+  ["./cascade", "names a dist no source builds; owed its own retire"],
+]);
+
+test("LIVE: no exported subpath lends a reader more at run time than the barrel lent from that module", async () => {
+  const MESH = join(ROOT, "packages/lararium-mesh");
+  const pkg = JSON.parse(readFileSync(join(MESH, "package.json"), "utf8"));
+  assert.ok(existsSync(join(MESH, "dist/index.js")), "mesh dist absent; cure: pnpm --filter @lararium/mesh build");
+  // The RUN-TIME namespaces tsc emitted, read as Node loads them: TypeScript 7 ships no JS compiler API, and a module
+  // namespace is the exact set a reader can import, with no parser between.
+  const barrel = await import(join(MESH, "dist/index.js"));
+  const lent = new Set(Object.values(barrel));
+  const wide = [];
+  for (const [sub, target] of Object.entries(pkg.exports)) {
+    if (sub === "." || PRE_REWRITE_WIDE.has(sub)) continue;
+    const ns = await import(join(MESH, target.import));
+    const extra = Object.keys(ns).filter((k) => !(k in barrel && barrel[k] === ns[k]) && !((typeof ns[k] === "function" || (typeof ns[k] === "object" && ns[k] !== null)) && lent.has(ns[k])));
+    if (extra.length) wide.push(`${sub}: ${extra.join(" ")}`);
+  }
+  assert.deepEqual(wide, [], "each subpath lends only what the barrel lent from that module: seat a `<module>-door.ts` carrying the barrel's lines and export the door instead");
+  const healed = [...PRE_REWRITE_WIDE.keys()].filter((sub) => !(sub in pkg.exports));
+  assert.deepEqual(healed, [], "these pre-rewrite subpaths left the exports map; take them off PRE_REWRITE_WIDE");
 });

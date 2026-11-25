@@ -12,7 +12,7 @@
  */
 import { describe, expect, test } from "vitest";
 import type { FederationPosture } from "@lararium/mesh/federation-gate";
-import type { GateShadowRing } from "@lararium/mesh/face-gate";
+import type { GateShadowRing } from "@lararium/mesh/face-gate-door";
 import { vesselGate } from "../src/vessel-gates.js";
 import type { CarriedNexusReading } from "../src/nexus-carriage.js";
 import { world, presenter, dial, type World } from "../../lararium-mesh/tests/face-gate-fixture.js";

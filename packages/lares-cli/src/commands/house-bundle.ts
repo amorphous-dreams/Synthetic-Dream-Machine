@@ -88,7 +88,7 @@ import {
 } from "../bundle-manifest.js";
 import { LIVE_SHARE_DOORS, landShares, shareSetArgs, unhandedLine } from "../share-doors.js";
 import { KeepSeatRefused, adoptKeepSeat, isTestRoute, bundleSeatText, keepSeatForCut, liveKeepRoute, openKeepSeat, sealRosterForCut, signCut } from "../keep-seat.js";
-import { verifyKeepCut } from "@lararium/mesh/keep-seat";
+import { verifyKeepCut } from "@lararium/mesh/keep-seat-door";
 import { type Credential } from "@lararium/mesh/keyslot-door";
 
 /** A keep seat refusal, as the bundle verbs name it. */

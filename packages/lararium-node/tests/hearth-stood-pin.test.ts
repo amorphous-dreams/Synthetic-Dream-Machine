@@ -15,7 +15,7 @@ import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
-import { custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute } from "@lararium/mesh/gate-bundle";
+import { custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute } from "@lararium/mesh/gate-bundle-door";
 import { hex } from "@lararium/mesh/crypto";
 import { nexusAidOf } from "@lararium/mesh/nexus-seal-seed";
 import { SOVEREIGN_SYNC_ROUTE } from "@lararium/mesh/admit-gate-pin";

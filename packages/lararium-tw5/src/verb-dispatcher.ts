@@ -54,7 +54,7 @@ import { type ChoreReceiptMark } from "@lararium/mesh/chore-ask";
 import { type CompositeStore } from "@lararium/mesh/composite-store";
 import { type CapabilityVerifier } from "@lararium/mesh/capability";
 import { type LarTiddlerChange } from "@lararium/mesh/tiddler-store";
-import { wikiSlugOfBag } from "@lararium/mesh/surface-recipe";
+import { wikiSlugOfBag } from "@lararium/mesh/surface-recipe-door";
 import { ControlHomeUnavailable } from "@lararium/mesh/control-home";
 import type { Hand } from "@lararium/mesh/session-contract";
 import { dispatchVerb, placeVerb, copyEffectOutcome, writeOutcome, removeVerb, isVisitResults, EFFECT_URI_PREFIX } from "./verb-vm.js";

@@ -48,7 +48,7 @@ import type { CeremonyAskKind } from "./ceremony-protocol.js";
 import type { FloorAnchor } from "@lararium/mesh/hearth-floor-pins";
 import type { GenesisSeed } from "@lararium/mesh/genesis-doc";
 import type { LarMsg_ControlEvent, LarMsg_ControlResult } from "@lararium/mesh/lar-camera";
-import type { VesselRestState } from "@lararium/mesh/vessel-island-pool-core";
+import type { VesselRestState } from "@lararium/mesh/vessel-island-pool-core-door";
 
 /** What the page hands the vessel worker to boot on: public inputs alone (URLs, the served seed, the arrival's carriage). */
 export interface VesselBoot {

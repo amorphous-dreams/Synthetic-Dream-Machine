@@ -1,5 +1,5 @@
 /** Operator acts over the vessel's relay enablement and admission key. */
-import { deriveGateBundle, gateKnock, sovereignGateRoot, sovereignRoute, type GateBundlePin } from "@lararium/mesh/gate-bundle";
+import { deriveGateBundle, gateKnock, sovereignGateRoot, sovereignRoute, type GateBundlePin } from "@lararium/mesh/gate-bundle-door";
 import { utf8Bytes } from "@lararium/mesh/crypto";
 import { INTENT_RELAY_ROUTE } from "@lararium/mesh/intent-relay-door";
 import { listAnchoredPersonas, loadIdentityAnchors } from "../identity-anchors.js";

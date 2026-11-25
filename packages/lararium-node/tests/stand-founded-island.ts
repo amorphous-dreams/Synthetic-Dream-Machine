@@ -14,7 +14,7 @@ import { DAEMON_BAG_ID, SECRET_HOME_ID } from "@lararium/mesh/lar-uris";
 import { controlStoreOf, standControlHome } from "@lararium/mesh/control-home";
 import { faceAtomKeyFromSeed } from "@lararium/mesh/face-atom";
 import { hex } from "@lararium/mesh/crypto";
-import { makeIslandRepo, attachMessageChannelSync } from "@lararium/mesh/island-repo";
+import { makeIslandRepo, attachMessageChannelSync } from "@lararium/mesh/island-repo-door";
 import { mintFaceAnchor } from "@lararium/mesh/face-anchor";
 import { materializeSharedLarDoc, personaKelBoardDocUrl } from "@lararium/mesh/deterministic-doc";
 import { personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";

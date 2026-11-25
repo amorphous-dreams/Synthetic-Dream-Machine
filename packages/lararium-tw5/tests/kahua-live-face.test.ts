@@ -19,7 +19,7 @@ import { attestAndRotate, provisionThresholdRecoveryAtFounding } from "@lararium
 import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
 import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
 import { kahuaActCid, kahuaStageDocUrl, signKahuaCarry, signKahuaLift, writeKahuaAct } from "@lararium/mesh/kahua-stage";
-import { makeIslandRepo } from "@lararium/mesh/island-repo";
+import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
 import { materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
 import { recoveryContactRegistrationCard } from "@lararium/mesh/recovery-registration";
 import { storedLarRecord } from "@lararium/mesh/stored-record";

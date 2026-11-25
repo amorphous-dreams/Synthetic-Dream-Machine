@@ -22,7 +22,7 @@ vi.mock("../src/vessel-paths.js", () => ({ larBootstrapPath: () => seam.bootstra
 // The admit pins the Nexus the vessel's sovereign gate stands at (`stoodSovereignPin`, hearth-stood-pin P1-P3); this
 // suite reads the edge alone, so the stood pin is a fixed one read at the seal home the paths name.
 vi.mock("../src/hearth-sovereign-pin.js", async () => {
-  const mesh = { ...(await vi.importActual<typeof import("@lararium/mesh/admit-gate-pin")>("@lararium/mesh/admit-gate-pin")), ...(await vi.importActual<typeof import("@lararium/mesh/gate-bundle")>("@lararium/mesh/gate-bundle")) };
+  const mesh = { ...(await vi.importActual<typeof import("@lararium/mesh/admit-gate-pin")>("@lararium/mesh/admit-gate-pin")), ...(await vi.importActual<typeof import("@lararium/mesh/gate-bundle-door")>("@lararium/mesh/gate-bundle-door")) };
   return {
     stoodSovereignPin: (sealHome: string) => {
       if (sealHome !== "seal-home-under-test") throw new Error(`stood pin read at ${sealHome}`);

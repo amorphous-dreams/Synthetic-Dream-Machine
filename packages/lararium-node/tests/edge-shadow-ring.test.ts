@@ -58,7 +58,7 @@ import { gateShadowRing } from "../src/gate-shadow-ring.js";
 import { selfSlotShareDecision, NO_BANS, NOBODY_ASIDE, NOTHING_CLASSED } from "../src/self-slot-share.js";
 import { decideAndServeWantBlock, type CasWireServerDeps } from "../src/cas-wire.js";
 import type { FaceScope, VesselFaceKey } from "@lararium/mesh/face-proof-subjects";
-import type { GateSortInput } from "@lararium/mesh/face-gate";
+import type { GateSortInput } from "@lararium/mesh/face-gate-door";
 import { direct } from "./direct-store.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { chairKey, seatChairs } from "./seat-fixture.js";

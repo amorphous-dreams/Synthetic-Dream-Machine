@@ -25,7 +25,7 @@
  */
 import { faceAtomPublicKey, signAsFaceAtom } from "@lararium/mesh/face-atom";
 import { HANDLE_INDEX_CEILING } from "@lararium/mesh/persona-vault";
-import { nexusAidOfPin, type GateBundlePin } from "@lararium/mesh/gate-bundle";
+import { nexusAidOfPin, type GateBundlePin } from "@lararium/mesh/gate-bundle-door";
 import { preparePlaceFace, type JoinedFaceTarget, type PlaceReading } from "@lararium/mesh/session-face";
 import type { Hand } from "@lararium/mesh/session-contract";
 import type { NexusOwnChain } from "@lararium/mesh/island-protocol";

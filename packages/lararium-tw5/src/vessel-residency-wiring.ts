@@ -40,7 +40,7 @@ import { makeWikiActivationCap } from "@lararium/mesh/wiki-activation";
 import { slugFromUri, wikiBagUri } from "@lararium/mesh/wiki-recipe";
 import { tiddlerText } from "@lararium/mesh/base-doc";
 import { recipeUri } from "@lararium/mesh/lar-uris";
-import { deriveWikiRecipe } from "@lararium/mesh/surface-recipe";
+import { deriveWikiRecipe } from "@lararium/mesh/surface-recipe-door";
 import { ownEntry } from "@lararium/mesh/stored-value";
 import { realmStandingDocUrl } from "@lararium/mesh/realm-bag";
 import { wikiCanonAddress } from "@lararium/mesh/house-canon-doc";

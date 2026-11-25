@@ -77,7 +77,7 @@ import { placeSeed } from "./browser-place-seed.fixture.js";
 import { describe, expect, test, vi } from "vitest";
 import { bindSlot, confirmPaperPin, decodeSlotTree, draftPaperPin, nobleKdf } from "@lararium/mesh/keyslot-door";
 import { commitSlotTree, openSealedCarrier, writeSealedCarrier, SEALING_SUFFIX, type CustodyIo } from "@lararium/mesh/sealed-writer";
-import { mintTreeKey } from "@lararium/mesh/tree-key";
+import { mintTreeKey } from "@lararium/mesh/tree-key-door";
 import { BootHalted } from "./wire-vessel-rig.js";
 import { bindSyntheticBrowserCustodySlot, bindSyntheticFace, foundedGroupOf } from "./browser-custody-fixture.js";
 import { wornFaceTreeOf } from "../src/browser-ward-tree.js";

@@ -21,7 +21,7 @@ import { browserWalkLeaf, browserWalkStore } from "../src/browser-walk.js";
 import { lockBrowserCustody, readBrowserCustody, readKeystoreRecord, unlockBrowserCustody } from "../src/browser-custody.js";
 import { bindFirstFaceSlot, lockFaceCustody, unlockFaceCustody } from "../src/browser-face-custody.js";
 import { admitCarriageCommit } from "@lararium/mesh/carriage-registry";
-import { custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute } from "@lararium/mesh/gate-bundle";
+import { custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute } from "@lararium/mesh/gate-bundle-door";
 import { encodeInvite } from "@lararium/mesh/hosting";
 import {
   faceKeyGrantImage,

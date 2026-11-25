@@ -22,7 +22,7 @@ import {
 import { carriageDocUrl } from "@lararium/mesh/deterministic-doc";
 import { writeCarriageEntry } from "@lararium/mesh/carriage-board";
 import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
-import { custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute, type GateBundlePin } from "@lararium/mesh/gate-bundle";
+import { custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute, type GateBundlePin } from "@lararium/mesh/gate-bundle-door";
 import { dialPresentation } from "../src/nexus-carriage.js";
 import { takeAdmitBundle } from "../src/admit-bundle.js";
 import { writeNexusDoc } from "../src/nexus-doc.js";

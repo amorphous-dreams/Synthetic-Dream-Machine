@@ -2,7 +2,7 @@
 import { afterAll, beforeAll, describe, expect, test, vi } from "vitest";
 import { deviceEdgeDigest, type DeviceDelegationTiddler } from "@lararium/mesh/device-delegation";
 import { ed25519SignerFromSeed } from "@lararium/mesh/ed25519-door";
-import { makeIslandRepo } from "@lararium/mesh/island-repo";
+import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
 import { mintFaceAnchor } from "@lararium/mesh/face-anchor";
 import { signLeaseAdvance } from "@lararium/mesh/lease-advance";
 import { type AutomergeUrl } from "@lararium/mesh/automerge";

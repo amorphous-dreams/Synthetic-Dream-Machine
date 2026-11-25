@@ -11,7 +11,7 @@ import { afterAll, describe, expect, test, vi } from "vitest";
 import { cpSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { deriveGateBundle, floorGateRoot, floorKeyDoor, floorRoute } from "@lararium/mesh/gate-bundle";
+import { deriveGateBundle, floorGateRoot, floorKeyDoor, floorRoute } from "@lararium/mesh/gate-bundle-door";
 import { fileHearthFloorCard, hearthFloorCardText, readHearthFloorCard, verifyHearthFloorCard } from "@lararium/mesh/hearth-floor-pins";
 import { hearthPinIndex } from "@lararium/mesh/admit-gate-pin";
 import { verifyPlaceKel } from "@lararium/mesh/vessel-kel";

@@ -15,7 +15,7 @@ import { ScriptedSeatRolls, type RollOutcome } from "@lararium/mesh/content-key-
 import { SealedStore, memorySealedStoreRest, type SealedStoreRest } from "@lararium/mesh/sealed-store-rest";
 import { utf8Bytes } from "@lararium/mesh/crypto";
 import { type RecordSigner } from "@lararium/mesh/sealed-records";
-import { type SealedAddress } from "@lararium/mesh/sealed-chunk";
+import { type SealedAddress } from "@lararium/mesh/sealed-chunk-door";
 import { type SeatRoll } from "@lararium/mesh/seat-duties";
 import { type SessionOwnChain } from "@lararium/mesh/island-protocol";
 import { KeyhiveProvider, InMemoryEventStore, seatContentKeys, ownChainStanding, type ContentKeySeat } from "../src/index.js";

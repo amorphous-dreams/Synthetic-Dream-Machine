@@ -73,7 +73,7 @@ import { sha256HexBytesSync, utf8Bytes } from "@lararium/mesh/crypto";
 import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { type LarDoc } from "@lararium/mesh/base-doc";
 import { type RecordSigner, type WriterStanding } from "@lararium/mesh/sealed-records";
-import { type SealedAddress } from "@lararium/mesh/sealed-chunk";
+import { type SealedAddress } from "@lararium/mesh/sealed-chunk-door";
 import { type SessionOwnChain } from "@lararium/mesh/island-protocol";
 import { KeyhiveProvider, InMemoryEventStore, RealmWriterBook, faceStanding, realmRestPort, seatContentKeys, type ContentKeySeat, type ContentKeySeatInput, type RealmFace, type RealmWriters } from "../src/index.js";
 import { adoptWorkbench, faceWorkbenchRealm, handOverCure, landWorkbench, sealedAdmitRefusal, landsUnderAHand, projectWorkbenchRoster, removeWorkbenchFace, workbenchFaceHolds, workbenchWriterSeat, type LedgerDoc } from "../src/workbench-realm.js";

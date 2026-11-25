@@ -41,12 +41,12 @@ import {
   sovereignGateRoot,
   sovereignRoute,
   type GateBundle,
-} from "@lararium/mesh/gate-bundle";
+} from "@lararium/mesh/gate-bundle-door";
 import { fleetJoinAnswerImage, type FleetJoinAnswer } from "@lararium/mesh/fleet-join";
 import { heldNexusRoot } from "@lararium/mesh/held-nexus-root";
 import { hex, utf8Bytes } from "@lararium/mesh/crypto";
 import { makeMultiSigQuorumVerifier } from "@lararium/mesh/kapae-antigen";
-import { memoryBackedWithdrawals, type GateSession } from "@lararium/mesh/face-gate";
+import { memoryBackedWithdrawals, type GateSession } from "@lararium/mesh/face-gate-door";
 import { nexusAidOf } from "@lararium/mesh/nexus-seal-seed";
 import { SessionTable, sessionBinding } from "../../../lararium-mesh/src/session-contract.js";
 import { runFoundTheFace, runFleetJoinOffer, runFleetJoinRequest, runFleetJoinAnswer, runFleetJoinLand } from "../../src/index.js";

@@ -17,7 +17,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { decodeKeepSeat, keepVerifyKeyOf, openKeepSecret } from "@lararium/mesh/keep-seat";
+import { decodeKeepSeat, keepVerifyKeyOf, openKeepSecret } from "@lararium/mesh/keep-seat-door";
 import { nobleKdf } from "@lararium/mesh/keyslot-door";
 import { FsCustodyIo } from "../src/custody-io.js";
 import { makeCustodyHolder } from "../src/custody-holder.js";

@@ -31,7 +31,7 @@ import type { LarDoc } from "@lararium/mesh/base-doc";
 import type { WikiRecipe } from "@lararium/mesh/wiki-recipe";
 import type { OfferingLookup } from "@lararium/mesh/plugin-offering-selector";
 import { offeringAnnouncesFromDoc } from "@lararium/mesh/offering-announce";
-import { resolveRecipePluginCids } from "@lararium/mesh/surface-recipe";
+import { resolveRecipePluginCids } from "@lararium/mesh/surface-recipe-door";
 
 export type NodePluginResolutionVerdict =
   | { readonly ok: true; readonly pluginCids: readonly string[] }

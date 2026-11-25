@@ -26,7 +26,7 @@ import {
   slotsOpenedBy,
   type Credential,
 } from "@lararium/mesh/keyslot-door";
-import { mintTreeKey } from "@lararium/mesh/tree-key";
+import { mintTreeKey } from "@lararium/mesh/tree-key-door";
 
 vi.setConfig({ testTimeout: 240_000 });
 

@@ -49,10 +49,10 @@ import type { IncomingMessage } from "node:http";
 import type { Duplex } from "node:stream";
 import { randomInt } from "node:crypto";
 import { WebSocketServer, type WebSocket } from "ws";
-import { GATE_PROTOCOL, readGateFlightHeader, type GateFlightRefusal } from "@lararium/mesh/gate-exchange";
-import { NOISE_MAX_MESSAGE_BYTES } from "@lararium/mesh/noise-ik";
+import { GATE_PROTOCOL, readGateFlightHeader, type GateFlightRefusal } from "@lararium/mesh/gate-exchange-door";
+import { NOISE_MAX_MESSAGE_BYTES } from "@lararium/mesh/noise-ik-door";
 import { channelSessionTable, type GateChannelBounds, type GateSessionChannel } from "@lararium/mesh/gate-session-channel";
-import { gateKnock, readGateBundlePin, type GateBundlePin } from "@lararium/mesh/gate-bundle";
+import { gateKnock, readGateBundlePin, type GateBundlePin } from "@lararium/mesh/gate-bundle-door";
 import {
   type FaceGate,
   type GateDeadlines,
@@ -61,7 +61,7 @@ import {
   type GateSession,
   type GateSessionTable,
   type GateSocket,
-} from "@lararium/mesh/face-gate";
+} from "@lararium/mesh/face-gate-door";
 import { type IntentRelayResult } from "@lararium/mesh/intent-relay-door";
 
 export type IntentRelayOutcome = { readonly outcome: "relay-answered"; readonly status: IntentRelayResult["status"] };

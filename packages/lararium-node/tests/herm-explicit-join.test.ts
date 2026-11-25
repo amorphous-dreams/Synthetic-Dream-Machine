@@ -21,7 +21,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { carriageDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
 import { carriageEntriesFromBoard, writeCarriageEntry } from "@lararium/mesh/carriage-board";
-import { filePlaceFloorPins, placeFloorPinsFromBoard, type PlaceFloorPinStatement } from "@lararium/mesh/place-floor-pin";
+import { filePlaceFloorPins, placeFloorPinsFromBoard, type PlaceFloorPinStatement } from "@lararium/mesh/place-floor-pin-door";
 import { foldCarrierSet } from "@lararium/mesh/carriage-registry";
 import { foundingRoster } from "@lararium/mesh/nexus-seal-seed";
 import { hearthPinIndex } from "@lararium/mesh/admit-gate-pin";
