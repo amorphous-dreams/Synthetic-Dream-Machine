@@ -1,0 +1,87 @@
+title: $:/lares/shore/log
+caption: Shore log
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+\function shore.log.events() [prefix[$:/lares/shore/log/event/]]
+\function shore.log.held() [function[shore.log.events]] :filter[get[ack]else[0]compare:number:lt{!!last-seq}]
+\function shore.log.nl() [charcode[10]]
+\procedure shore.log.kind-state() $:/state/lares/shore/log/kind
+\procedure shore.log.open-state() $:/state/lares/shore/log/open
+\procedure shore.log.ack()
+<$button class="tc-btn-invisible lar-shore-log-ack" tooltip="Acknowledge this event at its last seq: it reads held again only where it recurs">
+<$action-setfield $tiddler=<<currentTiddler>> ack={{!!last-seq}}/>
+ack
+</$button>
+\end
+\procedure shore.log.fold()
+<$let month=<<now "YYYY-0MM">> ash={{{ [<month>addprefix[$:/lares/shore/log/ash/]] }}} entry={{{ [{!!severity}] [{!!kind}] [{!!subject}] [{!!count}addprefix[×]] [{!!first-seq}addsuffix[..]addsuffix{!!last-seq}addprefix[seq ]] [{!!boot}addprefix[boot ]] [{!!text}] +[join[ ]] }}}>
+<$button class="tc-btn-invisible lar-shore-log-fold" tooltip="Fold this record into the month's ash; it rises again only where the event recurs">
+<$action-setfield $tiddler=<<ash>> type="text/plain" tags="[[$:/tags/lares/shore/log/ash]]" text={{{ [<ash>get[text]] [<entry>] +[join<shore.log.nl>] }}}/>
+<$action-deletetiddler $tiddler=<<currentTiddler>>/>
+fold
+</$button>
+</$let>
+\end
+\procedure shore.log.open()
+<$reveal type="nomatch" state=<<shore.log.open-state>> text=<<currentTiddler>>>
+<$button class="tc-btn-invisible" set=<<shore.log.open-state>> setTo=<<currentTiddler>> tooltip="Open this record raw">open</$button>
+</$reveal>
+<$reveal type="match" state=<<shore.log.open-state>> text=<<currentTiddler>>>
+<$button class="tc-btn-invisible" set=<<shore.log.open-state>> setTo="" tooltip="Close the raw record">close</$button>
+</$reveal>
+\end
+
+<div class="lar-shore-log">
+
+<p>
+The vessel's log, one record per distinct event, folded at the source. <$text text={{{ [function[shore.log.events]count[]] }}}/> record(s), <$text text={{{ [function[shore.log.held]count[]] }}}/> held. Boot(s): <$list filter="[function[shore.log.events]each[boot]get[boot]sort[]]" variable="boot" join=", "><code><<boot>></code></$list>. A terminal reads the same records with <code>lares shore log [--kind <k>] [--held] [--boot <id>]</code>.
+</p>
+
+<$list filter="[<shore.log.kind-state>get[text]!is[blank]]" variable="-" emptyMessage="""
+<table class="lar-shore-log-kinds">
+<tr><th>kind</th><th>records</th><th>lines</th><th>held</th><th>worst</th></tr>
+<$list filter="[function[shore.log.events]each[kind]get[kind]sort[]]" variable="kind">
+<tr>
+<td><$button class="tc-btn-invisible" set=<<shore.log.kind-state>> setTo=<<kind>>><code><<kind>></code></$button></td>
+<td><$text text={{{ [function[shore.log.events]field:kind<kind>count[]] }}}/></td>
+<td><$text text={{{ [function[shore.log.events]field:kind<kind>get[count]sum[]] }}}/></td>
+<td><$text text={{{ [function[shore.log.held]field:kind<kind>count[]] }}}/></td>
+<td><$text text={{{ [function[shore.log.events]field:kind<kind>field:severity[error]then[error]] ~[function[shore.log.events]field:kind<kind>field:severity[warn]then[warn]] ~[[info]] }}}/></td>
+</tr>
+</$list>
+</table>
+""">
+<$let kind={{{ [<shore.log.kind-state>get[text]] }}}>
+<p>
+<$button class="tc-btn-invisible" set=<<shore.log.kind-state>> setTo="">← every kind</$button> · <code><<kind>></code>
+</p>
+<table class="lar-shore-log-records">
+<tr><th>severity</th><th>subject</th><th>count</th><th>seq</th><th>boot</th><th>held</th><th></th></tr>
+<$list filter="[function[shore.log.events]field:kind<kind>!nsort[last-seq]]">
+<tr>
+<td><$text text={{!!severity}}/></td>
+<td><code><$text text={{!!subject}}/></code></td>
+<td><$text text={{!!count}}/></td>
+<td><$text text={{{ [{!!first-seq}addsuffix[..]addsuffix{!!last-seq}] }}}/></td>
+<td><code><$text text={{!!boot}}/></code></td>
+<td><$list filter="[<currentTiddler>] :filter[get[ack]else[0]compare:number:lt{!!last-seq}]" variable="-" emptyMessage="—">held</$list></td>
+<td><<shore.log.ack>> · <<shore.log.fold>> · <<shore.log.open>></td>
+</tr>
+<$reveal type="match" state=<<shore.log.open-state>> text=<<currentTiddler>> tag="tr">
+<td colspan="7">
+<pre><$text text={{!!text}}/></pre>
+<table class="lar-shore-log-raw">
+<$list filter="[<currentTiddler>fields[]sort[]] -text" variable="field">
+<tr><td><code><<field>></code></td><td><$text text={{{ [<currentTiddler>get<field>] }}}/></td></tr>
+</$list>
+</table>
+<$link to=<<currentTiddler>>>the record</$link>
+</td>
+</$reveal>
+</$list>
+</table>
+</$let>
+</$list>
+
+</div>

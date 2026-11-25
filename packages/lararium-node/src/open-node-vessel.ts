@@ -233,6 +233,7 @@ import { custodyOpens, duringLight, faceNamedCustodyWrite } from "./face-named-c
 import { armedLight, recardArms } from "./recard-arms.js";
 import { fenceReceiptAtStop } from "./stop-receipt-fence.js";
 import { daemonGenesisDir, daemonBagsDir, loadLaresConfig, tempConsentedSlugs } from "./lares-config.js";
+import type { VesselLogSink } from "./vessel-log-sink.js";
 import { projectionRoots, workspaceRootsOf, workbenchFolders, litFaceDiskMirrors, FACES_PROJECTION_DIR, REALMS_PROJECTION_DIR, faceRoot, type WorkbenchFolder } from "./bag-paths.js";
 import { ensureRealmLabel, realmPlacement, settleRealmMoves } from "./realm-labels.js";
 import { ledgerWorkbenches, ledgerWorkbenchRealms, workbenchSeats } from "@lararium/mesh/workbench";
@@ -563,6 +564,12 @@ export interface NodeVesselOptions extends LarariumVesselOptions {
    * boot dial alone may issue the founder's certificate at a new scope under it, and drops it once that dial settles.
    */
   readonly bootWard?: WardCredential;
+  /**
+   * The boot's log sink (`vessel-log-sink`): once the daemon island stands it takes the sink's records into the worn face's
+   * daemon temp layer, and each island restart replays the whole ring (a re-opened temp layer stands empty). Absent: the
+   * vessel's console stays the flat log alone.
+   */
+  readonly shoreLog?: Pick<VesselLogSink, "attach" | "replay">;
   portPolicy?: PortPolicy;
   onPortMessage?: (binding: string, islandKey: string, msg: PortIslandToVesselMsg) => void;
   storageDir: string;
@@ -4471,6 +4478,12 @@ async function prepareNodeBootOn(
     // restart) releases each closing face the composition left out.
     restartForFaces = async (reason) => { await daemonHolder.restart(reason); };
     daemonHolder.onRestarted(() => faceLife.recomposed(composedWith));
+    // THE VESSEL'S LOG RECORDS reach the daemon temp layer from here on (`vessel-log-sink`), and every re-opened island takes the whole ring again.
+    if (opts.shoreLog) {
+      const shoreLog = opts.shoreLog;
+      shoreLog.attach((records) => daemonVm.placeShoreLog(records));
+      daemonHolder.onRestarted(() => shoreLog.replay());
+    }
     standDaemonVm();
     // THE FACE'S CATALOG OPENS AFTER ITS HOLDER STANDS (T2): the island stood with its holder, so the sealed catalog
     // hydrates; the island then registers every bag it names beyond the set its open carried (the face's user bags, a

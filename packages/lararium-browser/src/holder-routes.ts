@@ -87,6 +87,7 @@ export const HOLDER_SENDERS = {
   "daemon:face-lit": "owner",
   "daemon:face-drop": "owner",
   "daemon:face-bags": "owner",
+  "daemon:shore-log": "owner",
   "daemon:resolve-binding-request": "any",
   "daemon:gate-verb-request": "any",
   "daemon:evict-result": "owner",

@@ -1252,6 +1252,10 @@
       "import": "./dist/shell-leaving-record.js",
       "types": "./dist/shell-leaving-record.d.ts"
     },
+    "./shore-log": {
+      "import": "./dist/shore-log.js",
+      "types": "./dist/shore-log.d.ts"
+    },
     "./sibling-channel": {
       "import": "./dist/sibling-channel.js",
       "types": "./dist/sibling-channel.d.ts"

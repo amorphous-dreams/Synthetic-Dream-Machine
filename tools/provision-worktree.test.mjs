@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { realpathSync, cpSync, existsSync, linkSync, mkdirSync, mkdtempSync, readFileSync, readlinkSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, relative } from 'node:path';
-import { assertDestination, provision, provisionExisting } from './provision-worktree.mjs';
+import { assertDestination, provision, provisionExisting, provisionSourceOnly } from './provision-worktree.mjs';
 import { stampWasm } from './stamp-build.mjs';
 
 const noGuard = () => {};
@@ -376,4 +376,27 @@ test('an existing-worktree call names a missing directory and a path that is no 
     assert.throws(() => provisionExisting({ worktree: join(f.base, 'absent'), guard: noGuard, run: f.run }), /is no directory; create it first: git worktree add/);
     assert.throws(() => provisionExisting({ worktree: join(f.worktree, 'packages'), guard: noGuard, run: f.run }), /no git worktree root/);
   } finally { f.close(); }
+});
+
+// RED-FIRST (floor-warden#2, mandate/floor-gate-1): a tasked spirit's bench holds the tracked tree alone.
+test('RED: --source-only adds the worktree on a new branch after the disk guard, and runs no submodule, install or build', () => {
+  const base = mkdtempSync(join(tmpdir(), 'provision-source-only-'));
+  const source = join(base, 'source'); mkdirSync(source);
+  const calls = []; let guarded = false;
+  const run = (cmd, args) => { calls.push([cmd, ...args].join(' ')); return cmd === 'git' && args.includes('rev-parse') ? 'abc123\n' : ''; };
+  const out = provisionSourceOnly({ source, destination: join(base, 'bench'), branch: 'spirit/x', run, log: () => {}, guard: () => { guarded = true; } });
+  assert.equal(guarded, true, 'the disk guard reads before the worktree lands');
+  assert.equal(out.head, 'abc123');
+  assert.ok(calls.some((c) => c === `git -C ${realpathSync(source)} worktree add -b spirit/x ${join(base, 'bench')} origin/develop`), calls.join('\n'));
+  assert.ok(!calls.some((c) => /pnpm|npm|submodule|tsc|build/.test(c)), `a source-only bench ran: ${calls.join(' | ')}`);
+});
+
+test('RED: --source-only with no branch adds a detached tree at the base; a bad branch name refuses before git runs', () => {
+  const base = mkdtempSync(join(tmpdir(), 'provision-source-only-'));
+  const source = join(base, 'source'); mkdirSync(source);
+  const calls = [];
+  const run = (cmd, args) => { calls.push([cmd, ...args].join(' ')); return 'f00\n'; };
+  provisionSourceOnly({ source, destination: join(base, 'a'), base: 'HEAD', run, log: () => {}, guard: noGuard });
+  assert.ok(calls[0].includes('worktree add --detach'), calls[0]);
+  assert.throws(() => provisionSourceOnly({ source, destination: join(base, 'b'), branch: 'bad name', run: () => { throw new Error('git ran'); }, log: () => {}, guard: noGuard }), /--branch wants/);
 });
