@@ -174,6 +174,7 @@ The incidents behind each crossing read at <<~ loulou uri=`lar:///ha.ka.ba/lares
 * ''Evergreen, with no old shapes.'' No migration door, no shim, and no detecting or warning about an old shape: old shapes stand as rejected experiments. Code, comments, logs, help text and test names state what IS, with no history words (//retired//, //no longer//, //now//, //legacy//, //pre-cutover//). Git carries the ashes, and o-takiage reaches code as much as carriers.
 * ''A refusal of the house's own earlier shape lives for one commit.'' The commit that moves a shape may refuse the earlier spelling by name; the next commit burns that refusal, its name list and the tests that pin the retired name. A check that also guards a live invariant (forged, foreign, occupied or malformed bytes) keeps the invariant in present tense, with present tests, and loses only the historical name.
 * ''Recursive o-takiage.'' A witness that catches burned names, or a list of retired names inside a test, lives only as scaffolding: build it, run it green, then burn it in the lane's final aftermath commit. No standing retired-names witness; a standing list keeps dead names and their l-space alive.
+* ''Every spirit stands beside the tree octopus.'' A spirit holds a `#has` stack and many instances, each a stream of thought and never an individual or a principal; the pattern integrity and its tells read at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/spirit-circle#/the-pattern`>>.
 * ''A burr gets taken when it appears'', or it gets a line with its wake condition in the roadmap (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-loops`>>).
 
 <<~/ahu>>
@@ -252,6 +253,6 @@ git config merge.mem-seal.driver "node tools/mem-merge-driver.mjs %O %A %B %P %L
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;NMhZS8I0uEoVv0dD5oagfXKiv8q6pl2bcpjE7qCX1ls`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;iwoYvCL750wpT57JfgDNE9htOAurp4E00E7mbusx3oY`>>
 
 <<^ code=`&#x0004;` to=`?`>>
