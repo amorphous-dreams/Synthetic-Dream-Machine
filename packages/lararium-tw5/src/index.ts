@@ -127,7 +127,7 @@ export { CANON_OFFER_VERBS, registerCanonOfferVerbs, makeOfferMakeReactor, makeO
 export type { FaceTargetResolver, IngestAlert } from "./action-handler.js";
 export { fresherThanBase, fresherAfterChange, listFresherCanon, listBaseUnknown, type FresherCanon, type BaseUnknownCopy } from "./override-bases.js";
 export type { Tw5Deserializer } from "./action-handler.js";
-export { canonicalizeNativeCarrierText } from "./native-canonical.js";
+export { canonicalizeNativeCarrierText, nativeCarrierLanding } from "./native-canonical.js";
 export type { NativeCanonicalCarrier } from "./native-canonical.js";
 export { makeWikiBehavior } from "./wiki-behavior.js";
 export { hasPortLease } from "./record-port-lease.js";

@@ -46,9 +46,13 @@
  * Meme: lar:///ha.ka.ba/lararium/api/disk-projection#/write-ward
  */
 
+import { existsSync, readFileSync } from "node:fs";
 import { extname } from "node:path";
 import { contentHash } from "./synced-tree.js";
+import { carrierCasFlagged, declaredType } from "./ingest-scan.js";
 import { digestsEqual } from "@lararium/mesh/agile-digest";
+import { carrierHash } from "@lararium/mesh/crypto";
+import { mediaTypeFromExt, ridesAsPointer } from "@lararium/mesh/content-handle";
 import { decideCollapse, type CollapseRule, type CollapseToward } from "./standoff-collapse.js";
 
 /**
@@ -133,13 +137,40 @@ export interface StandoffKeeperDeps {
   readonly notice?: (line: string, kept: { readonly bagId: string; readonly uri: string }) => void;
   /** Why a write to `bagId`'s document could not rest right now (its saves wait unsealed), or null where it can. */
   readonly unrested?: (bagId: string) => string | null;
+  /** A native carrier as it stands at `path`: its body (base64 where the bytes read binary) and its `.meta`, or null where none stands. */
+  readonly readCarrier?: (path: string) => DiskCarrier | null;
+  /** Whether that carrier rides a pointer to its bytes (the blob law): such a body lands through `lares ingest` alone. */
+  readonly pointerBody?: (path: string, carrier: DiskCarrier) => boolean;
+  /** The one record a native carrier's bytes say (TW5's deserializer, the sidecar merged over), or why it lands nothing. */
+  readonly landNative?: (uri: string, ext: string, body: string, meta: string | undefined) => { readonly records: readonly Fields[] } | { readonly why: string };
   /** Raise, or clear, the awaiting alert of one stand-off. */
   readonly alert: (a: StandoffAlert) => void | Promise<void>;
+}
+
+/** A native carrier read off the disk. */
+export interface DiskCarrier { readonly body: string; readonly meta?: string; readonly binary: boolean }
+
+/** Read the carrier at `path` as the projector's judge reads it: the body, base64 where its bytes fail the utf8 round trip, and the sidecar beside it. */
+export function readCarrierAt(path: string): DiskCarrier | null {
+  try {
+    const bytes = readFileSync(path);
+    const text = bytes.toString("utf8");
+    const binary = !Buffer.from(text, "utf8").equals(bytes);
+    const meta = existsSync(`${path}.meta`) ? readFileSync(`${path}.meta`, "utf8") : undefined;
+    return { body: binary ? bytes.toString("base64") : text, ...(meta !== undefined ? { meta } : {}), binary };
+  } catch { return null; }
+}
+
+/** THE BLOB LAW at the keeper: the same reading the hand's `keep-disk` refuses on (`shore-take-disk.ts`). */
+export function pointerBodyAt(path: string, carrier: DiskCarrier): boolean {
+  return ridesAsPointer(declaredType(carrier.meta) ?? mediaTypeFromExt(extname(path), carrier.binary)) || carrierCasFlagged(carrier.body, carrier.meta);
 }
 
 export interface CollapseAudit {
   readonly rule: CollapseRule | typeof BEHIND_RULE;
   readonly toward: CollapseToward;
+  /** Where the landed words came from, where a keep took the file whole: the disk. The worn face's save path carried them. */
+  readonly writer?: "disk";
   readonly bagId: string;
   readonly uri: string;
   readonly path: string;
@@ -270,6 +301,8 @@ export class StandoffKeeper {
     if (entry === undefined) return { kind: "passed", why: "the stand-off left before the keeper weighed it" };
     if (entry.kind !== "sides" || !entry.path || !entry.disk) return { kind: "passed", why: "the stand-off names no one file whose words could load as drafts" };
     const path = entry.path;
+    // THE RECORDS FELL BEHIND THEIR BASE: no draft loads and no person's rule runs. The file holds the newest words.
+    if (entry.behind !== undefined) return this.keepDisk(entry, path, stands);
     const render = this.deps.render(bagId, uri, standoff);
     const diskText = this.deps.readDisk(path);
     if (render === null || diskText === null || !digestsEqual(contentHash(diskText), entry.disk)) {
@@ -285,8 +318,6 @@ export class StandoffKeeper {
     if (recordsSaid === null) return this.awaiting(entry, path, [], "the records' render fails the ingest grade, so nothing collapses");
     const diskRecs = byTitle(diskSaid);
     const recordRecs = byTitle(recordsSaid);
-    // THE RECORDS FELL BEHIND THEIR BASE: no draft loads and no person's rule runs. The file holds the newest words.
-    if (entry.behind !== undefined) return this.keepDisk(entry, path, diskText, memetic, recordRecs, stands);
     const baseText = entry.base ? this.deps.baseText(path, entry.base.disk) : null;
     const baseSaid = baseText !== null && memetic ? this.deps.deserialize(uri, baseText) : null;
     const baseRecs = baseSaid ? byTitle(baseSaid) : null;
@@ -350,8 +381,14 @@ export class StandoffKeeper {
     { readonly writes: Array<{ readonly title: string; readonly fields: Fields | null }> } | { readonly why: string } {
     const landed = this.deps.land(entry.uri, text);
     if ("why" in landed) return { why: `${rule} would land words the ingest gate refuses: ${landed.why}` };
+    return this.planWrites(entry, path, rule, landed.records, recordRecs);
+  }
+
+  /** The writes that bring the records to say `records`, or why they may not land: the grant, then each target's save bag. */
+  private planWrites(entry: KeeperStandoff, path: string, rule: string, records: readonly Fields[], recordRecs: Map<string, Fields>):
+    { readonly writes: Array<{ readonly title: string; readonly fields: Fields | null }> } | { readonly why: string } {
     if (!this.deps.grants(entry.bagId, path)) return { why: `${rule} would land words from ${path}, which ${entry.bagId}'s grant does not reach` };
-    const landing = byTitle(landed.records);
+    const landing = byTitle(records);
     const writes: Array<{ readonly title: string; readonly fields: Fields | null }> = [];
     for (const [title, fields] of landing) if (movedFields(fields, recordRecs.get(title)).length > 0) writes.push({ title, fields });
     for (const title of recordRecs.keys()) if (!landing.has(title) && this.deps.wiki.get(title) !== undefined) writes.push({ title, fields: null });
@@ -389,24 +426,55 @@ export class StandoffKeeper {
    * reason and claims nothing: a native carrier, words the ingest grade refuses, a save no layer takes, or a document
    * whose saves cannot rest (`unrested`). The older render never writes over the file on any of these roads.
    */
-  private async keepDisk(entry: KeeperStandoff, path: string, diskText: string, memetic: boolean, recordRecs: Map<string, Fields>, stands: () => KeeperStandoff | undefined): Promise<KeeperOutcome> {
+  private async keepDisk(entry: KeeperStandoff, path: string, stands: () => KeeperStandoff | undefined): Promise<KeeperOutcome> {
     const behind = entry.behind!;
+    const { bagId, uri } = entry;
     const named = `${behind.doc ?? "its document"} lacks the heads its base names (${behind.heads.join(", ")})`;
     if (!behind.quiet) {
       return this.awaiting(entry, path, [], `the records fell behind their last agreement with the file (${named}), and a write landed in that document since it mounted, so it may hold words newer than the file; a person picks`);
     }
     const owed = (why: string): Promise<KeeperOutcome> =>
-      this.awaiting(entry, path, [], `owed: the records fell behind their last agreement with the file (${named}) and the file's words did not land back: ${why}. The file stays whole; \`lares shore keep-disk ${entry.uri} --key ${entry.standoff}\` lands them by hand`);
-    if (!memetic) return owed("a native carrier's raw bytes land through the ingest gesture alone");
-    const unrested = this.deps.unrested?.(entry.bagId) ?? null;
-    if (unrested !== null) return owed(`a write to ${entry.bagId} cannot rest (${unrested})`);
-    const plan = this.planLanding(entry, path, BEHIND_RULE, diskText, recordRecs);
+      this.awaiting(entry, path, [], `owed: the records fell behind their last agreement with the file (${named}) and the file's words did not land back: ${why}. The file stays whole; \`lares shore keep-disk ${uri} --key ${entry.standoff}\` lands them by hand`);
+    const moved = (): Promise<KeeperOutcome> => this.awaiting(entry, path, [], "the file moved since the stand-off was weighed");
+    const unrested = this.deps.unrested?.(bagId) ?? null;
+    if (unrested !== null) return owed(`a write to ${bagId} cannot rest (${unrested})`);
+
+    // ONE KEEPER FOR EVERY CARRIER (operator ruling, 2026-11-25): a meme reads through the memetic congruence, and a
+    // native carrier (a `.tid`, a file with its `.meta`, a bare text file) through TW5's own deserializer with its sidecar
+    // merged over, each landing WHOLE as the hand's `keep-disk` lands it. A pointer body refuses by name, as it does there.
+    const ext = extname(path);
+    let landing: readonly Fields[];
+    let recordRecs: Map<string, Fields>;
+    if (ext === ".mem") {
+      const diskText = this.deps.readDisk(path);
+      if (diskText === null || !entry.disk || !digestsEqual(contentHash(diskText), entry.disk)) return moved();
+      const render = this.deps.render(bagId, uri, entry.standoff);
+      const recordsSaid = render === null ? null : this.deps.deserialize(uri, render.text);
+      if (recordsSaid === null) return owed("the records' render fails the ingest grade");
+      const landed = this.deps.land(uri, diskText);
+      if ("why" in landed) return owed(`the file's words fail the ingest grade: ${landed.why}`);
+      landing = landed.records;
+      recordRecs = byTitle(recordsSaid);
+    } else {
+      const carrier = this.deps.readCarrier?.(path) ?? null;
+      if (carrier === null || !entry.disk || !digestsEqual(carrierHash(carrier.body, carrier.meta), entry.disk)) return moved();
+      if (this.deps.pointerBody?.(path, carrier) ?? carrier.binary) {
+        return owed(`pointer-body-holds-no-key-proof: ${uri} rides a pointer to its bytes, which no key proof covers here; \`lares ingest ${path}\` lands its bytes by name`);
+      }
+      const landed = this.deps.landNative?.(uri, ext, carrier.body, carrier.meta) ?? { why: "this island reads no native carrier" };
+      if ("why" in landed) return owed(landed.why);
+      landing = landed.records;
+      const standing = this.deps.wiki.get(uri);
+      recordRecs = new Map(standing !== undefined ? [[uri, standing]] : []);
+    }
+    const plan = this.planWrites(entry, path, BEHIND_RULE, landing, recordRecs);
     if ("why" in plan) return owed(plan.why);
     if (stands() === undefined) return { kind: "passed", why: "the stand-off moved while the keeper weighed it" };
     if (plan.writes.length > 0) await this.writeLanding(plan.writes, recordRecs, []);
-    this.rounds.delete(entry.uri);
-    this.deps.audit({ rule: BEHIND_RULE, toward: "disk", bagId: entry.bagId, uri: entry.uri, path, standoff: entry.standoff, drafts: [] });
-    this.deps.notice?.(`[shore] kept the disk: ${entry.uri} (${path}) in ${entry.bagId} — ${named}, so the records went backwards and the file holds the newest words; ${plan.writes.length} record(s) took the file's words and the older render wrote nothing`, { bagId: entry.bagId, uri: entry.uri });
+    this.rounds.delete(uri);
+    // PROVENANCE: the words came off the disk, and the worn face's save path carried them. The audit row says both.
+    this.deps.audit({ rule: BEHIND_RULE, toward: "disk", writer: "disk", bagId, uri, path, standoff: entry.standoff, drafts: [] });
+    this.deps.notice?.(`[shore] kept the disk: ${uri} (${path}) in ${bagId} — ${named}, so the records went backwards and the file holds the newest words; ${plan.writes.length} record(s) took the file's words (writer: disk) and the older render wrote nothing`, { bagId, uri });
     return { kind: "collapsed", rule: BEHIND_RULE, toward: "disk", drafts: [] };
   }
 

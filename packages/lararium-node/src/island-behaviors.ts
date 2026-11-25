@@ -16,7 +16,7 @@ import { mkWikiVerbResult } from "@lararium/mesh/island-protocol";
 import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import type { IslandMsg_Manifest, WikiMsg_PlaceVerb } from "@lararium/mesh/island-protocol";
 import type { VesselJournal } from "@lararium/mesh/vessel-journal";
-import { exportCarrierFile, exportRecordCarrierFile, makeWikiBehavior, hasWikiSensorium, makeTw5Deserializer, canonicalizeNativeCarrierText, wikiLandedCovers, bindRecoveryAtRest } from "@lararium/tw5";
+import { exportCarrierFile, exportRecordCarrierFile, makeWikiBehavior, hasWikiSensorium, makeTw5Deserializer, canonicalizeNativeCarrierText, nativeCarrierLanding, wikiLandedCovers, bindRecoveryAtRest } from "@lararium/tw5";
 import type { CarrierFile } from "@lararium/tw5";
 import type { IslandBehavior, IslandContext } from "@lararium/tw5";
 // PURE subpath (no Automerge/wasm) — the same law `ingest-gate` reads `@lararium/mesh/agile-digest` under.
@@ -27,7 +27,7 @@ import { SyncedTree, syncedTreeDir, syncedTreeKey } from "./synced-tree.js";
 import { larProjectionCheckpointDir, larProjectionsHome } from "./vessel-paths.js";
 import { basePoolText, facePoolHeads } from "./pool-head.js";
 import { COLLAPSE_CONFIG_PREFIX, COLLAPSE_RULES, collapseConfigOf, collapseRuleTitle, rulesFor, type CollapseRule } from "./standoff-collapse.js";
-import { StandoffKeeper, keeperWikiOf, standoffAlertWords, type Tw5WikiLike } from "./standoff-drafts.js";
+import { StandoffKeeper, keeperWikiOf, standoffAlertWords, readCarrierAt, pointerBodyAt, type Tw5WikiLike } from "./standoff-drafts.js";
 import { checkoutTracking } from "./checkout-carriers.js";
 import { readBackTempCarriers, TempLayerHousekeeper } from "./temp-layer.js";
 import { loadLaresConfig, tempExpiryDays, tempProjectionConsented } from "./lares-config.js";
@@ -345,7 +345,7 @@ export function mountDiskProjection(
     saveBag: (title) => ctx.saveBagOf?.(title) ?? null,
     grants: granted,
     // ONE AUDIT ROW PER COLLAPSE, naming the rule, on the ward rail's durable ledger (no live alert rides it).
-    audit: (row) => ctx.post(hostEvent(ctx.wikiUri, "confluence:collapsed", { verb: "ward-alert", requestedBy: "projection-confluence", wardKind: "standoff-collapsed", auditOnly: true, bagId: row.bagId, uri: row.uri, reason: `${row.rule} collapsed the stand-off toward ${row.toward === "merged" ? "a merge of both sides" : `the ${row.toward}`} (${row.path})`, standoff: row.standoff, rule: row.rule })),
+    audit: (row) => ctx.post(hostEvent(ctx.wikiUri, "confluence:collapsed", { verb: "ward-alert", requestedBy: "projection-confluence", wardKind: "standoff-collapsed", auditOnly: true, bagId: row.bagId, uri: row.uri, reason: `${row.rule} collapsed the stand-off toward ${row.toward === "merged" ? "a merge of both sides" : `the ${row.toward}`} (${row.path})`, standoff: row.standoff, ...(row.writer !== undefined ? { writer: row.writer } : {}), rule: row.rule })),
     // THE AWAITING ALERT RIDES THE WARD RAIL, keyed by the stand-off: the rail raises it where the daemon face reads its
     // alerts and files its audit row once. Its clearing rides the rail's resolution (`onConflictResolved`).
     // A KEEP OF THE DISK SAYS SO, ONCE, on the vessel's log (its audit row rides the ward rail beside it). No port tells
@@ -354,6 +354,11 @@ export function mountDiskProjection(
     // The keep's own write must not read as a stranger's: the bag's quiet mark re-seats at its next asking, so the other
     // carriers of that document that fell behind still keep their disk with no hand.
     notice: (line, kept) => { mountedHeads.delete(kept.bagId); console.log(line); },
+    // ONE KEEPER FOR EVERY CARRIER: a native carrier reads off the disk as the judge reads it, a pointer body refuses by
+    // name, and TW5's own deserializer says the one record its bytes carry.
+    readCarrier: readCarrierAt,
+    pointerBody: pointerBodyAt,
+    landNative: (uri, ext, body, meta) => nativeCarrierLanding(makeTw5Deserializer(ctx.tw5), uri, ext, body, meta),
     alert: (a) => {
       if (a.clear === true) return;
       const words = standoffAlertWords(a);
