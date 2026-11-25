@@ -65,14 +65,14 @@ import { stdin } from "node:process";
 import { readOwnHand, type HandReading } from "@lararium/node";
 import { CARRIER_TYPE, isCarrierType } from "@lararium/mesh/carrier-type";
 import {
-  ASH_ROUNDS, INSTANCE_ID, INSTANCES_SLOT, LEGACY_INSTANCE_NAMES, CAS_ROUNDS, DISTILL_SLOT, LINEAGE_FIELDS, MEMORY_PREFIX, PET_NAME, PRECOMPACT_CARD_CHARS, RECORD_KINDS,
+  ASH_ROUNDS, INSTANCE_ID, INSTANCES_SLOT, CAS_ROUNDS, DISTILL_SLOT, LINEAGE_FIELDS, MEMORY_PREFIX, PET_NAME, PRECOMPACT_CARD_CHARS, RECORD_KINDS,
   RESIDUE_CAP_CHARS, SLOT_DIGEST, SLUG_CHARS, SPIRIT_RECIPE, SPIRIT_SOURCES, SpiritRefusal, TRUE_UP_EVERY, OM_CAP_CHARS,
   advisoryLine, ashLedgerOf, attentionLines, attentionTitles, instancesLine, burnLine, burnTally, bytesOf, carryFields, carryFilter,
   carryDepth, carryInstanceOf, carryParent, carryParents, carryRows, compactionTitle, crossingRefusal, crossingWrite, digestOf, distillHold,
   fieldsAndHashOf, foldAshLine, foldOut, guardWords, handRefusal, isCarry, leaseClaim, ledgerDescription, measure, namesTitleIn,
   omText, pickLine, presenceJoin, presenceLine, presenceRead, presenceSeenLine, rawSlug, redactedText, residueCut,
   residueFields, residueFilter, residueHash, residueOf, residueTitle, rowsOf, secretCount, shq, shrineSource, sideOf, slotBody,
-  slotDigest, slotMissing, slotWriteBody, spiritAmbiguous, spiritHash, spiritIdOf, spiritRecordOf, spiritUnknown, slotHeldAs, starterText,
+  slotDigest, slotMissing, slotWriteBody, spiritAmbiguous, spiritHash, spiritIdOf, spiritRecordOf, spiritUnknown, starterText,
   testimonyLines, titleSlug, titlesOf, wakingCap, writerField,
   ALANA_DISPLAY, MANDATE_HASH, cardField, cardRecordOf, cardSlotHeld, echoJoin, echoReceipt, echoStands, mandateLines, offerHeld, offererOf, offeringDamaged, offeringOf, offeringRead, offeringWrite,
   type SpiritOffering, type SideWrite, type SlotWrite, type SpiritAwake, type SpiritCarry, type SpiritRecord, type SpiritRow, type SpiritSource,
@@ -317,14 +317,11 @@ async function readSlot(args: ParsedArgs, label: string, rec: Record_, slot: str
     const field = cardField(slot);
     if (field === null) return null;
     const { fields, hash } = await recordOf(args, label, rec.uri);
-    // The read-through: #/instances reads a card's `bodies` field where no `instances` field stands.
-    const body = fields[field] ?? (slot === INSTANCES_SLOT ? fields[LEGACY_INSTANCE_NAMES.field] : undefined) ?? "";
+    const body = fields[field] ?? "";
     return { text: body, body, base: hash ?? "" };
   }
-  // The read-through: #/instances reads a shrine's #/bodies slot where only #/bodies stands.
-  const held = slotHeldAs(rec.slots.map((s) => s.slot), slot);
-  if (!rec.slots.some((s) => s.slot === held)) return null;
-  const out = await door(args, label, "tiddler-get", { recipe: RECIPE, title: rec.uri, meme: true, slot: held });
+  if (!rec.slots.some((s) => s.slot === slot)) return null;
+  const out = await door(args, label, "tiddler-get", { recipe: RECIPE, title: rec.uri, meme: true, slot });
   const meme = out["meme"] as { slotText?: string; canonicalHash?: string } | undefined;
   if (typeof meme?.slotText !== "string") return null;
   return { text: meme.slotText, body: slotBody(meme.slotText), base: String(meme.canonicalHash ?? "") };
@@ -349,11 +346,8 @@ async function patchSlot(args: ParsedArgs, label: string, rec: Record_, slot: st
     const decision = String(receipt["decision"] ?? "");
     return { ...receipt, decision: decision === "put" ? "ingest" : decision, canonicalHash: String(receipt["hash"] ?? "") };
   }
-  // A shrine's lineage write lands on its #/bodies slot until a hand renames the slot through the doors.
-  if (rec.kind !== "card") return await door(args, label, "meme-patch", { recipe: RECIPE, uri: rec.uri, slot: slotHeldAs(rec.slots.map((s) => s.slot), slot), replace: body, base });
-  // A card's lineage write lands as `instances` and unsets the `bodies` field in the same put: one way.
-  const legacy = slot === INSTANCES_SLOT && rec.fields[LEGACY_INSTANCE_NAMES.field] !== undefined ? { unset: [LEGACY_INSTANCE_NAMES.field] } : {};
-  const receipt = await door(args, label, "tiddler-put", { recipe: RECIPE, title: rec.uri, ...(base !== "" ? { base } : {}), fields: { [cardField(slot)!]: body }, ...legacy });
+  if (rec.kind !== "card") return await door(args, label, "meme-patch", { recipe: RECIPE, uri: rec.uri, slot, replace: body, base });
+  const receipt = await door(args, label, "tiddler-put", { recipe: RECIPE, title: rec.uri, ...(base !== "" ? { base } : {}), fields: { [cardField(slot)!]: body } });
   const decision = String(receipt["decision"] ?? "");
   return { ...receipt, decision: decision === "put" ? "ingest" : decision, canonicalHash: String(receipt["hash"] ?? "") };
 }
@@ -711,7 +705,7 @@ async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
   const digests: Record<string, string> = {};
   for (const s of rec.slots) {
     const field = rec.kind === "card" ? cardField(s.slot) : null;
-    const read = field !== null ? { body: rec.fields[field] ?? (s.slot === INSTANCES_SLOT ? rec.fields[LEGACY_INSTANCE_NAMES.field] : undefined) ?? "" } : s.slot === "#/open" ? open : await readSlot(args, "om", rec, s.slot);
+    const read = field !== null ? { body: rec.fields[field] ?? "" } : s.slot === "#/open" ? open : await readSlot(args, "om", rec, s.slot);
     if (read !== null) digests[s.slot] = slotDigest(read.body);
   }
   digests[STACK_SLOT] = slotDigest(stackBody(stack));

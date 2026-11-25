@@ -282,7 +282,7 @@ const BURNED_RECALL_ARGS: readonly string[] = ["voice", "band", "drift", "agenth
  * unfiltered; the filters never get a second home in TypeScript.
  */
 const SEARCH_ONLY_RECALL_ARGS: readonly string[] = ["agent", "surface", "speaker", "channel", "function", "pair", "room", "lens"];
-const FUSION_ONLY_RECALL_ARGS = ["register", "grammarLayer", "grammar_layer", "formWeight", "apertureGrain", "aperture_grain", "aperture", "apertureWidth", "aperture_width"];
+const FUSION_ONLY_RECALL_ARGS = ["register", "grammarLayer", "grammar_layer", "formWeight", "apertureGrain", "aperture", "apertureWidth"];
 
 /** recall — the mempalace READ shore (semantic-search | list | get | multi-graph fuse). Requires
  *  the mempalace read-client + the form store (the dual fuse). */
@@ -324,9 +324,9 @@ export function recallVerbCap(): CapModule {
           const fwRaw        = args["formWeight"];
           const formWeight   = typeof fwRaw === "number" ? fwRaw : typeof fwRaw === "string" ? Number(fwRaw) : undefined;
           // P6 — the paragraph-scale aperture: a 0..20 grain or a band name ("paragraph"). Off when absent.
-          const agRaw        = args["apertureGrain"] ?? args["aperture_grain"] ?? args["aperture"];
+          const agRaw        = args["apertureGrain"] ?? args["aperture"];
           const apertureGrain = typeof agRaw === "number" || typeof agRaw === "string" ? agRaw : undefined;
-          const awRaw        = args["apertureWidth"] ?? args["aperture_width"];
+          const awRaw        = args["apertureWidth"];
           const apertureWidth = typeof awRaw === "number" ? awRaw : typeof awRaw === "string" && awRaw !== "" ? Number(awRaw) : undefined;
           // The addressed sensorium (from `lares sense <sensorium> recall`) — picks that sensorium's recall
           // holder up the cap ladder (absent → the memory default).

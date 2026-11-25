@@ -413,10 +413,9 @@ function runSyncModules(): { drift: number; missing: number; patched: number } {
     // Convert lar URI to file path: lar:///ha.ka.ba/lararium/tw5/{rest} -> tw5MemesRoot/{rest}.md
     const uriTrimmed = moduleRef.replace(/^lar:\/\/\//, "");
     const parts      = uriTrimmed.split("/");
-    // Strip ha.ka.ba/lararium/tw5 prefix (4 segments)
-    const rest       = (parts[0] === "ha.ka.ba" && parts[1] === "lararium" && parts[2] === "tw5")
-      ? parts.slice(3).join("/")
-      : parts.slice(2).join("/"); // legacy fallback
+    // A module ref stands under ha.ka.ba/lararium/tw5; one that stands elsewhere names no module here.
+    if (!(parts[0] === "ha.ka.ba" && parts[1] === "lararium" && parts[2] === "tw5")) throw new Error(`[sync-modules] ${mdPath} names module-ref ${moduleRef}, which stands outside lar:///ha.ka.ba/lararium/tw5/; name a module under that root`);
+    const rest       = parts.slice(3).join("/");
     // Module carriers ride the corpus as `.mem`; `.md` stays as the fallback spelling.
     const modPathMem = resolve(tw5MemesRoot, `${rest}.mem`);
     const modPath    = existsSync(modPathMem) ? modPathMem : resolve(tw5MemesRoot, `${rest}.md`);
