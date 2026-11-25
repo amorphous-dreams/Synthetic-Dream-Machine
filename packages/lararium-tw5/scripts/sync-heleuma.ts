@@ -484,6 +484,7 @@ function skinCodeMemes(): SkinCodeMeme[] {
   const found: SkinCodeMeme[] = [];
   for (const skin of PLUGIN_SKINS) {
     const dir = resolve(tw5Pkg, skin.tiddlersDir);
+    if (!existsSync(dir)) continue;
     for (const entry of readdirSync(dir).sort()) {
       if (!entry.endsWith(".tid")) continue;
       const path = resolve(dir, entry);
