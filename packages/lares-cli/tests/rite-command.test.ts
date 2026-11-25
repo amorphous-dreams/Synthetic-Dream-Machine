@@ -669,7 +669,7 @@ describe("the kūkulu names the seed the image offers beside the founding record
     expect(f.calls.filter((c) => !c.startsWith("seed-offer"))).toEqual(["checkout", STAGE, BEGIN, OFFER, `raise ${HEAD}`, LAND]);
     expect(f.calls.indexOf(`seed-offer ${HEAD}`)).toBeLessThan(f.calls.indexOf(BEGIN));
     const line = kukuluSeedLine(HEAD, { record, seed });
-    expect(line).toBe(`kūkulu: the image at ${HEAD} offers seed ${"5".repeat(64)} beside the founding record: a newer seed waits: engine same · grammar moved · lararium same · plugins same · floor same; the founding record keeps serving, and the kūkulu moves no ratchet; offer: grammar wait as a forward-only offer, and the founding record never moves (\`lares vessel floor seed\`)`);
+    expect(line).toBe(`kūkulu: the image at ${HEAD} offers seed ${"5".repeat(64)} beside the founding record: a newer seed waits: engine same · grammar moved · lararium same · plugins same · floor same; the founding record keeps serving, and the kūkulu moves no ratchet; offer: grammar adopt over a local floor, forward only, and the founding record never moves (\`lares vessel floor adopt\`)`);
     expect(line).not.toContain("only a re-found");
     expect(f.said).toContain(line);
     expect(out).toMatchObject({ code: 0, data: { seed: { cid: "5".repeat(64), ratchets: "engine same · grammar moved · lararium same · plugins same · floor same" } } });
@@ -712,7 +712,7 @@ describe("the kūkulu's seed port reads the genesis dir the image carries (the h
     const moved = JSON.stringify({ ...seed, blobs: { ...seed.blobs, [LARES_MEMETIC_WIKITEXT_PLUGIN_URI]: { ...seed.blobs[LARES_MEMETIC_WIKITEXT_PLUGIN_URI], sha256: "f".repeat(64) } } });
     const f = fakes();
     await riteKukulu({ ...f.ports, seedOffer: hostSeedOfferPort({ genesisDir: genesisDirWith(moved), record: async () => ({ record: record() }) }) }, {});
-    expect(f.said.join("\n")).toContain("a newer seed waits: engine same · grammar moved · lararium same · plugins same · floor same; the founding record keeps serving, and the kūkulu moves no ratchet; offer: grammar wait as a forward-only offer");
+    expect(f.said.join("\n")).toContain("a newer seed waits: engine same · grammar moved · lararium same · plugins same · floor same; the founding record keeps serving, and the kūkulu moves no ratchet; offer: grammar adopt over a local floor");
     const g = fakes();
     const out = await riteKukulu({ ...g.ports, seedOffer: hostSeedOfferPort({ genesisDir: genesisDirWith(shippedBytes()), record: async () => ({ unread: "no vessel answers" }) }) }, {});
     expect(g.said).toContain("kūkulu: the host reads no founding record beside the seed this image offers; the rite goes on, and moves no ratchet");

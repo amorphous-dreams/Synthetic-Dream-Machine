@@ -19,7 +19,7 @@
  * Meme: lar:///ha.ka.ba/kahua/memory/research/floor-mu#/shape
  */
 import { createHash } from "node:crypto";
-import { ratchetsDiffer, seedRatchetStances, seedStanceWords, SEED_HELD_NEXT, type FloorDrift, type FloorShadowTally, type RatchetDifference } from "@lararium/mesh";
+import { ratchetsDiffer, seedRatchetStances, seedStanceWords, SEED_HELD_NEXT, SEED_OFFER_NEXT, type FloorDrift, type FloorShadowTally, type RatchetDifference } from "@lararium/mesh";
 
 export const FLOOR_WORDS = ["disk lag", "working ahead", "canon floor drift", "seed offer", "shadow tally"] as const;
 export type FloorWord = (typeof FLOOR_WORDS)[number];
@@ -130,7 +130,7 @@ export function readFloorDrifts(input: FloorDriftInputs): FloorDriftRow[] {
     rows.push({ word: "seed offer", grain: "seed", state: ratchetsDiffer(input.seed.ratchets) ? "drifts" : "level", count: moved.length,
       carriers: moved.map((r) => r.ratchet === "floor" ? "the seed's floor" : r.ratchet), heads: [`seed ${input.seed.cid}`],
       detail: moved.length > 0 ? `a newer seed waits: ${input.seed.ratchets.map(seedRatchet).join(" · ")}; the founding record keeps serving; ${seedStanceWords(stances)}` : "the seed offered stands same on every ratchet",
-      next: stances.length > 0 && stances.every((s) => s.stance === "held (engine)") ? SEED_HELD_NEXT : SEED_NEXT, act: "read" });
+      next: stances.length > 0 && stances.every((s) => s.stance === "held (engine)") ? SEED_HELD_NEXT : stances.length > 0 ? SEED_OFFER_NEXT : SEED_NEXT, act: "read" });
   }
 
   // shadow tally: level needs at least one clean boot; a tally no boot read clean says nothing level

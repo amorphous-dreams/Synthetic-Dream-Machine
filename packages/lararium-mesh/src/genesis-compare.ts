@@ -155,8 +155,8 @@ export function ratchetsDiffer(differences: readonly RatchetDifference[]): boole
  * THE SEED'S STANCES (the follow lei, S0; operator ruling 2026-11-25 follow-lei-lands). Each ratchet a newer seed moves reads one
  * of two stances, each with the one runnable line that acts on it:
  *
- *   · `offer` ~ a skin (grammar, lararium, plugins, and the seed's floor that names them): a forward-only offer the ruling lets
- *     the vessel adopt over a local floor at a boot; the founding record never moves.
+ *   · `offer` ~ a skin (grammar, lararium, plugins, and the seed's floor that names them): the vessel adopts it over a local
+ *     floor (`lares vessel floor adopt`), forward only, at a boot; the founding record never moves.
  *   · `held (engine)` ~ the engine stays behind its own cadence threshold, never the kahu quorum (kahu.mem #/engine-cadence);
  *     each device takes it only by its own reboot onto it, so a re-found takes it today.
  *
@@ -165,8 +165,8 @@ export function ratchetsDiffer(differences: readonly RatchetDifference[]): boole
 export type SeedStance = "offer" | "held (engine)";
 export interface SeedRatchetStance { readonly ratchet: GenesisRatchet; readonly stance: SeedStance; readonly next: string }
 
-/** The line that reads an offered skin: the seed beside the founding record, ratchet by ratchet. */
-export const SEED_OFFER_NEXT = "lares vessel floor seed";
+/** The line that acts on an offered skin: the adopt's preview over the pin's base (S2); `--apply` lands it by hand. */
+export const SEED_OFFER_NEXT = "lares vessel floor adopt";
 /** The line that reads the held engine: the seed row of the floor status. */
 export const SEED_HELD_NEXT = "lares vessel floor status --grain seed";
 
@@ -183,7 +183,7 @@ export function seedStanceWords(stances: readonly SeedRatchetStance[]): string {
   const offers = stances.filter((s) => s.stance === "offer");
   const held = stances.filter((s) => s.stance === "held (engine)");
   return [
-    ...(offers.length > 0 ? [`offer: ${offers.map((s) => name(s.ratchet)).join(", ")} wait as a forward-only offer, and the founding record never moves (\`${SEED_OFFER_NEXT}\`)`] : []),
+    ...(offers.length > 0 ? [`offer: ${offers.map((s) => name(s.ratchet)).join(", ")} adopt over a local floor, forward only, and the founding record never moves (\`${SEED_OFFER_NEXT}\`)`] : []),
     ...(held.length > 0 ? [`held (engine): the engine stays behind its own cadence threshold, never the kahu quorum, and a re-found takes it today (\`${SEED_HELD_NEXT}\`)`] : []),
   ].join(" · ");
 }

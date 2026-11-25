@@ -100,7 +100,7 @@ import { runCabalAct, runCabalCosign, runCabalStanding, NexusCabalError } from "
 import { runFloorRelease } from "./commands/nexus-release.js";
 import { runFloorCut } from "./commands/floor-cut.js";
 import { runOfferRetire } from "./commands/offer-retire.js";
-import { runFloorAccept, runFloorStatus, FloorRefused } from "./commands/floor.js";
+import { runFloorAccept, runFloorAdopt, runFloorSettle, runFloorStatus, FloorRefused } from "./commands/floor.js";
 import { casDirForStorage } from "./node-cas.js";
 import { runNexusKapae, runNexusKapaeList, runNexusKapaeOpen, runNexusKapaePartial, NexusKapaeError } from "./commands/nexus-kapae.js";
 import { runNexusContract, runNexusContractOpen, runNexusContractPartial, runNexusRollAnchor, runNexusRollAnchorOpen, runNexusRollAnchorPartial, runEdgeRollAnchorOpen, runEdgeRollAnchorPartial, runEdgeRollAnchorStanding, runNexusRollPriorAnchorCheck, runNexusMembersList, NexusContractError } from "./commands/nexus-contract.js";
@@ -214,7 +214,7 @@ export async function awaitOnRolled(call: boolean | void | Promise<boolean | voi
 /** The door's rows, by name — each command's routed call names exactly one of these. */
 export const STORE_DOOR_VERBS = [
   "nexus-kapae", "nexus-kapae-list", "nexus-kapae-open", "nexus-kapae-partial", "nexus-contract", "nexus-contract-open", "nexus-contract-partial", "nexus-roll-anchor", "nexus-roll-anchor-open", "nexus-roll-anchor-partial", "nexus-roll-prior-anchor", "nexus-members-list",
-  "nexus-cabal-act", "nexus-cabal-cosign", "nexus-cabal-standing", "nexus-release", "floor-cut", "offer-retire", "floor-status", "floor-accept",
+  "nexus-cabal-act", "nexus-cabal-cosign", "nexus-cabal-standing", "nexus-release", "floor-cut", "offer-retire", "floor-status", "floor-accept", "floor-adopt", "floor-adopt-apply",
   "nexus-posture", "nexus-admit-take", "nexus-carry-take", "seal-home-refold",
   "edge-kapae", "edge-seat-facts", "edge-seat-duties", "edge-seat-marks", "edge-partial", "edge-cosign", "cabal-vouch", "cabal-join", "cabal-face", "cabal-feed",
   "fleet-join-offer", "fleet-join-answer", "nexus-roll-anchor-edge", "nexus-roll-anchor-edge-open", "nexus-roll-anchor-edge-partial", "nexus-roll-anchor-edge-standing",
@@ -266,7 +266,7 @@ export const PROMOTE_HAND_CODES: ReadonlyMap<string, string> = new Map([
 export const SWARM_HAND_CODES: ReadonlyMap<string, string> = new Map(Object.entries(SWARM_VERB_HAND_CODES));
 
 /** The floor's accept moves the vessel's floor: a person's act alone (w26-floor-lane#/the-vessel-pin); a seat reads the status. */
-export const FLOOR_HAND_CODES: ReadonlyMap<string, string> = new Map([["floor-accept", "floor-needs-hand"]]);
+export const FLOOR_HAND_CODES: ReadonlyMap<string, string> = new Map([["floor-accept", "floor-needs-hand"], ["floor-adopt-apply", "floor-needs-hand"]]);
 
 /**
  * The daemon island's wiki verbs a person's hand alone runs: `retire-wiki` unmints a face's wiki shell. It rides a session's
@@ -668,6 +668,23 @@ function storeDoorVerbsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
         ...opt("target", str(args["release"])), ...opt("floorAlert", deps.floorAlert),
       })),
     })),
+
+    // THE LOCAL FLOOR (3d, follow-lei S2): `floor-adopt` previews the seed's plugins over the pin's base and writes nothing;
+    // `floor-adopt-apply` (the hand's) applies it, or commits or reverts a staged local floor (`act`).
+    "floor-adopt": (args) => answer("floor-adopt", async () => ({
+      ...(await runFloorAdopt({
+        repo, sealHome, casDir: deps.casDir ?? casDirForStorage(storageDir), ...opt("aid", str(args["aid"])),
+        seedCid: need("floor-adopt", args, "seedCid"), seedFloor: need("floor-adopt", args, "seedFloor"), apply: false,
+      })),
+    })),
+    "floor-adopt-apply": (args) => answer("floor-adopt-apply", async () => {
+      const common = { repo, sealHome, casDir: deps.casDir ?? casDirForStorage(storageDir), ...opt("aid", str(args["aid"])) };
+      const act = str(args["act"]) ?? "apply";
+      if (act === "commit" || act === "revert") return { ...(await runFloorSettle({ ...common, act })) };
+      if (act !== "apply") throw new Error(`floor-adopt-apply REFUSED: act names apply, commit or revert (got "${act}")`);
+      return { ...(await runFloorAdopt({ ...common, ...opt("floorAlert", deps.floorAlert),
+        seedCid: need("floor-adopt-apply", args, "seedCid"), seedFloor: need("floor-adopt-apply", args, "seedFloor"), apply: true })) };
+    }),
 
     "nexus-posture": (args) => answer("nexus-posture", async () => {
       const doc = readNexusDoc(sealHome);

@@ -50,6 +50,19 @@ describe("the floor rows on the node's store door", () => {
     expect(STORE_DOOR_HAND_ONLY_ACTS.has("floor-status")).toBe(false);
   });
 
+  test("RED: the local floor's preview stays open to a seat; its apply, commit and revert ride the hand (follow-lei S2)", () => {
+    expect(STORE_DOOR_VERBS).toEqual(expect.arrayContaining(["floor-adopt", "floor-adopt-apply"]));
+    expect(STORE_DOOR_FACE_VERBS.has("floor-adopt-apply")).toBe(false);
+    expect(STORE_DOOR_HAND_CODES.get("floor-adopt-apply")).toBe("floor-needs-hand");
+    expect(STORE_DOOR_HAND_ONLY_ACTS.has("floor-adopt-apply")).toBe(true);
+    expect(STORE_DOOR_HAND_ONLY_ACTS.has("floor-adopt")).toBe(false);
+    const source = readFileSync(new URL("../src/commands/floor.ts", import.meta.url), "utf8");
+    expect(source).toMatch(/adoptFloorSeed\(ports, /);
+    expect(source).not.toMatch(/decideFloorAdopt/);                              // no second copy of the decision
+    const cut = readFileSync(new URL("../src/commands/floor-cut.ts", import.meta.url), "utf8");
+    expect(cut).toMatch(/floorPinBase\(floorPinOf\(/);                         // a cut builds on the base, never a local manifest
+  });
+
   test("the node's binding answers the mesh's one decision and declares no live swap", () => {
     const source = readFileSync(new URL("../src/commands/floor.ts", import.meta.url), "utf8");
     expect(source).toMatch(/acceptFloorRelease\(ports, opts\.target\)/);

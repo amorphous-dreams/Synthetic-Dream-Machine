@@ -20,7 +20,7 @@ import { existsSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  BAG_MANIFEST_FILE, FloorCutThin, cutReleaseFloor, floorPinOf, floorReleaseEntriesFromBoard, foldFloorReleases,
+  BAG_MANIFEST_FILE, FloorCutThin, cutReleaseFloor, floorPinBase, floorPinOf, floorReleaseEntriesFromBoard, foldFloorReleases,
   FloorManifestRefusal, publicationDocUrl, materializeSharedLarDoc, readFloorManifest, sha256HexBytesSync,
   type CapTier,
 } from "@lararium/mesh";
@@ -110,7 +110,7 @@ export async function runFloorCut(opts: {
     },
     prior: async () => {
       const standing = await foldFloorReleases({ rows: floorReleaseEntriesFromBoard(board.doc()), nexus: pinPorts.nexus, manifestBytesOf: casRead });
-      return standing.standing === "released" ? standing.head.body.manifest : floorPinOf(pinPorts.home.doc(), pinPorts.nexus, pinPorts.genesisManifest).pin.manifest;
+      return standing.standing === "released" ? standing.head.body.manifest : floorPinBase(floorPinOf(pinPorts.home.doc(), pinPorts.nexus, pinPorts.genesisManifest).pin);
     },
   });
   return { ...result, nexus: pinPorts.nexus };

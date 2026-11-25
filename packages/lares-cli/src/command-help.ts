@@ -621,6 +621,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares vessel floor status [--grain canon|seed|shadow|lag|all]  # the vessel's floor pin and the five drifts, one row each by its own word (disk lag, working ahead, canon floor drift, seed offer, shadow tally); refreshes the one floor card in the daemon wiki",
       "lares vessel floor accept [<release>]   # walk prior from the pin to the release (or the sole newest)",
       "lares vessel floor seed [--genesis <dir>]  # the seed a genesis dir offers (CID, digests) beside the founding record; moves nothing",
+      "lares vessel floor adopt [--apply|--commit|--revert]  # the seed's plugins over the pin's base as a local floor: bare previews; --apply stages it, --commit at par, --revert lands the prior back (the engine never adopts here)",
     ],
     flags: [
       "stand --foreground   this terminal owns the node (no Vite)",

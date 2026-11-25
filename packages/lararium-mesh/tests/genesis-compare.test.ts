@@ -137,7 +137,7 @@ describe("the seed's stances: each moved ratchet reads offer or held (engine), w
       { ratchet: "floor", stance: "offer", next: SEED_OFFER_NEXT },
     ]);
     const words = seedStanceWords(stances);
-    expect(words).toContain("offer: grammar, the seed's floor");
+    expect(words).toContain("offer: grammar, the seed's floor adopt over a local floor");
     expect(words).toContain(`\`${SEED_OFFER_NEXT}\``);
     expect(words).toContain("held (engine): the engine stays behind its own cadence threshold");
     expect(words).toContain(`\`${SEED_HELD_NEXT}\``);

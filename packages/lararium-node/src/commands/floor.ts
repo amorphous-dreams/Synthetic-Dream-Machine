@@ -28,10 +28,10 @@
  */
 import type { AutomergeUrl, DocHandle, Repo } from "@automerge/automerge-repo";
 import {
-  acceptFloorRelease, floorReleaseEntriesFromBoard, floorRequiredBlobIds, genesisFloorCidOf, materializeSharedLarDoc, nexusAidOf,
+  acceptFloorRelease, adoptFloorSeed, settleLocalFloor, floorReleaseEntriesFromBoard, floorRequiredBlobIds, genesisFloorCidOf, materializeSharedLarDoc, nexusAidOf,
   oracleGenesisDocUrl, publicationDocUrl, readControlHome, readFloorDriftReading, readFloorManifest, readFloorOffering, readFloorStatus, resolveBootDoc, sha256HexBytesSync,
   type FloorDrift, type FloorDriftReading, type FloorShadowTally, type FloorPinLike,
-  type FloorAcceptOutcome, type FloorPinPorts, type FloorRemount, type FloorStatus, type LarDoc,
+  type FloorAcceptOutcome, type FloorAdoptOutcome, type FloorLocalAct, type FloorPin, type FloorPinPorts, type FloorRemount, type FloorStatus, type LarDoc,
 } from "@lararium/mesh";
 import { bootDaemonUrl } from "../boot-face-planes.js";
 import { readBootTiddlers } from "../vessel-private.js";
@@ -222,4 +222,21 @@ export async function runFloorAccept(opts: NodeFloorOptions & { readonly target?
   const ports = await nodeFloorPorts(opts);
   const out = await acceptFloorRelease(ports, opts.target);
   return { ...out, alerted: ports.alerted };
+}
+
+/**
+ * `lares vessel floor adopt [--apply | --commit | --revert]` (3d, follow-lei S2): the seed the genesis dir offers, adopted over the
+ * pin's base as a local floor. `seedFloor` names the seed's floor manifest (its genesis witness) and `seedCid` the receipt; the
+ * vessel reads both floors from its own CAS (the boot mirrors a newer seed's blobs there). Bare it previews; `apply` lands it.
+ */
+export async function runFloorAdopt(opts: NodeFloorOptions & { readonly seedCid: string; readonly seedFloor: string; readonly apply: boolean }): Promise<FloorAdoptOutcome & { readonly alerted: readonly string[] }> {
+  const ports = await nodeFloorPorts(opts);
+  const out = await adoptFloorSeed(ports, { seedCid: opts.seedCid, seedFloor: opts.seedFloor, apply: opts.apply });
+  return { ...out, alerted: ports.alerted };
+}
+
+/** `floor adopt --commit | --revert`: the local floor settles by the hand's act, a forward row either way. */
+export async function runFloorSettle(opts: NodeFloorOptions & { readonly act: "commit" | "revert" }): Promise<FloorLocalAct & { readonly prior?: FloorPin }> {
+  const ports = await nodeFloorPorts(opts);
+  return settleLocalFloor(ports, opts.act);
 }
