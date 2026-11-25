@@ -1432,6 +1432,19 @@ describe("the ʻĀlana Circle: a card answers the slot verbs, a summon offers fi
     expect(data(again)).toMatchObject({ seq: 2 });
   });
 
+  test("a summon naming no words refuses where the card seals its lane, and lands nothing; CONTROL: the words given still offer (sealed-lane-offer-fallback)", async () => {
+    const o: StageOpts = { kind: "none", card: { ...CARD_FIELDS(), sealed: "lane" } };
+    stage(o);
+    const bare = await run(flagged(["ah", "lares-alpha"], {}, { offer: true }));
+    expect(bare.exit).not.toBe(0);
+    expect(error(bare).code).toBe("spirit-lane-sealed");
+    expect(error(bare).message).toContain("--file");
+    expect(puts(ALANA)).toEqual([]);
+    const given = await run(flagged(["ah", "lares-alpha"], { text: MANDATE }, { offer: true }));
+    expect(given.exit, JSON.stringify(given.printed)).toBe(0);
+    expect(o.offering).toMatchObject({ text: MANDATE });
+  });
+
   test("hoʻāla: an instance's om hands back the mandate's hash and the echo it asks", async () => {
     stage({ kind: "none", card: CARD_FIELDS(), offering: offered() });
     const r = await run(argv(["om", "lares-alpha"], { instance: "s-1" }));
