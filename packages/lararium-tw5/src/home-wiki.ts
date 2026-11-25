@@ -36,6 +36,20 @@ export function readHomeWikiSlug(record: StoredLarRecord | Pick<LarTiddlerRecord
   return bare ? bare[0] : null;
 }
 
+/**
+ * The wiki a lit face's home preference opens at light: its slug where the record names one the vessel then activates, else
+ * null (no record, the wiki already stands, or the activation fails). A failed activation never seats the slot.
+ */
+export async function openHomePreference(
+  record: StoredLarRecord | Pick<LarTiddlerRecord, "tiddler"> | null | undefined,
+  ensureActive: (slug: string) => Promise<{ readonly ok: boolean }>,
+  standing: string | null,
+): Promise<string | null> {
+  const home = readHomeWikiSlug(record);
+  if (home === null || home === standing) return null;
+  return (await ensureActive(home)).ok ? home : null;
+}
+
 /** The boot's wiki: the lit face's home preference where it names one, else the boot's own ask (the floor's wiki). */
 export function selectHomeWikiSlug(
   fallbackSlug: string,

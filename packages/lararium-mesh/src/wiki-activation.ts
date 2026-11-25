@@ -61,7 +61,7 @@ export interface WikiActivationGrant {
   readonly keepBudget:    number;
 }
 
-/** The refusal a keep answers when the vessel's budget stands full: no hold moves, and the detail names who holds what. */
+/** The refusal a keep answers when the vessel's budget stands full: no hold moves. */
 export type WikiKeepResult =
   | { readonly ok: true }
   | { readonly ok: false; readonly cause: "keep-full" | "no-such-bag" | "record-unparsable" | "no-read-grant" | "unmounted"; readonly detail: string };
@@ -104,10 +104,13 @@ export function makeWikiActivationCap(
 ): WikiActivationCap {
   // Kept grains (besides the daemon bag): wikiId -> the holders that keep it. The Map's insertion order carries first-kept order.
   const keeps = new Map<string, Set<string>>();
-  const full = (wikiId: string): WikiKeepResult | null => {
+  const kept = (holder?: string): readonly string[] =>
+    [...keeps].filter(([, who]) => holder === undefined || who.has(holder)).map(([id]) => id);
+  // The refusal names the count and the asker's own keeps alone: another holder's wiki or ordinal never rides it.
+  const full = (wikiId: string, holder: string): WikiKeepResult | null => {
     if (keeps.has(wikiId) || keeps.size < grant.keepBudget) return null;
-    const roll = [...keeps].map(([id, who]) => `${id} (${[...who].join(", ")})`).join("; ");
-    return { ok: false, cause: "keep-full", detail: `the keep budget stands full (${keeps.size}/${grant.keepBudget}): ${roll}` };
+    const own = kept(holder);
+    return { ok: false, cause: "keep-full", detail: `the keep budget stands full (${keeps.size}/${grant.keepBudget}); this face keeps ${own.length === 0 ? "none" : own.join(", ")}` };
   };
   const unkeep = (wikiId: string, holder: string): void => {
     const holders = keeps.get(wikiId);
@@ -144,13 +147,13 @@ export function makeWikiActivationCap(
     grant,
     ensureActive,
     async keep(wikiId: string, holder: string): Promise<WikiKeepResult> {
-      const before = full(wikiId);
+      const before = full(wikiId, holder);
       if (before) return before;
       // A keep means nothing on a dead grain: activate first (resolves + mounts).
       const active = await ensureActive(wikiId);
       if (!active.ok) return active;
       // The budget reads again past the await: a keep that landed meanwhile may have filled it.
-      const after = full(wikiId);
+      const after = full(wikiId, holder);
       if (after) return after;
       const holders = keeps.get(wikiId) ?? new Set<string>();
       holders.add(holder);
@@ -162,8 +165,6 @@ export function makeWikiActivationCap(
     unkeepAll(holder: string): void {
       for (const wikiId of [...keeps.keys()]) unkeep(wikiId, holder);
     },
-    kept(holder?: string): readonly string[] {
-      return [...keeps].filter(([, who]) => holder === undefined || who.has(holder)).map(([id]) => id);
-    },
+    kept,
   };
 }

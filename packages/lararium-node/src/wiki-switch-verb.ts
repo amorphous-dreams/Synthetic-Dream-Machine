@@ -13,6 +13,8 @@ import type { WikiActivationCap } from "@lararium/mesh/wiki-activation";
 export interface WikiSwitchDeps {
   readonly activation: WikiActivationCap;
   readonly pool: { forgetMountFailures(wikiId: string): void };
+  /** The asking face's keep holder, or null where none stands lit (the floor): the answer lists that holder's keeps alone. */
+  readonly holder?: () => string | null;
 }
 
 export async function wikiSwitchVerb(args: Record<string, unknown>, deps: WikiSwitchDeps) {
@@ -20,5 +22,5 @@ export async function wikiSwitchVerb(args: Record<string, unknown>, deps: WikiSw
   if (!slug) throw new Error("wiki-switch: `slug` required");
   if (args["remount"] === true) deps.pool.forgetMountFailures(slug);
   const active = await deps.activation.ensureActive(slug);
-  return { verb: "wiki-switch", slug, active: active.ok, ...(!active.ok ? { cause: active.cause, detail: active.detail } : {}), held: [...deps.activation.kept()] };
+  return { verb: "wiki-switch", slug, active: active.ok, ...(!active.ok ? { cause: active.cause, detail: active.detail } : {}), held: [...(deps.holder?.() ? deps.activation.kept(deps.holder()!) : [])] };
 }

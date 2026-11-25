@@ -68,9 +68,10 @@ test("RED (referee walk #1) a workbench this face cannot stand reads as a named 
 });
 
 test("a keep the vessel refuses names its cause and its detail, and the mint still stands", async () => {
-  holdOut = { held: false, cause: "keep-full", detail: "the keep budget stands full (3/3): a (face-0)", holds: [], budget };
+  holdOut = { held: false, cause: "keep-full", detail: "the keep budget stands full (3/3); this face keeps b", holds: [], budget };
   expect(await cmdWikiInit(parseArgs(["wiki", "fresh", "--no-json"]))).toBe(0);
   expect(sent).toContain("wiki-hold");
   expect(text).toContain("keep-full");
-  expect(text).toContain("face-0");
+  expect(text).toContain("this face keeps b");
+  expect(text).not.toContain("face-0");
 });

@@ -30,7 +30,7 @@ export { TW5Engine } from "./tw5-vm.js";
 export { bagScopeOf, qualifyStackTag, stackOf } from "./has-stack.js";
 export type { StackEntry } from "./has-stack.js";
 export type { TW5CoreBootBlob } from "./tw5-vm.js";
-export { HOME_WIKI_TITLE, HOME_WIKI_DEFAULT, homeWikiFilter, readHomeWikiSlug, selectHomeWikiSlug } from "./home-wiki.js";
+export { HOME_WIKI_TITLE, HOME_WIKI_DEFAULT, homeWikiFilter, readHomeWikiSlug, selectHomeWikiSlug, openHomePreference } from "./home-wiki.js";
 export type { HomeWikiSelectionSource } from "./home-wiki.js";
 export { KEEP_LIST_TITLE, keepListFilter, readKeepList, keepListWith, keepListWithout } from "./keep-list.js";
 export type { CameraMount } from "./tw5-camera.js";

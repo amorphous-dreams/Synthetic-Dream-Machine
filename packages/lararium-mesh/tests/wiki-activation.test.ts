@@ -179,7 +179,11 @@ describe("wiki-activation cap — the keep-warm budget over every face's keep li
     await cap.keep(W1, "face-0");
     const refused = await cap.keep(W2, "face-1");
     expect(refused).toMatchObject({ ok: false, cause: "keep-full" });
-    expect(refused.ok ? "" : refused.detail).toContain("face-0");
+    const said = refused.ok ? "" : refused.detail;
+    expect(said).toContain("1/1");
+    expect(said).not.toContain("face-0");
+    expect(said).not.toContain(W1);               // another holder's wiki never rides the refusal
+    expect(said).toContain("this face keeps none");
     expect(residency.isPinned(W1)).toBe(true);
     expect(residency.isPinned(W2)).toBe(false);
     expect([...cap.kept()]).toEqual([W1]);
@@ -213,5 +217,13 @@ describe("wiki-activation cap — the keep-warm budget over every face's keep li
     const { cap } = makeVesselTrio(4, async () => ({ ok: false, cause: "no-such-bag", detail: W1 }));
     expect(await cap.keep(W1, "face-0")).toMatchObject({ ok: false, cause: "no-such-bag" });
     expect([...cap.kept()]).toEqual([]);
+  });
+
+  test("kept(holder) lists that holder's keeps alone", async () => {
+    const { cap } = makeVesselTrio(4, anySpec, 3);
+    await cap.keep(W1, "face-0");
+    await cap.keep(W2, "face-1");
+    expect([...cap.kept("face-0")]).toEqual([W1]);
+    expect([...cap.kept("face-1")]).toEqual([W2]);
   });
 });

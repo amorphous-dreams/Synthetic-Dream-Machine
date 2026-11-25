@@ -4,7 +4,7 @@ import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
 import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import * as house from "../src/index.js";
-import { HOME_WIKI_TITLE, homeWikiFilter, readHomeWikiSlug, selectHomeWikiSlug } from "../src/home-wiki.js";
+import { HOME_WIKI_TITLE, homeWikiFilter, readHomeWikiSlug, selectHomeWikiSlug, openHomePreference } from "../src/home-wiki.js";
 
 // RED FIRST (written unrun, pin migration step 1): the boot pointer burns; a lit face's home wiki reads as a PREFERENCE RECORD
 // that face writes in its own daemon wiki's working layer, read at light. A record in, a slug or the floor out.
@@ -31,5 +31,22 @@ describe("a face's home preference", () => {
     expect(readHomeWikiSlug(await composite.get(HOME_WIKI_TITLE))).toBe("probe-book");
     // The boot pointer's old spellings stand burned whole (no back-compat).
     expect(Object.keys(house)).not.toEqual(expect.arrayContaining(["ACTIVE_WIKI_URI", "buildActiveWikiRecord", "readActiveWikiSlug", "selectActiveWikiSlug", "makeOpenWikiReactor"]));
+  });
+});
+
+describe("openHomePreference seats a slot only where the activation lands", () => {
+  const rec = { tiddler: { title: HOME_WIKI_TITLE, text: "[[probe-book]]" } };
+  test("a landed activation answers the slug", async () => {
+    expect(await openHomePreference(rec, async () => ({ ok: true }), null)).toBe("probe-book");
+  });
+  test("a failed activation leaves the slot unset", async () => {
+    expect(await openHomePreference(rec, async () => ({ ok: false }), null)).toBeNull();
+  });
+  test("CONTROL: no record, or the wiki already standing, asks no activation", async () => {
+    let asked = 0;
+    const ensure = async () => { asked++; return { ok: true }; };
+    expect(await openHomePreference(null, ensure, null)).toBeNull();
+    expect(await openHomePreference(rec, ensure, "probe-book")).toBeNull();
+    expect(asked).toBe(0);
   });
 });
