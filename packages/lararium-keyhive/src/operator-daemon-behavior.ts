@@ -21,7 +21,7 @@ import {
   makeCatalogAccessor, findOrThrow,
   makeInitWikiReactor, makeOpenWikiReactor, makeDraftReactor, makePruneStaleReactor,
   makeMemePutReactor, makeMemeGetReactor, makeMemeListReactor, makeMemeDeleteReactor, makeMemeProjectReactor, memeVerbOptions, VERB_SURFACE,
-  makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor, makeWikiStatusReactor,
+  makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor, makeTiddlerRenameReactor, makeWikiStatusReactor,
   makeWardAlertReactor, fileWardRefusal,
   makeAddBagReactor, makeRemoveBagReactor, makeCompactBagReactor, makeRotateRecipeReactor, makeRestampBagTierReactor,
   makeSwitcherStateReactor, makePromoteStateReactor,
@@ -1002,6 +1002,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       registry.register("wiki-render", makeWikiRenderReactor(memeOpts), { summary: "Wikify a title or a wikitext span through the daemon wiki's own engine to `text` or `html`, under a byte cap with a `next` cursor.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("tiddler-put", makeTiddlerPutReactor(memeOpts), { summary: "Patch one tiddler: set fields, unset fields, add and remove tags, and move the text only where named; `base` = the hash last read (stale answers `conflict`), `create` lands only where no tiddler stands. Lands in the wiki's working layer.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("tiddler-delete", makeTiddlerDeleteReactor(memeOpts), { summary: "Remove one tiddler by the family law: a plain tiddler leaves (a tombstone in the working layer); a meme root or slot answers its `consequence` and `decision: refused` (`tiddler-delete-in-a-family`) unless `family: true` names the family act, which lands every member as one change; `mode` names the delete over layers: `kapae` (default) tombstones in a writable layer and shadows the records beneath, `reveal` retracts the topmost record so the one beneath surfaces; each act names `holds` and `shadowed` or `reveals`; `base` = the hash last read.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
+      registry.register("tiddler-rename", makeTiddlerRenameReactor(memeOpts), { summary: "Rename one tiddler (or a meme root, its slots following) over TiddlyWiki's own relink: every tag and list that named the old title follows to `to`, and the old title stays as a forwarder (a pointer tiddler whose `forward-to` names the new title and whose text transcludes it); a standing target refuses `rename-target-stands` with its cure, a slot refuses `slot-without-root` naming its root; `base` = the hash last read.", surfaces: [VERB_SURFACE.cli] });
       registry.register("wiki-status", makeWikiStatusReactor(memeOpts), { summary: "Name each layer the daemon wiki composes and whether the session's face reads and writes it; `working` names the layer a write lands in.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
 
       // switcher-state — the daemon UX widget's IN path: main pushes the live

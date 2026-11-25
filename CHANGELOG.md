@@ -6,6 +6,9 @@ No release has shipped. A release names its floor by CID under the steward's `fl
 
 ### The lit house: light, lend and wear, the daemon mount, and the house that keeps itself
 
+**Added**
+- **`lares tiddler rename <old> <new>` relinks and leaves a forwarder.** The tiddler door's fourth sub-verb (daemon verb `tiddler-rename`) moves a record, or a meme root with its slots, and hands every tag and list that named the old title to TiddlyWiki's own `relinkTiddler`. The old title stays as a pointer tiddler (`forward-to`, its text transcluding the new title), so old roads keep answering. A standing target refuses `rename-target-stands` and names the delete that clears it; a slot refuses `slot-without-root` and names its root; `--if-match` guards a stale read.
+
 **Breaking**
 - **The parity reads one revision.** `tools/carry-parity.mjs` takes no `--imports`, `--stand-off` or `--manifest` and names no `moved` or `standOffs` class: both houses stand at one revision, so every changed or missing row reads red. Its census reads the face row `mounted` alone. The walker walks the three-face rite and the image leg; `--carry-leg`, `tools/rite-walk/carry-leg.mjs` and `tools/rite-walk/carry-seed.mjs` leave the tree.
 - **The pūlama lends a set.** A pūlama scope names the lent set (`PulamaScope.faces`), never one face or null. A session frame, a seat's set or an admission row whose faces read no set refuses by the set's own reading: `lent-faces-empty`, `lent-faces-malformed` or `lent-faces-duplicate`. The `pulama-lend-unnamed` class leaves. Admission rows (`admitted`, `reserved`, `admit-begun`, `admit-landed`, `image-admitted`) carry `faces` in the set's wire form and `tesserae`, one per lent face; a row whose tesserae miss, add, repeat or break the set refuses `admission-tesserae-mismatch`, and a rite naming no tessera refuses `admission-tessera-malformed`.

@@ -11,6 +11,7 @@
  *   tiddler-put    { recipe, title, text?, fields?, unset?, tagsAdd?, tagsRemove?, base?, create? }
  *                                                                         → { recipe, title, decision: put|noop|conflict|exists, bag, created, changed, hash, textHash, position, family? }
  *   tiddler-delete { recipe, title, base?, family?, mode? }               → { recipe, title, decision: removed|absent|conflict|refused, mode, tombstoned, retracted, hash?, refusal?, why?, consequence? }
+ *   tiddler-rename { recipe, title, to, base? }                          → { recipe, title, to, decision: renamed|absent|conflict|refused, forwarder?, relinked?, hash?, refusal?, why?, consequence? }
  *   wiki-status    { recipe }                                             → { recipe, working, layers: [{ bag, mounted, read, write, working?, why? }] }
  *
  * THIS PHASE ANSWERS THE ANCHOR ALONE: `recipe: "default"`, the daemon mount's daemon wiki, through the daemon island's live
@@ -59,7 +60,7 @@ import {
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { consequence, familyOf, retractsOf, rootAddressOf, tombstonesOf, type Consequence, type DeleteMode, type FamilyPosition, type FamilyView } from "@lararium/mesh/family";
 import { anchorBagOf, readContainer } from "./meme-verbs.js";
-import { wikiFamilyView, stageMemeTitle, STAGE_PATH_SHAPE_CODE, STAGE_MEME_PREFIX } from "./place-meme.js";
+import { wikiFamilyView, renameFamilyInWiki, stageMemeTitle, STAGE_PATH_SHAPE_CODE, STAGE_MEME_PREFIX } from "./place-meme.js";
 import { localFilter } from "./record-port-projection.js";
 import { pageFilterAnswer, checkFilter, WIKI_FILTER_ROWS, WIKI_FILTER_BYTES, WIKI_ANSWER_BYTES_MAX, type FilterRow, type FilterWiki } from "./filter-page.js";
 import { optionalStringArg, stringArg } from "./handler-args.js";
@@ -110,6 +111,7 @@ interface EngineWiki extends FilterWiki {
   tiddlerExists(title: string): boolean;
   addTiddler(tiddler: unknown): void;
   deleteTiddler(title: string): void;
+  relinkTiddler(from: string, to: string, options?: unknown): void;
   each(callback: (tiddler: EngineTiddler, title: string) => void): void;
   eachShadow(callback: (tiddler: EngineTiddler, title: string) => void): void;
   eachTiddlerPlusShadows(callback: (tiddler: EngineTiddler, title: string) => void): void;
@@ -646,6 +648,82 @@ export function makeTiddlerDeleteReactor(opts: TiddlerVerbOptions): VerbReactor 
     }
     for (const member of byHand) wiki.deleteTiddler(member);
     return { recipe: "default", title, decision: "removed", mode, tombstoned: tombstones, retracted: retracts, hash, consequence: read };
+  };
+}
+
+// ── tiddler-rename ────────────────────────────────────────────────────────────────────────────────────
+
+/** The forwarder's text: a transclusion of the new title, so an old road renders what the new one holds. */
+const forwarderText = (to: string): string => `<$transclude $tiddler=\`\`\`${to}\`\`\` mode="block"/>`;
+
+/**
+ * THE RENAME DOOR over TiddlyWiki's own relink. The record moves to `to` with its fields; every tag and list that named
+ * the old title follows through the engine's `relinkTiddler` (the relinkers the engine mounts, never a second walker
+ * here); the old title stays as a FORWARDER, a pointer tiddler whose `forward-to` field names the new title and whose
+ * text transcludes it, so an old road keeps answering. A meme root re-titles through the family law's rename (its slots
+ * follow; one forwarder stands at the old root address); a slot refuses (`slot-without-root`) and names its root. A target
+ * that stands refuses `rename-target-stands`, and the cure names the delete that clears it. No clock decides anything.
+ */
+export function makeTiddlerRenameReactor(opts: TiddlerVerbOptions): VerbReactor {
+  return async (args, ctx) => {
+    const anchor = anchorOf(opts, args, "tiddler-rename");
+    const title = stringArg(args, "title");
+    if (!title) throw new Error("tiddler-rename: args.title is required");
+    const to = stringArg(args, "to");
+    if (!to) throw new Error("tiddler-rename: args.to is required (the new title)");
+    refuseWithheld(title, "tiddler-rename");
+    refuseWithheld(to, "tiddler-rename");
+    await requireWrite(opts, anchor, ctx.cap, "tiddler rename");
+    const { wiki, Tiddler } = anchor.engine;
+    for (const named of [title, to]) {
+      if (named.startsWith("$:/")) throw new VerbRefusal("tiddler-put-code-class", `tiddler-put-code-class: "${named}" names a system title; the tiddler door renames no record the engine reads as configuration or code.`);
+    }
+    if (to.includes("```")) throw new VerbRefusal("fields-malformed", "fields-malformed: a new title carries no triple backtick (the forwarder quotes it).");
+    refuseMalformedStagePath(to);
+    const standing = wiki.tiddlerExists(title) ? wiki.getTiddler(title) : undefined;
+    if (!standing) return { recipe: "default", title, to, decision: "absent" };
+    const { fields, bag } = readRecord(standing);
+    const { view, mayRead } = await viewFor(opts, anchor, ctx.cap);
+    if (!(await mayRead(bag))) throw new Error(`cap-denied: read on ${bag} required (the bag that answers "${title}")`);
+    const hash = hashOf(fields);
+    const refused = (refusal: string, why: string, more: Record<string, unknown> = {}): Record<string, unknown> =>
+      ({ recipe: "default", title, to, decision: "refused", refusal, why: `${refusal}: ${why}`, hash, ...more });
+    if (to === title) return refused("rename-same-title", `"${title}" already stands at that title; name a different new title.`);
+    const base = optionalStringArg(args, "base");
+    if (base !== null && base !== hash) return { recipe: "default", title, to, decision: "conflict", hash };
+    if (wiki.tiddlerExists(to)) {
+      return refused("rename-target-stands", `"${to}" already stands; run \`lares tiddler delete "${to}"\` to clear it (or name another title), then rename again. Nothing moved.`);
+    }
+    // The family law reads what a rename moves: a slot refuses, a root takes its slots along.
+    const read: Consequence = consequence(wikiFamilyView(view as never), { kind: "rename", title, to });
+    if (read.refusals.length > 0) {
+      const first = read.refusals[0]!;
+      const why = first.code === "slot-without-root"
+        ? `"${title}" stands as a slot of ${read.family}; rename the root (\`lares tiddler rename "${read.family}" <new> --recipe default\`) and its slots follow. Nothing moved.`
+        : `"${first.title}" refuses this rename (${first.code}); nothing moved.`;
+      return refused(first.code, why, { consequence: read });
+    }
+    if (read.position !== "plain" && read.position !== "root") return refused("tiddler-rename-in-a-family", `"${title}" stands as a meme ${read.position}; nothing moved.`, { consequence: read });
+    refuseCodeClass(to, fields, []);
+
+    // THE RELINK SNAPSHOT: which records name the old title in a tag or a list, read before the engine relinks them.
+    const names = (value: unknown): boolean => Array.isArray(value) && value.includes(title);
+    const referrers: string[] = [];
+    wiki.each((tiddler, name) => { if (name !== title && (names(tiddler.fields["tags"]) || names(tiddler.fields["list"]))) referrers.push(name); });
+
+    // THE LANDING, through the live wiki as a person's edit lands: the record under its new title (a root with its
+    // slots), the engine's relink over every reference, then the forwarder where the old title stood.
+    if (read.position === "root") {
+      renameFamilyInWiki(wiki as never, title, to);
+    } else {
+      const moved: Record<string, string> = { ...fields, title: to };
+      if (typeof fields["uri-path"] === "string" && to.startsWith("lar:///")) moved["uri-path"] = to.slice("lar:///".length);
+      wiki.addTiddler(new Tiddler(moved));
+    }
+    if (!flagOff(args["relink"])) wiki.relinkTiddler(title, to);
+    wiki.addTiddler(new Tiddler({ title, type: WIKITEXT, text: forwarderText(to), "forward-to": to }));
+    const landed = readRecord(wiki.getTiddler(to)!).fields;
+    return { recipe: "default", title, to, decision: "renamed", forwarder: title, relinked: flagOff(args["relink"]) ? [] : referrers, hash: hashOf(landed), consequence: read };
   };
 }
 

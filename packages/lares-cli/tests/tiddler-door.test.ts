@@ -111,6 +111,25 @@ describe("the argument law, no daemon", () => {
   });
 });
 
+describe("tiddler rename — the sub-verb of the one door", () => {
+  test("the plan reads old and new from the line, rides tiddler-rename, and carries the base; a missing target refuses with the usage", () => {
+    expect(tiddlerPlan("rename", argv("tiddler", ["rename", "Old", "New"], { recipe: "default", base: "sha256-x" }))).toEqual({ verb: "tiddler-rename", args: { recipe: "default", title: "Old", to: "New", base: "sha256-x" } });
+    expect(() => tiddlerPlan("rename", argv("tiddler", ["rename", "Old"], { recipe: "default" }))).toThrow(/new title is required/);
+    expect(COMMANDS.find((c) => c.name === "tiddler")!.accepts).toContain("base");
+  });
+
+  test("receipts map to exits: renamed 0 with its relinks, absent not-found, conflict conflict, a refusal verb-error with its name", async () => {
+    h.reply = { recipe: "default", title: "Old", to: "New", decision: "renamed", relinked: ["Child"], forwarder: "Old" };
+    expect(await run(argv("tiddler", ["rename", "Old", "New"], { recipe: "default" }))).toMatchObject({ exit: 0, printed: { ok: true, data: { relinked: ["Child"] } } });
+    h.reply = { decision: "absent" };
+    expect((await run(argv("tiddler", ["rename", "Old", "New"], { recipe: "default" }))).exit).toBe(3);
+    h.reply = { decision: "conflict", hash: "sha256-live" };
+    expect((await run(argv("tiddler", ["rename", "Old", "New"], { recipe: "default", base: "sha256-old" }))).exit).toBe(4);
+    h.reply = { decision: "refused", refusal: "rename-target-stands", why: "rename-target-stands: \"New\" already stands; run `lares tiddler delete \"New\"` first" };
+    expect(await run(argv("tiddler", ["rename", "Old", "New"], { recipe: "default" }))).toMatchObject({ exit: 4, printed: { ok: false, error: { code: "verb-error", hint: "refusal: rename-target-stands", message: expect.stringContaining("lares tiddler delete") } } });
+  });
+});
+
 describe("the exit classes a receipt maps to", () => {
   test("an absent tiddler exits not-found; a stale base and an existing title exit conflict; a family delete carries its refusal name", async () => {
     h.reply = { recipe: "default", title: "T", tiddler: null };
