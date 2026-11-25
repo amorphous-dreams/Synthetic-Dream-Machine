@@ -6,7 +6,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { execFileSync, spawnSync } from "node:child_process";
 import {
-  chmodSync, existsSync, lstatSync, statSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, readlinkSync, rmSync, symlinkSync, writeFileSync,
+  chmodSync, existsSync, lstatSync, statSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, readlinkSync, realpathSync, rmSync, symlinkSync, writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
@@ -36,7 +36,7 @@ function clone(): string {
     writeFileSync(join(root, rel), readFileSync(join(REPO, rel), "utf8"));
   }
   for (const s of declared(REPO).home) {
-    const script = s["script"] ?? s["target"];
+    const script = s["script"] ?? s["target"] ?? s["tool"];
     if (typeof script === "string") { mkdirSync(join(root, dirname(script)), { recursive: true }); writeFileSync(join(root, script), "#\n"); }
   }
   execFileSync("git", ["init", "-q", root]);
@@ -337,6 +337,51 @@ describe("the home radius", () => {
     expect(settings).toContain(`${root}/packages/lares-cli/.claude-plugin/hooks/lares-loads-hook.mjs`);
     expect(readlinkSync(join(h.native, ".local/bin/lares"))).toBe(join(root, "packages/lares-cli/bin/lares.mjs"));
     expect((await tend(homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false }), l)).wrote).toEqual([]);
+  });
+
+  describe("the mana statusline rides the tunnel", () => {
+    const WANT = (root: string, home: string): unknown =>
+      ({ type: "command", command: `node ${realpathSync(root)}/tools/mana-statusline.mjs ${home}/.claude/mana-readings.jsonl` });
+    const settingsOf = (home: string): Record<string, unknown> => JSON.parse(readFileSync(join(home, ".claude/settings.json"), "utf8"));
+
+    it("read shows the item off-tunnel, a tend writes it aimed at the main clone, and a second tend writes nothing", async () => {
+      const root = clone();
+      const h = homes();
+      const l = ledger();
+      const items = () => homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false });
+      expect(read(items(), l).find((r) => r.id === "claude.mana-statusline")!.state).toBe("drift");
+      await tend(items(), l);
+      expect(settingsOf(h.native)["statusLine"]).toEqual(WANT(root, h.native));
+      expect(read(items(), l).find((r) => r.id === "claude.mana-statusline")!.state).toBe("aligned");
+      expect((await tend(items(), l)).wrote).toEqual([]);
+    });
+
+    it("a moved clone re-aims the line, and the operator's other keys stand", async () => {
+      const root = clone();
+      const h = homes();
+      writeFileSync(join(h.native, ".claude/settings.json"), JSON.stringify({ model: "m", statusLine: { type: "command", command: "node /gone/tools/mana-statusline.mjs /gone/log", padding: 2 } }));
+      await tend(homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false }), ledger());
+      const o = settingsOf(h.native);
+      expect(o["statusLine"]).toEqual({ ...(WANT(root, h.native) as object), padding: 2 });
+      expect(o["model"]).toBe("m");
+    });
+
+    it("a statusLine another hand set reads foreign and a tend refuses it; --force takes it and the ledger keeps the old bytes", async () => {
+      const root = clone();
+      const h = homes();
+      const held = JSON.stringify({ statusLine: { type: "command", command: "~/my-line.sh" } }, null, 2) + "\n";
+      writeFileSync(join(h.native, ".claude/settings.json"), held);
+      const l = ledger();
+      const items = () => homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false });
+      expect(read(items(), l).find((r) => r.id === "claude.mana-statusline")!.state).toBe("foreign");
+      const r = await tend(items(), l);
+      expect(r.refused.map((x) => x.id)).toContain("claude.mana-statusline");
+      expect(readFileSync(join(h.native, ".claude/settings.json"), "utf8")).toBe(held);
+      await tend(items(), l, { force: true });
+      expect(settingsOf(h.native)["statusLine"]).toEqual(WANT(root, h.native));
+      undo(l);
+      expect(readFileSync(join(h.native, ".claude/settings.json"), "utf8")).toBe(held);
+    });
   });
 
   it("a tend seats the compaction hook on PreCompact beside the wake on SessionStart (road L35, L43)", async () => {

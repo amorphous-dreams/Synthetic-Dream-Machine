@@ -53,6 +53,32 @@ export const jsonFloor = (key: string, floor: number): Transform =>
 export const jsonSet = (path: readonly string[], value: unknown): Transform =>
   jsonEdit((o) => { at(o, path.slice(0, -1))[path.at(-1)!] = structuredClone(value); });
 
+/** A statusLine command that names the house's tool, wherever its clone stood. */
+const namesTool = (tool: string) => (v: unknown): boolean =>
+  isObject(v) && v["type"] === "command" && typeof v["command"] === "string" && v["command"].includes(tool);
+
+/**
+ * Claude's `statusLine`: the house's command for the tool stands whole. A statusLine that already names the tool
+ * (a moved clone's stale path) yields to the resolved command and keeps its other keys; one that names another
+ * command stands outside the house's ownership.
+ */
+export const claudeStatusLine = (tool: string, command: string): Transform => {
+  const edit = jsonEdit((o) => {
+    const held = o["statusLine"];
+    o["statusLine"] = { ...(isObject(held) ? held : {}), type: "command", command };
+  });
+  const foreign = statusLineForeign(tool);
+  return (cur) => (foreign(cur) ? cur : edit(cur));
+};
+
+export const statusLineForeign = (tool: string) => (cur: string | null): string | null => {
+  const why = jsonForeign(cur);
+  if (why || cur === null || cur.trim() === "") return why;
+  const held = (JSON.parse(cur) as Json)["statusLine"];
+  if (held === undefined || namesTool(tool)(held)) return null;
+  return "holds a statusLine another hand set; the house changes none of it (`lares home tend --force` takes it and the ledger keeps the old bytes)";
+};
+
 /**
  * A JSON target whose list path holds another shape: an object that is no object along the way, or a list that is no list
  * at its end. An absent key anywhere on the path reads as the house's to write.
