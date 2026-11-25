@@ -143,17 +143,32 @@ describe("a parked holder is waited on until a cause ends it, never a clock", ()
       progress: () => { if ((paces += 1) === 4) interrupt.abort(); } })).rejects.toBeInstanceOf(StoreDoorInterrupted);
   });
 
-  it("the stand log binds to the held vessel: a stale fatal (written before the holder started) or a container holder reads nothing; a current-boot fatal reads", () => {
-    const log = "[lararium] phase → boot\nfatal: no hearth\n";
-    const alive = () => true;
-    // STALE: the file was last written before the held pid started: an earlier failed stand's fatal.
-    expect(standBootLog([4242], { alive, startMs: () => 2_000, logMtimeMs: () => 1_000, readLog: () => log })).toBe("");
-    // CONTAINER: the host never reads the named pid alive.
-    expect(standBootLog([4242], { alive: () => false, startMs: () => 1_000, logMtimeMs: () => 2_000, readLog: () => log })).toBe("");
-    // CURRENT: written after the holder started.
-    expect(standBootLog([4242], { alive, startMs: () => 1_000, logMtimeMs: () => 2_000, readLog: () => log })).toContain("fatal: no hearth");
-    // An earlier boot's fault in the same file never reads past the last boot line.
-    expect(standBootLog([4242], { alive, startMs: () => 1_000, logMtimeMs: () => 2_000, readLog: () => "phase → boot\nfatal: old\n[lararium] phase → boot\nphase → repo-open\n" })).not.toContain("fatal");
+  it("the stand log binds by the boot's own pid line, never a clock: another pid's fatal reads nothing, the held pid's reads, skew changes nothing", () => {
+    const stale = "[lararium] boot pid 9999\n[lararium] phase → boot\nfatal: old stand\n";
+    const current = "[lararium] boot pid 9999\n[lararium] phase → boot\nfatal: old stand\n[lararium] boot pid 4242\n[lararium] phase → boot\nfatal: no hearth\n";
+    const read = () => {
+      expect(standBootLog([4242], () => stale)).toBe("");                          // a touched-forward stale log names another pid
+      expect(standBootLog([4242], () => "phase → boot\nfatal: unnamed\n")).toBe(""); // no pid line: no identity
+      expect(standBootLog([4242], () => current)).toContain("fatal: no hearth");
+      expect(standBootLog([4242], () => current)).not.toContain("old stand");
+      expect(standBootLog([4242], () => `${current}[lararium] boot pid 9999\nfatal: later other\n`)).toBe("");
+    };
+    read();
+    const now = vi.spyOn(Date, "now").mockReturnValue(4_102_444_800_000);
+    const perf = vi.spyOn(performance, "now").mockReturnValue(9e12);
+    try { read(); } finally { now.mockRestore(); perf.mockRestore(); }
+  });
+
+  it("through the door: a stale log never ends the wait; the held pid's fatal ends it", async () => {
+    vi.mocked(udsAlive).mockResolvedValue(true);
+    vi.mocked(whoHolds).mockResolvedValue(PARKED);
+    hang();
+    const interrupt = new AbortController();
+    let paces = 0;
+    await expect(throughStoreDoor({ verb: "tiddler-put", args: {}, direct: async () => ({}), phases: TINY, holderAlive: () => true, interactive: false, interrupt: interrupt.signal,
+      bootLog: (pids) => standBootLog(pids, () => "boot pid 9999\nphase → boot\nfatal: old\n"), progress: () => { if ((paces += 1) === 3) interrupt.abort(); } })).rejects.toBeInstanceOf(StoreDoorInterrupted);
+    await expect(throughStoreDoor({ verb: "tiddler-put", args: {}, direct: async () => ({}), phases: TINY, holderAlive: () => true,
+      bootLog: (pids) => standBootLog(pids, () => "boot pid 4242\nphase → boot\nfatal: no hearth\n") })).rejects.toSatisfy((e: unknown) => (e as StoreDoorEnded).ended === "boot-fault");
   });
 
   it("EPERM reads a holder alive; only ESRCH reads it gone", () => {
