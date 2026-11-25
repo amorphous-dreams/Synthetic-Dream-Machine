@@ -80,17 +80,17 @@ describe("only the hand door lights the pūlama", () => {
     const dir = scratch(), records = pulamaRecords(dir);
     const door = pulamaHandDoor({ holder, server, image: pulamaImage(dir), records });
     const next = "sha256:" + "94".repeat(32);
-    const frame = { op: "keeper-commit-lei", next, image: next, devices: 1, branch: "develop", rev: "e".repeat(40), tree: "f".repeat(40), recheck: "same", ci: "7:success" };
+    const frame = { op: "name-successor-lei", next, image: next, devices: 1, branch: "develop", rev: "e".repeat(40), tree: "f".repeat(40), recheck: "same", ci: "7:success" };
     expect(await door(frame)).toMatchObject({ reading: "pulama-locked" });
     await door({ op: "light", credentials: [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }] });
     await door({ op: "closure", digest: "sha256:" + "d0".repeat(32) });
     // NO ROUTE RIDES THE FRAME, and the verb sends it whole: the host's testimony alone.
     const routes: string[] = [];
-    const spent = await runHandVerb("keeper-commit-lei", JSON.stringify({ ...frame, op: undefined }), { ask: (f) => door(f), route: async (label) => { routes.push(label); return FIXTURE_PASSPHRASE; } });
+    const spent = await runHandVerb("name-successor-lei", JSON.stringify({ ...frame, op: undefined }), { ask: (f) => door(f), route: async (label) => { routes.push(label); return FIXTURE_PASSPHRASE; } });
     expect(spent).toMatchObject({ reading: "committed", v: 1, branch: "develop" });
     expect(routes).toEqual([]);
-    expect(handVerbExit("keeper-commit-lei", spent)).toBe(0);
-    expect(handVerbExit("keeper-commit-lei", { op: "keeper-commit-lei", reading: "keeper-lei-ci-red" })).toBe(1);
+    expect(handVerbExit("name-successor-lei", spent)).toBe(0);
+    expect(handVerbExit("name-successor-lei", { op: "name-successor-lei", reading: "keeper-lei-ci-red" })).toBe(1);
     expect(await door({ op: "status" })).toMatchObject({ keeper: { successor: next }, keeperLei: { floor: true, licensed: [{ v: 1, next, branch: "develop", ci: "7:success", vested: false }] } });
     await door({ op: "lock" });
   });

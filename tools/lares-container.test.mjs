@@ -2209,7 +2209,7 @@ test(`${name}: pulama-name-successor-reads-a-terminal: with no terminal the succ
   const r = await run(shim, ["pulama", "name-successor"], { envFile: PULAMA_ENV, checkout: "clean" });
   assert.notEqual(r.status, 0);
   assert.match(r.stderr, /pulama name-successor reads your route on a terminal; run `lares pulama name-successor` on one \(no successor named\)/);
-  assert.doesNotMatch(r.calls, /keeper-commit/);
+  assert.doesNotMatch(r.calls, /name-successor/);
   const land = await run(shim, ["pulama", "keeper-land"], { envFile: PULAMA_ENV });
   assert.equal(land.status, 0, land.stderr);
   assert.match(land.calls, /exec -T pulama node \S+ keeper-land/);
@@ -2217,7 +2217,7 @@ test(`${name}: pulama-name-successor-reads-a-terminal: with no terminal the succ
 test(`${name}: RED name-successor-lei-guards-the-spend: with no terminal and no route, a revision unreachable from origin/develop, an image label that differs from D′, a red CI run and a face of two devices each refuse by name and send nothing to the pūlama; a green one sends one name-successor-lei frame naming D′, the branch whose kukulu lei licenses it, the revision, the run and one device`, { skip: skip || shim !== SH }, async () => {
   const LEI = { ...REBUILT, FAKE_INTENT_SHOW: '{"devices":1}', FAKE_GH_RUN: "77:completed:success" };
   const spend = (env, origin = true) => run(shim, ["pulama", "name-successor", "--lei", "HEAD", "develop"], { envFile: PULAMA_ENV, checkout: "pulama", origin, env: { ...LEI, ...env } });
-  const quiet = (r) => assert.doesNotMatch(r.calls, /keeper-commit-lei/);
+  const quiet = (r) => assert.doesNotMatch(r.calls, /name-successor-lei/);
   const far = await spend({ FAKE_IMAGE_CLOSURE: CL("b") }, false);
   assert.notEqual(far.status, 0);
   assert.match(far.stderr, /\(keeper-lei-unreachable\)[\s\S]*lares pulama name-successor/);
@@ -2238,7 +2238,7 @@ test(`${name}: RED name-successor-lei-guards-the-spend: with no terminal and no 
   quiet(two);
   const green = await spend({ FAKE_IMAGE_CLOSURE: d });
   assert.equal(green.status, 0, green.stderr);
-  const frame = green.calls.match(/exec -T pulama node \S+ keeper-commit-lei (\{.*\})/)?.[1];
+  const frame = green.calls.match(/exec -T pulama node \S+ name-successor-lei (\{.*\})/)?.[1];
   assert.ok(frame, green.calls);
   assert.deepEqual({ ...JSON.parse(frame), rev: "r", tree: "t" }, { next: d, branch: "develop", rev: "r", tree: "t", recheck: "same", image: d, ci: "77:success", devices: 1 });
   assert.match(JSON.parse(frame).rev, /^[0-9a-f]{40}$/);
@@ -2247,7 +2247,7 @@ test(`${name}: RED name-successor-lei-stays-internal: the rite's own step refuse
   const r = await run(shim, ["pulama", "name-successor", "--lei", "HEAD", "develop"], { envFile: PULAMA_ENV, checkout: "pulama", origin: true, tty: "", env: { ...REBUILT } });
   assert.notEqual(r.status, 0);
   assert.match(r.stdout, /the rite's own step[\s\S]*lares rite kukulu/);
-  assert.doesNotMatch(r.calls, /keeper-commit-lei/);
+  assert.doesNotMatch(r.calls, /name-successor-lei/);
 });
 test(`${name}: RED rebuild-image-names-the-keeper-lei: a moved closure the keeper's lei could spend on reads keeper lei, a stale live commit too; CONTROL: a live, current hand commit or the struck fire due reads no lei`, { skip: skip || shim !== SH }, async () => {
   const lei = await run(shim, ["rebuild", "--image"], { envFile: PULAMA_ENV, checkout: "clean", env: { ...VESTS, FAKE_PULAMA_STATUS: '{"op":"status","lit":true,"keeper":{"v":1},"keeperLei":{"left":3,"floor":true},"leiReady":true}' } });
@@ -2257,9 +2257,6 @@ test(`${name}: RED rebuild-image-names-the-keeper-lei: a moved closure the keepe
   // A STALE live commit (the pūlama reads `staleSuccessor`) binds nothing current: the lei supersedes it, so the reading names lei.
   const stale = await run(shim, ["rebuild", "--image"], { envFile: PULAMA_ENV, checkout: "clean", env: { ...VESTS, FAKE_PULAMA_STATUS: `{"op":"status","lit":true,"keeper":{"successor":"${CL("c")}","staleSuccessor":true,"staleSuccessorWhy":"self-successor"},"leiReady":true}` } });
   assert.match(stale.stdout, /"keeper":"lei"/);
-  // A pūlama still on the older code (the transition a pull crosses) names the same rows `pending`/`stalePending`/`staleWhy`: the shim reads both.
-  const older = await run(shim, ["rebuild", "--image"], { envFile: PULAMA_ENV, checkout: "clean", env: { ...VESTS, FAKE_PULAMA_STATUS: `{"op":"status","lit":true,"keeper":{"pending":"${CL("c")}","stalePending":true,"staleWhy":"self-commit"},"leiReady":true}` } });
-  assert.match(older.stdout, /"keeper":"lei"/);
   const due = await run(shim, ["rebuild", "--image"], { envFile: PULAMA_ENV, checkout: "clean", env: { ...VESTS, FAKE_PULAMA_STATUS: '{"op":"status","lit":true,"keeper":{"struckDue":true},"leiReady":true}' } });
   assert.match(due.stdout, /"keeper":"struck-due"/);
 });
@@ -2659,15 +2656,3 @@ for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
     }
   });
 }
-
-test("the hand verbs the shims send over the wire stay the names the pūlama dispatches (keeper-commit, keeper-commit-lei), while the human verb reads name-successor", async () => {
-  const { readFileSync } = await import("node:fs");
-  const verbs = readFileSync(new URL("../packages/lararium-node/src/pulama-verbs.ts", import.meta.url), "utf8");
-  const sh = readFileSync(new URL("./lares-container.sh", import.meta.url), "utf8");
-  const ps = readFileSync(new URL("./lares-container.ps1", import.meta.url), "utf8");
-  for (const op of ["keeper-commit", "keeper-commit-lei"]) assert.ok(verbs.includes(`"${op}"`), `the pūlama dispatches ${op}`);
-  assert.match(sh, /node "\$PULAMA_MAIN" keeper-commit "/);
-  assert.match(sh, /node "\$PULAMA_MAIN" keeper-commit-lei "/);
-  assert.match(ps, /\$PulamaMain, 'keeper-commit'/);
-  assert.match(sh, /^\s+name-successor\)/m);
-});

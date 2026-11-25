@@ -1271,9 +1271,6 @@ function PulamaStatusRead([string]$digest) {
   # THE KEEPER TALLY: the live successor's successor closure where it can vest, whether the struck fire is due, and any live successor.
   $script:PsVest = ([regex]::Match($flat, '"vestReady":"(sha256:[0-9a-f]{64})"')).Groups[1].Value
   $script:PsSuccessor = ([regex]::Match($flat, '"successor":"(sha256:[0-9a-f]{64})"')).Groups[1].Value
-  # An older pūlama (the transition a pull crosses) names the row `pending` and its stale reading `stalePending`/`staleWhy`.
-  if (-not $script:PsSuccessor) { $script:PsSuccessor = ([regex]::Match($flat, '"pending":"(sha256:[0-9a-f]{64})"')).Groups[1].Value }
-  if ($flat -match '"stalePending":true') { $why = ([regex]::Match($flat, '"staleWhy":"([a-z-]+)"')).Groups[1].Value; $script:PsStale = if ($why) { $why } else { 'stale' } }
   # A STALE live successor (`staleSuccessor`, its `staleSuccessorWhy`) binds nothing current: the next kukulu lei commit supersedes it.
   if ($flat -match '"staleSuccessor":true') { $why = ([regex]::Match($flat, '"staleSuccessorWhy":"([a-z-]+)"')).Groups[1].Value; $script:PsStale = if ($why) { $why } else { 'stale' } }
   $script:PsClosure = ([regex]::Match($flat, '"closure":"(sha256:[0-9a-f]{64})"')).Groups[1].Value
@@ -1717,7 +1714,7 @@ switch ($verb) {
           $cosignArgs = @('--cosign', "{""nonce"":""$nonce"",""faces"":[$($faces -join ',')]}")
           [Console]::Error.WriteLine('lares-container: name-successor: the co-sign of each face spent: another atom of the roster this vessel read approved the vest (the keeper checks the roster of this vessel, not the admission chain of the face); the commit carries the spends')
         }
-        Compose (@('--profile', 'pulama', 'exec') + $NoTty + @((PulamaSvc), 'node', $PulamaMain, 'keeper-commit', $d) + $devArgs + $cosignArgs)
+        Compose (@('--profile', 'pulama', 'exec') + $NoTty + @((PulamaSvc), 'node', $PulamaMain, 'name-successor', $d) + $devArgs + $cosignArgs)
         if ($LASTEXITCODE -eq 0 -and $held) { Remove-Item -Force $held }
       }
       'lock' {

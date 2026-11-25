@@ -58,7 +58,7 @@
  *            rests in this keeper's memory alone (two keepers share one state dir), and `image` may carry it too (`closure`).
  *
  * ── THE KEEPER TALLY (`pulama-keeper`): the keeper's own succession ─────────────────────────────
- *   keeper-commit  THE HAND NAMES THE SUCCESSOR. The route proves against the lit holder (as `admit`'s does) and the guest half
+ *   name-successor  THE HAND NAMES THE SUCCESSOR. The route proves against the lit holder (as `admit`'s does) and the guest half
  *                  rests naming ONE successor closure (`next`); a later commit supersedes. Unlit, unreported or passing refuses
  *                  before the route reads.
  *   keeper-offer   (the successor, unlit) mint the one-handoff X25519 key and answer its public half beside the closure the host
@@ -68,7 +68,7 @@
  *                  vouches name this move, and the vest begins the rite, claiming one lei return) and only where the successor's
  *                  reported closure equals the committed `next`. One attempt spends the commit, vested or lapsed. The answer
  *                  carries the slot for the host's pipe; it never rests. From then this keeper is PASSING THE FIRE: every hand
- *                  act that writes (admit, unadmit, lei, keep-seat, rehive, close, keeper-commit, keeper-commit-lei, keeper-vest,
+ *                  act that writes (admit, unadmit, lei, keep-seat, rehive, close, name-successor, name-successor-lei, keeper-vest,
  *                  keeper-land) refuses
  *                  `fire-passing`. The vessel's sessions keep serving through it until the shim locks it, so the down's keep and
  *                  census ride the keeper that still holds the fire; the successor holds no socket and serves nothing meanwhile.
@@ -78,12 +78,12 @@
  *   keeper-land    (a keeper the hand lit by passphrase: the struck fire) land the live successor with no vest; a keeper lit by a
  *                  vest, or a passing one, refuses.
  *   take-fire      (a lit successor) claim the vessel socket; it refuses while another keeper still holds it.
- *   keeper-commit-lei  THE COMMIT THE KUKULU LEI LICENSES (no route; operator ruling 2026-11-24: no count of its own). The host,
+ *   name-successor-lei  THE COMMIT THE KUKULU LEI LICENSES (no route; operator ruling 2026-11-24: no count of its own). The host,
  *                  having read a standing kukulu lei on the branch with returns left, testifies the branch, the revision, its tree, the
  *                  fresh-archive recheck, the built image's closure label (it must equal `next`), the CI push run and the device
  *                  count; the keeper refuses a face of more than one device, a fork, a live hand successor (a lei never supersedes
  *                  it), a vested commit unlanded, a red last pair and the struck fire due, then rests the same commit
- *                  `keeper-commit` rests, naming the license. The vest's live rite spends that lei's return (the same return the
+ *                  `name-successor` rests, naming the license. The vest's live rite spends that lei's return (the same return the
  *                  rite spends for the lent face) and names it. `KEEPER_LEI_STANDS` (a code constant inside the closure) turns it off.
  *   `status` folds the chain while lit (`keeper`), and names `vestReady` where a live successor can vest; `keeperLei` names the floor
  *   and each licensed commit (branch, revision, CI run, the lei returns its vest spent), and `leiReady` where one could rest now.
@@ -455,40 +455,40 @@ export function pulamaHandDoor(a: {
         log("the host reported this keeper's code closure");
         return { op: "closure", reading: "reported", closure };
       }
-      case "keeper-commit": {
-        if (passing) return passingRefusal("keeper-commit");
-        if (!holder.isUnlocked()) return { op: "keeper-commit", reading: "pulama-locked", ...status() };
-        if (closure === null) return { op: "keeper-commit", reading: "closure-unreported", detail: "the host reported no closure for this keeper (`closure <digest>`), so the chain cannot name what it hands from" };
+      case "name-successor": {
+        if (passing) return passingRefusal("name-successor");
+        if (!holder.isUnlocked()) return { op: "name-successor", reading: "pulama-locked", ...status() };
+        if (closure === null) return { op: "name-successor", reading: "closure-unreported", detail: "the host reported no closure for this keeper (`closure <digest>`), so the chain cannot name what it hands from" };
         const next = f["next"];
-        if (typeof next !== "string" || !CLOSURE.test(next)) return { op: "keeper-commit", reading: "next-malformed", detail: "the successor's closure reads `sha256:<64 hex>`" };
+        if (typeof next !== "string" || !CLOSURE.test(next)) return { op: "name-successor", reading: "next-malformed", detail: "the successor's closure reads `sha256:<64 hex>`" };
         const credentials = credentialsOf(f["credentials"]);
-        if (credentials === null) return { op: "keeper-commit", reading: "malformed" };
+        if (credentials === null) return { op: "name-successor", reading: "malformed" };
         // THE ROUTE PROVES A PERSON STANDS HERE, as an admission's does: the human's consent names ONE successor closure.
         const proof = await holder.proves(credentials);
-        if (proof.reading !== "proves") { log(`keeper-commit: ${proof.reading}`); return { op: "keeper-commit", ...proof, ...status() }; }
+        if (proof.reading !== "proves") { log(`name-successor: ${proof.reading}`); return { op: "name-successor", ...proof, ...status() }; }
         // THE DEVICE COUNT the vessel read at commit time rides the commit's own body; none read rides as null, and the vest fails closed on it.
         const devices = typeof f["devices"] === "number" && Number.isSafeInteger(f["devices"]) && f["devices"] >= 1 ? f["devices"] : null;
         // THE CARRIED CO-SIGN (`lares intent keeper-cosign`): the commit's nonce and each face's spent co-sign, read once at the vest.
         const cosign = f["cosign"] === undefined ? null : f["cosign"];
         const out = await keeperNameSuccessor(a.records, await pulamaSignerOf(holder), { ...await standing(), next, devices, cosign });
-        if ("refusal" in out) return { op: "keeper-commit", reading: out.refusal, detail: out.detail };
+        if ("refusal" in out) return { op: "name-successor", reading: out.refusal, detail: out.detail };
         log(`keeper named a successor: v${out.v} names the successor closure${out.supersedes !== null ? ", superseding the commit before it" : ""}`);
-        return { op: "keeper-commit", reading: "committed", ...out };
+        return { op: "name-successor", reading: "committed", ...out };
       }
-      case "keeper-commit-lei": {
+      case "name-successor-lei": {
         // THE COMMIT THE KUKULU LEI LICENSES (no route: the consent rode the hand's kukulu lei, whose return the vest's rite spends).
         // The host testifies what it read (the branch, the revision, its tree, the recheck, the image's closure label, the CI run, the
         // device count); the keeper checks its own bounds and rests the commit.
-        if (passing) return passingRefusal("keeper-commit-lei");
-        if (!holder.isUnlocked()) return { op: "keeper-commit-lei", reading: "pulama-locked", ...status() };
+        if (passing) return passingRefusal("name-successor-lei");
+        if (!holder.isUnlocked()) return { op: "name-successor-lei", reading: "pulama-locked", ...status() };
         const next = f["next"];
-        if (typeof next !== "string" || !CLOSURE.test(next)) return { op: "keeper-commit-lei", reading: "next-malformed", detail: "the successor's closure reads `sha256:<64 hex>`" };
+        if (typeof next !== "string" || !CLOSURE.test(next)) return { op: "name-successor-lei", reading: "next-malformed", detail: "the successor's closure reads `sha256:<64 hex>`" };
         const word = (k: string): string => (typeof f[k] === "string" ? f[k] : "");
         const devices = typeof f["devices"] === "number" && Number.isSafeInteger(f["devices"]) && f["devices"] >= 1 ? f["devices"] : null;
         const out = await keeperNameSuccessorByLei(a.records, await pulamaSignerOf(holder), { ...await standing(), next, devices, branch: word("branch"), rev: word("rev"), tree: word("tree"), recheck: word("recheck"), image: word("image"), ci: word("ci"), floor: leiFloor });
-        if ("refusal" in out) { log(`keeper-commit-lei: ${out.refusal}`); return { op: "keeper-commit-lei", reading: out.refusal, detail: out.detail }; }
+        if ("refusal" in out) { log(`name-successor-lei: ${out.refusal}`); return { op: "name-successor-lei", reading: out.refusal, detail: out.detail }; }
         log(`keeper named a successor under the kukulu lei of ${out.branch}: v${out.v} names the successor closure; the vest's rite spends the lei's return`);
-        return { op: "keeper-commit-lei", reading: "committed", ...out };
+        return { op: "name-successor-lei", reading: "committed", ...out };
       }
       case "keeper-offer": {
         if (holder.isUnlocked()) return { op: "keeper-offer", reading: "keeper-lit", detail: "a lit keeper holds a fire already; only an unlit successor offers a key" };
