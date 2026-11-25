@@ -1,0 +1,17 @@
+{
+  "blobs": [
+    {
+      "id": "$:/plugins/flibbles/relink",
+      "version": "2.6.2",
+      "sha256": "320547bb8b7fb23c7b30c4d65fad74099c13aea47048576e4f140c778b3a2b45",
+      "provenance": {
+        "source": "https://github.com/flibbles/tw5-relink",
+        "commit": "51266a1e853c616c5f0b401a9c881d518dddb9bc",
+        "path": "plugins/relink",
+        "licence": "BSD-3-Clause",
+        "author": "Cameron Fischer (Flibbles)"
+      },
+      "file": "relink-plugin.json"
+    }
+  ]
+}
