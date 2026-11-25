@@ -35,9 +35,9 @@ export interface PulamaSignKind<T> {
   verify(record: unknown, face: PulamaSignContext): Promise<string | null>;
 }
 
-/** A string as a terminal may print it: C0/C1 controls and bidi or zero-width marks each show as `?`, and a long one clips. */
+/** A string as a terminal may print it: C0/C1 controls, the soft hyphen, and bidi or zero-width marks (the Arabic letter mark among them) each show as `?`, and a long one clips. */
 export function printable(s: string, max = 120): string {
-  const clean = s.replace(/[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u2028\u2029\u202a-\u202e\u2060-\u2069\ufeff]/gu, "?");
+  const clean = s.replace(/[\u0000-\u001f\u007f-\u009f\u00ad\u061c\u200b-\u200f\u2028\u2029\u202a-\u202e\u2060-\u2069\ufeff]/gu, "?");
   return clean.length > max ? `${clean.slice(0, max)}…` : clean;
 }
 
@@ -60,7 +60,9 @@ const kahuaAct: PulamaSignKind<KahuaActBody> = {
     // THE PROMPT NAMES WHAT THE ROOT SIGNS, every string scrubbed of control and direction marks so none repaints the terminal.
     const fields = Object.keys(b.fields).sort().map((k) => printable(k));
     return `a kahua lift of "${printable(b.title)}" (epoch ${b.epoch}): ${b.text.length} char(s) of text; fields ${fields.length ? fields.join(", ") : "none"}; `
-      + `${b.sources.length} source(s); taint ${b.taint.length ? b.taint.map((t) => printable(t)).join(", ") : "none"}; parent ${b.parent ?? "none"}${b.proposal ? `; answers proposal ${b.proposal}` : ""}`;
+      + `${b.sources.length} source(s); taint ${b.taint.length ? b.taint.map((t) => printable(t)).join(", ") : "none"}; parent ${b.parent ?? "none"}${b.proposal ? `; answers proposal ${b.proposal}` : ""}; `
+      // THE ORIGIN the root signs over: a land with no session of its own carries this one, so the person reads it here.
+      + `session ${printable(b.origin.session)}; device ${printable(b.origin.device)}`;
   },
   async sign(body, root) {
     const record = await signKahuaActBody(body, root);

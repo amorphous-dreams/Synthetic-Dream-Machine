@@ -170,6 +170,13 @@ describe("the route's prompt names what the root signs (cold read F4)", () => {
     for (const part of ["42", "type", "1 source", "web:example", "parent none"]) expect(words, part).toContain(part);
     expect(PULAMA_SIGN_KINDS["kahua-act"]!.describe(kahuaActBody({ group: GROUP, act: "withdraw", epoch: 0, target: "c".repeat(64) }))).toContain("c".repeat(64));
   });
+
+  test("RED (cold re-read R1): a lift's words name the session and device its origin carries, so the root never signs a session label the person never saw; the Arabic letter mark and the soft hyphen print as `?`", async () => {
+    const words = PULAMA_SIGN_KINDS["kahua-act"]!.describe(await liftBody({ origin: { seat: (await ed25519VerifyingKeyFromSeed(SEED)).toLowerCase(), device: "d".repeat(64), session: "cli:the\u061csess\u00adion" } }));
+    expect(words).toContain("session cli:the?sess?ion");
+    expect(words).toContain(`device ${"d".repeat(64)}`);
+    expect(words).not.toMatch(/[\u061c\u00ad]/);
+  });
 });
 
 describe("the hand's sign verb at the pūlama checks before it asks", () => {
