@@ -170,6 +170,10 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       await writeFile(script, await readFile(shim, "utf8"));
       // The closure reader rides beside the shim, as it does in the checkout.
       await writeFile(join(repo, "tools", "pulama-closure.mjs"), await readFile(join(ROOT, "tools", "pulama-closure.mjs"), "utf8"));
+      // THE FLOOR rides beside the shim too (mandate/floor-gate-1): an image build takes the floor lock through battery.sh's
+      // lock path and floor-lock's ancestor read, as it does in the checkout.
+      await writeFile(join(repo, "tools", "battery.sh"), await readFile(join(ROOT, "tools", "battery.sh"), "utf8"));
+      await writeFile(join(repo, "tools", "floor-lock.mjs"), await readFile(join(ROOT, "tools", "floor-lock.mjs"), "utf8"));
       // "pulama": a clean checkout that carries a pūlama entry, so a build reads its code closure.
       if (checkout === "pulama") await plantPulamaTree(repo);
       gitEnv.GIT_CEILING_DIRECTORIES = dir;
@@ -211,7 +215,9 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
     const cmd0 = viaHarnessShell ? ["sh", ["-c", 'env -u CLAUDECODE "$0" "$@"; true', direct[0], ...direct[1]]] : direct;
     // A standing vessel answers a steady verdict unless a test scripts another answer.
     const steady = '{"data":{"standing":{"act":"attach","reason":"steady"}}}';
-    const base = { PATH: `${dir}:${process.env.PATH}`, CALL_LOG: log, HOME: home, LARES_COMPOSE_FILE: compose, FAKE_OBSERVE_OUTPUT: steady, ...gitEnv };
+    // Each run's floor lock stands in its own scratch dir: a build never queues on the box's real floor (a suite run under
+    // floor-run holds it, and a run in a fresh pid namespace cannot see that ancestor, so it would wait forever).
+    const base = { PATH: `${dir}:${process.env.PATH}`, CALL_LOG: log, HOME: home, LARES_COMPOSE_FILE: compose, FAKE_OBSERVE_OUTPUT: steady, LARES_BATTERY_LOCK: join(dir, "floor.lock"), ...gitEnv };
     // `@HEAD@` (and `@HEAD12@`, its first twelve) in an env value names the scratch checkout's own HEAD.
     const head = checkout && checkout !== "none" ? spawnSync("git", ["-C", join(dir, "repo"), "rev-parse", "HEAD"], { encoding: "utf8" }).stdout.trim() : "";
     const filled = Object.fromEntries(Object.entries(env).map(([k, v]) => [k, typeof v === "string" ? fill(v).replaceAll("@HEAD12@", head.slice(0, 12)).replaceAll("@HEAD@", head) : v]));
@@ -1345,6 +1351,19 @@ for (const [name, shim] of shims) {
     const failed = await run(shim, ["build"], { env: { ...MOUNTS, FAKE_PNPM_RC: "1" }, checkout: "clean" });
     assert.notEqual(failed.status, 0);
     assert.match(failed.stderr, /the host CLI build failed \(above\); the image stands built from \w{12}/);
+  });
+
+  // THE FLOOR TAKES IMAGE BUILDS (mandate/floor-gate-1). RED-FIRST: written by floor-warden#2, run by the familiar.
+  if (name === "sh") test(`${name}: build holds the floor lock around the compose build and prunes the build cache after; an unopenable lock refuses and builds nothing`, async () => {
+    const held = await run(shim, ["build"], { env: MOUNTS, checkout: "clean" });
+    assert.equal(held.status, 0, held.stderr);
+    assert.match(held.stderr, /holding the floor for the image build/);
+    assert.match(held.calls, /builder prune --all --force/);
+    assert.doesNotMatch(held.calls, /(^|\s)(rmi|image prune|system prune)(\s|$)/m);
+    const walled = await run(shim, ["build"], { env: { ...MOUNTS, LARES_BATTERY_LOCK: "/nonexistent-floor-dir/floor.lock" }, checkout: "clean" });
+    assert.notEqual(walled.status, 0);
+    assert.match(walled.stderr, /build refuses: the floor lock \/nonexistent-floor-dir\/floor\.lock cannot open here/);
+    assert.doesNotMatch(walled.calls, /GIT_REV=/, "no compose build ran unlocked");
   });
 
   // L4 (RD3): THE OUTGOING IMAGE KEEPS A REVISION TAG, and the newest three revision tags stand; the rest prune.
