@@ -17,12 +17,12 @@ vi.mock("../src/custody-door.js", () => ({ vesselStanding: vi.fn(async () => ({ 
 vi.mock("../src/env.js", () => ({ vesselDid: vi.fn(async () => "did:test"), larSealHome: vi.fn(() => "/tmp/unused-seal") }));
 
 import { udsAlive, whoHolds, invokeLocal } from "../src/local-connector.js";
-import { throughStoreDoor, storeFailure, RequestLost, StoreDoorInterrupted, STORE_DOOR_PHASES } from "../src/store-door.js";
+import { throughStoreDoor, storeFailure, RequestLost, StoreDoorInterrupted, StoreDoorEnded, STORE_DOOR_PHASES, SlowBootTimeout, hostPidAlive, standBootLog } from "../src/store-door.js";
 
 /** Every phase's figure tiny, so a clock-decided refusal, were one left, would fire many times over inside the wait. */
 const TINY = [
   { name: "unbound", budgetMs: 5 },
-  { name: "parked",  budgetMs: 5 },
+  { name: "parked",  budgetMs: 5, paced: true as const },
   { name: "wedged",  budgetMs: 5 },
   { name: "serving", budgetMs: 5, paced: true as const },
 ];
@@ -86,13 +86,131 @@ describe("a serving vessel is waited on, never timed out", () => {
     expect(aborted).toBe(true);
   });
 
-  it("CONTROL: a parked holder still spends its parked budget (the boot park keeps its bound until the molt)", async () => {
+  it("the shipped parked phase is paced: a boot that still advances leaves no clock to decide", () => {
+    expect(STORE_DOOR_PHASES.find((p) => p.name === "parked")).toMatchObject({ paced: true });
+  });
+});
+
+describe("a parked holder is waited on until a cause ends it, never a clock", () => {
+  const PARKED = { phase: "parked" as const, holder: "vessel", message: "a vessel (pid 4242) holds the store at /tmp/x" };
+  const hang = () => vi.mocked(invokeLocal).mockImplementation((_verb, _args, _by, opts) => new Promise((_resolve, reject) => {
+    opts?.signal?.addEventListener("abort", () => { reject(new Error("aborted")); }, { once: true });
+  }));
+
+  it("RED: a fake clock far past the old 45 s leaves the act owed: no refusal, and the pacing line says the boot goes on", async () => {
     vi.mocked(udsAlive).mockResolvedValue(true);
-    vi.mocked(whoHolds).mockResolvedValue({ phase: "parked", holder: "vessel", message: "a vessel (pid 4242) holds the store at /tmp/x" });
-    vi.mocked(invokeLocal).mockImplementation((_verb, _args, _by, opts) => new Promise((_resolve, reject) => {
-      opts?.signal?.addEventListener("abort", () => { reject(new Error("aborted")); }, { once: true });
-    }));
-    await expect(throughStoreDoor({ verb: "tiddler-put", args: {}, direct: async () => ({}), phases: TINY })).rejects.toThrow(/phase "parked"/);
+    vi.mocked(whoHolds).mockResolvedValue(PARKED);
+    hang();
+    const real = performance.now.bind(performance);
+    let skew = 0;
+    const spy = vi.spyOn(performance, "now").mockImplementation(() => real() + skew);
+    const interrupt = new AbortController();
+    const lines: string[] = [];
+    try {
+      const door = throughStoreDoor({ verb: "tiddler-put", args: {}, direct: async () => ({}), phases: TINY, interactive: true, interrupt: interrupt.signal,
+        holderAlive: () => true, bootLog: () => "phase → catalog-ready\nphase → island-ready\n",
+        progress: (line) => { lines.push(line); if (lines.length === 3) interrupt.abort(); } });
+      skew = 10 * 60_000;   // ten minutes pass on the fake clock
+      await expect(door).rejects.toBeInstanceOf(StoreDoorInterrupted);   // only the person ended it
+    } finally { spy.mockRestore(); }
+    expect(lines[0]).toContain("the vessel still boots");
+    expect(lines[0]).toContain("island-ready");
+    expect(lines[0]).toContain("the act stays owed");
+  });
+
+  it("RED: a gone holder ends the wait with a named refusal and a runnable cure", async () => {
+    vi.mocked(udsAlive).mockResolvedValue(true);
+    vi.mocked(whoHolds).mockResolvedValue(PARKED);
+    hang();
+    await expect(throughStoreDoor({ verb: "tiddler-put", args: {}, direct: async () => ({}), phases: TINY, holderAlive: (() => { let n = 0; return () => (n++ < 1); })(), bootLog: () => "" }))
+      .rejects.toSatisfy((e: unknown) => {
+        expect(e).toBeInstanceOf(StoreDoorEnded);
+        expect((e as StoreDoorEnded).ended).toBe("holder-gone");
+        const f = storeFailure(e);
+        expect(f.code).toBe("store-door-ended");
+        expect(f.hint).toMatch(/`lares [^`]+`/);
+        return true;
+      });
+  });
+
+  it("a holder pid the host never read alive (another pid namespace) never ends a healthy boot", async () => {
+    vi.mocked(udsAlive).mockResolvedValue(true);
+    vi.mocked(whoHolds).mockResolvedValue(PARKED);
+    hang();
+    const interrupt = new AbortController();
+    let paces = 0;
+    await expect(throughStoreDoor({ verb: "tiddler-put", args: {}, direct: async () => ({}), phases: TINY, holderAlive: () => false, bootLog: () => "", interactive: false, interrupt: interrupt.signal,
+      progress: () => { if ((paces += 1) === 4) interrupt.abort(); } })).rejects.toBeInstanceOf(StoreDoorInterrupted);
+  });
+
+  it("the stand log binds to the held vessel: a stale fatal (written before the holder started) or a container holder reads nothing; a current-boot fatal reads", () => {
+    const log = "[lararium] phase → boot\nfatal: no hearth\n";
+    const alive = () => true;
+    // STALE: the file was last written before the held pid started: an earlier failed stand's fatal.
+    expect(standBootLog([4242], { alive, startMs: () => 2_000, logMtimeMs: () => 1_000, readLog: () => log })).toBe("");
+    // CONTAINER: the host never reads the named pid alive.
+    expect(standBootLog([4242], { alive: () => false, startMs: () => 1_000, logMtimeMs: () => 2_000, readLog: () => log })).toBe("");
+    // CURRENT: written after the holder started.
+    expect(standBootLog([4242], { alive, startMs: () => 1_000, logMtimeMs: () => 2_000, readLog: () => log })).toContain("fatal: no hearth");
+    // An earlier boot's fault in the same file never reads past the last boot line.
+    expect(standBootLog([4242], { alive, startMs: () => 1_000, logMtimeMs: () => 2_000, readLog: () => "phase → boot\nfatal: old\n[lararium] phase → boot\nphase → repo-open\n" })).not.toContain("fatal");
+  });
+
+  it("EPERM reads a holder alive; only ESRCH reads it gone", () => {
+    const kill = vi.spyOn(process, "kill");
+    try {
+      kill.mockImplementation(() => { throw Object.assign(new Error("eperm"), { code: "EPERM" }); });
+      expect(hostPidAlive(4242)).toBe(true);
+      kill.mockImplementation(() => { throw Object.assign(new Error("esrch"), { code: "ESRCH" }); });
+      expect(hostPidAlive(4242)).toBe(false);
+    } finally { kill.mockRestore(); }
+  });
+
+  it("an unattended parked wait prints a runnable cure with every pace line", async () => {
+    vi.mocked(udsAlive).mockResolvedValue(true);
+    vi.mocked(whoHolds).mockResolvedValue(PARKED);
+    hang();
+    const interrupt = new AbortController();
+    const lines: string[] = [];
+    await expect(throughStoreDoor({ verb: "tiddler-put", args: {}, direct: async () => ({}), phases: TINY, holderAlive: () => true, bootLog: () => "", interactive: false, interrupt: interrupt.signal,
+      progress: (line) => { lines.push(line); if (lines.length === 2) interrupt.abort(); } })).rejects.toBeInstanceOf(StoreDoorInterrupted);
+    expect(lines[0]).toContain("`lares vessel read`");
+    expect(lines[0]).toContain("pid 4242");
+    expect(lines[0]).toMatch(/interrupt this act; it stays owed/);
+  });
+
+  it("no door clock rides the wire: a paced door asks the vessel for its full patience, never the 30 s default", async () => {
+    vi.mocked(udsAlive).mockResolvedValue(true);
+    vi.mocked(whoHolds).mockResolvedValue(SERVING);
+    let asked: number | undefined;
+    vi.mocked(invokeLocal).mockImplementation(async (_verb, _args, _by, opts) => { asked = opts?.timeoutMs; return { status: "done", requestId: opts?.requestId ?? "" }; });
+    await throughStoreDoor({ verb: "tiddler-put", args: {}, direct: async () => ({}), phases: STORE_DOOR_PHASES });
+    expect(asked).toBeGreaterThanOrEqual(3_600_000);
+  });
+
+  it("CONTROL: the unpaced phases keep their bound: a wedged holder still ends by SlowBootTimeout", async () => {
+    vi.mocked(udsAlive).mockResolvedValue(true);
+    vi.mocked(whoHolds).mockResolvedValue({ phase: "wedged", holder: null, message: "a listener accepted the connection but gave no answer — frozen or wedged, still held by pid(s) 4242" });
+    hang();
+    await expect(throughStoreDoor({ verb: "tiddler-put", args: {}, direct: async () => ({}), phases: TINY, interactive: false })).rejects.toBeInstanceOf(SlowBootTimeout);
+  });
+
+  it("RED: a boot-log fatal ends the wait with a named refusal; a uds error names its cause", async () => {
+    vi.mocked(udsAlive).mockResolvedValue(true);
+    vi.mocked(whoHolds).mockResolvedValue(PARKED);
+    hang();
+    await expect(throughStoreDoor({ verb: "tiddler-put", args: {}, direct: async () => ({}), phases: TINY, holderAlive: () => true, bootLog: () => "phase → boot\nfatal: no hearth\n" }))
+      .rejects.toSatisfy((e: unknown) => { expect((e as StoreDoorEnded).ended).toBe("boot-fault"); expect((e as Error).message).toContain("fatal:"); return true; });
+    await expect(throughStoreDoor({ verb: "tiddler-put", args: {}, direct: async () => ({}), phases: TINY, holderAlive: () => true, bootLog: () => "uds error: EADDRINUSE\n" }))
+      .rejects.toSatisfy((e: unknown) => { expect((e as StoreDoorEnded).ended).toBe("boot-refused"); expect((e as Error).message).toContain("EADDRINUSE"); return true; });
+  });
+
+  it("RED: a stand-socket exit ends the wait by name", async () => {
+    vi.mocked(udsAlive).mockResolvedValue(true);
+    vi.mocked(whoHolds).mockResolvedValue(PARKED);
+    hang();
+    await expect(throughStoreDoor({ verb: "tiddler-put", args: {}, direct: async () => ({}), phases: TINY, holderAlive: () => true, bootLog: () => "", standExited: () => true }))
+      .rejects.toSatisfy((e: unknown) => { expect((e as StoreDoorEnded).ended).toBe("stand-exited"); return true; });
   });
 });
 
