@@ -178,7 +178,7 @@ describe("an act carries no riders (cold read F1/F2: an unsigned key rode beside
     const resign = async (body: Record<string, unknown>) => ({ body, signer: root.key, sig: await root.sign(canonicalJsonBytes(body)) });
     const b = ok.body as unknown as Record<string, unknown>;
     for (const body of [
-      { ...b, rider: "x" },
+      { ...b, rider: "x" } as Record<string, unknown>,
       { ...b, origin: { ...(b.origin as object), rider: "x" } },
       { ...b, sources: [{ ...(b.sources as object[])[0], rider: "x" }] },
     ]) {
