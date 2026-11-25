@@ -74,6 +74,29 @@ describe("a fusion-only knob refuses off the dual fuse", () => {
   });
 });
 
+describe("a knob spelled in its retired snake case refuses, naming the camel-case knob (recall-snake-case-refuses)", () => {
+  // Molt 2a dropped aperture_grain and aperture_width from the fusion list, so a caller still sending one had it fall away
+  // on every path, the dual fuse included, while the answer read as if it narrowed.
+  const renamed: ReadonlyArray<readonly [string, string]> = [["aperture_grain", "apertureGrain"], ["aperture_width", "apertureWidth"]];
+  const paths: ReadonlyArray<readonly [string, Record<string, unknown>]> = [
+    ["dual", { query: "q", dual: true }], ["search", { query: "q" }], ["list", {}], ["imago", { imago: "cid-1" }],
+  ];
+  for (const [name, current] of renamed) {
+    for (const [path, extra] of paths) {
+      test(`★ ${name} refuses on the ${path} path, naming ${current} ★`, async () => {
+        const { recall, calls } = harness();
+        await expect(recall({ ...extra, [name]: 10 })).rejects.toThrow(new RegExp(`${name}[\\s\\S]*${current}`));
+        expect(calls).toEqual([]);
+      });
+    }
+  }
+  test("CONTROL — the camel-case knobs still ride the dual fuse", async () => {
+    const { recall, calls } = harness();
+    await recall({ query: "q", dual: true, apertureGrain: 10, apertureWidth: 5 });
+    expect(calls[0]).toMatchObject({ op: "multi", args: { apertureGrain: 10, apertureWidth: 5 } });
+  });
+});
+
 describe("room and lens narrow only the search path", () => {
   for (const name of ["room", "lens"]) {
     for (const [path, extra] of [["list", {}], ["imago", { imago: "c" }], ["dual", { query: "q", dual: true }]] as const) {
