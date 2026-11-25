@@ -1,6 +1,7 @@
 /**
  * security-class — RED FIRST (written, never run by its author). The wiki's matcher names which of a diff's paths the
- * security class holds; the host (tools/bench-gate.mjs) reads the git diff and develop's list, the wiki answers.
+ * security class holds; the landing judge (tools/cold-read-owed.mjs) calls the same exports over develop's list, and a wiki
+ * page asks through the filter.
  * CONTROL rows stand beside each RED so a matcher that names everything or nothing reads red here.
  */
 import { readFileSync } from "node:fs";
@@ -26,6 +27,7 @@ describe("security-class — the pure matcher", () => {
     expect(globToRegExp("a?c").test("abc")).toBe(true);
     expect(globToRegExp("a?c").test("a/c")).toBe(false);
     expect(globToRegExp("a.json").test("aXjson")).toBe(false);
+    expect(securityClassPaths([".github/a\nb.yml", "x/a\nb/package.json", "tools/a\nwitness", "plain\nfile"], LIST)).toEqual([".github/a\nb.yml", "x/a\nb/package.json", "tools/a\nwitness"]);
   });
 
   test("a path repeats once; the order stays the diff's; an empty diff names nothing", () => {
@@ -42,7 +44,7 @@ describe("security-class — the pure matcher", () => {
 
   test("the live list: its own path and the keyhive tree fall in the class", () => {
     const live = readSecurityClass(JSON.parse(readFileSync(new URL("../../../tools/security-class-paths.json", import.meta.url), "utf8")));
-    expect(securityClassPaths(["tools/security-class-paths.json", "packages/lararium-keyhive/x.ts", "packages/lararium-tw5/src/plain.ts"], live)).toEqual(["tools/security-class-paths.json", "packages/lararium-keyhive/x.ts"]);
+    expect(securityClassPaths(["tools/security-class-paths.json", "packages/lararium-keyhive/x.ts", "docs/plain.md"], live)).toEqual(["tools/security-class-paths.json", "packages/lararium-keyhive/x.ts"]);
   });
 });
 

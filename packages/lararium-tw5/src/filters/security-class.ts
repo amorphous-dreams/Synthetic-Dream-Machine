@@ -11,11 +11,17 @@ module-type: filteroperator
  * The class (`tools/security-class-paths.json`, read from develop's tree, never the lane's): a path matching a glob in `paths`,
  * or holding a `tokens` word anywhere (case-folded), takes a cold read before the familiar's merge lands. The source titles
  * ride in as the diff's paths; the operand carries the list's JSON, percent-encoded so its brackets never close the operand.
- * The operator yields the matched paths in source order and decides nothing else: the host reads the git diff and the list,
- * the wiki matches, the familiar reads and lands. A malformed list THROWS (an empty answer would read as a clean diff).
+ * The operator yields the matched paths in source order and decides nothing else. A malformed list THROWS (an empty answer
+ * would read as a clean diff).
+ *
+ * TWO CALLERS, ONE MATCHER. A wiki page renders the class through the filter operator. The landing judge
+ * (`tools/cold-read-owed.mjs`) loads this module's source out of develop's git objects and calls `readSecurityClass` and
+ * `securityClassPaths` in a child node, through no daemon and no door: it relies on those two export names and on this file
+ * importing types alone, so the stripped source loads on its own.
  *
  * Globs: `**` crosses `/` (a leading `**` and its slash match nothing too, so `**` + `/package.json` holds the root file),
- * `*` stops at `/`, `?` holds one non-`/` char; every other char stands for itself.
+ * `*` stops at `/`, `?` holds one non-`/` char; every other char stands for itself. A wildcard holds a newline like any other
+ * char (git lets a path carry one), so no line break walks a path out of its glob.
  */
 import type { TW5FilterOperator, TW5FilterSource } from "../types/tiddlywiki.js";
 
@@ -27,7 +33,7 @@ export function globToRegExp(glob: string): RegExp {
   for (let i = 0; i < glob.length; i++) {
     const c = glob.charAt(i);
     if (c === "*" && glob[i + 1] === "*") {
-      if (glob[i + 2] === "/") { out += "(?:.*/)?"; i += 2; } else { out += ".*"; i += 1; }
+      if (glob[i + 2] === "/") { out += "(?:[\\s\\S]*/)?"; i += 2; } else { out += "[\\s\\S]*"; i += 1; }
     } else if (c === "*") out += "[^/]*";
     else if (c === "?") out += "[^/]";
     else out += c.replace(/[.+^${}()|[\]\\]/g, "\\$&");
@@ -39,10 +45,10 @@ export function globToRegExp(glob: string): RegExp {
 export function readSecurityClass(raw: unknown): SecurityClassList {
   const o = raw as { paths?: unknown; tokens?: unknown } | null;
   const words = (v: unknown, name: string): string[] => {
-    if (!Array.isArray(v) || v.some((s) => typeof s !== "string" || s === "")) throw new Error(`security-class: the list's \`${name}\` must be an array of non-empty strings`);
+    if (!Array.isArray(v) || v.some((s) => typeof s !== "string" || s === "")) throw new Error(`security-class: the list's \`${name}\` holds an array of non-empty strings and nothing else`);
     return v as string[];
   };
-  if (!o || typeof o !== "object") throw new Error("security-class: the list must be a JSON object holding `paths` and `tokens`");
+  if (!o || typeof o !== "object") throw new Error("security-class: the list answers as a JSON object holding `paths` and `tokens`");
   return { paths: words(o.paths, "paths"), tokens: words(o.tokens, "tokens") };
 }
 
@@ -64,7 +70,7 @@ export function securityClassPaths(paths: readonly string[], list: SecurityClass
 export function securityClass(source: TW5FilterSource, operator: TW5FilterOperator): string[] {
   let list: SecurityClassList;
   try { list = readSecurityClass(JSON.parse(decodeURIComponent(operator.operand || ""))); }
-  catch (e) { throw new Error(e instanceof Error && e.message.startsWith("security-class:") ? e.message : "security-class: the operand must be the percent-encoded JSON of the list"); }
+  catch (e) { throw new Error(e instanceof Error && e.message.startsWith("security-class:") ? e.message : "security-class: the operand carries the percent-encoded JSON of the list, and this one would not decode"); }
   const titles: string[] = [];
   source((_tiddler, title: string) => { titles.push(title); });
   return securityClassPaths(titles, list);
