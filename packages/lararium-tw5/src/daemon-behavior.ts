@@ -21,6 +21,7 @@ import { islandExecLeiPort } from "./exec-lei-route.js";
 import { makeDelegationBook } from "./delegation-book.js";
 import { makeIslandWearDoor, type IslandWearDoor } from "./island-wear.js";
 import { seatRepoWear, type DaemonMsg_WearActorResult } from "@lararium/mesh";
+import { handCodeOf } from "@lararium/mesh/hand-refusal";
 import type { SessionWorn } from "./verb-dispatcher.js";
 import {
   PROMOTE_PANEL_HAND_CODES,
@@ -426,7 +427,7 @@ export interface LocalAsk {
  * six, the store door's `promote-orphan`, and the swarm's three that set or issue (`swarm-show` stays open). A session-cleared face row
  * passes (the socket already refused a seat); a channel ask, a meme put and a synced verb tiddler refuse by code.
  */
-export const DAEMON_HAND_ONLY_CODES: Readonly<Record<string, string>> = { ...PROMOTE_PANEL_HAND_CODES, "promote-orphan": "promote-needs-hand", ...SWARM_VERB_HAND_CODES,
+export const DAEMON_HAND_ONLY_CODES: Readonly<Record<string, string>> = { ...PROMOTE_PANEL_HAND_CODES, "promote-orphan": handCodeOf("promote-orphan")!, ...SWARM_VERB_HAND_CODES,
   // The island's own spend route (`islandExecLeiPort`) never rides the dispatcher; an ask for it from outside answers nothing.
   [EXEC_LEI_SPEND_VERB]: "exec-lei-spend-internal" };
 

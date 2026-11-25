@@ -68,7 +68,7 @@ const faceTries = (r: { readonly reading: string; readonly attemptsLeft?: number
 import { BackupRefused, type FaceBundleCut } from "./face-bundle-cut.js";
 import { SESSION_ACTS, SealedActRefused, isSealedActName } from "./sealed-acts.js";
 import { RehiveRefused, type RehiveOutcome } from "./face-rehive.js";
-import { readHand } from "./hand-act-gate.js";
+import { handCodeOf, readHand } from "./hand-act-gate.js";
 import type { PeerKind } from "./uds-peer.js";
 import { shoreFlushLines, shoreStuckFaces, type ShoreFlushReading } from "./shore-verb.js";
 
@@ -949,8 +949,9 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       // unlock and custody stay the operator's own acts.
       // THE LOSS IS A PERSON'S WORD: an AI seat's frame never carries it (the CLI asks a person to type it at a terminal).
       if (frame["acceptLoss"] === true && frame["seat"] === "ai") {
-        deps.onLog("wear: refused (accept-loss-needs-hand)");
-        answer(sock, { op, status: "error", errorMessage: "dropping the saves a refused face holds takes a person's own word, typed at their terminal: an AI seat's wear never carries it; nothing moved", refusal: { reason: "accept-loss-needs-hand" } });
+        const code = handCodeOf("wear accept-loss")!;
+        deps.onLog(`wear: refused (${code})`);
+        answer(sock, { op, status: "error", errorMessage: "dropping the saves a refused face holds takes a person's own word, typed at their terminal: an AI seat's wear never carries it; nothing moved", refusal: { reason: code } });
         return true;
       }
       act = () => wear(face as number, frame["yes"] === true, frame["acceptLoss"] === true);

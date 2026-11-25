@@ -23,6 +23,7 @@
  * Canon: lar:///ha.ka.ba/lararium/api/composable-keel
  */
 
+import { askerRefusal } from "@lararium/mesh/hand-refusal";
 import { composeVessel, guardHitl, type CapModule, type SenseHand } from "@lararium/mesh";
 import type {
   SparseFormVector,
@@ -48,7 +49,7 @@ export type VerbContribution = (registry: VerbTable) => void;
  * refuse `sense-needs-hand`, naming the command the operator runs on their own terminal (`guardHitl`).
  */
 function senseHandOf(verb: string, ctx: VerbContext | undefined): SenseHand {
-  const hand: SenseHand | undefined = ctx?.asker === "cli" ? "hand" : undefined;
+  const hand: SenseHand | undefined = askerRefusal(ctx?.asker, { terminal: true }) === null ? "hand" : undefined;
   guardHitl(verb, hand);
   return "hand";
 }

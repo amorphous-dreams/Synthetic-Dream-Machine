@@ -33,9 +33,8 @@ import {
   assertShareKindFree, parseShareFile, parseShareFilter, resolveShare, serializeShareFile, shareEntryBag, ShareConfigRefusal, SHARE_CONFIG_FILE,
   type ShareFace, type ShareEntry,
 } from "@lararium/mesh";
-import { ensureRealmLabel } from "@lararium/node";
+import { ensureRealmLabel, handCodeOf, handRefusalOf, readOwnHand } from "@lararium/node";
 import type { ParsedArgs } from "../parse-args.js";
-import { harnessSeatMarked } from "../local-connector.js";
 import { LIVE_SHARE_DOORS, landShares, shareSetArgs, type ShareDoors } from "../share-doors.js";
 
 /** Resolve `hN` tokens to face N's pet-name (bracketed where it holds a space); every other token stands as written. */
@@ -125,9 +124,12 @@ export function cmdShare(kind: "bag" | "wiki", doors: ShareDoors = LIVE_SHARE_DO
     }
     const slug = args.positional[0];
     if (!slug) { doors.err(`lares ${kind} share: name the ${kind} (\`lares ${kind} share <${kind}> --read <names> [--write <names>]\`), or --list`); return 2; }
-    // A SHARE IS A PERSON'S ACT (sealed-store#/the-share-config): a seat-marked run writes no row, in the file or the control document.
-    if ((doors.seat ?? (() => harnessSeatMarked()))()) {
-      doors.err(`lares ${kind} share: share-needs-hand: the shares land by a person's hand; run this line at a terminal outside any agent harness (\`lares ${kind} share ${slug} …\`). Nothing was written.`);
+    // A SHARE IS A PERSON'S ACT (sealed-store#/the-share-config): the gate reads the hand behind this run off its own branch, so
+    // an AI seat and a chain nothing attests alike write no row, in the file or the control document. A mark alone decides nothing.
+    const hand = (doors.hand ?? (() => readOwnHand({ proveRoute: false })))();
+    if ("refusal" in hand) {
+      const refused = handRefusalOf(hand.refusal, { act: "a share", reads: "branch", line: `lares ${kind} share ${slug} …` });
+      doors.err(`lares ${kind} share: ${handCodeOf("share-set")!}: ${refused.message} Nothing was written.`);
       return 1;
     }
     const standing = rows.find((r) => r.slug === slug);
