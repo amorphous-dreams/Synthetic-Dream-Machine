@@ -11,26 +11,31 @@
 # nothing at ingest — its whole job is to AGREE, and a field whose only job is agreement is exactly the
 # field that drifts unnoticed. 3 `uri-path` values had.
 #
+# The walk enters both disk homes a carrier rests in: a bag's canon (`bags/`) and a wiki's working layer (`wikis/`).
+# `REPO` names the corpus tree (default: this checkout); the shore always loads from this checkout.
+#
 # Exit 0 = every coordinate names its own file. Exit 1 = the drift, listed.
 set -uo pipefail
 cd "$(dirname "$0")/.."
+export SHORE_DIR="$PWD"
 
 python3 - <<'PY'
-import pathlib, re, sys, json, subprocess
+import os, pathlib, re, sys, json, subprocess
 
 # THE HEAD IS READ BY THE SHORE, NEVER BY THIS FILE. Nine spellings of that question stood across the
 # tree, and eight stopped matching in one minute when the corpus quoted its control values. One process
 # answers for every carrier — spawning node per file would cost 700 starts for a single question.
 def heads(paths):
     out = subprocess.run(
-        ["node", "tools/carrier-head.mjs", "--stdin"],
+        ["node", os.path.join(os.environ["SHORE_DIR"], "tools/carrier-head.mjs"), "--stdin"],
         input="\n".join(str(p) for p in paths), capture_output=True, text=True)
     if out.returncode != 0:
         print(out.stderr.strip() or "[meme-coordinates] the shore did not answer"); sys.exit(1)
     return {r["file"]: r for r in (json.loads(l) for l in out.stdout.splitlines() if l.strip())}
 
 drift = []
-_carriers = sorted(pathlib.Path("bags").rglob("*.mem"))
+_repo = pathlib.Path(os.environ.get("REPO") or ".")
+_carriers = sorted(p for home in ("bags", "wikis") for p in (_repo / home).rglob("*.mem"))
 _heads = heads(_carriers)
 read_uri_path = 0
 for f in _carriers:
@@ -61,7 +66,7 @@ for f in _carriers:
 # and a walk that read it on NOBODY fails rather than reporting the cleanest run.
 _floor = []
 if not _carriers:
-    _floor.append("no carrier under bags/ — the walk had no members")
+    _floor.append("no carrier under bags/ or wikis/ — the walk had no members")
 if read_uri_path == 0:
     _floor.append("not one carrier declared `uri-path` — the probe reads a spelling nothing writes")
 if _floor:
@@ -78,7 +83,7 @@ if not drift:
 
 print(f"[meme-coordinates] {len(drift)} coordinate(s) name something other than what they mirror:")
 for path, field, declared, actual in drift:
-    print(f"  {path}")
+    print(f"  {os.path.relpath(path, _repo)}")
     print(f"      {field} declares  {declared}")
     print(f"      {' ' * len(field)}   stands as  {actual}")
 sys.exit(1)
