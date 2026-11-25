@@ -109,7 +109,7 @@ describe("lares shore flush", () => {
     expect(await askShore({ op: "take-records", uri: "lar:///a/s", key: "k-sibling" }, "did:test", run)).toMatchObject({ ok: false, refusal: "standoff-key-moved" });
   });
 
-  test("RED D7 — take-disk settles by a person: a harness on the command's own branch refuses `shore-needs-hand` before anything asks the vessel", async () => {
+  test("RED D7 — take-disk settles by a person: a harness on the command's own branch refuses `hand-act-only` before anything asks the vessel", async () => {
     const out: string[] = [];
     const log = console.log, err = console.error, ow = process.stdout.write, ew = process.stderr.write;
     console.log = (l: unknown) => { out.push(String(l)); }; console.error = (l: unknown) => { out.push(String(l)); };
@@ -119,6 +119,6 @@ describe("lares shore flush", () => {
       const code = await cmdShore({ positional: ["take-disk", "lar:///a/s"], flags: { yes: true }, options: { key: "k" } } as unknown as ParsedArgs, () => ({ refusal: "hand-act-only" }));
       expect(code).toBe(1);
     } finally { console.log = log; console.error = err; process.stdout.write = ow; process.stderr.write = ew; }
-    expect(out.join("\n")).toContain("shore-needs-hand");
+    expect(out.join("\n")).toContain("hand-act-only");
   });
 });

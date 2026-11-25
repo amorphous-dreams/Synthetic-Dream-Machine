@@ -27,7 +27,7 @@
 import {
   rosterSensoria, inspectSensorium, reconcileSensorium, reconcileAllSensoria,
   buildEphemeralSensorium, promoteSensorium, retireSensorium, unRetireSensorium, purgeSensorium,
-  sensoriumDir, readOwnHand, type HandReading,
+  sensoriumDir, readOwnHand, handRefusalOf, type HandReading, type HandRefusalCode,
 } from "@lararium/node";
 import { guardHitl, MUSTIE_GROUNDS, type SenseHand } from "@lararium/mesh";
 import { emit, exitFor } from "../render.js";
@@ -40,10 +40,8 @@ const ownHand: HandRead = () => readOwnHand({ proveRoute: false });
 /** A hand verb's refusal: the reading's own code, and the command the operator runs on their own terminal. */
 export class HandActRefused extends Error {
   override readonly name = "HandActRefused";
-  constructor(readonly code: "hand-act-only" | "hand-unattested", readonly verb: string, readonly line: string) {
-    super(code === "hand-act-only"
-      ? `hand-act-only: \`${verb}\` runs on a person's hand at a real terminal, and an AI harness stands on this command's branch. Ask the operator to run \`${line}\` on their own terminal.`
-      : `hand-unattested: \`${verb}\` runs on a person's hand at a real terminal, and this command's process chain reads nothing to attest one. Run \`${line}\` on a terminal whose processes the host can read.`);
+  constructor(readonly code: HandRefusalCode, readonly verb: string, readonly line: string) {
+    super(handRefusalOf(code, { act: `\`${verb}\``, reads: "branch", line }).message);
   }
 }
 

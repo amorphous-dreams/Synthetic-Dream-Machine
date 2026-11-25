@@ -1,0 +1,62 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/vendor/flibbles-relink`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable          = true
+role               = "offering record: Relink plugin by Cameron Fischer (Flibbles) — rewrites references when a tiddler renames"
+tags               = ["api/pono/meme"]
+title              = "lar:///ha.ka.ba/lares/api/vendor/flibbles-relink"
+tw5-plugin-id      = "$:/plugins/flibbles/relink"
+tw5-plugin-version = "2.6.2"
+type               = "text/memetic-wikitext+tiddlywiki"
+uri-path           = "ha.ka.ba/lares/api/vendor/flibbles-relink"
+```
+
+<<~ ahu slot=`#/about`>>
+
+! Relink Plugin — by Cameron Fischer (Flibbles)
+
+A vendor declaration: this carrier names an outside artifact this tree carries, so a reader learns its
+provenance and its terms without opening it.
+
+''Author'': [[Cameron Fischer (Flibbles)|https://github.com/flibbles/tw5-relink]]
+''License'': BSD-3-Clause, Copyright (c) 2019-2020 Cameron Fischer
+''Upstream'': `flibbles/tw5-relink`
+''Pinned commit'': `51266a1e853c616c5f0b401a9c881d518dddb9bc` (v2.6.2)
+''TW5 plugin id'': `$:/plugins/flibbles/relink`
+
+Relink replaces TiddlyWiki's own tags-and-list relinker. When a tiddler renames, it walks wikitext
+links, transclusions, filters, macro and procedure parameters, and declared fields, and rewrites each
+reference to the new title.
+
+!! A packed offering
+
+The packed bytes ride under `packages/lararium-tw5/offerings/relink/` (`offering.json`,
+`relink-plugin.json`, `NOTICES.txt`), minted by `scripts/pack-relink-offering.ts` from the pinned
+commit; a re-pack comes out byte-identical. The descriptor stays UNSIGNED: the operator signs it as
+PUBLISHER through `lares nexus publish plugins --source packages/lararium-tw5/offerings/relink`. A
+wiki loads it by naming the signed offering in its recipe's `plugin-offerings`; it never joins the boot
+set, and `packages/lararium-tw5/plugins/` never carries it.
+
+The optional `relink-titles` add-on stays out of the offering: it rewrites derived titles through
+`wiki.deleteTiddler`, which escapes the rename door's dry-run capture.
+
+!! Moving the pin
+
+A new upstream version packs at a new commit, which mints a new offering. State the packed version in
+`tw5-plugin-version` above in the same change, so the declaration never says one thing while the
+offering carries another.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/vendor/sq-streams`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;4bGD3K51YAG-pSGBDdkDyEBbXxpTkKzTTsvUn5iFoGI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

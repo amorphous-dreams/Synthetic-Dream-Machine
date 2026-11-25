@@ -69,7 +69,7 @@
 
 import { createInterface } from "readline/promises";
 import { stdin, stdout } from "process";
-import { readOwnHand, type HandReading } from "@lararium/node";
+import { handRefusalOf, readOwnHand, type HandReading, type HandRefusal } from "@lararium/node";
 import type { ParsedArgs } from "../parse-args.js";
 import { emit, exitFor, wantsJson } from "../render.js";
 import { verbFailure } from "../verb-call.js";
@@ -191,18 +191,16 @@ const SETTLING: ReadonlySet<ShoreAct> = new Set(["take-records", "take-disk", "k
 /**
  * SETTLING A STAND-OFF STAYS A HAND ACT (operator ruling, 2026-11-23): the command reads its own branch first (the house hand
  * gate), since take-disk's write rides the ingest leg the vessel's per-op shore gate never sees; an AI harness on it refuses
- * `shore-needs-hand`, an unread branch `hand-unattested`, and `--yes` approves nothing by itself. Each refusal names the command
+ * `hand-act-only`, an unread branch `hand-unattested`, and `--yes` approves nothing by itself. Each refusal names the command
  * the operator runs at their own terminal. `take-records`, `keep-both`, `restore` and `remove` meet the same law at the
  * vessel's socket (`shoreHandCode`). Null where the act settles nothing or a hand stands.
  */
-export function shoreHandRefusal(act: ShoreAct, named: Readonly<Record<string, unknown>>, hand: ShoreHandRead = ownHand): { readonly code: "shore-needs-hand" | "hand-unattested"; readonly message: string } | null {
+export function shoreHandRefusal(act: ShoreAct, named: Readonly<Record<string, unknown>>, hand: ShoreHandRead = ownHand): HandRefusal | null {
   if (!SETTLING.has(act)) return null;
   const read = hand();
   if (!("refusal" in read)) return null;
   const line = `lares shore ${act} ${String(named["uri"] ?? "<uri>")} --key ${String(named["key"] ?? "<key>")}${typeof named["bag"] === "string" ? ` --bag ${named["bag"]}` : ""}`;
-  return read.refusal === "hand-act-only"
-    ? { code: "shore-needs-hand", message: `shore-needs-hand: \`lares shore ${act}\` settles a stand-off on a person's hand at a real terminal, and an AI harness stands on this command's branch. Ask the operator to run \`${line}\` on their own terminal.` }
-    : { code: "hand-unattested", message: `hand-unattested: \`lares shore ${act}\` settles a stand-off on a person's hand at a real terminal, and this command's process chain reads nothing to attest one. Run \`${line}\` on a terminal whose processes the host can read.` };
+  return handRefusalOf(read.refusal, { act: `\`lares shore ${act}\` (it settles a stand-off)`, reads: "branch", line });
 }
 
 export async function cmdShore(args: ParsedArgs, hand: ShoreHandRead = ownHand): Promise<number> {
