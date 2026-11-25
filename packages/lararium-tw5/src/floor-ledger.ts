@@ -39,6 +39,8 @@ export interface FloorTicket {
   state: FloorState;
   /** The log line index the ticket (last) entered the queue at: arrival order. */
   arrived: number;
+  /** The log line index the ticket's verdict landed at: the order the budget ledger reads in. */
+  settled: number;
   holder: string;
   cFree: string;
   verdict: FloorVerdict | null;
@@ -80,7 +82,7 @@ export function foldLedger(text: string): FloorTicket[] {
       if (held && (held.state === "waiting" || held.state === "taken")) return;
       tickets.delete(id);
       tickets.set(id, {
-        id, lane, branch, sha: sha.toLowerCase(), runs: [], why: "", state: "waiting", arrived: index,
+        id, lane, branch, sha: sha.toLowerCase(), runs: [], why: "", state: "waiting", arrived: index, settled: -1,
         holder: "", cFree: "", verdict: null, wrote: "", cDrop: "", verdictLine: "", dropReason: "",
       });
       return;
@@ -98,7 +100,7 @@ export function foldLedger(text: string): FloorTicket[] {
       const verdict = rest[0] as FloorVerdict;
       if (!(FLOOR_VERDICTS as readonly string[]).includes(verdict)) return;
       const dot = tail.indexOf("·");
-      held.state = "done"; held.verdict = verdict;
+      held.state = "done"; held.verdict = verdict; held.settled = index;
       held.wrote = rest.map((w) => keyed(w, "wrote")).find((v) => v !== null) ?? "";
       held.cDrop = rest.map((w) => keyed(w, "c-drop")).find((v) => v !== null) ?? "";
       held.verdictLine = dot < 0 ? "" : tail.slice(dot + 1).trim();
@@ -154,7 +156,7 @@ export function floorView(tickets: readonly FloorTicket[], view: string, arg = "
     case "green": case "red": case "stopped":
       return tickets.filter((t) => t.state === "done" && t.verdict === view.toUpperCase()).map((t) => t.id);
     case "dropped": return tickets.filter((t) => t.state === "dropped").map((t) => t.id);
-    case "budget": return tickets.filter((t) => t.state === "done").map(budgetRow);
+    case "budget": return tickets.filter((t) => t.state === "done").sort((a, b) => a.settled - b.settled).map(budgetRow);
     case "ticket": { const t = byId(); return t ? [ticketBlock(t)] : []; }
     case "runs": { const t = byId(); return t ? (t.runs.length ? [...t.runs] : [DEFAULT_RUN]) : []; }
     case "sha": { const t = byId(); return t ? [t.sha] : []; }

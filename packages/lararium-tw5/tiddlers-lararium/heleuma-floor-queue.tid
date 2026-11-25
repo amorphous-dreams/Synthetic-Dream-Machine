@@ -12,7 +12,7 @@ heleuma       = "ha"
 module-ref    = "lar:///ha.ka.ba/lararium/tw5/filters/floor-queue"
 role          = "code-meme: the floor-queue filter operator folds the test floor's ledger (QUEUE, RUN, WHY, TAKE, DONE, DROP) inside the wiki that holds it"
 source-file   = "packages/lararium-tw5/src/filters/floor-queue.ts"
-source-sha256 = "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+source-sha256 = "sha256:9f638819001e651e802eab48fbf452c1d233e56a84be5a9a288340aa72c19865"
 title         = "lar:///ha.ka.ba/lararium/tw5/heleuma/floor-queue"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/tw5/heleuma/floor-queue"
@@ -67,6 +67,6 @@ The operator reads through the wiki it runs in and writes nothing; one call fold
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;fdTj4blmX2pQxGWBTKYcJB7CewPifHV_kOV-cpzInqs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;cMPzyp_HpbfyJmIIz2wXLFQY9fguPjIeoE0S0SkFhfk`>>
 
 <<^ code=`&#x0004;` to=`?`>>
