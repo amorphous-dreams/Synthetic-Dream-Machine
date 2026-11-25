@@ -64,7 +64,7 @@ async function plantPulamaTree(root) {
   await put("packages/lararium-web/src/index.ts", "export const w = 3;\n");
 }
 
-async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, checkout, wornFace, keepSeat, houseFiles = {}, viaHarnessShell = false, rawSeat = false, hostInput, input, refuseInput = false, hostName = "host.mem", hostSibling, fifo = false, hostCwd = false, origin = false } = {}) {
+async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, checkout, wornFace, keepSeat, houseFiles = {}, viaHarnessShell = false, rawSeat = false, hostInput, input, refuseInput = false, hostName = "host.mem", hostSibling, fifo = false, hostCwd = false, origin = false, sync } = {}) {
   const dir = await mkdtemp(join(tmpdir(), "lares-container-"));
   try {
     const log = join(dir, "calls.log");
@@ -90,6 +90,8 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       `case " $* " in *"lares.pulama.closure"*) case " $* " in *"image inspect"*) printf '%s\\n' "\${FAKE_IMAGE_CLOSURE:-}";; *) if [ -n "\${FAKE_PULAMA_B_ID:-}" ] && [ "$last" = "\${FAKE_PULAMA_B_ID}" ]; then printf '%s\\n' "\${FAKE_IMAGE_CLOSURE:-}"; else printf '%s\\n' "\${FAKE_PULAMA_CLOSURE:-}"; fi;; esac; exit 0;; esac\n` +
       // A KEPT IMAGE (`<repo>:rev-<12 hex>`): its revision label, where a test names one; none stands otherwise.
       `case " $* " in *"image inspect"*"org.opencontainers.image.revision"*":rev-"*) [ -n "\${FAKE_KEPT_LABEL:-}" ] || exit 1; printf '%s\\n' "\${FAKE_KEPT_LABEL}"; exit 0;; esac\n` +
+      // The vessel's own image (FAKE_VESSEL_IMAGE) reads FAKE_VESSEL_REV_LABEL where a test names one; every other image the tag's label.
+      `case " $* " in *"image inspect"*"org.opencontainers.image.revision"*) if [ -n "\${FAKE_VESSEL_REV_LABEL:-}" ] && [ "$last" = "\${FAKE_VESSEL_IMAGE:-}" ]; then printf '%s\\n' "\${FAKE_VESSEL_REV_LABEL}"; exit 0; fi;; esac\n` +
       `case " $* " in *"image inspect"*"org.opencontainers.image.revision"*) printf '%s\\n' "\${FAKE_IMAGE_REV_LABEL:-}"; exit 0;; esac\n` +
       `case " $* " in *"image inspect"*) printf '%s\\n' "\${FAKE_IMAGE_ID:-sha256:feedface}"; exit 0;; esac\n` +
       // A container's image: the pūlama's (FAKE_PULAMA_ID) or the vessel's.
@@ -168,6 +170,15 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
         git("init", "-q"); git("add", "."); git("commit", "-qm", "seed");
         // `origin`: the revision reads as fetched from origin/develop (the keeper lei's reach).
         if (origin) git("update-ref", "refs/remotes/origin/develop", "HEAD");
+        // `sync`: what the rite's fast-forward reads (`syncPlan`'s input): a detached head, or a branch following `up` with commits
+        // behind it (outside the closure) and ahead of it, and a tracked edit uncommitted.
+        if (sync?.branch === "HEAD") git("checkout", "-q", "--detach");
+        else if (sync?.upstream) {
+          git("branch", "up"); git("branch", "-q", "--set-upstream-to=up");
+          for (let n = 0; n < sync.behind; n++) { git("checkout", "-q", "up"); await writeFile(join(repo, `upstream-${n}.txt`), `${n}\n`); git("add", "."); git("commit", "-qm", `up ${n}`); git("checkout", "-q", "-"); }
+          for (let n = 0; n < sync.ahead; n++) { await writeFile(join(repo, `local-${n}.txt`), `${n}\n`); git("add", "."); git("commit", "-qm", `local ${n}`); }
+          if (sync.dirty) await writeFile(join(repo, "tools", "pulama-closure.mjs"), (await readFile(join(repo, "tools", "pulama-closure.mjs"), "utf8")) + "\n// edited\n");
+        }
         // "dirty": a tracked edit uncommitted and an untracked file beside it, neither of which may ride a build.
         if (checkout === "dirty") { await writeFile(script, (await readFile(script, "utf8")) + "\n# edited\n"); await writeFile(join(repo, "stray-untracked.txt"), "never built\n"); }
         // "submodule": a submodule pinned at one commit, whose own checkout has since moved past the pin.
@@ -2345,20 +2356,27 @@ test("sh: pulama-status-names-the-kukulu-reading: each row of the shared table r
   const leiShow = { true: { standing: true, returnsLeft: 3 }, absent: { refusal: "absent" }, "returns-spent": { standing: true, returnsLeft: 0 } };
   for (const row of table.rows) {
     const f = { vessel: "standing", current: false, keeper: null, ...row.facts };
-    const status = { op: "status", ...(f.lit === null ? {} : { lit: f.lit }), ...(f.keeper === "struck-due" ? { keeper: { struckDue: true } } : {}), ...(f.keeper === "vests" ? { vestReady: mine } : {}), ...(f.keeper === "lei" ? { leiReady: true } : {}) };
+    // `admitted` and `offer` name the image the tag holds where it carries the head (its revision label), whatever the vessel runs.
+    const status = { op: "status", ...(f.lit === null ? {} : { lit: f.lit }), ...(f.keeper === "struck-due" ? { keeper: { struckDue: true } } : {}), ...(f.keeper === "vests" ? { vestReady: mine } : {}), ...(f.keeper === "lei" ? { leiReady: true } : {}), ...(f.admitted ? { admitted: ["sha256:new"] } : {}) };
     const env = {
-      FAKE_IMAGE_ID: "sha256:new",
+      FAKE_IMAGE_ID: "sha256:new", FAKE_IMAGE_REV_LABEL: f.admitted || f.offer ? "@HEAD@" : "e".repeat(40),
       ...(f.pulama === "absent" ? {} : { FAKE_PULAMA_ID: "p1", FAKE_PULAMA_IMAGE: "sha256:old", FAKE_PULAMA_CLOSURE: f.pulama === "level" ? mine : `sha256:${"b".repeat(64)}`, FAKE_PULAMA_STATUS: JSON.stringify(status) }),
-      ...(f.vessel === "standing" ? { FAKE_RUNNING_ID: "cid", FAKE_VESSEL_IMAGE: "sha256:vimg", FAKE_IMAGE_REV_LABEL: f.current ? "@HEAD@" : "f".repeat(40) } : {}),
+      ...(f.vessel === "standing" ? { FAKE_RUNNING_ID: "cid", FAKE_VESSEL_IMAGE: "sha256:vimg", FAKE_VESSEL_REV_LABEL: f.current ? "@HEAD@" : "f".repeat(40) } : {}),
       ...(f.lei === null ? {} : { FAKE_LEI_SHOW: JSON.stringify({ ok: true, data: { lei: leiShow[String(f.lei)] } }) }),
     };
-    const r = await run(SH, ["pulama", "status"], { envFile: PULAMA_ENV, checkout: "pulama", env });
+    const houseFiles = f.offer ? { "config/kukulu-offer.json": '{"faces":[{"image":"sha256:new"}]}\n' } : {};
+    const r = await run(SH, ["pulama", "status"], { envFile: PULAMA_ENV, checkout: "pulama", env, houseFiles, ...(f.sync ? { sync: f.sync } : {}) });
     assert.equal(r.status, 0, `${row.name}: ${r.stderr}`);
-    const said = /^lares-container: kūkulu at [0-9a-f]{12}: (.*) · closure (sha256:[0-9a-f]{12}) · pūlama (\S+)$/m.exec(r.stderr);
-    assert.ok(said, `${row.name}: no kūkulu line in ${r.stderr}\nCALLS ${r.calls}`);
-    assert.equal(said[1], row.line, row.name);
-    assert.equal(said[2], mine.slice(0, 19), `${row.name}: the line names the checkout's closure`);
-    if (f.lei !== null && f.vessel === "standing") assert.match(r.calls, /exec -T lares node \S+ lei show --rite kukulu --branch \S+ --json/, row.name);
+    const said = /^lares-container: kūkulu at [0-9a-f]{12}: (.*?)(?: · closure (sha256:[0-9a-f]{12}) · pūlama (\S+))?$/m.exec(r.stderr);
+    assert.ok(said, `${row.name}: no kūkulu line in ${r.stderr}`);
+    assert.equal(said[1], row.line, `${row.name}\nCALLS ${r.calls}`);
+    // A sync that stops names no closure: the rite stops before any image.
+    const stops = row.line.includes("the rite stops at the sync") || row.line.endsWith("stands detached");
+    if (stops) {
+      assert.equal(said[2], undefined, row.name);
+      assert.doesNotMatch(r.calls, /lei show/, `${row.name}: a sync that stops reads no lei (a detached head names no branch)`);
+    } else assert.equal(said[2], mine.slice(0, 19), `${row.name}: the line names the checkout's closure`);
+    if (f.lei !== null && f.vessel === "standing" && !stops) assert.match(r.calls, /exec -T lares node \S+ lei show --rite kukulu --branch \S+ --json/, row.name);
   }
   // No closure reads (a checkout with no pūlama entry): the line says so, and the status still answers.
   const bare = await run(SH, ["pulama", "status"], { envFile: PULAMA_ENV, checkout: "clean", env: { FAKE_PULAMA_ID: "p1" } });

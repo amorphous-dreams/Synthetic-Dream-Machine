@@ -308,7 +308,9 @@ export const owesLight = (r: StandReading): boolean => r.pulama === "absent" || 
  * THE FACTS A PRE-RITE READING READS (course pulama-unblur): the stand as the rite would read it for the checkout's head, before
  * any image builds. `pulama` compares the checkout's closure with the running pūlama's; `keeper` adds `lei` where the pūlama names
  * `leiReady` (the kukulu lei could license the keeper's commit); `lei` reads as `leiStands` answers (true: a kukulu lei stands
- * on the line with a return left); `current`, `admitted` and `offer` name the image the vessel already runs, where it carries the head.
+ * on the line with a return left, null where no read answered); `current` names a vessel already running the image of the head, and
+ * `admitted` and `offer` name that image wherever one stands already (the tag's, or the vessel's); an image yet to build carries none.
+ * `sync` names what the rite's fast-forward reads first (`syncPlan`): a stop stops the rite, a fast-forward reads the upstream's head.
  */
 export interface HandFacts {
   readonly pulama: StandReading["pulama"];
@@ -319,7 +321,11 @@ export interface HandFacts {
   readonly admitted: boolean | null;
   readonly offer: boolean;
   readonly lei: boolean | string | null;
+  readonly sync?: Parameters<typeof syncPlan>[0];
 }
+
+/** The line a kukulu lei that answered no read says, wherever the verdict turns on it. */
+const LEI_UNREAD = "reads unknown: the kukulu lei answered no reading (read it with `lares lei show --rite kukulu`)";
 
 /**
  * WHETHER THE NEXT KŪKULU NEEDS A HAND (course pulama-unblur): one line, read off the facts a no-terminal rite reads and through
@@ -332,28 +338,45 @@ export interface HandFacts {
  *   reads unknown: <why>                  the rite stops before anything moves (`kukulu-pulama-unread`)
  */
 export function kukuluHand(f: HandFacts): string {
+  // THE SYNC READS FIRST, as the rite's fast-forward does: a stop ends the rite before any image; a fast-forward reads the upstream.
+  const plan = f.sync === undefined ? null : syncPlan(f.sync);
+  if (plan?.act === "stop" && f.sync !== undefined) {
+    return `needs your hand: ${f.sync.branch === "HEAD" ? "the checkout stands detached" : f.sync.ahead > 0 ? `the checkout and ${f.sync.upstream ?? "its upstream"} diverged; the rite stops at the sync` : `the tree holds changes behind ${f.sync.upstream ?? "its upstream"}; the rite stops at the sync`}`;
+  }
+  const verdict = handVerdict(f);
+  return plan?.act === "fast-forward" && f.sync?.upstream ? `${verdict} (after the fast-forward to ${f.sync.upstream})` : verdict;
+}
+
+function handVerdict(f: HandFacts): string {
   if (f.pulama === "off") return "runs alone";
   if (f.pulama === "unread" || (f.pulama !== "absent" && f.pulama !== "moved" && f.lit === null)) return "reads unknown: whether the pūlama stands lit, or what it runs (read it with `lares pulama status`)";
   const moved = f.pulama === "moved";
   const leiOk = f.lei === true;
+  const leiUnread = f.lei === null;
   // The rite's leiGone: an absent lei, or one that stands not for a cause other than spent returns (a spent lei meets its begin).
   const leiGone = f.lei === false || (typeof f.lei === "string" && f.lei !== RETURNS_SPENT_REFUSAL);
   const byLei = moved && f.keeper === "lei" && f.lit === true && leiOk;
   const keeper = byLei ? "vests" : leiGone && f.keeper === "vests" ? null : f.keeper === "lei" ? null : f.keeper ?? null;
   const read: StandReading = { revision: "", image: "", how: "stood", vessel: f.vessel, current: f.current, pulama: f.pulama, keeper, lit: f.lit, admitted: f.admitted, offer: f.offer };
   if (owesLight(read)) {
+    // A lei that answered no read decides the keeper lei's path where the pūlama offers one; elsewhere the light stays owed.
+    if (moved && f.lit === true && f.keeper === "lei" && leiUnread && f.vessel === "standing") return LEI_UNREAD;
     const why = f.pulama === "absent" ? "no pūlama runs"
       : f.lit === false ? "the pūlama stands unlit"
       : keeper === "struck-due" ? "closure moved; struck due"
-      : !leiOk ? "closure moved; no standing kukulu lei"
-      : "closure moved; keeper lei path off";
+      : leiUnread && f.vessel === "down" ? "closure moved; no vessel stands to read the kukulu lei"
+      : leiOk || leiUnread ? "closure moved; keeper lei path off"
+      : "closure moved; no standing kukulu lei";
     return `needs your hand: ${why}`;
   }
   if (f.current && !moved) return "runs alone";
   // THE ADMIT GATE: a new vessel enters on an admission, a resting offer, or a begun rite (a kukulu lei's return spent).
   const begins = f.vessel === "standing" && leiOk;
   if (f.vessel === "standing" && f.lei === RETURNS_SPENT_REFUSAL) return "needs your hand: the kukulu lei's returns lie spent";
-  if (!begins && f.admitted !== true && !f.offer) return `needs your hand: ${f.vessel === "down" ? "no vessel stands to begin the rite" : "no standing kukulu lei"} (the pūlama's admit of the new image reads your route)`;
+  if (!begins && f.admitted !== true && !f.offer) {
+    if (f.vessel === "standing" && leiUnread) return LEI_UNREAD;
+    return `needs your hand: ${f.vessel === "down" ? "no vessel stands to begin the rite" : "no standing kukulu lei"} (the pūlama's admit of the new image reads your route)`;
+  }
   if (byLei) return "keeper vests under the standing lei";
   if (moved && keeper === "vests") return "keeper vests under your keeper commit";
   return "runs alone";

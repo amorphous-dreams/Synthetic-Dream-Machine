@@ -224,8 +224,13 @@ describe("the closure speaks: a pre-rite reading names whether the kūkulu needs
         tty: false, keeper: { to, closure }, leiSpend: true, ...(begin === undefined ? {} : { begin }), ...(facts.lei === null ? {} : { leiStands: facts.lei }),
         reading: { pulama: facts.pulama === "level" ? "closure-level" : facts.pulama, lit: facts.lit, keeper: (facts.keeper ?? null) as NonNullable<StandReading["keeper"]> | null, vessel: facts.vessel, current: facts.current, admitted: facts.admitted, offer: facts.offer },
       });
+      // THE SYNC the rite reads first answers as syncCheckout would over the same reading: a stop refuses, a stand or a fast-forward goes on.
+      const sync = facts.sync;
+      if (sync !== undefined) Object.assign(f.ports, { sync: async () => ({ ok: syncPlan(sync).act !== "stop", line: syncPlan(sync).act }) });
       const out = await riteKukulu(f.ports, {});
       const raised = f.calls.some((c) => c.startsWith("raise"));
+      // A lei that answered no read leaves the rite to the begin's own answer, which the reading never saw: it names no verdict.
+      if (row.line.startsWith("reads unknown: the kukulu lei")) continue;
       if (row.line.startsWith("reads unknown")) expect(out.data, row.name).toMatchObject({ refusal: "kukulu-pulama-unread" });
       else if (row.line.startsWith("needs your hand")) expect(raised, `${row.name}: ${f.said.join(" | ")}`).toBe(false);
       else {
