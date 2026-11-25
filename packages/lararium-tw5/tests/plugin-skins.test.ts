@@ -77,7 +77,7 @@ describe("a skin packs its code-memes beside the modules they window", () => {
         expect(metaOf(text, "source-sha256"), `${title}: source-sha256 names the packed module's bytes (cure: pnpm --filter @lararium/tw5 build:heleuma:commit)`).toBe(`sha256:${sha256HexSync(packed[ref]!["text"]!)}`);
       }
     }
-    expect(seen, "the house skin packs the spirit unfold's code-meme").toContain("lar:///ha.ka.ba/lararium/tw5/heleuma/spirit-unfold");
+    expect(seen, "the house skin packs the meme fold's code-meme").toContain("lar:///ha.ka.ba/lararium/tw5/heleuma/meme-fold");
   });
 });
 

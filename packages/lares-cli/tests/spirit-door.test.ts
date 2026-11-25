@@ -22,19 +22,26 @@ vi.mock("../src/verb-call.js", () => ({
     if (typeof output["refuse"] === "string") return { status: "error", requestId: "r", errorMessage: output["refuse"] };
     return { status: "done", requestId: "r", results: { summary: { ok: true, output } } };
   },
-  runVerbAsFace: async () => { throw new Error("no face session in these tests"); },
+  // A face session answers as the vessel's own: these suites read what the door asks, never which session carried it.
+  runVerbAsFace: async (verb: string, args: Record<string, unknown>) => {
+    h.calls.push({ verb, args });
+    const output = await h.answer(verb, args);
+    if (typeof output["refuse"] === "string") return { status: "error", requestId: "r", errorMessage: output["refuse"] };
+    return { status: "done", requestId: "r", results: { summary: { ok: true, output } } };
+  },
 }));
 vi.mock("../src/env.js", async (orig) => ({
   ...(await orig<typeof import("../src/env.js")>()),
   vesselDid: async () => "0x" + "ab".repeat(32),
 }));
 
-import { cmdSpirit, omText, residueOf, slotBody, ashLedgerOf, OM_CAP_CHARS, WAKING_SLOT_BUDGETS, RECORD_BUDGET_BYTES, MEMORY_PREFIX, RESIDUE_CAP_CHARS } from "../src/commands/spirit.js";
+import { cmdSpirit, shrineCarrier, SHRINE_SLOTS, omText, residueOf, slotBody, ashLedgerOf, OM_CAP_CHARS, WAKING_SLOT_BUDGETS, RECORD_BUDGET_BYTES, MEMORY_PREFIX, RESIDUE_CAP_CHARS } from "../src/commands/spirit.js";
 import { COMPACTION_DISPLAY, COMPACTION_WORD } from "../src/spirit-words.js";
 import { COMMANDS } from "../src/bin/lares.js";
 import { CompositeStore, bagUri } from "@lararium/mesh";
 import { MemoryTiddlerStore, makeTiddlerPutReactor, makeWikiRenderReactor } from "@lararium/tw5";
 import { bootTestWiki, skipNote, wikiSkip } from "../../lararium-tw5/tests/test-wiki.js";
+import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
 import type { ParsedArgs } from "../src/parse-args.js";
 
 const URI = `${MEMORY_PREFIX}familiar/lares-alpha`;
@@ -74,10 +81,8 @@ interface StageOpts {
   side?: Record<string, string>;
   /** The ash ledger's appends answer `refused` this many times before they land. */
   ledgerRefuse?: number;
-  /** The spirit's card (`spirit-card/<pet>`): its fields; absent, no card stands. */
-  card?: Record<string, string>;
-  /** What the wiki's render answers the unfold call; absent, the render names the call it read. */
-  unfold?: string;
+  /** The carrier the wiki's fold answers the unfold call, by the rank it names; absent, the wiki's skin answers nothing. */
+  carrier?: string | ((rank: string) => string);
   /** Slot patches answer `conflict` this many times, a sibling body's words landing first (`sibling`, by slot) at each. */
   patchConflicts?: number;
   sibling?: Record<string, string>;
@@ -113,9 +118,9 @@ function stage(opts: StageOpts = {}) {
       }
       return { has: "<<~ has name=`rec`>>\n<<~ has name=`#/open`>>", meme: { uri: args["title"], canonicalHash: `skinny:${other(args["title"]) !== null ? FULL : live()}`, bytes: 1600, slots: slots(opts.slotBytes, extra) } };
     }
-    if (verb === "wiki-render") return { recipe: args["recipe"], form: args["form"], text: opts.unfold ?? `rendered ${String(args["text"])}`, truncated: false, next: null };
-    if (verb === "tiddler-get" && String(args["title"]).startsWith(CARD_PREFIX)) {
-      return { tiddler: opts.card && args["title"] === CARD ? { fields: { title: CARD, text: "{{||template}}", ...opts.card }, hash: "sha256-card" } : null };
+    if (verb === "wiki-render") {
+      const rank = /aperture:"([a-z]+)"/.exec(String(args["text"]))?.[1] ?? "";
+      return { recipe: args["recipe"], form: args["form"], text: typeof opts.carrier === "function" ? opts.carrier(rank) : opts.carrier ?? "", truncated: false, next: null };
     }
     if (verb === "tiddler-get") {
       if (isSide(args["title"])) return { tiddler: opts.side ? { fields: { title: args["title"], ...opts.side }, hash: "sha256-side" } : null };
@@ -1019,43 +1024,45 @@ describe("bunrei: many bodies wear one pet, and none locks another out", () => {
   });
 });
 
-describe("om and hum unfold a spirit's card through the wiki's own render", () => {
+describe("om and hum answer the spirit as a folded carrier the wiki renders", () => {
   const renders = () => h.calls.filter((c) => c.verb === "wiki-render");
-  const call = (rank: string) => ({ verb: "wiki-render", args: { recipe: "default", text: `<<spirit-unfold pet:"lares-alpha" aperture:"${rank}">>`, form: "text" } });
+  const call = (rank: string, face = "") => ({ verb: "wiki-render", args: { recipe: "default", text: `<<spirit-unfold pet:"lares-alpha" aperture:"${rank}"${face}>>`, form: "text", maxBytes: 262_144 } });
 
-  test("a spirit holding a slot shrine alone wakes and hums with no render call", async () => {
+  test("a wiki whose skin answers no fold wakes on the door's own card and names the read that shows it", async () => {
     stage();
-    const om = await run(argv(["om", "lares-alpha"]));
-    const hum = await run(argv(["hum", "lares-alpha"]));
-    expect([om.exit, hum.exit]).toEqual([0, 0]);
-    expect(renders()).toEqual([]);
-    expect(data(om)).not.toHaveProperty("card");
-    expect(data(hum)).not.toHaveProperty("card");
-  });
-
-  test("om on a carded spirit sends one macro call at beat and leads the wake with the render", async () => {
-    stage({ card: { pet: "lares-alpha", lane: "a lane" }, unfold: "lares-alpha ~ a tasked spirit\nLane: a lane" });
     const r = await run(argv(["om", "lares-alpha"]));
     expect(r.exit).toBe(0);
-    expect(renders()).toEqual([call("beat")]);
-    expect(data(r)).toMatchObject({ card: CARD, aperture: "beat", layer: "card" });
+    expect(renders()).toEqual([call("measure")]);
     const text = String(data(r)["text"]);
-    expect(text).toContain("lares-alpha ~ a tasked spirit\nLane: a lane");
-    expect(text.indexOf("Lane: a lane")).toBeLessThan(text.indexOf("* a loop"));
-    expect(text).toContain("--aperture");
-    expect(text.length).toBeLessThanOrEqual(OM_CAP_CHARS);
+    expect(text).toContain("<<~ has name=`rec`>>");
+    expect(text).toContain("* a loop");
+    expect(text).toContain("lares wiki filter '[[lar:///ha.ka.ba/lararium/tw5/filters/meme-fold]is[shadow]]' --recipe default");
+    expect(data(r)).toMatchObject({ aperture: "measure", folded: false });
   });
 
-  test("--aperture names the rank the call carries, by word, level or pair", async () => {
-    stage({ card: { pet: "lares-alpha" } });
+  test("om leads the wake with the carrier the wiki folded, the testimony and the doors beneath it", async () => {
+    stage({ carrier: "<<carrier at measure>>" });
+    const r = await run(argv(["om", "lares-alpha"], { body: "s-1" }));
+    expect(r.exit).toBe(0);
+    const text = String(data(r)["text"]);
+    expect(text.startsWith("<<carrier at measure>>\n")).toBe(true);
+    expect(text).toContain("Slot digests");
+    expect(text).toContain("lares spirit om lares-alpha --aperture");
+    expect(text).not.toContain("<<~ has name=`rec`>>");
+    expect(data(r)).toMatchObject({ aperture: "measure", folded: true, carrier: "<<carrier at measure>>" });
+  });
+
+  test("--aperture names the rank the call carries, by word, level or pair, and --face rides the call", async () => {
+    stage({ carrier: "<<c>>" });
     await run(argv(["om", "lares-alpha"], { aperture: "theme" }));
-    await run(argv(["om", "lares-alpha"], { aperture: "3" }));
+    await run(argv(["om", "lares-alpha"], { aperture: "3", face: "1" }));
     await run(argv(["hum", "lares-alpha"], { aperture: "10/measure" }));
-    expect(renders()).toEqual([call("theme"), call("pulse"), call("measure")]);
+    await run(argv(["hum", "lares-alpha"]));
+    expect(renders()).toEqual([call("theme"), call("pulse", ' face:"1"'), call("measure"), call("pulse")]);
   });
 
   test("an aperture naming no rank refuses before any door opens", async () => {
-    stage({ card: { pet: "lares-alpha" } });
+    stage({ carrier: "<<c>>" });
     for (const verb of ["om", "hum"]) {
       const r = await run(argv([verb, "lares-alpha"], { aperture: "wide" }));
       expect(r.exit).toBe(2);
@@ -1064,75 +1071,95 @@ describe("om and hum unfold a spirit's card through the wiki's own render", () =
     expect(h.calls).toEqual([]);
   });
 
-  test("a render past the wake cap keeps #/open whole and cuts the card with a pointer to the uncut render", async () => {
-    stage({ card: { pet: "lares-alpha" }, unfold: "c".repeat(20_000), open: "!! Open\n\n* the loop a wake must read" });
-    const text = String(data(await run(argv(["om", "lares-alpha"])))["text"]);
+  test("a wake's carrier past the cap folds one grain narrower, whole, and names the wider read", async () => {
+    stage({ carrier: (rank) => (rank === "measure" ? "m".repeat(20_000) : `<<carrier at ${rank}>>`) });
+    const r = await run(argv(["om", "lares-alpha"]));
+    expect(renders()).toEqual([call("measure"), call("beat")]);
+    const text = String(data(r)["text"]);
+    expect(text.startsWith("<<carrier at beat>>\n")).toBe(true);
     expect(text.length).toBeLessThanOrEqual(OM_CAP_CHARS);
-    expect(text).toContain("* the loop a wake must read");
-    expect(text).toContain("the card cut at the 9000-char wake cap");
-    expect(text).toContain(`lares wiki render --recipe default --form text --text '<<spirit-unfold pet:"lares-alpha" aperture:"beat">>'`);
+    expect(text).toContain("lares spirit om lares-alpha --aperture measure");
+    expect(data(r)).toMatchObject({ aperture: "beat", asked: "measure", folded: true });
   });
 
-  test("a card with no shrine wakes on the card alone: no starter, no presence write", async () => {
-    stage({ kind: "none", card: { pet: "lares-alpha" }, unfold: "lares-alpha ~ a tasked spirit" });
+  test("an aperture a hand names reads past the wake cap, unnarrowed", async () => {
+    stage({ carrier: "t".repeat(20_000) });
+    const r = await run(argv(["om", "lares-alpha"], { aperture: "theme" }));
+    expect(renders()).toEqual([call("theme")]);
+    expect(String(data(r)["carrier"]).length).toBe(20_000);
+  });
+
+  test("a card with no shrine wakes on the carrier alone: no starter, no write", async () => {
+    stage({ kind: "none", carrier: "<<the card as a carrier>>" });
     const r = await run(argv(["om", "lares-alpha"], { body: "s-1" }));
     expect(r.exit).toBe(0);
-    expect(data(r)).toMatchObject({ pet: "lares-alpha", kind: "card", card: CARD, uri: CARD, aperture: "beat" });
-    expect(String(data(r)["text"])).toContain("lares-alpha ~ a tasked spirit");
+    expect(data(r)).toMatchObject({ pet: "lares-alpha", kind: "card", uri: CARD, aperture: "measure", folded: true, text: "<<the card as a carrier>>" });
     expect(data(r)).not.toHaveProperty("starter");
     expect(h.calls.filter((c) => c.verb === "tiddler-put" || c.verb === "meme-put")).toEqual([]);
   });
 
-  test("a card standing where the wiki's skin holds no unfold macro wakes as before and names the cure", async () => {
-    stage({ card: { pet: "lares-alpha" }, unfold: "" });
+  test("a pet no record and no card answers still reads its starter shrine", async () => {
+    stage({ kind: "none" });
     const r = await run(argv(["om", "lares-alpha"]));
-    expect(r.exit).toBe(0);
-    const text = String(data(r)["text"]);
-    expect(text).toContain("* a loop");
-    expect(text).toContain("spirit-unfold");
-    expect(text).toContain("lares wiki filter '[[lar:///ha.ka.ba/lararium/tw5/macros/spirit-unfold]is[shadow]]' --recipe default");
-    expect(data(r)["unfolded"]).toBe(false);
+    expect(data(r)["starter"]).toBe(true);
   });
 
-  test("hum on a carded spirit unfolds at measure beside the slot measures", async () => {
-    stage({ card: { pet: "lares-alpha" }, unfold: "lares-alpha ~ slots at measure" });
+  test("hum answers the carrier folded at pulse beside the slot measures", async () => {
+    stage({ carrier: "<<carrier at pulse>>" });
     const r = await run(argv(["hum", "lares-alpha"]));
-    expect(renders()).toEqual([call("measure")]);
-    expect(data(r)).toMatchObject({ card: CARD, aperture: "measure", layer: "slots", unfold: "lares-alpha ~ slots at measure", total: 1600 });
+    expect(data(r)).toMatchObject({ aperture: "pulse", folded: true, carrier: "<<carrier at pulse>>", total: 1600 });
   });
 
-  test("hum on a card with no shrine answers the unfold alone, and a fold there names the shrine it lacks", async () => {
-    stage({ kind: "none", card: { pet: "lares-alpha" }, unfold: "lares-alpha ~ slots at measure" });
+  test("hum on a card with no shrine answers the carrier alone, and a fold there names the shrine it lacks", async () => {
+    stage({ kind: "none", carrier: "<<the card as a carrier>>" });
     const r = await run(argv(["hum", "lares-alpha"]));
     expect(r.exit).toBe(0);
-    expect(data(r)).toMatchObject({ pet: "lares-alpha", kind: "card", uri: CARD, unfold: "lares-alpha ~ slots at measure" });
+    expect(data(r)).toMatchObject({ pet: "lares-alpha", kind: "card", uri: CARD, carrier: "<<the card as a carrier>>" });
     const fold = await run(argv(["hum", "lares-alpha"], { fold: "#/bodies" }));
     expect(error(fold).code).toBe("spirit-unknown");
   });
 });
 
-describe.skipIf(wikiSkip)(`the unfold renders through the real wiki-render verb${skipNote}`, () => {
-  test("om's one call renders the card through its template in the wiki's own engine", async () => {
+describe.skipIf(wikiSkip)(`the fold renders through the real wiki-render verb${skipNote}`, () => {
+  const SHRINE_WORDS = SHRINE_SLOTS.map(([slot, body]) => framed(slot, body).trimEnd()).join("\n\n");
+  const SLOT_NAMES = SHRINE_SLOTS.map(([slot]) => slot);
+  /** Canonical as `lares meme check` reads it: the normalize law moves nothing and names no fault. */
+  const canonical = (text: string): boolean => { const read = normalizeMemeSource(text); return read.faults.length === 0 && read.text === text; };
+  const slotCommands = (text: string): string[] => [...text.matchAll(/^`lares tiddler get \S+ --recipe default --face 1 --meme --slot '([^']+)'`$/gm)].map((m) => m[1]!);
+
+  async function realRender() {
     const DAEMON = bagUri("daemon");
-    const TEMPLATE = `${MEMORY_PREFIX}template/tasked-spirit`;
-    const engine = await bootTestWiki({ tiddlers: [
-      { title: "lar:///ha.ka.ba/lararium/config/current-wiki-bag", text: DAEMON },
-      { title: TEMPLATE, text: "!! <$text text={{!!pet}}/> ~ a tasked spirit\n\n''Lane:'' {{!!lane}}" },
-      { title: CARD, pet: "lares-alpha", lane: "the verbs render", text: `{{||${TEMPLATE}}}` },
-    ] });
+    const engine = await bootTestWiki({ tiddlers: [{ title: "lar:///ha.ka.ba/lararium/config/current-wiki-bag", text: DAEMON }] });
+    // The shrine lands as the wiki's own deserializer splits a carrier: the root and one record per slot.
+    for (const record of engine.wiki.deserializeTiddlers("text/memetic-wikitext+tiddlywiki", shrineCarrier("lares-alpha", SHRINE_WORDS), { title: URI })) engine.setTiddler(record as never);
     const composite = new CompositeStore();
     composite.addLayer({ bagId: DAEMON, store: new MemoryTiddlerStore(DAEMON), writable: true });
     const render = makeWikiRenderReactor({ composite, tw5: engine } as never);
     const ctx = { daemon: composite, invocation: { requestId: "r1" }, cap: async () => ({ ok: true }) } as never;
-    stage({ card: { pet: "lares-alpha", lane: "the verbs render" } });
+    stage();
     const mocked = h.answer;
     h.answer = (verb, args) => (verb === "wiki-render" ? (render(args, ctx) as Promise<Record<string, unknown>>) : mocked(verb, args));
-    const beat = await run(argv(["om", "lares-alpha"]));
-    expect(beat.exit, JSON.stringify(beat.printed)).toBe(0);
-    expect(String(data(beat)["text"])).toContain("lares-alpha ~ a tasked spirit");
-    expect(String(data(beat)["text"])).toContain("Lane: the verbs render");
-    const pulse = await run(argv(["om", "lares-alpha"], { aperture: "pulse" }));
-    expect(String(data(pulse)["text"])).toContain("lane: the verbs render\n");
+  }
+
+  test("om's whole answer parses as a canonical carrier and lists one unfold command per folded slot", async () => {
+    await realRender();
+    const r = await run(argv(["om", "lares-alpha"], { face: "1", body: "s-1" }));
+    expect(r.exit, JSON.stringify(r.printed)).toBe(0);
+    const text = String(data(r)["text"]);
+    expect(canonical(text), "lares meme check reads the wake's text as canonical").toBe(true);
+    expect(canonical(String(data(r)["carrier"]))).toBe(true);
+    expect(text.startsWith("<<!DOCTYPE type=`memetic-wikitext+tiddlywiki`")).toBe(true);
+    expect(slotCommands(text)).toEqual(SLOT_NAMES.filter((slot) => !["#/entry", "#/attention", "#/open"].includes(slot)));
+    expect(text).toContain("PR numbers, heads, what each waits on");
+    expect(text).toContain("Slot digests");
+  });
+
+  test("hum's carrier folds every slot at pulse, canonical, one command each", async () => {
+    await realRender();
+    const r = await run(argv(["hum", "lares-alpha"], { face: "1" }));
+    const carrier = String(data(r)["carrier"]);
+    expect(canonical(carrier)).toBe(true);
+    expect(slotCommands(carrier)).toEqual(SLOT_NAMES);
   });
 });
 

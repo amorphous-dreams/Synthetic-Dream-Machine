@@ -57,7 +57,7 @@ import {
   testimonyLines, titleSlug, titlesOf, wakingCap, writerField,
   type SideWrite, type SlotWrite, type SpiritAwake, type SpiritCarry, type SpiritRecord, type SpiritRow, type SpiritSource,
 } from "@lararium/mesh/spirit-shrine";
-import { UNFOLD_LAYER, UNFOLD_MACRO, UNFOLD_RANKS, spiritCardOf, unfoldCall, unfoldRank, type UnfoldLayer, type UnfoldRank } from "@lararium/mesh/spirit-unfold";
+import { FOLD_OPERATOR, UNFOLD_RANKS, narrowerRank, spiritCardOf, unfoldCall, unfoldRank, type UnfoldRank } from "@lararium/mesh/spirit-unfold";
 import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
 import { stampCarrier } from "@lararium/memetic-frame";
 import { COMPACTION_DISPLAY, COMPACTION_WORD } from "../spirit-words.js";
@@ -145,44 +145,62 @@ async function resolveRecord(args: ParsedArgs, label: string, pet: string, soft 
   return spiritRecordOf({ pet, ...hit }, fields, sideFields);
 }
 
-// ── THE UNFOLD ─────────────────────────────────────────────────────────────────────────────────────────────────────
+// ── THE FOLD ───────────────────────────────────────────────────────────────────────────────────────────────────────
 
-/** The module title the lares-lararium skin packs the unfold macro under. */
-const UNFOLD_MODULE = `lar:///ha.ka.ba/lararium/tw5/macros/${UNFOLD_MACRO}`;
+/** The module the lares-lararium skin packs the fold operators under. */
+const FOLD_MODULE = "lar:///ha.ka.ba/lararium/tw5/filters/meme-fold";
+/** The most a fold's render answers in one call (the tiddler door's own ceiling). */
+const FOLD_RENDER_BYTES = 262_144;
 
-/** The rank `--aperture` names (a rank, a level 0..20, or the gauge's pair), else the verb's own. */
-function apertureOf(args: ParsedArgs, fallback: UnfoldRank): UnfoldRank {
+/** What a fold asks: the rank `--aperture` names (a rank, a level 0..20, or the gauge's pair), else the verb's own, and the face its commands carry. */
+interface FoldAsk { readonly rank: UnfoldRank; readonly named: boolean; readonly face: string | null }
+function foldAsk(args: ParsedArgs, fallback: UnfoldRank): FoldAsk {
   const word = wordOf(args.options["aperture"]);
-  if (word === null) return fallback;
-  const rank = unfoldRank(word);
+  const rank = word === null ? fallback : unfoldRank(word);
   if (rank === null) throw new DoorUsage(`--aperture names one of ${UNFOLD_RANKS.join(" · ")}, a level 0..20, or the pair (10/measure); got "${word}"`);
-  return rank;
+  const face = wordOf(args.options["face"]);
+  if (unfoldCall("pet", rank, face) === null) throw new DoorUsage(`--face names a face number or handle; got "${face}"`);
+  return { rank, named: word !== null, face };
 }
 
-/** A card's unfold as the wiki rendered it: `text` null where the card stands and the wiki's skin holds no unfold macro. */
-interface Unfold { readonly card: string; readonly rank: UnfoldRank; readonly layer: UnfoldLayer; readonly text: string | null; readonly uncut: string }
+/** A spirit as the wiki folded it: `carrier` null where the wiki's skin answers no fold; `rank` the grain that answered. */
+interface Fold { readonly asked: UnfoldRank; readonly rank: UnfoldRank; readonly carrier: string | null }
 
 /**
- * THE CARD UNFOLDS IN THE WIKI. Where `spirit-card/<pet>` stands, this door sends the wiki's render verb ONE macro call and
- * prints what the engine answers: the macro, the template and every transclusion run inside the wiki that holds the records
- * (the lares-lararium skin's `<<spirit-unfold>>`). Null where no card stands, so a spirit holding a slot shrine alone reads as
- * it always read.
+ * THE SPIRIT FOLDS IN THE WIKI. This door sends the wiki's render verb ONE macro call and prints what the engine answers: the
+ * shrine (or, with no shrine, the card) as a folded carrier, recomposed, cut and stamped inside the wiki that holds the records
+ * (the lares-lararium skin's `spirit-fold`). A fold past `room` (a wake's cap) asks one grain narrower, so the carrier always
+ * rides whole; a hand naming its aperture names no room. A wiki whose skin holds no fold answers nothing, and the caller reads
+ * as it read before the fold stood.
  */
-async function unfoldCard(args: ParsedArgs, label: string, pet: string, rank: UnfoldRank): Promise<Unfold | null> {
-  const card = spiritCardOf(pet);
-  if ((await fieldsOf(args, label, card))["title"] !== card) return null;
-  const call = unfoldCall(pet, rank)!;
-  const uncut = `lares wiki render --recipe ${RECIPE} --form text --text ${shq(call)}`;
-  const out = await door(args, label, "wiki-render", { recipe: RECIPE, text: call, form: "text" });
-  const rendered = typeof out["text"] === "string" ? out["text"].replace(/\s+$/, "") : "";
-  const text = rendered === "" ? null : out["truncated"] === true ? `${rendered}\n… the render pages past here; read it whole: ${uncut}` : rendered;
-  return { card, rank, layer: UNFOLD_LAYER[rank], text, uncut };
+async function foldSpirit(args: ParsedArgs, label: string, pet: string, ask: FoldAsk, room: number | null): Promise<Fold> {
+  let rank = ask.rank;
+  for (;;) {
+    const out = await door(args, label, "wiki-render", { recipe: RECIPE, text: unfoldCall(pet, rank, ask.face)!, form: "text", maxBytes: FOLD_RENDER_BYTES });
+    const carrier = typeof out["text"] === "string" ? out["text"].replace(/\s+$/, "") : "";
+    if (carrier === "") return { asked: ask.rank, rank, carrier: null };
+    const over = out["truncated"] === true || (room !== null && carrier.length > room);
+    const narrower = over ? narrowerRank(rank) : null;
+    if (narrower === null) return { asked: ask.rank, rank, carrier: out["truncated"] === true ? null : carrier };
+    rank = narrower;
+  }
 }
-/** What an answer carries of an unfold. */
-const unfoldData = (u: Unfold): Record<string, unknown> => ({ card: u.card, aperture: u.rank, layer: u.layer, unfolded: u.text !== null });
-/** A card stands and the wiki rendered nothing for it: the loaded house skin holds no unfold macro. Names the read that shows it and the card's own render. */
-const unfoldAbsentLine = (u: Unfold): string =>
-  `The card ${u.card} stands, and this wiki's lares-lararium skin rendered no ${UNFOLD_MACRO} for it (a skin adopted before the macro holds none). Read whether the skin holds it: lares wiki filter '[[${UNFOLD_MODULE}]is[shadow]]' --recipe ${RECIPE} · read the card by title meanwhile: lares wiki render ${u.card} --recipe ${RECIPE} --form text`;
+/** What an answer carries of a fold. */
+const foldData = (f: Fold): Record<string, unknown> => ({ aperture: f.rank, ...(f.rank === f.asked ? {} : { asked: f.asked }), folded: f.carrier !== null, ...(f.carrier === null ? {} : { carrier: f.carrier }) });
+/** The wiki answered no fold: its loaded house skin holds no fold operator. Names the read that shows it. */
+const foldAbsentLine = (): string =>
+  `This wiki's lares-lararium skin answered no ${FOLD_OPERATOR} (a house skin adopted before the fold holds none), so this read stands unfolded. Read whether the skin holds it: lares wiki filter '[[${FOLD_MODULE}]is[shadow]]' --recipe ${RECIPE}`;
+
+/** A wake around a folded carrier: the lead above the declaration, the carrier whole, the testimony and the doors past its release. */
+function foldedWake(pet: string, fold: Fold & { carrier: string }, parts: { lead: string | null; testimony: readonly string[]; attention: string | null }, cap: number | null): string {
+  const doors = `True a slot: lares spirit ah ${pet} --slot '#/<name>' --file <path> (or --add <line>) · fold a line to ash: lares spirit hum ${pet} · widen or narrow this read: lares spirit om ${pet} --aperture <${UNFOLD_RANKS.filter((r) => r !== "arc").join("|")}>`;
+  const narrowed = fold.rank === fold.asked ? [] : [`This wake folds to ${fold.rank} to ride whole under the wake cap; the wider read: lares spirit om ${pet} --aperture ${fold.asked}`];
+  const head = `${parts.lead === null ? "" : `${parts.lead}\n\n`}${fold.carrier}\n\n${[...narrowed, ...parts.testimony].join("\n")}`;
+  const tail = `\n${doors}`;
+  const left = cap === null ? Infinity : cap - head.length - tail.length - 1;
+  const attention = parts.attention === null || left <= 0 ? "" : `\n${parts.attention.length <= left ? parts.attention : `${parts.attention.slice(0, Math.max(0, left - 40))}\n… the attention unfold cut at the wake cap`}`;
+  return `${head}${attention}${tail}`;
+}
 
 /**
  * A COMPARE-AND-SWAP ON THE RECORD'S FIELDS. Each round reads the fields and their live hash, asks `change` what to write over
@@ -383,7 +401,7 @@ async function readTitle(args: ParsedArgs, rec: Record_ | null, pet: string, tit
 
 async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
   const given = petOf(args, "om");
-  const rank = apertureOf(args, "beat");
+  const ask = foldAsk(args, "measure");
   const sourceWord = wordOf(args.options["source"]) ?? "startup";
   if (!(SOURCES as readonly string[]).includes(sourceWord)) throw new DoorUsage(`--source names one of ${SOURCES.join(", ")}; got "${sourceWord}"`);
   const source = sourceWord as Source;
@@ -391,13 +409,13 @@ async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
   if (body !== null && !BODY.test(body)) throw new DoorUsage("--body names a session id (letters, digits, '-' and '_')");
   const title = typeof args.options["title"] === "string" ? args.options["title"] : null;
   const seated = await resolveRecord(args, "om", given, true);
-  // A CARD WITH NO SHRINE wakes on the card alone: the unfold stands as the whole read, and nothing writes (presence and the
-  // wake epoch rest on a shrine's sibling record).
+  // A CARD WITH NO SHRINE wakes on the card alone: the wiki answers it as a carrier, and nothing writes (presence and the wake
+  // epoch rest on a shrine's sibling record). With no card either, the wiki answers nothing and the starter reads below.
   if (seated === null && source !== "precompact") {
-    const alone = await unfoldCard(args, "om", given, rank);
-    if (alone !== null) {
-      const text = alone.text ?? unfoldAbsentLine(alone);
-      emit(args, { ok: true, data: { pet: given, uri: alone.card, kind: "card", source, ...unfoldData(alone), chars: text.length, text }, human: () => console.log(text) });
+    const alone = await foldSpirit(args, "om", given, ask, null);
+    if (alone.carrier !== null) {
+      const text = alone.carrier;
+      emit(args, { ok: true, data: { pet: given, uri: spiritCardOf(given), kind: "card", source, ...foldData(alone), chars: text.length, text }, human: () => console.log(text) });
       return 0;
     }
   }
@@ -457,8 +475,6 @@ async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
   ].flatMap((l) => (l === null ? [] : [l])).join("\n") || null;
   const open = await readSlot(args, "om", rec, "#/open");
   const attention = await attentionUnfold(args, rec);
-  const unfold = await unfoldCard(args, "om", pet, rank);
-  if (unfold !== null && unfold.text === null) testimony.push(unfoldAbsentLine(unfold));
   // Each slot's digest, the view this body woke on: a whole-slot write names its slot's as --base, so a sibling's write since reads.
   const digests: Record<string, string> = {};
   for (const s of rec.slots) {
@@ -468,9 +484,15 @@ async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
   testimony.push(`Slot digests (a whole-slot ah names its slot's as --base; --add needs none): ${Object.entries(digests).map(([k, v]) => `${k}=${v}`).join(" ")}`);
   const advisory = advisoryLine(rec);
   if (advisory !== null) testimony.push(advisory);
-  const text = omText(rec, { open: open?.text ?? null, testimony, attention, lead, card: unfold === null || unfold.text === null ? null : { text: unfold.text, uncut: unfold.uncut } });
+  // THE WAKE READS THE SHRINE AS A FOLDED CARRIER, whole under the cap: the testimony and the doors ride past its release, so the
+  // whole text parses as one canonical carrier. A hand naming its aperture reads past the cap.
+  const fixed = (lead?.length ?? 0) + testimony.join("\n").length + 600;
+  const fold = await foldSpirit(args, "om", pet, ask, ask.named ? null : Math.max(0, OM_CAP_CHARS - fixed));
+  const text = fold.carrier !== null
+    ? foldedWake(pet, { ...fold, carrier: fold.carrier }, { lead, testimony, attention }, ask.named ? null : OM_CAP_CHARS)
+    : omText(rec, { open: open?.text ?? null, testimony: [...testimony, foldAbsentLine()], attention, lead });
   emit(args, {
-    ok: true, data: { ...data, ...(unfold === null ? {} : unfoldData(unfold)), latest: carry?.title ?? null, digests, chars: text.length, cap: OM_CAP_CHARS, text },
+    ok: true, data: { ...data, ...foldData(fold), latest: carry?.title ?? null, digests, chars: text.length, cap: OM_CAP_CHARS, text },
     human: () => console.log(text),
   });
   return 0;
@@ -593,17 +615,17 @@ async function burnToAshes(args: ParsedArgs, label: string, lines: readonly stri
 
 async function hum(args: ParsedArgs, ctx: Ctx): Promise<number> {
   const pet = petOf(args, "hum");
-  const rank = apertureOf(args, "measure");
+  const ask = foldAsk(args, "pulse");
   const fold = wordOf(args.options["fold"]);
   const lineWord = wordOf(args.options["line"]);
   if (lineWord !== null && fold === null) throw new DoorUsage(`--line <n> rides beside --fold '#/<slot>' (\`lares spirit hum ${pet} --fold '#/bodies' --line 3\`)`);
-  // A fold needs the shrine it folds; a bare hum reads a card where one stands, with or without a shrine beneath it.
+  // A fold of a line needs the shrine it folds; a bare hum reads the carrier the wiki folds, a shrine's or a lone card's.
   const found = await resolveRecord(args, "hum", pet, fold === null);
-  const unfold = fold === null ? await unfoldCard(args, "hum", pet, rank) : null;
+  const folded = fold === null ? await foldSpirit(args, "hum", pet, ask, null) : null;
   if (found === null) {
-    if (unfold === null) throw spiritUnknown(pet);
-    const shown = unfold.text ?? unfoldAbsentLine(unfold);
-    emit(args, { ok: true, data: { pet, uri: unfold.card, kind: "card", ...unfoldData(unfold), unfold: unfold.text }, human: () => console.log(shown) });
+    if (folded === null || folded.carrier === null) throw spiritUnknown(pet);
+    const carrier = folded.carrier;
+    emit(args, { ok: true, data: { pet, uri: spiritCardOf(pet), kind: "card", ...foldData(folded) }, human: () => console.log(carrier) });
     return 0;
   }
   const rec = found;
@@ -611,9 +633,9 @@ async function hum(args: ParsedArgs, ctx: Ctx): Promise<number> {
     const m = measure(rec);
     const over = m.slots.filter((s) => s.over);
     emit(args, {
-      ok: true, data: { pet, uri: rec.uri, ...m, advisory: advisoryLine(rec), every: rec.every, oversize: over.map((s) => s.slot), ...(unfold === null ? {} : { ...unfoldData(unfold), unfold: unfold.text }) },
+      ok: true, data: { pet, uri: rec.uri, ...m, advisory: advisoryLine(rec), every: rec.every, oversize: over.map((s) => s.slot), ...(folded === null ? {} : foldData(folded)) },
       human: () => {
-        if (unfold !== null) console.log(`${unfold.text ?? unfoldAbsentLine(unfold)}\n`);
+        if (folded !== null) console.log(`${folded.carrier ?? foldAbsentLine()}\n`);
         console.log(`lares spirit hum ${pet} · ${rec.uri}`);
         for (const s of m.slots) console.log(`  ${s.over ? "⚠" : " "} ${s.slot.padEnd(14)} ${String(s.bytes).padStart(5)}${s.budget === null ? "" : ` / ${s.budget}`}`);
         console.log(`  ${advisoryLine(rec, true)}`);
