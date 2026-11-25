@@ -1036,7 +1036,7 @@ type OfferRow = { cid: string; bag: string; offerer: string; retired: { steward:
 
 /** A daemon offer verb refused: the code, the message and the named refusal its answer carried. */
 class OfferVerbRefused extends Error {
-  constructor(readonly code: "cap-denied" | "verb-error", message: string, readonly requestId: string, readonly refusal?: string) { super(message); }
+  constructor(readonly code: "cap-denied" | "verb-error" | "owed", message: string, readonly requestId: string, readonly refusal?: string) { super(message); }
 }
 
 /** The doors one promotion walks: the canon write on the daemon's door, the charter seat's retire on the store door. */
@@ -1084,7 +1084,7 @@ async function memeOffer(args: ParsedArgs): Promise<number> {
     const answer = outcome.output;
     if (!outcome.ok || answer["ok"] === false) {
       const message = outcome.error ?? String(answer["why"] ?? answer["refusal"] ?? "the verb refused");
-      throw new OfferVerbRefused(/kahu-reach|cap-denied/.test(message) ? "cap-denied" : "verb-error", message, result.requestId, typeof answer["refusal"] === "string" ? answer["refusal"] : undefined);
+      throw new OfferVerbRefused(outcome.code === "owed" ? "owed" : /kahu-reach|cap-denied/.test(message) ? "cap-denied" : "verb-error", message, result.requestId, typeof answer["refusal"] === "string" ? answer["refusal"] : undefined);
     }
     return answer;
   };

@@ -380,6 +380,12 @@ describe("no silent loss: a put whose save cannot seal answers owed, never a bar
     const put = await run(argv("tiddler", ["put", "T"], { recipe: "lares", text: "x", face: "1" }));
     expect(put).toMatchObject({ exit: 6, printed: { ok: false, error: { code: "owed", message: expect.stringContaining("2hUgpNYoRGAk") }, data: { decision: "put", rest: owed } } });
   });
+  test("one path for every door: readVerbOutcome reads an owed answer as a refusal by code owed, the receipt kept beside it", async () => {
+    const { readVerbOutcome } = await import("../src/verb-result.js");
+    const read = readVerbOutcome({ status: "done", requestId: "r", results: { summary: { ok: true, output: { decision: "put" } } }, rest: owed as never });
+    expect(read).toMatchObject({ ok: false, code: "owed", output: { decision: "put", rest: owed }, error: expect.stringMatching(/^owed: .*2hUgpNYoRGAk/) });
+    expect(readVerbOutcome({ status: "done", requestId: "r", results: { summary: { ok: true, output: { decision: "noop" } } } })).toMatchObject({ ok: true });
+  });
   test("a delete the vessel answers owed exits owed too; a put with no band stays ok", async () => {
     h.reply = { decision: "removed", tombstoned: ["T"] };
     h.rest = owed;

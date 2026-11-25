@@ -88,6 +88,9 @@ export interface VerbOutcome {
   readonly ok:     boolean;
   readonly output: Record<string, unknown>;
   readonly error:  string | null;
+  /** `owed`: the verb ran and its write landed in the vessel's memory alone (the answer's `rest` band); every door reads it as a
+   *  refusal by that code (exit 6), never as ok. */
+  readonly code?:  "owed";
 }
 
 /**
@@ -103,5 +106,8 @@ export function readVerbOutcome(result: SubmitResult): VerbOutcome {
     return { ok: false, output: {}, error: result.errorMessage ?? "the daemon refused and named no reason" };
   }
   const output = summaryOutput(result) ?? {};
-  return { ok: true, output: result.rest ? { ...output, rest: result.rest } : output, error: null };
+  // NO SILENT LOSS, ONE PATH FOR EVERY DOOR: a write the vessel answers `owed` reads as a refusal by that code.
+  const owed = result.rest ? owedLine({ rest: result.rest }) : null;
+  if (owed !== null) return { ok: false, output: { ...output, rest: result.rest }, error: owed, code: "owed" };
+  return { ok: true, output, error: null };
 }

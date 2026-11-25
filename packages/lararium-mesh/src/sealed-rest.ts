@@ -524,6 +524,8 @@ export function composeSealedRest<S extends SaveSession>(input: {
   /** The Repo's own flush: every document, or the named ones alone (a face's drain names its own). */
   readonly flushRepo: (documentIds?: readonly string[]) => Promise<void>;
   readonly onHeld?: (held: HeldNotice) => void;
+  /** A save the store refused outright (`SealedDocumentPorts.onRefused`): it rests nowhere and waits nowhere. */
+  readonly onRefused?: (refused: { readonly documentId: string; readonly refusal: string; readonly cause?: string }) => void;
   /** A hydrating load waits (`SealedDocumentPorts.onHydrationWait`): once per document and refusal, with the bag the map names. */
   readonly onHydrationWait?: (wait: { readonly documentId: string; readonly refusal: string; readonly bagId: string | null }) => void;
   /** A restart's hydration: a sealed document's load waits for its map (`SealedDocumentStore.mapMoved`) until the rest
@@ -591,6 +593,7 @@ export function composeSealedRest<S extends SaveSession>(input: {
     waitOverSealed: true,
     seal: input.door.seal, open: input.door.open,
     ...(input.onHeld ? { onHeld: input.onHeld } : {}),
+    ...(input.onRefused ? { onRefused: input.onRefused } : {}),
     ...(input.onHydrationWait ? { onHydrationWait: input.onHydrationWait } : {}),
     ...(input.hydrates === true ? { hydrates: true } : {}),
     ...(input.vesselKey ? { vesselKey: input.vesselKey } : {}),
@@ -885,41 +888,57 @@ export function vesselRestAsker(port: { post(msg: unknown): void; listen(cb: (ms
   });
 }
 
-/** A write door's honest band where a document its call wrote still waits unsealed after the flush (sealed-store#/owed):
- *  the change stands in memory and rests nowhere until a session seals it, so the door answers `owed`, never a bare ok. */
+/** A write door's honest band where a document its call wrote still waits unsealed, or refused outright, after the flush
+ *  (sealed-store#/owed): the change stands in memory and rests nowhere until a session seals it, so the door answers
+ *  `owed`, never a bare ok. */
 export interface RestOwed {
   readonly band: "owed";
   readonly documents: ReadonlyArray<{ readonly documentId: string; readonly refusal: string; readonly error?: string; readonly cause?: string }>;
 }
 
-/** How many held notices the watch keeps: a call reads the notices since its own mark, so a bounded tail serves. */
-const REST_OWED_TAIL = 1024;
+/** What the watch hears about one document's save: a hold (`onHeld`) or an outright refusal (`onRefused`, `save-refused`). */
+export interface RestNotice { readonly documentId: string; readonly refusal: string; readonly error?: string; readonly cause?: string }
+
+/** Where a call began: the notice count, and each document's heads as the Repo held them. */
+export interface RestOwedMark { readonly seq: number; readonly heads: ReadonlyMap<string, string> }
 
 /**
- * THE REST-OWED WATCH: hears every save the sealed rest holds back (`onHeld`), numbered in arrival; a write door marks the
- * count as its call begins and, after its flush, reads which documents held a save since then and still wait (`waiting`).
- * Each document reads by its latest notice; one whose saves all sealed since owes nothing. Null: nothing owed.
+ * THE REST-OWED WATCH, SCOPED TO THE CALL. A write door marks as its call begins (the notice count and every document's
+ * heads); after its answer and the Repo's flush it reads the documents whose heads moved since the mark, the ones this
+ * call wrote (a noop moves none, so it owes nothing), and names each that still waits in the sealed rest, or whose save
+ * refused outright since the mark, or every moved one where the flush itself failed (`flushError`). Notices fold into one
+ * latest reading per document, counted, never sampled: no storm of notices drops a hold. Null: nothing owed.
  */
-export function restOwedWatch(waiting: (documentId: string) => number): {
-  notice(held: HeldNotice): void;
-  mark(): number;
-  owed(since: number): RestOwed | null;
+export function restOwedWatch(ports: {
+  readonly waiting: (documentId: string) => number;
+  /** Each document the Repo holds, by its heads joined (a stable string); read at the mark and again after the flush. */
+  readonly heads: () => ReadonlyMap<string, string>;
+}): {
+  notice(notice: RestNotice): void;
+  mark(): RestOwedMark;
+  owed(mark: RestOwedMark, flushError?: string): RestOwed | null;
 } {
   let seq = 0;
-  const tail: Array<{ readonly seq: number; readonly held: HeldNotice }> = [];
+  const latest = new Map<string, { readonly seq: number; readonly notice: RestNotice }>();
   return {
-    notice(held) {
-      tail.push({ seq: ++seq, held });
-      if (tail.length > REST_OWED_TAIL) tail.splice(0, tail.length - REST_OWED_TAIL);
-    },
-    mark: () => seq,
-    owed(since) {
-      const latest = new Map<string, HeldNotice>();
-      for (const { seq: at, held } of tail) if (at > since) latest.set(held.documentId, held);
-      const documents = [...latest.values()].filter((h) => waiting(h.documentId) > 0).map((h) => ({
-        documentId: h.documentId, refusal: h.refusal,
-        ...(h.error !== undefined ? { error: h.error } : {}), ...(h.cause !== undefined ? { cause: h.cause } : {}),
-      }));
+    notice(notice) { latest.set(notice.documentId, { seq: ++seq, notice }); },
+    mark: () => ({ seq, heads: new Map(ports.heads()) }),
+    owed(mark, flushError) {
+      const documents: Array<RestOwed["documents"][number]> = [];
+      for (const [documentId, heads] of ports.heads()) {
+        if (mark.heads.get(documentId) === heads) continue;
+        const heard = latest.get(documentId);
+        const since = heard !== undefined && heard.seq > mark.seq ? heard.notice : null;
+        const waits = ports.waiting(documentId) > 0;
+        if (flushError === undefined && !waits && since?.refusal !== "save-refused") continue;
+        const named = since ?? heard?.notice ?? null;
+        documents.push({
+          documentId,
+          refusal: flushError !== undefined && named === null ? "flush-refused" : named?.refusal ?? "save-waiting",
+          ...(named?.error !== undefined ? { error: named.error } : flushError !== undefined ? { error: flushError } : {}),
+          ...(named?.cause !== undefined ? { cause: named.cause } : {}),
+        });
+      }
       return documents.length > 0 ? { band: "owed", documents } : null;
     },
   };

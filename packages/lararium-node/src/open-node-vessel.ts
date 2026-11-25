@@ -26,6 +26,7 @@ import {
   composeSealedRest,
   restOwedWatch,
   type RestOwed,
+  type RestOwedMark,
   clearRosterOf,
   watchCatalogNames,
   docStorePortCell,
@@ -827,7 +828,7 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   sealedRestLock: (signer: object) => Promise<void>;
   /** NO SILENT LOSS at a write door: the count of held saves as a call begins (`mark`), and after its answer, the Repo's
    *  flush and the documents that held a save since the mark and still wait unsealed (`owed`; null: every save sealed). */
-  restOwed: { mark(): number; owed(since: number): Promise<RestOwed | null> };
+  restOwed: { mark(): RestOwedMark; owed(since: RestOwedMark): Promise<RestOwed | null> };
   /** The stand-down's last flush of the sealed rest (T3), after every session closed and before the daemon island goes:
    *  answers how many saves still wait unbooked (each rests nowhere new; its change returns by sync). */
   sealedRestStandDown: () => Promise<number>;
@@ -937,7 +938,7 @@ interface NodeBootPrep {
   sessionDoor:     UdsSessionDoor;
   /** The sealed rest's lock for one session's signer: the Repo and the rest flush, then its bookings drop. */
   sealedRestLock:  (signer: object) => Promise<void>;
-  restOwed: { mark(): number; owed(since: number): Promise<RestOwed | null> };
+  restOwed: { mark(): RestOwedMark; owed(since: RestOwedMark): Promise<RestOwed | null> };
   /** The stand-down's last flush of the sealed rest (T3), after every session closed: answers how many saves still wait. */
   sealedRestStandDown: () => Promise<number>;
   /** The stand-down's watch close over the worn face's pool: the final wave, then the commit seam, as a down. */
@@ -1412,7 +1413,17 @@ async function prepareNodeBootOn(
   const heldBack = heldInFlight(readEngineFalls(storageDir));
   // THE REST-OWED WATCH (No silent loss): every save held back numbers here, so a write door reads, after its flush, which
   // documents its call wrote still wait unsealed, and answers `owed` rather than a bare ok (`restOwedAfter`).
-  const owedWatch = restOwedWatch((documentId) => sealedRest.store.waiting(documentId));
+  const owedWatch = restOwedWatch({
+    waiting: (documentId) => sealedRest.store.waiting(documentId),
+    // Each ready document's heads: the documents a call moved read as the ones whose heads differ after its flush.
+    heads: () => {
+      const out = new Map<string, string>();
+      for (const [id, handle] of Object.entries(repo.handles as Record<string, { isReady(): boolean; doc(): unknown } | undefined>)) {
+        try { if (handle?.isReady()) out.set(id, A.getHeads(handle.doc() as A.Doc<unknown>).join(",")); } catch { /* a handle that will not read moved nothing we can name */ }
+      }
+      return out;
+    },
+  });
   const sealedRest = composeSealedRest<NodeSaveSession>({
     inner: holdBackStorage(new DurableNodeFSStorageAdapter(storageDir), heldBack, (line) => console.warn(`[lararium] ${line}`)),
     bagOf: sealedBagOf,
@@ -1447,6 +1458,11 @@ async function prepareNodeBootOn(
     // move, a switch) gives way to the session standing now, or waits `save-unbooked`, never `signer-refused`.
     stands: (session) => !session.signer.dropped,
     // A SAVE HELD BACK NAMES WHY: the store's refusal, and for a seal the holder refused, the holder's own refusal and cause.
+    // A SAVE REFUSED OUTRIGHT rests nowhere and waits nowhere: the watch hears it, so its write door answers owed.
+    onRefused: ({ documentId, refusal, cause }) => {
+      owedWatch.notice({ documentId, refusal: "save-refused", error: refusal, ...(cause !== undefined ? { cause } : {}) });
+      console.log(`[sealed-rest] save-refused (${refusal}${cause ? `: ${cause}` : ""}): ${documentId.slice(0, 12)}… rests nowhere; its change lives in the engine's memory alone`);
+    },
     onHeld: (held) => { owedWatch.notice(held); const { refusal, documentId, error, cause } = held; console.log(`[sealed-rest] ${refusal}${error ? ` (${error}${cause ? `: ${cause}` : ""})` : ""}: ${documentId.slice(0, 12)}… waits in memory, never clear, until a session seals it`); },
     // A HYDRATING LOAD THAT WAITS NAMES WHAT IT WAITS ON, once per document and refusal: the refusal and the bag holding it.
     onHydrationWait: ({ documentId, refusal, bagId }) => console.log(`[sealed-rest] ${documentId.slice(0, 12)}… waits to hydrate on ${refusal}${bagId ? ` in ${bagId}` : " (no bag names it yet)"}; it reads again at the next map move`),
@@ -5571,8 +5587,10 @@ async function prepareNodeBootOn(
     },
     restOwed: {
       mark: () => owedWatch.mark(),
+      // A FLUSH THAT FAILS NEVER READS AS SEALED: every document the call moved answers owed, naming the failure.
       owed: async (since) => {
-        try { await repo.flush(); } catch { /* a save that refused keeps its change in the store's memory, and the watch heard it */ }
+        try { await repo.flush(); }
+        catch (error) { return owedWatch.owed(since, error instanceof Error ? error.message : String(error)); }
         return owedWatch.owed(since);
       },
     },

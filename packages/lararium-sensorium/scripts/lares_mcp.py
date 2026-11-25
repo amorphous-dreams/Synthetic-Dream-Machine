@@ -1152,6 +1152,19 @@ def build_mcp(coordinator: LaresCoordinator):
         summary = ((out.get("results") or {}).get("summary")) or {}
         if summary.get("ok") is False:
             raise uds.LaresVerbError(str(summary.get("error") or f"verb {verb!r} failed"))
+        # NO SILENT LOSS (sealed-store#/owed): a write whose save waits unsealed, or refused outright, carries the vessel's
+        # `rest` band; every MCP write rides this one wire, so each answers `owed` naming the band, never a bare ok.
+        rest = out.get("rest")
+        if isinstance(rest, dict) and rest.get("band") == "owed":
+            docs = ", ".join(
+                f"{str(d.get('documentId', ''))[:12]}… ({d.get('refusal')}"
+                + (f": {d.get('error')}" + (f" {d.get('cause')}" if d.get("cause") else "") if d.get("error") else "") + ")"
+                for d in (rest.get("documents") or []) if isinstance(d, dict))
+            receipt = json.dumps({"rest": rest, "receipt": summary.get("output")}, ensure_ascii=False, separators=(",", ":"))
+            raise uds.LaresVerbError(
+                f"owed: the {verb} landed in the vessel's memory, and its save waits unsealed: {docs}. It rests nowhere "
+                f"until a session seals it, and a down before then loses it; `lares vessel census` names it · {receipt[:4000]}",
+                "owed")
         return summary.get("output")
 
     def meme_put(uri: str, text: str, recipe: "str | None" = None, bag: "str | None" = None,

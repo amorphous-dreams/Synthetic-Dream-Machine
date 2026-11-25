@@ -55,11 +55,13 @@ export async function runDoor(args: ParsedArgs, label: string, plan: DoorPlan): 
   if (outcome.ok) return { ok: true, requestId: result.requestId, output: face.face === undefined ? outcome.output : { face: face.face, ...outcome.output } };
   const message = outcome.error ?? "the verb refused";
   const named = /^([a-z][a-z0-9]*(?:-[a-z0-9]+)+):/.exec(message)?.[1];
-  const code = named === "cap-denied" ? "cap-denied" : named === "face-not-open" ? "face-not-open" : "verb-error";
+  const code = outcome.code === "owed" ? "owed" : named === "cap-denied" ? "cap-denied" : named === "face-not-open" ? "face-not-open" : "verb-error";
   // A visit's refusals name themselves in the hint (`cross-face-private`, `cross-face-write-refused`, `target-unknown`, …).
   emit(args, {
     ok: false, requestId: result.requestId,
-    error: { code, message, ...(named && named !== "cap-denied" ? { hint: `refusal: ${named}` } : {}) },
+    // An owed write carries what the verb answered beside the band: the write ran, and the receipt names what it moved.
+    ...(code === "owed" ? { data: face.face === undefined ? outcome.output : { face: face.face, ...outcome.output } } : {}),
+    error: { code, message, ...(named && named !== "cap-denied" && code !== "owed" ? { hint: `refusal: ${named}` } : {}) },
     human: () => console.error(`lares ${label}: ${message}`),
   });
   return { ok: false, exit: exitFor(code) };

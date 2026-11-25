@@ -14,7 +14,11 @@
  *   DS3 — a save that waited under a dead booking seals at the next live rebook, and a rebook under a dead session books nothing
  *   DS4 — the sign book's standing reading never names a dropped signer, and `standingFor` names the live session that
  *         wears the face, past a call of another face that stands first
- *   DS5 — the rest-owed watch: a write door reads, after its flush, which documents still wait unsealed since its call began
+ *   DS5 — the rest-owed watch reads only the documents this call moved (a noop owes nothing, another call's debt stays its own)
+ *   DS6 — a save refused outright, and a flush that failed, read owed
+ *   DS7 — a storm of notices drops no hold (counted per document, never a sampled tail)
+ *   DS8 — the store tells every refusal it throws (session-face-foreign), so none passes silent
+ *   DS9 — two faces: a dead booking never falls to the other face's live session
  *
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed · lar:///ha.ka.ba/kahua/memory/research/signer-refused
  */
@@ -157,18 +161,112 @@ describe("a dropped signer signs nothing, and no save waits on one", () => {
     expect(book.standingFor((s) => s.subject === "face-a")).toBeNull();
   });
 
-  it("DS5 — the rest-owed watch names the documents that still wait unsealed since a call began, and none that sealed", () => {
-    const waiting = new Map<string, number>();
-    const watch = restOwedWatch((id) => waiting.get(id) ?? 0);
-    watch.notice({ refusal: "save-unsealed", documentId: "before", error: "signer-refused" });
-    waiting.set("before", 1);
+  it("DS5 — the rest-owed watch names only the documents this call moved that still wait; a noop owes nothing", () => {
+    const waiting = new Map<string, number>([["other-call", 3]]);
+    const heads = new Map<string, string>([["doc-1", "h1"], ["other-call", "o1"], ["sealed", "s1"]]);
+    const watch = restOwedWatch({ waiting: (id) => waiting.get(id) ?? 0, heads: () => heads });
+    watch.notice({ refusal: "save-unsealed", documentId: "other-call", error: "signer-refused" });
+    // A noop: nothing moved, so another call's waiting document never reads as this call's debt.
+    const noop = watch.mark();
+    expect(watch.owed(noop)).toBeNull();
     const mark = watch.mark();
-    expect(watch.owed(mark)).toBeNull();
+    heads.set("doc-1", "h2"); heads.set("sealed", "s2");
     watch.notice({ refusal: "save-unsealed", documentId: "doc-1", error: "record-refused", cause: "signer-refused" });
-    watch.notice({ refusal: "save-unbooked", documentId: "doc-2" });
     waiting.set("doc-1", 2);
-    // doc-2 sealed at a rebook before the door read: it owes nothing.
-    const owed = watch.owed(mark);
-    expect(owed).toEqual({ band: "owed", documents: [{ documentId: "doc-1", refusal: "save-unsealed", error: "record-refused", cause: "signer-refused" }] });
+    // `sealed` moved and sealed: it owes nothing; `other-call` waits but this call never moved it.
+    expect(watch.owed(mark)).toEqual({ band: "owed", documents: [{ documentId: "doc-1", refusal: "save-unsealed", error: "record-refused", cause: "signer-refused" }] });
+  });
+
+  it("DS6 — a save refused outright (no hold, nothing waits) reads owed; a flush that failed reads owed for every moved document", () => {
+    const heads = new Map<string, string>([["doc-1", "a"], ["doc-2", "b"]]);
+    const watch = restOwedWatch({ waiting: () => 0, heads: () => heads });
+    const mark = watch.mark();
+    heads.set("doc-1", "a2");
+    watch.notice({ refusal: "save-refused", documentId: "doc-1", error: "session-face-foreign" });
+    expect(watch.owed(mark)).toEqual({ band: "owed", documents: [{ documentId: "doc-1", refusal: "save-refused", error: "session-face-foreign" }] });
+    heads.set("doc-2", "b2");
+    expect(watch.owed(mark, "flush threw")?.documents.map((d) => [d.documentId, d.refusal])).toEqual([["doc-1", "save-refused"], ["doc-2", "flush-refused"]]);
+  });
+
+  it("DS7 — a storm of notices drops no hold: the watch counts each document's latest reading, never a sampled tail", () => {
+    const heads = new Map<string, string>([["mine", "a"]]);
+    const waiting = new Map<string, number>();
+    const watch = restOwedWatch({ waiting: (id) => waiting.get(id) ?? 0, heads: () => heads });
+    const mark = watch.mark();
+    heads.set("mine", "b");
+    watch.notice({ refusal: "save-unbooked", documentId: "mine" });
+    waiting.set("mine", 1);
+    for (let i = 0; i < 5000; i++) watch.notice({ refusal: "save-unnamed", documentId: `storm-${i}` });
+    expect(watch.owed(mark)?.documents).toEqual([{ documentId: "mine", refusal: "save-unbooked" }]);
+  });
+
+  it("DS8 — the store tells a refusal it throws (session-face-foreign), so no outright refusal passes silent", async () => {
+    const w = world();
+    const a = await vessel(w, "a"), b = await vessel(w, "b");
+    const faceA = faceProofSubjectRef(a.chain.scope), faceB = faceProofSubjectRef(b.chain.scope);
+    const refused: string[] = [];
+    const rest = composeSealedRest<Session>({
+      inner: memoryAdapter(),
+      bagOf: () => ({ bagId: BAG, face: faceB }),
+      sessionFace: () => faceA,
+      openFaces: () => [faceA, faceB],
+      door: { seal: async (args) => b.holder.sealValues({ ...args, signer: (args.session as Session).signer }), open: async (args) => b.holder.openValue(args) },
+      flushRepo: async () => {},
+      onRefused: (r) => refused.push(`${r.refusal}:${r.documentId}`),
+    });
+    const sessionA: Session = { id: "s-a", subject: faceA, signer: { ...a.signer, dropped: false } };
+    rest.wrote("doc-b", sessionA);
+    let threw = "";
+    try { await rest.store.save(["doc-b", "incremental", "x"], new Uint8Array([1, 2, 3])); } catch (e) { threw = String((e as { refusal?: string }).refusal); }
+    expect(threw).toBe("session-face-foreign");
+    expect(refused).toEqual(["session-face-foreign:doc-b"]);
+  });
+
+  it("DS9 — two faces: a booking whose signer dropped never falls to the other face's live session; b's save waits for b", async () => {
+    const w = world();
+    const a = await vessel(w, "a"), b = await vessel(w, "b");
+    const faceA = faceProofSubjectRef(a.chain.scope), faceB = faceProofSubjectRef(b.chain.scope);
+    const liveA: Session = { id: "s-a", subject: faceA, signer: { ...a.signer, dropped: false } };
+    const oneShotB: Session = { id: "s-b-once", subject: faceB, signer: { ...b.signer, dropped: false } };
+    const liveB: Session = { id: "s-b", subject: faceB, signer: { ...b.signer, dropped: false } };
+    const sealedBy: string[] = [];
+    const held: string[] = [];
+    const standing = { b: oneShotB as Session | null };
+    let repo: Repo | null = null;
+    const rest = composeSealedRest<Session>({
+      inner: memoryAdapter(),
+      bagOf: () => ({ bagId: BAG, face: faceB }),
+      sessionFace: () => faceA,
+      openFaces: () => [faceA, faceB],
+      door: {
+        seal: async (args) => {
+          const session = args.session as Session;
+          sealedBy.push(session.id);
+          if (session.signer.dropped) return { refusal: "record-refused", cause: "signer-refused" } as never;
+          return (session.subject === faceA ? a : b).holder.sealValues({ ...args, signer: session.signer });
+        },
+        open: async (args) => b.holder.openValue(args),
+      },
+      flushRepo: async () => { await repo?.flush(); },
+      onHeld: (h) => held.push(`${h.refusal}:${h.documentId}`),
+    });
+    repo = new Repo({ storage: rest.store, network: [] });
+    // The standing reader hands b's session while it stands, else a's: the per-document match must refuse a's for b's bag.
+    rest.watch(repo, () => standing.b ?? liveA);
+    const doc = repo.create<{ note?: string }>();
+    doc.change((d) => { d.note = "b writes"; });
+    await repo.flush();
+    oneShotB.signer.dropped = true;
+    standing.b = null;
+    sealedBy.length = 0;
+    doc.change((d) => { d.note = "after b's signer dropped"; });
+    await repo.flush();
+    expect(sealedBy).not.toContain("s-a");
+    expect(sealedBy).not.toContain("s-b-once");
+    expect(held).toContain(`save-unbooked:${doc.documentId}`);
+    expect(await rest.rebook(liveA)).toBe(0);
+    expect(await rest.rebook(liveB)).toBeGreaterThan(0);
+    expect(sealedBy.filter((id) => id !== "s-b")).toEqual([]);
+    await repo.shutdown();
   });
 });

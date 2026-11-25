@@ -186,7 +186,7 @@ export interface UdsChannelOptions {
   readonly beforeSignerDrops?: (signer: UdsSessionSigner) => Promise<void>;
   /** NO SILENT LOSS (sealed-store#/owed): a write verb's answer reads, after the Repo's flush, which documents held a save
    *  since its call began and still wait unsealed; a `done` answer then carries `rest: { band: "owed", … }`. */
-  readonly restOwed?: { mark(): number; owed(since: number): Promise<RestOwedBand | null> };
+  readonly restOwed?: { mark(): unknown; owed(since: never): Promise<RestOwedBand | null> };
   /** The vessel's control document (`standControlHome`): its heads name a receipt's durability. */
   readonly controlHandle: DocHandle<LarDoc>;
   /** The verbs a one-shot runs while the control document stands as a stand-in (`floor-verbs`); every other refuses by its name. */
@@ -1772,7 +1772,9 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         // A WRITE THAT CANNOT SEAL ANSWERS `owed`, NEVER A BARE OK: the change stands in memory and rests nowhere yet.
         let rest: RestOwedBand | null = null;
         if (owedSince !== null && answer["status"] === "done") {
-          try { rest = await opts.restOwed!.owed(owedSince); } catch (error) { log(`rest-owed read failed: ${error instanceof Error ? error.message : String(error)}`); }
+          // A READING THAT FAILS NEVER READS AS SEALED: the answer names the failure as owed.
+          try { rest = await opts.restOwed!.owed(owedSince as never); }
+          catch (error) { rest = { band: "owed", documents: [{ documentId: "unread", refusal: "owed-unread", error: error instanceof Error ? error.message : String(error) }] }; }
         }
         const stamped = rest !== null ? { ...answer, rest } : answer;
         const named = choreMark !== undefined ? { ...stamped, chore: choreMark } : stamped;
