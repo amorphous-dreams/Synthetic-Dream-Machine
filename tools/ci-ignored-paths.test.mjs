@@ -116,7 +116,7 @@ test("RED: every other event reads as code without a git call, and a git fault o
 
 test("RED: the matcher reads GitHub globs; CONTROL: code paths stay un-ignored", () => {
   for (const p of ["bags/lares/ha.ka.ba/x.mem", "bags/a.mem", "README.md", "docs/deep/n.md", "wikis/w/working/t.tid", "CHANGELOG.md"]) assert.equal(isIgnoredPath(p), true, p);
-  for (const p of ["tools/land-train.mjs", "packages/a/src/x.ts", "bags/lares/x.json", "bags/x.mem.ts", "wikis", "a/CHANGELOG.md.bak"]) assert.equal(isIgnoredPath(p), false, p);
+  for (const p of ["tools/bench-gate.mjs", "packages/a/src/x.ts", "bags/lares/x.json", "bags/x.mem.ts", "wikis", "a/CHANGELOG.md.bak"]) assert.equal(isIgnoredPath(p), false, p);
   assert.equal(onlyIgnoredPaths(["a.md", "bags/q.mem"]), true);
   assert.equal(onlyIgnoredPaths(["a.md", "tools/x.mjs"]), false);
   assert.equal(onlyIgnoredPaths([]), false, "an empty change reads nothing ignored");

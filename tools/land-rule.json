@@ -1,6 +1,0 @@
-{
-  "about": "The land rule for code into the span: the checks a sha's own CI run must read success on, and the span head it must descend from. tools/land-rule.mjs reads this file to judge a sha by hand; the repository ruleset on the span names these same checks for the native merge queue, which only runs and orders the rule (controller-handoff#/the-seat). tools/land-rule.test.mjs welds each check to a job of .github/workflows/ci.yml.",
-  "span": "develop",
-  "workflow": "CI",
-  "requiredChecks": ["Quick gates", "Test", "Witnesses", "E2E / Merge shard reports"]
-}

@@ -10,8 +10,8 @@
 #
 # THE FLOOR (mandate/floor-gate-1): this lock IS the test floor's one slot. It re-enters: a run already inside the held floor
 # (an ancestor took this lock: tools/floor-lock.mjs reads the kernel's lock table) runs the command at once, since a second
-# flock on a fresh descriptor would wait on itself forever. The heavy tools (provision-worktree, bench-gate, land-train
-# --local, floor-run) refuse outside it; `node tools/floor-run.mjs -- <command>` takes it and meters the run's bytes.
+# flock on a fresh descriptor would wait on itself forever. The heavy tools (provision-worktree, bench-gate, floor-run)
+# refuse outside it; `node tools/floor-run.mjs -- <command>` takes it and meters the run's bytes.
 set -uo pipefail
 if [ -n "${LARES_BATTERY_LOCK:-}" ]; then
   case "$LARES_BATTERY_LOCK" in /*) ;; *) echo "battery: REFUSED, LARES_BATTERY_LOCK must be an absolute path (two working directories would pick two locks): $LARES_BATTERY_LOCK" >&2; exit 64;; esac

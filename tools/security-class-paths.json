@@ -1,8 +1,7 @@
 {
-  "about": "The security class (controller ruling 2026-11-01, F7 (a)): a lane whose own diff (`git diff --no-renames --raw -z <base>..<head>`) or whose LAND (each chain link's diff over the land before it, since merge-tree follows renames) names a path matching a glob in `paths`, or a path holding a `tokens` word anywhere (case-folded), lands only with a SHIP the controller wrote for its exact head (tools/land-train.mjs). The land reads this file from the SPAN HEAD's tree, never from the lane's, and the file sits in its own list. The code that decides CI's verdict (cells, shards, witnesses, the build stamp, every manifest and test config) sits in the class too. The future GitHub gate reads the same table. Prune from evidence; never widen a hole.",
+  "about": "The security class (controller ruling 2026-11-01, F7 (a)): a lane whose own diff (`git diff --no-renames --raw -z <base>..<head>`) or whose merge into develop (renames followed) names a path matching a glob in `paths`, or a path holding a `tokens` word anywhere (case-folded), lands only with a read the familiar records for its exact head before the merge. The read takes this file from develop's tree, never from the lane's, and the file sits in its own list. The code that decides CI's verdict (cells, shards, witnesses, the build stamp, every manifest and test config) sits in the class too. Prune from evidence; never widen a hole.",
   "paths": [
     "tools/security-class-paths.json",
-    "tools/land-train.mjs",
     "tools/ci-verdict.mjs",
     "tools/ci-ignored-paths.json",
     "tools/ci-ignored-paths.mjs",
