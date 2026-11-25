@@ -348,6 +348,9 @@ export const CONTENT_KEY_ID_INFO = mint("content-key-id");
 export const SEALED_BAG_LOCATOR_INFO = mint("sealed-bag-locator");
 /** The HKDF `info` a manifest ENTRY LOCATOR derives under, from the content key and the entry's context. */
 export const SEALED_ENTRY_LOCATOR_INFO = mint("sealed-entry-locator");
+/** The HKDF `info` a vessel's HEADS NOTE key derives under, from the version's content key over the founding and the
+ *  version: the note's tag keys to it, so a hand that holds no content key forges no note. */
+export const HEADS_NOTE_KEY_INFO = mint("heads-note-key");
 /** The HKDF `info` a JOIN's proof of one parent key derives under, over the joining version's id. */
 export const CONTENT_KEY_JOIN_PROOF_INFO = mint("content-key-join-proof");
 /** A KEY VERSION RECORD: its clear part hashes to the record id under this name. */
