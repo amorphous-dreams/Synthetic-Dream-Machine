@@ -19,8 +19,14 @@ import { TW5Engine } from "../src/tw5-vm.js";
 import { bootTestWiki, GLOBAL_IMPORT, wikiSkip, skipNote } from "./test-wiki.js";
 
 const MEM = "lar:///ha.ka.ba/kahua/memory/";
+function WORDS_OF(): string { return SHRINE_SLOTS.map(([slot, body]) => `<<~ ahu slot=\`${slot}\`>>\n\n${body}\n\n<<~/ahu>>`).join("\n\n"); }
 const TEMPLATE = `${MEM}template/tasked-spirit`;
-const SHRINE = `${MEM}familiar/verb-wright`;
+/** A shrine lands at the one address every spirit answers at. */
+const SHRINE = "lar:///ha.ka.ba/lares/spirit/verb-wright";
+/** A shrine that stood before the one address: the same carrier under its legacy title. */
+const LEGACY = `${MEM}familiar/old-familiar`;
+const LEGACY_CARRIER = stampCarrier(normalizeMemeSource(shrineSource("old-familiar", WORDS_OF(), CARRIER_TYPE).replaceAll("lar:///ha.ka.ba/lares/spirit/old-familiar", LEGACY).replaceAll("ha.ka.ba/lares/spirit/old-familiar", LEGACY.slice("lar:///".length))).text);
+const ONE_FIELDS = "lar:///ha.ka.ba/lares/spirit/field-shaped";
 const SLOTS = SHRINE_SLOTS.map(([slot]) => slot);
 const WORDS = SHRINE_SLOTS.map(([slot, body]) => `<<~ ahu slot=\`${slot}\`>>\n\n${body}\n\n<<~/ahu>>`).join("\n\n");
 /** A shrine as the spirit door lands one: the house normalize, then the block check. */
@@ -40,6 +46,8 @@ describe.skipIf(wikiSkip)(`a spirit folds as a carrier by aperture${skipNote}`, 
   beforeAll(async () => {
     e = await bootTestWiki({ tiddlers: [
       ...records(),
+      ...(memeticWikitextDeserializer(LEGACY_CARRIER, { title: LEGACY }) as Array<Record<string, string | string[]>>),
+      { title: ONE_FIELDS, pet: "field-shaped", lane: "a lane on the one record", tags: "lar:///spirit.lane.holds", description: "field-shaped: the one record as fields", text: `{{||${TEMPLATE}}}` },
       { title: TEMPLATE, text: "!! <$text text={{!!pet}}/> ~ a tasked spirit\n\n''Lane:'' {{!!lane}}" },
       { title: spiritCardOf("card-only"), pet: "card-only", lane: "a lane with no shrine", description: "card-only card: fields only", tags: "stage/spirit-card", text: `{{||${TEMPLATE}}}` },
     ] });
@@ -50,6 +58,17 @@ describe.skipIf(wikiSkip)(`a spirit folds as a carrier by aperture${skipNote}`, 
 
   test("CONTROL — the seeded shrine recomposes to the carrier the door landed", () => {
     expect(e.wiki.filterTiddlers(`[[${SHRINE}]meme-project[mem]]`)).toEqual([CARRIER]);
+  });
+
+  test("a shrine that stood before the one address still folds, and a field-shaped one record answers as a carrier", () => {
+    const legacy = unfold("old-familiar", "pulse");
+    canonical(legacy);
+    expect(commandsIn(legacy)).toEqual(SLOTS.map((slot) => slotCommand(LEGACY, slot)));
+    const fields = unfold("field-shaped", "pulse");
+    canonical(fields);
+    expect(fields).toContain(`to=\`${ONE_FIELDS}\``);
+    expect(fields).toMatch(/^lane\s+= "a lane on the one record"$/m);
+    expect(fields).toContain(commandLine(cardRenderCommand(ONE_FIELDS)));
   });
 
   test("pulse folds every slot: a canonical carrier, each slot its has line and one unfold command", () => {

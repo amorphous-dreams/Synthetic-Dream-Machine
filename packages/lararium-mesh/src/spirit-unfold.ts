@@ -2,7 +2,7 @@
  * spirit-unfold — the pure core of a tasked spirit's progressive unfold: an aperture names a rank, a rank names the slots that
  * read unfolded, and every folded slot names the one command that unfolds it.
  *
- * A spirit reads AS A FOLDED CARRIER: its shrine (`familiar/<pet>` or `spirit/<pet>`) in the carrier's own grammar, as the file
+ * A spirit reads AS A FOLDED CARRIER: its shrine (the one record `lares/spirit/<pet>`, else `familiar/<pet>` or `spirit/<pet>`) in the carrier's own grammar, as the file
  * rests on disk (the declaration, the head, the meta, each slot's `ahu` pair), with a folded slot's body standing as its `has`
  * line and the command that fetches it. The grain widens with the aperture scale:
  *
@@ -23,10 +23,12 @@
  * Meme: lar:///ha.ka.ba/kahua/memory/reference/tasked-spirit
  */
 
+import { SPIRIT_PREFIX, maskCardOf, spiritOf } from "./spirit-stack.js";
+
 /** Where a spirit's card stands on the memory stage. */
 export const SPIRIT_CARD_PREFIX = "lar:///ha.ka.ba/kahua/memory/spirit-card/";
-/** Where a shrine stands, in the order the spirit door resolves the kinds. */
-export const SPIRIT_SHRINE_PREFIXES = ["lar:///ha.ka.ba/kahua/memory/familiar/", "lar:///ha.ka.ba/kahua/memory/spirit/"] as const;
+/** Where a shrine stands, in the order the spirit door resolves them: the one address first, then the addresses that stood before it. */
+export const SPIRIT_SHRINE_PREFIXES = [SPIRIT_PREFIX, "lar:///ha.ka.ba/kahua/memory/familiar/", "lar:///ha.ka.ba/kahua/memory/spirit/"] as const;
 /** A pet name: lower-case letters, digits and hyphens (the spirit door's own shape). */
 const PET = /^[a-z0-9][a-z0-9-]{0,62}$/;
 /** A face a command names: `0`, `1`, … or a face handle (`h1`). */
@@ -53,6 +55,8 @@ export function narrowerRank(rank: UnfoldRank): UnfoldRank | null {
 
 /** The card a pet name's fields rest on. */
 export const spiritCardOf = (pet: string): string => `${SPIRIT_CARD_PREFIX}${pet}`;
+/** Where a field-shaped record may answer a pet name, in the door's order: the one address, a tasked spirit's card, a mask's card. */
+export const spiritCardsOf = (pet: string): string[] => [spiritOf(pet), spiritCardOf(pet), maskCardOf(pet)];
 /** The shrines a pet name may stand under. */
 export const spiritShrinesOf = (pet: string): string[] => SPIRIT_SHRINE_PREFIXES.map((prefix) => `${prefix}${pet}`);
 export const isPetName = (pet: string): boolean => PET.test(pet);

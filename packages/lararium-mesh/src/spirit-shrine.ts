@@ -20,6 +20,7 @@
 import { sha256HexSync, utf8Bytes } from "./crypto.js";
 import { redactSecretShapes } from "./secret-shapes.js";
 import { handRefusalOf, type HandRefusalCode } from "./hand-refusal.js";
+import { SPIRIT_CAPS, SPIRIT_PREFIX, maskCardOf, spiritOf } from "./spirit-stack.js";
 
 // ── THE CARRY'S WORDS ─────────────────────────────────────────────────────────────────────────────────────────────
 /**
@@ -190,7 +191,7 @@ export const spiritAmbiguous = (pet: string, uris: readonly string[]): SpiritRef
   new SpiritRefusal("spirit-ambiguous", `spirit-ambiguous: the pet name "${pet}" answers at ${uris.join(" and ")}; the door guesses neither. Read both (\`lares tiddler get <uri> --recipe default --meme --skinny\`), then rename one: one pet name, one record`, 4);
 /** No record answers a pet name. */
 export const spiritUnknown = (pet: string): SpiritRefusal =>
-  new SpiritRefusal("spirit-unknown", `spirit-unknown: no record answers the pet name "${pet}" at ${MEMORY_PREFIX}familiar/${pet}, ${MEMORY_PREFIX}spirit/${pet} or a card naming it at ${MEMORY_PREFIX}spirit-card/${pet}; list the records: \`lares wiki filter '[prefix[${MEMORY_PREFIX}familiar/]!regexp[#]] [prefix[${MEMORY_PREFIX}spirit/]!regexp[#]] [prefix[${MEMORY_PREFIX}spirit-card/]]' --recipe default\``, 3);
+  new SpiritRefusal("spirit-unknown", `spirit-unknown: no record answers the pet name "${pet}" at ${spiritOf(pet)}, nor at ${MEMORY_PREFIX}familiar/${pet}, ${MEMORY_PREFIX}spirit/${pet} or a card naming it at ${MEMORY_PREFIX}spirit-card/${pet} or ${maskCardOf(pet)}; list the records: \`lares wiki filter '[prefix[${SPIRIT_PREFIX}]!regexp[#]] [prefix[${MEMORY_PREFIX}familiar/]!regexp[#]] [prefix[${MEMORY_PREFIX}spirit/]!regexp[#]] [prefix[${MEMORY_PREFIX}spirit-card/]] [prefix[${MEMORY_PREFIX}mask-card/]]' --recipe default\``, 3);
 /** A slot the record lacks. */
 export const slotMissing = (rec: Pick<SpiritRecord, "uri" | "slots" | "pet">, slot: string): SpiritRefusal =>
   new SpiritRefusal("spirit-slot-missing", `spirit-slot-missing: ${rec.uri} holds no slot ${slot}; its slots: ${rec.slots.map((s) => s.slot).join(" ") || "(none)"} (\`lares spirit hum ${rec.pet}\` measures each)`, 3);
@@ -266,15 +267,15 @@ export function starterText(pet: string): string {
 }
 
 /**
- * A shrine's carrier source at `familiar/<pet>`, before the house normalize and the block check: a whole carrier given stands
+ * A shrine's carrier source at the one address (`lares/spirit/<pet>`), before the house normalize and the block check: a whole carrier given stands
  * as given, else the slot blocks wrap in the house frame under the carrier type the caller names.
  */
 export function shrineSource(pet: string, words: string, carrierType: string): string {
-  const uri = `${MEMORY_PREFIX}familiar/${pet}`;
+  const uri = spiritOf(pet);
   return words.trimStart().startsWith("<<!DOCTYPE") ? words : [
     "<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>", "",
     `<<^ code=\`&#x0001;\` from=\`?\` to=\`${uri}\`>>`, "<<^ code=`&#x0002;`>>", "",
-    "```toml meta", "cacheable = false", 'l-space   = "adjacent"', `role      = "the familiar spirit ${pet}'s record; a waking body reads this first"`, 'status    = "live"',
+    "```toml meta", "cacheable = false", 'l-space   = "adjacent"', `role      = "the spirit ${pet}'s record; a waking body reads this first"`, 'status    = "live"',
     `title     = "${uri}"`, `type      = "${carrierType}"`, `uri-path  = "${uri.slice("lar:///".length)}"`, "```", "",
     words.replace(/^[\s\S]*?(?=<<~ ahu slot=)/, "").trim(), "",
     "<<^ code=`&#x0003;`>>", "", "<<^ code=`&#x0004;` to=`?`>>", "",
@@ -588,6 +589,10 @@ export const CARD_HELD_FIELDS: ReadonlySet<string> = new Set([
   "spirit-id", "slot-budget", "record-budget", "true-up-every", "distilled", "aliases",
   // THE FRAME: the lane a bare offer takes as its mandate, and the fields the template renders as wikitext; the hand sets them.
   "lane", "model", "feeds", "wave", "waits",
+  // A MASK'S FRAME: its keepers hold the pen, so a wearer's slot verbs true the bodies and the story, never the character.
+  "canon", "keepers", "stage", "look", "voice", "handle", "goals", "sealed", "template",
+  // THE STACK'S OWN FIELDS: each cap's value lands through `#/has` (or the door's own act), never as a loose field write.
+  ...SPIRIT_CAPS.map((k) => k.field), "offer-seq", "offered-by",
 ]);
 /** The card field a slot names (`#/open` -> `open`), or null where the slot names no writable field. */
 export function cardField(slot: string): string | null {

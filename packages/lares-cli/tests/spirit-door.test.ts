@@ -39,7 +39,7 @@ import { cmdSpirit, shrineCarrier, SHRINE_SLOTS, omText, residueOf, slotBody, as
 import { COMPACTION_DISPLAY, COMPACTION_WORD } from "../src/spirit-words.js";
 import { COMMANDS } from "../src/bin/lares.js";
 import { CompositeStore, bagUri } from "@lararium/mesh";
-import { MemoryTiddlerStore, makeTiddlerPutReactor, makeWikiRenderReactor } from "@lararium/tw5";
+import { MemoryTiddlerStore, makeMemePutReactor, makeTiddlerGetReactor, makeTiddlerPutReactor, makeWikiRenderReactor } from "@lararium/tw5";
 import { bootTestWiki, skipNote, wikiSkip } from "../../lararium-tw5/tests/test-wiki.js";
 import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
 import type { ParsedArgs } from "../src/parse-args.js";
@@ -49,6 +49,8 @@ const SIDE = `${MEMORY_PREFIX}presence/lares-alpha`;
 const CARD_PREFIX = `${MEMORY_PREFIX}spirit-card/`;
 const CARD = `${CARD_PREFIX}lares-alpha`;
 const ALANA = `${MEMORY_PREFIX}alana/lares-alpha`;
+const ONE = "lar:///ha.ka.ba/lares/spirit/lares-alpha";
+const MASK = `${MEMORY_PREFIX}mask-card/lares-alpha`;
 const sha = (text: string): string => createHash("sha256").update(text).digest("hex");
 /** A slot's digest as the door hands it back: the first 16 hex of the sha256 of its body. */
 const digest = (body: string): string => createHash("sha256").update(body).digest("hex").slice(0, 16);
@@ -94,6 +96,10 @@ interface StageOpts {
   card?: Record<string, string>;
   /** The shelf's offering (`alana/lares-alpha`) fields, text included, where one stands; a put on the shelf lands here. */
   offering?: Record<string, string>;
+  /** The ONE record (`lares/spirit/lares-alpha`), field-shaped, where one stands; a put on it lands here (patch and unset) and moves its hash. */
+  one?: Record<string, string>;
+  /** The spirit's mask card (`mask-card/lares-alpha`) fields, where one stands. */
+  mask?: Record<string, string>;
 }
 
 /** A stage holding one familiar record (or two, or none); its slots hold these words, its fields these, every write answers by its verb. */
@@ -113,6 +119,7 @@ function stage(opts: StageOpts = {}) {
   // The card's live canonical hash: its fields render into the carrier's meta, so a field put on the card moves it, as a slot patch does.
   let rev = 0;
   let cardRev = 0;
+  let plainRev = 0;
   const live = (): string => (rev === 0 ? FULL : "sha256:" + rev.toString(16).padStart(2, "0").repeat(32));
   const isSide = (title: unknown): boolean => String(title).startsWith(`${MEMORY_PREFIX}presence/`);
   const texts: Record<string, string> = { "#/bodies": opts.bodies ?? "!! Bodies\n\n* one", "#/open": opts.open ?? "!! Open\n\n* a loop", ...(opts.slotTexts ?? {}) };
@@ -130,6 +137,17 @@ function stage(opts: StageOpts = {}) {
     if (verb === "wiki-render") {
       const rank = /aperture:"([a-z]+)"/.exec(String(args["text"]))?.[1] ?? "";
       return { recipe: args["recipe"], form: args["form"], text: typeof opts.carrier === "function" ? opts.carrier(rank) : opts.carrier ?? "", truncated: opts.truncated === true, next: null };
+    }
+    for (const [at, held, name] of [[ONE, opts.one, "one"], [MASK, opts.mask, "mask"]] as const) {
+      if (args["title"] !== at || !held) continue;
+      if (verb === "tiddler-get" && args["meme"] !== true) return { has: `<<~ has name=\`${name}\`>>`, tiddler: { fields: { title: at, ...held }, hash: `sha256-${name}-${plainRev}` } };
+      if (verb === "tiddler-put") {
+        if (args["base"] !== undefined && args["base"] !== `sha256-${name}-${plainRev}`) return { decision: "conflict" };
+        Object.assign(held, (args["fields"] ?? {}) as Record<string, string>);
+        for (const gone of (args["unset"] ?? []) as string[]) delete held[gone];
+        plainRev++;
+        return { decision: "put", hash: `sha256-${name}-${plainRev}` };
+      }
     }
     if (verb === "tiddler-get" && args["title"] === CARD && opts.card) return { has: "<<~ has name=`card`>>", tiddler: { fields: { title: CARD, ...opts.card }, hash: `sha256-card-${cardRev}` } };
     if (verb === "tiddler-get" && args["title"] === ALANA) return { tiddler: opts.offering ? { fields: { title: ALANA, ...opts.offering }, hash: "sha256-alana" } : null };
@@ -229,11 +247,12 @@ describe("the compaction's word stands in one place", () => {
 });
 
 describe("the pet name resolves the record", () => {
-  test("familiar/<pet> answers first, on the default recipe at skinny grain", async () => {
+  test("the one address reads first; with none standing, familiar/<pet> answers on the default recipe at skinny grain", async () => {
     stage();
     const r = await run(argv(["om", "lares-alpha"]));
     expect(r.exit).toBe(0);
-    expect(h.calls[0]).toEqual({ verb: "tiddler-get", args: { recipe: "default", title: URI, meme: true, grain: "skinny" } });
+    expect(h.calls[0]).toEqual({ verb: "tiddler-get", args: { recipe: "default", title: ONE } });
+    expect(h.calls[1]).toEqual({ verb: "tiddler-get", args: { recipe: "default", title: URI, meme: true, grain: "skinny" } });
     expect(data(r)["uri"]).toBe(URI);
   });
 
@@ -731,7 +750,7 @@ describe("a first wake writes its own shrine", () => {
     const landed = await run(withFlag);
     expect(landed.exit).toBe(0);
     const put = h.calls.find((c) => c.verb === "meme-put")!;
-    expect(put.args["uri"]).toBe(`${MEMORY_PREFIX}familiar/lares-awakens`);
+    expect(put.args["uri"]).toBe("lar:///ha.ka.ba/lares/spirit/lares-awakens");
     expect(String(put.args["text"])).toMatch(/^<<!DOCTYPE/);
     expect(String(put.args["text"])).toMatch(/<<\^ code=`&#x0003;` bcc=`ni:\/\/\/sha-256;[A-Za-z0-9_-]+`>>/);
   });
@@ -1203,7 +1222,7 @@ describe.skipIf(wikiSkip)(`the fold renders through the real wiki-render verb${s
     const DAEMON = bagUri("daemon");
     const engine = await bootTestWiki({ tiddlers: [{ title: "lar:///ha.ka.ba/lararium/config/current-wiki-bag", text: DAEMON }] });
     // The shrine lands as the wiki's own deserializer splits a carrier: the root and one record per slot.
-    for (const record of engine.wiki.deserializeTiddlers("text/memetic-wikitext+tiddlywiki", shrineCarrier("lares-alpha", SHRINE_WORDS), { title: URI })) engine.setTiddler(record as never);
+    for (const record of engine.wiki.deserializeTiddlers("text/memetic-wikitext+tiddlywiki", shrineCarrier("lares-alpha", SHRINE_WORDS), { title: ONE })) engine.setTiddler(record as never);
     const composite = new CompositeStore();
     composite.addLayer({ bagId: DAEMON, store: new MemoryTiddlerStore(DAEMON), writable: true });
     const render = makeWikiRenderReactor({ composite, tw5: engine } as never);
@@ -1484,5 +1503,170 @@ describe("the ʻĀlana Circle: a card answers the slot verbs, a summon offers fi
     stage({ kind: "none", card: CARD_FIELDS(), offering: offered() });
     const r = await run(argv(["ah", "lares-alpha"], { slot: "#/bodies", add: "x" }), { seat: () => false, hand: AI });
     expect(error(r).code).toBe("spirit-unechoed");
+  });
+});
+
+describe("one spirit record: a pet name answers at lares/spirit/<pet>, holding a stack of what it holds", () => {
+  const LANE = "lar:///spirit.lane.holds";
+  const FACE = "lar:///spirit.face.serves";
+  const CANON = "lar:///spirit.canon.transcludes";
+  const one = (): Record<string, string> => ({ pet: "lares-alpha", tags: `stage/spirit ${LANE}`, lane: "read a PR cold and return PASS or FAIL", model: "sonnet", bodies: "2026-11-24 · one", text: "{{||lar:///ha.ka.ba/kahua/memory/template/tasked-spirit}}" });
+  const mask = (): Record<string, string> => ({ pet: "lares-alpha", canon: "lar:///ha.ka.ba/elyncia/lindwyrm", keepers: "the table", stage: "10", bodies: "", text: "{{||lar:///ha.ka.ba/kahua/memory/template/mask-spirit}}" });
+  const stackOf = (r: { printed: Record<string, unknown> }) => (data(r)["stack"] as Array<{ cap: string; value: string }>).map((h) => `${h.cap} ${h.value}`.trim());
+
+  test("om wakes the one record: its address, its profiles, its stack, and the stack as one has line ahead of the wake", async () => {
+    stage({ kind: "none", one: one() });
+    const r = await run(argv(["om", "lares-alpha"]));
+    expect(r.exit, JSON.stringify(r.printed)).toBe(0);
+    expect(data(r)).toMatchObject({ pet: "lares-alpha", uri: ONE, profiles: ["tasked"] });
+    expect(stackOf(r)).toEqual([`${LANE} read a PR cold and return PASS or FAIL`]);
+    expect(String(data(r)["text"])).toContain("<<~ has entity=`spirit` name=`lares-alpha` params=`kind/tasked lane.holds/[[read a PR cold and return PASS or FAIL]]");
+    expect((data(r)["digests"] as Record<string, string>)["#/has"]).toBe(digest(`${LANE} read a PR cold and return PASS or FAIL`));
+  });
+
+  test("the one record answers ahead of a legacy shrine and a legacy card under the same pet name", async () => {
+    stage({ kind: "familiar", one: one(), card: { pet: "lares-alpha", lane: "an older lane" } });
+    const r = await run(argv(["om", "lares-alpha"]));
+    expect(r.exit, JSON.stringify(r.printed)).toBe(0);
+    expect(data(r)["uri"]).toBe(ONE);
+    expect(h.calls.some((c) => c.verb === "tiddler-get" && c.args["title"] === URI)).toBe(false);
+  });
+
+  test("the three kinds read through the one stack with no record moved: a shrine reads familiar, a card tasked, a mask card masked", async () => {
+    stage();
+    const familiar = await run(argv(["om", "lares-alpha"]));
+    expect(data(familiar)).toMatchObject({ uri: URI, profiles: ["familiar"] });
+    expect(stackOf(familiar)).toEqual([FACE]);
+    stage({ kind: "none", card: { pet: "lares-alpha", lane: "read cold" } });
+    const tasked = await run(argv(["om", "lares-alpha"]));
+    expect(data(tasked)).toMatchObject({ uri: CARD, profiles: ["tasked"] });
+    stage({ kind: "none", mask: mask() });
+    const masked = await run(argv(["om", "lares-alpha"]));
+    expect(masked.exit, JSON.stringify(masked.printed)).toBe(0);
+    expect(data(masked)).toMatchObject({ uri: MASK, kind: "card", profiles: ["masked"] });
+    expect(stackOf(masked)).toEqual([`${CANON} lar:///ha.ka.ba/elyncia/lindwyrm`]);
+    expect(h.calls.filter((c) => c.verb === "tiddler-put" && [URI, CARD, MASK].includes(String(c.args["title"])) && (c.args["fields"] as Record<string, string> | undefined)?.["tags"] !== undefined)).toEqual([]);
+  });
+
+  test("a mask's frame stays its keepers': no slot verb writes canon, keepers, stage, look or voice", async () => {
+    stage({ kind: "none", mask: mask() });
+    for (const slot of ["#/canon", "#/keepers", "#/stage", "#/look", "#/voice", "#/handle", "#/goals"]) {
+      expect(error(await run(argv(["ah", "lares-alpha"], { slot, text: "x" }))).code).toBe("spirit-slot-held");
+    }
+    const bodies = await run(argv(["ah", "lares-alpha"], { slot: "#/bodies", add: "2026-11-25 · a wearer" }));
+    expect(bodies.exit, JSON.stringify(bodies.printed)).toBe(0);
+  });
+
+  test("ah --add strings a cap by a hand: the tag and the field land in one write under the record's live hash", async () => {
+    const rec = one();
+    stage({ kind: "none", one: rec });
+    const r = await run(argv(["ah", "lares-alpha"], { slot: "#/has", add: "spirit.face.serves 1" }));
+    expect(r.exit, JSON.stringify(r.printed)).toBe(0);
+    expect(rec["face"]).toBe("1");
+    expect(rec["tags"]).toBe(`stage/spirit ${LANE} ${FACE}`);
+    expect(puts(ONE).at(-1)!.args).toMatchObject({ base: "sha256-one-0", fields: { face: "1", tags: `stage/spirit ${LANE} ${FACE}` } });
+    expect(data(r)).toMatchObject({ uri: ONE, slot: "#/has", decision: "ingest" });
+    expect(h.calls.filter((c) => c.verb === "meme-patch")).toEqual([]);
+  });
+
+  test("an AI seat strings no hand-held cap and no door-held cap, and nothing lands; a bare feed tag lands from any body", async () => {
+    const rec = one();
+    stage({ kind: "none", one: rec });
+    const held = await run(argv(["ah", "lares-alpha"], { slot: "#/has", add: "spirit.canon.transcludes lar:///ha.ka.ba/elyncia/lindwyrm", body: "s-1" }), { hand: AI, seat: () => true });
+    expect(error(held).code).toBe("spirit-cap-held");
+    expect(error(held).message).toContain("lares spirit ah lares-alpha --slot '#/has' --add");
+    const doors = await run(argv(["ah", "lares-alpha"], { slot: "#/has", add: `spirit.mandate.offers ${"ab".repeat(32)}` }));
+    expect(error(doors).code).toBe("spirit-cap-held");
+    expect(error(doors).message).toContain("--offer");
+    expect(puts(ONE)).toEqual([]);
+    const feed = await run(argv(["ah", "lares-alpha"], { slot: "#/has", add: "lar:///custody.hand.admits", body: "s-1" }), { hand: AI, seat: () => true });
+    expect(feed.exit, JSON.stringify(feed.printed)).toBe(0);
+    expect(rec["tags"]).toBe(`stage/spirit ${LANE} lar:///custody.hand.admits`);
+  });
+
+  test("the stack takes one cap per --add: a whole-slot write, a malformed line and a secret-shaped value each refuse", async () => {
+    stage({ kind: "none", one: one() });
+    const whole = await run(argv(["ah", "lares-alpha"], { slot: "#/has", text: `${LANE} x` }));
+    expect(whole.exit).not.toBe(0);
+    expect(JSON.stringify(whole.printed)).toContain("--add");
+    expect(error(await run(argv(["ah", "lares-alpha"], { slot: "#/has", add: "not a cap" }))).code).toBe("spirit-cap-malformed");
+    expect(error(await run(argv(["ah", "lares-alpha"], { slot: "#/has", add: "spirit.grant.attenuates ghp_abcdefghijklmnopqrstuvwxyz0123456789" }))).code).toBe("spirit-secret-shaped");
+    expect(puts(ONE)).toEqual([]);
+  });
+
+  test("hum measures the stack, numbers #/has cap by cap, and a hand's fold unstrings one cap to the ash ledger", async () => {
+    const rec = { ...one(), tags: `stage/spirit ${LANE} ${FACE}`, face: "1" };
+    stage({ kind: "none", one: rec, ledgerStands: true });
+    const measured = await run(argv(["hum", "lares-alpha"]));
+    expect(data(measured)).toMatchObject({ uri: ONE, profiles: ["familiar", "tasked"] });
+    const listed = await run(argv(["hum", "lares-alpha"], { fold: "#/has" }));
+    expect((data(listed)["lines"] as Array<{ text: string }>).map((l) => l.text)).toEqual([`${FACE} 1`, `${LANE} read a PR cold and return PASS or FAIL`]);
+    const seat = await run(argv(["hum", "lares-alpha"], { fold: "#/has", line: "1", expect: digest(`${FACE} 1`), body: "s-1" }), { hand: AI, seat: () => true });
+    expect(error(seat).code).toBe("spirit-cap-held");
+    const r = await run(argv(["hum", "lares-alpha"], { fold: "#/has", line: "1", expect: digest(`${FACE} 1`) }));
+    expect(r.exit, JSON.stringify(r.printed)).toBe(0);
+    expect(rec["face"]).toBeUndefined();
+    expect(rec["tags"]).toBe(`stage/spirit ${LANE}`);
+    expect(String(puts(LEDGER).at(-1)!.args["append"])).toContain(`${FACE} 1`);
+  });
+
+  test("a legacy shrine takes a cap on its own root, and the cap its address signs never unstrings", async () => {
+    stage({ ledgerStands: true });
+    const r = await run(argv(["ah", "lares-alpha"], { slot: "#/has", add: "spirit.face.serves 1" }));
+    expect(r.exit, JSON.stringify(r.printed)).toBe(0);
+    expect(puts(URI).at(-1)!.args).toMatchObject({ fields: { face: "1", tags: FACE } });
+    const seated = await run(argv(["hum", "lares-alpha"], { fold: "#/has", line: "1", expect: digest(FACE) }));
+    expect(error(seated).code).toBe("spirit-cap-seated");
+  });
+
+  test("ah --new lands a fresh shrine at the one address, and refuses over a record standing there", async () => {
+    stage({ kind: "none" });
+    const text = SHRINE_SLOTS.map(([slot, prompt]) => framed(slot, prompt)).join("\n");
+    const r = await run({ ...argv(["ah", "lares-alpha"], { text }), flags: { json: true, new: true } } as unknown as ParsedArgs);
+    expect(r.exit, JSON.stringify(r.printed)).toBe(0);
+    expect(data(r)).toMatchObject({ uri: ONE, created: true });
+    const put = h.calls.find((c) => c.verb === "meme-put")!;
+    expect(put.args["uri"]).toBe(ONE);
+    expect(String(put.args["text"])).toContain(`title     = "${ONE}"`);
+    stage({ kind: "none", one: one() });
+    const again = await run({ ...argv(["ah", "lares-alpha"], { text }), flags: { json: true, new: true } } as unknown as ParsedArgs);
+    expect(error(again).code).toBe("spirit-exists");
+  });
+});
+
+describe.skipIf(wikiSkip)(`the one record lands and holds its stack through the real tiddler and meme verbs${skipNote}`, () => {
+  const LANE = "lar:///spirit.lane.holds";
+  const DAEMON = bagUri("daemon");
+  /** Every verb over the one address rides the real reactors in one wiki; the sibling record and the rest stay staged. */
+  async function realOne() {
+    const engine = await bootTestWiki({ tiddlers: [{ title: "lar:///ha.ka.ba/lararium/config/current-wiki-bag", text: DAEMON }] });
+    const composite = new CompositeStore();
+    composite.addLayer({ bagId: DAEMON, store: new MemoryTiddlerStore(DAEMON), writable: true });
+    const deps = { composite, tw5: engine } as never;
+    const real: Record<string, (args: Record<string, unknown>, ctx: never) => unknown> = {
+      "tiddler-get": makeTiddlerGetReactor(deps) as never, "tiddler-put": makeTiddlerPutReactor(deps) as never, "meme-put": makeMemePutReactor(deps) as never,
+    };
+    const ctx = { daemon: composite, invocation: { requestId: "r1" }, cap: async () => ({ ok: true }) } as never;
+    stage({ kind: "none" });
+    const mocked = h.answer;
+    h.answer = (verb, args) => (real[verb] && String(args["title"] ?? args["uri"] ?? "").startsWith(ONE) ? (real[verb]!(args, ctx) as Promise<Record<string, unknown>>) : mocked(verb, args));
+    return engine;
+  }
+
+  test("ah --new lands the shrine at the one address, a hand strings a cap on its root, and om reads the stack back", async () => {
+    const engine = await realOne();
+    const text = SHRINE_SLOTS.map(([slot, prompt]) => framed(slot, prompt)).join("\n");
+    const landed = await run({ ...argv(["ah", "lares-alpha"], { text }), flags: { json: true, new: true } } as unknown as ParsedArgs);
+    expect(landed.exit, JSON.stringify(landed.printed)).toBe(0);
+    expect(engine.wiki.getTiddler(ONE)).toBeDefined();
+    const strung = await run(argv(["ah", "lares-alpha"], { slot: "#/has", add: "spirit.lane.holds read a PR cold" }));
+    expect(strung.exit, JSON.stringify(strung.printed)).toBe(0);
+    const root = engine.wiki.getTiddler(ONE)!.fields as Record<string, unknown>;
+    expect(root["lane"]).toBe("read a PR cold");
+    expect(engine.wiki.filterTiddlers(`[tag[${LANE}]]`)).toEqual([ONE]);
+    const woke = await run(argv(["om", "lares-alpha"]));
+    expect(woke.exit, JSON.stringify(woke.printed)).toBe(0);
+    expect(data(woke)).toMatchObject({ uri: ONE, kind: "shrine", profiles: ["tasked"] });
+    expect(String(data(woke)["text"])).toContain("<<~ has entity=`spirit` name=`lares-alpha` params=`kind/tasked lane.holds/[[read a PR cold]]");
   });
 });

@@ -2,8 +2,13 @@
  * `lares spirit <om | ah | hum | otakiage | hooili | residue> <pet-name>` — A SPIRIT'S RECORD, BY ITS PET NAME. The carry's
  * verb and name stand in one table (`spirit-words.ts`: `hooili` to type, hoʻoili to read).
  *
- * The pet name does the work: it resolves the record on the worn face's memory stage (recipe default) at `familiar/<pet>` or
- * `spirit/<pet>`; where both stand, the door names both and guesses neither. Beneath the pet name a stable `spirit-id` keys
+ * The pet name does the work. ONE RECORD answers it: `lar:///ha.ka.ba/lares/spirit/<pet>` (recipe default), a nameless entity the
+ * house names by its pet name, holding a stack of what it holds (`@lararium/mesh/spirit-stack`; ruling 2026-11-25-one-spirit-record).
+ * The stack reads and writes as the slot `#/has`, one cap per line: `ah --slot '#/has' --add '<a.b.c> <value>'` strings a cap (its
+ * tag and its field in one write), `hum --fold '#/has'` unstrings one, and om hands the whole stack as one `has` line. A cap names
+ * what the spirit holds and grants nothing (tags gather, ocaps authorize); a frame cap moves by a person's hand alone. The records
+ * that stood before the one address read through the same stack, none moved: `familiar/<pet>` or `spirit/<pet>` on the memory
+ * stage (where both stand, the door names both and guesses neither), then a card at `spirit-card/<pet>` or `mask-card/<pet>`. Beneath the pet name a stable `spirit-id` keys
  * the residue, so a rename keeps om, hum and otakiage finding it. Every read and write rides the tiddler door's own daemon
  * verbs (`tiddler-get`, `meme-patch`, `tiddler-put`, `tiddler-delete`, `wiki-filter`), so the doors' gates stand over each act.
  *
@@ -58,7 +63,7 @@
 import { readFileSync } from "node:fs";
 import { stdin } from "node:process";
 import { readOwnHand, type HandReading } from "@lararium/node";
-import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
+import { CARRIER_TYPE, isCarrierType } from "@lararium/mesh/carrier-type";
 import {
   ASH_ROUNDS, BODY_ID, CAS_ROUNDS, DISTILL_SLOT, LINEAGE_FIELDS, MEMORY_PREFIX, PET_NAME, PRECOMPACT_CARD_CHARS, RECORD_KINDS,
   RESIDUE_CAP_CHARS, SLOT_DIGEST, SLUG_CHARS, SPIRIT_RECIPE, SPIRIT_SOURCES, SpiritRefusal, TRUE_UP_EVERY, OM_CAP_CHARS,
@@ -72,6 +77,7 @@ import {
   ALANA_DISPLAY, MANDATE_HASH, cardField, cardRecordOf, cardSlotHeld, echoJoin, echoRefusal, echoStands, mandateLines, offerHeld, offererOf, offeringDamaged, offeringOf, offeringRead, offeringWrite,
   type SpiritOffering, type SideWrite, type SlotWrite, type SpiritAwake, type SpiritCarry, type SpiritRecord, type SpiritRow, type SpiritSource,
 } from "@lararium/mesh/spirit-shrine";
+import { STACK_SLOT, capHolder, capLine, maskCardOf, profilesOf, spiritOf, stackBody, stackLine, stackOf, stackWrite } from "@lararium/mesh/spirit-stack";
 import { FOLD_OPERATOR, UNFOLD_RANKS, narrowerRank, spiritCardOf, unfoldCall, unfoldRank, type UnfoldRank } from "@lararium/mesh/spirit-unfold";
 import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
 import { stampCarrier } from "@lararium/memetic-frame";
@@ -141,8 +147,20 @@ async function recordOf(args: ParsedArgs, label: string, title: string): Promise
 }
 const fieldsOf = async (args: ParsedArgs, label: string, title: string): Promise<Record<string, string>> => (await recordOf(args, label, title)).fields;
 
-/** Resolve a pet name to its record at `familiar/<pet>` or `spirit/<pet>`; both standing refuses, naming both. Null where none answers and `soft`. */
+/**
+ * Resolve a pet name to its record. THE ONE RECORD answers first (`lares/spirit/<pet>`: a carrier with slots, or a field-shaped
+ * record naming its own pet), and no legacy address gets read past it. Else the addresses that stood before it read through:
+ * `familiar/<pet>` or `spirit/<pet>` (both standing refuses, naming both), then a card naming the pet at `spirit-card/<pet>`
+ * or `mask-card/<pet>`. Null where none answers and `soft`.
+ */
 async function resolveRecord(args: ParsedArgs, label: string, pet: string, soft = false): Promise<Record_ | null> {
+  const one = spiritOf(pet);
+  const stands = await door(args, label, "tiddler-get", { recipe: RECIPE, title: one });
+  const oneFields = fieldsAndHashOf(stands).fields;
+  if (isCarrierType(oneFields["type"])) {
+    const out = await door(args, label, "tiddler-get", { recipe: RECIPE, title: one, meme: true, grain: "skinny" });
+    if (out["meme"]) return spiritRecordOf({ pet, kind: "shrine", uri: one, out }, oneFields, await fieldsOf(args, label, sideOf(pet)));
+  } else if (oneFields["pet"] === pet) return cardRecordOf(pet, one, stands, await fieldsOf(args, label, sideOf(pet)));
   const hits: Array<{ kind: string; uri: string; out: Record<string, unknown> }> = [];
   for (const kind of RECORD_KINDS) {
     const uri = `${MEMORY_PREFIX}${kind}/${pet}`;
@@ -155,6 +173,8 @@ async function resolveRecord(args: ParsedArgs, label: string, pet: string, soft 
     // A CARD ALONE answers as the record: its fields its slots (a card names its own pet, so a stray record never reads as one).
     const card = await door(args, label, "tiddler-get", { recipe: RECIPE, title: spiritCardOf(pet) });
     if (fieldsAndHashOf(card).fields["pet"] === pet) return cardRecordOf(pet, spiritCardOf(pet), card, await fieldsOf(args, label, sideOf(pet)));
+    const mask = await door(args, label, "tiddler-get", { recipe: RECIPE, title: maskCardOf(pet) });
+    if (fieldsAndHashOf(mask).fields["pet"] === pet) return cardRecordOf(pet, maskCardOf(pet), mask, await fieldsOf(args, label, sideOf(pet)));
     if (soft) return null;
     throw spiritUnknown(pet);
   }
@@ -278,6 +298,12 @@ async function keyOf(args: ParsedArgs, label: string, rec: Record_): Promise<str
 
 /** One slot read: its framed text, its body, and the partial base that patches it. */
 async function readSlot(args: ParsedArgs, label: string, rec: Record_, slot: string): Promise<{ text: string; body: string; base: string } | null> {
+  if (slot === STACK_SLOT) {
+    // THE STACK READS AS A SLOT: one cap per line off the record's live tags and fields, under the record hash a stack write names.
+    const { fields, hash } = await recordOf(args, label, rec.uri);
+    const body = stackBody(stackOf(fields, rec.uri));
+    return { text: body, body, base: hash ?? "" };
+  }
   if (rec.kind === "card") {
     // A card's slot reads its field, live, with the record hash a field write names; a field not yet standing reads empty.
     const field = cardField(slot);
@@ -298,6 +324,20 @@ async function readSlot(args: ParsedArgs, label: string, rec: Record_, slot: str
  * tiddler door (`tiddler-put` under the card's hash). Both answer in the meme door's words: `ingest`, `noop` or `conflict`.
  */
 async function patchSlot(args: ParsedArgs, label: string, rec: Record_, slot: string, body: string, base: string): Promise<Record<string, unknown>> {
+  if (slot === STACK_SLOT) {
+    // THE STACK WRITES AS ITS TAGS AND FIELDS, one put under the hash the read named: a cap gained takes its tag and its field,
+    // a cap dropped loses both, so a filter over the tag and a read of the field never disagree.
+    const { fields, hash } = await recordOf(args, label, rec.uri);
+    const write = stackWrite(fields, rec.uri, body);
+    if (write === null) return { decision: "noop", canonicalHash: hash ?? "" };
+    if ("code" in write) throw new SpiritRefusal(write.code, `${write.code}: ${write.why}; nothing landed. The stack as it stands: \`lares spirit hum ${rec.pet} --fold '${STACK_SLOT}'\``, 4);
+    const receipt = await door(args, label, "tiddler-put", {
+      recipe: RECIPE, title: rec.uri, ...(base !== "" ? { base } : {}),
+      ...(Object.keys(write.patch).length > 0 ? { fields: write.patch } : {}), ...(write.unset.length > 0 ? { unset: write.unset } : {}),
+    });
+    const decision = String(receipt["decision"] ?? "");
+    return { ...receipt, decision: decision === "put" ? "ingest" : decision, canonicalHash: String(receipt["hash"] ?? "") };
+  }
   if (rec.kind !== "card") return await door(args, label, "meme-patch", { recipe: RECIPE, uri: rec.uri, slot, replace: body, base });
   const receipt = await door(args, label, "tiddler-put", { recipe: RECIPE, title: rec.uri, ...(base !== "" ? { base } : {}), fields: { [cardField(slot)!]: body } });
   const decision = String(receipt["decision"] ?? "");
@@ -315,6 +355,17 @@ async function offeringFor(args: ParsedArgs, label: string, pet: string): Promis
 function handHolds(ctx: Ctx): boolean {
   const read = ctx.hand();
   return "admit" in read && read.admit === "hand";
+}
+
+/**
+ * WHO STRINGS A CAP. A cap the door's own act lands (the mandate) never moves by a slot verb; a cap of the spirit's frame (its
+ * profile's signing cap, its grant, its message caps) moves by a person's hand alone, read at the house's hand gate; a bare
+ * feed tag moves by any body. `again` names the command a hand runs.
+ */
+function capHolds(pet: string, cap: string, ctx: Ctx, again: string): void {
+  const holder = capHolder(cap);
+  if (holder === "door") throw new SpiritRefusal("spirit-cap-held", `spirit-cap-held: ${cap} lands by the door's own act and never by a slot verb; nothing landed. A summon offers the mandate: \`lares spirit ah ${pet} --offer --file <mandate>\``, 4);
+  if (holder === "hand" && !handHolds(ctx)) throw new SpiritRefusal("spirit-cap-held", `spirit-cap-held: ${cap} rides the spirit's frame, which a person's hand strings and unstrings; nothing landed. At the terminal, by hand: \`${again}\``, 4);
 }
 
 /** The echo gate a body's slot write passes (see `echoRefusal`): it throws the refusal. */
@@ -419,7 +470,7 @@ async function markCrossing(args: ParsedArgs, rec: Record_, body: string, ctx: C
 
 // ── the starter shrine ─────────────────────────────────────────────────────────────────────────────────────────────
 
-/** A shrine's carrier at `familiar/<pet>`: a whole carrier given, or the slot blocks wrapped in the house frame; resealed. */
+/** A shrine's carrier at the one address (`lares/spirit/<pet>`): a whole carrier given, or the slot blocks wrapped in the house frame; resealed. */
 export function shrineCarrier(pet: string, words: string): string {
   // The house normalize, then the block check minted over the body it follows (as `lares meme normalize` writes it).
   return stampCarrier(normalizeMemeSource(shrineSource(pet, words, CARRIER_TYPE)).text);
@@ -432,14 +483,14 @@ async function newShrine(args: ParsedArgs, pet: string): Promise<number> {
     throw new DoorUsage(`--new lands a whole shrine from one source: --file <path|-> or --text <words> (no --slot, no --add); \`lares spirit om ${pet}\` prints the skeleton`);
   }
   const standing = await resolveRecord(args, "ah", pet, true);
-  if (standing !== null && standing.kind !== "card") {
+  if (standing !== null && (standing.kind !== "card" || standing.uri === spiritOf(pet))) {
     throw new SpiritRefusal("spirit-exists", `spirit-exists: a record already answers "${pet}" at ${standing.uri}, so --new lands nothing; true its slots instead: \`lares spirit ah ${pet} --slot '#/<name>' --file <path>\``, 4);
   }
   const words = file !== null ? await sourceText("file", file) : text!;
   const shapes = secretCount(words);
   if (shapes > 0) throw new SpiritRefusal("spirit-secret-shaped", `spirit-secret-shaped: the shrine holds ${shapes} secret-shaped string(s), so nothing landed; clear them, then land it again: \`lares spirit ah ${pet} --new --file <scrubbed path>\``, 4);
   const carrier = shrineCarrier(pet, words);
-  const uri = `${MEMORY_PREFIX}familiar/${pet}`;
+  const uri = spiritOf(pet);
   const receipt = await door(args, "ah", "meme-put", { recipe: RECIPE, uri, text: carrier });
   const decision = String(receipt["decision"] ?? "");
   if (decision !== "ingest" && decision !== "noop") {
@@ -579,7 +630,9 @@ async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
   const awake = body !== null ? await joinPresence(args, rec, body, ctx) : presenceOf(rec.sideFields["bodies-awake"]);
   const leaseLine = epoch === null ? null : `Lares spirit wake epoch ${epoch}: an ordering stamp; no write needs it, and no body locks another out.`;
   const presence = body !== null ? presenceLine(pet, awake) : presenceSeenLine(pet, awake);
-  const data = { pet, uri: rec.uri, kind: rec.kind, base: rec.base, spiritId: key, epoch, every: rec.every, budgets: rec.budgets, source, ...(turn.to !== null ? { turnedFrom: given } : {}) };
+  // THE STACK: what this spirit holds, cap by cap, and the profiles those caps sign (a legacy address signs its own).
+  const stack = stackOf(rec.fields, rec.uri);
+  const data = { pet, uri: rec.uri, kind: rec.kind, profiles: profilesOf(stack), stack: stack.map((h) => ({ cap: h.cap, value: h.value, tagged: h.tagged })), base: rec.base, spiritId: key, epoch, every: rec.every, budgets: rec.budgets, source, ...(turn.to !== null ? { turnedFrom: given } : {}) };
   // A resumed body ends its own crossing too: it never reaches the wake's clear below, and no timer lifts a mark.
   if (source === "resume" && rec.crossing !== null && body !== null) await markCrossing(args, rec, body, ctx, false);
   if (source === "resume") {
@@ -632,6 +685,9 @@ async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
     const read = field !== null ? { body: rec.fields[field] ?? "" } : s.slot === "#/open" ? open : await readSlot(args, "om", rec, s.slot);
     if (read !== null) digests[s.slot] = slotDigest(read.body);
   }
+  digests[STACK_SLOT] = slotDigest(stackBody(stack));
+  // The whole stack rides one has line in the seed's own shape, past the carrier's release (the wake still parses as one carrier).
+  testimony.push(`The stack (${STACK_SLOT}: \`lares spirit hum ${pet} --fold '${STACK_SLOT}'\` lists it cap by cap): ${stackLine(pet, rec.fields, rec.uri)}`);
   testimony.push(`Slot digests (a whole-slot ah names its slot's as --base; --add needs none): ${Object.entries(digests).map(([k, v]) => `${k}=${v}`).join(" ")}`);
   const advisory = advisoryLine(rec);
   if (advisory !== null) testimony.push(advisory);
@@ -720,8 +776,15 @@ async function ah(args: ParsedArgs, ctx: Ctx): Promise<number> {
   if (Number(file !== null) + Number(text !== null) + Number(add !== null) !== 1) {
     throw new DoorUsage("name exactly one source: --file <path|-> or --text <words> (the slot's whole body), or --add <line> (one line at its end)");
   }
+  if (slot === STACK_SLOT) {
+    // THE STACK TAKES ONE CAP PER --add (hum's fold unstrings one), so no whole-slot write ever drops a cap it never read.
+    if (add === null) throw new DoorUsage(`the stack takes one cap per line: \`lares spirit ah ${pet} --slot '${STACK_SLOT}' --add '<a.b.c> <value>'\` strings one, and \`lares spirit hum ${pet} --fold '${STACK_SLOT}'\` lists them to unstring one`);
+    const named = capLine(add);
+    if (named === null) throw new SpiritRefusal("spirit-cap-malformed", `spirit-cap-malformed: "${redactedText(add.replace(/\s+/g, " ").trim()).slice(0, 80)}" names no cap; nothing landed. A line reads a three-term address then its value: \`lares spirit ah ${pet} --slot '${STACK_SLOT}' --add 'spirit.lane.holds <the lane>'\``, 2);
+    capHolds(pet, named.cap, ctx, `lares spirit ah ${pet} --slot '${STACK_SLOT}' --add ${shq(add.replace(/\s+/g, " ").trim())}`);
+  }
   const rec = (await resolveRecord(args, "ah", pet))!;
-  if (rec.kind === "card" && cardField(slot) === null) throw cardSlotHeld(rec, slot);
+  if (slot !== STACK_SLOT && rec.kind === "card" && cardField(slot) === null) throw cardSlotHeld(rec, slot);
   crossingHolds(rec, wordOf(args.options["body"]));
   await echoHolds(args, "ah", rec, wordOf(args.options["body"]), ctx);
   const words = file !== null ? await sourceText("file", file) : text;
@@ -788,13 +851,16 @@ async function hum(args: ParsedArgs, ctx: Ctx): Promise<number> {
   }
   const rec = found;
   if (fold === null) {
+    const stack = stackOf(rec.fields, rec.uri);
     const m = measure(rec);
     const over = m.slots.filter((s) => s.over);
     emit(args, {
-      ok: true, data: { pet, uri: rec.uri, ...m, advisory: advisoryLine(rec), every: rec.every, oversize: over.map((s) => s.slot), ...(folded === null ? {} : foldData(folded)) },
+      ok: true, data: { pet, uri: rec.uri, profiles: profilesOf(stack), stack: stack.map((h) => ({ cap: h.cap, value: h.value, tagged: h.tagged })), ...m, advisory: advisoryLine(rec), every: rec.every, oversize: over.map((s) => s.slot), ...(folded === null ? {} : foldData(folded)) },
       human: () => {
         if (folded !== null) console.log(`${folded.carrier ?? unfoldedLine(folded, rec.uri)}\n`);
         console.log(`lares spirit hum ${pet} · ${rec.uri}`);
+        console.log(`  ${stackLine(pet, rec.fields, rec.uri)}`);
+        console.log(`  ${STACK_SLOT.padEnd(14)} ${String(stack.length).padStart(5)} cap(s): lares spirit hum ${pet} --fold '${STACK_SLOT}' lists them`);
         for (const s of m.slots) console.log(`  ${s.over ? "⚠" : " "} ${s.slot.padEnd(14)} ${String(s.bytes).padStart(5)}${s.budget === null ? "" : ` / ${s.budget}`}`);
         console.log(`  ${advisoryLine(rec, true)}`);
         if (over.length > 0) console.log(`  fold a line from each: lares spirit hum ${pet} --fold '${over[0]!.slot}' (lists its lines), then --line <n>`);
@@ -829,6 +895,11 @@ async function hum(args: ParsedArgs, ctx: Ctx): Promise<number> {
   const picked = lines[at]!;
   if (picked.trim() === "") {
     throw new DoorUsage(`--line ${lineWord} names no line holding words in ${fold} (it holds ${lines.length}); \`lares spirit hum ${pet} --fold '${fold}'\` numbers them`);
+  }
+  // A CAP UNSTRINGS BY THE HAND THAT STRINGS IT: the fold of a frame cap reads the hand gate, as its --add does.
+  if (fold === STACK_SLOT) {
+    const named = capLine(picked);
+    if (named !== null) capHolds(pet, named.cap, ctx, `lares spirit hum ${pet} --fold '${STACK_SLOT}' --line ${lineWord} --expect ${expect}`);
   }
   // The fold lands first, at slot grain: past a sibling's write it re-reads and finds its line by content, so a shifted slot folds
   // the line this body chose and never another. Only once the patch lands does the line burn to the ledger.

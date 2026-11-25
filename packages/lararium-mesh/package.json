@@ -28,6 +28,10 @@
       "import": "./dist/spirit-shrine.js",
       "types": "./dist/spirit-shrine.d.ts"
     },
+    "./spirit-stack": {
+      "import": "./dist/spirit-stack.js",
+      "types": "./dist/spirit-stack.d.ts"
+    },
     "./spirit-unfold": {
       "import": "./dist/spirit-unfold.js",
       "types": "./dist/spirit-unfold.d.ts"

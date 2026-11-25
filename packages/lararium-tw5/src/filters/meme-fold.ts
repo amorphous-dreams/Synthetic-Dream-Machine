@@ -17,8 +17,9 @@ module-type: filteroperator
  * its `has` line and the command that reads the record. So one render serves a shrine, a card, a handback record and any
  * message one stream of thought sends another.
  *
- * `spirit-fold` folds a pet's shrine (`familiar/<pet>` or `spirit/<pet>`) at the rank its operand names, naming the pet's card
- * (`spirit-card/<pet>`) and its render command in the lead where one stands; a pet holding a card and no shrine answers the
+ * `spirit-fold` folds a pet's shrine (the one record `lares/spirit/<pet>`, else `familiar/<pet>` or `spirit/<pet>`) at the rank
+ * its operand names, naming the pet's field-shaped record (the one address, `spirit-card/<pet>` or `mask-card/<pet>`) and its
+ * render command in the lead where one stands; a pet holding a card and no shrine answers the
  * card as a carrier, its render command beneath the transclusion.
  *
  * The second operand names the face the commands carry (`--face <n>`); empty, they name none. A title no record answers yields
@@ -30,7 +31,7 @@ module-type: filteroperator
 import type { TW5FilterOperator, TW5FilterSource, TW5Wiki } from "../types/tiddlywiki.js";
 import { CARRIER_TYPE, isCarrierType } from "@lararium/mesh/carrier-type";
 import {
-  FOLD_OPERATOR, UNFOLD_RANKS, cardRenderCommand, isFaceWord, isPetName, recordCommand, slotCommand, spiritCardOf, spiritShrinesOf,
+  FOLD_OPERATOR, UNFOLD_RANKS, cardRenderCommand, isFaceWord, isPetName, recordCommand, slotCommand, spiritCardOf, spiritCardsOf, spiritShrinesOf,
   unfoldRank, unfoldsSlot, wholeCommand,
 } from "@lararium/mesh/spirit-unfold";
 import { commandLine, foldCarrier } from "../carrier-fold.js";
@@ -106,7 +107,8 @@ export function spiritFold(source: TW5FilterSource, operator: TW5FilterOperator,
   const results: string[] = [];
   source((_tiddler, pet: string) => {
     if (!isPetName(pet)) return;
-    const card = spiritCardOf(pet);
+    // The field-shaped record that answers the pet: the one address first, then a tasked spirit's card, then a mask's.
+    const card = spiritCardsOf(pet).find((uri) => { const fields = reader(uri); return fields !== undefined && !isCarrierType(fields.type); }) ?? spiritCardOf(pet);
     const held = reader(card);
     const render = commandLine(cardRenderCommand(card, face));
     const names = held ? Object.keys(held).filter((k) => k !== "title" && k !== "text" && k.charAt(0) !== "$") : [];
