@@ -4,7 +4,7 @@
 # The WSL VHD never shrinks and Linux `df /` cannot see the C: drive under it fill; the house filled C: twice. This witness
 # prints what the guard weighs (C: free, the VHD file's size when the Windows side is readable, the built and Codex worktree
 # counts, prunable records) and reads RED only under the guard's own limits (LARES_DISK_MIN_C_GB, LARES_DISK_MIN_ROOT_GB,
-# LARES_DISK_MAX_WORKTREES, LARES_DISK_MAX_CODEX). Self-test: tools/disk-witness.test.mjs.
+# LARES_DISK_MAX_SPIRITS, LARES_DISK_MAX_CODEX). Self-test: tools/disk-witness.test.mjs.
 #
 # On CI there is no /mnt/c, so the C: check skips by name; the runner's own `/` is a shared image with no VHD beneath it, so the
 # `/` floor drops to zero there and the line says so.

@@ -39,7 +39,7 @@ test('evergreen witness refusal teaches a procedure', () => {
 });
 
 test('disk witness refusal teaches a procedure', () => {
-  const env = { ...process.env, LARES_DISK_MIN_C_GB: '0', LARES_DISK_MIN_ROOT_GB: '999999999', LARES_DISK_MAX_WORKTREES: '100000', LARES_DISK_MAX_CODEX: '100000' };
+  const env = { ...process.env, LARES_DISK_MIN_C_GB: '0', LARES_DISK_MIN_ROOT_GB: '999999999', LARES_DISK_MAX_SPIRITS: '100000', LARES_DISK_MAX_CODEX: '100000' };
   const r = run('bash', ['tools/disk-witness.sh'], { env });
   assert.equal(r.status, 1, r.stdout + r.stderr);
   assert.match(r.stdout, /RED: \/ has/);
