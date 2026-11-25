@@ -47,6 +47,7 @@ describe.skipIf(wikiSkip)(`a spirit folds as a carrier by aperture${skipNote}`, 
     e = await bootTestWiki({ tiddlers: [
       ...records(),
       ...(memeticWikitextDeserializer(LEGACY_CARRIER, { title: LEGACY }) as Array<Record<string, string | string[]>>),
+      { title: "lar:///ha.ka.ba/lares/spirit/sealed-mask", pet: "sealed-mask", canon: "lar:///ha.ka.ba/elyncia/lindwyrm", hoard: "the true name of the hoard", sealed: "hoard", text: "a mask" },
       { title: ONE_FIELDS, pet: "field-shaped", lane: "a lane on the one record", tags: "lar:///spirit.lane.holds", description: "field-shaped: the one record as fields", text: `{{||${TEMPLATE}}}` },
       { title: TEMPLATE, text: "!! <$text text={{!!pet}}/> ~ a tasked spirit\n\n''Lane:'' {{!!lane}}" },
       { title: spiritCardOf("card-only"), pet: "card-only", lane: "a lane with no shrine", description: "card-only card: fields only", tags: "stage/spirit-card", text: `{{||${TEMPLATE}}}` },
@@ -69,6 +70,18 @@ describe.skipIf(wikiSkip)(`a spirit folds as a carrier by aperture${skipNote}`, 
     expect(fields).toContain(`to=\`${ONE_FIELDS}\``);
     expect(fields).toMatch(/^lane\s+= "a lane on the one record"$/m);
     expect(fields).toContain(commandLine(cardRenderCommand(ONE_FIELDS)));
+  });
+
+  test("a sealed hold names itself and nothing more: a sealed field folds to the word, a sealed slot to its name at every rank", () => {
+    const mask = unfold("sealed-mask", "theme");
+    canonical(mask);
+    expect(mask).not.toContain("the true name of the hoard");
+    expect(mask).toMatch(/^hoard\s+= "sealed"$/m);
+    const text = foldCarrier(CARRIER, { open: () => true, sealed: (slot) => slot === "#/grant", buttons: () => ["a-button-no-sealed-slot-carries"] });
+    canonical(text);
+    expect(text).not.toContain("What it covers");
+    expect(text).toContain("<<~ has name=`#/grant` params=`sealed/true`>>");
+    expect(text).not.toContain("a-button-no-sealed-slot-carries");
   });
 
   test("pulse folds every slot: a canonical carrier, each slot its has line and one unfold command", () => {

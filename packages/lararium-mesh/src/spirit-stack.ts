@@ -11,12 +11,14 @@
  * THE STACK, IN TWO GRAINS A FILTER CAN GATHER. A CAP rides as a three-term `lar:///` address in the record's `tags` and, where
  * the table below names one, a value in a field; every other field the record holds rides as plain metadata, so the stack
  * derives from the record and never from a list. TAGS GATHER, OCAPS AUTHORIZE (the affordance map's first law): a cap on the
- * stack names what the spirit holds and grants nothing; authority rides a lei the hand strings.
+ * stack names what the spirit holds and grants nothing, so ANY BODY strings one, a profile's cap included (a spirit that reads
+ * as a familiar only asks for the operator's attention; operator, 2026-11-25). Authority rides a lei, never a tag.
  *
  * THE SLOT. The stack reads and writes as the slot `#/has`, one cap per line (`<address> <value>`), so the door's own slot
  * verbs carry it: om reads it, `ah --add` strings one cap, `hum --fold` unstrings one.
  *
- * A SEALED HOLD NAMES ITSELF AND NOTHING MORE: a field named in `sealed` never rides the stack line.
+ * A SEALED HOLD NAMES ITSELF AND NOTHING MORE: a field named in `sealed` never rides the stack, its slot body or its line, and
+ * a stack write leaves the value home.
  *
  * Platform-blind and pure: no door, no clock, no env.
  *
@@ -32,8 +34,8 @@ export const STACK_SLOT = "#/has";
 
 export const SPIRIT_PROFILES = ["familiar", "tasked", "masked"] as const;
 export type SpiritProfile = (typeof SPIRIT_PROFILES)[number];
-/** Who strings a cap: a person's hand, the door's own act (never the slot verbs), or any body. */
-export type CapHolder = "hand" | "door" | "body";
+/** Who strings a cap: any body, or the door's own act alone (the mandate lands by `--offer`, never by a slot verb). */
+export type CapHolder = "door" | "body";
 
 export interface SpiritCapKind {
   /** The cap's address: the tag a filter gathers by. */
@@ -47,13 +49,13 @@ export interface SpiritCapKind {
 
 /** THE CAPS THE HOUSE NAMES, in the order a stack reads them. Any other three-term address rides as a bare tag (a feed). */
 export const SPIRIT_CAPS: readonly SpiritCapKind[] = Object.freeze([
-  { cap: "lar:///spirit.face.serves", field: "face", profile: "familiar", held: "hand" },
-  { cap: "lar:///spirit.lane.holds", field: "lane", profile: "tasked", held: "hand" },
-  { cap: "lar:///spirit.canon.transcludes", field: "canon", profile: "masked", held: "hand" },
+  { cap: "lar:///spirit.face.serves", field: "face", profile: "familiar", held: "body" },
+  { cap: "lar:///spirit.lane.holds", field: "lane", profile: "tasked", held: "body" },
+  { cap: "lar:///spirit.canon.transcludes", field: "canon", profile: "masked", held: "body" },
   { cap: "lar:///spirit.mandate.offers", field: "mandate-hash", profile: null, held: "door" },
-  { cap: "lar:///spirit.grant.attenuates", field: "grant", profile: null, held: "hand" },
-  { cap: "lar:///spirit.message.receives", field: "inbox", profile: null, held: "hand" },
-  { cap: "lar:///spirit.message.sends", field: "outbox", profile: null, held: "hand" },
+  { cap: "lar:///spirit.grant.attenuates", field: "grant", profile: null, held: "body" },
+  { cap: "lar:///spirit.message.receives", field: "inbox", profile: null, held: "body" },
+  { cap: "lar:///spirit.message.sends", field: "outbox", profile: null, held: "body" },
 ] as const);
 
 const TERM = "[a-z0-9]+(?:-[a-z0-9]+)*";
@@ -61,6 +63,8 @@ const TERM = "[a-z0-9]+(?:-[a-z0-9]+)*";
 export const CAP_ADDRESS = new RegExp(`^lar:///${TERM}\\.${TERM}\\.${TERM}$`);
 const kindOf = (cap: string): SpiritCapKind | undefined => SPIRIT_CAPS.find((k) => k.cap === cap);
 /** Who strings this cap: the table's holder, and any body for a bare tag. */
+/** The fields a record seals (`sealed` names them, as a title list). */
+export const sealedOf = (fields: Readonly<Record<string, unknown>>): Set<string> => new Set(tagsOf(typeof fields["sealed"] === "string" ? fields["sealed"] : ""));
 export const capHolder = (cap: string): CapHolder => kindOf(cap)?.held ?? "body";
 
 /** The memory-stage addresses that stood before the one record, each with the cap its address signs. */
@@ -97,7 +101,10 @@ export interface SpiritHold {
   readonly cap: string;
   /** The field that carries the value; null for a bare tag. */
   readonly field: string | null;
+  /** The cap's value; EMPTY where the record seals its field, so no read of the stack carries a sealed value. */
   readonly value: string;
+  /** The record seals this cap's field: the cap names itself and nothing more. */
+  readonly sealed: boolean;
   /** Does the cap's address stand in `tags` (so a filter gathers it)? A legacy field or seat alone reads untagged. */
   readonly tagged: boolean;
   /** The record's own address signs this cap (a legacy seat): it leaves when the record moves, never by an unstring. */
@@ -115,14 +122,16 @@ const oneLine = (value: string): string => value.replace(/\s+/g, " ").trim();
 export function stackOf(fields: Readonly<Record<string, string>>, uri: string): SpiritHold[] {
   const tags = tagsOf(fields["tags"]);
   const seat = seatedCap(uri);
+  const seals = sealedOf(fields);
   const named = SPIRIT_CAPS.flatMap((k): SpiritHold[] => {
     const value = String(fields[k.field] ?? "");
     const tagged = tags.includes(k.cap);
     const seated = seat === k.cap;
-    return tagged || seated || value.trim() !== "" ? [{ cap: k.cap, field: k.field, value, tagged, seated, held: k.held, profile: k.profile }] : [];
+    const sealed = seals.has(k.field);
+    return tagged || seated || value.trim() !== "" ? [{ cap: k.cap, field: k.field, value: sealed ? "" : value, sealed, tagged, seated, held: k.held, profile: k.profile }] : [];
   });
   const bare = tags.filter((t) => CAP_ADDRESS.test(t) && kindOf(t) === undefined)
-    .map((cap): SpiritHold => ({ cap, field: null, value: "", tagged: true, seated: false, held: "body", profile: null }));
+    .map((cap): SpiritHold => ({ cap, field: null, value: "", sealed: false, tagged: true, seated: false, held: "body", profile: null }));
   return [...named, ...bare];
 }
 
@@ -142,14 +151,15 @@ export function capLine(line: string): { cap: string; value: string } | null {
   return CAP_ADDRESS.test(cap) ? { cap, value: oneLine(m[2] ?? "") } : null;
 }
 
-export type StackRefusal = { readonly code: "spirit-cap-malformed" | "spirit-cap-seated"; readonly why: string };
+export type StackRefusal = { readonly code: "spirit-cap-malformed" | "spirit-cap-seated" | "spirit-cap-sealed"; readonly why: string };
 export interface StackWrite { readonly patch: Record<string, string>; readonly unset: string[] }
 
 /**
  * THE WRITE A `#/has` BODY ASKS over the fields read: each line's cap gains its tag and (a named cap) its field; a cap the
  * body leaves out loses both. A later line for one cap wins, so an `--add` over a standing cap trues its value. Null where the
- * body asks nothing new; a refusal where a line names no cap, a bare cap carries a value, or the body drops a cap the
- * record's own address signs.
+ * body asks nothing new; a refusal where a line names no cap, a bare cap carries a value, a line carries a value for a field
+ * the record seals (a sealed value stays home: the write never reads or moves it), or the body drops a cap the record's own
+ * address signs.
  */
 export function stackWrite(fields: Readonly<Record<string, string>>, uri: string, body: string): StackWrite | StackRefusal | null {
   const wanted = new Map<string, string>();
@@ -161,6 +171,7 @@ export function stackWrite(fields: Readonly<Record<string, string>>, uri: string
     wanted.set(read.cap, read.value);
   }
   const standing = stackOf(fields, uri);
+  const seals = sealedOf(fields);
   const tags = tagsOf(fields["tags"]);
   const next = [...tags];
   const patch: Record<string, string> = {};
@@ -168,6 +179,10 @@ export function stackWrite(fields: Readonly<Record<string, string>>, uri: string
   for (const [cap, value] of wanted) {
     const kind = kindOf(cap);
     if (!next.includes(cap)) next.push(cap);
+    if (kind !== undefined && seals.has(kind.field)) {
+      if (value !== "") return { code: "spirit-cap-sealed", why: `${cap} rides a field the record seals (${kind.field}), so its line carries no value and the stack never writes it` };
+      continue;
+    }
     if (kind !== undefined && oneLine(String(fields[kind.field] ?? "")) !== value) {
       if (value === "") { if (fields[kind.field] !== undefined) unset.push(kind.field); } else patch[kind.field] = value;
     }
@@ -209,14 +224,14 @@ const capName = (cap: string): string => { const root = cap.slice("lar:///".leng
  */
 export function stackLine(pet: string, fields: Readonly<Record<string, string>>, uri: string): string {
   const stack = stackOf(fields, uri);
-  const sealed = new Set(tagsOf(fields["sealed"]));
+  const sealed = sealedOf(fields);
   const profiles = profilesOf(stack);
-  const caps = stack.map((h) => (h.field !== null && sealed.has(h.field) ? `${capName(h.cap)}/sealed` : oneLine(h.value) === "" ? capName(h.cap) : param(capName(h.cap), h.value)));
+  const caps = stack.map((h) => (h.sealed ? `${capName(h.cap)}/sealed` : oneLine(h.value) === "" ? capName(h.cap) : param(capName(h.cap), h.value)));
   const meta = Object.keys(fields).filter((k) => !ENVELOPE.has(k) && !k.startsWith("$") && !k.startsWith("writer-") && !sealed.has(k) && String(fields[k] ?? "").trim() !== "")
     .sort().map((k) => param(k, String(fields[k])));
   const tail = oneLine(String(fields["role"] ?? fields["description"] ?? ""));
   const params = [
-    ...(profiles.length > 0 ? [`kind/${profiles.join("+")}`] : []), ...caps, ...meta, ...[...sealed].sort().map((k) => `${k}/sealed`),
+    ...(profiles.length > 0 ? [`kind/${profiles.join("+")}`] : []), ...caps, ...meta, ...[...sealed].filter((k) => !stack.some((h) => h.sealed && h.field === k)).sort().map((k) => `${k}/sealed`),
     ...(tail === "" ? [] : [`~ ${tail.length > 160 ? `${tail.slice(0, 157)}...` : tail}`]),
   ].join(" ");
   return `<<~ has entity=\`spirit\` name=\`${pet}\` params=${quoted(params)}>>`;

@@ -41,8 +41,9 @@ describe("the stack reads off the record", () => {
     expect(K.profilesOf(K.stackOf({ canon: "lar:///ha.ka.ba/elyncia/lindwyrm" }, K.maskCardOf("lindwyrm")))).toEqual(["masked"]);
     expect(K.stackOf({}, ONE)).toEqual([]);
   });
-  test("who strings a cap: the table's holder, any body for a bare tag", () => {
-    expect(K.capHolder(LANE)).toBe("hand");
+  test("who strings a cap: any body, a profile's cap included; the mandate's cap lands by the door's own act", () => {
+    expect(K.capHolder(LANE)).toBe("body");
+    expect(K.capHolder(FACE)).toBe("body");
     expect(K.capHolder("lar:///spirit.mandate.offers")).toBe("door");
     expect(K.capHolder("lar:///custody.hand.admits")).toBe("body");
   });
@@ -78,6 +79,20 @@ describe("the #/has slot", () => {
   });
   test("a legacy record takes a new cap beside the one its address signs", () => {
     expect(K.stackWrite({}, `${M}familiar/lares-alpha`, `${FACE}\nlar:///custody.hand.admits`)).toEqual({ patch: { tags: `${FACE} lar:///custody.hand.admits` }, unset: [] });
+  });
+});
+
+describe("a sealed hold names itself and nothing more", () => {
+  const fields = { tags: `${LANE} lar:///spirit.grant.attenuates`, lane: "l", grant: "the true name", sealed: "grant" };
+  test("the stack and its slot body name a sealed cap and never carry its value", () => {
+    const stack = K.stackOf(fields, ONE);
+    expect(stack.find((h) => h.field === "grant")).toMatchObject({ value: "", sealed: true });
+    expect(K.stackBody(stack)).toBe(`${LANE} l\nlar:///spirit.grant.attenuates`);
+    expect(JSON.stringify(stack)).not.toContain("the true name");
+  });
+  test("a stack write leaves a sealed value home, and a line carrying a value for it refuses", () => {
+    expect(K.stackWrite(fields, ONE, `${LANE} l\nlar:///spirit.grant.attenuates\nlar:///render.road.projects`)).toEqual({ patch: { tags: `${LANE} lar:///spirit.grant.attenuates lar:///render.road.projects` }, unset: [] });
+    expect(K.stackWrite(fields, ONE, `${LANE} l\nlar:///spirit.grant.attenuates a new value`)).toMatchObject({ code: "spirit-cap-sealed" });
   });
 });
 

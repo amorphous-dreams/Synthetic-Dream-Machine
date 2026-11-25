@@ -37,6 +37,7 @@ import {
 import { commandLine, foldCarrier } from "../carrier-fold.js";
 import { expandMemeRefs, type TiddlerFields } from "../deserializer.js";
 import { byteLength, hasLine, param } from "../has-line.js";
+import { sealedOf } from "@lararium/mesh/spirit-stack";
 
 type Reader = (title: string) => TiddlerFields | undefined;
 interface FoldAsk {
@@ -57,8 +58,10 @@ function foldMeme(reader: Reader, uri: string, ask: FoldAsk): string | null {
   const whole = expandMemeRefs(reader, uri);
   if (whole === null) return null;
   const root = reader(uri) ?? {};
+  const seals = sealedOf(root);
   return foldCarrier(whole, {
     open: ask.open,
+    sealed: (slot) => seals.has(slot),
     buttons: (slot) => [commandLine(slotCommand(uri, slot.slot, ask.face))],
     lead: (slots) => [
       hasLine(uri, [param("slots", slots.length), param("folded", slots.filter((s) => !ask.open(s.slot)).length)], word(root, "role") ?? word(root, "description")),
@@ -80,7 +83,17 @@ function foldPlain(reader: Reader, uri: string, ask: FoldAsk): string | null {
   return expandMemeRefs((title) => (title === uri ? { ...fields, type: CARRIER_TYPE, text: body } : reader(title)), uri);
 }
 
-const readerOf = (wiki: TW5Wiki): Reader => (title) => (wiki.getTiddler(title) as { fields?: TiddlerFields } | undefined)?.fields;
+/**
+ * A SEALED HOLD NAMES ITSELF AND NOTHING MORE. A record names what it seals in `sealed` (fields by name, slots as `#/name`): the
+ * reader every fold reads through answers a sealed field as the word `sealed`, and a sealed slot folds to its name, so no fold
+ * carries a sealed value into a wake, a margin or a message.
+ */
+const readerOf = (wiki: TW5Wiki): Reader => (title) => {
+  const fields = (wiki.getTiddler(title) as { fields?: TiddlerFields } | undefined)?.fields;
+  if (fields === undefined) return undefined;
+  const seals = [...sealedOf(fields)].filter((k) => !k.startsWith("#/") && k !== "title" && k !== "sealed" && fields[k] !== undefined);
+  return seals.length === 0 ? fields : { ...fields, ...Object.fromEntries(seals.map((k) => [k, "sealed"])) };
+};
 const faceOf = (operator: TW5FilterOperator): string | null => {
   const named = ((operator.operands[1] as unknown as string) || "").trim();
   return named !== "" && isFaceWord(named) ? named : null;

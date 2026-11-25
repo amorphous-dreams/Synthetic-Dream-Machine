@@ -98,6 +98,8 @@ interface StageOpts {
   offering?: Record<string, string>;
   /** The ONE record (`lares/spirit/lares-alpha`), field-shaped, where one stands; a put on it lands here (patch and unset) and moves its hash. */
   one?: Record<string, string>;
+  /** A plain record at the one address that names another pet (or none): no spirit answers there, and no shrine lands over it. */
+  stray?: Record<string, string>;
   /** The spirit's mask card (`mask-card/lares-alpha`) fields, where one stands. */
   mask?: Record<string, string>;
 }
@@ -156,6 +158,7 @@ function stage(opts: StageOpts = {}) {
       const o = other(args["title"]);
       if (o !== null) return { tiddler: { fields: { title: args["title"], "spirit-id": "fedcba987654", ...(opts.others![o]!.fields ?? {}) }, hash: "sha256-other" } };
       if (standing(args["title"])) return { tiddler: { fields: { title: args["title"], "spirit-id": ID, ...(opts.fields ?? {}) }, hash: "sha256-rec" } };
+      if (String(args["title"]).startsWith("lar:///ha.ka.ba/lares/spirit/")) return { tiddler: opts.stray ? { fields: { title: args["title"], ...opts.stray }, hash: "sha256-stray" } : null };
       return { tiddler: { fields: { title: args["title"], text: "first words\nmore", ...(opts.residue?.[String(args["title"])] ?? {}) }, textHash: "sha256-ab" } };
     }
     if (verb === "meme-patch") {
@@ -1585,19 +1588,20 @@ describe("one spirit record: a pet name answers at lares/spirit/<pet>, holding a
     expect(h.calls.filter((c) => c.verb === "meme-patch")).toEqual([]);
   });
 
-  test("an AI seat strings no hand-held cap and no door-held cap, and nothing lands; a bare feed tag lands from any body", async () => {
+  test("any body strings a profile's cap, the familiar's included (a cap asks for attention and grants nothing); the mandate's cap lands by the door's own act alone", async () => {
     const rec = one();
     stage({ kind: "none", one: rec });
-    const held = await run(argv(["ah", "lares-alpha"], { slot: "#/has", add: "spirit.canon.transcludes lar:///ha.ka.ba/elyncia/lindwyrm", body: "s-1" }), { hand: AI, seat: () => true });
-    expect(error(held).code).toBe("spirit-cap-held");
-    expect(error(held).message).toContain("lares spirit ah lares-alpha --slot '#/has' --add");
+    const face = await run(argv(["ah", "lares-alpha"], { slot: "#/has", add: "spirit.face.serves 1", body: "s-1" }), { hand: AI, seat: () => true });
+    expect(face.exit, JSON.stringify(face.printed)).toBe(0);
+    expect(rec["face"]).toBe("1");
+    const feed = await run(argv(["ah", "lares-alpha"], { slot: "#/has", add: "lar:///custody.hand.admits", body: "s-1" }), { hand: AI, seat: () => true });
+    expect(feed.exit, JSON.stringify(feed.printed)).toBe(0);
+    expect(rec["tags"]).toBe(`stage/spirit ${LANE} ${FACE} lar:///custody.hand.admits`);
+    const before = puts(ONE).length;
     const doors = await run(argv(["ah", "lares-alpha"], { slot: "#/has", add: `spirit.mandate.offers ${"ab".repeat(32)}` }));
     expect(error(doors).code).toBe("spirit-cap-held");
     expect(error(doors).message).toContain("--offer");
-    expect(puts(ONE)).toEqual([]);
-    const feed = await run(argv(["ah", "lares-alpha"], { slot: "#/has", add: "lar:///custody.hand.admits", body: "s-1" }), { hand: AI, seat: () => true });
-    expect(feed.exit, JSON.stringify(feed.printed)).toBe(0);
-    expect(rec["tags"]).toBe(`stage/spirit ${LANE} lar:///custody.hand.admits`);
+    expect(puts(ONE).length).toBe(before);
   });
 
   test("the stack takes one cap per --add: a whole-slot write, a malformed line and a secret-shaped value each refuse", async () => {
@@ -1610,16 +1614,14 @@ describe("one spirit record: a pet name answers at lares/spirit/<pet>, holding a
     expect(puts(ONE)).toEqual([]);
   });
 
-  test("hum measures the stack, numbers #/has cap by cap, and a hand's fold unstrings one cap to the ash ledger", async () => {
+  test("hum measures the stack, numbers #/has cap by cap, and a body's fold unstrings one cap to the ash ledger", async () => {
     const rec = { ...one(), tags: `stage/spirit ${LANE} ${FACE}`, face: "1" };
     stage({ kind: "none", one: rec, ledgerStands: true });
     const measured = await run(argv(["hum", "lares-alpha"]));
     expect(data(measured)).toMatchObject({ uri: ONE, profiles: ["familiar", "tasked"] });
     const listed = await run(argv(["hum", "lares-alpha"], { fold: "#/has" }));
     expect((data(listed)["lines"] as Array<{ text: string }>).map((l) => l.text)).toEqual([`${FACE} 1`, `${LANE} read a PR cold and return PASS or FAIL`]);
-    const seat = await run(argv(["hum", "lares-alpha"], { fold: "#/has", line: "1", expect: digest(`${FACE} 1`), body: "s-1" }), { hand: AI, seat: () => true });
-    expect(error(seat).code).toBe("spirit-cap-held");
-    const r = await run(argv(["hum", "lares-alpha"], { fold: "#/has", line: "1", expect: digest(`${FACE} 1`) }));
+    const r = await run(argv(["hum", "lares-alpha"], { fold: "#/has", line: "1", expect: digest(`${FACE} 1`), body: "s-1" }), { hand: AI, seat: () => true });
     expect(r.exit, JSON.stringify(r.printed)).toBe(0);
     expect(rec["face"]).toBeUndefined();
     expect(rec["tags"]).toBe(`stage/spirit ${LANE}`);
@@ -1633,6 +1635,28 @@ describe("one spirit record: a pet name answers at lares/spirit/<pet>, holding a
     expect(puts(URI).at(-1)!.args).toMatchObject({ fields: { face: "1", tags: FACE } });
     const seated = await run(argv(["hum", "lares-alpha"], { fold: "#/has", line: "1", expect: digest(FACE) }));
     expect(error(seated).code).toBe("spirit-cap-seated");
+  });
+
+  test("ah --new never lands over a plain record at the one address that names another pet", async () => {
+    stage({ kind: "none", stray: { pet: "someone-else", text: "a note that stood here first" } });
+    const text = SHRINE_SLOTS.map(([slot, prompt]) => framed(slot, prompt)).join("\n");
+    const r = await run({ ...argv(["ah", "lares-alpha"], { text }), flags: { json: true, new: true } } as unknown as ParsedArgs);
+    expect(error(r).code).toBe("spirit-exists");
+    expect(error(r).message).toContain("lares tiddler get");
+    expect(h.calls.some((c) => c.verb === "meme-put")).toBe(false);
+  });
+
+  test("a sealed hold names itself and nothing more: om, hum and the #/has listing never carry its value, and a stack write leaves it home", async () => {
+    const rec = { ...one(), tags: `stage/spirit ${LANE} lar:///spirit.grant.attenuates`, grant: "the hoard's true name", sealed: "grant" };
+    stage({ kind: "none", one: rec });
+    const woke = await run(argv(["om", "lares-alpha"]));
+    const measured = await run(argv(["hum", "lares-alpha"]));
+    const listed = await run(argv(["hum", "lares-alpha"], { fold: "#/has" }));
+    for (const r of [woke, measured, listed]) expect(JSON.stringify(r.printed)).not.toContain("the hoard's true name");
+    expect((data(listed)["lines"] as Array<{ text: string }>).map((l) => l.text)).toContain("lar:///spirit.grant.attenuates");
+    const add = await run(argv(["ah", "lares-alpha"], { slot: "#/has", add: "lar:///custody.hand.admits" }));
+    expect(add.exit, JSON.stringify(add.printed)).toBe(0);
+    expect(rec["grant"]).toBe("the hoard's true name");
   });
 
   test("ah --new lands a fresh shrine at the one address, and refuses over a record standing there", async () => {

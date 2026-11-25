@@ -22,6 +22,8 @@ export interface CarrierFold {
   readonly open: (slot: string) => boolean;
   /** The lines a folded slot carries beneath its `has` line: the commands that unfold it. */
   readonly buttons: (slot: CarrierSlot) => readonly string[];
+  /** Does the record seal this slot? A sealed slot always folds, to its name alone: no first line, no command. */
+  readonly sealed?: (slot: string) => boolean;
   /** Lines seated ahead of the first slot: the carrier's own `has` line and the commands over the whole of it. */
   readonly lead?: (slots: readonly CarrierSlot[]) => readonly string[];
 }
@@ -50,8 +52,9 @@ export function foldCarrier(text: string, fold: CarrierFold): string {
       out += text.slice(from, block.openStart) + (lead.length > 0 ? `${lead.join("\n\n")}\n\n` : "");
       from = block.openStart;
     }
-    if (fold.open(block.slot)) return;
-    out += text.slice(from, block.bodyStart) + foldBody(slot, fold.buttons(slot));
+    const sealed = fold.sealed?.(block.slot) === true;
+    if (!sealed && fold.open(block.slot)) return;
+    out += text.slice(from, block.bodyStart) + (sealed ? `\n\n${hasLine(slot.slot, [param("sealed", "true")], null)}\n\n` : foldBody(slot, fold.buttons(slot)));
     from = block.bodyEnd;
   });
   return stampCarrier(out + text.slice(from));

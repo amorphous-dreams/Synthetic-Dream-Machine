@@ -6,7 +6,7 @@
  * house names by its pet name, holding a stack of what it holds (`@lararium/mesh/spirit-stack`; ruling 2026-11-25-one-spirit-record).
  * The stack reads and writes as the slot `#/has`, one cap per line: `ah --slot '#/has' --add '<a.b.c> <value>'` strings a cap (its
  * tag and its field in one write), `hum --fold '#/has'` unstrings one, and om hands the whole stack as one `has` line. A cap names
- * what the spirit holds and grants nothing (tags gather, ocaps authorize); a frame cap moves by a person's hand alone. The records
+ * what the spirit holds and grants nothing (tags gather, ocaps authorize), so any body strings one. The records
  * that stood before the one address read through the same stack, none moved: `familiar/<pet>` or `spirit/<pet>` on the memory
  * stage (where both stand, the door names both and guesses neither), then a card at `spirit-card/<pet>` or `mask-card/<pet>`. Beneath the pet name a stable `spirit-id` keys
  * the residue, so a rename keeps om, hum and otakiage finding it. Every read and write rides the tiddler door's own daemon
@@ -358,14 +358,12 @@ function handHolds(ctx: Ctx): boolean {
 }
 
 /**
- * WHO STRINGS A CAP. A cap the door's own act lands (the mandate) never moves by a slot verb; a cap of the spirit's frame (its
- * profile's signing cap, its grant, its message caps) moves by a person's hand alone, read at the house's hand gate; a bare
- * feed tag moves by any body. `again` names the command a hand runs.
+ * WHO STRINGS A CAP. Any body: a cap names what the spirit holds and grants nothing, so a seat strings a profile's cap, the
+ * familiar's included (it asks for the operator's attention; operator, 2026-11-25). The mandate's cap alone lands by the door's
+ * own act, so the hash on the stack always names an offering the shelf holds.
  */
-function capHolds(pet: string, cap: string, ctx: Ctx, again: string): void {
-  const holder = capHolder(cap);
-  if (holder === "door") throw new SpiritRefusal("spirit-cap-held", `spirit-cap-held: ${cap} lands by the door's own act and never by a slot verb; nothing landed. A summon offers the mandate: \`lares spirit ah ${pet} --offer --file <mandate>\``, 4);
-  if (holder === "hand" && !handHolds(ctx)) throw new SpiritRefusal("spirit-cap-held", `spirit-cap-held: ${cap} rides the spirit's frame, which a person's hand strings and unstrings; nothing landed. At the terminal, by hand: \`${again}\``, 4);
+function capHolds(pet: string, cap: string): void {
+  if (capHolder(cap) === "door") throw new SpiritRefusal("spirit-cap-held", `spirit-cap-held: ${cap} lands by the door's own act and never by a slot verb; nothing landed. A summon offers the mandate: \`lares spirit ah ${pet} --offer --file <mandate>\``, 4);
 }
 
 /** The echo receipt a slot write carries (see `echoReceipt`): a damaged shelf throws its refusal; an unechoed write answers its notice. */
@@ -487,6 +485,15 @@ async function newShrine(args: ParsedArgs, pet: string): Promise<number> {
   const standing = await resolveRecord(args, "ah", pet, true);
   if (standing !== null && (standing.kind !== "card" || standing.uri === spiritOf(pet))) {
     throw new SpiritRefusal("spirit-exists", `spirit-exists: a record already answers "${pet}" at ${standing.uri}, so --new lands nothing; true its slots instead: \`lares spirit ah ${pet} --slot '#/<name>' --file <path>\``, 4);
+  }
+  // NO SHRINE LANDS OVER ANOTHER RECORD: a plain record at the one address that names another pet (or none) answers no spirit,
+  // and a meme put there would bury it.
+  const one = spiritOf(pet);
+  if (standing === null || standing.uri !== one) {
+    const at = (await recordOf(args, "ah", one)).fields;
+    if (Object.keys(at).length > 0) {
+      throw new SpiritRefusal("spirit-exists", `spirit-exists: a record already stands at ${one}${at["pet"] ? `, naming the pet "${at["pet"]}"` : ", naming no pet"}, so --new lands nothing over it. Read it: \`lares tiddler get ${shq(one)} --recipe default\`, then rename it away (\`lares tiddler rename ${shq(one)} <new title> --recipe default\`) or choose another pet name`, 4);
+    }
   }
   const words = file !== null ? await sourceText("file", file) : text!;
   const shapes = secretCount(words);
@@ -784,7 +791,7 @@ async function ah(args: ParsedArgs, ctx: Ctx): Promise<number> {
     if (add === null) throw new DoorUsage(`the stack takes one cap per line: \`lares spirit ah ${pet} --slot '${STACK_SLOT}' --add '<a.b.c> <value>'\` strings one, and \`lares spirit hum ${pet} --fold '${STACK_SLOT}'\` lists them to unstring one`);
     const named = capLine(add);
     if (named === null) throw new SpiritRefusal("spirit-cap-malformed", `spirit-cap-malformed: "${redactedText(add.replace(/\s+/g, " ").trim()).slice(0, 80)}" names no cap; nothing landed. A line reads a three-term address then its value: \`lares spirit ah ${pet} --slot '${STACK_SLOT}' --add 'spirit.lane.holds <the lane>'\``, 2);
-    capHolds(pet, named.cap, ctx, `lares spirit ah ${pet} --slot '${STACK_SLOT}' --add ${shq(add.replace(/\s+/g, " ").trim())}`);
+    capHolds(pet, named.cap);
   }
   const rec = (await resolveRecord(args, "ah", pet))!;
   if (slot !== STACK_SLOT && rec.kind === "card" && cardField(slot) === null) throw cardSlotHeld(rec, slot);
@@ -899,10 +906,10 @@ async function hum(args: ParsedArgs, ctx: Ctx): Promise<number> {
   if (picked.trim() === "") {
     throw new DoorUsage(`--line ${lineWord} names no line holding words in ${fold} (it holds ${lines.length}); \`lares spirit hum ${pet} --fold '${fold}'\` numbers them`);
   }
-  // A CAP UNSTRINGS BY THE HAND THAT STRINGS IT: the fold of a frame cap reads the hand gate, as its --add does.
+  // The mandate's cap leaves as it lands, by the door's own act; every other cap unstrings by any body.
   if (fold === STACK_SLOT) {
     const named = capLine(picked);
-    if (named !== null) capHolds(pet, named.cap, ctx, `lares spirit hum ${pet} --fold '${STACK_SLOT}' --line ${lineWord} --expect ${expect}`);
+    if (named !== null) capHolds(pet, named.cap);
   }
   // The fold lands first, at slot grain: past a sibling's write it re-reads and finds its line by content, so a shifted slot folds
   // the line this body chose and never another. Only once the patch lands does the line burn to the ledger.

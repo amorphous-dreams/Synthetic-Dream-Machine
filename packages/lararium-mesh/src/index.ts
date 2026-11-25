@@ -726,3 +726,7 @@ export * from "./share-config.js";
 export * from "./face-label.js";
 export * from "./secret-shapes.js";
 export * from "./attempt-budget.js";
+
+// The one spirit record's stack and the fold's ranks and commands: each subpath lends what the barrel lends from its module.
+export * from "./spirit-stack.js";
+export * from "./spirit-unfold.js";
