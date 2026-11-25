@@ -185,7 +185,12 @@ export function refuseStandingBegin(standing: ReadonlyArray<{ readonly tessera: 
   if (standing.length === 0) return;
   const heads = [...new Set(standing.map((s) => s.head.slice(0, 12)))].join(", ");
   const branch = standing[0]!.branch;
-  throw new SwarmRefused("rite-begun-stands", `a kūkulu begun at ${heads} on "${branch}" stands unlanded (${standing.map((s) => `${s.face ?? s.group ?? "a face"} tessera ${s.tessera}`).join(", ")}); \`lares rite kukulu\` resumes it and spends no second return, land it by hand where the vessel stands (\`lares rite land --tessera <tessera>\`, which rests the head and image the half began at), or set a stale half down by hand (\`lares rite land --abandon --tessera <tessera>\`; it spends nothing, records no par, and conferre reads it abandoned)`);
+  // EACH HALF'S CURE RUNS WHERE IT RESTS: a half a lent face carries sets down as that face; a half no lent face carries (shut or
+  // rehived) refuses rite-begun-absent under every trust held now, so its cure unlocks the face that carries its group first.
+  const setDown = standing.map((s) => /^h\d+$/.test(s.face ?? "")
+    ? `\`lares rite land --abandon --tessera ${s.tessera} --face ${s.face!.slice(1)}\``
+    : `tessera ${s.tessera} rests under group ${s.group ?? "(unnamed)"}, which no lent face carries: \`lares vault unlock\` the face that carries it, then \`lares rite land --abandon --tessera ${s.tessera} --face <that face>\``).join("; ");
+  throw new SwarmRefused("rite-begun-stands", `a kūkulu begun at ${heads} on "${branch}" stands unlanded (${standing.map((s) => `${s.face ?? s.group ?? "a face"} tessera ${s.tessera}`).join(", ")}); \`lares rite kukulu\` resumes it and spends no second return, land it by hand where the vessel stands (\`lares rite land --tessera <tessera>\`, which rests the head and image the half began at), or set a stale half down by hand (${setDown}; it spends nothing, records no par, and conferre reads it abandoned)`);
 }
 
 /**
