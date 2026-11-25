@@ -201,7 +201,7 @@ interface Ctx { readonly now: () => Date; readonly seat: () => boolean; readonly
  * between that mark and the same body's next wake (the one event that lifts it) a write naming that body (`--body`) refuses; a sibling,
  * or a write naming no body, writes freely. It guards a body from writing over its own folding, never a card from its siblings.
  */
-function crossingHolds(rec: Record_, ctx: Ctx, body: string | null): void {
+function crossingHolds(rec: Record_, body: string | null): void {
   if (body === null) return;
   if (!BODY.test(body)) throw new DoorUsage("--body names a session id (letters, digits, '-' and '_')");
   const refused = crossingRefusal(rec, body);
@@ -491,7 +491,7 @@ async function ah(args: ParsedArgs, ctx: Ctx): Promise<number> {
     throw new DoorUsage("name exactly one source: --file <path|-> or --text <words> (the slot's whole body), or --add <line> (one line at its end)");
   }
   const rec = (await resolveRecord(args, "ah", pet))!;
-  crossingHolds(rec, ctx, wordOf(args.options["body"]));
+  crossingHolds(rec, wordOf(args.options["body"]));
   const words = file !== null ? await sourceText("file", file) : text;
   const line = add?.replace(/\s+/g, " ").trim() ?? null;
   if (line === "") throw new DoorUsage("--add names one non-empty line");
@@ -572,7 +572,7 @@ async function hum(args: ParsedArgs, ctx: Ctx): Promise<number> {
     });
     return 0;
   }
-  crossingHolds(rec, ctx, wordOf(args.options["body"]));
+  crossingHolds(rec, wordOf(args.options["body"]));
   // THE LISTED LINE, BY ITS DIGEST. The number reads the listing this body saw; `--expect` names that line's digest, so a sibling's
   // write between the listing and the fold folds the line this body chose (wherever it moved), or nothing.
   const expect = wordOf(args.options["expect"]);
