@@ -284,6 +284,12 @@ const BURNED_RECALL_ARGS: readonly string[] = ["voice", "band", "drift", "agenth
 const SEARCH_ONLY_RECALL_ARGS: readonly string[] = ["agent", "surface", "speaker", "channel", "function", "pair", "room", "lens"];
 const FUSION_ONLY_RECALL_ARGS = ["register", "grammarLayer", "grammar_layer", "formWeight", "apertureGrain", "aperture", "apertureWidth"];
 
+/**
+ * Spellings outside the verb's vocabulary, each beside the knob it reads: a call naming one refuses by name, in every mode, and
+ * names the knob to send (the search path would forward it to a coordinator that drops it without a word).
+ */
+const UNREAD_RECALL_SPELLINGS: Readonly<Record<string, string>> = { aperture_grain: "apertureGrain", aperture_width: "apertureWidth" };
+
 /** recall — the mempalace READ shore (semantic-search | list | get | multi-graph fuse). Requires
  *  the mempalace read-client + the form store (the dual fuse). */
 export function recallVerbCap(): CapModule {
@@ -298,6 +304,10 @@ export function recallVerbCap(): CapModule {
           const burned = Object.keys(args).filter((name) => BURNED_RECALL_ARGS.includes(name.toLowerCase().replace(/[-_]/g, "")));
           if (burned.length) {
             throw new Error(`recall: ${burned.join(", ")} ${burned.length === 1 ? "names a burned filter" : "name burned filters"} — the coordinator no longer reads ${burned.length === 1 ? "it" : "them"}; narrow the stratum by speaker, channel or function`);
+          }
+          const unread = Object.keys(UNREAD_RECALL_SPELLINGS).filter((name) => Object.hasOwn(args, name));
+          if (unread.length) {
+            throw new Error(`recall: ${unread.map((name) => `${name} names no knob this verb reads; send ${UNREAD_RECALL_SPELLINGS[name]}`).join(", ")}`);
           }
           const imagoId = typeof args["imago"] === "string" ? (args["imago"] as string) : "";
           const query    = typeof args["query"]  === "string" ? (args["query"]  as string) : "";

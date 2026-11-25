@@ -175,7 +175,7 @@ export async function runHandVerb(verb: string, arg: string | readonly string[] 
     if (act !== "kui" && act !== "restring" && act !== "unstring") throw new PulamaVerbUsage();
     let terms: unknown;
     try { terms = JSON.parse(raw!); } catch { throw new PulamaVerbUsage(); }
-    const termsOk = (x: unknown): x is Record<string, unknown> => typeof x === "object" && x !== null && !Array.isArray(x) && !("credentials" in x) && !("op" in x) && !("act" in x);
+    const termsOk = (x: unknown): x is Record<string, unknown> => typeof x === "object" && x !== null && !Array.isArray(x) && !("credentials" in x) && !("op" in x) && !("act" in x) && !("check" in x);
     if (!termsOk(terms)) throw new PulamaVerbUsage();
     // ONE STRINGING FOR EVERY FACE: `faces` lists one terms object per face, each signed by that face's own hand under ONE route.
     const every = terms["faces"];
@@ -185,6 +185,12 @@ export async function runHandVerb(verb: string, arg: string | readonly string[] 
     // THE DOOR READS FIRST: an unlit pūlama refuses here, before anybody types a route.
     const standing = await ports.ask({ op: "status" });
     if (standing["lit"] !== true) return { op: "lei", reading: "pulama-locked", detail: "the pūlama stands unlit: light it first (`light`), then string the lei" };
+    // EVERY CHECK THE DOOR HOLDS RUNS BEFORE THE ROUTE (`check`), for every face: an unopened face, a face with no group, malformed
+    // terms, an unconfirmed count and a restring naming no tip each refuse here, before anybody types a route.
+    for (const f of each) {
+      const ready = await ports.ask({ op: "lei", act, ...f, check: true });
+      if (ready["reading"] !== "ready") return ready;
+    }
     const what = act === "unstring" ? `unstring the ${String(t["rite"])} lei ${String(t["lei"])}` : `${act} a ${String(t["rite"])} lei`;
     const passphrase = await ports.route(`pūlama route, to ${what} at "${String(t["branch"])}" for ${each.map((f) => `h${String(f["face"])}`).join(", ")}: `, "a lei");
     const credentials = [{ kind: "passphrase", passphrase }];
@@ -213,7 +219,9 @@ export async function runHandVerb(verb: string, arg: string | readonly string[] 
     // naming another key each refuse here, before anybody types a route.
     const ready = await ports.ask({ op: "publish", face, offering: read.terms, check: true });
     if (ready["reading"] !== "ready") return ready;
-    const passphrase = await ports.route(`pūlama route, to sign the plugin offering ${read.terms.pluginsCid} (${read.terms.blobs.length} blob(s)) for h${face}: `, "a plugin offering");
+    // THE PROMPT NAMES WHAT THE ROOT SIGNS: the region and each blob by id and version, never a bare count.
+    const blobs = read.terms.blobs.map((b) => `${b.id}@${b.version}`).join(", ");
+    const passphrase = await ports.route(`pūlama route, to sign the plugin offering ${read.terms.pluginsCid} (${read.terms.blobs.length} blob(s): ${blobs}) for h${face}: `, "a plugin offering");
     return ports.ask({ op: "publish", face, offering: read.terms, credentials: [{ kind: "passphrase", passphrase }] });
   }
   if (verb === "sign") {

@@ -5,7 +5,7 @@ name: Held-out witnesses
 # fleet names these witnesses but cannot raise their browser and Docker substrates, so they ride here.
 #
 # HELD-OUT RUNS PER TRAIN, NOT PER LANE PUSH. This workflow runs on each push to `develop` (the integration
-# branch) and to `main`, on a weekly clock, and by hand; a lane branch (`develop--*`, `lane/*`) never fires it,
+# branch) and to `main`, on a nightly clock that reads develop (the nightly-develop job), and by hand; a lane branch (`develop--*`, `lane/*`) never fires it,
 # so a lane reads GREEN on its CI alone (the Quick gates on a lane push, ci.yml's doorstep; the whole battery on the
 # merge queue's run) and these drivers measure the merged tree after each land.
 # `tools/ci-verdict.mjs` still prints its verdict as the third reading beside the CI workflow's own, so a head
@@ -50,15 +50,33 @@ concurrency:
   # A develop or main run finishes once begun: a newer push queues behind it (queued runs coalesce to the newest head),
   # so a burst of merges never cuts a held-out reading off mid-run. A lane's run still yields to its next push.
   # ONE READING OF THE NEWEST HEAD: a newer develop/main push cancels the held-out run still on an older head (pending runs
-  # already coalesce to the newest), so intermediate heads spend no held-out seats; the nightly schedule reads the head at 06:17.
+  # already coalesce to the newest), so intermediate heads spend no held-out seats; the nightly schedule dispatches a run that reads develop's head at 06:17.
   cancel-in-progress: true
 
 permissions:
   contents: read
 
 jobs:
+  # THE NIGHTLY READS DEVELOP. A schedule event runs on the default branch (main), so a scheduled run would measure
+  # main's head and never develop's. The scheduled run measures nothing itself: this one job dispatches the workflow on
+  # develop (a dispatch the workflow token raises still starts a run), and that run's github.sha names develop's head
+  # for every cell and the merge alike. Every measuring job below stands off the schedule.
+  nightly-develop:
+    name: Dispatch the nightly on develop
+    if: ${{ github.event_name == 'schedule' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: write
+    steps:
+      - name: Dispatch held-out on develop
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run held-out.yml --ref develop --repo "${{ github.repository }}"
+
   plan:
     name: Plan the cells
+    if: ${{ github.event_name != 'schedule' }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
@@ -80,6 +98,7 @@ jobs:
 
   image:
     name: Build the product image
+    if: ${{ github.event_name != 'schedule' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -319,7 +338,7 @@ jobs:
     # Runs whatever the cells answered: a merge that waited on success would let one red cell SKIP the gate,
     # and a skipped gate reads as nothing to report. A run a newer head superseded measured nothing whole, so
     # its merge stays out and the run reads cancelled, never red.
-    if: ${{ !cancelled() }}
+    if: ${{ !cancelled() && github.event_name != 'schedule' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:

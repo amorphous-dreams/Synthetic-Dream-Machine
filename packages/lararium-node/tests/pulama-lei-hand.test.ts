@@ -108,6 +108,19 @@ describe("the hand strings, restrings and unstrings a lei at the pūlama's hand 
     expect(await s.door({ ...kui, returns: 40, confirm: true })).toMatchObject({ reading: "signed", record: { body: { returns: 40 } } });
   });
 
+  // hand-door-publish-follow-ups (#576 cold read): the lei verb asked the route before the door's own face and terms checks, so an
+  // unopened face or a malformed lei had the operator type for nothing. The door answers `check: true` with every check it holds.
+  test("RED: `check: true` answers `ready` for a whole lei on an open face and opens no root; CONTROL: an unopened face and malformed terms answer their own readings under check", async () => {
+    const s = await stand();
+    const check = { op: "lei", act: "kui", face: 0, rite: "kukulu", branch: BRANCH, returns: 2, check: true };
+    expect(await s.door(check)).toMatchObject({ reading: "pulama-locked" });
+    await s.light();
+    expect(await s.door(check)).toMatchObject({ op: "lei", act: "kui", reading: "ready", face: 0 });
+    expect(await s.door({ ...check, face: 3 })).toMatchObject({ reading: "face-locked" });
+    expect(await s.door({ ...check, returns: 0 })).toMatchObject({ reading: "lei-malformed" });
+    expect(s.opened).toEqual([]);
+  });
+
   test("RED: a wrong route signs nothing and answers the ward's reading, and a pūlama seated with no lei hand answers `lei-unavailable`; CONTROL: the right route signs", async () => {
     const s = await stand();
     await s.light();

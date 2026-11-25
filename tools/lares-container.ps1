@@ -880,14 +880,37 @@ function WarnPulamaSkew {
 # THE DOWN PATH (`down`, and every act that must stop the vessel first): the keep while the vessel stands, the census,
 # the refusal of a silent stop; then the vessel alone stops where a pūlama runs, or the whole project downs.
 # THE VESSEL'S LOG OUTLIVES THE DOWN. A down removes the container, and its log leaves with it, so the down path saves
-# the last $VesselLogLines lines (stdout and stderr) to the house's run/vessel-last.log first, overwritten each down,
-# and names the file. A log that cannot be read is named and never blocks the down.
+# the vessel's log to the house's run/vessel-last.log first, overwritten each down, and names the file. Where the vessel
+# folds its log into records (`vessel-log-sink`: one JSON line per event change in its tmpfs /lar/run/vessel-live.log),
+# the file takes the CLOSING SLICE: each event's last line, one per event, in the order each last changed. Where no live
+# log reads, it takes the last $VesselLogLines raw lines (stdout and stderr). A log that cannot be read is named and
+# never blocks the down.
 $VesselLogLines = 20000
+# The closing slice of a live log's lines: each (boot, key)'s last line, ordered by where it last stood.
+function ClosingSlice([string[]]$lines) {
+  $last = [ordered]@{}
+  foreach ($line in $lines) {
+    $k = [regex]::Match($line, '"key":"[^"]*"')
+    if (-not $k.Success) { continue }
+    $b = [regex]::Match($line, '"boot":"[^"]*"')
+    $key = "$($b.Value)$($k.Value)"
+    if ($last.Contains($key)) { $last.Remove($key) }
+    $last[$key] = $line
+  }
+  return @($last.Values)
+}
 function SaveVesselLog([string]$id) {
   $id = (($id -split "`r?`n") | Where-Object { $_.Trim() } | Select-Object -First 1)
   $file = Join-Path (Join-Path $House 'run') 'vessel-last.log'
   try {
     New-Item -ItemType Directory -Force -Path (Join-Path $House 'run') | Out-Null
+    $live = @(& docker exec $id.Trim() cat /lar/run/vessel-live.log 2>$null | ForEach-Object { "$_" })
+    $slice = if ($LASTEXITCODE -eq 0 -and $live.Count -gt 0) { @(ClosingSlice $live) } else { @() }
+    if ($slice.Count -gt 0) {
+      Set-Content -LiteralPath $file -Value $slice -Encoding utf8
+      [Console]::Error.WriteLine("lares-container: the vessel's closing slice ($($slice.Count) event(s), one line each) rests at $file")
+      return
+    }
     $lines = & docker logs --tail $VesselLogLines $id.Trim() 2>&1 | ForEach-Object { "$_" }
     $rc = $LASTEXITCODE
     if ($rc -ne 0) { throw "docker logs exited $rc" }

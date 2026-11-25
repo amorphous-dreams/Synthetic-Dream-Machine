@@ -415,7 +415,7 @@ export async function keeperVest(records: SwarmWikiPort, by: KukuluSigner, at: {
     // EVERY CHECK PASSED: only now does the rite begin (it claims a lei return and rests its begun half), and only then does a key leave.
     const started = await rite.begin();
     if (!started.ok) return lapse(refuse(started.refusal, started.detail), started.begun ?? []);
-    const mark = await signPulamaRecord<"keeper-vested">({ act: "keeper-vested", tessera, begun, next, to: sha256HexBytesSync(unhex(at.to)), node: true, faces: keys.faces.map((f) => f.fcid), nonce: randomUUID(), rite: [...started.rite], ...(started.leis && started.leis.length > 0 ? { leis: started.leis.map((l) => ({ lei: l.lei, n: l.n })) } : {}) }, by);
+    const mark = await signPulamaRecord<"keeper-vested">({ act: "keeper-vested", tessera, begun, next, to: sha256HexBytesSync(unhex(at.to)), node: true, faces: keys.faces.map((f) => f.fcid), nonce: randomUUID(), rite: [...started.rite], ...(started.leis && started.leis.length > 0 ? { leis: started.leis.map((l) => ({ lei: l.lei, n: l.n })) } : {}), ...(license?.bench !== undefined ? { bench: license.bench } : {}) }, by);
     if (!(await records.writeNew(pulamaKeeperTitle(tessera, "vest"), JSON.stringify(mark)))) return refuse("vest-spent", "this commit already spent its one rite attempt; commit again on a terminal (`lares pulama name-successor`), or light the successor by hand: lares rite kukulu");
     const plain = packPayload({ node: keys.treeKey, faces: keys.faces.map((f) => ({ fcid: f.fcid, ordinal: f.ordinal, fck: f.fck, spent: f.spent ?? 0 })), spent: at.spent, worn: at.worn });
     let box;
@@ -504,16 +504,34 @@ export async function keeperSlotBinds(records: SwarmWikiPort, by: KukuluSigner, 
 // a standing kukulu lei on the branch holds returns, and the live rite the vest rides spends that lei's return (the SAME return the rite
 // spends for the lent face; the successor takes no extra one). The vest names each lei return that licensed it.
 // Meme: lar:///ha.ka.ba/kahua/memory/research/keeper-lei#/shape
-const REV = /^[0-9a-f]{40}$/, CI_GREEN = /^[0-9]+:success$/;
+const REV = /^[0-9a-f]{40}$/;
 
-/** What the host testifies beside a commit the kukulu lei licenses: it read the revision, the closure tool twice and the CI run;
- *  the pūlama reads none of them. */
-export interface KeeperLeiTestimony { readonly branch: string; readonly rev: string; readonly tree: string; readonly recheck: string; readonly image: string; readonly ci: string }
+/**
+ * THE LOCAL WITNESS (operator ruling 2026-11-25, //"web2 annotates, never decides"//): the host runs the bench gate over the exact
+ * tree the image carries (`node tools/bench-gate.mjs --verdict`) and hands the verdict document whole. The keeper hashes those very
+ * bytes itself (the gate writes `JSON.stringify` of the document, so the parse round-trips them), checks they name the testified
+ * revision and tree and read green, and seals the hash into its own signed commit; the vest names it. So the witness verifies
+ * offline, from bytes and the keeper's own chain, trusting no network. Meme: lar:///ha.ka.ba/kahua/memory/ruling/2026-11-25-web2-annotates
+ */
+export const BENCH_VERDICT_KIND = "lares-bench-verdict";
+export function keeperBenchVerdict(bench: unknown, rev: string, tree: string): { readonly hash: string; readonly line: string } | KeeperRefusal {
+  const cure = "run the bench gate over that tree (node tools/bench-gate.mjs --verdict <file> in the checkout at the revision; lares rite kukulu runs it), then lares rite kukulu again";
+  const v = typeof bench === "object" && bench !== null && !Array.isArray(bench) ? (bench as Record<string, unknown>) : null;
+  if (v === null || v["kind"] !== BENCH_VERDICT_KIND || typeof v["line"] !== "string" || typeof v["code"] !== "number") return refuse("keeper-lei-bench-unread", `the host handed no bench verdict over ${rev}; ${cure}`);
+  if (v["rev"] !== rev || v["tree"] !== tree) return refuse("keeper-lei-bench-differs", `the bench verdict names ${String(v["rev"])} (tree ${String(v["tree"])}), and the testimony names ${rev} (tree ${tree}); ${cure}`);
+  if (v["code"] !== 0 || !v["line"].startsWith("BENCH GATE GREEN")) return refuse("keeper-lei-bench-red", `the bench verdict over ${rev} reads ${v["line"]}; cure each named step, then lares rite kukulu again`);
+  return { hash: `sha256:${sha256HexBytesSync(new TextEncoder().encode(JSON.stringify(bench)))}`, line: v["line"] };
+}
+
+/** What the host testifies beside a commit the kukulu lei licenses: it read the revision, the closure tool twice, ran the bench
+ *  gate over the tree (`bench`, the verdict document whole, which the keeper hashes and checks itself), and read the CI run where gh
+ *  answered (`ci`, annotation alone: any reading, `unread` where none answered, and none blocks). */
+export interface KeeperLeiTestimony { readonly branch: string; readonly rev: string; readonly tree: string; readonly recheck: string; readonly image: string; readonly bench: unknown; readonly ci?: string }
 
 /** One successor the kukulu lei licensed, as `status` names it: its link, its closure, the host's testimony, and (once vested)
  *  each kukulu lei return the vest's live rite spent on it. */
 export interface KeeperLicensedCommit {
-  readonly tessera: string; readonly v: number; readonly next: string; readonly branch: string; readonly rev: string; readonly ci: string;
+  readonly tessera: string; readonly v: number; readonly next: string; readonly branch: string; readonly rev: string; readonly bench: string | null; readonly ci: string;
   readonly vested: boolean; readonly leis: readonly { readonly lei: string; readonly n: number }[];
 }
 
@@ -524,7 +542,7 @@ export async function keeperLicensed(records: SwarmWikiPort, by: KukuluSigner): 
   for (const [tessera, b] of rows.begun) {
     if (b === "refused" || b.body.licensed === undefined) continue;
     const l = b.body.licensed, vest = rows.vested.get(tessera);
-    out.push({ tessera, v: b.body.v, next: b.body.next, branch: l.branch, rev: l.rev, ci: l.ci, vested: vest?.begun === b.cid, leis: vest?.begun === b.cid ? [...(vest.leis ?? [])] : [] });
+    out.push({ tessera, v: b.body.v, next: b.body.next, branch: l.branch, rev: l.rev, bench: l.bench ?? null, ci: l.ci, vested: vest?.begun === b.cid, leis: vest?.begun === b.cid ? [...(vest.leis ?? [])] : [] });
   }
   return out.sort((x, y) => x.v - y.v || x.tessera.localeCompare(y.tessera));
 }
@@ -547,7 +565,10 @@ export async function keeperNameSuccessorByLei(records: SwarmWikiPort, by: Kukul
   if (!REV.test(at.rev) || !REV.test(at.tree)) return refuse("keeper-lei-testimony-malformed", `the host names the revision and its source tree as 40 hex each; run lares rite kukulu again, or ${routed}`);
   if (at.recheck !== "same") return refuse("keeper-lei-recheck-differs", `the second fresh-archive closure of ${at.rev} did not read the same; ${routed}`);
   if (at.image !== at.next) return refuse("keeper-lei-image-differs", `the built image's closure label reads ${at.image}, and the revision's archive reads ${at.next}; rebuild the image from that revision (lares rite kukulu), or ${routed}`);
-  if (!CI_GREEN.test(at.ci)) return refuse("keeper-lei-ci-red", `the CI push run on ${at.rev} reads ${at.ci || "none"}, never success; wait for it to land green (gh run list --commit ${at.rev} --workflow CI), or ${routed}`);
+  // THE LOCAL VERDICT DECIDES; CI rides beside it as annotation (any reading, `unread` where none answered) and never blocks.
+  const bench = keeperBenchVerdict(at.bench, at.rev, at.tree);
+  if ("refusal" in bench) return { refusal: bench.refusal, detail: `${bench.detail}, or ${routed}` };
+  const ci = typeof at.ci === "string" && at.ci !== "" ? at.ci : "unread";
   const fold = await keeperFold(records, by);
   if (fold.fork) return refuse("fork", `the keeper chain reads a fork; read it with lares pulama status, and ${routed}`);
   if (fold.successor !== null && keeperSuccessorStale(fold.successor, at.closure) === null) return refuse("keeper-lei-successor-stands", `a live successor already names ${fold.successor.next} from the closure this keeper runs, and a lei never supersedes a current commit: the next lares rite kukulu that raises that closure vests it, or ${routed} (it supersedes)`);
@@ -555,7 +576,7 @@ export async function keeperNameSuccessorByLei(records: SwarmWikiPort, by: Kukul
   const last = fold.pairs.at(-1);
   if (last !== undefined && !last.par) return refuse("keeper-lei-red", `the last keeper pair reads red (${last.red ?? "red"}); read it with lares pulama status, and light the successor by passphrase: lares rite kukulu on a terminal`);
   if (fold.struckDue) return refuse("struck-due", `${fold.vestings} handed links stand in a row; light this successor by passphrase (the struck fire): lares rite kukulu on a terminal`);
-  const out = await keeperNameSuccessor(records, by, { ...at, cosign: null, noSupersede: true, licensed: { by: "kukulu-lei", branch: at.branch, rev: at.rev, tree: at.tree, recheck: "same", image: at.image, ci: at.ci } });
+  const out = await keeperNameSuccessor(records, by, { ...at, cosign: null, noSupersede: true, licensed: { by: "kukulu-lei", branch: at.branch, rev: at.rev, tree: at.tree, recheck: "same", image: at.image, bench: bench.hash, benchLine: bench.line, ci } });
   if ("refusal" in out) return out;
   return { tessera: out.tessera, v: out.v, next: out.next, branch: at.branch };
 }
