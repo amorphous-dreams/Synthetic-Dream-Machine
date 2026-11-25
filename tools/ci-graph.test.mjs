@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
-import { evalExpr, eventContext, graphNumbers, liveFiles, mergeGroupOnly, REQUIRED_CHECKS, runPlan, runsPerLanePush, readJobs, triggers, widestConcurrent } from "./ci-graph.mjs";
+import { evalExpr, evalValue, eventContext, graphNumbers, interpolate, liveFiles, mergeGroupOnly, REQUIRED_CHECKS, runPlan, runsPerLanePush, readJobs, triggers, widestConcurrent } from "./ci-graph.mjs";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const CAP = 10;
@@ -311,4 +311,39 @@ test("F4 RED: held-out reads the newest develop/main head alone (a newer push ca
   assert.match(text, /^ {2}cancel-in-progress: true$/m, "held-out lets an older head's run finish beside the newest");
   assert.match(text, /cron: "\d+ \d+ \* \* \*"/, "held-out carries no nightly schedule");
   assert.ok(triggers(text).includes("workflow_dispatch"));
+});
+
+// GitHub keeps ONE pending run per concurrency group, and a newer arrival cancels the older PENDING run whatever
+// `cancel-in-progress` says (that flag guards the run in progress alone). On 2026-11-25 run 45627180609 held develop's
+// `ci-refs/heads/develop` group for two hours; the pushes at fba8313c9 and 646a07b9b each waited pending, then read
+// `cancelled` with zero jobs run (45643576902, 45645396427) the moment the next push queued. So the sum's runs never
+// share a group: each develop/main run holds one of its own (its run id), and every head gets a verdict.
+test("G1 RED: a develop or main push never cancels another run of the sum: each run holds a concurrency group of its own", () => {
+  const group = (yml) => /^concurrency:\n(?:\s*#.*\n)*  group: (.+)$/m.exec(yml)?.[1];
+  const cancel = (yml) => /^concurrency:\n(?:\s*#.*\n)*  group: .+\n(?:\s*#.*\n)*  cancel-in-progress: (.+)$/m.exec(yml)?.[1];
+  for (const file of ["ci.yml", "e2e-shards.yml"]) {
+    const yml = readFileSync(join(ROOT, ".github/workflows", file), "utf8");
+    const g = group(yml), c = cancel(yml);
+    assert.ok(g && c, `${file} carries no concurrency group`);
+    const ctx = (branch, run_id) => { const x = eventContext("push", { branch }); x.github.run_id = run_id; return x; };
+    for (const branch of ["develop", "main"]) {
+      assert.notEqual(interpolate(g, ctx(branch, 101)), interpolate(g, ctx(branch, 102)), `${file}: two ${branch} runs share one concurrency group, so a third push cancels the pending one`);
+      assert.equal(evalExpr(c, ctx(branch, 101)), false, `${file}: a ${branch} push cancels the run in progress`);
+    }
+    // CONTROL: a lane's newer push still supersedes its older run (one group per lane ref, cancel in progress).
+    assert.equal(interpolate(g, ctx("develop--lane", 101)), interpolate(g, ctx("develop--lane", 102)), `${file}: a lane's runs stopped superseding each other`);
+    assert.equal(evalExpr(c, ctx("develop--lane", 101)), true);
+  }
+  // The caller's group and the callee's never coincide inside one run (they would wait on each other).
+  const ci = readFileSync(join(ROOT, ".github/workflows/ci.yml"), "utf8"), shards = readFileSync(join(ROOT, ".github/workflows/e2e-shards.yml"), "utf8");
+  const one = eventContext("push", { branch: "develop" }); one.github.run_id = 7;
+  assert.notEqual(interpolate(group(ci), one), interpolate(group(shards), one));
+});
+
+test("G1 CONTROL: the value reader yields Actions' && / || operands and format()", () => {
+  const ctx = { github: { ref: "refs/heads/develop", run_id: 42 } };
+  assert.equal(evalValue("github.ref == 'refs/heads/develop' && format('-{0}', github.run_id) || ''", ctx), "-42");
+  assert.equal(evalValue("github.ref == 'refs/heads/x' && format('-{0}', github.run_id) || ''", ctx), "");
+  assert.equal(interpolate("ci-${{ github.ref }}", ctx), "ci-refs/heads/develop");
+  assert.equal(evalExpr("github.ref == 'refs/heads/develop' && 'yes'", ctx), true);
 });
