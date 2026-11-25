@@ -8,7 +8,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import {
-  beginRite, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, kukuluVouchDigest, signSwarmAct, swarmActCid, swarmLeiRecordTitle, swarmLeiUnstrungTitle,
+  beginRite, pendingBegins, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, kukuluVouchDigest, signSwarmAct, swarmActCid, swarmLeiRecordTitle, swarmLeiUnstrungTitle,
   verifyKukuluVouch, type SignedSwarmAct, type SwarmLeiTerms, type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort,
 } from "@lararium/mesh";
 import type { CustodyHolder } from "../src/custody-holder.js";
@@ -248,19 +248,26 @@ describe("RED rite-offer-binds-its-vouch-to-the-lei", () => {
 
 /** The cold read's findings on 4837a7480 (F2, F3, F5): the honest paths the binding must not stick. */
 describe("RED rite-offer-keeps-the-honest-paths", () => {
-  test("RED F2 a lei restrung after an interrupted begin moves the tip past the lei that paid: the offer binds the begun half that lei's return paid for, unstrung or not", async () => {
+  test("RED F2 (b) a lei restrung after an interrupted begin moves the tip past the lei that paid: the offer binds the begun half that lei's return paid for", async () => {
     const s = await stand();
     const paid = await s.string({ reach: "wide", returns: 2 });
     await s.begin();
     await s.string({ reach: "wide", returns: 2 }, swarmActCid(paid));
     expect((await s.offer()).lei).toBe(2);
+  });
+
+  test("RED kapae (a) an unstring tombstones the rite its lei paid for: a fresh lei never resurrects the stopped half, the offer binds nothing until the face begins afresh, and the raw debt hides it so the fresh begin stands", async () => {
     const t = await stand();
     const ended = await t.string({ reach: "wide", returns: 2 });
     await t.begin();
     await t.wiki.write(swarmLeiUnstrungTitle(swarmActCid(ended)), JSON.stringify(await signSwarmAct({ act: "lei-unstrung", group: GROUP, rite: "kukulu", branch: BRANCH, lei: swarmActCid(ended) }, t.hand)));
     await t.string({ reach: "wide", returns: 2 }, swarmActCid(ended));
-    const wrote = await t.offer();
-    expect(wrote.lei).toBe(2);
+    await expect(t.offer()).rejects.toMatchObject({ code: "rite-begun-absent" });
+    expect(existsSync(t.path)).toBe(false);
+    expect(await pendingBegins(t.wiki, "kukulu", BRANCH)).toEqual([]);
+    // THE FRESH RITE under the fresh lei binds, and the unstringing still rides.
+    await t.begin();
+    expect((await t.offer()).lei).toBe(2);
     expect((JSON.parse(readFileSync(t.path, "utf8")) as KukuluOffer).unstrung).toHaveLength(1);
   });
 

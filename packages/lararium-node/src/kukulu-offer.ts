@@ -22,7 +22,7 @@
  * The vessel signs no head, tree or image its caller picks. Per face it reads the LIVE lei that ends the line (`readLei`, its
  * spent return allowed: the begin just spent it for this very rite) and the unlanded begun half that lei's return paid for, and
  * the vouch names that half's head, tree and image (a lei restrung after an interrupted begin moves the tip past the lei that
- * paid: the half that lei's return rested still binds). A line with no chain from its root waits by name, as the begin waits it. Each refuses by the pūlama gate's own name before anything rests:
+ * paid: the half that lei's return rested still binds; an UNSTRUNG lei's half stays tombstoned, kāpae, and binds nothing). A line with no chain from its root waits by name, as the begin waits it. Each refuses by the pūlama gate's own name before anything rests:
  * `swarm-lei-unstrung`, `swarm-lei-forked`, `swarm-lei-head-mismatch` (a lei that pins another head), `rite-begun-absent` (no
  * begin spent the lei), `rite-offer-differs` (a caller's head or tree the begun half never named), `kukulu-image-mismatch` (an
  * image the begun half never named). Earlier lei on the line whose unstringing rests still ride whole, so the pūlama reads them
@@ -139,6 +139,9 @@ export async function writeKukuluOffer(a: {
     // interrupted begin moves the tip past the lei whose return paid; the half that return rested still binds the vouch).
     let begun: SwarmRiteBegunBody | null = null;
     for (const row of [...chain.cosigned].sort((x, y) => Number(y.cid === live.cid) - Number(x.cid === live.cid))) {
+      // KĀPAE (operator ruling 2026-11-25): an unstring tombstones the rite its lei paid for, so a fresh lei never resurrects
+      // that half; only a restring (the lei left unstrung, a newer one after it) leaves it bound.
+      if ((await a.wiki.read(swarmLeiUnstrungTitle(row.cid))) !== null) continue;
       begun = await begunOf(a.wiki, face, { cid: row.cid, returns: row.body.reach === "wide" ? row.body.returns : 1 }, a.branch);
       if (begun !== null) break;
     }

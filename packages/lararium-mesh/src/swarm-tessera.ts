@@ -30,7 +30,7 @@
 import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
 import type { SwarmLeiRite } from "./swarm-lei-rite.js";
 import {
-  SwarmRefused, checkReturn, claimReturn, signSwarmAct, swarmActCid, swarmTesseraPrefix, swarmTesseraTitle, verifySwarmRecord,
+  SwarmRefused, checkReturn, claimReturn, signSwarmAct, swarmActCid, swarmLeiUnstrungTitle, swarmTesseraPrefix, swarmTesseraTitle, verifySwarmRecord,
   type SwarmLeiLine, type SwarmReturnable, type SwarmRiteBegunBody, type SwarmRiteLandedBody, type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort,
 } from "./swarm-tiddlers.js";
 import type { WardActWitness } from "./ward-cosign.js";
@@ -105,7 +105,8 @@ export async function landRite(wiki: SwarmWikiPort, at: { readonly tessera: stri
 export interface PendingBegin { readonly tessera: string; readonly group: string; readonly branch: string; readonly head: string; readonly image?: string; readonly lei: string; readonly n: number; readonly begun: string }
 
 /**
- * THE DEBT, READ RAW: every begun half of `rite` on `branch` (every branch where none is named) resting with no host half. It
+ * THE DEBT, READ RAW: every begun half of `rite` on `branch` (every branch where none is named) resting with no host half,
+ * save a half whose paying lei the hand unstrung (kāpae: the unstring tombstones the rite it paid for). It
  * reads the rows themselves, not under a face's trust, so a half whose face stands shut, or was rehived under a new
  * group since, still counts; it names debt, and lands nothing (a landing verifies under the face's own trust).
  */
@@ -126,6 +127,9 @@ export async function pendingBegins(wiki: SwarmWikiPort, rite: SwarmLeiRite, bra
     if (body?.["act"] !== "rite-begun" || body["rite"] !== rite || body["tessera"] !== tessera) continue;
     if (typeof body["group"] !== "string" || typeof body["branch"] !== "string" || typeof body["head"] !== "string" || typeof body["lei"] !== "string" || typeof body["n"] !== "number") continue;
     if (branch !== undefined && body["branch"] !== branch) continue;
+    // KĀPAE (operator ruling 2026-11-25): a half whose paying lei the hand unstrung reads tombstoned, so it stands as no debt and
+    // the face begins afresh under a fresh lei. Any row at the unstrung title counts, as `readLei` counts it.
+    if ((await wiki.read(swarmLeiUnstrungTitle(body["lei"]))) !== null) continue;
     out.push({ tessera, group: body["group"], branch: body["branch"], head: body["head"], ...(typeof body["image"] === "string" ? { image: body["image"] } : {}), lei: body["lei"], n: body["n"], begun: swarmActCid(guest as unknown as Parameters<typeof swarmActCid>[0]) });
   }
   return out;
