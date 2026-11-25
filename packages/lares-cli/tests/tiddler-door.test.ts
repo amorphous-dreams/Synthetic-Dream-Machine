@@ -322,8 +322,7 @@ describe("wiki residency and switch wire", () => {
     expect(h.calls).toEqual([{ verb, args: wireArgs }]);
     vi.restoreAllMocks();
   });
-  test.each([[{}, "wiki-switch", { slug: "works", remount: true }],
-    [{ "next-boot": true }, "open-wiki", { slug: "works" }]])(
+  test.each([[{}, "wiki-switch", { slug: "works", remount: true }]])(
     "switch flags %j send %s", async (flags, verb, wireArgs) => {
       vi.spyOn(console, "log").mockImplementation(() => {});
       await cmdWiki(argv("wiki", ["switch", "works"], {}, flags));

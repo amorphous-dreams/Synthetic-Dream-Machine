@@ -32,7 +32,7 @@ import { ownEntry } from "@lararium/mesh/stored-value";
 import { plainEntries, plainField, storedDeleted } from "@lararium/mesh/stored-value";
 import { houseCanonBagsSeated } from "@lararium/mesh/kahu-canon-reach";
 import { houseCanonUrl, resolveHouseCanon } from "@lararium/mesh/house-canon-doc";
-import { ACTIVE_WIKI_URI } from "./active-wiki.js";
+import { HOME_WIKI_TITLE, readHomeWikiSlug } from "./home-wiki.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
 import { findOrThrow, makeCatalogAccessor, type CatalogAccessor } from "./catalog-accessor.js";
 import { effectiveRecipeOf } from "./recipe-planes.js";
@@ -343,8 +343,7 @@ export async function fileWardRefusal(
     // the audit row and the live alert, so one standoff files one row however often the rail hears of it,
     // two standoffs show two alerts, and a resolution clears exactly its own.
     const standoff = typeof args["standoff"] === "string" && /^[0-9a-f]{8,64}$/.test(args["standoff"]) ? args["standoff"] : null;
-    const marker = await composite.get(ACTIVE_WIKI_URI);
-    const slug   = tiddlerText(marker) ?? null;
+    const slug   = readHomeWikiSlug(await composite.get(HOME_WIKI_TITLE));
 
     if (standoff !== null && args["resolved"] === true) {
       if (slug) post(mkDaemonWikiAlert({ wikiSlug: slug, message: `${headline}: resolved`, cause: "disk-ward", kind: "disk-ward", key: standoff, clear: true }));
@@ -361,7 +360,7 @@ export async function fileWardRefusal(
       );
     }
 
-    // (b) Alert the operator's currently pinned VM (the active wiki marker in the daemon bag). A row filed for the record
+    // (b) Alert the face's home wiki (its home preference record in the daemon wiki's working layer, read at light). A row filed for the record
     // alone (`auditOnly`: a stand-off the person's own collapse rule settled) raises no alert: nothing awaits anyone.
     if (args["auditOnly"] === true) return { audited: auditTitle, alerted: "none", bagId, uri };
     if (slug) {
@@ -386,7 +385,7 @@ export async function fileWardRefusal(
 /** The `alert` rail for the daemon island's action verbs: each alert rides to the active wiki, none where none stands. */
 export function makeIngestAlertRail(composite: CompositeStore, post: (msg: DaemonMsg_WikiAlert) => void): (alert: IngestAlert) => Promise<void> {
   return async (alert) => {
-    const slug = tiddlerText(await composite.get(ACTIVE_WIKI_URI)) ?? null;
+    const slug = readHomeWikiSlug(await composite.get(HOME_WIKI_TITLE));
     if (!slug) return;
     post(mkDaemonWikiAlert({ wikiSlug: slug, message: alert.message, cause: "ingest", kind: alert.kind, key: alert.key, ...(alert.clear ? { clear: true } : {}) }));
   };

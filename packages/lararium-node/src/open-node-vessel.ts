@@ -206,9 +206,8 @@ import type { LarVessel } from "@lararium/mesh/lar-vessel";
 import { composeVessel } from "@lararium/mesh/cap-compose";
 import { islandFloorStack, islandLiftStack, larVesselOf } from "@lararium/mesh/lar-vessel";
 import {
-  DaemonRestarting, ACTIVE_WIKI_URI,
+  DaemonRestarting, HOME_WIKI_TITLE, readHomeWikiSlug,
   MemoryTiddlerStore,
-  selectActiveWikiSlug,
   seedVesselDefaults,
   loadCatalogCorpora,
   composeVerbPlane,
@@ -1027,7 +1026,7 @@ interface NodeBootPrep {
   daemonIslandState: () => Promise<{ restarts: number; leg: string }>;
   eventBus:         () => LarEventBusImpl;
   slotActiveWikiId: () => string;
-  activeWikiSource: () => "boot-arg" | "daemon-marker" | "floor";
+  activeWikiSource: () => "boot-arg" | "home-preference" | "floor";
   /** The wiki this composition stands in for on its floor wiki, waiting on a face; null where none waits. */
   wikiAwaitsFace:   () => FloorWikiRefusal | null;
   /** Stand down everything the prep and its closures stood, then the Repo; releases a floor the prep stood itself. */
@@ -2911,7 +2910,7 @@ async function prepareNodeBootOn(
   let personaSelves: PersonaSelvesPlane | null = null;   // the carried faces' selves records, built at the first ask
   let selvesCatalogRow: ((record: SelvesRecordRef) => void) | null = null;   // each record's row in its own face's catalog
   let slotActiveWikiId = "";               // captured in wikiSlot
-  let activeWikiSource: "boot-arg" | "daemon-marker" | "floor" = "boot-arg";
+  let activeWikiSource: "boot-arg" | "home-preference" | "floor" = "boot-arg";
   let wikiAwaitsFace: FloorWikiRefusal | null = null;   // captured in wikiSlot
   // The recall FORM leg holder — opened ONCE, lazily, shared by BOTH the dual recall fuse and the
   // worldline form pre-fetch (makeFormPalace ref-counts per canonical dir → one reference, never a
@@ -3345,7 +3344,9 @@ async function prepareNodeBootOn(
 
   // Active-wiki slot — slug from the daemon-doc marker (post-genesis).
   const wikiSlot = async (assembly: VesselCoreAssembly): Promise<VesselWikiSlot> => {
-    const sel = selectActiveWikiSlug(wikiId, ownEntry((await readDaemonDoc()).doc()?.tiddlers, ACTIVE_WIKI_URI) ?? null);
+    // EVERY BOOT STANDS ON THE BOOT'S OWN ASK (the floor's wiki); no vessel-scope pointer names a wiki before any face lights. A
+    // lit face's home preference selects its wiki at light (`afterLive`), read from that face's own daemon wiki.
+    const sel = { slug: wikiId, source: "boot-arg" as const };
     // A COMPOSITION THAT WEARS NO FACE BOOTS NO USER WIKI (the sealing scope): before a face lights (a floor, or a place
     // that founded none), a wiki whose canon bag rests on a face's half reads sealed to a face no session wears, so its
     // documents neither load nor rest. The floor STANDS all the same (every boot rests at the floor; its unlock door must
@@ -5142,11 +5143,11 @@ async function prepareNodeBootOn(
     });
 
     // ── The wiki-SWITCHER surface (the FACE over the activation cap) ──────────────
-    // The LIVE chokepoint (distinct from boot-time `open-wiki`): a reference ACTIVATES
+    // The LIVE chokepoint (the boot reads a face's home preference at light): a reference ACTIVATES
     // the grain (resolveWikiSpec wakes ANY registered wiki cold, single-flight). node is
     // headless — no #projection surface to flip — so a switch here is pure activation.
     registry.register("wiki-switch", (args) => wikiSwitchVerb(args, { activation: wikiActivation, pool: vmManager }));
-    // wiki-hold / wiki-release — the ROTATABLE active-wiki pin (the switcher's pin
+    // wiki-hold / wiki-release — the ROTATABLE keep-warm hold (the switcher's pin
     // control), budget-enforced by the cap (the daemon bag always + pinBudget rotatable).
     // Distinct from the recipe-bag `pin-wiki`: this pins the wiki GRAIN in the collector.
     registry.register("wiki-hold", async (args) => {
@@ -5542,7 +5543,15 @@ async function prepareNodeBootOn(
         stood.push({ what: `the workbench ${name}'s watch`, phase: "producers", down: async () => { await wsWatch.down("lock"); workspaceWatches.delete(wsWatch); if (workspaceWatches.size === 0) settleRealmFolders(); } });
       }
     }
-    if (slotActiveWikiId) void residency.pin(slotActiveWikiId, "boot:home-wiki", "wiki");
+    // A FACE'S HOME WIKI IS ITS OWN PREFERENCE, READ AT LIGHT (research/pin-mu#S2): the record sits in the lit face's own daemon
+    // wiki's working layer, so only a face that stands lit reads it, and no boot pin names a wiki for the vessel.
+    if (wornDeviceGroup !== null) void (async () => {
+      const home = readHomeWikiSlug(await daemonVm.composite.get(HOME_WIKI_TITLE));
+      if (home === null || home === slotActiveWikiId) return;
+      if (!(await wikiActivation.ensureActive(home))) return;
+      slotActiveWikiId = home;
+      activeWikiSource = "home-preference";
+    })().catch((e: unknown) => console.warn(`[home-wiki] the lit face's home preference did not open: ${e instanceof Error ? e.message : String(e)}`));
   };
 
   const orchestration: VesselOrchestration<VesselIslandPool> = {

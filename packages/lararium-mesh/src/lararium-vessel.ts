@@ -66,8 +66,8 @@ export interface VesselResult<TPool, TDaemon> {
   store:            CompositeStore;
   daemon:           TDaemon;
   activeWikiId:     string;
-  /** Who chose the mounted wiki: the boot's own ask, the daemon's active-wiki marker, or the floor (`FLOOR_WIKI`, standing in for a wiki that waits). */
-  activeWikiSource: "boot-arg" | "daemon-marker" | "floor";
+  /** Who chose the mounted wiki: the boot's own ask, the lit face's home preference, or the floor (`FLOOR_WIKI`, standing in for a wiki that waits). */
+  activeWikiSource: "boot-arg" | "home-preference" | "floor";
   /** The wiki this composition refused by name and stands in for on its floor wiki, waiting on a face (`wiki-awaits-face`); null where none waits. */
   wikiAwaitsFace:   FloorWikiRefusal | null;
   /** The wiki canon document this vessel mounted; null where a house canon wiki stands on the floor alone. */

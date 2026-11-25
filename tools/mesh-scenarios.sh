@@ -1145,7 +1145,7 @@ run_quorum_realm() {
 #
 # THE BOOK A MINTS. System canon takes live writes from the Kahu alone, so the crossing rides a user book A
 # mints (`wiki init`), the shape `herm-reshares` walks: `tiddler put --meme --recipe <book>` lands in the book's working
-# layer, `act MOVE` promotes the carrier group into the book's canon through the island its wiki switch --next-boots, and
+# layer, `act MOVE` promotes the carrier group into the book's canon through the island its live wiki switch mounts, and
 # `nexus realm-bag <book>` registers that canon on the realm at CONTRACT. A LOAD into canon refuses
 # (`load-into-canon`), so every write lands on working first.
 #
