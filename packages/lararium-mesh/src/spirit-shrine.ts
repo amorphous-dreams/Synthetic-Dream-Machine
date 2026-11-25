@@ -19,6 +19,7 @@
 
 import { sha256HexSync, utf8Bytes } from "./crypto.js";
 import { redactSecretShapes } from "./secret-shapes.js";
+import { handRefusalOf, type HandRefusalCode } from "./hand-refusal.js";
 
 // ── THE CARRY'S WORDS ─────────────────────────────────────────────────────────────────────────────────────────────
 /**
@@ -142,10 +143,8 @@ export class SpiritRefusal extends Error {
 }
 
 /** A release by the hand refused: an AI seat on the command's branch (`hand-act-only`), or a branch nothing attests. */
-export function handRefusal(code: string, line: string): SpiritRefusal {
-  return new SpiritRefusal(code, code === "hand-act-only"
-    ? `hand-act-only: a release burns by a person's hand at a real terminal, and an AI harness stands on this command's branch. Ask the operator to run \`${line}\` on their own terminal.`
-    : `hand-unattested: a release burns by a person's hand at a real terminal, and this command's process chain reads nothing to attest one. Run \`${line}\` on a terminal whose processes the host can read.`, 5);
+export function handRefusal(code: HandRefusalCode, line: string): SpiritRefusal {
+  return new SpiritRefusal(code, handRefusalOf(code, { act: "a release", reads: "branch", line }).message, 5);
 }
 
 // ── THE RECORD ─────────────────────────────────────────────────────────────────────────────────────────────────────

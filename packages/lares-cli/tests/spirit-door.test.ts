@@ -499,6 +499,15 @@ describe("otakiage burns the residue and keeps the card", () => {
     expect(h.calls).toEqual([]);
   });
 
+  test("a branch nothing attests refuses hand-unattested, names the command, and calls no door", async () => {
+    stage({ titles: [round] });
+    const r = await run(argv(["otakiage", "lares-alpha"]), { hand: () => ({ refusal: "hand-unattested" }) as never });
+    expect(error(r).code).toBe("hand-unattested");
+    expect(error(r).message).toContain("lares spirit otakiage lares-alpha");
+    expect(error(r).message).toContain("whose processes the host can read");
+    expect(h.calls).toEqual([]);
+  });
+
   test("the ash lines land ahead of the deletes, a confirm line after, and the card stays", async () => {
     stage({ titles: [round, hand, other], side: { distilled: "2026-11-20T00:00:00.000Z" }, residue: { [round]: old, [hand]: old } });
     const r = await run(argv(["otakiage", "lares-alpha"]));
