@@ -5,8 +5,9 @@
  * id-hashed and verified, ~14 s over a live 102 MB shelf, and every reload that moved the standing or saw an arrival
  * bought the walk again. The holder now rests the heads it counted in an own note per founding and key version, and a
  * fresh reading reads that note, verifies each id it names, and cites them. The note caches; it authorizes nothing:
- * a note that names an absent, unverified or out-of-date head, or that saw fewer index rows than rest now, falls back to
- * the one-pass walk, which writes the note afresh.
+ * a note whose tag fails under the version's content key (any byte a hand without the key moved), that names an absent,
+ * unverified or out-of-date head, that names no head and no refusal over rows that rest, or whose row digest names
+ * another row set than the one at rest, falls back to the one-pass walk, which writes the note afresh.
  *
  * Each vector counts the rest's own calls, so none reads a clock.
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store
@@ -188,6 +189,65 @@ describe("the note caches and never authorizes: whatever it gets wrong, the walk
     expect(await parentsOf(a, id)).toEqual([head]);
   });
 
+  it("PROBE: a note forged to keep the current row reading and name an older genuine manifest falls back, and no fork persists", async () => {
+    const a = await vessel(world(), "a");
+    const ids: RecordId[] = [];
+    for (let i = 0; i < 4; i++) ids.push(await seal(a, `note ${i}`));
+    const { name, bytes } = await noteOf(a);
+    const noted = JSON.parse(new TextDecoder().decode(bytes)) as Record<string, unknown>;
+    // The forger keeps the note's own row reading and names an older manifest that still verifies.
+    noted.heads = [ids[1]];
+    noted.refused = [];
+    await a.rest.put("own", name, utf8Bytes(JSON.stringify(noted)));
+    a.restart();
+    const first = await seal(a, "after the forged note");
+    expect(await parentsOf(a, first)).toEqual([ids[3]]);
+    a.restart();
+    const second = await seal(a, "after a second restart");
+    expect(await parentsOf(a, second)).toEqual([first]);
+  });
+
+  it("PROBE: a note forged to name no heads and no refusals over a ledger with rows falls back: no seal mints a parentless manifest", async () => {
+    const a = await vessel(world(), "a");
+    let head: RecordId | null = null;
+    for (let i = 0; i < 3; i++) head = await seal(a, `note ${i}`);
+    const { name, bytes } = await noteOf(a);
+    const noted = JSON.parse(new TextDecoder().decode(bytes)) as Record<string, unknown>;
+    noted.heads = [];
+    noted.refused = [];
+    await a.rest.put("own", name, utf8Bytes(JSON.stringify(noted)));
+    a.restart();
+    const id = await seal(a, "after the empty note");
+    expect(await parentsOf(a, id)).toEqual([head]);
+  });
+
+  it("PROBE: a genuine earlier note rolled back over a row set of the same size but other names falls back", async () => {
+    const a = await vessel(world(), "a");
+    for (let i = 0; i < 3; i++) await seal(a, `note ${i}`);
+    const earlier = await noteOf(a);
+    const before = new Set(await a.rest.list("index"));
+    const head = await seal(a, "the head the earlier note never saw");
+    const added = (await a.rest.list("index")).filter((n) => !before.has(n));
+    expect(added.length).toBeGreaterThan(0);
+    // The machine's holder hides the newer rows, and swaps one row the earlier note saw for a name of its own: the
+    // earlier note's count stands again over a row set it never saw.
+    const swapped = [...before].sort()[0]!;
+    const fake = `${swapped.slice(0, swapped.lastIndexOf(".") + 1)}${"0".repeat(64)}`;
+    const hidden = new Set([...added, swapped]);
+    const list = a.rest.list.bind(a.rest);
+    a.rest.list = async (kind, prefix) => {
+      const names = await list(kind, prefix);
+      if (kind !== "index") return names;
+      const kept = names.filter((n) => !hidden.has(n));
+      return [...kept, ...(prefix === undefined || fake.startsWith(prefix) ? [fake] : [])].sort();
+    };
+    await a.rest.put("own", earlier.name, earlier.bytes);
+    a.restart();
+    const id = await seal(a, "after the rolled-back note");
+    a.rest.list = list;
+    expect(await parentsOf(a, id)).toEqual([head]);
+  });
+
   it("a note malformed at rest falls back to the walk", async () => {
     const a = await vessel(world(), "a");
     let head: RecordId | null = null;
@@ -199,7 +259,7 @@ describe("the note caches and never authorizes: whatever it gets wrong, the walk
     expect(await parentsOf(a, id)).toEqual([head]);
   });
 
-  it("A STALE NOTE NEVER HIDES A HEAD: an earlier seal's note restored over the current one falls back and cites the true head", async () => {
+  it("an earlier seal's genuine note restored over the current one falls back once the row set moved past it, and cites the true head", async () => {
     const a = await vessel(world(), "a");
     for (let i = 0; i < 3; i++) await seal(a, `note ${i}`);
     const earlier = await noteOf(a);
