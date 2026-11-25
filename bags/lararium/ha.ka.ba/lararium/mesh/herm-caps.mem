@@ -9,7 +9,7 @@ l-space    = "lararium"
 namespace  = "&#x2695;"
 role       = "the herm's cap stack and its clear wiki: what every lararium stands on below its floor, defined by its refusals; the floor rendered through TiddlyWiki, answered only to a name the reader brings; no herm Pronaos"
 status     = "designed"
-status-why = "operator approved the plan 2026-11-25 (research/herm-caps-wave, herm-scryer#1; S0 measured in code); six questions stay open in #/open; nothing beyond S0 built"
+status-why = "the plan stands approved (research/herm-caps-wave; S0 measured in code); six questions stay open in #/open; nothing beyond S0 built"
 tags       = ["mesh/vessel-caps", "mesh/pronaos", "mesh/cap-tier", "api/pono/causal-islands", "lifecycle/designed"]
 title      = "lar:///ha.ka.ba/lararium/mesh/herm-caps"
 type       = "text/memetic-wikitext+tiddlywiki"
@@ -151,6 +151,6 @@ S5 and S6 both touch `composeHerm` and the public shore: they run in sequence, n
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;pAn5crQnjvpcMN1CpRvly31RLOWUlT8tD33LZa_p_a0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;nVOP69w4rH4jAAj5EkSA32_6xUSeZ5996horJVibN9w`>>
 
 <<^ code=`&#x0004;` to=`?`>>
