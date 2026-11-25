@@ -84,9 +84,10 @@ describe("a reload whose founding did not move keeps the heads it counted", () =
     const w = world();
     const a = await vessel(w, "a");
     for (let i = 0; i < 3; i++) await seal(a, `note ${i}`);
-    await seal(a, "the kitchen's note", OTHER);
-    // A manifest that arrives again, as a peer would carry it: the receipt cannot tell it from a stranger's.
+    // A manifest of the garden's own founding, the one the next seal counts under (its heads note clears on arrival).
     const arriving = (await a.store.records("manifest")).slice(0, 1);
+    await seal(a, "the kitchen's note", OTHER);
+    // It arrives again, as a peer would carry it: the receipt cannot tell it from a stranger's.
     const r = await a.holder.receive({ parcels: [], records: arriving });
     if ("refusal" in r) throw new Error(said(r));
     const calls = await callsOf(a, () => seal(a, "after the arrival"));

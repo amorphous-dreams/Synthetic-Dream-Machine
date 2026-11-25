@@ -60,7 +60,7 @@ function seedCidAt(dir: string): string | null {
 
 const SEED_WITNESS_FILE = "genesis-pin.json";
 
-const NO_DIGESTS: GenesisDigests = Object.freeze({ engine: null, grammar: null, plugins: null, floor: null });
+const NO_DIGESTS: GenesisDigests = Object.freeze({ engine: null, grammar: null, lararium: null, plugins: null, floor: null });
 
 /** The seed's ratchet digests, recomputed from its blobs (the mesh fold); every ratchet absent where no seed reads. */
 function seedDigestsAt(dir: string): GenesisDigests {
@@ -72,7 +72,7 @@ function seedDigestsAt(dir: string): GenesisDigests {
 function witnessDigests(value: unknown): GenesisDigests {
   const v = (value !== null && typeof value === "object" ? value : {}) as Record<string, unknown>;
   const at = (k: string): string | null => (typeof v[k] === "string" && (v[k] as string).length > 0 ? v[k] as string : null);
-  return Object.freeze({ engine: at("engine"), grammar: at("grammar"), plugins: at("plugins"), floor: at("floor") });
+  return Object.freeze({ engine: at("engine"), grammar: at("grammar"), lararium: at("lararium"), plugins: at("plugins"), floor: at("floor") });
 }
 
 /** Record the seed witness a founding used, for EVERY seed source: the seed CID, where it stood, and its ratchet digests. */

@@ -39,6 +39,7 @@ import { repoRoot } from "@lararium/mesh/node";
 import {
   sha256HexBytesSync,
   LARES_MEMETIC_WIKITEXT_PLUGIN_URI,
+  LARES_LARARIUM_PLUGIN_URI,
   isStockTw5PluginTitle,
   buildGenesisDoc,
   computeEngineCid,
@@ -67,6 +68,9 @@ const REPO_ROOT               = repoRoot;
 const DEFAULT_GENESIS_DIR     = join(REPO_ROOT, "genesis");
 const LARARIUM_TW5_DIST_PLUGIN = join(REPO_ROOT, "packages", "lararium-tw5", "dist-plugin");
 const LARES_TW5_PLUGIN_ATTESTATION = join(LARARIUM_TW5_DIST_PLUGIN, "lares-memetic-wikitext.attestation.json");
+// The house skin's own attestation: the bake reads, checks and folds each skin's beside the grammar's.
+const LARES_LARARIUM_PLUGIN_ATTESTATION = join(LARARIUM_TW5_DIST_PLUGIN, "lares-lararium.attestation.json");
+const SKIN_ATTESTATIONS = [LARES_TW5_PLUGIN_ATTESTATION, LARES_LARARIUM_PLUGIN_ATTESTATION] as const;
 
 // ---------------------------------------------------------------------------
 // Layer A helpers — filesystem only
@@ -86,12 +90,14 @@ function releaseBake(): boolean {
 
 function readPluginAttestations(): Map<string, PluginBuildAttestation> {
   const out = new Map<string, PluginBuildAttestation>();
-  if (!existsSync(LARES_TW5_PLUGIN_ATTESTATION)) return out;
-  const att = JSON.parse(readFileSync(LARES_TW5_PLUGIN_ATTESTATION, "utf8")) as PluginBuildAttestation;
-  if (att.format !== "lararium-tw5-plugin-build") {
-    throw new Error(`[genesis] the plugin attestation names the format ${JSON.stringify(att.format)}: it lacks the plugin build shape ("lararium-tw5-plugin-build")`);
+  for (const path of SKIN_ATTESTATIONS) {
+    if (!existsSync(path)) continue;
+    const att = JSON.parse(readFileSync(path, "utf8")) as PluginBuildAttestation;
+    if (att.format !== "lararium-tw5-plugin-build") {
+      throw new Error(`[genesis] the plugin attestation ${basename(path)} names the format ${JSON.stringify(att.format)}: it lacks the plugin build shape ("lararium-tw5-plugin-build")`);
+    }
+    out.set(att.canonicalTitle, att);
   }
-  out.set(att.canonicalTitle, att);
   return out;
 }
 
@@ -132,6 +138,8 @@ async function collectPlugins(attestations: Map<string, PluginBuildAttestation>)
       if (typeof meta["source"]  === "string") source  = meta["source"];
     } catch { /* unparseable — it declares nothing, so it stands as base seed */ }
     if (id === LARES_MEMETIC_WIKITEXT_PLUGIN_URI) kind = "grammar";
+    // The house skin declares itself by its own URI as the grammar does: required, and its own ratchet.
+    if (id === LARES_LARARIUM_PLUGIN_URI) kind = "lararium";
     // A stock TW5 plugin (the vanilla and snowwhite themes, packed from the core's own revision) declares itself by its title's
     // TW5-reserved namespace: it ships in the boot set and folds into no epoch region.
     if (kind === "plugin" && isStockTw5PluginTitle(id)) kind = "stock";
@@ -187,12 +195,14 @@ async function main(): Promise<void> {
   // path as "folds nothing" — correct for a seed derivation that must never throw on a partial tree,
   // but wrong for a BAKE: a bake that proceeds anyway mints a different, unattested seed and calls it
   // the same act. Refuse here, before the fold, rather than mint silently.
-  if (!existsSync(LARES_TW5_PLUGIN_ATTESTATION)) {
-    throw new Error(
-      `[genesis] plugin build attestation missing: ${LARES_TW5_PLUGIN_ATTESTATION}\n` +
-      `  → the actor seed folds it; baking without it would silently mint an unattested seed\n` +
-      `  → run: pnpm --filter @lararium/tw5 build:plugin`,
-    );
+  for (const path of SKIN_ATTESTATIONS) {
+    if (!existsSync(path)) {
+      throw new Error(
+        `[genesis] plugin build attestation missing: ${path}\n` +
+        `  → the actor seed folds it; baking without it would silently mint an unattested seed\n` +
+        `  → run: pnpm --filter @lararium/tw5 build:plugin`,
+      );
+    }
   }
 
   // Layer A: read files + derive actor seed.
@@ -201,7 +211,7 @@ async function main(): Promise<void> {
     root:             REPO_ROOT,
     corePath:         coreJsPath,
     pluginsRoot:      tw5PluginsRoot,
-    attestationPaths: [LARES_TW5_PLUGIN_ATTESTATION],
+    attestationPaths: [...SKIN_ATTESTATIONS],
   });
   console.log(`[genesis] actorSeed = ${actorSeed.slice(0, 16)}…`);
 
@@ -232,11 +242,13 @@ async function main(): Promise<void> {
   const attestations     = readPluginAttestations();
   const plugins          = await collectPlugins(attestations);
 
-  if (!plugins.some(p => p.id === LARES_MEMETIC_WIKITEXT_PLUGIN_URI)) {
-    throw new Error(
-      `[genesis] packed Lares TW5 plugin missing from ${tw5PluginsRoot}\n` +
-      `  → run: pnpm --filter @lararium/tw5 build:plugin`,
-    );
+  for (const required of [LARES_MEMETIC_WIKITEXT_PLUGIN_URI, LARES_LARARIUM_PLUGIN_URI]) {
+    if (!plugins.some(p => p.id === required)) {
+      throw new Error(
+        `[genesis] packed Lares TW5 skin ${required} missing from ${tw5PluginsRoot}\n` +
+        `  → run: pnpm --filter @lararium/tw5 build:plugin`,
+      );
+    }
   }
 
   // Layer B: build genesis doc — pure mesh, no fs.

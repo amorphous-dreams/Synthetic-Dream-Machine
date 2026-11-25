@@ -9,6 +9,7 @@ import { contentReading, handoffReading, labelReading, rgbOf, settleOf, sidebarI
 const THEME = "packages/lararium-tw5/plugins/tiddlywiki-vanilla.json";
 const SHADOWS = "packages/lararium-tw5/plugins/lararium-boot-shadows.json";
 const GRAMMAR = "packages/lararium-tw5/plugins/lares-memetic-wikitext.json";
+const HOUSE = "packages/lararium-tw5/plugins/lares-lararium.json";
 const pane = { sidebarBox: { x: 1090, y: 10, w: 330, h: 700 }, hostBox: { x: 320, y: 10, w: 1100, h: 720 }, breakpoint: "960px" };
 const styled = { sheetHasSidebarRule: true, sidebarPosition: "fixed", ...pane, svgWidth: 18, frameBackground: "rgb(40, 40, 40)", paletteBackground: "#282828",
   groundBackground: "rgb(29, 32, 33)", pageBackground: "#1d2021" };
@@ -72,6 +73,8 @@ test("RED: a story opened before the wiki landed fails even where the landing st
 
 test("the stock fallback reads as a gap only while the grammar bundle carrying the landing shadow stands declared unbaked", () => {
   assert.equal(contentReading("GettingStarted", { defaults: ["GettingStarted"] }, [GRAMMAR]).status, "gap");
+  // The landing shadow rides the house skin: its declared row reads the same gap.
+  assert.equal(contentReading("GettingStarted", { defaults: ["GettingStarted"] }, [HOUSE]).status, "gap");
   assert.equal(contentReading("GettingStarted", { defaults: ["GettingStarted"] }, []).status, "bad");
   // CONTROL: the wiki's own landing, opened first, passes.
   const welcome = "lar:///ha.ka.ba/lares/docs/welcome";

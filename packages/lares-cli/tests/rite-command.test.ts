@@ -659,8 +659,8 @@ describe("kukulu-offer-reaches-the-new-vessel (the host's step)", () => {
 });
 
 describe("the kūkulu names the seed the image offers beside the founding record (D1)", () => {
-  const record = { engine: "e1", grammar: "g1", plugins: "p1", floor: "f1" };
-  const seed = { cid: "5".repeat(64), digests: { engine: "e1", grammar: "g2", plugins: "p1", floor: "f1" } };
+  const record = { engine: "e1", grammar: "g1", lararium: "l1", plugins: "p1", floor: "f1" };
+  const seed = { cid: "5".repeat(64), digests: { engine: "e1", grammar: "g2", lararium: "l1", plugins: "p1", floor: "f1" } };
 
   it("RED: before any lei spends, the host says the seed (offered) at the head beside the founding record, ratchet by ratchet; the rows and the shim order stay as they were", async () => {
     const f = fakes();
@@ -669,9 +669,9 @@ describe("the kūkulu names the seed the image offers beside the founding record
     expect(f.calls.filter((c) => !c.startsWith("seed-offer"))).toEqual(["checkout", STAGE, BEGIN, OFFER, `raise ${HEAD}`, LAND]);
     expect(f.calls.indexOf(`seed-offer ${HEAD}`)).toBeLessThan(f.calls.indexOf(BEGIN));
     const line = kukuluSeedLine(HEAD, { record, seed });
-    expect(line).toBe(`kūkulu: the image at ${HEAD} offers seed ${"5".repeat(64)} beside the founding record: a newer seed waits: engine same · grammar moved · plugins same · floor same; the founding record keeps serving, and the kūkulu moves no ratchet`);
+    expect(line).toBe(`kūkulu: the image at ${HEAD} offers seed ${"5".repeat(64)} beside the founding record: a newer seed waits: engine same · grammar moved · lararium same · plugins same · floor same; the founding record keeps serving, and the kūkulu moves no ratchet`);
     expect(f.said).toContain(line);
-    expect(out).toMatchObject({ code: 0, data: { seed: { cid: "5".repeat(64), ratchets: "engine same · grammar moved · plugins same · floor same" } } });
+    expect(out).toMatchObject({ code: 0, data: { seed: { cid: "5".repeat(64), ratchets: "engine same · grammar moved · lararium same · plugins same · floor same" } } });
   });
 
   it("CONTROL: a seed the same on every ratchet says so; a host that reads no founding record names that and the rite goes on", async () => {
@@ -703,7 +703,7 @@ describe("the kūkulu's seed port reads the genesis dir the image carries (the h
     const f = fakes();
     const out = await riteKukulu({ ...f.ports, seedOffer: hostSeedOfferPort({ genesisDir: dir, record: async () => ({ record: record() }) }) }, {});
     expect(f.said).toContain(`kūkulu: the image at ${HEAD} offers seed ${cid}: same on every ratchet as the founding record`);
-    expect(out.data["seed"]).toEqual({ cid, ratchets: "engine same · grammar same · plugins same · floor same" });
+    expect(out.data["seed"]).toEqual({ cid, ratchets: "engine same · grammar same · lararium same · plugins same · floor same" });
   });
 
   it("CONTROL: a newer seed names what waits; a house that answers no founding record leaves the port null, and the rite goes on", async () => {
@@ -711,7 +711,7 @@ describe("the kūkulu's seed port reads the genesis dir the image carries (the h
     const moved = JSON.stringify({ ...seed, blobs: { ...seed.blobs, [LARES_MEMETIC_WIKITEXT_PLUGIN_URI]: { ...seed.blobs[LARES_MEMETIC_WIKITEXT_PLUGIN_URI], sha256: "f".repeat(64) } } });
     const f = fakes();
     await riteKukulu({ ...f.ports, seedOffer: hostSeedOfferPort({ genesisDir: genesisDirWith(moved), record: async () => ({ record: record() }) }) }, {});
-    expect(f.said.join("\n")).toContain("a newer seed waits: engine same · grammar moved · plugins same · floor same; the founding record keeps serving, and the kūkulu moves no ratchet");
+    expect(f.said.join("\n")).toContain("a newer seed waits: engine same · grammar moved · lararium same · plugins same · floor same; the founding record keeps serving, and the kūkulu moves no ratchet");
     const g = fakes();
     const out = await riteKukulu({ ...g.ports, seedOffer: hostSeedOfferPort({ genesisDir: genesisDirWith(shippedBytes()), record: async () => ({ unread: "no vessel answers" }) }) }, {});
     expect(g.said).toContain("kūkulu: the host reads no founding record beside the seed this image offers; the rite goes on, and moves no ratchet");

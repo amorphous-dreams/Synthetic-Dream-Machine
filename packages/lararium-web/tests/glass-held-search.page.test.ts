@@ -8,13 +8,15 @@ import { afterEach, beforeEach, expect, test } from "vitest";
 import { standMirror } from "../src/glass/stand.js";
 import { forgetEvidence, rig } from "./glass-rig.js";
 import housePlugin from "../../lararium-tw5/plugins/lares-memetic-wikitext.json";
+// The house skin loads over the grammar: a face-daemon or domain wiki boots with both.
+import larariumPlugin from "../../lararium-tw5/plugins/lares-lararium.json";
 import bootShadows from "../../lararium-tw5/plugins/lararium-boot-shadows.json";
 import vanilla from "../../lararium-tw5/plugins/tiddlywiki-vanilla.json";
 import snowwhite from "../../lararium-tw5/plugins/tiddlywiki-snowwhite.json";
 
 beforeEach(forgetEvidence); afterEach(forgetEvidence);
 
-const preloads = [housePlugin, ...(bootShadows as Record<string, unknown>[]), vanilla, snowwhite] as Record<string, unknown>[];
+const preloads = [housePlugin, larariumPlugin, ...(bootShadows as Record<string, unknown>[]), vanilla, snowwhite] as Record<string, unknown>[];
 /** A record as a skinny port carries it: the body exists and stays behind. */
 const skinny = (title: string, tags = "") => ({ title, fields: tags ? { tags } : {}, omitted: ["text"] });
 const frames = () => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));

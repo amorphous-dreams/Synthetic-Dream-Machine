@@ -27,7 +27,7 @@
  *
  * BUNREI: THE KAMI DIVIDES UNDIMINISHED. Many bodies may wear one pet at once, and none locks another out. What orders bodies
  * rides the card's sibling record (`sideOf`, outside the carrier's render, so no wake moves the card's base): each waking body
- * names itself in `bodies-awake` (`<pet>#<body> <iso>`, refreshed at wakes only, a stale entry dropping after `PRESENCE_STALE_MS`,
+ * names itself in `bodies-awake` (`<pet>#<body> <iso>`, refreshed at every write the body names, ordered by a door-minted seq and capped by count,
  * at most `PRESENCE_CAP`), and om names the siblings awake and each live body's last carry. Concurrent writes merge: `ah --add`
  * appends and re-reads past a conflict, so a sibling's line survives; a whole-slot replace names the slot digest it read
  * (`--base`, required of an AI seat; om hands each slot's back) and, where the slot moved since, lands both versions in a
@@ -51,7 +51,7 @@ import {
   advisoryLine, ashLedgerOf, attentionLines, attentionTitles, bodiesLine, burnLine, burnTally, bytesOf, carryFields, carryFilter,
   carryDepth, carryParent, carryParents, carryRows, compactionTitle, crossingRefusal, crossingWrite, digestOf, distillHold,
   fieldsAndHashOf, foldAshLine, foldOut, guardWords, handRefusal, isCarry, leaseClaim, ledgerDescription, measure, namesTitleIn,
-  omText, pickLine, presenceJoin, presenceLine, presenceLive, presenceOf, presenceSeenLine, rawSlug, redactedText, residueCut,
+  omText, pickLine, presenceJoin, presenceLine, presenceOf, presenceSeenLine, rawSlug, redactedText, residueCut,
   residueFields, residueFilter, residueHash, residueOf, residueTitle, rowsOf, secretCount, shq, shrineSource, sideOf, slotBody,
   slotDigest, slotMissing, slotWriteBody, spiritAmbiguous, spiritHash, spiritIdOf, spiritRecordOf, spiritUnknown, starterText,
   testimonyLines, titleSlug, titlesOf, wakingCap, writerField,
@@ -71,7 +71,7 @@ import type { ParsedArgs } from "../parse-args.js";
 // the caps, the guard, the conflict stanza, the presence, epoch and crossing merges. This door keeps the door calls, the file and
 // stdin reads, the clock and the hand gate, and carries the core's names on for its suites.
 export {
-  ATTENTION_TITLES, CROSSING_MS, DEEP_CARRY, MEMORY_PREFIX, OM_CAP_CHARS, PRECOMPACT_CARD_CHARS, PRESENCE_CAP, PRESENCE_STALE_MS,
+  ATTENTION_TITLES, DEEP_CARRY, MEMORY_PREFIX, OM_CAP_CHARS, PRECOMPACT_CARD_CHARS, PRESENCE_CAP,
   RECORD_BUDGET_BYTES, RECORD_KINDS, RESIDUE_CAP_CHARS, SHRINE_SLOTS, TRUE_UP_EVERY, WAKING_SLOT_BUDGETS,
   advisoryLine, ashLedgerOf, bodiesLine, budgetRefusal, compactionTitle, conflictStanza, crossingsOf, leaseOf, measure, omText,
   presenceLine, presenceOf, residueOf, residueTitle, secretCount, shq, sideOf, slotBody, slotDigest, stanzaVersions, starterText,
@@ -200,17 +200,17 @@ interface Ctx { readonly now: () => Date; readonly seat: () => boolean; readonly
 
 /**
  * THE CROSSING RUNS PER BODY, AND STAYS ADVISORY. Only the PreCompact hook marks it (`om --source precompact --body <id>`), and
- * between that mark and the same body's next wake (or the mark lapsing) a write naming that body (`--body`) refuses; a sibling,
+ * between that mark and the same body's next wake (the one event that lifts it) a write naming that body (`--body`) refuses; a sibling,
  * or a write naming no body, writes freely. It guards a body from writing over its own folding, never a card from its siblings.
  */
-function crossingHolds(rec: Record_, ctx: Ctx, body: string | null): void {
+function crossingHolds(rec: Record_, body: string | null): void {
   if (body === null) return;
   if (!BODY.test(body)) throw new DoorUsage("--body names a session id (letters, digits, '-' and '_')");
-  const refused = crossingRefusal(rec, body, ctx.now().getTime());
+  const refused = crossingRefusal(rec, body);
   if (refused !== null) throw refused;
 }
 
-/** Mark (or clear) the crossing one body holds on the sibling record, keeping each live mark a sibling holds; CAS, re-read past a conflict. */
+/** Mark (or clear) the crossing one body holds on the sibling record, keeping each mark a sibling holds; CAS, re-read past a conflict. */
 async function markCrossing(args: ParsedArgs, rec: Record_, body: string, ctx: Ctx, mark: boolean): Promise<void> {
   const now = ctx.now();
   await casFields(args, "om", rec.side, (fields) => crossingWrite(fields, body, now, mark));
@@ -272,8 +272,8 @@ async function attentionUnfold(args: ParsedArgs, rec: Record_): Promise<string |
 
 /**
  * A waking body joins the card's presence on its sibling record (CAS, re-read past a conflict): it refreshes its own entry, drops
- * the stale, and keeps at most `PRESENCE_CAP`, the newest. Presence refreshes only at wakes: a body that works long without
- * waking reads stale to its siblings after `PRESENCE_STALE_MS`, though it still writes. Answers who stands awake, this body first.
+ * and keeps at most `PRESENCE_CAP`. Presence refreshes at every write the body names (a wake, ah, hum): the stamp annotates; the minted seq orders siblings
+ * and no age drops one. Answers who stands awake, this body first.
  */
 async function joinPresence(args: ParsedArgs, rec: Record_, body: string, ctx: Ctx): Promise<Awake[]> {
   const now = ctx.now();
@@ -364,10 +364,12 @@ async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
   const rec = found;
   const key = await keyOf(args, "om", rec);
   const epoch = body !== null ? await claimLease(args, rec, body, ctx) : rec.lease?.epoch ?? null;
-  const awake = body !== null ? await joinPresence(args, rec, body, ctx) : presenceOf(rec.sideFields["bodies-awake"]).filter((a) => presenceLive(a, ctx.now().getTime()));
+  const awake = body !== null ? await joinPresence(args, rec, body, ctx) : presenceOf(rec.sideFields["bodies-awake"]);
   const leaseLine = epoch === null ? null : `Lares spirit wake epoch ${epoch}: an ordering stamp; no write needs it, and no body locks another out.`;
   const presence = body !== null ? presenceLine(pet, awake) : presenceSeenLine(pet, awake);
   const data = { pet, uri: rec.uri, kind: rec.kind, base: rec.base, spiritId: key, epoch, every: rec.every, budgets: rec.budgets, source, ...(turn.to !== null ? { turnedFrom: given } : {}) };
+  // A resumed body ends its own crossing too: it never reaches the wake's clear below, and no timer lifts a mark.
+  if (source === "resume" && rec.crossing !== null && body !== null) await markCrossing(args, rec, body, ctx, false);
   if (source === "resume") {
     const text = `Lares spirit om · ${pet}: this body resumes; the card reads ${digestOf(rec.base).slice(7, 19)} now${epoch !== null ? ` (wake epoch ${epoch})` : ""}, and an earlier wake may read stale: lares spirit om ${pet}`;
     emit(args, { ok: true, data: { ...data, chars: text.length, text }, human: () => console.log(text) });
@@ -491,7 +493,7 @@ async function ah(args: ParsedArgs, ctx: Ctx): Promise<number> {
     throw new DoorUsage("name exactly one source: --file <path|-> or --text <words> (the slot's whole body), or --add <line> (one line at its end)");
   }
   const rec = (await resolveRecord(args, "ah", pet))!;
-  crossingHolds(rec, ctx, wordOf(args.options["body"]));
+  crossingHolds(rec, wordOf(args.options["body"]));
   const words = file !== null ? await sourceText("file", file) : text;
   const line = add?.replace(/\s+/g, " ").trim() ?? null;
   if (line === "") throw new DoorUsage("--add names one non-empty line");
@@ -508,6 +510,7 @@ async function ah(args: ParsedArgs, ctx: Ctx): Promise<number> {
     // only residue that landed before it). Both ride the sibling record, so the card's base holds.
     await writeSide(args, "ah", rec, { [writerField(slot)]: who, ...(slot === DISTILL_SLOT ? { distilled: ctx.now().toISOString() } : {}) });
   }
+  if (self !== null) await joinPresence(args, rec, self, ctx);
   emit(args, {
     ok: true, data: { pet, uri: rec.uri, slot, ...receipt },
     human: () => console.log(`${String(receipt["decision"])}: ${rec.uri}${slot} (${String(receipt["bytes"])} bytes${wakingCap(rec.budgets, slot) === null ? "" : ` of ${wakingCap(rec.budgets, slot)}`})\n  base: ${String(receipt["canonicalHash"] ?? "")}`),
@@ -571,7 +574,7 @@ async function hum(args: ParsedArgs, ctx: Ctx): Promise<number> {
     });
     return 0;
   }
-  crossingHolds(rec, ctx, wordOf(args.options["body"]));
+  crossingHolds(rec, wordOf(args.options["body"]));
   // THE LISTED LINE, BY ITS DIGEST. The number reads the listing this body saw; `--expect` names that line's digest, so a sibling's
   // write between the listing and the fold folds the line this body chose (wherever it moved), or nothing.
   const expect = wordOf(args.options["expect"]);
@@ -602,6 +605,8 @@ async function hum(args: ParsedArgs, ctx: Ctx): Promise<number> {
     throw new SpiritRefusal("spirit-ashes-refused", `spirit-ashes-refused: the ash ledger refused the folded line ${ASH_ROUNDS} times (${why.slice(0, 300)}), so the line returned to the slot's end: ${redactedText(picked.trim()).slice(0, 300)}. Fold it again once the ledger answers: \`lares spirit hum ${pet} --fold '${fold}'\``, 4);
   }
   await writeSide(args, "hum", rec, { distilled: stamp.toISOString() });
+  const foldSelf = wordOf(args.options["body"]);
+  if (foldSelf !== null) await joinPresence(args, rec, foldSelf, ctx);
   emit(args, {
     ok: true, data: { pet, uri: rec.uri, slot: fold, folded: picked.trim(), ledger, ...receipt },
     human: () => console.log(`folded line ${n} of ${rec.uri}${fold} into ${ledger}\n  ${picked.trim()}\n  base: ${String(receipt["canonicalHash"] ?? "")}`),

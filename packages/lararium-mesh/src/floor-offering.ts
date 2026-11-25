@@ -54,8 +54,9 @@ export async function signFloorOffering(args: { readonly blobs: readonly Offered
 
 export type FloorOfferingRefusal = "floor-offering-refused" | "floor-offering-incomplete";
 
-/** The classes the bake declares REQUIRED (`GenesisBlobKind`): the memetic-wikitext parser and the base seed. No mount boots without them. */
-export const FLOOR_REQUIRED_BLOB_KINDS: readonly string[] = ["grammar", "base"];
+/** The classes the bake declares REQUIRED (`GenesisBlobKind`): the memetic-wikitext parser, the house plugin and the base seed. No
+ *  mount boots without them. */
+export const FLOOR_REQUIRED_BLOB_KINDS: readonly string[] = ["grammar", "lararium", "base"];
 
 /**
  * The blob ids every mount needs, read off a vessel's own island blob rows: each row whose declared class the bake names

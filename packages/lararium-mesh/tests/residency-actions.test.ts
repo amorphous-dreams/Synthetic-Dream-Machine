@@ -120,9 +120,9 @@ describe("newChangeId", () => {
     expect(ids.size).toBe(50);
   });
 
-  test("matches timestamp-rand format (base-32, hyphen separator)", () => {
+  test("carries 32 base-32 digits and no clock reading", () => {
     const id = newChangeId();
-    expect(id).toMatch(/^[0-9a-v]+-[0-9a-v]+$/);
+    expect(id).toMatch(/^[0-9a-v]{32}$/);
   });
 });
 
