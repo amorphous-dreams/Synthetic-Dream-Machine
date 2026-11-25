@@ -12,8 +12,9 @@
  *   1. PIN ONCE. `git rev-parse` names the base (`refs/remotes/origin/develop`), the bench's HEAD and the lane head, each one
  *      time. Every later read names those shas, so a ref or a HEAD that moves afterwards changes nothing here.
  *   2. THE BENCH STANDS AT THE BASE. A HEAD that differs from the base refuses (a lane worktree's HEAD reads as the lane, and
- *      a lane judged against itself owes nothing); `--base <ref>` names another base on the caller's own word and skips that
- *      one check. A lane head equal to the base refuses too: nothing stands there to merge.
+ *      a lane judged against itself owes nothing); `--base <ref>` names another base (any ref) on the caller's own word and skips that
+ *      one check; a base other than `refs/remotes/origin/develop` still reads and prints its verdict, marks the record line
+ *      `base≠origin/develop` and prints no `land:` line, so a typed base never hands the familiar a land command. A lane head equal to the base refuses too: nothing stands there to merge.
  *   3. THE JUDGE STANDS ON THE BASE. The running file's bytes equal `<base>:tools/cold-read-owed.mjs` or the read lands
  *      unread; the list (`<base>:tools/security-class-paths.json`) and the matcher
  *      (`<base>:packages/lararium-tw5/src/filters/security-class.ts`) come out of the base's git objects, so neither a dirty
@@ -157,7 +158,7 @@ function readPinned(pin, { git, self, match }) {
   if (pin.base === pin.head) throw new Error(`the lane head equals the base (${pin.base.slice(0, 9)}): nothing stands there to merge; name the lane's own head, and run from the landing bench, never from the lane`);
   const judge = judgeOn(git, pin.base, self);
   pin.listSha = judge.listSha;
-  pin.landable = true;
+  pin.landable = !pin.offDevelop;
   const twoTree = changedBetween(git, pin.base, pin.head);
   const merged = git(["merge-tree", "--write-tree", pin.base, pin.head], { raw: true });
   const tree = String(merged.stdout).split("\n")[0].trim();
@@ -171,7 +172,7 @@ function readPinned(pin, { git, self, match }) {
  * Nothing here throws; every refusal lands as unread, which owes.
  */
 export function coldRead({ root = ROOT, lane, base, self = HERE, git = gitAt(root), match = runMatcher } = {}) {
-  const pin = { head: "", base: "", listSha: "", landable: false };
+  const pin = { head: "", base: "", listSha: "", landable: false, offDevelop: false };
   const answer = (paths, unread) => ({ owed: paths.length > 0, unread, paths, ...pin, hash: recordHash({ ...pin, paths }) });
   try {
     if (typeof lane !== "string" || lane === "") throw new Error("no lane ref named; pass the lane's branch or sha");
@@ -179,7 +180,12 @@ export function coldRead({ root = ROOT, lane, base, self = HERE, git = gitAt(roo
       pin.base = commitOf(git, DEVELOP);
       const here = commitOf(git, "HEAD");
       if (here !== pin.base) throw new Error(`this bench's HEAD (${here.slice(0, 9)}) differs from ${DEVELOP} (${pin.base.slice(0, 9)}): the judge runs from the landing bench standing at develop, never from a lane; bring the bench to develop (git fetch origin develop, then git merge --ff-only origin/develop), or name the base with --base`);
-    } else pin.base = commitOf(git, base);
+    } else {
+      pin.base = commitOf(git, base);
+      let develop = "";
+      try { develop = commitOf(git, DEVELOP); } catch { /* no origin/develop here: the typed base stands off it */ }
+      pin.offDevelop = pin.base !== develop;
+    }
     pin.head = commitOf(git, lane);
     return answer(readPinned(pin, { git, self, match }), false);
   } catch (e) {
@@ -230,7 +236,7 @@ export const shown = (p) => (/[\u0000-\u001f\u007f,"\\]|^\(|^\s|\s$/.test(p) ? J
 /** The lines the familiar reads: the verdict, the record, then the landing command (a read) or the paths past the read (a merge). */
 export function lines(r) {
   const verdict = r.unread ? `COLD READ OWED: ${r.paths[0]}` : r.owed ? `COLD READ OWED: ${r.paths.map(shown).join(", ")}` : "cold read: none owed";
-  const out = [verdict, `cold-read: ${r.owed ? "owed" : "none"}${r.merge === undefined ? "" : ` · merge ${r.merge || "?"}`} · head ${r.head || "?"} · base ${r.base || "?"} · list ${r.listSha || "?"} · paths ${r.unread ? "unread" : r.paths.length} · record-hash ${r.hash}`];
+  const out = [verdict, `cold-read: ${r.owed ? "owed" : "none"}${r.merge === undefined ? "" : ` · merge ${r.merge || "?"}`} · head ${r.head || "?"} · base ${r.base || "?"} · list ${r.listSha || "?"} · paths ${r.unread ? "unread" : r.paths.length} · record-hash ${r.hash}${r.offDevelop ? " · base≠origin/develop" : ""}`];
   if (r.landable) out.push(`land: git merge --no-ff ${r.head}   (the merge message carries the line "Cold-Read: ${r.hash}"; then, before the push: node ${SELF} --check-merge HEAD ${r.head})`);
   if (r.beyond?.length) out.push(`cold-read: beyond the read: ${r.beyond.map(shown).join(", ")}`);
   return out;
