@@ -29,7 +29,7 @@ vi.mock("../src/env.js", async (orig) => ({
   vesselDid: async () => "0x" + "ab".repeat(32),
 }));
 
-import { cmdSpirit, omText, residueOf, slotBody, ashLedgerOf, OM_CAP_CHARS, SLOT_BUDGET_BYTES, MEMORY_PREFIX, RESIDUE_CAP_CHARS } from "../src/commands/spirit.js";
+import { cmdSpirit, omText, residueOf, slotBody, ashLedgerOf, OM_CAP_CHARS, WAKING_SLOT_BUDGETS, RECORD_BUDGET_BYTES, MEMORY_PREFIX, RESIDUE_CAP_CHARS } from "../src/commands/spirit.js";
 import { COMPACTION_DISPLAY, COMPACTION_WORD } from "../src/spirit-words.js";
 import { COMMANDS } from "../src/bin/lares.js";
 import { CompositeStore, bagUri } from "@lararium/mesh";
@@ -41,6 +41,7 @@ const URI = `${MEMORY_PREFIX}familiar/lares-alpha`;
 const SIDE = `${MEMORY_PREFIX}presence/lares-alpha`;
 /** A slot's digest as the door hands it back: the first 16 hex of the sha256 of its body. */
 const digest = (body: string): string => createHash("sha256").update(body).digest("hex").slice(0, 16);
+const OPEN_CAP = WAKING_SLOT_BUDGETS["#/open"]!;
 const OPEN = "!! Open\n\n* a loop";
 const LEDGER_TITLE = `${MEMORY_PREFIX}state/ashes-2026-11`;
 const FULL = "sha256:" + "f5".repeat(32);
@@ -296,18 +297,39 @@ describe("ah trues one slot through the meme door", () => {
     expect(error(r).message).toContain("kept moving");
   });
 
-  test("growth past the slot's budget refuses by name and names hum --fold", async () => {
+  test("a waking slot past its cap refuses by name and names hum --fold", async () => {
     stage();
-    const r = await run(argv(["ah", "lares-alpha"], { slot: "#/open", text: "z".repeat(SLOT_BUDGET_BYTES + 1) }));
+    const r = await run(argv(["ah", "lares-alpha"], { slot: "#/open", text: "z".repeat(OPEN_CAP + 1) }));
     expect(error(r).code).toBe("spirit-slot-over-budget");
     expect(error(r).message).toContain("lares spirit hum lares-alpha --fold '#/open'");
     expect(h.calls.some((c) => c.verb === "meme-patch")).toBe(false);
   });
 
-  test("growth past the record's budget refuses by name", async () => {
+  test("#/attention refuses past 1024 bytes; a write to #/open at its cap lands", async () => {
+    stage({ slotTexts: { "#/attention": "!! Where" } });
+    const r = await run(argv(["ah", "lares-alpha"], { slot: "#/attention", text: "z".repeat(1025) }));
+    expect(error(r).code).toBe("spirit-slot-over-budget");
+    const ok = await run(argv(["ah", "lares-alpha"], { slot: "#/open", text: "z".repeat(OPEN_CAP) }));
+    expect(ok.exit).toBe(0);
+  });
+
+  test("a #/voice write past 1024 bytes lands: only the waking slots refuse", async () => {
+    stage({ slotTexts: { "#/voice": "!! Voice" } });
+    const r = await run(argv(["ah", "lares-alpha"], { slot: "#/voice", text: "v".repeat(3000) }));
+    expect(r.exit, JSON.stringify(r.printed)).toBe(0);
+    expect(h.calls.some((c) => c.verb === "meme-patch")).toBe(true);
+  });
+
+  test("a record past its advisory weight lands the write, and hum and om name the total and the heaviest slot", async () => {
     stage({ slotBytes: { "#/entry": 5900 } });
     const r = await run(argv(["ah", "lares-alpha"], { slot: "#/open", text: "z".repeat(600) }));
-    expect(error(r).code).toBe("spirit-record-over-budget");
+    expect(r.exit, JSON.stringify(r.printed)).toBe(0);
+    const hum = await run(argv(["hum", "lares-alpha"]));
+    expect(String(data(hum)["advisory"])).toMatch(/^advisory: the record holds 6600 bytes, past 6144; heaviest #\/entry 5900/);
+    expect(data(hum)["oversize"]).toEqual([]);
+    const om = await run(argv(["om", "lares-alpha"]));
+    expect(String(data(om)["text"])).toContain("advisory: the record holds 6600 bytes");
+    expect(RECORD_BUDGET_BYTES).toBe(6144);
   });
 
   test("a shrink lands even where the slot stands over its budget", async () => {
@@ -348,11 +370,11 @@ describe("ah trues one slot through the meme door", () => {
 });
 
 describe("hum measures and folds", () => {
-  test("each slot against its budget, the oversize named", async () => {
-    stage({ slotBytes: { "#/entry": 1100 } });
+  test("a waking slot against its cap, the oversize named", async () => {
+    stage({ slotBytes: { "#/open": 2100 } });
     const r = await run(argv(["hum", "lares-alpha"]));
-    expect(data(r)["oversize"]).toEqual(["#/entry"]);
-    expect(data(r)["total"]).toBe(1800);
+    expect(data(r)["oversize"]).toEqual(["#/open"]);
+    expect(data(r)["total"]).toBe(3300);
   });
 
   test("--fold alone numbers the slot's lines", async () => {
@@ -922,8 +944,8 @@ describe("bunrei: many bodies wear one pet, and none locks another out", () => {
   });
 
   test("a stanza past twice the slot's budget refuses by name with the hum cure", async () => {
-    stage({ open: `!! Open\n\n${"o".repeat(SLOT_BUDGET_BYTES - 20)}` });
-    const r = await run(argv(["ah", "lares-alpha"], { slot: "#/open", text: "m".repeat(SLOT_BUDGET_BYTES + 200), base: "0000000000000000" }));
+    stage({ open: `!! Open\n\n${"o".repeat(OPEN_CAP - 20)}` });
+    const r = await run(argv(["ah", "lares-alpha"], { slot: "#/open", text: "m".repeat(OPEN_CAP * 2 + 200), base: "0000000000000000" }));
     expect(error(r).code).toBe("spirit-slot-over-budget");
     expect(error(r).message).toContain("lares spirit hum lares-alpha --fold '#/open'");
   });
