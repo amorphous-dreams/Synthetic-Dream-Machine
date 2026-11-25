@@ -1300,10 +1300,13 @@ pulama_status_read() { # $1 = the image digest
   # THE KEEPER TALLY: the live successor's successor closure where it can vest, whether the struck fire is due, and any live successor.
   ps_vest=$(printf '%s' "$ps_flat" | sed -n 's/.*"vestReady":"\(sha256:[0-9a-f]\{64\}\)".*/\1/p')
   ps_successor=$(printf '%s' "$ps_flat" | sed -n 's/.*"successor":"\(sha256:[0-9a-f]\{64\}\)".*/\1/p')
+  # A pūlama still running the older code (the transition a pull crosses) names the same row `pending`, its stale reading `stalePending`/`staleWhy`; the wire ops it dispatches (`keeper-commit`) stay unchanged.
+  [ -n "$ps_successor" ] || ps_successor=$(printf '%s' "$ps_flat" | sed -n 's/.*"pending":"\(sha256:[0-9a-f]\{64\}\)".*/\1/p')
   ps_closure=$(printf '%s' "$ps_flat" | sed -n 's/.*"closure":"\(sha256:[0-9a-f]\{64\}\)".*/\1/p')
   # A STALE live successor (`staleSuccessor`: a self-successor, or one a keeper of another closure rested) binds nothing current: the
   # lei's commit supersedes it, so the lei reading treats it as none (the pūlama decides by closures and rows, never a clock).
   case "$ps_flat" in *'"staleSuccessor":true'*) ps_stale=$(printf '%s' "$ps_flat" | sed -n 's/.*"staleSuccessorWhy":"\([a-z-]*\)".*/\1/p'); ps_stale=${ps_stale:-stale} ;; esac
+  case "$ps_flat" in *'"stalePending":true'*) ps_stale=$(printf '%s' "$ps_flat" | sed -n 's/.*"staleWhy":"\([a-z-]*\)".*/\1/p'); ps_stale=${ps_stale:-stale} ;; esac
   case "$ps_flat" in *'"struckDue":true'*) ps_struck=yes ;; esac
   # THE KEEPER LEI: a return could spend (the keeper's own bounds; the host adds its testimony at the spend).
   case "$ps_flat" in *'"leiReady":true'*) ps_lei=yes ;; esac
@@ -1610,7 +1613,7 @@ keeper_commit_lei() { # $1 = the revision, $2 = the branch whose kukulu lei lice
   [ "$kl_most" -eq 1 ] || die "pulama name-successor --lei: a lit face holds $kl_most devices (keeper-lei-cosign-owed), and a keeper lei hands the fire for one-device faces alone; no successor named: name the successor by hand on a terminal, which asks the co-sign: lares pulama name-successor"
   printf 'lares-container: name-successor --lei: %s reads reachable from %s, clean, closure %s twice, the image labelled the same, CI run %s green, every lit face of one device; the keeper rests the commit the kukulu lei of %s licenses\n' "$kl_rev" "$kl_reach" "$kl_d" "$kl_run" "$2" >&2
   kl_frame=$(printf '{"next":"%s","branch":"%s","rev":"%s","tree":"%s","recheck":"same","image":"%s","ci":"%s:success","devices":%s}' "$kl_d" "$2" "$kl_rev" "$kl_tree" "$kl_label" "$kl_run" "$kl_most")
-  compose --profile pulama exec -T "$(pulama_svc)" node "$PULAMA_MAIN" name-successor-lei "$kl_frame" </dev/null
+  compose --profile pulama exec -T "$(pulama_svc)" node "$PULAMA_MAIN" keeper-commit-lei "$kl_frame" </dev/null
 }
 # STAND THE SUCCESSOR (`keeper-stand`, the rite's step before its offer): one JSON line on stdout, {"to","closure","svc"}.
 keeper_stand() {
@@ -1955,9 +1958,9 @@ case "$verb" in
         fi
         # shellcheck disable=SC2046,SC2086
         if [ -n "$kc_cosign" ]; then
-          compose --profile pulama exec $(tty_flag) "$(pulama_svc)" node "$PULAMA_MAIN" name-successor "$kc_d" $kc_dev --cosign "$kc_cosign" && rm -f "$kc_held"
+          compose --profile pulama exec $(tty_flag) "$(pulama_svc)" node "$PULAMA_MAIN" keeper-commit "$kc_d" $kc_dev --cosign "$kc_cosign" && rm -f "$kc_held"
         else
-          compose --profile pulama exec $(tty_flag) "$(pulama_svc)" node "$PULAMA_MAIN" name-successor "$kc_d" $kc_dev
+          compose --profile pulama exec $(tty_flag) "$(pulama_svc)" node "$PULAMA_MAIN" keeper-commit "$kc_d" $kc_dev
         fi
         fi ;;
       lock)
