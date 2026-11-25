@@ -88,7 +88,9 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       `case " $* " in *" ps -q --filter ancestor="*) id=\${last#ancestor=}; case " \${FAKE_RUNNING_IMAGES:-} " in *" $id "*) printf 'c1\\n';; esac; exit 0;; esac\n` +
       // THE PŪLAMA'S CODE CLOSURE: the image's label, and the label the running pūlama's container carries.
       `case " $* " in *"lares.pulama.closure"*) case " $* " in *"image inspect"*) printf '%s\\n' "\${FAKE_IMAGE_CLOSURE:-}";; *) if [ -n "\${FAKE_PULAMA_B_ID:-}" ] && [ "$last" = "\${FAKE_PULAMA_B_ID}" ]; then printf '%s\\n' "\${FAKE_IMAGE_CLOSURE:-}"; else printf '%s\\n' "\${FAKE_PULAMA_CLOSURE:-}"; fi;; esac; exit 0;; esac\n` +
-      // A KEPT IMAGE (`<repo>:rev-<12 hex>`): its revision label, where a test names one; none stands otherwise.
+      // A KEPT IMAGE (`<repo>:rev-<12 hex>`): its id, where a test names one apart from the tag's; its revision label, where a
+      // test names one; none stands otherwise.
+      `case " $* " in *"image inspect --format {{.Id}} "*":rev-"*) if [ -n "\${FAKE_KEPT_ID:-}" ]; then printf '%s\\n' "\${FAKE_KEPT_ID}"; exit 0; fi;; esac\n` +
       `case " $* " in *"image inspect"*"org.opencontainers.image.revision"*":rev-"*) [ -n "\${FAKE_KEPT_LABEL:-}" ] || exit 1; printf '%s\\n' "\${FAKE_KEPT_LABEL}"; exit 0;; esac\n` +
       // The vessel's own image (FAKE_VESSEL_IMAGE) reads FAKE_VESSEL_REV_LABEL where a test names one; every other image the tag's label.
       `case " $* " in *"image inspect"*"org.opencontainers.image.revision"*) if [ -n "\${FAKE_VESSEL_REV_LABEL:-}" ] && [ "$last" = "\${FAKE_VESSEL_IMAGE:-}" ]; then printf '%s\\n' "\${FAKE_VESSEL_REV_LABEL}"; exit 0; fi;; esac\n` +
@@ -2356,15 +2358,18 @@ test("sh: pulama-status-names-the-kukulu-reading: each row of the shared table r
   const leiShow = { true: { standing: true, returnsLeft: 3 }, absent: { refusal: "absent" }, "returns-spent": { standing: true, returnsLeft: 0 } };
   for (const row of table.rows) {
     const f = { vessel: "standing", current: false, keeper: null, ...row.facts };
-    // `admitted` and `offer` name the image the tag holds where it carries the head (its revision label), whatever the vessel runs.
-    const status = { op: "status", ...(f.lit === null ? {} : { lit: f.lit }), ...(f.keeper === "struck-due" ? { keeper: { struckDue: true } } : {}), ...(f.keeper === "vests" ? { vestReady: mine } : {}), ...(f.keeper === "lei" ? { leiReady: true } : {}), ...(f.admitted ? { admitted: ["sha256:new"] } : {}) };
+    // `admitted` and `offer` name the image the tag holds where it carries the head (its revision label), whatever the vessel runs;
+    // `kept`: the tag holds an older revision, and a kept image `rev-<head12>` carries the head's, so they name that one.
+    const himg = f.kept ? "sha256:kept" : "sha256:new";
+    const status = { op: "status", ...(f.lit === null ? {} : { lit: f.lit }), ...(f.keeper === "struck-due" ? { keeper: { struckDue: true } } : {}), ...(f.keeper === "vests" ? { vestReady: mine } : {}), ...(f.keeper === "lei" ? { leiReady: true } : {}), ...(f.admitted ? { admitted: [himg] } : {}) };
     const env = {
-      FAKE_IMAGE_ID: "sha256:new", FAKE_IMAGE_REV_LABEL: f.admitted || f.offer ? "@HEAD@" : "e".repeat(40),
+      FAKE_IMAGE_ID: "sha256:new", FAKE_IMAGE_REV_LABEL: (f.admitted || f.offer) && !f.kept ? "@HEAD@" : "e".repeat(40),
+      ...(f.kept ? { FAKE_KEPT_ID: himg, FAKE_KEPT_LABEL: "@HEAD@" } : {}),
       ...(f.pulama === "absent" ? {} : { FAKE_PULAMA_ID: "p1", FAKE_PULAMA_IMAGE: "sha256:old", FAKE_PULAMA_CLOSURE: f.pulama === "level" ? mine : `sha256:${"b".repeat(64)}`, FAKE_PULAMA_STATUS: JSON.stringify(status) }),
       ...(f.vessel === "standing" ? { FAKE_RUNNING_ID: "cid", FAKE_VESSEL_IMAGE: "sha256:vimg", FAKE_VESSEL_REV_LABEL: f.current ? "@HEAD@" : "f".repeat(40) } : {}),
       ...(f.lei === null ? {} : { FAKE_LEI_SHOW: JSON.stringify({ ok: true, data: { lei: leiShow[String(f.lei)] } }) }),
     };
-    const houseFiles = f.offer ? { "config/kukulu-offer.json": '{"faces":[{"image":"sha256:new"}]}\n' } : {};
+    const houseFiles = f.offer ? { "config/kukulu-offer.json": `{"faces":[{"image":"${himg}"}]}\n` } : {};
     const r = await run(SH, ["pulama", "status"], { envFile: PULAMA_ENV, checkout: "pulama", env, houseFiles, ...(f.sync ? { sync: f.sync } : {}) });
     assert.equal(r.status, 0, `${row.name}: ${r.stderr}`);
     const said = /^lares-container: kūkulu at [0-9a-f]{12}: (.*?)(?: · closure (sha256:[0-9a-f]{12}) · pūlama (\S+))?$/m.exec(r.stderr);

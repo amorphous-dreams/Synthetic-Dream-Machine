@@ -133,7 +133,7 @@ export function realmRestPort(input: {
 export interface RealmFace {
   readonly agent: string;
   /** The face's PersonaGroup: the owner of a realm reads as the lit face whose group derives the realm's id. */
-  readonly group?: string;
+  readonly group: string;
   chain(): SessionOwnChain | null;
 }
 
@@ -169,13 +169,9 @@ export class RealmWriterBook {
       return removedBy.length > 0 ? [{ face, removedBy }] : [];
     });
     // THE OWNER: the lit face whose own PersonaGroup derives the realm's id (its private cabal of one), where the roster seats it
-    // a writer. The ledger keeps ONE seat row per face, which another device of the face may overwrite, so a book whose faces
-    // name their groups never reads the owner off that row; only a book that names no group falls back to it.
-    const named = faces.some((face) => face.group !== undefined);
-    const ownerAgent = named ? undefined : [...workbenchSeats(ledger, found.realmId, slot.slug)].find(([face]) => privateCabalRealmId(face, slot.slug) === found!.realmId)?.[1];
-    const owner = named
-      ? seated.find((face) => face.group !== undefined && privateCabalRealmId(face.group, slot.slug) === found!.realmId) ?? null
-      : ownerAgent === undefined ? null : seated.find((face) => bare(face.agent) === bare(ownerAgent)) ?? null;
+    // a writer. The ledger keeps ONE seat row per face, which another device of the face may overwrite, so the book never reads
+    // the owner off that row: a face that names no group owns nothing.
+    const owner = seated.find((face) => typeof face.group === "string" && face.group !== "" && privateCabalRealmId(face.group, slot.slug) === found!.realmId) ?? null;
     this.#bags.set(bagId, { seated, former, owner });
     this.#remark();
   }

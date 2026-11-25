@@ -1409,11 +1409,15 @@ kukulu_reading() {
     kr_image=$(docker inspect --format '{{.Image}}' "$kr_vid" 2>/dev/null | tr -d '\r') || kr_image=""
     if [ -n "$kr_image" ] && [ "$(label_of "$kr_image")" = "$kr_head" ]; then kr_current=true; fi
   fi
-  # THE IMAGE OF THE HEAD, wherever one stands already: the tag's (the image the rite's stage stands with no build), else the one
-  # the vessel runs. Its admission and a resting offer read as the rite reads them; an image yet to build carries neither.
+  # THE IMAGE OF THE HEAD, wherever one stands already: the tag's (the image the rite's stage stands with no build), else a kept
+  # image `rev-<head12>` carrying the head's revision label (the one resolve_image re-tags with no build), else the one the vessel
+  # runs. Its admission and a resting offer read as the rite reads them; an image yet to build carries neither.
   kr_himg=""
   kr_tag=$(image_id) || kr_tag=""
+  kr_kept="$IMAGE_REPO:rev-$(printf '%s' "$kr_head" | cut -c1-12)"
   if [ -n "$kr_tag" ] && [ "$(label_of "$IMAGE_REF")" = "$kr_head" ]; then kr_himg=$kr_tag
+  elif [ -n "$kr_head" ] && [ "$(label_of "$kr_kept")" = "$kr_head" ]; then
+    kr_himg=$(docker image inspect --format '{{.Id}}' "$kr_kept" 2>/dev/null | tr -d '\r') || kr_himg=""
   elif [ "$kr_current" = true ]; then kr_himg=$kr_image; fi
   kr_admitted=false; kr_offer=false
   if [ -n "$kr_himg" ] && offer_carries "$kr_himg"; then kr_offer=true; fi

@@ -467,8 +467,11 @@ export async function lagAfterRaise(ports: RitePorts, out: { code: number; data:
     return { code: 1, data: { ...out.data, lag, workbench: { offered, laid: false, interrupted: true }, refusal: "kukulu-workbench-lay-interrupted" } };
   }
   if (code !== 0) {
+    // A PAR LANDING READS GREEN: the house already stands balanced, so the lay's refusal rides as a warning with its cure line,
+    // never the rite's red; `refusal` stays for a rite that truly failed.
     ports.say(`kūkulu: the workbench lay answered ${code}; the house stands, the lines above name what the lay refused, and the lay reads diff-gated, so ${WORKBENCH_LAY_LINE} runs again safely`);
-    return { code: 1, data: { ...out.data, lag, workbench: { offered, laid: false }, refusal: "kukulu-workbench-lay-failed" } };
+    const warnings = [...(Array.isArray(out.data["warnings"]) ? (out.data["warnings"] as unknown[]) : []), "workbench-lay-waits"];
+    return { ...out, data: { ...out.data, lag, workbench: { offered, laid: false }, warnings } };
   }
   ports.say(`kūkulu: the workbench laid: ${offered} carrier(s) from ${read.wikis}`);
   return { ...out, data: { ...out.data, lag, workbench: { offered, laid: true } } };

@@ -33,6 +33,7 @@ import {
   assertShareKindFree, parseShareFile, parseShareFilter, resolveShare, serializeShareFile, shareEntryBag, ShareConfigRefusal, SHARE_CONFIG_FILE,
   type ShareFace, type ShareEntry,
 } from "@lararium/mesh";
+import { ensureRealmLabel } from "@lararium/node";
 import type { ParsedArgs } from "../parse-args.js";
 import { harnessSeatMarked } from "../local-connector.js";
 import { LIVE_SHARE_DOORS, landShares, shareSetArgs, type ShareDoors } from "../share-doors.js";
@@ -216,6 +217,18 @@ export function cmdShare(kind: "bag" | "wiki", doors: ShareDoors = LIVE_SHARE_DO
         + (pending > 0 ? `; ${pending} wait for a shut face (\`lares vault unlock --face N\`, then share again)` : ""));
       for (const w of Array.isArray(applied["workbenches"]) ? applied["workbenches"] as Array<Record<string, unknown>> : []) {
         doors.out(`  workbench: wiki ${String(w["slug"])} rides realm ${String(w["realmId"]).slice(0, 12)}… (${Number(w["members"] ?? 0)} member face(s)${w["founded"] === true ? ", founded now" : ""})`);
+        // THE LABEL RECORDS THE REALM the landing stood (the ledger rules; the label caches its id): a label minted while no
+        // workbench stood fills its id now, and a wiki no label holds yet takes its own, so `lares realm list` reads the realm.
+        if (typeof w["slug"] === "string" && typeof w["realmId"] === "string") {
+          try {
+            const e = ensureRealmLabel(doors.projections(), w["slug"], w["realmId"]);
+            if (e.line !== undefined) doors.out(`  ${e.line}`);
+          } catch (err) {
+            // THE GRANTS LANDED ALREADY: a label that cannot be written (a refusal, a filesystem fault) names itself and never
+            // aborts the share, so the owner write-back below still runs.
+            doors.err(`lares ${kind} share: the realm label of ${w["slug"]} records no id: ${err instanceof Error ? err.message : String(err)}`);
+          }
+        }
         // A SEAT THAT TOOK NO LOCKBOX names itself and its cure: its saves into the workbench wait until a landing hands one.
         for (const u of Array.isArray(w["unhanded"]) ? w["unhanded"] as Array<{ handleIndex?: unknown; cause?: unknown }> : []) {
           unhandedSeats++;

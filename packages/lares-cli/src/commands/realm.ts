@@ -105,6 +105,11 @@ async function cmdList(args: ParsedArgs, doors: RealmDoors): Promise<number> {
   const projections = doors.projections();
   const labels = readRealmLabels(projections);
   const placement = realmPlacement(projections);
+  // A LABEL WHOSE SLUG THE CATALOG HOLDS NO ROW FOR stands no workbench and no realm: its null id reads true, never unread.
+  // With no vessel answering, nothing reads as absent.
+  const catalog = labels.some((l) => l.realms.some((r) => r.id === null)) ? await doors.wikis() : null;
+  const idLine = (r: { readonly slug: string; readonly id: string | null }): string =>
+    r.id !== null ? `realm ${r.id.slice(0, 12)}…` : catalog !== null && !catalog.includes(r.slug) ? "(no workbench)" : "(realm id unread)";
   emit(args, {
     ok: true,
     data: { realms: labels.map((l) => ({ petName: l.petName, realms: l.realms, bags: l.bags })) },
@@ -112,7 +117,7 @@ async function cmdList(args: ParsedArgs, doors: RealmDoors): Promise<number> {
       if (labels.length === 0) { doors.out("lares realm list: no realm labelled on this house yet (each wiki takes its own at its first mount)"); return; }
       for (const l of labels) {
         doors.out(`${l.petName}`);
-        for (const r of l.realms) doors.out(`  wiki ${r.slug.padEnd(16)} ${join(placement.wikisBase(r.slug) ?? "", r.slug)}  ${r.id === null ? "(realm id unread)" : `realm ${r.id.slice(0, 12)}…`}`);
+        for (const r of l.realms) doors.out(`  wiki ${r.slug.padEnd(16)} ${join(placement.wikisBase(r.slug) ?? "", r.slug)}  ${idLine(r)}`);
         const loose = l.bags.filter((b) => !l.realms.some((r) => r.slug === b));
         for (const b of loose) doors.out(`  bag  ${b.padEnd(16)} ${join(placement.bagsBase(b) ?? "", b)}`);
       }

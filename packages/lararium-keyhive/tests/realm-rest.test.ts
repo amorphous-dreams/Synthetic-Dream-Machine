@@ -68,7 +68,7 @@ import {
   REALM_ADMISSION_ACT, REALM_STATE_ROLL_ACT, SealedStore, noteWorkbenchSeat, contentKeyRollSink, freshBasePort, memorySealedStoreRest, workbenchRemovals, sha256HexBytesSync, utf8Bytes, wikiSlotUri, workbenchKeyDocs,
   type DocumentValue, type LarDoc, type RecordSigner, type SealedAddress, type SealedStoreRest, type SessionOwnChain, type WriterStanding,
 } from "@lararium/mesh";
-import { KeyhiveProvider, InMemoryEventStore, RealmWriterBook, faceStanding, realmRestPort, seatContentKeys, type ContentKeySeat, type ContentKeySeatInput, type RealmWriters } from "../src/index.js";
+import { KeyhiveProvider, InMemoryEventStore, RealmWriterBook, faceStanding, realmRestPort, seatContentKeys, type ContentKeySeat, type ContentKeySeatInput, type RealmFace, type RealmWriters } from "../src/index.js";
 import { adoptWorkbench, faceWorkbenchRealm, handOverCure, landWorkbench, sealedAdmitRefusal, landsUnderAHand, projectWorkbenchRoster, removeWorkbenchFace, workbenchFaceHolds, workbenchWriterSeat, type LedgerDoc } from "../src/workbench-realm.js";
 import { signerOf } from "./content-key-fleet.js";
 import { chain } from "../../lararium-mesh/tests/face-proof-fixture.js";
@@ -161,7 +161,7 @@ describe("RT1 — the two-face round trip over one vessel's rest", () => {
     // THE ISLAND'S COMPOSITION: the realm's writer book, read off the roster at the mount; each face's seat reads the realm
     // port and the realm-aware standing (each face mounts the wiki, so each registers the working slot).
     const book = new RealmWriterBook();
-    const faces = [{ agent: a.id, chain: () => a.own }, { agent: b.id, chain: () => b.own }];
+    const faces = [{ agent: a.id, group: `group-${a.name}`, chain: () => a.own }, { agent: b.id, group: `group-${b.name}`, chain: () => b.own }];
     const stand = async (): Promise<[ContentKeySeat, ContentKeySeat]> => {
       await book.read(WORKING, [a.hive, b.hive], v.ledger.d, faces);
       const standing = (f: Omit<Face, "seat">) => faceStanding({ own: () => f.own, bags: () => [WORKING], realmWriters: (bagId) => book.writers(bagId), realmMark: () => book.mark() });
@@ -369,7 +369,7 @@ describe("A4 — shareable history by default; chained boxes; the late seat", ()
  *  face's seat reads the realm port and the realm-aware standing. `stand` re-reads the book and seats every face afresh. */
 function islandOf(v: Vessel, all: readonly Omit<Face, "seat">[]) {
   const book = new RealmWriterBook();
-  const faces = all.map((f) => ({ agent: f.id, chain: () => f.own }));
+  const faces = all.map((f) => ({ agent: f.id, group: `group-${f.name}`, chain: () => f.own }));
   const seats = new Map<string, ContentKeySeat>();
   return {
     book,
@@ -610,7 +610,7 @@ describe("A9 — a workbench founded closed before its realm bound it admits fro
     });
     const landAgain = (owner: ContentKeySeat) => landWorkbench({ slug: SLUG }, members, { provider: a.hive, ledger: v.ledger, ownerFace: "group-steward", keyholder: keyholder(owner) });
     const versions = async () => (await new SealedStore(v.rest).records("key-version")).length;
-    return { v, a, b, bOnA, w0, seat, landAgain, stop, versions, realmId, readBook };
+    return { v, a, b, bOnA, w0, seat, landAgain, stop, versions, realmId, readBook, book };
   }
 
   test("C1: founded closed, then bound and shared: the owner admits from now; the seated face opens and saves; the closed past stays closed", async () => {
@@ -691,10 +691,28 @@ describe("A9 — a workbench founded closed before its realm bound it admits fro
     const ACT = `${REALM_STATE_ROLL_ACT}forged-by-the-member`;
     const forger = seat(b, a, { countedRaises: () => new Set([ACT]) });
     const before = await versions();
-    await contentKeyRollSink(forger.holder.rollerPorts({ bagsOf: () => [WORKING], signer: () => b.signer }))({ kind: "seat-roll", scope: "realm", edgeId: "realm-roster", raiseCids: [ACT], how: "revoked" });
-    expect(await versions(), "the forged roll mints on the forger's seat and rests where the owner reads").toBe(before + 1);
+    // THE PREFIX READS FIRST on the forger's own seat too: its counted raises admit no roll its owner never signed, so it mints none.
+    await expect(contentKeyRollSink(forger.holder.rollerPorts({ bagsOf: () => [WORKING], signer: () => b.signer }))({ kind: "seat-roll", scope: "realm", edgeId: "realm-roster", raiseCids: [ACT], how: "revoked" }))
+      .rejects.toThrow(/mint-failed/);
+    expect(await versions(), "the forged roll mints nowhere").toBe(before);
     const read = await seat(a, b).holder.reading(WORKING);
-    expect("foundings" in read && [...read.foundings[0]!.heads].sort(), "the owner counts no roll the member signed").toEqual(heads);
+    expect("foundings" in read && [...read.foundings[0]!.heads].sort(), "the owner's heads stand").toEqual(heads);
+  });
+
+  test("C6b: the owner's gate covers every count path: a roll-prefixed act planted in a reader's counted raises still counts nowhere unsigned by the owner", async () => {
+    const { a, b, landAgain, seat, versions } = await closedThenSeated([0xdd, 0xde]);
+    expect((await landAgain(seat(a, b))).unhanded).toEqual([]);
+    const ownerBefore = await seat(a, b).holder.reading(WORKING);
+    const heads = "foundings" in ownerBefore ? [...ownerBefore.foundings[0]!.heads].sort() : [];
+    const ACT = `${REALM_STATE_ROLL_ACT}planted-in-the-count`;
+    // A FORGER WHOSE OWN STANDING LIES (it names itself the owner) mints the roll and rests it where the owner reads.
+    const liar: WriterStanding = { holdsWrite: () => true, signedByRealmOwner: () => true };
+    const before = await versions();
+    await contentKeyRollSink(seat(b, a, { session: { signer: () => null, standing: liar } }).holder.rollerPorts({ bagsOf: () => [WORKING], signer: () => b.signer }))({ kind: "seat-roll", scope: "realm", edgeId: "realm-roster", raiseCids: [ACT], how: "revoked" });
+    expect(await versions(), "the forged roll rests where the owner reads").toBe(before + 1);
+    // THE OWNER'S OWN SEAT carries the act among its counted raises (a projection noted it): the prefix still asks the owner's hand.
+    const read = await seat(a, b, { countedRaises: () => new Set([ACT]) }).holder.reading(WORKING);
+    expect("foundings" in read && [...read.foundings[0]!.heads].sort(), "a planted roll counts nowhere without the owner's signature").toEqual(heads);
     expect("foundings" in read && read.foundings[0]!.uncounted.map((u) => u.why), "it reads unverified").toContain("cause-unverified");
   });
 
@@ -708,12 +726,20 @@ describe("A9 — a workbench founded closed before its realm bound it admits fro
   });
 
   test("C8: the realm's owner reads as the lit face whose group derives the realm, whatever agent the ledger's seat row names", async () => {
-    const { v, a, b, landAgain, seat, realmId, readBook } = await closedThenSeated([0xdb, 0xdc]);
+    const { v, a, b, landAgain, seat, realmId, readBook, book } = await closedThenSeated([0xdb, 0xdc]);
     // ANOTHER DEVICE OF THE OWNER FACE overwrote the face's one seat row with its own agent.
     noteWorkbenchSeat(v.ledger.d, realmId, SLUG, "group-steward", "ab".repeat(32));
     await readBook();
     expect((await landAgain(seat(a, b))).unhanded, "the owner's admission still counts under its own chain").toEqual([]);
-    void b;
+    expect(book.writers(WORKING)?.owner, "the owner reads as the steward's own chain").toEqual(a.own);
+  });
+
+  test("C9: the book never reads its owner off the ledger's seat row: a face that names no group owns nothing", async () => {
+    const { v, a, b, book } = await closedThenSeated([0xdf, 0xe0]);
+    // THE ALPHA LINE carries no ledger-row fallback: a caller outside the contract hands faces without their groups.
+    const groupless = [{ agent: a.id, chain: () => a.own }, { agent: b.id, chain: () => b.own }] as unknown as RealmFace[];
+    await book.read(WORKING, [a.hive, b.hive], v.ledger.d, groupless);
+    expect(book.writers(WORKING)?.owner, "no group, no owner").toBe(null);
   });
 
   test("C2: a seated member's refused hand-over reads on the landing by name, never as landed", async () => {
