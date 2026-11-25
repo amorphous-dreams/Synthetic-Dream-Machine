@@ -31,8 +31,6 @@ import { CompositionShutdownError, shutdownExitCode } from "./composition-shutdo
  *   LAR_PULAMA_SOCKET — the unix socket a pūlama answers at: set, this vessel keeps no key and asks the pūlama for its
  *                      sealed rows (`pulama-seat`); unset or empty, it builds the in-process custody holder.
  *   LAR_KUKULU_OFFER — the file holding the lei and the vouch this kūkulu offers the pūlama (`pulama-seat`).
- *   LAR_WORN_FACE — the file holding the face the house last wore, worn from the first composition where the pūlama
- *                      remembers none (`pulama-seat`).
  *
  * Bootstrap:
  *   The boot prints the catalog Automerge URL to stdout.
@@ -85,11 +83,11 @@ import { vesselCustodyHomes } from "./vault-carriers.js";
 import { rendezvousDir, standingPath, markerIsOurs } from "@lararium/mesh/rendezvous-path";
 import { loadVesselIdentity, vesselFloorKeyDoor, sovereignStands, makeNodePersonaPetnameStore } from "./node-vessel-identity.js";
 import { CROSS_FACE_READ_VERBS } from "@lararium/mesh/cross-face-reach";
-import { KUKULU_OFFER_ENV, WORN_FACE_ENV, cleanGoodbye, lifeCloses, namesPulama, pulamaStandBy, readHouseWornFace, vesselPulamaHolder } from "./pulama-seat.js";
+import { KUKULU_OFFER_ENV, cleanGoodbye, lifeCloses, namesPulama, pulamaStandBy, readHouseWornFace, vesselPulamaHolder } from "./pulama-seat.js";
 import { consumeKukuluOffer } from "./kukulu-offer.js";
 import { NoStoodNexus, stoodFloorPins } from "./hearth-sovereign-pin.js";
 import { getMempalaceClient }           from "@lararium/mempalace";
-import { larDataDir }                   from "./vessel-paths.js";
+import { larConfigHome, larDataDir }    from "./vessel-paths.js";
 import { mkdirSync, writeFileSync, rmSync, readFileSync } from "fs";
 import { REPO_ROOT }   from "./node-host.js";
 import { resolveGenesis, checkGenesisPin, type GenesisResolution } from "./genesis-resolve.js";
@@ -542,7 +540,7 @@ async function main(): Promise<void> {
   const standBy = pulama === null ? null : pulamaStandBy({
     holder: pulama, recompose: (sovereign) => recompose(sovereign), onLog: (line) => console.log(`[pulama] ${line}`),
     consumeOffer: () => consumeKukuluOffer(process.env[KUKULU_OFFER_ENV]),
-    houseWorn: () => readHouseWornFace(process.env[WORN_FACE_ENV]),
+    houseWorn: () => readHouseWornFace(larConfigHome),
   });
   custodyDoor = custodyFrameHandler({
     holder, recompose, testScratch,

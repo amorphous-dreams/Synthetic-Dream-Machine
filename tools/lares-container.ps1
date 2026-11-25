@@ -77,8 +77,6 @@ if ($PulamaMode) {
   [Environment]::SetEnvironmentVariable('LAR_PULAMA_SOCKET', '/pulama/socket/pulama.sock')
   # The kūkulu's offer (its lei and the standing vessel's vouch) rests in the config bind, which the rite writes on the host.
   [Environment]::SetEnvironmentVariable('LAR_KUKULU_OFFER', '/lar/config/kukulu-offer.json')
-  # The face the house last wore rests in the same bind: the vessel wears it from its first composition where the pūlama forgot it.
-  [Environment]::SetEnvironmentVariable('LAR_WORN_FACE', '/lar/config/last-worn-face')
 }
 $PulamaMain = 'packages/lararium-node/dist/src/pulama-main.js'
 # THE ENV FILE RESTS OUTSIDE EVERY BIND.

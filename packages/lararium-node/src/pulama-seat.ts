@@ -8,8 +8,6 @@
  *   `LAR_KUKULU_OFFER`   a file holding what this kūkulu wears: `{ "lei": …, "vouch": … }`, the kūkulu lei the operator's
  *                        hand strung and the vouch the standing vessel signed. The host writes it before it raises the
  *                        image. Unset, or a file that does not read, offers nothing, and the pūlama refuses `kukulu-unvouched`.
- *   `LAR_WORN_FACE`      a file holding the face the house last wore (the host shim's `config/last-worn-face`: one
- *                        ordinal). Unset, or a file that reads no ordinal, names none.
  *
  * ── THE VESSEL DIALS ONCE AT BOOT, AND AGAIN ONLY WHEN ASKED ────────────────────────────────────
  * A vessel that names no offer still dials: the pūlama serves it where the image the host reports stands admitted (a kūkulu
@@ -29,7 +27,8 @@
  * as a pūlama that heard no wear leaves it. A remembered face never refuses the boot.
  *
  * ONE COMPOSITION PER RAISE. A kūkulu that restands or relights the pūlama clears that memory, while the house still keeps
- * the face last worn (`LAR_WORN_FACE`). Where the pūlama remembers none, the dial wears the house's face from the FIRST
+ * the face last worn: the host shim writes `config/last-worn-face` in the house's config home, which the vessel sees
+ * through its config bind, and the dial reads that same file. Where the pūlama remembers none, the dial wears the house's face from the FIRST
  * composition, under the same lend checks, so the shim's census reads it worn and sends no wear that would tear the
  * composition down and stand it again. The pūlama's own memory outranks the house's: it heard a later wear. The order rides
  * the events (the session's lend, then the one composition); no clock decides it.
@@ -41,6 +40,7 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
  */
 import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { mountedFaceOrdinal, setMountedFace } from "./node-vessel-identity.js";
 import { makePulamaHolder, type PulamaHolder } from "./pulama-holder.js";
 import { dialPulama } from "./pulama-socket.js";
@@ -48,13 +48,13 @@ import type { CustodyHomes } from "./vault-carriers.js";
 
 export const PULAMA_SOCKET_ENV = "LAR_PULAMA_SOCKET";
 export const KUKULU_OFFER_ENV = "LAR_KUKULU_OFFER";
-export const WORN_FACE_ENV = "LAR_WORN_FACE";
+/** The file in the house's config home where the host shim keeps the face last worn (one ordinal). */
+export const HOUSE_WORN_FACE_FILE = "last-worn-face";
 
-/** The face the house last wore, read from the file `LAR_WORN_FACE` names; an unset name, an unreadable file or no ordinal names none. */
-export function readHouseWornFace(path: string | undefined): number | undefined {
-  if (!path || path.trim() === "") return undefined;
+/** The face the house last wore, read from `<configHome>/last-worn-face`; an unreadable file, or one holding no ordinal, names none. */
+export function readHouseWornFace(configHome: () => string): number | undefined {
   try {
-    const raw = readFileSync(path, "utf8").trim();
+    const raw = readFileSync(join(configHome(), HOUSE_WORN_FACE_FILE), "utf8").trim();
     return /^[0-9]+$/.test(raw) ? Number(raw) : undefined;
   } catch { return undefined; }
 }
@@ -98,7 +98,7 @@ export function pulamaStandBy(a: {
   readonly onLog: (line: string) => void;
   /** Remove the offer this vessel just spent; answers whether a file went. Absent, the offer stays where it rests. */
   readonly consumeOffer?: () => boolean;
-  /** The face the house last wore (`readHouseWornFace`), read at each dial; absent, the house names none. */
+  /** The face the house last wore (`readHouseWornFace` over the config home), read at each dial; absent, the house names none. */
   readonly houseWorn?: () => number | undefined;
 }): { dial(): Promise<PulamaStandingBy>; waits(): string | null; goodbye(): Promise<boolean> } {
   let leaving = false;

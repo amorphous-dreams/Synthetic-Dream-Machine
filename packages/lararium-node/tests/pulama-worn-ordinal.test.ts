@@ -6,7 +6,8 @@
  * beside it, and only the wear door sends it.
  */
 import { EventEmitter } from "node:events";
-import { readdirSync, readFileSync } from "node:fs";
+import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import type { Socket } from "node:net";
 import { join } from "node:path";
 import { randomBytes } from "node:crypto";
@@ -17,7 +18,7 @@ import { faceAtomGroupFile } from "../src/face-atom-store.js";
 import { daemonMountOrdinal, mountedFaceOrdinal, setMountedFace } from "../src/node-vessel-identity.js";
 import { personaGroupDigest } from "../src/persona-group-file.js";
 import type { PulamaHolder } from "../src/pulama-holder.js";
-import { pulamaStandBy } from "../src/pulama-seat.js";
+import { pulamaStandBy, readHouseWornFace } from "../src/pulama-seat.js";
 import { fixtureSlots, lend, standPulama, type PulamaFixture } from "./pulama-fixture.js";
 
 vi.setConfig({ testTimeout: 180_000 });
@@ -78,7 +79,7 @@ const wornLines = (): string[] => fx!.lines.fromVessel.filter((l) => l.includes(
 
 describe("RED one-composition-per-raise: a raise whose pūlama forgot the worn face composes once, on the face the house remembers", () => {
   // A kūkulu that restands (or relights) the pūlama clears its memory, while the house keeps the face last worn
-  // (`config/last-worn-face`, named to the vessel by `LAR_WORN_FACE`). Before: the boot dial composed on the lowest face
+  // (`config/last-worn-face`, read through the vessel's config bind). Before: the boot dial composed on the lowest face
   // served, then the shim's wear tore that down and composed again worn (perf-pass-1 sink 1, ~2m50s per kūkulu).
   test("the house remembers h1 and the pūlama nothing: the boot dial composes ONE sovereign composition, mounted on h1", async () => {
     await standThree({ now: [0, 1, 2] });
@@ -116,6 +117,26 @@ describe("RED one-composition-per-raise: a raise whose pūlama forgot the worn f
     expect(b.vessel.isUnlocked()).toBe(true);
     expect(b.composed).toEqual([1, undefined]);
     expect(mountedFaceOrdinal()).toBeUndefined();
+  });
+
+  test("the house's face rides the config home's own file: an ordinal reads, anything else names none", async () => {
+    const home = mkdtempSync(join(tmpdir(), "worn-config-"));
+    try {
+      expect(readHouseWornFace(() => home)).toBeUndefined();
+      writeFileSync(join(home, "last-worn-face"), "1\n");
+      expect(readHouseWornFace(() => home)).toBe(1);
+      writeFileSync(join(home, "last-worn-face"), "");
+      expect(readHouseWornFace(() => home)).toBeUndefined();
+      writeFileSync(join(home, "last-worn-face"), "h1\n");
+      expect(readHouseWornFace(() => home)).toBeUndefined();
+      expect(readHouseWornFace(() => { throw new Error("HouseRootUnnamed"); })).toBeUndefined();
+    } finally { rmSync(home, { recursive: true, force: true }); }
+  });
+
+  test("WELD: the vessel's dial reads the house's face from the config home, and no env name carries it", () => {
+    const main = readFileSync(join(SRC, "main.ts"), "utf8");
+    expect(main.includes("houseWorn: () => readHouseWornFace(larConfigHome)")).toBe(true);
+    for (const f of readdirSync(SRC).filter((n) => n.endsWith(".ts"))) expect(readFileSync(join(SRC, f), "utf8")).not.toMatch(/LAR_WORN_FACE/);
   });
 
   test("CONTROL: a house that remembers nothing leaves the boot as it stood", async () => {

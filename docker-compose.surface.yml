@@ -216,7 +216,6 @@ services:
       LAR_WIRE_LOG: ${LAR_WIRE_LOG:-}
       LAR_PULAMA_SOCKET: ${LAR_PULAMA_SOCKET:-}
       LAR_KUKULU_OFFER: ${LAR_KUKULU_OFFER:-}
-      LAR_WORN_FACE: ${LAR_WORN_FACE:-}
       # THE KEEP WORKSPACE (packages/lares-cli/src/keep-config.ts). `vault unlock` runs in here and offers the keep lei where
       # the config names a keep workspace; the vessel holds no surface env file (HOME=/lar/cache), so the names the keep rule
       # reads ride in from the shim's environment or its --env-file, as LARES_HOUSE does. A change takes hold at the next `up`.

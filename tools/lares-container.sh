@@ -140,9 +140,6 @@ if [ "$pulama_word" = 1 ]; then
   export LAR_PULAMA_SOCKET=/pulama/socket/pulama.sock
   # The kūkulu's offer (its lei and the standing vessel's vouch) rests in the config bind, which the rite writes on the host.
   export LAR_KUKULU_OFFER=/lar/config/kukulu-offer.json
-  # The face the house last wore rests in the same bind: a pūlama that forgot its worn face (a restand, a relight) leaves the
-  # vessel to wear this one from its first composition, so a raise composes once and the shim's census finds it worn.
-  export LAR_WORN_FACE=/lar/config/last-worn-face
 fi
 PULAMA_MAIN="packages/lararium-node/dist/src/pulama-main.js"
 # THE ENV FILE RESTS OUTSIDE EVERY BIND: inside one, the container would read (and a reset could clear) the file that
