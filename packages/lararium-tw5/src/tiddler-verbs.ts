@@ -13,7 +13,7 @@
  *   tiddler-put    { recipe, title, text?, fields?, unset?, tagsAdd?, tagsRemove?, base?, create? }
  *                                                                         → { recipe, title, decision: put|noop|conflict|exists, bag, created, changed, hash, textHash, position, family? }
  *   tiddler-delete { recipe, title, base?, family?, mode? }               → { recipe, title, decision: removed|absent|conflict|refused, mode, tombstoned, retracted, hash?, refusal?, why?, consequence? }
- *   tiddler-rename { recipe, title, to, base? }                          → { recipe, title, to, decision: renamed|absent|conflict|refused, forwarder?, relinked?, skipped?, hash?, refusal?, why?, consequence? }
+ *   tiddler-rename { recipe, title, to, base? }                          → { recipe, title, to, decision: renamed|absent|conflict|refused, forwarder?, relinked?, moved?, skipped?, unreachable?, withheld?, hash?, refusal?, why?, consequence? }
  *   wiki-status    { recipe }                                             → { recipe, working, layers: [{ bag, mounted: writable|read-only|promotion-only, read, write, working?, why? }] }
  *
  * EVERY WIKI ITS ENGINE. `recipe: "default"` answers through the daemon island's live `$tw.wiki`, the daemon mount's daemon
@@ -1207,43 +1207,71 @@ export const makeWikiActionReactor = everyWiki("wiki-action", true, (opts: Tiddl
 const forwarderText = (to: string): string => `<$transclude $tiddler=\`\`\`${to}\`\`\` mode="block"/>`;
 
 /**
+ * A SYSTEM TITLE TAKES NO RENAME, for a seat and a hand alike. A rename leaves a forwarder at the title it moves from and
+ * relinks every tag and list that names it; the engine reads a `$:/` title as a setting, as a tag that hooks each tagged record into
+ * boot or render, or as code. A forwarder there would answer as the setting, and a relink onto a system tag would hang every
+ * tagged record on it with no record of theirs passing the seat's wall. The put and the delete move such a record by hand.
+ */
+function refuseSystemTitleRename(named: string, title: string, to: string, recipe: string): void {
+  if (!named.startsWith("$:/")) return;
+  throw new VerbRefusal("rename-system-title", `rename-system-title: "${named}" names a system title, and a rename leaves a forwarder at the title it moves from and relinks every tag and list onto the new one: the engine would read the forwarder as the setting, or hang every tagged record on a system tag. Land the record under its new title with \`lares tiddler put "${to}" --recipe ${recipe}\`, then clear the standing one with \`lares tiddler delete "${title}" --recipe ${recipe}\`. Nothing moved.`);
+}
+
+/**
  * THE RENAME DOOR over TiddlyWiki's own relink. The record moves to `to` with its fields; every reference the engine's
- * relinkers rewrite (the core's tags and list fields, and whatever relinker a plugin mounts) follows; the old title stays as
+ * relinkers rewrite (the core's tags and list fields, and whatever relinker a plugin mounts) follows; the title it leaves stays as
  * a FORWARDER, a pointer tiddler whose `forward-to` names the new title and whose text transcludes it, so an old road keeps
- * answering. A meme root re-titles through the family law's rename (its slots follow; one forwarder stands at the old root).
+ * answering. A meme root re-titles through the family law's rename (its slots follow; one forwarder stands at the root's first title).
  *
- * THE FENCES, in the order put and delete keep them: withheld titles, the effect ledger and the collapse rule on BOTH
- * titles, the Kahu predicate and the write cap, then the rendered and seat-executable walls. The move lands in the working
- * layer alone: a record resting in any other layer refuses `rename-source-layer` (a copy-up would hand its content to a
- * layer with other readers), and a `lar:` title that stands in another layer too takes a hand alone (`hand-act-only`).
+ * THE FENCES, in the order put and delete keep them: no padded title (the relink trims), withheld titles, the effect ledger and the collapse rule on BOTH
+ * titles, then the system-title wall on both (`rename-system-title`), the Kahu predicate and the write cap, then the
+ * rendered and seat-executable walls. The move lands in the working layer alone, and a layer reads from a record's STAMP
+ * and never from a guess: a record resting in any other layer, or carrying no stamp (the engine's own, or a write the shore
+ * still carries), refuses `rename-source-layer` (a copy-up would hand its content to a layer with other readers), and a
+ * `lar:` title that stands in another layer too takes a hand alone (`hand-act-only`).
  *
- * THE RELINK RUNS AS A DRY RUN FIRST. The engine's relinkers run with the wiki's writes captured, never applied: each record
- * they would rewrite must rest in the working layer, else the rename refuses `rename-referrers-unreachable` with a COUNT of
- * the records it could not relink (never their titles: the face may not read them), and nothing moves. Then the move, the
- * captured relinks and the forwarder land in one synchronous step that begins by re-reading the record against the hash this
- * call read, so `base` and a concurrent edit both hold (a moved record sends the round back to read again, bounded).
+ * THE DECISION READS THE WHOLE WIKI; THE ANSWER READS THE FACE'S VIEW. The family law runs twice: over the whole wiki, so a
+ * member the face cannot see strands nothing, and over the reader's view, whose consequence alone rides the answer. A
+ * record the face may not read reaches no answer by title (no act, leave, refusal, version or cure names it); `withheld`
+ * counts them. A title the caller named that such a record holds refuses `rename-target-stands` with no bag and no cure.
+ *
+ * THE RELINK RUNS AS A DRY RUN FIRST. The engine's relinkers run with the wiki's writes captured, never applied: a referrer
+ * that stays home keeps its fields and counts `skipped`; each other record they would rewrite must rest in the working
+ * layer, else the rename refuses `rename-referrers-unreachable` with a COUNT (`unreachable`, never titles), and nothing
+ * moves. THE RELINK FOLLOWS THE MOVE: a family member the relinkers rewrite (a slot tagged to its root, a record that lists
+ * itself) takes its relinked fields in place first, so it lands once, under its new title. From the re-read of the record
+ * against the hash this call read to the forwarder's landing no await stands, so `base` and a concurrent edit both hold (a
+ * moved record sends the round back to read again, bounded).
  */
 const RENAME_SETTLE_ROUNDS = 16;
 export const makeTiddlerRenameReactor = everyWiki("tiddler-rename", true, (opts: TiddlerVerbOptions): VerbReactor => {
   return async (args, ctx) => {
     const anchor = anchorOf(opts, args, "tiddler-rename", true);
     const title = stringArg(args, "title");
-    if (!title) throw new Error("tiddler-rename: args.title is required");
+    if (!title) throw new Error("tiddler-rename: name args.title (the record to move)");
     const to = stringArg(args, "to");
-    if (!to) throw new Error("tiddler-rename: args.to is required (the new title)");
+    if (!to) throw new Error("tiddler-rename: name args.to (the new title)");
+    // THE ENGINE'S RELINK TRIMS BOTH TITLES: a padded title would pass each fence as one title and relink as another.
+    for (const named of [title, to]) {
+      if (named !== named.trim()) throw new VerbRefusal("fields-malformed", `fields-malformed: a rename's titles carry no leading or trailing space (the engine's relink trims both, so it would relink another title than the one named); got "${named}".`);
+    }
     for (const named of [title, to]) {
       refuseWithheld(named, "tiddler-rename");
       refuseEffectLedgerWrite(named, "tiddler-rename");
       refuseUnhandedCollapseRule(named, "tiddler rename", ctx.asker);
+      refuseSystemTitleRename(named, title, to, anchor.recipe);
     }
     await requireWrite(opts, anchor, ctx.cap, "tiddler rename", ctx.asker);
     if (to.includes("```")) throw new VerbRefusal("fields-malformed", "fields-malformed: a new title carries no triple backtick (the forwarder quotes it).");
     refuseMalformedStagePath(to);
     const { wiki, Tiddler } = anchor.engine;
-    const { mayRead } = await viewFor(opts, anchor, ctx.cap);
+    const { view, visible, mayRead } = await viewFor(opts, anchor, ctx.cap);
     const { readable } = await layerReach(opts, anchor, ctx.cap, mayRead, ctx.asker);
     const face = wornOrigin(ctx.worn).face;
     const base = readBase(optionalStringArg(args, "base"), "tiddler-rename", false);
+    /** A standing record this face reads. */
+    const seen = (name: string): boolean => { const held = wiki.getTiddler(name); return held !== undefined && visible(name, held); };
+    const reaches = `\`lares wiki status --recipe ${anchor.recipe}\` names the layers this face reaches`;
     let admitted = false;
 
     for (let round = 0; ; round++) {
@@ -1258,10 +1286,12 @@ export const makeTiddlerRenameReactor = everyWiki("tiddler-rename", true, (opts:
       if (to === title) return refused("rename-same-title", `"${title}" already stands at that title; name a different new title.`);
       if (base !== null && base !== hash) return { recipe: anchor.recipe, title, to, decision: "conflict", hash };
 
-      // THE LAYERS: the record, and every member of its family, move out of the working layer alone.
-      const here = bag ?? anchor.bag;
-      if (here !== anchor.bag) {
-        return refused("rename-source-layer", `"${title}" rests in ${here}, not in the working layer ${anchor.bag}; a rename would copy its content into a layer with other readers. A hand that writes ${here} renames it there. Nothing moved.`);
+      // THE LAYERS: the record, and every member of its family, move out of the working layer alone, and only a stamp names a layer.
+      if (bag === null) {
+        return refused("rename-source-layer", `"${title}" carries no layer's stamp (the engine's own record, or a write the shore still carries to its layer), so this door reads no layer it rests in and moves nothing on a guess. \`lares tiddler get "${title}" --recipe ${anchor.recipe}\` names its bag once it lands; rename it then. Nothing moved.`);
+      }
+      if (bag !== anchor.bag) {
+        return refused("rename-source-layer", `"${title}" rests in ${bag}, not in the working layer ${anchor.bag}; a rename would copy its content into a layer with other readers. A hand that writes ${bag} renames it there. Nothing moved.`);
       }
       // A `lar:` title another layer holds too (canon under the working copy) takes a hand alone: the rename would shadow canon.
       for (const named of [title, to]) {
@@ -1282,58 +1312,82 @@ export const makeTiddlerRenameReactor = everyWiki("tiddler-rename", true, (opts:
         admitted = true;
       }
 
-      // THE FAMILY LAW reads what a rename moves over the whole wiki (the face's own view hides what it may not read, and a
-      // member it cannot see would strand): a slot refuses, a root takes its slots, every member rests in the working layer.
+      // ── THE SYNCHRONOUS STEP: no await from here to the last write, so every read below holds until the forwarder lands. ──
+      const now = wiki.getTiddler(title);
+      if ((now ? hashOf(readRecord(now).fields) : null) !== hash) continue;
+      if (wiki.tiddlerExists(to)) {
+        return refused("rename-target-stands", seen(to)
+          ? `"${to}" already stands; run \`lares tiddler delete "${to}" --recipe ${anchor.recipe}\` to clear it (or name another title), then rename again. Nothing moved.`
+          : `a record this face may not read holds the new title; name another title (${reaches}). Nothing moved.`);
+      }
+
+      // THE FAMILY LAW reads what a rename moves over the whole wiki (a member the face cannot see would strand): a slot
+      // refuses, a root takes its slots, every member rests in the working layer. The answer carries the reading over the
+      // face's own view, and a count of what the whole reading named beyond it.
       const read: Consequence = consequence(wikiFamilyView(wiki as never), { kind: "rename", title, to });
+      const shown: Consequence = consequence(wikiFamilyView(view as never), { kind: "rename", title, to });
+      const named = new Set<string>([...read.acts.map((row) => row.title), ...read.leaves.map((row) => row.title), ...read.orphans, ...read.refusals.map((row) => row.title)]);
+      const withheld = [...named].filter((name) => wiki.getTiddler(name) !== undefined && !seen(name)).length;
+      const answers = { consequence: shown, ...(withheld > 0 ? { withheld } : {}) };
       if (read.refusals.length > 0) {
         const first = read.refusals[0]!;
-        const why = first.code === "slot-without-root"
-          ? `"${title}" stands as a slot of ${read.family}; rename the root (\`lares tiddler rename "${read.family}" <new> --recipe ${anchor.recipe}\`) and its slots follow. Nothing moved.`
-          : first.code === "rename-target-stands"
-            ? `"${first.title}" already stands; run \`lares tiddler delete "${first.title}" --recipe ${anchor.recipe}\` to clear it (or name another title), then rename again. Nothing moved.`
-            : `a member of this family refuses the rename (${first.code}); nothing moved.`;
-        return refused(first.code, why, { consequence: read });
+        let why = `a member of this family refuses the rename (${first.code}); nothing moved.`;
+        if (first.code === "slot-without-root") {
+          why = read.family !== null && seen(read.family)
+            ? `"${title}" stands as a slot of ${read.family}; rename the root (\`lares tiddler rename "${read.family}" <new> --recipe ${anchor.recipe}\`) and its slots follow. Nothing moved.`
+            : `"${title}" stands as a slot, and no root this face reads stands over it; a family moves from its root, by a hand that reads it. \`lares tiddler get "${title}" --recipe ${anchor.recipe}\` reads where this face sees it stand. Nothing moved.`;
+        } else if (first.code === "rename-target-stands") {
+          const taken = read.refusals.filter((row) => row.code === "rename-target-stands").map((row) => row.title);
+          const open = taken.find(seen);
+          const closed = taken.filter((name) => !seen(name)).length;
+          why = open !== undefined
+            ? `"${open}" already stands; run \`lares tiddler delete "${open}" --recipe ${anchor.recipe}\` to clear it (or name another title), then rename again. Nothing moved.`
+            : `${closed} title${closed === 1 ? "" : "s"} this rename would take already stand${closed === 1 ? "s" : ""}, held by records this face may not read; name another title (${reaches}). Nothing moved.`;
+        }
+        return refused(first.code, why, answers);
       }
-      if (wiki.tiddlerExists(to)) {
-        return refused("rename-target-stands", `"${to}" already stands; run \`lares tiddler delete "${to}" --recipe ${anchor.recipe}\` to clear it (or name another title), then rename again. Nothing moved.`);
-      }
-      if (read.position !== "plain" && read.position !== "root") return refused("tiddler-rename-in-a-family", `"${title}" stands as a meme ${read.position}; nothing moved.`, { consequence: read });
+      if (read.position !== "plain" && read.position !== "root") return refused("tiddler-rename-in-a-family", `"${title}" stands as a meme ${read.position}; nothing moved.`, answers);
       const members = read.acts.filter((row) => row.act === "retitle").map((row) => row.title);
       for (const member of members) {
         const record = wiki.getTiddler(member);
-        const memberBag = (record ? readRecord(record).bag : null) ?? anchor.bag;
-        if (memberBag !== anchor.bag || !(await mayRead(memberBag))) {
-          return refused("rename-source-layer", `a member of "${title}"'s family rests outside the working layer ${anchor.bag}, so the family would split across layers. A hand that writes that layer renames it there. Nothing moved.`, { consequence: read });
+        if (!record || readRecord(record).bag !== anchor.bag) {
+          return refused("rename-source-layer", `a member of "${title}"'s family rests outside the working layer ${anchor.bag} (or carries no layer's stamp), so the family would split across layers. A hand that writes that layer renames it there (${reaches}). Nothing moved.`, answers);
         }
       }
 
-      // ── THE SYNCHRONOUS STEP: no await from here to the last write. ──
-      const now = wiki.getTiddler(title);
-      if ((now ? hashOf(readRecord(now).fields) : null) !== hash) continue;
-      // DRY RUN: the engine's relinkers run with every write captured, so each record they would rewrite is known before anything moves.
+      // DRY RUN: the engine's relinkers run with every write captured, so each record they would rewrite is known before
+      // anything moves. The wiki takes its own `addTiddler` back exactly as it held it.
       const captured = new Map<string, EngineTiddler>();
-      const original = wiki.addTiddler;
+      const own = Object.getOwnPropertyDescriptor(wiki, "addTiddler");
       wiki.addTiddler = (record: unknown) => { const next = record as EngineTiddler; captured.set(String(next.fields["title"]), next); };
-      try { wiki.relinkTiddler(title, to); } finally { wiki.addTiddler = original; }
+      try { wiki.relinkTiddler(title, to); } finally {
+        if (own) Object.defineProperty(wiki, "addTiddler", own); else delete (wiki as { addTiddler?: unknown }).addTiddler;
+      }
+      // A REFERRER THAT STAYS HOME takes no write here (the door writes none of its plane): it keeps its fields and counts.
+      let skipped = 0;
+      for (const name of [...captured.keys()]) if (staysHome(name)) { captured.delete(name); skipped++; }
       const unreachable = [...captured.keys()].filter((name) => {
         const held = wiki.getTiddler(name);
-        return !held || (readRecord(held).bag ?? anchor.bag) !== anchor.bag;
+        return !held || readRecord(held).bag !== anchor.bag;
       }).length;
       if (unreachable > 0) {
-        return refused("rename-referrers-unreachable", `${unreachable} record${unreachable === 1 ? "" : "s"} naming "${title}" rest outside the working layer ${anchor.bag}, which this face may not rewrite, so the rename would leave stale references. A hand that writes those layers renames it, or those records move to the working layer first. Nothing moved.`, { skipped: unreachable });
+        return refused("rename-referrers-unreachable", `${unreachable} record${unreachable === 1 ? "" : "s"} naming "${title}" rest outside the working layer ${anchor.bag} (or carry no layer's stamp), which this face may not rewrite, so the rename would leave stale references. A hand that writes those layers renames it, or those records move to the working layer first (${reaches}). Nothing moved.`, { unreachable });
       }
+      const family = new Set(members);
       const target = (member: string): string => (member === title ? to : to + member.slice(title.length));
-      wikiWearsNext(opts.tw5, to, face);
+      // THE RELINK FOLLOWS THE MOVE: a member the relinkers rewrite takes its relinked fields in place, and the move carries them.
+      for (const [name, record] of captured) if (family.has(name)) { wikiWearsNext(opts.tw5, name, face); wiki.addTiddler(record); }
+      for (const member of members) { wikiWearsNext(opts.tw5, member, face); wikiWearsNext(opts.tw5, target(member), face); }
       if (read.position === "root") {
-        for (const member of members) wikiWearsNext(opts.tw5, target(member), face);
-        wikiWearsNext(opts.tw5, title, face);
-        renameFamilyInWiki(wiki as never, title, to);
+        const moved = renameFamilyInWiki(wiki as never, title, to);
+        if (moved.refusals.length > 0) throw new Error(`tiddler-rename-incomplete: the family law refused the move of "${title}" (${moved.refusals[0]!.code}) after this door read it clear. Read it again with \`lares tiddler get "${title}" --recipe ${anchor.recipe}\` before another rename.`);
       } else {
-        const moved: Record<string, string> = { ...fields, title: to };
-        if (typeof fields["uri-path"] === "string" && to.startsWith("lar:///")) moved["uri-path"] = to.slice("lar:///".length);
+        const source = readRecord(wiki.getTiddler(title)!).fields;
+        const moved: Record<string, string> = { ...source, title: to };
+        if (typeof source["uri-path"] === "string" && to.startsWith("lar:///")) moved["uri-path"] = to.slice("lar:///".length);
         wiki.addTiddler(new Tiddler(moved));
       }
-      for (const [name, record] of captured) { wikiWearsNext(opts.tw5, name, face); wiki.addTiddler(record); }
+      for (const [name, record] of captured) if (!family.has(name)) { wikiWearsNext(opts.tw5, name, face); wiki.addTiddler(record); }
       wikiWearsNext(opts.tw5, title, face);
       wiki.addTiddler(new Tiddler({ title, type: WIKITEXT, text: forwarderText(to), "forward-to": to }));
       // THE FAMILY HOLDS AFTER THE MOVE: every member stands under its new title with its parent edge, else the rename fails loudly.
@@ -1347,8 +1401,8 @@ export const makeTiddlerRenameReactor = everyWiki("tiddler-rename", true, (opts:
       }
       const landed = readRecord(wiki.getTiddler(to)!).fields;
       return {
-        recipe: anchor.recipe, title, to, decision: "renamed", forwarder: title, relinked: [...captured.keys()], hash: hashOf(landed),
-        ...(read.position === "root" ? { moved: landedSlots } : {}), consequence: read,
+        recipe: anchor.recipe, title, to, decision: "renamed", forwarder: title, relinked: [...captured.keys()].map((name) => (family.has(name) ? target(name) : name)), hash: hashOf(landed),
+        ...(skipped > 0 ? { skipped } : {}), ...(read.position === "root" ? { moved: landedSlots } : {}), ...answers,
       };
     }
   };

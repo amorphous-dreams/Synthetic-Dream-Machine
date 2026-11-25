@@ -335,6 +335,8 @@ async function tiddlerRename(args: ParsedArgs): Promise<number> {
       console.log(`renamed: ${plan.args["title"]} -> ${plan.args["to"]}`);
       console.log(`  forwarder stands at ${plan.args["title"]}`);
       for (const name of relinked) console.log(`  relinked ${name}`);
+      if (typeof receipt["skipped"] === "number") console.log(`  skipped ${receipt["skipped"]} stay-home referrer(s): each keeps its fields`);
+      if (typeof receipt["withheld"] === "number") console.log(`  withheld ${receipt["withheld"]} record(s) this face may not read: counted, never named`);
       if (receipt["hash"]) console.log(`  base: ${receipt["hash"]}`);
     },
   });

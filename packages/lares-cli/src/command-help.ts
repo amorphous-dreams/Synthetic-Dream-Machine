@@ -856,9 +856,12 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "relinkers rewrite follows (the core relinks tags and list fields; wikitext links follow only where a relink " +
       "plugin mounts), and the old title stays as a forwarder, a pointer tiddler (`forward-to`) whose text transcludes " +
       "the new one, so old roads keep answering. The move lands in the working layer alone: a record resting in another " +
-      "layer refuses `rename-source-layer`, referrers outside it refuse `rename-referrers-unreachable` (a count, never " +
-      "titles), a standing target refuses `rename-target-stands` and names the delete that clears it, a slot refuses " +
-      "`slot-without-root` and names its root, and a `lar:` title another layer holds too takes a hand alone. A meme root or slot " +
+      "layer (or one the shore still carries, with no layer named yet) refuses `rename-source-layer`, referrers outside it " +
+      "refuse `rename-referrers-unreachable` (a count, never titles), a standing target refuses `rename-target-stands` and " +
+      "names the delete that clears it, a slot refuses `slot-without-root` and names its root, and a `lar:` title another " +
+      "layer holds too takes a hand alone. A `$:/` title on either side refuses `rename-system-title` (a forwarder would " +
+      "answer as the setting; `put` the new title, then `delete` the standing one). An answer names only records this face " +
+      "reads and counts the rest (`withheld`); a referrer that stays home keeps its fields (`skipped`). A meme root or slot " +
       "takes a field or tag patch here; its text moves through `lares tiddler put --meme`. `--base` carries the hash last " +
       "read: a record that moved past it answers `conflict` and nothing lands. The engine verbs stand beside this " +
       "door: `lares wiki filter | render | status --recipe <slug>`; bare status surveys the vessel.",
