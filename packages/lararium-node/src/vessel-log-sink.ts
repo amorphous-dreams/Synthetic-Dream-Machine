@@ -5,17 +5,21 @@
  * process's stdout and stderr), passes it through unchanged, and folds it into the boot's ring. A storm costs one map update
  * per line and nothing else: no write rides a line.
  *
- * THE FLUSH writes what changed, at most once per `flushMs`:
+ * THE SHORE'S QUEUE, CRESTED AS THE NALU CRESTS (lar:///ha.ka.ba/lares/api/pono/nalu#/the-wave-shape, `wave-crest`). Each
+ * distinct event key stands ONE FAMILY on the sink's queue, queued once however many lines fold into it before it lands: a
+ * storm raises counts, never writes. The drain takes a crest of whole families (`takeCrest`, bounded by event count and
+ * encoded bytes; no crest cuts a family) and lands it:
+ *   · into `run/vessel-live.log`, one JSON line per record: the flat fallback a reader tails when no door answers. Past
+ *     `liveMaxBytes` the file rewrites as the ring's own state (one line per event), so it stays bounded. `run/` stands a
+ *     tmpfs inside the container; the shim's down copies its closing slice to the house's `run/vessel-last.log`.
  *   · into the worn face's daemon temp layer, through the daemon island (`placeShoreLog`), where `$:/lares/shore/log` and
  *     `lares shore log` read the records. The temp class reaches plaintext only through its consented mirror.
- *   · into `run/vessel-live.log`, one JSON line per record that changed: the flat fallback a reader tails when no door
- *     answers. Past `liveMaxBytes` the file rewrites as the ring's own state (one line per event), so it stays bounded.
- *     `run/` stands a tmpfs inside the container; the shim's down copies its closing slice to the house's
- *     `run/vessel-last.log` (`tools/lares-container.sh` `save_vessel_log`).
+ * The NEXT crest goes only once the previous one landed, after a host-task yield (`yieldToHost`): the landing's own
+ * backpressure paces the sink, as the landing queue paces. NO CLOCK PACES IT: no timer, no interval, no duration read.
  *
  * O-TAKIAGE OF OLD RINGS: at open, a live log an earlier boot left folds into the month's ash (`run/shore-ash/<YYYY-MM>.jsonl`,
  * its closing slice, one line per event, the ash itself bounded to its last `ashMaxLines`), and the live log starts empty for
- * this boot. The month names a filing only (annotation): the clock never orders a record.
+ * this boot. The month and each record's `first-at`/`last-at` annotate alone: the clock never orders, keys or paces a record.
  *
  * Meme: lar:///ha.ka.ba/lararium/api/disk-projection
  */
@@ -24,9 +28,11 @@ import { appendFileSync, existsSync, mkdirSync, readFileSync, renameSync, statSy
 import { join } from "node:path";
 import { randomBytes } from "node:crypto";
 import {
-  ShoreLogRing, closingSlice, shoreLogJsonLine, shoreLogPlacements,
+  ShoreLogRing, closingSlice, shoreLogJsonLine, shoreLogKey, shoreLogPlacements, SHORE_LOG_EVICTED_KIND,
   type ShoreLogPlacement, type ShoreLogRecord, type ShoreLogStream,
 } from "@lararium/mesh/shore-log";
+import { takeCrest, type WaveLimits } from "@lararium/mesh/wave-crest";
+import { yieldToHost, type HostTaskYield } from "@lararium/mesh/host-task";
 
 /** The live log's name under the run dir. */
 export const VESSEL_LIVE_LOG = "vessel-live.log";
@@ -34,32 +40,37 @@ export const VESSEL_LIVE_LOG = "vessel-live.log";
 export const SHORE_ASH_DIR = "shore-ash";
 const LIVE_MAX_BYTES = 8 * 1024 * 1024;
 const ASH_MAX_LINES = 20_000;
-const FLUSH_MS = 1000;
+/** One crest's bound: event families, and the encoded bytes their live-log lines weigh (`ops` unused). */
+export const SHORE_LOG_CREST: WaveLimits = { count: 64, bytes: 64 * 1024, ops: Number.MAX_SAFE_INTEGER };
 
 export interface VesselLogSinkOptions {
   /** The house's run dir (`larRuntimeHome()`); null keeps no flat file (the records still reach the island). */
   readonly runDir: string | null;
   readonly boot?: string;
   readonly capacity?: number;
-  readonly flushMs?: number;
+  readonly crest?: WaveLimits;
   readonly liveMaxBytes?: number;
   readonly ashMaxLines?: number;
-  /** The annotation clock. */
+  /** The annotation clock (first-at / last-at, the ash's month): it never paces, keys or orders. */
   readonly now?: () => Date;
-  /** The timer seam (tests drive the flush by hand). */
-  readonly schedule?: (run: () => void, ms: number) => { cancel(): void };
+  /** The host-task seam between crests (tests hand it out by hand); never a timer. */
+  readonly yieldHost?: HostTaskYield;
 }
 
 export interface VesselLogSink {
   readonly boot: string;
   readonly ring: ShoreLogRing;
-  /** Fold one line (a whole line, no newline) into the ring; arms a flush. */
+  /** Fold one line (a whole line, no newline) into the ring; its event's family joins the queue once. */
   take(line: string, stream?: ShoreLogStream): void;
-  /** Name where the records land in the island; every record the ring holds goes first. */
-  attach(place: (records: readonly ShoreLogPlacement[]) => void): void;
+  /** Name where the records land in the island; every record the ring holds goes first. May answer a promise: the next crest waits on it. */
+  attach(place: (records: readonly ShoreLogPlacement[]) => void | Promise<void>): void;
   /** Hand the whole ring to the island again (a restarted island's temp layer stands empty). */
   replay(): void;
-  /** Write what changed now. */
+  /** The families queued, not yet landed. */
+  queued(): number;
+  /** Resolves once the queue stands empty and no crest lands. */
+  settled(): Promise<void>;
+  /** Land every queued family now, synchronously into the live log (the close's path); the island takes them as one batch. */
   flush(): void;
   /** The last flush, then the live log rewrites as the ring's closing slice. */
   close(): void;
@@ -100,23 +111,33 @@ export function openVesselLogSink(opts: VesselLogSinkOptions): VesselLogSink {
   const now = opts.now ?? (() => new Date());
   const boot = opts.boot ?? mintBootId();
   const ring = new ShoreLogRing({ boot, ...(opts.capacity !== undefined ? { capacity: opts.capacity } : {}), now: () => now().toISOString() });
-  const flushMs = opts.flushMs ?? FLUSH_MS;
+  const limits = opts.crest ?? SHORE_LOG_CREST;
   const liveMax = opts.liveMaxBytes ?? LIVE_MAX_BYTES;
-  const schedule = opts.schedule ?? ((run, ms) => { const t = setTimeout(run, ms); t.unref?.(); return { cancel: () => clearTimeout(t) }; });
+  const yieldHost = opts.yieldHost ?? yieldToHost;
   const live = opts.runDir === null ? null : join(opts.runDir, VESSEL_LIVE_LOG);
   let fileOk = live !== null;
   if (opts.runDir !== null) {
     try { mkdirSync(opts.runDir, { recursive: true }); otakiageLiveLog(opts.runDir, { now: now(), ...(opts.ashMaxLines !== undefined ? { ashMaxLines: opts.ashMaxLines } : {}) }); }
     catch { fileOk = false; }
   }
-  let place: ((records: readonly ShoreLogPlacement[]) => void) | null = null;
-  let armed: { cancel(): void } | null = null;
+  const evictedKey = shoreLogKey(SHORE_LOG_EVICTED_KIND, "");
+  /** THE SHORE'S QUEUE: event keys, each a family, each queued once until its crest lands. */
+  const queue: string[] = [];
+  const inQueue = new Set<string>();
+  let evictedSeen = 0;
+  let place: ((records: readonly ShoreLogPlacement[]) => void | Promise<void>) | null = null;
+  let draining: Promise<void> | null = null;
   let closed = false;
 
-  const toIsland = (records: readonly ShoreLogRecord[]): void => {
+  const enqueue = (key: string): void => { if (!inQueue.has(key)) { inQueue.add(key); queue.push(key); } };
+  const current = (): Map<string, ShoreLogRecord> => new Map(ring.records().map((r) => [r.key, r]));
+  const toIsland = (records: readonly ShoreLogRecord[]): void | Promise<void> => {
     if (place === null || records.length === 0) return;
-    // A daemon mid-restart refuses by throwing; its restart replays the whole ring (`replay`).
-    try { place(shoreLogPlacements(records)); } catch { /* the restart's replay carries it */ }
+    // A daemon mid-restart refuses (a throw or a rejection); its restart replays the whole ring (`replay`).
+    try {
+      const landed = place(shoreLogPlacements(records));
+      if (landed && typeof (landed as Promise<void>).then === "function") return (landed as Promise<void>).catch(() => undefined);
+    } catch { /* the restart's replay carries it */ }
   };
   const rewriteLive = (): void => {
     if (!fileOk || live === null) return;
@@ -131,26 +152,54 @@ export function openVesselLogSink(opts: VesselLogSinkOptions): VesselLogSink {
       if (statSync(live).size > liveMax) rewriteLive();
     } catch { fileOk = false; }   // a run dir that refuses keeps the records in memory and the island; never a console line
   };
-  const flush = (): void => {
-    armed?.cancel();
-    armed = null;
-    const changed = ring.drainChanged();
-    toFile(changed);
-    toIsland(changed);
+  /** Take one crest off the queue: whole families while the next still fits; a family the ring let go weighs nothing and lands nothing. */
+  const crestOf = (): ShoreLogRecord[] => {
+    const held = current();
+    const keys = takeCrest(queue, (key) => {
+      const rec = held.get(key);
+      return { count: 1, bytes: rec ? Buffer.byteLength(shoreLogJsonLine(rec)) + 1 : 0 };
+    }, limits);
+    for (const key of keys) inQueue.delete(key);
+    return keys.map((key) => held.get(key)).filter((rec): rec is ShoreLogRecord => rec !== undefined);
   };
+  /** THE DRAIN: a host task first, then crest after crest, each landing before the next goes; a yield between crests. */
+  const drain = async (): Promise<void> => {
+    await yieldHost();
+    while (queue.length > 0 && !closed) {
+      const crest = crestOf();
+      toFile(crest);
+      await toIsland(crest);
+      if (queue.length > 0) await yieldHost();
+    }
+    draining = null;
+    if (queue.length > 0 && !closed) kick();
+  };
+  const kick = (): void => { if (draining === null) draining = drain(); };
+  const flushAll = (): void => {
+    const all: ShoreLogRecord[] = [];
+    while (queue.length > 0) all.push(...crestOf());
+    toFile(all);
+    void toIsland(all);
+  };
+
   return {
     boot,
     ring,
     take(line, stream = "stdout") {
-      if (ring.take(line, stream) === null || closed || armed !== null) return;
-      armed = schedule(flush, flushMs);
+      const rec = ring.take(line, stream);
+      if (rec === null) return;
+      enqueue(rec.key);
+      if (ring.evicted !== evictedSeen) { evictedSeen = ring.evicted; enqueue(evictedKey); }
+      if (!closed) kick();
     },
-    attach(fn) { place = fn; toIsland(ring.records()); },
-    replay() { toIsland(ring.records()); },
-    flush,
+    attach(fn) { place = fn; void toIsland(ring.records()); },
+    replay() { void toIsland(ring.records()); },
+    queued: () => queue.length,
+    settled: async () => { while (draining !== null) await draining; },
+    flush: flushAll,
     close() {
       if (closed) return;
-      flush();
+      flushAll();
       closed = true;
       try { rewriteLive(); } catch { /* the appended lines already carry every record's last state */ }
     },
