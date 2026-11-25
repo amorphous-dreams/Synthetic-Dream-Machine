@@ -25,7 +25,10 @@ import { cmdNexus } from "../src/commands/nexus.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 import { larSealHome } from "../src/env.js";
 import { carriedCharterHome, generateOrLoadPersonaGroupRoot, listSeatKeys, readFaceIndexSync, readNexusDoc } from "@lararium/node";
-import { cidV1Sha256, cidV1Sha256FromHex, offerFingerprint, readFckCarrier, seatFingerprint, type CofoundOffer } from "@lararium/mesh";
+import { cidV1Sha256, cidV1Sha256FromHex } from "@lararium/mesh/crypto";
+import { offerFingerprint, type CofoundOffer } from "@lararium/mesh/cofound";
+import { readFckCarrier } from "@lararium/mesh/fck-envelope";
+import { seatFingerprint } from "@lararium/mesh/nexus-seal-seed";
 import { seatScratchCustody, type ScratchCustody } from "./support/scratch-custody.js";
 
 vi.setConfig({ testTimeout: 120_000, hookTimeout: 120_000 });

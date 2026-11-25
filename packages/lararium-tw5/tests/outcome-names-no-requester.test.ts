@@ -7,7 +7,9 @@
  * output, error, refusal and digest).
  */
 import { expect, test } from "vitest";
-import { CompositeStore, DAEMON_BAG_ID, OUTCOME_URI_PREFIX, VERB_RESULT_KEY, type Verb } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { OUTCOME_URI_PREFIX, VERB_RESULT_KEY, type Verb } from "@lararium/mesh/verb-tiddler";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { copyEffectOutcome, writeOutcome } from "../src/verb-vm.js";
 

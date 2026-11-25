@@ -18,7 +18,9 @@
  */
 import { describe, expect, test } from "vitest";
 import type { DocumentId } from "@automerge/automerge-repo";
-import { DeterministicFederationGate, crossroadsDocUrl, makeVesselOnlyDocs, type FederationGate } from "@lararium/mesh";
+import { DeterministicFederationGate, type FederationGate } from "@lararium/mesh/federation-gate";
+import { crossroadsDocUrl } from "@lararium/mesh/deterministic-doc";
+import { makeVesselOnlyDocs } from "@lararium/mesh/control-home";
 import { interpretAsDocumentId } from "@automerge/automerge-repo";
 import { browserShareConfig } from "../src/open-browser-vessel.js";
 

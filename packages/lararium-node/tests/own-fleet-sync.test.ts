@@ -26,10 +26,11 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { Repo, generateAutomergeUrl, interpretAsDocumentId, type AutomergeUrl, type DocumentId, type PeerId } from "@automerge/automerge-repo";
 import { NodeWSServerAdapter } from "@automerge/automerge-repo-network-websocket";
 import { WebSocket as WsSocket } from "ws";
-import {
-  DAEMON_BAG_ID, PERSONA_GROUP_ID_TIDDLER, personaBagIdFor, personaMembershipEntries, personaSiblingBagIds, shareConfigOf,
-  type FederationGate, type GateSession,
-} from "@lararium/mesh";
+import { DAEMON_BAG_ID, PERSONA_GROUP_ID_TIDDLER } from "@lararium/mesh/lar-uris";
+import { personaBagIdFor, personaSiblingBagIds } from "@lararium/mesh/persona-scope";
+import { personaMembershipEntries } from "@lararium/mesh/persona-planes";
+import { shareConfigOf, type FederationGate } from "@lararium/mesh/federation-gate";
+import { type GateSession } from "@lararium/mesh/face-gate-door";
 import { LarWSClientAdapter } from "../../lararium-mesh/src/lar-ws-client-adapter.js";
 import { wsDialSocket, type WsLike } from "../../lararium-mesh/src/ws-dial-socket.js";
 import { AUDIENCE, GROUP, presenter, sibling, world, type Presenter, type World } from "../../lararium-mesh/tests/face-gate-fixture.js";

@@ -7,7 +7,7 @@
  * tail, so a red names the entry that never came.
  */
 import type { LarInstance } from "./instance.js";
-import type { JournalCursor, JournalEntry, JournalKind } from "@lararium/mesh";
+import type { JournalCursor, JournalEntry, JournalKind } from "@lararium/mesh/vessel-journal";
 
 export interface ExpectEntryRequest {
   readonly kind?: JournalKind;

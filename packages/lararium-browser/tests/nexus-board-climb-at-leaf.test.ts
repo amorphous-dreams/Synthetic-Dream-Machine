@@ -42,17 +42,16 @@
 import { describe, test, expect } from "vitest";
 import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
 import * as ed from "@noble/ed25519";
-import {
-  climbNexusBoards, carryPersonaKelUpTheGradient,
-  nexusIdentity, nexusIslandsBelow, nexusScopeOrThrow, type NexusIdentityAt,
-  materializeSharedLarDoc,
-  kapaeAntigenDocUrl, realmAnnounceDocUrl,
-  personaKelBoardDocUrl,
-  writeAntigenEntry, antigenEntriesFromBoard, signAntigenEntry,
-  writePersonaKelEvent, personaKelChainForPrefix, mintPersonaInception,
-  publicRealmBooksFromDoc,
-  hex,
-} from "@lararium/mesh";
+import { climbNexusBoards } from "@lararium/mesh/nexus-board-climb";
+import { carryPersonaKelUpTheGradient } from "@lararium/mesh/persona-kel-climb";
+import { nexusIdentity, nexusIslandsBelow, nexusScopeOrThrow, type NexusIdentityAt } from "@lararium/mesh/nexus-identity";
+import { materializeSharedLarDoc, kapaeAntigenDocUrl, realmAnnounceDocUrl, personaKelBoardDocUrl } from "@lararium/mesh/deterministic-doc";
+import { writeAntigenEntry, antigenEntriesFromBoard } from "@lararium/mesh/antigen-board";
+import { signAntigenEntry } from "@lararium/mesh/kapae-antigen";
+import { writePersonaKelEvent, personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";
+import { mintPersonaInception } from "@lararium/mesh/persona-kel";
+import { publicRealmBooksFromDoc } from "@lararium/mesh/realm-bag";
+import { hex } from "@lararium/mesh/crypto";
 // The boot's own source — the fault-pin's only reachable witness. `?raw` because this suite runs in a
 // real chromium and holds no fs; the text is the same text `tsc` compiles.
 import bootSrc from "../src/open-browser-vessel.ts?raw";

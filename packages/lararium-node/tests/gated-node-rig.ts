@@ -10,7 +10,8 @@
  */
 import { createServer, type Server } from "node:http";
 import { NodeWSServerAdapter } from "@automerge/automerge-repo-network-websocket";
-import { LarWSClientAdapter, type FederationPosture, type LarWSClientOptions } from "@lararium/mesh";
+import { LarWSClientAdapter, type LarWSClientOptions } from "@lararium/mesh/lar-ws-client-adapter";
+import { type FederationPosture } from "@lararium/mesh/federation-gate";
 import { hearthPinIndex } from "../../lararium-mesh/src/admit-gate-pin.js";
 import { world, presenter, AUDIENCE, type World, type Presenter } from "../../lararium-mesh/tests/face-gate-fixture.js";
 import { faceGateServer, gateSessionRegistry } from "../src/face-gate-server.js";

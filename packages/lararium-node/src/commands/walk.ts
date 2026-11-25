@@ -18,7 +18,8 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
 
-import { decodeInvite, takeInvite, popInvite } from "@lararium/mesh";
+import { decodeInvite } from "@lararium/mesh/hosting";
+import { takeInvite, popInvite } from "@lararium/mesh/walk-client";
 import { nodeWalkStore, listWalkRecords, WalksElsewhere } from "../node-walk-store.js";
 import { mintFaceNexusLeaf } from "../nexus-leaf.js";
 import { resolveFace } from "../face-selector.js";

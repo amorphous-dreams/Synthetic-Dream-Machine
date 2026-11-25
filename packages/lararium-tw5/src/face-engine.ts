@@ -21,10 +21,11 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set
  */
-import {
-  CompositeStore, VerbRefusal, wikiSlotUri, crossFacePrivateRefusal, crossFaceViewSlots, CROSS_FACE_PRIVATE,
-  type FaceActorDoor, type WikiRecipe,
-} from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { VerbRefusal } from "@lararium/mesh/verb-refusal";
+import { wikiSlotUri, type WikiRecipe } from "@lararium/mesh/wiki-recipe";
+import { crossFacePrivateRefusal, crossFaceViewSlots, CROSS_FACE_PRIVATE } from "@lararium/mesh/cross-face-reach";
+import { type FaceActorDoor } from "@lararium/mesh/automerge-doc-store";
 import { buildIslandRecipe, seedDrained, type RecipeReadyBinding } from "./island-recipe.js";
 import { bridgeWikiToAdaptor } from "./outbound-bridge.js";
 import type { TW5Engine } from "./tw5-vm.js";

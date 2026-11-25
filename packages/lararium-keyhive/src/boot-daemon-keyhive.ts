@@ -21,7 +21,10 @@
 import { KeyhiveProvider, PrekeySecretAbsent } from "./keyhive-provider.js";
 import { registerBagsDurably, type BagDocLedger, type DurableRegistration } from "./bag-doc-ledger.js";
 import type { CapabilityProviderInitOpts, ProviderChunkRest } from "./capability-provider.js";
-import { checkFacePins, leaseEpochUnderAnchor, verifyEdgeAgainstPersonaKel, type FaceAnchor, type DeviceDelegationTiddler, type EdgeStanding, type PersonaKelEvent } from "@lararium/mesh";
+import { checkFacePins, leaseEpochUnderAnchor, type FaceAnchor } from "@lararium/mesh/face-anchor";
+import { verifyEdgeAgainstPersonaKel, type PersonaKelEvent } from "@lararium/mesh/persona-kel";
+import { type DeviceDelegationTiddler } from "@lararium/mesh/device-delegation";
+import { type EdgeStanding } from "@lararium/mesh/edge-kapae";
 
 export interface BootDaemonKeyhiveInput {
   /** The selected face's 32-byte atom seed. */

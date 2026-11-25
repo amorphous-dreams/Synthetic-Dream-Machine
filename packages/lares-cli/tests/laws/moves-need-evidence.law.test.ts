@@ -17,7 +17,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { SyncedTree, syncedTreeKey } from "@lararium/node";
-import { carrierHash } from "@lararium/mesh";
+import { carrierHash } from "@lararium/mesh/crypto";
 import { pairedDeletions } from "../../src/commands/watch.js";
 import { resolveRenames, scanSource, type ScanRow } from "../../src/ingest-core.js";
 

@@ -28,11 +28,9 @@ import { join } from "path";
 import { tmpdir } from "os";
 import { KeyhiveProvider, InMemoryEventStore } from "../src/index.js";
 import { foundCabalRealm, openDwelling, dwellersHolding } from "../src/cabal-realm-ceremony.js";
-import {
-  cabalRealmMaintenanceProvenance, cabalRealmLeaseSlot,
-  MEMBERSHIP_BROADCAST,
-  type MembershipChannel, type MembershipEnvelope,
-} from "@lararium/mesh";
+import { cabalRealmMaintenanceProvenance } from "@lararium/mesh/cabal-realm-clock";
+import { cabalRealmLeaseSlot } from "@lararium/mesh/cabal-realm";
+import { MEMBERSHIP_BROADCAST, type MembershipChannel, type MembershipEnvelope } from "@lararium/mesh/membership-channel";
 
 // ── FileMembershipChannel — the file/POST impl behind the shore — one of two live forms, chosen by deployment. ──
 // Envelopes ride as JSON files in a shared dir; per-recipient seen-set = deliver-once.

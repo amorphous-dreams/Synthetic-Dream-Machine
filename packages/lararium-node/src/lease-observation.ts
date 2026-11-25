@@ -5,7 +5,9 @@
  * signature, for this face's group, from a key the face's CURRENT KEL roster seats (`signedLeaseEpoch`). An unsigned slot, a
  * stranger's, another group's, or a deleted one raises nothing; the result never falls below what the anchor holds.
  */
-import { raiseFaceFrontier, readFace, type FaceAnchor, type PersonaKelEvent } from "@lararium/mesh";
+import { raiseFaceFrontier, type FaceAnchor } from "@lararium/mesh/face-anchor";
+import { readFace } from "@lararium/mesh/face-reading";
+import { type PersonaKelEvent } from "@lararium/mesh/persona-kel";
 
 export function raiseAnchorFromSlots(
   anchor: FaceAnchor, slotTexts: Iterable<unknown>, kelChain: readonly PersonaKelEvent[],

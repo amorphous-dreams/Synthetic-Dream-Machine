@@ -7,7 +7,7 @@
 
 import { readdirSync, statSync, existsSync } from "node:fs";
 import { join } from "node:path";
-import { sweepDocs, type DoctorReport } from "@lararium/mesh";
+import { sweepDocs, type DoctorReport } from "@lararium/mesh/doctor-sweep";
 import { makeChildProcessDocLoadProbe } from "./doc-load-probe.js";
 
 const SHARD_RE = /^[0-9A-Za-z]{2}$/;

@@ -5,7 +5,7 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, test } from "vitest";
-import type { SlotSpec } from "@lararium/mesh";
+import type { SlotSpec } from "@lararium/mesh/keyslot-door";
 import { FaceLocked, makeCustodyHolder } from "../src/custody-holder.js";
 import { FsCustodyIo } from "../src/custody-io.js";
 import { decodeFaceIndex, faceDir, faceIndexPath, FaceIndexRefused } from "../src/face-index.js";

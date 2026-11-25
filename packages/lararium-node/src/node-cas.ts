@@ -13,11 +13,12 @@
 
 import { mkdirSync, readFileSync, existsSync, copyFileSync, readdirSync, statSync, unlinkSync } from "node:fs";
 import { join, dirname } from "node:path";
-import {
-  casReferences, graceForTier, tiersByGraceDescending, realmPace, pinnedCids,
-  sha256HexBytesSync, verifyCidBytes, makeCidResolver,
-  type GenesisCasManifest, type PinCap, type CasReferenceEntry, type CabalRealmMaintenanceProvenance, type CasTransitTransport,
-} from "@lararium/mesh";
+import { casReferences, type GenesisCasManifest, type CasReferenceEntry } from "@lararium/mesh/cas";
+import { graceForTier, tiersByGraceDescending, pinnedCids, type PinCap } from "@lararium/mesh/cas-caps";
+import { realmPace } from "@lararium/mesh/ahi-ka";
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
+import { verifyCidBytes, makeCidResolver, type CasTransitTransport } from "@lararium/mesh/cas-transit";
+import { type CabalRealmMaintenanceProvenance } from "@lararium/mesh/cabal-realm-clock";
 import { runtimeCasOverride } from "./lares-config.js";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 

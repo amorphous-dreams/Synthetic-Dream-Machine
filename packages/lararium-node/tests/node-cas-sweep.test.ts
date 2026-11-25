@@ -22,7 +22,9 @@ import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
 import { mkdtempSync, mkdirSync, rmSync, existsSync, writeFileSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { casReferences, sha256HexBytesSync, utf8Bytes, GENESIS_CAS_MANIFEST_FORMAT, ENGINE_CORE_ID, type CasReferenceEntry, type GenesisCasManifest, type LarDoc } from "@lararium/mesh";
+import { casReferences, GENESIS_CAS_MANIFEST_FORMAT, type CasReferenceEntry, type GenesisCasManifest } from "@lararium/mesh/cas";
+import { sha256HexBytesSync, utf8Bytes } from "@lararium/mesh/crypto";
+import { ENGINE_CORE_ID, type LarDoc } from "@lararium/mesh/base-doc";
 import { casSweep, listCasBlobs, writeCasEntriesFs, readCasPins, pinCas, releaseCas } from "../src/node-cas.js";
 import { genesisProtectSet } from "../src/genesis-artifact.js";
 
@@ -115,7 +117,7 @@ describe("casSweep — retain by reference, release by DROP, never the genesis",
 // a clock to decide a sweep, even through the OPTIONAL `life`, with a pin that carries one a far-forward clock would have
 // no bearing on still holding, and one absent from the array sweeping the instant its sidecar entry is
 // withdrawn.
-import { graceForTier, type PinCap } from "@lararium/mesh";
+import { graceForTier, type PinCap } from "@lararium/mesh/cas-caps";
 
 describe("casSweep — PIN at cid grain, grace per tier, NO GLOBAL NOW", () => {
   test("a pinned unreferenced blob never sweeps while the pin stands (present)", () => {

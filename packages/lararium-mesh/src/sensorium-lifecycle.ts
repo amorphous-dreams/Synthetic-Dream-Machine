@@ -29,6 +29,8 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/sensorium-lifecycle
  */
 
+import { handCodesOf } from "./hand-refusal.js";
+
 /** Where a durable sensorium stands on the lifecycle ladder — a DECLARED fact a reconciler drives. */
 export type SensoriumLifecycleState = "pioneer" | "hardening" | "durable" | "tombstone";
 
@@ -180,11 +182,10 @@ export function seatOf(verb: string): "HOTL" | "HITL" {
  * THE SENSE VERBS A PERSON'S HAND ALONE RUNS, each with the code it refuses under (hitl-reads-a-hand). The grid above reads what
  * a move can undo; this table reads who may move it: `promote` changes what the house treats as durable, `retire` and `un-retire`
  * move a sensorium out of and back into the live set, and `purge` deletes its bytes. Each runs on a person's hand at a real
- * terminal (`lares sense <verb>`); the vessel refuses every other asker, and no MCP tool carries one.
+ * terminal (`lares sense <verb>`); the vessel refuses every other asker, and no MCP tool carries one. The sense wing's view of
+ * the one hand table (`HAND_ADMITS`, `custody.hand.admits`).
  */
-export const SENSE_HAND_CODES: Readonly<Record<string, string>> = {
-  promote: "sense-needs-hand", retire: "sense-needs-hand", "un-retire": "sense-needs-hand", purge: "sense-needs-hand",
-};
+export const SENSE_HAND_CODES: Readonly<Record<string, string>> = Object.freeze(Object.fromEntries(handCodesOf("sense")));
 
 /** The one value that approves a hand verb: the hand a door read off the process behind the ask, never a caller's value. */
 export type SenseHand = "hand";

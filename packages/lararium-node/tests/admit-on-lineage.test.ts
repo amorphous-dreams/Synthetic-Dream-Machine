@@ -10,11 +10,10 @@
  */
 import { describe, test, expect } from "vitest";
 import * as ed from "@noble/ed25519";
-import {
-  signCabalInvite, vouchDagFromInvites, DEFAULT_JOIN_POLICY,
-  type AdmissionDials, type CabalInvite,
-  hex, hexToBytes,
-} from "@lararium/mesh";
+import { signCabalInvite, DEFAULT_JOIN_POLICY, type CabalInvite } from "@lararium/mesh/cabal-invite";
+import { vouchDagFromInvites } from "@lararium/mesh/vouch-dag";
+import { type AdmissionDials } from "@lararium/mesh/admission-price";
+import { hex, hexToBytes } from "@lararium/mesh/crypto";
 import { admitOnLineage, admitToRealm } from "../src/realm-admission.js";
 
 const signer = (seed: Uint8Array) => (bytes: Uint8Array) => ed.signAsync(bytes, seed).then(hex);

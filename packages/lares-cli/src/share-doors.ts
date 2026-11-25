@@ -7,8 +7,8 @@
  */
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { larConfigHome, larProjectionsHome } from "@lararium/node";
-import { SHARE_CONFIG_FILE, type ShareEntry, type ShareFace } from "@lararium/mesh";
+import { larConfigHome, larProjectionsHome, type HandReading } from "@lararium/node";
+import { SHARE_CONFIG_FILE, type ShareEntry, type ShareFace } from "@lararium/mesh/share-config";
 import { vesselDid } from "./env.js";
 import { DaemonUnreachable, runVerb } from "./verb-call.js";
 import { sealedAct } from "./sealed-act-door.js";
@@ -26,8 +26,8 @@ export interface ShareDoors {
   readonly verb: (name: string, args: Record<string, unknown>) => Promise<Record<string, unknown> | null>;
   readonly out: (line: string) => void;
   readonly err: (line: string) => void;
-  /** Does this run stand under an agent harness's mark? Absent: the process environment answers. */
-  readonly seat?: () => boolean;
+  /** How a share reads the hand behind this run: the house gate over the command's own branch. Absent: the gate reads it. */
+  readonly hand?: () => HandReading;
   /** The house's projections home, where a founded workbench's realm id reaches its realm label (`realm-labels/<pet>.json`). */
   readonly projections: () => string;
 }

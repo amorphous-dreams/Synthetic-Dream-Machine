@@ -5,7 +5,7 @@
  * capability at once, and the act's `applied` result would cross before its target rests.
  */
 import { describe, expect, test } from "vitest";
-import { type LarTiddlerRecord } from "@lararium/mesh";
+import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { wikiSkip, skipNote } from "./test-wiki.js";
 import { afterDispatch, arrived, ManualBoundary, openDraft, remote, saveSequence, shoreRig, turns, type Rig } from "./wiki-shore-rig.js";
 

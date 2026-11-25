@@ -1,5 +1,5 @@
 import { describe, expect, test, vi } from "vitest";
-import type { ChangeOrigin } from "@lararium/mesh";
+import type { ChangeOrigin } from "@lararium/mesh/tiddler-store";
 
 // Every stalk derivation passes through `stratify(text, "wiki-sense-stalk")`, whoever calls `deriveDocStalk`: the
 // count sits at the derivation itself, so the same instrument reads the base tree and the cured one alike.

@@ -12,7 +12,7 @@ import { chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "n
 import { spawnSync } from "node:child_process";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { carrierHash } from "@lararium/mesh";
+import { carrierHash } from "@lararium/mesh/crypto";
 import { ensureRealmLabel, faceRoot, syncedTreeDir, syncedTreeKey, SyncedTree, writeFaceLabel } from "@lararium/node";
 import { cmdSurface, liveSurfaceDoors, surfaceHouse, vesselSpelling, type SurfaceDoors } from "../src/commands/surface.js";
 import { commandScope, decideRoute } from "../src/host-bridge.js";

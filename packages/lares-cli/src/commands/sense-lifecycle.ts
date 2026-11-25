@@ -29,7 +29,7 @@ import {
   buildEphemeralSensorium, promoteSensorium, retireSensorium, unRetireSensorium, purgeSensorium,
   sensoriumDir, readOwnHand, handRefusalOf, type HandReading, type HandRefusalCode,
 } from "@lararium/node";
-import { guardHitl, MUSTIE_GROUNDS, type SenseHand } from "@lararium/mesh";
+import { guardHitl, MUSTIE_GROUNDS, type SenseHand } from "@lararium/mesh/sensorium-lifecycle";
 import { emit, exitFor } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 

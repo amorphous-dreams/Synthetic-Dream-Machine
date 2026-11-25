@@ -22,10 +22,10 @@
  * reopens it, lands the tree, then the root, then the roster line. A torn mint resumes: a standing tree opens under the route and
  * a standing root is adopted. A route that opens nothing, or a passkey, writes nothing.
  */
-import {
-  bindWardSlot, commitWardTree, decodeSlotTree, encodeSlotTree, mintWardKey, nobleKdf, openWardKey, readWardCarrier,
-  writeWardCarrier, WardRefused, ATTEMPT_BUDGET, attemptWarning, type Credential, type SlotTree, type WardKey,
-} from "@lararium/mesh";
+import { bindWardSlot, mintWardKey, openWardKey, readWardCarrier, WardRefused, type WardKey } from "@lararium/mesh/ward-slots";
+import { commitWardTree, writeWardCarrier } from "@lararium/mesh/sealed-writer";
+import { decodeSlotTree, encodeSlotTree, nobleKdf, type Credential, type SlotTree } from "@lararium/mesh/keyslot-door";
+import { ATTEMPT_BUDGET, attemptWarning } from "@lararium/mesh/attempt-budget";
 import { browserKeystoreCustodyIo, BrowserCustodyRefused, readBrowserCustody, withCustodyRecords } from "./browser-custody.js";
 import { openWardedRoot, wardCredentialOf, wardPinOf, wardRootCarrier, wardRootRowsOf, wardRootTreeOf, type WardRoute } from "./ward-core.js";
 import { faceOfVessel, openVesselIdb } from "./browser-vessel-identity.js";

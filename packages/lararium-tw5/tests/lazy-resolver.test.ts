@@ -12,8 +12,8 @@
 import { describe, test, expect, vi } from "vitest";
 import { createHash } from "node:crypto";
 import { installLazyResolver, skinnyCid, type CarrierResolver } from "../src/lazy-resolver.js";
-import { cidUri } from "@lararium/mesh";
-import type { LarTiddlerChange } from "@lararium/mesh";
+import { cidUri } from "@lararium/mesh/lar-uris";
+import type { LarTiddlerChange } from "@lararium/mesh/tiddler-store";
 
 const cidOf = (s: string) => createHash("sha256").update(Buffer.from(s, "utf8")).digest("hex");
 const bytesOf = (s: string) => new TextEncoder().encode(s);

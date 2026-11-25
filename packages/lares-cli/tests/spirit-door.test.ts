@@ -38,7 +38,8 @@ vi.mock("../src/env.js", async (orig) => ({
 import { cmdSpirit, shrineCarrier, SHRINE_SLOTS, omText, residueOf, slotBody, ashLedgerOf, OM_CAP_CHARS, WAKING_SLOT_BUDGETS, RECORD_BUDGET_BYTES, MEMORY_PREFIX, RESIDUE_CAP_CHARS } from "../src/commands/spirit.js";
 import { COMPACTION_DISPLAY, COMPACTION_WORD } from "../src/spirit-words.js";
 import { COMMANDS } from "../src/bin/lares.js";
-import { CompositeStore, bagUri } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { bagUri } from "@lararium/mesh/lar-uris";
 import { MemoryTiddlerStore, makeMemePutReactor, makeTiddlerGetReactor, makeTiddlerPutReactor, makeWikiRenderReactor } from "@lararium/tw5";
 import { bootTestWiki, skipNote, wikiSkip } from "../../lararium-tw5/tests/test-wiki.js";
 import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
@@ -223,7 +224,7 @@ async function run(args: ParsedArgs, seams = {}): Promise<{ exit: number; printe
   const log = vi.spyOn(console, "log").mockImplementation((...p: unknown[]) => { chunks.push(p.join(" ") + "\n"); });
   const err = vi.spyOn(console, "error").mockImplementation(() => {});
   try {
-    const exit = await cmdSpirit(args, { now: NOW, hand: HAND, seat: () => false, ...seams });
+    const exit = await cmdSpirit(args, { now: NOW, hand: HAND, ...seams });
     return { exit, printed: JSON.parse(chunks.join("").trim().split("\n").at(-1)!) as Record<string, unknown> };
   } finally { out.mockRestore(); log.mockRestore(); err.mockRestore(); }
 }
@@ -343,9 +344,16 @@ describe("ah trues one slot through the meme door", () => {
 
   test("an AI seat's whole-slot write names the slot digest it read, or refuses spirit-base-needed by name", async () => {
     stage();
-    const r = await run(argv(["ah", "lares-alpha"], { slot: "#/open", text: "y" }), { seat: () => true });
+    const r = await run(argv(["ah", "lares-alpha"], { slot: "#/open", text: "y" }), { hand: AI });
     expect(error(r).code).toBe("spirit-base-needed");
     expect(error(r).message).toContain("--base <slot digest>");
+    expect(h.calls.some((c) => c.verb === "meme-patch")).toBe(false);
+  });
+
+  test("RED: a whole-slot write from a branch nothing attests names its base too; the gate reads the chain, never a mark alone", async () => {
+    stage();
+    const r = await run(argv(["ah", "lares-alpha"], { slot: "#/open", text: "y" }), { hand: () => ({ refusal: "hand-unattested" }) as never });
+    expect(error(r).code).toBe("spirit-base-needed");
     expect(h.calls.some((c) => c.verb === "meme-patch")).toBe(false);
   });
 
@@ -656,7 +664,7 @@ describe("fork the instance, fence the card", () => {
   test("the epoch orders instances and never refuses: an AI seat's write bearing a stale epoch, or none, lands", async () => {
     stage({ side: LEASE });
     for (const options of [{}, { epoch: "2" }, { epoch: "3" }]) {
-      const r = await run(argv(["ah", "lares-alpha"], { slot: "#/open", add: "* y", ...options }), { seat: () => true });
+      const r = await run(argv(["ah", "lares-alpha"], { slot: "#/open", add: "* y", ...options }), { hand: AI });
       expect(r.exit, JSON.stringify(r.printed)).toBe(0);
     }
   });
@@ -971,7 +979,7 @@ describe("bunrei: many instances wear one pet, and none locks another out", () =
 
   test("two instances add #/open lines at once: the later re-reads past the conflict and both lines survive", async () => {
     stage({ open: "!! Open\n\n* a loop", patchConflicts: 1, sibling: { "#/open": "!! Open\n\n* a loop\n* instance a's line" } });
-    const r = await run(argv(["ah", "lares-alpha"], { slot: "#/open", add: "* instance b's line" }), { seat: () => true });
+    const r = await run(argv(["ah", "lares-alpha"], { slot: "#/open", add: "* instance b's line" }), { hand: AI });
     expect(r.exit, JSON.stringify(r.printed)).toBe(0);
     const patches = h.calls.filter((c) => c.verb === "meme-patch");
     expect(String(patches.at(-1)!.args["replace"])).toBe("!! Open\n\n* a loop\n* instance a's line\n* instance b's line");
@@ -979,7 +987,7 @@ describe("bunrei: many instances wear one pet, and none locks another out", () =
 
   test("a whole-slot replace whose slot moved under it lands both versions in a conflict stanza naming this instance and the last writer", async () => {
     stage({ open: "!! Open\n\n* a loop", patchConflicts: 1, sibling: { "#/open": "!! Open\n\n* instance a rewrote it" }, side: { "writer-open": "lares-alpha#inst-a00" } });
-    const r = await run(argv(["ah", "lares-alpha"], { slot: "#/open", text: "!! Open\n\n* instance b rewrote it", instance: "inst-b00", base: digest(OPEN) }), { seat: () => true });
+    const r = await run(argv(["ah", "lares-alpha"], { slot: "#/open", text: "!! Open\n\n* instance b rewrote it", instance: "inst-b00", base: digest(OPEN) }), { hand: AI });
     expect(r.exit, JSON.stringify(r.printed)).toBe(0);
     const landed = String(h.calls.filter((c) => c.verb === "meme-patch").at(-1)!.args["replace"]);
     expect(landed).toContain("conflict");
@@ -1025,7 +1033,7 @@ describe("bunrei: many instances wear one pet, and none locks another out", () =
     const seen = (data(woke)["digests"] as Record<string, string>)["#/open"]!;
     expect(seen).toBe(digest(OPEN));
     stage({ open: `${OPEN}\n* a sibling's added line` });
-    const r = await run(argv(["ah", "lares-alpha"], { slot: "#/open", text: "!! Open\n\n* my rewrite", base: seen, instance: "inst-b00" }), { seat: () => true });
+    const r = await run(argv(["ah", "lares-alpha"], { slot: "#/open", text: "!! Open\n\n* my rewrite", base: seen, instance: "inst-b00" }), { hand: AI });
     expect(data(r)["conflict"]).toBe(true);
     const landed = String(h.calls.filter((c) => c.verb === "meme-patch").at(-1)!.args["replace"]);
     expect(landed).toContain("* a sibling's added line");
@@ -1309,7 +1317,7 @@ describe("the cold read's cures", () => {
   test("the carry refuses a malformed --instance, lands for a fenced AI seat, and single-quotes the line it hands back", async () => {
     stage({ side: { lease: "inst-a 3 2026-11-24T11:00:00.000Z" } });
     expect((await run(argv([COMPACTION_WORD, "lares-alpha"], { text: "s", instance: "bad instance!" }))).exit).toBe(2);
-    const r = await run(argv([COMPACTION_WORD, "lares-alpha"], { text: "the summary", epoch: "1" }), { seat: () => true });
+    const r = await run(argv([COMPACTION_WORD, "lares-alpha"], { text: "the summary", epoch: "1" }), { hand: AI });
     expect(r.exit).toBe(0);
     const unfiled = String(data(r)["unfiled"]);
     expect(unfiled).toContain(`--add '* '\\'''\\''2026-11-24`);

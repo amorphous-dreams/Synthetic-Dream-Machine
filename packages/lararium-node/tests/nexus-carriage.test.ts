@@ -22,11 +22,10 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
-import {
-  hex, signCarriageQuorum, signCarriageContract, carriageEntryActCid,
-  makeMultiSigQuorumVerifier, signAntigenEntry,
-  type NexusDoc, type CarriageEntry, type KahuQuorumSeats, type KapaeAntigenEntry,
-} from "@lararium/mesh";
+import { hex } from "@lararium/mesh/crypto";
+import { signCarriageQuorum, signCarriageContract, carriageEntryActCid, type CarriageEntry } from "@lararium/mesh/carriage-registry";
+import { makeMultiSigQuorumVerifier, signAntigenEntry, type KahuQuorumSeats, type KapaeAntigenEntry } from "@lararium/mesh/kapae-antigen";
+import { type NexusDoc } from "@lararium/mesh/nexus-seal-seed";
 import {
   makeNexusMembership, makeRealmCharterConsult, readCarriedNexuses, leafStandingFor,
   type CarriedNexusReading, type SocketBinding,

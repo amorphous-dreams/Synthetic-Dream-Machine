@@ -24,7 +24,9 @@
  */
 import { afterEach, describe, expect, test } from "vitest";
 import { createRequire } from "node:module";
-import { daemonFaceCanonBag, emptyLarDoc, wikiSlotUri, type DocHandle, type LarDoc, type Repo as RepoType } from "@lararium/mesh";
+import { daemonFaceCanonBag, wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { type DocHandle, type Repo as RepoType } from "@lararium/mesh/automerge";
 import { composeCrossFaceView, composeFaceEngine, crossFaceViewSource, faceEngines, type FaceEngineSource } from "../src/face-engine.js";
 import { makeTiddlerGetReactor, makeTiddlerPutReactor, makeWikiFilterReactor, makeWikiRenderReactor } from "../src/tiddler-verbs.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";

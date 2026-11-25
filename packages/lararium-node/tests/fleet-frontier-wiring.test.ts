@@ -1,9 +1,13 @@
 import { describe, expect, test } from "vitest";
-import {
-  ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, emptyLarDoc, fleetEdgeBoardDocUrl,
-  landFleetGenesis, makeHandLineage, makeIslandRepo, materializeSharedLarDoc,
-  writeEdgeFrontier, writeFrontierSnapshot, deviceEdgeId, signEdgeKapae, writeEdgeKapae, nextFleetFrontier, landFleetFrontier, fleetRaiseCids,
-} from "@lararium/mesh";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { emptyLarDoc } from "@lararium/mesh/base-doc";
+import { fleetEdgeBoardDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { landFleetGenesis, nextFleetFrontier, landFleetFrontier, fleetRaiseCids } from "@lararium/mesh/fleet-frontier";
+import { makeHandLineage } from "@lararium/mesh/hand-lineage";
+import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
+import { writeEdgeFrontier, writeFrontierSnapshot } from "@lararium/mesh/edge-frontier-board";
+import { deviceEdgeId } from "@lararium/mesh/dyad";
+import { signEdgeKapae, writeEdgeKapae } from "@lararium/mesh/edge-kapae";
 import { makeEdgeShadowRing } from "../src/edge-shadow-ring.js";
 
 const seed = new Uint8Array(32).fill(111);

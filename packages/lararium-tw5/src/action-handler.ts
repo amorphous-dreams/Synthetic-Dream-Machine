@@ -33,33 +33,80 @@
  * Meme:    lar:///ha.ka.ba/lararium/api/residency-model
  */
 
-import { refuseTw5DocsReserved, refuseTw5DocsWrite, wearOf } from "@lararium/mesh";
+import { askerRefusal } from "@lararium/mesh/hand-refusal";
+import { refuseTw5DocsReserved, refuseTw5DocsWrite } from "@lararium/mesh/tw5-docs-name";
+import { wearOf } from "@lararium/mesh/repo-wear";
+import type { CompositeStore } from "@lararium/mesh/composite-store";
+import type { LarTiddlerRecord, LarTiddlerStore, ChangeOrigin } from "@lararium/mesh/tiddler-store";
+import type { Verb } from "@lararium/mesh/verb-tiddler";
+import type { Repo } from "@lararium/mesh/automerge";
 import type {
-  CompositeStore,
-  LarTiddlerRecord,
-  LarTiddlerStore,
-  ChangeOrigin,
-  Verb,
-  Repo,
-  ResidencyAction, AddAction, CopyAction, MoveAction, ClearAction, DropAction, LoadAction, IngestAction, CreateAction,
-  WikiSlotKind,
-} from "@lararium/mesh";
-import { isHouseCanonBag, holdsKahuReach, plainRecordOrNull, admitSeatExecutable, requireKahuReach, resolveHouseCanon, ownEntry, isExecutableRecord, renderedFromOf, renderedRungOf, renderedRungWarning, RENDERED_ALERT_KIND, type RenderedRung } from "@lararium/mesh";
-import type { KahuReachSource } from "@lararium/mesh";
+  ResidencyAction,
+  AddAction,
+  CopyAction,
+  MoveAction,
+  ClearAction,
+  DropAction,
+  LoadAction,
+  IngestAction,
+  CreateAction,
+} from "@lararium/mesh/residency-actions";
+import type { WikiSlotKind } from "@lararium/mesh/wiki-recipe";
+import { isHouseCanonBag, holdsKahuReach, requireKahuReach } from "@lararium/mesh/kahu-canon-reach";
+import { plainRecordOrNull, ownEntry } from "@lararium/mesh/stored-value";
+import { admitSeatExecutable } from "@lararium/mesh/seat-startup-offer";
+import { resolveHouseCanon } from "@lararium/mesh/house-canon-doc";
+import { isExecutableRecord } from "@lararium/mesh/executable-class";
 import {
-  ACTION_VERBS, type ActionVerb, AutomergeDocStore,
-  parseResidencyAction, withEffectRecord, sha256HexBytesSync, carrierHash, digestsEqual,
-  emptyLarDoc, storedLarRecord, CATALOG_DOC_URI, ORACLE_DOC_URI,
-  ORIGINAL_TIDDLER_PATHS, parseProvenance, serializeProvenance, recordPack, membersOfPack,
-  ORIGINAL_TIDDLER_HASHES, parseHashes, serializeHashes, recordPackHashes, hashOfMember,
-  skinnyHandleTiddler, isOversizedBody, ridesAsPointer,
-  crossingDirection, type CapTier,
-  isEffectRecordUri, effectRecordUri, RETIRED_EVENT_ID, isRetirementMarker, storeIsRetired,
-  writesBag, VerbRefusal, workingLayerOfCanon, canonOfWorkingLayer, isWorkingLayerBag, overrideBaseOf, carrierHashOf, OVERRIDE_BASE_META,
-  CONTROL_HOME_ID, SECRET_HOME_ID,
-  yieldToHost, standoffOf,
-} from "@lararium/mesh";
-import type { HostTaskYield } from "@lararium/mesh";
+  renderedFromOf,
+  renderedRungOf,
+  renderedRungWarning,
+  RENDERED_ALERT_KIND,
+  type RenderedRung,
+} from "@lararium/mesh/rendered-derives";
+import type { KahuReachSource } from "@lararium/mesh/kahu-canon-reach";
+import { ACTION_VERBS, type ActionVerb, parseResidencyAction, writesBag } from "@lararium/mesh/residency-actions";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import {
+  withEffectRecord,
+  isEffectRecordUri,
+  effectRecordUri,
+  RETIRED_EVENT_ID,
+  isRetirementMarker,
+  storeIsRetired,
+} from "@lararium/mesh/effect-record";
+import { sha256HexBytesSync, carrierHash } from "@lararium/mesh/crypto";
+import { digestsEqual } from "@lararium/mesh/agile-digest";
+import { emptyLarDoc } from "@lararium/mesh/base-doc";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
+import { CATALOG_DOC_URI, ORACLE_DOC_URI, CONTROL_HOME_ID, SECRET_HOME_ID } from "@lararium/mesh/lar-uris";
+import {
+  ORIGINAL_TIDDLER_PATHS,
+  parseProvenance,
+  serializeProvenance,
+  recordPack,
+  membersOfPack,
+  ORIGINAL_TIDDLER_HASHES,
+  parseHashes,
+  serializeHashes,
+  recordPackHashes,
+  hashOfMember,
+} from "@lararium/mesh/pack-provenance";
+import { skinnyHandleTiddler, isOversizedBody, ridesAsPointer } from "@lararium/mesh/content-handle";
+import { crossingDirection } from "@lararium/mesh/crossing-direction";
+import { type CapTier } from "@lararium/mesh/cap-tier";
+import { VerbRefusal } from "@lararium/mesh/verb-refusal";
+import {
+  workingLayerOfCanon,
+  canonOfWorkingLayer,
+  isWorkingLayerBag,
+  overrideBaseOf,
+  OVERRIDE_BASE_META,
+} from "@lararium/mesh/override-base";
+import { carrierHashOf } from "@lararium/mesh/carrier-form";
+import { yieldToHost } from "@lararium/mesh/host-task";
+import { standoffOf } from "@lararium/mesh/standoff-watch";
+import type { HostTaskYield } from "@lararium/mesh/host-task";
 import type { SessionWorn, VerbReactor, VerbTable } from "./verb-dispatcher.js";
 import type { TW5Instance } from "./types/tiddlywiki.js";
 import { findOrThrow, makeCatalogAccessor } from "./catalog-accessor.js";
@@ -594,7 +641,7 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
     // A STAND-OFF SETTLES ON A HAND (operator ruling, 2026-11-23): a carrier that stands off at this island's disk shore names
     // a base the gate would trust, so it lands only from a person's line (`take-disk` and `keep-disk` ride exactly such a wave).
     // From any other asker, and whatever the frame says of itself, THAT carrier answers `conflict` and the rest of the wave lands.
-    if (action.verb === "INGEST" && ctx.asker !== "cli" && ctx.asker !== "tab") holdStandoffsForHand(action);
+    if (action.verb === "INGEST" && askerRefusal(ctx.asker) !== null) holdStandoffsForHand(action);
     if (action.verb === "LOAD" && (action.toBag === CONTROL_HOME_ID || action.toBag === SECRET_HOME_ID)) {
       throw new VerbRefusal("private-home-load", "private-home-load: LOAD cannot target the control or secret home; land through a working layer");
     }
@@ -1515,6 +1562,9 @@ async function executeIngest(action: IngestAction, access: BagAccess, opts: Acti
       // An `ingest` receipt carries the placement's warnings — the quoteblock floor's account of a fence
       // it laid, which a bag sink has no rail to raise. An `ingest` and a `noop` row each carry the hash
       // of the render the records hold after the decision: the records side of the base the gesture pins.
+      // A HELD FAMILY TURN NEVER PARKS THE WAVE: the carrier answers `owed` (the write stays queued behind the held turn and lands
+      // when it settles) and the loop moves on to the next carrier, whatever family it holds.
+      if (placed.decision === "owed") { results.push({ uri, decision: "owed", reason: placed.reason, root: placed.root, ...(placed.canonicalHash ? { canonicalHash: placed.canonicalHash } : {}) }); continue; }
       results.push(
         placed.decision === "ingest"  ? withWarnings({ uri, decision: "ingest", grade: placed.grade, landed: placed.landed.length, tombstoned: placed.tombstoned, ...recordsSide(placed.canonicalHash), ...(await landedHeads(access, action.toBag)) }, placed.warnings) :
         placed.decision === "noop"    ? { uri, decision: "noop", reason: placed.reason, ...recordsSide(placed.canonicalHash) } :

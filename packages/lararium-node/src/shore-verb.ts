@@ -44,7 +44,7 @@
  * reaches the worn projector and every lit sibling's, each unwritten row naming its face.
  *
  * SETTLING A STAND-OFF STAYS A HAND ACT. `take-records` and `keep-both` read the asker the vessel's own door read off the
- * line's peer (`ctx.asker`, never a word of the frame): a seat refuses `hand-act-only`, a line whose peer read nothing
+ * line's peer (`ctx.asker`, the gate's cached reading, which no word of the frame lifts): a seat refuses `hand-act-only`, a line whose peer read nothing
  * refuses `hand-unattested`, and each refusal names the command the operator runs at their own terminal. The CLI reads
  * the hand behind its own process first (`readOwnHand`).
  *
@@ -63,9 +63,9 @@
  */
 
 import type { ShutdownEntry } from "./composition-shutdown.js";
-import { sha256HexBytesSync } from "@lararium/mesh";
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
 import type { Hand } from "@lararium/mesh/session-contract";
-import { askerRefusal, handRefusalOf } from "./hand-act-gate.js";
+import { askerRefusal, handCodesOf, handRefusalOf } from "./hand-act-gate.js";
 import type { LarDiskProjector } from "./disk-projector.js";
 
 /** The verb an island answers at its disk shore. */
@@ -340,9 +340,9 @@ export function shoreFlushLines(reading: ShoreFlushReading): string[] {
  * socket refuses each from a seat (`shoreHandCode`, read per op), on a session and on a one-shot line alike, whether it rides the
  * `shore` verb itself or `wiki-act` into the active wiki. A seat lists, reads a render and flushes; it never takes a side.
  */
-export const SHORE_HAND_OPS: ReadonlySet<string> = new Set(["take-records", "keep-both", "restore", "remove"]);
-/** The refusal a seat's settling act reads: the siblings' code, as every hand act answers an AI seat. */
-export const SHORE_HAND_CODE = "hand-act-only";
+export const SHORE_HAND_OPS: ReadonlySet<string> = new Set([...handCodesOf("shore").keys()].map((act) => act.slice(act.indexOf(" ") + 1)));
+/** The refusal a seat's settling act reads: the siblings' code, as every hand act answers an AI seat (the one hand table's shore rows). */
+export const SHORE_HAND_CODE = handCodesOf("shore").get("shore take-records")!;
 
 /** The hand code a call's shore op reads, or null where the call settles nothing: per op, never per verb. */
 export function shoreHandCode(verb: string, args: unknown): string | null {

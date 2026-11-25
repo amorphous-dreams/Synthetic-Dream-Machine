@@ -9,9 +9,7 @@
  * the patched fake element itself.
  */
 import { afterEach, describe, test, expect, vi } from "vitest";
-import {
-  LAR_CONTROL_EVENT, LAR_RESEND, LAR_WHOLE_VALUE_MAX_CHARS, mkLarResend,
-} from "@lararium/mesh";
+import { LAR_CONTROL_EVENT, LAR_RESEND, LAR_WHOLE_VALUE_MAX_CHARS, mkLarResend } from "@lararium/mesh/lar-camera";
 import { patchFakeElementForEvents, dispatchLarControlEvent } from "../src/tw5-projection.js";
 import { hasProjection } from "../src/has-island-watches.js";
 import { mountSurface, type Surface } from "./projection-surface.js";

@@ -1,4 +1,4 @@
-import { placeSignerFromSeed } from "@lararium/mesh";
+import { placeSignerFromSeed } from "@lararium/mesh/place-signer";
 /**
  * flow-closed-door.test.ts — the herm flow keeps silence (pronaos#/the-rung-ladder).
  *
@@ -14,7 +14,8 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
-import { exportFlowSnapshot, FLOW_SOCKET_ROUTE } from "@lararium/mesh";
+import { exportFlowSnapshot } from "@lararium/mesh/flow-substrate";
+import { FLOW_SOCKET_ROUTE } from "@lararium/mesh/flow-read-client";
 import { CLOSED_DOOR } from "../src/bulb-routes.js";
 import { mountHttpFaceDispatcher } from "../src/http-face-dispatcher.js";
 import { mountFlowReadFace } from "../src/flow-read-face.js";

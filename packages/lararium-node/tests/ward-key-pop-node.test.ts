@@ -9,7 +9,8 @@
  * No suite person is seated here: a door that forgets its route reads red.
  */
 import { afterEach, beforeEach, expect, test } from "vitest";
-import { ed25519VerifyingKeyFromSeed, wardKeyPopHolds } from "@lararium/mesh";
+import { ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { wardKeyPopHolds } from "@lararium/mesh/ward-answer";
 import { vesselFaceTagDoor } from "../src/vessel-face-tag-store.js";
 import { ensureFaceCustodyOfGroup } from "../src/face-route.js";
 import { seatWardGatherer } from "../src/ward-credential.js";

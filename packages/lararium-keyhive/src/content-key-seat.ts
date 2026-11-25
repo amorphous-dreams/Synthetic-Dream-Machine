@@ -29,11 +29,20 @@
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store · lar:///ha.ka.ba/lares/api/pono/kapae#/keys
  */
 import {
-  ContentKeyHolder, REALM_ADMISSION_ACT, REALM_STATE_ROLL_ACT, SealedStore, contentKeyRollSink, readsAsFreshBase, sha256HexBytesSync,
-  utf8Bytes, verifiedSeatRoll,
-  type AdmissionEvidence, type ContentKeyHolderPorts, type EdgeStanding, type HolderRefusal, type RecordSigner, type RollOutcome, type SealedStoreRest,
-  type SeatRoll, type SeatRollSink, type WriterStanding,
-} from "@lararium/mesh";
+  ContentKeyHolder,
+  REALM_ADMISSION_ACT,
+  REALM_STATE_ROLL_ACT,
+  type AdmissionEvidence,
+  type ContentKeyHolderPorts,
+  type HolderRefusal,
+} from "@lararium/mesh/content-key-holder";
+import { SealedStore, type SealedStoreRest } from "@lararium/mesh/sealed-store-rest";
+import { contentKeyRollSink, type RollOutcome } from "@lararium/mesh/content-key-lineage";
+import { readsAsFreshBase } from "@lararium/mesh/sealed-doc-store";
+import { sha256HexBytesSync, utf8Bytes } from "@lararium/mesh/crypto";
+import { verifiedSeatRoll, type SeatRoll, type SeatRollSink } from "@lararium/mesh/seat-duties";
+import { type EdgeStanding } from "@lararium/mesh/edge-kapae";
+import { type RecordSigner, type WriterStanding } from "@lararium/mesh/sealed-records";
 import { keyhiveLockboxShore, type LockboxProvider } from "./keyhive-lockbox.js";
 import { WAIT_FOR_OWNER_CURE, realmWorkbenchFounding, type RealmRestPort } from "./realm-rest.js";
 import { subscribeSeatRolls } from "./seat-duty-executor.js";

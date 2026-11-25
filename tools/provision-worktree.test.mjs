@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { cpSync, existsSync, linkSync, mkdirSync, mkdtempSync, readFileSync, readlinkSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs';
+import { realpathSync, cpSync, existsSync, linkSync, mkdirSync, mkdtempSync, readFileSync, readlinkSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, relative } from 'node:path';
-import { assertDestination, provision } from './provision-worktree.mjs';
+import { assertDestination, provision, provisionExisting } from './provision-worktree.mjs';
 import { stampWasm } from './stamp-build.mjs';
 
 const noGuard = () => {};
@@ -328,5 +328,52 @@ test('a submodule whose objects live in its own .git directory serves as the ref
     provision({ guard: noGuard, source: f.source, destination: f.destination, run: f.run, log: () => {} });
     const updates = f.calls.filter(([cmd, args]) => cmd === 'git' && args.includes('submodule')).map(([, args]) => args.slice(args.indexOf('submodule')));
     assert.deepEqual(updates[1], ['submodule', 'update', '--init', '--reference', join(f.source, 'mempalace/.git'), '--', 'mempalace']);
+  } finally { f.close(); }
+});
+
+function existingFixture() {
+  const base = realpathSync(mkdtempSync(join(tmpdir(), 'provision-existing-')));
+  const worktree = join(base, 'bench'); mkdirSync(join(worktree, 'packages/a'), { recursive: true });
+  const calls = [];
+  const run = (cmd, args, cwd) => {
+    calls.push([cmd, args, cwd]);
+    if (cmd === 'git' && args.includes('--show-toplevel')) return worktree + '\n';
+    if (cmd === 'git' && args.includes('--git-common-dir')) return join(base, 'main/.git') + '\n';
+    if (cmd === 'pnpm') mkdirSync(join(worktree, 'node_modules/.bin'), { recursive: true });
+    return '';
+  };
+  return { base, worktree, calls, run, close: () => rmSync(base, { recursive: true, force: true }) };
+}
+
+test('an existing branch worktree takes the submodules with the file transport allowed, then its own offline frozen install', () => {
+  const f = existingFixture();
+  try {
+    provisionExisting({ worktree: f.worktree, guard: noGuard, run: f.run, log: () => {} });
+    const git = f.calls.filter(([cmd, args]) => cmd === 'git' && args.includes('submodule')).map(([, args]) => args);
+    assert.equal(git.length, 2);
+    for (const args of git) assert.deepEqual(args.slice(0, 2), ['-c', 'protocol.file.allow=always']);
+    const install = f.calls.filter(([cmd]) => cmd === 'pnpm');
+    assert.deepEqual(install.map(([, args, cwd]) => [args, cwd]), [[['install', '--frozen-lockfile', '--offline', '--package-import-method=copy'], f.worktree]]);
+  } finally { f.close(); }
+});
+
+test('an existing worktree whose node_modules is a symlink refuses by name before any submodule or install runs', () => {
+  const f = existingFixture();
+  try {
+    mkdirSync(join(f.base, 'main/node_modules'), { recursive: true });
+    symlinkSync(join(f.base, 'main/node_modules'), join(f.worktree, 'node_modules'));
+    assert.throws(() => provisionExisting({ worktree: f.worktree, guard: noGuard, run: f.run, log: () => {} }), /node_modules is a symlink to .*Remove it/);
+    assert.equal(f.calls.some(([cmd, args]) => cmd === 'pnpm' || args.includes('submodule')), false);
+    rmSync(join(f.worktree, 'node_modules')); mkdirSync(join(f.worktree, 'packages/a/node_modules'), { recursive: true }); rmSync(join(f.worktree, 'packages/a/node_modules'), { recursive: true });
+    symlinkSync(join(f.base, 'main/node_modules'), join(f.worktree, 'packages/a/node_modules'));
+    assert.throws(() => provisionExisting({ worktree: f.worktree, guard: noGuard, run: f.run, log: () => {} }), /packages\/a\/node_modules is a symlink/);
+  } finally { f.close(); }
+});
+
+test('an existing-worktree call names a missing directory and a path that is no worktree root', () => {
+  const f = existingFixture();
+  try {
+    assert.throws(() => provisionExisting({ worktree: join(f.base, 'absent'), guard: noGuard, run: f.run }), /is no directory; create it first: git worktree add/);
+    assert.throws(() => provisionExisting({ worktree: join(f.worktree, 'packages'), guard: noGuard, run: f.run }), /no git worktree root/);
   } finally { f.close(); }
 });

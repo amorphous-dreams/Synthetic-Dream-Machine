@@ -33,9 +33,17 @@ import { seatSuiteWard } from "./support/scratch-custody-setup.js";
 seatSuiteWard();
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
-import {
-  AutomergeDocStore, CompositeStore, DAEMON_BAG_ID, concludeVerb, deviceEdgeId, ed25519SignerFromSeed, edgeLedgerDocUrl, emptyLarDoc, keptSeatRolls,
-  materializeSharedLarDoc, raisesSeenThrough, signSeatRoll, wikiSlotUri, type LarDoc, type SeatRoll, CONTROL_HOME_ID } from "@lararium/mesh";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { DAEMON_BAG_ID, CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
+import { concludeVerb } from "@lararium/mesh/verb-tiddler";
+import { deviceEdgeId } from "@lararium/mesh/dyad";
+import { ed25519SignerFromSeed } from "@lararium/mesh/ed25519-door";
+import { edgeLedgerDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { keptSeatRolls, raisesSeenThrough } from "@lararium/mesh/edge-ledger";
+import { signSeatRoll, type SeatRoll } from "@lararium/mesh/seat-duties";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import {
   generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, loadPersonaGroupRootVerifyingKey,   loadVesselVerifyingKey,
 } from "../src/node-vessel-identity.js";

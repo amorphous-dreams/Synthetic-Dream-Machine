@@ -11,7 +11,12 @@ import { afterEach, expect, test, vi } from "vitest";
 import * as ed from "@noble/ed25519";
 import { KeyhiveProvider } from "@lararium/keyhive";
 import { operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
-import { BAG_IDS, DAEMON_BAG_ID, CONTROL_HOME_ID, hex, kahuRealmGroup, openKahuCabalAct, signKahuCabalAct, type CapabilityVerifier, type KahuCabalBoardReader, type KahuQuorumSeats } from "@lararium/mesh";
+import { BAG_IDS, DAEMON_BAG_ID, CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
+import { hex } from "@lararium/mesh/crypto";
+import { kahuRealmGroup, type KahuCabalBoardReader } from "@lararium/mesh/kahu-canon-reach";
+import { openKahuCabalAct, signKahuCabalAct } from "@lararium/mesh/kahu-cabal-admission";
+import { type CapabilityVerifier } from "@lararium/mesh/capability";
+import { type KahuQuorumSeats } from "@lararium/mesh/kapae-antigen";
 import { VerbTable } from "@lararium/tw5";
 import { standFoundedIsland } from "./stand-founded-island.js";
 

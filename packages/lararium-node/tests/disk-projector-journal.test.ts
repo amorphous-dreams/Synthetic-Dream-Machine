@@ -8,7 +8,7 @@ import { describe, test, expect, afterEach } from "vitest";
 import { existsSync, mkdtempSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { memoryJournal, type JournalEntry } from "@lararium/mesh";
+import { memoryJournal, type JournalEntry } from "@lararium/mesh/vessel-journal";
 import { LarDiskProjector } from "../src/disk-projector.js";
 import type { CarrierFile } from "@lararium/tw5";
 

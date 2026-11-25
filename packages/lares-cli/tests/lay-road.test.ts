@@ -114,6 +114,21 @@ describe("the lay feeds every disk-sourced holding through CREATE then INGEST", 
     expect(calls[0]!.flags["apply"]).toBeUndefined();
   });
 
+  test("S5b — an apply with no --yes and no terminal refuses out loud, naming the cure, and sends nothing", async () => {
+    const ttys = [process.stdin.isTTY, process.stdout.isTTY];
+    process.stdin.isTTY = false; process.stdout.isTTY = false;
+    const errors: string[] = [], error = console.error;
+    console.error = (...a: unknown[]) => { errors.push(a.join(" ")); };
+    try {
+      for (const flags of [{ apply: true }, { apply: true, workbench: true }]) {
+        calls.length = 0; errors.length = 0;
+        expect(await cmdLay({ command: "vessel", positional: ["lay"], options: {}, flags } as ParsedArgs)).toBe(2);
+        expect(errors.join("\n")).toContain(`lares vessel lay ${"workbench" in flags ? "--workbench " : ""}--apply --yes`);
+        expect(calls).toEqual([]);
+      }
+    } finally { console.error = error; process.stdin.isTTY = ttys[0] as boolean; process.stdout.isTTY = ttys[1] as boolean; }
+  });
+
   test("S6 — the lay warns where canon stands fresher than a working copy, names capped", async () => {
     fresherFor["lar:///ha.ka.ba/bags/sdm"] = { working: "lar:///ha.ka.ba/wikis/sdm/working", count: 10, titles: Array.from({ length: 10 }, (_, i) => `t${i}`) };
     const lines: string[] = [], errors: string[] = [];

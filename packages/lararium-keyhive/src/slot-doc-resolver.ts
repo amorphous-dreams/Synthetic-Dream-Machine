@@ -30,12 +30,24 @@
  * Canon: lar:///ha.ka.ba/lararium/api/personal-slot · lar:///ha.ka.ba/lares/api/pono/recipe-layer-model
  */
 
+import { CONTROL_HOME_ID, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX, slotBindingKey } from "@lararium/mesh/lar-uris";
+import { FloorUnavailable, floorRegistryOf, type FloorRegistry } from "@lararium/mesh/floor-registry";
+import { floorDaemonSlotTitle, floorSlotTitle } from "@lararium/mesh/device-daemon-docs";
 import {
-  CONTROL_HOME_ID, FloorUnavailable, floorDaemonSlotTitle, floorRegistryOf, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX, slotBindingKey,
-  computeRecipeFingerprint, emptyLarDoc, floorSlotTitle, realmWorkbenchDocUrl, mintVesselDocumentId, storedLarRecord, mutableLarRecord, resolveSlotDoc, tiddlerText,
-  wikiBagUri, wikiDraftDocKey, requireLarDid, didFromVerifyingKey, pointMint,
-  type CompositeStore, type FloorRegistry, type LarDoc, type SlotReach, type WikiSlotKind,
-} from "@lararium/mesh";
+  computeRecipeFingerprint,
+  resolveSlotDoc,
+  wikiBagUri,
+  wikiDraftDocKey,
+  type SlotReach,
+  type WikiSlotKind,
+} from "@lararium/mesh/wiki-recipe";
+import { emptyLarDoc, mutableLarRecord, tiddlerText, type LarDoc } from "@lararium/mesh/base-doc";
+import { realmWorkbenchDocUrl } from "@lararium/mesh/deterministic-doc";
+import { mintVesselDocumentId } from "@lararium/mesh/secret-home";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
+import { requireLarDid, didFromVerifyingKey } from "@lararium/mesh/lar-did";
+import { pointMint } from "@lararium/mesh/mint-census";
+import { type CompositeStore } from "@lararium/mesh/composite-store";
 import * as A from "@automerge/automerge";
 import { catalogCanonAddress, type CatalogAccessor } from "@lararium/tw5";
 import type { CapabilityProvider } from "./capability-provider.js";

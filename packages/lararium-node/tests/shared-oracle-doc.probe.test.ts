@@ -8,12 +8,11 @@ import { Repo } from "@automerge/automerge-repo";
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
 import { join } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
-import {
-  CROSSROADS_DOC_URI, LARES_DOC_URI, LARARIUM_DOC_URI,
-  emptyLarDoc, materializeGenesisIsland, tiddlerText,
-} from "@lararium/mesh";
+import { CROSSROADS_DOC_URI, LARES_DOC_URI, LARARIUM_DOC_URI } from "@lararium/mesh/lar-uris";
+import { emptyLarDoc, tiddlerText } from "@lararium/mesh/base-doc";
+import { materializeGenesisIsland } from "@lararium/mesh/genesis-intake";
 import { readGenesisSeed } from "../src/genesis-artifact.js";
-import { registerCrossroadsPointer } from "@lararium/mesh";
+import { registerCrossroadsPointer } from "@lararium/mesh/who-face";
 
 const genesisDir = join(repoRoot, "genesis");
 function repo(network: MessageChannelNetworkAdapter[] = []) {

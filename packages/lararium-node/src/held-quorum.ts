@@ -15,7 +15,7 @@
  * the antigen quorum and the membership quorum stay two relations that happen to select alike.
  */
 
-import type { KahuQuorumSeats } from "@lararium/mesh";
+import type { KahuQuorumSeats } from "@lararium/mesh/kapae-antigen";
 import { heldSeatKey, signAsSeat } from "./seat-key-store.js";
 
 /** One seat of a roster this vessel holds the key for: its public key and a hand that signs as that seat. */

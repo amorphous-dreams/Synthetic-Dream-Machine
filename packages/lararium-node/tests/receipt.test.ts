@@ -23,12 +23,13 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Repo, type DocumentId } from "@automerge/automerge-repo";
-import { attachMessageChannelSync, emptyLarDoc, makeIslandRepo, replicaHeads, type LarDoc } from "@lararium/mesh";
+import { attachMessageChannelSync, makeIslandRepo, replicaHeads } from "@lararium/mesh/island-repo-door";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
 import { DurableNodeFSStorageAdapter } from "../src/durable-storage-adapter.js";
 import { restEvery, restingRepo } from "./resting-repo.js";
-import { receiptInStore } from "@lararium/mesh";
+import { receiptInStore } from "@lararium/mesh/receipt-with-heads";
 import { beforeEach, describe, expect, test } from "vitest";
-import type { CapabilityRecord } from "@lararium/mesh";
+import type { CapabilityRecord } from "@lararium/mesh/capability-record";
 import { answerReceipt, nodeWorkerHandle } from "../src/worker-handle.js";
 import { vesselReceiptAsker } from "../src/sovereign-island-model.js";
 

@@ -19,11 +19,25 @@ import { join } from "node:path";
 import { createConnection } from "node:net";
 import * as A from "@automerge/automerge";
 import { Repo, type Chunk, type StorageAdapterInterface, type StorageKey } from "@automerge/automerge-repo";
+import { SealedDocumentStore } from "@lararium/mesh/sealed-doc-store";
 import {
-  SealedDocumentStore, bindSecretHomeRest, concludeVerb, controlHomeRefusal, controlStoreOf, emptyLarDoc, enrollSecretHome,
-  mintSecretHomeAddress, mintVesselDocumentId, nameControlHome, standControlHome, vesselHeldHomes,
-  CONTROL_HOME_UNNAMED, RECEIPT_FACT_URI_PREFIX, OUTCOME_URI_PREFIX, VESSEL_LOCKED, type CompositeStore, type LarDoc,
-} from "@lararium/mesh";
+  bindSecretHomeRest,
+  enrollSecretHome,
+  mintSecretHomeAddress,
+  mintVesselDocumentId,
+  vesselHeldHomes,
+} from "@lararium/mesh/secret-home";
+import { concludeVerb, RECEIPT_FACT_URI_PREFIX, OUTCOME_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
+import {
+  controlHomeRefusal,
+  controlStoreOf,
+  nameControlHome,
+  standControlHome,
+  CONTROL_HOME_UNNAMED,
+  VESSEL_LOCKED,
+} from "@lararium/mesh/control-home";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { type CompositeStore } from "@lararium/mesh/composite-store";
 import { startUdsChannel } from "../src/uds-channel.js";
 import { VEIL_FLOOR_VERBS, floorVerbsFor } from "../src/floor-verbs.js";
 import { FLOOR_VERBS } from "../src/floor-verbs.js";

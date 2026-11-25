@@ -1,6 +1,6 @@
 /** Read-only daemon face intent surface and its volatile, capability-gated state. */
 import { LARES_DISPATCH_FIELD } from "@lararium/mesh/lar-uris";
-import type { IntentPaneModel } from "@lararium/mesh";
+import type { IntentPaneModel } from "@lararium/mesh/intent-view";
 import type { TW5Engine } from "./tw5-vm.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
 import { LARES_SURFACE_STATE, LARES_SURFACE_TAG, seedShadows } from "./daemon-ui-tiddlers.js";

@@ -16,7 +16,9 @@
 import { bindFirstFaceSlot, faceTreeIdOf } from "../src/browser-face-custody.js";
 import { afterEach, expect, test } from "vitest";
 import { seatWardWorkerSpawn } from "../src/testing.js";
-import { ed25519SignerFromSeed, signingSeedFromHex, verifyEd25519, wardAnswerImage, wardKeyPopHolds, wardKeyPopImage, wardPublicKeyOf } from "@lararium/mesh";
+import { ed25519SignerFromSeed, verifyEd25519 } from "@lararium/mesh/ed25519-door";
+import { signingSeedFromHex } from "@lararium/mesh/vessel-identity-core";
+import { wardAnswerImage, wardKeyPopHolds, wardKeyPopImage, wardPublicKeyOf } from "@lararium/mesh/ward-answer";
 import { browserKeystoreCustodyIo, isCustodyRecord, readKeystoreRecord, sealBrowserKeystore, withCustodyRecords } from "../src/browser-custody.js";
 import { browserVesselFaceTagDoor } from "../src/browser-face-atom.js";
 import { generateOrLoadBrowserPersonaRoot, wearFaceOfVessel } from "../src/browser-vessel-identity.js";

@@ -6,7 +6,7 @@
  * SILENT-ZERO: an empty page serves nothing and shows no fork, and the same filing reads the known-positive rotation.
  */
 import { describe, expect, test } from "vitest";
-import { hex } from "@lararium/mesh";
+import { hex } from "@lararium/mesh/crypto";
 import { browserGatePins, fileFloorCard } from "../src/browser-gate-pins.js";
 import { claimAt, floorPinFor, headOf, prng, rotatePlace, shuffled, stormStages } from "../../lararium-mesh/tests/place-claim-fixture.js";
 

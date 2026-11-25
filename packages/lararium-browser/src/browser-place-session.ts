@@ -15,7 +15,10 @@
  *
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store · lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift
  */
-import { preparePlaceFace, signAsFaceAtom, SessionTable, sessionBinding, type BookedSessionSigner } from "@lararium/mesh";
+import { preparePlaceFace } from "@lararium/mesh/session-face";
+import { signAsFaceAtom } from "@lararium/mesh/face-atom";
+import { SessionTable, sessionBinding } from "@lararium/mesh/session-contract";
+import { type BookedSessionSigner } from "@lararium/mesh/session-sign-book";
 import { loadBrowserPlaceKel } from "./browser-vessel-identity.js";
 import { requireBrowserFaceAtomSeed } from "./browser-face-atom.js";
 import type { BrowserUnlockedSession } from "./browser-island-caps.js";

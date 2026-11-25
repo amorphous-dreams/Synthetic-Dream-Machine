@@ -12,9 +12,10 @@
 
 import { existsSync, readFileSync, realpathSync } from "node:fs";
 import { basename, dirname, join as joinPath, resolve as resolvePath, sep } from "node:path";
-import { mkWikiVerbResult, wikiSlotUri } from "@lararium/mesh";
-import type { IslandMsg_Manifest, WikiMsg_PlaceVerb } from "@lararium/mesh";
-import type { VesselJournal } from "@lararium/mesh";
+import { mkWikiVerbResult } from "@lararium/mesh/island-protocol";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import type { IslandMsg_Manifest, WikiMsg_PlaceVerb } from "@lararium/mesh/island-protocol";
+import type { VesselJournal } from "@lararium/mesh/vessel-journal";
 import { exportCarrierFile, exportRecordCarrierFile, makeWikiBehavior, hasWikiSensorium, makeTw5Deserializer, canonicalizeNativeCarrierText, wikiLandedCovers, bindRecoveryAtRest } from "@lararium/tw5";
 import type { CarrierFile } from "@lararium/tw5";
 import type { IslandBehavior, IslandContext } from "@lararium/tw5";
@@ -185,6 +186,8 @@ export function mountDiskProjection(
   };
   const collapseRules = async (bag: string): Promise<ReadonlySet<CollapseRule>> => rulesFor(opts.rulesFromOwnWiki ? await ownRules() : manifestRules, bag);
   let keeper: StandoffKeeper | null = null;
+  /** Each mirrored bag's document heads as this composition first read them (`lineageOf`, quiet). */
+  const mountedHeads = new Map<string, string>();
   const projector = new LarDiskProjector({
   mirrors,
   // The ONE render shore: a carrier projects back to ITS OWN filetype
@@ -196,6 +199,18 @@ export function mountDiskProjection(
   // THE DOCUMENT EACH MIRRORED BAG RESTS IN: every base names it, so a file another face's workbench document mirrored
   // under the same bag id answers to that document alone.
   documentOf: (bagId) => (ctx.composite.storeForBag(bagId) as { readonly documentId?: unknown } | null)?.documentId as string | undefined ?? null,
+  // THE HISTORY EACH MIRRORED BAG'S DOCUMENT HOLDS: every base names the heads it read, so a document that reads back
+  // without them (a save that never rested, a blank doc standing in for one that failed to load) writes nothing over a file.
+  lineageOf: (bagId) => {
+    const store = ctx.composite.storeForBag(bagId) as { headsNow?: () => readonly string[] | null; holdsHeads?: (named: readonly string[]) => boolean } | null;
+    if (!store || typeof store.headsNow !== "function" || typeof store.holdsHeads !== "function") return null;
+    const heads = store.headsNow();
+    // QUIET: the document stands at the heads it first answered here (this composition's mount), so no write landed in
+    // it since. A document that has not hydrated answers no heads and never reads quiet.
+    if (heads !== null && !mountedHeads.has(bagId)) mountedHeads.set(bagId, [...heads].sort().join(" "));
+    const quiet = heads !== null && mountedHeads.get(bagId) === [...heads].sort().join(" ");
+    return { heads, quiet, holds: (named) => store.holdsHeads!(named) };
+  },
   recoveryFileFn: async (fields) => {
     const title = fields["title"];
     if (typeof title !== "string") return null;
@@ -333,6 +348,12 @@ export function mountDiskProjection(
     audit: (row) => ctx.post(hostEvent(ctx.wikiUri, "confluence:collapsed", { verb: "ward-alert", requestedBy: "projection-confluence", wardKind: "standoff-collapsed", auditOnly: true, bagId: row.bagId, uri: row.uri, reason: `${row.rule} collapsed the stand-off toward ${row.toward === "merged" ? "a merge of both sides" : `the ${row.toward}`} (${row.path})`, standoff: row.standoff, rule: row.rule })),
     // THE AWAITING ALERT RIDES THE WARD RAIL, keyed by the stand-off: the rail raises it where the daemon face reads its
     // alerts and files its audit row once. Its clearing rides the rail's resolution (`onConflictResolved`).
+    // A KEEP OF THE DISK SAYS SO, ONCE, on the vessel's log (its audit row rides the ward rail beside it). No port tells
+    // this island yet whether a document's saves rest (`unrested`): the sealed store holds that word vessel-side
+    // (`waitingDocuments`), so a keep here lands in memory like any save and the next boot's weighing keeps the disk again.
+    // The keep's own write must not read as a stranger's: the bag's quiet mark re-seats at its next asking, so the other
+    // carriers of that document that fell behind still keep their disk with no hand.
+    notice: (line, kept) => { mountedHeads.delete(kept.bagId); console.log(line); },
     alert: (a) => {
       if (a.clear === true) return;
       const words = standoffAlertWords(a);

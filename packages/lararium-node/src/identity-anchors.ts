@@ -7,7 +7,7 @@
 import { mkdirSync, statSync } from "node:fs";
 import { faceFilePathSync, readFaceIndexSync } from "./face-index.js";
 import { larIdentityDir } from "./vessel-paths.js";
-import { readIdentityAnchors, type AnchorStore, type IdentityAnchors } from "@lararium/mesh";
+import { readIdentityAnchors, type AnchorStore, type IdentityAnchors } from "@lararium/mesh/anchor-store";
 import { identityHomeClosure } from "./identity-home-closure.js";
 import { CustodyRecordUnavailable } from "./custody-holder.js";
 import { readCustodyRecord, unlockedFaceOrdinals, writeCustodyRecord } from "./custody-seat.js";
@@ -17,7 +17,7 @@ import { personaGroupDigest } from "./persona-group-file.js";
 
 // The IdentityAnchors SHAPE + the AnchorStore shore lift to @lararium/mesh (platform-blind); this node
 // adapter implements the fs shore. Re-exported so existing importers keep their spelling.
-export type { IdentityAnchors } from "@lararium/mesh";
+export type { IdentityAnchors } from "@lararium/mesh/anchor-store";
 
 // PLURALITY PONO at the identity layer: a vessel that WEARS several personas anchors EACH to its OWN
 // veiled Handle (distinct PersonaGroup + MeshCabal ids + agentId). The anchor store is therefore a SET

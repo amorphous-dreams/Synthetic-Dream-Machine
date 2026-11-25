@@ -24,10 +24,9 @@ import {
   generateOrLoadPersonaGroupRoot, makeNodePersonaPetnameStore, makeNodePersonaDeclarationStore,
   writeNexusKahu, writeNexusSeal, nexusCharterDocPath,
 } from "@lararium/node";
-import {
-  renameOwnPersona, declarePersonaHandle, standForKahuSeat,
-  charterSealState, emptyFoundingCharterDoc, type NexusDoc,
-} from "@lararium/mesh";
+import { renameOwnPersona } from "@lararium/mesh/persona-petname";
+import { declarePersonaHandle, standForKahuSeat } from "@lararium/mesh/persona-declare";
+import { charterSealState, emptyFoundingCharterDoc, type NexusDoc } from "@lararium/mesh/nexus-seal-seed";
 import { seatScratchCustody, type ScratchCustody } from "./support/scratch-custody.js";
 import { bookSeat, heldCharter, sealRite, type SealRite } from "./seal-rite-fixture.js";
 

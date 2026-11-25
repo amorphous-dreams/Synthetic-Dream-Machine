@@ -15,7 +15,9 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set
  */
-import { announceSiblingSlotDoc, announceSlotDoc, announceSlotDocFiled, DAEMON_WIKI_SLUG, documentIdOfUrl, isFaceSlotBag, wikiSlotUri, type WikiSlotKind } from "@lararium/mesh";
+import { announceSiblingSlotDoc, announceSlotDoc, announceSlotDocFiled, documentIdOfUrl } from "@lararium/mesh/sealed-rest";
+import { DAEMON_WIKI_SLUG, wikiSlotUri, type WikiSlotKind } from "@lararium/mesh/wiki-recipe";
+import { isFaceSlotBag } from "@lararium/mesh/register-bags";
 import type { SlotDocResolver } from "./slot-doc-resolver.js";
 
 /** The vessel's door the island posts across (the daemon island's `docStoreDoor`). */

@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 import { readManifest, sensoriumContract } from "./sensorium.js";
-import type { SensoriumContract } from "@lararium/mesh";
+import type { SensoriumContract } from "@lararium/mesh/sensorium-contract";
 
 export const PETNAMES_FILE = "petnames.json";
 const PETNAMES_SCHEMA = 1;

@@ -11,9 +11,15 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/kahu#/cabal-admission
  */
 import {
-  isHouseCanonBag, kahuReachAccess, kahuRealmGroup, requireKahuReach, KAHU_REACH_REASON,
-  type CapabilityVerifier, type KahuCabalBoardReader, type KahuReachSource,
-} from "@lararium/mesh";
+  isHouseCanonBag,
+  kahuReachAccess,
+  kahuRealmGroup,
+  requireKahuReach,
+  KAHU_REACH_REASON,
+  type KahuCabalBoardReader,
+  type KahuReachSource,
+} from "@lararium/mesh/kahu-canon-reach";
+import { type CapabilityVerifier } from "@lararium/mesh/capability";
 import type { KeyhiveProvider } from "./keyhive-provider.js";
 
 export function kahuReachSourceOf(input: {

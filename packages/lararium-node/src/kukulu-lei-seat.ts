@@ -33,9 +33,17 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
  */
 import {
-  SwarmRefused, beginRite, landRite, pendingBegins, swarmActCid, swarmLeiRecordTitle, swarmLeiUnstrungTitle, verifySwarmRecord,
-  type SignedSwarmAct, type SwarmTrust, type SwarmWikiPort, type WardActWitness,
-} from "@lararium/mesh";
+  SwarmRefused,
+  swarmActCid,
+  swarmLeiRecordTitle,
+  swarmLeiUnstrungTitle,
+  verifySwarmRecord,
+  type SignedSwarmAct,
+  type SwarmTrust,
+  type SwarmWikiPort,
+} from "@lararium/mesh/swarm-tiddlers";
+import { beginRite, landRite, pendingBegins } from "@lararium/mesh/swarm-tessera";
+import { type WardActWitness } from "@lararium/mesh/ward-cosign";
 import type { KukuluRiteAt, KukuluRitePort } from "./kukulu-gate.js";
 
 const NO_COSIGN: WardActWitness = { accepts: () => true };

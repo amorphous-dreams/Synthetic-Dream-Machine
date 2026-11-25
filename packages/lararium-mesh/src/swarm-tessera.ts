@@ -17,8 +17,8 @@
  * orphan return; the next begin at the same branch, head, tree and image reuses it (`checkReturn` finds it, even past the
  * lei's count), so a retry never spends twice.
  *
- * THE IMAGE BINDS A KŪKULU. A begin that names the image it raises rests it in the guest half, and a landing reads par only
- * over the same image (`image-differs` otherwise). A half resting unlanded reads as debt off its raw rows (`pendingBegins`),
+ * THE IMAGE BINDS A KŪKULU. A begin that names the image it raises rests it in the guest half, and the landing rests that image
+ * (a caller naming another refuses `rite-land-differs`; an older off-par host half reads `image-differs`). A half resting unlanded reads as debt off its raw rows (`pendingBegins`),
  * whatever face's trust still verifies it; a landing ends it, or the hand sets it down.
  *
  * A BEGUN RITE SETS DOWN (the abandon, a kāpae over the half). A stale half (a tag-moved one, begun over an image the vessel
@@ -38,7 +38,7 @@
 import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
 import type { SwarmLeiRite } from "./swarm-lei-rite.js";
 import {
-  SwarmRefused, checkReturn, claimReturn, signSwarmAct, swarmActCid, swarmTesseraPrefix, swarmTesseraTitle, verifySwarmRecord,
+  SwarmRefused, checkReturn, claimReturn, signSwarmAct, swarmActCid, swarmLeiUnstrungTitle, swarmTesseraPrefix, swarmTesseraTitle, verifySwarmRecord,
   type SignedSwarmAct, type SwarmLeiLine, type SwarmReturnable, type SwarmRiteAbandonedBody, type SwarmRiteBegunBody, type SwarmRiteLandedBody, type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort,
 } from "./swarm-tiddlers.js";
 import type { WardActWitness } from "./ward-cosign.js";
@@ -84,11 +84,12 @@ export async function beginChecked(wiki: SwarmWikiPort, checked: SwarmReturnable
 }
 
 /**
- * Land a rite: the vessel that stands after rests the host half, naming the begun half by its cid, the head it stands at, and
- * the image it stands from where the caller names one. The answer reads `par` where that head equals the head the rite began
- * at and, where the begin named an image, the landing names the same one. A landing writes once.
+ * Land a rite: the vessel that stands after rests the host half, naming the begun half by its cid and the head and image THAT
+ * HALF names (operator ruling 2026-11-25), never the caller's: a caller that names another head, or another image where the half
+ * names one, refuses `rite-land-differs` and rests nothing, so no seat lands a wrong head first and blocks the true landing. The
+ * answer reads `par`; conferre still reads an off-par host half an older vessel rested red. A landing writes once.
  */
-export async function landRite(wiki: SwarmWikiPort, at: { readonly tessera: string; readonly head: string; readonly image?: string }, trust: SwarmTrust, group: string, vessel: SwarmSignerPort):
+export async function landRite(wiki: SwarmWikiPort, at: { readonly tessera: string; readonly head?: string; readonly image?: string }, trust: SwarmTrust, group: string, vessel: SwarmSignerPort):
   Promise<{ tessera: string; rite: SwarmLeiRite; begun: string; landed: string; par: boolean }> {
   const guestTitle = swarmTesseraTitle(at.tessera, "guest");
   const guest = verifySwarmRecord(await wiki.read(guestTitle), guestTitle, trust, group);
@@ -97,9 +98,15 @@ export async function landRite(wiki: SwarmWikiPort, at: { readonly tessera: stri
   // NO PAR OVER A HALF SET DOWN: the hand's abandon ended it, so no landing records a match over it.
   if (await markOf(wiki, at.tessera, guest.cid, (key) => trust.vessel(key), group) !== null) throw new SwarmRefused("rite-abandoned", `the hand set tessera ${at.tessera} down, so no landing takes it; a fresh begin raises the rite again`);
   const begun = guest.act.body;
-  const act = await signSwarmAct({ act: "rite-landed", group, rite: begun.rite, tessera: at.tessera, begun: guest.cid, head: at.head, ...(at.image === undefined ? {} : { image: at.image }) }, vessel);
+  // THE BEGUN HALF NAMES WHAT LANDS: a caller's head or image that reads otherwise refuses, and the host half never rests.
+  const differs = [
+    ...(at.head !== undefined && at.head !== begun.head ? [`head ${at.head} (the half began at ${begun.head})`] : []),
+    ...(at.image !== undefined && begun.image !== undefined && at.image !== begun.image ? [`image ${at.image} (the half began over ${begun.image})`] : []),
+  ];
+  if (differs.length > 0) throw new SwarmRefused("rite-land-differs", `the landing of tessera ${at.tessera} names ${differs.join(" and ")}; a landing rests what its begun half names, so name none: lares rite land --tessera ${at.tessera}`);
+  const act = await signSwarmAct({ act: "rite-landed", group, rite: begun.rite, tessera: at.tessera, begun: guest.cid, head: begun.head, ...(begun.image === undefined ? {} : { image: begun.image }) }, vessel);
   if (!(await wiki.writeNew(swarmTesseraTitle(at.tessera, "host"), JSON.stringify(act)))) throw new SwarmRefused("rite-already-landed", `a host half already rests for tessera ${at.tessera}`);
-  return { tessera: at.tessera, rite: begun.rite, begun: guest.cid, landed: swarmActCid(act), par: begun.head === at.head && (begun.image === undefined || begun.image === at.image) };
+  return { tessera: at.tessera, rite: begun.rite, begun: guest.cid, landed: swarmActCid(act), par: true };
 }
 
 /**
@@ -144,7 +151,8 @@ export async function abandonRite(wiki: SwarmWikiPort, at: { readonly tessera: s
 export interface PendingBegin { readonly tessera: string; readonly group: string; readonly branch: string; readonly head: string; readonly image?: string; readonly lei: string; readonly n: number; readonly begun: string }
 
 /**
- * THE DEBT, READ RAW: every begun half of `rite` on `branch` (every branch where none is named) resting with no host half. It
+ * THE DEBT, READ RAW: every begun half of `rite` on `branch` (every branch where none is named) resting with no host half,
+ * save a half whose paying lei the hand unstrung (kāpae: the unstring tombstones the rite it paid for). It
  * reads the rows themselves, not under a face's trust, so a half whose face stands shut, or was rehived under a new
  * group since, still counts; it names debt, and lands nothing (a landing verifies under the face's own trust).
  */
@@ -165,6 +173,9 @@ export async function pendingBegins(wiki: SwarmWikiPort, rite: SwarmLeiRite, bra
     if (body?.["act"] !== "rite-begun" || body["rite"] !== rite || body["tessera"] !== tessera) continue;
     if (typeof body["group"] !== "string" || typeof body["branch"] !== "string" || typeof body["head"] !== "string" || typeof body["lei"] !== "string" || typeof body["n"] !== "number") continue;
     if (branch !== undefined && body["branch"] !== branch) continue;
+    // KĀPAE (operator ruling 2026-11-25): a half whose paying lei the hand unstrung reads tombstoned, so it stands as no debt and
+    // the face begins afresh under a fresh lei. Any row at the unstrung title counts, as `readLei` counts it.
+    if ((await wiki.read(swarmLeiUnstrungTitle(body["lei"]))) !== null) continue;
     const begun = swarmActCid(guest as unknown as Parameters<typeof swarmActCid>[0]);
     // A HALF THE HAND SET DOWN owes nothing: its mark verifies as the very key that signed the guest half, over its own cid.
     if (set.has("abandoned") && typeof guest.signer === "string" && await markOf(wiki, tessera, begun, (key) => key === guest.signer.toLowerCase(), body["group"]) !== null) continue;

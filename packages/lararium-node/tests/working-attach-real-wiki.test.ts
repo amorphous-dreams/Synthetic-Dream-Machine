@@ -9,7 +9,9 @@
 import { houseSkins, skinPins, vendoredCore } from "../../lararium-tw5/tests/test-wiki.js";
 import { afterEach, beforeAll, describe, expect, test } from "vitest";
 import { operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
-import { CompositeStore, wikiBagUri, wikiSlotUri, type LarDoc } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { wikiBagUri, wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { TW5Engine } from "../../lararium-tw5/src/tw5-vm.js";
 import { bridgeWikiToAdaptor } from "../../lararium-tw5/src/outbound-bridge.js";
 import { buildIslandRecipe, seedDrained } from "../../lararium-tw5/src/island-recipe.js";

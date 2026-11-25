@@ -34,10 +34,23 @@
  * Node-main only: a worker never imports this module.
  */
 import {
-  RollCircleRefusal, coldKeyFromSeed, foundingRoster, heardSeatFingerprint, joinRollCircle, judgeRollCircle, openRollCircle, readRollCircle,
-  rollCircleBytes, seatFingerprint, signRollCircle, hex,
-  type NexusDoc, type QuorumSignature, type RollChair, type RollCircle, type RollCircleVerdict, type SealEpoch,
-} from "@lararium/mesh";
+  RollCircleRefusal,
+  joinRollCircle,
+  judgeRollCircle,
+  openRollCircle,
+  readRollCircle,
+  rollCircleBytes,
+  signRollCircle,
+  type RollChair,
+  type RollCircle,
+  type RollCircleVerdict,
+} from "@lararium/mesh/roll-circle";
+import { coldKeyFromSeed } from "@lararium/mesh/cold-key-card";
+import { foundingRoster, seatFingerprint, type NexusDoc } from "@lararium/mesh/nexus-seal-seed";
+import { heardSeatFingerprint } from "@lararium/mesh/cofound";
+import { hex } from "@lararium/mesh/crypto";
+import { type QuorumSignature } from "@lararium/mesh/kapae-antigen";
+import { type SealEpoch } from "@lararium/mesh/wax-stamp";
 import { charterHomeFor, importCarriedCharter, type CarriedImportResult } from "./carried-set.js";
 import { openedCustody } from "./custody-seat.js";
 import { readNexusDoc, renderNexusDoc } from "./nexus-doc.js";

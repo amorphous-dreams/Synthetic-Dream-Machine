@@ -8,8 +8,14 @@
 import { describe, test, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { modulePinsOf } from "../src/module-pins.js";
-import { SwarmRefused, sha256HexBytesSync } from "@lararium/mesh";
-import { CompositeStore, bagUri, wikiSlotUri, VERB_URI_PREFIX, buildEffectRecordTiddler, effectRecordUri, LARES_EFFECT_RECORD_TAG, buildRetiredShellRecord, retiredShellUri, unionRetiredShell } from "@lararium/mesh";
+import { SwarmRefused } from "@lararium/mesh/swarm-tiddlers";
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { bagUri } from "@lararium/mesh/lar-uris";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import { VERB_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
+import { buildEffectRecordTiddler, effectRecordUri, LARES_EFFECT_RECORD_TAG } from "@lararium/mesh/effect-record";
+import { buildRetiredShellRecord, retiredShellUri, unionRetiredShell } from "@lararium/mesh/shell-leaving-record";
 import { CARRIER_TYPE as CARRIER } from "@lararium/mesh/carrier-type";
 import { retractsOf, tombstonesOf, type Consequence } from "@lararium/mesh/family";
 import { MemoryTiddlerStore } from "../src/memory-store.js";

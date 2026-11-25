@@ -6,7 +6,7 @@
  * messages read in `vessel-protocol.ts`. Nothing here holds a key, a store or a ceremony.
  */
 import type { BrowserConnectionListener, BrowserConnectionSnapshot, HearthFloorRead, PageLife, ProjectionSurfaceFrame } from "@lararium/browser/page";
-import type { LarMsg_ControlEvent, LarMsg_ControlResult } from "@lararium/mesh";
+import type { LarMsg_ControlEvent, LarMsg_ControlResult } from "@lararium/mesh/lar-camera";
 import type { PortTransportDoors } from "./port-transport.js";
 import type { CeremonyAskKind } from "./ceremony-protocol.js";
 import type {
@@ -185,7 +185,7 @@ export function standVesselPort(worker: VesselWorkerLike, handlers: VesselPortHa
       place(surface: string, binding: string, msg: unknown) { post({ t: "port:place", surface, binding, msg }); return { ok: true as const }; },
       close(binding: string) { post({ t: "port:close", binding }); },
     } satisfies PortTransportDoors,
-    mirrorInputs: (surface: string) => call<{ coreCid: string; pluginCids: readonly string[] } | null>((callId) => ({ t: "read:mirror-inputs", callId, surface })),
+    mirrorInputs: (surface: string) => call<{ coreCid: string; pluginCids: readonly string[]; skinCids?: Readonly<Record<string, string>> } | null>((callId) => ({ t: "read:mirror-inputs", callId, surface })),
     startupAdmit: (surface: string, records: readonly { title: string; fields: Record<string, string> }[]) =>
       call<readonly string[]>((callId) => ({ t: "read:startup-admit", callId, surface, records: records.map((r) => ({ title: r.title, fields: { ...r.fields } })) })),
     readFloor: (baseUrl: string) => call<HearthFloorRead>((callId) => ({ t: "read:floor", callId, baseUrl })),

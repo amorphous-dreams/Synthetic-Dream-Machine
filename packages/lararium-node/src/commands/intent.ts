@@ -4,14 +4,49 @@ import { CustodyLocked } from "../custody-holder.js";
 import { randomBytes } from "node:crypto";
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  buildAnswer, buildAsks, buildCancel, buildClaim, buildDelegation, buildDelegationRevoke, buildIntent, buildSupersede, buildTakeover,
-  ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, faceAtomKeyFromSeed, faceIntentVerbs,
-  faceRecordsOf, intentEntryCid, intentEntryRecordsOfGroup, intentAdmissionRecordsOfGroup, intentId, intentPaneModel,
-  readIntentEntry, intentIdTakenBy, intentIdTakenAdvice,
-  deviceEdgeId, fleetEdgeAuthority, fleetEdgeBoardDocUrl, fleetFrontierLinks, fleetRaiseCids, fleetStoodAt, readFleetFrontier, readFrontierPins, FLEET_HAND,
-  personaBagIdFor, personaSiblingBagIds, readIntentPlane, intentPlaneCosignPort, faceRosterForIntents, type WardCosignPort, personaKelChainForPrefix, readFace, materializeSharedLarDoc, edgeLedgerDocUrl, replicaHeads, signIntentEntry, writeIntentEntry,
-  WardRefused, KEEPER_NONCE, keeperCosignGate, askShown, answerRefusal, buildWardedAnswer, type AskShown, type PersonaKelEvent, type DelegationCite, type DelegationPolicy, type IntentAudience, type IntentBound, type IntentSigner, type SignedIntentEntry,
-} from "@lararium/mesh";
+  buildAnswer,
+  buildAsks,
+  buildCancel,
+  buildClaim,
+  buildDelegation,
+  buildDelegationRevoke,
+  buildIntent,
+  buildSupersede,
+  buildTakeover,
+  faceRosterForIntents,
+  type IntentSigner,
+} from "@lararium/mesh/intent-issue";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { faceAtomKeyFromSeed } from "@lararium/mesh/face-atom";
+import { faceIntentVerbs, intentIdTakenAdvice } from "@lararium/mesh/intent-verbs";
+import { faceRecordsOf, readFace } from "@lararium/mesh/face-reading";
+import {
+  intentEntryCid,
+  intentEntryRecordsOfGroup,
+  intentId,
+  readIntentEntry,
+  signIntentEntry,
+  writeIntentEntry,
+  type IntentAudience,
+  type IntentBound,
+  type SignedIntentEntry,
+} from "@lararium/mesh/intent-entry";
+import { intentAdmissionRecordsOfGroup } from "@lararium/mesh/intent-admission";
+import { intentPaneModel } from "@lararium/mesh/intent-view";
+import { intentIdTakenBy, readIntentPlane } from "@lararium/mesh/intent-read";
+import { deviceEdgeId, fleetEdgeAuthority } from "@lararium/mesh/dyad";
+import { fleetEdgeBoardDocUrl, materializeSharedLarDoc, edgeLedgerDocUrl } from "@lararium/mesh/deterministic-doc";
+import { fleetFrontierLinks, fleetRaiseCids, fleetStoodAt, readFleetFrontier, FLEET_HAND } from "@lararium/mesh/fleet-frontier";
+import { readFrontierPins } from "@lararium/mesh/edge-frontier-board";
+import { personaBagIdFor, personaSiblingBagIds } from "@lararium/mesh/persona-scope";
+import { intentPlaneCosignPort, type WardCosignPort } from "@lararium/mesh/ward-cosign-gate";
+import { personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";
+import { replicaHeads } from "@lararium/mesh/island-repo-door";
+import { WardRefused } from "@lararium/mesh/ward-slots";
+import { KEEPER_NONCE, keeperCosignGate } from "@lararium/mesh/keeper-cosign";
+import { askShown, answerRefusal, buildWardedAnswer, type AskShown } from "@lararium/mesh/ward-answer";
+import { type PersonaKelEvent } from "@lararium/mesh/persona-kel";
+import { type DelegationCite, type DelegationPolicy } from "@lararium/mesh/intent-delegation";
 import { findOrThrow, makeCatalogAccessor } from "@lararium/tw5";
 import { existsSync, readFileSync } from "node:fs";
 import { larBootstrapPath } from "../vessel-paths.js";

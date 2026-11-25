@@ -8,8 +8,15 @@
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
-import { KAHUA_BAG, buildKahuaProposal, intentEntryCid, intentId, kahuaBodyDigest, writeIntentEntry } from "@lararium/mesh";
-import type { CompositeStore, DocHandle, IntentSigner, IntentVerbRegistry, KahuaProposal, LarDoc } from "@lararium/mesh";
+import { KAHUA_BAG } from "@lararium/mesh/wiki-recipe";
+import { buildKahuaProposal, kahuaBodyDigest } from "@lararium/mesh/kahua-stage";
+import { intentEntryCid, intentId, writeIntentEntry } from "@lararium/mesh/intent-entry";
+import type { CompositeStore } from "@lararium/mesh/composite-store";
+import type { DocHandle } from "@lararium/mesh/automerge";
+import type { IntentSigner } from "@lararium/mesh/intent-issue";
+import type { IntentVerbRegistry } from "@lararium/mesh/intent-verbs";
+import type { KahuaProposal } from "@lararium/mesh/kahua-stage";
+import type { LarDoc } from "@lararium/mesh/base-doc";
 
 export class KahuaProposeRefused extends Error { override name = "KahuaProposeRefused"; }
 

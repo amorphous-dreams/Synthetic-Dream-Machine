@@ -5,7 +5,7 @@
 import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { materializeGenesisDoc, type GenesisSeed } from "@lararium/mesh";
+import { materializeGenesisDoc, type GenesisSeed } from "@lararium/mesh/genesis-doc";
 
 const TEST_DIR = fileURLToPath(new URL(".", import.meta.url));
 export const GENESIS_SEED = join(TEST_DIR, "../../../genesis/seed.json");

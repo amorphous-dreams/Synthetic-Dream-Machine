@@ -24,13 +24,14 @@
  */
 
 import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-indexeddb";
-import { islandRestGuard, shoreStorage, vesselRestAsker } from "@lararium/mesh";
+import { islandRestGuard, vesselRestAsker } from "@lararium/mesh/sealed-rest";
+import { shoreStorage } from "@lararium/mesh/prototype-key-shore-door";
 import {
   runSovereignKernel,
   type IslandHostShore,
 } from "@lararium/tw5";
-import { mkReady } from "@lararium/mesh";
-import type { IslandMsg_Manifest, IslandToVesselMsg } from "@lararium/mesh";
+import { mkReady } from "@lararium/mesh/island-protocol";
+import type { IslandMsg_Manifest, IslandToVesselMsg } from "@lararium/mesh/island-protocol";
 import type { IslandBehavior } from "@lararium/tw5";
 import { readCasBlobFromOpfs } from "./browser-genesis.js";
 

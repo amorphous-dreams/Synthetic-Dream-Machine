@@ -9,7 +9,12 @@
  * cannot write fails loud, naming the bag. `base` carries the writer's merge base; stale reads CONFLICT.
  */
 import { describe, test, expect } from "vitest";
-import { CompositeStore, NoWorkingLayerRefusal, bagUri, carrierHashOf, overrideBaseOf, recipeUri, wikiSlotUri, type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh";
+import { CompositeStore, NoWorkingLayerRefusal } from "@lararium/mesh/composite-store";
+import { bagUri, recipeUri } from "@lararium/mesh/lar-uris";
+import { carrierHashOf } from "@lararium/mesh/carrier-form";
+import { overrideBaseOf } from "@lararium/mesh/override-base";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import { type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
 import { effectiveRecipe } from "../src/recipe-planes.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { memeVerbOptions, makeMemePutReactor, makeMemeGetReactor, makeMemePatchReactor, makeMemeProjectReactor, makeMemeListReactor, makeMemeDeleteReactor, MEME_LIST_PAGE, type MemeVerbOptions } from "../src/meme-verbs.js";
@@ -87,6 +92,17 @@ describe("meme-put — the anchor (recipes/default)", () => {
     expect(r.wiki.store.has(URI)).toBe(true);
     expect(r.wiki.store.has(`${URI}#/a`)).toBe(true);
     expect(await r.composite.storeForBag(bagUri("daemon"))!.listVisible()).toEqual([]);
+  });
+
+  test("`create` lands a family where none stands, and answers `exists` over a standing one with nothing moved", async () => {
+    const r = rig();
+    const put = makeMemePutReactor(r.opts);
+    const first = await put({ recipe: "default", uri: URI, text: meme(["a"]), create: "true" }, ctx());
+    expect(first["decision"]).toBe("ingest");
+    const again = await put({ recipe: "default", uri: URI, text: meme(["a", "b"]), create: "true" }, ctx());
+    expect(again["decision"]).toBe("exists");
+    expect(String((again["warnings"] as string[])[0])).toContain("--create lands only where none does");
+    expect(r.wiki.store.has(`${URI}#/b`)).toBe(false);
   });
 
   test("★ the anchor's cap seat is the bag the CASCADE lands in, never the last-registered writable layer ★", async () => {

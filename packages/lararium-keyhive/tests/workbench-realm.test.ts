@@ -26,10 +26,24 @@ import {
   type LedgerDoc,
 } from "../src/workbench-realm.js";
 import {
-  noteWorkbench, realmWorkbenchDocUrl, tiddlerText, WorkbenchRefusal, EDGE_LEDGER_PREFIX, ledgerWorkbenches, workbenchSeats,
-  wikiSlotUri, REALM_BAG_ANNOUNCE_PREFIX, privateCabalRealmId, ledgerWorkbenchRealms, noteWorkbenchKey, noteWorkbenchSeat, workbenchSeatHolds,
-  workbenchDecider, workbenchDocIds, workbenchKeyDocs, type LarDoc,
-} from "@lararium/mesh";
+  noteWorkbench,
+  WorkbenchRefusal,
+  ledgerWorkbenches,
+  workbenchSeats,
+  privateCabalRealmId,
+  ledgerWorkbenchRealms,
+  noteWorkbenchKey,
+  noteWorkbenchSeat,
+  workbenchSeatHolds,
+  workbenchDecider,
+  workbenchDocIds,
+  workbenchKeyDocs,
+} from "@lararium/mesh/workbench";
+import { realmWorkbenchDocUrl } from "@lararium/mesh/deterministic-doc";
+import { tiddlerText, type LarDoc } from "@lararium/mesh/base-doc";
+import { EDGE_LEDGER_PREFIX } from "@lararium/mesh/edge-ledger";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import { REALM_BAG_ANNOUNCE_PREFIX } from "@lararium/mesh/realm-bag";
 
 async function face(fill: number): Promise<KeyhiveProvider> {
   const p = new KeyhiveProvider();

@@ -10,7 +10,7 @@
  * so every bridged ask lands local.
  */
 import { describe, expect, test } from "vitest";
-import { islandEventAsk, LARES_VERB_ARGS_WIRE_FIELD } from "@lararium/mesh";
+import { islandEventAsk, LARES_VERB_ARGS_WIRE_FIELD } from "@lararium/mesh/lar-uris";
 
 describe("R3: the island-event bridge carries the island's stamp", () => {
   test("RED: the island's stamp rides through; an absent or unknown stamp reads content", () => {

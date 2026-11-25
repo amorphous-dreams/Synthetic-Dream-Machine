@@ -19,10 +19,13 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import {
-  carriageDocUrl, DAEMON_BAG_ID, foundingRoster, hearthPinIndex, materializeSharedLarDoc, FLOW_SOCKET_ROUTE, rollAnchorKey,
-  rollAnchorsFromBoard, type LarDoc,
-} from "@lararium/mesh";
+import { carriageDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { foundingRoster } from "@lararium/mesh/nexus-seal-seed";
+import { hearthPinIndex } from "@lararium/mesh/admit-gate-pin";
+import { FLOW_SOCKET_ROUTE } from "@lararium/mesh/flow-read-client";
+import { rollAnchorKey, rollAnchorsFromBoard } from "@lararium/mesh/carriage-board";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { readNexusDoc, writeNexusDoc } from "../src/nexus-doc.js";
 import { runNexusCarryFor, runNexusContract, runNexusRollAnchor } from "../src/commands/nexus-contract.js";

@@ -27,11 +27,19 @@
  */
 
 import {
-  realmLeaseSlotsFromBoard, realmFeedWrite, realmFeedSlotValue, cabalRealmMaintenanceProvenance, readFaceLeafBond, readRealmFeedAsk, VerbRefusal,
-  CONTROL_HOME_ID, defaultCryptoProvider, sha256Hex,
-  type LarTiddlerStore, type LarTiddlerRecord, type LarDoc,
-} from "@lararium/mesh";
-import { storedRecord, type StoredTiddlers } from "@lararium/mesh";
+  realmLeaseSlotsFromBoard,
+  realmFeedWrite,
+  realmFeedSlotValue,
+  cabalRealmMaintenanceProvenance,
+} from "@lararium/mesh/cabal-realm-clock";
+import { readFaceLeafBond, readRealmFeedAsk } from "@lararium/mesh/face-leaf-bond";
+import { VerbRefusal } from "@lararium/mesh/verb-refusal";
+import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
+import { defaultCryptoProvider, sha256Hex } from "@lararium/mesh/crypto";
+import { type LarTiddlerStore, type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { storedRecord } from "@lararium/mesh/stored-record";
+import { type StoredTiddlers } from "@lararium/mesh/stored-value";
 import type { VerbReactor } from "./verb-dispatcher.js";
 
 /** Resolve a read+write store over the daemon doc — where the per-writer lease slots live. */

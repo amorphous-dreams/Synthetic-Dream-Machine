@@ -11,7 +11,7 @@ import { cpSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, describe, expect, test, vi } from "vitest";
-import { personaScopedBagIds } from "@lararium/mesh";
+import { personaScopedBagIds } from "@lararium/mesh/persona-scope";
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
 
 const fault = vi.hoisted(() => ({ afterAnchors: false, group: "" }));

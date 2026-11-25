@@ -17,7 +17,10 @@ import { join } from "node:path";
 import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import * as A from "@automerge/automerge";
-import { composeVessel, deterministicDocUrl, seatMintCensus, type CapModule, type DocCensusRow } from "@lararium/mesh";
+import { composeVessel, type CapModule } from "@lararium/mesh/cap-compose";
+import { deterministicDocUrl } from "@lararium/mesh/deterministic-doc";
+import { seatMintCensus } from "@lararium/mesh/mint-census";
+import { type DocCensusRow } from "@lararium/mesh/doc-census";
 import { readDocCensus, ROOT_STORE } from "../src/doc-census-door.js";
 
 const dirs: string[] = [];

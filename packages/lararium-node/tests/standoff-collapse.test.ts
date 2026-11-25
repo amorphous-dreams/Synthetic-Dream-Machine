@@ -9,7 +9,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, test } from "vitest";
 import { canonicalizeCarrierText } from "@lararium/tw5/carrier-canonical";
 import { bareSeal } from "@lararium/mesh/meme-merge";
-import { mkManifest } from "@lararium/mesh";
+import { mkManifest } from "@lararium/mesh/island-protocol";
 import { SHORE_COLLAPSE_CONFIG_PREFIX } from "@lararium/tw5";
 import {
   COLLAPSE_CONFIG_PREFIX, COLLAPSE_RULES, collapseConfigOf, collapseRuleTitle, decideCollapse, foldWhitespace, memeSealer, rulesFor,

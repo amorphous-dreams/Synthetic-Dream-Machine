@@ -11,15 +11,15 @@
  */
 
 import type { Repo } from "@automerge/automerge-repo";
-import {
-  publicationDocUrl,
-  inspectPluginOffering,
-  offeringAnnounceKey,
-  PLUGIN_OFFERING_ANNOUNCE_DOMAIN,
-  type LarDoc,
-  type PluginOfferingAnnounce,
-  resolveBootDoc, ownEntry} from "@lararium/mesh";
-import { tiddlerText, type StoredLarRecord } from "@lararium/mesh";
+import { publicationDocUrl } from "@lararium/mesh/deterministic-doc";
+import { inspectPluginOffering } from "@lararium/mesh/offering-inspection";
+import { offeringAnnounceKey, type PluginOfferingAnnounce } from "@lararium/mesh/offering-announce";
+import { PLUGIN_OFFERING_ANNOUNCE_DOMAIN } from "@lararium/mesh/domains";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { resolveBootDoc } from "@lararium/mesh/boot-resolver";
+import { ownEntry } from "@lararium/mesh/stored-value";
+import { tiddlerText } from "@lararium/mesh/base-doc";
+import { type StoredLarRecord } from "@lararium/mesh/stored-value";
 import { larDataDir } from "../vessel-paths.js";
 import { casDirForStorage, readCasBlobFromFs } from "../node-cas.js";
 import { loadVesselVerifyingKey } from "../node-vessel-identity.js";

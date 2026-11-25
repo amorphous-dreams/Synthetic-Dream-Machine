@@ -11,7 +11,7 @@
  *   · `faceAt(index)` answers face `index`'s key at the primary charter's Nexus, minting none.
  */
 import { fixtureWard } from "./custody-seat-fixture.js";
-import { nexusAidOf } from "@lararium/mesh";
+import { nexusAidOf } from "@lararium/mesh/nexus-seal-seed";
 import { generateOrLoadPersonaGroupRoot } from "../src/node-vessel-identity.js";
 import { larSealHome } from "../src/vessel-paths.js";
 import { writeNexusDoc } from "../src/nexus-doc.js";

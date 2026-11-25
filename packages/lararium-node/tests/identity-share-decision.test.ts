@@ -17,10 +17,8 @@ import {
   interpretAsDocumentId, stringifyAutomergeUrl,
   type BinaryDocumentId, type DocumentId, type PeerId,
 } from "@automerge/automerge-repo";
-import {
-  DeterministicFederationGate, identityShareDecision, type IdentityRing,
-} from "@lararium/mesh";
-import type { IdentitySlot } from "@lararium/mesh";
+import { DeterministicFederationGate, identityShareDecision, type IdentityRing } from "@lararium/mesh/federation-gate";
+import type { IdentitySlot } from "@lararium/mesh/identity-slot";
 import { KeyhiveProvider } from "@lararium/keyhive";
 
 const memStore = () => ({ put: async () => {}, list: async () => [] });

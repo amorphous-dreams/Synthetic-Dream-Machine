@@ -2,10 +2,11 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import {
-  carriageDocUrl, materializeSharedLarDoc, placeSignerFromSeed, mintPlaceInception, mintPlaceRotation,
-  placeKelHeadFromBoard, writePlaceKelEvent, type LarDoc,
-} from "@lararium/mesh";
+import { carriageDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { placeSignerFromSeed } from "@lararium/mesh/place-signer";
+import { mintPlaceInception, mintPlaceRotation } from "@lararium/mesh/vessel-kel";
+import { placeKelHeadFromBoard, writePlaceKelEvent } from "@lararium/mesh/place-kel-board";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { generateOrLoadVesselIdentity, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { readNexusDoc, writeNexusDoc } from "../src/nexus-doc.js";
 import { runNexusCarryFor, runNexusContract } from "../src/commands/nexus-contract.js";
@@ -75,7 +76,7 @@ describe("a carry bundle carries verified place descent", () => {
     const issued = await ownedStore(larDataDir(), async (repo) => {
       const board = await materializeSharedLarDoc(repo, boardUrl as never, "board:carriage-contracts");
       const { carryBundleFrom } = await import("../src/carry-bundle.js");
-      const { foundingRoster } = await import("@lararium/mesh");
+      const { foundingRoster } = await import("@lararium/mesh/nexus-seal-seed");
       return carryBundleFrom({ aid: bundle.aid, nym: seal.nym, board: board.doc(), roster: foundingRoster(readNexusDoc(larSealHome())) });
     });
     expect(issued?.placeKel).toHaveLength(3);                  // the herm's own inception, beside the two rows written here

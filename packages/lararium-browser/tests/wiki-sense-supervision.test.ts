@@ -13,7 +13,7 @@
  */
 
 import { describe, test, expect, afterEach } from "vitest";
-import { DAEMON_BAG_ID } from "@lararium/mesh";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
 import {
   createWikiSenseSupervisor,
   parseProofRecord,

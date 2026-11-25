@@ -11,10 +11,12 @@ import { describe, test, expect } from "vitest";
 import { hkdfSync } from "node:crypto";
 import { basename, join } from "node:path";
 import * as ed from "@noble/ed25519";
-import {
-  ALL_DOMAINS, DEVICE_DELEGATION_DOMAIN, faceAtomKeyFromSeed, mintFaceAtomSeed, groupSecretOpenerFromSeed,
-  bindSlot, commitSlotTree, mintTreeKey, writeSealedCarrier, type TreeKey,
-} from "@lararium/mesh";
+import { ALL_DOMAINS, DEVICE_DELEGATION_DOMAIN } from "@lararium/mesh/domains";
+import { faceAtomKeyFromSeed, mintFaceAtomSeed } from "@lararium/mesh/face-atom";
+import { groupSecretOpenerFromSeed } from "@lararium/mesh/persona-group-secret";
+import { bindSlot } from "@lararium/mesh/keyslot-door";
+import { commitSlotTree, writeSealedCarrier } from "@lararium/mesh/sealed-writer";
+import { mintTreeKey, type TreeKey } from "@lararium/mesh/tree-key-door";
 import {
   CUSTODY_ROOT_BYTES, CustodyRootRefused, custodyDerive, custodyRootCarrier, custodyRootFromBytes, custodyRootPath,
   isCustodyRoot, mintCustodyRoot, openCustodyRootCarrier, sealCustodyRoot, type CustodyRoot,

@@ -4,7 +4,7 @@
  *
  * The contract every skin (this, the HTTP route, the MCP tool) carries verbatim:
  *
- *   meme-put      { recipe?, bag?, uri, text, base? }   → PlaceMemeReceipt
+ *   meme-put      { recipe?, bag?, uri, text, base?, create? }   → PlaceMemeReceipt | { decision: exists } (create lands only where no family stands)
  *   meme-get      { recipe?, bag?, uri }                → { uri, meme: { text, canonicalHash } | null }
  *   meme-patch    { recipe?, bag?, uri, slot, append [base] | replace base } → PlaceMemeReceipt & { slot } | { decision: absent }
  *   meme-list     { recipe?, bag?, tree?, after?, limit? } → { bag | recipe, roots: MemeListing[], next }
@@ -60,14 +60,34 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/meme-verbs
  */
 
-import { wearOf, refuseEffectLedgerWrite, refuseTw5DocsWrite } from "@lararium/mesh";
+import { wearOf } from "@lararium/mesh/repo-wear";
+import { refuseEffectLedgerWrite } from "@lararium/mesh/effect-record";
+import { refuseTw5DocsWrite } from "@lararium/mesh/tw5-docs-name";
 import { staysHome } from "./stay-home.js";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { NoWorkingLayerRefusal, type CompositeStore } from "@lararium/mesh/composite-store";
+import { VerbRefusal } from "@lararium/mesh/verb-refusal";
+import { floorReadFace } from "@lararium/mesh/floor-manifest";
+import { isHouseCanonBag, requireKahuReach, type KahuReachSource } from "@lararium/mesh/kahu-canon-reach";
+import { refuseRenderedWrite } from "@lararium/mesh/rendered-derives";
+import { admitSeatExecutable } from "@lararium/mesh/seat-startup-offer";
+import { resolveHouseCanon } from "@lararium/mesh/house-canon-doc";
+import { bagUri } from "@lararium/mesh/lar-uris";
+import { designatedBagOf } from "@lararium/mesh/recipe";
+import { expandRecipe, recipeFromRecord, wikiSlotKindOf, wikiSlotUri, type WikiSlotKind } from "@lararium/mesh/wiki-recipe";
 import {
-  AutomergeDocStore, NoWorkingLayerRefusal, VerbRefusal, floorReadFace, isHouseCanonBag, refuseRenderedWrite, admitSeatExecutable, requireKahuReach, resolveHouseCanon, bagUri, designatedBagOf, expandRecipe, recipeFromRecord, wikiSlotKindOf, wikiSlotUri,
-  REALM_ID_TIDDLER, realmDocPointer, realmDocUrl, realmStewardPointer, realmStandingPointer, readRealmStanding, mayWriteRealmBag, tiddlerText,
-  carrierHashOf, isWorkingLayerBag, overrideBaseOf,
-  type ChangeOrigin, type CompositeStore, type KahuReachSource, type LarTiddlerRecord, type LarTiddlerStore, type WikiSlotKind,
-} from "@lararium/mesh";
+  REALM_ID_TIDDLER,
+  realmDocPointer,
+  realmDocUrl,
+  realmStewardPointer,
+  realmStandingPointer,
+  readRealmStanding,
+  mayWriteRealmBag,
+} from "@lararium/mesh/realm-bag";
+import { tiddlerText } from "@lararium/mesh/base-doc";
+import { carrierHashOf } from "@lararium/mesh/carrier-form";
+import { isWorkingLayerBag, overrideBaseOf } from "@lararium/mesh/override-base";
+import { type ChangeOrigin, type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
 import { componentsBeneath } from "@lararium/mesh/family";
 import { findOrThrow, makeCatalogAccessor } from "./catalog-accessor.js";
 import { effectiveRecipeOf } from "./recipe-planes.js";
@@ -206,7 +226,7 @@ export function memeVerbOptions(
 
   /** The realm this vessel stands in, and the registrations its doc carries as of the last sync. Null when
    *  no catalog plane, no realm id, or no realm doc has arrived — each a vessel outside every realm. */
-  async function realmStanding(namedRealm?: string): Promise<{ realmId: string; bags: ReadonlyMap<string, import("@lararium/mesh").RealmBagRegistration> } | null> {
+  async function realmStanding(namedRealm?: string): Promise<{ realmId: string; bags: ReadonlyMap<string, import("@lararium/mesh/realm-bag").RealmBagRegistration> } | null> {
     if (!catalog) return null;
     const realmId = namedRealm?.trim().toLowerCase() || tiddlerText(await catalog.recordOf(REALM_ID_TIDDLER).catch(() => null));
     if (!realmId) return null;
@@ -545,7 +565,16 @@ export function makeMemePutReactor(opts: MemeVerbOptions): VerbReactor {
         await admitSeatExecutable(title, record, "meme put", ctx.asker, { wiki, port: ctx.execLei });
       }
     };
-    const receipt = await placeMeme({ uri: target.uri, text, baseHash, vet }, sink);
+    // `create` LANDS THE FAMILY ONLY WHERE NONE STANDS: a root the write layer holds, or the stack beneath answers, reads `exists`
+    // and nothing moves (the tiddler door's own `--create` law, kept for a family).
+    if (args["create"] === true || args["create"] === "true") {
+      const standing = (await readMeme(target.uri, sink)) ?? (target.recipe && !opts.faceLane ? await resolveRead(opts, target, origin, ctx.cap).then((below) => readMeme(target.uri, below.sink), () => null) : null);
+      if (standing) {
+        return { has: familyHas(target.uri, { ...target, canonicalHash: standing.canonicalHash }, "family-write"), uri: target.uri, decision: "exists", landed: [], tombstoned: [], diagnostics: [], canonicalHash: standing.canonicalHash,
+          warnings: [`exists: a meme already stands at ${target.uri}; --create lands only where none does. Nothing moved.`], bag };
+      }
+    }
+    const receipt = await placeMeme({ uri: target.uri, text, baseHash, vet, ...(ctx.signal ? { signal: ctx.signal } : {}) }, sink);
     // THE ANSWER NAMES THE LAYER: the bag the put landed in, and for a named wiki the slot of it (`working`, or `personal`
     // where the face holds no writer's seat in the wiki's workbench).
     const layer = target.recipe && target.recipe !== "default" ? wikiSlotKindOf(target.recipe, bag) : null;

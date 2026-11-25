@@ -8,7 +8,9 @@
  */
 import { createRequire } from "node:module";
 import { afterEach, expect, test } from "vitest";
-import { emptyLarDoc, mkDaemonDelegateVerb, type IslandMsg_Manifest, type LarDoc, type Repo as RepoType } from "@lararium/mesh";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { mkDaemonDelegateVerb, type IslandMsg_Manifest } from "@lararium/mesh/island-protocol";
+import { type Repo as RepoType } from "@lararium/mesh/automerge";
 import { openDaemonVmCore, type DaemonVmHost } from "../src/daemon-vm-core.js";
 import { captureVerbCap, type DaemonVerbProvider, type VerbContribution } from "../src/verb-caps.js";
 import { VerbTable } from "../src/verb-dispatcher.js";

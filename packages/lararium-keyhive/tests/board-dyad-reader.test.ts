@@ -2,10 +2,12 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, test } from "vitest";
-import {
-  deviceEdgeId, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, emptyLarDoc, fleetEdgeBoardDocUrl,
-  makeIslandRepo, materializeSharedLarDoc, signEdgeKapae, writeEdgeKapae,
-} from "@lararium/mesh";
+import { deviceEdgeId } from "@lararium/mesh/dyad";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { emptyLarDoc } from "@lararium/mesh/base-doc";
+import { fleetEdgeBoardDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
+import { signEdgeKapae, writeEdgeKapae } from "@lararium/mesh/edge-kapae";
 import { edgeKapaeKey } from "../../lararium-mesh/src/edge-kapae.js";
 import { markRaiseRolled } from "../../lararium-mesh/src/edge-ledger.js";
 import { signSeatRoll } from "../../lararium-mesh/src/seat-duties.js";

@@ -9,10 +9,10 @@
  */
 import { afterEach, describe, test, expect } from "vitest";
 import * as ed from "@noble/ed25519";
-import {
-  hex, provisionThresholdRecoveryAtFounding, recoveryContactRegistrationCard, attestAndRotate,
-  personaKelDropName, httpPersonaKelDropHerm, pullPersonaKelSuccessors,
-} from "@lararium/mesh";
+import { hex } from "@lararium/mesh/crypto";
+import { provisionThresholdRecoveryAtFounding, attestAndRotate } from "@lararium/mesh/recovery-keel-core";
+import { recoveryContactRegistrationCard } from "@lararium/mesh/recovery-registration";
+import { personaKelDropName, httpPersonaKelDropHerm, pullPersonaKelSuccessors } from "@lararium/mesh/persona-kel-drop";
 import { startHermRelayPort, type HermRelayPort } from "../src/herm-relay-port.js";
 
 const pubOf = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);

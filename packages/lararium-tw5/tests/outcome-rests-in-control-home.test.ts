@@ -8,7 +8,10 @@
  * Control: the outcome's own content (status, results) stands unchanged.
  */
 import { describe, expect, test } from "vitest";
-import { CompositeStore, CONTROL_HOME_ID, DAEMON_BAG_ID, OUTCOME_URI_PREFIX, concludeVerb, wikiSlotUri, type Verb } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { CONTROL_HOME_ID, DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { OUTCOME_URI_PREFIX, concludeVerb, type Verb } from "@lararium/mesh/verb-tiddler";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { writeOutcome, EFFECT_URI_PREFIX } from "../src/verb-vm.js";
 

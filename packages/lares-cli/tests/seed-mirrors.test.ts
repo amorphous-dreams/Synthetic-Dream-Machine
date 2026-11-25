@@ -45,7 +45,9 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync
 import { dirname, join, sep } from "node:path";
 import { createHash } from "node:crypto";
 import { kapaeShadowBody, readKapaeShadow, SyncedTree } from "@lararium/node";
-import { daemonFaceCanonBag, carrierHash, wikiSlotUri, type ShareEntry } from "@lararium/mesh";
+import { daemonFaceCanonBag, wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import { carrierHash } from "@lararium/mesh/crypto";
+import { type ShareEntry } from "@lararium/mesh/share-config";
 import { seedMirrors, liveLay, mirrorFiles, mirrorLines, mirrorsLeftWork, readKahuaPending, readKahuaFile, kahuaPendingPath, siteWaveFile, type MirrorDoors, type MirrorLaid, type MirrorWave } from "../src/seed-mirrors.js";
 import { houseExport, houseImport, foldWaveRefusal, type BundleDoors, type BundleVesselFace } from "../src/commands/house-bundle.js";
 import { writeFaceLabels, writeFaceBases, readFaceLabel, labelFaceAtNaming } from "../src/face-labels.js";

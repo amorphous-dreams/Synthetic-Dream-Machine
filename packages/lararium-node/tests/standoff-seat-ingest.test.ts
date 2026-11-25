@@ -16,7 +16,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { ShoreRig, RIG_BAG, coreBlobSkip } from "./shore-rig.js";
 import { scanSource } from "../../lares-cli/src/ingest-core.js";
-import { VERB_RESULT_KEY } from "@lararium/mesh";
+import { VERB_RESULT_KEY } from "@lararium/mesh/verb-tiddler";
 
 let rig: ShoreRig | null = null;
 afterEach(async () => { await rig?.close(); rig = null; });

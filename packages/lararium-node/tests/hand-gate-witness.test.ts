@@ -9,7 +9,11 @@
  *     as a mark and decides nothing);
  *   · no module declares its own `readHand`, so the gate's name carries one relation;
  *   · the refusal's witness clauses stand in the builder alone;
- *   · the shore's settling acts answer the siblings' code (`hand-act-only`), never a code of their own.
+ *   · the shore's settling acts answer the siblings' code (`hand-act-only`), never a code of their own;
+ *   · every hand code stands in ONE table keyed by verb (`HAND_ADMITS`, `custody.hand.admits`), each wing's table a view of it;
+ *   · no command reads an agent harness's mark (`harnessSeatMarked`) as a gate: a chain that reads nothing carries no mark, so a
+ *     mark-only gate admits it; the mark only names the hand a line asks under, and the vessel reads the peer again;
+ *   · no door admits a hand by comparing a booked asker to `cli` or `tab`: `askerRefusal` reads it as the gate's verdict.
  *
  * Research: lar:///ha.ka.ba/kahua/memory/research/affordance-map (collisions 1 and 2)
  */
@@ -61,5 +65,22 @@ describe("one gate reads the hand", () => {
 
   test("RED: the shore's settling acts answer hand-act-only, never shore-needs-hand", () => {
     expect(hits(/shore-needs-hand/)).toEqual([]);
+  });
+
+  test("RED: every hand code stands in the one table; no wing keys a code of its own", () => {
+    const ONE_TABLE = ["lararium-mesh/src/hand-refusal.ts"];
+    expect(hits(/(["'][\w-]+["']|\b[\w-]+)\s*:\s*["'][\w-]+-needs-hand["']/, ONE_TABLE)).toEqual([]);
+    expect(hits(/\[\s*["'][\w-]+["']\s*,\s*["'][\w-]+-needs-hand["']\s*\]/, ONE_TABLE)).toEqual([]);
+  });
+
+  test("RED: no command gates a hand act on the harness mark alone", () => {
+    // The connectors read the mark to NAME the hand a line asks under; the vessel reads the peer again and decides.
+    expect(hits(/\bharnessSeatMarked\s*\(/, ["lares-cli/src/local-connector.ts", "lares-cli/src/session-connector.ts"])).toEqual([]);
+  });
+
+  test("RED: no door admits a hand by comparing a booked asker to cli or tab", () => {
+    const GATE = ["lararium-mesh/src/hand-refusal.ts"];
+    expect(hits(/asker\s*[!=]==?\s*["'](cli|tab)["']/, GATE)).toEqual([]);
+    expect(hits(/["'](cli|tab)["']\s*[!=]==?\s*[\w.?]*asker\b/, GATE)).toEqual([]);
   });
 });

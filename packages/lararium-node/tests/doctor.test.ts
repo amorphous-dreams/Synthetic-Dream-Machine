@@ -6,7 +6,8 @@ import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { sweepDocs, type DocLoadProbe, type ProbeResult } from "@lararium/mesh";
+import { sweepDocs } from "@lararium/mesh/doctor-sweep";
+import { type DocLoadProbe, type ProbeResult } from "@lararium/mesh/doc-load-probe-contract";
 import { describe, expect, test } from "vitest";
 
 import { enumerateStoreDocs, formatDoctorReport } from "../src/doctor.js";

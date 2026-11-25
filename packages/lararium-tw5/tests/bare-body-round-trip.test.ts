@@ -9,7 +9,13 @@
  */
 import { describe, test, expect } from "vitest";
 import { createRequire } from "node:module";
-import { AutomergeDocStore, CompositeStore, bagUri, emptyLarDoc, recipeUri, wikiSlotUri, type LarDoc, type LarTiddlerRecord, type LarTiddlerStore, type Repo as RepoType } from "@lararium/mesh";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { bagUri, recipeUri } from "@lararium/mesh/lar-uris";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import { type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
+import { type Repo as RepoType } from "@lararium/mesh/automerge";
 import { carrierHash } from "@lararium/mesh/crypto";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { makeMemePutReactor, makeMemeGetReactor, makeMemeDeleteReactor, makeMemeProjectReactor, type MemeVerbOptions } from "../src/meme-verbs.js";

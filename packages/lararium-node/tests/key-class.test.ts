@@ -14,7 +14,7 @@ import { describe, test, expect } from "vitest";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { isKeyClass } from "@lararium/mesh";
+import { isKeyClass } from "@lararium/mesh/key-class";
 import { carrierTable, type CustodyHomes } from "../src/vault-carriers.js";
 import { FsCustodyIo } from "../src/custody-io.js";
 import { custodyStatus, foundCustody, type CustodyStatusRow } from "../src/custody-session.js";

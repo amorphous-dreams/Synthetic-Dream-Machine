@@ -35,7 +35,9 @@ import {
   generateOrLoadPersonaGroupRoot, makeNodePersonaPetnameStore, makeNodePersonaDeclarationStore,
   listPersonaRoots, readNexusDoc, loadIdentityAnchors, seatReadBackStandIn,
 } from "@lararium/node";
-import { ownPersonaPetname, declaredHandle, foundingQuorumSeated, nexusAidOf } from "@lararium/mesh";
+import { ownPersonaPetname } from "@lararium/mesh/persona-petname";
+import { declaredHandle } from "@lararium/mesh/persona-declare";
+import { foundingQuorumSeated, nexusAidOf } from "@lararium/mesh/nexus-seal-seed";
 import { labelledRelations, readFaceLabel } from "../src/face-labels.js";
 
 // The room each test and hook takes, stated where the file loads: a founding derives a key and every seat seals a

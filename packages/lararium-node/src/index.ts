@@ -84,7 +84,7 @@ export type {
   LifecycleRow, ReconcileResult, BuildResult, PromoteResult, RetireResult, UnRetireResult, PurgeResult,
 } from "./sensorium-lifecycle-verbs.js";
 // THE HAND BEHIND A COMMAND WITH NO SOCKET: the sense lifecycle's hand verbs read the process that runs them (hitl-reads-a-hand).
-export { readOwnHand, ownPeerKind, askerRefusal, handRefusalOf, type HandReading, type HandReads, type HandRefusal, type HandRefusalCode } from "./hand-act-gate.js";
+export { readOwnHand, ownPeerKind, askerRefusal, handRefusalOf, handCodeOf, HAND_ADMITS, type HandReading, type HandReads, type HandRefusal, type HandRefusalCode } from "./hand-act-gate.js";
 
 // The LI (sheaf) CONSISTENCY-RADIUS — the Robinson li-disagreement signal over content/structure/form
 // (0 ⟺ they glue; positive ⟺ a localizable obstruction), PAIRED with the KI (cosheaf) co-consistency —
@@ -533,9 +533,9 @@ export type {
 // makeNodeCaptureEngine.
 
 // ── The cleartext `cid/` CAS tier — read · list · sweep (tiddler-carriage #/pin-and-release) ──
-export { KEY_CLASSES, isKeyClass, isRelationClass } from "@lararium/mesh";
+export { KEY_CLASSES, isKeyClass, isRelationClass } from "@lararium/mesh/key-class";
 export { FsCustodyIo, vesselCustodyIo, CustodyLockRefused, CUSTODY_CLAIM_NAME, type FsCustodyIoOptions } from "./custody-io.js";
-export type { KeyClass } from "@lararium/mesh";
+export type { KeyClass } from "@lararium/mesh/key-class";
 // The ONE carrier table: every carrier at rest by home, custody class and writer. The custody status, the S key
 // rotation, the bundle's cut and the custody shape reader all derive from it — see `vault-carriers`.
 export {

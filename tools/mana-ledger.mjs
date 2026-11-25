@@ -11,7 +11,9 @@
  * script calibrates percent per weighted token and projects to the reset as
  * testimony. It annotates and paces; it never refuses a launch.
  */
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { closeSync, existsSync, openSync, readdirSync, readFileSync, readSync, statSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { StringDecoder } from 'node:string_decoder';
 import { join, resolve } from 'node:path';
 import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -19,7 +21,7 @@ import { fileURLToPath } from 'node:url';
 export const USAGE = `usage: mana-ledger.mjs [--dir <transcripts-dir>] [--since <iso>] [--until <iso>]
   [--readings-file <jsonl>] [--reading <iso>=<percent>]... [--calibrate <iso>=<pct>..<iso>=<pct>]... [--reset <iso>] [--json]
   --dir      transcripts root (default ~/.claude/projects: the plan meter spans every project)
-  --readings-file  the log tools/mana-statusline.mjs appends (seven_day used_percentage + resets_at
+  --readings-file  the log tools/mana-statusline.mjs appends (default ~/.claude/mana-readings.jsonl, where lares home tend seats it; seven_day used_percentage + resets_at
              from Claude Code's statusline input); each window's first..last prices % per token
   --since    window start (default: the earliest --reading, else 24h ago)
   --reading  an operator reading of plan percent-used at a time; two or more calibrate %/token
@@ -36,9 +38,11 @@ export function loadReadings(text) {
     let d; try { d = JSON.parse(line); } catch { continue; }
     const w = d?.seven_day, t = Date.parse(d?.t);
     if (!w || typeof w.used_percentage !== 'number' || Number.isNaN(t)) continue;
-    const r = { t, pct: w.used_percentage, reset: w.resets_at * 1000 };
+    const reset = typeof w.resets_at === 'number' && Number.isFinite(w.resets_at) ? w.resets_at * 1000 : undefined;
+    const r = { t, pct: w.used_percentage, ...(reset !== undefined && { reset }) };
     readings.push(r);
-    const g = windows.get(r.reset) ?? []; g.push(r); windows.set(r.reset, g);
+    if (reset === undefined) continue;
+    const g = windows.get(reset) ?? []; g.push(r); windows.set(reset, g);
   }
   const spans = [];
   for (const g of windows.values()) {
@@ -50,7 +54,7 @@ export function loadReadings(text) {
   return { readings, spans };
 }
 
-export function parseArgs(argv) {
+export function parseArgs(argv, home = homedir()) {
   const o = { readings: [], spans: [], json: false };
   const point = x => { const m = /^(.+)=(\d+(?:\.\d+)?)%?$/.exec(x); return m && !Number.isNaN(Date.parse(m[1])) ? { t: Date.parse(m[1]), pct: Number(m[2]) } : null; };
   for (let i = 0; i < argv.length; i++) {
@@ -72,13 +76,14 @@ export function parseArgs(argv) {
     } else throw new Error(`unknown argument ${a}\n${USAGE}`);
   }
   for (const k of ['since', 'until', 'reset']) if (Number.isNaN(o[k])) throw new Error(`--${k} takes an ISO time\n${USAGE}`);
-  if (o.readingsFile && existsSync(o.readingsFile)) {
+  o.readingsFile ??= join(home, '.claude', 'mana-readings.jsonl');
+  if (existsSync(o.readingsFile)) {
     const f = loadReadings(readFileSync(o.readingsFile, 'utf8'));
     o.readings.push(...f.readings); o.spans.push(...f.spans);
-    o.reset ??= f.readings.at(-1)?.reset;
+    o.reset ??= f.readings.findLast(r => Number.isFinite(r.reset))?.reset;
   }
   o.readings.sort((x, y) => x.t - y.t);
-  o.dir ??= join(homedir(), '.claude', 'projects');
+  o.dir ??= join(home, '.claude', 'projects');
   return o;
 }
 
@@ -100,7 +105,7 @@ export function* usageRecords(lines) {
     const model = m.model;
     if (!model || model === '<synthetic>') continue;
     yield {
-      key: `${m.id ?? ''}|${d.requestId ?? ''}`,
+      key: m.id || d.requestId ? `${m.id ?? ''}|${d.requestId ?? ''}` : `h:${createHash('sha256').update(line).digest('hex')}`,
       t: Date.parse(d.timestamp), model, sidechain: d.isSidechain === true,
       input: u.input_tokens ?? 0, cache_write: u.cache_creation_input_tokens ?? 0,
       cache_read: u.cache_read_input_tokens ?? 0, output: u.output_tokens ?? 0,
@@ -108,13 +113,31 @@ export function* usageRecords(lines) {
   }
 }
 
+/** A file's lines, read in chunks: a transcript of any size never loads whole. */
+export function* fileLines(path) {
+  const fd = openSync(path, 'r'), buf = Buffer.allocUnsafe(1 << 16), dec = new StringDecoder('utf8');
+  let rest = '';
+  try {
+    for (let n; (n = readSync(fd, buf, 0, buf.length, null)) > 0;) {
+      const parts = (rest + dec.write(buf.subarray(0, n))).split('\n');
+      rest = parts.pop();
+      yield* parts;
+    }
+  } finally { closeSync(fd); }
+  rest += dec.end();
+  if (rest) yield rest;
+}
+
 export const weigh = r => Object.entries(WEIGHTS).reduce((s, [k, w]) => s + (r[k] ?? 0) * w, 0);
 
 export function aggregate(records, { since = -Infinity, until = Infinity } = {}) {
+  // Streaming grows a request's usage block: the LAST record per key stands.
+  const latest = new Map();
+  for (const r of records) latest.set(r.key, r);
   const seen = new Set(), byModel = {}, byHour = {};
   let first = Infinity, last = -Infinity;
-  for (const r of records) {
-    if (!(r.t >= since && r.t < until) || seen.has(r.key)) continue;
+  for (const r of latest.values()) {
+    if (!(r.t >= since && r.t < until)) continue;
     seen.add(r.key);
     const row = byModel[r.model] ??= { requests: 0, sidechain_requests: 0, input: 0, cache_write: 0, cache_read: 0, output: 0, weighted: 0 };
     row.requests++; if (r.sidechain) row.sidechain_requests++;
@@ -180,7 +203,7 @@ export function main(argv = process.argv.slice(2)) {
   const records = [];
   for (const p of walk(o.dir)) {
     if (statSync(p).mtimeMs < from) continue;
-    for (const r of usageRecords(readFileSync(p, 'utf8').split('\n'))) records.push(r);
+    for (const r of usageRecords(fileLines(p))) records.push(r);
   }
   const agg = aggregate(records, { since: o.since, until: o.until ?? Infinity });
   const between = (a, b) => aggregate(records, { since: a, until: b }).weighted;

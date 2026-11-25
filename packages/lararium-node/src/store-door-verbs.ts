@@ -66,7 +66,9 @@
 
 import { routingString } from "./routing-arg.js";
 import { takeWardTicket, type WardCredential } from "./ward-credential.js";
-import { WardRefused, CanonOfferRefused, type FloorRemount } from "@lararium/mesh";
+import { WardRefused } from "@lararium/mesh/ward-slots";
+import { CanonOfferRefused } from "@lararium/mesh/canon-offer";
+import { type FloorRemount } from "@lararium/mesh/floor-pin";
 
 /** The route a row's own ticket resolved to, carried beside its arguments under a key no wire spells (seat-harness#/the-ward). */
 const WARD_ARG: unique symbol = Symbol("ward");
@@ -88,14 +90,26 @@ import { unlockedFaceOrdinals } from "./custody-seat.js";
 import { runPromoteVerb } from "./commands/promote.js";
 import { runSwarmVerb } from "./commands/swarm.js";
 import { runRiteVerb, type RiteAction } from "./commands/rite.js";
-import { PromoteRefused, KapaeRefused, SwarmRefused, SWARM_VERB_HAND_CODES, SENSE_HAND_CODES, type PromoteCommandRequest, type SwarmWikiPort } from "@lararium/mesh";
+import { PromoteRefused } from "@lararium/mesh/promote";
+import { KapaeRefused } from "@lararium/mesh/promote-kapae";
+import { SwarmRefused, type SwarmWikiPort } from "@lararium/mesh/swarm-tiddlers";
+import { SWARM_VERB_HAND_CODES } from "@lararium/mesh/swarm-door";
+import { SENSE_HAND_CODES } from "@lararium/mesh/sensorium-lifecycle";
+import { type PromoteCommandRequest } from "@lararium/mesh/promote-command";
+import { handCodesOf } from "@lararium/mesh/hand-refusal";
 import { faceRouteBindDigest, FaceRouteRefused, withFaceRoute } from "./face-route.js";
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
-import type { LarDoc } from "@lararium/mesh";
+import type { LarDoc } from "@lararium/mesh/base-doc";
 import { randomBytes } from "node:crypto";
 import { hasLine, pagePlaneRows, param, type VerbReactor } from "@lararium/tw5";
-import type { HandleClaim } from "@lararium/mesh";
-import { federationPostureFromDoc, isVerbRefusal, readNexusActPartial, type FederationPosture, type CarriageAction, type KahuQuorumSeats, type SealEpoch } from "@lararium/mesh";
+import type { HandleClaim } from "@lararium/mesh/handle-kel";
+import { federationPostureFromDoc } from "@lararium/mesh/nexus-seal-seed";
+import { isVerbRefusal } from "@lararium/mesh/verb-refusal";
+import { readNexusActPartial } from "@lararium/mesh/nexus-partial";
+import { type FederationPosture } from "@lararium/mesh/federation-gate";
+import { type CarriageAction } from "@lararium/mesh/carriage-registry";
+import { type KahuQuorumSeats } from "@lararium/mesh/kapae-antigen";
+import { type SealEpoch } from "@lararium/mesh/wax-stamp";
 import { runCabalAct, runCabalCosign, runCabalStanding, NexusCabalError } from "./commands/nexus-cabal.js";
 import { runFloorRelease } from "./commands/nexus-release.js";
 import { runFloorCut } from "./commands/floor-cut.js";
@@ -256,29 +270,31 @@ export const STORE_DOOR_FACE_VERBS: ReadonlySet<StoreDoorVerb> = new Set<StoreDo
  */
 export const KAHUA_OPERATOR_VERBS: ReadonlySet<StoreDoorVerb> = new Set<StoreDoorVerb>(["kahua-mint", "kahua-lift", "kahua-withdraw", "kahua-carry"]);
 
-/** A seat session refuses these before custody reads; a client names its own hand, so this gate remains advisory, as for the existing operator rows. */
-export const PROMOTE_HAND_CODES: ReadonlyMap<string, string> = new Map([
-  ["promote-commit", "promote-needs-hand"], ["promote-drop", "promote-needs-hand"], ["promote-orphan", "promote-needs-hand"],
-  ["kapae-raise", "kapae-needs-hand"], ["kapae-lower", "kapae-needs-hand"],
-]);
+/**
+ * THE WINGS' VIEWS OF THE ONE HAND TABLE (`HAND_ADMITS`, `custody.hand.admits`, `@lararium/mesh/hand-refusal`): each names the
+ * rows one door family answers, read off that table, so no wing keys a code of its own. A seat session refuses each before
+ * custody reads; the socket reads the asker off the peer (`peerKindOf`), and the island's own reactor reads it again.
+ */
+const storeRows = (map: ReadonlyMap<string, string>): ReadonlyMap<string, string> =>
+  new Map([...map].filter(([verb]) => (STORE_DOOR_VERBS as readonly string[]).includes(verb)));
 
-/** The swarm rows only a hand runs (the house cap, a lane share, a lei); `swarm-show` stays open to a seat. Advisory like the promote codes: the ward binds them. */
+/** The promote and kapae store rows a hand alone settles (a stage's commit, drop or orphan; a kapae's raise or lower). */
+export const PROMOTE_HAND_CODES: ReadonlyMap<string, string> = storeRows(handCodesOf("promote", "kapae"));
+
+/** The swarm rows only a hand runs (the house cap, a lane share, a lei); `swarm-show` stays open to a seat. */
 export const SWARM_HAND_CODES: ReadonlyMap<string, string> = new Map(Object.entries(SWARM_VERB_HAND_CODES));
 
 /** The floor's accept moves the vessel's floor: a person's act alone (w26-floor-lane#/the-vessel-pin); a seat reads the status. */
-export const FLOOR_HAND_CODES: ReadonlyMap<string, string> = new Map([["floor-accept", "floor-needs-hand"]]);
+export const FLOOR_HAND_CODES: ReadonlyMap<string, string> = handCodesOf("floor");
 
 /**
  * The daemon island's wiki verbs a person's hand alone runs: `retire-wiki` unmints a face's wiki shell. It rides a session's
  * `session:call` (an island verb, never a face row), so the socket refuses a seat's call by this code, and the island's own
- * reactor refuses any asker that is not a hand (`retire-needs-hand`).
+ * reactor refuses any asker but a terminal's (`retire-needs-hand`). THE SHARE ROWS ARE A PERSON'S ACT (sealed-store#/the-share-config):
+ * `share-set` writes who reads and writes a bag, and `share-apply` seats faces and hands each a lockbox under the owner's session,
+ * so no agent surface reaches either.
  */
-export const WIKI_HAND_CODES: ReadonlyMap<string, string> = new Map([
-  ["retire-wiki", "retire-needs-hand"],
-  // THE SHARE ROWS ARE A PERSON'S ACT (sealed-store#/the-share-config): `share-set` writes who reads and writes a bag, and `share-apply`
-  // seats faces and hands each a lockbox under the owner's session, so no agent surface reaches either.
-  ["share-set", "share-needs-hand"], ["share-apply", "share-needs-hand"],
-]);
+export const WIKI_HAND_CODES: ReadonlyMap<string, string> = handCodesOf("retire", "share");
 
 /**
  * The sense lifecycle's hand verbs (`promote`, `retire`, `un-retire`, `purge`): island verbs a session's `session:call` carries,
@@ -291,7 +307,7 @@ export const SENSE_HAND_DOOR_CODES: ReadonlyMap<string, string> = new Map(Object
  * The vessel verbs that write the operator's disk a person's hand alone runs: `wiki-render-out` lands derived bytes in a bound
  * workbench (a disk write grant), so the socket refuses a seat's ask by this code, on a session and on a one-shot line alike.
  */
-export const DISK_WRITE_HAND_CODES: ReadonlyMap<string, string> = new Map([["wiki-render-out", "render-output-needs-hand"]]);
+export const DISK_WRITE_HAND_CODES: ReadonlyMap<string, string> = handCodesOf("render-output");
 
 /**
  * The rite row a person's hand alone runs: `rite-abandon` sets a begun half down (a kāpae over it), so the socket refuses a seat's

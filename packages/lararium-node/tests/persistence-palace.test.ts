@@ -15,7 +15,8 @@ import { join } from "node:path";
 
 import { afterEach, beforeAll, expect, test } from "vitest";
 import * as ed25519 from "@noble/ed25519";
-import { signWitness, verifyWitnessSig, hex, type Witness } from "@lararium/mesh";
+import { signWitness, verifyWitnessSig, type Witness } from "@lararium/mesh/persistence-keel";
+import { hex } from "@lararium/mesh/crypto";
 
 import { palaceSuite } from "./helpers/palace-holder.js";
 import { makePersistencePalace, _livePersistenceHolderCount, type PersistencePalace } from "../src/sensorium.js";

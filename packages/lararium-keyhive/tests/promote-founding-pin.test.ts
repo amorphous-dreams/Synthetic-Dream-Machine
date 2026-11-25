@@ -10,11 +10,15 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
 import { describe, expect, test } from "vitest";
-import {
-  groupSecretOpenerFromSeed, heldDocOf, makeIslandRepo, materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix,
-  personaLineageFromKel, personaActRecordsOfGroup, projectPersonaLog, faceAtomKeyFromSeed, PROMOTE_PLANE, promotePlaneUrl, promoteBoardDocUrl,
-  type LarDoc,
-} from "@lararium/mesh";
+import { groupSecretOpenerFromSeed } from "@lararium/mesh/persona-group-secret";
+import { heldDocOf, personaLineageFromKel, personaActRecordsOfGroup } from "@lararium/mesh/persona-act-board";
+import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
+import { materializeSharedLarDoc, personaKelBoardDocUrl } from "@lararium/mesh/deterministic-doc";
+import { personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";
+import { projectPersonaLog } from "@lararium/mesh/persona-act";
+import { faceAtomKeyFromSeed } from "@lararium/mesh/face-atom";
+import { PROMOTE_PLANE, promotePlaneUrl, promoteBoardDocUrl } from "@lararium/mesh/promote-board";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { foundTheFace, foundThePlace, foundingHearthOf } from "../src/index.js";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 import { withMemorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";

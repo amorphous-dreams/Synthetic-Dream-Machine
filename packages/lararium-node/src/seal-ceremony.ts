@@ -36,11 +36,25 @@
  * Node-main only: a worker never imports this module.
  */
 import type { WardCredential } from "./ward-credential.js";
+import { CHARTER_SEAT_ROLL_DOMAIN } from "@lararium/mesh/domains";
+import { canonicalJsonBytes } from "@lararium/mesh/crypto";
+import { charterInceptionBytes, readCharterInceptionImage, sealKeySetHash, weakSeatOf, type SealEpoch } from "@lararium/mesh/wax-stamp";
+import { coldKeyFromSeed, seatNextDigest } from "@lararium/mesh/cold-key-card";
 import {
-  CHARTER_SEAT_ROLL_DOMAIN, canonicalJsonBytes, charterInceptionBytes, readCharterInceptionImage, coldKeyFromSeed, seatNextDigest, charterSealState, ed25519SignerFromSeed, emptyFoundingCharterDoc, foundingRoster,
-  majorityThreshold, nexusAidOf, personasStandingForSeat, sealKeySetHash, sealLineageHead, seatFingerprint, seatedKahuKeys, weakSeatOf,
-  type NexusCharterKahu, type NexusDoc, type QuorumSignature, type SealEpoch,
-} from "@lararium/mesh";
+  charterSealState,
+  emptyFoundingCharterDoc,
+  foundingRoster,
+  majorityThreshold,
+  nexusAidOf,
+  sealLineageHead,
+  seatFingerprint,
+  seatedKahuKeys,
+  type NexusCharterKahu,
+  type NexusDoc,
+} from "@lararium/mesh/nexus-seal-seed";
+import { ed25519SignerFromSeed } from "@lararium/mesh/ed25519-door";
+import { personasStandingForSeat } from "@lararium/mesh/persona-declare";
+import { type QuorumSignature } from "@lararium/mesh/kapae-antigen";
 import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { primaryNexusAid, readCarriedCharters } from "./carried-set.js";

@@ -1,5 +1,10 @@
 import { describe, expect, test } from "vitest";
-import { CompositeStore, DAEMON_BAG_ID, wikiBagUri, type LarDoc, type LarTiddlerRecord, type DocHandle } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { wikiBagUri } from "@lararium/mesh/wiki-recipe";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
+import { type DocHandle } from "@lararium/mesh/automerge";
 import { makeOpenWikiReactor } from "../src/wiki-mint-handlers.js";
 import { ACTIVE_WIKI_URI } from "../src/active-wiki.js";
 import type { CatalogAccessor } from "../src/catalog-accessor.js";

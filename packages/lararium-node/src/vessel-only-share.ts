@@ -1,4 +1,7 @@
-import { CONTROL_HOME_ID, DAEMON_SLOT_PREFIX, SECRET_HOME_ID, bagUri, documentIdOfUrl, tiddlerText, type LarDoc } from "@lararium/mesh";
+import { CONTROL_HOME_ID, SECRET_HOME_ID, bagUri } from "@lararium/mesh/lar-uris";
+import { DAEMON_SLOT_PREFIX } from "@lararium/mesh/device-daemon-docs";
+import { documentIdOfUrl } from "@lararium/mesh/sealed-rest";
+import { tiddlerText, type LarDoc } from "@lararium/mesh/base-doc";
 
 /**
  * A vessel-only document reaches the house's own proven islands alone. ONE DOCUMENT YIELDS (road row `L4f`): the daemon

@@ -6,10 +6,10 @@
  */
 
 import type { Repo } from "@automerge/automerge-repo";
-import {
-  headOpKey, personaKelChainForPrefix, personaKelEventsFromBoard, personaKelBoardDocUrl, materializeSharedLarDoc,
-  writePersonaKelEvent, type LarDoc, type PersonaKelEvent,
-} from "@lararium/mesh";
+import { headOpKey, type PersonaKelEvent } from "@lararium/mesh/persona-kel";
+import { personaKelChainForPrefix, personaKelEventsFromBoard, writePersonaKelEvent } from "@lararium/mesh/persona-kel-board";
+import { personaKelBoardDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { loadVesselVerifyingKey } from "./node-vessel-identity.js";
 import { nodeNexusIsland } from "./nexus-standing.js";
 import { resolveBootDoc } from "./repo-helpers.js";

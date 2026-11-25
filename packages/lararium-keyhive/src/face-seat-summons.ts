@@ -16,7 +16,12 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/keyhive/face-seat-summons
  */
-import type { DocHandle, LarDoc, IntentVerbRegistry, IntentView, DeviceDelegationTiddler, IntentSigner } from "@lararium/mesh";
+import type { DocHandle } from "@lararium/mesh/automerge";
+import type { LarDoc } from "@lararium/mesh/base-doc";
+import type { IntentVerbRegistry } from "@lararium/mesh/intent-verbs";
+import type { IntentView } from "@lararium/mesh/intent-read";
+import type { DeviceDelegationTiddler } from "@lararium/mesh/device-delegation";
+import type { IntentSigner } from "@lararium/mesh/intent-issue";
 import { requestFaceJoin } from "./face-intent-door.js";
 import type { FaceJoinSummons } from "./face-join.js";
 

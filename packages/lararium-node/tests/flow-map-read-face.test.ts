@@ -1,4 +1,4 @@
-import { placeSignerFromSeed } from "@lararium/mesh";
+import { placeSignerFromSeed } from "@lararium/mesh/place-signer";
 /**
  * flow-map-read-face — a Herm serves its FLOW-map to a proven peer over its floor-gated flow socket. The serve →
  * pull → verify round trip and the disclosure shore at the wire (only the coarse public projection crosses; the
@@ -13,7 +13,8 @@ import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
-import { exportFlowSnapshot, type MeshPalaceDoc } from "@lararium/mesh";
+import { exportFlowSnapshot } from "@lararium/mesh/flow-substrate";
+import { type MeshPalaceDoc } from "@lararium/mesh/mesh-palace";
 import { mountFlowReadFace } from "../src/flow-read-face.js";
 import { floorGates, presenter, pullFloor } from "./flow-floor-rig.js";
 import { arrival, type Arrival } from "../../lararium-mesh/tests/handshake.js";

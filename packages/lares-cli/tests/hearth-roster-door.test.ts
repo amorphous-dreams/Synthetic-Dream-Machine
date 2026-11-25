@@ -6,7 +6,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { composeHearthRoster, type HearthRoster } from "@lararium/mesh";
+import { composeHearthRoster, type HearthRoster } from "@lararium/mesh/hearth-roster";
 
 const h = vi.hoisted(() => ({ calls: [] as Array<{ verb: string; args: Record<string, unknown> }>, roster: null as unknown, refuse: null as string | null }));
 

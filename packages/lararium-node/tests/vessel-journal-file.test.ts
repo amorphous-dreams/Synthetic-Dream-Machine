@@ -12,7 +12,7 @@ import { mkdirSync, rmSync, readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 import { fileJournal } from "@lararium/node";
-import type { VesselJournal, JournalEntry } from "@lararium/mesh";
+import type { VesselJournal, JournalEntry } from "@lararium/mesh/vessel-journal";
 
 describe("fileJournal", () => {
   let tempDir: string;

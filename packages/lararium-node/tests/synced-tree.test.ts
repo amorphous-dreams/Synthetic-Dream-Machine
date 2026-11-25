@@ -8,7 +8,7 @@ import { mkdtempSync, readFileSync, writeFileSync, rmSync, readdirSync } from "n
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { SyncedTree, contentHash, syncedTreeKey } from "../src/synced-tree.js";
-import { carrierHash } from "@lararium/mesh";
+import { carrierHash } from "@lararium/mesh/crypto";
 
 // THE HANDSHAKE SEAM for the two-writers vector: the tree's own `renameSync` calls a hook the vector arms,
 // at the moment a row stands ready to land. Unarmed, it passes through.
@@ -128,6 +128,17 @@ describe("synced-tree — the base holds two sides", () => {
     expect(reloaded.baseAt("k", AT)).toEqual({ path: AT, disk: contentHash("render"), records: contentHash("render"), doc: "automerge:face-a" });
     expect(reloaded.baseAt("plain", AT)).toEqual({ path: AT, disk: contentHash("render"), records: contentHash("render") });
     expect("doc" in reloaded.baseAt("plain", AT)!).toBe(false);
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("a base carries the heads its document stood at, across a reload; a writer that holds none leaves none", () => {
+    const { dir, p } = fresh();
+    const t = new SyncedTree(p);
+    t.set("k", AT, contentHash("render"), contentHash("render"), "automerge:face-a", ["h1", "h2"]);
+    t.set("bare", AT, contentHash("render"), contentHash("render"), "automerge:face-a", []);
+    const reloaded = new SyncedTree(p);
+    expect(reloaded.baseAt("k", AT)).toEqual({ path: AT, disk: contentHash("render"), records: contentHash("render"), doc: "automerge:face-a", heads: ["h1", "h2"] });
+    expect("heads" in reloaded.baseAt("bare", AT)!).toBe(false);
     rmSync(dir, { recursive: true, force: true });
   });
 

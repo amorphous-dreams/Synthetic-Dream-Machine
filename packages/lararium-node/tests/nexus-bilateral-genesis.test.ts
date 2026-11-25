@@ -40,12 +40,17 @@ import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import { Repo } from "@automerge/automerge-repo";
 import { restEvery, restingRepo } from "./resting-repo.js";
+import { hex } from "@lararium/mesh/crypto";
+import { foundingRoster, nexusAidOf, type NexusDoc } from "@lararium/mesh/nexus-seal-seed";
 import {
-  hex, foundingRoster, foldCarriageSet, holdsCarriage,
-  carriageEntryBytes, signCarriageQuorum, ed25519SignerFromSeed,
-  nexusAidOf,
-  type NexusDoc, type KahuQuorumSeats, type CarriageEntry,
-} from "@lararium/mesh";
+  foldCarriageSet,
+  holdsCarriage,
+  carriageEntryBytes,
+  signCarriageQuorum,
+  type CarriageEntry,
+} from "@lararium/mesh/carriage-registry";
+import { ed25519SignerFromSeed } from "@lararium/mesh/ed25519-door";
+import { type KahuQuorumSeats } from "@lararium/mesh/kapae-antigen";
 import { mintNexusKey, nexusKeyPublicOf } from "../src/face-key-custody.js";
 import {
   generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot,
@@ -58,7 +63,8 @@ import { nodeNexusIsland } from "../src/nexus-standing.js";
 import { runNexusContract, runNexusAcceptCarriage, runNexusMembersList, NexusContractError } from "../src/commands/nexus-contract.js";
 import { makeNexusMembership, readCarriedNexuses } from "../src/nexus-carriage.js";
 import { nexusLeafFor } from "../src/nexus-leaf.js";
-import { materializeSharedLarDoc, carriageDocUrl, presentationFromBoardDoc } from "@lararium/mesh";
+import { materializeSharedLarDoc, carriageDocUrl } from "@lararium/mesh/deterministic-doc";
+import { presentationFromBoardDoc } from "@lararium/mesh/carriage-board";
 import { direct } from "./direct-store.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { seatChairs } from "./seat-fixture.js";

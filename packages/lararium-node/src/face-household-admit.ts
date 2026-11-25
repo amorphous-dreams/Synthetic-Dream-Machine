@@ -24,9 +24,9 @@
 import { mkdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import type { Repo } from "@automerge/automerge-repo";
-import {
-  gateBundleDigest, heldNexusRoot, makeMultiSigQuorumVerifier, verifySignedAdmitBundle, type CustodyRootDoor,
-} from "@lararium/mesh";
+import { gateBundleDigest, type CustodyRootDoor } from "@lararium/mesh/gate-bundle-door";
+import { heldNexusRoot, verifySignedAdmitBundle } from "@lararium/mesh/held-nexus-root";
+import { makeMultiSigQuorumVerifier } from "@lararium/mesh/kapae-antigen";
 import { admitBundlePathFor, isAdmitBundle, type AdmitBundle } from "./admit-bundle.js";
 import { primaryNexusAid } from "./carried-set.js";
 import { admitCanonDocs, faceCustodyGroup } from "./kahu-realm.js";

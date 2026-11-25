@@ -1,9 +1,9 @@
 import { describe, test, expect } from "vitest";
-import { VerbRefusal } from "@lararium/mesh";
-import type { CompositeStore, Verb, LarTiddlerRecord } from "@lararium/mesh";
-import {
-  OUTCOME_URI_PREFIX, VERB_RESULT_KEY, VERB_URI_PREFIX, buildVerb, parseVerb, verbInputDigest,
-} from "@lararium/mesh";
+import { VerbRefusal } from "@lararium/mesh/verb-refusal";
+import type { CompositeStore } from "@lararium/mesh/composite-store";
+import type { Verb } from "@lararium/mesh/verb-tiddler";
+import type { LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
+import { OUTCOME_URI_PREFIX, VERB_RESULT_KEY, VERB_URI_PREFIX, buildVerb, parseVerb, verbInputDigest } from "@lararium/mesh/verb-tiddler";
 import {
   AUDIT_ARRAY_CAP,
   boundOutcomeOutput,
