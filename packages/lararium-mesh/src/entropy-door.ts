@@ -14,6 +14,7 @@
  */
 
 import { webGetRandomValues } from "./crypto.js";
+import { VerbRefusal } from "./verb-refusal.js";
 
 /** A source of bytes, named. `fill` overwrites the whole view and hands it back. */
 export interface EntropyDoor {
@@ -51,4 +52,26 @@ export function entropyBelow(door: EntropyDoor, bound: number): number {
 export function entropyPick<T>(door: EntropyDoor, list: readonly T[]): T {
   if (list.length === 0) throw new RangeError("entropyPick: the list holds nothing to pick");
   return list[entropyBelow(door, list.length)] as T;
+}
+
+/**
+ * One fresh random id: 16 bytes from the platform's `crypto.getRandomValues`, each written as two base-32 digits.
+ *
+ * The id names an attempt or a lineage, never a moment: it carries no clock reading (an attacker holding a machine
+ * sets its clock at will, so a clock decides nothing), and it never falls back to `Math.random`. Where the platform
+ * holds no `crypto.getRandomValues`, the mint refuses by name.
+ */
+export function mintRandomId(): string {
+  const bytes = new Uint8Array(16);
+  if (typeof globalThis.crypto?.getRandomValues !== "function") {
+    throw new VerbRefusal(
+      "entropy-absent",
+      "entropy-absent: this runtime holds no crypto.getRandomValues, and the house mints no id from Math.random or the clock. " +
+        "cure: run on Node 19+ or a browser with Web Crypto.",
+    );
+  }
+  webGetRandomValues(bytes);
+  let out = "";
+  for (const b of bytes) out += b.toString(32).padStart(2, "0");
+  return out;
 }
