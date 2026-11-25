@@ -2,13 +2,8 @@
   "format": "lararium-genesis-unbaked",
   "unbaked": [
     {
-      "source": "packages/lararium-tw5/plugins/lares-memetic-wikitext.json",
-      "sha256": "43b3239287997496e8cb4a184b53fb8bd0a337f36b8a5d22a3db5283d18d95ec",
-      "why": "The family-turn-settle lane (the clock sweeper) re-packs the grammar skin from this tree, which also folds the mesh as develop now holds it (the entropy door's mintRandomId). The next labelled GENESIS RE-BAKE carries these bytes and deletes this row."
-    },
-    {
       "source": "packages/lararium-tw5/plugins/lares-lararium.json",
-      "sha256": "e3c0f84e3b5f0cf13a44042dfacda30f2e8ec5cf0fb7c863228ce9bd209fd81a",
+      "sha256": "fbb7c7dc96a812e4a118602ceb59fbcea5cf07674b9cec30351f7923bb915a34",
       "why": "The family-turn-settle lane (the clock sweeper) re-packs the house skin: a held family turn waits on its settle and answers owed, never on a timer. The next labelled GENESIS RE-BAKE carries these bytes and deletes this row."
     }
   ]
