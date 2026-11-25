@@ -80,7 +80,7 @@ describe("only the hand door lights the pūlama", () => {
     const dir = scratch(), records = pulamaRecords(dir);
     const door = pulamaHandDoor({ holder, server, image: pulamaImage(dir), records });
     const next = "sha256:" + "94".repeat(32);
-    const frame = { op: "name-successor-lei", next, image: next, devices: 1, branch: "develop", rev: "e".repeat(40), tree: "f".repeat(40), recheck: "same", ci: "7:success" };
+    const frame = { op: "name-successor-lei", next, image: next, devices: 1, branch: "develop", rev: "e".repeat(40), tree: "f".repeat(40), recheck: "same", bench: { kind: "lares-bench-verdict", v: 1, rev: "e".repeat(40), tree: "f".repeat(40), code: 0, line: "BENCH GATE GREEN at eeeeeeeee · 5 steps · 61 s", steps: [], secs: 61 }, ci: "7:completed:failure" };
     expect(await door(frame)).toMatchObject({ reading: "pulama-locked" });
     await door({ op: "light", credentials: [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }] });
     await door({ op: "closure", digest: "sha256:" + "d0".repeat(32) });
@@ -90,8 +90,8 @@ describe("only the hand door lights the pūlama", () => {
     expect(spent).toMatchObject({ reading: "named", v: 1, branch: "develop" });
     expect(routes).toEqual([]);
     expect(handVerbExit("name-successor-lei", spent)).toBe(0);
-    expect(handVerbExit("name-successor-lei", { op: "name-successor-lei", reading: "keeper-lei-ci-red" })).toBe(1);
-    expect(await door({ op: "status" })).toMatchObject({ keeper: { successor: next }, keeperLei: { floor: true, licensed: [{ v: 1, next, branch: "develop", ci: "7:success", vested: false }] } });
+    expect(handVerbExit("name-successor-lei", { op: "name-successor-lei", reading: "keeper-lei-bench-red" })).toBe(1);
+    expect(await door({ op: "status" })).toMatchObject({ keeper: { successor: next }, keeperLei: { floor: true, licensed: [{ v: 1, next, branch: "develop", bench: expect.stringMatching(/^sha256:[0-9a-f]{64}$/), ci: "7:completed:failure", vested: false }] } });
     await door({ op: "lock" });
   });
 
