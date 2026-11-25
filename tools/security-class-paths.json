@@ -1,7 +1,9 @@
 {
-  "about": "The security class (controller ruling 2026-11-01, F7 (a); the leans collapse 2026-11-25): a lane whose diff (`git diff --no-renames --raw -z <develop>..<head>`) names a path matching a glob in `paths`, or a path holding a `tokens` word anywhere (case-folded), takes a cold Opus read before the familiar's --no-ff merge lands; tools/bench-gate.mjs reads the diff, asks the wiki's `security-class` filter, and prints `COLD READ OWED: <paths>`. The familiar records the read for the lane's exact head and quotes its hash in the merge message. The read takes this file from develop's tree, never from the lane's, and the file sits in its own list. The code that decides CI's verdict (cells, shards, witnesses, the build stamp, every manifest and test config) sits in the class too. Prune from evidence; never widen a hole.",
+  "about": "The security class (controller ruling 2026-11-01, F7 (a); the leans collapse 2026-11-25): a lane whose diff (`git diff --no-renames --raw -z <develop>..<head>`) names a path matching a glob in `paths`, or a path holding a `tokens` word anywhere (case-folded), takes a cold Opus read before the familiar's --no-ff merge lands (a gate that cannot read the list answers `COLD READ OWED: (unread: <why>)`, never clean); tools/bench-gate.mjs reads the diff, asks the wiki's `security-class` filter, and prints `COLD READ OWED: <paths>`. The familiar records the read for the lane's exact head and quotes its hash in the merge message. The read takes this file from develop's tree, never from the lane's, and the file sits in its own list. The code that decides CI's verdict (cells, shards, witnesses, the build stamp, every manifest and test config) sits in the class too. Prune from evidence; never widen a hole.",
   "paths": [
     "tools/security-class-paths.json",
+    "tools/bench-gate.mjs",
+    "packages/lararium-tw5/src/filters/security-class.ts",
     "tools/ci-verdict.mjs",
     "tools/ci-ignored-paths.json",
     "tools/ci-ignored-paths.mjs",

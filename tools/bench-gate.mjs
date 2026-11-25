@@ -39,10 +39,10 @@
  */
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
-import { createRequire } from "node:module";
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { dirname, join, relative } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { TEST_CELLS } from "./ci-cells.mjs";
 import { requireFloor } from "./floor-lock.mjs";
 
@@ -148,30 +148,57 @@ export function parseRawZ(out) {
   return paths;
 }
 
-/** The record hash the familiar quotes: SHA-256 of the head, then each owed path, newline-joined. */
-export const coldReadHash = (head, paths) => createHash("sha256").update([head, ...paths].join("\n")).digest("hex");
+/** The record hash the familiar quotes: SHA-256 over the base sha, the list's own sha, the head, then each owed path, NUL-joined
+ *  (git refuses a NUL in a path, so no path joins two words into one). */
+export const coldReadHash = (head, paths, { base = "", listJson = "" } = {}) =>
+  createHash("sha256").update([base, createHash("sha256").update(listJson).digest("hex"), head, ...paths].join("\0")).digest("hex");
 
-/** The security class's own answer over a diff's paths: the wiki door first (the matcher lives there), the module's built
- *  form in-process where the doors stand dark; the one list rides both, read by the caller from develop's tree. */
+/** What the gate answers where it cannot read the list honestly: owed, never clean. */
+export const unreadOwed = (why) => [`(unread: ${why})`];
+
+/** A matcher that could not answer honestly: carries `unavailable` where no matcher stood at all. */
+export class Unread extends Error { constructor(why, unavailable = false) { super(why); this.unavailable = unavailable; } }
+
+/** The class's answer over a diff's paths. The wiki door first (the matcher lives there); the door must name the SENTINEL (a
+ *  path the list always owes), else it answered as an unknown operator would (TW5 hands those to `field`, which yields none)
+ *  and reads unread. A dark or unreadable door falls to DEVELOP's matcher in-process, never the lane's own. The one list rides
+ *  both, read by the caller from develop's tree. Throws Unread where neither answers; callers turn it into `unreadOwed`. */
 export function coldReadOwed(paths, listJson, { door = askDoor, local = askLocal } = {}) {
   if (paths.length === 0) return [];
   try { return door(paths, listJson); } catch { return local(paths, listJson); }
 }
 
-function askDoor(paths, listJson) {
-  if (paths.some((p) => /[\][\n]/.test(p))) throw new Error("a path the filter cannot carry");
-  const filter = `${paths.map((p) => `[[${p}]]`).join(" ")} +[security-class[${encodeURIComponent(JSON.stringify(JSON.parse(listJson)))}]]`;
-  const r = spawnSync(process.env.LARES_BIN ? "node" : "lares", [...(process.env.LARES_BIN ? [process.env.LARES_BIN] : []), "wiki", "filter", filter, "--recipe", "default", "--all", "--fields", "title"], { cwd: ROOT, encoding: "utf8", input: "" });
-  if (r.status !== 0) throw new Error(`the wiki door stands dark: ${r.stderr.trim()}`);
-  const answered = r.stdout.split("\n").map((l) => l.trim()).filter(Boolean);
-  return paths.filter((p) => answered.includes(p));
+/** One door ask: the diff's paths plus the sentinel, answered lines compared untrimmed. */
+export function askDoor(paths, listJson, { spawn = spawnSync } = {}) {
+  if ([...paths, SECURITY_CLASS_FILE].some((p) => /[\][\n\r]/.test(p))) throw new Error("a path the filter cannot carry");
+  const sent = [SECURITY_CLASS_FILE, ...paths.filter((p) => p !== SECURITY_CLASS_FILE)];
+  const filter = `${sent.map((p) => `[[${p}]]`).join(" ")} +[security-class[${encodeURIComponent(JSON.stringify(JSON.parse(listJson)))}]]`;
+  const r = spawn(process.env.LARES_BIN ? "node" : "lares", [...(process.env.LARES_BIN ? [process.env.LARES_BIN] : []), "wiki", "filter", filter, "--recipe", "default", "--all", "--fields", "title"], { cwd: ROOT, encoding: "utf8", input: "" });
+  if (r.status !== 0) throw new Error(`the wiki door stands dark: ${String(r.stderr).trim()}`);
+  const answered = new Set(String(r.stdout).split("\n").filter((l) => l !== ""));
+  if (!answered.has(SECURITY_CLASS_FILE)) throw new Error("the wiki door answered without the sentinel: the operator stands unknown or stale");
+  return paths.filter((p) => answered.has(p));
 }
 
-function askLocal(paths, listJson) {
-  const built = join(ROOT, "packages/lararium-tw5/dist/filters/security-class.js");
-  if (!existsSync(built)) throw new Error(`bench-gate: the doors stand dark and ${relative(ROOT, built)} stands unbuilt; run \`pnpm build\``);
-  const { readSecurityClass, securityClassPaths } = createRequire(import.meta.url)(built);
-  return securityClassPaths(paths, readSecurityClass(JSON.parse(listJson)));
+/** The runner a develop matcher answers through: a child node that imports the extracted module and prints the matched paths as JSON. */
+const RUNNER = 'const f = process.argv[1]; const { readSecurityClass, securityClassPaths } = await import(f); const { paths, list } = JSON.parse(await new Promise((ok) => { let b = ""; process.stdin.on("data", (c) => (b += c)).on("end", () => ok(b)); })); process.stdout.write(JSON.stringify(securityClassPaths(paths, readSecurityClass(list))));';
+
+/** DEVELOP's matcher, in a child process: its module source pulled through `git show` into a temp dir and imported there (Node
+ *  strips the types). The lane never chooses the matcher that judges it; a develop holding none leaves no matcher at all. */
+export function askLocal(paths, listJson, { show = (ref) => git(["show", ref]), ref = "origin/develop", spawn = spawnSync } = {}) {
+  const shown = show(`${ref}:packages/lararium-tw5/src/filters/security-class.ts`);
+  if (shown.status !== 0) throw new Unread(`${ref} holds no security-class matcher and the wiki door stands dark or stale`, true);
+  const dir = mkdtempSync(join(tmpdir(), "security-class-"));
+  try {
+    const file = join(dir, "security-class.mts");
+    writeFileSync(file, shown.stdout);
+    const r = spawn(process.execPath, ["--input-type=module", "-e", RUNNER, pathToFileURL(file).href], { encoding: "utf8", input: JSON.stringify({ paths, list: JSON.parse(listJson) }) });
+    if (r.status !== 0) throw new Error(String(r.stderr).trim().split("\n").at(-1) || `exit ${r.status}`);
+    const hit = JSON.parse(r.stdout);
+    if (!Array.isArray(hit)) throw new Error("the matcher answered no list");
+    return hit;
+  } catch (e) { throw e instanceof Unread ? e : new Unread(`${ref}'s matcher would not run: ${e instanceof Error ? e.message : e}`, true); }
+  finally { rmSync(dir, { recursive: true, force: true }); }
 }
 
 /** Runs every step through `run(step) -> exit code`; a red `stop` step ends the run. Returns { code, red, line, steps, secs }. */
@@ -195,11 +222,14 @@ export function runGate(steps, run, say = console.log, { head = "", base = "", c
   const line = red.length
     ? `BENCH GATE REFUSES: ${red.join(", ")} · ${secs}`
     : `BENCH GATE GREEN at ${head || "?"} over develop ${base || "?"} · ${steps.length} steps · ${secs}`;
-  const owed = cold.length ? ` · COLD READ OWED: ${cold.join(", ")}` : "";
+  // `cold` may be a function: the class reads AFTER merge-develop's fetch, so the list and the diff are the sum's.
+  const read = typeof cold === "function" ? cold() : { cold, hash };
+  const owedPaths = read.cold, recordHash = read.hash;
+  const owed = owedPaths.length ? ` · COLD READ OWED: ${owedPaths.join(", ")}` : "";
   say(line + owed);
-  if (cold.length) say(`cold-read: owed · head ${head || "?"} · paths ${cold.length} · record-hash ${hash}`);
+  if (owedPaths.length) say(`cold-read: owed · head ${head || "?"} · paths ${owedPaths.length} · record-hash ${recordHash}`);
   if (red.length) say("pono: cure each named step's finding (a red merge-develop: `git fetch origin && git merge origin/develop`), then run the gate again");
-  return { code: red.length ? 1 : 0, red, line: line + owed, steps: ran, secs: wall };
+  return { code: red.length ? 1 : 0, red, line: line + owed, steps: ran, secs: wall, cold: owedPaths, unavailable: read.unavailable === true };
 }
 
 /** The verdict document's kind: the keeper reads no other. */
@@ -212,13 +242,21 @@ export function verdictOf(r, { rev, tree }) {
 
 const git = (args) => spawnSync("git", args, { cwd: ROOT, encoding: "utf8" });
 
-/** The security class over the lane's diff against `base`: develop's list, the sum's paths. An `error` where git refuses either read. */
+/** The security class over the lane's diff against `base`: develop's list, the sum's paths, submodule pointers included. Every
+ *  path where it cannot read honestly answers owed `(unread: <why>)`; `unavailable` marks a missing matcher. */
 function coldAgainst(base) {
   const listed = git(["show", `${base}:${SECURITY_CLASS_FILE}`]);
-  const rawDiff = git(["diff", "--no-renames", "--raw", "-z", `${base}..HEAD`]);
-  if (listed.status !== 0 || rawDiff.status !== 0) return { error: (listed.stderr || rawDiff.stderr).trim() };
-  const cold = coldReadOwed(parseRawZ(rawDiff.stdout), listed.stdout);
-  return { cold, hash: coldReadHash(git(["rev-parse", "HEAD"]).stdout.trim(), cold) };
+  const rawDiff = git(["diff", "--no-renames", "--ignore-submodules=none", "--raw", "-z", `${base}..HEAD`]);
+  const sha = git(["rev-parse", base]).stdout.trim();
+  if (listed.status !== 0 || rawDiff.status !== 0) return { cold: unreadOwed(`${(listed.stderr || rawDiff.stderr).trim() || `${base} unreadable`}`), hash: "" };
+  const head = git(["rev-parse", "HEAD"]).stdout.trim();
+  try {
+    const cold = coldReadOwed(parseRawZ(rawDiff.stdout), listed.stdout, { local: (p, l) => askLocal(p, l, { ref: base }) });
+    return { cold, hash: coldReadHash(head, cold, { base: sha, listJson: listed.stdout }) };
+  } catch (e) {
+    const cold = unreadOwed(e instanceof Error ? e.message : String(e));
+    return { cold, hash: coldReadHash(head, cold, { base: sha, listJson: listed.stdout }), unavailable: e instanceof Unread && e.unavailable };
+  }
 }
 
 /** The merge-develop check: fetch develop, then hold the bench to it. */
@@ -284,9 +322,10 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     if (args.includes("--base") || args.includes("--list")) { console.error("bench-gate: --verdict runs over the checkout's own revision; it takes no --base or --list"); process.exit(2); }
     if (git(["status", "--porcelain", "--untracked-files=no"]).stdout.trim() !== "") { console.error("bench-gate: --verdict reads a clean tracked tree, and this checkout carries uncommitted changes; commit or drop them, then run it again"); process.exit(2); }
     const rev = git(["rev-parse", "HEAD"]).stdout.trim(), tree = git(["rev-parse", "HEAD^{tree}"]).stdout.trim();
-    // The keeper's verdict names the owed paths too (annotation: it never blocks the vest, the familiar's merge reads it); a checkout lacking a local origin/develop ref owes none here.
+    // The keeper's verdict names the owed paths too (annotation: it never blocks the vest, the familiar's merge reads it); a checkout
+    // lacking a local origin/develop ref prints `(unread: ...)`, owed, never silence.
     const owed = coldAgainst("origin/develop");
-    const r = runGate(plan({ verdict: true }), exec, console.log, { head: rev.slice(0, 9), base: "-", cold: owed.cold ?? [], hash: owed.hash ?? "" });
+    const r = runGate(plan({ verdict: true }), exec, console.log, { head: rev.slice(0, 9), base: "-", cold: owed.cold, hash: owed.hash });
     // A STEP THAT MOVED THE TRACKED TREE voids the verdict: a moved tree reads another revision than the one the verdict names.
     const moved = git(["status", "--porcelain", "--untracked-files=no"]).stdout.trim() !== "" || git(["rev-parse", "HEAD"]).stdout.trim() !== rev;
     const out = moved ? { ...r, code: 1, line: `BENCH GATE REFUSES: the tracked tree moved under the gate · ${r.secs} s` } : r;
@@ -306,9 +345,8 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   // it through `node tools/floor-run.mjs -- node tools/bench-gate.mjs`, and a tasked spirit hands that line back.
   requireFloor("bench-gate.mjs", args);
   const head = git(["rev-parse", "--short", "HEAD"]).stdout.trim();
-  // The class reads from develop's tree, never the lane's; the diff is the sum of the lane against develop, renames unfollowed.
-  const owed = coldAgainst(base);
-  if (owed.error !== undefined) { console.error(`bench-gate: the security class reads ${SECURITY_CLASS_FILE} and the diff of ${base}..HEAD; one refused: ${owed.error}`); process.exit(2); }
-  const r = runGate(steps, (s) => (s.check ? checkDevelop(base) : exec(s)), console.log, { head, base: git(["rev-parse", "--short", base]).stdout.trim(), cold: owed.cold, hash: owed.hash });
+  // The class reads from develop's tree AFTER merge-develop's fetch (the cold function runs once the steps have), never the lane's.
+  const r = runGate(steps, (s) => (s.check ? checkDevelop(base) : exec(s)), console.log, { head, base: git(["rev-parse", "--short", base]).stdout.trim(), cold: () => coldAgainst(base) });
+  if (r.unavailable) { console.error(`bench-gate: no matcher answered the security class (${r.cold.join(", ")}); the wiki door stands dark or stale and ${base} holds no module; start the daemon or land the matcher on develop, then run the gate again`); process.exit(2); }
   process.exit(r.code);
 }

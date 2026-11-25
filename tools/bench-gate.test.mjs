@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { PACKAGES, ROOT, SWIFT_SECONDS, VERDICT_KIND, VESSEL, coldReadHash, coldReadOwed, parseRawZ, plan, readWeights, runGate, tiers, touchedPackages, verdictOf, weigh } from "./bench-gate.mjs";
+import { PACKAGES, ROOT, SWIFT_SECONDS, VERDICT_KIND, VESSEL, SECURITY_CLASS_FILE, Unread, askDoor, askLocal, coldReadHash, coldReadOwed, parseRawZ, plan, readWeights, runGate, tiers, touchedPackages, unreadOwed, verdictOf, weigh } from "./bench-gate.mjs";
 
 test("RED: a red step refuses by name and the later steps still run; CONTROL: all ok reads one green verdict line", () => {
   const ran = [];
@@ -132,4 +132,61 @@ test("RED verdictOf: one document over the revision and its tree, the gate's exi
   assert.deepEqual(green, { kind: VERDICT_KIND, v: 1, rev, tree, code: 0, line: "BENCH GATE GREEN at aaaaaaa over develop - · 2 steps · 3 s", steps: [{ name: "build", code: 0, secs: 1 }], secs: 3 });
   assert.deepEqual(Object.keys(green), ["kind", "v", "rev", "tree", "code", "line", "steps", "secs"], "the key order the keeper hashes stays fixed");
   assert.throws(() => verdictOf({ code: 0, line: "", steps: [], secs: 0 }, { rev: "HEAD", tree }), /40 hex/);
+});
+
+// THE SAFE ANSWER IS THE DEFAULT (the cold read of the security-class wiring): any path the gate cannot read honestly owes the read.
+const doorSays = (stdout, status = 0) => () => ({ status, stdout, stderr: "dark" });
+
+test("RED askDoor: a door answer missing the sentinel (an unknown or stale operator hands the filter to `field`, which yields none) throws; CONTROL: with the sentinel the matched paths answer", () => {
+  const list = JSON.stringify({ paths: [".github/**"], tokens: [] });
+  assert.throws(() => askDoor([".github/x"], list, { spawn: doorSays("") }), /sentinel/);
+  assert.throws(() => askDoor([".github/x"], list, { spawn: doorSays("", 1) }), /dark/);
+  assert.deepEqual(askDoor([".github/x", "src/plain.ts"], list, { spawn: doorSays(`${SECURITY_CLASS_FILE}\n.github/x\n`) }), [".github/x"]);
+});
+
+test("RED askDoor: the ask carries the sentinel first, and the answer compares untrimmed (`x/custody ` never matches `x/custody`)", () => {
+  const list = JSON.stringify({ paths: [], tokens: ["custody"] });
+  let sent = "";
+  const spawn = (cmd, args) => { sent = args.find((a) => a.includes("security-class[")); return { status: 0, stdout: `${SECURITY_CLASS_FILE}\nx/custody\n`, stderr: "" }; };
+  assert.deepEqual(askDoor(["x/custody ", "x/custody"], list, { spawn }), ["x/custody"]);
+  assert.ok(sent.startsWith(`[[${SECURITY_CLASS_FILE}]] [[x/custody ]]`), sent);
+});
+
+test("RED: a bracket path the filter cannot carry falls to the local matcher, never the door; a path the local matcher throws on reads unread", () => {
+  const list = JSON.stringify({ paths: [], tokens: [] });
+  assert.throws(() => askDoor(["a[b].ts"], list, { spawn: () => assert.fail("a bracket path never rides the door") }), /cannot carry/);
+  assert.deepEqual(coldReadOwed(["a[b].ts"], list, { door: askDoor, local: () => ["a[b].ts"] }), ["a[b].ts"]);
+  assert.deepEqual(unreadOwed("origin/develop unreadable"), ["(unread: origin/develop unreadable)"]);
+});
+
+test("RED askLocal: the matcher is DEVELOP's (pulled through `git show` of the base ref), never the lane's built module; no develop module is `unavailable`", () => {
+  const list = JSON.stringify({ paths: [], tokens: [] });
+  const asked = [];
+  const develops = { status: 0, stdout: "export const readSecurityClass = (l) => l;\nexport const securityClassPaths = (paths) => paths.map((p) => `develop:${p}`);\n" };
+  assert.deepEqual(askLocal(["a"], list, { ref: "origin/develop", show: (ref) => { asked.push(ref); return develops; } }), ["develop:a"]);
+  assert.deepEqual(asked, ["origin/develop:packages/lararium-tw5/src/filters/security-class.ts"]);
+  assert.throws(() => askLocal(["a"], list, { show: () => ({ status: 128, stdout: "" }) }), (e) => e instanceof Unread && e.unavailable === true);
+  assert.throws(() => askLocal(["a"], list, { show: () => ({ status: 0, stdout: "throw new Error('boom');" }) }), (e) => e instanceof Unread && /would not run/.test(e.message));
+});
+
+test("RED coldReadHash: NUL-joined, and it binds the base sha and the list's sha beside the head and the paths", () => {
+  const h = (o) => coldReadHash("head", ["a", "b"], o);
+  assert.notEqual(h({ base: "b1", listJson: "{}" }), h({ base: "b2", listJson: "{}" }), "another base, another hash");
+  assert.notEqual(h({ base: "b1", listJson: "{}" }), h({ base: "b1", listJson: "{ }" }), "another list, another hash");
+  assert.notEqual(coldReadHash("h", ["a b"]), coldReadHash("h", ["a", "b"]), "the join keeps two paths two words");
+});
+
+test("RED runGate: a cold function runs AFTER the steps (the class reads past merge-develop's fetch); its unread answer rides the verdict line and flags unavailable", () => {
+  const order = [];
+  const lines = [];
+  const r = runGate([{ name: "a" }], () => { order.push("step"); return 0; }, (l) => lines.push(l), { head: "abc", base: "def", cold: () => { order.push("cold"); return { cold: unreadOwed("no develop"), hash: "h", unavailable: true }; } });
+  assert.deepEqual(order, ["step", "cold"]);
+  assert.match(r.line, / · COLD READ OWED: \(unread: no develop\)$/);
+  assert.equal(r.unavailable, true);
+  assert.deepEqual(r.cold, ["(unread: no develop)"]);
+});
+
+test("the live list owes a cold read for editing the matcher or the gate that reads it", () => {
+  const live = JSON.parse(readFileSync(join(ROOT, "tools/security-class-paths.json"), "utf8"));
+  for (const p of ["tools/bench-gate.mjs", "packages/lararium-tw5/src/filters/security-class.ts", SECURITY_CLASS_FILE]) assert.ok(live.paths.includes(p), `${p} stands outside the class`);
 });
