@@ -2,13 +2,8 @@
   "format": "lararium-genesis-unbaked",
   "unbaked": [
     {
-      "source": "packages/lararium-tw5/plugins/lares-memetic-wikitext.json",
-      "sha256": "43b3239287997496e8cb4a184b53fb8bd0a337f36b8a5d22a3db5283d18d95ec",
-      "why": "The door-gradient lane (the door bands, the oracle's asking and seed door) re-packs the grammar skin: the mesh the bundle folds carries the entropy door's seeded draw and mintRandomId, and the door bands. The next labelled GENESIS RE-BAKE carries these bytes and deletes this row."
-    },
-    {
       "source": "packages/lararium-tw5/plugins/lares-lararium.json",
-      "sha256": "b127ae238859a1a93233ab45a28daf89cbcc31449f345a57ce42fe36ee7d11aa",
+      "sha256": "820feac50214c7e2606bcb90ba08ea2a0c7cbacd4cb2a330ac3f4f0bc0693b5a",
       "why": "The door-gradient lane (the door bands, the oracle's asking and seed door) re-packs the house skin through oracle-cast-verb: one asking, one throw, with --fresh and --seed on a person's hand. The next labelled GENESIS RE-BAKE carries these bytes and deletes this row."
     }
   ]
