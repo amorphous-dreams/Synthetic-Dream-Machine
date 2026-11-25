@@ -1364,6 +1364,9 @@ for (const [name, shim] of shims) {
     assert.notEqual(walled.status, 0);
     assert.match(walled.stderr, /build refuses: the floor lock \/nonexistent-floor-dir\/floor\.lock cannot open here/);
     assert.doesNotMatch(walled.calls, /GIT_REV=/, "no compose build ran unlocked");
+    // The refusal names itself under a POSIX sh: a failing `exec 8>` redirection there exits the shell silent, so the shim
+    // probes the open in a subshell first (the 2026-11-25 red: dash died at the exec and printed nothing).
+    assert.doesNotMatch(walled.stderr, /holding the floor/);
   });
 
   // L4 (RD3): THE OUTGOING IMAGE KEEPS A REVISION TAG, and the newest three revision tags stand; the rest prune.
