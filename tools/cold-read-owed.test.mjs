@@ -397,7 +397,7 @@ test("RED: a lane pushed after the read lands another head, and --check-merge ca
   sh(f.root, "reset", "-q", "--hard", f.base);
   sh(f.root, "merge", "-q", "--no-ff", "-m", "land the lane", read);
   assert.match(checkMerge({ root: f.root, merge: "HEAD" }).paths[0], /quotes 0 Cold-Read lines/);
-  // A commit of another shape, and a merge whose first parent no longer stands as the base.
+  // A commit of another shape, and a merge whose first parent stands off the base.
   assert.match(checkMerge({ root: f.root, merge: read, head: read }).paths[0], /holds 1 parent/);
   const landed = f.sync();
   assert.match(checkMerge({ root: f.root, merge: landed, head: read }).paths[0], /first parent .* differs from the base/);
