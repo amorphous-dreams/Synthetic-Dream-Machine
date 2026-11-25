@@ -47,7 +47,7 @@ describe("the commands' verifiers hand the door their hex unread", () => {
   test.each(COMMANDS)("%s", (file) => {
     const source = readFileSync(join(import.meta.dirname, "..", "src", "commands", file), "utf8");
     expect(source).toMatch(/Promise\.resolve\(verifyEd25519\(sigHex, bytes, \w+\)\)/);
-    expect(source).toMatch(/import \{[^}]*\bverifyEd25519\b[^}]*\} from "@lararium\/mesh";/);   // the door, by name
+    expect(source).toMatch(/import \{[^}]*\bverifyEd25519\b[^}]*\} from "@lararium\/mesh\/ed25519-door";/);   // the door, by name
     expect(source).not.toMatch(/@noble\//);                                                     // and no curve library at all
   });
   test("the edge doors hold no verifier of their own: the mesh fold reads each signature through the door", () => {

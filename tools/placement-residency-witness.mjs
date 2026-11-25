@@ -87,7 +87,7 @@ const controlWriters = [
   // The swarm wiki writes into the control document it is handed (`docSwarmWiki`, one composition in the mesh), the node
   // re-exports it as `controlSwarmWiki`, and every node composition hands it the control document, never another.
   ["packages/lararium-mesh/src/doc-swarm-wiki.ts", /export function docSwarmWiki\(controlDoc: /, /daemonSwarmWiki|DAEMON_BAG_ID/],
-  ["packages/lararium-node/src/swarm-wiki.ts", /export \{ docSwarmWiki as controlSwarmWiki \} from "@lararium\/mesh"/, /daemonSwarmWiki/],
+  ["packages/lararium-node/src/swarm-wiki.ts", /export \{ docSwarmWiki as controlSwarmWiki \} from "@lararium\/mesh\/doc-swarm-wiki"/, /daemonSwarmWiki/],
   ["packages/lararium-node/src/open-node-vessel.ts", /controlSwarmWiki\(readControlDoc\)/, /controlSwarmWiki\((?!readControlDoc\))/],
   ["packages/lararium-keyhive/src/lease-frontier.ts", /storeForBag\(CONTROL_HOME_ID\)/, /DAEMON_BAG_ID/],
 ];
