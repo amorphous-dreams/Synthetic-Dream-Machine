@@ -55,6 +55,20 @@ export const VALUE_OR_FLAG: ReadonlySet<string> = new Set(["check", "face", "gra
  */
 export const VALUE_FLAGS: ReadonlySet<string> = new Set(["fields", "note", "reason", "text"]);
 
+/**
+ * THE REPEATABLE LIST FLAGS: a name repeated on one line UNIONS its values (each value keeps its own list syntax), where every
+ * other option keeps the last. Before this, `--tag-add a --tag-add b` landed only `b`, silently. A TiddlyWiki list (`--tag-add`,
+ * `--tag-remove`) and a share filter (`--read`, `--write`, `--read-remove`, `--write-remove`) join with a space; a comma list
+ * (`--unset`, and `--fields` on `wiki`, where it names columns; on `tiddler put` it carries one JSON object and keeps the last) joins with a comma.
+ */
+const SPACE_LISTS: ReadonlySet<string> = new Set(["tag-add", "tag-remove", "read", "write", "read-remove", "write-remove"]);
+
+function listJoint(command: string | null, key: string): string | null {
+  if (SPACE_LISTS.has(key)) return " ";
+  if (key === "unset" || (key === "fields" && command === "wiki")) return ",";
+  return null;
+}
+
 /** A command line the grammar itself refuses (`--no-key=…`, `--=v`); the dispatcher turns it into exit 2. */
 export class ArgsError extends Error {
   constructor(message: string) { super(message); this.name = "ArgsError"; }
@@ -78,6 +92,12 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
   const options:    Record<string, string>   = {};
   const flags:      Record<string, boolean>  = {};
 
+  const setOption = (key: string, value: string): void => {
+    const joint = listJoint(command, key);
+    const prior = options[key];
+    options[key] = joint !== null && prior !== undefined && prior.trim() !== "" && value.trim() !== "" ? `${prior}${joint}${value}` : value;
+  };
+
   let endOfOptions = false;
   while (tokens.length > 0) {
     const tok = tokens.shift() as string;
@@ -95,14 +115,14 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
         const key = body.slice(0, eq);
         if (key === "") throw new ArgsError(`${tok}: a flag needs a name before "="`);
         if (BOOLEAN_FLAGS.has(key)) throw new ArgsError(`${tok}: --${key} is a flag and takes no value`);
-        options[key] = body.slice(eq + 1);
+        setOption(key, body.slice(eq + 1));
         continue;
       }
       if (BOOLEAN_FLAGS.has(body) || (command === "wiki" && positional[0] === "pin" && ["bag", "release"].includes(body)) || (command === "wiki" && positional[0] === "switch" && body === "next-boot")) { flags[body] = true; continue; }
       const next = tokens[0];
       // --key value form: peek; consume next token if it does not look like an option (a VALUE_FLAGS name consumes it whatever it starts with).
       if (next !== undefined && (VALUE_FLAGS.has(body) || !next.startsWith("--"))) {
-        options[body] = next;
+        setOption(body, next);
         tokens.shift();
       } else {
         flags[body] = true;
