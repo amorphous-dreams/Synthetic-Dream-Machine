@@ -36,7 +36,7 @@
  */
 import { createPrivateKey, createPublicKey, randomBytes, sign } from "node:crypto";
 import { mkdirSync } from "node:fs";
-import { bytesEqual, sha256HexBytesSync } from "@lararium/mesh";
+import { bytesEqual, sha256HexBytesSync } from "@lararium/mesh/crypto";
 import { CustodyRecordUnavailable } from "./custody-holder.js";
 import { openColdCustodyRecord, openFaceFileNames, readCustodyRecord, updateColdCustodyRecord, updateCustodyRecord } from "./custody-seat.js";
 import { faceFileNames } from "./face-index.js";

@@ -19,7 +19,7 @@
 import { randomBytes } from "node:crypto";
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import type { CustodyIo } from "@lararium/mesh";
+import type { CustodyIo } from "@lararium/mesh/sealed-writer";
 
 export const FACE_INDEX_FILE = "face-index.json";
 export const FACES_DIR = "faces";

@@ -37,10 +37,19 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { faceRecordNames, handleRecordPath } from "./face-paths.js";
 import { afterEach, describe, expect, test, vi } from "vitest";
+import { NEXUS_DOC_DOMAIN } from "@lararium/mesh/domains";
 import {
-  NEXUS_DOC_DOMAIN, charterInceptionBytes, charterInceptionImage, foundingRoster, genesisOfInception, hex, mintColdKey, rotateSealEpoch, sealLineageHead, sealRollBytes, verifySealLineage,
-  type NexusCharterKahu, type SealEpoch,
-} from "@lararium/mesh";
+  charterInceptionBytes,
+  charterInceptionImage,
+  genesisOfInception,
+  rotateSealEpoch,
+  sealRollBytes,
+  verifySealLineage,
+  type SealEpoch,
+} from "@lararium/mesh/wax-stamp";
+import { foundingRoster, sealLineageHead, type NexusCharterKahu } from "@lararium/mesh/nexus-seal-seed";
+import { hex } from "@lararium/mesh/crypto";
+import { mintColdKey } from "@lararium/mesh/cold-key-card";
 import { CustodyLocked, CustodyRecordUnavailable, makeCustodyHolder } from "../src/custody-holder.js";
 import { FsCustodyIo } from "../src/custody-io.js";
 import { seatCustody, unseatCustody, updateColdCustodyRecord } from "../src/custody-seat.js";

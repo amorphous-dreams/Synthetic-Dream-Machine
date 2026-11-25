@@ -3,7 +3,7 @@
  * (mesh). Shared by the daemon VM wrapper and the island pool.
  */
 
-import type { VesselWorkerHandle } from "@lararium/mesh";
+import type { VesselWorkerHandle } from "@lararium/mesh/vessel-host";
 
 export function browserWorkerHandle(w: Worker): VesselWorkerHandle {
   // A browser Worker gives no exit event: the exit this handle names is the one its own terminate makes.

@@ -11,7 +11,7 @@ import { describe, test, expect, afterEach } from "vitest";
 import { mkdtempSync, rmSync, mkdirSync, writeFileSync, renameSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { carrierHash } from "@lararium/mesh";
+import { carrierHash } from "@lararium/mesh/crypto";
 import { SyncedTree, syncedTreeKey, bagsFileToUri } from "@lararium/node";
 import { scanFiles, scanSource, candidatesOf, listCarriers, recordLandedCarriers, applyConfirmedRenames } from "../src/ingest-core.js";
 

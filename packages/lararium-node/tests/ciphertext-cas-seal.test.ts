@@ -15,10 +15,13 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { writeFileSync } from "node:fs";
 import {
-  DeterministicFederationGate, carryContractShareDecision, carrierShareDecision,
-  verifyCiphertextCid, parseDigest,
+  DeterministicFederationGate,
+  carryContractShareDecision,
+  carrierShareDecision,
   type NexusMembership,
-} from "@lararium/mesh";
+} from "@lararium/mesh/federation-gate";
+import { verifyCiphertextCid } from "@lararium/mesh/ciphertext-cas";
+import { parseDigest } from "@lararium/mesh/agile-digest";
 import { makeSealedPlaneRegistry } from "../src/plane-seal.js";
 import { installSealedBody, docIdForCiphertextCid } from "../src/ciphertext-cas-seal.js";
 import { freshTestBodyKey, openAsMember } from "./cas-test-setup.js";

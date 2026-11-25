@@ -7,7 +7,7 @@
  */
 
 import { describe, test, expect } from "vitest";
-import { BagStowage } from "@lararium/mesh";
+import { BagStowage } from "@lararium/mesh/bag-residency";
 import { makeResidencyStatsReactor } from "../src/residency-handlers.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
 

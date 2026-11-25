@@ -9,7 +9,7 @@
  *
  * Meme: lar:///ha.ka.ba/lares/cli/vessel-door
  */
-import type { Credential } from "@lararium/mesh";
+import type { Credential } from "@lararium/mesh/keyslot-door";
 import { seatWardGatherer, gatherSeatedWardRoute, parkWardTicket, wardBindDigest, wardCredential, wardGathererSeated, storeVerbNeedsWard, type WardCredential } from "@lararium/node";
 import { readWardPassphrase } from "./prompt-secret.js";
 import { RoutedVerbRefused } from "./store-door.js";

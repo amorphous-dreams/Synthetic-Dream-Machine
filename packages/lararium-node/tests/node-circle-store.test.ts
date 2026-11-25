@@ -23,10 +23,10 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import {
-  HandleBook, HANDLE_BOOK_SNAPSHOT_ERA, mintPersonaGlamour, readFckCarrier,
-  type LarDoc,
-} from "@lararium/mesh";
+import { HandleBook, HANDLE_BOOK_SNAPSHOT_ERA } from "@lararium/mesh/handle-book";
+import { mintPersonaGlamour } from "@lararium/mesh/persona-glamour";
+import { readFckCarrier } from "@lararium/mesh/fck-envelope";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import * as circleStoreModule from "../src/node-circle-store.js";
 import { loadNodeHandleBook, saveNodeHandleBook, HANDLE_BOOK_FILE, handleBookFile } from "../src/node-circle-store.js";
 import * as nodeBarrel from "../src/index.js";

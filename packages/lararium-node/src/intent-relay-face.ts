@@ -1,5 +1,5 @@
 import type { Repo } from "@automerge/automerge-repo";
-import { faceRecordsOf } from "@lararium/mesh";
+import { faceRecordsOf } from "@lararium/mesh/face-reading";
 import { admitAgentEntry, type FaceIntentAdmissionPorts } from "@lararium/keyhive";
 import { listAnchoredPersonas, loadIdentityAnchors } from "./identity-anchors.js";
 import { loadIntentFace } from "./commands/intent.js";

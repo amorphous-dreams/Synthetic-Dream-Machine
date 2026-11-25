@@ -23,10 +23,15 @@ import { describe, test, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import {
-  verifyPluginOffering, pluginOfferingCid, selectPluginBlobs, selectedPluginCids, signPluginOffering,
-  computePluginsCid, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed,
-  type PluginOffering, type PluginProvenance,
-} from "@lararium/mesh";
+  verifyPluginOffering,
+  pluginOfferingCid,
+  signPluginOffering,
+  type PluginOffering,
+  type PluginProvenance,
+} from "@lararium/mesh/plugin-offering";
+import { selectPluginBlobs, selectedPluginCids } from "@lararium/mesh/plugin-offering-selector";
+import { computePluginsCid } from "@lararium/mesh/genesis-doc";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
 
 interface SourceBlob { readonly id: string; readonly version: string; readonly sha256: string; readonly provenance: PluginProvenance; readonly file: string }
 interface SourceDescriptor { readonly blobs: readonly SourceBlob[] }

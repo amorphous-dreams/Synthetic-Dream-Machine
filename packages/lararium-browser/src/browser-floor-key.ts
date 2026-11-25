@@ -14,7 +14,9 @@
  * holds no unlock for answers `vessel-locked`, and the floor stands no document until it opens.
  */
 import type { Repo } from "@automerge/automerge-repo";
-import { HELD_REST_KEY_LEN, floorRestKey, seedFloorDoor, standFloorKeyOn, VESSEL_LOCKED } from "@lararium/mesh";
+import { HELD_REST_KEY_LEN, floorRestKey, seedFloorDoor } from "@lararium/mesh/held-rest-key";
+import { standFloorKeyOn } from "@lararium/mesh/secret-home";
+import { VESSEL_LOCKED } from "@lararium/mesh/control-home";
 import { BrowserCustodyRefused, withCustodyRecords } from "./browser-custody.js";
 
 /** The place row the floor's rest seed rests in. */

@@ -15,7 +15,7 @@ describe("nexusAidOfPin", () => {
     for (const path of ["../../lararium-node/src/dial-presentation.ts", "../../lararium-browser/src/browser-face-presentation.ts"]) {
       const source = readFileSync(new URL(path, import.meta.url), "utf8");
       expect(source).not.toMatch(/function\s+nexusAidOfPin/);
-      expect(source).toMatch(/import\s*\{[^}]*\bnexusAidOfPin\b[^}]*\}\s*from\s*"@lararium\/mesh"/);
+      expect(source).toMatch(/import\s*\{[^}]*\bnexusAidOfPin\b[^}]*\}\s*from\s*"@lararium\/mesh\/gate-bundle-door"/);
     }
   });
 });

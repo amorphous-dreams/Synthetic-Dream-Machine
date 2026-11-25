@@ -17,14 +17,19 @@
 import { describe, test, expect } from "vitest";
 import * as ed from "@noble/ed25519";
 import { Repo, interpretAsDocumentId, type DocumentId, type PeerId } from "@automerge/automerge-repo";
+import { hex } from "@lararium/mesh/crypto";
 import {
-  hex,
-  signRealmBagRegistration, proposeRealmBagRegistration, coSignRealmBagRegistration,
-  writeRealmBagRegistration, RealmBagGate, realmDocUrl, type RealmCharterConsult,
-  deterministicDocUrl,
-  emptyLarDoc, mutableLarRecord, type LarDoc,
-  type FederationGate, type NexusMembership,
-} from "@lararium/mesh";
+  signRealmBagRegistration,
+  proposeRealmBagRegistration,
+  coSignRealmBagRegistration,
+  writeRealmBagRegistration,
+  RealmBagGate,
+  realmDocUrl,
+  type RealmCharterConsult,
+} from "@lararium/mesh/realm-bag";
+import { deterministicDocUrl } from "@lararium/mesh/deterministic-doc";
+import { emptyLarDoc, mutableLarRecord, type LarDoc } from "@lararium/mesh/base-doc";
+import { type FederationGate, type NexusMembership } from "@lararium/mesh/federation-gate";
 import { makeRealmPlane } from "../src/realm-plane.js";
 import { namedCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { arrival, type Arrival } from "../../lararium-mesh/tests/handshake.js";

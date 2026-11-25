@@ -38,7 +38,7 @@
  * process anyway.
  */
 
-import { ingestWaveRefusal } from "@lararium/mesh";
+import { ingestWaveRefusal } from "@lararium/mesh/ingest-wave-budget";
 
 /** The refusal every write verb answers once the engine has fallen. */
 export const ENGINE_TERMINATED = "engine-terminated";

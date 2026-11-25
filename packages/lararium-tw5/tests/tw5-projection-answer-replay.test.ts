@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "vitest";
-import { mkLarResend } from "@lararium/mesh";
+import { mkLarResend } from "@lararium/mesh/lar-camera";
 import { dispatchLarControlEvent, resendLarCamera } from "../src/tw5-projection.js";
 import { mountSurface, type Surface } from "./projection-surface.js";
 import { skipNote, wikiSkip } from "./test-wiki.js";

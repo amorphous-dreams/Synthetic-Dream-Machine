@@ -10,7 +10,8 @@
  *       opens nothing. CONTROL: its own face's record stands at another address.
  */
 import { afterEach, describe, expect, test } from "vitest";
-import { selvesRecordOf, type LarDoc } from "@lararium/mesh";
+import { selvesRecordOf } from "@lararium/mesh/persona-planes";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { faceProofSubjectRef } from "../../lararium-mesh/src/face-proof-subjects.js";
 import { chain, siblingChain } from "../../lararium-mesh/tests/face-proof-fixture.js";
 import { FLEET_NEXUS, fleet } from "../../lararium-keyhive/tests/content-key-fleet.js";

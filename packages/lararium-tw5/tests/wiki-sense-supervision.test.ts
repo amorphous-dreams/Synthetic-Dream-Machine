@@ -12,7 +12,8 @@
  */
 
 import { describe, test, expect } from "vitest";
-import { CompositeStore, isVesselToIslandMsg, mkSensoriumSignal } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { isVesselToIslandMsg, mkSensoriumSignal } from "@lararium/mesh/island-protocol";
 import {
   createWikiSenseSupervisor,
   buildProofRecordTiddler,

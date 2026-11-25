@@ -92,18 +92,27 @@
  * only sealed to one successor's key.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
  */
-import type { ExecLeiScope } from "@lararium/mesh";
+import type { ExecLeiScope } from "@lararium/mesh/exec-lei";
+import { LEI_RETURNS_ASK_ABOVE } from "@lararium/mesh/swarm-door";
+import { encodeKeepSeat, mintKeepSeatUnder } from "@lararium/mesh/keep-seat-door";
+import { isSwarmLeiRite } from "@lararium/mesh/swarm-lei-rite";
 import {
-  LEI_RETURNS_ASK_ABOVE, encodeKeepSeat, isSwarmLeiRite, mintKeepSeatUnder, signSwarmAct, swarmActCid, swarmLeiUnstrungTitle, swarmTesseraPrefix,
-  type Credential, type SwarmBodyParts, type SwarmSignerPort, type SwarmWikiPort,
-} from "@lararium/mesh";
+  signSwarmAct,
+  swarmActCid,
+  swarmLeiUnstrungTitle,
+  swarmTesseraPrefix,
+  type SwarmBodyParts,
+  type SwarmSignerPort,
+  type SwarmWikiPort,
+} from "@lararium/mesh/swarm-tiddlers";
+import { type Credential } from "@lararium/mesh/keyslot-door";
 import { lentFacesOf } from "@lararium/mesh/lent-faces";
 import { nativeKdf } from "@lararium/mesh/node";
 import { UNLOCK_ATTEMPTS_PER_BOOT, type CustodyHolder } from "./custody-holder.js";
 import { pulamaSignerOf } from "./kukulu-gate.js";
 import { pulamaRecordCid } from "./pulama-admit.js";
 import {
-  CLOSURE, KEEPER_LEI_STANDS, keeperCommit, keeperCommitByLei, keeperEphemeral, keeperFold, keeperLand, keeperLeiReady, keeperLicensed,
+  CLOSURE, KEEPER_LEI_STANDS, keeperCommit, keeperCommitByLei, keeperEphemeral, keeperFold, keeperLand, keeperLeiReady, keeperLicensed, keeperPendingStale,
   keeperPayloadDrop, keeperSlotBinds, keeperSlotOf, keeperVest, type KeeperEphemeral, type KeeperRiteReading, type KeeperStanding,
 } from "./pulama-keeper.js";
 import type { PulamaAdmissions } from "./pulama-admit.js";
@@ -222,12 +231,14 @@ export function pulamaHandDoor(a: {
     const fold = await keeperFold(a.records, by);
     const licensed = await keeperLicensed(a.records, by);
     const last = fold.pairs.at(-1);
+    const stale = keeperPendingStale(fold.pending, closure);
     return {
       // THE KEEPER LEI: the floor, and each commit a kukulu lei licensed with no route (its branch, revision, CI run and, once vested,
       // the lei returns its rite spent); `leiReady` where the kukulu lei could license one now (the host's stand reading follows it).
       keeperLei: { floor: leiFloor, licensed },
-      ...(keeperLeiReady(fold, leiFloor) && !passing ? { leiReady: true } : {}),
-      keeper: { v: fold.v, vestings: fold.vestings, struckDue: fold.struckDue, fork: fold.fork, tip: fold.tip, ...(fold.pending ? { pending: fold.pending.next } : {}), ...(last ? { last: last.par ? "par" : last.red } : {}) },
+      ...(keeperLeiReady(fold, leiFloor, closure) && !passing ? { leiReady: true } : {}),
+      // `stalePending` (with `staleWhy`) names a live commit that binds nothing current: the next lei commit supersedes it.
+      keeper: { v: fold.v, vestings: fold.vestings, struckDue: fold.struckDue, fork: fold.fork, tip: fold.tip, ...(fold.pending ? { pending: fold.pending.next } : {}), stalePending: stale !== null, ...(stale !== null ? { staleWhy: stale } : {}), ...(last ? { last: last.par ? "par" : last.red } : {}) },
       // VEST-READY ONLY WHERE A VEST COULD PROCEED: a live commit, no struck fire due, and a face of one device as the commit read it,
       // or a face of two whose commit carries its co-sign.
       ...(fold.pending && !fold.struckDue && !passing && (fold.pending.devices === 1 || (fold.pending.devices !== null && fold.pending.devices > 1 && Array.isArray(fold.pending.body.cosigns))) ? { vestReady: fold.pending.next } : {}),

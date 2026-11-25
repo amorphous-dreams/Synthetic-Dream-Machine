@@ -15,8 +15,11 @@
  */
 import { describe, test, expect, beforeAll } from "vitest";
 import { createHash } from "node:crypto";
-import { CompositeStore, carrierHash } from "@lararium/mesh";
-import type { CapabilityAccess, CapabilityVerifyResult, Verb, VerbContext } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { carrierHash } from "@lararium/mesh/crypto";
+import type { CapabilityAccess, CapabilityVerifyResult } from "@lararium/mesh/capability";
+import type { Verb } from "@lararium/mesh/verb-tiddler";
+import type { VerbContext } from "../src/verb-dispatcher.js";
 import {
   memeticWikitextDeserializer, quoteblockFence, QUOTEBLOCKED_FIELD, TORN_FIELD, BARE_DATA_TYPE,
 } from "../src/deserializer.js";

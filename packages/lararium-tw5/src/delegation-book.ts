@@ -5,7 +5,8 @@
  * An ask the caller gave up on (its AbortSignal aborts) drops its entry and rejects, so a mount main never answers
  * leaves nothing standing for the island's life.
  */
-import { mkDaemonDelegateVerb, type Verb } from "@lararium/mesh";
+import { mkDaemonDelegateVerb } from "@lararium/mesh/island-protocol";
+import { type Verb } from "@lararium/mesh/verb-tiddler";
 
 type Post = (msg: ReturnType<typeof mkDaemonDelegateVerb>) => void;
 

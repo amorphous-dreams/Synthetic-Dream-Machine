@@ -1,6 +1,8 @@
 import { describe, expect, test } from "vitest";
 import { Repo } from "./wiki-shore-rig.js";
-import { AutomergeDocStore, emptyLarDoc, type LarDoc, type LarTiddlerChange, type LarTiddlerStore } from "@lararium/mesh";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { type LarTiddlerChange, type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
 import { AtomicMemoryStore } from "./atomic-memory-store.js";
 import { ofType, open, realPort } from "./record-port-real-rig.js";
 

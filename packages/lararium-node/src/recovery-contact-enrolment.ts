@@ -25,10 +25,17 @@ import type { WardCredential } from "./ward-credential.js";
 import { randomBytes } from "node:crypto";
 import type { Repo } from "@automerge/automerge-repo";
 import * as ed from "@noble/ed25519";
+import { coldKeyCode } from "@lararium/mesh/cold-key-card";
+import { deriveSelfRecoveryKey } from "@lararium/mesh/persona-identity";
 import {
-  coldKeyCode, deriveSelfRecoveryKey, enrolRecoveryContacts, foldPersonaContests, recoveryContactPossessionBytes, recoveryContactRegistrationCard, hex,
-  type RecoveryContactEnrolmentOffer, type RecoveryContactKeysOfFace, type RecoveryContactRegistration, type PersonaKelEvent,
-} from "@lararium/mesh";
+  enrolRecoveryContacts,
+  recoveryContactPossessionBytes,
+  type RecoveryContactEnrolmentOffer,
+  type RecoveryContactKeysOfFace,
+} from "@lararium/mesh/recovery-keel-core";
+import { foldPersonaContests, type PersonaKelEvent } from "@lararium/mesh/persona-kel";
+import { recoveryContactRegistrationCard, type RecoveryContactRegistration } from "@lararium/mesh/recovery-registration";
+import { hex } from "@lararium/mesh/crypto";
 import { readCustodyRecord, updateCustodyRecord } from "./custody-seat.js";
 import { loadIdentityAnchors } from "./identity-anchors.js";
 import { listPersonaRosterLines, loadPersonaGroupRootSeed } from "./node-vessel-identity.js";

@@ -54,7 +54,10 @@
  */
 import { dropWardTickets, parkWardTicket, wardCredential, type WardCredential } from "./ward-credential.js";
 import type { Socket } from "node:net";
-import { attemptWarning, type Credential, type DocCensusReading, type HeldSaves, type SlotSpec } from "@lararium/mesh";
+import { attemptWarning } from "@lararium/mesh/attempt-budget";
+import { type Credential, type SlotSpec } from "@lararium/mesh/keyslot-door";
+import { type DocCensusReading } from "@lararium/mesh/doc-census";
+import { type HeldSaves } from "@lararium/mesh/sealed-doc-store";
 import { parkFaceRoute } from "./face-route.js";
 import { clearDaemonMount, daemonMountOrdinal, daemonMountState, mountedFaceOrdinal, restoreDaemonMount, setMountedFace, sovereignStands } from "./node-vessel-identity.js";
 import { listFaceOrdinals, listFaceCustodyIds } from "./identity-anchors.js";

@@ -18,7 +18,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
 import { PLATFORM_ENTROPY, seededEntropy } from "@lararium/mesh/entropy-door";
-import { hex } from "@lararium/mesh";
+import { hex } from "@lararium/mesh/crypto";
 import {
   ORACLE_THROW_STANDS, castFromCoins, castThreeCoins, castReadingTitles, castRecord, castText, parseCoins,
 } from "@lararium/mesh/oracle-cast";

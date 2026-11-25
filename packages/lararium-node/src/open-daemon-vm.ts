@@ -23,13 +23,10 @@ import { daemonDiskMirrors } from "./bag-paths.js";
 import { daemonBagsDir, loadLaresConfig, tempProjectionConsented } from "./lares-config.js";
 import { parseAutomergeUrl } from "@automerge/automerge-repo";
 import { join }                                          from "path";
-import {
-  type Repo, type AutomergeUrl, type LarDoc, type DocHandle,
-  type WikiRecipe,
-  type IslandMsg_Manifest,
-  type IslandGrants,
-  wikiSlotUri,
-} from "@lararium/mesh";
+import { type Repo, type AutomergeUrl, type DocHandle } from "@lararium/mesh/automerge";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { type WikiRecipe, wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import { type IslandMsg_Manifest, type IslandGrants } from "@lararium/mesh/island-protocol";
 import {
   openDaemonVmCore,
   type DaemonVmHost,
@@ -38,7 +35,12 @@ import {
 import { isStillJoining, resolveBootDoc } from "./repo-helpers.js";
 import { nodeNewSyncChannel, nodeSpawnDaemonWorker } from "./worker-handle.js";
 import type { IslandCasData } from "./node-cas.js";
-import { PLANE_LABELS, personaScopeTag, standControlHome, daemonFaceCanonBag, floorCidToMount, type CapabilityRecord } from "@lararium/mesh";
+import { PLANE_LABELS } from "@lararium/mesh/plane-labels";
+import { personaScopeTag } from "@lararium/mesh/persona-scope";
+import { standControlHome } from "@lararium/mesh/control-home";
+import { daemonFaceCanonBag } from "@lararium/mesh/wiki-recipe";
+import { floorCidToMount } from "@lararium/mesh/floor-pin";
+import { type CapabilityRecord } from "@lararium/mesh/capability-record";
 
 const DEFAULT_ADMIN_WORKER_URL = new URL("./node-daemon-island.js", import.meta.url);
 

@@ -23,7 +23,11 @@
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { GATE_MEMORY_RECORD_MAX_BYTES, readFckCarrier, bindSlot, commitSlotTree, mintTreeKey } from "@lararium/mesh";
+import { GATE_MEMORY_RECORD_MAX_BYTES } from "@lararium/mesh/gate-withdrawal-store-door";
+import { readFckCarrier } from "@lararium/mesh/fck-envelope";
+import { bindSlot } from "@lararium/mesh/keyslot-door";
+import { commitSlotTree } from "@lararium/mesh/sealed-writer";
+import { mintTreeKey } from "@lararium/mesh/tree-key-door";
 import { canonicalJsonBytes } from "../../lararium-mesh/src/crypto.js";
 import { faceProofSubjectRef, withdrawalHead } from "../../lararium-mesh/src/face-proof-subjects.js";
 import { storedWithdrawals } from "../../lararium-mesh/src/gate-withdrawal-store.js";

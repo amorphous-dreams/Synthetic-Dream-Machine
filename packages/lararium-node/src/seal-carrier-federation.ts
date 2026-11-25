@@ -24,7 +24,8 @@
  */
 
 import { join } from "node:path";
-import type { CasHolder, PrivateBodyKey } from "@lararium/mesh";
+import type { CasHolder } from "@lararium/mesh/cas-transit";
+import type { PrivateBodyKey } from "@lararium/mesh/ciphertext-cas";
 import { installSealedBody, registerSealedBody, type InstalledSealedBody, type RegisteredSealedBody } from "./ciphertext-cas-seal.js";
 import { noteInstalledBody } from "./bag-tracker.js";
 import type { BagTracker } from "./bag-tracker.js";

@@ -4,7 +4,7 @@
  * that wires a MessageChannel to it, the way the worker entry does. Every red pairs with a CONTROL.
  */
 import { describe, expect, test } from "vitest";
-import { verifyEd25519 } from "@lararium/mesh";
+import { verifyEd25519 } from "@lararium/mesh/ed25519-door";
 import { lockBrowserCustody, readBrowserCustody, sealBrowserKeystore } from "../src/browser-custody.js";
 import { bindFirstFaceSlot, faceCustodyHeld, lockFaceCustody } from "../src/browser-face-custody.js";
 import { generateOrLoadBrowserPersonaRoot, wearFaceOfVessel } from "../src/browser-vessel-identity.js";

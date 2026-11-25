@@ -1,5 +1,6 @@
 import { describe, test, expect } from "vitest";
-import { recipeHostFacets, expandRecipe, wikiSlotUri, wikiBagUri, wikiUri } from "@lararium/mesh";
+import { recipeHostFacets, expandRecipe, wikiSlotUri, wikiBagUri } from "@lararium/mesh/wiki-recipe";
+import { wikiUri } from "@lararium/mesh/lar-uris";
 
 // The isomorphic core: one recipe/slug, one set of slot minters, projected two
 // ways — recipeHostFacets (VM-free host) and expandRecipe (island cascade) — must

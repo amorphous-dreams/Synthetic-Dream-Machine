@@ -17,7 +17,8 @@
  */
 import { describe, test, expect } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
-import { BagStowage, emptyLarDoc, type LarDoc } from "@lararium/mesh";
+import { BagStowage } from "@lararium/mesh/bag-residency";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
 import {
   writePinTiddler, removePinTiddler, replayPinsFromDaemonDoc,
 } from "@lararium/tw5";

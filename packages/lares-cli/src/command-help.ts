@@ -179,7 +179,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--lei <cid>   (unstring) the lei to revoke", "--face N   face index", "--all   (kui, push or kukulu) one lei for every open face, under one route"],
   },
   rite: {
-    usage: "usage: lares rite kukulu [--branch <name>] [--face N] [--rollback [<rev>]] | keep --workspace <name> [--into <path>] [--accept-omissions] [--sessions|--no-sessions] | keep --if-due [--workspace <name>] | keep-cut --workspace <name> [--into <path>] [--accept-omissions] | begin --rite <r> --branch <name> --head <commit> [--staging <path>] [--image <digest>] | offer --branch <name> --head <commit> --image <digest> [--keeper-to <key> --keeper-next <closure>] | land --tessera <id> --head <commit> [--image <digest>] | receipts [--rite kukulu [--branch <name>]]",
+    usage: "usage: lares rite kukulu [--branch <name>] [--face N] [--rollback [<rev>]] | keep --workspace <name> [--into <path>] [--accept-omissions] [--sessions|--no-sessions] | keep --if-due [--workspace <name>] | keep-cut --workspace <name> [--into <path>] [--accept-omissions] | begin --rite <r> --branch <name> --head <commit> [--staging <path>] [--image <digest>] | offer --branch <name> --head <commit> --image <digest> [--keeper-to <key> --keeper-next <closure>] | land --tessera <id> --head <commit> [--image <digest>] | land --abandon --tessera <id> [--face N] | receipts [--rite kukulu [--branch <name>]]",
     synopsis:
       "A rite spends a lei. kūkulu is the one verb that raises the house again around its hearth, and it picks up wherever the " +
       "house stands: it fast-forwards the checkout where it stands clean and behind its upstream (a dirty tree behind, a diverged " +
@@ -198,8 +198,9 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "checkout names the lag and lays nothing. A Ctrl+C at any prompt (accept-loss, the light, the admit) leaves the house where the " +
       "next run reads it: a begin standing unlanded at this head and over this image, every half landable, is resumed (no lei " +
       "spent, no new tessera, the resting offer reused where its vouches match), and any other (another head or image, a face " +
-      "shut or rehived since) refuses by name with the line that clears it: each half a lent face lands, landed by hand where the " +
-      "vessel stands (`lares rite land --tessera <id> --head <the head the vessel runs>`; conferre reads it red). " +
+      "shut or rehived since) refuses by name with the line that clears it: each half a lent face holds, set down by the hand " +
+      "(`lares rite land --abandon --tessera <id>`: a hand act an AI seat cannot run; it spends nothing, records no par over an image " +
+      "the vessel never ran, frees the face to begin fresh, and conferre reads the half abandoned). " +
       "keep lays the house's authored memory, cut as a cleartext house bundle a new house imports, into a workspace the operator " +
       "bound, and keeps it in the operator's repo: on the host it guards the workspace clone (only <into> changes; a committed `* -text` " +
       ".gitattributes; no secret-shaped string), runs keep-cut in the vessel (a return of the keep lei strung for that workspace; the " +
@@ -207,7 +208,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "id the pushed tree holds. A push that fails names the cure: mend the remote and run keep again. " +
       "keep also carries this device's Claude Code sessions under devices/<name>-<id8>/ in the same commit and push (with --no-sessions it mirrors nothing new and commits what already stands there); a secret-shaped device file stays out of the commit, in place, and the keep names it; " +
       "--no-sessions (or LARES_KEEP_SESSIONS=0) keeps the house alone. " +
-      "conferre matches the halves at each wake: a match reads par, a half with no match reads red.",
+      "conferre matches the halves at each wake: a match reads par, a half with no match reads red, and a half the hand set down reads abandoned.",
     examples: [
       "lares lei kui --rite kukulu --branch main --returns 3 --all   # the hand strings every open face's lei first, one route",
       "lares rite kukulu                                       # fast-forward, image, begin, restand, land: the whole raise",
@@ -217,6 +218,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares rite keep-cut --workspace house-backup            # the vessel half alone: cut, verify, spend a return, rest the bundle",
       "lares rite offer --branch main --head <commit> --image <digest>   # the standing vessel rests what the next one carries to a pūlama",
       "lares rite land --tessera <id> --head <commit>          # land a rite whose vessel came back locked",
+      "lares rite land --abandon --tessera <id>                # the hand sets a stale begun half down: nothing spent, no par",
       "lares rite receipts --json                              # data.receipts, data.conferre",
       "lares rite receipts --rite kukulu --branch main --json  # data.standing: each lent face's begun half resting unlanded",
     ],
@@ -226,6 +228,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--accept-omissions   (keep, keep-cut) name the bundle partial where the census reads unsettled; a face whose live stage will not read needs no flag (its files travel, its standing heads stay behind, named)",
       "--if-due             (keep) keep only where the house moved since the pushed bundle; reads LARES_KEEP_WORKSPACE with no --workspace",
       "--image <digest>   (offer, begin, land) the digest of the image the host built",
+      "--abandon   (land) set the begun half down instead of landing it: a hand act, naming --tessera and no head",
       "--keeper-to <key> --keeper-next <closure>   (offer) the keeper move the vouches name: the successor's one-handoff key (64 hex) and the committed closure (sha256:<64 hex>), together or neither",
       "--tessera <id>   (land) the tessera a begin answered", "--face N   face index (a kūkulu naming none acts as the worn face; a keep naming none acts as the keep's face and says so; the floor refuses by name)"],
   },

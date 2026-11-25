@@ -8,7 +8,8 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
 import { describe, expect, test } from "vitest";
-import { KAHUA_BAG, CROSSROADS_DOC_URI } from "@lararium/mesh";
+import { KAHUA_BAG } from "@lararium/mesh/wiki-recipe";
+import { CROSSROADS_DOC_URI } from "@lararium/mesh/lar-uris";
 import { librarySlotUrl } from "../src/kahua-layer.js";
 
 const catalogNaming = (url: string) => {

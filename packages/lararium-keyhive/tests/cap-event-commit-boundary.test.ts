@@ -7,7 +7,7 @@
  * rides its own dyad and the census, never a seat rollback).
  */
 import { describe, expect, test } from "vitest";
-import { buildDeviceDelegation } from "@lararium/mesh";
+import { buildDeviceDelegation } from "@lararium/mesh/device-delegation";
 import { KeyhiveProvider } from "../src/keyhive-provider.js";
 import { runFaceJoin, type FaceJoinContext } from "../src/face-join.js";
 import { absorbCapEvents, type CapEventSink } from "../src/daemon-event-store.js";

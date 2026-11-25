@@ -11,7 +11,7 @@ import { asIslandStore } from "./island-store-double.js";
 import { bridgeWikiToAdaptor } from "../src/outbound-bridge.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import type { LaresMemeFace } from "../src/types/lares-globals.js";
-import type { ChangeOrigin, LarTiddlerRecord, LarWriteOptions } from "@lararium/mesh";
+import type { ChangeOrigin, LarTiddlerRecord, LarWriteOptions } from "@lararium/mesh/tiddler-store";
 
 const SLOTS = {
   working:  "lar:///ha.ka.ba/wikis/test/working",

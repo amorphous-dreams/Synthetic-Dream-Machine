@@ -6,10 +6,19 @@ import { existsSync, mkdtempSync, readFileSync, rmSync, statSync } from "node:fs
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { kukuluVouchDigest, verifyKukuluVouch } from "@lararium/mesh/kukulu-vouch";
 import {
-  ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, kukuluVouchDigest, signSwarmAct, swarmActCid, swarmLeiRecordTitle, swarmLeiUnstrungTitle,
-  verifyKukuluVouch, type SignedSwarmAct, type SwarmLeiTerms, type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort,
-} from "@lararium/mesh";
+  signSwarmAct,
+  swarmActCid,
+  swarmLeiRecordTitle,
+  swarmLeiUnstrungTitle,
+  type SignedSwarmAct,
+  type SwarmLeiTerms,
+  type SwarmSignerPort,
+  type SwarmTrust,
+  type SwarmWikiPort,
+} from "@lararium/mesh/swarm-tiddlers";
 import type { CustodyHolder } from "../src/custody-holder.js";
 import { kukuluGate, vouchKeyOf } from "../src/kukulu-gate.js";
 import { kukuluRiteOver } from "../src/kukulu-lei-seat.js";

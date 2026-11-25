@@ -8,7 +8,7 @@
  * door's `island.restart`) free to force the swap, and an arrival with no such act in flight (a remote raise, a sync) restarts at once.
  * Narrow residual, named: a hung reply of this device's own raise holds only the deferred run for the raise standing at the request.
  */
-import { promoteEdgeKey } from "@lararium/mesh";
+import { promoteEdgeKey } from "@lararium/mesh/promote";
 
 /** The (wiki, digest) edge a promote act names; a verb that names no wiki means the daemon wiki, as the door reads it. */
 export function promoteActEdge(args: Readonly<Record<string, unknown>>): string | undefined {

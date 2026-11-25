@@ -7,12 +7,23 @@
 import { describe, expect, test } from "vitest";
 import * as Automerge from "@automerge/automerge";
 import { Repo, generateAutomergeUrl, interpretAsDocumentId, type AutomergeUrl, type DocHandle } from "@automerge/automerge-repo";
-import {
-  DAEMON_BAG_ID, KAHUA_BAG, KAHUA_PLANE, isFaceScopedBag, personaMembershipEntries, PERSONA_GROUP_ID_TIDDLER, SessionDocumentView, emptyLarDoc, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed,
-  FACE_PLANE, kahuaMemeDigest, readKahuaStagedMeme, stageKahuaMeme,
-  faceIntentVerbs, intentEntryRecordsOfGroup, materializeSharedLarDoc, kahuaBodyDigest, kahuaPlaneUrl, kahuaStageDocUrl, makeHandLineage, personaActRecordsOfGroup, personaBagIdFor,
-  personaSiblingBagIds, projectPersonaLog, signFoundingLog, signPersonaAct, signsAtEpoch, buildKahuaProposal, intentId, writeIntentEntry, storedLarRecord, tiddlerText, writePersonaAct, type LarDoc,
-} from "@lararium/mesh";
+import { DAEMON_BAG_ID, PERSONA_GROUP_ID_TIDDLER } from "@lararium/mesh/lar-uris";
+import { KAHUA_BAG } from "@lararium/mesh/wiki-recipe";
+import { KAHUA_PLANE, kahuaBodyDigest, kahuaPlaneUrl, kahuaStageDocUrl, buildKahuaProposal } from "@lararium/mesh/kahua-stage";
+import { isFaceScopedBag, personaBagIdFor, personaSiblingBagIds } from "@lararium/mesh/persona-scope";
+import { personaMembershipEntries } from "@lararium/mesh/persona-planes";
+import { SessionDocumentView } from "@lararium/mesh/session-document-view-door";
+import { emptyLarDoc, tiddlerText, type LarDoc } from "@lararium/mesh/base-doc";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { FACE_PLANE } from "@lararium/mesh/face-relation";
+import { kahuaMemeDigest, readKahuaStagedMeme, stageKahuaMeme } from "@lararium/mesh/kahua-staged";
+import { faceIntentVerbs } from "@lararium/mesh/intent-verbs";
+import { intentEntryRecordsOfGroup, intentId, writeIntentEntry } from "@lararium/mesh/intent-entry";
+import { materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { makeHandLineage, signsAtEpoch } from "@lararium/mesh/hand-lineage";
+import { personaActRecordsOfGroup, signFoundingLog, signPersonaAct, writePersonaAct } from "@lararium/mesh/persona-act-board";
+import { projectPersonaLog } from "@lararium/mesh/persona-act";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
 import { kahuaDoor, KahuaRefused, type KahuaDoorPorts } from "../src/kahua-door.js";
 import { bridgeBooks, faceFleetFacets, faceFleetViews } from "../src/face-fleet-view.js";
 import { taggedAdmission, testVesselTag } from "../../lararium-mesh/tests/vessel-tag-fixture.js";

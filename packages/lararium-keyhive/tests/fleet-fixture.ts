@@ -3,10 +3,12 @@
  * genesis frontier on the fleet board; raises register into the root's next frontier the way the edge command does.
  */
 import type { DocHandle } from "@automerge/automerge-repo";
-import {
-  ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, recoveryContactRegistrationCard, landFleetFrontier, landFleetGenesis,
-  nextFleetFrontier, personaLineageFromKel, provisionThresholdRecoveryAtFounding, type LarDoc,
-} from "@lararium/mesh";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { recoveryContactRegistrationCard } from "@lararium/mesh/recovery-registration";
+import { landFleetFrontier, landFleetGenesis, nextFleetFrontier } from "@lararium/mesh/fleet-frontier";
+import { personaLineageFromKel } from "@lararium/mesh/persona-act-board";
+import { provisionThresholdRecoveryAtFounding } from "@lararium/mesh/recovery-keel-core";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 
 export async function fleetFixture(rootSeed: Uint8Array) {
   const root = await ed25519VerifyingKeyFromSeed(rootSeed);

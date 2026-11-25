@@ -11,10 +11,16 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-two-stacks
  */
 
+import { HandleBook, type HandleBookSnapshot } from "@lararium/mesh/handle-book";
 import {
-  HandleBook, composeFollow, composeUnfollow, listFollows,
-  type HandleBookSnapshot, type CircleStore, type FollowResult, type FollowView, type HandleCard,
-} from "@lararium/mesh";
+  composeFollow,
+  composeUnfollow,
+  listFollows,
+  type CircleStore,
+  type FollowResult,
+  type FollowView,
+} from "@lararium/mesh/compose-follow";
+import { type HandleCard } from "@lararium/mesh/handle-card";
 import { openVesselIdb, idbGet, idbPut, idbKeys, CIRCLE_STORE, HANDLE_BOOK_STORE } from "./browser-vessel-identity.js";
 
 const HANDLE_BOOK_KEY = "snapshot";

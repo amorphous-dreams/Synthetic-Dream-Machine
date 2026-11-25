@@ -3,7 +3,8 @@
  * human route guards refuse by name, another face's rows stay outside the lei, and a lock zero-fills what the holder held.
  */
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { FLOOR_REST_KEY_INFO, hex } from "@lararium/mesh";
+import { FLOOR_REST_KEY_INFO } from "@lararium/mesh/domains";
+import { hex } from "@lararium/mesh/crypto";
 import { custodyRootFromBytes, openCustodyRootCarrier } from "../src/custody-root.js";
 import { faceAtomGroupFile } from "../src/face-atom-store.js";
 import { faceProofKeyFile } from "../src/face-key-custody.js";

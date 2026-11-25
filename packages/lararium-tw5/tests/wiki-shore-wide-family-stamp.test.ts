@@ -11,7 +11,9 @@
  */
 import { createRequire } from "node:module";
 import { describe, expect, test } from "vitest";
-import { AutomergeDocStore, type LarDoc, type LarTiddlerRecord } from "@lararium/mesh";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { wikiSkip, skipNote } from "./test-wiki.js";
 import { arrived, ManualBoundary, Repo, shoreRig, workingBag, type Rig } from "./wiki-shore-rig.js";
 

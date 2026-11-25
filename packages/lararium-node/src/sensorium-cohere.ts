@@ -29,10 +29,10 @@
 import { readManifest, resolveCapDir, capDir, planeVariance, SHEAF_PLANES } from "./sensorium.js";
 import type { SensoriumManifest } from "./sensorium.js";
 import { enumerateStoreDocs } from "./doctor.js";
-import { consistencyRadius, fuse, assertSheafPlanes } from "@lararium/mesh";
-import type {
-  ConsistencyRadius, ComparisonStalk, PlaneRestriction, SheafAssignment, FuseResult, FuseOptions,
-} from "@lararium/mesh";
+import { consistencyRadius, assertSheafPlanes } from "@lararium/mesh/sensorium-consistency";
+import { fuse } from "@lararium/mesh/sensorium-fusion";
+import type { ConsistencyRadius, ComparisonStalk, PlaneRestriction } from "@lararium/mesh/sensorium-consistency";
+import type { SheafAssignment, FuseResult, FuseOptions } from "@lararium/mesh/sensorium-fusion";
 
 /**
  * The pluggable per-plane SECTION reader: map a declared sheaf plane (its name, resolved store dir, and

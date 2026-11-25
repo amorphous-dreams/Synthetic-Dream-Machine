@@ -5,7 +5,7 @@
  * canon on its own line, by carrier; an unread drift says so, never a silent zero.
  */
 import { describe, expect, test } from "vitest";
-import type { GenesisRatchet, RatchetDifference } from "@lararium/mesh";
+import type { GenesisRatchet, RatchetDifference } from "@lararium/mesh/genesis-compare";
 import { floorStatusLines, readFloorStatus, type FloorDoors } from "../src/commands/floor.js";
 
 const same = (r: GenesisRatchet): RatchetDifference => ({ ratchet: r, record: "x", other: "x", reading: "same" });

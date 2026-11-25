@@ -33,11 +33,11 @@ import type { CarrierFile } from "@lararium/tw5";
 import { createHash } from "node:crypto";
 import { afterDispatch, draftBag, openDraft, shoreRig, turns, typeInto } from "../../lararium-tw5/tests/wiki-shore-rig.js";
 import { makeReceiptCapability } from "../../lararium-tw5/src/receipt.js";
-import { attachMessageChannelSync } from "@lararium/mesh";
+import { attachMessageChannelSync } from "@lararium/mesh/island-repo-door";
 import { DurableNodeFSStorageAdapter } from "../src/durable-storage-adapter.js";
-import { receiptInStore } from "@lararium/mesh";
+import { receiptInStore } from "@lararium/mesh/receipt-with-heads";
 import { answerReceipt } from "../src/worker-handle.js";
-import type { CapabilityRecord } from "@lararium/mesh";
+import type { CapabilityRecord } from "@lararium/mesh/capability-record";
 import { restingRepo, restEvery } from "./resting-repo.js";
 
 let root = "";
@@ -601,7 +601,7 @@ test("CONTROL — initial scan leaves a title held only by an ungranted bag off 
 });
 
 test("recovery mount reads the draft bag's fields despite a shadow, and keeps other bags isolated", async () => {
-  const { CompositeStore } = await import("@lararium/mesh");
+  const { CompositeStore } = await import("@lararium/mesh/composite-store");
   const { MemoryTiddlerStore } = await import("../../lararium-tw5/src/memory-store.js");
   const { TW5Engine } = await import("../../lararium-tw5/src/tw5-vm.js");
   const { mountDiskProjection, mountedDiskProjector } = await import("../src/island-behaviors.js");

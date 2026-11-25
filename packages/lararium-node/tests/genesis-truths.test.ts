@@ -9,7 +9,10 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import { join } from "node:path";
 import { afterEach, describe, expect, test } from "vitest";
 import { repoRoot } from "@lararium/mesh/node";
-import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI, floorMountBlobRows, foundingRecordDigests, signFloorOffering, type GenesisSeed } from "@lararium/mesh";
+import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "@lararium/mesh/lar-uris";
+import { floorMountBlobRows, signFloorOffering } from "@lararium/mesh/floor-offering";
+import { foundingRecordDigests } from "@lararium/mesh/genesis-compare";
+import { type GenesisSeed } from "@lararium/mesh/genesis-doc";
 import { foundingRecordLine, readFoundingRecordTruths } from "../src/genesis-truths.js";
 import { genesisSeedCid, readGenesisSeedBytes } from "../src/genesis-artifact.js";
 

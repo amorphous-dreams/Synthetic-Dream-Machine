@@ -26,7 +26,7 @@
  * completes in at most one pass per holder plus the pass that was already running (H + 1), and a holder waits
  * behind at most one pass of each other holder: no holder starves.
  */
-import { WardRefused } from "@lararium/mesh";
+import { WardRefused } from "@lararium/mesh/ward-slots";
 import type { WardCredential } from "./ward-credential.js";
 
 export interface AfterRollStages {

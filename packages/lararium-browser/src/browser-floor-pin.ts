@@ -15,9 +15,16 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane#/the-vessel-pin
  */
 import {
-  acceptFloorRelease, floorAnswerEntries, readFloorStatus, sha256HexBytesSync,
-  type FloorAcceptOutcome, type FloorPinHome, type FloorPinPorts, type FloorRemount, type FloorStatus,
-} from "@lararium/mesh";
+  acceptFloorRelease,
+  readFloorStatus,
+  type FloorAcceptOutcome,
+  type FloorPinHome,
+  type FloorPinPorts,
+  type FloorRemount,
+  type FloorStatus,
+} from "@lararium/mesh/floor-pin";
+import { floorAnswerEntries } from "@lararium/mesh/floor-answer";
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
 import { OPFS_CAS_DIR, readCasBlobFromOpfs } from "./browser-genesis.js";
 import { floorNexusOf, porchOriginOf } from "./browser-floor-read.js";
 

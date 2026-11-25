@@ -22,7 +22,7 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/node/nexus-client-dial
  */
-import type { PeerClass } from "@lararium/mesh";
+import type { PeerClass } from "@lararium/mesh/island-protocol";
 
 export type DialRelation =
   | { readonly kind: "same-face";  readonly personaGroup: string; readonly nexus: string | null }

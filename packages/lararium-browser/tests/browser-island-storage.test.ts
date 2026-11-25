@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { browserIslandStorage } from "../src/browser-sovereign-island-model.js";
-import type { IslandMsg_Manifest } from "@lararium/mesh";
+import type { IslandMsg_Manifest } from "@lararium/mesh/island-protocol";
 
 const manifest = (patch: Partial<IslandMsg_Manifest> = {}): IslandMsg_Manifest => ({
   type: "manifest",

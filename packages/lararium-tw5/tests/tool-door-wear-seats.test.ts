@@ -16,8 +16,10 @@ import { describe, expect, test } from "vitest";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { createRequire } from "node:module";
-import * as mesh from "@lararium/mesh";
-import { AutomergeDocStore, emptyLarDoc, type LarDoc, type Repo as RepoType } from "@lararium/mesh";
+import * as mesh from "@lararium/mesh/repo-wear";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { type Repo as RepoType } from "@lararium/mesh/automerge";
 import * as behavior from "../src/daemon-behavior.js";
 import { REPO } from "./test-wiki.js";
 
@@ -72,7 +74,7 @@ describe("the tool door's stores hold the actor door, and the face crosses into 
   });
 
   test("W2 RED: a store seated by its Repo writes a face's change under the seated door's actor; CONTROL: an unseated Repo refuses by name", async () => {
-    const { seatRepoWear, wearOf } = mesh as unknown as { seatRepoWear: typeof import("@lararium/mesh").seatRepoWear; wearOf: typeof import("@lararium/mesh").wearOf };
+    const { seatRepoWear, wearOf } = mesh as unknown as { seatRepoWear: typeof import("@lararium/mesh/repo-wear").seatRepoWear; wearOf: typeof import("@lararium/mesh/repo-wear").wearOf };
     expect(typeof wearOf, "the mesh seats an actor door on a Repo").toBe("function");
     const repo = new Repo({ network: [] });
     const handle = repo.create<LarDoc>(emptyLarDoc());

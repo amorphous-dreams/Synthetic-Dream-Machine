@@ -40,8 +40,16 @@ vi.mock("../src/seat-key-store.js", async (importOriginal) => {
     },
   };
 });
-import { hex, admitCarriageCommit, mintColdKey, seatFingerprint, cidV1Sha256, foldCarriageDetails, carriageEntriesFromBoard, carriageDocUrl, materializeSharedLarDoc,
-  holdsCarriage, foundingRoster, KAPAE_ANTIGEN_DOMAIN, antigenActCid, nexusActPartial, type CofoundOffer, type KapaeAntigenEntry } from "@lararium/mesh";
+import { hex, cidV1Sha256 } from "@lararium/mesh/crypto";
+import { admitCarriageCommit, foldCarriageDetails, holdsCarriage } from "@lararium/mesh/carriage-registry";
+import { mintColdKey } from "@lararium/mesh/cold-key-card";
+import { seatFingerprint, foundingRoster } from "@lararium/mesh/nexus-seal-seed";
+import { carriageEntriesFromBoard } from "@lararium/mesh/carriage-board";
+import { carriageDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { KAPAE_ANTIGEN_DOMAIN } from "@lararium/mesh/domains";
+import { antigenActCid, type KapaeAntigenEntry } from "@lararium/mesh/kapae-antigen";
+import { nexusActPartial } from "@lararium/mesh/nexus-partial";
+import { type CofoundOffer } from "@lararium/mesh/cofound";
 import { charterHomeFor } from "../src/carried-set.js";
 import { NexusContractError, runNexusContractOpen, runNexusContractPartial } from "../src/commands/nexus-contract.js";
 import { takeAdmitBundle } from "../src/admit-bundle.js";

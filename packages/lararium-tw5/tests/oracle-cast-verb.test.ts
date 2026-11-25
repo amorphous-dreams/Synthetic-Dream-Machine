@@ -5,7 +5,10 @@
  * The caller names the time; the verb reads no clock.
  */
 import { describe, test, expect } from "vitest";
-import { CompositeStore, bagUri, isVerbRefusal, type Verb } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { bagUri } from "@lararium/mesh/lar-uris";
+import { isVerbRefusal } from "@lararium/mesh/verb-refusal";
+import { type Verb } from "@lararium/mesh/verb-tiddler";
 import { ORACLE_THROW_STANDS, askingCastTitle, askingId, readingTitle } from "@lararium/mesh/oracle-cast";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { bookedAsker, makeOracleCastReactor } from "../src/oracle-cast-verb.js";

@@ -11,13 +11,13 @@
  */
 
 import type { DocHandle } from "@automerge/automerge-repo";
-import {
-  storedLarRecord, tiddlerText,
-  leaseEpochPrefix, leaseEpochSlotUri, rolledLeaseEpoch,
-  signedLeaseEpoch, signLeaseAdvance,
-  quorumLeaseEpochOnBoard, signQuorumLease, landQuorumLease, quorumLeaseSlotUri, actCid,
-  type LarDoc, type HandLineage,
-} from "@lararium/mesh";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
+import { tiddlerText, type LarDoc } from "@lararium/mesh/base-doc";
+import { leaseEpochPrefix, leaseEpochSlotUri, rolledLeaseEpoch } from "@lararium/mesh/epoch-lease";
+import { signedLeaseEpoch, signLeaseAdvance } from "@lararium/mesh/lease-advance";
+import { quorumLeaseEpochOnBoard, signQuorumLease, landQuorumLease, quorumLeaseSlotUri } from "@lararium/mesh/quorum-lease";
+import { actCid } from "@lararium/mesh/signed-act";
+import { type HandLineage } from "@lararium/mesh/hand-lineage";
 
 /** The outcome of one face rekey — the verified epoch read, the epoch written, and the signing writer's slot. */
 export interface LeaseRekeyResult {

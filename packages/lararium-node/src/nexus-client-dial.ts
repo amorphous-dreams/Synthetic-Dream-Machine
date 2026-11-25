@@ -33,10 +33,11 @@
 
 import type { Repo } from "@automerge/automerge-repo";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
-import { LarWSClientAdapter, DAEMON_BAG_ID } from "@lararium/mesh";
+import { LarWSClientAdapter } from "@lararium/mesh/lar-ws-client-adapter";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
 import { nodeDialSocket } from "./node-dial-socket.js";
-import type { LarWSClientOptions } from "@lararium/mesh";
-import { shoreInbound } from "@lararium/mesh";
+import type { LarWSClientOptions } from "@lararium/mesh/lar-ws-client-adapter";
+import { shoreInbound } from "@lararium/mesh/prototype-key-shore-door";
 
 /** What a dial presents: the face's certificate, the session's signer, at most one arm and the withdrawal history. */
 export type DialFacePresentation = LarWSClientOptions["presentation"];

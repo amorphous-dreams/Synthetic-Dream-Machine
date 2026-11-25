@@ -21,7 +21,7 @@ import { udsAlive } from "../local-connector.js";
 import { existsSync, statSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { palaceOrgans, organHealthy, guestMempalaceOrgan, readMemeticWikitextCoupling, runDoctor, formatDoctorReport, readFloorShadowFile, quarantineHolds, readEngineFalls, heldInFlight, QUARANTINE_RELEASE_ACT, ENGINE_DOWN_HAND_ACT, ENGINE_RESTART_CAP, HELD_HAND_ACT, type EngineMeterReading } from "@lararium/node";
-import { floorShadowLine } from "@lararium/mesh";
+import { floorShadowLine } from "@lararium/mesh/floor-shadow";
 import { read as readIntent, Ledger } from "../reality-tunnel/engine.js";
 import { homeItems } from "../reality-tunnel/catalog.js";
 import { resolveHomes } from "../reality-tunnel/homes.js";

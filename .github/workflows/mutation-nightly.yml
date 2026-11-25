@@ -1,0 +1,70 @@
+name: Mutation nightly
+
+# GATE B'S READING. StrykerJS scores the lares-cli law suite against the sources it guards
+# (packages/lares-cli/stryker.config.json), and `tools/mutation-floor.mjs check` holds the report to the floor
+# `tools/mutation-baseline.json` keeps. With no floor standing the check reports; a floor stands once three
+# readings from three distinct runs agree (decision 3 of lar:///ha.ka.ba/lararium/docs/test-architecture),
+# folded by a commit: `gh run download <run> -n mutation-lares-cli-<run>` then
+# `node tools/mutation-floor.mjs fold lares-cli <run>=<report.json>`. The run id labels each reading, so one run
+# never counts twice, and the report carries that id inside it. The schedule paces the readings and never
+# decides a floor; a Timeout (a clock running out) never counts as a kill, and a stalled run reads red.
+#
+# Develop carries the integration tree, so a scheduled run checks out develop whatever the default branch holds.
+# Local reporters only: the report rides an artifact, never a dashboard.
+on:
+  schedule:
+    - cron: "41 9 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: mutation-nightly
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  lares-cli:
+    name: Mutation · lares-cli
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event_name == 'schedule' && 'develop' || github.ref }}
+          submodules: recursive
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - name: Read the Node floor (package.json engines.node)
+        id: node
+        # The floor major of package.json `engines.node`; setup-node would take the newest release of a `>=` range.
+        run: echo "major=$(node -p "/\\d+/.exec(require('./package.json').engines.node)[0]")" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ steps.node.outputs.major }}
+          cache: pnpm
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - run: pnpm install --frozen-lockfile
+      - name: Render the TW5 core blob
+        run: pnpm --filter @lararium/tw5 build:tw5-vendor
+      - name: Build all packages
+        run: pnpm build
+      - name: Run StrykerJS over the law suite
+        working-directory: packages/lares-cli
+        run: npx stryker run < /dev/null
+      # The report carries the run that made it, so a fold refuses a report under any other label.
+      - name: Stamp the run into the report
+        run: |
+          node -e 'const fs = require("node:fs"); const [f, run] = process.argv.slice(1); const r = JSON.parse(fs.readFileSync(f, "utf8")); r.actionsRun = run; fs.writeFileSync(f, JSON.stringify(r));' packages/lares-cli/reports/mutation/mutation.json "${{ github.run_id }}"
+          echo "fold label: ${{ github.run_id }} (head $(git rev-parse HEAD))"
+      - name: Hold the report to the floor
+        run: node tools/mutation-floor.mjs check lares-cli packages/lares-cli/reports/mutation/mutation.json
+      - name: Upload the report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: mutation-lares-cli-${{ github.run_id }}
+          path: packages/lares-cli/reports/mutation/mutation.json
+          if-no-files-found: error
+          retention-days: 30

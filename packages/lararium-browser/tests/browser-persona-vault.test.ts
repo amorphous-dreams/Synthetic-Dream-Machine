@@ -18,7 +18,7 @@ import { bindSyntheticBrowserCustodySlot, FIXTURE_WARD } from "./browser-custody
 import { describe, test, expect, afterEach } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import { runFoundingCeremony } from "@lararium/keyhive";
-import { faceAtomKeyFromSeed } from "@lararium/mesh";
+import { faceAtomKeyFromSeed } from "@lararium/mesh/face-atom";
 import {
   generateOrLoadBrowserVesselIdentity,
   generateOrLoadBrowserPersonaRoot, loadBrowserPersonaRootSeed,
@@ -26,8 +26,10 @@ import {
   browserPersonaRootExists, browserJoineePersonaIndex,
   makeBrowserIdbPersonaVault,
 } from "../src/browser-vessel-identity.js";
-import type { IdentityAnchors, DeviceDelegationTiddler, LarDid } from "@lararium/mesh";
-import { readWornPersonaMount } from "@lararium/mesh";
+import type { IdentityAnchors } from "@lararium/mesh/anchor-store";
+import type { DeviceDelegationTiddler } from "@lararium/mesh/device-delegation";
+import type { LarDid } from "@lararium/mesh/lar-did";
+import { readWornPersonaMount } from "@lararium/mesh/persona-vault";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 import { memorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";
 

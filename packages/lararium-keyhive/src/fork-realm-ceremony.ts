@@ -12,7 +12,7 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/cabal-realm
  */
 
-import type { CabalRealm } from "@lararium/mesh";
+import type { CabalRealm } from "@lararium/mesh/cabal-realm";
 import { forkSurvivors, forkGenesisUri, type RealmFork } from "./fork-realm.js";
 import { foundCabalRealm, openDwelling } from "./cabal-realm-ceremony.js";
 import type { KeyhiveProvider } from "./keyhive-provider.js";

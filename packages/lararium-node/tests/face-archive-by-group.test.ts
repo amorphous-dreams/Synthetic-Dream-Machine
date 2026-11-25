@@ -6,7 +6,7 @@ import { cpSync, mkdtempSync, readFileSync, rmSync, unlinkSync, writeFileSync } 
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, describe, expect, test } from "vitest";
-import { personaScopedBagIds } from "@lararium/mesh";
+import { personaScopedBagIds } from "@lararium/mesh/persona-scope";
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
 import { runFoundTheFace } from "../src/commands/init.js";
 import { seatedCustody, unseatCustody } from "../src/custody-seat.js";

@@ -12,12 +12,18 @@
 import { describe, expect, it } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import * as ed from "@noble/ed25519";
-import {
-  buildDeviceDelegationRootHalf, hex, deriveSelfRecoveryKey, sealGroupSecret, groupSecretSealTitle, groupSecretOpenerFromSeed,
-  personaGroupSecret, provisionThresholdRecoveryAtFounding, recoveryContactRegistrationCard, tiddlerText,
-  mintFaceAnchor, personaActRecordsOfGroup, proveFaceFromLog, signFoundingLog, faceRootCommitment, edgeBodyDigest, writePersonaAct,
-  ed25519SignerFromSeed, type PersonaKelEvent, type LarDoc,
-} from "@lararium/mesh";
+import { buildDeviceDelegationRootHalf } from "@lararium/mesh/device-delegation";
+import { hex } from "@lararium/mesh/crypto";
+import { deriveSelfRecoveryKey } from "@lararium/mesh/persona-identity";
+import { sealGroupSecret, groupSecretSealTitle, groupSecretOpenerFromSeed, personaGroupSecret } from "@lararium/mesh/persona-group-secret";
+import { provisionThresholdRecoveryAtFounding } from "@lararium/mesh/recovery-keel-core";
+import { recoveryContactRegistrationCard } from "@lararium/mesh/recovery-registration";
+import { tiddlerText, type LarDoc } from "@lararium/mesh/base-doc";
+import { mintFaceAnchor, faceRootCommitment, edgeBodyDigest } from "@lararium/mesh/face-anchor";
+import { personaActRecordsOfGroup, signFoundingLog, writePersonaAct } from "@lararium/mesh/persona-act-board";
+import { proveFaceFromLog } from "@lararium/mesh/face-boot-proof";
+import { ed25519SignerFromSeed } from "@lararium/mesh/ed25519-door";
+import { type PersonaKelEvent } from "@lararium/mesh/persona-kel";
 import { runFoundingCeremony } from "@lararium/keyhive";
 import { testVesselTag, testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 import { memorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";

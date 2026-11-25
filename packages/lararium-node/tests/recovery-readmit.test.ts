@@ -8,7 +8,10 @@
 import { describe, test, expect } from "vitest";
 import { generateKeyPairSync } from "node:crypto";
 import * as ed25519 from "@noble/ed25519";
-import { countersignDeviceDelegation, faceAtomKeyFromSeed, mintFaceAtomSeed, type DeviceDelegationRootHalf, splitToShares, assembleQuorum, reconstructFromQuorum, verifyDeviceDelegation, personaPrefixOf } from "@lararium/mesh";
+import { countersignDeviceDelegation, type DeviceDelegationRootHalf, verifyDeviceDelegation } from "@lararium/mesh/device-delegation";
+import { faceAtomKeyFromSeed, mintFaceAtomSeed } from "@lararium/mesh/face-atom";
+import { splitToShares, assembleQuorum, reconstructFromQuorum } from "@lararium/mesh/recovery-share";
+import { personaPrefixOf } from "@lararium/mesh/persona-kel";
 import { runReadmitEdge } from "@lararium/keyhive";
 
 /** The lost citizen's PersonaGroup root (the "become you" atom). */

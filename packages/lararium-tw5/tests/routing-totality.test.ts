@@ -31,7 +31,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 
 import { bootTestWiki, wikiSkip, skipNote, REPO } from "./test-wiki.js";
-import { CompositeStore } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
 import { IslandAdaptor } from "../src/island-adaptor.js";
 import { asIslandStore } from "./island-store-double.js";
 import { BAG_PATHS_CONFIG, routeBag, type RouteVerdict } from "../src/bag-cascade.js";

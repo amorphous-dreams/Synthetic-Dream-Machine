@@ -8,7 +8,11 @@
  * acceptance (it returns the floor and touches nothing else).
  */
 import { describe, expect, test } from "vitest";
-import { sha256HexBytesSync, cutFloorSnapshot, floorManifestBytes, assembleFloorRelease, openFloorReleaseBody, floorAnswerOf, floorReleaseBodyBytes, type FloorRelease, type SealEpoch } from "@lararium/mesh";
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
+import { cutFloorSnapshot, floorManifestBytes } from "@lararium/mesh/floor-manifest";
+import { assembleFloorRelease, openFloorReleaseBody, floorReleaseBodyBytes, type FloorRelease } from "@lararium/mesh/floor-release";
+import { floorAnswerOf } from "@lararium/mesh/floor-answer";
+import { type SealEpoch } from "@lararium/mesh/wax-stamp";
 import { floorNexusOf, porchOriginOf, readHearthFloor } from "../src/browser-floor-read.js";
 import { oneSeatCharter, uncommittedStep, type OneSeat } from "./browser-charter.js";
 

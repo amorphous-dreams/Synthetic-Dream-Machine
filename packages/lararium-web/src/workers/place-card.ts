@@ -10,7 +10,10 @@
  *
  * Canon: lar:///ha.ka.ba/lares/docs/stable-founding-road (W29) · lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift#/the-ceremony
  */
-import { ATTEMPT_BUDGET, attemptWarning, coldKeyCardLines, coldKeySeedFromCode, type Credential, type PlaceFoundingCard } from "@lararium/mesh";
+import { ATTEMPT_BUDGET, attemptWarning } from "@lararium/mesh/attempt-budget";
+import { coldKeyCardLines, coldKeySeedFromCode } from "@lararium/mesh/cold-key-card";
+import { type Credential } from "@lararium/mesh/keyslot-door";
+import { type PlaceFoundingCard } from "@lararium/mesh/place-founding-card";
 import type { CeremonyAskSpec } from "./ceremony-door.js";
 
 /** A card that never read back, or one the person declined: nothing was written. */

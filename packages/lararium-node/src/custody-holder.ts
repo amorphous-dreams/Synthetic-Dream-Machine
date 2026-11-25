@@ -40,12 +40,29 @@
  */
 import { createHash, randomBytes } from "node:crypto";
 import {
-  openSealedCarrier, writeSealedCarrier, updateSealedCarrier, removeSealedCarrier, CustodyRefusal, treeKeyEquals,
-  openFaceCarrier, writeFaceCarrier, updateFaceCarrier, removeFaceCarrier, commitFaceTree, bindSlot, mintFck,
-  bindWardSlot, commitWardTree, decodeSlotTree, mintWardKey, openWardCarrier, openWardKey,
-  updateWardCarrier, WardRefused, ATTEMPT_BUDGET, attemptWarning, wardSigningSeed, wardPublicKeyOf, isWardKey, ed25519SignerFromSeed,
-  type Credential, type CustodyIo, type FaceCarrier, type FaceCustodyKey, type ServingKey, type SlotSpec, type SlotTree, type TreeKey, type WardKey,
-} from "@lararium/mesh";
+  openSealedCarrier,
+  writeSealedCarrier,
+  updateSealedCarrier,
+  removeSealedCarrier,
+  CustodyRefusal,
+  openFaceCarrier,
+  writeFaceCarrier,
+  updateFaceCarrier,
+  removeFaceCarrier,
+  commitFaceTree,
+  commitWardTree,
+  openWardCarrier,
+  updateWardCarrier,
+  type CustodyIo,
+} from "@lararium/mesh/sealed-writer";
+import { treeKeyEquals, type TreeKey } from "@lararium/mesh/tree-key-door";
+import { bindSlot, decodeSlotTree, type Credential, type SlotSpec, type SlotTree } from "@lararium/mesh/keyslot-door";
+import { mintFck, type FaceCarrier, type FaceCustodyKey } from "@lararium/mesh/fck";
+import { bindWardSlot, mintWardKey, openWardKey, WardRefused, type WardKey } from "@lararium/mesh/ward-slots";
+import { ATTEMPT_BUDGET, attemptWarning } from "@lararium/mesh/attempt-budget";
+import { wardSigningSeed, wardPublicKeyOf, isWardKey } from "@lararium/mesh/ward-answer";
+import { ed25519SignerFromSeed } from "@lararium/mesh/ed25519-door";
+import { type ServingKey } from "@lararium/mesh/serving-key";
 import { nativeKdf } from "@lararium/mesh/node";
 import { faceCarrierFor, openFaceTree } from "./face-custody.js";
 import { appendFaceEntry, bindFaceAsk, FaceIndexRefused, bindFaceGroup, faceTreePath, findFace, readFaceIndex, retireFaceAsk, wardTreePath } from "./face-index.js";

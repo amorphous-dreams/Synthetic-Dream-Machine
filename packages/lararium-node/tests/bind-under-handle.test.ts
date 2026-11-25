@@ -19,12 +19,16 @@ import type { AutomergeUrl } from "@automerge/automerge-repo";
 import {
   KeyhiveProvider, DaemonEventStore, bootDaemonKeyhive, runFoundingCeremony,
   runDeviceAdmitEdge, runApplyAdmitPayload, packPersonaCrossing, replayCapEvents, readLeaseFrontier } from "@lararium/keyhive";
-import { seedDaemonDoc } from "@lararium/mesh";
-import {
-  CompositeStore, AutomergeDocStore, DAEMON_BAG_ID, controlStoreOf, standControlHome, hex, type LarDoc,
-  materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix,
-  mintFaceAnchor,
-} from "@lararium/mesh";
+import { seedDaemonDoc } from "@lararium/mesh/social-seed";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { controlStoreOf, standControlHome } from "@lararium/mesh/control-home";
+import { hex } from "@lararium/mesh/crypto";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { materializeSharedLarDoc, personaKelBoardDocUrl } from "@lararium/mesh/deterministic-doc";
+import { personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";
+import { mintFaceAnchor } from "@lararium/mesh/face-anchor";
 import * as ed25519 from "@noble/ed25519";
 
 import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";

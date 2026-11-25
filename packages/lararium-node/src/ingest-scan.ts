@@ -18,12 +18,16 @@
 
 import { readFileSync, readdirSync, statSync, existsSync, lstatSync } from "node:fs";
 import { dirname, join, resolve, sep, extname, relative } from "node:path";
-import {
-  newChangeId, newRequestId, carrierHash, digestsEqual, BAG_MANIFEST_FILE, VERB_RESULT_KEY,
-  ridesAsPointer, mediaTypeFromExt, isOversizedBody, wikiSlotUri, type WaveLimits, type WaveWeight,
-  takeCrest, scaleLimits, adaptDepth, addWeight, fitsWave, yieldToHost,
-  INGEST_WAVE_LIMITS, INGEST_WAVE_OVER_BUDGET, RECORD_OBJECTS, ingestCarrierWeight,
-} from "@lararium/mesh";
+import { newChangeId } from "@lararium/mesh/residency-actions";
+import { newRequestId, VERB_RESULT_KEY } from "@lararium/mesh/verb-tiddler";
+import { carrierHash } from "@lararium/mesh/crypto";
+import { digestsEqual } from "@lararium/mesh/agile-digest";
+import { BAG_MANIFEST_FILE } from "@lararium/mesh/bag-manifest";
+import { ridesAsPointer, mediaTypeFromExt, isOversizedBody } from "@lararium/mesh/content-handle";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import { type WaveLimits, type WaveWeight, takeCrest, scaleLimits, adaptDepth, addWeight, fitsWave } from "@lararium/mesh/wave-crest";
+import { yieldToHost } from "@lararium/mesh/host-task";
+import { INGEST_WAVE_LIMITS, INGEST_WAVE_OVER_BUDGET, RECORD_OBJECTS, ingestCarrierWeight } from "@lararium/mesh/ingest-wave-budget";
 import { canonicalizeCarrierText } from "@lararium/tw5/carrier-canonical";
 import { SyncedTree, syncedTreeKey, syncedTreeDir } from "./synced-tree.js";
 import { bagsFileToUri, houseIgnored, siteFileToTitle, facePlaneOf, facePlaneSiteDir, FACES_PROJECTION_DIR, FACE_PLANES, REALMS_PROJECTION_DIR, REALM_PLANES, TEMP_LAYER_DIR, type FacePlane, type FileSiting } from "./bag-paths.js";

@@ -8,7 +8,8 @@
  */
 import { describe, expect, test } from "vitest";
 import * as ed from "@noble/ed25519";
-import { hex, sealKeySetHash } from "@lararium/mesh";
+import { hex } from "@lararium/mesh/crypto";
+import { sealKeySetHash } from "@lararium/mesh/wax-stamp";
 import { mintPromotionReceipt, promotionAssertionBytes, verifyPromotionReceipt } from "../src/promotion-receipt.js";
 import { mintReserveTransition, verifyReserveTransition } from "@lararium/node";
 import { IDENTITY_KEY, NOBODYS_SIGNATURE, torsionHand } from "../../lararium-mesh/tests/ed25519-torsion.js";

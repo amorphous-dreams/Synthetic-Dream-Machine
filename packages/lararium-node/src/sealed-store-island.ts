@@ -18,7 +18,7 @@
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store
  */
 import { dirname, join } from "node:path";
-import { sha256HexBytesSync } from "@lararium/mesh";
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
 import type { SealedStoreShore } from "@lararium/keyhive/operator-daemon-behavior";
 import { casDirForStorage, readVerifiedCasBlobFromFs, writeCasEntriesFs } from "./node-cas.js";
 import { cadSealDir } from "./seal-carrier-federation.js";

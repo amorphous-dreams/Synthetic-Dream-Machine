@@ -1,7 +1,10 @@
 import { describe, expect, test } from "vitest";
 import { memoryControlStore } from "./control-store-fixture.js";
-import { CompositeStore, NoWorkingLayerRefusal, wikiBagUri, wikiSlotUri } from "@lararium/mesh";
-import type { DocHandle, LarDoc, LarTiddlerRecord, Repo } from "@lararium/mesh";
+import { CompositeStore, NoWorkingLayerRefusal } from "@lararium/mesh/composite-store";
+import { wikiBagUri, wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import type { DocHandle, Repo } from "@lararium/mesh/automerge";
+import type { LarDoc } from "@lararium/mesh/base-doc";
+import type { LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { fileWardRefusal, makeWhereReactor } from "../src/worker-data-verbs.js";
 

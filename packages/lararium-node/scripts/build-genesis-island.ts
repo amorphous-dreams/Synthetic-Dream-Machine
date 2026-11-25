@@ -36,21 +36,20 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync }              from 
 import { join, basename, resolve }                                          from "path";
 
 import { repoRoot } from "@lararium/mesh/node";
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
+import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI, LARES_LARARIUM_PLUGIN_URI } from "@lararium/mesh/lar-uris";
 import {
-  sha256HexBytesSync,
-  LARES_MEMETIC_WIKITEXT_PLUGIN_URI,
-  LARES_LARARIUM_PLUGIN_URI,
   isStockTw5PluginTitle,
   buildGenesisDoc,
   computeEngineCid,
-  genesisFloorOffering,
   verifyGenesisArtifact,
   verifyPluginAttestation,
   type GenesisInputs,
   type GenesisPluginEntry,
   type GenesisBlobKind,
   type PluginBuildAttestation,
-} from "@lararium/mesh";
+} from "@lararium/mesh/genesis-doc";
+import { genesisFloorOffering } from "@lararium/mesh/floor-offering";
 
 import { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME, TW5_CORE_DIR } from "@lararium/tw5";
 import { tw5PluginsRoot } from "@lararium/tw5/tw5-memes-root";

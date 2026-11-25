@@ -34,10 +34,11 @@ import {
   bagHomeRoots, surveyBags, readBagManifest, writeBagManifest, moveBagHome,
   readRepoRegistry, registerRepo, unregisterRepo, repoRegistryPath, realmFoldersOnDisk,
 } from "@lararium/node";
-import {
-  parseCapTier, isBagHome, bagUri, placeBag, BAG_HOMES, bagHomeTravelsWithAClone, refuseTw5DocsReserved,
-  type BagHome, type BagManifest,
-} from "@lararium/mesh";
+import { parseCapTier } from "@lararium/mesh/cap-tier";
+import { isBagHome, BAG_HOMES, bagHomeTravelsWithAClone, type BagHome } from "@lararium/mesh/bag-home";
+import { bagUri } from "@lararium/mesh/lar-uris";
+import { placeBag, type BagManifest } from "@lararium/mesh/bag-manifest";
+import { refuseTw5DocsReserved } from "@lararium/mesh/tw5-docs-name";
 import { join } from "node:path";
 import { larBagsDir, larProjectionsDirOrNone, vesselDid } from "../env.js";
 import { runVerb, verbFailure } from "../verb-call.js";

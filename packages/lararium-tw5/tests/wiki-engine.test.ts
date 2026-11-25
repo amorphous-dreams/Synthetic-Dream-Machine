@@ -18,7 +18,11 @@
  */
 import { afterEach, describe, expect, test } from "vitest";
 import { createRequire } from "node:module";
-import { AutomergeDocStore, emptyLarDoc, wikiBagUri, wikiSlotUri, type DocHandle, type LarDoc, type LarTiddlerRecord, type Repo as RepoType, type WikiSlotKind } from "@lararium/mesh";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { wikiBagUri, wikiSlotUri, type WikiSlotKind } from "@lararium/mesh/wiki-recipe";
+import { type DocHandle, type Repo as RepoType } from "@lararium/mesh/automerge";
+import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { composeWikiEngineSource, wikiEngines, type WikiEngineDeps } from "../src/wiki-engine.js";
 import { makeTiddlerDeleteReactor, makeTiddlerGetReactor, makeTiddlerPutReactor, makeWikiActionReactor, makeWikiFilterReactor, makeWikiRenderOutReactor, makeWikiStatusReactor } from "../src/tiddler-verbs.js";
 import { makeMemeDeleteReactor, makeMemePatchReactor, makeMemePutReactor } from "../src/meme-verbs.js";

@@ -6,7 +6,8 @@
  * (`execLeiPortOver`). A refusal throws as the lei grammar names it (`<code>: <detail>`), and the island reads its code back, so
  * the door offers by the lei's own reading.
  */
-import { SwarmRefused, execLeiPortOver, type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort } from "@lararium/mesh";
+import { SwarmRefused, type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort } from "@lararium/mesh/swarm-tiddlers";
+import { execLeiPortOver } from "@lararium/mesh/exec-lei";
 
 export interface ExecLeiSpendDeps {
   readonly wiki: SwarmWikiPort;

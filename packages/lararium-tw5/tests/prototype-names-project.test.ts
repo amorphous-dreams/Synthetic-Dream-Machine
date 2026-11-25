@@ -8,7 +8,9 @@
  */
 import { describe, expect, test } from "vitest";
 import { createRequire } from "node:module";
-import { AutomergeDocStore, emptyLarDoc, type LarDoc, type Repo as RepoType } from "@lararium/mesh";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { type Repo as RepoType } from "@lararium/mesh/automerge";
 import { exportCarrierFile } from "../src/meme-write.js";
 import { makeTw5Deserializer } from "../src/action-handler.js";
 import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";

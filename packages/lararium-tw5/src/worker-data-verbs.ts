@@ -14,8 +14,24 @@
  * Runtime-only reads (residency `stats`) stay at the resource (main) — no askMain.
  */
 
-import { tiddlerText, mkDaemonResidencyOp, mkDaemonWikiAlert, bagStackFromRec, recipeUri, SYSTEM_BAGS, wikiBagUri, wikiSlotUri, WARD_AUDIT_URI_PREFIX, type CompositeStore, type DaemonMsg_ResidencyOp, type DaemonMsg_WikiAlert, type LarDoc, type LarTiddlerRecord, type Repo, type WikiSlotKind, ownEntry } from "@lararium/mesh";
-import { plainEntries, plainField, storedDeleted, houseCanonBagsSeated, houseCanonUrl, resolveHouseCanon } from "@lararium/mesh";
+import { tiddlerText, type LarDoc } from "@lararium/mesh/base-doc";
+import {
+  mkDaemonResidencyOp,
+  mkDaemonWikiAlert,
+  type DaemonMsg_ResidencyOp,
+  type DaemonMsg_WikiAlert,
+} from "@lararium/mesh/island-protocol";
+import { bagStackFromRec } from "@lararium/mesh/bag-stack-from-rec";
+import { recipeUri } from "@lararium/mesh/lar-uris";
+import { SYSTEM_BAGS, wikiBagUri, wikiSlotUri, type WikiSlotKind } from "@lararium/mesh/wiki-recipe";
+import { WARD_AUDIT_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
+import { type CompositeStore } from "@lararium/mesh/composite-store";
+import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
+import { type Repo } from "@lararium/mesh/automerge";
+import { ownEntry } from "@lararium/mesh/stored-value";
+import { plainEntries, plainField, storedDeleted } from "@lararium/mesh/stored-value";
+import { houseCanonBagsSeated } from "@lararium/mesh/kahu-canon-reach";
+import { houseCanonUrl, resolveHouseCanon } from "@lararium/mesh/house-canon-doc";
 import { ACTIVE_WIKI_URI } from "./active-wiki.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
 import { findOrThrow, makeCatalogAccessor, type CatalogAccessor } from "./catalog-accessor.js";

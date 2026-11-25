@@ -1,0 +1,24 @@
+{
+  "$comment": "The mutation pilot (gate B): StrykerJS over the sources the CLI laws guard, scored against the law suite's own vitest config. In place, since that config reaches sibling packages by relative path; the type-check preprocessor stays off, so only a mutated file gets rewritten and restored. Local reporters only. tools/mutation-floor.mjs reads the JSON report against tools/mutation-baseline.json.",
+  "testRunner": "vitest",
+  "plugins": ["@stryker-mutator/vitest-runner"],
+  "vitest": { "configFile": "vitest.mutation.config.ts", "related": true },
+  "inPlace": true,
+  "disableTypeChecks": false,
+  "mutate": [
+    "src/reality-tunnel/kinds.ts",
+    "src/reality-tunnel/engine.ts",
+    "src/ingest-core.ts",
+    "src/commands/act.ts",
+    "src/handle-carriage.ts",
+    "src/store-door.ts",
+    "src/roster-standing.ts"
+  ],
+  "reporters": ["clear-text", "json"],
+  "jsonReporter": { "fileName": "reports/mutation/mutation.json" },
+  "clearTextReporter": { "reportMutants": false, "reportTests": false },
+  "incremental": false,
+  "concurrency": 4,
+  "timeoutMS": 30000,
+  "thresholds": { "high": 80, "low": 60, "break": null }
+}

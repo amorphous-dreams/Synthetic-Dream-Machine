@@ -67,10 +67,17 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/tiddler-verbs
  */
 
-import {
-  NoWorkingLayerRefusal, VerbRefusal, verifyCidBytes, canonicalJsonBytes, refuseEffectLedgerWrite, refuseRenderedWrite, admitSeatExecutable, executableClassOf, renderedWriteFault, requireKahuReach, RENDERED_DERIVES_REASON, sha256HexBytesSync, wikiSlotKindOf, DAEMON_WIKI_SLUG,
-  type ChangeOrigin, type CompositeStore, type KahuReachSource, type LarTiddlerStore,
-} from "@lararium/mesh";
+import { NoWorkingLayerRefusal, type CompositeStore } from "@lararium/mesh/composite-store";
+import { VerbRefusal } from "@lararium/mesh/verb-refusal";
+import { verifyCidBytes } from "@lararium/mesh/cas-transit";
+import { canonicalJsonBytes, sha256HexBytesSync } from "@lararium/mesh/crypto";
+import { refuseEffectLedgerWrite } from "@lararium/mesh/effect-record";
+import { refuseRenderedWrite, renderedWriteFault, RENDERED_DERIVES_REASON } from "@lararium/mesh/rendered-derives";
+import { admitSeatExecutable } from "@lararium/mesh/seat-startup-offer";
+import { executableClassOf } from "@lararium/mesh/executable-class";
+import { requireKahuReach, type KahuReachSource } from "@lararium/mesh/kahu-canon-reach";
+import { wikiSlotKindOf, DAEMON_WIKI_SLUG } from "@lararium/mesh/wiki-recipe";
+import { type ChangeOrigin, type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { askerRefusal, handRefusalOf } from "@lararium/mesh/hand-refusal";
 import { consequence, familyOf, retractsOf, rootAddressOf, tombstonesOf, type Consequence, type DeleteMode, type FamilyPosition, type FamilyView } from "@lararium/mesh/family";
@@ -1219,6 +1226,16 @@ function refuseSystemTitleRename(named: string, title: string, to: string, recip
   throw new VerbRefusal("rename-system-title", `rename-system-title: "${named}" names a system title, and a rename leaves a forwarder at the title it moves from and relinks every tag and list onto the new one: the engine would read the forwarder as the setting, or hang every tagged record on a system tag. Land the record under its new title with \`lares tiddler put "${to}" --recipe ${recipe}\`, then clear the standing one with \`lares tiddler delete "${title}" --recipe ${recipe}\`. Nothing moved.`);
 }
 
+/** The titles Relink's report marks impossible for a rename, or none when the offering stands absent from the wiki. */
+function relinkImpossibles(wiki: EngineWiki, tw: unknown, from: string, to: string): string[] {
+  const UTILS = "$:/plugins/flibbles/relink/js/utils.js";
+  const twish = tw as { modules?: { titles?: Record<string, unknown>; execute(title: string): unknown } } | undefined;
+  if (!twish?.modules?.titles?.[UTILS]) return [];
+  const utils = twish.modules.execute(UTILS) as { getIndexer(wiki: unknown): { relinkLookup(from: string, to: string, options: Record<string, unknown>): Record<string, Record<string, { impossible?: boolean }>> } };
+  const records = utils.getIndexer(wiki).relinkLookup(from, to, {});
+  return Object.keys(records).filter((name) => Object.values(records[name]!).some((entry) => entry.impossible === true));
+}
+
 /**
  * THE RENAME DOOR over TiddlyWiki's own relink. The record moves to `to` with its fields; every reference the engine's
  * relinkers rewrite (the core's tags and list fields, and whatever relinker a plugin mounts) follows; the title it leaves stays as
@@ -1240,7 +1257,9 @@ function refuseSystemTitleRename(named: string, title: string, to: string, recip
  * THE RELINK RUNS AS A DRY RUN FIRST. The engine's relinkers run with the wiki's writes captured, never applied: a referrer
  * that stays home keeps its fields and counts `skipped`; each other record they would rewrite must rest in the working
  * layer, else the rename refuses `rename-referrers-unreachable` with a COUNT (`unreachable`, never titles), and nothing
- * moves. THE RELINK FOLLOWS THE MOVE: a family member the relinkers rewrite (a slot tagged to its root, a record that lists
+ * moves. WITH THE RELINK OFFERING LOADED, a referrer it marks impossible (a link the new title cannot fit, as a list or tag field
+ * cannot quote a title holding `]]`) refuses `rename-relink-impossible`, naming the titles the face reads and counting the rest.
+ * THE RELINK FOLLOWS THE MOVE: a family member the relinkers rewrite (a slot tagged to its root, a record that lists
  * itself) takes its relinked fields in place first, so it lands once, under its new title. From the re-read of the record
  * against the hash this call read to the forwarder's landing no await stands, so `base` and a concurrent edit both hold (a
  * moved record sends the round back to read again, bounded).
@@ -1374,6 +1393,18 @@ export const makeTiddlerRenameReactor = everyWiki("tiddler-rename", true, (opts:
       }).length;
       if (unreachable > 0) {
         return refused("rename-referrers-unreachable", `${unreachable} record${unreachable === 1 ? "" : "s"} naming "${title}" rest outside the working layer ${anchor.bag} (or carry no layer's stamp), which this face may not rewrite, so the rename would leave stale references. A hand that writes those layers renames it, or those records move to the working layer first (${reaches}). Nothing moved.`, { unreachable });
+      }
+      // RELINK'S IMPOSSIBLES: a reference the relinkers cannot rewrite (a new title that fits no delimiter the link stands in, a `lar:///`
+      // title renamed to a non-URI) is marked impossible and left stale, silently. The door asks Relink's report and refuses by name.
+      const impossible = relinkImpossibles(wiki, opts.tw5.$tw, title, to).filter((name) => !staysHome(name) && wiki.getTiddler(name)?.fields["plugin-type"] === undefined);
+      // A PLUGIN IS NEVER REWRITTEN: Relink marks any plugin quoting the title impossible, and no hand edits a plugin in place (it moves
+      // through a rebuild or an offering), so the cure would name nothing runnable. The plugin keeps its quote, as under the core's own relink.
+      if (impossible.length > 0) {
+        const open = impossible.filter(seen);
+        const closed = impossible.length - open.length;
+        const one = impossible.length === 1;
+        const who = open.length > 0 ? `: ${open.map((name) => `"${name}"`).join(", ")}${closed > 0 ? ` and ${closed} more held by records this face may not read` : ""}` : ` (${closed} held by records this face may not read)`;
+        return refused("rename-relink-impossible", `${impossible.length} reference${one ? "" : "s"} to "${title}" cannot follow it to "${to}" (the new title fits no link ${one ? "that record holds" : "those records hold"} it in), so the rename would leave ${one ? "it" : "them"} stale${who}. Rename to a title that fits the link, or edit ${open.length > 0 ? "the referrer" : "those referrers"} by hand first (\`lares tiddler get <title> --recipe ${anchor.recipe}\` reads one this face sees). Nothing moved.`, { impossible: impossible.length });
       }
       const family = new Set(members);
       const target = (member: string): string => (member === title ? to : to + member.slice(title.length));

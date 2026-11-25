@@ -27,7 +27,9 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync }
 import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { carrierHash, VERB_RESULT_KEY, wikiSlotUri } from "@lararium/mesh";
+import { carrierHash } from "@lararium/mesh/crypto";
+import { VERB_RESULT_KEY } from "@lararium/mesh/verb-tiddler";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { SyncedTree, syncedTreeKey } from "../src/synced-tree.js";
 import { workspaceRootsOf, workbenchFolders, realmRoot } from "../src/bag-paths.js";
 import { nameRealm, placeInRealm, realmPlacement } from "../src/realm-labels.js";

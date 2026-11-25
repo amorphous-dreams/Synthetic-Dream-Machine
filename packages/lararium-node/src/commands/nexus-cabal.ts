@@ -18,12 +18,23 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/kahu#/cabal-admission
  */
 import type { Repo } from "@automerge/automerge-repo";
+import { carriageDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { foundingRoster, nexusAidOf } from "@lararium/mesh/nexus-seal-seed";
 import {
-  carriageDocUrl, materializeSharedLarDoc, foundingRoster, nexusAidOf,
-  openKahuCabalAct, signKahuCabalAct, kahuCabalActCounts, kahuCabalActCid, kahuCabalStanding,
-  kahuCabalActsFromBoard, writeKahuCabalAct, readKahuCabalAct, kahuRealmGroup,
-  type KahuCabalAct, type KahuCabalAction, type KahuCabalBoard, type KahuCabalStanding, type KahuQuorumSeats,
-} from "@lararium/mesh";
+  openKahuCabalAct,
+  signKahuCabalAct,
+  kahuCabalActCounts,
+  kahuCabalActCid,
+  kahuCabalStanding,
+  kahuCabalActsFromBoard,
+  writeKahuCabalAct,
+  readKahuCabalAct,
+  type KahuCabalAct,
+  type KahuCabalAction,
+  type KahuCabalStanding,
+} from "@lararium/mesh/kahu-cabal-admission";
+import { kahuRealmGroup, type KahuCabalBoard } from "@lararium/mesh/kahu-canon-reach";
+import { type KahuQuorumSeats } from "@lararium/mesh/kapae-antigen";
 import { readNexusDoc } from "../nexus-doc.js";
 import { loadVesselVerifyingKey } from "../node-vessel-identity.js";
 import { nodeNexusIsland } from "../nexus-standing.js";

@@ -8,7 +8,9 @@
  * shadows up to the default writable.
  */
 import { describe, test, expect } from "vitest";
-import { CompositeStore, bagUri, type ChangeOrigin } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { bagUri } from "@lararium/mesh/lar-uris";
+import { type ChangeOrigin } from "@lararium/mesh/tiddler-store";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { placeMeme, readMeme, removeMeme } from "../src/place-meme.js";
 import { storeMemeSink, compositeMemeSink } from "../src/meme-sinks.js";

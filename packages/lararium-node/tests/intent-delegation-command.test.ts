@@ -1,6 +1,11 @@
 import { describe, expect, test } from "vitest";
 import { intentDelegationCite, IntentRefused } from "../src/commands/intent.js";
-import { buildDelegation, buildDelegationRevoke, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, intentEntryCid, makeHandLineage, readIntentPlane, fixtureIntentVerbs } from "@lararium/mesh";
+import { buildDelegation, buildDelegationRevoke } from "@lararium/mesh/intent-issue";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { intentEntryCid } from "@lararium/mesh/intent-entry";
+import { makeHandLineage } from "@lararium/mesh/hand-lineage";
+import { readIntentPlane } from "@lararium/mesh/intent-read";
+import { fixtureIntentVerbs } from "@lararium/mesh/intent-verbs";
 const who = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(n)) });
 
 describe("intent delegation command guards", () => {

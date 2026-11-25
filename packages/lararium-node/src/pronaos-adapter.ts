@@ -21,18 +21,16 @@ import type { IncomingMessage, Server, ServerResponse } from "node:http";
 import type { HttpFaceDispatcher } from "./http-face-dispatcher.js";
 import { genesisSeedCid } from "./genesis-artifact.js";
 
+import { canonicalJsonBytes, niUriSha256FromHex, sha256HexBytesSync } from "@lararium/mesh/crypto";
 import {
-  canonicalJsonBytes,
   DEFAULT_PRONAOS_REFUSALS,
   deliverPublicArtifact,
-  niUriSha256FromHex,
-  sha256HexBytesSync,
   validatePublicArtifactPublication,
   type PublicArtifactPublication,
   validatePronaosRouteInventory,
   type PronaosRoute,
   type PronaosRouteInventory,
-} from "@lararium/mesh";
+} from "@lararium/mesh/pronaos";
 
 export interface PronaosFile {
   readonly bytes: Uint8Array;

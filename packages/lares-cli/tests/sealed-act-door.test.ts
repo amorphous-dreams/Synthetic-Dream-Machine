@@ -55,7 +55,7 @@
  *       `handleIndex` alone; the custody door's own act frame refuses each.
  *                                 control: an act of the place (`petname.set`) keeps the custody door's frame
  */
-import { controlStoreOf } from "@lararium/mesh";
+import { controlStoreOf } from "@lararium/mesh/control-home";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import type { Socket } from "node:net";
@@ -66,7 +66,12 @@ import {
   larDataDir, larSealHome, loadIdentityAnchors, makeCustodyHolder, makeUdsSeat, persistIdentityAnchors, readNexusDoc, SESSION_ACTS, seatCustody, seatedCustody, serveUdsFront,
   vesselCustodyHomes, type CustodyHolder,
 } from "@lararium/node";
-import { foundingRoster, AutomergeDocStore, CompositeStore, DAEMON_BAG_ID, emptyLarDoc, wikiSlotUri, type LarDoc } from "@lararium/mesh";
+import { foundingRoster } from "@lararium/mesh/nexus-seal-seed";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import type { SessionFace } from "@lararium/mesh/session-contract";
 import { Repo } from "../../lararium-node/node_modules/@automerge/automerge-repo/dist/index.js";
 import { dispatch } from "../src/bin/lares.js";

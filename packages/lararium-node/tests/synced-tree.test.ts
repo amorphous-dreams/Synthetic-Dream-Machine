@@ -8,7 +8,7 @@ import { mkdtempSync, readFileSync, writeFileSync, rmSync, readdirSync } from "n
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { SyncedTree, contentHash, syncedTreeKey } from "../src/synced-tree.js";
-import { carrierHash } from "@lararium/mesh";
+import { carrierHash } from "@lararium/mesh/crypto";
 
 // THE HANDSHAKE SEAM for the two-writers vector: the tree's own `renameSync` calls a hook the vector arms,
 // at the moment a row stands ready to land. Unarmed, it passes through.

@@ -19,10 +19,13 @@
  * Meme: lar:///ha.ka.ba/lararium/api/personal-slot
  */
 
-import {
-  canonicalJsonBytes, utf8Bytes, ed25519VerifyHex, sha256HexBytesSync, formatDigest, verifyEdgeAgainstPersonaKel, FACE_GRANT_DOMAIN,
-  type DeviceDelegationTiddler, type PersonaKelEvent, type EdgeStanding,
-} from "@lararium/mesh";
+import { canonicalJsonBytes, utf8Bytes, sha256HexBytesSync } from "@lararium/mesh/crypto";
+import { ed25519VerifyHex } from "@lararium/mesh/ed25519-door";
+import { formatDigest } from "@lararium/mesh/agile-digest";
+import { verifyEdgeAgainstPersonaKel, type PersonaKelEvent } from "@lararium/mesh/persona-kel";
+import { FACE_GRANT_DOMAIN } from "@lararium/mesh/domains";
+import { type DeviceDelegationTiddler } from "@lararium/mesh/device-delegation";
+import { type EdgeStanding } from "@lararium/mesh/edge-kapae";
 import { standingOfReading } from "./face-seat-summons.js";
 
 /** The title prefix under which grant records land on the PersonaGroup plane. */

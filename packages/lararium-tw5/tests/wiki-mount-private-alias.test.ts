@@ -13,7 +13,10 @@
  *   M1c CONTROL: an ordinary wiki canon still resolves and teaches its spec.
  */
 import { describe, expect, test } from "vitest";
-import { deterministicDocUrl, storedLarRecord, wikiBagUri, wikiSlotUri, type LarDoc } from "@lararium/mesh";
+import { deterministicDocUrl } from "@lararium/mesh/deterministic-doc";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
+import { wikiBagUri, wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { buildWikiMountSpec } from "../src/vessel-steps.js";
 import { makeVesselResidency } from "../src/vessel-residency-wiring.js";
 

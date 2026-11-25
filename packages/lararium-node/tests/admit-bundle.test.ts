@@ -21,14 +21,24 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import * as ed from "@noble/ed25519";
+import { hex } from "@lararium/mesh/crypto";
+import { nexusAidOf, foundingRoster, type NexusDoc } from "@lararium/mesh/nexus-seal-seed";
 import {
-  hex, nexusAidOf, signCarriageQuorum, signCarriageContract, makeMultiSigQuorumVerifier,
-  carriageEntryActCid, carriageDocUrl, writeCarriageEntry, emptyLarDoc, foundingRoster,
-  signRollAnchor, writeRollAnchor, isRollAnchor, rollAnchorCid,
+  signCarriageQuorum,
+  signCarriageContract,
+  carriageEntryActCid,
+  signRollAnchor,
+  isRollAnchor,
+  rollAnchorCid,
   admitCarriageCommit,
-  custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute,
-  type NexusDoc, type CarriageEntry, type LarDoc, type AdmitOpening, type GateBundlePin,
-} from "@lararium/mesh";
+  type CarriageEntry,
+  type AdmitOpening,
+} from "@lararium/mesh/carriage-registry";
+import { makeMultiSigQuorumVerifier } from "@lararium/mesh/kapae-antigen";
+import { carriageDocUrl } from "@lararium/mesh/deterministic-doc";
+import { writeCarriageEntry, writeRollAnchor } from "@lararium/mesh/carriage-board";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute, type GateBundlePin } from "@lararium/mesh/gate-bundle-door";
 import { takeAdmitBundle, readKeptAdmitBundle, admitBundlePathFor, dialedNexusAid, AdmitBundleError, type AdmitBundle } from "../src/admit-bundle.js";
 import { dialPresentation, makeNexusMembership, type CarriedNexusReading } from "../src/nexus-carriage.js";
 import { writeNexusDoc } from "../src/nexus-doc.js";

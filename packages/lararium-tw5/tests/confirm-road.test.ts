@@ -15,7 +15,7 @@
  *     key chord, and a render-id of an answered question answers `stale-target`.
  */
 import { afterEach, describe, expect, test } from "vitest";
-import { type LarTiddlerRecord } from "@lararium/mesh";
+import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { clearCustodyQuestion, LARES_DISPATCH_FIELD, LARES_VERB_ARG_PREFIX } from "@lararium/mesh/lar-uris";
 import { ENVELOPE_FIELDS } from "../src/envelope-fields.js";
 import { neverPersists } from "../src/island-adaptor.js";

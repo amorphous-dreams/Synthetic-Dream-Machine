@@ -27,7 +27,8 @@ import { join } from "node:path";
 import { randomBytes } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { resolveBandsSpawn, resolveHolderCapEnv } from "@lararium/mempalace";
-import { composePalace, freeEnergy, forecastEws, type PalaceComposition, type PlaneSink, type StreamAdapter, type StreamFrame } from "@lararium/mesh";
+import { composePalace, type PalaceComposition, type PlaneSink, type StreamAdapter, type StreamFrame } from "@lararium/mesh/stream-adapter";
+import { freeEnergy, forecastEws } from "@lararium/mesh/sensorium-pc";
 import { defaultSensoriumIngest, type SensoriumIngest } from "./sense-sensorium.js";
 
 // ── the frame-native signal door — bands + coupling over a raw numeric stream (NDJSON) ────────────

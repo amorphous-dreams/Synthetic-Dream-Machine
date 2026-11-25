@@ -7,7 +7,7 @@
  */
 import { describe, test, expect } from "vitest";
 import { interpretAsDocumentId, type AutomergeUrl } from "@automerge/automerge-repo";
-import { deterministicDocUrl } from "@lararium/mesh";
+import { deterministicDocUrl } from "@lararium/mesh/deterministic-doc";
 import { kahuCanonDocIds, kahuHandAtWire } from "../src/kahu-realm.js";
 
 const group = "0x" + "ab".repeat(32);

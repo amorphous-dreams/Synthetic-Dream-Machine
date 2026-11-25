@@ -1,4 +1,4 @@
-import type { IslandToVesselMsg, VesselToIslandMsg } from "@lararium/mesh";
+import type { IslandToVesselMsg, VesselToIslandMsg } from "@lararium/mesh/island-protocol";
 
 export type HolderRoute = "reply" | "camera" | "owner" | "port";
 

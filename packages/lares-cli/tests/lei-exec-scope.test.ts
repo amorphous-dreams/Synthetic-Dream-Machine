@@ -5,7 +5,7 @@
  * node's swarm row carries the scope to the door, and the pūlama's hand door reads it too. Every red pairs with a CONTROL.
  */
 import { describe, expect, it } from "vitest";
-import { execLeiBranch } from "@lararium/mesh";
+import { execLeiBranch } from "@lararium/mesh/exec-lei";
 import { parseArgs } from "../src/parse-args.js";
 import { LeiUsage, leiPlan } from "../src/commands/lei.js";
 import { COMMANDS } from "../src/bin/lares.js";

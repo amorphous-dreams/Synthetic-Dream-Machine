@@ -20,7 +20,14 @@
  *       a base, and a working-only title stay out of it; it writes nothing
  */
 import { describe, test, expect } from "vitest";
-import { AutomergeDocStore, CompositeStore, emptyLarDoc, overrideBaseOf, carrierHashOf, type CapabilityAccess, type CapabilityVerifyResult, type Verb, type VerbContext } from "@lararium/mesh";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { emptyLarDoc } from "@lararium/mesh/base-doc";
+import { overrideBaseOf } from "@lararium/mesh/override-base";
+import { carrierHashOf } from "@lararium/mesh/carrier-form";
+import { type CapabilityAccess, type CapabilityVerifyResult } from "@lararium/mesh/capability";
+import { type Verb } from "@lararium/mesh/verb-tiddler";
+import { type VerbContext } from "../src/verb-dispatcher.js";
 import { carrierHash } from "@lararium/mesh/crypto";
 import { Repo } from "./wiki-shore-rig.js";
 import { registerActionReactors, makeFresherCanonReactor } from "../src/action-handler.js";
