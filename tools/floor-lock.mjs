@@ -8,17 +8,19 @@
  *   node tools/floor-lock.mjs --lock-path            the lock path battery.sh names
  *
  * HOW "INSIDE" READS, with no environment marker (no new env vars; a marker a child inherits would also outlive the lock):
- * the kernel's own lock table. `/proc/locks` lists every FLOCK by holder pid and inode; this process runs inside the floor
- * where a FLOCK on the lock's inode names this process or one of its ancestors (battery.sh's shell takes the lock and runs
- * the command as its child, so the holder stays alive above every heavy run). An open descriptor alone never counts: a
- * waiter holds one too, and a stranger's lock on the same inode would read as ours. A Codex seat cannot open the lock at all (it sits outside
- * the seat's write roots), so it never reads as inside.
+ * the kernel's own lock state, read by OPEN FILE, never by pid alone. battery.sh opens the lock on fd 9 and runs `flock 9`:
+ * flock(1) runs as a CHILD process that locks the shell's open file and exits, so `/proc/locks` names the flock(1) pid, which
+ * no heavy run descends from (the nested-take deadlock of 2026-11-25: floor-run -> battery.sh -> floor-run read unheld and
+ * waited on its own lock). So this process runs inside the floor where this process or an ancestor holds a descriptor on
+ * the lock file whose open file carries the FLOCK: `/proc/<pid>/fdinfo/<fd>` lists a `lock:` line for every lock that open
+ * file owns (Linux has listed them there since 4.x). A bare descriptor never counts: a waiter holds one too. The holder pid in `/proc/locks` still counts where it names an
+ * ancestor. A Codex seat cannot open the lock at all (it sits outside the seat's write roots), so it never reads as inside.
  *
  * The wall exists against accident and habit, which caused both VHD crashes, never against a hostile process running as the
  * same user (memory: STOP OVERCONSTRAINING SPIRITS — receipts over gates); the floor ledger keeps the receipt.
  */
 import { spawnSync } from 'node:child_process';
-import { readFileSync, realpathSync, statSync } from 'node:fs';
+import { readFileSync, readdirSync, readlinkSync, realpathSync, statSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -69,7 +71,22 @@ export function floorHeld({ lock, pid = process.pid, proc = '/proc' } = {}) {
   try { table = flocksOf(readFileSync(join(proc, 'locks'), 'utf8')); } catch { return false; }
   const holders = table.get(ino);
   if (!holders || holders.size === 0) return false;
-  return ancestry(pid, proc).some((p) => holders.has(p));
+  const line = ancestry(pid, proc);
+  if (line.some((p) => holders.has(p))) return true;
+  // By open file: an ancestor's descriptor on the lock file, its fdinfo naming the FLOCK that open file owns.
+  for (const p of line) {
+    let fds;
+    try { fds = readdirSync(join(proc, String(p), 'fd')); } catch { continue; }
+    for (const fd of fds) {
+      let target;
+      try { target = readlinkSync(join(proc, String(p), 'fd', fd)); } catch { continue; }
+      if (target !== real) continue;
+      let info = '';
+      try { info = readFileSync(join(proc, String(p), 'fdinfo', fd), 'utf8'); } catch { continue; }
+      if (/^lock:\s+\d+:\s+FLOCK\s/m.test(info)) return true;
+    }
+  }
+  return false;
 }
 
 /** The refusal a heavy tool prints outside the floor: the cure names the floor runner around the same command. */

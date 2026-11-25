@@ -98,3 +98,41 @@ test('RED: the shim takes the floor around the compose build, prunes the build c
   assert.doesNotMatch(shim.slice(shim.indexOf('prune_build_cache() {'), shim.indexOf('build_image() {')), /docker (image|system) prune|docker rmi/);
   assert.match(shim, /node "\$HERE\/floor-lock\.mjs" --held/);
 });
+
+// THE NESTED-TAKE DEADLOCK (2026-11-25): battery.sh runs `flock 9`, and flock(1) locks the shell's open file from a CHILD that
+// exits, so /proc/locks names a pid no heavy run descends from. The hold reads by open file: an ancestor's fd on the lock whose
+// fdinfo lists the FLOCK. RED-FIRST: written by floor-warden#2, run by the familiar.
+test('RED: held where /proc/locks names a gone flock(1) pid but an ancestor holds a descriptor whose fdinfo lists the FLOCK', async () => {
+  const { symlinkSync } = await import('node:fs');
+  const d = dir(); const lock = join(d, 'lock'); writeFileSync(lock, '');
+  const ino = statSync(lock).ino;
+  const flockLine = `1: FLOCK  ADVISORY  WRITE 4444 08:20:${ino} 0 EOF`;
+  const proc = fakeProc(join(d, 'p'), { 30: 20, 20: 10, 10: 1, 1: 0 }, `${flockLine}\n`);
+  mkdirSync(join(proc, '20', 'fd'), { recursive: true }); mkdirSync(join(proc, '20', 'fdinfo'), { recursive: true });
+  symlinkSync(lock, join(proc, '20', 'fd', '9'));
+  writeFileSync(join(proc, '20', 'fdinfo', '9'), `pos:\t0\nflags:\t0100001\nmnt_id:\t30\nino:\t${ino}\nlock:\t${flockLine}\n`);
+  assert.equal(floorHeld({ lock, pid: 30, proc }), true);
+  // A waiter: the same descriptor with no lock line on its open file reads unheld.
+  writeFileSync(join(proc, '20', 'fdinfo', '9'), `pos:\t0\nflags:\t0100001\nmnt_id:\t30\nino:\t${ino}\n`);
+  assert.equal(floorHeld({ lock, pid: 30, proc }), false);
+});
+
+test('RED: a nested take under floor-run never waits on itself: floor-run -> battery.sh, floor-run -> floor-run, both run at once', () => {
+  const lock = join(dir(), 'lock');
+  const env = { ...process.env, LARES_BATTERY_LOCK: lock, LARES_BIN: '/nonexistent/lares' };
+  const RUN = join(TOOLS, 'floor-run.mjs');
+  // The timeout guards a hang only (the deadlock waited forever); the verdict reads the exit and the output.
+  const viaBattery = spawnSync(process.execPath, [RUN, '--', 'bash', BATTERY, 'echo', 'nested-battery-ran'], { encoding: 'utf8', env, timeout: 60_000 });
+  assert.equal(viaBattery.status, 0, viaBattery.stderr);
+  assert.match(viaBattery.stdout, /nested-battery-ran/);
+  assert.match(viaBattery.stderr, /already stands held/);
+  assert.equal((viaBattery.stderr.match(/battery: waiting for the box/g) ?? []).length, 1, 'one take, never a second wait');
+  const viaRun = spawnSync(process.execPath, [RUN, '--', process.execPath, RUN, '--', 'echo', 'nested-run-ran'], { encoding: 'utf8', env, timeout: 60_000 });
+  assert.equal(viaRun.status, 0, viaRun.stderr);
+  assert.match(viaRun.stdout, /nested-run-ran/);
+  assert.equal((viaRun.stderr.match(/battery: waiting for the box/g) ?? []).length, 1, 'one take, never a second wait');
+  // The familiar's step 1 shape: a heavy CLI under floor-run passes the wall (its own usage refusal, never the floor's 64).
+  const wall = spawnSync(process.execPath, [RUN, '--', process.execPath, join(TOOLS, 'provision-worktree.mjs'), '--existing', join(dir(), 'nowhere')], { encoding: 'utf8', env, timeout: 60_000 });
+  assert.notEqual(wall.status, 64, wall.stderr);
+  assert.doesNotMatch(wall.stderr, /floor: refused/);
+});
