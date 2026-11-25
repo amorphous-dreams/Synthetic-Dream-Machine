@@ -25,7 +25,7 @@ export interface SecurityClassList { paths: string[]; tokens: string[] }
 export function globToRegExp(glob: string): RegExp {
   let out = "";
   for (let i = 0; i < glob.length; i++) {
-    const c = glob[i];
+    const c = glob.charAt(i);
     if (c === "*" && glob[i + 1] === "*") {
       if (glob[i + 2] === "/") { out += "(?:.*/)?"; i += 2; } else { out += ".*"; i += 1; }
     } else if (c === "*") out += "[^/]*";
