@@ -74,9 +74,9 @@ describe("a fusion-only knob refuses off the dual fuse", () => {
   });
 });
 
-describe("a knob spelled in its retired snake case refuses, naming the camel-case knob (recall-snake-case-refuses)", () => {
-  // Molt 2a dropped aperture_grain and aperture_width from the fusion list, so a caller still sending one had it fall away
-  // on every path, the dual fuse included, while the answer read as if it narrowed.
+describe("a knob spelled in snake case refuses, naming the camel-case knob (recall-snake-case-refuses)", () => {
+  // No path reads aperture_grain or aperture_width, so a caller sending one would see it fall away on every path, the dual fuse
+  // included, while the answer read as if it narrowed.
   const renamed: ReadonlyArray<readonly [string, string]> = [["aperture_grain", "apertureGrain"], ["aperture_width", "apertureWidth"]];
   const paths: ReadonlyArray<readonly [string, Record<string, unknown>]> = [
     ["dual", { query: "q", dual: true }], ["search", { query: "q" }], ["list", {}], ["imago", { imago: "cid-1" }],

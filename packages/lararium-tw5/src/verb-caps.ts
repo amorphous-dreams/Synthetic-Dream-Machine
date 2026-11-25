@@ -285,11 +285,10 @@ const SEARCH_ONLY_RECALL_ARGS: readonly string[] = ["agent", "surface", "speaker
 const FUSION_ONLY_RECALL_ARGS = ["register", "grammarLayer", "grammar_layer", "formWeight", "apertureGrain", "aperture", "apertureWidth"];
 
 /**
- * The knob spellings molt 2a retired, each beside the one the verb reads now. No path reads a retired spelling (the
- * search path would forward it to a coordinator that drops it), so the verb refuses one by name, in every mode, naming
- * the knob to send instead.
+ * Spellings outside the verb's vocabulary, each beside the knob it reads: a call naming one refuses by name, in every mode, and
+ * names the knob to send (the search path would forward it to a coordinator that drops it without a word).
  */
-const RETIRED_RECALL_ARGS: Readonly<Record<string, string>> = { aperture_grain: "apertureGrain", aperture_width: "apertureWidth" };
+const UNREAD_RECALL_SPELLINGS: Readonly<Record<string, string>> = { aperture_grain: "apertureGrain", aperture_width: "apertureWidth" };
 
 /** recall — the mempalace READ shore (semantic-search | list | get | multi-graph fuse). Requires
  *  the mempalace read-client + the form store (the dual fuse). */
@@ -306,9 +305,9 @@ export function recallVerbCap(): CapModule {
           if (burned.length) {
             throw new Error(`recall: ${burned.join(", ")} ${burned.length === 1 ? "names a burned filter" : "name burned filters"} — the coordinator no longer reads ${burned.length === 1 ? "it" : "them"}; narrow the stratum by speaker, channel or function`);
           }
-          const retired = Object.keys(RETIRED_RECALL_ARGS).filter((name) => Object.hasOwn(args, name));
-          if (retired.length) {
-            throw new Error(`recall: ${retired.map((name) => `${name} retired; send ${RETIRED_RECALL_ARGS[name]}`).join(", ")} — no path reads the snake-case spelling`);
+          const unread = Object.keys(UNREAD_RECALL_SPELLINGS).filter((name) => Object.hasOwn(args, name));
+          if (unread.length) {
+            throw new Error(`recall: ${unread.map((name) => `${name} names no knob this verb reads; send ${UNREAD_RECALL_SPELLINGS[name]}`).join(", ")}`);
           }
           const imagoId = typeof args["imago"] === "string" ? (args["imago"] as string) : "";
           const query    = typeof args["query"]  === "string" ? (args["query"]  as string) : "";
