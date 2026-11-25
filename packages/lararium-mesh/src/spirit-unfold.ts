@@ -79,15 +79,21 @@ export function unfoldRank(aperture: string | null | undefined): UnfoldRank | nu
 
 // ── THE BUTTONS: the one command each fold names ───────────────────────────────────────────────────────────────────
 
+/**
+ * One word of a printed command, safe to paste into a shell: bare where every character reads plain, else single-quoted (a quote
+ * inside closes, escapes and reopens). A title holding a space, a `#`, a `$` or any other metacharacter never splits or expands.
+ */
+export const shellWord = (word: string): string => (/^[A-Za-z0-9_./:@%+=,-]+$/.test(word) ? word : `'${word.replace(/'/g, `'\\''`)}'`);
+
 const faceFlag = (face: string | null | undefined): string => (face && FACE.test(face) ? ` --face ${face}` : "");
 /** The command that reads one slot of a carrier whole. */
-export const slotCommand = (uri: string, slot: string, face?: string | null): string => `lares tiddler get ${uri} --recipe default${faceFlag(face)} --meme --slot '${slot}'`;
+export const slotCommand = (uri: string, slot: string, face?: string | null): string => `lares tiddler get ${shellWord(uri)} --recipe default${faceFlag(face)} --meme --slot ${shellWord(slot)}`;
 /** The command that reads a whole carrier. */
-export const wholeCommand = (uri: string, face?: string | null): string => `lares tiddler get ${uri} --recipe default${faceFlag(face)} --meme --all`;
+export const wholeCommand = (uri: string, face?: string | null): string => `lares tiddler get ${shellWord(uri)} --recipe default${faceFlag(face)} --meme --all`;
 /** The command that reads one plain record. */
-export const recordCommand = (uri: string, face?: string | null): string => `lares tiddler get ${uri} --recipe default${faceFlag(face)}`;
+export const recordCommand = (uri: string, face?: string | null): string => `lares tiddler get ${shellWord(uri)} --recipe default${faceFlag(face)}`;
 /** The command that renders a card through the template its text transcludes. */
-export const cardRenderCommand = (card: string, face?: string | null): string => `lares wiki render ${card} --recipe default${faceFlag(face)} --form text`;
+export const cardRenderCommand = (card: string, face?: string | null): string => `lares wiki render ${shellWord(card)} --recipe default${faceFlag(face)} --form text`;
 
 // ── THE CALL ───────────────────────────────────────────────────────────────────────────────────────────────────────
 

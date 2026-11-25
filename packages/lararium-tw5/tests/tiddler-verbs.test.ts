@@ -1645,6 +1645,27 @@ describe.skipIf(wikiSkip)(`the reader's view: a filter and a render compute over
     expect(r.engine.wiki.filterTiddlers("[[$:/temp/lares/secret]get[text]]")).toEqual(["device-local"]);
   });
 
+  test("a fold reads through the reader's view: a record in a bag the face may not read and a withheld title fold to nothing, no body, tagline or command; CONTROL: a reader of the bag reads the fold", async () => {
+    const r = await rig();
+    const SEALED = bagUri("sealed");
+    const SHRINE = "lar:///ha.ka.ba/kahua/memory/spirit/sealed-pet";
+    r.engine.wiki.addTiddler({ title: "Sealed report", description: "the sealed tagline", text: `sealed body ${"x".repeat(400)}`, "$origin-bag": SEALED });
+    r.engine.wiki.addTiddler({ title: SHRINE, type: "text/memetic-wikitext+tiddlywiki", role: "the sealed role", text: "<<~ kahea ahu slot=`#/open`>>", "$origin-bag": SEALED });
+    r.engine.wiki.addTiddler({ title: `${SHRINE}#/open`, type: "text/memetic-wikitext+tiddlywiki", "$fragment-parent": SHRINE, "$slot": "#/open", text: "!! Sealed loops\n\n* a sealed line", "$origin-bag": SEALED });
+    const only: Cap = async (_access, bag) => (bag === DAEMON ? { ok: true } : { ok: false, reason: "no-grant" });
+    const render = makeWikiRenderReactor(r.opts);
+    const span = "A:<$text text={{{ [[Sealed report]meme-fold[]] }}}/> B:<$text text={{{ [[$:/temp/lares/secret]meme-fold[*]] }}}/> C:<$text text={{{ [[sealed-pet]spirit-fold[theme]] }}}/> D:<<spirit-unfold pet:\"sealed-pet\" aperture:\"pulse\">>";
+    const blind = String((await render({ ...A, text: span }, ctx(only)))["text"]);
+    expect(blind).toBe("A: B: C: D:");
+    const seen = String((await render({ ...A, text: span }, ctx()))["text"]);
+    expect(seen).toContain("the sealed tagline");
+    expect(seen).toContain("`lares tiddler get 'Sealed report' --recipe default`");
+    expect(seen).toContain("* a sealed line");
+    expect(seen).toContain("the sealed role");
+    expect(seen).not.toContain("device-local");
+    expect(seen).toMatch(/B: C:/);
+  });
+
   test("the view moves no behaviour for a readable wiki: paging, the link graph and a repeat call answer as before", async () => {
     const r = await rig();
     const filter = makeWikiFilterReactor(r.opts);

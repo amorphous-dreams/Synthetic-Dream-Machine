@@ -10,7 +10,7 @@ import { describe, test, expect, beforeAll } from "vitest";
 import { stampCarrier } from "@lararium/memetic-frame";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { SHRINE_SLOTS, shrineSource } from "@lararium/mesh/spirit-shrine";
-import { UNFOLD_OPEN, UNFOLD_RANKS, cardRenderCommand, narrowerRank, recordCommand, slotCommand, spiritCardOf, unfoldCall, unfoldRank, wholeCommand } from "@lararium/mesh/spirit-unfold";
+import { UNFOLD_OPEN, UNFOLD_RANKS, cardRenderCommand, narrowerRank, recordCommand, shellWord, slotCommand, spiritCardOf, unfoldCall, unfoldRank, wholeCommand } from "@lararium/mesh/spirit-unfold";
 import { commandLine, foldCarrier } from "../src/carrier-fold.js";
 import { memeticWikitextDeserializer } from "../src/deserializer.js";
 import { normalizeMemeSource } from "../src/meme-normalize.js";
@@ -156,6 +156,20 @@ describe("the fold's pure core", () => {
     expect(unfoldCall("verb-wright", "10/measure")).toBe('<<spirit-unfold pet:"verb-wright" aperture:"measure">>');
     expect(unfoldCall("verb-wright", "pulse", "1")).toBe('<<spirit-unfold pet:"verb-wright" aperture:"pulse" face:"1">>');
     expect([unfoldCall("Bad Name", "beat"), unfoldCall("verb-wright", "wide"), unfoldCall("verb-wright", "beat", "a b")]).toEqual([null, null, null]);
+  });
+
+  test("every printed command quotes a word a shell would split or expand", () => {
+    expect(shellWord("lar:///ha.ka.ba/kahua/memory/spirit/verb-wright")).toBe("lar:///ha.ka.ba/kahua/memory/spirit/verb-wright");
+    expect(slotCommand("lar:///a.b.c/x", "#/open")).toBe("lares tiddler get lar:///a.b.c/x --recipe default --meme --slot '#/open'");
+    const wild = "A title; rm -rf $HOME `id` it's";
+    const quoted = `'A title; rm -rf $HOME \`id\` it'\\''s'`;
+    expect(shellWord(wild)).toBe(quoted);
+    expect([recordCommand(wild), wholeCommand(wild, "1"), slotCommand(wild, "#/x"), cardRenderCommand(wild)]).toEqual([
+      `lares tiddler get ${quoted} --recipe default`,
+      `lares tiddler get ${quoted} --recipe default --face 1 --meme --all`,
+      `lares tiddler get ${quoted} --recipe default --meme --slot '#/x'`,
+      `lares wiki render ${quoted} --recipe default --form text`,
+    ]);
   });
 
   test("a fold keeps every byte outside a folded body and re-stamps the check", () => {

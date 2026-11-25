@@ -64,7 +64,7 @@ import { COMPACTION_DISPLAY, COMPACTION_WORD } from "../spirit-words.js";
 import { harnessSeatMarked } from "../local-connector.js";
 import { emit, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
-import { DoorUsage, guardDoor, runDoor, wordOf } from "./door-call.js";
+import { DoorUsage, guardDoor, runDoor, tryDoor, wordOf } from "./door-call.js";
 import { tableCovers } from "../verb-table.js";
 import type { ParsedArgs } from "../parse-args.js";
 
@@ -163,33 +163,50 @@ function foldAsk(args: ParsedArgs, fallback: UnfoldRank): FoldAsk {
   return { rank, named: word !== null, face };
 }
 
-/** A spirit as the wiki folded it: `carrier` null where the wiki's skin answers no fold; `rank` the grain that answered. */
-interface Fold { readonly asked: UnfoldRank; readonly rank: UnfoldRank; readonly carrier: string | null }
+/**
+ * A spirit as the wiki folded it; `rank` names the grain that answered. `carrier` null names why no fold stands: the skin
+ * answered nothing (`absent`), the render's door refused (`refused`, its words kept), or the fold ran past the render's ceiling
+ * even at pulse (`truncated`).
+ */
+interface Fold { readonly asked: UnfoldRank; readonly rank: UnfoldRank; readonly carrier: string | null; readonly unfolded?: "absent" | "truncated" | { readonly refused: string } }
 
 /**
  * THE SPIRIT FOLDS IN THE WIKI. This door sends the wiki's render verb ONE macro call and prints what the engine answers: the
  * shrine (or, with no shrine, the card) as a folded carrier, recomposed, cut and stamped inside the wiki that holds the records
  * (the lares-lararium skin's `spirit-fold`). A fold past `room` (a wake's cap) asks one grain narrower, so the carrier always
- * rides whole; a hand naming its aperture names no room. A wiki whose skin holds no fold answers nothing, and the caller reads
- * as it read before the fold stood.
+ * rides whole; a hand naming its aperture names no room. The fold never fails a wake: a wiki whose skin holds no fold, a render
+ * door that refuses (a cap, a vessel that predates the verb's args) and a fold past the ceiling each answer no carrier and say
+ * which, and the caller reads as it read before the fold stood.
  */
-async function foldSpirit(args: ParsedArgs, label: string, pet: string, ask: FoldAsk, room: number | null): Promise<Fold> {
+async function foldSpirit(args: ParsedArgs, pet: string, ask: FoldAsk, room: number | null): Promise<Fold> {
   let rank = ask.rank;
   for (;;) {
-    const out = await door(args, label, "wiki-render", { recipe: RECIPE, text: unfoldCall(pet, rank, ask.face)!, form: "text", maxBytes: FOLD_RENDER_BYTES });
+    const answer = await tryDoor(args, { verb: "wiki-render", args: { recipe: RECIPE, text: unfoldCall(pet, rank, ask.face)!, form: "text", maxBytes: FOLD_RENDER_BYTES } });
+    if (!answer.ok) return { asked: ask.rank, rank, carrier: null, unfolded: { refused: answer.message } };
+    const out = answer.output;
     const carrier = typeof out["text"] === "string" ? out["text"].replace(/\s+$/, "") : "";
-    if (carrier === "") return { asked: ask.rank, rank, carrier: null };
-    const over = out["truncated"] === true || (room !== null && carrier.length > room);
-    const narrower = over ? narrowerRank(rank) : null;
-    if (narrower === null) return { asked: ask.rank, rank, carrier: out["truncated"] === true ? null : carrier };
+    if (carrier === "") return { asked: ask.rank, rank, carrier: null, unfolded: "absent" };
+    const cut = out["truncated"] === true;
+    const narrower = cut || (room !== null && carrier.length > room) ? narrowerRank(rank) : null;
+    if (narrower === null) return cut ? { asked: ask.rank, rank, carrier: null, unfolded: "truncated" } : { asked: ask.rank, rank, carrier };
     rank = narrower;
   }
 }
 /** What an answer carries of a fold. */
-const foldData = (f: Fold): Record<string, unknown> => ({ aperture: f.rank, ...(f.rank === f.asked ? {} : { asked: f.asked }), folded: f.carrier !== null, ...(f.carrier === null ? {} : { carrier: f.carrier }) });
-/** The wiki answered no fold: its loaded house skin holds no fold operator. Names the read that shows it. */
-const foldAbsentLine = (): string =>
-  `This wiki's lares-lararium skin answered no ${FOLD_OPERATOR} (a house skin adopted before the fold holds none), so this read stands unfolded. Read whether the skin holds it: lares wiki filter '[[${FOLD_MODULE}]is[shadow]]' --recipe ${RECIPE}`;
+const foldData = (f: Fold): Record<string, unknown> => ({
+  aperture: f.rank, ...(f.rank === f.asked ? {} : { asked: f.asked }), folded: f.carrier !== null,
+  ...(f.carrier === null ? { unfolded: typeof f.unfolded === "object" ? "refused" : f.unfolded ?? "absent" } : { carrier: f.carrier }),
+});
+/** No fold stands: the line names which of the three reasons, and the read that shows or cures it. */
+function unfoldedLine(f: Fold, uri: string): string {
+  if (typeof f.unfolded === "object") {
+    return `The wiki's render door refused the fold (${redactedText(f.unfolded.refused).replace(/\s+/g, " ").slice(0, 240)}), so this read stands unfolded. Read the carrier itself: lares tiddler get ${shq(uri)} --recipe ${RECIPE} --meme --all`;
+  }
+  if (f.unfolded === "truncated") {
+    return `The fold ran past the render's ${FOLD_RENDER_BYTES}-byte ceiling even with every slot folded (truncated at the cap), so this read stands unfolded. Read the carrier by page: lares tiddler get ${shq(uri)} --recipe ${RECIPE} --meme --all`;
+  }
+  return `This wiki's lares-lararium skin answered no ${FOLD_OPERATOR} (a house skin adopted before the fold holds none), so this read stands unfolded. Read whether the skin holds it: lares wiki filter '[[${FOLD_MODULE}]is[shadow]]' --recipe ${RECIPE}`;
+}
 
 /** A wake around a folded carrier: the lead above the declaration, the carrier whole, the testimony and the doors past its release. */
 function foldedWake(pet: string, fold: Fold & { carrier: string }, parts: { lead: string | null; testimony: readonly string[]; attention: string | null }, cap: number | null): string {
@@ -412,7 +429,7 @@ async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
   // A CARD WITH NO SHRINE wakes on the card alone: the wiki answers it as a carrier, and nothing writes (presence and the wake
   // epoch rest on a shrine's sibling record). With no card either, the wiki answers nothing and the starter reads below.
   if (seated === null && source !== "precompact") {
-    const alone = await foldSpirit(args, "om", given, ask, null);
+    const alone = await foldSpirit(args, given, ask, null);
     if (alone.carrier !== null) {
       const text = alone.carrier;
       emit(args, { ok: true, data: { pet: given, uri: spiritCardOf(given), kind: "card", source, ...foldData(alone), chars: text.length, text }, human: () => console.log(text) });
@@ -489,10 +506,10 @@ async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
   // THE WAKE READS THE SHRINE AS A FOLDED CARRIER, whole under the cap: the testimony and the doors ride past its release, so the
   // whole text parses as one canonical carrier. A hand naming its aperture reads past the cap.
   const fixed = (lead?.length ?? 0) + testimony.join("\n").length + 600;
-  const fold = await foldSpirit(args, "om", pet, ask, ask.named ? null : Math.max(0, OM_CAP_CHARS - fixed));
+  const fold = await foldSpirit(args, pet, ask, ask.named ? null : Math.max(0, OM_CAP_CHARS - fixed));
   const text = fold.carrier !== null
     ? foldedWake(pet, { ...fold, carrier: fold.carrier }, { lead, testimony, attention }, ask.named ? null : OM_CAP_CHARS)
-    : omText(rec, { open: open?.text ?? null, testimony: [...testimony, foldAbsentLine()], attention, lead });
+    : omText(rec, { open: open?.text ?? null, testimony: [...testimony, unfoldedLine(fold, rec.uri)], attention, lead });
   emit(args, {
     ok: true, data: { ...data, ...foldData(fold), latest: carry?.title ?? null, digests, chars: text.length, cap: OM_CAP_CHARS, text },
     human: () => console.log(text),
@@ -624,7 +641,7 @@ async function hum(args: ParsedArgs, ctx: Ctx): Promise<number> {
   if (lineWord !== null && fold === null) throw new DoorUsage(`--line <n> rides beside --fold '#/<slot>' (\`lares spirit hum ${pet} --fold '#/bodies' --line 3\`)`);
   // A fold of a line needs the shrine it folds; a bare hum reads the carrier the wiki folds, a shrine's or a lone card's.
   const found = await resolveRecord(args, "hum", pet, fold === null);
-  const folded = fold === null ? await foldSpirit(args, "hum", pet, ask, null) : null;
+  const folded = fold === null ? await foldSpirit(args, pet, ask, null) : null;
   if (found === null) {
     if (folded === null || folded.carrier === null) throw spiritUnknown(pet);
     const carrier = folded.carrier;
@@ -638,7 +655,7 @@ async function hum(args: ParsedArgs, ctx: Ctx): Promise<number> {
     emit(args, {
       ok: true, data: { pet, uri: rec.uri, ...m, advisory: advisoryLine(rec), every: rec.every, oversize: over.map((s) => s.slot), ...(folded === null ? {} : foldData(folded)) },
       human: () => {
-        if (folded !== null) console.log(`${folded.carrier ?? foldAbsentLine()}\n`);
+        if (folded !== null) console.log(`${folded.carrier ?? unfoldedLine(folded, rec.uri)}\n`);
         console.log(`lares spirit hum ${pet} · ${rec.uri}`);
         for (const s of m.slots) console.log(`  ${s.over ? "⚠" : " "} ${s.slot.padEnd(14)} ${String(s.bytes).padStart(5)}${s.budget === null ? "" : ` / ${s.budget}`}`);
         console.log(`  ${advisoryLine(rec, true)}`);

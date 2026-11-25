@@ -83,6 +83,8 @@ interface StageOpts {
   ledgerRefuse?: number;
   /** The carrier the wiki's fold answers the unfold call, by the rank it names; absent, the wiki's skin answers nothing. */
   carrier?: string | ((rank: string) => string);
+  /** The render answers its text cut at the byte ceiling. */
+  truncated?: boolean;
   /** Slot patches answer `conflict` this many times, a sibling body's words landing first (`sibling`, by slot) at each. */
   patchConflicts?: number;
   sibling?: Record<string, string>;
@@ -120,7 +122,7 @@ function stage(opts: StageOpts = {}) {
     }
     if (verb === "wiki-render") {
       const rank = /aperture:"([a-z]+)"/.exec(String(args["text"]))?.[1] ?? "";
-      return { recipe: args["recipe"], form: args["form"], text: typeof opts.carrier === "function" ? opts.carrier(rank) : opts.carrier ?? "", truncated: false, next: null };
+      return { recipe: args["recipe"], form: args["form"], text: typeof opts.carrier === "function" ? opts.carrier(rank) : opts.carrier ?? "", truncated: opts.truncated === true, next: null };
     }
     if (verb === "tiddler-get") {
       if (isSide(args["title"])) return { tiddler: opts.side ? { fields: { title: args["title"], ...opts.side }, hash: "sha256-side" } : null };
@@ -1062,7 +1064,33 @@ describe("om and hum answer the spirit as a folded carrier the wiki renders", ()
     expect(text).toContain("<<~ has name=`rec`>>");
     expect(text).toContain("* a loop");
     expect(text).toContain("lares wiki filter '[[lar:///ha.ka.ba/lararium/tw5/filters/meme-fold]is[shadow]]' --recipe default");
-    expect(data(r)).toMatchObject({ aperture: "measure", folded: false });
+    expect(data(r)).toMatchObject({ aperture: "measure", folded: false, unfolded: "absent" });
+  });
+
+  test("a render door that refuses never fails the wake: om and hum read unfolded and carry the refusal's words", async () => {
+    stage({ carrier: () => { throw new Error("cap-denied: read on lar:///ha.ka.ba/wikis/daemon/working required"); } });
+    const om = await run(argv(["om", "lares-alpha"]));
+    expect(om.exit, JSON.stringify(om.printed)).toBe(0);
+    const text = String(data(om)["text"]);
+    expect(text).toContain("* a loop");
+    expect(text).toContain("The wiki's render door refused the fold (cap-denied: read on lar:///ha.ka.ba/wikis/daemon/working required)");
+    expect(text).toContain(`lares tiddler get '${URI}' --recipe default --meme --all`);
+    expect(data(om)).toMatchObject({ folded: false, unfolded: "refused" });
+    const hum = await run(argv(["hum", "lares-alpha"]));
+    expect(hum.exit).toBe(0);
+    expect(data(hum)).toMatchObject({ folded: false, unfolded: "refused", total: 1600 });
+  });
+
+  test("a fold cut at the render's ceiling even at pulse names the truncation, never an absent skin", async () => {
+    stage({ carrier: "<<a cut carrier", truncated: true });
+    const r = await run(argv(["om", "lares-alpha"]));
+    expect(renders().map((c) => /aperture:"([a-z]+)"/.exec(String(c.args["text"]))![1])).toEqual(["measure", "beat", "pulse"]);
+    const text = String(data(r)["text"]);
+    expect(text).toContain("truncated at the cap");
+    expect(text).not.toContain("holds none");
+    expect(text).not.toContain("<<a cut carrier");
+    expect(text).toContain("* a loop");
+    expect(data(r)).toMatchObject({ folded: false, unfolded: "truncated" });
   });
 
   test("om leads the wake with the carrier the wiki folded, the testimony and the doors beneath it", async () => {
