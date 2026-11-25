@@ -33,7 +33,7 @@ import {
   assertShareKindFree, parseShareFile, parseShareFilter, resolveShare, serializeShareFile, shareEntryBag, ShareConfigRefusal, SHARE_CONFIG_FILE,
   type ShareFace, type ShareEntry,
 } from "@lararium/mesh";
-import { ensureRealmLabel, RealmRefused } from "@lararium/node";
+import { ensureRealmLabel } from "@lararium/node";
 import type { ParsedArgs } from "../parse-args.js";
 import { harnessSeatMarked } from "../local-connector.js";
 import { LIVE_SHARE_DOORS, landShares, shareSetArgs, type ShareDoors } from "../share-doors.js";
@@ -224,8 +224,9 @@ export function cmdShare(kind: "bag" | "wiki", doors: ShareDoors = LIVE_SHARE_DO
             const e = ensureRealmLabel(doors.projections(), w["slug"], w["realmId"]);
             if (e.line !== undefined) doors.out(`  ${e.line}`);
           } catch (err) {
-            if (!(err instanceof RealmRefused)) throw err;
-            doors.err(`lares ${kind} share: the realm label of ${w["slug"]} records no id: ${err.message}`);
+            // THE GRANTS LANDED ALREADY: a label that cannot be written (a refusal, a filesystem fault) names itself and never
+            // aborts the share, so the owner write-back below still runs.
+            doors.err(`lares ${kind} share: the realm label of ${w["slug"]} records no id: ${err instanceof Error ? err.message : String(err)}`);
           }
         }
         // A SEAT THAT TOOK NO LOCKBOX names itself and its cure: its saves into the workbench wait until a landing hands one.

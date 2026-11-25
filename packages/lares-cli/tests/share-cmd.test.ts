@@ -10,6 +10,7 @@
  *   SH6 — a row of the other kind standing for the slug refuses `share-kind-standing`, writes nothing and rides no verb;
  *         `--remove` unshares the row (file and control document), and the other kind then shares
  *   SH14 — a share that founds the workbench writes the realm id back to its realm label; `realm list` reads it (weld)
+ *   SH15 — a realm label write that fails names itself on stderr and never aborts the share or its owner write-back
  */
 import { afterAll, describe, expect, test } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
@@ -194,6 +195,16 @@ describe("the share door", () => {
     expect(await cmdRealm({ command: "realm", positional: ["list"], options: {}, flags: { json: false } }, realmDoors)).toBe(0);
     expect(out.join("\n"), "the label records the realm the share founded").toContain(`realm ${ID.slice(0, 12)}`);
     expect(out.join("\n")).not.toContain("(realm id unread)");
+  });
+
+  test("SH15 — a realm label that cannot be written never aborts the share: the line names it on stderr, the share exits as it would, and the owner still reaches the file and the control document", async () => {
+    const ID = "ef".repeat(32);
+    const f = fake({ applied: { granted: 1, carried: 0, pending: 0, waiting: [], workbenches: [{ slug: "garden", realmId: ID, members: 2, owner: 0, founded: true }] } });
+    const doors: ShareDoors = { ...f.doors, projections: () => { throw new Error("EACCES: permission denied, open 'realm-labels/garden.json'"); } };
+    expect(await cmdShare("wiki", doors)(args(["garden"], { write: "h1" }))).toBe(0);
+    expect(f.err.join("\n")).toMatch(/the realm label of garden records no id: EACCES/);
+    expect(parseShareFile(f.file()!)[0]?.owner, "the owner write-back still runs").toBe("joshua-fontany");
+    expect(f.verbs.map((v) => v.name)).toEqual(["share-set", "share-apply", "share-set"]);
   });
 
   test("SH12 — a seated face whose hand-over refused reads by name with its cure, and the line exits 1, never a bare landing", async () => {
