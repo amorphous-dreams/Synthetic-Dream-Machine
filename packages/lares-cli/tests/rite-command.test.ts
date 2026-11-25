@@ -126,7 +126,7 @@ describe("kukulu-asks-a-route-only-where-the-day-owes-one", () => {
     expect(t.calls).toEqual(["checkout", STAGE, BEGIN, OFFER, `raise ${HEAD}`, LAND]);
   });
 
-  it("RED: a moved closure a keeper commit names vests with no terminal: the successor stands before the offer, the vouches name the move, and the raise carries its key; CONTROL: a struck fire due, an unlit keeper, no lei to ride, or no keeper-stand still owes the light", async () => {
+  it("RED: a moved closure a successor names vests with no terminal: the successor stands before the offer, the vouches name the move, and the raise carries its key; CONTROL: a struck fire due, an unlit keeper, no lei to ride, or no keeper-stand still owes the light", async () => {
     const to = "c".repeat(64), closure = "sha256:" + "9".repeat(64);
     const f = fakes({ tty: false, reading: { pulama: "moved", lit: true, keeper: "vests" }, keeper: { to, closure } });
     expect((await riteKukulu(f.ports, {})).code).toBe(0);
@@ -144,17 +144,17 @@ describe("kukulu-asks-a-route-only-where-the-day-owes-one", () => {
     }
   });
 
-  it("RED: a moved closure no commit names yet rests a keeper commit the standing kukulu lei licenses, with no terminal and no count of its own, then rides the keeper move as a hand's commit would; CONTROL: a refused commit names the hand line and raises nothing, and a kukulu lei absent or spent licenses none", async () => {
+  it("RED: a moved closure no commit names yet rests a successor the standing kukulu lei licenses, with no terminal and no count of its own, then rides the keeper move as a hand's commit would; CONTROL: a refused commit names the hand line and raises nothing, and a kukulu lei absent or spent licenses none", async () => {
     const to = "c".repeat(64), closure = "sha256:" + "9".repeat(64);
     const f = fakes({ tty: false, reading: { pulama: "moved", lit: true, keeper: "lei" }, keeper: { to, closure }, leiSpend: true, leiStands: true });
     expect((await riteKukulu(f.ports, {})).code).toBe(0);
     const offer = `rite-offer ${JSON.stringify({ branch: "main", head: HEAD, image: IMAGE, keeperTo: to, keeperNext: closure })}`;
     expect(f.calls).toEqual(["checkout", "checkout", STAGE, `keeper-lei-spend ${HEAD} main`, BEGIN, "keeper-stand", offer, `raise ${HEAD} --keeper-to ${to}`, LAND]);
-    expect(f.said.join("\n")).toMatch(/the kukulu lei on main licenses a keeper commit naming the closure of a{12}; the rite's return spends on it, and the living fire passes with no route/);
+    expect(f.said.join("\n")).toMatch(/the kukulu lei on main licenses a successor naming the closure of a{12}; the rite's return spends on it, and the living fire passes with no route/);
     const refused = fakes({ tty: false, reading: { pulama: "moved", lit: true, keeper: "lei" }, keeper: { to, closure }, leiSpend: false, leiStands: true });
     expect(await riteKukulu(refused.ports, {})).toMatchObject({ code: 0, data: { begun: false, awaits: "hand" } });
     expect(refused.calls).toEqual(["checkout", "checkout", STAGE, `keeper-lei-spend ${HEAD} main`]);
-    expect(refused.said.join("\n")).toMatch(/the keeper rested no commit under the kukulu lei[\s\S]*lares pulama keeper-commit[\s\S]*your hand: lares rite kukulu on a terminal/);
+    expect(refused.said.join("\n")).toMatch(/the keeper rested no commit under the kukulu lei[\s\S]*lares pulama name-successor[\s\S]*your hand: lares rite kukulu on a terminal/);
     for (const leiStands of ["absent", "returns-spent"]) {
       const dry = fakes({ tty: false, reading: { pulama: "moved", lit: true, keeper: "lei" }, keeper: { to, closure }, leiSpend: true, leiStands });
       expect(await riteKukulu(dry.ports, {}), leiStands).toMatchObject({ code: 0, data: { begun: false, awaits: "hand" } });

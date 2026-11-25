@@ -2,7 +2,7 @@
  * keeper-cosign — THE VEST'S CO-SIGN, CARRIED: a face of two devices co-signs the keeper's handoff before the commit rests, and the
  * commit carries the spent co-sign so the keeper can read it offline (the keeper opens no document, so it never reads the plane).
  *
- * THE ACT. `ward-keeper-vest` names one keeper commit: its head binds the successor closure D′, the chain head the commit links to
+ * THE ACT. `ward-keeper-vest` names one successor: its head binds the successor closure D′, the chain head the commit links to
  * (`prev`, null at the founding link), the commit's own nonce and the face's device roster as the vessel read it, so a co-sign
  * answers one commit on one roster and no other. The vessel runs the
  * act through the ward co-sign gate (`wardCosignGate`) with no effect of its own: the gate issues the intent and its ask, a second
@@ -37,7 +37,7 @@ import { wardCosignGate, wardCosignIntentId, type WardCosignPort } from "./ward-
 export const KEEPER_VEST_VERB = "ward-keeper-vest" as const;
 /** The name the act binds in the digest's `wiki` slot: the keeper's own chain, never a wiki of the face. */
 export const KEEPER_VEST_WIKI = "pulama-keeper" as const;
-/** A keeper commit's nonce, as a co-signed commit carries it: 32 random bytes in hex. */
+/** A successor's nonce, as a co-signed commit carries it: 32 random bytes in hex. */
 export const KEEPER_NONCE = /^[0-9a-f]{64}$/;
 const HEX64 = /^[0-9a-f]{64}$/;
 
@@ -48,7 +48,7 @@ export interface KeeperVestTerms { readonly next: string; readonly prev: string 
 export const keeperRoster = (devices: readonly string[]): string[] => [...new Set(devices.map((d) => d.toLowerCase()))].sort();
 
 /**
- * The ward act one keeper commit names, on one face's roster. THE ROSTER RIDES THE DIGEST: the issuer's ask and the co-signer's ward
+ * The ward act one successor names, on one face's roster. THE ROSTER RIDES THE DIGEST: the issuer's ask and the co-signer's ward
  * signature both cover the device set the vessel read, so the roster the keeper reads is the one both atoms signed over (and the
  * vessel named; see the header for what that proves).
  */
@@ -118,7 +118,7 @@ export function keeperCosignProofOf(view: IntentView, port: Pick<WardCosignPort,
 }
 
 /**
- * THE VESSEL'S SIDE: run one keeper commit's co-sign through the gate and hand back what the commit carries. A face of one device
+ * THE VESSEL'S SIDE: run one successor's co-sign through the gate and hand back what the commit carries. A face of one device
  * carries its roster and no proof; a face of two carries the spent co-sign, read back where it spent already (it never re-spends).
  * The gate's own refusals pass through unchanged (`ward-awaiting-cosign: <ask cid>` while the second device has not answered).
  */
@@ -129,7 +129,7 @@ export async function keeperCosignGate(port: WardCosignPort, at: KeeperVestTerms
   const carried = (proof: KeeperCosignProof | null): KeeperCosign => {
     const cosign = { ordinal: at.ordinal, group: port.group, devices, proof };
     const refused = keeperCosignRefusal(cosign, terms);
-    if (refused !== null) throw new Error(`keeper-cosign-${refused}: the co-sign this vessel read for the keeper commit would refuse at the keeper`);
+    if (refused !== null) throw new Error(`keeper-cosign-${refused}: the co-sign this vessel read for the successor would refuse at the keeper`);
     return cosign;
   };
   const spent = (): KeeperCosignProof | null => { const view = port.view(); return view ? keeperCosignProofOf(view, port, terms, devices) : null; };

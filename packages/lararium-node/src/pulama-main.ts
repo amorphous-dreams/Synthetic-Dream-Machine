@@ -187,7 +187,7 @@ async function main(): Promise<void> {
     process.exit(code);
   }
   try {
-    const answer = await runHandVerb(verb, verb === "admit" || verb === "lei" || (verb === "keeper-commit" && args.length > 1) ? args : args.length === 1 ? args[0] : args.length === 0 ? undefined : args, { ask: askHand, route: (label, what) => readRoute(label, what)});
+    const answer = await runHandVerb(verb, verb === "admit" || verb === "lei" || (verb === "name-successor" && args.length > 1) ? args : args.length === 1 ? args[0] : args.length === 0 ? undefined : args, { ask: askHand, route: (label, what) => readRoute(label, what)});
     console.log(JSON.stringify(answer, null, 2));
     // A REFUSED REHIVE EXITS NON-ZERO: the JSON names the refusal, and the status keeps a script from reading it as landed.
     const exit = handVerbExit(verb, answer);

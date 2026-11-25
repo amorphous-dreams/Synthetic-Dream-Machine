@@ -570,7 +570,7 @@ function hostPorts(shim: string, say: (line: string) => void): RitePorts {
       } catch { return null; }
     },
     // THE COMMIT THE KUKULU LEI LICENSES: the shim's guards, then the keeper rests it; its lines name any refusal.
-    keeperLeiSpend: async (revision, branch) => (await runShim(shim, ["pulama", "keeper-commit", "--lei", revision, branch])) === 0,
+    keeperLeiSpend: async (revision, branch) => (await runShim(shim, ["pulama", "name-successor", "--lei", revision, branch])) === 0,
     tty: () => process.stdin.isTTY === true && process.stdout.isTTY === true,
     row: (verb, rowArgs) => cliVerb(hostRowLine(verb, rowArgs)),
     standing: async (branch, face) => {

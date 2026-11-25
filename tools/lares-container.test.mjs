@@ -2120,7 +2120,7 @@ test(`${name}: CONTROL rebuild-still-admits-what-the-light-did-not: a light that
   assert.match(r.calls, /pulama-main\.js light --admit\n[\s\S]*pulama-main\.js admit\n/);
 });
 test(`${name}: RED F7 rebuild-lands-only-its-own-commit: a plain relight whose reported closure differs from the live commit's lands nothing (the commit stays for its own rite); CONTROL: a relight on the committed closure lands struck`, { skip: skip || !haveScript }, async () => {
-  const after = (pending, closure) => `{"op":"status","lit":true,"admitted":["sha256:new"],"ended":[],"closure":"${closure}","keeper":{"pending":"${pending}"}}`;
+  const after = (pending, closure) => `{"op":"status","lit":true,"admitted":["sha256:new"],"ended":[],"closure":"${closure}","keeper":{"successor":"${pending}"}}`;
   const other = await run(shim, ["rebuild"], { envFile: PULAMA_ENV, tty: "", checkout: "clean", wornFace: 2, env: { ...REBUILT, FAKE_IMAGE_CLOSURE: CL("b"), FAKE_PULAMA_CLOSURE: CL("a"), FAKE_PULAMA_STATUS_AFTER: after(CL("c"), CL("b")) } });
   assert.equal(other.status, 0, other.stdout);
   assert.doesNotMatch(other.calls, /pulama-main\.js keeper-land/);
@@ -2129,7 +2129,7 @@ test(`${name}: RED F7 rebuild-lands-only-its-own-commit: a plain relight whose r
   assert.match(own.calls, /pulama-main\.js keeper-land/);
 });
 const VEST_TO = "cd".repeat(32);
-const VESTS = { ...REBUILT, FAKE_IMAGE_CLOSURE: CL("b"), FAKE_PULAMA_CLOSURE: CL("a"), FAKE_PULAMA_B_ID: "p2", FAKE_PULAMA_B_RUNNING: "1", FAKE_PULAMA_STATUS: `{"op":"status","lit":true,"admitted":["sha256:new"],"keeper":{"pending":"${CL("b")}"},"vestReady":"${CL("b")}","fire":true}`, FAKE_VEST_ANSWER: '{"op":"keeper-vest","reading":"vested","slot":{"body":{"act":"keeper-slot"},"signer":"s","sig":"g"}}' };
+const VESTS = { ...REBUILT, FAKE_IMAGE_CLOSURE: CL("b"), FAKE_PULAMA_CLOSURE: CL("a"), FAKE_PULAMA_B_ID: "p2", FAKE_PULAMA_B_RUNNING: "1", FAKE_PULAMA_STATUS: `{"op":"status","lit":true,"admitted":["sha256:new"],"keeper":{"successor":"${CL("b")}"},"vestReady":"${CL("b")}","fire":true}`, FAKE_VEST_ANSWER: '{"op":"keeper-vest","reading":"vested","slot":{"body":{"act":"keeper-slot"},"signer":"s","sig":"g"}}' };
 const RITE_OFFER = { "config/kukulu-offer.json": '{"lei":[],"unstrung":[],"vouch":[{"body":{"image":"sha256:new"}}]}\n' };
 test(`${name}: RED keeper-stand-stands-the-successor: the rite's step before its offer stands pulama-b beside the lit keeper, reports its image and closure, and prints the key it offers`, { skip }, async () => {
   const r = await run(shim, ["keeper-stand"], { envFile: PULAMA_ENV, env: { ...VESTS, FAKE_PULAMA_B_RUNNING: "" } });
@@ -2205,22 +2205,22 @@ test(`${name}: rebuild-image-names-the-keeper: a moved closure a live commit nam
   const none = await run(shim, ["rebuild", "--image"], { envFile: PULAMA_ENV, checkout: "clean", env: { ...VESTS, FAKE_PULAMA_STATUS: '{"op":"status","lit":true}' } });
   assert.doesNotMatch(none.stdout, /"keeper"/);
 });
-test(`${name}: pulama-keeper-commit-reads-a-terminal: with no terminal the keeper commit refuses and names the lares verb; nothing reaches the pūlama`, { skip }, async () => {
-  const r = await run(shim, ["pulama", "keeper-commit"], { envFile: PULAMA_ENV, checkout: "clean" });
+test(`${name}: pulama-name-successor-reads-a-terminal: with no terminal the successor naming refuses and names the lares verb; nothing reaches the pūlama`, { skip }, async () => {
+  const r = await run(shim, ["pulama", "name-successor"], { envFile: PULAMA_ENV, checkout: "clean" });
   assert.notEqual(r.status, 0);
-  assert.match(r.stderr, /pulama keeper-commit reads your route on a terminal; run `lares pulama keeper-commit` on one \(nothing committed\)/);
-  assert.doesNotMatch(r.calls, /keeper-commit/);
+  assert.match(r.stderr, /pulama name-successor reads your route on a terminal; run `lares pulama name-successor` on one \(nothing committed\)/);
+  assert.doesNotMatch(r.calls, /name-successor/);
   const land = await run(shim, ["pulama", "keeper-land"], { envFile: PULAMA_ENV });
   assert.equal(land.status, 0, land.stderr);
   assert.match(land.calls, /exec -T pulama node \S+ keeper-land/);
 });
-test(`${name}: RED keeper-commit-lei-guards-the-spend: with no terminal and no route, a revision unreachable from origin/develop, an image label that differs from D′, a red CI run and a face of two devices each refuse by name and send nothing to the pūlama; a green one sends one keeper-commit-lei frame naming D′, the branch whose kukulu lei licenses it, the revision, the run and one device`, { skip: skip || shim !== SH }, async () => {
+test(`${name}: RED name-successor-lei-guards-the-spend: with no terminal and no route, a revision unreachable from origin/develop, an image label that differs from D′, a red CI run and a face of two devices each refuse by name and send nothing to the pūlama; a green one sends one name-successor-lei frame naming D′, the branch whose kukulu lei licenses it, the revision, the run and one device`, { skip: skip || shim !== SH }, async () => {
   const LEI = { ...REBUILT, FAKE_INTENT_SHOW: '{"devices":1}', FAKE_GH_RUN: "77:completed:success" };
-  const spend = (env, origin = true) => run(shim, ["pulama", "keeper-commit", "--lei", "HEAD", "develop"], { envFile: PULAMA_ENV, checkout: "pulama", origin, env: { ...LEI, ...env } });
-  const quiet = (r) => assert.doesNotMatch(r.calls, /keeper-commit-lei/);
+  const spend = (env, origin = true) => run(shim, ["pulama", "name-successor", "--lei", "HEAD", "develop"], { envFile: PULAMA_ENV, checkout: "pulama", origin, env: { ...LEI, ...env } });
+  const quiet = (r) => assert.doesNotMatch(r.calls, /name-successor-lei/);
   const far = await spend({ FAKE_IMAGE_CLOSURE: CL("b") }, false);
   assert.notEqual(far.status, 0);
-  assert.match(far.stderr, /\(keeper-lei-unreachable\)[\s\S]*lares pulama keeper-commit/);
+  assert.match(far.stderr, /\(keeper-lei-unreachable\)[\s\S]*lares pulama name-successor/);
   quiet(far);
   const label = await spend({ FAKE_IMAGE_CLOSURE: CL("b") });
   assert.notEqual(label.status, 0);
@@ -2234,28 +2234,28 @@ test(`${name}: RED keeper-commit-lei-guards-the-spend: with no terminal and no r
   quiet(red);
   const two = await spend({ FAKE_IMAGE_CLOSURE: d, FAKE_INTENT_SHOW: '{"devices":2}' });
   assert.notEqual(two.status, 0);
-  assert.match(two.stderr, /\(keeper-lei-cosign-owed\)[\s\S]*lares pulama keeper-commit/);
+  assert.match(two.stderr, /\(keeper-lei-cosign-owed\)[\s\S]*lares pulama name-successor/);
   quiet(two);
   const green = await spend({ FAKE_IMAGE_CLOSURE: d });
   assert.equal(green.status, 0, green.stderr);
-  const frame = green.calls.match(/exec -T pulama node \S+ keeper-commit-lei (\{.*\})/)?.[1];
+  const frame = green.calls.match(/exec -T pulama node \S+ name-successor-lei (\{.*\})/)?.[1];
   assert.ok(frame, green.calls);
   assert.deepEqual({ ...JSON.parse(frame), rev: "r", tree: "t" }, { next: d, branch: "develop", rev: "r", tree: "t", recheck: "same", image: d, ci: "77:success", devices: 1 });
   assert.match(JSON.parse(frame).rev, /^[0-9a-f]{40}$/);
 });
-test(`${name}: RED keeper-commit-lei-stays-internal: the rite's own step refuses a person at a terminal and names the rite; nothing reaches the pūlama`, { skip: skip || shim !== SH || !haveScript }, async () => {
-  const r = await run(shim, ["pulama", "keeper-commit", "--lei", "HEAD", "develop"], { envFile: PULAMA_ENV, checkout: "pulama", origin: true, tty: "", env: { ...REBUILT } });
+test(`${name}: RED name-successor-lei-stays-internal: the rite's own step refuses a person at a terminal and names the rite; nothing reaches the pūlama`, { skip: skip || shim !== SH || !haveScript }, async () => {
+  const r = await run(shim, ["pulama", "name-successor", "--lei", "HEAD", "develop"], { envFile: PULAMA_ENV, checkout: "pulama", origin: true, tty: "", env: { ...REBUILT } });
   assert.notEqual(r.status, 0);
   assert.match(r.stdout, /the rite's own step[\s\S]*lares rite kukulu/);
-  assert.doesNotMatch(r.calls, /keeper-commit-lei/);
+  assert.doesNotMatch(r.calls, /name-successor-lei/);
 });
 test(`${name}: RED rebuild-image-names-the-keeper-lei: a moved closure the keeper's lei could spend on reads keeper lei, a stale live commit too; CONTROL: a live, current hand commit or the struck fire due reads no lei`, { skip: skip || shim !== SH }, async () => {
   const lei = await run(shim, ["rebuild", "--image"], { envFile: PULAMA_ENV, checkout: "clean", env: { ...VESTS, FAKE_PULAMA_STATUS: '{"op":"status","lit":true,"keeper":{"v":1},"keeperLei":{"left":3,"floor":true},"leiReady":true}' } });
   assert.match(lei.stdout, /"keeper":"lei"/);
-  const pending = await run(shim, ["rebuild", "--image"], { envFile: PULAMA_ENV, checkout: "clean", env: { ...VESTS, FAKE_PULAMA_STATUS: `{"op":"status","lit":true,"keeper":{"pending":"${CL("c")}"},"leiReady":true}` } });
+  const pending = await run(shim, ["rebuild", "--image"], { envFile: PULAMA_ENV, checkout: "clean", env: { ...VESTS, FAKE_PULAMA_STATUS: `{"op":"status","lit":true,"keeper":{"successor":"${CL("c")}"},"leiReady":true}` } });
   assert.doesNotMatch(pending.stdout, /"keeper":"lei"/);
-  // A STALE live commit (the pūlama reads `stalePending`) binds nothing current: the lei supersedes it, so the reading names lei.
-  const stale = await run(shim, ["rebuild", "--image"], { envFile: PULAMA_ENV, checkout: "clean", env: { ...VESTS, FAKE_PULAMA_STATUS: `{"op":"status","lit":true,"keeper":{"pending":"${CL("c")}","stalePending":true,"staleWhy":"self-commit"},"leiReady":true}` } });
+  // A STALE live commit (the pūlama reads `staleSuccessor`) binds nothing current: the lei supersedes it, so the reading names lei.
+  const stale = await run(shim, ["rebuild", "--image"], { envFile: PULAMA_ENV, checkout: "clean", env: { ...VESTS, FAKE_PULAMA_STATUS: `{"op":"status","lit":true,"keeper":{"successor":"${CL("c")}","staleSuccessor":true,"staleSuccessorWhy":"self-successor"},"leiReady":true}` } });
   assert.match(stale.stdout, /"keeper":"lei"/);
   const due = await run(shim, ["rebuild", "--image"], { envFile: PULAMA_ENV, checkout: "clean", env: { ...VESTS, FAKE_PULAMA_STATUS: '{"op":"status","lit":true,"keeper":{"struckDue":true},"leiReady":true}' } });
   assert.match(due.stdout, /"keeper":"struck-due"/);

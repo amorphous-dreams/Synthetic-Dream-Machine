@@ -515,7 +515,7 @@ function storeDoorVerbsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     }),
     "intent-issue": (args) => answer("intent-issue", () => intent("issue", args)),
     "intent-show": (args) => answer("intent-show", () => intent(args["action"] === "delegations" ? "delegations" : "show", args)),
-    // THE KEEPER VEST'S CO-SIGN rides the ask door: it issues (or reads back) one ward ask over a keeper commit.
+    // THE KEEPER VEST'S CO-SIGN rides the ask door: it issues (or reads back) one ward ask over a successor.
     "intent-ask": (args) => answer("intent-ask", () => args["action"] === "keeper-cosign"
       ? runKeeperCosign({ repo, ...opt("catalogUrl", deps.catalogUrl), ...opt("face", int(args["face"])), next: String(args["next"] ?? ""),
         prev: args["prev"] === "none" ? null : String(args["prev"] ?? ""), nonce: String(args["nonce"] ?? "") })
