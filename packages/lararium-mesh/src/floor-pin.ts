@@ -374,7 +374,8 @@ export async function vesselFloorCid(args: {
 export async function vesselMountFloorCid(args: Parameters<typeof vesselFloorCid>[0]): Promise<string | null> {
   let island: LarDoc | null | undefined;
   try { island = args.islandDoc(); } catch { island = null; }
-  return (await vesselFloorCid(args)) ?? genesisFloorCidOf(island);
+  // An island read that throws never fails the mount: the pick reads the one value read above, and no pin then mounts no floor.
+  return (await vesselFloorCid({ control: args.control, islandDoc: () => island })) ?? genesisFloorCidOf(island);
 }
 
 /** The pool doors the floor alert rides: the live islands outside any session, and a wiki verb's placement. */

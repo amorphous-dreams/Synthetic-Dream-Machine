@@ -119,5 +119,8 @@ describe("the mount's floor pick: the pin, else the genesis floor the founding r
     expect(await vesselMountFloorCid({ control: async () => ({ doc: () => withPin }), islandDoc })).toBe(pinned);
     expect(await vesselMountFloorCid({ control: async () => { throw new Error("locked"); }, islandDoc })).toBe(genesis);
     expect(await vesselMountFloorCid({ control: async () => null, islandDoc: () => null })).toBeNull();
+    // An island read that throws falls back, never rejects the mount (cold read #578, finding 5).
+    expect(await vesselMountFloorCid({ control: async () => ({ doc: () => withPin }), islandDoc: () => { throw new Error("torn"); } })).toBe(pinned);
+    expect(await vesselMountFloorCid({ control: async () => null, islandDoc: () => { throw new Error("torn"); } })).toBeNull();
   });
 });
