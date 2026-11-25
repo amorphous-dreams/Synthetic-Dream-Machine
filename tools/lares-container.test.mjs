@@ -2237,11 +2237,14 @@ test(`${name}: RED keeper-commit-lei-stays-internal: the rite's own step refuses
   assert.match(r.stdout, /the rite's own step[\s\S]*lares rite kukulu/);
   assert.doesNotMatch(r.calls, /keeper-commit-lei/);
 });
-test(`${name}: RED rebuild-image-names-the-keeper-lei: a moved closure the keeper's lei could spend on reads keeper lei; CONTROL: a live hand commit or the struck fire due reads no lei`, { skip: skip || shim !== SH }, async () => {
+test(`${name}: RED rebuild-image-names-the-keeper-lei: a moved closure the keeper's lei could spend on reads keeper lei, a stale live commit too; CONTROL: a live, current hand commit or the struck fire due reads no lei`, { skip: skip || shim !== SH }, async () => {
   const lei = await run(shim, ["rebuild", "--image"], { envFile: PULAMA_ENV, checkout: "clean", env: { ...VESTS, FAKE_PULAMA_STATUS: '{"op":"status","lit":true,"keeper":{"v":1},"keeperLei":{"left":3,"floor":true},"leiReady":true}' } });
   assert.match(lei.stdout, /"keeper":"lei"/);
   const pending = await run(shim, ["rebuild", "--image"], { envFile: PULAMA_ENV, checkout: "clean", env: { ...VESTS, FAKE_PULAMA_STATUS: `{"op":"status","lit":true,"keeper":{"pending":"${CL("c")}"},"leiReady":true}` } });
   assert.doesNotMatch(pending.stdout, /"keeper":"lei"/);
+  // A STALE live commit (the pūlama reads `stalePending`) binds nothing current: the lei supersedes it, so the reading names lei.
+  const stale = await run(shim, ["rebuild", "--image"], { envFile: PULAMA_ENV, checkout: "clean", env: { ...VESTS, FAKE_PULAMA_STATUS: `{"op":"status","lit":true,"keeper":{"pending":"${CL("c")}","stalePending":true,"staleWhy":"self-commit"},"leiReady":true}` } });
+  assert.match(stale.stdout, /"keeper":"lei"/);
   const due = await run(shim, ["rebuild", "--image"], { envFile: PULAMA_ENV, checkout: "clean", env: { ...VESTS, FAKE_PULAMA_STATUS: '{"op":"status","lit":true,"keeper":{"struckDue":true},"leiReady":true}' } });
   assert.match(due.stdout, /"keeper":"struck-due"/);
 });

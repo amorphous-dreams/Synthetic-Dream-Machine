@@ -1256,15 +1256,17 @@ function ResolveImage([string]$want) {
 # THE PŪLAMA'S OWN STATUS (`pulama-main.js status`, read detached): whether it stands lit, and whether the admitted set it
 # reads under its key names the image and no tombstone ends it. An unlit pūlama lists no admission; a status that never
 # answers leaves both unread.
-$script:PsLit = ''; $script:PsAdmitted = ''; $script:PsVest = ''; $script:PsStruck = $false; $script:PsPending = ''
+$script:PsLit = ''; $script:PsAdmitted = ''; $script:PsVest = ''; $script:PsStruck = $false; $script:PsPending = ''; $script:PsStale = ''
 function PulamaStatusRead([string]$digest) {
-  $script:PsLit = ''; $script:PsAdmitted = ''; $script:PsVest = ''; $script:PsStruck = $false; $script:PsPending = ''; $script:PsClosure = ''
+  $script:PsLit = ''; $script:PsAdmitted = ''; $script:PsVest = ''; $script:PsStruck = $false; $script:PsPending = ''; $script:PsStale = ''; $script:PsClosure = ''
   $out = $null | & docker compose @Base --profile pulama exec -T (PulamaSvc) node $PulamaMain status 2>$null
   if ($LASTEXITCODE -ne 0) { return }
   $flat = (($out -join '') -replace '\s', '')
   # THE KEEPER TALLY: the live commit's successor closure where it can vest, whether the struck fire is due, and any live commit.
   $script:PsVest = ([regex]::Match($flat, '"vestReady":"(sha256:[0-9a-f]{64})"')).Groups[1].Value
   $script:PsPending = ([regex]::Match($flat, '"pending":"(sha256:[0-9a-f]{64})"')).Groups[1].Value
+  # A STALE live commit (`stalePending`, its `staleWhy`) binds nothing current: the next kukulu lei commit supersedes it.
+  if ($flat -match '"stalePending":true') { $why = ([regex]::Match($flat, '"staleWhy":"([a-z-]+)"')).Groups[1].Value; $script:PsStale = if ($why) { $why } else { 'stale' } }
   $script:PsClosure = ([regex]::Match($flat, '"closure":"(sha256:[0-9a-f]{64})"')).Groups[1].Value
   $script:PsStruck = $flat.Contains('"struckDue":true')
   if ($flat.Contains('"lit":true')) { $script:PsLit = 'yes' }
@@ -1492,7 +1494,8 @@ function StandHouse {
     # closure leaves the commit standing for its own rite.
     if ($script:PsPending -and $script:PsClosure -ne $script:PsPending) {
       $runs = if ($script:PsClosure) { $script:PsClosure } else { 'no reported closure' }
-      [Console]::Error.WriteLine("lares-container: rebuild: the live keeper commit names $($script:PsPending) and this keeper runs $runs; the commit stays for its own rite")
+      if ($script:PsStale) { [Console]::Error.WriteLine("lares-container: rebuild: the live keeper commit names $($script:PsPending) and reads stale ($($script:PsStale)); the next kukulu lei commit supersedes it") }
+      else { [Console]::Error.WriteLine("lares-container: rebuild: the live keeper commit names $($script:PsPending) and this keeper runs $runs; the commit stays for its own rite") }
     }
     if ($script:PsPending -and $script:PsClosure -eq $script:PsPending) {
       $land = $null | & docker compose @Base --profile pulama exec -T (PulamaSvc) node $PulamaMain keeper-land 2>$null
