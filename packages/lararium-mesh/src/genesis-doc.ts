@@ -33,6 +33,7 @@ import {
   CATALOG_DOC_URI,
   LARES_DOC_URI,
   LARES_MEMETIC_WIKITEXT_PLUGIN_URI,
+  LARES_LARARIUM_PLUGIN_URI,
   bagDescriptorUri,
   recipeUri,
 } from "./lar-uris.js";
@@ -143,6 +144,7 @@ export async function verifyPluginAttestation(a: PluginBuildAttestation): Promis
  */
 export type GenesisBlobKind =
   | "grammar"   // the memetic-wikitext grammar — REQUIRED, and kāhuli's GRAMMAR tier
+  | "lararium"  // the house plugin (routes, face, engines, widgets) — REQUIRED, its own ratchet beside the grammar
   | "base"      // required base seed (API/shadow tiddlers) — ships, ratchets nothing
   | "plugin"   // an operator's own offering, layered on top of the required base
   | "stock"    // a stock TW5 plugin (the vanilla and snowwhite themes) packed from the core's own TW5 revision — ships, ratchets nothing
@@ -164,7 +166,7 @@ export interface GenesisPluginEntry {
   readonly sha256:      string;
   readonly mimeType:    string;
   readonly blob:        Uint8Array;
-  /** DECLARED class. Absent reads as `plugin` — the grammar is recognised by its own URI regardless. */
+  /** DECLARED class. Absent reads as `plugin` — the grammar and the house are recognised by their own URIs regardless. */
   readonly kind?:       GenesisBlobKind;
   readonly license?:    string;
   readonly author?:     string;
@@ -516,6 +518,8 @@ function foldRegion(domain: string, entries: readonly RegionEntry[]): string {
 }
 
 const isGrammar  = (p: RegionEntry): boolean => p.id === LARES_MEMETIC_WIKITEXT_PLUGIN_URI;
+// The house reads by its own URI as the grammar does: an offering's rows carry no declared kind.
+const isLararium = (p: RegionEntry): boolean => p.id === LARES_LARARIUM_PLUGIN_URI;
 const isBaseSeed = (p: RegionEntry): boolean => p.kind === "base";
 
 /**
@@ -526,7 +530,7 @@ const isBaseSeed = (p: RegionEntry): boolean => p.kind === "base";
  * A plugin added here moves THIS operator's plugin epoch and nothing further.
  */
 export function computePluginsCid(plugins: readonly RegionEntry[]): string {
-  return foldRegion("lararium-plugins", plugins.filter((p) => !isGrammar(p) && !isBaseSeed(p) && p.kind !== "floor" && p.kind !== "stock"));
+  return foldRegion("lararium-plugins", plugins.filter((p) => !isGrammar(p) && !isLararium(p) && !isBaseSeed(p) && p.kind !== "floor" && p.kind !== "stock"));
 }
 
 /**
@@ -550,6 +554,19 @@ export function computePluginsCid(plugins: readonly RegionEntry[]): string {
  */
 export function computeGrammarCid(plugins: readonly RegionEntry[]): string {
   return foldRegion("lararium-grammar", plugins.filter(isGrammar));
+}
+
+/**
+ * THE LARARIUM REGION — the house plugin's own ratchet, folded over `lares-lararium` ALONE.
+ *
+ * The house (routes, the meme face, the engines, the widgets, the house config) rides its own skin beside the grammar, so a widget
+ * or route edit moves THIS ratchet and leaves the grammar's epoch standing: the grammar names a parse change, the house names a
+ * house change. It folds apart from an operator's plugins for the grammar's reason: every face-daemon and domain wiki loads it.
+ * The ratchet recomputes from the blobs (`foundingRecordDigests`); a founding record carrying no house blob reads its region over
+ * none, so a seed offering the house reads `moved` beside it.
+ */
+export function computeLarariumCid(plugins: readonly RegionEntry[]): string {
+  return foldRegion("lararium-house", plugins.filter(isLararium));
 }
 
 /**

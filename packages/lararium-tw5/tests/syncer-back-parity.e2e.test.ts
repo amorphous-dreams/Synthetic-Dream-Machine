@@ -27,7 +27,9 @@ const PKG = fileURLToPath(new URL("..", import.meta.url));
 const REPO = path.resolve(PKG, "../..");
 const TW5_JS = process.env["LARES_TW5_JS"] ?? path.join(REPO, "TiddlyWiki5/tiddlywiki.js");
 const PLUGIN_TID = path.join(PKG, "dist-plugin/lares-memetic-wikitext.tid");
-const forkPresent = existsSync(TW5_JS) && existsSync(PLUGIN_TID);
+// The meme doors ride the house skin, which loads over the grammar: the server carries both.
+const HOUSE_TID = path.join(PKG, "dist-plugin/lares-lararium.tid");
+const forkPresent = existsSync(TW5_JS) && existsSync(PLUGIN_TID) && existsSync(HOUSE_TID);
 if (!forkPresent) {
   console.error(`syncer-back-parity.e2e: SKIPPED — fork or plugin missing (${TW5_JS} · ${PLUGIN_TID})`);
 }
@@ -64,6 +66,7 @@ async function bootFork(wiki: string, files: Record<string, string>): Promise<Fo
     description: "syncer back-parity e2e", plugins: ["tiddlywiki/tiddlyweb", "tiddlywiki/filesystem"], themes: [], build: {},
   }));
   copyFileSync(PLUGIN_TID, path.join(wiki, "tiddlers/lares-memetic-wikitext.tid"));
+  copyFileSync(HOUSE_TID, path.join(wiki, "tiddlers/lares-lararium.tid"));
   for (const [n, t] of Object.entries(files)) writeFileSync(path.join(wiki, n), t);
   const port = await freePort();
   const base = `http://127.0.0.1:${port}`;

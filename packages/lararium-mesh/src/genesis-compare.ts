@@ -6,9 +6,10 @@
  * every function stays pure and reads only what its caller hands it, so the boot line, the charter-free status
  * read, the kūkulu and the floor shadow read (vessel-island-pool-core) all print the same per-ratchet words.
  *
- * THE FOUR RATCHETS. `engine`, `grammar` and `plugins` name the folded digests (on a pinned floor, grammar and plugins read
- * through its plugins offering: the floor names no grammar field) (`computeEngineCid`,
- * `computeGrammarCid`, `computePluginsCid`); `floor` names the floor manifest CID. The founding record's folded
+ * THE FIVE RATCHETS. `engine`, `grammar`, `lararium` and `plugins` name the folded digests (on a pinned floor, grammar, lararium
+ * and plugins read through its plugins offering: the floor names no grammar field) (`computeEngineCid`,
+ * `computeGrammarCid`, `computeLarariumCid`, `computePluginsCid`); `floor` names the floor manifest CID. The grammar and the house
+ * ride two skins with two ratchets, so a house edit moves `lararium` and leaves `grammar` standing. The founding record's folded
  * digests RECOMPUTE from its own blobs (through `regionEntriesOf`, the one mapping the mint's verify reads), never
  * from its witness tiddlers, so a record whose witness drifted from its bytes reads by its bytes. The floor has no
  * fold: it reads the record's floor witness (`GENESIS_FLOOR_TIDDLER`).
@@ -20,14 +21,14 @@
 import type { LarBlobEntry } from "./base-doc.js";
 import { ENGINE_CORE_ID } from "./base-doc.js";
 import { GENESIS_FLOOR_TIDDLER, type FloorManifest } from "./floor-manifest.js";
-import { computeEngineCid, computeGrammarCid, computePluginsCid, regionEntriesOf, type GenesisSeed } from "./genesis-doc.js";
+import { computeEngineCid, computeGrammarCid, computeLarariumCid, computePluginsCid, regionEntriesOf, type GenesisSeed } from "./genesis-doc.js";
 import { verifyFloorOfferingSet } from "./floor-offering.js";
-import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "./lar-uris.js";
+import { LARES_LARARIUM_PLUGIN_URI, LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "./lar-uris.js";
 import type { PluginOffering } from "./plugin-offering.js";
 import { isPlainMap, ownEntry, plainValue, type StoredTiddlers } from "./stored-value.js";
 
 /** The ratchets, in the order every line names them. */
-export const GENESIS_RATCHETS = ["engine", "grammar", "plugins", "floor"] as const;
+export const GENESIS_RATCHETS = ["engine", "grammar", "lararium", "plugins", "floor"] as const;
 export type GenesisRatchet = typeof GENESIS_RATCHETS[number];
 
 /** One digest per ratchet; null where the side names none. */
@@ -57,8 +58,8 @@ export type GenesisRecordLike = StoredGenesisRecord | Partial<Pick<GenesisSeed, 
 
 /**
  * The pinned floor as the comparison reads it: its manifest CID, its engine fold and plugins offering address, and the
- * offering itself where its bytes read (null or absent where they did not). The floor names no grammar: the parser's bytes
- * ride the offering, so the offering decides both the grammar and the plugins readings.
+ * offering itself where its bytes read (null or absent where they did not). The floor names no grammar: the parser's and the
+ * house's bytes ride the offering, so the offering decides the grammar, lararium and plugins readings.
  */
 export interface FloorPinLike {
   readonly manifestCid: string;
@@ -81,6 +82,7 @@ export function foundingRecordDigests(record: GenesisRecordLike): GenesisDigests
   return Object.freeze({
     engine: core && typeof core.sha256 === "string" && core.sha256.length > 0 ? computeEngineCid(core.sha256) : null,
     grammar: entries ? computeGrammarCid(entries) : null,
+    lararium: entries ? computeLarariumCid(entries) : null,
     plugins: entries ? computePluginsCid(entries) : null,
     floor: typeof floor === "string" && floor.length > 0 ? floor : null,
   });
@@ -94,30 +96,38 @@ export function foundingRecordDigests(record: GenesisRecordLike): GenesisDigests
 export function floorPinDigests(
   manifestCid: string,
   manifest: FloorPinLike["manifest"],
-  offered: { readonly grammar: string | null; readonly plugins: string | null } = { grammar: null, plugins: null },
+  offered: OfferedReadings = { grammar: null, lararium: null, plugins: null },
 ): GenesisDigests {
   const field = (v: string): string | null => (typeof v === "string" && v.length > 0 ? v : null);
   return Object.freeze({
-    engine: field(manifest.engine), grammar: offered.grammar, plugins: offered.plugins,
+    engine: field(manifest.engine), grammar: offered.grammar, lararium: offered.lararium, plugins: offered.plugins,
     floor: field(manifestCid),
   });
 }
 
+/** The offering-read ratchets: what a pinned floor's plugins offering decides beside the founding record. */
+export interface OfferedReadings { readonly grammar: string | null; readonly lararium: string | null; readonly plugins: string | null }
+
 /**
- * The grammar and plugins a pinned floor's offering reads as, beside the founding record: the record's own digest where the
- * offering carries the same bytes (the parser's for grammar, the whole boot set for plugins), else the offering's address
- * (so it reads moved); absent where no offering read or the record holds no blobs.
+ * The grammar, lararium and plugins a pinned floor's offering reads as, beside the founding record: the record's own digest where
+ * the offering carries the same bytes (the parser's for grammar, the house plugin's for lararium, the whole boot set for plugins),
+ * else the offering's address (so it reads moved); absent where no offering read or the record holds no blobs.
  */
-function offeringReadings(record: GenesisRecordLike, digests: GenesisDigests, pin: FloorPinLike): { readonly grammar: string | null; readonly plugins: string | null } {
+function offeringReadings(record: GenesisRecordLike, digests: GenesisDigests, pin: FloorPinLike): OfferedReadings {
   const blobs = record.blobs ?? null;
-  if (!pin.offering || !blobs) return { grammar: null, plugins: null };
+  if (!pin.offering || !blobs) return { grammar: null, lararium: null, plugins: null };
   const rows = Object.values(blobs).filter((b): b is LarBlobEntry => Boolean(b) && typeof b.mimeType === "string")
     .map((b) => ({ id: b.id, version: b.version ?? "", sha256: b.sha256, mimeType: b.mimeType }));
   const moved = `offering ${pin.manifest.plugins}`;
   const parser = ownEntry(blobs, LARES_MEMETIC_WIKITEXT_PLUGIN_URI);
   const offeredParser = pin.offering.blobs.find((b) => b.id === LARES_MEMETIC_WIKITEXT_PLUGIN_URI);
+  const house = ownEntry(blobs, LARES_LARARIUM_PLUGIN_URI);
+  const offeredHouse = pin.offering.blobs.find((b) => b.id === LARES_LARARIUM_PLUGIN_URI);
   return {
     grammar: digests.grammar === null ? null : parser && offeredParser && offeredParser.sha256 === parser.sha256 ? digests.grammar : moved,
+    // Neither side carrying the house reads as the record's own fold (both name none); one side alone reads moved.
+    lararium: digests.lararium === null ? null
+      : (house === undefined && offeredHouse === undefined) || (house && offeredHouse && offeredHouse.sha256 === house.sha256) ? digests.lararium : moved,
     plugins: digests.plugins === null ? null : verifyFloorOfferingSet(pin.offering, rows) === null ? digests.plugins : moved,
   };
 }
@@ -131,7 +141,7 @@ export function compareGenesisDigests(record: GenesisDigests, other: GenesisDige
   }));
 }
 
-/** The per-ratchet words every surface prints: `engine same · grammar moved · plugins same · floor absent`. */
+/** The per-ratchet words every surface prints: `engine same · grammar moved · lararium same · plugins same · floor absent`. */
 export function ratchetWords(differences: readonly RatchetDifference[]): string {
   return differences.map((d) => `${d.ratchet} ${d.reading}`).join(" · ");
 }

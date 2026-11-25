@@ -1,6 +1,8 @@
 import { makePortTransport } from "../src/port-transport.js";
 import coreUrl from "../../lararium-tw5/tw5-core/tiddlywikicore-5.5.0-prerelease.js?url";
 import housePlugin from "../../lararium-tw5/plugins/lares-memetic-wikitext.json";
+// The house skin loads over the grammar: a face-daemon or domain wiki boots with both.
+import larariumPlugin from "../../lararium-tw5/plugins/lares-lararium.json";
 
 export const lends = () => Object.fromEntries(["global", "Buffer", "process"].map(k => [k, Object.getOwnPropertyDescriptor(globalThis, k)]));
 const sha = async (bytes: Uint8Array): Promise<string> =>
@@ -46,7 +48,7 @@ export async function rig(options: { gate?: Promise<void>; chunks?: number; seal
     }, close() {},
   } });
   // A test's boot set in place of the port's handoff: the house plugin rides as the vessel's own preload; `sealedRest` is the vessel's word, false unless a test stands for a sealed vessel.
-  const seams = { readInputs: async () => ({ coreBytes: bytes, coreCid, preloadedTiddlers: options.preloads ?? [housePlugin as Record<string, unknown>], sealedRest: options.sealedRest === true }) };
+  const seams = { readInputs: async () => ({ coreBytes: bytes, coreCid, preloadedTiddlers: options.preloads ?? [housePlugin as Record<string, unknown>, larariumPlugin as Record<string, unknown>], sealedRest: options.sealedRest === true }) };
   const options2 = { host, port, inputs: { coreCid: "0".repeat(64), pluginCids: [] as string[] }, wikiUri: "wiki", actor: "actor" };
   return { host, port, messages, seams, options: options2, onPlace: (watcher: (msg: Record<string, any>) => void) => { placed.push(watcher); },
     /** The names a vessel gives for this stub's boot set: with them and no `readInputs` seam, the mirror boots from the port's own handoff. */

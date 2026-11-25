@@ -4,6 +4,7 @@ import { glassLocalTitle, makeGlassPortAdaptor } from "./glass-port-adaptor.js";
 import type { GlassPortOptions } from "./glass-port-adaptor.js";
 import type { PortWireRecord } from "@lararium/mesh/record-port";
 import { executableClassOf } from "@lararium/mesh/executable-class";
+import { LARES_LARARIUM_PLUGIN_URI, LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "@lararium/mesh/lar-uris";
 import type { GlassDoor } from "./glass-root.js";
 import { mountGlassCamera } from "./glass-camera.js";
 import { openDefaultStory } from "./default-story.js";
@@ -20,11 +21,12 @@ export interface MirrorSeams {
 type Adaptor = ReturnType<typeof makeGlassPortAdaptor>;
 const nameOf = (error: unknown): string => error instanceof Error ? error.name : "Error";
 
-const HOUSE = "lar:///ha.ka.ba/lararium/plugins/lares/memetic-wikitext";
+/** The house's two skins, the grammar and the house plugin: the boot set carries both by CID, and every mount requires both. */
+const HOUSE_SKINS: ReadonlySet<string> = new Set([LARES_MEMETIC_WIKITEXT_PLUGIN_URI, LARES_LARARIUM_PLUGIN_URI]);
 /**
  * THE CENSUS AND THE GATE, before any module evaluates. A plugin of any type carrying a `syncadaptor` or a `saver` shadow, or a
  * promoted loose module carrying either type, refuses: the mirror is fed by the port alone. Every other person's plugin (not the
- * house plugin, not the core) evaluates only on a vessel whose boot inputs carry `sealedRest` (the browser store's sealed-rest
+ * house's two skins, not the core) evaluates only on a vessel whose boot inputs carry `sealedRest` (the browser store's sealed-rest
  * capability, S's row); until then the gate holds it by its own name and never defaults open.
  *
  * THE GATE READS CAPABILITY, NEVER A NAME. A theme or a language plugin whose shadows carry no JavaScript module evaluates no code:
@@ -48,7 +50,7 @@ export function censusPreloads(preloads: Record<string, unknown>[], sealedRest: 
     const dangerous = fields.some(value => ["syncadaptor", "saver"].includes(String(value["module-type"])));
     const evaluates = fields.some(value => value["module-type"] !== undefined || value["type"] === "application/javascript");
     const gated = plugin["plugin-type"] === "plugin" || evaluates;
-    const kind = dangerous ? "plugin-syncadaptor" : gated && !sealedRest && title !== HOUSE && title !== "$:/core" ? "plugin-gate" : "";
+    const kind = dangerous ? "plugin-syncadaptor" : gated && !sealedRest && !HOUSE_SKINS.has(title) && title !== "$:/core" ? "plugin-gate" : "";
     if (kind) refused.push({ title, kind });
     return !kind;
   });

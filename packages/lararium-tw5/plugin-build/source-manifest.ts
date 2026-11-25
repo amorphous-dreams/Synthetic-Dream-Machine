@@ -1,6 +1,6 @@
 import { mkdirSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
-import { MODULE_MANIFEST } from "./paths.js";
+import { MODULE_MANIFEST, TIDDLERS_DIR } from "./paths.js";
 import { type ModuleManifest, sha256 } from "./module-manifest.js";
 import { witnessPluginInfo, witnessStaticTiddlers } from "./source-witness.js";
 
@@ -35,14 +35,15 @@ export interface PluginSourceManifest {
 export function buildPluginSourceManifest(
   moduleManifest: ModuleManifest,
   moduleManifestSha256: string,
+  island: { readonly tiddlersDir: string; readonly moduleManifest: string } = { tiddlersDir: TIDDLERS_DIR, moduleManifest: MODULE_MANIFEST },
 ): PluginSourceManifest {
   return {
     format: SOURCE_MANIFEST_FORMAT,
     generatedBy: "packages/lararium-tw5/scripts/build-plugin-tiddler.ts",
-    pluginInfo: witnessPluginInfo(),
-    staticTiddlers: witnessStaticTiddlers(),
+    pluginInfo: witnessPluginInfo(island.tiddlersDir),
+    staticTiddlers: witnessStaticTiddlers(island.tiddlersDir),
     moduleManifest: {
-      path: MODULE_MANIFEST,
+      path: island.moduleManifest,
       sha256: moduleManifestSha256,
       moduleCount: moduleManifest.modules.length,
     },

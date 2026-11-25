@@ -38,23 +38,27 @@
  "crossingsOf": [
   {
    "who": "sess-1",
-   "at": "2026-11-24T12:00:00Z"
+   "at": "2026-11-24T12:00:00Z",
+   "seq": 0
   },
   {
    "who": "sess-2",
-   "at": "2026-11-24T11:59:00Z"
+   "at": "2026-11-24T11:59:00Z",
+   "seq": 0
   }
  ],
  "presenceOf": [
   {
    "tag": "lares-alpha#sess-1",
    "body": "sess-1",
-   "at": "2026-11-24T12:00:00Z"
+   "at": "2026-11-24T12:00:00Z",
+   "seq": 0
   },
   {
    "tag": "lares-alpha#sess-2",
    "body": "sess-2",
-   "at": "2026-11-24T11:30:00Z"
+   "at": "2026-11-24T11:30:00Z",
+   "seq": 0
   }
  ],
  "presenceLine": "2 bodies wear lares-alpha: #sess-1aa (you), #sess-2bb since 11:30",
@@ -197,9 +201,7 @@
   "TRUE_UP_EVERY": 25,
   "RESIDUE_CAP_CHARS": 60000,
   "DEEP_CARRY": 3,
-  "PRESENCE_STALE_MS": 1800000,
   "PRESENCE_CAP": 16,
-  "CROSSING_MS": 600000,
   "PRECOMPACT_CARD_CHARS": 4000,
   "ATTENTION_TITLES": 12,
   "MEMORY_PREFIX": "lar:///ha.ka.ba/kahua/memory/",

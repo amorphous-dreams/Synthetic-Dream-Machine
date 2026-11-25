@@ -35,6 +35,7 @@ import { readFileSync, existsSync } from "node:fs";
 import path from "node:path";
 import { TW5Engine } from "../src/tw5-vm.js";
 import LARES_MEMETIC_WIKITEXT_PLUGIN from "../plugins/lares-memetic-wikitext.json" with { type: "json" };
+import LARES_LARARIUM_PLUGIN from "../plugins/lares-lararium.json" with { type: "json" };
 import { TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME, TW5_CORE_SHA256 } from "../src/generated-tw5-version.js";
 import { casBlobPreloads, modulePinsOf } from "../src/module-pins.js";
 import type { TW5CoreBootBlob } from "../src/tw5-host-bridge.js";
@@ -49,17 +50,36 @@ export function vendoredCore(): TW5CoreBootBlob {
 
 const PLUGINS = new URL("../plugins/", import.meta.url).pathname;
 
-/**
- * The grammar plugin's module pins, read off the plugin blob the tree tracks only once its bytes hash to the `pluginJsonSha256`
- * the plugin bake's tracked attestation names. A rig that boots the grammar hands these to `boot` as `modulePins`.
- */
+/** A skin's module pins, read off the plugin blob the tree tracks only once its bytes hash to the `pluginJsonSha256` its tracked
+ *  attestation names. */
+function skinPinsOf(stem: string): ReadonlySet<string> {
+  const attestation = JSON.parse(readFileSync(path.join(PLUGINS, "standalone", `${stem}.attestation.json`), "utf8")) as { pluginJsonSha256: string };
+  return modulePinsOf(casBlobPreloads(new Uint8Array(readFileSync(path.join(PLUGINS, `${stem}.json`))), attestation.pluginJsonSha256));
+}
+
+/** The grammar plugin's module pins. A rig that boots the grammar alone hands these to `boot` as `modulePins`. */
 let grammarPinsRead: ReadonlySet<string> | null = null;
 export function grammarPins(): Set<string> {
-  if (!grammarPinsRead) {
-    const attestation = JSON.parse(readFileSync(path.join(PLUGINS, "standalone", "lares-memetic-wikitext.attestation.json"), "utf8")) as { pluginJsonSha256: string };
-    grammarPinsRead = modulePinsOf(casBlobPreloads(new Uint8Array(readFileSync(path.join(PLUGINS, "lares-memetic-wikitext.json"))), attestation.pluginJsonSha256));
-  }
+  grammarPinsRead ??= skinPinsOf("lares-memetic-wikitext");
   return new Set(grammarPinsRead);
+}
+
+/** Both skins' module pins, the grammar's and the house's: what a rig booting a face-daemon or domain wiki hands to `boot`. */
+let housePinsRead: ReadonlySet<string> | null = null;
+export function skinPins(): Set<string> {
+  housePinsRead ??= skinPinsOf("lares-lararium");
+  return new Set([...grammarPins(), ...housePinsRead]);
+}
+
+/**
+ * The skins a face-daemon or domain wiki loads, in load order: the grammar, then the house that depends on it. A rig booting a
+ * house wiki hands these to `boot` with `skinPins()`.
+ */
+export function houseSkins(): Array<Record<string, unknown>> {
+  return [
+    LARES_MEMETIC_WIKITEXT_PLUGIN as unknown as Record<string, unknown>,
+    LARES_LARARIUM_PLUGIN as unknown as Record<string, unknown>,
+  ];
 }
 
 /** The repository root, for a suite reading real carriers off disk. */
@@ -77,9 +97,10 @@ export const wikiSkip: false | string = existsSync(CORE_PATH)
 export const skipNote = wikiSkip ? ` [SKIPPED: ${wikiSkip}]` : "";
 
 /**
- * Boot a wiki holding the grammar and nothing else.
+ * Boot a wiki holding the skins a house wiki loads (the grammar and the house) and nothing else; `skins: "grammar"` boots the
+ * grammar alone, as a published wiki loads it.
  *
- * `extraPlugins` rides for a suite needing more than the grammar; `tiddlers` seeds records the suite
+ * `extraPlugins` rides for a suite needing more than the skins; `tiddlers` seeds records the suite
  * authors itself. Both stay empty by default, so the plain call yields the same wiki every time.
  */
 export async function bootTestWiki(opts: {
@@ -87,12 +108,15 @@ export async function bootTestWiki(opts: {
   tiddlers?: Array<Record<string, string | string[]>>;
   /** Pins for modules an extra plugin packs, the way a verified offering would carry them. */
   modulePins?: ReadonlySet<string>;
+  /** The skins to load: both (a face-daemon or domain wiki, the default) or the grammar alone (a published wiki). */
+  skins?: "house" | "grammar";
 } = {}): Promise<TW5Engine> {
   const engine = new TW5Engine();
+  const grammarOnly = opts.skins === "grammar";
   await engine.boot(vendoredCore(), [
-    LARES_MEMETIC_WIKITEXT_PLUGIN as unknown as Record<string, unknown>,
+    ...(grammarOnly ? [LARES_MEMETIC_WIKITEXT_PLUGIN as unknown as Record<string, unknown>] : houseSkins()),
     ...(opts.extraPlugins ?? []),
-  ], undefined, { modulePins: new Set([...grammarPins(), ...(opts.modulePins ?? [])]) });
+  ], undefined, { modulePins: new Set([...(grammarOnly ? grammarPins() : skinPins()), ...(opts.modulePins ?? [])]) });
   for (const t of opts.tiddlers ?? []) engine.setTiddler(t);
   return engine;
 }

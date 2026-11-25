@@ -1,0 +1,11 @@
+{
+  "title": "lar:///ha.ka.ba/lararium/plugins/lares/lararium",
+  "name": "lararium",
+  "description": "The Lararium house for TiddlyWiki5: meme routes, placement, the meme face, house engines, widgets and house config; loads over the memetic-wikitext grammar",
+  "author": "lares",
+  "version": "0.1.0",
+  "core-version": ">=5.4.0",
+  "plugin-type": "plugin",
+  "dependents": "lar:///ha.ka.ba/lararium/plugins/lares/memetic-wikitext",
+  "plugin-priority": 20
+}

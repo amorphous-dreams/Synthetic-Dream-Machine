@@ -244,6 +244,10 @@ export const KAHUA_DOC_URI = bagUri("kahua");
 // A meme namespace carries no relation to a bag-doc identity, so it takes no `bags/`
 // kind-segment.
 export const LARES_MEMETIC_WIKITEXT_PLUGIN_URI = stableLarUri("lararium/plugins/lares/memetic-wikitext");
+// The house plugin — the second skin beside the grammar: the routes, the face, the engines, the widgets and the house
+// config every face-daemon and domain wiki runs. It requires the grammar and the grammar never requires it, so a wiki
+// that loads it loads the grammar first (plugin.info `dependents`), and a grammar-only wiki renders memes with no house.
+export const LARES_LARARIUM_PLUGIN_URI = stableLarUri("lararium/plugins/lares/lararium");
 
 // Shared tag/state law — consumed by vessel projections, not owned by any one runtime.
 export const GRAMMAR_TAG = stableTagUri("SharktoothSigil");

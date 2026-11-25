@@ -1,52 +1,60 @@
 /**
- * smoke-plugin-boot — verify the plugin-tiddler boot path.
+ * smoke-plugin-boot — verify the plugin-tiddler boot path, for both skins.
  *
- * Boots a fresh TW5Engine in-process, passing LARES_MEMETIC_WIKITEXT_PLUGIN
- * as boot()'s plugin argument (the caller supplies plugins explicitly — the
- * engine preloads nothing by itself); TW5's standard plugin loader unpacks
- * it. We then assert that every static tiddler the tracked source declares
- * is present in the running wiki — the roll is DERIVED by reading
- * `tiddlers/*.tid` directly (`witnessStaticTiddlers`, the same reader the
- * plugin build itself calls), never hand-enumerated and never routed
- * through the build's own output — plus the plugin's own title and the
- * parser's registration in TW5's own registry (`tw.Wiki.parsers`), each a
- * named assertion.
+ * Boots a fresh TW5Engine in-process, passing both packed skins (the grammar,
+ * LARES_MEMETIC_WIKITEXT_PLUGIN, then the house, LARES_LARARIUM_PLUGIN, as a
+ * face-daemon or domain wiki loads them) as boot()'s plugin argument (the caller
+ * supplies plugins explicitly — the engine preloads nothing by itself); TW5's
+ * standard plugin loader unpacks them. We then assert that every static tiddler
+ * the tracked source declares is present in the running wiki — the roll is
+ * DERIVED by reading each skin's island (`tiddlers/*.tid`, `tiddlers-lararium/*.tid`)
+ * directly (`witnessStaticTiddlers`, the same reader the plugin build itself calls),
+ * never hand-enumerated and never routed through the build's own output — plus
+ * each plugin's own title, the parser's registration in TW5's own registry
+ * (`tw.Wiki.parsers`) and a house route's registration, each a named assertion.
  *
  * Exit nonzero if any check fails.
  */
 import { readFileSync } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "@lararium/mesh";
+import { LARES_LARARIUM_PLUGIN_URI, LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "@lararium/mesh";
 import { frameCarrier } from "@lararium/memetic-frame";
 import { TW5Engine } from "../src/tw5-vm.js";
-import { LARES_MEMETIC_WIKITEXT_PLUGIN } from "../src/plugin-tiddler.generated.js";
+import { LARES_LARARIUM_PLUGIN, LARES_MEMETIC_WIKITEXT_PLUGIN } from "../src/plugin-tiddler.generated.js";
 import { exportMemeText } from "../src/meme-write.js";
 import { TW5_CORE_SCRIPT_FILENAME, TW5_CORE_DIR, TW5_CORE_SHA256 } from "../src/generated-tw5-version.js";
 import { casBlobPreloads, modulePinsOf } from "../src/module-pins.js";
 import { witnessStaticTiddlers } from "../plugin-build/source-manifest.js";
+import { PLUGIN_SKINS } from "../plugin-build/skins.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 async function main(): Promise<void> {
   const corePath = path.join(TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME);
   const coreBlob = { bytes: new Uint8Array(readFileSync(corePath)), sha256: TW5_CORE_SHA256 };
-  // The grammar's module pins: the tracked plugin blob, read only once it hashes to the bake attestation's pin.
+  // Each skin's module pins: the tracked plugin blob, read only once it hashes to its bake attestation's pin.
   const plugins = path.join(__dirname, "..", "plugins");
-  const attestation = JSON.parse(readFileSync(path.join(plugins, "standalone", "lares-memetic-wikitext.attestation.json"), "utf8")) as { pluginJsonSha256: string };
-  const modulePins = modulePinsOf(casBlobPreloads(new Uint8Array(readFileSync(path.join(plugins, "lares-memetic-wikitext.json"))), attestation.pluginJsonSha256));
+  const modulePins = new Set<string>();
+  for (const skin of PLUGIN_SKINS) {
+    const attestation = JSON.parse(readFileSync(path.join(plugins, "standalone", `${skin.stem}.attestation.json`), "utf8")) as { pluginJsonSha256: string };
+    for (const pin of modulePinsOf(casBlobPreloads(new Uint8Array(readFileSync(path.join(plugins, `${skin.stem}.json`))), attestation.pluginJsonSha256))) modulePins.add(pin);
+  }
   const engine = new TW5Engine();
-  await engine.boot(coreBlob, [LARES_MEMETIC_WIKITEXT_PLUGIN as unknown as Record<string, unknown>], undefined, { modulePins });
+  await engine.boot(coreBlob, [
+    LARES_MEMETIC_WIKITEXT_PLUGIN as unknown as Record<string, unknown>,
+    LARES_LARARIUM_PLUGIN as unknown as Record<string, unknown>,
+  ], undefined, { modulePins });
 
   const failures: string[] = [];
   const wiki = engine.wiki;
 
   // THE SHADOW ROLL IS DERIVED, NEVER ENUMERATED: every static tiddler expected comes from reading
-  // the TRACKED source directly — `witnessStaticTiddlers` walks `tiddlers/*.tid`, the same reader
+  // the TRACKED source directly — `witnessStaticTiddlers` walks each skin's island, the same reader
   // the plugin build itself calls to populate its (gitignored, build-produced) source manifest — so
   // this check never depends on that manifest existing, and a tiddler added to, renamed in, or
   // removed from `tiddlers/*.tid` enters or leaves this roll with no code change here.
-  const expectedTitles = witnessStaticTiddlers().map((t) => t.title);
+  const expectedTitles = PLUGIN_SKINS.flatMap((skin) => witnessStaticTiddlers(skin.tiddlersDir).map((t) => t.title));
   for (const title of expectedTitles) {
     if (!wiki.getTiddler(title)) failures.push(`missing tiddler: ${title}`);
   }
@@ -54,12 +62,15 @@ async function main(): Promise<void> {
   // The plugin's own title and the parser registry are named assertions, not part of the derived
   // roll: pluginInfo is metadata ABOUT the packed tiddlers, not one of them, and the parser check
   // reads TW5's own registry (`tw.Wiki.parsers`), the house's real record of what registered.
-  if (!wiki.getTiddler(LARES_MEMETIC_WIKITEXT_PLUGIN_URI)) {
-    failures.push(`missing tiddler: ${LARES_MEMETIC_WIKITEXT_PLUGIN_URI}`);
+  for (const title of [LARES_MEMETIC_WIKITEXT_PLUGIN_URI, LARES_LARARIUM_PLUGIN_URI]) {
+    if (!wiki.getTiddler(title)) failures.push(`missing tiddler: ${title}`);
   }
   const tw = (engine as unknown as { _tw: { Wiki?: { parsers?: Record<string, unknown> }; modules?: { types?: Record<string, Record<string, unknown>> } } })._tw;
   const parsers = tw?.Wiki?.parsers ?? {};
   if (!parsers["text/memetic-wikitext+tiddlywiki"]) failures.push("parser not registered: text/memetic-wikitext+tiddlywiki");
+  // The house's routes register over the grammar: one named route stands for the skin.
+  const route = "lar:///ha.ka.ba/lararium/tw5/routes/get-meme";
+  if (!tw?.modules?.types?.["route"]?.[route]) failures.push(`house route not registered: ${route}`);
 
   // Sigil widgets (ahu, aka, kahea, kau, loulou, pranala, pranala-header) live as TW5 \widget
   // definitions in tiddler text, carried by the derived roll above — a render probe does not belong
@@ -179,7 +190,7 @@ async function main(): Promise<void> {
   }
   console.log("✓ plugin boot smoke clean");
   console.log(`  ${expectedTitles.length} shadow tiddlers present`);
-  console.log(`  parser registered; sigil widgets live as TW5 \\widget tiddlers`);
+  console.log(`  parser registered; the house route registered; sigil widgets live as TW5 \\widget tiddlers`);
   console.log(`  sigil-ahu wikitext tiddler present (~ahu + ~kahea~ahu defined)`);
   console.log(`  wikitext sigil tiddlers present; render probes live in integration flow tests`);
   console.log(`  deserializer carriage: prologue + postamble ride as records under the carrier`);
