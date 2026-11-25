@@ -116,7 +116,7 @@ export function titleMismatch(pet, title) {
   const slug = titleSlug(title);
   if (slug !== null && (slug === pet || slug.startsWith(`${pet}-`))) return null;
   const named = title.trim().slice(0, 80);
-  return `this session's title reads "${named}"; the seated familiar reads "${pet}". A rename renames, never retargets: this body stays ${pet} and wakes from ${pet}'s record. ` +
+  return `this session's title reads "${named}"; the seated familiar reads "${pet}". A rename renames, never retargets: this instance stays ${pet} and wakes from ${pet}'s record. ` +
     `To keep the new name as an alias, record it: lares spirit ah ${pet} --slot '#/entry' --add ${shq(`''renames:'' ${pet} -> ${named}`)}`;
 }
 
@@ -128,7 +128,7 @@ export const omSourceOf = (source) => (["startup", "resume", "clear", "compact",
  * this session id; a startup's counter reads stale) keeps it, and says so to the door (`--held`), so a retitle reads as that
  * familiar's rename, never a switch. A fresh session hands the door the seated familiar (the hook's argument, a default) with
  * its title beside it, and the door reads the title by the house's one rule: a title naming a standing record wakes it (another
- * body joining any already awake), a startup's title no record answers prints that familiar's starter as an offer, never the
+ * instance joining any already awake), a startup's title no record answers prints that familiar's starter as an offer, never the
  * seated card, and a fork's inherited title counts only where its record stands. With none seated, the title's slug asks for
  * itself. One read, never a race of candidates.
  */
@@ -193,13 +193,13 @@ export function compactionAsk(pet, shape = null, inherits = null) {
   return [
     `End the summary with a section headed "${heading}", in these fixed slots, one line each where it fits:`,
     `pet: ${pet}`,
-    `inherits: ${typeof inherits === "string" && inherits !== "" ? inherits : "none"} (the hash of the ${COMPACTION_DISPLAY} this body woke from)`,
+    `inherits: ${typeof inherits === "string" && inherits !== "" ? inherits : "none"} (the hash of the ${COMPACTION_DISPLAY} this instance woke from)`,
     "open: the open loops by name (PR numbers, heads, what each waits on, whose hand it needs)",
     "tells: any new tells (a joint to watch, never a debt)",
-    "body: one line on what this body did",
+    "instance: one line on what this instance did",
     ...(typeof shape === "string" && shape.trim() !== "" ? [`The familiar's own carry-shape:\n${shape.trim()}`] : []),
     `The PostCompact hook lands the whole summary as the ${COMPACTION_DISPLAY} under lar:///ha.ka.ba/kahua/memory/${COMPACTION_WORD}/, and writes nothing to the card; ` +
-      `the next body files its #/bodies line, and the card (lares spirit om ${pet}) outranks the summary on that wake.`,
+      `the next instance files its #/instances line, and the card (lares spirit om ${pet}) outranks the summary on that wake.`,
   ].join("\n");
 }
 
@@ -207,13 +207,13 @@ export function compactionAsk(pet, shape = null, inherits = null) {
 export const PRECOMPACT_CHARS = 9_800;
 
 /**
- * The PreCompact text, in the crossing's order: the card's #/open and #/kulana read to the outgoing body first (the CLI cuts
+ * The PreCompact text, in the crossing's order: the card's #/open and #/kulana read to the outgoing instance first (the CLI cuts
  * them short enough that the ask still lands), then the carry ask in fixed slots, a manual /compact's own instructions
  * echoed, then the rows in play.
  */
 export function precompactText({ pet, shape = null, inherits = null, card = "", instructions = "", carry = "" }) {
   const parts = [
-    pet === null || !card ? null : `The card, read to the outgoing body before it folds (the record outranks this summary):\n${card}`,
+    pet === null || !card ? null : `The card, read to the outgoing instance before it folds (the record outranks this summary):\n${card}`,
     pet === null ? null : compactionAsk(pet, shape, inherits),
     typeof instructions === "string" && instructions.trim() !== "" ? `The operator's own instructions for this compaction: ${instructions.trim()}` : null,
     carry || null,
@@ -316,15 +316,15 @@ export function stopStep(state, every = state.every ?? TRUE_UP_EVERY) {
 }
 
 /** The true-up's words: the doors that true and fold the record, and why they ask now. */
-export function trueUpText(pet, step, body = null) {
+export function trueUpText(pet, step, instance = null) {
   const why = step.fire === "unfiled"
     ? `the last ${COMPACTION_DISPLAY} landed unfiled (${String(step.unfiled).slice(0, 400)})`
     : `${step.state.turns} turns passed since the session began`;
-  const self = typeof body === "string" && /^[A-Za-z0-9_-]{1,128}$/.test(body) ? ` --body ${body}` : "";
+  const self = typeof instance === "string" && /^[A-Za-z0-9_-]{1,128}$/.test(instance) ? ` --instance ${instance}` : "";
   const open = digestsOf(step?.state?.digests)["#/open"];
   return [
     `Lares spirit true-up · ${pet}: ${why}.`,
-    `True the record before the next move: add a line with lares spirit ah ${pet} --slot '<slot>' --add '<line>' on #/bodies, #/open or #/kulana${self}; ` +
+    `True the record before the next move: add a line with lares spirit ah ${pet} --slot '<slot>' --add '<line>' on #/instances, #/open or #/kulana${self}; ` +
       `rewrite a slot whole with lares spirit ah ${pet} --slot '#/open' --file <path> --base ${open ?? "<the slot digest your last om or ah handed back>"}${self}` +
       `${open ? " (the digest as of this session's wake; a later ah hands back the newer one)" : ""}; ` +
       `measure and fold: lares spirit hum ${pet} (then --fold '<slot>' lists each line's digest; --line <n> --expect <digest>${self}). The budget refuses growth; you choose what folds.`,

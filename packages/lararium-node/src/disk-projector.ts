@@ -76,6 +76,12 @@
  * projector pins names the document it read (`documentOf`). A base that names another document reads as no base of
  * this one: the judge leaves its file standing and raises nothing, its row stays in the tree, and a carrier this
  * document also holds writes nothing over it and stands off by name.
+ *
+ * A BASE VOUCHES ONLY FOR RECORDS THAT STILL HOLD ITS HISTORY (`pastRecords`). Every base this projector pins names the
+ * heads its document stood at (`lineageOf`). A document that reads back WITHOUT those heads lost the write the agreement
+ * saw: a save that never rested before the vessel went down, a restored snapshot, a blank document standing in for one
+ * that failed to load. Its render (or its silence) says nothing newer than the file, so nothing writes over the file and
+ * nothing unlinks it: the carrier stands off, and the alert names the door that lands the file's words back.
  */
 
 import { writeFileSync, mkdirSync, unlinkSync, existsSync, readFileSync, readdirSync, rmdirSync } from "fs";
@@ -137,6 +143,17 @@ export interface LarDiskProjectorOptions {
    * here: its file stays, its row stays, and nothing writes over it (`otherDocument`).
    */
   readonly documentOf?: (bagId: string) => string | null;
+  /**
+   * THE HISTORY A BAG'S DOCUMENT HOLDS, in this composition (null: its store carries none). `heads` names where the
+   * document stands now, and every base this projector pins carries them; `holds` answers whether the document still
+   * holds a base's heads. A document that lacks them fell behind that agreement (`pastRecords`).
+   */
+  readonly lineageOf?: (bagId: string) => {
+    readonly heads: readonly string[] | null;
+    holds(heads: readonly string[]): boolean;
+    /** No write landed in the document since it mounted: it reads exactly as it loaded. Absent reads false. */
+    readonly quiet?: boolean;
+  } | null;
   readonly recoveryFileFn?: (fields: Record<string, unknown>) => Promise<CarrierFile | null>;
   /**
    * Render a mirrored bag's OWN record of a carrier root — off that bag's records, never the resolved view. Present, an
@@ -446,6 +463,12 @@ export interface StandoffSides {
   readonly disk: string | null;
   readonly records: string;
   readonly base?: { readonly disk: string; readonly records: string };
+  /**
+   * THE RECORDS FELL BEHIND THE BASE (`pastRecords`): the document the base names, the heads it lacks, and whether the
+   * document stood quiet since it mounted (no write landed, so it holds nothing newer than what it loaded). The keeper
+   * reads this to keep the disk with no hand (`standoff-drafts.ts`).
+   */
+  readonly behind?: { readonly doc?: string; readonly heads: readonly string[]; readonly quiet: boolean };
 }
 
 interface StandoffEntry extends Partial<StandoffSides> {
@@ -542,6 +565,7 @@ export class LarDiskProjector {
   private readonly baseFromGit: BaseFromGit | undefined;
   private readonly untrackedAt: CarrierTracking | undefined;
   private readonly documentOf: LarDiskProjectorOptions["documentOf"];
+  private readonly lineageOf: LarDiskProjectorOptions["lineageOf"];
   private readonly journal: VesselJournal | undefined;
   private readonly onBagProjected: ((info: { bagId: string; path: string }) => void) | undefined;
   private readonly projectedBags = new Set<string>();
@@ -551,6 +575,7 @@ export class LarDiskProjector {
     this.carrierFileFn = opts.carrierFileFn;
     this.recoveryStore = opts.recoveryStore;
     this.documentOf = opts.documentOf;
+    this.lineageOf = opts.lineageOf;
     this.recoveryFileFn = opts.recoveryFileFn;
     this.recordFileFn = opts.recordFileFn;
     this.topRecordFn = opts.topRecordFn;
@@ -1210,6 +1235,17 @@ export class LarDiskProjector {
     return mine !== undefined && base.doc !== mine;
   }
 
+  /**
+   * Whether a base stands PAST the records this composition reads: it names heads, and the bag's document lacks them.
+   * The document read back without the write that agreement saw, so the base vouches for no write and no unlink here.
+   * A base with no heads, or a store with no history to ask, answers false and vouches as it always did.
+   */
+  private pastRecords(bagId: string, base: SyncedBase | null): boolean {
+    if (base === null || base.heads === undefined) return false;
+    const lineage = this.lineageOf?.(bagId) ?? null;
+    return lineage !== null && !lineage.holds(base.heads);
+  }
+
   /** The base that stands at `path` for THIS document's records, or null: another document's base names none here. */
   private ownBaseAt(bagId: string, uri: string, path: string): SyncedBase | null {
     const base = this.syncedTree.baseAt(syncedTreeKey(bagId, uri), path);
@@ -1244,7 +1280,7 @@ export class LarDiskProjector {
 
   /** Pin an agreement between the file at `path` and this document's records. */
   private pin(bagId: string, uri: string, path: string, diskHash: string, recordsHash: string = diskHash): void {
-    this.syncedTree.set(syncedTreeKey(bagId, uri), path, diskHash, recordsHash, this.docOf(bagId));
+    this.syncedTree.set(syncedTreeKey(bagId, uri), path, diskHash, recordsHash, this.docOf(bagId), this.lineageOf?.(bagId)?.heads ?? undefined);
   }
 
   /** The base at `path` leaves, unless it names another document: that row stays with the file it vouches for. */
@@ -1271,14 +1307,15 @@ export class LarDiskProjector {
    *   absent   no content file stands there (a sidecar may, alone and unproven: it stays);
    *   agreed   its bytes equal the disk side of the base standing AT THAT PATH, or say what the records
    *            render: byte for byte, or through the family's congruence. Nothing a hand added rests there;
-   *   held     anything else, with the hash of what stands. The file stays.
+   *   held     anything else, with the hash of what stands. The file stays. `behind` marks a file whose base agrees
+   *            with it while the records fell behind that base (`pastRecords`): the file holds the newer words.
    *   another  the base standing AT THAT PATH names another document: the file mirrors that document's records,
    *            so it stays, and this document's pass says nothing of it.
    *
    * `recordsHash` names the render the records carry, or null where the records hold no such carrier:
    * then the base alone can vouch.
    */
-  private judgeHome(bagId: string, uri: string, contentPath: string, recordsHash: string | null): "absent" | "agreed" | "another" | { readonly held: string } {
+  private judgeHome(bagId: string, uri: string, contentPath: string, recordsHash: string | null): "absent" | "agreed" | "another" | { readonly held: string; readonly behind?: true } {
     if (this.otherDocument(bagId, this.syncedTree.baseAt(syncedTreeKey(bagId, uri), contentPath))) return "another";
     let body: string, meta: string | undefined, binary: boolean;
     try {
@@ -1301,7 +1338,9 @@ export class LarDiskProjector {
     } catch { return { held: "unreadable" }; }
     const hash = carrierHash(body, meta);
     const base = this.syncedTree.baseAt(syncedTreeKey(bagId, uri), contentPath);
-    if (base !== null && digestsEqual(hash, base.disk)) return "agreed";
+    // A base past the records vouches for no unlink: the document lost the write this file still carries.
+    const behind = this.pastRecords(bagId, base);
+    if (base !== null && digestsEqual(hash, base.disk) && !behind) return "agreed";
     if (recordsHash !== null) {
       if (digestsEqual(hash, recordsHash)) return "agreed";
       const ext = extname(contentPath);
@@ -1315,7 +1354,7 @@ export class LarDiskProjector {
       }
       if (canonical !== null && digestsEqual(canonical, recordsHash)) return "agreed";
     }
-    return { held: hash };
+    return behind && base !== null && digestsEqual(hash, base.disk) ? { held: hash, behind: true } : { held: hash };
   }
 
   /**
@@ -1375,20 +1414,22 @@ export class LarDiskProjector {
    */
   private settleHomes(bagId: string, uri: string, homes: readonly string[], recordsHash: string | null, toward: string | null, why: string): boolean {
     const agreed: string[] = [];
-    const held: Array<{ readonly path: string; readonly hash: string }> = [];
+    const held: Array<{ readonly path: string; readonly hash: string; readonly behind?: true }> = [];
     for (const home of [...new Set(homes)].sort()) {
       const verdict = this.judgeHome(bagId, uri, home, recordsHash);
       if (verdict === "agreed") agreed.push(home);
       else if (verdict === "absent") continue;   // no body stands there; a sidecar left alone proves nothing and stays
       else if (verdict === "another") continue;  // another document's file: it stays, and nothing stands off
-      else held.push({ path: home, hash: verdict.held });
+      else held.push({ path: home, hash: verdict.held, ...(verdict.behind ? { behind: true as const } : {}) });
     }
     if (held.length > 0) {
       const standoff = sha256HexBytesSync(new TextEncoder().encode([bagId, uri, "home", toward ?? "", ...held.map((h) => `${h.path}\n${h.hash}`), recordsHash ?? ""].join("\n"))).slice(0, 24);
       if (this.answered.get(sitedKey(bagId, uri)) !== standoff) {
         const where = held.map((h) => h.path).join(", ");
-        this._enterStandoff(bagId, uri, standoff, "home",
-          `${why}: the file at ${where} holds bytes no agreement covers, so it stays${toward !== null ? ` and nothing writes at ${toward}` : ""}. Ingest that file, or take the records' side under key ${standoff} (the file then leaves)`);
+        const lost = held.every((h) => h.behind === true);
+        this._enterStandoff(bagId, uri, standoff, "home", lost
+          ? `${why}: the records fell behind their last agreement with the file at ${where} (the document read back without the write that agreement saw: a save that never rested, or a document that failed to load), so the file stays${toward !== null ? ` and nothing writes at ${toward}` : ""}. Land the file's words again through the wiki's own door (a meme: \`lares tiddler put ${uri} --recipe <wiki> --meme --file ${where}\`). Or take the records' side under key ${standoff} (the file then leaves)`
+          : `${why}: the file at ${where} holds bytes no agreement covers, so it stays${toward !== null ? ` and nothing writes at ${toward}` : ""}. Ingest that file, or take the records' side under key ${standoff} (the file then leaves)`);
         return false;
       }
       // The person named this very state and took the records' side: the held files give way.
@@ -2217,6 +2258,8 @@ export class LarDiskProjector {
           syncedRecordsHash: base?.records ?? null,
           recordsHash:       gateRecords,
           diskCanonicalHash,
+          // A HEAD base rests in no tree and names no heads; a synced base past the records vouches for no write.
+          ...(!headed && this.pastRecords(bagId, base) ? { recordsBehindBase: true } : {}),
           ...(this.answered.get(key) === standoff ? { answer: "take-records" as const }
             : this.restoreAsked.has(key) ? { answer: "restore" as const } : {}),
         });
@@ -2269,13 +2312,17 @@ export class LarDiskProjector {
         const doors = `Take the disk's words: \`lares shore take-disk ${tiddlerUri} --key ${standoff}\`. Take the records' words: \`lares shore take-records ${tiddlerUri} --key ${standoff}\`. Or save in the wiki until both say the same`;
         const reason = another
           ? `the file at ${candidate} mirrors another document's record of ${tiddlerUri} (another face's workbench serves this bag over the same mirror), and this document's records say something else; nothing writes, so that file stays whole. ${doors}`
+          : decision.reason === "records-behind-base"
+          ? `the records fell behind their last agreement with the file at ${candidate} (${decision.reason}): the document read back without the write that agreement saw (a save that never rested, or a document that failed to load), so its older render writes nothing over the file's newer words. Land the file's words whole: \`lares shore keep-disk ${tiddlerUri} --key ${standoff}\`. Take the records' older words: \`lares shore take-records ${tiddlerUri} --key ${standoff}\``
           : decision.reason === "no-base"
           ? `the file at ${candidate} and the records say different things, and no base names a last agreement (${decision.reason}); nothing writes. ${doors}`
           : `the file at ${candidate} and the records both moved past their last agreement (${decision.reason}); nothing writes, so neither edit drowns. ${doors}`;
         // ONE SURFACING PER STANDOFF: the key names the bag, the carrier and the two states. A reconcile
         // that meets the standoff it already raised stays quiet; the write still stands down.
         this._enterStandoff(mirror.bagId, tiddlerUri, standoff, "sides", reason,
-          { path: candidate, disk: diskHash, records: gateRecords, ...(base !== null ? { base: { disk: base.disk, records: base.records } } : {}) });
+          { path: candidate, disk: diskHash, records: gateRecords, ...(base !== null ? { base: { disk: base.disk, records: base.records } } : {}),
+            ...(decision.reason === "records-behind-base" && base?.heads !== undefined
+              ? { behind: { ...(base.doc !== undefined ? { doc: base.doc } : {}), heads: base.heads, quiet: this.lineageOf?.(bagId)?.quiet === true } } : {}) });
         if (renderText !== undefined && !another) this.standoffRenders.set(key, { standoff, text: renderText });
         return;
       }

@@ -19,7 +19,7 @@
  * Meme: lar:///ha.ka.ba/kahua/memory/research/floor-mu#/shape
  */
 import { createHash } from "node:crypto";
-import { ratchetsDiffer, type RatchetDifference } from "@lararium/mesh/genesis-compare";
+import { ratchetsDiffer, type RatchetDifference, seedRatchetStances, seedStanceWords, SEED_HELD_NEXT, SEED_OFFER_NEXT } from "@lararium/mesh/genesis-compare";
 import { type FloorDrift } from "@lararium/mesh/floor-drift";
 import { type FloorShadowTally } from "@lararium/mesh/floor-shadow";
 
@@ -127,10 +127,12 @@ export function readFloorDrifts(input: FloorDriftInputs): FloorDriftRow[] {
       detail: `unread (${input.seedWhy ?? "no seed reads here"})`, next: SEED_NEXT, act: "read" });
   } else {
     const moved = input.seed.ratchets.filter((r) => r.reading !== "same");
+    // Each moved ratchet reads its stance (follow-lei S0): a skin waits as an offer, the engine stays held behind its own cadence.
+    const stances = seedRatchetStances(input.seed.ratchets);
     rows.push({ word: "seed offer", grain: "seed", state: ratchetsDiffer(input.seed.ratchets) ? "drifts" : "level", count: moved.length,
       carriers: moved.map((r) => r.ratchet === "floor" ? "the seed's floor" : r.ratchet), heads: [`seed ${input.seed.cid}`],
-      detail: moved.length > 0 ? `a newer seed waits: ${input.seed.ratchets.map(seedRatchet).join(" · ")}; the founding record keeps serving, and only a re-found takes it (floor adopt stays held)` : "the seed offered stands same on every ratchet",
-      next: SEED_NEXT, act: "read" });
+      detail: moved.length > 0 ? `a newer seed waits: ${input.seed.ratchets.map(seedRatchet).join(" · ")}; the founding record keeps serving; ${seedStanceWords(stances)}` : "the seed offered stands same on every ratchet",
+      next: stances.length > 0 && stances.every((s) => s.stance === "held (engine)") ? SEED_HELD_NEXT : stances.length > 0 ? SEED_OFFER_NEXT : SEED_NEXT, act: "read" });
   }
 
   // shadow tally: level needs at least one clean boot; a tally no boot read clean says nothing level

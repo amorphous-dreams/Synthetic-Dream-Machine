@@ -22,7 +22,7 @@ vi.mock("../src/store-door.js", () => ({
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { cmdKahua } from "../src/commands/kahua.js";
+import { cmdKahua, kahuaLanding } from "../src/commands/kahua.js";
 import { helpLines } from "../src/command-help.js";
 import { parseArgs } from "../src/parse-args.js";
 
@@ -152,5 +152,50 @@ describe("lares kahua", () => {
     expect(await run("carry")).toBe(1);
     expect(await run("carry", CID, "--all")).toBe(1);
     expect(seam.calls).toEqual([]);
+  });
+});
+
+describe("lares kahua under a pūlama: terms -> the pūlama's sign -> land", () => {
+  let lines: string[];
+  const RECORD = { kind: "lar:kahua-act", act: "lift", title: "T" };
+  beforeEach(() => {
+    seam.calls = []; lines = [];
+    seam.preview = { title: "T", digest: DIGEST, relation: "6f1c2b9e-4d3a-4e5f-8a7b-0c1d2e3f4a5b", text: "body", fields: {}, heads: [] };
+    vi.spyOn(console, "log").mockImplementation((line: unknown) => { lines.push(String(line)); });
+    vi.spyOn(console, "error").mockImplementation(() => {});
+  });
+
+  test("RED: `lift --terms` reaches the lift row with `terms` (so the ward door asks no passphrase) and prints exactly ONE line the pūlama's sign takes", async () => {
+    seam.output = { terms: { hand: "terms", kind: "kahua-act", key: "k", record: RECORD }, face: 1 };
+    expect(await run("lift", "T", "--face", "1", "--digest", DIGEST, "--taint", "none", "--terms")).toBe(0);
+    expect(seam.calls.at(-1)).toEqual(["kahua-lift", { face: 1, title: "T", digest: DIGEST, taint: [], terms: true }]);
+    expect(lines).toEqual([JSON.stringify({ face: 1, kind: "kahua-act", record: RECORD })]);
+  });
+
+  test("RED: `--land '<answer>'` lands the pūlama's signed record on the face it signed for, naming the preview's digest with no prompt; CONTROL: a refusal, another kind or another face lands nothing", async () => {
+    seam.output = { cid: CID, parent: null, landed: true };
+    const answer = JSON.stringify({ op: "sign", reading: "signed", face: 1, kind: "kahua-act", record: { body: RECORD, signer: "s", sig: "x" } });
+    expect(await run("lift", "T", "--taint", "none", "--land", answer)).toBe(0);
+    expect(seam.calls.at(-1)).toEqual(["kahua-lift", { face: 1, title: "T", digest: DIGEST, taint: [], signed: { body: RECORD, signer: "s", sig: "x" } }]);
+    expect(await run("withdraw", CID, "--land", answer)).toBe(0);
+    expect(seam.calls.at(-1)).toEqual(["kahua-withdraw", { face: 1, target: CID, signed: { body: RECORD, signer: "s", sig: "x" } }]);
+    const before = seam.calls.length;
+    for (const bad of [
+      JSON.stringify({ op: "sign", reading: "ward-no-slot-opens", face: 1 }),
+      JSON.stringify({ op: "sign", reading: "signed", face: 1, kind: "plugin-offering", record: {} }),
+      JSON.stringify({ op: "publish", reading: "signed", face: 1, kind: "kahua-act", record: {} }),
+      "not json",
+    ]) expect(await run("lift", "T", "--taint", "none", "--land", bad), bad).toBe(1);
+    expect(await run("lift", "T", "--face", "2", "--taint", "none", "--land", answer)).toBe(1);
+    expect(await run("stage", "T", "--text", "x", "--terms")).toBe(1);
+    expect(await run("lift", "T", "--taint", "none", "--terms", "--land", answer)).toBe(1);
+    expect(seam.calls.length).toBe(before);
+    expect(() => kahuaLanding(answer, 3)).toThrow(/h1/);
+  });
+
+  test("CONTROL: a terms read whose act signs nothing (a replay) prints no terms line", async () => {
+    seam.output = { cid: CID, parent: null, landed: false };
+    expect(await run("lift", "T", "--digest", DIGEST, "--taint", "none", "--terms")).toBe(0);
+    expect(lines).toEqual([]);
   });
 });

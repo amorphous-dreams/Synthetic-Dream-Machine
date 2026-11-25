@@ -152,7 +152,7 @@ import { promoteMainVerbs } from "@lararium/mesh/promote-main-verbs";
 import { promoteBoardDoor } from "@lararium/mesh/promote-board-door";
 import { promotions } from "@lararium/mesh/promote-door";
 import { promoteBoardRecords, writePromoteAct } from "@lararium/mesh/promote-board";
-import { resolveNodeIslandPluginCids, nodeOfferingLookup } from "./node-plugin-resolution.js";
+import { resolveNodeIslandPluginCids, nodeOfferingLookup, logFloorFallback } from "./node-plugin-resolution.js";
 import { registerStoreDoorReactors } from "./store-door-registry.js";
 import { makeDurableMailbox, type DurableMailbox } from "./vessel-mailbox.js";
 import { makeRealmPlane, type RealmPlanesHolder } from "./realm-plane.js";
@@ -431,6 +431,7 @@ import { carriedSet, readCarriedCharters }       from "./carried-set.js";
 import { composeLararium, composeHerm, carriageStack, type MeshSelf } from "./node-caps.js";
 import { PLANE_LABELS } from "@lararium/mesh/plane-labels";
 import { shoreInbound } from "@lararium/mesh/prototype-key-shore-door";
+import { vesselMountFloorCid } from "@lararium/mesh/floor-pin";
 
 /** The genesis dir when a caller sites none — resolves through the composable genesis cap
  *  (`LAR_GENESIS` → `<root>/config/config.json` → repo-relative `<corpus>/genesis`). Genesis stays
@@ -4371,8 +4372,10 @@ async function prepareNodeBootOn(
     const offerings = publicationHandle;
     daemonHolder = await standDaemonIsland({
       readJoinedFaces,
-      resolvePlugins: () => resolveNodeIslandPluginCids({
+      resolvePlugins: async () => resolveNodeIslandPluginCids({
         islandBlobs: assembly.islandHandle.doc()?.blobs,
+        floorCid: await vesselMountFloorCid({ control: readControlDoc, islandDoc: () => assembly.islandHandle.doc() }),
+        onFloorFallback: logFloorFallback,
         recipe: { wikiSlug: "daemon" },
         lookup: nodeOfferingLookup(offerings.doc()),
         readBytes: (cid) => readCasBlobFromFs(cid, cidDir),
@@ -5373,9 +5376,12 @@ async function prepareNodeBootOn(
       // THE FLOOR THE VESSEL ACCEPTED (`floor-pin`): each mount reads the pin afresh; no pin mounts genesis.
       floorCid: () => vesselFloorCid({ control: readControlDoc, islandDoc: () => assembly.islandHandle.doc() }),
       foundingRecord: () => assembly.islandHandle.doc(), // the floor shadow read: each mount reads its floor beside the founding record, serving unchanged
-      resolvePluginCids: (recipe) => resolveNodeIslandPluginCids({
+      resolvePluginCids: async (recipe) => resolveNodeIslandPluginCids({
         islandBlobs: assembly.islandHandle.doc()?.blobs,
         recipe,
+        // THE FLIP (3c): the floor this mount stands on supplies its plugin set; the founding record's boot set serves only where none resolves.
+        floorCid: await vesselMountFloorCid({ control: readControlDoc, islandDoc: () => assembly.islandHandle.doc() }),
+        onFloorFallback: logFloorFallback,
         lookup:      nodeOfferingLookup(publicationHandle?.doc()),
         readBytes:   (cid) => readCasBlobFromFs(cid, casDir),
         promoted: (slug) => promoteWiringRef ? promoteWiringRef.boot.promotedFor(slug) : Promise.resolve([]),

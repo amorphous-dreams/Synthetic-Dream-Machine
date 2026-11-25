@@ -217,7 +217,9 @@ describe("one function resolves a session's effective recipe at surface mount", 
       return asked === cid ? bytes : asked === offered.cid ? offered.bytes : null;
     } } };
     const withFloor = await resolved(withBytes);
-    expect(reads).toEqual([cid, offered.cid]);
+    // The flip reads the manifest first for the plugin set: this fixture's `engine` names no fold of the island's core, so the
+    // island's set serves (engine-moved); the session view then reads the manifest and its offering.
+    expect(reads).toEqual([cid, cid, offered.cid]);
     // The manifest's slugs walk sorted: lararium before lares; the plugins offering record follows them.
     expect(withFloor.floorCids).toEqual([cid, lararium, lares, offered.cid, "77".repeat(32)]);
     expect(facetsOfSurfaceRecipe(withFloor).content).toEqual([CORE_CID, GRAMMAR_CID, cid, lararium, lares, offered.cid, "77".repeat(32)]);

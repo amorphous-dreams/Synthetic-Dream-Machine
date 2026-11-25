@@ -141,6 +141,7 @@ export * from "./aperture-selector.js";
 export * from "./entropy-door.js";
 export * from "./ddate.js";
 export * from "./oracle-cast.js";
+export * from "./door-band.js";
 export * from "./epoch-lease.js";
 export { controlHomeUrlOf, standControlHome, readControlHome, nameControlHome, ControlHomeUnavailable, controlStoreOf, vesselOnlyDocIds, floorOnlyDocIds, makeVesselOnlyDocs, VESSEL_LOCKED, CONTROL_HOME_UNNAMED, controlHomeRefusal, assertControlHomeOpen, refusingControlStore, floorAnswerStore, isFloorAnswerTitle, FLOOR_ANSWER_RING, vesselLockedRefusal, type ControlHomeRefusal } from "./control-home.js";
 export { vesselOnlyBook, repoReverdict } from "./vessel-only-book.js";
@@ -313,8 +314,8 @@ export { didKeyFromVerifyingKey, buildCeremonyTiddlers } from "./cold-boot-cerem
 export type { CeremonyTiddler } from "./cold-boot-ceremony.js";
 export { RECIPE_PLANES, effectiveRecipe, recipeRecordStands } from "./recipe-planes.js";
 export type { EffectiveRecipe, RecipePlane } from "./recipe-planes.js";
-export { resolveRecipePluginCids, deriveWikiRecipe, wikiSlugOfBag } from "./surface-recipe.js";
-export type { WikiRecipeDerivation } from "./surface-recipe.js";
+export { resolveRecipePluginCids, deriveWikiRecipe, wikiSlugOfBag, floorMountSet } from "./surface-recipe.js";
+export type { WikiRecipeDerivation, FloorMountReading } from "./surface-recipe.js";
 export { makeIslandRepo, attachMessageChannelSync, replicaHeads, islandPeersOf, markIslandArrival, markWikiIslandPeer, wikiIslandPeersOf } from "./island-repo.js";
 export { wikiIslandWithholds, vesselDocBags, wikiSlotOf, type WikiIslandMount } from "./wiki-island-reach.js";
 export { peerArrivals, type PeerArrival, type PeerArrivals } from "./peer-arrivals.js";
@@ -719,3 +720,7 @@ export * from "./share-config.js";
 export * from "./face-label.js";
 export * from "./secret-shapes.js";
 export * from "./attempt-budget.js";
+
+// The one spirit record's stack and the fold's ranks and commands: each subpath lends what the barrel lends from its module.
+export * from "./spirit-stack.js";
+export * from "./spirit-unfold.js";

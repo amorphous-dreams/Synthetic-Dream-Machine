@@ -33,6 +33,7 @@
  * Meme:    lar:///ha.ka.ba/lararium/api/residency-model
  */
 
+import { askerRefusal } from "@lararium/mesh/hand-refusal";
 import { refuseTw5DocsReserved, refuseTw5DocsWrite } from "@lararium/mesh/tw5-docs-name";
 import { wearOf } from "@lararium/mesh/repo-wear";
 import type { CompositeStore } from "@lararium/mesh/composite-store";
@@ -640,7 +641,7 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
     // A STAND-OFF SETTLES ON A HAND (operator ruling, 2026-11-23): a carrier that stands off at this island's disk shore names
     // a base the gate would trust, so it lands only from a person's line (`take-disk` and `keep-disk` ride exactly such a wave).
     // From any other asker, and whatever the frame says of itself, THAT carrier answers `conflict` and the rest of the wave lands.
-    if (action.verb === "INGEST" && ctx.asker !== "cli" && ctx.asker !== "tab") holdStandoffsForHand(action);
+    if (action.verb === "INGEST" && askerRefusal(ctx.asker) !== null) holdStandoffsForHand(action);
     if (action.verb === "LOAD" && (action.toBag === CONTROL_HOME_ID || action.toBag === SECRET_HOME_ID)) {
       throw new VerbRefusal("private-home-load", "private-home-load: LOAD cannot target the control or secret home; land through a working layer");
     }
@@ -1561,6 +1562,9 @@ async function executeIngest(action: IngestAction, access: BagAccess, opts: Acti
       // An `ingest` receipt carries the placement's warnings — the quoteblock floor's account of a fence
       // it laid, which a bag sink has no rail to raise. An `ingest` and a `noop` row each carry the hash
       // of the render the records hold after the decision: the records side of the base the gesture pins.
+      // A HELD FAMILY TURN NEVER PARKS THE WAVE: the carrier answers `owed` (the write stays queued behind the held turn and lands
+      // when it settles) and the loop moves on to the next carrier, whatever family it holds.
+      if (placed.decision === "owed") { results.push({ uri, decision: "owed", reason: placed.reason, root: placed.root, ...(placed.canonicalHash ? { canonicalHash: placed.canonicalHash } : {}) }); continue; }
       results.push(
         placed.decision === "ingest"  ? withWarnings({ uri, decision: "ingest", grade: placed.grade, landed: placed.landed.length, tombstoned: placed.tombstoned, ...recordsSide(placed.canonicalHash), ...(await landedHeads(access, action.toBag)) }, placed.warnings) :
         placed.decision === "noop"    ? { uri, decision: "noop", reason: placed.reason, ...recordsSide(placed.canonicalHash) } :

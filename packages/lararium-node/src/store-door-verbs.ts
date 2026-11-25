@@ -36,7 +36,8 @@
  *   persona-new                                  a face onto a standing place (`commands/init`)
  *   persona-lease                                a signed lease advance for a face (`commands/persona-lease`)
  *   persona-kel-head                             a persona-KEL head off the local board (`local-persona-kel`)
- *   nexus-publish                                an offering onto the publication board (`commands/nexus-publish`)
+ *   nexus-publish                                an offering onto the publication board (`commands/nexus-publish`); `terms` reads
+ *                                                the descriptor a pūlama's hand signs, `signed` lands the offering it signed
  *   nexus-offering-inspect                       one carried offering, read off the publication board
  *                                                (`commands/nexus-offering-inspect`)
  *   raise-sign                                   a raise grant off the carriage board (`commands/raise-sign`)
@@ -96,6 +97,7 @@ import { SwarmRefused, type SwarmWikiPort } from "@lararium/mesh/swarm-tiddlers"
 import { SWARM_VERB_HAND_CODES } from "@lararium/mesh/swarm-door";
 import { SENSE_HAND_CODES } from "@lararium/mesh/sensorium-lifecycle";
 import { type PromoteCommandRequest } from "@lararium/mesh/promote-command";
+import { handCodesOf } from "@lararium/mesh/hand-refusal";
 import { faceRouteBindDigest, FaceRouteRefused, withFaceRoute } from "./face-route.js";
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
 import type { LarDoc } from "@lararium/mesh/base-doc";
@@ -113,7 +115,7 @@ import { runCabalAct, runCabalCosign, runCabalStanding, NexusCabalError } from "
 import { runFloorRelease } from "./commands/nexus-release.js";
 import { runFloorCut } from "./commands/floor-cut.js";
 import { runOfferRetire } from "./commands/offer-retire.js";
-import { runFloorAccept, runFloorStatus, FloorRefused } from "./commands/floor.js";
+import { runFloorAccept, runFloorAdopt, runFloorSettle, runFloorStatus, FloorRefused } from "./commands/floor.js";
 import { casDirForStorage } from "./node-cas.js";
 import { runNexusKapae, runNexusKapaeList, runNexusKapaeOpen, runNexusKapaePartial, NexusKapaeError } from "./commands/nexus-kapae.js";
 import { runNexusContract, runNexusContractOpen, runNexusContractPartial, runNexusRollAnchor, runNexusRollAnchorOpen, runNexusRollAnchorPartial, runEdgeRollAnchorOpen, runEdgeRollAnchorPartial, runEdgeRollAnchorStanding, runNexusRollPriorAnchorCheck, runNexusMembersList, NexusContractError } from "./commands/nexus-contract.js";
@@ -132,7 +134,7 @@ import { runCabalJoin, CabalJoinError } from "./commands/cabal-join.js";
 import { runFleetJoinAnswer, runFleetJoinOffer, FleetJoinRefused } from "./commands/fleet-join.js";
 import { runHandlePublish, runHandleBurn, runHandleRotate, runHandleAttest } from "./commands/handle.js";
 import { runFoundTheFace } from "./commands/init.js";
-import { runNexusPublishPlugins, NexusPublishError } from "./commands/nexus-publish.js";
+import { runNexusPublishPlugins, runNexusPublishTerms, NexusPublishError } from "./commands/nexus-publish.js";
 import { runNexusInspectOffering, NexusOfferingInspectError } from "./commands/nexus-offering-inspect.js";
 import { runRaiseSign, RaiseSignError } from "./commands/raise-sign.js";
 import { makeLocalPersonaKelHeadAndSeqResolver } from "./local-persona-kel.js";
@@ -227,7 +229,7 @@ export async function awaitOnRolled(call: boolean | void | Promise<boolean | voi
 /** The door's rows, by name — each command's routed call names exactly one of these. */
 export const STORE_DOOR_VERBS = [
   "nexus-kapae", "nexus-kapae-list", "nexus-kapae-open", "nexus-kapae-partial", "nexus-contract", "nexus-contract-open", "nexus-contract-partial", "nexus-roll-anchor", "nexus-roll-anchor-open", "nexus-roll-anchor-partial", "nexus-roll-prior-anchor", "nexus-members-list",
-  "nexus-cabal-act", "nexus-cabal-cosign", "nexus-cabal-standing", "nexus-release", "floor-cut", "offer-retire", "floor-status", "floor-accept",
+  "nexus-cabal-act", "nexus-cabal-cosign", "nexus-cabal-standing", "nexus-release", "floor-cut", "offer-retire", "floor-status", "floor-accept", "floor-adopt", "floor-adopt-apply",
   "nexus-posture", "nexus-admit-take", "nexus-carry-take", "seal-home-refold",
   "edge-kapae", "edge-seat-facts", "edge-seat-duties", "edge-seat-marks", "edge-partial", "edge-cosign", "cabal-vouch", "cabal-join", "cabal-face", "cabal-feed",
   "fleet-join-offer", "fleet-join-answer", "nexus-roll-anchor-edge", "nexus-roll-anchor-edge-open", "nexus-roll-anchor-edge-partial", "nexus-roll-anchor-edge-standing",
@@ -269,29 +271,31 @@ export const STORE_DOOR_FACE_VERBS: ReadonlySet<StoreDoorVerb> = new Set<StoreDo
  */
 export const KAHUA_OPERATOR_VERBS: ReadonlySet<StoreDoorVerb> = new Set<StoreDoorVerb>(["kahua-mint", "kahua-lift", "kahua-withdraw", "kahua-carry"]);
 
-/** A seat session refuses these before custody reads; a client names its own hand, so this gate remains advisory, as for the existing operator rows. */
-export const PROMOTE_HAND_CODES: ReadonlyMap<string, string> = new Map([
-  ["promote-commit", "promote-needs-hand"], ["promote-drop", "promote-needs-hand"], ["promote-orphan", "promote-needs-hand"],
-  ["kapae-raise", "kapae-needs-hand"], ["kapae-lower", "kapae-needs-hand"],
-]);
+/**
+ * THE WINGS' VIEWS OF THE ONE HAND TABLE (`HAND_ADMITS`, `custody.hand.admits`, `@lararium/mesh/hand-refusal`): each names the
+ * rows one door family answers, read off that table, so no wing keys a code of its own. A seat session refuses each before
+ * custody reads; the socket reads the asker off the peer (`peerKindOf`), and the island's own reactor reads it again.
+ */
+const storeRows = (map: ReadonlyMap<string, string>): ReadonlyMap<string, string> =>
+  new Map([...map].filter(([verb]) => (STORE_DOOR_VERBS as readonly string[]).includes(verb)));
 
-/** The swarm rows only a hand runs (the house cap, a lane share, a lei); `swarm-show` stays open to a seat. Advisory like the promote codes: the ward binds them. */
+/** The promote and kapae store rows a hand alone settles (a stage's commit, drop or orphan; a kapae's raise or lower). */
+export const PROMOTE_HAND_CODES: ReadonlyMap<string, string> = storeRows(handCodesOf("promote", "kapae"));
+
+/** The swarm rows only a hand runs (the house cap, a lane share, a lei); `swarm-show` stays open to a seat. */
 export const SWARM_HAND_CODES: ReadonlyMap<string, string> = new Map(Object.entries(SWARM_VERB_HAND_CODES));
 
 /** The floor's accept moves the vessel's floor: a person's act alone (w26-floor-lane#/the-vessel-pin); a seat reads the status. */
-export const FLOOR_HAND_CODES: ReadonlyMap<string, string> = new Map([["floor-accept", "floor-needs-hand"]]);
+export const FLOOR_HAND_CODES: ReadonlyMap<string, string> = handCodesOf("floor");
 
 /**
  * The daemon island's wiki verbs a person's hand alone runs: `retire-wiki` unmints a face's wiki shell. It rides a session's
  * `session:call` (an island verb, never a face row), so the socket refuses a seat's call by this code, and the island's own
- * reactor refuses any asker that is not a hand (`retire-needs-hand`).
+ * reactor refuses any asker but a terminal's (`retire-needs-hand`). THE SHARE ROWS ARE A PERSON'S ACT (sealed-store#/the-share-config):
+ * `share-set` writes who reads and writes a bag, and `share-apply` seats faces and hands each a lockbox under the owner's session,
+ * so no agent surface reaches either.
  */
-export const WIKI_HAND_CODES: ReadonlyMap<string, string> = new Map([
-  ["retire-wiki", "retire-needs-hand"],
-  // THE SHARE ROWS ARE A PERSON'S ACT (sealed-store#/the-share-config): `share-set` writes who reads and writes a bag, and `share-apply`
-  // seats faces and hands each a lockbox under the owner's session, so no agent surface reaches either.
-  ["share-set", "share-needs-hand"], ["share-apply", "share-needs-hand"],
-]);
+export const WIKI_HAND_CODES: ReadonlyMap<string, string> = handCodesOf("retire", "share");
 
 /**
  * The sense lifecycle's hand verbs (`promote`, `retire`, `un-retire`, `purge`): island verbs a session's `session:call` carries,
@@ -304,7 +308,7 @@ export const SENSE_HAND_DOOR_CODES: ReadonlyMap<string, string> = new Map(Object
  * The vessel verbs that write the operator's disk a person's hand alone runs: `wiki-render-out` lands derived bytes in a bound
  * workbench (a disk write grant), so the socket refuses a seat's ask by this code, on a session and on a one-shot line alike.
  */
-export const DISK_WRITE_HAND_CODES: ReadonlyMap<string, string> = new Map([["wiki-render-out", "render-output-needs-hand"]]);
+export const DISK_WRITE_HAND_CODES: ReadonlyMap<string, string> = handCodesOf("render-output");
 
 /**
  * The rite row a person's hand alone runs: `rite-abandon` sets a begun half down (a kāpae over it), so the socket refuses a seat's
@@ -432,6 +436,8 @@ function storeDoorVerbsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     const list = (v: unknown): string[] | undefined => (Array.isArray(v) && v.every((x) => typeof x === "string") ? v as string[] : undefined);
     const parent = args["parent"] === null || args["parent"] === "none" ? null : str(args["parent"]);
     return runKahuaCommand({ repo, ...opt("catalogUrl", deps.catalogUrl), action, ...opt("ward", wardOf(args)),
+      // THE HAND AT THE PŪLAMA: `terms` reads the one body the pūlama's root signs; `signed` lands the record it signed.
+      ...opt("terms", args["terms"] === true ? true : undefined), ...(args["signed"] !== undefined ? { signed: args["signed"] } : {}),
       ...opt("face", int(args["face"])), ...opt("title", str(args["title"])),
       ...opt("text", typeof args["text"] === "string" ? args["text"] : undefined), ...opt("digest", str(args["digest"])),
       ...opt("fields", args["fields"] && typeof args["fields"] === "object" && !Array.isArray(args["fields"]) ? args["fields"] as Record<string, string> : undefined),
@@ -689,6 +695,23 @@ function storeDoorVerbsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       })),
     })),
 
+    // THE LOCAL FLOOR (3d, follow-lei S2): `floor-adopt` previews the seed's plugins over the pin's base and writes nothing;
+    // `floor-adopt-apply` (the hand's) applies it, or commits or reverts a staged local floor (`act`).
+    "floor-adopt": (args) => answer("floor-adopt", async () => ({
+      ...(await runFloorAdopt({
+        repo, sealHome, casDir: deps.casDir ?? casDirForStorage(storageDir), ...opt("aid", str(args["aid"])),
+        seedCid: need("floor-adopt", args, "seedCid"), seedFloor: need("floor-adopt", args, "seedFloor"), apply: false,
+      })),
+    })),
+    "floor-adopt-apply": (args) => answer("floor-adopt-apply", async () => {
+      const common = { repo, sealHome, casDir: deps.casDir ?? casDirForStorage(storageDir), ...opt("aid", str(args["aid"])) };
+      const act = str(args["act"]) ?? "apply";
+      if (act === "commit" || act === "revert") return { ...(await runFloorSettle({ ...common, act })) };
+      if (act !== "apply") throw new Error(`floor-adopt-apply REFUSED: act names apply, commit or revert (got "${act}")`);
+      return { ...(await runFloorAdopt({ ...common, ...opt("floorAlert", deps.floorAlert),
+        seedCid: need("floor-adopt-apply", args, "seedCid"), seedFloor: need("floor-adopt-apply", args, "seedFloor"), apply: true })) };
+    }),
+
     "nexus-posture": (args) => answer("nexus-posture", async () => {
       const doc = readNexusDoc(sealHome);
       const want = args["want"];
@@ -869,9 +892,10 @@ function storeDoorVerbsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       const { head, seq } = await (await makeLocalPersonaKelHeadAndSeqResolver(repo))(prefix);
       return { head, ...(seq !== null ? { seq } : {}) };
     }),
-    "nexus-publish": (args) => answer("nexus-publish", async () => ({
-      ...(await runNexusPublishPlugins({ repo, storageDir, source: need("nexus-publish", args, "source"), ...opt("handleIndex", int(args["handleIndex"])), ...opt("ward", wardOf(args)) })),
-    })),
+    // `terms: true` reads the face and the closed descriptor the pūlama's hand door signs; `signed` lands the offering it signed.
+    "nexus-publish": (args) => answer("nexus-publish", async () => (args["terms"] === true
+      ? { ...(await runNexusPublishTerms({ storageDir, source: need("nexus-publish", args, "source"), ...opt("handleIndex", int(args["handleIndex"])) })) }
+      : { ...(await runNexusPublishPlugins({ repo, storageDir, source: need("nexus-publish", args, "source"), ...opt("handleIndex", int(args["handleIndex"])), ...opt("ward", wardOf(args)), ...(args["signed"] !== undefined ? { signed: args["signed"] } : {}) })) })),
     "nexus-offering-inspect": (args) => answer("nexus-offering-inspect", async () => ({
       ...(await runNexusInspectOffering({ offeringCid: need("nexus-offering-inspect", args, "offeringCid"), storageDir, repo })),
     })),

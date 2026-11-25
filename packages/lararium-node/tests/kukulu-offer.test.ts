@@ -2,27 +2,22 @@
  * kukulu-offer — the standing vessel rests what a kūkulu carries, and the next vessel offers it to the pūlama once: the line's
  * lei out of the vessel's own control records, the vouch it signs over the image the host named, one file in the config home.
  */
-import { existsSync, mkdtempSync, readFileSync, rmSync, statSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { dirname } from "node:path";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
 import { kukuluVouchDigest, verifyKukuluVouch } from "@lararium/mesh/kukulu-vouch";
 import {
-  signSwarmAct,
-  swarmActCid,
-  swarmLeiRecordTitle,
-  swarmLeiUnstrungTitle,
-  type SignedSwarmAct,
-  type SwarmLeiTerms,
-  type SwarmSignerPort,
-  type SwarmTrust,
-  type SwarmWikiPort,
+  signSwarmAct, swarmActCid, swarmLeiRecordTitle, swarmLeiUnstrungTitle,
+  type SignedSwarmAct, type SwarmLeiTerms, type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort,
 } from "@lararium/mesh/swarm-tiddlers";
+import { beginRite, pendingBegins } from "@lararium/mesh/swarm-tessera";
 import type { CustodyHolder } from "../src/custody-holder.js";
 import { kukuluGate, vouchKeyOf } from "../src/kukulu-gate.js";
 import { kukuluRiteOver } from "../src/kukulu-lei-seat.js";
-import { KUKULU_OFFER_FILE, consumeKukuluOffer, writeKukuluOffer, type KukuluOffer } from "../src/kukulu-offer.js";
+import { KUKULU_OFFER_FILE, consumeKukuluOffer, kukuluOfferBase, writeKukuluOffer, type KukuluOffer } from "../src/kukulu-offer.js";
 import { generateOrLoadPersonaGroupRoot, loadPersonaGroupRootVerifyingKey } from "../src/node-vessel-identity.js";
 import { personaGroupDigest } from "../src/persona-group-file.js";
 import { pulamaStandBy, readKukuluOffer } from "../src/pulama-seat.js";
@@ -38,6 +33,8 @@ const BRANCH = "main";
 const HEAD = "a".repeat(40);
 const TREE = "b".repeat(40);
 const IMAGE = "sha256:" + "ab".repeat(32);
+const HEAD2 = "c".repeat(40);
+const IMAGE2 = "sha256:" + "cd".repeat(32);
 const NO_COSIGN = { accepts: () => true };
 
 let fx: PulamaFixture | null = null;
@@ -76,12 +73,16 @@ async function stand() {
     await wiki.write(swarmLeiRecordTitle("kukulu", BRANCH, swarmActCid(lei)), JSON.stringify(lei));
     return lei;
   };
-  const offer = (image = IMAGE) => writeKukuluOffer({ wiki, faces: [{ group: GROUP, trust, ward: NO_COSIGN }], branch: BRANCH, head: HEAD, tree: TREE, image, holder: fx!.local, path });
+  // THE RITE'S BEGIN, as the standing vessel rests it: the lei's return and the guest half, naming the head and the image.
+  const begin = (image: string | undefined = IMAGE, head = HEAD) => beginRite(wiki, { rite: "kukulu", branch: BRANCH, head, tree: TREE, ...(image === undefined ? {} : { image }) }, trust, GROUP, atom, NO_COSIGN);
+  /** The offer over the resting file: its base reads the hash of the file this caller last read (none where none rests). */
+  const offer = (image = IMAGE, o: { head?: string; base?: string | null } = {}) => writeKukuluOffer({ wiki, faces: [{ group: GROUP, trust, ward: NO_COSIGN }], branch: BRANCH, head: o.head ?? HEAD, tree: TREE, image, holder: fx!.local, path,
+    base: o.base === undefined ? kukuluOfferBase(path) : o.base });
   const hello = async (offered: unknown): Promise<string> => {
     try { return (await fx!.vessel(offered).unlock([])).reading; }
     catch (err) { return (err as { reading?: string }).reading ?? String(err); }
   };
-  return { fx, path, wiki, hand, string, offer, hello, raise: (d: string | null) => { raised = d; } };
+  return { fx, path, wiki, hand, string, begin, offer, hello, raise: (d: string | null) => { raised = d; } };
 }
 
 describe("RED kukulu-offer-reaches-the-new-vessel", () => {
@@ -89,6 +90,7 @@ describe("RED kukulu-offer-reaches-the-new-vessel", () => {
     const s = await stand();
     const first = await s.string({ reach: "wide", returns: 1 });
     const lei = await s.string({ reach: "wide", returns: 3 }, swarmActCid(first));
+    await s.begin();
     const wrote = await s.offer();
     expect(wrote).toMatchObject({ path: s.path, lei: 2 });
     expect(statSync(s.path).mode & 0o777).toBe(0o600);
@@ -127,8 +129,11 @@ describe("RED kukulu-offer-reaches-the-new-vessel", () => {
 
   test("a later offer supersedes the last; an unstringing rides the offer; a hello the pūlama refuses leaves the file for the next dial", async () => {
     const s = await stand();
-    const lei = await s.string({ reach: "wide", returns: 2 });
+    const lei = await s.string({ reach: "wide", returns: 3 });
+    await s.begin();
     const one = await s.offer();
+    // A LATER RITE begins over another image, and its offer (over the base it read) supersedes the first.
+    await s.begin(IMAGE2);
     const two = await s.offer("sha256:" + "cd".repeat(32));
     expect(two.vouch).not.toEqual(one.vouch);
     expect((JSON.parse(readFileSync(s.path, "utf8")) as KukuluOffer).vouch[0]!.body.image).toBe("sha256:" + "cd".repeat(32));
@@ -142,21 +147,25 @@ describe("RED kukulu-offer-reaches-the-new-vessel", () => {
     expect(await by.dial()).toEqual({ session: true, waits: null });
     expect(existsSync(s.path)).toBe(false);
 
-    // THE HAND UNSTRINGS the lei in the vessel's records: the next offer carries the unstringing, and the pūlama serves nothing.
+    // THE HAND UNSTRINGS the lei and strings a fresh one after it: the next offer carries the unstringing beside the fresh lei.
     const unstrung = await signSwarmAct({ act: "lei-unstrung", group: GROUP, rite: "kukulu", branch: BRANCH, lei: swarmActCid(lei) }, s.hand);
     await s.wiki.write(swarmLeiUnstrungTitle(swarmActCid(lei)), JSON.stringify(unstrung));
+    await s.string({ reach: "wide", returns: 2 }, swarmActCid(lei));
+    await s.begin(IMAGE2);
     await s.offer("sha256:" + "cd".repeat(32));
-    expect((JSON.parse(readFileSync(s.path, "utf8")) as KukuluOffer).unstrung).toHaveLength(1);
-    expect(await s.hello(readKukuluOffer(s.path))).toBe("swarm-lei-unstrung");
+    const carried = JSON.parse(readFileSync(s.path, "utf8")) as KukuluOffer;
+    expect(carried.unstrung).toHaveLength(1);
+    expect(carried.lei).toHaveLength(2);
   });
 
   test("RED every lent face's line rides the offer: one vouch per face, each over its own group; a face whose line carries no lei rides its vouch and waits by name", async () => {
     const s = await stand();
     await s.string({ reach: "wide", returns: 2 });
+    await s.begin();
     const trust: SwarmTrust = { hand: () => false, vessel: () => false, lead: () => false };
     const wrote = await writeKukuluOffer({
       wiki: s.wiki, faces: [{ group: GROUP, trust: { hand: () => true, vessel: () => true, lead: () => false }, ward: NO_COSIGN, name: "h0" }, { group: "group-two", trust, ward: NO_COSIGN, name: "h1" }],
-      branch: BRANCH, head: HEAD, tree: TREE, image: IMAGE, holder: s.fx.local, path: s.path,
+      branch: BRANCH, head: HEAD, tree: TREE, image: IMAGE, holder: s.fx.local, path: s.path, base: null,
     });
     expect(wrote).toMatchObject({ lei: 1, faces: ["h0", "h1"], waits: ["h1"] });
     const file = JSON.parse(readFileSync(s.path, "utf8")) as KukuluOffer;
@@ -171,10 +180,123 @@ describe("RED kukulu-offer-reaches-the-new-vessel", () => {
     await s.string({ reach: "wide", returns: 2 });
     await expect(s.offer("lares-surface:local")).rejects.toMatchObject({ code: "rite-offer-malformed" });
     expect(existsSync(s.path)).toBe(false);
+    // A LEI WHOSE RETURN NO BEGIN SPENT names no head this vessel ran: the offer writes nothing until the rite begins.
+    await expect(s.offer()).rejects.toMatchObject({ code: "rite-begun-absent" });
+    expect(existsSync(s.path)).toBe(false);
+    await s.begin();
     await s.offer();
     expect(await s.hello(readKukuluOffer(s.path))).toBe("opens");
     expect(consumeKukuluOffer(s.path)).toBe(true);
     expect(consumeKukuluOffer(s.path)).toBe(false);
     expect(consumeKukuluOffer(undefined)).toBe(false);
+  });
+});
+
+/**
+ * THE OFFER BINDS TO THE LEI (operator ruling 2026-11-25, lar:///ha.ka.ba/kahua/memory/ruling/2026-11-25-offer-binds-and-census):
+ * the vessel signs its vouch over the head and image the face's live lei and its begun half name, never over what the caller
+ * picks, and refuses by the gate's own names before it writes; an overwrite of a resting offer names the base it read.
+ */
+describe("RED rite-offer-binds-its-vouch-to-the-lei", () => {
+  test("RED an offer whose lei the hand unstrung refuses swarm-lei-unstrung and writes nothing; a forked line refuses swarm-lei-forked", async () => {
+    const s = await stand();
+    const lei = await s.string({ reach: "wide", returns: 2 });
+    await s.begin();
+    const unstrung = await signSwarmAct({ act: "lei-unstrung", group: GROUP, rite: "kukulu", branch: BRANCH, lei: swarmActCid(lei) }, s.hand);
+    await s.wiki.write(swarmLeiUnstrungTitle(swarmActCid(lei)), JSON.stringify(unstrung));
+    await expect(s.offer()).rejects.toMatchObject({ code: "swarm-lei-unstrung", message: expect.stringMatching(/lares lei kui --rite kukulu --branch main/) });
+    expect(existsSync(s.path)).toBe(false);
+    const t = await stand();
+    await t.string({ reach: "wide", returns: 2 });
+    await t.string({ reach: "wide", returns: 3 });
+    await expect(t.offer()).rejects.toMatchObject({ code: "swarm-lei-forked" });
+    expect(existsSync(t.path)).toBe(false);
+  });
+
+  test("RED an offer naming a head the lei pins otherwise refuses swarm-lei-head-mismatch; a head the begun half never named refuses rite-offer-differs; an image it never named refuses kukulu-image-mismatch", async () => {
+    const s = await stand();
+    await s.string({ reach: "head", head: HEAD });
+    await s.begin();
+    await expect(s.offer(IMAGE, { head: HEAD2 })).rejects.toMatchObject({ code: "swarm-lei-head-mismatch" });
+    expect(existsSync(s.path)).toBe(false);
+    const t = await stand();
+    await t.string({ reach: "wide", returns: 2 });
+    await t.begin();
+    await expect(t.offer(IMAGE, { head: HEAD2 })).rejects.toMatchObject({ code: "rite-offer-differs", message: expect.stringMatching(/lares rite kukulu/) });
+    await expect(t.offer(IMAGE2)).rejects.toMatchObject({ code: "kukulu-image-mismatch" });
+    expect(existsSync(t.path)).toBe(false);
+    // CONTROL: the head and image the begun half names write the offer.
+    expect((await t.offer()).lei).toBe(1);
+  });
+
+  test("RED an overwrite of a resting offer with a stale base, or none, refuses conflict and leaves the resting file; CONTROL: the base just read overwrites", async () => {
+    const s = await stand();
+    await s.string({ reach: "wide", returns: 3 });
+    await s.begin();
+    await s.offer();
+    const stale = kukuluOfferBase(s.path)!;
+    expect(stale).toMatch(/^sha256:[0-9a-f]{64}$/);
+    await s.begin(IMAGE2);
+    await s.offer(IMAGE2);
+    const resting = readFileSync(s.path, "utf8");
+    await expect(s.offer(IMAGE2, { base: stale })).rejects.toMatchObject({ code: "conflict", message: expect.stringMatching(/lares rite receipts --rite kukulu/) });
+    await expect(s.offer(IMAGE2, { base: null })).rejects.toMatchObject({ code: "conflict" });
+    expect(readFileSync(s.path, "utf8")).toBe(resting);
+    await s.offer(IMAGE2, { base: kukuluOfferBase(s.path) });
+    // THE TRUE PATH still serves: the pūlama opens on the offer.
+    s.raise(IMAGE2);
+    expect(await s.hello(readKukuluOffer(s.path))).toBe("opens");
+  });
+});
+
+/** The cold read's findings on 4837a7480 (F2, F3, F5): the honest paths the binding must not stick. */
+describe("RED rite-offer-keeps-the-honest-paths", () => {
+  test("RED F2 (b) a lei restrung after an interrupted begin moves the tip past the lei that paid: the offer binds the begun half that lei's return paid for", async () => {
+    const s = await stand();
+    const paid = await s.string({ reach: "wide", returns: 2 });
+    await s.begin();
+    await s.string({ reach: "wide", returns: 2 }, swarmActCid(paid));
+    expect((await s.offer()).lei).toBe(2);
+  });
+
+  test("RED kapae (a) an unstring tombstones the rite its lei paid for: a fresh lei never resurrects the stopped half, the offer binds nothing until the face begins afresh, and the raw debt hides it so the fresh begin stands", async () => {
+    const t = await stand();
+    const ended = await t.string({ reach: "wide", returns: 2 });
+    await t.begin();
+    await t.wiki.write(swarmLeiUnstrungTitle(swarmActCid(ended)), JSON.stringify(await signSwarmAct({ act: "lei-unstrung", group: GROUP, rite: "kukulu", branch: BRANCH, lei: swarmActCid(ended) }, t.hand)));
+    await t.string({ reach: "wide", returns: 2 }, swarmActCid(ended));
+    await expect(t.offer()).rejects.toMatchObject({ code: "rite-begun-absent" });
+    expect(existsSync(t.path)).toBe(false);
+    expect(await pendingBegins(t.wiki, "kukulu", BRANCH)).toEqual([]);
+    // THE FRESH RITE under the fresh lei binds, and the unstringing still rides.
+    await t.begin();
+    expect((await t.offer()).lei).toBe(2);
+    expect((JSON.parse(readFileSync(t.path, "utf8")) as KukuluOffer).unstrung).toHaveLength(1);
+  });
+
+  test("RED F5 a face whose lei rows stand on no chain from the line's root waits by name, as the begin waits it; CONTROL: the other face's lend stands", async () => {
+    const s = await stand();
+    await s.string({ reach: "wide", returns: 2 });
+    await s.begin();
+    const orphan = await signSwarmAct({ act: "lei", group: "group-two", rite: "kukulu", branch: BRANCH, after: "f".repeat(64), reach: "wide", returns: 2 }, s.hand);
+    await s.wiki.write(swarmLeiRecordTitle("kukulu", BRANCH, swarmActCid(orphan)), JSON.stringify(orphan));
+    const all: SwarmTrust = { hand: () => true, vessel: () => true, lead: () => false };
+    const wrote = await writeKukuluOffer({ wiki: s.wiki, faces: [{ group: GROUP, trust: all, ward: NO_COSIGN, name: "h0" }, { group: "group-two", trust: all, ward: NO_COSIGN, name: "h1" }],
+      branch: BRANCH, head: HEAD, tree: TREE, image: IMAGE, holder: s.fx.local, path: s.path, base: null });
+    expect(wrote).toMatchObject({ lei: 1, faces: ["h0", "h1"], waits: ["h1"] });
+  });
+
+  test("RED F3 an offer some other hand rests while this one signs is never written over: the base re-reads just before the rename and refuses conflict", async () => {
+    const s = await stand();
+    await s.string({ reach: "wide", returns: 2 });
+    await s.begin();
+    let raced = false;
+    const holder = { derive: (domain: Parameters<typeof s.fx.local.derive>[0]) => {
+      if (!raced) { raced = true; mkdirSync(dirname(s.path), { recursive: true }); writeFileSync(s.path, "another hand's offer"); }
+      return s.fx.local.derive(domain);
+    } };
+    await expect(writeKukuluOffer({ wiki: s.wiki, faces: [{ group: GROUP, trust: { hand: () => true, vessel: () => true, lead: () => false }, ward: NO_COSIGN }],
+      branch: BRANCH, head: HEAD, tree: TREE, image: IMAGE, holder, path: s.path, base: null })).rejects.toMatchObject({ code: "conflict" });
+    expect(readFileSync(s.path, "utf8")).toBe("another hand's offer");
   });
 });

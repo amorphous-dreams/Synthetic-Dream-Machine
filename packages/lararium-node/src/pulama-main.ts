@@ -29,6 +29,14 @@
  *                                                   real terminal, the face root signs one record here, and the answer prints
  *                                                   it for the vessel to land (`lares lei land`); terms naming `faces` sign
  *                                                   one record per face under that one route
+ *   node dist/src/pulama-main.js publish '<terms>'  the operator signs one plugin offering (`lares nexus publish plugins --terms`
+ *                                                   prints the terms: the face and the closed descriptor): reads the route on a
+ *                                                   real terminal, the face root signs that one descriptor here, and the answer
+ *                                                   prints the signed offering for the vessel to land (`--land`)
+ *   node dist/src/pulama-main.js sign '<terms>'     the operator signs ONE record of the closed set (`lares kahua lift|withdraw|carry
+ *                                                   --terms` prints the terms: the face, the kind, the record): the door checks it
+ *                                                   first, then reads the route on a real terminal, the face root signs that one
+ *                                                   record here, and the answer prints it for the vessel to land (`--land`)
  *
  * Environment (every name required for `serve`; the hand verbs need `LAR_PULAMA_HAND` alone):
  *   LAR_ROOT            the house root whose hearth this pūlama keeps (the same root the vessel names)
@@ -98,6 +106,17 @@ async function serve(): Promise<void> {
     group: async (ordinal: number) => (await loadIdentityAnchors(ordinal).catch(() => null))?.personaGroupId ?? null,
     signer: (ordinal: number, credentials: Parameters<typeof wardCredential>[0]) => wardRootSigner(ordinal, wardCredential(credentials), `the face root at h${ordinal}, for a lei at the pūlama's hand door`),
   };
+  // THE PUBLISH HAND reads the face root's public key off its roster row and opens its root fresh under the route for ONE offering.
+  const publish = {
+    key: handKey,
+    signer: (ordinal: number, credentials: Parameters<typeof wardCredential>[0]) => wardRootSigner(ordinal, wardCredential(credentials), `the face root at h${ordinal}, for a plugin offering at the pūlama's hand door`),
+  };
+  // THE SIGN HAND signs ONE record of the closed set (`pulama-sign`) under the face root, opened fresh under the route.
+  const sign = {
+    key: handKey,
+    group: lei.group,
+    signer: (ordinal: number, credentials: Parameters<typeof wardCredential>[0]) => wardRootSigner(ordinal, wardCredential(credentials), `the face root at h${ordinal}, for one record at the pūlama's hand door`),
+  };
   // THE REHIVE runs over this pūlama's own holder and custody files: the face's key opens for the act alone (`openFaceForAct`).
   const rehive = (ordinal: number, credentials: Parameters<typeof wardCredential>[0]) => rehiveShutFace({ holder, io: new FsCustodyIo(homes), ordinal, credentials });
   // THE FIRE IS THE VESSEL SOCKET, and exactly one keeper holds it. A keeper that finds another already answering there stands
@@ -111,7 +130,7 @@ async function serve(): Promise<void> {
   };
   // THIS KEEPER HOLDS THE FIRE while its claim still names the socket path (a claim another keeper displaced reads as none).
   const fire = { holds: () => listener !== null && listener.owns(), take: claim };
-  const door = pulamaHandDoor({ holder, server, image, records, admissions, lei, rehive, fire, keeperRite, worn: () => server.worn?.(), onLog: log });
+  const door = pulamaHandDoor({ holder, server, image, records, admissions, lei, publish, sign, rehive, fire, keeperRite, worn: () => server.worn?.(), onLog: log });
 
   const successor = await pulamaAnswers(socket);
   if (!successor) { const first = await claim(); if ("refusal" in first) throw new Error(first.detail); }

@@ -6,7 +6,7 @@ import { mountedFaceOrdinal } from "../src/node-vessel-identity.js";
 import { setMountedFace } from "../src/node-vessel-identity.js";
 import type { CustodyHolder } from "../src/custody-holder.js";
 
-function harness(opts: { pulama?: boolean; lockThrows?: boolean; unlockGate?: Promise<void>; heldSaves?: Array<{ ordinal: number; cause: string; saves: number }> } = {}) {
+function harness(opts: { pulama?: boolean; lockThrows?: boolean; unlockGate?: Promise<void>; heldSaves?: Array<{ ordinal: number; cause: string; saves: number }>; peer?: "ai" | "hand" | "unknown" } = {}) {
   const open = new Set(["0"]);
   const holder = {
     unlock: async () => ({ reading: "already-unlocked" }),
@@ -40,6 +40,8 @@ function harness(opts: { pulama?: boolean; lockThrows?: boolean; unlockGate?: Pr
   }
   const handle = custodyFrameHandler({ holder, lightFace, dropFace, releaseFace, releaseFaces, holdFace, holdFaces, replayLend, closeFaces, recompose, standing: () => "hearth", onLog: () => {}, testScratch: false,
     runAct: async () => ({ ran: true }),
+    // The line's peer, as the socket reads it (the hand gate's test seam): a hand unless the test names another reading.
+    peerOf: async () => opts.peer ?? "hand",
     ...(opts.heldSaves ? { refusedHolds: () => opts.heldSaves! } : {}),
     ...(opts.pulama === true ? { pulama: { standing: () => ({ session: true, waits: null }), dial: async () => ({ session: true, waits: null }), lent: () => [], tellWorn: () => {} } } : {}) } as unknown as Parameters<typeof custodyFrameHandler>[0]);
   const send = (frame: unknown) => new Promise<Record<string, unknown>>((resolve) => {
@@ -304,6 +306,23 @@ test("F4 THE LOSS IS A PERSON'S WORD: a wear frame carrying acceptLoss from an A
   expect(await h.send({ op: "wear", face: 1, acceptLoss: true, seat: "ai" })).toMatchObject({ op: "wear", status: "error", refusal: { reason: "accept-loss-needs-hand" } });
   expect(h.recompose).not.toHaveBeenCalled();
 });
+for (const peer of ["ai", "unknown"] as const) {
+  test(`F5 THE FRAME'S SEAT WORD ONLY NARROWS: an unmarked wear carrying acceptLoss whose peer reads ${peer} refuses accept-loss-needs-hand, and nothing composes`, async () => {
+    setMountedFace(0); const h = harness({ peer, heldSaves: HELD }); h.open.add("1");
+    const answer = await h.send({ op: "wear", face: 1, acceptLoss: true });
+    expect(answer).toMatchObject({ op: "wear", status: "error", refusal: { reason: "accept-loss-needs-hand", reading: peer === "ai" ? "hand-act-only" : "hand-unattested" } });
+    expect(String(answer["errorMessage"])).toContain("lares wear 1 --accept-loss");
+    // A frame that claims a terminal's seat lifts nothing either: the only seat word a wear carries is `ai`.
+    expect(await h.send({ op: "wear", face: 1, acceptLoss: true, seat: "cli" })).toMatchObject({ op: "wear", status: "error", refusal: { reason: "bad-custody-frame" } });
+    expect(h.recompose).not.toHaveBeenCalled();
+  });
+}
+
+test("F5 CONTROL: a wear WITHOUT acceptLoss moves the mount whatever the peer reads (a seat wears on the operator's word)", async () => {
+  setMountedFace(0); const h = harness({ peer: "ai" }); h.open.add("1");
+  expect(await h.send({ op: "wear", face: 1 })).toMatchObject({ op: "wear", face: 1 });
+});
+
 test("P1 A WEAR THAT WOULD COMPOSE AGAIN REFUSES OVER HELD SAVES, naming the cures; `yes` speaks for the shore's flush alone and still refuses; only the frame's own `acceptLoss` turns anyway", async () => {
   setMountedFace(0); const h = harness({ heldSaves: HELD }); h.open.add("1");
   const answer = await h.send({ op: "wear", face: 1 });

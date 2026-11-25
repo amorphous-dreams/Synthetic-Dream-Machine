@@ -6,6 +6,7 @@
  */
 import { describe, expect, test } from "vitest";
 import type { GenesisRatchet, RatchetDifference } from "@lararium/mesh/genesis-compare";
+import { readFloorDrifts } from "@lararium/node";
 import { floorStatusLines, readFloorStatus, type FloorDoors } from "../src/commands/floor.js";
 
 const same = (r: GenesisRatchet): RatchetDifference => ({ ratchet: r, record: "x", other: "x", reading: "same" });
@@ -98,7 +99,7 @@ describe("the five drifts, each by its own word, and the one card", () => {
     const puts: Array<{ title: string; text: string; fields: Record<string, string> }> = [];
     const s = await readFloorStatus({}, doorsOver(() => driftedStatus(), puts));
     expect(s.drifts!.map((r) => r.word)).toEqual(["disk lag", "working ahead", "canon floor drift", "seed offer", "shadow tally"]);
-    expect(s.drifts!.find((r) => r.word === "seed offer")).toMatchObject({ state: "drifts", carriers: ["the seed's floor"], next: "lares vessel floor seed" });
+    expect(s.drifts!.find((r) => r.word === "seed offer")).toMatchObject({ state: "drifts", carriers: ["the seed's floor"], next: "lares vessel floor adopt" });
     expect(s.drifts!.find((r) => r.word === "canon floor drift")).toMatchObject({ state: "drifts", carriers: [CREST] });
     expect(s.drifts!.find((r) => r.word === "disk lag")).toMatchObject({ state: "drifts", count: 1, next: "lares vessel lay", act: "cure" });
     const text = floorStatusLines(s).join("\n");
@@ -127,7 +128,7 @@ describe("the five drifts, each by its own word, and the one card", () => {
     expect(puts[0]).toEqual(puts[1]);
     expect(puts[0]!.title).toMatch(/^lar:\/\/\/ha\.ka\.ba\/kahua\/memory\/state\/floor-[0-9a-f]{12}$/);
     expect(puts[0]!.text).toContain("seed offer");
-    expect(puts[0]!.text).toContain("read with `lares vessel floor seed`");
+    expect(puts[0]!.text).toContain("read with `lares vessel floor adopt`");
     status = driftedStatus({ floorDrift: { manifest: "f".repeat(64), count: 2, carriers: [CREST, `${CREST}-two`], slugs: [], unread: [] } });
     await readFloorStatus({}, doors);
     expect(puts[2]!.fields["floor-cause"]).not.toBe(puts[0]!.fields["floor-cause"]);
@@ -209,5 +210,26 @@ describe("the five drifts, each by its own word, and the one card", () => {
     await readFloorStatus({}, doorsOver(() => driftedStatus({ nexus: "aid" }), puts));
     expect(puts[0]!.title).toMatch(/^lar:\/\/\/ha\.ka\.ba\/kahua\/memory\/state\/floor-[0-9a-f]{12}-[0-9a-f]{12}$/);
     for (const canon of ["lares", "lararium", "crossroads"]) expect(puts[0]!.title.startsWith(`lar:///ha.ka.ba/${canon}/`)).toBe(false);
+  });
+});
+
+describe("the seed offer row names each moved ratchet's stance (follow-lei S0)", () => {
+  const moved = (r: GenesisRatchet): RatchetDifference => ({ ratchet: r, record: "a", other: "b", reading: "moved" });
+  const seedRow = (ratchets: RatchetDifference[]) => readFloorDrifts({ canon: { drift: undefined }, seed: { cid: "c".repeat(64), ratchets }, shadow: null, lag: undefined })
+    .find((r) => r.word === "seed offer")!;
+
+  test("RED: skins read offer and the engine reads held (engine), each with its line; the row no longer says only a re-found takes it", () => {
+    const row = seedRow([moved("engine"), moved("grammar"), moved("lararium"), same("plugins"), moved("floor")]);
+    expect(row.detail).toContain("offer: grammar, lararium, the seed's floor adopt over a local floor");
+    expect(row.detail).toContain("held (engine): the engine stays behind its own cadence threshold");
+    expect(row.detail).not.toContain("only a re-found takes it");
+    expect(row.detail).not.toContain("floor adopt stays held");
+    expect(row.next).toBe("lares vessel floor adopt");
+  });
+
+  test("CONTROL: an engine-only move reads held, and its next line reads the seed row", () => {
+    const row = seedRow([moved("engine"), same("grammar"), same("lararium"), same("plugins"), same("floor")]);
+    expect(row.detail).not.toContain("offer:");
+    expect(row.next).toBe("lares vessel floor status --grain seed");
   });
 });

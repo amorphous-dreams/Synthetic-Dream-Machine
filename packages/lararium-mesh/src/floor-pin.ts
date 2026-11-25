@@ -35,8 +35,9 @@ import { tiddlerText, type LarDoc } from "./base-doc.js";
 import { CONTROL_HOME_ID } from "./lar-uris.js";
 import { storedLarRecord } from "./stored-record.js";
 import { ownEntry, plainRecordOrNull } from "./stored-value.js";
-import { GENESIS_FLOOR_TIDDLER, floorBlobCids } from "./floor-manifest.js";
-import { resolveFloorWhole } from "./floor-offering.js";
+import { GENESIS_FLOOR_TIDDLER, floorBlobCids, floorManifestBytes, readFloorManifest, type FloorManifest } from "./floor-manifest.js";
+import { floorOfferingBlobsOf, resolveFloorOffering, resolveFloorWhole } from "./floor-offering.js";
+import { sha256HexBytesSync } from "./crypto.js";
 import { foldFloorReleases, type FloorRelease, type FloorReleaseRefused, type FloorReleaseStanding } from "./floor-release.js";
 
 /** The pin record's shape name: a reader tells a pin by `kind`, never by a counter. */
@@ -48,12 +49,40 @@ export const FLOOR_PIN_PREFIX = `${CONTROL_HOME_ID}/floor-pin/` as const;
 const HEX64 = /^[0-9a-f]{64}$/;
 const PIN_KEYS = ["kind", "nexus", "release", "manifest"] as const;
 
-/** One vessel's pin at one Nexus: the release it accepted (null at genesis) and that release's floor manifest CID. */
+/** The pin before an adoption, kept one adoption back: its release, the manifest it mounted, and its own base and receipt where it
+ *  stood local (null where it stood plain). Its own prior drops: the house keeps one floor back, never a chain. */
+export interface PriorFloorPin {
+  readonly release:  string | null;
+  readonly manifest: string;
+  readonly base:     string | null;
+  readonly receipt:  string | null;
+}
+
+/**
+ * THE LOCAL FLOOR (3d, follow-lei S2): a pin adopted past its base. `base` names the manifest of the release (or genesis floor) the
+ * descent walks from, and the place-claim and the cut read; `receipt` the seed whose plugins it adopted (a CID, never a clock);
+ * `prior` the pin before it, kept alive so a red revert lands it back; `state` reads `staged` until the boot it stood on reads par.
+ */
+export interface LocalFloor {
+  readonly base:    string;
+  readonly receipt: string;
+  readonly prior:   PriorFloorPin | null;
+  readonly state:   "staged" | "committed";
+}
+
+/** One vessel's pin at one Nexus: the release it accepted (null at genesis), the floor manifest it mounts, and its local form
+ *  where it adopted past that release's floor (`manifest` then names the local manifest, `local.base` the release's). */
 export interface FloorPin {
   readonly kind:     typeof FLOOR_PIN_KIND;
   readonly nexus:    string;
   readonly release:  string | null;
   readonly manifest: string;
+  readonly local?:   LocalFloor;
+}
+
+/** The manifest a pin's descent, cut and place-claim stand on: the local floor's base, else the pin's own manifest. */
+export function floorPinBase(pin: FloorPin): string {
+  return pin.local?.base ?? pin.manifest;
 }
 
 /** Where a pin read came from: a row the vessel's accept wrote, or genesis (no row, or a torn one, which the status names). */
@@ -78,18 +107,48 @@ export function genesisFloorCidOf(islandDoc: LarDoc | null | undefined): string 
 
 /** Coerce a value into a pin at its exact shape for `nexus`, or null. */
 export function readFloorPin(value: unknown, nexus: string): FloorPin | null {
-  if (value === null || typeof value !== "object" || Array.isArray(value)) return null;
-  const v = value as Record<string, unknown>;
-  if (Object.keys(v).length !== PIN_KEYS.length || !PIN_KEYS.every((k) => Object.hasOwn(v, k))) return null;
+  if (!isPlain(value)) return null;
+  const v = value;
+  const keys = Object.hasOwn(v, "local") ? [...PIN_KEYS, "local"] : PIN_KEYS;
+  if (!exactKeys(v, keys)) return null;
   if (v["kind"] !== FLOOR_PIN_KIND || v["nexus"] !== nexus) return null;
-  if (v["release"] !== null && (typeof v["release"] !== "string" || !HEX64.test(v["release"]))) return null;
-  if (typeof v["manifest"] !== "string" || !HEX64.test(v["manifest"])) return null;
-  return Object.freeze({ kind: FLOOR_PIN_KIND, nexus, release: v["release"] as string | null, manifest: v["manifest"] });
+  if (!hexOrNull(v["release"]) || !hex64(v["manifest"])) return null;
+  const pin = { kind: FLOOR_PIN_KIND, nexus, release: v["release"] as string | null, manifest: v["manifest"] as string };
+  if (!Object.hasOwn(v, "local")) return Object.freeze(pin);
+  const local = readLocalFloor(v["local"]);
+  // A local floor keeps its prior on the same release: an adopt never moves the release, so a prior naming another reads torn.
+  if (!local || (local.prior !== null && local.prior.release !== pin.release) || local.base === pin.manifest) return null;
+  return Object.freeze({ ...pin, local });
+}
+
+const isPlain = (v: unknown): v is Record<string, unknown> => v !== null && typeof v === "object" && !Array.isArray(v);
+const exactKeys = (v: Record<string, unknown>, keys: readonly string[]): boolean => Object.keys(v).length === keys.length && keys.every((k) => Object.hasOwn(v, k));
+const hex64 = (v: unknown): v is string => typeof v === "string" && HEX64.test(v);
+const hexOrNull = (v: unknown): boolean => v === null || hex64(v);
+const LOCAL_KEYS = ["base", "receipt", "prior", "state"] as const;
+const PRIOR_KEYS = ["release", "manifest", "base", "receipt"] as const;
+
+function readLocalFloor(value: unknown): LocalFloor | null {
+  if (!isPlain(value) || !exactKeys(value, LOCAL_KEYS)) return null;
+  if (!hex64(value["base"]) || !hex64(value["receipt"])) return null;
+  if (value["state"] !== "staged" && value["state"] !== "committed") return null;
+  let prior: PriorFloorPin | null = null;
+  if (value["prior"] !== null) {
+    const p = value["prior"];
+    if (!isPlain(p) || !exactKeys(p, PRIOR_KEYS) || !hexOrNull(p["release"]) || !hex64(p["manifest"]) || !hexOrNull(p["base"]) || !hexOrNull(p["receipt"])) return null;
+    if ((p["base"] === null) !== (p["receipt"] === null)) return null;
+    prior = Object.freeze({ release: p["release"] as string | null, manifest: p["manifest"], base: p["base"] as string | null, receipt: p["receipt"] as string | null });
+  }
+  return Object.freeze({ base: value["base"], receipt: value["receipt"], prior, state: value["state"] });
 }
 
 /** The pin's canonical text: fixed key order, so the same pin always writes the same bytes. */
 function pinText(pin: FloorPin): string {
-  return JSON.stringify({ kind: pin.kind, nexus: pin.nexus, release: pin.release, manifest: pin.manifest });
+  const plain = { kind: pin.kind, nexus: pin.nexus, release: pin.release, manifest: pin.manifest };
+  if (!pin.local) return JSON.stringify(plain);
+  const l = pin.local;
+  const prior = l.prior === null ? null : { release: l.prior.release, manifest: l.prior.manifest, base: l.prior.base, receipt: l.prior.receipt };
+  return JSON.stringify({ ...plain, local: { base: l.base, receipt: l.receipt, prior, state: l.state } });
 }
 
 /** The vessel's pin at `nexus` off its control document, or the genesis pin where it holds none (a torn row names itself). */
@@ -218,8 +277,14 @@ export function decideFloorAccept(args: { readonly pin: FloorPin; readonly stand
   }
   const target = args.target ?? (standing.standing === "released" ? standing.head.cid : undefined);
   if (target === undefined) return { ok: false, refusal: "floor-no-release", detail: "no release counts on this Nexus's board" };
-  if (target === pin.release) return { ok: true, moved: false, prior: pin, pin, path: [], release: countedMap(standing).get(target) ?? null };
   const counted = countedMap(standing);
+  if (target === pin.release) {
+    // THE LET-GO (3d): a local floor over the release it already stands on accepts back onto that release's own floor, a move.
+    const held = counted.get(target) ?? null;
+    // A bare accept (no release named) never lets a local floor go: the hand names the release to leave the adoption behind.
+    if (!pin.local || held === null || args.target === undefined) return { ok: true, moved: false, prior: pin, pin, path: [], release: held };
+    return { ok: true, moved: true, prior: pin, pin: Object.freeze({ kind: FLOOR_PIN_KIND, nexus: pin.nexus, release: target, manifest: held.body.manifest }), path: [], release: held };
+  }
   const release = counted.get(target);
   if (release === undefined) {
     const refusedRow = standing.refused.find((r) => r.keyCid === target);
@@ -231,6 +296,71 @@ export function decideFloorAccept(args: { readonly pin: FloorPin; readonly stand
   }
   const next: FloorPin = Object.freeze({ kind: FLOOR_PIN_KIND, nexus: pin.nexus, release: target, manifest: release.body.manifest });
   return { ok: true, moved: true, prior: pin, pin: next, path, release };
+}
+
+// ── the local floor: adopt, commit, revert (3d, follow-lei S2) ─────────────────────────────────────
+
+export const FLOOR_ADOPT_REFUSALS = [
+  "adopt-engine-held",   // the seed's floor names another engine: the engine stays behind its own cadence threshold, never adopted here
+  "adopt-uncommitted",   // a staged adoption stands uncommitted: no second adoption stacks on it (commit at par, or revert)
+  "adopt-none-local",    // commit or revert asked of a pin that stands on no local floor
+  "adopt-no-prior",      // a revert asked of a local floor that kept no prior pin
+  "adopt-many-floors",   // the vessel holds pins at more than one Nexus: a local floor at one would drop the mount to genesis
+] as const;
+export type FloorAdoptRefusal = (typeof FLOOR_ADOPT_REFUSALS)[number];
+
+/** The ratchets a local manifest moves past its base: the floor's plugins offering carries grammar, lararium and plugins alike. */
+export type FloorAdoptMove = "plugins";
+
+export type FloorAdoptDecision =
+  | { readonly ok: true; readonly moved: false; readonly pin: FloorPin; readonly why: string }
+  | { readonly ok: true; readonly moved: true; readonly prior: FloorPin; readonly pin: FloorPin; readonly manifest: FloorManifest; readonly manifestBytes: Uint8Array; readonly moves: readonly FloorAdoptMove[] }
+  | { readonly ok: false; readonly refusal: FloorAdoptRefusal; readonly detail: string };
+
+const priorOf = (pin: FloorPin): PriorFloorPin => Object.freeze({ release: pin.release, manifest: pin.manifest, base: pin.local?.base ?? null, receipt: pin.local?.receipt ?? null });
+
+/**
+ * Decide an adopt: the local manifest over the pin's base (the base's engine and canon snapshots, the seed floor's plugins
+ * offering), the receipt, the prior pin kept. Pure. The founding record never moves; the engine never adopts; an adoption never
+ * stacks on an uncommitted one; a seed offering nothing past the pin lands nothing.
+ */
+export function decideFloorAdopt(args: { readonly pin: FloorPin; readonly base: FloorManifest; readonly seed: { readonly cid: string; readonly manifest: FloorManifest } }): FloorAdoptDecision {
+  const { pin, base, seed } = args;
+  if (seed.manifest.engine !== base.engine) {
+    return { ok: false, refusal: "adopt-engine-held", detail: `the seed's floor names engine ${seed.manifest.engine}, the base ${base.engine}; the engine stays behind its own cadence threshold, so a re-found takes it today` };
+  }
+  if (pin.local?.state === "staged") {
+    return { ok: false, refusal: "adopt-uncommitted", detail: `the adoption of seed ${pin.local.receipt} stands staged; commit it at par (\`lares vessel floor adopt --commit\`) or revert it (\`lares vessel floor adopt --revert\`) first` };
+  }
+  const manifest: FloorManifest = { format: base.format, engine: base.engine, plugins: seed.manifest.plugins, snapshots: base.snapshots };
+  const manifestBytes = floorManifestBytes(manifest);
+  const cid = sha256HexBytesSync(manifestBytes);
+  const baseCid = floorPinBase(pin);
+  if (cid === pin.manifest) return { ok: true, moved: false, pin, why: "the pin already mounts this seed's plugins over its base" };
+  if (cid === baseCid || seed.manifest.plugins === base.plugins) return { ok: true, moved: false, pin, why: "the seed offers no plugins past the base" };
+  const next: FloorPin = Object.freeze({ kind: FLOOR_PIN_KIND, nexus: pin.nexus, release: pin.release, manifest: cid,
+    local: Object.freeze({ base: baseCid, receipt: seed.cid, prior: priorOf(pin), state: "staged" as const }) });
+  return { ok: true, moved: true, prior: pin, pin: next, manifest, manifestBytes, moves: ["plugins"] };
+}
+
+export type FloorLocalAct = { readonly ok: true; readonly moved: boolean; readonly pin: FloorPin } | { readonly ok: false; readonly refusal: FloorAdoptRefusal; readonly detail: string };
+
+/** Commit a staged local floor (the boot it stood on read par). A committed one answers unmoved. Pure. */
+export function commitLocalFloor(pin: FloorPin): FloorLocalAct {
+  if (!pin.local) return { ok: false, refusal: "adopt-none-local", detail: "this pin stands on no local floor, so nothing commits" };
+  if (pin.local.state === "committed") return { ok: true, moved: false, pin };
+  return { ok: true, moved: true, pin: Object.freeze({ ...pin, local: Object.freeze({ ...pin.local, state: "committed" as const }) }) };
+}
+
+/** Revert a local floor to the pin it kept (red, or the hand's word): a forward row that writes the prior back, never a deletion. Pure. */
+export function revertLocalFloor(pin: FloorPin): FloorLocalAct {
+  if (!pin.local) return { ok: false, refusal: "adopt-none-local", detail: "this pin stands on no local floor, so nothing reverts" };
+  const p = pin.local.prior;
+  if (p === null) return { ok: false, refusal: "adopt-no-prior", detail: "this local floor kept no prior pin" };
+  const back: FloorPin = p.base === null || p.receipt === null
+    ? Object.freeze({ kind: FLOOR_PIN_KIND, nexus: pin.nexus, release: p.release, manifest: p.manifest })
+    : Object.freeze({ kind: FLOOR_PIN_KIND, nexus: pin.nexus, release: p.release, manifest: p.manifest, local: Object.freeze({ base: p.base, receipt: p.receipt, prior: null, state: "committed" as const }) });
+  return { ok: true, moved: true, pin: back };
 }
 
 // ── the remount decision ────────────────────────────────────────────────────────────────────────────
@@ -350,6 +480,63 @@ export async function acceptFloorRelease(ports: FloorPinPorts, target?: string):
   return { ...decision, staged, remount };
 }
 
+export type FloorAdoptOutcome =
+  | (Extract<FloorAdoptDecision, { ok: true; moved: false }> & { readonly applied: false })
+  | (Extract<FloorAdoptDecision, { ok: true; moved: true }> & { readonly applied: boolean; readonly staged: readonly string[]; readonly remount: FloorRemount | null })
+  | Extract<FloorAdoptDecision, { ok: false }>
+  | { readonly ok: false; readonly refusal: "floor-bytes-absent" | "floor-offering-refused" | "floor-offering-incomplete"; readonly detail: string };
+
+/**
+ * `floor adopt`: the seed's floor (`seedFloor`, the manifest CID its genesis witness names; `seedCid`, the receipt) over the pin's
+ * base, read from this vessel's CAS (the boot mirrors a newer seed's blobs there). The offering resolves whole for its plugins
+ * before anything moves. Bare (`apply: false`) it previews and writes nothing; applied, it stages the local manifest, moves the pin,
+ * and remounts by capability (the reboot alert today). Replays and refusals land nothing.
+ */
+export async function adoptFloorSeed(ports: FloorPinPorts, args: { readonly seedCid: string; readonly seedFloor: string; readonly apply: boolean }): Promise<FloorAdoptOutcome> {
+  const { pin } = floorPinOf(ports.home.doc(), ports.nexus, ports.genesisManifest);
+  const others = floorPinsOf(ports.home.doc()).filter((p) => p.nexus !== ports.nexus);
+  if (others.length > 0) {
+    return { ok: false, refusal: "adopt-many-floors", detail: `this vessel holds pins at ${others.length + 1} Nexuses; the mount reads a sole pin (\`floorCidToMount\`), so a local floor at one would drop every mount to the genesis floor` };
+  }
+  const readManifest = async (cid: string): Promise<FloorManifest | string> => {
+    const bytes = await ports.fetchCas(cid).catch(() => null);
+    if (!bytes) return `manifest bytes absent from this vessel's CAS: ${cid}`;
+    if (sha256HexBytesSync(bytes) !== cid) return `manifest bytes differ from their CID: ${cid}`;
+    const read = readFloorManifest(bytes);
+    return "refusal" in read ? `${read.refusal}: ${read.reason}` : read.manifest;
+  };
+  const base = await readManifest(floorPinBase(pin));
+  if (typeof base === "string") return { ok: false, refusal: "floor-bytes-absent", detail: `the pin's base: ${base}` };
+  const seed = await readManifest(args.seedFloor);
+  if (typeof seed === "string") return { ok: false, refusal: "floor-bytes-absent", detail: `the seed's floor: ${seed}` };
+  const offered = await resolveFloorOffering(seed, async (cid) => ports.fetchCas(cid).catch(() => null), { required: ports.requiredBlobIds });
+  if ("refusal" in offered) {
+    return { ok: false, refusal: offered.refusal === "floor-absent" ? "floor-bytes-absent" : offered.refusal, detail: `${offered.refusal}: ${offered.reason}` };
+  }
+  const decision = decideFloorAdopt({ pin, base, seed: { cid: args.seedCid, manifest: seed } });
+  if (!decision.ok) return decision;
+  if (!decision.moved) return { ...decision, applied: false };
+  const staged = [decision.pin.manifest, seed.plugins, ...floorOfferingBlobsOf(offered.offering).map((b) => b.sha256)];
+  if (!args.apply) return { ...decision, applied: false, staged, remount: null };
+  await ports.stage([{ cid: decision.pin.manifest, bytes: decision.manifestBytes }]);
+  // The local manifest resolves whole (its base's snapshots, the offering and every blob) before the pin moves, as an accept's does.
+  const whole = await resolveFloorWhole(decision.pin.manifest, async (cid) => ports.fetchCas(cid).catch(() => null), { required: ports.requiredBlobIds });
+  if ("refusal" in whole) return { ok: false, refusal: whole.refusal === "floor-offering-refused" || whole.refusal === "floor-offering-incomplete" ? whole.refusal : "floor-bytes-absent", detail: `the local floor: ${whole.refusal}: ${whole.reason}` };
+  ports.home.change((draft) => { writeFloorPin(draft, decision.pin); });
+  const remount = floorRemountDecision({ floorSwap: ports.mount.floorSwap === true && ports.mount.swap !== undefined }, decision.pin.manifest);
+  if (remount.act === "swap-live" && ports.mount.swap) await ports.mount.swap(decision.pin.manifest);
+  else if (remount.act === "alert") await ports.mount.alert(remount);
+  return { ...decision, applied: true, staged, remount };
+}
+
+/** `floor adopt --commit | --revert`: move the local floor by its own act, a forward row either way. A refusal lands nothing. */
+export async function settleLocalFloor(ports: Pick<FloorPinPorts, "home" | "nexus" | "genesisManifest">, act: "commit" | "revert"): Promise<FloorLocalAct & { readonly prior?: FloorPin }> {
+  const { pin } = floorPinOf(ports.home.doc(), ports.nexus, ports.genesisManifest);
+  const out = act === "commit" ? commitLocalFloor(pin) : revertLocalFloor(pin);
+  if (out.ok && out.moved) ports.home.change((draft) => { writeFloorPin(draft, out.pin); });
+  return out.ok ? { ...out, prior: pin } : out;
+}
+
 /**
  * The floor manifest a vessel's next island mounts, or null where it stands on genesis (the island then reads its seed's
  * own witness). Both hosts bind this one read into the pool (`VesselIslandPoolCoreOptions.floorCid`); a control document
@@ -365,6 +552,17 @@ export async function vesselFloorCid(args: {
   const pick = floorCidToMount({ controlDoc, nexus: null, genesis: genesisFloorCidOf(args.islandDoc()) });
   if (pick.note) console.info(`[floor] ${pick.note}`);
   return pick.source === "pin" ? pick.cid : null;
+}
+
+/**
+ * The floor a mount loads its plugin set from (the flip, 3c): the vessel's pin (`vesselFloorCid`), else the genesis floor the
+ * founding record names; null where neither stands, and the founding record's own boot set serves.
+ */
+export async function vesselMountFloorCid(args: Parameters<typeof vesselFloorCid>[0]): Promise<string | null> {
+  let island: LarDoc | null | undefined;
+  try { island = args.islandDoc(); } catch { island = null; }
+  // An island read that throws never fails the mount: the pick reads the one value read above, and no pin then mounts no floor.
+  return (await vesselFloorCid({ control: args.control, islandDoc: () => island })) ?? genesisFloorCidOf(island);
 }
 
 /** The pool doors the floor alert rides: the live islands outside any session, and a wiki verb's placement. */

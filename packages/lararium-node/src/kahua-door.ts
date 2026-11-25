@@ -53,6 +53,7 @@ import { readKahuaStagedMeme, stageKahuaMeme, kahuaStagedSource, type KahuaStage
 import { type IntentVerbRegistry } from "@lararium/mesh/intent-verbs";
 import { type LarDoc } from "@lararium/mesh/base-doc";
 import { type PersonaProjection } from "@lararium/mesh/persona-act";
+import { kahuaActBody, kahuaActBytes, type KahuaActBody, type SignedKahuaAct } from "@lararium/mesh/kahua-stage";
 import { actingFaceOf, choreReceiptMark, type ChoreAsk, type ChoreReceiptMark } from "@lararium/mesh/chore-ask";
 import { lentFacesOf } from "@lararium/mesh/lent-faces";
 
@@ -80,12 +81,22 @@ export interface KahuaDoorPorts {
   readonly intents: DocHandle<LarDoc>;
   /** The operator's grant in hand: the face's root signer out of sealed custody; throws where custody holds none. */
   readonly rootSigner: () => Promise<Signer>;
+  /**
+   * The face root's PUBLIC key, read off its roster row with no route (a hand act's terms name it as the signer they expect).
+   * Absent or answering none: a `terms` hand refuses `operator-grant-absent`.
+   */
+  readonly rootKey?: () => Promise<string | null | undefined>;
   /** The lōkahi cap as the daemon island's Keyhive reads it for a presenter; null where no island stands to read it. */
   readonly cap: ((presenter: string) => Promise<{ readonly held: boolean; readonly reason?: string }>) | null;
   /** Register the stage in the vessel's catalog under its bag id (the recipe layer resolves it there). */
   readonly register: (bagId: string, url: string) => void;
   /** The session a lift by hand names in its origin. */
   readonly session: () => string;
+  /**
+   * Whether `session` names a session the caller bound this door to. A hand LAND under a bound door lands only a record naming
+   * that session (`kahua-hand-session`); an unbound door (a fresh CLI land) takes the session the terms read and names it.
+   */
+  readonly sessionBound?: boolean;
   /**
    * The face's LOCAL canon `bags/daemon-<F>` by the face's relation: the document a lift reads its staged row from and a
    * stage writes into. Absent (a direct act, no vessel standing to open the sealed canon) or answering null: a lift refuses
@@ -126,6 +137,19 @@ export interface KahuaProposeInput {
   readonly proposals: readonly { readonly title: string; readonly revision: string; readonly text?: string; readonly digest?: string; readonly taint: readonly string[] }[];
   readonly session?: string;
 }
+
+/**
+ * THE HAND AT THE PŪLAMA (the vessel under a pūlama holds no face root). `terms` runs every gate a signing act runs (the chore, the
+ * pin, the staged row and its digest, the cap, the current grant over the root's PUBLIC key) and answers the ONE unsigned body
+ * the root would sign, signing nothing and opening no route. `signed` lands the record the pūlama's `sign` door signed: the
+ * door builds the same body afresh and lands the record only where its signed body equals that body byte for byte and the
+ * reader seats its signer in the CURRENT roster. Neither path opens a ward here.
+ */
+export type KahuaHand = { readonly terms: true } | { readonly signed: unknown };
+/** What a `terms` hand answers: the closed record kind and the one body the face root signs at the pūlama. */
+export interface KahuaHandTerms { readonly hand: "terms"; readonly kind: "kahua-act"; readonly key: string; readonly record: KahuaActBody }
+
+const sameBytes = (a: Uint8Array, b: Uint8Array): boolean => a.length === b.length && a.every((x, i) => x === b[i]);
 
 export function kahuaDoor(ports: KahuaDoorPorts) {
   const { group } = ports;
@@ -183,8 +207,36 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
     const read = readKahuaAct(act, { group, grant: ports.currentSigner });
     if (!read.ok) throw new KahuaRefused(`kahua-act-refused: ${read.refusal}`);
     const handle = await stage();
-    handle.change((d) => writeKahuaAct(d, act));
+    // THE STAGE TAKES THE READER'S OWN ACT (its signed parts alone), never the record the caller handed in.
+    handle.change((d) => writeKahuaAct(d, read.act));
     return read.cid;
+  };
+  /** The signer a hand act names: the root's public key (terms) or the signed record's signer (land), each under the CURRENT grant. */
+  const handKey = async (hand: KahuaHand): Promise<string> => {
+    if ("terms" in hand) {
+      const key = ports.rootKey ? await ports.rootKey() : null;
+      if (typeof key !== "string" || key === "") throw new KahuaRefused("operator-grant-absent: this vessel reads no root key for the face on its roster row, so no terms read for the pūlama's hand");
+      const lower = key.toLowerCase();
+      if (!ports.currentSigner(lower)) throw new KahuaRefused("operator-grant-absent: the face's root key stands in no current roster; an AI seat proposes with `lares kahua propose`");
+      return lower;
+    }
+    const s = hand.signed as { signer?: unknown; body?: unknown; sig?: unknown } | null;
+    if (typeof s !== "object" || s === null || Array.isArray(s) || typeof s.signer !== "string" || !/^[0-9a-f]{64}$/.test(s.signer) || typeof s.body !== "object" || s.body === null || typeof s.sig !== "string") {
+      throw new KahuaRefused("kahua-hand-malformed: --land takes the record the pūlama's sign door answered (body, signer, sig)");
+    }
+    if (!ports.currentSigner(s.signer)) throw new KahuaRefused("operator-grant-absent: the signed record names a signer outside the face's current roster");
+    return s.signer;
+  };
+  /** Finish a hand act: the terms answer the one body; a land lands the signed record only over a byte-equal body. */
+  const handFinish = async (hand: KahuaHand, key: string, build: () => KahuaActBody): Promise<{ readonly terms: KahuaHandTerms } | { readonly cid: string }> => {
+    let body: KahuaActBody;
+    try { body = build(); } catch (e) { throw new KahuaRefused(`kahua-act-refused: ${e instanceof Error ? e.message.replace(/^kahua-act: /, "") : String(e)}`); }
+    if ("terms" in hand) return { terms: { hand: "terms", kind: "kahua-act", key, record: body } };
+    const signed = hand.signed as SignedKahuaAct;
+    if (!sameBytes(kahuaActBytes(signed.body), kahuaActBytes(body))) {
+      throw new KahuaRefused("kahua-hand-moved: the record the pūlama signed differs from the act this vessel builds now (the stage, its head or the epoch moved); read the terms again");
+    }
+    return { cid: await land(signed) };
   };
   /** The face's local canon, refused `kahua-lift-unstaged` where the face names no relation or no canon stands here. */
   const canon = async (code: string): Promise<{ relation: string; handle: DocHandle<LarDoc> }> => {
@@ -208,7 +260,7 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
     return found;
   };
 
-  return {
+  const acts = {
     async mint(): Promise<{ readonly url: string; readonly minted: boolean }> {
       const url = kahuaPlaneUrl(projection(), group);
       if (!url) throw new KahuaRefused("kahua-mint-outside-founding: the face's founding act signs its stage's pin and this face's log names none; no act outside the founding mints it");
@@ -253,7 +305,7 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
       return marked({ title: done.row.title, digest: done.row.digest, relation, staged: done.wrote }, mark);
     },
 
-    async lift(input: KahuaLiftInput): Promise<{ readonly cid: string; readonly parent: string | null; readonly landed: boolean; readonly chore?: ChoreReceiptMark }> {
+    async lift(input: KahuaLiftInput, hand?: KahuaHand): Promise<{ readonly cid: string; readonly parent: string | null; readonly landed: boolean; readonly chore?: ChoreReceiptMark } | { readonly terms: KahuaHandTerms; readonly chore?: ChoreReceiptMark }> {
       const mark = await actingOrRefuse("kahua-lift");
       stageUrl();
       if (!Array.isArray(input.taint)) throw new KahuaRefused("kahua-act-refused: taint: name the lift's taint list (empty when every input came from inside the face)");
@@ -261,7 +313,12 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
       // THE STAGED ROW: the body and fields the lift carries come from bags/daemon-<F> alone, checked against the digest read.
       const row = await stagedRow(input.title, input.digest);
       const text = row.text;
-      let origin = { seat: "", device: ports.atom.key, session: ports.session() };
+      // A LAND names the session its terms read: the signed body carries it, and the body this vessel builds again takes it back.
+      const signedSession = hand && "signed" in hand ? (hand.signed as { body?: { origin?: { session?: unknown } } } | null)?.body?.origin?.session : undefined;
+      if (hand && "signed" in hand && !input.proposal && ports.sessionBound && signedSession !== ports.session()) {
+        throw new KahuaRefused(`kahua-hand-session: the signed record names session ${JSON.stringify(signedSession)}, and this land runs under ${JSON.stringify(ports.session())}; read the terms under this session`);
+      }
+      let origin = { seat: "", device: ports.atom.key, session: typeof signedSession === "string" && signedSession.length > 0 ? signedSession : ports.session() };
       let taint = [...input.taint];
       let sources = [kahuaStagedSource(row), ...(input.sources ?? []).filter((s) => !(s.title === row.title && s.revision === kahuaStagedSource(row).revision))];
       let proposalCause: { id: string; cid: string } | null = null;
@@ -288,8 +345,9 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
         }
       }
       await cap();
-      const root = await grant();
-      if (!input.proposal) origin = { ...origin, seat: root.key };
+      const granted = hand ? null : await grant();
+      const seatKey = granted ? granted.key : await handKey(hand!);
+      if (!input.proposal) origin = { ...origin, seat: seatKey };
       let parent: string | null;
       if (input.parent !== undefined) parent = input.parent;
       else {
@@ -297,10 +355,22 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
         if (item?.status === "siblings") throw new KahuaRefused(`siblings: "${input.title}" stands as ${item.heads.length} siblings; name --parent <cid> (${item.heads.map((h) => h.cid).join(", ")})`);
         parent = item?.heads[0]?.cid ?? null;
       }
+      if (hand) {
+        const parts = { group, act: "lift" as const, epoch: ports.epoch(), title: input.title, text, fields: { ...row.fields }, parent, origin, taint, sources,
+          ...(proposalCause ? { proposal: proposalCause.id } : {}) };
+        const done = await handFinish(hand, seatKey, () => kahuaActBody(parts));
+        if ("terms" in done) return marked({ terms: done.terms }, mark);
+        if (proposalCause) {
+          const outcome = await buildOutcome({ group, signer: ports.atom, cause: proposalCause.id, result: { lifted: done.cid, title: input.title } });
+          ports.intents.change((d) => writeIntentEntry(d, outcome));
+        }
+        await ports.repo.flush();
+        return marked({ cid: done.cid, parent, landed: true, session: origin.session }, mark);
+      }
       let act;
       try {
         act = await signKahuaLift({ group, epoch: ports.epoch(), title: input.title, text, fields: { ...row.fields }, parent, origin, taint, sources,
-          ...(proposalCause ? { proposal: proposalCause.id } : {}) }, root);
+          ...(proposalCause ? { proposal: proposalCause.id } : {}) }, granted!);
       } catch (e) { throw new KahuaRefused(`kahua-act-refused: ${e instanceof Error ? e.message.replace(/^kahua-act: /, "") : String(e)}`); }
       const cid = await land(act);
       if (proposalCause) {
@@ -311,10 +381,18 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
       return marked({ cid, parent, landed: true }, mark);
     },
 
-    async withdraw(target: string): Promise<{ readonly cid: string; readonly chore?: ChoreReceiptMark }> {
+    async withdraw(target: string, hand?: KahuaHand): Promise<{ readonly cid: string; readonly chore?: ChoreReceiptMark } | { readonly terms: KahuaHandTerms; readonly chore?: ChoreReceiptMark }> {
       const mark = await actingOrRefuse("kahua-withdraw");
       stageUrl();
       await cap();
+      if (hand) {
+        const key = await handKey(hand);
+        if (!/^[0-9a-f]{64}$/.test(target) || !(await reading()).revision(target)) throw new KahuaRefused(`withdraw-unknown: no verified revision ${target} stands on the stage`);
+        const done = await handFinish(hand, key, () => kahuaActBody({ group, act: "withdraw", epoch: ports.epoch(), target }));
+        if ("terms" in done) return marked({ terms: done.terms }, mark);
+        await ports.repo.flush();
+        return marked({ cid: done.cid }, mark);
+      }
       const root = await grant();
       if (!/^[0-9a-f]{64}$/.test(target) || !(await reading()).revision(target)) throw new KahuaRefused(`withdraw-unknown: no verified revision ${target} stands on the stage`);
       const cid = await land(await signKahuaWithdraw({ group, epoch: ports.epoch(), target }, root));
@@ -322,11 +400,11 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
       return marked({ cid }, mark);
     },
 
-    async carry(input: { readonly cids?: readonly string[]; readonly all?: boolean }): Promise<{ readonly cids: readonly string[]; readonly carried: readonly string[]; readonly chore?: ChoreReceiptMark }> {
+    async carry(input: { readonly cids?: readonly string[]; readonly all?: boolean }, hand?: KahuaHand): Promise<{ readonly cids: readonly string[]; readonly carried: readonly string[]; readonly chore?: ChoreReceiptMark } | { readonly terms: KahuaHandTerms; readonly carried: readonly string[]; readonly chore?: ChoreReceiptMark }> {
       const mark = await actingOrRefuse("kahua-carry");
       stageUrl();
       await cap();
-      const root = await grant();
+      const root = hand ? { key: await handKey(hand), sign: async (): Promise<string> => { throw new KahuaRefused("kahua-hand: a hand act signs at the pūlama"); } } : await grant();
       const read = await reading();
       let carried: string[];
       if (input.all) carried = kahuaCarryCandidates(await records(), foldFace());
@@ -336,6 +414,14 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
         carried = carried.filter((cid) => read.revision(cid)?.standing !== true).sort();
       }
       if (carried.length === 0) throw new KahuaRefused("carry-nothing: every verified revision named already stands under the current root");
+      if (hand) {
+        // THE HAND SIGNS ONE RECORD: a carry larger than one act carries by hand in several runs, each naming its own cids.
+        if (carried.length > KAHUA_CARRY_MAX) throw new KahuaRefused(`kahua-hand-carry-too-large: the pūlama's hand signs one act, and ${carried.length} revisions need ${Math.ceil(carried.length / KAHUA_CARRY_MAX)}; name at most ${KAHUA_CARRY_MAX} cids per carry`);
+        const done = await handFinish(hand, root.key, () => kahuaActBody({ group, act: "carry", epoch: ports.epoch(), carries: carried }));
+        if ("terms" in done) return marked({ terms: done.terms, carried }, mark);
+        await ports.repo.flush();
+        return marked({ cids: [done.cid], carried }, mark);
+      }
       const cids: string[] = [];
       for (let i = 0; i < carried.length; i += KAHUA_CARRY_MAX) {
         cids.push(await land(await signKahuaCarry({ group, epoch: ports.epoch(), carries: carried.slice(i, i + KAHUA_CARRY_MAX) }, root)));
@@ -347,5 +433,19 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
     async list(): Promise<KahuaItem[]> { return (await reading()).list(); },
     async get(title: string): Promise<KahuaItem | null> { return (await reading()).get(title); },
     async history(title: string): Promise<KahuaRevision[]> { return (await reading()).history(title); },
+  };
+  type Lifted = { readonly cid: string; readonly parent: string | null; readonly landed: boolean; readonly chore?: ChoreReceiptMark };
+  type Withdrawn = { readonly cid: string; readonly chore?: ChoreReceiptMark };
+  type Carried = { readonly cids: readonly string[]; readonly carried: readonly string[]; readonly chore?: ChoreReceiptMark };
+  return {
+    ...acts,
+    // THE OPERATOR'S OWN HAND signs here (its root in custody): each answers its act's landing.
+    lift: (input: KahuaLiftInput) => acts.lift(input) as Promise<Lifted>,
+    withdraw: (target: string) => acts.withdraw(target) as Promise<Withdrawn>,
+    carry: (input: { readonly cids?: readonly string[]; readonly all?: boolean }) => acts.carry(input) as Promise<Carried>,
+    // THE HAND AT THE PŪLAMA: `terms` answers the one body its root signs there, `signed` lands the record it signed.
+    liftByHand: (input: KahuaLiftInput, hand: KahuaHand) => acts.lift(input, hand),
+    withdrawByHand: (target: string, hand: KahuaHand) => acts.withdraw(target, hand),
+    carryByHand: (input: { readonly cids?: readonly string[]; readonly all?: boolean }, hand: KahuaHand) => acts.carry(input, hand),
   };
 }

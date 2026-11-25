@@ -21,7 +21,7 @@ import { join } from "node:path";
 import type { Repo } from "@automerge/automerge-repo";
 import { BAG_MANIFEST_FILE } from "@lararium/mesh/bag-manifest";
 import { FloorCutThin, cutReleaseFloor } from "@lararium/mesh/canon-offer";
-import { floorPinOf } from "@lararium/mesh/floor-pin";
+import { floorPinOf, floorPinBase } from "@lararium/mesh/floor-pin";
 import { floorReleaseEntriesFromBoard, foldFloorReleases } from "@lararium/mesh/floor-release";
 import { FloorManifestRefusal, readFloorManifest } from "@lararium/mesh/floor-manifest";
 import { publicationDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
@@ -113,7 +113,7 @@ export async function runFloorCut(opts: {
     },
     prior: async () => {
       const standing = await foldFloorReleases({ rows: floorReleaseEntriesFromBoard(board.doc()), nexus: pinPorts.nexus, manifestBytesOf: casRead });
-      return standing.standing === "released" ? standing.head.body.manifest : floorPinOf(pinPorts.home.doc(), pinPorts.nexus, pinPorts.genesisManifest).pin.manifest;
+      return standing.standing === "released" ? standing.head.body.manifest : floorPinBase(floorPinOf(pinPorts.home.doc(), pinPorts.nexus, pinPorts.genesisManifest).pin);
     },
   });
   return { ...result, nexus: pinPorts.nexus };

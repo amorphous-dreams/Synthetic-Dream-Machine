@@ -20,6 +20,10 @@
       "import": "./dist/entropy-door.js",
       "types": "./dist/entropy-door.d.ts"
     },
+    "./door-band": {
+      "import": "./dist/door-band.js",
+      "types": "./dist/door-band.d.ts"
+    },
     "./oracle-cast": {
       "import": "./dist/oracle-cast.js",
       "types": "./dist/oracle-cast.d.ts"
@@ -27,6 +31,14 @@
     "./spirit-shrine": {
       "import": "./dist/spirit-shrine.js",
       "types": "./dist/spirit-shrine.d.ts"
+    },
+    "./spirit-stack": {
+      "import": "./dist/spirit-stack.js",
+      "types": "./dist/spirit-stack.d.ts"
+    },
+    "./spirit-unfold": {
+      "import": "./dist/spirit-unfold.js",
+      "types": "./dist/spirit-unfold.d.ts"
     },
     "./hand-refusal": {
       "import": "./dist/hand-refusal.js",

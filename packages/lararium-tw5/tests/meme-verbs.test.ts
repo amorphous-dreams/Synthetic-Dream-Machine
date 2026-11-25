@@ -94,6 +94,17 @@ describe("meme-put — the anchor (recipes/default)", () => {
     expect(await r.composite.storeForBag(bagUri("daemon"))!.listVisible()).toEqual([]);
   });
 
+  test("`create` lands a family where none stands, and answers `exists` over a standing one with nothing moved", async () => {
+    const r = rig();
+    const put = makeMemePutReactor(r.opts);
+    const first = await put({ recipe: "default", uri: URI, text: meme(["a"]), create: "true" }, ctx());
+    expect(first["decision"]).toBe("ingest");
+    const again = await put({ recipe: "default", uri: URI, text: meme(["a", "b"]), create: "true" }, ctx());
+    expect(again["decision"]).toBe("exists");
+    expect(String((again["warnings"] as string[])[0])).toContain("--create lands only where none does");
+    expect(r.wiki.store.has(`${URI}#/b`)).toBe(false);
+  });
+
   test("★ the anchor's cap seat is the bag the CASCADE lands in, never the last-registered writable layer ★", async () => {
     const r = rig();
     // A live island registers its volatile temp layer LAST — the cap gate holds no registration for it.

@@ -17,6 +17,13 @@
  * epoch. An AI seat proposes and stages (`propose`, `stage`, or the MCP's `kahua_propose`); its session never runs a
  * lift, a withdraw or a carry, and no MCP tool carries.
  *
+ * UNDER A PŪLAMA THE ROOT SIGNS AT THE PŪLAMA'S HAND DOOR. The vessel there holds no face root, so a lift, a withdraw or a
+ * carry runs in the lei pattern, and the host shim walks it (`tools/lares-container.sh kahua lift|withdraw|carry …`): `--terms`
+ * runs every gate and prints ONE stdout line (`{"face","kind","record"}`: the one unsigned act its root signs), opening no
+ * route; the pūlama's `sign '<terms>'` checks it, reads the route on the operator's terminal and its face root signs it;
+ * `--land '<answer>'` lands the signed record, where the door builds the act afresh and lands it only over a byte-equal body.
+ * Neither `--terms` nor `--land` asks the passphrase on the vessel.
+ *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
 import { readFileSync } from "node:fs";
@@ -66,6 +73,23 @@ function liftArgs(args: ParsedArgs, title: string): Record<string, unknown> {
     ...(parent !== undefined ? { parent: parent === "none" ? null : parent } : {}),
     ...(args.options["proposal"] !== undefined ? { proposal: args.options["proposal"] } : {}),
   };
+}
+
+/** The hand mode a line names: `--terms` (read the one body the pūlama signs), `--land` (land its signed record), or neither. */
+type HandMode = { readonly terms: true } | { readonly signed: unknown; readonly face: number } | null;
+
+/** One pūlama `sign` answer's signed kahua act and the face it signed for; a refusal or another kind lands nothing. */
+export function kahuaLanding(raw: string, named: number | undefined): { readonly signed: unknown; readonly face: number } {
+  let read: unknown;
+  try { read = JSON.parse(raw); } catch { throw new Error("kahua-hand-malformed: --land's answer reads as no JSON"); }
+  const r = (typeof read === "object" && read !== null && !Array.isArray(read) ? read : {}) as Record<string, unknown>;
+  if (r["op"] !== "sign") throw new Error("kahua-hand-malformed: --land takes the pūlama's sign answer");
+  if (r["reading"] !== "signed") throw new Error(`kahua-hand-unsigned: the pūlama signed nothing (${String(r["reading"])}), so nothing lands`);
+  if (r["kind"] !== "kahua-act") throw new Error(`kahua-hand-malformed: the pūlama signed a ${String(r["kind"])}, not a kahua act`);
+  const face = r["face"];
+  if (typeof face !== "number" || !Number.isSafeInteger(face) || face < 0 || typeof r["record"] !== "object" || r["record"] === null) throw new Error("kahua-hand-malformed: the pūlama's answer names no face and no signed record");
+  if (named !== undefined && named !== face) throw new Error(`kahua-hand-malformed: the pūlama signed for h${face}, and the line names h${named}`);
+  return { signed: r["record"], face };
 }
 
 /** The staged row's preview as `kahua-read` `staged` answers it. */
@@ -121,7 +145,14 @@ export async function cmdKahua(args: ParsedArgs, ask: ((prompt: string) => Promi
   const [act, target] = args.positional;
   if (!act || !ACTS.has(act)) return refuseUsage(args, "kahua", helpLines("kahua"), act ? `unknown sub-verb "${act}"` : "name a sub-verb");
   try {
-    const face = faceOf(args);
+    let face = faceOf(args);
+    // THE HAND AT THE PŪLAMA: `--terms` and `--land` name a lift, a withdraw or a carry, never both.
+    const land = args.options["land"];
+    if (args.flags["land"] !== undefined) throw new Error("kahua-hand-malformed: --land takes the pūlama's sign answer");
+    if (args.flags["terms"] === true && land !== undefined) throw new Error("kahua-hand-malformed: name --terms or --land, never both");
+    if ((args.flags["terms"] === true || land !== undefined) && act !== "lift" && act !== "withdraw" && act !== "carry") throw new Error(`kahua-hand-malformed: only a lift, a withdraw or a carry signs at the pūlama's hand, never ${act}`);
+    const hand: HandMode = args.flags["terms"] === true ? { terms: true } : land !== undefined ? kahuaLanding(land, face.face) : null;
+    if (hand && "face" in hand) face = { face: hand.face };
     const need = (what: string): string => { if (!target) throw new Error(`${act}: name ${what}`); return target; };
     let door: "kahua-mint" | "kahua-propose" | "kahua-stage" | "kahua-lift" | "kahua-withdraw" | "kahua-carry" | "kahua-read";
     let payload: Record<string, unknown>;
@@ -140,7 +171,8 @@ export async function cmdKahua(args: ParsedArgs, ask: ((prompt: string) => Promi
         const { output } = await storeVerb("kahua-read", { ...face, action: "staged", title: lift["title"] });
         const preview = output as unknown as KahuaStagedPreview;
         for (const line of kahuaPreviewLines(preview)) console.error(line);
-        const digest = await confirmedDigest(preview, args.options["digest"], ask);
+        // A LAND names the digest the terms read: the door lands the signed record only over the body its row builds now, byte for byte.
+        const digest = hand && "signed" in hand ? (args.options["digest"] ?? preview.digest) : await confirmedDigest(preview, args.options["digest"], ask);
         door = "kahua-lift"; payload = { ...lift, digest };
         break;
       }
@@ -158,7 +190,16 @@ export async function cmdKahua(args: ParsedArgs, ask: ((prompt: string) => Promi
         door = "kahua-read";
         payload = target ? { action: "get", title: target, ...(args.flags["history"] === true ? { history: true } : {}) } : { action: "list", ...(args.options["after"] ? { after: args.options["after"] } : {}), ...(args.options["limit"] ? { limit: Number(args.options["limit"]) } : {}) };
     }
-    const { output } = await storeVerb(door, { ...face, ...payload });
+    const handArgs = hand === null ? {} : "terms" in hand ? { terms: true } : { signed: hand.signed };
+    const { output } = await storeVerb(door, { ...face, ...payload, ...handArgs });
+    if (hand && "terms" in hand) {
+      // THE TERMS LINE: exactly ONE stdout line, the terms `pulama-main.js sign` takes; an act that signs nothing (a replay) prints none.
+      const out = output as Record<string, unknown>;
+      const terms = out["terms"] as { kind?: unknown; record?: unknown } | undefined;
+      if (!terms) { console.error(`[lares kahua] nothing to sign: ${JSON.stringify(output)}`); return 0; }
+      console.log(JSON.stringify({ face: out["face"], kind: terms.kind, record: terms.record }));
+      return 0;
+    }
     console.log(JSON.stringify(output));
     // TWO DIGESTS SHARE ONE WORD: a staged row's digest covers its body AND fields; a proposal's covers the body bytes alone.
     if (act === "stage") console.error(STAGE_DIGEST_NOTE);
