@@ -6,7 +6,7 @@
  */
 import { describe, test, expect } from "vitest";
 import { CompositeStore, bagUri, isVerbRefusal, type Verb } from "@lararium/mesh";
-import { ORACLE_THROW_STANDS, readingTitle } from "@lararium/mesh/oracle-cast";
+import { ORACLE_THROW_STANDS, askingCastTitle, askingId, readingTitle } from "@lararium/mesh/oracle-cast";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { makeOracleCastReactor } from "../src/oracle-cast-verb.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
@@ -37,8 +37,9 @@ describe.skipIf(wikiSkip)(`oracle-cast — a cast writes its result as a tiddler
 
   test("RED: an operator's typed throw writes one cast tiddler naming method, entropy, lines, both hexagrams, caster and time", async () => {
     const r = await rig();
-    const out = await r.cast({ recipe: "default", coins: [8, 8, 9, 6, 8, 8], caster: "operator", at: AT }, r.ctx);
-    expect(out).toMatchObject({ decision: "put", created: true, title: "lar:///ha.ka.ba/lares/oracle/casts/2026-11-20T23-15-02-123Z-15-16" });
+    const out = await r.cast({ recipe: "default", coins: [8, 8, 9, 6, 8, 8], caster: "operator", at: AT, nonce: "n1" }, r.ctx);
+    const intent = askingId({ caster: "operator", nonce: "n1", coins: [8, 8, 9, 6, 8, 8] });
+    expect(out).toMatchObject({ band: "answered", intent, decision: "put", created: true, title: askingCastTitle(intent) });
     const fields = r.engine.wiki.getTiddler(String(out["title"]))!.fields as Record<string, unknown>;
     expect(fields).toMatchObject({
       method: "three-coins", entropy: "operator:three-coins", lines: "8 8 9 6 8 8", changing: "3 4",
@@ -69,12 +70,64 @@ describe.skipIf(wikiSkip)(`oracle-cast — a cast writes its result as a tiddler
     expect(r.engine.wiki.getTiddler(String(out["title"]))!.fields["entropy"]).toBe("platform:crypto.getRandomValues");
   }, 60_000);
 
-  test("re-asking never recasts over a standing cast: the same title answers `exists` and the record stays", async () => {
+  test("one asking, one throw: the same asking again answers the standing cast, at any later time, and draws nothing", async () => {
     const r = await rig();
-    const first = await r.cast({ recipe: "default", coins: [7, 7, 7, 7, 7, 7], caster: "operator", at: AT }, r.ctx);
-    const again = await r.cast({ recipe: "default", coins: [7, 7, 7, 7, 7, 7], caster: "someone else", at: AT }, r.ctx);
-    expect(again["decision"]).toBe("exists");
-    expect(r.engine.wiki.getTiddler(String(first["title"]))!.fields["caster"]).toBe("operator");
+    const first = await r.cast({ recipe: "default", caster: "operator", asking: "which road first?", at: AT }, r.ctx);
+    const again = await r.cast({ recipe: "default", caster: "operator", asking: "which road first?", at: "2031-01-01T00:00:00.000Z" }, r.ctx);
+    expect(first).toMatchObject({ band: "answered", replayed: false, created: true });
+    expect(again).toMatchObject({ band: "answered", replayed: true, created: false, title: first["title"], intent: first["intent"] });
+    expect((again["cast"] as Record<string, unknown>)["lines"]).toEqual((first["cast"] as Record<string, unknown>)["lines"]);
+    expect((again["cast"] as Record<string, unknown>)["at"]).toBe(AT);
+    expect(r.engine.wiki.filterTiddlers("[prefix[lar:///ha.ka.ba/lares/oracle/casts/]]")).toEqual([first["title"]]);
+  }, 60_000);
+
+  test("another asker, other words, or a fresh nonce stands as another asking and throws its own cast", async () => {
+    const r = await rig();
+    const base = { recipe: "default", caster: "operator", asking: "which road first?", at: AT };
+    const titles = new Set<unknown>();
+    for (const args of [base, { ...base, caster: "agent" }, { ...base, asking: "which road last?" }, { ...base, nonce: "fresh-1", fresh: true }]) {
+      titles.add((await r.cast(args, r.ctx))["title"]);
+    }
+    expect(titles.size).toBe(4);
+  }, 60_000);
+
+  test("a bare cast (no asking, nonce or seed) mints its own nonce: two bare casts stand as two", async () => {
+    const r = await rig();
+    const one = await r.cast({ recipe: "default", caster: "operator", at: AT }, r.ctx);
+    const two = await r.cast({ recipe: "default", caster: "operator", at: AT }, r.ctx);
+    expect(one["title"]).not.toBe(two["title"]);
+  }, 60_000);
+
+  test("a seed throws the same coins for the same seed, and the record names the seed's digest", async () => {
+    const r = await rig();
+    const a = await r.cast({ recipe: "default", caster: "operator", asking: "q1", seed: "kahiko", at: AT }, r.ctx);
+    const b = await r.cast({ recipe: "default", caster: "operator", asking: "q2", seed: "kahiko", at: AT }, r.ctx);
+    expect((a["cast"] as Record<string, unknown>)["lines"]).toEqual((b["cast"] as Record<string, unknown>)["lines"]);
+    expect(String((a["cast"] as Record<string, unknown>)["entropy"])).toMatch(/^seed:sha256:[0-9a-f]{16}$/);
+  }, 60_000);
+
+  test("a seat's fresh throw or seed answers `asks`: a person's hand gives it, and nothing moves", async () => {
+    const r = await rig();
+    const seat = { ...r.ctx, asker: "seat" } as VerbContext;
+    for (const extra of [{ fresh: true, nonce: "n" }, { seed: "kahiko" }]) {
+      const out = await r.cast({ recipe: "default", caster: "agent", asking: "which road first?", at: AT, ...extra }, seat);
+      expect(out).toMatchObject({ band: "asks", decision: "asks" });
+      expect(String((out["asks"] as Record<string, unknown>)["answer"])).toContain("lares oracle cast");
+    }
+    expect(r.engine.wiki.filterTiddlers("[prefix[lar:///ha.ka.ba/lares/oracle/casts/]]")).toEqual([]);
+    const plain = await r.cast({ recipe: "default", caster: "agent", asking: "which road first?", at: AT }, seat);
+    expect(plain["band"]).toBe("answered");
+  }, 60_000);
+
+  test("the readings read labelled as-of the bytes they reflect, and the label moves only when they do", async () => {
+    const r = await rig();
+    const one = await r.cast({ recipe: "default", coins: "889688", caster: "operator", asking: "a", at: AT }, r.ctx);
+    const two = await r.cast({ recipe: "default", coins: "889688", caster: "operator", asking: "b", at: AT }, r.ctx);
+    expect(String(one["asOf"])).toMatch(/^[0-9a-f]{16}$/);
+    expect(two["asOf"]).toBe(one["asOf"]);
+    r.engine.wiki.addTiddler({ title: `${readingTitle("doa", 15)}#/reading`, text: "! 15\n\nAnother reading.", "$origin-bag": DAEMON });
+    const three = await r.cast({ recipe: "default", coins: "889688", caster: "operator", asking: "c", at: AT }, r.ctx);
+    expect(three["asOf"]).not.toBe(one["asOf"]);
   }, 60_000);
 
   test("the verb reads no clock: a call naming no time refuses, and bad coins refuse by name", async () => {
