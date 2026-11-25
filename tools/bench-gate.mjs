@@ -223,6 +223,8 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   }
   const verdictFile = flag("--verdict");
   if (verdictFile) {
+    // THE FLOOR first: the keeper's witness builds and tests like any gate run, so it too runs inside the one floor lock.
+    requireFloor("bench-gate.mjs", args);
     // THE TREE IS THE SUM: no merge-develop, no fetch; a dirty tracked tree names no revision, so it refuses before any step.
     if (args.includes("--base") || args.includes("--list")) { console.error("bench-gate: --verdict runs over the checkout's own revision; it takes no --base or --list"); process.exit(2); }
     if (git(["status", "--porcelain", "--untracked-files=no"]).stdout.trim() !== "") { console.error("bench-gate: --verdict reads a clean tracked tree, and this checkout carries uncommitted changes; commit or drop them, then run it again"); process.exit(2); }

@@ -1653,7 +1653,8 @@ keeper_commit_lei() { # $1 = the revision, $2 = the branch whose kukulu lei lice
       mkdir -p -- "$HOUSE/cache/bench" || die "pulama name-successor --lei: cannot make $HOUSE/cache/bench (keeper-lei-bench-unread); no successor named: $kl_bench_cure"
       rm -f -- "$kl_bench"
       printf 'lares-container: name-successor --lei: the bench gate runs over %s, the tree the image carries (the local witness; CI annotates, never decides)\n' "$kl_rev" >&2
-      (cd "$kl_top" && node tools/floor-run.mjs -- node tools/bench-gate.mjs --verdict "$kl_bench" </dev/null >&2) || true   # on the floor: one heavy run at a time, the C: byte meter beside it
+      kl_gate_rc=0; (cd "$kl_top" && node tools/floor-run.mjs -- node tools/bench-gate.mjs --verdict "$kl_bench" </dev/null >&2) || kl_gate_rc=$?   # on the floor: one heavy run at a time, the C: byte meter beside it
+      [ "$kl_gate_rc" = 64 ] && die "pulama name-successor --lei: the floor refused the bench gate (keeper-lei-floor-refused); no successor named: free the floor (another heavy run holds it, or the C: floor/budget refused) and run lares rite kukulu again"
       [ -z "$(git -C "$kl_top" status --porcelain --untracked-files=no)" ] && [ "$(git -C "$kl_top" rev-parse HEAD 2>/dev/null)" = "$kl_rev" ] || die "pulama name-successor --lei: the checkout moved under the bench gate (keeper-lei-bench-differs); no successor named: $kl_bench_cure"
       kl_verdict=$(kl_bench_read) ;;
   esac
@@ -1669,7 +1670,7 @@ keeper_commit_lei() { # $1 = the revision, $2 = the branch whose kukulu lei lice
   # GitHub unreachable reads `unread`, and neither blocks.
   kl_ci=""
   if command -v gh >/dev/null 2>&1; then
-    kl_ci=$(cd "$kl_top" && gh run list --commit "$kl_rev" --workflow CI --event push --limit 1 --json databaseId,status,conclusion --jq '.[0] | "\(.databaseId):\(.status):\(.conclusion)"' </dev/null 2>/dev/null | tr -d '\r') || kl_ci=""
+    kl_ci=$(cd "$kl_top" && timeout 20 gh run list --commit "$kl_rev" --workflow CI --event push --limit 1 --json databaseId,status,conclusion --jq '.[0] | "\(.databaseId):\(.status):\(.conclusion)"' </dev/null 2>/dev/null | tr -d '\r') || kl_ci=""
   fi
   printf '%s' "$kl_ci" | grep -Eq '^[0-9]+:[a-z_]+:[a-z_]*$' || kl_ci=unread
   case "$kl_ci" in
