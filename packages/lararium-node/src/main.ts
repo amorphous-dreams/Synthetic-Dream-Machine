@@ -716,7 +716,8 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
     dispatcher,
     meshSelf,
     ...(pullMs ? { pullIntervalMs: Number.parseInt(pullMs, 10) } : {}),
-    onPhase:    (phase) => console.log(`[herm] phase → ${phase}`),
+    // THE BOOT NAMES ITSELF: its first line carries this process's pid, so a reader binds the log to the vessel it holds by identity, never by a file's time.
+    onPhase:    (phase) => { if (phase === "boot") console.log(`[herm] boot pid ${process.pid}`); console.log(`[herm] phase → ${phase}`); },
   });
   console.log(`[herm] live — wiki-less wayfarer | storage: ${storageDir}`);
   console.log(`[herm] catalog:   ${herm.catalogHandleUrl}`);
@@ -886,6 +887,8 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     catalogUrl,
     meshSelf,
     onPhase: (phase) => {
+      // THE BOOT NAMES ITSELF: its first line carries this process's pid, so a reader binds the log to the vessel it holds by identity, never by a file's time.
+      if (phase === "boot") console.log(`[lararium] boot pid ${process.pid}`);
       console.log(`[lararium] phase → ${phase}`);
     },
   });

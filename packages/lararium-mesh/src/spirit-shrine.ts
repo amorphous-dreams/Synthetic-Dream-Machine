@@ -502,7 +502,7 @@ export function slotWriteBody(slot: string, readBody: string, write: SlotWrite, 
   return body.replace(/^\n+/, "").replace(/\s+$/, "");
 }
 
-/** The line a fold takes, found by content: the slot's body without it, or null where the line no longer stands. */
+/** The line a fold takes, found by content: the slot's body without it, or null where the body holds no such line. */
 export function foldOut(body: string, line: string): string | null {
   const lines = body.split("\n");
   const at = lines.indexOf(line);

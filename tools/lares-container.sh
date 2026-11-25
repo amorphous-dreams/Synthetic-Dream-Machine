@@ -1336,6 +1336,48 @@ print_reading() {
   printf '{"op":"rebuild-image","revision":"%s","image":"%s","how":"%s","vessel":"%s","current":%s,"pulama":"%s","lit":%s,"admitted":%s,"offer":%s%s%s}\n' \
     "$R_REV" "$rd_image" "$R_HOW" "$rd_vessel" "$rd_current" "$rd_pulama" "$rd_lit" "$rd_admitted" "$rd_offer" "$rd_keeper" "$rd_at"
 }
+# THE KUKULU LEI on a branch, read in the standing vessel as the rite's leiStands reads it, printed as one word: `yes` (a return
+# left), `returns-spent`, or the cause it stands not (`absent`, ...); nothing where the vessel answers no reading.
+kukulu_lei_word() { # $1 = the branch
+  compose exec -T lares node "$CLI" lei show --rite kukulu --branch "$1" --json </dev/null 2>/dev/null | node -e '
+      let s = ""; process.stdin.on("data", (d) => { s += d; }).on("end", () => {
+        let o; try { o = JSON.parse(s.trim().split("\n").at(-1) ?? "").data; } catch { return; }
+        if (!o || typeof o !== "object") return;
+        const read = (Array.isArray(o.faces) ? o.faces.map((f) => f.lei) : [o.lei]).filter((l) => typeof l === "object" && l !== null);
+        if (read.length === 0) return;
+        if (read.some((l) => l.standing === true && Number(l.returnsLeft ?? 0) > 0)) { process.stdout.write("yes"); return; }
+        const causes = read.map((l) => (l.standing === true ? "returns-spent" : typeof l.refusal === "string" ? l.refusal : null));
+        if (causes.every((c) => c === null)) return;
+        process.stdout.write(causes.find((c) => c !== null && c !== "absent") ?? "absent");
+      });' 2>/dev/null || true
+}
+# THE RESTAND SPENDS THE LEI (course ai-restand-spends-lei): an AI seat on this shim's own host chain (`host_chain_kind` reads
+# `ai`) runs up, down, vessel stand, vessel stop and build only under a standing kukulu lei on the checkout's branch with a
+# return left, read as the rite reads it; one standing lei among the vessel's faces licenses. A hand (chain reads `hand`) passes
+# untouched. The rite's own steps (`rebuild`, `keeper-stand`, `keep-owed`) never come through here. With no vessel standing the
+# lei reads nowhere, and the refusal says so.
+ai_restand_gate() { # $1 = the verb as typed
+  [ "$HOST_CHAIN" = ai ] || return 0
+  ag_top=$(git -C "$SHIM_DIR" rev-parse --show-toplevel 2>/dev/null) || ag_top=""
+  ag_branch=""
+  if [ -n "$ag_top" ]; then ag_branch=$(git -C "$ag_top" rev-parse --abbrev-ref HEAD 2>/dev/null) || ag_branch=""; fi
+  ag_id=$(compose ps -q --status running lares 2>/dev/null) || ag_id=""
+  ag_id=$(printf '%s\n' "$ag_id" | tr -d '\r' | sed -n '1p')
+  # shellcheck disable=SC2016
+  [ -n "$ag_id" ] || die "$1 refused to an AI seat: no kukulu lei licenses it, because the lei reads nowhere while no vessel stands; a hand runs \`$1\` at their own terminal (nothing ran)"
+  case "$ag_branch" in
+    ''|HEAD) die "$1 refused to an AI seat: the checkout stands on no branch, so no kukulu lei reads for it; a hand runs \`$1\` at their own terminal (nothing ran)" ;;
+  esac
+  ag_lei=$(kukulu_lei_word "$ag_branch") || ag_lei=""
+  if [ "$ag_lei" = yes ]; then return 0; fi
+  case "$ag_lei" in
+    '') ag_why="the kukulu lei on $ag_branch answered no reading" ;;
+    returns-spent) ag_why="the kukulu lei on $ag_branch stands with no return left" ;;
+    *) ag_why="no standing kukulu lei on $ag_branch ($ag_lei)" ;;
+  esac
+  # shellcheck disable=SC2016
+  die "$1 refused to an AI seat: $ag_why; a hand strings one: lares lei kui --rite kukulu --branch $ag_branch --returns <n> --all (nothing ran)"
+}
 # THE KŪKULU READING (course pulama-unblur): before any rite, one line says whether the next `lares rite kukulu` runs alone or
 # needs a hand, read off the sync the rite reads first, the closure of the head it would build (tools/pulama-closure.mjs over a
 # fresh archive of it) against the running pūlama's label, the pūlama's own status (lit, struckDue, vestReady, leiReady, pending),
@@ -1434,19 +1476,7 @@ kukulu_reading() {
   esac
   # THE KUKULU LEI on the checkout's branch, as the rite's leiStands reads it: yes (a return left), or the cause it stands not.
   kr_lei=""
-  if [ "$kr_vessel" = standing ] && [ -n "$kr_branch" ]; then
-    kr_lei=$(compose exec -T lares node "$CLI" lei show --rite kukulu --branch "$kr_branch" --json </dev/null 2>/dev/null | node -e '
-      let s = ""; process.stdin.on("data", (d) => { s += d; }).on("end", () => {
-        let o; try { o = JSON.parse(s.trim().split("\n").at(-1) ?? "").data; } catch { return; }
-        if (!o || typeof o !== "object") return;
-        const read = (Array.isArray(o.faces) ? o.faces.map((f) => f.lei) : [o.lei]).filter((l) => typeof l === "object" && l !== null);
-        if (read.length === 0) return;
-        if (read.some((l) => l.standing === true && Number(l.returnsLeft ?? 0) > 0)) { process.stdout.write("yes"); return; }
-        const causes = read.map((l) => (l.standing === true ? "returns-spent" : typeof l.refusal === "string" ? l.refusal : null));
-        if (causes.every((c) => c === null)) return;
-        process.stdout.write(causes.find((c) => c !== null && c !== "absent") ?? "absent");
-      });' 2>/dev/null) || kr_lei=""
-  fi
+  if [ "$kr_vessel" = standing ] && [ -n "$kr_branch" ]; then kr_lei=$(kukulu_lei_word "$kr_branch") || kr_lei=""; fi
   # THE VERDICT, gate by gate as the rite walks them with no terminal (rite-kukulu.ts `kukuluHand`).
   kr_lei_ok=""; kr_lei_gone=""
   case "$kr_lei" in yes) kr_lei_ok=yes ;; ''|returns-spent) ;; *) kr_lei_gone=yes ;; esac
@@ -1784,7 +1814,7 @@ keep_owed_verb() {
 }
 
 case "$verb" in
-  up) up_verb "$@" ;;
+  up) ai_restand_gate up; up_verb "$@" ;;
   rebuild) rebuild_verb "$@" ;;
   keep-owed) keep_owed_verb "$@" ;;
   keeper-stand)
@@ -1801,7 +1831,7 @@ case "$verb" in
       vi_image=$(docker inspect --format '{{.Image}}' "$vi_id" 2>/dev/null) || die "vessel-image: the running vessel's image reads nowhere (docker inspect failed)"
       printf '%s\n' "$vi_image" | tr -d '\r'
     fi ;;
-  down) down_vessel "$@" ;;
+  down) ai_restand_gate down; down_vessel "$@" ;;
   pulama)
     [ -n "$PULAMA_MODE" ] || die "pulama needs LARES_PULAMA=1 in the environment or $ENV_FILE"
     case "${1:-}" in
@@ -2035,7 +2065,7 @@ case "$verb" in
   build)
     at=HEAD
     if [ "${1:-}" = --at ]; then [ "$#" -ge 2 ] || die "build --at wants a revision"; at=$2; shift 2; fi
-    build_image "$at" "$@" ;;
+    ai_restand_gate build; build_image "$at" "$@" ;;
   found)
     ensure_house
     # shellcheck disable=SC2046
@@ -2045,6 +2075,7 @@ case "$verb" in
     for arg in "$@"; do if [ "$arg" = --observe ]; then observing=yes; fi; done
     case "${1:-}" in
       stand)
+        [ -n "$observing" ] || ai_restand_gate "vessel stand"
         if [ -n "$observing" ]; then follow_up=""; route_cli "$verb" "$@"
         elif [ "$#" -gt 1 ]; then route_cli "$verb" "$@"
         else
@@ -2057,7 +2088,7 @@ case "$verb" in
         fi ;;
       # Stopping the daemon stops the container's main process: a host act. A fallen engine reads the signal as the hand's
       # stop: it clears the restart count (and the holds it carries) and exits 0.
-      stop) [ "$#" -eq 1 ] || die "vessel stop takes no option through this shim"; compose stop lares ;;
+      stop) [ "$#" -eq 1 ] || die "vessel stop takes no option through this shim"; ai_restand_gate "vessel stop"; compose stop lares ;;
       # THE STEP-IN READ asks no standing verdict after it: a fallen engine answers none, and the read reads its files.
       read) vessel_read "$@" ;;
       # THE RELEASE HOLDS THE STORE: a standing container refuses here, naming the stop, before anything execs; a stopped

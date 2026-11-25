@@ -18,7 +18,7 @@ import { openLocalSession, SessionRefused } from "./session-connector.js";
 import { sealedAct } from "./sealed-act-door.js";
 import { vesselStanding, type VesselStanding } from "./custody-door.js";
 import { vesselDid, larSealHome, larDataDir } from "./env.js";
-import { readFileSync, statSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { DaemonUnreachable, refusalCode, refusalHint, verbFailure } from "./verb-call.js";
 import { udsAlive, udsSocketPresent, udsSocketPath, whoHolds, invokeLocal, UdsUnreachable, LocalWaitExpired, type WhoHoldsAnswer } from "./local-connector.js";
@@ -182,9 +182,9 @@ export class StoreDoorEnded extends Error {
 }
 const endedCure: Record<StoreDoorEndCause, string> = {
   "holder-gone":  "the holder left; run again to stand a fresh door, or read what held the store with `lares vessel read`.",
-  "boot-fault":   "the boot attested a fault; read it with `lares vessel read`, then stand the vessel again with `lares vessel up`.",
-  "boot-refused": "the boot's verb channel refused; read the cause with `lares vessel read`, then stand the vessel again with `lares vessel up`.",
-  "stand-exited": "the node that was standing exited; stand it again with `lares vessel up`, then run again.",
+  "boot-fault":   "the boot attested a fault; read it with `lares vessel read`, then stand the vessel again with `lares vessel stand`.",
+  "boot-refused": "the boot's verb channel refused; read the cause with `lares vessel read`, then stand the vessel again with `lares vessel stand`.",
+  "stand-exited": "the node that was standing exited; stand it again with `lares vessel stand`, then run again.",
 };
 
 /**
@@ -238,36 +238,20 @@ export function hostPidAlive(pid: number): boolean {
   try { process.kill(pid, 0); return true; } catch (e) { return (e as NodeJS.ErrnoException).code === "EPERM"; }
 }
 
-/** When `pid` started, in epoch ms, read off `/proc` (boot time plus the stat's start ticks at 100 Hz); null where no `/proc` names it. */
-function procStartMs(pid: number): number | null {
-  try {
-    const btime = /^btime (\d+)$/m.exec(readFileSync("/proc/stat", "utf8"));
-    const stat = readFileSync(`/proc/${pid}/stat`, "utf8");
-    const ticks = Number(stat.slice(stat.lastIndexOf(")") + 2).split(" ")[19]);
-    return btime && Number.isFinite(ticks) ? Number(btime[1]) * 1000 + ticks * 10 : null;
-  } catch { return null; }
-}
-
 /**
- * The current boot's stretch of `<data dir>/stand.log`, or "" when this log cannot be the held vessel's. Only a HOST stand
- * writes that file, so it reads only when a held pid runs on this host and the file was written after that pid started: a
- * container vessel (a pid the host never sees) and a stale log from an earlier failed stand both read nothing. Then from its
- * last `phase → boot` line, so an earlier boot's fault in the same file never reads. `seam` lets a test name the facts.
+ * The current boot's stretch of `<data dir>/stand.log`, bound to the held vessel by IDENTITY, never by a clock: the stand's
+ * first line (`boot pid <N>`) names its own pid, and this reads only the lines from the LAST such line whose pid the held
+ * vessel names (whoHolds). No file time and no boot time decides: an older stand's log, a touched file or a moved clock names
+ * another pid, or none, and reads nothing. A container vessel writes no such file, and reads nothing. `readLog` is a test seam.
  */
-export function standBootLog(holderPids: readonly number[], seam: {
-  readonly alive?: (pid: number) => boolean; readonly startMs?: (pid: number) => number | null;
-  readonly logMtimeMs?: () => number; readonly readLog?: () => string;
-} = {}): string {
+export function standBootLog(holderPids: readonly number[], readLog: () => string = () => readFileSync(join(larDataDir(), "stand.log"), "utf8")): string {
   try {
-    const alive = seam.alive ?? hostPidAlive;
-    const startOf = seam.startMs ?? procStartMs;
-    const mtime = seam.logMtimeMs ?? ((): number => statSync(join(larDataDir(), "stand.log")).mtimeMs);
-    const written = mtime();
-    const bound = holderPids.some((pid) => { const start = alive(pid) ? startOf(pid) : null; return start !== null && written >= start; });
-    if (!bound) return "";
-    const lines = (seam.readLog ?? ((): string => readFileSync(join(larDataDir(), "stand.log"), "utf8")))().split("\n");
+    const lines = readLog().split("\n");
     let from = -1;
-    lines.forEach((line, i) => { if (/\bphase → boot\s*$/.test(line)) from = i; });
+    lines.forEach((line, i) => {
+      const m = /\bboot pid (\d+)\s*$/.exec(line);
+      if (m) from = holderPids.includes(Number(m[1])) ? i : -1;
+    });
     return from >= 0 ? lines.slice(from).join("\n") : "";
   } catch { return ""; }
 }
