@@ -4,7 +4,7 @@
  *
  * The contract every skin (this, the HTTP route, the MCP tool) carries verbatim:
  *
- *   meme-put      { recipe?, bag?, uri, text, base? }   → PlaceMemeReceipt
+ *   meme-put      { recipe?, bag?, uri, text, base?, create? }   → PlaceMemeReceipt | { decision: exists } (create lands only where no family stands)
  *   meme-get      { recipe?, bag?, uri }                → { uri, meme: { text, canonicalHash } | null }
  *   meme-patch    { recipe?, bag?, uri, slot, append [base] | replace base } → PlaceMemeReceipt & { slot } | { decision: absent }
  *   meme-list     { recipe?, bag?, tree?, after?, limit? } → { bag | recipe, roots: MemeListing[], next }
@@ -565,6 +565,15 @@ export function makeMemePutReactor(opts: MemeVerbOptions): VerbReactor {
         await admitSeatExecutable(title, record, "meme put", ctx.asker, { wiki, port: ctx.execLei });
       }
     };
+    // `create` LANDS THE FAMILY ONLY WHERE NONE STANDS: a root the write layer holds, or the stack beneath answers, reads `exists`
+    // and nothing moves (the tiddler door's own `--create` law, kept for a family).
+    if (args["create"] === true || args["create"] === "true") {
+      const standing = (await readMeme(target.uri, sink)) ?? (target.recipe && !opts.faceLane ? await resolveRead(opts, target, origin, ctx.cap).then((below) => readMeme(target.uri, below.sink), () => null) : null);
+      if (standing) {
+        return { has: familyHas(target.uri, { ...target, canonicalHash: standing.canonicalHash }, "family-write"), uri: target.uri, decision: "exists", landed: [], tombstoned: [], diagnostics: [], canonicalHash: standing.canonicalHash,
+          warnings: [`exists: a meme already stands at ${target.uri}; --create lands only where none does. Nothing moved.`], bag };
+      }
+    }
     const receipt = await placeMeme({ uri: target.uri, text, baseHash, vet, ...(ctx.signal ? { signal: ctx.signal } : {}) }, sink);
     // THE ANSWER NAMES THE LAYER: the bag the put landed in, and for a named wiki the slot of it (`working`, or `personal`
     // where the face holds no writer's seat in the wiki's workbench).

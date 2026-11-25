@@ -42,7 +42,7 @@ import { houseCanonSlugs } from "@lararium/mesh/kahu-canon-reach";
 import { namesTw5Docs } from "@lararium/mesh/tw5-docs-name";
 import { type FloorDriftReading } from "@lararium/mesh/floor-drift";
 import type { ParsedArgs } from "../parse-args.js";
-import { emit } from "../render.js";
+import { emit, exitFor } from "../render.js";
 import { larBagsDir, larProjectionsDirOrNone, larRoot, larWikisDir, vesselDid } from "../env.js";
 import { fileToUriForSource, openSyncedTree, scanSource } from "../ingest-core.js";
 import type { HouseLag, LagHolding } from "../rite-kukulu.js";
@@ -312,6 +312,18 @@ export async function cmdLay(args: ParsedArgs, mirrorDoors: MirrorDoors = LIVE_M
       },
     });
     return 0;
+  }
+  // AN APPLY THAT NO HAND CONFIRMS REFUSES OUT LOUD: without `--yes` the lay asks at a terminal, and with none (a pipe, a seat, a
+  // harness) no one can answer, so it names the cure instead of standing silent.
+  if (args.flags["apply"] === true && args.flags["yes"] !== true && !(process.stdin.isTTY && process.stdout.isTTY)) {
+    const cure = `lares vessel lay ${args.flags["workbench"] ? "--workbench " : ""}--apply --yes`;
+    emit(args, {
+      ok: false,
+      error: { code: "usage", message: "confirmation required", hint: `no terminal answers the lay's confirmation; pass --yes (the operator's relayed approval): ${cure}` },
+      human: () => { /* the line below speaks for the prose route and rides stderr beside a JSON envelope too */ },
+    });
+    console.error(`lares vessel lay: --apply needs a confirmation and no terminal stands to give it; run \`${cure}\` to confirm (add --lift-kahua <N> to lift kahua items).`);
+    return exitFor("usage");
   }
   // `--workbench` walks the checkout's workbench folders alone (the lay a kūkulu offers on the owner's yes): no holdings leg, no
   // face root, no share, no kahua; each workbench lays only where the worn face holds a writer's seat.
