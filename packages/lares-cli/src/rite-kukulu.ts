@@ -157,7 +157,8 @@ export interface RitePorts {
   /**
    * THE COMMIT THE KUKULU LEI LICENSES (no route; operator ruling 2026-11-24: the keeper lei keeps no count of its own): the shim's
    * internal step (`pulama name-successor --lei <rev> <branch>`, no hand verb) checks the revision reachable from origin, the image's closure label equal to its D′
-   * and its CI push run green, and the keeper rests a commit naming D′ and the license. The rite's own begin spends the lei's
+   * and a green LOCAL bench verdict over that very tree (the host runs `node tools/bench-gate.mjs --verdict`; CI rides beside it as
+   * annotation and never blocks, ruling 2026-11-25-web2-annotates), and the keeper rests a commit naming D′, the verdict's hash and the license. The rite's own begin spends the lei's
    * return (the same return it spends for the lent face), and the vest names it. True where the commit rests (the stand then reads
    * `vests`); false where any guard refused (its lines name why). Absent, nothing licenses a commit.
    */

@@ -43,7 +43,7 @@ async function termsFor(blobs: readonly OfferedBlob[] = BLOBS) {
   return { offeror: (await ed25519VerifyingKeyFromSeed(SEED)).toLowerCase(), pluginsCid: computePluginsCid(blobs), blobs };
 }
 
-async function stand(opts: { readonly publish?: boolean } = {}) {
+async function stand(opts: { readonly publish?: boolean; readonly signerKey?: string } = {}) {
   fx = await standPulama("pulama-publish-hand", () => openGate({ faces: lend(0), coldReads: [] }));
   await fx.kept.foundFace({ group: personaGroupDigest("group-publish-hand"), ordinal: 0, slots: fixtureSlots });
   const holder = makeCustodyHolder({ io: new FsCustodyIo(fx.seat.homes), homes: fx.seat.homes });
@@ -58,7 +58,7 @@ async function stand(opts: { readonly publish?: boolean } = {}) {
     signer: async (ordinal: number, credentials: readonly Credential[]) => {
       opened.push(ordinal);
       if (credentials.some((c) => c.kind !== "passphrase" || c.passphrase !== FIXTURE_PASSPHRASE)) throw new WardRefused("ward-no-slot-opens", "the route opens no slot of this face's ward (2 attempt(s) left)");
-      return { key, sign: async (bytes: Uint8Array) => { signed.push(bytes); return ed25519SignerFromSeed(SEED)(bytes); } };
+      return { key: opts.signerKey ?? key, sign: async (bytes: Uint8Array) => { signed.push(bytes); return ed25519SignerFromSeed(SEED)(bytes); } };
     },
   };
   const lines: string[] = [];
@@ -69,6 +69,16 @@ async function stand(opts: { readonly publish?: boolean } = {}) {
 }
 
 describe("the hand signs one plugin offering at the pūlama's hand door", () => {
+  // #576 cold read: the signer-key mismatch branch rode no test.
+  test("RED: a root signer that opens under the route naming another key than the roster row signs nothing and answers publish-offeror-mismatch; CONTROL: the roster's own key signs", async () => {
+    const other = (await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(9))).toLowerCase();
+    const s = await stand({ signerKey: other });
+    await s.light();
+    const terms = await termsFor();
+    expect(await s.door({ op: "publish", face: 0, offering: terms, credentials: route })).toMatchObject({ op: "publish", reading: "publish-offeror-mismatch", face: 0 });
+    expect(s.signed).toEqual([]);
+  });
+
   test("RED: a lit pūlama signs the closed descriptor under the face's route, the root signs exactly its offering preimage, the offering verifies, nothing rests, and no answer carries the route", async () => {
     const s = await stand();
     await s.light();
@@ -163,6 +173,8 @@ describe("the hand's publish verb at the pūlama", () => {
     expect(p.asked).toHaveLength(1);
     expect(p.asked[0]).toContain(terms.pluginsCid);
     expect(p.asked[0]).toContain("h0");
+    // The prompt names the blobs the operator signs, each by id and version (#576 cold read), never a bare count.
+    for (const b of terms.blobs) expect(p.asked[0]).toContain(`${b.id}@${b.version}`);
   });
 
   test("RED: an unlit pūlama and a malformed descriptor each refuse before any route is asked; a line carrying a route or another field refuses by usage", async () => {

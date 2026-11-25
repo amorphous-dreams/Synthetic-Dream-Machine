@@ -35,7 +35,7 @@ const SHELLS = new Set(['bash', 'sh', 'zsh', 'dash', 'ksh']);
 const TAKES_VALUE = new Set(['-C', '-c', '--git-dir', '--work-tree', '--namespace', '--super-prefix', '--config-env', '--exec-path', '--list-cmds']);
 export const REASON = "stash-guard: refused — never `git stash` in any form, `stash list` included (lane law): the stash stack spans every worktree and session over this repository.\npono: read the tree with git status, git diff or git log";
 
-class Unreadable extends Error {}
+export class Unreadable extends Error {}
 
 /** Quote-aware lexer: words, operators, and the scripts nested inside substitutions and heredocs. */
 export function lex(src) {
@@ -100,7 +100,7 @@ export function lex(src) {
   return { words, scripts, heredocs };
 }
 
-function commandsOf(words) {
+export function commandsOf(words) {
   const out = []; let cmd = [];
   for (const w of words) { if (w === ';') { if (cmd.length) out.push(cmd); cmd = []; } else cmd.push(w); }
   if (cmd.length) out.push(cmd);

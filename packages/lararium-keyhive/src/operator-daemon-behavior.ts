@@ -201,7 +201,7 @@ export function requireDyadReader(reader: DyadReader | undefined, gate: "the Bin
   }
   return reader;
 }
-import { bootDaemonKeyhive, FaceHoldsNoPrekeySecret, FaceRecardRefused, recardCommand, type BootDaemonKeyhiveRecard } from "./boot-daemon-keyhive.js";
+import { bootDaemonKeyhive, FaceHoldsNoPrekeySecret, FaceRecardRefused, landRecard, recardCommand, type BootDaemonKeyhiveRecard } from "./boot-daemon-keyhive.js";
 import { daemonBagDocLedger, planeBagDocLedger, registerBagsDurably, type BagDocLedger } from "./bag-doc-ledger.js";
 import { persistArchiveFloor } from "./archive-floor-write.js";
 import { replicaHeads } from "@lararium/mesh/island-repo-door";
@@ -251,7 +251,7 @@ import { answerKahuaCap } from "./kahua-cap.js";
 import { proposeDraftsToKahua, pageTitleList } from "./kahua-page-propose.js";
 import type { ProviderChunkRest } from "./capability-provider.js";
 import { seatContentKeys, type ContentKeySeat } from "./content-key-seat.js";
-import { faceSeatTable, type FaceSeat } from "./face-seat-table.js";
+import { faceSeatTable, standSiblingEntry, type FaceSeat } from "./face-seat-table.js";
 import { crossFaceReactor, faceEngineReactor, faceLaneReactor, FACE_LANE_VERBS, type CrossFacePorts, type FaceEnginePorts, type FaceLanePorts } from "./face-lane.js";
 /** The verbs a lit sibling reaches on its own lane (`face-lane`). */
 export { FACE_LANE_VERBS } from "./face-lane.js";
@@ -453,7 +453,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           if (again instanceof PrekeySecretAbsent) throw new FaceRecardRefused("still-refuses", `face ${handle} held no prekey secret even after its card; read \`lares vault status --verbose\` and keep the face dark`);
           throw again;
         }
-        recard = { stale: true, reminted: recard?.reminted ?? [] };
+        recard = { stale: true, reminted: recard?.reminted ?? [], commit: recard?.commit ?? (async () => {}) };
       }
       // THE SIBLING'S ARCHIVE FLOOR, as the mounted face's: its one card mints, then its Archive rests in its own row. Every
       // later ask of this stand (a grant, a workbench seat, a revoke) presents that same card, so the Archive the next light
@@ -467,10 +467,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       });
       await surfaceFloorRefusals(ctx, floor, key);
       if (recard) {
-        // THE RECARD LANDS ONLY WITH ITS ARCHIVE: a stale stand's card and its fresh Documents live in this Archive alone.
-        if (recard.stale && (floor.wrote.length === 0 || floor.refusals.length > 0)) {
-          throw new FaceRecardRefused("archive-unrested", `the Archive of face ${handle} did not rest after its card (${floor.refusals.map((r) => r.message).join("; ") || (floor.barred ? "the archive holds shut" : "no row took it")}), so its next light would hold no prekey secret again; it stays dark, and the recard spends its arm. Read the refusing row with \`lares vault status --verbose\` first; where custody reads locked, unlock it (\`lares vault unlock\`) so its Archive rows take writes, then \`${recardCommand(face.handleIndex)}\` again`);
-        }
+        // THE RECARD LANDS ONLY WITH ITS ARCHIVE (landRecard): a stale stand whose Archive rested nothing refuses
+        // `archive-unrested` and commits no ledger row; past the check, the rows its stale pass held rest.
+        await landRecard(recard, floor, handle, face.handleIndex);
         console.warn(recardLine(handle, recard));
       }
       providers.set(key, { provider: joined.keyhive, group: face.personaGroupId });
@@ -1076,12 +1075,11 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   /** A lit sibling's own seat, in its own entry; its identity's dispose closes the entry whole. */
   const standSiblingSeat = (ctx: IslandContext, key: string, face: JoinedFaceAuth, keyhive: KeyhiveProvider): void => {
     if (!sealedStore || faces.lit(key)?.seat) return;
-    const entry = faces.light(key, null);
-    entry.seat = seatOfFace(ctx, keyhive, entry, {
+    // THE CLEANUP REGISTERS BEFORE THE SEAT STANDS (standSiblingEntry): a seat that throws leaves with its identity.
+    standSiblingEntry(faces, key, keyhive, (entry) => seatOfFace(ctx, keyhive, entry, {
       groupId: face.personaGroupId, fleetRoot: face.deviceEdge.personaRootDid, atomKey: () => face.atom.key,
       bags: () => face.registerBags, dyad: () => dyadReader(ctx, { ...daemonAuth, ...face }), archiveFace: face.personaGroupId,
-    });
-    keyhive.whenDisposed(() => { if (faces.lit(key) === entry) faces.drop(key); });
+    }));
   };
   // THE HOLDER AND ITS DOOR STAND BEFORE ANY READ OF A SEALED DOCUMENT (the working-layer-first rule, red 3): the face's
   // catalog rests sealed, and the vessel opens its chunks only through this door, so a boot that read the catalog

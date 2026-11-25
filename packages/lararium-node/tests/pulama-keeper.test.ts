@@ -16,7 +16,7 @@ import { UNLOCK_ATTEMPTS_PER_BOOT, makeCustodyHolder, type CustodyHolder } from 
 import { personaGroupDigest } from "../src/persona-group-file.js";
 import { pulamaAdmissions, signPulamaRecord, verifiedPulamaRecord } from "../src/pulama-admit.js";
 import { pulamaHandDoor, type PulamaHandAnswer } from "../src/pulama-hand.js";
-import { KEEPER_STRUCK_EVERY, keeperNameSuccessor, keeperEphemeral, keeperFold, keeperSuccessorStale, keeperSlotOpen, pulamaKeeperPrefix } from "../src/pulama-keeper.js";
+import { KEEPER_STRUCK_EVERY, keeperNameSuccessor, keeperEphemeral, keeperFold, keeperSuccessorStale, keeperSlotOpen, pulamaKeeperPrefix, pulamaKeeperTitle } from "../src/pulama-keeper.js";
 import { servePulama } from "../src/pulama-server.js";
 import { listenPulama, pulamaAnswers } from "../src/pulama-socket.js";
 import { pulamaImage, pulamaRecords } from "../src/pulama-state.js";
@@ -26,6 +26,11 @@ import { createHash } from "node:crypto";
 const sha = (s: string): string => createHash("sha256").update(s).digest("hex");
 import { KEEPER_FACE, cosignedCommit, selfCosigned } from "../../lararium-mesh/tests/keeper-cosign-fixture.js";
 import { SESSION_DERIVES, fixtureRoute, fixtureSlots, lend, openGate, standPulama, type PulamaFixture } from "./pulama-fixture.js";
+
+/** A LOCAL bench verdict as `node tools/bench-gate.mjs --verdict <file>` writes it, over one revision and its tree. */
+const benchVerdict = (rev: string, tree: string, code = 0) => ({ kind: "lares-bench-verdict", v: 1, rev, tree, code, line: code === 0 ? `BENCH GATE GREEN at ${rev.slice(0, 9)} · 5 steps · 61 s` : "BENCH GATE REFUSES: build (exit 1) · 9 s", steps: [{ name: "build", code, secs: 9 }], secs: code === 0 ? 61 : 9 });
+/** The hash the keeper names a verdict by: sha256 over the exact bytes the gate wrote (its JSON, as written). */
+const benchHash = (v: unknown) => `sha256:${createHash("sha256").update(JSON.stringify(v)).digest("hex")}`;
 
 vi.setConfig({ testTimeout: 180_000 });
 
@@ -557,8 +562,9 @@ describe("RED the live rite a vest rides (`keeperRiteOver`)", () => {
 });
 
 describe("RED the keeper lei: the kukulu lei licenses the handed fire (operator ruling, 2026-11-24: no count of its own)", () => {
-  /** The host's testimony as `pulama name-successor --lei` sends it: the branch whose kukulu lei licenses, the revision, its tree, the recheck, the CI run (green). */
-  const TESTIMONY = { branch: "main", rev: "a".repeat(40), tree: "b".repeat(40), recheck: "same", ci: "4242:success" };
+  /** The host's testimony as `pulama name-successor --lei` sends it: the branch whose kukulu lei licenses, the revision, its tree, the
+   *  recheck, the LOCAL bench verdict the host ran over that very tree (ruling 2026-11-25-web2-annotates), and the CI run as annotation. */
+  const TESTIMONY = { branch: "main", rev: "a".repeat(40), tree: "b".repeat(40), recheck: "same", bench: benchVerdict("a".repeat(40), "b".repeat(40)), ci: "4242:completed:success" };
   const spend = (door: (f: unknown) => Promise<PulamaHandAnswer>, next = D2, over: Record<string, unknown> = {}) => door({ op: "name-successor-lei", next, image: next, devices: 1, ...TESTIMONY, ...over });
 
   test("keeper-lei-licenses-with-no-route: a commit the kukulu lei licenses rests with no route and names its license; the vest's live rite spends that lei's return and names it; the successor's next commit asks no count", async () => {
@@ -567,14 +573,19 @@ describe("RED the keeper lei: the kukulu lei licenses the handed fire (operator 
     const first = await spend(h.old);
     expect(first).toMatchObject({ reading: "named", v: 1, next: D2, branch: "main" });
     const successor = (await keeperFold(h.records, await pulamaSignerOf(fx!.kept))).successor;
-    expect(successor?.body).toMatchObject({ devices: 1, licensed: { by: "kukulu-lei", ...TESTIMONY, image: D2 } });
-    expect(await h.old({ op: "status" })).toMatchObject({ keeperLei: { licensed: [{ v: 1, next: D2, branch: "main", rev: TESTIMONY.rev, ci: TESTIMONY.ci, vested: false, leis: [] }] }, vestReady: D2 });
+    // THE LICENSE NAMES THE LOCAL VERDICT BY HASH (the bytes the host handed, hashed by the keeper itself) and carries CI as annotation.
+    const { bench, ...rest } = TESTIMONY;
+    expect(successor?.body).toMatchObject({ devices: 1, licensed: { by: "kukulu-lei", ...rest, image: D2, bench: benchHash(bench), benchLine: bench.line } });
+    expect(await h.old({ op: "status" })).toMatchObject({ keeperLei: { licensed: [{ v: 1, next: D2, branch: "main", rev: TESTIMONY.rev, bench: benchHash(bench), ci: TESTIMONY.ci, vested: false, leis: [] }] }, vestReady: D2 });
     expect(await h.old({ op: "status" })).not.toHaveProperty("leiReady");
     const one = await handoff(h, h.old);
     expect(one.landed).toMatchObject({ reading: "landed", vestings: 1 });
     // THE VEST NAMES THE KUKULU LEI RETURN ITS RITE SPENT: the license, read back on status.
     await one.next.door({ op: "image", digest: IMAGE, closure: D2 });
     expect(await one.next.door({ op: "status" })).toMatchObject({ keeperLei: { licensed: [{ v: 1, vested: true, leis: [{ lei: "11".repeat(32), n: 1 }] }] }, leiReady: true });
+    // THE VEST NAMES THE LOCAL VERDICT BY HASH, beside the lei return it spent.
+    const vest = verifiedPulamaRecord(await h.records.read(pulamaKeeperTitle(first["tessera"] as string, "vest")), (await pulamaSignerOf(fx!.kept)).key);
+    expect(vest?.body).toMatchObject({ act: "keeper-vested", bench: benchHash(TESTIMONY.bench) });
     expect(await spend(one.next.door, D3)).toMatchObject({ reading: "named", v: 2 });
     expect((await handoff(h, one.next.door, D3)).landed).toMatchObject({ reading: "landed", vestings: 2 });
     expect(JSON.stringify([h.lines, h.answers])).not.toContain(FIXTURE_PASSPHRASE);
@@ -642,7 +653,11 @@ describe("RED the keeper lei: the kukulu lei licenses the handed fire (operator 
     expect(await spend(h.old, D2, { devices: 2 })).toMatchObject({ reading: "keeper-lei-cosign-owed", detail: expect.stringContaining("lares pulama name-successor") });
     expect(await spend(h.old, D2, { devices: undefined })).toMatchObject({ reading: "keeper-lei-devices-unread" });
     expect(await spend(h.old, D2, { image: D3 })).toMatchObject({ reading: "keeper-lei-image-differs" });
-    expect(await spend(h.old, D2, { ci: "4242:failure" })).toMatchObject({ reading: "keeper-lei-ci-red", detail: expect.stringContaining("gh run list --commit") });
+    // THE LOCAL WITNESS DECIDES: no verdict, one over another tree, or a red one each refuse by name with the cure.
+    expect(await spend(h.old, D2, { bench: undefined })).toMatchObject({ reading: "keeper-lei-bench-unread", detail: expect.stringContaining("node tools/bench-gate.mjs --verdict") });
+    expect(await spend(h.old, D2, { bench: { ...TESTIMONY.bench, kind: "other" } })).toMatchObject({ reading: "keeper-lei-bench-unread" });
+    expect(await spend(h.old, D2, { bench: benchVerdict("a".repeat(40), "c".repeat(40)) })).toMatchObject({ reading: "keeper-lei-bench-differs", detail: expect.stringContaining("lares rite kukulu") });
+    expect(await spend(h.old, D2, { bench: benchVerdict("a".repeat(40), "b".repeat(40), 1) })).toMatchObject({ reading: "keeper-lei-bench-red", detail: expect.stringContaining("BENCH GATE REFUSES") });
     expect(await spend(h.old, D2, { recheck: "differs" })).toMatchObject({ reading: "keeper-lei-recheck-differs" });
     expect(await spend(h.old, D2, { branch: "" })).toMatchObject({ reading: "keeper-lei-testimony-malformed" });
     expect(await h.records.list(pulamaKeeperPrefix())).toEqual([]);
@@ -654,6 +669,14 @@ describe("RED the keeper lei: the kukulu lei licenses the handed fire (operator 
     expect(await struck.door({ op: "keeper-land" })).toMatchObject({ reading: "red", red: "closure-differs" });
     expect(await spend(struck.door, D2)).toMatchObject({ reading: "keeper-lei-red", detail: expect.stringContaining("lares rite kukulu on a terminal") });
     await struck.holder.lock();
+  });
+
+  test("RED web2-annotates-never-decides (ruling 2026-11-25): a red CI run, an unread one, or none at all rides the license as annotation and blocks nothing; the local verdict alone decides", async () => {
+    for (const [i, ci] of ["4242:completed:failure", "unread", undefined].entries()) {
+      const h = await house(`keeper-lei-web2-${i}`);
+      expect(await spend(h.old, D2, { ci })).toMatchObject({ reading: "named", v: 1, next: D2 });
+      expect((await keeperFold(h.records, await pulamaSignerOf(fx!.kept))).successor?.body).toMatchObject({ licensed: { ci: ci ?? "unread", bench: benchHash(TESTIMONY.bench) } });
+    }
   });
 
   test("keeper-lei-floor-and-passing: a passing keeper refuses `fire-passing`; the floor off refuses `keeper-lei-floor-off` and status reads it", async () => {
@@ -675,7 +698,7 @@ describe("RED the keeper lei: the kukulu lei licenses the handed fire (operator 
 
 describe("RED the keeper lei's cold read (F1, F3, F5, F6): a licensed commit vests for every face on the vessel, over the very revision it names, under a standing floor, never superseding the hand", () => {
   /** The testimony the vouches below agree with: the branch, head and tree each vouch names. */
-  const LICENSED = { branch: "main", rev: "a".repeat(40), tree: "b".repeat(40), recheck: "same", ci: "9:success" };
+  const LICENSED = { branch: "main", rev: "a".repeat(40), tree: "b".repeat(40), recheck: "same", bench: benchVerdict("a".repeat(40), "b".repeat(40)), ci: "9:completed:success" };
   const offerOf = async (to: string, faces: readonly { group: string; devices: number }[], head = "a".repeat(40)) => {
     const signer = await vouchSignerOf(fx!.kept);
     const vouch = await Promise.all(faces.map((f) => signKukuluVouch({ group: f.group, branch: "main", head, tree: "b".repeat(40), image: IMAGE, keeper: { to, next: D2, devices: f.devices } as never }, signer)));

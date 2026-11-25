@@ -933,7 +933,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--all                (get) the whole at the lens's grain: a record fat, a pointer resolved, a meme's carrier paged to the end",
       "--after <cursor>     (get) one page of the whole carrier: hand back the cursor `next` named",
       "--unset <a,b>        (put) fields to remove",
-      "--tag-add <list>     (put) tags to add, as TiddlyWiki writes a list: one [[two words]]",
+      "--tag-add <list>     (put) tags to add, as TiddlyWiki writes a list: one [[two words]]; a repeated --tag-add (or --tag-remove) joins its list to the earlier ones",
       "--tag-remove <list>  (put) tags to remove",
       "--text <words>       (put) the new text (with `--meme --slot`: the slot's whole body)   ·   --file <host path | ->  the new text from a host file or stdin",
       "--base <hash>        (put) the hash last read; stale → conflict, nothing lands (a base guards honest reuse, never a lock)",

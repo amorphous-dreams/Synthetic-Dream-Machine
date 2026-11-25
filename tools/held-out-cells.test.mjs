@@ -153,6 +153,20 @@ test("the record door writes the file the merge door reads, through the download
   } finally { rmSync(temp, { recursive: true, force: true }); }
 });
 
+// The schedule event runs on the DEFAULT branch (main), so a scheduled run measured main's head and the nightly never read
+// develop (blind read of #567). The scheduled run measures nothing itself: one job dispatches this workflow on develop,
+// and every measuring job stands off the schedule, so the nightly verdict carries develop's head as its github.sha.
+test("RED: the nightly reads develop: the schedule dispatches held-out on develop and measures nothing on the default branch", () => {
+  const yml = readFileSync(join(ROOT, ".github/workflows/held-out.yml"), "utf8");
+  const job = (id) => new RegExp(`^  ${id}:\\n((?: {4}.*\\n|\\n| {6,}.*\\n)+)`, "m").exec(yml)?.[1] ?? "";
+  const nightly = job("nightly-develop");
+  assert.match(nightly, /^ {4}if: \$\{\{ github\.event_name == 'schedule' \}\}$/m, "no schedule-only job dispatches the nightly");
+  assert.match(nightly, /^ {6}actions: write$/m, "the dispatching job holds no actions: write");
+  assert.match(nightly, /gh workflow run held-out\.yml --ref develop/, "the nightly never dispatches on develop");
+  for (const id of ["plan", "image"]) assert.match(job(id), /^ {4}if: \$\{\{ github\.event_name != 'schedule' \}\}$/m, `${id} still measures the default branch on the schedule`);
+  assert.match(job("merge"), /^ {4}if: \$\{\{ !cancelled\(\) && github\.event_name != 'schedule' \}\}$/m, "merge still reads a scheduled run");
+});
+
 test("RED: held-out fires on develop, main, the weekly clock and by hand, and never on a lane branch push", () => {
   const yml = readFileSync(join(ROOT, ".github/workflows/held-out.yml"), "utf8");
   const on = yml.slice(yml.indexOf("\non:"), yml.indexOf("\nconcurrency:"));

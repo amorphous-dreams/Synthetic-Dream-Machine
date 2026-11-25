@@ -1,0 +1,161 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` namespace=`⚕` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/herm-caps`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable  = true
+l-space    = "lararium"
+namespace  = "&#x2695;"
+role       = "the herm's cap stack and its clear wiki: what every lararium stands on below its floor, defined by its refusals; the floor rendered through TiddlyWiki, answered only to a name the reader brings; no herm Pronaos"
+status     = "designed"
+status-why = "the plan stands approved (research/herm-caps-wave; S0 measured in code); #/open holds Q1-Q4 ruled and Q5-Q6 open as the operator's; nothing beyond S0 built"
+tags       = ["mesh/vessel-caps", "mesh/pronaos", "mesh/cap-tier", "api/pono/causal-islands", "lifecycle/designed"]
+title      = "lar:///ha.ka.ba/lararium/mesh/herm-caps"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lararium/mesh/herm-caps"
+```
+
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
+
+<<~ ahu slot=`#/head`>>
+
+! The herm's caps ~ the road beneath every house
+
+> //"Below the floor of all of the lararia, we have a herm. A relay that can transmit, but not decrypt. We had always wondered if it would eventually have a Wiki capability, and I think we just found it."// ~ the operator, 2026-11-25
+
+The herm stands where the Lares Viales stand: at the turning of the road, before any house. Canon already holds the shape: ''a herm names the floor capability set of every Lararium, and a Node Lararium lifts a herm floor and adds the Pronaos'' (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/harbor`>>). This meme names the herm's caps as one `#has` stack, defines the herm by what it refuses, and seats its clear wiki: the floor every recipe already ends on, rendered through TiddlyWiki.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-finding`>>
+
+!! The finding ~ the clear wiki already rests on every herm
+
+The herm already rests, by CID, every byte a clear wiki needs: the bulb (the genesis seed and the engine and skin blobs it names), one history-free snapshot per house-canon bag (the floor manifest), and the release that names them (the porch). Measured in code (research/herm-caps-wave S0, floor-scout#1):
+
+* `expandRecipe` ends every recipe on the oracle bag (`packages/lararium-mesh/src/wiki-recipe.ts`), so every wiki the house opens stands on the floor.
+* Each floor snapshot holds TiddlyWiki fields in a one-change document, and `floorReadFace` already lays it as the read-only oracle layer.
+* Only PUBLIC-tier bags and the system canon ride a floor, so the clear wiki stays clear by construction.
+* A faceless herm mounts the genesis floor alone: the floor pin rests in the control document, which mints with a face. A locked lararium mounts the same genesis floor, the herm beneath it made visible.
+
+''"Names no house" reads as identity, never as prose.'' The bulb law (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/pronaos#/the-rung-ladder`>>: "nothing that names a house or a Nexus", so two houses holding one genesis hold one bulb CID) guards the bulb's BYTES against carrying a particular house's identity: an AID, a key, a charter epoch, joining pointers, a Nexus's own release. Stock canon that speaks OF houses and Nexuses in general names none of them in that sense, and re-derives identically for every house from the published build, so it rides the bulb; the genesis floor already carries it. What stays off the bulb: a particular Nexus's released floor, which names that Nexus and answers only at `/floor/<Nexus AID>`.
+
+So the herm's wiki names no new thing. ''The clear wiki = the floor, rendered, with nothing sealed above it.'' One cap serves the crossroads herm and the locked lararium's waking floor alike.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-stack`>>
+
+!! The stack ~ seven holds in the five-cap grammar
+
+Caps ride as three-term `lar:` roots, one per `#/has` line, the grammar the ʻĀlana Circle uses (`spirit-stack.ts`): caps gather and grant nothing; authority keeps riding ocaps and leis. Every hold extends a stem cap of <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/vessel-caps#/the-five-caps`>>; no sixth stem joins rhizome · stolon ⊥ tuber · bulb · corm.
+
+|!cap |!gathers |!stem |!state |
+|`lar:///herm.leyline.carries` |sealed carriage, the holder hints, the carriage log |rhizome |standing (`startCarriageRelay`) |
+|`lar:///herm.coal.hands` |the genesis seed and its blobs, by a CID the traveler brings |bulb |standing (`/bulb/<cid>.bin`) |
+|`lar:///herm.lease.renews` |the herm's own freshness against the Nexus epoch |corm |standing |
+|`lar:///herm.keel.wards` |the daemon immune core and the FLOW map |tuber, scoped |standing |
+|`lar:///herm.floor.presents` |a Nexus's release answer and the blobs its head names |public-floor read |standing (`/floor/<Nexus AID>`) |
+|`lar:///herm.shelf.rests` |whole CIDs signed or sealed elsewhere, kept at rest |rhizome (en-route cache) |the wave |
+|`lar:///herm.wiki.renders` |the clear wiki: a read-only recipe over the floor, its top layer held in memory |public-floor read |the wave |
+
+`lar:///herm.waymark.posts` rides only where the keeper set `herm.waymark` (opt-in, standing). The herm holds no stolon: a stolon carries one house's joining pointers, and the herm never plays the invite.
+
+''Rest ⊥ render.'' Resting bytes takes no engine and no judgment; rendering takes both. A herm MAY hold the shelf without lighting the wiki.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-refusals`>>
+
+!! The refusals ~ what the herm never does
+
+Unask "what can the herm do?" and ask what it never does; its holds fall out as the public remainder.
+
+|!refusal |!it never |!ground |
+|`lar:///herm.seal.never-opens` |unlocks, decrypts, or waits on an unlock |"a herm never unlocks" (operator, 2026-11-09); carry ⊥ read |
+|`lar:///herm.voice.never-signs-public` |signs a public claim under the place key |<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/pronaos#/the-rung-ladder`>> |
+|`lar:///herm.face.never-seats` |seats a persona root |SEATED ⊥ RAISED |
+|`lar:///herm.pronaos.never-lights` |lights an arrival page, a descriptor or a kindle |"only a lararium lights a Pronaos" |
+|`lar:///herm.door.never-describes` |lists, indexes or describes what rests; every miss draws one closed door |the SILENT rung |
+|`lar:///herm.shelf.never-posts` |rests a stranger's write; it rests only what a release, a PUBLIC registration or a publication record names |a library, never a bulletin board |
+|`lar:///herm.title.never-answers` |answers a remote per-title ask; a reader syncs whole CIDs and reads at home |a per-title answer builds an existence oracle |
+|`lar:///herm.wiki.never-saves` |persists a working layer or promotes anything; its top layer dies with the composition |a save needs a key, a key needs a face, a face needs a lararium |
+
+''Rest ⊥ trust.'' The herm rests by a valid signature; each reading lararium trusts only by its own roots. Judgment never moves into the herm.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-rungs`>>
+
+!! The rungs ~ the clear wiki takes no rung of its own
+
+The rung ladder measures the OUTWARD face: how much a vessel says about itself to a stranger. The clear wiki changes nothing outward.
+
+* ''Outward, nothing moves.'' A stranger who brings a bulb CID gets the coal; one who brings a Nexus AID gets the release answer; one who brings a CID a release or a PUBLIC book names gets those bytes. Every other ask draws the one closed door. The clear wiki rides the FLOOR line and adds no route.
+* ''Inward, the box renders.'' Whoever tends the herm reads the clear wiki on the owner socket or localhost. A locked lararium does the same for its own person: canon, law and the unlock road, readable before the key opens.
+* ''A remote reader renders at home.'' Their own vessel pulls whole CIDs, verifies lineage and every hash by its own roots, mounts the floor read-only, and reads locally.
+
+"In the clear" therefore reads ''unencrypted, answered only to a name the reader brings'', never ''open to browse''.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/no-herm-pronaos`>>
+
+!! No herm Pronaos ~ a stranger's browser kindles its own house
+
+The question (operator, 2026-11-25): do herms now need a Pronaos, to serve strangers or invited guests their content through a browser? ''No.'' Three grounds close it:
+
+# ''The first arrival trusts the origin it reaches'' (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/pronaos#/the-first-arrival`>>). A phone cannot hash-check a top-level page; SRI covers subresources alone; Signed Exchanges ended. A page a herm origin served would run with that origin's authority, so the herm would become the house, which it never may.
+# ''A herm never signs anything public,'' and an arrival descriptor speaks for a house.
+# ''Only a lararium lights a Pronaos'' (operator-ruled).
+
+So a browser reaches clear content in one of two ways, both through a house:
+
+* ''A stranger'' arrives at a house's Pronaos (the herm keeper's own lararium, or any house that hosts the crossing), kindles ''its own'' browser lararium at stage zero from that house's origin, then pulls the floor by CID and renders the clear wiki ''inside its own new house''. The herm carries the bytes; the stranger's house reads them.
+* ''An invited guest'' arrives at the inviter's Pronaos. The invite rides the inviter's stolon; the herm carries its sealed bytes and never plays it.
+
+''The crossroads lararium.'' A keeper who wants a café or a hall to welcome browsers lifts the herm into a small lararium: a PUBLIC-tier face whose Pronaos serves the arrival and the kindle, with the herm floor beneath it unchanged. The Elyncia shrine tiers name it already: a ''Crossroads'' shrine fed by collective offering, above the road's herm. The lift stays small, and the herm stays a herm.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-wave`>>
+
+!! The wave ~ slices in order
+
+|!# |!slice |!carries |!custody |
+|S0 |floor scout |measured: the pin's home, the faceless mount, renderable snapshots (done) |read-only |
+|S1 |canon carrier |this meme; reconcile "the herm furnishes no wikis" and "names no wiki" in place |canon |
+|S2 |cap vocabulary |the herm roots in one platform-blind table beside the spirit caps |inline check |
+|S3 |the clear recipe |a floor-class read-only recipe; a named refusal for every save |blind read |
+|S4 |outward silence, red first |public bytes, headers and refusals read identical with the wiki lit and unlit |cold read |
+|S5 |the clear island |`herm.wiki.renders` as a base cap: an island on `caps.cas` alone, owner socket only |cold read |
+|S6 |the shelf |`herm.shelf.rests` law in code; the owed carriage-client fetch |cold read |
+|S7 |reader pull |a library call beside `pullBulb`: pull, verify by own roots, mount at home |blind read |
+|S8 |browser floor parity |a locked browser vessel renders the clear wiki from its house's served bytes |cold read |
+
+S5 and S6 both touch `composeHerm` and the public shore: they run in sequence, never in parallel. Code that can live in the wiki VMs lives there, as mirrored module tiddlers (operator, 2026-11-25); only host-process gates stay in tools.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/open`>>
+
+!! Open ~ the operator's questions
+
+Ruled (<<~ loulou uri=`lar:///ha.ka.ba/kahua/memory/ruling/2026-11-25-the-leans-collapse`>>):
+
+* ''Q1, "system wiki".'' Both, as strata of one recipe: the clear floor below, sealed layers above. The house-canon quine wikis (`lares`, `lararium`) ride the floor; the vessel's `@daemon` wiki rides the sealed layers.
+* ''Q2, no stranger render.'' A herm never renders for a stranger, and the waymark carries no stock clear-wiki CID: the stranger-render slice (S9 of research/herm-caps-wave) strikes whole. The waymark keeps the bulb CID alone.
+* ''Q3, floor accept.'' The floor accept carries the floor pin's select sense as a place's act on a place-held home (vessel key, never face-gated), each recipe mounting the accept for its own realm's Nexus; a faceless herm shows the newest release its leyline carries, stamped carried-unaccepted, as of its last sync (<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-tiers#/floor-accept`>>).
+* ''Q4, the Librarium.'' Stacks only: the herm rests by CID, and a catalogue belongs to a house or a Nexus. The herm wiki takes no describing rung.
+
+Open, the operator's own:
+
+* ''Q5, the first daemon face.'' The locked system wiki as the first anon face's daemon wiki (it follows the face on a fleet join), or a place-bound wiki under the vessel key that the first face opens and never owns (it stays with the place, the way a Lar binds to a hearth)? Talk story first.
+* ''Q6, the operator's notes.'' The operator holds notes of their own on the herm wiki; S1's reconcile waits for them.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;YFiS-1LOBIxOqMw_FFc_IOSYxXMz6ymklL8sv8O0pgs`>>
+
+<<^ code=`&#x0004;` to=`?`>>

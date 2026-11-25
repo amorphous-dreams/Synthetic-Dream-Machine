@@ -15,7 +15,7 @@ const TITLES = ["$:/temp/lares/alert/x", "$:/state/popup/y", "lar:///lararium.lo
 
 describe("the one stay-home predicate", () => {
   test("RED: temp, state, the volatile VM plane, control and secret homes and cap/** stay home; a plain title and a lar: meme leave", () => {
-    for (const title of ["$:/temp/lares/alert/x", "$:/state/popup/y", "lar:///lararium.local.vm/verbs/r1"]) expect(staysHome(title), title).toBe(true);
+    for (const title of ["$:/temp/lares/alert/x", "$:/state/popup/y", "lar:///lararium.local.vm/verbs/r1", "$:/lares/swarm/house-cap"]) expect(staysHome(title), title).toBe(true);
     for (const title of ["Note 01", "lar:///ha.ka.ba/lares/api/pono/meme"]) expect(staysHome(title), title).toBe(false);
   });
 

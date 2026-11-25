@@ -41,7 +41,8 @@ const STEP_KEYS = new Set(["name", "id", "if", "run", "uses", "shell", "with", "
 // job's `defaults:` (a different shell line), `services:` (sidecar containers) or `container:` (a different
 // image), changes how the runner runs every step, so it throws rather than reading as absent.
 const WORKFLOW_KEYS = new Set(["name", "on", "concurrency", "permissions", "env", "jobs"]);
-const JOB_KEYS = new Set(["name", "needs", "if", "runs-on", "timeout-minutes", "outputs", "strategy", "env", "steps"]);
+// `permissions` scopes the job's token alone (as the workflow-level key does): no local step reads it.
+const JOB_KEYS = new Set(["name", "needs", "if", "runs-on", "timeout-minutes", "outputs", "strategy", "env", "permissions", "steps"]);
 // The one dynamic matrix this reader knows: the plan job's output, which `tools/held-out-cells.mjs matrix` prints.
 const PLAN_MATRIX = /^\s*matrix:\s*\$\{\{\s*fromJSON\(needs\.plan\.outputs\.matrix\)\s*\}\}\s*$/;
 const PLAN_TOOL = 'node tools/held-out-cells.mjs matrix >> "$GITHUB_OUTPUT"';

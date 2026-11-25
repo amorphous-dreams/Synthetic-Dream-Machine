@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 /**
- * bench-gate — the one command a spirit runs in its own bench before it hands back (ruling/2026-11-25-branches-not-prs):
- * the cheap, deterministic laws that read the SUM of lanes, run on the lane with develop merged in.
+ * bench-gate — the cheap, deterministic laws that read the SUM of lanes, run on the lane with develop merged in
+ * (ruling/2026-11-25-branches-not-prs). Since mandate/floor-gate-1 only the familiar runs it, on the floor: a tasked spirit
+ * hands back a floor ticket naming it, and the familiar runs `node tools/floor-run.mjs --ticket <id> -- node tools/bench-gate.mjs`
+ * (outside the floor lock the gate refuses with exit 64; `--list` and `--weigh` read and run anywhere).
  *
  *   node tools/bench-gate.mjs [--list] [--base <ref>]
  *   node tools/bench-gate.mjs --weigh <vitest-report-dir> [--run <id>]   (re-measure tools/unit-weights.json)
+ *   node tools/bench-gate.mjs --verdict <file>                           (the keeper's local witness; below)
  *
  * ── THE STEPS (research/test-corpus-mu, "the bench gate") ────────────────────────────────────────
  *   merge-develop   the bench holds `origin/develop` (fetched now): the gate reads the sum, never the lane alone
@@ -25,7 +28,14 @@
  * The familiar's cold Opus read of that head files its record under that hash; the merge message carries `Cold-Read: <hash>`.
  * The matcher lives in the wiki (packages/lararium-tw5/src/filters/security-class.ts): the host reads the git diff and asks
  * `lares wiki filter` through the doors; where the doors stand dark the same module's built form answers in-process.
- * It stands as a spirit's own step, never a git hook.
+ * It stands as the familiar's step on the floor, never a git hook.
+ *
+ * ── THE KEEPER'S LOCAL WITNESS (`--verdict <file>`, ruling 2026-11-25-web2-annotates) ─────────────────────────────────────
+ * `lares rite kukulu`'s keeper lei step runs the gate over the exact tree the image carries (the checkout at that revision, its
+ * tracked tree clean) and writes ONE verdict document to <file>: {kind, v, rev, tree, code, line, steps, secs}, as
+ * `JSON.stringify` writes it (the keeper hashes those very bytes). merge-develop drops out: the tree IS the sum the image
+ * carries (the rite's own reach guard reads the revision on develop), and no fetch, no web2 service, decides it. No heavy tier
+ * runs (no lane diff names one); CI's full run, where it answers, rides beside the vest as annotation alone.
  */
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -34,6 +44,7 @@ import { createRequire } from "node:module";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { TEST_CELLS } from "./ci-cells.mjs";
+import { requireFloor } from "./floor-lock.mjs";
 
 export const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 export const WEIGHTS_FILE = join(ROOT, "tools/unit-weights.json");
@@ -101,10 +112,10 @@ export function vitestStep(name, dir, files, root = ROOT) {
 }
 
 /** The whole plan for a bench: the fixed steps, then the swift tier of every package and the heavy files of the touched ones. */
-export function plan({ weights = readWeights(), touched = [], root = ROOT } = {}) {
+export function plan({ weights = readWeights(), touched = [], root = ROOT, verdict = false } = {}) {
   const tools = readdirSync(join(root, "tools")).filter((f) => f.endsWith(".test.mjs") && !VESSEL.includes(f)).sort().map((f) => `tools/${f}`);
   const steps = [
-    { name: "merge-develop", stop: true, check: "develop" },
+    ...(verdict ? [] : [{ name: "merge-develop", stop: true, check: "develop" }]),
     { name: "build", stop: true, cmd: "pnpm", args: ["build"], cwd: "." },
     { name: "witnesses-fast", cmd: "bash", args: ["tools/witness-all.sh", "--fast"], cwd: "." },
     { name: "carrier-pins", cmd: "node", args: ["tools/rite-walk.mjs", "--bind"], cwd: "." },
@@ -163,21 +174,24 @@ function askLocal(paths, listJson) {
   return securityClassPaths(paths, readSecurityClass(JSON.parse(listJson)));
 }
 
-/** Runs every step through `run(step) -> exit code`; a red `stop` step ends the run. Returns { code, red, line }. */
+/** Runs every step through `run(step) -> exit code`; a red `stop` step ends the run. Returns { code, red, line, steps, secs }. */
 export function runGate(steps, run, say = console.log, { head = "", base = "", clock = () => performance.now(), cold = [], hash = "" } = {}) {
-  const red = [];
+  const red = [], ran = [];
   const t0 = clock();
   for (const s of steps) {
     const t = clock();
     say(`── gate step ${s.name} ──`);
     const rc = run(s);
-    say(`── ${s.name}: ${rc === 0 ? "ok" : `RED exit ${rc}`} (${((clock() - t) / 1000).toFixed(1)} s) ──`);
+    const took = (clock() - t) / 1000;
+    ran.push({ name: s.name, code: rc, secs: Math.round(took * 10) / 10 });
+    say(`── ${s.name}: ${rc === 0 ? "ok" : `RED exit ${rc}`} (${took.toFixed(1)} s) ──`);
     if (rc !== 0) {
       red.push(`${s.name} (exit ${rc})`);
       if (s.stop) { say(`── ${s.name} stops the gate: every later step would read a tree that is not the sum ──`); break; }
     }
   }
-  const secs = `${Math.round((clock() - t0) / 1000)} s`;
+  const wall = Math.round((clock() - t0) / 1000);
+  const secs = `${wall} s`;
   const line = red.length
     ? `BENCH GATE REFUSES: ${red.join(", ")} · ${secs}`
     : `BENCH GATE GREEN at ${head || "?"} over develop ${base || "?"} · ${steps.length} steps · ${secs}`;
@@ -185,10 +199,27 @@ export function runGate(steps, run, say = console.log, { head = "", base = "", c
   say(line + owed);
   if (cold.length) say(`cold-read: owed · head ${head || "?"} · paths ${cold.length} · record-hash ${hash}`);
   if (red.length) say("pono: cure each named step's finding (a red merge-develop: `git fetch origin && git merge origin/develop`), then run the gate again");
-  return { code: red.length ? 1 : 0, red, line: line + owed };
+  return { code: red.length ? 1 : 0, red, line: line + owed, steps: ran, secs: wall };
+}
+
+/** The verdict document's kind: the keeper reads no other. */
+export const VERDICT_KIND = "lares-bench-verdict";
+/** THE KEEPER'S LOCAL WITNESS: one document over the revision and its tree, in a fixed key order (the keeper hashes the bytes). */
+export function verdictOf(r, { rev, tree }) {
+  if (!/^[0-9a-f]{40}$/.test(rev) || !/^[0-9a-f]{40}$/.test(tree)) throw new Error("bench-gate: a verdict names its revision and tree as 40 hex each");
+  return { kind: VERDICT_KIND, v: 1, rev, tree, code: r.code, line: r.line, steps: r.steps.map(({ name, code, secs }) => ({ name, code, secs })), secs: r.secs };
 }
 
 const git = (args) => spawnSync("git", args, { cwd: ROOT, encoding: "utf8" });
+
+/** The security class over the lane's diff against `base`: develop's list, the sum's paths. An `error` where git refuses either read. */
+function coldAgainst(base) {
+  const listed = git(["show", `${base}:${SECURITY_CLASS_FILE}`]);
+  const rawDiff = git(["diff", "--no-renames", "--raw", "-z", `${base}..HEAD`]);
+  if (listed.status !== 0 || rawDiff.status !== 0) return { error: (listed.stderr || rawDiff.stderr).trim() };
+  const cold = coldReadOwed(parseRawZ(rawDiff.stdout), listed.stdout);
+  return { cold, hash: coldReadHash(git(["rev-parse", "HEAD"]).stdout.trim(), cold) };
+}
 
 /** The merge-develop check: fetch develop, then hold the bench to it. */
 function checkDevelop(base) {
@@ -233,8 +264,8 @@ const exec = (s) => spawnSync(s.cmd, s.args, { cwd: join(ROOT, s.cwd), stdio: "i
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const args = process.argv.slice(2);
   const flag = (n) => { const i = args.indexOf(n); return i === -1 ? undefined : args[i + 1]; };
-  const known = new Set(["--list", "--base", "--weigh", "--run"]);
-  const valued = new Set(["--base", "--weigh", "--run"]);
+  const known = new Set(["--list", "--base", "--weigh", "--run", "--verdict"]);
+  const valued = new Set(["--base", "--weigh", "--run", "--verdict"]);
   for (let i = 0; i < args.length; i++) {
     if (!known.has(args[i])) { console.error(`bench-gate: unknown argument ${args[i]}`); process.exit(2); }
     if (valued.has(args[i])) { if (!args[i + 1]) { console.error(`bench-gate: ${args[i]} wants a value`); process.exit(2); } i++; }
@@ -245,6 +276,24 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     console.log(`bench-gate: wrote ${relative(ROOT, WEIGHTS_FILE)} (${PACKAGES.filter((d) => table[d]).map((d) => `${d} ${Object.keys(table[d]).length}`).join(", ")})`);
     process.exit(0);
   }
+  const verdictFile = flag("--verdict");
+  if (verdictFile) {
+    // THE FLOOR first: the keeper's witness builds and tests like any gate run, so it too runs inside the one floor lock.
+    requireFloor("bench-gate.mjs", args);
+    // THE TREE IS THE SUM: no merge-develop, no fetch; a dirty tracked tree names no revision, so it refuses before any step.
+    if (args.includes("--base") || args.includes("--list")) { console.error("bench-gate: --verdict runs over the checkout's own revision; it takes no --base or --list"); process.exit(2); }
+    if (git(["status", "--porcelain", "--untracked-files=no"]).stdout.trim() !== "") { console.error("bench-gate: --verdict reads a clean tracked tree, and this checkout carries uncommitted changes; commit or drop them, then run it again"); process.exit(2); }
+    const rev = git(["rev-parse", "HEAD"]).stdout.trim(), tree = git(["rev-parse", "HEAD^{tree}"]).stdout.trim();
+    // The keeper's verdict names the owed paths too (annotation: it never blocks the vest, the familiar's merge reads it); a checkout lacking a local origin/develop ref owes none here.
+    const owed = coldAgainst("origin/develop");
+    const r = runGate(plan({ verdict: true }), exec, console.log, { head: rev.slice(0, 9), base: "-", cold: owed.cold ?? [], hash: owed.hash ?? "" });
+    // A STEP THAT MOVED THE TRACKED TREE voids the verdict: a moved tree reads another revision than the one the verdict names.
+    const moved = git(["status", "--porcelain", "--untracked-files=no"]).stdout.trim() !== "" || git(["rev-parse", "HEAD"]).stdout.trim() !== rev;
+    const out = moved ? { ...r, code: 1, line: `BENCH GATE REFUSES: the tracked tree moved under the gate · ${r.secs} s` } : r;
+    writeFileSync(verdictFile, JSON.stringify(verdictOf(out, { rev, tree })));
+    console.log(`bench-gate: verdict over ${rev.slice(0, 12)} written to ${verdictFile}${moved ? " (void: the tracked tree moved)" : ""}`);
+    process.exit(out.code);
+  }
   const base = flag("--base") ?? "origin/develop";
   const changed = git(["diff", "--name-only", `${base}...HEAD`]);
   const touched = changed.status === 0 ? touchedPackages(changed.stdout.split("\n").filter(Boolean)) : [];
@@ -253,13 +302,13 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     for (const s of steps) console.log(s.check ? `${s.name}: HEAD holds ${base}` : `${s.name}: ${s.cmd} ${s.args.length > 8 ? `${s.args.slice(0, 4).join(" ")} … (${s.args.length - 4} more)` : s.args.join(" ")} (in ${s.cwd})`);
     process.exit(0);
   }
+  // THE FLOOR (mandate/floor-gate-1): the gate builds and tests, so it runs only inside the one floor lock; the familiar runs
+  // it through `node tools/floor-run.mjs -- node tools/bench-gate.mjs`, and a tasked spirit hands that line back.
+  requireFloor("bench-gate.mjs", args);
   const head = git(["rev-parse", "--short", "HEAD"]).stdout.trim();
   // The class reads from develop's tree, never the lane's; the diff is the sum of the lane against develop, renames unfollowed.
-  const listed = git(["show", `${base}:${SECURITY_CLASS_FILE}`]);
-  const rawDiff = git(["diff", "--no-renames", "--raw", "-z", `${base}..HEAD`]);
-  if (listed.status !== 0 || rawDiff.status !== 0) { console.error(`bench-gate: the security class reads ${SECURITY_CLASS_FILE} and the diff of ${base}..HEAD; one refused: ${(listed.stderr || rawDiff.stderr).trim()}`); process.exit(2); }
-  const cold = coldReadOwed(parseRawZ(rawDiff.stdout), listed.stdout);
-  const full = git(["rev-parse", "HEAD"]).stdout.trim();
-  const r = runGate(steps, (s) => (s.check ? checkDevelop(base) : exec(s)), console.log, { head, base: git(["rev-parse", "--short", base]).stdout.trim(), cold, hash: coldReadHash(full, cold) });
+  const owed = coldAgainst(base);
+  if (owed.error !== undefined) { console.error(`bench-gate: the security class reads ${SECURITY_CLASS_FILE} and the diff of ${base}..HEAD; one refused: ${owed.error}`); process.exit(2); }
+  const r = runGate(steps, (s) => (s.check ? checkDevelop(base) : exec(s)), console.log, { head, base: git(["rev-parse", "--short", base]).stdout.trim(), cold: owed.cold, hash: owed.hash });
   process.exit(r.code);
 }

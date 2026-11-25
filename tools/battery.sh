@@ -7,6 +7,11 @@
 # HOME, and a $HOME-relative lock would give each lead its own lock and serialize nothing.
 #   battery.sh --lock-path   prints the lock path and exits.
 # Exit 64: the lock cannot open (or flock failed); the command never runs unlocked. Otherwise the command's own exit code.
+#
+# THE FLOOR (mandate/floor-gate-1): this lock IS the test floor's one slot. It re-enters: a run already inside the held floor
+# (an ancestor took this lock: tools/floor-lock.mjs reads the kernel's lock table) runs the command at once, since a second
+# flock on a fresh descriptor would wait on itself forever. The heavy tools (provision-worktree, bench-gate, floor-run)
+# refuse outside it; `node tools/floor-run.mjs -- <command>` takes it and meters the run's bytes.
 set -uo pipefail
 if [ -n "${LARES_BATTERY_LOCK:-}" ]; then
   case "$LARES_BATTERY_LOCK" in /*) ;; *) echo "battery: REFUSED, LARES_BATTERY_LOCK must be an absolute path (two working directories would pick two locks): $LARES_BATTERY_LOCK" >&2; exit 64;; esac
@@ -17,6 +22,11 @@ else
   LOCK=$PW_HOME/.lares-scratch/.battery.lock
 fi
 [ "${1:-}" = "--lock-path" ] && { echo "$LOCK"; exit 0; }
+HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+if [ -e "$LOCK" ] && command -v node >/dev/null 2>&1 && LARES_BATTERY_LOCK=$LOCK node "$HERE/floor-lock.mjs" --held >/dev/null 2>&1; then
+  echo "battery: the floor already stands held by this run; running inside it" >&2
+  "$@"; exit $?
+fi
 { exec 9>"$LOCK"; } 2>/dev/null || { echo "battery: REFUSED, the lock $LOCK cannot open here (a walled seat?); run single-file checks bare, and leave the battery to the lane lead" >&2; exit 64; }
 echo "battery: waiting for the box ($(date +%T))" >&2
 flock 9 || { echo "battery: REFUSED, flock failed on $LOCK" >&2; exit 64; }

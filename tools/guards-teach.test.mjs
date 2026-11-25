@@ -18,6 +18,18 @@ test('stash refusal teaches a procedure', () => {
   endsInPono(r.stderr);
 });
 
+test('floor-guard refusal teaches a procedure (RED-FIRST, mandate/floor-gate-1)', () => {
+  const r = run(process.execPath, ['tools/floor-guard.mjs'], { input: JSON.stringify({ agent_id: 'a1', tool_input: { command: 'pnpm test' }, cwd: root }) });
+  assert.equal(r.status, 2, r.stderr);
+  endsInPono(r.stderr);
+});
+
+test('the floor wall refusal teaches a procedure (RED-FIRST, mandate/floor-gate-1)', () => {
+  const r = run(process.execPath, ['tools/bench-gate.mjs'], { env: { ...process.env, LARES_BATTERY_LOCK: join(mkdtempSync(join(tmpdir(), 'guard-floor-')), 'lock') } });
+  assert.equal(r.status, 64, r.stderr);
+  endsInPono(r.stderr);
+});
+
 test('bench-gate refusal teaches a procedure', () => {
   const lines = [];
   assert.equal(runGate([{ name: 'fixture' }], () => 1, line => lines.push(line)).code, 1);
