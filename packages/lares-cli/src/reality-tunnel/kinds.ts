@@ -129,6 +129,22 @@ export const jsonIncludes = (path: readonly string[], values: readonly string[])
 };
 
 /**
+ * The forced form of `jsonIncludes`: where the path holds another shape, replace that one key alone, the list at its end
+ * with the house's values, or the value that is no object on the way with an object; every other key and every list member
+ * stands. Bytes that do not parse as an object rebuild from nothing, since no key survives there to keep.
+ */
+export const jsonIncludesTaking = (path: readonly string[], values: readonly string[]): Transform => {
+  const edit = jsonEdit((o) => {
+    const parent = at(o, path.slice(0, -1));
+    const key = path.at(-1)!;
+    const list = Array.isArray(parent[key]) ? (parent[key] as unknown[]) : [];
+    const missing = [...new Set(values)].filter((v) => !list.includes(v));
+    if (!Array.isArray(parent[key]) || missing.length > 0) parent[key] = [...list, ...missing];
+  });
+  return (cur) => edit(jsonForeign(cur) ? null : cur);
+};
+
+/**
  * A list converged on one entry: every member that `mentions` the entry's script yields to the
  * entry at the first such member's place, so a moved checkout re-aims the hook rather than adding
  * a second one beside the stale path.

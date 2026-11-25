@@ -409,6 +409,39 @@ describe("the home radius", () => {
       expect(JSON.stringify((o["hooks"] as { Stop: unknown[] }).Stop)).toContain("mine.sh");
     });
 
+    it("--force over a permissions.allow that holds another shape replaces that list alone: every other key, permissions.deny and an undeclared hook stand", async () => {
+      const root = clone();
+      const h = homes();
+      const mine = {
+        model: "m", permissions: { allow: "Bash(foreign:*)", deny: ["Bash(rm -rf:*)"] }, mcpServers: { x: { command: "x" } },
+        hooks: { Stop: [{ hooks: [{ type: "command", command: "mine.sh" }] }] },
+      };
+      writeFileSync(join(h.native, ".claude/settings.json"), JSON.stringify(mine));
+      const l = ledger();
+      const items = () => homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false });
+      expect(read(items(), l).find((r) => r.id === "claude.doors-allow")!.state).toBe("foreign");
+      await tend(items(), l, { force: true });
+      const o = settingsOf(h.native);
+      const perms = o["permissions"] as { allow: string[]; deny: string[] };
+      expect(o["model"]).toBe("m");
+      expect(o["mcpServers"]).toEqual(mine.mcpServers);
+      expect(perms.deny[0]).toBe("Bash(rm -rf:*)");
+      expect(Array.isArray(perms.allow) && perms.allow.length > 0).toBe(true);
+      expect(JSON.stringify((o["hooks"] as { Stop: unknown[] }).Stop)).toContain("mine.sh");
+      expect((await tend(items(), l)).wrote).toEqual([]);
+    });
+
+    it("--force over a permissions that is no object replaces that key's path alone", async () => {
+      const root = clone();
+      const h = homes();
+      writeFileSync(join(h.native, ".claude/settings.json"), JSON.stringify({ model: "m", permissions: "none" }));
+      const l = ledger();
+      await tend(homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false }), l, { force: true });
+      const o = settingsOf(h.native);
+      expect(o["model"]).toBe("m");
+      expect(Array.isArray((o["permissions"] as { allow: unknown }).allow)).toBe(true);
+    });
+
     it("every path rides double-quoted and a path holding a quote, a dollar, a backtick or a backslash reads back whole under a shell", async () => {
       const root = clone();
       const native = join(dir, 'h $x"q`b\\s');

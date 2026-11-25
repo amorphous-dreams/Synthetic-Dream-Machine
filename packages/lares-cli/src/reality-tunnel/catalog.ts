@@ -11,7 +11,7 @@ import { dirname, join, relative } from "node:path";
 import { parse as parseToml } from "smol-toml";
 import type { External, Item, Radius } from "./engine.js";
 import {
-  claudeHook, claudeStatusLine, claudeStatusLineTaking, copilotHook, headLine, jsonFloor, jsonForeign, jsonHooksOwned, jsonIncludes, jsonListForeign, jsonSet, owned, seedless, statusLineForeign, strays,
+  claudeHook, claudeStatusLine, claudeStatusLineTaking, copilotHook, headLine, jsonFloor, jsonForeign, jsonHooksOwned, jsonIncludes, jsonIncludesTaking, jsonListForeign, jsonSet, owned, seedless, statusLineForeign, strays,
   tomlHook, tomlHookForeign, tomlHooksOwned, tomlMcpServer, tomlShapeForeign, tomlTableForeign, tomlTableKey, tomlTableUnset, tomlTopFloor,
 } from "./kinds.js";
 import { homesOf, type Homes } from "./homes.js";
@@ -87,14 +87,14 @@ export function projectScout(seedPath: string, seed: string, s: Spec): string {
  * A `json-includes` row, for either radius: `key` names the list by a dotted path (`permissions.allow`), and `values` names
  * every member it keeps. One row per list keeps the whole set; the operator's other members stand.
  */
-function includes(s: Spec): Pick<Item, "transform" | "foreign"> {
+function includes(s: Spec): Pick<Item, "transform" | "taking" | "foreign"> {
   const values = s["values"];
   if (!Array.isArray(values) || values.length === 0 || !values.every((v) => typeof v === "string" && v !== "")) {
     throw new Error(`${CARRIER}: item ${s.id} names no \`values\` list of strings`);
   }
   const path = str(s, "key").split(".");
   if (path.some((k) => k === "")) throw new Error(`${CARRIER}: item ${s.id} names a key path with an empty segment`);
-  return { transform: jsonIncludes(path, values as string[]), foreign: jsonListForeign(path) };
+  return { transform: jsonIncludes(path, values as string[]), taking: jsonIncludesTaking(path, values as string[]), foreign: jsonListForeign(path) };
 }
 
 const item = (radius: Radius, s: Spec, path: string, rest: Partial<Item>): Item =>
