@@ -183,7 +183,7 @@ DDATE_VERBS = ("ddate",)
 # THE ORACLE CAST — one tool, `oracle_cast`, the MCP skin of the `oracle-cast` verb every vessel answers: one I Ching cast
 # by three coins a line, written by the vessel as one tiddler under `casts/`. It mirrors `lares oracle cast`. The draw
 # lives in the vessel, never in the prompt: the seat that asks never picks the figure. THE CLOCK SEAM rides this seat:
-# the call carries `at`, the seat's own time, and the verb reads no clock. The oracle widens attention and never decides.
+# the call carries `at`, the seat's own time, and the verb reads no clock. The throw stands and the reading stays open.
 ORACLE_VERBS = ("oracle_cast",)
 
 # The OFFERING door (offering#/the-canon-offer) — an AI seat offers its face's working records toward a house-canon bag
@@ -1523,8 +1523,8 @@ def build_mcp(coordinator: LaresCoordinator):
         with their attribution and license, and names the ones it holds none of. A spirit's jolt rides this tool only when
         its brief opts in, and the hand-back names the cast. CONTAINER LAW: exactly one of `recipe` / `bag`
         (`recipe="default"` names the worn face's daemon wiki).
-        THE LIMIT: the oracle widens attention and never decides; the reading names an angle to attend to, never a
-        choice to make, and the operator decides."""
+        THE PLACE: a blind throw to collide uncertainty with: the throw stands, the reading stays open.
+        The seat casts at its own open forks, never at the operator's decisions uninvited, and enacts after."""
         import datetime
         args: dict = dict(_meme_container("oracle_cast", recipe, bag))
         if coins is not None:

@@ -77,7 +77,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "name the primary hexagram by its King Wen number; the changing lines turned over name the relating one. With no --coins the coins draw " +
       "through the platform's entropy door (crypto.getRandomValues); --coins hands in the operator's own throw with real coins, named " +
       "operator:three-coins. A cast stands as an act: the tiddler holds the throw, and reading it again never casts again; " +
-      "the oracle widens attention and never decides.",
+      "a blind throw to collide uncertainty with: the throw stands, the reading stays open.",
     details: [
       "  The reading names the house's imported texts for each hexagram: the DOA (Kopyleft 2022, Steal and Share Alike) and the",
       "  e-jing ((K)opyLeft, its quoted snippets under fair use), each with its attribution and license.",

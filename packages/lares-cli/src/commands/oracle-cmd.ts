@@ -9,7 +9,7 @@
  *
  * The reading prints plainly by default (the figure, the change, the source of chance, each reading the wiki holds
  * with its attribution and license, and the cast's title); `--json` carries the verb's own answer verbatim as `data`,
- * the same body the MCP seat's `oracle_cast` hands back. The oracle widens attention and never decides.
+ * the same body the MCP seat's `oracle_cast` hands back. The throw stands and the reading stays open.
  *
  * The container law holds: name `--recipe <slug>` (`--recipe default`, the worn face's daemon wiki) or `--bag <slug>`.
  */
@@ -18,7 +18,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
 import { PLATFORM_ENTROPY } from "@lararium/mesh/entropy-door";
-import { ORACLE_WIDENS, castFromCoins, castThreeCoins, castReadingTitles, castRecord, castText, parseCoins } from "@lararium/mesh/oracle-cast";
+import { ORACLE_THROW_STANDS, castFromCoins, castThreeCoins, castReadingTitles, castRecord, castText, parseCoins } from "@lararium/mesh/oracle-cast";
 import { DaemonUnreachable } from "../verb-call.js";
 import { containerArgs } from "../container-target.js";
 import { emit, exitFor } from "../render.js";
@@ -61,7 +61,7 @@ async function offlineCast(plan: DoorPlan): Promise<Record<string, unknown>> {
     if (slot["text"] !== undefined) named["text"] = slot["text"];
     return named;
   });
-  return { decision: "put", created: false, title: castRecord(cast)["title"], cast: castRecord(cast), text: castText(cast), readings, note: ORACLE_WIDENS, offline: true };
+  return { decision: "put", created: false, title: castRecord(cast)["title"], cast: castRecord(cast), text: castText(cast), readings, note: ORACLE_THROW_STANDS, offline: true };
 }
 
 async function oracleCast(args: ParsedArgs): Promise<number> {

@@ -14,13 +14,13 @@
  * cast, and a call naming none refuses (`oracle-cast-untimed`).
  *
  * The answer carries the readings the wiki holds for the hexagrams cast (`oracles/doa`, `oracles/e-jing`), each read
- * through the tiddler door's own get, and names the ones this wiki holds none of. The oracle widens attention and
- * never decides.
+ * through the tiddler door's own get, and names the ones this wiki holds none of. The throw stands and the
+ * reading stays open.
  */
 
 import { VerbRefusal } from "@lararium/mesh";
 import {
-  ORACLE_WIDENS, castFields, castFromCoins, castReadingTitles, castRecord, castText, castThreeCoins, parseCoins,
+  ORACLE_THROW_STANDS, castFields, castFromCoins, castReadingTitles, castRecord, castText, castThreeCoins, parseCoins,
   type OracleCast,
 } from "@lararium/mesh/oracle-cast";
 import { PLATFORM_ENTROPY } from "@lararium/mesh/entropy-door";
@@ -81,7 +81,7 @@ export function makeOracleCastReactor(opts: TiddlerVerbOptions): VerbReactor {
       decision: receipt["decision"], created: receipt["created"] === true, title,
       ...(receipt["bag"] !== undefined ? { bag: receipt["bag"] } : {}),
       ...(receipt["hash"] !== undefined ? { hash: receipt["hash"] } : {}),
-      cast: castRecord(cast), text: castText(cast), readings, note: ORACLE_WIDENS,
+      cast: castRecord(cast), text: castText(cast), readings, note: ORACLE_THROW_STANDS,
     };
   };
 }
