@@ -93,12 +93,12 @@ A parting note states its meaning (thanks, completion, or dismissal) and never r
 
 * The names of the four seams and the whole circle: the operator's ear, their family's, and a kumu's where the operator chooses.
 * The seat minted per summon: a scout measures how the doors resolve a seat today before any build.
-* Until that seat stands, an offering (ʻālana) carries no authority beyond a nudge: the shelf (`alana/<pet>`) records who offered (a hand, or a seat by its body id), a wake names the offerer, and a re-offer over a standing mandate lands only from the same offerer or a hand. A shelf whose hash disagrees with its words fails closed. The tiddler door still reaches the `alana/` prefix; guarding it there, as the other door-owned prefixes stand guarded, waits as a course item.
+* Until that seat stands, an offering (ʻālana) carries no authority beyond a nudge: the shelf (`alana/<pet>`) records who offered (a hand, or a seat by its body id), a wake names the offerer, and a re-offer over a standing mandate lands only from the same offerer or a hand. A seat's offerer id stays SELF-CLAIMED (it comes from the caller's own `--body`, and a wake and the presence show every body id), so the same-offerer check stops an accidental overwrite, never a deliberate one; a pet with no offering goes to the first offerer. A shelf whose hash disagrees with its words fails closed. The tiddler door still reaches the `alana/` prefix; guarding it there, as the other door-owned prefixes stand guarded, waits as a course item, and that guard also refuses a caller-written `offered-by`.
 * The keeping seam's word.
 * The familiar spirit: a spirit the operator's own hand wakes keeps company rather than running an errand; its design draft sits at lar:///ha.ka.ba/lares/docs/pono/familiar-spirit.
 * The summon machinery's own doors (the queue on the face's intent plane, the deterministic launcher, budgets per lane, leases per grant), designed in research/spirits-switchboard and not yet built.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;GGPKqDLV5N-fj0jKZ5oR7wmMGjA_tGqDSOkpaznHqeA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;00LPyqeUBfy6Q0S9CMwbD7hCOMrTOppdKjcdiH_-TGw`>>
 <<^ code=`&#x0004;` to=`?`>>
