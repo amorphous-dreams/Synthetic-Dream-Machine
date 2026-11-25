@@ -126,7 +126,7 @@ describe("RF: a document that rests under the vessel's key re-files under a face
     await repo3.shutdown();
   });
 
-  it("RF2 (control): with no vessel key in reach, a chunk under the vessel's key never opens for a face", async () => {
+  it("RF2 (control): with no vessel key in reach, a chunk under the vessel's key never opens for a face, and its refusal names the locked holder, never a malformed pointer", async () => {
     const w = world();
     const a = await vessel(w, "a");
     const inner = memoryAdapter();
@@ -141,7 +141,7 @@ describe("RF: a document that rests under the vessel's key re-files under a face
     cell.bag = (own) => ({ bagId: BAG, face: own });
     cell.key = null;
     const faced = standRest(a, inner, cell);
-    await expect(faced.rest.store.loadRange([doc.documentId])).rejects.toThrow(/pointer-malformed/);
+    await expect(faced.rest.store.loadRange([doc.documentId])).rejects.toThrow(/holder-locked/);
     expect(await faced.rest.sealMapped(doc.documentId, { id: "s", subject: faced.own, signer: a.signer })).toBe(false);
   });
 });

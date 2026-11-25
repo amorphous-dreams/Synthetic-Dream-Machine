@@ -12,7 +12,6 @@ role      = "THE locked golden path for {any chat + telemetry} → ingest → na
 title     = "lar:///ha.ka.ba/lararium/api/ingest-canon"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/api/ingest-canon"
-written   = "2026-06-27"
 ```
 
 <<~ ahu slot=`#/head`>>
@@ -52,7 +51,7 @@ The golden path for getting //any// chat session + its telemetry into the palace
 !! Migration (the circle-back work, after FFZ)
 
 ''BUILD (ordered):'' (1) ''register the turn sigils'' as gradient-valued SharktoothSigil tids —
-`lares aim/yield · confidence · hud · ward · oracle · syad` (word + gradient-reading + render) so the
+`aim/yield · confidence · hud · ward · oracle · syad` (word + gradient-reading + render) so the
 engine parses TURNS, not just documents. (2) ''the VM gradient module'' (lararium-tw5): run the NATIVE
 `$tw.wiki.parseText` flow (TW5's parser + our `<<~` overlay wikirule) → the FULL TW5+memetic parse
 tree (host wikitext typed + sigils typed) → walk + GRADE the sigil nodes (complete=high, drifted/
@@ -220,6 +219,6 @@ linonetwo's tw-react + TidGi):
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;RWoNV-WFUYWnPOb_XiDP2MZhf6UHezpl0G74DxzNpXE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;RkojyigKIbRAmWq2_IQDBAbI5Sd1EzC_nTQu2fID_9o`>>
 
 <<^ code=`&#x0004;` to=`?`>>

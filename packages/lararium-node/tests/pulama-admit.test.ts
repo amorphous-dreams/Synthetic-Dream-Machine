@@ -17,13 +17,17 @@ import { kukuluGate, pulamaSignerOf, vouchSignerOf } from "../src/kukulu-gate.js
 import { kukuluRiteOver } from "../src/kukulu-lei-seat.js";
 import { generateOrLoadPersonaGroupRoot, loadPersonaGroupRootVerifyingKey } from "../src/node-vessel-identity.js";
 import { personaGroupDigest } from "../src/persona-group-file.js";
+import * as admitModule from "../src/pulama-admit.js";
 import { pulamaAdmissions, pulamaAdmitTesseraTitle, pulamaAdmittedTitle, pulamaReservedPrefix, type SignedPulamaAdmit } from "../src/pulama-admit.js";
+/** The tombstone title, read off the module so this file loads before the cure lands. */
+const pulamaUnadmittedTitle = (image: string, tessera: string): string => (admitModule as unknown as { pulamaUnadmittedTitle: (i: string, t: string) => string }).pulamaUnadmittedTitle(image, tessera);
 import { pulamaHandDoor } from "../src/pulama-hand.js";
 import { pulamaImage, pulamaRecords } from "../src/pulama-state.js";
 import { PulamaVerbUsage, RouteNeedsTerminal, readRoute, runHandVerb, type RouteTerminal } from "../src/pulama-verbs.js";
 import { wardRootSigner } from "../src/ward-signer.js";
 import { FIXTURE_PASSPHRASE, fixtureWard } from "./custody-seat-fixture.js";
 import { fixtureRoute, fixtureSlots, standPulama, type PulamaFixture } from "./pulama-fixture.js";
+import { UNLOCK_ATTEMPTS_PER_BOOT as BOUND } from "../src/custody-holder.js";
 
 vi.setConfig({ testTimeout: 180_000 });
 
@@ -51,7 +55,7 @@ async function stand() {
   const root = await generateOrLoadPersonaGroupRoot(0, fixtureWard());
   const hand: SwarmSignerPort = { key: root.verifyingKey, sign: async (bytes) => (await wardRootSigner(0, fixtureWard(), "a swarm control")).sign(bytes) };
   const lei: SignedSwarmAct = await signSwarmAct({ act: "lei", group: GROUP, rite: "kukulu", branch: BRANCH, after: null, reach: "wide", returns: 2 }, hand);
-  const vouch = async (img = IMAGE) => signKukuluVouch({ group: GROUP, branch: BRANCH, head: HEAD, tree: TREE, image: img, verdict: "pass", receipt: null }, await vouchSignerOf(fx!.local));
+  const vouch = async (img = IMAGE) => signKukuluVouch({ group: GROUP, branch: BRANCH, head: HEAD, tree: TREE, image: img }, await vouchSignerOf(fx!.local));
   const hello = async (offer: unknown): Promise<string> => {
     try { return (await fx!.vessel(offer).unlock([])).reading; }
     catch (err) { return (err as { reading?: string }).reading ?? String(err); }
@@ -171,7 +175,7 @@ describe("RED pulama-admit-asks-the-route-on-a-terminal", () => {
     expect(answer).toMatchObject({ op: "admit", reading: "admitted", admitted: IMAGE, lent: [0], faces: 1, lit: true });
     // THE ROUTE OPENED NOTHING: the holder stood lit before and holds the same faces after; no attempt spent.
     expect(s.fx.kept.unlockedFaces()).toEqual([s.face.fcid]);
-    expect(answer["attemptsLeft"]).toBe(3);
+    expect(answer["attemptsLeft"]).toBe(BOUND);
     // THE HAND'S OWN TESSERA: both halves rest from this one act, the host half naming the guest half, under the pūlama's key.
     const tessera = String(answer["tessera"]);
     const guest = JSON.parse((await s.records.read(pulamaAdmitTesseraTitle(tessera, "guest")))!) as SignedPulamaAdmit;
@@ -193,7 +197,7 @@ describe("RED pulama-admit-asks-the-route-on-a-terminal", () => {
     const s = await stand();
     s.image.report(IMAGE);
     const wrong = await s.door({ op: "admit", credentials: [{ kind: "passphrase", passphrase: "a-wrong-route" }] });
-    expect(wrong).toMatchObject({ op: "admit", reading: "no-slot-opens", attemptsLeft: 2 });
+    expect(wrong).toMatchObject({ op: "admit", reading: "no-slot-opens", attemptsLeft: BOUND - 1 });
     expect(await s.records.read(pulamaAdmittedTitle(IMAGE))).toBeNull();
     expect(await s.hello({})).toBe("pulama-image-unadmitted");
     expect(await s.door({ op: "admit" })).toMatchObject({ reading: "malformed" });
@@ -267,7 +271,7 @@ describe("RED pulama-admit-refuses-unlit-or-unreported", () => {
     // LIT, and the host reported nothing.
     expect(await runHandVerb("admit", undefined, ports)).toMatchObject({ op: "admit", reading: "image-unreported" });
     expect(prompts).toBe(0);
-    expect(await s.door({ op: "admit", credentials: [{ kind: "passphrase", passphrase: "a-wrong-route" }] })).toMatchObject({ reading: "image-unreported", attemptsLeft: 3 });
+    expect(await s.door({ op: "admit", credentials: [{ kind: "passphrase", passphrase: "a-wrong-route" }] })).toMatchObject({ reading: "image-unreported", attemptsLeft: BOUND });
     // UNLIT, with an image reported.
     s.image.report(IMAGE);
     await s.fx.server.lock();
@@ -282,5 +286,174 @@ describe("RED pulama-admit-refuses-unlit-or-unreported", () => {
     expect((await s.fx.kept.unlockFace({ ordinal: 0 }, fixtureRoute)).reading).toBe("opens");
     expect(await runHandVerb("admit", undefined, ports)).toMatchObject({ reading: "admitted", admitted: IMAGE });
     expect(prompts).toBe(1);
+  });
+});
+
+describe("RED pulama-route-reading-names-what-it-heard", () => {
+  test("a stop before Enter over a typed route says the route went nowhere and spent no attempt; only an empty reading says no route came", async () => {
+    const s = await stand();
+    await s.fx.server.lock();
+    const frames: string[] = [];
+    const light = (t: ReturnType<typeof terminal>) => runHandVerb("light", undefined, {
+      ask: (frame) => { frames.push(String(frame["op"])); return s.door(frame); },
+      route: (label, what) => readRoute(label, what, t.port),
+    }).catch((e: unknown) => e as Error);
+    // A TYPED ROUTE, then Ctrl-D before Enter: the pūlama hears nothing, and the answer says so.
+    const typed = terminal(true);
+    const stopped = light(typed);
+    typed.type("a-wrong-route\u0004");
+    const typedRefusal = await stopped;
+    expect((typedRefusal as Error).message).not.toMatch(/no route came/);
+    expect((typedRefusal as Error).message).toMatch(/opened nothing/);
+    expect((typedRefusal as Error).message).toMatch(/no attempt/);
+    expect((typedRefusal as Error).message).not.toContain("a-wrong-route");
+    // NOTHING TYPED, then Ctrl-C: the one case that reads "no route came", and it still names the unspent attempt.
+    const empty = terminal(true);
+    const nothing = light(empty);
+    empty.type("\u0003");
+    const emptyRefusal = await nothing;
+    expect((emptyRefusal as Error).message).toMatch(/no route came/);
+    expect((emptyRefusal as Error).message).toMatch(/no attempt/);
+    // A BARE ENTER sends no empty route to the door: it reads as no route, and spends nothing.
+    const bare = terminal(true);
+    const blank = light(bare);
+    bare.type("\r");
+    expect(((await blank) as Error).message).toMatch(/no route came/);
+    expect(frames).toEqual([]);
+    expect((await s.door({ op: "status" }))["attemptsLeft"]).toBe(BOUND);
+  });
+});
+
+describe("RED pulama-unadmit-ends-an-admission by a signed tombstone", () => {
+  test("unadmit rests `unadmitted/<image>/<tessera>` under the pūlama's key naming the tessera it ends; the gate then reads pulama-image-unadmitted; status names the ended digest; a re-admit writes a new tessera and serves again", async () => {
+    const s = await stand();
+    s.image.report(IMAGE);
+    const first = await s.door({ op: "admit", credentials: fixtureRoute });
+    const tessera = String(first["tessera"]);
+    expect(await s.hello({})).toBe("opens");
+    // NEEDS A ROUTE: a frame with none refuses as malformed; a wrong one proves nothing and spends an attempt.
+    expect(await s.door({ op: "unadmit", image: IMAGE })).toMatchObject({ op: "unadmit", reading: "malformed" });
+    expect(await s.door({ op: "unadmit", image: IMAGE, credentials: [{ kind: "passphrase", passphrase: "a-wrong-route" }] })).toMatchObject({ op: "unadmit", reading: "no-slot-opens", attemptsLeft: BOUND - 1 });
+    // AN UNKNOWN DIGEST answers a reading and rests nothing.
+    expect(await s.door({ op: "unadmit", image: OTHER, credentials: fixtureRoute })).toMatchObject({ op: "unadmit", reading: "image-not-admitted", digest: OTHER });
+    const ended = await s.door({ op: "unadmit", image: IMAGE, credentials: fixtureRoute });
+    expect(ended).toMatchObject({ op: "unadmit", reading: "unadmitted", digest: IMAGE, ends: tessera });
+    const tomb = JSON.parse((await s.records.read(pulamaUnadmittedTitle(IMAGE, tessera)))!) as SignedPulamaAdmit;
+    expect(tomb.signer).toBe(s.pulamaKey);
+    expect(tomb.body).toMatchObject({ kind: PULAMA_TESSERA_DOMAIN, act: "image-unadmitted", image: IMAGE, ends: tessera });
+    // THE ADMISSION ROW STAYS (a keep copy carries it the same): it reads ended while a tombstone names its tessera.
+    expect(await s.records.read(pulamaAdmittedTitle(IMAGE))).not.toBeNull();
+    expect(await s.admissions.admitted(IMAGE, await pulamaSignerOf(s.fx.kept))).toBeNull();
+    expect(await s.hello({})).toBe("pulama-image-unadmitted");
+    expect(await s.door({ op: "status" })).toMatchObject({ admitted: [], ended: [IMAGE] });
+    expect((await s.door({ op: "tessera" }))["admitted"]).toEqual([]);
+    // A second unadmit of the ended image answers the same reading as an unknown one.
+    expect(await s.door({ op: "unadmit", image: IMAGE, credentials: fixtureRoute })).toMatchObject({ reading: "image-not-admitted" });
+    // RE-ADMIT writes a new tessera, which no tombstone names: the image serves again.
+    const again = await s.door({ op: "admit", credentials: fixtureRoute });
+    expect(again).toMatchObject({ reading: "admitted" });
+    expect(again["tessera"]).not.toBe(tessera);
+    expect(await s.hello({})).toBe("opens");
+    expect(await s.door({ op: "status" })).toMatchObject({ admitted: [IMAGE], ended: [] });
+  });
+
+  test("a tombstone planted under another key ends nothing; the verb reads the door first and names the image in the route's label; unlit refuses before the route reads", async () => {
+    const s = await stand();
+    s.image.report(IMAGE);
+    const first = await s.door({ op: "admit", credentials: fixtureRoute });
+    const tessera = String(first["tessera"]);
+    const seed = new Uint8Array(32).fill(9);
+    const body = { kind: PULAMA_TESSERA_DOMAIN, act: "image-unadmitted", image: IMAGE, ends: tessera };
+    await s.records.write(pulamaUnadmittedTitle(IMAGE, tessera), JSON.stringify({ body, signer: await ed25519VerifyingKeyFromSeed(seed), sig: await ed25519SignerFromSeed(seed)(canonicalJsonBytes(body)) }));
+    expect(await s.hello({})).toBe("opens");
+    // The verb line: status first, then the route under a label naming the image, then the frame.
+    const frames: Array<Record<string, unknown>> = [];
+    const asked: string[] = [];
+    const answer = await runHandVerb("unadmit", IMAGE, {
+      ask: (frame) => { frames.push({ ...frame }); return s.door(frame); },
+      route: async (label) => { asked.push(label); return FIXTURE_PASSPHRASE; },
+    });
+    expect(frames.map((f) => f["op"])).toEqual(["status", "unadmit"]);
+    expect(asked[0]).toContain(IMAGE);
+    // The forged row holds the slot, so no signed tombstone can rest there: the answer names it and the admission still stands.
+    expect(answer).toMatchObject({ reading: "unadmit-slot-occupied", slot: pulamaUnadmittedTitle(IMAGE, tessera) });
+    expect(await s.hello({})).toBe("opens");
+    await expect(runHandVerb("unadmit", undefined, { ask: (f) => s.door(f), route: async () => FIXTURE_PASSPHRASE })).rejects.toBeInstanceOf(PulamaVerbUsage);
+    await s.fx.server.lock();
+    const unlit: string[] = [];
+    expect(await runHandVerb("unadmit", IMAGE, { ask: (f) => s.door(f), route: async (l) => { unlit.push(l); return FIXTURE_PASSPHRASE; } })).toMatchObject({ reading: "pulama-locked" });
+    expect(unlit).toEqual([]);
+  });
+
+  test("CONTROL: an admission no tombstone names keeps serving, and reads admitted", async () => {
+    const s = await stand();
+    s.image.report(IMAGE);
+    await s.door({ op: "admit", credentials: fixtureRoute });
+    expect(await s.hello({})).toBe("opens");
+    expect(await s.admissions.admitted(IMAGE, await pulamaSignerOf(s.fx.kept))).toMatchObject({ by: "hand" });
+  });
+});
+
+describe("RED unadmit-never-answers-unadmitted-with-no-tombstone-resting", () => {
+  test("a junk row planted at `unadmitted/<image>/<tessera>` refuses `unadmit-slot-occupied`, naming the slot and that the admission still stands; the image keeps serving", async () => {
+    const s = await stand();
+    s.image.report(IMAGE);
+    const first = await s.door({ op: "admit", credentials: fixtureRoute });
+    const tessera = String(first["tessera"]);
+    await s.records.write(pulamaUnadmittedTitle(IMAGE, tessera), "not a signed row");
+    const a = await s.door({ op: "unadmit", image: IMAGE, credentials: fixtureRoute });
+    expect(a).toMatchObject({ op: "unadmit", reading: "unadmit-slot-occupied", digest: IMAGE, slot: pulamaUnadmittedTitle(IMAGE, tessera) });
+    expect(String(a["detail"])).toMatch(/still stands/);
+    expect(await s.admissions.admitted(IMAGE, await pulamaSignerOf(s.fx.kept))).toMatchObject({ by: "hand", tessera });
+    expect(await s.hello({})).toBe("opens");
+  });
+
+  test("a signed tombstone that landed first (a race) answers already ended, never a second write", async () => {
+    const s = await stand();
+    s.image.report(IMAGE);
+    await s.door({ op: "admit", credentials: fixtureRoute });
+    const by = await pulamaSignerOf(s.fx.kept);
+    // Two unadmits read the same standing admission; the second finds the first's signed tombstone in the slot.
+    const [one, two] = await Promise.all([s.admissions.unadmit(IMAGE, by), s.admissions.unadmit(IMAGE, by)]);
+    expect([one, two].filter((r) => r !== null && "already" in r && r.already === true)).toHaveLength(1);
+    expect(await s.admissions.admitted(IMAGE, by)).toBeNull();
+  });
+});
+
+describe("RED pulama-admit-names-the-seed-the-image-offers (D1)", () => {
+  const SEED = "seed (offered) " + "5".repeat(64) + ": a newer seed waits: engine same · grammar moved · plugins same · floor same";
+
+  test("the host's report carries the seed line beside the image; status and the admission answer name it before and after the route; the admitted row carries none of it", async () => {
+    const s = await stand();
+    expect(await s.door({ op: "image", digest: IMAGE, seed: SEED })).toMatchObject({ reading: "reported", image: IMAGE, seed: SEED });
+    expect(await s.door({ op: "status" })).toMatchObject({ image: IMAGE, seed: SEED });
+    // THE VERB: the route's prompt names the seed line beside the image, so the hand reads what waits before it admits.
+    const asked: string[] = [];
+    const answer = await runHandVerb("admit", undefined, { ask: (frame) => s.door(frame), route: async (label) => { asked.push(label); return FIXTURE_PASSPHRASE; } });
+    expect(asked[0]).toContain(IMAGE);
+    expect(asked[0]).toContain(SEED);
+    expect(answer).toMatchObject({ op: "admit", reading: "admitted", admitted: IMAGE, seed: SEED });
+    // ADMISSION MOVES NOTHING: the admitted row and both tessera halves carry no seed field.
+    const row = JSON.parse((await s.records.read(pulamaAdmittedTitle(IMAGE)))!) as SignedPulamaAdmit;
+    expect(JSON.stringify(row)).not.toContain("seed");
+    const tessera = String(answer["tessera"]);
+    for (const half of ["guest", "host"] as const) expect(await s.records.read(pulamaAdmitTesseraTitle(tessera, half))).not.toContain("seed");
+    // The verb line: the seed rides a structured frame `{ digest, seed }`, never trailing words; a bare digest stays valid.
+    const ports = { ask: (frame: Readonly<Record<string, unknown>>) => s.door(frame), route: async () => FIXTURE_PASSPHRASE };
+    expect(await runHandVerb("image", JSON.stringify({ digest: OTHER, seed: SEED }), ports)).toMatchObject({ reading: "reported", image: OTHER, seed: SEED });
+    await expect(runHandVerb("image", [OTHER, ...SEED.split(" ")], ports)).rejects.toBeInstanceOf(PulamaVerbUsage);
+    await expect(runHandVerb("image", JSON.stringify({ digest: OTHER, seed: 7 }), ports)).rejects.toBeInstanceOf(PulamaVerbUsage);
+    const bare = await runHandVerb("image", IMAGE, ports);
+    expect(bare).toMatchObject({ reading: "reported", image: IMAGE });
+    expect(bare["seed"]).toBeUndefined();
+  });
+
+  test("CONTROL: a report with no seed line clears the earlier one; status and the answer then name no seed", async () => {
+    const s = await stand();
+    await s.door({ op: "image", digest: IMAGE, seed: SEED });
+    await s.door({ op: "image", digest: OTHER });
+    const status = await s.door({ op: "status" });
+    expect(status["seed"]).toBeUndefined();
+    expect(status).toMatchObject({ image: OTHER });
   });
 });

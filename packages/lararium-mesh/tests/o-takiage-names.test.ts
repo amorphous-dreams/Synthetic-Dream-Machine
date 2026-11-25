@@ -26,6 +26,7 @@ const CODE = /\.(ts|mjs|js|sh|yml|conf)$/;
 
 const SLICE5 = "slice 5 (w26-floor-lane #/owed): the genesis island doc keeps its name until the floor read-face replaces its layer";
 const OTHER = "a sense that never meant the pointer";
+const DIVINATION = "the divination oracle by ruling (state/decisions, the oracle designs): the house's I Ching cast, never the pointer";
 
 /** token -> the reason it stands. */
 const TOKENS: Record<string, string> = Object.fromEntries([
@@ -37,12 +38,23 @@ const TOKENS: Record<string, string> = Object.fromEntries([
   ...["oracleTw", "oracleRel", "oracleReadFace"].map((t) => [t, OTHER] as const),
   // The seed law that checks each `<<~ oracle>>` throw (die == face == tail) names the live blind gauge itself.
   ["oracleCrossCheck", OTHER],
+  // The I Ching cast: its core, its verb, its widget and its CLI door each name the divination sense.
+  ...["ORACLE_THROW_STANDS", "OracleCast", "makeOracleCastReactor", "ActionOracleCast", "ActionOracleCastWidget", "oracleCastFor",
+    "cmdOracle", "oraclePlan", "oracleCast"].map((t) => [t, DIVINATION] as const),
 ]);
 
 const FILES: Record<string, string> = {
   "packages/lararium-mesh/tests/oracle-doc-no-writer.test.ts": SLICE5,
   "packages/lararium-node/tests/shared-oracle-doc.probe.test.ts": SLICE5,
   "packages/lararium-mesh/tests/couple-oracle.test.ts": "a recovery oracle for the coupling estimator, a test oracle",
+  "packages/lararium-mesh/src/oracle-cast.ts": DIVINATION,
+  "packages/lararium-mesh/tests/oracle-cast.test.ts": DIVINATION,
+  "packages/lararium-tw5/src/oracle-cast-verb.ts": DIVINATION,
+  "packages/lararium-tw5/src/widgets/action-oracle-cast.ts": DIVINATION,
+  "packages/lararium-tw5/tests/action-oracle-cast.test.ts": DIVINATION,
+  "packages/lararium-tw5/tests/oracle-cast-verb.test.ts": DIVINATION,
+  "packages/lares-cli/src/commands/oracle-cmd.ts": DIVINATION,
+  "packages/lares-cli/tests/oracle-cmd.test.ts": DIVINATION,
 };
 
 function walk(dir: string, out: string[] = []): string[] {

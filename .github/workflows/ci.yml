@@ -1,6 +1,6 @@
 name: CI
 
-# The pinned Playwright image supplies Node 26 for the browser cells; the other jobs pin Node 24.
+# The pinned Playwright image supplies Node 26 for the browser cells (dim for now: tools/ci-cells.mjs BROWSER_LAMPS_DIM); the other jobs pin Node 24.
 # The browser import boundary must keep product code compatible with Node 24.
 
 # Golden-principle gates for the Lararium monorepo, mapped to the project's
@@ -8,11 +8,13 @@ name: CI
 #
 # A FULL RUN RAISES AT MOST TEN JOBS AT ONCE (tools/ci-graph.test.mjs reads this file and the called e2e workflow), so a
 # second full run starts beside it inside the account's twenty running jobs:
+#   scope           — one small read, beside quick and ahead of every cell: whether this push changes canon alone
+#                     (tools/ci-ignored-paths.json), and on a lane which packages, test cells and witness cells it runs
 #   quick           — build + generated-artifact freshness (the checked-in plugin artifacts — the lar:// canonical copy AND
 #                     the `$:/` standalone distribution — must match a fresh build), typecheck, the exact-deps witness, the
 #                     the seed presence check (the hooks load the boot seed whole), the grammar artifact gates, the
-#                     browser floor crossing, pristine upstream (the meme routes AND a stock single-file build meet a
-#                     PUBLISHED tiddlywiki, against the COMMITTED standalone artifact), then the contract witness cell
+#                     pristine upstream (the meme routes meet a PUBLISHED tiddlywiki, against the COMMITTED standalone
+#                     artifact; the browser floor crossing and the stock single-file build stand dim), then the contract witness cell
 #   test            — every package's suite as four cells (node dealt across two by file weight), incl. the meme
 #                     round-trip laws and the two plugin-artifact parity gates (lar:// + the standalone `$:/` distribution)
 #   witnesses       — the whole `tools/*witness*.sh` fleet through `witness-all`, under its own name so a red suite cannot
@@ -23,7 +25,39 @@ name: CI
 #
 # ONE RUN PER SHA. A push to a branch and a pull request from the same repository name one sha, so the push owns it and
 # every job stands guarded off on the same-repository `pull_request` event; a fork's pull request has no push here and runs
-# whole. `merge_group` (a native merge queue) has its hook as a comment in the `on:` block below.
+# whole. The native merge queue on `develop` raises `merge_group` on each group's merge commit, and every job runs there
+# (the fork guard reads `pull_request` alone): the queue's run reads a lane on top of every lane queued ahead of it.
+#
+# A LANE RUNS WHAT IT TOUCHES, THE FORD RUNS FULL (the operator's rulings, 2026-11-18 and 2026-11-19). A code push to a LANE
+# branch (`develop--*`, `lane/*`) runs the Quick gates, the test cells over the packages its diff touches, and the Test gate;
+# the e2e shards stand guarded off and the e2e merge gate answers on its doorstep step (e2e-shards.yml's `doorstep` input).
+# The scope job (tools/ci-ignored-paths.mjs `laneScope`) reads the lane's diff against its merge base with develop:
+#   packages  — each path under `packages/<dir>/`, `tests/` or `TiddlyWiki5` names its workspace package, closed over every
+#               in-repo package whose package.json depends on it (`workspace:`), so a mesh change reaches tw5, node, web, cli...
+#   cells     — the test cells (TEST_CELLS in tools/ci-cells.mjs) holding a selected package. Every matrix row still raises
+#               (a job-level `if:` cannot read the matrix), and a row the selection leaves out skips every step behind
+#               `contains(needs.scope.outputs.cells, matrix.cell)`; a running row walks its selected packages alone, and the
+#               Test gate owes their reports alone (`--select`).
+#   witnesses — the witness cells and their gate run on a lane when canon moved beside code, when a source genesis carries moved
+#               (`isGenesisSource`: the engine's inputs, a packed plugin file), or when the full battery runs.
+# FAIL OPEN TO MORE, NEVER FEWER: a path outside every package dir (tools/, the workflows, the root package.json or lockfile, a
+# non-meme file under bags/), a package no test cell carries, an unread diff or graph selects the full battery (`packages=all`).
+# The full battery runs unchanged on `merge_group`, on a push to `develop` or `main` (and any other branch, a feature span's
+# among them), on a fork's pull request, and by `workflow_dispatch` for a lane that wants a whole reading before it queues.
+# The four checks the `develop` ruleset requires still report on a lane head: `Quick gates` and `Test` run; `Witnesses` runs
+# or reports skipped (GitHub reads a skipped required check as passing); `E2E / Merge shard reports` runs its one doorstep
+# step and passes, because a called job's check bears that name only while the caller runs. tools/ci-graph.test.mjs (D1-D3)
+# holds the run law and tools/ci-ignored-paths.test.mjs the selection.
+#
+# THE CANON DOORSTEP. A push that changes only the canon paths tools/ci-ignored-paths.json names (meme, docs, wikis) runs
+# the doorstep set alone, on a lane or on `develop`/`main` alike: the scope job reads the push's diff against that one list
+# (develop and main against the push's own `before`, any other branch against its merge base with develop) and hands on
+# `canon`, and every job a lane push skips reads it beside the lane test. The push trigger ignores no path: a trigger filter
+# cannot vary by branch and stops the run before any job is read, so a canon pull request never saw its four required
+# checks and could not enter the queue (PR #242). A canon pull request reports all four and enqueues; a canon push to
+# `develop` costs the scope read, the Quick gates and the doorstep step, never the battery. A mixed push reads as code,
+# and `merge_group`, dispatch and a fork's pull request run whole whatever the scope reads. A scope that cannot read the
+# push answers code. tools/ci-graph.test.mjs (D4-D6) and tools/ci-ignored-paths.test.mjs hold it.
 # Defense-in-depth, not a single flag: build-freshness (CI, authoritative) is
 # backed by the always-on plugin-artifact-parity unit test in `test` (local-first,
 # runs in every `pnpm test`). Dropping one gate does not open the hole.
@@ -38,45 +72,69 @@ on:
     # pushes it and watches that ONE run). Without this exclusion the same push would also raise the
     # whole full-CI matrix here — two answers to one push, and the shard lane's point (a cheap,
     # throwaway proof run) would cost a full CI run every time.
-    branches-ignore: ["ci/**"]
-    # Meme, docs and wiki paths raise no run on a push (tools/ci-ignored-paths.json; a test pins these globs equal
-    # to it). A push that changes only these leaves the in-flight run alone. pull_request stays un-ignored.
-    paths-ignore:
-      - "bags/**/*.mem"
-      - "**/*.md"
-      - "wikis/**"
-      - "CHANGELOG.md"
+    #
+    # The merge queue pushes each group to `gh-readonly-queue/<base>/...` and raises `merge_group` on that same sha; skipping
+    # those refs here leaves the group ONE run, the merge_group one the queue waits on.
+    branches-ignore: ["ci/**", "gh-readonly-queue/**"]
+    # NO `paths-ignore`: a canon-only push raises a run and its scope job answers it with the doorstep (THE CANON DOORSTEP,
+    # above). tools/ci-ignored-paths.test.mjs holds the trigger free of it.
   pull_request:
-    branches: [main]
-  # MERGE QUEUE HOOK (not wired yet). A native merge queue raises `merge_group` on the group's merge ref. When it lands, add here
-  #   merge_group:
-  #     types: [checks_requested]
-  #     branches: [feature/green-jello-dinosaur-5]
-  # and add `gh-readonly-queue/**` to the push `branches-ignore` above, so a group raises ONE run, not two. No job guards
-  # `merge_group` off (the fork guard below reads only `pull_request`), so the queue's run would raise the same ten jobs.
-  # A controller runs CI by hand on a lane head whose own push the ignore list skipped: a meme-only head never
-  # raises a run of its own, and the land guard reads a head's verdict, not its ancestor's alone.
+    branches: [develop, main]
+  # THE MERGE QUEUE. A lane lands as a pull request into `develop` that enters the queue (the repository ruleset on `develop`
+  # names the queue and its required checks); the queue builds each group on top of the groups ahead of it and raises
+  # `merge_group` on the group's merge commit. That run raises the same ten jobs a push does, and on green the queue moves
+  # `develop` to that exact sha. The scope job reads a push alone, so a group of canon-only lanes still raises a full run
+  # here: a canon pull request enqueues on its doorstep checks, and canon may still go direct (tools/span-push.mjs).
+  # held-out.yml answers the push of the group's merge onto `develop`, not the queue.
+  merge_group:
+    types: [checks_requested]
+    branches: [develop]
+  # A controller runs CI by hand on a lane head that wants a whole reading before it queues: a lane push, canon or code,
+  # runs the doorstep alone, and the land guard reads a head's verdict, not its ancestor's alone.
   workflow_dispatch:
 
+# A newer push to a lane or a feature span supersedes its older run. On `develop` and `main` the run in flight finishes: a
+# canon push there raises a run of its own (THE CANON DOORSTEP), and its doorstep must never cancel the battery a
+# code push before it raised, the way a canon push that raised no run never did (tools/span-push.mjs pushes canon on it).
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
-
-env:
-  NODE_VERSION: "24"
-  # ONE pnpm, exact: the same string as package.json `packageManager` and the Dockerfile. A lock
-  # written by any other pnpm rewrites its peer suffixes on its next write.
-  PNPM_VERSION: "11.28.5"
-  # The published tiddlywiki the plugin proves it drops into (the `pristine-upstream` job). ONE
-  # version, one place: the job's name, its cache key, its pack and its log-line check all read it.
-  TW5_PRISTINE: "5.4.1"
-  # THE BROWSER LIBRARIES COME IN THE IMAGE, NEVER FROM APT. `playwright install-deps` timed out at its five minutes in the browser
-  # cells at least six times in one day. The official Playwright image carries the system libraries and all three engines, so no
-  # browser step installs anything. Tag AND digest, the pin docker-compose.capability-probe.yml holds; tools/workflow-law.test.mjs
-  # holds both to the repo's `playwright` version. A job `container:` cannot read `env`, so test-cells names the same string literally.
-  PLAYWRIGHT_IMAGE: "mcr.microsoft.com/playwright:v1.64.1-noble@sha256:2f05f8a734509a7b3f26a912639488ee08f58a7b292d14d62271bcff9038768f"
+  cancel-in-progress: ${{ github.ref != 'refs/heads/develop' && github.ref != 'refs/heads/main' }}
 
 jobs:
+  # ─── scope (does this push change canon alone? ONE small runner, beside quick) ───────────────
+  # It reads the push through tools/ci-ignored-paths.mjs, the one list's own module, off the runner's GITHUB_* variables and
+  # event file, and names a lane's selection (`packages`, `cells`, `witnesses`; A LANE RUNS WHAT IT TOUCHES, above). Every job a canon-only push skips lists it in `needs` (Actions hands a job its direct needs' outputs alone;
+  # tools/workflow-law.test.mjs WL6 holds that); quick does not wait on it. On any event but a push it answers `false`.
+  scope:
+    name: Scope
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      canon: ${{ steps.read.outputs.canon }}
+      packages: ${{ steps.read.outputs.packages }}
+      cells: ${{ steps.read.outputs.cells }}
+      witnesses: ${{ steps.read.outputs.witnesses }}
+      playwright: ${{ steps.image.outputs.playwright }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # The reader opens tools/ci-ignored-paths.{mjs,json} and asks git for the rest; no other file of the tree.
+          sparse-checkout: tools
+      - name: Read the Node floor (package.json engines.node)
+        id: node
+        # The floor major of package.json `engines.node`; setup-node would take the newest release of a `>=` range.
+        run: echo "major=$(node -p "/\\d+/.exec(require('./package.json').engines.node)[0]")" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ steps.node.outputs.major }}
+      - name: Read the pinned Playwright image (docker-compose.capability-probe.yml)
+        id: image
+        run: echo "playwright=$(tools/pw-container.sh --pin)" >> "$GITHUB_OUTPUT"
+      - name: Read whether this push changes canon alone (tools/ci-ignored-paths.json)
+        id: read
+        run: node tools/ci-ignored-paths.mjs scope >> "$GITHUB_OUTPUT"
+
   # ─── quick (six small gates and the contract witness, ONE runner) ─────────────────────────
   # THE ACCOUNT RUNS ABOUT TWENTY JOBS AT ONCE, and a full run raises at most TEN (tools/ci-graph.test.mjs holds this file to
   # it), so a second full run starts beside the first. The six small gates that each held a runner of their own (build +
@@ -98,11 +156,13 @@ jobs:
           # artifact the repo never had a chance to produce.
           submodules: recursive
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
-        with:
-          version: ${{ env.PNPM_VERSION }}
+      - name: Read the Node floor (package.json engines.node)
+        id: node
+        # The floor major of package.json `engines.node`; setup-node would take the newest release of a `>=` range.
+        run: echo "major=$(node -p "/\\d+/.exec(require('./package.json').engines.node)[0]")" >> "$GITHUB_OUTPUT"
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: ${{ steps.node.outputs.major }}
           cache: pnpm
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
@@ -133,6 +193,25 @@ jobs:
       - name: Every dependency names ONE version
         if: ${{ !cancelled() }}
         run: tools/exact-deps-witness.sh
+      # A misspelt trailer key drops a record line silently (`Braking:` renders nowhere in tools/changelog-render.mjs). The
+      # checkout stands shallow, so this step alone fetches the base's history (no blobs) and reads the range from the merge
+      # base. A push to develop itself reads an empty range. This costs no build.
+      - name: Every trailer key names a known key
+        if: ${{ !cancelled() }}
+        run: |
+          git fetch --no-tags --no-recurse-submodules --filter=blob:none --unshallow origin "${{ github.base_ref || 'develop' }}"
+          node tools/trailer-keys.mjs "$(git merge-base FETCH_HEAD HEAD)..HEAD"
+      # THE PŪLAMA CLOSURE, NAMED (course pulama-unblur): whether this change moves the closure the pūlama runs, read at the head
+      # against its merge base with the base branch (a push to that branch itself reads against its parent), into the job
+      # summary. Informational, never a gate: the step cannot fail the job. This costs no build.
+      - name: Moves the pūlama closure (informational)
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        run: |
+          git fetch --no-tags --no-recurse-submodules --filter=blob:none origin "${{ github.base_ref || 'develop' }}"
+          base=$(git merge-base FETCH_HEAD HEAD)
+          [ "$base" != "$(git rev-parse HEAD)" ] || base=$(git rev-parse HEAD^)
+          node tools/pulama-closure-moves.mjs "$base" HEAD | tee -a "$GITHUB_STEP_SUMMARY"
       - name: Generated artifacts must be fresh (build emits no tracked diff)
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: |
@@ -195,29 +274,10 @@ jobs:
         if: ${{ !cancelled() && steps.wasm.outcome == 'success' }}
         working-directory: packages/tree-sitter-memetic-wikitext
         run: pnpm run gate:fold-ts
-      # ── the browser engines: one Chromium for the floor crossing and the pristine suites ──
-      # The engines and their system libraries ride in the pinned official image (env.PLAYWRIGHT_IMAGE), so no apt step runs here. The
-      # two browser steps below run inside it through tools/pw-container.sh; everything else in this job stays on the runner.
-      - name: Pull the pinned Playwright image and find its Chromium
-        id: chromium
-        if: ${{ !cancelled() }}
-        timeout-minutes: 12
-        env:
-          PW_IMAGE: ${{ env.PLAYWRIGHT_IMAGE }}
-        run: tools/pw-container.sh node -e 'const p = require("playwright"); const e = p.chromium.executablePath(); require("node:fs").accessSync(e); console.log("chromium:", e, "playwright", require("playwright/package.json").version)'
-      # ── the browser floor crossing (W23) ──
-      # A real Chromium on the page a staged hearth serves, crossing that hearth's gates
-      # (`packages/lararium-web/tests/e2e/floor-crossing.e2e.test.ts`). It rides its own config
-      # (`vitest.crossing.config.ts`) and no package suite collects it. A scratch HOME, LAR_ROOT and LAR_STAGE_DIR keep the
-      # staged vessels off any real home; the image's own engines answer (PLAYWRIGHT_BROWSERS_PATH is the image's).
-      - name: Run the floor crossing under a scratch home
-        if: ${{ !cancelled() && steps.build.outcome == 'success' && steps.chromium.outcome == 'success' }}
-        run: |
-          scratch="$RUNNER_TEMP/crossing"
-          mkdir -p "$scratch/home" "$scratch/root" "$scratch/stage"
-          cd packages/lararium-web
-          env PW_IMAGE="$PLAYWRIGHT_IMAGE" PW_MOUNTS="$scratch" PW_ENV="LAR_ROOT LAR_STAGE_DIR" HOME_INSIDE="$scratch/home" LAR_ROOT="$scratch/root" LAR_STAGE_DIR="$scratch/stage" \
-            "$GITHUB_WORKSPACE/tools/pw-container.sh" npx vitest run --config vitest.crossing.config.ts
+      # ── the browser lamps stand dim (operator, 2026-11-20) ──
+      # "disable all browser tests for now, while we move quickly to settle the road": the Chromium pull and the browser floor
+      # crossing (W23: `packages/lararium-web/vitest.crossing.config.ts`, files kept in the tree) rode here and ride no more.
+      # The whole account stands in tools/ci-cells.mjs (BROWSER_LAMPS_DIM) with how to relight.
       # ── pristine upstream (the plugin drops into a PUBLISHED tiddlywiki) ──
       # THE INSTRUMENT AND ITS INVOKER. `meme-routes.e2e` takes `LARES_TW5_JS` and runs the whole contact against any
       # `tiddlywiki.js`; the package suites run it against the FORK. THE SUITE SKIPS LOUDLY WHEN ITS ENGINE IS MISSING, AND A
@@ -230,44 +290,33 @@ jobs:
       - name: Point dist-plugin at the committed standalone artifact
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: cp packages/lararium-tw5/plugins/standalone/lares-memetic-wikitext.tid packages/lararium-tw5/dist-plugin/lares-memetic-wikitext.tid
-      # ONE VERSION, ONE PLACE. The tarball caches by the pinned version; a bump re-packs.
-      - name: Cache the published tiddlywiki
-        id: pristine-cache
-        if: ${{ !cancelled() }}
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.cache/lares-pristine/tiddlywiki-${{ env.TW5_PRISTINE }}
-          key: pristine-tiddlywiki-${{ env.TW5_PRISTINE }}
-      - name: Pack tiddlywiki@${{ env.TW5_PRISTINE }} from npm
-        if: ${{ !cancelled() && steps.pristine-cache.outputs.cache-hit != 'true' }}
-        run: |
-          dir=~/.cache/lares-pristine/tiddlywiki-$TW5_PRISTINE
-          mkdir -p "$dir" && cd "$dir"
-          npm pack "tiddlywiki@$TW5_PRISTINE" --silent
-          tar xzf "tiddlywiki-$TW5_PRISTINE.tgz"
-      - name: Witness the engine is the one pinned
+      # THE PUBLISHED ENGINE IS A DEPENDENCY. `tiddlywiki-pristine` (packages/lararium-tw5 devDependencies, an npm alias of the stock
+      # release) lands in the lockfile with its integrity hash and in the install above; the contact reads its version off the
+      # installed package, so nothing here restates it.
+      - name: Witness the pristine engine is the installed alias
         if: ${{ !cancelled() }}
         run: |
-          pkg=~/.cache/lares-pristine/tiddlywiki-$TW5_PRISTINE/package
-          test -f "$pkg/tiddlywiki.js"
-          node -e 'const v=require(process.argv[1]+"/package.json").version; console.log("pristine engine: tiddlywiki@"+v); if(v!==process.env.TW5_PRISTINE){console.error("::error::packed "+v+", pinned "+process.env.TW5_PRISTINE);process.exit(1)}' "$pkg"
-      - name: meme-routes + standalone single-file contact against the pristine engine
-        if: ${{ !cancelled() && steps.build.outcome == 'success' && steps.chromium.outcome == 'success' }}
+          dir=$(node -p "require('path').dirname(require.resolve('tiddlywiki-pristine/tiddlywiki.js', { paths: ['packages/lararium-tw5'] }))")
+          test -f "$dir/tiddlywiki.js"
+          node -p "'pristine engine: tiddlywiki@' + require(process.argv[1] + '/package.json').version" "$dir"
+      - name: meme-routes contact against the pristine engine
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: |
-          export LARES_TW5_JS=~/.cache/lares-pristine/tiddlywiki-$TW5_PRISTINE/package/tiddlywiki.js
+          export LARES_TW5_JS=$(node -p "require.resolve('tiddlywiki-pristine/tiddlywiki.js', { paths: ['packages/lararium-tw5'] })")
           export LARES_E2E_TMP="$RUNNER_TEMP/pristine-e2e"
           mkdir -p "$LARES_E2E_TMP"
           cd packages/lararium-tw5
-          env PW_IMAGE="$PLAYWRIGHT_IMAGE" PW_MOUNTS="$HOME/.cache/lares-pristine $LARES_E2E_TMP" PW_ENV="LARES_TW5_JS LARES_E2E_TMP" \
-            "$GITHUB_WORKSPACE/tools/pw-container.sh" npx vitest run tests/meme-routes.e2e.test.ts tests/standalone-single-file.e2e.test.ts 2>&1 | tee "$RUNNER_TEMP/pristine.log"
+          npx vitest run tests/meme-routes.e2e.test.ts 2>&1 | tee "$RUNNER_TEMP/pristine.log"
           test "${PIPESTATUS[0]}" -eq 0
       - name: The log names the engine it met
         if: ${{ !cancelled() }}
         run: |
           line=$(grep -a "meme-routes.e2e: contact with TiddlyWiki" "$RUNNER_TEMP/pristine.log" || true)
           echo "$line"
-          if ! grep -aq "contact with TiddlyWiki $TW5_PRISTINE " "$RUNNER_TEMP/pristine.log"; then
-            echo "::error::the contact never named tiddlywiki@$TW5_PRISTINE — the suite skipped or met another engine"
+          dir=$(node -p "require('path').dirname(require.resolve('tiddlywiki-pristine/tiddlywiki.js', { paths: ['packages/lararium-tw5'] }))")
+          version=$(node -p "require(process.argv[1] + '/package.json').version" "$dir")
+          if ! grep -aq "contact with TiddlyWiki $version " "$RUNNER_TEMP/pristine.log"; then
+            echo "::error::the contact never named tiddlywiki@$version — the suite skipped or met another engine"
             exit 1
           fi
       # ── the contract witness (the hosted witness cell `contract-witness`; WITNESS_CELLS in tools/ci-cells.mjs) ──
@@ -292,7 +341,8 @@ jobs:
   # named `Test` below is the gate: it fails closed on any missing, empty, red or unexpected cell.
   test-cells:
     name: Test cell ${{ matrix.cell }}
-    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork }}
+    needs: scope
+    if: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork) && !(github.event_name == 'push' && (needs.scope.outputs.canon == 'true')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
     container: ${{ matrix.container }}
@@ -309,7 +359,7 @@ jobs:
           # `engines` names the Playwright engines the cell's suites launch (measured against the suite configs:
           # node holds none; `@lararium/web` runs all three and tw5's e2e walks launch Chromium; `@lararium/browser`
           # runs Chromium and Firefox). An empty value runs the cell on the bare runner. A cell that names engines also names
-          # `container`, the pinned official Playwright image (the same string as env.PLAYWRIGHT_IMAGE; a job container cannot read
+          # `container`, the pinned official Playwright image (read off docker-compose.capability-probe.yml by the scope job, `needs.scope.outputs.playwright`; a job container cannot read
           # `env`), so the system libraries and the engines are already there and no apt or download step runs. `--ipc=host`
           # keeps Chromium off the container's 64 MB /dev/shm. `--user 1001` is the runner's uid and the image's `pwuser`: the
           # steps run as the workspace's owner (git trusts the tree; Firefox refuses to run as root over a home it does not own).
@@ -317,14 +367,16 @@ jobs:
             engines: ''
           - cell: node-b
             engines: ''
+          # THE BROWSER LAMPS STAND DIM (operator, 2026-11-20; tools/ci-cells.mjs BROWSER_LAMPS_DIM): no cell names engines or the
+          # Playwright container now. To relight, restore `engines: chromium firefox webkit` on web-tw5 and `engines: chromium firefox`
+          # on cli-mesh, each with `container: { image: "${{ needs.scope.outputs.playwright }}", options: "--ipc=host --init --user 1001" }`.
           - cell: web-tw5
-            engines: chromium firefox webkit
-            container: { image: "mcr.microsoft.com/playwright:v1.64.1-noble@sha256:2f05f8a734509a7b3f26a912639488ee08f58a7b292d14d62271bcff9038768f", options: "--ipc=host --init --user 1001" }
+            engines: ''
           - cell: cli-mesh
-            engines: chromium firefox
-            container: { image: "mcr.microsoft.com/playwright:v1.64.1-noble@sha256:2f05f8a734509a7b3f26a912639488ee08f58a7b292d14d62271bcff9038768f", options: "--ipc=host --init --user 1001" }
+            engines: ''
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: ${{ contains(needs.scope.outputs.cells, matrix.cell) }}
         with:
           # No suite or witness reads git history, so the default shallow checkout stands.
           # TiddlyWiki5 IS the vendored-core build input and mempalace IS the python import
@@ -332,23 +384,30 @@ jobs:
           # artifact the repo never had a chance to produce.
           submodules: recursive
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
-        with:
-          version: ${{ env.PNPM_VERSION }}
+        if: ${{ contains(needs.scope.outputs.cells, matrix.cell) }}
+      - name: Read the Node floor (package.json engines.node)
+        id: node
+        # The floor major of package.json `engines.node`; setup-node would take the newest release of a `>=` range.
+        run: echo "major=$(node -p "/\\d+/.exec(require('./package.json').engines.node)[0]")" >> "$GITHUB_OUTPUT"
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        if: ${{ contains(needs.scope.outputs.cells, matrix.cell) }}
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: ${{ steps.node.outputs.major }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+        if: ${{ contains(needs.scope.outputs.cells, matrix.cell) }}
       # Eight suites guard on `existsSync` of tw5-core/ and dist/ — both gitignored build output.
       # Unbuilt, they SKIP and the job exits 0, so the run reads green while 35 tests never ran.
       # THE ENGINE BLOB IS A DELIBERATE RENDER, NEVER A BUILD SIDE EFFECT. tw5-core/ stays gitignored
       # because its sha256 IS the hearth's true name, so `build` refuses to render it and the bake reads
       # the blob that stands. A runner holds none until this step renders it from the submodule.
       - name: Render the TW5 core blob (suites guard on tw5-core/ and skip without it)
+        if: ${{ contains(needs.scope.outputs.cells, matrix.cell) }}
         run: pnpm --filter @lararium/tw5 build:tw5-vendor
       # The root `build` stamps the source digest after `pnpm -r build`; an unstamped dist reads as
       # stale to every freshness gate and witness that compares against it.
       - name: Build (suites guard on built artifacts and silently skip without them)
+        if: ${{ contains(needs.scope.outputs.cells, matrix.cell) }}
         run: pnpm build
       # THE HOLDER IS A DEPENDENCY, NOT AN OPTIONAL EXTRA. `content-palace` drives the python
       # mempalace holder live, and with no interpreter holding it the suite fails on an absent
@@ -362,32 +421,55 @@ jobs:
       # ONE LIST. The suite's own dependencies live in `packages/lararium-sensorium/requirements.txt`,
       # which the root `requirements.txt` (the operator's ~/.venv manifest) includes. The root list's
       # prose-tier NLP stack stays out: it needs downloaded models and the router degrades through it.
+      #
+      # THE HOLDER INTERPRETER. A bare-runner cell stands the venv on setup-python's 3.12. A container cell stands it on
+      # the image's own python3: the job container mounts the runner's hostedtoolcache, and setup-python's build there
+      # links the runner image's OpenSSL, which the Playwright image's libraries do not carry, so its `ssl` cannot import
+      # and pip cannot reach PyPI. The image's python3 carries ssl and no pip (Ubuntu splits ensurepip into python3-venv,
+      # which uid 1001 cannot install), so the venv step bootstraps pip with get-pip.py.
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        if: ${{ !matrix.container && contains(needs.scope.outputs.cells, matrix.cell) }}
         id: py
         with:
           python-version: '3.12'
+      - name: Name the holder interpreter (it must carry ssl)
+        if: ${{ contains(needs.scope.outputs.cells, matrix.cell) }}
+        id: interp
+        run: |
+          python3 -c 'import ssl' || { echo "::error::$(command -v python3) carries no ssl module: the holder venv's pip cannot reach PyPI"; exit 1; }
+          echo "python-version=$(python3 -c 'import platform; print(platform.python_version())')" >> "$GITHUB_OUTPUT"
       - id: mempalace-pin
+        if: ${{ contains(needs.scope.outputs.cells, matrix.cell) }}
         run: echo "sha=$(git rev-parse HEAD:mempalace)" >> "$GITHUB_OUTPUT"
 
-      # The key carries the exact interpreter PATCH: a restored venv's bin/python3 symlinks to the hostedtoolcache path of the patch that built
-      # it, so on a runner carrying another 3.12.x it dangles (exit 127).
+      # The key carries the exact interpreter PATCH: a restored venv's bin/python3 symlinks to the interpreter that built it
+      # (the hostedtoolcache path of that patch, or the image's /usr/bin/python3), so under another patch it dangles (exit 127).
       - name: Cache the holder venv
+        if: ${{ contains(needs.scope.outputs.cells, matrix.cell) }}
         id: venv-cache
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.venv
-          key: holder-venv-${{ runner.os }}-${{ matrix.container && 'pwimage' || 'host' }}-py${{ steps.py.outputs.python-version }}-${{ steps.mempalace-pin.outputs.sha }}-${{ hashFiles('mempalace/pyproject.toml', 'packages/lararium-sensorium/requirements.txt') }}
+          key: holder-venv-${{ runner.os }}-${{ matrix.container && 'pwimage' || 'host' }}-py${{ steps.interp.outputs.python-version }}-${{ steps.mempalace-pin.outputs.sha }}-${{ hashFiles('mempalace/pyproject.toml', 'packages/lararium-sensorium/requirements.txt') }}
       - name: Stand the holder venv (~/.venv)
+        if: ${{ contains(needs.scope.outputs.cells, matrix.cell) }}
         env:
           CACHE_HIT: ${{ steps.venv-cache.outputs.cache-hit }}
         run: |
-          # A restored venv whose interpreter does not answer is no venv: stand it again (belt beside the patch-keyed cache).
-          if [ "$CACHE_HIT" = 'true' ] && ~/.venv/bin/python3 -V >/dev/null 2>&1; then exit 0; fi
+          # A restored venv whose interpreter does not answer, or answers without ssl, is no venv: stand it again (belt beside the patch-keyed cache).
+          if [ "$CACHE_HIT" = 'true' ] && ~/.venv/bin/python3 -c 'import ssl' >/dev/null 2>&1; then exit 0; fi
           rm -rf ~/.venv
-          python3 -m venv ~/.venv
-          ~/.venv/bin/python3 -m pip install --upgrade pip
+          if python3 -c 'import ensurepip' >/dev/null 2>&1; then
+            python3 -m venv ~/.venv
+            ~/.venv/bin/python3 -m pip install --upgrade pip
+          else
+            python3 -m venv --without-pip ~/.venv
+            ~/.venv/bin/python3 -c "import sys, urllib.request; sys.stdout.buffer.write(urllib.request.urlopen('https://bootstrap.pypa.io/get-pip.py').read())" > "$RUNNER_TEMP/get-pip.py"
+            ~/.venv/bin/python3 "$RUNNER_TEMP/get-pip.py"
+          fi
           ~/.venv/bin/python3 -m pip install -e ./mempalace -r packages/lararium-sensorium/requirements.txt
       - name: Witness the holder answers
+        if: ${{ contains(needs.scope.outputs.cells, matrix.cell) }}
         id: holder
         run: ~/.venv/bin/python3 -c "import mempalace; print('holder ok')"
       # `pnpm test` reaches the sensorium's two TypeScript tests only. The holder
@@ -418,7 +500,7 @@ jobs:
       # one an operator measures locally. Parallelism lives between cells, each with a tree of its own.
       - name: Run this cell's package suites
         if: ${{ !cancelled() && steps.holder.outcome == 'success' && (matrix.engines == '' || steps.browser.outcome == 'success') }}
-        run: node tools/ci-cells.mjs run-test "${{ matrix.cell }}" --out "$RUNNER_TEMP/cell"
+        run: node tools/ci-cells.mjs run-test "${{ matrix.cell }}" --out "$RUNNER_TEMP/cell" --select "${{ needs.scope.outputs.packages }}"
       - name: Upload this cell's JSON reports (always, even on a red cell)
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -431,16 +513,20 @@ jobs:
 
   test:
     name: Test
-    needs: test-cells
+    needs: [scope, test-cells]
     # Runs whatever the cells answered: a gate skipped by one red cell would read as nothing to report.
-    if: ${{ always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork) }}
+    if: ${{ always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork) && !(github.event_name == 'push' && (needs.scope.outputs.canon == 'true')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Read the Node floor (package.json engines.node)
+        id: node
+        # The floor major of package.json `engines.node`; setup-node would take the newest release of a `>=` range.
+        run: echo "major=$(node -p "/\\d+/.exec(require('./package.json').engines.node)[0]")" >> "$GITHUB_OUTPUT"
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: ${{ steps.node.outputs.major }}
       - name: Download every cell's reports (one subdirectory per cell)
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
@@ -449,7 +535,7 @@ jobs:
         continue-on-error: true
       - name: Gate — fails closed on any missing, empty, red or unexpected cell
         if: always()
-        run: node tools/ci-cells.mjs verify-tests --artifacts-dir artifacts
+        run: node tools/ci-cells.mjs verify-tests --artifacts-dir artifacts --select "${{ needs.scope.outputs.packages }}"
       - name: Gate — every cell job itself succeeded
         if: always()
         env:
@@ -485,7 +571,8 @@ jobs:
   # them and fails closed on any missing, red or unexpected cell log.
   witness-cells:
     name: Witness cell ${{ matrix.cell }}
-    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork }}
+    needs: scope
+    if: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork) && !(github.event_name == 'push' && (needs.scope.outputs.canon == 'true' || needs.scope.outputs.witnesses == 'false')) }}
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     strategy:
@@ -501,11 +588,13 @@ jobs:
           # artifact the repo never had a chance to produce.
           submodules: recursive
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
-        with:
-          version: ${{ env.PNPM_VERSION }}
+      - name: Read the Node floor (package.json engines.node)
+        id: node
+        # The floor major of package.json `engines.node`; setup-node would take the newest release of a `>=` range.
+        run: echo "major=$(node -p "/\\d+/.exec(require('./package.json').engines.node)[0]")" >> "$GITHUB_OUTPUT"
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: ${{ steps.node.outputs.major }}
           cache: pnpm
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
@@ -563,15 +652,19 @@ jobs:
 
   witnesses:
     name: Witnesses
-    needs: [quick, witness-cells]
-    if: ${{ always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork) }}
+    needs: [scope, quick, witness-cells]
+    if: ${{ always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork) && !(github.event_name == 'push' && (needs.scope.outputs.canon == 'true' || needs.scope.outputs.witnesses == 'false')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Read the Node floor (package.json engines.node)
+        id: node
+        # The floor major of package.json `engines.node`; setup-node would take the newest release of a `>=` range.
+        run: echo "major=$(node -p "/\\d+/.exec(require('./package.json').engines.node)[0]")" >> "$GITHUB_OUTPUT"
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: ${{ steps.node.outputs.major }}
       - name: Download every cell's log (one subdirectory per cell)
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
@@ -618,6 +711,11 @@ jobs:
   # The called jobs read on the run as `E2E / Shard <set> <k>/<n>` and `E2E / Merge shard reports`.
   e2e:
     name: E2E
-    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork }}
+    # `!cancelled()` keeps the required `E2E / Merge shard reports` standing when the scope read itself fails: the doorstep
+    # input then reads code, and the shards answer (a lane still answers on its doorstep).
+    needs: scope
+    if: ${{ !cancelled() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork) }}
     uses: ./.github/workflows/e2e-shards.yml
+    with:
+      doorstep: ${{ (github.event_name == 'push' && (startsWith(github.ref, 'refs/heads/develop--') || startsWith(github.ref, 'refs/heads/lane/') || needs.scope.outputs.canon == 'true')) }}
 

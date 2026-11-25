@@ -2,7 +2,7 @@
  * swarm-tiddlers — the swarm's live controls as signed records in the daemon wiki: the titles, the `swarm-act` signing domain, the
  * share sum law, a lei that binds branch and head and is spent once, and a verify-on-read that fails closed.
  *
- * Each record names who may sign it: the face's hand (lei), the vessel as witness (roster, receipt, a lei's spend), the lead under its
+ * Each record names who may sign it: the face's hand (lei), the vessel as witness (roster, a lei's spend), the lead under its
  * own seat name (lane state). A record that fails any check reads as ABSENT for the caller's purpose, never as a softer grant.
  * Every red pairs with a CONTROL. Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
@@ -11,8 +11,8 @@ import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "../src/ed255
 import { PROMOTE_ACT_DOMAIN, SWARM_ACT_DOMAIN } from "../src/domains.js";
 import { canonicalJsonBytes } from "../src/crypto.js";
 import {
-  SwarmRefused, putSwarmAct, readLei, readSwarmRecord, signSwarmAct, returnLei, swarmActCid, swarmCapRefusal, swarmLeiNarrowedTitle, swarmLeiRecordTitle, swarmLeiReturnedTitle, swarmLeiTitle, swarmHouseCapTitle,
-  swarmLaneStateTitle, swarmReceiptTitle, swarmRecordFields, swarmRosterTitle, swarmShareRefusal, swarmShareTitle, SWARM_URI_PREFIX,
+  SwarmRefused, putSwarmAct, readLei, readSwarmRecord, signSwarmAct, returnLei, swarmActCid, swarmCapRefusal, swarmLeiRecordTitle, swarmLeiReturnedTitle, swarmLeiTitle, swarmHouseCapTitle,
+  swarmLaneStateTitle, swarmRecordFields, swarmRosterTitle, swarmShareRefusal, swarmShareTitle, SWARM_URI_PREFIX,
   type SwarmWikiPort,
 } from "../src/swarm-tiddlers.js";
 
@@ -37,7 +37,7 @@ async function fixture() {
 
 describe("the titles and the signing domain", () => {
   test("RED: every title rests under the swarm prefix, a name escapes as one segment, and the signing domain is its own minted name; CONTROL: a dot name refuses", () => {
-    for (const t of [swarmHouseCapTitle(), swarmShareTitle("lane-a"), swarmLeiTitle("push", "feature/x"), swarmLaneStateTitle("lane-a"), swarmRosterTitle("seat-1"), swarmReceiptTitle(TREE), swarmLeiReturnedTitle("c".repeat(64), 1)]) expect(t.startsWith(SWARM_URI_PREFIX), t).toBe(true);
+    for (const t of [swarmHouseCapTitle(), swarmShareTitle("lane-a"), swarmLeiTitle("push", "feature/x"), swarmLaneStateTitle("lane-a"), swarmRosterTitle("seat-1"), swarmLeiReturnedTitle("c".repeat(64), 1)]) expect(t.startsWith(SWARM_URI_PREFIX), t).toBe(true);
     expect(swarmLeiTitle("push", "feature/x")).toBe("$:/lares/swarm/lei/push/feature%2Fx");
     expect(swarmShareTitle("lane-a")).toBe("$:/lares/swarm/lane/lane-a/share");
     expect(SWARM_ACT_DOMAIN).not.toBe(PROMOTE_ACT_DOMAIN);
@@ -72,13 +72,12 @@ describe("the sum law", () => {
 });
 
 describe("verify-on-read fails closed", () => {
-  test("CONTROL: a hand-signed lei, a vessel-signed roster and receipt, and a lead-signed lane state each read", async () => {
+  test("CONTROL: a hand-signed lei, a vessel-signed roster and a lead-signed lane state each read", async () => {
     const f = await fixture();
     const lei = await signSwarmAct({ act: "lei", ...f.leiBody() }, f.hand);
     const roster = await signSwarmAct({ act: "roster", group: GROUP, seat: "seat-1", model: "gpt-5.3-codex", mode: "build", reading: 10, ceiling: 100, outcome: "running" }, f.vessel);
-    const receipt = await signSwarmAct({ act: "receipt", group: GROUP, tree: TREE, checks: ["typecheck"], verdict: "pass", definitions: "d".repeat(64) }, f.vessel);
     const state = await signSwarmAct({ act: "lane-state", group: GROUP, lane: "lane-a", seat: "lead-a", state: { phase: "build" } }, f.lead);
-    for (const [title, act] of [[swarmLeiRecordTitle("push", "feature/x", swarmActCid(lei)), lei], [swarmRosterTitle("seat-1"), roster], [swarmReceiptTitle(TREE), receipt], [swarmLaneStateTitle("lane-a"), state]] as const) {
+    for (const [title, act] of [[swarmLeiRecordTitle("push", "feature/x", swarmActCid(lei)), lei], [swarmRosterTitle("seat-1"), roster], [swarmLaneStateTitle("lane-a"), state]] as const) {
       await putSwarmAct(f.wiki, title, act);
       expect(await readSwarmRecord(f.wiki, title, f.trust, GROUP), title).toMatchObject({ ok: true });
     }
@@ -92,7 +91,6 @@ describe("verify-on-read fails closed", () => {
       [swarmRosterTitle("lead-a"), await signSwarmAct(roster, f.lead)],
       [swarmLeiRecordTitle("push", "feature/x", swarmActCid(vesselGo)), vesselGo],
       [swarmLaneStateTitle("lane-b"), await signSwarmAct({ act: "lane-state", group: GROUP, lane: "lane-b", seat: "lead-b", state: {} }, f.lead)],
-      [swarmReceiptTitle(TREE), await signSwarmAct({ act: "receipt", group: GROUP, tree: TREE, checks: [], verdict: "pass", definitions: "d".repeat(64) }, f.outsider)],
     ] as const;
     for (const [title, act] of cases) { await putSwarmAct(f.wiki, title, act); expect(await readSwarmRecord(f.wiki, title, f.trust, GROUP), title).toEqual({ ok: false, refusal: "role" }); }
     await putSwarmAct(f.wiki, swarmRosterTitle("lead-a"), await signSwarmAct(roster, f.vessel));
@@ -136,8 +134,6 @@ describe("a lei binds branch and head and is spent once", () => {
   const issue = async (f: Awaited<ReturnType<typeof fixture>>, over: Record<string, unknown> = {}, signer = f.hand): Promise<string> => {
     const lei = await signSwarmAct({ act: "lei", ...f.leiBody(over) }, signer);
     await putSwarmAct(f.wiki, swarmLeiRecordTitle("push", "feature/x", swarmActCid(lei)), lei);
-    // A spend rests on a passing receipt for the head's tree (`lei-reach.test.ts`): one stands beside every lei issued here.
-    await putSwarmAct(f.wiki, swarmReceiptTitle(TREE), await signSwarmAct({ act: "receipt", group: GROUP, tree: TREE, checks: ["typecheck"], verdict: "pass", definitions: "d".repeat(64) }, f.vessel));
     return swarmActCid(lei);
   };
 
@@ -187,7 +183,7 @@ describe("a name escapes no segment (S1 cold read, P2-1)", () => {
   });
 
   test("RED: a one-segment name (lane, seat, tree, a spend cid) refuses a slash and every dot spelling; CONTROL: a plain name stands", () => {
-    for (const make of [swarmShareTitle, swarmLaneStateTitle, swarmRosterTitle, swarmReceiptTitle, (cid: string) => swarmLeiReturnedTitle(cid, 1), swarmLeiNarrowedTitle]) {
+    for (const make of [swarmShareTitle, swarmLaneStateTitle, swarmRosterTitle, (cid: string) => swarmLeiReturnedTitle(cid, 1)]) {
       for (const bad of ["a/b", "..", "%2e%2e", "a%2Fb", "%2F"]) expect(() => make(bad), `${make.name} ${bad}`).toThrow(SwarmRefused);
       expect(make("lane-a").startsWith(SWARM_URI_PREFIX)).toBe(true);
     }

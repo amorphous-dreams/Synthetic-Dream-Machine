@@ -15,6 +15,7 @@
  */
 
 import { stdin, stdout } from "node:process";
+import { ATTEMPT_BUDGET } from "@lararium/mesh";
 
 /** True when we can run an interactive no-echo prompt (a real TTY on both ends). */
 export function canPromptSecret(): boolean {
@@ -117,13 +118,14 @@ const ROUTE_IN_ENV = /^LAR(?:ES)?_\w*(?:PASS|WARD)|PASSPHRASE/i;
  * passphrase-shaped environment variable stands (it reads none) and when stdin is not a TTY (a pipe, a file, a script). The route
  * lives for the act that asked and nothing keeps it.
  */
-export function readWardPassphrase(verb: string, opts: { readonly stream?: TtyStream; readonly env?: NodeJS.ProcessEnv } = {}): Promise<string> {
+export function readWardPassphrase(verb: string, opts: { readonly stream?: TtyStream; readonly env?: NodeJS.ProcessEnv; /** The face whose ward opens; absent, the worn face. */ readonly face?: number } = {}): Promise<string> {
   const env = opts.env ?? process.env;
   const carrier = Object.keys(env).find((k) => ROUTE_IN_ENV.test(k) && typeof env[k] === "string" && env[k]!.length > 0);
   if (carrier !== undefined) return Promise.reject(new WardNeedsTty(verb, `the environment carries \`${carrier}\`, which this door never reads`));
   const stream = opts.stream ?? stdin;
   if (!stream.isTTY) return Promise.reject(new WardNeedsTty(verb, "stdin is not a terminal (a pipe or a file carries nothing a ward reads)"));
-  return promptSecret(`${verb}: the face's passphrase for this one act: `, stream);
+  // THE PROMPT NAMES WHOSE ROUTE IT ASKS: the face by its handle index, or the worn face where the act names none.
+  return promptSecret(`${verb}: ${opts.face !== undefined ? `face h${opts.face}'s` : "the worn face's"} passphrase for this one act: `, stream);
 }
 
 /**
@@ -131,7 +133,7 @@ export function readWardPassphrase(verb: string, opts: { readonly stream?: TtySt
  * mismatch (up to `tries`), then rejects. Empty is refused (the core would refuse anyway; catch it here
  * with a friendly message).
  */
-export async function promptSecretConfirmed(label: string, tries = 3): Promise<string> {
+export async function promptSecretConfirmed(label: string, tries = ATTEMPT_BUDGET): Promise<string> {
   for (let i = 0; i < tries; i++) {
     const a = await promptSecret(`${label}: `);
     if (a.length === 0) { stdout.write("  (empty — try again)\n"); continue; }
@@ -139,5 +141,5 @@ export async function promptSecretConfirmed(label: string, tries = 3): Promise<s
     if (a === b) return a;
     stdout.write("  (entries did not match — try again)\n");
   }
-  throw new Error("passphrase confirmation failed after multiple attempts");
+  throw new Error(`passphrase confirmation failed after ${tries} tries; nothing was bound`);
 }

@@ -5,7 +5,7 @@
  *
  * THE STEWARD IS A SEAT HELD HERE. The first seat of the charter this vessel holds a key for seals the body under the
  * release domain; the AUTHORITY is the approval, which a person opened and carried between vaults beforehand
- * (`lares nexus promote open|sign <manifest-file> --purpose floor-release --surface floor-release --class high-impact`).
+ * (`lares nexus approve open|sign <manifest-file> --purpose floor-release --surface floor-release --class high-impact`).
  * The door verifies the whole release exactly as a reader will, and lands it only where it counts: a short approval
  * lands nothing and the door says how many seats it still wants.
  *
@@ -21,10 +21,11 @@ import { readFileSync } from "node:fs";
 import type { Repo } from "@automerge/automerge-repo";
 import {
   FLOOR_RELEASE_SURFACE, assembleFloorRelease, publicationDocUrl, floorReleaseEntriesFromBoard, foldFloorReleases, materializeSharedLarDoc,
-  openFloorReleaseBody, readPromotionApproval, resolveFloor, sha256HexBytesSync, verifyFloorRelease, writeFloorRelease,
+  floorRequiredBlobIds, openFloorReleaseBody, readPromotionApproval, resolveFloorWhole, sha256HexBytesSync, verifyFloorRelease, writeFloorRelease,
   type FloorRelease, type FloorReleaseStanding, type FloorReleaseRefusal,
 } from "@lararium/mesh";
 import { readNexusDoc } from "../nexus-doc.js";
+import { readGenesisSeed } from "../genesis-artifact.js";
 import { readVerifiedCasBlobFromFs, writeCasEntriesFs } from "../node-cas.js";
 import { loadVesselVerifyingKey } from "../node-vessel-identity.js";
 import { nodeNexusIsland } from "../nexus-standing.js";
@@ -65,9 +66,10 @@ export async function runFloorReleaseStanding(opts: {
 export async function runFloorRelease(opts: {
   readonly repo: Repo; readonly sealHome: string; readonly manifestFile: string; readonly approval: unknown;
   readonly aid?: string; readonly vesselKey?: string;
-  /** This hearth's CAS dir. Present: the manifest is staged there, and the floor it names must stand WHOLE in it (the
-   *  manifest and every snapshot it names, each re-hashed) before a release names it, since the porch serves what this CAS holds. */
-  readonly casDir?: string;
+  /** This hearth's CAS dir. The floor the manifest names must stand WHOLE in it (every snapshot, the plugins offering and each
+   *  blob it carries, each re-hashed) before a release names it, since the porch serves what this CAS holds; the manifest stages
+   *  there once the release counts. Required: no caller lands a release past the whole-floor check. */
+  readonly casDir: string;
 }): Promise<NexusReleaseResult> {
   let manifestBytes: Uint8Array;
   try { manifestBytes = new Uint8Array(readFileSync(opts.manifestFile)); }
@@ -85,9 +87,12 @@ export async function runFloorRelease(opts: {
   const board = await publicationBoard(opts.repo, core, opts.vesselKey);
 
   const manifest = sha256HexBytesSync(manifestBytes);
-  if (opts.casDir !== undefined) {
-    writeCasEntriesFs([{ cid: manifest, bytes: manifestBytes }], opts.casDir);
-    const whole = await resolveFloor(manifest, async (cid) => readVerifiedCasBlobFromFs(cid, opts.casDir!));
+  {
+    // The blobs every mount needs, as the genesis this hearth ships declares them: a release may change the plugins, never drop these.
+    const required = floorRequiredBlobIds(readGenesisSeed()?.blobs);
+    // RESOLVE BEFORE STAGING: the manifest answers from these bytes, everything else from the CAS; the manifest stages only once
+    // the release counts, beside the row. A refused release writes nothing.
+    const whole = await resolveFloorWhole(manifest, async (cid) => (cid === manifest ? manifestBytes : readVerifiedCasBlobFromFs(cid, opts.casDir)), { required });
     if ("refusal" in whole) throw new NexusCabalError(`the floor this manifest names does not stand whole in this hearth's CAS, so no release names it: ${whole.refusal} (${whole.reason}).`);
   }
   // THE PRIOR is the head of the chain the rows' own bodies spell: the release no other row names as its prior. This
@@ -112,13 +117,14 @@ export async function runFloorRelease(opts: {
   if (!verdict.ok) {
     throw new NexusCabalError(`the release counts nothing here: ${describe(verdict.reason)}`);
   }
+  writeCasEntriesFs([{ cid: manifest, bytes: manifestBytes }], opts.casDir);
   board.change((draft) => writeFloorRelease(draft, release));
   return { nexus: core.nexus, release, counted: verdict.counted, threshold: verdict.threshold };
 }
 
 function describe(reason: FloorReleaseRefusal): string {
   switch (reason) {
-    case "approval-below-class-threshold": return "the approval is short of the seats the high-impact bar takes; carry it to the next vault (`lares nexus promote sign`).";
+    case "approval-below-class-threshold": return "the approval is short of the seats the high-impact bar takes; carry it to the next vault (`lares nexus approve sign`).";
     case "approval-bytes-differ":          return "the approval covers other bytes than this manifest file.";
     case "approval-class-below-surface":   return "the approval stands below the high-impact bar a release takes (the chartered classes hold the surface there).";
     case "approval-wrong-charter-epoch":   return "the approval was signed at another charter epoch than this vessel's head; open a fresh one.";

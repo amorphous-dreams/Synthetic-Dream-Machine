@@ -64,6 +64,7 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
 
+import { routingString } from "./routing-arg.js";
 import { takeWardTicket, type WardCredential } from "./ward-credential.js";
 import { WardRefused, CanonOfferRefused, type FloorRemount } from "@lararium/mesh";
 
@@ -87,12 +88,12 @@ import { unlockedFaceOrdinals } from "./custody-seat.js";
 import { runPromoteVerb } from "./commands/promote.js";
 import { runSwarmVerb } from "./commands/swarm.js";
 import { runRiteVerb, type RiteAction } from "./commands/rite.js";
-import { PromoteRefused, KapaeRefused, SwarmRefused, SWARM_VERB_HAND_CODES, type PromoteCommandRequest, type SwarmWikiPort } from "@lararium/mesh";
+import { PromoteRefused, KapaeRefused, SwarmRefused, SWARM_VERB_HAND_CODES, SENSE_HAND_CODES, type PromoteCommandRequest, type SwarmWikiPort } from "@lararium/mesh";
 import { faceRouteBindDigest, FaceRouteRefused, withFaceRoute } from "./face-route.js";
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
 import type { LarDoc } from "@lararium/mesh";
 import { randomBytes } from "node:crypto";
-import type { VerbReactor } from "@lararium/tw5";
+import { hasLine, pagePlaneRows, param, type VerbReactor } from "@lararium/tw5";
 import type { HandleClaim } from "@lararium/mesh";
 import { federationPostureFromDoc, isVerbRefusal, readNexusActPartial, type FederationPosture, type CarriageAction, type KahuQuorumSeats, type SealEpoch } from "@lararium/mesh";
 import { runCabalAct, runCabalCosign, runCabalStanding, NexusCabalError } from "./commands/nexus-cabal.js";
@@ -105,7 +106,7 @@ import { runNexusKapae, runNexusKapaeList, runNexusKapaeOpen, runNexusKapaeParti
 import { runNexusContract, runNexusContractOpen, runNexusContractPartial, runNexusRollAnchor, runNexusRollAnchorOpen, runNexusRollAnchorPartial, runEdgeRollAnchorOpen, runEdgeRollAnchorPartial, runEdgeRollAnchorStanding, runNexusRollPriorAnchorCheck, runNexusMembersList, NexusContractError } from "./commands/nexus-contract.js";
 import { runEdgeKapae, EdgeKapaeError } from "./commands/edge-kapae-cmd.js";
 import { runPersonaLease, PersonaLeaseError } from "./commands/persona-lease.js";
-import { runIntentCommand, IntentRefused, type IntentCommandOptions } from "./commands/intent.js";
+import { runIntentCommand, runKeeperCosign, IntentRefused, type IntentCommandOptions } from "./commands/intent.js";
 import { runIntentRelayCommand } from "./commands/intent-relay.js";
 import { runKahuaCommand, KahuaRefused, type KahuaAction } from "./commands/kahua.js";
 import { FaceNotNamed, faceVerbArgs } from "./face-selector.js";
@@ -175,6 +176,12 @@ export interface StoreDoorDeps {
    */
   readonly mountFace?: () => number | null;
   /**
+   * The relation this composition PROVED a lit face under, by handle index (the worn face's and every lit sibling's), else null.
+   * A face's stage read names it beside the stage, so a lit face the stage cannot read (a non-worn face whose fold will not load)
+   * still names the relation its root carries, and its stage reads `unread` with the cause. Absent on a direct act.
+   */
+  readonly litRelation?: (face: number) => string | null;
+  /**
    * Raise the reboot-pending alert in every live wiki after a floor accept (`@lararium/mesh` `raiseFloorAlert`); answers the
    * wikis it reached. Absent on a direct act, which holds no live wiki: the accepted floor mounts at the next boot.
    */
@@ -218,7 +225,7 @@ export const STORE_DOOR_VERBS = [
   "kahua-mint", "kahua-propose", "kahua-stage", "kahua-lift", "kahua-withdraw", "kahua-carry", "kahua-read",
   "promote-prepare", "promote-commit", "promote-drop", "promote-orphan", "promote-list", "kapae-raise", "kapae-lower", "kapae-flag",
   "swarm-show", "swarm-cap-set", "swarm-share-set", "swarm-lei-kui", "swarm-lei-unstring", "swarm-lei-restring",
-  "rite-begin", "rite-land", "rite-receipts", "rite-receipt", "rite-offer",
+  "rite-begin", "rite-land", "rite-receipts", "rite-offer",
 ] as const;
 export type StoreDoorVerb = (typeof STORE_DOOR_VERBS)[number];
 
@@ -229,7 +236,7 @@ export type StoreDoorVerb = (typeof STORE_DOOR_VERBS)[number];
  * none, the command resolves the one face standing open. A row that reads a face acts as that face, wherever it sits
  * (the relay rows that enable, disable or read one face's relay). Every other row acts as the place: the Nexus
  * steward's seat acts, the place's key-side duties, a face's founding, the relay key's rotation, the refold, and reads
- * of what the place holds.
+ * of what the place holds, and a rite's receipt, which the place signs over a tree.
  */
 export const STORE_DOOR_FACE_VERBS: ReadonlySet<StoreDoorVerb> = new Set<StoreDoorVerb>([
   "edge-kapae", "edge-partial", "edge-cosign", "cabal-vouch", "cabal-join", "cabal-face", "cabal-feed",
@@ -240,7 +247,7 @@ export const STORE_DOOR_FACE_VERBS: ReadonlySet<StoreDoorVerb> = new Set<StoreDo
   "kahua-mint", "kahua-propose", "kahua-stage", "kahua-lift", "kahua-withdraw", "kahua-carry", "kahua-read",
   "promote-prepare", "promote-commit", "promote-drop", "promote-orphan", "promote-list", "kapae-raise", "kapae-lower", "kapae-flag",
   "swarm-show", "swarm-cap-set", "swarm-share-set", "swarm-lei-kui", "swarm-lei-unstring", "swarm-lei-restring",
-  "rite-begin", "rite-land", "rite-receipts", "rite-receipt", "rite-offer",
+  "rite-begin", "rite-land", "rite-receipts", "rite-offer",
 ]);
 
 /**
@@ -261,8 +268,33 @@ export const SWARM_HAND_CODES: ReadonlyMap<string, string> = new Map(Object.entr
 /** The floor's accept moves the vessel's floor: a person's act alone (w26-floor-lane#/the-vessel-pin); a seat reads the status. */
 export const FLOOR_HAND_CODES: ReadonlyMap<string, string> = new Map([["floor-accept", "floor-needs-hand"]]);
 
-/** The socket's one hand-only table: every code a seat session refuses, promote, swarm and floor together. */
-export const STORE_DOOR_HAND_CODES: ReadonlyMap<string, string> = new Map([...PROMOTE_HAND_CODES, ...SWARM_HAND_CODES, ...FLOOR_HAND_CODES]);
+/**
+ * The daemon island's wiki verbs a person's hand alone runs: `retire-wiki` unmints a face's wiki shell. It rides a session's
+ * `session:call` (an island verb, never a face row), so the socket refuses a seat's call by this code, and the island's own
+ * reactor refuses any asker that is not a hand (`retire-needs-hand`).
+ */
+export const WIKI_HAND_CODES: ReadonlyMap<string, string> = new Map([
+  ["retire-wiki", "retire-needs-hand"],
+  // THE SHARE ROWS ARE A PERSON'S ACT (sealed-store#/the-share-config): `share-set` writes who reads and writes a bag, and `share-apply`
+  // seats faces and hands each a lockbox under the owner's session, so no agent surface reaches either.
+  ["share-set", "share-needs-hand"], ["share-apply", "share-needs-hand"],
+]);
+
+/**
+ * The sense lifecycle's hand verbs (`promote`, `retire`, `un-retire`, `purge`): island verbs a session's `session:call` carries,
+ * so the socket refuses a seat's call by this code, and the island's own reactor refuses any asker but a terminal's
+ * (`sense-needs-hand`, hitl-reads-a-hand).
+ */
+export const SENSE_HAND_DOOR_CODES: ReadonlyMap<string, string> = new Map(Object.entries(SENSE_HAND_CODES));
+
+/**
+ * The vessel verbs that write the operator's disk a person's hand alone runs: `wiki-render-out` lands derived bytes in a bound
+ * workbench (a disk write grant), so the socket refuses a seat's ask by this code, on a session and on a one-shot line alike.
+ */
+export const DISK_WRITE_HAND_CODES: ReadonlyMap<string, string> = new Map([["wiki-render-out", "render-output-needs-hand"]]);
+
+/** The socket's one hand-only table: every code a seat session refuses, promote, swarm, floor, wiki, sense and disk writes together. */
+export const STORE_DOOR_HAND_CODES: ReadonlyMap<string, string> = new Map([...PROMOTE_HAND_CODES, ...SWARM_HAND_CODES, ...FLOOR_HAND_CODES, ...WIKI_HAND_CODES, ...SENSE_HAND_DOOR_CODES, ...DISK_WRITE_HAND_CODES]);
 /** The acts a seat session refuses at the socket: the kahua operator rows (`beyond-profile`) and every row of the code table. */
 export const STORE_DOOR_HAND_ONLY_ACTS: ReadonlySet<string> = new Set([...KAHUA_OPERATOR_VERBS, ...STORE_DOOR_HAND_CODES.keys()]);
 
@@ -319,6 +351,14 @@ function relayFace(args: Readonly<Record<string, unknown>>): { face?: number } {
 /** The name a row's refusal answers under: the row's own verb, so no two doors share one word for "refused". */
 export const storeRefusalName = (verb: string): string => `${verb}-refused`;
 
+/**
+ * The name a row's swarm refusal answers under: a rite row carries the refusal's own code (`rite-begun-stands`,
+ * `rite-tree-unreadable`), so the CLI's JSON names what refused; a store with no daemon, and every other row,
+ * answers under the row's own name.
+ */
+export const rowRefusalName = (verb: string, err: SwarmRefused): string =>
+  verb.startsWith("rite-") && err.code !== "swarm-no-daemon" ? err.code : storeRefusalName(verb);
+
 /** Run a row, answering a refusal as `{ refused, refusal }`: the door's words, and the name it refuses under. */
 async function answer(verb: string, run: () => Promise<Record<string, unknown>>): Promise<Record<string, unknown>> {
   try { return { verb, ...(await run()) }; }
@@ -326,6 +366,7 @@ async function answer(verb: string, run: () => Promise<Record<string, unknown>>)
     if (err instanceof FaceRouteRefused) return { verb, refused: err.message, refusal: "face-route-refused" };
     // A floor door's refusal carries its own name (`floor-no-charter`, `floor-cut-thin`): the row answers under it, never the verb's.
     if (err instanceof FloorRefused) return { verb, refused: err.message, refusal: err.refusal };
+    if (err instanceof SwarmRefused) return { verb, refused: err.message, refusal: rowRefusalName(verb, err) };
     if (REFUSALS.some((R) => err instanceof R)) return { verb, refused: (err as Error).message, refusal: storeRefusalName(verb) };
     throw err;
   }
@@ -396,7 +437,6 @@ function storeDoorVerbsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     "rite-begin": (args) => answer("rite-begin", () => riteVerb("begin", args)),
     "rite-land": (args) => answer("rite-land", () => riteVerb("land", args)),
     "rite-receipts": (args) => answer("rite-receipts", () => riteVerb("receipts", args)),
-    "rite-receipt": (args) => answer("rite-receipt", () => riteVerb("receipt", args)),
     "rite-offer": (args) => answer("rite-offer", () => riteVerb("offer", args)),
     "swarm-show": (args) => answer("swarm-show", () => swarmVerb("show", args)),
     "swarm-cap-set": (args) => answer("swarm-cap-set", () => swarmVerb("cap-set", args)),
@@ -423,16 +463,43 @@ function storeDoorVerbsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     "kahua-withdraw": (args) => answer("kahua-withdraw", () => kahua("withdraw", args)),
     "kahua-carry": (args) => answer("kahua-carry", () => kahua("carry", args)),
     "kahua-read": (args) => answer("kahua-read", async () => {
-      const read = await kahua(args["action"] === "get" ? "get" : args["action"] === "staged" ? "staged" : "list", args);
+      const action = args["action"] === "get" ? "get" : args["action"] === "staged" ? "staged" : "list";
+      const face = int(args["face"]);
+      // A LIT FACE NAMES ITS RELATION: the composition proved it lit under that relation, so a list the stage cannot answer (a
+      // non-worn face whose fold will not load here) still names it, and marks the stage `unread` with the cause; a reader
+      // that maps faces to roots (the keep's bundle) claims the root and leaves the stage behind by name, never the root.
+      const proved = action === "list" && face !== undefined ? deps.litRelation?.(face) ?? null : null;
+      let read: Record<string, unknown>;
+      try {
+        read = await kahua(action, args);
+        if (proved !== null && read["relation"] == null) read = { ...read, relation: proved };
+      } catch (e) {
+        if (proved === null || !REFUSALS.some((R) => e instanceof R)) throw e;
+        read = { items: [], relation: proved, stage: "unread", unread: (e as Error).message };
+      }
       // THE DAEMON MOUNT, named as such: the read answers the face it names, and beside it the one face the daemon island
       // mounts (`mount`) and whether this face stands as it (`mounted`); the daemon's working layer holds the mount's document.
-      const face = int(args["face"]);
       const mount = deps.mountFace?.() ?? null;
-      return deps.mountFace && face !== undefined ? { ...read, mount, mounted: mount === face } : read;
+      const sight = deps.mountFace && face !== undefined ? { ...read, mount, mounted: mount === face } : read;
+      if (args["action"] === "staged") return sight;
+      if (args["action"] === "get") {
+        const title = routingString(args, "title", "kahua-read");
+        return { has: hasLine(title, [param("source", "kahua-stage"), param("grain", "item"), param("verified", true)]), ...sight,
+          source: "kahua-stage", grain: "item",
+          ...(sight["item"] !== null && sight["item"] !== undefined ? { nextOperation: `lares kahua get ${JSON.stringify(title)} --history` } : {}) };
+      }
+      const items = Array.isArray(read["items"]) ? read["items"] : [];
+      const page = pagePlaneRows(items, str(args["after"]), int(args["limit"]));
+      return { has: hasLine("kahua", [param("source", "kahua-stage"), param("grain", "list"), param("count", page.count)]), ...sight,
+        items: page.rows, source: "kahua-stage", grain: "list", count: page.count, next: page.next };
     }),
     "intent-issue": (args) => answer("intent-issue", () => intent("issue", args)),
     "intent-show": (args) => answer("intent-show", () => intent(args["action"] === "delegations" ? "delegations" : "show", args)),
-    "intent-ask": (args) => answer("intent-ask", () => intent("ask", args)),
+    // THE KEEPER VEST'S CO-SIGN rides the ask door: it issues (or reads back) one ward ask over a keeper commit.
+    "intent-ask": (args) => answer("intent-ask", () => args["action"] === "keeper-cosign"
+      ? runKeeperCosign({ repo, ...opt("catalogUrl", deps.catalogUrl), ...opt("face", int(args["face"])), next: String(args["next"] ?? ""),
+        prev: args["prev"] === "none" ? null : String(args["prev"] ?? ""), nonce: String(args["nonce"] ?? "") })
+      : intent("ask", args)),
     "intent-answer": (args) => answer("intent-answer", () => intent("answer", args)),
     "intent-steer": (args) => answer("intent-steer", () => {
       const action = args["action"];
@@ -593,7 +660,7 @@ function storeDoorVerbsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     // THE VESSEL'S FLOOR PIN (w26-floor-lane#/the-vessel-pin): one pin per (vessel, Nexus) in the control home, moved only by
     // the accept, which walks `prior` from the pin. Both rows answer the mesh's own decision; a refusal rides as data.
     "floor-status": (args) => answer("floor-status", async () => ({
-      ...(await runFloorStatus({ repo, sealHome, casDir: deps.casDir ?? casDirForStorage(storageDir), ...opt("aid", str(args["aid"])), ...opt("porch", str(args["porch"])) })),
+      ...(await runFloorStatus({ repo, sealHome, casDir: deps.casDir ?? casDirForStorage(storageDir), storageDir, ...opt("aid", str(args["aid"])), ...opt("porch", str(args["porch"])), ...opt("catalogUrl", deps.catalogUrl) })),
     })),
     "floor-accept": (args) => answer("floor-accept", async () => ({
       ...(await runFloorAccept({

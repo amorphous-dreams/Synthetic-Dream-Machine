@@ -65,6 +65,7 @@ const SOH_CODE_PARAM_RE = new RegExp(`^<<\\^[^>\\n]*?\\bcode=\\s*\`&#x(${frameHe
 import { parseTaploFields } from "./toml-ast.js";
 import { CARRIER_TYPE, CARRIER_TYPES, isCarrierType } from "@lararium/mesh/carrier-type";
 import { HANDLE_ONLY_FIELDS } from "@lararium/mesh/content-handle";
+import { parseTitleList, TITLE_LIST_FIELDS } from "@lararium/mesh/carrier-form";
 
 import { getGrammar, resetGrammar } from "./grammar-cache.js";
 export type { GrammarRules } from "./meme-ast/types.js";
@@ -835,7 +836,11 @@ function fmtTomlValue(v: string | string[]): string {
     ).join(", ") + "]";
   }
   const s = String(v);
-  if (/^-?\d+$/.test(s) || s === "true" || s === "false") return s;
+  // BARE ONLY WHEN IT READS BACK. A string writes bare only where TOML reads the bare lexeme back to
+  // the same string: a TOML integer (no leading zero, no `-0`) inside the safe-integer range. `0310`
+  // written bare breaks the whole block on the next read; `-0` and a run past 2^53 read back respelled.
+  if (/^(?:0|-?[1-9]\d*)$/.test(s) && Number.isSafeInteger(Number(s))) return s;
+  if (s === "true" || s === "false") return s;
   return '"' + s.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "\\n").replace(/\r/g, "\\r") + '"';
 }
 
@@ -874,10 +879,30 @@ function sameFieldValue(a: TiddlerFields[string] | undefined, b: TiddlerFields[s
   return a === b;
 }
 
+/**
+ * ONE FORM FOR A TITLE LIST. The store holds `tags` as TiddlyWiki's title-list string (`a [[b c]]`), the engine as an
+ * array; the projector recomposes from the one and the meme door from the other. Both read here, so the field lands as
+ * the array before it renders, and the carrier writes it as one TOML array (one string per title, `[[…]]` never written):
+ * the form every committed carrier holds, and the one a title holding a space survives whole in.
+ */
+function listFieldsAsArrays(fields: TiddlerFields): TiddlerFields {
+  let out: TiddlerFields | undefined;
+  for (const k of TITLE_LIST_FIELDS) {
+    const v = fields[k];
+    if (typeof v !== "string") continue;
+    out ??= { ...fields };
+    out[k] = [...(parseTitleList(v) ?? [])];
+  }
+  return out ?? fields;
+}
+
 // `parentFields`, when present, drives child INHERITANCE: a child writes a field ONLY when it
 // DIFFERS from the parent's (or the parent lacks it). A field that matches the parent floats down
 // silently — the author sees it once, at the level that set it, never re-stamped on every fragment.
-function emitMetaToml(fields: TiddlerFields, deny: ReadonlySet<string>, parentFields?: TiddlerFields): string {
+// Both sides read their title lists as arrays first, so a store-shaped child matches an engine-shaped parent.
+function emitMetaToml(raw: TiddlerFields, deny: ReadonlySet<string>, rawParent?: TiddlerFields): string {
+  const fields = listFieldsAsArrays(raw);
+  const parentFields = rawParent && listFieldsAsArrays(rawParent);
   const keys = Object.keys(fields).sort().filter((k) => {
     if (deny.has(k) || k.charAt(0) === "$") return false;
     const v = fields[k];

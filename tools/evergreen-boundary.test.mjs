@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { scanText, scanAll, scanTestText, scanUpgradeText, scanCanonText, scanCanonDatedText, scanConfigText, isConfigFile, blindClasses, classify, RULES, EXCEPTIONS, CEILINGS } from "./evergreen-boundary.mjs";
+import { scanText, scanAll, scanTestText, scanUpgradeText, scanCanonText, scanCanonDatedText, scanCanonMetaText, scanConfigText, isConfigFile, blindClasses, classify, RULES, EXCEPTIONS, CEILINGS } from "./evergreen-boundary.mjs";
 
 const repo = fileURLToPath(new URL("../", import.meta.url));
 const cli = join(repo, "tools/evergreen-boundary.mjs");
@@ -16,7 +16,7 @@ function fixture(files, extra = []) {
       mkdirSync(join(root, rel, ".."), { recursive: true });
       writeFileSync(join(root, rel), body);
     }
-    return spawnSync(process.execPath, [cli, "--root", root, "--ceilings", "version=0,clock=0,narration=0,old-shape=0,retired-test=0,upgrade-delete=0,canon-history=0,canon-dated-history=0", "--no-exceptions", ...extra], { encoding: "utf8" });
+    return spawnSync(process.execPath, [cli, "--root", root, "--ceilings", "version=0,clock=0,narration=0,old-shape=0,retired-test=0,upgrade-delete=0,canon-history=0,canon-dated-history=0,canon-dated-meta=0", "--no-exceptions", ...extra], { encoding: "utf8" });
   } finally { rmSync(root, { recursive: true, force: true }); }
 }
 const one = (body) => fixture({ "packages/example/src/a.ts": body });
@@ -72,10 +72,33 @@ test("E1d old-shape: a reading or comment that names an earlier shape reads; a p
     const red = one(body); assert.equal(red.status, 1); assert.match(red.stdout, /old-shape +packages\/example\/src\/a\.ts:1/);
   }
   const lawful = [
-    '// tombstone: the aside path map alone holds a pack\'s prior shape.',
+    '// tombstone: the aside path map alone holds a pack\'s prior membership.',
     '// the previous frame\'s posterior is this frame\'s prior.',
     '// A source already gone (a re-entered founding recovered its seed from an earlier group row) keeps the destination.',
     'const shape = "torn";',
+  ].join("\n");
+  assert.equal(scanText("a.ts", lawful).filter(f => f.rule === "old-shape").length, 0);
+  const green = one(lawful); assert.equal(green.status, 0, green.stdout + green.stderr);
+});
+
+test("E1e old-shape: a comment or reading that carries a shape forward reads, one planted line per word; a present order of acts does not", () => {
+  for (const body of [
+    '// A roster of bare indices predates the ward: it refuses by name.',
+    'const why = "this doc predates the veil-born founding";',
+    '// The reader keeps the prior shape of the row beside the new one.',
+    '// A pre-face-root store names its face at the top of the record.',
+    'const cure = "this face was founded before the secret minted, and re-founds";',
+    '/** The ward-key row from before the key moved under its own ward: the next ask sweeps it. */',
+  ]) {
+    assert.equal(scanText("a.ts", body).filter(f => f.rule === "old-shape").length, 1, body);
+    const red = one(body); assert.equal(red.status, 1, body); assert.match(red.stdout, /old-shape +packages\/example\/src\/a\.ts:1/);
+  }
+  const lawful = [
+    '// The last fold may precede the very act that set this one off.',
+    '// A founding checkpoint rests before the Repo reads a byte of it.',
+    '// The seat returns and receives no key minted while it stood away.',
+    'const predator = "the wordlist keeps its own words";',
+    '// The face founds, and before the ward binds its route reads twice.',
   ].join("\n");
   assert.equal(scanText("a.ts", lawful).filter(f => f.rule === "old-shape").length, 0);
   const green = one(lawful); assert.equal(green.status, 0, green.stdout + green.stderr);
@@ -111,6 +134,17 @@ test("E6 numbered formats and numeric version fields read; string version does n
   }
   assert.equal(scanText("a.ts", 'const record = { version: "1.2.3" };').length, 0);
   assert.equal(scanText("a.ts", 'const url = "https://example.org/version";').length, 0);
+});
+test("E6b a minted tag that ends in a bare number reads; paths, urls, dates and ratios do not", () => {
+  for (const body of ['export const FACE_LABEL_SCHEMA = "lar-face-label/1";', "const KAHUA_PENDING_SCHEMA = 'lar-kahua-pending/1';",
+    'emit({ schema: "lar-carry-census/12" });', "const tag = `lararium-seed/3`;"]) {
+    assert.equal(scanText("a.ts", body).filter(f => f.rule === "version").length, 1, body);
+  }
+  for (const body of ['const schema = "lar-face-label";', 'const url = "https://example.org/lar-face/1";', 'const file = "a/b/1";',
+    'const rel = "fixtures/case/2";', 'const day = "2026/11/18";', 'const ratio = "1/2";', 'const aspect = "16/9";', 'const http = "HTTP/1";',
+    'const route = "/api/items/1";', 'const glob = "**/1";', 'const label = "page 3/4";']) {
+    assert.equal(scanText("a.ts", body).filter(f => f.rule === "version").length, 0, body);
+  }
 });
 test("E7 stale and empty-reason exceptions fail classification", () => {
   const findings = scanText("a.ts", "schemaVersion: 1");
@@ -149,7 +183,7 @@ test("E9 real corpus holds under its ceilings, each rule reads a known positive,
   }
   assert.ok(total > 0 || RULES.every(rule => CEILINGS[rule] === 0), "the tree read no debt under standing ceilings");
   // Each new class reads a known positive in the real tree too, while its ceiling stands above zero.
-  for (const rule of ["retired-test", "upgrade-delete", "canon-history", "canon-dated-history"]) {
+  for (const rule of ["retired-test", "upgrade-delete", "canon-history", "canon-dated-history", "canon-dated-meta"]) {
     const [, open] = r.stdout.match(new RegExp(`${rule} (\\d+)/`)) ?? [];
     assert.ok(Number(open) > 0 || CEILINGS[rule] === 0, `${rule} read nothing under a standing ceiling`);
   }
@@ -200,8 +234,8 @@ test("E13 canon-history: a history word in live canon reads; present canon and a
   assert.equal(record.status, 0, record.stdout + record.stderr);
 });
 test("E14 a class whose corpus holds no file reads blind", () => {
-  assert.deepEqual(blindClasses(["tools/a.mjs", "packages/x/src/a.ts"]), ["retired-test", "canon-history", "canon-dated-history"]);
-  assert.deepEqual(blindClasses([]), ["old-shape", "retired-test", "upgrade-delete", "canon-history", "canon-dated-history"]);
+  assert.deepEqual(blindClasses(["tools/a.mjs", "packages/x/src/a.ts"]), ["retired-test", "canon-history", "canon-dated-history", "canon-dated-meta"]);
+  assert.deepEqual(blindClasses([]), ["old-shape", "retired-test", "upgrade-delete", "canon-history", "canon-dated-history", "canon-dated-meta"]);
   assert.deepEqual(blindClasses(["packages/x/tests/a.test.ts", "packages/x/src/a.ts", "bags/lares/ha.ka.ba/lares/api/a.mem"]), []);
 });
 test("E15 a comment that names its lane, wave or slice is narration; the lowercase domain words are not", () => {
@@ -246,4 +280,21 @@ test("E17 canon-dated-history: a history verb beside an ISO date reads in live c
   const c = canon("The identity model stands RULED (operator, 2026-06-24).\n"); assert.equal(c.status, 0, c.stdout + c.stderr); assert.match(c.stdout, /canon-dated-history 0\/0/);
   const record = fixture({ "bags/lares/ha.ka.ba/lares/docs/pono/a.mem": "The engine landed 2026-07-02.\n", "tools/a.mjs": "const x = 1;" });
   assert.equal(record.status, 0, record.stdout + record.stderr);
+});
+test("E18 canon-dated-meta: an authored date key in a live canon meta reads; a ruling dated in the body and a record carrier's dated meta do not", () => {
+  const meta = (line) => "<<^ code=`&#x0002;`>>\n\n```toml meta\ntitle = \"lar:///ha.ka.ba/lares/api/pono/a\"\n" + line + "\n```\n\nBody.\n";
+  for (const line of ['written = "2026-06-12"', 'status-date = "2026-09-08"', 'revised-on = "2026-10-01"', 'date = "x"', 'proposed-on = "2026-11-01"', 'created = "2026-05-01"', 'revision-note = "minted"', 'role = "the plane, cut 2026-06-06"', 'status-why = "open until 2026-11"']) {
+    assert.equal(scanCanonMetaText("a.mem", meta(line)).length, 1, line);
+  }
+  const r = canon(meta('written = "2026-06-12"')); assert.equal(r.status, 1); assert.match(r.stdout, /canon-dated-meta +bags\/lares\/ha\.ka\.ba\/lares\/api\/pono\/a\.mem:5/);
+  // CONTROL: a present meta, a ruling line dated in the body, and a docs record's dated meta read nothing.
+  assert.deepEqual(scanCanonMetaText("a.mem", meta('role = "the law holds"') + "Operator ruling 2026-06-12: the law holds.\n"), []);
+  const c = canon(meta('role = "the law holds"')); assert.equal(c.status, 0, c.stdout + c.stderr); assert.match(c.stdout, /canon-dated-meta 0\/0/);
+  const record = fixture({ "bags/lares/ha.ka.ba/lares/docs/pono/a.mem": meta('written = "2026-06-12"'), "tools/a.mjs": "const x = 1;" });
+  assert.equal(record.status, 0, record.stdout + record.stderr);
+});
+test("E19 canon corpus reads the cli surface: a history word in a cli meme reads; a docs record beside it does not", () => {
+  const r = fixture({ "bags/lares/ha.ka.ba/lares/cli/door.mem": "A door.\nThe old name was renamed to the new one.\n" });
+  assert.equal(r.status, 1); assert.match(r.stdout, /canon-history +bags\/lares\/ha\.ka\.ba\/lares\/cli\/door\.mem:2/);
+  const c = fixture({ "bags/lares/ha.ka.ba/lares/cli/door.mem": "A door answers its own name.\n" }); assert.equal(c.status, 0, c.stdout + c.stderr);
 });

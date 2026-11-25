@@ -52,6 +52,7 @@ import { LocalWaitExpired, queryReceipt, type ReceiptAnswer } from "../local-con
 import { verbFailure, refusalCode, refusalHint } from "../verb-call.js";
 import { emit, wantsJson, exitFor } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
+import { cmdDraft } from "./draft.js";
 
 /**
  * A receipt's `done`/`error` reads exactly like `runVerb`'s own resolved result — build that shape
@@ -97,24 +98,35 @@ function addressTitleForLoad(source: string, file: string, toBag: string): strin
   return rel ? `${base}/${rel}` : base;
 }
 
+/** Every ACTION verb the act door answers (INGEST names its own door, `lares ingest`), and REPACK. */
+export const ACT_VERBS: readonly string[] = [...ACTION_VERBS.filter((v) => v !== "INGEST"), "REPACK"];
+
+/** The act door's own account: `lares act --help` prints it, and a refusal ends with it. */
+export function actHelpLines(): string[] {
+  return [
+    "usage: lares act <VERB> [flags...]",
+    "",
+    `  VERB ∈ { ${ACTION_VERBS.join(", ")}, REPACK }`,
+    "",
+    "  ADD / COPY / MOVE  --title <t> --from <bag> --to <bag> [--change-id <id>]",
+    "  MOVE of a layer    --from <bag> --to <bag>   moves every live title the source holds (promotion)",
+    "  MOVE of a tombstone  --title <t> --from <bag> [--to <bag>] [--shadow]",
+    "                     carries the delete down into a bag that holds the title; with no --to the",
+    "                     holders print as candidates; --shadow hides the title from a bag that holds none",
+    "  CLEAR / DROP       --bag <bag> [--change-id <id>]",
+    "  CREATE             --bag <bag> [--plane <catalog|oracle>] [--change-id <id>]",
+    "  LOAD               --source-uri <u> --to <bag> [--change-id <id>]",
+    "  REPACK             --source <bundle-file> --from <bag> [--out <file>]",
+    "  --draft <uri>      pull a tiddler from a lower bag into a writable draft [--to <bag>] (no tombstone)",
+    "",
+    "  --yes              skip confirmation prompt",
+    "  --dry-run          preview the effect without committing it",
+    "  --in-wiki          run any act in the active wiki",
+  ];
+}
+
 function printUsage(): void {
-  console.error("usage: lares act <VERB> [flags...]");
-  console.error("");
-  console.error(`  VERB ∈ { ${ACTION_VERBS.join(", ")}, REPACK }`);
-  console.error("");
-  console.error("  ADD / COPY / MOVE  --title <t> --from <bag> --to <bag> [--change-id <id>]");
-  console.error("  MOVE of a layer    --from <bag> --to <bag>   moves every live title the source holds (promotion)");
-  console.error("  MOVE of a tombstone  --title <t> --from <bag> [--to <bag>] [--shadow]");
-  console.error("                     carries the delete down into a bag that holds the title; with no --to the");
-  console.error("                     holders print as candidates; --shadow hides the title from a bag that holds none");
-  console.error("  CLEAR / DROP       --bag <bag> [--change-id <id>]");
-  console.error("  CREATE             --bag <bag> [--plane <catalog|oracle>] [--change-id <id>]");
-  console.error("  LOAD               --source-uri <u> --to <bag> [--change-id <id>]");
-  console.error("  REPACK             --source <bundle-file> --from <bag> [--out <file>]");
-  console.error("");
-  console.error("  --yes              skip confirmation prompt");
-  console.error("  --dry-run          preview the effect without committing it");
-  console.error("  --in-wiki          run any act in the active wiki");
+  for (const line of actHelpLines()) console.error(line);
 }
 
 /**
@@ -143,7 +155,8 @@ async function actRepack(args: ParsedArgs): Promise<number> {
   const root = larRoot();
   // Derive the pack path (mirror-relative, WITH extension) exactly as the island recorded it in the
   // aside provenance: the `lar:` URI's path + the file's extension.
-  const uri = fileToUriForSource(root, source, { bags: larBagsDir(), wikis: larWikisDir(), ...projectionsDirs() })(root, source);
+  const sited = fileToUriForSource(root, source, { bags: larBagsDir(), wikis: larWikisDir(), ...projectionsDirs() })(root, source);
+  const uri = typeof sited === "string" ? sited : null;
   if (!uri || !uri.startsWith("lar:///")) {
     emit(args, { ok: false, error: { code: "usage", message: `no address derivation for "${source}" (outside bags//wikis/, or rootless)` }, human: () => console.error(`lares act REPACK: no address derivation for "${source}"`) });
     return exitFor("usage");
@@ -186,16 +199,16 @@ async function actRepack(args: ParsedArgs): Promise<number> {
       } else {
         if (receipt?.state === "abandoned") {
           const hint = refusalHint("request-abandoned", undefined)!;
-          emit(args, { ok: false, requestId: repackRequestId, error: { code: "request-abandoned", message: msg, hint }, human: () => { console.error(`lares act REPACK: request abandoned. Check request ${repackRequestId}.`); console.error(`  ${hint}`); } });
+          emit(args, { ok: false, requestId: repackRequestId, error: { code: "request-abandoned", message: msg, hint }, human: () => { console.error(`lares act REPACK: request abandoned. Read it back: \`lares vessel request ${repackRequestId}\`.`); console.error(`  ${hint}`); } });
           return exitFor("request-abandoned");
         }
         if (receipt?.state === "interrupted") {
           const hint = refusalHint("request-interrupted", undefined)!;
-          emit(args, { ok: false, requestId: repackRequestId, error: { code: "request-interrupted", message: msg, hint }, human: () => { console.error(`lares act REPACK: request interrupted. Check request ${repackRequestId}.`); console.error(`  ${hint}`); } });
+          emit(args, { ok: false, requestId: repackRequestId, error: { code: "request-interrupted", message: msg, hint }, human: () => { console.error(`lares act REPACK: request interrupted. Read it back: \`lares vessel request ${repackRequestId}\`.`); console.error(`  ${hint}`); } });
           return exitFor("request-interrupted");
         }
-        const hint = `this process stopped waiting after the daemon answered; a short read found no receipt yet for THIS attempt's own request id (${repackRequestId}) — check it with \`lares receipt ${repackRequestId}\`. REPACK reads and carries no effect key — re-running it is always safe, since there is nothing it could re-land twice.`;
-        emit(args, { ok: false, requestId: repackRequestId, error: { code: "outcome-unknown", message: msg, hint }, human: () => { console.error(`lares act REPACK: outcome unknown. Check request ${repackRequestId}.`); console.error(`  ${hint}`); } });
+        const hint = `this process stopped waiting after the daemon answered; a short read found no receipt yet for THIS attempt's own request id (${repackRequestId}) — check it with \`lares vessel request ${repackRequestId}\`. REPACK reads and carries no effect key — re-running it is always safe, since there is nothing it could re-land twice.`;
+        emit(args, { ok: false, requestId: repackRequestId, error: { code: "outcome-unknown", message: msg, hint }, human: () => { console.error(`lares act REPACK: outcome unknown. Read it back: \`lares vessel request ${repackRequestId}\`.`); console.error(`  ${hint}`); } });
         return exitFor("outcome-unknown");
       }
     } else {
@@ -243,12 +256,20 @@ async function actRepack(args: ParsedArgs): Promise<number> {
 export interface ActClaims { readonly houseCanon?: boolean }
 
 export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<number> {
+  // `--draft <uri>` pulls a lower-bag tiddler into a writable draft: the pull rides this door, the landing rides an ACTION verb.
+  if (args.flags["draft"] === true) {
+    if (args.positional[0] !== undefined && (isActionVerb(args.positional[0]) || args.positional[0] === "REPACK")) {
+      console.error(`lares act --draft: "${args.positional[0]}" names an ACTION verb; --draft takes the tiddler to pull (lares act --draft <uri>)`);
+      return 2;
+    }
+    return await cmdDraft(args);
+  }
   const verbRaw = args.positional[0];
   if (!verbRaw) { printUsage(); return 2; }
   if (verbRaw === "REPACK") return await actRepack(args);
   if (!isActionVerb(verbRaw)) {
-    console.error(`lares act: "${verbRaw}" is not an ACTION verb`);
-    console.error(`  ACTION verbs: ${ACTION_VERBS.join(", ")}, REPACK`);
+    console.error(`lares act: "${verbRaw}" names no ACTION verb`);
+    printUsage();
     return 2;
   }
   if (verbRaw === "INGEST") {
@@ -335,7 +356,7 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
     // An unrecognized value errors rather than silently coercing to catalog (a typo would mis-place the bag).
     const planeOpt = args.options["plane"];
     if (planeOpt !== undefined && planeOpt !== "catalog" && planeOpt !== "oracle") {
-      console.error(`lares act CREATE: --plane must be "catalog" or "oracle" (got "${planeOpt}")`);
+      console.error(`lares act CREATE: --plane takes "catalog" or "oracle" (got "${planeOpt}")`);
       return 2;
     }
     const plane = planeOpt === "oracle" ? "oracle" : "catalog";
@@ -536,7 +557,7 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
         const hint = refusalHint("request-abandoned", changeId)!;
         emit(args, {
           ok: false, requestId, error: { code: "request-abandoned", message: msg, hint },
-          human: () => { console.error(`lares act: request abandoned. Check request ${requestId}.`); console.error(`  ${hint}`); },
+          human: () => { console.error(`lares act: request abandoned. Read it back: \`lares vessel request ${requestId}\`.`); console.error(`  ${hint}`); },
           data: { changeId },
         });
         return exitFor("request-abandoned");
@@ -544,7 +565,7 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
         const hint = refusalHint("request-interrupted", changeId)!;
         emit(args, {
           ok: false, requestId, error: { code: "request-interrupted", message: msg, hint },
-          human: () => { console.error(`lares act: request interrupted. Check request ${requestId}.`); console.error(`  ${hint}`); },
+          human: () => { console.error(`lares act: request interrupted. Read it back: \`lares vessel request ${requestId}\`.`); console.error(`  ${hint}`); },
           data: { changeId },
         });
         return exitFor("request-interrupted");
@@ -555,7 +576,7 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
         const hint = refusalHint("retention-gap", changeId)!;
         emit(args, {
           ok: false, requestId, error: { code: "retention-gap", message: msg, hint },
-          human: () => { console.error(`lares act: retention gap. Check request ${requestId}.`); console.error(`  ${hint}`); },
+          human: () => { console.error(`lares act: retention gap. Read it back: \`lares vessel request ${requestId}\`.`); console.error(`  ${hint}`); },
           data: { changeId },
         });
         return exitFor("retention-gap");
@@ -566,10 +587,10 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
         // is a FRESH nonce every verb's own attempt alone owns — re-running never reads IT back
         // (a fresh attempt mints its own) — so the hint names the EXACT gesture that keeps this a
         // retry rather than a new change: reuse `--change-id`.
-        const hint = `this process stopped waiting after ${timeoutMs}ms (budgeted for ${carrierCount} carrier(s)${verb === "LOAD" ? " — a LOAD budgets 10s + 400ms per carrier" : ""}) and a ${READBACK_MS}ms read found no receipt yet for THIS attempt's own request id (${requestId}) — check it with \`lares receipt ${requestId}\`. Re-run with \`--change-id ${changeId}\`: if this attempt landed, the effect index answers it without running twice; a re-run WITHOUT it is a NEW change. The outcome, once written, lives at ${OUTCOME_URI_PREFIX}${requestId}.`;
+        const hint = `this process stopped waiting after ${timeoutMs}ms (budgeted for ${carrierCount} carrier(s)${verb === "LOAD" ? " — a LOAD budgets 10s + 400ms per carrier" : ""}) and a ${READBACK_MS}ms read found no receipt yet for THIS attempt's own request id (${requestId}) — check it with \`lares vessel request ${requestId}\`. Re-run with \`--change-id ${changeId}\`: if this attempt landed, the effect index answers it without running twice; a re-run WITHOUT it is a NEW change. The outcome, once written, lives at ${OUTCOME_URI_PREFIX}${requestId}.`;
         emit(args, {
           ok: false, requestId, error: { code: "outcome-unknown", message: msg, hint },
-          human: () => { console.error(`lares act: outcome unknown. Check request ${requestId}.`); console.error(`  ${hint}`); },
+          human: () => { console.error(`lares act: outcome unknown. Read it back: \`lares vessel request ${requestId}\`.`); console.error(`  ${hint}`); },
           data: { changeId },
         });
         return exitFor("outcome-unknown");

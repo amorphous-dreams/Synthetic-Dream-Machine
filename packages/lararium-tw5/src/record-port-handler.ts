@@ -18,6 +18,7 @@ import { mountCamera } from "./tw5-camera.js";
 import { registerActionReactors, makeTw5Deserializer } from "./action-handler.js";
 import { VerbTable, type VerbContext } from "./verb-dispatcher.js";
 import { checkFilter, pageFilterAnswer, type FilterRow } from "./filter-page.js";
+import { canonFiltersText, houseFilterWikiOf } from "./house-filters.js";
 
 export interface RecordPortOptions {
   authority?: (req: InvokeRequest) => AuthorityResult;
@@ -392,6 +393,9 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
         if (!faceHolds(port)) { if (port.ledger.discard(msg.txId)) port.actorState.unanswered.delete(msg.txId); return; }
       }
       const failed: string[] = [];
+      // THE REFUSAL A FAMILY ENDED ON TRAVELS WITH ITS ANSWER: a VerbRefusal names itself (`sealed-document-unopened` and kin),
+      // any other fault names `write-failed`, so a TW5 caller reads why its write did not land.
+      let failedReason: string | undefined;
       for (const family of begun.pending) {
         if (!faceHolds(port)) { failed.push(...begun.pending.slice(begun.pending.indexOf(family))); break; }
         const members = msg.records.filter(record => (record.bag ?? "(default)") === family);
@@ -405,7 +409,11 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
             { kind: "tw-local", instanceId: token },
             family === "(default)" ? undefined : { bag: family });
           port.ledger.recordApplied(msg.txId, family);
-        } catch { failed.push(...begun.pending.slice(begun.pending.indexOf(family))); break; }
+        } catch (error) {
+          failedReason = isVerbRefusal(error) ? error.reason : "write-failed";
+          failed.push(...begun.pending.slice(begun.pending.indexOf(family)));
+          break;
+        }
         finally {
           tokens.delete(token);
           flush(ctx);
@@ -422,7 +430,7 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
       const result = port.ledger.answer(msg.txId, failed);
       if (result.status === "applied") port.actorState.unanswered.delete(msg.txId);
       flush(ctx);
-      answer(result.status, [...result.applied], [...result.failed]);
+      answer(result.status, [...result.applied], [...result.failed], result.failed.length > 0 ? failedReason : undefined);
     } catch (error) {
       release(null);
       if (!familyStarted && port.ledger.discard(msg.txId)) port.actorState.unanswered.delete(msg.txId);
@@ -442,10 +450,13 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
       // ONE BOUNDED PAGE, never the whole array: the page law the daemon's `wiki-filter` verb answers (`filter-page.ts`) caps rows
       // and bytes and names a cursor to continue; a filter the engine cannot parse refuses by name before it runs.
       try {
-        const wiki = ctx.tw5.$tw.wiki;
+        const $tw = ctx.tw5.$tw;
+        const wiki = $tw.wiki;
         const filter = msg.subject ?? "";
         checkFilter(wiki, filter);
-        const titles = wiki.filterTiddlers(filter).filter(title => visible(title, port));
+        // The port's filter ask runs under the house widget too: a house function reads from canon, never the wiki's globals.
+        const house = houseFilterWikiOf(wiki as never as Parameters<typeof houseFilterWikiOf>[0], ($tw as unknown as { fakeDocument: { createElement(tag: string): unknown } }).fakeDocument, await canonFiltersText(ctx.composite, wiki as never, async () => true)) as unknown as typeof wiki;
+        const titles = house.filterTiddlers(filter).filter(title => visible(title, port));
         const names = msg.fields;
         const rowOf = names === undefined ? undefined : (title: string): FilterRow => {
           const held = (wiki.getTiddler(title) as { getFieldStrings?: () => Record<string, string> } | undefined)?.getFieldStrings?.() ?? {};

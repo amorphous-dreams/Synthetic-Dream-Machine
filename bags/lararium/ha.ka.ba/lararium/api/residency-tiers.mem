@@ -4,19 +4,16 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-approved-on   = "2026-06-01"
-cacheable     = true
-hydrate       = true
-l-space       = "stable"
-namespace     = "&#x0950; &#x0901;"
-revised-on    = "2026-06-01"
-revision-note = "warm (mahana) tier CUT after adversarial+kupono+YIN research; two states (wela/anu) only"
-role          = "load-bearing architectural invariant — ONE island-owned residency model: two-state ʻōlelo thermal axis wela/anu + orthogonal pin-flag; bag residency DERIVED from referencing islands"
-status-why    = "rides the residency substrate; the tier read stands with it"
-tags          = ["lar:///ha.ka.ba/lares/api/pono/meme", "lifecycle/standing"]
-title         = "lar:///ha.ka.ba/lararium/api/residency-tiers"
-type          = "text/memetic-wikitext+tiddlywiki"
-uri-path      = "ha.ka.ba/lararium/api/residency-tiers"
+cacheable  = true
+hydrate    = true
+l-space    = "stable"
+namespace  = "&#x0950; &#x0901;"
+role       = "load-bearing architectural invariant — ONE island-owned residency model: two-state ʻōlelo thermal axis wela/anu + orthogonal pin-flag; bag residency DERIVED from referencing islands; the warm (mahana) tier stands cut after adversarial, kupono and YIN research, so two states (wela/anu) only"
+status-why = "rides the residency substrate; the tier read stands with it"
+tags       = ["lar:///ha.ka.ba/lares/api/pono/meme", "lifecycle/standing"]
+title      = "lar:///ha.ka.ba/lararium/api/residency-tiers"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lararium/api/residency-tiers"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -96,7 +93,7 @@ Two disciplines survive the collapse as bag-level mechanism (driven by the pool,
 
 ''Code homing — KEEP-SEPARATE'' (operator ruling 2026-09-18, closing the relocation clause of 2026-06-01). `packages/lararium-mesh/src/bag-residency.ts` stays a module under its own name. It answers ONE question — how a vessel STOWS what it holds — and never folds into the pool. The file names the hazard in its own words: //"A federation-authority doctrine once shared its file and shared none of its types, functions, or imports — a single name over two unrelated questions, which is the shape that lets a reader carry an assumption from one half into the other."// The pool's source states the matching boundary: "the ONE residency collector (BagStowage + per-grain-type dials) owns reachability + the wiki cap... so the pool stays a pure mount mechanism — one authority, no second collector" (`packages/lararium-mesh/src/vessel-island-pool-core.ts`).
 
-''The stowage axis carries its own name'' (`BagStowage`, `lares bag stats`), one of the three lawful moves `one-name-one-relation#/the-unbraiding` names. The collector reaches the pool through two hooks (onHydrate → mount, onEvict → unmount; `packages/lararium-tw5/src/vessel-residency-wiring.ts` wires both). No `causal-island.ts` stands in the tree, and no residency method lives in causal-island code. A relocation reopens only on a fresh, dated ruling.
+''The stowage axis carries its own name'' (`BagStowage`, `lares wiki status`), one of the three lawful moves `one-name-one-relation#/the-unbraiding` names. The collector reaches the pool through two hooks (onHydrate → mount, onEvict → unmount; `packages/lararium-tw5/src/vessel-residency-wiring.ts` wires both). No `causal-island.ts` stands in the tree, and no residency method lives in causal-island code. A relocation reopens only on a fresh, dated ruling.
 
 <<~/ahu>>
 
@@ -120,6 +117,8 @@ Pin/unpin gestures carry no verb name (the state change describes itself). `hoʻ
 !! Third tier — the gate
 
 The model holds two tiers (`wela` live / `anu` torn down). A third (warm / frozen) tier enters ONLY when BOTH hold: (a) a //measured// island resume-latency problem under real focus-rotation, AND (b) a definition that genuinely ''sheds memory'' — isolate evicted, handle-cache retained, resume re-instantiates the engine against still-warm handles and skips the `ea` handshake (the bfcache lineage done right). At that point adopt bfcache vocabulary (freeze / resume / evict), a freeze-disqualifier discipline (mid-replication may not freeze), and a second-chance reference bit on the sweeper (as built, the sweeper trims by pure age).
+
+''The warm (mahana) tier stands cut after adversarial, kupono and YIN research'': the model holds two states, wela and anu, only.
 
 <<~/ahu>>
 
@@ -146,6 +145,6 @@ through #third-tier-gate, and only after the research that meme charges.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;jDzI8USX0p-GXWz_NePDbPCjc__f1ApggwYVYXK3FLQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;PKTNWguZ9NZsg15LkKivJuZrBHEKqa8VSb9RIr4OLkI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

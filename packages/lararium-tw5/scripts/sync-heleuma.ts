@@ -44,7 +44,7 @@ import { repoRoot } from "@lararium/mesh/node";
 import { formatDigest, digestsEqual } from "@lararium/mesh/agile-digest";
 import { sha256HexSync } from "@lararium/mesh";
 import { frameCarrier, headUriOf } from "@lararium/memetic-frame";
-import { moduleBodyDigest, applySourceSha256Patch } from "./heleuma-digest.js";
+import { moduleBodyDigest, applySourceSha256Patch, sourceTiddlerMatches, stampSourceAnchor } from "./heleuma-digest.js";
 import { rootMetaFields } from "../src/root-meta.js";
 
 const root     = repoRoot;
@@ -54,6 +54,7 @@ const pkgsRoot = resolve(root, "packages");
 // `ha.ka.ba/<namespace>/…`, so `bags/lararium/tw5` names a directory that has never stood —
 // the marker retirement made that visible without causing it.
 const tw5MemesRoot = resolve(root, "bags", "lararium", "ha.ka.ba", "lararium", "tw5");
+const meshWaveAnchor = resolve(root, "bags/lararium/ha.ka.ba/lararium/mesh/wave-crest.mem");
 
 const args             = process.argv.slice(2);
 const COMMIT           = args.includes("--commit");
@@ -694,6 +695,13 @@ if (COMMIT) {
   const scriptsDir = dirname(fileURLToPath(import.meta.url));
   console.log("[heleuma] --commit: building plugin CJS tiddlers and patching anchor hashes…\n");
   execSync(`tsx ${resolve(scriptsDir, "build-plugin-tiddler.ts")}`, { stdio: "inherit" });
+  const waveContent = readFileSync(meshWaveAnchor, "utf8");
+  const waveSource = readFileSync(resolve(root, "packages/lararium-mesh/src/wave-crest.ts"), "utf8");
+  const waveDigest = formatDigest("sha256", sha256HexSync(waveSource));
+  if (!digestsEqual(waveDigest, asStr(rootMetaFields(waveContent)["source-sha256"]))) {
+    writeFileSync(meshWaveAnchor, stampSourceAnchor(waveContent, waveSource), "utf8");
+    console.log("[heleuma] patched mesh wave-crest source-sha256 and carrier check");
+  }
   console.log("\n[heleuma] --commit: checking #source windows (reference integrity — the code-file tiddler holds the source)\n");
 } else {
   console.log("[heleuma] dry-run (pass --commit to patch, --scan to find candidates, --scan-promote to find corpus candidates)\n");
@@ -704,7 +712,7 @@ let totalDrift   = 0;
 let totalMissing = 0;
 let totalPatched = 0;
 
-for (const mdPath of walkExt(tw5MemesRoot, ".mem")) {
+for (const mdPath of [...walkExt(tw5MemesRoot, ".mem"), meshWaveAnchor]) {
   const content = readFileSync(mdPath, "utf8");
 
   const toml = rootMetaFields(content);
@@ -773,4 +781,15 @@ if (!COMMIT) {
   if (modResult.drift > 0 || modResult.missing > 0) {
     console.warn(`[sync-modules] run with --sync-modules --commit to update source-sha256 fields`);
   }
+}
+
+// This Node source travels as a text tiddler, never as a TW5 module. Keep the
+// packed window, Git source and describing anchor on the same bytes.
+if (!COMMIT) {
+  const anchor = rootMetaFields(readFileSync(meshWaveAnchor, "utf8"));
+  const source = readFileSync(resolve(root, "packages/lararium-mesh/src/wave-crest.ts"), "utf8");
+  const tid = readFileSync(resolve(root, "packages/lararium-tw5/tiddlers/wave-crest-source.tid"), "utf8");
+  const valid = sourceTiddlerMatches(source, tid, asStr(anchor["module-ref"]), asStr(anchor["source-sha256"]));
+  if (!valid) { console.warn("[sync-modules] DRIFT mesh wave-crest source, tiddler or digest"); process.exitCode = 1; }
+  else console.log("[sync-modules] ok   mesh wave-crest source tiddler and digest");
 }

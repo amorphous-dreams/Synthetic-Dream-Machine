@@ -52,7 +52,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/device-capabilities-2026"
 ''The house seat:''
 
 * ''The browser CAS `cid/` tier ALREADY rides it.'' `packages/lararium-browser/src/browser-genesis.ts:37-38` (`navigator.storage.getDirectory()` → `root.getDirectoryHandle(OPFS_CAS_DIR, { create: true })`), `:42-43` (`createWritable()` per blob, keyed by CID), `:63` `fetchGenesisCasToOpfs`, `:94-97` `readCasBlobFromOpfs`; the worker pulls "engine + plugin bytes by CID from the OPFS CAS" (`packages/lararium-browser/src/browser-sovereign-island-model.ts:45-47`, `resolveByCid: (cid) => readCasBlobFromOpfs(cid)`). `packages/lararium-mesh/src/cas.ts:8-10` names the pair: "the SAME two derivations here over its own platform I/O (OPFS · nodefs)". The write leg uses the async `createWritable` that reached Baseline 2025-09; the house never calls `createSyncAccessHandle` anywhere in `packages/` (grep, 2026-09-11) even though the island runs in the dedicated worker the spec exposes it to — #/moves 3.
-* ''The pending shape'' (a pointer whose bytes the local `cid/` lacks — <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/blob-carriage#/proposed-law`>> clause 5) maps onto "best-effort" eviction cleanly: an evicted OPFS blob reads as PENDING and re-fetches by CID, never as a lost identity. `open-browser-vessel.ts:275` already names the class: "LOCAL copy is gone (IndexedDB quota eviction under storage pressure, or corruption)."
+* ''The pending shape'' (a pointer whose bytes the local `cid/` lacks — <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/blob-carriage#/proposed-law`>> clause 5) maps onto "best-effort" eviction cleanly: an evicted OPFS blob reads as PENDING and re-fetches by CID, never as a lost identity. `open-browser-vessel.ts:275` already names the class: "LOCAL copy is gone (IndexedDB quota eviction under storage pressure, or corruption)."
 * ''The projector never reaches a folder the human sees, on any engine, without the File System Access picker'' — and two of three engines refuse that picker (#/refusals-and-floors). A browser vessel therefore ''projects to OPFS alone'' (an origin-private disk the operator cannot open in Finder or Files), and the human-visible `bags/` / `wikis/` projection of <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection`>> stays a NODE seat. The honest absence: on a phone or a Safari/Firefox desktop the "disk" the vessel writes reads as the browser's, not the operator's; a `showDirectoryPicker` projection stands as a Chromium-only ''offer'', never the vessel's floor.
 * ''Per-persona planes'' — the Storage Buckets rhyme (#/pattern-integrity-rhymes) breaks on the vendor split: Chromium alone ships buckets, so the house keeps its persona planes inside ONE bucket (the IDB stores at `packages/lararium-browser/src/browser-vessel-identity.ts:91-108` and the `${idbName}:repo` Automerge store at `open-browser-vessel.ts:369`), partitioned by key, never by bucket.
 
@@ -95,7 +95,7 @@ Columns: capability · status per engine (Chromium / WebKit / Gecko) · the quot
 | ''Isolated Web Apps'' | 128 (2024-07-12) — ChromeOS enterprise only; allowlist from 143; Direct Sockets ChromeOS 151 (2026-06) | ''blocked'' (WebKit #184, "depends on Web Bundles") | ''negative'' (Mozilla #799, 2024-09-10) | "packaged into Web Bundles and signed by their developer. For this initial launch, installation can only be triggered by enterprise policy on managed devices" (blink-dev iMfYonTs414); developer.chrome.com/docs/iwa (2026-02-06): "identity tied to the bundle's public key" | the bridge/reach plane (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/reach-plane`>>) | ''REFUSE'' (#/moves, the refusal) |
 | ''WebGPU'' | 113 | 26.0 (2025-09-15) | 141 Windows · 145 macOS · Linux/Android tracking | "WebKit for Safari 26.0 adds support for WebGPU"; "WebGPU achieved Baseline in January 2026" (utsubo, 2026-04-29); Mozilla #971 WebGPU in Service/SharedWorker positive | the render camera (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/canvas-field-scout`>>) | COULD RIDE (a canvas/UE-style camera); FLOORS to WebGL2 on Linux Firefox |
 | ''WebNN'' | 147–149 Origin Trial | none (WebKit #486) | positive (Mozilla #1215), unshipped | "Chrome 147–149 is running WebNN as an Origin Trial only … best estimated at 2027"; W3C CR 2026-01 | none | FLOORS |
-| ''WebCodecs'' | 94 | 26.0 full (AudioEncoder/AudioDecoder) | desktop; Android missing | "Safari 26.0 expands support for WebCodecs API by adding AudioEncoder and AudioDecoder"; Interop-2027 proposal #1378 (2026-09-08) | the held live-stream case (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/blob-carriage#/held-cases`>>, `:168`) | COULD RIDE for a SOURCE tiddler's decode leg |
+| ''WebCodecs'' | 94 | 26.0 full (AudioEncoder/AudioDecoder) | desktop; Android missing | "Safari 26.0 expands support for WebCodecs API by adding AudioEncoder and AudioDecoder"; Interop-2027 proposal #1378 (2026-09-08) | the held live-stream case (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/blob-carriage#/held-cases`>>, `:168`) | COULD RIDE for a SOURCE tiddler's decode leg |
 | ''Web Bluetooth / WebUSB / Web Serial / WebHID'' | 56 / 61 / 89 / 89; Android Serial 148 | ''oppose'' ×4 (WebKit #570 2025-12-02, #68, #199, #510 venue) | negative / negative / ''neutral → Nightly 151 behind a flag'' / negative | quotes under #/refusals-and-floors | none | FLOORS — a phone vessel promises none |
 | ''Compute Pressure / Device Memory / Battery'' | 125 / yes / 38 | oppose (#255) / ''oppose'' (#645, 2026-04-14) / never | none recorded (#521) / removed / removed | rniwa 2026-04-01: "I suggest we add "oppose" to this feature one week from now"; Battery: "Firefox removed it and Safari does not support it" (caniuse, read 2026-09-11) | the DPI ceiling as a standing gate (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/sensorium-machina`>>, `:103`) | FLOORS — capacity rides the house's own caps declaration (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/vessel-caps`>>, `:54`) |
 | ''Mudlet'' (5.0.0 2026-08-29 · 5.0.1 2026-09-02 · PTB 2026-09-08) | — | — | — | Lua: `getHTTP/postHTTP/putHTTP/deleteHTTP/customHTTP`, `downloadFile` ("Since Mudlet 3.0, https downloads are supported"), `sendSocket`, GMCP/MSDP, MMCP; "Mudlet does not yet support Websockets - it works with telnet only" (wiki, last edited 2020-03-27); 5.0: "Supported games can now hand sign-in to your browser … Mudlet keeps the reconnect token in your operating system's keychain" | `vessel-caps.mem:21,54`; `wiki-layer-ontology.mem:249` ("MUDlet's Lua object-model") | a ''probe/leaf behind a node'' (#/device-seats) |
@@ -165,7 +165,7 @@ The story pair that tested these. Gaia, 2026: a nurse keeps her notes on a phone
 # ''WebTransport datagrams ARE the carriage lane.'' "multiple streams that won't block each other" + unreliable datagrams ↔ Socket B "SEPARATE from the Automerge /ws relay (Socket A)" (`open-node-vessel.ts:567-572`), ciphertext blocks a relay serves "secret-free" (`cas-transit.ts:17`). ''Where it breaks:'' the herm sits on a node, and Node ships no WebTransport server in core; the lane rides HTTP/3 the home hearth (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/nexus-topology`>>) must terminate with a certificate — the same DNS-01 wall, one layer up.
 # ''A Service Worker IS a herm at the waking floor.'' It carries fetches and pushes for an origin while no page stands ↔ "the 'dumb' relay IS the Herm, LOAD-BEARING". ''Where it breaks:'' a Service Worker holds no socket and no timer the vendor honours (Background Sync refused on two engines; Push on iOS only after install); it wakes for a push the relay sends — so it rhymes with the herm's DOORBELL, never the herm.
 # ''`persist()` IS the residency verb PIN.'' "cannot be cleared without user consent" ↔ clause 7 of the blob law, "GC and PIN ride the residency verbs and the cap-tier — DESIGNED, UNBUILT" (`blob-carriage.mem:190`). ''Where it breaks:'' `persist()` pins the ORIGIN whole ("all-or-nothing per origin", `secure-context-gate.ts:134`) where PIN pins a CID; the house grain stays finer than the platform's.
-# ''iOS "every site can be a web app" IS the founding rite's "stand".'' A Home Screen install turns a tab into a seat with its own day-counter ↔ found · stand · seed (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook`>>). ''Where it breaks:'' the install belongs to the human's gesture, never to the vessel; a vessel may ASK (the `beforeinstallprompt` Chromium alone fires) and on WebKit may only explain.
+# ''iOS "every site can be a web app" IS the founding rite's "stand".'' A Home Screen install turns a tab into a seat with its own day-counter ↔ found · stand · lay (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook`>>). ''Where it breaks:'' the install belongs to the human's gesture, never to the vessel; a vessel may ASK (the `beforeinstallprompt` Chromium alone fires) and on WebKit may only explain.
 
 <<~/ahu>>
 
@@ -221,13 +221,13 @@ Owed measurements: owner-kill, one-tab lock fallback, long background, PRF deriv
 
 !! Edges
 
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/blob-carriage`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/blob-carriage`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/tiddler-carriage`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/recipe-layer-model`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-prior-art`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/canvas-field-scout`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/wiki-layer-ontology`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pattern-integrities`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/sensorium-machina`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/waking-floor`>>
@@ -250,6 +250,6 @@ Owed measurements: owner-kill, one-tab lock fallback, long background, PRF deriv
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;rxm0LXsPCGB8v8FU1Or-3Q6jJfZZ9hzFJyaWlW_uQs8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;I9QENyRoFXKYMvHn-NDm-QtsagNk1H0GrXnWsvgbp4c`>>
 
 <<^ code=`&#x0004;` to=`?`>>

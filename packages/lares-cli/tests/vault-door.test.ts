@@ -67,9 +67,16 @@ async function slots(): Promise<{ id: string }[]> {
 
 const run = (...argv: string[]): Promise<number> => cmdVault(parseArgs(["vault", ...argv, "--json"]));
 
+/** The pūlama's signals: this suite stands no pūlama, so none of them may leak in from the operator's own house. */
+const PULAMA_KEYS = ["HOME", "LARES_PULAMA", "LAR_PULAMA_SOCKET"] as const;
+let priorEnv: Record<string, string | undefined> = {};
 beforeEach(async () => {
   root = mkdtempSync(join(tmpdir(), "vault-door-"));
   process.env["LAR_ROOT"] = root;
+  priorEnv = Object.fromEntries(PULAMA_KEYS.map((k) => [k, process.env[k]]));
+  process.env["HOME"] = join(root, "operator");
+  delete process.env["LARES_PULAMA"];
+  delete process.env["LAR_PULAMA_SOCKET"];
   tty = true; answers.length = 0; out = []; err = [];
   vi.spyOn(console, "log").mockImplementation((...a) => { out.push(a.join(" ")); });
   vi.spyOn(console, "error").mockImplementation((...a) => { err.push(a.join(" ")); });
@@ -77,7 +84,11 @@ beforeEach(async () => {
   const homes = vesselCustodyHomes();
   await foundCustody({ io: new FsCustodyIo(homes), homes, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: PW }] }] });
 });
-afterEach(() => { vi.restoreAllMocks(); delete process.env["LAR_ROOT"]; rmSync(root, { recursive: true, force: true }); });
+afterEach(() => {
+  vi.restoreAllMocks(); delete process.env["LAR_ROOT"];
+  for (const k of PULAMA_KEYS) { if (priorEnv[k] === undefined) delete process.env[k]; else process.env[k] = priorEnv[k]; }
+  rmSync(root, { recursive: true, force: true });
+});
 
 describe("vault door — a credential rides a TTY alone", () => {
   it("★ with no TTY, unlock/bind/unbind refuse BY NAME and write nothing ★", async () => {
@@ -214,12 +225,12 @@ describe("vault door — status, unlock, bind, unbind", () => {
     expect(() => parseArgs(["vault", "unbind", "abc", "--rotate=abc"])).toThrow(/--rotate is a flag and takes no value/);
   }, 60_000);
 
-  it("★ status gives ONE reading of each standing file: a floor row beside its law, a bare hot row as a fault, a private file outside the table by name ★", async () => {
+  it("★ status --verbose gives ONE reading of each standing file: a floor row beside its law, a bare hot row as a fault, a private file outside the table by name ★", async () => {
     const homes = vesselCustodyHomes();
     writeFileSync(join(homes.identity, ".vessel-key.json"), "{}", { mode: 0o600 });
     writeFileSync(join(homes.identity, ".persona-enroll-pending.json"), "{}", { mode: 0o600 });
     writeFileSync(join(homes.identity, "side-key.json"), "{}", { mode: 0o600 });
-    expect(await cmdVault(parseArgs(["vault", "status", "--no-json"]))).toBe(0);
+    expect(await cmdVault(parseArgs(["vault", "status", "--verbose"]))).toBe(0);
     const lines = out.join("\n").split("\n");
     // each standing file reads on exactly one line
     for (const file of ["gate-root.bin", ".vessel-key.json", ".persona-enroll-pending.json", "s-slots.bin"]) {
@@ -335,15 +346,14 @@ describe("vault door — restore reads the bundle's route on a terminal", () => 
   });
 });
 
-describe("the vault door answers eight verbs", () => {
-  // `rewrap` moves a face founded before the ward under one (seat-harness#/the-ward).
-  const SEVEN = ["status", "unlock", "lock", "bind", "unbind", "backup", "restore", "rewrap"];
+describe("the vault door answers its live verbs", () => {
+  const LIVE_VERBS = ["status", "unlock", "lock", "bind", "unbind", "backup", "restore", "rehive", "recard"];
 
-  it("★ the help names the eight live verbs ★", () => {
+  it("★ the help names the nine live verbs ★", () => {
     const text = helpLines("vault").join("\n");
     const usage = /usage: lares vault <([^>]*(?:<[^>]*>[^>]*)*)> /.exec(text.replace(/<(slot-id|N|file)>/g, "$1"));
     expect(usage, text).not.toBeNull();
-    expect(usage![1]!.split("|").map((part) => part.trim().split(/\s+/)[0])).toEqual(SEVEN);
+    expect(usage![1]!.split("|").map((part) => part.trim().split(/\s+/)[0])).toEqual(LIVE_VERBS);
   });
 
   it("★ an unknown word answers as no door: a usage refusal that names the word, and no byte moves ★", async () => {
@@ -352,7 +362,59 @@ describe("the vault door answers eight verbs", () => {
     expect(await run(verb)).toBe(2);
     expect([...out, ...err].join("\n")).toContain(`unknown sub-verb "${verb}"`);
     expect(tree(root)).toBe(before);
-    // CONTROL: a verb of the eight answers.
+    // CONTROL: a live verb answers.
     expect(await run("status")).toBe(0);
+  });
+});
+
+describe("vault status answers a pipe in prose (quiet-pipe)", () => {
+  /** Stdout as a pipe reads it: no terminal, so the house-wide policy alone would answer JSON. */
+  function piped(): void { Object.defineProperty(process.stdout, "isTTY", { value: false, configurable: true }); }
+  afterEach(() => { delete (process.stdout as { isTTY?: boolean }).isTTY; });
+
+  it("★ a piped `vault status` prints the short summary a terminal reads: no JSON, no sealed row by name ★", async () => {
+    piped();
+    expect(await cmdVault(parseArgs(["vault", "status"]))).toBe(0);
+    const lines = out.join("\n").split("\n").filter((l) => l.trim() !== "");
+    expect(lines.some((l) => l.trimStart().startsWith("{")), lines.join("\n")).toBe(false);
+    expect(lines.join("\n")).toMatch(/slot tree\s+1 slot\(s\)/);
+    expect(lines.join("\n")).toMatch(/carriers\s+\d+ standing: \d+ sealed under the vessel key, \d+ outside it by law, 0 at fault/);
+    expect(lines.join("\n")).toMatch(/outside the table\s+nothing/);
+    expect(lines.join("\n")).not.toContain("gate-root.bin");                       // a sealed row rests in the count, never by name
+    expect(lines.length, lines.join("\n")).toBeLessThanOrEqual(12);
+  });
+
+  it("★ a fault and a file outside the table still print by name in the summary ★", async () => {
+    piped();
+    const homes = vesselCustodyHomes();
+    writeFileSync(join(homes.identity, ".persona-enroll-pending.json"), "{}", { mode: 0o600 });
+    writeFileSync(join(homes.identity, "side-key.json"), "{}", { mode: 0o600 });
+    expect(await cmdVault(parseArgs(["vault", "status"]))).toBe(0);
+    const text = out.join("\n");
+    expect(text).toMatch(/\.persona-enroll-pending\.json\s+FAULT/);
+    expect(text).toMatch(/OUTSIDE THE TABLE.*side-key\.json/);
+    expect(text).not.toContain("gate-root.bin");
+  });
+
+  it("★ `--verbose` prints one reading of every standing file; `--json` still answers the whole custody object ★", async () => {
+    piped();
+    expect(await cmdVault(parseArgs(["vault", "status", "--verbose"]))).toBe(0);
+    expect(out.join("\n")).toMatch(/gate-root\.bin/);
+    out.length = 0;
+    expect(await cmdVault(parseArgs(["vault", "status", "--json"]))).toBe(0);
+    const j = JSON.parse(out.join("").trim().split("\n").pop()!);
+    expect(j.ok).toBe(true);
+    expect(j.data.custody.rows.some((r: { row: string }) => r.row === "gate-root")).toBe(true);
+  });
+
+  it("★ a piped `vault unlock` answers in prose: its refusal names itself on stderr and stdout carries no JSON; `--json` keeps the envelope ★", async () => {
+    piped();
+    tty = false;
+    expect(await cmdVault(parseArgs(["vault", "unlock", "--all"]))).toBe(1);
+    expect(out.join("")).toBe("");
+    expect(err.join("\n")).toMatch(/lares vault unlock: CredentialTtyRefusal/);
+    err.length = 0;
+    expect(await cmdVault(parseArgs(["vault", "unlock", "--all", "--json"]))).toBe(1);
+    expect(JSON.parse(out.join("").trim()).error.code).toBe("CredentialTtyRefusal");
   });
 });

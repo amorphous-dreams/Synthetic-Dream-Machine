@@ -205,7 +205,7 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
       const daemonHandle = secondRepo.import<LarDoc>(daemonBytes!);
       const workingHandle = secondRepo.import<LarDoc>(workingBytes!);
       second = await Vessel.restore({ repo: secondRepo, daemonHandle, workingHandle, placeVerbImpl: doneWorker(counter), ring: 8, dir: first.dir });
-      const ledger = new FactLedger(second.compositeForBoot(), secondRepo, 8, second.claim.bootEpoch);
+      const ledger = new FactLedger(second.compositeForBoot(), secondRepo, 8, second.claim.life);
       const facts = await Promise.all(ids.map((requestId) => ledger.get(requestId)));
       expect(facts.map((fact) => fact && fact !== "torn" ? fact.seq : null)).toEqual([0, 1, 2]);
       for (const requestId of ids) {
@@ -346,6 +346,22 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
     } finally { await v.teardown(); }
   });
 
+  test("a wiki-action request replays its first receipt and a fresh request dispatches anew", async () => {
+    const counter = { n: 0 };
+    const v = await Vessel.boot({ placeVerbImpl: doneWorker(counter) });
+    try {
+      const args = { recipe: "default", name: "sidebar-layout", expected: "fixed-fluid", resulting: "fluid-fixed" };
+      const first = { verb: "wiki-action", args, requestedBy: "did:key:test", requestId: "wiki-action-first" };
+      expect((await sendLine(v.socketPath, first))["status"]).toBe("done");
+      await v.restart();
+      expect((await sendLine(v.socketPath, first))["status"]).toBe("done");
+      expect(counter.n).toBe(1);
+      expect((await sendLine(v.socketPath, { op: "receipt", requestId: first.requestId }))["state"]).toBe("done");
+      expect((await sendLine(v.socketPath, { ...first, requestId: "wiki-action-fresh" }))["status"]).toBe("done");
+      expect(counter.n).toBe(2);
+    } finally { await v.teardown(); }
+  });
+
   test("a fresh ledger reads receipts only from the control document", async () => {
     const v = await Vessel.boot({ placeVerbImpl: () => {} });
     try {
@@ -431,15 +447,15 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
       await dispatchAndStrand(v, counter, inv);
       // CONTROL: the same boot still reads `committed`.
       expect((await sendLine(v.socketPath, { op: "receipt", requestId }))["state"]).toBe("committed");
-      const firstEpoch = v.claim.bootEpoch;
+      const firstLife = v.claim.life;
 
       await v.restart();
-      expect(v.claim.bootEpoch).toBeGreaterThan(firstEpoch);
+      expect(v.claim.life, "the restart begins another life").not.toBe(firstLife);
 
       expect((await sendLine(v.socketPath, { op: "receipt", requestId }))["state"]).toBe("interrupted");
       const stored = plainRecord(v.workingHandle.doc()!.tiddlers[`${RECEIPT_FACT_URI_PREFIX}${requestId}`]!).tiddler as Record<string, unknown>;
       expect(stored["state"]).toBe("interrupted");
-      expect(stored["boot-epoch"]).toBe(String(firstEpoch));
+      expect(stored["life"]).toBe(firstLife);
 
       const t0 = performance.now();
       const retry = await sendLine(v.socketPath, { ...inv, timeoutMs: 5_000 });
@@ -455,15 +471,15 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
     } finally { await v.teardown(); }
   });
 
-  test("a second channel over the SAME claim (same boot epoch) leaves this boot's `committed` fact `committed`", async () => {
+  test("a second channel over the SAME claim (same life) leaves this boot's `committed` fact `committed`", async () => {
     const counter = { n: 0 };
     const v = await Vessel.boot({ placeVerbImpl: () => { counter.n++; } });
     try {
       const requestId = "req-same-claim";
       const inv = { verb: "nexus-kapae", args: {}, requestedBy: "did:key:test", requestId, timeoutMs: 100 };
       await dispatchAndStrand(v, counter, inv);
-      // Only the channel closes; the claim (and so the boot epoch) stays. A fact whose epoch EQUALS
-      // the seeding channel's epoch belongs to this boot and never settles.
+      // Only the channel closes; the claim (and so the life) stays. A fact whose life IS the seeding
+      // channel's life belongs to this life and never settles.
       v.channel.close();
       v.channel = startUdsChannel({
         controlHandle: v.workingHandle, placeVerb: (o) => v.placeVerbImpl(o as Placed, v.workingHandle),
@@ -640,7 +656,7 @@ describe("the receipt ring bounds BYTES as well as count", () => {
     const ledgerAt = (ringBytes: number, ring = 100) => {
       const c = composite();
       const faults: string[] = [];
-      return { ledger: new FactLedger(c, repo, ring, ++boot, ringBytes, (line) => faults.push(line)), composite: c, faults };
+      return { ledger: new FactLedger(c, repo, ring, `life-${++boot}`, ringBytes, (line) => faults.push(line)), composite: c, faults };
     };
     return { repo, daemonHandle, workingHandle, ledgerAt };
   }
@@ -960,6 +976,46 @@ describe("the receipt ring bounds BYTES as well as count", () => {
     await s.repo.shutdown();
   });
 
+  /** A committed fact an ended life wrote under the retired counter: it names `boot-epoch` and no `life`, so it reads torn. */
+  const epochFact = (n: number, seq: number) => ({
+    tiddler: { title: `${RECEIPT_FACT_URI_PREFIX}${ID(n)}`, "request-id": ID(n), state: "committed", seq: String(seq), "input-digest": DIGEST(n), "boot-epoch": "3" },
+    meta: { authority: "lares-daemon-channel" },
+  });
+
+  test("★ A TORN FACT LEAVES THE RING BY COUNT: a committed fact carrying only the retired boot-epoch reads torn, then past the count bound reads evicted (retention-gap), its body tombstoned, and a restart reads it evicted ★", async () => {
+    const s = stores();
+    const seed = s.ledgerAt(WEIGHT * 100, 2);
+    await seed.composite.put(epochFact(1, 0) as never, ORIGIN);
+    await seed.composite.put(outcomeOf(1), ORIGIN, { bag: DAEMON_BAG_ID });
+    const b = s.ledgerAt(WEIGHT * 100, 2);
+    expect(await stateOf(b, 1)).toBe("torn");
+    expect(await b.ledger.arbitrate(ID(1), DIGEST(1))).toEqual({ verdict: "refuse", reason: "receipt-fact-torn" });
+    await land(b, 2);
+    expect(await stateOf(b, 1), "within the bound the torn fact stands, never guessed").toBe("torn");
+    await land(b, 3);
+    expect(await Promise.all([1, 2, 3].map((n) => stateOf(b, n)))).toEqual(["evicted", "done", "done"]);
+    expect(await b.ledger.arbitrate(ID(1), DIGEST(1))).toEqual({ verdict: "refuse", reason: "retention-gap" });
+    expect(await keptOutcome(b, 1), "the torn id's body left with it").toBe(false);
+    const fields = plainRecord(s.workingHandle.doc()!.tiddlers[`${RECEIPT_FACT_URI_PREFIX}${ID(1)}`]!).tiddler as Record<string, unknown>;
+    expect(fields).toMatchObject({ state: "evicted", seq: "0", "input-digest": DIGEST(1) });
+    expect(fields["boot-epoch"], "the retired field leaves with the rewrite").toBeUndefined();
+    const again = s.ledgerAt(WEIGHT * 100, 2);
+    expect(await stateOf(again, 1)).toBe("evicted");
+    await s.repo.shutdown();
+  });
+
+  test("A TORN FACT LEAVES THE RING BY COUNT at seed: a boot whose bound the torn facts already pass evicts the oldest first; a torn record with no readable seq stays torn (it holds no place in the order)", async () => {
+    const s = stores();
+    const seed = s.ledgerAt(WEIGHT * 100, 1);
+    await seed.composite.put(epochFact(1, 0) as never, ORIGIN);
+    await seed.composite.put(epochFact(2, 1) as never, ORIGIN);
+    const seqless = epochFact(3, 0);
+    await seed.composite.put({ ...seqless, tiddler: { ...seqless.tiddler, seq: "unread" } } as never, ORIGIN);
+    const b = s.ledgerAt(WEIGHT * 100, 1);
+    expect(await Promise.all([1, 2, 3].map((n) => stateOf(b, n)))).toEqual(["evicted", "torn", "torn"]);
+    await s.repo.shutdown();
+  });
+
   test("★ over the socket: the channel measures the outcome it observes, and an evicted body leaves the vessel's store ★", async () => {
     /** Resolve once the working doc's fact for `requestId` reads `state`: a handshake on the doc's own change. */
     const factReads = (v: Vessel, requestId: string, state: string): Promise<Record<string, unknown>> => new Promise((resolve) => {
@@ -1081,7 +1137,7 @@ describe("a cancelled id leaves the ring as every other fact does", () => {
       const c = new CompositeStore();
       c.addLayer({ bagId: DAEMON_BAG_ID, store: new AutomergeDocStore(daemonHandle as never, DAEMON_BAG_ID), writable: true, defaultWritable: false });
       c.addLayer({ bagId: WORKING, store: new AutomergeDocStore(workingHandle as never, WORKING), writable: true });
-      return { ledger: new FactLedger(c, repo, ring, ++boot), composite: c };
+      return { ledger: new FactLedger(c, repo, ring, `life-${++boot}`), composite: c };
     };
     /** The fields of the fact the store holds for `id`, as a later boot would read them. */
     const stored = (id: string): Record<string, unknown> =>

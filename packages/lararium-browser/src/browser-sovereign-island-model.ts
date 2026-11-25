@@ -4,9 +4,9 @@
  * The lifecycle itself lives in @lararium/tw5 `runSovereignKernel` — ONE flow
  * both vessels compose. This file supplies only the browser platform pieces:
  *   - transport : Web Worker self (self.postMessage / self.addEventListener)
- *   - storage   : ordinary manifests retain their IndexedDB partition keyed by
- *                 wikiUri; a D-VR daemon manifest opts its primary Repo into memory
- *                 and supplies an explicit owned-document IDB scope separately
+ *   - storage   : the daemon island's own IndexedDB partition, the one store a
+ *                 manifest names (`{ type: "idb" }`); every other island relays in
+ *                 memory through the vessel's Repo
  *   - ready     : self.postMessage(mkReady()) — IoC handshake; the WASM
  *                 top-level await in this ES-module Worker completes before the
  *                 kernel fires it, so the vessel may send a manifest only after.
@@ -34,18 +34,12 @@ import type { IslandMsg_Manifest, IslandToVesselMsg } from "@lararium/mesh";
 import type { IslandBehavior } from "@lararium/tw5";
 import { readCasBlobFromOpfs } from "./browser-genesis.js";
 
-/** Browser storage composition: preserve ordinary wiki durability while the
- * D-VR daemon primary crossing stays ephemeral; every island store stands behind the vessel's rest guard. */
+/** Browser storage composition: the daemon island's own IndexedDB partition, the one store a manifest names, behind the
+ * vessel's rest guard. Any other manifest stands no store. */
 export function browserIslandStorage(msg: IslandMsg_Manifest, restsAtVessel?: (documentId: string) => Promise<boolean>) {
-  // V2: the daemon island's owned store rests no document the vessel's rest seals (`islandRestGuard`).
-  if (msg.storage?.type === "idb") {
-    const inner = shoreStorage(new IndexedDBStorageAdapter(msg.storage.dbName));
-    return restsAtVessel ? islandRestGuard(inner, restsAtVessel) : inner;
-  }
-  if (msg.storage?.type === "memory" || msg.ownedDocument) return undefined;
-  // A WIKI ISLAND'S STORE rests no byte of a document the vessel holds sealed or held (the node's island rest guard, every
-  // island store): the pool answers its `rest:ask` from the vessel's sealed rest.
-  const inner = shoreStorage(new IndexedDBStorageAdapter(msg.wikiUri));
+  if (msg.storage?.type !== "idb") return undefined;
+  // V2: the daemon island's own store rests no document the vessel's rest seals (`islandRestGuard`).
+  const inner = shoreStorage(new IndexedDBStorageAdapter(msg.storage.dbName));
   return restsAtVessel ? islandRestGuard(inner, restsAtVessel) : inner;
 }
 

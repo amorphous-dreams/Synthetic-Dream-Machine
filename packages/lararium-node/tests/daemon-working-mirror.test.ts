@@ -1,8 +1,8 @@
 /**
- * daemon-working-mirror — the daemon wiki's working layer projects to `wikis/daemon-<F>/`, and its private bag to nowhere.
+ * daemon-working-mirror — the daemon wiki's working layer projects to `faces/<pet name>/wikis/daemon/`, and its private bag to nowhere.
  *
  * THE FACE-BOUND DAEMON WIKI (operator rulings, 2026-11-01 and 2026-11-08): the wiki the operator works in binds to the
- * worn face and projects to `<projections>/wikis/daemon-<F>`. The layer keeps its bag (`wikis/daemon/working`); only its
+ * worn face and projects to `<projections>/faces/<pet name>/wikis/daemon`. The layer keeps its bag (`wikis/daemon/working`); only its
  * disk folder takes the face relation.
  * The kahua recipe (its `bags/daemon` workbench over the fleet `bags/kahua`) stays design: `docs/pono/kahua-memory-stage`.
  *
@@ -20,16 +20,16 @@ import { mkdtempSync, rmSync, existsSync, readFileSync, readdirSync } from "node
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { LarDiskProjector } from "../src/disk-projector.js";
-import { daemonWorkingMirror, daemonFaceFolder } from "../src/bag-paths.js";
+import { daemonWorkingMirror } from "../src/bag-paths.js";
 import { wikiSlotUri, DAEMON_BAG_ID } from "@lararium/mesh";
 import type { CarrierFile } from "@lararium/tw5";
 
 const URI = "lar:///ha.ka.ba/t/daemon/note";
 const REL = "ha.ka.ba/t/daemon/note.mem";
 const DAEMON_WORKING = wikiSlotUri("daemon", "working");
-/** The worn face: its relation names the working top's folder (`daemon-<F>`). */
+/** The worn face: its pet name names its root (`faces/Heron/`); its relation names its bags alone. */
 const TAG = "7b0f6c1e-4a52-4d3b-9c18-2e5a6f0d8b31";
-const FACE = daemonFaceFolder(TAG);
+const SITE = { relation: TAG, segment: "Heron" };
 type Flushable = { flush: (b: string, u: string) => Promise<void>; _scheduleUnlinkByTitle: (t: string) => Promise<void> };
 
 let root = "";
@@ -39,26 +39,26 @@ function rig(bagsHolding?: (uri: string) => Promise<string[]>): { projector: Flu
   root = mkdtempSync(join(tmpdir(), "lar-daemon-mirror-"));
   const file: CarrierFile = { ext: ".mem", body: "<<^ code=`&#x0001;`>>\n" };
   const projector = new LarDiskProjector({
-    mirrors: [daemonWorkingMirror(root, TAG)],
+    mirrors: [daemonWorkingMirror(root, SITE)],
     carrierFileFn: async () => file,
     ...(bagsHolding ? { bagsHolding } : {}),
   }) as unknown as Flushable;
   return { projector, root };
 }
 
-describe("the daemon wiki projects to wikis/daemon-<F>/", () => {
+describe("the daemon wiki projects to faces/<pet name>/wikis/daemon/", () => {
   test("★ the daemon working mirror keeps its bag and projects under its face folder ★", () => {
     const rootDir = "/vessel/root";
-    const minted = daemonWorkingMirror(rootDir, TAG);
+    const minted = daemonWorkingMirror(rootDir, SITE);
     expect(minted.bagId).toBe(wikiSlotUri("daemon", "working"));
     expect(minted.bagId).toBe(DAEMON_WORKING);
-    expect(minted.mirrorRoot).toBe(join(rootDir, "wikis", FACE));
+    expect(minted.mirrorRoot).toBe(join(rootDir, "faces", "Heron", "wikis", "daemon"));
   });
 
-  test("★ a record landing in wikis/daemon/working projects to <root>/wikis/daemon-<F>/<uri-path>.mem ★", async () => {
+  test("★ a record landing in wikis/daemon/working projects to <root>/faces/<pet name>/wikis/daemon/<uri-path>.mem ★", async () => {
     const { projector, root } = rig();
     await projector.flush(DAEMON_WORKING, URI);
-    const at = join(root, "wikis", FACE, REL);
+    const at = join(root, "faces", "Heron", "wikis", "daemon", REL);
     expect(existsSync(at), `nothing projected at ${at}`).toBe(true);
     expect(readFileSync(at, "utf8")).toContain("<<^ code=");
   });
@@ -75,11 +75,11 @@ describe("the daemon wiki projects to wikis/daemon-<F>/", () => {
    * projector's `sited` memory carries the unlink for the mirror whose bag no longer holds it, and
    * keeps the file where a bag still does (the shadow-aware gate).
    */
-  test("★ a carrier that LEFT wikis/daemon/working unlinks from wikis/daemon-<F>/; one still held there stays ★", async () => {
+  test("★ a carrier that LEFT wikis/daemon/working unlinks from faces/<pet name>/wikis/daemon/; one still held there stays ★", async () => {
     let holding: string[] = [DAEMON_WORKING];
     const { projector, root } = rig(async () => holding);
     await projector.flush(DAEMON_WORKING, URI);
-    const at = join(root, "wikis", FACE, REL);
+    const at = join(root, "faces", "Heron", "wikis", "daemon", REL);
     expect(existsSync(at)).toBe(true);
     await projector._scheduleUnlinkByTitle(URI);
     expect(existsSync(at), "the file left while the working layer still holds the carrier").toBe(true);

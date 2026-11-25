@@ -8,12 +8,21 @@ import { afterEach, describe, test, expect, vi } from "vitest";
 const ANSWER = {
   wikis: [
     { slug: "lares", uri: "lar:///ha.ka.ba/wikis/lares", automergeUrl: "automerge:abc", kind: "system", composition: "own", defaultDiffers: true },
-    { slug: "plain", uri: "lar:///ha.ka.ba/wikis/plain", automergeUrl: null, kind: "system", composition: "default" },
+    { slug: "plain", uri: "lar:///ha.ka.ba/wikis/plain", automergeUrl: null, kind: "system", composition: "default", canon: "floor" },
     { slug: "mine",  uri: "lar:///ha.ka.ba/wikis/mine",  automergeUrl: "automerge:def", kind: "user" },
+    { slug: "bare",  uri: "lar:///ha.ka.ba/wikis/bare",  automergeUrl: null, kind: "user" },
   ],
 };
+const asFace: Array<{ name: string; face: number }> = [];
 vi.mock("../src/verb-call.js", () => ({
   DaemonUnreachable: class extends Error {},
+  verbFailure: (err: unknown) => ({ code: "error", message: err instanceof Error ? err.message : String(err) }),
+  runVerbAsFace: async (name: string, _args: unknown, face: number) => {
+    asFace.push({ name, face });
+    return face === 3
+      ? { status: "error", requestId: "", errorMessage: "face-not-open: face h3 stands shut on this vessel (face-locked); nothing ran" }
+      : { status: "done", requestId: "r", results: { summary: { ok: true, output: ANSWER } } };
+  },
   runVerb: async (name: string) => ({ status: "done", requestId: "r", results: { summary: { ok: true, output: name === "wiki-active" ? { active: ["lares"], held: [], activeSurface: "lares", activationCap: 4, pinBudget: 3 } : ANSWER } } }),
 }));
 vi.mock("../src/env.js", async (orig) => ({
@@ -44,6 +53,16 @@ describe("lares wiki list", () => {
     expect(mine).not.toMatch(/composition/);
   });
 
+  test("a system wiki whose canon reads through the floor says so plainly, never `(no doc)`; CONTROL: a user row with no document still reads `(no doc)`", async () => {
+    const c = capture();
+    expect(await cmdWikiList(parseArgs(["wiki", "--no-json"]))).toBe(0);
+    const lines = c.out().split("\n");
+    const under = (slug: string): string => lines[lines.findIndex((l) => l.includes(`wikis/${slug}`)) + 1] ?? "";
+    expect(under("plain")).toMatch(/canon read through the floor/);
+    expect(under("plain")).not.toMatch(/no doc/);
+    expect(under("bare")).toMatch(/\(no doc\)/);
+  });
+
   test("`--json` emits the daemon's answer verbatim as `data`", async () => {
     const c = capture();
     expect(await cmdWikiList(parseArgs(["wiki", "--json"]))).toBe(0);
@@ -52,15 +71,13 @@ describe("lares wiki list", () => {
     expect(payload.data).toEqual(ANSWER);
   });
 
-  test("`--face` refuses `face-not-routed`: the list rides the maintenance frame, which carries no face, so it never answers another face's catalog", async () => {
+  test("EACH HAT REACHED BY NAME: `--face 1` lists through a session of face h1 (never the one-shot) and names the face; a shut face refuses `face-not-open`", async () => {
     const c = capture();
-    const errs: string[] = [];
-    vi.spyOn(console, "error").mockImplementation((...a: unknown[]) => { errs.push(a.join(" ")); });
-    expect(await cmdWikiList(parseArgs(["wiki", "--face", "1", "--no-json"]))).toBe(2);
-    expect(errs.join("\n")).toMatch(/^face-not-routed:/);
-    expect(c.out()).not.toMatch(/wikis \(/);
-    expect(await cmdWikiList(parseArgs(["wiki", "--face", "1", "--json"]))).toBe(2);
-    expect(JSON.parse(c.out().trim().split("\n").pop()!)).toMatchObject({ ok: false, error: { code: "face-not-routed" } });
+    expect(await cmdWikiList(parseArgs(["wiki", "--face", "1", "--json"]))).toBe(0);
+    expect(asFace).toEqual([{ name: "list-wikis", face: 1 }]);
+    expect(JSON.parse(c.out().trim().split("\n").pop()!)).toMatchObject({ ok: true, data: { ...ANSWER, face: 1 } });
+    expect(await cmdWikiList(parseArgs(["wiki", "--face", "3", "--json"]))).not.toBe(0);
+    expect(JSON.parse(c.out().trim().split("\n").pop()!)).toMatchObject({ ok: false, error: { code: "face-not-open" } });
   });
 
   test("CONTROL: a row with composition `own` and defaultDiffers false does not read as differing", async () => {

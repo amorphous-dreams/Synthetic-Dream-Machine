@@ -42,7 +42,7 @@ const NOT_HELD: readonly { readonly paths: readonly string[]; readonly code: str
     reason: (p) => `\`${p}\` belongs to the host shim: it stands, stops, builds, founds or reads a container on a host. A browser vessel stands when its page loads and founds from the page's own founding door.` },
   { paths: ["vessel stand", "vessel stop", "vessel found", "herm", "host", "intent-relay"], code: "needs-inbound-socket",
     reason: (p) => `\`${p}\` stands or tends a listening socket, and a browser opens none: this vessel dials a hearth's relay and serves nobody.` },
-  { paths: ["vault unlock", "vault bind", "vault unbind", "vault rewrap", "vault backup", "vault restore", "raise", "rotate-place"], code: "hand-needed",
+  { paths: ["vault unlock", "vault bind", "vault unbind", "vault backup", "vault restore", "raise", "rotate-place"], code: "hand-needed",
     reason: (p) => `\`${p}\` takes a person's hand and a secret, and the console takes neither. The vessel raises its ask at the top of the page, and the ceremony document it opens takes the secret.` },
   { paths: ["vault lock"], code: "locks-by-leaving",
     reason: () => "a browser vessel locks when its face's last tab closes or reloads: each tab holds its own unlock, and the vessel returns to its floor as the last one leaves. Close or reload this site's tabs to lock it." },

@@ -12,6 +12,22 @@
       "import": "./dist/agile-digest.js",
       "types": "./dist/agile-digest.d.ts"
     },
+    "./ddate": {
+      "import": "./dist/ddate.js",
+      "types": "./dist/ddate.d.ts"
+    },
+    "./entropy-door": {
+      "import": "./dist/entropy-door.js",
+      "types": "./dist/entropy-door.d.ts"
+    },
+    "./oracle-cast": {
+      "import": "./dist/oracle-cast.js",
+      "types": "./dist/oracle-cast.d.ts"
+    },
+    "./spirit-shrine": {
+      "import": "./dist/spirit-shrine.js",
+      "types": "./dist/spirit-shrine.d.ts"
+    },
     "./bures-metric": {
       "import": "./dist/bures-metric.js",
       "types": "./dist/bures-metric.d.ts"
@@ -23,6 +39,10 @@
     "./record-port": {
       "import": "./dist/record-port.js",
       "types": "./dist/record-port.d.ts"
+    },
+    "./executable-class": {
+      "import": "./dist/executable-class.js",
+      "types": "./dist/executable-class.d.ts"
     },
     "./port-lease": {
       "import": "./dist/port-lease.js",
@@ -39,6 +59,18 @@
     "./carrier-type": {
       "import": "./dist/carrier-type.js",
       "types": "./dist/carrier-type.d.ts"
+    },
+    "./carrier-form": {
+      "import": "./dist/carrier-form.js",
+      "types": "./dist/carrier-form.d.ts"
+    },
+    "./meme-merge": {
+      "import": "./dist/meme-merge.js",
+      "types": "./dist/meme-merge.d.ts"
+    },
+    "./meme-merge-git": {
+      "import": "./dist/meme-merge-git.js",
+      "types": "./dist/meme-merge-git.d.ts"
     },
     "./cas": {
       "import": "./dist/cas.js",
@@ -152,6 +184,10 @@
       "import": "./dist/lent-faces.js",
       "types": "./dist/lent-faces.d.ts"
     },
+    "./cross-face-reach": {
+      "import": "./dist/cross-face-reach.js",
+      "types": "./dist/cross-face-reach.d.ts"
+    },
     "./chore-ask": {
       "import": "./dist/chore-ask.js",
       "types": "./dist/chore-ask.d.ts"
@@ -159,6 +195,10 @@
     "./host-task": {
       "import": "./dist/host-task.js",
       "types": "./dist/host-task.d.ts"
+    },
+    "./wave-crest": {
+      "import": "./dist/wave-crest.js",
+      "types": "./dist/wave-crest.d.ts"
     },
     "./tiddler-store": {
       "import": "./dist/tiddler-store.js",

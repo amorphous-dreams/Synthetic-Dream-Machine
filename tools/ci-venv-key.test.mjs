@@ -28,7 +28,43 @@ for (const name of flows) {
   });
 
   test(`${name}: the holder venv key folds the exact python version`, () => {
-    assert.match(key, /steps\.[\w-]+\.outputs\.python-version/, key);
-    assert.match(yml, /- uses: actions\/setup-python@[^\n]+\n\s+id: [\w-]+/, "setup-python carries an id so its output is readable");
+    const id = /steps\.([\w-]+)\.outputs\.python-version/.exec(key)?.[1];
+    assert.ok(id, key);
+    assert.match(yml, new RegExp(`\\n\\s+id: ${id}\\n`), `a step carries id ${id} so its output is readable`);
+  });
+}
+
+// A job container (the Playwright image) mounts the runner's hostedtoolcache, and setup-python's build there links
+// the runner image's OpenSSL, which the container's own libraries do not carry: its `ssl` fails to import and pip
+// cannot reach PyPI. The container cells therefore stand the venv on the image's own python3, setup-python runs on
+// the bare-runner cells alone, and every interpreter the venv stands on must answer `import ssl` or fail by name.
+{
+  const yml = code(readFileSync(join(ROOT, ".github/workflows/ci.yml"), "utf8"));
+  const cells = /\n  test-cells:\n[\s\S]*?(?=\n  [\w-]+:\n)/.exec(yml)?.[0] ?? "";
+  const step = (head) => new RegExp(`${head}[^\\n]*\\n(?:\\s{8,}[^\\n]*\\n|\\n)*?(?=\\s{6}- )`).exec(cells)?.[0] ?? "";
+  const setupPy = step("- uses: actions/setup-python@");
+  const stand = step("- name: Stand the holder venv \\(~/\\.venv\\)");
+
+  test("ci.yml test-cells: the job runs container cells and stands a holder venv (control)", () => {
+    assert.match(cells, /container: \$\{\{ matrix\.container \}\}/);
+    assert.ok(setupPy, "test-cells carries a setup-python step");
+    assert.ok(stand, "test-cells carries the venv step");
+  });
+
+  test("ci.yml test-cells: setup-python runs on the bare-runner cells alone", () => {
+    assert.match(setupPy, /\n\s+if: \$\{\{ !matrix\.container(?: && contains\(needs\.scope\.outputs\.cells, matrix\.cell\))? \}\}\n/, setupPy);
+  });
+
+  test("ci.yml test-cells: the interpreter that stands the venv must carry ssl, failing by name", () => {
+    assert.match(cells, /python3 -c ['"]import ssl['"][^\n]*\|\|[^\n]*::error[^\n]*ssl/, "a missing ssl module names itself");
+  });
+
+  test("ci.yml test-cells: a restored venv whose interpreter lacks ssl stands again", () => {
+    assert.match(stand, /CACHE_HIT" = 'true' \] && ~\/\.venv\/bin\/python3 -c ['"]import ssl['"]/, stand);
+  });
+
+  test("ci.yml test-cells: a pip-less interpreter (the image's python3) bootstraps pip into the venv", () => {
+    assert.match(stand, /python3 -m venv --without-pip ~\/\.venv/, stand);
+    assert.match(stand, /get-pip\.py/, stand);
   });
 }

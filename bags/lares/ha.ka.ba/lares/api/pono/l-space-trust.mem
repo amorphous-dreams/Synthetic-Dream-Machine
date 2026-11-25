@@ -73,6 +73,28 @@ Explicit operator-mediated promotion MAY move content upward by creating or revi
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/read-doors`>>
+
+!! Read Doors ~ Provenance and Weight
+
+''A model's context stream holds its state.'' Text a model reads both informs and steers it: the black speaks and the red acts in every span, a weighting and never a split (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot#/classifier-channel`>>). So no door can hand an AI reader text that only informs.
+
+''An AI-facing door labels provenance and weight, never a data/instruction split.'' Every read names the wiki or bag that answered, and the reader weighs it from there.
+
+''A read turns through the five tools'' (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot#/mu-five-tools`>>). Standing never ranks once and for all; each read weighs as the tools turn it:
+
+* 🜂 Wand `*` ~ ignition: any layer's words may light a move; the working layer carries the house's live thinking, the node's own included ~ the freshest fire, never the least weight.
+* 🜄 Cup `?` ~ sympathy: a read weighs by how it sits with the mutual frame, the operator's intent and the law around it.
+* 🜁 Sword `!` ~ discernment: the door names where the text came from (the wiki or bag that answered), and a claim stands on what the reader can verify, whatever its layer.
+* 🜃 Pentacle `_` ~ ground: residency (canon, working, peer, document) grounds a text's standing ~ presence acknowledged, essence unclaimed; canon carries the house's settled hand, never a truth above question.
+* 🜍 Arcana `0` ~ unask: the ladder itself (#/precedence) rides as catma; operator and node hold the frame together (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot#/working-agreement`>>), and no layer and no seat steers alone.
+
+''The guards carry the trust.'' A label alone steers nothing; residency makes it trustworthy. A law row prints only where a canon layer answers its record, under a title that reads as one `lar:` address, and a face's pins reorder canon and add none, so nothing a face writes prints as law. A read verb carries no outward channel. A door MUST keep these guards whole, and MUST NOT word its framing as a wall the reader's attention cannot cross.
+
+''A recipe names the layers a read stacks.'' `recipe="default"` composes the worn face's daemon wiki over the oracle floor and never a canon bag, so canon text searches through `recipe="<canon slug>"` (`lares`, for one). The oracle floor answering canon titles under `default` stands by design.
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/edges`>>
 
 !! Edges
@@ -85,6 +107,6 @@ Explicit operator-mediated promotion MAY move content upward by creating or revi
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;AUtZH3XtXtHAIsc56eHiht1vNM95yOaZLv4ryGOtAgY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7bTF-8fKdh0zAR1LkoDrd3v5xSvC14yEsabavV16PbQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

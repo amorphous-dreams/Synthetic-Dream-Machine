@@ -273,7 +273,7 @@ describe("the paper read-back refusal names a position, never a word", () => {
   });
 });
 
-// ── THE RELATION CLASS AND THE OLD-SHAPE REFUSAL (P3 mesh custody contract) ──────────────────────────────────
+// ── THE RELATION CLASS AND THE OCCUPIED-STORE REFUSAL (P3 mesh custody contract) ──────────────────────────────────
 
 /** A scratch store that records every mutating call; nothing here touches a real home. */
 class ScratchIo implements CustodyIo {
@@ -299,7 +299,7 @@ const text = (s: string) => new TextEncoder().encode(s);
 describe("an occupied store refuses BEFORE any write", () => {
   test("RED: founding the tree over a CLEARTEXT root refuses by name, and the store sees no mutation", async () => {
     const io = new ScratchIo();
-    io.files.set(ROOT.path, text("a cleartext custody root, as the old build kept it"));
+    io.files.set(ROOT.path, text("a cleartext custody root"));
     const treeKey = mintTreeKey();
     const tree = await bindSlot(null, treeKey, { t: 1, pins: [right] }, nativeKdf);
     const err = await commitSlotTree({ io, path: TREE, expected: null, treeKey, tree, carriers: [ROOT, KEYRING] }).catch((e: unknown) => e);
@@ -312,10 +312,10 @@ describe("an occupied store refuses BEFORE any write", () => {
 
   test("RED: a sealed file no listed carrier names refuses the founding too (the census law)", async () => {
     const io = new ScratchIo();
-    const old = mintTreeKey();
-    const oldTree = await bindSlot(null, old, { t: 1, pins: [right] }, nativeKdf);
-    await commitSlotTree({ io, path: "/other/tree.bin", expected: null, treeKey: old, tree: oldTree, carriers: [] });
-    await writeSealedCarrier({ io, treeKey: old, treePath: "/other/tree.bin", carrier: { name: "stray", path: "/scratch/stray.bin" }, plaintext: text("x") });
+    const other = mintTreeKey();
+    const otherTree = await bindSlot(null, other, { t: 1, pins: [right] }, nativeKdf);
+    await commitSlotTree({ io, path: "/other/tree.bin", expected: null, treeKey: other, tree: otherTree, carriers: [] });
+    await writeSealedCarrier({ io, treeKey: other, treePath: "/other/tree.bin", carrier: { name: "stray", path: "/scratch/stray.bin" }, plaintext: text("x") });
     io.files.delete("/other/tree.bin");
     io.mutations.length = 0;
     const treeKey = mintTreeKey();

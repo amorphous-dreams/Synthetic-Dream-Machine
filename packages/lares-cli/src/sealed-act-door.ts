@@ -94,7 +94,7 @@ async function actInSession(act: SealedActName, args: Readonly<Record<string, un
     if (e instanceof SessionRefused) throw new SealedActRefused("act-refused", e.message);
     throw e;
   }
-  try { return await session.act(act, typeof args["handleIndex"] === "number" ? args : { ...args, face }); }
+  try { return (await session.act(act, typeof args["handleIndex"] === "number" ? args : { ...args, face })).answer; }
   catch (e) {
     if (e instanceof SessionRefused) throw new SealedActRefused("act-refused", e.message);
     throw e;

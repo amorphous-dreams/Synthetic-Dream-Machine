@@ -544,7 +544,7 @@ describe("IslandAdaptor — cascade config drift guard", () => {
 });
 
 describe("IslandAdaptor — outbound deleteTiddler", () => {
-  test("lar: URI → store.tombstone() called", async () => {
+  test("★ an engine delete over nothing beneath leaves no tombstone: the record retracts to absent ★", async () => {
     const tw5     = new FakeTW5Engine();
     const store   = new MemoryTiddlerStore();
     const adaptor = new IslandAdaptor(tw5 as never, asIslandStore(store), INSTANCE_ID);
@@ -557,7 +557,98 @@ describe("IslandAdaptor — outbound deleteTiddler", () => {
     store.tombstone = async (t, o) => { tombstones.push(t); return orig(t, o); };
 
     await Promise.all([adaptor.deleteTiddler(LAR_URI), adaptor.boundary()]);
-    expect(tombstones).toContain(LAR_URI);
+    expect(tombstones).toEqual([]);
+    expect(await store.get(LAR_URI), "the record leaves its layer; no kāpae stands in its place").toBeNull();
+  });
+
+  /** The stacks the two controls share: a writable canon layer beneath the working layer, the default writable. */
+  const WORKING = wikiSlotUri("test-wiki", "working");
+  const CANON = "lar:///ha.ka.ba/bags/writable-canon";
+  function stackOf(): { composite: CompositeStore; working: MemoryTiddlerStore; canon: MemoryTiddlerStore } {
+    const working = new MemoryTiddlerStore();
+    const canon = new MemoryTiddlerStore();
+    const composite = new CompositeStore();
+    composite.addLayer({ bagId: CANON, store: canon, writable: true, defaultWritable: false });
+    composite.addLayer({ bagId: WORKING, store: working, writable: true, defaultWritable: true });
+    return { composite, working, canon };
+  }
+
+  test("★ a record only the working layer holds leaves plainly, with no kāpae over it ★", async () => {
+    vi.useFakeTimers();
+    const { composite, working, canon } = stackOf();
+    const adaptor = new IslandAdaptor(new FakeTW5Engine() as never, composite, INSTANCE_ID);
+    adaptor.start();
+    await working.put({ tiddler: { title: LAR_URI, text: "mine" } }, crdtRemote());
+    await vi.advanceTimersByTimeAsync(1);
+    const deleted = adaptor.deleteTiddler(LAR_URI);
+    await adaptor.boundary();
+    await deleted;
+    adaptor.stop();
+    vi.useRealTimers();
+    expect(await working.get(LAR_URI)).toBeNull();
+    expect(await canon.get(LAR_URI)).toBeNull();
+  });
+
+  test("★ CONTROL: a delete over a lower canon title still raises the kāpae, so the browser's delete keeps the canon record hidden ★", async () => {
+    vi.useFakeTimers();
+    const { composite, working, canon } = stackOf();
+    const adaptor = new IslandAdaptor(new FakeTW5Engine() as never, composite, INSTANCE_ID);
+    adaptor.start();
+    await canon.put({ tiddler: { title: LAR_URI, text: "canon" } }, crdtRemote());
+    await vi.advanceTimersByTimeAsync(1);
+    const deleted = adaptor.deleteTiddler(LAR_URI);
+    await adaptor.boundary();
+    await deleted;
+    adaptor.stop();
+    vi.useRealTimers();
+    expect((await working.get(LAR_URI))?.meta?.deleted, "the working layer shadows the canon record").toBe(true);
+    expect((await canon.get(LAR_URI))?.meta?.deleted, "canon keeps its own record").not.toBe(true);
+  });
+
+  /** Delete a record only the working layer holds, over `composite`; answers the working layer's record after. */
+  async function deleteWorkingOnly(composite: CompositeStore, working: MemoryTiddlerStore): Promise<LarTiddlerRecord | null> {
+    vi.useFakeTimers();
+    const adaptor = new IslandAdaptor(new FakeTW5Engine() as never, composite, INSTANCE_ID);
+    adaptor.start();
+    await working.put({ tiddler: { title: LAR_URI, text: "mine" } }, crdtRemote());
+    await vi.advanceTimersByTimeAsync(1);
+    const deleted = adaptor.deleteTiddler(LAR_URI);
+    await adaptor.boundary();
+    await deleted;
+    adaptor.stop();
+    vi.useRealTimers();
+    return working.get(LAR_URI);
+  }
+
+  test("★ a recipe slot beneath the working layer the composer could not reach counts as holding the title: the engine delete raises the kāpae, so a face that reaches that bag never sees its record surface ★", async () => {
+    // A shared workbench [working, realm canon R, canon]: this face reaches no R, and R may hold the title.
+    const realm = "lar:///ha.ka.ba/bags/realm-r";
+    const { composite, working } = stackOf();
+    composite.markUnreached([WORKING, realm, CANON], [realm]);
+    expect((await deleteWorkingOnly(composite, working))?.meta?.deleted, "a kāpae over the unread layer").toBe(true);
+  });
+
+  test("★ a mounted layer beneath that stands in for an unread document (a degraded, pending or late blank) counts as holding the title: the delete raises the kāpae ★", async () => {
+    const working = new MemoryTiddlerStore();
+    const blank = Object.assign(new MemoryTiddlerStore(), { unknown: () => true });
+    const composite = new CompositeStore();
+    composite.addLayer({ bagId: CANON, store: blank, writable: false });
+    composite.addLayer({ bagId: WORKING, store: working, writable: true, defaultWritable: true });
+    expect((await deleteWorkingOnly(composite, working))?.meta?.deleted, "a kāpae over the stand-in").toBe(true);
+  });
+
+  test("CONTROL: an unreached slot or a stand-in ABOVE the working layer, or a stand-in released, leaves the plain retract", async () => {
+    const { composite, working } = stackOf();
+    composite.markUnreached([wikiSlotUri("test-wiki", "draft"), WORKING, CANON], [wikiSlotUri("test-wiki", "draft")]);
+    expect(await deleteWorkingOnly(composite, working), "nothing unread beneath: plain").toBeNull();
+    let unread = true;
+    const released = new MemoryTiddlerStore();
+    const blank = Object.assign(new MemoryTiddlerStore(), { unknown: () => unread });
+    const stacked = new CompositeStore();
+    stacked.addLayer({ bagId: CANON, store: blank, writable: false });
+    stacked.addLayer({ bagId: WORKING, store: released, writable: true, defaultWritable: true });
+    unread = false;
+    expect(await deleteWorkingOnly(stacked, released), "the real document merged in, and it holds nothing: plain").toBeNull();
   });
 });
 
@@ -594,16 +685,17 @@ describe("IslandAdaptor — the apply flag does not classify a hand", () => {
     const adaptor = new IslandAdaptor(tw5 as never, asIslandStore(store), INSTANCE_ID);
     adaptor.start();
 
-    let tombstoneCount = 0;
-    const orig = store.tombstone.bind(store);
-    store.tombstone = async (t, o) => { tombstoneCount++; return orig(t, o); };
+    await store.put({ tiddler: { title: LAR_URI, text: "exist" } }, crdtRemote());
+    let leaveCount = 0;
+    const orig = store.remove.bind(store);
+    store.remove = async (t, o, opts) => { leaveCount++; return orig(t, o, opts); };
 
     tw5.applying = true;
     const deleted = adaptor.deleteTiddler(LAR_URI);
     await adaptor.boundary();
     await deleted;
 
-    expect(tombstoneCount).toBe(1);
+    expect(leaveCount, "nothing lies beneath, so the delete retracts the record").toBe(1);
     await adaptor.stop();
     vi.useRealTimers();
   });

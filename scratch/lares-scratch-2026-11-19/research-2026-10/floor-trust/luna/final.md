@@ -1,0 +1,1 @@
+Wrote the handback to [out2.md](/home/joshu/.lares-scratch/research/floor-trust/luna/out2.md). It covers F1–F6 in 821 words. Repository access stayed read-only; no suites ran.

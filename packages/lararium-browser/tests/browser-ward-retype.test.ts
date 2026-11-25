@@ -4,17 +4,16 @@
  * A ward MINT binds a fresh ward over the route the person types, and nothing reopens a ward bound over a typo: a mint asks its
  * route twice (`bind`, then `retype`) and binds only where both match; a mismatch refuses `ward-route-mismatch` and binds nothing.
  * An act over a ward that stands asks once (`open`). The dialog's words name the act truly: a bind binds, an open opens.
- * The tag door sweeps the face's sealed ward-key row from before the ward key moved under its own ward (alpha line, no shim).
  * Only the test-only entry seats the ward worker's spawn: a product caller's `spawn` reaches no door. A malformed face name refuses
  * in the browser's own refusal class.
  *
- * Reds: a typo'd retype binds; the old sealed row stays; a caller's spawn runs the act; a group holding "/" raises the mesh class.
- * Controls: a matching retype binds and its key opens under that route; an open asks once; the face's other rows stand.
+ * Reds: a typo'd retype binds; a caller's spawn runs the act; a group holding "/" raises the mesh class.
+ * Controls: a matching retype binds and its key opens under that route; an open asks once.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness#/the-swarm-slices
  */
 import { bindFirstFaceSlot } from "../src/browser-face-custody.js";
 import { expect, test } from "vitest";
-import { browserKeystoreCustodyIo, BrowserWardRefused, readKeystoreRecord, sealBrowserKeystore } from "../src/browser-custody.js";
+import { browserKeystoreCustodyIo, BrowserWardRefused, sealBrowserKeystore } from "../src/browser-custody.js";
 import { browserVesselFaceTagDoor } from "../src/browser-face-atom.js";
 import * as ward from "../src/browser-ward.js";
 import { runWardAct } from "../src/ward-core.js";
@@ -92,17 +91,6 @@ test("RED: the ward dialog's words name a bind as a bind; CONTROL: an open names
   expect(retype).toMatch(/again/);
   expect(open).toMatch(/\bopen/);
   expect(open).not.toMatch(/\bbind/);
-});
-
-test("RED: the face's sealed ward-key row from before the move stays on disk; CONTROL: the next tag ask sweeps it, and the tag row and the warded key rows stand", async () => {
-  const s = await fresh();
-  const me = await keyed(92);
-  await s.io.write(`sealed/ward-sign/${s.G}`, new Uint8Array([7, 7, 7]));
-  expect(await s.io.read(`sealed/ward-sign/${s.G}`)).not.toBeNull();
-  const fields = await browserVesselFaceTagDoor(s.idbName, { route: async () => PASS, spawn: core("passed") } as never)(s.G, me.key);
-  expect(await s.io.read(`sealed/ward-sign/${s.G}`)).toBeNull();
-  expect(await readKeystoreRecord(s.idbName, `vessel-face-tag/${s.G}`), "the tag row stands under the face's own tree").toBeInstanceOf(Uint8Array);
-  expect(await ward.browserWardKeyOf(s.idbName, s.G)).toBe(fields.wardKey);
 });
 
 test("RED: a caller's `spawn` runs the tag door's ward act; CONTROL: only the test-only entry seats the worker, and the product index exports no seat", async () => {

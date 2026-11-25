@@ -860,8 +860,7 @@ export async function runDeviceAdmitEdge(
     hearthTrueName:     input.hearthTrueName,
     // THE DEVICE-ADMIT PATH MUST CARRY A REAL EPOCH — this edge licenses a NEW device, so it binds to the
     // lease epoch the caller read live (`input.boundEpoch`), never a frozen genesis value. Absent a live
-    // read, 0 is the honest floor (a doc predating the epoch wiring reads every device as maximally stale —
-    // safe direction — never the reverse).
+    // read, 0 is the honest floor: it reads every device as maximally stale, the safe direction.
     boundEpoch:         input.boundEpoch ?? 0,
   });
   const issued: DeviceAdmitPayload = {

@@ -8,6 +8,13 @@
  * here, and of its leaving, never does** — Society of American Archivists
  * professional discipline applied to a CRDT mesh.
  *
+ * Indelible at HOUSE level: CLEAR and DROP never tombstone a ledger row, and
+ * no hand's door writes or removes one (`refuseEffectLedgerWrite`). The one
+ * act that erases a document holding effect records, `retire-wiki` over a
+ * face's wiki shell, first carries them verbatim into that face's retirement
+ * record (`shell-leaving-record.ts`, its daemon wiki working layer) and reads
+ * the copy back; a carry that cannot land refuses the retire, erasing nothing.
+ *
  * The dual-surface design from residency-model.md:
  *   - ACTION verbs (lar URIs, ALL CAPS, SPARQL Update derivation) — gesture
  *   - Effect-record annotations (tiddler tags, archival profession derivation) — audit
@@ -26,6 +33,8 @@
 import type { ResidencyAction, ActionVerb } from "./residency-actions.js";
 import { stableTagUri } from "./lar-uris.js";
 import type { LarTiddlerRecord, LarTiddlerStore, ChangeOrigin } from "./tiddler-store.js";
+import { VerbRefusal } from "./verb-refusal.js";
+import { isShellLeavingUri } from "./shell-leaving-record.js";
 
 // ── Archival verb vocabulary ────────────────────────────────────────────────
 
@@ -121,6 +130,47 @@ export function isEffectRecordUri(title: string): boolean {
   // audit record on every plane (it is audit data, never a carrier surface). A
   // narrower prefix pattern leaks a ledger record held by a per-wiki slot to disk.
   return /^lar:\/\/\/[^/]+\/.+\/ledger\/residency\/[^/]+$/.test(title);
+}
+
+/** The refusal a residency-ledger write from any door but the house's effect recorder names. */
+export const EFFECT_LEDGER_HOUSE_ONLY = "effect-ledger-house-only";
+
+/**
+ * A RESIDENCY LEDGER TAKES THE HOUSE'S HAND ALONE. The effect recorder (`writeEffectRecord`, through a bag's own store) writes
+ * every row under `<holder>/ledger/residency/`; a hand's door (the tiddler door, the meme door, the engine's cascade from a
+ * page or a draft) neither writes nor removes one, whoever asks. The refusal names the title and the door. A shell's record
+ * of leaving (`shell-leaving-record.ts`) takes the same wall: the retire's carry alone writes it.
+ */
+export function refuseEffectLedgerWrite(title: string, verb: string): void {
+  if (isEffectRecordUri(title)) {
+    throw new VerbRefusal(EFFECT_LEDGER_HOUSE_ONLY, `${EFFECT_LEDGER_HOUSE_ONLY}: "${title}" rests in a residency ledger; the house's effect recorder alone writes there, and ${verb} neither writes nor removes it.`);
+  }
+  if (isShellLeavingUri(title)) {
+    throw new VerbRefusal(EFFECT_LEDGER_HOUSE_ONLY, `${EFFECT_LEDGER_HOUSE_ONLY}: "${title}" holds a retired shell's effect records; the retire's carry alone writes there, and ${verb} neither writes nor removes it.`);
+  }
+}
+
+/** True when `title` takes the house's hand alone: a residency-ledger row, or a shell's record of leaving. */
+export function isHouseLedgerUri(title: string): boolean {
+  return isEffectRecordUri(title) || isShellLeavingUri(title);
+}
+
+/** Two flat field bags hold the same keys and the same values (each value read as its string). */
+function sameEffectFields(a: Record<string, unknown>, b: Record<string, unknown>): boolean {
+  const keys = Object.keys(a);
+  if (keys.length !== Object.keys(b).length) return false;
+  return keys.every((k) => Object.prototype.hasOwnProperty.call(b, k) && String(a[k]) === String(b[k]));
+}
+
+/**
+ * THE HOUSE'S OWN EFFECT RECORD IN ONE LAYER: the row reads back as the one the ledger's builder writes for THAT layer's bag
+ * (`buildEffectRecordTiddler`): its title rests under `effectLedgerPrefix(bag)` at its own event id, its `bag` field names
+ * that bag, and it carries no field beside the schema's (no text). The same reading the retired-bag passage holds.
+ */
+export function isHouseEffectRecordOf(bag: string, title: string, fields: Record<string, unknown>): boolean {
+  const parsed = parseEffectRecord(fields);
+  if (!parsed || parsed.bag !== bag || fields["title"] !== title || title !== effectRecordUri(bag, parsed.eventId)) return false;
+  return sameEffectFields(buildEffectRecordTiddler(parsed).tiddler as Record<string, unknown>, fields);
 }
 
 // ── EffectRecord shape ─────────────────────────────────────────────────────

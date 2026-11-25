@@ -1,7 +1,7 @@
 /**
  * realm-bag — a bag two operators keep THROUGH a relation, registered on the realm's shared CRDT.
  *
- * THE RULING (scale-stories-basket-one#/exit, 2026-09-11): "the shared bag registers in the realm's shared
+ * THE RULING (cabal-realm#/the-shared-bag, 2026-09-11): "the shared bag registers in the realm's shared
  * CRDT, crossroads-plane names only that it exists, read at CONTRACT". Three planes, never fused
  * (cabal-realm#six-joints): the CABAL is the collective, the REALM its shared CRDT and resources, the NEXUS the
  * hardware. A bag two households keep is stuff held in common — it belongs to the REALM plane.
@@ -140,7 +140,7 @@ export interface RealmBagRegistration {
   readonly kind:       typeof REALM_BAG_DOMAIN;
   /** The realm this registration lives in — a record carried onto another realm's doc never counts. */
   readonly realmId:    string;
-  /** The bag's lar: URI — the name both sides ask by (`meme get --bag lares`). */
+  /** The bag's lar: URI — the name both sides ask by (`tiddler get --meme --bag lares`). */
   readonly bagUri:     string;
   /** The Automerge doc URL the bag's tiddlers live in — the doc the members replicate. */
   readonly docUrl:     string;

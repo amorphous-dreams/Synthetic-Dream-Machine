@@ -14,7 +14,7 @@
  *
  * ── ONLY THE OPERATOR'S HAND LIGHTS THE PŪLAMA ──────────────────────────────────────────────────
  * No door here opens a key. A face's unlock answers what already stands open at the pūlama; a proof, an adoption, a
- * founding, a ward act and a rewrap refuse `needs-the-human`: each asks a human route, and that route belongs at the
+ * founding and a ward act refuse `needs-the-human`: each asks a human route, and that route belongs at the
  * pūlama's own hand door. `lock` leaves the session and never dims the pūlama.
  *
  * ── A DECISION RUNS HERE, THE WRITE LANDS THERE ─────────────────────────────────────────────────
@@ -28,6 +28,14 @@
  * stand lit as open and the lent faces still dark as waiting. A session frame whose lent set reads empty, malformed or
  * doubled refuses by the set's own reading (`lent-faces-empty`, `lent-faces-malformed`, `lent-faces-duplicate`) and no
  * session stands: no set never reads as a lend of every face.
+ *
+ * ── THE PŪLAMA REMEMBERS THE WORN FACE ──────────────────────────────────────────────────────────
+ * `tellWorn` sends the pūlama the one ordinal the wear door just wore (`face.worn`), and `worn` reads back the ordinal the
+ * session's standing carried at the hello. Nothing else rides that op: no route, no key, no row.
+ *
+ * ── A RECARD SPENDS THE PŪLAMA'S GRANT ──────────────────────────────────────────────────────────
+ * `takeRecard` asks the pūlama for the one recard grant its hand door rested for a lent face (`face.recard`), by ordinal and
+ * nothing beside it; true spends it. The route proved at the hand door, never here.
  *
  * `derive` answers synchronously from the children the session carried, under the domains the pūlama serves a session.
  * The holder names no host: `dial` hands it a channel.
@@ -46,8 +54,14 @@ export interface PulamaStanding {
   readonly slot: string | null; readonly attemptsLeft: number;
   /** The lent faces that stand lit, by custody id. */
   readonly faces: readonly string[];
+  /** Each lit face's opening as the pūlama's own holder numbers it: a lock and re-lend there carries a new number. */
+  readonly openings: Readonly<Record<string, string>>;
   /** The lent faces still dark at the pūlama, by ordinal. */
   readonly waiting: readonly number[];
+  /** The lent faces the pūlama names closing (two-phase close), by custody id: their key stays until this vessel answers. */
+  readonly closing: readonly string[];
+  /** The face a wear door last wore, as the pūlama remembers it; absent where it heard no wear since it was lit. */
+  readonly worn?: number;
 }
 
 /** What a session serves: the faces the pūlama lends this vessel. */
@@ -64,6 +78,20 @@ export interface PulamaHolder extends CustodyHolder {
   landRite(): Promise<{ readonly par: boolean }>;
   /** What the pūlama answered this side's last hello, where it refused one and no session stood since; null otherwise. */
   waits(): string | null;
+  /** The face the pūlama remembers a wear door last wore, by ordinal, as the session's standing carries it; undefined
+   *  with no session or no wear heard. The ordinal may name a face outside this session's lend: the reader checks. */
+  worn(): number | undefined;
+  /** Tell the pūlama the face this vessel now wears: one ordinal, nothing beside it. Only the wear door calls it. */
+  tellWorn(ordinal: number): Promise<void>;
+  /** Spend the recard grant the pūlama's hand door rested for the lent face at `ordinal`: true once, false where none stands.
+   *  The custody door's recard alone calls it, with the ordinal alone. */
+  takeRecard(ordinal: number): Promise<boolean>;
+  /**
+   * THE CLEAN GOODBYE: the vessel drained every save and leaves. It tells the pūlama so through its session, naming the life
+   * its hello named, and the session ends. Answers whether the pūlama heard it: with no session, no life to name, or a refusal,
+   * no goodbye stands, and the leaving reads as any dropped session does. Only a vessel's clean exit calls it.
+   */
+  goodbye(): Promise<boolean>;
 }
 
 interface Session {
@@ -78,12 +106,16 @@ const needsHuman = (what: string): Promise<never> =>
   Promise.reject(new PulamaRefused("needs-the-human", `${what} asks a human route, and a pūlama session carries none: ask it at the pūlama's own hand door`));
 
 const standingOf = (raw: unknown): PulamaStanding => {
-  const s = (raw ?? {}) as { slot?: unknown; attemptsLeft?: unknown; faces?: unknown; waiting?: unknown };
+  const s = (raw ?? {}) as { slot?: unknown; attemptsLeft?: unknown; faces?: unknown; openings?: unknown; waiting?: unknown; closing?: unknown; worn?: unknown };
   return {
     slot: typeof s.slot === "string" ? s.slot : null,
     attemptsLeft: typeof s.attemptsLeft === "number" ? s.attemptsLeft : 0,
     faces: Array.isArray(s.faces) ? s.faces.filter((f): f is string => typeof f === "string") : [],
+    openings: typeof s.openings === "object" && s.openings !== null
+      ? Object.fromEntries(Object.entries(s.openings).filter((e): e is [string, string] => typeof e[1] === "string" && e[1].length > 0)) : {},
     waiting: Array.isArray(s.waiting) ? s.waiting.filter((o): o is number => Number.isSafeInteger(o) && o >= 0) : [],
+    closing: Array.isArray(s.closing) ? s.closing.filter((f): f is string => typeof f === "string") : [],
+    ...(Number.isSafeInteger(s.worn) && (s.worn as number) >= 0 ? { worn: s.worn as number } : {}),
   };
 };
 const derivedOf = (raw: unknown): Record<string, Uint8Array> => {
@@ -92,12 +124,26 @@ const derivedOf = (raw: unknown): Record<string, Uint8Array> => {
   return out;
 };
 
+/** How long a vessel's goodbye waits on its pūlama before it leaves unheard: the exit's liveness bound, never a verdict. */
+export const GOODBYE_WAIT_MS = 2_000;
+
 export function makePulamaHolder(a: {
   readonly homes: CustodyHomes;
   /** Open one channel to the pūlama. A pūlama that does not answer rejects. */
   readonly dial: () => Promise<PulamaChannel>;
   /** What this kūkulu wears into the hello: its lei and its vouch, as the pūlama's gate reads them. */
   readonly offer: () => unknown | Promise<unknown>;
+  /**
+   * The vessel life this holder dials for, beside the offer: `{ id }`, the life id the vessel's store claim minted
+   * (`StoreClaim.life`). The pūlama checks it against the life its own hearth names and ties every session of one life
+   * together by it; absent, the hello names no life and its session stands with none.
+   */
+  readonly life?: () => unknown;
+  /**
+   * How long a goodbye waits on the pūlama's answer before this side leaves unheard (default {@link GOODBYE_WAIT_MS}). A bound on
+   * the exit's liveness alone, never a verdict: an answer past it changes nothing here, and an unheard goodbye reads as a drop.
+   */
+  readonly goodbyeWaitMs?: number;
 }): PulamaHolder {
   let session: Session | null = null;
   let nextId = 1;
@@ -108,6 +154,7 @@ export function makePulamaHolder(a: {
   let refused: string | null = null;
   const openedListeners = new Set<() => void>();
   const closedListeners = new Set<() => void>();
+  const closingListeners = new Set<(fcid: string, opening: string | null) => void>();
   const fire = (set: Set<() => void>): void => { for (const l of [...set]) { try { l(); } catch { /* a listener's fault never reaches the holder */ } } };
 
   const drop = (s: Session): void => {
@@ -140,6 +187,10 @@ export function makePulamaHolder(a: {
       s.standing = standingOf(f["standing"]);
       s.derived = derivedOf(f["derived"]);
       fire(openedListeners);
+    } else if (f.t === "closing" && typeof f["fcid"] === "string" && (f["opening"] === null || typeof f["opening"] === "string")) {
+      // THE FIRST PHASE: the pūlama asks this vessel to stop serving a lent face; it keeps the key until `faceClosed` answers.
+      const fcid = f["fcid"], opening = f["opening"] as string | null;
+      for (const l of [...closingListeners]) { try { l(fcid, opening); } catch { /* a listener's fault never reaches the holder */ } }
     }
   };
 
@@ -147,13 +198,14 @@ export function makePulamaHolder(a: {
     const began = left;
     const channel = await a.dial();
     const offer = await a.offer();
+    const life = a.life?.();
     const answered = await new Promise<PulamaFrame | null>((resolve) => {
       channel.onClose(() => resolve(null));
       channel.onFrame((f) => {
         const s = session;
         if (s !== null && s.channel === channel) onFrame(s, f); else resolve(f);
       });
-      channel.send({ t: "hello", offer });
+      channel.send({ t: "hello", offer, ...(life !== undefined ? { life } : {}) });
     });
     if (answered === null) throw new PulamaRefused("pulama-unreachable", "the pūlama closed the channel before it answered the hello");
     if (answered.t !== "session") {
@@ -177,7 +229,7 @@ export function makePulamaHolder(a: {
     refused = null;
     channel.onClose(() => drop(stood));
     fire(openedListeners);
-    return { reading: "opens", slot: stood.standing.slot ?? "pulama" };
+    return { reading: "opens", slot: stood.standing.slot ?? "pulama", opener: [] };
   };
 
   const reading = async (op: string, args: Readonly<Record<string, unknown>>): Promise<RecordReading> => {
@@ -236,7 +288,7 @@ export function makePulamaHolder(a: {
 
   const faceOf = async (face: FaceRef) => await call("face.standing", { face }) as Awaited<ReturnType<CustodyHolder["faceStanding"]>>;
   const faceUnlock = (f: { readonly ordinal: number; readonly fcid: string; readonly unlocked: boolean }): FaceUnlock =>
-    f.unlocked ? { reading: "already-unlocked", fcid: f.fcid, ordinal: f.ordinal } : { reading: "attempts-spent", fcid: f.fcid };
+    f.unlocked ? { reading: "already-unlocked", fcid: f.fcid, ordinal: f.ordinal } : { reading: "attempts-spent", fcid: f.fcid, attemptsLeft: 0 };
 
   return {
     homes: a.homes,
@@ -257,6 +309,26 @@ export function makePulamaHolder(a: {
     lends: () => session?.scope.faces.map((f) => f.ordinal) ?? [],
     waiting: () => session?.standing.waiting ?? [],
     waits: () => (session === null ? refused : null),
+    worn: () => session?.standing.worn,
+    async tellWorn(ordinal) { await call("face.worn", { ordinal }); },
+    async takeRecard(ordinal) { return (await call("face.recard", { ordinal })) === true; },
+    async goodbye() {
+      const s = session, life = a.life?.();
+      // A GOODBYE WHILE A DIAL RUNS COUNTS AS LEAVING: the dial in flight seats no session after it.
+      if (s === null) { left += 1; return false; }
+      // THE GOODBYE IS THE SESSION'S LAST WORD: this side leaves too, heard or not. With no life to name, none is said, and the
+      // leaving reads as any dropped session does. A SILENT PŪLAMA HOLDS NO EXIT: past its bound the goodbye leaves unheard.
+      let bound: ReturnType<typeof setTimeout> | undefined;
+      try {
+        if (life === undefined) return false;
+        const unheard = new Promise<false>((resolve) => { bound = setTimeout(() => resolve(false), a.goodbyeWaitMs ?? GOODBYE_WAIT_MS); });
+        return await Promise.race([call("vessel.goodbye", { life }).then(() => true as const), unheard]);
+      } catch { return false; } finally {
+        clearTimeout(bound);
+        left += 1;
+        if (session === s) { s.channel.close(); drop(s); }
+      }
+    },
     async landRite() { return { par: (await call("rite.land") as { par?: unknown }).par === true }; },
     attemptsLeft: () => session?.standing.attemptsLeft ?? 0,
     openedSlot: () => session?.standing.slot ?? null,
@@ -307,9 +379,14 @@ export function makePulamaHolder(a: {
     faceStanding: (face) => faceOf(face),
     lockFace: () => needsHuman("a face's lock"),
     unlockedFaces: () => session?.standing.faces ?? [],
+    // THE OPENING COMES FROM ITS SOURCE: the pūlama's own number, verbatim; a face it names no opening for reads none (fail closed).
+    faceOpening: (fcid) => (session?.standing.faces.includes(fcid) ? session.standing.openings[fcid] ?? null : null),
+    onClosing(listener) { closingListeners.add(listener); return () => { closingListeners.delete(listener); }; },
+    closingFaces: () => session?.standing.closing ?? [],
+    // THE SECOND PHASE: this vessel's face actor reached closed; the pūlama locks once every session it told answered.
+    async faceClosed(fcid, opening) { await call("face.closed", { fcid, opening }); },
     withWardKey: () => needsHuman("a ward act"),
     async wardPublicKey(face) { return await call("face.ward-key", { face }) as string | null; },
-    rewrapWard: () => needsHuman("a ward rewrap"),
     watchWardKeys() { /* this side opens no ward key */ },
     async isFaceUnlocked(face) {
       if (session === null) return false;

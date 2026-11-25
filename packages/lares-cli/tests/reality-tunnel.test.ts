@@ -4,7 +4,7 @@
  * home.
  */
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import {
   chmodSync, existsSync, lstatSync, statSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, readlinkSync, rmSync, symlinkSync, writeFileSync,
 } from "node:fs";
@@ -13,9 +13,9 @@ import { dirname, join } from "node:path";
 import { EXIT, Ledger, exitOf, read, tend, undo, type External, type Item, type Row } from "../src/reality-tunnel/engine.js";
 import { windowsProfile } from "../src/reality-tunnel/homes.js";
 import { radiusLock } from "../src/reality-tunnel/lock.js";
-import { briefLine, indexReader, liftedLines } from "../src/commands/tunnel-door.js";
+import { briefLine, externalLines, indexReader, liftedLines } from "../src/commands/tunnel-door.js";
 import {
-  claudeHook, headLine, jsonFloor, tomlHookForeign, jsonForeign, jsonIncludes, jsonSet, namesSeed, seedless, tomlHook, tomlMcpServer,
+  claudeHook, headLine, jsonFloor, tomlHookForeign, jsonForeign, jsonIncludes, jsonListForeign, jsonSet, namesSeed, seedless, tomlHook, tomlMcpServer,
   tomlTableKey, tomlTableUnset, tomlTopFloor,
 } from "../src/reality-tunnel/kinds.js";
 import { CARRIER, declared, homeItems, repoItems } from "../src/reality-tunnel/catalog.js";
@@ -193,8 +193,106 @@ describe("the repo radius", () => {
 
   it("the live tree's checkout holds its reality tunnel, read without a write", () => {
     const rows = read(repoItems(REPO), new Ledger(join(dir, "never-written")));
-    expect(rows.filter((r) => r.state !== "aligned")).toEqual([]);
+    // The clone's git config rests outside the tree, and a lane's runner never tends the operator's clone; the scratch
+    // clones below prove the driver's rows.
+    expect(rows.filter((r) => r.state !== "aligned" && r.host !== "git")).toEqual([]);
     expect(existsSync(join(dir, "never-written"))).toBe(false);
+  });
+});
+
+describe("the repo radius seats the seal merge driver in the clone's shared git config", () => {
+  const DRIVER = "node tools/mem-merge-driver.mjs %O %A %B %P %L";
+  const NAME = "a .mem conflict on its seal alone re-seals";
+  const git = (root: string, ...args: string[]): string | null => {
+    try { return execFileSync("git", ["-C", root, ...args], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim(); }
+    catch { return null; }
+  };
+  const configBytes = (root: string): string => readFileSync(join(root, ".git", "config"), "utf8");
+
+  it("the carrier declares both driver keys as repo items", () => {
+    const rows = declared(REPO).repo.filter((s) => s.kind === "git-config");
+    expect(rows.map((s) => [s["key"], s["value"]])).toEqual([["merge.mem-seal.name", NAME], ["merge.mem-seal.driver", DRIVER]]);
+  });
+
+  it("a scratch clone reads drift unset; tend sets both keys; a second tend changes nothing", async () => {
+    const root = clone();
+    const l = ledger();
+    const before = read(repoItems(root), l).filter((r) => r.host === "git");
+    expect(before.map((r) => r.state)).toEqual(["drift", "drift"]);
+    expect(before.every((r) => /unset/.test(r.detail))).toBe(true);
+    const r1 = await tend(repoItems(root), l);
+    expect(r1.set.sort()).toEqual(["git.merge-driver", "git.merge-driver-name"]);
+    expect(git(root, "config", "--local", "--get", "merge.mem-seal.driver")).toBe(DRIVER);
+    expect(git(root, "config", "--local", "--get", "merge.mem-seal.name")).toBe(NAME);
+    const bytes = configBytes(root);
+    const r2 = await tend(repoItems(root), l);
+    expect(r2.wrote).toEqual([]);
+    expect(r2.set).toEqual([]);
+    expect(r2.generation).toBeNull();
+    expect(configBytes(root)).toBe(bytes);
+    const after = r2.rows.filter((r) => r.host === "git");
+    expect(after.map((r) => [r.state, r.touched])).toEqual([["aligned", false], ["aligned", false]]);
+  });
+
+  it("a worktree's tend lands in the clone's shared config, so every worktree of the clone reads it", async () => {
+    const root = clone();
+    execFileSync("git", ["-C", root, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "--allow-empty", "--no-verify", "-m", "root"]);
+    const wt = join(dir, "wt");
+    execFileSync("git", ["-C", root, "worktree", "add", "-q", wt]);
+    for (const rel of [CARRIER, declared(REPO).seed]) {
+      mkdirSync(join(wt, dirname(rel)), { recursive: true });
+      writeFileSync(join(wt, rel), readFileSync(join(root, rel), "utf8"));
+    }
+    await tend(repoItems(wt), ledger());
+    expect(git(root, "config", "--local", "--get", "merge.mem-seal.driver")).toBe(DRIVER);
+  });
+
+  it("a value set by another hand reads drift naming it, and tend sets the tunnel's", async () => {
+    const root = clone();
+    execFileSync("git", ["-C", root, "config", "merge.mem-seal.driver", "node elsewhere.mjs"]);
+    const row = read(repoItems(root), ledger()).find((r) => r.id === "git.merge-driver")!;
+    expect(row.state).toBe("drift");
+    expect(row.detail).toContain("node elsewhere.mjs");
+    await tend(repoItems(root), ledger());
+    expect(git(root, "config", "--local", "--get", "merge.mem-seal.driver")).toBe(DRIVER);
+  });
+
+  it("undo puts the keys back unset", async () => {
+    const root = clone();
+    const l = ledger();
+    await tend(repoItems(root), l);
+    const items = repoItems(root);
+    undo(l, undefined, { externals: new Map(items.filter((i) => i.external).map((i) => [i.id, i.external!] as const)) });
+    expect(git(root, "config", "--local", "--get", "merge.mem-seal.driver")).toBeNull();
+    expect(git(root, "config", "--local", "--get", "merge.mem-seal.name")).toBeNull();
+  });
+
+  it("the commit gate reads the index alone, so an unset driver reads absent there", () => {
+    const root = clone();
+    const show = (rel: string): string | null => { try { return execFileSync("git", ["-C", root, "show", `:${rel}`], { encoding: "utf8" }); } catch { return null; } };
+    execFileSync("git", ["-C", root, "add", "-A"]);
+    const rows = read(repoItems(root, declared(root, show), show, { staged: true }), ledger(), indexReader(root)).filter((r) => r.host === "git");
+    expect(rows.map((r) => r.state)).toEqual(["absent", "absent"]);
+  });
+
+  it("a tree outside any git repository reads the driver absent", () => {
+    const root = mkdtempSync(join(dir, "nogit-"));
+    for (const rel of [CARRIER, declared(REPO).seed]) {
+      mkdirSync(join(root, dirname(rel)), { recursive: true });
+      writeFileSync(join(root, rel), readFileSync(join(REPO, rel), "utf8"));
+    }
+    const rows = read(repoItems(root), ledger()).filter((r) => r.host === "git");
+    expect(rows.map((r) => r.state)).toEqual(["absent", "absent"]);
+  });
+
+  it("tend's report names what it set and what it found already set, in plain words", async () => {
+    const root = clone();
+    const l = ledger();
+    const first = await tend(repoItems(root), l);
+    const set = externalLines(repoItems(root), first);
+    expect(set).toContain(`  set merge.mem-seal.driver = ${DRIVER} (git.merge-driver)`);
+    const second = await tend(repoItems(root), l);
+    expect(externalLines(repoItems(root), second)).toContain(`  already set merge.mem-seal.driver = ${DRIVER} (git.merge-driver)`);
   });
 });
 
@@ -246,9 +344,47 @@ describe("the home radius", () => {
     const h = homes();
     await tend(homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false }), ledger());
     const hooks = JSON.parse(readFileSync(join(h.native, ".claude/settings.json"), "utf8")).hooks as Record<string, Array<{ hooks: unknown[] }>>;
-    const at = (name: string) => ({ type: "command", command: "node", args: [`${root}/packages/lares-cli/.claude-plugin/hooks/${name}`], timeout: 15 });
-    expect(hooks["PreCompact"]).toEqual([{ hooks: [at("lares-compact-hook.mjs")] }]);
-    expect(hooks["SessionStart"]).toEqual([{ hooks: [at("lares-wake-hook.mjs")] }]);
+    const at = (name: string, timeout = 15, extra = {}) => ({ type: "command", command: "node", args: [`${root}/packages/lares-cli/.claude-plugin/hooks/${name}`], timeout, ...extra });
+    expect(hooks["PreCompact"]).toEqual([{ hooks: [at("lares-compact-hook.mjs", 27)] }]);
+    expect(hooks["SessionStart"]).toEqual([{ hooks: [at("lares-om-hook.mjs", 14, { statusMessage: "the familiar wakes from its card" })] }, { hooks: [at("lares-wake-hook.mjs")] }]);
+  });
+
+  it("a tend with a familiar seats the familiar's hooks, the pet name as each one's default argument: om's group first, the landing async, the true-up, the rename read, the handback async", async () => {
+    const root = clone();
+    const h = homes();
+    const l = ledger();
+    const items = (familiar?: string) => homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false, ...(familiar ? { familiar } : {}) });
+    await tend(items("lares-alpha"), l);
+    const hooks = JSON.parse(readFileSync(join(h.native, ".claude/settings.json"), "utf8")).hooks as Record<string, Array<{ matcher?: string; hooks: unknown[] }>>;
+    const at = (name: string, timeout: number, args: string[], extra = {}) => ({ type: "command", command: "node", args: [`${root}/packages/lares-cli/.claude-plugin/hooks/${name}`, ...args], timeout, ...extra });
+    const pet = ["lares-alpha"];
+    expect(hooks["SessionStart"]).toEqual([{ hooks: [at("lares-om-hook.mjs", 14, pet, { statusMessage: "the familiar wakes from its card" })] }, { hooks: [at("lares-wake-hook.mjs", 15, [])] }]);
+    expect(hooks["PreCompact"]).toEqual([{ hooks: [at("lares-compact-hook.mjs", 27, pet)] }]);
+    expect(hooks["PostCompact"]).toEqual([{ hooks: [at("lares-postcompact-hook.mjs", 33, pet, { async: true, statusMessage: "the hoʻoili lands" })] }]);
+    expect(hooks["Stop"]).toEqual([{ hooks: [at("lares-true-up-hook.mjs", 11, pet)] }]);
+    expect(hooks["UserPromptSubmit"]).toEqual([{ hooks: [at("lares-rename-hook.mjs", 5, pet)] }]);
+    expect(hooks["PostToolUse"]).toEqual([{ matcher: "SubagentHandback", hooks: [at("lares-handback-hook.mjs", 23, pet, { async: true, statusMessage: "the handback lands as residue" })] }]);
+    // The familiar stays where a tend seated it: a tend that names none writes nothing.
+    expect((await tend(items(), l)).wrote).toEqual([]);
+    // A tend naming another familiar re-aims each hook in its own place.
+    await tend(items("lares-awakens"), l);
+    const again = JSON.parse(readFileSync(join(h.native, ".claude/settings.json"), "utf8")).hooks as Record<string, Array<{ hooks: unknown[] }>>;
+    expect(again["SessionStart"]).toEqual([{ hooks: [at("lares-om-hook.mjs", 14, ["lares-awakens"], { statusMessage: "the familiar wakes from its card" })] }, { hooks: [at("lares-wake-hook.mjs", 15, [])] }]);
+  });
+
+  it("with no familiar named, the familiar's hooks seat bare: each resolves its pet per session, from the session's title", async () => {
+    const root = clone();
+    const h = homes();
+    await tend(homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false }), ledger());
+    const hooks = JSON.parse(readFileSync(join(h.native, ".claude/settings.json"), "utf8")).hooks as Record<string, Array<{ hooks: Array<{ args: string[] }> }>>;
+    for (const event of ["PostCompact", "Stop", "UserPromptSubmit", "PostToolUse"]) expect(hooks[event]![0]!.hooks[0]!.args, event).toHaveLength(1);
+  });
+
+  it("a malformed familiar name seats nothing and names the cure", () => {
+    const root = clone();
+    const h = homes();
+    const rows = read(homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false, familiar: "Bad Name" }), ledger());
+    expect(rows.find((r) => r.id === "claude.om-hook")!.detail).toContain("reads as no pet name");
   });
 
   it("a tend seats the keep hook on SessionEnd, so each session's end runs `lares rite keep --if-due` (cross-and-keep, K11)", async () => {
@@ -319,7 +455,11 @@ describe("the home radius", () => {
     const r = await tend(items(), l);
     const settings = JSON.parse(readFileSync(join(h.native, ".claude/settings.json"), "utf8"));
     for (const gone of [STRAY, "lares-wake-hook.sh", "lares-unlisted-hook.sh"]) expect(JSON.stringify(settings), gone).not.toContain(gone);
-    expect(settings.hooks.Stop).toEqual([{ hooks: [{ type: "command", command: "my-own-stop" }] }]);
+    // The other hand's Stop command stays; the house's own true-up seats beside it, bare (it resolves its pet per session).
+    expect(settings.hooks.Stop).toEqual([
+      { hooks: [{ type: "command", command: "my-own-stop" }] },
+      { hooks: [{ type: "command", command: "node", args: [`${root}/packages/lares-cli/.claude-plugin/hooks/lares-true-up-hook.mjs`], timeout: 11 }] },
+    ]);
     // The stray leaves SessionEnd, and the house's own keep hook stands there alone.
     expect(settings.hooks.SessionEnd).toEqual([{ hooks: [{ type: "command", command: "node", args: [`${root}/${HOOKS}/lares-keep-hook.mjs`], timeout: 10 }] }]);
     // CONTROL: a command of another hand that names no script under the house's folder never moves, its matcher with it.
@@ -404,6 +544,104 @@ describe("the home radius", () => {
   });
 });
 
+describe("json-includes keeps every member of a list at a dotted key path, and every other entry stands", () => {
+  const ALLOW = ["permissions", "allow"];
+  const DOORS = ["Bash(lares:*)", "mcp__lares__*"];
+
+  it("a nested list absent takes every value; a second pass writes nothing", () => {
+    const f = jsonIncludes(ALLOW, DOORS);
+    const once = f('{"model": "m"}\n')!;
+    expect(JSON.parse(once)).toEqual({ model: "m", permissions: { allow: DOORS } });
+    expect(f(once)).toBe(once);
+    expect(JSON.parse(f(null)!)).toEqual({ permissions: { allow: DOORS } });
+  });
+
+  it("an operator's own entries stand in their places, and only the missing values append", () => {
+    const f = jsonIncludes(ALLOW, DOORS);
+    const held = '{"permissions": {"allow": ["Bash(git:*)", "mcp__lares__*"], "deny": ["Bash(rm:*)"], "defaultMode": "auto"}}';
+    const o = JSON.parse(f(held)!);
+    expect(o.permissions).toEqual({ allow: ["Bash(git:*)", "mcp__lares__*", "Bash(lares:*)"], deny: ["Bash(rm:*)"], defaultMode: "auto" });
+    // CONTROL: every value held already moves no byte.
+    const full = '{"permissions":{"allow":["mcp__lares__*","x","Bash(lares:*)"]}}';
+    expect(f(full)).toBe(full);
+  });
+
+  it("a top-level key reads as a path of one, as the repo's exclude row names it", () => {
+    const f = jsonIncludes(["claudeMdExcludes"], ["**/a.md"]);
+    expect(JSON.parse(f('{"claudeMdExcludes": ["b"]}')!)).toEqual({ claudeMdExcludes: ["b", "**/a.md"] });
+  });
+
+  it("a foreign shape on the path refuses and moves no byte: a scalar where the object stands, an object where the list stands", () => {
+    const foreign = jsonListForeign(ALLOW);
+    for (const cur of ['{"permissions": "all"}', '{"permissions": {"allow": "Bash(*)"}}', '{"permissions": []}', "[1]", "{not json"]) {
+      expect(foreign(cur), cur).not.toBeNull();
+      expect(jsonIncludes(ALLOW, DOORS)(cur), cur).toBe(cur);
+    }
+    // CONTROL: an absent file, an empty object and an absent list read as the house's to write.
+    for (const cur of [null, "{}", '{"permissions": {}}', '{"permissions": {"allow": []}}']) expect(foreign(cur), String(cur)).toBeNull();
+  });
+
+  it("the home rows keep Claude's doors open and the host acts the house's gates never see shut, in every home, the Windows profile included", async () => {
+    const root = clone();
+    const native = mkdtempSync(join(dir, "home-"));
+    const windows = mkdtempSync(join(dir, "win-"));
+    for (const d of [".claude", ".codex", ".copilot", ".local/bin"]) mkdirSync(join(native, d), { recursive: true });
+    mkdirSync(join(windows, ".claude"));
+    writeFileSync(join(native, ".claude/settings.json"), '{"permissions": {"allow": ["Bash(git:*)"], "deny": ["Bash(rm -rf:*)"]}, "model": "m"}\n');
+    const h = { native, windows };
+    const items = () => homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false });
+    const l = ledger();
+    const ids = ["claude.doors-allow", "claude.host-acts-deny", "claude.host-acts-ask", "claude.doors-allow@windows", "claude.host-acts-deny@windows", "claude.host-acts-ask@windows"];
+    const before = read(items(), l);
+    expect(ids.map((id) => before.find((r) => r.id === id)?.state)).toEqual(ids.map(() => "drift"));
+    await tend(items(), l);
+    const d = declared(REPO);
+    const listOf = (id: string): string[] => d.home.find((s) => s.id === id)!["values"] as string[];
+    for (const home of [native, windows]) {
+      const o = JSON.parse(readFileSync(join(home, ".claude/settings.json"), "utf8"));
+      expect(o.permissions.allow).toEqual(expect.arrayContaining(listOf("claude.doors-allow")));
+      expect(o.permissions.deny).toEqual(expect.arrayContaining(listOf("claude.host-acts-deny")));
+      expect(o.permissions.ask).toEqual(expect.arrayContaining(listOf("claude.host-acts-ask")));
+    }
+    const o = JSON.parse(readFileSync(join(native, ".claude/settings.json"), "utf8"));
+    expect(o.permissions.allow[0]).toBe("Bash(git:*)");
+    expect(o.permissions.deny[0]).toBe("Bash(rm -rf:*)");
+    expect(o.model).toBe("m");
+    const after = read(items(), l);
+    expect(ids.map((id) => after.find((r) => r.id === id)?.state)).toEqual(ids.map(() => "aligned"));
+    expect((await tend(items(), l)).wrote).toEqual([]);
+  });
+
+  it("a home whose permissions hold another shape reads foreign, and a tend leaves it as it stands", async () => {
+    const root = clone();
+    const native = mkdtempSync(join(dir, "home-"));
+    mkdirSync(join(native, ".claude"));
+    const held = '{"permissions": {"allow": "everything"}}\n';
+    writeFileSync(join(native, ".claude/settings.json"), held);
+    const items = homeItems({ repo: root, homes: { native, windows: null }, mcp: MCP, claudeCli: false });
+    expect(read(items, ledger()).find((r) => r.id === "claude.doors-allow")!.state).toBe("foreign");
+    const r = await tend(items, ledger());
+    expect(r.refused.length).toBeGreaterThan(0);
+    expect(readFileSync(join(native, ".claude/settings.json"), "utf8")).toBe(held);
+  });
+
+  it("the live carrier's deny list holds the two hearth acts, their shim spellings and the undo that would drop them, and the ask list the acts the operator keeps a prompt on", () => {
+    const valuesOf = (id: string): string[] => declared(REPO).home.find((s) => s.id === id)!["values"] as string[];
+    const deny = valuesOf("claude.host-acts-deny");
+    for (const v of [
+      "Bash(lares reset:*)", "Bash(lares found:*)", "Bash(lares vessel found:*)", "Bash(lares vessel *found*)", "Bash(lares vessel rite founding*)",
+      "Bash(lares home undo:*)", "Bash(lares home *undo*)", "Bash(tools/lares-container.sh reset:*)", "Bash(./tools/lares-container.sh reset:*)",
+      "Bash(*lares-container.sh reset*)", "Bash(*lares-container.sh found*)", "Bash(*lares-container.sh * found*)", "Bash(*lares.mjs reset*)",
+      "Bash(*/lares reset*)", "Edit(~/.claude/settings.json)", "Write(~/.claude/settings.json)",
+    ]) expect(deny, v).toContain(v);
+    const ask = valuesOf("claude.host-acts-ask");
+    for (const v of ["Bash(lares home tend --force*)", "Bash(lares * undo*)", "Bash(lares down*)", "Bash(lares vessel stop*)", "Bash(lares vessel release*)", "Bash(lares rebuild*)"]) {
+      expect(ask, v).toContain(v);
+    }
+    expect(valuesOf("claude.doors-allow")).toEqual(["Bash(lares:*)", "mcp__lares__*"]);
+  });
+});
+
 describe("verify reads what the host loaded", () => {
   const seed = "/c/bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem";
   it("one load of one real path holds; two loads red; a compact reload never counts", () => {
@@ -438,7 +676,10 @@ describe("the carrier", () => {
 
 describe("the brief line", () => {
   it("prints one line with no terminal, the way the wake hook reads it", () => {
-    const out = execFileSync("node", [join(REPO, "packages/lares-cli/dist/src/bin/lares.js"), "repo", "read", "--brief"], { encoding: "utf8", cwd: REPO });
+    // The exit reads the clone's own state (an untended clone's git config reads drift); the line's shape holds either way.
+    const r = spawnSync("node", [join(REPO, "packages/lares-cli/dist/src/bin/lares.js"), "repo", "read", "--brief"], { encoding: "utf8", cwd: REPO });
+    expect([0, 1]).toContain(r.status);
+    const out = r.stdout;
     expect(out.trim().split("\n")).toHaveLength(1);
     expect(out).toMatch(/^reality tunnel: /);
   });
@@ -455,6 +696,14 @@ describe("the brief line's count", () => {
     expect(briefLine([row("a", "drift", true), row("b", "foreign"), row("c", "unreachable"), row("d", "aligned", true), row("e", "aligned")]))
       .toBe("reality tunnel: 3 item(s) off the tunnel — a, b, c (lares home read); 1 aligned item(s) rewritten by another hand since the house wrote them: d");
     expect(briefLine([row("e", "aligned")])).toBe("reality tunnel: every item holds");
+  });
+
+  it("names the read of the radius that printed it: lares repo read for the checkout, lares home read for the home", () => {
+    const off = [row("git.merge-driver", "drift"), row("c", "aligned")];
+    expect(briefLine(off, "repo")).toBe("reality tunnel: 1 item(s) off the tunnel — git.merge-driver (lares repo read)");
+    // CONTROL: the home radius, named or left to its default, keeps its own read.
+    expect(briefLine(off, "home")).toBe("reality tunnel: 1 item(s) off the tunnel — git.merge-driver (lares home read)");
+    expect(briefLine(off)).toBe("reality tunnel: 1 item(s) off the tunnel — git.merge-driver (lares home read)");
   });
 
   it("names a row the house once wrote whose host now stands absent here: apart from drift, never dropped from the line", () => {

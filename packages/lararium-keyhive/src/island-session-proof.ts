@@ -43,6 +43,8 @@ export type SessionReading =
     readonly counted: readonly string[];
     /** The counted raises no subscriber has taken yet (no mark in the vessel's ledger): owed, a restart included. */
     readonly unanswered: readonly string[];
+    /** The lit sibling face the session wears, by its bare atom key (each hat its own chain); absent, the worn face. */
+    readonly face?: string;
   }
   | { readonly refusal: string };
 
@@ -52,7 +54,7 @@ export interface IslandSessionProof {
   signer(ask: SessionAsk | null): Promise<SessionReading>;
   /** The vessel's own chain and fold with no session behind the ask (a backup's cut, a restore's import): the island
    *  counts records by them and signs nothing. Absent, or a refusal: the island reads as before. */
-  own?(): Promise<{ readonly chain: SessionOwnChain; readonly foldRead: boolean; readonly counted: readonly string[]; readonly unanswered: readonly string[] } | { readonly refusal: string }>;
+  own?(face?: string): Promise<{ readonly chain: SessionOwnChain; readonly foldRead: boolean; readonly counted: readonly string[]; readonly unanswered: readonly string[] } | { readonly refusal: string }>;
 }
 
 const bare = (s: string): string => s.trim().toLowerCase().replace(/^0x/, "");
@@ -107,6 +109,66 @@ export function ownChainStanding(chain: () => SessionOwnChain | null, bags: () =
       const place = c.place ? `${bare(c.place.atomKey)}@${c.place.place}` : "";
       return `${nexus}|${place}`;
     },
+    // The register set by its content, in one order: a bag the face registers after a reading moves it.
+    registeredOf: () => JSON.stringify([...new Set(bags())].sort()),
+  };
+}
+
+/** The writers a realm workbench bag reads on this vessel (cabal-realm#/the-workbench). */
+export interface RealmWriters {
+  /** The chain of every face the realm's roster seats as a writer (`admin`) now, as this vessel last read each face. */
+  readonly seated: readonly SessionOwnChain[];
+  /** Each face the roster seated as a writer once and a removal since left out, with the removal acts that left it. */
+  readonly former: readonly { readonly chain: SessionOwnChain; readonly removedBy: readonly string[] }[];
+  /** The chain of the face that owns the realm (its private cabal of one), where the roster seats it as a writer; null else. */
+  readonly owner?: SessionOwnChain | null;
+}
+
+/** A chain named by its content: the reading a holder took under one set of writers gives way when the set moves. */
+export function chainName(c: SessionOwnChain | null): string | null {
+  if (c === null) return null;
+  const nexus = "scope" in c ? `${bare(c.scope.faceKey)}|${c.scope.nexus}|${bare(c.vesselFaceKey)}` : "";
+  const place = c.place ? `${bare(c.place.atomKey)}@${c.place.place}` : "";
+  return `${nexus}|${place}`;
+}
+
+/**
+ * THE WRITER STANDING OF ONE FACE'S SEAT, REALM-AWARE (S4). For a bag a realm workbench keeps (`realmWriters` answers a set),
+ * a certificate stands under the chain of any face the realm seats as a writer on this vessel; a `read` seat signs nothing.
+ * Every other bag reads the face's own chain over the bags it registers, exactly as `ownChainStanding`. `realmMark` names the
+ * realm writer sets by their content, so a holder's reading gives way when a seat lands or leaves.
+ *
+ * STANDING KEYS TO THE KEY-VERSION LINEAGE (u2): a writer a removal left out still stands for a record under a version that
+ * follows none of the removals that left it, so a revoke never orphans its earlier writes; under any version that follows
+ * one, it stands nowhere. A former writer with no removal named, or a reader that hands no lineage, stands nowhere: the
+ * reading fails closed.
+ */
+export function faceStanding(input: {
+  readonly own: () => SessionOwnChain | null;
+  readonly bags: () => readonly string[];
+  readonly realmWriters?: (bagId: string) => RealmWriters | null;
+  readonly realmMark?: () => string;
+}): WriterStanding {
+  const base = ownChainStanding(input.own, input.bags);
+  return {
+    holdsWrite: (args) => {
+      if (base.holdsWrite(args)) return true;
+      const realm = input.realmWriters?.(args.bagId) ?? null;
+      if (realm === null) return false;
+      if (realm.seated.some((c) => certificateUnderChain(args.certificate, c))) return true;
+      const follows = args.followsRemoval;
+      if (follows === undefined) return false;
+      return realm.former.some((f) => f.removedBy.length > 0 && certificateUnderChain(args.certificate, f.chain) && !f.removedBy.some((act) => follows(act)));
+    },
+    signedByRealmOwner: ({ certificate, bagId }) => {
+      const owner = input.realmWriters?.(bagId)?.owner ?? null;
+      return owner !== null && certificateUnderChain(certificate, owner);
+    },
+    chainOf: () => {
+      const own = base.chainOf!();
+      return own === null ? null : `${own}#${input.realmMark?.() ?? ""}`;
+    },
+    registeredOf: base.registeredOf!,
   };
 }
 
@@ -132,16 +194,16 @@ export function islandSessionDoor(
     settle(m as IslandMsg_SessionSigned);
   });
   let seq = 0;
-  const askVessel = (op: "read" | "sign" | "own", ask: SessionAsk, payload?: Uint8Array): Promise<IslandMsg_SessionSigned | null> => new Promise((resolve) => {
+  const askVessel = (op: "read" | "sign" | "own", ask: SessionAsk, payload?: Uint8Array, face?: string): Promise<IslandMsg_SessionSigned | null> => new Promise((resolve) => {
     const requestId = `${opts.idPrefix}-${++seq}`;
     pending.set(requestId, resolve);
-    const msg: IslandMsg_SessionSign = { type: "session:sign", requestId, op, ask: ask.requestId, verb: ask.verb, ...(payload ? { payload } : {}) };
+    const msg: IslandMsg_SessionSign = { type: "session:sign", requestId, op, ask: ask.requestId, verb: ask.verb, ...(payload ? { payload } : {}), ...(face !== undefined ? { face } : {}) };
     try { port.post(msg); } catch { pending.delete(requestId); resolve(null); }
   });
   const strings = (v: unknown): string[] => (Array.isArray(v) ? v.filter((c): c is string => typeof c === "string") : []);
   return {
-    async own() {
-      const read = await askVessel("own", { requestId: "", verb: "" });
+    async own(face) {
+      const read = await askVessel("own", { requestId: "", verb: "" }, undefined, face);
       if (read === null || !("own" in read)) return { refusal: read !== null && "refusal" in read ? read.refusal : "chain-absent" };
       return { chain: read.chain, foldRead: read.foldRead === true, counted: strings(read.counted), unanswered: strings(read.unanswered) };
     },
@@ -155,6 +217,7 @@ export function islandSessionDoor(
       return {
         subject: read.subject, chain: read.chain, foldRead: read.foldRead === true,
         counted: strings(read.counted), unanswered: strings(read.unanswered),
+        ...(typeof read.face === "string" ? { face: read.face } : {}),
         signer: {
           certificate,
           async sign(purpose, payload) {

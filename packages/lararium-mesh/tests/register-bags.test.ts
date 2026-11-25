@@ -15,9 +15,10 @@
  */
 import { describe, expect, test } from "vitest";
 
-import { catalogNamedBags, deriveRegisterBags, isVesselGround, type FleetMembership } from "../src/register-bags.js";
+import { catalogFaceSlotBags, catalogNamedBags, deriveRegisterBags, isFaceSlotBag, isVesselGround, litFaceOwnBags, wornFaceWikiBags, type FleetMembership } from "../src/register-bags.js";
+import { wikiBagUri, wikiSlotUri } from "../src/wiki-recipe.js";
 import { personaBagIdFor } from "../src/persona-scope.js";
-import { BAG_IDS, DAEMON_BAG_ID, PERSONA_NAMESPACE } from "../src/lar-uris.js";
+import { BAG_IDS, DAEMON_BAG_ID, PERSONA_NAMESPACE, recipeUri } from "../src/lar-uris.js";
 import { personaScopedBagIds, personaTagFromBagId, personaSiblingBagIds, isFaceScopedBag, faceTagOfBag } from "../src/persona-scope.js";
 
 const WIKI = ["lar:///ha.ka.ba/bags/my-wiki", "lar:///ha.ka.ba/bags/my-wiki/draft"];
@@ -224,5 +225,42 @@ describe("a group registers its own four planes and never another face's, by the
       expect(faceTagOfBag(`lar:///ha.ka.ba/bags/${malformed}`)).toBeNull();
     }
     expect(isFaceScopedBag(WIKI[0]!)).toBe(false);
+  });
+});
+
+describe("the boot's register set carries every layer the worn face's catalog announces", () => {
+  const row = (title: string, meta: Record<string, unknown> = {}) => ({ tiddler: { title, text: "" }, meta: { authority: "t", ...meta } });
+  const catalogOf = (...slugs: string[]) => ({ tiddlers: Object.fromEntries(slugs.map((slug) => [recipeUri("catalog", slug), row(recipeUri("catalog", slug))])) }) as unknown as Parameters<typeof catalogFaceSlotBags>[0];
+  const SLOT = { wikiBagId: wikiBagUri("lares"), workingBagId: wikiSlotUri("lares", "working"), draftBagId: wikiSlotUri("lares", "draft") };
+  const layers = (slug: string) => [wikiSlotUri(slug, "personal"), wikiSlotUri(slug, "draft")];
+
+  test("each wiki the catalog names by its recipe row announces its personal layer and its draft; a working layer, the daemon wiki and a tombstoned row announce none", () => {
+    const catalog = { tiddlers: {
+      [recipeUri("catalog", "notes")]: row(recipeUri("catalog", "notes")),
+      [recipeUri("catalog", "daemon")]: row(recipeUri("catalog", "daemon")),
+      [recipeUri("catalog", "burned")]: row(recipeUri("catalog", "burned"), { deleted: true }),
+      [`${recipeUri("catalog", "notes")}/inner`]: row("inner"),
+      "lar:///ha.ka.ba/bags/notes": row("lar:///ha.ka.ba/bags/notes"),
+    } } as unknown as Parameters<typeof catalogFaceSlotBags>[0];
+    expect(catalogFaceSlotBags(catalog)).toEqual(layers("notes"));
+    expect(catalogFaceSlotBags(null)).toEqual([]);
+  });
+
+  test("the mount's own personal layer rides the lit face's set with no catalog row and no naming; the floor registers none", () => {
+    expect(wornFaceWikiBags({ slot: SLOT, lit: true }).registered).toContain(wikiSlotUri("lares", "personal"));
+    expect(wornFaceWikiBags({ slot: SLOT, lit: true }).sealed).toContain(wikiSlotUri("lares", "personal"));
+    expect(wornFaceWikiBags({ slot: SLOT, lit: false }).registered).not.toContain(wikiSlotUri("lares", "personal"));
+    expect(wornFaceWikiBags({ slot: SLOT, lit: false, announced: catalogFaceSlotBags(catalogOf("notes")) }).registered).toEqual([SLOT.wikiBagId, SLOT.workingBagId, SLOT.draftBagId]);
+  });
+
+  test("TWO FACES LIT: the worn face's set carries the layers its own catalog announces and none a sibling's catalog names; the sibling's own set carries no wiki's layer", () => {
+    const wornCatalog = catalogOf("notes"), siblingCatalog = catalogOf("ledger");
+    const worn = deriveRegisterBags({ fleets: [{ personaGroupId: "ab".repeat(16) }], wikiBags: wornFaceWikiBags({ slot: SLOT, lit: true, announced: catalogFaceSlotBags(wornCatalog) }).registered });
+    for (const bag of [...layers("lares"), ...layers("notes")]) expect(worn, bag).toContain(bag);
+    for (const bag of catalogFaceSlotBags(siblingCatalog)) expect(worn, bag).not.toContain(bag);
+    // The sibling registers what a lit face owns beside the worn one (`joined-face-auth`): no user wiki's personal layer or draft.
+    const sibling = deriveRegisterBags({ fleets: [], wikiBags: litFaceOwnBags("0a1b2c3d-0a1b-4a1b-8a1b-0a1b2c3d4e5f") });
+    expect(sibling.filter(isFaceSlotBag)).toEqual([]);
+    for (const bag of [...layers("lares"), ...layers("notes"), ...layers("ledger")]) expect(sibling, bag).not.toContain(bag);
   });
 });

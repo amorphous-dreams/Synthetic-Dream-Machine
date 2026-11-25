@@ -1,0 +1,1 @@
+[**out3.md**](/home/joshu/.lares-scratch/research/dreamdom-width/terra/out3.md) contains the third-wave response. It runs 101 lines.

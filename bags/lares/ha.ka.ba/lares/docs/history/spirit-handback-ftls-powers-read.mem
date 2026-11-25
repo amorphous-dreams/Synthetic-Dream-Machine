@@ -32,7 +32,7 @@ Verbatim final message of FTLS-Reader (2026-10-18); only Markdown transliterated
 
 ! FTLS-Reader (Ink-Clerk) handback
 
-`REACHED` marks a direct Git or file observation. `INFERRED` marks my reading of what that observation means. Repo paths below start at `/home/joshu/Synthetic-Dream-Machine`.
+`REACHED` marks a direct Git or file observation. `INFERRED` marks my reading of what that observation means. Repo paths below start at the repository root.
 <<~/ahu>>
 
 <<~ ahu slot=`#/branch-against-the-span`>>
@@ -76,6 +76,6 @@ Sources: `in/ftls-powers-reader.md`. Persona: FTLS-Reader. Date: 2026-10-18.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;epTfszJ0JYPhkr_3OwzvCJABFo_ylrCX1-zgCMFIw3M`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;DwLh8yK0msgaOt2DMCTNXEp1G7D9CkvZHh0Nsy_uZJY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

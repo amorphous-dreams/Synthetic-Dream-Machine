@@ -38,7 +38,6 @@ function countingHost(): { host: VesselIslandHost; spawns: () => number } {
       };
     },
     newSyncChannel: () => { const { port1, port2 } = new MessageChannel(); return { mainPort: port1, syncPort: port2 }; },
-    storage: () => undefined,
   };
   return { host, spawns: () => spawns };
 }

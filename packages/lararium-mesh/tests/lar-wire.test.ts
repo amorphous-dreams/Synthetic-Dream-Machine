@@ -73,6 +73,12 @@ describe("the island → vessel door", () => {
     }
     expect(isIslandToVesselMsg({ type: "daemon:face-settled", atomKey: "abc", op: "moved", ok: true })).toBe(false);
   });
+
+  // The island's open lights each face its manifest carried, and no ask stands behind those lights: a face it refused there
+  // answers under op `composed`, so the vessel that adopted the face lit learns the refusal and its cause.
+  test("B3 — a manifest face the island's open refused answers under op composed, with its reason, and passes the door", () => {
+    expect(isIslandToVesselMsg(mkDaemonFaceSettled("abc", "composed", false, "FaceHoldsNoPrekeySecret: it holds none"))).toBe(true);
+  });
 });
 
 // ── The pool ────────────────────────────────────────────────────────────────────────────────────
@@ -100,7 +106,6 @@ function scriptedHost() {
       };
     },
     newSyncChannel: () => { const { port1, port2 } = new MessageChannel(); return { mainPort: port1, syncPort: port2 }; },
-    storage: () => undefined,
   };
   return { host, posted, reply: (msg: unknown) => { for (const l of [...listeners]) l(msg); } };
 }

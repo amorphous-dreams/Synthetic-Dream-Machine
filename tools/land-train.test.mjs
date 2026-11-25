@@ -16,6 +16,10 @@ const SPAN = "feature/span";
 const sh = (cwd, ...args) => execFileSync("git", args, { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
 
 // ── pure parts ───────────────────────────────────────────────────────────────────────────────────────────────
+test("the default span names `develop`, the integration branch; its lanes stand at `develop--<suffix>`", () => {
+  assert.equal(LT.SPAN, "develop");
+});
+
 test("parseSpec reads suffix:pr:head:msgfile and refuses a malformed spec", () => {
   assert.deepEqual(parseSpec("k19:127:" + "a".repeat(40) + ":/m/k19.txt"), { suffix: "k19", pr: "127", head: "a".repeat(40), msg: "/m/k19.txt" });
   assert.throws(() => parseSpec("k19:127:abc"), /suffix:pr:head:msgfile/);

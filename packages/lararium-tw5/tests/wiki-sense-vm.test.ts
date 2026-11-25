@@ -18,13 +18,14 @@
  */
 
 import { describe, test, expect, beforeAll } from "vitest";
-import { readFileSync, existsSync } from "node:fs";
+import { existsSync } from "node:fs";
 import path from "node:path";
 import { TW5Engine } from "../src/tw5-vm.js";
 import { LARES_MEMETIC_WIKITEXT_PLUGIN } from "../src/plugin-tiddler.generated.js";
 import { TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME } from "../src/generated-tw5-version.js";
 import { buildFixtureIsland, GLUE_SEEDS, type FixtureTiddler } from "../src/wiki-store-adapter.js";
 import { createWikiSensorium } from "../src/wiki-sensorium-cap.js";
+import { grammarPins, vendoredCore } from "./test-wiki.js";
 import { summarizeCoherence, type WikiCoherenceSummary } from "../src/wiki-sense-fold.js";
 
 const CORE_PATH = path.join(TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME);
@@ -61,8 +62,8 @@ describe.skipIf(coreBlobSkip)(
 
   beforeAll(async () => {
     engine = new TW5Engine();
-    const coreBlob = new Uint8Array(readFileSync(CORE_PATH));
-    await engine.boot(coreBlob, [LARES_MEMETIC_WIKITEXT_PLUGIN as unknown as Record<string, unknown>]);
+    const coreBlob = vendoredCore();
+    await engine.boot(coreBlob, [LARES_MEMETIC_WIKITEXT_PLUGIN as unknown as Record<string, unknown>], undefined, { modulePins: grammarPins() });
     for (const s of GLUE_SEEDS) engine.setTiddler({ title: s.title, text: s.text });
   }, 60_000);
 

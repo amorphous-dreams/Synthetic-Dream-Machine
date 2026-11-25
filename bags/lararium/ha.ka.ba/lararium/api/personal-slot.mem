@@ -4,19 +4,16 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-approved-on = "2026-06-01"
-cacheable   = true
-l-space     = "stable"
-merged-on   = "2026-06-04"
-namespace   = "&#x0950; &#x0901;"
-proposed-on = "2026-05-30"
-role        = "the personal-slot recipe slot (one face's view-state and private margin over the wiki's shared workbench, PersonaGroup × recipe-fingerprint scoped, crossing that face's own devices alone) and its admin-doc-stored binding map — one ledger"
-status-why  = "the personal-slot slot stands; S7.7 cross-device remains"
-tags        = ["lar:///ha.ka.ba/lares/api/lararium/wiki-recipe", "lifecycle/standing"]
-title       = "lar:///ha.ka.ba/lararium/api/personal-slot"
-type        = "text/memetic-wikitext+tiddlywiki"
-uri-path    = "ha.ka.ba/lararium/api/personal-slot"
-uri-shape   = "lar:///ha.ka.ba/wikis/{slug}/personal"
+cacheable  = true
+l-space    = "stable"
+namespace  = "&#x0950; &#x0901;"
+role       = "the personal-slot recipe slot (one face's view-state and what it keeps for itself over the wiki's shared workbench, PersonaGroup × recipe-fingerprint scoped, crossing that face's own devices alone) and its admin-doc-stored binding map — one ledger"
+status-why = "the personal-slot slot stands; S7.7 cross-device remains"
+tags       = ["lar:///ha.ka.ba/lares/api/lararium/wiki-recipe", "lifecycle/standing"]
+title      = "lar:///ha.ka.ba/lararium/api/personal-slot"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lararium/api/personal-slot"
+uri-shape  = "lar:///ha.ka.ba/wikis/{slug}/personal"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -62,7 +59,7 @@ Keyhive already names a `PersonaGroup`.
 ```
 1. wikis/{slug}/temp      volatile per-island, no CRDT
 2. wikis/{slug}/draft     drafts, CRDT, recipe-scoped
-3. wikis/{slug}/personal  one face's view-state and private margin, CRDT, PersonaGroup-scoped + recipe-scoped
+3. wikis/{slug}/personal  one face's view-state and what it keeps for itself, CRDT, PersonaGroup-scoped + recipe-scoped
 4. wikis/{slug}/working   the wiki's realm workbench, CRDT, realm-scoped
 5. bags/{slug}            the wiki's canon, CRDT, mesh-shared (read-only)
 6. libraryBags[]           optional content libraries, CRDT, mesh-shared
@@ -74,7 +71,7 @@ Slot URI: `lar:///ha.ka.ba/wikis/{slug}/personal` — a per-wiki live layer root
 at the wiki's identity (`wikis/{slug}`), one per wiki. The `BagResolver` binds the
 DOC per `(PersonaGroup × recipe-fingerprint)`; the URI carries the address.
 
-''Personal holds a face's private margin'' (operator ruling 2026-11-11: //"Personal can absorb the new caps."//). The recipe reads canon → workbench → personal → draft → temp. Every wiki but the daemon's rests its `working` layer in the wiki's realm workbench, shared by every face the realm seats (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench`>>); `personal` carries what one face keeps for itself over that shared layer: its view-state (`$:/StoryList`, `$:/state/folded/*`, `$:/palette`) and the content it shadows privately. It crosses that face's own devices alone and projects per face to `personal/<F>/{slug}/` (<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/personal`>>).
+''Personal holds what a face keeps for itself'' (operator ruling 2026-11-11: //"Personal can absorb the new caps."//). The recipe reads canon → workbench → personal → draft → temp. Every wiki but the daemon's rests its `working` layer in the wiki's realm workbench, shared by every face the realm seats (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench`>>); `personal` carries what one face keeps for itself over that shared layer: its view-state (`$:/StoryList`, `$:/state/folded/*`, `$:/palette`) and the content it shadows privately. It crosses that face's own devices alone and projects in the face's root to `faces/<pet name>/personal/{slug}/` (<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/personal`>>).
 
 <<~/ahu>>
 
@@ -230,7 +227,7 @@ One fingerprint produces TWO bindings (one for `@personal`, one for `@draft`) un
 
 !!! Tiddler vs Automerge document
 
-The bindings TIDDLERS live inside the admin doc. The `@personal` and `@draft` AUTOMERGE DOCUMENTS the bindings point to live as separate Automerge docs in the same Repo. The admin doc carries names; the named docs carry the face's actual view state and private margin.
+The bindings TIDDLERS live inside the admin doc. The `@personal` and `@draft` AUTOMERGE DOCUMENTS the bindings point to live as separate Automerge docs in the same Repo. The admin doc carries names; the named docs carry the face's actual view state and what it keeps for itself.
 
 <<~/ahu>>
 
@@ -351,6 +348,8 @@ Three research spirits (Keyhive/BeeKEM · object-capability theory · MLS/TreeKE
 
 ''The grant that seats a later joiner.'' A vessel that joins a PersonaGroup after its founding holds bindings minted on its own vessel key. The founder writes a signed face-join grant record on the PersonaGroup plane; the joinee's own kit reads and verifies that record, takes the seat, and re-grants its vessel-only bindings on reuse. Verification checks the persona KEL's genesis against the pinned root, then the founder's edge against the KEL head and the current lease epoch; reading never re-cuts (`packages/lararium-keyhive/src/face-grant-record.ts`, witnessed in `tests/e2e/meme-two-vessel-bag.test.ts`).
 
+''Ruled'' (operator, 2026-09-11, "Approve all, OODA-HA forwards"; one clause of the moʻolelo first told at `scale-stories-basket-one#/exit`), quote license: "the later grant lands as a record on the PersonaGroup doc and the joinee's own kit takes the seat against the published seal, reading never re-cuts".
+
 ''Never-delete.'' Operator view state carries durability — `$:/StoryList`, `$:/state/folded/*`, `$:/state/tab-*`, and `$:/palette` represent the operator's actual viewing history per recipe. Bindings persist indefinitely; the operator's view state across all recipes they have ever opened stays recoverable.
 
 ''Cap-rotation on PersonaGroup membership change.'' When the operator admits a new device, the founding ceremony already grants the new device admin access to the admin doc. The new device reads the admin doc, sees existing binding tiddlers, mounts the same `@personal`/`@draft` docs. Keyhive's CRDT-of-capabilities means the new device also gains access to the underlying `@personal`/`@draft` docs (each carries a delegation to the PersonaGroup, and the new device joined the PersonaGroup) — no per-binding re-grant required. //(Verified 2026-06-03: access is membership-graph reachability, so the new edge covers every doc the group can reach, retroactively.)//
@@ -359,7 +358,7 @@ Three research spirits (Keyhive/BeeKEM · object-capability theory · MLS/TreeKE
 
 ''Cap-rotation on PersonaGroup contraction.'' When the operator removes a device from the PersonaGroup, Keyhive's revocation propagates to the admin doc + all PersonaGroup-delegated bags. The removed device loses access to `@personal`/`@draft` at the same time it loses access to the admin doc — atomic by construction.
 
-''Long-term garbage collection.'' Not in scope for Sprint 7. A future sprint MAY add operator-facing inspection of binding tiddlers (`lares wiki personal --list`) and explicit revocation (`lares wiki personal --forget <fingerprint>`). For now, bindings accumulate forever and that reads as the correct default.
+''Long-term garbage collection.'' Not in scope for Sprint 7. A future sprint MAY add operator-facing inspection of binding tiddlers (`wiki personal --list`, not yet a door) and explicit revocation (`wiki personal --forget <fingerprint>`). For now, bindings accumulate forever and that reads as the correct default.
 
 <<~/ahu>>
 
@@ -463,7 +462,7 @@ Q7 (mint atomicity) ✅ resolved 2026-06-01 — ''orphan-tolerant idempotent min
 ''Subscription + linkage''
 
 Q8 (subscription gesture) ✅ deferred 2026-05-31 — S7.6 ships with implicit-on-PersonaGroup-membership as the default subscription gesture; the per-wiki explicit opt-out toggle becomes follow-up sprint scope once the operator has lived with the implicit default.
-Q9 (cross-fingerprint linkage) ✅ deferred 2026-06-01 — out of Sprint 7 scope; a future sprint MAY add `lares wiki personal --import-from <fingerprint>`.
+Q9 (cross-fingerprint linkage) ✅ deferred 2026-06-01 — out of Sprint 7 scope; a future sprint MAY add `wiki personal --import-from <fingerprint>` (not yet a door).
 
 ''@draft binding''
 
@@ -481,7 +480,7 @@ Q11 (`@draft` per-fingerprint vs boot draft) ✅ resolved 2026-06-03 — ''slice
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/keyhive/persona-group`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/config/bag-paths`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/recipe-layer-model`>>
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/session-contract#/the-working-layer`>> ~ aligns slot addresses with the realm-workbench rule
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-model`>>
@@ -496,6 +495,6 @@ register's lived surface — the living grammar in use before curation lifts it 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Y3jy75dgKDiqWziWRZxIavm2Sjlt-dUcrPceV-4Jm-4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;lsRprAmj8ZBJIMWkW3Aaubt5Upgofiwjt7fjUxvRcCo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

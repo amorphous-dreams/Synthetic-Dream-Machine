@@ -5,9 +5,9 @@
  */
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { createServer, type Server, type Socket } from "node:net";
-import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { dirname, join } from "node:path";
+import { mkdirSync } from "node:fs";
+import { closeScratch, openScratch, type Scratch } from "../../lararium-node/tests/support/scratch-fixture.js";
+import { dirname } from "node:path";
 import { cmdPersona } from "../src/commands/persona.js";
 import { vesselStanding } from "../src/custody-door.js";
 import { udsSocketPath } from "../src/local-connector.js";
@@ -15,8 +15,7 @@ import { udsSocketPath } from "../src/local-connector.js";
 vi.setConfig({ testTimeout: 30_000 });
 
 describe("a vessel that recomposes", () => {
-  let root: string;
-  let prior: string | undefined;
+  let house: Scratch;
   let server: Server;
   let verbLines = 0;
   const sockets: Socket[] = [];
@@ -36,9 +35,7 @@ describe("a vessel that recomposes", () => {
   };
 
   beforeEach(() => {
-    prior = process.env["LAR_ROOT"];
-    root = mkdtempSync(join(tmpdir(), "lares-composing-"));
-    process.env["LAR_ROOT"] = root;
+    house = openScratch();
     verbLines = 0; closedByCaller = 0;
     vi.spyOn(console, "log").mockImplementation(() => {});
     vi.spyOn(console, "error").mockImplementation(() => {});
@@ -47,8 +44,7 @@ describe("a vessel that recomposes", () => {
     vi.restoreAllMocks();
     for (const s of sockets.splice(0)) s.destroy();
     await new Promise<void>((r) => server?.close(() => r()));
-    if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior;
-    rmSync(root, { recursive: true, force: true });
+    closeScratch(house);
   });
 
   test("RED: persona new refuses vessel-composing at once while the unlock never finishes, and no verb line reaches the socket", async () => {

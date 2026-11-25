@@ -4,7 +4,7 @@
  * Two layers:
  *   1. HERMETIC (always runs): a fake `exec` proves the args + NDJSON the shore builds.
  *   2. INTEGRATION: the REAL kg_io.py against a temp palace — spawn→Delegation, inject→Communication,
- *      handback→close, kapae→close + history kept. When python or the mempalace submodule is absent the
+ *      retire→close, kapae→close + history kept. When python or the mempalace submodule is absent the
  *      suite SKIPS BY NAME, reason in the reporter line; it never returns early and reports passed.
  */
 import { describe, test, expect } from "vitest";
@@ -13,7 +13,7 @@ import { mkdtempSync, rmSync, mkdirSync, readFileSync, existsSync } from "node:f
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { delegationEdge, communicationEdge, handbackClose, worldlineHandles, worldlineCompare } from "@lararium/mesh";
+import { delegationEdge, communicationEdge, retireClose, worldlineHandles, worldlineCompare } from "@lararium/mesh";
 import {
   persistWorldlineEdges,
   closeWorldlineEdges,
@@ -61,7 +61,7 @@ describe("worldline-kg arg/NDJSON building (fake exec)", () => {
 
   test("close → `invalidate` subcommand by S/P/O", () => {
     calls.length = 0;
-    const res = closeWorldlineEdges([handbackClose("run", "run.child", "2026-06-29T02:00:00Z")], opts);
+    const res = closeWorldlineEdges([retireClose("run", "run.child", "2026-06-29T02:00:00Z")], opts);
     expect(res.invalidated).toBe(1);
     const c = calls[0]!;
     expect(c.args).toContain("invalidate");
@@ -83,7 +83,7 @@ describe("worldline-kg arg/NDJSON building (fake exec)", () => {
     expect(JSON.parse((calls[0]!.ndjson ?? "").trim()).valid_from).toBe("2026-06-29T00:00:00Z");
 
     calls.length = 0;
-    closeWorldlineEdges([handbackClose("run", "run.child", "2026-06-29T02:00:00.456Z")], opts);
+    closeWorldlineEdges([retireClose("run", "run.child", "2026-06-29T02:00:00.456Z")], opts);
     expect(JSON.parse((calls[0]!.ndjson ?? "").trim()).ended).toBe("2026-06-29T02:00:00Z");
 
     calls.length = 0;
@@ -179,7 +179,7 @@ describe.skipIf(skipReason)(
     return JSON.parse(out.trim());
   }
 
-  test("spawn→Delegation · inject→Communication · handback→close · kapae→close (history kept)", () => {
+  test("spawn→Delegation · message→Communication · retire→close · kapae→close (history kept)", () => {
     const dir = mkdtempSync(join(tmpdir(), "lar-wl-kg-"));
     const palace = join(dir, "palace");
     mkdirSync(palace, { recursive: true });
@@ -202,7 +202,7 @@ describe.skipIf(skipReason)(
       expect(comm[3]).toBe("inject-turn"); // turnKey rode source_drawer_id
 
       // HANDBACK — close the Delegation interval by S/P/O
-      const closed = closeWorldlineEdges([handbackClose("run", "run.child", "2026-06-29T02:00:00Z")], opts);
+      const closed = closeWorldlineEdges([retireClose("run", "run.child", "2026-06-29T02:00:00Z")], opts);
       expect(closed.invalidated).toBe(1);
       rows = dump(palace);
       expect(rows.find((r) => r[0] === "prov:delegation")![2]).toBe("2026-06-29T02:00:00Z");
@@ -234,8 +234,8 @@ describe.skipIf(skipReason)(
         opts,
       );
       expect(added.added).toBe(1);
-      // CLOSE with a ms `ended` — the handback leg crosses the same shore law.
-      const closed = closeWorldlineEdges([handbackClose("run", "run.child", "2026-06-29T02:00:01.234Z")], opts);
+      // CLOSE with a ms `ended` — the retirement leg crosses the same shore law.
+      const closed = closeWorldlineEdges([retireClose("run", "run.child", "2026-06-29T02:00:01.234Z")], opts);
       expect(closed.invalidated).toBe(1);
       const rows = dump(palace);
       expect(rows.length).toBe(1);

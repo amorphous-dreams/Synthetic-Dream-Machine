@@ -52,6 +52,17 @@ export interface ComposedVessel {
   readonly dispose: () => Promise<void>;
 }
 
+/** The cap whose build runs now, for the mint census (`mint-census`); null outside every build. */
+let building: CapId | null = null;
+
+/**
+ * The cap whose `build` the composer awaits right now, or null. The mint census reads it to name which cap minted a
+ * document. A build's awaits let other work run under the same name, so it attributes, never authorizes.
+ */
+export function capBuilding(): CapId | null {
+  return building;
+}
+
 /**
  * Compose a vessel from its #has-cap-stack. Topologically wires the cap-modules (build-or-REFUSE on a
  * missing mandatory dep, a duplicate id, or a cycle), building each in dependency order with a
@@ -114,15 +125,20 @@ export async function composeVessel(stack: readonly CapModule[]): Promise<Compos
       }
       return built.get(dep) as T; // mandatory: built earlier; absent-optional: undefined
     };
+    // A nested compose (a lift stack built inside a cap) names its own caps, then hands the name back.
+    const outer = building;
+    building = id;
     try {
       built.set(id, await m.build(resolve));
       builtOrder.push(id);
     } catch (err) {
+      building = outer;
       // a cap's build threw mid-boot → dispose the already-built caps before re-throwing, so a partial
       // boot leaks nothing (the one genuine win the Effect.Layer eval surfaced — Scope cleanup, sans dep).
       await teardown();
       throw err;
     }
+    building = outer;
   }
 
   return {

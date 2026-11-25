@@ -12,9 +12,8 @@
  *
  * WHERE IT IS CALLED. LAZILY, at the first gate open at a scope (`readFounderFaceProof`), and never at founding: a
  * per-Nexus face key mints when a Nexus is first used, so a certificate cannot be issued at founding for a scope that
- * has no key yet, and a vessel founded before this door stands has no certificate at all. The lazy door covers both.
- * An already-founded vessel therefore needs nothing run by hand: its first gate open at each scope issues and keeps the
- * certificate, and every later open finds it standing.
+ * has no key yet. A vessel's first gate open at each scope issues and keeps the certificate, and every later open finds
+ * it standing; nothing runs by hand.
  *
  * WHAT IT CHECKS, BY NAME. A face standing provisional (a restored root adds no vessel to its authority), a face whose
  * anchors do not name the PersonaGroup the grant would name (face B's root never signs a grant for group A, and so

@@ -11,16 +11,18 @@
  *   `reset:declined`    the person declined. The ask's notice leaves the page; nothing else moves.
  *
  * A TAB HONOURS THE CHANNEL ONLY FOR A STANDING ASK. Any script of the origin can say these words on the channel, so a tab
- * checks each against the ask record (`reset-core.ts`): it stands down only for an id the origin's record
- * names; it boots afresh only for an id it stood down for (the burn removed the record by then); it takes a declined notice
- * down only where its own page shows that reset ask. A signal for any other id moves nothing. This binds the channel to the
+ * checks each against the ask record (`reset-core.ts`): it stands down only for an id the origin's record names raised or
+ * burned; it boots afresh only for an id it stood down for, or one whose burned receipt the record holds; it takes a declined
+ * notice down only where its own page shows that reset ask. The receipt carries a LATE TAB: the channel and the storage keep
+ * no order between them, so a tab can hear `reset:stand-down` after the burn settled the record, or `reset:burned` before
+ * its stand-down; either word for a burned id still moves it, and it reloads. A signal for any other id moves nothing. This binds the channel to the
  * record; it does not defend against script already running in a page of this origin, which writes that record as a page does.
  *
  * A SECOND TAB NEVER REFUSES THE RESET, and the reset never waits on its word: a tab that stands down lets go at once, and a
  * tab that does not hear (frozen, or an older page) holds its store until it closes, which the ceremony names to the person.
  */
 import type { ResetSignal } from "./ceremony-protocol.js";
-import { clearOwnedKeys, resetAskStands } from "./ceremony/reset-core.js";
+import { clearOwnedKeys, resetAskBurned, resetAskStands } from "./ceremony/reset-core.js";
 
 export interface ResetTabEnv {
   /** The origin's reset channel as this tab hears it. */
@@ -50,7 +52,7 @@ const signalOf = (msg: unknown): ResetSignal | null => {
 /** Stand this tab's listener on the reset channel. Answers whether this tab stood down. */
 export function standResetTab(env: ResetTabEnv): { readonly stoodDown: () => boolean } {
   let stoodDown = false;
-  /** The asks this tab stood down for: the only ids whose `reset:burned` it honours. */
+  /** The asks this tab stood down for: beside a burned receipt, the only ids whose `reset:burned` it honours. */
   const stoodFor = new Set<string>();
   const { record, shows } = env;
   env.listen((msg) => {
@@ -58,7 +60,7 @@ export function standResetTab(env: ResetTabEnv): { readonly stoodDown: () => boo
     if (!signal) return;
     if (signal.t === "reset:declined") { if (shows(signal.askId)) env.settle(signal.askId); return; }
     if (signal.t === "reset:stand-down") {
-      if (!resetAskStands(record, signal.askId)) return;
+      if (!resetAskStands(record, signal.askId) && !resetAskBurned(record, signal.askId)) return;
       stoodFor.add(signal.askId);
       if (stoodDown) return;
       stoodDown = true;
@@ -66,7 +68,7 @@ export function standResetTab(env: ResetTabEnv): { readonly stoodDown: () => boo
       env.say("This browser's vessel resets from its ceremony: this tab stood its vessel down, and boots afresh once the reset lands. If the ceremony closed before it finished, reload this tab.");
       return;
     }
-    if (!stoodFor.has(signal.askId)) return;
+    if (!stoodFor.has(signal.askId) && !resetAskBurned(record, signal.askId)) return;
     if (env.session) { try { clearOwnedKeys(env.session); } catch { /* a withheld storage holds nothing to clear */ } }
     env.reload();
   });

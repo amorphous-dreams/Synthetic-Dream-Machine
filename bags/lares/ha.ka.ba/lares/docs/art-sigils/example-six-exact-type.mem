@@ -1,0 +1,41 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/art-sigils/example-six-exact-type`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+uri-path = "ha.ka.ba/lares/docs/art-sigils/example-six-exact-type"
+title    = "lar:///ha.ka.ba/lares/docs/art-sigils/example-six-exact-type"
+type     = "text/memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role     = "typographic invitation and independently verified literal text"
+status   = "draft"
+retain   = true
+```
+
+<<~ ahu slot=`#/inscription`>>
+! Exact typography
+
+```tiddlywiki
+<<~ art worktype=`minimal typographic poster` subject=`a short instruction to notice the present moment` read=`a quiet invitation, not an advertisement` imagery=`one large line of lettering above ample visual rest` treatment=`warm restrained ink impression with subtle letterpress-like edge character` composition=`one asymmetrically balanced line with generous margins` relation=`the text and unprinted space establish a deliberate pause` depiction-scope=`only the poster; no maker, photographed office, or metadata labels`>>
+```
+<<~/ahu>>
+
+<<~ ahu slot=`#/verification`>>
+!! Check
+
+Inspect the actual letters, punctuation and hierarchy after export; a visually plausible generated inscription is not a verified string.
+
+Exact source text belongs in a separately checkable artifact contract.
+
+```toml
+[artifact]
+exact_text = "NOTICE THE PRESENT."
+spelling_and_punctuation = "mandatory"
+validation = "inspect final letters or typeset deterministically"
+```
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;kkM8o44UC0FcGfH6-CR1dYXqCkjSOQJnWQ-8yr4AqGI`>>
+<<^ code=`&#x0004;` to=`?`>>

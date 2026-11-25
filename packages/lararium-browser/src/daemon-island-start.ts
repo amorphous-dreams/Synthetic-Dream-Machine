@@ -7,6 +7,7 @@ import { Repo } from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-indexeddb";
 import { shoreStorage } from "@lararium/mesh";
 import { idbSealedStoreShore, sealedStoreDbName } from "./browser-sealed-store.js";
+import { browserVeilArchiveWriters } from "./browser-veil-archive-route.js";
 
 // The daemon INHERITS the wiki render cap (hasProjection). Mount its projection DORMANT at island-boot —
 // exactly as a pool wiki mounts its camera — so summoning the daemon is a pure active-surface gate flip,
@@ -46,7 +47,9 @@ runBrowserSovereignWorker((manifest) => {
     // under the ask its book holds for the session that booked the change, and opens each value it hydrates.
     docStoreDoor: docStorePort,
     freshBase: freshBasePort(liveOnVessel),
-    persistVeilArchive: (bytes: Uint8Array) => custodyOnVessel("veil", bytes),
+    // A BROWSER VESSEL RESTS THE WORN FACE'S ARCHIVE ALONE, and says so before any export: the writer and the floor's routing
+    // word read one predicate (`browser-veil-archive-route.ts`), so a sibling's light mints no card no row keeps.
+    ...browserVeilArchiveWriters(manifest.daemonAuth?.personaGroupId, (bytes, face) => custodyOnVessel("veil", bytes, face)),
     // ONE SEED SITE: `makeDaemonBehavior` runs the cap-gated `seedDaemonProtocol` in onEa, so the daemon
     // protocol seed (Ui+Persona+Circle+Flow) stands identically on either boot. This ts-only browser vessel
     // passes HULLS_TS_ONLY → it seeds crystal alone, and its onBoot carries the projection mount.

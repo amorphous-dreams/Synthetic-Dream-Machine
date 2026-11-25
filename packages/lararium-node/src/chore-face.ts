@@ -25,7 +25,7 @@ const PLACE = "a row of the place: acts as the place, never as a face";
 export const CHORE_FREE_VERBS: Readonly<Record<string, string>> = Object.freeze({
   // The daemon island's reads (its content fence still judges each presenter).
   "where": READ, "resolve": READ, "unbound-docs": READ, "fresher-canon": READ,
-  "meme-get": READ, "meme-list": READ, "meme-project": "renders a meme root to text and answers it; writes nothing",
+  "meme-list": READ, "meme-project": "renders a meme root to text and answers it; writes nothing",
   "wiki-filter": READ, "tiddler-get": READ, "wiki-render": READ, "wiki-status": READ, "circle-list": READ,
   "list-wikis": READ, "share-list": READ, "workbench-seat": READ, "intent-view": READ, "sealed-reading": READ, "events": READ,
   "realm-clock": READ,
@@ -33,9 +33,32 @@ export const CHORE_FREE_VERBS: Readonly<Record<string, string>> = Object.freeze(
   // The main thread's reads.
   "recall": READ, "status": READ, "rejim": READ, "worldline": READ, "worldline-compare": READ, "worldline-trajectory": READ,
   "analyze": READ, "ki": READ, "li": READ, "jing": READ, "couple-r": READ, "forecast": READ, "mismatch": READ, "flow": READ,
-  "roster": READ, "inspect": READ, "residency": READ, "wiki-active": READ, "echo": READ,
+  "roster": READ, "inspect": READ, "residency": READ, "wiki-active": READ, "echo": READ, "ddate": READ,
   ...Object.fromEntries(STORE_DOOR_VERBS.filter((verb) => !STORE_DOOR_FACE_VERBS.has(verb)).map((verb) => [verb, PLACE])),
 });
+
+/**
+ * EACH HAT REACHED BY NAME: the chores a LIT sibling's own session carries as ITSELF, on its own lane (the island's per-face
+ * lane writes that face's own document, sealed under its own chain): the meme writes, and the tiddler door's writes, which land
+ * through that face's own engine in its own working document. Every other chore still spends the mount's authority alone and
+ * refuses from a sibling's session.
+ */
+export const FACE_LANE_CHORES: ReadonlySet<string> = new Set(["meme-put", "meme-delete", "tiddler-put", "tiddler-delete", "oracle-cast"]);
+
+/**
+ * The chore-free verbs that still write into a face's daemon layer, each with its reason. A chore-free verb passes the chore
+ * gate (it spends no mounted face's material), but a write into the daemon layer can still enter that face's drain, so the
+ * one-shot line's work gate takes it ({@link entersADrain}). The house lean: a write takes the gate unless proven outside every
+ * face's drain.
+ */
+export const CHORE_FREE_WRITES: Readonly<Record<string, string>> = Object.freeze({
+  "realm-feed": "rolls the presenter's lease slot and lands its receipt in the daemon layer",
+});
+
+/** True for a verb whose one-shot dispatch writes into a face's layers: every chore, and each chore-free write. */
+export function entersADrain(verb: string): boolean {
+  return isChore(verb) || Object.hasOwn(CHORE_FREE_WRITES, verb);
+}
 
 /** True for a verb that writes or signs under the daemon mount's authority. */
 export function isChore(verb: string): boolean {
@@ -55,12 +78,17 @@ export type ChoreAtDoor = { readonly ok: true; readonly mark: ChoreReceiptMark }
  */
 export function choreAtDoor(input: {
   readonly verb: string; readonly face: number; readonly mount: number | null; readonly lent: readonly number[] | null;
+  /** The sibling faces lit beside the mount: a session wearing one carries its own lane's chores (`FACE_LANE_CHORES`). */
+  readonly lit?: readonly number[];
   readonly hand: Hand; readonly session: string | null; readonly generation: number | null;
 }): ChoreAtDoor | null {
   if (input.mount === null || !isChore(input.verb)) return null;
   const read = lentFacesOf(input.lent && input.lent.length > 0 ? input.lent : [...new Set([input.mount, input.face])]);
   if (!read.ok) return { ok: false, refusal: read.refusal, message: read.message };
   const ask: ChoreAsk = { chore: input.verb, face: input.face, asker: { hand: input.hand, session: input.session, generation: input.generation } };
-  const acting = actingFaceOf(ask, read.faces, [input.mount]);
+  // A lit sibling's session carries its own lane's chores as itself: the process carries that face for this act alone.
+  const carried = FACE_LANE_CHORES.has(input.verb) && input.face !== input.mount && (input.lit ?? []).includes(input.face)
+    ? [input.mount, input.face] : [input.mount];
+  const acting = actingFaceOf(ask, read.faces, carried);
   return acting.ok ? { ok: true, mark: choreReceiptMark(ask, acting.face) } : acting;
 }

@@ -19,6 +19,7 @@
 
 import { invokeLocal, udsSocketPresent, udsSocketPath, UdsUnreachable, LocalWaitExpired } from "./local-connector.js";
 import type { SubmitResult, SubmitOptions } from "./verb-result.js";
+import { openLocalSession, SessionRefused } from "./session-connector.js";
 
 export interface RunVerbOptions extends SubmitOptions {
   readonly dataDir?: string;
@@ -52,7 +53,7 @@ export class DaemonUnreachable extends Error {
  * and simply took longer to answer than this process waited.
  */
 export interface VerbFailure {
-  readonly code:    "outcome-unknown" | "daemon-unreachable" | "verb-error";
+  readonly code:    "outcome-unknown" | "outcome-committed" | "daemon-unreachable" | "verb-error";
   readonly message: string;
   readonly requestId?: string;
   readonly hint?: string;
@@ -84,7 +85,7 @@ export interface VerbFailure {
  *   crossing-outward                       → crossing-outward (5) — the crossing relaxes confinement
  *                                             and wants the kahu quorum.
  *
- * An unrecognized reason (a future server-side addition this build predates) falls to `verb-error`
+ * An unrecognized reason (one this table names no code for) falls to `verb-error`
  * rather than crashing or silently inventing a code — the additive contract means an older CLI
  * still reads `errorMessage` either way.
  */
@@ -151,16 +152,67 @@ export function refusalHint(code: string, changeId: string | undefined): string 
 }
 
 export function verbFailure(err: unknown): VerbFailure {
+  // A WAVE'S WAIT THAT READ ITS RECEIPT BACK (`WaveWaitEnded`, duck-read so this door imports no ingest machinery).
+  const read = err instanceof LocalWaitExpired ? (err as LocalWaitExpired & { receiptState?: unknown; detail?: unknown }) : null;
+  if (read && read.receiptState === "committed") {
+    return {
+      code: "outcome-committed", requestId: read.requestId,
+      message: typeof read.detail === "string"
+        ? `request ${read.requestId} reads ${read.detail}`
+        : `the vessel holds request ${read.requestId} committed: it admitted the wave before this process stopped waiting, and its outcome had not landed yet`,
+      hint: `read it with \`lares vessel request ${read.requestId}\`; a re-run passes the diff gate and carries only what did not land.`,
+    };
+  }
+  if (read && read.receiptState === "unknown") {
+    return {
+      code: "outcome-unknown", requestId: read.requestId,
+      message: `${read.message}${typeof read.detail === "string" ? ` (${read.detail})` : ""}`,
+      hint: `the outcome of request ${read.requestId} stays unknown; read it later with \`lares vessel request ${read.requestId}\` before running it again.`,
+    };
+  }
   if (err instanceof LocalWaitExpired) {
     return {
       code: "outcome-unknown", message: err.message, requestId: err.requestId,
-      hint: `the daemon took this request but this process stopped waiting to hear back; it may have already committed. Check request ${err.requestId} with \`lares receipt ${err.requestId}\`.`,
+      hint: `the daemon took this request but this process stopped waiting to hear back; it may have already committed. Check request ${err.requestId} with \`lares vessel request ${err.requestId}\`.`,
     };
   }
   if (err instanceof DaemonUnreachable) {
     return { code: "daemon-unreachable", message: err.message, hint: "Start the daemon with `lares vessel stand --foreground` and try again." };
   }
   return { code: "verb-error", message: err instanceof Error ? err.message : String(err) };
+}
+
+/**
+ * EACH HAT REACHED BY NAME: run `verb` as face `face` (`h<N>`) on a session of that face, the face the store door's
+ * `--face N` names. The session books the face's own signer, so whatever the verb seals, it seals under that face's own
+ * chain; the island answers on that face's lane alone. A face the vessel opens no session of (locked, shut, never lit, or
+ * outside the vessel) answers `face-not-open`, naming the vessel's own reason, and nothing runs. The answer reads as the
+ * one-shot's does.
+ */
+export async function runVerbAsFace(
+  verb: string, args: Record<string, unknown>, face: number, opts: RunVerbOptions = {},
+): Promise<SubmitResult> {
+  if (!udsSocketPresent(opts.dataDir)) throw new DaemonUnreachable(udsSocketPath(opts.dataDir));
+  let session: Awaited<ReturnType<typeof openLocalSession>>;
+  try { session = await openLocalSession({ faceRef: `h${face}`, hand: "cli", ...(opts.dataDir !== undefined ? { dataDir: opts.dataDir } : {}) }); }
+  catch (e) {
+    if (e instanceof UdsUnreachable) throw new DaemonUnreachable(udsSocketPath(opts.dataDir));
+    if (e instanceof SessionRefused) {
+      return { status: "error", requestId: "", errorMessage: `face-not-open: face h${face} stands shut on this vessel (${e.refusal}); nothing ran`, refusal: { reason: "face-not-open" } };
+    }
+    throw e;
+  }
+  try {
+    const answer = await session.call(verb, args, { ...(opts.timeoutMs !== undefined ? { timeoutMs: opts.timeoutMs } : {}) });
+    const { kind: _kind, ...rest } = answer;
+    return rest as unknown as SubmitResult;
+  } catch (e) {
+    if (e instanceof UdsUnreachable) throw new DaemonUnreachable(udsSocketPath(opts.dataDir));
+    if (e instanceof SessionRefused) return { status: "error", requestId: "", errorMessage: `face-not-open: face h${face} refused this act (${e.refusal}); nothing ran`, refusal: { reason: "face-not-open" } };
+    throw e;
+  } finally {
+    await session.close().catch(() => { /* the socket already went */ });
+  }
 }
 
 export async function runVerb(

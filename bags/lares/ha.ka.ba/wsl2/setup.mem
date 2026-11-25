@@ -177,7 +177,9 @@ sudo apt update && sudo apt install docker.io docker-compose-v2 && sudo usermod 
 pnpm install --frozen-lockfile
 ```
 
-Open a new terminal tab between the Docker line and the stand: group membership and the nvm shell hook both land at the next login. The Linux stand reads for Node 24+, Corepack, and a reachable Docker daemon and prints these same lines as `needs-you` while any one stays absent; it runs none of them for you. The stand's own `corepack enable` exposes `pnpm`; the first `pnpm` command then fetches pnpm 10, which satisfies the repository's `engines` (pnpm 9 or later).
+Open a new terminal tab between the Docker line and the stand: group membership and the nvm shell hook both land at the next login. The Linux stand reads for Node 24+, Corepack, and a reachable Docker daemon and prints these same lines as `needs-you` while any one stays absent; it runs none of them for you. The stand's own `corepack enable` exposes `pnpm`; the first `pnpm` command in the clone then fetches the exact pnpm the root `package.json` pins in `packageManager` (above the `engines` floor of pnpm 9).
+
+''Next:'' a house of your own on this host walks <<~ loulou uri=`lar:///ha.ka.ba/wsl2/new-hearth`>>, from the clone to a founded, lit hearth with the MCP seat.
 
 The script creates one `~/.venv` and records the digest of `requirements.txt` only after a successful install. A changed requirements file causes the next stand to repair that venv. The repository's own dependencies stay the operator's line.
 
@@ -311,5 +313,5 @@ Two shapes a household also meets that carry no error text: the Linux password p
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;P1m3JDB_lVqWZyyCp-kYH-ZO_lSHstma1jD81HALM5E`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;j1K58BGgpqj9BA_fol28fjtkY9XbwpLM_7UMkoTxIJ4`>>
 <<^ code=`&#x0004;` to=`?`>>

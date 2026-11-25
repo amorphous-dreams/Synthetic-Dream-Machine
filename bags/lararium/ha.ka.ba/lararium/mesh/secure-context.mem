@@ -8,13 +8,12 @@ cacheable  = true
 hydrate    = true
 l-space    = "lararium"
 namespace  = "&#x2695;"
-role       = "the browser vessel's SECURE-CONTEXT WALL and the path through it: crypto.subtle + OPFS demand https/localhost, so a family phone on http://192.168.x.x cannot mint a key → the vessel never boots (dragging the relay to wss://). The prior-art answer — a Let's Encrypt DNS-01 wildcard over a zone the serving entity holds a DNS-DELEGATION CAP over, + split-horizon DNS, ZERO per-device install. SPLIT device-key TOFU (who-syncs) from real-cert TLS (the padlock). Cert-renewal = the one island-able web2 bridge, on its own clock beside registrar tenure and serve. A NAME grants RENDEZVOUS (how to reach); a KEY grants IDENTITY (who) — the ORIGIN-ATTESTATION cap composes with nothing on the spine, so revoking a name withholds a signpost and never touches sovereignty. Researched (two-lens swarm converged 2026-07-23), NOT built. AND (2026-08-09, MEASURED in Chromium 151 + Firefox 153) what a key FORMAT buys: a non-extractable handle works and survives a restart, yet the raw seed still sits CLEARTEXT ON DISK — so the win reads NON-PORTABILITY, never non-compromise; and the origin-attestation cap is untouched by it, because that entity serves the CODE. Two key classes, two cures: a device key MAY go opaque (never resurrected), a persona root STRUCTURALLY CANNOT (hierarchical derivation needs parent bytes) and wants an at-rest seal instead. Storage evicts: seven days without interaction clears an origin on WebKit, and home-screen installation is the exemption."
+role       = "the browser vessel's SECURE-CONTEXT WALL and the path through it: crypto.subtle + OPFS demand https/localhost, so a family phone on http://192.168.x.x cannot mint a key → the vessel never boots (dragging the relay to wss://). The prior-art answer — a Let's Encrypt DNS-01 wildcard over a zone the serving entity holds a DNS-DELEGATION CAP over, + split-horizon DNS, ZERO per-device install. SPLIT device-key TOFU (who-syncs) from real-cert TLS (the padlock). Cert-renewal = the one island-able web2 bridge, on its own clock beside registrar tenure and serve. A NAME grants RENDEZVOUS (how to reach); a KEY grants IDENTITY (who) — the ORIGIN-ATTESTATION cap composes with nothing on the spine, so revoking a name withholds a signpost and never touches sovereignty. Researched (two-lens swarm converged), NOT built. AND (MEASURED in Chromium 151 + Firefox 153) what a key FORMAT buys: a non-extractable handle works and survives a restart, yet the raw seed still sits CLEARTEXT ON DISK — so the win reads NON-PORTABILITY, never non-compromise; and the origin-attestation cap is untouched by it, because that entity serves the CODE. Two key classes, two cures: a device key MAY go opaque (never resurrected), a persona root STRUCTURALLY CANNOT (hierarchical derivation needs parent bytes) and wants an at-rest seal instead. Storage evicts: seven days without interaction clears an origin on WebKit, and home-screen installation is the exemption."
 status-why = "researched by two-lens swarm; the path NOT built"
 tags       = ["mesh/cap-tier", "mesh/carry-contract", "api/pono/lararium-identity", "api/pono/causal-islands", "api/pono/persona-circle", "lifecycle/designed"]
 title      = "lar:///ha.ka.ba/lararium/mesh/secure-context"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lararium/mesh/secure-context"
-written    = "2026-07-23"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -173,13 +172,25 @@ A minted key rests in browser storage, and browsers reclaim it. ''WebKit clears 
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/the-phone-seat`>>
+
+!! The phone seat ~ the operator's ruling of 2026-09-11
+
+> ''RULED (operator, 2026-09-11, "Approve all, OODA-HA forwards"; one clause of the moʻolelo first told at `scale-stories-basket-one#/exit`).'' Quote license: "the phone seat explains and offers the install, projection stays the node's, PRF wraps beside and never mints, a synced passkey counts as a cloud, every key names its class in vault status, Mudlet probes the bulb face, Unreal builds against 5.x".
+
+''Keys, not storage (operator ruling, 2026-11-20).'' The operator, asked whether the pair reads keys against storage, answered //"agree"//. So //PRF wraps beside and never mints// speaks of KEYS: the wrap stands beside the device-minted key and never mints one. Of STORAGE it reads with #/custody-leans: PRF wraps the resting form in place of the cleartext. The clause's last two parts (//Mudlet probes the bulb face, Unreal builds against 5.x//) govern host seats beyond this wall and ride here whole with their clause. The witness reads `packages/lararium-web/tests/phone-seat.test.ts`.
+
+''Deferred, and recorded so it can reopen.'' The browser, phone and tablet vessel rewrite sits deferred (the browser Mu, from scratch). This collapse of the wave-form to the ruling stands recorded here so that rewrite can revisit it.
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/custody-leans`>>
 
 !! Custody across a storage reset ~ operator-approved LEANS, with a crucible's conditions
 
 > ''Register: APPROVED LEANS (operator, 2026-10-11), never rulings and never built.'' Quote license: //"Approve the leans; send a Luna pair to crucible it"//. A two-lens crucible then tested them across two traded waves, read-only; its conditions ride below as research the leans must meet.
 
-# ''PRF-wrapped custody REPLACES the cleartext resting form'' of a browser vessel's roots (the cleartext stands measured at #/what-the-key-format-buys). It replaces; it never sits beside the cleartext as an opt-in. PRF wraps and never mints.
+# ''PRF wraps the resting form in place of the cleartext'' of a browser vessel's roots (the cleartext stands measured at #/what-the-key-format-buys), and ''never mints a key'' (#/the-phone-seat, trued 2026-11-20: the ruling's //beside// names the device-minted key, never the cleartext). The wrap never sits beside the cleartext as an opt-in.
 # ''The herm carries the wrapped blob'': carry, never read. Ciphertext rests with the party that cannot read it, and the unwrapping key rests behind the passkey, which a storage reset cannot reach. After an eviction the human presents the passkey, fetches the blob and unwraps it.
 # ''The install gets offered, never required'' (#/storage-that-vanishes). The passkey gives an uninstalled phone its reason to keep its memory.
 # ''Three cautions ride with them.'' A synced passkey reads `cloud-synced`, a seed-class secret, and `vault status` names the class. The served-page hole stays open, since PRF cures nothing there. The herm's blob locator stays an opaque address and never grows into a roster.
@@ -294,6 +305,6 @@ The `https` compose profile supplies a TLS terminator and a split-horizon resolv
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;uiwTlMZ-DClopvZuH0BP038hhVzTPSLl2P09iGqSS80`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5NccCiwNJyrhBaFCeEsKBUXgHH0WuJP3Ore9P4-m6r8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

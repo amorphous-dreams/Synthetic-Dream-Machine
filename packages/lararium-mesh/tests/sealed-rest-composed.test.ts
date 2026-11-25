@@ -10,6 +10,7 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { litFaceOwnBags, DAEMON_WIKI_SLOT_BAGS, FACE_CATALOG_BAG_ID, daemonFaceCanonBag, selvesRecordOf } from "../src/index.js";
 
 const stripped = (path: readonly string[]): string => {
   const source = readFileSync(join(import.meta.dirname, "..", "..", ...path), "utf8");
@@ -40,6 +41,12 @@ describe("each vessel's Repo stands on the sealed rest", () => {
     expect(browser).toMatch(/await sealedRest\.lock\(\)[\s\S]{0,300}await lifted\.dispose\(\)/);
   });
 
+  it("the browser derives registration and live announced-slot sealing through the mesh bag classification", () => {
+    const browser = stripped(["lararium-browser", "src", "open-browser-vessel.ts"]);
+    expect(browser).toMatch(/wikiBags:\s*\[\s*\.\.\.wornFaceWikiBags\(\{[\s\S]*?announced:\s*catalogFaceSlotBags\(catalogHandle\.doc\(\)\)[\s\S]*?\}\)\.registered/);
+    expect(browser).toMatch(/sealedCells\.bags = \(\) => wornFaceWikiBags\(\{[\s\S]*?announced:\s*slotDocsNamed\.keys\(\)[\s\S]*?\}\)\.sealed/);
+  });
+
   it("each daemon island answers the document store's door beside its holder", () => {
     expect(stripped(["lararium-node", "src", "node-daemon-island.ts"])).toMatch(/docStoreDoor\s*:/);
     expect(stripped(["lararium-browser", "src", "daemon-island-start.ts"])).toMatch(/docStoreDoor\s*:/);
@@ -50,11 +57,14 @@ describe("each vessel's Repo stands on the sealed rest", () => {
 describe("the node holds the lit set (sealed-store#/the-lit-set)", () => {
   it("each sibling stands its own place session in the book, its own canon and bases keeper; a lock drops its waiting saves and handles", () => {
     const node = stripped(["lararium-node", "src", "open-node-vessel.ts"]);
-    expect(node).toMatch(/const litSibling = \(entry: JoinedFaceAuth\): void => \{[\s\S]{0,600}standSiblingSession\(\{ group, atomKey: entry\.atom\.key \}\)/);
+    expect(node).toMatch(/const litSibling = async \(entry: JoinedFaceAuth, live: \(\) => boolean\): Promise<void> => \{[\s\S]{0,900}await standSiblingSession\(\{ group, atomKey: entry\.atom\.key \}, current, entry\.deviceEdge\.personaRootDid\)/);
     expect(node).toMatch(/for \(const sibling of siblingSessions\.values\(\)\) sibling\.seat\.book\(book\)/);
-    expect(node).toMatch(/standFaceDaemonCanon\(\{ repo, control: await readControlDoc\(\), faceRelation: relation/);
+    expect(node).toMatch(/standFaceDaemonCanon\(\{ repo, control, faceRelation: relation/);
     expect(node).toMatch(/siblingBasesKeepers\.set\(group, keepFaceBases\(/);
-    expect(node).toMatch(/const dropped = sealedRest\.forget\(owned\);[\s\S]{0,120}repo\.removeFromCache\(/);
+    // A closed face forgets its saves, a refused one keeps them: the choice lives in `settleFaceSaves` (face-lend.ts), the teardown hands it both doors.
+    expect(node).toMatch(/settleFaceSaves\(owned, why, \{ forget: \(ids\) => sealedRest\.forget\(ids\), keep: \(ids\) => sealedRest\.keep\(ids\) \}\);[\s\S]{0,120}repo\.removeFromCache\(/);
+    const lend = stripped(["lararium-node", "src", "face-lend.ts"]);
+    expect(lend).toMatch(/if \(why === "refused"\) return \{ dropped: 0, held: rest\.keep\(owned\) \};\s*return \{ dropped: rest\.forget\(owned\), held: 0 \};/);
     expect(node).toMatch(/sealedRest\.watch\(repo, standingSaveSessionFor\)/);
     expect(node).toMatch(/openFaces: openFaceSubjects/);
   });
@@ -63,6 +73,15 @@ describe("the node holds the lit set (sealed-store#/the-lit-set)", () => {
     const island = stripped(["lararium-keyhive", "src", "operator-daemon-behavior.ts"]);
     expect(island).toMatch(/faceTarget: litFaceTargetOf\(ctx\)/);
     expect(island).toMatch(/litSiblings\.set\(key, face\)/);
-    expect(stripped(["lararium-node", "src", "joined-face-auth.ts"])).toMatch(/registerBags: deriveRegisterBags\(\{ fleets: \[\], wikiBags: litFaceOwnBags\(relation\) \}\)/);
+  });
+
+  // BEHAVIOUR, NOT A CALL SITE: what a lit sibling's hive registers reads off `litFaceOwnBags` itself (the node's
+  // `joined-face-auth.test.ts` pins that `joinedFaceAuth` hands each sibling exactly this set, by its own group).
+  it("a lit face's own bags carry its daemon slots, its canon, its catalog half and its own selves record, never another face's", () => {
+    const relation = "11111111-1111-4111-8111-111111111111";
+    const own = litFaceOwnBags(relation, "group-own");
+    expect(own).toEqual(expect.arrayContaining([...DAEMON_WIKI_SLOT_BAGS, daemonFaceCanonBag(relation), FACE_CATALOG_BAG_ID, selvesRecordOf("group-own").bagId]));
+    expect(own).not.toContain(selvesRecordOf("group-other").bagId);
+    expect(litFaceOwnBags(null).some((b) => b.includes("/selves-")), "no group, no selves record").toBe(false);
   });
 });

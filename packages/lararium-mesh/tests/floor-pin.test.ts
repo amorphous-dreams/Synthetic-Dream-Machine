@@ -18,6 +18,7 @@ import { save } from "@automerge/automerge";
 import { sha256HexBytesSync } from "../src/crypto.js";
 import { emptyLarDoc, type LarDoc } from "../src/base-doc.js";
 import { floorManifestBytes, cutFloorSnapshot, type FloorManifest } from "../src/floor-manifest.js";
+import { signFloorOffering } from "../src/floor-offering.js";
 import { assembleFloorRelease, openFloorReleaseBody, type FloorRelease } from "../src/floor-release.js";
 import {
   FLOOR_PIN_PREFIX, acceptFloorRelease, decideFloorAccept, floorCidToMount, floorPinOf, floorPinTitle, floorRemountDecision,
@@ -28,12 +29,20 @@ import type { LarTiddlerRecord } from "../src/tiddler-store.js";
 
 const row = (title: string, text: string): LarTiddlerRecord => ({ tiddler: { title, text } });
 
+/** The plugins offering every test floor names: one blob whose bytes ride the floor's CAS beside the record. */
+const PLUGIN_BYTES = new TextEncoder().encode("plugin bytes");
+const OFFERING = await signFloorOffering({ seed: new Uint8Array(32).fill(3), blobs: [{
+  id: "lar:///ha.ka.ba/lararium/plugins/lares/memetic-wikitext", version: "unknown", sha256: sha256HexBytesSync(PLUGIN_BYTES),
+  provenance: { source: "https://example.test", commit: "0".repeat(40), path: "plugin.json", licence: "MIT" },
+}] });
+
 function floor(tag: string) {
   const cas = new Map<string, Uint8Array>();
   const lares = cutFloorSnapshot({ [`lar:///t/${tag}/lares`]: row(`lar:///t/${tag}/lares`, `lares ${tag}`) });
   const lararium = cutFloorSnapshot({ [`lar:///t/${tag}/lararium`]: row(`lar:///t/${tag}/lararium`, `lararium ${tag}`) });
   cas.set(lares.cid, lares.bytes); cas.set(lararium.cid, lararium.bytes);
-  const manifest: FloorManifest = { format: "lararium-floor", engine: "e".repeat(64), grammar: "a".repeat(64), plugins: "b".repeat(64), snapshots: { lares: lares.cid, lararium: lararium.cid } };
+  cas.set(OFFERING.cid, OFFERING.bytes); cas.set(OFFERING.offering.blobs[0]!.sha256, PLUGIN_BYTES);
+  const manifest: FloorManifest = { format: "lararium-floor", engine: "e".repeat(64), plugins: OFFERING.cid, snapshots: { lares: lares.cid, lararium: lararium.cid } };
   const manifestBytes = floorManifestBytes(manifest);
   const manifestCid = sha256HexBytesSync(manifestBytes);
   cas.set(manifestCid, manifestBytes);
@@ -56,13 +65,14 @@ function memoryHome(doc: LarDoc = emptyLarDoc()): { changes: number; doc(): LarD
 const GENESIS = floor("genesis");
 
 /** Ports over one board and one CAS; `staged` and `alerts` record what the accept did. */
-function portsOver(args: { home: FloorPinHome; nexus: string; releases: readonly FloorRelease[]; cas: Map<string, Uint8Array>; floorSwap?: boolean }) {
+function portsOver(args: { home: FloorPinHome; nexus: string; releases: readonly FloorRelease[]; cas: Map<string, Uint8Array>; floorSwap?: boolean; required?: readonly string[] }) {
   const staged: string[] = [];
   const alerts: FloorRemount[] = [];
   const swapped: string[] = [];
   const local = new Map<string, Uint8Array>(GENESIS.cas);
   const ports: FloorPinPorts = {
     home: args.home, nexus: args.nexus, genesisManifest: GENESIS.manifestCid,
+    requiredBlobIds: args.required ?? [OFFERING.offering.blobs[0]!.id],
     rows: async () => args.releases.map((r) => ({ keyCid: r.cid, record: JSON.parse(JSON.stringify(r)) as unknown })),
     fetchCas: async (cid) => local.get(cid) ?? args.cas.get(cid) ?? null,
     stage: async (blobs) => { for (const b of blobs) { staged.push(b.cid); local.set(b.cid, b.bytes); } },
@@ -103,6 +113,17 @@ describe("the vessel's pin", () => {
     expect(alerts).toHaveLength(1);
     // CONTROL: the status now reads current: the head IS the pin, nothing to fast-forward.
     expect(await readFloorStatus(ports)).toMatchObject({ newest: r2.cid, descends: true, fastForward: false, path: [] });
+  });
+
+  test("RED: a release whose offering drops a blob every mount needs refuses `floor-offering-incomplete`, naming it, and lands nothing", async () => {
+    const c = await seatedCharter({ seats: 3, threshold: 1 });
+    const f1 = floor("one");
+    const r1 = await released(c, f1);
+    const home = memoryHome();
+    const { ports, staged, alerts } = portsOver({ home, nexus: c.aid, releases: [r1], cas: f1.cas, required: [OFFERING.offering.blobs[0]!.id, "lararium-boot-shadows"] });
+    const out = await acceptFloorRelease(ports);
+    expect(out).toMatchObject({ ok: false, refusal: "floor-offering-incomplete", detail: expect.stringContaining("lararium-boot-shadows") });
+    expect({ staged: staged.length, changes: home.changes, alerts: alerts.length }).toEqual({ staged: 0, changes: 0, alerts: 0 });
   });
 
   test("RED: a release that does not descend from the pin refuses `floor-not-descendant` (a rollback), and lands nothing", async () => {

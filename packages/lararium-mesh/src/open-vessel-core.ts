@@ -17,11 +17,13 @@
  * grow into init/PersonaGroup/genesis/corpus/residency.
  */
 
-import type { Repo, DocHandle, AutomergeUrl } from "@automerge/automerge-repo";
+import { wearOf } from "./repo-wear.js";
+import type { Repo, DocHandle, AutomergeUrl, DocumentId } from "@automerge/automerge-repo";
 import type { LarOpenPhase } from "./lararium-vessel.js";
 import { CompositeStore } from "./composite-store.js";
 import type { LarTiddlerStore } from "./tiddler-store.js";
-import { AutomergeDocStore } from "./automerge-doc-store.js";
+import { AutomergeDocStore, markStandIn, releaseStandIn, sealedUnopened } from "./automerge-doc-store.js";
+import { nameDocumentFor, sealedLoadEnding } from "./wait-handle.js";
 import { DOCUMENT_HANG_BOUND_MS, findOrThrow, WorkingDocumentUnavailableRefusal } from "./find-or-throw.js";
 import { emptyLarDoc, tiddlerText, type LarDoc } from "./base-doc.js";
 import { personaSiblingBagIds } from "./persona-scope.js";
@@ -29,7 +31,7 @@ import { BAG_IDS, DAEMON_BAG_ID, ORACLE_DOC_URI } from "./lar-uris.js";
 import type { PersonaPlaneRef } from "./persona-planes.js";
 import { slotLayerFlags, wikiSlotUri } from "./wiki-recipe.js";
 import { resolveBootDoc, isStillJoining } from "./boot-resolver.js";
-import { isCondemned, isUnresolved, type DocLoadProbe, type ProbeResult } from "./doc-load-probe-contract.js";
+import { isCondemned, isSealedVerdict, isUnresolved, type DocLoadProbe, type ProbeResult } from "./doc-load-probe-contract.js";
 import { storedLarRecord } from "./stored-record.js";
 import { resolveCatalogEntry } from "./catalog-entry.js";
 import { floorCanonAddress } from "./house-canon-doc.js";
@@ -82,8 +84,11 @@ export interface VesselKeel {
    *
    *  ⚠ NOT `allowableStates` — that option carries an upstream deprecation tag and takes no effect in the
    *  pinned automerge-repo, so a strategy resting on it rests on nothing. Progress reads through
-   *  `findWithProgress`, which reports per-source state rather than one collapsed verdict. */
-  waitHandle:    <T>(url: AutomergeUrl, fallback: () => DocHandle<T>) => Promise<DocHandle<T>>;
+   *  `findWithProgress`, which reports per-source state rather than one collapsed verdict.
+   *
+   *  `bagId` names the bag the document belongs to where the caller knows it: the map before the bytes
+   *  (`waitHandle`'s own `bagId`), so a sealed bag's document the map names nothing for yet never rests clear. */
+  waitHandle:    <T>(url: AutomergeUrl, bagId: string, fallback: () => DocHandle<T>) => Promise<DocHandle<T>>;
   /** Genesis island piece → handle + coreHash + the social-plane bootstrap it carries.
    *  Genesis REQUIRED (coreless boot deleted) — the vessel derives bootstrap from the
    *  island (or the init JSON) here, so it resolves together with genesis, not before. */
@@ -97,9 +102,14 @@ export interface VesselKeel {
    *  repo materializing it. Absent = skip the probe (the doc resolves straight through —
    *  the pre-hardening path). The node injects a child_process probe; a browser a Worker. */
   docLoadProbe?: DocLoadProbe;
+  /** The refusal a sealed document's latest keyed load ended on (`SealedDocumentStore#refusalOf`). A sealed plane whose load
+   *  ends quarantines only on integrity evidence (`isIntegrityRefusal`); any other ending, or none named (absent port),
+   *  leaves it pending: read-only, no bytes moved, nothing held. */
+  sealedRefusalOf?: (documentId: string) => string | null;
   /** L2: quarantine a condemned doc — the platform MOVES its bytes aside (nodefs rename /
-   *  IndexedDB key-drop). Fires only when the probe condemns. */
-  quarantineDoc?: (result: ProbeResult) => void;
+   *  IndexedDB key-drop). Fires only when the probe condemns; names the plane it mounted as, so the record can tell a
+   *  plane a sibling device carries. */
+  quarantineDoc?: (result: ProbeResult, bagId: string) => void;
   /** L3: attempt a clean-tail recovery of a condemned doc AHEAD of quarantine — the platform
    *  verifies the doc's clean record-prefix loads in isolation, MOVES only the torn tail aside
    *  (keeping the verified prefix), and returns the re-verified `status:"ok"` verdict. Returns
@@ -128,8 +138,12 @@ export interface MountEntry {
   /** `pending` (H2) — the probe (or its clean-tail recovery) answered with NO verdict (its own
    *  patience spent, or a signal-less boundary death): the plane mounts read-only blank, no
    *  bytes move, and a later re-probe (doctor, or an operator receipt) decides. Distinct from
-   *  `degraded`, which only ever follows real integrity evidence. */
-  readonly status: "mounted" | "promoted" | "degraded" | "pending";
+   *  `degraded`, which only ever follows real integrity evidence.
+   *  `sealed` — the probe read sound sealed envelopes and no inner byte: the plane mounts read-only over its OWN id until
+   *  the keyed load opens it (the entry then reads `mounted`, the plane writable over the same handle), refuses on
+   *  integrity evidence (the entry then reads `degraded`, the document quarantined), or ends on liveness or a foreign
+   *  face (the entry then reads `pending`, no bytes moved). Never a writable blank. */
+  readonly status: "mounted" | "promoted" | "degraded" | "pending" | "sealed";
   /** names the condemnation when status=degraded, the clean-tail cut when status=promoted, or
    *  the unresolved reason when status=pending. */
   readonly reason?: string;
@@ -154,8 +168,13 @@ export interface VesselCoreAssembly {
   /** The live lararium memetic corpus — its own doc, separate from oracle and lares. Null outside the Kahu cabal. */
   larariumHandle: DocHandle<LarDoc> | null;
   coreHash:      string;
-  /** L2: which social planes mounted live vs degraded (read-only after a condemn). */
+  /** L2: which social planes mounted live vs degraded (read-only after a condemn). A `sealed` entry moves later, in place,
+   *  to `mounted`, `degraded` (and `degraded` turns true) or `pending` as its keyed load opens, refuses on integrity
+   *  evidence, or ends with none. */
   mountManifest: MountManifest;
+  /** Settles once every `sealed` plane's keyed load opened or refused. A load waiting on a session that never stands
+   *  keeps it open; nothing in the boot awaits it. */
+  sealedMounts: Promise<void>;
 }
 
 /** Strip the `automerge:` scheme, leaving the documentId the storage path shards on. */
@@ -164,14 +183,18 @@ function documentIdFromUrl(url: string): string {
 }
 
 const blankDoc = (repo: Repo): DocHandle<LarDoc> => repo.create<LarDoc>(emptyLarDoc());
+/** A degraded or pending doc's read-only blank: it reads empty and stands in, unread, so a delete above it raises a kāpae. */
+/** A blank document minted for `bagId`, named for that bag before its first byte moves (`nameDocumentFor`). */
+const blankDocFor = (repo: Repo, bagId: string): DocHandle<LarDoc> => { const handle = blankDoc(repo); nameDocumentFor(repo, handle.documentId, bagId); return handle; };
+const standIn = (repo: Repo): DocHandle<LarDoc> => { const handle = blankDoc(repo); markStandIn(handle); return handle; };
 
 /** Canon layer (the lararium and lares bags): writable, defaultWritable:false. */
-function addSubstrateLayer(composite: CompositeStore, bagId: string, handle: DocHandle<LarDoc>): void {
-  composite.addLayer({ bagId, store: new AutomergeDocStore(handle, bagId), writable: true, defaultWritable: false });
+function addSubstrateLayer(composite: CompositeStore, bagId: string, handle: DocHandle<LarDoc>, repo: Repo): void {
+  composite.addLayer({ bagId, store: new AutomergeDocStore(handle, bagId, wearOf(repo)), writable: true, defaultWritable: false });
 }
 /** Read-only layer (catalog registry, corpus bags). */
-function addReadOnlyLayer(composite: CompositeStore, bagId: string, handle: DocHandle<LarDoc>): void {
-  composite.addLayer({ bagId, store: new AutomergeDocStore(handle, bagId), writable: false });
+function addReadOnlyLayer(composite: CompositeStore, bagId: string, handle: DocHandle<LarDoc>, repo: Repo): void {
+  composite.addLayer({ bagId, store: new AutomergeDocStore(handle, bagId, wearOf(repo)), writable: false });
 }
 
 /**
@@ -184,11 +207,11 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
   const emit = (p: LarOpenPhase) => keel.onPhase?.(p);
 
   const composite = new CompositeStore();
-  addReadOnlyLayer(composite, BAG_IDS.catalog, catalogHandle);
+  addReadOnlyLayer(composite, BAG_IDS.catalog, catalogHandle, repo);
 
   // ── genesis island (REQUIRED — coreless boot deleted) + the bootstrap it carries ──
   const { islandHandle, coreHash, bootstrap } = await loadGenesis();
-  addSubstrateLayer(composite, BAG_IDS.oracle, islandHandle);
+  addSubstrateLayer(composite, BAG_IDS.oracle, islandHandle, repo);
   // The lares and lararium bags — the LIVE system documents, mounted only from what the shore names (`keel.systemCanon`):
   // the Kahu realm's standing registrations on a vessel whose cabal admitted its group. No catalog row names either bag.
   // The named documents resolve through the tideline resolver, never the blank-mint fallback: a document that has not
@@ -201,7 +224,7 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
     });
     if (!isStillJoining(resolved)) {
       laresHandle = resolved;
-      addSubstrateLayer(composite, BAG_IDS.lares, laresHandle);
+      addSubstrateLayer(composite, BAG_IDS.lares, laresHandle, repo);
     }
   }
   let larariumHandle: DocHandle<LarDoc> | null = null;
@@ -211,7 +234,7 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
     });
     if (!isStillJoining(resolved)) {
       larariumHandle = resolved;
-      addSubstrateLayer(composite, BAG_IDS.lararium, larariumHandle);
+      addSubstrateLayer(composite, BAG_IDS.lararium, larariumHandle, repo);
     }
   }
   const existingRef = tiddlerText(ownEntry(catalogHandle.doc()?.tiddlers, ORACLE_DOC_URI)) ?? null;
@@ -232,13 +255,71 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
   // doc gets quarantined and mounts as a read-only blank (writable:false, so no write forks
   // into the placeholder), and the manifest marks the vessel degraded. Absent a probe, the
   // doc resolves straight through, as before.
-  const resolve = (url: AutomergeUrl) => waitHandle<LarDoc>(url, () => blankDoc(repo));
+  const resolve = (url: AutomergeUrl, bagId: string) => waitHandle<LarDoc>(url, bagId, () => blankDoc(repo));
   const entries: MountEntry[] = [];
-  let degraded = false;
+  const manifest: { entries: MountEntry[]; degraded: boolean } = { entries, degraded: false };
+  const sealedSettling: Promise<void>[] = [];
+  /**
+   * A SEALED PLANE WAITS FOR ITS KEY, NEVER FOR A WINDOW. The probe read sound envelopes and no inner byte, so nothing
+   * vouches that the document opens. The plane mounts read-only over its own id (the handle the keyed load fills), never
+   * through the blank writable fallback: a stand-in under a fresh id would take the late merge and write it under an id
+   * the bag map does not name. The keyed load that opens re-mounts the plane writable over the same handle; one that
+   * refuses on integrity evidence (a value the holder does not hold, a sequence cut short) takes the condemn path: the
+   * quarantine, held across boots, and the read-only stand-in; a load that ends on liveness or a foreign face settles
+   * `pending`. The clean-tail cut is skipped there: its framing walk reads no byte inside
+   * a sealed record, so it would keep the very record the key refused.
+   */
+  const mountSealed = (bagId: string, documentId: string, url: string, reason: string): void => {
+    const progress = repo.findWithProgress<LarDoc>(url as AutomergeUrl);
+    const own = (repo.handles as Record<DocumentId, DocHandle<LarDoc> | undefined>)[documentId as DocumentId];
+    const reading = own ?? standIn(repo);
+    markStandIn(reading);
+    const at = entries.push({ bagId, documentId, status: "sealed", reason }) - 1;
+    let mounted = new AutomergeDocStore(reading, bagId, wearOf(repo));
+    composite.addLayer({ bagId, store: mounted, writable: false });
+    const mountWritable = (store: AutomergeDocStore): void => {
+      const index = composite.layerIds.indexOf(bagId);
+      composite.removeLayer(bagId);
+      mounted.dispose();
+      mounted = store;
+      composite.addLayer({ bagId, store, writable: true, defaultWritable: false }, index);
+    };
+    sealedSettling.push(sealedLoadEnding(progress, documentId, keel.sealedRefusalOf).then((ending) => {
+      if (ending.status === "opened") {
+        releaseStandIn(reading);
+        mountWritable(new AutomergeDocStore(ending.handle, bagId, wearOf(repo)));
+        entries[at] = { bagId, documentId, status: "mounted" };
+      } else if (ending.status === "refused") {
+        // ONLY INTEGRITY EVIDENCE MOVES BYTES (`sealedLoadEnding`): the quarantine, held across boots, and the read-only layer
+        // over the real handle stays as it stands, still reading unknown, so no write reaches it.
+        const verdict = { documentId, status: "load-error" as const, reason: `sealed: the keyed load refused (${ending.why})` };
+        keel.quarantineDoc?.(verdict, bagId);
+        entries[at] = { bagId, documentId, status: "degraded", reason: `${verdict.status}: ${verdict.reason}` };
+        manifest.degraded = true;
+      } else {
+        // Liveness (no session yet, the rest standing down at a stop), a foreign face, custody, or no named refusal: read-only,
+        // nothing moved, nothing held, nothing minted at a stop, and the next boot probes it fresh.
+        entries[at] = { bagId, documentId, status: "pending", reason: `sealed: the keyed load ended with no integrity evidence (${ending.why}); no bytes moved, the next boot probes it again` };
+      }
+    }));
+  };
   const mountSocial = async (bagId: string, url: string): Promise<void> => {
     const documentId = documentIdFromUrl(url);
     if (keel.docLoadProbe) {
       const verdict = await keel.docLoadProbe.probe(documentId);
+      if (verdict.held) {
+        // AN ID ALREADY IN QUARANTINE STAYS HELD. Its bytes rest aside from an earlier condemn, so the store holds none
+        // under this id, and a load would read a fresh blank and mount writable over an orphan no pointer names. No
+        // recovery, no second move: the degraded stand-in, read-only, until a hand act restores or releases the id.
+        manifest.degraded = true;
+        entries.push({ bagId, documentId, status: "degraded", reason: `${verdict.status}: ${verdict.reason ?? ""}`.trim() });
+        composite.addLayer({ bagId, store: new AutomergeDocStore(standIn(repo), bagId, wearOf(repo)), writable: false });
+        return;
+      }
+      if (isSealedVerdict(verdict)) {
+        mountSealed(bagId, documentId, url, `sealed: ${verdict.sealed ?? "?"} record(s) rest sealed; the keyed load decides`);
+        return;
+      }
       if (isCondemned(verdict)) {
         // L3 — before condemning the whole doc, try a clean-tail recovery: verify the doc's
         // clean record-prefix loads in isolation, then drop only the torn tail. A promoted
@@ -248,18 +329,23 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
         // a signal-less death) is NOT a promotion, and falls straight through to the ORIGINAL
         // condemn's quarantine (real integrity evidence already stands on the base verdict).
         const promoted = keel.recoverCleanTail ? await keel.recoverCleanTail(verdict) : null;
+        if (promoted && isSealedVerdict(promoted)) {
+          const cut = promoted.cleanTail;
+          mountSealed(bagId, documentId, url, `clean-tail: kept ${cut?.kept ?? "?"}, moved ${cut?.movedAside.length ?? "?"} aside; the kept records rest sealed, so the keyed load decides`);
+          return;
+        }
         if (promoted && promoted.status === "ok") {
-          composite.addLayer({ bagId, store: new AutomergeDocStore(await resolve(url as AutomergeUrl), bagId), writable: true, defaultWritable: false });
+          composite.addLayer({ bagId, store: new AutomergeDocStore(await resolve(url as AutomergeUrl, bagId), bagId, wearOf(repo)), writable: true, defaultWritable: false });
           const cut = promoted.cleanTail;
           entries.push({ bagId, documentId, status: "promoted", reason: cut ? `clean-tail: kept ${cut.kept}, moved ${cut.movedAside.length} aside` : "clean-tail recovery" });
           return;
         }
-        keel.quarantineDoc?.(verdict);
-        degraded = true;
+        keel.quarantineDoc?.(verdict, bagId);
+        manifest.degraded = true;
         entries.push({ bagId, documentId, status: "degraded", reason: `${verdict.status}: ${verdict.reason ?? ""}`.trim() });
         // Read-only blank stands in — the plane reads empty until L4 rematerializes it,
         // and no write forks a placeholder the real doc will later reconcile against.
-        composite.addLayer({ bagId, store: new AutomergeDocStore(blankDoc(repo), bagId), writable: false });
+        composite.addLayer({ bagId, store: new AutomergeDocStore(standIn(repo), bagId, wearOf(repo)), writable: false });
         return;
       }
       if (isUnresolved(verdict)) {
@@ -269,12 +355,26 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
         // later reconcile against) — a read-only blank, named `pending`, until a later
         // re-probe (doctor, or an operator receipt) actually decides.
         entries.push({ bagId, documentId, status: "pending", reason: `${verdict.status}: ${verdict.reason ?? ""}`.trim() });
-        composite.addLayer({ bagId, store: new AutomergeDocStore(blankDoc(repo), bagId), writable: false });
+        composite.addLayer({ bagId, store: new AutomergeDocStore(standIn(repo), bagId, wearOf(repo)), writable: false });
         return;
       }
     }
-    composite.addLayer({ bagId, store: new AutomergeDocStore(await resolve(url as AutomergeUrl), bagId), writable: true, defaultWritable: false });
-    entries.push({ bagId, documentId, status: "mounted" });
+    const handle = await resolve(url as AutomergeUrl, bagId);
+    composite.addLayer({ bagId, store: new AutomergeDocStore(handle, bagId, wearOf(repo)), writable: true, defaultWritable: false });
+    if (sealedUnopened(handle) === undefined) { entries.push({ bagId, documentId, status: "mounted" }); return; }
+    // A SEALED PLANE PAST THE WINDOW, WITH NO PROBE AHEAD OF IT: `waitHandle` held it read-only over its own id (a write
+    // refuses by name until the keyed load opens it, and its door moves the bytes aside on integrity evidence). The entry
+    // reads `sealed` and moves, in place, as the load ends.
+    const at = entries.push({ bagId, documentId, status: "sealed", reason: "sealed: past the boot window, read-only over its own id; the keyed load decides" }) - 1;
+    sealedSettling.push(sealedLoadEnding(repo.findWithProgress<LarDoc>(url as AutomergeUrl), documentId, keel.sealedRefusalOf).then((ending) => {
+      if (ending.status === "opened") { entries[at] = { bagId, documentId, status: "mounted" }; return; }
+      if (ending.status === "refused") {
+        entries[at] = { bagId, documentId, status: "degraded", reason: `load-error: sealed: the keyed load refused (${ending.why})` };
+        manifest.degraded = true;
+        return;
+      }
+      entries[at] = { bagId, documentId, status: "pending", reason: `sealed: the keyed load ended with no integrity evidence (${ending.why}); no bytes moved, the next boot reads it again` };
+    }));
   };
   // A PLACE names no social plane, so each mount rides its own url standing. A faceless vessel carries
   // and serves with these absent — the waking floor, reached by founding rather than by falling.
@@ -296,14 +396,15 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
   if (bootstrap.personaBagId && bootstrap.personaUrl) {
     await mountSocial(bootstrap.personaBagId, bootstrap.personaUrl);
   }
-  const mountManifest: MountManifest = { entries, degraded };
+  const mountManifest: MountManifest = manifest;
+  const sealedMounts = Promise.all(sealedSettling).then(() => undefined);
 
   if (keel.loadCorpora) {
     await keel.loadCorpora(composite);
     emit("corpus-ready");
   }
 
-  return { repo, composite, catalogHandle, islandHandle, laresHandle, larariumHandle, coreHash, mountManifest };
+  return { repo, composite, catalogHandle, islandHandle, laresHandle, larariumHandle, coreHash, mountManifest, sealedMounts };
 }
 
 /**
@@ -340,7 +441,7 @@ export async function mountWikiSlot(
   // registry entry, not the canon-doc lookup.
   const wikiHandle = presetWikiHandle ?? (isHouseCanonBag(slot.wikiBagId) ? null : await resolveCatalogEntry(
     catalogHandle, slot.wikiBagId,
-    (url) => url ? waitHandle<LarDoc>(url as AutomergeUrl, () => blankDoc(repo)) : blankDoc(repo),
+    (url) => url ? waitHandle<LarDoc>(url as AutomergeUrl, slot.wikiBagId, () => blankDoc(repo)) : blankDocFor(repo, slot.wikiBagId),
     "vessel-boot",
   ));
   const canonAddress = wikiHandle?.url ?? floorCanonAddress(slot.wikiBagId);
@@ -352,11 +453,11 @@ export async function mountWikiSlot(
   const workingHandle = workingUrl === null ? null : await findOrThrow(repo, workingUrl, `${workingSlot} (working layer)`, { refusal: WorkingDocumentUnavailableRefusal, timeoutMs: DOCUMENT_HANG_BOUND_MS });
   const writeSlot = await resolveWriteSlot?.(canonAddress);
   const flags = (bagId: string) => slotLayerFlags(bagId, slot.wikiSlug, writeSlot);
-  if (wikiHandle) composite.addLayer({ bagId: slot.wikiBagId, store: new AutomergeDocStore(wikiHandle, slot.wikiBagId), ...flags(slot.wikiBagId) });
-  if (workingHandle) composite.addLayer({ bagId: workingSlot, store: new AutomergeDocStore(workingHandle, workingSlot), ...flags(workingSlot) });
+  if (wikiHandle) composite.addLayer({ bagId: slot.wikiBagId, store: new AutomergeDocStore(wikiHandle, slot.wikiBagId, wearOf(repo)), ...flags(slot.wikiBagId) });
+  if (workingHandle) composite.addLayer({ bagId: workingSlot, store: new AutomergeDocStore(workingHandle, workingSlot, wearOf(repo)), ...flags(workingSlot) });
 
-  const draftHandle = await waitHandle<LarDoc>(await resolveDraft(canonAddress) as AutomergeUrl, () => blankDoc(repo));
-  composite.addLayer({ bagId: slot.draftBagId, store: new AutomergeDocStore(draftHandle, slot.draftBagId), ...flags(slot.draftBagId) });
+  const draftHandle = await waitHandle<LarDoc>(await resolveDraft(canonAddress) as AutomergeUrl, slot.draftBagId, () => blankDoc(repo));
+  composite.addLayer({ bagId: slot.draftBagId, store: new AutomergeDocStore(draftHandle, slot.draftBagId, wearOf(repo)), ...flags(slot.draftBagId) });
 
   const tempSlot = wikiSlotUri(slot.wikiSlug, "temp");
   composite.addLayer({ bagId: tempSlot, store: keel.tempStore(), ...flags(tempSlot) });

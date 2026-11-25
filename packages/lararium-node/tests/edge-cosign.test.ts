@@ -1,7 +1,8 @@
 import { seatSuiteWard } from "./support/scratch-custody-setup.js";
 // This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
 seatSuiteWard();
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { keepHouse } from "./support/kept-house.js";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -35,14 +36,25 @@ let chairB: string;
 let priorLarRoot: string | undefined;
 const REALM = "af".repeat(32), MEMBER = "bc".repeat(32);
 
-async function stand(index: number, seatIndex: number, keys: string[]) {
+async function withRepo<T>(index: number, run: (repo: Repo) => Promise<T>): Promise<T> {
   process.env["LAR_ROOT"] = roots[index]!;
+  return ownedStore(larDataDir(), run);
+}
+
+beforeAll(async () => {
+  chairA = await chairKey(0);
+  chairB = await chairKey(1);
+  genesis = heldCharter({ keys: [chairA, chairB], threshold: 2, successors: { keys: [await chairKey(0, 1), await chairKey(1, 1)], threshold: 2 } });
+});
+const houses = [0, 1].map((face) => keepHouse(`lares-edge-cosign-h${face}-`, async () => {
   await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
-  await seedFaceAtom(0);
-  await generateOrLoadPersonaGroupRoot(seatIndex); await seedFaceAtom(seatIndex);
-  await seatChairs([seatIndex]);
-  await generateOrLoadPersonaGroupRoot(8); await seedFaceAtom(8);
-  await generateOrLoadPersonaGroupRoot(0);   // three faces held
+  await generateOrLoadPersonaGroupRoot(face);
+  await seedFaceAtom(face);
+  await seatChairs([face]);
+  if (face !== 0) await seedFaceAtom(0);
+  await generateOrLoadPersonaGroupRoot(8);
+  await seedFaceAtom(8);
+  await generateOrLoadPersonaGroupRoot(0);
   writeNexusDoc(larSealHome(), genesis!.doc());
   await ownedStore(larDataDir(), async (repo) => {
     const daemon = await import("@lararium/mesh").then((m) => m.seedDaemonDoc(repo));
@@ -51,32 +63,21 @@ async function stand(index: number, seatIndex: number, keys: string[]) {
     mkdirSync(dirname(larBootstrapPath()), { recursive: true });
     writeFileSync(larBootstrapPath(), JSON.stringify({ text: JSON.stringify({ tiddlers: { [DAEMON_BAG_ID]: { title: DAEMON_BAG_ID, text: daemon.url, kind: "oracle" } } }) }), "utf8");
   });
-}
-
-async function withRepo<T>(index: number, run: (repo: Repo) => Promise<T>): Promise<T> {
-  process.env["LAR_ROOT"] = roots[index]!;
-  return ownedStore(larDataDir(), run);
-}
-
-beforeEach(async () => {
-  priorLarRoot = process.env["LAR_ROOT"];
-  roots = [mkdtempSync(join(tmpdir(), "lares-cosign-a-")), mkdtempSync(join(tmpdir(), "lares-cosign-b-"))];
-  process.env["LAR_ROOT"] = roots[0]!; await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } }); await generateOrLoadPersonaGroupRoot(0); await seedFaceAtom(0);
-  chairA = (await seatChairs([0])).keys[0]!;
-  process.env["LAR_ROOT"] = roots[1]!; await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } }); await generateOrLoadPersonaGroupRoot(1); await seedFaceAtom(1);
-  chairB = (await seatChairs([1])).keys[0]!;
   const keys = [chairA, chairB];
-  // The charter commits to the chairs' next keys, so a roll moves its head and keeps its Nexus.
-  genesis = heldCharter({ keys, threshold: 2, successors: { keys: [await chairKey(0, 1), await chairKey(1, 1)], threshold: 2 } });
-  await stand(0, 0, keys); await stand(1, 1, keys);
-  const hands = [0, 1].map((face) => ({ signer: keys[face]!, sign: ed25519SignerFromSeed(chairSeed(face)) }));
-  for (const index of [0, 1]) await withRepo(index, async (repo) => {
+  const hands = keys.map((signer, i) => ({ signer, sign: ed25519SignerFromSeed(chairSeed(i)) }));
+  await ownedStore(larDataDir(), async (repo) => {
     const edge = await materializeSharedLarDoc(repo, realmEdgeBoardDocUrl(REALM), "board:edge-kapae");
     await foundRealmFrontier(edge, REALM, genesis!, hands);
     await repo.flush();
   });
-  // Each vessel founds its face's custody under a key derivation of its own, so the hook gets room beside a loaded runner.
-}, 90_000);
+}));
+
+beforeEach(() => {
+  priorLarRoot = process.env["LAR_ROOT"];
+  roots = [mkdtempSync(join(tmpdir(), "lares-cosign-a-")), mkdtempSync(join(tmpdir(), "lares-cosign-b-"))];
+  houses.forEach((house, index) => house.into(roots[index]!));
+  process.env["LAR_ROOT"] = roots[1]!;
+});
 afterEach(async () => {
   if (priorLarRoot === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = priorLarRoot;
   await new Promise((resolve) => setTimeout(resolve, 200));

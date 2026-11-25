@@ -18,7 +18,7 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import { casReferences, summarizeCas, type CasReferenceEntry } from "@lararium/mesh";
-import { listCasBlobs, genesisProtectSet, readCasPins, pinCas, releaseCas, readBootEpoch } from "@lararium/node";
+import { listCasBlobs, genesisProtectSet, readCasPins, pinCas, releaseCas, readVesselLife } from "@lararium/node";
 import { parseCapTier, type PinCap } from "@lararium/mesh";
 import { larCasDir, larBagsDir, larWikisDir, larGenesisDir, larDataDir, vesselDid } from "../env.js";
 import { runVerb } from "../verb-call.js";
@@ -72,6 +72,9 @@ export interface CasReadOptions {
   readonly bagsDir:    string;
   readonly wikisDir:   string;
   readonly genesisDir: string;
+  /** The daemon's own protect set (the seed's blobs and the stored island's, `cas-protect`). Absent, the read
+   *  guards the seed alone, which leaves a blob only the stored island names reading `protected: false`. */
+  readonly protect?:   readonly string[];
 }
 
 export interface CasReadEntry {
@@ -126,7 +129,7 @@ export function readCas(opts: CasReadOptions): CasRead {
   // their engine and plugin blobs as unguarded when nothing could be decided either way.
   const protect = genesisProtectSet(opts.genesisDir);
   const known   = protect !== "unreadable";
-  const genesis = known ? protect : new Set<string>();
+  const genesis = known ? new Set<string>([...protect, ...(opts.protect ?? [])]) : new Set<string>();
   const entries = blobs.map((b) => ({
     cid: b.cid, size: b.size,
     refs: [...(refs.get(b.cid) ?? [])].sort(),
@@ -202,10 +205,11 @@ async function cmdCasSweep(args: ParsedArgs): Promise<number> {
  * flag — a pin's lifetime is an EVENT (pin / release), never a span. Pins live in the CAS dir's
  * `.pins.json` sidecar (a non-hex name the sweep never reads as a blob). Local, no daemon.
  *
- * `--held` (M7′) stamps the pin with THIS vessel's CURRENT boot epoch (`readBootEpoch`, @lararium/node) —
- * a pin that dies with THIS boot: once a later boot bumps the epoch past the stamp, the sweep (run where
- * the composite stands, reading its own current epoch) lets it go. A bare `--pin` carries no `fence` at
- * all — the operator's own explicit, PRESENCE-ONLY pin, standing until an explicit `--release`.
+ * `--held` stamps the pin with the vessel LIFE the store names at rest (`readVesselLife`, @lararium/node) —
+ * a pin that dies with that life: once another life holds the store, the sweep (run where the composite
+ * stands, comparing its own current life) lets it go. A store that names no life (never claimed, or torn)
+ * gives `--held` nothing to bind to, and the pin refuses by name. A bare `--pin` carries no `life` at all —
+ * the operator's own explicit, PRESENCE-ONLY pin, standing until an explicit `--release`.
  */
 function cmdCasPin(args: ParsedArgs, pin: string, release: string): number {
   const casDir = larCasDir();
@@ -216,8 +220,12 @@ function cmdCasPin(args: ParsedArgs, pin: string, release: string): number {
     const tier = parseCapTier(args.options["tier"] ?? "veil");
     const holder = args.options["holder"] ?? "operator";
     const held = args.flags["held"] === true;
-    const fence = held ? readBootEpoch(larDataDir()) : undefined;
-    pins = pinCas(casDir, { cid: pin, tier, holder, ...(fence !== undefined ? { fence } : {}) });
+    const life = held ? readVesselLife(larDataDir()) : undefined;
+    if (life === null) {
+      emit(args, { ok: false, error: { code: "held-pin-no-life", message: "the store names no vessel life, so a held pin has no life to end with" }, human: () => console.error("lares bag cas --held: the store names no vessel life (no vessel has claimed it, or its life record reads torn), so a held pin has no life to end with; boot the vessel first, or pin without --held") });
+      return 1;
+    }
+    pins = pinCas(casDir, { cid: pin, tier, holder, ...(life !== undefined ? { life } : {}) });
   }
   emit(args, {
     ok: true,
@@ -240,7 +248,19 @@ export function cmdCas(args: ParsedArgs): number | Promise<number> {
   const pin = typeof args.options["pin"] === "string" ? args.options["pin"] : "";
   const release = typeof args.options["release"] === "string" ? args.options["release"] : "";
   if (pin || release) return cmdCasPin(args, pin, release);
-  const r = readCas({ casDir: larCasDir(), bagsDir: larBagsDir(), wikisDir: larWikisDir(), genesisDir: larGenesisDir() });
+  return cmdCasRead(args);
+}
+
+/** The summary read: the daemon's protect set joins when a daemon answers, the seed alone when none does. */
+async function cmdCasRead(args: ParsedArgs): Promise<number> {
+  let daemonProtect: string[] | undefined;
+  try {
+    const answer = await runVerb("cas-protect", {}, await vesselDid());
+    const out = answer.status === "error" ? null : summaryOutput(answer);
+    if (out && Array.isArray(out["protect"])) daemonProtect = (out["protect"] as unknown[]).filter((c): c is string => typeof c === "string");
+  } catch { /* no daemon answers: the seed alone guards, as before */ }
+  const r = readCas({ casDir: larCasDir(), bagsDir: larBagsDir(), wikisDir: larWikisDir(), genesisDir: larGenesisDir(),
+                      ...(daemonProtect ? { protect: daemonProtect } : {}) });
   emit(args, {
     ok: true,
     data: r as unknown as Record<string, unknown>,

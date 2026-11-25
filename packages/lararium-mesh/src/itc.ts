@@ -8,10 +8,13 @@
  *
  *   fork  = spawn   — split the id; both branches inherit the shared event history,
  *                     so the parent happened-before each child (the Delegation edge).
- *   event = inject  — advance one stamp's event (the rhizome's prov:Communication leg;
- *                     FULL ticks — EVERY injection is an event, the operator's D-cut).
- *   join  = handback — sum the ids + max-join the events (the twin-reunion merge; one
- *                     merge among many in the rhizome — merge-where-messages-land).
+ *   event = tick    — advance one stamp's event (local work, a send, a receive; FULL
+ *                     ticks — EVERY injection rides an event, the operator's D-cut).
+ *   peek  = message — an anonymous stamp (id 0) carrying the sender's history; joining it
+ *                     merges the history and leaves the recipient's ownership whole, so a
+ *                     message orders the receive after the send (merge-where-messages-land).
+ *   join  = retire  — sum the ids + max-join the events (the reunion that reclaims a
+ *                     retired spirit's ownership).
  *
  * Concurrency is FIRST-CLASS: two stamps that share no merge-ancestry compare
  * "concurrent" — the read the rhythmic FfzClock LWW can never give (the PATH-B cut:
@@ -117,12 +120,11 @@ function maxEvent(e: ItcEvent): number {
   return typeof e === "number" ? e : e[0] + Math.max(maxEvent(e[1]), maxEvent(e[2]));
 }
 
-/** Canonicalize an event tree: collapse equal flat children, sink shared depth into the base. */
-function normEvent(e: ItcEvent): ItcEvent {
-  if (typeof e === "number") return e;
-  const n = e[0];
-  const l = normEvent(e[1]);
-  const r = normEvent(e[2]);
+/**
+ * Canonicalize ONE node whose children already stand canonical (each recursive join/fill result does): the
+ * canonical rule (collapse equal flat children, sink shared depth into the base) read at the top alone, so a join or fill costs its path, not the tree.
+ */
+function normTop(n: number, l: ItcEvent, r: ItcEvent): ItcEvent {
   if (typeof l === "number" && typeof r === "number" && l === r) return n + l;
   const m = Math.min(minEvent(l), minEvent(r));
   return [n + m, sinkEvent(l, m), sinkEvent(r, m)];
@@ -135,7 +137,7 @@ function joinEvent(a: ItcEvent, b: ItcEvent): ItcEvent {
   if (typeof b === "number") return joinEvent(a, [b, 0, 0]);
   if (a[0] > b[0]) return joinEvent(b, a); // ensure a[0] <= b[0]
   const m = b[0] - a[0];
-  return normEvent([a[0], joinEvent(a[1], liftEvent(b[1], m)), joinEvent(a[2], liftEvent(b[2], m))]);
+  return normTop(a[0], joinEvent(a[1], liftEvent(b[1], m)), joinEvent(a[2], liftEvent(b[2], m)));
 }
 
 /** Partial-order on histories: a ≤ b iff every event a knows, b knows. */
@@ -167,13 +169,13 @@ function fill(i: ItcId, e: ItcEvent): ItcEvent {
   const [n, el, er] = e;
   if (il === 1) {
     const er2 = fill(ir, er);
-    return normEvent([n, Math.max(maxEvent(el), minEvent(er2)), er2]);
+    return normTop(n, Math.max(maxEvent(el), minEvent(er2)), er2);
   }
   if (ir === 1) {
     const el2 = fill(il, el);
-    return normEvent([n, el2, Math.max(maxEvent(er), minEvent(el2))]);
+    return normTop(n, el2, Math.max(maxEvent(er), minEvent(el2)));
   }
-  return normEvent([n, fill(il, el), fill(ir, er)]);
+  return normTop(n, fill(il, el), fill(ir, er));
 }
 
 /** A large constant biasing growth toward shallower (lower-cost) branches. */
@@ -222,7 +224,16 @@ export function itcEvent(s: ItcStamp): ItcStamp {
   return { id: s.id, event: grown };
 }
 
-/** join = HANDBACK — sum the ids, max-join the histories (the merge). */
+/**
+ * peek = MESSAGE — the anonymous stamp (id 0) carrying `s`'s history and no ownership (Almeida et al.
+ * §5). `itcJoin(recipient, itcPeek(sender))` merges the sender's history into the recipient while the
+ * recipient's ownership stays whole — the receive half of a message between two continuing writers.
+ */
+export function itcPeek(s: ItcStamp): ItcStamp {
+  return { id: 0, event: s.event };
+}
+
+/** join = RETIRE — sum the ids, max-join the histories (the reunion that reclaims ownership). */
 export function itcJoin(a: ItcStamp, b: ItcStamp): ItcStamp {
   return { id: normId(sumId(a.id, b.id)), event: joinEvent(a.event, b.event) };
 }

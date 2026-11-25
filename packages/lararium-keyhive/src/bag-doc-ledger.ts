@@ -4,13 +4,22 @@ import type { CapabilityProvider } from "./capability-provider.js";
 export interface BagDocLedger {
   get(bag: string): Promise<string | null>;
   put(bag: string, docId: string): Promise<void>;
+  /** Drop a bag's record (`lares wiki retire`): the face's next mint of that bag registers a fresh Document. True where one stood. */
+  drop?(bag: string): Promise<boolean>;
 }
+
+/**
+ * What a durable registration did: each bag whose recorded Document this stand held no hand in, so a fresh Document took its
+ * place (`remintBag`). Content sealed under the Document that left stays unreadable to this face.
+ */
+export interface DurableRegistration { readonly reminted: readonly string[] }
 
 export async function registerBagsDurably({ provider, bags, ledger }: {
   provider: CapabilityProvider;
   bags: readonly string[];
   ledger: BagDocLedger;
-}): Promise<void> {
+}): Promise<DurableRegistration> {
+  const reminted: string[] = [];
   for (const bag of bags) {
     const recorded = await ledger.get(bag);
     if (recorded) {
@@ -18,11 +27,13 @@ export async function registerBagsDurably({ provider, bags, ledger }: {
       if (await provider.holdsHand(bag)) continue;
       const { docId } = await provider.remintBag(bag);
       await ledger.put(bag, docId);
+      reminted.push(bag);
     } else {
       const { docId } = await provider.registerBag(bag);
       await ledger.put(bag, docId);
     }
   }
+  return { reminted };
 }
 
 async function titleFor(bag: string, vessel: boolean, face?: string): Promise<string> {
@@ -54,6 +65,13 @@ export function planeBagDocLedger(store: LarTiddlerStore): BagDocLedger {
     },
     async put(bag, docId) {
       await store.put(mutableLarRecord(await titleFor(bag, false), { text: docId, bag }, "lares-keyhive"), origin);
+    },
+    async drop(bag) {
+      const title = await titleFor(bag, false);
+      const record = await store.get(title);
+      if (!record || record.meta?.deleted || record.tiddler?.bag !== bag) return false;
+      await store.remove(title, origin);
+      return true;
     },
   };
 }

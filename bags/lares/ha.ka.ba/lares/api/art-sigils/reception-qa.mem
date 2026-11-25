@@ -1,0 +1,78 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/art-sigils/reception-qa`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+uri-path = "ha.ka.ba/lares/api/art-sigils/reception-qa"
+title    = "lar:///ha.ka.ba/lares/api/art-sigils/reception-qa"
+type     = "text/memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role     = "observe and verify artistic, technical and situated outputs"
+status   = "draft"
+retain   = true
+```
+
+<<~ ahu slot=`#/bearing`>>
+! Reception QA
+
+Compare an observed artifact with a known Art Sigil and any optional [[Artifact Contract|ha.ka.ba/lares/api/art-sigils/artifact-contract]]. Use [[Formal Analysis|ha.ka.ba/lares/api/art-sigils/formal-analysis]] for open-ended reading of an existing image. Neither process recovers a hidden original prompt.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/checks`>>
+!! Three independent judgments
+
+* `Technical` — required dimensions, alpha, cropping, registration, file integrity, exact text and editability.
+* `Artistic` — worktype, primary read, hierarchy, material behavior, relation, depiction-scope and deliberate silence.
+* `Situated` — legibility at intended size, context, audience distance, display or composite.
+
+Mark each `fulfilled`, `deviated`, `failed` or `unverified`. Attach an observation, not just a grade. Avoid combining the three into a single success scalar.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/loop`>>
+!! Observe → compare → intervene → inspect → hold
+
+1. Retain the current artifact, source, references and known receiver conditions.
+2. Record visible differences and affected regions. Do not guess unseen model operations.
+3. Check artistic requirements separately from mandatory artifact requirements.
+4. Choose the smallest appropriate correction or retain a valuable departure by explicit operator choice.
+5. Inspect the result and before/after comparison under the same conditions.
+6. Keep rollback; record acceptance and remaining uncertainties. Stop when the operator's criteria are met.
+
+Changing several variables at once prevents claims about which one caused an improvement. Selecting a favorite from a small set does not establish population-level performance.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/cases`>>
+!! Probe cases
+
+| Work | Verify | Do not mistake |
+|---|---|---|
+| Transparent overlay | Actual alpha and composite role | Transparent appearance for zero-alpha margins |
+| Sparse abstract field | Intentional silence and nonrepresentation | More detail for better fulfillment |
+| Single photograph | Framing and documented source status | Attractive narrative for documentary evidence |
+| Mixed-media work | Distinct material responses | One uniform simulated texture for separate supports |
+| Typography | Exact characters and intended hierarchy | Plausible-looking text for exact spelling |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/record`>>
+!! Review record
+
+```toml
+[review]
+art_sigil = "replace with originating Inscription or Folio"
+artifact_contract = "reference or absent"
+technical = "status, evidence"
+artistic = "status, evidence"
+situated = "status, evidence"
+decision = "operator acceptance, rejection or hold"
+rollback = "retained source"
+```
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_oj0NHlxsobElvCCQ2MF2rA0p-kfg6COii9uBjvGM-0`>>
+<<^ code=`&#x0004;` to=`?`>>

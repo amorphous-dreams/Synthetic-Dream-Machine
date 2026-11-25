@@ -9,6 +9,7 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { FsCustodyIo } from "../src/custody-io.js";
 import { makeCustodyHolder } from "../src/custody-holder.js";
 import { pulamaHandDoor } from "../src/pulama-hand.js";
+import { handVerbExit, runHandVerb } from "../src/pulama-verbs.js";
 import { KUKULU_OFFER_ENV, PULAMA_SOCKET_ENV, pulamaStandBy, readKukuluOffer, standByPulama, vesselPulamaHolder } from "../src/pulama-seat.js";
 import { servePulama } from "../src/pulama-server.js";
 import { swarmTesseraTitle } from "@lararium/mesh";
@@ -16,6 +17,7 @@ import { pulamaImage, pulamaRecords } from "../src/pulama-state.js";
 import { personaGroupDigest } from "../src/persona-group-file.js";
 import { FIXTURE_PASSPHRASE } from "./custody-seat-fixture.js";
 import { SESSION_DERIVES, fixtureSlots, lend, openGate, standPulama, type PulamaFixture } from "./pulama-fixture.js";
+import { UNLOCK_ATTEMPTS_PER_BOOT as BOUND } from "../src/custody-holder.js";
 
 vi.setConfig({ testTimeout: 180_000 });
 
@@ -54,8 +56,8 @@ describe("only the hand door lights the pūlama", () => {
     const dir = scratch(), records = pulamaRecords(dir);
     const lines: string[] = [];
     const door = pulamaHandDoor({ holder, server, image: pulamaImage(dir), records, onLog: (l) => lines.push(l) });
-    expect(await door({ op: "status" })).toEqual({ op: "status", lit: false, faces: 0, sessions: 0, attemptsLeft: 3, image: null });
-    expect(await door({ op: "light", credentials: [{ kind: "passphrase", passphrase: "a-wrong-route" }] })).toMatchObject({ reading: "no-slot-opens", lit: false, attemptsLeft: 2 });
+    expect(await door({ op: "status" })).toEqual({ op: "status", lit: false, faces: 0, sessions: 0, attemptsLeft: BOUND, image: null });
+    expect(await door({ op: "light", credentials: [{ kind: "passphrase", passphrase: "a-wrong-route" }] })).toMatchObject({ reading: "no-slot-opens", lit: false, attemptsLeft: BOUND - 1 });
     expect(await door({ op: "light" })).toEqual({ op: "light", reading: "malformed" });
     const lit = await door({ op: "light", credentials: [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }] });
     expect(lit).toMatchObject({ op: "light", reading: "opens", faceReadings: ["opens"], lit: true, faces: 1 });
@@ -68,6 +70,45 @@ describe("only the hand door lights the pūlama", () => {
     // No answer and no log line carried the route.
     expect(JSON.stringify([lit, lines])).not.toContain(FIXTURE_PASSPHRASE);
     expect(JSON.stringify(lines)).not.toContain("a-wrong-route");
+  });
+
+  test("RED THE KEEPER LEI AT THE HAND DOOR: a commit the kukulu lei licenses asks no route and reads unlit first; its answer exits 0 and status names the license", async () => {
+    fx = await standPulama("pulama-hand-keeper-lei", () => openGate({ faces: lend(0), coldReads: [] }));
+    await fx.kept.foundFace({ group: personaGroupDigest("group-hand-keeper-lei"), ordinal: 0, slots: fixtureSlots });
+    const holder = makeCustodyHolder({ io: new FsCustodyIo(fx.seat.homes), homes: fx.seat.homes });
+    const server = servePulama({ holder, gate: openGate({ faces: lend(0), coldReads: [] }), derives: SESSION_DERIVES });
+    const dir = scratch(), records = pulamaRecords(dir);
+    const door = pulamaHandDoor({ holder, server, image: pulamaImage(dir), records });
+    const next = "sha256:" + "94".repeat(32);
+    const frame = { op: "keeper-commit-lei", next, image: next, devices: 1, branch: "develop", rev: "e".repeat(40), tree: "f".repeat(40), recheck: "same", ci: "7:success" };
+    expect(await door(frame)).toMatchObject({ reading: "pulama-locked" });
+    await door({ op: "light", credentials: [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }] });
+    await door({ op: "closure", digest: "sha256:" + "d0".repeat(32) });
+    // NO ROUTE RIDES THE FRAME, and the verb sends it whole: the host's testimony alone.
+    const routes: string[] = [];
+    const spent = await runHandVerb("keeper-commit-lei", JSON.stringify({ ...frame, op: undefined }), { ask: (f) => door(f), route: async (label) => { routes.push(label); return FIXTURE_PASSPHRASE; } });
+    expect(spent).toMatchObject({ reading: "committed", v: 1, branch: "develop" });
+    expect(routes).toEqual([]);
+    expect(handVerbExit("keeper-commit-lei", spent)).toBe(0);
+    expect(handVerbExit("keeper-commit-lei", { op: "keeper-commit-lei", reading: "keeper-lei-ci-red" })).toBe(1);
+    expect(await door({ op: "status" })).toMatchObject({ keeper: { pending: next }, keeperLei: { floor: true, licensed: [{ v: 1, next, branch: "develop", ci: "7:success", vested: false }] } });
+    await door({ op: "lock" });
+  });
+
+  test("THE OPERATOR'S HAND CLOSES ONE FACE: `close` tells the lending vessel and answers closing, `status` names the face its vessel has not answered, and `force` locks it", async () => {
+    fx = await standPulama("pulama-hand-close", () => openGate({ faces: lend(0), coldReads: [] }));
+    const face = await fx.kept.foundFace({ group: personaGroupDigest("group-hand-close"), ordinal: 0, slots: fixtureSlots });
+    const vessel = fx.vessel();
+    await vessel.unlock([]);
+    const dir = scratch();
+    const door = pulamaHandDoor({ holder: fx.kept, server: fx.server, image: pulamaImage(dir), records: pulamaRecords(dir) });
+    expect(await door({ op: "close", face: "h0" })).toMatchObject({ op: "close", reading: "malformed" });
+    expect(await door({ op: "close", face: 0 })).toMatchObject({ op: "close", reading: "closing", face: 0, unanswered: 1 });
+    expect(await door({ op: "status" })).toMatchObject({ closing: [{ face: 0, unanswered: 1, note: "face h0: the vessel has not answered its close; close it again to tell the vessel again, or force it by hand" }] });
+    expect(fx.kept.unlockedFaces()).toContain(face.fcid);
+    expect(await door({ op: "close", face: 0, force: true })).toMatchObject({ op: "close", reading: "locked", forced: true });
+    expect(fx.kept.unlockedFaces()).not.toContain(face.fcid);
+    expect(await door({ op: "status" })).not.toHaveProperty("closing");
   });
 });
 
@@ -118,7 +159,7 @@ describe("a vessel finds its pūlama by one name and stands by it", () => {
     let consumed = 0;
     const thrown = fx.vessel();
     const falls = pulamaStandBy({ holder: thrown, onLog: () => {}, consumeOffer: () => { consumed += 1; return true; }, recompose: async (sovereign) => { if (sovereign) throw new Error("the composition fell over"); return { standing: "floor" }; } });
-    expect(await falls.dial()).toEqual({ session: false, waits: "composition-refused" });
+    expect(await falls.dial()).toEqual({ session: false, waits: "composition-refused", refused: "the composition fell over" });
     expect(thrown.isUnlocked()).toBe(false);
     expect(consumed).toBe(0);
     await fx.server.lock();

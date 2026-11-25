@@ -1,0 +1,75 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/art-sigils/layer-composition`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+uri-path = "ha.ka.ba/lares/api/art-sigils/layer-composition"
+title    = "lar:///ha.ka.ba/lares/api/art-sigils/layer-composition"
+type     = "text/memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role     = "optional reversible multi-component composition procedure"
+status   = "draft"
+retain   = true
+```
+
+<<~ ahu slot=`#/bearing`>>
+! Layer Composition
+
+Use a layer stack where an artwork builds from independently controlled components. A layer earns its value only in relation to the full composition. This companion adds no `~art-layer` sigil and requires no worktype to use layers.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/roles`>>
+!! Name component responsibilities
+
+* `source-bearing` — original material retained for provenance or editing.
+* `underpainting` — color, light or support beneath another component.
+* `glaze` — a partial color or luminance contribution.
+* `registration-plate` — transformed selection from a named source.
+* `mask/protection` — spatial inclusion, exclusion or shielding for an operation.
+* `typography/attribution` — literal lettering, credits or labels where appropriate.
+* `diagnostic/backup` — non-publication comparison and recovery assets.
+
+One component can hold multiple roles. Record whether each should render in the publication export.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ledger`>>
+!! Composition ledger
+
+For each component record source identity, role, bounds, canvas, visibility, order, transforms, masks, pixel alpha, blend mode, layer opacity and expected relation. Track actual transformations rather than implied ones.
+
+```toml
+[[component]]
+handle = "glaze-A"
+role = "glaze"
+source = "retained file reference"
+canvas = "named base canvas"
+transform = "documented"
+blend = "actual operation"
+opacity = "actual numeric value and scale"
+visibility = "publication / diagnostic / hidden"
+relation = "changes underlying hue without replacing subjects"
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/process`>>
+!! Operate reversibly
+
+1. Preserve original pixels and working source assets when required.
+2. Apply transforms and masks to named derivatives; keep coordinate origins and order explicit.
+3. Verify each component's contribution in the assembled result. An isolated layer need not appear complete.
+4. Distinguish intentional registration shifts from orphan marks or accidental coverage.
+5. Inspect technical geometry and intended visual read independently.
+6. Preserve an editable master and separately name any flattened publication export.
+
+A composite preview may differ between renderers. When pixel equality matters, test the target renderer rather than assuming identical blend or color-management behavior.
+
+See [[Artifact Contract|ha.ka.ba/lares/api/art-sigils/artifact-contract]] and [[Reception QA|ha.ka.ba/lares/api/art-sigils/reception-qa]]; for image-generator plates on true alpha, [[Technical-Art Plate Fieldcraft|ha.ka.ba/lares/api/art-sigils/technical-art]].
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Jvq5x7gRH6KUlsSH6IynBinT7NDkNUsS3iXuceBBjSE`>>
+<<^ code=`&#x0004;` to=`?`>>

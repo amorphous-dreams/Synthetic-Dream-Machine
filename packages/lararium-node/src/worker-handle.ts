@@ -77,7 +77,7 @@ function attachCustodyWrite(w: Worker, caps: CapabilityRecord): void {
   hear(w, (raw: unknown) => {
     const m = raw as Partial<IslandMsg_CustodyWrite> | null;
     if (!m || m.type !== "custody:write" || typeof m.requestId !== "string") return;
-    void answerCustodyWrite(caps, { requestId: m.requestId, carrier: m.carrier as CustodyWriteCarrier, bytes: m.bytes as Uint8Array }).then((reply) => {
+    void answerCustodyWrite(caps, { requestId: m.requestId, carrier: m.carrier as CustodyWriteCarrier, bytes: m.bytes as Uint8Array, face: m.face as string }).then((reply) => {
       try { w.postMessage(reply); } catch { /* the worker went away — nothing to answer */ }
     });
   });
@@ -171,8 +171,8 @@ function attachRefusals(w: Worker, caps: CapabilityRecord, island: "wiki" | "ses
   });
 }
 
-// THE REST ASK, vessel side (sealed-store#/owed, V2): every island with a store of its own (the daemon island's owned
-// store, a wiki island's) asks before it rests a byte of a document, and the vessel answers from its Repo's sealed rest.
+// THE REST ASK, vessel side (sealed-store#/owed, V2): the daemon island, the one island with a store of its own, asks
+// before it rests a byte of a document, and the vessel answers from its Repo's sealed rest. A wiki island keeps no store.
 function attachRestAsk(w: Worker, caps: CapabilityRecord): void {
   hear(w, (raw: unknown) => {
     const m = raw as Partial<IslandMsg_RestAsk> | null;
@@ -200,7 +200,6 @@ export function nodeWorkerHandle(w: Worker, opts: { readonly island: IslandClass
   } else if (opts.island === "wiki") {
     attachCas(w, caps);
     attachRefusals(w, caps);
-    attachRestAsk(w, caps);
   } else {
     attachRefusals(w, {}, "session");
   }

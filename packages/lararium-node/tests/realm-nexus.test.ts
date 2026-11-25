@@ -56,17 +56,19 @@ import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { chairKey, seatChairs } from "./seat-fixture.js";
 import { atomKeyOf, atomSeedOf, seedFaceAtom, actingAtomKey } from "./atom-fixture.js";
 import { seedFleet } from "./fleet-seed-fixture.js";
-import { scratchRoot as root, it } from "./support/scratch-fixture.js";
+import { scratchRoot as root, scratchHome, it } from "./support/scratch-fixture.js";
+import { keepHouse } from "./support/kept-house.js";
 import { seedFoundedDaemonDoc } from "./daemon-control-fixture.js";
 
 const REALM = "b1".repeat(32), OTHER_REALM = "b2".repeat(32), MEMBER = "c3".repeat(32), JOINER = "d4".repeat(32);
 
 /** The primary charter: one seat this vessel holds, threshold one. */
 let primary: { aid: string; doc: NexusDoc; seat: { signer: string; sign: (b: Uint8Array) => Promise<string> } };
+let foundingPrimary: typeof primary;
 /** A carried charter of ANOTHER Nexus: one seat this vessel does not hold. */
 let carried: { aid: string; doc: NexusDoc };
 
-beforeEach(async () => {
+const house = keepHouse("lares-realm-nexus-", async () => {
   await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   await generateOrLoadPersonaGroupRoot(0);
   await seedFaceAtom(0);
@@ -76,7 +78,7 @@ beforeEach(async () => {
   const seated = await seatChairs([0]);
   const doc = heldCharter({ keys: [...seated.keys], threshold: 1 }).doc();
   writeNexusDoc(larSealHome(), doc);
-  primary = { aid: nexusAidOf(doc)!, doc, seat: seated.hands[0]! };
+  foundingPrimary = { aid: nexusAidOf(doc)!, doc, seat: seated.hands[0]! };
   const otherDoc = heldCharter({ keys: [await chairKey(7, 0, "elsewhere")], threshold: 1 }).doc();
   const otherAid = nexusAidOf(otherDoc)!;
   writeNexusDoc(carriedCharterHome(larSealHome(), otherAid), otherDoc);
@@ -89,6 +91,10 @@ beforeEach(async () => {
     mkdirSync(dirname(larBootstrapPath()), { recursive: true });
     writeFileSync(larBootstrapPath(), JSON.stringify({ text: JSON.stringify({ tiddlers: { [DAEMON_BAG_ID]: { title: DAEMON_BAG_ID, text: daemon.url, kind: "oracle" } } }) }), "utf8");
   });
+});
+beforeEach(() => {
+  house.into(root, scratchHome);
+  primary = foundingPrimary; // The roll case replaces its primary charter.
 });
 afterEach(async () => {
   await restEvery();

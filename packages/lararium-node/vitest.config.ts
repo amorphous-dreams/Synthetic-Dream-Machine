@@ -111,6 +111,7 @@ export const heavy = [
   "tests/pronaos-kindle.test.ts",
   "tests/pronaos-public-artifact.test.ts",
   "tests/readiness-face.test.ts",
+  "tests/held-planes-named.test.ts",
   "tests/flow-closed-door.test.ts",
   "tests/herm-answers-the-knock.test.ts",
   "tests/flow-read-face-shore.test.ts",
@@ -128,6 +129,9 @@ export const heavy = [
   // a floor node lights none. In a parallel batch its teardown ran past the 10 s afterEach hook (a hook clock M6 owes), so
   // it runs here, one live vessel at a time.
   "tests/face-cell-lights-proved.test.ts",
+  // Live MessageChannel ports between a vessel's sealed rest and the island's session and docstore doors (each hat its own
+  // chain: a sibling's save travels the book-to-holder route).
+  "tests/face-slot-seal-restart.test.ts",
 ];
 
 /**

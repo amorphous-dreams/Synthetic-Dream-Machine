@@ -17,7 +17,7 @@ const decisionFiles = [
   ["packages/lararium-node/src/kahua-door.ts", /isControlPlaneUri|isDaemonCanonWithheld|isBagManifestUri|isRealmBagAnnounceUri|isNexusHandlesUri/],
   ["packages/lararium-tw5/src/action-handler.ts", /projectionWithheld|isControlPlaneUri|isDaemonCanonWithheld|isBagManifestUri|isRealmBagAnnounceUri|isNexusHandlesUri|neverProjects|NeverProjectedPathRefusal/],
   ["packages/lares-cli/src/ingest-core.ts", /projectionWithheld|isControlPlaneUri|isDaemonCanonWithheld|neverProjects|NeverProjectedPathRefusal/],
-  ["packages/lares-cli/src/commands/carry.ts", /isDaemonCanonWithheld|isControlPlaneUri|neverProjects|daemonCanon|daemon\/canon/],
+  ["packages/lares-cli/src/commands/house-bundle.ts", /isDaemonCanonWithheld|isControlPlaneUri|neverProjects|daemonCanon|daemon\/canon/],
 ];
 for (const [path, pattern] of decisionFiles) {
   const text = read(path);
@@ -72,8 +72,8 @@ const daemonRecipe = mesh.kahuaRecipe({ wikiSlug: "daemon", canonBag: mesh.daemo
 for (const slot of mesh.expandRecipe(daemonRecipe)) {
   if (slot === mesh.CONTROL_HOME_ID || slot === mesh.SECRET_HOME_ID) throw new Error(`the daemon recipe composes a private home: ${slot}`);
 }
-for (const faceRelation of [F, null]) {
-  for (const mirror of daemonDiskMirrors({ projectionRoot: "/witness", canonBags: "/witness-absent", faceRelation, canon: faceRelation !== null, temp: true })) {
+for (const face of [{ relation: F, segment: "witness" }, null]) {
+  for (const mirror of daemonDiskMirrors({ projectionRoot: "/witness", canonBags: "/witness-absent", face, canon: face !== null, temp: true })) {
     if (PRIVATE_HOMES.has(mirror.bagId)) throw new Error(`a daemon mirror names a private home by placement: ${mirror.bagId} -> ${mirror.mirrorRoot}`);
   }
 }
@@ -84,7 +84,11 @@ const controlWriters = [
   ["packages/lararium-tw5/src/verb-summons.ts", /opts\.control\.tombstoneInBag/, /opts\.daemon\./],
   ["packages/lararium-node/src/vessel-mailbox.ts", /\{ bag: CONTROL_HOME_ID \}/, /DAEMON_BAG_ID/],
   ["packages/lararium-node/src/uds-channel.ts", /storeForBag\(CONTROL_HOME_ID\)/, /wikiSlotUri\("daemon", "working"\)/],
-  ["packages/lararium-node/src/swarm-wiki.ts", /export function controlSwarmWiki/, /daemonSwarmWiki/],
+  // The swarm wiki writes into the control document it is handed (`docSwarmWiki`, one composition in the mesh), the node
+  // re-exports it as `controlSwarmWiki`, and every node composition hands it the control document, never another.
+  ["packages/lararium-mesh/src/doc-swarm-wiki.ts", /export function docSwarmWiki\(controlDoc: /, /daemonSwarmWiki|DAEMON_BAG_ID/],
+  ["packages/lararium-node/src/swarm-wiki.ts", /export \{ docSwarmWiki as controlSwarmWiki \} from "@lararium\/mesh"/, /daemonSwarmWiki/],
+  ["packages/lararium-node/src/open-node-vessel.ts", /controlSwarmWiki\(readControlDoc\)/, /controlSwarmWiki\((?!readControlDoc\))/],
   ["packages/lararium-keyhive/src/lease-frontier.ts", /storeForBag\(CONTROL_HOME_ID\)/, /DAEMON_BAG_ID/],
 ];
 for (const [path, must, mustNot] of controlWriters) {

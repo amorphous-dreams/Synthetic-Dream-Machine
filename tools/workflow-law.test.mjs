@@ -122,6 +122,81 @@ test("WL2 CONTROL: a planted workflow without the caps reads every breach, and a
   assert.deepEqual(breaches("from-step.yml", fromStep), []);
 });
 
+// THE NEEDS LAW. Actions hands a job the `needs` context of its DIRECT dependencies alone: a job that reads
+// `needs.<id>.outputs` (or `.result`) off a job its own `needs:` does not name reads null, quietly, and a guard built on it
+// reads the wrong way on every run. Each reference must name a job the reading job lists.
+
+/** The breaches of the needs law in one workflow text, comments dropped: each `needs.<id>` a job reads but does not list. */
+export function needsBreaches(file, text) {
+  const out = [];
+  const lines = text.split("\n").map((l) => l.replace(/^\s*#.*$/, "").replace(/\s+#\s.*$/, ""));
+  const at = lines.findIndex((l) => /^jobs:\s*$/.test(l));
+  if (at === -1) return out;
+  let job = null;
+  const close = () => {
+    if (!job) return;
+    for (const id of job.reads) if (!job.needs.includes(id)) out.push(`${file}: job ${job.name} reads needs.${id} but does not list ${id} in its needs`);
+  };
+  for (const line of lines.slice(at + 1)) {
+    if (/^\S/.test(line)) break;
+    const head = /^ {2}([A-Za-z0-9_-]+):\s*$/.exec(line);
+    if (head) { close(); job = { name: head[1], needs: [], reads: new Set() }; continue; }
+    if (!job) continue;
+    const needs = /^ {4}needs:\s*(.+?)\s*$/.exec(line);
+    if (needs) job.needs = needs[1].replace(/^\[|\]$/g, "").split(",").map((s) => s.trim()).filter(Boolean);
+    for (const m of line.matchAll(/\bneeds\.([A-Za-z0-9_-]+)\./g)) job.reads.add(m[1]);
+  }
+  close();
+  return out;
+}
+
+test("WL6 RED: every job that reads needs.<id> lists <id> in its own needs, in every workflow", () => {
+  const found = [];
+  for (const file of readdirSync(WORKFLOWS).filter((f) => /\.ya?ml$/.test(f)).sort()) found.push(...needsBreaches(file, readFileSync(join(WORKFLOWS, file), "utf8")));
+  assert.deepEqual(found, []);
+});
+
+test("WL6b CONTROL: a planted read of an unlisted job's outputs breaches; a listed one, a block and a comment read clean", () => {
+  const planted = [
+    "jobs:",
+    "  s:",
+    "    runs-on: ubuntu-latest",
+    "  a:",
+    "    needs: [s]",
+    "    if: ${{ needs.s.outputs.canon != 'true' }}",
+    "  b:",
+    "    if: ${{ needs.s.outputs.canon != 'true' }}",
+    "    # needs.q.result in a comment never counts",
+    "  c:",
+    "    needs: s",
+    "    with:",
+    "      flag: ${{ needs.s.outputs.canon == 'true' }}",
+  ].join("\n");
+  assert.deepEqual(needsBreaches("planted.yml", planted), ["planted.yml: job b reads needs.s but does not list s in its needs"]);
+});
+
+test("WL7 RED: the canon doorstep reads ci.yml's scope job in every job a canon-only push skips, and in the e2e doorstep input", () => {
+  const text = readFileSync(join(WORKFLOWS, "ci.yml"), "utf8");
+  const jobs = new Map(jobsOf(text).map((j) => [j.name, j]));
+  assert.ok(jobs.has("scope"), "ci.yml carries no scope job");
+  const scope = jobs.get("scope");
+  assert.ok(scope.keys.some((k) => /^if: \$\{\{ github\.event_name != 'pull_request' \|\| github\.event\.pull_request\.head\.repo\.fork \}\}$/.test(k)), "the scope job stands on other events than the cells it feeds");
+  assert.ok(!scope.keys.some((k) => k.startsWith("needs:")), "the scope job waits on another job: it must stand first");
+  for (const id of ["test-cells", "test", "witness-cells", "witnesses", "e2e"]) {
+    const job = jobs.get(id);
+    assert.ok(job, `ci.yml lost the ${id} job`);
+    const needs = job.keys.find((k) => k.startsWith("needs:")) ?? "";
+    assert.match(needs, /\bscope\b/, `${id} does not list scope in its needs`);
+    // The cells and gates read it in their `if:`; the e2e caller runs on every push and hands it on as its `doorstep` input.
+    const head = text.indexOf(`\n  ${id}:\n`) + 1;
+    const block = text.slice(head).split(/\n(?=  [a-z][\w-]*:\n)/)[0];
+    const reads = id === "e2e" ? /^ {6}doorstep: (.*)$/m.exec(block)?.[1] ?? "" : job.keys.find((k) => k.startsWith("if:")) ?? "";
+    assert.match(reads, /github\.event_name == 'push' && \(.*\bneeds\.scope\.outputs\.canon == 'true'.*\)\)/, `${id} reads no canon doorstep off the scope job, or reads it off another event than a push`);
+  }
+  // The quick job stands beside the scope read, never behind it: the doorstep's one heavy job does not wait on a diff.
+  assert.ok(!(jobs.get("quick").keys.find((k) => k.startsWith("needs:")) ?? "").includes("scope"), "the quick job waits on the scope read");
+});
+
 // The pinned Playwright image supplies Node 26 for the browser cells; the other jobs pin Node 24.
 // The browser import boundary must keep product code compatible with Node 24.
 // THE BROWSER LIBRARIES COME IN THE IMAGE. `playwright install-deps` is an apt step; on a hosted runner it timed out at its five
@@ -132,7 +207,7 @@ test("WL2 CONTROL: a planted workflow without the caps reads every breach, and a
 const PIN = /mcr\.microsoft\.com\/playwright:v([0-9.]+)-noble@sha256:[0-9a-f]{64}/;
 // The values a field may carry instead of the literal: each one names a field this same law reads (the matrix row's `container`,
 // the workflow `env`, or a shell variable the step set from them).
-const BY_REFERENCE = /^(\$\{\{\s*(matrix\.container|env\.PLAYWRIGHT_IMAGE)\s*\}\}|\$\{?(PLAYWRIGHT_IMAGE|PW_IMAGE|WELD_PW_IMAGE)\}?|"\$\{?(PLAYWRIGHT_IMAGE|PW_IMAGE|WELD_PW_IMAGE|image)\}?")$/;
+const BY_REFERENCE = /^(\$\{\{\s*(matrix\.container|needs\.scope\.outputs\.playwright)\s*\}\}|\$\{?(PW_IMAGE|WELD_PW_IMAGE)\}?|"\$\{?(PW_IMAGE|WELD_PW_IMAGE|image)\}?"|\$\(tools\/pw-container\.sh --pin\)|"\$\(tools\/pw-container\.sh --pin\)")$/;
 const unquote = (v) => v.trim().replace(/^(["'])(.*)\1$/, "$2");
 
 /** Every image-bearing field of one workflow text, comments dropped: `{ line, field, value }`. */
@@ -145,7 +220,7 @@ export function imageFields(text) {
     for (const m of line.matchAll(/\bimage:\s*("[^"]*"|'[^']*'|[^\s,}]+)/g)) add("image", m[1]);
     const scalar = /^\s*container:\s*(?!\{)(\S.*)$/.exec(line);
     if (scalar) add("container", scalar[1]);
-    for (const m of line.matchAll(/\b(PLAYWRIGHT_IMAGE|PW_IMAGE|WELD_PW_IMAGE)[:=]\s*("[^"]*"|\$\{\{[^}]*\}\}|[^\s"']+)/g)) add(m[1], m[2]);
+    for (const m of line.matchAll(/\b(PW_IMAGE|WELD_PW_IMAGE)[:=]\s*("[^"]*"|\$\{\{[^}]*\}\}|"\$\([^)]*\)"|[^\s"']+)/g)) add(m[1], m[2]);
     for (const m of line.matchAll(/\bdocker\s+(?:run|pull|create)\b[^\n]*/g)) {
       const named = [...m[0].matchAll(/mcr\.microsoft\.com\/\S+|"\$\{?\w*IMAGE\w*\}?"|\$\{?\w*IMAGE\w*\}?|\$image\b/g)].map((x) => x[0]);
       if (named.length === 0) add("docker", m[0]); else for (const v of named) add("docker", v);
@@ -183,14 +258,17 @@ test("WL3 RED: no workflow installs Playwright, and every image field of every w
   assert.equal(pin[1], pkg.devDependencies?.playwright ?? pkg.dependencies?.playwright, "the image tag names the release the repo's playwright package pins");
   assert.match(readFileSync(join(root, "pnpm-lock.yaml"), "utf8"), new RegExp(`playwright@${pin[1].replaceAll(".", "\\.")}`), "CONTROL: the lockfile resolves that same release");
   let literal = 0;
+  let byRef = 0;
   const found = [];
   for (const file of readdirSync(WORKFLOWS).filter((f) => /\.ya?ml$/.test(f)).sort()) {
     const text = readFileSync(join(WORKFLOWS, file), "utf8");
     found.push(...imageBreaches(file, text, pin[0]));
     literal += imageFields(text).filter((f) => f.value === pin[0]).length;
+    byRef += imageFields(text).filter((f) => /needs\.scope\.outputs\.playwright|pw-container\.sh --pin/.test(f.value)).length;
   }
   assert.deepEqual(found, []);
-  assert.ok(literal >= 4, "CONTROL: the browser cells name the pin (ci.yml env and two matrix rows, held-out env)");
+  assert.equal(literal, 0, "no workflow restates the pin: the capability probe holds it alone");
+  assert.equal(byRef, 0, "CONTROL: with the browser lamps dim (tools/ci-cells.mjs BROWSER_LAMPS_DIM) no image field reads the pin; relit, ci.yml's two matrix rows and held-out's weld driver read it by reference again (three or more)");
 });
 
 test("WL4 CONTROL: an unpinned reference, a changed digest, a second image, a docker run and an install each fail; comments never count", () => {
@@ -213,6 +291,8 @@ test("WL5 RED: pw-container.sh refuses every image but the capability probe's pi
   const root = join(import.meta.dirname, "..");
   const pin = readPin(root)[0];
   const run = (image) => spawnSync("bash", [join(root, "tools", "pw-container.sh"), "true"], { cwd: root, env: { PATH: process.env.PATH, PW_IMAGE: image }, encoding: "utf8" });
+  const asked = spawnSync("bash", [join(root, "tools", "pw-container.sh"), "--pin"], { cwd: root, env: { PATH: process.env.PATH }, encoding: "utf8" });
+  assert.equal(asked.stdout.trim(), pin, "--pin answers the capability probe's pin and runs nothing");
   for (const bad of [pin.split("@")[0], pin.replace(/[0-9a-f]$/, (c) => (c === "0" ? "1" : "0")), "ubuntu:24.04"]) {
     const r = run(bad);
     assert.equal(r.status, 2, `${bad} refuses`);
@@ -232,10 +312,22 @@ const withFixture = (range, dependency) => ({
   [webManifest]: JSON.stringify({ ...originalWeb, devDependencies: { ...originalWeb.devDependencies, [fixtureName]: "workspace:*" } }),
   [`${fixtureDir}/package.json`]: JSON.stringify({ name: fixtureName, version: "1.0.0", engines: { node: range }, dependencies: dependency ?? {} }),
 });
-async function boundaryWitness(overlay = {}) {
+// THE BROWSER LAMPS STAND DIM (tools/ci-cells.mjs BROWSER_LAMPS_DIM): ci.yml names no container row and no quick-job pw-container step now.
+// The closure laws below keep their teeth by reading ci.yml RELIT (the two rows' containers and one quick step restored in memory), so
+// relighting the real file finds the witness exact; `G55 dim CONTROL` reads the real file and finds no browser cell to judge.
+const relitCi = () => readFileSync(join(boundaryRoot, ".github/workflows/ci.yml"), "utf8")
+  .replace(/(- cell: (?:web-tw5|cli-mesh)\n\s+engines: )''/g, `$1'chromium'\n            container: { image: "x", options: "--init" }`)
+  .replace("      - name: Run the hosted witness cell contract-witness", "      - name: relit browser step\n        run: |\n          cd packages/lararium-web\n          tools/pw-container.sh npx vitest\n      - name: Run the hosted witness cell contract-witness");
+async function boundaryWitness(overlay = {}, { relit = true } = {}) {
   const law = await import("./browser-node-boundary.mjs");
-  return law.browserNodeBoundary({ root: boundaryRoot, overlay });
+  return law.browserNodeBoundary({ root: boundaryRoot, overlay: { ...(relit ? { ".github/workflows/ci.yml": relitCi() } : {}), ...overlay } });
 }
+
+test("G55 dim CONTROL: with the lamps dim the real ci.yml names no browser cell and the witness reads clean", async () => {
+  assert.deepEqual(await boundaryWitness({}, { relit: false }), []);
+  const law = await import("./browser-node-boundary.mjs");
+  assert.ok(law.browserCells(relitCi()).length >= 3, "CONTROL: the relit file names the two rows and the quick job");
+});
 const refuses = (diagnostics, cell, name) => assert.ok(
   diagnostics.some((d) => d.includes(cell) && d.includes(name)),
   `expected refusal naming ${cell} and ${name}: ${JSON.stringify(diagnostics)}`,

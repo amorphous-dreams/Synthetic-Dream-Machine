@@ -130,7 +130,7 @@ export function standVesselHost(env: VesselHostEnv = {}) {
   const statusTo = (conn: Conn | undefined, s: VesselStatus): void => conn?.post({ t: "status", status: s });
 
   const wordsOf = (question: CustodyAsk | HouseAsk | { readonly kind: "clear" }): string =>
-    question.kind === "unlock" ? `attempt ${String(question.attempt)} of ${String(question.of)}${question.notes.length ? ` — ${question.notes.join("; ")}` : ""}` : "";
+    question.kind === "unlock" ? `attempt ${String(question.attempt)} of ${String(question.of)}${question.notes.length ? ` — ${question.notes.join("; ")}` : ""}${question.warning ? ` — ${question.warning}` : ""}` : "";
   /** A custody ask through one session's ceremony door: the ceremony offers a passkey route beside the passphrase wherever a passkey pin stands. */
   const askCustodyOf = (conn: Conn, act: string) => async (question: HouseAsk | CustodyAsk | { readonly kind: "clear" }): Promise<CustodyAnswer> => {
     // A house ask names its face; the vessel's own custody asks (its boot, the fleet join) speak for the session's face.
@@ -508,6 +508,7 @@ export function standVesselHost(env: VesselHostEnv = {}) {
               return;
             }
             case "read:mirror-inputs": reply(msg.callId, async () => (await litFaceVessel()).mirrorInputs(msg.surface)); return;
+            case "read:startup-admit": reply(msg.callId, async () => (await litFaceVessel()).startupAdmit(msg.surface, msg.records)); return;
             case "read:floor": reply(msg.callId, async () => (await vessel()).readFloor(msg.baseUrl)); return;
             case "join:offer": reply(msg.callId, async () => { const { h, s } = await own(); return join.offer(conn, h, s, msg.text, msg.abandonPending); }); return;
             case "join:answer": reply(msg.callId, async () => { const { h, s } = await own(); return join.answer(h, s, msg.text); }); return;

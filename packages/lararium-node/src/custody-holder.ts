@@ -32,29 +32,30 @@
  * A face's root seed rests `ward-cold`, under the face's WARD key (`ward-slots`), never under its FCK. No door of an unlocked
  * holder reads, writes, moves or removes such a row: each refuses `ward-needs-fresh-unlock`. `withWardKey` opens the ward key
  * fresh from a human route for ONE act, spending the face's own unlock attempts on a miss, runs the act over that face's warded
- * rows, and zeroes the key when the act settles; the key never enters `faces` and a lock zeroes one in flight. A face founded here
- * binds its ward tree over the same human routes as its face tree; a face founded before the ward refuses `ward-absent` until
- * `rewrapWard` moves its root under a ward (the tree first, then each row, so a torn rewrap resumes).
+ * rows, and zeroes the key when the act settles; the key never enters `faces` and a lock zeroes one in flight. A face's founding
+ * binds its ward tree over the same human routes as its face tree; a face whose ward tree stands absent refuses `ward-absent`,
+ * and its restore (`lares vault restore`) founds the ward again.
  *
  * Node-main only: a worker never imports this module.
  */
-import { createHash } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 import {
   openSealedCarrier, writeSealedCarrier, updateSealedCarrier, removeSealedCarrier, CustodyRefusal, treeKeyEquals,
   openFaceCarrier, writeFaceCarrier, updateFaceCarrier, removeFaceCarrier, commitFaceTree, bindSlot, mintFck,
-  bindWardSlot, commitWardTree, confirmHeldPaper, decodeSlotTree, mintWardKey, openWardCarrier, openWardKey, readFckCarrier, readWardCarrier,
-  updateWardCarrier, openUnderWard, sealUnderWard, SEALING_SUFFIX, WardRefused, wardSigningSeed, wardPublicKeyOf, isWardKey, ed25519SignerFromSeed,
-  type Credential, type CustodyIo, type FaceCarrier, type FaceCustodyKey, type PinSpec, type ServingKey, type SlotSpec, type SlotTree, type TreeKey, type WardKey,
+  bindWardSlot, commitWardTree, decodeSlotTree, mintWardKey, openWardCarrier, openWardKey,
+  updateWardCarrier, WardRefused, ATTEMPT_BUDGET, attemptWarning, wardSigningSeed, wardPublicKeyOf, isWardKey, ed25519SignerFromSeed,
+  type Credential, type CustodyIo, type FaceCarrier, type FaceCustodyKey, type ServingKey, type SlotSpec, type SlotTree, type TreeKey, type WardKey,
 } from "@lararium/mesh";
 import { nativeKdf } from "@lararium/mesh/node";
 import { faceCarrierFor, openFaceTree } from "./face-custody.js";
-import { appendFaceEntry, bindFaceAsk, FaceIndexRefused, bindFaceGroup, faceDir, faceTreePath, findFace, readFaceIndex, retireFaceAsk, wardTreePath } from "./face-index.js";
+import { appendFaceEntry, bindFaceAsk, FaceIndexRefused, bindFaceGroup, faceTreePath, findFace, readFaceIndex, retireFaceAsk, wardTreePath } from "./face-index.js";
 import { custodyDerive, custodyRootFromBytes, openCustodyRootCarrier, type CustodyRoot } from "./custody-root.js";
 import { openCustodyNodeKey, unlockCustody } from "./custody-session.js";
 import { carrierTable, sSlotsPath, type CarrierRow, type CustodyHome, type CustodyHomes, type FaceSelector } from "./vault-carriers.js";
 
 export type HolderUnlock =
-  | { readonly reading: "opens"; readonly slot: string }
+  /** `opener` names, by index into the credentials the unlock received, the ones the custody open proved. */
+  | { readonly reading: "opens"; readonly slot: string; readonly opener: readonly number[]; readonly proved?: ReadonlyArray<{ readonly slot: string; readonly t: number; readonly pins: number; readonly opener: readonly number[] }> }
   | { readonly reading: "already-unlocked" }
   | { readonly reading: "no-slot-opens"; readonly attemptsLeft: number }
   | { readonly reading: "attempts-spent" }
@@ -64,7 +65,8 @@ export type HolderUnlock =
 
 /** What `proves` answers: whether a person presented a route of the tree this holder's own key rests in. */
 export type HolderProof =
-  | { readonly reading: "proves" }
+  /** `opener` names, by index into the credentials presented, the ones the custody open proved. */
+  | { readonly reading: "proves"; readonly opener: readonly number[]; readonly proved?: ReadonlyArray<{ readonly slot: string; readonly t: number; readonly pins: number; readonly opener: readonly number[] }> }
   | { readonly reading: "locked"; readonly fcid?: string }
   | { readonly reading: "no-slot-opens"; readonly attemptsLeft: number }
   | { readonly reading: "attempts-spent" }
@@ -116,11 +118,11 @@ export class WardNeedsFreshUnlock extends Error {
   readonly reading = "ward-needs-fresh-unlock";
   constructor(what: string) { super(`ward-needs-fresh-unlock: ${what} rests under the face's ward, which opens only fresh from the face's own route for one act; unlocked custody never reaches it`); }
 }
-/** A face founded before the ward: no ward tree stands, so no ward act runs until `ward rewrap` moves its root under one. */
+/** A face whose ward tree stands absent: no ward act runs, and the face's restore (`lares vault restore`) founds its ward again. */
 export class WardAbsent extends Error {
   override readonly name = "WardAbsent";
   readonly reading = "ward-absent";
-  constructor(fcid: string) { super(`ward-absent: run ward rewrap (\`lares vault rewrap --face <N>\`) — face ${fcid.slice(0, 8)} holds no ward tree, so its root opens to no ward act`); }
+  constructor(fcid: string) { super(`ward-absent: face ${fcid.slice(0, 8)} holds no ward tree, so its root opens to no ward act; restore the face (\`lares vault restore\`)`); }
 }
 
 /** What a ward act holds: its face's warded rows, under the ward key opened for this act alone. */
@@ -143,17 +145,23 @@ export type FaceUnlock =
   | { readonly reading: "opens"; readonly fcid: string; readonly ordinal: number; readonly slot: string }
   | { readonly reading: "already-unlocked"; readonly fcid: string; readonly ordinal: number }
   | { readonly reading: "no-slot-opens"; readonly fcid: string; readonly attemptsLeft: number }
-  | { readonly reading: "attempts-spent"; readonly fcid: string }
+  | { readonly reading: "attempts-spent"; readonly fcid: string; readonly attemptsLeft: 0 }
   | { readonly reading: "face-absent" }
   | { readonly reading: "tree-absent"; readonly fcid: string }
   | { readonly reading: "tree-unreadable"; readonly fcid: string; readonly why: string }
   /** The floor index routed to a tree whose own D `face-owner` row names another face (or none): nothing seats. */
   | { readonly reading: "index-mismatch"; readonly fcid: string; readonly why: string };
 
+/** A face's key opened for one act (`openFaceForAct`), bound to the custody id and group digest its checks read; or the refusal. */
+export type FaceActOpening =
+  | { readonly reading: "opens"; readonly fcid: string; readonly ordinal: number; readonly groupDigest: string | null; readonly fck: FaceCustodyKey }
+  | Exclude<FaceUnlock, { readonly reading: "opens" }>;
+
 /** The D row a face's directory keeps to authenticate the floor index entry that routed to it. */
 export interface FaceOwnerRecord { readonly fcid: string; readonly group: string | null }
 
-export const UNLOCK_ATTEMPTS_PER_BOOT = 3;
+/** The vessel's, each face's and each ward's unlock bound per boot: the house's one attempt budget (attempt-budget.ts, @lararium/mesh). */
+export const UNLOCK_ATTEMPTS_PER_BOOT = ATTEMPT_BUDGET;
 
 /** Charge an offering against the attempts `left` (THE UNLOCK BOUND): what reaches the open, what a miss costs, and
  *  whether passphrases past the bound stayed unread. */
@@ -245,6 +253,15 @@ export interface CustodyHolder {
   bindFace(fcid: string, groupDigest: string): Promise<void>;
   /** Open one face with the presented credentials. Spends one of the boot's attempts for that face on a miss. */
   unlockFace(face: FaceRef, credentials: readonly Credential[]): Promise<FaceUnlock>;
+  /**
+   * Open one SHUT face's key for ONE act, without seating it: the same per-face attempt budget, the same `face-owner` and anchors
+   * checks against the floor index as `unlockFace`, and no open event, so no composition hears the face open. The key and its
+   * custody id come back bound together; the caller zero-fills the key when its act settles. A face already open answers
+   * `already-unlocked` and hands no key, unless the act reads a face that stands open (`whileOpen`: a recard proves the face's
+   * own route while its key stands open, the same budget and checks, the held key untouched). Absent on a holder that serves its
+   * custody from elsewhere (a pūlama).
+   */
+  openFaceForAct?(face: FaceRef, credentials: readonly Credential[], act?: { readonly whileOpen?: boolean }): Promise<FaceActOpening>;
   /** Try the credentials against every face's tree and open each one they fit; a face they do not fit stays shut and spends nothing. */
   unlockFaces(credentials: readonly Credential[]): Promise<readonly FaceUnlock[]>;
   /** A reserved face takes the founding ask whose digest could not stand before its first row. */
@@ -257,6 +274,25 @@ export interface CustodyHolder {
   /** The custody ids of the faces standing unlocked. */
   unlockedFaces(): readonly string[];
   /**
+   * Which opening of the face stands, or null while it stands shut: each open of a face takes a fresh name, `<boot>:<n>`, where
+   * `<boot>` is a nonce this holder minted when it stood and `n` counts its opens. A reader that captured one opening tells a
+   * lock and re-open of the same face (same custody id) from the opening it read under, and a restarted holder whose count
+   * starts over never repeats a name an earlier boot handed out.
+   */
+  faceOpening?(fcid: string): string | null;
+  /** Hear each time one face this holder held open shuts (`lockFace`; a whole-holder `lock` drops every session instead). Returns the unsubscribe. */
+  onClosed?(listener: () => void): () => void;
+  /**
+   * TWO-PHASE CLOSE, FIRST PHASE (a pūlama's holder alone): hear the pūlama ask a lent face to close, naming its custody id and
+   * the opening it closes; the key stays until this vessel answers `faceClosed`. Returns the unsubscribe. A local holder closes in
+   * process (its lock door runs the face's close before `lockFace`), so it carries none.
+   */
+  onClosing?(listener: (fcid: string, opening: string | null) => void): () => void;
+  /** The faces the pūlama names closing now, by custody id (a pūlama's holder alone). */
+  closingFaces?(): readonly string[];
+  /** TWO-PHASE CLOSE, SECOND PHASE: this vessel stopped serving `fcid` under `opening`; the pūlama may lock the key. */
+  faceClosed?(fcid: string, opening: string | null): Promise<void>;
+  /**
    * ONE WARD ACT: open the face's ward key fresh from `credentials` (a human route; a passkey refuses), run `act` over that face's
    * warded rows, then zero the key. The face must stand unlocked. A miss spends one of the face's unlock attempts, as `unlockFace`'s
    * does. The key never enters the faces this holder holds open, and nothing here caches a credential or a key between acts.
@@ -268,14 +304,23 @@ export interface CustodyHolder {
    * Null where the face's ward stands with no key row.
    */
   wardPublicKey(face: FaceRef): Promise<string | null>;
-  /**
-   * Move a pre-ward face's root under a ward: prove `credentials` open the face's own tree, bind the ward tree over them (or open
-   * the one a torn rewrap left), then re-seal each FCK-framed root row under the ward key. Answers how many rows moved.
-   */
-  rewrapWard(face: FaceRef, credentials: readonly Credential[]): Promise<{ readonly rewrapped: number }>;
   /** Test seam: watch each ward key this holder opens, to witness that it zeroes. The product seats none. */
   watchWardKeys(watch: ((key: WardKey) => void) | null): void;
   isFaceUnlocked(face: FaceRef): Promise<boolean>;
+  // ── vesting: a lit keeper hands the house's end of the bond to its successor (a pūlama's own holder alone) ─────────────
+  /**
+   * THE HANDED FIRE, OUTGOING: copies of the node key and every open face's key, for the vest to seal to the successor's
+   * ephemeral key. The caller zero-fills every copy once sealed. Null while no key stands. Never a passphrase, a slot or a ward key:
+   * those never rest in a holder's memory to hand.
+   */
+  handOver?(): { readonly treeKey: Uint8Array; readonly faces: ReadonlyArray<{ readonly fcid: string; readonly ordinal: number; readonly fck: Uint8Array; readonly spent: number }> } | null;
+  /**
+   * THE HANDED FIRE, INCOMING: seat one face's key a vest carried, as `adopt` seats the node key. The key must answer the floor
+   * index as an unlock's would (`face-owner`, anchors), or nothing seats and the copy zero-fills. Spends no attempt.
+   */
+  adoptFace?(fcid: string, fck: Uint8Array): Promise<FaceUnlock>;
+  /** THE BUDGET CARRIES: raise the spent unlock count, and each named face's, to what the keeper before spent (never lower one). */
+  seedSpent?(spent: number, faces?: ReadonlyArray<{ readonly fcid: string; readonly spent: number }>): void;
 }
 
 /** A key handed to `adopt` that the custody root does not open under. */
@@ -289,7 +334,8 @@ type Located =
   | { readonly kind: "treeKey"; readonly row: CarrierRow; readonly path: string; readonly name: string }
   | { readonly kind: "face"; readonly row: CarrierRow; readonly path: string; readonly carrier: FaceCarrier; readonly fcid: string; readonly treePath: string };
 
-interface FaceSeat { readonly fck: FaceCustodyKey; readonly slot: string | null; readonly ordinal: number }
+/** `opening` counts each open of a face on this holder: a lock and a later open of the same face carry different openings. */
+interface FaceSeat { readonly fck: FaceCustodyKey; readonly slot: string | null; readonly ordinal: number; readonly opening: number }
 
 const heldPort = (io: CustodyIo): CustodyIo => ({
   read: (path) => io.read(path), write: (path, bytes) => io.write(path, bytes), rename: (from, to) => io.rename(from, to),
@@ -319,6 +365,11 @@ export function makeCustodyHolder(a: {
   let spent = 0;
   const faceSpent = new Map<string, number>();
   const faces = new Map<string, FaceSeat>();
+  let openings = 0;
+  /** This holder's boot: every opening it names carries it, so a restart's count never repeats an earlier opening's name. */
+  const bootNonce = randomBytes(16).toString("hex");
+  const closedListeners = new Set<() => void>();
+  const faceClosed = (): void => { for (const listener of [...closedListeners]) { try { listener(); } catch { /* a listener's fault never reaches the holder */ } } };
   /** Ward keys opened for an act in flight: never a face's seat, zeroed when the act settles or a lock lands. */
   const wardKeys = new Set<WardKey>();
   let wardWatch: ((key: WardKey) => void) | null = null;
@@ -359,7 +410,9 @@ export function makeCustodyHolder(a: {
     slot = result.slot;
     keyOpened();
     // The node key opens alone: no face key hangs from it. A face opens by its own unlock (`unlockFace`, `unlockFaces`).
-    return { reading: "opens", slot };
+    // THE OPENER, by index into what the unlock received: the offering's order differs, so each offered credential maps back.
+    const back = (ix: readonly number[]): number[] => ix.map((i) => credentials.indexOf(charge.offered[i]!)).filter((i) => i >= 0);
+    return { reading: "opens", slot, opener: back(result.opener), proved: result.proved.map((p) => ({ slot: p.slot, t: p.t, pins: p.pins, opener: back(p.opener) })) };
   };
   const doProve = async (credentials: readonly Credential[]): Promise<HolderProof> => {
     if (treeKey === null || !accepting) return { reading: "locked" };
@@ -375,7 +428,8 @@ export function makeCustodyHolder(a: {
     // A route that opens a tree whose key differs from the one held proves nothing about this vessel.
     const same = treeKey !== null && treeKeyEquals(result.treeKey, treeKey);
     result.treeKey.fill(0);
-    if (same) { spent -= charge.cost; return { reading: "proves" }; }
+    const back = (ix: readonly number[]): number[] => ix.map((i) => credentials.indexOf(charge.offered[i]!)).filter((i) => i >= 0);
+    if (same) { spent -= charge.cost; return { reading: "proves", opener: back(result.opener), proved: result.proved.map((p) => ({ slot: p.slot, t: p.t, pins: p.pins, opener: back(p.opener) })) }; }
     return missed();
   };
   const operation = <T>(fn: () => Promise<T>): Promise<T> => {
@@ -438,7 +492,7 @@ export function makeCustodyHolder(a: {
         await writeFaceCarrier({ io: held, key: fck, treePath: faceTreePath(a.homes.identity, fcid), carrier: ownerCarrier(fcid), plaintext: encodeOwner({ fcid, group: args.group ?? null }) });
         // THE WARD KEY'S PUBLIC HALF lands with the ward: the face's admission carries it, and the ward key itself zeroes below.
         await writeFaceCarrier({ io: held, key: fck, treePath: faceTreePath(a.homes.identity, fcid), carrier: wardKeyCarrier(fcid), plaintext: await wardKeyBytes(ward) });
-        faces.set(fcid, { fck, slot: null, ordinal });
+        faces.set(fcid, { fck, slot: null, ordinal, opening: ++openings });
         return { ordinal, fcid };
       });
     } catch (err) { fck.fill(0); throw err; }
@@ -465,7 +519,7 @@ export function makeCustodyHolder(a: {
     if (!row) throw new CustodyRecordUnknown("identity", file, "no warded row matches");
     return faceCarrierFor(a.homes, fcid, file, row);
   };
-  /** The ward tree standing for a face, or the reading that refuses: absent names the rewrap. */
+  /** The ward tree standing for a face, or the reading that refuses. */
   const readWardTree = async (fcid: string): Promise<SlotTree> => {
     const reading = decodeSlotTree(await a.io.read(wardTreePath(a.homes.identity, fcid)));
     if (reading.reading === "absent") throw new WardAbsent(fcid);
@@ -474,13 +528,13 @@ export function makeCustodyHolder(a: {
   };
   /** Open the ward key fresh, charged against the face's own attempts (CHARGE FIRST: a miss or a throw keeps the charge). */
   const openWardFresh = async (fcid: string, tree: SlotTree, credentials: readonly Credential[]): Promise<WardKey> => {
-    if ((faceSpent.get(fcid) ?? 0) >= UNLOCK_ATTEMPTS_PER_BOOT) throw new WardRefused("ward-attempts-spent", "this face's unlock attempts are spent until the vessel restarts");
+    if ((faceSpent.get(fcid) ?? 0) >= UNLOCK_ATTEMPTS_PER_BOOT) throw new WardRefused("ward-attempts-spent", attemptWarning(0, "face", UNLOCK_ATTEMPTS_PER_BOOT), 0);
     const charge = chargeOffering(credentials, UNLOCK_ATTEMPTS_PER_BOOT - (faceSpent.get(fcid) ?? 0));
     faceSpent.set(fcid, (faceSpent.get(fcid) ?? 0) + charge.cost);
     const opened = await openWardKey(tree, charge.offered, nativeKdf);
     if (opened.reading !== "opens") {
       const left = UNLOCK_ATTEMPTS_PER_BOOT - (faceSpent.get(fcid) ?? 0);
-      throw new WardRefused(charge.short || left <= 0 ? "ward-attempts-spent" : "ward-no-slot-opens", `the route opens no slot of this face's ward (${left} attempt(s) left)`);
+      throw new WardRefused(charge.short || left <= 0 ? "ward-attempts-spent" : "ward-no-slot-opens", `the route opens no slot of this face's ward. ${attemptWarning(left, "face", UNLOCK_ATTEMPTS_PER_BOOT)}`, Math.max(0, left));
     }
     faceSpent.set(fcid, (faceSpent.get(fcid) ?? 0) - charge.cost);
     wardKeys.add(opened.treeKey);
@@ -532,92 +586,6 @@ export function makeCustodyHolder(a: {
     const { fcid } = await openFaceFor(by);
     return { fcid, key: await openWardFresh(fcid, await readWardTree(fcid), credentials) };
   };
-  /** The files of one face's directory that a warded row names. */
-  const wardFilesOf = async (fcid: string): Promise<string[]> => {
-    const dir = faceDir(a.homes.identity, fcid);
-    const rows = carrierTable().filter((r) => r.custody === "ward-cold" && r.faceRecord !== undefined);
-    return (await a.io.list()).filter((p) => p.startsWith(`${dir}/`)).map((p) => p.slice(dir.length + 1))
-      .filter((f) => !f.includes("/") && rows.some((r) => r.faceRecord!.inner.test(f)));
-  };
-  const doRewrapWard = async (by: FaceRef, credentials: readonly Credential[]): Promise<{ readonly rewrapped: number }> => {
-    const { fcid } = await openFaceFor(by);
-    const fck = faces.get(fcid)!.fck;
-    let ward: WardKey;
-    const standing = decodeSlotTree(await a.io.read(wardTreePath(a.homes.identity, fcid)));
-    if (standing.reading === "unreadable") throw new WardRefused("ward-tree-unreadable", standing.why);
-    if (standing.reading === "readable") ward = await openWardFresh(fcid, standing.tree, credentials);
-    else {
-      // THE ROUTE PROVES THE FACE FIRST: the ward binds only over a route that opens this face's own tree to the key held. The
-      // proof spends the face's own attempts as an unlock's miss does (CHARGE FIRST: a miss or a throw keeps the charge).
-      if ((faceSpent.get(fcid) ?? 0) >= UNLOCK_ATTEMPTS_PER_BOOT) throw new WardRefused("ward-attempts-spent", "this face's unlock attempts are spent until the vessel restarts");
-      const charge = chargeOffering(credentials, UNLOCK_ATTEMPTS_PER_BOOT - (faceSpent.get(fcid) ?? 0));
-      faceSpent.set(fcid, (faceSpent.get(fcid) ?? 0) + charge.cost);
-      const proof = await openFaceTree({ io: a.io, homes: a.homes, fcid, credentials: charge.offered });
-      if (proof.reading !== "opens") {
-        const left = UNLOCK_ATTEMPTS_PER_BOOT - (faceSpent.get(fcid) ?? 0);
-        throw new WardRefused(charge.short || left <= 0 ? "ward-attempts-spent" : "ward-no-slot-opens", `the route opens no slot of this face's own tree, so no ward binds over it (${left} attempt(s) left)`);
-      }
-      faceSpent.set(fcid, (faceSpent.get(fcid) ?? 0) - charge.cost);
-      const same = treeKeyEquals(proof.fck, fck);
-      proof.fck.fill(0);
-      if (!same) throw new WardRefused("ward-no-slot-opens", "the route opens another key than the face's own");
-      // THE WARD NEVER WEAKENS THE FACE: it binds ONE slot over the routes presented, at the threshold of the face slot they opened,
-      // so a k-of-n face rewraps to a ward that asks k of these routes, never one.
-      const faceTree = decodeSlotTree(await a.io.read(faceTreePath(a.homes.identity, fcid)));
-      const opened = faceTree.reading === "readable" ? faceTree.tree.slots.find((sl) => sl.id === proof.slot) : undefined;
-      const threshold = opened?.t ?? credentials.length;
-      // THE REWRAP KEEPS THE KEY: it changes the ward's wrapping, never the key the face's ward signs under. A face whose ward key row
-      // stands already founded the key its admission names; a ward bound fresh here would sign under another, so every approve that
-      // device signs would stop verifying. Its tree went missing, so the rows it sealed stay sealed under it, and nothing binds here.
-      if ((await openFaceCarrier({ io: a.io, key: fck, carrier: wardKeyCarrier(fcid) })).reading !== "absent") {
-        throw new WardRefused("ward-key-would-rotate", "this face's ward founded the ward key its admission carries, and its tree stands absent; a fresh ward would sign under a key no admission names: restore the ward tree, or re-found the face");
-      }
-      ward = mintWardKey();
-      wardKeys.add(ward);
-      wardWatch?.(ward);
-      try {
-        const pins: PinSpec[] = credentials.map((c): PinSpec => c.kind === "passphrase" ? { kind: "passphrase", passphrase: c.passphrase } : c.kind === "paper" ? { kind: "paper", confirmed: confirmHeldPaper(c.sheets) } : (() => { throw new WardRefused("ward-passkey-refused", "the ward binds human routes alone"); })());
-        if (pins.length === 0) throw new WardRefused("ward-needs-human-route", "a rewrap binds the ward over a passphrase or a paper pin; none was given");
-        const tree = await bindWardSlot(null, ward, { t: Math.min(Math.max(threshold, 1), pins.length), pins }, nativeKdf);
-        // THE TREE LANDS FIRST, so a rewrap torn after it resumes by opening the ward it left.
-        await commitWardTree({ io: a.io, path: wardTreePath(a.homes.identity, fcid), expected: null, key: ward, tree, carriers: [] });
-
-      } catch (err) { dropWard(ward); throw err; }
-    }
-    try {
-      // The ward key's public half stands beside the tree, the one the ward signs under (a torn rewrap writes it again, the same bytes).
-      const keyBytes = await wardKeyBytes(ward);
-      await updateFaceCarrier({ io: a.io, key: fck, treePath: faceTreePath(a.homes.identity, fcid), carrier: wardKeyCarrier(fcid), decide: () => ({ plaintext: keyBytes, value: undefined }) });
-      let moved = 0;
-      for (const file of await wardFilesOf(fcid)) {
-        const carrier = wardCarrierOf(fcid, file);
-        const bytes = await a.io.read(carrier.path);
-        if (readWardCarrier(bytes) === "sealed") continue;
-        if (readFckCarrier(bytes) !== "sealed") throw new CustodyRecordUnavailable("identity", file, `reads ${readFckCarrier(bytes)}, neither warded nor face-sealed`);
-        const faceSealed = await openFaceCarrier({ io: a.io, key: fck, carrier });
-        if (faceSealed.reading !== "opens") throw new CustodyRecordUnavailable("identity", file, faceSealed.reading);
-        try {
-          // The FCK-framed bytes stand where a warded row belongs: the ward's writer would refuse them, so the move seals to a sidecar,
-          // reads it back under the ward, and only then renames over them (the writer's own law, held here for the one frame it crosses).
-          await a.io.exclusive(async () => {
-            const sealed = sealUnderWard(ward, carrier, faceSealed.plaintext);
-            const side = `${carrier.path}${SEALING_SUFFIX}`;
-            await a.io.write(side, sealed);
-            const back = openUnderWard(ward, carrier, await a.io.read(side));
-            if (back.reading !== "opens" || !back.plaintext.every((b, i) => b === faceSealed.plaintext[i]) || back.plaintext.length !== faceSealed.plaintext.length) {
-              await a.io.remove(side);
-              throw new CustodyRecordUnavailable("identity", file, "the ward seal did not read back; the face-sealed row stands as it was");
-            }
-            back.plaintext.fill(0);
-            await a.io.rename(side, carrier.path);
-          });
-        } finally { faceSealed.plaintext.fill(0); }
-        moved++;
-      }
-      return { rewrapped: moved };
-    } finally { dropWard(ward); }
-  };
-
   const doBindFace = async (fcid: string, groupDigest: string): Promise<void> => {
     const seat = faces.get(fcid);
     if (!seat) throw new FaceLocked(fcid);
@@ -631,24 +599,18 @@ export function makeCustodyHolder(a: {
     });
   };
   const doUnlockFace = async (by: FaceRef, credentials: readonly Credential[]): Promise<FaceUnlock> => {
-    const found = await resolveFace(by);
-    if (!found) return { reading: "face-absent" };
+    const opened = await doOpenVerified(by, credentials);
+    if (opened.reading !== "opens") return opened;
+    faces.set(opened.fcid, { fck: opened.fck, slot: opened.slot, ordinal: opened.ordinal, opening: ++openings });
+    keyOpened();
+    return { reading: "opens", fcid: opened.fcid, ordinal: opened.ordinal, slot: opened.slot };
+  };
+  /** A face key's checks against the floor index (`face-owner`, anchors): null where it answers the entry, else the refusal (the key zero-fills). */
+  const checkFaceKey = async (found: { readonly fcid: string; readonly ordinal: number; readonly group: string | null }, fck: FaceCustodyKey, opts: { readonly requireAnchors?: boolean } = {}): Promise<Exclude<FaceUnlock, { readonly reading: "opens" }> | null> => {
     const { fcid, ordinal } = found;
-    if (faces.has(fcid)) return { reading: "already-unlocked", fcid, ordinal };
-    if ((faceSpent.get(fcid) ?? 0) >= UNLOCK_ATTEMPTS_PER_BOOT) return { reading: "attempts-spent", fcid };
-    // CHARGE FIRST, against the face's own count: a throw or a miss keeps it; anything else refunds it.
-    const charge = chargeOffering(credentials, UNLOCK_ATTEMPTS_PER_BOOT - (faceSpent.get(fcid) ?? 0));
-    faceSpent.set(fcid, (faceSpent.get(fcid) ?? 0) + charge.cost);
-    const opened = await openFaceTree({ io: a.io, homes: a.homes, fcid, credentials: charge.offered });
-    if (opened.reading === "no-slot-opens") {
-      return charge.short ? { reading: "attempts-spent", fcid } : { reading: "no-slot-opens", fcid, attemptsLeft: UNLOCK_ATTEMPTS_PER_BOOT - (faceSpent.get(fcid) ?? 0) };
-    }
-    faceSpent.set(fcid, (faceSpent.get(fcid) ?? 0) - charge.cost);
-    if (opened.reading === "tree-absent") return { reading: "tree-absent", fcid };
-    if (opened.reading === "tree-unreadable") return { reading: "tree-unreadable", fcid, why: opened.why };
     // THE INDEX ROUTES AND NEVER DECIDES: the face's own D row must name the custody id and the group the index entry names.
-    const owner = await openFaceCarrier({ io: a.io, key: opened.fck, carrier: ownerCarrier(fcid) });
-    const refuse = (why: string): FaceUnlock => { opened.fck.fill(0); return { reading: "index-mismatch", fcid, why }; };
+    const owner = await openFaceCarrier({ io: a.io, key: fck, carrier: ownerCarrier(fcid) });
+    const refuse = (why: string): Exclude<FaceUnlock, { readonly reading: "opens" }> => { fck.fill(0); return { reading: "index-mismatch", fcid, why }; };
     if (owner.reading !== "opens") return refuse(`the face-owner row reads ${owner.reading}`);
     const named = decodeOwner(owner.plaintext);
     owner.plaintext.fill(0);
@@ -659,7 +621,7 @@ export function makeCustodyHolder(a: {
     // answers the floor index entry. Either row disagreeing with the index refuses by name before anything seats.
     const anchorsRow = carrierTable().find((r) => r.row === "anchors");
     if (anchorsRow) {
-      const anchored = await openFaceCarrier({ io: a.io, key: opened.fck, carrier: faceCarrierFor(a.homes, fcid, `anchors-h${ordinal}.json`, anchorsRow) });
+      const anchored = await openFaceCarrier({ io: a.io, key: fck, carrier: faceCarrierFor(a.homes, fcid, `anchors-h${ordinal}.json`, anchorsRow) });
       if (anchored.reading === "opens") {
         let group: unknown = null;
         try { group = (JSON.parse(new TextDecoder().decode(anchored.plaintext)) as { personaGroupId?: unknown }).personaGroupId; } catch { /* unreadable */ }
@@ -669,11 +631,38 @@ export function makeCustodyHolder(a: {
         }
       } else if (anchored.reading !== "absent") {
         return refuse(`the anchors row reads ${anchored.reading}`);
+      } else if (opts.requireAnchors === true) {
+        // AN ACT ON ONE FACE'S ROWS PROVES ITS ORDINAL: the anchors row at the handle the index routed by must stand and agree.
+        return refuse(`the anchors row at h${ordinal} stands absent, so nothing proves the handle names this face`);
       }
+    } else if (opts.requireAnchors === true) {
+      return refuse("no anchors row stands in the carrier table to prove the handle");
     }
-    faces.set(fcid, { fck: opened.fck, slot: opened.slot, ordinal });
-    keyOpened();
-    return { reading: "opens", fcid, ordinal, slot: opened.slot };
+    return null;
+  };
+  /** One face's key opened and checked (budget, `face-owner`, anchors), never seated: unlock seats it, an act holds it alone. */
+  const doOpenVerified = async (by: FaceRef, credentials: readonly Credential[], opts: { readonly requireAnchors?: boolean; readonly whileOpen?: boolean } = {}): Promise<
+    { readonly reading: "opens"; readonly fcid: string; readonly ordinal: number; readonly slot: string; readonly group: string | null; readonly fck: FaceCustodyKey }
+    | Exclude<FaceUnlock, { readonly reading: "opens" }>
+  > => {
+    const found = await resolveFace(by);
+    if (!found) return { reading: "face-absent" };
+    const { fcid, ordinal } = found;
+    if (faces.has(fcid) && opts.whileOpen !== true) return { reading: "already-unlocked", fcid, ordinal };
+    if ((faceSpent.get(fcid) ?? 0) >= UNLOCK_ATTEMPTS_PER_BOOT) return { reading: "attempts-spent", fcid, attemptsLeft: 0 };
+    // CHARGE FIRST, against the face's own count: a throw or a miss keeps it; anything else refunds it.
+    const charge = chargeOffering(credentials, UNLOCK_ATTEMPTS_PER_BOOT - (faceSpent.get(fcid) ?? 0));
+    faceSpent.set(fcid, (faceSpent.get(fcid) ?? 0) + charge.cost);
+    const opened = await openFaceTree({ io: a.io, homes: a.homes, fcid, credentials: charge.offered });
+    if (opened.reading === "no-slot-opens") {
+      return charge.short ? { reading: "attempts-spent", fcid, attemptsLeft: 0 } : { reading: "no-slot-opens", fcid, attemptsLeft: UNLOCK_ATTEMPTS_PER_BOOT - (faceSpent.get(fcid) ?? 0) };
+    }
+    faceSpent.set(fcid, (faceSpent.get(fcid) ?? 0) - charge.cost);
+    if (opened.reading === "tree-absent") return { reading: "tree-absent", fcid };
+    if (opened.reading === "tree-unreadable") return { reading: "tree-unreadable", fcid, why: opened.why };
+    const refused = await checkFaceKey(found, opened.fck, opts);
+    if (refused !== null) return refused;
+    return { reading: "opens", fcid, ordinal, slot: opened.slot, group: found.group, fck: opened.fck };
   };
   const doUnlockFaces = async (credentials: readonly Credential[]): Promise<FaceUnlock[]> => {
     const index = await readFaceIndex(a.io, a.homes.identity);
@@ -733,6 +722,18 @@ export function makeCustodyHolder(a: {
     root = custodyRootFromBytes(opened.opened);
     slot = null;
     keyOpened();
+  };
+
+  const doAdoptFace = async (fcid: string, handed: Uint8Array): Promise<FaceUnlock> => {
+    const found = await resolveFace({ fcid });
+    if (!found) return { reading: "face-absent" };
+    if (faces.has(found.fcid)) return { reading: "already-unlocked", fcid: found.fcid, ordinal: found.ordinal };
+    const fck = Uint8Array.from(handed) as FaceCustodyKey;
+    const refused = await checkFaceKey(found, fck);
+    if (refused !== null) return refused;
+    faces.set(found.fcid, { fck, slot: null, ordinal: found.ordinal, opening: ++openings });
+    keyOpened();
+    return { reading: "opens", fcid: found.fcid, ordinal: found.ordinal, slot: "vested" };
   };
 
   const asReading = (standing: { readonly reading: string; readonly plaintext?: Uint8Array }): RecordReading =>
@@ -801,6 +802,21 @@ export function makeCustodyHolder(a: {
       const run = unlockChain.then(drop, drop);
       unlockChain = run.catch(() => undefined);
       return run;
+    },
+    handOver() {
+      if (treeKey === null || !accepting) return null;
+      return { treeKey: Uint8Array.from(treeKey), faces: [...faces].map(([fcid, seat]) => ({ fcid, ordinal: seat.ordinal, fck: Uint8Array.from(seat.fck), spent: faceSpent.get(fcid) ?? 0 })) };
+    },
+    adoptFace(fcid, handed) {
+      const run = unlockChain.then(() => doAdoptFace(fcid, handed), () => doAdoptFace(fcid, handed));
+      unlockChain = run.catch(() => undefined);
+      return run;
+    },
+    seedSpent(n, carried) {
+      if (Number.isSafeInteger(n) && n > spent) spent = Math.min(n, UNLOCK_ATTEMPTS_PER_BOOT);
+      for (const f of carried ?? []) {
+        if (typeof f.fcid === "string" && Number.isSafeInteger(f.spent) && f.spent > (faceSpent.get(f.fcid) ?? 0)) faceSpent.set(f.fcid, Math.min(f.spent, UNLOCK_ATTEMPTS_PER_BOOT));
+      }
     },
     isUnlocked: () => treeKey !== null,
     attemptsLeft: () => UNLOCK_ATTEMPTS_PER_BOOT - spent,
@@ -958,6 +974,12 @@ export function makeCustodyHolder(a: {
       unlockChain = run.catch(() => undefined);
       return run;
     },
+    openFaceForAct(face, credentials, act) {
+      const open = () => doOpenVerified(face, credentials, { requireAnchors: true, ...(act?.whileOpen === true ? { whileOpen: true } : {}) });
+      const run = unlockChain.then(open, open);
+      unlockChain = run.catch(() => undefined);
+      return run.then((o): FaceActOpening => (o.reading === "opens" ? { reading: "opens", fcid: o.fcid, ordinal: o.ordinal, groupDigest: o.group, fck: o.fck } : o));
+    },
     unlockFace(face, credentials) {
       const run = unlockChain.then(() => doUnlockFace(face, credentials), () => doUnlockFace(face, credentials));
       unlockChain = run.catch(() => undefined);
@@ -986,24 +1008,21 @@ export function makeCustodyHolder(a: {
       const drop = async (): Promise<void> => {
         await Promise.allSettled([...active]);
         faces.get(fcid)?.fck.fill(0);
-        faces.delete(fcid);
+        if (faces.delete(fcid)) faceClosed();
       };
       const run = unlockChain.then(drop, drop);
       unlockChain = run.catch(() => undefined);
       return run;
     },
     unlockedFaces: () => [...faces.keys()],
+    faceOpening: (fcid) => { const seat = faces.get(fcid); return seat ? `${bootNonce}:${seat.opening}` : null; },
+    onClosed(listener) { closedListeners.add(listener); return () => { closedListeners.delete(listener); }; },
     async withWardKey(face, credentials, act) {
       // The derivation takes its turn on the unlock chain (attempts never race); the act runs outside it, and the key zeroes after.
       const run = unlockChain.then(() => doWardOpen(face, credentials), () => doWardOpen(face, credentials));
       unlockChain = run.catch(() => undefined);
       const { fcid, key } = await run;
       try { return await act(seatOf(fcid, key)); } finally { dropWard(key); }
-    },
-    rewrapWard(face, credentials) {
-      const run = unlockChain.then(() => doRewrapWard(face, credentials), () => doRewrapWard(face, credentials));
-      unlockChain = run.catch(() => undefined);
-      return run;
     },
     async wardPublicKey(face) {
       const found = await resolveFace(face);

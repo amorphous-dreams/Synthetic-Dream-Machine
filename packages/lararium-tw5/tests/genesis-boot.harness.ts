@@ -20,7 +20,7 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { bootSetPluginCids } from "@lararium/mesh";
 import { TW5Engine } from "../src/tw5-vm.js";
-import { preloadsFromCasBlob } from "../src/cas-preloads.js";
+import { casBlobPreloads, modulePinsOf } from "../src/module-pins.js";
 
 /** The repository's tracked genesis directory, derived from this file's own path. */
 export const GENESIS_DIR = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..", "..", "..", "genesis");
@@ -66,20 +66,26 @@ export function genesisCoreBlob(): { bytes: Uint8Array; sha256: string } {
 /** Every preload the kernel would hand the engine: the seed's json blobs, in the kernel's own selection and shape. */
 export function genesisPreloads(): Record<string, unknown>[] {
   const seed = readSeed()!;
-  return bootSetPluginCids(seed.blobs).flatMap((cid) => preloadsFromCasBlob(new Uint8Array(readFileSync(casPath(cid)))));
+  return bootSetPluginCids(seed.blobs).flatMap((cid) => casBlobPreloads(new Uint8Array(readFileSync(casPath(cid))), cid));
+}
+
+/** The module pins the genesis boot set carries: each module its CID-verified blobs pack, as the kernel reads them. */
+export function genesisModulePins(): Set<string> {
+  return modulePinsOf(genesisPreloads());
 }
 
 /**
  * Boot an engine from the genesis CAS on the named path. `tiddlers` seeds records the suite authors itself;
  * `preloads` adds tiddlers to the boot's own preload (a probe module, a startup action), as an offering would.
  */
-export async function bootGenesisWiki(opts: { path?: EnginePath; tiddlers?: Array<Record<string, string | string[]>>; preloads?: Array<Record<string, unknown>> } = {}): Promise<TW5Engine> {
+export async function bootGenesisWiki(opts: { path?: EnginePath; tiddlers?: Array<Record<string, string | string[]>>; preloads?: Array<Record<string, unknown>>; modulePins?: ReadonlySet<string> } = {}): Promise<TW5Engine> {
   const g = globalThis as Record<string, unknown>;
   const lendSignal = opts.path === "browser-worker" && g["WorkerGlobalScope"] === undefined;
   if (lendSignal) g["WorkerGlobalScope"] = {};
   try {
     const engine = new TW5Engine();
-    await engine.boot(genesisCoreBlob(), [...genesisPreloads(), ...(opts.preloads ?? [])]);
+    await engine.boot(genesisCoreBlob(), [...genesisPreloads(), ...(opts.preloads ?? [])], undefined,
+      { modulePins: new Set([...genesisModulePins(), ...(opts.modulePins ?? [])]) });
     for (const t of opts.tiddlers ?? []) engine.setTiddler(t);
     return engine;
   } finally {

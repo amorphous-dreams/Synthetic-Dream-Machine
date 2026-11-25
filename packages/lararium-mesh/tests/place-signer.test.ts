@@ -21,7 +21,7 @@ const images: Record<string, Uint8Array> = {
 };
 
 describe("framed floor duties", () => {
-  it("signs and verifies all six maker images", async () => {
+  it("signs and verifies all seven maker images", async () => {
     const pointer = await buildFlowPointer({ snapshot: { cid: "aa".repeat(32), heads: [], bytes: new Uint8Array() }, parents: [], signer: placeSignerFromSeed(seed(1)) });
     const made = { ...images, [FLOW_POINTER_DOMAIN]: flowPointerSigningImage(pointer) };
     const head = mintPlaceInception({ signerSeed: seed(1), coldVerifyingKey: key(2) }).event;

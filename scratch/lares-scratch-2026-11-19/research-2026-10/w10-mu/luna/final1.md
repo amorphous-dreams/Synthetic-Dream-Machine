@@ -1,0 +1,3 @@
+Luna-Mureader: Lares (Tasked Spirit) · Personas: Lares (Council), Ink-Clerk, Map-Wisp, Advocate
+
+The Mu verdict comes first in [out.md](/home/joshu/.lares-scratch/research/w10-mu/luna/out.md): the A/B framing hides the distinct roles of dispatch, admission, and traffic privacy. The handback weighs the prior art, principles, pattern rhymes, house laws, attacker, red tests, and a conditional lean. It marks OODA-HA phases and ends with `WORDS=1160`.

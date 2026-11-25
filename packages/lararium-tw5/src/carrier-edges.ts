@@ -25,16 +25,11 @@
 import { fencedSpans, inMask } from "@lararium/memetic-frame";
 
 /** How a carrier spelled the reference. */
-export type EdgeForm = "loulou" | "pranala" | "kahea" | "wikilink" | "md-target";
+export type EdgeForm = "loulou" | "pranala" | "kahea" | "wikilink";
 
 export interface CarrierEdge {
-  /**
-   * The address named, fragment stripped — what a resolver would look up.
-   *
-   * An `md-target` edge names a FILE rather than an address, so it has none: a reader cannot resolve
-   * it without guessing which carrier that file became, and a guess is what the resolver must not do.
-   */
-  readonly address: string | null;
+  /** The address named, fragment stripped — what a resolver would look up. */
+  readonly address: string;
   /** The address as written, fragment included. */
   readonly written: string;
   readonly form: EdgeForm;
@@ -58,14 +53,6 @@ const PATTERNS: ReadonlyArray<readonly [EdgeForm, RegExp]> = [
   ["kahea",    /<<~\s*kahea(?:[^>]|>(?!>))*?\suri=`lar:\/\/\/([^`\s]+?)`/g],
   ["wikilink", /\[\[[^\]|]*\|lar:\/\/\/([^\]]+)\]\]/g],
   ["wikilink", /\[\[lar:\/\/\/([^\]|]+)\]\]/g],
-  // THE FORM THAT PREDATES THE ADDRESS. Before the corpus poured to `.mem`, a carrier linked its
-  // neighbours by FILE. Those links still stand, and a reader counting only `lar:///` targets does not
-  // see them — 70 of them sat outside this instrument while it reported the graph whole.
-  //
-  // They carry no address, so they never count as dangling and never count as resolving. They are
-  // named so a sweep can find them, and left unresolved because matching a file to a carrier means
-  // guessing which one it became.
-  ["md-target", /\[\[[^\]|]*\|((?:\.\.?\/)*[^\]:]*\.md)\]\]/g],
 ];
 
 /**
@@ -84,8 +71,21 @@ export function readCarrierEdges(text: string): CarrierEdge[] {
       if (inMask(spans, m.index)) continue;
       // A trailing period or comma belongs to the prose, never to the name.
       const written = m[1]!.replace(/[.,;]+$/, "");
-      out.push({ written, address: form === "md-target" ? null : written.split("#")[0]!, form });
+      out.push({ written, address: written.split("#")[0]!, form });
     }
   }
   return out;
+}
+
+/**
+ * HOMED IN THE KAHU WORKBENCH, OUTSIDE THE CORPUS — the one class of unheld edge that names a carrier
+ * standing somewhere this reader cannot see. The operator's ruling of 2026-11-20 moved the founding
+ * road (`docs/stable-founding-road`, `docs/road-ashes`, every `docs/road/*` rank and ruling) out of
+ * canon and into the shared Kahu workbench wiki (slug `kahu`, `--recipe kahu`): an engineer's working
+ * plan, not shared canon. A canon loulou to the road still names a live carrier; it answers in the
+ * workbench, never in `bags/`. The class names that prefix exactly and nothing beside it, and the
+ * corpus test holds its own ceiling, so no other broken edge hides inside it.
+ */
+export function homedInTheKahuWorkbench(address: string): boolean {
+  return /^ha\.ka\.ba\/lares\/docs\/(?:stable-founding-road|road-ashes|road\/[^/]+)$/.test(address);
 }

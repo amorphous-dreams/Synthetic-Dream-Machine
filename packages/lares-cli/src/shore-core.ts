@@ -1,7 +1,7 @@
 /**
  * shore-core — the two lines every shore act rides: `wiki-act` carrying the `shore` verb into the active
  * wiki's island, and the `shore` verb itself into the daemon island, each answer read whole and the two read
- * as one shore (`askShore`). `lares shore` sends a person's answers through it; `lares watch` sends what it
+ * as one shore (`askShore`). `lares shore` sends a person's answers through it; `lares ingest --watch` sends what it
  * sensed on disk; `lares ingest --apply` asks its settle word.
  */
 
@@ -11,6 +11,7 @@ import { larRuntimeHome } from "@lararium/node";
 import { summaryOutput, type SubmitResult } from "./verb-result.js";
 import { runVerb } from "./verb-call.js";
 import { LocalWaitExpired } from "./local-connector.js";
+import { sendCustodyFrame, type CustodyDoorAnswer } from "./custody-door.js";
 
 /** The verb the island answers at its disk shore (`@lararium/node` `shore-verb.ts`, `SHORE_VERB`). */
 export const SHORE_VERB = "shore";
@@ -83,7 +84,7 @@ export async function readShoreList(
     const told = `${String(o["standoffCount"])}/${String(o["pendingCount"])}`;
     const markNow = typeof o["mark"] === "string" ? o["mark"] : null;
     if (markNow === null) return refuse("shore-list-unpaged", "the shore's page named no mark of the shore it read; this vessel answers an unpaged list");
-    if (mark !== null && markNow !== mark) return refuse("shore-list-moved", `the shore moved while its pages were read (${counts} standoffs/pending, then ${told}); read it again`);
+    if (mark !== null && markNow !== mark) return refuse("shore-list-moved", `the shore moved while the read walked its pages (${counts} standoffs/pending, then ${told}); read it again`);
     mark = markNow;
     counts = told;
     standoffs.push(...(o["standoffs"] as Array<Record<string, unknown>>));
@@ -271,7 +272,7 @@ const refusedAt = (island: ShoreIsland, a: ShoreAnswer): ShoreAnswer =>
  *            settle ends `stalled` where no page newly settled for the stall window (`SETTLE_STALL_MS`),
  *            naming what still waits (`pendingCount`, `stalledCount`, `pendingUris`)
  *   answers  (`take-records`, `restore`, `remove`) go to the island whose list holds the state: the standoff
- *            under the named key, or the pending removals the answer names (by carrier, by bag, or all).
+ *            under the named key (and `render`, the records' side that standoff weighed, reads there too), or the pending removals the answer names (by carrier, by bag, or all).
  *            Where both islands hold it, or a set splits across them, the answer refuses by name
  *            (`shore-answer-incomplete`) and names how to split it: two bags never fold into one answer.
  *            Where neither holds it, the active wiki's island answers and names what stands there.
@@ -284,13 +285,15 @@ const refusedAt = (island: ShoreIsland, a: ShoreAnswer): ShoreAnswer =>
 export async function askShore(shoreArgs: Readonly<Record<string, unknown>>, did: string, run: RunVerb = runVerb, wait: SettleWaitOptions = {}): Promise<ShoreAnswer> {
   const ask = (island: ShoreIsland) => (a: Readonly<Record<string, unknown>>) => askIsland(island, a, did, run);
   const op = typeof shoreArgs["op"] === "string" ? shoreArgs["op"] : "list";
+  // A FACE NAMES A LIT SIBLING'S SHORE: every lit face's projector stands in the daemon island, so the act reaches it alone.
+  const reach: readonly ShoreIsland[] = shoreArgs["face"] !== undefined ? ["daemon"] : SHORE_ISLANDS;
 
   if (op === "list") {
     const standoffs: Array<Record<string, unknown>> = [];
     const pending: Array<Record<string, unknown>> = [];
     const marks: string[] = [];
     let requestId: string | undefined;
-    for (const island of SHORE_ISLANDS) {
+    for (const island of reach) {
       const listed = await readShoreList(ask(island), { ...shoreArgs, op: "list" });
       if (!listed.ok) { if (holdsNoShore(listed)) { marks.push(`${island}:none`); continue; } return refusedAt(island, listed); }
       requestId ??= listed.requestId;
@@ -306,7 +309,7 @@ export async function askShore(shoreArgs: Readonly<Record<string, unknown>>, did
 
   if (op === "sense") {
     const answers: Array<{ island: ShoreIsland; answer: ShoreAnswer }> = [];
-    for (const island of SHORE_ISLANDS) answers.push({ island, answer: await ask(island)(shoreArgs) });
+    for (const island of reach) answers.push({ island, answer: await ask(island)(shoreArgs) });
     const refused = answers.find((a) => !a.answer.ok && !holdsNoShore(a.answer));
     if (refused) return refusedAt(refused.island, refused.answer);
     const held = answers.filter((a) => a.answer.ok).map((a) => a.answer.output);
@@ -345,7 +348,7 @@ export async function askShore(shoreArgs: Readonly<Record<string, unknown>>, did
       const retry: number[] = [];
       for (const p of queue) {
         const page = pages[p]!;
-        for (const island of SHORE_ISLANDS) {
+        for (const island of reach) {
           if (answered[p]!.has(island)) continue;
           if (now() - lastProgress >= stallMs) { stalled = true; break outer; }
           let answer: ShoreAnswer;
@@ -383,7 +386,7 @@ export async function askShore(shoreArgs: Readonly<Record<string, unknown>>, did
             }
           }
         }
-        if (answered[p]!.size === SHORE_ISLANDS.length) lastProgress = now();
+        if (answered[p]!.size === reach.length) lastProgress = now();
         else retry.push(p);
       }
       queue = retry;
@@ -398,7 +401,7 @@ export async function askShore(shoreArgs: Readonly<Record<string, unknown>>, did
     // WHAT STILL WAITS: every carrier of a page some island never answered; stalled where that page was asked
     // and timed out, the rest never asked before the window closed.
     const uriOfRow = (c: unknown): string => String((c as { uri?: unknown } | null)?.uri);
-    const pendingPages = pages.map((_, i) => i).filter((i) => answered[i]!.size < SHORE_ISLANDS.length);
+    const pendingPages = pages.map((_, i) => i).filter((i) => answered[i]!.size < reach.length);
     const pendingUris = pendingPages.flatMap((i) => pages[i]!.map(uriOfRow));
     const stalledCount = pendingPages.filter((i) => timedOut.has(i)).reduce((n, i) => n + pages[i]!.length, 0);
     const output: Record<string, unknown> = {
@@ -409,6 +412,22 @@ export async function askShore(shoreArgs: Readonly<Record<string, unknown>>, did
     return { ok: true, output, refusal: null, why: null, ...(requestId !== undefined ? { requestId } : {}) };
   }
 
+  // THE DRAFTS A CARRIER'S STAND-OFFS LOADED, read at both islands as one list, each naming its island (titles alone).
+  if (op === "drafts") {
+    const drafts: Array<Record<string, unknown>> = [];
+    let draftCount = 0;
+    let requestId: string | undefined;
+    for (const island of SHORE_ISLANDS) {
+      const answer = await ask(island)(shoreArgs);
+      if (!answer.ok) { if (holdsNoShore(answer) || answer.refusal === "no-standoff-keeper" || answer.refusal === "shore-op-unknown") continue; return refusedAt(island, answer); }
+      requestId ??= answer.requestId;
+      const rows = Array.isArray(answer.output["drafts"]) ? (answer.output["drafts"] as Array<Record<string, unknown>>) : [];
+      drafts.push(...rows.map((r) => ({ ...r, island })));
+      draftCount += typeof answer.output["draftCount"] === "number" ? (answer.output["draftCount"] as number) : rows.length;
+    }
+    return { ok: true, refusal: null, why: null, ...(requestId !== undefined ? { requestId } : {}), output: { ok: true, op, uri: shoreArgs["uri"], drafts, draftCount } };
+  }
+
   // AN ANSWER GOES TO THE ISLAND THAT HOLDS ITS STATE, read from what each island lists right now: a key
   // folds the bag and the states, never the island, and a set of carriers may stand at either. Where the
   // state stands at both islands, or a set splits across them, the answer refuses by name and changes nothing.
@@ -417,10 +436,13 @@ export async function askShore(shoreArgs: Readonly<Record<string, unknown>>, did
   const bag = typeof shoreArgs["bag"] === "string" ? shoreArgs["bag"] : null;
   const holders: ShoreIsland[] = [];
   const keysSeen: string[] = [];
-  for (const island of SHORE_ISLANDS) {
-    const listed = await readShoreList(ask(island), { op: "list", ...(op === "take-records" && uri !== null ? { uris: [uri] } : uris.length > 0 ? { uris } : {}), ...(bag !== null ? { bag } : {}) });
+  // A KEYED ACT names one standoff: the records' side taken, or the records' side read.
+  const keyed = op === "take-records" || op === "render" || op === "keep-both";
+  for (const island of reach) {
+    // THE LISTING READS THE SHORE THE ANSWER NAMES: a face's answer lists that face's own projector, never the worn face's.
+    const listed = await readShoreList(ask(island), { op: "list", ...(keyed && uri !== null ? { uris: [uri] } : uris.length > 0 ? { uris } : {}), ...(bag !== null ? { bag } : {}), ...(shoreArgs["face"] !== undefined ? { face: shoreArgs["face"] } : {}) });
     if (!listed.ok) { if (holdsNoShore(listed)) continue; return refusedAt(island, listed); }
-    if (op === "take-records") {
+    if (keyed) {
       const stands = listed.standoffs.filter((s) => s["uri"] === uri);
       keysSeen.push(...stands.map((s) => String(s["standoff"])));
       if (stands.some((s) => s["standoff"] === shoreArgs["key"])) holders.push(island);
@@ -429,15 +451,15 @@ export async function askShore(shoreArgs: Readonly<Record<string, unknown>>, did
     }
   }
   if (holders.length > 1) {
-    return { ok: false, output: {}, refusal: "shore-answer-incomplete", why: op === "take-records"
+    return { ok: false, output: {}, refusal: "shore-answer-incomplete", why: keyed
       ? `the standoff under key ${String(shoreArgs["key"])} stands at both islands over one bag; the door cannot name which one a person read, so it takes neither`
       : `what the answer names stands pending at both islands; name one bag with \`bag\`, or answer each island's carriers apart` };
   }
-  if (holders.length === 0 && op === "take-records" && keysSeen.length > 0) {
+  if (holders.length === 0 && keyed && keysSeen.length > 0) {
     return { ok: false, output: {}, refusal: "standoff-key-moved", why: `the standoff for ${uri} stands under key ${keysSeen.join(", ")}; the answer names ${String(shoreArgs["key"])}` };
   }
   // No island lists the state: the active wiki's island answers, and names what stands there.
-  const island = holders[0] ?? "wiki";
+  const island = holders[0] ?? reach[0]!;
   const answer = await ask(island)(shoreArgs);
   return answer.ok ? answer : refusedAt(island, answer);
 }
@@ -448,6 +470,8 @@ export const CENSUS_PAGE_MS = 15_000;
 /** What one census read of every disk shore names: each carrier not settled, and each island that could not answer. */
 export interface ShoreCensus {
   readonly carriers: ReadonlyArray<{ readonly state: string; readonly uri: string; readonly bagId: string | null; readonly island: ShoreIsland }>;
+  /** Each file a mirror's checkout never tracked, by path: an owed commit (absent: none). */
+  readonly untracked?: ReadonlyArray<{ readonly path: string; readonly bagId: string | null; readonly island: ShoreIsland }>;
   readonly unanswered: ReadonlyArray<{ readonly part: string; readonly why: string }>;
 }
 
@@ -458,6 +482,7 @@ export interface ShoreCensus {
  */
 export async function askShoreCensus(did: string, run: RunVerb = runVerb): Promise<ShoreCensus> {
   const carriers: Array<ShoreCensus["carriers"][number]> = [];
+  const untracked: Array<NonNullable<ShoreCensus["untracked"]>[number]> = [];
   const unanswered: Array<ShoreCensus["unanswered"][number]> = [];
   for (const island of SHORE_ISLANDS) {
     const part = `${island === "wiki" ? "the active wiki's" : "the daemon"} island's disk projector`;
@@ -477,6 +502,16 @@ export async function askShoreCensus(did: string, run: RunVerb = runVerb): Promi
       for (const c of o["carriers"] as Array<Record<string, unknown>>) {
         rows.push({ state: String(c["state"]), uri: String(c["uri"]), bagId: typeof c["bagId"] === "string" ? c["bagId"] : null, island });
       }
+      // THE OWED COMMITS ride the first page: each file a mirror's checkout never tracked, and each checkout git could not read.
+      if (pages === 0) {
+        for (const u of Array.isArray(o["untracked"]) ? o["untracked"] as Array<Record<string, unknown>> : []) {
+          if (typeof u["path"] === "string" && !untracked.some((t) => t.path === u["path"])) untracked.push({ path: u["path"], bagId: typeof u["bagId"] === "string" ? u["bagId"] : null, island });
+        }
+        for (const u of Array.isArray(o["untrackedUnread"]) ? o["untrackedUnread"] as Array<Record<string, unknown>> : []) {
+          const part = `the checkout under ${String(u["root"])}`;
+          if (!unanswered.some((x) => x.part === part)) unanswered.push({ part, why: String(u["why"]) });
+        }
+      }
       const next = o["next"];
       if (typeof next !== "string" || next === "") {
         if (typeof o["carrierCount"] === "number" && o["carrierCount"] !== rows.length && pages === 0) failed = `the census counted ${String(o["carrierCount"])} carriers and named ${rows.length}`;
@@ -488,5 +523,70 @@ export async function askShoreCensus(did: string, run: RunVerb = runVerb): Promi
     carriers.push(...rows);
     if (failed !== null) unanswered.push({ part, why: failed });
   }
-  return { carriers, unanswered };
+  return { carriers, ...(untracked.length > 0 ? { untracked } : {}), unanswered };
+}
+
+/** How long the vessel's whole-island flush may take: each island's own bound (fifteen seconds, side by side) and the answer beside it. */
+export const FLUSH_ASK_MS = 30_000;
+
+/** One island's part of a hand's flush: its own answer, or why it gave none. */
+export type ShoreFlushPart =
+  | {
+    readonly island: string; readonly answered: true;
+    readonly written: ReadonlyArray<Record<string, unknown>>; readonly writtenCount: number;
+    readonly unwritten: ReadonlyArray<Record<string, unknown>>; readonly unwrittenCount: number;
+    readonly fileWrites: number; readonly drained: boolean;
+  }
+  | { readonly island: string; readonly answered: false; readonly refusal: string; readonly why: string };
+
+/** What a hand's flush reads: each island the vessel asked, and whether every carrier reached disk. */
+export interface ShoreFlushReading {
+  readonly islands: readonly ShoreFlushPart[];
+  /** True where every island answered and none left a carrier unwritten. */
+  readonly whole: boolean;
+}
+
+/** The one line a hand's flush rides: the custody door's `shore-flush` frame, injectable so a test drives it without a vessel. */
+export type ShoreFlushLine = (frame: { readonly op: "shore-flush" }) => Promise<CustodyDoorAnswer | null>;
+
+const LIVE_FLUSH_LINE: ShoreFlushLine = (frame) => {
+  const abort = new AbortController();
+  const timer = setTimeout(() => abort.abort(), FLUSH_ASK_MS);
+  return sendCustodyFrame(frame, undefined, abort.signal).finally(() => clearTimeout(timer));
+};
+
+/**
+ * THE HAND'S FLUSH, WHOLE ISLAND: the vessel's own flush (`flushShores`, the one the teardown runs) through the custody door's
+ * `shore-flush` frame, so it reaches every island that mounts a disk shore: the daemon's, with each lit sibling's projector,
+ * and every resident wiki's. Each part names its island; one that refused or stayed silent reads `answered: false`, by name,
+ * never as written. No vessel, or a refusal, reads as one unanswered part (`vessel`).
+ */
+export async function askShoreFlush(line: ShoreFlushLine = LIVE_FLUSH_LINE): Promise<ShoreFlushReading> {
+  const unanswered = (refusal: string, why: string): ShoreFlushReading => ({ islands: [{ island: "vessel", answered: false, refusal, why }], whole: false });
+  const answer = await line({ op: "shore-flush" });
+  if (answer === null) return unanswered("unanswered", "no vessel answered the flush on this store's socket (stand the vessel: lares vessel stand), or it gave no answer in time");
+  if (answer["status"] === "error") {
+    const reason = (answer["refusal"] as { reason?: unknown } | undefined)?.reason;
+    return unanswered(typeof reason === "string" ? reason : "refused", typeof answer["errorMessage"] === "string" ? answer["errorMessage"] : "the vessel refused the flush");
+  }
+  const reading = answer["reading"] as { islands?: unknown } | undefined;
+  if (answer["op"] !== "shore-flush" || !Array.isArray(reading?.islands)) return unanswered("shore-answer-unread", "the vessel answered no flush (a vessel older than this door)");
+  const islands: ShoreFlushPart[] = (reading.islands as Array<Record<string, unknown>>).map((o) => {
+    const island = String(o["island"]);
+    if (o["answered"] !== true) return { island, answered: false, refusal: typeof o["refusal"] === "string" ? o["refusal"] : "unanswered", why: typeof o["why"] === "string" ? o["why"] : "named no reason" };
+    return {
+      island, answered: true,
+      written: (o["written"] ?? []) as Array<Record<string, unknown>>, writtenCount: Number(o["writtenCount"] ?? 0),
+      unwritten: (o["unwritten"] ?? []) as Array<Record<string, unknown>>, unwrittenCount: Number(o["unwrittenCount"] ?? 0),
+      fileWrites: Number(o["fileWrites"] ?? 0), drained: o["drained"] === true,
+    };
+  });
+  return { islands, whole: islands.every((i) => i.answered && i.unwrittenCount === 0) };
+}
+
+/** The exit a hand's flush takes, never usage's 2: 0 every asked island wrote what it owed · 4 a carrier stayed unwritten
+ *  (the work fell short) · 3 an asked island could not answer (nothing answered for it). */
+export function shoreFlushExit(reading: ShoreFlushReading): 0 | 3 | 4 {
+  if (reading.islands.some((i) => !i.answered)) return 3;
+  return reading.whole ? 0 : 4;
 }

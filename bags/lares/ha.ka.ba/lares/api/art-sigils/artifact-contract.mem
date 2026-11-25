@@ -1,0 +1,77 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/art-sigils/artifact-contract`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+uri-path = "ha.ka.ba/lares/api/art-sigils/artifact-contract"
+title    = "lar:///ha.ka.ba/lares/api/art-sigils/artifact-contract"
+type     = "text/memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role     = "optional checkable artifact and execution requirements"
+status   = "draft"
+retain   = true
+```
+
+<<~ ahu slot=`#/bearing`>>
+! Artifact Contract
+
+Keep the artistic invitation, artifact requirements, and actual execution record distinct. Use this companion only when output properties need to be checked or enforced. Do not add new `~art` parameters.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/registers`>>
+!! Keep three records
+
+* `Art Sigil` — the intended worktype, read, imagery, treatment, composition, relation and depiction-scope.
+* `Artifact contract` — required output category, dimensions, support, channels, alignment, color space, exact text, file structure and delivery conditions, as applicable. Mark requirements `mandatory`, `preferred`, `delegated` or `unset`.
+* `Execution record` — actual receiver, accessible inputs, transformations, measurements, produced outputs, failed checks and accepted deviations.
+
+Do not treat a technically valid file as evidence of artistic success, or an attractive image as proof of technical compliance.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/transparency`>>
+!! Distinguish transparency properties
+
+* `Artistic translucency` — represented or simulated light transmission.
+* `Pixel alpha` — channel values in a delivered file; visible translucency does not guarantee an alpha channel.
+* `Layer opacity` — attenuation of a source layer during composition, distinct from the source pixel alpha.
+
+Where a property is mandatory, inspect the delivered file or use an appropriate deterministic operation. A language instruction is not a validation result.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/card`>>
+!! Minimal contract
+
+```toml
+[artifact]
+role = "transparent overlay"
+format = "PNG/RGBA"
+canvas_px = [512, 512]
+alpha = "clear margins required to have alpha 0"
+registration = "specified base canvas origin"
+preserve_source = true
+
+[execution]
+receiver = "record actual receiver"
+inputs = "record verified access"
+checks = ["dimensions", "alpha", "composite at intended scale"]
+results = "record observations and deviations"
+acceptance = "operator decision"
+```
+
+This is an example contract, not a universal schema. A physical artwork may specify substrate, circulation, size or duration instead of pixel fields. Document unsupported checks as unverified.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/handoff`>>
+!! Handoff
+
+Keep references in [[Reference Roles|ha.ka.ba/lares/api/art-sigils/reference-roles]]. Assess the outcome with [[Reception QA|ha.ka.ba/lares/api/art-sigils/reception-qa]]. Use [[Layer Composition|ha.ka.ba/lares/api/art-sigils/layer-composition]] where component operations require preservation and verification.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;oNtw3EKW1DJl5B3ZWQ_mXz8gC2OyKD6Jy8D2uIjQ35w`>>
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,5 +1,5 @@
 /**
- * face-grant-record — THE LATER GRANT as a RECORD on the PersonaGroup plane (basket-one #/the-later-grant, ruled
+ * face-grant-record — THE LATER GRANT as a RECORD on the PersonaGroup plane (personal-slot #/lifecycle, ruled
  * 2026-09-11): "the later grant lands as a record on the PersonaGroup doc and the joinee's own kit takes the seat
  * against the published seal, reading never re-cuts."
  *

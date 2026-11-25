@@ -10,7 +10,7 @@ import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "../src/ed255
 import { swarmBoardRecords, writeSwarmBoardAct } from "../src/swarm-board.js";
 import { SWARM_VERB_HAND_CODES, restringLei, swarmCommand, unstringLei, type SwarmDoorDeps } from "../src/swarm-door.js";
 import {
-  putSwarmAct, readLei, readSwarmRecord, returnLei, signSwarmAct, swarmActCid, swarmLeiRecordTitle, swarmLeiTitle, swarmLeiUnstrungTitle, swarmReceiptTitle,
+  readLei, readSwarmRecord, returnLei, swarmActCid, swarmLeiRecordTitle, swarmLeiTitle, swarmLeiUnstrungTitle,
   type SignedSwarmAct, type SwarmWikiPort,
 } from "../src/swarm-tiddlers.js";
 import { soloCosign } from "./ward-cosign-table.js";
@@ -40,7 +40,6 @@ async function stand(who: SwarmDoorDeps["who"]["kind"] = "hand") {
       after = swarmActCid(next); out.push(after);
     }
   };
-  await putSwarmAct(wiki, swarmReceiptTitle(TREE), await signSwarmAct({ act: "receipt", group: GROUP, tree: TREE, checks: ["typecheck"], verdict: "pass", definitions: "d".repeat(64) }, vessel));
   const read = () => readLei(wiki, { rite: "push", branch: BRANCH, head: HEAD }, trust, GROUP, ONE_DEVICE);
   const giveBack = () => returnLei(wiki, { rite: "push", branch: BRANCH, head: HEAD, tree: TREE }, trust, GROUP, vessel, ONE_DEVICE);
   return { deps, wiki, rows, trust, root, vessel, line, read, giveBack };
@@ -100,7 +99,7 @@ describe("lei-restring-supersedes", () => {
     expect(s.line()).toEqual([]);
     await swarmCommand({ action: "lei-kui", rite: "push", branch: BRANCH, returns: 5, after: null }, s.deps);
     const [old] = s.line();
-    expect(await restringLei({ rite: "push", branch: BRANCH, reach: "head", head: HEAD }, s.deps)).toEqual({ rite: "push", branch: BRANCH, reach: "head", head: HEAD, restrung: old });
+    expect(await restringLei({ rite: "push", branch: BRANCH, reach: "head", head: HEAD }, s.deps)).toEqual({ rite: "push", branch: BRANCH, reach: "head", head: HEAD, lei: expect.stringMatching(/^[0-9a-f]{64}$/), restrung: old });
     const [, fresh] = s.line();
     // The newer lei names the one it supersedes, under the hand's signature; the old row rests where it stood.
     expect(JSON.parse(s.rows.get(swarmLeiRecordTitle("push", BRANCH, fresh!))!)).toMatchObject({ signer: s.root.key, body: { act: "lei", after: old, reach: "head" } });

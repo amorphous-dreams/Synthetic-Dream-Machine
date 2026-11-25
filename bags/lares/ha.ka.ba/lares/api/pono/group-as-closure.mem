@@ -13,7 +13,6 @@ tags       = ["api/pono/meme", "api/pono/orichalcum-capabilities", "api/pono/cau
 title      = "lar:///ha.ka.ba/lares/api/pono/group-as-closure"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/api/pono/group-as-closure"
-written    = "2026-06-29"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -194,6 +193,6 @@ group-object, the closure model carries a real pattern integrity, not a stylisti
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;i3Kkp5TxAZBp0_CZ7Gdmvbm5RqWQ5GDoWZdhZA9YBAM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;xnqjjfMU2GuThXgqrg3HvmTyyWk69XQMEXZg7-briHI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

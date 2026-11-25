@@ -34,6 +34,23 @@ export function wantsJson(args: ParsedArgs): boolean {
 }
 
 /**
+ * A STATUS READ ANSWERS A PIPE IN PROSE (the operator, 2026-11-19: the re-stand's output read "spammy"). A read whose whole
+ * reading runs long (every sealed row, every document the store holds) prints the same summary on a terminal and through a
+ * pipe, so `| head` cuts it and a shim that pipes the CLI floods nothing; only an explicit `--json` asks for the envelope,
+ * and `--no-json` stays a working alias of the default. `tiddler get --meme`'s carrier-first ruling (commands/tiddler.ts) runs the same
+ * law. A caller that parses one of these reads names `--json`.
+ */
+export function proseFirst(args: ParsedArgs): ParsedArgs {
+  return { ...args, flags: { ...args.flags, json: args.flags["json"] === true } };
+}
+
+/**
+ * The reads that answer a pipe in prose (`proseFirst`), as `<command> <sub>` the way an operator types them. A caller that
+ * parses one of them names `--json`; `tests/quiet-pipe-parse-sites.test.ts` holds every parse site in the tree to it.
+ */
+export const PROSE_FIRST_READS: readonly string[] = ["vault status", "vault unlock", "vessel read", "wear", "ddate", "law list", "vessel roster"];
+
+/**
  * A failure an agent can branch on: a STABLE class `code`, a human `message`,
  * and an optional actionable `hint`. The `code` pairs with the process exit
  * (see `exitFor`), so the machine reads the same verdict two ways. Errors travel
@@ -65,6 +82,9 @@ export const EXIT_FOR: Readonly<Record<string, number>> = {
   // reading a committed act as a failure (4's). `outcome-unknown` is raised from `local-connector.ts`'s
   // `LocalWaitExpired` alone (M3).
   "outcome-unknown":   6,
+  // THE SAME EXIT FAMILY (6), outcome-unknown's read-back kin: the wait ended, the receipt read `committed`, so the vessel
+  // admitted the act and its outcome had not landed. Never a failure (4): a re-run passes the diff gate, a read-back names it.
+  "outcome-committed": 6,
   // THE SAME EXIT FAMILY AS outcome-unknown (6), BUT A DISTINCT CODE. An `abandoned` receipt names a
   // request THIS vessel arbitrated and refused BEFORE commit — never ran, never will under this id.
   // That is a sharper, more actionable answer than "outcome unknown" ("it may have committed"), so it
@@ -72,7 +92,7 @@ export const EXIT_FOR: Readonly<Record<string, number>> = {
   // itself — there is none, the act never started) or the bare `outcome-unknown` (which would tell a
   // caller to keep wondering about an id this vessel has already settled).
   "request-abandoned": 6,
-  // The CONFLICT family (4): `lares cancel` reached a ledger that already held a fact for the id. The withdrawal
+  // The CONFLICT family (4): `lares vessel request --cancel` reached a ledger that already held a fact for the id. The withdrawal
   // changed nothing and the act it met runs on (or already landed); the state the vessel holds rides beside it.
   "cancel-lost":       4,
   // THE SAME EXIT FAMILY (6), outcome-unknown's sharper kin: the vessel that committed this request
@@ -190,4 +210,15 @@ export function emit(args: ParsedArgs, e0: Emission): void {
   if (e.error     !== undefined) payload["error"]     =
     typeof e.error === "string" ? { code: "error", message: e.error } : e.error;
   stdout.write(JSON.stringify(payload) + "\n");
+}
+
+/**
+ * ONE ANSWER SHAPE for the hand verbs (`lei show|kui|unstring|restring|land`, `rite keep|kukulu`): the one-line JSON envelope
+ * rides stdout on a terminal and on a pipe alike, and a terminal also reads one line of prose on stderr (`say`: the verdict in
+ * words, the refusal by its message). Only an explicit `--no-json` asks the prose route (`e.human`) in place of the envelope.
+ */
+export function emitAnswer(args: ParsedArgs, e: Emission, say: string): void {
+  const asked = { ...args, flags: { ...args.flags, json: args.flags["json"] !== false } };
+  emit(asked, e);
+  if (asked.flags["json"] === true && stdout.isTTY) console.error(say);
 }

@@ -57,9 +57,10 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "clean": "node ../../tools/clean-output.mjs dist dist-plugin",
-    "build": "tsx scripts/build-tw5-themes.ts && tsx scripts/build-plugin-tiddler.ts && tsc -p tsconfig.build.json && tsx scripts/sync-heleuma.ts",
+    "build": "tsx scripts/build-tw5-themes.ts && tsx scripts/build-tw5-docs.ts && tsx scripts/build-plugin-tiddler.ts && tsc -p tsconfig.build.json && tsx scripts/sync-heleuma.ts",
     "build:tw5-vendor": "tsx scripts/build-tw5-vendor.ts",
     "build:tw5-themes": "tsx scripts/build-tw5-themes.ts",
+    "build:tw5-docs": "tsx scripts/build-tw5-docs.ts",
     "build:heleuma": "tsx scripts/sync-heleuma.ts",
     "build:heleuma:commit": "tsx scripts/sync-heleuma.ts --commit",
     "build:plugin": "tsx scripts/build-plugin-tiddler.ts",
@@ -81,6 +82,7 @@
   },
   "devDependencies": {
     "fast-check": "4.10.2",
+    "tiddlywiki-pristine": "npm:tiddlywiki@5.4.1",
     "tsx": "4.23.15",
     "tw5-typed": "1.1.5",
     "vite": "8.3.4",

@@ -1,5 +1,5 @@
 /**
- * promote-command — the one request shape `lares promote` and `lares kapae` send, and what the vessel's row does with it: the wiki
+ * promote-command — the one request shape `lares trust` and `lares kapae` send, and what the vessel's row does with it: the wiki
  * defaults to the daemon wiki, a seat prepares and flags and a hand commits and raises, a malformed ask refuses by name before any door.
  * Every red pairs with a CONTROL. Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */

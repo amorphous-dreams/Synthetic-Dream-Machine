@@ -3,10 +3,12 @@ import { MIRROR_TOKEN } from "./glass-token.js";
 import { glassLocalTitle, makeGlassPortAdaptor } from "./glass-port-adaptor.js";
 import type { GlassPortOptions } from "./glass-port-adaptor.js";
 import type { PortWireRecord } from "@lararium/mesh/record-port";
+import { executableClassOf } from "@lararium/mesh/executable-class";
 import type { GlassDoor } from "./glass-root.js";
 import { mountGlassCamera } from "./glass-camera.js";
 import { openDefaultStory } from "./default-story.js";
 import { tendOrphanAlerts } from "./place-meme.js";
+import { modulePinsOf } from "./module-pins.js";
 
 export interface MirrorSeams {
   bootEngine?: () => void | Promise<void>; paint?: () => void;
@@ -53,7 +55,8 @@ export function censusPreloads(preloads: Record<string, unknown>[], sealedRest: 
   return { accepted, refused };
 }
 
-const STARTUP_ACTION = /(^|\s|\[\[)\$:\/tags\/StartupAction(\/[^\s\]]*)?(\]\]|\s|$)/;
+/** A startup record, by the mesh's one executable-class list. */
+const isStartupRecord = (record: PortWireRecord): boolean => executableClassOf(record.fields)?.class === "startup-action";
 const shadowsOf = (text: unknown): Record<string, unknown>[] | null => {
   try {
     const tiddlers = (JSON.parse(String(text ?? "{}")) as { tiddlers?: Record<string, unknown> }).tiddlers ?? {};
@@ -79,15 +82,17 @@ const shadowsOf = (text: unknown): Record<string, unknown>[] | null => {
  *                       module stays defined (the core's modules ride `$:/core` in the engine blob and take the same hold by the
  *                       `$:/core/modules/` prefix).
  *   (startup action)    a record tagged `$:/tags/StartupAction` (or a tag beneath it): TW5 runs those during boot, and the
- *                       island's own gate decides which of a wiki's startup actions run; the mirror runs none a second time.
- *                       Held with no alert: nothing was refused, the act belongs to the island.
+ *   startup-offer       server-side island stays floor-only, so the tab is where a wiki's startup records run. The tab runs the
+ *                       ones its vessel admits (`startupAdmitted`: the wearing face's own, or one a standing exec lei spent a
+ *                       return for, `admitStartupRecords`); every other waits with a `startup-offer` notice. Where the vessel
+ *                       asks no admission (`startupAdmitted` absent) every startup record waits with no alert.
  *
  * A held record still LANDS, after boot, as an ordinary record: the person sees it, edits it, deletes it. TW5 defines a module
  * and registers a plugin's modules during boot alone, so a record that lands after boot evaluates nothing; TW5's own ordering
  * keeps the gate, and no field of the record changes.
  */
 export function censusRecords(records: readonly PortWireRecord[], bootTitles: ReadonlySet<string>, sealedRest: boolean, localFilter: readonly string[] = [],
-  bootModules: ReadonlySet<string> = new Set()) {
+  bootModules: ReadonlySet<string> = new Set(), startupAdmitted: ReadonlySet<string> | null = null) {
   const preloaded: PortWireRecord[] = [];
   const held: PortWireRecord[] = [];
   const refused: { title: string; kind: string }[] = [];
@@ -100,8 +105,8 @@ export function censusRecords(records: readonly PortWireRecord[], bootTitles: Re
     // the boot: TW5 defines no shadow module an ordinary tiddler overrides, so the record in the boot store would unseat the
     // engine's own code. Landed after boot it overrides the shadow's text and the module stands, exactly as in the island.
     if (bootModules.has(record.title) || record.title.startsWith("$:/core/modules/") || record.title.startsWith("$:/boot/")) { held.push(record); continue; }
-    // A record's StartupAction runs where the island's own gate admits it, never a second time on a surface: it lands after boot.
-    if (STARTUP_ACTION.test(fields["tags"] ?? "")) { held.push(record); continue; }
+    // A startup record runs in the tab where its vessel admits it; any other lands after boot, and an unadmitted one shows as an offer.
+    if (isStartupRecord(record) && !startupAdmitted?.has(record.title)) { if (startupAdmitted) hold("startup-offer"); else held.push(record); continue; }
     const moduleType = fields["module-type"];
     const plugin = fields["plugin-type"] !== undefined;
     if (!plugin && moduleType === undefined) { preloaded.push(record); continue; }
@@ -148,7 +153,9 @@ export function bootSetTitles(preloads: readonly Record<string, unknown>[]): Set
  * wait for the port's first snapshot before it paints.
  */
 export async function openMirror(options: Omit<GlassPortOptions, "wiki" | "Tiddler" | "adopt" | "inheritTags" | "inheritDeferred" | "opened"> & {
-  inputs: { coreBytes: Uint8Array; coreCid: string; preloadedTiddlers: Record<string, unknown>[]; sealedRest?: boolean };
+  inputs: { coreBytes: Uint8Array; coreCid: string; preloadedTiddlers: Record<string, unknown>[]; sealedRest?: boolean;
+    /** The vessel's answer to which of the wiki's startup records this tab runs (`admitStartupRecords` behind it); absent, none runs. */
+    startupAdmit?: (records: readonly PortWireRecord[]) => Promise<ReadonlySet<string>> };
   shadowRoot: ShadowRoot;
   deferPaint?: boolean;
   /** The first whole snapshot the boot's handoff read off the already-open port: the engine boots with these records. */
@@ -200,14 +207,22 @@ export async function openMirror(options: Omit<GlassPortOptions, "wiki" | "Tiddl
       await seams.bootEngine?.();
       const census = censusPreloads(options.inputs.preloadedTiddlers, options.inputs.sealedRest === true);
       const sealed = options.inputs.sealedRest === true;
-      wikiCensus = options.opened ? censusRecords(options.opened.records, bootSetTitles(census.accepted), sealed, options.localFilter, bootSetModuleTitles(census.accepted)) : null;
+      const startups = options.opened ? options.opened.records.filter(record => !record.deleted && isStartupRecord(record)) : [];
+      const startupAdmitted = options.inputs.startupAdmit && startups.length > 0 ? await options.inputs.startupAdmit(startups) : options.inputs.startupAdmit ? new Set<string>() : null;
+      wikiCensus = options.opened ? censusRecords(options.opened.records, bootSetTitles(census.accepted), sealed, options.localFilter, bootSetModuleTitles(census.accepted), startupAdmitted) : null;
       // THE STORE A SERVER HANDS A BROWSER: the verified boot set, then the wiki's own records, all in `$tw.preloadTiddlers`
       // before TW5 unpacks a plugin or defines a module.
-      const store = [...census.accepted, ...(wikiCensus?.preloaded ?? []).map(record => ({ ...record.fields, title: record.title }))];
-      await engine.boot({ bytes: options.inputs.coreBytes, sha256: options.inputs.coreCid }, store, MIRROR_TOKEN);
+      const wikiPreloads: Record<string, unknown>[] = (wikiCensus?.preloaded ?? []).map(record => ({ ...record.fields, title: record.title }));
+      const store = [...census.accepted, ...wikiPreloads];
+      // THE MODULE PINS. The boot set's modules ride the CIDs the handoff verified. A person's plugin the census let through (it
+      // evaluates only on a vessel whose store rests sealed) carries no CID: the vessel's sealed-rest word admits it, and the pin
+      // gate takes that word as its pin (`island-host-contract#/ses-gate` names this path as one no hash covers).
+      const sealedPlugins = sealed ? wikiPreloads.filter(record => record["plugin-type"] !== undefined) : [];
+      const modulePins = new Set([...modulePinsOf(census.accepted), ...modulePinsOf(sealedPlugins)]);
+      await engine.boot({ bytes: options.inputs.coreBytes, sha256: options.inputs.coreCid }, store, MIRROR_TOKEN, { modulePins });
       const tw = engine.$tw;
       census.refused.push(...(wikiCensus?.refused ?? []));
-      for (const refusal of census.refused) tw.wiki.addTiddler(new tw.Tiddler({ title: `$:/temp/lares/alert/refused/${refusal.kind}/${refusal.title}`, text: `Plugin refused: ${refusal.title}`, tags: ["$:/tags/Alert"] }));
+      for (const refusal of census.refused) tw.wiki.addTiddler(new tw.Tiddler({ title: `$:/temp/lares/alert/refused/${refusal.kind}/${refusal.title}`, text: refusal.kind === "startup-offer" ? `Startup action offered, not run (another writer's, and no exec lei stands for it): ${refusal.title}` : `Plugin refused: ${refusal.title}`, tags: ["$:/tags/Alert"] }));
       if (census.refused.length) options.shadowRoot.host.setAttribute("data-lar-refused-plugins", String(census.refused.length));
       const runtime = tw as unknown as { syncer?: unknown; syncadaptor?: unknown };
       if (runtime.syncer !== undefined || runtime.syncadaptor !== undefined) throw new Error("syncer-stood");

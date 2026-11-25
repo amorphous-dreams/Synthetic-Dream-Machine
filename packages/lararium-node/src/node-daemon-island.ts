@@ -8,8 +8,8 @@
 import { parentPort } from "worker_threads";
 import { runSovereignWorker, vesselReceiptAsker, vesselCustodyWriter, vesselDyadAsker, vesselSessionDoor } from "./sovereign-island-model.js";
 import { makeOperatorDaemonBehavior } from "@lararium/keyhive/operator-daemon-behavior";
-import { mountDiskProjection, mountedDiskProjector } from "./island-behaviors.js";
-import { answerShore } from "./shore-verb.js";
+import { litFaceProjector, litFaceProjectorFaces, mountDiskProjection, mountLitFaceProjection, mountedDiskProjector } from "./island-behaviors.js";
+import { answerShoreSeats } from "./shore-verb.js";
 import type { IslandContext } from "@lararium/tw5";
 import { makeBagTierReader } from "./vessel-bag-tier.js";
 import { HULLS_FULL, freshBasePort, islandLiveDocDoor, type JournalCursor, type JournalEntry, type JournalKind } from "@lararium/mesh";
@@ -22,6 +22,12 @@ import { readKahuCabalBoard } from "./commands/nexus-cabal.js";
 import { heldCharterSeat } from "./commands/offer-retire.js";
 import { join } from "node:path";
 import { randomUUID } from "node:crypto";
+import { createEngineMeter } from "./engine-meter.js";
+
+// THE ISLAND'S OWN ENGINE METER (`engine-meter`): this worker runs its own isolate and so its own Automerge engine, the one
+// INGEST lands every wave in. Armed here, at load, while the heap stays small, it logs a line as that engine crosses each mark
+// of its ceiling; the vessel's health reads the main isolate's meter and every process wasm memory beside it.
+createEngineMeter({ isolate: "daemon island", log: (line) => console.warn(`[daemon] ${line}`) }).arm();
 
 // The Boundary-1 inversion, in the worker: keyhive stays fs-blind, node supplies the writer that lands the
 // keyhive Archive in the sovereign identity home. This island holds no vessel key, so the writer HANDS the bytes
@@ -76,10 +82,13 @@ runSovereignWorker((manifest) => {
   // ONE cap-gated seedDaemonProtocol (onEa) then seeds this vessel's FULL enactable flow-set (all three)
   // plus the Ui/Persona/Circle seeds, from the single site, into the daemon wiki's shadow layer. This entry seeds nothing of its own.
   const base = makeOperatorDaemonBehavior(manifest, {
-    // The daemon wiki projects to `<projections>/wikis/daemon-<F>/` through the same projector a wiki island mounts: its working
+    // The daemon wiki projects to `<projections>/faces/<pet name>/wikis/daemon/` through the same projector a wiki island mounts: its working
     // layer's records reach disk, and the control document, which no recipe composes and no mirror names, never does; the
     // option also lights the daemon's projection cap.
-    onBoot:         (ctx: IslandContext) => mountDiskProjection(manifest, ctx, { journal }),
+    onBoot:         (ctx: IslandContext) => mountDiskProjection(manifest, ctx, { journal, rulesFromOwnWiki: true }),
+    // EVERY LIT FACE PROJECTS ITS OWN WRITES: a sibling lit beside the worn face projects through its own engine into its own
+    // root (`faces/<its pet name>/`), under the grants the vessel named for it, from its light to its drop.
+    projectLitFace: (ctx: IslandContext) => (face, engine) => mountLitFaceProjection(manifest, face, engine, ctx, { journal, log: (line) => console.log(`[faces] ${line}`) }),
     ...(receiptFromVessel ? { askReceipt: receiptFromVessel } : {}),
     ...(dyadOnVessel ? { dyadReading: dyadOnVessel } : {}),
     // THE KAHU PREDICATE'S BOARD: this vessel's charter and the admission acts its carriage board carries, read at
@@ -96,17 +105,17 @@ runSovereignWorker((manifest) => {
     ...(vesselPort ? { docStoreDoor: vesselPort } : {}),
     ...(liveOnVessel ? { freshBase: freshBasePort(liveOnVessel) } : {}),
     ...(sealOnVessel ? {
-      persistVeilArchive: (bytes: Uint8Array) => sealOnVessel("veil", bytes),
+      persistVeilArchive: (bytes: Uint8Array, face: string) => sealOnVessel("veil", bytes, face),
     } : {}),
     // A person's answers at this island's disk shore: the same door a wiki island stands (`claimShoreVerb`),
     // answered from the projector this island mounts. `lares shore` reaches it by this verb, beside the
     // `wiki-act` line into the active wiki's island (`shore-core.ts`).
-    shore:          async (args) => {
-      const projector = mountedDiskProjector();
-      return projector === null
-        ? { ok: false, refusal: "no-disk-shore", why: "the daemon island mounts no disk projection" }
-        : answerShore(projector, args);
-    },
+    // A LIT SIBLING'S SHORE ANSWERS BY ITS FACE (`answerShoreSeats`): an act naming `face` reaches that face's projector, so its
+    // standoffs read and answer without wearing it; a flush naming no face reaches the worn projector and every lit sibling's.
+    shore:          async (args, asker) => answerShoreSeats({
+      own: mountedDiskProjector(), worn: manifest.daemonAuth?.handleIndex ?? null,
+      lit: litFaceProjector, litFaces: litFaceProjectorFaces,
+    }, args, asker),
     events:         async (args, signal) => {
       const kindRaw = args["kind"];
       const wait = args["wait"] === true;

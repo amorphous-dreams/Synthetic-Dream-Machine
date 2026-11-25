@@ -97,6 +97,31 @@ test("face drop waits for the island acknowledgement", async () => {
   } finally { core.dispose(); ports.forEach((port) => port.close()); await repo.shutdown(); }
 });
 
+// A face the manifest carried lights inside the island's open, with no ask behind it: its refusal rides op `composed`, and
+// the vessel (which adopted the face lit before the island opened) hears it by its atom key and its reason.
+test("B4 — a manifest face the island's open refused reaches the vessel by name; CONTROL: an asked light's refusal rejects its ask and reaches no such hearing", async () => {
+  const repo = new Repo({ sharePolicy: async () => true });
+  const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
+  const ports: MessagePort[] = [];
+  const listeners: Array<(msg: any) => void> = [];
+  const host: DaemonVmHost = {
+    spawnWorker: () => ({ post: () => {}, listen: (fn) => { listeners.push(fn); return () => {}; }, onError: () => () => {}, terminate: () => {} }),
+    newSyncChannel: () => { const { port1, port2 } = new MessageChannel(); ports.push(port1, port2); return { mainPort: port1 as IslandMsg_Manifest["syncPort"], syncPort: port2 as IslandMsg_Manifest["syncPort"] }; },
+  };
+  const heard: Array<{ atomKey: string; reason: string }> = [];
+  const core = openDaemonVmCore(host, { repo, daemonHandle, controlHandle: repo.create<LarDoc>(emptyLarDoc()), recipe: { wikiSlug: "daemon" }, grants: { islandUrl: daemonHandle.url }, coreHash: null, workerScriptUrl: new URL("file:///unused"), eaSilenceMs: 2 ** 30,
+    onFaceRefused: (atomKey: string, reason: string) => { heard.push({ atomKey, reason }); } } as Parameters<typeof openDaemonVmCore>[1]);
+  core.workerEa.catch(() => {});
+  try {
+    for (const listener of listeners) listener({ type: "daemon:face-settled", atomKey: "abc", op: "composed", ok: false, reason: "FaceHoldsNoPrekeySecret: it holds none" });
+    expect(heard).toEqual([{ atomKey: "abc", reason: "FaceHoldsNoPrekeySecret: it holds none" }]);
+    const asked = core.lightFace({ atom: { key: "def" } } as never);
+    for (const listener of listeners) listener({ type: "daemon:face-settled", atomKey: "def", op: "lit", ok: false, reason: "refused" });
+    await expect(asked).rejects.toThrow("refused");
+    expect(heard, "an asked light answers its ask alone").toHaveLength(1);
+  } finally { core.dispose(); ports.forEach((port) => port.close()); await repo.shutdown(); }
+});
+
 test("a face change asked after the island ended rejects at once", async () => {
   const repo = new Repo({ sharePolicy: async () => true });
   const daemonHandle = repo.create<LarDoc>(emptyLarDoc());

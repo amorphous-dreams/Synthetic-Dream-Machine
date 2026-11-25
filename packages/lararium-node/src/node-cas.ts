@@ -45,6 +45,9 @@ export interface IslandCasData {
   /** The house canon slugs the vessel seated off its checkout (`seatHouseCanon`): the island seats the same set, since a
    *  worker thread holds its own module state and reads no disk for it. Absent: the island holds the system canon alone. */
   readonly houseCanon?: readonly string[];
+  /** The documents a resting engine fall names in flight (`engine-fall`): the island's own store holds them back from its
+   *  engine as the vessel's does. Absent: none held. */
+  readonly heldBack?: readonly string[];
 }
 
 /**
@@ -239,16 +242,15 @@ export async function casFetchReading(
 //
 // A PIN CARRIES NO CLOCK — EVER. A pin stands exactly as long as its sidecar entry stands: `pinCas` writes
 // it, `releaseCas` removes it. `PinCap` (@lararium/mesh) carries NO clock field at all (M7: the record has
-// no place for one, so none is ever read). Its OPTIONAL `fence` names a holder's OWN boot epoch
-// at pin time (M7′): PRESENCE in the sidecar still decides by default (a bare `--pin` carries no `fence` —
-// the operator's own explicit, standing-forever pin), but a pin that DOES carry a `fence` (a `--held`
-// pin) is a CAUSAL supersession, never a span — `casSweep`'s REQUIRED `currentFence` option, this vessel's
-// OWN current boot epoch, reads it through the mesh-level `pinnedCids` (the SAME law `cas-caps.ts` states):
-// held while `currentFence <= fence`, superseded the moment a later boot moves past it; a bare pin with no
-// `fence` of its own still reads presence-only regardless of `currentFence`, exactly as before the fence
-// ever existed. Ending a pin is always one of: an
+// no place for one, so none is ever read). Its OPTIONAL `life` names the holder's OWN vessel life at pin
+// time (`vessel-life.ts`): PRESENCE in the sidecar still decides by default (a bare `--pin` carries no `life` —
+// the operator's own explicit, standing-forever pin), but a pin that DOES carry a `life` (a `--held` pin) ends
+// on a CAUSAL event, never a span — `casSweep`'s REQUIRED `currentLife` option, this vessel's OWN current
+// life, reads it through the mesh-level `pinnedCids` (the SAME law `cas-caps.ts` states): held while its life
+// IS the current one, ended the moment another life holds the store; equality alone, never an order. A bare
+// pin with no `life` still reads presence-only regardless of `currentLife`. Ending a pin is always one of: an
 // EXPLICIT `releaseCas`, the next pin for the same cid superseding the one it replaces (`pinCas`'s
-// replace-by-cid), or — for a `--held` pin alone — this vessel's own next boot.
+// replace-by-cid), or — for a `--held` pin alone — the end of the vessel life that pinned it.
 
 /** A cleartext CAS file name — hex sha256. Anything else in the dir (a sidecar) is never a blob. */
 const CAS_CID_RE = /^[0-9a-f]{64}$/;
@@ -286,18 +288,14 @@ export interface CasSweepOptions {
    *  "released" and "absent from `pins`" are the same fact. */
   readonly pins?:      readonly PinCap[];
   /**
-   * This vessel's CURRENT boot epoch (M7′/M7″, `owned-store.ts`'s `StoreClaim.bootEpoch`) — the fence a
-   * `--held` pin's own stamped `fence` is read against (`pinnedCids` — the SAME law `cas-caps.ts` states:
-   * absent `fence` on a pin holds regardless, i.e. presence-only; a pin WITH a `fence` holds only while
-   * `currentFence` has not yet moved past it). REQUIRED (M7″ G3): every caller,
-   * production or test, threads its own epoch through — never guessed. `0` is the fence law's OWN floor
-   * ("no boot has happened yet"): every `--held` pin reads as still standing against it (`0 <= fence` for
-   * any non-negative fence), so a caller with no real epoch to give is never safe passing `0` AS IF it were
-   * a genuine epoch — it must withhold the sweep instead (`open-node-vessel.ts`'s shape beside
-   * `genesisProtect === "unreadable"`). Only the ABSENCE of a pin's own `fence` field reads as a
-   * standing-forever pin; the absence of THIS option is not representable at all.
+   * This vessel's CURRENT life (`owned-store.ts`'s `StoreClaim.life`) — the life a `--held` pin's own stamped
+   * `life` compares against (`pinnedCids` — the SAME law `cas-caps.ts` states: absent `life` on a pin holds
+   * regardless, i.e. presence-only; a pin WITH a `life` holds only while it equals `currentLife`). REQUIRED:
+   * every caller, production or test, threads its own life through — never guessed; a caller with no life to
+   * give withholds the sweep instead. Only the ABSENCE of a pin's own `life` field reads as a standing-forever
+   * pin; the absence of THIS option is not representable at all.
    */
-  readonly currentFence: number;
+  readonly currentLife: string;
   /** Name what would sweep; delete nothing. */
   readonly dryRun?:    boolean;
 }
@@ -315,11 +313,9 @@ export interface CasSweepResult {
 
 /** Mark-and-sweep the cleartext CAS from the derived references + the genesis protect set. */
 export function casSweep(opts: CasSweepOptions): CasSweepResult {
-  // M7″: a `--held` pin (one stamped with a `fence`) holds only while this vessel's current epoch has not
-  // yet moved past it (`pinnedCids`); a presence-only pin (no `fence`) still holds regardless, same as
-  // always. `currentFence` is REQUIRED — there is no more caller-side fallback that reads every pin as
-  // presence-only regardless of its own stamped fence.
-  const standing = pinnedCids(opts.pins ?? [], opts.currentFence);
+  // A `--held` pin (one stamped with a `life`) holds only while that life stands as this vessel's current one
+  // (`pinnedCids`); a presence-only pin (no `life`) still holds regardless. `currentLife` stands REQUIRED.
+  const standing = pinnedCids(opts.pins ?? [], opts.currentLife);
   const swept: string[] = [], kept: string[] = [], protectedCids: string[] = [], pinned: string[] = [];
   for (const { cid } of listCasBlobs(opts.casDir)) {
     if (opts.protect.has(cid)) { protectedCids.push(cid); continue; }
@@ -344,13 +340,13 @@ const PINS_FILE = ".pins.json";
 /** `PinCap`'s own fields (`cas-caps.ts`) — the only keys a record may ever carry. Any other key reads the
  *  WHOLE sidecar as malformed (gp25): a record shape this reader does not recognize might carry a
  *  clock-driven verdict, and a pin carries no clock, so it refuses rather than read a shape it never named. */
-const PIN_RECORD_FIELDS = new Set(["cid", "holder", "tier", "fence"]);
+const PIN_RECORD_FIELDS = new Set(["cid", "holder", "tier", "life", "fence"]);
 
 /** The pins a CAS dir holds — an ABSENT sidecar reads as no pins (a vessel that never pinned anything is
  *  not corrupt); a sidecar that EXISTS but fails to parse (torn JSON, not an array) THROWS rather than
  *  reading as no pins (M7′: the sweep's own caller must REFUSE its run on this, never silently un-pin
  *  everything). A per-record `cid` string is the only load-bearing field: a record missing/mistyping its
- *  `holder`/`tier`/`fence` still holds that cid (presence-only, if its `fence` reads as absent) rather than
+ *  `holder`/`tier`/`life` still holds that cid (presence-only, if its `life` reads as absent) rather than
  *  being dropped whole — dropping a torn record is exactly the "fails open toward deletion" fault M7′
  *  closes. A record carrying ANY field outside `PIN_RECORD_FIELDS` is NOT silently ignored: it REFUSES the
  *  whole read by the field's name (gp25-SW2) — fail toward KEEPING every blob, never toward deleting over a
@@ -384,18 +380,21 @@ export function readCasPins(casDir: string): PinCap[] {
     }
   }
   // A TORN RECORD THAT STILL NAMES A CID STRING STILL HOLDS THAT CID (M7′): only `cid` is load-bearing here.
-  // A missing/mistyped `holder`/`tier` or `fence` (the probed `fence: "7"` case) never drops the WHOLE
-  // record — that would un-pin a blob over a cosmetic field, exactly the "fails open toward deletion" fault
-  // this closes. A mistyped `fence` reads as ABSENT (presence-only — holds forever), never as zero and never
-  // as dropped.
+  // A missing/mistyped `holder`/`tier` or `life` (a counter where a life name stands, say) never drops the
+  // WHOLE record — that would un-pin a blob over a cosmetic field, exactly the "fails open toward deletion"
+  // fault this closes. A mistyped `life` reads as ABSENT (presence-only — holds forever), never as dropped.
+  // A RECORD STAMPED UNDER THE RETIRED BOOT COUNT (`fence`, no `life`) names a held pin of an earlier vessel life, and a held
+  // pin ends with its life: it reads released, the same verdict that count gave at the next boot, and the next write rests
+  // the sidecar without it. A record carrying a `life` beside a `fence` reads by its life alone.
   return parsed
     .filter((p): p is Record<string, unknown> => !!p && typeof p === "object" && typeof (p as Record<string, unknown>)["cid"] === "string")
+    .filter((p) => !("fence" in p) || (typeof p["life"] === "string" && p["life"] !== ""))
     .map((p) => {
       const cid    = p["cid"] as string;
       const holder = typeof p["holder"] === "string" ? (p["holder"] as string) : "unknown";
       const tier   = typeof p["tier"]   === "string" ? (p["tier"]   as string) : "veil";
-      const fence  = typeof p["fence"]  === "number" ? (p["fence"]  as number) : undefined;
-      return { cid, holder, tier, ...(fence !== undefined ? { fence } : {}) } as PinCap;
+      const life   = typeof p["life"]   === "string" && p["life"] !== "" ? (p["life"] as string) : undefined;
+      return { cid, holder, tier, ...(life !== undefined ? { life } : {}) } as PinCap;
     });
 }
 
@@ -469,10 +468,9 @@ export interface InstallCasSweepOptions {
   /** The realm's own clock — the reading `realm-clock` answers (`realmMaintenanceFromBoard`), or null on a
    *  hearth outside every realm. Read at each probe; `realmPace` turns it into rolls. */
   readonly realmClock: () => CabalRealmMaintenanceProvenance | null | Promise<CabalRealmMaintenanceProvenance | null>;
-  /** This vessel's boot epoch (M7″) — the callback supplies the fence at each sweep, so a `--held` pin is
-   *  judged against the epoch THIS boot owns. A caller with no epoch supplies `() => 0`, which the fence
-   *  law reads as "no boot has happened yet" (every `--held` pin superseded). */
-  readonly currentFence: () => number;
+  /** This vessel's life — the callback supplies it at each sweep, so a `--held` pin reads against the life
+   *  that stands now. */
+  readonly currentLife: () => string;
   readonly log:        (line: string) => void;
   /** Observes each tick's result (a witness hook; the verb's caller reads the result directly). */
   readonly onSweep?:   (r: CasSweepVerbResult) => void;
@@ -531,8 +529,8 @@ export function installCasSweep(opts: InstallCasSweepOptions): CasSweepInstalled
       references,
       protect: opts.protect,
       pins: opts.pins(),
-      // M7″: sample the caller's fence for this sweep when judging a `--held` pin's stamped `fence`.
-      currentFence: opts.currentFence(),
+      // Sample the caller's life for this sweep when judging a `--held` pin's stamped `life`.
+      currentLife: opts.currentLife(),
       // The floor: the longest tier's grace in rolls. No pace → no age (every blob reads 0) → nothing sweeps.
       grace: graceForTier(longest, 1),
       ageOf: (cid) => (pace === null ? 0 : pace - (firstSeen.get(cid) ?? pace)),
@@ -546,6 +544,9 @@ export function installCasSweep(opts: InstallCasSweepOptions): CasSweepInstalled
     opts.onSweep?.(out);
     return out;
   };
+  // cas-protect — the daemon names the set its sweep guards (the seed's blobs and the stored island's), so a
+  // reader reports the union the daemon holds instead of re-deriving a narrower one.
+  opts.registry.register("cas-protect", async () => ({ verb: "cas-protect", protect: [...opts.protect].sort() }));
   opts.registry.register("cas-sweep", async (args) => {
     const r = await sweep(args["dryRun"] === true);
     return r as unknown as Record<string, unknown>;

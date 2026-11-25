@@ -21,7 +21,7 @@
  * scan + re-diff against this tree; no journal replay.
  *
  * ONE FILE PER ROW, MANY WRITERS. Every projector in the vessel shares this tree: the
- * daemon island mirrors wikis/daemon-<F>, bags/kahua-<F> + bags/crossroads, each wiki island mirrors
+ * daemon island mirrors faces/<pet name>/{wikis/daemon,bags/daemon,bags/kahua} + bags/crossroads, each wiki island mirrors
  * its recipe's bags, and the CLI's ingest gesture records what it landed. They live in
  * separate workers and separate processes. The tree rests as a DIRECTORY, one file per
  * row, each named by its carrier and its path and written whole (a temp file in the same
@@ -55,7 +55,7 @@
  */
 
 import { readFileSync, writeFileSync, renameSync, mkdirSync, readdirSync, unlinkSync, statSync } from "fs";
-import { join, resolve } from "path";
+import { join, resolve, sep } from "path";
 import { randomBytes } from "crypto";
 import { tagDigest, formatDigest, sha256HexSync } from "@lararium/mesh";
 
@@ -109,6 +109,8 @@ function rowOf(value: unknown): Row | null {
 }
 
 const stem = (s: string): string => sha256HexSync(s).slice(0, 32);
+/** The directory the kāpae shadows' rows rest in, inside the tree's own (`shadows`). No row file takes its name. */
+const SHADOW_DIR = "kapae";
 /** A row's file name: its carrier, then its path. The name never moves, so a write replaces the row whole,
  *  and every row of one carrier shares the leading stem. */
 const rowFile = (key: string, path: string): string => `${stem(key)}.${stem(path)}.json`;
@@ -166,6 +168,8 @@ export class SyncedTree {
    * ONE index key; a bare value parses as nothing and stays out of the index.
    */
   private byHash: Map<string, Set<string>> | null = null;
+  /** The keys whose base stands at each path: DERIVED like `byHash`, rebuilt on the first `uriAt` after a change. */
+  private byPath: Map<string, Set<string>> | null = null;
 
   constructor(
     /** The directory the tree rests in. Null holds the bases in memory for this instance's life and persists nothing. */
@@ -194,6 +198,7 @@ export class SyncedTree {
     if (!ids) { ids = new Set(); this.byKey.set(row.key, ids); }
     ids.add(id);
     this.byHash = null;
+    this.byPath = null;
   }
 
   private drop(key: string, path: string): boolean {
@@ -203,6 +208,7 @@ export class SyncedTree {
     ids?.delete(id);
     if (ids?.size === 0) this.byKey.delete(key);
     this.byHash = null;
+    this.byPath = null;
     return true;
   }
 
@@ -226,6 +232,20 @@ export class SyncedTree {
   /** The base that stands AT `file`, or null: an agreement reached at another path names no base here. */
   baseAt(key: string, file: string): SyncedBase | null {
     return this.map.get(rowId(key, syncedPath(file)))?.base ?? null;
+  }
+
+  /**
+   * THE REVERSE LOOKUP A BASE ROW GIVES: the one carrier whose base stands AT `file` (scoped to `bagId` where named), or null
+   * where none stands there or several carriers' bases do. A mirror file reads back under the carrier the projector last
+   * agreed at its path (`siteFileToTitle`, rule 0), so a title the projector sited by a uniquifier or a flatten reads home.
+   */
+  uriAt(file: string, bagId?: string): string | null {
+    const uris = new Set<string>();
+    for (const key of this.pathIndex().get(syncedPath(file)) ?? []) {
+      const at = this.splitKey(key);
+      if (bagId === undefined || at.bagId === bagId) uris.add(at.uri);
+    }
+    return uris.size === 1 ? uris.values().next().value ?? null : null;
   }
 
   /**
@@ -317,6 +337,55 @@ export class SyncedTree {
       bucket.add(uri);
     }
     return (this.byHash = byHash);
+  }
+
+  /** The path index over the rows as they stand (it never persists). */
+  private pathIndex(): Map<string, Set<string>> {
+    if (this.byPath !== null) return this.byPath;
+    const byPath = new Map<string, Set<string>>();
+    for (const { key, base } of this.map.values()) {
+      let keys = byPath.get(base.path);
+      if (!keys) { keys = new Set(); byPath.set(base.path, keys); }
+      keys.add(key);
+    }
+    return (this.byPath = byPath);
+  }
+
+  /**
+   * THE KĀPAE SHADOWS' OWN TREE (`kapae-shadow.ts`): a shadow file names no carrier home, so its rows rest apart from the
+   * carriers' bases, in a `kapae/` directory inside this tree's own. Each row keys by the bag and the title the shadow
+   * sets aside, stands at the shadow file's path, and names the hash of the bytes the projector last wrote there (or
+   * found already standing as its own write would leave them); the projector removes the row as it lowers the shadow.
+   * So the house remembers its last write of every shadow, and `lares surface commit` stages the lowering where the
+   * disk still holds those bytes, as it stages a carrier the house agrees with. A tree held in memory keeps its shadow
+   * rows in memory too.
+   */
+  shadows(): SyncedTree {
+    return (this.shadowTree ??= new SyncedTree(this.dirPath === null ? null : join(this.dirPath, SHADOW_DIR)));
+  }
+
+  private shadowTree: SyncedTree | null = null;
+
+  /**
+   * A FOLDER MOVED WHOLE, ITS AGREEMENTS WITH IT: every base standing at or below `from` (this tree's rows and its shadows')
+   * re-stands at the same place below `to`, its two hashes and its document kept, and leaves its old path. A heal that moves a
+   * face's folders onto their shelves (`shelveFaceRoot`) calls it, so no file reads as vanished from where it stood and none as
+   * never agreed where it now stands. Answers how many rows moved.
+   */
+  movePaths(from: string, to: string): number {
+    return this.moveOwnPaths(from, to) + this.shadows().moveOwnPaths(from, to);
+  }
+
+  private moveOwnPaths(from: string, to: string): number {
+    const src = syncedPath(from), dst = syncedPath(to);
+    let moved = 0;
+    for (const { key, base } of [...this.map.values()]) {
+      if (base.path !== src && !base.path.startsWith(src + sep)) continue;
+      this.set(key, dst + base.path.slice(src.length), base.disk, base.records, base.doc);
+      this.deleteAt(key, base.path);
+      moved++;
+    }
+    return moved;
   }
 
   /** Every row the tree holds: the carrier's bag and address beside its base. */

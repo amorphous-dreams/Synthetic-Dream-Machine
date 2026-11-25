@@ -3,7 +3,7 @@
  * (NEXT VECTOR build 4, the deferred cut; handoff #watcher-talk-story).
  *
  * A one-shot `lares ingest` walks disk, so a vanished carrier never appears in its
- * scan; the long-lived `lares watch` daemon, tracking what it last saw, witnesses a
+ * scan; the long-lived `lares ingest --watch` daemon, tracking what it last saw, witnesses a
  * vanish. The watcher tombstones nothing by itself and holds no clock over a vanish:
  * it hands each vanished address to the vessel's shore, where the carrier stands as a
  * PENDING REMOVAL until a person answers through `lares shore`. This vector drives the
@@ -26,17 +26,55 @@ import { spawn } from "node:child_process";
 import { readFileSync, writeFileSync, mkdirSync, rmSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { stagedTarget, targetInstance, type LarInstance } from "../harness/instance.js";
+import { nameSeatSkip, seatLaunched } from "../harness/seat-launch.js";
+
+nameSeatSkip("watcher-cut-c", ["the whole file (its setup ingest and its watch are hand acts)"]);
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const CLI_BIN   = join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js");
-const TICK_TMPL = join(REPO_ROOT, "bags/lares/ha.ka.ba/lares/api/pono/tick.mem");
 const LARES_URI = "lar:///ha.ka.ba/bags/lares";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 let lar: LarInstance;
 let SRC = "";
-let tickTemplate = "";
+
+/**
+ * THE TEST'S OWN FIXTURE CARRIER, never live canon prose. A template read off a canon page (it was `pono/tick`) moves under
+ * the test whenever that page's words move, and the edit below then finds no line to change. This carrier holds the one line
+ * the live-and-coalesce edit hunts (`''Status: DEFERRED''`), so the edit always finds it. The slug `pono/cutc-template` swaps
+ * for each case's own.
+ */
+const CARRIER_TEMPLATE = [
+  "<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>",
+  "",
+  "<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/cutc-template`>>",
+  "<<^ code=`&#x0002;`>>",
+  "",
+  "```toml meta",
+  "cacheable = true",
+  'namespace = "&#x2299;"',
+  'role      = "the watcher e2e fixture carrier — a disk peer\'s edits, vanishes and renames walk it"',
+  'title     = "lar:///ha.ka.ba/lares/api/pono/cutc-template"',
+  'type      = "text/memetic-wikitext+tiddlywiki"',
+  'uri-path  = "ha.ka.ba/lares/api/pono/cutc-template"',
+  "```",
+  "",
+  "<<~ ahu slot=`#/head`>>",
+  "",
+  "! Watcher fixture carrier",
+  "",
+  "A fixture carrier the watcher's end-to-end suite lands, edits, removes and renames.",
+  "",
+  "''Status: DEFERRED''",
+  "",
+  "<<~/ahu>>",
+  "",
+  "<<^ code=`&#x0003;` bcc=`ni:///sha-256;AWDExptc_13xpVuC_lZ5pDKm8XXL82LNv3sTh19naVc`>>",
+  "",
+  "<<^ code=`&#x0004;` to=`?`>>",
+  "",
+].join("\n");
 
 /** Disk path a `cutc-<slug>` carrier projects to under the staged bags mirror. */
 function carrierPath(slug: string): string {
@@ -46,10 +84,10 @@ function carrierUri(slug: string): string {
   return `lar:///ha.ka.ba/lares/api/pono/${slug}`;
 }
 
-/** Template a fresh carrier from tick.mem, swapping ONLY the URI slug (the path
+/** Template a fresh carrier from the fixture, swapping ONLY the slug (the path
  *  derives the record URI; the body prose carries over untouched). */
 function carrierBody(slug: string): string {
-  return tickTemplate.replaceAll("pono/tick", `pono/${slug}`);
+  return CARRIER_TEMPLATE.replaceAll("pono/cutc-template", `pono/${slug}`);
 }
 
 /** A carrier's check stamp, and the carrier's words with that stamp set aside. */
@@ -73,13 +111,13 @@ interface WatchProc {
   readonly stop: () => Promise<void>;
 }
 
-/** Spawn `lares watch --apply` against the staged vessel; stream its log. */
+/** Spawn `lares ingest --watch --apply` against the staged vessel; stream its log. */
 function spawnWatch(): WatchProc {
   let log = "";
   const child = spawn(
     process.execPath,
     [
-      CLI_BIN, "watch",
+      CLI_BIN, "ingest", "--watch",
       "--source", SRC, "--to", LARES_URI, "--apply",
       "--debounce", "150",
     ],
@@ -113,9 +151,8 @@ const SLUGS = ["cutc-edit", "cutc-trans", "cutc-ren", "cutc-del", "cutc-brake-1"
 
 beforeAll(async () => {
   lar = await targetInstance();
-  if (!stagedTarget) return;
+  if (!stagedTarget || seatLaunched) return;   // the setup ingest is a hand act: a seat-launched run skips the whole file, named below
   SRC = join(lar.root, "projections/bags/lares");
-  tickTemplate = readFileSync(TICK_TMPL, "utf8");
 
   // Write all test carriers, then land them in ONE ingest wave.
   for (const slug of SLUGS) writeCarrier(slug);
@@ -139,7 +176,7 @@ beforeAll(async () => {
 
 afterAll(async () => { await lar.stop(); });
 
-describe.skipIf(!stagedTarget)("watcher Cut C — the disk peer witnessed end-to-end", () => {
+describe.skipIf(!stagedTarget || seatLaunched)("watcher Cut C — the disk peer witnessed end-to-end", () => {
   test("live + coalesce — backend self-test fires; rapid edits drain to ONE wave", async () => {
     const w = spawnWatch();
     try {

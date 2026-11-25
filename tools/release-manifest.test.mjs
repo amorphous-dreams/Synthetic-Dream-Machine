@@ -121,6 +121,65 @@ test("a genesis CAS blob that does not hash to its address refuses: an address b
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 
+/**
+ * Copy the repository genesis and rewrite its floor manifest through `mutate`, re-addressing the manifest blob and
+ * the seed row that names it, so only the floor's shape moves. `mutate` null drops the floor-manifest row.
+ */
+function withFloor(mutate, check) {
+  const dir = mkdtempSync(join(tmpdir(), "release-manifest-floor-"));
+  try {
+    cpSync(genesis, dir, { recursive: true });
+    const seedPath = join(dir, "seed.json");
+    const seed = JSON.parse(readFileSync(seedPath, "utf8"));
+    if (mutate === null) delete seed.blobs["floor-manifest"];
+    else {
+      const floor = JSON.parse(readFileSync(join(dir, "cas", seed.blobs["floor-manifest"].sha256), "utf8"));
+      const bytes = Buffer.from(JSON.stringify(mutate(floor)));
+      const cid = createHash("sha256").update(bytes).digest("hex");
+      writeFileSync(join(dir, "cas", cid), bytes);
+      seed.blobs["floor-manifest"].sha256 = cid;
+    }
+    writeFileSync(seedPath, JSON.stringify(seed));
+    check(dir);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+}
+
+test("emit reads the engine off the floor manifest's own shape and binds the plugins offering it names", () => {
+  const seed = JSON.parse(readFileSync(new URL("../genesis/seed.json", import.meta.url), "utf8"));
+  const floor = JSON.parse(readFileSync(new URL(`../genesis/cas/${seed.blobs["floor-manifest"].sha256}`, import.meta.url), "utf8"));
+  assert.deepEqual(Object.keys(floor), ["format", "engine", "plugins", "snapshots"]);
+  assert.equal(floor.plugins, seed.blobs["floor-plugin-offering"].sha256);
+  assert.equal(buildReleaseManifest({ image, genesisDir: genesis }).engine.cid, floor.engine);
+});
+
+test("a genesis whose floor manifest names grammar refuses floor-manifest-malformed", () => {
+  withFloor(({ format, engine, plugins, snapshots }) => ({ format, engine, grammar: "b" + "c".repeat(58), plugins, snapshots }), (dir) => {
+    assert.throws(() => buildReleaseManifest({ image, genesisDir: dir }), /floor-manifest-malformed/);
+  });
+});
+
+test("a genesis whose floor plugins names another offering than the floor-plugin-offering row refuses by name", () => {
+  withFloor((floor) => ({ ...floor, plugins: "0".repeat(64) }), (dir) => {
+    assert.throws(() => buildReleaseManifest({ image, genesisDir: dir }), /floor plugins .* differs from the floor-plugin-offering row/);
+  });
+});
+
+test("a genesis whose floor engine differs from the seed's engine witness refuses by name", () => {
+  withFloor((floor) => ({ ...floor, engine: "b" + "a".repeat(58) }), (dir) => {
+    assert.throws(() => buildReleaseManifest({ image, genesisDir: dir }), /floor engine .* differs from the seed's engine witness/);
+  });
+});
+
+test("a genesis that names no floor refuses by name: a release binds the floor it ships", () => {
+  withFloor(null, (dir) => {
+    assert.throws(() => buildReleaseManifest({ image, genesisDir: dir }), /names no floor-manifest/);
+  });
+});
+
+test("the record keeps grammar while the cofound offer reads it: the address the seed's grammar witness names", () => {
+  assert.equal(buildReleaseManifest({ image, genesisDir: genesis }).grammar.cid, node.readGenesisGrammarCid(genesis));
+});
+
 test("verifying against the image reads EVERY platform the record names, and a difference names its platform", async () => {
   const manifest = buildReleaseManifest({ image, genesisDir: genesis, platforms: ["linux/amd64", "linux/arm64"] });
   const good = { seedCid: manifest.genesis.seedCid, engineCid: manifest.engine.cid, grammarCid: manifest.grammar.cid };

@@ -144,7 +144,7 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
       error: { code: "FoundingRefused", message: `the founding refused (${refusedStep.detail}); nothing stands. The refusal leads the lines above.` },
       data: { founding, root, bootstrap: existsSync(bootstrap) ? "present" : "absent" },
       human: () => {
-        console.error(`lares vessel stand: FoundingRefused: ${refusedStep.detail}; no vessel was founded and no daemon was started.`);
+        console.error(`lares vessel stand: FoundingRefused: ${refusedStep.detail}; no vessel founded and no daemon started.`);
       },
     });
     return 1;
@@ -246,7 +246,7 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
       // offset we start appending at.
       //   Cross-peer presence (who is breathing in the mesh) is a SEPARATE organ and
       //   never lives in a persisted/synced doc — least of all the oracle plane, the cache-stable
-      //   federation floor. Per canon (api/pono/ea#not-a-heartbeat;
+      //   federation floor. Per canon (api/pono/ea#/contrast;
       //   DREAMNET-FEDERATION-RESEARCH "never write presence into the Automerge document"):
       //   presence rides an EPHEMERAL channel — `ea` once at establishment, then CRDT
       //   sync / frame:ack, or an ephemeral broadcast() with TTL derived locally. Presence

@@ -5,7 +5,7 @@
  * LEAD RUNS: found, boot, unlock, restart, and write both kahua layers of a staged vessel.
  * SECURITY CLASS (signed founding acts). The walk, through the test door (scratch marker, test custody, `vessel found
  * --hearth --skip-build`, boot, unlock):
- *   RED      the unlocked hearth reads its stage: `lares kahua list` answers an empty stage (an unpinned face refuses
+ *   RED      the unlocked hearth reads its stage: `lares kahua get` answers an empty stage (an unpinned face refuses
  *            `kahua-unpinned`), and the boot names the stage it adopted at the face's derived address.
  *            A mint on the founding device answers the pin already standing (`minted: false`); the boot adopts, never pins.
  *   CONTROL  a mint stands the face's derived url, and after a restart of the same hearth a mint answers that pin and the
@@ -56,7 +56,7 @@ describe.skipIf(!stagedTarget || !built)("the founding pins the face's kahua sta
   });
 
   test("RED: the unlocked founding device reads an empty stage, names the stage it adopted at the face's derived address, and a mint finds the pin standing", async () => {
-    const listed = await hearth!.cli(["kahua", "list"]);
+    const listed = await hearth!.cli(["kahua", "get"]);
     expect(listed.code, said(listed)).toBe(0);
     // The list names the face's relation beside its items: the folder name its private projections carry.
     expect(answer(listed)["items"]).toEqual([]);
@@ -80,13 +80,13 @@ describe.skipIf(!stagedTarget || !built)("the founding pins the face's kahua sta
   }, 600_000);
 
   test("a daemon-wiki write and a kahua lift each project under the face's kahua name, and the daemon bag projects no control or house title", async () => {
-    // Trued from the seed form: `vessel seed` reads the canon source, which a scratch LAR_ROOT holds empty, and the
-    // fleet bag projects under its own bag id (`bags/kahua`), never `bags/kahua-<F>`. A write to each layer drives
+    // `vessel lay` reads the canon source, which a scratch LAR_ROOT holds empty, and the
+    // fleet bag projects under its own bag id (`bags/kahua`), never a folder of its own beside the face root. A write to each layer drives
     // its projection; the face rides the folder name alone.
     const source = join(hearth!.root, "stage-row.mem");
     const uri = "lar:///ha.ka.ba/kahua/memory/kahua-founding-stage-row";
     writeFileSync(source, `<<^ code=\`&#x0001;\` from=\`?\` to=\`${uri}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${uri.slice("lar:///".length)}"\n\`\`\`\n\n! A stage meme\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`);
-    const put = await hearth!.cli(["meme", "put", uri, "--recipe", "default", "--file", source, "--json"]);
+    const put = await hearth!.cli(["tiddler", "put", "--meme", uri, "--recipe", "default", "--file", source, "--json"]);
     expect(put.json?.["ok"], said(put)).toBe(true);
     // LIVENESS: both event waits fail on a stalled projector; the journal names the completed mirror roots.
     await expectEntry(hearth!, { kind: "bag-projected", match: (event) => {
@@ -105,8 +105,8 @@ describe.skipIf(!stagedTarget || !built)("the founding pins the face's kahua sta
     } }, { budgetMs: 60_000 });
     expect(existsSync(join(daemonWikiDir(hearth!.root), "ha.ka.ba/kahua/memory/kahua-founding-stage-row.mem"))).toBe(true);
     expect(existsSync(kahuaStageDir(hearth!.root))).toBe(true);
-    // CONTROL (placement over patterns): the daemon wiki's mirrors stand under the worn face's F alone, `wikis/daemon-<F>`
-    // and `bags/daemon-<F>`; the daemon document and the control document name no mirror, so neither the tracked-shape
+    // CONTROL (placement over patterns): the daemon wiki's mirrors stand in the worn face's root alone, `faces/<pet name>/wikis/daemon`
+    // and `faces/<pet name>/bags/daemon`; the daemon document and the control document name no mirror, so neither the tracked-shape
     // bags/ beside the root nor <projections>/bags/daemon holds anything, and no projected file names a private home.
     expect(faceDaemonMirrors(hearth!.root).working).toBe(daemonWikiDir(hearth!.root));
     expect(existsSync(join(hearth!.root, "bags", "daemon"))).toBe(false);

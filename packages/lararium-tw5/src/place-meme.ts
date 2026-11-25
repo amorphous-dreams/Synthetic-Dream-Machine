@@ -41,7 +41,7 @@ import { readCarrierEdges } from "./carrier-edges.js";
 import type { MemeDiagnostic } from "./meme-ast/diagnostics.js";
 import { gradeOf, MEMETIC_SOURCE } from "./meme-ast/diagnostics.js";
 import type { TiddlerFields } from "./deserializer.js";
-import { expandMemeRefs } from "./deserializer.js";
+import { carriageUri, expandMemeRefs } from "./deserializer.js";
 import type { TW5Wiki } from "./types/tiddlywiki.js";
 
 import { carrierMarkPattern, headUriOf, maskedExec, maskedExecAll } from "@lararium/memetic-frame";
@@ -70,6 +70,15 @@ export interface MemeSink {
    * root and the slots that left with it as one family write).
    */
   tombstoneFamily?(titles: readonly string[]): MaybePromise<void>;
+  /**
+   * WHERE THE SINK KNOWS ITS LAYERS: whether a live record of the title rests in a layer beneath the one this sink
+   * writes. A removal tombstones only the titles that answer yes (a kāpae keeps the lower record hidden) and retracts
+   * the rest plainly, so no kāpae rises over nothing. A sink that does not know (`beneath` or `leaveFamily` absent)
+   * removes through `tombstone`, and the holder's own shore decides what leaves.
+   */
+  beneath?(title: string): MaybePromise<boolean>;
+  /** Remove a family as ONE change: `tombstones` raise a kāpae, `retracts` leave their layer to absent. */
+  leaveFamily?(tombstones: readonly string[], retracts: readonly string[]): MaybePromise<void>;
   /**
    * THE ALERT RAIL, where the sink has one: raise (or, with `null`, clear) the one coalesced alert a
    * meme root carries. A live wiki has it (`wikiMemeSink`); a bag store does not, and its placements
@@ -207,6 +216,10 @@ export interface PlaceMemeInput {
   /** True where no person stands behind the placement (a watcher's wave): with no base it never adopts
    *  over records that say something else, and answers `conflict`, `no-base` (`ingest-gate`, rule 4½). */
   readonly unattended?: boolean;
+  /** How long this write waits on the root's turn before it refuses `family-turn-held`; defaults to `FAMILY_TURN_WAIT_MS`. */
+  readonly turnWaitMs?: number;
+  /** Reads every record an `ingest` decision would land, before the first lands; a throw lands nothing (a door's own wall). */
+  readonly vet?: (records: readonly Record<string, unknown>[]) => void | Promise<void>;
 }
 
 export interface PlaceMemeReceipt {
@@ -520,13 +533,52 @@ function receiptOfNonIngest(
  * Place one meme into a sink through the Confluence gate. Never throws on a bad meme — the receipt
  * carries the refusal; a sink verb that throws propagates.
  */
-export async function placeMeme(input: PlaceMemeInput, sink: MemeSink): Promise<PlaceMemeReceipt> {
+export function placeMeme(input: PlaceMemeInput, sink: MemeSink): Promise<PlaceMemeReceipt> {
+  return inFamilyTurn(input.uri, () => placeMemeNow(input, sink), input.turnWaitMs);
+}
+
+/**
+ * ONE FAMILY WRITE AT A TIME, PER ROOT, PER DOOR-FAMILY IN ONE PROCESS. A family write reads the carrier, checks the writer's
+ * base, vets, and lands its records one by one, with awaits between; two writes of one root left to interleave would each pass
+ * the base check on the same bytes and the later would land over the earlier. So every place and every removal of a root that
+ * runs through this module instance waits its turn behind the one before it: the base check and the landing it guards run as
+ * one serialized step, and a write that read bytes the turn before it moved answers `conflict`. The turns live in this module
+ * instance: the plugin bundle and the host's meme verbs each keep their own, and a writer that reaches the store directly meets
+ * the shore drain's per-field merge, where two writes of one field resolve last-writer-wins. A turn that throws hands the root on
+ * all the same; a write that waits past its bound on a turn that never settles refuses `family-turn-held` and moves nothing,
+ * and the root stays held behind that turn, never skipping it.
+ */
+export const FAMILY_TURN_WAIT_MS = 30_000;
+const FAMILY_TURN_HELD = "family-turn-held";
+const familyTurns = new Map<string, Promise<void>>();
+function inFamilyTurn<T>(uri: string, act: () => Promise<T>, waitMs: number = FAMILY_TURN_WAIT_MS): Promise<T> {
+  const key = rootAddressOf(uri);
+  const before = familyTurns.get(key) ?? Promise.resolve();
+  const turn = (async () => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const bound = new Promise<false>((resolve) => { timer = setTimeout(() => resolve(false), waitMs); });
+    const ready = await Promise.race([before.then(() => true as const), bound]);
+    clearTimeout(timer);
+    if (!ready) {
+      // A refusal by name, in the shape every door reads (`isVerbRefusal`: the name and a string reason).
+      throw Object.assign(new Error(`${FAMILY_TURN_HELD}: another write of ${key} has held its turn past ${waitMs} ms; nothing moved. Try again once it settles.`), { name: "VerbRefusal", reason: FAMILY_TURN_HELD });
+    }
+    return act();
+  })();
+  const settled = Promise.all([before, turn.catch(() => undefined)]).then(() => undefined);
+  familyTurns.set(key, settled);
+  void settled.then(() => { if (familyTurns.get(key) === settled) familyTurns.delete(key); });
+  return turn;
+}
+
+async function placeMemeNow(input: PlaceMemeInput, sink: MemeSink): Promise<PlaceMemeReceipt> {
   const { uri } = input;
   const hash = input.hash ?? defaultHash;
   const { view, decision, currentRenderHash } = await evaluate(input, sink);
 
   if (decision.kind !== "ingest") return receiptOfNonIngest(uri, currentRenderHash, decision);
   const grade = gradeOf(decision.diagnostics);
+  await input.vet?.(decision.records);
 
   const lands: string[] = [];
   for (const fields of decision.records) {
@@ -575,6 +627,71 @@ export async function evaluateMeme(
   return { uri, decision: "ingest", grade, landed: [], tombstoned: [], canonicalHash: hash(decision.canonicalText), warnings: [], diagnostics: decision.diagnostics };
 }
 
+/** The code a slot patch refuses under when the meme holds no slot at the address it names. */
+export const SLOT_MISSING_CODE = "slot-missing";
+/** The code a slot patch refuses under when the meme moved past the base the writer read. */
+export const STALE_BASE_CODE = "stale-base";
+
+/** One slot's body edit: `append` lands a paragraph at the end of the body; `replace` swaps the whole body. */
+export interface SlotPatchInput {
+  readonly uri: string;
+  /** The slot's address under the root, `#/name` (or `#/name/child`). */
+  readonly slot: string;
+  readonly mode: "append" | "replace";
+  readonly text: string;
+  /** The canonical hash the writer read; the patch reads against it and nothing else. An append alone may name none: it then
+   *  composes over the carrier as it reads now, and the answer's `canonicalHash` names the base that composition stands on. */
+  readonly baseHash: string | null;
+  readonly hash?: (text: string) => string;
+}
+
+export type SlotPatchReading =
+  | { readonly kind: "absent" }
+  | { readonly kind: "stale"; readonly canonicalHash: string }
+  | { readonly kind: "slot-missing"; readonly canonicalHash: string }
+  | { readonly kind: "carrier"; readonly text: string; readonly canonicalHash: string };
+
+/**
+ * A SLOT PATCH WRITES NO CARRIER BY HAND: it edits the slot's own record in a copy of the family and lets the one recompose
+ * (`expandMemeRefs`) frame the whole carrier, which mints the block check over the bytes it frames. The caller lands that text
+ * through the put's own gate under the same base, so a patch passes every law a put passes and reseals as a put does.
+ *
+ * The body a slot carries spans its record's text and its `$preamble` / `$postamble` carriage (the text before its meta, and
+ * the text after its last child). `append` adds to the body's end: the postamble where one stands, the slot's text otherwise.
+ * `replace` swaps the whole body: the slot's text takes the new bytes and both carriages leave; a child slot the new body
+ * does not call leaves with the put's consequence. The slot's fields (its meta) and its authored delimiters stay.
+ */
+export async function patchSlotCarrier(input: SlotPatchInput, sink: Pick<MemeSink, "titles" | "read">): Promise<SlotPatchReading> {
+  const hash = input.hash ?? defaultHash;
+  const { view, records } = await familySnapshot(input.uri, sink);
+  const group = familyGroup(view, input.uri);
+  if (!group.includes(input.uri)) return { kind: "absent" };
+  const reader = (map: ReadonlyMap<string, TiddlerFields>) => (title: string): TiddlerFields | undefined => map.get(title);
+  const canonicalHash = hash(expandMemeRefs(reader(records), input.uri) ?? heldText(records.get(input.uri)));
+  if (input.baseHash === null ? input.mode !== "append" : input.baseHash !== canonicalHash) return { kind: "stale", canonicalHash };
+  const title = `${rootAddressOf(input.uri)}${input.slot}`;
+  const slot = records.get(title);
+  if (!slot || !group.includes(title) || slot["$slot"] !== input.slot) return { kind: "slot-missing", canonicalHash };
+  const next = new Map(records);
+  const addition = input.text.replace(/^\n+/, "").replace(/\s+$/, "");
+  const pre = carriageUri(title, "preamble");
+  const post = carriageUri(title, "postamble");
+  if (input.mode === "replace") {
+    next.set(title, { ...slot, text: addition });
+    next.delete(pre);
+    next.delete(post);
+  } else {
+    const tail = next.get(post);
+    const into = tail && typeof tail.text === "string" && tail.text.trim() !== "" ? post : title;
+    const held = next.get(into)!;
+    const standing = typeof held.text === "string" ? held.text.replace(/\s+$/, "") : "";
+    next.set(into, { ...held, text: standing === "" ? addition : `${standing}\n\n${addition}` });
+  }
+  const text = expandMemeRefs(reader(next), input.uri);
+  if (text === null) return { kind: "slot-missing", canonicalHash };
+  return { kind: "carrier", text, canonicalHash };
+}
+
 /** The read half: the whole meme as text (children recomposed inline) and the canonical hash a
  *  writer hands back as its base. `null` when the sink holds no record under the URI. */
 export async function readMeme(
@@ -592,17 +709,35 @@ export async function readMeme(
  * to match the standing render answers `conflict` and removes nothing. `absent` when no root stands under
  * the URI. The answer carries the `consequence` the removal read, so a caller sees what it left behind.
  */
-export async function removeMeme(
+export function removeMeme(
   input: { readonly uri: string; readonly baseHash?: string | null; readonly hash?: (text: string) => string },
   sink: MemeSink,
-): Promise<{ decision: "removed" | "absent" | "conflict"; tombstoned: readonly string[]; canonicalHash?: string; consequence?: Consequence }> {
+): Promise<RemoveMemeReceipt> {
+  return inFamilyTurn(input.uri, () => removeMemeNow(input, sink));
+}
+
+type RemoveMemeReceipt = { decision: "removed" | "absent" | "conflict"; tombstoned: readonly string[]; retracted?: readonly string[]; canonicalHash?: string; consequence?: Consequence };
+
+async function removeMemeNow(
+  input: { readonly uri: string; readonly baseHash?: string | null; readonly hash?: (text: string) => string },
+  sink: MemeSink,
+): Promise<RemoveMemeReceipt> {
   const hash = input.hash ?? defaultHash;
   const { group, text, view } = await currentRender(input.uri, sink);
   if (!group.includes(input.uri)) return { decision: "absent", tombstoned: [] };
   const canonicalHash = hash(text);
   if (input.baseHash && input.baseHash !== canonicalHash) return { decision: "conflict", tombstoned: [], canonicalHash };
   const read = consequence(view, { kind: "delete", title: input.uri });
-  const tombstoned = tombstonesOf(read);
+  const leaving = tombstonesOf(read);
+  // A KĀPAE ONLY WHERE A LOWER LAYER WOULD SURFACE (operator ruling 2026-11-20): over nothing beneath the family retracts plainly.
+  if (sink.beneath && sink.leaveFamily) {
+    const tombstoned: string[] = [];
+    const retracted: string[] = [];
+    for (const title of leaving) ((await sink.beneath(title)) ? tombstoned : retracted).push(title);
+    await sink.leaveFamily(tombstoned, retracted);
+    return { decision: "removed", tombstoned, retracted, canonicalHash, consequence: read };
+  }
+  const tombstoned = leaving;
   if (sink.tombstoneFamily) await sink.tombstoneFamily(tombstoned);
   else for (const title of tombstoned) await sink.tombstone(title);
   return { decision: "removed", tombstoned, canonicalHash, consequence: read };

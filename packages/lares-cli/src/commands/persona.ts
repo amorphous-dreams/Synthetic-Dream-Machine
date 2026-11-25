@@ -12,7 +12,7 @@
  *                                      publish — only an announce binds a persona to a glamour)
  *              [--seat [--chair <label>]] stand this persona for a Kahu chair on THIS node
  *              [--split-root]          arm its 2-of-3 recovery split
- *   list                               the private multitude-view — held indices, labels, Handles
+ *   list                               the private multitude-view — held indices, labels, Handles, each open face's PersonaGroup
  *
  * The pet-name stays PRIVATE (persona-petname: rests sealed, fleet-syncs among the human's own vessels over a
  * persona plane whose rest seals, never PUBLICLY federates); minting a persona announces no public glamour, because only a publicly announced Handle binds
@@ -28,7 +28,7 @@
 import { gatherWard, gatherWardRoute } from "../ward-door.js";
 import { faceOption } from "../face-option.js";
 import {
-  faceStands, armRecoveryAtFounding, recoveryContactOffer, listFaceOrdinals, CustodyLocked, type FoundFaceResult,
+  faceStands, compartmentStands, armRecoveryAtFounding, recoveryContactOffer, listFaceOrdinals, CustodyLocked, type FoundFaceResult,
 } from "@lararium/node";
 import {
   renameOwnPersona, ownPersonaPetname, HANDLE_INDEX_CEILING, RECOVERY_CONTACT_THRESHOLD,
@@ -36,12 +36,12 @@ import {
   refuseSlot, personaSlotCeiling, defaultChairLabel, faceLogViewLine, coldKeySeedFromCode, signFaceLogView, type VesselClass,
 } from "@lararium/mesh";
 import { requireTty } from "../custody-prompt.js";
-import { handFaceRouteToVessel, seatNewFaceRoute } from "../face-route-prompt.js";
+import { handExistingFaceRouteToVessel, handFaceRouteToVessel, seatNewFaceRoute } from "../face-route-prompt.js";
 import { promptSecret } from "../prompt-secret.js";
 import { labelFaceAtNaming, faceRelationOnStage } from "../face-labels.js";
 import { storeVerb, storeFailure, standingRefusal } from "../store-door.js";
 import { sealedAct } from "../sealed-act-door.js";
-import { vesselStanding } from "../custody-door.js";
+import { houseFaces, vesselStanding, type VesselStanding } from "../custody-door.js";
 import { larDataDir } from "../env.js";
 import { readPersonaRoots, type PersonaRoots, personaRootKey, sealedPetnameStore, sealedDeclarationStore } from "../sealed-records.js";
 import {
@@ -50,6 +50,8 @@ import {
 import { emit, exitFor, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
 import type { ParsedArgs } from "../parse-args.js";
+import { cmdRaiseSign } from "./raise.js";
+import { tableCovers } from "../verb-table.js";
 
 class UsageError extends Error {}
 
@@ -76,7 +78,7 @@ export function vesselCeiling(env: NodeJS.ProcessEnv = process.env): { cls: Vess
  * ceiling) and THIS VESSEL's slot ceiling (an operator turn, raisable, and the refusal says so).
  */
 export function parseIndex(raw: string | undefined, env: NodeJS.ProcessEnv = process.env): number {
-  if (raw === undefined) throw new UsageError("a handle-index is required (e.g. `lares persona new 1 --name '…'`)");
+  if (raw === undefined) throw new UsageError("new needs a handle-index (e.g. `lares persona new 1 --name '…'`)");
   const n = Number(raw);
   if (!Number.isSafeInteger(n) || n < 0 || n >= HANDLE_INDEX_CEILING) {
     throw new UsageError(`handle-index out of range: "${raw}" (expected 0 ≤ n < 0x80000000)`);
@@ -95,11 +97,19 @@ export function parseIndex(raw: string | undefined, env: NodeJS.ProcessEnv = pro
   return n;
 }
 
+/** Every verb the persona door answers; `recovery-contact` names its own. */
+export const PERSONA_VERBS = {
+  new: null, list: null, sync: null, reissue: null, lease: null,
+  "recovery-contact": ["offer", "show", "enrol", "view"], provisional: null, confirm: null, view: null, "raise-sign": null,
+} as const;
+type PersonaVerb = keyof typeof PERSONA_VERBS;
+
 export async function cmdPersona(args: ParsedArgs): Promise<number> {
   const sub = args.positional[0];
   if (!sub) { usage(args); return 2; }
   try {
-    switch (sub) {
+    const v = sub as PersonaVerb;
+    switch (v) {
       case "new":   return await personaNew(args);
       case "list":  return await personaList(args);
       case "sync":  return await personaSync(args);
@@ -109,8 +119,9 @@ export async function cmdPersona(args: ParsedArgs): Promise<number> {
       case "provisional": return await personaProvisional(args);
       case "confirm": return await personaConfirm(args);
       case "view": return await personaView(args);
+      case "raise-sign": return await cmdRaiseSign({ ...args, positional: args.positional.slice(1) });
       default:
-        console.error(`lares persona: unknown sub-verb "${sub}"`);
+        console.error(`lares persona: unknown sub-verb "${tableCovers(v)}"`);
         return usage(args, sub);
     }
   } catch (err) {
@@ -261,7 +272,7 @@ export function recoveryContactEnrolmentSpeech(): readonly string[] {
  * takes the recovery contacts' quorum. Three recovery contacts, a threshold of two: two of the three, together, restore your Handle.
  */
 async function personaRecoveryContact(args: ParsedArgs): Promise<number> {
-  const verb = args.positional[1];
+  const verb = args.positional[1] as (typeof PERSONA_VERBS)["recovery-contact"][number] | undefined;
   if (verb === "offer") {
     const prefix = typeof args.options["prefix"] === "string" ? args.options["prefix"].trim() : "";
     if (!/^persona-[0-9a-f]{64}$/.test(prefix)) throw new UsageError("`persona recovery-contact offer` names the face it guards: --prefix persona-<64 hex>");
@@ -306,10 +317,10 @@ async function personaRecoveryContact(args: ParsedArgs): Promise<number> {
     // The threshold is the law's two: absent, it reads two; named, the vessel's refusal answers any other (`threshold-not-two`).
     const raw = args.options["threshold"];
     const threshold = typeof raw === "string" ? Number(raw) : RECOVERY_CONTACT_THRESHOLD;
-    if (!Number.isFinite(threshold)) throw new UsageError("`persona recovery-contact enrol` reads --threshold as a number; the rule is two");
+    if (!Number.isFinite(threshold)) throw new UsageError("`persona recovery-contact enrol` reads --threshold as a number; the rule asks for two");
     const offers = args.positional.slice(3);
     if (offers.length === 0) throw new UsageError("`persona recovery-contact enrol` takes the three recovery contacts' offer lines");
-    const r = await sealedAct("persona.recovery-contact.enrol", { handleIndex: index, offers: offers.join(" "), threshold, ward: await gatherWardRoute(`lares persona recovery-contact enrol ${index}`) });
+    const r = await sealedAct("persona.recovery-contact.enrol", { handleIndex: index, offers: offers.join(" "), threshold, ward: await gatherWardRoute(`lares persona recovery-contact enrol ${index}`, index) });
     emit(args, {
       ok: true,
       data: r,
@@ -343,7 +354,7 @@ async function personaRecoveryContact(args: ParsedArgs): Promise<number> {
     });
     return 0;
   }
-  return usage(args, "recovery-contact");
+  return refuseUsage(args, "persona recovery-contact", helpLines("persona recovery-contact"), verb ? `unknown sub-verb "${verb}"` : undefined);
 }
 
 /** The recovery contact's card, read hidden on a terminal; a test installs its own. */
@@ -352,6 +363,32 @@ let readRecoveryContactCard: () => Promise<string> = async () => {
   return (await promptSecret("your recovery contact card (hidden): ")).trim();
 };
 export function setRecoveryContactCardPrompt(read: () => Promise<string>): void { readRecoveryContactCard = read; }
+
+/**
+ * THE ROUTE A `persona new N` HANDS THE STANDING VESSEL, read before any prompt (`persona-route-rebind`). A face that already
+ * stands takes NO route: its founding answers `alreadyStood` before any route is read, so a route asked there gets parked and
+ * thrown away (a Handle re-declare or a rename touches no route; `vault bind` and `vault unbind --rotate` rebind on purpose). A
+ * face shut under its own route refuses, naming the unlock. A founding that stopped midway (custody and anchors stand, no plane
+ * entry) completes under the route the face ALREADY binds, asked once through the ward door. Only a face not yet founded binds a
+ * new route. Undefined where no vessel stands (the founding asks in this process) or no route rides.
+ */
+export async function routeForPersonaNew(index: number, standing: VesselStanding): Promise<string | undefined> {
+  if (standing.reading !== "vessel") return undefined;
+  if (index === 0 && faceStands()) return undefined;
+  if (index !== 0 && listFaceOrdinals().includes(index)) {
+    const faces = await houseFaces();
+    if (faces.shut.includes(index)) {
+      throw new UsageError(`face h${index} stands here and rests shut: open it (\`lares vault unlock --face ${index}\`), then run this again — this verb asked for no route`);
+    }
+    // A ROSTER THAT CANNOT BE READ SETTLES NOTHING: the face's group reads unknown, so the existing route gets asked once (a ward
+    // act under the route the face already binds), never a new one bound on an uncertain read.
+    let group: string | null = null;
+    try { group = (await readPersonaRoots()).roots.find((r) => r.handleIndex === index)?.group ?? null; } catch { group = null; }
+    if (group !== null && compartmentStands(group)) return undefined;
+    return await handExistingFaceRouteToVessel(index, "persona-new", { handleIndex: index });
+  }
+  return await handFaceRouteToVessel(`h${index}`, "persona-new", { handleIndex: index });
+}
 
 async function personaNew(args: ParsedArgs): Promise<number> {
   seatNewFaceRoute();
@@ -402,7 +439,7 @@ async function personaNew(args: ParsedArgs): Promise<number> {
     throw new UsageError("no face stands on this place yet — found the hearth and its first face with `lares found --hearth --name '<label>'` first.");
   }
   // A face that founds INSIDE a standing vessel takes its route over the custody door first (the route rides that frame alone).
-  const faceRouteRef = !(index === 0 && faceStands()) && standing.reading === "vessel" ? await handFaceRouteToVessel(`h${index}`, "persona-new", { handleIndex: index }) : undefined;
+  const faceRouteRef = await routeForPersonaNew(index, standing);
   // THE EARLY READING GOES STALE ACROSS THE PROMPT above: the door probes AGAIN, so an unlock or lock started in another
   // shell meanwhile refuses by name instead of parking.
   const founded = (await storeVerb("persona-new", { handleIndex: index, ...(faceRouteRef ? { faceRouteRef } : {}) })).output as unknown as FoundFaceResult & { readonly lit?: boolean; readonly lightRefused?: string };
@@ -416,7 +453,7 @@ async function personaNew(args: ParsedArgs): Promise<number> {
     console.log("  Keep both carriers yourself, apart from this device and apart from each other. Handing one to another person makes that person plus this device able to rebuild the root.");
     console.log(`  recorded-code   ${recordedCode}`);
     console.log(`  escrow-carrier  ${escrowCarrier}`);
-  }, await gatherWard(`lares persona new ${index} (the recovery split reads the face root)`)) : null;
+  }, await gatherWard(`lares persona new ${index} (the recovery split reads the face root)`, index)) : null;
 
   // The founding act above is the ONE door that mints a persona root; this reads the root it stood (or the one
   // already standing), never mints one. Then set the PRIVATE pet-name; renameOwnPersona keeps its own guard.
@@ -426,9 +463,9 @@ async function personaNew(args: ParsedArgs): Promise<number> {
   // The pet-name the face wore before this naming finds the label it wrote at its creation, where its stage answers no relation.
   const formerPetname = founded.alreadyStood ? await ownPersonaPetname(petnames, index).catch(() => undefined) ?? null : null;
   await renameOwnPersona(petnames, index, name);
-  // THE FACE NAMES ITSELF AT ITS CREATION: its label (relation -> pet-name) lands now, beside the sealed pet-name, so a seed
-  // after a re-founding adopts its folders by this name though no face read ran first. A face that already stood answers its
-  // relation off its own stage, else off the one label naming it under its former pet-name.
+  // THE FACE NAMES ITSELF AT ITS CREATION: its label (relation -> pet-name) lands now, beside the sealed pet-name, though no
+  // face read ran first. A face that already stood answers its relation off its own stage, else off the one label naming it
+  // under its former pet-name; a new pet-name moves its root (`faces/<pet name>/`) along with it.
   await labelFaceAtNaming({ handleIndex: index, petname: name, relation: founded.faceRelation ?? null, formerPetname }, faceRelationOnStage);
 
   // The DECLARATION rides its own store, so the private label never becomes a public commitment by matching
@@ -491,6 +528,7 @@ async function personaList(args: ParsedArgs): Promise<number> {
     roster = { roots: [], orphans: [] };
   }
   const held = roster.roots.map(({ handleIndex }) => handleIndex);
+  const groupOf = new Map(roster.roots.map((r) => [r.handleIndex, r.group ?? null]));
   const lockedFaces = listFaceOrdinals().filter((i) => !held.includes(i));
   const orphans = roster.orphans;
   const { petnames, declarations } = fleetStores();
@@ -498,6 +536,7 @@ async function personaList(args: ParsedArgs): Promise<number> {
   const rows = await Promise.all(
     held.map(async (handleIndex) => ({
       handleIndex,
+      group: groupOf.get(handleIndex) ?? null,
       petname: (await ownPersonaPetname(petnames, handleIndex)) ?? null,
       handle: (await declarations.get(handleIndex))?.handle ?? null,
       seat: (await declarations.get(handleIndex))?.seat === true,
@@ -523,7 +562,7 @@ async function personaList(args: ParsedArgs): Promise<number> {
       console.log("personas (the private multitude — private label -> declared Handle):");
       for (const r of rows) {
         const declares = `${r.handle ? `  ->  "${r.handle}"` : ""}${r.seat ? ` [stands for a Kahu seat as "${r.chair}"]` : ""}`;
-        console.log(`  h${r.handleIndex}  ${r.petname ?? "(unnamed)"}${declares}`);
+        console.log(`  h${r.handleIndex}  ${r.petname ?? "(unnamed)"}${declares}${r.group ? `  group ${r.group}` : ""}`);
       }
     },
   });

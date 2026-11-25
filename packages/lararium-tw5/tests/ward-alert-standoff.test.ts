@@ -16,6 +16,7 @@ import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { makeWardAlertReactor, ACTIVE_WIKI_URI } from "../src/index.js";
 import type { DaemonMsg_WikiAlert } from "../src/index.js";
 import { placeSystemAlert, systemAlertTitle } from "../src/wiki-behavior.js";
+import { fileWardRefusal } from "../src/worker-data-verbs.js";
 
 async function daemon(): Promise<CompositeStore> {
   const composite = new CompositeStore();
@@ -56,6 +57,16 @@ describe("the ward rail keys a standoff", () => {
     await react({ ...conflict("cccc3333cccc3333"), resolved: true });
     expect(await rows(control)).toEqual(before);
     expect(posted.at(-1)).toMatchObject({ kind: "disk-ward", key: "cccc3333cccc3333", clear: true, wikiSlug: "elyncia" });
+  });
+
+  test("a stand-off the person's own collapse rule settled files one row naming the rule, and raises no alert", async () => {
+    const composite = await daemon();
+    const control = memoryControlStore();
+    const posted: Array<Record<string, unknown>> = [];
+    await fileWardRefusal(composite, control, (m) => posted.push(m as unknown as Record<string, unknown>), { ...conflict("dddd4444dddd4444"), wardKind: "standoff-collapsed", auditOnly: true, rule: "slot-disjoint", reason: "slot-disjoint collapsed the stand-off" });
+    expect(posted, "nothing awaits anyone").toEqual([]);
+    const row = (await control.get(`${WARD_AUDIT_URI_PREFIX}dddd4444dddd4444`))!.tiddler as Record<string, unknown>;
+    expect(row).toMatchObject({ "alert-kind": "standoff-collapsed", rule: "slot-disjoint", standoff: "dddd4444dddd4444" });
   });
 
   test("CONTROL: a refusal that names no standoff files a row each time and posts an unkeyed alert", async () => {

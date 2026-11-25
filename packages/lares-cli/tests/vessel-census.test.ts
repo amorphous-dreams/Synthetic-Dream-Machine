@@ -2,15 +2,21 @@
  * `lares vessel census` — what a stop would drop, named item by item.
  *
  *   V1  a save held in memory and a carrier the projector has not settled each print one line; exit 3.
+ *   V1b an unnamed row of sync states alone (`save-unnamed`, `contentFree`) reads under `unasked` (document, saves, bytes,
+ *       age), never as an item: clean, exit 0; beside it an owed save still blocks (V1c); an unnamed row holding any content
+ *       save, whoever made it, or one that names no `contentFree`, blocks as owed and names its ways on (V1d, fail closed).
  *   V2  a clean vessel answers clean; exit 0, and the JSON names empty lists.
  *   V3  a line that cannot answer (no socket, a silent custody door, an island that refuses) exits 2 by name and
  *       never reads clean.
  *   V4  the shore census reads both islands' pages; an island that mounts no projection holds none.
+ *   V7  a file a mirror's checkout never tracked reads by path, an owed commit like an unsealed save: one line, exit 3,
+ *       the JSON item names the path; both islands naming one path read it once, and a checkout git cannot read lands
+ *       unanswered by its root.
  */
 import { describe, test, expect, vi, afterEach } from "vitest";
 import { VERB_RESULT_KEY } from "@lararium/mesh";
 import { cmdCensus, readCensus, type CensusLines } from "../src/commands/census.js";
-import { askShoreCensus } from "../src/shore-core.js";
+import { askShoreCensus, type ShoreCensus } from "../src/shore-core.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 import type { SubmitResult } from "../src/verb-result.js";
 
@@ -46,6 +52,65 @@ describe("the vessel census", () => {
     expect(c.err.join("\n")).toMatch(/2 item\(s\) rest nowhere yet/);
   });
 
+  test("V1b RED — a save-unnamed row of sync states alone (contentFree) reads unasked (document, saves, bytes, age): never an unreadable shape, never an item a stop drops", async () => {
+    const row = { documentId: "doc-heads", refusal: "save-unnamed", saves: 3, bagId: null, bytes: 6, contentFree: true, heldAcross: 9 };
+    const unnamed = lines({ custody: async () => ({ op: "census", held: [row], standing: "hearth" }) });
+    const reading = await readCensus(unnamed);
+    expect(reading.unanswered).toEqual([]);
+    expect(reading.items).toEqual([]);
+    expect(reading.clean).toBe(true);
+    expect(reading.unasked).toEqual([{ documentId: "doc-heads", saves: 3, bytes: 6, heldAcross: 9 }]);
+    const c = capture();
+    expect(await cmdCensus(args(false), unnamed)).toBe(0);
+    expect(c.out).toEqual(["census: clean — no save waits in memory, and the disk projector owes no carrier"]);
+    expect(c.err.join("\n")).toContain("census: unasked  doc doc-heads  3 save(s), 6 byte(s), held across 9 later save(s): sync states alone, peers' heads and no change, so a stop drops no content here");
+    c.out.length = 0;
+    expect(await cmdCensus(args(true), unnamed)).toBe(0);
+    expect(JSON.parse(c.out.join("")).data.census).toEqual({ clean: true, items: [], unanswered: [], unasked: [{ documentId: "doc-heads", saves: 3, bytes: 6, heldAcross: 9 }] });
+  });
+
+  test("V1c CONTROL — beside an unasked row, a save this vessel owes still blocks: exit 3, the owed save alone an item", async () => {
+    const c = capture();
+    const code = await cmdCensus(args(false), lines({
+      custody: async () => ({ op: "census", standing: "hearth", held: [
+        { documentId: "doc-heads", refusal: "save-unnamed", saves: 1, bagId: null, bytes: 2, contentFree: true, heldAcross: 0 },
+        { documentId: "doc-heron", refusal: "save-unsealed", saves: 1, bagId: "lar:///ha.ka.ba/bags/notes" },
+      ] }),
+    }));
+    expect(code).toBe(3);
+    expect(c.out).toEqual(["held-save  save-unsealed  doc doc-heron  1 save(s) in memory  bag lar:///ha.ka.ba/bags/notes"]);
+    expect(c.err.join("\n")).toMatch(/1 item\(s\) rest nowhere yet/);
+    expect(c.err.join("\n")).toContain("census: unasked  doc doc-heads");
+  });
+
+  test("V1d RED — FAIL CLOSED: an unnamed row holding any content save (a peer's push, a local change), or one from a vessel that names no contentFree, blocks the stop and names its ways on", async () => {
+    for (const row of [
+      { documentId: "doc-peer-content", refusal: "save-unnamed", saves: 2, bagId: null, bytes: 90, contentFree: false, heldAcross: 1 },
+      { documentId: "doc-shape-unread", refusal: "save-unnamed", saves: 1, bagId: null },
+    ]) {
+      const c = capture();
+      const reading = await readCensus(lines({ custody: async () => ({ op: "census", held: [row], standing: "hearth" }) }));
+      expect(reading.clean, row.documentId).toBe(false);
+      expect(reading.unasked, row.documentId).toBeUndefined();
+      expect(reading.items, row.documentId).toEqual([{ kind: "held-save", refusal: "save-unnamed", documentId: row.documentId, saves: row.saves, bagId: null }]);
+      expect(await cmdCensus(args(false), lines({ custody: async () => ({ op: "census", held: [row], standing: "hearth" }) })), row.documentId).toBe(3);
+      expect(c.out.join("\n"), row.documentId).toContain(`held-save  save-unnamed  doc ${row.documentId}  ${row.saves} save(s) in memory  bag (none mapped)  (no map or roster names it: read who carries it with \`lares vessel census --docs\`, then open the bag that owns it so its saves land, or type accept-loss at down)`);
+      vi.restoreAllMocks();
+    }
+  });
+
+  test("V7 — a file the checkout never tracked prints by path, an owed commit, and the census exits 3", async () => {
+    const c = capture();
+    const PATH = "/lar/workspaces/sdm/wikis/lares/ha.ka.ba/lares/docs/history/first-contact.mem";
+    const owed = lines({ shore: async () => ({ carriers: [], untracked: [{ path: PATH, bagId: "lares", island: "wiki" }], unanswered: [] }) });
+    expect(await cmdCensus(args(false), owed)).toBe(3);
+    expect(c.out).toEqual([`untracked  ${PATH}  bag lares  island wiki  (an owed commit: commit it, or remove it by hand)`]);
+    expect(c.err.join("\n")).toMatch(/1 item\(s\) rest nowhere yet/);
+    c.out.length = 0;
+    expect(await cmdCensus(args(true), owed)).toBe(3);
+    expect(JSON.parse(c.out.join("")).data.census.items).toEqual([{ kind: "untracked", path: PATH, bagId: "lares", island: "wiki" }]);
+  });
+
   test("V2 — a clean vessel answers clean and exits 0; the JSON names empty lists", async () => {
     const c = capture();
     expect(await cmdCensus(args(false), lines({}))).toBe(0);
@@ -69,6 +134,20 @@ describe("the vessel census", () => {
     const reading = await readCensus(lines({ custody: async () => ({ op: "census", held: [], standing: "hearth", locked: false, facesLit: [0, 1], facesLocked: [2] }) }));
     expect(reading.facesLit).toEqual([0, 1]);
     expect(reading.unanswered).toEqual([{ part: "the face h2", why: "h2 stands locked; unlock it (`lares vault unlock --face 2`), then down" }]);
+  });
+
+  test("V6 census-names-none-worn: faces lit and none worn, the census says so and names the wear; CONTROL: a worn face names none", async () => {
+    const c = capture();
+    const unsettled: ShoreCensus = { carriers: [{ state: "pending", uri: "lar:///ha.ka.ba/notes/pond", bagId: "notes", island: "wiki" }], unanswered: [] };
+    const noneWorn = lines({ custody: async () => ({ op: "census", held: [], standing: "hearth", locked: false, facesLit: [0, 1, 2] }), shore: async () => unsettled });
+    expect((await readCensus(noneWorn)).worn).toBeNull();
+    expect(await cmdCensus(args(false), noneWorn)).toBe(3);
+    expect(c.err.join("\n")).toMatch(/^census: no face worn \(h0, h1, h2 stand open\): wear one \(`lares wear N`\), then down$/m);
+    c.err.length = 0;
+    const worn = lines({ custody: async () => ({ op: "census", held: [], standing: "hearth", locked: false, facesLit: [0, 1, 2], worn: 1 }), shore: async () => unsettled });
+    expect((await readCensus(worn)).worn).toBe(1);
+    expect(await cmdCensus(args(false), worn)).toBe(3);
+    expect(c.err.join("\n")).not.toMatch(/no face worn/);
   });
 
   test("V3 — a line that cannot answer exits 2 by name and never reads clean", async () => {
@@ -120,10 +199,13 @@ describe("the shore census", () => {
       seen.push({ name, after: shoreArgs["after"] });
       if (name === "wiki-act") {
         return shoreArgs["after"] === undefined
-          ? answer({ ok: true, op: "census", carriers: [{ state: "failed", uri: "lar:///a/one", bagId: "b" }], carrierCount: 2, drained: true, next: "c1" })
+          ? answer({ ok: true, op: "census", carriers: [{ state: "failed", uri: "lar:///a/one", bagId: "b" }], carrierCount: 2, drained: true, next: "c1",
+            untracked: [{ path: "/lar/workspaces/sdm/wikis/lares/ha.ka.ba/lares/docs/history/first-contact.mem", bagId: "lares" }] })
           : answer({ ok: true, op: "census", carriers: [{ state: "pending", uri: "lar:///a/two", bagId: null }], carrierCount: 2, drained: true, next: null });
       }
-      return answer({ ok: false, refusal: "no-disk-shore", why: "this island mounts no disk projection" });
+      return answer({ ok: true, op: "census", carriers: [], carrierCount: 0, drained: true, next: null,
+        untracked: [{ path: "/lar/workspaces/sdm/wikis/lares/ha.ka.ba/lares/docs/history/first-contact.mem", bagId: "lares" }],
+        untrackedUnread: [{ root: "/lar/workspaces/sdm/bags/lares", why: "git cannot run in this runtime" }] });
     };
     const census = await askShoreCensus("did:test", run);
     expect(census).toEqual({
@@ -131,7 +213,8 @@ describe("the shore census", () => {
         { state: "failed", uri: "lar:///a/one", bagId: "b", island: "wiki" },
         { state: "pending", uri: "lar:///a/two", bagId: null, island: "wiki" },
       ],
-      unanswered: [],
+      untracked: [{ path: "/lar/workspaces/sdm/wikis/lares/ha.ka.ba/lares/docs/history/first-contact.mem", bagId: "lares", island: "wiki" }],
+      unanswered: [{ part: "the checkout under /lar/workspaces/sdm/bags/lares", why: "git cannot run in this runtime" }],
     });
     expect(seen).toEqual([{ name: "wiki-act", after: undefined }, { name: "wiki-act", after: "c1" }, { name: "shore", after: undefined }]);
   });
@@ -143,5 +226,16 @@ describe("the shore census", () => {
     const census = await askShoreCensus("did:test", run);
     expect(census.carriers).toEqual([]);
     expect(census.unanswered.map((u) => u.part)).toEqual(["the active wiki's island's disk projector", "the daemon island's disk projector"]);
+  });
+  test("R9 — a face served by custody and dark here prints its cause and clearing line, and leaves a clean census clean", async () => {
+    const c = capture();
+    const NOTE = "h1 served by custody, dark here: its light refused (daemon-down); clear it with `lares vault unlock` (it replays the lend), or the next custody event";
+    const code = await cmdCensus(args(false), lines({
+      custody: async () => ({ op: "census", held: [], standing: "hearth", facesLit: [0, 1], worn: 0, facesDark: [{ face: 1, cause: "daemon-down", note: NOTE }] }),
+    }));
+    expect(code).toBe(0);
+    expect(c.err).toContain(`census: ${NOTE}`);
+    expect((await readCensus(lines({ custody: async () => ({ op: "census", held: [], standing: "hearth", facesLit: [0, 1], worn: 0, facesDark: [{ face: 1, cause: "daemon-down", note: NOTE }] }) }))).facesDark)
+      .toEqual([{ face: 1, cause: "daemon-down", note: NOTE }]);
   });
 });

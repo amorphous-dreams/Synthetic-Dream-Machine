@@ -37,6 +37,7 @@ import { existsSync } from "node:fs";
 import { emit, exitFor, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
 import type { ParsedArgs } from "../parse-args.js";
+import { tableCovers } from "../verb-table.js";
 
 class LibraryUsageError extends Error {}
 
@@ -44,17 +45,21 @@ function usage(args: ParsedArgs, typed?: string): number {
   return refuseUsage(args, "library", helpLines("library"), typed ? `unknown sub-verb "${typed}"` : undefined);
 }
 
+/** Every verb the library door answers. */
+export const LIBRARY_VERBS = ["list", "show", "acquire", "verify", "index", "path"] as const;
+
 export async function cmdLibrary(args: ParsedArgs): Promise<number> {
   const verb = args.positional[0];
   try {
-    switch (verb) {
+    const v = verb as (typeof LIBRARY_VERBS)[number];
+    switch (v) {
       case "list":    return libraryList(args);
       case "show":    return libraryShow(args);
       case "acquire": return libraryAcquire(args);
       case "verify":  return libraryVerify(args);
       case "index":   return libraryIndex(args);
       case "path":    return libraryPath(args);
-      default:        return usage(args, verb);
+      default:        tableCovers(v); return usage(args, verb);
     }
   } catch (err) {
     const msg  = err instanceof Error ? err.message : String(err);

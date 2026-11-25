@@ -1,0 +1,37 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/library/oracles/e-jing/hexagram-18`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+attribution   = "the E-Jing-A-Ling Thing, by its unnamed authors at 23ae.com: \"we took the I-Ching and created Discordian answers\""
+cacheable     = true
+caption       = "18. Yog Sothoth"
+hexagram      = "18"
+l-space       = "archive"
+license       = "(K)opyLeft: Copyright Is Reversed. Reprint What You Like. The quoted third-party snippets ride under fair use (operator ruling 2026-11-20), each kept with its attribution as the page gives it"
+lines         = "011001"
+role          = "one e-jing hexagram reading, imported once from the page the oracle scout carried in (oracles/e-jing/index)"
+source        = "E-Jing-A-Ling Thing Hexagrams, 23ae.com (Wayback capture 2006-02-18)"
+source-sha256 = "d1a27264fae6598cc29ef44cf2c1fd5a7858534fd91f1122538b3ddf9527746e"
+tags          = ["oracle/reading", "oracle/e-jing"]
+title         = "lar:///ha.ka.ba/lares/library/oracles/e-jing/hexagram-18"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/library/oracles/e-jing/hexagram-18"
+```
+
+<<~ ahu slot=`#/reading`>>
+
+! ䷑ 18. Yog Sothoth
+
+<<<
+For Yog-Sothoth is the Gate. He knoweth where the Old Ones came forth in times past and where they came forth again when the cycle returneth.
+<<<
+
+This hexagram represents vile decay and rot. It can also represent corruption. Needless to say, this is not a very good sign. The E-Jing-A-Ling Thing suggests that you stay upbeat during this nasty time and foster a "Fuck it" attitude until Fortuna's wheel spins again. Cheerily wave to the rotting corpses and laugh with excessive mirth at the babies brains being eaten by worms. Cheerio-ho!
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;DJ1xpaJ3BqJpkM8avoBc7Nmfl5vcoz5lxZjLCq9DPVU`>>
+
+<<^ code=`&#x0004;` to=`?`>>

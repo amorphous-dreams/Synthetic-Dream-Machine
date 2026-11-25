@@ -11,6 +11,8 @@ import { readIdentityAnchors, type AnchorStore, type IdentityAnchors } from "@la
 import { identityHomeClosure } from "./identity-home-closure.js";
 import { CustodyRecordUnavailable } from "./custody-holder.js";
 import { readCustodyRecord, unlockedFaceOrdinals, writeCustodyRecord } from "./custody-seat.js";
+import { requireArchiveOf } from "@lararium/keyhive";
+import { loadFaceAtomOfGroup } from "./face-atom-store.js";
 import { personaGroupDigest } from "./persona-group-file.js";
 
 // The IdentityAnchors SHAPE + the AnchorStore shore lift to @lararium/mesh (platform-blind); this node
@@ -51,9 +53,25 @@ export function warnIfIdentityHomeOpen(): void {
   if (!verdict.closed) console.warn(`[identity] ${verdict.reading}`);
 }
 
-/** Write ONE persona's anchor set (founding and admit both land it here) and record the index into the explicit
- *  roster. `handleIndex` selects which persona (0 = founding). */
-export async function persistIdentityAnchors(anchors: IdentityAnchors, handleIndex = 0): Promise<void> {
+/**
+ * Whether `personaGroup`'s anchors may land at `handleIndex`: refuses `anchors-face-mismatch` where the floor index binds that
+ * face to another PersonaGroup. A founding and an admit ask this BEFORE their first row, so neither leaves a half-written act
+ * (an archive written, its anchors refused). A face so bound never takes another group's anchors: the holder's unlock reads a
+ * face's anchors against its index entry, and a mismatched face never opens again.
+ */
+export function requireAnchorsLand(personaGroup: string, handleIndex: number): void {
+  const entry = readFaceIndexSync(larIdentityDir()).faces[handleIndex];
+  if (entry !== undefined && "fcid" in entry && entry.group !== null && entry.group !== personaGroupDigest(personaGroup)) {
+    throw new Error(`anchors-face-mismatch: face h${handleIndex} stands under another PersonaGroup than this act's own; nothing was written`);
+  }
+}
+
+/** Write ONE persona's anchor set (founding and admit both land it here). `handleIndex` names the face the row rests in,
+ *  always: EACH ANCHORS ROW NAMES ITS FACE. Where the floor index already binds that face to a PersonaGroup, the anchors must
+ *  name the same group, or the write refuses `anchors-face-mismatch` and nothing writes (a join that lands at another face's
+ *  handle never hands that face its anchors). */
+export async function persistIdentityAnchors(anchors: IdentityAnchors, handleIndex: number): Promise<void> {
+  requireAnchorsLand(anchors.personaGroupId, handleIndex);
   // THE HOME CARRIES THE MODE, not just the file. A recursive mkdir takes the process umask for the directory,
   // ordinarily 0755, and the floor key rests here outside the seal. Created owner-only, then READ BACK and
   // reported: a home that already stood open keeps its mode, because a vessel widened on purpose has reasons and
@@ -105,6 +123,10 @@ export function listFaceCustodyIds(): Array<{ readonly ordinal: number; readonly
 
 /** The veil archive family's filename law: one row per PersonaGroup. */
 export const VEIL_ARCHIVE_FILE = /^veil-archive-g([0-9a-f]{64})\.bin$/;
+/** One generation back: the row a face's last overwrite replaced, so a write can be reversed. Never more than one. */
+export const VEIL_ARCHIVE_PREV_FILE = /^veil-archive-g([0-9a-f]{64})\.bin\.prev$/;
+/** A row moved aside because it held another identity's Archive (`face-rehive`), named by its own digest; never deleted. */
+export const VEIL_ARCHIVE_ASIDE_FILE = /^veil-archive-g([0-9a-f]{64})\.bin\.mismatch-([0-9a-f]{16})$/;
 
 /** One face's veil archive filename. */
 export function veilArchiveFile(personaGroup: string): string {
@@ -116,16 +138,106 @@ export function veilArchivePath(personaGroup: string): string {
   return faceFilePathSync(larIdentityDir(), { group: personaGroupDigest(personaGroup) }, veilArchiveFile(personaGroup));
 }
 
-/** Seal ONE face's veil archive: the group creator's prekeys and key agreement state survive a boot, or material
- *  keyed to the card that veil presented stops opening and its creator seats nobody. */
-export async function persistVeilArchive(bytes: Uint8Array, personaGroup: string): Promise<void> {
-  mkdirSync(larIdentityDir(), { recursive: true, mode: 0o700 });
-  await writeCustodyRecord("identity", veilArchiveFile(personaGroup), bytes);
+/** One face's previous veil archive filename: the generation its last overwrite replaced. */
+export function veilArchivePrevFile(personaGroup: string): string {
+  return `${veilArchiveFile(personaGroup)}.prev`;
 }
 
-/** ONE face's veil archive, or null when none stands. */
-export function loadVeilArchive(personaGroup: string): Promise<Uint8Array | null> {
-  return readCustodyRecord("identity", veilArchiveFile(personaGroup));
+/** A face holds no atom, so nothing can prove an Archive is its own: the seal refuses rather than write unproven bytes. */
+export class VeilArchiveUnproven extends Error {
+  override readonly name = "VeilArchiveUnproven";
+  constructor(readonly personaGroup: string) {
+    super(`archive-unproven: face ${personaGroup.slice(0, 8)}… holds no atom, so no Archive proves itself its own and none rests`);
+  }
+}
+
+const sameBytes = (a: Uint8Array, b: Uint8Array): boolean => a.length === b.length && a.every((byte, i) => byte === b[i]);
+
+/**
+ * Seal ONE face's veil archive: the group creator's prekeys and key agreement state survive a boot, or material
+ * keyed to the card that veil presented stops opening and its creator seats nobody.
+ *
+ * THE SEAL PROVES THE BYTES ARE THE FACE'S OWN. Before anything moves, the face's atom seed stands a throwaway provider
+ * over the bytes (`requireArchiveOf`): an Archive that restores another identity refuses `ArchiveIdentityMismatch`, one
+ * that does not decode refuses its own fault, and a face holding no atom refuses `VeilArchiveUnproven`. On any refusal
+ * the row stands unchanged. This one guard stands under every route that reaches the row, named or not.
+ *
+ * ONE GENERATION BACK. An overwrite first seals the standing row's bytes as `….bin.prev` (replacing any older one), then
+ * the new bytes over the row, each a whole sealed write: a stop between the two leaves the standing row whole beside its
+ * copy. Only a standing row the face's own seed proves rotates: a wrong current (another identity's, or bytes that decode as
+ * none) never displaces the `.prev` it would overwrite, and a row that stands and does not open is never copied.
+ *
+ * ONE WRITE OF A FACE AT A TIME. A face's writes serialize in this process (the one writer of its rows), so two saves never
+ * both read one standing row and rotate it twice: the later rotates the earlier.
+ */
+export function persistVeilArchive(bytes: Uint8Array, personaGroup: string): Promise<void> {
+  const prior = veilWrites.get(personaGroup) ?? Promise.resolve();
+  const run = prior.catch(() => undefined).then(() => sealVeilArchive(bytes, personaGroup));
+  veilWrites.set(personaGroup, run);
+  void run.finally(() => { if (veilWrites.get(personaGroup) === run) veilWrites.delete(personaGroup); }).catch(() => undefined);
+  return run;
+}
+
+/** Each face's write in flight, by PersonaGroup: the next write of that face waits on it. */
+const veilWrites = new Map<string, Promise<void>>();
+
+/** Whether `bytes` restore the identity `seed` derives; an Archive of another identity, or bytes that decode as none, read false. */
+async function provenBy(seed: Uint8Array, bytes: Uint8Array): Promise<boolean> {
+  try { await requireArchiveOf(seed, bytes); return true; } catch { return false; }
+}
+
+async function sealVeilArchive(bytes: Uint8Array, personaGroup: string): Promise<void> {
+  const seed = await loadFaceAtomOfGroup(personaGroup);
+  if (!seed) throw new VeilArchiveUnproven(personaGroup);
+  try {
+    await requireArchiveOf(seed, bytes);
+    mkdirSync(larIdentityDir(), { recursive: true, mode: 0o700 });
+    const file = veilArchiveFile(personaGroup);
+    const standing = await readCustodyRecord("identity", file).catch((error: unknown) => {
+      if (error instanceof CustodyRecordUnavailable) return null;
+      throw error;
+    });
+    if (standing && !sameBytes(standing, bytes) && await provenBy(seed, standing)) {
+      await writeCustodyRecord("identity", veilArchivePrevFile(personaGroup), standing);
+    }
+    await writeCustodyRecord("identity", file, bytes);
+  } finally {
+    seed.fill(0);
+  }
+}
+
+/** ONE face's previous veil archive (the generation its last overwrite replaced), or null when none stands. */
+export function loadVeilArchivePrev(personaGroup: string): Promise<Uint8Array | null> {
+  return readCustodyRecord("identity", veilArchivePrevFile(personaGroup));
+}
+
+/**
+ * ONE face's veil archive, or null when none stands: a row a rehive left standing as its marker reads as none. The read waits
+ * on that face's write already queued (`veilWrites`), so a reader that follows a rest (a supervisor reopen) never reads one
+ * card behind; a queued write that refuses leaves the row standing, and the read takes that.
+ */
+export async function loadVeilArchive(personaGroup: string): Promise<Uint8Array | null> {
+  await veilWrites.get(personaGroup)?.catch(() => undefined);
+  const bytes = await readCustodyRecord("identity", veilArchiveFile(personaGroup));
+  return bytes !== null && rehiveMarkerAside(bytes) !== null ? null : bytes;
+}
+
+/**
+ * THE REHIVE'S MARKER: the bytes a rehive seals over a face's veil-archive row in ONE write, in place of another identity's
+ * Archive, naming where that Archive rests aside. Every reader takes it for no Archive, so the face's next boot stands from its
+ * seed; the seal never rotates it into `.prev` (no seed proves it); a retry over it reads the rehive as done.
+ */
+const REHIVE_MARKER = "lares-rehive-marker\n";
+export function rehiveMarker(aside: string): Uint8Array {
+  return new TextEncoder().encode(`${REHIVE_MARKER}${aside}`);
+}
+/** The aside row a rehive marker names, or null where the bytes hold no marker. */
+export function rehiveMarkerAside(bytes: Uint8Array): string | null {
+  if (bytes.length > 512) return null;
+  const text = new TextDecoder("utf-8", { fatal: false }).decode(bytes);
+  if (!text.startsWith(REHIVE_MARKER)) return null;
+  const aside = text.slice(REHIVE_MARKER.length);
+  return VEIL_ARCHIVE_ASIDE_FILE.test(aside) ? aside : null;
 }
 
 /** The node AnchorStore: the shore the PersonaVault carries. `save` writes the face's own anchors row;

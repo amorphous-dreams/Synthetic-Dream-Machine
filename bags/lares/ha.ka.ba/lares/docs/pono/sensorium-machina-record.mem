@@ -1,0 +1,146 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/sensorium-machina-record`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = false
+l-space   = "stable"
+role      = "docs record for the sensorium machina — the design's history (the decomposition it left, the measurements stamped to a session, the dated first capture, the nine self-manufacturing instruments) moved out of the api meme under the ever-speaking present"
+tags      = ["api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/docs/pono/sensorium-machina-record"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/pono/sensorium-machina-record"
+```
+
+<<~ ahu slot=`#/meme-header`>>
+
+! Sensorium Machina — Record
+
+This docs record keeps the history behind <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/sensorium-machina`>>. The api meme states the design of record in the present; this record keeps, verbatim, each passage the ever-speaking-present cure turned, so the story of how the design arrived stays findable. It does not outrank the law.
+
+Facts the passages carry: the first design read the sensorium as a decomposition and Locatello's result overturned it; the form plane once vanished from every report while holding 914 rows; the coherence gate reported health on every bed it read; the `admitThreshold` dial left the design once the store inferred the cosine; the 89.1% figure came from one session's live transcript bed; the first memory-sensorium capture ran 2026-07-10; the Hodge-circulation diagnostic got its name in June and no build followed; nine instruments manufactured their own findings before the design settled, the ninth a diagonal Gaussian that inverts at 384 dimensions.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/moved-text`>>
+
+!! Moved text, verbatim
+
+Each block holds a passage as the api meme carried it before the cure.
+
+<<<
+''The day that overturned the centre.'' Its first design read the sensorium as a ''decomposition'' — five planes
+that FACTOR a stream into independent coordinates. It never did, and it cannot.
+''Locatello et al. (arXiv 1811.12359) prove unsupervised disentanglement impossible without an inductive''
+''bias'', and the house's own no-imposed-prior law forbade exactly that bias. The ambition and the law ran
+inconsistent from the first line. What the machina actually runs — what it ran all along, unnamed — reads
+as a ''COMPRESSION'': every plane estimates facets of ONE quantity, the past-future information-bottleneck
+in ritual clothes (Bialek–Tishby; #grounds). The two-part code holds the centre (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/sensorium-machina#/the-one-objective`>>), never a
+factorization.
+<<<
+
+<<<
+Silence there is how the form plane vanished from every report while holding 914 rows.
+<<<
+
+<<<
+reported ''health on every bed it ever read'': the health named a ''tautology'' — one plane heard three
+times. ''It was never anti-apophenia. It could not fire.''
+
+The consistency-radius organ (`sensorium_consistency.py`) already carries this in its own header
+<<<
+
+<<<
+!! Ki ~ the EXTEND register (the section that had to be earned)
+
+''Bands-as-frequency is dead.'' So the machina owes an honest answer to //what ki IS//, and the honest
+answer re-cuts the boundary rather than patching it.
+<<<
+
+<<<
+The reading ''li = STORED · ki = COMPUTED-ON-READ'' ''retires''
+''here.'' It fails on its own examples
+<<<
+
+<<<
+!!! A SECOND axis, and the confusion that cost us the bands
+
+The variance axis (`restrict | extend`) runs ''orthogonal'' to a
+provenance axis nobody had named:
+<<<
+
+<<<
+''Bands looked like a plane because the two axes got fused.'' A band is `induced` (we compute it) and its
+//product// — the address — is `restrict`-shaped (a label on the moment). Reading "induced" as "ki" made the
+band a plane; reading it on the variance axis dissolves it. ''Bands was never a plane. It was an ADDRESS'',
+and the address has ''moved into li'' as a stored prefix code (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/sensorium-machina#/the-grain`>>).
+<<<
+
+<<<
+''STANDING already knew it was ki.'' `persistence-keel.ts` says so in its own header, verbatim:
+<<<
+
+<<<
+it now runs on the ONE cohesion signal, and the per-band framing retires with the ladder
+<<<
+
+<<<
+The `admitThreshold` dial ''DELETES'' — the one knob the design most wanted to keep, gone because the store
+now infers it.
+<<<
+
+<<<
+''Membership was never made of clock. That is why ONE instrument reads both.''
+<<<
+
+<<<
+''`role == "user"` names TOOL OUTPUT 89.1% of the time'' (measured
+this session on the live transcript bed).
+<<<
+
+<<<
+''And a single-grammar instrument dies on it.'' The bed proved this before any detector ran
+(`pidgin_bed.py`, verbatim):
+<<<
+
+<<<
+status/BUILT; the first memory-sensorium capture ran 2026-07-10 note/
+<<<
+
+<<<
+status/BUILT; the beds that taught us the category error note/
+<<<
+
+<<<
+!! Owed / Open ~ what the canon still cannot answer
+<<<
+
+<<<
+under a green gate, and the machina can say so. This costs no new prior — it is the two-part code applied
+one level up, and it is ''the first thing to build.''
+<<<
+
+<<<
+''Named in June, never built'' (recall, verbatim: *"the coupling Hodge-circulation diagnostic … remains the next ki-side extension"*). It matters MORE now, not less: coupling stands
+<<<
+
+<<<
+Nine instruments manufactured their own findings before this design settled, and the ninth — a diagonal
+Gaussian that ''INVERTS at 384 dimensions'' — stayed ''invisible to every 2-D test.''
+<<<
+
+<<<
+Disposable witnesses now align owned MiniLM
+<<<
+
+<<<
+Five deep
+domains once read this one instrument in five dialects
+<<<
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;sD6wnKAOLnDX3TybX6BRjpetO8bzNdMGHP7ZlTr333Y`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -2,7 +2,6 @@
 // No vessel stands here: the walk itself runs once at each merge (`node tools/rite-walk.mjs --out <dir>`).
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -118,22 +117,96 @@ test("rite-walk-names-unreached: a receipt that turns an unreached step into a p
   assert.match(receiptFaults(forged("image", { cause: undefined })).join("\n"), /image: unreached and names no cause/);
   assert.match(receiptFaults(forged("found", { via: undefined })).join("\n"), /found: a bare pass over a staged-custody stand-in/);
   assert.match(receiptFaults(rows.filter((r) => r.step !== "export")).join("\n"), /export: the receipt carries no row/);
-  assert.match(receiptFaults(forged("seed", { runbook: "founding-runbook.mem" })).join("\n"), /seed: names no runbook line/);
+  assert.match(receiptFaults(forged("lay", { runbook: "founding-runbook.mem" })).join("\n"), /lay: names no runbook line/);
 });
 
 test("rite-walk-names-unreached: a step whose ground never stood reads `unreached: blocked:<step>`; hands that cannot reach answer their own cause", async () => {
   const failed = await stubWalk(async (step) => (step.id === "found" ? { ok: false, answer: "the founding refused" } : { ok: true, answer: "ok" }));
   assert.equal(row(failed.rows, "found").outcome, "fail");
   assert.deepEqual([row(failed.rows, "up").outcome, row(failed.rows, "up").cause], ["unreached", "blocked:found"]);
-  assert.deepEqual([row(failed.rows, "seed").outcome, row(failed.rows, "seed").cause], ["unreached", "blocked:up"]);
+  assert.deepEqual([row(failed.rows, "lay").outcome, row(failed.rows, "lay").cause], ["unreached", "blocked:up"]);
   assert.deepEqual(failed.rows.filter((r) => r.outcome === "pass").map((r) => r.step), []);
   assert.deepEqual(failed.stood, [], "no stand-in clears a hearth the walk never reached");
   assert.equal(row(failed.rows, "reset").cause, "host-shim");
-  const thrown = await stubWalk(async (step) => { if (step.id === "seed") throw new Error("the seed threw"); return { ok: true, answer: "ok" }; });
-  assert.deepEqual([row(thrown.rows, "seed").outcome, row(thrown.rows, "seed").answer], ["fail", "the seed threw"]);
+  const thrown = await stubWalk(async (step) => { if (step.id === "lay") throw new Error("the lay threw"); return { ok: true, answer: "ok" }; });
+  assert.deepEqual([row(thrown.rows, "lay").outcome, row(thrown.rows, "lay").answer], ["fail", "the lay threw"]);
   const seatless = await stubWalk(async (step) => (step.id === "memory" ? { unreached: "seat-interpreter" } : { ok: true, answer: "ok" }));
   assert.deepEqual([row(seatless.rows, "memory").outcome, row(seatless.rows, "memory").cause], ["unreached", "seat-interpreter"]);
   assert.deepEqual(receiptFaults(seatless.rows), []);
+});
+
+// ── rite-walk-wears-what-stood ──────────────────────────────────────────────────────────────────────────────────────
+
+const ATTACH_CAUSE = "[vessel-host] fault while waiting for ea: manifest handler threw: WorkingLayerAttachRefusal: [daemon] WorkingLayerAttachRefusal: working layer \"lar:///ha.ka.ba/wikis/daemon/working\" could not attach (" + "the cause the walker must carry whole ".repeat(20) + "); start the vessel again";
+const switchRefusedAnswer = (wears) => ({ op: "unlock", reading: "already-unlocked", wears, standing: "hearth", held: true, switchRefused: ATTACH_CAUSE, face: 2, wornAgain: 1 });
+const runStep = (id, answer) => STEPS.find((s) => s.id === id).run({ vars: {}, wear: async () => answer });
+
+test("rite-walk-wears-what-stood: a wear whose switch refused fails the step, whatever face the frame names", async () => {
+  for (const id of ["wear-referee", "hold-wear-referee", "lay-wear-referee"]) {
+    for (const wears of [2, 1]) assert.equal((await runStep(id, switchRefusedAnswer(wears))).ok, false, `${id} passed over a refused switch (wears ${wears})`);
+  }
+});
+
+// ── walk-holds-the-kahua-item ───────────────────────────────────────────────────────────────────────────────────────
+
+const KAHUA_ITEM = "lar:///ha.ka.ba/kahua/law/rite-walk";
+const kahuaCtx = (vars, { list = "", lifts = [] } = {}) => ({
+  vars, cli: async (args) => {
+    if (args[0] === "kahua") return { code: 0, stdout: list, stderr: "" };
+    lifts.push(args.join(" "));
+    return { code: 0, stdout: "", stderr: "" };
+  },
+});
+const liftEngineer = STEPS.find((s) => s.id === "lift-kahua-engineer");
+
+test("walk-holds-the-kahua-item: the engineer's lift fails by name when nothing previewed and the stage reads nothing", async () => {
+  const r = await liftEngineer.run(kahuaCtx({ liftKahua: 0, layText: "lay: ok" }));
+  assert.equal(r.ok, false);
+  assert.ok(r.answer.includes(KAHUA_ITEM));
+});
+
+test("CONTROL walk-holds-the-kahua-item: a preview naming the item lifts it, and a stage that already reads it passes", async () => {
+  const lifts = [];
+  const lifted = await liftEngineer.run(kahuaCtx({ liftKahua: 1, layText: `kahua: 1 item(s) stand pending\n${KAHUA_ITEM}` }, { list: KAHUA_ITEM, lifts }));
+  assert.equal(lifted.ok, true);
+  assert.ok(lifts[0].includes("--lift-kahua 1"));
+  assert.equal((await liftEngineer.run(kahuaCtx({ liftKahua: 0 }, { list: KAHUA_ITEM }))).ok, true);
+});
+
+test("walk-holds-the-kahua-item: a lift that lands yet leaves the stage without the item fails", async () => {
+  assert.equal((await liftEngineer.run(kahuaCtx({ liftKahua: 1, layText: KAHUA_ITEM }))).ok, false);
+});
+
+test("walk-holds-the-kahua-item: the import wears the engineer first and fails where its stage never reads the item", async () => {
+  const imp = STEPS.find((s) => s.id === "import");
+  const wears = [];
+  const mk = (list) => ({ carry: () => "carry", wear: async (f) => (wears.push(f), { wears: f }),
+    cli: async (args) => (args[0] === "kahua" ? { code: 0, stdout: list, stderr: "" } : { code: 0, stdout: "landed 0 already 1", stderr: "" }) });
+  assert.equal((await imp.run(mk(""))).ok, false);
+  const ok = await imp.run(mk(KAHUA_ITEM));
+  assert.equal(ok.ok, true);
+  assert.ok(wears[0] === 1 && wears.at(-1) === 2);
+});
+
+test("CONTROL rite-walk-wears-what-stood: a wear that stood the asked face passes", async () => {
+  assert.equal((await runStep("lay-wear-referee", { op: "unlock", reading: "already-unlocked", wears: 2, standing: "hearth", held: true })).ok, true);
+});
+
+test("rite-walk-wears-what-stood: a refused switch's cause rides the row whole, past the answer's cut", async () => {
+  const step = STEPS.find((s) => s.id === "lay-wear-referee");
+  const [r] = await walk([{ ...step, needs: [], line: 1 }], { run: (s) => s.run({ vars: {}, wear: async () => switchRefusedAnswer(1) }), now: () => 0 });
+  assert.equal(r.outcome, "fail");
+  assert.ok(Buffer.byteLength(r.answer) <= 400, "the answer keeps its cut");
+  assert.equal(r.refusal, ATTACH_CAUSE);
+});
+
+test("rite-walk-wears-what-stood: a refused act's words ride whole, and a pass carries no refusal", async () => {
+  const long = { op: "unlock", reading: "opens", held: false, refused: ATTACH_CAUSE };
+  const [failed, passed] = await walk([{ id: "a", line: 1 }, { id: "b", line: 2 }], {
+    run: async (s) => (s.id === "a" ? { ok: false, answer: `the engineer never stood worn: ${JSON.stringify(long)}` } : { ok: true, answer: "ok" }), now: () => 0,
+  });
+  assert.equal(failed.refusal, ATTACH_CAUSE);
+  assert.equal("refusal" in passed, false);
 });
 
 test("CONTROL rite-walk-names-unreached: the receipt names the head and the carrier, and its outcome digest moves with an outcome and never with an answer", async () => {
@@ -148,10 +221,10 @@ test("CONTROL rite-walk-names-unreached: the receipt names the head and the carr
   assert.deepEqual([a.tally.unreached, a.tally.fail, a.tally.firstFail], [3, 0, null]);
   const b = receipt({ ...inputs, rows: rows.map((r) => ({ ...r, answer: "another founding minted other ids", ms: 99 })) });
   assert.equal(b.outcomes, a.outcomes);
-  const c = receipt({ ...inputs, rows: rows.map((r) => (r.step === "seed" ? { ...r, outcome: "fail" } : r)) });
+  const c = receipt({ ...inputs, rows: rows.map((r) => (r.step === "lay" ? { ...r, outcome: "fail" } : r)) });
   assert.notEqual(c.outcomes, a.outcomes);
-  assert.equal(c.tally.firstFail, "seed");
-  assert.ok(Buffer.byteLength(row((await stubWalk(async () => ({ ok: true, answer: "é".repeat(900) }))).rows, "seed").answer) <= 400);
+  assert.equal(c.tally.firstFail, "lay");
+  assert.ok(Buffer.byteLength(row((await stubWalk(async () => ({ ok: true, answer: "é".repeat(900) }))).rows, "lay").answer) <= 400);
 });
 
 // ── rite-walk-scratch-only ──────────────────────────────────────────────────────────────────────────────────────────
@@ -227,7 +300,7 @@ test("rite-walk-scratch-only: the walker refuses a root in the checkout or a hom
 test("rite-walk-scratch-only: the walker's arguments refuse by name", () => {
   refuses(() => parseArgs(["--out"]), /--out names nothing/);
   refuses(() => parseArgs(["--live"]), /unknown argument --live/);
-  assert.deepEqual(parseArgs(["--out", "o", "--to", "seed", "--keep"]), { keep: true, bind: false, out: "o", to: "seed" });
+  assert.deepEqual(parseArgs(["--out", "o", "--to", "lay", "--keep"]), { keep: true, bind: false, out: "o", to: "lay" });
 });
 
 // ── the image leg ───────────────────────────────────────────────────────────────────────────────────────────────────
@@ -313,12 +386,6 @@ test("image-walk-keeps-the-outcome-law: a blocked step reads unreached, a throw 
   assert.match(imageLeg.imageReceiptFaults([{ ...row(rows, "d"), cause: undefined }, ...rows.filter((r) => r.step !== "d")], steps).join("\n"), /d: unreached and names no cause/);
 });
 
-test("rite-receipt-names-the-definitions-hash: the receipt step hands the door the walker's sha256, never its path", () => {
-  const args = imageLeg.receiptArgs("a".repeat(40));
-  const defs = args[args.indexOf("--definitions") + 1];
-  assert.match(defs, /^[0-9a-f]{64}$/);
-  assert.equal(defs, createHash("sha256").update(readFileSync(new URL("./rite-walk/image-leg.mjs", import.meta.url))).digest("hex"));
-});
 test("image-leg-table-ends-in-teardown, and the line refuses before any act where it names no scope", () => {
   const ids = imageLeg.IMAGE_STEPS.map((s) => s.id);
   assert.equal(ids.at(-1), "teardown");

@@ -102,10 +102,14 @@ describe("sense search trial receipt membership", () => {
     expect(result.filter_exhaustive).toBe(false);
   });
 
-  test("caller source and revision filters reject otherwise receipted rows", async () => {
+  // Each filter stands alone, so a dropped one cannot hide behind the other.
+  test.each([
+    ["source", ["--source-key", "source-other"]],
+    ["revision", ["--revision", "rev-other"]],
+  ])("the caller's %s filter alone rejects an otherwise receipted row", async (_which, filter) => {
     seam.candidates = [hit("cid-receipted", "source-current", "rev-current")];
 
-    expect(await run("search", "query", "--trial-root", "/tmp/trial-op", "--model-home", "/tmp/model-home", "--source-key", "source-other", "--revision", "rev-other", "--json"), seam.errors.join("\n")).toBe(0);
+    expect(await run("search", "query", "--trial-root", "/tmp/trial-op", "--model-home", "/tmp/model-home", ...filter, "--json"), seam.errors.join("\n")).toBe(0);
 
     const result = readOutput().data.result;
     expect(result.results).toEqual([]);

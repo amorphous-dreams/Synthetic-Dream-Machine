@@ -6,6 +6,7 @@
  * Meme: lar:///ha.ka.ba/lararium/api/disk-projection
  */
 
+import { vendoredCore } from "../../lararium-tw5/tests/test-wiki.js";
 import { afterEach, describe, expect, test } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -124,10 +125,10 @@ describe("the consent grant", () => {
 
   test("the daemon wiki's temp mirror stands beside its working top only under consent", () => {
     const face = "0b0e7f3a-1c2d-4e5f-8a9b-0c1d2e3f4a5b";
-    const base = { projectionRoot: "/p", canonBags: "/canon", faceRelation: face };
+    const base = { projectionRoot: "/p", canonBags: "/canon", face: { relation: face, segment: "Heron" } };
     expect(daemonDiskMirrors(base).some((m) => m.bagId === wikiSlotUri("daemon", "temp"))).toBe(false);
     const temp = daemonDiskMirrors({ ...base, temp: true }).find((m) => m.bagId === wikiSlotUri("daemon", "temp"));
-    expect(temp).toMatchObject({ mirrorRoot: `/p/wikis/daemon-${face}/temp`, mirrorClass: "recovery", tempLayer: true });
+    expect(temp).toMatchObject({ mirrorRoot: "/p/faces/Heron/wikis/daemon/temp", mirrorClass: "recovery", tempLayer: true });
   });
 });
 
@@ -333,7 +334,6 @@ describe("the mount", () => {
   test("a consented temp mirror reads its carriers back before the first pass, projects new user rows, and bars internal state", async () => {
     const { CompositeStore } = await import("@lararium/mesh");
     const { TW5Engine } = await import("../../lararium-tw5/src/tw5-vm.js");
-    const { TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME } = await import("../../lararium-tw5/src/generated-tw5-version.js");
     const { mountDiskProjection, mountedDiskProjector } = await import("../src/island-behaviors.js");
     const { larProjectionsHome } = await import("../src/vessel-paths.js");
     const mirrorRoot = join(larProjectionsHome(), "wikis", SLUG, "temp");
@@ -351,7 +351,7 @@ describe("the mount", () => {
     const composite = new CompositeStore();
     composite.addLayer({ bagId: BAG, store: temp, writable: true });
     const engine = new TW5Engine();
-    await engine.boot(new Uint8Array(readFileSync(join(TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME))));
+    await engine.boot(vendoredCore());
     const stop = mountDiskProjection({ recipe: { wikiSlug: SLUG }, diskMirrors: [
       { bagId: BAG, mirrorRoot, scope: "temp", mirrorClass: "recovery", tempLayer: true },
     ] } as never, { tw5: engine, composite, post: () => {}, wikiUri: "test" } as never)!;

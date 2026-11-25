@@ -1,10 +1,11 @@
 /**
  * face-labels — what a face relation wore, in plaintext where a re-founding never reaches: its pet-name (the LABEL) and the
- * override base each of its working copies forked from (the BASES sidecar). The seed reads both after a re-founding, so a
- * former face's folders adopt by pet-name and its copies keep the base they forked from, from disk alone.
+ * override base each of its working copies forked from (the BASES sidecar). The seed reads both after a re-founding, so the
+ * re-minted face's copies keep the base they forked from, from disk alone.
  *
- * A face's private mirrors key by its relation F (`wikis/daemon-<F>`, `bags/daemon-<F>`, `bags/kahua-<F>`). A re-founding
- * clears the hearth (the sealed rows that held the pet-name) and keeps the projections root, so the label names the face:
+ * A face's private mirrors key by its PET NAME (`faces/<pet name>/`, `bag-paths.ts`), so a re-found finds them where they stand.
+ * A re-founding clears the hearth (the sealed rows that held the pet-name) and keeps the projections root, so the label names
+ * which relation wore which pet name (and the face-segment rule reads every other face's name off it):
  * `<projections>/face-labels/<F>.json` holds `{ relation, petname, handleIndex }`. A base rides a record's meta envelope and
  * never projects, so the sidecar carries it: `<projections>/face-labels/<F>.bases.json` maps each working title to the carrier
  * identity (`carrierHash`, `sha256:…`) of the canon record its copy forked from.
@@ -31,6 +32,7 @@ import {
   faceLabelToWrite, isFaceLabelRelation, type FaceLabel, type FaceLabelInput,
 } from "@lararium/mesh";
 import { atomicWriteFileSync } from "./fs-atomic.js";
+import { faceSegmentRefusal, type FaceSegmentCode, type FaceSite } from "./bag-paths.js";
 
 export { FACE_LABELS_DIR, FACE_LABEL_SCHEMA, FACE_BASES_SCHEMA, type FaceLabel };
 
@@ -79,6 +81,26 @@ export function labelledRelations(projections: string): string[] {
   catch { return []; }
 }
 
+/**
+ * THE FACE'S SITE: its relation and the folder its pet name makes (`faces/<pet name>`), or why it makes none, by name. The other
+ * faces' segments come off the label shelf: a label under another relation that carries this very pet name names a former
+ * instance of this face (a re-found mints a new relation under the same pet name), so it never collides; a label whose pet name
+ * folds onto this one without matching it refuses (`face-segment-collision`), since no two faces share a root.
+ */
+export function faceSiteOf(face: FaceLabelInput, projections: string): { readonly site: FaceSite } | { readonly refused: { readonly code: FaceSegmentCode; readonly why: string } } {
+  const others: string[] = [];
+  for (const r of labelledRelations(projections)) {
+    if (r === face.relation) continue;
+    const label = readFaceLabel(r, projections);
+    if (label === null || label.petname.normalize("NFC") === face.petname?.normalize("NFC")) continue;
+    if (faceSegmentRefusal(label.petname) === null) others.push(label.petname.normalize("NFC"));
+  }
+  const refused = faceSegmentRefusal(face.petname, others);
+  if (refused !== null) return { refused };
+  if (!isFaceLabelRelation(face.relation)) return { refused: { code: "face-segment-empty", why: "a face with no relation names no private plane yet" } };
+  return { site: { relation: face.relation, segment: face.petname!.normalize("NFC") } };
+}
+
 /** Move a file under face-labels to `dest`; nothing where none stands or `dest` stands. Answers whether it moved. */
 export function moveFaceLabelFile(from: string, dest: string): boolean {
   if (!existsSync(from) || existsSync(dest)) return false;
@@ -101,11 +123,14 @@ export function readFaceBases(relation: string, projections: string): Record<str
 export function writeFaceBases(relation: string, bases: Readonly<Record<string, string>>, projections: string): boolean {
   if (!isFaceLabelRelation(relation)) return false;
   const sorted = Object.fromEntries(Object.entries(bases).filter(([, b]) => BASE.test(b)).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)));
-  const standing = readFaceBases(relation, projections);
-  if (JSON.stringify(standing) === JSON.stringify(sorted) && existsSync(faceBasesPath(relation, projections))) return false;
+  // THE BYTES DECIDE: the whole file compares, and a sidecar whose bytes differ takes this write.
+  const body = `${JSON.stringify({ schema: FACE_BASES_SCHEMA, relation, bases: sorted }, null, 2)}\n`;
+  let standing: string | null = null;
+  try { standing = readFileSync(faceBasesPath(relation, projections), "utf8"); } catch { standing = null; }
+  if (standing === body) return false;
   try {
     mkdirSync(faceLabelsDir(projections), { recursive: true });
-    atomicWriteFileSync(faceBasesPath(relation, projections), `${JSON.stringify({ schema: FACE_BASES_SCHEMA, relation, bases: sorted }, null, 2)}\n`, undefined, { mode: 0o600 });
+    atomicWriteFileSync(faceBasesPath(relation, projections), body, undefined, { mode: 0o600 });
     return true;
   } catch { return false; }
 }

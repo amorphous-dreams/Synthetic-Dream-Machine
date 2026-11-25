@@ -28,7 +28,7 @@ async function stand(cosign?: () => WardCosignPort | Promise<WardCosignPort>) {
   const doc = { tiddlers: {} } as LarDoc, rows = new Map<string, string>();
   const wiki: SwarmWikiPort = { read: async (t) => rows.get(t) ?? null, write: async (t, x) => { rows.set(t, x); }, writeNew: async (t, x) => (rows.has(t) ? false : (rows.set(t, x), true)),
     list: async (prefix) => [...rows.keys()].filter((t) => t.startsWith(prefix)) };
-  const trust = { hand: (k: string) => k === root.key, vessel: () => false, lead: () => false };
+  const trust = { hand: (k: string) => k === root.key, vessel: () => false, place: () => false, lead: () => false };
   const deps: SwarmDoorDeps = {
     group: GROUP, face: { group: GROUP, grant: (k) => k === root.key }, signer: root, trust, epoch: () => 0, wiki,
     board: { records: async () => swarmBoardRecords(doc, GROUP), land: async (act) => { writeSwarmBoardAct(doc, act); } },
@@ -39,7 +39,7 @@ async function stand(cosign?: () => WardCosignPort | Promise<WardCosignPort>) {
 
 describe("the co-sign weighs reach: a kukulu lei stays home", () => {
   test("RED: `ward-kukulu-lei` stands in no co-sign table, and a kukulu lei reads with a witness that co-signs nothing; CONTROL: a push lei at the same witness stands on no chain", async () => {
-    expect(WARD_COSIGN_VERBS).toEqual(["ward-kapae-lower", "ward-house-cap", "ward-push-lei"]);
+    expect(WARD_COSIGN_VERBS).toEqual(["ward-kapae-lower", "ward-house-cap", "ward-push-lei", "ward-keeper-vest"]);
     expect(faceIntentVerbs().classOfVerb("ward-kukulu-lei")).toBeNull();
     expect(leiRiteCosigns("push")).toBe(true);
     expect(leiRiteCosigns("kukulu")).toBe(false);
@@ -60,7 +60,7 @@ describe("the co-sign weighs reach: a kukulu lei stays home", () => {
     let asks = 0;
     const s = await stand(() => { asks++; throw new Error("the co-sign port stands unreachable here"); });
     // show reads the board's cap through the witness; a line's read alone runs below.
-    await expect(swarmCommand({ action: "lei-kui", rite: "kukulu", branch: BRANCH, returns: 2, after: null }, s.deps)).resolves.toEqual({ rite: "kukulu", branch: BRANCH, reach: "wide", returns: 2 });
+    await expect(swarmCommand({ action: "lei-kui", rite: "kukulu", branch: BRANCH, returns: 2, after: null }, s.deps)).resolves.toEqual({ rite: "kukulu", branch: BRANCH, reach: "wide", returns: 2, lei: expect.stringMatching(/^[0-9a-f]{64}$/) });
     expect(asks).toBe(0);
     const rows = s.rows.size;
     await expect(swarmCommand({ action: "lei-kui", rite: "kukulu", branch: BRANCH, returns: 2, after: null }, s.deps)).rejects.toMatchObject({ code: "swarm-lei-already-strung" });

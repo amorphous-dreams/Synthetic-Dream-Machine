@@ -49,13 +49,14 @@ import { atomKeyOf, atomSeedOf, seedFaceAtom, actingAtomKey } from "./atom-fixtu
 import { seedFleet } from "./fleet-seed-fixture.js";
 import { fleetLineageOf } from "../src/fleet-lineage.js";
 import { nodeNexusIsland } from "../src/nexus-standing.js";
-import { scratchRoot as root, it } from "./support/scratch-fixture.js";
+import { scratchRoot as root, scratchHome, it } from "./support/scratch-fixture.js";
+import { keepHouse } from "./support/kept-house.js";
 
 const REALM = "a".repeat(64);
 const nymOf = (byte: number) => ed.getPublicKeyAsync(new Uint8Array(32).fill(byte)).then(hex);
 const idOf = (url: string): DocumentId => interpretAsDocumentId(url as never) as DocumentId;
 
-beforeEach(async () => {
+const house = keepHouse("lares-edge-shadow-ring-", async () => {
   await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   await generateOrLoadPersonaGroupRoot(0);
   await seedFaceAtom(0);
@@ -68,6 +69,7 @@ beforeEach(async () => {
     writeFileSync(larBootstrapPath(), JSON.stringify({ text: JSON.stringify({ tiddlers: packed }) }), "utf8");
   });
 });
+beforeEach(() => house.into(root, scratchHome));
 afterEach(async () => {
   await new Promise((r) => setTimeout(r, 200));
 });

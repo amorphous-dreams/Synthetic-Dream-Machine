@@ -1,7 +1,7 @@
 /**
  * face-wire-alias — THE ACCEPTANCE TEST for the veil's second cut: ONE composition, several faces lit, several Nexuses.
  *
- * Operator, 2026-11-14: "a human 'publishes' no roster that joins their faces". The first cut (`face-wire-identity`)
+ * Operator, 2026-11-19: "a crypto-registry or any other DreamNet published document SHALL NOT link a human's faces", by their crypto identities (+ public Handles); pet names carry no restriction. The first cut (`face-wire-identity`)
  * closed the MOUNT switch: a fresh composition presents a fresh peer id and its own scope's store id. Inside one
  * composition every leg still presented that composition's one peer id and one store id, so a face lit beside the worn
  * one (`vault unlock --all` lights three) and a face that stands at two Nexuses each showed one identifier twice.
@@ -199,7 +199,13 @@ describe("the veil's second cut: one composition presents each (face, Nexus) its
     const seats = new Map<string, Seat>([["seated-peer", { face: FACE_B, nexus: NEXUS_2 }]]);
     const refusals: string[] = [];
     await c.identity.alias({ face: FACE_B, nexus: NEXUS_2 });
-    c.vessel.networkSubsystem.addNetworkAdapter(c.identity.leg(new NodeWSServerAdapter(wss as never, 60_000), (remote) => seats.get(remote) ?? null, (refusal, peer) => refusals.push(`${refusal}:${peer}`)));
+    const gate = c.identity.leg(new NodeWSServerAdapter(wss as never, 60_000), (remote) => seats.get(remote) ?? null, (refusal, peer) => refusals.push(`${refusal}:${peer}`));
+    // The Repo connects an adapter once its own peer metadata resolves (its store id read), and the server adapter hears
+    // sockets only from that connect on: a session that dials sooner finds no listener, its join drops, and its client
+    // redials only after its retry interval. So no peer dials before the gate stands: the test waits on that connect.
+    const gateStands = new Promise<void>((stood) => { const connect = gate.connect.bind(gate); gate.connect = (...args) => { const out = connect(...args); stood(); return out; }; });
+    c.vessel.networkSubsystem.addNetworkAdapter(gate);
+    await gateStands;
     const dial = (peerId: string) => {
       const recorder = new Repo({ peerId: peerId as PeerId, network: [new WebSocketClientAdapter(url, 60_000)] });
       const seen: Array<{ peerId: string; storageId: string | undefined }> = [];

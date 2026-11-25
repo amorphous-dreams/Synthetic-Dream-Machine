@@ -3,7 +3,7 @@
  * `LAR_ROOT`, founded and unlocked through the test door) and a real Chromium joined to its face through the fleet-join door.
  *
  *   S1 — the node half: a CLI `meme put --recipe default` lands in the daemon wiki's working layer, its carrier projects
- *        under `<root>/projections/wikis/daemon-<F>/` (the face-bound daemon wiki the operator works in), and `meme get --recipe default` reads the same bytes; the repo's tree takes no write.
+ *        under `<root>/projections/faces/<pet name>/wiki/` (the face-bound daemon wiki the operator works in), and `tiddler get --recipe default --meme` reads the same bytes; the repo's tree takes no write.
  *        It doubles as the KNOWN POSITIVE for S3's disk instrument: a write under the root reads as a write.
  *   S2 — a fresh browser joins the hearth's face (offer → request → answer → land), crosses connected, and SUMMONS its own
  *        daemon surface: the one wiki whose recipe stacks this device's working top over the face's kahua stage over canon
@@ -17,9 +17,9 @@
  *   S4 — the page PROPOSES its draft: a tiddler the page saves carries a TW5 button whose `$action-setfield` writes the
  *        island's verb tiddler (`lar:///lararium.local.vm/verb/kahua-propose`, `verb`, `lares-dispatch`, `arg-titles`), and
  *        its proposal id comes from the face's intents plane through the CLI. Digests only cross: before any lift,
- *        `<root>/bags/kahua` holds no file, `kahua get` answers null, `meme get` misses.
+ *        `<root>/bags/kahua` holds no file, `kahua get` answers null, `tiddler get --meme` misses.
  *   S5 — the OPERATOR'S HAND lifts: `lares kahua stage` then `lares kahua lift <title> --proposal <id> --digest <d>` binds the staged body by digest; the item
- *        projects at `<root>/bags/kahua/<title path>.tid`; `lares kahua get`, `lares meme get --recipe default` and the
+ *        projects at `<root>/bags/kahua/<title path>.tid`; `lares kahua get`, `lares tiddler get --recipe default --meme` and the
  *        seat's read (the door the MCP seat's `kahua_get` rides: a `seat`-hand session's `kahua-read`) read the same body.
  *   S6 — the stage reaches the page: the joined page re-edits the draft and the `kahua-shadow` mark casts (a mark needs
  *        the kahua twin beneath the draft); a second propose + lift over the new body clears it (bodies equal).
@@ -33,11 +33,10 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, statSync
 import { join, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
 import { chromium, type Browser, type BrowserContext, type Page } from "playwright";
-import { foundStagedHearth, openStaged, stageDir, stagedHearthRelation, type LarInstance } from "../../../../tests/harness/instance.js";
+import { foundStagedHearth, openStaged, stageDir, daemonWikiDir, kahuaStageDir, type LarInstance } from "../../../../tests/harness/instance.js";
 import { mintStagedNexusKey } from "../../../../tests/harness/vessel-key.js";
 // The published test route answers the custody form a fresh vessel raises (a harness door; never a person's passphrase).
 import { armTestCustody } from "../../../lararium-node/dist/probes/browser-test-custody.js";
-import { daemonFaceFolder, kahuaFaceFolder } from "../../../lararium-node/dist/src/bag-paths.js";
 import { KAHUA_PROPOSE_VERB } from "../../../lararium-mesh/dist/kahua-stage.js";
 
 const REPO = resolve(import.meta.dirname, "../../../..");
@@ -82,18 +81,14 @@ const projection = (): Map<string, number> =>
 
 const tail = (): string => lines.filter((l) => !l.startsWith("Warning: Global assignment")).slice(-80).join("\n");
 
-/** The worn face's stage folder (`kahua-<F>`), its relation read off the hearth's founding record. */
-const faceFolder = (): string => kahuaFaceFolder(stagedHearthRelation(hearth!.root));
-/** The worn face's daemon wiki folder (`daemon-<F>`), the same relation. */
-const daemonFolder = (): string => daemonFaceFolder(stagedHearthRelation(hearth!.root));
 /**
- * WHERE A NODE-SIDE DRAFT PROJECTS: the worn face's daemon wiki working top under the projections root
- * (`<root>/projections/wikis/daemon-<F>`).
+ * WHERE A NODE-SIDE DRAFT PROJECTS: the worn face's daemon wiki working top in its face root
+ * (`<root>/projections/faces/<pet name>/wiki`).
  * One helper, so the lane repoints every read when the top moves.
  */
-const draftPath = (titlePath: string, ext: string): string => join(hearth!.root, "projections", "wikis", daemonFolder(), `${titlePath}${ext}`);
-/** Where a LIFTED kahua item projects: the face's stage under the projections root (`<root>/projections/bags/kahua-<F>`), sited by title. */
-const stagePath = (titlePath: string): string => join(hearth!.root, "projections", "bags", faceFolder(), `${titlePath}.tid`);
+const draftPath = (titlePath: string, ext: string): string => join(daemonWikiDir(hearth!.root), `${titlePath}${ext}`);
+/** Where a LIFTED kahua item projects: the face's stage in its face root (`<root>/projections/faces/<pet name>/stage`), sited by title. */
+const stagePath = (titlePath: string): string => join(kahuaStageDir(hearth!.root), `${titlePath}.tid`);
 
 /** Poll a predicate on the hearth's disk or CLI to a bound; answer its last reading. */
 async function settle<T>(read: () => T | Promise<T>, done: (v: T) => boolean, ms = 30_000): Promise<T> {
@@ -204,10 +199,10 @@ const shadowText = (page: Page) => page.evaluate(() => document.getElementById("
 // the same two frames from node, so the read stands on the house's own door and no host interpreter.
 async function seatRead(title: string): Promise<Record<string, unknown>> {
   const { openLocalSession } = await import(join(REPO, "packages/lares-cli/dist/src/session-connector.js")) as {
-    openLocalSession: (o: { faceRef: string; hand?: string; dataDir?: string | null }) => Promise<{ act(act: string, args: Record<string, unknown>): Promise<Record<string, unknown>>; close(): Promise<void> }>;
+    openLocalSession: (o: { faceRef: string; hand?: string; dataDir?: string | null }) => Promise<{ act(act: string, args: Record<string, unknown>): Promise<{ answer: Record<string, unknown> }>; close(): Promise<void> }>;
   };
   const session = await openLocalSession({ faceRef: "h0", hand: "seat", dataDir: join(hearth!.root, "hearth/vessel") });
-  try { return await session.act("kahua-read", { action: "get", title }); }
+  try { return (await session.act("kahua-read", { action: "get", title })).answer; }
   finally { await session.close(); }
 }
 
@@ -267,22 +262,28 @@ afterAll(async () => {
   await hearth?.stop();
 });
 
+/** The text the one read door answered: a meme's carrier (`meme.text`), or the record a meme lens found holding none (`tiddler.fields.text`). */
+const textOf = (stdout: string): string | undefined => {
+  const data = (JSON.parse(stdout) as { data: { meme?: { text?: string }; tiddler?: { fields?: { text?: string } } | null } }).data;
+  return data.meme?.text ?? data.tiddler?.fields?.text;
+};
+
 describe("the stage walk: the node half, the join, and the page's save route", () => {
-  test("S1 — a CLI put to recipe default projects under <root>/projections/wikis/daemon-<F> and reads back the same bytes", async () => {
+  test("S1 — a CLI put to recipe default projects under <root>/projections/faces/<pet name>/wiki and reads back the same bytes", async () => {
     const uri = "lar:///t.stage.walk/cli-put";
     const file = join(scratch, "cli.txt");
     writeFileSync(file, "hello from the CLI\n");
     const repoBefore = filesUnder(join(REPO, "wikis")).length;
-    const put = await hearth!.cli(["meme", "put", uri, "--recipe", "default", "--file", file, "--json"]);
+    const put = await hearth!.cli(["tiddler", "put", "--meme", uri, "--recipe", "default", "--file", file, "--json"]);
     expect(put.code, `${put.stdout.slice(-400)}\n${put.stderr.slice(-400)}`).toBe(0);
     const carrier = draftPath("t.stage.walk/cli-put", ".txt");
     const deadline = performance.now() + 30_000;
     while (!existsSync(carrier) && performance.now() < deadline) await new Promise((r) => setTimeout(r, 250));
     expect(existsSync(carrier), filesUnder(join(hearth!.root, "projections", "wikis")).join("\n")).toBe(true);
     expect(readFileSync(carrier, "utf8")).toBe("hello from the CLI\n");
-    const got = await hearth!.cli(["meme", "get", uri, "--recipe", "default", "--json"]);
+    const got = await hearth!.cli(["tiddler", "get", uri, "--recipe", "default", "--meme", "--all", "--json"]);
     expect(got.code, got.stderr).toBe(0);
-    expect((JSON.parse(got.stdout) as { data: { text: string } }).data.text).toBe("hello from the CLI\n");
+    expect(textOf(got.stdout)).toBe("hello from the CLI\n");
     expect(filesUnder(join(REPO, "wikis")).length).toBe(repoBefore);
   });
 
@@ -341,7 +342,7 @@ describe("the stage walk: the node half, the join, and the page's save route", (
     expect(moved, "a page save moved files under the hearth's projection").toEqual([]);
     const holding = [...after.keys()].filter((f) => { try { return readFileSync(f, "utf8").includes(body); } catch { return false; } });
     expect(holding).toEqual([]);
-    for (const args of [["meme", "get", title, "--bag", "lares"], ["meme", "get", title, "--recipe", "default"]] as const) {
+    for (const args of [["tiddler", "get", title, "--bag", "lares", "--meme", "--json"], ["tiddler", "get", title, "--recipe", "default", "--meme", "--json"]] as const) {
       const r = await hearth!.cli(args);
       expect(r.code, `${args.join(" ")}: ${r.stdout.slice(0, 300)}`).toBe(3);
       expect(r.stdout).toMatch(/not-found/);
@@ -363,11 +364,11 @@ describe("the stage walk: the node half, the join, and the page's save route", (
     proposal = ids[0]!;
     // Digests only crossed: nothing stands on the stage until the operator's hand lifts.
     expect(existsSync(stagePath(DRAFT.title))).toBe(false);
-    expect(filesUnder(join(hearth!.root, "projections", "bags", faceFolder()))).toEqual([]);
+    expect(filesUnder(kahuaStageDir(hearth!.root))).toEqual([]);
     const got = await hearth!.cli(["kahua", "get", DRAFT.title]);
     expect(got.code, got.stderr).toBe(0);
     expect((JSON.parse(got.stdout) as { item: unknown }).item).toBeNull();
-    const meme = await hearth!.cli(["meme", "get", DRAFT.title, "--recipe", "default"]);
+    const meme = await hearth!.cli(["tiddler", "get", DRAFT.title, "--recipe", "default", "--meme", "--json"]);
     expect(meme.stdout, meme.stdout.slice(0, 300)).toMatch(/not-found/);
   });
 
@@ -391,9 +392,9 @@ describe("the stage walk: the node half, the join, and the page's save route", (
     expect(got.code, got.stderr).toBe(0);
     // One standing head: the lift's revision carries the body and the proposal it bound (a fork reads `siblings`).
     expect((JSON.parse(got.stdout) as { item: unknown }).item).toMatchObject({ title: DRAFT.title, status: "standing", heads: [{ text: DRAFT.body, proposal }] });
-    const meme = await hearth!.cli(["meme", "get", DRAFT.title, "--recipe", "default", "--json"]);
+    const meme = await hearth!.cli(["tiddler", "get", DRAFT.title, "--recipe", "default", "--meme", "--all", "--json"]);
     expect(meme.code, `${meme.stdout.slice(0, 400)}\n${meme.stderr.slice(0, 400)}`).toBe(0);
-    expect((JSON.parse(meme.stdout) as { data: { text: string } }).data.text).toBe(DRAFT.body);
+    expect(textOf(meme.stdout)).toBe(DRAFT.body);
     const said = await seatRead(DRAFT.title);
     const answer = (said["output"] ?? said) as { item?: { status?: string; heads?: Array<{ text?: string }> } | null };
     expect(answer.item?.status, `the seat read ${JSON.stringify(said)}`).toBe("standing");

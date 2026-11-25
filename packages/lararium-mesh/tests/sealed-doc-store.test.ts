@@ -190,6 +190,37 @@ describe("one face at two anchors: the store reads the face by every subject the
   });
 });
 
+// A REALM WORKBENCH'S BAG (cabal-realm#/the-workbench): any face the realm seats saves into it through its own session, and a
+// value opens whichever seated writer signed it (the holder read that writer's standing under the roster).
+describe("a realm workbench's bag: every seated face saves, and the store opens any writer the holder verified", () => {
+  it("RW1 — a session of a seated face saves into the owner's bag and reads back under the owner; an unseated face's session refuses", async () => {
+    const w = world();
+    const a = await vessel(w, "a");
+    const inner = memoryAdapter();
+    const owner = faceProofSubjectRef(a.chain.scope);
+    const seated = faceProofSubjectRef((await chain("b", "nexus-test-one")).scope);
+    const stranger = faceProofSubjectRef((await chain("c", "nexus-test-one")).scope);
+    const storeAs = (subject: string, writer: string, realm?: { keeps(bagId: string): boolean; wears(bagId: string, subject: string): boolean }): SealedDocumentStore => new SealedDocumentStore({
+      inner,
+      bagOf: () => ({ bagId: BAG, face: owner }),
+      sessionFace: () => owner,
+      sessionOf: () => ({ id: `session-of-${subject.slice(-8)}`, subject }),
+      seal: ({ bagId, values }) => a.holder.sealValues({ bagId, values, signer: a.signer }),
+      open: async (args) => { const opened = await a.holder.openValue(args); return "refusal" in opened ? opened : { ...opened, writer }; },
+      ...(realm ? { realm } : {}),
+    });
+    const realm = { keeps: (bagId: string) => bagId === BAG, wears: (bagId: string, subject: string) => bagId === BAG && subject === seated };
+    const key = ["doc-realm", "incremental", "c1"];
+    await storeAs(seated, seated, realm).save(key, A.save(A.change(A.init<{ note?: string }>(), (d) => { d.note = SECRET; })));
+    const loaded = await storeAs(owner, seated, realm).load(key);
+    expect(loaded, "the owner reads the seated writer's change: no writer-face-foreign").toBeInstanceOf(Uint8Array);
+    expect(A.load<{ note?: string }>(loaded!).note).toBe(SECRET);
+    // CONTROL: a face the realm does not seat saves nothing into the bag, and with no realm the old law holds.
+    await expect(storeAs(stranger, stranger, realm).save(["doc-realm", "incremental", "c2"], A.save(A.change(A.init<{ n?: number }>(), (d) => { d.n = 1; })))).rejects.toThrow(/session-face-foreign/);
+    expect(await refusalOf(() => storeAs(owner, seated).load(key)), "no realm: one bag, one face").toBe("writer-face-foreign");
+  });
+});
+
 // THE PORT TAKES THE BAG'S FACE (`wornAt(face, subject)`): the worn subject names the worn face alone. A bag of another
 // face never passes the writer check through the worn subject, whichever anchor sealed the value.
 describe("wornAtOf: the worn subject passes the worn face's bags alone", () => {
@@ -277,9 +308,10 @@ describe("the browser vessel names its face by one subject", () => {
   it("B1 — the sealed rest carries no wornAt, the map face and the session subject are one value, and nothing reassigns the face from a dial", () => {
     expect(src).toMatch(/composeSealedRest</);
     // The face map, beneath the vessel's held bags: device documents by owner, then the held homes (the secret home rests under
-    // the vessel's key, never a face's), in the one order the node reads (`vesselHeldBagOf`).
-    // The vessel files through `browserDeviceFiling`, whose one reading is `vesselHeldBagOf`.
-    expect(src).toMatch(/const sealedBagOf = \(documentId: string\): SealedBag \| null => filing\.bagOf\(documentId\) \?\? sealedMap\.bagOf\(documentId\);/);
+    // the vessel's key, never a face's), in the one order the node reads (`vesselHeldBagOf`), then each carried face's selves
+    // record, then the map. The vessel files through `browserDeviceFiling`, whose one reading is `vesselHeldBagOf`. The pin reads
+    // the order of the readings, whatever the line wrap.
+    expect(src).toMatch(/const sealedBagOf = \(documentId: string\): SealedBag \| null =>\s*filing\.bagOf\(documentId\)\s*\?\?\s*selvesRecordBagOf\(documentId,\s*carriedSelves\(\),\s*litDevices\(\)\)\s*\?\?\s*sealedMap\.bagOf\(documentId\);/);
     const filing = readFileSync(new URL("../../lararium-browser/src/browser-device-filing.ts", import.meta.url), "utf8");
     expect(filing).toMatch(/bagOf: \(documentId\) => vesselHeldBagOf\(deviceDocs, secretHomes, opts\.litDevices\(\), documentId\) \?\? null/);
     expect(src).toMatch(/composeSealedRest<BrowserSaveSession>\(\{[\s\S]*?bagOf: sealedBagOf,[\s\S]*?sessionFace: \(\) => sealedCells\.face\(\),/);
@@ -479,5 +511,43 @@ describe("P2-6: a stop inside the fresh base's rest never strands the base", () 
     expect("plaintext" in opened, JSON.stringify(opened)).toBe(true);
     const after = await a.holder.sealValues({ bagId: BAG, values: [{ role: "change", ref: logicalRefOf(["doc", "incremental", "c1"]), parents: [], plaintext: utf8Bytes("after") }], signer: a.signer });
     expect("refusal" in after ? said(after) : "sealed").toBe("sealed");
+  });
+});
+
+// EACH FACE LIVES ONE LIFE (face-lifecycle): a face's drain flushes its own bags alone, so one face's seal in flight never holds
+// another face's close. Seals of one bag still take their turns in order.
+describe("SOL R7 (face drains share the sealed-store flush queue): each bag takes its own turn line", () => {
+  it("a seal of one bag held in flight never holds the flush of another bag; the whole flush still waits for it", async () => {
+    const w = world();
+    const a = await vessel(w, "a");
+    const own = faceProofSubjectRef(a.chain.scope);
+    const OTHER = "lar:///ha.ka.ba/@test/bags/other-face-notes";
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => { release = resolve; });
+    let held = false;
+    const store = new SealedDocumentStore({
+      inner: memoryAdapter(),
+      bagOf: (documentId) => ({ bagId: documentId === "doc-slow" ? BAG : OTHER, face: own }),
+      sessionFace: () => own,
+      sessionOf: () => ({ id: "the-writing-session", subject: own }),
+      seal: async ({ bagId, values }) => {
+        if (bagId === BAG && !held) { held = true; await gate; }
+        return a.holder.sealValues({ bagId, values, signer: a.signer });
+      },
+      open: (args) => a.holder.openValue(args),
+    });
+    const bytes = A.save(A.change(A.init<{ note?: string }>(), (d) => { d.note = SECRET; }));
+    const slow = store.save(["doc-slow", "incremental", "c1"], bytes);
+    await new Promise((r) => setTimeout(r, 20));
+    await store.save(["doc-quick", "incremental", "c1"], bytes);
+    let otherFlushed = false, allFlushed = false;
+    const other = store.flush([OTHER]).then(() => { otherFlushed = true; });
+    const all = store.flush().then(() => { allFlushed = true; });
+    await other;
+    expect(otherFlushed, "the other bag's flush never waits on the held seal").toBe(true);
+    expect(allFlushed, "the whole flush still waits for every seal").toBe(false);
+    release();
+    await slow; await all;
+    expect(allFlushed).toBe(true);
   });
 });

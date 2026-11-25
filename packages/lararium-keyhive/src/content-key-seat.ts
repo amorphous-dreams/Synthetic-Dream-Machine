@@ -29,11 +29,13 @@
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store · lar:///ha.ka.ba/lares/api/pono/kapae#/keys
  */
 import {
-  ContentKeyHolder, SealedStore, contentKeyRollSink, readsAsFreshBase, verifiedSeatRoll,
-  type ContentKeyHolderPorts, type EdgeStanding, type RecordSigner, type RollOutcome, type SealedStoreRest,
+  ContentKeyHolder, REALM_ADMISSION_ACT, REALM_STATE_ROLL_ACT, SealedStore, contentKeyRollSink, readsAsFreshBase, sha256HexBytesSync,
+  utf8Bytes, verifiedSeatRoll,
+  type AdmissionEvidence, type ContentKeyHolderPorts, type EdgeStanding, type HolderRefusal, type RecordSigner, type RollOutcome, type SealedStoreRest,
   type SeatRoll, type SeatRollSink, type WriterStanding,
 } from "@lararium/mesh";
 import { keyhiveLockboxShore, type LockboxProvider } from "./keyhive-lockbox.js";
+import { WAIT_FOR_OWNER_CURE, realmWorkbenchFounding, type RealmRestPort } from "./realm-rest.js";
 import { subscribeSeatRolls } from "./seat-duty-executor.js";
 
 /** The slice of a `KeyhiveProvider` a content-key seat rides. */
@@ -85,6 +87,16 @@ export interface ContentKeySeatInput {
   readonly session?: SessionProof;
   /** What each founding of each bag did with a roll: for a door, a log line or a vector. It names no key. */
   readonly report?: (outcome: RollOutcome) => void;
+  /**
+   * THE REALM PORT (cabal-realm#/the-workbench): a bag that rests in a realm workbench reads its readers off the realm's
+   * roster, and founds only under the realm owner's seat. Absent: every bag reads the face's key group, as before.
+   */
+  readonly realm?: RealmRestPort;
+  /**
+   * Hand a wrap's public operations on to the readers that stand on this same vessel (a lit sibling face's hive), so a
+   * lockbox one face's holder wraps for another opens there with no member lane. Absent: the parcels carry them.
+   */
+  readonly handOn?: (served: readonly string[], wrapper: ContentKeyProvider) => Promise<void>;
   /** Where the roll subscribes. Absent: this island's own seat rolls (`subscribeSeatRolls`), the production
    *  seam. A vector that stands several vessels in one process hands each its own. */
   readonly subscribe?: (sink: SeatRollSink) => () => void;
@@ -109,6 +121,24 @@ export interface ContentKeySeat {
   sealValues(args: Omit<Parameters<ContentKeyHolder["sealValues"]>[0], "owedActs">): ReturnType<ContentKeyHolder["sealValues"]>;
   /** Settle the rolls still owed with `signer`, the signer of the session whose act runs now. */
   settle(signer: RecordSigner | null): Promise<void>;
+  /**
+   * HAND A SEATED READER THE WORKBENCH'S KEY, under the realm owner's seat and `signer` (the share door's landing, under a
+   * person's hand): the head's one chained box. A realm bag whose head span reads `closed` (its owner founded it before the realm
+   * bound it) hands no past: the owner's holder first admits from now (`admitRealmFromNow`), and the reader takes the new
+   * span's box. The closed span stays closed to it; the bytes already sealed there stay as they rest.
+   */
+  handOverRealm(bagId: string, reader: string, signer: RecordSigner | null): Promise<Awaited<ReturnType<ContentKeyHolder["handOver"]>>>;
+  /**
+   * A REALM BAG FOUNDED CLOSED OPENS FROM NOW: where the realm this seat OWNS keeps `bagId` and the head span reads `closed`, the
+   * holder mints a from-now admission (`admitFromNow`) whose span declares `shareable`, wrapped for the realm's roster now, on a
+   * fresh base of the current document. Its act derives from the closed heads it follows (`REALM_ADMISSION_ACT`), so the same
+   * landing entered again mints nothing more; a head span such an admission opened re-enters under its own act, which cuts a
+   * base a stop left uncut (sealed-store#/the-store's repair). Null: nothing owed (no realm, not the owner, no head span either
+   * reads).
+   */
+  admitRealmFromNow(bagId: string, signer: RecordSigner | null): Promise<Awaited<ReturnType<ContentKeyHolder["admitFromNow"]>> | null>;
+  /** ROLL NOW: the roll a realm's roster owes one bag's head, at once, under `signer` (the revoke's own act). */
+  rollNow(bagId: string, signer: RecordSigner | null): ReturnType<ContentKeyHolder["rollRoster"]>;
   /** The raises still owed in one bag's scope, as last read (a vector reads it). */
   owedFor(bagId: string): readonly string[];
   /** The same, after reading the vessel's durable unanswered raises afresh. */
@@ -118,15 +148,33 @@ export interface ContentKeySeat {
 }
 
 const bare = (id: string): string => id.trim().toLowerCase().replace(/^0x/, "");
+/** The act a realm's from-now admission names: the realm's prefix over the closed heads it follows, ascending (no clock). */
+const realmAdmissionAct = (parents: readonly string[]): string => `${REALM_ADMISSION_ACT}${sha256HexBytesSync(utf8Bytes([...parents].sort().join("\n")))}`;
 
 /** Seat the holder beside these identities and subscribe its roll. */
 export function seatContentKeys(input: ContentKeySeatInput): ContentKeySeat {
   const session = input.session ?? NO_PROOF;
-  const shore = keyhiveLockboxShore(input.providers, { restArchive: (provider) => input.restArchive(provider as ContentKeyProvider) });
+  let wrapper: ContentKeyProvider = input.providers[0]!;
+  const keyShore = keyhiveLockboxShore(input.providers, { restArchive: async (provider) => { wrapper = provider as ContentKeyProvider; await input.restArchive(provider as ContentKeyProvider); } });
+  // A wrap's operations reach the readers on this vessel before the lockbox rests: a sibling face opens it at its next read.
+  const shore: typeof keyShore = input.handOn === undefined ? keyShore : {
+    ...keyShore,
+    async wrap(args) {
+      const wrapped = await keyShore.wrap(args);
+      if (wrapped.served.length > 0) await input.handOn!(wrapped.served, wrapper);
+      return wrapped;
+    },
+  };
   /** Raises this island's own count answered: every roll the sink took, and every kept roll under a receipt. */
   const answered = new Set<string>();
 
-  const readersOf = async (): Promise<readonly string[]> => {
+  const readersOf = async (bagId: string): Promise<readonly string[]> => {
+    // READERS FOLLOW THE ROSTER: a realm workbench bag wraps for every hive its realm seats now, never the face's devices.
+    const realm = input.realm === undefined ? null : await input.realm.of(bagId);
+    if (realm !== null) {
+      const own = new Set((await shore.self()).map(bare));
+      return (await realm.readers()).map(bare).filter((id) => !own.has(id));
+    }
     if (input.group === null) return [];
     const own = new Set((await shore.self()).map(bare));
     for (const provider of input.providers) {
@@ -145,17 +193,48 @@ export function seatContentKeys(input: ContentKeySeatInput): ContentKeySeat {
     return [];
   };
 
+  /** Does a version citing a realm admission act stand: owner-signed, shareable, its act derived from its own parents? */
+  const realmAdmissionStands = (bagId: string, act: string, by: AdmissionEvidence): boolean =>
+    by.history === "shareable"
+    && act === realmAdmissionAct(by.parents)
+    && session.standing.signedByRealmOwner?.({ certificate: by.certificate, bagId }) === true;
+
   const holder = new ContentKeyHolder({
     store: new SealedStore(input.rest),
     shore,
     readersOf,
     standing: session.standing,
-    evidenceOf: async () => {
+    // ONE FOUNDER PER REALM BAG: the realm owner's seat founds the workbench's key; a seated face waits for its lockbox.
+    ...(input.realm ? {
+      foundingOwnedElsewhere: async (bagId: string) => {
+        const realm = await input.realm!.of(bagId);
+        // A bag the ledger binds to a realm that this face's reading names none of (seated in two, or in none) founds nothing either.
+        if (realm === null) return (await input.realm!.bound?.(bagId)) === true ? WAIT_FOR_OWNER_CURE : null;
+        return realm.owner ? null : (input.realm!.ownerCure?.(realm) ?? WAIT_FOR_OWNER_CURE);
+      },
+      chainsKeys: async (bagId: string) => (await input.realm!.of(bagId)) !== null,
+      realmRemovals: async (bagId: string) => { const realm = await input.realm!.of(bagId); return realm === null ? null : realm.removals(); },
+    } : {}),
+    evidenceOf: async (bagId) => {
       const counted = input.countedRaises === undefined ? new Set<string>() : await input.countedRaises();
       const admitted = input.verifiedAdmissions === undefined ? new Set<string>() : await input.verifiedAdmissions();
-      return { raiseCounts: (act) => answered.has(act) || counted.has(act), admissionVerifies: (act) => admitted.has(act) };
+      // A REALM'S REMOVAL COUNTS on the vessel's own ledger (the roster's projection noted it): the evidence its roll counts by.
+      const realm = input.realm === undefined ? null : await input.realm.of(bagId);
+      const removed = new Set(realm === null ? [] : (await realm.removals()).map((r) => r.act));
+      // A REALM'S FROM-NOW ADMISSION verifies from the realm and the version itself: the realm's OWNER signed it, its span
+      // declares `shareable`, and its act derives from the very parents it cites. A member's own admission counts nowhere.
+      return {
+        // A ROLL THE REALM DERIVES FROM STATE counts only under its owner's hand, as the owner's holder alone derives one: the
+        // prefix reads first, so no count path (answered, counted, removed) admits a member's roll under it, and it never
+        // becomes a head the owner holds no key for.
+        raiseCounts: (act, by) => act.startsWith(REALM_STATE_ROLL_ACT)
+          ? realm !== null && by !== undefined && session.standing.signedByRealmOwner?.({ certificate: by.certificate, bagId }) === true
+          : answered.has(act) || counted.has(act) || removed.has(act),
+        admissionVerifies: (act, by) => admitted.has(act) || (realm !== null && by !== undefined && realmAdmissionStands(bagId, act, by)),
+      };
     },
-    ownEdgeShadowed: async () => (input.ownEdgeShadowed === undefined ? false : (await input.ownEdgeShadowed()) === true),
+    // A face the realm seats nowhere performs no key act in its workbench's bag (the roster's own shadow).
+    ownEdgeShadowed: async (bagId) => (input.ownEdgeShadowed !== undefined && (await input.ownEdgeShadowed()) === true) || (await input.realm?.shadowed?.(bagId)) === true,
     ownSeat: async () => {
       if (input.group === null) return null;
       const own = (await shore.self()).map(bare);
@@ -221,21 +300,60 @@ export function seatContentKeys(input: ContentKeySeatInput): ContentKeySeat {
     return [...new Set([...[...owed.values()].filter((r) => bare(r.scope) === scope).flatMap((r) => [...r.raiseCids]), ...unanswered])].sort();
   };
   const unsubscribe = (input.subscribe ?? subscribeSeatRolls)(sink);
+  /** A FACE THE REALM SEATS NOWHERE seals nothing into its workbench, under any head it still holds: its earlier writes
+   *  keep standing by the lineage (u2), and nothing it signs after the revoke joins them. */
+  const realmShadow = async (bagId: string): Promise<{ readonly refusal: "own-edge-shadowed"; readonly cause: string } | null> =>
+    ((await input.realm?.shadowed?.(bagId)) === true
+      ? { refusal: "own-edge-shadowed", cause: "this face holds no seat in the workbench's realm now; the realm's owner seats it again (`lares wiki share <wiki> --write <this face's name>`)" }
+      : null);
+  /** A realm workbench bag founds with the realm's declared history (`realmWorkbenchFounding`); every other bag as asked. */
+  const foundingOf = async (bagId: string): Promise<{ readonly founding: { readonly history: "shareable" | "closed" } } | Record<string, never>> =>
+    (input.realm !== undefined && (await input.realm.of(bagId)) !== null ? { founding: realmWorkbenchFounding() } : {});
+
+  const admitRealmFromNow = async (bagId: string, signer: RecordSigner | null): Promise<Awaited<ReturnType<ContentKeyHolder["admitFromNow"]>> | null> => {
+    const realm = input.realm === undefined ? null : await input.realm.of(bagId);
+    // OWNER-ONLY: the realm's owner founds its key, so its holder alone opens the key's next span.
+    if (realm === null || !realm.owner) return null;
+    const reading = await holder.reading(bagId);
+    if ("refusal" in reading) return reading;
+    const standing = reading.foundings.filter((f) => f.heads.length > 0);
+    if (standing.length === 0) return null;
+    if (standing.length > 1) return { refusal: "founding-forked" };
+    const [f] = standing as [typeof standing[number]];
+    // A SPAN AN ADMISSION OPENED re-enters under its own act: where a stop left it without its fresh base, the base cuts now;
+    // where the base stands, the holder answers the version that act opened and mints nothing.
+    if (f.history === "shareable" && f.openedBy?.startsWith(REALM_ADMISSION_ACT) === true) return holder.admitFromNow({ bagId, act: f.openedBy, history: "shareable", signer });
+    if (f.history !== "closed") return null;
+    const parents = f.heads.filter((head) => f.held.includes(head));
+    return holder.admitFromNow({ bagId, act: realmAdmissionAct(parents), history: "shareable", signer });
+  };
 
   return {
     holder, sink,
+    admitRealmFromNow,
+    async handOverRealm(bagId, reader, signer) {
+      // THE OWNER'S SPAN OPENS FIRST: a closed head admits from now, and an admission a stop left baseless cuts its base.
+      const admitted = await admitRealmFromNow(bagId, signer);
+      if (admitted !== null && "refusal" in admitted) return admitted as HolderRefusal;
+      return holder.handOver({ bagId, reader, signer, chained: true });
+    },
     async seal(args) {
+      const shadow = await realmShadow(args.bagId);
+      if (shadow !== null) return shadow;
       await refreshOwed();
       await settle(args.signer);
       // The holder reads the owed raises inside its own turn, so a roll that arrives after the settle still binds it.
-      return holder.sealBlob({ ...args, owedActs: () => owedActs(args.bagId) });
+      return holder.sealBlob({ ...(await foundingOf(args.bagId)), ...args, owedActs: () => owedActs(args.bagId) });
     },
     async sealValues(args) {
+      const shadow = await realmShadow(args.bagId);
+      if (shadow !== null) return shadow;
       await refreshOwed();
       await settle(args.signer);
-      return holder.sealValues({ ...args, owedActs: () => owedActs(args.bagId) });
+      return holder.sealValues({ ...(await foundingOf(args.bagId)), ...args, owedActs: () => owedActs(args.bagId) });
     },
     settle,
+    rollNow: (bagId, signer) => holder.rollRoster({ bagId, signer }),
     owedFor: (bagId) => owedActs(bagId),
     async owedNow(bagId) { await refreshOwed(); return owedActs(bagId); },
     async catchUp(rolls, vesselKey) {

@@ -1,0 +1,205 @@
+/**
+ * face-slot-docs-sealed — EVERY SLOT DOCUMENT THE WORN FACE'S RESOLVER NAMES RESTS SEALED UNDER THAT FACE.
+ *
+ * The daemon island's resolver names each wiki's `personal` layer and `draft` binding to the vessel's map before its first
+ * byte (`announceSlotDoc`), as `wikis/<slug>/<kind>`. The vessel composes its map from the bags the worn face seals
+ * (`wornFaceWikiBags`) and the documents each bag carries (the announced ones among them). A named document whose bag the
+ * map does not seal passes clear to the inner rest, and every island's guard reads it unsealed, so its copy rests clear
+ * there too. These vectors compose the map the way the vessel does, with the face lit and the announcement standing.
+ *
+ * The key shore models the measured substrate (`content-key-fixture`); the door runs over a real MessageChannel.
+ * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed · lar:///ha.ka.ba/lararium/api/personal-slot
+ */
+import { afterEach, describe, expect, it } from "vitest";
+import * as A from "@automerge/automerge";
+import { Repo, type AutomergeUrl, type Chunk, type StorageAdapterInterface, type StorageKey } from "@automerge/automerge-repo";
+import { utf8Bytes } from "../src/crypto.js";
+import { faceProofSubjectRef } from "../src/face-proof-subjects.js";
+import type { RecordSigner } from "../src/sealed-records.js";
+import { announceSlotDocFiled, answerDocStoreAsks, composeSealedRest, docStorePortCell, sealedBagMap, vesselDocStoreDoor, type SealedRest } from "../src/sealed-rest.js";
+import { wornFaceWikiBags, type WikiSlotBags } from "../src/register-bags.js";
+import { wikiBagUri, wikiSlotUri } from "../src/wiki-recipe.js";
+import { vessel, world, type Vessel } from "./content-key-fixture.js";
+
+const SECRET = "the-personal-layer-holds-the-heron-count";
+const MAGIC = [0x85, 0x6f, 0x4a, 0x83];   // the Automerge chunk magic
+const SLOT: WikiSlotBags = { wikiBagId: wikiBagUri("lares"), workingBagId: wikiSlotUri("lares", "working"), draftBagId: wikiSlotUri("lares", "draft") };
+
+function memoryAdapter(): StorageAdapterInterface & { readonly bytes: Map<string, Uint8Array> } {
+  const bytes = new Map<string, Uint8Array>();
+  const name = (key: StorageKey): string => key.join("\u0000");
+  const starts = (key: string, prefix: StorageKey): boolean => key.split("\u0000").slice(0, prefix.length).join("\u0000") === name(prefix);
+  return {
+    bytes,
+    async load(key) { const got = bytes.get(name(key)); return got ? Uint8Array.from(got) : undefined; },
+    async save(key, data) { bytes.set(name(key), Uint8Array.from(data)); },
+    async remove(key) { bytes.delete(name(key)); },
+    async loadRange(prefix): Promise<Chunk[]> {
+      return [...bytes].filter(([key]) => starts(key, prefix)).map(([key, data]) => ({ key: key.split("\u0000"), data: Uint8Array.from(data) }));
+    },
+    async removeRange(prefix) { for (const key of [...bytes.keys()]) if (starts(key, prefix)) bytes.delete(key); },
+  };
+}
+const holds = (hay: Uint8Array, needle: readonly number[]): boolean => {
+  outer: for (let i = 0; i + needle.length <= hay.length; i++) { for (let j = 0; j < needle.length; j++) if (hay[i + j] !== needle[j]) continue outer; return true; }
+  return false;
+};
+const restsClear = (inner: { bytes: Map<string, Uint8Array> }, docId: string, text: string): boolean =>
+  [...inner.bytes].some(([key, data]) => key.startsWith(docId) && (holds(data, [...utf8Bytes(text)]) || holds(data, MAGIC)));
+const restsAny = (inner: { bytes: Map<string, Uint8Array> }, docId: string): boolean => [...inner.bytes.keys()].some((key) => key.startsWith(docId));
+
+type Session = { readonly id: string; readonly subject: string; readonly signer: RecordSigner };
+const ports: MessagePort[] = [];
+afterEach(() => { while (ports.length) ports.pop()!.close(); });
+const portOf = (p: MessagePort) => {
+  ports.push(p);
+  return {
+    post: (msg: unknown) => p.postMessage(msg),
+    listen: (cb: (msg: unknown) => void) => { const h = (e: MessageEvent) => cb(e.data); p.addEventListener("message", h as never); p.start(); return () => p.removeEventListener("message", h as never); },
+  };
+};
+
+/**
+ * The vessel's sealed rest, its map composed as the node vessel composes it: the worn face lit, the bags it seals
+ * (`wornFaceWikiBags`, every slot bag the resolver named passed as `announced`), and each bag's documents by the names
+ * the resolver gave (`slotDocsNamed`).
+ */
+function standVessel(a: Vessel, inner: StorageAdapterInterface, slotDocsNamed: Map<string, Set<string>>) {
+  const own = faceProofSubjectRef(a.chain.scope);
+  const channel = new MessageChannel();
+  const vesselSide = portOf(channel.port1), islandSide = portOf(channel.port2);
+  const asks = new Map<string, { verb: string; session: Session }>();
+  answerDocStoreAsks(islandSide, {
+    async seal({ bagId, values, ask, peer }) {
+      const booked = asks.get(ask.requestId);
+      if (!booked || booked.verb !== ask.verb) return { refusal: "signer-unavailable" } as never;
+      return a.holder.sealValues({ bagId, values, signer: booked.session.signer, ...(peer !== undefined ? { peer } : {}) });
+    },
+    open: (args) => a.holder.openValue(args),
+  });
+  const map = sealedBagMap({
+    face: () => own,
+    bags: () => wornFaceWikiBags({ slot: SLOT, lit: true, announced: slotDocsNamed.keys() }).sealed,
+    docsOf: (bagId) => [...(slotDocsNamed.get(bagId) ?? [])],
+  });
+  let repo: Repo | null = null;
+  const rest: SealedRest<Session> = composeSealedRest<Session>({
+    inner,
+    bagOf: (documentId) => map.bagOf(documentId),
+    sessionFace: () => own,
+    door: vesselDocStoreDoor<Session>(() => vesselSide, {
+      book: (ask, verb, session) => { asks.set(ask, { verb, session }); return () => asks.delete(ask); },
+      idPrefix: "test",
+    }),
+    flushRepo: async () => { await repo?.flush(); },
+  });
+  const notices = docStorePortCell(async () => null, {
+    onSlot: (bagId, documentId) => {
+      announce(slotDocsNamed, bagId, documentId);
+      rest.store.mapMoved();
+    },
+  });
+  notices.attach(vesselSide);
+  return { rest, own, map, announce: (bagId: string, documentId: string) => announceSlotDocFiled(islandSide, bagId, documentId), session: { id: "s-a", subject: own, signer: a.signer } as Session, seat: (r: Repo) => { repo = r; } };
+}
+
+/** Name `documentId` as `bagId`'s document, as the vessel's `onSlotNamed` files a resolver's announcement. */
+const announce = (named: Map<string, Set<string>>, bagId: string, documentId: string): void => {
+  const set = named.get(bagId) ?? new Set<string>();
+  set.add(documentId);
+  named.set(bagId, set);
+};
+
+async function restsSealedUnder(bagId: string) {
+  const w = world();
+  const a = await vessel(w, "a");
+  const inner = memoryAdapter();
+  const named = new Map<string, Set<string>>();
+  const v = standVessel(a, inner, named);
+  const repo = new Repo({ storage: v.rest.store, network: [] });
+  v.seat(repo);
+  // The island owns the fresh document before the vessel's Repo encounters it.
+  const islandRepo = new Repo({ network: [] });
+  const fresh = islandRepo.create<{ note?: string }>();
+  const bytes = A.save(fresh.doc()!);
+  await v.announce(bagId, fresh.documentId);
+  expect(restsAny(inner, fresh.documentId), "the announcement precedes the first storage access").toBe(false);
+  v.rest.wrote(fresh.documentId, v.session);
+  const doc = repo.import<{ note?: string }>(bytes, { docId: fresh.documentId });
+  doc.change((d) => { d.note = SECRET; });
+  await islandRepo.shutdown();
+  await repo.flush();
+  await v.rest.store.flush();
+  return { a, inner, named, v, repo, doc };
+}
+
+describe("the worn face's resolver names a slot document: it rests sealed under that face", () => {
+  it("the mounted wiki's personal layer (wikis/lares/personal): an acked announcement followed by an edit reaches storage sealed", async () => {
+    const bagId = wikiSlotUri("lares", "personal");
+    const { a, inner, named, v, repo, doc } = await restsSealedUnder(bagId);
+    expect(v.map.bagOf(doc.documentId), "the map names the personal layer under the worn face").toEqual({ bagId, face: v.own });
+    expect(await v.rest.restsSealed(doc.documentId)).toBe(true);
+    expect(restsAny(inner, doc.documentId), "the save rested").toBe(true);
+    expect(restsClear(inner, doc.documentId, SECRET), "no clear chunk of the personal layer rests").toBe(false);
+    await repo.shutdown();
+    // A restart opens it under the same face.
+    a.restart();
+    const again = standVessel(a, inner, named);
+    const repo2 = new Repo({ storage: again.rest.store, network: [] });
+    expect((await repo2.find<{ note?: string }>(doc.documentId as unknown as AutomergeUrl)).doc()).toMatchObject({ note: SECRET });
+    await repo2.shutdown();
+  });
+
+  it("another wiki's draft binding (wikis/notes/draft), beside the mount slot: it rests sealed too", async () => {
+    const bagId = wikiSlotUri("notes", "draft");
+    const { inner, v, repo, doc } = await restsSealedUnder(bagId);
+    expect(v.map.bagOf(doc.documentId)).toEqual({ bagId, face: v.own });
+    expect(await v.rest.restsSealed(doc.documentId)).toBe(true);
+    expect(restsAny(inner, doc.documentId)).toBe(true);
+    expect(restsClear(inner, doc.documentId, SECRET)).toBe(false);
+    await repo.shutdown();
+  });
+
+  it("another wiki's personal layer (wikis/notes/personal): sealed as the mount slot's is", async () => {
+    const bagId = wikiSlotUri("notes", "personal");
+    const { inner, v, repo, doc } = await restsSealedUnder(bagId);
+    expect(await v.rest.restsSealed(doc.documentId)).toBe(true);
+    expect(restsClear(inner, doc.documentId, SECRET)).toBe(false);
+    await repo.shutdown();
+  });
+
+  it("CONTROL: another wiki's working layer (its realm workbench, shared across the realm's faces) stays outside this face's seal", async () => {
+    const bagId = wikiSlotUri("notes", "working");
+    const { inner, v, repo, doc } = await restsSealedUnder(bagId);
+    expect(v.map.bagOf(doc.documentId)).toBeNull();
+    expect(restsClear(inner, doc.documentId, SECRET)).toBe(true);
+    await repo.shutdown();
+  });
+
+  it("CONTROL: a document no resolver named stays unmapped and rests clear", async () => {
+    const w = world();
+    const a = await vessel(w, "a");
+    const inner = memoryAdapter();
+    const v = standVessel(a, inner, new Map());
+    const repo = new Repo({ storage: v.rest.store, network: [] });
+    const doc = repo.create<{ note?: string }>();
+    doc.change((d) => { d.note = SECRET; });
+    await repo.flush();
+    expect(await v.rest.restsSealed(doc.documentId)).toBe(false);
+    expect(restsClear(inner, doc.documentId, SECRET)).toBe(true);
+    await repo.shutdown();
+  });
+});
+
+describe("the naming lands before the first write", () => {
+  it("an island's acked notice settles only after the vessel's map filed it (`announceSlotDocFiled`)", async () => {
+    const channel = new MessageChannel();
+    const vesselSide = portOf(channel.port1), islandSide = portOf(channel.port2);
+    const filed: string[] = [];
+    const cell = docStorePortCell(async () => null, { onSlot: (bagId, documentId) => { filed.push(`${bagId} ${documentId}`); } });
+    cell.attach(vesselSide);
+    const bagId = wikiSlotUri("lares", "personal");
+    await announceSlotDocFiled(islandSide, bagId, "2MZ5fCHpbqBkTqmhQ8Gm4hTJ5cDS");
+    expect(filed, "the vessel filed the name before the island's caller may write").toEqual([`${bagId} 2MZ5fCHpbqBkTqmhQ8Gm4hTJ5cDS`]);
+  });
+});

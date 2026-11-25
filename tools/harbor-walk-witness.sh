@@ -157,8 +157,8 @@ result 'leg 1: the engine restarted nothing'                    test "$(docker i
 # The mirror root splits by origin (operator ruling 2026-11-01): a canon bag whose source stands in the workspace projects
 # back there, while the house's private planes (the daemon wiki, the store, custody) land under the house root alone.
 mkdir -p "$SCRATCH_WORKSPACE/wikis/inbox/ha.ka.ba/lares/docs"
-sed -e 's#ha.ka.ba/lares/docs/stable-founding-road#ha.ka.ba/lares/docs/harbor-walk-probe#g' -e 's#docs/stable-founding-road.mem#docs/harbor-walk-probe.mem#' \
-  "$ROOT/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem" > "$SCRATCH_WORKSPACE/wikis/inbox/ha.ka.ba/lares/docs/harbor-walk-probe.mem"
+sed -e 's#ha.ka.ba/lares/docs/federation#ha.ka.ba/lares/docs/harbor-walk-probe#g' \
+  "$ROOT/bags/lares/ha.ka.ba/lares/docs/federation.mem" > "$SCRATCH_WORKSPACE/wikis/inbox/ha.ka.ba/lares/docs/harbor-walk-probe.mem"
 lares meme normalize /workspace/wikis/inbox/ha.ka.ba/lares/docs/harbor-walk-probe.mem >/dev/null
 # Keep the settle answer visible: a record can land with no granted mirror.
 lares ingest --source /workspace/wikis/inbox/ha.ka.ba/lares/docs/harbor-walk-probe.mem --to lar:///ha.ka.ba/bags/crossroads --apply --yes
@@ -168,7 +168,7 @@ while [ ! -f "$projected" ] && [ "$tries" -lt 30 ]; do sleep 1; tries=$((tries +
 result 'leg 1: a sourced canon bag projects back under /workspace/bags' test -f "$projected"
 result 'leg 1: the house writes no private plane under /workspace' test -z "$(find "$SCRATCH_WORKSPACE" -mindepth 1 \( -path "$SCRATCH_WORKSPACE/bags" -o -path "$SCRATCH_WORKSPACE/wikis" \) -prune -o -print -quit)$(find "$SCRATCH_WORKSPACE/bags" "$SCRATCH_WORKSPACE/wikis" -maxdepth 1 \( -name daemon -o -name kahua \) -print -quit)"
 # The daemon recipe explicitly includes the public crossroads library.
-got=$(lares meme get lar:///ha.ka.ba/lares/docs/harbor-walk-probe --recipe default 2>&1 || :)
+got=$(lares tiddler get lar:///ha.ka.ba/lares/docs/harbor-walk-probe --recipe default --meme --all --json 2>&1 || :)
 result "leg 1: the wiki's recipe resolves the carrier"          contains "$got" '"ok":true'
 drop_scratch
 
@@ -197,7 +197,7 @@ result 'leg 2: the lifted boot stands as a Lararium'            contains "$log" 
 # through the daemon wiki lands in the working layer, never in the daemon's canon bag.
 result 'leg 2: the working layer attaches after the lift'       contains "$log" 'working layer attached'
 result 'leg 2: no working-layer attach refusal'              not_contains "$log" 'WorkingLayerAttachRefusal'
-anchor=$(lares meme list --recipe default --json 2>&1 || :)
+anchor=$(lares tiddler get --meme --recipe default --json 2>&1 || :)
 result 'leg 2: the daemon wiki writes into its working layer'   contains "$anchor" 'wikis/daemon/working'
 before=$(started_at)
 lares persona list --json >/dev/null

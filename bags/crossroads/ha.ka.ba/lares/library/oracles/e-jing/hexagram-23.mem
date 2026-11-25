@@ -1,0 +1,45 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/library/oracles/e-jing/hexagram-23`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+attribution   = "the E-Jing-A-Ling Thing, by its unnamed authors at 23ae.com: \"we took the I-Ching and created Discordian answers\""
+cacheable     = true
+caption       = "23. John Dillenger"
+hexagram      = "23"
+l-space       = "archive"
+license       = "(K)opyLeft: Copyright Is Reversed. Reprint What You Like. The quoted third-party snippets ride under fair use (operator ruling 2026-11-20), each kept with its attribution as the page gives it"
+lines         = "000001"
+page-lines    = "010010"
+role          = "one e-jing hexagram reading, imported once from the page the oracle scout carried in (oracles/e-jing/index)"
+source        = "E-Jing-A-Ling Thing Hexagrams, 23ae.com (Wayback capture 2006-02-18)"
+source-sha256 = "d1a27264fae6598cc29ef44cf2c1fd5a7858534fd91f1122538b3ddf9527746e"
+tags          = ["oracle/reading", "oracle/e-jing"]
+title         = "lar:///ha.ka.ba/lares/library/oracles/e-jing/hexagram-23"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/library/oracles/e-jing/hexagram-23"
+```
+
+<<~ ahu slot=`#/reading`>>
+
+! ䷖ 23. John Dillenger
+
+<<<
+"""
+The man that died that night was neither the same height nor weight than Dillinger.
+The dead man had brown eyes while it was a well known fact that Dillinger's eyes were bright blue.
+Dillinger's well publicized birth mark was not mentioned in the autopsy report.
+The report stated that the dead man had more teeth than Dillinger.
+And finally, there was evidence that the dead man had a rheumatic heart, a condition that would have certainly prevented Dillinger from serving in the U.S. Navy.
+The FBI continues to deny the discrepancies and claims that they were nothing more than untimely mistakes made in the coroner's office.
+"""
+<<<
+
+This hexagram represents a splitting apart (or a 23-Skidooing). It does not futher one to go anywhere, or you might get shot down in the street in front of a movie theatre or something as equally inconvenient. Just stay at home and play Cooknote Fiberglass or something and send your double to the theatre to get shot.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;k3mU5Xi2jWlQRBC-lTnWCGmBHU5Ilhjc9GUSBli04jE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

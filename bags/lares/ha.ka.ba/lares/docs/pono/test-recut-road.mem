@@ -174,12 +174,12 @@ Train T's complete items move to the road's own #/o-takiage at each land. This k
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/controller-handoff#/the-lane-law`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/cli-test-laws`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/otakiage`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/otakiage`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/working-procedures#/red-first`>>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;CDOBCmGFm4qNLOwE2hSCEw-604rRPVIkPKxmdT6Giww`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;im3CAzlJ8Yt-ksS7JIQaBxwPVaSogWk02fnPksnPBw8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

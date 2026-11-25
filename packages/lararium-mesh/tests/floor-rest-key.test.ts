@@ -76,7 +76,7 @@ describe("the held homes keep two keys apart", () => {
     const { homes, repo } = heldRepo();
     const floorDoc = mintSecretHomeAddress().documentId, control = mintSecretHomeAddress().documentId;
     expect(enrollBesideSecretHome(repo, floorDoc, GARDEN), "mapped, held: no floor key stands yet").toBe(false);
-    expect(homes.bagOf(floorDoc)).toEqual({ bagId: GARDEN, face: null });
+    expect(homes.bagOf(floorDoc)).toEqual({ bagId: GARDEN, face: null, locked: true });
     expect(floorKeyStandsOn(repo)).toBe(false);
     const floor = floorRestKey(seedFloorDoor(seed(7)));
     expect(standFloorKeyOn(repo, floor)).toBe(true);
@@ -84,7 +84,7 @@ describe("the held homes keep two keys apart", () => {
     expect([...(homes.bagOf(floorDoc)?.held ?? [])]).toEqual([...floor]);
     // No face landed: no secret home's key stands, so a control document maps held and reads no key.
     expect(enrollBesideSecretHome(repo, control, CONTROL_HOME_ID)).toBe(false);
-    expect(homes.bagOf(control)).toEqual({ bagId: CONTROL_HOME_ID, face: null });
+    expect(homes.bagOf(control)).toEqual({ bagId: CONTROL_HOME_ID, face: null, locked: true });
     await repo.shutdown();
   });
 

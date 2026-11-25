@@ -1,6 +1,6 @@
 /**
  * tools/browser-ci.sh against a fake `docker` that records argv. Nothing here starts a container: the live proof
- * (up, ingest, meme get, qa smoke, down) runs against the real image. This pins the driver's contract: the verb
+ * (up, ingest, tiddler get --meme, qa smoke, down) runs against the real image. This pins the driver's contract: the verb
  * routing, the refusals by name, that `down` removes the volumes, and that no argv ever carries the Docker socket.
  */
 import assert from "node:assert/strict";
@@ -31,9 +31,9 @@ case "$*" in
   *"logs --no-color lares"*) printf 'lares-1  | [herm]   gate key: %s\nlares-1  | [lararium] gate key: %s\n' "$(printf 'c%.0s' $(seq 64))" "$(printf 'b%.0s' $(seq 64))" ;;
   *"fleet join offer"*) printf '{\n  "kind": "fleet-join-offer",\n  "nonce": "n1"\n}\n[lares fleet join] carry the offer to the joining vessel\n' ;;
   *"fleet join answer"*) printf '{\n  "kind": "fleet-join-answer",\n  "request": %s\n}\n[lares fleet join] carry the answer to the joining vessel\n' "$(cat)" ;;
-  *"wiki list --json"*) printf '%s\\n' "$INFO_WIKIS" ;;
+  *"wiki status --json"*) node -e 'const x=JSON.parse(process.env.INFO_WIKIS || "{}"); console.log(JSON.stringify({ok:true,data:{catalog:x.data ?? {},activation:{active:["lares"]},residency:{pinned:[],wela:[]}}}));'  ;;
   *" --json"*) echo '{"ok":true}' ;;
-  *"wiki active"*) printf "\\nactive wikis (1/4):\\n     lares\\n  rotatable pin budget: 3\\n" ;;
+
 esac
 `);
     await chmod(join(dir, "docker"), 0o755);
@@ -230,9 +230,9 @@ test("recipe add inits the mounted wiki, then adds; remove only removes", async 
       { slug: "lares", kind: "system", uri: "lar:///ha.ka.ba/bags/lares", automergeUrl: "automerge:doc" },
     ] } }),
   });
-  assert.match(add.calls, /wiki active/);
+  assert.match(add.calls, /wiki status --json/);
   assert.match(add.calls, /wiki init lares --json/);
-  assert.match(add.calls, /wiki list --json/);
+  assert.match(add.calls, /wiki status --json/);
   assert.match(add.stderr, /note: lares is a \[system\] wiki/);
   const rm = await run(["recipe", "remove", bag]);
   assert.equal(rm.status, 0);
@@ -244,13 +244,13 @@ test("recipe add inits the mounted wiki, then adds; remove only removes", async 
 test("BROWSER_CI_WIKI names the wiki without asking the node", async () => {
   const r = await run(["recipe", "remove", "lar:///ha.ka.ba/bags/x"], { BROWSER_CI_WIKI: "other" });
   assert.match(r.calls, /wiki remove-bag other /);
-  assert.doesNotMatch(r.calls, /wiki active/);
+  assert.doesNotMatch(r.calls, /wiki status --json/);
 });
 
 test("get reads AS the mounted wiki by default, and takes an explicit --bag or --recipe", async () => {
   const u = "lar:///ha.ka.ba/x/y";
-  assert.match((await run(["get", u])).calls, /meme get lar:\/\/\/ha\.ka\.ba\/x\/y --recipe lares/);
-  assert.match((await run(["get", u, "--bag", "aki-fixture"])).calls, /meme get .* --bag aki-fixture/);
+  assert.match((await run(["get", u])).calls, /tiddler get lar:\/\/\/ha\.ka\.ba\/x\/y --recipe lares --meme --all/);
+  assert.match((await run(["get", u, "--bag", "aki-fixture"])).calls, /tiddler get .* --bag aki-fixture --meme --all/);
   assert.equal((await run(["get", u, "--tag", "z"])).status, 2);
 });
 
@@ -293,7 +293,7 @@ async function runJoin(runnerIds, env = {}, command = ["node", "x.mjs"]) {
     await writeFile(join(dir, "docker"), `#!/bin/sh
 printf '%s\\n' "$*" >> "$CALL_LOG"
 case "$*" in
-  *"wiki list --json"*) printf '%s\\n' "$INFO_WIKIS"; exit 0 ;;
+  *"wiki status --json"*) node -e 'const x=JSON.parse(process.env.INFO_WIKIS || "{}"); console.log(JSON.stringify({ok:true,data:{catalog:x.data ?? {},activation:{active:["lares"]},residency:{pinned:[],wela:[]}}}));' ; exit 0 ;;
 esac
 await_file() { i=0; while [ ! -f "$1" ] && [ ! -f "$2" ] && [ "$i" -lt 100 ]; do i=$((i+1)); sleep 0.05; done; }
 got() { for f in "$@"; do [ -f "$f" ] && echo "GOT $(basename "$f"): $(cat "$f" | tr '\\n' ' ')"; done; return 0; }
@@ -388,7 +388,7 @@ test("CONTROL: info reads the mounted wiki document from a registered JSON syste
   assert.match(r.calls, /logs --no-color lares/);
   assert.doesNotMatch(r.calls, /device-admit|fleet join/);
   assert.equal(info.recipe.leafReadsDefaultRecipe, true);
-  assert.match(r.calls, /wiki list --json/);
+  assert.match(r.calls, /wiki status --json/);
 });
 
 test("info refuses a walk start by name when the wiki has no document", async () => {
@@ -435,7 +435,7 @@ test("CONTROL: qa-join starts a live walk when the registered document is an Aut
     ] } }),
   }, ["node", "packages/lararium-web/tests/live-wiki.mjs", "crossing"]);
   assert.equal(r.status, 0, r.stderr);
-  assert.match(r.calls, /wiki list --json/);
+  assert.match(r.calls, /wiki status --json/);
   assert.match(r.calls, / run .*qa /);
 });
 

@@ -11,9 +11,9 @@ import os
 import pytest
 
 from lares_mcp import (LIFECYCLE_VERBS, PLANE_VERBS, WIKI_VERBS, SENSE_LIFECYCLE_VERBS,
-                       MEME_VERBS, KAHUA_VERBS, OFFER_VERBS, TIDDLER_VERBS,
-                       VERB_SEATS, DaemonCoordinator,
-                       LaresCoordinator, build_mcp, guard_hitl, seat_of)
+                       MEME_VERBS, KAHUA_VERBS, OFFER_VERBS, TIDDLER_VERBS, DDATE_VERBS, ORACLE_VERBS, LAW_VERBS, HEARTH_VERBS, SHORE_VERBS,
+                       SENSE_HAND_VERBS, VERB_SEATS, DaemonCoordinator,
+                       LaresCoordinator, build_mcp, seat_of)
 from worldline_veil import veiled_root
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
@@ -170,51 +170,41 @@ def test_pour_builds_the_worldline_and_kapae_cascades_the_subtree(tmp_path):
 def test_grid_seats_the_verbs_by_reversibility_and_trust():
     for v in LIFECYCLE_VERBS:
         assert seat_of(v) == "HOTL"       # every lifecycle verb runs reversible + trusted
-    assert seat_of("teardown") == "HITL"  # tears a sensorium store down — irreversible
-    assert seat_of("purge") == "HITL"     # irreversible
     assert seat_of("attach") == "HITL"    # trust-crossing
     assert seat_of("release") == "HITL"   # irreversible — drops a guest handle for good
     assert seat_of("reconcile") == "HOTL" # reversible re-settle against source
 
 
-def test_hitl_gate_blocks_without_approval():
-    guard_hitl("recall")                  # HOTL passes freely
-    guard_hitl("kapae")                   # reversible mute passes freely
-    guard_hitl("reconcile")               # HOTL re-settle passes freely
-    with pytest.raises(PermissionError):
-        guard_hitl("purge")               # HITL (irreversible) blocks without approval
-    with pytest.raises(PermissionError):
-        guard_hitl("attach")              # HITL (trust-crossing) blocks without approval
-    with pytest.raises(PermissionError):
-        guard_hitl("release")             # HITL (irreversible) blocks without approval
-    with pytest.raises(PermissionError):
-        guard_hitl("teardown")            # HITL (irreversible store teardown) blocks without approval
-    guard_hitl("purge", approval="operator-granted-cap")   # the @daemon-granted cap unblocks it
-    guard_hitl("teardown", approval="operator-granted-cap")  # the same cap unblocks the store teardown
+def test_every_seated_tool_runs_hotl_and_no_hitl_verb_holds_a_tool(tmp_path):
+    # THE HAND LAW (hitl-reads-a-hand): a person's hand at a real terminal approves an HITL verb, and no argument a seat
+    # fills stands in for it, so every tool this seat serves seats HOTL and every HITL verb in the grid holds no tool.
+    tools = _mcp_tool_names(tmp_path)
+    for v in tools:
+        assert v in VERB_SEATS and seat_of(v) == "HOTL", f"tool {v!r} seats HITL or rides unseated"
+    for v, _seat in VERB_SEATS.items():
+        if seat_of(v) == "HITL":
+            assert v not in tools, f"HITL verb {v!r} holds a tool"
 
 
-def test_sense_lifecycle_verbs_carry_their_real_seats():
-    # the DURABLE sensorium-lifecycle sub-verbs carry the REAL reversibility×trust seats (the TS twin of
-    # mesh LIFECYCLE_SEATS), not a blanket HOTL — reads + reversible re-settle/restore/build run HOTL; the
-    # in-loop-human graduation (promote) and judged deaccession (retire) cross HITL, as does purge.
+def test_sense_hand_verbs_hold_no_tool_and_no_seat(tmp_path):
+    # RED before the cure: promote, retire and purge rode tools gated by an `approve` boolean the model fills, and
+    # un_retire rode one ungated. The cure retires each: the operator runs `lares sense <verb>` on their own terminal.
+    tools = _mcp_tool_names(tmp_path)
+    assert {"harden", "promote", "sense_harden", "sense_promote", "trust", "nexus_approve", "nexus_promote"}.isdisjoint(tools)
+    for v in SENSE_HAND_VERBS:
+        tool = v.replace("-", "_")
+        assert tool not in tools, f"hand verb {v!r} still rides an MCP tool"
+        assert tool not in VERB_SEATS and v not in VERB_SEATS, f"hand verb {v!r} still holds a seat row"
+    for tool in tools:
+        schema = {t.name: t for t in asyncio.run(build_mcp(_coord(tmp_path)).list_tools())}[tool].input_schema
+        assert "approve" not in schema.get("properties", {}), f"tool {tool!r} takes an approval value a seat fills"
+
+
+def test_sense_lifecycle_verbs_a_seat_runs_carry_their_seats():
+    # the DURABLE sensorium-lifecycle sub-verbs a seat runs — the reads and the pioneer build — seat HOTL.
     for v in SENSE_LIFECYCLE_VERBS:
         assert v in VERB_SEATS, f"sense-lifecycle verb {v!r} rides UNSEATED"
-    for v in ("roster", "inspect", "build", "reconcile", "un_retire"):
-        assert seat_of(v) == "HOTL"        # reads + reversible moves run on the operator's loop
-    for v in ("promote", "retire", "purge"):
-        assert seat_of(v) == "HITL"        # graduation · deaccession · byte-GC need the operator's hand
-
-
-def test_sense_lifecycle_hitl_gate_blocks_without_approval():
-    # the surface twin of the CLI's `--approve`: an HITL sense-lifecycle verb refuses without an operator-
-    # approval capability, and the @daemon-granted cap unblocks it (E5 — the gate holds on the MCP surface).
-    guard_hitl("roster")                   # HOTL read passes freely
-    guard_hitl("build")                    # HOTL self-service build passes freely
-    guard_hitl("un_retire")                # HOTL reversible restore passes freely
-    for v in ("promote", "retire"):
-        with pytest.raises(PermissionError):
-            guard_hitl(v)                  # HITL blocks without approval
-        guard_hitl(v, approval="operator-granted-cap")   # the cap unblocks it
+        assert seat_of(v) == "HOTL"
 
 
 def _mcp_tool_names(tmp_path):
@@ -227,7 +217,9 @@ def test_mcp_tools_mirror_the_cli_lifecycle_verbs(tmp_path):
     # DURABLE sensorium-lifecycle sub-verbs, and the meme placement pair — name-for-name (the growth floor).
     assert _mcp_tool_names(tmp_path) == (set(LIFECYCLE_VERBS) | set(PLANE_VERBS) | set(WIKI_VERBS)
                                          | set(SENSE_LIFECYCLE_VERBS)
-                                         | set(MEME_VERBS) | set(KAHUA_VERBS) | set(OFFER_VERBS) | set(TIDDLER_VERBS))
+                                         | set(MEME_VERBS) | set(KAHUA_VERBS) | set(OFFER_VERBS) | set(TIDDLER_VERBS)
+                                         | set(DDATE_VERBS) | set(ORACLE_VERBS) | set(LAW_VERBS) | set(HEARTH_VERBS)
+                                         | set(SHORE_VERBS))
 
 
 def test_recall_tool_args_are_isomorphic_with_the_recall_api(tmp_path):
@@ -275,7 +267,7 @@ def test_parity_inventory_three_way(tmp_path):
     # (c) the name-normalization BRIDGE: each MCP tool's CLI spelling lands on a REAL host verb — so a
     # sub-verb mirror (kapae → `worldline kapae`, status → `sensorium status`) still resolves to a top-level
     # verb the CLI actually carries (no orphan tool; MCP ⊆ CLI reads through the spelling, not the raw name).
-    # A NAMESPACE PAIR spells its host + sub-verb: meme_put/meme_get → `meme put`/`meme get` — ONE host
+    # A NAMESPACE PAIR spells its host + sub-verb: meme_put/meme_list → `meme put`/`meme list` — ONE host
     # (`meme`), two tools, the same `<host> <sub>` shape kapae/un_kapae ride under `sense worldline`.
     for m in mirrored_tools:
         head = cli_forms[m].split()[0]
@@ -706,3 +698,186 @@ def test_daemon_rejim_routes_and_repour_rides_refresh(monkeypatch):
     dc.rejim(repour=True, sensorium_root="/root/mesh")
     assert calls[0] == ("refresh", {"which": "rejim", "sensoriumRoot": "/root/mesh"})   # repour rides refresh
     assert calls[1] == ("rejim", {"sensoriumRoot": "/root/mesh"})         # then reads, root threaded
+
+
+# ── the SENSE DOOR SHRINKS (road leap-ux-collapse, fold 1): the read instruments answer as lenses on one
+#    `analyze` tool, roster reads at two grains, pour carries the bulk pass. Each lens keeps its own wire verb. ──
+
+_RETIRED_TOOLS = {"ki", "li", "jing", "couple_r", "forecast", "mismatch", "rejim", "inspect", "sweep"}
+
+
+def _routed_tools(monkeypatch):
+    calls = []
+    monkeypatch.setattr("lares_mcp.uds.output", lambda verb, args: (calls.append((verb, args)), {"answered": verb})[1])
+    mcp = build_mcp(DaemonCoordinator(wing="w"))
+    tool = lambda name: mcp._tool_manager.get_tool(name).fn  # noqa: E731,SLF001 — the registered skin
+    return mcp, tool, calls
+
+
+def test_the_retired_sense_tools_leave_the_seat(monkeypatch):
+    mcp, _, _ = _routed_tools(monkeypatch)
+    names = {t.name for t in asyncio.run(mcp.list_tools())}
+    assert names.isdisjoint(_RETIRED_TOOLS), sorted(names & _RETIRED_TOOLS)
+    assert {"analyze", "roster", "pour"} <= names
+    for v in _RETIRED_TOOLS:
+        assert v not in VERB_SEATS, f"{v!r} keeps a seat after its tool retired"
+
+
+def test_analyze_lens_routes_each_lens_to_its_own_wire_verb(monkeypatch):
+    from lares_mcp import ANALYZE_LENSES, ANALYZE_LENS_READS
+    _, tool, calls = _routed_tools(monkeypatch)
+    for lens, wire in ANALYZE_LENSES.items():
+        calls.clear()
+        out = tool("analyze")(lens=lens, **({"rows": [[1.0, 2.0]]} if "signal" in ANALYZE_LENS_READS[lens] else {}))
+        assert out["lens"] == lens                                  # every answer echoes the lens it applied
+        assert calls[-1][0].replace("-", "_") == wire               # the lens chooses; the wire verb stays its own
+
+
+def test_analyze_house_names_flow_to_their_plain_lens(monkeypatch):
+    _, tool, calls = _routed_tools(monkeypatch)
+    assert tool("analyze")(lens="ki")["lens"] == "couple" and calls[-1][0] == "ki"
+    assert tool("analyze")(lens="li")["lens"] == "cohere" and calls[-1][0] == "li"
+
+
+def test_analyze_unknown_or_missing_lens_refuses_naming_every_lens(monkeypatch):
+    from lares_mcp import ANALYZE_LENSES, SeatArgumentRefused
+    _, tool, calls = _routed_tools(monkeypatch)
+    for asked in (None, "zz-no-such-lens"):
+        with pytest.raises(SeatArgumentRefused) as refused:
+            tool("analyze")(lens=asked)
+        for lens in ANALYZE_LENSES:
+            assert lens in str(refused.value)
+    assert calls == []                                              # a refusal reaches no wire
+
+
+def test_analyze_lenses_weld_to_the_cli_table():
+    # ONE LENS TABLE, TWO SKINS: the fixture carries the CLI's own table (gen_cli_verbs.mjs reads SENSE_LENSES),
+    # and the seat's table names the same lenses riding the same wire verbs.
+    from lares_mcp import ANALYZE_LENSES, ANALYZE_LENS_ALIASES
+    with open(_CLI_VERBS, encoding="utf-8") as f:
+        inv = json.load(f)
+    assert {k: v.replace("_", "-") for k, v in ANALYZE_LENSES.items()} == inv["analyze_lenses"]
+    assert ANALYZE_LENS_ALIASES == inv["analyze_lens_aliases"]
+
+
+def test_roster_reads_at_two_grains(monkeypatch):
+    _, tool, calls = _routed_tools(monkeypatch)
+    tool("roster")()
+    assert calls[-1] == ("roster", {})
+    tool("roster")(name="memory")
+    assert calls[-1] == ("inspect", {"name": "memory"})
+
+
+def test_pour_bulk_rides_the_sweep_spine(monkeypatch):
+    _, tool, calls = _routed_tools(monkeypatch)
+    tool("pour")(bulk=True, surface="claude", limit=3)
+    assert calls[-1][0] == "sweep" and calls[-1][1]["surface"] == "claude" and calls[-1][1]["limit"] == 3
+    tool("pour")(surface="claude", pointer="/x.jsonl")
+    assert calls[-1][0] == "capture" and calls[-1][1]["pointer"] == "/x.jsonl"
+
+
+def test_pour_bulk_refuses_the_one_pointer_shaping(monkeypatch):
+    # `bulk` rides the sweep spine, which carries no preview, no writeback, no pointer and no room: each refuses by
+    # name before the wire, never drops silently (a dropped dry_run would LAND a real backfill on append-only ground).
+    from lares_mcp import SeatArgumentRefused
+    _, tool, calls = _routed_tools(monkeypatch)
+    for shaping, named in (({"dry_run": True}, "dry_run"), ({"writeback": True}, "writeback"),
+                           ({"pointer": "/x.jsonl"}, "pointer"), ({"room": "elsewhere"}, "room")):
+        with pytest.raises(SeatArgumentRefused) as refused:
+            tool("pour")(bulk=True, **shaping)
+        assert named in str(refused.value)
+    assert calls == []
+
+
+def test_analyze_refuses_an_argument_its_lens_never_reads(monkeypatch):
+    # The lens reads only its own arguments (the CLI refuses a stray flag by name); the seat reads the same table.
+    from lares_mcp import SeatArgumentRefused
+    _, tool, calls = _routed_tools(monkeypatch)
+    for lens, stray in (("couple", {"spectral": True}), ("changes", {"rows": [[1.0]]}),
+                        ("forecast", {"names": ["a"]}), ("rhythm", {"halves": "4,8"}), ("square", {"repour": True})):
+        with pytest.raises(SeatArgumentRefused) as refused:
+            tool("analyze")(lens=lens, **stray)
+        assert next(iter(stray)) in str(refused.value)
+    assert calls == []
+    tool("analyze")(lens="changes", spectral=True, halves="4,8", span=8)      # CONTROL: its own arguments ride
+    assert calls[-1][0] == "analyze"
+
+
+def test_analyze_lens_reads_weld_to_the_cli_table():
+    from lares_mcp import ANALYZE_LENS_READS
+    with open(_CLI_VERBS, encoding="utf-8") as f:
+        inv = json.load(f)
+    assert {k: sorted(v) for k, v in ANALYZE_LENS_READS.items()} == {k: sorted(v) for k, v in inv["analyze_lens_reads"].items()}
+
+
+def test_wiki_seat_reach_stays_on_switch_rotate_and_act(monkeypatch):
+    _, tool, calls = _routed_tools(monkeypatch)
+    wiki = tool("wiki")
+    monkeypatch.setattr("lares_mcp.uds.call", lambda verb, args: (calls.append((verb, args)), {"results": {"summary": {"ok": True, "output": {}}}})[1])
+    for args, expected in [
+        ({"verb": "switch", "slug": "w"}, ("wiki-switch", {"slug": "w"})),
+        ({"verb": "pin", "slug": "w", "rotate": True}, ("wiki-hold", {"slug": "w"})),
+        ({"verb": "pin", "slug": "w", "rotate": True, "release": True}, ("wiki-release", {"slug": "w"})),
+        ({"verb": "act", "name": "sidebar-layout", "recipe": "default", "expected": "a", "resulting": "b"}, ("wiki-action", {"recipe": "default", "name": "sidebar-layout", "expected": "a", "resulting": "b"})),
+    ]:
+        wiki(**args)
+        assert calls.pop() == expected
+    for args, name in [
+        ({"verb": "pin", "slug": "w"}, "rotate"),
+        ({"verb": "pin", "slug": "w", "release": True}, "rotate"),
+        ({"verb": "pin", "slug": "w", "bag": True}, "bag"),
+        ({"verb": "pin", "slug": "w", "bag": True, "release": True}, "bag"),
+        ({"verb": "pin", "slug": "w", "next_boot": True}, "next_boot"),
+        ({"verb": "switch", "slug": "w", "rotate": True}, "rotate"),
+        ({"verb": "switch", "slug": "w", "release": True}, "release"),
+        ({"verb": "hold", "slug": "w"}, "verb"),
+        ({"verb": "pin", "rotate": True}, "slug"),
+        ({"verb": "pin", "slug": "w", "rotate": True, "recipe": "default"}, "action"),
+        ({"verb": "switch", "slug": "w", "next_boot": True}, "next_boot"),
+        ({"verb": "act", "name": "a", "recipe": "default", "expected": "a", "resulting": "b", "bag": True}, "bag"),
+    ]:
+        with pytest.raises(Exception, match=name):
+            wiki(**args)
+        assert calls == []
+
+
+
+def test_registered_tools_carry_seat_annotations_and_plain_first_lines():
+    from lares_mcp import VERB_SEATS, TOOL_NATURE, tool_annotation_hints, DaemonCoordinator, build_mcp
+
+    tools = asyncio.run(build_mcp(DaemonCoordinator(wing="w")).list_tools())
+    assert next(t for t in tools if t.name == "analyze").annotations.read_only_hint is False
+    assert set(TOOL_NATURE) == {t.name for t in tools}
+    verbs = set("capture recall report render mute restore read run switch wikify survey cast pin unpin patch remove offer show propose stage get roster build reconcile".split())
+
+    def check(tool):
+        assert tool.name in VERB_SEATS and VERB_SEATS[tool.name] == (True, False)
+        a = tool.annotations
+        assert a is not None, tool.name
+        assert (a.read_only_hint, a.destructive_hint, a.idempotent_hint, a.open_world_hint) == (
+            *tool_annotation_hints(tool.name),
+        ), tool.name
+        first = tool.description.splitlines()[0]
+        assert len(first) < 120, (tool.name, first)
+        assert first.split()[0] in {v.capitalize() for v in verbs}, (tool.name, first)
+
+    for tool in tools:
+        check(tool)
+    from copy import deepcopy
+    planted = deepcopy(tools[0])
+    planted.annotations = None
+    with pytest.raises(AssertionError):
+        check(planted)
+    planted = deepcopy(tools[0])
+    planted.annotations.open_world_hint = True
+    with pytest.raises(AssertionError):
+        check(planted)
+
+    planted = deepcopy(next(t for t in tools if t.name == "analyze"))
+    planted.annotations.read_only_hint = True
+    with pytest.raises(AssertionError):
+        check(planted)
+    planted = deepcopy(next(t for t in tools if t.annotations.read_only_hint))
+    planted.annotations.destructive_hint = True
+    with pytest.raises(AssertionError):
+        check(planted)

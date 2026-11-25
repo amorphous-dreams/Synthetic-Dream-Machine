@@ -1,0 +1,309 @@
+/**
+ * wear-frame — `op: "wear", face: N` on the custody door: unlock opens custody, wear chooses the face. A wear asks no route,
+ * carries none and hands none to the composition it stands; it moves the mount to a face already open (under a pūlama, one
+ * inside the lent set) and recomposes, and a composition that refuses wears the face it left.
+ */
+import { EventEmitter } from "node:events";
+import type { Socket } from "node:net";
+import { afterEach, describe, expect, test } from "vitest";
+import type { SlotSpec } from "@lararium/mesh";
+import { custodyFrameHandler } from "../src/custody-frames.js";
+import { personaGroupDigest } from "../src/persona-group-file.js";
+import type { CustodyHolder } from "../src/custody-holder.js";
+import { mountedFaceOrdinal, setMountedFace, sovereignStands } from "../src/node-vessel-identity.js";
+import type { WardCredential } from "../src/ward-credential.js";
+import type { ShoreFlushReading } from "../src/shore-verb.js";
+import { FIXTURE_PASSPHRASE, seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
+
+const slot = (passphrase: string): SlotSpec => ({ t: 1, pins: [{ kind: "passphrase", passphrase }] });
+const cred = (passphrase: string) => [{ kind: "passphrase" as const, passphrase }];
+const SECOND = "the-second-face-route";
+let seat: SeatedScratchCustody | null = null;
+afterEach(async () => { setMountedFace(undefined); await seat?.drop(); seat = null; });
+
+function sender(handle: (parsed: unknown, sock: Socket) => boolean) {
+  return (frame: unknown): Promise<Record<string, unknown>> => new Promise((resolve) => {
+    const sock = Object.assign(new EventEmitter(), { end: (line: string) => resolve(JSON.parse(line) as Record<string, unknown>) }) as unknown as Socket;
+    expect(handle(frame, sock)).toBe(true);
+  });
+}
+
+/** A scratch vessel with faces under the routes named; `refuseWearing` names a face whose composition refuses to stand. */
+/** What the stub composition does, settable mid-test: the mounts it refuses to stand on, and the mounts it throws on. */
+interface Composing { readonly refuse: Set<number>; readonly throwOn: Set<number> }
+async function vessel(faceRoutes: readonly string[], refuseWearing?: number, ctl: Composing = { refuse: new Set(), throwOn: new Set() }, shoreFlush?: () => Promise<ShoreFlushReading>) {
+  seat = await seatScratchCustody("wear-frame");
+  const { holder } = seat;
+  // EACH FACE LANDED: its group, and its anchors naming that group (a face whose join waits holds none, and never takes the mount).
+  for (const [i, route] of faceRoutes.entries()) {
+    await holder.foundFace({ group: personaGroupDigest(`wear-frame-face-${i}`), slots: [slot(route)] });
+    await holder.writeRecord("identity", `anchors-h${i}.json`, new TextEncoder().encode(JSON.stringify({ personaGroupId: `wear-frame-face-${i}`, meshCabalDocIdHex: "ab" })));
+  }
+  await holder.lock();
+  const composed: Array<{ sovereign: boolean; ward: WardCredential | undefined; mount: number | undefined }> = [];
+  const logs: string[] = [];
+  const handle = custodyFrameHandler({
+    holder, testScratch: false, standing: () => "hearth", onLog: (l) => logs.push(l),
+    ...(shoreFlush ? { shoreFlush } : {}),
+    recompose: async (sovereign, ward) => {
+      composed.push({ sovereign, ward, mount: mountedFaceOrdinal() });
+      if (sovereign && refuseWearing !== undefined && mountedFaceOrdinal() === refuseWearing) return { standing: "herm", refused: `h${refuseWearing} would not stand` };
+      const m = mountedFaceOrdinal();
+      if (sovereign && m !== undefined && ctl.throwOn.has(m)) throw new Error(`the composition wearing h${m} fell over`);
+      if (sovereign && m !== undefined && ctl.refuse.has(m)) return { standing: "herm", refused: `h${m} would not stand` };
+      return { standing: sovereign ? "hearth" : "herm" };
+    },
+  });
+  return { holder, composed, logs, send: sender(handle), ctl };
+}
+
+describe("RED wear: the session's choice among the faces standing open, with no route", () => {
+  test("wear-recomposes-sovereign-with-no-ward-credential, and wear-sets-the-mount-before-the-recompose", async () => {
+    const v = await vessel([FIXTURE_PASSPHRASE, SECOND]);
+    await v.send({ op: "unlock", credentials: [...cred(FIXTURE_PASSPHRASE), ...cred(SECOND)], all: true });
+    expect(mountedFaceOrdinal()).toBe(0);
+    v.composed.length = 0;
+    const a = await v.send({ op: "wear", face: 1 });
+    expect(a).toMatchObject({ op: "wear", face: 1, held: true, standing: "hearth" });
+    expect(v.composed).toEqual([{ sovereign: true, ward: undefined, mount: 1 }]);
+    expect(mountedFaceOrdinal()).toBe(1);
+    expect(sovereignStands()).toBe(true);
+  });
+
+  test("wear-refuses-a-face-not-open: the mount stays and nothing recomposes", async () => {
+    const v = await vessel([FIXTURE_PASSPHRASE, SECOND]);
+    await v.send({ op: "unlock", credentials: cred(FIXTURE_PASSPHRASE), all: true });
+    v.composed.length = 0;
+    expect(await v.send({ op: "wear", face: 1 })).toMatchObject({ op: "wear", status: "error", refusal: { reason: "face-not-open" } });
+    expect(await v.send({ op: "wear", face: 7 })).toMatchObject({ op: "wear", status: "error", refusal: { reason: "face-not-open" } });
+    expect(mountedFaceOrdinal()).toBe(0);
+    expect(v.composed).toEqual([]);
+  });
+
+  test("wear-rolls-the-mount-back-when-the-composition-refuses, and keeps the node key", async () => {
+    const v = await vessel([FIXTURE_PASSPHRASE, SECOND], 1);
+    await v.send({ op: "unlock", credentials: [...cred(FIXTURE_PASSPHRASE), ...cred(SECOND)], all: true });
+    v.composed.length = 0;
+    const a = await v.send({ op: "wear", face: 1 });
+    expect(a).toMatchObject({ op: "wear", face: 1, held: true, switchRefused: "h1 would not stand", wornAgain: 0, standing: "hearth" });
+    expect(mountedFaceOrdinal()).toBe(0);
+    expect(v.holder.isUnlocked()).toBe(true);
+    expect(v.composed.map((c) => c.mount)).toEqual([1, 0]);
+    expect(v.composed.every((c) => c.ward === undefined)).toBe(true);
+  });
+
+  test("wear-of-the-worn-face-recomposes-nothing", async () => {
+    const v = await vessel([FIXTURE_PASSPHRASE, SECOND]);
+    await v.send({ op: "unlock", credentials: [...cred(FIXTURE_PASSPHRASE), ...cred(SECOND)], all: true });
+    v.composed.length = 0;
+    expect(await v.send({ op: "wear", face: 0 })).toMatchObject({ op: "wear", face: 0, held: true, already: true });
+    expect(v.composed).toEqual([]);
+  });
+
+  test("wear-frame-refuses-stray-keys-and-a-credential, before anything reads it", async () => {
+    const v = await vessel([FIXTURE_PASSPHRASE, SECOND]);
+    await v.send({ op: "unlock", credentials: [...cred(FIXTURE_PASSPHRASE), ...cred(SECOND)], all: true });
+    v.composed.length = 0;
+    const route = "a-route-that-rides-no-wear";
+    const carried = await v.send({ op: "wear", face: 1, credentials: cred(route) });
+    expect(carried).toMatchObject({ op: "wear", status: "error", refusal: { reason: "bad-custody-frame" } });
+    for (const bad of [{ op: "wear" }, { op: "wear", face: -1 }, { op: "wear", face: "1" }, { op: "wear", face: 1.5 }]) {
+      expect(await v.send(bad)).toMatchObject({ op: "wear", status: "error", refusal: { reason: "bad-custody-frame" } });
+    }
+    expect(v.composed).toEqual([]);
+    expect(mountedFaceOrdinal()).toBe(0);
+    expect(JSON.stringify([carried, v.logs])).not.toContain(route);
+  });
+
+  test("wear-while-custody-locked-refuses-and-recomposes-nothing (unlock owns that act)", async () => {
+    const v = await vessel([FIXTURE_PASSPHRASE]);
+    expect(await v.send({ op: "wear", face: 0 })).toMatchObject({ op: "wear", status: "error", refusal: { reason: "custody-locked" } });
+    expect(v.composed).toEqual([]);
+  });
+
+  test("CONTROL: the unlock's own switch still hands its route to the composition it stands", async () => {
+    const v = await vessel([FIXTURE_PASSPHRASE]);
+    await v.send({ op: "unlock", credentials: cred(FIXTURE_PASSPHRASE) });
+    expect(v.composed).toHaveLength(1);
+    expect(v.composed[0]!.ward).toBeDefined();
+  });
+});
+
+/** A door seated by a pūlama lending `lent`; the holder's faces stand open per `open`. */
+function pulamaDoor(lent: readonly number[], open: readonly number[]) {
+  const unlockFaceCalls: unknown[] = [];
+  const composed: Array<number | undefined> = [];
+  const holder = {
+    isUnlocked: () => true, attemptsLeft: () => 0, openedSlot: () => "pulama", unlockedFaces: () => open.map((o) => `fcid-${o}`),
+    faceStanding: async ({ ordinal }: { ordinal: number }) => (open.includes(ordinal) || lent.includes(ordinal) ? { ordinal, fcid: `fcid-${ordinal}`, unlocked: open.includes(ordinal) } : null),
+    unlockFace: async (face: unknown) => { unlockFaceCalls.push(face); return { reading: "attempts-spent" }; },
+    unlockFaces: async () => { unlockFaceCalls.push("all"); return []; },
+    unlock: async () => ({ reading: "already-unlocked" }), lock: async () => {},
+  } as unknown as CustodyHolder;
+  const handle = custodyFrameHandler({
+    holder, testScratch: false, standing: () => "hearth", onLog: () => {},
+    recompose: async () => { composed.push(mountedFaceOrdinal()); return { standing: "hearth" }; },
+    pulama: { standing: () => ({ session: true, waits: null }), dial: async () => ({ session: true, waits: null }), lent: () => lent, tellWorn: async () => {} },
+  });
+  return { send: sender(handle), unlockFaceCalls, composed };
+}
+
+describe("RED wear under a pūlama: the lent set bounds it", () => {
+  test("wear-under-a-pulama-takes-a-lent-face and calls no holder unlock", async () => {
+    setMountedFace(0);
+    const d = pulamaDoor([0, 2], [0, 2]);
+    expect(await d.send({ op: "wear", face: 2 })).toMatchObject({ op: "wear", face: 2, held: true });
+    expect(d.composed).toEqual([2]);
+    expect(d.unlockFaceCalls).toEqual([]);
+  });
+
+  test("wear-under-a-pulama-refuses-a-face-outside-the-lend, naming the lent set", async () => {
+    setMountedFace(0);
+    const d = pulamaDoor([0, 2], [0, 1, 2]);
+    const a = await d.send({ op: "wear", face: 1 });
+    expect(a).toMatchObject({ op: "wear", status: "error", refusal: { reason: "face-not-lent", lent: [0, 2] } });
+    expect(d.composed).toEqual([]);
+    expect(mountedFaceOrdinal()).toBe(0);
+    expect(d.unlockFaceCalls).toEqual([]);
+  });
+});
+
+describe("RED wear's rollback: a key never rests over a floor", () => {
+  // A SECOND REFUSAL DROPS NO KEY: a wear opened no key, so the vessel stands at the floor (NO MOUNT) with every key it held.
+  test("wear-rollback-that-also-refuses-stands-the-floor-and-keeps-every-key", async () => {
+    const v = await vessel([FIXTURE_PASSPHRASE, SECOND]);
+    await v.send({ op: "unlock", credentials: [...cred(FIXTURE_PASSPHRASE), ...cred(SECOND)], all: true });
+    v.ctl.refuse.add(0); v.ctl.refuse.add(1);
+    const a = await v.send({ op: "wear", face: 1 });
+    expect(a).toMatchObject({ op: "wear", face: 1, held: true, switchRefused: "h1 would not stand" });
+    expect(v.holder.isUnlocked(), "the node key stays held").toBe(true);
+    expect(v.holder.unlockedFaces().length, "every face key stays open").toBe(2);
+    expect(sovereignStands(), "the vessel stands at the floor").toBe(false);
+  });
+
+  test("wear-whose-recompose-throws-restores-the-prior-mount", async () => {
+    const v = await vessel([FIXTURE_PASSPHRASE, SECOND]);
+    await v.send({ op: "unlock", credentials: [...cred(FIXTURE_PASSPHRASE), ...cred(SECOND)], all: true });
+    v.ctl.throwOn.add(1);
+    const a = await v.send({ op: "wear", face: 1 });
+    expect(a).toMatchObject({ op: "wear", status: "error" });
+    expect(mountedFaceOrdinal()).toBe(0);
+  });
+
+  test("CONTROL: a rollback that stands keeps the key and answers held on the face it left", async () => {
+    const v = await vessel([FIXTURE_PASSPHRASE, SECOND]);
+    await v.send({ op: "unlock", credentials: [...cred(FIXTURE_PASSPHRASE), ...cred(SECOND)], all: true });
+    v.ctl.refuse.add(1);
+    expect(await v.send({ op: "wear", face: 1 })).toMatchObject({ held: true, wornAgain: 0 });
+    expect(v.holder.isUnlocked()).toBe(true);
+  });
+});
+
+describe("RED a seat's wear moves the mount", () => {
+  test("a wear frame marked `seat: \"ai\"` over an open face moves the mount like the operator's own", async () => {
+    const v = await vessel([FIXTURE_PASSPHRASE, SECOND]);
+    await v.send({ op: "unlock", credentials: [...cred(FIXTURE_PASSPHRASE), ...cred(SECOND)], all: true });
+    v.composed.length = 0;
+    const a = await v.send({ op: "wear", face: 1, seat: "ai" });
+    expect(a).toMatchObject({ op: "wear", face: 1, held: true });
+    expect(mountedFaceOrdinal()).toBe(1);
+    expect(v.composed.length).toBeGreaterThan(0);
+  });
+
+  test("CONTROL: a seat's wear of a shut face refuses `face-not-open`", async () => {
+    const v = await vessel([FIXTURE_PASSPHRASE, SECOND]);
+    await v.send({ op: "unlock", credentials: cred(FIXTURE_PASSPHRASE), face: 0 });
+    const a = await v.send({ op: "wear", face: 1, seat: "ai" });
+    expect(a).toMatchObject({ op: "wear", status: "error", refusal: { reason: "face-not-open" } });
+    expect(mountedFaceOrdinal()).toBe(0);
+  });
+
+  test("CONTROL: a seat's wear on a locked vessel refuses `custody-locked`", async () => {
+    const v = await vessel([FIXTURE_PASSPHRASE, SECOND]);
+    const a = await v.send({ op: "wear", face: 1, seat: "ai" });
+    expect(a).toMatchObject({ op: "wear", status: "error", refusal: { reason: "custody-locked" } });
+  });
+
+  test("the seat key carries `ai` alone; any other value refuses as a bad frame. CONTROL: an unmarked wear still wears", async () => {
+    const v = await vessel([FIXTURE_PASSPHRASE, SECOND]);
+    await v.send({ op: "unlock", credentials: [...cred(FIXTURE_PASSPHRASE), ...cred(SECOND)], all: true });
+    for (const seat of ["human", "", 1, true]) expect(await v.send({ op: "wear", face: 1, seat })).toMatchObject({ refusal: { reason: "bad-custody-frame" } });
+    expect(await v.send({ op: "wear", face: 1 })).toMatchObject({ op: "wear", face: 1, held: true });
+  });
+});
+
+describe("RED lock of the mount after unlock --all slides to the next open face", () => {
+  test("lock-face-of-the-mount-slides-to-the-next-open-face: never the floor while another face stands open", async () => {
+    const v = await vessel([FIXTURE_PASSPHRASE, SECOND]);
+    await v.send({ op: "unlock", credentials: [...cred(FIXTURE_PASSPHRASE), ...cred(SECOND)], all: true });
+    expect(mountedFaceOrdinal()).toBe(0);
+    v.composed.length = 0;
+    expect(await v.send({ op: "lock", face: 0 })).toMatchObject({ op: "lock", locked: true, face: 0, was: "unlocked", standing: "hearth" });
+    expect(mountedFaceOrdinal()).toBe(1);
+    expect(sovereignStands()).toBe(true);
+    expect(v.composed.map((c) => [c.sovereign, c.mount])).toEqual([[true, 1]]);
+  });
+
+  test("CONTROL: the last open face locked leaves the floor, the node key held", async () => {
+    const v = await vessel([FIXTURE_PASSPHRASE]);
+    await v.send({ op: "unlock", credentials: cred(FIXTURE_PASSPHRASE), all: true });
+    await v.send({ op: "lock", face: 0 });
+    expect(sovereignStands()).toBe(false);
+    expect(v.holder.isUnlocked()).toBe(true);
+  });
+});
+
+
+describe("RED wear flushes every shore before it turns the face", () => {
+  const WHOLE: ShoreFlushReading = { whole: true, islands: [{ island: "daemon", answered: true, written: [{ uri: "lar:///a.b.c/kept" }] as never, writtenCount: 1, unwritten: [], unwrittenCount: 0, fileWrites: 1, drained: true }] };
+  const STRANDS: ShoreFlushReading = { whole: false, islands: [
+    { island: "daemon", answered: true, written: [], writtenCount: 0, unwritten: [], unwrittenCount: 0, fileWrites: 0, drained: true },
+    { island: "wiki:sdm", answered: true, written: [], writtenCount: 0, unwritten: [{ state: "failed", uri: "lar:///a.b.c/stuck", why: "its reconcile threw again on the retry" }] as never, unwrittenCount: 1, fileWrites: 0, drained: true },
+    { island: "wiki:lares", answered: false, why: "the island gave no answer within 15000ms" },
+  ] };
+
+  test("WF1 a wear that turns asks the whole-island flush while the old face still stands mounted, then turns, and its answer carries the reading", async () => {
+    const asked: Array<number | undefined> = [];
+    const v = await vessel([FIXTURE_PASSPHRASE, SECOND], undefined, undefined, async () => { asked.push(mountedFaceOrdinal()); return WHOLE; });
+    await v.send({ op: "unlock", credentials: [...cred(FIXTURE_PASSPHRASE), ...cred(SECOND)], all: true });
+    v.composed.length = 0;
+    const a = await v.send({ op: "wear", face: 1 });
+    expect(asked).toEqual([0]);
+    expect(a).toMatchObject({ op: "wear", face: 1, held: true, shore: WHOLE });
+    expect(v.composed.map((c) => c.mount)).toEqual([1]);
+  });
+
+  test("WF2 a flush that leaves carriers unwritten (or an island unanswered) refuses the turn by name, the mount stays and nothing recomposes", async () => {
+    const v = await vessel([FIXTURE_PASSPHRASE, SECOND], undefined, undefined, async () => STRANDS);
+    await v.send({ op: "unlock", credentials: [...cred(FIXTURE_PASSPHRASE), ...cred(SECOND)], all: true });
+    v.composed.length = 0;
+    const a = await v.send({ op: "wear", face: 1 });
+    expect(a).toMatchObject({ op: "wear", status: "error", refusal: { reason: "shore-unwritten", shore: STRANDS } });
+    expect(String(a["errorMessage"])).toContain("lar:///a.b.c/stuck");
+    expect(String(a["errorMessage"])).toContain("wiki:lares");
+    // The refusal names the face whose carrier stands stuck (the worn face's wiki holds it here), and the flush that writes it.
+    expect(String(a["errorMessage"])).toMatch(/records unwritten on h0 \(/);
+    expect(String(a["errorMessage"])).toContain("lares shore flush");
+    expect(String(a["errorMessage"])).not.toContain("turns away from");
+    expect(mountedFaceOrdinal()).toBe(0);
+    expect(v.composed).toEqual([]);
+  });
+
+  test("WF3 the same wear carrying `yes: true` turns over the unwritten carriers, and its answer still names them", async () => {
+    const v = await vessel([FIXTURE_PASSPHRASE, SECOND], undefined, undefined, async () => STRANDS);
+    await v.send({ op: "unlock", credentials: [...cred(FIXTURE_PASSPHRASE), ...cred(SECOND)], all: true });
+    v.composed.length = 0;
+    const a = await v.send({ op: "wear", face: 1, yes: true });
+    expect(a).toMatchObject({ op: "wear", face: 1, held: true, shore: STRANDS });
+    expect(mountedFaceOrdinal()).toBe(1);
+    expect(await v.send({ op: "wear", face: 0, yes: "sure" })).toMatchObject({ op: "wear", status: "error", refusal: { reason: "bad-custody-frame" } });
+  });
+
+  test("WF4 a wear of the face already worn turns nothing and asks no flush", async () => {
+    let asked = 0;
+    const v = await vessel([FIXTURE_PASSPHRASE, SECOND], undefined, undefined, async () => { asked += 1; return WHOLE; });
+    await v.send({ op: "unlock", credentials: [...cred(FIXTURE_PASSPHRASE), ...cred(SECOND)], all: true });
+    expect(await v.send({ op: "wear", face: 0 })).toMatchObject({ op: "wear", already: true });
+    expect(asked).toBe(0);
+  });
+});

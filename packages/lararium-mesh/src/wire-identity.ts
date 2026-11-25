@@ -39,7 +39,7 @@
  *     salts. The floor derives under its own scope's secret, apart from every face.
  *
  * A scope's name in the store derives from the PersonaGroup by a one-way digest, so the store's own key names hold no
- * group id. The store itself rests vessel-private (it joins a human's faces as every vessel-private record does).
+ * group id. The store itself rests vessel-local, and no DreamNet-published document carries it.
  *
  * Pure but for the store it wraps: no key, no signer, no timer, no clock.
  *
@@ -101,15 +101,47 @@ export interface WireIdentity {
    */
   leg<T extends object>(adapter: T, seat: WireLegSeat, onRefusal?: (refusal: WireLegRefusal, peerId: string) => void): T;
   /** The change actor `face` (null: the veil floor) writes `documentId` under in this composition: sixteen bytes of hex,
-   *  settled once, and every later reading answers it. Another composition derives another. */
-  actor(face: string | null, documentId: string): Promise<string>;
+   *  settled once, and every later reading answers it. Another composition derives another. `replica` names another
+   *  Repo of this composition that writes the document (an island's own, minted at its boot): it derives an actor of its
+   *  own, so two Repos never hand one actor's sequence out twice, and `ownsActor` answers it all the same. */
+  actor(face: string | null, documentId: string, replica?: string): Promise<string>;
   /**
    * WRITE ONE CHANGE AS A FACE: `change` lands on the handle's document under the actor `face` derives for it, and the
-   * document then stands again under the actor it held, so a write that names no face never rides a face's actor.
+   * document then stands again under the actor it held, so a write that names no face never rides a face's actor. With
+   * `at` (hex heads in the document's past) the change lands at those heads under the face actor's isolation form, and
+   * the answer names the heads of the change it made (`changeUnderActor`).
    */
-  writeAs<T>(handle: ActorWritable<T>, face: string | null, change: (doc: T) => void): Promise<void>;
-  /** Whether this composition derived `actor`: a change under it reads as this replica's own, never a peer's. */
+  writeAs<T>(handle: ActorWritable<T>, face: string | null, change: (doc: T) => void, at?: readonly string[]): Promise<readonly string[] | undefined>;
+  /** Whether this composition derived `actor` (or names its isolation form, a change at a past base): a change under it
+   *  reads as this replica's own, never a peer's. */
   ownsActor(actor: string): boolean;
+}
+
+/** A derived actor's length in hex: sixteen bytes. */
+const ACTOR_HEX = 32;
+
+/**
+ * LAND ONE CHANGE UNDER `actor`, synchronously, through the handle's own snapshot door: the change lands on a fork of the
+ * document under `actor`, and the document then stands again under the actor it held, so a write that names no face
+ * never rides a face's actor. With `at` (hex heads in the document's past) the change lands AT those heads, as the
+ * engine's `changeAt` lands it: beside whatever landed after them, so a concurrent value stays a conflict, under the
+ * isolation form of `actor` (the engine's prefix and counter ahead of it). Answers the heads of the change `at` made.
+ */
+export function changeUnderActor<T>(handle: ActorWritable<T>, actor: string, change: (doc: T) => void, at?: readonly string[]): readonly string[] | undefined {
+  let madeAt: readonly string[] | undefined;
+  handle.update((doc) => {
+    const held = A.getActorId(doc);
+    const fork = A.clone(doc, { actor });
+    let written: A.Doc<T>;
+    if (at !== undefined) {
+      const made = A.changeAt(fork, at as A.Heads, change as A.ChangeFn<T>);
+      written = made.newDoc;
+      if (made.newHeads) madeAt = Object.freeze([...made.newHeads]);
+    } else written = A.change(fork, change as A.ChangeFn<T>);
+    // The document stands again under the actor it held: the engine's own, which no face's write rides.
+    return held === actor ? written : A.clone(written, { actor: held });
+  });
+  return madeAt;
 }
 
 /** The engine's own key for a store's id, and the key segment under which it rests a peer's sync state. */
@@ -347,15 +379,15 @@ export function wireIdentityOf(input: { readonly store: StorageAdapterInterface;
   const actorSalt = hexOf(globalThis.crypto.getRandomValues(new Uint8Array(32)));
   const actors = new Map<string, Promise<string>>();
   const owned = new Set<string>();
-  const actor = (face: string | null, documentId: string): Promise<string> => {
+  const actor = (face: string | null, documentId: string, replica?: string): Promise<string> => {
     const scope = wireScopeOf(face);
-    const name = `${scope}\n${documentId}`;
+    const name = `${scope}\n${replica ?? ""}\n${documentId}`;
     let reading = actors.get(name);
     if (reading === undefined) {
       reading = (async () => {
         // The face scope's own secret keys the digest (the secret a pair's alias derives from, under another domain).
         const secret = await rested(`${STORE_ID}-${scope}.veil`, () => hexOf(globalThis.crypto.getRandomValues(new Uint8Array(32))));
-        const derived = hexOf(hmac(sha256, secret, new TextEncoder().encode(`${WIRE_ACTOR_DOMAIN}\n${actorSalt}\n${documentId}`)).slice(0, 16));
+        const derived = hexOf(hmac(sha256, secret, new TextEncoder().encode(replica === undefined ? `${WIRE_ACTOR_DOMAIN}\n${actorSalt}\n${documentId}` : `${WIRE_ACTOR_DOMAIN}\n${actorSalt}\n${replica}\n${documentId}`)).slice(0, 16));
         owned.add(derived);
         return derived;
       })().catch((e: unknown) => { actors.delete(name); throw e; });
@@ -363,19 +395,13 @@ export function wireIdentityOf(input: { readonly store: StorageAdapterInterface;
     }
     return reading;
   };
-  const writeAs = async <T>(handle: ActorWritable<T>, face: string | null, change: (doc: T) => void): Promise<void> => {
-    const as = await actor(face, handle.documentId);
-    handle.update((doc) => {
-      const held = A.getActorId(doc);
-      const written = A.change(A.clone(doc, { actor: as }), change as A.ChangeFn<T>);
-      // The document stands again under the actor it held: the engine's own, which no face's write rides.
-      return held === as ? written : A.clone(written, { actor: held });
-    });
-  };
+  const writeAs = async <T>(handle: ActorWritable<T>, face: string | null, change: (doc: T) => void, at?: readonly string[]): Promise<readonly string[] | undefined> =>
+    changeUnderActor(handle, await actor(face, handle.documentId), change, at);
 
   return {
     storage, peerId, alias, leg, actor, writeAs,
-    ownsActor: (name) => owned.has(name),
+    // A change at a past base names its writer's actor in its isolation form (the engine's prefix and counter ahead of it).
+    ownsActor: (name) => owned.has(name) || (name.length > ACTOR_HEX && owned.has(name.slice(-ACTOR_HEX))),
     storeId: async () => new TextDecoder().decode(await storage.load([STORE_ID])),
   };
 }

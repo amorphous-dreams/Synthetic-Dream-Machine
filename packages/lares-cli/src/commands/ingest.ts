@@ -2,6 +2,7 @@
  * lares ingest — the disk→records gesture.
  *
  *   lares ingest --source <dir|file> --to <bagUri> [--apply] [--yes]
+ *   lares ingest --watch --source <dir> --to <bagUri> [--apply] [--debounce ms]   (the same gesture, fired per settle: ./watch.ts)
  *
  * The gesture holds the disk grant and the Synced tree (the island holds
  * neither — readiness reads local on both sides of the shore):
@@ -22,13 +23,17 @@ import { emit, wantsJson, exitFor } from "../render.js";
 import { summaryOutput } from "../verb-result.js";
 import { OUTCOME_URI_PREFIX } from "@lararium/mesh";
 import { larRoot, larBagsDir, larWikisDir, larProjectionsDirOrNone, vesselDid } from "../env.js";
-import { openSyncedTree, scanSource, fileToUriForSource, candidatesOf, settleIngest, ingestVerdict, applyConfirmedRenames } from "../ingest-core.js";
+import { openSyncedTree, scanSource, skipLines, fileToUriForSource, candidatesOf, settleIngest, ingestVerdict, applyConfirmedRenames, type IngestSettlement } from "../ingest-core.js";
 import { carrierNeedsTag, tagBlobs } from "../tag-blobs.js";
 import { verbFailure } from "../verb-call.js";
 import { askShore, askSettle, type SettleReading } from "../shore-core.js";
+import { cmdWatch } from "./watch.js";
 
 function printUsage(): void {
   console.log("usage: lares ingest --source <dir|file> --to <bagUri> [--apply] [--tag-blobs] [--in-wiki] [--yes]");
+  console.log("       lares ingest --watch --source <dir> --to <bagUri> [--apply] [--debounce ms]");
+  console.log("  --watch    fires the gesture on each settled wave instead of once (preview by default;");
+  console.log("             --apply submits; --debounce sets the quiet window in ms);");
   console.log("  default    = preview (scan + two-leg diff, no submission);");
   console.log("  --tag-blobs writes the CAS opt-in flag (`.meta` sidecar / meme ahu meta) for the");
   console.log("             large un-flagged carriers that would fault during ingest; writes no records;");
@@ -52,7 +57,68 @@ export function readFresherCanon(summary: Readonly<Record<string, unknown>>): Fr
   return { working: String(o["working"] ?? ""), titles, count: typeof o["count"] === "number" ? (o["count"] as number) : titles.length };
 }
 
-export async function cmdIngest(args: ParsedArgs, sink?: { fresher?: FresherCanonReading }): Promise<number> {
+/** What a caller (the lay) hears beside the exit: the fresher canon, and a wave whose wait ended, read back by its id. */
+export interface IngestSink {
+  fresher?: FresherCanonReading;
+  outcome?: { readonly state: "committed" | "unknown"; readonly requestId: string };
+}
+
+/** What one run's settlement reads as: the envelope's verdict, its code, its exit and the headline a person reads. */
+export interface IngestRunReading {
+  readonly ok: boolean;
+  readonly code?: string;
+  readonly message?: string;
+  readonly exit: number;
+  readonly headline: string;
+}
+
+export function ingestRunReading(settled: IngestSettlement, o: { readonly candidates: number; readonly requestId: string; readonly kapaeFault: string | null }): IngestRunReading {
+  const verdict = ingestVerdict(settled);
+  const { refused, conflicts, pageError } = settled;
+  const failed = verdict.failed || o.kapaeFault !== null;
+  const stoodOff = !failed && conflicts.length > 0;
+  const req = o.requestId.slice(0, 8);
+  const headline = pageError !== undefined
+    ? `INGEST ✗ ${refused.length} refusal(s) read, then a later wave failed; ${pageError.unread} carrier(s) stay unread (req ${req})`
+    : stoodOff
+    ? `INGEST ✗ ${conflicts.length} of ${o.candidates} carrier(s) stand in a conflict and landed nothing; the rest applied locally (req ${req})`
+    : refused.length === 0
+    ? `INGEST ✓ applied locally — ${o.candidates} carrier(s) submitted (req ${req})`
+    : `INGEST ✗ ${refused.length} of ${o.candidates} carrier(s) refused; the rest applied locally (req ${req})`;
+  // A LATER WAVE WHOSE WAIT ENDED READS ITS RECEIPT'S STATE, NEVER A FAILURE: committed or unknown, exit 6, ◐ with its id.
+  if (pageError?.outcome !== undefined && refused.length === 0 && o.kapaeFault === null) {
+    const id = pageError.requestId ?? "";
+    return {
+      ok: false, code: `outcome-${pageError.outcome}`, message: verdict.message ?? `a later wave reads ${pageError.outcome}`,
+      exit: exitFor(`outcome-${pageError.outcome}`),
+      headline: `INGEST ◐ ${settled.landed.size} carrier(s) landed; a later wave reads ${pageError.outcome} (req ${id}); ${pageError.unread} carrier(s) stay owed: read \`lares vessel request ${id}\`, then run the ingest again (diff-gated)`,
+    };
+  }
+  if (failed) return { ok: false, code: "verb-error", message: verdict.message ?? o.kapaeFault ?? "INGEST refused", exit: exitFor("verb-error"), headline };
+  if (stoodOff) return { ok: false, code: "conflict", message: "conflict", exit: exitFor("conflict"), headline };
+  return { ok: true, exit: 0, headline };
+}
+
+export async function cmdIngest(args: ParsedArgs, sink?: IngestSink): Promise<number> {
+  // `--watch` fires this gesture per settle. The watcher reads none of the one-shot flags, so each refuses by name
+  // rather than riding a long-lived loop that ignores it.
+  if (args.flags["watch"] === true) {
+    const oneShot = [
+      ...(args.flags["yes"] === true ? ["yes"] : []),
+      ...(args.flags["tag-blobs"] === true ? ["tag-blobs"] : []),
+      ...(args.flags["in-wiki"] === true ? ["in-wiki"] : []),
+      ...(args.options["change-id"] !== undefined ? ["change-id"] : []),
+    ];
+    if (oneShot.length > 0) {
+      console.error(`lares ingest --watch: ${oneShot.map((f) => `--${f}`).join(", ")} ride the one-shot ingest alone`);
+      return 2;
+    }
+    return cmdWatch(args);
+  }
+  if (args.options["debounce"] !== undefined) {
+    console.error("lares ingest: --debounce sets the watcher's quiet window and rides `--watch` alone");
+    return 2;
+  }
   const source = args.options["source"];
   const toBag  = args.options["to"];
   if (!source || !toBag) { printUsage(); return 2; }
@@ -63,7 +129,7 @@ export async function cmdIngest(args: ParsedArgs, sink?: { fresher?: FresherCano
   // scan — observations only, never a work queue
   const projections = larProjectionsDirOrNone();
   const dirs = { bags: larBagsDir(), wikis: larWikisDir(), ...(projections !== undefined ? { projections } : {}) };
-  const scan = scanSource(root, source, toBag, tree, fileToUriForSource(root, source, dirs));
+  const scan = scanSource(root, source, toBag, tree, fileToUriForSource(root, source, dirs, tree));
   if (scan === null) {
     emit(args, { ok: false, error: { code: "usage", message: `source "${source}" does not resolve` }, human: () => console.error(`lares ingest: source "${source}" does not resolve`) });
     return exitFor("usage");
@@ -71,7 +137,7 @@ export async function cmdIngest(args: ParsedArgs, sink?: { fresher?: FresherCano
   const { rows, skipped } = scan;
   // A scan that skipped every carrier is no success: say which mirror directories it derived against.
   if (rows.length === 0 && skipped.length > 0) {
-    const message = `scanned 0 carriers; ${skipped.length} skipped (no address derivation). Derived against bags dir ${dirs.bags} and wikis dir ${dirs.wikis}; first skipped: ${skipped[0]}`;
+    const message = `scanned 0 carriers; ${skipped.length} skipped. Derived against bags dir ${dirs.bags} and wikis dir ${dirs.wikis}; first skipped: ${skipped[0]!.file} (${skipped[0]!.why})`;
     emit(args, {
       ok: false,
       error: { code: "usage", message, hint: "the source must sit under the bags dir (LAR_BAGS) or wikis dir (LAR_WIKIS) as <holding>/<w.w.w>/…/<name>.<ext>" },
@@ -129,7 +195,7 @@ export async function cmdIngest(args: ParsedArgs, sink?: { fresher?: FresherCano
         for (const r of rows) console.log(`  ${r.status.toUpperCase().padEnd(10)} ${r.uri}`);
         for (const t of shadows) console.log(`  ${"KAPAE".padEnd(10)} ${t}`);
         for (const r of refusedShadows) console.error(`  ${"REFUSE".padEnd(10)} ${r.file} (${r.refusal})`);
-        for (const f of skipped) console.log(`  SKIPPED    ${f} (no address derivation — outside bags//wikis/, non-.md, or rootless interior)`);
+        for (const line of skipLines(skipped)) console.log(`  ${line}`);
         console.log(`\n  ${rows.length} scanned · ${candidates.length} would submit · preview only (pass --apply)`);
         if (wouldFault.length > 0) console.log(`  ${wouldFault.length} large un-flagged file(s) would fault during ingest — run \`--tag-blobs\` to flag them.`);
       },
@@ -181,6 +247,9 @@ export async function cmdIngest(args: ParsedArgs, sink?: { fresher?: FresherCano
     // whose write-door daemon stands to start a daemon already running. `verbFailure`
     // tells the fault apart by its own TYPE.
     const f = verbFailure(err);
+    if (sink && f.requestId !== undefined && (f.code === "outcome-committed" || f.code === "outcome-unknown")) {
+      sink.outcome = { state: f.code === "outcome-committed" ? "committed" : "unknown", requestId: f.requestId };
+    }
     emit(args, {
       ok: false, ...(f.requestId !== undefined ? { requestId: f.requestId } : {}),
       error: { code: f.code, message: f.message, ...(f.hint !== undefined ? { hint: f.hint } : {}) },
@@ -198,6 +267,9 @@ export async function cmdIngest(args: ParsedArgs, sink?: { fresher?: FresherCano
   const summary = summaryOutput(result) ?? {};
   const fresher = readFresherCanon(summary);
   if (sink && fresher) sink.fresher = fresher;
+  if (sink && settled.pageError?.outcome !== undefined && settled.pageError.requestId !== undefined) {
+    sink.outcome = { state: settled.pageError.outcome, requestId: settled.pageError.requestId };
+  }
 
   // The gesture pinned what it landed (`settleIngest`); the projector pins what it projects; both write
   // the same key and the same base where they agree. An unchanged carrier then reads `unchanged` on the
@@ -238,44 +310,40 @@ export async function cmdIngest(args: ParsedArgs, sink?: { fresher?: FresherCano
   const kapaeFault = refusedShadows.length > 0 || kapaeRefused.length > 0
     ? `INGEST set aside no title for ${refusedShadows.length + kapaeRefused.length} kāpae shadow(s): ${[...refusedShadows.map((r) => `${r.file} (${r.refusal})`), ...kapaeRefused.map((r) => `${String(r["uri"])} (${String(r["code"])})`)].join(", ")}`
     : null;
-  const failed = verdict.failed || kapaeFault !== null;
+  const reading = ingestRunReading(settled, { candidates: candidates.length, requestId: result.requestId, kapaeFault });
   const refusedMessage = verdict.message ?? kapaeFault;
-  const stoodOff = !failed && conflicts.length > 0;
   const conflictMessage = `INGEST landed nothing for ${conflicts.length} of ${candidates.length} carrier(s) that stand in a conflict: ${conflicts.map((r) => r.uri).join(", ")}. \`lares shore\` names each standoff's key; settle one with \`lares shore take-disk <uri> --key <key>\` (the file's words) or \`lares shore take-records <uri> --key <key>\` (the records')`;
   const data = {
     verb: "INGEST", scanned: rows.length, submitted: candidates.length, ...summary,
-    tallies: settled.tallies, refused, conflicts,
+    tallies: settled.tallies, refused, conflicts, derived: settled.derived,
     ...(settled.pages.length > 0 ? { pages: settled.pages.map((p) => p.requestId) } : {}),
     ...(settle !== undefined ? { settle } : {}),
     audit: auditUri,
   };
   emit(args, {
-    ...(failed
-      ? { ok: false as const, error: { code: "verb-error", message: refusedMessage ?? "INGEST refused" } }
-      : stoodOff
-      ? { ok: false as const, error: { code: "conflict", message: conflictMessage } }
-      : { ok: true as const }),
+    ...(reading.ok
+      ? { ok: true as const }
+      : { ok: false as const, error: { code: reading.code ?? "verb-error", message: reading.code === "conflict" ? conflictMessage : reading.message ?? "INGEST refused" } }),
     requestId: result.requestId,
     data,
     human: () => {
-      console.log(pageError !== undefined
-        ? `INGEST ✗ ${refused.length} refusal(s) read, then a later wave failed; ${pageError.unread} carrier(s) stay unread (req ${result.requestId.slice(0, 8)})`
-        : stoodOff
-        ? `INGEST ✗ ${conflicts.length} of ${candidates.length} carrier(s) stand in a conflict and landed nothing; the rest applied locally (req ${result.requestId.slice(0, 8)})`
-        : refused.length === 0
-        ? `INGEST ✓ applied locally — ${candidates.length} carrier(s) submitted (req ${result.requestId.slice(0, 8)})`
-        : `INGEST ✗ ${refused.length} of ${candidates.length} carrier(s) refused; the rest applied locally (req ${result.requestId.slice(0, 8)})`);
+      console.log(reading.headline);
       for (const [decision, n] of Object.entries(settled.tallies)) console.log(`  ${decision.toUpperCase().padEnd(10)} × ${n}`);
       for (const t of Array.isArray(kapaeAnswer?.raised) ? (kapaeAnswer.raised as unknown[]) : []) console.log(`  ${"KAPAE".padEnd(10)} ${String(t)}  (raised)`);
       for (const t of Array.isArray(kapaeAnswer?.standing) ? (kapaeAnswer.standing as unknown[]) : []) console.log(`  ${"KAPAE".padEnd(10)} ${String(t)}  (already set aside)`);
       if (kapaeFault !== null) console.error(`  ⚠ ${kapaeFault}`);
       // Under the row cap every row prints. Past it the landed rows ride the tally above, and each row
-      // that asks for a hand prints below with its reason.
-      const asking = new Set([...refused, ...conflicts].map((r) => r.uri));
+      // that asks for a hand, or a render whose rung warns, prints below with its reason.
+      const asking = new Set([...refused, ...conflicts, ...settled.derived].map((r) => r.uri));
       for (const c of settled.named.values()) {
         if (asking.has(String(c["uri"]))) continue;
         const extra = c["reason"] ?? (Array.isArray(c["tombstoned"]) && (c["tombstoned"] as unknown[]).length ? `tombstoned ${(c["tombstoned"] as unknown[]).length}` : "");
         console.log(`  ${String(c["decision"]).toUpperCase().padEnd(10)} ${c["uri"]}${extra ? `  (${extra})` : ""}`);
+      }
+      // A render on a warning rung lands nothing and fails nothing: its line names the cure.
+      for (const r of settled.derived) {
+        console.log(`  ${r.decision.toUpperCase().padEnd(10)} ${r.uri}${r.file !== undefined ? `  (${r.file})` : ""}`);
+        console.error(`    ⚠ ${r.why}`);
       }
       for (const r of [...refused, ...conflicts]) {
         console.error(`  ${r.decision.toUpperCase().padEnd(10)} ${r.uri}${r.file !== undefined ? `  (${r.file})` : ""}`);
@@ -301,5 +369,5 @@ export async function cmdIngest(args: ParsedArgs, sink?: { fresher?: FresherCano
       console.log(`\n  audit: ${auditUri}`);
     },
   });
-  return failed ? exitFor("verb-error") : stoodOff ? exitFor("conflict") : 0;
+  return reading.exit;
 }

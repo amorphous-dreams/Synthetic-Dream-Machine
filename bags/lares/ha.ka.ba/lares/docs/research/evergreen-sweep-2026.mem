@@ -31,7 +31,7 @@ After the long buildout the operator called a deep Aftermath and Evergreen pass 
 # ''A reader tolerates every grammar it will meet, named as an archive set.'' Capture keeps reading the heads a written turn may carry (`focus`, `feedback`) as a named archive set beside the live grammar, its comment stating the set and never its history. `rotate-recipe` keeps its prior canon readable, addressed by the doc's CID and a `rotated-from` link; `canon/vN` and `rotation-gen` leave.
 # ''The numbered preimages and formats rename together, in one deliberate re-genesis before the second operator.'' `engine/v1`, `plugins/v1`, `grammar/v1`, `lararium-genesis-seed/v1` and `lararium-genesis-cas/v1` take semantic names in the bake that closes `W26`, never by search and replace and never mid-slice, since each rename moves every CID the floor carries.
 # ''The floor announcement and the browser's store take their current shape.'' The announcement's signed body names its kind (`floor-announcement`) in the same re-genesis, and no reader of the numbered body remains. `openVesselIdb` lays its current stores and drops its additive migration branches; a store that does not match re-founds by name. The browser API's numeric open argument stays.
-# ''Worldline replay orders by parent links.'' A spawn names its parent turn, an inject its spawn, a handback its inject; producers add the missing parent link first, and a skip announces itself the way a cascade gap does (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology`>> #/totality-law), never a silent `continue`.
+# ''Worldline replay orders by parent links.'' A spawn names its parent turn, an inject its spawn, a handback its inject; producers add the missing parent link first, and a skip announces itself the way a cascade gap does (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/wiki-layer-ontology`>> #/totality-law), never a silent `continue`.
 
 ''The order between lanes'' (controller lean, approved): the standing witness lands first at today's count and only ever moves down, the way `unbuilt-laws` does; the byte, hex and pin lifts (lanes 1–3) run beside the Wrights' lanes on disjoint files; lanes that touch mesh session or genesis code wait for `W26` slice 2, and the preimage renames ride the bake that closes `W26`.
 
@@ -42,7 +42,7 @@ After the long buildout the operator called a deep Aftermath and Evergreen pass 
 !! Refutations and corrections
 
 
-All paths below are relative to `/home/joshu/Synthetic-Dream-Machine`. Findings marked ''MEASURED'' were read in source. This is a code reading and PR plan; no suites, builds, or git writes ran.
+All paths below are relative to the repository root. Findings marked ''MEASURED'' were read in source. This is a code reading and PR plan; no suites, builds, or git writes ran.
 
 # ''MEASURED — refute draft deletion.'' YIN 3/YANG 4 say the clock removes old drafts. `packages/lararium-tw5/src/wiki-draft-handlers.ts:65-73,87-115` only returns a `stale` advisory list; it makes no write or delete. The clock changes a human-facing candidate report, so a 1970/3000 clock does not itself authorize pruning. It still deserves a product ruling because a human may rely on the report. The separate draft writer does persist `drafted-at` at `wiki-draft-handlers.ts:40-61`.
 # ''MEASURED — refute build-patch compatibility arm.'' YIN 26/YANG 23 call `deriveSurface` an active legacy acceptance branch. `packages/lararium-mesh/src/capture/build-patch.ts:127-139` returns `unknown` for absent or unprefixed input; it does not recreate the old `claude` default. `deriveRootHandle` at `build-patch.ts:186-198` rejects an unprefixed root. Rewrite the historical comments, but keep honest unknown provenance unless an input contract explicitly forbids it.
@@ -148,6 +148,6 @@ The inventory's 68 cross-package-name rows are search leads, not 68 isomorphisms
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/spirit-handback-evergreen-sweep`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;dPjee_nghO_0AEs2BtT2531_6xO-opoN-kHGEkzQZAU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;UPcVYF1Oox1-s0yQN1jyU1yEFm1-0sJS9lN4PhXOUAI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

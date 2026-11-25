@@ -1,8 +1,8 @@
 /**
- * `lares sense li` — the Li (理) gluing verdict: do the ADDRESSED sensorium's sheaf
+ * `lares sense analyze --lens cohere` — the Li (理) gluing verdict: do the ADDRESSED sensorium's sheaf
  * planes GLUE, and does a global section stand? Cohering is a GENERAL cap a sensorium `#has` — any
  * sensorium that declares ≥2 sheaf planes answers; one without reports the honest "no cover". `lares
- * sense <sensorium> li` reads that sensorium; bare `lares sense li` reads the memory default. No
+ * sense <sensorium> li` reads that sensorium; bare `lares sense analyze --lens cohere` reads the memory default. No
  * sensorium is hardcoded, and the read keys by cid — media-general, text first.
  *
  * The read is TS-NATIVE (no python, no daemon compute): `readCohere` enumerates the sheaf planes, reads
@@ -14,12 +14,11 @@
  * as a PLUMBING witness, never a health verdict. The radius certifies only at a LIVE boundary (the same
  * plane across two contexts). This verb surfaces that flag loud so a nested 0 never masquerades as health.
  *
- *   lares sense <sensorium> li   the gluing verdict — readable planes · shared cids · radius · fuse|hold-open · note
+ *   lares sense <sensorium> analyze --lens cohere   the gluing verdict — readable planes · shared cids · radius · fuse|hold-open · note
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/cohomological-gate
  *
- * OWED (operator, 2026-10-11): a house-grammar `|en` alias `cohere` flowing to this same module — declared by
- * the house grammar's alias layer, never a hand-wired second entry in the `sense` door table.
+ * The plain lens name `cohere` spells this read on the one `analyze` door (sense-analyze.ts); the house name `li` answers as its alias, where li-ki-integrities pins it.
  */
 
 import { readCohere, memorySensoriumDir } from "@lararium/node";
@@ -35,6 +34,7 @@ export function cmdLi(args: ParsedArgs): number {
   emit(args, {
     ok: true,
     data: {
+      lens: "cohere",
       sensorium: cohere.sensorium,
       readable: cohere.readable,
       sharedUnits: cohere.sharedUnits,
@@ -47,7 +47,7 @@ export function cmdLi(args: ParsedArgs): number {
       note: cohere.note,
     },
     human: () => {
-      console.log(`lares sense li — cohere (${cohere.sensorium})`);
+      console.log(`lares sense analyze --lens cohere — cohere (${cohere.sensorium})`);
       console.log(`  verdict:      ${verdict}`);
       console.log(`  readable:     ${cohere.readable} plane(s) · ${cohere.sharedUnits} shared cid(s)`);
       if (cohere.consistency) {

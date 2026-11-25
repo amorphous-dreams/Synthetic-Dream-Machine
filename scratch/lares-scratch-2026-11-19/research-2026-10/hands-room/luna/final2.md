@@ -1,0 +1,1 @@
+**Luna-Handwright: Lares (Tasked Spirit)** — I wrote the handback to [out2.md](/home/joshu/.lares-scratch/research/hands-room/luna/out2.md). It settles the lane boundaries, start-now slice, face–Nexus question and person’s joints, then lists the lanes in build order with red-first slices and file ownership. The handback is under 1,200 words and ends with `WORDS=1004`.

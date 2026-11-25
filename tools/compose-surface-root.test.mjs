@@ -161,3 +161,110 @@ test("CONTROL: a lares service that carries no keep name reads red", () => {
   const env = serviceEnvironment("services:\n  lares:\n    environment:\n      <<: *roots\n      LAR_PEERS: ${LAR_PEERS:-}\n  offline:\n    environment:\n      LARES_KEEP_WORKSPACE: ${LARES_KEEP_WORKSPACE:-}\n", "lares");
   assert.deepEqual(env, { LAR_PEERS: "${LAR_PEERS:-}" });
 });
+
+/**
+ * THE PŪLAMA'S SOCKET REACHES NO HOST PATH. The vessel and the pūlama meet at `/pulama/socket`, and that directory rides one
+ * named Docker volume the two services share, never a bind of the host house: a host process running as the operator's uid
+ * (an AI session among them) that holds no Docker reaches no socket file there. The image pre-creates the mount point owned
+ * by the runtime user, so the volume's first mount copies that owner and mode in.
+ *
+ * Each volume entry one top-level service lists itself, as `{ type, source, target }`.
+ */
+export function serviceVolumes(text, service) {
+  const lines = text.split("\n");
+  // A service may open an anchor (`  pulama: &pulama-keeper`) or stand as an alias of one (`  pulama-b: *pulama-keeper`):
+  // an alias reads the volumes of the stanza its anchor opens.
+  const head = lines.find((l) => new RegExp(`^  ${service}:(\\s+[&*][\\w-]+)?\\s*$`).test(l));
+  if (head === undefined) return null;
+  const alias = /^\s+\S+:\s+\*([\w-]+)\s*$/.exec(head)?.[1];
+  const start = alias === undefined ? lines.indexOf(head) : lines.findIndex((l) => new RegExp(`^  [\\w.-]+:\\s+&${alias}\\s*$`).test(l));
+  if (start < 0) return null;
+  const out = [];
+  let inVolumes = false, volIndent = -1, entry = null;
+  for (let j = start + 1; j < lines.length; j++) {
+    const line = lines[j];
+    if (line.trim() === "" || line.trim().startsWith("#")) continue;
+    const indent = /^\s*/.exec(line)[0].length;
+    if (indent <= 2) break;
+    if (/^\s*volumes:\s*$/.test(line)) { inVolumes = true; volIndent = indent; continue; }
+    if (inVolumes && indent <= volIndent && !/^\s*-/.test(line)) inVolumes = false;
+    if (!inVolumes) continue;
+    const item = /^\s*-\s*(.*)$/.exec(line);
+    if (item) { entry = {}; out.push(entry); }
+    const m = /^\s*(?:-\s*)?(type|source|target):\s*(.*)$/.exec(line);
+    if (m && entry) entry[m[1]] = m[2].trim();
+  }
+  return out;
+}
+
+/** The top-level named volumes the compose declares. */
+export function topLevelVolumes(text) {
+  const lines = text.split("\n");
+  const start = lines.findIndex((l) => l === "volumes:");
+  if (start < 0) return [];
+  const out = [];
+  for (let j = start + 1; j < lines.length; j++) {
+    const line = lines[j];
+    if (line.trim() === "" || line.trim().startsWith("#")) continue;
+    if (!/^\s/.test(line)) break;
+    const m = /^  ([A-Za-z0-9_.-]+):/.exec(line);
+    if (m) out.push(m[1]);
+  }
+  return out;
+}
+
+export const PULAMA_SOCKET_VOLUME = "lares-pulama-socket";
+
+/** Every refusal the socket law reads in a compose text and the Dockerfile beside it. */
+export function readPulamaSocketMount(text, dockerfile) {
+  const refusals = [];
+  if (/source:[^\n]*\/pulama\/socket\s*\n\s*target: \/pulama\/socket/.test(text)) refusals.push("a host path binds at /pulama/socket");
+  // `pulama-b`, the keeper's successor, stands over the same socket volume where the compose names it.
+  const services = ["lares", "pulama", ...(serviceVolumes(text, "pulama-b") ? ["pulama-b"] : [])];
+  for (const service of services) {
+    const vols = serviceVolumes(text, service);
+    if (!vols) { refusals.push(`no ${service} service stands`); continue; }
+    const at = vols.filter((v) => v.target === "/pulama/socket");
+    if (at.length !== 1) { refusals.push(`${service} mounts /pulama/socket ${at.length} times`); continue; }
+    if (at[0].type !== "volume") refusals.push(`${service} mounts /pulama/socket as ${at[0].type}, not the named volume`);
+    if (at[0].source !== PULAMA_SOCKET_VOLUME) refusals.push(`${service} mounts ${at[0].source} at /pulama/socket, not ${PULAMA_SOCKET_VOLUME}`);
+  }
+  if (!topLevelVolumes(text).includes(PULAMA_SOCKET_VOLUME)) refusals.push(`the compose declares no top-level ${PULAMA_SOCKET_VOLUME}`);
+  for (const service of ["offline", "herm"]) {
+    if ((serviceVolumes(text, service) ?? []).some((v) => v.target === "/pulama/socket")) refusals.push(`${service} mounts the pūlama's socket`);
+  }
+  const made = /^RUN mkdir -p [^\n]*\\?[\s\S]*?(?=\n[A-Z]+ |\n#|\n\n)/m.exec(dockerfile)?.[0] ?? "";
+  if (!/mkdir -p[^\n]*\s\/pulama\/socket(\s|$)/.test(made)) refusals.push("the image does not pre-create /pulama/socket");
+  if (!/chown node:node[^\n]*\s\/pulama\/socket(\s|$)/.test(made)) refusals.push("the image does not hand /pulama/socket to the runtime user");
+  if (!/chmod 1777[^\n]*\s\/pulama\/socket(\s|$)/.test(made)) refusals.push("the image does not open /pulama/socket to whatever uid compose names (sticky, 1777)");
+  return refusals;
+}
+
+const DOCKERFILE = join(ROOT, "Dockerfile");
+
+test("the pūlama's socket rides one named volume the vessel and the pūlama share, binds no host path, and the image pre-creates its mount point for the runtime user", () => {
+  assert.deepEqual(readPulamaSocketMount(readFileSync(COMPOSE, "utf8"), readFileSync(DOCKERFILE, "utf8")), []);
+});
+
+test("CONTROL: a successor keeper that leaves the shared stanza and binds a host path at /pulama/socket reads red", () => {
+  const planted = readFileSync(COMPOSE, "utf8").replace(
+    "  pulama-b: *pulama-keeper",
+    "  pulama-b:\n    image: x\n    volumes:\n      - type: bind\n        source: /srv/pulama/socket\n        target: /pulama/socket");
+  assert.notEqual(planted, readFileSync(COMPOSE, "utf8"), "the plant found the successor's alias line");
+  assert.ok(readPulamaSocketMount(planted, readFileSync(DOCKERFILE, "utf8")).some((r) => r.startsWith("pulama-b mounts")), "the successor's bind reads red");
+});
+
+test("CONTROL: a host bind of /pulama/socket reads red", () => {
+  const planted = readFileSync(COMPOSE, "utf8").replace(
+    /- type: volume\n(\s*)source: lares-pulama-socket\n(\s*)target: \/pulama\/socket/,
+    "- type: bind\n$1source: ${LARES_HOUSE:?set LARES_HOUSE}/pulama/socket\n$2target: /pulama/socket");
+  const refusals = readPulamaSocketMount(planted, readFileSync(DOCKERFILE, "utf8"));
+  assert.ok(refusals.some((r) => /host path binds/.test(r)), JSON.stringify(refusals));
+  assert.ok(refusals.some((r) => /as bind, not the named volume/.test(r)), JSON.stringify(refusals));
+});
+
+test("CONTROL: an image that leaves the mount point to the engine reads red", () => {
+  const planted = readFileSync(DOCKERFILE, "utf8").replaceAll(" /pulama/socket", "");
+  const refusals = readPulamaSocketMount(readFileSync(COMPOSE, "utf8"), planted);
+  assert.ok(refusals.some((r) => /does not pre-create/.test(r)), JSON.stringify(refusals));
+});

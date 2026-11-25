@@ -1,5 +1,5 @@
 /**
- * `lares nexus promote {open | sign | check}` — the seats' approval of ONE promotion's exact bytes, carried
+ * `lares nexus approve {open | sign | check}` — the seats' approval of ONE promotion's exact bytes, carried
  * between vaults as a file (stable-founding-road, "Planes ~ cabal, realm, Nexus").
  *
  *   open  <file> --purpose <p> --surface <s> [--class ordinary|high-impact] [--nexus <aid>] --out <approval>
@@ -34,41 +34,44 @@ function readApproval(path: string): unknown {
   try { return JSON.parse(readFileSync(path, "utf8")); } catch { throw new PromoteError(`cannot read ${path} as an approval file`); }
 }
 
+/** Every verb `lares nexus approve` answers. */
+export const NEXUS_APPROVE_VERBS = ["open", "sign", "check"] as const;
+
 export async function cmdPromote(args: ParsedArgs): Promise<number> {
   const sub = args.positional[1];
-  if (sub !== "open" && sub !== "sign" && sub !== "check") return refuseUsage(args, "nexus promote", helpLines("nexus promote"), sub ? `unknown verb "${sub}"` : undefined);
+  if (sub === undefined || !(NEXUS_APPROVE_VERBS as readonly string[]).includes(sub)) return refuseUsage(args, "nexus approve", helpLines("nexus approve"), sub ? `unknown verb "${sub}"` : undefined);
   const sealHome = larSealHome();
   const aid = args.options["nexus"];
   const nexus = aid !== undefined ? { aid } : {};
   try {
     if (sub === "open") {
       const file = args.positional[2], purpose = args.options["purpose"], surface = args.options["surface"], out = args.options["out"];
-      if (!file || !purpose || !surface || !out) return refuseUsage(args, "nexus promote", helpLines("nexus promote"), "open needs <file>, --purpose, --surface and --out");
+      if (!file || !purpose || !surface || !out) return refuseUsage(args, "nexus approve", helpLines("nexus approve"), "open needs <file>, --purpose, --surface and --out");
       const klass = args.options["class"] ?? "high-impact";
-      if (klass !== "ordinary" && klass !== "high-impact") return refuseUsage(args, "nexus promote", helpLines("nexus promote"), "--class takes ordinary or high-impact");
+      if (klass !== "ordinary" && klass !== "high-impact") return refuseUsage(args, "nexus approve", helpLines("nexus approve"), "--class takes ordinary or high-impact");
       partialOutOrRefuse(refuse, out);
       const r = await runPromoteOpen({ file, purpose, surface, actClass: klass, sealHome, ...nexus });
       const written = writePartialFile(out, r.approval);
       emit(args, { ok: true, data: { ...r, written: written.path },
         human: () => {
-          console.log(`nexus promote open — ${r.approval.bytesHash}`);
+          console.log(`nexus approve open — ${r.approval.bytesHash}`);
           console.log(`  statement: ${r.statement}`);
           console.log(`  signed here: ${r.signed.length} seat${r.signed.length === 1 ? "" : "s"} · ${verdictLine(r.verdict)}`);
           console.log(written.path !== null ? `  approval:    ${written.path}` : `  approval: ${written.error ?? "not written"}\n${JSON.stringify(r.approval)}`);
-          if (!r.verdict.ok) console.log(`  carry the file to the next seat's vault: \`lares nexus promote sign ${out} --confirm-statement ${r.statement} --out <file>\``);
+          if (!r.verdict.ok) console.log(`  carry the file to the next seat's vault: \`lares nexus approve sign ${out} --confirm-statement ${r.statement} --out <file>\``);
         } });
       return 0;                                  // a partial reads as progress; `check` alone answers ok or not
     }
     if (sub === "sign") {
       const path = args.positional[2], confirmHash = args.options["confirm-hash"], confirmStatement = args.options["confirm-statement"], out = args.options["out"];
-      if (!path) return refuseUsage(args, "nexus promote", helpLines("nexus promote"), "sign needs <approval.json>");
-      if (confirmStatement !== undefined && !out) return refuseUsage(args, "nexus promote", helpLines("nexus promote"), "a confirmed sign needs --out <file>");
+      if (!path) return refuseUsage(args, "nexus approve", helpLines("nexus approve"), "sign needs <approval.json>");
+      if (confirmStatement !== undefined && !out) return refuseUsage(args, "nexus approve", helpLines("nexus approve"), "a confirmed sign needs --out <file>");
       if (out !== undefined) partialOutOrRefuse(refuse, out, path);
       const r = await runPromoteSign({ approval: readApproval(path), sealHome, ...nexus, ...(confirmHash !== undefined ? { confirmHash } : {}), ...(confirmStatement !== undefined ? { confirmStatement } : {}) });
       const written = out !== undefined && r.would === undefined ? writePartialFile(out, r.approval) : null;
       emit(args, { ok: true, data: { ...r, written: written?.path ?? null },
         human: () => {
-          console.log(`nexus promote sign — ${r.approval.bytesHash}`);
+          console.log(`nexus approve sign — ${r.approval.bytesHash}`);
           console.log(`  statement: ${r.statement}`);
           console.log(`  purpose:  ${r.approval.purpose} · surface: ${r.approval.surface} · class: ${r.approval.actClass}`);
           console.log(`  seats:    ${r.counted} of ${r.threshold}${r.complete ? " (complete)" : ""}`);
@@ -78,14 +81,14 @@ export async function cmdPromote(args: ParsedArgs): Promise<number> {
       return 0;
     }
     const path = args.positional[2], file = args.positional[3];
-    if (!path || !file) return refuseUsage(args, "nexus promote", helpLines("nexus promote"), "check needs <approval.json> and <file>");
+    if (!path || !file) return refuseUsage(args, "nexus approve", helpLines("nexus approve"), "check needs <approval.json> and <file>");
     const verdict = await runPromoteCheck({ approval: readApproval(path), file, sealHome, ...nexus });
-    emit(args, { ok: verdict.ok, data: { verdict }, human: () => console.log(`nexus promote check — ${verdictLine(verdict)}`) });
+    emit(args, { ok: verdict.ok, data: { verdict }, human: () => console.log(`nexus approve check — ${verdictLine(verdict)}`) });
     return verdict.ok ? 0 : 1;
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     const failure = storeFailure(err, err instanceof PromoteError ? "refused" : "error");
-    emit(args, { ok: false, error: failure, human: () => console.error(`lares nexus promote ${sub}: ${msg}`) });
+    emit(args, { ok: false, error: failure, human: () => console.error(`lares nexus approve ${sub}: ${msg}`) });
     return exitFor(failure.code);
   }
 }

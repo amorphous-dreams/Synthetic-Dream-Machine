@@ -4,7 +4,8 @@
 // names itself by its bytes and edges, never by an authored counter; a wall clock never decides; a comment states
 // the present. This reads three SEMANTIC SINKS, never bare tokens:
 //   version    — an authored version field or numbered format: `schemaVersion`, a `<name>/v<N>` format or preimage
-//                string, a `version`/`<word>Version` key held as a number, a `<NAME>_VERSION = <N>` constant;
+//                string, a minted `<name>/<N>` tag, a `version`/`<word>Version` key held as a number, a
+//                `<NAME>_VERSION = <N>` constant;
 //   clock      — `Date.now()` or `new Date()` flowing on its statement into an id (a template, a concat, a radix
 //                string, an id/nonce/epoch name), a durable record field (a time-named key, quoted or bare, or an
 //                ISO-stamped now), or a validity gate (a comparison or subtraction against the reading);
@@ -15,7 +16,9 @@
 //                comment or string literal that names an OLDER PEER (an older build, vessel, daemon, pūlama, peer, writer,
 //                client or house; a frame, payload or session from an older one) or an EARLIER SHAPE (earlier, previous
 //                or pre-cut, with one word between at most): a house runs one revision, so a parse refuses on its own
-//                terms and never by the build or the shape that wrote the bytes.
+//                terms and never by the build or the shape that wrote the bytes. A comment or string literal that
+//                CARRIES A SHAPE FORWARD reads here too: `predates`, `prior shape`, `pre-face-root`, `founded before`
+//                and `from before` each name a thing by the cut it stood on the far side of.
 // It reads lines, not a syntax tree, so a sink split across lines escapes it; false green is the tolerable side.
 //
 // FOUR MORE CLASSES hold the places a past shape lingers after its code burns (each over its own corpus):
@@ -24,11 +27,14 @@
 //                     retired-name list;
 //   upgrade-delete  — in `packages/*/src`, an `onupgradeneeded` body that deletes stores or rows (`deleteObjectStore`,
 //                     a row `.delete(`, `.clear(`), since a present schema creates what it holds and carries no deletions;
-//   canon-history   — in live canon (`bags/*/…/{api,mesh,browser}/**/*.mem`, never a record carrier under `docs/`), a
+//   canon-history   — in live canon (`bags/*/…/{api,mesh,browser,cli}/**/*.mem`, never a record carrier under `docs/`), a
 //                     word that narrates the house's past (used to, formerly, legacy, no longer, retired, earlier shape…);
 //   canon-dated-history — in the same corpus, a verb of history (landed, burned, retired, cured, …) within 40 characters
 //                     of an ISO date: a line that dates the canon's making. A date with a ruling or correction marker
-//                     (`RULED`, `ruled`, `ruling`, `CORRECTION`, `CORRECTED`) within 40 characters carries provenance and reads nothing.
+//                     (`RULED`, `ruled`, `ruling`, `CORRECTION`, `CORRECTED`) within 40 characters carries provenance and reads nothing;
+//   canon-dated-meta — in the same corpus, a line of the `toml meta` fence that names a date key (`date`, `written`,
+//                     a `-date` or `-on` key, `created`, `updated`, `revised`, `proposed`, `revision-note`) or carries an ISO date in any value, an authored date field:
+//                     git dates every revision, so an authored date in the meta drifts the way a version field drifts.
 // A class whose corpus reads no file fails the run; each class carries a planted red and a lawful control in the self-test.
 //
 // NAMED EXCEPTIONS. Each names its rule, its file, a substring of the line it allows (never a line number), how many
@@ -40,20 +46,22 @@
 // ceiling fails and names every open finding of that rule; a rule under it passes and asks for the ceiling to come
 // down; a corpus that reads no file fails, since a zero from no reading proves nothing.
 //
-// Usage: node tools/evergreen-boundary.mjs [--list] [--root <dir> --ceilings version=N,clock=N,narration=N,old-shape=N,retired-test=N,upgrade-delete=N,canon-history=N,canon-dated-history=N --no-exceptions]
+// Usage: node tools/evergreen-boundary.mjs [--list] [--root <dir> --ceilings version=N,clock=N,narration=N,old-shape=N,retired-test=N,upgrade-delete=N,canon-history=N,canon-dated-history=N,canon-dated-meta=N --no-exceptions]
 import { execFileSync } from "node:child_process";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-export const RULES = ["version", "clock", "narration", "old-shape", "retired-test", "upgrade-delete", "canon-history", "canon-dated-history"];
+export const RULES = ["version", "clock", "narration", "old-shape", "retired-test", "upgrade-delete", "canon-history", "canon-dated-history", "canon-dated-meta"];
 /** Today's measured open debt, per rule. RATCHET: each number may only ever come DOWN. */
-export const CEILINGS = { version: 0, clock: 52, narration: 0, "old-shape": 0, "retired-test": 0, "upgrade-delete": 0, "canon-history": 0, "canon-dated-history": 0 };
+export const CEILINGS = { version: 0, clock: 52, narration: 0, "old-shape": 0, "retired-test": 0, "upgrade-delete": 0, "canon-history": 0, "canon-dated-history": 0, "canon-dated-meta": 0 };
 export const EXCEPTIONS = [
   { rule: "version", file: "packages/lararium-browser/src/browser-vessel-identity.ts", match: "const IDB_VERSION", reason: "IndexedDB's open call takes a numeric version argument; the browser API names it." },
   { rule: "version", file: "tools/domain-registry-witness.test.mjs", match: "const names = ['lar-planted-versioned/v1'", reason: "The domain witness's self-test plants versioned domain literals in a scratch fixture to prove the witness refuses each by name." },
   { rule: "clock", file: "packages/lararium-tw5/src/wiki-draft-handlers.ts", match: "const cutoffMs =", reason: "The prune-stale report lists idle drafts for a person to read; the clock picks what the report shows, never what leaves, since nothing here prunes (operator ruling 2026-10-18)." },
   { rule: "clock", file: "packages/lararium-tw5/src/wiki-draft-handlers.ts", match: "const daysIdle =", reason: "The prune-stale report shows each draft's idle days to a person; the reading decides nothing (operator ruling 2026-10-18)." },
+  { rule: "clock", file: "packages/lares-cli/src/commands/oracle-cmd.ts", match: "const plan = oraclePlan(args, new Date().toISOString());", reason: "The oracle cast's clock seam at the CLI edge: the command reads the time of the cast once and hands it to the verb, whose core reads no clock (operator ruling 2026-11-20, the oracle designs); the time records when the act happened and decides nothing." },
+  { rule: "clock", file: "packages/lararium-tw5/src/widgets/action-oracle-cast.ts", match: "oracleCastFor(this.castCoins, this.castCaster, new Date().toISOString())", reason: "The oracle cast's clock seam at the widget edge: the action reads the time of the cast once when it fires and hands it to the core, which reads no clock (operator ruling 2026-11-20, the oracle designs); the time records when the act happened and decides nothing." },
   { rule: "clock", file: "packages/lararium-node/src/temp-layer.ts", match: "now: () => Date.now()", reason: "The temp layer's one clock seam: age expiry and the orphan settle window measure a file's age against wall time, the clock decides only when a settled file moves to the trash, and every housekeeping run reads it here alone." },
   { rule: "clock", file: "packages/lares-cli/src/keep-sessions.ts", match: "now: () => Date.now()", reason: "The session mirror's one clock seam: a transcript mirrors once its file has rested idle, so a live session never copies mid-write; the reading picks when a copy happens, never what a record holds or names." },
   { rule: "clock", file: "tools/browser-ci-join.mjs", match: "Date.now() >= deadline", reason: "The join reader bounds only its own wait for a host response." },
@@ -77,6 +85,10 @@ export const EXCEPTIONS = [
   { rule: "canon-history", file: "bags/lares/ha.ka.ba/lares/api/pono/working-procedures.mem", match: "Evergreen, with no old shapes", reason: "This law line names the history words it bans." },
   { rule: "canon-history", file: "bags/lares/ha.ka.ba/lares/api/pono/working-procedures.mem", match: "lives for one commit", reason: "This law line states the one-commit refusal it permits." },
   { rule: "canon-history", file: "bags/lares/ha.ka.ba/lares/api/pono/working-procedures.mem", match: "Recursive o-takiage", reason: "This law line names the retired-name lists it bans." },
+  { rule: "canon-history", file: "bags/lares/ha.ka.ba/lares/api/pono/dreamdom-port-contract.mem", match: "a retired bag or a refused title", reason: "A retired bag names the present bag-retired disposition the island's family precheck refuses (effect-record.ts RETIRED_EVENT_ID), never history." },
+  { rule: "canon-history", file: "bags/lares/ha.ka.ba/lares/cli/problems.mem", match: "retired-trailer", reason: "The problem table names the live `retired-trailer` frame-problem code the checker emits (memetic-frame check.ts and span.ts, tw5 ingest-gate.ts)." },
+  { rule: "canon-dated-meta", file: "bags/lares/ha.ka.ba/lares/api/pono/memetic-wikitext.mem", match: "date", reason: "The submittable spec projects to an RFC I-D whose kramdown-rfc2629 front matter requires a date; weave's I-D profile reads this key (packages/lararium-tw5/src/weave/index.ts requiredMeta)." },
+  { rule: "canon-dated-meta", file: "bags/lares/ha.ka.ba/lares/api/pono/memetic-wikitext-framing.mem", match: "date", reason: "The submittable framing spec projects to an RFC I-D whose kramdown-rfc2629 front matter requires a date; weave's I-D profile reads this key (packages/lararium-tw5/src/weave/index.ts requiredMeta)." },
 ];
 const REPO = fileURLToPath(new URL("../", import.meta.url));
 const SOURCE = /\.(?:ts|mts|cts|js|mjs|cjs|sh|py)$/;
@@ -87,6 +99,9 @@ const NARRATION = /\b(?:used to|previously|formerly|legacy|no longer|back-compat
 // A comment that names the lane, wave or slice that built a line narrates its making; the code states what IS.
 const LANE_NARRATION = /\b(?:Wave [A-D]|[Ss]lice \d+|[Tt]his lane)\b/;
 const FORMAT = /(?:[a-z][\w.-]*|\})\/v(?:\d+|\$\{[^}]+\})(?![\w.])/;
+// A minted tag that ends in a bare number: a whole literal, one hyphen-joined lowercase name, one slash, digits.
+// A path, a url, a date or a ratio carries more slashes, a scheme, or no hyphen-joined name, and reads nothing.
+const NUMBERED_TAG = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)+\/\d+$/;
 const VERSION_CONST = /\b[A-Z][A-Z0-9_]*VERSION\s*=\s*(?:0x[\da-fA-F]+|\d)/;
 const CLOCK = /(?:\bDate\.now\s*\(\s*\)|\bnew\s+Date\s*\()/;
 const FIELD = /(?:\b[A-Za-z_$][\w$]*(?:At|Time|time|timestamp|Timestamp|ts|stamp|Stamp|date|Date)|\bts|["'][\w-]*(?:-at|-time|-ts|-stamp|-date|At|Time|timestamp|Timestamp)["'])\s*:/;
@@ -96,8 +111,10 @@ const OLD_SHAPE_LITERAL = /^["']old-shape(?:-inception)?["']$/;
 const OLD_SHAPE_COMMENT = /retired (?:spelling|shape|layout|name)|falls? back to the retired|tolerates every grammar/i;
 // An older PEER, never an older run, version or runtime: the nouns name who wrote the bytes, so an older Node, an IndexedDB
 // store's older version and a run still in flight read nothing.
-// An earlier SHAPE, never a prior one: a pack's prior shape names a revision of data, which the house reads on purpose.
 const EARLIER_SHAPE = /\b(?:earlier|previous|pre-cut(?:over)?)[- ](?:[a-z]+ )?shapes?\b/i;
+// The carry-forward words: each names a row, a face or a record by a cut it stood on the far side of. An order of acts
+// inside one run says `precedes`, `before` or `while`, and reads nothing.
+const CARRIED_FORWARD = /\bpredat(?:es?|ed|ing)\b|\bprior shapes?\b|\bpre-face-root\b|\bfounded before\b|\bfrom before\b/i;
 const OLDER_PEER = /\bolder (?:(?:daemon|vessel|node|pūlama|pulama|peer) )?(?:builds?|vessels?|daemons?|peers?|pūlamas?|pulamas?|writers?|clients?|houses?|key holders?)\b|\b(?:frames?|payloads?|sessions?) from (?:an? )?older\b/i;
 
 // `statement` has its string literals blanked, so a clock named inside a string reads nothing; `keyed` keeps them,
@@ -145,8 +162,8 @@ export function scanText(rel, text) {
     if (/\.(?:sh|py)$/.test(rel)) { if (clockSink(code)) add(finding("clock")); continue; }
     const literals = code.match(/"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`/g) ?? [];
     const names = code.replace(/"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`/g, "\"\"");
-    if (OLD_SHAPE_NAME.test(names) || literals.some(literal => OLD_SHAPE_LITERAL.test(literal) || OLDER_PEER.test(literal) || EARLIER_SHAPE.test(literal)) || OLD_SHAPE_COMMENT.test(comments) || OLDER_PEER.test(comments) || EARLIER_SHAPE.test(comments)) add(finding("old-shape"));
-    if (/\bschemaVersion\b/.test(names) || /["']schemaVersion["']\s*:/.test(code) || /\[\s*["']schemaVersion["']\s*\]/.test(code) || /\b(?:version|[A-Za-z_$][\w$]*Version)\s*\??\s*:\s*(?:\d[\d_]*\b|number\b)/.test(names) || VERSION_CONST.test(names) || literals.some(literal => FORMAT.test(literal.slice(1, -1)))) add(finding("version"));
+    if (OLD_SHAPE_NAME.test(names) || literals.some(literal => OLD_SHAPE_LITERAL.test(literal) || OLDER_PEER.test(literal) || EARLIER_SHAPE.test(literal) || CARRIED_FORWARD.test(literal)) || OLD_SHAPE_COMMENT.test(comments) || OLDER_PEER.test(comments) || EARLIER_SHAPE.test(comments) || CARRIED_FORWARD.test(comments)) add(finding("old-shape"));
+    if (/\bschemaVersion\b/.test(names) || /["']schemaVersion["']\s*:/.test(code) || /\[\s*["']schemaVersion["']\s*\]/.test(code) || /\b(?:version|[A-Za-z_$][\w$]*Version)\s*\??\s*:\s*(?:\d[\d_]*\b|number\b)/.test(names) || VERSION_CONST.test(names) || literals.some(literal => FORMAT.test(literal.slice(1, -1)) || NUMBERED_TAG.test(literal.slice(1, -1)))) add(finding("version"));
     const clockCode = code.replace(/"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'/g, "\"\"");
     if (clockSink(`${carry.clock} ${clockCode}`, `${carry.keyed} ${code}`)) add(finding("clock"));
     carry = /(?:[=:(]|\?\?|\|\|)\s*$/.test(code) ? { clock: clockCode, keyed: code } : { clock: "", keyed: "" };
@@ -219,6 +236,23 @@ export function scanCanonDatedText(rel, text) {
   return findings;
 }
 
+// A meta date key: a bare `date`, `written`, `created`, `updated`, `revised` or `proposed`, or any key ending `-date`
+// or `-on` (`status-date`, `revised-on`, `proposed-on`).
+// The `revision-note` key reads too, and an ISO date in ANY meta value reads whatever key carries it.
+const META_DATE_KEY = /^\s*(?:date|written|created|updated|revised|proposed|revision-note|[a-z][\w-]*-(?:date|on))\s*=/i;
+const META_ISO_DATE = /^\s*[\w-]+\s*=.*20\d\d-\d\d(?:-\d\d)?/;
+/** Live canon `toml meta` lines that carry an authored date field. */
+export function scanCanonMetaText(rel, text) {
+  const findings = [];
+  let inMeta = false;
+  text.split(/\r?\n/).forEach((raw, index) => {
+    if (!inMeta) { if (/^```toml meta\s*$/.test(raw)) inMeta = true; return; }
+    if (/^```\s*$/.test(raw)) { inMeta = false; return; }
+    if (META_DATE_KEY.test(raw) || META_ISO_DATE.test(raw)) findings.push({ rule: "canon-dated-meta", file: rel, line: index + 1, text: raw.trim() });
+  });
+  return findings;
+}
+
 /** Live canon lines that narrate the house's past. */
 export function scanCanonText(rel, text) {
   const findings = [];
@@ -264,14 +298,15 @@ function isTestFile(rel) {
     && (/^packages\/[^/]+\/tests?\//.test(rel) || /^tests\//.test(rel) || /^tools\/.*\.test\.[a-z]+$/.test(rel) || /^packages\/[^/]+\/scripts\/test_[^/]*\.py$/.test(rel));
 }
 function isUpgradeFile(rel) { return /\.(?:ts|mts|js|mjs)$/.test(rel) && !BUILT.test(rel) && /^packages\/[^/]+\/src\//.test(rel); }
-/** Live canon: a `.mem` under a bag's `api`, `mesh` or `browser` directory; `docs/` and every other directory hold record carriers. */
-function isCanonFile(rel) { return /^bags\/[^/]+\/[^/]+\/[^/]+\/(?:.*\/)?(?:api|mesh|browser)\/(?:.*\/)?[^/]+\.mem$/.test(rel) && !/\/docs\//.test(rel); }
+/** Live canon: a `.mem` under a bag's `api`, `mesh`, `browser` or `cli` directory; `docs/` and every other directory hold record carriers. */
+function isCanonFile(rel) { return /^bags\/[^/]+\/[^/]+\/[^/]+\/(?:.*\/)?(?:api|mesh|browser|cli)\/(?:.*\/)?[^/]+\.mem$/.test(rel) && !/\/docs\//.test(rel); }
 const CLASSES = {
   "old-shape": { has: eligible, scan: () => [] },
   "retired-test": { has: isTestFile, scan: scanTestText },
   "upgrade-delete": { has: isUpgradeFile, scan: scanUpgradeText },
   "canon-history": { has: isCanonFile, scan: scanCanonText },
   "canon-dated-history": { has: isCanonFile, scan: scanCanonDatedText },
+  "canon-dated-meta": { has: isCanonFile, scan: scanCanonMetaText },
 };
 function walkFiles(root, dir = root) {
   const out = [];

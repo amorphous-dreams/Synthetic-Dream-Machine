@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/face-intent-plane"
 
 ! The face intent plane ~ the channel of intent through a face's fleet
 
-The operator un-asked the daemon doc's whole position on 2026-10-20 and kept one point pinned: //the daemon wiki reads pono; the operator and the AIs need a channel of intent through each PersonaGroup's fleet of device vessels.// A two-wave research pair read the field (the research rests at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/face-intent-plane-2026`>>) and the operator approved the model below the same day: //"Approve your leans, land the full models into the architecture now."//
+''The daemon wiki reads pono; the operator and the AIs need a channel of intent through each PersonaGroup's fleet of device vessels'' (#/rulings). The research that read the field rests at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/face-intent-plane-2026`>>.
 
 The model in one line: ''the daemon wiki keeps working memory; a face's intents travel on that face's own intent plane; a vessel's own records rest in its daemon bag.''
 
@@ -27,7 +27,7 @@ The model in one line: ''the daemon wiki keeps working memory; a face's intents 
 
 <<~ ahu slot=`#/the-split`>>
 
-!! The split ~ what the daemon doc carried, and where each part goes
+!! The split ~ each part of the daemon's work, and its home
 
 |! Part |! Its home |! Why |
 | The face's pins (group, signer, KEL prefix, device edge) | the face's custody and `@persona-<tag>` | identity belongs to the face; the floor reads none of them until the face's atom lights (`K15` step 2c) |
@@ -35,7 +35,7 @@ The model in one line: ''the daemon wiki keeps working memory; a face's intents 
 | Verb summonses and their answers | ''the face's intent plane'' (#/the-plane) | the channel of intent: addressed, answered by receipt, face-owned, clockless |
 | Per-vessel records (boot outcomes, residency, alerts, claims in flight, local verbs' receipts) | the vessel's daemon bag, unmirrored | they belong to one vessel; one owner, the vessel |
 
-The daemon wiki shows the intent plane through a read-only view: the pane where the operator and an agent watch intents and receipts flow. It stops serving as the pipe.
+The daemon wiki shows the intent plane through a read-only view: the pane where the operator and an agent watch intents and receipts flow. It never serves as the pipe.
 
 <<~/ahu>>
 
@@ -44,7 +44,7 @@ The daemon wiki shows the intent plane through a read-only view: the pane where 
 !! The plane ~ one face-owned, append-only log
 
 * ''A fifth face plane'', `@intents-<tag>`, beside `@persona`, `@circles`, `@identities` and `@sessions` (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/automerge-tiga`>>). It derives from the PersonaGroup's tag like its siblings, so every device that joins the face derives its name and syncs it with no extra provisioning; two faces on one device share no entry; nothing stands above it. The PersonaGroup mints it and delegates append to each device edge; the mint order binds as for every face plane.
-* ''Never mirrored'': the plane carries the control plane, so it never projects to the tracked tree (the daemon bag's own law, <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology`>>).
+* ''Never mirrored'': the plane carries the control plane, so it never projects to the tracked tree (the daemon bag's own law, <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/wiki-layer-ontology`>>).
 * ''Entries append, never edit'', each signed by the atom of the device that writes it (a far agent's by its own key, #/the-far-agent). Kinds:
 ** `intent`: an invocation naming its verb, its arguments, its audience and its causal bound (#/no-clock). Its id is the content hash of issuer, verb, arguments and nonce, so every device derives it offline and a replayed copy carries the same id. An idempotent verb takes the empty nonce.
 ** `outcome`: a receipt whose `cause` names the intent's id and whose signer names the device that acted.
@@ -94,11 +94,54 @@ An agent off every device of the face (a cloud sandbox, another machine) never h
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/the-vow`>>
+
+!! The vow ~ an intent addressed to a face
+
+''The lift.'' The plane's audience grows from device grain to face grain. A ''votum'' (plural ''vota'') names an intent addressed to a face: the vower issues it, the face's own actor drains it, and the outcome answers it. `intent` stays the wire kind, and the chain keeps its nouns: the verb, the summons that invokes it, the outcome that answers (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/verb-tiddler`>>). ''Receipt'' stays the ledger's word for what a vessel says about a request id (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/receipt-ledger`>>), and a votum's outcome never takes that name.
+
+''Lineage.'' The vow grows from the operator's household and the hat-alignment keel, and from Freyja's vow, the operator's daughter's.
+
+!!! Seven pattern integrities
+
+# ''One object, many rotations.'' The Lararium shows each seat a face, and the shown face holds that seat's reality tunnel; one seat's turn never moves another seat's view.
+# ''The vower binds itself; the face only admits.'' A seat's reach equals its grant, meeting the face's vow cap, meeting the face's own grants and lei; a votum's text requests, and caps grant.
+# ''Later means the face's next pass.'' A votum voids by a causal event (supersede, cancel, revoke, a roster edge) and lapses by a counted number of the face's passes, never by time (#/no-clock).
+# ''One face, one drainer, one pass.'' The face's lifecycle actor answers its vota one at a time; order holds within a face, and across faces only a named ref orders, a ref cycle refusing at issue.
+# ''Effect once, outcome owed.'' The intent id hashes issuer, verb, arguments and nonce; a lost outcome retries as an outcome and never as the act, and an AI answer lands recorded once and never replays.
+# ''Each enactor keeps its own lane.'' A deterministic votum never falls to an AI, and no votum reaches the hand-only class (promote, retire, unlock, kui) by attenuation, never by policy (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/session-contract#/the-hands`>>).
+# ''The wave delivers; a new cause re-arms.'' Vota land on the nalu wave (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/nalu`>>), and an outcome never re-arms its own votum.
+
+!!! Eight flows ~ what the house does with a votum
+
+|! Flow |! Roman stage |! What it does |
+| 1. Word | //concipere// | a seat issues an intent addressed to face F: verb, arguments, nonce, enactor, optional refs |
+| 2. Admit | //suscipere// | F's door checks reach, refs and the hand-only class, then queues the votum or answers a void outcome naming the broken condition |
+| 3. Bind | //voti reus// | a votum with refs waits until each named outcome lands; the others stand ready |
+| 4. Answer | | on F's lit pass the actor drains ready vota one by one, `mayAct` first |
+| 5. Pay | //solvere// | a deterministic votum runs its declared effect (oracle cast, ddate, cabalculate, grant landings, TW5 affordances); an AI votum reads the brief through F's tunnel from a seat holding F's standing and answers once, the house witnessing what it can check |
+| 6. Inscribe | //V.S.L.M.// | a signed outcome names who paid (seat, face, on whose behalf), how it landed (void, landed, witnessed) and against what (intent id, lei spent) |
+| 7. Read back | | the hearth roster at wake shows seats, rotations, lanes, open vota and unclaimed outcomes, and a votum stuck past its pass count shows stuck |
+| 8. Withdraw | | the vower cancels, a revoke stops admission, and an admitted votum finishes or voids with its cause |
+
+!!! What stands built, and what rests on the road
+
+* ''Built.'' The plane and its entries, `mayAct`, the delegations a far agent carries, owed outcomes, and the door's `runDeclaredEffect` port for idempotent declared verbs (`packages/lararium-mesh/src/intent-*.ts`, `packages/lararium-keyhive/src/face-intent-door.ts`); the hearth roster's read of seats, rotations, lanes, open vota and owed outcomes at wake (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/hearth-roster`>>). Beside them:
+** ''The face gate.'' Each lit face stands its own door, keyed by its atom (`face-doors`), in one shape for every face. Each answer a door gives (a votum, or its owed outcomes) runs on a pass the face gate admits (`admitTurn`, shaped as the face actor's `admitWork`): a dark or closing face answers none, and the face's next lit pass heeds what waited. Where the actor admits the pass (`admitWork`), its close waits out the votum in flight. On the daemon island the face's drop does: the votum in flight lands under the face's own hive, then the door detaches and its planes leave the island's cache. The vessel's close reaches CLOSED without the island's answer (face-lifecycle), so its saves may drain before that votum's outcome lands; an outcome that misses the drain answers again at the face's next lit pass, which the door's declared effects keep whole, since a sibling's door pays idempotent declared verbs alone, with change coalescing kept. A face's light reaching the daemon island heeds that face's own door.
+** ''A lit sibling's own door'' (operator ruling 2026-11-21). A sibling lit beside the worn face mounts its proven intents and persona planes in the live Repo for its lit life, and answers its vota under its own atom and through its own engine, never turning the worn slot. Four limits hold, each a test (`sibling-plane-mount`): the mount takes the intents and persona planes alone, and any other slot kind refuses; a pair its own signed log and verified KEL do not name mounts nothing, the vessel proving it at the light and the island re-reading it before either plane is read for a votum; the lit life bounds it, a close or a lock filing both documents under no face and dropping the mount whole while the door detaches; and every intent write names its face, a plane refusing an entry of another face (`intent-plane-misfiled`).
+** ''The deterministic enactors.'' `ddate` and `oracle-cast` declare idempotent and pay through `runDeclaredEffect`, never through an AI. A declaration names the arguments it `fixes`, each one a thing its effect would otherwise draw for itself (chance, a time): a cast votum carries its time and the coins its issuer threw at the word, so every answer and every re-run lands the same cast, and a votum without them refuses `args-unfixed` at issue and on read. A declaration also names what it `bars`: an argument naming a draw of chance the effect would make for itself, so a calendar votum whose format names its `%.` exclamation refuses `args-draw-chance`, and every device that answers one votum lands the same text.
+** ''The chore mark stays home.'' Each outcome a door lands keeps, beside it and never on it, the house-local `ChoreReceiptMark`: the face it answered as (its handle index here), the asker's hand `seat` (a seat of the face signed the votum, or the relay seat admitted it) and no session. The signed outcome keeps its cause, its signer and its result alone, so no handle index, hand or session crosses the plane, and no outcome pairs a requester with what it answered (`K20`, <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/verb-tiddler`>>).
+* ''Rests on the road.'' `cabalculate`, which stands as no verb yet; the face-named vow cap (a standing lei: reach `standing`, scope seat, affordance and enactor); conditional refs; the AI enactor; a votum's pass count, so the roster names no votum stuck. Flow 3, flow 7's stuck reading and flow 5's AI branch therefore read as design until those land, and the pattern integrities above name the law each must keep.
+
+''Cross-reads.'' The verb, summons and outcome records rest at <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/verb-tiddler`>>; the ledger's facts at <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/receipt-ledger`>>; the wave at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/nalu`>>; the hands that issue and answer at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/session-contract#/the-hands`>>. A votum may pay into a Votive, the bounty pool of <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/libation-pool#/the-wave`>>.
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/the-rubric`>>
 
 !! The rubric ~ what earns a place in a face's log
 
-The operator's tension, 2026-10-20: //every little action must not end up in each face's log; each keystroke replaces a cached invariant tiddler in memory with another, so a draft mid-edit does not belong.// The plane carries a hand's ''decisions that cross devices'', never its ''motion''. An entry belongs on the plane only when every test below holds:
+''Every little action stays out of a face's log'': each keystroke replaces a cached invariant tiddler in memory with another, so a draft mid-edit does not belong (#/rulings). The plane carries a hand's ''decisions that cross devices'', never its ''motion''. An entry belongs on the plane only when every test below holds:
 
 # ''It crosses a device boundary.'' Its effect or its answerer stands on some device other than the one where the hand acts, or the fleet must read its outcome. An act whose effect and observers rest on one vessel leaves at most a receipt in that vessel's daemon bag.
 # ''It settles.'' A hand committed it: save-and-publish, ask, approve, join, re-key, move a carrier's residency, grant, revoke. A keystroke, a cursor, a selection, a mid-edit draft, a cached invariant tiddler and every `$:/temp`, `$:/state` and `$:/status` title never qualify; they live in working memory and the volatile tiers.
@@ -116,7 +159,7 @@ The operator's tension, 2026-10-20: //every little action must not end up in eac
 | "admit this new device to the face" | an `intent` pinned to the hearth that holds the root |
 | an agent's request for approval | an `asks`, answered by a session wearing the face |
 | a vessel's boot outcome | the vessel's daemon bag |
-| `lares meme get` on the local socket, touching that vessel alone | no entry; a receipt in that vessel's daemon bag |
+| `lares tiddler get --meme` on the local socket, touching that vessel alone | no entry; a receipt in that vessel's daemon bag |
 
 ''The myth'': the conch blows for decisions, never for breaths. The slate holds the chalk; the conch carries the call, names who should answer, and hears who did.
 
@@ -148,10 +191,19 @@ The operator's tension, 2026-10-20: //every little action must not end up in eac
 
 !! The build ~ road item `I1`
 
-Item `I1` at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>> carries the build, red-first in this order: the plane and its entry kinds; stand-down and the verb classes; the read-side winner; claims, takeover and causal voids; the face-join summons moving off the daemon doc onto the plane (closing "two hearths of one face"); the daemon wiki's view pane; the rubric's witness; then the far agent's relay seat, item `I2`, built. Item `I3` carries the plane's hardening under re-pin, re-target and growth (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/i2-relay-lane`>>). The CLI's per-invocation face naming (the session model's commit 5) lands beside the summons move, since an intent names its issuing face.
+Road item `I1` at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>> carries the build; its order and its sibling items rest at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/face-intent-plane-record#/the-build`>>.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;bAnjyIzjsprkmAziqXjKhXlx4G-CkrglakXNB17hJKY`>>
+<<~ ahu slot=`#/rulings`>>
+
+!! Rulings
+
+# Operator ruling 2026-10-20: the operator un-asked the daemon doc's whole position and kept one point pinned — //the daemon wiki reads pono; the operator and the AIs need a channel of intent through each PersonaGroup's fleet of device vessels.// A two-wave research pair read the field, and the operator approved the model the same day: //"Approve your leans, land the full models into the architecture now."//
+# The operator's tension 2026-10-20, which the rubric answers: //every little action must not end up in each face's log; each keystroke replaces a cached invariant tiddler in memory with another, so a draft mid-edit does not belong.//
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;N87jWW9HDbPCLMsI9Ku3gUb5zyupAlXmOmR5k-xov4w`>>
 
 <<^ code=`&#x0004;` to=`?`>>

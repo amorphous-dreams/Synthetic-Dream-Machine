@@ -161,7 +161,7 @@ Witnesses: `tests/syncer-native-delete-door.test.ts` (6 vectors — the group le
 * ''(b′) CLOSED'' — the root law got ONE spelling (`framedRootOf` reads `isMemeRoot`; all three doors inherit it; no stall — `3d0f7248a`), the fragment PUT door walls itself with 400 for every other skin (`bf9d9e04f`), and the scanner no longer counts a `kahea` CALL as a declared slot (`75e895c3e` — a second defect fell beside it: a call before its own block dropped the slot's body into no record at all).
 * ''(c′) RULED Mu, marked'' — a member's death leaves the call standing (never-invent-bytes); the ahu template distinguishes `unresolved · arriving · empty · filled` (`79420f5b5`); the served text keeps the call, the page marks it. The re-cut lean below was REFUTED by measure: a re-place lands the marker again.
 * ''(d′) CLOSED on the server'' — `native-skinny-door` re-inflates slot children in stock's own `tiddlers.json` (`61ac87090`); measured 132 tiddlers 23 798 B → 38 967 B (×1.64); dial `$:/config/lares/memes/fat-children` (default yes); the cord for //arriving// rides the same template.
-* ''(b) STANDS, and says why'' — the backstop widening REFUTED at its red (`3dfb06170`): `placeMeme(root, readMeme(root))` is the canonical form's own fixed point, so seven kinds of child edit read `noop · clean · 0 diagnostics` while the same shapes refuse at the root's door. A child's save grades only against the child's OWN authored text, and no congruence reads a fragment body as a gradeable unit. The operator's call.
+* ''(b) CLOSED by the built path'' (operator ruling, 2026-11-20, quote license: //"approve truing up to today's state, that reads pono, even if it gets reexamined later"//) — a child's save grades (#/rulings, answer (7)): the backstop's child gate runs the ingest gate's READ HALF, `evaluateMeme` and never `placeMeme`, over the composed root, and surfaces what it finds on the quoteblock's alert rail (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/ahu#/quoteblock-floor`>>). The re-place route fell at its red (`3dfb06170`): `placeMeme(root, readMeme(root))` reaches the canonical form's own fixed point, so seven kinds of child edit read `noop · clean · 0 diagnostics` while the same shapes refuse at the root's door.
 
 The leans as first written, kept for the record:
 
@@ -173,6 +173,24 @@ The leans as first written, kept for the record:
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/rulings`>>
+
+!! The operator's rulings over this loop ~ verbatim
+
+''The two doors'' (operator, 2026-09-11, "Approve all, OODA-HA forwards"; one clause of the moʻolelo first told at `scale-stories-basket-one#/exit`), quote license: "the two doors compose: refuse a bare root at the native door naming /memes/, the adaptor rides the plugin the client already loads, a backstop re-stamps and logs".
+
+''The eight answers'' (operator, on the house's answers, 2026-09-12; first told at `syncer-seams-roundtable#/plan`), quote license:
+
+<<~ moolelo held=```(1) (c′) = SCAR, MARKED — the crossroads' answer; keep the pointer, mark it dead; never-invent-bytes rules · (2) no re-cut, so no 412 on a party who did nothing · (3) the pasted frame stays as AUTHORED TEXT; the grade speaks in Phase 5 · (4) the payload gets a dial, `$:/config/lares/memes/fat-children` default yes, with the measured size reported · (5) (d′) IS a defect for this house's carriers (eleven-slot documents are the normal); Phase 3 stands whole · (6) `<<~?` waits its own pass; unbound here · (7) a child's save IS graded, through the root re-place · (8) order 0 · 1 · 4 · 2 · 3 · 5 — (b′) first, the human's screen second, arrival third, the ungated child last (operator, on the house's answers)```>>the same hand that sat the table enacts, red-first, every phase with its anti-stall control<<~/moolelo>>
+
+''Answer (7), trued (operator ruling, 2026-11-20).'' Quote license: //"approve truing up to today's state, that reads pono, even if it gets reexamined later"//. The ruling's intent binds: a child's save IS graded. Its route clause, //through the root re-place//, stands SUPERSEDED by the built path: the backstop's child gate grades the composed root through the ingest gate's READ HALF (`evaluateMeme`, never `placeMeme`), with no re-place (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/ahu#/quoteblock-floor`>>); the re-place fell at its red (`3dfb06170`). #/leans reads (b) closed by that path. The operator left the truing open to a later look.
+
+''The population the never-refuse law binds'' (operator ruling, 2026-09-13; first told at `syncer-seams-roundtable#/refusals`, under its refusal "No cure may answer 4xx on a path the stock syncer drives."), quote license:
+
+> The refusal holds at full strength over what ships in `packages/lararium-tw5/plugins/lares-memetic-wikitext.json` — a consumer's own wiki folder under a plain `tiddlywiki --listen`, where the stock `tiddlyweb` syncadaptor stands and answers to stock TW5's contract. The SDM repo's own `bags/` and `wikis/` run the lararium multi-wiki + daemon-wiki setup, and ''the daemon-wiki stands outside this refusal's jurisdiction'': the island boots with no syncadaptor module, no `$tw.syncer` and no poll timer (`src/sovereign-kernel.ts:415`), ROAD B carries one direct `change` listener into `IslandAdaptor.saveTiddler` instead (`src/outbound-bridge.ts:1-19`), the packed plugin registers no `module-type: syncadaptor`, and the daemon serves `/ws` alone (`packages/lararium-node/src/main.ts:156-167`). The refusal's own measurement declares that scope: `tests/syncer-back-parity.e2e.test.ts:3-4` names its contact //"a plain `tiddlywiki --listen` carrying the packed plugin, driven by a real Chromium client running the stock `tiddlyweb` + `filesystem` pair. Nothing of the island, nothing of the daemon."//
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/edges`>>
 
 !! Edges
@@ -181,11 +199,11 @@ The leans as first written, kept for the record:
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/outbound-bridge`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/meme`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/tiddler-record`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/recipe-layer-model`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/cli/vessel-door`>>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;i9VtCadt-lxcTs4k8yLh38iQm9Tpu00cbTdUXN-Rl1I`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;y1nMRlY7tKme041BZ1FWAj8cNi7U2-T0FGbyNlcRPt8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

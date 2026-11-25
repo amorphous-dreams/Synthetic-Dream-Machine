@@ -43,6 +43,23 @@ describe("★ placeMeme lands a meme from text alone ★", () => {
     expect(sink.store.has(`${URI}#/b`)).toBe(true);
   });
 
+  test("a write waiting past its bound on a root's held turn refuses family-turn-held and moves nothing; the root stays held behind that turn", async () => {
+    const sink = memorySink();
+    const root = URI;
+    let release!: () => void;
+    const hung = placeMeme({ uri: root, text: meme(["a"]), vet: () => new Promise<void>((resolve) => { release = resolve; }) }, sink);
+    await expect(placeMeme({ uri: root, text: meme(["b"]), turnWaitMs: 20 }, sink)).rejects.toMatchObject({ name: "VerbRefusal", reason: "family-turn-held" });
+    expect(sink.store.has(`${root}#/b`)).toBe(false);
+    // A third write queues behind the held turn rather than skipping it, and lands once that turn settles.
+    const third = placeMeme({ uri: root, text: meme(["a", "c"]) }, sink);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(sink.store.has(`${root}#/c`)).toBe(false);
+    release();
+    expect((await hung).decision).toBe("ingest");
+    expect((await third).decision).toBe("ingest");
+    expect(sink.store.has(`${root}#/c`)).toBe(true);
+  });
+
   test("the same text again reads canonical-equivalent: a noop, nothing moves", async () => {
     const sink = memorySink();
     await placeMeme({ uri: URI, text: meme(["a"]) }, sink);

@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/lares/docs/pono/w26-floor-lane"
 
 ! The W26 floor lane ~ one owner per registry, the floor by CID
 
-Road item `W26` carries the build of two operator rulings: //the system wikis release; every other wiki reads the floor// (2026-10-16) and //one owner per registry; the floor reads by CID// (2026-10-18), both at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>> #/rulings. Items `W21` and `P8` ride it. The law it enacts already stands at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology`>> #/oracle-planes: an oracle names documents at one scope, that scope's owner writes its registry, and a registry travels no wider than its scope.
+Road item `W26` carries the build of two operator rulings: //the system wikis release; every other wiki reads the floor// (2026-10-16) and //one owner per registry; the floor reads by CID// (2026-10-18), both at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>> #/rulings. Items `W21` and `P8` ride it. The law it enacts already stands at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/wiki-layer-ontology`>> #/oracle-planes: an oracle names documents at one scope, that scope's owner writes its registry, and a registry travels no wider than its scope.
 
 <<~/ahu>>
 
@@ -60,7 +60,7 @@ Road item `W26` carries the build of two operator rulings: //the system wikis re
 
 <<~ ahu slot=`#/the-evidence`>>
 
-!! The evidence that drew it (2026-10-18, lane `--w26-own-canon`)
+!! The evidence that drew it (2026-10-18, tag `archive/w26-own-canon`, `dd78a181a`)
 
 * ''The shared document merges siblings' pointers.'' `oracleGenesisDocUrl()` gives every vessel one id, and each vessel writes its own `lares` and `lararium` urls, crossroads pin and realm pointers into it (`genesis-artifact.ts` `mintLaresIfAbsent`, `who-face.ts`, `realm-plane.ts`). Two vessels that each mint their own `lares` document settle on ONE `LARES_DOC_URI` once they sync; the control, never connected, keeps each its own (`packages/lararium-node/tests/shared-oracle-doc.probe.test.ts`, on lane `--w26-floor-1`).
 * ''The split moves rather than closes.'' With the lares wiki's own canon held to its granted document, `herm-reshares-public-blob` step ③ failed three of three runs: the MOVE landed in A's document while `wiki which` and sync read the document the shared plane named. A's log in each run: `layer lar:///ha.ka.ba/bags/lararium moved …` then `layer lar:///ha.ka.ba/bags/lares held at …; the shared plane names …`. A's lares wiki then mounted the joinee's lararium corpus, the reverse of `W21`'s ruling.
@@ -118,7 +118,7 @@ action reactors, `meme` and `where` by `systemCanonUrl`, and a recipe's library 
 * RETIRED at slice 4: `OraclePointer`, `ORACLE_POINTER_DOMAIN`, `snapshotPublicOracle` and the node's oracle floor serve. The floor answers by the release at the porch; the flow map keeps its own pointer under `FLOW_POINTER_DOMAIN` (`flow-pointer`), and `oracle-substrate`, `oracle-read-client` and `oracle-read-face` live on as `flow-substrate`, `flow-read-client` and `flow-read-face`. Left for an o-takiage pass: the route and gate names that still say "oracle" (`ORACLE_SOCKET_ROUTE`, `OracleFloorGate`, `OracleGateArgs`), which name the flow map's socket and not a pointer.
 * Canon lines that named "the shared floor CID" now describe the release (`oracle-governance#/board-model`, `pronaos#/the-rung-ladder`, `genesis-doc#/the-oracle-pointer`, `disk-projection`, `dreamnet-architecture`); the docblocks that call the oracle "the vessel's own plane" or libraries "read-only from wiki" follow the slice whose code makes each line true.
 
-''The interim cure stays out.'' The lane's recipe-watch hold (`--w26-own-canon`, commit `d1983aa75`) keeps a system wiki's own canon against a shared pointer that slice 2 removes; under //build the end state// it lands nowhere. Its probes stand: the shared-oracle probe as slice 2's red, the `W25` creator probe as that item's measurement.
+''The interim cure stays out.'' The lane's recipe-watch hold (commit `d1983aa75`, held at the tag `archive/w26-own-canon`, `dd78a181a`) keeps a system wiki's own canon against a shared pointer that slice 2 removes; under //build the end state// it lands nowhere. Its probes stand: the shared-oracle probe as slice 2's red, the `W25` creator probe as that item's measurement.
 
 <<~/ahu>>
 
@@ -138,7 +138,8 @@ action reactors, `meme` and `where` by `systemCanonUrl`, and a recipe's library 
 * ''The announcements'' order by their links too: `foldFloorAnnouncements` reads one line (its head and order) or a fork (its heads named), never settled by recency.
 
 ''Moʻolelo, each overrulable.''
-* ''The CLI rides the vessel door.'' The ruling named `lares floor`; the help's one-screen law holds the top level full and the vessel door already names "a new cap-stack arrives as a rite, never another top-level verb", and the pin belongs to the vessel, so the verb reads `lares vessel floor status|accept`.
+* ''The status reads five drifts, each by its own word, and keeps one card.'' `floor status` prints one row per drift (`--grain canon|seed|shadow|lag|all`; `lag` carries both lag rows): ''disk lag'' (`bags/` and `wikis/<slug>` files ahead of canon or a workbench), ''working ahead'' (a wiki's working-layer edits short of canon; no door counts it yet, so it reads `unread` by name), ''canon floor drift'' (live canon ahead of the floor this vessel serves, by carrier), ''seed offer'' (the genesis bake ahead of the founding record, ratchet by ratchet; its floor speaks as "the seed's floor", so "the floor" names the canon floor alone) and ''shadow tally'' (the boots' shadow read). A row reads `level`, `drifts` or `unread` (a canon slug with no live document, a shadow tally no boot read clean and a corrupt tally file each read `unread`, never level; `working ahead` stays a not-yet-counted stub outside the card's state), and carries its carriers, the heads it read and the exact next `lares` line, labelled `read with` or `cure with` (the lay's preview first; `--apply --yes` relays the operator's approval). The same read refreshes ONE state card per (vessel, Nexus) in the worn face's daemon wiki working layer (`lar:///ha.ka.ba/kahua/memory/state/floor-<vessel12>[-<nexus12>]`, a kahua state title outside canon's namespaces, a plain card tagged `floor-card`): its bytes stay deterministic in the rows, so a second read of the same drifts puts nothing new; a new cause moves `floor-cause` and re-arms it; a level reading voids its row; it never stacks duplicates. A door that refuses the card never fails the read (the card reads `unwritten` with the reason). The kūkulu's seed line names the seed offer, the card's title and `lares vessel floor status --grain seed`. Slices S2 to S5 (cut, the floor lei, the MCP `floor` tool, adopt) follow the floor-mu research.
+* ''The CLI rides the vessel door.'' The ruling named a top-level `floor`; the help's one-screen law holds the top level full and the vessel door already names "a new cap-stack arrives as a rite, never another top-level verb", and the pin belongs to the vessel, so the verb reads `lares vessel floor status|accept`.
 * ''A genesis pin meets every chain.'' The genesis floor stands below any release, so from genesis every counted chain fast-forwards; the first release need not name the genesis manifest.
 * ''A fork refuses even a named descendant.'' Two heads stand unsettled for the Nexus; the accept waits for the cabal whatever release the person names.
 * ''A replay answers, it never refuses.'' An accept of the pinned release answers `moved: false` and lands nothing, so an act re-run after a restart reads clean.
@@ -190,8 +191,8 @@ action reactors, `meme` and `where` by `systemCanonUrl`, and a recipe's library 
 !! Edges
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/wiki-layer-ontology`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/recipe-layer-model`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/oracle-governance`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/pronaos`>>
@@ -202,6 +203,6 @@ action reactors, `meme` and `where` by `systemCanonUrl`, and a recipe's library 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;AbKmRIa7r2V3_uIJJA9uLh7JyK3xH3KOZRsJBPQUsQg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;C-jFEMFaDZFjmQoycJsNcCUnpXa_5A-xTJDVWd9sKO4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

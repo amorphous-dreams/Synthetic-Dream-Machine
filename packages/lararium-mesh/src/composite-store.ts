@@ -29,9 +29,20 @@ import { headsEqual } from "./wiki-recipe.js";
 import { assertStorableTitle } from "./title-law.js";
 import { OVERRIDE_BASE_META, isWorkingLayerBag, overrideBaseOf } from "./override-base.js";
 import { carrierHashOf } from "./carrier-form.js";
-import { buildEffectRecordTiddler, effectLedgerPrefix, effectRecordUri, isEffectRecordUri, isRetirementMarker, parseEffectRecord, RETIRED_EVENT_ID, storeIsRetired } from "./effect-record.js";
+import { buildEffectRecordTiddler, effectLedgerPrefix, effectRecordUri, isEffectRecordUri, isRetirementMarker, parseEffectRecord, refuseEffectLedgerWrite, RETIRED_EVENT_ID, storeIsRetired } from "./effect-record.js";
 
 /** Two flat field bags hold the same keys and the same values (each value read as its string). */
+/**
+ * THE HAND'S ORIGINS: a page's save (`tw-local`), a tool's draft, a canvas's draft. None writes a residency ledger: the
+ * house's effect recorder alone does (`refuseEffectLedgerWrite`), so a forged row never stands beside the real ones; nor does
+ * a hand write or remove a shell's record of leaving, the retire's carry alone does.
+ */
+const HAND_ORIGINS: ReadonlySet<string> = new Set(["tw-local", "mcp-draft", "canvas-draft"]);
+function refuseHandOnLedger(origin: ChangeOrigin, titles: readonly string[], verb: string): void {
+  if (!HAND_ORIGINS.has(origin.kind)) return;
+  for (const title of titles) refuseEffectLedgerWrite(title, `CompositeStore.${verb} (${origin.kind})`);
+}
+
 function sameFields(a: Record<string, unknown>, b: Record<string, unknown>): boolean {
   const keys = Object.keys(a);
   if (keys.length !== Object.keys(b).length) return false;
@@ -136,10 +147,40 @@ export class CompositeStore implements LarTiddlerStore {
     return this.layers.findIndex((l) => l.bagId === bagId);
   }
 
+  /** The recipe slots this composition names but could not mount (`markUnreached`), and the recipe order they sit in. */
+  private unreached: { readonly order: readonly string[]; readonly slots: Set<string> } | null = null;
+
+  /**
+   * THE SLOTS THE COMPOSER COULD NOT REACH. A composer that walks a recipe and skips a slot (no reach into that bag, a library
+   * the island does not hold) names it here with the recipe's top-first order, so a delete above it knows a layer stands there
+   * unread. A slot that mounts later (`addLayer`) leaves the list. Calling again replaces the list.
+   */
+  markUnreached(order: readonly string[], slots: readonly string[]): void {
+    const live = slots.filter((slot) => !this.hasBag(slot));
+    this.unreached = live.length > 0 ? { order: [...order], slots: new Set(live) } : null;
+  }
+
+  /**
+   * WHETHER A LAYER BENEATH `bagId` STANDS UNREAD: a recipe slot beneath it this composition could not mount
+   * (`markUnreached`), or a mounted layer whose store stands in for a document it has not read (`LarTiddlerStore.unknown`).
+   * Either may hold any title, so a delete in `bagId` counts it as holding one (a kāpae, never a plain retract).
+   */
+  unknownBeneath(bagId: string): boolean {
+    const at = this.layerIndexOf(bagId);
+    if (at > 0 && this.layers.slice(0, at).some((layer) => layer.store.unknown?.() === true)) return true;
+    if (this.unreached) {
+      const { order, slots } = this.unreached;
+      const pos = order.indexOf(bagId);
+      if (pos >= 0 && [...slots].some((slot) => order.indexOf(slot) > pos)) return true;
+    }
+    return false;
+  }
+
   /** `at` splices the layer into the cascade at that priority index (live
    *  recipe reconcile); omitted = push to top (boot-time bottom-up order). */
   addLayer(layer: CompositeLayer, at?: number): void {
     if (this.hasBag(layer.bagId)) throw new Error(`CompositeStore: bag "${layer.bagId}" already registered`);
+    if (this.unreached?.slots.delete(layer.bagId) && this.unreached.slots.size === 0) this.unreached = null;
     if (at !== undefined && at >= 0 && at < this.layers.length) this.layers.splice(at, 0, layer);
     else this.layers.push(layer);
     // defaultWritable defaults to true. Set false for layers that accept
@@ -244,6 +285,7 @@ export class CompositeStore implements LarTiddlerStore {
   }
 
   async put(record: LarTiddlerRecord, origin: ChangeOrigin, options?: LarWriteOptions): Promise<void> {
+    refuseHandOnLedger(origin, [record.tiddler.title as string], "put");
     this._requireBagForBase(options, "put");
     const store = this._writeTargetFor(options?.bag, "put");
     const retired = this._refuseRetired(store, [record], "put");
@@ -319,6 +361,7 @@ export class CompositeStore implements LarTiddlerStore {
     origin:     ChangeOrigin,
     options?:   LarWriteOptions,
   ): Promise<void> {
+    refuseHandOnLedger(origin, [...puts.map((r) => r.tiddler.title as string), ...tombstones, ...(options?.retracts ?? [])], "writeFamily");
     const { store, retired } = this._familyChecks(puts, tombstones, options);
     if (retired) await retired;
     const writeOptions = this._writeOptionsFor(options, store, "writeFamily");
@@ -476,6 +519,7 @@ export class CompositeStore implements LarTiddlerStore {
   }
 
   async tombstone(title: string, origin: ChangeOrigin, options?: { base?: readonly string[] }): Promise<void> {
+    refuseHandOnLedger(origin, [title], "tombstone");
     this._requireBagForBase(options, "tombstone");
     if (!this.writableStore) throw new NoWorkingLayerRefusal("The bagless tombstone");
     const retired = this._refuseRetired(this.writableStore, [], "tombstone", [title]);
@@ -484,6 +528,7 @@ export class CompositeStore implements LarTiddlerStore {
   }
 
   async remove(title: string, origin: ChangeOrigin, options?: LarRemoveOptions): Promise<void> {
+    refuseHandOnLedger(origin, [title], "remove");
     if (!this.writableStore) throw new NoWorkingLayerRefusal("The bagless remove");
     const retired = this._refuseRetired(this.writableStore, [], "remove", [title]);
     if (retired) await retired;
@@ -497,6 +542,7 @@ export class CompositeStore implements LarTiddlerStore {
    * Throws when the named bag is absent or not writable.
    */
   async tombstoneInBag(bagId: string, title: string, origin: ChangeOrigin, options?: { base?: readonly string[] }): Promise<void> {
+    refuseHandOnLedger(origin, [title], "tombstoneInBag");
     const store = this._writableLayerOf(bagId);
     const retired = this._refuseRetired(store, [], "tombstoneInBag", [title]);
     if (retired) await retired;
@@ -506,6 +552,7 @@ export class CompositeStore implements LarTiddlerStore {
   /** HARD-remove a title from one bag (ABSENT — falls through), distinct from
    *  tombstoneInBag's kāpae hide. The retract a MOVE/promotion uses on its source. */
   async removeInBag(bagId: string, title: string, origin: ChangeOrigin): Promise<void> {
+    refuseHandOnLedger(origin, [title], "removeInBag");
     const store = this._writableLayerOf(bagId);
     const retired = this._refuseRetired(store, [], "removeInBag", [title]);
     if (retired) await retired;

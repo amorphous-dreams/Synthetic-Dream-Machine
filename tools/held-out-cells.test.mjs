@@ -153,11 +153,11 @@ test("the record door writes the file the merge door reads, through the download
   } finally { rmSync(temp, { recursive: true, force: true }); }
 });
 
-test("RED: held-out fires on the span, main, the weekly clock and by hand, and never on a lane branch push", () => {
+test("RED: held-out fires on develop, main, the weekly clock and by hand, and never on a lane branch push", () => {
   const yml = readFileSync(join(ROOT, ".github/workflows/held-out.yml"), "utf8");
   const on = yml.slice(yml.indexOf("\non:"), yml.indexOf("\nconcurrency:"));
-  assert.match(on, /branches: \["feature\/\*\*", "!feature\/green-jello-dinosaur-5--\*\*", main\]/);
+  assert.match(on, /branches: \[develop, main\]/);
   assert.match(on, /schedule:/);
   assert.match(on, /workflow_dispatch:/);
-  assert.ok(on.indexOf('"feature/**"') < on.indexOf('"!feature/green-jello-dinosaur-5--**"'), "an exclusion follows the positive pattern it narrows");
+  assert.ok(!/feature\//.test(on), "no feature pattern raises a held-out run");
 });

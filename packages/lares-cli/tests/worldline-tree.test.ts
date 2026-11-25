@@ -2,7 +2,7 @@
  * worldline tree — the braid builder (pure) + the read-only KG row reader.
  *
  * The ∥ mark must be a CAUSAL verdict (ITC re-projection from the edge-DAG),
- * never a timestamp guess: a spirit spawned AFTER another's handback reads
+ * never a timestamp guess: a spirit spawned AFTER another's retirement reads
  * sequential (the parent merged the child's stamp at the join), while two
  * overlapping spirits read concurrent.
  */
@@ -23,7 +23,7 @@ const A = `${RUN}.agent-a`;
 const B = `${RUN}.agent-b`;
 const C = `${RUN}.agent-c`;
 
-/** a: 10:00→10:05 · b: 10:01→10:04 (overlaps a) · c: 10:06→10:07 (after both handbacks). */
+/** a: 10:00→10:05 · b: 10:01→10:04 (overlaps a) · c: 10:06→10:07 (after both retirements). */
 const ROWS: WorldlineKgRow[] = [
   { subject: RUN, predicate: "prov:delegation", object: A, valid_from: "2026-06-30T10:00:00Z", valid_to: "2026-06-30T10:05:00Z", turn_key: "uuid-a" },
   { subject: RUN, predicate: "prov:delegation", object: B, valid_from: "2026-06-30T10:01:00Z", valid_to: "2026-06-30T10:04:00Z", turn_key: "uuid-b" },
@@ -40,12 +40,12 @@ describe("buildWorldlineTree", () => {
     expect(t.root.children[0]?.turnKey).toBe("uuid-a");
   });
 
-  test("∥ is the ITC verdict: overlapping b reads concurrent, post-handback c reads sequential", () => {
+  test("∥ is the ITC verdict: overlapping b reads concurrent, post-retirement c reads sequential", () => {
     const t = buildWorldlineTree(RUN, ROWS);
     const [a, b, c] = t.root.children;
     expect(a?.concurrentWithPreviousSibling).toBe(false); // first sibling — nothing before it
     expect(b?.concurrentWithPreviousSibling).toBe(true);  // spawned inside a's open interval
-    expect(c?.concurrentWithPreviousSibling).toBe(false); // spawned after b's handback merged home
+    expect(c?.concurrentWithPreviousSibling).toBe(false); // spawned after b's retirement merged home
   });
 
   test("renders the braid with the ∥ mark and the OPEN interval", () => {

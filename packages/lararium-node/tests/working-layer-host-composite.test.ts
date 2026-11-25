@@ -71,7 +71,7 @@ describe("daemon VM host composite working binding", () => {
     expect(core.composite.defaultWritableBagId()).toBe(working);
     expect(answer.workingUrl, "the host named a different document than the worker attached").toBe(workerHandle.url);
 
-    const ledger = new FactLedger(core.control, st.vesselRepo, 8, 1);
+    const ledger = new FactLedger(core.control, st.vesselRepo, 8, "life-one");
     const requestId = `host-fact-${seated}`;
     await ledger.arbitrate(requestId, "digest-1");
     const title = `${RECEIPT_FACT_URI_PREFIX}${requestId}`;

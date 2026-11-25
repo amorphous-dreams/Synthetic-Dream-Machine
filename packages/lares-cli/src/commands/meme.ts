@@ -2,28 +2,31 @@
  * `lares meme` — ONE FAMILY FOR EVERY LAW OVER MEME TEXT.
  *
  *   put <uri> (--recipe <slug> | --bag <slug>) [--base <hash>] [--file <path>]
- *   get <uri> (--recipe <slug> | --bag <slug>)
+ *   patch <uri> (--recipe <slug> | --bag <slug>) --slot '#/x' (--append <file> [--base <hash>] | --replace <file> --base <hash>)   (the public door: `tiddler put --meme --slot … --append <file> | --text|--file`)
+ *                                                 — one slot's body through the put's own gate, resealed
  *   list (--recipe <slug> | --bag <slug>) [--tree]
  *   delete <uri> (--recipe <slug> | --bag <slug>) [--if-match <hash>]
  *   normalize <file.mem ...> [--grammar]
  *   check <file.mem ...> [--gradient | --edges | --grammar]
  *   project <file.mem> --to md [--out <path>]
- *   project <file.mem | lar:uri> --to <mem|md|html|tid|json> (--recipe <slug> | --bag <slug>) [--out <path>]
+ *   project <file.mem | lar:uri> --to <md|html|tid|json> (--recipe <slug> | --bag <slug>) [--out <path>]
  *   project <file.mem> --to md [--dialect CommonMark|GFM|kramdown-rfc2629]   — RFC 7764 variant; CommonMark default
  *   project <file.mem> --to md [--tongue <bcp47>]   — weave sigil head names through their tongue's primary mirror; canonical default
  *   project --to md --check <file.md | dir>   — prove currency by re-projection alone; writes nothing
  *   promote <docs/…/x.mem> [--face N] [--dest-bag <lar:uri>] [--corpus <glob>]
  *   offer <lar:uri ...> --bag <slug>              — offer working records toward a house-canon bag (offering#/the-canon-offer)
- *   offer list [--bag <slug>] [--all]             — the Nexus's offer table, each record's freshness ("canon is fresher" warns)
+ *   offer show [--bag <slug>] [--all]             — the Nexus's offer table, each record's freshness ("canon is fresher" warns)
  *   offer show <cid>                              — one offer's field diff against canon now
  *   offer promote <cid> [--over-fresher]          — the Kahu steward lands it in canon and retires it
  *
  * A VERB DECLARES ITS SEAT. `normalize` · `check` · `project --to md` over a file run LOCAL — they open a
  * path, read its bytes, and (normalize, project) write bytes back: no daemon, no store, no cap gate, no
- * effect record. The offline re-stamp of a stale block check keeps working with no socket. `put` · `get`
- * · `list` · `delete` · `project` over a `lar:` uri or to any rendered target ride the daemon verb
- * (`meme-put` · `meme-get` · `meme-list` · `meme-delete` · `meme-project`) — the one placement function,
- * the one removal, the one listing and the island's own renderers, reached from a terminal.
+ * effect record. The offline re-stamp of a stale block check keeps working with no socket. `put` · `list`
+ * · `delete` · `project` over a `lar:` uri or to any rendered target ride the daemon verb (`meme-put` ·
+ * `meme-list` · `meme-delete` · `meme-project`) — the one placement function, the one removal, the one listing
+ * and the island's own renderers, reached from a terminal. A READ rides the one door: `lares tiddler get <uri>
+ * --meme` answers the carrier on a gradient (whole within a page, its has-stack past it), and `--meme --all` the
+ * whole carrier, paged on slot boundaries.
  *
  * THE CONTAINER LAW (every store-backed seat):
  *   · no target        — `no-container` refusal before file reads, socket dials or daemon starts.
@@ -32,18 +35,18 @@
  *   · --recipe <slug>  — an edit AS that wiki: its designated writable bag, write-then-sync.
  *   · --bag <slug>     — a residency placement into that bag; a bag the island cannot write refuses.
  *   · --realm <id>     — beside --bag: the realm whose registration that bag resolves through; it reads that realm alone.
- *   · --base <hash>    — (put) the canonical hash the writer read (`meme get` reports it); records that
+ *   · --base <hash>    — (put) the canonical hash the writer read (`tiddler get --meme` reports it); records that
  *                        moved past it read as a CONFLICT and nothing lands.
  *   · --if-match <hash>— (delete) the same base, spelled as the route's header: stale → CONFLICT, nothing moves.
  *   · --tree           — (list) nest each root's slot tree beneath it; roots + canonical hash alone otherwise.
  *
  * `list` names EVERY root its seat holds. `--bag` lists that one bag's records; `--recipe <slug>` lists the
- * roots the wiki's whole stack resolves, as `get --recipe` reads them (a tombstone in the working layer
+ * roots the wiki's whole stack resolves, as `tiddler get --recipe` reads them (a tombstone in the working layer
  * shadows canon, so a carrier the wiki removed lists nowhere), each row naming the bag that answered.
  *
  * Slugs ride bare (`sdm`, `lares`). Exit classes: a conflict exits `conflict`; an island refusal `verb-error`;
  * a missing or doubled container exits `no-container` (2);
- * an absent meme on `get` exits `not-found`; drift under `check` exits 1 for a CI gate.
+ * drift under `check` exits 1 for a CI gate.
  *
  * ── THE LOCAL LAWS ──────────────────────────────────────────────────────────────────────────────
  * `normalize` canonicalizes a carrier's framing so the round-trip lens laws hold (meme-corpus-roundtrip:
@@ -87,12 +90,12 @@
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, statSync } from "node:fs";
 import { execFileSync } from "node:child_process";
-import { stdin, stdout } from "node:process";
+import { stdout } from "node:process";
 import { basename, dirname, isAbsolute, join } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
 import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
 import { projectSubmission, PROFILES, profileOf, recordedTargetOf, resolveWeaveTarget, type WeaveProfile } from "@lararium/tw5/weave";
-import { readCarrierShape, readCarrierEdges, readCarrierLifecycle, checkCarrierLifecycle, memeticVerdict } from "@lararium/tw5";
+import { homedInTheKahuWorkbench, readCarrierShape, readCarrierEdges, readCarrierLifecycle, checkCarrierLifecycle, memeticVerdict } from "@lararium/tw5";
 import { verifyBcc, classifyPostEot, stampCarrier } from "@lararium/memetic-frame";
 import { newChangeId } from "@lararium/mesh";
 import { faceSigningSeat, listFaceOrdinals, runPromoteCheckBytes } from "@lararium/node";
@@ -103,20 +106,18 @@ import { storeVerb } from "../store-door.js";
 import { LocalWaitExpired } from "../local-connector.js";
 import { readVerbOutcome, summaryOutput } from "../verb-result.js";
 import { emit, exitFor } from "../render.js";
-import { helpLines } from "../command-help.js";
+import { helpDoor, helpLines } from "../command-help.js";
+import {
+  bccOffset, duplicateKeyOffsets, frameFaultOffset, headOffset, postEotOffset, problemLine, type ProblemSeverity,
+} from "../problems.js";
 import { promoteCarrier, type PromotionSeat, type PromotionMove } from "./meme-promote.js";
 import type { ParsedArgs } from "../parse-args.js";
 
-class UsageError extends Error {}
-
-export interface MemePlan {
-  readonly verb: "meme-put" | "meme-get" | "meme-list" | "meme-delete";
-  /** The verb args as the daemon receives them — `text` joins on put once the body is read. */
-  readonly args: Record<string, string>;
-}
+import { UsageError } from "./meme-shared.js";
 
 /** The targets `project --to` renders. `md` over a file seats local; every other pairing rides the daemon. */
-export const PROJECT_TARGETS = ["mem", "md", "html", "tid", "json"] as const;
+/** `mem` left the list: the composed carrier reads through the one door, `lares tiddler get <uri> --recipe <slug> --meme --all`. */
+export const PROJECT_TARGETS = ["md", "html", "tid", "json"] as const;
 export type ProjectTarget = typeof PROJECT_TARGETS[number];
 
 export interface ProjectPlan {
@@ -130,57 +131,12 @@ export interface ProjectPlan {
   readonly container: Record<string, string>;
 }
 
-const SUBS = ["put", "get", "list", "delete", "normalize", "check", "sitting", "project", "promote", "offer"] as const;
-type Sub = typeof SUBS[number];
+/** Every verb the meme door answers; `offer` names its own (bare `offer <uri…>` makes one). */
+export const MEME_VERBS = { normalize: null, check: null, sitting: null, project: null, promote: null, offer: ["show", "promote"] } as const;
+const SUBS = Object.keys(MEME_VERBS) as ReadonlyArray<keyof typeof MEME_VERBS>;
+type Sub = keyof typeof MEME_VERBS;
 
 function usage(): void { for (const line of helpLines("meme")) console.error(line); }
-
-/**
- * THE STORE DOOR'S ONE-SHOT CARRIES NO FACE: a store verb reads and writes the daemon mount's seat, so a line naming `--face`
- * refuses `face-not-routed` rather than stand the mount in for the face it names.
- */
-function refuseFace(args: ParsedArgs, line: string): void {
-  if (args.options["face"] === undefined) return;
-  throw new UsageError(`face-not-routed: \`lares ${line}\` rides the store door's one-shot, which carries no face; it reads and writes the vessel's daemon mount, never the face --face names, so drop \`--face\``);
-}
-
-/** The verb and its args for a sub-verb — the argument law, with no daemon in reach. */
-export function memePlan(sub: "put" | "get" | "delete", args: ParsedArgs): MemePlan {
-  refuseFace(args, `meme ${sub}`);
-  const uri = args.positional[1];
-  if (!uri) throw new UsageError(`a uri is required (e.g. \`lares meme ${sub} lar:///ha.ka.ba/... --recipe <slug>\`)`);
-  const out: Record<string, string> = { uri, ...containerArgs(args, `meme ${sub}`, sub === "put" || sub === "delete" ? "write" : "read") };
-  if (sub === "put") {
-    const base = typeof args.options["base"] === "string" ? args.options["base"].trim() : "";
-    if (base) out["base"] = base;
-    return { verb: "meme-put", args: out };
-  }
-  if (sub === "delete") {
-    // The route spells the base as `If-Match`; the verb reads it as `base` — one hash, two spellings.
-    const base = typeof args.options["if-match"] === "string" ? args.options["if-match"].trim() : "";
-    if (base) out["base"] = base;
-    return { verb: "meme-delete", args: out };
-  }
-  return { verb: "meme-get", args: out };
-}
-
-/** The listing addresses the SEAT, never one meme: the container alone, `tree` on request. */
-export function listPlan(args: ParsedArgs): { readonly verb: "meme-list"; readonly args: Record<string, string | boolean> } {
-  refuseFace(args, "meme list");
-  const out: Record<string, string | boolean> = { ...containerArgs(args, "meme list") };
-  if (args.flags["tree"]) out["tree"] = true;
-  return { verb: "meme-list", args: out };
-}
-
-/** The meme body: `--file`, else the whole of stdin. */
-async function readBody(args: ParsedArgs): Promise<string> {
-  const file = args.options["file"];
-  if (typeof file === "string" && file) return readFileSync(file, "utf8");
-  if (stdin.isTTY) throw new UsageError("no meme text: pass --file <path> or pipe the meme on stdin");
-  const chunks: Buffer[] = [];
-  for await (const chunk of stdin) chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
-  return Buffer.concat(chunks).toString("utf8");
-}
 
 /**
  * The seat law for `project` — decided from the argument shape alone, with no daemon in reach.
@@ -192,7 +148,7 @@ async function readBody(args: ParsedArgs): Promise<string> {
  */
 export function projectPlan(args: ParsedArgs): ProjectPlan {
   const source = args.positional[1];
-  if (!source) throw new UsageError("a source is required: a file, or a lar: uri");
+  if (!source) throw new UsageError("the verb needs a source: a file, or a lar: uri");
   const to = typeof args.options["to"] === "string" ? args.options["to"].trim() : "";
   if (!(PROJECT_TARGETS as readonly string[]).includes(to)) {
     throw new UsageError(`--to names the target, one of ${PROJECT_TARGETS.join(" · ")}${to ? ` (got "${to}")` : ""}`);
@@ -217,10 +173,6 @@ export async function cmdMeme(args: ParsedArgs): Promise<number> {
   }
   try {
     switch (sub as Sub) {
-      case "put":       return await memePut(args);
-      case "get":       return await memeGet(args);
-      case "list":      return await memeList(args);
-      case "delete":    return await memeDelete(args);
       case "normalize": return normalizeFiles(args, true);
       case "check":     return checkFiles(args);
       case "sitting":   return surveySitting(namedFiles(args, "sitting"));
@@ -236,8 +188,9 @@ export async function cmdMeme(args: ParsedArgs): Promise<number> {
     }
     if (err instanceof UsageError) {
       const msg = err.message;
-      const code = msg.startsWith("face-not-routed:") ? "face-not-routed" : "usage";
-      emit(args, { ok: false, error: { code, message: msg }, human: () => console.error(`lares meme ${sub}: ${msg}`) });
+      const code = msg.startsWith("face-malformed:") ? "face-malformed" : "usage";
+      // A usage refusal ends with the door's own lines, so the cure sits under the fault (help-is-the-refusal).
+      emit(args, { ok: false, error: { code, message: msg }, human: () => { console.error(`lares meme ${sub}: ${msg}`); if (code === "usage") for (const line of helpLines(helpDoor("meme", args.positional))) console.error(line); } });
       return exitFor("usage");
     }
     // M3: a LOCAL WAIT ENDING (LocalWaitExpired, including the vessel's own folded-in
@@ -265,162 +218,16 @@ export async function cmdMeme(args: ParsedArgs): Promise<number> {
   }
 }
 
-async function memePut(args: ParsedArgs): Promise<number> {
-  const plan = memePlan("put", args);
-  const text = await readBody(args);
-  const result = await runVerb(plan.verb, { ...plan.args, text }, await vesselDid());
-  const outcome = readVerbOutcome(result);
-  if (!outcome.ok) {
-    const code = /cap-denied/.test(outcome.error ?? "") ? "cap-denied" : "verb-error";
-    emit(args, { ok: false, requestId: result.requestId, error: { code, message: outcome.error ?? "the verb refused" }, human: () => console.error(`lares meme put: ${outcome.error}`) });
-    return exitFor(code);
+/** The public family spellings now enter through the tiddler door; keep the handlers for that door. */
+export async function cmdMemeSurface(args: ParsedArgs): Promise<number> {
+  const sub = args.positional[0];
+  if (sub === "put" || sub === "patch" || sub === "list" || sub === "delete") {
+    const moved = sub === "list" ? "tiddler get --meme" : `tiddler ${sub === "patch" ? "put" : sub} <uri> --meme`;
+    const message = `meme ${sub} moved to lares ${moved}`;
+    emit(args, { ok: false, error: { code: "usage", message }, human: () => console.error(message) });
+    return exitFor("usage");
   }
-  const receipt = outcome.output;
-  const decision = String(receipt["decision"] ?? "");
-  const landed = Array.isArray(receipt["landed"]) ? (receipt["landed"] as string[]) : [];
-  const tombstoned = Array.isArray(receipt["tombstoned"]) ? (receipt["tombstoned"] as string[]) : [];
-  const warnings = Array.isArray(receipt["warnings"]) ? (receipt["warnings"] as string[]) : [];
-  const ok = decision === "ingest" || decision === "noop";
-  const code = ok ? "ok" : decision === "conflict" ? "conflict" : "verb-error";
-  emit(args, {
-    ok,
-    requestId: result.requestId,
-    data: receipt,
-    ...(ok ? {} : { error: { code, message: `${decision}: ${warnings[0] ?? receipt["reason"] ?? plan.args["uri"]}` } }),
-    human: () => {
-      console.log(`${decision}: ${plan.args["uri"]}`);
-      if (decision === "ingest") console.log(`  landed ${landed.length} · tombstoned ${tombstoned.length}`);
-      // THE ANSWER NAMES THE LAYER: a face that holds no writer's seat in the wiki's workbench lands in its own personal layer.
-      if (typeof receipt["bag"] === "string") console.log(receipt["layer"] === "personal"
-        ? `  in ${receipt["bag"]} (your personal layer: this face holds no writer's seat in the wiki's workbench; \`lares meme offer\` carries a record from here)`
-        : `  in ${receipt["bag"]}`);
-      if (decision === "noop" && receipt["reason"]) console.log(`  ${receipt["reason"]}`);
-      for (const w of warnings) console.log(`  ! ${w}`);
-      if (receipt["canonicalHash"]) console.log(`  base: ${receipt["canonicalHash"]}`);
-    },
-  });
-  return exitFor(code);
-}
-
-async function memeGet(args: ParsedArgs): Promise<number> {
-  const plan = memePlan("get", args);
-  const result = await runVerb(plan.verb, plan.args, await vesselDid());
-  const outcome = readVerbOutcome(result);
-  if (!outcome.ok) {
-    const code = /cap-denied/.test(outcome.error ?? "") ? "cap-denied" : "verb-error";
-    emit(args, { ok: false, requestId: result.requestId, error: { code, message: outcome.error ?? "the verb refused" }, human: () => console.error(`lares meme get: ${outcome.error}`) });
-    return exitFor(code);
-  }
-  const meme = outcome.output["meme"] as { text: string; canonicalHash: string } | null | undefined;
-  const fromFloor = outcome.output["floor"] === true;
-  if (!meme) {
-    emit(args, { ok: false, requestId: result.requestId, error: { code: "not-found", message: `no meme at ${plan.args["uri"]}` }, human: () => console.error(`lares meme get: no meme at ${plan.args["uri"]}`) });
-    return exitFor("not-found");
-  }
-  emit(args, {
-    ok: true,
-    requestId: result.requestId,
-    // `floor`: the bag's floor snapshot answered (this face holds no read on the live house canon document).
-    data: { uri: plan.args["uri"], text: meme.text, canonicalHash: meme.canonicalHash, ...(fromFloor ? { floor: true } : {}) },
-    // The text alone reaches stdout on a terminal, or under `--no-json`: a redirect leaves stdout no terminal, where the answer
-    // is JSON, so `lares meme get <uri> --recipe <slug> --no-json > file` carries the meme. The base rides stderr.
-    human: () => { stdout.write(meme.text); console.error(`base: ${meme.canonicalHash}`); if (fromFloor) console.error(FLOOR_READ_NOTE); },
-  });
-  return 0;
-}
-
-/** One listed root, as the verb answers it. */
-interface ListedRoot { uri: string; canonicalHash: string; bag?: string; floor?: boolean; slots?: ListedSlot[] }
-
-/** The line a read prints on stderr where a house canon bag's floor snapshot answered it. */
-const FLOOR_READ_NOTE = "read from the floor snapshot: this face holds no read on the live house canon document (the Kahu steward's face reads it live)";
-interface ListedSlot { slot: string; uri: string; slots: ListedSlot[] }
-
-/**
- * THE LISTING ARRIVES IN PAGES. One outcome carries a bounded number of rows, so the verb answers a page
- * and names the cursor of the next (`next`); this door hands each cursor back as `after` until none
- * remains, and a person reads every root. An answer whose `roots` holds no array (an outcome that carried
- * a count where the rows belong) refuses by name: an empty listing over a full seat would state a thing
- * nobody measured. A cursor that fails to advance refuses the same way.
- */
-async function memeList(args: ParsedArgs): Promise<number> {
-  const plan = listPlan(args);
-  const did = await vesselDid();
-  const roots: ListedRoot[] = [];
-  let head: Record<string, unknown> = {};
-  let requestId = "";
-  const refuse = (code: "cap-denied" | "verb-error", message: string): number => {
-    emit(args, { ok: false, requestId, error: { code, message }, human: () => console.error(`lares meme list: ${message}`) });
-    return exitFor(code);
-  };
-  for (let after: string | null = null; ;) {
-    const result = await runVerb(plan.verb, after === null ? plan.args : { ...plan.args, after }, did);
-    requestId = result.requestId;
-    const outcome = readVerbOutcome(result);
-    if (!outcome.ok) return refuse(/cap-denied/.test(outcome.error ?? "") ? "cap-denied" : "verb-error", outcome.error ?? "the verb refused");
-    const page = outcome.output["roots"];
-    if (!Array.isArray(page)) {
-      const count = (page as { boundedArrayCount?: unknown } | null | undefined)?.boundedArrayCount;
-      return refuse("verb-error", typeof count === "number"
-        ? `the listing arrived as a count of ${count} roots and named none of them; this vessel answers an unpaged listing`
-        : "the listing named no roots array");
-    }
-    roots.push(...(page as ListedRoot[]));
-    if (after === null) head = outcome.output;
-    const next = outcome.output["next"];
-    if (typeof next !== "string" || next === "") break;
-    if (after !== null && next <= after) return refuse("verb-error", `the listing's cursor stood still at ${next}`);
-    after = next;
-  }
-  const slotLines = (slots: ListedSlot[] | undefined, depth: number): void => {
-    for (const s of slots ?? []) { console.log(`${"  ".repeat(depth)}${s.slot}`); slotLines(s.slots, depth + 1); }
-  };
-  // The seat as the verb named it: one bag, or a recipe with the bags its stack read and any it could not reach.
-  const seat: Record<string, unknown> = {};
-  for (const key of ["bag", "floor", "recipe", "bags", "unreached"]) if (head[key] !== undefined) seat[key] = head[key];
-  const unreached = Array.isArray(head["unreached"]) ? (head["unreached"] as string[]) : [];
-  emit(args, {
-    ok: true,
-    requestId,
-    data: { ...seat, roots },
-    // One root per line — the base first so a shell reads it, the uri after; slots indent beneath.
-    human: () => {
-      for (const r of roots) { console.log(`${r.canonicalHash}  ${r.uri}`); slotLines(r.slots, 1); }
-      for (const bag of unreached) console.error(`lares meme list: ${bag} stands unreached; its roots stay unlisted`);
-      if (head["floor"] === true || roots.some((r) => r.floor === true)) console.error(FLOOR_READ_NOTE);
-    },
-  });
-  return 0;
-}
-
-async function memeDelete(args: ParsedArgs): Promise<number> {
-  const plan = memePlan("delete", args);
-  const result = await runVerb(plan.verb, plan.args, await vesselDid());
-  const outcome = readVerbOutcome(result);
-  if (!outcome.ok) {
-    const code = /cap-denied/.test(outcome.error ?? "") ? "cap-denied" : "verb-error";
-    emit(args, { ok: false, requestId: result.requestId, error: { code, message: outcome.error ?? "the verb refused" }, human: () => console.error(`lares meme delete: ${outcome.error}`) });
-    return exitFor(code);
-  }
-  const receipt = outcome.output;
-  const decision = String(receipt["decision"] ?? "");
-  const tombstoned = Array.isArray(receipt["tombstoned"]) ? (receipt["tombstoned"] as string[]) : [];
-  const code = decision === "removed" ? "ok" : decision === "conflict" ? "conflict" : decision === "absent" ? "not-found" : "verb-error";
-  const message = decision === "conflict" ? `conflict: the records moved past ${plan.args["base"] ?? "the base"} — read again and hand back the live hash`
-                : decision === "absent" ? `no meme at ${plan.args["uri"]}` : `${decision}: ${plan.args["uri"]}`;
-  emit(args, {
-    ok: code === "ok",
-    requestId: result.requestId,
-    data: receipt,
-    ...(code === "ok" ? {} : { error: { code, message } }),
-    human: () => {
-      if (code !== "ok") { console.error(`lares meme delete: ${message}`); return; }
-      console.log(`removed: ${plan.args["uri"]}`);
-      console.log(`  tombstoned ${tombstoned.length}`);
-      if (receipt["canonicalHash"]) console.log(`  base: ${receipt["canonicalHash"]}`);
-    },
-  });
-  return exitFor(code);
+  return cmdMeme(args);
 }
 
 // ── the local laws: normalize · check ──────────────────────────────────────────────────────────
@@ -458,10 +265,24 @@ function checkFiles(args: ParsedArgs): number {
   const sitting = reading("sitting");
   const ate = [gradient.ate, edges.ate, sitting.ate].filter((f): f is string => typeof f === "string");
   const files = [...(ate.length > 0 ? args.positional.slice(1) : namedFiles(args, "check")), ...ate];
+  const problems = problemsFormat(args);
+  if (problems && (gradient.on || edges.on || sitting.on)) {
+    throw new UsageError("lares meme check --format=problems reads the normalize law alone — drop --gradient, --edges and --sitting");
+  }
   if (gradient.on) return surveyGradient(files);
   if (edges.on) return surveyEdges(files);
   if (sitting.on) return surveySitting(files);
-  return normalizeFiles(args, false);
+  return normalizeFiles(args, false, problems);
+}
+
+/**
+ * `--format=problems`: one `path:line:col: severity: code: message` line per diagnostic, the shape a
+ * `tasks.json` problem matcher reads (lar:///ha.ka.ba/lares/cli/problems). Absent, the human report.
+ */
+function problemsFormat(args: ParsedArgs): boolean {
+  if (!("format" in args.options) && !("format" in args.flags)) return false;
+  if (args.options["format"] === "problems") return true;
+  throw new UsageError("lares meme check --format=problems — `problems` names the one format this door reads");
 }
 
 /**
@@ -476,8 +297,20 @@ function checkFiles(args: ParsedArgs): number {
  * success. A dirty carrier nobody named reads two ways — yours and forgotten, or nobody's — and this
  * door cannot tell which. So it NAMES them and carries on: a warning a caller can weigh, never a
  * refusal that would block a legitimate partial sweep.
+ *
+ * ── `problems` SPEAKS THE SAME READING IN THE MATCHER'S SHAPE ──────────────────────────────────
+ * Read alone with `--format=problems`, every human line falls silent and each diagnostic prints once as
+ * `path:line:col: severity: code: message` (problems.ts), the exit unchanged. The unnamed-dirty reading
+ * names files nobody named, so it stays in the human report alone.
  */
-function normalizeFiles(args: ParsedArgs, write: boolean): number {
+function normalizeFiles(args: ParsedArgs, write: boolean, problems = false): number {
+  if (write && ("format" in args.options || "format" in args.flags)) {
+    throw new UsageError("lares meme normalize takes no --format — `lares meme check --format=problems` reads the law alone");
+  }
+  const say = problems ? (_line: string): void => {} : (line: string): void => console.log(line);
+  const report = (f: string, src: string, offset: number | null, severity: ProblemSeverity, code: string, message: string): void => {
+    if (problems) console.log(problemLine(f, src, offset, severity, code, message));
+  };
   // `--grammar` applies GRAMMAR-authority clauses (authored bytes — e.g. a call site's `:` vs `=`
   // separator) alongside the FRAME clauses that always apply. Default: grammar clauses are
   // PROPOSED, named per site, and move no byte — parse-args eats a following bare token as the
@@ -494,8 +327,10 @@ function normalizeFiles(args: ParsedArgs, write: boolean): number {
   let faulted = 0;
 
   // Named under BOTH seats: the read-alone run is the one a caller reads before deciding to stamp.
+  // The problems shape reads the named files alone, so it never asks git (whose refusal outside a tree
+  // would otherwise reach the matcher's stream).
   let unnamed: string[] = [];
-  try {
+  if (!problems) try {
     const dirty = String(execFileSync("git", ["diff", "--name-only", "--", "*.mem"], { encoding: "utf8" }))
       .split("\n").filter(Boolean);
     unnamed = dirty.filter((d: string) => !files.some((p) => p.endsWith(d) || d.endsWith(p)));
@@ -508,8 +343,9 @@ function normalizeFiles(args: ParsedArgs, write: boolean): number {
     // stage law below still reads whatever meta it declares.
     const frame = memeticVerdict(src);   // the house verdict: torn where the frame's meta read and TOML's part
     if (frame.kind === "bare") {
-      console.log(`bare: ${f}`);
-      console.log("  ⚠ bare data — no frame stands (no head, no STX/ETX, no release); not a meme. WARNING: UNSTABLE");
+      say(`bare: ${f}`);
+      say("  ⚠ bare data — no frame stands (no head, no STX/ETX, no release); not a meme. WARNING: UNSTABLE");
+      report(f, src, null, "warning", "bare", "bare data — no frame stands (no head, no STX/ETX, no release); not a meme. WARNING: UNSTABLE");
     }
     const res = frame.kind === "bare"
       ? { text: src, changed: false, notes: [], flags: [], grammarChanged: false, grammarNotes: [], faults: [] }
@@ -521,16 +357,22 @@ function normalizeFiles(args: ParsedArgs, write: boolean): number {
     // wording) from the clause itself.
     if (res.grammarChanged) {
       grammarDrifted++;
-      console.log(`${grammar ? "grammar applied" : "grammar preference"}: ${f}`);
-      for (const gn of res.grammarNotes) console.log(`  ~ ${gn}`);
+      say(`${grammar ? "grammar applied" : "grammar preference"}: ${f}`);
+      for (const gn of res.grammarNotes) {
+        say(`  ~ ${gn}`);
+        report(f, src, null, "info", "grammar", gn);
+      }
     }
 
     // Flags surface whether or not the carrier rewrote — advisory triage the law will NOT auto-fix
     // (e.g. a register value off the band ladder).
     if (res.flags.length > 0) {
       flagged++;
-      console.log(`flagged: ${f}`);
-      for (const fl of res.flags) console.log(`  ⚠ ${fl}`);
+      say(`flagged: ${f}`);
+      for (const fl of res.flags) {
+        say(`  ⚠ ${fl}`);
+        report(f, src, null, "warning", "flag", fl);
+      }
     }
 
     // THE STAGE LAW BINDS ONLY WHERE THE TAG STANDS. An untagged carrier — law, record, reference,
@@ -540,8 +382,11 @@ function normalizeFiles(args: ParsedArgs, write: boolean): number {
     const stage = checkCarrierLifecycle(src);
     if (stage.length > 0) {
       faulted++;
-      console.log(`stage: ${f}`);
-      for (const fault of stage) console.log(`  ✗ ${fault}`);
+      say(`stage: ${f}`);
+      for (const fault of stage) {
+        say(`  ✗ ${fault}`);
+        report(f, src, null, "error", "stage", fault);
+      }
     }
 
     // THE CHECK COVERS THE BODY, SO IT IS PART OF BEING CANONICAL. Framing rides inside the checked
@@ -559,18 +404,24 @@ function normalizeFiles(args: ParsedArgs, write: boolean): number {
     // whose meaning normalize cannot choose — reads non-canonical on both seats and stamps nothing.
     if (res.faults.length > 0) {
       faulted++;
-      console.log(`fault: ${f}`);
-      for (const fault of res.faults) console.log(`  ✗ ${fault.code}: ${fault.message}`);
+      say(`fault: ${f}`);
+      const keyAt = duplicateKeyOffsets(src);
+      res.faults.forEach((fault, i) => {
+        say(`  ✗ ${fault.code}: ${fault.message}`);
+        report(f, src, keyAt.length === res.faults.length ? keyAt[i]! : null, "error", fault.code, fault.message);
+      });
       continue;
     }
 
     if (frame.kind === "torn") {
       faulted++;
-      console.log(`torn: ${f}`);
+      say(`torn: ${f}`);
       for (const fault of frame.faults) {
-        console.log(fault.kind === "no-etx"
-          ? "  ✗ the frame opens and never closes — no block check can cover an unbounded span; close the frame by hand"
-          : `  ✗ ${fault.message}`);
+        const message = fault.kind === "no-etx"
+          ? "the frame opens and never closes — no block check can cover an unbounded span; close the frame by hand"
+          : fault.message;
+        say(`  ✗ ${message}`);
+        report(f, src, frameFaultOffset(src, fault), "error", fault.kind, message);
       }
       continue;
     }
@@ -579,8 +430,10 @@ function normalizeFiles(args: ParsedArgs, write: boolean): number {
     // the sealed root meta never names — a reading named aloud on both seats, never a fault: no gesture
     // can choose the address the meta should have sealed.
     if (frame.kind === "head-unbound") {
-      console.log(`head-unbound: ${f}`);
-      console.log(`  ⚠ the head names ${frame.unbound.map((e) => `\`${e}=\``).join(" and ")} where the sealed root meta names none — the block check never reaches it; seal a \`title\`${frame.unbound.includes("namespace") ? " and `namespace`" : ""} in the root meta`);
+      say(`head-unbound: ${f}`);
+      const message = `the head names ${frame.unbound.map((e) => `\`${e}=\``).join(" and ")} where the sealed root meta names none — the block check never reaches it; seal a \`title\`${frame.unbound.includes("namespace") ? " and `namespace`" : ""} in the root meta`;
+      say(`  ⚠ ${message}`);
+      report(f, src, headOffset(src), "warning", "head-unbound", message);
     }
 
     // EOT closes the carrier. Bytes after it are outside every recoverable frame boundary and may
@@ -590,8 +443,9 @@ function normalizeFiles(args: ParsedArgs, write: boolean): number {
     const afterEot = classifyPostEot(res.text);
     if (afterEot?.kind === "foreign") {
       faulted++;
-      console.log(`boundary: ${f}`);
-      console.log("  ✗ content follows the terminating EOT mark — separate the carrier by hand; normalization refused to guess");
+      say(`boundary: ${f}`);
+      say("  ✗ content follows the terminating EOT mark — separate the carrier by hand; normalization refused to guess");
+      report(f, src, postEotOffset(src), "error", "post-eot", "content follows the terminating EOT mark — separate the carrier by hand; normalization refused to guess");
       continue;
     }
 
@@ -603,32 +457,42 @@ function normalizeFiles(args: ParsedArgs, write: boolean): number {
 
     if (write) {
       writeFileSync(isAbsolute(f) ? f : join(process.cwd(), f), stamped);
-      console.log(`normalized: ${f}`);
+      say(`normalized: ${f}`);
     } else {
-      console.log(`would normalize: ${f}`);
+      say(`would normalize: ${f}`);
     }
-    for (const n of res.notes) console.log(`  - ${n}`);
+    for (const n of res.notes) {
+      say(`  - ${n}`);
+      report(f, src, null, "error", "drift", `${n} — \`lares meme normalize\` applies it`);
+    }
     if (stamped !== res.text) {
       // MINTED and RE-STAMPED are different facts, and a reader owes the difference: one carrier held a
       // stale check, the other held none at all.
       const act = standing === "unchecked"
         ? (write ? "minted over the body it follows" : "would mint over the body it follows")
         : (write ? "re-stamped over the body it follows" : "would re-stamp over the body it follows");
-      console.log(`  - block check ${act}`);
-      if (frame.kind === "stale") console.log(`  - stale: stored ${frame.stored} · computed ${frame.computed}`);
+      say(`  - block check ${act}`);
+      if (frame.kind === "stale") say(`  - stale: stored ${frame.stored} · computed ${frame.computed}`);
+      if (frame.kind === "stale") {
+        report(f, src, bccOffset(src), "error", "stale-bcc", `the block check covers other bytes — stored ${frame.stored} · computed ${frame.computed}; \`lares meme normalize\` re-stamps it`);
+      } else if (standing === "unchecked") {
+        report(f, src, null, "error", "unchecked", "the frame holds no block check — `lares meme normalize` mints one over the body it follows");
+      } else {
+        report(f, src, bccOffset(src), "error", "restamp", "the block check would re-stamp over the body normalize leaves — `lares meme normalize` applies both");
+      }
     }
   }
 
   if (unnamed.length > 0) {
-    console.log("\n  ⚠ dirty and NOT named on this run — read each before stamping it:");
-    for (const u of unnamed) console.log(`      ${u}`);
+    say("\n  ⚠ dirty and NOT named on this run — read each before stamping it:");
+    for (const u of unnamed) say(`      ${u}`);
   }
 
   const tail = (flagged > 0 ? ` (${flagged} flagged for triage)` : "")
     + (faulted > 0 ? ` (${faulted} standing off its declared stage)` : "")
     + (grammarDrifted > 0 ? ` (${grammarDrifted} carrying a grammar preference${grammar ? "" : " — rerun with --grammar to apply"})` : "");
   if (drifted === 0) {
-    console.log(faulted === 0
+    say(faulted === 0
       ? `all ${files.length} carrier(s) canonical.${tail}`
       : `no carrier(s) normalized; ${faulted} boundary/stage fault(s) remain.${tail}`);
     // A STAGE FAULT FAILS THE READ-ALONE SEAT even where every byte reads canonical — the two say
@@ -638,7 +502,7 @@ function normalizeFiles(args: ParsedArgs, write: boolean): number {
     // never trips a CI gate or pre-commit hook forever.
     return faulted === 0 ? 0 : 1;
   }
-  console.log(`${drifted} of ${files.length} carrier(s) drifted.${tail}`);
+  say(`${drifted} of ${files.length} carrier(s) drifted.${tail}`);
   // Read alone, FRAME drift fails loud so a CI gate or pre-commit hook catches un-normalized
   // carriers. Flags stay advisory (needs-triage); GRAMMAR drift is a preference, never a gate
   // failure — `drifted` above counts only FRAME-authority changes (frame clauses + the block-check
@@ -705,15 +569,14 @@ function surveyEdges(files: string[]): number {
   }
 
   const dangling = new Map<string, { form: string; from: string[] }>();
-  let total = 0, unaddressed = 0;
+  let total = 0;
+  let workbench = 0;
   for (const [f, src] of texts) {
     for (const e of readCarrierEdges(src)) {
       total++;
-      // AN EDGE WITH NO ADDRESS NAMES A FILE, not a carrier. It cannot dangle, because it never
-      // pointed at an address to begin with — it is counted apart so a sweep can find the class
-      // without a resolver guessing which carrier a file became.
-      if (e.address === null) { unaddressed++; continue; }
       if (held.has(e.address)) continue;
+      // The founding road lives in the shared `kahu` workbench, outside the corpus: it answers there, never in `bags/`.
+      if (homedInTheKahuWorkbench(e.address)) { workbench++; continue; }
       const seen = dangling.get(e.address) ?? { form: e.form, from: [] };
       seen.from.push(f);
       dangling.set(e.address, seen);
@@ -727,8 +590,7 @@ function surveyEdges(files: string[]): number {
     if (from.length > 3) console.log(`     … and ${from.length - 3} more`);
   }
   const n = [...dangling.values()].reduce((a, d) => a + d.from.length, 0);
-  const tail = unaddressed > 0 ? ` · ${unaddressed} naming a FILE rather than an address` : "";
-  console.log(`edges: ${files.length} carrier(s) read · ${held.size} address(es) held · ${total} edge(s) · ${n} naming nothing${tail}`);
+  console.log(`edges: ${files.length} carrier(s) read · ${held.size} address(es) held · ${total} edge(s) · ${workbench} homed in the kahu workbench · ${n} naming nothing`);
   return n === 0 ? 0 : 1;
 }
 
@@ -766,7 +628,6 @@ function surveySitting(files: string[]): number {
   const inbound = new Map<string, string[]>();
   for (const [f, src] of texts) {
     for (const e of readCarrierEdges(src)) {
-      if (e.address === null) continue;
       // A carrier naming ITSELF is not a reader holding it.
       if (addressOf.get(f) === e.address) continue;
       (inbound.get(e.address) ?? inbound.set(e.address, []).get(e.address)!).push(f);
@@ -825,19 +686,8 @@ async function memeProject(args: ParsedArgs): Promise<number> {
     return exitFor(code);
   }
   const text = String(outcome.output["text"] ?? "");
-  // ── THE COMPOSITION READING, AT THE ONE PLACE A HUMAN STANDS WAITING ──────────────────────────────
-  //
-  // A `mem` projection RENDERS A CARRIER — the composed one, the join `expandRefs` makes out of a root
-  // and its slot children. That join is where a whole class of fault comes into being and nowhere else:
-  // the child's bytes read as a legal carrier, the root's bytes read as a legal carrier, and the two
-  // together carry TWO text frames where only the first verifies. A guest's paste GRADES CLEAN at every
-  // content instrument in the tree (`child-grade-decision.mem` #/measured row 11) and the shape reading
-  // catches it (row 13) — the `--gradient` survey carries the same reading.
-  // So the cost routed from the actor's present to a stranger's future: four months on, a reader on
-  // another peer meets a carrier with two heads and no author left to ask.
-  //
-  // Projection is where a human waits on a command they just typed, so this is where the reading lands.
-  const shape = plan.to === "mem" ? readCarrierShape(text) : null;
+  // A `mem` projection left this verb: the composed carrier reads through the one door (`lares tiddler get <uri> --meme
+  // --all`), and the composition reading (`readCarrierShape`) rides that read, the one place a human waits on a carrier.
   const out = typeof args.options["out"] === "string" ? args.options["out"] : "";
   if (out) writeFileSync(out, text, "utf8");
   // THE SIDECAR PAIR IS A CARRIER IN TWO FILES: an `md` projection rides its `.meta` in the reply, and it
@@ -853,56 +703,13 @@ async function memeProject(args: ParsedArgs): Promise<number> {
       uri, to: plan.to, contentType: outcome.output["contentType"],
       ...(out ? { out, ...(typeof meta === "string" ? { outMeta: `${out}.meta` } : {}) } : { text }),
       ...(typeof meta === "string" ? { meta } : {}),
-      // The reading rides the machine channel whole — carrier status AND faults — so an agent reads the same
-      // verdict a person does. Absent for every target whose render is not a carrier: an html page has
-      // no carrier shape, and inventing one would be a reading over bytes the question does not fit.
-      ...(shape ? { shape: { check: shape.marks.check, faults: shape.faults } } : {}),
     },
     // The rendered text alone reaches stdout, so `lares meme project <uri> --recipe <slug> --to html > file` carries it.
-    // THE READING GOES TO STDERR, and that placement is load-bearing: stdout is the operator's artifact
-    // — the redirect they typed — and a verdict written into it would corrupt the very carrier it warns
-    // about. The two streams are the two facts.
     human: () => {
       if (out) console.log(`projected ${uri} -> ${out} (${plan.to})`); else stdout.write(text);
-      if (!shape || shape.faults.length === 0) return;
-      console.error(`\n⚠ the composed carrier stands below its full floor (check ${shape.marks.check}):`);
-      for (const fault of shape.faults) console.error(`  ⚠ ${fault}`);
-      console.error("  the bytes above are what the island composed — read the fault before you carry them anywhere.");
     },
   });
-  // ── REPORT, NEVER REFUSE — and the doctrine that decided it ────────────────────────────────────────
-  //
-  // THREE STANDING RULINGS point one way, and none of them is close.
-  //
-  //   · WRITE-OPEN, READ-CERTIFIED (`child-grade-decision.mem` #/standing-law, on `handle-card.mem`
-  //     #/public-by-design): let the act land, and carry the verdict on the read. The precedent is the
-  //     announce board, which admits any nym's card and certifies nothing at write.
-  //   · THE DIAGNOSTICS LADDER (`diagnostics.ts:38-46`): `error` names the one fault that costs the
-  //     operator their bytes, and every recovery grades below the line BECAUSE refusing a recovery would
-  //     drop bytes to protect the grammar. Exactly two faults reach `error`, and a composition fault is
-  //     neither. A projection that withheld a render would be that forbidden drop, at a door whose whole
-  //     job is to hand over bytes.
-  //   · A CONFLICT SURFACES RATHER THAN ONE STREAM DROWNING ANOTHER, and auto-arbitration reads
-  //     anti-pono (talk-story conflict law). A door that refused here would ARBITRATE — deciding on its
-  //     own reading that the operator may not have the render they asked for — over a carrier whose
-  //     every byte an author wrote on purpose. Refusing is the move this house does not make.
-  //
-  // AND THE FAULT IS A COMPOSITION FAULT, WHICH MEANS THE CURE LIES ELSEWHERE. Two legal carriers joined into
-  // an illegal one: no byte of the projection is wrong, and nothing this door could refuse would repair
-  // the records behind it. Refusing would withhold the one artifact that SHOWS the operator the join.
-  //
-  // SO THE EXIT CODE CARRIES THE READING AND `ok` CARRIES THE ACT. The projection happened — `ok: true`,
-  // the text in the payload, the `--out` file on disk — and the exit says a reading faulted, so a hook,
-  // a CI gate or a script catches it without a human reading prose. Two facts, two channels, neither
-  // answering for the other.
-  //
-  // MY EXIT DISCIPLINE AGREES WITH `--gradient`, and the reported divergence does not reproduce:
-  // `meme check --gradient` over a faulted file exits 1, measured on the built binary. The "exits 0 while
-  // printing 1 carrier(s) below the full floor" reading came from `$?` after a pipe, which reports the
-  // LAST stage's status — the instrument lie, not a defect in the door. `surveySitting` keeps 0 by its own
-  // ruling (a candidate is a state, not a fault); a carrier below the full floor IS a fault, so it
-  // exits non-zero here exactly as it does there.
-  return shape && shape.faults.length > 0 ? 1 : 0;
+  return 0;
 }
 
 /**
@@ -1181,7 +988,7 @@ async function memePromote(args: ParsedArgs): Promise<number> {
       ok: false, error: { code, message: outcome.reason },
       human: () => {
         console.error(`lares meme promote: ${outcome.reason}`);
-        if (code === "cap-denied") console.error("  promotion-down is the kahu-cabal's act — nothing moved, and the carrier stands where it stood");
+        if (code === "cap-denied") console.error("  promotion-down belongs to the kahu-cabal's hand — nothing moved, and the carrier stands where it stood");
       },
     });
     return exitFor(code);
@@ -1202,7 +1009,7 @@ async function memePromote(args: ParsedArgs): Promise<number> {
 /**
  * THE OFFERING DOOR (offering#/the-canon-offer), four acts over the daemon's offer verbs:
  *   offer <lar:uri ...> --bag <slug>      `offer-make`: the lit face offers records from its working layer toward a house-canon bag;
- *   offer list [--bag <slug>] [--all]     `offer-list`: the open offers (every one with --all), each record's freshness now;
+ *   offer show [--bag <slug>] [--all]     `offer-list`: the open offers (every one with --all), each record's freshness now;
  *   offer show <cid>                      `offer-show`: one offer's field diff against canon now;
  *   offer promote <cid> [--over-fresher]  `offer-promote`: the Kahu steward, on a vessel holding a charter seat, writes the offered bytes into canon and retires the offer.
  * A moved base WARNS ("canon is fresher") in every listing; only a promotion over it takes the explicit `--over-fresher`. A release
@@ -1211,14 +1018,16 @@ async function memePromote(args: ParsedArgs): Promise<number> {
 export function offerPlan(args: ParsedArgs): { readonly verb: "offer-make" | "offer-list" | "offer-show" | "offer-promote"; readonly args: Record<string, unknown> } {
   const act = args.positional[1];
   const bag = typeof args.options["bag"] === "string" ? args.options["bag"] : undefined;
-  if (act === "list") return { verb: "offer-list", args: { ...(bag !== undefined ? { bag } : {}), ...(args.flags["all"] === true ? { all: true } : {}) } };
+  if (act === "list") throw new UsageError("offer list moved to `offer show [<cid>]`");
   if (act === "show" || act === "promote") {
     const cid = args.positional[2];
+    if (act === "show" && !cid) return { verb: "offer-list", args: { ...(bag !== undefined ? { bag } : {}), ...(args.flags["all"] === true ? { all: true } : {}), ...(args.options["after"] ? { after: args.options["after"] } : {}), ...(args.options["limit"] ? { limit: Number(args.options["limit"]) } : {}) } };
+    if (act === "show" && (bag !== undefined || args.flags["all"] === true)) throw new UsageError("offer show <cid> refuses list filters --bag and --all");
     if (!cid || !/^[0-9a-f]{64}$/.test(cid)) throw new UsageError(`offer ${act} names one offer CID (64 hex)`);
     return act === "show" ? { verb: "offer-show", args: { cid } } : { verb: "offer-promote", args: { cid, ...(args.flags["over-fresher"] === true ? { overFresher: true } : {}) } };
   }
   const titles = args.positional.slice(1);
-  if (titles.length === 0 || titles.some((t) => !t.startsWith("lar:"))) throw new UsageError("offer names the lar: uris to offer, or one of list · show <cid> · promote <cid>");
+  if (titles.length === 0 || titles.some((t) => !t.startsWith("lar:"))) throw new UsageError("offer names the lar: uris to offer, or one of show [<cid>] · promote <cid>");
   if (bag === undefined) throw new UsageError("offer names the house-canon bag it offers toward (--bag <slug>)");
   return { verb: "offer-make", args: { bag, titles } };
 }
@@ -1306,15 +1115,16 @@ async function memeOffer(args: ParsedArgs): Promise<number> {
   emit(args, {
     ok: true, requestId: result.requestId, data: retire !== null ? { ...out, retire } : out,
     human: () => {
+      if ((plan.verb === "offer-list" || plan.verb === "offer-show") && typeof out["has"] === "string") console.log(out["has"]);
       if (plan.verb === "offer-make") {
         console.log(`offer → ${out["landed"] ? "OFFERED" : "HELD (the same offer already stands)"} ${out["cid"]}`);
         for (const r of (out["records"] as Array<{ title: string; base: string | null }>) ?? []) console.log(`  ${r.title}  ${r.base ? `base ${short(r.base)}` : "(a new title)"}`);
-        console.log("  canon stays unmoved; the Kahu steward reviews it (lares meme offer list) and promotes it");
+        console.log("  canon stays unmoved; the Kahu steward reviews it (lares meme offer show) and promotes it");
         return;
       }
       if (plan.verb === "offer-list") {
         const offers = (out["offers"] as OfferRow[]) ?? [];
-        if (offers.length === 0) console.log("offer list: no open offer on this Nexus's table");
+        if (offers.length === 0) console.log("offer show: no open offer on this Nexus's table");
         for (const o of offers) {
           console.log(`${o.cid}  ${o.bag}  offerer ${short(o.offerer)}${o.retired ? "  (retired)" : ""}${o.fresher ? "  ⚠ canon is fresher" : ""}${o.refusedRetires?.length ? `  (${o.refusedRetires.length} retire-unauthorised ignored)` : ""}`);
           for (const r of o.records) console.log(`  ${r.freshness === "canon-is-fresher" ? "⚠ canon is fresher" : r.freshness}  ${r.title}`);

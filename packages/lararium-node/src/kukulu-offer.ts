@@ -12,9 +12,8 @@
  *              pūlama lands each where it verifies under its own face's hand
  *   unstrung   each unstringing that rests for one of those lei, so a lei the hand ended reaches the pūlama ended
  *   vouch      one vouch per face: this vessel's signature, under the custody root's vouch child, over that face's group,
- *              the branch, the head and the tree it derived, the image digest the host named, and the verdict of the
- *              receipt standing for that tree. A face with no lei on its line still rides its vouch, and waits at the pūlama
- *              by name (`swarm-lei-absent`) while the other faces' lend stands.
+ *              the branch, the head and the tree it derived, and the image digest the host named. A face with no lei
+ *              on its line still rides its vouch, and waits at the pūlama by name (`swarm-lei-absent`) while the other faces' lend stands.
  *
  * ── NOTHING SECRET RESTS IN THE FILE ────────────────────────────────────────────────────────────
  * Each part holds a signed record or a public digest. The file lands whole (a sibling temp, then a rename), owner-only.
@@ -31,7 +30,7 @@
 import { closeSync, fsyncSync, mkdirSync, openSync, renameSync, rmSync, writeSync } from "node:fs";
 import { dirname, join } from "node:path";
 import {
-  SwarmRefused, kukuluVouchDigest, readLeiChain, signKukuluVouch, swarmLeiUnstrungTitle, swarmReceiptTitle, verifySwarmRecord,
+  SwarmRefused, kukuluVouchDigest, readLeiChain, signKukuluVouch, swarmLeiUnstrungTitle,
   type SignedKukuluVouch, type SignedSwarmAct, type SwarmTrust, type SwarmWikiPort, type WardActWitness,
 } from "@lararium/mesh";
 import type { CustodyHolder } from "./custody-holder.js";
@@ -48,14 +47,15 @@ export interface KukuluOffer { readonly lei: readonly SignedSwarmAct[]; readonly
  * One face the offer asks lent: its group, the trust its own hand's records verify under, its ward witness, and the name the
  * answer gives it (`h<ordinal>`; its group where the caller names none).
  */
-export interface KukuluOfferFace { readonly group: string; readonly trust: SwarmTrust; readonly ward: WardActWitness; readonly name?: string }
+export interface KukuluOfferFace { readonly group: string; readonly trust: SwarmTrust; readonly ward: WardActWitness; readonly name?: string;
+  /** The devices this face holds, as this vessel read its signed admission fold; absent where it read none. */
+  readonly devices?: number }
 
 const IMAGE_DIGEST = /^[a-z0-9]+:[0-9a-f]{32,128}$/;
 
 /**
  * Gather the offer for one line and rest it at `path`. Refuses by name, writing nothing: `rite-offer-malformed` (an image
- * that reads as no digest), `swarm-lei-absent` (no kukulu lei rests on any face's line), `rite-offer-testimony-absent` (no
- * receipt stands for the head's tree under any face's group, so the vouches would carry no verdict).
+ * that reads as no digest), `swarm-lei-absent` (no kukulu lei rests on any face's line).
  */
 export async function writeKukuluOffer(a: {
   readonly wiki: SwarmWikiPort;
@@ -67,8 +67,11 @@ export async function writeKukuluOffer(a: {
   /** The holder whose custody root yields the vouch key: this vessel's seated one. */
   readonly holder: Pick<CustodyHolder, "derive">;
   readonly path: string;
+  /** THE KEEPER MOVE this rite carries (the keeper tally): the successor's announced key and the committed closure; each vouch
+   *  names them beside its face's device count, so the pūlama's vest proceeds only inside this rite. */
+  readonly keeper?: { readonly to: string; readonly next: string };
 }): Promise<{
-  readonly path: string; readonly vouch: readonly string[]; readonly lei: number; readonly verdict: "pass" | "fail";
+  readonly path: string; readonly vouch: readonly string[]; readonly lei: number;
   /** Every face the offer vouches for, by name, in the order asked. */
   readonly faces: readonly string[];
   /** The faces whose line carries no lei: each rides its vouch and waits at the pūlama by name. */
@@ -88,21 +91,17 @@ export async function writeKukuluOffer(a: {
     }
   }
   if (lei.length === 0) throw new SwarmRefused("swarm-lei-absent", `no kukulu lei rests for "${a.branch}" on any face's line, so this kūkulu wears none`);
-  // THE WALK'S RECEIPT rests at one title per tree, under the group of the face whose hand rested it.
-  const receiptTitle = swarmReceiptTitle(a.tree), receiptText = await a.wiki.read(receiptTitle);
-  const receipt = a.faces.map((face) => verifySwarmRecord(receiptText, receiptTitle, face.trust, face.group)).find((r) => r.ok && r.act.body.act === "receipt");
-  if (receipt === undefined || !receipt.ok || receipt.act.body.act !== "receipt") throw new SwarmRefused("rite-offer-testimony-absent", `no receipt stands for the tree of ${a.head}; a vouch carries the verdict of the walk it rests on`);
-  const verdict = receipt.act.body.verdict;
   const signer = await vouchSignerOf(a.holder);
   const vouch: SignedKukuluVouch[] = [];
-  for (const face of a.faces) vouch.push(await signKukuluVouch({ group: face.group, branch: a.branch, head: a.head, tree: a.tree, image: a.image, verdict, receipt: receipt.cid }, signer));
+  for (const face of a.faces) vouch.push(await signKukuluVouch({ group: face.group, branch: a.branch, head: a.head, tree: a.tree, image: a.image,
+    ...(a.keeper === undefined ? {} : { keeper: { to: a.keeper.to, next: a.keeper.next, devices: face.devices ?? 0 } }) }, signer));
   const offer: KukuluOffer = { lei, unstrung, vouch };
   mkdirSync(dirname(a.path), { recursive: true });
   const tmp = `${a.path}.${process.pid}.tmp`;
   const fd = openSync(tmp, "w", 0o600);
   try { writeSync(fd, JSON.stringify(offer)); fsyncSync(fd); } finally { closeSync(fd); }
   renameSync(tmp, a.path);
-  return { path: a.path, vouch: vouch.map((v) => kukuluVouchDigest(v)), lei: offer.lei.length, verdict, faces: a.faces.map(nameOf), waits };
+  return { path: a.path, vouch: vouch.map((v) => kukuluVouchDigest(v)), lei: offer.lei.length, faces: a.faces.map(nameOf), waits };
 }
 
 /** Remove a spent offer; answers whether a file went. A file that will not go stays, and the caller names it. */

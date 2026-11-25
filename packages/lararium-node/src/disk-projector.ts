@@ -85,14 +85,20 @@ import { KAPAE_EXT, kapaeShadowBody } from "./kapae-shadow.js";
 import { contentHash, syncedTreeKey, SyncedTree, type SyncedBase } from "./synced-tree.js";
 import { decideProjection } from "./projection-gate.js";
 import { MEME_EXT } from "@lararium/mesh/mirror-paths";
-import { isFaceScopedBag, KeyedReconcileGate, carrierHash, sha256HexBytesSync, digestsEqual, projectionWithheld, hasEffectRecordKind, type ProjectionClass } from "@lararium/mesh";
-import { ORIGINAL_TIDDLER_PATHS, parseProvenance, packOfMember } from "@lararium/mesh";
+import { watchStandoffs, isFaceScopedBag, KeyedReconcileGate, carrierHash, sha256HexBytesSync, digestsEqual, projectionWithheld, hasEffectRecordKind, type ProjectionClass } from "@lararium/mesh";
+import { ORIGINAL_TIDDLER_PATHS, parseProvenance, packOfMember, isEffectRecordUri } from "@lararium/mesh";
 import type { ReadinessMap, VesselJournal, LarTiddlerStore } from "@lararium/mesh";
 import type { TW5Engine, CarrierFile } from "@lararium/tw5";
 import { surfaceOrphanAlert, tendOrphanAlerts, wikiFamilyView } from "@lararium/tw5";
 import { familyRootOf, memeOrphanAlertTitle, orphansUnder, rootAddressOf, ORPHAN_FOLDER_SUFFIX } from "@lararium/mesh/family";
 import type { BagMirrorConfig } from "./bag-paths.js";
 import { atomicWriteFileSync } from "./fs-atomic.js";
+import type { BaseFromGit } from "./pool-head.js";
+import type { CarrierTracking } from "./checkout-carriers.js";
+
+/** The alert a carrier file git never tracked raises where the records dropped it and the file stays: one per path. */
+export const UNTRACKED_CARRIER_ALERT_PREFIX = "$:/temp/lares/alert/untracked-carrier/";
+export const untrackedCarrierAlertTitle = (path: string): string => `${UNTRACKED_CARRIER_ALERT_PREFIX}${path}`;
 
 /** The mode every projected file takes at creation: the operator alone reads the house's plaintext renders. */
 export const PROJECTION_FILE_MODE = 0o600;
@@ -273,6 +279,20 @@ export interface LarDiskProjectorOptions {
    */
   readonly syncedTree?: SyncedTree;
   /**
+   * HEAD'S WORDS WHERE NO SYNCED BASE STANDS (`facePoolHeads`, face-pools A5). A re-found clears the Synced tree; a face
+   * pool keeps its git history. For a carrier these records render and no base covers, HEAD's blob names the base: its
+   * bytes the disk side, its canonical render the records side. Read only for records this projector renders, so a
+   * record the house does not hold never gains a base. Absent → no history stands in for a base.
+   */
+  readonly baseFromGit?: BaseFromGit;
+  /**
+   * THE FILES A CHECKOUT NEVER TRACKED (`checkoutTracking`). Where the records drop a carrier whose file rests untracked
+   * in a canon-sourced tree, that file holds the only copy: it stays, and an alert names its path and the cure (commit
+   * it, or remove it by hand). A checkout git cannot read keeps the file too. The census reads the same port. Absent →
+   * no file reads as an owed commit.
+   */
+  readonly untrackedAt?: CarrierTracking;
+  /**
    * Vessel journal writer. When present, the projector appends one `bag-projected` entry per bag after
    * that bag's mirror first gains a carrier file on disk.
    */
@@ -433,6 +453,15 @@ export interface StandingStandoff extends StandoffEntry {
 
 export class LarDiskProjector {
   /**
+   * THE STAND-OFF KEEPER the island wires beside this projector (`standoff-drafts.ts`): the shore verb reads a carrier's
+   * drafts through it and a person's `keep-both` marks them kept. Null where no keeper stands (a bare projector).
+   */
+  standoffKeeper: import("./standoff-drafts.js").StandoffKeeper | null = null;
+
+  /** The ingest door's watch over this projector's stand-offs, while it runs. */
+  private unwatchStandoffs: (() => void) | null = null;
+
+  /**
    * URIs currently being written to disk.
    * File watcher MUST check writing.has(uri) before ingesting — skip own writes.
    */
@@ -477,6 +506,12 @@ export class LarDiskProjector {
   private readonly standoffs = new Map<string, StandoffEntry>();
   /** The standoff a person answered for each (bag, carrier), by the key they named. Read once, by the reconcile the answer starts. */
   private readonly answered = new Map<string, string>();
+  /**
+   * The records' render each `sides` standoff weighed, by (bag, carrier), beside the key it folded into. A text carrier
+   * with no sidecar alone: `lares shore take-disk` reads it (`standoffRender`) to merge the file and the records slot by
+   * slot against the base's words. Memory only, and it leaves with its standoff.
+   */
+  private readonly standoffRenders = new Map<string, { readonly standoff: string; readonly text: string }>();
   /** Every carrier whose file vanished from the path its base names, by (bag, carrier). Memory only: a boot's mount scan finds each anew. */
   private readonly pending = new Map<string, { readonly bagId: string; readonly uri: string; readonly path: string }>();
   /** The pending removals a person answered `restore` for. Read once, by the reconcile the answer starts. */
@@ -495,6 +530,8 @@ export class LarDiskProjector {
   private readonly readinessMap: ReadinessMap | undefined;
   private readonly debugJson: boolean;
   private readonly syncedTree: SyncedTree;
+  private readonly baseFromGit: BaseFromGit | undefined;
+  private readonly untrackedAt: CarrierTracking | undefined;
   private readonly documentOf: LarDiskProjectorOptions["documentOf"];
   private readonly journal: VesselJournal | undefined;
   private readonly onBagProjected: ((info: { bagId: string; path: string }) => void) | undefined;
@@ -525,6 +562,8 @@ export class LarDiskProjector {
     this.readinessMap = opts.readinessMap;
     this.debugJson    = opts.debugJson ?? false;
     this.syncedTree   = opts.syncedTree ?? new SyncedTree(null);
+    this.baseFromGit  = opts.baseFromGit;
+    this.untrackedAt  = opts.untrackedAt;
     this.journal      = opts.journal;
     this.onBagProjected = opts.onBagProjected;
     for (const entry of this.journal?.since() ?? []) {
@@ -546,6 +585,10 @@ export class LarDiskProjector {
    */
   start(tw5: TW5Engine): () => Promise<void> {
     this._tw5 = tw5;
+    // THE INGEST DOOR ASKS THIS SHORE whether a wave's carrier stands off (`standoff-watch`, @lararium/mesh): such a wave
+    // lands only from a person's line, while this projector runs.
+    this.unwatchStandoffs?.();
+    this.unwatchStandoffs = watchStandoffs((bagId, uri) => this.standing().find((s) => s.bagId === bagId && s.uri === uri)?.standoff ?? null);
     const wiki = tw5.$tw.wiki;
     // Group routing: a fragment record's change belongs to its carrier root.
     // Climb `$fragment-parent` one hop at a time (the field points one level
@@ -611,6 +654,15 @@ export class LarDiskProjector {
       scans.push(store.listVisible().then((titles) => {
         for (const title of titles) gate.mark(LarDiskProjector.rootOf(title));
       }));
+    }
+    // A KĀPAE STANDING IN A MIRROR'S BAG WRITES ITS SHADOW AT START. `listVisible` hides a tombstone, and a mirror root that
+    // stood up after the kāpae rose (a face's planes moving to `faces/<pet name>/`, a re-pour into a fresh root) never heard
+    // the change that wrote the shadow, so the bag's own tombstones mark their roots: each settles its shadow where it sites.
+    for (const mirror of this.mirrors) {
+      if (mirror.mirrorClass === "recovery") continue;
+      const store = this.recoveryStore?.(mirror.bagId) as (LarTiddlerStore & { listTombstoned?: () => string[] }) | null | undefined;
+      if (typeof store?.listTombstoned !== "function") continue;
+      for (const title of store.listTombstoned()) if (!isEffectRecordUri(title)) gate.mark(LarDiskProjector.rootOf(title));
     }
     // listVisible excludes a record tombstoned while stopped. The
     // persisted agreements name the recovery files that still need a store read.
@@ -709,6 +761,8 @@ export class LarDiskProjector {
 
   async stop(): Promise<void> {
     this.stopping = true;
+    this.unwatchStandoffs?.();
+    this.unwatchStandoffs = null;
     this.wakeWaiters();
     await this.gate?.settle();
     this.writing.clear();
@@ -775,6 +829,20 @@ export class LarDiskProjector {
     }
     const after = this.standoffs.get(key)?.standoff;
     return after === undefined ? { took: true } : { took: false, why: `the states moved while the answer travelled; the standoff stands under key ${after}` };
+  }
+
+  /**
+   * THE RECORDS' SIDE OF ONE STANDOFF, AS IT WAS WEIGHED: the render the projector would have written when it raised
+   * the standoff under `standoff`, with its hash. Null where no standoff stands under that key, or the carrier holds
+   * a sidecar, a pointer or a binary body (no text a line merge can read). A key folds the records' hash, so the
+   * render answers only the state the person read.
+   */
+  standoffRender(bagId: string, uri: string, standoff: string): { readonly text: string; readonly records: string } | null {
+    const key = sitedKey(bagId, uri);
+    const entry = this.standoffs.get(key);
+    const render = this.standoffRenders.get(key);
+    if (entry === undefined || entry.standoff !== standoff || render === undefined || render.standoff !== standoff || entry.records === undefined) return null;
+    return { text: render.text, records: entry.records };
   }
 
   /** Reconcile one carrier root through the queue where it runs, and wait for the queue to drain. */
@@ -1084,6 +1152,7 @@ export class LarDiskProjector {
     const entry = this.standoffs.get(key);
     if (entry === undefined || (kind !== undefined && entry.kind !== kind)) return;
     this.standoffs.delete(key);
+    this.standoffRenders.delete(key);
     this.onConflictResolved?.({ bagId, uri, standoff: entry.standoff });
   }
 
@@ -1136,6 +1205,27 @@ export class LarDiskProjector {
   private ownBaseAt(bagId: string, uri: string, path: string): SyncedBase | null {
     const base = this.syncedTree.baseAt(syncedTreeKey(bagId, uri), path);
     return this.otherDocument(bagId, base) ? null : base;
+  }
+
+  /**
+   * THE BASE THE POOL'S HEAD NAMES for a carrier at `path` (face-pools A5), where no synced base stands: HEAD's bytes on
+   * the disk side, the render they say on the records side (folded as the gate's `≈` folds the disk), or null where no
+   * port stands, the body rides binary, or HEAD never held the file.
+   */
+  private headBaseAt(uri: string, path: string, ext: string, isBinary: boolean): SyncedBase | null {
+    if (this.baseFromGit === undefined || isBinary) return null;
+    const head = this.baseFromGit(path);
+    if (head === null) return null;
+    const disk = carrierHash(head.body, head.meta);
+    const records = (() => {
+      if (ext === MEME_EXT) {
+        const canonical = this.canonicalizeFn ? this.canonicalizeFn(uri, head.body) : null;
+        return canonical === null ? null : carrierHash(canonical, head.meta);
+      }
+      const canonical = this.canonicalizeNativeFn ? this.canonicalizeNativeFn(uri, ext, head.body, head.meta) : null;
+      return canonical === null ? null : carrierHash(canonical.body, canonical.metaBody);
+    })();
+    return { path, disk, records: records ?? disk };
   }
 
   /** Every base the carrier holds for THIS document's records. */
@@ -1217,6 +1307,41 @@ export class LarDiskProjector {
       if (canonical !== null && digestsEqual(canonical, recordsHash)) return "agreed";
     }
     return { held: hash };
+  }
+
+  /**
+   * THE HOMES A CHECKOUT NEVER TRACKED, where the records dropped their carrier. Each content file (or its sidecar) git
+   * reads untracked, or a checkout git cannot read, stays and raises one alert per path naming the cure; a home that no
+   * longer stands untracked clears the alert it raised. Answers whether any home stays, so the caller leaves every home
+   * of this carrier where it stands.
+   */
+  private keepUntracked(bagId: string, uri: string, homes: readonly string[]): boolean {
+    if (this.untrackedAt === undefined) return false;
+    const wiki = this._tw5?.$tw.wiki as unknown as {
+      getTiddler?: (t: string) => unknown; addTiddler?: (f: Record<string, unknown>) => void; deleteTiddler?: (t: string) => void;
+    } | undefined;
+    let kept = false;
+    for (const home of [...new Set(homes)].sort()) {
+      const alert = untrackedCarrierAlertTitle(home);
+      const files = [home, `${home}.meta`].filter((f) => existsSync(f));
+      const reading = files.length === 0 ? null : this.untrackedAt(dirname(home));
+      const untracked = reading !== null && "untracked" in reading ? files.filter((f) => reading.untracked.includes(f)) : [];
+      const why = reading !== null && "why" in reading ? reading.why : null;
+      if (untracked.length === 0 && why === null) {
+        if (wiki?.getTiddler?.(alert) !== undefined) wiki.deleteTiddler?.(alert);
+        continue;
+      }
+      kept = true;
+      const text = why === null
+        ? `The records dropped ${uri}, and its file at ${home} rests untracked in a checkout: it holds the only copy, so it stays. Commit it, or remove it by hand.`
+        : `The records dropped ${uri}, and its file at ${home} stays: ${why}. Commit it, or remove it by hand.`;
+      const standing = (wiki?.getTiddler?.(alert) as { fields?: Record<string, unknown> } | undefined)?.fields;
+      if (standing?.["text"] !== text) {
+        console.error(`[disk-ward] untracked carrier kept (${bagId} <- ${uri}): ${home}`);
+        wiki?.addTiddler?.({ title: alert, text, tags: "$:/tags/Alert", "alert-kind": "untracked-carrier", path: home, uri, bag: bagId });
+      }
+    }
+    return kept;
   }
 
   /** Remove one carrier home the judge agreed to: the content file and its sidecar; the base that stood there leaves with it. */
@@ -1466,6 +1591,9 @@ export class LarDiskProjector {
       homes.push(...this.basedHomes(mirror, title));
       // Where the carrier sited, read BEFORE its siting leaves: the kāpae shadow takes that stem.
       const shadowBase = this.sited.get(sitedKey(mirror.bagId, title)) ?? carrierBaseRelPath(title);
+      // A FILE GIT NEVER TRACKED STAYS: in a checkout it holds the only copy, so no proof of agreement lets it leave.
+      // Its base stays with it, so the next scan reads the file where its agreement left it, never as an arrival.
+      if (this.keepUntracked(mirror.bagId, title, homes)) continue;
       // The records hold no such carrier, so the base alone can vouch for a file. A held one stays.
       if (!this.settleHomes(mirror.bagId, title, homes, null, null, `the records dropped ${title}`)) continue;
       this._leaveStandoff(mirror.bagId, title);
@@ -1501,22 +1629,31 @@ export class LarDiskProjector {
       const body = kapaeShadowBody(title);
       let standing: string | null = null;
       try { standing = existsSync(gate.path) ? readFileSync(gate.path, "utf-8") : null; } catch { standing = null; }
-      if (standing === body) return;
-      this.writing.add(title);
-      try {
-        mkdirSync(dirname(gate.path), { recursive: true });
-        this.atomicWrite(gate.path, body);
-      } finally { this.writing.delete(title); }
+      if (standing !== body) {
+        this.writing.add(title);
+        try {
+          mkdirSync(dirname(gate.path), { recursive: true });
+          this.atomicWrite(gate.path, body);
+        } finally { this.writing.delete(title); }
+      }
+      // THE HOUSE REMEMBERS ITS SHADOW (`SyncedTree.shadows`): the bytes it wrote, or found standing as it would write them.
+      const shadows = this.syncedTree.shadows();
+      const key = syncedTreeKey(mirror.bagId, title), hash = carrierHash(body);
+      if (shadows.baseAt(key, gate.path)?.disk !== hash) shadows.set(key, gate.path, hash);
       return;
     }
     if (record !== null || !existsSync(gate.path)) return;
     this.writing.add(title);
-    try { LarDiskProjector.lowerShadowAt(gate.path); } finally { this.writing.delete(title); }
+    try { this.lowerShadowAt(mirror.bagId, title, gate.path); } finally { this.writing.delete(title); }
   }
 
-  /** A shadow standing at `path` leaves: its title surfaced again, or fell through to absent. The caller holds the write mark. */
-  private static lowerShadowAt(path: string): void {
-    try { if (existsSync(path)) unlinkSync(path); } catch { /* best-effort — a hand can clean up */ }
+  /** A shadow standing at `path` leaves, and the house's memory of it with it: its title surfaced again, or fell through to
+   *  absent. The caller holds the write mark. A shadow the disk would not give up keeps its row. */
+  private lowerShadowAt(bagId: string, title: string, path: string): void {
+    const shadows = this.syncedTree.shadows(), key = syncedTreeKey(bagId, title);
+    let stood = false;
+    try { if (existsSync(path)) { stood = true; unlinkSync(path); } } catch { return; /* best-effort — a hand can clean up */ }
+    if (stood || shadows.baseAt(key, path) !== null) shadows.deleteAt(key, path);
   }
 
   /**
@@ -1835,6 +1972,38 @@ export class LarDiskProjector {
    * (`pending`), and each whose latest reconcile threw (`failed`), with the bag the view names for it (null: none).
    * A stop that would leave these off disk lists them first (`lares vessel census`).
    */
+  /**
+   * THE FILES EACH MIRROR'S CHECKOUT NEVER TRACKED, read and never moved: every untracked file under a mirror root a
+   * checkout holds (by path, with the mirror's bag), and each root whose checkout git could not read. A mirror outside
+   * every checkout names none. A stop with these on disk lists them first (`lares vessel census`): each owes a commit.
+   */
+  untrackedCarriers(): { readonly files: ReadonlyArray<{ readonly path: string; readonly bagId: string }>; readonly unread: ReadonlyArray<{ readonly root: string; readonly why: string }> } {
+    const files = new Map<string, string>();
+    const unread = new Map<string, string>();
+    if (this.untrackedAt === undefined) return { files: [], unread: [] };
+    for (const mirror of this.mirrors) {
+      const root = resolvePath(mirror.mirrorRoot);
+      const reading = this.untrackedAt(root);
+      if (reading === null) continue;
+      if ("why" in reading) { unread.set(root, reading.why); continue; }
+      for (const path of reading.untracked) if (!files.has(path)) files.set(path, mirror.bagId);
+    }
+    return {
+      files: [...files].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)).map(([path, bagId]) => ({ path, bagId })),
+      unread: [...unread].map(([root, why]) => ({ root, why })),
+    };
+  }
+
+  /** How many files this projector has written since it stood (a measure; `shoreFlush` reads its rise across one flush). */
+  fileWrites(): number { return this.measure.writes; }
+
+  /** Mark each carrier whose latest reconcile threw for one more reconcile (a flush's retry); answers how many it marked. */
+  retryFailed(): number {
+    if (!this.gate || this.stopping) return 0;
+    for (const rootUri of this.failedRoots) this.gate.mark(rootUri);
+    return this.failedRoots.size;
+  }
+
   unsettled(): { readonly pending: ReadonlyArray<{ readonly uri: string; readonly bagId: string | null }>; readonly failed: ReadonlyArray<{ readonly uri: string; readonly bagId: string | null }> } {
     const bagOf = (uri: string): string | null => {
       const origin = (this._tw5?.$tw.wiki.getTiddler?.(uri)?.fields as Record<string, unknown> | undefined)?.["$origin-bag"];
@@ -1934,6 +2103,8 @@ export class LarDiskProjector {
     const obsHash    = carrierHash(output, metaBody);             // whole-carrier, for the Synced tree
     const metaPath   = metaBody !== undefined ? candidate + ".meta" : null;
     const metaInSync = metaPath === null || (existsSync(metaPath) && safeReadEquals(metaPath, metaBody!));
+    /** The records' render as text a line merge reads: a text carrier with no sidecar alone (`standoffRender`). */
+    const renderText = metaPath === null && !bodyPending && typeof writeBytes === "string" ? writeBytes : undefined;
 
     // ── THE HOMES THIS CARRIER LEFT ─────────────────────────────────────────
     // A siting rule that moved the carrier leaves its files at the earlier path. Two memories name that
@@ -2010,7 +2181,17 @@ export class LarDiskProjector {
       // A BASE STANDS AT ONE PATH: an agreement this carrier reached at another path names no base here.
       // A base that names ANOTHER DOCUMENT names no agreement of this one: the gate reads none.
       let another = this.otherDocument(bagId, this.syncedTree.baseAt(syncedTreeKey(bagId, tiddlerUri), candidate));
-      let base = this.ownBaseAt(bagId, tiddlerUri, candidate);
+      // NO SYNCED BASE AND NO OTHER DOCUMENT'S: the pool's HEAD stands in where it holds the file (a re-found cleared the
+      // tree). These records stand, so HEAD vouches for an agreement with a record the house holds.
+      // A HEAD base rests in no tree, so an agreement it names still pins.
+      let headed = false;
+      const baseOf = (): SyncedBase | null => {
+        const own = this.ownBaseAt(bagId, tiddlerUri, candidate);
+        const head = own === null && !another ? this.headBaseAt(tiddlerUri, candidate, file.ext, isBinary) : null;
+        headed = head !== null;
+        return own ?? head;
+      };
+      let base = baseOf();
       /** Weigh the carrier against the base as it stands: the disk's hash, the standoff those states fold to, and the gate's answer. */
       const weigh = (): { diskHash: string | null; standoff: string; decision: ReturnType<typeof decideProjection> } => {
         const diskHash = onDisk !== null ? carrierHash(onDisk.body, onDisk.meta)
@@ -2039,7 +2220,7 @@ export class LarDiskProjector {
       if (weighed.decision.kind !== "noop") {
         this.syncedTree.reread(syncedTreeKey(bagId, tiddlerUri));
         another = this.otherDocument(bagId, this.syncedTree.baseAt(syncedTreeKey(bagId, tiddlerUri), candidate));
-        base = this.ownBaseAt(bagId, tiddlerUri, candidate);
+        base = baseOf();
         weighed = weigh();
       }
       const { diskHash, standoff, decision } = weighed;
@@ -2057,7 +2238,7 @@ export class LarDiskProjector {
         // render on the other, so the ingest scan reads the file `unchanged` and each gate still tells a
         // later disk edit from a later record edit. A base that already names this agreement stays put.
         if (decision.reason === "canonical-equivalent" && diskHash !== null && !another
-            && !(base !== null && base.disk === diskHash && base.records === gateRecords)) {
+            && !(base !== null && !headed && base.disk === diskHash && base.records === gateRecords)) {
           this.pin(bagId, tiddlerUri, candidate, diskHash, gateRecords);
         }
         // A PENDING POINTER'S SIDECAR STANDS AS THE RECORDS RENDER IT, and no base stands here: that
@@ -2086,6 +2267,7 @@ export class LarDiskProjector {
         // that meets the standoff it already raised stays quiet; the write still stands down.
         this._enterStandoff(mirror.bagId, tiddlerUri, standoff, "sides", reason,
           { path: candidate, disk: diskHash, records: gateRecords, ...(base !== null ? { base: { disk: base.disk, records: base.records } } : {}) });
+        if (renderText !== undefined && !another) this.standoffRenders.set(key, { standoff, text: renderText });
         return;
       }
     }
@@ -2113,7 +2295,7 @@ export class LarDiskProjector {
       if (!bodyPending) this.atomicWrite(candidate, writeBytes);
       if (metaPath !== null) this.atomicWrite(metaPath, metaBody!);
       // THE KĀPAE LOWERED: the carrier writes back, so a shadow standing at its stem leaves with the raise.
-      LarDiskProjector.lowerShadowAt(candidate.slice(0, candidate.length - extname(candidate).length) + KAPAE_EXT);
+      this.lowerShadowAt(bagId, tiddlerUri, candidate.slice(0, candidate.length - extname(candidate).length) + KAPAE_EXT);
       // The observation names the WHOLE carrier; under a pending body it names the sidecar alone.
       this.pin(bagId, tiddlerUri, candidate, gateRecords);
       // A bag counts as projected once a file of it stands: a pending body with no sidecar wrote nothing yet.

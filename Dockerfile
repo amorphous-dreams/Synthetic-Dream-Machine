@@ -46,6 +46,9 @@ COPY packages/lararium-sensorium/package.json           packages/lararium-sensor
 COPY packages/lararium-tw5/package.json     packages/lararium-tw5/
 COPY packages/lararium-node/package.json    packages/lararium-node/
 COPY packages/lararium-web/package.json     packages/lararium-web/
+# The automerge engine installs from the vendored tarball the workspace override names (third-party/automerge/README.md);
+# the lock pins its integrity, so the install fetches no engine from the registry and needs no Rust toolchain.
+COPY third-party/automerge/automerge-3.5.0-split-capacity.tgz third-party/automerge/
 
 RUN pnpm install --frozen-lockfile
 
@@ -79,8 +82,11 @@ WORKDIR /app
 
 # The Node slim base omits Python's runtime libraries even though both images
 # use Bookworm. Install the shared libraries explicitly before probing imports.
+# git reads the mounted checkout's tracking: the census names a mirror file git never
+# tracked as an owed commit, and the projector keeps such a file rather than delete it.
+# iproute2 carries `ss`, which reads a verb socket's peer (`uds-peer`): without it every hand act's peer reads unknown.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-      libsqlite3-0 libbz2-1.0 liblzma5 libffi8 libexpat1 libgomp1 libssl3 \
+      libsqlite3-0 libbz2-1.0 liblzma5 libffi8 libexpat1 libgomp1 libssl3 git iproute2 \
     && rm -rf /var/lib/apt/lists/*
 
 # One explicit Python interpreter and installed dependency closure live beside
@@ -136,6 +142,10 @@ COPY --from=build /app/packages/lares-cli/node_modules      ./packages/lares-cli
 COPY --from=build /app/packages/lares-cli/dist              ./packages/lares-cli/dist
 COPY --from=build /app/packages/lares-cli/bin               ./packages/lares-cli/bin
 COPY --from=build /app/packages/lares-cli/package.json      ./packages/lares-cli/package.json
+# `lares` STANDS ON PATH. Every caller inside (the pool pre-commit hook, an operator's exec shell, a sitting) types `lares`;
+# the link lays here, while root, to the one CLI the image carries. Node resolves the link to its real file, so the CLI
+# reads its own tree under this image's node; LAR_ROOT=/lar below keeps it acting directly, never through the host bridge.
+RUN ln -s /app/packages/lares-cli/bin/lares.mjs /usr/local/bin/lares
 
 # THE HOUSE ROOT AND THE CORPUS (the deployment contract; docker-compose.surface.yml wires them):
 #   /lar        the house root (LAR_ROOT). Its hearth (vessel homes AND custody keys), sensoriums, projections,
@@ -147,9 +157,13 @@ COPY --from=build /app/packages/lares-cli/package.json      ./packages/lares-cli
 # from the image, so an unmounted run reads node:node here, never root-owned. The cache and run classes stand sticky
 # and world-writable for whatever uid the compose `user:` names. The harness composes root their scratch vessels at
 # /state (`LAR_ROOT=/state`), so that mount point stands node-owned for their named volumes too.
-RUN mkdir -p /lar/hearth /lar/sensoriums /lar/projections /lar/library /lar/config /lar/cache /lar/run /state /workspace \
- && chown node:node /lar /lar/hearth /lar/sensoriums /lar/projections /lar/library /lar/config /state /workspace \
- && chmod 1777 /lar/cache /lar/run
+# THE PŪLAMA'S SOCKET DIRECTORY (/pulama/socket) rides a named volume the vessel and the pūlama share, bound to no host
+# path (docker-compose.surface.yml). A fresh named volume copies its mount point's owner and mode from the image at its
+# first mount, so the image stands it node-owned and sticky, world-writable: the runtime uid compose names (LARES_UID)
+# makes its socket there whichever uid that is, and the socket file's own 0600 under that uid gates every dial.
+RUN mkdir -p /lar/hearth /lar/sensoriums /lar/projections /lar/library /lar/config /lar/cache /lar/run /state /workspace /pulama/socket \
+ && chown node:node /lar /lar/hearth /lar/sensoriums /lar/projections /lar/library /lar/config /state /workspace /pulama/socket \
+ && chmod 1777 /lar/cache /lar/run /pulama/socket
 VOLUME /lar/hearth
 VOLUME /lar/sensoriums
 VOLUME /lar/projections
@@ -197,6 +211,10 @@ USER node
 # Last in the stage: a new revision rebuilds this layer alone.
 ARG GIT_REV=unknown
 LABEL org.opencontainers.image.revision=$GIT_REV
+# THE PŪLAMA'S CODE CLOSURE (tools/pulama-closure.mjs, computed by the host shim's build over the archived tree): the
+# pūlama runs this same image, so the shim compares this digest, not the image id, before it re-stands a lit pūlama.
+ARG PULAMA_CLOSURE=
+LABEL lares.pulama.closure="$PULAMA_CLOSURE"
 
 # The daemon's flags (`--root /x` and `--root=/x` read alike; main.js and the CLI refuse a flag nobody reads).
 ENTRYPOINT ["node", "packages/lararium-node/dist/src/main.js"]

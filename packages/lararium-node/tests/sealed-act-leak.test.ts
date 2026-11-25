@@ -29,9 +29,9 @@
  *       an index this vessel holds no root for refuses both; `fill` never replaces a name the plane holds; a
  *       vessel with no plane refuses before any row opens, and the sealed row keeps the name. L3 and L4 run over
  *       a plane whose rest seals, the composition the sealed store's step three stands.
- *   L5  RED: A PLANE WHOSE REST STANDS CLEAR TAKES NO NAME. A carry refuses by the rest's own name, the plane's
- *       own write refuses too, the plane's document holds neither name, and the sealed rows keep both.
- *       CONTROL: a clear still runs there, and removes a name an older vessel of the face left on the plane.
+ *   L5  RED: A RECORD WHOSE REST STANDS CLEAR TAKES NO NAME. A carry refuses by the rest's own name, the record's
+ *       own write refuses too, the record's document holds neither name, and the sealed rows keep both.
+ *       CONTROL: a clear still runs there, and removes a name an older vessel of the face left in the record.
  */
 import { controlStoreOf } from "@lararium/mesh";
 import { seatSuiteWard } from "./support/scratch-custody-setup.js";
@@ -105,9 +105,9 @@ async function stand(door: (parsed: unknown, sock: Socket) => boolean, rest: Pla
   const personaHandle = repo.create<LarDoc>(emptyLarDoc());
   const otherFaceHandle = repo.create<LarDoc>(emptyLarDoc());
   const plane = personaSelvesPlaneOver(async () => [
-    { handleIndex: 0, store: async () => new AutomergeDocStore(personaHandle as never, "bags/persona-leak-test-h0") },
-    { handleIndex: 1, store: async () => new AutomergeDocStore(otherFaceHandle as never, "bags/persona-leak-test-h1") },
-  ], { rest });
+    { handleIndex: 0, store: async () => new AutomergeDocStore(personaHandle as never, "bags/persona-leak-test-h0"), rest: () => rest },
+    { handleIndex: 1, store: async () => new AutomergeDocStore(otherFaceHandle as never, "bags/persona-leak-test-h1"), rest: () => rest },
+  ]);
   return {
     socketPath: claim.socketPath,
     plane,
@@ -334,8 +334,8 @@ describe("an act frame and the daemon's document", () => {
     await act("petname.set", { handleIndex: 0, petname: PETNAME });
     await act("declaration.set", { handleIndex: 0, declaration: { handle: HANDLE } });
     // RED: each carry refuses by the rest's own name, and neither name reaches the plane's document.
-    expect(reason(await act("selves.carry", { handleIndex: 0, name: "petname" }))).toMatch(/^act-refused: h0's persona plane rests in the clear/);
-    expect(reason(await act("selves.carry", { handleIndex: 0, name: "handle", fill: true }))).toMatch(/^act-refused: h0's persona plane rests in the clear/);
+    expect(reason(await act("selves.carry", { handleIndex: 0, name: "petname" }))).toMatch(/^act-refused: h0's selves record rests in the clear/);
+    expect(reason(await act("selves.carry", { handleIndex: 0, name: "handle", fill: true }))).toMatch(/^act-refused: h0's selves record rests in the clear/);
     expect(v.planeText().includes(PETNAME) || v.planeText().includes(HANDLE)).toBe(false);
     // The plane's own write refuses a name too, whoever calls it: the rest decides, never the door alone.
     await expect(v.plane.write(0, "petname", PETNAME)).rejects.toThrow(/rests in the clear/);
@@ -344,11 +344,13 @@ describe("an act frame and the daemon's document", () => {
     expect(await (await makeNodePersonaPetnameStore()).get(0)).toBe(PETNAME);
     expect(await act("selves.read", {})).toEqual({ op: "act", act: "selves.read", result: { selves: [], rest: "clear" } });
     // CONTROL: a clear still runs at a clear rest, since it moves no name onto it. A name an older vessel of the
-    // face left on the plane leaves it once the row's own clear landed.
+    // face left on the record answers nobody there (a clear record vouches for nothing), and leaves it once the
+    // row's own clear landed.
     await writePersonaSelfName(v.planeStore(), 0, "petname", "a-name-an-older-vessel-left", "t1");
-    expect(await v.plane.read()).toEqual([{ handleIndex: 0, petname: "a-name-an-older-vessel-left" }]);
+    expect(await v.plane.read()).toEqual([]);
+    expect(v.planeText().includes("a-name-an-older-vessel-left")).toBe(true);
     await act("petname.clear", { handleIndex: 0 });
     expect(await act("selves.clear", { handleIndex: 0, name: "petname" })).toEqual({ op: "act", act: "selves.clear", result: { cleared: true } });
-    expect(await v.plane.read()).toEqual([]);
+    expect(v.planeText().includes("a-name-an-older-vessel-left")).toBe(false);
   });
 });

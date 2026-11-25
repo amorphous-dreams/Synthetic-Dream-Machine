@@ -14,13 +14,19 @@ export interface DoctorEntry {
   readonly status: ProbeStatus;
   readonly reason?: string;
   readonly chunks?: number;
+  /** the records that rest sealed (sound envelopes, inner bytes unread: the sweep holds no key). */
+  readonly sealed?: number;
 }
 
 /** The whole-store health chart. */
 export interface DoctorReport {
   readonly entries: readonly DoctorEntry[];
   readonly total: number;
+  /** sound documents with no sealed record. */
   readonly healthy: number;
+  /** documents that rest sealed (status `sealed`): every envelope well-formed, the inner bytes left to the vessel that holds
+   *  the key. Counted APART from `healthy`, and never condemned: the sweep holds no key, so it vouches for neither. */
+  readonly sealed: number;
   readonly condemned: number;
   /** H2 — counted APART from `condemned`: a probe that spent its own patience (or died with
    *  no abort signature) named no verdict at all. Never folds into "the store carries a
@@ -37,6 +43,7 @@ function toEntry(r: ProbeResult): DoctorEntry {
     status: r.status,
     ...(r.reason !== undefined ? { reason: r.reason } : {}),
     ...(r.chunks !== undefined ? { chunks: r.chunks } : {}),
+    ...(r.sealed !== undefined ? { sealed: r.sealed } : {}),
   };
 }
 
@@ -69,10 +76,12 @@ export async function sweepDocs(
 
   const condemned  = entries.filter((e) => isCondemned({ documentId: e.documentId, status: e.status })).length;
   const unresolved = entries.filter((e) => isUnresolved({ documentId: e.documentId, status: e.status })).length;
+  const sealed     = entries.filter((e) => e.status === "sealed").length;
   return {
     entries,
     total: entries.length,
-    healthy: entries.length - condemned - unresolved,
+    healthy: entries.length - condemned - unresolved - sealed,
+    sealed,
     condemned,
     unresolved,
     degraded: condemned > 0,

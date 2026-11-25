@@ -289,7 +289,7 @@ In all three, the CONTENT grade and the FRAME shape diverge, and the frame shape
 
 !!! The population that law binds — and the one it does not
 
-''The refusal holds at full strength over the SHIPPED PLUGIN'' (operator ruling, 2026-09-13): a consumer's own wiki folder under a plain `tiddlywiki --listen` carrying `packages/lararium-tw5/plugins/lares-memetic-wikitext.json`, where the stock `tiddlyweb` syncadaptor stands. ''The SDM repo's `bags/` and `wikis/` run the lararium multi-wiki + daemon-wiki setup, and the daemon-wiki stands outside its jurisdiction'' — the island boots with no syncadaptor module, no `$tw.syncer`, no poll timer (`src/sovereign-kernel.ts:415`); ROAD B carries one direct `change` listener into `IslandAdaptor.saveTiddler` (`src/outbound-bridge.ts:1-19`); the packed plugin registers no `module-type: syncadaptor`; the daemon serves `/ws` alone (`packages/lararium-node/src/main.ts:156-167`). The refusal's own measurement declares that scope in its first lines: `tests/syncer-back-parity.e2e.test.ts:3-4` names its contact //"a plain `tiddlywiki --listen` carrying the packed plugin … Nothing of the island, nothing of the daemon."//
+''The population that law binds'' (operator ruling, 2026-09-13) rests verbatim at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/syncer-back-parity#/rulings`>>.
 
 !!! THE CAVEAT — "the daemon MAY refuse" never reads as "refusing is safe"
 
@@ -372,7 +372,7 @@ In all three, the CONTENT grade and the FRAME shape diverge, and the frame shape
 
 ''Answering (1) alone leaves (2), (3) and (4) open, and a hand enacting a bare yes or no will pick them silently.'' That reads as the same drift the (b′) seam opened through: one law, two spellings, and the second one moved.
 
-''RULED (operator, 2026-10-04) — the write-grain half, canonized.'' [[ahu #/quoteblock-floor|lar:///ha.ka.ba/lares/api/pono/ahu#/quoteblock-floor]] answers the part of (1)-(4) this carrier can settle without the operator choosing an instrument: un-decomposable content fences to a quoteblock, never drops, at the grain the WRITE lands in — the whole chunk on ingest (no family exists yet), or just that ahu's body on an in-place update (the family, and the ``<<~ ahu slot=`#/slot`>>`` wrapper, untouched). A fenced span declares zero slots, so the ahu-fidelity guard measured at #/third-shape passes by construction — the paste case this carrier opened on (#/forks) can no longer mint a phantom slot or a false conflict once it lands un-decomposable. This settles the FLOOR under any instrument the operator still picks for (2); it does not pick that instrument, and (3) and (4) stand open exactly as before.
+''RULED (operator, 2026-10-04) — the write-grain half'' rests at [[ahu #/quoteblock-floor|lar:///ha.ka.ba/lares/api/pono/ahu#/quoteblock-floor]]. A fenced span declares zero slots, so the ahu-fidelity guard measured at #/third-shape passes by construction — the paste case this carrier opened on (#/forks) can no longer mint a phantom slot or a false conflict once it lands un-decomposable. This settles the FLOOR under any instrument the operator still picks for (2); it does not pick that instrument, and (3) and (4) stand open exactly as before.
 
 <<~/ahu>>
 
@@ -393,6 +393,6 @@ In all three, the CONTENT grade and the FRAME shape diverge, and the frame shape
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;mEMT2bbPkVMi2Z2MNJA-OFZEN0MmGWmnYKje9oR0jRY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;PwCIhZHUfM2RwgA873rv-oBtQT9zqOxmt9USGAvITbs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -72,31 +72,37 @@ Lararia stabilize through use. Offerings, repeated gestures, negotiated rites, a
 
 !! Infrastructure Map
 
-The `lares` bag holds the node's own law and its working shelves. ''Every file here carries the `.mem`
+The `lares` bag holds the node's own law and its working shelves. The map names shelves and carries no counts, since a count in prose ages with every carrier that lands or leaves (`lares tiddler get --meme --bag lares` counts the tree). ''Every file here carries the `.mem`
 extension and declares its own address''; the directory only says where the bytes rest, and a carrier's
 `uri-path` says what it IS.
 
 ```
 bags/lares/ha.ka.ba/lares/
   README.mem            this carrier — identity frame and infrastructure map
-  api/                  171 carriers — the law shelf. THESE GO OUT AS SPECS.
-    pono/         142    language, address, carrier, and epistemic law
-    masks/         10    the mask layer
-    mu/             8    the five tools and the null-oracle shore
-    vendor/         1    declarations for outside artifacts this tree carries
-  docs/                  93 carriers — research, history, and the docs sisters of the law
-    pono/          33    the extended docs beside api/pono
-    history/       23    the arc that lifted: the Lindwyrm records, the consume archive,
-                         the period-forms law that governs how an early HUD reads
-    mu/             5  · voices/ 5 · graph/ 4
-  cli/                    2 carriers — the command surface
-  library/                3 carriers — shelf indexes; the acquired bodies rest outside every
-                          tracked tree, in the vessel's own library tier
+  api/                  the law shelf. THESE GO OUT AS SPECS.
+    pono/               language, address, carrier, and epistemic law
+    masks/              the mask layer
+    mu/                 the five tools and the null-oracle shore
+    art-sigils/         the art-sigil contract and its procedures
+    vendor/             declarations for outside artifacts this tree carries
+  docs/                 research, history, and the docs sisters of the law
+    pono/               the extended docs beside api/pono
+    history/            the arc that lifted: the Lindwyrm records, the consume archive,
+                        the period-forms law that governs how an early HUD reads
+    research/           research reports and scouts
+    art-sigils/         worked art-sigil examples and practice
+    mu/ · graph/        the docs sisters of api/mu and the graph law
+  cli/                  the command surface
+  ref/                  outside standards the law cites (the RFCs)
+  library/              shelf indexes; the acquired bodies rest outside every
+                        tracked tree, in the vessel's own library tier
 ```
 
 ''The `api`/`docs` split carries weight beyond tidiness.'' A carrier under `api/` states law and travels
 as a specification; a carrier under `docs/` explains, records, or researches. A section that states
 conformance belongs in one; a section that tells how the design arrived belongs in the other.
+
+''The split follows the ever-speaking present'' (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/ever-speaking-present`>>): `api/` speaks in every reader's present and points to its ruling, `docs/` records and may narrate, and a plan or lane kit rests in a workbench until it lands.
 
 ''Boot chain:'' a surface's seed → `noosphere-boot` (the constitution) → `pono/config` (the session
 dials). One seed per surface, all of them on disk — a CLI agent takes a pointer from its instructions
@@ -114,7 +120,7 @@ file, a browser agent takes the carrier pasted in.
 
 * `lar:///ha.ka.ba/lares/api/mu` — null-oracle core, five-season loop
 * `lar:///ha.ka.ba/lares/api/lararium` — canonical seat and hydration bridge
-* `lar:///ha.ka.ba/lares/docs/voices` — the Voice house (the Thirteen), worker swarm, mask layer
+* `lar:///ha.ka.ba/lares/api/voices` — the Voice house (the Thirteen), worker swarm, mask layer
 * `lar:///ha.ka.ba/lararium/docs/degraded-states` — named failure modes and correction handles
 * `lar:///ha.ka.ba/lares/docs/history/period-forms` — how an early carrier's HUD reads, and what MUST NOT be modernized in place
 * `lar:///ha.ka.ba/lares/api/pono/memetic-wikitext` — the grammar, its frame, and the block check
@@ -133,6 +139,6 @@ file, a browser agent takes the carrier pasted in.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;GLpABkrhA9nik9h0h9DZfZaneGlU8n-t5DwHFbOLajw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Os58HhbJ9QatEMVzUMUwtgxE2AmIXxVtOudhFMBaF68`>>
 
 <<^ code=`&#x0004;` to=`?`>>

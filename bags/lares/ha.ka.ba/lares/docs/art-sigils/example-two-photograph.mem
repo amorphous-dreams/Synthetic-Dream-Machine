@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/art-sigils/example-two-photograph`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+uri-path = "ha.ka.ba/lares/docs/art-sigils/example-two-photograph"
+title    = "lar:///ha.ka.ba/lares/docs/art-sigils/example-two-photograph"
+type     = "text/memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role     = "minimal photographic inscription demonstrating delegated parameters"
+status   = "draft"
+retain   = true
+```
+
+<<~ ahu slot=`#/inscription`>>
+! Single photograph
+
+```tiddlywiki
+<<~ art worktype=`single observational photograph` subject=`an empty public bench after rainfall` read=`human presence suggested through absence, without inventing its occupants`>>
+```
+<<~/ahu>>
+
+<<~ ahu slot=`#/verification`>>
+!! Check
+
+Inspect the absence of invented subjects or asserted documentary provenance. Do not insert the photographer or a source image unless explicitly depicted.
+
+The unspecified treatment and composition remain delegated; no Folio is required.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;oxNObndh28U3wQQTVY8DdpHZoPU5ardrfAly7gGtYCg`>>
+<<^ code=`&#x0004;` to=`?`>>

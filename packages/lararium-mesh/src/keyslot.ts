@@ -54,8 +54,15 @@ export const PIN_KINDS: readonly PinKind[] = Object.freeze(["passphrase", "paper
  *  is a change of pin kind, never a stored parameter a tree could lower. */
 const SCRYPT = Object.freeze({ N: 1 << 17, r: 8, p: 1, dkLen: 32 } as const);
 
-/** The cost a KDF port receives on every derivation: always `SCRYPT`, handed over by this module. */
-export type ScryptCost = typeof SCRYPT;
+/**
+ * THE REMOTE COST: a route whose wrapped key rides a remote anyone may copy (the keep seat) stretches here FIRST, then derives
+ * at `SCRYPT` as every pin does, so a guess against the remote copy pays both. N 2^18 · r 8 holds a 256 MiB working set, the
+ * most a laptop and a browser tab both hold; p 2 doubles the time without growing it (~4x custody's stretch, ~5x in all).
+ */
+const REMOTE_SCRYPT = Object.freeze({ N: 1 << 18, r: 8, p: 2, dkLen: 32 } as const);
+
+/** The cost a KDF port receives on a derivation: `SCRYPT`, or `REMOTE_SCRYPT` for a remote route's stretch, handed over by this module. */
+export interface ScryptCost { readonly N: number; readonly r: number; readonly p: number; readonly dkLen: number }
 type Derive = (password: Uint8Array, salt: Uint8Array, cost: ScryptCost) => Promise<Uint8Array>;
 
 declare const kdfBrand: unique symbol;
@@ -86,6 +93,11 @@ function deriveOf(kdf: KdfPort): Derive {
   return derive;
 }
 const SLOT_KEY_LENGTH = 32;
+/** The most slots a tree holds: a bind past it refuses, and a tree read off disk or a remote with more reads `unreadable`, so a
+ *  crafted tree spends no open past what a house binds. */
+export const MAX_SLOTS = 64;
+/** The most pins a slot holds (its shares' x-coordinates ride one byte). */
+const MAX_PINS = 255;
 const PAPER_SECRET_LENGTH = 32;
 const SLOT_ID_LENGTH = 16;
 const SALT_LENGTH = 16;
@@ -211,6 +223,21 @@ async function passphraseMaterial(passphrase: string, salt: Uint8Array, derive: 
   return out;
 }
 
+/**
+ * Stretch a passphrase whose wrapped key rides a remote at `REMOTE_SCRYPT`, under its own random salt, before any pin derives
+ * from it: the answer (hex) stands in for the passphrase at bind and at open. Package-internal: the keep seat calls it.
+ */
+export async function stretchForRemote(passphrase: string, salt: Uint8Array, kdf: KdfPort): Promise<string> {
+  const derive = deriveOf(kdf);
+  const password = utf8(passphrase.normalize("NFKC"));
+  let out: unknown;
+  try { out = await derive(password, salt, REMOTE_SCRYPT); }
+  catch (cause) { throw new Error("keyslot: kdf-refused: the KDF port refused the remote stretch; nothing opened and nothing bound", { cause }); }
+  finally { password.fill(0); }
+  if (!(out instanceof Uint8Array) || out.length !== REMOTE_SCRYPT.dkLen) throw new Error(`keyslot: kdf-refused: the KDF port answered other than ${REMOTE_SCRYPT.dkLen} bytes`);
+  try { return hex(out); } finally { out.fill(0); }
+}
+
 function fromHex(s: string, bytes: number, what: string): Uint8Array {
   if (typeof s !== "string" || !/^[0-9a-f]*$/.test(s) || s.length !== bytes * 2) throw new Error(`${what} is not ${bytes} bytes of lowercase hex`);
   const out = new Uint8Array(bytes);
@@ -240,7 +267,8 @@ export async function bindSlot(tree: SlotTree | null, treeKey: TreeKey, spec: Sl
   if (!Number.isInteger(spec.t) || spec.t < 1 || spec.t > spec.pins.length) {
     throw new Error(`keyslot: a slot's threshold must be an integer in 1..${spec.pins.length} (its pin count); got ${spec.t}`);
   }
-  if (spec.pins.length > 255) throw new Error("keyslot: a slot holds at most 255 pins");
+  if (spec.pins.length > MAX_PINS) throw new Error(`keyslot: a slot holds at most ${MAX_PINS} pins`);
+  if ((tree?.slots.length ?? 0) >= MAX_SLOTS) throw new Error(`keyslot: a tree holds at most ${MAX_SLOTS} slots`);
   // THE PASSKEY STAYS OPTIONAL (operator, 2026-10-29): a tree never holds a passkey as its only route. The bind reads the whole
   // tree, the slots that stand and the one binding: a passkey slot beside a passphrase or paper slot binds; a tree that would
   // open by a passkey alone refuses by name. A local-first island weighs the human's easy path through a centralized
@@ -336,7 +364,9 @@ export type Credential =
   | { readonly kind: "passkey"; readonly credentialId: Uint8Array; readonly prfOutput: Uint8Array };
 
 export type TreeKeyUnlock =
-  | { readonly reading: "opens"; readonly treeKey: TreeKey; readonly slot: string }
+  /** `opener` names, by index into the credentials presented, the ones whose pins yielded the slot's shares: the PROVED
+   *  route, apart from any typo offered beside it. It carries indexes alone, never a credential. */
+  | { readonly reading: "opens"; readonly treeKey: TreeKey; readonly slot: string; readonly opener: readonly number[] }
   /** The credentials open no slot. `notes` names credentials that never reached a pin and NEVER quotes one: a note
    *  carries no word of a sheet and no character of a passphrase, so a caller may print or log it. (a sheet that fails its
    *  checksum, say); a passphrase that simply does not unwrap leaves no note, since the AEAD cannot say why. */
@@ -364,17 +394,23 @@ export function openPasskeyPin(slot: SlotRecord, pinIndex: number, prfOutput: Ui
 export async function openTreeKey(tree: SlotTree, credentials: readonly Credential[], kdf: KdfPort): Promise<TreeKeyUnlock> {
   const derive = deriveOf(kdf);
   const notes: string[] = [];
-  const paperSecrets: Uint8Array[] = [];
-  for (const c of credentials) {
+  const paperSecrets: Array<{ readonly secret: Uint8Array; readonly at: number }> = [];
+  for (const [at, c] of credentials.entries()) {
     if (c.kind !== "paper") continue;
-    try { paperSecrets.push(combineMnemonics(c.sheets)); } catch { notes.push("a paper credential reads no secret: its sheets fail their own check (a mistyped word, a missing sheet, or sheets of two sets)"); }
+    try { paperSecrets.push({ secret: combineMnemonics(c.sheets), at }); } catch { notes.push("a paper credential reads no secret: its sheets fail their own check (a mistyped word, a missing sheet, or sheets of two sets)"); }
   }
-  // NFKC-equal spellings derive the same material, so each distinct route rides once.
-  const passphrases = [...new Set(credentials.flatMap((c) => (c.kind === "passphrase" ? [c.passphrase.normalize("NFKC")] : [])))];
+  // NFKC-equal spellings derive the same material, so each distinct route rides once, named by the first credential spelling it.
+  const passphrases: Array<{ readonly route: string; readonly at: number }> = [];
+  for (const [at, c] of credentials.entries()) {
+    if (c.kind !== "passphrase") continue;
+    const route = c.passphrase.normalize("NFKC");
+    if (!passphrases.some((p) => p.route === route)) passphrases.push({ route, at });
+  }
 
   for (const slot of tree.slots) {
     const slotId = fromHex(slot.id, SLOT_ID_LENGTH, "slot id");
     const shares: ShareBytes[] = [];
+    const opener: number[] = [];
     // ONE ROUTE, ONE PIN: a passphrase that opened one pin of this slot cannot open another, so it never derives again here.
     const spent = new Set<number>();
     for (const [i, pin] of slot.pins.entries()) {
@@ -383,10 +419,10 @@ export async function openTreeKey(tree: SlotTree, credentials: readonly Credenti
       const wrapped = fromHex(pin.wrapped, SHARE_LENGTH + TAG_LENGTH, "wrapped share");
       const aad = pinAad(slotId, i, pin.kind);
       if (pin.kind === "passkey") {
-        for (const c of credentials) {
+        for (const [at, c] of credentials.entries()) {
           if (c.kind !== "passkey" || hex(c.credentialId) !== hex(pin.credentialId) || c.prfOutput.length !== 32) continue;
           const share = tryUnwrap(passkeyKey(c.prfOutput, slotId, i), nonce, aad, wrapped);
-          if (share !== null) { shares.push({ x: share[0]!, ys: share.subarray(1) }); break; }
+          if (share !== null) { shares.push({ x: share[0]!, ys: share.subarray(1) }); opener.push(at); break; }
         }
         continue;
       }
@@ -395,14 +431,14 @@ export async function openTreeKey(tree: SlotTree, credentials: readonly Credenti
         const salt = fromHex(pin.salt, SALT_LENGTH, "pin salt");
         for (const [j, p] of passphrases.entries()) {
           if (spent.has(j)) continue;
-          const share = tryUnwrap(wrapKey(await passphraseMaterial(p, salt, derive), slotId), nonce, aad, wrapped);
-          if (share !== null) { shares.push({ x: share[0]!, ys: share.subarray(1) }); spent.add(j); break; }
+          const share = tryUnwrap(wrapKey(await passphraseMaterial(p.route, salt, derive), slotId), nonce, aad, wrapped);
+          if (share !== null) { shares.push({ x: share[0]!, ys: share.subarray(1) }); spent.add(j); opener.push(p.at); break; }
         }
         continue;
       }
       for (const m of paperSecrets) {
-        const share = tryUnwrap(wrapKey(m, slotId), nonce, aad, wrapped);
-        if (share !== null) { shares.push({ x: share[0]!, ys: share.subarray(1) }); break; }
+        const share = tryUnwrap(wrapKey(m.secret, slotId), nonce, aad, wrapped);
+        if (share !== null) { shares.push({ x: share[0]!, ys: share.subarray(1) }); opener.push(m.at); break; }
       }
     }
     if (shares.length < slot.t) continue;
@@ -413,10 +449,29 @@ export async function openTreeKey(tree: SlotTree, credentials: readonly Credenti
     );
     if (treeKey === null) continue;
     const opened = adoptUnwrappedTreeKey(treeKey);
-    if (treeKeyAnswersCheck(opened, tree.keyCheck)) return { reading: "opens", treeKey: opened, slot: slot.id };
+    if (treeKeyAnswersCheck(opened, tree.keyCheck)) return { reading: "opens", treeKey: opened, slot: slot.id, opener: opener.slice(0, slot.t) };
     notes.push(`slot ${slot.id} unwraps a tree key this tree does not commit to; it opens nothing`);
   }
   return { reading: "no-slot-opens", notes };
+}
+
+/** One slot the presented credentials open: its id, threshold and pin count, and the credentials (by index) that opened it. */
+export interface ProvedSlot { readonly slot: string; readonly t: number; readonly pins: number; readonly opener: readonly number[] }
+
+/**
+ * EVERY slot the presented credentials open, each tried alone, in tree order: an act that proves several routes (a passphrase
+ * and a paper sheet, each a slot of its own) learns each, where `openTreeKey` stops at the first. Holds no tree key: each one
+ * opened zero-fills before the next slot reads. A slot that opens to a key the tree does not commit to proves nothing.
+ */
+export async function slotsOpenedBy(tree: SlotTree, credentials: readonly Credential[], kdf: KdfPort): Promise<ProvedSlot[]> {
+  const out: ProvedSlot[] = [];
+  for (const slot of tree.slots) {
+    const u = await openTreeKey({ keyCheck: tree.keyCheck, slots: [slot] }, credentials, kdf);
+    if (u.reading !== "opens") continue;
+    u.treeKey.fill(0);
+    out.push({ slot: slot.id, t: slot.t, pins: slot.pins.length, opener: u.opener });
+  }
+  return out;
 }
 
 // ── the tree at rest ─────────────────────────────────────────────────────────────────────────────
@@ -448,12 +503,14 @@ export function decodeSlotTree(bytes: Uint8Array | null): SlotTreeReading {
     fromHex(raw.keyCheck as string, TREE_CHECK_LENGTH, "the tree's tree key check");
     if (!Array.isArray(raw.slots)) throw new Error("the tree names no slots");
     if (raw.slots.length === 0) throw new Error("a tree with no slot holds no human route");
+    if (raw.slots.length > MAX_SLOTS) throw new Error(`the tree names ${raw.slots.length} slots, more than the ${MAX_SLOTS} any bind makes`);
     const slots = raw.slots.map((s: Record<string, unknown>, si: number): SlotRecord => {
       const where = `slot ${si + 1}`;
       fromHex(s.id as string, SLOT_ID_LENGTH, `${where} id`);
       fromHex(s.nonce as string, NONCE_LENGTH, `${where} nonce`);
       fromHex(s.wrappedKey as string, TREE_KEY_LENGTH + TAG_LENGTH, `${where} wrapped tree key`);
       if (!Array.isArray(s.pins) || s.pins.length === 0) throw new Error(`${where} holds no pin`);
+      if (s.pins.length > MAX_PINS) throw new Error(`${where} names ${s.pins.length} pins, more than the ${MAX_PINS} a slot holds`);
       if (!Number.isInteger(s.t) || (s.t as number) < 1 || (s.t as number) > s.pins.length) throw new Error(`${where} threshold lies outside 1..${s.pins.length}`);
       const pins = (s.pins as Record<string, unknown>[]).map((p, pi): PinRecord => {
         const pw = `${where} pin ${pi + 1}`;

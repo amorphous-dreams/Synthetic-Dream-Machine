@@ -22,13 +22,16 @@
  *   KH11 one commit carries `house/` and `devices/<name>-<id8>/`, and one push carries that commit;
  *   KH12 the guard allows exactly `<into>` and this device's dir: another device's dir, changed, refuses before the vessel half
  *        runs, and so does this device's dir where its DEVICE.json names another uuid;
- *   KH13 a secret-shaped string in the mirror refuses the commit BEFORE the vessel half runs (no return spends), in a plain
+ *   KH13 a secret-shaped file in the mirror stays out of the commit (in place, named with its cure), in a plain
  *        file and inside a compressed transcript; a PLANTED fixture passes;
  *   KH14 with the vessel down the keep names where the lei lives, exits non-zero, commits nothing and pushes nothing (the
  *        mirror rests in the workspace for the keep that follows the `up`);
  *   KH15 sessions that moved over an unmoved house spend a return of their own (`begin` over the standing bundle) before
  *        anything commits; with no return left, nothing commits and nothing pushes; `--if-due` reads moved sessions as due;
  *   KH16 `sessions: false` (`--no-sessions`, LARES_KEEP_SESSIONS=0) keeps the house alone.
+ *   KH17 a private-key header trips the guard only with key material after it (a base64 body of real length, in real lines,
+ *        CRLF, or escaped `\n` inside JSONL): a header named in prose passes; the other shapes read as before;
+ *   KH18 both guards (the sessions and the bundle) pass a header named in prose and refuse a planted header with its body.
  *
  * Real git over scratch repos; the vessel's rows answer from a recorded fake.
  */
@@ -37,15 +40,28 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { CARRY_SCHEMA, MANIFEST_FILE, bundleIdOf, sha256Hex, zeroCounts, type CarryFile } from "../src/carry-manifest.js";
+import { BUNDLE_SCHEMA, MANIFEST_FILE, bundleIdOf, sha256Hex, zeroCounts, type BundleFile } from "../src/bundle-manifest.js";
 import { riteKeepHost, secretShapes, workspaceFromPairs, type GitAnswer, type KeepHostPorts } from "../src/rite-keep-host.js";
 import { KeepRefused } from "../src/rite-keep.js";
+import type { ShoreFlushReading } from "../src/shore-core.js";
 import { readOrMintDevice, sessionSources, type SessionSources } from "../src/keep-sessions.js";
 import { keepSessionsOn } from "../src/keep-config.js";
 import { keepPlan } from "../src/commands/rite.js";
 import { parseArgs } from "../src/parse-args.js";
 
 let scratch: string, gitConfig: string;
+
+/**
+ * The four samples the operator's session mirror held where the keep refused (2026-11-19), verbatim as the JSONL bytes read:
+ * a grep line, a transcript path, prose after a doubly escaped newline, and the header in discussion with no body. The header
+ * splits (`${"-----"}`) so this file names no header itself.
+ */
+const MIRROR_SAMPLES: readonly string[] = [
+  `${"-----"}BEGIN OPENSSH PRIVATE KEY-----\\npackages/lares-cli/src/rite-keep-host.ts:14: *                    A dir another device o`,
+  `${"-----"}BEGIN OPENSSH PRIVATE KEY-----\\n-Dream-Machine/51e9b3fb-b3f5-4d7f-85a6-6102d371292f/subagents/agent-a027c23eb9d9a9f13.js`,
+  `${"-----"}BEGIN OPENSSH PRIVATE KEY-----\\\\npackages/lares-cli/src/rite-keep-\\nthe key. It's \`~/.claude/projects/…/51e9b3fb…/subage`,
+  Array.from({ length: 14 }, () => `${"-----"}BEGIN OPENSSH PRIVATE KEY-----\\\` in discussion with no key body after it`).join(" "),
+];
 
 function runGit(dir: string, argv: readonly string[]): GitAnswer {
   const env: NodeJS.ProcessEnv = { ...process.env, GIT_CONFIG_GLOBAL: gitConfig, GIT_CONFIG_SYSTEM: "/dev/null" };
@@ -62,7 +78,7 @@ const must = (dir: string, ...argv: string[]): string => {
 /** A whole bundle at `dest`: every file hashed, the id over the file list. */
 function writeBundle(dest: string, notes: Readonly<Record<string, string>>): string {
   rmSync(dest, { recursive: true, force: true });
-  const files: CarryFile[] = [];
+  const files: BundleFile[] = [];
   for (const [name, text] of Object.entries(notes)) {
     const rel = `faces/f0/working/${name}.tid`, abs = join(dest, ...rel.split("/"));
     mkdirSync(dirname(abs), { recursive: true });
@@ -71,7 +87,7 @@ function writeBundle(dest: string, notes: Readonly<Record<string, string>>): str
   }
   files.sort((a, b) => (a.path < b.path ? -1 : 1));
   const bundleId = bundleIdOf(files);
-  writeFileSync(join(dest, MANIFEST_FILE), `${JSON.stringify({ schema: CARRY_SCHEMA, bundleId, faces: [{ key: "f0", petname: "steward" }], files, rows: [], counts: zeroCounts(), tempBytes: {}, omissions: [] }, null, 2)}\n`);
+  writeFileSync(join(dest, MANIFEST_FILE), `${JSON.stringify({ schema: BUNDLE_SCHEMA, bundleId, faces: [{ key: "f0" }], files, rows: [], counts: zeroCounts(), tempBytes: {}, omissions: [] }, null, 2)}\n`);
   return bundleId;
 }
 
@@ -252,6 +268,21 @@ describe("the keep rite, host half", () => {
     expect(existsSync(join(r.ws, "README"))).toBe(true);
   });
 
+  test("KH17 RED: a keep commit carries the fixed neutral author and committer the code names, never the host's ambient git identity, and the rebase over a moved upstream keeps it; CONTROL: another clone's own commit keeps its own identity", async () => {
+    const r = rig();
+    const other = join(scratch, "other");
+    must(scratch, "clone", "-q", r.remote, other);
+    writeFileSync(join(other, "README"), "another device's note\n");
+    must(other, "add", "README");
+    must(other, "commit", "-q", "-m", "elsewhere");
+    must(other, "push", "-q", "origin", "HEAD:refs/heads/main");
+    const out = await riteKeepHost(r.ports, { workspace: "backup" });
+    expect(out).toMatchObject({ code: 0, data: { pushed: true, par: true } });
+    const who = must(r.remote, "log", "--format=%an <%ae>|%cn <%ce>", "main").split("\n");
+    expect(who[0], "the keep commit names the keep, never the operator").toBe("Lares Keep <keep@lares.invalid>|Lares Keep <keep@lares.invalid>");
+    expect(who[1], "CONTROL: the other clone's commit carries the identity its own config names").toBe("Keeper <keeper@example.invalid>|Keeper <keeper@example.invalid>");
+  });
+
   test("KH8 RED: beside the container house the host reads the workspace's directory from LARES_WORKSPACES; a name it never pairs, or a relative dir, refuses by name", () => {
     expect(workspaceFromPairs("backup", "notes=/srv/notes; backup=/srv/house-backup ;")).toBe("/srv/house-backup");
     for (const configured of ["", "notes=/srv/notes", "backup=relative/dir"]) {
@@ -339,28 +370,151 @@ describe("the keep rite, host half", () => {
     expect((await riteKeepHost(r.ports, { workspace: "backup" })).code).toBe(0);
   });
 
-  test("KH13 RED: a secret-shaped string in the mirror refuses the commit before any return spends, plain or inside a compressed transcript; CONTROL: a PLANTED fixture passes", async () => {
+  test("KH13 RED: a secret-shaped file in the mirror stays out of the commit, in place and named with its cure; the clean device files commit and push, and a later keep does not refuse on it", async () => {
     const r = rig();
     const n = r.commits();
     r.sessions.put("projects/-home-me-proj/memory/token.md", `the token ${"ghp_"}${"y".repeat(30)}\n`);
-    const plain = await riteKeepHost(r.ports, { workspace: "backup" });
-    expect(plain).toMatchObject({ code: 1, data: { refusal: "keep-secret-shaped", stopped: "guard" } });
-    expect(String(plain.data["message"])).toContain(`${r.device}/projects/-home-me-proj/memory/token.md (ghp_yyyy…)`);
-    expect(r.commits()).toBe(n);
-    rmSync(join(r.sessions.claude, "projects/-home-me-proj/memory/token.md"));
     r.sessions.put("projects/-home-me-proj/bbbb.jsonl", `{"type":"user","text":"${"sk-ant-"}${"z".repeat(20)}"}\n`);
-    const packed = await riteKeepHost(r.ports, { workspace: "backup" });
-    expect(packed).toMatchObject({ code: 1, data: { refusal: "keep-secret-shaped", stopped: "guard" } });
-    expect(String(packed.data["message"])).toContain(`${r.device}/projects/-home-me-proj/sessions/bbbb.jsonl.zst (sk-ant-z…)`);
-    expect(r.commits()).toBe(n);
-    // The scan over the mirror runs ahead of the vessel half: a refused mirror spends no return.
-    expect(r.calls).toEqual([]);
-    expect(r.state.returns).toBe(12);
+    const plain = await riteKeepHost(r.ports, { workspace: "backup" });
+    expect(plain.data, JSON.stringify(plain.data)).toMatchObject({ kept: true, committed: true, pushed: true, par: true });
+    expect(plain.code).toBe(0);
+    expect(r.commits()).toBe(n + 1);
+    const line = r.said.filter((l) => /withheld from the commit/.test(l));
+    expect(line).toHaveLength(1);
+    expect(line[0]).toContain(`${r.device}/projects/-home-me-proj/memory/token.md (ghp_yyyy…)`);
+    expect(line[0]).toContain(`${r.device}/projects/-home-me-proj/sessions/bbbb.jsonl.zst (sk-ant-z…)`);
+    expect(line[0]).toContain(r.sessions.claude);
+    const carried = must(r.remote, "show", "--name-only", "--format=", "main").split("\n");
+    expect(carried).toContain(`${r.device}/config/CLAUDE.md`);
+    expect(carried).not.toContain(`${r.device}/projects/-home-me-proj/memory/token.md`);
+    expect(carried).not.toContain(`${r.device}/projects/-home-me-proj/sessions/bbbb.jsonl.zst`);
+    // In place, untracked: the workspace holds them and no later keep refuses on them (with the sessions or without).
+    expect(existsSync(join(r.ws, r.device, "projects/-home-me-proj/memory/token.md"))).toBe(true);
+    expect(must(r.ws, "status", "--porcelain")).toContain("token.md");
+    r.state.notes = { heron: "remember the heron\n", pond: "the pond at dusk\n" };
+    const again = await riteKeepHost(r.ports, { workspace: "backup" });
+    expect(again.code, JSON.stringify(again.data)).toBe(0);
+    const bare = await riteKeepHost(r.ports, { workspace: "backup", sessions: false });
+    expect(bare.code, JSON.stringify(bare.data)).toBe(0);
+    expect(must(r.remote, "ls-tree", "-r", "--name-only", "main")).not.toContain("token.md");
+    // CLEARED at the source: the mirror follows (the workspace file stays until the hand removes it), and the keep carries no complaint.
+    rmSync(join(r.sessions.claude, "projects/-home-me-proj/memory/token.md"));
+    rmSync(join(r.ws, r.device, "projects/-home-me-proj/memory/token.md"));
     // CONTROL: the house's own planted fixtures pass, as they pass the script's scan.
-    r.sessions.put("projects/-home-me-proj/bbbb.jsonl", `{"type":"user","text":"${"ghp_"}PLANTED${"a".repeat(20)} and AKIAIOSFODNN7EXAMPLE"}\n`, 1800);
-    rmSync(join(r.ws, r.device, "projects/-home-me-proj/sessions/bbbb.jsonl.zst"));
+    r.sessions.put("projects/-home-me-proj/cccc.jsonl", `{"type":"user","text":"${"ghp_"}PLANTED${"a".repeat(20)} and AKIAIOSFODNN7EXAMPLE"}\n`, 1800);
     const passed = await riteKeepHost(r.ports, { workspace: "backup" });
-    expect(passed.data, JSON.stringify(passed.data)).toMatchObject({ committed: true, pushed: true, par: true });
+    expect(passed.data, JSON.stringify(passed.data)).toMatchObject({ pushed: true, par: true });
+    expect(must(r.remote, "ls-tree", "-r", "--name-only", "main")).toContain("cccc.jsonl.zst");
+  });
+
+  test("KH13b RED: a --no-sessions keep commits the device changes already standing in this device's dir (mirroring nothing), and still refuses changes outside house/ and this dir", async () => {
+    const r = rig();
+    expect((await riteKeepHost(r.ports, { workspace: "backup" })).code).toBe(0);
+    // A refused earlier keep left mirror files standing; a later --no-sessions keep carries the clean ones, never the secret one.
+    writeFileSync(join(r.ws, r.device, "config", "left-behind.md"), "mirrored once, never committed\n");
+    writeFileSync(join(r.ws, r.device, "config", "secret.md"), `${"ghp_"}${"q".repeat(30)}\n`);
+    r.state.notes = { heron: "remember the heron\n" };
+    const out = await riteKeepHost(r.ports, { workspace: "backup", sessions: false });
+    expect(out.code, JSON.stringify(out.data)).toBe(0);
+    const tree = must(r.remote, "ls-tree", "-r", "--name-only", "main");
+    expect(tree).toContain(`${r.device}/config/left-behind.md`);
+    expect(tree).not.toContain("secret.md");
+    expect(r.said.some((l) => /withheld from the commit/.test(l) && l.includes("secret.md"))).toBe(true);
+    // Changes elsewhere outside house/ still refuse.
+    writeFileSync(join(r.ws, "stray.txt"), "not the keep's\n");
+    const calls = r.calls.length;
+    const stray = await riteKeepHost(r.ports, { workspace: "backup", sessions: false });
+    expect(stray).toMatchObject({ code: 1, data: { refusal: "keep-tree-unclean", outside: ["stray.txt"] } });
+    expect(r.calls.length).toBe(calls);
+  });
+
+  test("KH17 a private-key header trips the guard only with key material after it: a header named in prose passes, a header with a base64 body refuses, in real lines, CRLF, escaped \\n and doubly escaped \\\\n", () => {
+    const BEGIN = `${"-----"}BEGIN OPENSSH PRIVATE KEY-----`, END = `${"-----"}END OPENSSH PRIVATE KEY-----`;
+    const lines = Array.from({ length: 5 }, (_, i) => `b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZWQyNTUxOQ${i}`);
+    const header = `${"-----"}BEGIN OPENSSH PRIVATE KEY`;
+    // PROSE: the header named in discussion, again and again, with no body after any mention, passes.
+    const prose = Array.from({ length: 14 }, (_, i) => `{"type":"assistant","text":"turn ${i}: the guard reads \`${BEGIN}\` in a transcript\\nand no key follows it"}`).join("\n");
+    expect(secretShapes(prose)).toEqual([]);
+    expect(secretShapes(`the header ${BEGIN} then prose`)).toEqual([]);
+    expect(secretShapes(`${BEGIN}\nMIIEvQ\n${END}`)).toEqual([]);
+    expect(secretShapes(`${BEGIN}\n${"0123456789abcdef".repeat(2)}\nthe commit, not a key`)).toEqual([]);
+    expect(secretShapes(`${BEGIN}\n${END}`)).toEqual([]);
+    // MATERIAL: the header, then a base64 body of real length, refuses in every carriage a file meets.
+    expect(secretShapes(`${BEGIN}\n${lines.join("\n")}\n${END}\n`)).toEqual([header]);
+    expect(secretShapes(`${BEGIN}\r\n${lines.join("\r\n")}\r\n${END}\r\n`)).toEqual([header]);
+    expect(secretShapes(`{"text":"${BEGIN}\\n${lines.join("\\n")}\\n${END}\\n"}`)).toEqual([header]);
+    expect(secretShapes(`{"text":"{\\"text\\":\\"${BEGIN}\\\\n${lines.join("\\\\n")}\\\\n${END}\\"}"}`)).toEqual([header]);
+    expect(secretShapes(`${BEGIN}${lines.join("")}${END}`)).toEqual([header]);
+    expect(secretShapes(`  ${BEGIN}\n  ${lines.join("\n  ")}\n  ${END}`)).toEqual([header]);
+    // A body with no END line inside the window still reads as material; so does an encrypted PEM with its header fields.
+    expect(secretShapes(`${BEGIN}\n${lines.join("\n")}`)).toEqual([header]);
+    const rsa = `${"-----"}BEGIN RSA PRIVATE KEY-----\nProc-Type: 4,ENCRYPTED\nDEK-Info: AES-128-CBC,0123456789ABCDEF\n\n${lines.join("\n")}\n${"-----"}END RSA PRIVATE KEY-----`;
+    expect(secretShapes(rsa)).toEqual([`${"-----"}BEGIN RSA PRIVATE KEY`]);
+    // Prose that mentions the header and a key that stands later both read: the key alone counts.
+    expect(secretShapes(`${prose}\n${BEGIN}\n${lines.join("\n")}\n${END}`)).toEqual([header]);
+    // The other shapes read as before.
+    expect(secretShapes(`token ${"ghp_"}${"x".repeat(30)}`)).toEqual([`${"ghp_"}${"x".repeat(30)}`]);
+  });
+
+  test("KH19 a body line reads whole: the operator's four mirror samples pass (a path, prose or a short token after an escaped newline is no key), as do short identifiers and hex digests after a header; real-shaped keys wrapped at 70 and 64 still refuse", () => {
+    const BEGIN = `${"-----"}BEGIN OPENSSH PRIVATE KEY-----`, END = `${"-----"}END OPENSSH PRIVATE KEY-----`;
+    const header = `${"-----"}BEGIN OPENSSH PRIVATE KEY`;
+    // THE FOUR SAMPLES, verbatim as the session mirror held them (JSONL, escaped once or twice).
+    for (const sample of MIRROR_SAMPLES) {
+      expect(secretShapes(sample), sample).toEqual([]);
+      expect(secretShapes(`{"type":"assistant","text":"${sample}"}`), sample).toEqual([]);
+      expect(secretShapes(JSON.stringify({ text: sample })), sample).toEqual([]);
+      expect(secretShapes(JSON.stringify({ text: JSON.stringify({ text: sample }) })), sample).toEqual([]);
+    }
+    expect(secretShapes(MIRROR_SAMPLES.join("\n"))).toEqual([]);
+    // SHORT TOKENS after a header, each line base64-charactered yet no key line: identifiers, words, a field-shaped prose line.
+    expect(secretShapes(`${BEGIN}\\npackages\\nsrc\\nriteKeepHost\\nsecretShapes\\nkeyBodyFollows\\nmirrorSessions\\nsessionSources\\nworkspaceFromPairs`)).toEqual([]);
+    expect(secretShapes(`${BEGIN}\\nNote: the header\\nkeyBodyFollowsAgainAndAgainAndAgain\\nsecretShapesOverAndOverAndOver`)).toEqual([]);
+    // HEX DIGESTS after a header (commit ids, sha256): long, base64-charactered, and no key.
+    expect(secretShapes(`${BEGIN}\n${"e844e0d8b".padEnd(40, "0")}\n${"ab12".repeat(16)}\n${"cd34".repeat(16)}\n`)).toEqual([]);
+    // REAL-SHAPED KEYS still refuse: an OpenSSH body wrapped at 70 with a short tail, a PEM body wrapped at 64, in every carriage.
+    const b64 = Buffer.from(Array.from({ length: 400 }, (_, i) => (i * 37 + 11) & 255)).toString("base64");
+    const wrap = (w: number): string[] => b64.match(new RegExp(`.{1,${w}}`, "g"))!;
+    const ssh = wrap(70), pem = wrap(64);
+    expect(ssh.at(-1)!.length).toBeLessThan(70);
+    expect(secretShapes(`${BEGIN}\n${ssh.join("\n")}\n${END}\n`)).toEqual([header]);
+    expect(secretShapes(`{"text":"${BEGIN}\\n${ssh.join("\\n")}\\n${END}\\n"}`)).toEqual([header]);
+    expect(secretShapes(`{"text":"{\\"text\\":\\"${BEGIN}\\\\n${ssh.join("\\\\n")}\\\\n${END}\\"}"}`)).toEqual([header]);
+    expect(secretShapes(`${"-----"}BEGIN PRIVATE KEY-----\r\n${pem.join("\r\n")}\r\n${"-----"}END PRIVATE KEY-----\r\n`)).toEqual([`${"-----"}BEGIN PRIVATE KEY`]);
+    // Two full lines alone carry the minimum; one full line and a tail do too, while a lone short line never starts a run.
+    expect(secretShapes(`${BEGIN}\n${ssh[0]}\n${ssh[1]}\n${END}`)).toEqual([header]);
+    expect(secretShapes(`${BEGIN}\n${ssh[0]}\nAAAA\n${END}`)).toEqual([header]);
+    expect(secretShapes(`${BEGIN}\nAAAA\n${ssh[0]}\n${END}`)).toEqual([]);
+  });
+
+  test("KH18 the session guard and the bundle guard each pass a header named in prose and refuse a planted header with its body", async () => {
+    const BEGIN = `${"-----"}BEGIN OPENSSH PRIVATE KEY-----`, END = `${"-----"}END OPENSSH PRIVATE KEY-----`;
+    const body = Array.from({ length: 5 }, (_, i) => `b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZWQyNTUxOQ${i}`);
+    const prose = Array.from({ length: 14 }, (_, i) => `{"type":"assistant","text":"turn ${i}: \`${BEGIN}\` names a header\\nno key follows"}`).join("\n") + "\n";
+    // SESSIONS, prose: the transcript discussing the header keeps.
+    const r = rig();
+    // The operator's four mirror samples ride the transcript and the record too: both guards keep them.
+    const samples = MIRROR_SAMPLES.map((s) => `{"type":"user","text":"${s}"}`).join("\n") + "\n";
+    r.sessions.put("projects/-home-me-proj/cccc.jsonl", prose + samples);
+    r.state.notes = { heron: `the guard reads ${BEGIN} in discussion\nno key follows\n${MIRROR_SAMPLES.join("\n")}\n` };
+    const kept = await riteKeepHost(r.ports, { workspace: "backup" });
+    expect(kept.data, JSON.stringify(kept.data)).toMatchObject({ committed: true, pushed: true, par: true });
+    // SESSIONS, planted: a transcript carrying the header and its body, escaped inside JSONL, stays out of the commit and is named; the keep goes on.
+    r.sessions.put("projects/-home-me-proj/dddd.jsonl", `{"type":"user","text":"${BEGIN}\\n${body.join("\\n")}\\n${END}\\n"}\n`, 1800);
+    r.state.notes = { heron: "remember the heron\n", pond: "the pond at dusk\n" };
+    r.said.length = 0;
+    const planted = await riteKeepHost(r.ports, { workspace: "backup" });
+    expect(planted.code, JSON.stringify(planted.data)).toBe(0);
+    expect(r.said.some((l) => l.includes(`${r.device}/projects/-home-me-proj/sessions/dddd.jsonl.zst (-----BEG…)`))).toBe(true);
+    expect(must(r.remote, "ls-tree", "-r", "--name-only", "main")).not.toContain("dddd.jsonl.zst");
+    // BUNDLE, planted: a record carrying the header and its body refuses at the bundle guard and commits nothing.
+    const b = rig({ at: join(scratch, "bundle") });
+    const m = b.commits();
+    b.state.notes = { heron: `remember the heron\n${BEGIN}\n${body.join("\n")}\n${END}\n` };
+    const bundled = await riteKeepHost(b.ports, { workspace: "backup", sessions: false });
+    expect(bundled).toMatchObject({ code: 1, data: { refusal: "keep-secret-shaped", stopped: "guard" } });
+    expect(String(bundled.data["message"])).toMatch(/heron\.tid \(-----BEG…\)/);
+    expect(b.commits()).toBe(m);
   });
 
   test("KH14 RED: with the vessel down the keep names where the lei lives, exits non-zero, and commits and pushes nothing", async () => {
@@ -456,23 +610,92 @@ describe("the keep rite, host half", () => {
     expect(keepSessionsOn(false, {}, null)).toBe(false);
   });
 
-  test("KH17 keep-acts-as-the-mount: with no face named, the host half carries the face the vessel half acted as into every row after the cut, and names it", async () => {
+  test("KH17 keep-acts-as-the-keep-face: with no face named, the host half carries the face the vessel half acted as into every row after the cut, and names it", async () => {
     const r = rig();
     const row = r.ports.row;
     const ports: KeepHostPorts = { ...r.ports, sessions: null, row: async (verb, args) => {
       const a = await row(verb, args);
-      return verb === "keep-cut" && a.ok ? { ok: true, output: { ...a.output, face: 0, faceBy: "mount" } } : a;
+      return verb === "keep-cut" && a.ok ? { ok: true, output: { ...a.output, face: 0, faceBy: "keep" } } : a;
     } };
     const out = await riteKeepHost(ports, { workspace: "backup" });
-    expect(out).toMatchObject({ code: 0, data: { face: 0, faceBy: "mount", par: true } });
+    expect(out).toMatchObject({ code: 0, data: { face: 0, faceBy: "keep", par: true } });
     expect(r.calls[0]).toBe(`keep-cut ${JSON.stringify({ workspace: "backup", into: "house" })}`);
     expect(r.calls.slice(1).length).toBeGreaterThan(0);
     for (const c of r.calls.slice(1)) expect(c).toContain('"face":0');
-    expect(r.said.some((l) => /acting as h0, the daemon mount/.test(l))).toBe(true);
+    expect(r.said.some((l) => /acting as h0, the keep's face/.test(l))).toBe(true);
     // A named face rides the cut as named.
     const n = rig({ at: join(scratch, "named") });
     const named = await riteKeepHost({ ...n.ports, sessions: null }, { workspace: "backup", face: 2 });
     expect(n.calls[0]).toBe(`keep-cut ${JSON.stringify({ workspace: "backup", into: "house", face: 2 })}`);
     expect(named.data).toMatchObject({ face: 2, faceBy: "named" });
+  });
+
+  test("KH19 spent-lei-offers-its-refill: a keep stopped on a spent lei strings the refill the refusal names (its returns, its face) through the refill port and goes on once; declined or on a pipe it keeps today's refusal", async () => {
+    const spentRow = (r: ReturnType<typeof rig>, strung: { n: number }): KeepHostPorts["row"] => async (verb, args) => {
+      if (verb === "keep-cut" && strung.n === 0) { r.calls.push(`${verb} ${JSON.stringify(args)}`); return { ok: false, code: "swarm-lei-returns-spent", message: "no keep lei stands for the workspace \"backup\" (returns-spent); the hand strings one: `lares lei kui --rite keep --branch backup --returns 6 --face 0`" }; }
+      return r.ports.row(verb, args);
+    };
+    const r = rig(); const strung = { n: 0 }; const asked: unknown[] = [];
+    const yes = await riteKeepHost({ ...r.ports, sessions: null, row: spentRow(r, strung), refill: async (req) => { asked.push(req); strung.n++; return { strung: true, remedy: "unused" }; } }, { workspace: "backup" });
+    expect(asked).toEqual([{ rite: "keep", branch: "backup", returns: 6, face: 0 }]);
+    expect(yes.code).toBe(0);
+    expect(r.calls.filter((c) => c.startsWith("keep-cut"))).toHaveLength(2);
+    const n = rig({ at: join(scratch, "declined") }); const none = { n: 0 };
+    const no = await riteKeepHost({ ...n.ports, sessions: null, row: spentRow(n, none), refill: async () => ({ strung: false, remedy: "lares lei kui --rite keep --branch backup --returns 6 --face 0" }) }, { workspace: "backup" });
+    expect(no).toMatchObject({ code: 1, data: { refusal: "swarm-lei-returns-spent" } });
+    expect(n.calls.filter((c) => c.startsWith("keep-cut"))).toHaveLength(1);
+  });
+
+  test("KH18 keep-names-its-code-once: a vessel half refused under a message that already leads with its code says the code once", async () => {
+    const r = rig();
+    const ports: KeepHostPorts = { ...r.ports, sessions: null, row: async (verb, args) => {
+      if (verb === "keep-cut") { r.calls.push(`${verb} ${JSON.stringify(args)}`); return { ok: false, code: "vessel-locked", message: "vessel-locked: run `lares vault unlock`, then run again" }; }
+      return r.ports.row(verb, args);
+    } };
+    const out = await riteKeepHost(ports, { workspace: "backup" });
+    expect(out).toMatchObject({ code: 1, data: { refusal: "vessel-locked" } });
+    const line = r.said.find((l) => l.startsWith("keep: vessel-locked"));
+    expect(line).toBe("keep: vessel-locked: run `lares vault unlock`, then run again");
+    expect(String((out.data as { message?: unknown }).message)).not.toMatch(/vessel-locked: vessel-locked/);
+  });
+});
+
+describe("the keep rite flushes every shore before the cut", () => {
+  const reading = (over: Partial<ShoreFlushReading> = {}): ShoreFlushReading => ({
+    islands: [
+      { island: "daemon", answered: true, written: [{ uri: "lar:///a.b.c/one" }], writtenCount: 1, unwritten: [], unwrittenCount: 0, fileWrites: 1, drained: true },
+      { island: "wiki:home", answered: true, written: [], writtenCount: 0, unwritten: [], unwrittenCount: 0, fileWrites: 0, drained: true },
+      { island: "wiki:notes", answered: true, written: [{ uri: "lar:///a.b.c/two" }], writtenCount: 1, unwritten: [], unwrittenCount: 0, fileWrites: 1, drained: true },
+    ],
+    whole: true, ...over,
+  });
+
+  test("KF1 RED: the keep asks `lares shore flush` before the vessel cuts and says what every island wrote, a resident wiki beyond the active one among them; no reach gap rides the lines", async () => {
+    const r = rig();
+    const order: string[] = [];
+    const row = r.ports.row;
+    const out = await riteKeepHost({ ...r.ports, flush: async () => { order.push("flush"); return reading(); }, row: async (verb, args) => { order.push(verb); return row(verb, args); } }, { workspace: "backup" });
+    expect(out.code).toBe(0);
+    expect(order.slice(0, 2)).toEqual(["flush", "keep-cut"]);
+    const said = r.said.join("\n");
+    expect(said).toMatch(/keep: the shore's flush: daemon wrote 1 owed carrier\(s\)/);
+    expect(said).toMatch(/keep: the shore's flush: wiki:notes wrote 1 owed carrier\(s\)/);
+    expect(said).not.toMatch(/outside this door's reach|active wiki alone/);
+    expect(out.data["shore"]).toMatchObject({ whole: true });
+  });
+
+  test("KF2 RED: a flush that leaves carriers unwritten, or answers nothing, names that and the keep goes on as it would", async () => {
+    const r = rig();
+    const strands = reading({ whole: false, islands: [{ island: "wiki", answered: true, written: [], writtenCount: 0, unwritten: [{ state: "failed", uri: "lar:///a.b.c/stuck", why: "its reconcile threw" }], unwrittenCount: 1, fileWrites: 0, drained: true }, { island: "daemon", answered: false, refusal: "unanswered", why: "timed out" }] });
+    const out = await riteKeepHost({ ...r.ports, flush: async () => strands }, { workspace: "backup" });
+    expect(out.code).toBe(0);
+    const said = r.said.join("\n");
+    expect(said).toMatch(/keep: the shore's flush: wiki wrote 0 owed carrier\(s\); 1 left unwritten: failed lar:\/\/\/a\.b\.c\/stuck \(its reconcile threw\)/);
+    expect(said).toMatch(/keep: the shore's flush: daemon did not answer: unanswered: timed out/);
+    expect(said).toMatch(/the bundle cuts from the records, and those mirrors stay behind/);
+    const r2 = rig({ at: join(scratch, "second") });
+    const quiet = await riteKeepHost({ ...r2.ports, flush: async () => null }, { workspace: "backup" });
+    expect(quiet.code).toBe(0);
+    expect(r2.said.join("\n")).toMatch(/keep: the shore's flush answered nothing \(`lares shore flush` reads it\); the keep goes on/);
   });
 });

@@ -41,11 +41,11 @@
  */
 
 import { type LarDoc, tiddlerText } from "./base-doc.js";
-import { BAG_IDS, CATALOG_DOC_URI, DAEMON_BAG_ID, isBagId } from "./lar-uris.js";
-import { isFaceScopedBag, personaScopedBagIds } from "./persona-scope.js";
-import { ownEntry } from "./stored-value.js";
+import { BAG_IDS, CATALOG_DOC_URI, DAEMON_BAG_ID, isBagId, recipeUri, wikiUri } from "./lar-uris.js";
+import { isFaceScopedBag, personaScopedBagIds, personaSelvesBagIdFor } from "./persona-scope.js";
+import { ownEntry, plainMeta } from "./stored-value.js";
 import { houseCanonBagsSeated, isHouseCanonBag } from "./kahu-canon-reach.js";
-import { daemonFaceCanonBag, wikiSlotUri } from "./wiki-recipe.js";
+import { DAEMON_WIKI_SLUG, daemonFaceCanonBag, wikiSlotUri } from "./wiki-recipe.js";
 
 /**
  * The bag URIs the `catalog` registry NAMES — the PersonaGroup's own work, read from the projection.
@@ -71,6 +71,26 @@ export function catalogNamedBags(doc: LarDoc | undefined | null): string[] {
   return Object.keys(tiddlers).filter(
     (title) => isBagId(title) && (tiddlerText(ownEntry(tiddlers, title)) ?? "").startsWith("automerge:"),
   );
+}
+
+/**
+ * THE FACE'S OWN LAYERS A CATALOG ANNOUNCES: the `personal` layer and the `draft` binding (`isFaceSlotBag`) of every wiki
+ * the catalog names by its recipe row (`catalog/recipes/<slug>`, the row `wiki init` writes). The catalog a vessel reads
+ * merges the WORN face's own rows over the floor's (`catalog-view`), and no other face's catalog binds there, so the
+ * answer names the worn face's layers alone. The boot registers each before any slot document opens, so the holder's
+ * reading founds every personal layer the resolver names afterwards.
+ */
+export function catalogFaceSlotBags(doc: LarDoc | undefined | null): string[] {
+  const tiddlers = doc?.tiddlers ?? {};
+  const prefix = recipeUri("catalog", "");
+  const out: string[] = [];
+  for (const title of Object.keys(tiddlers)) {
+    if (!title.startsWith(prefix)) continue;
+    const slug = title.slice(prefix.length);
+    if (!slug || slug.includes("/") || plainMeta(ownEntry(tiddlers, title) as never, "deleted") === true) continue;
+    out.push(...[wikiSlotUri(slug, "personal"), wikiSlotUri(slug, "draft")].filter(isFaceSlotBag));
+  }
+  return [...new Set(out)];
 }
 
 /** One PersonaGroup this vessel stands in, and the work that group brings with it. */
@@ -122,7 +142,7 @@ export function isVesselGround(bag: string): boolean {
  * The bags this vessel registers, derived — its ground, its wiki, and the union over the groups it stands in.
  *
  * Each membership contributes THE WHOLE FACE — its persona plane and the circles, identities, sessions and intents
- * that travel with it, all five derived off the one tag that group's doc id yields — plus every bag that
+ * that travel with it, all five derived off the one tag that group's doc id yields, and its selves record — plus every bag that
  * group's catalog names. Order stays stable and duplicates collapse, so two vessels in the same groups
  * produce one comparable set, and two groups naming a bag in common register it once.
  */
@@ -134,9 +154,10 @@ export function deriveRegisterBags(input: RegisterBagsInput): string[] {
   const out: string[] = [...OWN_GROUND, ...(input.systemCanon === true ? houseCanonBagsSeated() : []), ...wikiBags];
   for (const fleet of input.fleets) {
     const face = personaScopedBagIds(fleet.personaGroupId);
-    // The catalog names every face's planes; a group registers ITS four (above) and never another face's, which the derived shape
-    // recognises without any list of the others.
-    out.push(face.persona, face.circles, face.identities, face.sessions, face.intents, ...(fleet.catalogNamed ?? []).filter((bag) => !isFaceScopedBag(bag)));
+    // The catalog names every face's planes; a group registers ITS own (above) and its selves record, and never another face's,
+    // which the derived shape recognises without any list of the others.
+    out.push(face.persona, face.circles, face.identities, face.sessions, face.intents, personaSelvesBagIdFor(fleet.personaGroupId),
+      ...(fleet.catalogNamed ?? []).filter((bag) => !isFaceScopedBag(bag)));
   }
   return [...new Set(out)];
 }
@@ -169,11 +190,16 @@ export function standingDaemonCanonBag(input: { readonly lit: boolean; readonly 
 
 /**
  * THE LIT SET: the bags a face OWNS while it stands lit, worn or beside the worn face: the daemon wiki's device slots, its daemon
- * canon (where its relation stands known), and its own catalog half. A sibling face's hive registers these and never a user
- * wiki's bags, which belong to the worn face's mount.
+ * canon (where its relation stands known), its own catalog half, and its own selves record (`personaSelvesBagIdFor`, where its
+ * group stands known). A sibling face's hive registers these and never a user wiki's bags, which belong to the worn face's mount.
+ *
+ * THE SELVES RECORD SEALS UNDER ITS OWN FACE'S HIVE. The vessel's bag map files a lit face's record under that face's subject
+ * (`selvesRecordBagOf`), so its save books that face's own session; a hive that left the bag out read the writer
+ * `writer-not-capable` and the bag `bag-unfounded`, and the save waited in memory under a face that stood lit and open.
  */
-export function litFaceOwnBags(faceRelation: string | null | undefined): string[] {
-  return [...DAEMON_WIKI_SLOT_BAGS, ...(faceRelation ? [daemonFaceCanonBag(faceRelation)] : []), FACE_CATALOG_BAG_ID];
+export function litFaceOwnBags(faceRelation: string | null | undefined, personaGroupId?: string | null): string[] {
+  return [...DAEMON_WIKI_SLOT_BAGS, ...(faceRelation ? [daemonFaceCanonBag(faceRelation)] : []), FACE_CATALOG_BAG_ID,
+    ...(personaGroupId ? [personaSelvesBagIdFor(personaGroupId)] : [])];
 }
 
 /**
@@ -186,15 +212,45 @@ export function litFaceOwnBags(faceRelation: string | null | undefined): string[
  * register set reads `writer-not-capable`, its seal refuses, and a flush waits on it. The user wiki's slots register at
  * the floor and lit alike, as a wiki stack stands; the daemon wiki's slots register and seal under the lit face alone.
  */
-export function wornFaceWikiBags(input: { readonly slot?: WikiSlotBags | undefined; readonly lit: boolean; readonly daemonCanon?: string }): { readonly registered: string[]; readonly sealed: string[] } {
+export function wornFaceWikiBags(input: { readonly slot?: WikiSlotBags | undefined; readonly lit: boolean; readonly daemonCanon?: string; readonly announced?: Iterable<string> }): { readonly registered: string[]; readonly sealed: string[] } {
   const user = input.slot ? [input.slot.wikiBagId, input.slot.workingBagId, input.slot.draftBagId] : [];
+  // EVERY PERSONAL LAYER AND DRAFT THE WORN FACE'S RESOLVER NAMED (`isFaceSlotBag`): the face's own layers of each wiki, the mount
+  // slot's and every other wiki's alike, seal under the lit face. The island registers each on the face's hive before it
+  // names it (`announceSlotDoc`), so the seal finds the writer capable.
+  // THE MOUNT'S OWN PERSONAL LAYER rides with them from the boot: the slot names the wiki, so the face's `personal` layer of it
+  // derives off the slot's draft, and no naming has to come first.
+  const personal = input.slot ? facePersonalBeside(input.slot.draftBagId) : null;
+  const named = input.lit ? [...new Set([...(personal ? [personal] : []), ...(input.announced ?? [])].filter(isFaceSlotBag))] : [];
   // The face's own catalog (U1's D half of the catalog) rides with the daemon wiki's slots: the island registers it at
   // boot, so its holder holds the catalog's key before the lift opens the sealed document. The vessel's control document
   // seals beside the secret home under the vessel's own key (`secret-home`), never under one face.
   // The worn face's daemon canon (`bags/daemon-<F>`, `daemonFaceCanonBag`) rides with them too: a face's daemon wiki content.
   const faceOwn = input.lit ? [...DAEMON_WIKI_SLOT_BAGS, ...(input.daemonCanon ? [input.daemonCanon] : []), FACE_CATALOG_BAG_ID] : [];
   return {
-    registered: [...user, ...faceOwn],
-    sealed: [...(input.lit ? user : []), ...faceOwn],
+    registered: [...new Set([...user, ...faceOwn, ...named])],
+    sealed: [...new Set([...(input.lit ? user : []), ...faceOwn, ...named])],
   };
+}
+
+/** The `personal` layer of the wiki whose `draft` binding `draftBagId` names, or null where it names no face's layer. */
+function facePersonalBeside(draftBagId: string): string | null {
+  const suffix = "/draft";
+  return isFaceSlotBag(draftBagId) && draftBagId.endsWith(suffix) ? `${draftBagId.slice(0, -suffix.length)}/personal` : null;
+}
+
+/**
+ * A FACE'S OWN LAYER OF A WIKI: `wikis/<slug>/personal` or `wikis/<slug>/draft` for any wiki but the daemon's (whose slots
+ * file by their owner as device documents, `device-daemon-docs`). The face's resolver binds each to that face alone (the
+ * PersonaGroup × recipe binding), so it seals under that face. A wiki's working layer stays out: it rests in the wiki's
+ * realm workbench, which a realm's faces share.
+ */
+export function isFaceSlotBag(bagId: string): boolean {
+  const prefix = wikiUri("");
+  if (!bagId.startsWith(prefix)) return false;
+  const rest = bagId.slice(prefix.length);
+  const at = rest.lastIndexOf("/");
+  if (at <= 0) return false;
+  const slug = rest.slice(0, at), kind = rest.slice(at + 1);
+  if (slug === DAEMON_WIKI_SLUG || (kind !== "personal" && kind !== "draft")) return false;
+  return wikiSlotUri(slug, kind) === bagId;
 }

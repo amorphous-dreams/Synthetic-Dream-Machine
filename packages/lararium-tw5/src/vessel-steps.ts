@@ -15,6 +15,7 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/vessel-steps
  */
 
+import { wearOf } from "@lararium/mesh";
 import {
   AutomergeDocStore,
   computeRecipeFingerprint,
@@ -29,7 +30,8 @@ import {
   type WikiRecipe,
   type WikiMountSpec,
   type IslandGrants, ownEntry, litFaceCatalogOf, isFloorCanonAddress} from "@lararium/mesh";
-import type { VerbTable } from "./verb-dispatcher.js";
+import { VERB_SURFACE, type VerbTable } from "./verb-dispatcher.js";
+import { ddateVerb } from "./ddate-verb.js";
 import { effectiveRecipe } from "./recipe-planes.js";
 
 /** Resolve one bag's doc handle. Encodes the platform/office seed policy
@@ -49,18 +51,18 @@ export type ResolveBagHandle = (
  * tiddlers, but `defaultWritable:false` so unbagged TW5 saves keep routing to
  * the wiki — only an explicit `record.bag === bagId` write lands here.
  */
-export function addSubstrateLayer(composite: CompositeStore, bagId: string, handle: DocHandle<LarDoc>): void {
+export function addSubstrateLayer(composite: CompositeStore, bagId: string, handle: DocHandle<LarDoc>, repo?: object): void {
   composite.addLayer({
     bagId,
-    store:           new AutomergeDocStore(handle, bagId),
+    store:           new AutomergeDocStore(handle, bagId, wearOf(repo)),
     writable:        true,
     defaultWritable: false,
   });
 }
 
 /** Read-only layer (catalog registry, corpus bags): synced for reads, never written. */
-export function addReadOnlyLayer(composite: CompositeStore, bagId: string, handle: DocHandle<LarDoc>): void {
-  composite.addLayer({ bagId, store: new AutomergeDocStore(handle, bagId), writable: false });
+export function addReadOnlyLayer(composite: CompositeStore, bagId: string, handle: DocHandle<LarDoc>, repo?: object): void {
+  composite.addLayer({ bagId, store: new AutomergeDocStore(handle, bagId, wearOf(repo)), writable: false });
 }
 
 /**
@@ -72,6 +74,13 @@ export function seedVesselDefaults(registry: VerbTable): void {
   // echo — universal protocol smoke verb.
   if (!registry.has("echo")) {
     registry.register("echo", async (args) => ({ echoed: args }));
+  }
+  // ddate — the Discordian calendar through the house's own core; the caller names today's date (the clock seam).
+  if (!registry.has("ddate")) {
+    registry.register("ddate", ddateVerb, {
+      summary: "Read the Discordian date through the house's own calendar: `format` (ddate(1) codes: %A %a %B %b %d %e %E %H %N %n %t %Y %. %X %{ %}) and a date (`day`, `month`, `year`, together), or `today` ({year, month, day}) when none rides. Answers {text, entropy, gregorian, yold, tibs, season, dayOfSeason, weekday, holyday}.",
+      surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent],
+    });
   }
 }
 
@@ -117,7 +126,7 @@ export interface PrimaryMountInputs {
   /** M2 — this wiki's recipe RECORD named a `plugin-offerings` field `recipeFromRecord` could not
    *  honestly parse. Threaded straight into the mount spec's `WikiRecipe` alongside `pluginOfferings`
    *  (never derived here): the resolver refuses ONLY this wiki's plugin resolution by name, while
-   *  everything else this mount carries — library bags, the grain swap, `meme get` — stays unaffected. */
+   *  everything else this mount carries — library bags, the grain swap, `tiddler get --meme` — stays unaffected. */
   pluginOfferingsFault?: string;
 }
 
@@ -194,7 +203,7 @@ export async function buildWikiMountSpec(
     ...(inputs.libraryBags?.length ? { libraryBags: inputs.libraryBags } : {}),
     ...(inputs.pluginOfferings?.length ? { pluginOfferings: inputs.pluginOfferings } : {}),
     ...(inputs.pluginOfferingsFault !== undefined ? { pluginOfferingsFault: inputs.pluginOfferingsFault } : {}),
-    // The personal slot rides the designation too: it carries the face's private margin over the workbench, and its grant roots
+    // The personal slot rides the designation too: it holds the face's own overlay over the workbench, and its grant roots
     // per face (`faceFolder`); plaintext survives for it as for every other layer that holds content.
     // ONE FOLDER ANSWERS A WORKBENCH, and a seated writer's wear writes it: a face that holds no writer's seat (seated `read`,
     // or seated nowhere) designates no working mirror, so its mount writes nothing into the workbench's folder.

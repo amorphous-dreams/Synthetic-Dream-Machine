@@ -9,7 +9,6 @@ hydrate           = true
 l-space           = "stable"
 namespace         = "&#x2299;"
 pattern-integrity = true
-revised-on        = "2026-09-02"
 role              = "two-integrities — the adoption plan for Ink & Switch's `onomancy` (a local-first name system) and `subduction` (peer-to-peer sync for hash-linked data, encryption-friendly). Onomancy answers WHICH DOCUMENT YOU MEANT and WHO MAY SPEAK FOR IT; subduction answers HOW BYTES CROSS UNREAD. They stack rather than compete. Carries the DOUBLE-BLIND WRAP: a lamplighter relay must learn neither the content nor the author, which realm-scoped writer keys buy and padding does not. Carries the one hard collision — subduction's handshake makes an absolute wall clock a LIVENESS precondition, where this house holds wall-clock adversary-controlled."
 tags              = ["api/pono/meme"]
 title             = "lar:///ha.ka.ba/lares/api/pono/two-integrities"
@@ -31,7 +30,7 @@ uri-path          = "ha.ka.ba/lares/api/pono/two-integrities"
 
 !! What each answers that we could not
 
-''ONOMANCY answers the registry question we opened and could not close.'' The realm feed cannot cross because no vessel can resolve a realm's substrate from its id, and a list of every realm you belong to takes the shape #the-roster forbids. A ''petname edge'' supplies that registry without forming a roster: it stays ''resolution-only, never discovery'' — it opens a document the holder already keys and names nothing it does not. It scopes to the ''FACE'' (operator ruling: //one Persona at a time takes the blame//), so a compromise yields one face's realms rather than a multitude's.
+''ONOMANCY answers the registry question we opened and could not close.'' The realm feed cannot cross because no vessel can resolve a realm's substrate from its id, and a list of every realm you belong to takes the shape #the-roster forbids. A ''petname edge'' supplies that registry without forming a roster: it stays ''resolution-only, never discovery'' — it opens a document the holder already keys and names nothing it does not. It scopes to the ''FACE'' (the operator's ruling rests at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-policy#/one-face`>>), so a compromise yields one face's realms rather than a multitude's.
 
 ''SUBDUCTION answers the independent-operator question.'' A node runner holds no cabal-cap on the base grammar docs, and without it serving a realm means holding the power to read it. Subduction syncs on ''metadata alone'' — digests, parents, boundaries, checkpoints — and declares content encryption //application responsibility//. So a vessel can ''relay a realm it cannot read''. That makes the lamplighter structural rather than promised.
 
@@ -45,7 +44,7 @@ uri-path          = "ha.ka.ba/lares/api/pono/two-integrities"
 * ''`Signed<T> -> try_verify -> Verified<T>` as type-state.'' "Forgetting to verify is a type error, not a bug class." `verifyCarriageConsent` and `verifyRealmFeedSlot` return booleans, and nothing structural stops a caller reading a consent's fields without checking its seal. A comment ranks as the weakest ward this house owns.
 * ''Petnames — the personal naming layer we lack.'' Every address handed to an operator takes global form. `~/grove` means //you bound this label to this reference//: mutable, local, face-scoped. A UX capability and a privacy capability in one primitive.
 * ''Graded verdicts, and staleness as a BADGE never a prompt.'' Interruption reserved for ''events'' — diffs in the derivation — never for standing conditions. //A warning that is always on protects nothing//, and every defence ending in "surfaced to the user" draws one attention budget.
-* ''The mutual backstop.'' Lose the keys and the name rescues you; lose the name and the keys rescue you. #the-two-keels ruled that ONE quorum serves both recovery and impersonation, leaving no safe custodial escrow — this gives a third path that ''holds no third party''.
+* ''The mutual backstop.'' Lose the keys and the name rescues you; lose the name and the keys rescue you. The one-quorum ruling (resting at <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/identity-classes#/reading-b-recovery`>>) leaves no safe custodial escrow — this gives a third path that ''holds no third party''.
 
 <<~/ahu>>
 
@@ -56,7 +55,7 @@ uri-path          = "ha.ka.ba/lares/api/pono/two-integrities"
 * ''Ciphertext relay'' — the independent operator seat, above.
 * ''Authorize the AUTHOR, never the sender.'' Authorization checks the signature issuer, so relays act as byte couriers and multi-hop forwarding needs no trust in the middle. The herm chain's trust story finally matches its topology.
 * ''Revocation with no protocol message.'' The relay stops passing the filter; no broadcast, no list. The same principle as onomancy's generation key, reached from the other end — //negative facts cannot travel in attacker-supplied records//.
-* ''A civic name that verifies OFFLINE.'' Chain validation from a baked-in IANA anchor set, never delegating to a resolver's AD bit, so a vessel that has never queried DNS verifies a binding gossiped by QR. #the-attestation-seat ruled //no roster, because a roster is a global now//: this grants a global ''name'' without a global ''list''.
+* ''A civic name that verifies OFFLINE.'' Chain validation from a baked-in IANA anchor set, never delegating to a resolver's AD bit, so a vessel that has never queried DNS verifies a binding gossiped by QR. The no-roster ruling (resting at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/registry-filter#/the-law`>>): this grants a global ''name'' without a global ''list''.
 * ''Sedimentree'' — hash-derived, coordination-free partition boundaries, so a joining vessel takes older history in larger strata. Three ingredients carry it: ''reverse depth-first traversal'' (parents never change, so the order holds stable under concurrent writes), ''boundaries from the digest itself'' (leading zero bytes; no negotiation), and ''retained checkpoints'', which make //supports// decidable from metadata alone.
 
 <<~/ahu>>
@@ -128,6 +127,6 @@ Against #the-face-planes — where relations travel with the face and a vessel-g
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;JT09A45-d4HWCPa8un_Fbdb3Bm5JNYAqB9TsQJcrDzE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;hdlkd2n5T2cTKukyHQC0-SqJceqsy-uLgfs668JJzfk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

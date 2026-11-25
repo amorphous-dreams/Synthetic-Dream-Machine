@@ -142,6 +142,13 @@ export const CADENCE_INCEPTION_DOMAIN = mint("cadence-inception");
 /** A cadence holder's NEXT-KEY commitment: the digest of the hearth's next cadence key. Its own name: a cadence
  *  commitment never reads as a seat's. */
 export const CADENCE_NEXT_KEY_DOMAIN = mint("cadence-next-key");
+/** A cadence OFFER: one engine CID, the inception it rides, the prior offer's digest and the window width k, signed
+ *  by t of the cadence holders; the offers' `prev` chain advances a Nexus's engine window. Its own name: an offer
+ *  never verifies as an inception, a deny or any seat act, and the kahu quorum never signs one. */
+export const CADENCE_OFFER_DOMAIN = mint("cadence-offer");
+/** A cadence RELEASE-DENY: one engine CID dropped from every window of its inception, monotone, under the same t of
+ *  holders. Its own name: a deny never verifies as an offer, so a signature that offers can never withdraw. */
+export const CADENCE_RELEASE_DENY_DOMAIN = mint("cadence-release-deny");
 
 // ── CUSTODY: THE tree key, ITS KEYSLOTS, AND THE VESSEL KEL ───────────────────────────────────────────
 /** The floor key's own inception: the key signed by itself, committing no next key. */
@@ -153,6 +160,18 @@ export const SLOT_WRAP_INFO = mint("slot-wrap");
 /** The HKDF `info` of the slot tree's tree key check: the keyed digest a tree carries so every writer proves the tree key
  *  in hand against the standing tree before any byte moves. */
 export const TREE_CHECK_INFO = mint("tree-key-check");
+/** The HKDF `info` the KEEP PAIR's X25519 secret derives under, from the random key its own slot tree wraps: the keep's tree
+ *  key never doubles as the secret itself, and no face's tree key derives into it. */
+export const KEEP_PAIR_INFO = mint("keep-pair");
+/** The sealed-box `info` a keep bundle's roster seals to the keep pair's public half under: a roster never opens as another
+ *  protocol's seal between the same keys. */
+export const KEEP_ROSTER_INFO = mint("keep-roster");
+/** The HKDF `info` the keep's SIGNING seed derives under, from the same key the keep's slot tree wraps: the verify key a
+ *  restore checks rides inside that wrapped tree, so only the house that minted the pair signs a cut it accepts. */
+export const KEEP_SIGN_INFO = mint("keep-sign");
+/** The keep cut's SIGNATURE: the signing seed signs the bundle id and the sealed roster's digest under this name, so a roster
+ *  sealed to the published public half by anyone else never restores as the house's own. */
+export const KEEP_CUT_DOMAIN = mint("keep-cut");
 
 // ── ADMISSION + ENROLMENT ───────────────────────────────────────────────────────────────────────
 /** A hearth's HOSTING ACT in one Nexus: its per-Nexus leaf signs the Nexus, itself, the act's POPRF public key
@@ -247,7 +266,7 @@ export const PROMOTE_ACT_DOMAIN = mint("promote-act");
 /** A daemon or kahua promotion's ward signature: the face root over (wiki, digest, seq), made under a fresh ward unlock
  *  (seat-harness#/the-ward). Its own name, so no promote act, kahua act or swarm act verifies as one. */
 export const PROMOTE_WARD_DOMAIN = mint("promote-ward");
-/** One signed swarm control: the house cap, a lane share, a lei, its return, narrowing or unstringing, a rite's begin or land, a lane's state, a roster row or a check receipt.
+/** One signed swarm control: the house cap, a lane share, a lei, its return, narrowing or unstringing, a rite's begin or land, a lane's state or a roster row.
  *  Its own name, so no swarm record verifies as a promote or kahua act and none of those as a swarm control. */
 export const SWARM_ACT_DOMAIN = mint("swarm-act");
 /** A kūkulu vouch (apart from the cabal vouch edge below): the standing vessel's signature over the candidate image it walked before a kūkulu (the-worn-house#/the-pulama).
@@ -342,6 +361,9 @@ export const SEALED_CHECKPOINT_DOMAIN = mint("sealed-checkpoint");
 export const SEALED_RECORD_AUTHORSHIP_DOMAIN = mint("sealed-record-authorship");
 /** A LOCKBOX PAYLOAD's image: the bag's id, its locator, the key version id and the content key. */
 export const SEALED_LOCKBOX_DOMAIN = mint("sealed-lockbox");
+/** A CHAINED LOCKBOX PAYLOAD's image (cabal-realm#/the-workbench, Keyhive's Envelope idea): a lockbox payload, then each
+ *  earlier key of the same span the version's history declared shareable, so a late reader needs one box for the span. */
+export const SEALED_LOCKBOX_CHAIN_DOMAIN = mint("sealed-lockbox-chain");
 /** A LOCKBOX as it rests and travels: its clear part (locator, key version id, wrap) and its box. */
 export const SEALED_LOCKBOX_RECORD_DOMAIN = mint("sealed-lockbox-record");
 /** A lockbox's BOX: the wrap document's id and the Keyhive ciphertext, and nothing else. */
@@ -364,6 +386,8 @@ export const SEALED_OUTBOX_PARCEL_DOMAIN = mint("sealed-outbox-parcel");
 export const SEALED_OUTBOX_KEY_INFO = mint("sealed-outbox-key");
 /** A MEMORY-IMPORT RECORD: its clear part hashes to the record id under this name. */
 export const SEALED_MEMORY_IMPORT_DOMAIN = mint("sealed-memory-import");
+/** A RE-SEAL RECORD: one replacement a roll's successor re-sealed; its clear part hashes to the record id under this name. */
+export const SEALED_RESEAL_DOMAIN = mint("sealed-re-seal");
 /** A backup bundle's MEMORY SECTION: the image of its entries, each a bag's id, its locator, a key version
  *  id and that version's content key. */
 export const SEALED_MEMORY_SECTION_DOMAIN = mint("sealed-memory-section");
@@ -626,6 +650,8 @@ export const REALM_FEED_DOMAIN = mint("realm-feed");
 export const WARD_COSIGN_DIGEST_DOMAIN = mint("ward-cosign-digest");
 /** What a co-signer's per-face ward key signs in its answer to a ward ask: (the answer, the ask's digest, the fleet frontier it read). */
 export const WARD_ANSWER_DOMAIN = mint("ward-answer");
+/** The head a keeper vest's co-sign names: (the successor closure D′, the chain head the commit links to, the commit's nonce). */
+export const KEEPER_VEST_COSIGN_DOMAIN = mint("keeper-vest-cosign");
 /** The per-face ward signing seed a node derives from that face's own ward key: its public half rides the device's admission. */
 export const WARD_SIGN_SEED_DOMAIN = mint("ward-sign-seed");
 /** What a device's per-face ward key signs to prove its admission names a key that device holds: (group, device atom, ward key). */

@@ -37,7 +37,7 @@ The working address derives from three inputs: a verified face secret scoped to 
 
 !! Commit walk
 
-# ''PURE: address and receipt vectors.'' Fix the working-address image with N's identity lead, then derive offline convergence and separation vectors. Define a durability receipt on the authenticated session carrying `docUrl`, the stored heads and the holder's boot epoch; send it only after the holder commits those heads, with no clock in the frame. Keep receipt truth behind the vessel owner's storage acknowledgement.
+# ''PURE: address and receipt vectors.'' Fix the working-address image with N's identity lead, then derive offline convergence and separation vectors. Define a durability receipt on the authenticated session carrying `docUrl`, the stored heads and the holder's life; send it only after the holder commits those heads, with no clock in the frame. Keep receipt truth behind the vessel owner's storage acknowledgement.
 # ''LIVE: scoped surface mounts.'' Open the verified session, resolve its recipe once, construct its face facets and call `mountSurface` from node and browser production sites. The share verdict guards the offered facet list. The leaf and hearth each wear their one-way canon gate. A catalog ask and a content read cross the same view as document fetch, write and announce.
 # ''LIVE: hands and controls.'' Move node verbs, watcher, seat, effect index and outcome reader to session scope. Give the browser holder unicast replies and one control-event leg for keys, files, drops, Escape, Ctrl-Enter and import. Bind parallel-draft attribution to the authenticated session face.
 # ''LIVE: switch and fleet.'' Switch one tab's session without ending another. Retire the vessel-wide selector and the last `mountWiki` production caller. Expose the person's fleet view and removal through the verified session door.
@@ -84,6 +84,6 @@ The roadmap's ONE FACE path and `F1`–`F12` name the session debt (<<~ loulou u
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;6zQXqerWXXh5kdbOEUgiPnMMjUDu7M1QCDBHiw6S1BI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;D3UpGCz6VMtpXpnlyEeFO7c6bJtWUa5_YBfiYkzu9nw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -74,7 +74,7 @@ export interface SecretHomeRest {
 export interface VesselHeldHomes {
   /** The held bag a document belongs to. `held` absent: the document rests sealed under the vessel's key, which has not
    *  opened yet (custody locked): its saves wait in memory and its loads wait, never clear. */
-  bagOf(documentId: string): { readonly bagId: string; readonly face: null; readonly held?: HeldRestKey } | null;
+  bagOf(documentId: string): { readonly bagId: string; readonly face: null; readonly held?: HeldRestKey; readonly locked?: true } | null;
   has(documentId: string): boolean;
   /** Every vessel-only document this table holds (the secret home, and what enrolled beside it): the read a share verdict's
    *  vessel-only deny set takes. */
@@ -108,7 +108,7 @@ export function vesselHeldHomes(): VesselHeldHomes {
       const bagId = homes.get(documentId);
       if (bagId === undefined) return null;
       const held = keyOf(bagId);
-      return held ? { bagId, face: null, held } : { bagId, face: null };
+      return held ? { bagId, face: null, held } : { bagId, face: null, locked: true };
     },
     has: (documentId) => homes.has(documentId),
     ids: () => [...homes.keys()],

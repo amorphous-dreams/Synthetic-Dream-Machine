@@ -63,7 +63,7 @@ export async function runDoctor(
 export function formatDoctorReport(report: DoctorReport, storageDir: string): string {
   const lines: string[] = [];
   lines.push(`vessel doctor — ${storageDir}`);
-  lines.push(`  ${report.total} docs · ${report.healthy} healthy · ${report.condemned} condemned · ${report.unresolved} unresolved (liveness, no verdict)`);
+  lines.push(`  ${report.total} docs · ${report.healthy} healthy · ${report.sealed} sealed (sound envelopes; only the vessel's key reads inside) · ${report.condemned} condemned · ${report.unresolved} unresolved (liveness, no verdict)`);
   const bad        = report.entries.filter((e) => e.status === "torn" || e.status === "load-error" || e.status === "aborted").sort((a, b) => a.documentId.localeCompare(b.documentId));
   const unresolved = report.entries.filter((e) => e.status === "unresolved").sort((a, b) => a.documentId.localeCompare(b.documentId));
   if (bad.length === 0 && unresolved.length === 0) {
@@ -74,7 +74,7 @@ export function formatDoctorReport(report: DoctorReport, storageDir: string): st
       for (const e of bad) {
         lines.push(`    ${e.documentId}  [${e.status}]  ${e.reason ?? ""}`.trimEnd());
       }
-      lines.push(`  recovery: restore its disk carrier, then run \`lares vessel seed --apply --yes\``);
+      lines.push(`  recovery: restore its disk carrier, then run \`lares vessel lay --apply --yes\``);
     }
     if (unresolved.length > 0) {
       // H2 — never named "condemned": this door never learned whether these docs are sound.

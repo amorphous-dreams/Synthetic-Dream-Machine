@@ -35,7 +35,7 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench
  */
 import {
-  ledgerWorkbenchRealms, noteWorkbench, noteWorkbenchKey, privateCabalRealmId, realmWorkbenchDocUrl, requireWorkbenchShareable,
+  REALM_ADMISSION_ACT, REALM_STATE_ROLL_ACT, dropWorkbench, ledgerWorkbenchRealms, noteWorkbenchRemoval, noteWorkbench, noteWorkbenchKey, privateCabalRealmId, realmWorkbenchDocUrl, requireWorkbenchShareable,
   wikiSlotUri, noteWorkbenchSeat, dropWorkbenchSeat, workbenchKeyDocs, workbenchSeats, WorkbenchRefusal,
   type AutomergeUrl, type CabalRealm, type LarDoc,
 } from "@lararium/mesh";
@@ -178,6 +178,35 @@ export async function standWorkbench(provider: KeyhiveProvider, ledger: LedgerDo
   return { realmId, founded: !noted, keyDoc: f.keyDoc };
 }
 
+/** Who stands a slug's workbench on this vessel, read for one face: every realm the ledger binds it under, and the face's own. */
+export interface WorkbenchOwnership {
+  readonly bound: readonly string[];
+  /** The face's own derived cabal of one for the slug (`privateCabalRealmId`). */
+  readonly own: string;
+}
+
+/** Read who stands a slug's workbench for `face`: it reads alone and founds nothing. */
+export function workbenchOwnership(ledger: LarDoc | undefined | null, slug: string, face: string): WorkbenchOwnership {
+  return { bound: ledgerWorkbenchRealms(ledger, slug), own: privateCabalRealmId(face, slug) };
+}
+
+/**
+ * RETIRE a face's workbench of `slug` (`lares wiki retire`, the owner face's hand): the ledger's rows binding the slug to the
+ * face's OWN cabal (the binding, its key Documents, its seats) leave, so a later stand by any face founds afresh and none meets
+ * `workbench-slug-bound` (the face's hive forgets the working slot's Document through `wikiShellPorts`' `forget`). A slug the ledger binds under another face's
+ * realm refuses `workbench-slug-bound` and drops nothing: only the owner retires its workbench. The key Document's capability
+ * events stay where they rest; nothing here revokes or deletes one.
+ */
+export function retireWorkbench(ledger: LedgerDoc, slug: string, face: string): { readonly realmId: string | null; readonly dropped: readonly string[] } {
+  const { bound, own } = workbenchOwnership(ledger.doc(), slug, face);
+  if (bound.some((realmId) => realmId !== own)) {
+    throw new WorkbenchRefusal("workbench-slug-bound", `the workbench of "${slug}" stands on this vessel under another face's realm; that face retires it`);
+  }
+  let dropped: string[] = [];
+  if (bound.includes(own)) ledger.change((d) => { dropped = dropWorkbench(d, own, slug); });
+  return { realmId: bound.includes(own) ? own : null, dropped };
+}
+
 /**
  * THE WORKBENCH PORT UNDER ONE FACE: the realm a wiki's working layer rests in for `face`, read off the vessel's ledger through
  * the face's own hive. The realm that seats the hive answers (`seatedWorkbenches`). Where none does, a `mint` founds the
@@ -220,20 +249,32 @@ export async function workbenchWriterSeat(provider: KeyhiveProvider, ledger: Lar
  * the realm's key Document seats the agent on this replica, and leaves where it does not. Keyhive answers; the ledger mirrors
  * it. The reading asks the key Document the ledger names that seats this hive, else (a replica that adopted the key and
  * noted no row of it) the Document the hive maps the slot to. Rows whose face no candidate names read again through the
- * agent they carry. Returns the faces the projection holds.
+ * agent they carry. Returns the faces the projection holds. On the owner's replica (`notesRemovals`) a seat the ledger held that
+ * the Document holds nowhere now leaves ONE removal row beside its dropped seat row (the rest seals for the roster).
  */
 export async function projectWorkbenchRoster(
   provider: KeyhiveProvider, ledger: LedgerDoc, realmId: string, slug: string, candidates: ReadonlyMap<string, string> = new Map(),
+  /** `notesRemovals`: this projection reads the realm owner's own replica, the hand that revokes (the share door's landing),
+   *  so a seat it reads gone was revoked, and it notes the removal the workbench's roll answers. A projection on any other
+   *  replica (a seated face's mount) may read a seat it never ingested as absent, so it notes none. */
+  opts: { readonly notesRemovals?: boolean } = {},
 ): Promise<readonly string[]> {
   const self = await provider.whoami();
   let rosterDoc: string | null = null;
   for (const keyDoc of workbenchKeyDocs(ledger.doc(), realmId, slug)) if (await provider.seatedInDoc(self, keyDoc)) { rosterDoc = keyDoc; break; }
   rosterDoc ??= provider.docIdOfBag(wikiSlotUri(slug, "working"));
-  const all = new Map<string, string>([...workbenchSeats(ledger.doc(), realmId, slug), ...candidates]);
+  const noted = workbenchSeats(ledger.doc(), realmId, slug);
+  const all = new Map<string, string>([...noted, ...candidates]);
   const held: string[] = [];
   for (const [face, agentHex] of all) {
     const seated = rosterDoc !== null && await provider.seatedInDoc(agentHex, rosterDoc);
     if (seated) { held.push(face); ledger.change((d) => noteWorkbenchSeat(d, realmId, slug, face, agentHex)); }
+    else if (opts.notesRemovals === true && noted.has(face)) {
+      // A SEAT THE LEDGER HELD LEFT: its row drops, and ONE removal row names the act the workbench's content-key roll answers
+      // (the rest seals for the roster), so a revoke always rotates the workbench's key.
+      const was = noted.get(face)!;
+      ledger.change((d) => { dropWorkbenchSeat(d, realmId, slug, face); noteWorkbenchRemoval(d, realmId, slug, face, was); });
+    }
     else ledger.change((d) => dropWorkbenchSeat(d, realmId, slug, face));
   }
   return held.sort();
@@ -251,6 +292,14 @@ export interface LandWorkbenchPorts {
   readonly ownerFace: string;
   /** True where the wiki's canon stands in the canon source: its one workbench folder rests beside that source and takes no workspace. */
   readonly checkoutSourced?: boolean;
+  /**
+   * THE KEY HOLDER (u3, the rest seals for the roster): a face the landing seats reads the workbench's past only from a box a
+   * holder of the key hands it. Answers null where the workbench's rest holds no founding yet (the owner's first seal wraps
+   * for the roster then); a door that hands one seated agent the head's chained box; or a `cure` (a runnable `lares …` line)
+   * where no holder of the key stands lit to hand it, and the landing then refuses `seat-needs-keyholder` before any seat
+   * moves. Absent: the landing seats and hands nothing over.
+   */
+  readonly keyholder?: () => Promise<null | { handOver(agentHex: string): Promise<void> } | { readonly cure: string }>;
 }
 
 /** What one landing did. */
@@ -261,6 +310,11 @@ export interface LandedWorkbench {
   readonly seated: number;
   /** The faces a row stopped naming, whose seats this landing revoked. */
   readonly removed: readonly string[];
+  /**
+   * Each member the roster already seated whose hand-over refused this landing, by face, with the refusal and its cure as the
+   * key holder named them: such a seat holds no lockbox yet, and the landing says so rather than read as landed.
+   */
+  readonly unhanded: readonly { readonly face: string; readonly cause: string }[];
 }
 
 /**
@@ -275,6 +329,14 @@ export async function landWorkbench(
   requireWorkbenchShareable({ slug: row.slug, ...(ports.checkoutSourced !== undefined ? { checkoutSourced: ports.checkoutSourced } : {}), ...(row.workspace !== undefined ? { workspace: row.workspace } : {}) });
   const { realmId, founded, keyDoc } = await standWorkbench(ports.provider, ports.ledger, row.slug, ports.ownerFace);
   const named = new Set(members.map((m) => m.face));
+  const fresh: WorkbenchMember[] = [];
+  for (const m of members) if (!(await workbenchFaceHolds(ports.provider, row.slug, m.agentHex, m.access))) fresh.push(m);
+  // A FACE SEATED NOW READS THE PAST ONLY FROM A HOLDER OF THE KEY (u3): with none lit to hand it over, no seat moves.
+  // A re-land reads the holder too: a seat a refused hand-over left lockbox-less takes its box at the next landing.
+  const keyholder = ports.keyholder && members.length > 0 ? await ports.keyholder() : null;
+  if (keyholder !== null && "cure" in keyholder && fresh.length > 0) {
+    throw new WorkbenchRefusal("seat-needs-keyholder", `the workbench of "${row.slug}" already rests sealed, and no holder of its key stands lit to hand the new seat its lockbox; ${keyholder.cure}`);
+  }
   const removed: string[] = [];
   for (const [face, agentHex] of workbenchSeats(ports.ledger.doc(), realmId, row.slug)) {
     if (face === ports.ownerFace || named.has(face)) continue;
@@ -282,10 +344,48 @@ export async function landWorkbench(
     removed.push(face);
   }
   let seated = 0;
-  for (const m of members) {
-    if (!(await workbenchFaceHolds(ports.provider, row.slug, m.agentHex, m.access))) { await admitWorkbenchFace(ports.provider, row.slug, m.agentHex, m.access); seated++; }
-  }
+  const unhanded: { face: string; cause: string }[] = [];
+  for (const m of fresh) { await admitWorkbenchFace(ports.provider, row.slug, m.agentHex, m.access); seated++; }
   const candidates = new Map<string, string>([[ports.ownerFace, await ports.provider.whoami()], ...members.map((m) => [m.face, m.agentHex] as [string, string])]);
-  await projectWorkbenchRoster(ports.provider, ports.ledger, realmId, row.slug, candidates);
-  return { slug: row.slug, realmId, docUrl: realmWorkbenchDocUrl(realmId, row.slug), founded, members: members.length, seated, removed: removed.sort() };
+  await projectWorkbenchRoster(ports.provider, ports.ledger, realmId, row.slug, candidates, { notesRemovals: true });
+  // THE HAND-OVER: each face seated now takes the head's one chained box (its history declared shareable at the founding).
+  if (keyholder !== null && !("cure" in keyholder)) {
+    const freshHexes = new Set(fresh.map((m) => m.agentHex));
+    for (const m of members) {
+      if (freshHexes.has(m.agentHex)) { await keyholder.handOver(m.agentHex); continue; }
+      // A seat the roster already held: its box is handed again where the holder can (a lockbox a refused landing never gave).
+      // A refusal stays named on the landing, with its cure: the seat moved before, so the landing goes on for the others.
+      try { await keyholder.handOver(m.agentHex); } catch (err) { unhanded.push({ face: m.face, cause: err instanceof Error ? err.message : String(err) }); }
+    }
+  }
+  return { slug: row.slug, realmId, docUrl: realmWorkbenchDocUrl(realmId, row.slug), founded, members: members.length, seated, removed: removed.sort(), unhanded };
+}
+
+/**
+ * WHETHER A LANDING ASKS UNDER A PERSON'S HAND: the owner's holder signs a hand-over only for an ask the operator's own CLI placed
+ * (`asker: "cli"`); a seat, a tab, a watcher and an ask no door read leave the cure to the person.
+ */
+export function landsUnderAHand(context: { readonly asker?: string }): boolean {
+  return context.asker === "cli";
+}
+
+/**
+ * EACH HAND-OVER REFUSAL NAMES ITS OWN CURE (a runnable `lares …` line): a span with no live document to open on, a member the
+ * owner's hive cannot wrap for; any other refusal reads `ownerLine`, the owner's cure (wear the owner face, land again).
+ */
+export function handOverCure(slug: string, refusal: string, ownerLine: string, memberIndex?: number): string {
+  if (refusal === "no-head-held") return `the owner face's holder here holds no key of the workbench's head (another device of the face, or a version this holder never counted, wrote it): land the share from the device whose holder wrote under that head (\`lares wiki share ${slug}\`)`;
+  if (refusal === "fresh-base-unavailable") return `open the wiki under the realm's owner face so its live working document stands (\`lares wiki switch ${slug}\`), then land the share again (\`lares wiki share ${slug}\`)`;
+  if (refusal === "wrap-failed" || refusal === "reader-unreached") return `the owner's hive holds no contact card it can wrap for that member: light the member face (\`lares vault unlock --face ${memberIndex ?? "N"}\`), then land the share again (\`lares wiki share ${slug}\`)`;
+  return ownerLine;
+}
+
+/**
+ * THE `sealed-admit` DOOR OPENS NO REALM-DERIVED ACT: a realm's from-now admission opens only at the share door, under the owner's
+ * hand (`handOverRealm`), and a state roll only in the owner's holder. An act under either prefix refuses `realm-act-reserved`
+ * before the holder reads it; null lets any other act through.
+ */
+export function sealedAdmitRefusal(act: string): { readonly refusal: "realm-act-reserved"; readonly cause: string } | null {
+  if (!act.startsWith(REALM_ADMISSION_ACT) && !act.startsWith(REALM_STATE_ROLL_ACT)) return null;
+  return { refusal: "realm-act-reserved", cause: "a realm workbench opens its admission at the share door alone, under the realm owner's hand (`lares wiki share <wiki>`)" };
 }

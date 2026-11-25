@@ -4,8 +4,13 @@
  * The cap and the shares land on the face-private promote board (a sibling record family), and a lei lands in the daemon wiki under
  * `$:/lares/swarm/`. The signer is the face's root seed, loaded only for the rows that sign; `show` reads and never touches the seed.
  * The wiki is checked first: with no standing daemon every row refuses by name before a face loads.
+ *
+ * A kui or an unstring row that carries `signed` lands a HAND RECORD: the hand signed it at the pūlama's hand door, where the
+ * face root rests, so this row opens no ward and loads no seed; the swarm door's `lei-land` verifies the record against the face
+ * and runs the act it names over the record's own signature (a restring lands as the kui after the tip it names).
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
+import type { ExecLeiScope } from "@lararium/mesh";
 import { wardRootSigner } from "../ward-signer.js";
 import { loadPersonaGroupRootVerifyingKey } from "../node-vessel-identity.js";
 import type { WardCredential } from "../ward-credential.js";
@@ -39,7 +44,8 @@ export async function runSwarmVerb(opts: {
   // a co-signed act the gate holds (the house cap, a lei) asks no route at all.
   let signing: SwarmSignerPort = { key: "", sign: async () => { throw new SwarmRefused("swarm-show-signs-nothing", "show holds no signer"); } };
   const wardRefusal = (e: unknown): unknown => (e instanceof Error && /^ward-/.test(e.message) ? new SwarmRefused(e.message.split(":")[0]!, e.message) : e);
-  if (opts.action !== "show") {
+  const handRecord = (opts.action === "lei-kui" || opts.action === "lei-unstring") && opts.args["signed"] !== undefined;
+  if (opts.action !== "show" && !handRecord) {
     const key = await loadPersonaGroupRootVerifyingKey(index);
     if (!key) throw new Error(`[ward-signer] this vessel holds no root at h${index}: a joinee signs as its device, never as the root`);
     signing = { key, sign: async (bytes) => {
@@ -48,7 +54,8 @@ export async function runSwarmVerb(opts: {
     } };
   }
   const str = (key: string): string => (typeof opts.args[key] === "string" ? opts.args[key] as string : "");
-  const request: SwarmRequest = opts.action === "show" ? { action: "show", ...(str("branch") ? { rite: opts.args["rite"] as SwarmLeiRite, branch: str("branch"), ...(str("head") ? { head: str("head") } : {}) } : {}) }
+  const request: SwarmRequest = handRecord ? { action: "lei-land", record: opts.args["signed"] }
+    : opts.action === "show" ? { action: "show", ...(str("branch") ? { rite: opts.args["rite"] as SwarmLeiRite, branch: str("branch"), ...(str("head") ? { head: str("head") } : {}) } : {}) }
     : opts.action === "cap-set" ? { action: "cap-set", value: opts.args["value"], ...(opts.args["supersede"] === true ? { supersede: true } : {}) }
     : opts.action === "share-set" ? { action: "share-set", lane: str("lane"), value: opts.args["value"], ...(opts.args["supersede"] === true ? { supersede: true } : {}) }
     // An unstring names its lei by cid; the hand signs the record and no co-sign waits.
@@ -58,6 +65,7 @@ export async function runSwarmVerb(opts: {
         ...(opts.args["reach"] !== undefined ? { reach: opts.args["reach"] as SwarmLeiReach } : {}),
         ...(opts.args["returns"] !== undefined ? { returns: opts.args["returns"] as number } : {}),
         ...(opts.args["head"] !== undefined ? { head: opts.args["head"] as string } : {}),
+        ...(opts.args["scope"] !== undefined ? { scope: opts.args["scope"] as ExecLeiScope } : {}),
         ...(opts.args["confirm"] === true ? { confirm: true } : {}) }
     // `rite` names the lei's one power (push or kukulu); the door refuses a lei that names none. `after` names the lei this one
     // follows on its rite's line at the branch (`show` reads it), null for the first there; an absent one refuses.
@@ -67,10 +75,11 @@ export async function runSwarmVerb(opts: {
         ...(opts.args["reach"] !== undefined ? { reach: opts.args["reach"] as SwarmLeiReach } : {}),
         ...(opts.args["returns"] !== undefined ? { returns: opts.args["returns"] as number } : {}),
         ...(opts.args["head"] !== undefined ? { head: opts.args["head"] as string } : {}),
+        ...(opts.args["scope"] !== undefined ? { scope: opts.args["scope"] as ExecLeiScope } : {}),
         ...(opts.args["confirm"] === true ? { confirm: true } : {}) };
   return await swarmCommand(request, {
     group, face: { group, grant }, signer: signing, epoch: () => face.lineage[face.lineage.length - 1]!.epoch, wiki: opts.wiki,
-    // The vessel and lead trust join at the slices that sign roster, receipt and lane state; at S1 the hand alone signs.
+    // The vessel and lead trust join at the slices that sign roster and lane state; at S1 the hand alone signs.
     trust: { hand: grant, vessel: () => false, lead: () => false },
     board: { records: async () => swarmBoardRecords(handle.doc(), group), land: async (act) => { handle.change((d) => writeSwarmBoardAct(d, act)); await opts.repo.flush(); } },
     // A local process names its own hand; the session gate refuses declared seat hands before custody reads. That `who` is

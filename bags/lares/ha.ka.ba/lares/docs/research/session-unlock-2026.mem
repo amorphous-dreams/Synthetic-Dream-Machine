@@ -90,7 +90,7 @@ Dates below are publication/update dates where the page supplies one; otherwise 
 | Native secure hardware can protect keys, with device-specific availability and constraints. | Twin | CONFIRMED | [Apple Secure Enclave](https://developer.apple.com/documentation/Security/protecting-keys-with-the-secure-enclave) (undated; accessed 2026-10-18) says enclave private keys remain device-bound and can require unlocked device/user verification. [Android Keystore](https://developer.android.com/privacy-and-security/keystore) (undated; accessed 2026-10-18) requires checking security level; StrongBox is not universal. |
 | Web/PWA cannot claim direct native enclave/keystore custody. | Twin | CONFIRMED as an API boundary, but a blanket claim across all browser bridges is LEAD | Apple documents native Security/Authentication Services APIs; Android documents app Keystore APIs. Neither source grants ordinary web JavaScript these interfaces. A particular installed app bridge needs its own audit. |
 | Containers automatically lack TPM/secure-hardware access. | Twin | LEAD | No vendor/runtime source checked establishes this as a universal. It depends on host configuration and device passthrough; probe deployment socket/device mounts and key security level. |
-| House law: per-tab asks; a session wears one face; no vessel-wide face/session roster; quiet sync stays sealed until authorized session opens. | Both | CONFIRMED against house ground | Local `stable-founding-road.mem` #/rulings and `session-contract.mem` #/the-hands; `sealed-store.mem` #/owed. The 2026-10-18 operator ruling explicitly fixes per-tab unlock. |
+| House law: per-tab asks; a session wears one face; no vessel-wide face/session roster; quiet sync stays sealed until authorized session opens. | Both | CONFIRMED against house ground | Local `lar:///ha.ka.ba/lares/docs/stable-founding-road` #/rulings and `session-contract.mem` #/the-hands; `sealed-store.mem` #/owed. The 2026-10-18 operator ruling explicitly fixes per-tab unlock. |
 
 ## What changed after Yang's ground
 
@@ -205,6 +205,6 @@ This retains my wave-one per-tab ruling and the twin’s strongest correction: b
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;lLlxHkujCSVokqKjXo7LV-scPx3AH9DSUcT319yyI38`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;pCw38l-C1BxRjmFQIJJ3SHiCqhVk_WAyw410huSinPI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -2,7 +2,7 @@
  * floor-cut — `lares nexus release <manifest-file> --cut`: the node vessel's binding of the release wiring (`@lararium/mesh`
  * `cutReleaseFloor`). It cuts the floor the next release names from LIVE house canon, so a release after a promotion carries the
  * promoted rows (offering#/the-canon-offer). It seals nothing and lands nothing on any board: it writes the manifest file the
- * seats then approve (`lares nexus promote open <manifest-file> --purpose floor-release --surface floor-release`) and stages the
+ * seats then approve (`lares nexus approve open <manifest-file> --purpose floor-release --surface floor-release`) and stages the
  * floor's blobs in this hearth's CAS, where `nexus release` and the porch read them.
  *
  * The ports, by capability (`runFloorCutOver` binds them; `runFloorCut` resolves the charter, the board and the catalog first):
@@ -18,11 +18,11 @@
  */
 import { existsSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import type { AutomergeUrl, Repo } from "@automerge/automerge-repo";
+import type { Repo } from "@automerge/automerge-repo";
 import {
-  AutomergeDocStore, BAG_MANIFEST_FILE, FloorCutThin, bagUri, cutReleaseFloor, floorPinOf, floorReleaseEntriesFromBoard, foldFloorReleases,
-  publicationDocUrl, materializeSharedLarDoc, realmStandingDocUrl, sha256HexBytesSync,
-  type CapTier, type LarDoc, type LarTiddlerRecord, type OfferRecordReader,
+  BAG_MANIFEST_FILE, FloorCutThin, cutReleaseFloor, floorPinOf, floorReleaseEntriesFromBoard, foldFloorReleases,
+  FloorManifestRefusal, publicationDocUrl, materializeSharedLarDoc, readFloorManifest, sha256HexBytesSync,
+  type CapTier,
 } from "@lararium/mesh";
 import { readBagManifest } from "../bag-declare.js";
 import { daemonBagsDir } from "../lares-config.js";
@@ -31,6 +31,7 @@ import { loadVesselVerifyingKey } from "../node-vessel-identity.js";
 import { nodeNexusIsland } from "../nexus-standing.js";
 import { FloorRefused, nodeFloorPorts } from "./floor.js";
 import { charterHomeFor } from "../carried-set.js";
+import { nodeCanonDocUrl, nodeCanonRows } from "./canon-rows.js";
 
 export interface FloorCutResult {
   readonly nexus?:      string;
@@ -51,23 +52,6 @@ export function declaredBagTier(bagsDir: string, slug: string): CapTier | null {
 }
 
 /**
- * The live house-canon document a bag names on this vessel: the Kahu realm's bag row in the vessel's own catalog. `catalogUrl`
- * names that catalog as the store door holds it (`StoreDoorDeps.catalogUrl`: the standing vessel's own catalog handle, or the
- * pointer file beside a store a direct act opened, `readCatalogPointer`). Null where the store names no catalog or no row stands
- * for the bag. A read; it asks nothing.
- */
-export async function nodeCanonDocUrl(repo: Repo, catalogUrl: string | null | undefined): Promise<(bag: string) => string | null> {
-  const catalog = catalogUrl ? (await repo.find<LarDoc>(catalogUrl as AutomergeUrl)).doc() : null;
-  return (bag) => (catalog ? realmStandingDocUrl(catalog, bag) : null);
-}
-
-/** One canon bag's live store on this vessel, or null where no document stands for it. */
-export async function nodeCanonStore(repo: Repo, docUrlOf: (bag: string) => string | null, bag: string): Promise<(OfferRecordReader & { listVisible(): Promise<string[]> }) | null> {
-  const url = docUrlOf(bag);
-  return url ? new AutomergeDocStore(await repo.find<LarDoc>(url as AutomergeUrl), bag) : null;
-}
-
-/**
  * THE NODE BINDING, over what the caller resolved: the prior floor's manifest CID, the canon documents by bag. It cuts, stages the
  * blobs in `casDir`, and writes the manifest's exact bytes to `out`. A prior this CAS cannot answer refuses `floor-cut-refused`.
  */
@@ -80,6 +64,8 @@ export async function runFloorCutOver(opts: {
   readonly bagTier:     (slug: string) => CapTier | null;
   /** Slugs the steward names thin on purpose: each cuts though its live rows count under half the prior snapshot's. */
   readonly thin?:       readonly string[];
+  /** The engine digest this vessel's genesis floor names; a prior whose engine differs refuses `floor-engine-unoffered`. Required. */
+  readonly genesisEngine: () => Promise<string | null> | string | null;
 }): Promise<FloorCutResult> {
   const out = await cutReleaseFloor({
     prior: async () => {
@@ -87,18 +73,14 @@ export async function runFloorCutOver(opts: {
       const bytes = cid ? readVerifiedCasBlobFromFs(cid, opts.casDir) : null;
       return cid && bytes ? { manifestCid: cid, bytes } : null;
     },
-    canonRows: async (slug) => {
-      const store = await nodeCanonStore(opts.repo, opts.canonDocUrl, bagUri(slug));
-      if (!store) return null;
-      const rows: Record<string, LarTiddlerRecord> = {};
-      for (const title of await store.listVisible()) { const r = await store.get(title); if (r) rows[title] = r; }
-      return rows;
-    },
+    canonRows: (slug) => nodeCanonRows(opts.repo, opts.canonDocUrl, slug),
     tier: opts.bagTier,
     blob: async (cid) => readVerifiedCasBlobFromFs(cid, opts.casDir),
     stage: async (blobs) => { writeCasEntriesFs(blobs.map((b) => ({ cid: b.cid, bytes: b.bytes })), opts.casDir); },
+    genesisEngine: opts.genesisEngine,
   }, { ...(opts.thin ? { thin: opts.thin } : {}) }).catch((e: unknown) => {
     if (e instanceof FloorCutThin) throw new FloorRefused(e.refusal, e.message);
+    if (e instanceof FloorManifestRefusal && e.code === "floor-engine-unoffered") throw new FloorRefused(e.code, e.message);
     throw new FloorRefused("floor-cut-refused", e instanceof Error ? e.message : String(e));
   });
   if (sha256HexBytesSync(out.manifestBytes) !== out.manifestCid) throw new FloorRefused("floor-cut-refused", "the cut manifest's bytes differ from its CID");
@@ -120,6 +102,12 @@ export async function runFloorCut(opts: {
     repo: opts.repo, casDir: opts.casDir, out: opts.out, canonDocUrl: await nodeCanonDocUrl(opts.repo, opts.catalogUrl),
     bagTier: (slug) => declaredBagTier(daemonBagsDir(), slug),
     ...(opts.thin ? { thin: opts.thin } : {}),
+    // The engine the genesis floor names: a cut carries the engine it stands on and never offers one.
+    genesisEngine: async () => {
+      const bytes = pinPorts.genesisManifest ? await casRead(pinPorts.genesisManifest) : null;
+      const read = bytes ? readFloorManifest(bytes) : null;
+      return read && "manifest" in read ? read.manifest.engine : null;
+    },
     prior: async () => {
       const standing = await foldFloorReleases({ rows: floorReleaseEntriesFromBoard(board.doc()), nexus: pinPorts.nexus, manifestBytesOf: casRead });
       return standing.standing === "released" ? standing.head.body.manifest : floorPinOf(pinPorts.home.doc(), pinPorts.nexus, pinPorts.genesisManifest).pin.manifest;

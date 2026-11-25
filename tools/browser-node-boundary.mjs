@@ -64,7 +64,14 @@ export function browserCells(workflowText) {
       if (cd) { quickDirs.add(cd[1]); break; }
     }
   });
-  return [...named, { cell: "quick", dirs: [...quickDirs] }];
+  // With the browser lamps dim (tools/ci-cells.mjs BROWSER_LAMPS_DIM) no quick step runs pw-container.sh and no row names a container: no cell stands to judge.
+  return quickDirs.size > 0 ? [...named, { cell: "quick", dirs: [...quickDirs] }] : named;
+}
+
+/** The snapshot key a lock `version` names for `dep`: an alias records `name@version` (or `npm:name@version`) itself, a plain edge only the version. */
+function lockKey(dep, version) {
+  if (version.startsWith("npm:")) return version.slice(4);
+  return /^[^(]*@/.test(version) ? version : `${dep}@${version}`;
 }
 
 // ── the lockfile: exact line reader for importers / packages / snapshots ──
@@ -209,14 +216,14 @@ function walkCell({ cell, dirs }, members, lock, diagnostics) {
           // a peer the importer never resolves rides the consumer's own edge, which the walk reaches from there
           if (!version && field === "peerDependencies") continue;
           if (!version) { diagnostics.push(`cell ${cell}: ${dep} (from ${item.workspace}) has no importer entry in pnpm-lock.yaml`); continue; }
-          visit({ key: version.startsWith("npm:") ? version.slice(4) : `${dep}@${version}`, name: dep, from: item.workspace });
+          visit({ key: lockKey(dep, version), name: dep, from: item.workspace });
         }
       }
     } else {
       const bare = bareVersion(item.key);
       if (!lock.edges.has(item.key) && !lock.engines.has(bare)) { diagnostics.push(`cell ${cell}: ${item.name} (${item.key}) is absent from pnpm-lock.yaml`); continue; }
       judge(lock.engines.get(bare), bare, cell, diagnostics);
-      for (const [dep, value] of lock.edges.get(item.key) ?? []) visit({ key: value.startsWith("npm:") ? value.slice(4) : `${dep}@${value}`, name: dep, from: item.key });
+      for (const [dep, value] of lock.edges.get(item.key) ?? []) visit({ key: lockKey(dep, value), name: dep, from: item.key });
     }
   }
   return seen.size;

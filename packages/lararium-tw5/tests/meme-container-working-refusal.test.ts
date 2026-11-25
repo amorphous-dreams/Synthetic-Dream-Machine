@@ -2,7 +2,7 @@ import { describe, expect, test, vi } from "vitest";
 import { memoryControlStore } from "./control-store-fixture.js";
 import { CompositeStore, DAEMON_BAG_ID, NoWorkingLayerRefusal, OUTCOME_URI_PREFIX } from "@lararium/mesh";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
-import { makeMemePutReactor } from "../src/meme-verbs.js";
+import { makeMemeDeleteReactor, makeMemePatchReactor, makeMemePutReactor } from "../src/meme-verbs.js";
 import { VerbDispatcher, VerbTable, type VerbContext } from "../src/verb-dispatcher.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
 
@@ -79,5 +79,35 @@ describe("a meme write into the daemon's own wiki without a working layer", () =
     } finally {
       dispatcher.stop();
     }
+  });
+});
+
+describe("RED (#428 F1) — the meme door never writes a residency ledger", () => {
+  test("meme put, patch and delete of a ledger uri refuse `effect-ledger-house-only` before any write", async () => {
+    const daemon = new CompositeStore();
+    const daemonBag = new MemoryTiddlerStore(DAEMON_BAG_ID);
+    daemon.addLayer({ bagId: DAEMON_BAG_ID, store: daemonBag, writable: true });
+    const options = { composite: daemon, tw5: new Wiki() as unknown as Pick<TW5Engine, "$tw"> };
+    const uri = "lar:///ha.ka.ba/wikis/elyncia-referee/working/ledger/residency/forged";
+    const ctx = (verb: string) => ({ daemon, invocation: { verb, requestId: "r", requestedBy: "did:key:test", args: {} } } as unknown as VerbContext);
+    await expect(makeMemePutReactor(options)({ recipe: "default", uri, text: "content" }, ctx("meme-put"))).rejects.toMatchObject({ reason: "effect-ledger-house-only" });
+    await expect(makeMemePatchReactor(options)({ recipe: "default", uri, slot: "#/a", append: "x", base: "sha256-x" }, ctx("meme-patch"))).rejects.toMatchObject({ reason: "effect-ledger-house-only" });
+    await expect(makeMemeDeleteReactor(options)({ recipe: "default", uri }, ctx("meme-delete"))).rejects.toMatchObject({ reason: "effect-ledger-house-only" });
+    expect(await daemonBag.get(uri)).toBeNull();
+  });
+});
+
+describe("RED (the record of leaving stays) — the meme door never writes a shell's record of leaving", () => {
+  test("meme put, patch and delete of `shell-leavings/<slug>` refuse `effect-ledger-house-only` before any write", async () => {
+    const daemon = new CompositeStore();
+    const daemonBag = new MemoryTiddlerStore(DAEMON_BAG_ID);
+    daemon.addLayer({ bagId: DAEMON_BAG_ID, store: daemonBag, writable: true });
+    const options = { composite: daemon, tw5: new Wiki() as unknown as Pick<TW5Engine, "$tw"> };
+    const uri = "lar:///ha.ka.ba/lararium/shell-leavings/elyncia-referee";
+    const ctx = (verb: string) => ({ daemon, invocation: { verb, requestId: "r", requestedBy: "did:key:test", args: {} } } as unknown as VerbContext);
+    await expect(makeMemePutReactor(options)({ recipe: "default", uri, text: "content" }, ctx("meme-put"))).rejects.toMatchObject({ reason: "effect-ledger-house-only" });
+    await expect(makeMemePatchReactor(options)({ recipe: "default", uri, slot: "#/a", append: "x", base: "sha256-x" }, ctx("meme-patch"))).rejects.toMatchObject({ reason: "effect-ledger-house-only" });
+    await expect(makeMemeDeleteReactor(options)({ recipe: "default", uri }, ctx("meme-delete"))).rejects.toMatchObject({ reason: "effect-ledger-house-only" });
+    expect(await daemonBag.get(uri)).toBeNull();
   });
 });

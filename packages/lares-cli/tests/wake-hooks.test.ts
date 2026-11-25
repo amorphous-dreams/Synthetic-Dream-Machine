@@ -17,6 +17,7 @@ describe("the wake and compaction hooks (road L43)", () => {
       "--test",
       "packages/lares-cli/tests/lares-wake-core.test.mjs",
       "packages/lares-cli/tests/lares-wake-hook.test.mjs",
+      "packages/lares-cli/tests/lares-spirit-hooks.test.mjs",
     ], { cwd: REPO, env, encoding: "utf8" });
     expect(ran.status, `${ran.stdout.slice(-4000)}\n${ran.stderr.slice(-1000)}`).toBe(0);
     expect(ran.stdout).toMatch(/ℹ fail 0|# fail 0/);

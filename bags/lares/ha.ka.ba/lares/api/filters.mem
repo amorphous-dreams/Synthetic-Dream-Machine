@@ -1,0 +1,97 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/filters`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+role      = "the house's named filters: the law index, course standing, waves and the memory stage as canon functions; canon only"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/api/filters"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/filters"
+```
+
+\function lares.law.pins()
+[subfilter{$:/config/lares/law/pins}] :intersection[lares.law[]]
+\end
+
+\function lares.law()
+[subfilter{$:/config/lares/law/pins}] =[prefix[lar:///ha.ka.ba/]regexp[^lar:///ha\.ka\.ba/(\w|-)+/api/]!regexp[#]sort[title]] +[unique[]] :filter[regexp[^lar:///ha\.ka\.ba/(\w|-)+/api/]!regexp[#]] :filter[get[$origin-bag]regexp[^lar:///ha\.ka\.ba/bags/(oracle|lares|lararium)$]] :filter[regexp[^lar:///\S+$]]
+\end
+
+\function lares.road(state)
+[tag[stage/road]] :filter[tags[]removeprefix[road/state/]match<state>]
+\end
+
+\function lares.course.citers(pattern,t)
+[all[tiddlers]prefix[lar:///ha.ka.ba/kahua/memory/]!match<t>search:text:literal,casesensitive<t>regexp:text<pattern>] :filter[<currentTiddler>removeprefix<t>prefix[#/]then[no]else[yes]match[yes]]
+\end
+
+\function lares.course.text-uncited(t)
+[<t>escaperegexp[]addsuffix[(?:\.(?!\w|-)|#/|(?!(?:-|\.|/|#))\W|$)]] :map[lares.course.citers<currentTiddler>,<t>count[]] +[match[0]]
+\end
+
+\function lares.course.uncited(t)
+[<t>backlinks[]prefix[lar:///ha.ka.ba/kahua/memory/]!match<t>] :filter[<currentTiddler>removeprefix<t>prefix[#/]then[no]else[yes]match[yes]] +[count[]match[0]] :filter[lares.course.text-uncited<t>]
+\end
+
+\function lares.course.standing(t)
+[<t>!has[proof]then[open]] :else[<t>get[proof]trim[]is[blank]then[open]] :else[lares.course.uncited<t>then[closed ash-ready]else[closed]enlist-input[]]
+\end
+
+\function lares.course(standing)
+[tag[stage/course]!regexp[#]] :filter[lares.course.standing<currentTiddler>match<standing>]
+\end
+
+\function lares.waves()
+[tag[stage/wave]]
+\end
+
+These reference titles name the engineer face's instance of the attractor-store title convention, in wake order, as slugs under the reference stage; a later store joins the slug list. The view supplies presence.
+
+\function lares.attractors()
+[[discordian-catmas]] [[pattern-integrities]] [[practices]]
++[addprefix[lar:///ha.ka.ba/kahua/memory/reference/]]
+:filter[is[tiddler]]
+\end
+
+\function lares.stage(name)
+[prefix[lar:///ha.ka.ba/kahua/memory/]] :filter[<currentTiddler>removeprefix[lar:///ha.ka.ba/kahua/memory/]removeprefix<name>removeprefix[/]]
+\end
+
+\function lares.broken()
+[prefix[lar:///ha.ka.ba/kahua/memory/]lar-refs:out[]prefix[lar:///ha.ka.ba/kahua/memory/]] :filter[is[missing]]
+\end
+
+\function lares.unreached()
+[prefix[lar:///ha.ka.ba/kahua/memory/]!regexp[#]lar-refs:unreached[]]
+\end
+
+<<~ ahu slot=`#/head`>>
+
+! The house's named filters
+
+The house filters stand here as `\function` definitions, defined for every filter the house runs: `[lares.law[]]` (the law index: the pins first, then every canon root meme under a bag's `api/` tree, each row answered from a canon layer), `[lares.law.pins[]]` (the pins that stand as canon law), `[lares.road[state]]` (the road reader until stage road items move; a later change retires it under the canon retirement law), `[lares.course[open]]` (course items whose proof reads blank), `[lares.course[closed]]` (items carrying proof), `[lares.course[ash-ready]]` (proved items without inbound citations), `[lares.waves[]]` (wave titles) and `[lares.stage[state]]` (every title under `lar:///ha.ka.ba/kahua/memory/<stage>/`, slots too; `[lares.stage[state]!regexp[#]]` keeps the root memes). Citations count only from other memory-stage titles, excluding the item and its slots; literal text matches case and a whole title, with links also checked through backlinks. `lares wiki filter '[lares.law[]]'`, the wake and the MCP seat's `law_index` all run these same functions.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/names`>>
+
+!! Why the names carry a period
+
+TiddlyWiki resolves a user function as a filter operator only where its name holds a period (`filters/unknown.js`); a bare `law` would read as a field name. The `lares.` stem marks the house's own set.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/canon-only`>>
+
+!! Canon only
+
+The daemon reads this carrier's text from the canon layers (the oracle floor and the system canon bags) and builds the functions from it; a house name that fails to parse from the carrier (dropped, renamed, in a form no reader takes) reads from the floor the code holds, name by name. The carrier carries no `$:/tags/Global`, so no stock `\import` reads a shadowable copy. A working-layer tiddler that redefines `lares.law`, `lares.law.pins`, `lares.course`, its helpers, `lares.waves` or `lares.stage`, at this title or tagged `$:/tags/Global` elsewhere, changes no answer of `lares wiki filter`, the MCP `wiki_filter`, `lares wiki render` or the record port's filter ask. A filter naming any other `lares.` operator refuses by name. A raw `\import` a hand writes into its own wikitext stands outside that guarantee.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;4-bVFuuNH3suxNOnt7ZcP6gGwF2D9CuI7ActRz9L6i4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

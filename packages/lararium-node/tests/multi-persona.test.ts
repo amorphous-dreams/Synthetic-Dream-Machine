@@ -203,7 +203,7 @@ describe("multi-persona-per-vessel (#63)", () => {
   test("veiled-Handle anchors extend to a SET — each persona anchors to its OWN PersonaGroup", async () => {
     const a0 = { personaGroupId: "a0".repeat(32), meshCabalDocIdHex: "b0".repeat(32) };
     const a1 = { personaGroupId: "a1".repeat(32), meshCabalDocIdHex: "b1".repeat(32) };
-    await persistIdentityAnchors(a0);          // default index 0 (founding) → anchors-h0.json, uniform keying
+    await persistIdentityAnchors(a0, 0);       // the founding face, named → anchors-h0.json, uniform keying
     await persistIdentityAnchors(a1, 1);       // persona 1 → anchors-h1.json
 
     expect(await loadIdentityAnchors()).toEqual(a0);       // the founding-persona read round-trips

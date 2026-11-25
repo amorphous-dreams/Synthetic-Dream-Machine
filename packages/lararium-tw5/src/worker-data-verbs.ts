@@ -20,6 +20,7 @@ import { ACTIVE_WIKI_URI } from "./active-wiki.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
 import { findOrThrow, makeCatalogAccessor, type CatalogAccessor } from "./catalog-accessor.js";
 import { effectiveRecipeOf } from "./recipe-planes.js";
+import type { IngestAlert } from "./action-handler.js";
 
 /** True for a draft floor's registry key (`wikis/<slug>/drafts/<did>`) — a doc the slot walk names. */
 function isDraftFloorKey(key: string): boolean {
@@ -173,7 +174,10 @@ export function makeResolveReactor(composite: CompositeStore): VerbReactor {
  *  composite layer, so the accessor reads it directly, never through the composite. */
 export function makeListWikisReactor(catalog: CatalogAccessor, sysPlane?: CatalogAccessor, systemCanonUrl?: (bagUri: string) => Promise<string | null>): VerbReactor {
   return async () => {
-    const wikis: Array<{ slug: string; uri: string; automergeUrl: string | null; kind: string; composition?: "own" | "default"; defaultDiffers?: boolean }> = [];
+    // `canon: "floor"` names WHY a system row carries no document: no Kahu realm document answers this face (it holds no Kahu
+    // reach) and no catalog row names one, so the wiki reads its canon through the floor snapshot (`floorCanonAddress`), which
+    // no document stands behind. A house canon outside the Kahu cabal reads so by design, never as a seat gap.
+    const wikis: Array<{ slug: string; uri: string; automergeUrl: string | null; kind: string; composition?: "own" | "default"; defaultDiffers?: boolean; canon?: "floor" }> = [];
     const cat = await catalog.handle();
     const catTiddlers: Record<string, LarTiddlerRecord> = Object.fromEntries(plainEntries(cat.doc()?.tiddlers));
     // System wikis — oracle-plane recipes (the lares/lararium quine system bags) carry the DEFAULT.
@@ -190,7 +194,8 @@ export function makeListWikisReactor(catalog: CatalogAccessor, sysPlane?: Catalo
         if (!slug || slug.includes("/")) continue;
         const bagUri = wikiBagUri(slug);
         const own = catTiddlers[recipeUri("catalog", slug)];
-        const row: (typeof wikis)[number] = { slug, uri: bagUri, automergeUrl: houseCanonUrl(await resolveHouseCanon<string>(bagUri, { realm: systemCanonUrl, row: () => catalog.urlOf(bagUri) })), kind: "system", composition: "default" };
+        const automergeUrl = houseCanonUrl(await resolveHouseCanon<string>(bagUri, { realm: systemCanonUrl, row: () => catalog.urlOf(bagUri) }));
+        const row: (typeof wikis)[number] = { slug, uri: bagUri, automergeUrl, kind: "system", composition: "default", ...(automergeUrl === null ? { canon: "floor" as const } : {}) };
         if (own && !own.meta?.deleted) {
           row.composition = "own";
           row.defaultDiffers = bagStackFromRec(own).join(" ") !== bagStackFromRec(rec).join(" ");
@@ -335,12 +340,14 @@ export async function fileWardRefusal(
     const auditTitle = `${WARD_AUDIT_URI_PREFIX}${standoff ?? crypto.randomUUID()}`;
     if (standoff === null || (await control.get(auditTitle)) === null) {
       await control.put(
-        { tiddler: { title: auditTitle, "alert-kind": wardKind, bag: bagId, uri, reason, ts, ...(standoff !== null ? { standoff } : {}) }, meta: { authority: "disk-ward" } },
+        { tiddler: { title: auditTitle, "alert-kind": wardKind, bag: bagId, uri, reason, ts, ...(standoff !== null ? { standoff } : {}), ...(typeof args["rule"] === "string" && args["rule"] ? { rule: args["rule"] } : {}) }, meta: { authority: "disk-ward" } },
         { kind: "lares-verb", requestId: `ward-${ts}` },
       );
     }
 
-    // (b) Alert the operator's currently pinned VM (the active wiki marker in the daemon bag).
+    // (b) Alert the operator's currently pinned VM (the active wiki marker in the daemon bag). A row filed for the record
+    // alone (`auditOnly`: a stand-off the person's own collapse rule settled) raises no alert: nothing awaits anyone.
+    if (args["auditOnly"] === true) return { audited: auditTitle, alerted: "none", bagId, uri };
     if (slug) {
       post(mkDaemonWikiAlert({
         wikiSlug: slug,
@@ -352,4 +359,19 @@ export async function fileWardRefusal(
     }
     return { audited: auditTitle, alerted: slug ?? "none", bagId, uri };
   }
+}
+
+// ── ingest-alert — a wave's render warnings surface in the operator's pinned VM ────────────
+//
+// An INGEST wave the daemon island runs answers a render carrier on its rung (rendered-derives.ts); the rungs that warn
+// raise one alert per (rung, render title) over the same wiki-alert rail the ward rides, and a render that reads settled
+// clears it. The pinned VM stands it at `$:/temp/lares/alert/<kind>/<key>`, tagged `$:/tags/Alert`.
+
+/** The `alert` rail for the daemon island's action verbs: each alert rides to the active wiki, none where none stands. */
+export function makeIngestAlertRail(composite: CompositeStore, post: (msg: DaemonMsg_WikiAlert) => void): (alert: IngestAlert) => Promise<void> {
+  return async (alert) => {
+    const slug = tiddlerText(await composite.get(ACTIVE_WIKI_URI)) ?? null;
+    if (!slug) return;
+    post(mkDaemonWikiAlert({ wikiSlug: slug, message: alert.message, cause: "ingest", kind: alert.kind, key: alert.key, ...(alert.clear ? { clear: true } : {}) }));
+  };
 }

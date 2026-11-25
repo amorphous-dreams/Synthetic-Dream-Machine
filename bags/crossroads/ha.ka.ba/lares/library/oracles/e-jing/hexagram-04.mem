@@ -1,0 +1,37 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/library/oracles/e-jing/hexagram-04`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+attribution   = "the E-Jing-A-Ling Thing, by its unnamed authors at 23ae.com: \"we took the I-Ching and created Discordian answers\""
+cacheable     = true
+caption       = "4. The Bobbies"
+hexagram      = "4"
+l-space       = "archive"
+license       = "(K)opyLeft: Copyright Is Reversed. Reprint What You Like. The quoted third-party snippets ride under fair use (operator ruling 2026-11-20), each kept with its attribution as the page gives it"
+lines         = "010001"
+role          = "one e-jing hexagram reading, imported once from the page the oracle scout carried in (oracles/e-jing/index)"
+source        = "E-Jing-A-Ling Thing Hexagrams, 23ae.com (Wayback capture 2006-02-18)"
+source-sha256 = "d1a27264fae6598cc29ef44cf2c1fd5a7858534fd91f1122538b3ddf9527746e"
+tags          = ["oracle/reading", "oracle/e-jing"]
+title         = "lar:///ha.ka.ba/lares/library/oracles/e-jing/hexagram-04"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/library/oracles/e-jing/hexagram-04"
+```
+
+<<~ ahu slot=`#/reading`>>
+
+! ䷃ 4. The Bobbies
+
+<<<
+GOD spelled backwards is DOG, but BOB spelled backwards is still BOB!
+<<<
+
+This hexagram indicates youthful folly - and therefore implies a temporariness that can be overcome. Be conscious of your inexperience and seek out a teacher. The teacher does not have to be a person, as long as it teaches discipline. Remember, discipline is not drill. Discipline itself is a very useful tool, while drill is an Aneristic waste of time. The first thing that comes to mind is the self-effacement practised by Drake in the Illuminatus! Trilogy. One might also, if the previous example is too labor-intensive for your tastes, study the works of Mr. Crowley, especially //Diary of a Drug Fiend//, keeping in mind, of course, that the man was mentally deranged.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;XqCAb4q_99SMcVxh7XTXVaqSE3b7umyyahAUzP8MjS0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

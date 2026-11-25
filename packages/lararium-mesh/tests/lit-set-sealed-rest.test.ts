@@ -15,6 +15,8 @@
  *   LS3 — a load of b's document with only a lit throws session-face-foreign
  *   LS4 — lock b: b's later save waits, a's keeps sealing
  *   LS5 — lock b drops b's waiting saves from memory (`forget`): none reaches disk, and nothing of them seals later
+ *   LS6 — each hat its own holder: an open names the face its document's bag wears, so the island opens it through THAT
+ *         face's holder (the door routes by face, never by the worn face's seat)
  *
  * Written beside the cure (written, unrun here; CI runs it).
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed · lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings
@@ -62,8 +64,9 @@ async function twoFaces() {
   const sessionA: Session = { id: "s-a", subject: faceA, signer: a.signer };
   const sessionB: Session = { id: "s-b", subject: faceB, signer: b.signer };
   const holderOf = (subject: string): Vessel => (subject === faceA ? a : b);
-  const sealedBy: Array<{ bagId: string; subject: string }> = [];
+  const sealedBy: Array<{ bagId: string; subject: string; peer?: string }> = [];
   const held: string[] = [];
+  const opened: Array<{ bagId: string; face: string | undefined }> = [];
   const open = new Set<string>([faceA]);
   const docsOfB = new Set<string>();
   const inner = memoryAdapter();
@@ -76,18 +79,25 @@ async function twoFaces() {
     door: {
       seal: async (args) => {
         const session = args.session as Session;
-        sealedBy.push({ bagId: args.bagId, subject: session.subject });
+        const peer = (args as { peer?: string }).peer;
+        sealedBy.push({ bagId: args.bagId, subject: session.subject, ...(peer !== undefined ? { peer } : {}) });
         return holderOf(session.subject).holder.sealValues({ ...args, signer: session.signer });
       },
-      open: (args) => (args.bagId === BAG_B ? b : a).holder.openValue(args),
+      // EACH HAT ITS OWN HOLDER: the open names its face, and only that face's holder answers it.
+      open: async (args) => {
+        const face = (args as { face?: string }).face;
+        opened.push({ bagId: args.bagId, face });
+        const holder = face === faceB ? b : face === faceA ? a : null;
+        return holder === null ? { refusal: "face-unnamed" } as never : holder.holder.openValue(args);
+      },
     },
     flushRepo: async () => { await repo?.flush(); },
     onHeld: (h) => held.push(`${h.refusal}:${h.documentId}`),
   });
   repo = new Repo({ storage: rest.store, network: [] });
-  // The OLD shape: one standing session (a's) for every document. The watch must refuse it for b's documents.
+  // One standing session (a's) answers for every document: the watch must refuse it for b's documents.
   rest.watch(repo, () => (open.has(faceA) ? sessionA : null));
-  return { rest, repo, inner, faceA, faceB, sessionA, sessionB, sealedBy, held, open, docsOfB, a, b };
+  return { rest, repo, inner, faceA, faceB, sessionA, sessionB, sealedBy, held, opened, open, docsOfB, a, b };
 }
 
 const docOfB = <T>(r: Awaited<ReturnType<typeof twoFaces>>, init: (d: T) => void) => {
@@ -185,6 +195,69 @@ describe("the lit set: each open face seals under its own key", () => {
     r.open.add(r.faceB);
     expect(await r.rest.rebook(r.sessionB)).toBe(0);
     expect(restsAny(r.inner, theirs.documentId)).toBe(false);
+    await r.repo.shutdown();
+  });
+
+  // A face the island refused goes dark with its host side down and its waiting saves KEPT. Its document leaves the Repo's
+  // cache. The save it could not seal waits in the store's memory (`#waiting`) as PLAIN Automerge bytes, gated by the face
+  // gate (`#face`): never clear on disk, and never sealed, until its next seat seals it. The keep records the document's own
+  // actor first, so the seal still names this vessel's session as its writer once the handle that knew the actor has gone.
+  it("LS7 — a refused face's held save outlives its dark: kept, its document leaves the cache, nothing forgets the save, and once the face lights its own session seals it to rest AS ITS OWN WRITER, never as a peer's", async () => {
+    const r = await twoFaces();
+    const theirs = docOfB<{ note?: string }>(r, (d) => { d.note = "written while b's light refused"; });
+    await r.repo.flush();
+    const held = r.rest.store.waiting(theirs.documentId);
+    expect(held).toBeGreaterThan(0);
+    expect(r.rest.keep([theirs.documentId])).toBe(held);
+    await r.repo.removeFromCache(theirs.documentId);
+    expect(r.rest.store.waiting(theirs.documentId), "the save stays held through the dark").toBe(held);
+    expect(restsAny(r.inner, theirs.documentId), "and never reaches disk unsealed").toBe(false);
+    // THE RECARD'S LIGHT: b joins the lit set, and its own session books and seals what waited.
+    r.open.add(r.faceB);
+    expect(await r.rest.rebook(r.sessionB)).toBeGreaterThan(0);
+    expect(r.rest.store.waiting(theirs.documentId)).toBe(0);
+    expect(restsAny(r.inner, theirs.documentId), "the held save rests sealed").toBe(true);
+    const seals = r.sealedBy.filter((s) => s.bagId === BAG_B);
+    expect(seals.length).toBeGreaterThan(0);
+    expect(seals.every((s) => s.subject === r.faceB)).toBe(true);
+    expect(seals.filter((s) => s.peer !== undefined), "this vessel's own change seals as its session's, with no peer writer named").toEqual([]);
+    expect(r.rest.book.writerOf(theirs.documentId)).toBe(`session:${r.sessionB.id}`);
+    await r.repo.shutdown();
+  });
+
+  // The face lights and a reader finds its document again before the session rebooks: the fresh handle carries a NEW actor, and
+  // the held save's change still names the one that wrote it. Either reads as this vessel's own.
+  it("LS8 — a held save stays this vessel's own though its document came back into the cache under a fresh actor before the rebook", async () => {
+    const r = await twoFaces();
+    const theirs = docOfB<{ note?: string }>(r, (d) => { d.note = "written while b's light refused"; });
+    await r.repo.flush();
+    expect(r.rest.keep([theirs.documentId])).toBeGreaterThan(0);
+    r.open.add(r.faceB);
+    // A handle stands again for the document before the rebook, under an actor the held change never carried.
+    const writer = A.getActorId(theirs.doc() as A.Doc<unknown>);
+    await r.repo.removeFromCache(theirs.documentId);
+    const again = await r.repo.find<{ note?: string }>(theirs.url);
+    expect(again.isReady()).toBe(true);
+    expect(A.getActorId(again.doc() as A.Doc<unknown>), "the fresh handle writes under another actor").not.toBe(writer);
+    expect(await r.rest.rebook(r.sessionB)).toBeGreaterThan(0);
+    const seals = r.sealedBy.filter((s) => s.bagId === BAG_B);
+    expect(seals.filter((s) => s.peer !== undefined), "no peer writer names this vessel's own change").toEqual([]);
+    expect(r.rest.book.writerOf(theirs.documentId)).toBe(`session:${r.sessionB.id}`);
+    await r.repo.shutdown();
+  });
+
+  it("LS6 — each hat its own holder: b's open names b's face and a's names a's, so each opens under its own holder", async () => {
+    const r = await twoFaces();
+    r.open.add(r.faceB);
+    const mine = r.repo.create<{ note?: string }>();
+    mine.change((d) => { d.note = "a's own"; });
+    const theirs = docOfB<{ note?: string }>(r, (d) => { d.note = "b's own"; });
+    await r.repo.flush();
+    await r.rest.rebook(r.sessionB);
+    const keyOf = (id: string) => [...r.inner.bytes.keys()].find((k) => k.startsWith(id))!.split("\u0000");
+    expect(await r.rest.store.load(keyOf(theirs.documentId))).toBeInstanceOf(Uint8Array);
+    expect(await r.rest.store.load(keyOf(mine.documentId))).toBeInstanceOf(Uint8Array);
+    expect(r.opened).toEqual([{ bagId: BAG_B, face: r.faceB }, { bagId: BAG_A, face: r.faceA }]);
     await r.repo.shutdown();
   });
 });

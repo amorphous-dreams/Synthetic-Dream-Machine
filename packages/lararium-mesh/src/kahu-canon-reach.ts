@@ -23,11 +23,20 @@
  */
 import { bagUri } from "./lar-uris.js";
 import { VerbRefusal } from "./verb-refusal.js";
+import { namesTw5Docs } from "./tw5-docs-name.js";
 import { kahuCabalCanonAccess, type KahuCabalAccess } from "./kahu-cabal-admission.js";
 import type { KahuQuorumSeats } from "./kapae-antigen.js";
+import type { Hand } from "./session-contract.js";
 
 /** The refusal reason a door raises for a hand outside the Kahu cabal. */
 export const KAHU_REACH_REASON = "kahu-reach" as const;
+
+/**
+ * The refusal reason a door raises for the AI seat on a house canon bag (reach-mu T4-2). Every seat call acts as the daemon
+ * mount, and the mount holds the Kahu chair, so the Kahu predicate alone would let a seat-asked write land in canon; the
+ * seat's own road runs through a wiki's working layer and an offer the steward promotes.
+ */
+export const SEAT_CANON_REACH_REASON = "seat-canon-reach" as const;
 
 /**
  * THE HOUSE CANON — ONE SET, DERIVED. Every holding whose canon source stands on disk (the checkout's `bags/<slug>`, read
@@ -44,7 +53,7 @@ export const PUBLIC_BOARD_SLUGS: readonly string[] = ["crossroads"];
 /** The house canon's slugs over a vessel's disk-sourced holdings: the system canon, plus every sourced slug but the board. */
 export function houseCanonSlugs(sourcedSlugs: Iterable<string> = []): string[] {
   const out = new Set(SYSTEM_CANON_SLUGS);
-  for (const slug of sourcedSlugs) if (/^[a-z0-9][a-z0-9-]*$/.test(slug) && !PUBLIC_BOARD_SLUGS.includes(slug)) out.add(slug);
+  for (const slug of sourcedSlugs) if (/^[a-z0-9][a-z0-9-]*$/.test(slug) && !PUBLIC_BOARD_SLUGS.includes(slug) && !namesTw5Docs(slug)) out.add(slug);
   return [...out].sort();
 }
 
@@ -129,11 +138,29 @@ export async function holdsKahuReach(source: KahuReachSource | undefined): Promi
 }
 
 /**
- * Every write door's one call. Returns at once for a bag outside house canon; for a house canon bag it throws a
- * `VerbRefusal` (reason `kahu-reach`) unless the hand holds the cabal's reach. `act` names the door in the refusal.
+ * The seat's half of the gate, for a door that clears house canon elsewhere (the routed verb's gate): throws a `VerbRefusal`
+ * (reason `seat-canon-reach`) where the asker reads `seat` and `bag` stands in house canon; returns otherwise. The refusal
+ * names the seat's own road (a copy-up through the wiki, then an offer), never a vault unlock.
  */
-export async function requireKahuReach(bag: string, source: KahuReachSource | undefined, act: string): Promise<void> {
+export function refuseSeatCanonReach(bag: string, act: string, asker: Hand | undefined): void {
+  if (asker !== "seat" || !isHouseCanonBag(bag)) return;
+  // The seat offers and never promotes: a promotion's cure names the operator's own hand, every other act's the offer road.
+  const cure = act === "offer promote"
+    ? "the AI seat offers and never promotes; the promotion rides the operator's own hand: `lares meme offer promote <cid>` from the operator's own terminal."
+    : "write the wiki's working layer instead (`recipe=<slug>`, a copy-up), then `meme_offer` the record toward the canon bag, and the steward promotes it.";
+  throw new VerbRefusal(SEAT_CANON_REACH_REASON,
+    `${SEAT_CANON_REACH_REASON}: ${act} into ${bag} refused — the AI seat never writes house canon live, whatever face it acts as; ${cure}`);
+}
+
+/**
+ * Every write door's one call. Returns at once for a bag outside house canon; for a house canon bag it throws a
+ * `VerbRefusal` (reason `seat-canon-reach`) for an AI seat asker, before any Kahu read, and otherwise (reason `kahu-reach`)
+ * unless the hand holds the cabal's reach. `act` names the door in the refusal; `asker` names the asker's hand as the
+ * vessel's door read it (`VerbContext.asker`), absent where no door read one (the tab's record port, the steward's promote).
+ */
+export async function requireKahuReach(bag: string, source: KahuReachSource | undefined, act: string, asker?: Hand): Promise<void> {
   if (!isHouseCanonBag(bag)) return;
+  refuseSeatCanonReach(bag, act, asker);
   const access = await kahuReachAccess(source);
   if (access.held) return;
   throw new VerbRefusal(KAHU_REACH_REASON,

@@ -56,6 +56,8 @@ AI-operator chat is a stream of a special kind. Its blocks carry discourse struc
 
 The block stays the block; //move// and //speaker// tag what kind of block it is; recall //pairs// blocks into exchanges as a derived view, so the operator's steering surfaces as its own recallable speaker rather than fusing into the agent's stream.
 
+''Rounds and messages.'' The worldline reads a chat's spirit lifecycle from the events the harness actually records: a spawn opens a spirit; each real report (a task notification carrying the spirit's report, a hand-back agent message, an agent result reporting `completed`) closes one round while the spirit persists; a notification that says no report came closes nothing, and a killed, failed or stopped one ends the round without a message; each delivered message joins the sender's past into the recipient, so the receive orders after the send. A readable spirit transcript proves no handback, and the record names no retirement the harness never wrote ([[agent-worldline|lar:///ha.ka.ba/lararium/api/agent-worldline#/build-sequence]]).
+
 <<~/ahu>>
 
 <<~ ahu slot=`#/as-above-so-below`>>
@@ -68,6 +70,6 @@ One recursion — ''ki &rarr; li &rarr; ki &rarr; li'' — repeating at every sc
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZyvLCE5P1LYRVNAatgHQ0SOhWRF2dy2q7OZfyEQQDyo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;FCvKv1AlzuD3dqmsClWwququvjhbnGdlWasVGwDFM_8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

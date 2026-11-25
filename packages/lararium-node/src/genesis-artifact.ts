@@ -1,7 +1,7 @@
 /**
  * genesis-artifact — node genesis byte SOURCE + the node genesis office.
  *
- * The intake core (validate → import → verify, CID reconcile) lives ONCE in
+ * The intake core (validate → import → verify) lives ONCE in
  * @lararium/mesh `genesis-intake`; this file
  * keeps only what genuinely belongs to node:
  *   - the fs byte source (genesis/seed.json + cas/)
@@ -18,6 +18,7 @@ import type { LarDoc }               from "@lararium/mesh";
 import {
   materializeGenesisIsland,
   genesisCasManifestFromSeed,
+  genesisCasCidsFromOracle,
   GENESIS_SEED_FORMAT, genesisSeedCarriesAVersion,
   sha256HexBytesSync,
   utf8Bytes,
@@ -115,13 +116,27 @@ export function readGenesisCasManifest(genesisDir?: string): GenesisCasManifest 
  * The ABSENT case keeps its empty set on purpose: a vessel carrying no seed holds no genesis blobs, so
  * protecting nothing states a fact rather than losing one. Only a seed that stands and refuses to read
  * answers `"unreadable"`, and a caller holding that answer must not sweep at all.
+ *
+ * THE STORED ISLAND JOINS THE SET. A vessel reloads its persisted oracle island under the fixed doc id at every
+ * boot, so after a rebuild that declares a new seed it keeps serving its grammar and canon floor from the blobs
+ * that island names, not the ones the new seed names. A caller holding that island passes it, and the set reads
+ * the union: the declared seed's blobs and every blob the stored island still points at. An island whose blob
+ * metadata will not read answers `"unreadable"` too, for the same reason a torn seed does.
  */
-export function genesisProtectSet(genesisDir?: string): ReadonlySet<string> | "unreadable" {
+export function genesisProtectSet(genesisDir?: string, storedIsland?: LarDoc | null): ReadonlySet<string> | "unreadable" {
   const { seed } = genesisArtifactPaths(genesisDir);
-  if (!existsSync(seed)) return new Set<string>();
-  const read = readGenesisCasManifest(genesisDir);
-  if (read === null) return "unreadable";
-  return new Set(read.blobs.map((b) => b.cid));
+  const set = new Set<string>();
+  if (existsSync(seed)) {
+    const read = readGenesisCasManifest(genesisDir);
+    if (read === null) return "unreadable";
+    for (const b of read.blobs) set.add(b.cid);
+  }
+  if (storedIsland) {
+    let island: readonly string[];
+    try { island = genesisCasCidsFromOracle(storedIsland); } catch { return "unreadable"; }
+    for (const cid of island) set.add(cid);
+  }
+  return set;
 }
 
 // ---------------------------------------------------------------------------

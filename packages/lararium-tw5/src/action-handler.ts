@@ -33,6 +33,7 @@
  * Meme:    lar:///ha.ka.ba/lararium/api/residency-model
  */
 
+import { refuseTw5DocsReserved, refuseTw5DocsWrite, wearOf } from "@lararium/mesh";
 import type {
   CompositeStore,
   LarTiddlerRecord,
@@ -43,7 +44,7 @@ import type {
   ResidencyAction, AddAction, CopyAction, MoveAction, ClearAction, DropAction, LoadAction, IngestAction, CreateAction,
   WikiSlotKind,
 } from "@lararium/mesh";
-import { isHouseCanonBag, holdsKahuReach, plainRecordOrNull, requireKahuReach, resolveHouseCanon, ownEntry } from "@lararium/mesh";
+import { isHouseCanonBag, holdsKahuReach, plainRecordOrNull, admitSeatExecutable, requireKahuReach, resolveHouseCanon, ownEntry, isExecutableRecord, renderedFromOf, renderedRungOf, renderedRungWarning, RENDERED_ALERT_KIND, type RenderedRung } from "@lararium/mesh";
 import type { KahuReachSource } from "@lararium/mesh";
 import {
   ACTION_VERBS, type ActionVerb, AutomergeDocStore,
@@ -56,7 +57,7 @@ import {
   isEffectRecordUri, effectRecordUri, RETIRED_EVENT_ID, isRetirementMarker, storeIsRetired,
   writesBag, VerbRefusal, workingLayerOfCanon, canonOfWorkingLayer, isWorkingLayerBag, overrideBaseOf, carrierHashOf, OVERRIDE_BASE_META,
   CONTROL_HOME_ID, SECRET_HOME_ID,
-  yieldToHost,
+  yieldToHost, standoffOf,
 } from "@lararium/mesh";
 import type { HostTaskYield } from "@lararium/mesh";
 import type { SessionWorn, VerbReactor, VerbTable } from "./verb-dispatcher.js";
@@ -294,6 +295,24 @@ export interface ActionHandlerOptions {
    * sentinel, so it trusts that gate and asks nothing; any other composition leaves this unset and asks itself.
    */
   readonly kahuReachClearedAtGate?: boolean;
+  /**
+   * The island's alert rail: an INGEST render carrier that warns (`hand-edit`, `awaits-source`, rendered-derives.ts)
+   * raises one alert per (rung, render title) here, and a later wave that reads the render settled clears it. Absent: the
+   * warning rides the wave's row alone. A rail that faults never fails the wave.
+   */
+  readonly alert?: (alert: IngestAlert) => void | Promise<void>;
+}
+
+/**
+ * One alert an INGEST wave raises or clears: `kind` names the rung (`RENDERED_ALERT_KIND`), `key` (hex) the render title
+ * under it, so a re-run lands on the same alert. The rail stands it at `$:/temp/lares/alert/<kind>/<key>`, tagged
+ * `$:/tags/Alert`, with its `alert-kind` field.
+ */
+export interface IngestAlert {
+  readonly kind:    string;
+  readonly key:     string;
+  readonly message: string;
+  readonly clear?:  true;
 }
 
 export class DiskWavePlacementRefusal extends Error {
@@ -396,7 +415,7 @@ export function makeBagAccess(opts: ActionHandlerOptions): BagAccess {
             causes.set(bag, [...(causes.get(bag) ?? []), `realm: ${err instanceof Error ? err.message : String(err)}`]);
             return null;
           });
-          store = handle ? new AutomergeDocStore(handle, bag) : null;
+          store = handle ? new AutomergeDocStore(handle, bag, wearOf(reach.repo)) : null;
         } else if (answer) {
           store = answer.row;
         }
@@ -412,7 +431,7 @@ export function makeBagAccess(opts: ActionHandlerOptions): BagAccess {
           };
           const url = await reach.slotDocUrl(m[1]!, m[2] as WikiSlotKind, { mint: false }).catch(reason);
           const handle = url ? await findOrThrow(reach.repo, url, bag).catch(reason) : null;
-          store = handle ? new AutomergeDocStore(handle, bag) : null;
+          store = handle ? new AutomergeDocStore(handle, bag, wearOf(reach.repo)) : null;
         }
       }
       cache.set(bag, store);
@@ -445,7 +464,7 @@ export interface CapturedEffect {
  * whole projected effect while the executor runs UNCHANGED. (CREATE's mint +
  * registry write live OUTSIDE access — its executor guards on `dryRun` itself.)
  */
-function makeCapturingBagAccess(real: BagAccess): { access: BagAccess; captured: CapturedEffect } {
+function makeCapturingBagAccess(real: BagAccess, onPut?: (record: LarTiddlerRecord) => void): { access: BagAccess; captured: CapturedEffect } {
   const puts: Array<{ bag: string; title: string }> = [];
   const tombstones: Array<{ bag: string; title: string }> = [];
   const removes: Array<{ bag: string; title: string }> = [];
@@ -456,7 +475,7 @@ function makeCapturingBagAccess(real: BagAccess): { access: BagAccess; captured:
       const capturing: LarTiddlerStore = {
         listVisible: () => (realStore ? realStore.listVisible() : Promise.resolve([])),
         get: (title) => (realStore ? realStore.get(title) : Promise.resolve(null)),
-        put: async (record) => { puts.push({ bag, title: String(record.tiddler.title) }); },
+        put: async (record) => { puts.push({ bag, title: String(record.tiddler.title) }); onPut?.(record); },
         tombstone: async (title) => { tombstones.push({ bag, title }); },
         remove: async (title) => { removes.push({ bag, title }); },
         subscribe: () => () => {},
@@ -491,9 +510,12 @@ export function registerActionReactors(table: VerbTable, opts: ActionHandlerOpti
   // serializer (the reciprocal of a multi-tiddler deserialize). Returns the bytes;
   // the gesture writes them to disk (for the operator's upstream PR). Read cap only.
   table.register("REPACK", async (args, ctx) => {
-    const bag = String(args["bag"] ?? "");
-    const packPath = String(args["pack-path"] ?? "");
+    // ROUTING FIELDS READ AS STRINGS OR REFUSE, never coerced (`routing-arg-malformed`).
+    for (const name of ["bag", "pack-path"]) if (args[name] !== undefined && typeof args[name] !== "string") throw new VerbRefusal("routing-arg-malformed", `routing-arg-malformed: REPACK: \`${name}\` names a string`);
+    const bag = (args["bag"] as string | undefined) ?? "";
+    const packPath = (args["pack-path"] as string | undefined) ?? "";
     if (!bag || !packPath) throw new Error("REPACK: `bag` and `pack-path` required");
+    refuseTw5DocsReserved(bag, "REPACK");
     const proof = await ctx.cap("read", bag);
     if (!proof.ok) throw new Error(`cap-denied: read on ${bag} required to REPACK (${proof.reason ?? "no reason"})`);
     return executeRepack(makeBagAccess(opts), bag, packPath, opts.tw5);
@@ -526,16 +548,53 @@ async function executeRepack(access: BagAccess, bag: string, packPath: string, t
 }
 
 /** Per-ACTION-verb reactor factory. */
+/** The carriers of a wave held back for a hand: each address and the key its stand-off stands under (`holdStandoffsForHand`). */
+const HELD_FOR_HAND = new WeakMap<IngestAction, ReadonlyMap<string, string>>();
+
+/** Mark each carrier of a wave that stands off at this island's disk shore: the executor answers it `conflict`, landing nothing. */
+function holdStandoffsForHand(action: IngestAction): void {
+  const held = new Map<string, string>();
+  for (const carrier of action.carriers) {
+    const key = standoffOf(action.toBag, carrier.uri);
+    if (key !== null) held.set(carrier.uri, key);
+  }
+  if (held.size > 0) HELD_FOR_HAND.set(action, held);
+}
+
+/** The row a held carrier answers: a stand-off awaits a person's hand, and the row names the command that settles it. */
+function awaitsHandRow(uri: string, key: string): Record<string, unknown> {
+  return {
+    uri, decision: "conflict", reason: "awaits-hand", grade: "clean",
+    warnings: [`${uri} stands off at this island's disk shore (key ${key}), and settling it runs on a person's hand; nothing landed for it. The operator runs \`lares shore keep-disk ${uri} --key ${key}\` (or \`lares shore keep-records ${uri} --key ${key}\`) at their own terminal.`],
+  };
+}
+
 export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOptions): VerbReactor {
   return async (args, ctx) => {
-    const action = residencyFromContext(verb, args, ctx.invocation);
-    if (!action) throw new Error(`action-handler/${verb}: malformed args — required fields missing or wrong type`);
+    const parsed = residencyFromContext(verb, args, ctx.invocation);
+    if (!parsed) throw new Error(`action-handler/${verb}: malformed args — required fields missing or wrong type`);
+    // A STAND-OFF SETTLES BY A PERSON, ON THIS LEG TOO: a wave's `unattended` flag comes from its caller, so a wave a seat
+    // asked rides unattended whatever it claims, and the gate's no-base verdict stands off rather than adopting a file over
+    // records that say something else. The socket stamps the same on every INGEST a seat or an unread peer sends
+    // (`stampUnattendedIngest`), so a wave routed into a wiki island, where no asker rides, stands off the same way.
+    const action = parsed.verb === "INGEST" && ctx.asker === "seat" && parsed.unattended !== true ? { ...parsed, unattended: true } : parsed;
+    // THE TW5 DOCS LIBRARY'S NAME HOLDS ONE RELATION (`tw5-docs-name`): no CREATE mints a bag under it, and no verb writes it,
+    // as a destination or as a source, before any cap ask, placement check or store reach.
+    if (action.verb === "CREATE") refuseTw5DocsReserved(action.bag, "CREATE");
+    else {
+      refuseTw5DocsWrite(destinationBag(action), action.verb);
+      if ("fromBag" in action) refuseTw5DocsWrite(action.fromBag, action.verb);
+    }
 
     if (action.verb === "INGEST") assertDiskWavePlacement(action, opts.diskMirrors);
     // THE FACE-NAMED WAVE (the lit set): it lands only in the named face's own document, and only where the device table
     // names THAT face as its owner; an unnamed wave over a face-owned layer lands only where the daemon mount owns it.
     let faceStore: LarTiddlerStore | null = null;
     if (action.verb === "INGEST") faceStore = await faceWaveTarget(action, opts.faceTarget, ctx.worn);
+    // A STAND-OFF SETTLES ON A HAND (operator ruling, 2026-11-23): a carrier that stands off at this island's disk shore names
+    // a base the gate would trust, so it lands only from a person's line (`take-disk` and `keep-disk` ride exactly such a wave).
+    // From any other asker, and whatever the frame says of itself, THAT carrier answers `conflict` and the rest of the wave lands.
+    if (action.verb === "INGEST" && ctx.asker !== "cli" && ctx.asker !== "tab") holdStandoffsForHand(action);
     if (action.verb === "LOAD" && (action.toBag === CONTROL_HOME_ID || action.toBag === SECRET_HOME_ID)) {
       throw new VerbRefusal("private-home-load", "private-home-load: LOAD cannot target the control or secret home; land through a working layer");
     }
@@ -555,8 +614,8 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
 
     // THE ONE PREDICATE, before any other check: a hand outside the Kahu cabal lands nothing in house canon.
     if (opts.kahuReachClearedAtGate !== true) {
-      await requireKahuReach(destinationBag(action), opts.kahuReach, action.verb);
-      if (action.verb === "MOVE") await requireKahuReach(action.fromBag, opts.kahuReach, "MOVE out of canon");
+      await requireKahuReach(destinationBag(action), opts.kahuReach, action.verb, ctx.asker);
+      if (action.verb === "MOVE") await requireKahuReach(action.fromBag, opts.kahuReach, "MOVE out of canon", ctx.asker);
     }
 
     // W27: a write lands on a working layer, and canon takes it by promotion. No door passes a LOAD into canon;
@@ -670,11 +729,22 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
       }
     }
 
+    // THE ONE WALL A SEAT KEEPS (state/decisions, "Native TW5 wikis"; "Five floors walked" (2)): a wave a seat asks lands no
+    // executable record, since one runs in the operator's tab. The executor runs once through the capturing access first, and a
+    // record it would land that the mesh's one executable-class list names refuses the whole wave before a byte moves, unless a
+    // standing exec lei for the destination admits it (each such record spends one return).
+    if (ctx.asker === "seat" && (action.verb === "INGEST" || action.verb === "LOAD")) {
+      const startup: LarTiddlerRecord[] = [];
+      const vet = makeCapturingBagAccess(access, (record) => { if (isExecutableRecord(record.tiddler)) startup.push(record); });
+      await executeAction(action, vet.access, opts);
+      for (const record of startup) await admitSeatExecutable(String(record.tiddler.title), record.tiddler, action.verb, ctx.asker, { wiki: destBag, port: ctx.execLei });
+    }
+
     // `--dry-run`: run the executor through the capturing access — content writes
     // AND the effect-record ledger are captured, nothing commits.
     if (dryRun) {
       const cap = makeCapturingBagAccess(access);
-      const summary = await withEffectRecord(action, (bag) => cap.access.write(bag), () => executeAction(action, cap.access, opts.tw5, opts.resolveByCid, opts.yieldHostTask),
+      const summary = await withEffectRecord(action, (bag) => cap.access.write(bag), () => executeAction(action, cap.access, opts),
         action.verb === "DROP" ? { newId: () => RETIRED_EVENT_ID } : undefined);
       return { verb, dryRun: true, ...summary, ...projectedEffect(cap.captured) };
     }
@@ -684,9 +754,9 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
     if (action.verb === "DROP") {
       const dropStore = await access.write(action.bag);
       const marked = !!dropStore && await storeIsRetired(dropStore, action.bag);
-      if (marked) return { verb, ...(await executeAction(action, access, opts.tw5, opts.resolveByCid, opts.yieldHostTask)) };
+      if (marked) return { verb, ...(await executeAction(action, access, opts)) };
     }
-    const summary = await withEffectRecord(action, (bag) => access.write(bag), () => executeAction(action, access, opts.tw5, opts.resolveByCid, opts.yieldHostTask),
+    const summary = await withEffectRecord(action, (bag) => access.write(bag), () => executeAction(action, access, opts),
       action.verb === "DROP" ? { newId: () => RETIRED_EVENT_ID } : undefined);
     return { verb, ...summary };
   };
@@ -725,7 +795,7 @@ async function faceWaveTarget(action: IngestAction, resolve: FaceTargetResolver 
   // wears that session's face, so an AI seat (or any session) naming a face other than the one it wears refuses by name. The
   // operator's own gestures (the CLI seed and import, a ward credential) ride no session and may name any open face.
   if (face !== undefined && hand !== undefined && hand.ordinal !== face) {
-    throw new VerbRefusal("face-hand-refused", `face-hand-refused: this call wears face h${hand.ordinal}, and only the operator's own hand (\`lares vessel seed\`, \`lares vessel import\`) names another face (h${face}); no seat lands one face's memory in another`);
+    throw new VerbRefusal("face-hand-refused", `face-hand-refused: this call wears face h${hand.ordinal}, and only the operator's own hand (\`lares vessel lay\`, \`lares import\`) names another face (h${face}); no seat lands one face's memory in another`);
   }
   if (face === undefined) {
     if (!resolve || !isFaceOwnedLayer(action.toBag)) return null;
@@ -774,15 +844,15 @@ function destinationBag(action: ResidencyAction): string {
 
 // ── Per-verb executors ─────────────────────────────────────────────────────
 
-async function executeAction(action: ResidencyAction, access: BagAccess, tw5?: Tw5Deserializer, resolveByCid?: CarrierResolver, yieldHostTask: HostTaskYield = yieldToHost): Promise<Record<string, unknown>> {
+async function executeAction(action: ResidencyAction, access: BagAccess, opts: ActionHandlerOptions): Promise<Record<string, unknown>> {
   switch (action.verb) {
     case "ADD":   return executeAdd(action, access);
     case "COPY":  return executeCopy(action, access);
     case "MOVE":  return executeMove(action, access);
     case "CLEAR": return executeClear(action, access);
     case "DROP":  return executeDrop(action, access);
-    case "LOAD":  return executeLoad(action, access, tw5, resolveByCid, yieldHostTask);
-    case "INGEST": return executeIngest(action, access, tw5, resolveByCid);
+    case "LOAD":  return executeLoad(action, access, opts.tw5, opts.resolveByCid, opts.yieldHostTask ?? yieldToHost);
+    case "INGEST": return executeIngest(action, access, opts);
     case "CREATE": throw new Error("action-handler: CREATE is handled in the reactor (plane-aware gate + mint), not executeAction");
   }
 }
@@ -931,7 +1001,7 @@ async function createHouseCanon(action: CreateAction, opts: ActionHandlerOptions
     throw new VerbRefusal("house-canon-unlanded", `house-canon-unlanded: ${action.bag} rests in the Kahu realm, and the realm registers no document for it yet; the steward's next boot lands it (standKahuCanon), and no catalog row ever mints canon`);
   }
   const handle = await findOrThrow(opts.reach.repo, url, action.bag).catch(() => null);
-  const count = handle ? (await new AutomergeDocStore(handle, action.bag).listVisible()).filter((t) => !isEffectRecordUri(t)).length : 0;
+  const count = handle ? (await new AutomergeDocStore(handle, action.bag, wearOf(opts.reach.repo)).listVisible()).filter((t) => !isEffectRecordUri(t)).length : 0;
   return { ...base, docUrl: url, count };
 }
 
@@ -1229,7 +1299,8 @@ async function landedHeads(access: BagAccess, bag: string): Promise<{ heads?: st
   return heads !== null && heads !== undefined && heads.length > 0 ? { heads: [...heads] } : {};
 }
 
-async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5Deserializer, resolveByCid?: CarrierResolver): Promise<Record<string, unknown>> {
+async function executeIngest(action: IngestAction, access: BagAccess, opts: ActionHandlerOptions): Promise<Record<string, unknown>> {
+  const { tw5, resolveByCid } = opts;
   const o = origin(action);
   // A carry's working rows name the override base each copy forked from: every record this wave lands under such a title
   // carries it, so the composite keeps it rather than forking a fresh one off the canon standing now.
@@ -1317,7 +1388,39 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
   const results: Array<Record<string, unknown>> = [];
   const unattended = action.unattended === true;
 
-  for (const carrier of action.carriers) {
+  // ── the render carriers (rendered-derives.ts, `RenderedRung`) ──
+  // THE WAVE'S NAMES: every carrier's address and the title its sidecar names, read whole before any carrier decides, so
+  // a render whose source rides this same wave stands on one rung whatever the order.
+  const waveNames = new Set<string>();
+  for (const c of action.carriers) {
+    waveNames.add(c.uri);
+    const named = c.meta && tw5 ? tw5.parseFields(c.meta)["title"] : undefined;
+    if (typeof named === "string" && named !== "") waveNames.add(named);
+  }
+  const sourceStands = async (source: string): Promise<boolean> =>
+    waveNames.has(source) || await holdsRecord(access, action.toBag, source) || (await opts.composite.getLive(source)) !== null;
+  // One alert per (rung, render title): the rung that warns raises its own and clears the other, and a render that reads
+  // settled clears both. The row carries the warning whatever the rail does.
+  const renderAlerts = async (title: string, rung: RenderedRung | null, warning: string | null): Promise<void> => {
+    if (!opts.alert) return;
+    const key = sha256HexBytesSync(new TextEncoder().encode(title)).slice(0, 32);
+    for (const [kindRung, kind] of Object.entries(RENDERED_ALERT_KIND)) {
+      const raise = kindRung === rung && warning !== null;
+      try { await opts.alert(raise ? { kind, key, message: warning } : { kind, key, message: `${title}: settled`, clear: true }); }
+      catch { /* the row carries the warning; a rail that faults fails no wave */ }
+    }
+  };
+
+  const heldForHand = HELD_FOR_HAND.get(action);
+  for (const sent of action.carriers) {
+    const awaiting = heldForHand?.get(sent.uri);
+    if (awaiting !== undefined) { results.push(awaitsHandRow(sent.uri, awaiting)); continue; }
+    // NO RECORD, NO BASE (face-pools A5): a base the gesture read off the pool's HEAD vouches only for a record the house
+    // still holds. Where the records hold nothing under the carrier, it drops, and the carrier weighs as one that holds no
+    // base: the file lands as an arrival, and no echo of HEAD pins a base for a record that stands nowhere.
+    const carrier = sent.headBase === true && sent.syncedHash !== null && !(await holdsRecord(access, action.toBag, sent.uri))
+      ? dropHeadBase(sent)
+      : sent;
     // A rename's target re-homes from the vanished carrier's records (identity
     // preserved); skip its normal fresh ingest so the re-link is not overwritten.
     if (renameTargets.has(carrier.uri)) {
@@ -1556,7 +1659,7 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
         }
 
         // Members the re-ingest DROPPED from the file (in the prior membership, absent now)
-        // tombstone — the aside path map alone holds a pack's prior shape (a pack's foreign-
+        // tombstone — the aside path map alone holds a pack's prior membership (a pack's foreign-
         // titled members never nest under the carrier URI). A conflicted member stays a
         // CURRENT member → never dropped.
         const dropped = membersOfPack(prevPaths, packInfo.packPath).filter((t) => !currentMemberTitles.has(t));
@@ -1626,8 +1729,25 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
         recordsAbsent:     currentRec === null,
       }, nativeOps);
       if (decision.kind === "noop") {
-        // The records already say what the disk says: their standing render names the base's records side.
+        // The records already say what the disk says: their standing render names the base's records side. A render's
+        // echo reads here, ahead of every rung, and settles the alerts its title raised.
+        if (currentRec && renderedFromOf(currentRec.tiddler) !== null) await renderAlerts(String(currentRec.tiddler["title"] ?? uri), null, null);
         results.push({ uri, decision: "noop", reason: decision.reason, ...(currentRec ? recordsSide(currentRenderHash) : {}) });
+        continue;
+      }
+      // ONLY THE RENDERER WRITES A RENDERED TIDDLER: a file over a standing render, or one whose records carry
+      // `rendered-from`, lands nothing and answers `derived` on its rung, and the wave goes on.
+      const standingRender = currentRec !== null && renderedFromOf(currentRec.tiddler) !== null;
+      const renderRecord = standingRender
+        ? currentRec!.tiddler as unknown as Record<string, unknown>
+        : freshRecords.find((record) => renderedFromOf(record) !== null);
+      if (renderRecord !== undefined) {
+        const source = renderedFromOf(renderRecord)!;
+        const title = String(renderRecord["title"] ?? uri);
+        const rung = renderedRungOf(standingRender, await sourceStands(source));
+        const warning = renderedRungWarning(rung, title, source);
+        await renderAlerts(title, rung, warning);
+        results.push(withWarnings({ uri, decision: "derived", rung, source, reason: `${rung}: the render of "${source}"` }, warning === null ? [] : [warning]));
         continue;
       }
       if (decision.kind === "refuse") {
@@ -1869,6 +1989,18 @@ export function makeFresherCanonReactor(opts: ActionHandlerOptions): VerbReactor
 }
 
 /** Read a bag's OWN Manifestation of title (or null if absent / bag unreachable). */
+/** Whether the bag holds a live record under `title` (a tombstone holds none). */
+async function holdsRecord(access: BagAccess, bag: string, title: string): Promise<boolean> {
+  const record = await readFromBag(access, bag, title);
+  return record !== null && record.meta?.deleted !== true;
+}
+
+/** The carrier with its HEAD base set down: it weighs as one that holds no base. */
+function dropHeadBase(carrier: IngestAction["carriers"][number]): IngestAction["carriers"][number] {
+  const { syncedRecordsHash: _records, headBase: _head, ...rest } = carrier;
+  return { ...rest, syncedHash: null };
+}
+
 async function readFromBag(access: BagAccess, fromBag: string, title: string): Promise<LarTiddlerRecord | null> {
   const store = await access.read(fromBag);
   return store ? store.get(title) : null;

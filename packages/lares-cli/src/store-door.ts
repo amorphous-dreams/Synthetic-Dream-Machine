@@ -12,15 +12,18 @@
  */
 
 import { wardTicketFor } from "./ward-door.js";
-import { ControlHomeUnavailable, VESSEL_LOCKED, type Credential } from "@lararium/mesh";
+import { ControlHomeUnavailable, newRequestId, VESSEL_LOCKED, type Credential, type SessionReceipt } from "@lararium/mesh";
 import { storeDoorDirect, storeVerbFace, storeVerbGatesFirst, StoreHeld, STORE_DOOR_FACE_VERBS, type StoreDoorVerb } from "@lararium/node";
 import { openLocalSession, SessionRefused } from "./session-connector.js";
 import { sealedAct } from "./sealed-act-door.js";
 import { vesselStanding, type VesselStanding } from "./custody-door.js";
-import { vesselDid, larSealHome } from "./env.js";
+import { vesselDid, larSealHome, larDataDir } from "./env.js";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { DaemonUnreachable, refusalCode, refusalHint, verbFailure } from "./verb-call.js";
-import { udsAlive, udsSocketPresent, udsSocketPath, whoHolds, invokeLocal, UdsUnreachable, LocalWaitExpired } from "./local-connector.js";
+import { udsAlive, udsSocketPresent, udsSocketPath, whoHolds, invokeLocal, UdsUnreachable, LocalWaitExpired, type WhoHoldsAnswer } from "./local-connector.js";
 import { waitForResourceBudgeted, SlowBootTimeout, type BootPhase } from "./port-control.js";
+import { BOOT_MILESTONES, bootStage } from "./stand-socket-wait.js";
 import { summaryOutput } from "./verb-result.js";
 import type { SubmitResult } from "./verb-result.js";
 
@@ -32,10 +35,11 @@ import type { SubmitResult } from "./verb-result.js";
  */
 async function invokeAbortable(
   verb: string, args: Record<string, unknown>, requestedBy: string,
-  opts: { readonly timeoutMs: number; readonly signal: AbortSignal },
+  opts: { readonly timeoutMs?: number; readonly signal: AbortSignal; readonly requestId: string },
 ): Promise<SubmitResult> {
   if (!udsSocketPresent()) throw new DaemonUnreachable(udsSocketPath());
-  try { return await invokeLocal(verb, args, requestedBy, opts); }
+  // UNTIMED HERE: the door's own wait reads the holder, and the vessel's answer (or a person's interrupt) ends it.
+  try { return await invokeLocal(verb, args, requestedBy, { ...opts, untimed: true }); }
   catch (e) {
     if (e instanceof UdsUnreachable) throw new DaemonUnreachable(udsSocketPath());
     throw e;
@@ -50,10 +54,13 @@ async function invokeAbortable(
  * answers by the vessel's own name, and a row the vessel could not run throws `RoutedVerbRefused` with its words and
  * the refusal's own name. The act carries no flat timer of its own: the door's budgeted wait bounds it, and the vessel
  * bounds its clearance (`LocalWaitExpired` serves the maintenance frame alone).
+ * THE DOOR OWNS THE ACT'S REQUEST ID: it mints one per act and the act rides it, so a socket that goes once the act was
+ * sent throws {@link SessionActAnswerLost} naming that id and the face, and {@link sessionActReceipt} reads the outcome
+ * under it. A socket that went before the session opened sent nothing, and reads `DaemonUnreachable`.
  */
 async function invokeInSession(
   verb: string, args: Record<string, unknown>, face: number,
-  opts: { readonly signal: AbortSignal },
+  opts: { readonly signal: AbortSignal; readonly requestId: string },
 ): Promise<Record<string, unknown>> {
   if (!udsSocketPresent()) throw new DaemonUnreachable(udsSocketPath());
   let session: Awaited<ReturnType<typeof openLocalSession>>;
@@ -65,8 +72,9 @@ async function invokeInSession(
   }
   const abort = () => { void session.close(); };
   opts.signal.addEventListener("abort", abort, { once: true });
+  const requestId = opts.requestId;
   try {
-    const answer = await session.act(verb, args);
+    const { answer } = await session.act(verb, args, { requestId });
     if (answer["status"] === "error") {
       const reason = typeof answer["reason"] === "string" ? answer["reason"] : undefined;
       throw new RoutedVerbRefused(typeof answer["errorMessage"] === "string" ? answer["errorMessage"] : reason ?? `${verb} failed`, reason);
@@ -75,13 +83,46 @@ async function invokeInSession(
     return output !== null && typeof output === "object" && !Array.isArray(output) ? output as Record<string, unknown> : {};
   }
   catch (e) {
-    if (e instanceof UdsUnreachable) throw new DaemonUnreachable(udsSocketPath());
+    if (e instanceof UdsUnreachable) throw new SessionActAnswerLost(verb, face, requestId);
     if (e instanceof SessionRefused) throw new RoutedVerbRefused(e.message, e.refusal);
     throw e;
   } finally {
     opts.signal.removeEventListener("abort", abort);
     await session.close().catch(() => { /* the socket already went */ });
   }
+}
+
+/**
+ * A FACE ROW'S ANSWER WENT WITH ITS SOCKET: the act was sent under `requestId` on a session of face `face`, and no answer
+ * came back. It may have run, so this reads outcome-unknown, never a verdict; the face's receipt under the id tells.
+ */
+export class SessionActAnswerLost extends Error {
+  override readonly name = "SessionActAnswerLost";
+  constructor(readonly verb: string, readonly face: number, readonly requestId: string) {
+    super(`"${verb}" on face h${face} lost its answer with the socket; outcome unknown. Its receipt rides request ${requestId}.`);
+  }
+}
+
+/**
+ * RECOVER A FACE ROW'S OUTCOME BY ITS ID: open a session of face `face` and read the receipt the act under `requestId`
+ * left (the vessel scopes it to the face). The answer body rode the lost socket alone, so the receipt carries the outcome
+ * the vessel recorded, never the body. Throws `DaemonUnreachable` where no vessel answers.
+ */
+export async function sessionActReceipt(face: number, requestId: string): Promise<SessionReceipt> {
+  if (!udsSocketPresent()) throw new DaemonUnreachable(udsSocketPath());
+  let session: Awaited<ReturnType<typeof openLocalSession>>;
+  try { session = await openLocalSession({ faceRef: `h${face}`, hand: "cli" }); }
+  catch (e) {
+    if (e instanceof UdsUnreachable) throw new DaemonUnreachable(udsSocketPath());
+    if (e instanceof SessionRefused) throw new RoutedVerbRefused(e.message, e.refusal);
+    throw e;
+  }
+  try { return await session.receipt(requestId); }
+  catch (e) {
+    if (e instanceof UdsUnreachable) throw new DaemonUnreachable(udsSocketPath());
+    throw e;
+  }
+  finally { await session.close().catch(() => { /* the socket already went */ }); }
 }
 
 /**
@@ -116,9 +157,104 @@ export type StoreDoorVia = "daemon" | "direct";
  */
 export const STORE_DOOR_PHASES: readonly BootPhase[] = [
   { name: "unbound", budgetMs: 10_000 },
-  { name: "parked",  budgetMs: 45_000 },
+  // PARKED spends no budget either (No Global Now): the boot still advances, and a clock never decides it failed. The figure
+  // paces the "still boots" line alone; the holder gone, a boot-log fault or refusal, a stand-socket exit, the seat's serving
+  // answer, or a person's interrupt ends the wait.
+  { name: "parked",  budgetMs: 45_000, paced: true },
   { name: "wedged",  budgetMs: 10_000 },
+  // SERVING spends no budget (No Global Now): the live seat took the act and answers for it, however long the island
+  // runs ahead of it. The figure names the PACING of the progress lines alone; the vessel's answer, its named refusal,
+  // or a person's interrupt ends the wait.
+  { name: "serving", budgetMs: 15_000, paced: true },
 ];
+
+/**
+ * A CAUSE ENDED THE WAIT on a parked vessel, never a clock: the holder named at the park left the process table, the boot
+ * log attested `fatal:` or a `uds error:`, or the stand socket's child exited. The act never reached the store; the cure
+ * names the command that reads or restarts what stood there.
+ */
+export type StoreDoorEndCause = "holder-gone" | "boot-fault" | "boot-refused" | "stand-exited";
+export class StoreDoorEnded extends Error {
+  override readonly name = "StoreDoorEnded";
+  constructor(readonly verb: string, readonly ended: StoreDoorEndCause, readonly detail: string) {
+    super(`"${verb}": the vessel's boot ended before it served (${detail}); the act never reached the store.`);
+  }
+}
+const endedCure: Record<StoreDoorEndCause, string> = {
+  "holder-gone":  "the holder left; run again to stand a fresh door, or read what held the store with `lares vessel read`.",
+  "boot-fault":   "the boot attested a fault; read it with `lares vessel read`, then stand the vessel again with `lares vessel stand`.",
+  "boot-refused": "the boot's verb channel refused; read the cause with `lares vessel read`, then stand the vessel again with `lares vessel stand`.",
+  "stand-exited": "the node that was standing exited; stand it again with `lares vessel stand`, then run again.",
+};
+
+/**
+ * A PERSON ENDED THE WAIT (an interrupt), never a clock and never a verdict on the act: the vessel took it under
+ * `requestId` and may still run it. The words name the id to read back.
+ */
+export class StoreDoorInterrupted extends Error {
+  override readonly name = "StoreDoorInterrupted";
+  constructor(readonly verb: string, readonly requestId: string, readonly face?: number) {
+    super(`"${verb}": the wait ended at your interrupt; the vessel holds the act under request ${requestId} and may still run it. ${readBack(requestId, face)}`);
+  }
+}
+
+/**
+ * THE ACT LEFT THE SEAT'S HOLD, AND NO ANSWER CAME: the holder probe, asked twice under this act's request id,
+ * read it gone from the asks in flight (or, for a caller with no person at the keys, could not confirm it held). Never
+ * a clock's verdict: the seat's own word. The act may have run; the id reads its outcome back.
+ */
+export class RequestLost extends Error {
+  override readonly name = "RequestLost";
+  constructor(readonly verb: string, readonly requestId: string, readonly face?: number) {
+    super(`"${verb}": request ${requestId} left the vessel's asks in flight and no answer reached this caller. ${readBack(requestId, face)}`);
+  }
+}
+const readBack = (requestId: string, face?: number): string => face === undefined
+  ? `Read it back: \`lares vessel request ${requestId}\`.`
+  : `Read its receipt under request ${requestId} on a session of face h${face}.`;
+
+/** The progress line a serving wait prints: the vessel serves, the act waits behind the island, and the cure. */
+function servingLine(verb: string, requestId: string, met: WhoHoldsAnswer | null, interactive: boolean, face?: number): string {
+  const oldest = met?.oldest;
+  const ahead = oldest && oldest.requestId === undefined ? `; ${met?.inFlight ?? "some"} ask(s) in flight, the oldest a ${oldest.verb}` : oldest ? "; yours stands oldest in flight" : "";
+  const exit = interactive ? " Ctrl-C ends this wait, never the act." : " This wait goes on while the vessel holds the act.";
+  return `[lares] the vessel serves; your act "${verb}" (request ${requestId}) waits behind the island${ahead}.${exit} ${readBack(requestId, face)}`;
+}
+
+/** The progress line a parked wait prints: the vessel still boots, and the act stays owed. */
+function parkedLine(log: string, holder: string): string {
+  const at = bootStage(log);
+  const stage = at >= 0 ? BOOT_MILESTONES[at]! : "unread";
+  const pids = pidsNamedIn(holder);
+  const named = pids.length > 0 ? ` (pid ${pids.join(", ")})` : "";
+  return `[lares] the vessel still boots (stage ${stage}); the act stays owed. To look: \`lares vessel read\` names the holder${named}. To stop waiting: interrupt this act; it stays owed.`;
+}
+
+/** The ask a paced door sends the vessel: its servo's own ceiling (one hour), the most patience the vessel holds, never the 30 s a missing figure defaults to. */
+const NO_SERVO_MS = 3_600_000;
+
+/** Does `pid` still run on this host? EPERM (another user's process) reads ALIVE; only ESRCH reads gone. */
+export function hostPidAlive(pid: number): boolean {
+  try { process.kill(pid, 0); return true; } catch (e) { return (e as NodeJS.ErrnoException).code === "EPERM"; }
+}
+
+/**
+ * The current boot's stretch of `<data dir>/stand.log`, bound to the held vessel by IDENTITY, never by a clock: the stand's
+ * first line (`boot pid <N>`) names its own pid, and this reads only the lines from the LAST such line whose pid the held
+ * vessel names (whoHolds). No file time and no boot time decides: an older stand's log, a touched file or a moved clock names
+ * another pid, or none, and reads nothing. A container vessel writes no such file, and reads nothing. `readLog` is a test seam.
+ */
+export function standBootLog(holderPids: readonly number[], readLog: () => string = () => readFileSync(join(larDataDir(), "stand.log"), "utf8")): string {
+  try {
+    const lines = readLog().split("\n");
+    let from = -1;
+    lines.forEach((line, i) => {
+      const m = /\bboot pid (\d+)\s*$/.exec(line);
+      if (m) from = holderPids.includes(Number(m[1])) ? i : -1;
+    });
+    return from >= 0 ? lines.slice(from).join("\n") : "";
+  } catch { return ""; }
+}
 
 /** The pid(s) named in a `heldAs`/`whoHolds` message (`"a vessel (pid 1234) holds…"`, or M4's wedged
  *  `"…still held by pid(s) 1234, 5678"`), or none. */
@@ -141,16 +277,58 @@ export async function throughStoreDoor(opts: {
   readonly face?:     number;
   /** Test seam — defaults to {@link STORE_DOOR_PHASES}. A real caller never overrides this. */
   readonly phases?:   readonly BootPhase[];
+  /** Where a serving wait's progress lines go; stderr when absent. */
+  readonly progress?: (line: string) => void;
+  /** A person's interrupt; absent, the door listens for SIGINT while it waits. Test seam for the interrupt. */
+  readonly interrupt?: AbortSignal;
+  /** Does a person sit at the keys? Absent, read from stdin's TTY. Without one, the wait goes on only while the vessel
+   *  confirms it holds the act. Test seam. */
+  readonly interactive?: boolean;
+  /** Test seam — does this pid still answer a signal-0 probe? Defaults to the process table. */
+  readonly holderAlive?: (pid: number) => boolean;
+  /** The vessel's boot log as it stands now (milestones, `fatal:`, `uds error:`); absent, no log reads. */
+  readonly bootLog?: (holderPids: readonly number[]) => string;
+  /** Has the stand socket's node exited? Absent, never. */
+  readonly standExited?: () => boolean;
 }): Promise<{ readonly output: Record<string, unknown>; readonly via: StoreDoorVia }> {
   if (opts.daemonUp ?? (await udsAlive())) {
     const phases = opts.phases ?? STORE_DOOR_PHASES;
-    const totalBudgetMs = phases.reduce((sum, p) => sum + p.budgetMs, 0);
+    // The vessel's own servo for the maintenance frame: the budgets of the phases a clock still bounds (a paced phase
+    // adds none). It rides the wire; this process sets no timer against it.
+    const anyPaced = phases.some((p) => p.paced === true);
+    const totalBudgetMs = phases.reduce((sum, p) => sum + (p.paced === true ? 0 : p.budgetMs), 0);
+    const holderAlive = opts.holderAlive ?? hostPidAlive;
+    const bootLog = opts.bootLog ?? ((pids: readonly number[]): string => standBootLog(pids));
+    let holderGoneReads = 0;
+    // The named pid counts only once THIS host has read it alive: a vessel in another pid namespace names a pid the host never
+    // sees, and a host-side ESRCH there says nothing about the boot.
+    const seenAlive = new Set<number>();
+    const progress = opts.progress ?? ((line: string) => { process.stderr.write(`${line}\n`); });
+    const interactive = opts.interactive ?? process.stdin.isTTY === true;
+    const requestId = newRequestId();
     let settled = false;
     let lastMessage = "";
+    let lastMet: WhoHoldsAnswer | null = null;
     const controller = new AbortController();
+    // A PERSON ENDS THE WAIT, or the seat's own word that the act left its hold, never a clock: either aborts this
+    // door's own socket and names the request id.
+    let interrupted = false;
+    let endWait!: (err: Error) => void;
+    const interruption = new Promise<never>((_, reject) => {
+      endWait = (err) => { if (interrupted) return; interrupted = true; reject(err); };
+    });
+    const onInterrupt = (): void => { endWait(new StoreDoorInterrupted(opts.verb, requestId, opts.face)); };
+    /** Did the probe ever read the act held, and how many readings since read it gone (or, unattended, unconfirmed)? */
+    let seenHeld = false;
+    let goneReads = 0;
+    interruption.catch(() => { /* raced below */ });
+    const sigint = (): void => { onInterrupt(); };
+    if (opts.interrupt) {
+      if (opts.interrupt.aborted) onInterrupt(); else opts.interrupt.addEventListener("abort", onInterrupt, { once: true });
+    } else process.once("SIGINT", sigint);
     const verbPromise = (opts.face !== undefined
-      ? invokeInSession(opts.verb, opts.args, opts.face, { signal: controller.signal })
-      : invokeAbortable(opts.verb, opts.args, await vesselDid(), { timeoutMs: totalBudgetMs, signal: controller.signal }).then((r) => {
+      ? invokeInSession(opts.verb, opts.args, opts.face, { signal: controller.signal, requestId })
+      : invokeAbortable(opts.verb, opts.args, await vesselDid(), { timeoutMs: anyPaced ? NO_SERVO_MS : totalBudgetMs, signal: controller.signal, requestId }).then((r) => {
         // The vessel's own name for the refusal rides out with its words: a floor, a retired bag, an abandoned id.
         if (r.status === "error") throw new RoutedVerbRefused(r.errorMessage ?? "verb failed", r.refusal?.reason);
         return summaryOutput(r) ?? {};
@@ -163,15 +341,45 @@ export async function throughStoreDoor(opts: {
       until: () => settled,
       probe: async () => settled,
       phase: async () => {
-        const met = await whoHolds();
+        const met = await whoHolds(undefined, undefined, requestId);
         lastMessage = met?.message ?? "";
+        lastMet = met;
+        if (met?.phase === "serving" && !settled) {
+          if (met.held === true) { seenHeld = true; goneReads = 0; }
+          // GONE: the seat held the act, and the act left its hold. UNCONFIRMED: a caller with no person at the keys hears a
+          // seat that names no hold. Either, read twice with no answer arriving, ends the wait by the seat's own word.
+          else if ((met.held === false && seenHeld) || (met.held === undefined && !interactive)) {
+            goneReads += 1;
+            if (goneReads >= 2) endWait(new RequestLost(opts.verb, requestId, opts.face));
+          }
+        }
+        // PARKED: only a cause ends the wait. The holder named at the park gone (read twice), the boot log's own fault or
+        // refusal, or the stand socket's exit; each names its refusal and its cure.
+        if (met?.phase === "parked" && !settled) {
+          const pids = pidsNamedIn(met.message);
+          for (const pid of pids) if (holderAlive(pid)) seenAlive.add(pid);
+          const trusted = pids.some((pid) => seenAlive.has(pid));
+          holderGoneReads = trusted && !pids.some(holderAlive) ? holderGoneReads + 1 : 0;
+          const log = bootLog(pids);
+          const refused = /uds error: (.+)/.exec(log);
+          if (/fatal:/.test(log)) endWait(new StoreDoorEnded(opts.verb, "boot-fault", "the boot log attests `fatal:`"));
+          else if (refused) endWait(new StoreDoorEnded(opts.verb, "boot-refused", `the verb channel logged \`uds error: ${refused[1]!.trim()}\``));
+          else if (opts.standExited?.() === true) endWait(new StoreDoorEnded(opts.verb, "stand-exited", "the stand socket's node exited"));
+          else if (holderGoneReads >= 2) endWait(new StoreDoorEnded(opts.verb, "holder-gone", `pid(s) ${pids.join(", ")} no longer run`));
+        }
+        // A serving reading prints nothing yet: a verb that answers inside one cadence leaves no line behind.
         return met === null ? "unbound" : met.phase;
       },
       holderPids: () => pidsNamedIn(lastMessage),
+      onPace: (phase) => {
+        if (settled) return;
+        if (phase === "serving") progress(servingLine(opts.verb, requestId, lastMet, interactive, opts.face));
+        else if (phase === "parked") progress(parkedLine(bootLog(pidsNamedIn(lastMessage)), lastMessage));
+      },
     }).then((): { readonly quiet: true } => ({ quiet: true }));
     let raced: { readonly quiet: true } | { readonly quiet: false; readonly v: Record<string, unknown> };
     try {
-      raced = await Promise.race([verbPromise.then((v): { readonly quiet: false; readonly v: Record<string, unknown> } => ({ quiet: false, v })), named]);
+      raced = await Promise.race([verbPromise.then((v): { readonly quiet: false; readonly v: Record<string, unknown> } => ({ quiet: false, v })), named, interruption]);
     } catch (err) {
       // THIS DOOR'S OWN DECISION CLOSES THE SOCKET AT ONCE (H1). A budgeted wait that names a holder and
       // gives up must not leave the verb's own flat timer holding a channel open for the rest of ITS budget
@@ -179,10 +387,19 @@ export async function throughStoreDoor(opts: {
       // (`owned-store.ts`'s `park`, once it stops masking EOF behind a paused, unshifted socket), rather than
       // running the verb on a late thaw against a caller that already told its operator this failed.
       controller.abort();
+      settled = true;   // the waiter stops polling at its next turn
       await verbPromise.catch(() => { /* the abort's own rejection is not a second fault; `err` already is one */ });
       throw err;
+    } finally {
+      if (opts.interrupt) opts.interrupt.removeEventListener("abort", onInterrupt);
+      else process.removeListener("SIGINT", sigint);
     }
-    return { output: raced.quiet ? await verbPromise : raced.v, via: "daemon" };
+    if (raced.quiet) {
+      // The waiter went quiet once the verb settled; an interrupt that lands first still ends the wait.
+      try { return { output: await Promise.race([verbPromise, interruption]), via: "daemon" }; }
+      catch (err) { if (interrupted) { controller.abort(); await verbPromise.catch(() => {}); } throw err; }
+    }
+    return { output: raced.v, via: "daemon" };
   }
   return { output: await opts.direct(), via: "direct" };
 }
@@ -266,6 +483,20 @@ export function storeFailure(err: unknown, fallback = "error"): { readonly code:
   }
   if (err instanceof StoreHeld) return { code: "store-held", message, hint: "another holder holds this store: a standing vessel, or a command mid-act. Run again once it has gone." };
   if (err instanceof SlowBootTimeout) return { code: "store-door-timeout", message, hint: "the vessel's store door gave no answer inside its budget. `lares vessel read` names what holds it." };
+  if (err instanceof StoreDoorEnded) return { code: "store-door-ended", message, hint: endedCure[err.ended] };
+  if (err instanceof RequestLost) {
+    return { code: "request-lost", message, hint: err.face === undefined
+      ? `the act may have run; read it back with \`lares vessel request ${err.requestId}\` before running it again.`
+      : `the act may have run; read its receipt under request ${err.requestId} on a session of face h${err.face} before running it again.` };
+  }
+  if (err instanceof StoreDoorInterrupted) {
+    return { code: "outcome-unknown", message, hint: err.face === undefined
+      ? `the act may still run; read it back with \`lares vessel request ${err.requestId}\` before running it again.`
+      : `the act may still run; read its receipt under request ${err.requestId} on a session of face h${err.face} before running it again.` };
+  }
+  if (err instanceof SessionActAnswerLost) {
+    return { code: "outcome-unknown", message, hint: `the act may have run; read its receipt under request ${err.requestId} on a session of face h${err.face} before running it again.` };
+  }
   if (err instanceof LocalWaitExpired || err instanceof DaemonUnreachable) {
     const f = verbFailure(err);
     return { code: f.code, message: f.message, ...(f.hint !== undefined ? { hint: f.hint } : {}) };
@@ -275,6 +506,21 @@ export function storeFailure(err: unknown, fallback = "error"): { readonly code:
 
 /** The rows a locked vessel cannot run: each face row, and `persona-new`, which founds a face. */
 const KEY_VERBS: ReadonlySet<StoreDoorVerb> = new Set<StoreDoorVerb>([...STORE_DOOR_FACE_VERBS, "persona-new"]);
+
+/**
+ * THE ROWS WHOSE SESSION ONLY SEATS THE ACT: the kūkulu's begin and offer gather every lent face (one lei, one vouch apiece), so
+ * naming no face they ride the face the operator WEARS (`face.resolve` worn, the mounted face), never a refusal for several open.
+ */
+const WORN_SESSION_VERBS: ReadonlySet<StoreDoorVerb> = new Set<StoreDoorVerb>(["rite-begin", "rite-offer", "rite-land"]);
+
+/**
+ * Whether a row naming no face rides the worn face's session: the kūkulu's begin and offer, and its standing read
+ * (`rite-receipts` with `rite: kukulu`), each gathering every lent face, so several faces open (the house lights h0, h1 and h2)
+ * never refuse it; and a landing that names no face (the hand-landing line a read with no raw debt names). A plain receipts read
+ * still resolves its one face.
+ */
+export const storeVerbRidesWorn = (verb: StoreDoorVerb, args: Readonly<Record<string, unknown>>): boolean =>
+  WORN_SESSION_VERBS.has(verb) || (verb === "rite-receipts" && args["rite"] === "kukulu");
 
 /**
  * Run one row of the store's door table: through the standing vessel when one stands, or here, holding the
@@ -305,7 +551,7 @@ export async function storeVerb(
   // THE FACE RESOLVES ONCE, here: the session opens on it and the row carries it, so the row never resolves again.
   const named = STORE_DOOR_FACE_VERBS.has(verb) ? storeVerbFace(args) : undefined;
   const face = daemonUp && STORE_DOOR_FACE_VERBS.has(verb)
-    ? named ?? (await sealedAct<{ face: number }>("face.resolve", {})).face
+    ? named ?? (await sealedAct<{ face: number }>("face.resolve", storeVerbRidesWorn(verb, args) ? { worn: true } : {})).face
     : undefined;
   // A WARD ACT names a one-use ref for the route a person typed at this terminal, bound to the act as the row will read it (the
   // face included); the route itself rides no verb argument. An act a co-sign gate holds runs first with no route: the route gets

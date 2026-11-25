@@ -77,3 +77,34 @@ test("a gate failure after initialization disposes its provider", async () => {
     expect(dispose).toHaveBeenCalledOnce();
   } finally { dispose.mockRestore(); init.mockRestore(); hydrate.mockRestore(); }
 });
+
+test("SOL R6 M (the watcher stalls on a shared queue): a face whose drop never settles holds only its own queue; another face lights meanwhile", async () => {
+  const a = await standFoundedIsland(teardown);
+  const b = await standFoundedIsland(teardown, { seedOffset: 10 });
+  const c = await standFoundedIsland(teardown, { seedOffset: 20 });
+  const opts = operatorDaemonOptions({ daemonAuth: { ...a.daemonAuth, joinedFaces: [entry(b.daemonAuth)] } } as never, { dyadReading: () => "clear" });
+  const verifier = await opts.verifierFactory!(a.ctx);
+  const ask = (key: string) => verifier.verify({ presenter: `0x${key}`, bagUrl: DAEMON_BAG_ID, access: "read", channel: "local" });
+  const { KeyhiveProvider } = await import("@lararium/keyhive");
+  let release!: () => void;
+  let started!: () => void;
+  const begun = new Promise<void>((resolve) => { started = resolve; });
+  const gate = new Promise<void>((resolve) => { release = resolve; });
+  const original = KeyhiveProvider.prototype.verify;
+  let held = false;
+  // The first verify (b's) holds its provider, so b's drop waits on it; c's own queue never meets b's.
+  const verify = vi.spyOn(KeyhiveProvider.prototype, "verify").mockImplementation(async function (this: InstanceType<typeof KeyhiveProvider>, ...args) {
+    if (!held) { held = true; started(); await gate; }
+    return original.apply(this, args);
+  });
+  try {
+    const pending = ask(b.daemonAuth.atom.key);
+    await begun;
+    let dropped = false;
+    const drop = opts.onHostMessage!({ type: "daemon:face-drop", atomKey: b.daemonAuth.atom.key }, a.ctx).then(() => { dropped = true; });
+    await opts.onHostMessage!({ type: "daemon:face-lit", entry: entry(c.daemonAuth) } as never, a.ctx);
+    expect(dropped, "b's drop still waits on its own queue").toBe(false);
+    release(); await pending; await drop;
+    expect(await ask(c.daemonAuth.atom.key)).toMatchObject({ ok: true });
+  } finally { verify.mockRestore(); }
+});

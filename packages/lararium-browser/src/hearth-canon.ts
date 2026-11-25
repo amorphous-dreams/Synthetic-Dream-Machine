@@ -2,7 +2,7 @@
  * hearth-canon — what an admitted leaf takes from ITS OWN HEARTH beyond the public boards.
  *
  * A leaf that a hearth admitted wears that hearth's face, and the wiki it opens there reads the hearth's
- * base canon: the `@lares` and `@lararium` documents. The carried admit NAMES those documents by url
+ * base canon: the `lares` and `lararium` documents. The carried admit NAMES those documents by url
  * (`hearthCanonDocs`), the way it names the persona plane and the hearth's door: a pointer per relation,
  * carried by the act that makes the relation. The cross-operator gate federates the public boards alone, so
  * without the names a carrier the hearth holds never reaches the page.
@@ -141,6 +141,12 @@ export function hearthCrossingOf(at: {
   readonly nexusPubkey:      string;
 }): {
   readonly ownHearth: boolean; readonly hearthCanon: HearthCanonDocs; readonly gate: FederationGate | null;
+  /**
+   * THE CLEAR SHELF of this crossing: the Nexus's deterministic public boards, and at the own hearth the canon its admit names.
+   * Never a face's plane nor the hearth's daemon working document (`openFacePlanes`, `openHearthDaemon` widen the fetch gate
+   * alone): those cross to fetch, yet rest sealed under the face. The clear-name roster reads this gate (`clearRosterOf`).
+   */
+  readonly clearShelf: FederationGate | null;
   /** Open the worn face's proven planes at the own-hearth crossing (`provenCrossingPlanes`); true where the gate widened. */
   readonly openFacePlanes: (urls: readonly unknown[]) => boolean;
   /**
@@ -153,10 +159,12 @@ export function hearthCrossingOf(at: {
 } {
   const ownHearth = isOwnHearthCrossing(at);
   const hearthCanon: HearthCanonDocs = ownHearth ? admittedCanonDocs(at.hearthCanonDocs, at.nexusPubkey) : {};
-  if (!at.pinnedGatePubKey) return { ownHearth, hearthCanon, gate: null, openFacePlanes: () => false, openHearthDaemon: () => null };
+  if (!at.pinnedGatePubKey) return { ownHearth, hearthCanon, gate: null, clearShelf: null, openFacePlanes: () => false, openHearthDaemon: () => null };
   const boards = new DeterministicFederationGate(at.nexusPubkey);
-  if (!ownHearth) return { ownHearth, hearthCanon, gate: boards, openFacePlanes: () => false, openHearthDaemon: () => null };
+  if (!ownHearth) return { ownHearth, hearthCanon, gate: boards, clearShelf: boards, openFacePlanes: () => false, openHearthDaemon: () => null };
   const gate = new HearthCanonGate(boards, hearthCanon);
+  // A SECOND GATE OVER THE SAME CANON, whose planes never open: the fetch gate widens, the clear shelf never does.
+  const clearShelf = new HearthCanonGate(boards, hearthCanon);
   const openFacePlanes = (urls: readonly unknown[]): boolean => {
     const ids = facePlaneDocIds(urls, at.nexusPubkey);
     gate.admitPlanes(ids);
@@ -168,7 +176,7 @@ export function hearthCrossingOf(at: {
     gate.admitPlanes(new Set([id]));
     return id;
   };
-  return { ownHearth, hearthCanon, gate, openFacePlanes, openHearthDaemon };
+  return { ownHearth, hearthCanon, gate, clearShelf, openFacePlanes, openHearthDaemon };
 }
 
 /**
@@ -191,7 +199,7 @@ export interface CatalogRegistry {
 
 /**
  * Seat the admitted canon on this vessel's own catalog: each named title points at the document the
- * admit named. The keel and every island resolve `@lares` and `@lararium` off that catalog, so the leaf's
+ * admit named. The keel and every island resolve `lares` and `lararium` off that catalog, so the leaf's
  * wiki mounts the hearth's canon. One change carries every pointer that differs; a replica that already
  * names them takes no write.
  */

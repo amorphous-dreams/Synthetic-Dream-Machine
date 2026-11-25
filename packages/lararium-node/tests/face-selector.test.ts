@@ -7,6 +7,7 @@ import { seatSuiteWard } from "./support/scratch-custody-setup.js";
 // This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
 seatSuiteWard();
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { keepHouse } from "./support/kept-house.js";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -18,9 +19,12 @@ import { FaceNotNamed, resolveFace } from "../src/face-selector.js";
 import { seedFaceAtom } from "./atom-fixture.js";
 
 let root: string; let prior: string | undefined;
-beforeEach(async () => {
-  root = mkdtempSync(join(tmpdir(), "lares-face-sel-")); prior = process.env["LAR_ROOT"]; process.env["LAR_ROOT"] = root;
+const house = keepHouse("lares-face-selector-", async () => {
   await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
+});
+beforeEach(() => {
+  root = mkdtempSync(join(tmpdir(), "lares-face-sel-")); prior = process.env["LAR_ROOT"]; process.env["LAR_ROOT"] = root;
+  house.into(root);
 });
 afterEach(() => { if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior; rmSync(root, { recursive: true, force: true }); });
 

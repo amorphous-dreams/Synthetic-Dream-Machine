@@ -124,7 +124,7 @@ export function isWardRow(row: string): boolean { return WARD_RECORD.test(row); 
 /** A ward act refused by name: no credential and no byte of the root rides the error. */
 export class BrowserWardRefused extends Error {
   override readonly name = "BrowserWardRefused";
-  constructor(readonly reading: string, detail = "the face root opened to no ward act in this browser") { super(`${reading}: ${detail}`); }
+  constructor(readonly reading: string, detail = "the face root opened to no ward act in this browser", readonly attemptsLeft?: number) { super(`${reading}: ${detail}`); }
 }
 
 /** Refuse a ward row at a door of unlocked custody: the root opens only fresh, for one ward act. */
@@ -435,10 +435,6 @@ const personaRosterCodec: RecordCodec = {
       const { tree, verifyingKey } = (l ?? {}) as { tree?: unknown; verifyingKey?: unknown };
       return typeof tree === "string" && /^[0-9a-f]{32}$/.test(tree) && typeof verifyingKey === "string" && /^[0-9a-f]{64}$/.test(verifyingKey);
     };
-    // A ROSTER OF BARE INDICES (`{ roots: [0] }`) predates the ward: refuse by name with its cure.
-    if (Array.isArray(roots) && roots.length > 0 && roots.every((r) => typeof r === "number")) {
-      throw new BrowserWardRefused("ward-face-predates", "this face predates the ward; found it again");
-    }
     if (!Array.isArray(roots) || !roots.every(line)) {
       throw new Error("[browser-custody] the persona-root roster holds no { roots: [{ tree, verifyingKey }] } record");
     }

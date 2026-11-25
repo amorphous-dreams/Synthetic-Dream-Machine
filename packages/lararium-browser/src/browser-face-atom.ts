@@ -24,7 +24,7 @@ import {
   wardKeyPopImage,
   type VesselFaceTagDoor,
 } from "@lararium/mesh";
-import { browserKeystoreCustodyIo, readKeystoreRecord, SEALED_RECORD_PREFIX, withCustodyRecords } from "./browser-custody.js";
+import { readKeystoreRecord, withCustodyRecords } from "./browser-custody.js";
 import { browserWardBindRoute, browserWardKeyMint, browserWardKeyOf, browserWardKeySign, BrowserWardRefused, type WardAskKind } from "./browser-ward.js";
 import type { WardRoute } from "./ward-core.js";
 import type { BrowserWardRoute } from "./browser-ward-cosign.js";
@@ -131,9 +131,6 @@ export interface BrowserTagDoorWard {
   readonly route?: (act: string, kind: WardAskKind) => Promise<BrowserWardRoute | WardRoute>;
 }
 
-/** The face's ward-key row from before the key moved under its own ward: the next tag ask sweeps it (alpha line, no shim). */
-const sweptWardSignRecord = (personaGroup: string): string => `${SEALED_RECORD_PREFIX}${wardSignRecord(personaGroup)}`;
-
 /**
  * THE BROWSER VESSEL'S TAG DOOR: the blinded per-face tag one admission of this browser carries (`vessel-face-tag`).
  * The face's tag secret rests in its own row beside its atom, 32 random bytes minted at the face's founding or first
@@ -143,8 +140,7 @@ const sweptWardSignRecord = (personaGroup: string): string => `${SEALED_RECORD_P
  * read. The key's public half reads off the plain row beside its ward, so naming the key opens no seed; the pop signs only inside a
  * ward act of this face (the per-act ward worker, opened from the route typed for it, zeroed after): the mint's own act where this ask
  * mints the key, a fresh one where the key stood. A mint asks its route twice (`bind`, `retype`) and binds only where both match.
- * An ask with no route refuses `ward-needs-fresh-unlock`, a passkey `ward-passkey-refused`. Each ask sweeps the face's sealed
- * ward-key row from before the key moved under its own ward.
+ * An ask with no route refuses `ward-needs-fresh-unlock`, a passkey `ward-passkey-refused`.
  */
 export function browserVesselFaceTagDoor(idbName = "lares:vessel", ward: BrowserTagDoorWard = {}, rowFace?: string): VesselFaceTagDoor {
   return async (group, deviceKey) => {
@@ -160,7 +156,6 @@ export function browserVesselFaceTagDoor(idbName = "lares:vessel", ward: Browser
       return fresh;
     });
     try {
-      await browserKeystoreCustodyIo(idbName).remove(sweptWardSignRecord(group));
       if (!ward.route) throw new BrowserWardRefused("ward-needs-fresh-unlock", "the face's ward key opens only inside a ward act, and this door offers no route");
       const ask = ward.route;
       const stood = await browserWardKeyOf(idbName, group);

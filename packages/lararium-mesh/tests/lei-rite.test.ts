@@ -13,7 +13,7 @@ import { swarmBoardRecords, writeSwarmBoardAct } from "../src/swarm-board.js";
 import { swarmCommand, type SwarmDoorDeps } from "../src/swarm-door.js";
 import { SWARM_LEI_RITES, leiRiteCosigns, wardLeiVerb } from "../src/swarm-lei-rite.js";
 import {
-  SwarmRefused, putSwarmAct, readLei, readSwarmRecord, signSwarmAct, returnLei, swarmActCid, swarmLeiHead, swarmLeiRecordTitle, swarmLeiTitle, swarmReceiptTitle,
+  SwarmRefused, putSwarmAct, readLei, readSwarmRecord, signSwarmAct, returnLei, swarmActCid, swarmLeiHead, swarmLeiRecordTitle, swarmLeiTitle,
   type SwarmBodyParts, type SwarmWikiPort,
 } from "../src/swarm-tiddlers.js";
 import type { WardCosignAct } from "../src/ward-cosign.js";
@@ -39,8 +39,6 @@ async function fixture() {
     await putSwarmAct(wiki, swarmLeiRecordTitle(rite, BRANCH, swarmActCid(lei)), lei);
     return { lei, cid: swarmActCid(lei) };
   };
-  // Every spend rests on a passing receipt for the head's tree (`lei-reach.test.ts`); one stands here for each spend below.
-  await putSwarmAct(wiki, swarmReceiptTitle(TREE), await signSwarmAct({ act: "receipt", group: GROUP, tree: TREE, checks: ["typecheck"], verdict: "pass", definitions: "d".repeat(64) }, vessel));
   return { hand, vessel, trust, wiki, issue };
 }
 
@@ -93,15 +91,15 @@ describe("lei-rite-separates-powers", () => {
     await expect(returnLei(f.wiki, { rite: "kukulu", branch: BRANCH, head: HEAD, tree: TREE }, f.trust, GROUP, f.vessel, ONE_DEVICE)).rejects.toMatchObject({ code: "swarm-lei-returned" });
   });
 
-  test("RED: the rite list holds three names, and a lei of any other rite forms no record, no title and no ward verb; CONTROL: the push rite registers its co-signed ward verb", async () => {
+  test("RED: the rite list holds four names (the executable-record lei's `exec` beside the three restart and keep rites), and a lei of any other rite forms no record, no title and no ward verb; CONTROL: the push rite registers its co-signed ward verb", async () => {
     const f = await fixture();
-    expect([...SWARM_LEI_RITES]).toEqual(["push", "kukulu", "keep"]);
+    expect([...SWARM_LEI_RITES]).toEqual(["push", "kukulu", "keep", "exec"]);
     for (const rite of ["merge", "", "PUSH", "push/x", undefined]) {
       await expect(signSwarmAct({ act: "lei", group: GROUP, rite, reach: "head", branch: BRANCH, head: HEAD, after: null } as unknown as SwarmBodyParts, f.hand), String(rite)).rejects.toMatchObject({ code: "swarm-shape" });
       expect(() => swarmLeiTitle(rite as never, BRANCH), String(rite)).toThrow(SwarmRefused);
       await expect(readLei(f.wiki, { rite: rite as never, branch: BRANCH, head: HEAD }, f.trust, GROUP, ONE_DEVICE), String(rite)).rejects.toMatchObject({ code: "swarm-name-malformed" });
     }
-    expect(WARD_COSIGN_VERBS).toEqual(["ward-kapae-lower", "ward-house-cap", "ward-push-lei"]);
+    expect(WARD_COSIGN_VERBS).toEqual(["ward-kapae-lower", "ward-house-cap", "ward-push-lei", "ward-keeper-vest"]);
     expect(faceIntentVerbs().classOfVerb(wardLeiVerb("push"))).toEqual({ class: "single-effect", cosign: true });
   });
 });
@@ -146,7 +144,7 @@ describe("the door issues a lei under its rite", () => {
       await expect(swarmCommand({ action: "lei-kui", rite, branch: BRANCH, head: HEAD, after: null } as never, s.deps), String(rite)).rejects.toMatchObject({ code: "swarm-lei-malformed" });
     }
     expect([...s.wiki.rows.keys()]).toEqual([]);
-    expect(await swarmCommand({ action: "lei-kui", rite: "kukulu", reach: "head", branch: BRANCH, head: HEAD, after: null }, s.deps)).toEqual({ rite: "kukulu", branch: BRANCH, reach: "head", head: HEAD });
+    expect(await swarmCommand({ action: "lei-kui", rite: "kukulu", reach: "head", branch: BRANCH, head: HEAD, after: null }, s.deps)).toEqual({ rite: "kukulu", branch: BRANCH, reach: "head", head: HEAD, lei: expect.stringMatching(/^[0-9a-f]{64}$/) });
     expect([...s.wiki.rows.keys()].every((t) => t.startsWith(`${swarmLeiTitle("kukulu", BRANCH)}/`))).toBe(true);
   });
 
@@ -157,7 +155,7 @@ describe("the door issues a lei under its rite", () => {
     expect(await swarmCommand({ action: "show", rite: "push", branch: BRANCH, head: HEAD }, s.deps)).toMatchObject({ lei: { standing: false, refusal: "absent", after: null } });
     await expect(swarmCommand({ action: "show", branch: BRANCH, head: HEAD } as never, s.deps)).rejects.toMatchObject({ code: "swarm-lei-malformed" });
     // The push chain holds no lei, so its first names no predecessor: the kukulu lei never counts as the one it follows.
-    await expect(swarmCommand({ action: "lei-kui", rite: "push", reach: "head", branch: BRANCH, head: HEAD, after: null }, s.deps)).resolves.toEqual({ rite: "push", branch: BRANCH, reach: "head", head: HEAD });
+    await expect(swarmCommand({ action: "lei-kui", rite: "push", reach: "head", branch: BRANCH, head: HEAD, after: null }, s.deps)).resolves.toEqual({ rite: "push", branch: BRANCH, reach: "head", head: HEAD, lei: expect.stringMatching(/^[0-9a-f]{64}$/) });
     expect(await swarmCommand({ action: "show", rite: "push", branch: BRANCH, head: HEAD }, s.deps)).toMatchObject({ lei: { standing: true } });
   });
 });

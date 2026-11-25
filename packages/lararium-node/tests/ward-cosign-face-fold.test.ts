@@ -26,7 +26,8 @@ import { runFoundTheFace } from "../src/index.js";
 import { DurableNodeFSStorageAdapter } from "../src/durable-storage-adapter.js";
 import { ownedStore } from "../src/owned-store.js";
 import { larBootstrapPath } from "../src/vessel-paths.js";
-import { loadIntentFace, loadNodeWardCosignPort } from "../src/commands/intent.js";
+import { loadIntentFace, loadNodeWardCosignPort, runKeeperCosign } from "../src/commands/intent.js";
+import { riteFaceOf } from "../src/commands/rite.js";
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
 import { direct } from "./direct-store.js";
 import { foundDirect, openTestCustody, seatSeedCharter } from "./found-route.js";
@@ -119,4 +120,22 @@ test("RED: a fold that cannot be read (neither the catalog nor the bootstrap nam
 
 test("RED: a bootstrap persona entry naming a doc with no signed log reads no fold, refuses `ward-cosign-fold-unread` and runs nothing", async () => {
   expect(await gated("no-persona", "unsigned")).toMatchObject({ ran: 0, code: "ward-cosign-fold-unread" });
+}, 240_000);
+
+test("RED: ONE OWNER NAMES THE FACE'S GROUP: the kūkulu offer's face (the group its vouch signs) and the keeper vest's co-sign (the group its proof carries) both read the PersonaGroup id through the real builders, so the keeper's ordinal-to-group check never drifts apart from them", async () => {
+  await withLarRoot(ROOT, async () => {
+    await openTestCustody();
+    const adapter = new DurableNodeFSStorageAdapter(storage), repo = new Repo({ storage: adapter, network: [] });
+    try {
+      const { index } = await loadIntentFace(repo, catalogs["whole"], { group });
+      const offered = await riteFaceOf(repo, catalogs["whole"], index);
+      const carried = await runKeeperCosign({ repo, catalogUrl: catalogs["whole"], face: index, next: "sha256:" + "94".repeat(32), prev: null, nonce: "ab".repeat(32) });
+      const cosign = carried["cosign"] as { group: string; ordinal: number; devices: string[]; proof: unknown };
+      expect(offered.group).toBe(group);
+      expect(cosign.group).toBe(offered.group);
+      // The one-device face carries its roster and no proof, at the ordinal the vouch's face stands at.
+      expect(cosign).toMatchObject({ ordinal: index, proof: null });
+      expect(cosign.devices).toHaveLength(offered.devices!);
+    } finally { await repo.shutdown(); await adapter.close(); }
+  });
 }, 240_000);

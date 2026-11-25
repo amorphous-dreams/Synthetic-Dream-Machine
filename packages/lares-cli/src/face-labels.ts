@@ -10,8 +10,9 @@
 import {
   larProjectionsHome, faceLabelsDir as nodeLabelsDir, faceLabelPath as nodeLabelPath, faceBasesPath as nodeBasesPath, readFaceLabel as nodeReadLabel,
   writeFaceLabel, labelledRelations as nodeLabelled, readFaceBases as nodeReadBases, writeFaceBases as nodeWriteBases, FACE_LABEL_SCHEMA, FACE_LABELS_DIR,
-  type FaceLabel,
+  faceRoot, faceSegmentRefusal, type FaceLabel,
 } from "@lararium/node";
+import { existsSync, renameSync } from "node:fs";
 import { storeVerb } from "./store-door.js";
 
 export { FACE_LABEL_SCHEMA, FACE_LABELS_DIR, writeFaceLabel, type FaceLabel };
@@ -60,9 +61,36 @@ export async function labelFaceAtNaming(
   let relation = face.relation ?? null;
   if (relation === null) { try { relation = await readRelation(face.handleIndex); } catch { relation = null; } }
   if (relation === null && face.formerPetname) relation = relationLabelledAs(face.handleIndex, face.formerPetname, root);
+  if (face.formerPetname && face.formerPetname !== face.petname) {
+    const moved = moveFaceRoot(face.formerPetname, face.petname, root);
+    if (moved !== null) console.warn(`[faces] ${moved}`);
+  }
   if (relation === null) return null;
   writeFaceLabel({ relation, petname: face.petname, handleIndex: face.handleIndex }, root);
   return relation;
+}
+
+/**
+ * A RENAME MOVES THE FACE'S ROOT: `faces/<former>` becomes `faces/<petname>`, since the folder names the pet name the face wears.
+ * Nothing moves where the former root never stood. Answers null where it moved or had nothing to move, else why it left the
+ * root standing (a name the segment rule refuses, or a root already standing at the new name); never throws.
+ */
+export function moveFaceRoot(former: string, petname: string, projections: string = larProjectionsHome()): string | null {
+  if (faceSegmentRefusal(former) !== null) return null;                  // a former name that made no folder left none to move
+  const refused = faceSegmentRefusal(petname);
+  const from = faceRoot(projections, former);
+  if (!existsSync(from)) return null;
+  if (refused !== null) return `the face root ${from} stays where it stands: the new pet name makes no folder (${refused.code}: ${refused.why})`;
+  const to = faceRoot(projections, petname);
+  if (from === to) return null;
+  // A case-only rename (`heron` -> `Heron`) moves through a step aside, so a case-blind file system renames it too.
+  if (existsSync(to) && from.toLowerCase() !== to.toLowerCase()) return `the face root ${from} stays where it stands: ${to} already stands; move one aside by hand`;
+  try {
+    const step = `${from}.lar-rename-${process.pid}`;
+    renameSync(from, step);
+    renameSync(step, to);
+    return null;
+  } catch (e) { return `the face root ${from} did not move to ${to}: ${e instanceof Error ? e.message : String(e)}`; }
 }
 
 /** The one relation whose label names this ordinal under this pet-name, or null where none or several do. */

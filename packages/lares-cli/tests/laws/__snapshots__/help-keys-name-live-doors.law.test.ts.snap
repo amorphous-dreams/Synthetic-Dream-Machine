@@ -3,12 +3,12 @@
 exports[`the per-command help registry > meme help publishes the required store target > meme help 1`] = `
 {
   "examples": [
-    "lares meme get lar:///ha.ka.ba/lares/api/corpus --recipe lares        # text on stdout, the base on stderr",
-    "lares meme put lar:///ha.ka.ba/... --recipe lares --file note.mem     # land a framed meme through the gate",
-    "lares meme list --recipe lares --tree                                  # every root the wiki resolves, each slot tree nested",
-    "lares meme list --bag lares                                            # every root that one bag holds",
+    "lares tiddler get lar:///ha.ka.ba/lares/api/corpus --recipe lares --meme   # READ a meme: the carrier, base on stderr (the one door)",
+    "lares meme normalize draft.mem                         # re-frame + re-stamp the block check",
+    "lares meme check bags/**/*.mem                         # CI / pre-commit: drift exits 1",
+    "lares meme project note.mem --to md --out ./out        # the submission pair, clock-free",
   ],
-  "synopsis": "THE MEME DOOR — one family for every law over meme text, and each verb DECLARES ITS SEAT: \`normalize\` · \`check\` · \`sitting\` · \`project --to md\` (over a file) run LOCAL with no daemon in reach; \`put\` · \`get\` · \`list\` · \`delete\` · \`project\` to any other target, or from a \`lar:\` uri, ride the daemon verb. Store-backed verbs require \`(--recipe <slug> | --bag <slug>)\`; \`--recipe\` edits AS the named wiki; \`--bag\` places into that bag and REFUSES when this island cannot write it; \`--realm <id>\` beside \`--bag\` names the realm whose registration that bag resolves through, and reads that realm alone. \`--base\` carries the canonical hash last read — a record that moved past it CONFLICTS and nothing lands.",
-  "usage": "usage: lares meme <put | get | list | delete | normalize | check | sitting | project | promote | offer> (store verbs require (--recipe <slug> | --bag <slug>))",
+  "synopsis": "THE MEME DOOR — one family for every law over meme text, and each verb DECLARES ITS SEAT: \`normalize\` · \`check\` · \`sitting\` · \`project --to md\` (over a file) run LOCAL with no daemon in reach; \`project\` to any other target, or from a \`lar:\` uri, rides the daemon verb. A family lands, patches, lists and leaves through \`lares tiddler put | get | delete --meme\`. A meme READS through the one door: \`lares tiddler get <uri> --recipe <slug> --meme\` (whole within a page, its has-stack past it; \`--all\` the whole carrier). Store-backed verbs require \`(--recipe <slug> | --bag <slug>)\`; \`--recipe\` edits AS the named wiki; \`--bag\` places into that bag and REFUSES when this island cannot write it; \`--realm <id>\` beside \`--bag\` names the realm whose registration that bag resolves through, and reads that realm alone. \`--base\` carries the canonical hash last read — a record that moved past it CONFLICTS and nothing lands.",
+  "usage": "usage: lares meme <normalize | check | sitting | project | promote | offer> (store verbs require (--recipe <slug> | --bag <slug>))",
 }
 `;

@@ -23,7 +23,7 @@ uri-path           = "ha.ka.ba/lares/api/pono/guest-grammar/SKILL"
 
 ! Guest-Grammar Skill
 
-[[guest-grammar.md|../guest-grammar.md]] holds the law.
+[[guest-grammar|lar:///ha.ka.ba/lares/api/pono/guest-grammar]] holds the law.
 This skill carries the working procedure.
 
 <<~ ahu slot=`#/load-contract`>>
@@ -231,6 +231,6 @@ Aftermath — close by naming:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;iF9CzGqEoc9TgHBpdrVOJJLkymrW-5l15MtJ4AG_ECw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;IcVwo3sI_d7oEin2BWgEOFecTQJwzu473ojwe2J_rGw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

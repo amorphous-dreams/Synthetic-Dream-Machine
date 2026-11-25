@@ -38,6 +38,15 @@ import { headsEqual } from "./wiki-recipe.js";
 import { plainField, plainRecord, plainValue, storedDeleted, type StoredLarRecord, ownEntry, hasOwnEntry, isPrototypeKey } from "./stored-value.js";
 import { storedRecord, storedValue, PROTOTYPE_KEY_CODE } from "./stored-record.js";
 import { VerbRefusal } from "./verb-refusal.js";
+import { changeUnderActor, type WireIdentity } from "./wire-identity.js";
+
+/** The door a store writes a worn face's change through: the actor that face derives for a document in this composition. */
+export type FaceActorDoor = Pick<WireIdentity, "actor">;
+
+/** A write naming a face the store cannot write as (it holds no actor door): it refuses, and lands nothing. */
+export const WORN_FACE_UNWRITABLE = "worn-face-unwritable";
+/** A stale-base write naming a face the store cannot write as at its base: it refuses, never landing under the engine's actor. */
+export const STALE_BASE_UNDER_WORN_FACE = "stale-base-under-worn-face";
 
 type MutableLarTiddlerRecord = {
   tiddler: Record<string, unknown> & { title: string };
@@ -136,8 +145,89 @@ function _tombstoneRecord(title: string): LarTiddlerRecord {
   return Object.freeze({ tiddler: { title }, meta: { deleted: true } });
 }
 
+/**
+ * THE STAND-INS: handles a vessel mounted in place of a document it has not read (a degraded or pending doc's read-only
+ * blank, `waitHandle`'s fallback before the real doc merges). A store over one reads `unknown()` until it is released.
+ */
+const STAND_INS = new WeakSet<object>();
+/** Mark a handle as standing in for an unread document. */
+export function markStandIn(handle: DocHandle<unknown>): void { STAND_INS.add(handle); }
+/** The real document merged into the handle: it now reads what the document holds. */
+export function releaseStandIn(handle: DocHandle<unknown>): void { STAND_INS.delete(handle); }
+/** Whether a handle still stands in for a document it has not read. */
+export function standsIn(handle: DocHandle<unknown>): boolean { return STAND_INS.has(handle); }
+
+/** A write into a sealed document held read-only over its own id (`waitHandle`): it refuses by this name, and lands nothing. */
+export const SEALED_DOCUMENT_UNOPENED = "sealed-document-unopened";
+/**
+ * THE SEALED DOCUMENTS HELD READ-ONLY OVER THEIR OWN IDS, each with why it stands so: a document of a sealed bag that missed
+ * the boot window waits for its keyed load under the real id (`waitHandle`), never under a writable fallback. A write into
+ * one refuses `sealed-document-unopened` naming why, so nothing lands clear, nothing lands under an id the bag map does not
+ * name, and nothing waits in memory to drop at a stand-down. The keyed load that opens releases it (`openSealed`).
+ */
+const SEALED_UNOPENED = new WeakMap<object, string>();
+/**
+ * THE HANDLE ITSELF HOLDS, NOT ONLY A STORE OVER IT. A held handle stands over an empty document while its keyed load waits, so
+ * a raw `change` that created `tiddlers` there would conflict with the loaded document's own and hide the sealed content
+ * behind the conflict once the load opened. While held, every mutator a caller reaches (`change`, `changeAt`, `merge`, `sub`
+ * and the sub-handles it would hand out, `remove`) refuses `sealed-document-unopened` before any byte moves, and a reader
+ * sees it held: `isReady()` answers false and `whenReady()` waits for the open. The engine's own `update` (the keyed load, a
+ * peer's sync) passes untouched, and the engine reads no handle's readiness.
+ *
+ * A DELETE BURNS THE WHOLE DOCUMENT, never a write into its held content: `Repo.delete` (a lift that burns its floor
+ * document) runs whole, the hold released first, so nothing refuses midway and leaves the repo half-deleted.
+ */
+const SEALED_GUARDS = new WeakMap<object, { readonly release: () => void }>();
+const SEALED_MUTATORS = ["change", "changeAt", "merge", "sub", "remove"] as const;
+function guardSealed(handle: DocHandle<unknown>): { readonly release: () => void } {
+  const own = handle as unknown as Record<string, unknown>;
+  const isReady = own["isReady"];
+  const whenReady = handle.whenReady.bind(handle);
+  let opened!: () => void;
+  const opens = new Promise<void>((resolve) => { opened = resolve; });
+  const refuse = (verb: string) => (): never => {
+    const why = SEALED_UNOPENED.get(handle) ?? "its keyed load has not opened";
+    throw new VerbRefusal(SEALED_DOCUMENT_UNOPENED, `${SEALED_DOCUMENT_UNOPENED}: ${handle.documentId} rests sealed and stands read-only over its own id (${why}); \`${verb}\` lands nothing, and lands once the keyed load opens the document`);
+  };
+  for (const verb of SEALED_MUTATORS) Object.defineProperty(handle, verb, { value: refuse(verb), configurable: true, writable: true });
+  Object.defineProperty(handle, "isReady", { value: () => false, configurable: true, writable: true });
+  Object.defineProperty(handle, "delete", {
+    value: () => { openSealed(handle); handle.delete(); },
+    configurable: true, writable: true,
+  });
+  Object.defineProperty(handle, "whenReady", {
+    value: (states?: Parameters<typeof handle.whenReady>[0]) => (states !== undefined && !states.includes("ready") ? whenReady(states) : opens.then(() => whenReady(states))),
+    configurable: true, writable: true,
+  });
+  return {
+    release: () => {
+      for (const verb of SEALED_MUTATORS) delete own[verb];
+      delete own["whenReady"];
+      delete own["delete"];
+      Object.defineProperty(handle, "isReady", { value: isReady, configurable: true, writable: true });
+      opened();
+    },
+  };
+}
+/** Hold a sealed document's handle read-only over its own id; `why` names what it waits on (or what ended its load). */
+export function holdSealedUnopened(handle: DocHandle<unknown>, why: string): void {
+  SEALED_UNOPENED.set(handle, why);
+  if (!SEALED_GUARDS.has(handle)) SEALED_GUARDS.set(handle, guardSealed(handle));
+}
+/** The keyed load opened the document: a write into it lands, under the real id, and seals there. */
+export function openSealed(handle: DocHandle<unknown>): void {
+  SEALED_UNOPENED.delete(handle);
+  const guard = SEALED_GUARDS.get(handle);
+  SEALED_GUARDS.delete(handle);
+  guard?.release();
+}
+/** Why a sealed document's handle stands read-only, or undefined where it takes writes. */
+export function sealedUnopened(handle: DocHandle<unknown>): string | undefined { return SEALED_UNOPENED.get(handle); }
+
 export class AutomergeDocStore implements LarTiddlerStore {
   readonly notifiesSynchronously = true;
+  /** True while the handle stands in for a document the vessel has not read (`markStandIn`). */
+  unknown(): boolean { return standsIn(this.handle); }
   protected readonly handle: DocHandle<LarDoc>;
   readonly provider: MemeProvider;
   readonly bagId: string | undefined;
@@ -146,10 +236,13 @@ export class AutomergeDocStore implements LarTiddlerStore {
    *  origin, marked a redelivery. Undefined outside the store's own change: the event then carries a remote or sync merge. */
   private _applying: ChangeOrigin | undefined;
   private readonly _draftListeners = new Set<(change: ParallelDraftsChange) => void | Promise<void>>();
+  /** The composition's actor door: a write whose origin names a face lands under that face's actor through it. */
+  private readonly _wear: FaceActorDoor | undefined;
 
-  constructor(handle: DocHandle<LarDoc>, bagId?: string) {
+  constructor(handle: DocHandle<LarDoc>, bagId?: string, options?: { readonly wear?: FaceActorDoor }) {
     this.handle  = handle;
     this.bagId   = bagId;
+    this._wear   = options?.wear;
     // MemeProvider gets the tiddlers submap — keeps MemeProvider path-agnostic.
     this.provider = new MemeProvider(
       (title) => { const raw = ownEntry(handle.doc()?.tiddlers, title); return raw ? plainRecord(raw) : null; },
@@ -158,7 +251,7 @@ export class AutomergeDocStore implements LarTiddlerStore {
     );
 
     const remoteOrigin: ChangeOrigin = { kind: "crdt-remote", edgeIsland: bagId ?? "automerge" };
-    handle.on("change", ({ patches }) => {
+    this._onChange = ({ patches }) => {
       // Re-map ["tiddlers", title, ...] → [title, ...] before fan-out.
       // Patches that touch doc-level fields (blobs, etc.) are dropped here
       // since MemeProvider only tracks tiddler-keyed URIs.
@@ -170,7 +263,39 @@ export class AutomergeDocStore implements LarTiddlerStore {
       const own = this._applying;
       this.provider.handleChange(remapped, own ?? remoteOrigin, own !== undefined);
       this._surfaceConflicts(remapped);
-    });
+    };
+    handle.on("change", this._onChange);
+  }
+
+  /** The handle's change listener this store holds. */
+  private readonly _onChange: (payload: { patches?: readonly { path: unknown }[] }) => void;
+
+  /** Stop hearing the handle: a layer that leaves the cascade (a remount over the same handle) drops its listener. */
+  dispose(): void { this.handle.off("change", this._onChange as never); }
+
+  /**
+   * THE WORN FACE'S ACTOR for a write whose origin names one (undefined: the write names no face, and rides the engine's
+   * actor). A store with no actor door refuses by name, so a face's write never lands under the engine's actor: a write
+   * at a stale base refuses `stale-base-under-worn-face`, any other `worn-face-unwritable`.
+   */
+  private async _faceActor(origin: ChangeOrigin, base: readonly string[] | undefined): Promise<string | undefined> {
+    if (origin?.face === undefined) return undefined;
+    const wear = this._wear;
+    if (wear === undefined || typeof (this.handle as Partial<DocHandle<LarDoc>>).update !== "function") {
+      const now = this.handle.doc() ? this.headsNow() : null;
+      const stale = base !== undefined && (now === null || !headsEqual(base, now));
+      const who = origin.face === null ? "the veil floor" : "a worn face";
+      if (stale) throw new VerbRefusal(STALE_BASE_UNDER_WORN_FACE, `${STALE_BASE_UNDER_WORN_FACE}: a write at a stale base names ${who}, and the store of ${this.bagId ?? "this document"} holds no actor door to write at that base under the face's actor; it refuses rather than land under the engine's actor`);
+      throw new VerbRefusal(WORN_FACE_UNWRITABLE, `${WORN_FACE_UNWRITABLE}: a write names ${who}, and the store of ${this.bagId ?? "this document"} holds no actor door to write under the face's actor; it refuses rather than land under the engine's actor`);
+    }
+    return wear.actor(origin.face, this.handle.documentId);
+  }
+
+  /** A SEALED DOCUMENT HELD READ-ONLY (`holdSealedUnopened`) takes no write: it refuses by name before any byte moves. */
+  private _refuseSealedUnopened(): void {
+    const why = sealedUnopened(this.handle);
+    if (why === undefined) return;
+    throw new VerbRefusal(SEALED_DOCUMENT_UNOPENED, `${SEALED_DOCUMENT_UNOPENED}: ${this.bagId ?? "this document"} rests sealed and stands read-only over its own id (${why}); the write lands nothing, and it lands once the keyed load opens the document`);
   }
 
   private _own<T>(origin: ChangeOrigin, apply: () => T): T {
@@ -374,8 +499,12 @@ export class AutomergeDocStore implements LarTiddlerStore {
     // refuses by name before any byte moves (`title-law.ts`).
     for (const record of puts) assertStorableTitle(record.tiddler.title);
     for (const title of tombstones) assertStorableTitle(title);
-    const docNow = this.handle.doc();
+    this._refuseSealedUnopened();
     const requestedBase = options?.base;
+    // THE FACE'S ACTOR SETTLES FIRST, ahead of every read: no await stands between the read of the doc and the change,
+    // and a write that names no face awaits nothing here (the store notifies synchronously).
+    const faceActor = origin?.face === undefined ? undefined : await this._faceActor(origin, requestedBase);
+    const docNow = this.handle.doc();
     let currentHeads: readonly string[] | null = null;
     if (requestedBase !== undefined) {
       try {
@@ -456,7 +585,11 @@ export class AutomergeDocStore implements LarTiddlerStore {
     };
     let madeAt: readonly string[] | undefined;
     try {
-      if (based) {
+      if (faceActor !== undefined) {
+        // A WORN FACE'S WRITE lands under the face's actor, a stale base at its base (the isolation form of that actor).
+        const made = this._own(origin, () => changeUnderActor(this.handle, faceActor, change, based ? requestedBase : undefined));
+        if (based && made) madeAt = made;
+      } else if (based) {
         const made = this._own(origin, () => this.handle.changeAt(encodeHeads(requestedBase as string[]), change));
         if (made) madeAt = Object.freeze([...decodeHeads(made)]);
       } else this._own(origin, () => this.handle.change(change));
@@ -537,8 +670,10 @@ export class AutomergeDocStore implements LarTiddlerStore {
   /** HARD-remove: delete the key so `get` returns null (ABSENT — falls through
    *  the cascade), never a kāpae tombstone. The MOVE/promotion source retract. */
   async remove(title: string, origin: ChangeOrigin, options?: LarRemoveOptions): Promise<void> {
+    this._refuseSealedUnopened();
     let removed = true;
-    this._own(origin, () => this.handle.change((doc) => {
+    const faceActor = origin?.face === undefined ? undefined : await this._faceActor(origin, undefined);
+    const removal = (doc: LarDoc) => {
       const tiddlers = doc.tiddlers as unknown as Record<string, MutableLarTiddlerRecord>;
       // THE TEST AND THE REMOVAL SHARE ONE CHANGE: no write lands between them.
       // A title holding a concurrent value the live one hides (a parallel draft, field or whole record) stays: removing
@@ -547,7 +682,8 @@ export class AutomergeDocStore implements LarTiddlerStore {
       if (options?.only && (!holdsOnly(ownEntry(tiddlers, title) as unknown as LarTiddlerRecord | undefined, options.only)
         || this.parallelDrafts(title).length > 0)) { removed = false; return; }
       delete tiddlers[title];
-    }));
+    };
+    this._own(origin, () => faceActor !== undefined ? changeUnderActor(this.handle, faceActor, removal) : this.handle.change(removal));
     if (!removed) return;
     // Fire record:null — absence; the adaptor's cross-bag resolution surfaces
     // whatever lower-bag copy now resolves beneath (vs a kāpae stop).

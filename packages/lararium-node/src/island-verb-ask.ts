@@ -14,6 +14,7 @@
  * clear at the floor and sealed under a lit face, so nothing a sealed row holds rides here: a sealed row's act
  * rides the custody door (`sealed-acts`).
  */
+import { islandAskRefusal, type EngineWatch } from "./engine-watch.js";
 import {
   OUTCOME_URI_PREFIX, VERB_RESULT_KEY, newRequestId, signMemoryAsk, signSeatDutiesAsk,
   type CompositeStore, type MemoryAct,
@@ -74,7 +75,12 @@ export function askIslandVerb(opts: {
   readonly args:         Record<string, unknown>;
   readonly requestedBy:  string;
   readonly requestId:    string;
+  /** The isolate's engine watch the gate reads (`engine-watch`); absent, the isolate's own. */
+  readonly engine?:      EngineWatch;
 }): IslandAsk {
+  // THE SOCKET'S GATES STAND ON THIS ROAD TOO (`islandAskRefusal`): the vessel's own watches ask here, past the socket.
+  const gated = islandAskRefusal(opts.verb, opts.args, opts.engine);
+  if (gated !== null) return { answer: Promise.reject(new IslandVerbRefused(opts.verb, gated.message, gated.refusal)), abandon: () => {} };
   let abandon: () => void = () => {};
   const answer = new Promise<Record<string, unknown>>((resolve, reject) => {
     let settled = false;

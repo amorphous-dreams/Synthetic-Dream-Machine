@@ -10,7 +10,7 @@ import { spawn } from "node:child_process";
 import { TIMEOUT_CEIL_MS } from "@lararium/mempalace";
 
 import { resolveCaptureSessionSpawn, resolveHolderCapEnv } from "@lararium/mempalace";
-import type { SubagentEdgePair } from "@lararium/tw5";
+import type { SpiritFeed } from "@lararium/tw5";
 
 import { composePalace, type PalaceHolderProc, type PalaceHolderSpawn } from "../sensorium.js";
 
@@ -106,10 +106,10 @@ export interface SourceCapture {
   cascadeUnKapae(request: { branch: string; tick: number }): Promise<Record<string, unknown>>;
   /** The cross-plane witness: ONE cid → presence across content · structure · form (honest nulls). Read-only. */
   planeRecord(request: { cid: string }): Promise<Record<string, unknown>>;
-  /** Derive a session transcript's spawn/handback edge-DAG — the worldline-COMPARE consumer's edge feed. The
+  /** Derive a session transcript's spirit edge-DAG (spawns, round closes, messages) — the worldline-COMPARE consumer's edge feed. The
    *  CRUNCH lives in python (beside the transcript data); this reads the holder's `subagent-edges` serve-op.
    *  PURE over the transcript (no store touched), but rides the SAME serialized pipe as the rest. */
-  subagentEdges(request: { transcript: string }): Promise<readonly SubagentEdgePair[]>;
+  subagentEdges(request: { transcript: string }): Promise<SpiritFeed>;
   close(): Promise<void>;
 }
 
@@ -171,11 +171,12 @@ export function makeSourceCapture(
     cascadeKapae: async (request) => await p.send("kapae", { ...request }) as Record<string, unknown>,
     cascadeUnKapae: async (request) => await p.send("un_kapae", { ...request }) as Record<string, unknown>,
     planeRecord: async (request) => await p.send("plane_record", { ...request }) as Record<string, unknown>,
-    // The worldline-compare edge feed — the python crunch derives the spawn/handback pairs beside the
-    // transcript data; the serve-op returns `{ pairs }`, honest-empty when the session spawned no spirits.
+    // The worldline-compare edge feed — the python crunch derives each spirit's spawn, round and message edges beside the
+    // transcript data; the serve-op returns `{ run, spirits, unplaced }`, honest-empty when the session spawned
+    // no spirits, and the unplaced ids ride through so a compare names that cause.
     subagentEdges: async (request) => {
-      const r = await p.send("subagent-edges", { ...request }) as { pairs?: readonly SubagentEdgePair[] };
-      return r.pairs ?? [];
+      const r = await p.send("subagent-edges", { ...request }) as Partial<SpiritFeed>;
+      return { run: r.run ?? "", spirits: r.spirits ?? [], unplaced: r.unplaced ?? [] };
     },
     close: p.close,
   };

@@ -43,7 +43,7 @@ import type { ParsedArgs } from "./parse-args.js";
  * argues otherwise. Only two motions neither found nor boot — `read` inspects and starts nothing, and
  * `stop` is pure port-control that loads no vessel logic.
  */
-const NEVER_STALE: ReadonlySet<string> = new Set(["read", "stop", "help", "unbound", "census", "fresher"]);
+const NEVER_STALE: ReadonlySet<string> = new Set(["read", "stop", "help", "unbound", "census", "fresher", "request"]);
 
 /**
  * The vessel door's own sub-door names, DERIVED from its SUBS table — never a second roster to drift.
@@ -108,7 +108,7 @@ function stampToolPath(root: string): string {
  * and neither `tools/` nor any package `src/`: nothing there can drift from a source the tree never held, and
  * nothing there could rebuild. The gate's question ("does dist come from the source this tree holds?") has one
  * answer in such a tree: no source stands to compare, so the dist reads current. Measured in the image:
- * `lares vessel seed` died `ERR_MODULE_NOT_FOUND … /app/tools/stamp-build.mjs` before its handler ran.
+ * `lares vessel lay` died `ERR_MODULE_NOT_FOUND … /app/tools/stamp-build.mjs` before its handler ran.
  *
  * BOTH absences together name the built tree. A tree that holds the CLI's source and lost its stamp tool (a
  * sparse or partial checkout) still holds source its dist may trail, so it never reads as arrived built.

@@ -16,7 +16,12 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/daemon-behavior
  */
 
+import { EXEC_LEI_SPEND_VERB } from "@lararium/mesh";
+import { islandExecLeiPort } from "./exec-lei-route.js";
 import { makeDelegationBook } from "./delegation-book.js";
+import { makeIslandWearDoor, type IslandWearDoor } from "./island-wear.js";
+import { seatRepoWear, type DaemonMsg_WearActorResult } from "@lararium/mesh";
+import type { SessionWorn } from "./verb-dispatcher.js";
 import {
   PROMOTE_PANEL_HAND_CODES,
   SWARM_VERB_HAND_CODES,
@@ -35,13 +40,16 @@ import {
   type DaemonMsg_WorldlineTrajectoryRequest,
   type BatchMode,
   type Verb,
+  type ChoreReceiptMark,
   type CapabilityVerifier,
   type CaptureEngine,
   type CapturePost,
 } from "@lararium/mesh";
+import type { Hand } from "@lararium/mesh/session-contract";
 import { placeVerb } from "./verb-vm.js";
 import { composeIsland } from "./island-caps.js";
 import { hasEngineWatch, hasHandBoundary, hasProjection } from "./has-island-watches.js";
+import { hasRenderedTiddlers } from "./rendered-tiddler.js";
 import { hasCapture } from "./capture/has-capture.js";
 import { VerbDispatcher, VerbTable } from "./verb-dispatcher.js";
 import type { IslandCap } from "./island-caps.js";
@@ -156,6 +164,8 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
   // The asks to main wait here until main answers; `post` binds with the island's context at its first ea.
   let _post: IslandContext["post"] = () => {};
   const delegations = makeDelegationBook((msg) => _post(msg));
+  // THE ISLAND'S ACTOR DOOR: its Repo writes a worn face's change under an actor the vessel derives (`island-wear`).
+  let _wear: IslandWearDoor | null = null;
 
   // The daemon island is a nameless cap stack: #has engine-watch + #has daemon-dispatch (the
   // VerbDispatcher + the daemon:* signal family). The dispatch cap below holds the
@@ -170,6 +180,9 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
     async onEa(ctx: IslandContext) {
       const { tw5, composite, post } = ctx;
       _post = post;
+      // Every store over the island Repo's documents (`wearOf(repo)`) writes a worn face's change through this door.
+      _wear = makeIslandWearDoor((msg) => _post(msg));
+      if (ctx.repo) seatRepoWear(ctx.repo, _wear.door);
       // Resolve the verifier: the async factory (bootDaemonKeyhive over the daemon
       // composite, then the working-layer attach) wins; else a ready verifier; else none (delegated-verb path).
       const verifier = opts.verifierFactory ? await opts.verifierFactory(ctx) : opts.verifier;
@@ -195,10 +208,15 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
         control:   controlOf(ctx),
         registry,
         routeFn:  (invocation, signal) => delegations.route(invocation, signal),
+        // THE EXEC LEI'S ISLAND HALF: a write door's spend routes `exec-lei-spend` to main, which signs; the island holds no key.
+        execLei:  islandExecLeiPort((invocation) => delegations.route(invocation), () => crypto.randomUUID()),
         ...(verifier ? { verifier } : {}),
         ...(opts.presenterOf ? { presenterOf: (inv: Verb) => opts.presenterOf!(inv, localAsks.has(inv)) } : {}),
         localOf: (inv: Verb) => localAsks.has(inv),
         surfaceOf: (inv: Verb) => localAsks.isSurface(inv),
+        askerOf: (inv: Verb) => localAsks.askerOf(inv),
+        choreOf: (inv: Verb) => localAsks.choreOf(inv),
+        wornOf: (inv: Verb) => localAsks.wornOf(inv),
       });
       _dispatcher.start();
       // A local id serves its own invocation alone: it retires once the verb concludes and its tiddler leaves the VM.
@@ -244,8 +262,13 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
             ...(msg.effectKey ? { effectKey:  msg.effectKey             } : {}),
             ...(msg.face      ? { face:       msg.face                  } : {}),
           });
-          if (placedAskIsLocal(msg)) localAsks.add({ requestId: placed, action: msg.verb, args: msg.args, requestedBy: msg.requestedBy, origin: msg.origin === "surface" ? "surface" : "channel" });
+          if (placedAskIsLocal(msg)) localAsks.add({ requestId: placed, action: msg.verb, args: msg.args, requestedBy: msg.requestedBy, origin: msg.origin === "surface" ? "surface" : "channel", ...(msg.asker ? { asker: msg.asker } : {}), ...(msg.chore ? { chore: msg.chore } : {}), ...(msg.worn ? { worn: msg.worn } : {}) });
         }
+        return true;
+      }
+
+      if (type === "daemon:wear-actor-result") {
+        _wear?.answer(raw as DaemonMsg_WearActorResult);
         return true;
       }
 
@@ -262,7 +285,7 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
         // answers the causal verdict; an unknown handle throws → a graceful `error` across the wire.
         const msg = raw as DaemonMsg_WorldlineCompareRequest;
         try {
-          const $tw = (tw5 as { $tw?: { lares?: { worldlineCompareVm?: (i: { a: string; b: string; opens: unknown; closes?: unknown; root?: string }) => { order: string } } } } | undefined)?.$tw;
+          const $tw = (tw5 as { $tw?: { lares?: { worldlineCompareVm?: (i: { a: string; b: string; opens: unknown; closes?: unknown; root?: string }) => { order: string; uncertain?: readonly string[] } } } } | undefined)?.$tw;
           const fn = $tw?.lares?.worldlineCompareVm;
           if (!fn) {
             console.warn("[daemon-behavior] $tw.lares.worldlineCompareVm absent (plugin not loaded) — worldline-compare unavailable");
@@ -273,7 +296,7 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
               ...(msg.closes !== undefined ? { closes: msg.closes } : {}),
               ...(msg.root   !== undefined ? { root: msg.root }     : {}),
             });
-            post(mkDaemonWorldlineCompareResult({ requestId: msg.requestId, order: r.order }));
+            post(mkDaemonWorldlineCompareResult({ requestId: msg.requestId, order: r.order, ...(r.uncertain !== undefined ? { uncertain: r.uncertain } : {}) }));
           }
         } catch (err) {
           post(mkDaemonWorldlineCompareResult({ requestId: msg.requestId, error: err instanceof Error ? err.message : String(err) }));
@@ -372,6 +395,8 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
     // point the daemon surfaces like any pinned wiki (same VM, same path).
     hasProjection(opts.onBoot),
     hasEngineWatch(),
+    // A marked source renders into a live tiddler of its own, on the daemon wiki as on a pool wiki.
+    hasRenderedTiddlers(),
     hasCapture({
       ...(opts.makeCaptureEngine ? { makeEngine: opts.makeCaptureEngine } : {}),
       ...(opts.captureTickMs !== undefined ? { tickMs: opts.captureTickMs } : {}),
@@ -380,7 +405,15 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
 }
 
 /** One placed ask, as the local book reads it: its id and the act it names. */
-export interface LocalAsk { readonly requestId: string; readonly action: string; readonly args: unknown; readonly requestedBy: string; readonly origin?: "channel" | "surface" }
+export interface LocalAsk {
+  readonly requestId: string; readonly action: string; readonly args: unknown; readonly requestedBy: string; readonly origin?: "channel" | "surface";
+  /** The asker's hand the vessel's door read (`DaemonMsg_PlaceVerb.asker`); booked with the act, lent to no other. */
+  readonly asker?: Hand;
+  /** The chore's receipt mark the vessel's door built (`DaemonMsg_PlaceVerb.chore`); the outcome carries it. */
+  readonly chore?: ChoreReceiptMark;
+  /** The face a session wore (`DaemonMsg_PlaceVerb.worn`); booked with the act, lent to no other. */
+  readonly worn?: SessionWorn;
+}
 
 /**
  * THE LOCAL ASKS, each the exact invocation the vessel's channel or a surface leg placed, standing only while it does
@@ -393,20 +426,28 @@ export interface LocalAsk { readonly requestId: string; readonly action: string;
  * six, the store door's `promote-orphan`, and the swarm's three that set or issue (`swarm-show` stays open). A session-cleared face row
  * passes (the socket already refused a seat); a channel ask, a meme put and a synced verb tiddler refuse by code.
  */
-export const DAEMON_HAND_ONLY_CODES: Readonly<Record<string, string>> = { ...PROMOTE_PANEL_HAND_CODES, "promote-orphan": "promote-needs-hand", ...SWARM_VERB_HAND_CODES };
+export const DAEMON_HAND_ONLY_CODES: Readonly<Record<string, string>> = { ...PROMOTE_PANEL_HAND_CODES, "promote-orphan": "promote-needs-hand", ...SWARM_VERB_HAND_CODES,
+  // The island's own spend route (`islandExecLeiPort`) never rides the dispatcher; an ask for it from outside answers nothing.
+  [EXEC_LEI_SPEND_VERB]: "exec-lei-spend-internal" };
 
 export function makeLocalAskBook(bound = 4096): {
   add(ask: LocalAsk): void;
   has(ask: LocalAsk): boolean;
   isSurface(ask: LocalAsk): boolean;
+  askerOf(ask: LocalAsk): Hand | undefined;
+  choreOf(ask: LocalAsk): ChoreReceiptMark | undefined;
+  wornOf(ask: LocalAsk): SessionWorn | undefined;
   onWikiChange(changes: Record<string, { deleted?: boolean }>): void;
 } {
-  const acts = new Map<string, { act: string; origin?: "channel" | "surface" }>();
+  const acts = new Map<string, { act: string; origin?: "channel" | "surface"; asker?: Hand; chore?: ChoreReceiptMark; worn?: SessionWorn }>();
   const actOf = (ask: LocalAsk): string => canonicalJson([ask.action, JSON.parse(JSON.stringify(ask.args ?? {})), ask.requestedBy]);
   return {
-    add: (ask) => { acts.delete(ask.requestId); acts.set(ask.requestId, { act: actOf(ask), ...(ask.origin ? { origin: ask.origin } : {}) }); if (acts.size > bound) acts.delete(acts.keys().next().value as string); },
+    add: (ask) => { acts.delete(ask.requestId); acts.set(ask.requestId, { act: actOf(ask), ...(ask.origin ? { origin: ask.origin } : {}), ...(ask.asker ? { asker: ask.asker } : {}), ...(ask.chore ? { chore: ask.chore } : {}), ...(ask.worn ? { worn: ask.worn } : {}) }); if (acts.size > bound) acts.delete(acts.keys().next().value as string); },
     has: (ask) => acts.get(ask.requestId)?.act === actOf(ask),
     isSurface: (ask) => { const entry = acts.get(ask.requestId); return entry?.origin === "surface" && entry.act === actOf(ask); },
+    askerOf: (ask) => { const entry = acts.get(ask.requestId); return entry !== undefined && entry.act === actOf(ask) ? entry.asker : undefined; },
+    choreOf: (ask) => { const entry = acts.get(ask.requestId); return entry !== undefined && entry.act === actOf(ask) ? entry.chore : undefined; },
+    wornOf: (ask) => { const entry = acts.get(ask.requestId); return entry !== undefined && entry.act === actOf(ask) ? entry.worn : undefined; },
     onWikiChange: (changes) => {
       for (const [title, change] of Object.entries(changes)) {
         if (change?.deleted && title.startsWith(VERB_URI_PREFIX)) acts.delete(title.slice(VERB_URI_PREFIX.length));

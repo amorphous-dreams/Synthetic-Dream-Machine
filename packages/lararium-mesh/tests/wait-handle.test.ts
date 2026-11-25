@@ -13,9 +13,12 @@
 import { describe, expect, test } from "vitest";
 
 import { waitHandle, LOCAL_READY_MS } from "../src/wait-handle.js";
+import { standsIn } from "../src/automerge-doc-store.js";
 
 type Handle = { id: string; merged: string[]; doc: () => unknown };
 /** A handle stand-in: the guarded merge reads the source document, so each carries a clean empty `doc()`. */
+/** The bag every document here belongs to: each caller of `waitHandle` names one. */
+const TEST_BAG = "lar:///ha.ka.ba/bags/wait-handle-test";
 const handle = (id: string): Handle => ({ id, merged: [], doc: () => ({}) });
 
 /** A Repo stand-in whose readiness the test controls. `never` models a peer that has not synced. */
@@ -36,7 +39,7 @@ function recordingFallback(id: string) {
 describe("a doc the local store already holds", () => {
   test("returns without waiting out the window", async () => {
     const started = Date.now();
-    const got = await waitHandle(fakeRepo(Promise.resolve(handle("local"))), "automerge:x", () => handle("fresh") as never);
+    const got = await waitHandle(fakeRepo(Promise.resolve(handle("local"))), "automerge:x", TEST_BAG, () => handle("fresh") as never);
     expect((got as unknown as Handle).id).toBe("local");
     expect(Date.now() - started).toBeLessThan(LOCAL_READY_MS);
   });
@@ -45,7 +48,7 @@ describe("a doc the local store already holds", () => {
 describe("a doc the peer has not synced yet", () => {
   test("falls back rather than hanging the boot", async () => {
     const { fn } = recordingFallback("fresh");
-    const got = await waitHandle(fakeRepo("never"), "automerge:x", fn, 5);
+    const got = await waitHandle(fakeRepo("never"), "automerge:x", TEST_BAG, fn, 5);
     expect((got as unknown as Handle).id).toBe("fresh");
   });
 
@@ -56,7 +59,7 @@ describe("a doc the peer has not synced yet", () => {
     const late = new Promise<Handle>((r) => { land = r; });
     const { h, fn } = recordingFallback("fresh");
 
-    const got = await waitHandle(fakeRepo(late), "automerge:x", fn, 5);
+    const got = await waitHandle(fakeRepo(late), "automerge:x", TEST_BAG, fn, 5);
     expect((got as unknown as Handle).id).toBe("fresh");   // boot moved on
     expect(h.merged).toEqual([]);                          // nothing has arrived yet
 
@@ -68,7 +71,7 @@ describe("a doc the peer has not synced yet", () => {
   test("a remote that never comes leaves the fallback whole and throws nothing", async () => {
     const { h, fn } = recordingFallback("fresh");
     const rejecting = { findWithProgress: () => ({ whenReady: () => Promise.reject(new Error("unavailable")) }) } as never;
-    const got = await waitHandle(rejecting, "automerge:x", fn, 5);
+    const got = await waitHandle(rejecting, "automerge:x", TEST_BAG, fn, 5);
     expect((got as unknown as Handle).id).toBe("fresh");
     await new Promise((r) => setTimeout(r, 0));
     expect(h.merged).toEqual([]);
@@ -80,10 +83,25 @@ describe("the window", () => {
     let land!: (h: Handle) => void;
     const late = new Promise<Handle>((r) => { land = r; });
     const { h, fn } = recordingFallback("fresh");
-    const got = await waitHandle(fakeRepo(late), "automerge:x", fn, 0);
+    const got = await waitHandle(fakeRepo(late), "automerge:x", TEST_BAG, fn, 0);
     expect((got as unknown as Handle).id).toBe("fresh");
     land(handle("from-peer"));
     await new Promise((r) => setTimeout(r, 0));
     expect(h.merged).toEqual(["from-peer"]);
+  });
+});
+
+describe("the fallback stands in, unread", () => {
+  test("★ a fallback the window handed back reads as a stand-in until the real doc merges; a doc the store held never does ★", async () => {
+    let land!: (h: Handle) => void;
+    const late = new Promise<Handle>((r) => { land = r; });
+    const { fn } = recordingFallback("fresh");
+    const got = await waitHandle(fakeRepo(late), "automerge:x", TEST_BAG, fn, 0);
+    expect(standsIn(got as never), "the blank says nothing of what the doc holds").toBe(true);
+    land(handle("from-peer"));
+    await new Promise((r) => setTimeout(r, 0));
+    expect(standsIn(got as never), "the real doc merged in: it reads what the doc holds").toBe(false);
+    const local = await waitHandle(fakeRepo(Promise.resolve(handle("local"))), "automerge:y", TEST_BAG, () => handle("fresh") as never);
+    expect(standsIn(local as never)).toBe(false);
   });
 });

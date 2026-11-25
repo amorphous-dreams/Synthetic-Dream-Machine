@@ -13,7 +13,6 @@ tags      = ["api/pono/meme", "api/lararium"]
 title     = "lar:///ha.ka.ba/lararium/api/capture-annotation-model"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/api/capture-annotation-model"
-written   = "2026-06-25"
 ```
 
 <<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/lararium-memory`>>
@@ -256,7 +255,7 @@ multi-agent spec.
 !! Layer 4 ~ Ephemeral (what to never keep)
 
 ''Capture is ON by default; ephemeral work is LAUNCHED isolated, never gated.''
-`lares ephemeral <task>` births a swarm (one-or-more tasked spirits) in a ''blind''
+`ephemeral <task>` (the launcher, no CLI door) births a swarm (one-or-more tasked spirits) in a ''blind''
 ''temp dir outside every harvested path'' — ephemeral //by construction//: never mined,
 nothing to exclude. The reason: the operator's thousands of blind judge-panel Q&A
 flows must leave no trace.
@@ -302,9 +301,9 @@ tmpfs is the never-touch-disk option). Depth: `agent-worldline#lifecycle`.
 ''Historical June ledger.'' `BUILT`, `SPECIFIED` and `BLOCKED` below describe the design's state at that time. The current upstream pin, container intake, identity revision and acceptance gates live at <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/mempalace-integration#/redesign-plan`>>. In particular, a fork-side `mine --source` route below grants no capability to today's upstream pin.
 
 ''BUILT (committed):''
-* lar-telemetry READ shore (`recall` verb · `lares recall` · MempalaceClient.search · spawn-resolve) — `35a3dfc8`.
-* lar-telemetry WRITE shore (`lar-telemetry` verb · `lares telemetry` · telemetry-writeback core · hook routed through daemon-plane) — `63d3c1c7`.
-* Subagent capture (`subagent-mine` · `lares subagents` · lar_agent/lar_sidechain · hook leg) — `21300458`.
+* lar-telemetry READ shore (`recall` verb · `lares sense recall` · MempalaceClient.search · spawn-resolve) — `35a3dfc8`.
+* lar-telemetry WRITE shore (`lar-telemetry` verb · `lares sense telemetry` · telemetry-writeback core · hook routed through daemon-plane) — `63d3c1c7`.
+* Subagent capture (`subagent-mine` · `lares sense capture` · lar_agent/lar_sidechain · hook leg) — `21300458`.
 * The worldline handle + projected edge (lar_agent_handle/parent/root, live-proven) + the lar_ffz address mechanism (worldline-clock.ts, tested) — `f551c582`·`2785bfe5`·`712635cc`·`4afed85b`.
 * The RFC-002 source-adapter CLI shore in the mempalace FORK (`mine --source` → registry + ingest-loop; `_mine_via_source_adapter`; conformance test; smoke-proven) — branch `feat/mine-source-registry` (pending ruff/pytest in the uv env + the upstream PR).
 
@@ -316,7 +315,7 @@ tmpfs is the never-touch-disk option). Depth: `agent-worldline#lifecycle`.
 * The relationship spawn-edge: stamp the in-process edge (free, agentId/parentUuid) as a bi-temporal KG predicate; the cross-surface trace-id launcher shim.
 * `#has`/`lar_capability` best-effort enrichment (optional; recall already rides semantic search).
 * recall-into-wake (boot climbs already-remembering).
-* `lares ephemeral` launcher + the hardening stack (env-redirect · tiers · caps · `--cleanup`).
+* the `ephemeral` launcher + the hardening stack (env-redirect · tiers · caps · `--cleanup`).
 * copilot format-drift fix (`discoverCopilotCli` keys on `events.jsonl`; verify vs `workspace.yaml`).
 
 ''BLOCKED (live):''
@@ -349,6 +348,6 @@ this model annotates from ([[lar-telemetry|lar:///ha.ka.ba/lararium/api/lar-tele
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Bc08o45TqaR9RwOa0Xhv-ymbISy5Lu-Z1wbgCqfEoYM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;GTKOk01V650SyOa8Z-_5exPuQpPEQttT8hn8zQ1kerA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -66,7 +66,7 @@ describe("the shore verb answers from the projector", () => {
 
   test("take-records under the standing key writes the records' render and clears the standoff", async () => {
     const s = await stand();
-    expect(await answerShore(s.projector, { op: "take-records", uri: URI, key: s.key })).toEqual({ ok: true, op: "take-records", bag: BAG, uri: URI, key: s.key, took: "records" });
+    expect(await answerShore(s.projector, { op: "take-records", uri: URI, key: s.key }, "cli")).toEqual({ ok: true, op: "take-records", bag: BAG, uri: URI, key: s.key, took: "records" });
     expect(readFileSync(s.file, "utf-8")).toBe(RECORDS);
     expect(s.resolved).toEqual([s.key]);
     expect(await answerShore(s.projector, { op: "list" })).toMatchObject({ standoffs: [] });
@@ -74,10 +74,10 @@ describe("the shore verb answers from the projector", () => {
 
   test("CONTROL: a key that does not stand, a carrier in no standoff, a missing name and an unknown act each refuse by name and write nothing", async () => {
     const s = await stand();
-    expect(await answerShore(s.projector, { op: "take-records", uri: URI, key: "f".repeat(24) })).toMatchObject({ ok: false, refusal: "standoff-key-moved" });
-    expect(await answerShore(s.projector, { op: "take-records", uri: `${URI}-other`, key: s.key })).toMatchObject({ ok: false, refusal: "no-standoff-stands" });
-    expect(await answerShore(s.projector, { op: "take-records", uri: URI, key: s.key, bag: "another-bag" })).toMatchObject({ ok: false, refusal: "no-standoff-stands" });
-    expect(await answerShore(s.projector, { op: "take-records", uri: URI })).toMatchObject({ ok: false, refusal: "shore-answer-incomplete" });
+    expect(await answerShore(s.projector, { op: "take-records", uri: URI, key: "f".repeat(24) }, "cli")).toMatchObject({ ok: false, refusal: "standoff-key-moved" });
+    expect(await answerShore(s.projector, { op: "take-records", uri: `${URI}-other`, key: s.key }, "cli")).toMatchObject({ ok: false, refusal: "no-standoff-stands" });
+    expect(await answerShore(s.projector, { op: "take-records", uri: URI, key: s.key, bag: "another-bag" }, "cli")).toMatchObject({ ok: false, refusal: "no-standoff-stands" });
+    expect(await answerShore(s.projector, { op: "take-records", uri: URI }, "cli")).toMatchObject({ ok: false, refusal: "shore-answer-incomplete" });
     expect(await answerShore(s.projector, { op: "take-disk", uri: URI, key: s.key })).toMatchObject({ ok: false, refusal: "shore-op-unknown" });
     expect(readFileSync(s.file, "utf-8")).toBe(HAND);
     expect(s.resolved).toEqual([]);
@@ -95,9 +95,33 @@ describe("the shore verb answers from the projector", () => {
   });
 });
 
+describe("settling a stand-off stays a hand act", () => {
+  test("a seat's take-records refuses shore-needs-hand, a line no door attested refuses hand-unattested, and the file stays", async () => {
+    const s = await stand();
+    const seat = await answerShore(s.projector, { op: "take-records", uri: URI, key: s.key }, "seat");
+    expect(seat).toMatchObject({ ok: false, refusal: "shore-needs-hand" });
+    expect(String(seat["why"])).toContain(`lares shore take-records ${URI} --key ${s.key}`);
+    expect(await answerShore(s.projector, { op: "take-records", uri: URI, key: s.key })).toMatchObject({ ok: false, refusal: "hand-unattested" });
+    expect(await answerShore(s.projector, { op: "keep-both", uri: URI, key: s.key }, "seat")).toMatchObject({ ok: false, refusal: "shore-needs-hand" });
+    expect(readFileSync(s.file, "utf-8")).toBe(HAND);
+    expect(s.resolved).toEqual([]);
+  });
+
+  test("keep-both with no draft standing refuses by name and points at keep-disk or keep-records; the file stays", async () => {
+    const s = await stand();
+    s.projector.standoffKeeper = { draftsOf: () => [], keep: async () => [] } as unknown as NonNullable<typeof s.projector.standoffKeeper>;
+    const answer = await answerShore(s.projector, { op: "keep-both", uri: URI, key: s.key }, "cli");
+    expect(answer).toMatchObject({ ok: false, refusal: "no-drafts-to-keep" });
+    expect(String(answer["why"])).toContain(`lares shore keep-disk ${URI} --key ${s.key}`);
+    expect(String(answer["why"])).toContain(`lares shore keep-records ${URI} --key ${s.key}`);
+    expect(readFileSync(s.file, "utf-8")).toBe(HAND);
+    expect(s.resolved).toEqual([]);
+  });
+});
+
 describe("the island's shore door", () => {
-  const place = (verb: string, args: Record<string, unknown>, requestId?: string) =>
-    ({ type: "wiki:place-verb", verb, args, requestedBy: "did:test", ...(requestId ? { requestId } : {}) });
+  const place = (verb: string, args: Record<string, unknown>, requestId?: string, asker?: string) =>
+    ({ type: "wiki:place-verb", verb, args, requestedBy: "did:test", ...(requestId ? { requestId } : {}), ...(asker ? { asker } : {}) });
 
   test("claims the shore verb and posts the projector's answer under the request's id", async () => {
     const s = await stand();
@@ -108,6 +132,17 @@ describe("the island's shore door", () => {
     await done;
     expect(posted).toHaveLength(1);
     expect(posted[0]).toMatchObject({ type: "wiki:verb-result", requestId: "req-1", result: { ok: true, op: "list", standoffs: [{ uri: URI, standoff: s.key }] } });
+  });
+
+  test("carries the asker the vessel's door read: a seat's take-records refuses at the island", async () => {
+    const s = await stand();
+    const posted: Array<Record<string, unknown>> = [];
+    const done = new Promise<void>((resolve) => {
+      claimShoreVerb("wiki:place-verb", place(SHORE_VERB, { op: "take-records", uri: URI, key: s.key }, "req-5", "seat"), (msg) => { posted.push(msg as unknown as Record<string, unknown>); resolve(); }, () => s.projector);
+    });
+    await done;
+    expect(posted[0]).toMatchObject({ requestId: "req-5", result: { ok: false, refusal: "shore-needs-hand" } });
+    expect(readFileSync(s.file, "utf-8")).toBe(HAND);
   });
 
   test("CONTROL: another verb and another message pass unclaimed", () => {

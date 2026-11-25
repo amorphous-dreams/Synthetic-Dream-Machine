@@ -1,0 +1,1 @@
+Sol-Muwright: Lares (Tasked Spirit), Ink-Clerk: ->↺ I wrote the joint lean, measured gate shapes, canon reading, and proposed named-leak sentence to [out2.md](/home/joshu/.lares-scratch/research/w10-mu/sol/out2.md). The handback runs 915 words. The repo stayed read-only; I ran no suites.

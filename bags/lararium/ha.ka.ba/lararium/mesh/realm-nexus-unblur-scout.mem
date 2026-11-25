@@ -8,13 +8,12 @@ cacheable  = true
 hydrate    = true
 l-space    = "lararium"
 namespace  = "&#x2695;"
-role       = "the MEASURED scout of the realm/nexus word-blur, taken under the operator's 2026-09-13 ruling (NEXUS keys the public/crossroads plane; 'realm' as pet-name serves cabal-private docs and resources). REPORT ONLY — no rename lands from this carrier. It carries four things: the structural fact that both words presently name ONE value (the charter's genesis epoch cid) while a second `realm` names a DIFFERENT id space entirely; the realm-named/Nexus-shaped sites; the nexus-named/realm-shaped sites; and the UN-RENAMEABLE SET — every signing domain, HKDF info, doc-url seed, hash-feeding lar URI, persisted record key and wire field where the word rides inside bytes that are already signed or already addressed. NEXUS_DOC_DOMAIN heads that set: it is a content-address PREIMAGE, so re-spelling it renames every island, every board, every realm doc and every charter at once."
-status-why = "scouted 2026-09-13 against the tree; no rename attempted, and the ranked plan awaits the operator"
+role       = "the MEASURED scout of the realm/nexus word-blur, taken under the operator's ruling (NEXUS keys the public/crossroads plane; 'realm' as pet-name serves cabal-private docs and resources). REPORT ONLY — no rename lands from this carrier. It carries four things: the structural fact that both words presently name ONE value (the charter's genesis epoch cid) while a second `realm` names a DIFFERENT id space entirely; the realm-named/Nexus-shaped sites; the nexus-named/realm-shaped sites; and the UN-RENAMEABLE SET — every signing domain, HKDF info, doc-url seed, hash-feeding lar URI, persisted record key and wire field where the word rides inside bytes that are already signed or already addressed. NEXUS_DOC_DOMAIN heads that set: it is a content-address PREIMAGE, so re-spelling it renames every island, every board, every realm doc and every charter at once."
+status-why = "scouted against the tree; no rename attempted, and the ranked plan awaits the operator"
 tags       = ["mesh/cabal-realm", "mesh/nexus-topology", "mesh/lar-uris", "api/pono/cabal-realm", "lifecycle/standing", "kind/reading"]
 title      = "lar:///ha.ka.ba/lararium/mesh/realm-nexus-unblur-scout"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lararium/mesh/realm-nexus-unblur-scout"
-written    = "2026-09-13"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -83,7 +82,7 @@ This ''strengthens'' the ruling and ''raises its price'': moving the public half
 
 `nexus seal` (`cabal-realm.mem:163`, `nexus.ts:95`), `nexus rite quorum` (`realm-bag-brief.mem:73`, `nexus.ts:106`), `nexus contract` (`realm-bag-brief.mem:29`), `seal export`/`seal import`/`accept-carriage` (`realm-bag-brief.mem:58`).
 
-''A live cross-ruling collision:'' `scale-stories-basket-one.mem:154` reads "'admit' is a Nexus verb and never decides carriage", while the three-plane sorting test sends //who joins// to the CABAL plane. The word `admit` sits astride two rulings and wants one.
+''A live cross-ruling collision:'' `cabal-realm.mem` #/the-shared-bag reads "'admit' is a Nexus verb and never decides carriage", while the three-plane sorting test sends //who joins// to the CABAL plane. The word `admit` sits astride two rulings and wants one.
 
 <<~/ahu>>
 
@@ -202,6 +201,6 @@ the `bags/nexus` charter home                         nexus-refresh.ts:42 · ope
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;NWLcqf6mvxVYN4sadnhrIEwn9k2Jl5P9gXqag_uqSh4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;wDGAUAJSdGI6U15r4FxD4aOqAgTs1fdwuTG7BMOA4bY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

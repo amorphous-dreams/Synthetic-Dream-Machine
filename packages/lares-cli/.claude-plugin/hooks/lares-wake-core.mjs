@@ -11,6 +11,17 @@
  * (`rite-begun`, `rite-landed`); `keep` reads the keep lei at the workspace the house config names (`keepWorkspace`), and a red
  * keep tessera in conferre's reading names its cure. A runner that answers none of them leaves the wake as it stood.
  *
+ * THE LAW BEFORE THE ACT. Two more reads ride the shim beside the memory: the law index (`lawArgv`) and the pins that head it
+ * (`lawPinsArgv`), both the tiddler door's `wiki filter` over the worn face's daemon wiki, so the session reads the house's
+ * law the way it reads its working memory. The filters (`@lararium/tw5`'s `daemon-law-tiddlers`) read the pin set the wiki
+ * holds (`$:/config/lares/law/pins`) and the law by address, and their canon guard keeps every row to a record a canon layer
+ * answers. The block reads into every session's context, so it also prints each title only as one `lar:` address within a
+ * byte cap, caps the pins it shows, and says that its rows read as data.
+ *
+ * WHO IS HOME. Beside the law rides the hearth roster (`rosterArgv`, the shim's `vessel roster --json`): the worn face and who
+ * holds it, the seats here by presence and far by last signed act, the lanes and the open vota, framed by provenance and weight
+ * (`ROSTER_WEIGHT_LINE`) and capped; a vessel that answers no "up" skips it with the other memory reads.
+ *
  * ONE BUDGET. The harness bounds a hook (`hooks/hooks.json`, 15 seconds), and past that bound it discards the hook's
  * whole answer. So the three reads start together and share one budget that closes inside the harness's bound: a read
  * still open then stops and reports itself by name, and the wake carries what the other reads answered. The budget
@@ -21,16 +32,22 @@ import { spawn } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+/** How long a stopped read's group holds after SIGTERM before SIGKILL: the shim's own trap stops its compose act inside it. */
+export const TERM_GRACE_MS = 2_000;
+
 /**
  * Start one read as a child in its own process group. `kill` stops the whole group, so a compose child cannot hold
- * the hook's pipes open past the read.
+ * the hook's pipes open past the read: SIGTERM first, so the shim's trap stops the act it waits on (an offline run's
+ * container leaves with it), then SIGKILL once `TERM_GRACE_MS` passes with the group still standing. `input`, where
+ * given, rides the child's stdin whole.
  */
-export function spawnRead(command, argv) {
+export function spawnRead(command, argv, input = null) {
   let child;
   let output = "";
   const done = new Promise((resolve) => {
     try {
-      child = spawn(command, argv, { detached: true, stdio: ["ignore", "pipe", "ignore"] });
+      child = spawn(command, argv, { detached: true, stdio: [input === null ? "ignore" : "pipe", "pipe", "ignore"] });
+      if (input !== null) { child.stdin.on("error", () => { /* a child that left early reads no more */ }); child.stdin.end(input); }
     } catch (err) {
       resolve({ stdout: "", code: null, signal: null, error: err?.code ?? err?.message ?? "spawn error" });
       return;
@@ -42,9 +59,11 @@ export function spawnRead(command, argv) {
   });
   const kill = () => {
     if (!child?.pid) return;
-    try { process.kill(-child.pid, "SIGKILL"); } catch { /* The process already left. */ }
+    const pid = child.pid;
+    try { process.kill(-pid, "SIGTERM"); } catch { /* The process already left. */ }
+    const hard = setTimeout(() => { try { process.kill(-pid, "SIGKILL"); } catch { /* The group already left. */ } }, TERM_GRACE_MS);
+    child.once("close", () => clearTimeout(hard));
     child.stdout?.destroy();
-    child.unref();
   };
   return { done, kill };
 }
@@ -54,7 +73,7 @@ export function shimRunner(hookUrl) {
   const hookDir = dirname(fileURLToPath(hookUrl));
   const laresBin = join(hookDir, "..", "..", "bin", "lares.mjs");
   const shim = join(hookDir, "..", "..", "..", "..", "tools", "lares-container.sh");
-  return (name, argv) => (name === "homes" ? spawnRead(process.execPath, [laresBin, ...argv]) : name === "git" ? spawnRead("git", argv) : spawnRead(shim, argv));
+  return (name, argv) => (name === "menu" ? spawnRead(process.execPath, [join(hookDir, "lares-menu-read.mjs"), laresBin]) : name === "homes" ? spawnRead(process.execPath, [laresBin, ...argv]) : name === "git" ? spawnRead("git", argv) : spawnRead(shim, argv));
 }
 
 /** One page of the view: the filter door's own row ceiling, and the byte cap both the door and the render keep. */
@@ -69,18 +88,35 @@ export const WAKE_BUDGET_MS = 12_000;
  * stands.
  */
 export const STATE_PREFIX = "lar:///ha.ka.ba/kahua/memory/state/";
-export const STATE_FILTER = `[prefix[${STATE_PREFIX}]!regexp[#]]`;
+export const STATE_FILTER = "[lares.stage[state]!regexp[#]]";
 export const STATE_HANDOFF = `${STATE_PREFIX}handoff`;
 /**
  * The tag of the one cold-boot view (first-three-wave-map#/the-handoff-walk; road `L43`). The index lists the rest: the
  * state rows lead in their own block, so the view leaves their prefix out.
  */
 export const INDEX_TAG = "stage/index";
-export const INDEX_FILTER = `[tag[${INDEX_TAG}]!prefix[${STATE_PREFIX}]]`;
+export const INDEX_FILTER = `[tag[${INDEX_TAG}]] -[lares.stage[state]]`;
 /** The rows in play stay short: a row ceiling, a byte cap on the block, and one on each row's line. */
 export const STATE_ROWS = 8;
 export const STATE_BYTES = 2048;
 export const STATE_LINE_BYTES = 320;
+/**
+ * The law index (lar:///ha.ka.ba/lararium/tw5/daemon-law-tiddlers): the canon pins first, then the canon law they leave
+ * out, read as calls to the canon functions (lar:///ha.ka.ba/lares/api/filters). The same strings `@lararium/tw5` exports,
+ * welded by a test. No floor copy of the long forms stands here: where the vessel stands down the wake runs no filter, it
+ * only names the call in its stand-down line, and the vessel's canon answers the call once it stands.
+ */
+export const LAW_PINS_TITLE = "$:/config/lares/law/pins";
+export const LAW_PINS_FILTER = "[lares.law.pins[]]";
+export const LAW_INDEX_FILTER = "[lares.law[]]";
+/** The law block: at most this many pins (the rest counted), then this many law rows; byte caps on the block, a line, a title. */
+export const LAW_PIN_ROWS = 16;
+export const LAW_ROWS = 8;
+export const LAW_TITLE_BYTES = 200;
+export const LAW_BYTES = 4096;
+export const LAW_LINE_BYTES = 240;
+/** The page the law read asks: the door's row ceiling, and room for that many rows of `role` lines. */
+const LAW_PAGE_BYTES = 16384;
 
 const CURE = "stand it with tools/lares-container.sh up";
 const viewOf = (filter) => `wiki_filter(filter="${filter}", recipe="default", fields=["title","description"]`;
@@ -103,11 +139,19 @@ export const indexArgv = (after) => [
   "wiki", "filter", INDEX_FILTER, "--recipe", "default", "--fields", "title,description",
   "--limit", String(INDEX_ROWS), "--max-bytes", String(INDEX_BYTES), "--json", ...(after ? ["--after", after] : []),
 ];
+export const attractorsArgv = () => ["wiki", "filter", "[lares.attractors[]]", "--recipe", "default", "--limit", "32", "--json"];
 /** The shim's argv for the rows in play, read in the worn face's daemon wiki. */
 export const stateArgv = () => [
   "wiki", "filter", STATE_FILTER, "--recipe", "default", "--fields", "title,description",
   "--limit", String(STATE_ROWS), "--max-bytes", String(INDEX_BYTES), "--json",
 ];
+/** The shim's argv for one page of the law index, read in the worn face's daemon wiki: title, description and role. */
+export const lawArgv = () => [
+  "wiki", "filter", LAW_INDEX_FILTER, "--recipe", "default", "--fields", "title,description,role",
+  "--limit", String(INDEX_ROWS), "--max-bytes", String(LAW_PAGE_BYTES), "--json",
+];
+/** The shim's argv for the pins that stand, titles alone. */
+export const lawPinsArgv = () => ["wiki", "filter", LAW_PINS_FILTER, "--recipe", "default", "--limit", String(INDEX_ROWS), "--json"];
 /** The host CLI's argv for the homes line. */
 export const homesArgv = () => ["home", "read", "--brief"];
 
@@ -155,6 +199,21 @@ export function libraryLine(frame) {
     `Lares memory library (mempalace, the optional upstream library \`lares mempalace install\` keeps; the house memory reads from the daemon wiki below, never from it) reads ${library.standing ?? "red"}${named ? `: ${named}` : ""}`,
     ...dropped, ...frameOk,
   ].join(" · ");
+}
+
+/** The shim's argv for the TW5 docs library's read: its status, which composes it where the vessel answers it. */
+export const docsArgv = () => ["wiki", "status", "--recipe", "tw5-docs", "--json"];
+
+/**
+ * The TW5 docs library's line, read off the vessel's own answer: where `wiki status --recipe tw5-docs` answers, the library
+ * (the vendored tw5.com edition every face reads read-only, `tw5-docs-library`) with the read that opens a page and the one
+ * that lists the operator vocabulary; where it refuses or stays silent (an older vessel image answers `wiki-unreached`),
+ * `Library: tw5-docs unread (<cause>)`, so the wake never names a library the vessel does not answer.
+ */
+export function docsLines(result) {
+  const { fault } = filterAnswer(result);
+  if (fault) return `Library: tw5-docs unread (${fault})`;
+  return "Library: tw5-docs (TiddlyWiki docs, read-only) · read a page: tiddler_get(title=\"backlinks Operator\", recipe=\"tw5-docs\") · the operators: wiki_filter(filter=\"[tag[Filter Operators]]\", recipe=\"tw5-docs\")";
 }
 
 /** The observation's line, and whether the vessel itself answered up. Each cause reads by its own name: only the vessel's own answer says "down". */
@@ -209,7 +268,7 @@ function renderRows(answer, { head: label, filter, cap, lineCap = cap, rows: ord
     ? `cut at the wake's byte cap after ${lines.length} of ${total} rows; read the whole view: ${view})`
     : next
       ? `read further: ${view}, after="${next}")`
-      : `read a row: meme_get(uri=<title>, recipe="default"); the same view: ${view})`;
+      : `read a row: tiddler_get(title=<title>, recipe="default", meme=true); the same view: ${view})`;
   return [head, ...lines, further].join("\n");
 }
 
@@ -255,6 +314,132 @@ export function stateLines(result) {
 export function indexLines(result) {
   const { fault, answer } = filterAnswer(result);
   return fault ? `memory index unread: ${fault}` : renderIndex(answer);
+}
+
+const LAW_VIEW = `${viewOf(LAW_INDEX_FILTER).replace('fields=["title","description"]', 'fields=["title","description","role"]')})`;
+const LAW_FURTHER = `read the rest: law_index(after=<next>) or lares law list --all; the filter: ${LAW_VIEW}; pin or unpin: law_pin(uri=<title>) · law_unpin(uri=<title>) (lares law pin|unpin <uri>)`;
+
+/** The line that frames the rows by provenance and weight: canon grounds each one, the five tools turn it, and both hands hold the frame. */
+export const LAW_WEIGHT_LINE = "these rows come from canon, the house's settled ground (🜃); read one whole (tiddler_get(title=<title>, recipe=\"default\", meme=true, grain=\"whole\")) and turn it through the five tools beside the live work; operator and node hold the frame together";
+/** A title prints only as one `lar:` address with no whitespace, within its byte cap. */
+const printableTitle = (title) => typeof title === "string" && /^lar:\/\/\/\S+$/.test(title) && bytes(title) <= LAW_TITLE_BYTES;
+
+/**
+ * The law block: the standing pins (marked, at most `LAW_PIN_ROWS`, the rest counted), then the first `LAW_ROWS` law rows
+ * the pins leave out, each with its description or role, and the calls that read the rest. `pinsAnswer` names the pins;
+ * where it stands unread the block marks none and shows `LAW_ROWS` rows. A title that reads as no single `lar:` address,
+ * or outruns its byte cap, never prints, whatever the door answered.
+ */
+export function renderLaw(answer, pinsAnswer = null, cap = LAW_BYTES) {
+  const data = answer?.data ?? {};
+  const rows = (Array.isArray(data.rows) ? data.rows : []).filter((row) => printableTitle(row?.title));
+  const total = typeof data.total === "number" ? data.total : rows.length;
+  const pinned = new Set(Array.isArray(pinsAnswer?.data?.titles) ? pinsAnswer.data.titles : []);
+  if (total === 0 && rows.length === 0) {
+    return `Lares law (pinned first): 0 rows; no canon law answers in the worn face's daemon wiki (its pin set: ${LAW_PINS_TITLE}); the view: ${LAW_VIEW}`;
+  }
+  let pins = 0;
+  while (pins < rows.length && pinned.has(rows[pins]?.title)) pins++;
+  const shownPins = Math.min(pins, LAW_PIN_ROWS);
+  const lineOf = (row, mark) => {
+    const fields = row?.fields ?? {};
+    const one = { title: row.title, fields: { description: String(fields.description ?? "").trim() || String(fields.role ?? "") } };
+    return `${mark} ${rowLine(one, LAW_LINE_BYTES)}`;
+  };
+  const lines = [];
+  let size = 0;
+  const push = (line) => {
+    if (size + bytes(line) + 1 > cap && lines.length > 0) return false;
+    lines.push(line);
+    size += bytes(line) + 1;
+    return true;
+  };
+  let printed = 0;
+  for (const row of rows.slice(0, shownPins)) { if (!push(lineOf(row, "📌"))) break; printed++; }
+  if (pins > printed) push(`📌 +${pins - printed} more pinned (lares law list, law_index)`);
+  let shown = printed;
+  for (const row of rows.slice(pins, pins + LAW_ROWS)) { if (!push(lineOf(row, "  "))) break; shown++; }
+  return [`Lares law (pinned first): ${pins} pinned · ${total} rows${shown < total ? ` (${shown} shown)` : ""}`, LAW_WEIGHT_LINE, ...lines, LAW_FURTHER].join("\n");
+}
+
+/** The law reads' lines: the block where the door answered a page, else `Lares law unread: <cause>` with the view. */
+export function lawLines(result, pinsResult = null) {
+  const { fault, answer } = filterAnswer(result);
+  if (fault) return `Lares law unread: ${fault}; the view: ${LAW_VIEW}`;
+  const pins = pinsResult ? filterAnswer(pinsResult).answer ?? null : null;
+  return renderLaw(answer, pins);
+}
+
+/**
+ * THE HEARTH ROSTER (lar:///ha.ka.ba/lararium/mesh/hearth-roster): who is home, read through the shim's `vessel roster --json`,
+ * which the vessel's verb channel answers itself. The block reads the rotation first (the operator reads it first), then the
+ * seats in their two grains, the lanes and the open vota, within a byte cap; a vessel that answers no "up" skips it quietly.
+ */
+export const ROSTER_BYTES = 2048;
+export const ROSTER_ROWS = 8;
+export const rosterArgv = () => ["vessel", "roster", "--json"];
+const ROSTER_FURTHER = "read it whole: vessel_roster() or lares vessel roster";
+/** The line that frames the rows by provenance and weight: the vessel's own live reading, turned through the five tools. */
+export const ROSTER_WEIGHT_LINE =
+  "these rows come from this vessel's own live reading: a seat here stands by the kernel's hold on its socket, a far seat by its signature on the face intent plane; " +
+  "turn them through the five tools (🜁 verify a claim before you lean on it, 🜄 weigh who stands with whom against the live work) and hold the operator's seat as an equal; operator and node hold the frame together";
+const TOKEN = /^[a-z0-9][a-z0-9:._-]{0,63}$/;
+const tok = (v) => (typeof v === "string" && TOKEN.test(v) ? v : "?");
+const hexOf = (v, n = 12) => (typeof v === "string" && /^[0-9a-f]+$/.test(v) ? v.slice(0, n) : "?");
+const seatId = (v) => (typeof v === "string" && /^(s-[0-9a-z]{1,8}|[0-9a-f]{1,12})$/.test(v) ? v : "?");
+const face = (v) => (Number.isSafeInteger(v) && v >= 0 ? `h${v}` : "h?");
+const kindOf = (s) => (s?.kind === "ai" ? `an AI seat (${tok(s.hand)})` : `a hand (${tok(s.hand)})`);
+const count = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+
+/** One roster row's line, either grain, in plain words. */
+function rosterSeatLine(s) {
+  if (s?.grain === "local") return `${seatId(s.seat)}  ${face(s.face)}  ${kindOf(s)}, here by presence`;
+  const heard = (Array.isArray(s?.lastHeard) ? s.lastHeard : []).map((t) => `${tok(t?.entry)} ${hexOf(t?.cid)}`).join(", ") || "no act";
+  return `${seatId(s?.seat)}  ${face(s?.face)}  ${s?.self ? "this vessel's own atom, " : ""}last heard at ${heard} (${tok(s?.standing)})`;
+}
+
+/** The roster block from the shim's JSON answer: count line, weight line, rotation, rows within the cap, the gap, and where to read on. */
+export function renderRoster(answer, cap = ROSTER_BYTES) {
+  const r = answer?.data ?? {};
+  const counts = r.counts ?? {};
+  const seats = Array.isArray(r.seats) ? r.seats : [];
+  const rot = r.rotation ?? {};
+  const byId = (id) => { const s = seats.find((x) => x?.seat === id); return s ? `${seatId(id)} (${kindOf(s)})` : seatId(id); };
+  const worn = Number.isSafeInteger(rot.worn) ? `this vessel wears ${face(rot.worn)}` : "this vessel wears no face (it stands at its floor)";
+  const holders = Array.isArray(rot.holders) ? rot.holders : [];
+  const held = !Number.isSafeInteger(rot.worn) ? "" : holders.length > 0 ? `, held by ${holders.map(byId).join(" and ")}` : ", and no session holds it now";
+  const other = (Array.isArray(rot.underOther) ? rot.underOther : []).map((o) => `; ${seatId(o?.seat)} acts under ${face(o?.face)}`).join("");
+  const rows = [
+    ...seats.map((s) => `${s?.grain === "local" ? "here" : "far "}  ${rosterSeatLine(s)}`),
+    ...(Array.isArray(r.lanes) ? r.lanes : []).map((l) => `lane  ${face(l?.face)} ${tok(l?.verb)} (intent ${hexOf(l?.intent)}): claimed by ${hexOf(l?.claimant)}`),
+    ...(Array.isArray(r.vota) ? r.vota : []).map((v) => `votum ${face(v?.face)} ${tok(v?.verb)} (intent ${hexOf(v?.intent)}): waits on ${v?.waitsOn === "answer" ? "an answer" : v?.waitsOn === "frontier" ? "a frontier this vessel does not hold" : `an outcome, ${v?.owedBy ? `owed by ${hexOf(v.owedBy)}` : "unclaimed"}`}`),
+    ...(Array.isArray(r.unread) ? r.unread : []).map((u) => `unread ${face(u?.face)}'s intent plane (${tok(u?.reason)})`),
+  ];
+  const lines = [];
+  let size = 0;
+  for (const row of rows) {
+    if (lines.length >= ROSTER_ROWS || size + bytes(row) + 1 > cap) break;
+    lines.push(row);
+    size += bytes(row) + 1;
+  }
+  const cut = lines.length < rows.length ? [`cut at the wake's cap after ${lines.length} of ${rows.length} rows`] : [];
+  // The rows the vessel itself left out (each face keeps eight per list), counted in the body it answered.
+  const left = ["local", "far", "lanes", "vota"].reduce((n, k) => n + (Number.isSafeInteger(r.more?.[k]) && r.more[k] > 0 ? r.more[k] : 0), 0);
+  if (left > 0) cut.push(`+${left} more rows the vessel left out (each face keeps 8 per list)`);
+  return [
+    `Lares hearth (who is home): ${count(Number(counts.local ?? 0), "seat", "seats")} here · ${Number(counts.far ?? 0)} heard from afar · ${count(Number(counts.lanes ?? 0), "lane", "lanes")} · ${count(Number(counts.vota ?? 0), "open votum", "open vota")}`,
+    ROSTER_WEIGHT_LINE,
+    `rotation: ${worn}${held}${other}`,
+    ...lines, ...cut,
+    "seats here stand by presence; far seats read only by last signed act (no global now, so nobody far reads online); lanes read the intent plane's claims alone (no leap or road-meme claim store stands)",
+    ROSTER_FURTHER,
+  ].join("\n");
+}
+
+/** The roster read's lines: the block where the vessel answered, else one line naming the cause. */
+export function rosterLines(result) {
+  const { fault, answer } = filterAnswer(result);
+  return fault ? `Lares hearth (who is home) unread: ${fault}; ${ROSTER_FURTHER}` : renderRoster(answer);
 }
 
 /** The refusal a locked vessel answers, in the words a session reads: it calls the operator at once. */
@@ -321,6 +506,28 @@ export function keepWorkspaceOf(env, envFileText) {
   return pairs.length === 1 ? ok(pairs[0].slice(0, pairs[0].indexOf("=")).trim()) : null;
 }
 
+/**
+ * The workspaces the house config binds, as the shim reads them: LARES_WORKSPACES (the environment, else the env file), `;`-separated
+ * `<name>=<dir>` pairs; a pair whose name breaks the shim's rule or whose dir names no absolute path reads none.
+ */
+export function workspaceBindsOf(env, envFileText) {
+  const out = [];
+  for (const pair of envValue("LARES_WORKSPACES", env, envFileText).split(";")) {
+    const at = pair.indexOf("=");
+    if (at <= 0) continue;
+    const name = pair.slice(0, at).trim(), dir = pair.slice(at + 1).trim();
+    if (WORKSPACE_NAME.test(name) && name !== "." && name !== ".." && dir.startsWith("/")) out.push({ name, dir });
+  }
+  return out;
+}
+
+/** The offer lines: one per bound workspace whose directory sits in no work tree. A notice and an offer, never an act. */
+export function workspaceOfferLines(workspaces, treeStands) {
+  return (Array.isArray(workspaces) ? workspaces : [])
+    .filter((w) => !treeStands(w.dir))
+    .map((w) => `workspace ${w.name} holds no git tree; lares surface init --workspace ${w.name}`);
+}
+
 /** The keep line: the keep lei standing at the configured workspace, or none with how one strings; a locked vessel says nothing here. */
 export function keepLines(workspace, result) {
   if (result === BUDGET) return `Lares keep unread: ${CLOSED}`;
@@ -367,7 +574,7 @@ export function halvesLines(result) {
   const answer = parseAnswer(result?.stdout);
   if (answer === null) return `Lares tessera conferre unread: ${readFault(result, "read") ?? "the answer did not parse"}`;
   if (refusesLocked(answer)) return null;
-  if (answer.ok === false) return `Lares tessera conferre unread: ${answer.error?.code ?? "refused"}`;
+  if (answer.ok === false) return `Lares tessera conferre unread: ${answer.error?.code ?? "refused"}${answer.error?.message ? `: ${answer.error.message}` : ""}`;
   const records = answer.data?.receipts;
   const red = unmatchedHalves(records);
   const par = new Set((Array.isArray(records) ? records : []).filter((r) => r?.act === "rite-begun").map((r) => String(r.tessera))).size - red.filter((h) => h.half === "begun").length;
@@ -389,25 +596,36 @@ function underBudget(budgetMs) {
 }
 
 /**
- * The SessionStart context: the vessel's frame, the homes line, the rows in play (the state rows, handoff first), then
- * the memory index, on every wake. The reads start together. A vessel that answers anything but up stops the memory
+ * The SessionStart context: the vessel's frame, the homes line, the rows in play (the state rows, handoff first), the
+ * law (pinned first), then the memory index, on every wake. The reads start together. A vessel that answers anything but up stops the memory
  * reads, and the wake says once that it skipped them.
  */
 // `source` (startup, resume, clear, compact) changes nothing the wake reads: every wake leads with the rows in play.
-export async function wake({ run, budgetMs = WAKE_BUDGET_MS, source: _source = "", keepWorkspace = null }) {
+export async function wake({ run, budgetMs = WAKE_BUDGET_MS, source: _source = "", keepWorkspace = null, workspaces = [], treeStands = () => true }) {
   const reads = { observe: run("observe", observeArgv()), index: run("index", indexArgv()), homes: run("homes", homesArgv()) };
   // The optional reads: a runner that answers none leaves their lines out.
   const optional = (name, argv) => run(name, argv) ?? null;
+  const attractorsRead = optional("attractors", attractorsArgv());
   const stateRead = optional("state", stateArgv());
+  const lawRead = optional("law", lawArgv());
+  const lawPinsRead = optional("lawPins", lawPinsArgv());
+  const rosterRead = optional("roster", rosterArgv());
+  const menuRead = optional("menu", []);
   const gitRead = optional("git", gitArgv());
   const halvesRead = optional("halves", halvesArgv());
+  const docsRead = optional("docs", docsArgv());
   const keepRead = keepWorkspace ? optional("keep", keepArgv(keepWorkspace)) : null;
   const budget = underBudget(budgetMs);
   const homesRead = budget.settle(reads.homes);
   const seen = observation(await budget.settle(reads.observe));
   // The index read started beside the observation; a vessel that answers no "up" stops it, and nothing waits on it.
-  if (!seen.up) for (const read of [reads.index, stateRead, halvesRead, keepRead]) { try { read?.kill(); } catch { /* the read already left */ } }
+  if (!seen.up) for (const read of [reads.index, attractorsRead, stateRead, lawRead, lawPinsRead, rosterRead, menuRead, halvesRead, keepRead, docsRead]) { try { read?.kill(); } catch { /* the read already left */ } }
+  const attractors = attractorsRead && seen.up ? await budget.settle(attractorsRead) : null;
   const state = stateRead && seen.up ? await budget.settle(stateRead) : null;
+  const law = lawRead && seen.up ? await budget.settle(lawRead) : null;
+  const lawPins = lawPinsRead && seen.up ? await budget.settle(lawPinsRead) : null;
+  const roster = rosterRead && seen.up ? await budget.settle(rosterRead) : null;
+  const menu = menuRead && seen.up ? await budget.settle(menuRead) : null;
   const index = seen.up ? await budget.settle(reads.index) : null;
   const leiAnswers = {};
   const checkout = gitRead && seen.up ? checkoutOf(await budget.settle(gitRead)) : null;
@@ -416,6 +634,7 @@ export async function wake({ run, budgetMs = WAKE_BUDGET_MS, source: _source = "
     for (const [rite, read] of started) leiAnswers[rite] = await budget.settle(read);
   }
   const halves = halvesRead && seen.up ? await budget.settle(halvesRead) : null;
+  const docs = docsRead && seen.up ? await budget.settle(docsRead) : null;
   const keep = keepRead && seen.up ? await budget.settle(keepRead) : null;
   const homes = await homesRead;
   budget.close();
@@ -428,11 +647,34 @@ export async function wake({ run, budgetMs = WAKE_BUDGET_MS, source: _source = "
     ...(seen.library ? [seen.library] : []),
     `Lares homes: ${homesLine}`,
   ];
+  if (menu !== null) {
+    let digest;
+    if (menu !== BUDGET && menu.code === 0) {
+      try { digest = JSON.parse(menu.stdout).digest; } catch { /* report the malformed answer below */ }
+    }
+    if (/^[0-9a-f]{12}$/.test(digest ?? "")) lines.push(`Lares tool menu: sha256:${digest}`);
+    else {
+      const cause = readFault(menu, "read") ?? (menu.code !== 0 ? `the read exited ${menu.code}` : "the read's answer did not parse (exit 0)");
+      lines.push(`Lares tool menu: unread (${String(cause).replace(/\s+/g, " ")})`);
+    }
+  }
+  if (!seen.up) lines.push("Attractor stores: unavailable (no vessel answers)");
+  else if (attractors !== null) {
+    const { fault, answer } = filterAnswer(attractors);
+    const titles = answer?.data?.titles;
+    if (fault) lines.push(`Attractor stores: unread (${fault.replace(/\s+/g, " ").slice(0, 240)})`);
+    else if (!Array.isArray(titles) || titles.some((title) => typeof title !== "string" || !/^lar:\/\/\/[^\s]{1,240}$/.test(title)) || answer.data.next) lines.push("Attractor stores: unread (invalid or incomplete answer)");
+    else lines.push(titles.length ? `Attractor stores: ${titles.join(" · ")}` : "Attractor stores: no attractor stores");
+  }
   if (state !== null) lines.push(stateLines(state));
+  if (law !== null) lines.push(lawLines(law, lawPins));
+  if (roster !== null) lines.push(rosterLines(roster));
   lines.push(seen.up ? indexLines(index) : "memory index skipped: no vessel answers (the line above names the cause)");
+  if (docs !== null) lines.push(docsLines(docs));
   if (checkout && Object.keys(leiAnswers).length > 0) lines.push(...leiLines(checkout, leiAnswers));
   if (keep !== null) { const line = keepLines(keepWorkspace, keep); if (line) lines.push(line); }
   if (halves !== null) { const line = halvesLines(halves); if (line) lines.push(line); }
+  lines.push(...workspaceOfferLines(workspaces, treeStands));
   return lines.join("\n");
 }
 

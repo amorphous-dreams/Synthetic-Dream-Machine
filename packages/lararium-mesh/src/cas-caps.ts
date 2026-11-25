@@ -1,18 +1,18 @@
 /**
  * cas-caps — the two RETENTION caps a bag holds beside its read caps: PIN (keep these bytes) and PREFETCH (pull
- * pointers' bytes as they cross). Both name a holder and (optionally) a FENCE — never a wall-clock expiry
+ * pointers' bytes as they cross). Both name a holder and (optionally) the holder's LIFE — never a wall-clock expiry
  * (standing law: a wall clock never decides a verdict).
  *
- * PIN at CID grain: `{ cid, tier, holder, fence? }` — a pinned blob never sweeps while the pin stands. "Stands"
- * is PRESENCE, decided by the sidecar (`node-cas.ts`'s `pinCas`/`releaseCas`), never a clock read here; `fence`
- * (M7) is OPTIONAL and, when present, names the holder's OWN fence (its boot epoch) at pin time — the pin
- * holds while the holder's CURRENT fence has not yet superseded it (a reboot moves the fence forward), ending
- * the pin on that CAUSAL event rather than a span. `releaseCas` ends it earlier still, explicitly. The tier
- * binds to the bag whose pointer the pin protects.
+ * PIN at CID grain: `{ cid, tier, holder, life? }` — a pinned blob never sweeps while the pin stands. "Stands"
+ * is PRESENCE, decided by the sidecar (`node-cas.ts`'s `pinCas`/`releaseCas`), never a clock read here; `life`
+ * (M7) is OPTIONAL and, when present, names the holder's OWN life at pin time (the id its store claim minted) —
+ * the pin holds while the holder's CURRENT life matches it, and ends the moment another life holds the
+ * store: a CAUSAL event, compared by equality and never by order. `releaseCas` ends it earlier still, explicitly.
+ * The tier binds to the bag whose pointer the pin protects.
  *
- * PREFETCH per peer: `{ tier, holder, fence? }` — DECLARED, gated, DEFAULT OFF. Fetch-on-read stays the house
+ * PREFETCH per peer: `{ tier, holder, life? }` — DECLARED, gated, DEFAULT OFF. Fetch-on-read stays the house
  * default (the road stays light, the absence stays honest); a prefetch cap opens only for the ONE peer it names,
- * for as long as that peer's own fence has not superseded the one recorded. Absent cap → nothing prefetches.
+ * for as long as that peer's own life stays the one recorded. Absent cap → nothing prefetches.
  *
  * GRACE per tier: `graceForTier(tier, unit)` — ratios over the realm's own clock (one roll), never a constant.
  * VEIL / PERSONAGROUP hold LONGER than CONTRACT / PUBLIC: a private tier's bytes have exactly one holder-set that
@@ -25,53 +25,53 @@
 
 import { type CapTier, CAP_TIER_ORDER } from "./cap-tier.js";
 
-/** A PIN cap — keep the bytes a cid names, at cid grain, until an explicit release or the holder's own fence
- *  (its boot epoch) supersedes it. NO clock field (M7): a wall clock never decides this house's pin verdicts,
+/** A PIN cap — keep the bytes a cid names, at cid grain, until an explicit release or the holder's own life ends
+ *  (another life holds its store). NO clock field (M7): a wall clock never decides this house's pin verdicts,
  *  and a field that decides nothing invites a reader to think it does. */
 export interface PinCap {
   readonly cid:    string;
   readonly tier:   CapTier;
   /** The vessel / persona that holds the pin (its verifying-key hex or a persona slug). */
   readonly holder: string;
-  /** The holder's OWN fence (its boot epoch) at pin time. OPTIONAL — absent means "no fence recorded", under
-   *  which presence alone decides (the `node-cas.ts` sidecar law: `pinHolds`/`pinnedCids` read it as standing
-   *  forever, until an explicit release). */
-  readonly fence?: number;
+  /** The holder's OWN life at pin time. OPTIONAL — absent means "no life recorded", under which presence alone
+   *  decides (the `node-cas.ts` sidecar law: `pinHolds`/`pinnedCids` read it as standing forever, until an
+   *  explicit release). */
+  readonly life?: string;
 }
 
 /** A PREFETCH cap — pull the bytes behind pointers as they cross, for ONE peer, until an explicit release or
- *  that peer's own fence supersedes the one recorded. */
+ *  that peer's own life ends. */
 export interface PrefetchCap {
   readonly tier:   CapTier;
   /** The one peer (its proven key) the cap opens for. */
   readonly holder: string;
-  readonly fence?: number;
+  readonly life?: string;
 }
 
 /**
- * Does a PIN hold `cid` under this holder's CURRENT fence? Presence alone decides when no fence was ever
- * recorded (`pin.fence === undefined` — the sidecar-presence law); a recorded fence that `currentFence` has
- * since moved past holds nothing. Never a clock comparison either way (M7 — lost `now`).
+ * Does a PIN hold `cid` under the holder's CURRENT life? Presence alone decides when no life was ever recorded
+ * (`pin.life === undefined` — the sidecar-presence law); a recorded life holds while it IS the current one, and
+ * nothing once another life stands. Equality alone: no clock and no order (M7 — lost `now`).
  */
-export function pinHolds(pin: PinCap | undefined, cid: string, currentFence: number): boolean {
+export function pinHolds(pin: PinCap | undefined, cid: string, currentLife: string): boolean {
   if (!pin) return false;
   if (pin.cid !== cid) return false;
-  return pin.fence === undefined || currentFence <= pin.fence;
+  return pin.life === undefined || pin.life === currentLife;
 }
 
-/** The pins that still hold under `currentFence`, as the set of cids they protect — the sweep's "never" set. */
-export function pinnedCids(pins: Iterable<PinCap>, currentFence: number): Set<string> {
+/** The pins that still hold under `currentLife`, as the set of cids they protect — the sweep's "never" set. */
+export function pinnedCids(pins: Iterable<PinCap>, currentLife: string): Set<string> {
   const out = new Set<string>();
-  for (const p of pins) if (p.fence === undefined || currentFence <= p.fence) out.add(p.cid);
+  for (const p of pins) if (p.life === undefined || p.life === currentLife) out.add(p.cid);
   return out;
 }
 
-/** Does a PREFETCH cap open for `peer` under `currentFence`? Absent → OFF (the default); another holder → off;
- *  a fence the peer has since superseded → off. */
-export function prefetchAllows(cap: PrefetchCap | undefined, peer: string, currentFence: number): boolean {
+/** Does a PREFETCH cap open for `peer` under its `currentLife`? Absent → OFF (the default); another holder → off;
+ *  another life than the one recorded → off. */
+export function prefetchAllows(cap: PrefetchCap | undefined, peer: string, currentLife: string): boolean {
   if (!cap) return false;
   if (cap.holder !== peer) return false;
-  return cap.fence === undefined || currentFence <= cap.fence;
+  return cap.life === undefined || cap.life === currentLife;
 }
 
 /**

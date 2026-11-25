@@ -43,7 +43,7 @@ import {
   type VesselKeel, type VesselCoreAssembly,
   type BagStowage,
   // ── the lifted carriage machinery, now mesh-floor (re-exported below) ──
-  CARRIAGE_CAP,
+  CARRIAGE_CAP, genesisCasCidsFromOracle,
   carriageStack, type MeshSelf, type MeshPalaceComponent,
   type MeshPalaceDoc, type FlowPullResult, type PlaceSigner,
 } from "@lararium/mesh";
@@ -112,6 +112,13 @@ export function flowMapReadFaceCap(deps: {
 
 // ── the node-ONLY BULB cap: the held cold-boot snapshot served by cid over the PUBLIC read-face ─────
 
+/** The founding record's CAS cids, read off the stored oracle island; absent where the island holds none that read. */
+function foundingOf(assembly: VesselCoreAssembly | undefined): { founding?: readonly string[] } {
+  const doc = assembly?.islandHandle?.doc();
+  if (!doc) return {};
+  try { return { founding: genesisCasCidsFromOracle(doc) }; } catch { return {}; }
+}
+
 /** bulb — HOLD a cold-boot snapshot (genesis seed + CAS + bootstrap, epoch-PINNED) and serve it by cid over the
  *  HTTP floor (`/bulb/*`), ALL-PUBLIC, alongside the FLOW-map read-face. A stranger pulls it + kindles their OWN
  *  sovereign hearth (serve FIRE, never KEY). Requires substrate only (it reads the held artifact, mints nothing). */
@@ -122,8 +129,9 @@ export function bulbCap(deps: {
 }): CapModule {
   return {
     id: CAP.bulb, requires: [CAP.substrate],
-    build: async () => mountBulbReadFace({
+    build: async (resolve) => mountBulbReadFace({
       httpServer: deps.httpServer, bulb: deps.bulb,
+      ...foundingOf(resolve<VesselCoreAssembly>(CAP.substrate)),
       ...(deps.dispatcher ? { dispatcher: deps.dispatcher } : {}),
       ...(deps.onLog ? { onLog: deps.onLog } : {}),
       ...(deps.publicCas ? { publicCas: deps.publicCas } : {}),
@@ -144,6 +152,8 @@ export const composeLararium = composeCoreVessel;
 export interface HermStackDeps extends DaemonCapDeps {
   readonly keel:           VesselKeel;
   readonly repo:           Repo;
+  /** The Herm's own vessel key: its meshpalace map's address derives from it, so every compose finds the one map. */
+  readonly vesselKey:      string;
   readonly residency?:     BagStowage;
   readonly httpServer:     Server;
   readonly signer:         PlaceSigner;
@@ -197,6 +207,7 @@ export async function composeHerm(d: HermStackDeps): Promise<ComposedHerm> {
     // one. That is what a crossroads IS before anyone passes.
     ...carriageStack({
       repo:        d.repo,
+      vesselKey:   d.vesselKey,
       ...(d.meshSelf?.gatePubKey ? { cadenceKey: d.meshSelf.gatePubKey } : {}),
       ...(d.residency ? { residency: d.residency } : {}),
       ...(d.meshSelf ? { self: d.meshSelf } : {}),

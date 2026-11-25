@@ -1,16 +1,15 @@
 /**
  * daemon-roster-tiddlers — the SENSORIUM ROSTER daemon surface (E4, the co-use UX).
  *
- * ONE capability rendered two ways (UI ≡ API): every lifecycle button here fires the RESIDENT verb-summon
- * pattern — `$button` → `$action-setfield` on `…/verb/<verb>` carrying `verb`, the `lares-dispatch` marker,
- * and its `arg-*` fields — the SAME verb-summon a CLI `lares sense <verb>` drives through the daemon. A
- * human clicks; an agent writes the same summons; both land on ONE store. No divergent view.
+ * The roster's buttons (refresh, reconcile) fire the RESIDENT verb-summon pattern — `$button` →
+ * `$action-setfield` on `…/verb/<verb>` carrying `verb`, the `lares-dispatch` marker, and its `arg-*`
+ * fields. Those verbs answer any asker, so a click and an agent's written summons land alike; no button
+ * here runs a hand verb.
  *
- * MODED AUTONOMY IN THE SURFACE (the seat grid, rendered): the reconcile button (HOTL) renders for
- * everyone. The HITL buttons — promote · retire · purge — render CALLABLE only when the caller HOLDS the
- * approval cap (`$:/lares/caps/lifecycle-approve` == "1"); absent it they render as a gated note. The held
- * cap becomes the visible-and-callable button AND supplies the `arg-approve` the verb needs — the affordance
- * IS the authority (ocap), the TS mirror of the CLI's `--approve` and the MCP approval cap.
+ * THE HAND VERBS RENDER NO BUTTON (hitl-reads-a-hand): the reconcile button renders for everyone, and
+ * harden · retire · un-retire · purge render as a note naming the command, since each runs on a person's
+ * hand at a real terminal alone and the vessel refuses it from a tab, a seat or a synced summons. A wiki
+ * tiddler any writer can set approves nothing.
  *
  * The live roster LIST rides the LOCAL state slot the roster worker-verb pushes (the IN path — deferred
  * with the daemon routed executor, F-C); the surface + its refresh button stand now, painting empty until
@@ -26,8 +25,6 @@ import { LARES_SURFACE_TAG, LARES_SURFACE_STATE, seedShadows } from "./daemon-ui
 /** LOCAL state: the live sensorium roster list (name · lifecycle), pushed by the roster worker-verb. Never
  *  synced — a volatile temp slot, like the switcher's. Empty until the IN-path push lands (deferred). */
 export const ROSTER_STATE_TITLE = "$:/temp/lares/sensorium-roster";
-/** LOCAL cap-state: does the caller hold the lifecycle approval cap? "1" → HITL buttons render callable. */
-export const LIFECYCLE_APPROVE_CAP = "$:/lares/caps/lifecycle-approve";
 
 const ROSTER_TITLE   = "$:/lares/ui/sensorium-roster";
 const ROSTER_PAGECTRL = "$:/lares/ui/PageControls/sensorium-roster";
@@ -38,8 +35,8 @@ const VERB_PREFIX = "lar:///lararium.local.vm/verb/";
 
 /**
  * The roster surface: a refresh button (summons the `roster` verb), then a per-sensorium row rendered from
- * the live state list. Each row carries its lifecycle + the seated buttons — reconcile ungated (HOTL);
- * promote/retire/purge gated behind the approval cap (HITL). The row variable `sensName` names the target.
+ * the live state list. Each row carries its lifecycle, the reconcile button, and a note naming the terminal
+ * command for the hand verbs. The row variable `sensName` names the target.
  */
 const ROSTER_BODY = `\\whitespace trim
 ! daemon · Sensorium Roster
@@ -62,20 +59,7 @@ refresh
 reconcile
 </$button>
 
-<$list filter="[[${LIFECYCLE_APPROVE_CAP}]get[text]match[1]]" variable="_" emptyMessage="<span class='lares-life-gated' data-lares-gated='promote retire purge'>promote · retire · purge — hold the approval cap</span>">
-<$button class="lares-life-btn lares-life-promote" data-lares-verb="promote" data-lares-sensorium=<<sensName>>>
-<$action-setfield $tiddler="${VERB_PREFIX}promote" verb="promote" ${LARES_DISPATCH_FIELD}="1" ${LARES_VERB_ARG_PREFIX}name=<<sensName>> ${LARES_VERB_ARG_PREFIX}approve="1"/>
-promote
-</$button>
-<$button class="lares-life-btn lares-life-retire" data-lares-verb="retire" data-lares-sensorium=<<sensName>>>
-<$action-setfield $tiddler="${VERB_PREFIX}retire" verb="retire" ${LARES_DISPATCH_FIELD}="1" ${LARES_VERB_ARG_PREFIX}name=<<sensName>> ${LARES_VERB_ARG_PREFIX}grounds="superseded" ${LARES_VERB_ARG_PREFIX}approve="1"/>
-retire
-</$button>
-<$button class="lares-life-btn lares-life-purge" data-lares-verb="purge" data-lares-sensorium=<<sensName>>>
-<$action-setfield $tiddler="${VERB_PREFIX}purge" verb="purge" ${LARES_DISPATCH_FIELD}="1" ${LARES_VERB_ARG_PREFIX}name=<<sensName>> ${LARES_VERB_ARG_PREFIX}approve="1"/>
-purge
-</$button>
-</$list>
+<span class="lares-life-hand" data-lares-hand="harden retire un-retire purge">harden · retire · un-retire · purge — your own terminal: <code>lares sense &lt;verb&gt; <$text text=<<sensName>>/></code></span>
 
 </div>
 </$let>

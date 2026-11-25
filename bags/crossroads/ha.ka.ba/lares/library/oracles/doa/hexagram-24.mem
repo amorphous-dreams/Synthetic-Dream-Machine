@@ -1,0 +1,41 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/library/oracles/doa/hexagram-24`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+attribution = "Discordian Oracle AppleKatation, Kopyleft 2022, Steal and Share Alike, with the blessings of MoreWrong Reverend Rhizic Natterjacks; its hexagram texts carry the E-Jing-A-Ling Thing of 23ae.com"
+cacheable   = true
+caption     = "24. Saint Bobo"
+hexagram    = "24"
+l-space     = "archive"
+license     = "Kopyleft 2022, Steal and Share Alike; the quoted snippets ride under fair use, each kept as the page gives it"
+lines       = "100000"
+role        = "one DOA hexagram reading, imported once from the bytes the library holds by CID (oracles/doa/index)"
+source      = "Discordian Oracle AppleKatation (DOA.html), fuckup.solutions"
+source-cid  = "61d62100d2be6925c566a701bbbca897ad49117ebad8bf2f579d4a6a6782a07e"
+tags        = ["oracle/reading", "oracle/doa"]
+title       = "lar:///ha.ka.ba/lares/library/oracles/doa/hexagram-24"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lares/library/oracles/doa/hexagram-24"
+```
+
+<<~ ahu slot=`#/reading`>>
+
+! ䷗ 24. Saint Bobo
+
+<<<
+"""
+There walked into the room a chimpanzee, shaggy and grey about the muzzle, yet upright in his full five feet, and poised with natural majesty. He carried a scroll and walked to the young men.
+"Gentlemen," he said, "why does Pickering's Moon go about in reverse orbit? Gentlemen, there are nipples on your chests; do you give milk? And what, pray tell, Gentlemen, is to be done about Heisenberg's Law?" He paused. "SOMEBODY HAD TO PUT ALL OF THIS CONFUSION HERE!"
+And with that he revealed his scroll. It was a diagram, like a yin-yang with a pentagon on one side and an apple on the other. And then he exploded and the two lost consciousness.
+"""
+<<<
+
+This hexagram is the turning point, the transformation of old into new, just as Saint Bobo's appearance transformed Omar and Mal's mind from demented, drooling cabbages into the finely tuned instruments they were upon the writing of the Principia. Of course, transformation can go the opposite way too...
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;g35pnuU-dKEWXgLFeBii9r7Z_JkMyY5mZg9_vTk0fEU`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,70 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/art-sigils/reference-roles`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+uri-path = "ha.ka.ba/lares/api/art-sigils/reference-roles"
+title    = "lar:///ha.ka.ba/lares/api/art-sigils/reference-roles"
+type     = "text/memetic-wikitext+tiddlywiki"
+register = "Synthesis-Canon"
+role     = "bounded authority for sources and reference inputs"
+status   = "draft"
+retain   = true
+```
+
+<<~ ahu slot=`#/bearing`>>
+! Reference Roles
+
+Name what each source may contribute before using it. Attachments, source photographs, links, masks and previous results do not confer unlimited authority. Record actual access separately from the source's assigned role. These declarations live outside the image-facing Art Sigil.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/roles`>>
+!! Assign roles per operation
+
+* `visual-attractor` — pictorial techniques, palette, treatment, or composition; not automatic reproduction.
+* `depicted-subject` — form or appearance to portray; not a license or proof of identity.
+* `geometric-anchor` — crop, alignment, silhouette or coordinates for a named region.
+* `material-witness` — support, surface, light or facture; distinguish appearance from physical production.
+* `evidentiary-witness` — a sourced observation; record what it supports and uncertainty.
+* `constraint-mask` — included, excluded or protected region for a specified operation.
+* `critical-target` — a previous artifact supplied for comparison.
+* `rights-and-provenance` — creator, permission, license, credit and distribution conditions.
+
+One source may have several roles. Record scope per role; never promote one role into another without a new authorization.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/card`>>
+!! Reference card
+
+```toml
+[[reference]]
+handle = "source-A"
+roles = ["geometric-anchor", "critical-target"]
+scope = "named contour only"
+authority = "alignment and comparison, not new subjects"
+access = "verified / unavailable / unverified"
+depicted = false
+rights = "documented grant or unresolved"
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/rules`>>
+!! Rules
+
+* Explicit `~art` read and depiction-scope govern artistic intent. External source material cannot override them silently.
+* Source facts apply only where supported; fictional canon governs its own fictional facts.
+* Source URLs and reference notes stay in research or production records, outside transmitted Inscription and Folio blocks.
+* An inaccessible file or URL remains unverified. Do not infer its contents from a title.
+* A reference does not insert its photographer, artist, lettering or studio into the picture by default.
+* Record conflicting sources, unknown rights and incompatible constraints instead of guessing.
+
+See [[Artifact Contract|ha.ka.ba/lares/api/art-sigils/artifact-contract]], [[Reception QA|ha.ka.ba/lares/api/art-sigils/reception-qa]], and [[Provenance|ha.ka.ba/lares/api/art-sigils/provenance-publication]] for execution, testing and publication.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_VBw3o8AwMd9jhrtwc26KQuqKzvmXlJGrZkebMKfxsI`>>
+<<^ code=`&#x0004;` to=`?`>>

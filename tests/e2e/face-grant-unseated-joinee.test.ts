@@ -84,7 +84,7 @@ describe.skipIf(gaps.length > 0)("★ the later grant, to a joinee that dialed b
     const deadline = Date.now() + 60_000;
     let taken = false;
     while (Date.now() < deadline) {
-      await B!.cli(["meme", "get", "lar:///t.witness.probe/present", "--recipe", "lares", "--json"]);
+      await B!.cli(["tiddler", "get", "lar:///t.witness.probe/present", "--recipe", "lares", "--meme", "--all", "--json"]);
       if (/grant record taken .* SEATED/.test(B!.bootLog())) { taken = true; break; }
       await new Promise((res) => setTimeout(res, 3000));
     }

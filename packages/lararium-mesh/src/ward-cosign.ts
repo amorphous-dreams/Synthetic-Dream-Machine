@@ -31,7 +31,7 @@ type Standing = "stands" | "aside" | "unknown";
 
 /** One ward act, as its digest names it: the verb, the wiki it binds and the head it acts over. */
 export interface WardCosignAct {
-  readonly verb: "ward-kapae-lower" | "ward-house-cap" | WardLeiVerb;
+  readonly verb: "ward-kapae-lower" | "ward-house-cap" | WardLeiVerb | "ward-keeper-vest";
   readonly wiki: string;
   readonly head: string;
 }
@@ -141,7 +141,7 @@ export function wardActRefusal(witness: WardActWitness, act: WardCosignAct): War
  * outcome (a second approve, a deny, a raise the next frontier counts against the co-signer) never changes what stands; an approved
  * intent with no outcome stands nothing. THE ISSUER READS NOW: a raise shadows its target at once for every reader that sees it, so
  * an outcome whose issuer this reader reads aside (`ward-issuer-aside`) or unknown (`ward-issuer-unknown`) stands nothing, door-made
- * or signed outside the gate citing an approve from before its set-aside (it fails toward the brake). A plane that did not load, or
+ * or signed outside the gate citing an approve that precedes its set-aside (it fails toward the brake). A plane that did not load, or
  * a fold that throws, accepts nothing on two devices.
  */
 export function wardActWitness(input: {

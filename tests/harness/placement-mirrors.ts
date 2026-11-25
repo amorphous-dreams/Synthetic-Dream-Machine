@@ -2,7 +2,7 @@
  * harness/placement-mirrors — what a staged hearth's disk mirrors hold, read the way the placement contract states it.
  *
  * PLACEMENT DECIDES RESIDENCY (lar:///ha.ka.ba/lararium/mesh/control-home). The worn face's daemon wiki projects its working
- * top to `<projections>/wikis/daemon-<F>` and its canon `bags/daemon-<F>` to `<projections>/bags/daemon-<F>`; the daemon
+ * top to `<projections>/faces/<pet name>/wikis/daemon` and its canon `bags/daemon-<F>` to `<projections>/faces/<pet name>/bags/daemon`; the daemon
  * document (`bags/daemon`) and the control document (`bags/control`) name no mirror, and neither does the secret home. So a
  * witness reads every file the projections tree holds and asks which titles name a private home: none may.
  *
@@ -12,13 +12,13 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, sep } from "node:path";
 import { CONTROL_HOME_ID, DAEMON_BAG_ID, SECRET_HOME_ID, SWARM_URI_PREFIX } from "../../packages/lararium-mesh/src/lar-uris.js";
-import { daemonFaceFolder } from "../../packages/lararium-node/src/bag-paths.js";
-import { stagedHearthRelation } from "./instance.js";
+import { FACE_PLANES } from "../../packages/lararium-node/src/bag-paths.js";
+import { stagedFaceRoot } from "./instance.js";
 
-/** The worn face's two daemon mirrors on a staged hearth: its working top and its canon. */
+/** The worn face's two daemon mirrors on a staged hearth: its working top and its canon, in its face root. */
 export function faceDaemonMirrors(root: string): { readonly working: string; readonly canon: string } {
-  const folder = daemonFaceFolder(stagedHearthRelation(root));
-  return { working: join(root, "projections", "wikis", folder), canon: join(root, "projections", "bags", folder) };
+  const face = stagedFaceRoot(root);
+  return { working: join(face, FACE_PLANES.wiki), canon: join(face, FACE_PLANES.canon) };
 }
 
 /** Every file under `dir`, relative to it; an absent dir holds none. */

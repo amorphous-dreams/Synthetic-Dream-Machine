@@ -44,7 +44,7 @@ function island(): { worker: Worker; said: Array<Record<string, unknown>>; ask(m
   };
 }
 
-const custodyAsk = (requestId: string) => ({ type: "custody:write", requestId, carrier: "veil", bytes: new Uint8Array([7, 7, 7]) });
+const custodyAsk = (requestId: string) => ({ type: "custody:write", requestId, carrier: "veil", bytes: new Uint8Array([7, 7, 7]), face: "group-of-the-exporting-face" });
 const receiptAsk = (requestId: string) => ({ type: "receipt:request", requestId, documentIds: ["doc-a"] });
 const dyadAsk = (requestId: string) => ({ type: "dyad:ask", requestId, fleetRoot: "fleet", deviceKey: "device" });
 const casAsk = (requestId: string) => ({ type: "cas:want", requestId, cid: "sha256:" + "ab".repeat(32) });
@@ -132,7 +132,6 @@ describe("the vessel's doors answer by island class", () => {
           return nodeWorkerHandle(stand.worker, { island: "wiki", caps });
         },
         newSyncChannel() { const c = new MessageChannel(); return { mainPort: c.port1, syncPort: c.port2 }; },
-        storage: () => undefined,
       };
       const pool = new VesselIslandPoolCore({ host, mainRepo: repo, resolvePluginCids: async () => ({ ok: true, pluginCids: [] }) });
       return { pool, async mount(id: string) { next = id; await pool.mountWiki(id, { coreHash: null, recipe: { wikiSlug: id }, grants: { islandUrl: "automerge:fixture", wikiUrl: null } }); return emitters.get(id)!; } };

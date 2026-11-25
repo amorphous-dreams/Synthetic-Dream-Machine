@@ -1,0 +1,37 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/library/oracles/e-jing/hexagram-49`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+attribution   = "the E-Jing-A-Ling Thing, by its unnamed authors at 23ae.com: \"we took the I-Ching and created Discordian answers\""
+cacheable     = true
+caption       = "49. Revolution"
+hexagram      = "49"
+l-space       = "archive"
+license       = "(K)opyLeft: Copyright Is Reversed. Reprint What You Like. The quoted third-party snippets ride under fair use (operator ruling 2026-11-20), each kept with its attribution as the page gives it"
+lines         = "101110"
+role          = "one e-jing hexagram reading, imported once from the page the oracle scout carried in (oracles/e-jing/index)"
+source        = "E-Jing-A-Ling Thing Hexagrams, 23ae.com (Wayback capture 2006-02-18)"
+source-sha256 = "d1a27264fae6598cc29ef44cf2c1fd5a7858534fd91f1122538b3ddf9527746e"
+tags          = ["oracle/reading", "oracle/e-jing"]
+title         = "lar:///ha.ka.ba/lares/library/oracles/e-jing/hexagram-49"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/library/oracles/e-jing/hexagram-49"
+```
+
+<<~ ahu slot=`#/reading`>>
+
+! ䷰ 49. Revolution
+
+<<<
+"The Principia Discordia has served as the basis for a worldwide revolution in madness, managing to leave a trail of icons and such in its path." - Discordian Society of Saint Mary's University
+<<<
+
+This hexagram represents revolution. It is not telling you to shoot government workers - it is warning you that a revolution (of the mind, hopefully) seems immenant at this time. Remember, this can usually be read on a personal level. It also warns that revolution should only be looked to when there is no other way out.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7m-ZdX6YC4r9QWkf_bTK7sqK7sw1eUS1ATMRj3MtML4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

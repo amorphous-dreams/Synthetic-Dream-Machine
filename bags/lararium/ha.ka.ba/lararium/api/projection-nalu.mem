@@ -13,7 +13,6 @@ tags      = ["api/pono/meme", "api/lararium"]
 title     = "lar:///ha.ka.ba/lararium/api/projection-nalu"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/api/projection-nalu"
-written   = "2026-06-26"
 ```
 
 <<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/nalu`>>
@@ -166,7 +165,7 @@ The DOM nalu (`tw5-projection.ts`) draws `CoalesceGate`; the Automerge-boundary 
 * ''merge-gate'' (`mesh/merge-gate.ts`) — the fan-in merge acts as a GATE not a funnel: VALIDATE before the irreversible commit (kinetic-proofreading), assign one-way order, RECYCLE rejects to a dead-letter lane (never drop, never block) — plus CONSUME-LICENSE-ON-COMMIT (DNA-replication licensing). `parallel-ingest.ts` commits through one serial lane, tracks a separate in-memory license set, and advances the drain after each resolved verdict (commit, dead-letter or skip). A drain-owned license registry (the watermark advance == the license removal, one mechanism) stands UNBUILT.
 * ''KAPPA law'' (live wiring UNBUILT): the SAME runtime MUST serve live capture AND recovery/harvest — recovery replays through the same daemon-plane gate from offset 0, never a separate raw-mine batch lane (Lambda = the anti-pattern). Every source (main turns · spirit returns · harvest) routes through the ONE sovereign nalu gate; telemetry + synthesis + rhizome-stitch happen AT the gate — a bypass makes a second, blind witness.
 
-''Held for the live-wire:'' the real embed + commit shores (through the daemon-plane), a shared durable quarantine (merge-gate's per-item proofread-reject ⋈ capture-nalu's batch-poison, two triggers one lane), the SubagentStop→nalu hook, and retiring the `lares subagents` direct-mine bypass.
+''Held for the live-wire:'' the real embed + commit shores (through the daemon-plane), a shared durable quarantine (merge-gate's per-item proofread-reject ⋈ capture-nalu's batch-poison, two triggers one lane), the SubagentStop→nalu hook, and retiring the `lares sense capture` direct-mine bypass.
 
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/federated-causal-islands#/task-handoff`>>
@@ -179,6 +178,6 @@ The DOM nalu (`tw5-projection.ts`) draws `CoalesceGate`; the Automerge-boundary 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;OMIvCbpsSKwvttFpbmY3A5VurIlKPMRAyEKenf8w5yA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;PJM7UbZVGCuKVG0mqeW8u63s5vpchiCTtsyP4XeEG0s`>>
 
 <<^ code=`&#x0004;` to=`?`>>

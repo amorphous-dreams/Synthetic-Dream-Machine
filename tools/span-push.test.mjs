@@ -2,20 +2,23 @@
 // pushes, and none calls the real `gh`.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { PINS, spanPush } from "./span-push.mjs";
+import { PINS, QUIET_SPANS, spanPush } from "./span-push.mjs";
 
 const TOOL = fileURLToPath(new URL("./span-push.mjs", import.meta.url));
 
-/** Hands that record each call; `pins` maps a pin name to its exit code, `runs` answers every gh read. */
-function hands({ pins = {}, runs = [], ghError = null, pushStatus = 0 } = {}) {
+/** Hands that record each call; `pins` maps a pin name to its exit code, `runs` answers every gh read, `changed` names the
+ *  paths the push carries over the remote's head (null: the remote head reads unknown). */
+function hands({ pins = {}, runs = [], ghError = null, pushStatus = 0, changed = ["tools/land-train.mjs", "bags/lares/x.mem"] } = {}) {
   const calls = [], said = [];
   return {
     calls, said,
     ops: {
       pin: (step) => { calls.push(`pin ${step.name}`); return pins[step.name] ?? 0; },
       gh: (args) => { calls.push(`gh ${args.join(" ")}`); if (ghError) throw ghError; return runs.filter((r) => args.includes(r.status)); },
+      changed: (remote, branch) => { calls.push(`changed ${remote} ${branch}`); return changed; },
       push: (remote, branch) => { calls.push(`push ${remote} ${branch}`); return { status: pushStatus, stderr: pushStatus ? "rejected" : "" }; },
       head: () => "0123456789abcdef",
       say: (line) => said.push(line),
@@ -58,6 +61,41 @@ test("a run in flight on the branch refuses (exit 3) and never pushes; every act
   assert.deepEqual(pushed(h.calls), []);
   assert.match(h.said.join("\n"), /2 run\(s\) still in flight/);
   for (const status of ["queued", "in_progress", "waiting", "requested", "pending"]) assert.ok(h.calls.some((c) => c.includes(`--branch feature/span --status ${status}`)), `no read of ${status}`);
+});
+
+test("RED: a canon-only push to develop or main cancels no run (CI lets the run in flight finish there), so it pushes past runs in flight unread", async () => {
+  for (const branch of ["develop", "main"]) {
+    const h = hands({ runs: [{ status: "in_progress" }, { status: "queued" }], changed: ["bags/lares/ha.ka.ba/lares/docs/pono/x.mem", "wikis/w/t.tid", "README.md"] });
+    const { code } = await spanPush({ branch }, h.ops);
+    assert.equal(code, 0);
+    assert.deepEqual(pushed(h.calls), [`push origin ${branch}`]);
+    assert.deepEqual(h.calls.filter((c) => c.startsWith("gh ")), [], "a canon-only push to the span reads no CI: no run it could cancel");
+    assert.ok(h.calls.indexOf(`changed origin ${branch}`) > h.calls.findLastIndex((c) => c.startsWith("pin ")), "the pins run first");
+    assert.match(h.said.join("\n"), /ignored paths alone/);
+    assert.match(h.said.join("\n"), /doorstep/);
+  }
+});
+
+test("RED: the spans span-push pushes canon past are exactly the refs whose CI run in flight ci.yml never cancels", () => {
+  const ci = readFileSync(fileURLToPath(new URL("../.github/workflows/ci.yml", import.meta.url)), "utf8");
+  const cancel = /^concurrency:\n {2}group: .*\n {2}cancel-in-progress: (.*)$/m.exec(ci)?.[1];
+  assert.equal(cancel, `\${{ ${QUIET_SPANS.map((b) => `github.ref != 'refs/heads/${b}'`).join(" && ")} }}`, "ci.yml cancels a run in flight on a span span-push pushes canon onto unread");
+});
+
+test("RED: a canon-only push to any other branch raises a doorstep run that cancels the one in flight, so it keeps the in-flight refusal", async () => {
+  const h = hands({ runs: [{ status: "in_progress" }], changed: ["bags/lares/x.mem"] });
+  const { code } = await spanPush({ branch: "feature/span" }, h.ops);
+  assert.equal(code, 3);
+  assert.deepEqual(pushed(h.calls), []);
+});
+
+test("CONTROL: one code path among the ignored ones, or a remote head the checkout cannot read, keeps the in-flight refusal", async () => {
+  for (const changed of [["bags/lares/x.mem", "tools/span-push.mjs"], null, []]) {
+    const h = hands({ runs: [{ status: "in_progress" }], changed });
+    const { code } = await spanPush({ branch: "develop" }, h.ops);
+    assert.equal(code, 3, `changed ${JSON.stringify(changed)} pushed past a run in flight`);
+    assert.deepEqual(pushed(h.calls), []);
+  }
 });
 
 test("an unreadable GitHub waits as UNREADABLE (exit 10), never reads as clear, and never pushes", async () => {

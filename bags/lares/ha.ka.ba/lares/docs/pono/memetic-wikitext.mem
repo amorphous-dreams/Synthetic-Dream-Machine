@@ -180,6 +180,15 @@ The submission-grade specification at `lar:///ha.ka.ba/lares/api/pono/memetic-wi
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/rulings`>>
+
+!! Rulings
+
+# Operator ruling 2026-09-07: the arrow survives a named-parameter frame — a named parameter states a property, an arrow a relation.
+# Operator ruling 2026-10-31: reverses 2026-09-07 — `from=` and `to=` carry the bearing as two named values and no bare `->` stands between them; the pair reads as the relation through the host's own attribute reader (api/pono/memetic-wikitext#/lexical-structure, api/pono/memetic-wikitext-framing, "Why the pair carries the relation").
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/edges`>>
 
 !! Edges
@@ -189,6 +198,6 @@ The submission-grade specification at `lar:///ha.ka.ba/lares/api/pono/memetic-wi
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;2JJ0yIaaaFwtIqdvoT6gWkxNkDv1vRLPuld_qedbMqA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2JrqI22V4uVljkUAqOjPCgdd-svKY84DLESrrY06CSE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

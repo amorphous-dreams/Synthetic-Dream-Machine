@@ -2,7 +2,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { FACE_NEUTRAL_VERBS, operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
+import { FACE_LANE_VERBS, FACE_NEUTRAL_VERBS, operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
 import { VerbDispatcher, VerbTable } from "@lararium/tw5";
 import * as ed25519 from "@noble/ed25519";
 import { hex, hexToBytes, realmFeedAskImage, signAsFaceAtom, signFaceLeafBond } from "@lararium/mesh";
@@ -29,9 +29,10 @@ async function standTwoFaces() {
   teardown.push(() => { void kh.dispose?.(); });
   const registry = new VerbTable();
   opts.wireWorkerVerbs!(registry, a.ctx);
-  const ctxOf = (presenter?: string, local = false) => ({ daemon: {} as never, invocation: { requestId: "r1", args: {} } as never, cap: async () => ({ ok: true }), local, ...(presenter === undefined ? {} : { presenter }) }) as never;
-  const call = (verb: string, presenter: string | undefined, args: Record<string, unknown>, local = false) =>
-    Promise.resolve().then(() => registry.get(verb)!(args, ctxOf(presenter, local))).then(() => null, (e: { reason?: string }) => e);
+  // `bound` names a session's proof subject on the invocation, as the vessel's session door books it; a one-shot carries none.
+  const ctxOf = (presenter?: string, local = false, bound = false) => ({ daemon: {} as never, invocation: { requestId: "r1", args: {}, ...(bound ? { face: "proof-session" } : {}) } as never, cap: async () => ({ ok: true }), local, ...(presenter === undefined ? {} : { presenter }) }) as never;
+  const call = (verb: string, presenter: string | undefined, args: Record<string, unknown>, local = false, bound = false) =>
+    Promise.resolve().then(() => registry.get(verb)!(args, ctxOf(presenter, local, bound))).then(() => null, (e: { reason?: string }) => e);
   // Each face's bond for its leaf at a realm: its atom signs from the fixture's own seed, a fresh leaf signs beside it.
   const bondOf = async (auth: any, realm: string) => {
     const leafSeed = ed25519.utils.randomSecretKey();
@@ -42,7 +43,7 @@ async function standTwoFaces() {
     const askSig = await signAsFaceAtom(hexToBytes(auth.atom.seed), realmFeedAskImage({ requestId: "r1", realm, writer: leaf }));
     return { leaf, bond, askSig };
   };
-  return { registry, call, composite: (a.ctx as any).composite, sibling: `0x${b.daemonAuth.atom.key}`, mounted: `0x${a.daemonAuth.atom.key}`,
+  return { registry, call, ctxOf, composite: (a.ctx as any).composite, sibling: `0x${b.daemonAuth.atom.key}`, mounted: `0x${a.daemonAuth.atom.key}`,
     siblingBond: (realm: string) => bondOf(b.daemonAuth, realm), mountedBond: (realm: string) => bondOf(a.daemonAuth, realm) };
 }
 
@@ -74,7 +75,7 @@ test("a routed wiki-act crosses the same presenter fence before routing", async 
 
 const SEALED = ["sealed-seal", "sealed-open", "sealed-reading", "sealed-choose-head", "sealed-hand-over", "sealed-admit", "sealed-parcels", "sealed-receive", "sealed-serve", "sealed-memory-cut", "sealed-memory-door", "sealed-memory-import", "sealed-rolls", "seat-duties"];
 // The verbs that close over the mounted face's mint, slot documents or catalog (Aftermath M1 on PR #110).
-const MOUNTED_MATERIAL = ["add-bag", "remove-bag", "prune-stale", "bag-compact", "rotate-recipe", "restamp-bag-tier", "meme-put", "meme-delete", "draft", "pin", "register-cold"];
+const MOUNTED_MATERIAL = ["add-bag", "remove-bag", "prune-stale", "bag-compact", "rotate-recipe", "restamp-bag-tier", "meme-put", "meme-patch", "meme-delete", "draft", "pin", "register-cold"];
 
 test("a content verb refuses a presenter that is not the mounted face, by name", async () => {
   const { registry, call, sibling, mounted } = await standTwoFaces();
@@ -89,8 +90,13 @@ test("a content verb refuses a presenter that is not the mounted face, by name",
     expect(await call(verb, undefined, a2), `${verb} no presenter`).toMatchObject({ reason: "content-mounted-only" });
     // CONTROL: the mounted face's call passes the fence (it may refuse for another reason).
     expect(await call(verb, mounted, a2, true), `${verb} mounted`).not.toMatchObject({ reason: "content-mounted-only" });
-    // A sibling's DID on the vessel's own channel refuses too; the channel lends no face.
-    expect(await call(verb, sibling, a2, true), `${verb} local sibling`).toMatchObject({ reason: "content-mounted-only" });
+    // A sibling's DID on the vessel's own channel refuses too; the channel lends no face. EACH HAT REACHED BY NAME: a lane verb
+    // (`FACE_LANE_VERBS`) answers by face instead, and this sibling stands joined but never lit, so it refuses `face-not-open`
+    // (a lit sibling's own lane: keyhive `face-lane`).
+    // A ONE-SHOT NEVER PRESENTS A SIBLING (Sol 407c H4): with no bound session, a sibling's DID refuses at the fence for every
+    // verb; only a session bound to that face reaches its lane (here, joined but never lit, so `face-not-open`).
+    expect(await call(verb, sibling, a2, true), `${verb} local sibling, no session`).toMatchObject({ reason: "content-mounted-only" });
+    expect(await call(verb, sibling, a2, true, true), `${verb} local sibling, bound session`).toMatchObject({ reason: FACE_LANE_VERBS.has(verb) ? "face-not-open" : "content-mounted-only" });
   }
 });
 
@@ -101,6 +107,11 @@ test("the vessel's own channel pushes under a label that names no face: it passe
     expect(await call(verb, "persona", {}, true), `${verb} local label`).not.toMatchObject({ reason: "content-mounted-only" });
     expect(await call(verb, "persona", {}, false), `${verb} synced label`).toMatchObject({ reason: "content-mounted-only" });
     expect(await call(verb, "did:key:z6MkStranger", {}, true), `${verb} local stranger DID`).toMatchObject({ reason: "content-mounted-only" });
+  }
+  // A lane verb from a stranger's DID names no face of this island: the face lane never takes it (no `face-not-open`, which
+  // names a face of this vessel standing shut), and the fence refuses it.
+  for (const verb of FACE_LANE_VERBS) {
+    expect(await call(verb, `0x${"11".repeat(32)}`, { bag: BAG }, true), `${verb} local stranger key`).toMatchObject({ reason: "content-mounted-only" });
   }
 });
 
@@ -117,11 +128,15 @@ test("THE CENSUS: every daemon verb is fenced unless it stands on the named neut
     expect(verbs, `neutral ${verb} registers`).toContain(verb);
     expect(why, `neutral ${verb} reason`).toMatch(/^[^\n]{12,}$/);
   }
+  // The calendar a votum pays through declares itself on this table: a summary of a sentence at least, and no surface.
+  expect(registry.spec("ddate")?.summary ?? "", "ddate spec").toMatch(/^[^\n]{24,}$/);
+  expect(registry.spec("ddate")?.surfaces ?? null).toEqual([]);
   // Each neutral verb runs WHOLE for the sibling on arguments it accepts: a refusal of any kind reads as a fence.
   // A sibling's session arrives local, so each neutral verb runs as one.
   const fed = await siblingBond("ab".repeat(32));
   const neutralArgs: Record<string, Record<string, unknown>> = {
     "realm-clock": { realm: "ab".repeat(32) },
+    "ddate": { today: { year: 2026, month: 11, day: 21 } },
     "realm-feed": { realm: "ab".repeat(32), writer: fed.leaf, bond: fed.bond, askSig: fed.askSig },
   };
   const open: string[] = [];
@@ -146,4 +161,14 @@ test("RED: realm-feed stands neutral, and a sibling feeds as its own leaf throug
   expect(String((await call("realm-feed", sibling, { realm, writer: theirs.leaf, bond: theirs.bond, askSig: theirs.askSig }, true) as Error)?.message)).toMatch(/writer-not-presenter/);
   // A synced summons naming the sibling and carrying its whole bond feeds nothing.
   expect(String((await call("realm-feed", sibling, { realm, writer: own.leaf, bond: own.bond, askSig: own.askSig }, false) as Error)?.message)).toMatch(/realm-feed-not-local/);
+});
+
+test("L2 RED: a lit sibling whose proven planes never mounted (it stands no intent door) clears no intent row, nor any other face row; CONTROL: the mounted face clears both", async () => {
+  const { registry, ctxOf, sibling, mounted } = await standTwoFaces();
+  const clear = (verb: string, presenter: string): unknown => { try { registry.admitRouted(verb, ctxOf(presenter, true) as never); return null; } catch (e) { return (e as { reason?: string }).reason; } };
+  for (const verb of ["intent-issue", "intent-show", "intent-answer", "kahua-stage"]) {
+    expect(clear(verb, sibling), `${verb} for a doorless sibling`).toBe("content-mounted-only");
+  }
+  expect(clear("intent-issue", mounted)).toBeNull();
+  expect(clear("intent-show", mounted)).toBeNull();
 });

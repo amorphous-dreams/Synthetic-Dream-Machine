@@ -27,13 +27,13 @@
  *
  * Lives in @lararium/keyhive because the mint sequence needs keyhive (`registerBag` + `delegate`).
  *
- * Canon: lar:///ha.ka.ba/lararium/api/personal-slot · lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model
+ * Canon: lar:///ha.ka.ba/lararium/api/personal-slot · lar:///ha.ka.ba/lares/api/pono/recipe-layer-model
  */
 
 import {
   CONTROL_HOME_ID, FloorUnavailable, floorDaemonSlotTitle, floorRegistryOf, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX, slotBindingKey,
   computeRecipeFingerprint, emptyLarDoc, floorSlotTitle, realmWorkbenchDocUrl, mintVesselDocumentId, storedLarRecord, mutableLarRecord, resolveSlotDoc, tiddlerText,
-  wikiBagUri, wikiDraftDocKey, requireLarDid, didFromVerifyingKey,
+  wikiBagUri, wikiDraftDocKey, requireLarDid, didFromVerifyingKey, pointMint,
   type CompositeStore, type FloorRegistry, type LarDoc, type SlotReach, type WikiSlotKind,
 } from "@lararium/mesh";
 import * as A from "@automerge/automerge";
@@ -233,6 +233,7 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
         "minted-by": args.mintedByHex(),
       }, "slot-doc:floor");
     });
+    pointMint(handle.url);   // the catalog names it: the mint census reads no cap mint here
     return handle.url;
   };
 
@@ -267,7 +268,7 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
   };
 
   /**
-   * THE PERSONAL MARGIN. A seated face holds it by binding (PersonaGroup × fingerprint). With no seat, where the floor's
+   * THE PERSONAL LAYER. A seated face holds it by binding (PersonaGroup × fingerprint). With no seat, where the floor's
    * rest key stands, it rests in a floor document the floor's registry names (`floor/slot/<slug>/personal`); the Lift
    * carries it under the face's binding when a seat lands. A floor with no key keeps the faceless binding row.
    */
@@ -353,6 +354,7 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
         await created.whenReady?.();
         await minter.flush([created.documentId]);
         await names.put(created.url);
+        pointMint(created.url);
         return { url: created.url, reach: "vessel-only" };
       }
       const documentId = mintVesselDocumentId();
@@ -378,7 +380,7 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
   /** Whether the floor's rest key stands on this vessel now (its registry refuses nothing). */
   const floorStands = (): boolean => floorRegistry.refusal() === null;
   const floorWorking = (slug: string, mint: boolean): Promise<SlotDoc | null> => floorSlot(slug, "working", mint);
-  /** One floor document of a wiki, by kind: the working layer, the draft, or the personal margin. One law names all three. */
+  /** One floor document of a wiki, by kind: the working layer, the draft, or the personal layer. One law names all three. */
   const floorSlot = async (slug: string, kind: FloorSlotKind, mint: boolean): Promise<SlotDoc | null> => {
     const registry = floorRegistry;
     const title = floorSlotTitle(slug, kind);
@@ -402,6 +404,7 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
         const doc = minter.create<LarDoc>(emptyLarDoc());
         args.announceFloor?.(slug, kind, doc.documentId);
         await name(doc.url);
+        pointMint(doc.url);
         await doc.whenReady?.();
         await minter.flush([doc.documentId]);
         return { url: doc.url, reach: "vessel-only" };
@@ -485,8 +488,8 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
           if (!stood) throw new WorkingSlotRefusal("no-workbench", `no realm answers for "${slug}" under this face (another face of the vessel stands its workbench, and seats this face nowhere)`);
           return stood.url;
         } } } : {}),
-        // THE FLOOR'S DRAFT AND PERSONAL MARGIN lift into the face's own binding of that kind, stood on ask.
-        ...(args.floor ? { margins: { floor: args.floor, faceSlot: async (slug: string, kind: "draft" | "personal") => {
+        // THE FLOOR'S DRAFT AND PERSONAL LAYER lift into the face's own binding of that kind, stood on ask.
+        ...(args.floor ? { faceLayers: { floor: args.floor, faceSlot: async (slug: string, kind: "draft" | "personal") => {
           const trace = await traceOf(slug).catch(() => null);   // the mount's trace where this session mounted the wiki
           return trace ? (await binding(kind, trace.fingerprint, trace.recipeTrace)).url : null;
         } } } : {}),

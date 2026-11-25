@@ -152,7 +152,7 @@ describe.skipIf(!stagedTarget)("smoke — residency canon through the real CLI",
   });
 
   test("bag stats answers with the operator's real identity (no placeholder DID)", async () => {
-    const r = await lar.cli(["bag", "stats"]);
+    const r = await lar.cli(["wiki", "status"]);
     expect(r.code).toBe(0);
     expect(r.stdout + r.stderr).not.toMatch(/bad hex length/);
   });

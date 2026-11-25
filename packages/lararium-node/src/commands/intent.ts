@@ -7,10 +7,10 @@ import {
   buildAnswer, buildAsks, buildCancel, buildClaim, buildDelegation, buildDelegationRevoke, buildIntent, buildSupersede, buildTakeover,
   ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, faceAtomKeyFromSeed, faceIntentVerbs,
   faceRecordsOf, intentEntryCid, intentEntryRecordsOfGroup, intentAdmissionRecordsOfGroup, intentId, intentPaneModel,
-  readIntentEntry,
+  readIntentEntry, intentIdTakenBy, intentIdTakenAdvice,
   deviceEdgeId, fleetEdgeAuthority, fleetEdgeBoardDocUrl, fleetFrontierLinks, fleetRaiseCids, fleetStoodAt, readFleetFrontier, readFrontierPins, FLEET_HAND,
   personaBagIdFor, personaSiblingBagIds, readIntentPlane, intentPlaneCosignPort, faceRosterForIntents, type WardCosignPort, personaKelChainForPrefix, readFace, materializeSharedLarDoc, edgeLedgerDocUrl, replicaHeads, signIntentEntry, writeIntentEntry,
-  WardRefused, askShown, answerRefusal, buildWardedAnswer, type AskShown, type PersonaKelEvent, type DelegationCite, type DelegationPolicy, type IntentAudience, type IntentBound, type IntentSigner, type SignedIntentEntry,
+  WardRefused, KEEPER_NONCE, keeperCosignGate, askShown, answerRefusal, buildWardedAnswer, type AskShown, type PersonaKelEvent, type DelegationCite, type DelegationPolicy, type IntentAudience, type IntentBound, type IntentSigner, type SignedIntentEntry,
 } from "@lararium/mesh";
 import { findOrThrow, makeCatalogAccessor } from "@lararium/tw5";
 import { existsSync, readFileSync } from "node:fs";
@@ -253,6 +253,22 @@ export async function loadNodeWardCosignPort(repo: Repo, catalogUrl: string | un
   return nodeWardCosignPortOf(repo, fold);
 }
 
+/**
+ * THE KEEPER VEST'S CO-SIGN, VESSEL SIDE (`lares intent keeper-cosign`): run `ward-keeper-vest` over one keeper commit (the successor
+ * closure D′, the chain head it links to, its nonce) through this face's ward co-sign gate, and answer what the commit carries: the
+ * face's roster and, past one device, the spent co-sign (`keeperCosignGate`). An unanswered ask refuses `ward-awaiting-cosign`.
+ * The co-sign's group reads `loadFaceFold().group` (the PersonaGroup id), the owner the kūkulu offer's face reads too (`riteFaceOf`),
+ * so the keeper's check of a vouch's group against a co-sign's group compares one name with itself.
+ */
+export async function runKeeperCosign(opts: { readonly repo: Repo; readonly catalogUrl?: string; readonly face?: number; readonly next: string; readonly prev: string | null; readonly nonce: string }): Promise<Record<string, unknown>> {
+  if (!/^sha256:[0-9a-f]{64}$/.test(opts.next)) throw new IntentRefused("keeper-cosign-next-malformed: the successor closure reads `sha256:<64 hex>`");
+  if (opts.prev !== null && !/^[0-9a-f]{64}$/.test(opts.prev)) throw new IntentRefused("keeper-cosign-prev-malformed: the chain head reads 64 hex, or `none` at the founding link");
+  if (!KEEPER_NONCE.test(opts.nonce)) throw new IntentRefused("keeper-cosign-nonce-malformed: the commit's nonce reads 64 hex");
+  const fold = await loadFaceFold(opts.repo, opts.catalogUrl, { index: opts.face });
+  const port = await nodeWardCosignPortOf(opts.repo, fold);
+  return { cosign: await keeperCosignGate(port, { ordinal: fold.index, next: opts.next, prev: opts.prev, nonce: opts.nonce }) };
+}
+
 export async function runIntentCommand(opts: IntentCommandOptions): Promise<Record<string, unknown>> {
   const { group, index, anchors, face, projection, plane, standing, heldFrontiers, frontier, verbs, atom, atomSeed, signer } = await loadIntentFace(opts.repo, opts.catalogUrl, { index: opts.face });
   const records = intentEntryRecordsOfGroup(plane.doc(), group);
@@ -269,7 +285,9 @@ export async function runIntentCommand(opts: IntentCommandOptions): Promise<Reco
       outcomes: reading.intents.flatMap((state) => state.slots.flatMap((slot) => [slot.winner, ...slot.duplicates].filter((r) => r !== null)
         .map((r) => ({ cause: state.id, signer: r!.entry.signer, winner: slot.winner === r, result: r!.entry.body["result"] })))),
       strayAnswers: reading.strayAnswers.map((r) => r.cid), refused: reading.refused,
-      standing: standing(atom.key), delegations: reading.delegations };
+      standing: standing(atom.key), delegations: reading.delegations,
+      // THE FACE'S DEVICE COUNT, off its signed admission fold: the keeper tally's commit carries it (a vest fails closed past one).
+      devices: projection.devices.length };
   }
   const target = opts.target;
   const intentNamedBy = (name: string): string => {
@@ -315,7 +333,13 @@ export async function runIntentCommand(opts: IntentCommandOptions): Promise<Reco
           }
           nonce ??= faceJoinNonce(atom.key, audience);
         } else audience = intentAudience(opts);
-        entry = await buildIntent({ group, signer, verb: opts.verb, args: args ?? {}, nonce: nonce ?? randomBytes(16).toString("hex"), audience, bound, verbs });
+        // An idempotent verb names its votum by its word alone: the empty nonce, so the same word twice is one votum.
+        entry = await buildIntent({ group, signer, verb: opts.verb, args: args ?? {},
+          nonce: nonce ?? (verbs.classOfVerb(opts.verb)?.class === "idempotent" ? "" : randomBytes(16).toString("hex")), audience, bound, verbs });
+        // THE SAME WORD NAMES ONE VOTUM: a body already standing under this id (the word under another audience or bound)
+        // refuses here, before a second body could void the first and orphan its outcome.
+        { const taken = intentIdTakenBy(view(), entry);
+          if (taken) throw new IntentRefused(`intent-id-taken: votum ${intentId(entry.body as unknown as { issuer: string; verb: string; args: unknown; nonce: string }).slice(0, 12)}… stands under another audience or bound (${taken.slice(0, 12)}…); ${intentIdTakenAdvice(verbs.classOfVerb(opts.verb))}`); }
         break;
       }
       case "ask":

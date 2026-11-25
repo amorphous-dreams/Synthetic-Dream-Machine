@@ -18,16 +18,16 @@ export {
   meshSensoriumDir, meshWhoDir, meshAuthorityDir, meshFlowDir,
 } from "./vessel-paths.js";
 export { atomicWriteFileSync } from "./fs-atomic.js";
-// The carry bundle's one reader: the shape, the hashes, and the verify that proves a bundle whole. It stands beneath the
+// The house bundle's one reader: the shape, the hashes, and the verify that proves a bundle whole. It stands beneath the
 // vessel, so the vessel derives a keep's bundle id from the staged tree itself (`commands/rite.ts#keepStagedTree`).
 export {
-  CARRY_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, KAHUA_HEADS_FILE, CarryBundleRefused,
-  sha256Hex, bundleIdOf, zeroCounts, unsafeRelPath, walkBundle, bundleBytes, verifyBundle, relUnder,
-} from "./carry-manifest.js";
+  BUNDLE_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, KAHUA_HEADS_FILE, BundleVerifyRefused,
+  sha256Hex, bundleIdOf, zeroCounts, unsafeRelPath, walkBundle, bundleBytes, verifyBundle, relUnder, openBundle, rosterView, sealRedeclare, redeclareBytes, readBundleSeat, keepManifestDigest, KEEP_SEAT_FILE,
+} from "./bundle-manifest.js";
 export type {
-  CarryLayer, CarryFile, CarryRow, CarryFace, CarryOmission, CarryManifest, CarryRedeclareFace, CarryShareEntry, CarryRedeclare,
-  CarryKahuaHead, VerifiedBundle,
-} from "./carry-manifest.js";
+  BundleLayer, BundleFile, BundleRow, BundleFace, BundleOmission, BundleManifest, BundleRedeclareFace, BundleShareEntry, BundleRedeclare,
+  BundleKahuaHead, VerifiedBundle, SealedBundle, BundleDiskManifest, BundleFaceKey,
+} from "./bundle-manifest.js";
 export { fileJournal } from "./vessel-journal-file.js";
 
 // The Erisian date: `ddate(1)` where it stands (it carries holydays, exclamations, X-Day and the whole
@@ -83,6 +83,8 @@ export {
 export type {
   LifecycleRow, ReconcileResult, BuildResult, PromoteResult, RetireResult, UnRetireResult, PurgeResult,
 } from "./sensorium-lifecycle-verbs.js";
+// THE HAND BEHIND A COMMAND WITH NO SOCKET: the sense lifecycle's hand verbs read the process that runs them (hitl-reads-a-hand).
+export { readOwnHand, ownPeerKind, type HandReading } from "./hand-act-gate.js";
 
 // The LI (sheaf) CONSISTENCY-RADIUS — the Robinson li-disagreement signal over content/structure/form
 // (0 ⟺ they glue; positive ⟺ a localizable obstruction), PAIRED with the KI (cosheaf) co-consistency —
@@ -186,33 +188,73 @@ export type { FaceGateServer, GateSessionRegistry, SeatedGateSession, StoodGate,
 export { openNodeVessel, openNodeHerm, standNodeFloor, seatedSovereignReaders } from "./open-node-vessel.js";
 export { openDaemonVm } from "./open-daemon-vm.js";
 export { runDoctor, formatDoctorReport, enumerateStoreDocs } from "./doctor.js";
-export { probeDocLoad, makeChildProcessDocLoadProbe, quarantineDoc } from "./doc-load-probe.js";
+export { FLOOR_SHADOW_FILE, floorShadowFileStore, readFloorShadowFile, readFloorShadowFileTold, type FloorShadowRead } from "./floor-shadow-file.js";
+export { probeDocLoad, makeChildProcessDocLoadProbe, quarantineDoc, quarantineHolds, quarantineHoldOf, readQuarantineManifests, releaseQuarantinedDoc, QUARANTINE_RELEASE_ACT } from "./doc-load-probe.js";
+export type { QuarantineHold, QuarantineRelease, QuarantineReleaseAct } from "./doc-load-probe.js";
 export { precheckDocStore, docStorePath } from "./store-integrity.js";
 export { persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas, listFaceOrdinals, persistVeilArchive, loadVeilArchive, veilArchivePath, veilArchiveFile, type IdentityAnchors } from "./identity-anchors.js";
+export { rehiveLines, type RehiveSeat, type RehiveAnswerReading } from "./face-rehive-lines.js";
 
 export type { DaemonVmOptions } from "./open-daemon-vm.js";
 export type { NodeVesselOptions, NodeVesselResult, NodeHermResult, NodeFloor, SovereignReaders, NodeOpenPhase } from "./open-node-vessel.js";
 export { createReadinessState, mountReadinessFace, markReadyOnceStanding } from "./readiness-face.js";
 export type { NodeReadiness, ReadinessState, ReadinessFace } from "./readiness-face.js";
+export { createEngineWatch, engineFatalCauseOf, engineTerminatedRefusal, engineFallBody, tapRepoLogs, tapInboundDocs, islandAskRefusal, ISOLATE_ENGINE, ENGINE_TERMINATED, ENGINE_HAND_ACT } from "./engine-watch.js";
+export { answerEngineFall, armFallKeeper, fallAwareProbeDoors, heldBackReason, heldInFlight, holdBackStorage, keepFallDown, HELD_BACK, HELD_IN_FLIGHT, HELD_HAND_ACT, readEngineFalls, restEngineFall, clearEngineFalls, fallenHolder, engineFallsPath, ENGINE_FALL_EXIT, ENGINE_RESTART_CAP, ENGINE_DOWN_HAND_ACT } from "./engine-fall.js";
+export type { RestingFall, FallAnswer, FallPorts, FallKeeper, FallKeeperPorts, ProbeDoors } from "./engine-fall.js";
+export type { EngineWatch, EngineFall, EngineFatalCause, EnginePath, EngineSettled } from "./engine-watch.js";
+export { createEngineMeter, findEngineMemories, processWasmOf, readProcessWasm, ENGINE_WASM_CEILING_BYTES, WASM_PAGE_BYTES, ENGINE_METER_MARKS, ENGINE_METER_TICK_MS } from "./engine-meter.js";
+export type { EngineMeter, EngineMeterOptions, EngineMeterReading, EngineWasmReading, ProcessWasmReading } from "./engine-meter.js";
 
 export { SOCIAL_BOOTSTRAP_PLUGIN_TITLE } from "./open-node-vessel.js";
 export { SyncedTree, contentHash, syncedTreeKey, syncedTreeDir, type SyncedBase } from "./synced-tree.js";
-export { PERSONAL_PROJECTION_DIR, personalFaceRoot, workspaceRootsOf } from "./bag-paths.js";
-export { bagsFileToUri, wikisFileToUri, mirrorDirFileToUri, isTempLayerInternalTitle, TEMP_LAYER_DIR,
-  daemonFaceFolder, isDaemonFaceFolder, kahuaFaceFolder, isKahuaFaceFolder, isPrivateProjectionSlug, projectionRoots, type ProjectionRoots } from "./bag-paths.js";
+export { workspaceRootsOf, workbenchFolders, type WorkbenchFolder, REALMS_PROJECTION_DIR, REALM_PLANES, realmRoot, FACES_PROJECTION_DIR, FACE_PLANES, faceSegment, faceSegmentRefusal, FaceSegmentRefused, faceRoot, facePersonalRoot, type FaceSite, type FaceSegmentCode } from "./bag-paths.js";
+export { bagsFileToUri, wikisFileToUri, mirrorDirFileToUri, siteFileToTitle, type SiteMirror, type FileSiting, HOUSE_IGNORED, houseIgnored, houseExcludeLines, withExcludeBlock,
+  POOL_EXCLUDE_OPEN, POOL_EXCLUDE_CLOSE, REALM_EXCLUDE_LINES, WORKSPACE_EXCLUDE_LINES, isTempLayerInternalTitle, TEMP_LAYER_DIR,
+  isPrivateProjectionSlug, projectionRoots, type ProjectionRoots } from "./bag-paths.js";
+// The drain, one seat (face-pools W1, W2): the CLI's `lares ingest --watch` and the vessel's host over the worn face's pool.
+export { drainSeat, isWatchNoise, cookieSelfTest, COOKIE_WINDOW_MS, armFacePoolWatch, poolCommitSeam, tendPoolExclude, tendLitFacePool, type ExcludeTending, stageEditsSinceSitting, wakeStageLine, runGit,
+  armWorkspaceWatch, workspaceCommitSeam, WORKSPACE_SKIP, WORKSPACE_CLOSE_PREFIX, type WorkspaceWatchOptions,
+  WATCHED_PLANES, SITTING_CLOSE_PREFIX, POOL_SETTLE_MS, type DrainSeat, type FacePoolWatch, type FacePoolPorts, type FacePoolWatchOptions, type SeamReading,
+  type SittingClose, type StageEdit, type WatchState, type GitRun } from "./watch-core.js";
+// ONE TREE PER ENTITY: the face, realm and workspace pools' one init, the house's idempotent ensure, the re-stand's heal and lift (`pool-tree`).
+export { PoolTreeRefused, poolGit, POOL_PRE_COMMIT, poolPreCommit, IN_IMAGE_CLI, refreshPoolHook, faceEmailSlug, REALM_EMAIL_DOMAIN, realmAuthor, initFacePool, initRealmPool, initWorkspacePool, ensurePoolTree, poolTreeLine,
+  healPoolTrees, liftNestedTrees, commitRealmMove, retagRealmAuthor, type LiftedTree, type PoolInitResult, type PoolOwner, type PoolTreeEnsured } from "./pool-tree.js";
+// HEAD's words for a file with no synced base (face-pools A5): both gates read the pool's last sitting as the base a re-found cleared.
+export { checkoutTracking, type CarrierTracking, type UntrackedReading } from "./checkout-carriers.js";
+export { walledGit, poolPlaceOf, blobAt, poolHeadOf, poolHeads, facePoolHeads, basePoolText, POOL_BASE_DEPTH, type PoolPlace, type PoolHead, type BaseFromGit, type PoolBase } from "./pool-head.js";
+// The disk→records gesture's pure machinery behind one submit port (tideline-surface #/seam point 1): the CLI fills it with the
+// verb socket, the vessel with its daemon island's INGEST, so the watch over the worn face's pool lands an edit by itself.
+export {
+  carriedBasesOf, skipLines, openSyncedTree, readCarrierText, listCarriers, listSourceFiles, fileToUriForSource, siteFaceFile, siteMirrorFile,
+  scanFiles, recordLandedCarriers, readCarrierAnswer, INGEST_PAGE, ingestVerdict, renamesOf, renamedSources, absentSources, NO_STANDING_ASKS,
+  standsClean, standingAfterFault, standingAfterWave, settleIngest, candidatesOf, applyConfirmedRenames, deletionsOf, pairedDeletions,
+  carrierCasFlagged, declaredType, inlineStage, ridesInline, ingestWaveArgs, ingestWaveVerb, islandIngestSubmit, poolIngestPorts, workspaceIngestPorts,
+  foldWaveRefusal, mirrorFiles, siteWaveFile, liveLay,
+  INGEST_WAVE_TARGET_MS, INGEST_WAIT_FLOOR_MS, INGEST_WAIT_PER_CARRIER_MS, INGEST_WAIT_PER_MIB_MS, INGEST_WAIT_CAP_MS, ingestWaitBudgetMs,
+  type IngestWaveRecord, type IngestPacing,
+  type ScanStatus, type PendingDeletion, type ArmedDeletion, type ScanRow, type ScanSkip, type ScanResult, type FileToUriFn, type MirrorDirs,
+  type CarrierAnswer, type AskingCarrier, type IngestSettlement, type IngestVerdict, type StandingAsks, type SubmitIngestOpts,
+  type IngestSubmitResult, type IngestSubmit, type StagedCarrier, type CarrierStage, type IslandVerbAsk, type MirrorWave, type MirrorLaid,
+  type LayPorts, type PoolPlaneBags, type PoolIngestOptions, type WorkspaceIngestOptions,
+} from "./ingest-scan.js";
 export { parseTidCarrier, readBackTempCarriers, TempLayerHousekeeper, tempAuditPath, TEMP_ORPHAN_SETTLE_MS, HOUSEKEEPING_PERIOD_MS } from "./temp-layer.js";
 export type { TempHousekeepingClock, TempHousekeepingPolicy, TempAuditLine, TempRecordState, TidFields } from "./temp-layer.js";
 
-export { runInit, runFoundTheFace, faceStands, armRecoveryAtFounding } from "./commands/init.js";
+export { runInit, runFoundTheFace, faceStands, compartmentStands, armRecoveryAtFounding } from "./commands/init.js";
 export { recoveryContactOffer } from "./recovery-contact-enrolment.js";
 // THE STABLE FOUNDING ACT: place, persona zero, the one-seat seed charter and the face that binds its AID — see `found-hearth`.
 export { runFoundHearth, foundSeedCharter, HearthFoundingRefused } from "./commands/found-hearth.js";
 export type { FoundHearthOptions, FoundHearthResult, HearthCard } from "./commands/found-hearth.js";
 // THE ROOT-CARD READER: the split-root cards build a face's body in the person's own process — see `face-card-restore`.
 export { buildCardBody, CardRestoreRefused, CARD_REFUSALS } from "./face-card-restore.js";
+// THE REALM LABELS: each realm's local pet name and the canon realms and bags its folder holds (`realm-labels`).
+export { REALM_LABELS_DIR, REALM_LABEL_SCHEMA, realmLabelsDir, realmLabelPath, readRealmLabels, findRealmLabel, realmPetNameRefusal,
+  nameRealm, placeInRealm, ensureRealmLabel, releaseRealmId, setAsideRetiredWiki, settleRealmMoves, realmPlacement, RealmRefused, type RealmLabel, type RealmLabelRealm, type RealmRefusalCode,
+  realmFoldersOnDisk, moveWikiToRealm, type RealmMove, type RealmFolder, type RealmNaming, type RealmPlacement, type RealmEnsured, type RealmSettle } from "./realm-labels.js";
 // THE FACE LABELS: each face's pet-name and its copies' override bases, in plaintext outside every mirror (`face-labels`).
 export { FACE_LABELS_DIR, FACE_LABEL_SCHEMA, FACE_BASES_SCHEMA, faceLabelsDir, faceLabelPath, faceBasesPath, readFaceLabel, writeFaceLabel, labelledRelations,
-  moveFaceLabelFile, readFaceBases, writeFaceBases, basesOfDoc, keepFaceBases, type FaceLabel, type KeptDoc, type KeptDocState } from "./face-labels.js";
+  moveFaceLabelFile, faceSiteOf, readFaceBases, writeFaceBases, basesOfDoc, keepFaceBases, type FaceLabel, type KeptDoc, type KeptDocState } from "./face-labels.js";
 export type { CardRefusal, FaceNamed, PresentedCard } from "./face-card-restore.js";
 // The live read path onto `mesh/dyad` — a vessel enumerates the relationships it already holds.
 export { makeBagTierReader, bagNameFromBagUrl } from "./vessel-bag-tier.js";
@@ -240,7 +282,7 @@ export { runWalkState, runWalkTake, runWalkInvite, WalkRefusal } from "./command
 export type { WalkReading } from "./commands/walk.js";
 // ONE STORE, ONE HOLDER — the door table every store command routes through, and the one direct opener.
 export { storeDoorReactors, storeDoorDirect, storeVerbFace, KAHUA_OPERATOR_VERBS, STORE_DOOR_FACE_VERBS, STORE_DOOR_VERBS, type StoreDoorVerb, type StoreDoorDeps } from "./store-door-verbs.js";
-export { ownedStore, claimStore, StoreHeld, StoreHeldElsewhere, type StoreClaim, readBootEpoch, bootEpochPath } from "./owned-store.js";
+export { ownedStore, claimStore, StoreHeld, StoreHeldElsewhere, type StoreClaim, readVesselLife, vesselLifePath, isVesselLife } from "./owned-store.js";
 export { claimName, anchoredName, NameTooLong, NameHeld, NameReaping, type ClaimedName, type ClaimNameOptions } from "./socket-claim.js";
 export { readHearthDialPin } from "./hearth-dial-pin.js";
 export {
@@ -534,7 +576,7 @@ export type { CustodyOpener } from "./custody-seat.js";
 // The ward (seat-harness#/the-ward): the face root seed opens fresh under a human route for one act.
 export { WardNeedsFreshUnlock, WardAbsent } from "./custody-holder.js";
 export type { WardSeat } from "./custody-holder.js";
-export { rewrapWardCustody, withWardKeyCustody } from "./custody-seat.js";
+export { withWardKeyCustody } from "./custody-seat.js";
 export { wardCredential, wardCredentialOfRoute, parkWardTicket, wardBindDigest, storeVerbNeedsWard, storeVerbGatesFirst, seatWardGatherer, wardGathererSeated, gatherSeatedWardRoute } from "./ward-credential.js";
 export type { WardCredential } from "./ward-credential.js";
 export { wardRootSigner } from "./ward-signer.js";
@@ -551,3 +593,7 @@ export type { CustodyFrame, CustodyAnswer, CustodyFrameDeps } from "./custody-fr
 export { nodePromoteStores, nodePromoteCas, promotedFile, kapaeFile, PROMOTED_FILE, KAPAE_FILE } from "./promoted-store.js";
 
 export { seatReadBackStandIn, readBackStandInSeated } from "./seal-ceremony.js";
+export { COLLAPSE_CONFIG_PREFIX, COLLAPSE_RULES, collapseConfigOf, collapseRuleTitle, decideCollapse, isCollapseRule, memeSealer, noLineMerge, rulesFor, type CollapseConfig, type CollapseRule, type CollapseToward, type CollapseVerdict } from "./standoff-collapse.js";
+export { StandoffKeeper, keeperWikiOf, standoffActions, standoffAlertWords, standoffDraftTitle, STANDOFF_FIELD, STANDOFF_KEPT_FIELD, STANDOFF_LOADED_FIELD, standoffLoadedDigest, type KeeperOutcome, type StandoffAlert } from "./standoff-drafts.js";
+
+export { FLOOR_WORDS, FLOOR_GRAINS, readFloorDrifts, rowInGrain, floorRowLine, floorCardFor, floorCardTitle, type FloorWord, type FloorGrain, type FloorDriftRow, type FloorCard, type FloorLagInput } from "./floor-card.js";

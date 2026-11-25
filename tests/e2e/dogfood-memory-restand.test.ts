@@ -53,7 +53,7 @@ describe("dogfood memory survives a content-keyed re-stand", () => {
     const path = pathFor(uri);
     const source = join(originalRoot, "memory.mem");
     writeFileSync(source, carrier(uri));
-    const put = await original!.cli(["meme", "put", uri, "--recipe", "default", "--file", source, "--json"]);
+    const put = await original!.cli(["tiddler", "put", "--meme", uri, "--recipe", "default", "--file", source, "--json"]);
     expect(put.json?.["ok"], `${put.stdout}\n${put.stderr}`).toBe(true);
     await expectEntry(original!, {
       kind: "bag-projected",
@@ -80,11 +80,11 @@ describe("dogfood memory survives a content-keyed re-stand", () => {
     expect(field(priorWiki, "uri-path")).toBe(path);
     const sourceAgain = join(freshRoot, "re-pour.mem");
     writeFileSync(sourceAgain, priorWiki);
-    const poured = await restored!.cli(["meme", "put", uri, "--recipe", "default", "--file", sourceAgain, "--json"]);
+    const poured = await restored!.cli(["tiddler", "put", "--meme", uri, "--recipe", "default", "--file", sourceAgain, "--json"]);
     expect(poured.json?.["ok"], `${poured.stdout}\n${poured.stderr}`).toBe(true);
-    const fetched = await restored!.cli(["meme", "get", uri, "--recipe", "default", "--json"]);
+    const fetched = await restored!.cli(["tiddler", "get", uri, "--recipe", "default", "--meme", "--all", "--json"]);
     expect(fetched.json?.["ok"], `${fetched.stdout}\n${fetched.stderr}`).toBe(true);
-    const data = fetched.json?.["data"] as Record<string, unknown>;
+    const data = (fetched.json?.["data"] as Record<string, unknown>)["meme"] as Record<string, unknown>;
     expect(data["uri"]).toBe(uri);
     expect(data["text"]).toBe(priorWiki);
     const text = String(data["text"]);
@@ -106,21 +106,21 @@ describe("dogfood memory survives a content-keyed re-stand", () => {
     expect(changedUri).not.toBe(titleFor(ROW.stagePath));
     const source = join(freshRoot, "changed-row.mem");
     writeFileSync(source, carrier(changedUri));
-    const put = await restored!.cli(["meme", "put", changedUri, "--recipe", "default", "--file", source, "--json"]);
+    const put = await restored!.cli(["tiddler", "put", "--meme", changedUri, "--recipe", "default", "--file", source, "--json"]);
     expect(put.json?.["ok"], `${put.stdout}\n${put.stderr}`).toBe(true);
-    const fetched = await restored!.cli(["meme", "get", changedUri, "--recipe", "default", "--json"]);
+    const fetched = await restored!.cli(["tiddler", "get", changedUri, "--recipe", "default", "--meme", "--all", "--json"]);
     expect(fetched.json?.["ok"], `${fetched.stdout}\n${fetched.stderr}`).toBe(true);
-    const text = String((fetched.json?.["data"] as Record<string, unknown>)["text"]);
+    const text = String(((fetched.json?.["data"] as Record<string, unknown>)["meme"] as Record<string, unknown>)["text"]);
     expect([field(text, "uri-path"), field(text, "title")]).toEqual([pathFor(changedUri), changedUri]);
 
     // The gate holds the stage path's shape: a path of uppercase letters refuses by name, and the old stage meme stands.
     const malformedUri = titleFor("Dogfood-Memory");
     const malformed = join(freshRoot, "malformed-row.mem");
     writeFileSync(malformed, carrier(malformedUri));
-    const refused = await restored!.cli(["meme", "put", malformedUri, "--recipe", "default", "--file", malformed, "--json"]);
+    const refused = await restored!.cli(["tiddler", "put", "--meme", malformedUri, "--recipe", "default", "--file", malformed, "--json"]);
     expect(refused.json?.["ok"], `${refused.stdout}\n${refused.stderr}`).toBe(false);
     expect(JSON.stringify(refused.json?.["error"])).toContain("stage-path-shape");
-    const kept = await restored!.cli(["meme", "get", titleFor(ROW.stagePath), "--recipe", "default", "--json"]);
-    expect(field(String((kept.json?.["data"] as Record<string, unknown>)["text"]), "uri-path")).toBe(pathFor(titleFor(ROW.stagePath)));
+    const kept = await restored!.cli(["tiddler", "get", titleFor(ROW.stagePath), "--recipe", "default", "--meme", "--all", "--json"]);
+    expect(field(String(((kept.json?.["data"] as Record<string, unknown>)["meme"] as Record<string, unknown>)["text"]), "uri-path")).toBe(pathFor(titleFor(ROW.stagePath)));
   });
 });

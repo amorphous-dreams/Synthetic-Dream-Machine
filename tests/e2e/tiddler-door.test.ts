@@ -16,6 +16,10 @@
  *   a malformed filter and a family delete refuse by name    (CONTROLS)
  *   a family delete under the family flag lands whole         (THE JOIN)
  *
+ * Then EVERY WIKI ITS ENGINE: the face founds a wiki of its own, and the same door (both skins) puts, filters, gets, renders,
+ * reads the status of and deletes a record in THAT wiki's own engine, while the daemon wiki reads none of it; a wiki no
+ * recipe names refuses `wiki-unreached`.
+ *
  * Then THE CALLER'S FACE DECIDES REACH: the vessel wears a second face, and the same filter reaches none of the
  * first face's daemon wiki.
  *
@@ -112,6 +116,8 @@ function payload(result: unknown): { ok: true; data: Record<string, unknown> } |
 
 const dataOf = (r: CliResult): Record<string, unknown> => ((r.json?.["data"] ?? {}) as Record<string, unknown>);
 const D = ["--recipe", "default", "--json"] as const;
+/** The wiki the walk founds to reach a named wiki's own engine. */
+const WALK_WIKI = "walkwiki";
 
 let lar: LarInstance;
 let entry: Entry;
@@ -163,7 +169,7 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     for (let n = 1; n <= NOTES; n++) {
       const file = join(scratch, `note-${n}.mem`);
       writeFileSync(file, memory(n));
-      const put = await lar.cli(["meme", "put", uriOf(n), "--recipe", "default", "--file", file, "--json"]);
+      const put = await lar.cli(["tiddler", "put", "--meme", uriOf(n), "--recipe", "default", "--file", file, "--json"]);
       expect(put.code, `${put.stdout}\n${put.stderr}`).toBe(0);
       if (n === 1) say("seed meme put (note 01)", dataOf(put));
     }
@@ -183,6 +189,18 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     const home = await lar.cli(["wiki", "filter", "[all[tiddlers+shadows]prefix[$:/temp/]] [all[tiddlers+shadows]prefix[$:/state/]] [[$:/temp/lares/switcher]get[text]]", ...D]);
     say("CLI wiki filter over the temp and state namespaces", dataOf(home));
     expect(dataOf(home)).toMatchObject({ titles: [], total: 0 });
+    // THE HOUSE'S FUNCTIONS ON A BOOTED VESSEL: the canon layer answers the carrier's text, so `[lares.law[]]` lists the law
+    // (the boot seed leads, as its pin) and the `law list` door and the pins read the same functions.
+    const lawCall = await lar.cli(["wiki", "filter", "[lares.law[]]", ...D]);
+    say("CLI wiki filter [lares.law[]] on a booted vessel", { total: dataOf(lawCall)["total"], first: (dataOf(lawCall)["titles"] as string[] | undefined)?.[0] });
+    expect(lawCall.code, `${lawCall.stdout}\n${lawCall.stderr}`).toBe(0);
+    expect(dataOf(lawCall)["titles"]).toContain("lar:///ha.ka.ba/lares/api/noosphere-boot");
+    expect(Number(dataOf(lawCall)["total"])).toBeGreaterThan(10);
+    const pinsCall = await lar.cli(["wiki", "filter", "[lares.law.pins[]]", ...D]);
+    expect((dataOf(pinsCall)["titles"] as string[])[0]).toBe("lar:///ha.ka.ba/lares/api/noosphere-boot");
+    const listCall = await lar.cli(["law", "list", "--json"]);
+    expect(listCall.code, `${listCall.stdout}\n${listCall.stderr}`).toBe(0);
+    expect(Number(dataOf(listCall)["total"])).toBe(Number(dataOf(lawCall)["total"]));
   }, 120_000);
 
   test("filter by tag under a small cap: the cursor pages through all twelve, and both skins answer the same pages", async () => {
@@ -242,11 +260,11 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     expect(slot.fields["text"]).not.toContain("Rule 3");
     expect(slot).toMatchObject({ position: "slot", family: uriOf(3) });
     const said = await speak(entry, [
-      { name: "tiddler_get", arguments: { title: uriOf(3), recipe: "default", text: false } },
+      { name: "tiddler_get", arguments: { title: uriOf(3), recipe: "default", grain: "skinny" } },
       { name: "tiddler_get", arguments: { title: uriOf(3), recipe: "default", slot: "#/why" } },
     ]);
     const [seatSkinny, seatSlot] = said.results.map(payload);
-    say("MCP tiddler_get text=false", seatSkinny);
+    say("MCP tiddler_get grain=skinny", seatSkinny);
     say("MCP tiddler_get slot", seatSlot);
     expect(seatSkinny).toEqual({ ok: true, data: dataOf(cliSkinny) });
     expect(seatSlot).toEqual({ ok: true, data: dataOf(cliSlot) });
@@ -266,6 +284,28 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     const seat = payload((await speak(entry, [{ name: "wiki_filter", arguments: { filter, recipe: "default" } }])).results[0]);
     say("MCP wiki_filter backlinks", seat);
     expect(seat).toEqual({ ok: true, data: dataOf(cli) });
+  }, 180_000);
+
+  test("collapse: a filter answers each meme root skinny, bytes and slots the skinny get names, on both skins; one slot unfolds by its own get", async () => {
+    const filter = `[[${uriOf(3)}]] [[${uriOf(3)}#/why]]`;
+    const cli = await lar.cli(["wiki", "filter", filter, "--collapse", ...D]);
+    say("CLI wiki filter --collapse", dataOf(cli));
+    expect(cli.code, cli.stderr).toBe(0);
+    const rows = dataOf(cli)["rows"] as Array<{ title: string; bytes: number; slots?: Array<{ slot: string; bytes: number; first: string | null }> }>;
+    expect(rows.map((r) => r.title)).toEqual([uriOf(3), `${uriOf(3)}#/why`]);
+    const meme = await lar.cli(["tiddler", "get", uriOf(3), "--meme", "--skinny", ...D]);
+    const skinny = dataOf(meme)["meme"] as { bytes: number; slots: Array<{ slot: string; bytes: number; first: string | null }> };
+    expect(rows[0]).toMatchObject({ bytes: skinny.bytes, slots: skinny.slots });
+    expect(skinny.slots.map((x) => x.slot)).toContain("#/why");
+    expect(rows[1]!.bytes).toBeGreaterThan(0);
+    expect(rows[1]!.slots, "a slot row is no meme root").toBeUndefined();
+    const unfolded = await lar.cli(["tiddler", "get", uriOf(3), "--meme", "--slot", "#/why", ...D]);
+    expect(String((dataOf(unfolded)["meme"] as { slotText?: string }).slotText)).toContain("Because walk 3 measured it.");
+    const seat = payload((await speak(entry, [{ name: "wiki_filter", arguments: { filter, recipe: "default", collapse: true } }])).results[0]);
+    say("MCP wiki_filter collapse=true", seat);
+    expect(seat).toEqual({ ok: true, data: dataOf(cli) });
+    const plain = await lar.cli(["wiki", "filter", filter, ...D]);
+    expect(dataOf(plain)["titles"]).toEqual([uriOf(3), `${uriOf(3)}#/why`]);
   }, 180_000);
 
   test("render: the island's own engine wikifies a transcluding span and a slot's title, on both skins", async () => {
@@ -296,9 +336,9 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     expect(after.fields).toMatchObject({ status: "done", tags: "memory feedback reviewed" });
     expect(after.textHash).toBe(before.textHash);
     expect(after.hash).toBe(dataOf(put)["hash"]);
-    // The meme door still reads the family whole after a field patch on its root.
-    const meme = await lar.cli(["meme", "get", uriOf(5), ...D]);
-    say("CLI meme get after the patch (the family still recomposes)", { code: meme.code, hasWhy: String(dataOf(meme)["text"]).includes("Because walk 5 measured it.") });
+    // The meme lens still reads the family whole after a field patch on its root.
+    const meme = await lar.cli(["tiddler", "get", uriOf(5), "--meme", "--all", ...D]);
+    say("CLI tiddler get --meme after the patch (the family still recomposes)", { code: meme.code, hasWhy: String((dataOf(meme)["meme"] as Record<string, unknown> | undefined)?.["text"]).includes("Because walk 5 measured it.") });
     expect(meme.code, meme.stderr).toBe(0);
     // CONTROL: the base the patch moved past lands nothing, on both skins.
     const stale = await lar.cli(["tiddler", "put", uriOf(5), "--fields", JSON.stringify({ status: "stale" }), "--base", before.hash, ...D]);
@@ -320,12 +360,12 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     say("MCP tiddler_get fields=[status]", seatGet);
     expect(seatPut!.ok && seatPut!.data["decision"]).toBe("put");
     expect(seatGet!.ok && (seatGet!.data["tiddler"] as { fields: Record<string, string> }).fields).toEqual({ title: uriOf(6), status: "done" });
-    // CONTROL: a meme root refuses the tiddler door's delete toward the meme door; a plain tiddler leaves.
+    // CONTROL: a meme root refuses the tiddler door's delete toward the meme door; a plain tiddler leaves plainly, no tombstone raised.
     say("MCP tiddler_delete of a meme root", seatFamily);
     expect(seatFamily!.ok === false && seatFamily!.said).toContain("tiddler-delete-in-a-family");
     say("MCP tiddler_put create (a plain note)", seatPlain);
     say("MCP tiddler_delete of the plain note", seatGone);
-    expect(seatGone!.ok && seatGone!.data).toMatchObject({ decision: "removed", tombstoned: ["Walk scratch note"], consequence: { position: "plain" } });
+    expect(seatGone!.ok && seatGone!.data).toMatchObject({ decision: "removed", mode: "plain", tombstoned: [], retracted: ["Walk scratch note"], consequence: { position: "plain" } });
     expect((await lar.cli(["tiddler", "get", "Walk scratch note", ...D])).code).toBe(3);
     expect((await lar.cli(["tiddler", "get", uriOf(6), ...D])).code).toBe(0);
   }, 300_000);
@@ -344,7 +384,7 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     const extra = NOTES + 1;
     const file = join(scratch, `note-${extra}.mem`);
     writeFileSync(file, memory(extra));
-    expect((await lar.cli(["meme", "put", uriOf(extra), "--recipe", "default", "--file", file, "--json"])).code).toBe(0);
+    expect((await lar.cli(["tiddler", "put", "--meme", uriOf(extra), "--recipe", "default", "--file", file, "--json"])).code).toBe(0);
     const family = [uriOf(extra), `${uriOf(extra)}#/rule`, `${uriOf(extra)}#/why`];
     // WITHOUT THE FLAG: nothing moves, and the answer names every record the delete would move.
     const refused = await lar.cli(["tiddler", "delete", uriOf(extra), ...D]);
@@ -352,7 +392,7 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     expect(refused.code).toBe(4);
     expect(dataOf(refused)).toMatchObject({ decision: "refused", refusal: "tiddler-delete-in-a-family", tombstoned: [], consequence: { position: "root", family: uriOf(extra), refusals: [] } });
     const acts = (dataOf(refused)["consequence"] as { acts: Array<{ title: string; act: string }> }).acts;
-    expect(acts.filter((row) => row.act === "tombstone").map((row) => row.title)).toEqual(family);
+    expect(acts.filter((row) => row.act === "retract").map((row) => row.title)).toEqual(family);
     const slotRefused = await lar.cli(["tiddler", "delete", `${uriOf(extra)}#/why`, "--family", ...D]);
     say("CLI tiddler delete of a called slot, --family", slotRefused.json);
     expect(dataOf(slotRefused)).toMatchObject({ decision: "refused", refusal: "tiddler-delete-in-a-family" });
@@ -367,7 +407,7 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     expect(seatRefused!.ok === false && seatRefused!.said).toContain(`${uriOf(extra)}#/why`);
     expect(seatStill!.ok && seatStill!.data["tiddler"]).not.toBeNull();
     say("MCP tiddler_delete family=true", seatRemoved);
-    expect(seatRemoved!.ok && seatRemoved!.data).toMatchObject({ decision: "removed", tombstoned: family, consequence: { position: "root", family: uriOf(extra) } });
+    expect(seatRemoved!.ok && seatRemoved!.data).toMatchObject({ decision: "removed", mode: "plain", tombstoned: [], retracted: family, consequence: { position: "root", family: uriOf(extra) } });
     // LIVENESS: the shore lands the store's one change in the wiki; the walk COUNTS looks and never compares a clock.
     let left: unknown = null;
     for (let look = 0; look < 30; look++) {
@@ -379,8 +419,83 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     say("CLI wiki filter over the family's address after the delete", left);
     expect(left).toEqual([]);
     expect((await lar.cli(["tiddler", "get", uriOf(extra), ...D])).code).toBe(3);
-    expect((await lar.cli(["meme", "get", uriOf(extra), "--recipe", "default", "--json"])).code).not.toBe(0);
+    expect((await lar.cli(["tiddler", "get", uriOf(extra), "--recipe", "default", "--meme", "--all", "--json"])).code).not.toBe(0);
   }, 300_000);
+
+  test("EVERY WIKI ITS ENGINE: a wiki the face founds answers the tiddler door in its own engine, on both skins; the daemon wiki reads none of it", async () => {
+    const init = await lar.cli(["wiki", "init", WALK_WIKI, "--json"]);
+    say(`CLI wiki init ${WALK_WIKI}`, dataOf(init));
+    expect(init.code, `${init.stdout}\n${init.stderr}`).toBe(0);
+    const W = ["--recipe", WALK_WIKI, "--json"] as const;
+    const put = await lar.cli(["tiddler", "put", "Walk wiki note", ...W, "--create", "--text", "a note in the named wiki", "--fields", "{\"tags\":\"walk\"}"]);
+    say(`CLI tiddler put --recipe ${WALK_WIKI}`, dataOf(put));
+    expect(put.code, `${put.stdout}\n${put.stderr}`).toBe(0);
+    expect(dataOf(put)).toMatchObject({ recipe: WALK_WIKI, decision: "put", bag: `lar:///ha.ka.ba/wikis/${WALK_WIKI}/working` });
+    const filter = "[tag[walk]]";
+    // LIVENESS: the put lands through the wiki's own engine and its working document; the walk COUNTS looks.
+    let seen: CliResult | null = null;
+    for (let look = 0; look < 30; look++) {
+      seen = await lar.cli(["wiki", "filter", filter, ...W]);
+      if (seen.code === 0 && (dataOf(seen)["titles"] as string[] | undefined)?.includes("Walk wiki note")) break;
+      await new Promise((r) => setTimeout(r, 500));
+    }
+    say(`CLI wiki filter --recipe ${WALK_WIKI}`, dataOf(seen!));
+    expect(dataOf(seen!)).toMatchObject({ recipe: WALK_WIKI, titles: ["Walk wiki note"] });
+    const got = await lar.cli(["tiddler", "get", "Walk wiki note", ...W]);
+    expect(got.code, got.stderr).toBe(0);
+    expect((dataOf(got)["tiddler"] as { bag: string }).bag).toBe(`lar:///ha.ka.ba/wikis/${WALK_WIKI}/working`);
+    const layoutTitle = "$:/themes/tiddlywiki/vanilla/options/sidebarlayout";
+    const layoutSeed = await lar.cli(["tiddler", "put", layoutTitle, ...W, "--create", "--text", "fixed-fluid"]);
+    expect(layoutSeed.code, layoutSeed.stderr).toBe(0);
+    const changedLayout = await lar.cli(["wiki", "act", "sidebar-layout", ...W, "--expected", "fixed-fluid", "--resulting", "fluid-fixed"]);
+    expect(changedLayout.code, changedLayout.stderr).toBe(0);
+    expect(dataOf(changedLayout)).toMatchObject({ decision: "put", title: layoutTitle, resulting: "fluid-fixed" });
+    const layoutRead = await lar.cli(["tiddler", "get", layoutTitle, ...W]);
+    expect((dataOf(layoutRead)["tiddler"] as { fields: { text: string } }).fields.text).toBe("fluid-fixed");
+    const actedBySeat = await speak(entry, [{ name: "wiki", arguments: { verb: "act", name: "sidebar-layout", recipe: WALK_WIKI, expected: "fluid-fixed", resulting: "fixed-fluid" } }]);
+    say("MCP wiki act", payload(actedBySeat.results[0]));
+    expect(payload(actedBySeat.results[0])).toMatchObject({ ok: true, data: { decision: "put", title: layoutTitle, resulting: "fixed-fluid" } });
+    expect((dataOf(await lar.cli(["tiddler", "get", layoutTitle, ...W]))["tiddler"] as { fields: { text: string } }).fields.text).toBe("fixed-fluid");
+    const status = await lar.cli(["wiki", "status", ...W]);
+    say(`CLI wiki status --recipe ${WALK_WIKI}`, dataOf(status));
+    expect(dataOf(status)).toMatchObject({ recipe: WALK_WIKI, working: `lar:///ha.ka.ba/wikis/${WALK_WIKI}/working` });
+    const rendered = await lar.cli(["wiki", "render", "--text", "{{Walk wiki note}}", ...W]);
+    expect(dataOf(rendered)).toMatchObject({ recipe: WALK_WIKI, text: "a note in the named wiki" });
+    const seat = await speak(entry, [
+      { name: "wiki_filter", arguments: { filter, recipe: WALK_WIKI } },
+      { name: "tiddler_get", arguments: { title: "Walk wiki note", recipe: WALK_WIKI, fields: ["tags"] } },
+      { name: "wiki_filter", arguments: { filter: "[all[]]", recipe: "nowhere-at-all" } },
+    ]);
+    say(`MCP wiki_filter recipe=${WALK_WIKI}`, payload(seat.results[0]));
+    expect(payload(seat.results[0])).toEqual({ ok: true, data: dataOf(seen!) });
+    expect(payload(seat.results[1])).toMatchObject({ ok: true, data: { recipe: WALK_WIKI, tiddler: { fields: { title: "Walk wiki note", tags: "walk" } } } });
+    const unreached = payload(seat.results[2]);
+    say("MCP wiki_filter on a wiki no recipe names", unreached);
+    expect(unreached.ok === false && unreached.said.includes("wiki-unreached")).toBe(true);
+    // CONTROL: the daemon wiki answers none of the named wiki's records.
+    expect(dataOf(await lar.cli(["wiki", "filter", filter, ...D]))).toMatchObject({ titles: [], total: 0 });
+    const removed = await lar.cli(["tiddler", "delete", "Walk wiki note", ...W]);
+    say(`CLI tiddler delete --recipe ${WALK_WIKI}`, dataOf(removed));
+    expect(dataOf(removed)).toMatchObject({ recipe: WALK_WIKI, decision: "removed" });
+  }, 300_000);
+
+  test("THE FIRST LOOK AFTER A COLD BOOT: a named wiki's working document rests in the vessel's own store, and the very first filter after a fresh boot answers", async () => {
+    const W = ["--recipe", WALK_WIKI, "--json"] as const;
+    const put = await lar.cli(["tiddler", "put", "Cold boot note", ...W, "--create", "--text", "rests in the store", "--fields", "{\"tags\":\"coldboot\"}"]);
+    expect(put.code, `${put.stdout}\n${put.stderr}`).toBe(0);
+    // The daemon stands down and a second stands over the same root: the working document now loads from the store alone.
+    await lar.stopDaemonOnly();
+    lar = await openStaged({ root: lar.root, port: lar.port, found: async () => {} });
+    if (!(await awaitRendezvous(lar))) throw new Error(`the re-stood daemon bound no rendezvous:\n${lar.bootLog().slice(-800)}`);
+    // ONE look, never a loop: the first filter after the boot answers or the wiki's slot refuses by the store's own name.
+    const first = await lar.cli(["wiki", "filter", "[tag[coldboot]]", ...W]);
+    say(`CLI first wiki filter --recipe ${WALK_WIKI} after a cold boot`, dataOf(first));
+    expect(first.code, `${first.stdout}\n${first.stderr}`).toBe(0);
+    expect(first.stdout).not.toContain("document-unavailable");
+    expect(dataOf(first)).toMatchObject({ recipe: WALK_WIKI, titles: ["Cold boot note"] });
+    const removed = await lar.cli(["tiddler", "delete", "Cold boot note", ...W]);
+    expect(dataOf(removed)).toMatchObject({ recipe: WALK_WIKI, decision: "removed" });
+  }, 600_000);
 
   test("THE CALLER'S FACE DECIDES REACH: a second face, worn, reaches none of the first face's daemon wiki", async () => {
     const filter = `[prefix[${STAGE}]]`;

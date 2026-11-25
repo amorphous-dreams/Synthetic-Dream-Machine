@@ -16,7 +16,7 @@ import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
 import {
   assembleFloorRelease, crossroadsDocUrl, publicationDocUrl, cutFloorSnapshot, floorManifestBytes, materializeSharedLarDoc, openFloorReleaseBody, readFloorAnswer,
-  sha256HexBytesSync, writeFloorRelease, type FloorRelease,
+  sha256HexBytesSync, signFloorOffering, writeFloorRelease, type FloorRelease,
 } from "@lararium/mesh";
 import { mountHttpFaceDispatcher } from "../src/http-face-dispatcher.js";
 import { mountFloorPorch, releasedFloorCids } from "../src/floor-porch.js";
@@ -38,12 +38,20 @@ async function rig(opts: { serveCas?: boolean } = {}) {
   const lararium = cutFloorSnapshot({ "lar:///t/lararium": { tiddler: { title: "lar:///t/lararium", text: "lararium" } } });
   // v2: one snapshot per house-canon bag; sdm rides beside the system canon and the porch serves it under the release.
   const sdm = cutFloorSnapshot({ "lar:///t/sdm": { tiddler: { title: "lar:///t/sdm", text: "sdm" } } });
-  const manifestBytes = floorManifestBytes({ format: "lararium-floor", engine: "e".repeat(64), grammar: "a".repeat(64), plugins: "b".repeat(64), snapshots: { lares: lares.cid, lararium: lararium.cid, sdm: sdm.cid } });
+  // The plugins offering the floor names, its one blob in the same CAS: the porch serves both under the release.
+  const pluginBytes = new TextEncoder().encode("plugin bytes");
+  const offering = await signFloorOffering({ seed: new Uint8Array(32).fill(3), blobs: [{
+    id: "lar:///ha.ka.ba/lararium/plugins/lares/memetic-wikitext", version: "unknown", sha256: sha256HexBytesSync(pluginBytes),
+    provenance: { source: "https://example.test", commit: "0".repeat(40), path: "plugin.json", licence: "MIT" },
+  }] });
+  const pluginCid = offering.offering.blobs[0]!.sha256;
+  const manifestBytes = floorManifestBytes({ format: "lararium-floor", engine: "e".repeat(64), plugins: offering.cid, snapshots: { lares: lares.cid, lararium: lararium.cid, sdm: sdm.cid } });
   const manifestCid = sha256HexBytesSync(manifestBytes);
   const secret = new TextEncoder().encode("a private blob this vessel holds");
   const secretCid = sha256HexBytesSync(secret);
   writeCasEntriesFs([
     { cid: lares.cid, bytes: lares.bytes }, { cid: lararium.cid, bytes: lararium.bytes }, { cid: sdm.cid, bytes: sdm.bytes }, { cid: manifestCid, bytes: manifestBytes }, { cid: secretCid, bytes: secret },
+    { cid: offering.cid, bytes: offering.bytes }, { cid: pluginCid, bytes: pluginBytes },
   ], casDir);
   const [steward] = await c.signers([0]);
   const release = await assembleFloorRelease({
@@ -57,7 +65,7 @@ async function rig(opts: { serveCas?: boolean } = {}) {
   const porch = mountFloorPorch({ httpServer: server, dispatcher, repo, nexusPubkey: c.aid, casDir, serveCas: opts.serveCas ?? true });
   await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
   const origin = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
-  return { c, board, crossroads, release, casDir, origin, porch, ids: { lares: lares.cid, lararium: lararium.cid, sdm: sdm.cid, manifest: manifestCid, secret: secretCid } };
+  return { c, board, crossroads, release, casDir, origin, porch, ids: { lares: lares.cid, lararium: lararium.cid, sdm: sdm.cid, manifest: manifestCid, secret: secretCid, offering: offering.cid, plugin: pluginCid } };
 }
 const land = (r: Awaited<ReturnType<typeof rig>>, release: FloorRelease) => r.board.change((d) => writeFloorRelease(d, release));
 const bodyOf = async (res: Response) => ({ status: res.status, text: await res.text(), cache: res.headers.get("cache-control") });
@@ -99,9 +107,10 @@ describe("the porch answers for the Nexus's floor", () => {
     r.board.change((d) => { d.tiddlers[`$:/lar/floor-release/${r.release.cid}`] = { tiddler: { title: `$:/lar/floor-release/${r.release.cid}`, text: JSON.stringify(forged) } } as never; });
     expect((await releasedFloorCids({ board: r.board.doc(), nexus: r.c.aid, casDir: r.casDir })).size).toBe(0);
     expect((await bodyOf(await fetch(`${r.origin}/cas/${r.ids.secret}`))).status).toBe(404);
-    // CONTROL: the lawful release names exactly the manifest and each snapshot it keys
+    // CONTROL: the lawful release names exactly the manifest, each snapshot it keys, its plugins offering and the offering's blob
     land(r, r.release);
-    expect([...await releasedFloorCids({ board: r.board.doc(), nexus: r.c.aid, casDir: r.casDir })].sort()).toEqual([r.ids.lares, r.ids.lararium, r.ids.sdm, r.ids.manifest].sort());
+    expect([...await releasedFloorCids({ board: r.board.doc(), nexus: r.c.aid, casDir: r.casDir })].sort()).toEqual([r.ids.lares, r.ids.lararium, r.ids.sdm, r.ids.manifest, r.ids.offering, r.ids.plugin].sort());
+    expect((await bodyOf(await fetch(`${r.origin}/cas/${r.ids.plugin}`))).status).toBe(200);
   });
 
   test("a release hand-placed in the mirrored crossroads document answers as no release and opens no blob", async () => {

@@ -33,7 +33,7 @@
 # @lararium/node) reads it against A's own replica with `verifyPresentedAdmit`: HELD after the admit, DENIED
 # after a descending revoke. It checks that B's own leaf opens a socket through the sealed face gate, that a stranger
 # carrying the same admit draws `arm-other-key`, and that the admit beside a root edge draws the gate's silence.
-# The raise door then walks: `lares raise sign` signs as a held persona's LEAF with the leaf's admit attached, and
+# The raise door then walks: `lares persona raise-sign` signs as a held persona's LEAF with the leaf's admit attached, and
 # `verifyRaiseGrant` raises it against A's readings; a foreign signer carrying the same admit refuses.
 #
 # ── ANCHORED ANCESTRY ──────────────────────────────────────────────────────────────────────────────────
@@ -232,7 +232,7 @@ step "★ B's key is FOREIGN to A — no shared seed on disk ★"
 # own key, so no grep of a root finds one, on either vessel. B's own `persona list` opens B's custody and names
 # the probe; an absence claim over a name nothing ever wrote would read green by vacancy. Then A answers, and its
 # answer must read as an answer: a `persona list` that faulted names nothing either. A's custody names no such
-# persona, A's root holds the name in no cleartext file, the key B's mint printed sits among none of the kahu
+# persona, A's root holds the name nowhere, the key B's mint printed sits among none of the kahu
 # keys A minted, and the two vessels' own floor keys differ.
 # UNMEASURED HERE: whether a sealed copy of B's seed rests under A's root. Nothing in this run carries one there,
 # and no reading of A's sealed rows by this harness could tell B's seed from A's own.
@@ -249,16 +249,9 @@ elif [ -z "$A_VESSEL" ] || [ -z "$B_VESSEL" ]; then bad "a vessel key went unrea
 elif [ "$A_VESSEL" = "$B_VESSEL" ]; then bad "the two vessels share one floor key"
 elif [ -d "$A_ROOT" ] && ! grep -rqs "$B_PROBE" "$A_ROOT" 2>/dev/null; then ok
 else bad "B's material reachable from A's root"; fi
-# THE FACE LABEL: projections/face-labels/<relation>.json carries the face's pet-name in the clear by ruling, so the
-# seed adopts a former face's folders by label (operator ruling 2026-11-10, verbatim: `"pet-names in plain text"
-# reads fine for now.`); every other cleartext occurrence reads red: hearth/, config/, every other projection.
-# RE-ENTRY: "for now" holds the door open; a ruling that seals the label retires this exclusion, and the control
-# then reads the whole root again.
-cleartext_outside_label() { grep -rls "$1" "$2" 2>/dev/null | grep -vE "^$2/projections/face-labels/[0-9a-f-]+\.json\$"; }
-step "CONTROL: B's sealed pet-name rests in no cleartext file of B's own root, the face label aside"
-if [ -n "$(cleartext_outside_label "$B_PROBE" "$B_ROOT")" ]; then
-  bad "B's pet-name reads in the clear at rest: $(cleartext_outside_label "$B_PROBE" "$B_ROOT" | sed "s|^$B_ROOT/||" | head -3 | tr '\n' ' ')"
-else ok; fi
+# A PET NAME RESTS WHERE THE OPERATOR READS IT (operator ruling 2026-11-19): it is the human-scale grip on the crypto identities
+# beneath it, so no rule here asks it to stay out of cleartext. The absences measured above (A holds none of B's key, seed or
+# persona) guard keys and custody; the name served only as B's marker in them.
 
 # ── ③ THE PREREQUISITE — carry A's public charter to B ───────────────────────────────────────────
 say "③ the prerequisite the one-vessel run hid"
@@ -594,9 +587,9 @@ CHALLENGE="$XFER/raise-challenge.json"; GRANT="$XFER/raise-grant.json"
 step "a challenge names A's Nexus by its AID"
 if s6_a challenge > "$CHALLENGE" 2>&1 && grep -q '"nexus"' "$CHALLENGE"; then ok; else bad "$(tail -1 "$CHALLENGE")"; fi
 
-step "lares raise sign signs as the LEAF, carrying its admit"
+step "lares persona raise-sign signs as the LEAF, carrying its admit"
 # stdout alone is the JSON: a runtime warning on stderr (node:sqlite's experimental notice) must not corrupt it.
-if as_a raise sign "$(cat "$CHALLENGE")" --as 0 --json > "$XFER/raise-sign.out" 2> "$XFER/raise-sign.err" \
+if as_a persona raise-sign "$(cat "$CHALLENGE")" --as 0 --json > "$XFER/raise-sign.out" 2> "$XFER/raise-sign.err" \
    && node -e 'const o=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")); if(!o.ok) process.exit(1); require("fs").writeFileSync(process.argv[2], JSON.stringify(o.data));' "$XFER/raise-sign.out" "$GRANT" \
    && grep -q "\"byNym\":\"$A_LEAF\"" "$GRANT"; then ok
 else bad "$(tail -c 300 "$XFER/raise-sign.out") $(tail -c 300 "$XFER/raise-sign.err")"; fi
@@ -684,27 +677,6 @@ else bad "${LM:-no token}"; fi
 step "★ CONTROL: the pre-roll presentation, carrying no anchor, reads WRONG-EPOCH ★"
 VE=$(s6_a verdict "$PRESENTED" 2>&1)
 if [ "$VE" = "wrong-epoch" ]; then ok; else bad "$VE"; fi
-
-# ── ⑪ THE RE-LIGHT ───────────────────────────────────────────────────────────────────────────────────
-# B named its face before it stood, so that label rests on B's sealed rows alone. A person who names the face
-# again while it stands lit re-lights it, and the face's persona plane stands open beside the act. That plane's
-# document rests through the vessel's own storage, in the clear, so the label never rides onto it: it rests on the
-# sealed row and nowhere else (lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed). B stops before
-# the search, so every write its Repo holds reaches rest first, and nothing below needs B standing.
-say "⑪ the re-light — a lit face's new label rests sealed"
-B_RELIT="brelit-$$-qzx"
-run_b "B re-lights its lit face under a fresh label"   persona new 0 --name "$B_RELIT"
-step "the fresh label reads through B's own custody"
-if as_b persona list --json 2>/dev/null | grep -qs "$B_RELIT"; then ok
-else bad "the label names nothing under B — the absence below would measure the grep"; fi
-run_b "B stops, so its Repo's writes reach rest"       vessel stop
-step "CONTROL: the search reads B's own root"
-if [ -n "$B_VESSEL" ] && grep -rqs "$B_VESSEL" "$B_ROOT" 2>/dev/null; then ok
-else bad "B's own vessel key reads nowhere under B's root"; fi
-step "★ B's re-lit label rests in no cleartext file of B's own root, the face label aside ★"
-if [ -n "$(cleartext_outside_label "$B_RELIT" "$B_ROOT")" ]; then
-  bad "the re-lit label reads in the clear at rest: $(cleartext_outside_label "$B_RELIT" "$B_ROOT" | sed "s|^$B_ROOT/||" | head -3 | tr '\n' ' ')"
-else ok; fi
 
 say "═══ RESULT ═══"
 if [ "$FAILED" -eq 0 ]; then

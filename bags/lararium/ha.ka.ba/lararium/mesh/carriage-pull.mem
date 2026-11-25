@@ -11,7 +11,6 @@ source-file = "packages/lararium-mesh/src/carriage-pull.ts"
 title       = "lar:///ha.ka.ba/lararium/mesh/carriage-pull"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/carriage-pull"
-written     = "2026-10-16"
 ```
 
 <<~ ahu slot=`#/head`>>
@@ -67,6 +66,6 @@ is tried at most once per pull; nothing throws. The last refusal names itself wh
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/place-floor-pin`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/node/herm-carriage`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;LX0X0Ne_e0Barzxp09vgIN1uoFF1mWRKLH_1SdPJ1Rc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;8m5XZAYTm5uvQ81ioYwKcCyDwLoiUKcn_4Nksl1LKGg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

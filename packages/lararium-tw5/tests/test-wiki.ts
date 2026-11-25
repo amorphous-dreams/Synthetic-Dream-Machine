@@ -35,10 +35,32 @@ import { readFileSync, existsSync } from "node:fs";
 import path from "node:path";
 import { TW5Engine } from "../src/tw5-vm.js";
 import LARES_MEMETIC_WIKITEXT_PLUGIN from "../plugins/lares-memetic-wikitext.json" with { type: "json" };
-import { TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME } from "../src/generated-tw5-version.js";
+import { TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME, TW5_CORE_SHA256 } from "../src/generated-tw5-version.js";
+import { casBlobPreloads, modulePinsOf } from "../src/module-pins.js";
+import type { TW5CoreBootBlob } from "../src/tw5-host-bridge.js";
 
 /** Where the vendored core blob stands. */
 export const CORE_PATH = path.join(TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME);
+
+/** The vendored core blob with the pin its bake carries (`TW5_CORE_SHA256`): a stale or tampered blob refuses to boot. */
+export function vendoredCore(): TW5CoreBootBlob {
+  return { bytes: new Uint8Array(readFileSync(CORE_PATH)), sha256: TW5_CORE_SHA256 };
+}
+
+const PLUGINS = new URL("../plugins/", import.meta.url).pathname;
+
+/**
+ * The grammar plugin's module pins, read off the plugin blob the tree tracks only once its bytes hash to the `pluginJsonSha256`
+ * the plugin bake's tracked attestation names. A rig that boots the grammar hands these to `boot` as `modulePins`.
+ */
+let grammarPinsRead: ReadonlySet<string> | null = null;
+export function grammarPins(): Set<string> {
+  if (!grammarPinsRead) {
+    const attestation = JSON.parse(readFileSync(path.join(PLUGINS, "standalone", "lares-memetic-wikitext.attestation.json"), "utf8")) as { pluginJsonSha256: string };
+    grammarPinsRead = modulePinsOf(casBlobPreloads(new Uint8Array(readFileSync(path.join(PLUGINS, "lares-memetic-wikitext.json"))), attestation.pluginJsonSha256));
+  }
+  return new Set(grammarPinsRead);
+}
 
 /** The repository root, for a suite reading real carriers off disk. */
 export const REPO = new URL("../../..", import.meta.url).pathname;
@@ -63,12 +85,14 @@ export const skipNote = wikiSkip ? ` [SKIPPED: ${wikiSkip}]` : "";
 export async function bootTestWiki(opts: {
   extraPlugins?: Array<Record<string, unknown>>;
   tiddlers?: Array<Record<string, string | string[]>>;
+  /** Pins for modules an extra plugin packs, the way a verified offering would carry them. */
+  modulePins?: ReadonlySet<string>;
 } = {}): Promise<TW5Engine> {
   const engine = new TW5Engine();
-  await engine.boot(new Uint8Array(readFileSync(CORE_PATH)), [
+  await engine.boot(vendoredCore(), [
     LARES_MEMETIC_WIKITEXT_PLUGIN as unknown as Record<string, unknown>,
     ...(opts.extraPlugins ?? []),
-  ]);
+  ], undefined, { modulePins: new Set([...grammarPins(), ...(opts.modulePins ?? [])]) });
   for (const t of opts.tiddlers ?? []) engine.setTiddler(t);
   return engine;
 }

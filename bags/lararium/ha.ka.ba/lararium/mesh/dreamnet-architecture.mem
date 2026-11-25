@@ -4,13 +4,12 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-cacheable  = true
-l-space    = "lararium"
-revised-on = "2026-10-11"
-role       = "DreamNet two-axis mesh topology: INFRA (relay-floor → lararium → nexusGroup → DreamNet) ⊥ SOCIAL (vessel-key → personaGroup-veiled → cabalGroup), the two axes crossing at the vessel. Re-trued 2026-09-20 against the board-keying ruling (`91ce09afb`+`c6cfe5b8d`), the seven per-Nexus boards, the crossroads/offering/heraldry canon, and the registry-filter + causal-islands laws."
-title      = "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture"
-type       = "text/memetic-wikitext+tiddlywiki"
-uri-path   = "ha.ka.ba/lararium/mesh/dreamnet-architecture"
+cacheable = true
+l-space   = "lararium"
+role      = "DreamNet two-axis mesh topology: INFRA (relay-floor → lararium → nexusGroup → DreamNet) ⊥ SOCIAL (vessel-key → personaGroup-veiled → cabalGroup), the two axes crossing at the vessel. Trued against the board-keying ruling (`91ce09afb`+`c6cfe5b8d`), the seven per-Nexus boards, the crossroads/offering/heraldry canon, and the registry-filter + causal-islands laws."
+title     = "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lararium/mesh/dreamnet-architecture"
 ```
 
 ! DreamNet Architecture
@@ -562,7 +561,7 @@ A vessel that imports a bag from a foreign cabalGroup parses its memes, verifies
 
 ''The registry filter.'' ''"If a fork's downstream builds a 'global registry' of even ONE-NEXUS scope, the fork is REJECTED"'' (operator, 2026-09-06, quote license, `registry-filter.mem` #/the-law) — the rule fires at DESIGN time, so a rejected fork never reaches code. The mechanical test, run on every plane above: ''CARRIAGE (passes)'' — authored announced-BY-the-subject, replicated causally, read as-of-my-last-sync, not enumerable by construction; ''REGISTRY (rejected, at ANY scope)'' — compiled ABOUT subjects, replicated authoritatively, read as-of-truth, and its compilation IS the product (`registry-filter.mem` #/the-test). ''The shadow-case:'' a key reused across contexts compiles a registry in the correlations it leaves, with or without a table — "the test reads OUTPUT SHAPES, not tables" (`registry-filter.mem` #/the-test).
 
-''Deliberate-announce, never a boot-side-effect.'' A pointer written to disk by a boot path, rather than by a deliberate act, reads as an un-consented publication even when the plane it lands in is nominally public. The crossroads doc mirrors to disk unconditionally, with no filter separating curated content from an ephemeral per-boot board pointer, so a throwaway dev boot's private-nexus-of-one projects WHO-board pointers into the tracked `bags/crossroads` tree. A scratch `LAR_ROOT` keeps such a boot's projection out of the tracked tree, and `tools/tree-clean-witness.sh` reads a run that writes into it as red; the mirror's own filter awaits the operator's word (`stable-founding-road.mem` #/open). The keying itself holds correct (through `nexusIdentity`) — the leak names a projection-filter gap one layer up, at the disk mirror, the sibling of #/the-nexus-keying-spine's ruling rather than a re-opening of it.
+''Deliberate-announce, never a boot-side-effect.'' A pointer written to disk by a boot path, rather than by a deliberate act, reads as an un-consented publication even when the plane it lands in is nominally public. The crossroads doc mirrors to disk unconditionally, with no filter separating curated content from an ephemeral per-boot board pointer, so a throwaway dev boot's private-nexus-of-one projects WHO-board pointers into the tracked `bags/crossroads` tree. A scratch `LAR_ROOT` keeps such a boot's projection out of the tracked tree, and `tools/tree-clean-witness.sh` reads a run that writes into it as red; the mirror's own filter awaits the operator's word (`lar:///ha.ka.ba/lares/docs/stable-founding-road` #/open). The keying itself holds correct (through `nexusIdentity`) — the leak names a projection-filter gap one layer up, at the disk mirror, the sibling of #/the-nexus-keying-spine's ruling rather than a re-opening of it.
 
 ''Presentation ⊥ condemnation.'' A log records; it never judges. Certificate Transparency states the pattern twenty years before this stack re-derived it: //"the logs do not themselves prevent misissuance… monitors watch logs to check for correct behavior"// (RFC 9162, quote license, via `offering.mem` #/the-field ①). `offering-antigen.ts`'s own header carries the same split for offerings — presentation reads as evidence, condemnation as a separate quorum act, and the fold's parameter list carries no term for a tender at all (`offering.mem` #/pattern-integrity-rhymes). The crossroads kūkala carries the same separation one more time: a notice, a tombstone, and a kāpae are three DIFFERENT authorities — an author governs only their own cries, and only the Nexus's own kāpae outranks a cry (`crossroads.mem` #/open).
 
@@ -717,7 +716,7 @@ The carriage-client fetch item stays OWED (measured 2026-10-22). The vessel-side
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/grammar-invariants`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/carry-contract`>>
 
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology#/oracle-planes`>> — anchors the shared oracle surface model
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/wiki-layer-ontology#/oracle-planes`>> — anchors the shared oracle surface model
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-oracle-plane`>> — defines floor projection and scoped answer
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/pronaos#/the-rung-ladder`>> — separates bulb delivery from porch carriage
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/genesis-doc#/the-oracle-pointer`>> — names seed bytes and the floor CID
@@ -725,6 +724,6 @@ The carriage-client fetch item stays OWED (measured 2026-10-22). The vessel-side
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;md8FTaToLPFx7R2ql17nQzNkum40sqJ6xkcUiLPHR6Q`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;8akObbSSZUemRnAvwStm2VdAGEnRAHjb5V3T44__EAs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

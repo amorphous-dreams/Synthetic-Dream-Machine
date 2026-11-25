@@ -165,7 +165,7 @@ The free slot opened when lane `nexus` merged (`cb653cc`). Ranked by grounds bef
 
 ### N's remainder: first three commits and gates
 
-1. **`N4`, a roll waits on its prior anchor** (operator ruling 2026-10-15, `stable-founding-road.mem:210`). Today a second roll before an anchor lands leaves the first "unanchored for good", and only a comment warns of it (`nexus-contract.ts:581-590`); no refusal stands. First commit: red first, with the refusal by name at the roll's open in `seal-ceremony.ts` and the two-vault rotate, read off the carriage board's anchors (`rollAnchorsFromBoard`), with the single-vault rotate (which anchors inside itself) as the control.
+1. **`N4`, a roll waits on its prior anchor** (operator ruling 2026-10-15, `lar:///ha.ka.ba/lares/docs/stable-founding-road`). Today a second roll before an anchor lands leaves the first "unanchored for good", and only a comment warns of it (`nexus-contract.ts:581-590`); no refusal stands. First commit: red first, with the refusal by name at the roll's open in `seal-ceremony.ts` and the two-vault rotate, read off the carriage board's anchors (`rollAnchorsFromBoard`), with the single-vault rotate (which anchors inside itself) as the control.
 2. **`N2`, which realms a two-vault anchor covers.** `runNexusRollAnchorOpen` anchors the carriage board alone; the realm edge boards stay owed across two vaults (`nexus-contract.ts:588-590`; `lares-cli/src/commands/nexus-anchor-cmd.ts:51` prints "their anchors stay owed"). Second commit: carry `runEdgeRollAnchors`' realm anchors through the same partial.
 3. **`N5`, the dormant vault's catch-up** by re-import along one lineage, and its witness on the two-root e2e (`tests/e2e/two-roots*`, commit `e2df91d`).
 
@@ -181,7 +181,7 @@ Gates: mesh unit suites, the unbuilt-laws witness reading each declared red that
 
 ### O1: first three commits and gates
 
-1. **PURE: the working address and the receipt.** The address image comes from N's identity lead (`train-o1-launch#/ground`). Its witness shows two offline vessels converging and each input diverging. The durability receipt carries `docUrl`, the stored heads and the boot epoch.
+1. **PURE: the working address and the receipt.** The address image comes from N's identity lead (`train-o1-launch#/ground`). Its witness shows two offline vessels converging and each input diverging. The durability receipt carries `docUrl`, the stored heads and the owner's life.
 2. **LIVE: scoped surface mounts** from both composers through `mountSurface`. It unskips `PRODUCTION_SURFACES_USE_SCOPED_VIEW` (`unbuilt-laws.test.ts:522`).
 3. **LIVE: node verbs, the watcher and the seat move to session scope.**
 

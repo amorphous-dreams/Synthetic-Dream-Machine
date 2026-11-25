@@ -13,8 +13,11 @@
 //       the same commit under `devices/<name>-<id8>/` (a scratch Claude home, sanitized); sessions that move over the unmoved
 //       house spend the lei's second return through the vessel's own `rite begin` over the standing bundle, push, and land par.
 //   H4  THE RESTORE DRILL: the exporting house goes down; a brand-new scratch house founds under the same pet-name, imports the
-//       bundle out of a FRESH CLONE of the remote, and `carry-parity` reads par against the census taken before the down. A
+//       bundle out of a FRESH CLONE of the remote, and `census-drill` reads par against the census taken before the down. A
 //       clone with one byte flipped refuses first (`bundle-hash-mismatch`), and nothing of it lands.
+//       The engine fall's hand act (`ENGINE_DOWN_HAND_ACT`) names this same road (founding runbook 11a) in the form the host
+//       bridge runs: the keep bound as a workspace, then `lares import /lar/workspaces/house-backup/house --apply`; this
+//       drill runs it with no container, so it reads the clone at its scratch path.
 //
 // Each house stands under its own marked scratch LAR_ROOT through the test custody doors; no LAR_BAGS, no docker, and the
 // only remote a bare repo under the scratch dir.
@@ -33,7 +36,7 @@ import { daemonStood } from "./daemon-stood.mjs";
 const repo = fileURLToPath(new URL("../", import.meta.url));
 const cli = join(repo, "packages/lares-cli/dist/src/bin/lares.js");
 const nodeMain = join(repo, "packages/lararium-node/dist/src/main.js");
-const tool = join(repo, "tools/carry-parity.mjs");
+const tool = join(repo, "tools/census-drill.mjs");
 
 const freePort = () => new Promise((resolve) => {
   const s = createServer();
@@ -117,7 +120,7 @@ test("the keep rite lays a bundle into a bound workspace under a lei, and a bran
     for (const [uri, body, meta] of [[HERON, "remember the heron", `tags = "stage/index"\ndescription = "the heron"\n`], [POND, "the pond at dusk", ""], [KITE, "fly the kite low", ""]]) {
       const file = join(scratch, `${uri.split("/").pop()}.mem`);
       writeFileSync(file, memeText(uri, body, meta));
-      old.must(["meme", "put", uri, "--recipe", "default", "--file", file, "--json"]);
+      old.must(["tiddler", "put", "--meme", uri, "--recipe", "default", "--file", file, "--json"]);
     }
     old.must(["tiddler", "put", FREE, "--recipe", "default", "--text", "a free-titled note", "--json"]);
 
@@ -149,7 +152,7 @@ test("the keep rite lays a bundle into a bound workspace under a lei, and a bran
     assert.deepEqual(held(), [".git", "house"]);
     const manifest = JSON.parse(readFileSync(join(workspace, "house", "manifest.json"), "utf8"));
     assert.equal(manifest.bundleId, kept.bundleId);
-    assert.equal(manifest.schema, "lar-carry/1");
+    assert.equal(manifest.schema, "lar-house-bundle");
     assert.ok(manifest.files.some((f) => f.path.endsWith("heron.mem") || f.path.endsWith("heron.tid")), "the bundle carries the memory as a plain file a person reads");
     assert.equal(line("keep").returnsLeft, 1, "one return spent");
     const red = old.answer(old.must(["rite", "receipts", "--json"])).data.conferre;
@@ -214,6 +217,12 @@ test("the keep rite lays a bundle into a bound workspace under a lei, and a bran
     assert.notEqual(dry.status, 0, dry.stdout);
     assert.equal(old.answer(dry).error?.code, "swarm-lei-returns-spent", dry.stdout);
     assert.equal(git(workspace, "rev-list", "--count", "HEAD"), git(remote, "rev-list", "--count", "main"), "nothing committed without a return");
+    // THE MIRROR A REFUSED KEEP LEAVES STANDING belongs to this device's dir: a --no-sessions keep reads it as the sessions' half,
+    // never as a dirty tree, and refuses on the empty lei alone.
+    assert.match(git(workspace, "status", "--porcelain", "--untracked-files=all"), /devices\/.*pond\.md/, "the refused keep left its mirror in the workspace");
+    const noSessions = old.lares(["rite", "keep", "--workspace", "backup", "--no-sessions", "--json"]);
+    assert.notEqual(noSessions.status, 0, noSessions.stdout);
+    assert.equal(old.answer(noSessions).error?.code, "swarm-lei-returns-spent", noSessions.stdout);
     rmSync(join(old.claudeHome, "projects", "-scratch-proj", "memory", "pond.md"));
 
     // ── the census before the down ──────────────────────────────────────────────────────────────────────────────
@@ -225,6 +234,8 @@ test("the keep rite lays a bundle into a bound workspace under a lei, and a bran
     // ── H4: THE RESTORE DRILL: a brand-new house, a fresh clone, an import, par ─────────────────────────────────
     const fresh = await standHouse("new", "steward");
     houses.push(fresh);
+    // NO KEY CROSSES BY HAND: the bundle carries the keep seat beside its roster, and the steward's route (the staged root's test
+    // route here, a passphrase or paper sheet on a terminal) opens it at the import.
     const restore = join(scratch, "restore");
     git(scratch, "clone", "-q", "--branch", "main", remote, restore);
     assert.ok(existsSync(join(restore, "house", "manifest.json")));

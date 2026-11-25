@@ -29,6 +29,7 @@ import type { IslandCap } from "./island-caps.js";
 import type { IslandBehavior, IslandContext } from "./island-context.js";
 import type { RecordPortOptions } from "./record-port-handler.js";
 import { hasPortLease } from "./record-port-lease.js";
+import { hasRenderedTiddlers } from "./rendered-tiddler.js";
 
 /** The reboot-pending alert tiddler title. Tagged `$:/tags/Alert` so TW5's NATIVE
  *  alert area renders it (no custom banner needed). Stable title = one coalesced
@@ -127,6 +128,11 @@ export function makeWikiBehavior(opts: WikiBehaviorOptions = {}): IslandBehavior
         ...(ctx.resolveByCid ? { resolveByCid: ctx.resolveByCid } : {}),
         // The keyholder island's gate asked the Kahu predicate for every system bag the routed verb names.
         kahuReachClearedAtGate: true,
+        // A wave's render warnings stand as alerts in this wiki's OWN temp; a clear touches only an alert that stands.
+        alert: async (alert) => {
+          if (alert.clear && (await ctx.composite.getLive(systemAlertTitle(alert.kind, alert.key))) === null) return;
+          await placeSystemAlert(ctx.composite, ctx.recipe.wikiSlug, { message: alert.message, cause: "ingest", kind: alert.kind, key: alert.key, ...(alert.clear ? { clear: true } : {}) });
+        },
       });
       // system-alert — the daemon worker (via main → pool.placeWikiVerb) delivers a
       // reboot-pending notice; the island writes it into its OWN temp (volatile,
@@ -178,5 +184,5 @@ export function makeWikiBehavior(opts: WikiBehaviorOptions = {}): IslandBehavior
   // recipe · engine · projection-cleanup · registry-null. hasProjection is
   // the SHARED render cap the daemon also inherits — one VM, one surface path. Caller-supplied caps
   // fold at the tail — added capability, never a re-ordering of the base channels.
-  return composeIsland([hasHandBoundary(), dispatchCap, hasPortLease(opts.recordPort), hasProjection(opts.onBoot), hasEngineWatch(), hasRecipeWatch(), ...(opts.caps ?? [])]);
+  return composeIsland([hasHandBoundary(), dispatchCap, hasPortLease(opts.recordPort), hasProjection(opts.onBoot), hasEngineWatch(), hasRecipeWatch(), hasRenderedTiddlers(), ...(opts.caps ?? [])]);
 }

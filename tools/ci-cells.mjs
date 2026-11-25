@@ -14,9 +14,9 @@
  * nothing, so it reads as missing. The evaluators are pure so the tests plant each refusal without a run.
  *
  * Usage:
- *   ci-cells.mjs run-test <cell> --out <dir>        run the cell's packages, a JSON report each (also the per-file timing)
+ *   ci-cells.mjs run-test <cell> --out <dir> [--select <packages>]   run the cell's packages (a lane's selected ones), a JSON report each
  *   ci-cells.mjs run-witness <cell> --out <dir>     run the cell's witnesses or self-tests, its log in <dir>
- *   ci-cells.mjs verify-tests --artifacts-dir <dir>
+ *   ci-cells.mjs verify-tests --artifacts-dir <dir> [--select <packages>]   (`--select` = the scope job's `packages`; `all` or blank owes all)
  *   ci-cells.mjs verify-witnesses --artifacts-dir <dir>
  */
 import { execFileSync, spawn } from "node:child_process";
@@ -48,6 +48,26 @@ const dealt = (name, dir, part, parts) => pkg(name, dir, null, { deal: "node-uni
  * checkout, install and build (0.9 to 2 minutes measured on run 41280151942), so the cells are few and full, with each run's
  * critical path held at the slowest e2e shard (about 17 minutes). Run seconds (run 41280151942): node 1297 · web 576 ·
  * cli 296 · mesh 256 · tw5 172 · browser 99 · keyhive 46 · tiddlywiki jasmine ~27.
+ */
+/**
+ * THE BROWSER LAMPS STAND DIM (operator, 2026-11-20: "disable all browser tests for now, while we move quickly to settle
+ * the road"). The whole browser side gets a deep Mu from scratch later (lar:///ha.ka.ba/kahua/memory/project/browser-mu-from-scratch),
+ * and its CI reds had been flaking. No cell below launches a browser: the `web-tw5` and `cli-mesh` matrix rows in ci.yml name
+ * no engines and no Playwright container, and the browser vitest projects stand out of the package configs. The test FILES
+ * all stay in the tree, untouched, for the browser Mu to relight.
+ *
+ * What still runs from the browser packages is the node-environment slice (isomorphic-by-intent code needs no real browser):
+ *   - `@lararium/browser`  `packages/lararium-browser/vitest.config.ts`: project `browser-node`, 47 of 112 files.
+ *   - `@lararium/web`      `packages/lararium-web/vitest.config.ts`: project `web-node`, 13 of 53 files.
+ *   - `@lararium/tw5`      `packages/lararium-tw5/vitest.config.ts`: every node suite; meme-routes.e2e keeps its node contact (its one
+ *                          Chromium describe skips loudly without an engine).
+ * What went dark: `@lararium/browser` projects chromium + firefox (the other 65 files); `@lararium/web` projects web-browser, vessel-host and the
+ * four Playwright e2e projects (40 files under tests/ and 13 e2e files, the floor-crossing config's three among them); tw5's
+ * filter-cts-chromium, standalone-single-file and syncer-back-parity e2e files; the ci.yml floor-crossing and Chromium-pull steps;
+ * and held-out's browser-weld driver (tools/held-out-cells.mjs).
+ *
+ * TO RELIGHT: in each package config, add the exported `browserProjects` back into `projects`; in ci.yml restore the `engines`
+ * and `container` of the two matrix rows and the dropped quick-job steps; in held-out-cells.mjs restore the browser-weld driver.
  */
 export const TEST_CELLS = Object.freeze([
   { cell: "node-a", packages: [dealt("@lararium/node", "packages/lararium-node", 1, 2)] },
@@ -83,6 +103,19 @@ export const WITNESS_CELLS = Object.freeze([
 ]);
 
 export const cellIds = (cells) => cells.map((c) => c.cell);
+
+/**
+ * The table narrowed to a lane's selection (the scope job's `packages` output, tools/ci-ignored-paths.mjs `laneScope`): `all`,
+ * blank or absent owes the whole table; a comma list keeps the selected packages and the cells holding one. A name the table
+ * does not carry throws, so a selection never reads as fewer cells than it named.
+ */
+export function selectCells(select, cells = TEST_CELLS) {
+  if (!select || select === "all") return cells;
+  const names = select.split(",").map((s) => s.trim()).filter(Boolean);
+  const known = new Set(cells.flatMap((c) => c.packages.map((p) => p.name)));
+  for (const n of names) if (!known.has(n)) throw new Error(`ci-cells: the selection names no package of the table: ${n}`);
+  return cells.map((c) => ({ ...c, packages: c.packages.filter((p) => names.includes(p.name)) })).filter((c) => c.packages.length > 0);
+}
 
 // ── the node deal: files to the two node cells by measured weight ────────────────────────────────
 
@@ -218,13 +251,25 @@ function dirsOf(artifactsDir, prefix) {
   return existsSync(artifactsDir) ? readdirSync(artifactsDir).filter((d) => d.startsWith(prefix)).sort() : [];
 }
 
+/**
+ * actions/download-artifact lays an artifact under `<path>/<artifact name>/` when the pattern matches several, and straight
+ * into `<path>` when it matches ONE (a targeted lane selects one cell). Both layouts read alike: a report file loose in the
+ * directory names its cell by its own `report-<cell>-` prefix, a cell the table does not carry reading as no cell.
+ */
 export function readTestReports(artifactsDir) {
   const reports = new Map();
+  const take = (cell, dir, file) => {
+    try { reports.set(file, { cell, report: JSON.parse(readFileSync(join(dir, file), "utf8")) }); }
+    catch (err) { reports.set(file, { cell, report: null, parseError: String(err?.message ?? err) }); }
+  };
+  const isReport = (f) => /^report-.*\.json$/.test(f);
   for (const dir of dirsOf(artifactsDir, "test-cell-")) {
-    const cell = dir.slice("test-cell-".length);
-    for (const file of readdirSync(join(artifactsDir, dir)).filter((f) => /^report-.*\.json$/.test(f))) {
-      try { reports.set(file, { cell, report: JSON.parse(readFileSync(join(artifactsDir, dir, file), "utf8")) }); }
-      catch (err) { reports.set(file, { cell, report: null, parseError: String(err?.message ?? err) }); }
+    for (const file of readdirSync(join(artifactsDir, dir)).filter(isReport)) take(dir.slice("test-cell-".length), join(artifactsDir, dir), file);
+  }
+  if (existsSync(artifactsDir)) {
+    const ids = cellIds(TEST_CELLS).sort((a, b) => b.length - a.length);
+    for (const file of readdirSync(artifactsDir).filter(isReport)) {
+      take(ids.find((id) => file.startsWith(`report-${id}-`)) ?? "?", artifactsDir, file);
     }
   }
   return reports;
@@ -236,6 +281,13 @@ export function readWitnessLogs(artifactsDir) {
     const cell = dir.slice("witness-cell-".length);
     const file = join(artifactsDir, dir, `${cell}.log`);
     if (existsSync(file)) logs.set(cell, readFileSync(file, "utf8"));
+  }
+  // One matched artifact lands loose in the directory (see readTestReports).
+  if (existsSync(artifactsDir)) {
+    for (const cell of cellIds(WITNESS_CELLS)) {
+      const file = join(artifactsDir, `${cell}.log`);
+      if (!logs.has(cell) && existsSync(file)) logs.set(cell, readFileSync(file, "utf8"));
+    }
   }
   return logs;
 }
@@ -254,10 +306,11 @@ function runCommand(cmd, args, logFile) {
 }
 
 /** A cell never short-circuits: every package runs, and the worst exit wins. */
-async function runTestCell(id, out) {
-  const cell = TEST_CELLS.find((c) => c.cell === id);
-  if (!cell) throw new Error(`no test cell ${id}; the table names ${cellIds(TEST_CELLS).join(", ")}`);
+async function runTestCell(id, out, select) {
+  if (!TEST_CELLS.some((c) => c.cell === id)) throw new Error(`no test cell ${id}; the table names ${cellIds(TEST_CELLS).join(", ")}`);
   mkdirSync(out, { recursive: true });
+  const cell = selectCells(select).find((c) => c.cell === id);
+  if (!cell) { console.log(`── ${id}: the lane's selection names none of this cell's packages ──`); return 0; }
   let worst = 0;
   for (const p of cell.packages) {
     const args = ["--filter", p.name, "test"];
@@ -296,13 +349,14 @@ const flag = (args, name) => { const i = args.indexOf(name); return i === -1 ? u
 
 async function main() {
   const [sub, ...rest] = process.argv.slice(2);
-  if (sub === "run-test") { process.exitCode = await runTestCell(rest[0], flag(rest, "--out") ?? "test-cell-out"); return; }
+  if (sub === "run-test") { process.exitCode = await runTestCell(rest[0], flag(rest, "--out") ?? "test-cell-out", flag(rest, "--select")); return; }
   if (sub === "run-witness") { process.exitCode = await runWitnessCell(rest[0], flag(rest, "--out") ?? "witness-cell-out"); return; }
   if (sub === "verify-tests" || sub === "verify-witnesses") {
     const dir = resolve(flag(rest, "--artifacts-dir") ?? "artifacts");
     const tests = sub === "verify-tests";
-    const verdict = tests ? evaluateTestCells({ reports: readTestReports(dir), tracked: { [NODE_DIR]: { files: trackedNodeFiles(), heavy: readNodeHeavy() } } }) : evaluateWitnessCells({ logs: readWitnessLogs(dir) });
-    console.log(`${tests ? "TEST-CELLS" : "WITNESS-CELLS"}: ok=${verdict.ok} cells=${cellIds(tests ? TEST_CELLS : WITNESS_CELLS).length}${tests ? ` totalTests=${verdict.totalTests}` : ""}`);
+    const cells = tests ? selectCells(flag(rest, "--select")) : WITNESS_CELLS;
+    const verdict = tests ? evaluateTestCells({ reports: readTestReports(dir), cells, tracked: { [NODE_DIR]: { files: trackedNodeFiles(), heavy: readNodeHeavy() } } }) : evaluateWitnessCells({ logs: readWitnessLogs(dir) });
+    console.log(`${tests ? "TEST-CELLS" : "WITNESS-CELLS"}: ok=${verdict.ok} cells=${cellIds(cells).length}${tests ? ` totalTests=${verdict.totalTests}` : ""}`);
     for (const p of verdict.problems) console.error(`${tests ? "TEST-CELLS" : "WITNESS-CELLS"} problem: ${p}`);
     process.exitCode = verdict.ok ? 0 : 1;
     return;

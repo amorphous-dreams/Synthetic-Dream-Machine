@@ -29,8 +29,9 @@ const MCP = { command: "/usr/bin/python3", args: ["/clone/lares_mcp.py"], env: {
 const JSON_KINDS: Array<[string, Kind]> = [
   ["jsonFloor", jsonFloor("cleanupPeriodDays", 99999)],
   ["jsonSet", jsonSet(["mcpServers", "lares"], { command: "p", args: ["a"] })],
-  ["jsonIncludes", jsonIncludes("claudeMdExcludes", "**/x.md")],
+  ["jsonIncludes", jsonIncludes(["claudeMdExcludes"], ["**/x.md"])],
   ["claudeHook", claudeHook("Stop", "hook.sh", { type: "command", command: 'bash "/new/hook.sh"', timeout: 30 })],
+  ["jsonIncludes.dotted", jsonIncludes(["permissions", "allow"], ["Bash(lares:*)", "mcp__lares__*"])],
 ];
 const TOML_KINDS: Array<[string, Kind]> = [
   ["tomlTopFloor", tomlTopFloor("project_doc_max_bytes", 65536)],
@@ -45,7 +46,7 @@ const TEXT_KINDS: Array<[string, Kind]> = [
 ];
 
 /** A JSON object a host might hold: plain keys, nested values, the keys the kinds touch among them. */
-const key = fc.constantFrom("model", "hooks", "mcpServers", "cleanupPeriodDays", "claudeMdExcludes", "theme", "x");
+const key = fc.constantFrom("model", "hooks", "mcpServers", "cleanupPeriodDays", "claudeMdExcludes", "permissions", "theme", "x");
 const jsonDoc = fc.dictionary(key, fc.jsonValue({ maxDepth: 3 }), { maxKeys: 6 }).map((o) => `${JSON.stringify(o, null, 2)}\n`);
 /** A TOML document: generated tables, the ones the kinds touch among them, stringified by a real writer. */
 const tomlKey = fc.constantFrom("history", "mcp_servers", "model", "project_doc_max_bytes", "persistence", "max_bytes", "a");
@@ -81,6 +82,37 @@ describe("L5 · every kind converges: a second application changes nothing", () 
   plain("CONTROL: a transform that appends on every run reads non-convergent", () => {
     const grows: Kind = (c) => `${c ?? ""}x`;
     expect(grows(grows("a"))).not.toBe(grows("a"));
+  });
+});
+
+describe("L5 · the fixed point holds what the kind owes: a kind that converges on nothing reads red", () => {
+  // The oracle spells the pointer lines itself, so a kind whose own pointer reader goes blind still reads red.
+  const POINTERS = ["-> [noosphere-boot.mem](x)", "@bags/x/noosphere-boot.mem", "bags/x/noosphere-boot.mem"];
+  const pointerless = (out: string, from: number): boolean => !out.split("\n").slice(from).some((l) => POINTERS.includes(l));
+  const SEEDS_TEXT: Array<[string | null]> = POINTERS.map((p) => [`prose\n${p}\nmore prose\n`]);
+  const [, head] = TEXT_KINDS[0]!;
+  const [, seedFree] = TEXT_KINDS[1]!;
+  test.prop([fc.option(textDoc, { nil: null })], { examples: SEEDS_TEXT })("headLine heads the file and lifts every other pointer line", (doc) => {
+    const out = head(doc)!;
+    expect(out.split("\n")[0]).toBe("@.claude/noosphere-boot");
+    expect(pointerless(out, 1)).toBe(true);
+  });
+  test.prop([fc.option(textDoc, { nil: null })], { examples: SEEDS_TEXT })("seedless lifts every pointer line", (doc) => {
+    const out = seedFree(doc);
+    if (out !== null) expect(pointerless(out, 0)).toBe(true);
+  });
+  const [, hook] = JSON_KINDS[3]!;
+  const want = JSON.stringify({ type: "command", command: 'bash "/new/hook.sh"', timeout: 30 });
+  test.prop([fc.option(jsonDoc, { nil: null })], { examples: SEEDS_JSON })("claudeHook lands the owed command exactly once", (doc) => {
+    const out = hook(doc)!;
+    const groups = (JSON.parse(out) as { hooks: { Stop: Array<{ hooks?: unknown[] }> } }).hooks.Stop;
+    expect(groups.flatMap((g) => g.hooks ?? []).filter((c) => JSON.stringify(c) === want)).toHaveLength(1);
+  });
+  plain("CONTROL: a kind that returns its input converges, and the fixed-point oracle reads it red", () => {
+    const idle: Kind = (c) => c;
+    const doc = `prose\n${POINTERS[0]}\n`;
+    expect(idle(idle(doc))).toBe(idle(doc));
+    expect(pointerless(idle(doc)!, 0)).toBe(false);
   });
 });
 
@@ -126,6 +158,17 @@ describe("L6 · a kind changes only the keys it owns; every sibling key survives
     ["jsonFloor", JSON_KINDS[0]![1], (o) => { const c = structuredClone(o); delete c["cleanupPeriodDays"]; return c; }],
     ["jsonSet", JSON_KINDS[1]![1], (o) => { const c = structuredClone(o); const m = c["mcpServers"]; if (m && typeof m === "object" && !Array.isArray(m)) { delete (m as J)["lares"]; if (Object.keys(m).length === 0) delete c["mcpServers"]; } return c; }],
     ["jsonIncludes", JSON_KINDS[2]![1], (o) => { const c = structuredClone(o); const l = c["claudeMdExcludes"]; if (Array.isArray(l)) { const k = l.filter((x) => x !== "**/x.md"); if (k.length) c["claudeMdExcludes"] = k; else delete c["claudeMdExcludes"]; } return c; }],
+    ["jsonIncludes.dotted", JSON_KINDS[4]![1], (o) => {
+      const c = structuredClone(o);
+      const p = c["permissions"];
+      if (p && typeof p === "object" && !Array.isArray(p) && Array.isArray((p as J)["allow"])) {
+        const k = ((p as J)["allow"] as unknown[]).filter((x) => x !== "Bash(lares:*)" && x !== "mcp__lares__*");
+        if (k.length) (p as J)["allow"] = k; else delete (p as J)["allow"];
+      }
+      // An object the kind opened, or one that held nothing, pares to absent on both sides.
+      if (p && typeof p === "object" && !Array.isArray(p) && Object.keys(p).length === 0) delete c["permissions"];
+      return c;
+    }],
   ];
   const withSiblings = fc.record({
     mine: fc.dictionary(fc.constantFrom("model", "theme", "permissions", "x"), fc.jsonValue({ maxDepth: 2 }), { maxKeys: 3 }),

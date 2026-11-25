@@ -26,7 +26,7 @@
 
 import { attachMessageChannelSync, markWikiIslandPeer } from "./island-repo.js";
 import { awaitIslandMsg } from "./vessel-host.js";
-import { SYSTEM_BAGS, wikiBagUri, wikiSlotUri, type WikiSlotKind } from "./wiki-recipe.js";
+import { SYSTEM_BAGS, expandRecipe, wikiBagUri, wikiSlotUri, type WikiSlotKind } from "./wiki-recipe.js";
 import { isFaceScopedBag } from "./persona-scope.js";
 import type { VesselWorkerHandle, VesselIslandHost } from "./vessel-host.js";
 import {
@@ -46,6 +46,7 @@ import type {
   Repo,
 } from "@automerge/automerge-repo";
 import { hasHeads } from "@automerge/automerge";
+import { isValidAutomergeUrl, parseAutomergeUrl, type Repo as AutomergeRepo } from "@automerge/automerge-repo";
 import type {
   IslandMsg_Event,
   IslandMsg_Ea,
@@ -56,7 +57,13 @@ import type {
 import type { WikiMountSpec, WikiRecipe } from "./wiki-recipe.js";
 import type { ResidencyTemperature } from "./bag-residency.js";
 import { SessionDocumentView } from "./session-document-view.js";
-import { isCapabilityProfile, type CapabilityProfile } from "./session-contract.js";
+import type { LarDoc } from "./base-doc.js";
+import { genesisFloorCidOf } from "./floor-pin.js";
+import {
+  floorShadowLine, floorShadowReadingLine, foldFloorShadowTally, readFloorShadow, readFloorShadowTally,
+  type FloorShadowStore, type FloorShadowTally,
+} from "./floor-shadow.js";
+import { isCapabilityProfile, type CapabilityProfile, type Hand } from "./session-contract.js";
 import { facetsOfSurfaceRecipe, resolvedSlotsOf, type SurfaceRecipe } from "./surface-recipe.js";
 import { ORACLE_BAG } from "./wiki-recipe.js";
 import { verifyCidBytes } from "./cas-transit.js";
@@ -201,8 +208,15 @@ export type DiskMirrorGrant = readonly {
   sourcedRoots?: Readonly<Record<string, string>>; consentSlugs?: readonly string[]; tempLayer?: boolean;
   /** A wiki's WORKING grant: the operator's workspace dir per slug (`/lar/workspaces/<name>`), where its share row names one. */
   workspaceRoots?: Readonly<Record<string, string>>;
-  /** A wiki's PERSONAL grant: the folder of the face the composition wears (its relation F), read at each mount; none: no mirror. */
+  /** A FACE-ROOTED grant (a wiki's personal layer, its drafts, its temp layer): the face root's folder of the face the composition
+   *  wears (its pet-name segment, `faces/<pet name>`), read at each mount, under the grant's `mirrorRoot` (`<projections>/faces`);
+   *  none: no mirror. */
   faceFolder?: () => string | null;
+  /** A per-wiki grant's REALM BASE (a wiki's working slot, its self canon): the folder a slug's mirror lays under by the realm
+   *  that holds it (`<projections>/realms/<pet name>/wikis` or `/bags`), read at each mount (the node mints a realm's default label
+   *  on first read, so every realm names one); null: the host named no folder (a refusal it logs), so no mirror lays. A workspace
+   *  and a sourced slug's canon source answer first. */
+  realmBase?: (wikiSlug: string) => string | null;
 }[];
 
 /** Resolve a mount's disk mirrors: intersect the held grant (authority) with the
@@ -220,18 +234,23 @@ export type DiskMirrorGrant = readonly {
  *    double-project; a system wiki's canon never projects by self-canon at all
  *    (`bags/` projects on the Kahu's vessel alone, road `W26`).
  *
- *  A `temp` slot entry projects the wiki's user temp layer to `wikis/{slug}/temp` and yields only for a slug its
- *  `consentSlugs` names (the operator's consent row, keyed by slug); the resolved entry carries `tempLayer`, so the
- *  projector bars the layer's internal volatile titles by namespace. A draft recovery entry lands in `/recovery`.
+ *  A `temp` slot entry projects the wiki's user temp layer and yields only for a slug its `consentSlugs` names (the
+ *  operator's consent row, keyed by slug); the resolved entry carries `tempLayer`, so the projector bars the layer's
+ *  internal volatile titles by namespace. A temp or draft entry holds one face's hand, so a FACE-ROOTED one (`faceFolder`)
+ *  lands in the writing face's root (`faces/<pet name>/temp/{slug}`, `faces/<pet name>/recovery/{slug}`), never under the
+ *  shared `wikis/{slug}/`; with no face worn it yields no mirror.
  *
  *  A wiki's WORKING slot rests in its realm workbench (cabal-realm#/the-workbench), and its grant may name a workspace for the
  *  slug (`workspaceRoots`): a shared wiki's workbench mirror then roots there. ONE FOLDER ANSWERS A WORKBENCH, whichever
- *  seated writer wears: with no workspace named the mirror rests at `wikis/{slug}` under the grant's own root, and a SOURCED
- *  slug's rests beside its canon source, `{source}/wikis/{slug}` (`sourcedRoots`). No face relation enters that path. A mount
+ *  seated writer wears: with no workspace named, a SOURCED slug's rests beside its canon source, `{source}/wikis/{slug}`
+ *  (`sourcedRoots`), and a REALM-ROOTED grant (`realmBase`, the node's) lays it under the realm the slug's label names,
+ *  `realms/<pet name>/wikis/{slug}` (every realm carries a pet name: its default, the slug, minted on first read); a grant with
+ *  no realm base keeps `{slug}` under its own root. No face relation enters that path. A mount
  *  whose face holds no writer's seat in the workbench designates no working mirror at all (`buildWikiMountSpec`), so it writes
- *  nothing there. A wiki's PERSONAL slot carries the wearing face's private margin (operator ruling 2026-11-11), so its
- *  grant roots per face under the grant's OWN root and never beside a canon source: `personal/<F>/{slug}`, read off the
- *  grant's `faceFolder` at each mount; with no face worn it yields no mirror.
+ *  nothing there. A wiki's PERSONAL slot holds what the wearing face keeps for itself (operator ruling 2026-11-11), so its
+ *  grant roots in the wearing face's root under the grant's OWN root and never beside a canon source:
+ *  `faces/<pet name>/personal/{slug}`, read off the grant's `faceFolder` at each mount; with no face worn it yields no mirror.
+ *  A personal layer mirrors the face's overlay layer alone, never a copy of the workbench (face-pools #/one-copy).
  *
  *  OCAP-clean: authority stays in the static grant, designation in the synced
  *  recipe, the per-instance bag + subdir resolved here. */
@@ -252,6 +271,9 @@ export function resolveDiskMirrors(
       // A consent-keyed grant (the user temp layer) yields only for a slug the operator's consent row names.
       if (g.consentSlugs !== undefined && !g.consentSlugs.includes(wikiSlug)) return false;
       if (g.faceFolder !== undefined && !g.faceFolder()) return false;
+      // A REALM-ROOTED grant lays where its realm base names a folder, or where a workspace or the canon source answers first.
+      if (g.realmBase !== undefined && !Object.hasOwn(g.sourcedRoots ?? {}, wikiSlug)
+        && !(g.wikiSlot === "working" && Object.hasOwn(g.workspaceRoots ?? {}, wikiSlug)) && g.realmBase(wikiSlug) === null) return false;
       // A SYSTEM wiki's canon projects through its LITERAL grant alone, which only the Kahu's vessel holds: self-canon
       // never reaches `bags/lares` or `bags/lararium`, so no vessel outside the cabal writes under them.
       return g.selfCanon
@@ -260,9 +282,14 @@ export function resolveDiskMirrors(
     })
     .map((g) => {
       // A sourced slug's per-wiki root writes back beside its source; every other slug keeps the grant's own root.
-      const base = Object.hasOwn(g.sourcedRoots ?? {}, wikiSlug) ? g.sourcedRoots![wikiSlug]! : g.mirrorRoot;
-      const { sourcedRoots: _sourced, consentSlugs: _consent, workspaceRoots: _workspaces, faceFolder: _face, ...held } = g;
-      if (g.faceFolder !== undefined) return { ...held, bagId: perWikiBag(g), mirrorRoot: `${g.mirrorRoot}/${g.faceFolder()}/${wikiSlug}` };
+      const base = Object.hasOwn(g.sourcedRoots ?? {}, wikiSlug) ? g.sourcedRoots![wikiSlug]!
+        : g.realmBase !== undefined ? g.realmBase(wikiSlug) ?? g.mirrorRoot
+        : g.mirrorRoot;
+      const { sourcedRoots: _sourced, consentSlugs: _consent, workspaceRoots: _workspaces, faceFolder: _face, realmBase: _realm, ...held } = g;
+      if (g.faceFolder !== undefined) {
+        const plane = g.wikiSlot === "personal" || g.wikiSlot === "temp" ? g.wikiSlot : "recovery";
+        return { ...held, bagId: perWikiBag(g), mirrorRoot: `${g.mirrorRoot}/${g.faceFolder()}/${plane}/${wikiSlug}`, ...(g.wikiSlot === "temp" ? { tempLayer: true } : {}) };
+      }
       if (g.wikiSlot === "working" && Object.hasOwn(g.workspaceRoots ?? {}, wikiSlug)) return { ...held, bagId: perWikiBag(g), mirrorRoot: g.workspaceRoots![wikiSlug]! };
       const leaf = g.wikiSlot === "temp" ? "/temp" : g.mirrorClass === "recovery" ? "/recovery" : "";
       return (g.selfCanon || g.wikiSlot)
@@ -273,6 +300,21 @@ export function resolveDiskMirrors(
     });
 }
 
+
+/**
+ * THE VESSEL OPENS EVERY DOCUMENT IT GRANTS A WIKI ISLAND before the island binds. The island keeps no store, so each slot
+ * document reaches it from the vessel's Repo: a document the Repo holds a handle for rides the vessel's push the moment the
+ * island's peer stands, and one it holds only at rest would ride the island's own pull alone. Opening each granted document
+ * here puts every slot on the push. The find runs unawaited: the island's slot wait ends on the document's arrival or the
+ * vessel's named answer, and a find that refuses here says nothing the island's own ask will not hear.
+ */
+function openGrantedDocuments(repo: AutomergeRepo, grants: IslandGrants): void {
+  for (const value of Object.values(grants)) {
+    if (typeof value !== "string" || !isValidAutomergeUrl(value)) continue;
+    if (repo.handles[parseAutomergeUrl(value).documentId]) continue;
+    repo.find(value).catch(() => { /* the island's own ask hears the vessel's answer */ });
+  }
+}
 /** What the vessel itself read of its receipt requests: asked, answered issued (`rested`: its Repo held the heads and flushed), answered stalled. */
 export interface VesselRestState { readonly asked: number; readonly rested: number; readonly stalled: number }
 
@@ -285,6 +327,11 @@ export interface VesselIslandPoolCoreOptions {
   mainRepo?: Repo | null;
   /** Held disk-write capability — bag → mirror configs this pool MAY project. */
   diskMirrorGrant?: DiskMirrorGrant;
+  /**
+   * The person's stand-off collapse rules (rule → bags), read afresh from the worn face's daemon wiki at each mount and
+   * carried in the manifest (`IslandMsg_Manifest.shoreCollapse`). Absent or null = no rule enabled.
+   */
+  shoreCollapse?: () => Readonly<Record<string, readonly string[]>> | null | Promise<Readonly<Record<string, readonly string[]>> | null>;
   /** Called when an island OUTSIDE any session emits a verse-event reaction, a camera frame, a control
    *  result or a host-door ask. */
   onWorkerEvent?: (wikiId: string, msg: IslandMsg_Event | LarIslandToVesselMsg) => void;
@@ -331,6 +378,14 @@ export interface VesselIslandPoolCoreOptions {
    * draws `content-store-absent` for every address.
    */
   readContent?: (cid: string) => Uint8Array | null | Promise<Uint8Array | null>;
+  /**
+   * THE FOUNDING RECORD (the vessel's genesis island document): the blobs every wiki island serves, and the genesis floor
+   * its seed witness names. Present, each wiki mount runs the floor shadow read (`floor-shadow`) once per boot and floor:
+   * the floor it stands on beside the record's own folds. The read never moves serving. Absent, no shadow read runs.
+   */
+  foundingRecord?: () => LarDoc | null | undefined;
+  /** Where the shadow tally rests between boots; absent, the tally lives for this pool alone. */
+  floorShadow?: FloorShadowStore;
   /** Override the mount silence budget in ms (tests). */
   mountSilenceMs?: number;
   /** Override the mount progress-stall budget in ms (default 3x silence). */
@@ -372,12 +427,19 @@ export class VesselIslandPoolCore {
   private _restState: VesselRestState = { asked: 0, rested: 0, stalled: 0 };
   private readonly _onRest: ((state: VesselRestState) => void) | null;
   private readonly _diskMirrorGrant: DiskMirrorGrant;
+  private readonly _shoreCollapse: VesselIslandPoolCoreOptions["shoreCollapse"] | null;
   private readonly _onWorkerEvent:  ((wikiId: string, msg: IslandMsg_Event | LarIslandToVesselMsg) => void) | null;
   private readonly _onSurfaceEvent: ((surface: IslandKeyParts, msg: IslandMsg_Event | LarIslandToVesselMsg) => void) | null;
   private readonly _resolvePluginCids: VesselIslandPoolCoreOptions["resolvePluginCids"];
   private readonly _floorCid: VesselIslandPoolCoreOptions["floorCid"];
   private readonly _onEa:           ((wikiId: string) => void) | null;
   private readonly _readContent:    VesselIslandPoolCoreOptions["readContent"] | null;
+  private readonly _foundingRecord: VesselIslandPoolCoreOptions["foundingRecord"] | null;
+  private readonly _floorShadow:    FloorShadowStore | null;
+  /** The floors this pool's boot already shadow-read: one reading per boot and floor, however many wikis mount. */
+  private readonly _shadowRead = new Set<string>();
+  private _shadowTally: FloorShadowTally | null = null;
+  private _shadowChain: Promise<void> = Promise.resolve();
   private readonly _portDoor: ReturnType<typeof makePortDoor>;
   private readonly _onPortMessage: VesselIslandPoolCoreOptions["onPortMessage"];
   private readonly _onPortDrop: VesselIslandPoolCoreOptions["onPortDrop"];
@@ -414,6 +476,7 @@ export class VesselIslandPoolCore {
     this._host            = opts.host;
     this._mainRepo        = opts.mainRepo ?? null;
     this._diskMirrorGrant = opts.diskMirrorGrant ?? [];
+    this._shoreCollapse   = opts.shoreCollapse ?? null;
     this._onWorkerEvent   = opts.onWorkerEvent ?? null;
     this._onRest          = opts.onRest ?? null;
     this._onSurfaceEvent  = opts.onSurfaceEvent ?? null;
@@ -421,6 +484,8 @@ export class VesselIslandPoolCore {
     this._floorCid = opts.floorCid;
     this._onEa            = opts.onEa ?? null;
     this._readContent     = opts.readContent ?? null;
+    this._foundingRecord  = opts.foundingRecord ?? null;
+    this._floorShadow     = opts.floorShadow ?? null;
     this._portDoor = makePortDoor({ ...(opts.portPolicy ? { policy: opts.portPolicy } : {}),
       post: (scope, msg) => {
         const slot = this._slots.get(scope);
@@ -662,6 +727,37 @@ export class VesselIslandPoolCore {
     return this.has(wikiId);
   }
 
+  /** The floor shadow tally as this pool last folded it; null before any wiki mounted with a founding record. */
+  floorShadowTally(): FloorShadowTally | null { return this._shadowTally; }
+
+  /** Read one floor beside the founding record, once per boot and floor; fold, keep and print. Never throws. The readings run
+   *  one after another on one chain, so the store's load and save never race; a mount fires this and does not wait. */
+  private _shadowReadFloor(pinned: string | null, coreHash: string | null): Promise<void> {
+    const founding = this._foundingRecord;
+    if (!founding) return Promise.resolve();
+    let record: LarDoc | null | undefined;
+    try { record = founding(); } catch { record = null; }
+    const manifestCid = pinned ?? genesisFloorCidOf(record);
+    const key = manifestCid ?? "";
+    if (this._shadowRead.has(key)) return this._shadowChain;
+    this._shadowRead.add(key);
+    this._shadowChain = this._shadowChain.then(async () => {
+      try {
+        const reading = await readFloorShadow({ manifestCid, readBytes: this._readContent ?? null, islandBlobs: record?.blobs, coreSha256: coreHash });
+        const prior = this._floorShadow ? readFloorShadowTally(await this._floorShadow.load()) : this._shadowTally;
+        const tally = foldFloorShadowTally(prior, reading);
+        this._shadowTally = tally;
+        if (this._floorShadow) await this._floorShadow.save(tally);
+        if (reading.verdict === "mismatch") console.warn(floorShadowReadingLine(reading));
+        else console.info(floorShadowReadingLine(reading));
+        console.info(floorShadowLine(tally));
+      } catch (err) {
+        console.info(`[floor shadow] the tally could not be kept: ${err instanceof Error ? err.message : String(err)}`);
+      }
+    });
+    return this._shadowChain;
+  }
+
   private _failuresOf(wikiId: string): number { return this._mountFailures.get(wikiId) ?? 0; }
   private _countMountFailure(wikiId: string): void { this._mountFailures.set(wikiId, this._failuresOf(wikiId) + 1); }
 
@@ -708,6 +804,10 @@ export class VesselIslandPoolCore {
     const floorCid = plan.surface ? (plan.surface.mount.recipe.floorCids[0] ?? null) : ((await this._floorCid?.()) ?? null);
     // The mirror of a wiki island reads the plugin list the island booted with, never a second resolution that an offering change could move.
     if (!plan.surface && plan.coreHash) this._bootInputs.set(wikiId, { coreCid: plan.coreHash, pluginCids });
+    // THE FLOOR SHADOW READ (backlog-awakens 3a): the floor this wiki stands on, beside the founding record it serves. It
+    // only reads and records; the manifest below still carries the same floor and the island serves as before. NEVER ON THE
+    // BOOT PATH: serving never waits on its answer, so a content reader or tally store that hangs stalls no mount.
+    if (!plan.surface) void this._shadowReadFloor(floorCid, plan.coreHash);
 
     // THE FENCE READS BEFORE ANY VIEW ATTACHES. A session that ended or switched while the plugins resolved,
     // or a pool that began to close, opens no channel at all.
@@ -739,8 +839,14 @@ export class VesselIslandPoolCore {
     if (this._mainRepo) {
       // EVERY POOL ISLAND IS A WIKI ISLAND: it renders pages and syncs no custody document (`markWikiIslandPeer`).
       const repo = this._mainRepo;
-      if (view) { markWikiIslandPeer(repo, view.peerId); view.attach(this._mainRepo, mainPort); }
-      else attachMessageChannelSync(repo, mainPort, (peerId) => { markWikiIslandPeer(repo, peerId); this._islandPeerOf.set(wikiId, peerId); });
+      // Each island's mark names the mount it serves, so the vessel's verdict withholds what that mount never names
+      // (`wiki-island-reach`): another wiki's layers, the daemon document, a face's planes.
+      const mount = { slug: plan.recipe.wikiSlug, bags: expandRecipe(plan.recipe) };
+      if (view) { markWikiIslandPeer(repo, view.peerId, mount); view.attach(this._mainRepo, mainPort); }
+      else {
+        openGrantedDocuments(repo, plan.grants);
+        attachMessageChannelSync(repo, mainPort, (peerId) => { markWikiIslandPeer(repo, peerId, mount); this._islandPeerOf.set(wikiId, peerId); });
+      }
     }
 
     // A session's island spawns without the vessel's own doors: its view answers what it may ask.
@@ -753,16 +859,18 @@ export class VesselIslandPoolCore {
     // Authority ∩ designation, with per-wiki-slug leaves filled from the recipe
     // (e.g. working → wikis/{slug}). See resolveDiskMirrors.
     //
-    // A SESSION ISLAND HOLDS AN EPHEMERAL REPLICA: no storage rides its manifest, on any platform, and no
-    // disk mirror either. The vessel's owner alone persists.
+    // EVERY ISLAND THIS POOL SPAWNS HOLDS AN EPHEMERAL REPLICA: no storage rides its manifest, on any platform. The
+    // vessel's Repo rests every document once (single-owner law), and the island relays through it. A session island
+    // carries no disk mirror either.
     const diskMirrors = plan.surface ? [] : resolveDiskMirrors(this._diskMirrorGrant, plan.recipe.mirrorBags, plan.recipe.wikiSlug);
-    const storage = plan.surface ? undefined : this._host.storage(wikiId);
+    // THE PERSON'S COLLAPSE RULES ride only with a mirror: an island that projects nothing weighs no stand-off.
+    const shoreCollapse = diskMirrors.length > 0 && this._shoreCollapse !== null ? await (async () => this._shoreCollapse!())().catch(() => null) : null;
 
     const manifestMsg = mkManifest(
       plan.wikiUri, syncPort, plan.recipe, plan.grants, plan.coreHash,
       {
-        ...(storage            ? { storage }     : {}),
         ...(diskMirrors.length ? { diskMirrors } : {}),
+        ...(shoreCollapse ? { shoreCollapse } : {}),
         ...(pluginCids.length ? { pluginCids } : {}),
         ...(floorCid ? { floorCid } : {}),
         ...(plan.surface && view ? { view: { peerId: view.peerId }, resolved: resolvedSlotsOf(plan.surface.mount.recipe) } : {}),
@@ -927,7 +1035,7 @@ export class VesselIslandPoolCore {
   /** Place a wiki-scope job into a live island and await the result. */
   placeWikiVerb(
     wikiId: string,
-    opts: { verb: string; args: Record<string, unknown>; requestedBy: string; targets?: string[]; batchMode?: string },
+    opts: { verb: string; args: Record<string, unknown>; requestedBy: string; targets?: string[]; batchMode?: string; asker?: Hand },
     session?: PlacingSession,
   ): Promise<Record<string, unknown>> {
     const slot = this._placeable(wikiId, session);
@@ -1055,6 +1163,12 @@ export class VesselIslandPoolCore {
    *  from a never-opened one (which needs the caller's `resolveWikiSpec`). */
   knowsSpec(wikiId: string): boolean {
     return this._mountSpecs.has(wikiId);
+  }
+
+  /** The mirror bags a known grain's own recipe designates (`WikiRecipe.mirrorBags`), or null for a grain this pool never learned. */
+  mirrorBagsOf(wikiId: string): readonly string[] | null {
+    const held = this._mountSpecs.get(wikiId);
+    return held ? [...(held.spec.recipe.mirrorBags ?? [])] : null;
   }
 
   /** TEACH the pool a grain's mount spec WITHOUT mounting it — the resolver's shore

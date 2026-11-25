@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/nihomano-sigils"
 
 ! Nihomano Sigils
 
-''The sigils form the RUBRIC.'' A missal writes the words to be spoken in black and the instructions for performing them in red — //rubrica//, red ochre, its own production stage. The black SAYS; the red DOES: in a stream it steers, in a wiki it calls.
+''The sigils form the RUBRIC.'' A missal writes the words a celebrant speaks in black and the instructions for performing them in red — //rubrica//, red ochre, its own production stage. The black weighs toward SAYING, the red toward DOING, and every span does both (Austin) — a weighting, never a split: in a stream the red steers, in a wiki it calls; felicity tests the red (did the act land), contact tests the black (does the claim hold).
 
 //niho// — Hawaiian: tooth, teeth; edge, serration. Used in //lei niho palaoa// (whale-tooth
 necklace of the aliʻi) and //niho mano// (shark tooth — the attested two-word form).
@@ -101,9 +101,9 @@ operator-visible data layer as the content itself.
 
 !! The First Discovered Sigil Set
 
-The nihomano discovery yielded the first coherent set of SharktoothSigil-registered sigils.
-The set holds 47 tiddlers, each carrying a pono law spec and passing the alignment check.
-They fall into eight families:
+The first coherent set of SharktoothSigil-registered sigils falls into eight families. Each sigil
+carries a pono law spec and passes the alignment check; the code's tables derive from the sigil
+tiddlers (#/sharktooth-tag), so the tiddler shelf, not a count in prose, names the set:
 
 ''Structural sigils'' (addressable scope boundaries):
 * `ahu` — child-slot worksite; the named scope boundary; skeleton of meme structure
@@ -121,7 +121,7 @@ They fall into eight families:
 
 ''Pragma sigils'' (declaration forms; first-class in memetic-wikitext):
 * `wehe` / `\procedure` — procedure executor; named callable body declaration
-* `\define` — backward-compat alias; use `\procedure` instead
+* `\define` — mirrors `wehe` read-only; `meme normalize` re-mints it as `wehe` (#/mirror-vocabulary)
 * `\widget` — widget declaration; `~` prefix convention; a native TW5 pragma of its own, carrying no Hawaiian headword
 * `helu` / `\function` — TW5 5.3+ filter-function declaration
 * `kumu` — device-template declaration; mold precedes the cast (`\type`/`\typos` run as native TW5 pragmas of their own, carrying no Hawaiian headword — see `lar:///ha.ka.ba/lares/api/pono/kumu#/syntax`)
@@ -141,14 +141,14 @@ They fall into eight families:
 ''Guest-grammar sigils'' (foreign-body delegation):
 * `hana` / `\task` — bounded guest-grammar block; grammar-key selects the interpreter
 
-''Concurrency sigils'' (async cluster; sprint pending):
+''Concurrency sigils'' (async cluster; the grammar registers each, no runtime executes one):
 * `lele` / `\branch` — structured fire-and-continue dispatch; Verse branch; bounded by enclosing scope
 * `hui` / `\sync` — await-all join; every child flow must complete before continuing
 * `holo` / `\race` — cancelling race; first wins, all losers and their subtrees cancelled recursively
 * `puka` / `\rush` — selecting race; first wins, losers continue until enclosing scope exits
 * `kukali` / `\suspends` — wait-until-trigger; parks the causal island
 * `hoolele` / `\spawn` — unstructured escape hatch; new independent task root; completes the six-operator ontology
-* `\tick` / `\simulate` — device lifecycle hook: run once per nalu (simulation tick); Hawaiian proper name deferred pending Visual Verse tick node shape (UE6 ~2027)
+* `\tick` / `\simulate` — device lifecycle hook: run once per nalu (simulation tick); its Hawaiian proper name wakes on the shape of Visual Verse's tick node
 
 ''Infrastructure'':
 * `sigil-dispatcher` — the `~` root dispatch widget; routes `<<~ name>>` to `\widget ~name`
@@ -278,13 +278,13 @@ The grammar accepts all five families equally. The parse result for a Hawaiian s
 
 * Lives in `lar://` space — owned by the Lares namespace, not TW5's `$:/` system namespace.
 * Resolvable by any peer holding the `ha.ka.ba` bag — the grammar is federated with the wiki.
-* Readable by `grammar-cache.ts` via `wiki.filterTiddlers([tag[lar:///ha.ka.ba/tags/SharktoothSigil]])` —
-  tiddler sigils take precedence over TOML fallback by name.
+* Read by `grammar-cache.ts` through `wiki.filterTiddlers([all[shadows+tiddlers]tag[lar:///ha.ka.ba/tags/SharktoothSigil]])` —
+  a sigil tiddler's `lar-name` field names its sigil, else its title past the `sigil-` prefix.
 * Writable by any operator with bag write access — language extension requires no authority
   beyond bag membership.
 
-The tag lives in the `lar:///` namespace, not the `$:/` system namespace that requires code-side registration. The migration from `$:/` to `lar:///` namespaces across all
-owned tags is the companion sprint to this one.
+The tag lives in the `lar:///` namespace, not the `$:/` system namespace that requires code-side registration.
+The record keeps the set's first census and the tag's companion work (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/nihomano-sigils-record`>>).
 
 No kernel monolith (`memetic-wikitext.tid`) holds the grammar; it self-hosts:
 every rule lives in a `sigil-*.tid` tiddler (`packages/lararium-tw5/tiddlers/`), and the code's tables
@@ -309,6 +309,6 @@ derive from those tiddlers, held to them by `tools/sigil-parity-witness.sh`.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;n61tpaQeTHXzw749uI4FiaPSDwe6Q76bUvOQhYoNvmE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;bOWmbx39DdqHxGyM6WXdewDfM0NlXbKJG0IQEMeZCrQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

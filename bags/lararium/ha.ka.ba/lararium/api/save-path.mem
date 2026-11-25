@@ -114,7 +114,7 @@ draft's store-only base fields record its target's base and route nothing. Resid
 each change with its own bag, the nalu stamps `$origin-bag` on the wiki side for
 the projector, and the outbound save strips that stamp before the write. `bag`
 stays the author's own field and never routes. A ceremony that targets one
-specific bag (MOVE, promotion, `meme put --bag`) carries the bag on the write
+specific bag (MOVE, promotion, `tiddler put --meme --bag`) carries the bag on the write
 OPTION (`store.put(record, origin, { bag })`) — never on the record — and a
 bag with no writable layer refuses loud rather than falling through to the
 default writable (wiki-layer-ontology#/write-law).
@@ -173,11 +173,11 @@ title on the console.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/island-adaptor`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/outbound-bridge#/the-shore-law`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/nalu#/the-surface`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/recipe-layer-model`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/verse-mesh`>>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;PKgpGdIUll_wGm5WHaQpVGLbvARrBP3JDM1IaoX2m4M`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;IguzOM6H_FD_5kV-oCbrLBrKUPlOtoIu0aqX8GX5TQg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

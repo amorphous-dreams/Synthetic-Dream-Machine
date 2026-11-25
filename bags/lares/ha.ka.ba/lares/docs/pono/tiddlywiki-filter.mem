@@ -15,8 +15,7 @@ uri-path  = "ha.ka.ba/lares/docs/pono/tiddlywiki-filter"
 ! X-TiddlyWiki-Filter — Docs
 
 This file does not bind invariant law.
-Law lives at [[tiddlywiki-filter.md|lar:///ha.ka.ba/lares/docs/pono/tiddlywiki-filter]].
-Procedure lives at [[tiddlywiki-filter/SKILL.md|../../api/pono/tiddlywiki-filter/SKILL.md]].
+Law lives at [[x-tiddlywiki-filter|lar:///ha.ka.ba/lares/api/pono/x-tiddlywiki-filter]].
 
 This file holds examples, explanatory guidance, reminders, and notes on deferred scope.
 
@@ -157,6 +156,6 @@ A future parser meme and render-pipeline meme should absorb these when they are 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Clx5x_jtEBXMax1ktZFLe7QRBfwNizri_ojlLqh7KZk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;jqS5wMfSEo3EHjOvuDWf7b-c7XoogdDXs5XAdr17Pzo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

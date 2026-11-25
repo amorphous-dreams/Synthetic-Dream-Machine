@@ -13,12 +13,14 @@
  * stays one shape across platforms.
  */
 
+import type { FaceActorDoor } from "@lararium/mesh";
 import {
   CompositeStore,
   AutomergeDocStore,
   defaultWritableSlot,
   expandRecipe,
   slotLayerFlags,
+  wikiSlotKindOf,
   wikiSlotUri,
   ORACLE_BAG,
   KAHUA_BAG,
@@ -36,17 +38,20 @@ import { kahuaLayerStore } from "./kahua-layer.js";
 import { MemoryTiddlerStore } from "./memory-store.js";
 import type { TW5Engine } from "./tw5-vm.js";
 
-export interface RecipeReadyBinding {
-  /** Slot URI from the expanded recipe. */
-  slot: SlotUri;
-  handle: DocHandle<LarDoc>;
-}
+/**
+ * One slot's binding: a CRDT handle the recipe wraps in its own store, or a store already standing over that slot's document
+ * (a named wiki's layer reached by reference, or its floor snapshot), which the recipe lays as it stands. A store handed here
+ * belongs to this composition alone: the recipe replays it into this engine.
+ */
+export type RecipeReadyBinding =
+  | { /** Slot URI from the expanded recipe. */ slot: SlotUri; handle: DocHandle<LarDoc> }
+  | { /** Slot URI from the expanded recipe. */ slot: SlotUri; store: LarTiddlerStore };
 
 export interface BuildIslandRecipeInput {
   tw5: TW5Engine;
   composite: CompositeStore;
   recipe: WikiRecipe;
-  /** Resolved CRDT handles keyed by slot URI. temp has no entry. */
+  /** Resolved CRDT handles (or stores) keyed by slot URI. temp has no entry. */
   ready: readonly RecipeReadyBinding[];
   /** Pinned system snapshots beneath the live oracle seed. */
   floorRecords?: readonly Readonly<Record<string, LarTiddlerRecord>>[];
@@ -56,9 +61,37 @@ export interface BuildIslandRecipeInput {
   kahuaFace?: () => KahuaStageFace | null;
   /** Wakes the kahua layer's re-fold when the face's lineage moves (`liveKahuaFace`). */
   kahuaFaceWatch?: (fn: () => void) => () => void;
+  /** The island Repo's actor door (`wearOf(repo)`'s door): each slot's store writes a worn face's change through it. */
+  wear?: FaceActorDoor;
+  /**
+   * A VIEW THAT TAKES NO WRITE (a cross-face view, `face-engine`): every slot lays read-only, the engine's own temp layer
+   * included, and each store the composite hands out refuses a put, a tombstone and a removal (`readOnlyStore`), so no save
+   * and no caller holding a store moves a byte. The write-layer pointer still names the working slot, which the read gate
+   * reads as the bag the view answers for.
+   */
+  readOnly?: true;
 }
 
-/** The islands bound by the code wards: the daemon wiki and a face's kahua stage (`kahua-<tag>`). A user's own wiki is not bound. */
+/** The refusal a view's store answers a write with. */
+const VIEW_READS = "cross-face-view-reads";
+
+/** A store that reads as `store` reads and refuses every write: a put, a tombstone, a family write and a removal. */
+function readOnlyStore(store: LarTiddlerStore, slot: string): LarTiddlerStore {
+  const refuse = (): Promise<never> => Promise.reject(Object.assign(new Error(`${VIEW_READS}: ${slot} lays in a cross-face view, which reads alone and takes no write`), { reason: VIEW_READS }));
+  const writes = new Set<PropertyKey>(["put", "tombstone", "writeFamily", "remove"]);
+  return new Proxy(store, {
+    get(target, prop) {
+      if (writes.has(prop)) return typeof Reflect.get(target, prop) === "function" ? refuse : undefined;
+      const value = Reflect.get(target, prop, target) as unknown;
+      return typeof value === "function" ? (value as (...a: unknown[]) => unknown).bind(target) : value;
+    },
+  });
+}
+
+/**
+ * The islands bound by the code wards: the daemon wiki and a face's kahua stage (`kahua-<tag>`). Their seed pass runs no
+ * StartupAction at all, not even a floor plugin's shadow laid after boot: code runs there from the boot pass alone.
+ */
 export function startupGated(slug: string): boolean {
   return slug === "daemon" || slug.startsWith("kahua-");
 }
@@ -74,15 +107,19 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
   adaptor: IslandAdaptor;
   stores: Array<{ slot: SlotUri; store: LarTiddlerStore }>;
 } {
-  const { tw5, composite, recipe, ready, floorRecords, writeSlot } = input;
+  const { tw5, composite, recipe, ready, floorRecords, writeSlot, readOnly } = input;
   // The titles TW5's own startup pass already ran over the preloads: these never run again.
   const STARTUP_ACTIONS = "[all[shadows+tiddlers]tag[$:/tags/StartupAction]!has[draft.of]]";
   const ranAtBoot = new Set<string>(tw5.$tw.wiki.filterTiddlers(STARTUP_ACTIONS));
 
-  const handleBySlot   = new Map(ready.map((r) => [r.slot, r.handle]));
+  const boundBySlot    = new Map(ready.map((r) => [r.slot, r]));
   const slots          = expandRecipe(recipe);
   const slug           = recipe.wikiSlug;
   const tempSlot       = wikiSlotUri(slug, "temp");
+  const flagsOf = (slot: SlotUri): { writable: boolean; defaultWritable: boolean } =>
+    readOnly ? { writable: false, defaultWritable: false } : slotLayerFlags(slot, slug, writeSlot);
+  /** The store a layer lays: a view's refuses every write. */
+  const laid = (store: LarTiddlerStore, slot: SlotUri): LarTiddlerStore => (readOnly ? readOnlyStore(store, slot) : store);
   const stores: Array<{ slot: SlotUri; store: LarTiddlerStore }> = [];
 
   // Bottom-up addLayer order. Slot at index slots.length-1 (oracle, the floor) lands first.
@@ -91,26 +128,33 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
     const slot = slots[i]!;
     if (slot === tempSlot) {
       tempStore = new MemoryTiddlerStore();
-      composite.addLayer({ bagId: slot, store: tempStore, ...slotLayerFlags(slot, slug, writeSlot) });
+      composite.addLayer({ bagId: slot, store: laid(tempStore, slot), ...flagsOf(slot) });
       stores.push({ slot, store: tempStore });
       continue;
     }
-    const handle = handleBySlot.get(slot);
-    if (!handle) continue; // CRDT slot not provided — skip (cold or unmapped)
+    const bound = boundBySlot.get(slot);
+    if (!bound) continue; // CRDT slot not provided — skip (cold or unmapped)
     // THE KAHUA SLOT READS THE FOLD: any member of the face writes any tiddler into the stage doc, so the layer serves the
     // verified standing items alone, through the one seam (`kahuaLayerStore`), and never the doc's titles.
-    const base: LarTiddlerStore = slot === KAHUA_BAG
-      ? kahuaLayerStore(handle, input.kahuaFace ?? (() => null), input.kahuaFaceWatch)
-      : new AutomergeDocStore(handle, slot);
+    const base: LarTiddlerStore = "store" in bound ? bound.store
+      : slot === KAHUA_BAG
+        ? kahuaLayerStore(bound.handle, input.kahuaFace ?? (() => null), input.kahuaFaceWatch)
+        : new AutomergeDocStore(bound.handle, slot, input.wear ? { wear: input.wear } : {});
     const store = slot === ORACLE_BAG ? floorReadFace({ rows: floorRecords ?? [], base, bagId: slot }) : base;
     // Oracle takes no writes; other CRDT slots accept writes through the in-wiki bag-paths cascade
     // (lar:///ha.ka.ba/lararium/config/bag-paths). A ceremony that names its own slot writes the
     // slot's store directly, carrying the bag on the put option — never a field on the record. The
     // default (an unbagged write or tombstone) is the working slot; without its handle no default
     // writable stands. The ONE law `slotLayerFlags` spells for the host mount and this island alike.
-    composite.addLayer({ bagId: slot, store, ...slotLayerFlags(slot, slug, writeSlot) });
+    composite.addLayer({ bagId: slot, store: laid(store, slot), ...flagsOf(slot) });
     stores.push({ slot, store });
   }
+
+  // THE SLOTS THE COMPOSER SKIPPED STAND UNREAD. A slot of the recipe the composer handed no binding for (a bag this face does
+  // not reach, a library the island does not hold, the kahua stage and daemon document a sibling's engine leaves out) may hold
+  // any title, and another face's composition of the same recipe reads it: a delete above it raises a kāpae, never a plain
+  // retract (recipe-layer-model#/the-delete). An instance slot with no binding holds no record yet, and temp lives here alone.
+  composite.markUnreached(slots, slots.filter((slot) => slot !== tempSlot && !boundBySlot.has(slot) && wikiSlotKindOf(slug, slot) === null));
 
   const adaptor = new IslandAdaptor(tw5, composite, recipe.wikiSlug);
   adaptor.installLandingQueue();
@@ -133,7 +177,7 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
   // an empty write-layer pointer makes unrouted saves raise the alert-rail refusal.
   if (tempStore) {
     // A face that holds no writer's seat in the workbench routes its saves to its own `personal` slot, where that slot stands.
-    const writeLayer = handleBySlot.has(defaultWritableSlot(slug, writeSlot)) ? defaultWritableSlot(slug, writeSlot) : "";
+    const writeLayer = boundBySlot.has(defaultWritableSlot(slug, writeSlot)) ? defaultWritableSlot(slug, writeSlot) : "";
     const configSeed: Record<string, string> = {
       "lar:///ha.ka.ba/lararium/config/current-wiki-bag":      writeLayer,
       "lar:///ha.ka.ba/lararium/config/current-wiki-temp":     wikiSlotUri(slug, "temp"),
@@ -154,20 +198,18 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
     }
   }
 
-  // TW5 ran `$:/tags/StartupAction` over the preloads alone, before any record landed. The seed carries
-  // the bags' own startup actions, so each one the boot pass never saw runs once over the resident seed;
-  // the ones that already ran stay run.
+  // TW5 ran `$:/tags/StartupAction` over the preloads alone, before any record landed: the floor-admitted plugins' own startup
+  // actions ran there, once. THE FLOOR ALONE RUNS CODE ON THE ISLAND (state/decisions, "Native TW5 wikis"), as the module gate
+  // admits modules from the granted preloads alone: the seed pass runs a StartupAction only where it stands as a floor plugin's
+  // shadow the boot pass never saw (a house seed laid after boot), unshadowed by any landed record. A record the wiki's document
+  // landed (any layer, any fields, `kahua-cid` or not) rides inert here on every wiki and runs in the tab alone, under that
+  // engine's own accept, so a member's record in a shared realm never runs on the operator's vessel.
   const checkpoint = adaptor.armSeedCheckpoint().then(() => {
-    const tw = tw5.$tw as unknown as { wiki: { filterTiddlers(f: string): string[]; getTiddlerText(t: string): string | undefined; getTiddler(t: string): { fields: Record<string, unknown> } | undefined }; rootWidget: { invokeActionString(actions: string, triggeringWidget: unknown, event: unknown, variables: Record<string, string>): void } };
+    const tw = tw5.$tw as unknown as { wiki: { filterTiddlers(f: string): string[]; getTiddlerText(t: string): string | undefined; isShadowTiddler(t: string): boolean; tiddlerExists(t: string): boolean }; rootWidget: { invokeActionString(actions: string, triggeringWidget: unknown, event: unknown, variables: Record<string, string>): void } };
     for (const title of tw.wiki.filterTiddlers(STARTUP_ACTIONS)) {
       if (ranAtBoot.has(title)) continue;
-      // A StartupAction lifted from the kahua stage stays inert data: it carries `kahua-cid`, and only a promotion puts a rite among the
-      // preloads, where the boot pass above ran it. The seed pass never runs code a hand has not promoted.
-      if (tw.wiki.getTiddler(title)?.fields["kahua-cid"] !== undefined) continue;
-      // THE LAYER GATE (operator ruling 2026-11-04). The daemon island and the kahua stage hold the module gate's law: code runs only from
-      // genesis or the promoted set, and both are preloads the boot pass ran. Every record the seed landed rides inert there, whatever
-      // layer it came from and whatever fields it wears, and names itself. A user's own wiki keeps full caps.
-      if (startupGated(slug)) { console.warn(`[startup-gate] ${slug}: ${title} rides inert (a StartupAction runs only from genesis or the promoted set)`); continue; }
+      if (!tw.wiki.isShadowTiddler(title) || tw.wiki.tiddlerExists(title)) continue;
+      if (startupGated(slug)) { console.warn(`[startup-gate] ${slug}: ${title} rides inert (a StartupAction runs here from the boot pass alone)`); continue; }
       tw.rootWidget.invokeActionString(tw.wiki.getTiddlerText(title) ?? "", tw.rootWidget, undefined, {});
     }
   });
@@ -205,6 +247,15 @@ const adaptors = new WeakMap<TW5Engine, IslandAdaptor>();
  */
 export function wikiLandedCovers(tw5: TW5Engine, bag: string, named: readonly string[]): boolean {
   return adaptors.get(tw5)?.landedCovers(bag, named) ?? false;
+}
+
+/**
+ * Name the face the next hand of `title` wears on the shore mounted over this engine (`IslandAdaptor.wearNext`): a tool
+ * door that lands a record through `wiki.addTiddler` calls this first, so the record lands under the face's actor. An
+ * engine whose recipe mounted no shore takes nothing.
+ */
+export function wikiWearsNext(tw5: object, title: string, face: string | null | undefined): void {
+  adaptors.get(tw5 as TW5Engine)?.wearNext(title, face);
 }
 
 /** Ask the shore mounted over this engine to take an inbound act boundary. */

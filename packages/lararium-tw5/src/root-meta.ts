@@ -121,6 +121,8 @@ export function metaFences(text: string, spans: readonly MaskSpan[] = fencedSpan
 /** A meta fence that defines a key twice: where its body starts, and the wording naming the key. */
 export interface MetaKeyRedefinition {
   readonly bodyStart: number;
+  /** The redefinition's line within the fence body, 1-based. */
+  readonly line: number;
   readonly key: string;
   readonly message: string;
 }
@@ -132,7 +134,7 @@ export interface MetaKeyRedefinition {
  */
 export function metaKeyRedefinitions(text: string): MetaKeyRedefinition[] {
   return metaFences(text).flatMap((fence) => duplicateTomlKeys(fence.body).map((d) => ({
-    bodyStart: fence.bodyStart, key: d.key, message: `meta fence: ${duplicateKeyMessage(d)}`,
+    bodyStart: fence.bodyStart, line: d.line, key: d.key, message: `meta fence: ${duplicateKeyMessage(d)}`,
   })));
 }
 

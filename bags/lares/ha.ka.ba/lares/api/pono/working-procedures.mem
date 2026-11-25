@@ -7,7 +7,7 @@
 cacheable = true
 hydrate   = true
 l-space   = "stable"
-role      = "working procedures — the standing law for any hand that tests, wires or measures in this tree: red-first test design in eight moves, the ladder for wiring a module that stands designed, tested and unreached, the instruments that read green while they report something false, how a fork settles, the working agreements that bind every spirit, and the rulings they rest on"
+role      = "working procedures — the standing law for any hand that tests, wires or measures in this tree: red-first test design in eight moves, the ladder for wiring a module that stands designed, tested and unreached, the instruments that read green while they report something false, how a fork settles, the seal merge a carrier conflict on its seal alone takes, the working agreements that bind every spirit, and the rulings they rest on"
 title     = "lar:///ha.ka.ba/lares/api/pono/working-procedures"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/working-procedures"
@@ -19,8 +19,8 @@ uri-path  = "ha.ka.ba/lares/api/pono/working-procedures"
 
 ! Working procedures ~ how a hand tests, wires and measures here
 
-Each block below states a procedure that cost this tree measured hours to learn. A hand reads the block
-that names its act before it writes a vector, a wire or a count. The named failure modes these procedures
+Each block below states a procedure, and the failure each guards against carries a measured cost. A hand
+reads the block that names its act before it writes a vector, a wire or a count. The named failure modes these procedures
 guard against read at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/failure-states#/index`>>, each with its
 own measured instance and diagnostic.
 
@@ -102,16 +102,16 @@ Collide each before trusting it.
 * ''A receipt from one layer greens no claim another layer holds.'' A pure scenario proves grammar; a docker run proves a process and a storage boundary; neither decides authority. Record what each receipt leaves unproven.
 
 !!! Test design
-* ''A control set made only of negatives reads satisfied by inertness.'' An empty input killed a carry outright while every behavioural vector stayed green. Pin the call's own arguments.
+* ''A control set made only of negatives reads satisfied by inertness.'' An empty input can kill a carry outright while every behavioural vector stays green. Pin the call's own arguments.
 * ''A red that proves the hole proves no fix.'' Add a pin that bites a WEAKENING: a census of the calls, the named argument, the boards asserted absent, the nesting.
 * ''An ordering assertion over an absent call passes vacuously'': `indexOf` answers −1, and −1 sits below everything. An ordering clause wants a presence clause beside it.
 * ''A fixture that DECLARES reads as a carrier.'' The finder reads the DOCTYPE or `type` line, never the path; assemble the declaration at read time, and control that the finder reads false.
-* ''A unit fake without the live shape hides the defect.'' A rebuild from the wrong source kept every unit test green; only a vector over a document a real ceremony wrote caught it.
+* ''A unit fake without the live shape hides the defect.'' A rebuild from the wrong source can keep every unit test green; only a vector over a document a real ceremony wrote catches it.
 * ''A stall watcher reports only while the event loop turns.'' A decoder that believes a random byte run's claimed length blocks the loop, so the watcher's timer never fires and the timeout names no stage. Read a length claim against the bytes that remain before decoding, and find a rare stall by repeating the case a hundred times with each phase timed.
 * ''A case that sleeps against a counted budget measures the machine.'' A wait loop whose look returns early spends its count at the speed of the box, and the case reads red on the FASTER runner. Hold a contention window by a handshake: the holder says it holds, the contender starts, the holder says a contender reached it and leaves on that word. A suite never makes its own load.
 
 !!! Source-reading welds
-* ''A source-reading weld proves no behaviour.'' One weld went green over a loop that only warns, because its text window reached past the loop's close.
+* ''A source-reading weld proves no behaviour.'' A weld reads green over a loop that only warns whenever its text window reaches past the loop's close.
 * ''Strip comments first, and pin the strip'': a docblock that names an old spelling to explain it reads to a raw-source weld exactly like the defect. Assert the strip left something.
 * ''Prefer a census'': a rename cannot green `calls.length === N`; it can green a token match.
 
@@ -145,11 +145,13 @@ Collide each before trusting it.
 
 The house proves a zero with a known positive: an instrument that reads nothing must show it can read something. This law carries that rule across a boundary. ''An instrument that asserts across a boundary (process, thread or worker, storage, network) names the causal event it waits for on the far side'': a sentinel act's answer, a rested count, a tally line, a disconnect event. An absence assertion (nothing happened, the state holds, a count stays zero) with no far-side barrier before it counts as no check. The instrument reads honestly on its own shore and goes blind at the crossing, and a zero read before the far side could speak states nothing about the far side.
 
-!!! Testimony, from one day
-* ''Process.'' A merge train read a test suite's exit code while the config threw at load and vitest exited 0 with no tally; another log tallied "1 failed" over a recorded exit 0. The barrier is the tally line, read beside the exit code.
-* ''Thread.'' `golden-whole-road` W4 asserted "the story holds" right after a modified click and a middle click, before any act relayed across the page-to-island wire could arrive. The acts landed about 1.1 s late and broke W5 and W6 once a faster island let them arrive inside the run. Its polls waited on the page's own tab count, a near-shore event. The barrier is a sentinel act's answer.
-* ''Storage.'' The rest-before-reload control R2 decided "rested" by searching IndexedDB for plaintext bytes, while the doc store rests encrypted and compressed; it read rests that never happened. The barrier is a rested count.
-* ''Network.'' automerge-repo's MessageChannel adapter never forwarded a port's close, so a vessel never learned an island died. The barrier is a disconnect event, and the adapter owes it.
+!!! The four crossings
+* ''Process.'' A runner can exit 0 with no tally when its config throws at load, and a log can tally a failure over a recorded exit 0. The barrier is the tally line, read beside the exit code.
+* ''Thread.'' An assertion that the state holds, read right after an act and before any act relayed across the page-to-island wire can arrive, passes until a faster island lets the act land inside the run; a poll on the page's own tab count waits on a near-shore event. The barrier is a sentinel act's answer.
+* ''Storage.'' A control that decides "rested" by searching storage for plaintext bytes reads rests that never happen when the store rests encrypted and compressed. The barrier is a rested count.
+* ''Network.'' An adapter that never forwards a port's close keeps a vessel from learning that an island died. The barrier is a disconnect event, and the adapter owes it.
+
+The incidents behind each crossing read at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/working-procedures-record#/testimony`>>.
 
 !!! The instrument
 * ''`tools/barrier-witness.sh` reads the e2e set'' (`packages/*/tests/e2e/**`, `tests/e2e/**`). It flags an absence assertion (a `.not.` form with a literal, a `toEqual` or `toBe` on a value the test's own name calls unchanged, a `toBe(0)` or `toHaveLength(0)` count) that follows no barrier after the test's last act.
@@ -192,13 +194,31 @@ Straight to the operator, at once: a classifier refusal; a destroy-class act pas
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/the-seal-merge`>>
+
+!! The seal merge ~ a carrier conflict on its seal alone re-seals
+
+A carrier's ETX mark carries the block check over the span it closes, so every body edit moves the `bcc=` line. Two branches that edit one carrier's body far apart, each re-sealed, merge clean in the body and conflict on that one line. `tools/mem-merge-driver.mjs` takes that conflict: `.gitattributes` names `*.mem merge=mem-seal`, and git calls the driver with the base, ours, theirs, the path and the marker size. The merge itself lives in ONE module, `@lararium/mesh/meme-merge` (git's line merge at `@lararium/mesh/meme-merge-git`): the driver shells over it for git, and the vessel's own carrier merge reads it where a disk edit and a house write meet. It runs git's own three-way merge over the three sides with the ETX seal set bare, first over the whole text, then, where that conflicts, slot by slot: a slot one side moved takes that side, a slot both moved line-merges alone, two slots added at one place both land, and a slot one side dropped leaves only where the other side left it untouched. A clean merge there means the seal alone stood in the way, so the driver takes the merged body, runs the normalize law `lares meme normalize` runs (the frame canonical, the block check minted over the body it follows) and writes the sealed carrier. Every other case (a hunk that conflicts within one slot, a slot dropped against a move, a frame normalize faults, a span no check covers, a checkout whose build stands absent) writes git's own conflict over the original three sides and stops the merge, as a merge with no driver stops.
+
+The driver reads this checkout's build (`packages/lararium-mesh/dist`, `packages/lararium-memetic-frame/dist`, `packages/lararium-tw5/dist`), so a fresh clone builds before it merges carriers. `lares repo tend` seats it, and the root build (`pnpm build`) runs that tend: the reality tunnel declares both keys (lar:///ha.ka.ba/lares/cli/reality-tunnel, `git.merge-driver-name` and `git.merge-driver`), and the tend writes them through `git config --local` into the clone's shared config, so every worktree of the clone runs its own tree's driver. The tend says `set` or `already set` beside each key and its value, and a second tend writes nothing. The keys it seats:
+
+```sh
+git config merge.mem-seal.name "a .mem conflict on its seal alone re-seals"
+git config merge.mem-seal.driver "node tools/mem-merge-driver.mjs %O %A %B %P %L"
+```
+
+`lares repo read` names a clone that lacks them as drift; the commit gate (`lares repo read --staged`) reads them absent, since a commit carries no git config. A clone without the tend merges carriers with git's text merge, since git reads an undefined driver as the plain text merge; the seal conflict then stops the merge, and `lares meme normalize <file>` re-seals by hand once the bodies stand merged. Proof: `node --test tools/mem-merge-driver.test.mjs` (scratch repositories, git alone red on the seal, the driver green, a body conflict and an unsealable frame left standing) and `node --test tools/mem-merge-weld.test.mjs` (the driver and the module write one byte string and one verdict over a corpus of carrier triples).
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/rulings`>>
 
 !! Rulings ~ the operator's words the agreements rest on
 
-# 2026-10-16: early alpha until a third human; evergreen with no old shapes; recursive o-takiage.
-# 2026-10-25: the commit that moves a shape may refuse the old spelling by name; the next commit burns that refusal.
-# 2026-10-14, 2026-10-30: forks settle down the ladder of #/forks.
+# Operator ruling 2026-10-16: early alpha until a third human; evergreen with no old shapes; recursive o-takiage (#/working-agreements). Source: the operator's words, kept in the house's evergreen and alpha-line feedback memory.
+# Operator ruling 2026-10-25: the commit that moves a shape may refuse the old spelling by name; the next commit burns that refusal (#/working-agreements). Source: the operator's words, kept in the same memory.
+# Operator rulings 2026-10-14 and 2026-10-30: forks settle down the ladder of #/forks. Source: the operator's words, kept in the house's fork-ladder feedback memory.
+# Operator ruling 2026-11-18: a `.mem` conflict that touches only `bcc=` seal lines resolves by taking the bodies and re-sealing with `lares meme normalize` (#/the-seal-merge). Source: lar:///ha.ka.ba/kahua/memory/research/two-hearths-flow#/rulings, D6; lar:///ha.ka.ba/kahua/memory/ruling/2026-11-18#/ruled-defaults.
 
 <<~/ahu>>
 
@@ -209,10 +229,11 @@ Straight to the operator, at once: a classifier refusal; a destroy-class act pas
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/failure-states`>> the named failure modes these procedures guard against
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/cold-start`>> the roadmap's cold start names the instruments
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/hearths`>> the hearths ledger names which session holds which ground
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/working-procedures-record`>> the incidents and the earlier wording these procedures carried
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot`>>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;i9xF66DrlKmI-m0ViGQEentkwfTwItzjJO37Z4q6rzg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;jNnCZAvYwaF5syBJNnhONGCyG0FNiEUAfKChrlor0fg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -4,8 +4,8 @@
  * The lifecycle itself lives in @lararium/tw5 `runSovereignKernel` — ONE flow
  * both vessels compose. This file supplies only the node platform pieces:
  *   - transport : worker_threads parentPort (.postMessage / .on("message"))
- *   - storage   : DurableNodeFSStorageAdapter (crash-atomic; driven by manifest IslandStorageConfig)
- *                 or in-memory when no storage config is present
+ *   - storage   : DurableNodeFSStorageAdapter (crash-atomic) for the daemon island's own store, the one
+ *                 island whose manifest names a store; every other island relays in memory
  *   - ready     : omitted — the node worker has no WASM-load handshake
  *
  * Divergence is COMPOSITION (which pieces the shore resolves), not an OO
@@ -49,6 +49,7 @@ import {
 import type { IslandBehavior } from "@lararium/tw5";
 import { islandSessionDoor, type IslandSessionProof } from "@lararium/keyhive";
 import { casDirFromIslandStorageDir, readCasBlobFromFs, type IslandCasData } from "./node-cas.js";
+import { holdBackStorage } from "./engine-fall.js";
 
 /**
  * THE CAS CAPABILITY, worker side — a `CasTransitTransport` over the parent port. The worker holds no socket; the
@@ -167,7 +168,7 @@ export function vesselReceiptAsker(port: { postMessage(msg: unknown): void; on(e
  * THE CUSTODY WRITE CAPABILITY, worker side. Workers hold bytes to seal but never the vessel key; the vessel seals the
  * named carrier and answers on the same request id. A refusal rejects without exposing the bytes.
  */
-export function vesselCustodyWriter(port: { postMessage(msg: unknown): void; on(ev: "message", fn: (m: unknown) => void): void }): (carrier: CustodyWriteCarrier, bytes: Uint8Array) => Promise<void> {
+export function vesselCustodyWriter(port: { postMessage(msg: unknown): void; on(ev: "message", fn: (m: unknown) => void): void }): (carrier: CustodyWriteCarrier, bytes: Uint8Array, face: string) => Promise<void> {
   const pending = new Map<string, (answer: IslandMsg_CustodyWritten) => void>();
   port.on("message", (raw: unknown) => {
     const m = raw as Partial<IslandMsg_CustodyWritten> | null;
@@ -178,23 +179,29 @@ export function vesselCustodyWriter(port: { postMessage(msg: unknown): void; on(
     settle(m as IslandMsg_CustodyWritten);
   });
   let seq = 0;
-  return (carrier, bytes) => new Promise<void>((resolve, reject) => {
+  return (carrier, bytes, face) => new Promise<void>((resolve, reject) => {
     const requestId = `custody-${process.pid}-${++seq}`;
     const settleWith = (answer: IslandMsg_CustodyWritten): void => {
       if (answer.written === true) resolve();
       else reject(new Error(`the vessel did not seal the ${carrier} carrier (${answer.why ?? "unwritten"})`));
     };
     pending.set(requestId, settleWith);
-    const ask: IslandMsg_CustodyWrite = { type: "custody:write", requestId, carrier, bytes };
+    const ask: IslandMsg_CustodyWrite = { type: "custody:write", requestId, carrier, bytes, face };
     port.postMessage(ask);
   });
 }
 
-/** An island's own store, behind the rest guard (sealed-store#/owed, V2): a document the vessel's rest seals rests in
- *  the island's memory alone and reaches rest by sync, sealed in the vessel's store. */
-function _buildStorage(cfg: IslandStorageConfig | undefined, restsAtVessel: (documentId: string) => Promise<boolean>): StorageAdapterInterface | undefined {
+/** The daemon island's own store, behind the rest guard (sealed-store#/owed, V2): a document the vessel's rest seals rests
+ *  in the island's memory alone and reaches rest by sync, sealed in the vessel's store. A document a resting engine fall
+ *  names in flight (handed in `workerData`, `IslandCasData.heldBack`) holds back from the island's engine as from the
+ *  vessel's. A wiki island's manifest names no store, so the kernel never asks for one. */
+export function buildIslandStorage(
+  cfg: IslandStorageConfig | undefined, restsAtVessel: (documentId: string) => Promise<boolean>,
+  held: readonly string[] = [], log: (line: string) => void = (line) => console.warn(`[sovereign-island] ${line}`),
+): StorageAdapterInterface | undefined {
   if (!cfg || cfg.type === "memory") return undefined;
-  if (cfg.type === "nodefs") return islandRestGuard(new DurableNodeFSStorageAdapter(cfg.dir), restsAtVessel);
+  // THE TRAP-NAMED DOCUMENTS HOLD HERE TOO (`engine-fall`): the island's own engine never meets their chunks.
+  if (cfg.type === "nodefs") return holdBackStorage(islandRestGuard(new DurableNodeFSStorageAdapter(cfg.dir), restsAtVessel), held, log);
   return undefined;
 }
 
@@ -235,7 +242,7 @@ export function runSovereignWorker(
     listen:  (onMessage) => port.on("message", onMessage),
     storage: (msg) => {
       if (msg.storage?.type === "nodefs" && !handed.cidDir) casDir = casDirFromIslandStorageDir(msg.storage.dir);
-      return _buildStorage(msg.storage, restsAtVessel);
+      return buildIslandStorage(msg.storage, restsAtVessel, Array.isArray(handed.heldBack) ? handed.heldBack : []);
     },
     restsAtVessel,
     // Resolve by content-address — the vessel's cas capability (basket-one #/the-fetch-door), composed here as

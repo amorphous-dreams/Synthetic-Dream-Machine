@@ -30,7 +30,8 @@ import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import { plainRecordOrNull } from "../../packages/lararium-mesh/src/stored-value.js";
 import { DEVICE_DELEGATION_SELF_TIDDLER } from "../../packages/lararium-mesh/src/lar-uris.js";
-import { daemonFaceFolder, kahuaFaceFolder } from "../../packages/lararium-node/src/bag-paths.js";
+import { FACE_PLANES, faceRoot, realmRoot, REALM_PLANES } from "../../packages/lararium-node/src/bag-paths.js";
+import { realmPlacement } from "../../packages/lararium-node/src/realm-labels.js";
 
 /**
  * Remove a staged root, and WAIT OUT THE DAEMON'S LAST WRITES.
@@ -146,12 +147,20 @@ function seedCustodyFor(env: Record<string, string>, args: readonly string[]): v
   seedTestCustody(root);
 }
 
+/** The marks an AI harness sets in its shells (`HARNESS_SEAT_MARKS` in the CLI). The staged CLI stands as the operator's hand, so a run under a harness reads as CI does. */
+const HARNESS_SEAT_MARK_NAMES = ["CLAUDECODE", "CODEX_SANDBOX", "CODEX_SANDBOX_NETWORK_DISABLED"] as const;
+const handEnv = (env: Record<string, string>): NodeJS.ProcessEnv => {
+  const out: NodeJS.ProcessEnv = { ...process.env, ...env };
+  for (const mark of HARNESS_SEAT_MARK_NAMES) delete out[mark];
+  return out;
+};
+
 function runCli(env: Record<string, string>, args: readonly string[]): Promise<CliResult> {
   seedCustodyFor(env, args);
   return new Promise((resolve) => {
     // The harness hands its staged CLI the test ward route explicitly (the product binary never answers one from a file).
     const child = spawn(process.execPath, ["--import", TEST_WARD_ROUTE, CLI_BIN, ...args], {
-      env: { ...process.env, ...env },
+      env: handEnv(env),
       cwd: REPO_ROOT,
     });
     let stdout = "";
@@ -307,24 +316,42 @@ export function stagedHearthGroup(root: string): string {
 }
 
 /**
- * Where a staged hearth's daemon wiki (the kahua wiki's working top, bag `wikis/daemon/working`) projects on disk: the face
- * rides the folder's name, `<root>/wikis/kahua-<tag>`, the tag the founded face's derived persona tag.
+ * Persona zero's face root on a staged hearth, `<root>/projections/faces/<pet name>`: the pet name its founding labelled
+ * (`face-labels/<F>.json`, which rests beside `faces/`, never inside it).
  */
+export function stagedFaceRoot(root: string): string {
+  const relation = stagedHearthRelation(root);
+  const label = JSON.parse(readFileSync(join(root, "projections", "face-labels", `${relation}.json`), "utf8")) as { petname?: unknown };
+  if (typeof label.petname !== "string") throw new Error(`the face label of ${relation} names no pet name`);
+  return faceRoot(join(root, "projections"), label.petname);
+}
+
+/** Where a staged hearth's daemon wiki (the kahua wiki's working top, bag `wikis/daemon/working`) projects on disk: the face
+ *  root's `wikis/daemon/`, `<root>/projections/faces/<pet name>/wikis/daemon`. */
 export function daemonWikiDir(root: string): string {
-  return join(root, "projections", "wikis", daemonFaceFolder(stagedHearthRelation(root)));
+  return join(stagedFaceRoot(root), FACE_PLANES.wiki);
 }
 
 /**
  * Where a staged vessel's workbench of a wiki projects on disk when its canon stands under no canon source: the ONE
- * folder `<root>/projections/wikis/<slug>`, whichever seated writer wears (cabal-realm#/the-workbench).
+ * folder `<root>/projections/realms/<realm pet name>/wikis/<slug>`, whichever seated writer wears (cabal-realm#/the-workbench).
+ * The realm labels name the pet name; before any label stands, the realm's default pet name, its slug.
  */
 export function wikiWorkbenchDir(root: string, slug: string): string {
-  return join(root, "projections", "wikis", slug);
+  const projections = join(root, "projections");
+  return join(realmPlacement(projections).wikisBase(slug) ?? join(realmRoot(projections, slug), REALM_PLANES.wikis), slug);
 }
 
-/** The face's kahua stage on a staged hearth: `<root>/projections/bags/kahua-<F>`. */
+/** Where a staged vessel's canon bag of a minted wiki projects on disk: `<root>/projections/realms/<realm pet name>/bags/<slug>`,
+ *  the realm's default pet name (its slug) before any label stands. */
+export function wikiCanonBagDir(root: string, slug: string): string {
+  const projections = join(root, "projections");
+  return join(realmPlacement(projections).bagsBase(slug) ?? join(realmRoot(projections, slug), REALM_PLANES.bags), slug);
+}
+
+/** The face's kahua stage on a staged hearth: `<root>/projections/faces/<pet name>/bags/kahua`. */
 export function kahuaStageDir(root: string): string {
-  return join(root, "projections", "bags", kahuaFaceFolder(stagedHearthRelation(root)));
+  return join(stagedFaceRoot(root), FACE_PLANES.stage);
 }
 
 /**

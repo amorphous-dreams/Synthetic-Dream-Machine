@@ -10,6 +10,8 @@
  *   W5 a bad carrier or non-bytes payload never reaches the capability and answers `bad custody write ask`.
  *      control: the face veil reaches it.
  *   W6 a rejection's message carries no byte of the payload.
+ *   W7 EACH ARCHIVE NAMES ITS FACE: an ask naming no face never reaches the capability and answers `face-not-named`.
+ *      control: the same bytes naming a face reach it with that face.
  */
 import { EventEmitter } from "node:events";
 import { beforeEach, describe, expect, test } from "vitest";
@@ -24,12 +26,15 @@ function wired(opts: { answer?: boolean } = {}) {
     postMessage: (msg: unknown) => {
       posted.push(msg);
       if (opts.answer === false) return;
-      void answerCustodyWrite(caps, msg as { requestId: string; carrier: "veil"; bytes: Uint8Array }).then((reply) => island.emit("message", reply));
+      void answerCustodyWrite(caps, msg as { requestId: string; carrier: "veil"; bytes: Uint8Array; face: string }).then((reply) => island.emit("message", reply));
     },
     on: (ev: "message", fn: (m: unknown) => void) => { island.on(ev, fn); },
   };
   return { port, posted, island };
 }
+
+/** The face every ask names: the PersonaGroup of the hive that exported the bytes. */
+const FACE = "group-of-the-exporting-face";
 
 /** The record the vessel hands; each test starts from an empty one. */
 let caps: CapabilityRecord = {};
@@ -39,30 +44,30 @@ describe("the custodyWrite capability", () => {
   test("W1 — no capability standing rejects; a standing one receives the exact carrier and bytes", async () => {
     const bytes = new Uint8Array([1, 2, 3]);
     const w = wired();
-    await expect(vesselCustodyWriter(w.port)("veil", bytes)).rejects.toThrow(/veil carrier \(no custodyWrite capability/);
-    const received: Array<[string, Uint8Array]> = [];
-    caps.custodyWrite = async (carrier, payload) => { received.push([carrier, payload]); };
-    await expect(vesselCustodyWriter(w.port)("veil", bytes)).resolves.toBeUndefined();
-    expect(received).toEqual([["veil", bytes]]);
+    await expect(vesselCustodyWriter(w.port)("veil", bytes, FACE)).rejects.toThrow(/veil carrier \(no custodyWrite capability/);
+    const received: Array<[string, Uint8Array, string]> = [];
+    caps.custodyWrite = async (carrier, payload, face) => { received.push([carrier, payload, face]); };
+    await expect(vesselCustodyWriter(w.port)("veil", bytes, FACE)).resolves.toBeUndefined();
+    expect(received).toEqual([["veil", bytes, FACE]]);
     expect(received[0]?.[1]).toBe(bytes);
   });
 
   test("W2 — a faulting capability answers unwritten with its fault", async () => {
     caps.custodyWrite = async () => { throw new Error("the seal store refused the write"); };
-    const reply = await answerCustodyWrite(caps, { requestId: "r1", carrier: "veil", bytes: new Uint8Array([4]) });
+    const reply = await answerCustodyWrite(caps, { requestId: "r1", carrier: "veil", bytes: new Uint8Array([4]), face: FACE });
     expect(reply).toMatchObject({ type: "custody:written", requestId: "r1", written: false, why: "the seal store refused the write" });
-    await expect(vesselCustodyWriter(wired().port)("veil", new Uint8Array([4]))).rejects.toThrow(/the seal store refused the write/);
+    await expect(vesselCustodyWriter(wired().port)("veil", new Uint8Array([4]), FACE)).rejects.toThrow(/the seal store refused the write/);
   });
 
   test("W3 — the vessel's answer resolves the write", async () => {
     caps.custodyWrite = async () => {};
-    await expect(vesselCustodyWriter(wired().port)("veil", new Uint8Array([5]))).resolves.toBeUndefined();
+    await expect(vesselCustodyWriter(wired().port)("veil", new Uint8Array([5]), FACE)).resolves.toBeUndefined();
   });
 
   test("W4 — an answer under another request id settles nothing; its own refusal rejects (control)", async () => {
     const w = wired({ answer: false });
     let settled = false;
-    const asking = vesselCustodyWriter(w.port)("veil", new Uint8Array([6])).finally(() => { settled = true; });
+    const asking = vesselCustodyWriter(w.port)("veil", new Uint8Array([6]), FACE).finally(() => { settled = true; });
     asking.catch(() => {});
     w.island.emit("message", { type: "custody:written", requestId: "someone-else", written: true });
     await new Promise((resolve) => setTimeout(resolve, 0));
@@ -85,7 +90,7 @@ describe("the custodyWrite capability", () => {
     const veilBytes = new Uint8Array([9]);
     const retired = await answerCustodyWrite(caps, { requestId: "archive", carrier: "archive", bytes: new Uint8Array([8]) } as never);
     expect(retired).toMatchObject({ written: false, why: "bad custody write ask" });
-    await answerCustodyWrite(caps, { requestId: "veil", carrier: "veil", bytes: veilBytes });
+    await answerCustodyWrite(caps, { requestId: "veil", carrier: "veil", bytes: veilBytes, face: FACE });
     expect(seen).toEqual([["veil", veilBytes]]);
     expect(seen[0]?.[1]).toBe(veilBytes);
   });
@@ -95,9 +100,21 @@ describe("the custodyWrite capability", () => {
     const marker = "synthetic-payload-marker";
     const bytes = new TextEncoder().encode(marker);
     let message = "";
-    try { await vesselCustodyWriter(wired().port)("veil", bytes); }
+    try { await vesselCustodyWriter(wired().port)("veil", bytes, FACE); }
     catch (error) { message = error instanceof Error ? error.message : String(error); }
     expect(message).toContain("seal failed");
     expect(message).not.toContain(marker);
+  });
+
+  test("W7 — EACH ARCHIVE NAMES ITS FACE: a faceless ask never reaches the capability and answers face-not-named", async () => {
+    const seen: string[] = [];
+    caps.custodyWrite = async (_carrier, _bytes, face) => { seen.push(face); };
+    for (const face of [undefined, ""]) {
+      const reply = await answerCustodyWrite(caps, { requestId: "faceless", carrier: "veil", bytes: new Uint8Array([3]), ...(face === undefined ? {} : { face }) } as never);
+      expect(reply).toMatchObject({ written: false, why: expect.stringMatching(/^face-not-named/) });
+    }
+    expect(seen).toEqual([]);
+    await answerCustodyWrite(caps, { requestId: "named", carrier: "veil", bytes: new Uint8Array([3]), face: FACE });
+    expect(seen).toEqual([FACE]);
   });
 });

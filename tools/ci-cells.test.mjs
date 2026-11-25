@@ -3,12 +3,13 @@
 // `ci-cells.mjs` are the one statement of the cells, and the workflow, the packages and the witness roster are held to them.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 import {
-  TEST_CELLS, WITNESS_CELLS, expectedTestReports, evaluateTestCells, evaluateWitnessCells, testReportName, cellIds,
+  TEST_CELLS, WITNESS_CELLS, expectedTestReports, evaluateTestCells, evaluateWitnessCells, testReportName, cellIds, selectCells, readTestReports, readWitnessLogs,
 } from "./ci-cells.mjs";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
@@ -62,6 +63,20 @@ test("C4 RED: a report no cell of the table owns refuses (a cell renamed or adde
   assert.match(verdictOf(reports).problems.join("\n"), /unexpected report: cell ghost/);
 });
 
+test("C4b RED: a lane's selection owes the selected packages' reports alone, refuses one it lacks or one it never selected, and `all` or blank owes the table", () => {
+  const cells = selectCells("@lares/cli");
+  assert.deepEqual(cells.map((c) => [c.cell, c.packages.map((p) => p.name)]), [["cli-mesh", ["@lares/cli"]]]);
+  const owed = expectedTestReports(cells);
+  const lane = new Map(owed.map((r) => [r.file, { cell: r.cell, report: lawful() }]));
+  assert.deepEqual(evaluateTestCells({ reports: lane, cells, tracked: TRACKED }).problems, [], "the selected report alone reads green");
+  assert.match(evaluateTestCells({ reports: new Map(), cells, tracked: TRACKED }).problems.join("\n"), /missing report: cell cli-mesh \(@lares\/cli\)/);
+  const stray = expectedTestReports().find((r) => r.pkg === "@lararium/mesh");
+  lane.set(stray.file, { cell: stray.cell, report: lawful() });
+  assert.match(evaluateTestCells({ reports: lane, cells, tracked: TRACKED }).problems.join("\n"), /unexpected report: cell cli-mesh/);
+  for (const whole of ["all", "", undefined]) assert.deepEqual(selectCells(whole), TEST_CELLS, String(whole));
+  assert.throws(() => selectCells("@lares/cli,$(rm)"), /names no package/);
+});
+
 test("C5 RED: a witness cell with no log, a red log, a rest log with no roll call or no self-test summary each refuse", () => {
   const logs = allLogs();
   logs.delete("contract-witness");
@@ -106,12 +121,14 @@ test("C7 RED: ci.yml carries one matrix row per cell, and a gate job named Test 
   const block = (id) => new RegExp(`^  ${id}:\\n((?: {4}.*\\n|\\n| {6}.*\\n)+)`, "m").exec(yml)?.[1] ?? "";
   for (const c of WITNESS_CELLS.filter((x) => x.host)) assert.match(block(c.host), new RegExp(`run-witness ${c.cell}\\b`), `the ${c.host} job never runs hosted cell ${c.cell}`);
   for (const [gate, cells, verb] of [["test", "test-cells", "verify-tests"], ["witnesses", "witness-cells", "verify-witnesses"]]) {
-    const needsRx = gate === "witnesses" ? `\\[quick, ${cells}\\]` : cells; // the Witnesses gate also waits on the job hosting a witness cell
+    // the Witnesses gate also waits on the job hosting a witness cell; both gates list the scope job, whose canon answer they read
+    const needsRx = gate === "witnesses" ? `\\[scope, quick, ${cells}\\]` : `\\[scope, ${cells}\\]`;
     const g = block(gate);
     assert.match(g, /^ {4}name: (Test|Witnesses)$/m, `the ${gate} gate job lost its name`);
     assert.match(g, new RegExp(`^ {4}needs: ${needsRx}$`, "m"));
-    // `always()` keeps the gate from skipping on a red cell; the fork guard keeps a same-repository pull_request from raising a second run (ci-graph.test.mjs).
-    assert.match(g, /^ {4}if: \$\{\{ always\(\) && \(github\.event_name != 'pull_request' \|\| github\.event\.pull_request\.head\.repo\.fork\) \}\}$/m, `the ${gate} gate skips when a cell fails: a skipped required check reads as nothing to report`);
+    // `always()` keeps the gate from skipping on a red cell, and the fork guard keeps a same-repository pull_request from raising a second
+    // run; which pushes skip the gate (canon alone; the witnesses when the scope sends none) ci-graph.test.mjs D1-D6 read by evaluating it.
+    assert.match(g, /^ {4}if: \$\{\{ always\(\) && \(github\.event_name != 'pull_request' \|\| github\.event\.pull_request\.head\.repo\.fork\) && /m, `the ${gate} gate skips when a cell fails: a skipped required check reads as nothing to report`);
     assert.match(g, new RegExp(`ci-cells\\.mjs ${verb}`));
     assert.match(g, new RegExp(`needs\\.${cells}\\.result`), `the ${gate} gate never reads its cells' own result`);
     assert.match(block(cells), /fail-fast: false/, `${cells} cancels its siblings on one red`);
@@ -172,4 +189,32 @@ test("C9 RED: a cell's report name carries its cell and package, and the table k
     const script = JSON.parse(readFileSync(join(ROOT, p.dir, "package.json"), "utf8")).scripts.test;
     assert.match(script, /^vitest run( --config \S+)?$/, `${p.dir}: its test script is no plain vitest run, so a cell cannot append a shard and a reporter to it`);
   }
+});
+
+// download-artifact lays ONE matched artifact straight into `path` (no `test-cell-<cell>/` subdirectory), which is what a
+// targeted lane (one cell selected) always downloads; the readers owe the same answer for either layout.
+test("C10 RED: a targeted lane's single downloaded artifact lands flat, and the gate still reads its report and log", () => {
+  const flat = mkdtempSync(join(tmpdir(), "cells-flat-"));
+  const nested = mkdtempSync(join(tmpdir(), "cells-nested-"));
+  const cli = expectedTestReports(selectCells("@lares/cli")).find((r) => r.cell === "cli-mesh");
+  assert.equal(cli.file, "report-cli-mesh-lares-cli.json");
+  writeFileSync(join(flat, cli.file), JSON.stringify(lawful(5)));
+  mkdirSync(join(nested, "test-cell-cli-mesh"));
+  writeFileSync(join(nested, "test-cell-cli-mesh", cli.file), JSON.stringify(lawful(5)));
+  for (const dir of [flat, nested]) {
+    const reports = readTestReports(dir);
+    assert.equal(reports.get(cli.file)?.cell, "cli-mesh", `${dir}: the report reads under its cell`);
+    const v = evaluateTestCells({ reports, cells: selectCells("@lares/cli"), tracked: TRACKED });
+    assert.deepEqual(v.problems, [], dir);
+  }
+  const wf = mkdtempSync(join(tmpdir(), "cells-wflat-"));
+  writeFileSync(join(wf, "contract-witness.log"), "x");
+  assert.equal(readWitnessLogs(wf).get("contract-witness"), "x");
+});
+
+test("C10b CONTROL: a flat report that no cell of the table owns reads as its own stray, never as a cell", () => {
+  const flat = mkdtempSync(join(tmpdir(), "cells-stray-"));
+  writeFileSync(join(flat, "report-nowhere-x.json"), JSON.stringify(lawful()));
+  const v = evaluateTestCells({ reports: readTestReports(flat), tracked: TRACKED });
+  assert.ok(v.problems.some((q) => q.startsWith("unexpected report")));
 });

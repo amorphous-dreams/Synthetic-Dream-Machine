@@ -631,7 +631,7 @@ async function lead(boot: { paint: (p: string) => void; relayUrl: string | undef
     mirrorStanding = true;
     mirrorSurface = shown;
     void standPageMirror({ port: pageBinding, host: $("mirror"), actor: did, surface: () => mirrorSurface,
-      mirrorInputs: vessel.mirrorInputs, onState: (state) => console.warn(`[mirror] ${state.kind}`, state),
+      mirrorInputs: vessel.mirrorInputs, startupAdmit: vessel.startupAdmit, onState: (state) => console.warn(`[mirror] ${state.kind}`, state),
       // Stock's "refresh" boots the mirror afresh from a new handoff; the page itself stays. A write still waiting holds it, as it holds a leave.
       reload: () => {
         if (!standingMirror) throw new Error("no mirror stands");

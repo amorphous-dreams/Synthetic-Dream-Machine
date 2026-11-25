@@ -20,6 +20,7 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/daemon-vm-core
  */
 
+import { wearOf } from "@lararium/mesh";
 import {
   canonicalJson,
   DAEMON_BAG_ID,
@@ -87,13 +88,16 @@ import {
   type WorldlineEdgeClose,
   type DaemonMsg_EvictRequest,
   type DaemonMsg_ResidencyOp,
+  type DaemonMsg_WearActorRequest,
   type DaemonMsg_WikiAlert,
   type BatchMode,
+  type ChoreReceiptMark,
   type IslandMsg_Ea,
   type IslandMsg_TeardownAck,
   isTeardownFault,
   landBindingDocuments,
 } from "@lararium/mesh";
+import type { Hand } from "@lararium/mesh/session-contract";
 import { runLocalVerb } from "./verb-local-dispatch.js";
 import type { SessionWorn, VerbTable } from "./verb-dispatcher.js";
 /** Well 1 input the host round-trips to the worker — two handles + the edge-DAG to project from. */
@@ -183,7 +187,7 @@ export interface DaemonVmCoreOptions {
   storage?:        IslandStorageConfig;
   /** One bounded D-VR-C worker-owned document; absent, the worker owns no document and its doc syncs over the host's channel alone. */
   ownedDocument?:  { documentUrl: string; storage?: IslandStorageConfig };
-  /** The daemon wiki's disk mirrors (its working layer → `<projections>/wikis/daemon-<F>/`); a node host mints them, a browser passes none. Rides the manifest's
+  /** The daemon wiki's disk mirrors (its working layer → `<projections>/faces/<pet name>/wikis/daemon/`); a node host mints them, a browser passes none. Rides the manifest's
    *  `diskMirrors` so the worker's `onBoot` can mount the same projector a wiki island mounts. */
   diskMirrors?:    readonly { bagId: string; mirrorRoot: string; scope: string; mirrorClass?: "recovery"; titlePaths?: boolean; tempLayer?: boolean }[];
   /**
@@ -205,6 +209,17 @@ export interface DaemonVmCoreOptions {
   askLivenessMs?: number;
   /** Override the ea progress-stall budget in ms (default 3x silence). */
   eaStallMs?:      number;
+  /**
+   * The PersonaGroup the vessel's worn face maps a session's ordinal to (the mounted face, or a lit sibling), or null where
+   * it maps none. A session's placed act carries it to the island (`DaemonMsg_PlaceVerb.worn`), so a tool-door write names
+   * that face on its origin. Absent, or null for an ordinal: the act carries no group, and its writes ride the engine's actor.
+   */
+  wornGroupOf?:    (ordinal: number) => string | null;
+  /**
+   * A face the manifest carried that the island's open refused to light (`daemon:face-settled`, op `composed`): its atom key and
+   * the island's reason. The vessel adopted that face lit before the island opened, so it reads the face dark from here.
+   */
+  onFaceRefused?:  (atomKey: string, reason: string) => void;
 }
 
 /** Unified placeVerb request — union of node + browser fields. */
@@ -217,6 +232,10 @@ export interface VesselPlaceVerbRequest {
   face?:        string;
   /** The session's face on this vessel (its ordinal), beside `face`; a session seat alone supplies it. */
   ordinal?:     number;
+  /** The asker's hand the vessel's door read (`seat`, `cli`, `tab`); the island books it with the act (`ctx.asker`). */
+  asker?:       Hand;
+  /** The chore's receipt mark the vessel's door built; the island stamps it into the durable outcome. */
+  chore?:       ChoreReceiptMark;
   requestId?:   string;
   targets?:     readonly string[];
   batchMode?:   string;
@@ -288,7 +307,7 @@ export interface DaemonVmCore {
    * the island's `$tw.lares.worldlineCompareVm`; the worker projects the registry + runs the ITC
    * tree-leq. Rejects (the worker's error) on an unknown handle — the verb wraps the helpful message.
    */
-  worldlineCompare: (input: DaemonWorldlineCompareInput) => Promise<{ order: string }>;
+  worldlineCompare: (input: DaemonWorldlineCompareInput) => Promise<{ order: string; uncertain: readonly string[] }>;
   /**
    * Well 3 (THE CORE) + Well 4 (NULL-READY) — a handle's worldline-ordered form-vector path IN the
    * daemon VM. Round-trips the captured turns (form-vectors the host pre-fetched from the form store
@@ -399,7 +418,9 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
   // book by its request id, never the presenter the delegate names. Only a channel ask carrying a session's face books,
   // and a booking serves ONE delegate of the verb it booked: the first delegate consumes it, so no later ask reusing the
   // id (a summons, a replay) wears the face.
-  const sessionAsks = new Map<string, SessionWorn & { readonly act: string }>();
+  // The booking also keeps the asker's hand the vessel's door read (`cli`, `seat`, …): a delegate of the booked act runs with
+  // that asker (`ctx.asker`), so a hand verb answers a terminal's session and refuses every other (hitl-reads-a-hand).
+  const sessionAsks = new Map<string, SessionWorn & { readonly act: string; readonly asker?: Hand }>();
   // A booking names the exact act its session placed: its verb and its args, so no other invocation under the id wears it.
   const actOf = (verb: string, args: unknown): string => canonicalJson([verb, JSON.parse(JSON.stringify(args ?? {}))]);
   // Pool eviction mechanism — set via onEvictRequest() after the pool exists.
@@ -426,7 +447,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
 
   // ── Vessel composite (cap-event writes) ─────────────────────────────────────
   const composite  = new CompositeStore();
-  const daemonStore = new AutomergeDocStore(daemonHandle, DAEMON_BAG_ID);
+  const daemonStore = new AutomergeDocStore(daemonHandle, DAEMON_BAG_ID, wearOf(repo));
   composite.addLayer({ bagId: DAEMON_BAG_ID, store: daemonStore, writable: true, defaultWritable: false });
   daemonStore.markSyncComplete();
   // Hold the persona plane directly for proof readers; no verb reads or writes it through the composite.
@@ -571,6 +592,11 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     if (!isIslandToVesselMsg(raw)) return;
 
     if (raw.type === "daemon:face-settled") {
+      // A MANIFEST FACE'S REFUSAL ANSWERS NO ASK: the vessel hears it by the face's atom key and the island's reason.
+      if (raw.op === "composed") {
+        if (!raw.ok) opts.onFaceRefused?.(raw.atomKey, raw.reason ?? "the island's open refused the face");
+        return;
+      }
       const key = faceKey(raw.atomKey, raw.op);
       const queue = facePending.get(key);
       const ask = queue?.shift();
@@ -639,7 +665,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     if (raw.type === "daemon:worldline-compare-result") {
       const msg = raw as DaemonMsg_WorldlineCompareResult;
       if (msg.error) settleAsk(msg.requestId, undefined, msg.error);
-      else settleAsk(msg.requestId, { order: msg.order });
+      else settleAsk(msg.requestId, { order: msg.order, uncertain: msg.uncertain ?? [] });
       return;
     }
 
@@ -665,6 +691,18 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
         .catch((err: unknown) => worker.post(mkDaemonEvictResult({
           requestId: msg.requestId, ok: false, error: err instanceof Error ? err.message : String(err),
         })));
+      return;
+    }
+
+    if (raw.type === "daemon:wear-actor-request") {
+      // THE ISLAND'S ACTOR, derived here: the main Repo's seated door (`seatRepoWear`, the vessel's wire identity) derives it
+      // under the island's own replica, and the actor alone crosses back. A main Repo with no seat refuses by name.
+      const msg = raw as DaemonMsg_WearActorRequest;
+      const door = wearOf(repo).wear!;
+      door.actor(msg.face, msg.documentId, msg.replica).then(
+        (actor) => worker.post({ type: "daemon:wear-actor-result", requestId: msg.requestId, actor }),
+        (err: unknown) => worker.post({ type: "daemon:wear-actor-result", requestId: msg.requestId, refusal: (err as { reason?: unknown })?.reason === undefined ? "worn-face-unwritable" : String((err as { reason: unknown }).reason) }),
+      );
       return;
     }
 
@@ -705,7 +743,8 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
       // vessel's own channel). Any other delegate keeps the claim it names and reads non-local. Only the delegate of
       // the act booked spends the booking: one naming another verb or other args under that id leaves it standing.
       const booked = sessionAsks.get(msg.requestId);
-      const worn: SessionWorn | undefined = booked && booked.act === actOf(msg.verb, msg.args) ? { ordinal: booked.ordinal, presenter: booked.presenter } : undefined;
+      const worn: SessionWorn | undefined = booked && booked.act === actOf(msg.verb, msg.args) ? { ordinal: booked.ordinal, presenter: booked.presenter, ...(booked.group !== undefined ? { group: booked.group } : {}) } : undefined;
+      const asker: Hand | undefined = worn ? booked?.asker : undefined;
       if (worn) sessionAsks.delete(msg.requestId);
       const invocationLike = {
         title:       `${DAEMON_BAG_ID}/delegate/${msg.requestId}`,
@@ -722,6 +761,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
         daemon:   composite,
         registry: _registry,
         ...(worn ? { wornOf: () => worn, localOf: () => true } : {}),
+        ...(asker ? { askerOf: () => asker } : {}),
       }).then((result) => {
         worker.post(mkDaemonVerbResult({ requestId: msg.requestId, result }));
       }).catch((err: unknown) => {
@@ -835,7 +875,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     }
     if (!binding.workingUrl) throw new HostWorkingBindingRefusal(slot, new Error("the island named no working document for the daemon wiki"));
     const handle = await findOrThrow(repo, binding.workingUrl, `${slot} (the host's daemon working layer)`, { refusal: WorkingDocumentUnavailableRefusal, timeoutMs: DOCUMENT_HANG_BOUND_MS });
-    const store = new AutomergeDocStore(handle, slot);
+    const store = new AutomergeDocStore(handle, slot, wearOf(repo));
     composite.addLayer({ bagId: slot, store, writable: true, defaultWritable: true });
     store.markSyncComplete();
     if (composite.defaultWritableBagId() !== slot) throw new NoWorkingLayerRefusal("Mounting the host working layer", "The mounted daemon working layer did not become the default writable; restart the vessel.");
@@ -845,7 +885,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     const slot = wikiSlotUri("daemon", "working");
     if (!composite.hasBag(slot) || mountedDocumentId(composite.storeForBag(slot)) === documentIdOfUrl(url)) return;
     const handle = await findOrThrow(repo, url, `${slot} (the island's working document)`, { refusal: WorkingDocumentUnavailableRefusal, timeoutMs: DOCUMENT_HANG_BOUND_MS });
-    const store = new AutomergeDocStore(handle, slot);
+    const store = new AutomergeDocStore(handle, slot, wearOf(repo));
     if (rebindWorkingLayer(composite, slot, store)) {
       store.markSyncComplete();
       console.log(`[daemon] the host working layer follows the island onto ${url.slice(0, 22)}…`);
@@ -888,10 +928,15 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     },
     placeVerb: (o: VesselPlaceVerbRequest) => {
       if (o.origin === "channel" && o.face && o.requestId && o.requestedBy && o.ordinal !== undefined && Number.isSafeInteger(o.ordinal) && o.ordinal >= 0) {
-        sessionAsks.set(o.requestId, { ordinal: o.ordinal, presenter: o.requestedBy, act: actOf(o.verb, o.args) });
+        const group = opts.wornGroupOf?.(o.ordinal) ?? null;
+        sessionAsks.set(o.requestId, { ordinal: o.ordinal, presenter: o.requestedBy, ...(group !== null ? { group } : {}), ...(o.asker ? { asker: o.asker } : {}), act: actOf(o.verb, o.args) });
         if (sessionAsks.size > 4096) sessionAsks.delete(sessionAsks.keys().next().value as string);
       }
+      // THE SESSION'S FACE RIDES THE ACT INTO THE ISLAND: the ordinal, the presenter its door verified, and the group the
+      // vessel's worn face maps the ordinal to. Booked the same way as the delegate's worn face above.
+      const booked = o.requestId ? sessionAsks.get(o.requestId) : undefined;
       worker.post(mkDaemonPlaceVerb({
+        ...(booked ? { worn: { ordinal: booked.ordinal, presenter: booked.presenter, ...(booked.group !== undefined ? { group: booked.group } : {}) } } : {}),
         origin:      o.origin,
         verb:        o.verb,
         args:        o.args,
@@ -903,6 +948,8 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
         ...(o.listenable      ? { listenable: o.listenable } : {}),
         ...(o.effectKey       ? { effectKey: o.effectKey } : {}),
         ...(o.face            ? { face: o.face } : {}),
+        ...(o.asker           ? { asker: o.asker } : {}),
+        ...(o.chore           ? { chore: o.chore } : {}),
       }));
     },
     placeTelemetry: (turnText: string, sourceFile: string, frontier?: readonly string[], turnKey?: string, chunkIndex?: number) => {
@@ -912,7 +959,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
       worker.post(mkStructurepalaceKapae({ turnKey, ...(ended ? { ended } : {}) }));
     },
     worldlineCompare: (input: DaemonWorldlineCompareInput) =>
-      askIsland<{ order: string }>("wl-cmp", (requestId) => mkDaemonWorldlineCompareRequest({
+      askIsland<{ order: string; uncertain: readonly string[] }>("wl-cmp", (requestId) => mkDaemonWorldlineCompareRequest({
         requestId, a: input.a, b: input.b, opens: input.opens,
         ...(input.closes !== undefined ? { closes: input.closes } : {}),
         ...(input.root   !== undefined ? { root: input.root }     : {}),

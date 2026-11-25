@@ -1,0 +1,40 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/system-pattern-integrities-record`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = false
+l-space   = "stable"
+role      = "docs record for the system pattern-integrities — the sprint phases, owed-work clauses and dated law headers the api meme carried before its ever-speaking-present cure"
+tags      = ["api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/docs/pono/system-pattern-integrities-record"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/pono/system-pattern-integrities-record"
+```
+
+<<~ ahu slot=`#/meme-header`>>
+
+! System Pattern-Integrities — Record
+
+This docs record keeps the history behind <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities`>>. The api meme states what holds; this record keeps the words the ever-speaking-present cure moved out of it, verbatim. It does not outrank the law.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/moved-text`>>
+
+!! Moved text, verbatim
+
+* Law headers carried their dates inline: "FFZ disk projection law (2026-05-01):", "FFZ island law (2026-05-01):", "FFZ pentadic law (2026-05-06):". The api meme's <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities#/rulings`>> now holds each as a dated line.
+* The AUTHORITY sources line named `lares/lararium-research/PRINCIPLES.md`, a path the tree no longer holds.
+* The SYSTEM laws read: "These encode the design-time heuristics that governed the web3 refactor."
+* ISLAND_2_GENESIS_ROOT opened "@phase: S5" and GEN_4_QUINE_PROPERTY opened "@phase: S5 — proved Sprint 5.": the quine closure and the genesis root entered under the fifth sprint.
+* PEER_3_AUTHORITY_FROM_CAPABILITY read: "Authority flows from a capability receipt, signature, or policy (Keyhive, future work) alone. Boot order, history depth, and writing genesis grant no authority. Until Keyhive lands, all peers operate at parity below the canon residency boundary."
+* The THRESHOLD table's carrier row read "the checked body between STX and ETX (sealed once carrier signing lands)": carrier signing stood as owed work; it rests on the road, not in the law.
+* CODEC_1_GRAMMAR_AS_MEMES named the grammar home as `lares/memes/api/pono/`, a path the tree no longer holds; the law names the lares bag's `api/pono/`.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zs40Qc0Kp3PP2vX76relqE1ytDsYvp6uDvHxecE7Z0M`>>
+
+<<^ code=`&#x0004;` to=`?`>>

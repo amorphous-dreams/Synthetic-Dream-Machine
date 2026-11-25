@@ -15,6 +15,7 @@ import { afterEach, describe, expect, test } from "vitest";
 import { genesisCoreBlob, genesisNote, genesisSkip, type EnginePath } from "./genesis-boot.harness.js";
 import { TW5Engine } from "../src/tw5-vm.js";
 import { preloadsFromCasBlob } from "../src/cas-preloads.js";
+import { modulePinsOf } from "../src/module-pins.js";
 import { memeticWikitextDeserializer } from "../src/deserializer.js";
 import { openDefaultStory } from "../src/default-story.js";
 import { TW5_PAGE_STYLESHEET } from "../src/tw5-camera.js";
@@ -44,7 +45,9 @@ async function boot(enginePath: EnginePath, dropStock = false): Promise<TW5Engin
   if (lend) g["WorkerGlobalScope"] = {};
   try {
     const engine = new TW5Engine();
-    await engine.boot(genesisCoreBlob(), treePreloads(dropStock));
+    // The tree reads its own NEXT bake, which no seed names yet: the tree vouches for its own packed set, as the bake will.
+    const preloads = treePreloads(dropStock);
+    await engine.boot(genesisCoreBlob(), preloads, undefined, { modulePins: modulePinsOf(preloads) });
     return engine;
   } finally { if (lend) delete g["WorkerGlobalScope"]; }
 }

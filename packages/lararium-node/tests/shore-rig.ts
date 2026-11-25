@@ -10,6 +10,7 @@
  * projector's own idle handshake.
  */
 
+import { grammarPins, vendoredCore } from "../../lararium-tw5/tests/test-wiki.js";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -102,7 +103,7 @@ export class ShoreRig {
   /** A rig over `count` tracked carriers, its wiki booted with the grammar plugin. */
   static async stand(count = 3): Promise<ShoreRig> {
     const engine = new TW5Engine();
-    await engine.boot(new Uint8Array(readFileSync(CORE)), [LARES_MEMETIC_WIKITEXT_PLUGIN as unknown as Record<string, unknown>]);
+    await engine.boot(vendoredCore(), [LARES_MEMETIC_WIKITEXT_PLUGIN as unknown as Record<string, unknown>], undefined, { modulePins: grammarPins() });
     return new ShoreRig(engine, count);
   }
 
@@ -129,15 +130,17 @@ export class ShoreRig {
 
   /**
    * ONE WAVE AGAINST THE ISLAND'S INGEST REACTOR, as the daemon answers it: the args the gesture sends, the
-   * reactor's own decision per carrier, and the outcome's row cap over the answer.
+   * reactor's own decision per carrier, and the outcome's row cap over the answer. The wave rides the operator's own line
+   * (`cli`) unless a vector names another asker (a seat, or none a door read).
    */
-  readonly submitWave = async (o: SubmitIngestOpts): Promise<SubmitResult> => {
+  readonly submitWave = async (o: SubmitIngestOpts, asker: VerbContext["asker"] | null = "cli"): Promise<SubmitResult> => {
     const requestId = `req-rig-${++this.wave}`;
     const args: Record<string, unknown> = {
       "source-uri": `file://${o.source}`, "to-bag": o.toBag, "change-id": `rig-${this.wave}`,
       carriers: o.candidates.map((r) => ({
         uri: r.uri, file: r.file, size: Buffer.byteLength(r.text, "utf8"), diskHash: r.diskHash, syncedHash: r.syncedHash,
         ...(r.syncedRecordsHash !== undefined ? { syncedRecordsHash: r.syncedRecordsHash } : {}),
+        ...((r as { headBase?: boolean }).headBase === true ? { headBase: true } : {}),
         ext: r.ext, text: r.text, ...(r.meta !== undefined ? { meta: r.meta } : {}),
       })),
       ...(o.deletions && o.deletions.length > 0 ? { deletions: o.deletions.map((d) => ({ uri: d.uri, syncedHash: d.syncedHash })) } : {}),
@@ -147,7 +150,7 @@ export class ShoreRig {
       requestId, title: `lar:///lararium.local.vm/verbs/${requestId}`, action: "INGEST", args, targets: [], batchMode: "best-effort",
       status: "pending", requestedBy: "operator-test", requestedAt: "2026-10-13T00:00:00Z",
     };
-    const ctx: VerbContext = { daemon: this.composite, invocation, cap: allowCap };
+    const ctx: VerbContext = { daemon: this.composite, invocation, cap: allowCap, ...(asker !== null && asker !== undefined ? { asker } : {}) };
     const result = await this.table.get("INGEST")!(args, ctx) as Record<string, unknown>;
     return { status: "done", requestId, results: { [VERB_RESULT_KEY]: { ok: true, output: boundOutcomeOutput(result) } } } as SubmitResult;
   };

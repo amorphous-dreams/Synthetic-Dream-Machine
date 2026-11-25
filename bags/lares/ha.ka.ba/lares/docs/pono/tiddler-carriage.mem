@@ -33,7 +33,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/tiddler-carriage"
 ''THE LAW (RFC-2119).''
 
 # ''A tiddler stands as a CRDT record.'' Every carry the house makes — a meme, a `.md`, a `.tid`, a POINTER to a binary — lands as a record in a bag doc (`LarTiddlerRecord`, `packages/lararium-mesh/src/tiddler-store.ts`) and MUST sync as that doc syncs. Nothing rides beside the CRDT as a second carriage of record.
-# ''A blob holds what a CID names.'' The bytes behind a pointer rest in a content-addressed tier — cleartext `cid/` (`sha256(bytes)` hex, `packages/lararium-node/src/node-cas.ts`) or ciphertext `@cad` (`blake3:` over the ciphertext, `packages/lararium-node/src/ciphertext-cas-seal.ts`) — and MUST NOT ride the CRDT. The pointer carries `textCid` · `_integrity` · `size` · `type` · `_is_skinny` and no `text` (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/blob-carriage#/proposed-law`>> clause 3).
+# ''A blob holds what a CID names.'' The bytes behind a pointer rest in a content-addressed tier — cleartext `cid/` (`sha256(bytes)` hex, `packages/lararium-node/src/node-cas.ts`) or ciphertext `@cad` (`blake3:` over the ciphertext, `packages/lararium-node/src/ciphertext-cas-seal.ts`) — and MUST NOT ride the CRDT. The pointer carries `textCid` · `_integrity` · `size` · `type` · `_is_skinny` and no `text` (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/blob-carriage#/proposed-law`>> clause 3).
 # ''The RECORD syncs by the share policy.'' A fleet peer (same-operator, a signed device edge) receives every plane; a cross-operator peer receives the deterministically-federatable public shelf, and a contracted MEMBER blind-transits a provably-sealed private plane (`packages/lararium-node/src/self-slot-share.ts`; the policy closure at `packages/lararium-node/src/open-node-vessel.ts:434-462`). The pointer crosses WITH the record, riding as a field of the record.
 # ''A peer FETCHES the BYTES on request; nothing syncs them with the record.'' A peer that holds the pointer and the read cap MUST hold a door to fetch the blob by cid, and MUST verify `hash(bytes) == cid` before it trusts a byte (the bulb's own law, `packages/lararium-node/src/bulb.ts:15-18`, `assembleBulb`; the lazy resolver's, `packages/lararium-tw5/src/lazy-resolver.ts`). A fetch MAY fail (a miss reads PENDING and a later render re-tries); a fetch MUST NOT hand back unverified bytes.
 # ''By which cap.'' The cid carries the verify-cap to anyone (a content address self-proves). A PUBLIC blob's bytes ride the public floor under `pull ≠ read` — "even public keeps the gate" (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/content-resolution#/cad-storage`>>). A PRIVATE blob's bytes ride as ciphertext: the carry-cap (a proven MEMBER over a provably-sealed plane, `carrierShareDecision`) moves it; the read-cap (the message key on the keyhive lane) opens it; the two never fuse (#/private-plane).
@@ -104,6 +104,19 @@ No door carries a cleartext `sha256` blob across the fleet today. The three plac
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/rulings`>>
+
+!! The operator's rulings over this carriage ~ verbatim
+
+The operator ruled the fetch door and the grace on 2026-09-11 ("Approve all, OODA-HA forwards"), two clauses of the moʻolelo first told at `scale-stories-basket-one#/exit`; quote license:
+
+* ''The fetch door:'' "the fetch door enacts makeCidResolver(localRead, casTransit, cacheWriteThrough) over Socket B with fetch-on-read the default, prefetch a per-peer cap, public blobs re-share via the Herm".
+* ''Grace and pin:'' "grace runs per tier against the realm's ahi-kā baseline, PIN at CID grain, the seven-day clock a reported floor".
+
+''⚠ Two drifts named, never chosen.'' #/questions below still asks the grace (one value for the house, or per tier), prefetch against fetch-on-read, and whether a public blob first travels to a Herm ~ the questions these two clauses answered ~ and #/law carries neither answer. The ruling names `casTransit`; the built door the status names reads `portTransit`. This slot carries the rulings and settles neither drift.
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/questions`>>
 
 !! Questions ~ only the operator answers
@@ -118,7 +131,7 @@ No door carries a cleartext `sha256` blob across the fleet today. The three plac
 
 !! Edges
 
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/blob-carriage`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/blob-carriage`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/content-resolution`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/cap-tier`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/reach-plane`>>
@@ -130,6 +143,6 @@ No door carries a cleartext `sha256` blob across the fleet today. The three plac
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;3DzL42ruhsIGJEsQNaFFtXj2w222n5zFrGKekLUhCVY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zERyAK5Sf910QGJZD0vMpRBY9yeMC2sH40Wi5G5ckKQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

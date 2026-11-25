@@ -50,7 +50,7 @@ describe("main's explicit origin composition weld", () => {
 // says; this weld holds the entry to saying them: the notice before any face listens, the watch on the one server.
 describe("main says the reach face's two lines", () => {
   test("the boot notice reads the setting and prints before the listener; the watch seats on the http server", () => {
-    const notice = SOURCE.indexOf("reachFaceBootNotice(process.env[\"LAR_PUBLIC_URL\"], `http://localhost:${port}`)");
+    const notice = SOURCE.indexOf("reachFaceBootNotice(process.env[\"LAR_PUBLIC_URL\"], `http://localhost:${port}`, testScratch)");
     const watch = SOURCE.indexOf("mountReachFaceWatch({ httpServer, declaredUrl: process.env[\"LAR_PUBLIC_URL\"]");
     expect(notice).toBeGreaterThan(-1);
     expect(watch).toBeGreaterThan(-1);
@@ -94,8 +94,10 @@ describe("main leaves the floor standing under a sovereign refusal", () => {
     expect(floor).toBeGreaterThan(named);
     // The refusal never wears the supervisor's `fatal:` marker while the floor stands.
     expect(road).not.toContain("fatal:");
-    // A floor that refuses closes the front, frees the store's name and rethrows.
-    expect(SOURCE).toMatch(/const floorRefused = async \(err: unknown\): Promise<never> => \{\s*front\.close\(\);\s*await floor\.release\(\);\s*throw err;/);
+    // A floor that refuses closes the front; a Repo that failed to close retains its claim.
+    expect(SOURCE).toContain("await front.close();");
+    expect(SOURCE).toContain("if (!(err instanceof CompositionShutdownError) || err.storeClosed) await floor.release();");
+    expect(road).toContain("if (err instanceof CompositionShutdownError && !err.storeClosed) throw err;");
   });
 
   test("the first boot and the custody door's recomposition both compose through that one road", () => {

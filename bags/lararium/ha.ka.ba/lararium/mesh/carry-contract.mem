@@ -7,13 +7,12 @@
 cacheable  = true
 l-space    = "lararium"
 namespace  = "&#x2695;"
-role       = "the carry-contract: revocation reframed as an IMMUNE SYSTEM (no firewall exists in no-global-now). Kapae = the propagating antigen riding the always-carried public/infra planes; a Kapae'd authn/z gets MU. Three carry tiers — MANDATORY (operator↔kahu: oracle-floor+@crossroads+Kapae, always) · BILATERAL (operator↔operator: cabal/shared) · PRIVATE (home). Carry ⊥ read ⊥ contract; carry-generous is safe because the BeeKEM read-floor makes every carry-mistake unreadable. Operator-ruled 2026-07-20; substrate built, the contract design-intent."
+role       = "the carry-contract: revocation reframed as an IMMUNE SYSTEM (no firewall exists in no-global-now). Kapae = the propagating antigen riding the always-carried public/infra planes; a Kapae'd authn/z gets MU. Three carry tiers — MANDATORY (operator↔kahu: oracle-floor+@crossroads+Kapae, always) · BILATERAL (operator↔operator: cabal/shared) · PRIVATE (home). Carry ⊥ read ⊥ contract; carry-generous is safe because the BeeKEM read-floor makes every carry-mistake unreadable. Operator-ruled; substrate built, the contract design-intent."
 status-why = "the SUBSTRATE stands"
 tags       = ["mesh/dreamnet-architecture", "mesh/oracle-governance", "mesh/siege-resilience", "api/pono/cabal-realm", "api/pono/causal-islands", "lifecycle/standing"]
 title      = "lar:///ha.ka.ba/lararium/mesh/carry-contract"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lararium/mesh/carry-contract"
-written    = "2026-07-20"
 ```
 
 <<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
@@ -194,6 +193,6 @@ cannot.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;SQ_RS6OYzZ19lLQeqH2yNIDF1uGIXJFRfdCu9wbpnEk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;DE3b5Ek_ht39X4RzVgCOUJzRLNcFqAGAk0JiG0g1yGk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

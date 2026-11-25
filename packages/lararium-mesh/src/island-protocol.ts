@@ -62,6 +62,8 @@
 
 import type { DeviceDelegationTiddler } from "./device-delegation.js";
 import type { FaceAnchor } from "./face-anchor.js";
+import type { Hand } from "./session-contract.js";
+import type { ChoreReceiptMark } from "./chore-ask.js";
 import type { PersonaKelEvent } from "./persona-kel.js";
 import type { WorldlineEdgeTriple, WorldlineEdgeClose } from "./worldline-edge.js";
 import type { SparseFormVector } from "./worldline-trajectory.js";
@@ -241,9 +243,9 @@ export interface IslandMsg_Manifest {
   /** Typed structural capabilities (see IslandGrants). Libraries resolve via the catalog registry. */
   grants: IslandGrants;
   /**
-   * Storage adapter configuration for the island-side Automerge Repo.
-   * When present, the island creates a persistent Repo (NodeFS or IDB).
-   * Absent or `{ type: "memory" }` = ephemeral relay-only Repo (test / cold-boot path).
+   * Storage adapter configuration for the island-side Automerge Repo: the daemon island's own store alone.
+   * Absent or `{ type: "memory" }` = an ephemeral relay-only Repo, on every platform: every wiki and session island
+   * stands so, and the vessel's Repo rests what it holds.
    */
   storage?: IslandStorageConfig;
   /** Optional bounded worker-owned document crossing (D-VR-C). */
@@ -266,11 +268,18 @@ export interface IslandMsg_Manifest {
   /**
    * Serializable disk mirror configs for island-hosted LarDiskProjector.
    * Each entry carries `bagId`, `mirrorRoot` (absolute path), and `scope`
-   * (e.g. "@lares", "@lararium") so the island can reconstruct `BagMirrorConfig`
+   * (e.g. "daemon", "kahua") so the island can reconstruct `BagMirrorConfig`
    * via `namedBagMirror(scope, mirrorRoot)` from `bag-paths`.
    * Absent = no disk projection for this island.
    */
   diskMirrors?: readonly { bagId: string; mirrorRoot: string; scope: string; mirrorClass?: "recovery"; titlePaths?: boolean; tempLayer?: boolean }[];
+  /**
+   * THE PERSON'S STAND-OFF COLLAPSE RULES, read from the worn face's daemon wiki (`$:/config/lares/shore/collapse/<rule>`,
+   * each naming the bags it may collapse in) as the vessel mints this manifest: rule → bags. A wiki island reads its
+   * rules here alone, never from its own wiki, which another writer may share; absent = no rule enabled anywhere.
+   * The daemon island reads its own wiki, the daemon face itself (`@lararium/node` standoff-collapse).
+   */
+  shoreCollapse?: Readonly<Record<string, readonly string[]>>;
   /**
    * DAEMON-ISLAND ONLY — operator authn/z material for in-worker keyhive boot
    * (isomorphic-vessel epic, Stage 1). The daemon worker's `onEa` calls
@@ -310,6 +319,10 @@ export interface IslandMsg_Manifest {
     /** This face's relation (its face plane pin, `faceRelationOf`): its daemon canon (`bags/daemon-<relation>`) stands by
      *  it. Absent: the face's daemon canon waits until a proof names it. */
     faceRelation?:     string;
+    /** A LIT SIBLING'S PROVEN PLANES (sibling-plane-mount): its intent plane and the persona plane its roster folds from, as its
+     *  own signed log named them when the vessel proved it at its light. The island re-checks the pair against that log and KEL
+     *  before its door reads either; absent, the sibling's door stands none. */
+    facePlanes?:       { readonly persona: string; readonly intents: string };
     faceAnchor?: FaceAnchor | null;
     meshCabalDocIdHex?:    string;
     /** Writable bag URIs to register so verify/delegate resolve (lar: URIs). */
@@ -343,7 +356,22 @@ export interface IslandMsg_Manifest {
 /** Authentication material carried by one unlocked joined face. */
 export type JoinedFaceAuth = Required<Pick<NonNullable<IslandMsg_Manifest["daemonAuth"]>,
   "atom" | "personaGroupId" | "faceAnchor" | "personaKel" | "deviceEdge" | "signerDid" | "registerBags">> &
-  Pick<NonNullable<IslandMsg_Manifest["daemonAuth"]>, "meshCabalDocIdHex" | "veilArchiveBytes" | "faceAddressSecret" | "handleIndex" | "faceRelation">;
+  Pick<NonNullable<IslandMsg_Manifest["daemonAuth"]>, "meshCabalDocIdHex" | "veilArchiveBytes" | "faceAddressSecret" | "handleIndex" | "faceRelation" | "facePlanes"> & {
+    /**
+     * EVERY LIT FACE PROJECTS ITS OWN WRITES: the mirror grants the vessel names for this face alone, each under that face's own
+     * root (`<projections>/faces/<pet name>/`): its daemon working top, its daemon canon, its kahua stage. The daemon island
+     * mounts one projector over the face's own engine while the face stands lit, and stops it when the face drops. Absent (no
+     * pet name, or a face that makes no folder), the face projects nothing. Never a crossroads or a temp layer: those belong
+     * to the worn composition's own list.
+     */
+    readonly diskMirrors?: IslandMsg_Manifest["diskMirrors"];
+    /**
+     * THE RECARD (`lares vault recard --face N`), asked for this light alone: where the face's stand holds no prekey secret, it
+     * mints its card before it registers its bags and rests the Archive after that card, keeping the face's identity. A light
+     * that never meets the fault stands as it would. Never part of what the face lit from (`faceInputsDigest`).
+     */
+    readonly recard?: true;
+  };
 
 /**
  * Cool the wiki slot from `wela` (hot) to `anu` (cold) — teardown; thread
@@ -400,6 +428,21 @@ export interface DaemonMsg_PlaceVerb {
   args: Record<string, unknown>;
   requestedBy: string;
   face?: string;
+  /**
+   * The face a session wore, as the vessel's session door booked it: its ordinal on this vessel, the presenter that door
+   * verified, and the PersonaGroup the vessel's worn face maps the ordinal to (absent where it maps none). The island
+   * books it with the act and hands it to the reactor as `ctx.worn`; absent for every ask that rode no session.
+   */
+  worn?: { readonly ordinal: number; readonly presenter: string; readonly group?: string };
+  /**
+   * The asker's hand as the vessel's own door read it (`seat` off a seat-marked line, `cli` for the operator's line, a
+   * session's own hand). Absent for an ask no door read (content, a synced summons). The island books it with the act and
+   * hands it to the reactor as `ctx.asker`; nothing reads it off args, a payload or a tiddler.
+   */
+  asker?: Hand;
+  /** The chore's receipt mark the vessel's door built (`ChoreReceiptMark`); the island books it with the act and the
+   *  dispatcher stamps it into the durable outcome. Absent for a read, a refusal, or an ask no door read. */
+  chore?: ChoreReceiptMark;
   targets?: string[];
   batchMode?: string;
   requestId?: string;
@@ -497,9 +540,9 @@ export interface DaemonMsg_WorldlineCompareRequest {
   requestId: string;
   a: string;
   b: string;
-  /** The durable edge-DAG opens (prov:Delegation spawn / prov:Communication inject), plain objects. */
+  /** The durable edge-DAG opens (prov:Delegation spawn / prov:Communication message or round-closing handback), plain objects. */
   opens: readonly WorldlineEdgeTriple[];
-  /** The edge-DAG closes (prov:Delegation handback) — absent when no handback edges stand. */
+  /** The edge-DAG closes (prov:Delegation retirement) — absent when no retirement edges stand. */
   closes?: readonly WorldlineEdgeClose[];
   /** The run-root / common-cause handle the registry seeds from (default "operator"). */
   root?: string;
@@ -511,6 +554,8 @@ export interface DaemonMsg_WorldlineCompareResult {
   requestId: string;
   /** "before" | "after" | "concurrent" | "equal" — the ItcOrder, carried as a plain string (GP-2). */
   order?: string;
+  /** Handles whose stamps rest on an incomplete record (the replay's `uncertain`); a verdict naming one reads partial. */
+  uncertain?: readonly string[];
   error?: string;
 }
 
@@ -569,8 +614,12 @@ export interface DaemonMsg_VerbResult {
 }
 
 
-/** The ops a face's settled answer names: the type and the door's runtime check both read this one tuple. */
-export const FACE_SETTLED_OPS = ["lit", "dropped", "bags"] as const;
+/**
+ * The ops a face's settled answer names: the type and the door's runtime check both read this one tuple. `lit`, `dropped` and
+ * `bags` each answer an ask of the vessel's; `composed` answers none: the island's open lights each face its manifest carried,
+ * and a face it refused there says so under this op, with its reason, so a vessel that adopted the face lit reads it dark.
+ */
+export const FACE_SETTLED_OPS = ["lit", "dropped", "bags", "composed"] as const;
 export interface DaemonMsg_FaceSettled { type: "daemon:face-settled"; atomKey: string; op: (typeof FACE_SETTLED_OPS)[number]; ok: boolean; reason?: string; }
 export const mkDaemonFaceSettled = (atomKey: string, op: DaemonMsg_FaceSettled["op"], ok: boolean, reason?: string): DaemonMsg_FaceSettled => ({ type: "daemon:face-settled", atomKey, op, ok, ...(reason === undefined ? {} : { reason }) });
 export const isDaemonFaceSettled = (v: IslandToVesselMsg): v is DaemonMsg_FaceSettled => v.type === "daemon:face-settled";
@@ -705,6 +754,26 @@ export interface DaemonMsg_ResidencyOp {
   reason?: string;
 }
 
+/**
+ * Island → vessel: the actor a face derives for one document, for the island's own Repo (`WireIdentity.actor` under the
+ * island's `replica`, minted at its boot). The derivation's secrets stay with the vessel; the actor alone crosses.
+ */
+export interface DaemonMsg_WearActorRequest {
+  type: "daemon:wear-actor-request";
+  requestId: string;
+  face: string | null;
+  documentId: string;
+  replica: string;
+}
+
+/** Vessel → island: the derived actor, or the refusal that stands in its place (`worn-face-unwritable`). */
+export interface DaemonMsg_WearActorResult {
+  type: "daemon:wear-actor-result";
+  requestId: string;
+  actor?: string;
+  refusal?: string;
+}
+
 /** Vessel → island: ack for a residency-op. */
 export interface DaemonMsg_ResidencyOpResult {
   type: "daemon:residency-op-result";
@@ -795,6 +864,7 @@ export type VesselToIslandMsg =
   | DaemonMsg_GateVerbRequest
   | DaemonMsg_EvictResult
   | DaemonMsg_ResidencyOpResult
+  | DaemonMsg_WearActorResult
   | WikiMsg_PlaceVerb
   | LarMsg_ControlEvent
   | LarMsg_Resend
@@ -968,7 +1038,7 @@ export interface IslandMsg_ReceiptRequest {
 }
 
 /**
- * Island → vessel: THE REST ASK (sealed-store#/owed, V2). Before an island's own store rests a byte of a document it asks
+ * Island → vessel: THE REST ASK (sealed-store#/owed, V2). Before the daemon island's own store rests a byte of a document it asks
  * whether the vessel's rest holds that document sealed; a sealed one rests in the island's memory alone and reaches rest
  * by sync, sealed in the vessel's store (`islandRestGuard`).
  */
@@ -1009,7 +1079,12 @@ export type CustodyWriteCarrier = "veil";
  * answers `custody:written` on the same `requestId`. The island names the CARRIER, never a path: the vessel decides
  * where the bytes rest.
  */
-export interface IslandMsg_CustodyWrite { type: "custody:write"; requestId: string; carrier: CustodyWriteCarrier; bytes: Uint8Array; }
+export interface IslandMsg_CustodyWrite {
+  type: "custody:write"; requestId: string; carrier: CustodyWriteCarrier; bytes: Uint8Array;
+  /** The face whose row the bytes rest in, by its PersonaGroup: the mounted face's or a lit sibling's. An ask naming none
+   *  seals nowhere (`face-not-named`). */
+  face: string;
+}
 /**
  * Island → vessel: THE BINDING GATE'S VERDICT, posted by a persona-bound daemon island once its gate ran. `gate:clear`
  * names the edge (by digest) and the persona root the gate verified, so a holder admits a session only for the edge the
@@ -1044,6 +1119,8 @@ export interface IslandMsg_SessionSign {
   ask: string;
   verb: string;
   payload?: Uint8Array;
+  /** `own` only: the lit face whose chain and fold it reads, by its bare atom key; absent, the worn face's. */
+  face?: string;
 }
 
 /**
@@ -1071,7 +1148,7 @@ export function nexusOfChain(chain: SessionOwnChain | null): NexusOwnChain | nul
 
 /** Vessel → island: the session sign door's answer, or one refusal by name. */
 export type IslandMsg_SessionSigned =
-  | { type: "session:signed"; requestId: string; certificate: unknown; subject: string; chain: SessionOwnChain; foldRead: boolean; counted: readonly string[]; unanswered: readonly string[] }
+  | { type: "session:signed"; requestId: string; certificate: unknown; subject: string; chain: SessionOwnChain; foldRead: boolean; counted: readonly string[]; unanswered: readonly string[]; face?: string }
   | { type: "session:signed"; requestId: string; own: true; chain: SessionOwnChain; foldRead: boolean; counted: readonly string[]; unanswered: readonly string[] }
   | { type: "session:signed"; requestId: string; signature: string }
   | { type: "session:signed"; requestId: string; refusal: string };
@@ -1099,6 +1176,9 @@ export interface WikiMsg_PlaceVerb {
   targets?:       string[];
   batchMode?:     string;
   requestId?:     string;
+  /** The asker's hand as the vessel's own door read it (`DaemonMsg_PlaceVerb.asker`); never read off args. Absent where no
+   *  door read one (a verb the vessel places by itself). */
+  asker?:         Hand;
 }
 
 /**
@@ -1155,6 +1235,7 @@ export type IslandToVesselMsg =
   | DaemonMsg_GateVerbResult
   | DaemonMsg_EvictRequest
   | DaemonMsg_ResidencyOp
+  | DaemonMsg_WearActorRequest
   | DaemonMsg_WikiAlert
   | DaemonMsg_FloorAnswer
   | IslandMsg_CasWant
@@ -1195,7 +1276,7 @@ export function isVesselToIslandMsg(v: unknown): v is VesselToIslandMsg {
   if (v.type === LAR_CONTROL_EVENT) return readLarControlEvent(v) !== null;
   if (v.type === LAR_RESEND) return readLarResend(v) !== null;
   if (isPortKind(v.type)) return readPortVesselMsg(v) !== null;   // the record port reads whole at the door too
-  return (["manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:face-lit", "daemon:face-drop", "daemon:face-bags", "daemon:verify-request", "daemon:resolve-binding-request", "daemon:gate-verb-request", "daemon:evict-result", "daemon:residency-op-result", "wiki:place-verb", "cas:block", "dyad:read", "receipt:issued", "rest:answer", "custody:written", "session:signed", "view:catalog-result", "view:content-result", "view:settled"] as const)
+  return (["manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:face-lit", "daemon:face-drop", "daemon:face-bags", "daemon:verify-request", "daemon:resolve-binding-request", "daemon:gate-verb-request", "daemon:evict-result", "daemon:residency-op-result", "daemon:wear-actor-result", "wiki:place-verb", "cas:block", "dyad:read", "receipt:issued", "rest:answer", "custody:written", "session:signed", "view:catalog-result", "view:content-result", "view:settled"] as const)
     .includes(v.type as Exclude<VesselToIslandMsg["type"], "receipt:close" | "wiki:request-drain" | SensoriumSignalType | typeof LAR_CONTROL_EVENT | typeof LAR_RESEND | PortVesselToIslandMsg["type"]>) || isSensoriumSignalType(v.type);
 }
 
@@ -1225,7 +1306,7 @@ export function isIslandToVesselMsg(v: unknown): v is IslandToVesselMsg {
     const tiddler = record?.tiddler as Record<string, unknown> | undefined;
     return typeof record === "object" && record !== null && typeof tiddler === "object" && tiddler !== null && typeof tiddler.title === "string";
   }
-  return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "gate:clear", "gate:refused", "wiki:verb-result", "daemon:face-settled", "daemon:delegate-verb", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:gate-verb-result", "daemon:evict-request", "daemon:residency-op", "daemon:wiki-alert", "cas:want", "dyad:ask", "receipt:request", "rest:ask", "custody:write", "session:sign", "view:catalog", "view:content", "view:settle", "docstore:sealed", "docstore:opened", "docstore:live", "docstore:slot", "docstore:answering", "docstore:silent"] as const).includes(
+  return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "gate:clear", "gate:refused", "wiki:verb-result", "daemon:face-settled", "daemon:delegate-verb", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:gate-verb-result", "daemon:evict-request", "daemon:residency-op", "daemon:wear-actor-request", "daemon:wiki-alert", "cas:want", "dyad:ask", "receipt:request", "rest:ask", "custody:write", "session:sign", "view:catalog", "view:content", "view:settle", "docstore:sealed", "docstore:opened", "docstore:live", "docstore:slot", "docstore:answering", "docstore:silent"] as const).includes(
     v.type as Exclude<IslandToVesselMsg["type"], "receipt:asks-done" | "daemon:floor-answer" | LarIslandToVesselMsg["type"] | PortIslandToVesselMsg["type"]>,
   );
 }
@@ -1268,6 +1349,7 @@ export function mkManifest(
     floorCid?:       string | null;
     view?:           IslandViewStanding;
     resolved?:       Readonly<Record<string, string>>;
+    shoreCollapse?:  Readonly<Record<string, readonly string[]>>;
   },
 ): IslandMsg_Manifest {
   const msg: IslandMsg_Manifest = {
@@ -1286,6 +1368,7 @@ export function mkManifest(
   if (opts?.floorCid)            msg.floorCid    = opts.floorCid;
   if (opts?.view)                msg.view        = opts.view;
   if (opts?.resolved)            msg.resolved    = opts.resolved;
+  if (opts?.shoreCollapse && Object.keys(opts.shoreCollapse).length > 0) msg.shoreCollapse = opts.shoreCollapse;
   return msg;
 }
 
@@ -1314,6 +1397,9 @@ export function mkDaemonPlaceVerb(opts: {
   args: Record<string, unknown>;
   requestedBy: string;
   face?: string;
+  worn?: DaemonMsg_PlaceVerb["worn"];
+  asker?: Hand;
+  chore?: ChoreReceiptMark;
   targets?: string[];
   batchMode?: string;
   requestId?: string;
@@ -1335,6 +1421,9 @@ export function mkDaemonPlaceVerb(opts: {
   if (opts.listenable)       msg.listenable = opts.listenable;
   if (opts.effectKey)        msg.effectKey  = opts.effectKey;
   if (opts.face)             msg.face       = opts.face;
+  if (opts.worn)             msg.worn       = opts.worn;
+  if (opts.asker)            msg.asker      = opts.asker;
+  if (opts.chore)            msg.chore      = opts.chore;
   return msg;
 }
 
@@ -1389,6 +1478,7 @@ export function mkDaemonWorldlineCompareRequest(opts: {
 export function mkDaemonWorldlineCompareResult(opts: {
   requestId: string;
   order?: string;
+  uncertain?: readonly string[];
   error?: string;
 }): DaemonMsg_WorldlineCompareResult {
   const msg: DaemonMsg_WorldlineCompareResult = {
@@ -1396,6 +1486,7 @@ export function mkDaemonWorldlineCompareResult(opts: {
     requestId: opts.requestId,
   };
   if (opts.order !== undefined) msg.order = opts.order;
+  if (opts.uncertain !== undefined) msg.uncertain = opts.uncertain;
   if (opts.error !== undefined) msg.error = opts.error;
   return msg;
 }
@@ -1585,6 +1676,7 @@ export function mkWikiPlaceVerb(opts: {
   targets?: string[];
   batchMode?: string;
   requestId?: string;
+  asker?: Hand;
 }): WikiMsg_PlaceVerb {
   const msg: WikiMsg_PlaceVerb = {
     type: "wiki:place-verb",
@@ -1595,6 +1687,7 @@ export function mkWikiPlaceVerb(opts: {
   if (opts.targets?.length)  msg.targets   = opts.targets;
   if (opts.batchMode)        msg.batchMode = opts.batchMode;
   if (opts.requestId)        msg.requestId = opts.requestId;
+  if (opts.asker)            msg.asker     = opts.asker;
   return msg;
 }
 

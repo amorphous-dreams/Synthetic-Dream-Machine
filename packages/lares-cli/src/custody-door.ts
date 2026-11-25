@@ -15,13 +15,27 @@ export type CustodyFrame =
   /** An unlock at a vessel whose custody a pūlama holds: it carries no credential, and the vessel asks its pūlama again. */
   | { readonly op: "unlock" }
   | { readonly op: "lock"; readonly face?: number }
+  /** A proof that a person holds a route of this vessel, over its held key: opens nothing new, names its opener by index. */
+  | { readonly op: "prove"; readonly credentials: readonly Credential[] }
+  /** Wear face `face`, one already standing open: no route rides it. It names the face, `seat: "ai"` where an AI seat sent it,
+   *  `yes: true` where it turns over records the shore's flush left unwritten (`--yes`), and `acceptLoss: true` where a person
+   *  typed the word that drops the saves a refused face holds (`--accept-loss`; never beside `seat: "ai"`). */
+  | { readonly op: "wear"; readonly face: number; readonly seat?: "ai"; readonly yes?: true; readonly acceptLoss?: true }
   | { readonly op: "custody" }
   /** The census of saves the vessel holds in memory, read before a stop: no credential, answered at once. */
   | { readonly op: "census" }
+  /** The document census: every document the stores hold and who names it, read-only (`vessel census --docs`). */
+  | { readonly op: "doc-census" }
+  /** The shore's flush over every island the composition holds (`lares shore flush`): no credential; it places no record. */
+  | { readonly op: "shore-flush" }
   /** One act of the sealed-act table and its typed arguments; nothing rides beside them. */
   | { readonly op: "act"; readonly act: string; readonly args: Readonly<Record<string, unknown>> }
   /** One face's backup cut: the vessel's own route, the face's handle-index and the bundle key (64 lower hex). */
   | { readonly op: "backup"; readonly credentials: readonly Credential[]; readonly face: number; readonly key: string }
+  /** Rehive one SHUT face from its own seed: the face's own route and its handle-index (`lares vault rehive`). */
+  | { readonly op: "rehive"; readonly credentials: readonly Credential[]; readonly face: number }
+  /** Recard one face served here and dark for want of a prekey secret: the vessel's own route and the face's handle-index. */
+  | { readonly op: "recard"; readonly credentials: readonly Credential[]; readonly face: number }
   /** The human route the next new face this vessel founds will bind (passphrase pins; one use). */
   | { readonly op: "face-route"; readonly slots: readonly SlotSpec[]; readonly purpose: "persona-new" | "bundle.restore"; readonly argsDigest: string }
   /** One ward act's route: the vessel parks it under a one-use ticket the verb names (seat-harness#/the-ward). */
@@ -77,4 +91,11 @@ export function vesselStanding(dataDir?: string | null, waitMs = 5_000): Promise
   const asked = sendCustodyFrame({ op: "custody" }, dataDir, abort.signal).then((a): VesselStanding =>
     (a !== null && a["op"] === "custody" ? { reading: "vessel", unlocked: a["unlocked"] === true, composing: a["composing"] === true } : { reading: "none" }));
   return Promise.race([asked, silent]).finally(() => { if (timer) clearTimeout(timer); });
+}
+
+/** The faces the vessel holds, by handle index: the census's lit set and its faces locked; none where no vessel answers. */
+export async function houseFaces(dataDir?: string | null): Promise<{ open: number[]; shut: number[] }> {
+  const census = await sendCustodyFrame({ op: "census" }, dataDir);
+  const ordinals = (v: unknown): number[] => (Array.isArray(v) ? v.filter((f): f is number => Number.isSafeInteger(f) && (f as number) >= 0) : []);
+  return { open: ordinals(census?.["facesLit"]), shut: ordinals(census?.["facesLocked"]) };
 }

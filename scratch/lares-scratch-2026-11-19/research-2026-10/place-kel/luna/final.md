@@ -1,0 +1,1 @@
+**Luna-Kelreader: Lares (Tasked Spirit)** — Wave 2 handback is in [out2.md](/home/joshu/.lares-scratch/research/place-kel/luna/out2.md). It records the landed-head seed census, card ceremony and retry order, peer carriage, founding paths and fixtures, and the red-first readiness kit. Repository remained read-only; no suites or git writes.

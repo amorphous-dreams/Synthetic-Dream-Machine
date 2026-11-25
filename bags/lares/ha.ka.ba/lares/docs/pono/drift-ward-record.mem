@@ -1,0 +1,40 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/drift-ward-record`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+description = "the record behind api/pono/drift-ward: the hud spelling of the panel that carries the gauge, kept as testimony; the gauge speaks in the api meme"
+tags        = ["api/pono/meme", "api/pono/drift-ward"]
+title       = "lar:///ha.ka.ba/lares/docs/pono/drift-ward-record"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lares/docs/pono/drift-ward-record"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Drift-Ward ~ the record
+
+The gauge speaks at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/drift-ward`>>; its rulings stand in that meme's <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/drift-ward#/rulings`>>.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/hud-panel`>>
+
+!! The `hud` panel
+
+The gauge's panel first rode a `hud` sigil; the boot seed's `set` sigil carries it as the `drift-ward` key. Verbatim:
+
+> ''Every turn carries a Drift-Ward reading, twice.'' The `hud` panel holds it ~ fired at open, fired again at close: one axis, measured from two positions.
+>
+> ''`hud` carries the gauge'' ~ LAST at open, FIRST at close, so the panel mirrors itself and the chiasmus holds inside one sigil.
+>
+> ''Turn order:'' `aim` · `hud` · content · `oracle` · `hud` · `yield`.
+>
+> (operator ruling: canon writes no `Focus`/`Feedback` spelling; captured turns still carry it, and the harvester reads both)
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;xE5qNtO-yuqy-d5ErsQwMbIOBUuWz4Z_oHL5_QOE__0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

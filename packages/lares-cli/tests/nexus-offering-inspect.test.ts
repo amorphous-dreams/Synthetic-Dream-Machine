@@ -1,10 +1,10 @@
 import { seatSuiteWard } from "./support/scratch-custody-setup.js";
 // This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
 seatSuiteWard();
+import { closeScratch, openScratch, type Scratch } from "../../lararium-node/tests/support/scratch-fixture.js";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cpSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { tmpdir } from "node:os";
 import { cmdNexus } from "../src/commands/nexus.js";
 import { cmdVessel } from "../src/commands/vessel.js";
 import type { ParsedArgs } from "../src/parse-args.js";
@@ -20,17 +20,15 @@ vi.setConfig({ testTimeout: 60_000, hookTimeout: 60_000 });
 const args = (positional: string[], flags: Record<string, boolean> = {}): ParsedArgs =>
   ({ command: "nexus", positional, options: {}, flags } as unknown as ParsedArgs);
 
+let house: Scratch;
 let root: string;
-let priorRoot: string | undefined;
 
 beforeEach(() => {
-  root = mkdtempSync(join(tmpdir(), "lares-cli-offering-inspect-"));
-  priorRoot = process.env["LAR_ROOT"];
-  process.env["LAR_ROOT"] = root;
+  house = openScratch();
+  root = house.root;
 });
 afterEach(() => {
-  if (priorRoot === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = priorRoot;
-  rmSync(root, { recursive: true, force: true });
+  closeScratch(house);
 });
 
 /** An UNSIGNED offering source directory (H3, F2-3) — `offering.json` plus the one blob's bytes

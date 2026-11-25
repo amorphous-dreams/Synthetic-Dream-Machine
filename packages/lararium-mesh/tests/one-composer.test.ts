@@ -95,7 +95,7 @@ async function probe(record: Readonly<CapabilityRecord>) {
     unrested: (await answerReceipt(caps, { requestId: "r2", documentIds: ["doc-unrested"] })).issued,
     cas:      record.cas ? new TextDecoder().decode((await record.cas("cid-held")) ?? new Uint8Array()) : "no-cas",
     casMiss:  record.cas ? await record.cas("cid-absent") : "no-cas",
-    custody:  (await answerCustodyWrite(caps, { requestId: "c1", carrier: "veil", bytes: bytes("veil") })).written,
+    custody:  (await answerCustodyWrite(caps, { requestId: "c1", carrier: "veil", bytes: bytes("veil"), face: "G-A" })).written,
     signRead: pick(await answerSessionSign(caps, { requestId: "s1", op: "read", ask: "call-1", verb: "sealed-seal" })),
     signSign: pick(await answerSessionSign(caps, { requestId: "s2", op: "sign", ask: "call-1", verb: "sealed-seal", payload: bytes("x") })),
     signOwn:  pick(await answerSessionSign(caps, { requestId: "s3", op: "own", ask: "own", verb: "own" })),

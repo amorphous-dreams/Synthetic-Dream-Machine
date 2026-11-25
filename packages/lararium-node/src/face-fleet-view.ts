@@ -68,7 +68,7 @@ export function faceFleetFacets(bootstrapTiddlers: BootTiddlers, personaGroup: s
  * stand on (a realm's doc, its steward, its standing), as document IDs. An ALLOW-LIST: a document the catalog does not point at
  * reads nothing across the bridge, so a foreign face's plane whose catalog row is absent, withheld or face-scoped is shut out by
  * default and never let in by an omission. The mounted face's own five planes ride its view. The Kahu canon this vessel
- * stands (`@lares`, `@lararium`, registered by the realm and never the catalog) rides the bridge as the vessel's books too.
+ * stands (`lares`, `lararium`, registered by the realm and never the catalog) rides the bridge as the vessel's books too.
  */
 export function bridgeBooks(catalog: LarDoc | undefined | null, canon: KahuCanonDocs = {}): ReadonlySet<string> {
   const out = new Set<string>();
@@ -81,7 +81,7 @@ export function bridgeBooks(catalog: LarDoc | undefined | null, canon: KahuCanon
     if (isFaceScopedBag(title) || title === KAHUA_BAG) continue;
     add(tiddlerText(record));
   }
-  // THE KAHU CANON IS A BOOK OF THIS VESSEL: the realm registry, never the catalog, names `@lares` and `@lararium` (one
+  // THE KAHU CANON IS A BOOK OF THIS VESSEL: the realm registry, never the catalog, names `lares` and `lararium` (one
   // owner per registry), so the bridge reads them off the canon the vessel stood at boot (`standKahuCanon`). Without this a
   // seated same-operator leaf read every book and none of the canon (walk R4).
   add(canon.lares); add(canon.lararium);

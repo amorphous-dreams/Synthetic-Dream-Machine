@@ -32,12 +32,12 @@ A moʻolelo of the talk-story between the operator and the house on 2026-11-14, 
 ''A document follows its cap contract, and every carry act follows the document.'' A carry act names any of: a disk mirror, a seed, an export, an import, a sync to a fleet device. None of them asks which face stands worn first; each asks which document it carries and who holds that document.
 
 |! document |! held by |! folder |! seeded and carried |
-| a daemon wiki, a kahua stage | one face | names the face (`daemon-<F>`, `kahua-<F>`) | per face, adopted by pet-name |
-| a face's `personal` layer of a wiki | one face | `personal/<F>/<slug>` | per face |
-| a wiki's workbench (`wikis/<slug>/working`) | the realm: its owner and every seated face (OWED on one vessel: the rest gate, below) | one folder for the wiki | once per document, at any seated writer's wear |
+| a daemon wiki, a kahua stage | one face | the face's root, named by its pet name (`faces/<pet name>/wikis/daemon`, `.../bags/kahua`) | per face, where the root stands |
+| a face's `personal` layer of a wiki | one face | `faces/<pet name>/personal/<slug>` | per face |
+| a wiki's workbench (`wikis/<slug>/working`) | the realm: its owner and every seated face | one folder for the wiki | once per document, at any seated writer's wear |
 | house canon | the Kahu seat | `bags/<slug>` | at the steward |
 
-''The workbench row, as it stands.'' The realm holds the workbench across vessels, and on one vessel for a wiki the vessel does not mount as its own (a second wiki, reached by the store door or a pool island), where every seated face reads and writes the one document. On ONE vessel, a face seated in ANOTHER face's realm cannot yet open the mounted wiki's workbench: the vessel seals that working document under the worn face's own content key, so such a face mounts no workbench there and writes its own `personal` layer (`workbench-seat` answers `restsUnderOwner`). OWED: the rest gate, road item `C2` (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-leaps`>>), where the workbench bag's content key wraps for its realm's roster.
+''The workbench row, as it stands.'' The realm holds the workbench across vessels, and on one vessel for a wiki the vessel does not mount as its own (a second wiki, reached by the store door or a pool island), where every seated face reads and writes the one document. On ONE vessel, a face seated in ANOTHER face's realm mounts the workbench too: the working bag's content key wraps for the realm's roster, so each seated face's own holder opens the one document, a writer writes `working` and a reader `personal` (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench`>>, the rest seals for the roster). The roster's wrap reaches a member face's other vessels through the member lane, still owed (road `C2` wave two, with `K21`).
 
 ''Seed'' names the first pour of a document onto a place. Its source varies: the genesis floor for canon, the disk mirrors on a re-founding, a peer's CRDT on a fleet device. A shared wiki arrives once; a face-private document arrives for its face.
 
@@ -47,7 +47,7 @@ A moʻolelo of the talk-story between the operator and the house on 2026-11-14, 
 
 <<~ ahu slot=`#/the-unseated-face`>>
 
-!! The unseated face writes its margin
+!! The unseated face writes its personal layer
 
 A face that holds no writer's seat in a wiki's workbench reads canon (from the floor where it stands outside the cabal) and writes into its own `personal` layer of that wiki. It offers from there. It founds no second working realm of a wiki another face on the vessel already stands; where no face of the vessel stands the wiki, its first put founds the workbench and lands in `working` (`workbenchFoundsOnWrite`). The recipe order already carried the place: canon -> working -> personal -> draft -> temp, with the operator's 2026-11-11 ruling //"Personal can absorb the new caps."//
 
@@ -58,13 +58,13 @@ A face that holds no writer's seat in a wiki's workbench reads canon (from the f
 
 <<~ ahu slot=`#/faces-sit-flat`>>
 
-!! Faces sit flat ~ no record joins a human's faces
+!! Faces sit flat ~ no published document joins a human's faces
 
-''The construction.'' No realm-crossing act takes two faces of one human as its inputs, and seating one's own second face takes the same record shape as seating a stranger's.
+''The construction.'' No realm-crossing act takes two faces of one human as its inputs, and seating one's own second face takes the same record shape as seating a stranger's, so no DreamNet-published document carries two of one human's faces' crypto identities or handles in a joinable way. A pet-name carries no restriction: it stays the human's own label, which the human may say anywhere (operator, 2026-11-19).
 
 * ''One door for every seat.'' The law: a face asks with its own key from its own session, and standing members consent (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-steward-signer`>>: "a name enters a record by its own hand first"). What stands on one vessel: the share door has the owner's hive delegate to the member face's hive, read off that face's contact card, with both hives lit, and no ask comes from the member's own session. The record it writes matches a stranger's seat (a contact card, then a delegation), so no record shape marks "my other face" and the flat construction holds at the record. OWED: the ask from the member's own session, which a seat across vessels and operators needs (the member consult, road item `P3`).
-* ''A roster lists faces flat.'' It carries no owner field, no issuer that ties face to face, and no pet-name. A pet-name such as `<name>-engineer` spells a link in plain text and stays a local label.
-* ''Everything that does join faces rests vessel-private:'' the persona roster, the device table, pet-name labels, share-carry entries, adoption across a re-founding. An export bundle counts as the operator's own private carry; handed to another party it would tell the mapping.
+* ''A roster lists faces flat.'' It carries no owner field, no issuer that ties face to face, and no pet-name. A pet-name such as `<name>-engineer` spells a link in plain text, and the human may say it anywhere.
+* ''Everything that does join faces rests vessel-local:'' the persona roster, the device table, pet-name labels, share-carry entries, adoption across a re-founding. An export bundle counts as the operator's own private carry; handed to another party it carries the mapping to them.
 * ''Who belongs to whom travels by voice.'' The model offers no field to say it and none to deny it.
 
 ''What the code keeps, measured by reading on 2026-11-14.'' A PersonaGroup holds the devices of ONE face. Each face founds its own Keyhive identity, group and sentinel document, and each face's root mints from fresh randomness, so no public value lets an observer test "same root". The operator's ruling of 2026-10-18 stands behind it: //"one Keyhive identity per PersonaGroup, none above them … it's the only way to retain control over faces that don't know about each other."// A workbench's key document stays on its vessel, and nothing of it crosses to another human today.
@@ -169,7 +169,7 @@ Each leap names a lane that can run beside the others.
 # ''The Handle.'' A collective Handle's key custody and a Handle seat that shows one member.
 # ''Recovery under random roots.'' What a recovery phrase restores under random roots, stated per face.
 # ''The seat for a face's second device.'' A workbench seat that reaches every device of the seated face.
-# ''The realm's key: the rest gate.'' The workbench bag's content key wraps for its realm's roster through the content-key seat's lockbox, so a face seated in another face's realm opens the mounted wiki's workbench on one vessel, and a wiki the vessel does not mount rests sealed for its roster (the house's decision, overrulable: only the roster's wrap carries to a second vessel and a second operator).
+# ''The realm's key across vessels.'' On one vessel the workbench bag's content key wraps for its realm's roster (landed 2026-11-23); the wrap reaches a member face's other devices and vessels through the member lane's parcels, so the roster's wrap carries to a second vessel and a second operator (the house's decision, overrulable).
 # ''The TiddlyWiki caps as phases.'' Phase 1 stands (one family law, the orphan folder and its flag, the tiddler door on the anchor); named wikis and the `act` ask follow, then the console and the live feeds (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-surface-scout#/phases`>>).
 # ''The memory stage goes primary.'' The wiki replaces the flat markdown memory once the hearth answers: a face reads its own daemon wiki and every topic wiki shared to it, so the house's shared memory lives in a shared topic wiki.
 
@@ -177,6 +177,6 @@ On the road (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/th
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;_n7N84_wp6v4YokCsxrynhb9Cr88vgW2vUT7OPLxyA0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;xXewsjRi5gjSOs7QcVQOtWGeneTGy49imjwmdEw8twQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

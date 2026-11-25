@@ -1,14 +1,14 @@
 /**
- * `lares sense analyze` — DETECT-ONLY change-point analysis over the sensorium's poured content stream.
+ * `lares sense analyze --lens changes` — DETECT-ONLY change-point analysis over the sensorium's poured content stream.
  * The isomorphic `sense_analyze` instrument (Foote novelty · sequitur depth+shore · sequitur-MDL · branching
  * entropy) reads the reconstructed stream word-grained and reports WHERE the content changes hands — every
  * boundary a word index. Blind to any ground-truth (the answer-key wall stays uncrossed): it LOCATES, never
  * scores. A read-only compute, no cache — it runs on demand and returns.
  *
- *   lares sense analyze                     the boundary map across the default Foote scales
- *   lares sense analyze --halves 4,8,16     name the Foote kernel half-widths (words)
- *   lares sense analyze --span 8            context words each side of a reported boundary (human render)
- *   lares sense analyze --spectral          the embedding-geometry surface instead of boundaries
+ *   lares sense analyze --lens changes                     the boundary map across the default Foote scales
+ *   lares sense analyze --lens changes --halves 4,8,16     name the Foote kernel half-widths (words)
+ *   lares sense analyze --lens changes --span 8            context words each side of a reported boundary (human render)
+ *   lares sense analyze --lens changes --spectral          the embedding-geometry surface instead of boundaries
  *
  * The compute rides THROUGH the daemon `analyze` verb so it reuses the ONE content handle the holder owns
  * (never a second store client). The daemon-side verb registration rides the wiki-VM TS build target (the
@@ -36,7 +36,7 @@ export async function cmdAnalyze(args: ParsedArgs): Promise<number> {
     did = await vesselDid();
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    emit(args, { ok: false, error: { code: "not-found", message: msg }, human: () => console.error(`lares sense analyze: ${msg}`) });
+    emit(args, { ok: false, error: { code: "not-found", message: msg }, human: () => console.error(`lares sense analyze --lens changes: ${msg}`) });
     return exitFor("not-found");
   }
 
@@ -56,10 +56,10 @@ export async function cmdAnalyze(args: ParsedArgs): Promise<number> {
       ok: false, ...(f.requestId !== undefined ? { requestId: f.requestId } : {}),
       error: { code: f.code, message: f.message, ...(hint !== undefined ? { hint } : {}) },
       human: () => {
-        console.error(`lares sense analyze: ${f.message}`);
+        console.error(`lares sense analyze --lens changes: ${f.message}`);
         if (f.code === "daemon-unreachable") {
           console.error("  Start the daemon with `lares vessel stand --foreground` and try again.");
-          console.error("  (Standalone today: lares_mcp --standalone --sensorium <root>, tool `analyze`.)");
+          console.error("  (Standalone today: lares_mcp --standalone --sensorium <root>, tool `analyze`, lens `changes`.)");
         } else if (f.hint !== undefined) {
           console.error(`  ${f.hint}`);
         }
@@ -74,10 +74,10 @@ export async function cmdAnalyze(args: ParsedArgs): Promise<number> {
     const owed = /unknown verb|no .*verb|analyze/i.test(msg);
     emit(args, {
       ok: false, requestId: result.requestId, error: { code, message: msg,
-        ...(owed ? { hint: "the daemon `analyze` verb registration is owed on the wiki-VM TS build; run `lares_mcp --standalone --sensorium <root>` (tool `analyze`) meanwhile" } : {}) },
+        ...(owed ? { hint: "the daemon `analyze` verb registration is owed on the wiki-VM TS build; run `lares_mcp --standalone --sensorium <root>` (tool `analyze`, lens `changes`) meanwhile" } : {}) },
       human: () => {
-        console.error(`lares sense analyze failed: ${msg}`);
-        if (owed) console.error("  → standalone today: lares_mcp --standalone --sensorium <root> (tool `analyze`)");
+        console.error(`lares sense analyze --lens changes failed: ${msg}`);
+        if (owed) console.error("  → standalone today: lares_mcp --standalone --sensorium <root> (tool `analyze`, lens `changes`)");
       },
     });
     return exitFor(code);
@@ -87,15 +87,15 @@ export async function cmdAnalyze(args: ParsedArgs): Promise<number> {
   emit(args, {
     ok: true,
     requestId: result.requestId,
-    data: out,
+    data: { lens: "changes", ...out },
     human: () => {
       if (spectral) {
-        console.log(`lares sense analyze --spectral · ${out["sensorium"] ?? "?"}`);
+        console.log(`lares sense analyze --lens changes --spectral · ${out["sensorium"] ?? "?"}`);
         console.log(JSON.stringify(out, null, 1));
         return;
       }
       const boundaries = (out["boundaries"] ?? {}) as Record<string, unknown>;
-      console.log(`lares sense analyze — ${out["n_words"] ?? "?"} words · ${out["n_chars"] ?? "?"} chars · mdl cuts ${out["mdl_inferred_cuts"] ?? "?"}`);
+      console.log(`lares sense analyze --lens changes — ${out["n_words"] ?? "?"} words · ${out["n_chars"] ?? "?"} chars · mdl cuts ${out["mdl_inferred_cuts"] ?? "?"}`);
       for (const [arm, cuts] of Object.entries(boundaries)) {
         const list = Array.isArray(cuts) ? cuts : [];
         console.log(`  ${arm.padStart(14)} · ${list.length} boundaries (word-index): ${JSON.stringify(list.slice(0, 24))}${list.length > 24 ? " …" : ""}`);

@@ -11,7 +11,7 @@ import { dirname, join, relative } from "node:path";
 import { parse as parseToml } from "smol-toml";
 import type { External, Item, Radius } from "./engine.js";
 import {
-  claudeHook, copilotHook, headLine, jsonFloor, jsonForeign, jsonHooksOwned, jsonIncludes, jsonSet, owned, seedless, strays,
+  claudeHook, copilotHook, headLine, jsonFloor, jsonForeign, jsonHooksOwned, jsonIncludes, jsonListForeign, jsonSet, owned, seedless, strays,
   tomlHook, tomlHookForeign, tomlHooksOwned, tomlMcpServer, tomlShapeForeign, tomlTableForeign, tomlTableKey, tomlTableUnset, tomlTopFloor,
 } from "./kinds.js";
 import { homesOf, type Homes } from "./homes.js";
@@ -83,20 +83,84 @@ export function projectScout(seedPath: string, seed: string, s: Spec): string {
   ].join("\n");
 }
 
+/**
+ * A `json-includes` row, for either radius: `key` names the list by a dotted path (`permissions.allow`), and `values` names
+ * every member it keeps. One row per list keeps the whole set; the operator's other members stand.
+ */
+function includes(s: Spec): Pick<Item, "transform" | "foreign"> {
+  const values = s["values"];
+  if (!Array.isArray(values) || values.length === 0 || !values.every((v) => typeof v === "string" && v !== "")) {
+    throw new Error(`${CARRIER}: item ${s.id} names no \`values\` list of strings`);
+  }
+  const path = str(s, "key").split(".");
+  if (path.some((k) => k === "")) throw new Error(`${CARRIER}: item ${s.id} names a key path with an empty segment`);
+  return { transform: jsonIncludes(path, values as string[]), foreign: jsonListForeign(path) };
+}
+
 const item = (radius: Radius, s: Spec, path: string, rest: Partial<Item>): Item =>
   ({ id: s.id, radius, host: s.host, path, what: s.what, ...rest });
 
-/** The checkout's items. */
-export function repoItems(repo: string, d: Declared = declared(repo), textOf: TextOf = treeText(repo)): Item[] {
+/** git with the tree handed in deciding: a leaked hook env (GIT_DIR and its kin) would answer for another repository. */
+function gitIn(root: string, args: readonly string[]): { status: number | null; out: string } {
+  const env = { ...process.env };
+  for (const k of ["GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR", "GIT_INDEX_FILE"]) delete env[k];
+  // LIVENESS: git config answers at once or not at all.
+  const r = spawnSync("git", ["-C", root, ...args], { encoding: "utf8", env, timeout: 10_000 });
+  return { status: r.error ? null : r.status, out: String(r.stdout ?? "").replace(/\n$/, "") };
+}
+
+/** The clone's shared git dir (every worktree of the clone reads its `config`), or null outside any repository. */
+function gitCommonDir(root: string): string | null {
+  const r = gitIn(root, ["rev-parse", "--path-format=absolute", "--git-common-dir"]);
+  return r.status === 0 && r.out ? r.out : null;
+}
+
+/**
+ * One key in the clone's shared git config, changed through git's own `git config --local`. In a worktree `--local`
+ * writes the common config, so one tend seats every worktree of the clone.
+ */
+function gitConfig(root: string, key: string, value: string): External {
+  const get = (): string | null => {
+    const r = gitIn(root, ["config", "--local", "--get", key]);
+    return r.status === 0 ? r.out : null;
+  };
+  const put = (v: string | null): { ok: boolean; detail: string } => {
+    if (v === null && get() === null) return { ok: true, detail: "" };
+    const r = gitIn(root, v === null ? ["config", "--local", "--unset-all", key] : ["config", "--local", "--replace-all", key, v]);
+    return r.status === 0 ? { ok: true, detail: "" } : { ok: false, detail: `git config ${key} did not take` };
+  };
+  return {
+    observe: () => {
+      const cur = get();
+      if (cur === value) return { aligned: true, detail: `${key} = ${value}` };
+      return { aligned: false, detail: cur === null ? `${key} unset; tend sets it to ${value}` : `${key} reads ${cur}; tend sets it to ${value}` };
+    },
+    apply: () => put(value),
+    snapshot: () => JSON.stringify(get()),
+    restore: (snap) => put(JSON.parse(snap) as string | null),
+  };
+}
+
+/**
+ * The checkout's items. `staged` reads what a commit carries: a git config rides in no commit, so its items read
+ * absent there and the commit gate never waits on a clone's own config.
+ */
+export function repoItems(repo: string, d: Declared = declared(repo), textOf: TextOf = treeText(repo), opts: { staged?: boolean } = {}): Item[] {
   const seedAbs = join(repo, d.seed);
+  const common = d.repo.some((s) => s.kind === "git-config") && !opts.staged ? gitCommonDir(repo) : null;
   return d.repo.map((s) => {
     const path = join(repo, s.file);
     switch (s.kind) {
+      case "git-config": {
+        if (opts.staged) return item("repo", s, path, { absent: "a commit carries no git config; the clone's own tend seats it" });
+        if (common === null) return item("repo", s, path, { absent: `${repo} stands outside any git repository` });
+        return item("repo", s, join(common, "config"), { external: gitConfig(repo, str(s, "key"), str(s, "value")) });
+      }
       case "seed-link": return item("repo", s, path, { link: relative(dirname(path), seedAbs) });
       case "head-import": return item("repo", s, path, { transform: headLine(str(s, "line"), str(s, "render")) });
       case "seedless": return item("repo", s, path, { transform: seedless(s["render"] as string | undefined) });
       case "toml-top-floor": return item("repo", s, path, { transform: tomlTopFloor(str(s, "key"), Number(s["floor"])), foreign: tomlShapeForeign(str(s, "key"), "number") });
-      case "json-includes": return item("repo", s, path, { transform: jsonIncludes(str(s, "key"), str(s, "value")), foreign: jsonForeign });
+      case "json-includes": return item("repo", s, path, includes(s));
       case "scout": {
         const seed = textOf(d.seed) ?? "";
         const o = owned(projectScout(d.seed, seed, s), SCOUT_MARKER);
@@ -170,6 +234,8 @@ export interface HomeContext {
   readonly mcp?: LaresMcpCommand | null;
   /** False keeps Claude's seat to a read of its store (tests, and reads that must stay offline). */
   readonly claudeCli?: boolean;
+  /** The familiar's pet name a tend seats in the familiar's hooks (`lares home tend --familiar <pet>`); absent keeps the seated one. */
+  readonly familiar?: string | null;
 }
 
 /** Every operator home's items. A host whose home directory stands absent reads absent. */
@@ -200,6 +266,30 @@ export function homeItems(ctx: HomeContext, d: Declared = declared(ctx.repo)): I
   return out;
 }
 
+/** A pet name a familiar's hook carries. */
+const PET_NAME = /^[a-z0-9][a-z0-9-]{0,62}$/;
+
+/**
+ * The familiar a home's hooks carry: the tend's `--familiar`, else the pet name a house hook under the hooks folder already
+ * carries in this hook file (a tend that names none keeps the one seated), else none.
+ */
+function familiarFor(ctx: HomeContext, path: string, folder: string): string | null {
+  if (typeof ctx.familiar === "string" && ctx.familiar !== "") return ctx.familiar;
+  let held: unknown;
+  try { held = JSON.parse(readFileSync(path, "utf8")); } catch { return null; }
+  const events = (held as { hooks?: unknown } | null)?.hooks;
+  if (events === null || typeof events !== "object") return null;
+  for (const groups of Object.values(events as Record<string, unknown>)) {
+    for (const g of Array.isArray(groups) ? groups : []) {
+      for (const c of Array.isArray((g as { hooks?: unknown }).hooks) ? (g as { hooks: unknown[] }).hooks : []) {
+        const args = (c as { args?: unknown }).args;
+        if (Array.isArray(args) && typeof args[0] === "string" && args[0].includes(`${folder}/`) && typeof args[1] === "string" && PET_NAME.test(args[1])) return args[1];
+      }
+    }
+  }
+  return null;
+}
+
 /** The scripts under the house's hooks folder that a value names and no home row declares for this row's host and file. */
 const straysOf = (s: Spec, d: Declared) =>
   strays(d.hooks, d.home.filter((h) => h.host === s.host && h.file === s.file && typeof h["script"] === "string").map((h) => String(h["script"]).split("/").at(-1)!));
@@ -213,11 +303,21 @@ function homeItem(
   switch (s.kind) {
     case "json-floor": return base({ transform: jsonFloor(str(s, "key"), Number(s["floor"])), foreign: jsonForeign });
     case "json-set": return base({ transform: jsonSet([str(s, "key")], s["value"]), foreign: jsonForeign });
+    case "json-includes": return base(includes(s));
     case "claude-hook": {
+      // A familiar's hook carries the pet name as its argument (no env var): the tend's `--familiar`, else the one a tend seated.
+      const wants = s["familiar"] === "required" || s["familiar"] === "optional";
+      const pet = wants ? familiarFor(ctx, path, d.hooks) : null;
+      if (pet !== null && !PET_NAME.test(pet)) return base({ unreachable: `the familiar "${pet}" reads as no pet name (lower-case letters, digits and hyphens); run \`lares home tend --familiar <pet-name> --yes\`` });
+      if (s["familiar"] === "required" && pet === null) return base({ absent: "no familiar named in this home; `lares home tend --familiar <pet-name> --yes` seats its hooks" });
+      const tail = pet === null ? [] : [pet];
+      // `async` lets an event run on without waiting (the hook bounds itself); `status` names the wait the harness shows.
+      const extra = { ...(s["async"] === true ? { async: true } : {}), ...(typeof s["status"] === "string" ? { statusMessage: s["status"] } : {}) };
       const command = str(s, "runner") === "node"
-        ? { type: "command", command: "node", args: [script], timeout }
-        : { type: "command", command: `bash "${script}"`, timeout };
-      return base({ transform: claudeHook(str(s, "event"), script.slice(script.lastIndexOf("/") + 1), command), foreign: jsonForeign });
+        ? { type: "command", command: "node", args: [script, ...tail], timeout, ...extra }
+        : { type: "command", command: [`bash "${script}"`, ...tail.map((t) => `"${t}"`)].join(" "), timeout, ...extra };
+      const placing = { ...(typeof s["matcher"] === "string" ? { matcher: s["matcher"] } : {}), ...(s["first"] === true ? { first: true } : {}) };
+      return base({ transform: claudeHook(str(s, "event"), script.slice(script.lastIndexOf("/") + 1), command, placing), foreign: jsonForeign });
     }
     case "copilot-hook":
       return base({ transform: copilotHook(str(s, "event"), script.slice(script.lastIndexOf("/") + 1), { type: "command", bash: script, timeoutSec: timeout }), foreign: jsonForeign });

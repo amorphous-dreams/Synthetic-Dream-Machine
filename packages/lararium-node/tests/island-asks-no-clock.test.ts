@@ -62,7 +62,7 @@ describe("the island's asks end on the vessel's answer, never on a clock", () =>
 
   test("a custody write stands past any clock; the vessel's refusal answers it by name (control)", async () => {
     const w = portPair();
-    const ask = watch(vesselCustodyWriter(w.port)("veil", new Uint8Array([1])));
+    const ask = watch(vesselCustodyWriter(w.port)("veil", new Uint8Array([1]), "group-of-the-exporting-face"));
     await vi.advanceTimersByTimeAsync(LONG_PAST_ANY_PATIENCE);
     expect(ask.settled()).toBe(false);
     w.island.emit("message", { type: "custody:written", requestId: w.posted[0]?.["requestId"], written: false, why: "the seal store refused the write" });

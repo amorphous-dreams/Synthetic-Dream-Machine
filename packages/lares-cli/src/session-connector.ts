@@ -1,20 +1,29 @@
 import { createConnection } from "node:net";
 import { newRequestId, type SessionReceipt } from "@lararium/mesh";
 import type { Hand } from "@lararium/mesh/session-contract";
-import { LocalWaitExpired, UdsUnreachable, udsSocketPath } from "./local-connector.js";
+import { harnessSeatMarked, LocalWaitExpired, UdsUnreachable, udsSocketPath } from "./local-connector.js";
 
 export class SessionRefused extends Error {
   override readonly name = "SessionRefused";
-  constructor(readonly refusal: string, readonly closed = false) { super(`local session refused: ${refusal}${closed ? " (the session closed)" : ""}`); }
+  /** `words`: the vessel's own line for the refusal, where its door sent one (a dark face's cause and cure); it leads with the refusal's name. */
+  constructor(readonly refusal: string, readonly closed = false, words?: string) { super(`local session refused: ${words ?? refusal}${closed ? " (the session closed)" : ""}`); }
+}
+
+/** A session act's answer and the request id it rode, which recovers its outcome when an answer goes with the socket. */
+export interface SessionActResult {
+  readonly requestId: string;
+  readonly answer: Record<string, unknown>;
 }
 
 export interface LocalSession {
   call(verb: string, args: Record<string, unknown>, opts?: { requestId?: string; effectKey?: string; timeoutMs?: number }): Promise<Record<string, unknown>>;
   /**
    * Run one sealed act that acts as a face (`SESSION_ACTS`) as THIS session's face: the vessel's custody door runs it and
-   * answers as an `act` frame does (`{ op, act, result }` or `{ status: "error", refusal }`).
+   * answers as an `act` frame does (`{ op, act, result }` or `{ status: "error", refusal }`), beside the request id the act
+   * rode. THE CALLER OWNS THAT ID: it names one stable id per act (`opts.requestId`, else one mints here), so an answer
+   * the socket lost recovers under it (`receipt`, on a session of the same face; a retry under it reads the act that ran).
    */
-  act(act: string, args: Record<string, unknown>): Promise<Record<string, unknown>>;
+  act(act: string, args: Record<string, unknown>, opts?: { requestId?: string }): Promise<SessionActResult>;
   receipt(requestId: string): Promise<SessionReceipt>;
   cancel(requestId: string): Promise<SessionReceipt>;
   /**
@@ -58,7 +67,7 @@ export async function openLocalSession(opts: { faceRef: string; hand?: Hand; dat
       if (id !== undefined && waiters?.length === 0) pending.delete(id);
       if (answer.kind === "session:refused" && answer.closed === true) sessionClosed = true;
       if (!waiter) continue;
-      if (answer.kind === "session:refused") waiter.reject(new SessionRefused(String(answer.refusal), answer.closed === true));
+      if (answer.kind === "session:refused") waiter.reject(new SessionRefused(String(answer.refusal), answer.closed === true, typeof answer.message === "string" && answer.message ? answer.message : undefined));
       else waiter.resolve(answer);
     }
   });
@@ -78,7 +87,11 @@ export async function openLocalSession(opts: { faceRef: string; hand?: Hand; dat
   };
   const openingId = newRequestId();
   let opened: Record<string, unknown>;
-  try { opened = await send({ op: "session:open", faceRef: opts.faceRef, hand: opts.hand ?? "cli" }, openingId); }
+  // THE SEAT MARK OPENS AS THE SEAT (hitl-reads-a-hand): a run under a harness's mark (a host forward carries the host chain
+  // across the container wall as that mark) opens its session with the seat's hand, whatever hand its caller names, so a
+  // hand-only call it places refuses at the socket as a seat's does.
+  const hand: Hand = harnessSeatMarked(process.env) ? "seat" : opts.hand ?? "cli";
+  try { opened = await send({ op: "session:open", faceRef: opts.faceRef, hand }, openingId); }
   catch (error) { sock.destroy(); throw error; }
   if (opened.kind !== "session:opened" || typeof opened.ownerEpoch !== "string" ||
       typeof opened.sessionId !== "string" || typeof opened.generation !== "number" || typeof opened.faceRef !== "string") {
@@ -103,10 +116,11 @@ export async function openLocalSession(opts: { faceRef: string; hand?: Hand; dat
       if (answer.status === "unknown") throw new LocalWaitExpired(verb, timeoutMs, requestId);
       return answer;
     },
-    async act(act, args) {
-      const answer = await send({ op: "session:act", ...bound(), act, args }, newRequestId());
+    async act(act, args, actOpts = {}) {
+      const requestId = actOpts.requestId ?? newRequestId();
+      const answer = await send({ op: "session:act", ...bound(), act, args }, requestId);
       if (answer.kind !== "session:act-result" || !answer.answer || typeof answer.answer !== "object") throw new Error("malformed act result from local channel");
-      return answer.answer as Record<string, unknown>;
+      return { requestId, answer: answer.answer as Record<string, unknown> };
     },
     receipt: (requestId) => query("session:receipt", requestId),
     async switch(target) {

@@ -1,0 +1,37 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/library/oracles/doa/hexagram-39`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+attribution = "Discordian Oracle AppleKatation, Kopyleft 2022, Steal and Share Alike, with the blessings of MoreWrong Reverend Rhizic Natterjacks; its hexagram texts carry the E-Jing-A-Ling Thing of 23ae.com"
+cacheable   = true
+caption     = "39. The Eschaton"
+hexagram    = "39"
+l-space     = "archive"
+license     = "Kopyleft 2022, Steal and Share Alike; the quoted snippets ride under fair use, each kept as the page gives it"
+lines       = "001010"
+role        = "one DOA hexagram reading, imported once from the bytes the library holds by CID (oracles/doa/index)"
+source      = "Discordian Oracle AppleKatation (DOA.html), fuckup.solutions"
+source-cid  = "61d62100d2be6925c566a701bbbca897ad49117ebad8bf2f579d4a6a6782a07e"
+tags        = ["oracle/reading", "oracle/doa"]
+title       = "lar:///ha.ka.ba/lares/library/oracles/doa/hexagram-39"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lares/library/oracles/doa/hexagram-39"
+```
+
+<<~ ahu slot=`#/reading`>>
+
+! ䷦ 39. The Eschaton
+
+<<<
+"Salvation is defined in such eschatological terms as "eternal life," "resurrection," and present entrance into the kingdom (e.g., Jn.5:24). In Paul the "justification" anticipated for the righteous as they would stand at the bar of God's judgment is in Christ a present reality, something enjoyed by faith ahead of time (e.g., Rom.5:1). The blessings of the New Covenant, which today's believer enjoys, are themselves (originally) cast in an eschatological context (cf. Jer.31:31ff; Ezek.36:22ff). Christ has already delivered us from "this present evil age" (Gal.1:4) and has placed us into His own kingdom (Col.1:13). We live even now "in the heavenlies" (Eph.2:6). In Christ the future is present; the eschatological kingdom is now." - Fred G. Zaspel
+<<<
+
+This hexagram represents a dangerous abyss that can and should be overcome with perserverance. It recommends that you walk softly but carry a big apple. Don't try to jump over the gaping abyss; make your way around it.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;oHWoESd7zEZsalj0boFbmCuId8253htfwxDmmZQp5mU`>>
+
+<<^ code=`&#x0004;` to=`?`>>

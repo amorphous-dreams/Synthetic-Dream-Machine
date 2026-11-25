@@ -143,7 +143,7 @@ export class UnroutedSaveRefusal extends Error {
  * cascade NAMES. Every production wiring hands it the wiki's `CompositeStore` (`island-recipe`), and a
  * store that could only write to its own default would land a routed save in a bag no rule chose.
  */
-export type IslandStore = LarTiddlerStore & Pick<CompositeStore, "writeFamily" | "tombstoneInBag" | "storeForBag" | "resolveLayered" | "resolveAll" | "defaultWritableBagId" | "layerIndexOf">;
+export type IslandStore = LarTiddlerStore & Pick<CompositeStore, "writeFamily" | "tombstoneInBag" | "storeForBag" | "resolveLayered" | "resolveAll" | "defaultWritableBagId" | "layerIndexOf"> & Partial<Pick<CompositeStore, "unknownBeneath">>;
 
 export class LandingDoorUnavailableError extends Error {
   override readonly name = "LandingDoorUnavailableError";
@@ -253,6 +253,13 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   private readonly actRemovals = new Map<string, ActRemoval>();
   /** The rest holds of the acts this change dispatch began; they rest with what the dispatch marked. */
   private readonly actHolds: Array<{ hold: ReceiptHold; members: readonly string[] }> = [];
+  /**
+   * THE FACE A TOOL DOOR'S HAND WORE, by title: a verb that lands a record through the wiki (`wiki.addTiddler`) names
+   * its session's face here before the hand, and the drain's write of that title carries it on its origin
+   * (`ChangeOrigin.face`), so the record lands under the face's actor. It stands until a write of the title is taken
+   * (or the title settles with nothing to write), so a refused write retries under the same face.
+   */
+  private readonly handFaces = new Map<string, string | null>();
   /** Parallel-draft persistence in flight. */
   private readonly surfacings = new Set<Promise<void>>();
 
@@ -767,14 +774,24 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
    * (a tombstone included) shadows whatever lands beneath it. A title living beneath the working layer
    * never draws a save down: the cascade's layer takes it and shadows the lower record.
    */
-  private _saveBag(title: string): SlotUri | null {
-    const routed = this._destination(title);
+  private _saveBag(title: string, probe = false): SlotUri | null {
+    const routed = this._settle(title, this._routeBag(title), probe);
     if (routed === null) return null;
     const lives = this.lastWriteBag.get(title) ?? this.ledger.landedOf(title)?.bag;
     const working = this.store.defaultWritableBagId();
     if (!lives || !working || !this._holdsRecord(lives, title)) return routed;
     const livesAt = this.store.layerIndexOf(lives);
     return livesAt >= this.store.layerIndexOf(working) && livesAt > this.store.layerIndexOf(routed) ? lives as SlotUri : routed;
+  }
+
+  /**
+   * Where a hand's save of `title` would land, asked as a probe: no alert stands and no console line prints. Null where the
+   * cascade routes the title to no layer this composition mounts (a save of it would refuse). A writer that lands words on
+   * a person's behalf (the stand-off keeper) asks first, and writes only where the save lands in the bag it means.
+   */
+  saveBagOf(title: string): SlotUri | null {
+    try { return this._saveBag(title, true); }
+    catch (err) { if (err instanceof UnroutedSaveRefusal) return null; throw err; }
   }
 
   /**
@@ -891,8 +908,8 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
    * discards it; its deletion uses the landed ledger's bag and heads.
    *
    * Nothing here decides: the live value stays the CRDT's merge, and the winner's own draft (every
-   * conflicted field live) is the live record, so it is never copied. A parallel draft never fuses
-   * with the projector's disk-conflict surface. A surfacing ON the draft bag itself persists nothing —
+   * conflicted field live) is the live record, so it is never copied. A disk stand-off's drafts arrive by
+   * another road (the keeper's own wiki writes, `@lararium/node` standoff-drafts). A surfacing ON the draft bag itself persists nothing —
    * a draft of a draft is two edit buffers racing, and copying it would mint drafts of drafts.
    */
   onParallelDrafts(change: ParallelDraftsChange): Promise<void> {
@@ -1431,7 +1448,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
    * its slot children; its refusal keeps the source in the wiki and the title owed, named on the rail under itself and its target.
    */
   private async _flushRemoval(title: string, removal: ActRemoval): Promise<void> {
-    const origin: ChangeOrigin = { kind: "tw-local", instanceId: this.instanceId };
+    const origin: ChangeOrigin = { kind: "tw-local", instanceId: this.instanceId, ...this._handFace(title) };
     const ackBefore = this.writeAcks.get(title) ?? 0;
     if (removal.recovery) {
       try { await this._issueGroup(removal.bag, this._handBaseFor(title, removal.bag), [removal.recovery], [], origin); }
@@ -1484,12 +1501,33 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   }
 
   /** One `writeFamily` call for one (bag, base); a base outside the document's history retries without it. */
-  private _issueGroup(bag: string, base: readonly string[] | undefined, puts: LarTiddlerRecord[], deletes: string[], origin: ChangeOrigin): Promise<void> {
-    return this.store.writeFamily(puts, deletes, origin, { bag: bag as SlotUri, ...(base ? { base } : {}) }).catch(async (error: unknown) => {
+  private _issueGroup(bag: string, base: readonly string[] | undefined, puts: LarTiddlerRecord[], deletes: string[], origin: ChangeOrigin, retracts: readonly string[] = []): Promise<void> {
+    const named = retracts.length > 0 ? { retracts } : {};
+    return this.store.writeFamily(puts, deletes, origin, { bag: bag as SlotUri, ...(base ? { base } : {}), ...named }).catch(async (error: unknown) => {
       if (!base || !(error instanceof Error) || !error.message.includes("requested base contains heads outside this document history")) throw error;
       console.warn(`[island-adaptor] retrying a write to ${bag} without unavailable base`);
-      await this.store.writeFamily(puts, deletes, origin, { bag: bag as SlotUri });
+      await this.store.writeFamily(puts, deletes, origin, { bag: bag as SlotUri, ...named });
     });
+  }
+
+  /**
+   * HOW A HAND'S DELETE LEAVES (operator ruling 2026-11-20: a kāpae is needed only where a record beneath would otherwise
+   * surface). Each member of the delete splits by its own layers: a member with a live record in a layer beneath `bag`
+   * leaves as a tombstone that keeps that record hidden (the browser's delete of a canon tiddler stays gone); any other
+   * member retracts to absent from `bag`, so no tombstone rises over nothing. A layer beneath `bag` this composition could
+   * not read (a recipe slot the composer skipped, a stand-in for an unread document: `unknownBeneath`) counts as holding
+   * every member, since another face's composition of the same recipe reads what it holds.
+   */
+  private async _leavesAs(bag: string, members: readonly string[]): Promise<{ tombstones: string[]; retracts: string[] }> {
+    if (this.store.unknownBeneath?.(bag)) return { tombstones: [...members], retracts: [] };
+    const at = this.store.layerIndexOf(bag);
+    const tombstones: string[] = [];
+    const retracts: string[] = [];
+    for (const member of members) {
+      const lower = (await this.store.resolveAll(member)).some((row) => this.store.layerIndexOf(row.bagId) < at);
+      (lower ? tombstones : retracts).push(member);
+    }
+    return { tombstones, retracts };
   }
 
   // ---------------------------------------------------------------------------
@@ -1534,6 +1572,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       : this.resident && !this.unlanded.has(title) && same(state, landed ? landed.tiddler : null));
     if (!placedByFamily) this.familyPlaced.delete(title);
     if (settled) {
+      this.handFaces.delete(title);
       if (this.handed.get(title) === state) this.handed.delete(title);
       if (!this.sent.has(title)) this.handBase.delete(title);
       this.lastFlushWrote.set(title, false);
@@ -1541,7 +1580,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       this._clearUnsaved(title);
       return;
     }
-    const origin: ChangeOrigin = { kind: "tw-local", instanceId: this.instanceId };
+    const origin: ChangeOrigin = { kind: "tw-local", instanceId: this.instanceId, ...this._handFace(title) };
     const ackBefore = this.writeAcks.get(title) ?? 0;
     let writeBag: string | undefined;
     let task: Promise<void>;
@@ -1596,14 +1635,14 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       // no component leaves as the single tombstone it always was.
       const leaving = this._leavingWith(title, bag);
       for (const rider of leaving.riders) this.sent.set(rider.uri, null);
-      const issued = leaving.riders.length > 0
-        ? this._issueGroup(bag, base, [], [title, ...leaving.riders.map((rider) => rider.uri)], origin)
+      const issued = this._leavesAs(bag, [title, ...leaving.riders.map((rider) => rider.uri)]).then((leaves) => leaving.riders.length > 0 || leaves.retracts.length > 0
+        ? this._issueGroup(bag, base, [], leaves.tombstones, origin, leaves.retracts)
         : this.store.tombstoneInBag(bag, title, origin, base ? { base } : undefined)
           .catch(async (error: unknown) => {
             if (!(error instanceof Error) || !error.message.includes("requested base contains heads outside this document history")) throw error;
             console.warn(`[island-adaptor] retrying "${title}" without unavailable base`);
             await this.store.tombstoneInBag(bag, title, origin);
-          });
+          }));
       task = issued.then(
         () => { this._settleLeaving(leaving, bag); },
         (error: unknown) => { this._returnLeaving(leaving, bag, error); throw error; },
@@ -1616,6 +1655,8 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       // an equal state already stood (a noop). A noop fires no envelope, so no return wave lands over `sent`
       // and none clears `unlanded`: only an acknowledged write stands ahead of the ledger.
       const acknowledged = (this.writeAcks.get(title) ?? 0) > ackBefore;
+      // The write of this hand stood: the face it wore leaves with it, and the title's next hand names its own.
+      if (origin.face !== undefined && this.handFaces.get(title) === origin.face) this.handFaces.delete(title);
       this.lastFlushWrote.set(title, acknowledged);
       if (writeBag) this.lastWriteBag.set(title, writeBag);
       if (acknowledged) this.unlanded.add(title);
@@ -1655,6 +1696,20 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
   //
   // So the refusal sits HERE, in the module the law names, ahead of the cascade — the cascade routes
   // among bags and stays the operator's to edit, and no edit of it may re-open this.
+
+  /**
+   * NAME THE FACE THE NEXT HAND OF `title` WEARS: a tool door that lands a record through the wiki calls this before its
+   * `addTiddler` (or `deleteTiddler`). `undefined` clears it, so a hand no session made rides the engine's actor.
+   */
+  wearNext(title: string, face: string | null | undefined): void {
+    if (face === undefined) this.handFaces.delete(title);
+    else this.handFaces.set(title, face);
+  }
+
+  /** The origin field naming the face the title's pending hand wore, or nothing. */
+  private _handFace(title: string): { readonly face?: string | null } {
+    return this.handFaces.has(title) ? { face: this.handFaces.get(title)! } : {};
+  }
 
   saveTiddler(tiddler: unknown): Promise<void> {
     const fields = extractFields(this.tw5, tiddler);

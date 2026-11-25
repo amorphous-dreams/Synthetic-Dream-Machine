@@ -19,14 +19,28 @@ import { save as automergeSave } from "@automerge/automerge";
 import { pinnedDoc } from "./pinned-doc.js";
 import { sha256BytesSync, utf8Bytes } from "./crypto.js";
 import { resolveBootDoc } from "./boot-resolver.js";
-import { CROSSROADS_DOC_URI, nexusHandlesUri, nexusRegistryUri } from "./lar-uris.js";
+import { nameDerivedDocument } from "./wait-handle.js";
+import { CROSSROADS_DOC_URI, bagUri, nexusHandlesUri, nexusRegistryUri } from "./lar-uris.js";
 import { emptyLarDoc, type LarDoc } from "./base-doc.js";
 
 /** Derive a deterministic automerge: URL from a seed string — the first 16 bytes of its sha256 as the doc-id. */
 export function deterministicDocUrl(seed: string): AutomergeUrl {
   const binId = sha256BytesSync(utf8Bytes(seed)).slice(0, 16) as BinaryDocumentId;
-  return stringifyAutomergeUrl({ documentId: binId });
+  const url = stringifyAutomergeUrl({ documentId: binId });
+  if (!derived.has(url)) derived.set(url, seedLabel(seed));
+  return url;
 }
+
+/**
+ * THE DERIVED ADDRESSES THIS PROCESS COMPUTED, by URL: each names the document a derivation reaches (`deterministicDocUrl`),
+ * labelled by the seed's head (the part before any `#`, so no key a seed carries after it rides the label) or by the board
+ * label a materialize names (`materializeSharedLarDoc`). The document census reads them as `derived` names.
+ */
+const derived = new Map<string, string>();
+const seedLabel = (seed: string): string => (seed.split("#")[0] ?? seed).slice(0, 96);
+
+/** The derived addresses this process computed, by URL, each with its label. */
+export function derivedDocAddresses(): ReadonlyMap<string, string> { return derived; }
 
 /** The Nexus's crossroads doc URL — the public plane's per-island address (deterministic). */
 export function crossroadsDocUrl(nexusPubkey: string): AutomergeUrl {
@@ -163,6 +177,17 @@ export function edgeLedgerDocUrl(vesselKey: string): AutomergeUrl {
 }
 
 /**
+ * A vessel's OWN meshpalace FLOW-map URL — deterministic over the vessel's own key, so every compose of one vessel finds
+ * the one map a prior boot rested and two vessels never stand one map between them. A compose mints nothing it cannot
+ * find again: a map minted fresh at each compose, with no pointer read back, leaves one orphan per boot in the root store.
+ * The map carries PUBLIC reachability (each vessel's own dials and routing slots, and what its carriage merges in), so a
+ * derived address grants nothing: peers reach it through the signed read-face, never by its id.
+ */
+export function meshPalaceDocUrl(vesselKey: string): AutomergeUrl {
+  return deterministicDocUrl(`${bagUri("meshpalace")}#vessel/${vesselKey.trim().toLowerCase().replace(/^0x/, "")}`);
+}
+
+/**
  * The Nexus's PERSONA-KEL board URL — deterministic, so the per-Nexus key-event-log board (every persona's
  * PUBLIC KEL head/events) rides the always-carried plane every island member resolves alike. A sibling of the
  * WHO board (both derive from `nexusHandlesUri` — the public WHO face), because the KEL PUBLICLY advertises
@@ -199,6 +224,9 @@ export async function materializeSharedLarDoc(
   url: AutomergeUrl,
   label: string,
 ): Promise<DocHandle<LarDoc>> {
+  derived.set(url, label);
+  // THE DERIVATION NAMES IT: its owner's key reaches this address, so the vessel's rest keeps a copy a peer pushed first.
+  nameDerivedDocument(repo, url);
   try {
     const existing = await resolveBootDoc<LarDoc>(repo, url, { tideline: "hearth-private", label });
     return existing;   // present (persisted or synced) → use it

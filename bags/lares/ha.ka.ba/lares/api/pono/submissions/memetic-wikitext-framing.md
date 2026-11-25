@@ -6,7 +6,7 @@ docname: "draft-fontany-memetic-wikitext-framing-00"
 ipr: "trust200902"
 lang: "en"
 source: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
-source-check: "ni:///sha-256;WMW5I_d59ZsUF-s2H4_i08W2mSJeAf6zgEc4xyagTL8"
+source-check: "ni:///sha-256;jsBpuO24nnddRXA_zAnqGGhcUjQiiVkTtNdgERZKf_o"
 title: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
 tongue: "x-lares>en"
 variant: "kramdown-rfc2629"
@@ -313,9 +313,9 @@ end it answers for, ``from=`?` `` or ``to=`?` ``, never bare. A bare `?` names n
 control-soh scan captures the `to=` value as a group, so the bearing rides as PARSED STRUCTURE rather
 than as decoration inside the line.
 
-### Why the pair replaces the arrow
+### Why the pair carries the relation
 
-**Operator ruling 2026-10-31 reverses the ruling of 2026-09-07 that the arrow survives a named-parameter frame.** The earlier law held that a named parameter states a PROPERTY — *this carrier has a lar value* — while an arrow states a RELATION — *this carrier resolves toward that address* — so the arrow kept its seat between the values and named params rode in front of it. The reversal reads the pair itself as the relation: `from=` names one end and `to=` names the other, and a processor that reads both attributes recovers the edge with no special token. A bare `->` demanded a hand-rolled scan beside the host's parser; the pair rides the host's own attribute reader, a backtick value after a name. The earlier reasoning keeps one lesson: both ends belong to ONE call, so SOH carries `from` and `to` together, and EOT carries `to` alone, its source standing as the carrier itself. Writers write `from` first; readers take either order. An arrow INSIDE a value stays (a ladder, a gauge slide), and a prose marker (`->✶`) keeps its arrow and its editor scope.
+**No arrow stands between the two ends of a bearing.** One reading holds that a named parameter states a PROPERTY — *this carrier has a lar value* — while an arrow states a RELATION — *this carrier resolves toward that address* — and so seats an arrow between the values with named params in front of it. This specification reads the pair itself as the relation: `from=` names one end and `to=` names the other, and a processor that reads both attributes recovers the edge with no special token. A bare `->` demanded a hand-rolled scan beside the host's parser; the pair rides the host's own attribute reader, a backtick value after a name. The property-and-relation reading keeps one lesson: both ends belong to ONE call, so SOH carries `from` and `to` together, and EOT carries `to` alone, its source standing as the carrier itself. Writers write `from` first; readers take either order. An arrow INSIDE a value stays (a ladder, a gauge slide), and a prose marker (`->✶`) keeps its arrow and its editor scope.
 
 ### A declared unresolved bearing, distinct from a dangling link
 
@@ -1104,7 +1104,7 @@ and a resolver must not guess.
 
 ## The Classifier Channel — What the Sigil Layer Does
 
-The carrier sigils, the namespace glyphs, and the OODA-HA marks ride as an **unpronounced classifier register** beside the propositional stream — category-marks that steer the reading without sounding in it, the determinative's office in a graphemic classifier system. **The black speaks; the red steers.** The body carries the proposition; the sigil layer carries the protocol for reading it — heading-vs-text, layer of authorship, trust tier, phase — the way a determinative sorts the word it silently classifies, or a rubric directs the act the text does not state.
+The carrier sigils, the namespace glyphs, and the OODA-HA marks ride as an **unpronounced classifier register** beside the propositional stream — category-marks that steer the reading without sounding in it, the determinative's office in a graphemic classifier system. **The black speaks; the red steers** — a weighting, never a split: every span both says and does (Austin), and each ink weighs it toward one pole. The body leans toward the proposition, tested by contact (does the claim hold); the sigil layer leans toward the protocol for reading it, tested by felicity (did the act land) — heading-vs-text, layer of authorship, trust tier, phase — the way a determinative sorts the word it silently classifies, or a rubric directs the act the text does not state.
 
 **Transmission law (ritual stance).** A carrier travels as **received form**: a reader stands the frame before interpreting its gloss, so one structure carries shifting readings across time without losing shape. This practice transmits through the **inscribed channel alone** — the marks hold the protocol, and the protocol lives only while the marks stay tended. A surface left intact while its readers forget the marks (the cautionary case: ekphonetic signs that outlived their decoders) keeps the body and loses the steering. The sigil layer earns its keep when readers read it *as* a classifier, not by surviving as decoration.
 

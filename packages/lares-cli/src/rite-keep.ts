@@ -2,8 +2,8 @@
  * rite-keep — the keep rite's vessel half: the house lays its authored memory into one of the operator's bound workspaces.
  *
  * A workspace stands as a directory the operator bound by hand (`<root>/workspaces/<name>`; the host shim binds it at
- * `/lar/workspaces/<name>`), here a clone of the operator's own private repo. The keep cuts a `lar-carry/1` bundle (the same
- * cut `lares export` makes: cleartext, keyed by pet-name, the one tree a new house imports) and rests it at `<workspace>/<into>`,
+ * `/lar/workspaces/<name>`), here a clone of the operator's own private repo. The keep cuts a `lar-house-bundle` bundle (the same
+ * cut `lares export` makes: content in clear, its roster of faces sealed to the keep pair, whose secret opens under the steward's passphrase or paper sheet, the one tree a new house imports) and rests it at `<workspace>/<into>`,
  * replacing the bundle an earlier keep left there, so the repo's history diffs file by file.
  *
  * THE LEI CARRIES THE GRANT. The operator strings a keep lei for the workspace by hand, under the ward
@@ -17,11 +17,10 @@
  *                   the walk added release and the pins that stood before hold again, in their own order
  *   4. the cut      a bundle written beside the dest and read back whole (`verifyBundle`); its id names this keep's head
  *   5. the standing a dest that already holds this very bundle ends the rite: nothing spends and nothing moves
- *   6. rite-receipt IN THE VESSEL: the verify handed in as the receipt the return rests on (`receipt/<bundle id>`)
- *   7. rite-begin   IN THE VESSEL: name the staged bundle by its place inside the workspace; the vessel reads it back itself,
+ *   6. rite-begin   IN THE VESSEL: name the staged bundle by its place inside the workspace; the vessel reads it back itself,
  *                   derives the bundle id, refuses a head the tree never derived, returns the keep lei at that head and rests
  *                   the guest half of a tessera (`rite-begun`)
- *   8. the move     the cut takes the dest's name; the bundle it replaces leaves whole
+ *   7. the move     the cut takes the dest's name; the bundle it replaces leaves whole
  *
  * THE RETURN COMES BEFORE THE MOVE, as every rite's does: a begin the vessel refuses leaves the workspace as it stood. A keep
  * that dies after its return leaves the begun half alone, and conferre reads it red until the host half lands it.
@@ -37,19 +36,23 @@ import { basename, dirname, join, relative, sep } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
 import { WORKSPACE_NAME_RE } from "@lararium/mesh";
 import { larHearthHome, larWorkspacesHome } from "@lararium/node";
-import { CARRY_SCHEMA, MANIFEST_FILE, sha256Hex, unsafeRelPath, verifyBundle, type CarryManifest } from "./carry-manifest.js";
+import { BUNDLE_SCHEMA, MANIFEST_FILE, unsafeRelPath, verifyBundle, type BundleManifest } from "./bundle-manifest.js";
 import type { RiteVerbAnswer } from "./rite-kukulu.js";
 
 export const RITE_KEEP = "keep";
-/** The check a keep's receipt names: the bundle read back whole against its manifest. */
-export const KEEP_CHECK = "carry-verify";
 /** Where a keep rests inside its workspace where the line names no other place. */
 export const KEEP_INTO = "house";
+
+/**
+ * A refusal's message, led by its code ONCE: a message handed on from a row or a nested line already leads with the code it
+ * refused by (`vessel-locked: …`), so it rides as it came.
+ */
+export const codedMessage = (code: string, message: string): string => (message.startsWith(`${code}: `) ? message : `${code}: ${message}`);
 
 /** A refusal the keep raises by name; the message carries the cure. */
 export class KeepRefused extends Error {
   override readonly name = "KeepRefused";
-  constructor(readonly code: string, message: string) { super(`${code}: ${message}`); }
+  constructor(readonly code: string, message: string) { super(codedMessage(code, message)); }
 }
 
 /**
@@ -64,23 +67,65 @@ export interface KeepWikiPorts {
 
 export interface KeepPorts {
   /** One store row, answered by the vessel that stands. */
-  row(verb: "swarm-show" | "rite-receipt" | "rite-begin", args: Record<string, unknown>): Promise<RiteVerbAnswer>;
-  /** Cut a bundle at `dest`, a fresh path inside `workspace`, and answer its manifest (`carryExport`). `woken` names the cold
+  row(verb: "swarm-show" | "rite-begin", args: Record<string, unknown>): Promise<RiteVerbAnswer>;
+  /** Cut a bundle at `dest`, a fresh path inside `workspace`, and answer its manifest (`houseExport`). `woken` names the cold
    *  wikis the wake held before the cut: each projected its pages, so the cut names none of them cold. */
-  cut(dest: string, opts: { readonly workspace: string; readonly acceptOmissions: boolean; readonly woken?: readonly string[] }): Promise<CarryManifest>;
+  cut(dest: string, opts: { readonly workspace: string; readonly acceptOmissions: boolean; readonly woken?: readonly string[] }): Promise<KeepCut>;
   /** The wiki switcher the wake walks. Absent: no wiki wakes, and the cut names every cold one. */
   readonly wikis?: KeepWikiPorts;
   /**
-   * The face the daemon mount runs under (`face.resolve` with `worn`), the face a keep naming none acts as; it throws, naming
-   * why, where the vessel stands no mount (the floor). Absent: a keep naming no face rides none, and the vessel resolves it.
+   * The faces the house holds (the custody door's census): those standing open, whose keep line the keep's face reads beside h0,
+   * and those standing shut, where a keep lei may stand unseen. Absent: h0 alone, and none shut.
    */
-  mountFace?(): Promise<number>;
+  houseFaces?(): Promise<HouseFaces>;
 }
 
-/** How the keep came by its face: the line named it, or it acts as the daemon mount. */
-export type KeepFaceBy = "named" | "mount";
-/** The line a keep's answer says about its face, where it acts as the mount. */
-export const mountLine = (face: number): string => `acting as h${face}, the daemon mount`;
+/** The faces the house holds, by handle index: the lit set and the faces that stand shut. */
+export interface HouseFaces { readonly open: readonly number[]; readonly shut: readonly number[] }
+
+/** How the keep came by its face: the line named it, or it acts as the keep's face, one per house. */
+export type KeepFaceBy = "named" | "keep";
+/** The keep's face where no face holds a keep line yet: h0, where a house strings its first. */
+export const KEEP_FACE_DEFAULT = 0;
+/** The line a keep's answer says about its face, where it acts as the keep's face. */
+export const keepFaceLine = (face: number): string => `acting as h${face}, the keep's face`;
+
+/** A keep line held at a face: a lei standing there, or a chain that face strung (a tip a restring follows). */
+export function lineHeld(line: RiteVerbAnswer | null): boolean {
+  if (line === null || !line.ok) return false;
+  const lei = (line.output["lei"] ?? {}) as { standing?: unknown; after?: unknown; tip?: unknown };
+  return lei.standing === true || (typeof lei.after === "string" && lei.after !== "") || (typeof lei.tip === "string" && lei.tip !== "");
+}
+
+/**
+ * THE KEEP'S FACE, ONE PER HOUSE: the keep backs up the house, so its lei stands once, as one face, whoever wears. That face
+ * is the one whose keep line already stands (read at h0 first, then each other face standing open, ascending), else h0. No
+ * config key and no environment name chooses it: the standing lei does. Answers the face and the line read there (null where
+ * nothing read at h0 either), so the caller reads no line twice, and `unread`: each face whose line the door would not answer
+ * (the chore gate reads a line only as the daemon mount), where a keep lei may stand unseen.
+ */
+export async function keepFaceOf(show: (face: number) => Promise<RiteVerbAnswer>, open: readonly number[]): Promise<{ readonly face: number; readonly line: RiteVerbAnswer | null; readonly unread: readonly number[] }> {
+  const order = [KEEP_FACE_DEFAULT, ...[...new Set(open)].filter((f) => f !== KEEP_FACE_DEFAULT).sort((a, b) => a - b)];
+  let first: RiteVerbAnswer | null = null;
+  const unread: number[] = [];
+  for (const face of order) {
+    const line = await show(face);
+    if (face === KEEP_FACE_DEFAULT) first = line;
+    if (lineHeld(line)) return { face, line, unread };
+    if (!line.ok) unread.push(face);
+  }
+  return { face: KEEP_FACE_DEFAULT, line: first, unread };
+}
+
+/** A row refused at the door's chore gate names whose act the keep is. */
+function keepRowRefused(r: { readonly code: string; readonly message: string }, face: number): KeepRefused {
+  return new KeepRefused(r.code, r.code === "chore-face-not-mounted"
+    ? `${r.message}; the keep belongs to the operator's hand: wear h${face} at the operator's own terminal (\`lares wear ${face}\`), then run \`lares rite keep\``
+    : r.message);
+}
+
+/** The cut's opened view, and beside it (in memory alone, never written) the faces whose standing heads stayed behind. */
+export type KeepCut = BundleManifest & { readonly unreadFaces?: readonly number[] };
 
 export interface KeepOptions { readonly workspace: string; readonly into?: string; readonly acceptOmissions?: boolean; readonly face?: number }
 
@@ -89,7 +134,9 @@ export type KeepFace = { readonly face?: number; readonly faceBy?: KeepFaceBy };
 
 export type KeepResult = KeepFace & (
   | { readonly kept: true; readonly workspace: string; readonly into: string; readonly dest: string; readonly bundleId: string; readonly tessera: string; readonly lei: string; readonly n: number;
-      readonly faces: readonly string[]; readonly counts: CarryManifest["counts"]; readonly omissions: CarryManifest["omissions"] }
+      readonly faces: readonly string[]; readonly counts: BundleManifest["counts"]; readonly omissions: BundleManifest["omissions"];
+      /** The faces (by handle index) whose standing heads stayed behind, for the house's own terminal. */
+      readonly unreadFaces?: readonly number[] }
   | { readonly kept: false; readonly standing: true; readonly workspace: string; readonly into: string; readonly dest: string; readonly bundleId: string });
 
 const within = (child: string, parent: string): boolean => child === parent || child.startsWith(parent.endsWith(sep) ? parent : parent + sep);
@@ -134,7 +181,7 @@ async function wakeColdWikis(wikis: KeepWikiPorts | undefined): Promise<{ readon
       const kept = now.filter((slug) => before.includes(slug));
       if (kept.length !== before.length || kept.some((slug, i) => slug !== before[i])) for (const slug of before) await wikis.hold(slug);
     } catch (e) {
-      throw new KeepRefused("keep-pins-unreturned", `the wake could not hand the wiki pins back (${e instanceof Error ? e.message : String(e)}); the pins that stood before the keep: ${before.join(", ") || "(none)"}. Hold each again by hand (\`lares wiki hold <slug>\`) and keep again`);
+      throw new KeepRefused("keep-pins-unreturned", `the wake could not hand the wiki pins back (${e instanceof Error ? e.message : String(e)}); the pins that stood before the keep: ${before.join(", ") || "(none)"}. Hold each again by hand (\`lares wiki pin <slug> --rotate\`) and keep again`);
     }
   };
   return { woken, giveBack };
@@ -156,24 +203,41 @@ export async function riteKeep(ports: KeepPorts, opts: KeepOptions): Promise<Kee
     // A KEEP REPLACES A KEEP ALONE: a directory that holds no bundle manifest belongs to the operator, and so does a file.
     let schema: unknown = null;
     try { schema = lstatSync(target).isDirectory() ? (JSON.parse(readFileSync(join(target, MANIFEST_FILE), "utf8")) as { schema?: unknown }).schema : null; } catch { schema = null; }
-    if (schema !== CARRY_SCHEMA) throw new KeepRefused("keep-dest-foreign", `${target} stands and holds no ${CARRY_SCHEMA} bundle; a keep replaces only the bundle an earlier keep left, so name another place with --into`);
+    if (schema !== BUNDLE_SCHEMA) throw new KeepRefused("keep-dest-foreign", `${target} stands and holds no ${BUNDLE_SCHEMA} bundle; a keep replaces only the bundle an earlier keep left, so name another place with --into`);
   }
-  // THE FACE THE KEEP ACTS AS: the one the line names, else the daemon mount, a named fact of the standing vessel; no mount
-  // (the floor) refuses by name before any row reads.
-  let acting: KeepFace = opts.face === undefined ? {} : { face: opts.face, faceBy: "named" };
-  if (opts.face === undefined && ports.mountFace !== undefined) {
-    try { acting = { face: await ports.mountFace(), faceBy: "mount" }; }
-    catch (e) { throw new KeepRefused("keep-face-unmounted", `the keep names no face and the vessel stands no daemon mount to act as (${e instanceof Error ? e.message : String(e)}); name the face the keep acts as (--face N)`); }
+  // THE FACE THE KEEP ACTS AS: the one the line names, else the keep's face, one per house (the face whose keep lei stands,
+  // else h0), whoever wears. THE LINE FIRST: with no lei standing, no byte of memory leaves its mirror.
+  const show = (at: number): Promise<RiteVerbAnswer> => ports.row("swarm-show", { rite: RITE_KEEP, branch: name, face: at });
+  let acting: KeepFace;
+  let line: RiteVerbAnswer;
+  /** Faces where a keep lei may stand unseen: shut ones, and open ones whose line the door would not read. */
+  let unseen: { readonly shut: readonly number[]; readonly unread: readonly number[] } = { shut: [], unread: [] };
+  if (opts.face !== undefined) {
+    acting = { face: opts.face, faceBy: "named" };
+    line = await show(opts.face);
+  } else {
+    const house = ports.houseFaces ? await ports.houseFaces() : { open: [], shut: [] };
+    const keep = await keepFaceOf(show, house.open);
+    acting = { face: keep.face, faceBy: "keep" };
+    line = keep.line ?? await show(keep.face);
+    if (!lineHeld(keep.line)) unseen = { shut: house.shut, unread: keep.unread.filter((f) => f !== keep.face) };
   }
-  const face = acting.face === undefined ? {} : { face: acting.face };
-  const hintFace = acting.face === undefined ? "" : ` --face ${acting.face}`;
-
-  // THE LINE FIRST: with no lei standing, no byte of memory leaves its mirror.
-  const line = await ports.row("swarm-show", { rite: RITE_KEEP, branch: name, ...face });
-  if (!line.ok) throw new KeepRefused(line.code, line.message);
+  const face = { face: acting.face! };
+  const hintFace = ` --face ${acting.face!}`;
+  // A LEI THE KEEP CANNOT SEE: none read standing while a face stands shut, or its line went unread; name it, string nothing.
+  if (unseen.shut.length > 0 || unseen.unread.length > 0) {
+    const where = [
+      ...(unseen.shut.length > 0 ? [`a face not open (${unseen.shut.map((f) => `h${f}`).join(", ")})`] : []),
+      ...(unseen.unread.length > 0 ? [`a face not read (${unseen.unread.map((f) => `h${f}`).join(", ")})`] : []),
+    ].join(" or ");
+    throw new KeepRefused("keep-lei-unseen", `no keep lei read standing for the workspace "${name}", and a keep lei may stand on ${where}: open that face and wear it, then run \`lares rite keep --face N\`; string a new lei only once every face reads none`);
+  }
+  if (!line.ok) throw keepRowRefused(line, acting.face!);
   const lei = line.output["lei"] as { standing?: boolean; refusal?: string } | undefined;
   if (lei?.standing !== true) {
-    throw new KeepRefused(`swarm-lei-${lei?.refusal ?? "absent"}`, `no keep lei stands for the workspace "${name}" (${lei?.refusal ?? "absent"}); the hand strings one: \`lares lei kui --rite keep --branch ${name} --returns <n>${hintFace}\``);
+    // A SPENT LINE NAMES ITS OWN REFILL: the same returns as the lei that ran out, the same face, and no cid (a kui follows the tip itself).
+    const again = (lei as { returns?: unknown } | undefined)?.returns;
+    throw new KeepRefused(`swarm-lei-${lei?.refusal ?? "absent"}`, `no keep lei stands for the workspace "${name}" (${lei?.refusal ?? "absent"}); the hand strings one: \`lares lei kui --rite keep --branch ${name} --returns ${typeof again === "number" ? again : "<n>"}${hintFace}\``);
   }
 
   const parent = dirname(target);
@@ -185,7 +249,9 @@ export async function riteKeep(ports: KeepPorts, opts: KeepOptions): Promise<Kee
     // THE WAKE BEFORE THE CUT, AND THE PINS BACK BEFORE ANYTHING SPENDS: the cut reads disk, and a cold wiki's pages reach disk
     // only at a wake.
     const wake = await wakeColdWikis(ports.wikis);
-    try { await ports.cut(staging, { workspace: wsDir, acceptOmissions: opts.acceptOmissions === true, woken: wake.woken }); }
+    // The cut answers the opened view (its faces by pet-name, read before the seal); the bundle on disk names each by key alone.
+    let cut: KeepCut;
+    try { cut = await ports.cut(staging,{ workspace: wsDir, acceptOmissions: opts.acceptOmissions === true, woken: wake.woken }); }
     catch (e) { await wake.giveBack().catch(() => {}); throw e; }   // the cut's own refusal names the cause
     await wake.giveBack();
     // The keep's own reading of what it cut: every byte against the manifest, and the id over the file list.
@@ -195,12 +261,10 @@ export async function riteKeep(ports: KeepPorts, opts: KeepOptions): Promise<Kee
       rmSync(staging, { recursive: true, force: true });
       return { kept: false, standing: true, workspace: name, into, dest: target, bundleId, ...acting };
     }
-    const receipt = await ports.row("rite-receipt", { tree: bundleId, checks: [KEEP_CHECK], verdict: "pass", definitions: sha256Hex(CARRY_SCHEMA), ...face });
-    if (!receipt.ok) throw new KeepRefused(receipt.code, receipt.message);
     // THE VESSEL READS THE TREE ITSELF: the begin names where the cut stands, never only the id this seat heard.
     const staged = relative(wsDir, staging).split(sep).join("/");
     const begun = await ports.row("rite-begin", { rite: RITE_KEEP, branch: name, head: bundleId, staged, ...face });
-    if (!begun.ok) throw new KeepRefused(begun.code, begun.message);
+    if (!begun.ok) throw keepRowRefused(begun, acting.face!);
     // THE MOVE: the earlier bundle steps aside, the cut takes the name, and the earlier one leaves whole.
     const aside = join(parent, `.${basename(target)}.kept-${tag}`);
     const stood = existsSync(target);
@@ -210,7 +274,8 @@ export async function riteKeep(ports: KeepPorts, opts: KeepOptions): Promise<Kee
     return {
       kept: true, workspace: name, into, dest: target, bundleId,
       tessera: String(begun.output["tessera"]), lei: String(begun.output["lei"]), n: Number(begun.output["n"]),
-      faces: manifest.faces.map((f) => f.petname), counts: manifest.counts, omissions: manifest.omissions, ...acting,
+      faces: cut.faces.map((f) => f.petname), counts: manifest.counts, omissions: manifest.omissions,
+      ...((cut.unreadFaces?.length ?? 0) > 0 ? { unreadFaces: cut.unreadFaces } : {}), ...acting,
     };
   } catch (e) {
     rmSync(staging, { recursive: true, force: true });

@@ -25,7 +25,7 @@ A `lar:` URI names one of three surfaces, and the KIND rides the ''first path se
 
 !! Identity ⋈ canon — a wiki's two addresses
 
-A wiki's IDENTITY (`wikis/slug`, its recipe/`#has`-stack) stands apart from its CANON (`bags/slug`, its published content). `wiki init` registers BOTH: the recipe under `wikis/slug` and the canonical home bag under `bags/slug`. Content resolves from the canon bag; the recipe names the stack.
+A wiki's IDENTITY (`wikis/slug`, its recipe/`#has`-stack) stands apart from its CANON (`bags/slug`, its published content). `wiki init` mints the canonical home bag under `bags/slug` and the recipe at `bags/catalog/recipes/<slug>`, and its answer names the stack (`wikiUri`: `wikis/slug`) with the canon bag beside it (`canonBag`: `bags/slug`). Content resolves from the canon bag; the recipe names the stack. The nameless stack carries the wiki's name and the canon bag stands as one capability in it (operator, 2026-11-20, state/decisions: the wiki's name rides its stack).
 
 !! Meme URIs carry NO relation to bag URIs
 
@@ -35,7 +35,7 @@ A meme moves between bags freely, or lives in several at once. Bag identity NEVE
 
 The two disk planes carry the two STATES of a meme:
 
-* ''`wikis/{slug}`'' — the LIVE wiki. The operator edits here; a live edit projects to the `/wikis/{slug}/…` disk tree (`wikisFileToUri`). The `mirror-root: wikis/{slug}` `wiki init` stamps names this projection.
+* ''`wikis/{slug}`'' — the LIVE wiki. The operator edits here; a live edit projects to the wiki's workbench folder under its realm root, `realms/<realm pet name>/wikis/{slug}/…` (`wikisFileToUri`), or the workspace its share row names; the daemon wiki's rests in its face's root, `faces/<pet name>/wikis/daemon/`. `wiki init` stamps no projection field on the canon row: the realm placement names the folder.
 * ''`bags/{slug}`'' — the CANONICAL bag. Published content, projecting to the `/bags/{slug}/…` tree (`bagsFileToUri`).
 * ''The MOVE makes the shore.'' The operator promotes a tiddler from the live wiki to the canonical bag of the same name; the projector re-projects it `/wikis/ → /bags/` (tiddler-store canon-promotion, `wiki-layer-ontology#shore-law`). Which state holds a meme reads from its URI alone.
 
@@ -45,7 +45,7 @@ The per-wiki live layers ride above the fold, each rooted at the wiki's identity
 
 `bags/lares` (and each house-canon bag beside it) names two things, and no reader may fuse them:
 
-* ''The static floor — a seed for every wiki.'' The genesis bake cuts one history-free snapshot per public house-canon bag from the tracked carriers (`cutGenesisFloor`; a bag that declares a tier under `public` in its own `meta.mem` keys none), a manifest names each by ''CID'', and every recipe composes them read-only through `@oracle` (`floorReadFace`): reproducible from the hash, unreachable by an edit. A later floor reaches a vessel only as a release its Nexus's Kahu cabal approved and the vessel accepted. A write aimed at the floor copies up into the wiki's own working layer.
+* ''The static floor — a seed for every wiki.'' A `main` release's genesis bake cuts one history-free snapshot per public house-canon bag from the tracked carriers, and each develop bake between releases carries them forward unchanged (`cutGenesisFloor`, `carryGenesisFloor`; a bag that declares a tier under `public` in its own `meta.mem` keys none), a manifest names each by ''CID'', and every recipe composes them read-only through `@oracle` (`floorReadFace`): reproducible from the hash, unreachable by an edit. A later floor reaches a vessel only as a release its Nexus's Kahu cabal approved and the vessel accepted. A write aimed at the floor copies up into the wiki's own working layer.
 * ''The live canon — the `wikis/lares` stack's canon layer.'' One CRDT document in the Kahu realm, which the Kahu cabal holds the write reach on (`requireKahuReach`). The `lares` wiki composes it beneath its draft and working layers and above the floor; a hand edits in the working layer and a promotion carries the edit into canon (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/offering`>> #/the-canon-offer). On the Kahu's vessel, in a checkout-sourced boot, that document mirrors to disk at `bags/lares`. A vessel outside the cabal holds no live document and reads the floor.
 
 ''The decoupling carries the safety.'' The floor answers to a CID, so editing `wikis/lares` cannot break what another wiki reads: a promotion moves live canon alone, and every other wiki's floor moves only when a release cuts a fresh snapshot from that canon and the vessel accepts it. Edit freely, promote deliberately, release by the cabal's act.
@@ -81,15 +81,15 @@ One recipe expansion serves every context. `expandRecipe(recipe)` serves as the 
 Two maps, cleanly separated — each the operator's own, never a registry of others:
 
 * ''bags'' — `bags/{slug}` → automerge url. Composable recipe pieces, each one doc, shared per the user's wish.
-* ''wikis'' — `wikis/{slug}` → recipe (the `#has` bag-stack). Per-wiki layers route from here.
+* ''recipes'' — the recipe (the `#has` bag-stack) rests at `bags/catalog/recipes/<slug>`, keyed by the slug. No catalog row stands at `wikis/{slug}`: that prefix mints the wiki's slots (`wikis/{slug}/working`, `/personal`, `/draft`, `/temp`) and keys its host facets (`recipeHostFacets`), and the realm id names the wiki globally. Per-wiki layers route from the recipe.
 
 `@oracle` names the shared system floor from its genesis seed. The read-face projects only seed-named records and blob descriptors as a content-addressed snapshot without Automerge history; the snapshot carries the seed CID beside its own CID. It never hands the oracle document itself across the read-face. The floor's frozen seed-derived address and no-writer rule remain owed on the Kahu Plane road. LAW THE BUILD OWES: one porch answer per Nexus names the floor CID and derived WHO board address; that Nexus's Kahu steward signs it, and a herm carries and presents it without signing it. No tender name reaches a stranger; the steward seal carries the authority (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/pronaos#/the-rung-ladder`>>).
 
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology#/oracle-planes`>> — anchors the shared oracle surface model
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/wiki-layer-ontology#/oracle-planes`>> — anchors the shared oracle surface model
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-oracle-plane`>> — sets the read-face projection and answer split
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/oracle-split`>> — separates floor records from vessel pointers
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model#/one-model`>> — places system floor beneath writable recipe layers
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/recipe-layer-model#/one-model`>> — places system floor beneath writable recipe layers
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;lIxkSpy9JIWbQ6-mXCERuAAvAof_ab4wervyDJB61U4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;xhyXv1Tqermt_pRf980DJ48iL-Ei9bC40NrEUIVLIP8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

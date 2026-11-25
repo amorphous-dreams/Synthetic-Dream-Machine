@@ -2,9 +2,9 @@
  * A locked `persona list` prints the public indices the floor index names and nothing a face keeps private; a face that
  * unlocks shows its name. A vessel with no face standing has nothing to show and refuses naming the unlock.
  */
+import { closeScratch, openScratch, type Scratch } from "../../lararium-node/tests/support/scratch-fixture.js";
 import { afterEach, beforeEach, describe, test, expect, vi } from "vitest";
-import { cpSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { cpSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { cmdPersona } from "../src/commands/persona.js";
 import { cmdVessel } from "../src/commands/vessel.js";
@@ -13,12 +13,11 @@ import { seatedCustody } from "@lararium/node";
 vi.setConfig({ testTimeout: 60_000, hookTimeout: 60_000 });
 
 describe("a locked persona list", () => {
+  let house: Scratch;
   let root: string;
-  let prior: string | undefined;
   beforeEach(async () => {
-    prior = process.env["LAR_ROOT"];
-    root = mkdtempSync(join(tmpdir(), "lares-list-locked-"));
-    process.env["LAR_ROOT"] = root;
+    house = openScratch();
+    root = house.root;
     vi.spyOn(console, "log").mockImplementation(() => {});
     vi.spyOn(console, "error").mockImplementation(() => {});
     cpSync(join(import.meta.dirname, "..", "..", "..", "genesis"), join(root, "genesis"), { recursive: true });
@@ -27,10 +26,20 @@ describe("a locked persona list", () => {
   });
   afterEach(() => {
     vi.restoreAllMocks();
-    if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior;
-    rmSync(root, { recursive: true, force: true });
+    closeScratch(house);
   });
 
+
+  test("★ an open face's row names its PersonaGroup, so a rite reads the group off `persona list --json` ★", async () => {
+    const said: string[] = [];
+    vi.spyOn(process.stdout, "write").mockImplementation((c) => { said.push(String(c)); return true; });
+    vi.mocked(console.log).mockImplementation((...a: unknown[]) => { said.push(a.join(" ")); });
+    expect(await cmdPersona({ command: "persona", positional: ["list"], options: {}, flags: { json: true } })).toBe(0);
+    const answer = JSON.parse(said.join("").trim().split("\n").at(-1) ?? "{}") as { data?: { personas?: Array<{ handleIndex: number; group?: unknown }> } };
+    const h0 = answer.data?.personas?.find((p) => p.handleIndex === 0);
+    expect(typeof h0?.group).toBe("string");
+    expect(String(h0?.group).length).toBeGreaterThan(0);
+  });
 
   test("a vessel with no face standing refuses a locked list naming the unlock", async () => {
     rmSync(join(root, "hearth"), { recursive: true, force: true });

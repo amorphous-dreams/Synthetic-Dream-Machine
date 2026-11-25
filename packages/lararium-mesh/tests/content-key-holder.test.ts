@@ -113,6 +113,36 @@ describe("a key persists: nothing private rests, and a restart finds what the ve
     expect((await seal(a!, "after the restart")).body.keyVersion).toBe(sealed.body.keyVersion);
   });
 
+  it("A READING GIVES WAY WHEN THE REGISTER SET GROWS: a bag the face registers after the holder read founds at the next ask, and a bag that stood read keeps opening", async () => {
+    let registered = [BAG, OTHER];
+    const a = await vessel(world(), "a", { standing: { holdsWrite: ({ bagId }) => registered.includes(bagId), chainOf: () => "one-chain", registeredOf: () => JSON.stringify(registered) } });
+    const garden = await seal(a, "the garden's note");
+    const kitchen = await seal(a, "the kitchen's note", OTHER);
+    a.restart();
+    registered = [BAG];
+    // The holder reads rest under the set that stands: the kitchen's founding record names a writer over an unregistered bag.
+    expect(await opens(a, garden.body.ref)).toBe("the garden's note");
+    expect(await opens(a, kitchen.body.ref, OTHER)).toBe("REFUSED:bag-unfounded");
+    registered = [BAG, OTHER];
+    expect(await opens(a, kitchen.body.ref, OTHER)).toBe("the kitchen's note");
+    expect(await opens(a, garden.body.ref)).toBe("the garden's note");
+    // The reload minted nothing: each bag writes on under the version it stood on.
+    expect((await seal(a, "after the growth")).body.keyVersion).toBe(garden.body.keyVersion);
+    expect((await seal(a, "after the growth", OTHER)).body.keyVersion).toBe(kitchen.body.keyVersion);
+  });
+
+  it("CONTROL: a standing that names no register set keeps the one reading it took", async () => {
+    let registered = [BAG, OTHER];
+    const a = await vessel(world(), "a", { standing: { holdsWrite: ({ bagId }) => registered.includes(bagId) } });
+    const garden = await seal(a, "the garden's note");
+    const kitchen = await seal(a, "the kitchen's note", OTHER);
+    a.restart();
+    registered = [BAG];
+    expect(await opens(a, garden.body.ref)).toBe("the garden's note");
+    registered = [BAG, OTHER];
+    expect(await opens(a, kitchen.body.ref, OTHER)).toBe("REFUSED:bag-unfounded");
+  });
+
   it("NO BARE KEY REACHES REST: no stored value and no sealed value holds a content key's bytes, and no rest value names the bag", async () => {
     const { w, v: [a] } = await fleet("a");
     const sealed = await seal(a!, "find my key");

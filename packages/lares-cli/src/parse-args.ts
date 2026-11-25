@@ -11,7 +11,7 @@
  * Conventions:
  *   bare tokens   → positional[]
  *   --key         → flag (boolean true)
- *   --key value   → option (string)
+ *   --key value   → option (string); a VALUE_FLAGS name takes the next token whatever it starts with
  *   --key=value   → option (string); splits at the FIRST `=`, so the value may carry more `=`.
  *                   An empty value (`--key=`) stays an option holding "".
  *   --no-key      → flag (boolean false)
@@ -31,20 +31,29 @@
  * one of `VALUE_OR_FLAG`.
  */
 export const BOOLEAN_FLAGS: ReadonlySet<string> = new Set([
-  "accept-omissions", "added", "all", "all-strata", "apply", "approve", "brief", "cards", "cosign", "confirm", "create", "cut", "drain",
-  "deny", "drop", "dry-run", "edge", "ephemeral", "every", "executable", "family", "force", "foreground", "from-persona", "held", "help", "help-mempalace", "history",
-  "hearth", "hold", "if-due", "in-wiki", "init", "join", "json", "keep", "keep-hooks", "keyhive-trace", "list", "meme", "memory", "observe", "orphans", "over-fresher",
-  "page", "pair", "palaces", "paper", "partial", "passphrase", "pending", "probe", "quorum", "remove", "repour", "restart", "rotate", "seat", "sessions", "shadow", "skinny", "skip-build", "spectral", "split-root",
-  "staged", "sweep", "tag-blobs", "tree", "verbose", "wait", "with-web", "writeback", "yes",
+  "accept-loss", "accept-omissions", "added", "all", "all-strata", "apply", "approve", "brief", "bulk", "cancel", "cards", "collapse", "cosign", "confirm", "create", "cut", "drain",
+  "deny", "docs", "draft", "drop", "dry-run", "edge", "ephemeral", "every", "executable", "family", "force", "fresh", "foreground", "from-persona", "held", "help", "help-mempalace", "history",
+  "hearth", "hold", "if-due", "in-wiki", "init", "join", "json", "keep", "keep-hooks", "keyhive-trace", "lag", "launch", "list", "meme", "memory", "new", "observe", "orphans", "over-fresher",
+  "page", "pair", "palaces", "paper", "partial", "passphrase", "pending", "probe", "quorum", "overwrite", "remove", "repour", "restart", "rotate", "seat", "sessions", "shadow", "skinny", "skip-build", "spectral", "split-root",
+  "staged", "sweep", "tag-blobs", "tree", "verbose", "wait", "watch", "with-web", "workbench", "writeback", "yes",
 ]);
 
 /**
  * Names a command reads as a flag in one spelling and as a valued option in another (`meme project --check`
- * alone or `--check <x>`; `--grammar`). The parser cannot tell which spelling comes, so these
- * stay greedy. `--face` takes a value (`fleet join offer --face 1`); its flag read only refuses the bare spelling.
+ * alone or `--check <x>`; `--grammar`; `rite kukulu --rollback` alone or `--rollback <rev>`). The parser cannot tell which spelling comes, so these
+ * stay greedy. `--face` takes a value (`fleet join offer --face 1`), and so does `--target` (`tiddler get T --target h1`);
+ * each flag read only refuses the bare spelling.
  */
-export const VALUE_OR_FLAG: ReadonlySet<string> = new Set(["check", "face", "grammar"]);
+export const VALUE_OR_FLAG: ReadonlySet<string> = new Set(["check", "face", "grammar", "rollback", "target", "recipe", "realm"]);
 
+
+/**
+ * THE VALUE FLAGS: names that carry free text (a tiddler body, a note, a reason, a field list) and ALWAYS take the next
+ * token as their value, whatever it starts with: `--text "---\nfront: matter\n---"` binds the front matter, never reads
+ * as a flag. Every other non-boolean name keeps the peek (`--key --other` leaves `--key` bare). `tests/parse-args.test.ts`
+ * reds a name here that a handler reads as a flag, or that sits in `BOOLEAN_FLAGS` / `VALUE_OR_FLAG`.
+ */
+export const VALUE_FLAGS: ReadonlySet<string> = new Set(["fields", "note", "reason", "text"]);
 
 /** A command line the grammar itself refuses (`--no-key=…`, `--=v`); the dispatcher turns it into exit 2. */
 export class ArgsError extends Error {
@@ -89,10 +98,10 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
         options[key] = body.slice(eq + 1);
         continue;
       }
-      if (BOOLEAN_FLAGS.has(body)) { flags[body] = true; continue; }
+      if (BOOLEAN_FLAGS.has(body) || (command === "wiki" && positional[0] === "pin" && ["bag", "release"].includes(body)) || (command === "wiki" && positional[0] === "switch" && body === "next-boot")) { flags[body] = true; continue; }
       const next = tokens[0];
-      // --key value form: peek; consume next token if it does not look like an option.
-      if (next !== undefined && !next.startsWith("--")) {
+      // --key value form: peek; consume next token if it does not look like an option (a VALUE_FLAGS name consumes it whatever it starts with).
+      if (next !== undefined && (VALUE_FLAGS.has(body) || !next.startsWith("--"))) {
         options[body] = next;
         tokens.shift();
       } else {

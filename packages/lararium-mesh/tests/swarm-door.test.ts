@@ -25,7 +25,7 @@ async function stand(over: Partial<SwarmDoorDeps> = {}) {
   const doc = { tiddlers: {} } as LarDoc, rows = new Map<string, string>();
   const wiki: SwarmWikiPort = { read: async (t) => rows.get(t) ?? null, write: async (t, x) => { rows.set(t, x); }, writeNew: async (t, x) => (rows.has(t) ? false : (rows.set(t, x), true)),
     list: async (prefix) => [...rows.keys()].filter((t) => t.startsWith(prefix)) };
-  const trust = { hand: (k: string) => k === root.key, vessel: () => false, lead: () => false };
+  const trust = { hand: (k: string) => k === root.key, vessel: () => false, place: () => false, lead: () => false };
   const deps: SwarmDoorDeps = {
     group: GROUP, face: { group: GROUP, grant: (k) => k === root.key }, signer: root, trust, epoch: () => 0, wiki,
     board: { records: async () => swarmBoardRecords(doc, GROUP), land: async (act) => { writeSwarmBoardAct(doc, act); } },

@@ -1,0 +1,36 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/nalu-record`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+description = "the record behind api/pono/nalu: the talk-story session that named the wave, the SceneGraph release its alignment read against, and the scale projection behind its threshold, kept as testimony; the law speaks in the api meme"
+tags        = ["api/pono/meme", "api/pono/nalu"]
+title       = "lar:///ha.ka.ba/lares/docs/pono/nalu-record"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lares/docs/pono/nalu-record"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Nalu ~ the record
+
+The nalu law speaks at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/nalu`>>; its dated ruling stands in that meme's <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/nalu#/rulings`>>.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/readings`>>
+
+!! The dated readings
+
+* ''Source authority'', as first written: Talk Story session 2026-05-15; Book of Verse ch. 14; TW5 SyncAdaptor contract; Elm Architecture (Czaplicki 2012); UEFN SceneGraph Beta.
+* ''The SceneGraph release.'' The alignment slot read ''UEFN SceneGraph Alignment (Beta, June 2025)'': ''The SceneGraph Beta unifies editor and runtime — all scene elements are now Verse-addressable.''
+* ''The coordinate change.'' ''Coordinate system note (v36.00): UEFN transitioned to LUF (Left, Up, Forward) coordinates. Any `spatial:contains`, `spatial:adjacent`, or `spatial:portal` pranala edges encoded with FRU orientation assumptions need migration. See `uefn-scene.md`.''
+* ''The home split'' read that the capture / stream nalu-gate ''re-homes py-side''.
+* ''The scale projection.'' ''If VmPool scale reaches 100+ VMs with 1000+ widgets each, or if CRDT patch frequency exceeds 600/second per VM, re-evaluate. The Stranger's concern (unfiltered delivery at scale) is real but not yet triggered at current projected scale.'' No class named `VmPool` stands; the threshold reads against the vessel's island pool.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;p6eopUnvyDgEoGCFUP1h1Lm5IRwkKXZnB_2ttpRXULc`>>
+
+<<^ code=`&#x0004;` to=`?`>>

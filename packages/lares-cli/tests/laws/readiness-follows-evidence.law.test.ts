@@ -174,6 +174,7 @@ describe("L10 roster: standing derives from seated chairs and threshold alone", 
       if (!r.seated) { expect(r.reading, JSON.stringify(g)).toMatch(/no kahu|nobody|unseated/i); continue; }
       expect(r.reading, JSON.stringify(g)).toContain(`${g.threshold} of ${g.seated}`);
       if (r.fragile) expect(r.reading, JSON.stringify(g)).toMatch(/one more seat|another seat/i);
+      else expect(r.reading, JSON.stringify(g)).toMatch(new RegExp(`survives ${r.tolerance} seats?\\b`));
     }
   });
 
@@ -251,6 +252,13 @@ describe("L10 re-pave: the verdict reads off counts, never off a clean exit", ()
       const named = (n: number) => new RegExp(`${n}|${n.toLocaleString("en-US")}`);
       if (v.state === "barren") expect(v.why, JSON.stringify(g)).toMatch(named(g.sources));
       if (v.state === "shrank") expect(v.why, JSON.stringify(g)).toMatch(named(g.before));
+      // A standing verdict names what stands: the drawers over their sources, and a re-run that moved nothing as one.
+      if (v.state === "landed") {
+        expect(v.why, JSON.stringify(g)).toMatch(named(g.after));
+        expect(v.why, JSON.stringify(g)).toMatch(named(g.sources));
+        expect(/nothing new/.test(v.why), JSON.stringify(g)).toBe(g.after === g.before);
+      }
+      if (v.state === "empty") expect(v.why, JSON.stringify(g)).toMatch(/no transcript sources/);
     }
   });
 

@@ -1,15 +1,16 @@
 name: Held-out witnesses
 
-# The drivers that prove TRANSPORT across real containers and a real browser: the browser weld, the civic
+# The drivers that prove TRANSPORT across real containers (the browser weld stands dim: tools/ci-cells.mjs BROWSER_LAMPS_DIM): the civic
 # families, the crossing matrix, the Herm mesh across three hops, and every mesh scenario. The per-push CI
 # fleet names these witnesses but cannot raise their browser and Docker substrates, so they ride here.
 #
-# HELD-OUT RUNS PER TRAIN, NOT PER LANE PUSH. This workflow runs on each push to the span and to `main`, on a
-# weekly clock, and by hand; a lane branch (`feature/green-jello-dinosaur-5--*`) never fires it, so a lane
-# reads GREEN on its CI alone and these drivers measure the merged tree after each land. `tools/ci-verdict.mjs`
-# still prints its verdict as the third reading beside the CI workflow's own, so a head these drivers never
-# measured reads UNREAD (a lane reads `held-out: not run (per train)`) and never green; the vigil on the span
-# reads both.
+# HELD-OUT RUNS PER TRAIN, NOT PER LANE PUSH. This workflow runs on each push to `develop` (the integration
+# branch) and to `main`, on a weekly clock, and by hand; a lane branch (`develop--*`, `lane/*`) never fires it,
+# so a lane reads GREEN on its CI alone (the Quick gates on a lane push, ci.yml's doorstep; the whole battery on the
+# merge queue's run) and these drivers measure the merged tree after each land.
+# `tools/ci-verdict.mjs` still prints its verdict as the third reading beside the CI workflow's own, so a head
+# these drivers never measured reads UNREAD (a lane reads `held-out: not run (per train)`) and never green; the
+# vigil on `develop` reads both.
 #
 # FOUR JOBS, ONE VERDICT.
 #   plan      prints the cell matrix. `tools/held-out-cells.mjs` derives it: one cell per whole driver, and one
@@ -31,7 +32,7 @@ name: Held-out witnesses
 # `max-parallel` holds the cells to eight.
 on:
   push:
-    branches: ["feature/**", "!feature/green-jello-dinosaur-5--**", main]
+    branches: [develop, main]
     # Meme, docs and wiki paths raise no run on a push (tools/ci-ignored-paths.json; a test pins these globs equal
     # to it). A push that changes only these leaves the in-flight run alone. pull_request stays un-ignored.
     paths-ignore:
@@ -46,19 +47,12 @@ on:
 # A newer head supersedes an older run of the same ref.
 concurrency:
   group: held-out-${{ github.ref }}
-  cancel-in-progress: true
+  # A develop or main run finishes once begun: a newer push queues behind it (queued runs coalesce to the newest head),
+  # so a burst of merges never cuts a held-out reading off mid-run. A lane's run still yields to its next push.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/develop' && github.ref != 'refs/heads/main' }}
 
 permissions:
   contents: read
-
-env:
-  NODE_VERSION: "24"
-  # ONE pnpm, exact: the same string as package.json `packageManager` and the Dockerfile. A lock
-  # written by any other pnpm rewrites its peer suffixes on its next write.
-  PNPM_VERSION: "11.28.5"
-  # THE BROWSER LIBRARIES COME IN THE IMAGE, NEVER FROM APT (`playwright install-deps` timed out in the browser cells six times in one
-  # day). The same string as ci.yml's; tools/workflow-law.test.mjs holds both to the repo's `playwright` version.
-  PLAYWRIGHT_IMAGE: "mcr.microsoft.com/playwright:v1.64.1-noble@sha256:2f05f8a734509a7b3f26a912639488ee08f58a7b292d14d62271bcff9038768f"
 
 jobs:
   plan:
@@ -69,9 +63,13 @@ jobs:
       matrix: ${{ steps.cells.outputs.matrix }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Read the Node floor (package.json engines.node)
+        id: node
+        # The floor major of package.json `engines.node`; setup-node would take the newest release of a `>=` range.
+        run: echo "major=$(node -p "/\\d+/.exec(require('./package.json').engines.node)[0]")" >> "$GITHUB_OUTPUT"
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: ${{ steps.node.outputs.major }}
       - name: Derive the cell matrix
         id: cells
         run: |
@@ -123,11 +121,13 @@ jobs:
         with:
           submodules: recursive
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
-        with:
-          version: ${{ env.PNPM_VERSION }}
+      - name: Read the Node floor (package.json engines.node)
+        id: node
+        # The floor major of package.json `engines.node`; setup-node would take the newest release of a `>=` range.
+        run: echo "major=$(node -p "/\\d+/.exec(require('./package.json').engines.node)[0]")" >> "$GITHUB_OUTPUT"
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: ${{ steps.node.outputs.major }}
           cache: pnpm
       # The runner context is unreadable in a job-level env block; the path is computed where it is.
       - name: Prepare held-out evidence directory
@@ -185,24 +185,11 @@ jobs:
         run: |
           echo "COMPOSE_PROJECT_NAME=held-${{ matrix.cell }}" >> "$GITHUB_ENV"
           echo "MESH_PROJECT=held-${{ matrix.cell }}" >> "$GITHUB_ENV"
-      # The browser weld's two drivers run inside the pinned official Playwright image (the driver step names it
-      # `WELD_PW_IMAGE`, for tools/browser-weld-witness.sh alone: its entry-contract test runs fakes and must see none), so the system libraries and Chromium are already there and no apt or download step runs. The pull
-      # is its own step, so a stall names itself.
-      - name: Pull the pinned Playwright image and find its Chromium
-        if: matrix.driver == 'browser-weld'
-        timeout-minutes: 12
-        run: |
-          export PW_IMAGE="$PLAYWRIGHT_IMAGE"
-          tools/pw-container.sh node -e 'const p = require("playwright"); const e = p.chromium.executablePath(); require("node:fs").accessSync(e); console.log("chromium:", e, "playwright", require("playwright/package.json").version)'
-
       # Regression for the status bug that held this runner back. The fake Docker seam runs no
       # container and checks both a quiet failed compose result and a quiet successful one.
       - name: Crossing driver preserves a quiet compose verdict
         if: matrix.driver == 'crossing'
         run: node --test tools/crossing-witness.test.mjs
-      - name: Browser weld driver preserves its entry contract
-        if: matrix.driver == 'browser-weld'
-        run: node --test tools/browser-weld-witness.test.mjs
       # The mesh witnesses' readers hold to a known positive: a field the pointer builder stops minting
       # reds here, before a mesh run can read every act as one frozen default.
       - name: Herm mesh readers read a known positive
@@ -246,10 +233,6 @@ jobs:
           set +e
           SECONDS=0
           case "${{ matrix.driver }}" in
-            browser-weld)
-              WELD_PW_IMAGE="$PLAYWRIGHT_IMAGE" run_logged 40m bash tools/browser-weld-witness.sh
-              status=$?
-              ;;
             civic)
               run_logged 85m bash tools/civic-witness.sh
               status=$?
@@ -339,9 +322,13 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Read the Node floor (package.json engines.node)
+        id: node
+        # The floor major of package.json `engines.node`; setup-node would take the newest release of a `>=` range.
+        run: echo "major=$(node -p "/\\d+/.exec(require('./package.json').engines.node)[0]")" >> "$GITHUB_OUTPUT"
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: ${{ steps.node.outputs.major }}
       # A cell that uploaded nothing leaves no directory here; the gate below names it missing.
       - name: Download every cell's evidence
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2

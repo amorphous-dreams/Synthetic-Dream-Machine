@@ -115,7 +115,7 @@ describe("lares kahua", () => {
     const proposals = [{ title: "T", revision: "r1", text: "body", taint: [] }];
     expect(await run("propose", "--proposals", JSON.stringify(proposals))).toBe(0);
     expect(await run("withdraw", CID)).toBe(0);
-    expect(await run("list")).toBe(0);
+    expect(await run("get")).toBe(0);
     expect(await run("get", "T", "--history")).toBe(0);
     expect(seam.calls).toEqual([
       ["kahua-mint", { face: 0 }],
@@ -127,10 +127,20 @@ describe("lares kahua", () => {
     seam.calls = [];
     expect(await run("propose", "--proposals", "{not json")).toBe(1);
     expect(await run("withdraw")).toBe(1);
-    expect(await run("get")).toBe(1);
+    expect(await run("get", "--history")).toBe(1);
     expect(await run("burn")).toBe(2);   // an unknown act answers the usage refusal
     expect(await run("lift", "T", "--taint", "none", "--sources", "[oops")).toBe(1);
     expect(seam.calls).toEqual([]);
+  });
+
+  test("plane read folds list and item through get, while history needs a title", async () => {
+    expect(await run("get")).toBe(0);
+    expect(await run("get", "T", "--history")).toBe(0);
+    expect(await run("get", "--history")).toBe(1);
+    expect(seam.calls).toEqual([
+      ["kahua-read", { action: "list" }],
+      ["kahua-read", { action: "get", title: "T", history: true }],
+    ]);
   });
 
   test("RED: `carry` reaches the carry row with the cids it names, or `--all` for every earlier head; CONTROL: a carry naming neither, or both, refuses before the door", async () => {

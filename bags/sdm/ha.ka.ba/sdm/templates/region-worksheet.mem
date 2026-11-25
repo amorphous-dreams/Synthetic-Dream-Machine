@@ -29,8 +29,8 @@ Travel-hex place meme on its shelf; Sites and Areas that matter (extraction, del
 profiles) nest beneath their Destinations. Every place meme declares its stratum and its
 hex-scale. Feed every hex: ''horizon · hidden handle · bleed''.
 
-Live enactments: [[new-delos|../../../../@elyncia/ha.ka.ba/elyncia/nexuses/new-delos/region-worksheet.md]] ·
-[[illyria|../../../../@elyncia/ha.ka.ba/elyncia/nexuses/illyria/region-worksheet.md]] ·
+Live enactments: [[new-delos|lar:///ha.ka.ba/elyncia/nexuses/new-delos/region-worksheet]] ·
+[[illyria|lar:///ha.ka.ba/elyncia/nexuses/illyria/region-worksheet]] ·
 neo-thracia (referee bag).
 
 <<~/ahu>>
@@ -124,6 +124,6 @@ grain, blessed before moving:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;wKQpFzdr9dlSoN7mw6A912hhQRyWadzObDWAW2bmqpw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;N1hUbldvIpIylraWIPq_mgg8FlxWMVHGWMvB3IYAc9c`>>
 
 <<^ code=`&#x0004;` to=`?`>>

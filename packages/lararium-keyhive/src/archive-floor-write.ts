@@ -14,7 +14,14 @@ export type ArchiveFloorCarrier = "veil";
  * It injects no per-boot writer until that row has a custody door.
  */
 export interface ArchiveFloorWriters {
-  readonly persistVeilArchive?: (bytes: Uint8Array) => void | Promise<void>;
+  /** Rest one face's Archive in that face's own row, named by its PersonaGroup. */
+  readonly persistVeilArchive?: (bytes: Uint8Array, face: string) => void | Promise<void>;
+  /**
+   * Whether `persistVeilArchive` can route this face's Archive at all. Absent: every face routes (the writer's own gate
+   * decides). False: nothing exports, so no card mints for an Archive no row would keep (`exportArchiveAfterTheCard` mints
+   * the stand's card, and a card no kept Archive holds burns a prekey).
+   */
+  readonly routesVeilArchive?: (face: string) => boolean;
 }
 
 /** A write that was attempted and FAILED — decided here, surfaced by the caller (Rail B). */
@@ -30,6 +37,8 @@ export interface ArchiveFloorOutcome {
   readonly barred: boolean;
   /** Attempted writes that failed. The caller surfaces these; this door never raises. */
   readonly refusals: readonly ArchiveFloorRefusal[];
+  /** The writer routes no Archive for this face: nothing exported, and no card minted. */
+  readonly unrouted?: boolean;
 }
 
 export interface ArchiveFloorInput {
@@ -41,6 +50,11 @@ export interface ArchiveFloorInput {
    */
   readonly archiveOpens: unknown;
   readonly writers: ArchiveFloorWriters;
+  /**
+   * The PersonaGroup of the hive whose Archive this floor exports: the row the bytes rest in. Absent or blank, nothing exports
+   * and the floor refuses `face-not-named`, so no write ever lands in a row the vessel chose for itself.
+   */
+  readonly face: string | null | undefined;
   /** Materialise the veil keyhive's archive bytes. NOT called on a barred boot. */
   readonly exportVeilArchive?: () => Promise<Uint8Array>;
 }
@@ -61,15 +75,26 @@ export async function persistArchiveFloor(input: ArchiveFloorInput): Promise<Arc
 
   const wrote: ArchiveFloorCarrier[] = [];
   const refusals: ArchiveFloorRefusal[] = [];
+  // EACH ARCHIVE NAMES ITS FACE. A floor that names none exports nothing (no prekey secret reaches the heap) and refuses by name.
+  const face = typeof input.face === "string" && input.face.trim() !== "" ? input.face : null;
+  if (face === null) {
+    if (input.writers.persistVeilArchive && input.exportVeilArchive) refusals.push({ carrier: "veil", message: "face-not-named: the archive floor names no face, so no row takes its bytes" });
+    return { wrote, barred: false, refusals };
+  }
+
+  // A FACE THE WRITER CANNOT ROUTE EXPORTS NOTHING: the export mints the stand's card, and a card no row keeps burns a prekey.
+  if (input.writers.persistVeilArchive && input.writers.routesVeilArchive && !input.writers.routesVeilArchive(face)) {
+    return { wrote, barred: false, refusals, unrouted: true };
+  }
 
   const land = async (
     carrier: ArchiveFloorCarrier,
-    write: ((bytes: Uint8Array) => void | Promise<void>) | undefined,
+    write: ((bytes: Uint8Array, face: string) => void | Promise<void>) | undefined,
     exportBytes: (() => Promise<Uint8Array>) | undefined,
   ): Promise<void> => {
     if (!write || !exportBytes) return;   // never injected → never persists; not a refusal
     try {
-      await write(await exportBytes());
+      await write(await exportBytes(), face);
       wrote.push(carrier);
     } catch (err) {
       // DECIDED here, SURFACED by the caller. A failed export never blocks the boot.

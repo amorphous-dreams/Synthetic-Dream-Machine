@@ -38,6 +38,8 @@ export * from "./stored-value.js";
 export * from "./stored-record.js";
 export * from "./catalog-entry.js";
 export * from "./floor-manifest.js";
+export * from "./floor-drift.js";
+export * from "./floor-offering.js";
 export * from "./cas.js";
 export * from "./lar-camera.js";
 export * from "./record-port.js";
@@ -80,9 +82,11 @@ export * from "./intent-entry.js";
 export * from "./intent-verbs.js";
 export * from "./intent-read.js";
 export * from "./intent-view.js";
+export * from "./hearth-roster.js";
 export * from "./intent-issue.js";
 export * from "./ward-cosign.js";
 export * from "./ward-cosign-gate.js";
+export * from "./keeper-cosign.js";
 export * from "./ward-answer.js";
 export * from "./vessel-face-tag.js";
 export * from "./kahua-stage.js";
@@ -95,6 +99,8 @@ export * from "./swarm-tiddlers.js";
 export * from "./swarm-tessera.js";
 export * from "./swarm-board.js";
 export * from "./swarm-door.js";
+export * from "./exec-lei.js";
+export * from "./doc-swarm-wiki.js";
 export * from "./kukulu-vouch.js";
 export * from "./face-relation.js";
 export * from "./promote-door.js";
@@ -112,6 +118,7 @@ export * from "./lease-advance.js";
 export * from "./charter-hand-lineage.js";
 export * from "./quorum-lease.js";
 export * from "./face-boot-proof.js";
+export * from "./sibling-plane-mount.js";
 export * from "./face-reading.js";
 export * from "./join-face-documents.js";
 export * from "./edge-frontier-board.js";
@@ -137,6 +144,9 @@ export * from "./stream-adapter.js";
 export * from "./text-stream-adapter.js";
 export * from "./sensorium-pc.js";
 export * from "./aperture-selector.js";
+export * from "./entropy-door.js";
+export * from "./ddate.js";
+export * from "./oracle-cast.js";
 export * from "./epoch-lease.js";
 export { controlHomeUrlOf, standControlHome, readControlHome, nameControlHome, ControlHomeUnavailable, controlStoreOf, vesselOnlyDocIds, floorOnlyDocIds, makeVesselOnlyDocs, VESSEL_LOCKED, CONTROL_HOME_UNNAMED, controlHomeRefusal, assertControlHomeOpen, refusingControlStore, floorAnswerStore, isFloorAnswerTitle, FLOOR_ANSWER_RING, vesselLockedRefusal, type ControlHomeRefusal } from "./control-home.js";
 export { vesselOnlyBook, repoReverdict } from "./vessel-only-book.js";
@@ -179,13 +189,17 @@ export * from "./capture-nalu.js";
 export * from "./capture/capture-engine.js";
 export * from "./projection-nalu.js";
 export * from "./host-task.js";
+export * from "./wave-crest.js";
+export * from "./ingest-wave-budget.js";
 export * from "./iris.js";
 export * from "./lent-faces.js";
+export * from "./cross-face-reach.js";
 export * from "./chore-ask.js";
 export * from "./gate-tuning.js";
 export * from "./lar-event-bus.js";
 export * from "./social-tiddlers.js";
 export * from "./automerge-doc-store.js";
+export { seatRepoWear, wearOf } from "./repo-wear.js";
 export * from "./parallel-drafts.js";
 export * from "./lar-vessel.js";
 export * from "./lararium-vessel.js";
@@ -237,7 +251,7 @@ export type {
 export {
   sealChunk, openChunk, authorizeAddress, sealedAddressOf, keyVersionIdOf, contextDigest, mintContentKey,
   readContentKey, readKeyVersionId, readSealedAddress, isChunkRole, sealedImage, readSealedImage, isWellFormedText,
-  CHUNK_ROLES, ADDRESS_SOURCES, SEAL_REFUSALS, OPEN_REFUSALS, CONTENT_KEY_LEN, SEALED_HEADER_LEN, SEALED_SEGMENT_LEN, SEALED_TAG_LEN, SEALED_CHUNK_MARK, SEALED_MARK_LEN,
+  CHUNK_ROLES, ADDRESS_SOURCES, SEAL_REFUSALS, OPEN_REFUSALS, CONTENT_KEY_LEN, SEALED_HEADER_LEN, SEALED_SEGMENT_LEN, SEALED_TAG_LEN, SEALED_CHUNK_MARK, SEALED_MARK_LEN, SEALED_VALUE_POINTER, namesSealedPointer, bearsSealedMark,
 } from "./sealed-chunk.js";
 export type {
   ContentKey, KeyVersionId, SealedAddress, ChunkRole, SealContext, AuthorizedAddress, AddressSource,
@@ -289,11 +303,14 @@ export * from "./face-scoped-id.js";
 export * from "./durability-receipt.js";
 export * from "./session-receipt.js";
 export * from "./residency-actions.js";
+export { watchStandoffs, standoffOf, type StandoffWatch } from "./standoff-watch.js";
 export * from "./verb-refusal.js";
 export * from "./content-handle.js";
 export * from "./effect-record.js";
+export * from "./shell-leaving-record.js";
 export * from "./kumu-device.js";
 export * from "./genesis-doc.js";
+export * from "./genesis-compare.js";
 export * from "./genesis-intake.js";
 export * from "./island-protocol.js";
 export * from "./conformance-verb-breathing.js";
@@ -306,13 +323,14 @@ export type { EffectiveRecipe, RecipePlane } from "./recipe-planes.js";
 export { resolveRecipePluginCids, deriveWikiRecipe, wikiSlugOfBag } from "./surface-recipe.js";
 export type { WikiRecipeDerivation } from "./surface-recipe.js";
 export { makeIslandRepo, attachMessageChannelSync, replicaHeads, islandPeersOf, markIslandArrival, markWikiIslandPeer, wikiIslandPeersOf } from "./island-repo.js";
+export { wikiIslandWithholds, vesselDocBags, wikiSlotOf, type WikiIslandMount } from "./wiki-island-reach.js";
 export { peerArrivals, type PeerArrival, type PeerArrivals } from "./peer-arrivals.js";
 export { wireIdentityOf, seatDialLeg } from "./wire-identity.js";
 export type { WireIdentity, WireAlias, WireLegAt, WireLegSeat, WireLegRefusal, WornFace } from "./wire-identity.js";
 export { answerReceiptWithHeads, receiptInStore, RECEIPT_STALL_ROUNDS } from "./receipt-with-heads.js";
 export type { CapabilityRecord, ReceiptIssuer, CasFetcher, DyadReader, CustodyWriter, SessionSignDoor } from "./capability-record.js";
 export { islandCustodyWriter, answerReceipt, answerDyad, answerCustodyWrite, answerSessionSign, answerRestAsk, answerIslandAsks, receiptSettlement, RECORD_ASKS } from "./capability-record.js";
-export { SessionSignBook, standingSessionSeat, type BookedSession, type BookedSessionSigner } from "./session-sign-book.js";
+export { SessionSignBook, standingSessionSeat, type BookedSession, type BookedSessionSigner, type FaceFold } from "./session-sign-book.js";
 export { GatedSyncLeg, oneWayDocumentsGate, carriesPrototypeKeyReason } from "./gated-sync-leg.js";
 export { shoreInbound, shoreStorage, syncMessagePrototypeKey, chunkPrototypeKey, docPrototypeKeyFault, assertNoPrototypeKeys, type PrototypeKeyRefusal } from "./prototype-key-shore.js";
 export type { SyncLegGate, LegRefusal } from "./gated-sync-leg.js";
@@ -321,7 +339,7 @@ export { assembleVessel, mountWikiSlot } from "./open-vessel-core.js";
 export type { VesselKeel, VesselBootstrap, VesselCoreAssembly, MountManifest, MountEntry } from "./open-vessel-core.js";
 export { awaitIslandMsg } from "./vessel-host.js";
 export type { AwaitIslandMsgOpts, VesselWorkerHandle, VesselIslandHost } from "./vessel-host.js";
-export { VesselIslandPoolCore } from "./vessel-island-pool-core.js";
+export { VesselIslandPoolCore, resolveDiskMirrors } from "./vessel-island-pool-core.js";
 export { makeWikiActivationCap } from "./wiki-activation.js";
 export type { WikiActivationCap, WikiActivationGrant, ActivationResidency, ActivationPool, ResolveWikiSpec, WikiActivationResult, WikiSpecResolution } from "./wiki-activation.js";
 export type { VesselIslandPoolCoreOptions, VesselRestState, DiskMirrorGrant } from "./vessel-island-pool-core.js";
@@ -352,6 +370,8 @@ export type { CarryOutcome } from "./walk-carry.js";
 export { LEAF_RETRY_CAP_MS, LEAF_SILENCE_LOG_EVERY, LarWSClientAdapter } from "./lar-ws-client-adapter.js";
 export type { LarWSClientOptions, LarLeafSession, FacePresentation } from "./lar-ws-client-adapter.js";
 export * from "./cap-compose.js";
+export * from "./mint-census.js";
+export * from "./doc-census.js";
 export * from "./carriage-caps.js";
 export * from "./persona-hd.js";
 export * from "./persona-identity.js";
@@ -485,10 +505,15 @@ export * from "./chartered-classes.js";
 export * from "./promotion-approval.js";
 export * from "./kahu-cabal-admission.js";
 export * from "./kahu-canon-reach.js";
+export * from "./tw5-docs-name.js";
+export * from "./executable-class.js";
+export * from "./seat-startup-offer.js";
+export * from "./rendered-derives.js";
 export * from "./house-canon-doc.js";
 export * from "./floor-release.js";
 export * from "./floor-answer.js";
 export * from "./floor-pin.js";
+export * from "./floor-shadow.js";
 export * from "./canon-offer.js";
 export * from "./family.js";
 export * from "./lineage-rank.js";
@@ -532,6 +557,7 @@ export * from "./recovery-seat.js";
 export * from "./wax-stamp.js";
 // The two-founder act and the engine cadence it seats (kahu#/seed-and-nexus, kahu#/contract); the cofound ceremony calls them.
 export * from "./cadence-lineage.js";
+export * from "./cadence-offer.js";
 export * from "./cofound.js";
 export * from "./cold-key-card.js";
 export * from "./persona-kel.js";
@@ -601,11 +627,11 @@ export * from "./pack-provenance.js";
 
 // One boot-time doc resolver for both vessels — races local readiness, then MERGES a late remote
 // into the fallback rather than dropping it.
-export { waitHandle, LOCAL_READY_MS } from "./wait-handle.js";
+export { waitHandle, nameDocumentFor, nameDerivedDocument, LOCAL_READY_MS, seatSealedRest, sealedLoadEnding, type SealedRestDoor, type SealedSettlement, type SealedLoadEnding } from "./wait-handle.js";
 
 // The registered bag set, derived from the persona BINDING — founded stays private, admitted carries the fleet's.
 export type { FleetMembership, RegisterBagsInput } from "./register-bags.js";
-export { deriveRegisterBags, catalogNamedBags, isVesselGround, wornFaceWikiBags, standingDaemonCanonBag, litFaceOwnBags, DAEMON_WIKI_SLOT_BAGS, type WikiSlotBags } from "./register-bags.js";
+export { deriveRegisterBags, catalogNamedBags, catalogFaceSlotBags, isVesselGround, wornFaceWikiBags, isFaceSlotBag, standingDaemonCanonBag, litFaceOwnBags, DAEMON_WIKI_SLOT_BAGS, type WikiSlotBags } from "./register-bags.js";
 export * from "./persona-scope.js";
 export * from "./persona-planes.js";
 export * from "./holdings-witness.js";
@@ -646,9 +672,12 @@ export type {
   CustodyIo, SealedCarrier, SealedCarrierUpdate, StandingCarrier, TreeKeyReading, WriteSealedCarrierArgs, CommitSlotTreeArgs, RotateTreeKeyArgs, SettleRotationArgs,
   WriteFaceCarrierArgs, RotateFckArgs, CommitFaceTreeArgs, WriteWardCarrierArgs,
 } from "./sealed-writer.js";
-export { bindSlot, unbindSlot, openTreeKey, nobleKdf, encodeSlotTree, decodeSlotTree, draftPaperPin, confirmPaperPin, confirmHeldPaper, mintPasskeySalt, openPasskeyPin, PIN_KINDS } from "./keyslot.js";
-export type { KdfPort, ScryptCost, PaperDraft, ConfirmedPaperPin, SlotTree, SlotSpec, PinSpec, PinKind, PinRecord, PasskeyPinRecord, Credential, TreeKeyUnlock, SlotTreeReading } from "./keyslot.js";
+export { bindSlot, unbindSlot, openTreeKey, slotsOpenedBy, nobleKdf, encodeSlotTree, decodeSlotTree, draftPaperPin, confirmPaperPin, confirmHeldPaper, mintPasskeySalt, openPasskeyPin, PIN_KINDS } from "./keyslot.js";
+export type { ProvedSlot, KdfPort, ScryptCost, PaperDraft, ConfirmedPaperPin, SlotTree, SlotSpec, PinSpec, PinKind, PinRecord, PasskeyPinRecord, Credential, TreeKeyUnlock, SlotTreeReading } from "./keyslot.js";
 export { mintTreeKey, treeKeyEquals } from "./tree-key.js";
+// The keep pair: a keep bundle's roster seals to its public half; its secret rests wrapped under the human's routes — see `keep-seat`.
+export { mintKeepSeat, mintKeepSeatUnder, openKeepSecret, bindKeepSlot, sealToKeep, openFromKeep, encodeKeepSeat, decodeKeepSeat, signKeepCut, verifyKeepCut, keepVerifyKeyOf } from "./keep-seat.js";
+export type { KeepSeat, KeepMint, KeepSecretOpening, KeepSlotBinding, KeepSeatReading } from "./keep-seat.js";
 // The serving key and the serving tree that wraps it under the tree key's entry — see `serving-key`.
 export { mintServingKey, SK_LENGTH } from "./serving-key.js";
 export type { ServingKey } from "./serving-key.js";
@@ -695,3 +724,5 @@ export * from "./promote-panel-api.js";
 export * from "./promote-main-verbs.js";
 export * from "./share-config.js";
 export * from "./face-label.js";
+export * from "./secret-shapes.js";
+export * from "./attempt-budget.js";

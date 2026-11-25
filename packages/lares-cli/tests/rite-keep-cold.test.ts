@@ -10,26 +10,27 @@
  *   C3  a cut that throws still hands the pins back;
  *   C4  no lei standing: no pin moves, and no wiki list reads.
  */
+import { closeScratch, openScratch, type Scratch } from "../../lararium-node/tests/support/scratch-fixture.js";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { CARRY_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, bundleIdOf, sha256Hex, zeroCounts, type CarryFile, type CarryManifest } from "../src/carry-manifest.js";
+import { BUNDLE_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, bundleIdOf, sha256Hex, zeroCounts, type BundleFile, type BundleManifest } from "../src/bundle-manifest.js";
 import { KeepRefused, riteKeep, type KeepPorts } from "../src/rite-keep.js";
 
+let house: Scratch;
 let root: string;
 const workspace = (): string => join(root, "workspaces", "backup");
 
-function writeBundle(dest: string): CarryManifest {
-  const files: CarryFile[] = [];
+function writeBundle(dest: string): BundleManifest {
+  const files: BundleFile[] = [];
   const put = (rel: string, text: string): void => {
     const abs = join(dest, ...rel.split("/"));
     mkdirSync(dirname(abs), { recursive: true });
     writeFileSync(abs, text);
     files.push({ path: rel, sha256: sha256Hex(text), bytes: Buffer.byteLength(text) });
   };
-  put(REDECLARE_FILE, `${JSON.stringify({ schema: CARRY_SCHEMA, faces: [] })}\n`);
-  const manifest: CarryManifest = { schema: CARRY_SCHEMA, bundleId: bundleIdOf(files), faces: [], files, rows: [], counts: zeroCounts(), tempBytes: {}, omissions: [] };
+  put(REDECLARE_FILE, `${JSON.stringify({ schema: BUNDLE_SCHEMA, faces: [] })}\n`);
+  const manifest: BundleManifest = { schema: BUNDLE_SCHEMA, bundleId: bundleIdOf(files), faces: [], files, rows: [], counts: zeroCounts(), tempBytes: {}, omissions: [] };
   writeFileSync(join(dest, MANIFEST_FILE), `${JSON.stringify(manifest, null, 2)}\n`);
   return manifest;
 }
@@ -43,7 +44,6 @@ function rig(over: { listed?: string[]; active?: string[]; held?: string[]; budg
     row: async (verb) => {
       calls.push(verb);
       if (verb === "swarm-show") return { ok: true, output: { lei: over.lei === false ? { standing: false, refusal: "absent" } : { standing: true } } };
-      if (verb === "rite-receipt") return { ok: true, output: {} };
       return { ok: true, output: { tessera: "e".repeat(64), lei: "d".repeat(64), n: 1 } };
     },
     cut: async (dest, opts) => {
@@ -70,13 +70,13 @@ function rig(over: { listed?: string[]; active?: string[]; held?: string[]; budg
 }
 
 beforeEach(() => {
-  root = mkdtempSync(join(tmpdir(), "lar-keep-cold-"));
+  house = openScratch();
+  root = house.root;
   writeFileSync(join(root, ".lar-test-scratch"), "keep cold suite\n");
-  process.env["LAR_ROOT"] = root;
   mkdirSync(join(root, "hearth"), { recursive: true });
   mkdirSync(join(workspace(), ".git"), { recursive: true });
 });
-afterEach(() => { rmSync(root, { recursive: true, force: true }); });
+afterEach(() => { closeScratch(house); });
 
 describe("the keep wakes cold wikis", () => {
   test("C1 RED: each cold listed wiki holds in turn after the line and before the cut, the cut hears the woken slugs, and the pins that stood come back; CONTROL: the daemon and a running wiki take no hold", async () => {
@@ -88,7 +88,7 @@ describe("the keep wakes cold wikis", () => {
     // The walk's own pins release, and bravo, held before, holds again.
     expect(r.calls.slice(6, 10)).toEqual(["read", "release charlie", "release delta", "hold bravo"]);
     expect(r.state.held).toEqual(["bravo"]);
-    expect(r.calls.slice(10)).toEqual(["rite-receipt", "rite-begin"]);
+    expect(r.calls.slice(10)).toEqual(["rite-begin"]);
   });
 
   test("C2 RED: a hold that never lands stays out of the woken set, and the walk goes on; CONTROL: the pins still come back", async () => {

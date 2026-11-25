@@ -111,7 +111,7 @@ test('parseWorktrees drops the first record (the main checkout) and separates pr
 
 test('lane branches count wherever located, including the main record and Codex trees', () => {
   const paths = ['/main', '/home/u/.claude/worktrees/a', '/other/b', '/home/u/.codex/worktrees/c/r'];
-  const text = paths.flatMap((p, i) => [`worktree ${p}`, 'HEAD a', `branch refs/heads/${i === 2 ? 'feature/green-jello-dinosaur-5--x' : 'lane/x' + i}`, '']).join('\n');
+  const text = paths.flatMap((p, i) => [`worktree ${p}`, 'HEAD a', `branch refs/heads/${i === 2 ? 'develop--x' : 'lane/x' + i}`, '']).join('\n');
   const r = checkDisk(reading({ porcelain: text, env: { LARES_DISK_MAX_WORKTREES: '3' } }));
   assert.deepEqual(r.built, paths);
   assert.equal(r.ok, false);

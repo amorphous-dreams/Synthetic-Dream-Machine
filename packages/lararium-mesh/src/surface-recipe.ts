@@ -33,6 +33,7 @@ import type { LarTiddlerRecord } from "./tiddler-store.js";
 import { bootSetIds, bootSetPluginCids, verifyCasBytesAsync, type CasBlobLike } from "./cas.js";
 import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
 import { GENESIS_FLOOR_TIDDLER, floorBlobCids, readFloorManifest } from "./floor-manifest.js";
+import { readFloorOffering } from "./floor-offering.js";
 import { wikiUri } from "./lar-uris.js";
 import { selectPluginBlobs, selectedPluginCids, type OfferingLookup } from "./plugin-offering-selector.js";
 import { effectiveRecipe, type RecipePlane } from "./recipe-planes.js";
@@ -260,7 +261,8 @@ export async function resolveSurfaceRecipe(input: SurfaceRecipeInput): Promise<S
   const plugins = await resolveRecipePluginCids(recipe, input.plugins);
   if (!plugins.ok) return refused("plugins-refused", plugins.error);
 
-  // The seed's floor witness admits the manifest and each house-canon snapshot it keys to the session's content view.
+  // The seed's floor witness admits the manifest, each house-canon snapshot it keys, its plugins offering record and each blob
+  // the offering carries to the session's content view.
   const floorCid = input.floorCid ?? plainRecordOrNull(planes.read("oracle", GENESIS_FLOOR_TIDDLER))?.tiddler.cid;
   const floorCids: string[] = [];
   if (typeof floorCid === "string" && floorCid.length > 0) {
@@ -273,7 +275,13 @@ export async function resolveSurfaceRecipe(input: SurfaceRecipeInput): Promise<S
     }
     const opened = readFloorManifest(bytes);
     if ("refusal" in opened) return refused("floor-unresolved", `${GENESIS_FLOOR_TIDDLER}: ${opened.refusal}: ${opened.reason}`);
-    floorCids.push(...floorBlobCids(floorCid, opened.manifest));
+    let offeringBytes: Uint8Array | null;
+    try { offeringBytes = await input.plugins.readBytes(opened.manifest.plugins); }
+    catch (error) { return refused("floor-unresolved", `${GENESIS_FLOOR_TIDDLER}: plugins offering: ${String(error)}`); }
+    if (!offeringBytes) return refused("floor-unresolved", `${GENESIS_FLOOR_TIDDLER}: plugins offering bytes absent: ${opened.manifest.plugins}`);
+    const offering = readFloorOffering(offeringBytes, opened.manifest.plugins);
+    if ("refusal" in offering) return refused("floor-unresolved", `${GENESIS_FLOOR_TIDDLER}: ${offering.refusal}: ${offering.reason}`);
+    floorCids.push(...floorBlobCids(floorCid, opened.manifest, offering.offering));
   }
 
   const coreHash = input.plugins.coreHash;

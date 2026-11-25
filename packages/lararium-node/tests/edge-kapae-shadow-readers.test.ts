@@ -13,7 +13,7 @@ import { seatSuiteWard } from "./support/scratch-custody-setup.js";
 seatSuiteWard();
 import { afterEach, beforeEach, describe, expect } from "vitest";
 import { mkdirSync, writeFileSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { dirname } from "node:path";
 import * as ed from "@noble/ed25519";
 import {
   hex, signCabalInvite, signEdgeKapae, writeEdgeKapae, vouchEdgeId, CABAL_INVITE_DOMAIN,
@@ -30,13 +30,16 @@ import { runEdgeKapae } from "../src/commands/edge-kapae-cmd.js";
 import { direct } from "./direct-store.js";
 import { seedFaceAtom } from "./atom-fixture.js";
 import { seedFleet } from "./fleet-seed-fixture.js";
-import { scratchRoot as root, it } from "./support/scratch-fixture.js";
+import { scratchRoot as root, scratchHome, it } from "./support/scratch-fixture.js";
+import { keepHouse } from "./support/kept-house.js";
 import { seedFoundedDaemonDoc } from "./daemon-control-fixture.js";
 
 
 const REALM = "a".repeat(64);
 
-beforeEach(async () => {
+/** Stand the house every case reads: the vessel, two faces, the fleet, the daemon document, the realm's charter and each
+ *  face's hand there. Sixteen passphrase derivations at the fixed scrypt cost, so it stands ONCE per file. */
+async function standTheHouse(): Promise<void> {
   await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   await generateOrLoadPersonaGroupRoot(0);
   await seedFaceAtom(0);
@@ -54,8 +57,13 @@ beforeEach(async () => {
   await seatOwnCharter([0]);
   face1 = await presentFace(1);
   face0 = await presentFace(0);
-});
+}
 let face0: string, face1: string;
+
+// Standing the house costs a founding's worth of derivations, so it stands once per file (kept-house); each case's own
+// hook then copies files and derives nothing, so no case reads another's acts.
+const house = keepHouse("lares-eksr-", standTheHouse);
+beforeEach(() => house.into(root, scratchHome));
 /** Face `i`'s signing seed at the realm's Nexus: the hand a carried invite signs with. */
 const faceSeed = async (i: number): Promise<Uint8Array> => (await nexusLeafFor(i, primaryAid()))!.seed;
 afterEach(async () => {

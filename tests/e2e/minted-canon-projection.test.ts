@@ -20,7 +20,7 @@ import { spawn, type ChildProcess } from "node:child_process";
 import { createServer } from "node:net";
 import { existsSync, readdirSync, statSync, rmSync } from "node:fs";
 import { join } from "node:path";
-import { stagedTarget, targetInstance, unlockStaged, stopChild, type LarInstance } from "../harness/instance.js";
+import { stagedTarget, targetInstance, unlockStaged, stopChild, wikiCanonBagDir, type LarInstance } from "../harness/instance.js";
 import { promoteLoadedTitles } from "../harness/promote.js";
 import { expectEntry } from "../harness/journal-expect.js";
 
@@ -67,7 +67,7 @@ describe.skipIf(!stagedTarget)("minted-canon projection — a user wiki's @{slug
     // 1) mint a fresh user wiki + 2) set it active for the next boot
     const minted = await lar.cli(["wiki", "init", SLUG, "--json"]);
     expect(minted.json?.["ok"], `mint failed: ${JSON.stringify(minted.json)}`).toBe(true);
-    const opened = await lar.cli(["wiki", "open", SLUG, "--json"]);
+    const opened = await lar.cli(["wiki", "switch", SLUG, "--next-boot", "--json"]);
     expect(opened.json?.["ok"] ?? true).not.toBe(false);
 
     // 3) REBOOT — the active-wiki marker only takes on boot (open does not remount)
@@ -115,11 +115,11 @@ describe.skipIf(!stagedTarget)("minted-canon projection — a user wiki's @{slug
     expect(r.json?.["ok"], `LOAD --to ${WORKING} failed: ${JSON.stringify(r.json)}`).toBe(true);
     await promoteLoadedTitles(lar, r.json, SLUG);
 
-    // 5) the self-canon mirror projects @{slug} canon to bags/{slug}. barrier: the projector journals
+    // 5) the self-canon mirror projects @{slug} canon to its realm folder, realms/{pet}/bags/{slug}. barrier: the projector journals
     // `bag-projected` once the first file of the bag stands (it writes the file, then appends the entry), so the
     // entry is the far-side event; the carrier reads present the moment it comes.
     await expectEntry(lar, { kind: "bag-projected", match: (e) => (e.data as Record<string, unknown>)["bagId"] === CANON_BAG }, { budgetMs: 90_000 });
-    const projected = walk(join(lar.root, `projections/bags/${SLUG}`)).some((f) => f.endsWith("noosphere-boot.mem"));
+    const projected = walk(wikiCanonBagDir(lar.root, SLUG)).some((f) => f.endsWith("noosphere-boot.mem"));
     expect(projected, `minted canon never projected to bags/${SLUG}`).toBe(true);
   }, 300_000);
 });

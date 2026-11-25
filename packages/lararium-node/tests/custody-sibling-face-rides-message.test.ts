@@ -1,29 +1,59 @@
 import { EventEmitter } from "node:events";
 import type { Socket } from "node:net";
 import { afterEach, expect, test, vi } from "vitest";
-import { custodyFrameHandler } from "../src/custody-frames.js";
+import { custodyFrameHandler, doorDarkLine, heldSavesLossLines, servedDark } from "../src/custody-frames.js";
+import { mountedFaceOrdinal } from "../src/node-vessel-identity.js";
 import { setMountedFace } from "../src/node-vessel-identity.js";
 import type { CustodyHolder } from "../src/custody-holder.js";
 
-function harness() {
+function harness(opts: { pulama?: boolean; lockThrows?: boolean; unlockGate?: Promise<void>; heldSaves?: Array<{ ordinal: number; cause: string; saves: number }> } = {}) {
   const open = new Set(["0"]);
   const holder = {
     unlock: async () => ({ reading: "already-unlocked" }),
     unlockFace: async ({ ordinal }: { ordinal: number }) => { open.add(String(ordinal)); return { reading: "opens", ordinal }; },
-    unlockFaces: async () => { open.add("1"); return [{ reading: "opens", ordinal: 1 }]; },
+    unlockFaces: async () => { await opts.unlockGate; open.add("1"); return [{ reading: "opens", ordinal: 1 }]; },
     unlockedFaces: () => [...open],
     faceStanding: async ({ ordinal }: { ordinal: number }) => ({ ordinal, fcid: String(ordinal), unlocked: open.has(String(ordinal)) }),
     lockFace: async (fcid: string) => { open.delete(fcid); },
+    // Every face here LANDED: its anchors row stands, so each may take the mount.
+    readRecord: async () => ({ reading: "opens", plaintext: new Uint8Array() }),
   } as unknown as CustodyHolder;
   const lightFace = vi.fn(async (_ordinal: number) => {});
   const dropFace = vi.fn(async (_ordinal: number) => {});
   const recompose = vi.fn(async () => ({ standing: "hearth" }));
-  const handle = custodyFrameHandler({ holder, lightFace, dropFace, recompose, standing: () => "hearth", onLog: () => {}, testScratch: false });
+  const releaseFace = vi.fn((_ordinal: number) => {});
+  const closeFaces = vi.fn(async () => {});
+  const releaseFaces = vi.fn(() => {});
+  const holdFace = vi.fn((_ordinal: number) => true);
+  const holdFaces = vi.fn(() => true);
+  const replayLend = vi.fn(async () => {});
+  let unlocked = true;
+  const order: string[] = [];
+  const lockFace = holder.lockFace.bind(holder);
+  (holder as { lockFace: (fcid: string) => Promise<void> }).lockFace = async (fcid) => { order.push(`lockFace ${fcid}`); await lockFace(fcid); };
+  const lock = vi.fn(async () => { order.push("lock"); });
+  (holder as unknown as { lock: () => Promise<void>; isUnlocked: () => boolean }).lock = lock;
+  (holder as unknown as { isUnlocked: () => boolean }).isUnlocked = () => unlocked;
+  if (opts.pulama === true || opts.lockThrows === true) {
+    // A pūlama's lent holder refuses every face lock (the person's own act at the pūlama); a local holder may throw.
+    (holder as { lockFace: (fcid: string) => Promise<void> }).lockFace = async () => { order.push("lockFace refused"); throw new Error("needs-the-human: a face's lock"); };
+  }
+  const handle = custodyFrameHandler({ holder, lightFace, dropFace, releaseFace, releaseFaces, holdFace, holdFaces, replayLend, closeFaces, recompose, standing: () => "hearth", onLog: () => {}, testScratch: false,
+    runAct: async () => ({ ran: true }),
+    ...(opts.heldSaves ? { refusedHolds: () => opts.heldSaves! } : {}),
+    ...(opts.pulama === true ? { pulama: { standing: () => ({ session: true, waits: null }), dial: async () => ({ session: true, waits: null }), lent: () => [], tellWorn: () => {} } } : {}) } as unknown as Parameters<typeof custodyFrameHandler>[0]);
   const send = (frame: unknown) => new Promise<Record<string, unknown>>((resolve) => {
     const sock = Object.assign(new EventEmitter(), { end: (line: string) => resolve(JSON.parse(line)) }) as unknown as Socket;
     handle(frame, sock);
   });
-  return { send, open, lightFace, dropFace, recompose };
+  /** A caller who leaves once the frame went in: its socket reads destroyed and every answer goes nowhere. */
+  const sendAndLeave = (frame: unknown): void => {
+    const sock = Object.assign(new EventEmitter(), { destroyed: false, end: () => {} }) as unknown as Socket & { destroyed: boolean };
+    handle(frame, sock);
+    sock.destroyed = true;
+  };
+  const setUnlocked = (yes: boolean): void => { unlocked = yes; };
+  return { send, sendAndLeave, open, lightFace, dropFace, recompose, releaseFace, releaseFaces, holdFace, holdFaces, replayLend, closeFaces, lock, order, handle, setUnlocked };
 }
 afterEach(() => setMountedFace(undefined));
 test("locking an open sibling drops its provider without recomposition", async () => {
@@ -66,3 +96,278 @@ test("a sibling lock whose provider drop refuses leaves the key open and answers
   expect(answer).not.toMatchObject({ locked: true });
   expect(h.open.has("1")).toBe(true);
 });
+
+test("SOL R7 (a lock holds the custody line while its drain waits on a session act queued behind it): the face closes ahead of the line, so the act runs and the lock lands", async () => {
+  setMountedFace(0); const h = harness(); h.open.add("1");
+  // The face's close waits on a session act (admitted work) that rides the custody line itself.
+  h.dropFace.mockImplementation(async () => { await h.handle.act("crossing.sign", {}); });
+  const answer = await Promise.race([h.send({ op: "lock", face: 1 }), new Promise((r) => setTimeout(() => r("deadlocked"), 3000))]);
+  expect(answer).toMatchObject({ locked: true, face: 1 });
+  expect(h.open.has("1")).toBe(false);
+});
+
+test("SOL R7 (a mounted-face lock drops its key before teardown): the mount closes through its actor before its key locks", async () => {
+  setMountedFace(0); const h = harness();
+  h.dropFace.mockImplementation(async (ordinal: number) => { h.order.push(`close h${ordinal}`); });
+  await h.send({ op: "lock", face: 0 });
+  expect(h.order.slice(0, 2)).toEqual(["close h0", "lockFace 0"]);
+});
+
+test("SOL R7 (a whole lock tears faces down after the key drops): every face closes through its actor before the vessel's key locks", async () => {
+  setMountedFace(0); const h = harness();
+  h.closeFaces.mockImplementation(async () => { h.order.push("close every face"); });
+  await h.send({ op: "lock" });
+  expect(h.order.indexOf("close every face")).toBeGreaterThan(-1);
+  expect(h.order.indexOf("close every face")).toBeLessThan(h.order.indexOf("lock"));
+});
+
+test("a lock's hold on the face lifts once the key locked, and lifts too when the close faults and the key stays open", async () => {
+  setMountedFace(0); const h = harness(); h.open.add("1");
+  await h.send({ op: "lock", face: 1 });
+  expect(h.releaseFace).toHaveBeenCalledWith(1);
+  h.open.add("1"); h.releaseFace.mockClear();
+  h.dropFace.mockRejectedValueOnce(new Error("saves still wait"));
+  expect(await h.send({ op: "lock", face: 1 })).toMatchObject({ status: "error", refusal: { reason: "face-close-held" } });
+  expect(h.open.has("1")).toBe(true);
+  expect(h.releaseFace).toHaveBeenCalledWith(1);
+});
+
+test("FINDING 1 (a refused lock darkened the mount): under a pūlama the face lock cannot land here, so no close runs ahead of it: the mount and every sibling keep standing", async () => {
+  setMountedFace(0); const h = harness({ pulama: true }); h.open.add("1");
+  const answer = await h.send({ op: "lock", face: 0 });
+  expect(answer).toMatchObject({ status: "error" });
+  expect(h.dropFace, "no drain, no dark mount").not.toHaveBeenCalled();
+  expect(h.recompose).not.toHaveBeenCalled();
+  expect(h.open.has("0")).toBe(true);
+});
+
+test("FINDING 1: a local lock whose key did not lock (the holder threw) answers the fault and lifts the hold its close set", async () => {
+  setMountedFace(0); const h = harness({ lockThrows: true });
+  const answer = await h.send({ op: "lock", face: 0 });
+  expect(answer).toMatchObject({ status: "error" });
+  expect(h.dropFace).toHaveBeenCalledWith(0);
+  expect(h.releaseFace).toHaveBeenCalledWith(0);
+  expect(h.open.has("0")).toBe(true);
+});
+
+test("FINDING 2 (a caller who leaves strands the hold): a face lock whose close ran ahead runs to its end though its caller left: the key locks and the hold lifts", async () => {
+  setMountedFace(0); const h = harness(); h.open.add("1");
+  h.sendAndLeave({ op: "lock", face: 1 });
+  await vi.waitFor(() => expect(h.releaseFace).toHaveBeenCalledWith(1));
+  expect(h.dropFace).toHaveBeenCalledWith(1);
+  expect(h.open.has("1"), "the key locked behind the caller who left").toBe(false);
+});
+
+test("FINDING 2: a whole lock whose faces closed ahead runs to its end though its caller left: the vessel key locks", async () => {
+  setMountedFace(0); const h = harness();
+  h.sendAndLeave({ op: "lock" });
+  await vi.waitFor(() => expect(h.lock).toHaveBeenCalledOnce());
+  expect(h.closeFaces).toHaveBeenCalledOnce();
+});
+
+test("FINDING 2: a whole lock over a key already shut lifts every hold its close set", async () => {
+  setMountedFace(0); const h = harness(); h.setUnlocked(false);
+  expect(await h.send({ op: "lock" })).toMatchObject({ locked: true, was: "locked" });
+  expect(h.releaseFaces).toHaveBeenCalledOnce();
+  expect(h.lock).not.toHaveBeenCalled();
+});
+
+test("FINDING 3 (a whole lock over unsealed saves): a face that did not close whole leaves the vessel key open, names the fault, and lifts every hold", async () => {
+  setMountedFace(0); const h = harness();
+  h.closeFaces.mockRejectedValueOnce(new Error("face h1 did not close whole, so the key stays open: seal refused"));
+  const answer = await h.send({ op: "lock" });
+  expect(answer).toMatchObject({ status: "error", refusal: { reason: "face-close-held" } });
+  expect(String(answer["errorMessage"])).toContain("face h1");
+  expect(h.lock, "the key never locked over unsealed saves").not.toHaveBeenCalled();
+  expect(h.releaseFaces).toHaveBeenCalledOnce();
+});
+
+test("FINDING 4 (a lock queued behind a recompose): a face lit again under a new composition before its key locks leaves the key open", async () => {
+  setMountedFace(0); const h = harness(); h.open.add("1");
+  h.holdFace.mockReturnValueOnce(false);
+  const answer = await h.send({ op: "lock", face: 1 });
+  expect(answer).toMatchObject({ status: "error" });
+  expect(String(answer["errorMessage"])).toMatch(/stands lit/);
+  expect(h.open.has("1"), "the new life's key stays open").toBe(true);
+  expect(h.holdFace).toHaveBeenCalledWith(1);
+});
+
+test("B1 (a lock queued behind an unlock locks a lit face with no close): the face read shut at the frame, so no close ran ahead; the unlock lit it; the lock finds it lit in its line and leaves the key open", async () => {
+  setMountedFace(0);
+  let letUnlock!: () => void;
+  const h = harness({ unlockGate: new Promise<void>((r) => { letUnlock = r; }) });
+  const lit = new Set<number>([0]);
+  h.lightFace.mockImplementation(async (ordinal: number) => { lit.add(ordinal); });
+  h.holdFace.mockImplementation((ordinal: number) => !lit.has(ordinal));
+  // THE UNLOCK runs first and waits on its route; the lock arrives while face 1 still reads shut.
+  const unlocked = h.send({ op: "unlock", all: true, credentials: [{ kind: "passphrase", passphrase: "x" }] });
+  const locked = h.send({ op: "lock", face: 1 });
+  await new Promise((r) => setTimeout(r, 20));
+  expect(h.dropFace, "the face read shut at the frame: no close ran ahead").not.toHaveBeenCalled();
+  letUnlock();
+  await unlocked;
+  expect(lit.has(1), "the unlock lit face 1").toBe(true);
+  const answer = await locked;
+  expect(answer).toMatchObject({ status: "error" });
+  expect(String(answer["errorMessage"])).toMatch(/stands lit/);
+  expect(h.open.has("1"), "no key locks under a lit face no close reached").toBe(true);
+  expect(h.order).not.toContain("lockFace 1");
+});
+
+test("F7: a whole lock finds a face lit in its line (a composition stood again after its close) and leaves the vessel key open, lifting every hold", async () => {
+  setMountedFace(0); const h = harness();
+  h.holdFaces.mockReturnValueOnce(false);
+  const answer = await h.send({ op: "lock" });
+  expect(answer).toMatchObject({ status: "error" });
+  expect(String(answer["errorMessage"])).toMatch(/stands lit/);
+  expect(h.lock).not.toHaveBeenCalled();
+  expect(h.releaseFaces).toHaveBeenCalledOnce();
+});
+
+test("R9 SERVED BUT DARK: the census names each face its custody serves that stands dark here, its cause and its clearing line; a face the custody does not serve reads nowhere", () => {
+  expect(servedDark([{ ordinal: 1, cause: "daemon-down" }, { ordinal: 3, cause: "x" }], [0, 1])).toEqual([
+    { face: 1, cause: "daemon-down", note: "h1 served by custody, dark here: its light refused (daemon-down); clear it with `lares vault unlock` (it replays the lend), or the next custody event" },
+  ]);
+});
+
+// An unlock replays the lend and the stale face refuses again: the note that sends a person there cures nothing.
+test("R9 A STALE FACE'S CLEARING LINE NAMES THE RECARD: a face dark for want of a prekey secret reads its recard, at the pūlama's hand door first where custody rests there; never the unlock", () => {
+  const cause = "Error: face 0xabc refused: FaceHoldsNoPrekeySecret: [daemon-keyhive] face abc… holds no prekey secret";
+  const [lent] = servedDark([{ ordinal: 2, cause }], [0, 2], true);
+  expect(lent!.note).toContain("tools/lares-container.sh pulama recard 2");
+  expect(lent!.note).toContain("lares vault recard --face 2");
+  expect(lent!.note.indexOf("pulama recard 2")).toBeLessThan(lent!.note.indexOf("lares vault recard --face 2"));
+  expect(lent!.note).not.toContain("lares vault unlock");
+  const [own] = servedDark([{ ordinal: 2, cause }], [0, 2]);
+  expect(own!.note).toContain("lares vault recard --face 2");
+  expect(own!.note).not.toContain("pulama recard");
+  expect(own!.note).not.toContain("lares vault unlock");
+});
+
+test("R9 THE DOOR AND THE CENSUS SAY ONE LINE: the session door's dark line for a face reads the census's own note, live from the refused lights; a face with no refused light reads none", () => {
+  const cause = "face 0xabc refused: FaceHoldsNoPrekeySecret: [daemon-keyhive] face abc… holds no prekey secret";
+  let refused: Array<{ ordinal: number; cause: string }> = [];
+  for (const pulama of [true, false]) {
+    const line = doorDarkLine(() => refused, pulama);
+    refused = [];
+    expect(line(2)).toBeNull();
+    refused = [{ ordinal: 2, cause }];
+    expect(line(2)).toBe(servedDark(refused, [2], pulama)[0]!.note);
+    expect(line(1)).toBeNull();
+  }
+});
+
+// A refused face's saves wait in this composition's memory as plain bytes, and no seat has sealed them: a lock would drop the
+// key over them and the next composition would throw them away. Every act that ends the composition refuses first, by name.
+const HELD = [{ ordinal: 2, cause: "FaceHoldsNoPrekeySecret: [daemon-keyhive] face abc… holds no prekey secret", saves: 1 }];
+test("P1 A WHOLE LOCK NEVER LANDS OVER A REFUSED FACE'S HELD SAVES: it refuses by name with both cures (light the face so its seat seals them, or drop them knowingly), before any face closes, and the key stays open", async () => {
+  setMountedFace(0); const h = harness({ heldSaves: HELD });
+  const answer = await h.send({ op: "lock" });
+  expect(answer).toMatchObject({ status: "error", refusal: { reason: "saves-held" } });
+  // THE GATE READS BEFORE THE CLOSE THAT RUNS AHEAD: a refused lock drains and closes no lit face.
+  expect(h.closeFaces).not.toHaveBeenCalled();
+  const words = String(answer["errorMessage"]);
+  expect(words).toContain("h2");
+  expect(words).toContain("1 save(s)");
+  expect(words).toContain("lares vault recard --face 2");
+  expect(words).toContain("accept-loss");
+  expect(h.lock).not.toHaveBeenCalled();
+  expect(h.recompose).not.toHaveBeenCalled();
+  // No close ran, so no hold stands for anything to lift.
+  expect(h.holdFaces).not.toHaveBeenCalled();
+});
+test("F6 A FACE LOCK GATES ONLY WHERE IT WOULD COMPOSE AGAIN: the mounted face's lock refuses saves-held before any close runs; the refused face's own lock (unmounted, the road to its rehive) lands and composes nothing", async () => {
+  setMountedFace(0); const h = harness({ heldSaves: HELD }); h.open.add("1"); h.open.add("2");
+  const mount = await h.send({ op: "lock", face: 0 });
+  expect(mount).toMatchObject({ status: "error", refusal: { reason: "saves-held" } });
+  expect(String(mount["errorMessage"])).toContain("lares vault recard --face 2");
+  expect(h.dropFace, "no close ran ahead of the refused lock").not.toHaveBeenCalled();
+  expect(h.open.has("0")).toBe(true);
+  expect(await h.send({ op: "lock", face: 2 })).toMatchObject({ op: "lock", locked: true, face: 2 });
+  expect(h.open.has("2")).toBe(false);
+  expect(h.recompose).not.toHaveBeenCalled();
+});
+test("F1 AN UNLOCK THAT WOULD COMPOSE AGAIN REFUSES BEFORE ANYTHING MOVES: no face key opens and the mount stays where it stood; CONTROL: an unlock that only lights a sibling beside the same mount still lands", async () => {
+  setMountedFace(0); const h = harness({ heldSaves: HELD });
+  const answer = await h.send({ op: "unlock", face: 1, credentials: [{ kind: "passphrase", passphrase: "x" }] });
+  expect(answer).toMatchObject({ op: "unlock", status: "error", refusal: { reason: "saves-held" } });
+  expect(String(answer["errorMessage"])).toContain("lares vault recard --face 2");
+  expect(h.open.has("1"), "no key opened under a refused unlock").toBe(false);
+  expect(mountedFaceOrdinal(), "the mount stays").toBe(0);
+  expect(h.recompose).not.toHaveBeenCalled();
+  await h.send({ op: "unlock", all: true, credentials: [{ kind: "passphrase", passphrase: "x" }] });
+  expect(h.lightFace).toHaveBeenCalledExactlyOnceWith(1);
+  expect(h.recompose).not.toHaveBeenCalled();
+});
+test("F4 THE LOSS IS A PERSON'S WORD: a wear frame carrying acceptLoss from an AI seat refuses accept-loss-needs-hand, and nothing composes", async () => {
+  setMountedFace(0); const h = harness({ heldSaves: HELD }); h.open.add("1");
+  expect(await h.send({ op: "wear", face: 1, acceptLoss: true, seat: "ai" })).toMatchObject({ op: "wear", status: "error", refusal: { reason: "accept-loss-needs-hand" } });
+  expect(h.recompose).not.toHaveBeenCalled();
+});
+test("P1 A WEAR THAT WOULD COMPOSE AGAIN REFUSES OVER HELD SAVES, naming the cures; `yes` speaks for the shore's flush alone and still refuses; only the frame's own `acceptLoss` turns anyway", async () => {
+  setMountedFace(0); const h = harness({ heldSaves: HELD }); h.open.add("1");
+  const answer = await h.send({ op: "wear", face: 1 });
+  expect(answer).toMatchObject({ op: "wear", status: "error", refusal: { reason: "saves-held" } });
+  expect(String(answer["errorMessage"])).toContain("lares vault recard --face 2");
+  expect(String(answer["errorMessage"])).toContain("lares wear 1 --accept-loss");
+  expect(String(answer["errorMessage"])).not.toContain("--yes");
+  // THE SHIM'S WORD: `yes` turns over records the shore's flush left unwritten, and never drops a held save.
+  expect(await h.send({ op: "wear", face: 1, yes: true })).toMatchObject({ status: "error", refusal: { reason: "saves-held" } });
+  expect(h.recompose).not.toHaveBeenCalled();
+  expect(await h.send({ op: "wear", face: 1, acceptLoss: true })).toMatchObject({ op: "wear", face: 1 });
+  expect(h.recompose).toHaveBeenCalledOnce();
+  expect(await h.send({ op: "wear", face: 1, acceptLoss: "yes" }), "the word reads true or stays off the frame").toMatchObject({ status: "error", refusal: { reason: "bad-custody-frame" } });
+});
+test("NO HELD SAVE DROPS UNNAMED: a composition that ends over a refused face's held saves names the face and the count; with none held it says nothing", () => {
+  const lines = heldSavesLossLines([...HELD, { ordinal: 3, cause: "x", saves: 0 }]);
+  expect(lines).toHaveLength(1);
+  expect(lines[0]).toContain("h2");
+  expect(lines[0]).toContain("1 save(s)");
+  expect(lines[0]).toContain("drop unwritten");
+  expect(heldSavesLossLines([])).toEqual([]);
+});
+test("P3 THE HELD SAVES STAY ON THE CENSUS WHILE A LOCK HOLDS THE FACE: a held face reads no refused light, and its row still stands, with its count", () => {
+  const [row] = servedDark([], [0, 2], true, [], HELD);
+  expect(row).toMatchObject({ face: 2, heldSaves: 1 });
+  expect(row!.note).toContain("1 save(s) of its own wait held in memory");
+  expect(servedDark([{ ordinal: 2, cause: HELD[0]!.cause, heldSaves: 1 }], [0, 2], true, [], HELD), "one row, never two").toHaveLength(1);
+  // A FACE ITS OWN LOCK SHUT leaves the served set, and its saves still wait here: the row stands wherever the gate would refuse.
+  expect(servedDark([], [0], true, [], HELD)).toMatchObject([{ face: 2, heldSaves: 1 }]);
+});
+
+test("R9 THE DARK ROW NAMES ITS HELD SAVES: a refused face whose saves wait in memory reads their count on its row and its line; one with none reads no count", () => {
+  const cause = "FaceHoldsNoPrekeySecret: [daemon-keyhive] face abc… holds no prekey secret";
+  const [row] = servedDark([{ ordinal: 2, cause, heldSaves: 1 }], [0, 2], true);
+  expect(row).toMatchObject({ face: 2, cause, heldSaves: 1 });
+  expect(row!.note).toContain("1 save(s) of its own wait held in memory");
+  expect(row!.note).toContain("lares vault recard --face 2");
+  const [bare] = servedDark([{ ordinal: 2, cause, heldSaves: 0 }], [0, 2], true);
+  expect(bare!.note).not.toContain("held in memory");
+  expect(doorDarkLine(() => [{ ordinal: 2, cause, heldSaves: 1 }], true)(2)).toBe(row!.note);
+});
+
+test("R9 A REFUSED FACE THAT HOLDS CLOSING NAMES ITSELF: the census and the door read one line for it, naming the saves that hold it and the lock that drives its close again", () => {
+  const cause = "FaceHoldsNoPrekeySecret: [daemon-keyhive] face abc… holds no prekey secret";
+  const [row] = servedDark([], [0, 2], true, [{ ordinal: 2, cause }]);
+  expect(row).toMatchObject({ face: 2, cause });
+  expect(row!.note).toContain("closing here");
+  expect(row!.note).toContain("lares vault lock --face 2");
+  expect(servedDark([], [0], true, [{ ordinal: 2, cause }]), "a face the custody does not serve reads nowhere").toEqual([]);
+  const line = doorDarkLine(() => [], true, () => [{ ordinal: 2, cause }]);
+  expect(line(2)).toBe(row!.note);
+  expect(line(1)).toBeNull();
+});
+
+test("R9 THE CLEARING LINE: an unlock over a held key replays the lend, so a served face whose light refused lights again", async () => {
+  setMountedFace(0); const h = harness();
+  expect(await h.send({ op: "unlock", credentials: [{ kind: "passphrase", passphrase: "x" }] })).toMatchObject({ op: "unlock" });
+  expect(h.replayLend).toHaveBeenCalledOnce();
+  expect(h.recompose).not.toHaveBeenCalled();
+});
+
+test("R9 THE CLEARING LINE under a pūlama: an unlock over a standing session replays the lend", async () => {
+  setMountedFace(0); const h = harness({ pulama: true });
+  expect(await h.send({ op: "unlock", credentials: [{ kind: "passphrase", passphrase: "x" }] })).toMatchObject({ op: "unlock", reading: "already-unlocked" });
+  expect(h.replayLend).toHaveBeenCalledOnce();
+});
+

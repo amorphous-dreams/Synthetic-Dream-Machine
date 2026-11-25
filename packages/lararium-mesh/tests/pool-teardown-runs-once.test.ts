@@ -37,7 +37,6 @@ function scriptedHost() {
       };
     },
     newSyncChannel: () => { const { port1, port2 } = new MessageChannel(); return { mainPort: port1, syncPort: port2 }; },
-    storage: () => undefined,
   };
   return {
     host,
@@ -153,7 +152,6 @@ test("a drain request reaches each live wiki, but not a cooled wiki", async () =
       };
     },
     newSyncChannel() { const { port1, port2 } = new MessageChannel(); return { mainPort: port1, syncPort: port2 }; },
-    storage: () => undefined,
   };
   const pool = new VesselIslandPoolCore({ host, resolvePluginCids: async () => ({ ok: true, pluginCids: [] }) });
   const spec = (wikiSlug: string) => ({ coreHash: null, recipe: { wikiSlug }, grants: { islandUrl: "automerge:fixture" } });

@@ -28,10 +28,11 @@ vi.mock("@lararium/node", async (importOriginal) => {
   return { ...actual, storeDoorDirect: vi.fn(async (verb: string) => ({ verb, ranHere: true })) };
 });
 
-import { udsAlive, invokeLocal } from "../src/local-connector.js";
+import { udsAlive, invokeLocal, UdsUnreachable } from "../src/local-connector.js";
 import { openLocalSession, SessionRefused } from "../src/session-connector.js";
 import { sealedAct } from "../src/sealed-act-door.js";
 import { sendCustodyFrame } from "../src/custody-door.js";
+import * as storeDoor from "../src/store-door.js";
 import { storeVerb, storeFailure } from "../src/store-door.js";
 
 const done = (output: Record<string, unknown>) => ({ status: "done", results: { summary: { ok: true, output } } });
@@ -39,17 +40,27 @@ const opened: string[] = [];
 const acted: Array<{ act: string; args: Record<string, unknown> }> = [];
 let answerOf = (act: string): Record<string, unknown> => ({ status: "done", output: { verb: act, via: "session" } });
 let closed = 0;
+/** The request id each act rode, as the door named it. */
+const actIds: Array<string | undefined> = [];
+/** The receipts a recovery read, by the id it asked under. */
+const receiptsRead: string[] = [];
+let loseAnswer = false;
 
 beforeEach(() => {
   vi.clearAllMocks();
-  opened.length = 0; acted.length = 0; closed = 0;
+  opened.length = 0; acted.length = 0; closed = 0; actIds.length = 0; receiptsRead.length = 0; loseAnswer = false;
   answerOf = (act) => ({ status: "done", output: { verb: act, via: "session" } });
   vi.mocked(udsAlive).mockResolvedValue(true);
   vi.mocked(invokeLocal).mockImplementation(async (verb) => done({ verb, via: "frame" }) as never);
   vi.mocked(openLocalSession).mockImplementation(async ({ faceRef }) => {
     opened.push(faceRef);
     return {
-      faceRef, act: async (act: string, args: Record<string, unknown>) => { acted.push({ act, args }); return answerOf(act); },
+      faceRef, act: async (act: string, args: Record<string, unknown>, opts?: { requestId?: string }) => {
+        acted.push({ act, args }); actIds.push(opts?.requestId);
+        if (loseAnswer) throw new UdsUnreachable("local session socket closed");
+        return { requestId: opts?.requestId ?? "minted-here", answer: answerOf(act) };
+      },
+      receipt: async (requestId: string) => { receiptsRead.push(requestId); return { requestId, status: "done" }; },
       call: async () => { throw new Error("a face row never rides session:call"); },
       close: async () => { closed += 1; },
     } as never;
@@ -75,6 +86,18 @@ describe("store rows on a running vessel", () => {
     expect(opened).toEqual(["h1"]);
   });
 
+  it("RED: a rite row that gathers every lent face (the kūkulu's begin and offer) rides the WORN face's session where it names none; CONTROL: a named face rides its own", async () => {
+    vi.mocked(sealedAct).mockResolvedValue({ face: 2 } as never);
+    await storeVerb("rite-begin", { rite: "kukulu", branch: "main", head: "h" });
+    await storeVerb("rite-offer", { branch: "main", head: "h", image: "sha256:x" });
+    expect(vi.mocked(sealedAct).mock.calls).toEqual([["face.resolve", { worn: true }], ["face.resolve", { worn: true }]]);
+    expect(opened).toEqual(["h2", "h2"]);
+    vi.mocked(sealedAct).mockClear();
+    await storeVerb("rite-begin", { rite: "kukulu", branch: "main", head: "h", face: 0 });
+    expect(sealedAct).not.toHaveBeenCalled();
+    expect(opened.at(-1)).toBe("h0");
+  });
+
   it("a face row the vessel could not run throws with its words and the act's own reason", async () => {
     answerOf = () => ({ status: "error", errorMessage: "capability denied for routed verb \"cabal-face\"" });
     const denied = await storeVerb("cabal-face", { realm: "r", face: 0 }).catch((e: unknown) => e);
@@ -90,6 +113,15 @@ describe("store rows on a running vessel", () => {
     expect(storeFailure(err).code).toBe("face-locked");
   });
 
+  it("RED: a dark face's rite-land refuses in the vessel's own words, which name the recard that cures it", async () => {
+    answerOf = () => { throw new SessionRefused("face-not-open", false, "face-not-open: h2 served by custody, dark here: its light refused (FaceHoldsNoPrekeySecret: it holds none); recard it at your own terminal: lares vault recard --face 2; no act ran"); };
+    const err = await storeVerb("rite-land", { tessera: "t", head: "h", face: 2 }).catch((e: unknown) => e);
+    const failure = storeFailure(err);
+    expect(failure.code).toBe("face-not-open");
+    expect(failure.message).toContain("FaceHoldsNoPrekeySecret");
+    expect(failure.message).toContain("lares vault recard --face 2");
+  });
+
   it("CONTROL: a row of the place rides the maintenance frame, and with no vessel standing every row runs here", async () => {
     expect(await storeVerb("persona-new", { handleIndex: 3 })).toEqual({ output: { via: "frame" }, via: "daemon" });
     expect(opened).toEqual([]);
@@ -97,5 +129,29 @@ describe("store rows on a running vessel", () => {
     expect(await storeVerb("handle-publish", { glamour: "g", handleIndex: 2 })).toEqual({ output: { ranHere: true }, via: "direct" });
     expect(opened).toEqual([]);
     expect(sealedAct).not.toHaveBeenCalled();
+  });
+});
+
+describe("a face row's act rides a request id the door owns (K20)", () => {
+  it("RED: each act carries one id the door minted, and two acts never share one", async () => {
+    await storeVerb("cabal-face", { realm: "r", face: 0 });
+    await storeVerb("cabal-face", { realm: "r", face: 0 });
+    expect(actIds).toHaveLength(2);
+    expect(typeof actIds[0]).toBe("string");
+    expect(typeof actIds[1]).toBe("string");
+    expect(actIds[0]).not.toBe(actIds[1]);
+  });
+
+  it("RED: an answer the socket lost names the id it rode, and the face's receipt recovers under that id", async () => {
+    loseAnswer = true;
+    const lost = await storeVerb("cabal-face", { realm: "r", face: 0 }).catch((e: unknown) => e);
+    const failure = storeFailure(lost);
+    expect(failure.code).toBe("outcome-unknown");
+    expect(failure.message).toContain(actIds[0]!);
+    expect((lost as { requestId?: unknown }).requestId).toBe(actIds[0]);
+    const recover = (storeDoor as Record<string, unknown>)["sessionActReceipt"] as ((face: number, requestId: string) => Promise<unknown>) | undefined;
+    expect(typeof recover).toBe("function");
+    expect(await recover!(0, actIds[0]!)).toEqual({ requestId: actIds[0], status: "done" });
+    expect(receiptsRead).toEqual([actIds[0]]);
   });
 });

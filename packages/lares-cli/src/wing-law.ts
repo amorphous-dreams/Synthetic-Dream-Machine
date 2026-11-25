@@ -1,6 +1,6 @@
 /**
  * wing-law — the ONE per-project wing derivation, extracted from harvest.ts so every
- * consumer (harvest · capture · `lares wing-of`) reads the SAME law instead of mirroring
+ * consumer (harvest · capture · `tools/wing-of.mjs`) reads the SAME law instead of mirroring
  * it. The python sweep carries its own port (`wing_derive.py`); the two fixture tables
  * (tests/wing-law.test.ts, scripts/test_wing_derive.py) pin the agreement.
  *

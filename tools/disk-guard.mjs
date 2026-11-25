@@ -49,7 +49,7 @@ export function parseWorktrees(text) {
     else {
       if (index > 0) built.push(path);
       const branch = lines.find(line => line.startsWith('branch refs/heads/'))?.slice('branch refs/heads/'.length) ?? '';
-      if (branch.startsWith('lane/') || branch.startsWith('feature/green-jello-dinosaur-5--')) lanes.push(path);
+      if (branch.startsWith('lane/') || branch.startsWith('develop--')) lanes.push(path);
     }
   }
   return { built, prunable, lanes };

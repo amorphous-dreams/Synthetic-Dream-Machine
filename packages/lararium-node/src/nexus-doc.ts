@@ -99,8 +99,7 @@ function fenceRe(name: string): RegExp {
  * Swap ONE fence's payload inside a body, leaving every other byte untouched.
  *
  * The neighbours ride through as opaque text — this never parses them, so a writer cannot corrupt a joint it
- * does not own. A body missing the named fence gains it, so a carrier written before a joint existed grows
- * that joint rather than failing.
+ * does not own. A body missing the named fence gains it.
  */
 function swapFence(body: string, name: string, payload: unknown): string {
   const block = "```json " + name + "\n" + JSON.stringify(payload, null, 2) + "\n```";

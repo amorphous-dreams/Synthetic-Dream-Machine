@@ -18,6 +18,7 @@
  * The run never writes into the tracked tree: every path it writes sits under one scratch directory.
  */
 
+import { grammarPins, vendoredCore } from "../../lararium-tw5/tests/test-wiki.js";
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { execFileSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from "node:fs";
@@ -164,7 +165,7 @@ describe.skipIf(coreBlobSkip)(
       }
     }
     engine = new TW5Engine();
-    await engine.boot(new Uint8Array(readFileSync(CORE)), [LARES_MEMETIC_WIKITEXT_PLUGIN as unknown as Record<string, unknown>]);
+    await engine.boot(vendoredCore(), [LARES_MEMETIC_WIKITEXT_PLUGIN as unknown as Record<string, unknown>], undefined, { modulePins: grammarPins() });
     tree = new SyncedTree(path.join(scratch, "state", "synced-tree"));
 
     // THE SEED'S GESTURE, one bag at a time: scan, INGEST, record what landed.
@@ -187,7 +188,11 @@ describe.skipIf(coreBlobSkip)(
         const args = { "source-uri": `file://${scratch}/bags/${bag}`, "to-bag": o.toBag, "change-id": `seed-${bag}-${wave}`, carriers: wireCarriers(o.candidates) };
         const result = await table.get("INGEST")!(args, ctx(composite, args, requestId)) as Record<string, unknown>;
         const rows = result["carriers"] as Array<Record<string, unknown>>;
-        if (wave === 1) firstWaveRows.set(bag, rows);
+        // THE FIRST PASS CRESTS IN WAVES (`settleIngest`): each carrier's first row names its landing; a later re-ask
+        // under the row cap reads `noop` over a carrier the first pass already landed, so the first row seen stands.
+        const seen = new Map((firstWaveRows.get(bag) ?? []).map((r) => [String(r["uri"]), r] as const));
+        for (const r of rows) if (!seen.has(String(r["uri"]))) seen.set(String(r["uri"]), r);
+        firstWaveRows.set(bag, [...seen.values()]);
         return { status: "done", requestId, results: { [VERB_RESULT_KEY]: { ok: true, output: boundOutcomeOutput(result) } } } as SubmitResult;
       };
       const settled = await settleIngest({ source: path.join(scratch, "bags", bag), toBag: bagUri(bag), candidates, did: "did:test" }, tree, submit);

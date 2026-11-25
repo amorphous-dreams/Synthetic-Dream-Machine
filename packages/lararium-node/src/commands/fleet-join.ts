@@ -206,7 +206,7 @@ export interface FleetJoinAnswerOptions {
 const ROOT_REFUSAL_DETAIL: Readonly<Record<string, string>> = {
   "request-malformed": "the request names no nonce.",
   "request-scope-household-absent": "the request asks no certificate at this hearth's Nexus for the face's admitted key; offer again.",
-  "no-address-secret": "this face holds no address secret: it was founded before the secret minted at founding, and re-founds.",
+  "no-address-secret": "this face holds no address secret, which its founding mints; found the face again.",
   "answer-unsigned": "the answer this vessel composed does not read back under the face's root key.",
 };
 

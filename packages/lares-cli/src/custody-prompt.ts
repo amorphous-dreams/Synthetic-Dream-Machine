@@ -12,7 +12,7 @@
 
 import { stdout } from "node:process";
 import {
-  confirmHeldPaper, confirmPaperPin, draftPaperPin,
+  ATTEMPT_BUDGET, attemptWarning, confirmHeldPaper, confirmPaperPin, draftPaperPin,
   type Credential, type SlotSpec, type PinSpec,
 } from "@lararium/mesh";
 import { canPromptSecret, promptLine, promptSecret, promptSecretConfirmed } from "./prompt-secret.js";
@@ -42,30 +42,32 @@ const say = (line = ""): void => { stdout.write(`${line}\n`); };
 
 type Route = "passphrase" | "paper";
 
-async function askRoute(question: string, allowBoth: boolean): Promise<readonly Route[]> {
-  const menu = allowBoth ? "[p]assphrase, [s]heet (paper pin), [b]oth" : "[p]assphrase or [s]heet (paper pin)";
-  for (let i = 0; i < 3; i++) {
+async function askRoute(question: string, allowBoth: boolean, passphraseOnly?: string): Promise<readonly Route[]> {
+  // A PASSPHRASE-ONLY ROUTE offers the passphrase alone and refuses a sheet here, before any sheet prints.
+  const menu = passphraseOnly !== undefined ? "[p]assphrase" : allowBoth ? "[p]assphrase, [s]heet (paper pin), [b]oth" : "[p]assphrase or [s]heet (paper pin)";
+  for (let i = 0; i < ATTEMPT_BUDGET; i++) {
     const a = (await promptLine(`${question} ${menu} (p): `)).trim().toLowerCase();
     if (a === "" || a.startsWith("p")) return ["passphrase"];
+    if (passphraseOnly !== undefined && (a.startsWith("s") || a.startsWith("b"))) { say(`  ${passphraseOnly}; choose p`); continue; }
     if (a.startsWith("s")) return ["paper"];
     if (allowBoth && a.startsWith("b")) return ["passphrase", "paper"];
     say("  (choose one of the letters shown)");
   }
-  throw new Error("no route chosen after three tries");
+  throw new Error(`no route chosen after ${ATTEMPT_BUDGET} tries`);
 }
 
 /**
- * A yes or no with NO default: a blank line asks again, and three misses refuse. The answer is the operator's each time it is
+ * A yes or no with NO default: a blank line asks again, and five misses (`ATTEMPT_BUDGET`) refuse. The answer is the operator's each time it is
  * asked; nothing here remembers one.
  */
 export async function askYesNo(question: string): Promise<boolean> {
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < ATTEMPT_BUDGET; i++) {
     const a = (await promptLine(`${question} [y/n]: `)).trim().toLowerCase();
     if (a === "y" || a === "yes") return true;
     if (a === "n" || a === "no") return false;
-    say("  (answer y or n; there is no default)");
+    say("  (answer y or n; the prompt holds no default)");
   }
-  throw new Error("no answer after three tries; nothing was founded");
+  throw new Error(`no answer after ${ATTEMPT_BUDGET} tries; nothing founded`);
 }
 
 /** Read the sheets of a paper pin, one line each, hidden; a blank line ends the list. */
@@ -79,22 +81,34 @@ async function readSheets(label: string): Promise<string[]> {
   return sheets;
 }
 
-/** One credential, read hidden: a passphrase, or the sheets of a held paper pin. */
-async function readCredential(route: Route): Promise<Credential> {
-  if (route === "passphrase") return { kind: "passphrase", passphrase: await promptSecret("passphrase: ") };
-  return { kind: "paper", sheets: await readSheets("paper") };
+/** One credential, read hidden: a passphrase, or the sheets of a held paper pin, each named for whose key it opens. */
+async function readCredential(route: Route, owner: string): Promise<Credential> {
+  if (route === "passphrase") return { kind: "passphrase", passphrase: await promptSecret(`${owner} passphrase: `) };
+  return { kind: "paper", sheets: await readSheets(`${owner} paper`) };
+}
+
+/**
+ * WHOSE ROUTE A PROMPT ASKS: the vessel's (the node key), a face's (its own tree, by handle index), or a backup bundle's. The
+ * question a person reads names it, so a route typed under it never lands on a key it was not meant for.
+ */
+export type RouteOwner = { readonly kind: "vessel" } | { readonly kind: "face"; readonly ordinal: number } | { readonly kind: "bundle" };
+
+/** The owner as a possessive the prompt reads: "the vessel's", "face h1's", "the backup bundle's". */
+export function routeOwnerName(owner: RouteOwner): string {
+  return owner.kind === "vessel" ? "the vessel's" : owner.kind === "face" ? `face h${owner.ordinal}'s` : "the backup bundle's";
 }
 
 /**
  * The credentials that open the S key. One credential per pass; a slot of several pins asks for more. Refuses with no TTY.
  * Nothing read here is stored beyond the returned array, which the caller hands to `unlockCustody` and drops.
  */
-export async function gatherCredentials(verb: string, opts: { readonly route?: Route } = {}): Promise<Credential[]> {
+export async function gatherCredentials(verb: string, owner: RouteOwner, opts: { readonly route?: Route } = {}): Promise<Credential[]> {
   requireTty(verb);
+  const named = routeOwnerName(owner);
   const out: Credential[] = [];
   for (;;) {
-    const [route] = opts.route ? [opts.route] : await askRoute("open with", false);
-    const credential = await readCredential(route!);
+    const [route] = opts.route ? [opts.route] : await askRoute(`open ${named} key with`, false);
+    const credential = await readCredential(route!, named);
     if (out.length > 0 && credential.kind === "passphrase" && credential.passphrase === "") say("  blank extra passphrase skipped.");
     else out.push(credential);
     const more = (await promptLine("another pin? only a slot sealed with several pins needs one [y/N]: ")).trim().toLowerCase();
@@ -127,18 +141,18 @@ export async function gatherCards(verb: string): Promise<Array<{ readonly code: 
 async function newPaperPin(): Promise<PinSpec> {
   const draft = draftPaperPin({ threshold: 1, count: 1 });
   say();
-  say("  PAPER PIN — write these words on paper, in order. They are shown once and kept nowhere:");
+  say("  PAPER PIN — write these words on paper, in order. They show once, and nothing keeps them:");
   say("  Never paste these words anywhere: no chat, no notes app, no screenshot.");
   say();
   draft.sheets.forEach((sheet, i) => say(`    sheet ${i + 1}: ${sheet}`));
   say();
-  for (let attempt = 0; attempt < 3; attempt++) {
+  for (let attempt = 0; attempt < ATTEMPT_BUDGET; attempt++) {
     const typed: string[] = [];
     for (let i = 0; i < draft.sheets.length; i++) typed.push((await promptSecret(`  read sheet ${i + 1} back (hidden): `)).trim());
     try { return { kind: "paper", confirmed: confirmPaperPin(draft, typed) }; }
-    catch (err) { say(`  ${(err as Error).message}`); }
+    catch (err) { say(`  ${(err as Error).message}`); if (attempt + 1 < ATTEMPT_BUDGET) say(`  ${attemptWarning(ATTEMPT_BUDGET - attempt - 1, "read-back")}`); }
   }
-  throw new Error("the paper pin did not read back after three tries; nothing was bound");
+  throw new Error(`the paper pin did not read back: ${attemptWarning(0, "read-back")}`);
 }
 
 /** One new pin of the chosen route: a passphrase (double entry) or a drafted, read-back paper pin. */
@@ -155,13 +169,14 @@ export async function gatherNewSlot(verb: string, route: Route): Promise<SlotSpe
 
 /**
  * The founding route: one slot per chosen route, each opening the S key on its own. Refuses by name with no TTY and names
- * the container recipe.
+ * the container recipe. `passphraseOnly` names why only a passphrase binds here (a standing vessel's door): the prompt then
+ * offers the passphrase alone and refuses a sheet before any sheet prints.
  */
-export async function gatherFoundingRoute(): Promise<SlotSpec[]> {
+export async function gatherFoundingRoute(opts: { readonly passphraseOnly?: string } = {}): Promise<SlotSpec[]> {
   requireTty("lares vessel found", CONTAINER_FOUND_HOW);
   say("A founding seals the vessel's custody from birth and binds a HUMAN ROUTE to it.");
   say("Lose every route and the sealed state opens for no one; keep the passphrase or the paper safe.");
-  const routes = await askRoute("bind", true);
+  const routes = await askRoute("bind", true, opts.passphraseOnly);
   const slots: SlotSpec[] = [];
   for (const r of routes) slots.push({ t: 1, pins: [await newPin(r)] });
   return slots;

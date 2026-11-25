@@ -151,6 +151,25 @@ These directories contain source material from the Synthetic Dream Machine ecosy
 | `packages/lares-cli/` | the vessel door |
 | `TiddlyWiki5/`, `VSCode-TW5-Syntax/`, `mempalace/`, `kowloon*/` | submodules the reference deployment runs on |
 
+#### Workspaces take the house's projection
+
+A Lararium house lays its canon (`bags/`, `wikis/`) from the workspace `LARES_WORKSPACE` names and projects bags, wikis and rendered artifacts back into it. The operator names each workspace; for the Kahu cabal the repo checkout stands as the working surface, so canon edits land in the tracked tree as source-control write-back. Read-back follows descent: a fast-forward of the workspace's commit flows in, a fork (a branch switch, a rebase, a reset) holds the house's canon and asks which side stands. What notices the commit moving stands owed; until then the operator reads moved canon in by hand:
+
+```sh
+lares vessel lay                            # the standing house reads the workspace's canon
+```
+
+`tools/house-canon.mjs` stays as a tool where a separate pinned clone serves a house (`stand`, `move`, `read`). The [founding runbook](bags/lararium/ha.ka.ba/lararium/mesh/founding-runbook.mem) (`#/prepare`) carries the whole walk.
+
+#### The seal merge driver
+
+Two branches that each re-seal one carrier conflict on its `bcc=` seal line even when their bodies merge clean. `.gitattributes` routes `*.mem` through `tools/mem-merge-driver.mjs`, which re-seals a seal-only conflict and leaves every other conflict standing. `pnpm build` ends with `lares repo tend`, which seats the driver in the clone's shared git config (every worktree of the clone reads it) and says `set` or `already set` for each key; run `lares repo tend` again any time to check. The keys it writes:
+
+```sh
+git config merge.mem-seal.name "a .mem conflict on its seal alone re-seals"
+git config merge.mem-seal.driver "node tools/mem-merge-driver.mjs %O %A %B %P %L"
+```
+
 
 ---
 
@@ -194,41 +213,36 @@ The Lares agent architecture lives in the [`bags/lares/`](bags/lares/) meme grap
 
 ---
 
+## Install a New Hearth on WSL
+
+A new operator on Windows 11 walks **[Install a new hearth on WSL](bags/lares/ha.ka.ba/wsl2/new-hearth.mem)** (`lar:///ha.ka.ba/wsl2/new-hearth`): from a bare PC with WSL Ubuntu to a founded, lit house of your own, kept in your own private repo, with the `lares` MCP seat in Claude Code. It strings two runbooks into one order:
+
+- [Windows 11 + WSL2 developer host](bags/lares/ha.ka.ba/wsl2/setup.mem): WSL, the distro, Docker Engine, Node 24 and pnpm; `tools/wsl2/witness.sh` reads the host and writes nothing.
+- [Founding runbook](bags/lararium/ha.ka.ba/lararium/mesh/founding-runbook.mem): the founding, custody, the lit house, and (step 11a) the restore from your keep.
+
+The short order: host → clone + `git submodule update --init TiddlyWiki5 mempalace` → `pnpm install --frozen-lockfile && pnpm build` → `lares home tend` → your private keep repo → `~/.lares/lares-surface.env` → `tools/lares-container.sh build` → `found --hearth` → persona, `up`, seed, backup, first keep → the pūlama → `claude`.
+
+**Write every cold-key card and every paper sheet the founding prints on PAPER, by hand. Never paste, type, photograph or screenshot a card line or a sheet word into a chat, an AI session, a notes app or a password manager. A card line that reached any other surface counts as burned: found again at a fresh house root.**
+
+---
+
 ## Development Setup
 
-These scripts are idempotent and intended to be run from the repository root.
-They assume Python 3 is available. For project setup, activate `.venv` first.
+Every command runs from the repository root. The house itself runs in Docker (above); the host keeps Node, pnpm and the `lares` CLI for its host verbs, tests and witnesses.
 
-### 0. Prepare scripts
+### 1. Node and Python toolchains
 
-If the executable bit was not preserved by your checkout or zip tool, run:
+The [host runbook](bags/lares/ha.ka.ba/wsl2/setup.mem) installs Node 24, pnpm (the version `package.json` pins in `packageManager`) and Docker, and its Linux stand keeps `~/.venv` from `requirements.txt` for the Python suites.
 
-```bash
-chmod +x scripts/*.sh scripts/*.py
-```
-
-### 1. Create and activate a virtual environment
+### 2. Build the workspace
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
+git submodule update --init TiddlyWiki5 mempalace   # --recursive fetches the development submodules too
+pnpm install --frozen-lockfile
+pnpm build                                          # every package, then `lares repo tend`
 ```
 
-### 2. Install the repo in editable dev mode
-
-```bash
-./scripts/dev-setup.sh
-```
-
-This script:
-
-- verifies that `.venv` is active,
-- syncs git submodules when `.gitmodules` is present,
-- upgrades packaging tools,
-- installs the package with dev extras via `pip install -e '.[dev]'`,
-- verifies that the `lares` package imports.
-
-### 3. Install Ollama
+### 3. Install Ollama (optional local models)
 
 Install Ollama with the official installer:
 
@@ -261,8 +275,6 @@ Then, inside WSL:
 
 ```bash
 cd ~/Synthetic-Dream-Machine
-code-insiders .
-source .venv/bin/activate
 ./scripts/ollama-wsl-setup.sh
 ```
 
@@ -506,90 +518,38 @@ ollama ps
 ### 7. Run tests
 
 ```bash
-pytest
+pnpm test                          # the TypeScript suites, one package at a time
+source ~/.venv/bin/activate && pytest   # the Python suites (the sensorium scripts, the parser's Python host)
 ```
 
-### 8. Smoke-test the repo MCP server
+### 8. The MCP seat
 
-Default smoke test:
+`lares home tend` writes one MCP seat, `lares mcp aho`, into each harness config it finds (Claude Code, Codex, Copilot, VS Code), with the session hooks and `lares` on your path; `lares home read` shows each item and writes nothing. The seat speaks for the house standing in the container and answers `hearth-sleeps` while none stands. No harness config names a Python server.
+
+### 9. Check the host
 
 ```bash
-python scripts/mcp-smoke.py
+tools/wsl2/witness.sh      # the WSL host profile and Docker, read only
+lares home read --brief    # your homes: seats, hooks, seed rule, `lares` on the path
+lares repo read            # this checkout's own seats
 ```
 
-If the MCP server entrypoint differs, pass the exact launch command after `--`:
+### 10. Open the repo in VS Code
 
 ```bash
-python scripts/mcp-smoke.py -- python -m lares.lararium_mcp
-python scripts/mcp-smoke.py -- ./lares/lararium_mcp/run.sh
+code .
 ```
 
-The smoke test sends MCP `initialize` and `tools/list` requests over stdio.
-
-### 9. Check local environment status
-
-```bash
-make status
-# or
-./scripts/status.sh
-```
-
-This prints repo, Python, package import, installed Ollama models, running Ollama models, Ollama service, and VS Code Insiders status.
-
-### 10. Open the repo in VS Code Insiders
-
-```bash
-code-insiders .
-```
-
-Then configure Ollama in Copilot Chat:
-
-1. Open Copilot Chat.
-2. Open the model picker.
-3. Select **Local**.
-4. If models do not appear, use **Chat: Manage Language Models**.
-5. Choose **Add Models → Ollama**.
-6. Add the repo MCP server through `.vscode/mcp.json`.
-
-Recommended workspace MCP config:
-
-```json
-{
-  "servers": {
-    "lararium": {
-      "type": "stdio",
-      "command": ".venv/bin/python3",
-      "args": ["-m", "lares.lararium_mcp"],
-      "cwd": ".",
-      "env": {}
-    }
-  }
-}
-```
-
-For clients that read root `.mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "lararium": {
-      "command": ".venv/bin/python3",
-      "args": ["-m", "lares.lararium_mcp"],
-      "cwd": "."
-    }
-  }
-}
-```
+To use local Ollama models in Copilot Chat: open the model picker, choose **Local** (or **Chat: Manage Language Models → Add Models → Ollama**). `lares home tend` already seated the `lares` MCP seat in VS Code's user config.
 
 ## Project Structure
 
-- `lares/` — main package, MCP server modules, and agentic logic.
-- `scripts/` — idempotent setup, status, and smoke-test scripts.
-- `tests/` — test suite.
-- `requirements.txt` — development dependencies, if present.
-- `pyproject.toml` — build and project metadata.
-
-
+- `bags/` — the meme graph: canon the house seeds from, and the specifications above.
+- `packages/` — the runtime (`lararium-*`), the `lares` CLI (`lares-cli`) and the reference parser.
+- `tools/` — the host shim (`lares-container.sh`), the WSL stands, witnesses and rite walkers.
+- `genesis/` — the baked seed the image carries.
+- `tests/` — the end-to-end harness.
+- `requirements.txt`, `pyproject.toml` — the Python suites' dependencies and pytest config.
 
 ## License
 LICENSE
