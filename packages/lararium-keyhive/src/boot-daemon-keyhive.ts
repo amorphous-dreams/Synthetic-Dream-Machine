@@ -89,7 +89,8 @@ export interface BootDaemonKeyhiveInput {
   readonly recard?: true;
 }
 
-/** What a recard did: whether the stand met the fault at all, and each bag whose recorded Document it could not hold. */
+/** What a recard did: whether the stand met the fault at all, and each bag whose recorded Document it could not hold; a stale
+ *  pass's ledger rows wait on `commit`, which the caller runs once the Archive after the card rests. */
 export interface BootDaemonKeyhiveRecard extends DurableRegistration { readonly stale: boolean }
 
 export interface BootDaemonKeyhiveResult {
@@ -250,10 +251,11 @@ export async function bootDaemonKeyhive(input: BootDaemonKeyhiveInput): Promise<
   // dance + the affiliation layer; boot itself proves identity only and does not read them.
 
   // Register the operator's writable bags so cap checks resolve against lar: URIs.
-  const register = async (): Promise<DurableRegistration> => {
-    if (input.ledger) return registerBagsDurably({ provider: keyhive, bags: input.registerBags, ledger: input.ledger });
+  // A RECARD'S STALE PASS HOLDS ITS LEDGER ROWS (`hold`): the caller commits them once the Archive after the card rests.
+  const register = async (hold = false): Promise<DurableRegistration> => {
+    if (input.ledger) return registerBagsDurably({ provider: keyhive, bags: input.registerBags, ledger: input.ledger, hold });
     for (const bagUrl of input.registerBags) await keyhive.registerBag(bagUrl);
-    return { reminted: [] };
+    return { reminted: [], commit: async () => {} };
   };
   let recard: BootDaemonKeyhiveRecard | undefined;
   if (input.recard) keyhive.markRecard();
@@ -266,7 +268,7 @@ export async function bootDaemonKeyhive(input: BootDaemonKeyhiveInput): Promise<
     // THE RECARD: the card mints FIRST, rotating in a prekey whose secret this stand holds, and the registration runs again;
     // every Document it mints now rides that prekey. Nothing minted in the refused pass (the fault meets the first mint).
     await keyhive.contactCard();
-    try { recard = { stale: true, ...(await register()) }; }
+    try { recard = { stale: true, ...(await register(true)) }; }
     catch (again) {
       if (again instanceof PrekeySecretAbsent) throw new FaceRecardRefused("still-refuses", `face ${input.faceVerifyingKey.slice(0, 16)}… held no prekey secret even after its card; read \`lares vault status --verbose\` and keep the face dark`);
       throw again;

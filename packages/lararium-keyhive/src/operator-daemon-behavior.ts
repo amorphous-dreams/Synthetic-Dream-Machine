@@ -453,7 +453,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           if (again instanceof PrekeySecretAbsent) throw new FaceRecardRefused("still-refuses", `face ${handle} held no prekey secret even after its card; read \`lares vault status --verbose\` and keep the face dark`);
           throw again;
         }
-        recard = { stale: true, reminted: recard?.reminted ?? [] };
+        recard = { stale: true, reminted: recard?.reminted ?? [], commit: recard?.commit ?? (async () => {}) };
       }
       // THE SIBLING'S ARCHIVE FLOOR, as the mounted face's: its one card mints, then its Archive rests in its own row. Every
       // later ask of this stand (a grant, a workbench seat, a revoke) presents that same card, so the Archive the next light
@@ -471,6 +471,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         if (recard.stale && (floor.wrote.length === 0 || floor.refusals.length > 0)) {
           throw new FaceRecardRefused("archive-unrested", `the Archive of face ${handle} did not rest after its card (${floor.refusals.map((r) => r.message).join("; ") || (floor.barred ? "the archive holds shut" : "no row took it")}), so its next light would hold no prekey secret again; it stays dark, and the recard spends its arm. Read the refusing row with \`lares vault status --verbose\` first; where custody reads locked, unlock it (\`lares vault unlock\`) so its Archive rows take writes, then \`${recardCommand(face.handleIndex)}\` again`);
         }
+        // THE LEDGER FOLLOWS THE ARCHIVE: the rows the stale pass held rest only now, past the check, so a refused recard
+        // leaves the vessel-ground ledger as it stood (course recard-ledger-trails-archive).
+        await recard.commit();
         console.warn(recardLine(handle, recard));
       }
       providers.set(key, { provider: joined.keyhive, group: face.personaGroupId });
