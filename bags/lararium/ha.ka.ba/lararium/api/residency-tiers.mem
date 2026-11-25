@@ -60,15 +60,50 @@ Two states. An island runs live (`wela`) or stands torn down (`anu`). UNBUILT: r
 
 `pinned` crosses the temperature axis at right angles. A pinned island stands ''exempt from the cooler'' — it stays `wela` regardless of idle time or cap pressure. `unpinned` islands face LRU + idle-sweep cooling. (Kupono-aligned with Orleans `[KeepAlive]` and Android foreground-service — a flag orthogonal to the importance/age ranking.)
 
-The always-hot set (system-pinned):
+The always-hot set (system-pinned) DERIVES from the lit set: a lit face's planes (its identities, circles and sessions planes) and its home wiki hold for that face's lit life, the shape the CAS pin's `life` already carries; the catalog, the oracle and the daemon bag hold for the vessel's own life. The set reads:
 
 * ''identity / admin'' — the operator's sovereign authority surface; the admin VM.
 * ''active wiki'' — the PrimaryWiki the operator currently works in.
 * ''Session Wiki'' — UNBUILT: the proposed `lar_playspace` coordinator would stay pinned-wela and lead recipe order.
 
-As built, each vessel pins at boot the catalog, the oracle, the daemon bag, the lares corpus when it holds one, the worn face's identities, circles and sessions planes, and its home wiki; the node also pins the lararium corpus (`open-node-vessel.ts`, `open-browser-vessel.ts`).
+''As built: the boot pins each such bag directly, until kaula#3 lands.'' Each vessel pins at boot the catalog, the oracle, the daemon bag, the lares corpus when it holds one, the worn face's identities, circles and sessions planes, and its home wiki; the node also pins the lararium corpus (`open-node-vessel.ts`, `open-browser-vessel.ts`). A lit sibling's planes mount through the sibling-plane road and take no boot pin.
 
-Operator pin/unpin gestures move the flag; they do not carry a Hawaiian transition-verb name (the state change describes itself). Pin holds durable: pin state lives as tiddlers under the daemon bag and rides to operator devices on that doc's own sync surface (no RPC — web2 smell test holds). `writePinTiddler`/`removePinTiddler` (`packages/lararium-tw5/src/vessel-residency-wiring.ts`, driven off the daemon's residency-op pin/unpin branches) persist the tiddler, and `replayPinsFromDaemonDoc` begins restoring pins at boot, ahead of the sweeper's start; neither vessel awaits that replay.
+Operator pin/unpin gestures move the flag; they do not carry a Hawaiian transition-verb name (the state change describes itself). Pin holds durable on the vessel that wrote it: pin state lives as tiddlers under the daemon bag, and the daemon document stays ''sovereign per vessel, never shared across vessels'' (`DAEMON_BAG_ID`, `packages/lararium-mesh/src/lar-uris.ts`), so a pin rides to no other device and no RPC carries it (web2 smell test holds). `writePinTiddler`/`removePinTiddler` (`packages/lararium-tw5/src/vessel-residency-wiring.ts`, driven off the daemon's residency-op pin/unpin branches) persist the tiddler, and `replayPinsFromDaemonDoc` begins restoring pins at boot, ahead of the sweeper's start; neither vessel awaits that replay.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/pin-senses`>>
+
+!! The pin's five senses ~ and the narrowed word
+
+One word carries five unlike acts. Only the select sense assumes one lit daemon: it stores, at vessel scope, an answer that now chooses for faces that never chose. The other four hold.
+
+| Sense | The act | Examples | The word it takes |
+|---|---|---|---|
+| ''select'' | fixes ONE choice where several could stand | the floor pin, the boot pointer, the mounted face, the dialed hearth | ''accept'' (#/floor-accept) |
+| ''keep'' | exempts a thing from cooling or sweep | the `pinned` flag (#/pin-flag), rotate holds, the CAS pin | a face's ''keep list'' |
+| ''trust'' | anchors which key answers for a name | gate-bundle pins, place floor pin claims, the persona-KEL prefix | `pin` |
+| ''verify'' | binds bytes to a digest | module pins, `pinnedDoc`, the vendored automerge pin | `pin` |
+| ''share'' | carries one human route's share of a slot key | the keyslot passphrase and paper pins | `pin` |
+
+''The narrowed word'' (<<~ loulou uri=`lar:///ha.ka.ba/kahua/memory/ruling/2026-11-25-the-leans-collapse`>>, Pin Q4). `pin` keeps key and byte anchors: trust, verify and share. Select becomes ''accept''. Keep becomes ''a face's keep list'': a record the face writes in its own daemon wiki, bound to its lit life, over one vessel cap that refuses by name when full and never drops one face's hold to seat another's. Order stays with ''law pins'', a face's own record that orders canon law and adds none.
+
+The `pinned` flag of #/pin-flag names the keep sense in the word the code carries, until kaula's steps move it onto the keep list.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/floor-accept`>>
+
+!! Floor accept ~ a place's act on a place-held home
+
+''Floor accept'' carries the select sense at the floor: a place's receipt that it took head X of Nexus N's floor release chain, as of its last sync. A PLACE acts, never a face: the accept rests on a place-held home under the vessel key, and no face gate stands before it, the way a Lar binds to a hearth.
+
+* ''Each recipe mounts its own realm's accept.'' A recipe reads the accept for the Nexus its realm names, so faces lit in different Nexuses each stand on their own realm's floor, and no vessel-wide sole pick chooses for them.
+* ''The chain orders; the accept records.'' The release chain orders the floors by its `prior` links; the accept names which head this place took. It fast-forwards along descent, refuses a release that does not descend, refuses while two heads stand, and stages the floor whole before it moves. Nothing accepts by itself.
+* ''A faceless herm stamps what it carries.'' It shows the newest release its leyline carries, stamped ''carried-unaccepted'', as of its last sync.
+* ''The home serves the accept alone.'' It claims nothing about where the system wiki lives; herm-caps Q5 stays the operator's (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/herm-caps#/open`>>).
+
+''As built:'' the floor pin (`packages/lararium-mesh/src/floor-pin.ts`) rests in the control document, which mints with a face, and mounts the one pin the vessel holds; its code header keeps the pin's name until kaula#4 moves it onto the place home.
 
 <<~/ahu>>
 
@@ -145,6 +180,6 @@ through #third-tier-gate, and only after the research that meme charges.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;PKTNWguZ9NZsg15LkKivJuZrBHEKqa8VSb9RIr4OLkI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;VaDafcQzFDG19oX7y0Rz9o6Cl1z_QsjC2bjNf-nGlYg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

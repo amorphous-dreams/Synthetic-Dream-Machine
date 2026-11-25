@@ -9,7 +9,7 @@ l-space    = "lararium"
 namespace  = "&#x2695;"
 role       = "the herm's cap stack and its clear wiki: what every lararium stands on below its floor, defined by its refusals; the floor rendered through TiddlyWiki, answered only to a name the reader brings; no herm Pronaos"
 status     = "designed"
-status-why = "the plan stands approved (research/herm-caps-wave; S0 measured in code); six questions stay open in #/open; nothing beyond S0 built"
+status-why = "the plan stands approved (research/herm-caps-wave; S0 measured in code); #/open holds Q1-Q4 ruled and Q5-Q6 open as the operator's; nothing beyond S0 built"
 tags       = ["mesh/vessel-caps", "mesh/pronaos", "mesh/cap-tier", "api/pono/causal-islands", "lifecycle/designed"]
 title      = "lar:///ha.ka.ba/lararium/mesh/herm-caps"
 type       = "text/memetic-wikitext+tiddlywiki"
@@ -142,15 +142,20 @@ S5 and S6 both touch `composeHerm` and the public shore: they run in sequence, n
 
 !! Open ~ the operator's questions
 
-* ''Q1, "system wiki".'' The house-canon quine wikis (`lares`, `lararium`), the vessel's `@daemon` wiki, or both as strata of one recipe: the clear floor below, sealed layers above.
-* ''Q2, a waymark stock CID.'' May the opt-in waymark carry the STOCK clear wiki's manifest CID beside the bulb CID (both name no Nexus)? A Nexus's wiki never rides the waymark.
-* ''Q3, the faceless mount.'' May a faceless herm show a carried release with no accepted pin, stamped carried and unaccepted, as of its last sync, or the genesis floor alone?
-* ''Q4, the Librarium.'' Stacks only (rest by CID; the catalogue belongs to a house or a Nexus), or the herm wiki as its home, which needs a describing rung?
+Ruled (<<~ loulou uri=`lar:///ha.ka.ba/kahua/memory/ruling/2026-11-25-the-leans-collapse`>>):
+
+* ''Q1, "system wiki".'' Both, as strata of one recipe: the clear floor below, sealed layers above. The house-canon quine wikis (`lares`, `lararium`) ride the floor; the vessel's `@daemon` wiki rides the sealed layers.
+* ''Q2, no stranger render.'' A herm never renders for a stranger, and the waymark carries no stock clear-wiki CID: the stranger-render slice (S9 of research/herm-caps-wave) strikes whole. The waymark keeps the bulb CID alone.
+* ''Q3, floor accept.'' The floor accept carries the floor pin's select sense as a place's act on a place-held home (vessel key, never face-gated), each recipe mounting the accept for its own realm's Nexus; a faceless herm shows the newest release its leyline carries, stamped carried-unaccepted, as of its last sync (<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-tiers#/floor-accept`>>).
+* ''Q4, the Librarium.'' Stacks only: the herm rests by CID, and a catalogue belongs to a house or a Nexus. The herm wiki takes no describing rung.
+
+Open, the operator's own:
+
 * ''Q5, the first daemon face.'' The locked system wiki as the first anon face's daemon wiki (it follows the face on a fleet join), or a place-bound wiki under the vessel key that the first face opens and never owns (it stays with the place, the way a Lar binds to a hearth)? Talk story first.
 * ''Q6, the operator's notes.'' The operator holds notes of their own on the herm wiki; S1's reconcile waits for them.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;nVOP69w4rH4jAAj5EkSA32_6xUSeZ5996horJVibN9w`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;YFiS-1LOBIxOqMw_FFc_IOSYxXMz6ymklL8sv8O0pgs`>>
 
 <<^ code=`&#x0004;` to=`?`>>
