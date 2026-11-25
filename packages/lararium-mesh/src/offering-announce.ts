@@ -127,6 +127,3 @@ export async function verifiedPluginOfferingsFromDoc(doc: LarDoc | undefined | n
   }
   return out;
 }
-
-/** Compatibility-shaped reader name for callers that want the wrapper plus its later verdict. */
-export const readOfferingAnnounces = offeringAnnouncesFromDoc;

@@ -90,7 +90,7 @@ describe("wake-reads-unmatched-half-red", () => {
     await f.kui("kukulu", { reach: "wide", returns: 3 });
     const matched = await f.begin(), other = await f.begin(), open = await f.begin();
     const landed = await f.land(matched.tessera);
-    // A landing at another head refuses now (rite-land-differs); a host half an older vessel rested off par still reads red.
+    // A landing at another head refuses (rite-land-differs); a host half resting off par reads red.
     await expect(f.land(other.tessera, HEAD2)).rejects.toMatchObject({ code: "rite-land-differs" });
     const off = await signSwarmAct({ act: "rite-landed", group: GROUP, rite: "kukulu", tessera: other.tessera, begun: other.begun, head: HEAD2 }, f.vessel);
     await putSwarmAct(f.wiki, swarmTesseraTitle(other.tessera, "host"), off);
