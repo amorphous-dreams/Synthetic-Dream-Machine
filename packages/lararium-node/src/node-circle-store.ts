@@ -30,7 +30,7 @@
  */
 
 import { mkdirSync } from "node:fs";
-import { HandleBook, HANDLE_BOOK_SNAPSHOT_ERA, type HandleBookSnapshot } from "@lararium/mesh";
+import { HandleBook, HANDLE_BOOK_SNAPSHOT_ERA, type HandleBookSnapshot } from "@lararium/mesh/handle-book";
 import { CustodyRecordUnavailable } from "./custody-holder.js";
 import { readCustodyRecord, updateCustodyRecord } from "./custody-seat.js";
 import { larIdentityDir } from "./vessel-paths.js";

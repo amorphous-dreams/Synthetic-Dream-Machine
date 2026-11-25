@@ -70,7 +70,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     ],
   },
   oracle: {
-    usage: "usage: lares oracle cast --recipe <slug> [--coins <six values>] [--caster <name>]",
+    usage: "usage: lares oracle cast --recipe <slug> [--asking <words>] [--fresh | --seed <words>] [--coins <six values>] [--caster <name>]",
     synopsis:
       "Cast the I Ching by three coins a line and let the vessel write the cast as one tiddler under lar:///ha.ka.ba/lares/oracle/casts/. " +
       "A line sums three coins, heads three and tails two: 6 (old yin) and 9 (old yang) change, 7 and 8 hold. The six lines, bottom first, " +
@@ -81,16 +81,30 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     details: [
       "  The reading names the house's imported texts for each hexagram: the DOA (Kopyleft 2022, Steal and Share Alike) and the",
       "  e-jing ((K)opyLeft, its quoted snippets under fair use), each with its attribution and license.",
+      "  One asking, one throw: --asking names the question, and the same words by the same caster answer the cast already",
+      "  standing (replayed), at any later time, so a retry never throws twice. A bare cast mints its own nonce at the word.",
+      "  A person's hand opens the second mode: --fresh throws anew for the same words, --seed <words> throws the same coins for",
+      "  the same seed; a seat that asks either reads `asks` with the line a person runs (exit 5). A lost answer reads owed",
+      "  (exit 6), never failed. The readings print as of the digest of the bytes read. The throw keys on the asker the",
+      "  vessel booked (--caster annotates) and on the words normalized (case, spacing, trailing punctuation never re-roll).",
+      "  A seat names its query before it casts: its bare cast reads `asks`. A sleeping vessel honors --seed and refuses a bare",
+      "  --asking. A weak seed reads back: the record names the seed by a 16-hex digest anyone can test guesses against, so",
+      "  choose a strong one.",
     ],
     examples: [
       "lares oracle cast --recipe default                       # a house cast through the platform's entropy door",
       "lares oracle cast --recipe default --coins 7,8,9,6,7,7   # the six lines you threw with real coins, bottom first",
       "lares oracle cast --recipe default --json                # the verb's answer: cast, readings, the tiddler's title",
+      "lares oracle cast --recipe default --asking 'which road first?'          # asked again, the same throw answers",
+      "lares oracle cast --recipe default --asking 'which road first?' --fresh  # a person asks the same words anew",
     ],
     flags: [
+      "--asking <w>  the question: the same words by the same caster answer the cast already standing",
+      "--fresh       a person's hand: a new throw for the same words",
+      "--seed <w>    a person's hand: coins drawn from these words, the same seed the same throw (named by its digest)",
       "--coins <v>   six line values of 6, 7, 8 or 9, bottom line first (7,8,9,6,7,7 or 789677): the operator's own throw",
       "--caster <n>  who cast (default: operator)",
-      "--json        emit {decision, created, title, cast, text, readings, note}",
+      "--json        emit {band, intent, replayed, decision, created, title, cast, text, readings, asOf, note}",
     ],
   },
   law: {

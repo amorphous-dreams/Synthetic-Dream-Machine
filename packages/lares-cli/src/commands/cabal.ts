@@ -41,7 +41,7 @@
 
 import { faceOption } from "../face-option.js";
 import { readFileSync, existsSync } from "node:fs";
-import { realmStanding } from "@lararium/mesh";
+import { realmStanding } from "@lararium/mesh/realm-standing";
 import {
   CabalVouchError, CabalJoinError, CabalFaceError,
   type CabalVouchResult, type CabalJoinResult, type CabalFaceResult,

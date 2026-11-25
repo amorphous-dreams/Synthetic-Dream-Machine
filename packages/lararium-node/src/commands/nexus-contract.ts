@@ -43,25 +43,89 @@
 
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  judgeNexusActPartial, cosignNexusActPartial, nexusActPartial, readNexusActPartial, NexusPartialRefusal,
-  type NexusActPartial, type NexusPartialReader, type PartialVerdict,
-  carriageEntriesFromBoard, writeCarriageEntry, signCarriageQuorum, carriageEntryActCid, signCarriageContract,
-  signCarrierContract, verifyCarrierContract, verifyCarriageConsent, carriageEntryCounts, foldCarriageDetails, foldCarriageSet,
-  holdsCarriage, holdsCarrier, foundingRoster, presentationFromBoardDoc,
-  carriageDocUrl, materializeSharedLarDoc, ed25519SignerFromSeed, nexusAidOf,
-  rollAnchorsFromBoard, carriageAncestryFromBoard, rollAnchorParents, signRollAnchor, rollAnchorCounts, rollAnchorCid, writeRollAnchor, epochSeats,
-  admitCarriageCommit, openAdmitCarriage,
-  realmEdgeBoardDocUrl, edgeLedgerDocUrl, readEdgeBoard, keptFromLedger, keepInLedger, ledgerRealms, ledgerScopes, edgeRollAnchorsFromBoard, edgeKapaeActsFromBoard,
-  edgeRollAnchorParents, edgeRollAnchorCounts, edgeRollAnchorCid, signEdgeRollAnchor, writeEdgeRollAnchor, mergeEdgeRollAnchors,
-  charterHandLineage, prepareRealmFrontier, realmRaiseCids, carryOfPrepared, cosignFrontierCarry,
-  frontierCarryAgrees, frontierCarryStands, landFrontierCarry,
-  type CountedEdgeBoard, type EdgeRollAnchor,
-  type AdmitOpening, type CustodyRootDoor, type CarriageAction, type CarriageEntry, type KahuQuorumSeats, type QuorumSignature, type RollAnchor,
+  judgeNexusActPartial,
+  cosignNexusActPartial,
+  nexusActPartial,
+  readNexusActPartial,
+  NexusPartialRefusal,
+  type NexusActPartial,
+  type NexusPartialReader,
+} from "@lararium/mesh/nexus-partial";
+import { type PartialVerdict } from "@lararium/mesh/edge-partial";
+import {
+  carriageEntriesFromBoard,
+  writeCarriageEntry,
+  presentationFromBoardDoc,
+  rollAnchorsFromBoard,
+  carriageAncestryFromBoard,
+  writeRollAnchor,
+} from "@lararium/mesh/carriage-board";
+import {
+  signCarriageQuorum,
+  carriageEntryActCid,
+  signCarriageContract,
+  signCarrierContract,
+  verifyCarrierContract,
+  verifyCarriageConsent,
+  carriageEntryCounts,
+  foldCarriageDetails,
+  foldCarriageSet,
+  holdsCarriage,
+  holdsCarrier,
+  rollAnchorParents,
+  signRollAnchor,
+  rollAnchorCounts,
+  rollAnchorCid,
+  admitCarriageCommit,
+  openAdmitCarriage,
+  type AdmitOpening,
+  type CarriageAction,
+  type CarriageEntry,
+  type RollAnchor,
   type PresentationFinding,
-  signPlaceFloorPin, readPlaceFloorPin, writePlaceFloorPin, hexToBytes, FLOW_SOCKET_ROUTE, CARRIAGE_CARRIER_DOMAIN, PLACE_FLOOR_PIN_DOMAIN,
-  foldClaimHead, verifyCarrierContractAtHead, verifyPlaceKel, writePlaceKelEvent, decodePlaceKelEvent,
-  type FloorKeyDoor, type PlaceFloorPinStatement, type PlaceKelEvent,
-} from "@lararium/mesh";
+  verifyCarrierContractAtHead,
+} from "@lararium/mesh/carriage-registry";
+import { foundingRoster, nexusAidOf } from "@lararium/mesh/nexus-seal-seed";
+import { carriageDocUrl, materializeSharedLarDoc, realmEdgeBoardDocUrl, edgeLedgerDocUrl } from "@lararium/mesh/deterministic-doc";
+import { ed25519SignerFromSeed } from "@lararium/mesh/ed25519-door";
+import { epochSeats } from "@lararium/mesh/wax-stamp";
+import {
+  readEdgeBoard,
+  edgeRollAnchorsFromBoard,
+  edgeKapaeActsFromBoard,
+  edgeRollAnchorParents,
+  edgeRollAnchorCounts,
+  edgeRollAnchorCid,
+  signEdgeRollAnchor,
+  writeEdgeRollAnchor,
+  mergeEdgeRollAnchors,
+  type CountedEdgeBoard,
+  type EdgeRollAnchor,
+} from "@lararium/mesh/edge-kapae";
+import { keptFromLedger, keepInLedger, ledgerRealms, ledgerScopes } from "@lararium/mesh/edge-ledger";
+import { charterHandLineage } from "@lararium/mesh/charter-hand-lineage";
+import { prepareRealmFrontier, realmRaiseCids } from "@lararium/mesh/realm-frontier";
+import {
+  carryOfPrepared,
+  cosignFrontierCarry,
+  frontierCarryAgrees,
+  frontierCarryStands,
+  landFrontierCarry,
+} from "@lararium/mesh/frontier-carry";
+import { type CustodyRootDoor, type FloorKeyDoor } from "@lararium/mesh/gate-bundle-door";
+import { type KahuQuorumSeats, type QuorumSignature } from "@lararium/mesh/kapae-antigen";
+import {
+  signPlaceFloorPin,
+  readPlaceFloorPin,
+  writePlaceFloorPin,
+  foldClaimHead,
+  type PlaceFloorPinStatement,
+} from "@lararium/mesh/place-floor-pin-door";
+import { hexToBytes } from "@lararium/mesh/crypto";
+import { FLOW_SOCKET_ROUTE } from "@lararium/mesh/flow-read-client";
+import { CARRIAGE_CARRIER_DOMAIN, PLACE_FLOOR_PIN_DOMAIN } from "@lararium/mesh/domains";
+import { verifyPlaceKel, decodePlaceKelEvent, type PlaceKelEvent } from "@lararium/mesh/vessel-kel";
+import { writePlaceKelEvent } from "@lararium/mesh/place-kel-board";
 import { readNexusDoc } from "../nexus-doc.js";
 import { hearthSovereignPin } from "../hearth-sovereign-pin.js";
 

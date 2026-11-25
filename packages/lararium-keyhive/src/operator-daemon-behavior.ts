@@ -13,7 +13,7 @@
  * Meme: lar:///ha.ka.ba/lararium/keyhive/operator-daemon-behavior
  */
 
-import { wearOf } from "@lararium/mesh";
+import { wearOf } from "@lararium/mesh/repo-wear";
 import { seatGrantsReader } from "./carried-seat.js";   // leaf-fleet
 import {
   makeDaemonBehavior, makeWhereReactor, makeResolveReactor, makeListWikisReactor,
@@ -42,14 +42,40 @@ import { applyShares, liftCarriedShares } from "./share-apply.js";
 import { grantShare } from "./share-grant.js";
 import { adoptWorkbench, faceWorkbenchRealm, handOverCure, landWorkbench, sealedAdmitRefusal, landsUnderAHand, workbenchFoundsOnWrite, workbenchWriterSeat, type LedgerDoc } from "./workbench-realm.js";
 import { daemonRetiredHome, faceOwnSlot, wikiShellPorts } from "./wiki-shell-ports.js";
-import { workbenchKeyDocs, ledgerWorkbenchRealms, privateCabalRealmId, bagUri as meshBagUri, shareCarryTitle, shareCarryOf, tiddlerText, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX } from "@lararium/mesh";
-import { DAEMON_WIKI_SLUG, daemonSlotTitle, stoodDocumentBytes, ACTION_VERBS, sha256HexBytesSync, canonicalJsonBytes, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, fleetEdgeBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc, wikiBagUri, recipeLayerIndex, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, ControlHomeUnavailable, canonOfferDocUrl, type ChangeOrigin } from "@lararium/mesh";
+import { workbenchKeyDocs, ledgerWorkbenchRealms, privateCabalRealmId } from "@lararium/mesh/workbench";
+import { bagUri as meshBagUri, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX } from "@lararium/mesh/lar-uris";
+import { shareCarryTitle, shareCarryOf } from "@lararium/mesh/share-config";
+import { tiddlerText } from "@lararium/mesh/base-doc";
+import { DAEMON_WIKI_SLUG, wikiBagUri, recipeLayerIndex, wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import { daemonSlotTitle } from "@lararium/mesh/device-daemon-docs";
+import { stoodDocumentBytes } from "@lararium/mesh/stood-document";
+import { ACTION_VERBS } from "@lararium/mesh/residency-actions";
+import { sha256HexBytesSync, canonicalJsonBytes } from "@lararium/mesh/crypto";
+import { DOCUMENT_HANG_BOUND_MS } from "@lararium/mesh/find-or-throw";
+import { VerbRefusal } from "@lararium/mesh/verb-refusal";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { personaBagIdFor, personaSiblingBagIds } from "@lararium/mesh/persona-scope";
+import { didFromVerifyingKey } from "@lararium/mesh/lar-did";
+import { deviceEdgeDigest } from "@lararium/mesh/device-delegation";
+import { edgeLedgerDocUrl, fleetEdgeBoardDocUrl, materializeSharedLarDoc, canonOfferDocUrl } from "@lararium/mesh/deterministic-doc";
+import { personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";
+import { mutableLarRecord } from "@lararium/mesh/base-doc";
+import { faceIntentVerbs } from "@lararium/mesh/intent-verbs";
+import { faceRecordsOf } from "@lararium/mesh/face-reading";
+import { isVesselGround } from "@lararium/mesh/register-bags";
+import { ControlHomeUnavailable } from "@lararium/mesh/control-home";
+import { type ChangeOrigin } from "@lararium/mesh/tiddler-store";
 import type { IslandBehavior, IslandContext, DaemonBehaviorOptions, VerbReactor, VerbTable } from "@lararium/tw5";
-import type { IslandMsg_Manifest, JoinedFaceAuth } from "@lararium/mesh";
+import type { IslandMsg_Manifest, JoinedFaceAuth } from "@lararium/mesh/island-protocol";
 import type { Hand } from "@lararium/mesh/session-contract";
 import { boardDyadReader, intentDoorStandings } from "./board-dyad-reader.js";
 import { litFaceProjections, type LitFaceProjectionMount, type LitFaceProjections } from "./lit-face-projections.js";
-import type { DocHandle, LarDoc, AutomergeUrl, CapabilityVerifier, Verb, LarTiddlerStore } from "@lararium/mesh";
+import type { DocHandle, AutomergeUrl } from "@lararium/mesh/automerge";
+import type { LarDoc } from "@lararium/mesh/base-doc";
+import type { CapabilityVerifier } from "@lararium/mesh/capability";
+import type { Verb } from "@lararium/mesh/verb-tiddler";
+import type { LarTiddlerStore } from "@lararium/mesh/tiddler-store";
 
 /** Vessel-injected daemon shore the platform entry supplies (node folds the telemetry capture SINK here; a
  *  browser/node entry folds the projection `onBoot` mount so the daemon inherits the wiki render cap).
@@ -82,7 +108,7 @@ type DaemonExtra = Pick<DaemonBehaviorOptions, "makeCaptureEngine" | "captureTic
    *  NODE injects the reader over its hearth bag manifests. Threaded into the ACTION verb handlers,
    *  where `crossingDirection` prices a transfer by direction. Absent (a browser vessel, tests) →
    *  the gate fail-closes every bag to VEIL and prices every transfer lateral, as before. */
-  bagTier?: (bagUrl: string) => import("@lararium/mesh").CapTier | null;
+  bagTier?: (bagUrl: string) => import("@lararium/mesh/cap-tier").CapTier | null;
   /** `dyadReading` — the node vessel's dyad reader (kapae#/reach). The browser island reads its own board
    *  when `readDyadFromBoard` stands. A reader answers `aside` when its board cannot be read. Absent → the Binding Gate refuses a persona-bound boot
    *  and the join gate refuses a summons, each by name (`requireDyadReader`): a gate that could ask nobody
@@ -113,7 +139,7 @@ type DaemonExtra = Pick<DaemonBehaviorOptions, "makeCaptureEngine" | "captureTic
   /** `freshBase` — the document store's cut of a from-now admission's fresh base (`@lararium/mesh` `freshBasePort`),
    *  over the bag's live document as the vessel's Repo holds it. Absent → every from-now admission refuses
    *  `fresh-base-unavailable`. */
-  freshBase?: import("@lararium/mesh").ContentKeyHolderPorts["freshBase"];
+  freshBase?: import("@lararium/mesh/content-key-holder").ContentKeyHolderPorts["freshBase"];
   /** `countedRaises` — the raises the vessel's own ledger counts on one fleet's board, asked of the vessel's own
    *  fold. Absent → a raise counts where this island's own count answered it (each roll its seat took, each
    *  kept roll handed back under the vessel's receipt). */
@@ -121,11 +147,11 @@ type DaemonExtra = Pick<DaemonBehaviorOptions, "makeCaptureEngine" | "captureTic
   /** `kahuCabal` — the shore's reader of the Kahu cabal board: the charter's Nexus and seated roster, and the
    *  admission acts its carriage board carries. This island adds the sentinel read and the group, and hands every
    *  write door the composed source. Absent → every door reads a stranger and refuses a house canon bag (fail closed). */
-  kahuCabal?: (ctx: IslandContext) => import("@lararium/mesh").KahuCabalBoardReader;
+  kahuCabal?: (ctx: IslandContext) => import("@lararium/mesh/kahu-canon-reach").KahuCabalBoardReader;
   /** `charterSeat` — the shore's reader of the charter seat this vessel holds (its key, its epoch, the lineage that proves
    *  it), read by name and never opened. `offer-promote` asks it before canon moves: the retire that closes an offer seals
    *  under that seat alone. Absent → the verb refuses `offer-retire-unseated` for every caller (a browser page holds no seat row). */
-  charterSeat?: () => Promise<import("@lararium/mesh").OfferSeat | null>;
+  charterSeat?: () => Promise<import("@lararium/mesh/canon-offer").OfferSeat | null>;
   /** `projectLitFace` — EVERY LIT FACE PROJECTS ITS OWN WRITES: the shore's mount of one projector over a lit sibling's own engine,
    *  under the grants the vessel named for that face (`JoinedFaceAuth.diskMirrors`). keyhive stays fs-blind: the node entry
    *  mounts it (`mountLitFaceProjection`). Absent (a browser vessel) → a sibling projects nothing. */
@@ -160,7 +186,7 @@ export class SealedStoreUnavailable extends Error {
 }
 
 /** The island's ask for one device's standing in one fleet, answered by the vessel's own fold of that fleet's board. */
-export type DyadReader = (fleetRootDid: string, deviceVerifyingKey: string) => import("@lararium/mesh").EdgeStanding | Promise<import("@lararium/mesh").EdgeStanding>;
+export type DyadReader = (fleetRootDid: string, deviceVerifyingKey: string) => import("@lararium/mesh/edge-kapae").EdgeStanding | Promise<import("@lararium/mesh/edge-kapae").EdgeStanding>;
 
 /**
  * The dyad's reader a gate asks through, or a refusal by name. A gate that binds or seats a device reads that
@@ -178,10 +204,19 @@ export function requireDyadReader(reader: DyadReader | undefined, gate: "the Bin
 import { bootDaemonKeyhive, FaceHoldsNoPrekeySecret, FaceRecardRefused, recardCommand, type BootDaemonKeyhiveRecard } from "./boot-daemon-keyhive.js";
 import { daemonBagDocLedger, planeBagDocLedger, registerBagsDurably, type BagDocLedger } from "./bag-doc-ledger.js";
 import { persistArchiveFloor } from "./archive-floor-write.js";
-import { replicaHeads, hexToBytes as meshHexToBytes, faceAtomKeyFromSeed, nexusOfferSigner, holdsKahuReach, isHouseCanonBag, realmStandingDocUrl, CROSS_FACE_READ_VERBS, CROSS_FACE_TARGET_VERBS } from "@lararium/mesh";
+import { replicaHeads } from "@lararium/mesh/island-repo-door";
+import { hexToBytes as meshHexToBytes } from "@lararium/mesh/crypto";
+import { faceAtomKeyFromSeed } from "@lararium/mesh/face-atom";
+import { nexusOfferSigner } from "@lararium/mesh/canon-offer";
+import { holdsKahuReach, isHouseCanonBag } from "@lararium/mesh/kahu-canon-reach";
+import { realmStandingDocUrl } from "@lararium/mesh/realm-bag";
+import { CROSS_FACE_READ_VERBS, CROSS_FACE_TARGET_VERBS } from "@lararium/mesh/cross-face-reach";
 import { DaemonEventStore, absorbCapEvents } from "./daemon-event-store.js";
 import { readLeaseUnderFace, controlLayerOf, type LeaseFrontier } from "./lease-frontier.js";
-import { readFace, answerDocStoreAsks, announceSlotDoc, announceLiftedDoc, floorSlotTitle, floorRegistryOf, FloorUnavailable, type FloorRegistry } from "@lararium/mesh";
+import { readFace } from "@lararium/mesh/face-reading";
+import { answerDocStoreAsks, announceSlotDoc, announceLiftedDoc } from "@lararium/mesh/sealed-rest";
+import { floorSlotTitle } from "@lararium/mesh/device-daemon-docs";
+import { floorRegistryOf, FloorUnavailable, type FloorRegistry } from "@lararium/mesh/floor-registry";
 import { makeSlotDocResolver, type SlotDocResolver } from "./slot-doc-resolver.js";
 import { slotAnnouncer } from "./slot-announcer.js";
 import { makeLitFaceDocs, makeLitFaceTarget, type LitFace } from "./lit-face-target.js";
@@ -194,10 +229,22 @@ import { makeFaceSeat, makeGroupDocListener, watchFaceSeatFleet, type GroupDocHa
 import { runFaceJoinOperation } from "./face-join-operation.js";
 import { makeFaceIntentDoor } from "./face-intent-door.js";
 import { faceDoors } from "./face-doors.js";
-import { readSiblingFacePlanes, recheckSiblingPlanes, intentPlaneSelf, mkDaemonFaceSettled, type FaceAnchor } from "@lararium/mesh";
+import { readSiblingFacePlanes, recheckSiblingPlanes } from "@lararium/mesh/sibling-plane-mount";
+import { intentPlaneSelf } from "@lararium/mesh/intent-entry";
+import { mkDaemonFaceSettled } from "@lararium/mesh/island-protocol";
+import { type FaceAnchor } from "@lararium/mesh/face-anchor";
 import { makeSeatSummons, standingOfReading } from "./face-seat-summons.js";
 import { base64ToBytes, bytesToBase64 } from "./bytes-base64.js";
-import { MEMORY_CUT_SHADOW_READ, memoryAskRefusal, mintMemoryKeypair, openMemorySecret, seatDutiesAskRefusal, hex as memoryHex, type MemoryAct, type MemoryKeypair } from "@lararium/mesh";
+import {
+  MEMORY_CUT_SHADOW_READ,
+  memoryAskRefusal,
+  mintMemoryKeypair,
+  openMemorySecret,
+  type MemoryAct,
+  type MemoryKeypair,
+} from "@lararium/mesh/memory-section";
+import { seatDutiesAskRefusal } from "@lararium/mesh/seat-duties";
+import { hex as memoryHex } from "@lararium/mesh/crypto";
 import { KeyhiveProvider, PrekeySecretAbsent } from "./keyhive-provider.js";
 import { makeFaceBagDoor, faceOwnerVerifier } from "./face-bag-door.js";
 import { answerKahuaCap } from "./kahua-cap.js";
@@ -212,8 +259,13 @@ import { faceStanding, type IslandSessionProof } from "./island-session-proof.js
 import { RealmWriterBook, realmRestPort, type RealmFace } from "./realm-rest.js";
 // The island side of the session sign door, for an island entry that composes this behaviour.
 export { islandSessionDoor } from "./island-session-proof.js";
-import type { RecordSigner } from "@lararium/mesh";
-import { SealedStore, readKeyParcel, readOutboxKey, readCarriedRecord, encodeKeyParcel, readKeyVersionId, utf8Bytes, type ContentKeyHolderPorts, type KeyParcel, type SealedRecord, type SealedStoreRest } from "@lararium/mesh";
+import type { RecordSigner } from "@lararium/mesh/sealed-records";
+import { SealedStore, readOutboxKey, readCarriedRecord, type SealedStoreRest } from "@lararium/mesh/sealed-store-rest";
+import { readKeyParcel, encodeKeyParcel, type KeyParcel } from "@lararium/mesh/lockbox-wrap";
+import { readKeyVersionId } from "@lararium/mesh/sealed-chunk-door";
+import { utf8Bytes } from "@lararium/mesh/crypto";
+import { type ContentKeyHolderPorts } from "@lararium/mesh/content-key-holder";
+import { type SealedRecord } from "@lararium/mesh/sealed-records";
 import { unboundMints, restingMinter } from "./resolve-binding.js";
 import { kahuReachSourceOf, withKahuReach } from "./kahu-reach-source.js";
 

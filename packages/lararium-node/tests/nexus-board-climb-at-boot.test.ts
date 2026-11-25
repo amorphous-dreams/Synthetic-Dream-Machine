@@ -35,16 +35,14 @@ import { join } from "node:path";
 import { describe, test, expect } from "vitest";
 import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
 import * as ed from "@noble/ed25519";
-import {
-  climbNexusBoards,
-  nexusIdentity, nexusIslandsBelow, nexusScopeOrThrow, type NexusIdentityAt,
-  nexusAidOf, realmDocUrl,
-  materializeSharedLarDoc,
-  kapaeAntigenDocUrl, realmAnnounceDocUrl,
-  writeAntigenEntry, antigenEntriesFromBoard, signAntigenEntry,
-  signRealmBagRegistration, writeRealmBagRegistration, publicRealmBooksFromDoc,
-  hex,
-} from "@lararium/mesh";
+import { climbNexusBoards } from "@lararium/mesh/nexus-board-climb";
+import { nexusIdentity, nexusIslandsBelow, nexusScopeOrThrow, type NexusIdentityAt } from "@lararium/mesh/nexus-identity";
+import { nexusAidOf } from "@lararium/mesh/nexus-seal-seed";
+import { realmDocUrl, signRealmBagRegistration, writeRealmBagRegistration, publicRealmBooksFromDoc } from "@lararium/mesh/realm-bag";
+import { materializeSharedLarDoc, kapaeAntigenDocUrl, realmAnnounceDocUrl } from "@lararium/mesh/deterministic-doc";
+import { writeAntigenEntry, antigenEntriesFromBoard } from "@lararium/mesh/antigen-board";
+import { signAntigenEntry } from "@lararium/mesh/kapae-antigen";
+import { hex } from "@lararium/mesh/crypto";
 import { readNexusDoc, nexusCharterStands, writeNexusDoc, nexusCharterDocPath } from "../src/nexus-doc.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 

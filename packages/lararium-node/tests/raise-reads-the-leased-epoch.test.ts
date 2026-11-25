@@ -1,7 +1,10 @@
 /** The raise door reads a Nexus lease through its charter's verified seal lineage. */
 import { describe, test, expect, afterEach } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
-import { emptyLarDoc, charterHandLineage, leaseEpochSlotUri, storedLarRecord, type LarDoc } from "@lararium/mesh";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { charterHandLineage } from "@lararium/mesh/charter-hand-lineage";
+import { leaseEpochSlotUri } from "@lararium/mesh/epoch-lease";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
 import { seatedCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { rollQuorumLeaseOnBoard } from "../src/lease-rekey.js";
 import { leaseEpochOnBoard } from "../src/vessel-raise.js";

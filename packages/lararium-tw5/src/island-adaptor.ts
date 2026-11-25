@@ -58,20 +58,15 @@
  * Schema: lar:///ha.ka.ba/lares/api/lararium/schema/island-adaptor
  */
 
-import type {
-  CompositeStore,
-  LarTiddlerStore,
-  LarTiddlerRecord,
-  LarTiddlerChange,
-  ChangeOrigin,
-  MemeProjection,
-  ParallelDraftsChange,
-  ParallelDraftsReader,
-  SlotUri,
-} from "@lararium/mesh";
+import type { CompositeStore } from "@lararium/mesh/composite-store";
+import type { LarTiddlerStore, LarTiddlerRecord, LarTiddlerChange, ChangeOrigin, MemeProjection } from "@lararium/mesh/tiddler-store";
+import type { ParallelDraftsChange, ParallelDraftsReader } from "@lararium/mesh/parallel-drafts";
+import type { SlotUri } from "@lararium/mesh/wiki-recipe";
 import { KAHUA_SHADOW_PREFIX, kahuaShadowOf, kahuaShadowTitle } from "./kahua-shadow.js";
-import { KAHUA_BAG } from "@lararium/mesh";
-import { toLarTiddlerRecord, isVolatileVmUri, draftsOffLive, parallelDraftTitle } from "@lararium/mesh";
+import { KAHUA_BAG } from "@lararium/mesh/wiki-recipe";
+import { toLarTiddlerRecord } from "@lararium/mesh/tiddler-store";
+import { isVolatileVmUri } from "@lararium/mesh/lar-uris";
+import { draftsOffLive, parallelDraftTitle } from "@lararium/mesh/parallel-drafts";
 import { edgeDescendantsOf, rootAddressOf, type FamilyView } from "@lararium/mesh/family";
 import { BAG_PATHS_CONFIG, routeBag, type RouteVerdict } from "./bag-cascade.js";
 import type { TW5Engine } from "./tw5-vm.js";

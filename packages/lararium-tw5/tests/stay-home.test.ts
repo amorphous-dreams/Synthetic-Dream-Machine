@@ -3,7 +3,8 @@
  * gate and view, and the internal meme reads. A second spelling would drift the day one of them moved.
  */
 import { describe, test, expect } from "vitest";
-import { CompositeStore, bagUri } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { bagUri } from "@lararium/mesh/lar-uris";
 import { staysHome } from "../src/stay-home.js";
 import { makeMemeGetReactor, type MemeVerbOptions } from "../src/meme-verbs.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";

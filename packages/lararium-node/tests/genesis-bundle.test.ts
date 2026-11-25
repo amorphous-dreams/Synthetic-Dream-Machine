@@ -10,12 +10,8 @@ import { describe, expect, test } from "vitest";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
-import {
-  materializeGenesisDoc,
-  sha256HexBytesSync,
-  genesisCasManifestFromSeed,
-  type GenesisSeed,
-} from "@lararium/mesh";
+import { materializeGenesisDoc, genesisCasManifestFromSeed, type GenesisSeed } from "@lararium/mesh/genesis-doc";
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
 import { parseGenesisSeed, readGenesisCasManifest, readGenesisSeed } from "../src/genesis-artifact.js";
 
 const GENESIS_DIR = join(repoRoot, "genesis");

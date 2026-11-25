@@ -1,5 +1,8 @@
 import { describe, expect, test } from "vitest";
-import { deriveRegisterBags, litFaceOwnBags, personaScopedBagIds, daemonFaceCanonBag, wikiSlotUri, selvesRecordOf } from "@lararium/mesh";
+import { deriveRegisterBags, litFaceOwnBags } from "@lararium/mesh/register-bags";
+import { personaScopedBagIds } from "@lararium/mesh/persona-scope";
+import { daemonFaceCanonBag, wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import { selvesRecordOf } from "@lararium/mesh/persona-planes";
 import { joinedFaceAuth, unlitServedFaces, type JoinedFaceAuthPorts } from "../src/joined-face-auth.js";
 import { faceLives } from "../src/face-lifecycle.js";
 

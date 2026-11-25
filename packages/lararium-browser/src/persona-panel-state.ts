@@ -15,7 +15,7 @@
  * Meme: lar:///ha.ka.ba/lararium/browser/persona-panel-state
  */
 
-import type { PersonaMultitudeEntry } from "@lararium/mesh";
+import type { PersonaMultitudeEntry } from "@lararium/mesh/persona-petname";
 
 /**
  * Shape the panel push args. `list` = the indices (the TW5 list field), `active` = the worn index

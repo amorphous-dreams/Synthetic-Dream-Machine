@@ -28,7 +28,7 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { init, load, loadIncremental, getHeads } from "@automerge/automerge";
-import { partitionCleanTail, precheckChunkBytes } from "@lararium/mesh";
+import { partitionCleanTail, precheckChunkBytes } from "@lararium/mesh/store-integrity";
 
 function listBlobs(dir: string): string[] {
   try {

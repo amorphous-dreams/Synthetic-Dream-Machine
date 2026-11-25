@@ -4,7 +4,7 @@
  * no more, so a later summons reusing that id is the synced claim it is.
  */
 import { expect, test } from "vitest";
-import { VERB_URI_PREFIX } from "@lararium/mesh";
+import { VERB_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
 import { makeLocalAskBook } from "../src/daemon-behavior.js";
 
 test("RED: a local ask's id retires when its verb concludes; CONTROL: an id still standing reads local, and another verb's removal retires nothing", () => {

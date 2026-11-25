@@ -22,9 +22,10 @@ import {
   generateOrLoadPersonaGroupRoot, makeNodePersonaPetnameStore, makeNodePersonaDeclarationStore, readNexusDoc, readCustodyRecord,
   type ReserveTransition,
 } from "@lararium/node";
-import {
-  renameOwnPersona, declarePersonaHandle, standForKahuSeat, sealLineageHead, readSCarrier,
-} from "@lararium/mesh";
+import { renameOwnPersona } from "@lararium/mesh/persona-petname";
+import { declarePersonaHandle, standForKahuSeat } from "@lararium/mesh/persona-declare";
+import { sealLineageHead } from "@lararium/mesh/nexus-seal-seed";
+import { readSCarrier } from "@lararium/mesh/s-envelope";
 import { seatScratchCustody, type ScratchCustody } from "./support/scratch-custody.js";
 import { sealRite, type SealRite } from "./seal-rite-fixture.js";
 

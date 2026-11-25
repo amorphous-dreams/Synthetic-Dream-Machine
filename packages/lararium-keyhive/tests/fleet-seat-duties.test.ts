@@ -7,7 +7,10 @@
  * Canon: lar:///ha.ka.ba/lares/api/pono/kapae#/keys
  */
 import { describe, test, expect } from "vitest";
-import { deviceEdgeId, signEdgeKapae, ed25519SignerFromSeed, verifiedSeatRoll, type EdgeKapae, type SeatRoll } from "@lararium/mesh";
+import { deviceEdgeId } from "@lararium/mesh/dyad";
+import { signEdgeKapae, type EdgeKapae } from "@lararium/mesh/edge-kapae";
+import { ed25519SignerFromSeed } from "@lararium/mesh/ed25519-door";
+import { verifiedSeatRoll, type SeatRoll } from "@lararium/mesh/seat-duties";
 import { KeyhiveProvider, InMemoryEventStore, answerFleetSeatDuties } from "../src/index.js";
 
 const seed = (n: number): Uint8Array => new Uint8Array(32).fill(n);

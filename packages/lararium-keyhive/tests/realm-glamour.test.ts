@@ -18,7 +18,7 @@ import {
   CABAL_REALM_VEIL_PUBLIC_SET,
   type CabalRealmPublishState,
 } from "../src/realm-glamour.js";
-import type { CabalRealm } from "@lararium/mesh";
+import type { CabalRealm } from "@lararium/mesh/cabal-realm";
 import { load as automergeLoad } from "@automerge/automerge";
 
 const REALM: CabalRealm = {

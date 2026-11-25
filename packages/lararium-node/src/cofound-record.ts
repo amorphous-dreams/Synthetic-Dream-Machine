@@ -20,7 +20,9 @@
  * Canon: lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus · lar:///ha.ka.ba/lararium/mesh/custody#/the-table
  */
 import { faceFileNames } from "./face-index.js";
-import { canonicalJson, readCharterInceptionImage, readCofoundOffer, type CharterInceptionImage, type CofoundOffer } from "@lararium/mesh";
+import { canonicalJson } from "@lararium/mesh/crypto";
+import { readCharterInceptionImage, type CharterInceptionImage } from "@lararium/mesh/wax-stamp";
+import { readCofoundOffer, type CofoundOffer } from "@lararium/mesh/cofound";
 import { openFaceFileNames, readCustodyRecord, removeCustodyRecord, updateCustodyRecord } from "./custody-seat.js";
 import { larIdentityDir } from "./vessel-paths.js";
 

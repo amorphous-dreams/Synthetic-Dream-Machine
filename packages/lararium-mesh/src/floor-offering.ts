@@ -18,7 +18,7 @@ import { sha256BytesSync, sha256HexBytesSync, utf8Bytes } from "./crypto.js";
 import { PLUGIN_OFFERING_DOMAIN } from "./domains.js";
 import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "./ed25519-door.js";
 import { ENGINE_CORE_ID } from "./base-doc.js";
-import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "./lar-uris.js";
+import { LARES_LARARIUM_PLUGIN_URI, LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "./lar-uris.js";
 import { computePluginsCid } from "./genesis-doc.js";
 import { FLOOR_OFFERING_BLOB_ID, FLOOR_OFFERING_MIME, floorOfferingSetDiff, resolveFloor, type ResolvedFloor } from "./floor-manifest.js";
 import {
@@ -66,6 +66,18 @@ export function floorRequiredBlobIds(blobs: Readonly<Record<string, { readonly i
   const ids = new Set<string>([LARES_MEMETIC_WIKITEXT_PLUGIN_URI]);
   for (const row of Object.values(blobs ?? {})) if (row && typeof row.kind === "string" && FLOOR_REQUIRED_BLOB_KINDS.includes(row.kind)) ids.add(row.id);
   return [...ids].sort();
+}
+
+/**
+ * The CIDs the attested genesis names for the house skins, read off a vessel's own island blob rows: skin title -> the sha256 the
+ * bake hashed that skin's bytes to. A mirror admits a skin plugin by these (`censusPreloads`): a URI names a skin, and these prove
+ * which bytes the house means by it. A row that names no sha256 names no skin; no hand-kept list stands beside the rows.
+ */
+export function floorSkinCids(blobs: Readonly<Record<string, { readonly id: string; readonly sha256?: string | undefined }>> | undefined | null): Record<string, string> {
+  const skins: Record<string, string> = {};
+  for (const row of Object.values(blobs ?? {}))
+    if (row && (row.id === LARES_MEMETIC_WIKITEXT_PLUGIN_URI || row.id === LARES_LARARIUM_PLUGIN_URI) && typeof row.sha256 === "string") skins[row.id] = row.sha256;
+  return skins;
 }
 
 /** Read an offering record off its bytes: they hash to `cid` and encode canonically. Verification stays the caller's (async). */

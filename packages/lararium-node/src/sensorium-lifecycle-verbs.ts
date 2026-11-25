@@ -26,11 +26,19 @@
 import { mkdirSync, readFileSync, rmSync } from "node:fs";
 import { dirname, join } from "node:path";
 import {
-  nextLifecycle, promoteState, guardHitl, type SenseHand,
-  isMustieGround, MUSTIE_GROUNDS, type MustieGround,
-  LIFECYCLE_GATES_DEFAULT, type LifecycleGates, type LifecycleEvidence,
-  type SensoriumLifecycleState, type RetirementRecord,
-} from "@lararium/mesh";
+  nextLifecycle,
+  promoteState,
+  guardHitl,
+  type SenseHand,
+  isMustieGround,
+  MUSTIE_GROUNDS,
+  type MustieGround,
+  LIFECYCLE_GATES_DEFAULT,
+  type LifecycleGates,
+  type LifecycleEvidence,
+  type SensoriumLifecycleState,
+  type RetirementRecord,
+} from "@lararium/mesh/sensorium-lifecycle";
 import { sensoriumNames, sensoriumDir } from "./vessel-paths.js";
 import { readManifest, writeManifest, buildSensoriumManifest, type SensoriumManifest } from "./sensorium.js";
 import { atomicWriteFileSync } from "./fs-atomic.js";

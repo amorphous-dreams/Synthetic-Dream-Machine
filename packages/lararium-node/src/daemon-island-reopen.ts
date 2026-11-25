@@ -1,5 +1,5 @@
 import { holdDaemonVm, KAPAE_EMERGENCY_REASON, PROMOTE_RESTART_REASON, type DaemonVmCore, type DaemonVmHolder } from "@lararium/tw5";
-import type { JoinedFaceAuth } from "@lararium/mesh";
+import type { JoinedFaceAuth } from "@lararium/mesh/island-protocol";
 
 /** The emergency brake is the ONE exported reason, matched exactly: a prose or prefix match would leave the brake open. */
 const isEmergency = (reason: string): boolean => reason === KAPAE_EMERGENCY_REASON;

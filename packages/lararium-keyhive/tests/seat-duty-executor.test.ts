@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest";
-import type { SeatDuty, SeatRoll, SeatRollSink } from "@lararium/mesh";
+import type { SeatDuty, SeatRoll, SeatRollSink } from "@lararium/mesh/seat-duties";
 import { runSeatDuties, subscribeSeatRolls, announceSeatRoll, type SeatKeyShore } from "../src/seat-duty-executor.js";
 
 const seat = { group: "group", member: "member" };

@@ -24,10 +24,14 @@ import { afterEach, describe, expect, test } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
 import * as A from "@automerge/automerge";
-import {
-  CompositeStore, emptyLarDoc, landBindingDocuments, materializeSharedLarDoc, mkDaemonResolveBindingResult, mountWikiSlot,
-  privateCabalRealmId, realmWorkbenchDocUrl, stoodDocumentBytes, wikiBagUri, wikiSlotUri, type LarDoc,
-} from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { landBindingDocuments, stoodDocumentBytes } from "@lararium/mesh/stood-document";
+import { materializeSharedLarDoc, realmWorkbenchDocUrl } from "@lararium/mesh/deterministic-doc";
+import { mkDaemonResolveBindingResult } from "@lararium/mesh/island-protocol";
+import { mountWikiSlot } from "@lararium/mesh/open-vessel-core";
+import { privateCabalRealmId } from "@lararium/mesh/workbench";
+import { wikiBagUri, wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { MemoryTiddlerStore } from "@lararium/tw5";
 
 const leaving: Array<() => Promise<void> | void> = [];

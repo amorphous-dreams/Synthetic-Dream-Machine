@@ -111,7 +111,7 @@
  * equivalence.
  */
 
-import { digestsEqual } from "@lararium/mesh";
+import { digestsEqual } from "@lararium/mesh/agile-digest";
 
 export type ProjectionDecision =
   | { readonly kind: "noop"; readonly reason: "disk-matches-records" | "canonical-equivalent" | "records-unmoved" }

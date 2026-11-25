@@ -13,18 +13,23 @@ import { join } from "node:path";
 import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
 import { restEvery, restingRepo } from "./resting-repo.js";
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
+import { materializeSharedLarDoc, crossroadsDocUrl } from "@lararium/mesh/deterministic-doc";
+import { offeringAnnounceKey, writeOfferingAnnounce } from "@lararium/mesh/offering-announce";
 import {
-  sha256HexBytesSync, materializeSharedLarDoc, offeringAnnounceKey, computePluginsCid, crossroadsDocUrl, writeOfferingAnnounce,
-  GENESIS_CID_ENGINE_TIDDLER, GENESIS_CID_GRAMMAR_TIDDLER, GENESIS_CID_PLUGINS_TIDDLER,
+  computePluginsCid,
+  GENESIS_CID_ENGINE_TIDDLER,
+  GENESIS_CID_GRAMMAR_TIDDLER,
+  GENESIS_CID_PLUGINS_TIDDLER,
   type GenesisSeed,
-} from "@lararium/mesh";
+} from "@lararium/mesh/genesis-doc";
 import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { runNexusPublishPlugins } from "../src/commands/nexus-publish.js";
 import { runNexusInspectOffering, NexusOfferingInspectError } from "../src/commands/nexus-offering-inspect.js";
 import { larDataDir } from "../src/vessel-paths.js";
 import { storeDoorReactors } from "../src/store-door-verbs.js";
 import { direct } from "./direct-store.js";
-import { tiddlerText } from "@lararium/mesh";
+import { tiddlerText } from "@lararium/mesh/base-doc";
 import { scratchRoot as root, it } from "./support/scratch-fixture.js";
 
 

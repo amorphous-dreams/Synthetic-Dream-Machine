@@ -15,7 +15,10 @@
  * never weighs a disk byte. It reads canon under each working copy before and after the gate ran.
  */
 
-import { basesEqual, isEffectRecordUri, overrideBaseOf, carrierHashOf, type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh";
+import { basesEqual, overrideBaseOf } from "@lararium/mesh/override-base";
+import { isEffectRecordUri } from "@lararium/mesh/effect-record";
+import { carrierHashOf } from "@lararium/mesh/carrier-form";
+import { type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
 
 /** One working copy that shadows a canon record fresher than the one it forked from. */
 export interface FresherCanon {

@@ -3,9 +3,20 @@ import { afterEach, beforeAll, describe, expect, test, vi } from "vitest";
 import { existsSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { buildIntent, buildOutcome, countPlaneEntries, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed,
-  faceIntentVerbs, intentId, mintPersonaInception, signPersonaAct, actCid, writeIntentEntry, storedLarRecord,
-  personaScopedBagIds, wikiSlotUri, castFields, castFromCoins, type DocHandle, type LarDoc } from "@lararium/mesh";
+import { buildIntent, buildOutcome } from "@lararium/mesh/intent-issue";
+import { countPlaneEntries } from "@lararium/mesh/intent-rubric";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { faceIntentVerbs } from "@lararium/mesh/intent-verbs";
+import { intentId, writeIntentEntry } from "@lararium/mesh/intent-entry";
+import { mintPersonaInception } from "@lararium/mesh/persona-kel";
+import { signPersonaAct } from "@lararium/mesh/persona-act-board";
+import { actCid } from "@lararium/mesh/signed-act";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
+import { personaScopedBagIds } from "@lararium/mesh/persona-scope";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import { castFields, castFromCoins } from "@lararium/mesh/oracle-cast";
+import { type DocHandle } from "@lararium/mesh/automerge";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { makeFaceIntentDoor } from "@lararium/keyhive";
 import { LarDiskProjector } from "../src/disk-projector.js";
 import { TW5Engine } from "../../lararium-tw5/src/tw5-vm.js";

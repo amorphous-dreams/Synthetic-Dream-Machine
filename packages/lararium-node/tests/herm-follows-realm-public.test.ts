@@ -15,9 +15,12 @@ import { describe, test, expect } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { sha256HexBytesSync, utf8Bytes, type CasReferenceEntry, type CapTier } from "@lararium/mesh";
+import { sha256HexBytesSync, utf8Bytes } from "@lararium/mesh/crypto";
+import { type CasReferenceEntry } from "@lararium/mesh/cas";
+import { type CapTier } from "@lararium/mesh/cap-tier";
 import { announcedRealmBooks, hermRealmShoreBooks, publicCasShore } from "../src/bulb-read-face.js";
-import { realmBagAnnounceOf, writeRealmBagAnnounce, signRealmBagRegistration, type LarDoc } from "@lararium/mesh";
+import { realmBagAnnounceOf, writeRealmBagAnnounce, signRealmBagRegistration } from "@lararium/mesh/realm-bag";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import * as ed from "@noble/ed25519";
 import { writeCasEntriesFs } from "../src/node-cas.js";
 

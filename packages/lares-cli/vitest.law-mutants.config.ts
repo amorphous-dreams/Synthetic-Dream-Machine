@@ -20,6 +20,7 @@ export default defineConfig({
     maxWorkers: 1,
     environment: "node",
     include: ["tests/laws/*.law.test.ts", "tests/reality-tunnel.test.ts"],
-    setupFiles: ["../../tools/vitest-scratch-house.mjs", "tests/laws/fixed-seed.ts"],
+    // The package config's setup files, every one: a law that founds a vessel needs the test route the harness seats.
+    setupFiles: ["../../tools/vitest-scratch-house.mjs", "tests/support/harness-mark-cleared.ts", "tests/support/found-route.ts", "tests/support/scratch-custody-setup.ts", "tests/laws/fixed-seed.ts"],
   },
 });

@@ -50,7 +50,10 @@ import {
   standVesselHouse, sessionLifetimeLock, VesselSessionRefused, readBrowserVesselFaces, wardAskWords,
   type BrowserVesselResult, type ProjectionSurfaceFrame, type CustodyAnswer, type CustodyAsk, type HouseAsk, type PageLife, type VesselHouse, type VesselSession, type LockHost, type WardAskKind,
 } from "@lararium/browser";
-import { didFromVerifyingKey, foldLarFrame, mountedDocumentId, readLarFrame, slugFromUri, wikiSlotUri } from "@lararium/mesh";
+import { didFromVerifyingKey } from "@lararium/mesh/lar-did";
+import { foldLarFrame, readLarFrame } from "@lararium/mesh/lar-camera";
+import { mountedDocumentId } from "@lararium/mesh/sealed-rest";
+import { slugFromUri, wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import type { PageToVessel, SeedRest, VesselBoot, VesselError, VesselStatus, VesselToPage } from "../vessel-protocol.js";
 import { CeremonyRefused, standCeremonyDoor } from "./ceremony-door.js";
 import { ceremonyPlaceCard, PlaceCardRefused } from "./place-card.js";

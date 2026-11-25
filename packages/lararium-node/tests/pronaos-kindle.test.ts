@@ -13,10 +13,10 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
-import {
-  buildGenesisDoc, didKeyFromVerifyingKey, LARES_MEMETIC_WIKITEXT_PLUGIN_URI, sha256HexBytesSync, utf8Bytes,
-  type GenesisInputs,
-} from "@lararium/mesh";
+import { buildGenesisDoc, type GenesisInputs } from "@lararium/mesh/genesis-doc";
+import { didKeyFromVerifyingKey } from "@lararium/mesh/cold-boot-ceremony";
+import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "@lararium/mesh/lar-uris";
+import { sha256HexBytesSync, utf8Bytes } from "@lararium/mesh/crypto";
 import {
   mountPronaosReadFace, pronaosRouteInventoryForProjection, ARRIVAL_WELL_KNOWN_ROUTE,
   type PronaosFile, type PronaosPreparedProjection,

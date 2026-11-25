@@ -21,22 +21,34 @@
 import type { WardCredential } from "../ward-credential.js";
 import { existsSync, readFileSync } from "fs";
 import { type AutomergeUrl, type DocHandle, type Repo } from "@automerge/automerge-repo";
-import {
-  DAEMON_BAG_ID, personaBagIdFor, PERSONA_KEL_PREFIX_TIDDLER,
-  PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
-  personaKelBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc,
-  buildDeviceDelegationRootHalf,
-  faceAtomKeyFromSeed,
-  leaseEpochPrefix, readControlHome, readFace,
-  seatDeviceInFace, DeviceSeatRefused, ed25519VerifyingKeyFromSeed, hearthDaemonOf,
-  tiddlerText, FLEET_HAND, AutomergeDocStore, type LarDoc, ownEntry, findOrThrow, DOCUMENT_HANG_BOUND_MS} from "@lararium/mesh";
+import { DAEMON_BAG_ID, PERSONA_KEL_PREFIX_TIDDLER, PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER } from "@lararium/mesh/lar-uris";
+import { personaBagIdFor } from "@lararium/mesh/persona-scope";
+import { personaKelBoardDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";
+import { buildDeviceDelegationRootHalf } from "@lararium/mesh/device-delegation";
+import { faceAtomKeyFromSeed } from "@lararium/mesh/face-atom";
+import { leaseEpochPrefix } from "@lararium/mesh/epoch-lease";
+import { readControlHome } from "@lararium/mesh/control-home";
+import { readFace } from "@lararium/mesh/face-reading";
+import { seatDeviceInFace, DeviceSeatRefused } from "@lararium/mesh/device-seat";
+import { ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { hearthDaemonOf } from "@lararium/mesh/device-daemon-docs";
+import { tiddlerText, type LarDoc } from "@lararium/mesh/base-doc";
+import { FLEET_HAND } from "@lararium/mesh/fleet-frontier";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { ownEntry } from "@lararium/mesh/stored-value";
+import { findOrThrow, DOCUMENT_HANG_BOUND_MS } from "@lararium/mesh/find-or-throw";
 import { makeCatalogAccessor } from "@lararium/tw5";
 import { larBootstrapPath, larSealHome } from "../vessel-paths.js";
 import { openVesselSecretHomeIfNamed } from "../secret-home-store.js";
 import { runDeviceAdmitEdge, type DeviceAdmitPayload } from "@lararium/keyhive";
 import { loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey } from "../node-vessel-identity.js";
 import { readVesselEdgeBoard } from "../edge-board.js";
-import { fleetEdgeBoardDocUrl, fleetEdgeAuthority, deviceEdgeId, readFleetFrontier, fleetFrontierCarriage, fleetRaiseCids, readFrontierPins, type CustodyRootDoor, type GateBundlePin } from "@lararium/mesh";
+import { fleetEdgeBoardDocUrl } from "@lararium/mesh/deterministic-doc";
+import { fleetEdgeAuthority, deviceEdgeId } from "@lararium/mesh/dyad";
+import { readFleetFrontier, fleetFrontierCarriage, fleetRaiseCids } from "@lararium/mesh/fleet-frontier";
+import { readFrontierPins } from "@lararium/mesh/edge-frontier-board";
+import { type CustodyRootDoor, type GateBundlePin } from "@lararium/mesh/gate-bundle-door";
 import { stoodSovereignPin } from "../hearth-sovereign-pin.js";
 import { nodeNexusIsland, nodeNexusIslandsBelow, nodeNexusStanding } from "../nexus-standing.js";
 import { carryPersonaKelUpTheGradient } from "../persona-kel-ring.js";

@@ -37,11 +37,23 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import { generateAutomergeUrl, interpretAsDocumentId, type DocumentId, type PeerId } from "@automerge/automerge-repo";
+import { DAEMON_BAG_ID, PERSONA_GROUP_ID_TIDDLER } from "@lararium/mesh/lar-uris";
 import {
-  DAEMON_BAG_ID, PERSONA_GROUP_ID_TIDDLER, RealmBagGate, deterministicDocUrl, foldRealmBags, hex, personaBagIdFor, personaMembershipEntries,
-  personaSiblingBagIds, protectedDocGuard, realmBagRegistrationCounts, signRealmBagRegistration, storedLarRecord, writeRealmBagRegistration,
-  type FaceGrantReading, type FederationGate, type LarDoc, type ProtectedDocClass,
-} from "@lararium/mesh";
+  RealmBagGate,
+  foldRealmBags,
+  realmBagRegistrationCounts,
+  signRealmBagRegistration,
+  writeRealmBagRegistration,
+} from "@lararium/mesh/realm-bag";
+import { deterministicDocUrl } from "@lararium/mesh/deterministic-doc";
+import { hex } from "@lararium/mesh/crypto";
+import { personaBagIdFor, personaSiblingBagIds } from "@lararium/mesh/persona-scope";
+import { personaMembershipEntries } from "@lararium/mesh/persona-planes";
+import { protectedDocGuard, type ProtectedDocClass } from "@lararium/mesh/protected-doc-guard";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
+import { type FaceGrantReading } from "@lararium/mesh/session-face";
+import { type FederationGate } from "@lararium/mesh/federation-gate";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { faceFleetViews, bridgeBooks } from "../src/face-fleet-view.js";
 import { selfSlotShareDecision, NO_BANS, NOBODY_ASIDE, NOTHING_CLASSED } from "../src/self-slot-share.js";
 

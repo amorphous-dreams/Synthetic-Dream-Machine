@@ -7,7 +7,7 @@ import { afterEach, describe, expect, test } from "vitest";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute, type GateBundlePin } from "@lararium/mesh";
+import { custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute, type GateBundlePin } from "@lararium/mesh/gate-bundle-door";
 import { world } from "../../lararium-mesh/tests/face-gate-fixture.js";
 import { hearthDialTiddlers, readHearthDialPin } from "../src/hearth-dial-pin.js";
 

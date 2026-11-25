@@ -12,10 +12,18 @@ import { describe, test, expect } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import * as ed25519 from "@noble/ed25519";
 import { FacelessKeyhiveRefused, runFoundingCeremony, runDeviceAdmitEdge, runApplyAdmitPayload } from "@lararium/keyhive";
+import { hex } from "@lararium/mesh/crypto";
+import { personaKelBoardDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";
 import {
-  hex, personaKelBoardDocUrl, materializeSharedLarDoc, personaKelChainForPrefix, groupSecretSealTitle,
-  groupSecretOpenerFromSeed, personaGroupSecret, verifyGroupSecretSeal, sealGroupSecret, seedDaemonDoc, tiddlerText, type LarDoc,
-} from "@lararium/mesh";
+  groupSecretSealTitle,
+  groupSecretOpenerFromSeed,
+  personaGroupSecret,
+  verifyGroupSecretSeal,
+  sealGroupSecret,
+} from "@lararium/mesh/persona-group-secret";
+import { seedDaemonDoc } from "@lararium/mesh/social-seed";
+import { tiddlerText, type LarDoc } from "@lararium/mesh/base-doc";
 
 import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";

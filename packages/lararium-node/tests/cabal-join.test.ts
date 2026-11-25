@@ -17,7 +17,12 @@ import { mkdtempSync, rmSync, mkdirSync, writeFileSync, existsSync, unlinkSync }
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import * as ed from "@noble/ed25519";
-import { hex, hexToBytes, signCabalInvite, writeVouch, realmVouchBoardDocUrl, materializeSharedLarDoc, DEFAULT_JOIN_POLICY, DAEMON_BAG_ID, seedDaemonDoc } from "@lararium/mesh";
+import { hex, hexToBytes } from "@lararium/mesh/crypto";
+import { signCabalInvite, DEFAULT_JOIN_POLICY } from "@lararium/mesh/cabal-invite";
+import { writeVouch } from "@lararium/mesh/vouch-board";
+import { realmVouchBoardDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { seedDaemonDoc } from "@lararium/mesh/social-seed";
 import { seedFoundedDaemonDoc } from "./daemon-control-fixture.js";
 import {
   generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootVerifyingKey,
@@ -285,7 +290,7 @@ describe("cabal join — the crossing, and what it refuses", () => {
     });
     const { updateCustodyRecord } = await import("../src/custody-seat.js");
     const { SECRET_HOME_FILE } = await import("../src/secret-home-store.js");
-    const { decodeSecretHomeAddress, encodeSecretHomeAddress } = await import("@lararium/mesh");
+    const { decodeSecretHomeAddress, encodeSecretHomeAddress } = await import("@lararium/mesh/secret-home");
     await updateCustodyRecord("identity", SECRET_HOME_FILE, (standing) => {
       const address = standing ? decodeSecretHomeAddress(standing) : null;
       if (!address) throw new Error("fixture: no secret home address stands");

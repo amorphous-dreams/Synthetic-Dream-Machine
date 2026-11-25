@@ -17,10 +17,18 @@
  */
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  readLedgeredEdgeBoard, edgeLedgerDocUrl, materializeSharedLarDoc, noteRealm, ledgerRealms, ledgerRealmNexus, ledgerRealmNexuses, foundingRoster,
-  NEXUS_AID_PATTERN,
-  type EdgeCharter, type LarDoc, type LedgeredEdgeBoardRead,
-} from "@lararium/mesh";
+  readLedgeredEdgeBoard,
+  noteRealm,
+  ledgerRealms,
+  ledgerRealmNexus,
+  ledgerRealmNexuses,
+  type LedgeredEdgeBoardRead,
+} from "@lararium/mesh/edge-ledger";
+import { edgeLedgerDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { foundingRoster } from "@lararium/mesh/nexus-seal-seed";
+import { NEXUS_AID_PATTERN } from "@lararium/mesh/wax-stamp";
+import { type EdgeCharter } from "@lararium/mesh/edge-kapae";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { readNexusDoc } from "./nexus-doc.js";
 import { charterHomeFor, primaryNexusAid, readCarriedCharters } from "./carried-set.js";
 

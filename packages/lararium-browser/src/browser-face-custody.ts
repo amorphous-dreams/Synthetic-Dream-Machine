@@ -44,10 +44,9 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/browser/browser-custody
  */
-import {
-  bindSlot, decodeSlotTree, encodeSlotTree, mintFck, nobleKdf, openTreeKey, openUnderFck, sealUnderFck, treeKeyEquals,
-  type Credential, type FaceCarrier, type FaceCustodyKey,
-} from "@lararium/mesh";
+import { bindSlot, decodeSlotTree, encodeSlotTree, nobleKdf, openTreeKey, type Credential } from "@lararium/mesh/keyslot-door";
+import { mintFck, openUnderFck, sealUnderFck, type FaceCarrier, type FaceCustodyKey } from "@lararium/mesh/fck";
+import { treeKeyEquals } from "@lararium/mesh/tree-key-door";
 import {
   BrowserCustodyRefused, browserKeystoreCustodyIo, custodyPinOf, readBrowserCustody, withCustodyRecords, type ConfirmDoor, type CustodyBindRoute,
 } from "./browser-custody.js";

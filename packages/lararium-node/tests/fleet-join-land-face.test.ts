@@ -36,33 +36,46 @@ vi.mock("@lararium/keyhive", () => ({ carriedAdmitOfFleetJoin: () => ({ kind: "d
 // The veil-lift link a landing keeps (node-veil-lift), signed over the atom the join minted.
 vi.mock("../src/node-veil-lift.js", () => ({ keepNodeVeilLift: async () => { seam.writes.push("veil-lift"); } }));
 vi.mock("../src/face-atom-store.js", () => ({ standFaceAtom: async () => new Uint8Array(32) }));
-vi.mock("@lararium/mesh", async () => {
-  const { composerOverStubs } = await import("./fixtures/fleet-join-composer-seam.js");
-  const stubs = {
-  faceAtomKeyFromSeed: () => ({ key: "c".repeat(64) }),
-  // The own-property door, as `stored-value.ts` spells it: the bootstrap read asks it by name.
-  ownEntry: (map: Record<string, unknown> | null | undefined, key: string) => (map && key !== "__proto__" && Object.hasOwn(map, key) ? map[key] : undefined),
-  gateBundleDigest: (pin: unknown) => JSON.stringify(pin),
-  admitGatePinDigest: () => "a".repeat(64),
-  nexusAidOf: () => "nexus-a",
-  heldNexusRoot: () => ({ nexus: "nexus-a" }),
-  makeMultiSigQuorumVerifier: () => ({}),
-  verifySignedAdmitBundle: async () => ({ carriage: {} }),
-  readGateBundlePin: () => ({ refusal: "pin-malformed" }),
-  PERSONA_GROUP_ID_TIDDLER: "lar:///ha.ka.ba/lares/persona-group-id",
-  readFleetJoinOffer: () => ({ personaGroup: "group-two", rootKey: "root" }),
-  readFleetJoinRequest: () => ({ nonce: "n" }),
-  readFleetJoinAnswer: () => ({ answer: seam.gateless ? {
-    // A root holder that stood no gate (a browser, a phone): the answer carries no hearth's dial.
-    personaGroup: "group-two", certificates: [], grants: [], edge: { hearthTrueName: "" }, carriage: null,
-    reach: { syncUrl: null }, charter: null, admit: null, floorPins: [],
-  } : {
-    personaGroup: "group-two", certificates: [], grants: [], edge: { hearthTrueName: "nexus-a" }, carriage: { gatePin: { signingKey: "k" }, canon: {} },
-    reach: { syncUrl: null }, charter: "charter", admit: { admit: { nym: "d" }, lineage: [], salt: "s" }, floorPins: [],
-  }, addressSecret: new Uint8Array(32) }),
-};
-  return { ...stubs, ...composerOverStubs(stubs) };
+// The suite's mesh primitives, built ONCE and shared by every mesh module mock below (each module carries its own names).
+const meshStubs = vi.hoisted(() => {
+  let made: Promise<Record<string, unknown>> | undefined;
+  return (): Promise<Record<string, unknown>> => (made ??= (async () => {
+    const { composerOverStubs } = await import("./fixtures/fleet-join-composer-seam.js");
+    const stubs: Record<string, unknown> = {
+      faceAtomKeyFromSeed: () => ({ key: "c".repeat(64) }),
+      // The own-property door, as `stored-value.ts` spells it: the bootstrap read asks it by name.
+      ownEntry: (map: Record<string, unknown> | null | undefined, key: string) => (map && key !== "__proto__" && Object.hasOwn(map, key) ? map[key] : undefined),
+      gateBundleDigest: (pin: unknown) => JSON.stringify(pin),
+      admitGatePinDigest: () => "a".repeat(64),
+      nexusAidOf: () => "nexus-a",
+      heldNexusRoot: () => ({ nexus: "nexus-a" }),
+      makeMultiSigQuorumVerifier: () => ({}),
+      verifySignedAdmitBundle: async () => ({ carriage: {} }),
+      readGateBundlePin: () => ({ refusal: "pin-malformed" }),
+      PERSONA_GROUP_ID_TIDDLER: "lar:///ha.ka.ba/lares/persona-group-id",
+      readFleetJoinOffer: () => ({ personaGroup: "group-two", rootKey: "root" }),
+      readFleetJoinRequest: () => ({ nonce: "n" }),
+      readFleetJoinAnswer: () => ({ answer: seam.gateless ? {
+        // A root holder that stood no gate (a browser, a phone): the answer carries no hearth's dial.
+        personaGroup: "group-two", certificates: [], grants: [], edge: { hearthTrueName: "" }, carriage: null,
+        reach: { syncUrl: null }, charter: null, admit: null, floorPins: [],
+      } : {
+        personaGroup: "group-two", certificates: [], grants: [], edge: { hearthTrueName: "nexus-a" }, carriage: { gatePin: { signingKey: "k" }, canon: {} },
+        reach: { syncUrl: null }, charter: "charter", admit: { admit: { nym: "d" }, lineage: [], salt: "s" }, floorPins: [],
+      }, addressSecret: new Uint8Array(32) }),
+    };
+    return { ...stubs, ...composerOverStubs(stubs) };
+  })());
 });
+vi.mock("@lararium/mesh/face-atom", async (real) => { const all = await meshStubs(); return { ...(await real<Record<string, unknown>>()), ...Object.fromEntries(["faceAtomKeyFromSeed"].map((key) => [key, all[key]])) }; });
+vi.mock("@lararium/mesh/stored-value", async (real) => { const all = await meshStubs(); return { ...(await real<Record<string, unknown>>()), ...Object.fromEntries(["ownEntry"].map((key) => [key, all[key]])) }; });
+vi.mock("@lararium/mesh/gate-bundle-door", async (real) => { const all = await meshStubs(); return { ...(await real<Record<string, unknown>>()), ...Object.fromEntries(["gateBundleDigest","readGateBundlePin"].map((key) => [key, all[key]])) }; });
+vi.mock("@lararium/mesh/admit-gate-pin", async (real) => { const all = await meshStubs(); return { ...(await real<Record<string, unknown>>()), ...Object.fromEntries(["admitGatePinDigest"].map((key) => [key, all[key]])) }; });
+vi.mock("@lararium/mesh/nexus-seal-seed", async (real) => { const all = await meshStubs(); return { ...(await real<Record<string, unknown>>()), ...Object.fromEntries(["nexusAidOf"].map((key) => [key, all[key]])) }; });
+vi.mock("@lararium/mesh/held-nexus-root", async (real) => { const all = await meshStubs(); return { ...(await real<Record<string, unknown>>()), ...Object.fromEntries(["heldNexusRoot","verifySignedAdmitBundle"].map((key) => [key, all[key]])) }; });
+vi.mock("@lararium/mesh/kapae-antigen", async (real) => { const all = await meshStubs(); return { ...(await real<Record<string, unknown>>()), ...Object.fromEntries(["makeMultiSigQuorumVerifier"].map((key) => [key, all[key]])) }; });
+vi.mock("@lararium/mesh/lar-uris", async (real) => { const all = await meshStubs(); return { ...(await real<Record<string, unknown>>()), ...Object.fromEntries(["PERSONA_GROUP_ID_TIDDLER"].map((key) => [key, all[key]])) }; });
+vi.mock("@lararium/mesh/fleet-join", async (real) => { const all = await meshStubs(); return { ...(await real<Record<string, unknown>>()), ...Object.fromEntries(["readFleetJoinOffer","readFleetJoinRequest","readFleetJoinAnswer","FleetJoinRootRefused","fleetJoinHearthOf","composeFleetJoinOffer","composeFleetJoinAnswer"].map((key) => [key, all[key]])) }; });
 
 import { runFleetJoinLand } from "../src/commands/fleet-join.js";
 

@@ -19,7 +19,8 @@
 import { describe, test, expect, afterEach } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import { VesselIslandPool } from "../src/vessel-island-pool.js";
-import type { IslandMsg_Event, WikiMountSpec } from "@lararium/mesh";
+import type { IslandMsg_Event } from "@lararium/mesh/island-protocol";
+import type { WikiMountSpec } from "@lararium/mesh/wiki-recipe";
 
 // ---------------------------------------------------------------------------
 // Fixture island URL

@@ -55,7 +55,7 @@
  * genesis island), ratchet by ratchet (`seedOffer`, `kukuluSeedLine`). The kūkulu moves no ratchet: the new vessel serves the
  * founding record it reloads, and the line only names what waits.
  */
-import { compareGenesisDigests, ratchetWords, ratchetsDiffer, type GenesisDigests } from "@lararium/mesh";
+import { compareGenesisDigests, ratchetWords, ratchetsDiffer, type GenesisDigests } from "@lararium/mesh/genesis-compare";
 
 export type RiteVerbAnswer =
   | { readonly ok: true; readonly output: Record<string, unknown> }

@@ -17,12 +17,26 @@
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/offering#/the-canon-offer
  */
-import { wearOf } from "@lararium/mesh";
+import { wearOf } from "@lararium/mesh/repo-wear";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
 import {
-  AutomergeDocStore, CanonOfferRefused, VerbRefusal, bagUri, findOrThrow, isHouseCanonBag, offerCanonRecords, resolveHouseCanon, promoteCanonOffer, readCanonOffers, requireKahuReach,
-  showCanonOffer, workingLayerOfCanon,
-  type CanonOfferBoard, type CanonOfferPorts, type LarTiddlerStore, type OfferSeat, type OfferSigner,
-} from "@lararium/mesh";
+  CanonOfferRefused,
+  offerCanonRecords,
+  promoteCanonOffer,
+  readCanonOffers,
+  showCanonOffer,
+  type CanonOfferBoard,
+  type CanonOfferPorts,
+  type OfferSeat,
+  type OfferSigner,
+} from "@lararium/mesh/canon-offer";
+import { VerbRefusal } from "@lararium/mesh/verb-refusal";
+import { bagUri } from "@lararium/mesh/lar-uris";
+import { findOrThrow } from "@lararium/mesh/find-or-throw";
+import { isHouseCanonBag, requireKahuReach } from "@lararium/mesh/kahu-canon-reach";
+import { resolveHouseCanon } from "@lararium/mesh/house-canon-doc";
+import { workingLayerOfCanon } from "@lararium/mesh/override-base";
+import { type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
 import { makeBagAccess, type ActionHandlerOptions } from "./action-handler.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
 import { hasLine, pagePlaneRows, param } from "./read-gradient.js";

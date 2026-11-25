@@ -15,16 +15,12 @@
  * Meme: lar:///ha.ka.ba/lararium/browser/browser-vessel-island-pool
  */
 
-import {
-  VesselIslandPoolCore,
-  type Repo,
-  type IslandMsg_Event,
-  type LarIslandToVesselMsg,
-  type WikiRecipe,
-  type PortIslandToVesselMsg,
-  type VesselRestState,
-  type LarDoc,
-} from "@lararium/mesh";
+import { VesselIslandPoolCore, type VesselRestState } from "@lararium/mesh/vessel-island-pool-core-door";
+import { type Repo } from "@lararium/mesh/automerge";
+import { type IslandMsg_Event, type LarIslandToVesselMsg } from "@lararium/mesh/island-protocol";
+import { type WikiRecipe } from "@lararium/mesh/wiki-recipe";
+import { type PortIslandToVesselMsg } from "@lararium/mesh/record-port";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import type { PortPolicy } from "@lararium/mesh/port-lease";
 import { browserNewSyncChannel, browserSpawnWorker } from "./worker-handle.js";
 import { refuseBrowserDyadAsks } from "./browser-dyad-refusal.js";

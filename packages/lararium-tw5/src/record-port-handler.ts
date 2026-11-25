@@ -4,8 +4,12 @@ import {
   mkPortBoot, mkPortSnapshot, mkPortWritten, PORT_BOOT_CHUNK_BYTES,
   type PortMsg_Open, type PortMsg_Ask, type PortMsg_Write, type PortMsg_Written, type PortWireRecord,
 } from "@lararium/mesh/record-port";
-import { isVerbRefusal, requireKahuReach, type CapTier, type KahuReachSource, type LarTiddlerRecord, type Verb } from "@lararium/mesh";
-import type { LarTiddlerChange } from "@lararium/mesh";
+import { isVerbRefusal } from "@lararium/mesh/verb-refusal";
+import { requireKahuReach, type KahuReachSource } from "@lararium/mesh/kahu-canon-reach";
+import { type CapTier } from "@lararium/mesh/cap-tier";
+import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
+import { type Verb } from "@lararium/mesh/verb-tiddler";
+import type { LarTiddlerChange } from "@lararium/mesh/tiddler-store";
 import type { IslandCap } from "./island-caps.js";
 import type { IslandContext } from "./island-context.js";
 import { createPortLog, createTxLedger, transactionDigest, validateTx, type PortEntry } from "./record-port-log.js";

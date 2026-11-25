@@ -1,7 +1,9 @@
 /** A holder refusal swaps both daemon sync crossings without retaining the old Repo adapters. */
 import { createRequire } from "node:module";
 import { describe, expect, test, vi } from "vitest";
-import { emptyLarDoc, type IslandMsg_Manifest, type LarDoc, type Repo as RepoType } from "@lararium/mesh";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { type IslandMsg_Manifest } from "@lararium/mesh/island-protocol";
+import { type Repo as RepoType } from "@lararium/mesh/automerge";
 import { makeMemeGetReactor, type MemeVerbOptions } from "../src/meme-verbs.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
 import { openDaemonVmCore, type DaemonVmHost } from "../src/daemon-vm-core.js";

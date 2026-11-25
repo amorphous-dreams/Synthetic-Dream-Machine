@@ -49,10 +49,11 @@ import {
   larProjectionsHome, larConfigHome, larWorkspacesHome, syncedTreeDir, labelledRelations, readFaceLabel, REALMS_PROJECTION_DIR,
   REALM_PLANES, findRealmLabel, realmPlacement, realmRoot,
 } from "@lararium/node";
-import {
-  ownPersonaPetname, carrierHash, digestsEqual, parseShareFile, SHARE_CONFIG_FILE,
-  WORKSPACE_NAME_RE, type ShareEntry,
-} from "@lararium/mesh";
+import { ownPersonaPetname } from "@lararium/mesh/persona-petname";
+import { carrierHash } from "@lararium/mesh/crypto";
+import { digestsEqual } from "@lararium/mesh/agile-digest";
+import { parseShareFile, SHARE_CONFIG_FILE, type ShareEntry } from "@lararium/mesh/share-config";
+import { WORKSPACE_NAME_RE } from "@lararium/mesh/workbench";
 import { emit, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
 import { faceOption, FaceOptionMalformed } from "../face-option.js";

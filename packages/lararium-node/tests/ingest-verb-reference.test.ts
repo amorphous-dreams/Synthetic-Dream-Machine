@@ -15,8 +15,11 @@
 
 import { describe, test, expect } from "vitest";
 import { createHash } from "node:crypto";
-import { CompositeStore } from "@lararium/mesh";
-import type { ChangeOrigin, LarTiddlerRecord, VerbContext, Verb, CapabilityAccess, CapabilityVerifyResult } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import type { ChangeOrigin, LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
+import type { VerbContext } from "@lararium/tw5";
+import type { Verb } from "@lararium/mesh/verb-tiddler";
+import type { CapabilityAccess, CapabilityVerifyResult } from "@lararium/mesh/capability";
 import { MemoryTiddlerStore } from "../../lararium-tw5/src/memory-store.js";
 import { VerbTable } from "../../lararium-tw5/src/verb-dispatcher.js";
 import { registerActionReactors } from "../../lararium-tw5/src/action-handler.js";

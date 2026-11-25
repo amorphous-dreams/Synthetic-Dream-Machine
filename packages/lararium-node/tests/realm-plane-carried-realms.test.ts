@@ -1,7 +1,9 @@
 import { createHash } from "node:crypto";
 import { describe, expect, test } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
-import { emptyLarDoc, realmDocPointer, tiddlerText, type NexusDoc } from "@lararium/mesh";
+import { emptyLarDoc, tiddlerText } from "@lararium/mesh/base-doc";
+import { realmDocPointer } from "@lararium/mesh/realm-bag";
+import { type NexusDoc } from "@lararium/mesh/nexus-seal-seed";
 import { namedCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { makeRealmPlane } from "../src/realm-plane.js";
 import { runRealmBags } from "../src/realm-steward.js";

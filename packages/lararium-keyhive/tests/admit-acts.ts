@@ -3,10 +3,17 @@
  * signs, then the joinee's admission and device-edge acts, built from the same helpers the node's founding and admit
  * paths use. A fixture that founds through `foundTheFace` and admits through `runDeviceAdmitEdge` carries them here.
  */
-import {
-  signFoundingLog, signPersonaAct, projectPersonaLog, personaLineageFromKel, actCid, edgeBodyDigest, faceRootCommitment,
-  faceAtomKeyFromSeed, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, emptyLarDoc, landFleetGenesis, makeHandLineage, edgeFrontierRecords, frontierSnapshots, FLEET_HAND, type PersonaKelEvent,
-} from "@lararium/mesh";
+import { signFoundingLog, signPersonaAct, personaLineageFromKel } from "@lararium/mesh/persona-act-board";
+import { projectPersonaLog } from "@lararium/mesh/persona-act";
+import { actCid } from "@lararium/mesh/signed-act";
+import { edgeBodyDigest, faceRootCommitment } from "@lararium/mesh/face-anchor";
+import { faceAtomKeyFromSeed } from "@lararium/mesh/face-atom";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { emptyLarDoc } from "@lararium/mesh/base-doc";
+import { landFleetGenesis, FLEET_HAND } from "@lararium/mesh/fleet-frontier";
+import { makeHandLineage } from "@lararium/mesh/hand-lineage";
+import { edgeFrontierRecords, frontierSnapshots } from "@lararium/mesh/edge-frontier-board";
+import { type PersonaKelEvent } from "@lararium/mesh/persona-kel";
 import { testVesselTag } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 
 export async function founderAndJoineeActs(input: {

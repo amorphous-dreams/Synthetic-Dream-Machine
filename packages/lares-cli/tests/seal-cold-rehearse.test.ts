@@ -32,7 +32,10 @@ import {
   FsCustodyIo, foundCustody, generateOrLoadPersonaGroupRoot, listSeatKeys, makeCustodyHolder, makeNodePersonaDeclarationStore,
   makeNodePersonaPetnameStore, nexusCharterDocPath, readNexusDoc, seatCustody, seatReadBackStandIn, unseatCustody, vesselCustodyHomes,
 } from "@lararium/node";
-import { coldKeyCode, mintColdKey, renameOwnPersona, seatedKahuKeys, standForKahuSeat } from "@lararium/mesh";
+import { coldKeyCode, mintColdKey } from "@lararium/mesh/cold-key-card";
+import { renameOwnPersona } from "@lararium/mesh/persona-petname";
+import { seatedKahuKeys } from "@lararium/mesh/nexus-seal-seed";
+import { standForKahuSeat } from "@lararium/mesh/persona-declare";
 import { seatScratchCustody, type ScratchCustody } from "./support/scratch-custody.js";
 import { sealRite, type SealRite } from "./seal-rite-fixture.js";
 

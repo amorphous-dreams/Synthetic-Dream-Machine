@@ -1,13 +1,22 @@
 import { defineConfig } from "vitest/config";
 import path from "path";
+import { readFileSync } from "fs";
 
 const root = new URL(".", import.meta.url).pathname;
+const meshExports = JSON.parse(readFileSync(path.resolve(root, "../lararium-mesh/package.json"), "utf8")).exports as Record<string, { import: string }>;
+const meshReseated = Object.entries(meshExports).flatMap(([key, target]) => {
+  const seat = key === "." ? null : /^\.\/dist\/(.+)\.js$/.exec(target.import)?.[1];
+  return seat && seat !== key.slice(2) ? [{ find: `@lararium/mesh/${key.slice(2)}`, replacement: path.resolve(root, "../lararium-mesh/src", `${seat}.ts`) }] : [];
+});
 
 export default defineConfig({
   resolve: {
     alias: [
-      // Anchored: a mesh SUBPATH (`@lararium/mesh/sensorium-consistency`, reached through the built tw5)
-      // resolves through the package, never under `index.ts/…`.
+      // Every mesh subpath reads SOURCE, as the bare barrel does (the sibling lanes hold the same rule): a subpath that
+      // resolved through the package would test mesh's dist beside its src and load one module twice. A subpath the
+      // exports map seats elsewhere (`./harvest` -> `capture/harvest`) reads its own seat first.
+      ...meshReseated,
+      { find: /^@lararium\/mesh\/(.+)$/, replacement: path.resolve(root, "../lararium-mesh/src") + "/$1.ts" },
       { find: /^@lararium\/mesh$/, replacement: path.resolve(root, "../lararium-mesh/src/index.ts") },
     ],
   },

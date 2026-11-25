@@ -1,5 +1,6 @@
-import { personaBagIdFor, personaSiblingBagIds, type ProvenFacePlanes as FacePlanes } from "@lararium/mesh";
-export { provenPlaneUrls } from "@lararium/mesh";
+import { personaBagIdFor, personaSiblingBagIds } from "@lararium/mesh/persona-scope";
+import { type ProvenFacePlanes as FacePlanes } from "@lararium/mesh/face-boot-proof";
+export { provenPlaneUrls } from "@lararium/mesh/face-boot-proof";
 
 export async function registerFacePlanesForRelay(ports: {
   group: string;

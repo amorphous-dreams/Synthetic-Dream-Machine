@@ -638,6 +638,7 @@ async function runKeepHost(args: ParsedArgs): Promise<number> {
   const ports: KeepHostPorts = {
     workspaceDir: hostWorkspaceDir,
     row: (verb, rowArgs) => cliVerb(["rite", verb, ...flagsOf(rowArgs)]),
+    leiShow: (branch, face) => cliVerb(["lei", "show", "--rite", "keep", "--branch", branch, ...(face !== undefined ? ["--face", String(face)] : [])]),
     git: gitIn,
     say: (line) => console.error(line),
     // THE SHORE'S FLUSH BEFORE THE CUT rides the hand door that stands (daemon and active wiki alone); no reach widens for it.

@@ -12,9 +12,10 @@
 
 import { existsSync, readFileSync, realpathSync } from "node:fs";
 import { basename, dirname, join as joinPath, resolve as resolvePath, sep } from "node:path";
-import { mkWikiVerbResult, wikiSlotUri } from "@lararium/mesh";
-import type { IslandMsg_Manifest, WikiMsg_PlaceVerb } from "@lararium/mesh";
-import type { VesselJournal } from "@lararium/mesh";
+import { mkWikiVerbResult } from "@lararium/mesh/island-protocol";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import type { IslandMsg_Manifest, WikiMsg_PlaceVerb } from "@lararium/mesh/island-protocol";
+import type { VesselJournal } from "@lararium/mesh/vessel-journal";
 import { exportCarrierFile, exportRecordCarrierFile, makeWikiBehavior, hasWikiSensorium, makeTw5Deserializer, canonicalizeNativeCarrierText, wikiLandedCovers, bindRecoveryAtRest } from "@lararium/tw5";
 import type { CarrierFile } from "@lararium/tw5";
 import type { IslandBehavior, IslandContext } from "@lararium/tw5";

@@ -41,8 +41,16 @@
  * Meme: lar:///ha.ka.ba/lararium/node/self-slot-share
  */
 import type { DocumentId } from "@automerge/automerge-repo";
-import { carryContractShareDecision, carrierShareDecision, presenterIsKapaed, presenterStandsAside, siblingShareDecision } from "@lararium/mesh";
-import type { AntigenRing, FederationGate, NexusMembership, PeerClass, PlaneSeal, ProtectedDocGuard, ShadowConsult } from "@lararium/mesh";
+import {
+  carryContractShareDecision,
+  carrierShareDecision,
+  presenterIsKapaed,
+  presenterStandsAside,
+  siblingShareDecision,
+} from "@lararium/mesh/federation-gate";
+import type { AntigenRing, FederationGate, NexusMembership, PlaneSeal, ShadowConsult } from "@lararium/mesh/federation-gate";
+import type { PeerClass } from "@lararium/mesh/island-protocol";
+import type { ProtectedDocGuard } from "@lararium/mesh/protected-doc-guard";
 
 /** Every in-process island peer rides this empty relay ring → shared freely. */
 const NO_RELAY_PEERS: ReadonlySet<string> = new Set<string>();

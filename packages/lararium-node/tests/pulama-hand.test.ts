@@ -12,7 +12,7 @@ import { pulamaHandDoor } from "../src/pulama-hand.js";
 import { handVerbExit, runHandVerb } from "../src/pulama-verbs.js";
 import { KUKULU_OFFER_ENV, PULAMA_SOCKET_ENV, pulamaStandBy, readKukuluOffer, standByPulama, vesselPulamaHolder } from "../src/pulama-seat.js";
 import { servePulama } from "../src/pulama-server.js";
-import { swarmTesseraTitle } from "@lararium/mesh";
+import { swarmTesseraTitle } from "@lararium/mesh/swarm-tiddlers";
 import { pulamaImage, pulamaRecords } from "../src/pulama-state.js";
 import { personaGroupDigest } from "../src/persona-group-file.js";
 import { FIXTURE_PASSPHRASE } from "./custody-seat-fixture.js";

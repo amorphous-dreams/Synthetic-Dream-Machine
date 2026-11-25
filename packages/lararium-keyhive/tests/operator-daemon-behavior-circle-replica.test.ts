@@ -28,7 +28,8 @@ vi.mock("@lararium/tw5", async (importOriginal) => {
 
 import { operatorDaemonOptions } from "../src/operator-daemon-behavior.js";
 import { VerbTable } from "@lararium/tw5";
-import { didFromVerifyingKey, faceAtomKeyFromSeed } from "@lararium/mesh";
+import { didFromVerifyingKey } from "@lararium/mesh/lar-did";
+import { faceAtomKeyFromSeed } from "@lararium/mesh/face-atom";
 
 /** The minimum an island context must offer for the wiring pass to run the FOLLOW-GRAPH branch (it gates
  *  on `ctx.oracleUrl`; `catalogUrl` stands the (lazy, never-dialed-here) facePlane accessor). */

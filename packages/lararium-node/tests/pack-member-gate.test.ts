@@ -13,10 +13,12 @@ import { describe, test, expect, beforeAll } from "vitest";
 import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
 import path from "node:path";
-import { CompositeStore, ORIGINAL_TIDDLER_HASHES, parseHashes } from "@lararium/mesh";
-import type {
-  VerbContext, Verb, CapabilityAccess, CapabilityVerifyResult, LarTiddlerRecord, ChangeOrigin,
-} from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { ORIGINAL_TIDDLER_HASHES, parseHashes } from "@lararium/mesh/pack-provenance";
+import type { VerbContext } from "@lararium/tw5";
+import type { Verb } from "@lararium/mesh/verb-tiddler";
+import type { CapabilityAccess, CapabilityVerifyResult } from "@lararium/mesh/capability";
+import type { LarTiddlerRecord, ChangeOrigin } from "@lararium/mesh/tiddler-store";
 import { MemoryTiddlerStore } from "../../lararium-tw5/src/memory-store.js";
 import { VerbTable } from "../../lararium-tw5/src/verb-dispatcher.js";
 import { registerActionReactors, makeTw5Deserializer } from "../../lararium-tw5/src/action-handler.js";

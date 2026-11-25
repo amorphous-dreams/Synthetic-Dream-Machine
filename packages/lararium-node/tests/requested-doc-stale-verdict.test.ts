@@ -18,7 +18,7 @@
 import { describe, test, expect } from "vitest";
 import { Repo, type DocumentId, type PeerId } from "@automerge/automerge-repo";
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
-import { shareConfigOf } from "@lararium/mesh";
+import { shareConfigOf } from "@lararium/mesh/federation-gate";
 import { arrival } from "../../lararium-mesh/tests/handshake.js";
 
 type Doc = { text?: string; slot?: string };

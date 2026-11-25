@@ -27,7 +27,7 @@ import {
   browserJoinedFaces, loadBrowserPlaceKel, readBrowserCustody, readBrowserVesselFaces, readFaceCustody,
   type BrowserVesselResult, type VesselHouse, type VesselSession,
 } from "@lararium/browser";
-import { didFromVerifyingKey } from "@lararium/mesh";
+import { didFromVerifyingKey } from "@lararium/mesh/lar-did";
 import type { CeremonyAskKind } from "../ceremony-protocol.js";
 import { ConsoleRefused, type ConsoleVerbRow } from "../console-verbs.js";
 

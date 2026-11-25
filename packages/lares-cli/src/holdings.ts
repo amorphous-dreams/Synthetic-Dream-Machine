@@ -5,7 +5,7 @@
 
 import { readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { bagUri } from "@lararium/mesh";
+import { bagUri } from "@lararium/mesh/lar-uris";
 import { daemonBagsDir, projectionRoots } from "@lararium/node";
 import { larProjectionsDirOrNone } from "./env.js";
 

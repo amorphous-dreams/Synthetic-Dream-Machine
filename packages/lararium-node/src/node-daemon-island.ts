@@ -12,7 +12,10 @@ import { litFaceProjector, litFaceProjectorFaces, mountDiskProjection, mountLitF
 import { answerShoreSeats } from "./shore-verb.js";
 import type { IslandContext } from "@lararium/tw5";
 import { makeBagTierReader } from "./vessel-bag-tier.js";
-import { HULLS_FULL, freshBasePort, islandLiveDocDoor, type JournalCursor, type JournalEntry, type JournalKind } from "@lararium/mesh";
+import { HULLS_FULL } from "@lararium/mesh/flow";
+import { freshBasePort } from "@lararium/mesh/sealed-doc-store";
+import { islandLiveDocDoor } from "@lararium/mesh/sealed-rest";
+import { type JournalCursor, type JournalEntry, type JournalKind } from "@lararium/mesh/vessel-journal";
 import { runReconcileCadence } from "./sensorium-lifecycle-verbs.js";
 import { islandStorageDirOf, nodeSealedStoreShore } from "./sealed-store-island.js";
 import { fileJournal } from "./vessel-journal-file.js";

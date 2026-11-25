@@ -17,7 +17,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { LarDiskProjector } from "../src/disk-projector.js";
 import { kahuaStageMirror, projectionRoots, titleRelPath } from "../src/bag-paths.js";
-import { KAHUA_BAG } from "@lararium/mesh";
+import { KAHUA_BAG } from "@lararium/mesh/wiki-recipe";
 import type { CarrierFile } from "@lararium/tw5";
 
 type Flushable = { flush: (b: string, u: string) => Promise<void> };

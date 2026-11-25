@@ -11,12 +11,8 @@
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync, realpathSync, statSync } from "node:fs";
 import { isAbsolute, join, sep } from "node:path";
-import {
-  genesisCasManifestFromSeed,
-  validatePronaosArtifactRecord,
-  type PronaosArtifactRecord,
-  type GenesisSeed,
-} from "@lararium/mesh";
+import { genesisCasManifestFromSeed, type GenesisSeed } from "@lararium/mesh/genesis-doc";
+import { validatePronaosArtifactRecord, type PronaosArtifactRecord } from "@lararium/mesh/pronaos";
 import {
   pronaosRouteInventoryForProjection,
   type PronaosFile,

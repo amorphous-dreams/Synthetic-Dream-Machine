@@ -2,11 +2,16 @@
 import { wardRootSigner } from "../ward-signer.js";
 import type { WardCredential } from "../ward-credential.js";
 import type { Repo } from "@automerge/automerge-repo";
-import {
-  faceRecordsOf, kahuaActRecords, kahuaPlaneUrl,
-  promoteBoardRecords, promoteBoardDoor, promoteCommand, promotePlaneUrl, promotions, promoteWikiItems,
-  readKahuaStage, readPromoteBoard, writePromoteAct, PromoteRefused, cosignPortWitness, type LarDoc, type PromoteCommandRequest,
-} from "@lararium/mesh";
+import { faceRecordsOf } from "@lararium/mesh/face-reading";
+import { kahuaActRecords, kahuaPlaneUrl, readKahuaStage } from "@lararium/mesh/kahua-stage";
+import { promoteBoardRecords, promotePlaneUrl, readPromoteBoard, writePromoteAct } from "@lararium/mesh/promote-board";
+import { promoteBoardDoor } from "@lararium/mesh/promote-board-door";
+import { promoteCommand, type PromoteCommandRequest } from "@lararium/mesh/promote-command";
+import { promotions } from "@lararium/mesh/promote-door";
+import { promoteWikiItems } from "@lararium/mesh/promote-wiki-items";
+import { PromoteRefused } from "@lararium/mesh/promote";
+import { cosignPortWitness } from "@lararium/mesh/ward-cosign-gate";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { loadFaceFold, nodeWardCosignPortOf, IntentRefused, type FaceFold } from "./intent.js";
 import { makeCatalogAccessor } from "@lararium/tw5";
 import { nodePromoteCas, nodePromoteStores } from "../promoted-store.js";

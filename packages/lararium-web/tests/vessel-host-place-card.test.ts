@@ -11,7 +11,7 @@
  *   PC3         a declined card refuses by name (`card-declined`): no founding writes a key without its card.
  */
 import { expect, test } from "vitest";
-import { coldKeyCode } from "@lararium/mesh";
+import { coldKeyCode } from "@lararium/mesh/cold-key-card";
 import { standCeremonyDoor, type DoorToPage } from "../src/workers/ceremony-door.js";
 import { ceremonyPlaceCard, PlaceCardRefused } from "../src/workers/place-card.js";
 import type { CeremonyAsk, CeremonyToVessel, VesselToCeremony } from "../src/ceremony-protocol.js";

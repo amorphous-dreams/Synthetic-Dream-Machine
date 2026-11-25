@@ -16,7 +16,7 @@
  */
 
 import { describe, expect, test, beforeAll } from "vitest";
-import { carrierFormOf, carrierHashOf } from "@lararium/mesh";
+import { carrierFormOf, carrierHashOf } from "@lararium/mesh/carrier-form";
 import { carrierHash } from "@lararium/mesh/crypto";
 
 import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";

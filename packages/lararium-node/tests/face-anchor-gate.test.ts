@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
-import { PERSONA_GROUP_ID_TIDDLER, PERSONA_KEL_PREFIX_TIDDLER, raiseFaceFrontier, type LarDoc } from "@lararium/mesh";
+import { PERSONA_GROUP_ID_TIDDLER, PERSONA_KEL_PREFIX_TIDDLER } from "@lararium/mesh/lar-uris";
+import { raiseFaceFrontier } from "@lararium/mesh/face-anchor";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { standFoundedIsland } from "./stand-founded-island.js";
 
 const teardown: Array<() => void> = [];

@@ -31,7 +31,8 @@
 
 import { mkdirSync, writeFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
-import { sha256HexBytesSync, utf8Bytes, isOversizedBody, ridesAsPointer, mediaTypeFromExt } from "@lararium/mesh";
+import { sha256HexBytesSync, utf8Bytes } from "@lararium/mesh/crypto";
+import { isOversizedBody, ridesAsPointer, mediaTypeFromExt } from "@lararium/mesh/content-handle";
 import { larCasDir } from "./env.js";
 
 /** The `_lar_cas` override and the `.meta` type declaration read off text the gesture already holds: both stand in the node's

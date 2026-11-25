@@ -16,15 +16,16 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/daemon-behavior
  */
 
-import { EXEC_LEI_SPEND_VERB } from "@lararium/mesh";
+import { EXEC_LEI_SPEND_VERB } from "@lararium/mesh/exec-lei";
 import { islandExecLeiPort } from "./exec-lei-route.js";
 import { makeDelegationBook } from "./delegation-book.js";
 import { makeIslandWearDoor, type IslandWearDoor } from "./island-wear.js";
-import { seatRepoWear, type DaemonMsg_WearActorResult } from "@lararium/mesh";
+import { seatRepoWear } from "@lararium/mesh/repo-wear";
+import { type DaemonMsg_WearActorResult } from "@lararium/mesh/island-protocol";
 import type { SessionWorn } from "./verb-dispatcher.js";
+import { PROMOTE_PANEL_HAND_CODES } from "@lararium/mesh/promote-main-verbs";
+import { SWARM_VERB_HAND_CODES } from "@lararium/mesh/swarm-door";
 import {
-  PROMOTE_PANEL_HAND_CODES,
-  SWARM_VERB_HAND_CODES,
   mkDaemonResolveBindingResult,
   mkDaemonGateVerbResult,
   mkDaemonWorldlineCompareResult,
@@ -38,13 +39,11 @@ import {
   type DaemonMsg_GateVerbRequest,
   type DaemonMsg_WorldlineCompareRequest,
   type DaemonMsg_WorldlineTrajectoryRequest,
-  type BatchMode,
-  type Verb,
-  type ChoreReceiptMark,
-  type CapabilityVerifier,
-  type CaptureEngine,
-  type CapturePost,
-} from "@lararium/mesh";
+} from "@lararium/mesh/island-protocol";
+import { type BatchMode, type Verb } from "@lararium/mesh/verb-tiddler";
+import { type ChoreReceiptMark } from "@lararium/mesh/chore-ask";
+import { type CapabilityVerifier } from "@lararium/mesh/capability";
+import { type CaptureEngine, type CapturePost } from "@lararium/mesh/capture/capture-engine";
 import type { Hand } from "@lararium/mesh/session-contract";
 import { placeVerb } from "./verb-vm.js";
 import { composeIsland } from "./island-caps.js";
@@ -55,9 +54,11 @@ import { VerbDispatcher, VerbTable } from "./verb-dispatcher.js";
 import type { IslandCap } from "./island-caps.js";
 import type { IslandContext, IslandBehavior, WritableOutcome } from "./island-context.js";
 import { controlOf } from "./island-context.js";
-import type { RunnableHulls } from "@lararium/mesh";
+import type { RunnableHulls } from "@lararium/mesh/flow";
 import { seedDaemonProtocol } from "./daemon-protocol-seed.js";
-import { canonicalJson, wikiSlotUri, VERB_URI_PREFIX } from "@lararium/mesh";
+import { canonicalJson } from "@lararium/mesh/crypto";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import { VERB_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
 
 const WRITE_LAYER_POINTER = "lar:///ha.ka.ba/lararium/config/current-wiki-bag";
 

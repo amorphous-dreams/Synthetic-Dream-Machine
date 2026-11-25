@@ -21,7 +21,7 @@ vi.mock("node:fs", async (original) => {
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { restDigest } from "@lararium/mesh";
+import { restDigest } from "@lararium/mesh/sealed-store-rest";
 import { fsSealedStoreRest } from "../src/sealed-store-fs.js";
 
 const value = (i: number): Uint8Array => Uint8Array.from([i & 0xff, (i >> 8) & 0xff, 7]);

@@ -15,10 +15,11 @@
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench · lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store
  */
-import {
-  ledgerWorkbenchRealms, privateCabalRealmId, wikiSlotOf, workbenchRemovals, workbenchSeats,
-  type HistoryDeclaration, type LarDoc, type SessionOwnChain,
-} from "@lararium/mesh";
+import { ledgerWorkbenchRealms, privateCabalRealmId, workbenchRemovals, workbenchSeats } from "@lararium/mesh/workbench";
+import { wikiSlotOf } from "@lararium/mesh/wiki-island-reach";
+import { type HistoryDeclaration } from "@lararium/mesh/content-key-lineage";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { type SessionOwnChain } from "@lararium/mesh/island-protocol";
 import type { RealmWriters } from "./island-session-proof.js";
 import type { KeyhiveProvider } from "./keyhive-provider.js";
 import { seatedWorkbenches } from "./workbench-realm.js";

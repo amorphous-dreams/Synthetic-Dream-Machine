@@ -42,15 +42,14 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/cabal-realm
  */
 
+import { DEFAULT_GRAIN_TYPE, type BagStowage } from "@lararium/mesh/bag-residency";
 import {
-  DEFAULT_GRAIN_TYPE,
   cabalRealmJoinGate,
   cabalRealmLeaseSlot,
   deriveCabalRealmLiveness,
   type CabalRealm,
   type CabalRealmLiveness,
-  type BagStowage,
-} from "@lararium/mesh";
+} from "@lararium/mesh/cabal-realm";
 import { projectRealmGlamour, type RealmGlamourMeta, type RealmGlamour } from "./realm-glamour.js";
 import type { KeyhiveProvider } from "./keyhive-provider.js";
 

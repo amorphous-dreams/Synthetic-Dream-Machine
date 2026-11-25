@@ -20,7 +20,7 @@
  * Meme: lar:///ha.ka.ba/lararium/node/bag-tracker
  */
 
-import type { CasHolder } from "@lararium/mesh";
+import type { CasHolder } from "@lararium/mesh/cas-transit";
 import type { InstalledSealedBody } from "./ciphertext-cas-seal.js";
 
 /** A relay-local `cid → holders` hint index — DHT-free discovery over announced holders. */

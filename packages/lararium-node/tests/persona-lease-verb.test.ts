@@ -12,11 +12,18 @@ seatSuiteWard();
 import { afterEach, describe, expect } from "vitest";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
-import {
-  DAEMON_BAG_ID, standControlHome, nameControlHome, ed25519SignerFromSeed, leaseEpochSlotUri, seedDaemonDoc, signLeaseAdvance, signedLeaseEpoch, raiseFaceFrontier, tiddlerText, type LarDoc,
-  ed25519VerifyingKeyFromSeed, emptyLarDoc, signFoundingLog, signPersonaAct, actCid, faceRootCommitment, edgeBodyDigest, personaBagIdFor,
-  verifyDeviceDelegation, writePersonaAct,
-} from "@lararium/mesh";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { standControlHome, nameControlHome } from "@lararium/mesh/control-home";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { leaseEpochSlotUri } from "@lararium/mesh/epoch-lease";
+import { seedDaemonDoc } from "@lararium/mesh/social-seed";
+import { signLeaseAdvance, signedLeaseEpoch } from "@lararium/mesh/lease-advance";
+import { raiseFaceFrontier, faceRootCommitment, edgeBodyDigest } from "@lararium/mesh/face-anchor";
+import { tiddlerText, type LarDoc, emptyLarDoc } from "@lararium/mesh/base-doc";
+import { signFoundingLog, signPersonaAct, writePersonaAct } from "@lararium/mesh/persona-act-board";
+import { actCid } from "@lararium/mesh/signed-act";
+import { personaBagIdFor } from "@lararium/mesh/persona-scope";
+import { verifyDeviceDelegation } from "@lararium/mesh/device-delegation";
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed } from "../src/node-vessel-identity.js";
 import { testVesselTag } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 import { loadIdentityAnchors } from "../src/identity-anchors.js";

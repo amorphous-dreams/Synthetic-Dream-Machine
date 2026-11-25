@@ -156,6 +156,24 @@ done
 # `run/keep-owed` mark, which outlives this invocation (a Ctrl+C, a later run), and a keep that keeps clears it.
 KEEP_SAID=""
 keep_owed_mark() { printf '%s' "$HOUSE/run/keep-owed"; }
+# THE KEEP'S WORDS OUTLIVE THE PASTE: the keep's stderr (its refusal text included) streams to the terminal and rests at the
+# house's run/keep-last.log, overwritten each keep, so the next refusal leaves its words on disk. A log that cannot be written
+# never blocks the keep (stderr then flows to the terminal alone).
+keep_run() {
+  kr_log="$HOUSE/run/keep-last.log"; kr_fifo="$HOUSE/run/.keep-last.fifo.$$"
+  # The log and the fifo are the operator's alone (umask 077 in this subshell-bound scope; a keep's words may name paths).
+  kr_umask=$(umask); umask 077
+  if mkdir -p -- "$HOUSE/run" 2>/dev/null && mkfifo -m 600 "$kr_fifo" 2>/dev/null; then
+    umask "$kr_umask"
+    ( umask 077; exec tee -- "$kr_log" < "$kr_fifo" >&2 ) &
+    kr_tee=$!
+    "$@" rite keep --if-due --json 2>"$kr_fifo"; kr_rc=$?
+    wait "$kr_tee" 2>/dev/null; rm -f -- "$kr_fifo"
+    return "$kr_rc"
+  fi
+  umask "$kr_umask"
+  "$@" rite keep --if-due --json
+}
 keep_before_down() {
   KEEP_SAID="no keep workspace named"
   [ -n "$(value_of LARES_KEEP_WORKSPACE)$(value_of LARES_WORKSPACES)" ] || return 0
@@ -167,7 +185,7 @@ keep_before_down() {
   printf '%s\n' 'lares-container: keeping first (rite keep --if-due): a house that moved cuts and pushes its keep before the stop' >&2
   # THE MARK CLEARS ON A REAL KEEP alone: a successful envelope (`"ok":true`) naming its workspace (`data.workspace`, non-empty).
   # An answer naming no workspace kept nothing; an empty or malformed one reads as nothing kept. Either way the keep stays owed.
-  if kb_out=$("$@" rite keep --if-due --json); then
+  if kb_out=$(keep_run "$@"); then
     # The envelope parses as JSON (python3: the host carries no jq); a reader that cannot parse it reads nothing kept.
     # STRICT: no NaN or Infinity, `ok` the boolean true, `data` an object, `data.workspace` a non-empty string (or null: none named).
     kb_rc=0
@@ -195,7 +213,7 @@ elif isinstance(w, str) and w.strip():
          else KEEP_SAID="the keep answered no envelope naming its workspace, so nothing reads kept; the keep stays owed"; fi ;;
     esac
     [ "$kb_read" = kept ] || { mkdir -p -- "$HOUSE/run" && : > "$(keep_owed_mark)"; }
-  else KEEP_SAID="the keep did not complete"; mkdir -p -- "$HOUSE/run" && : > "$(keep_owed_mark)"; printf '%s\n' 'lares-container: the keep did not complete (above); down goes on, and `lares rite keep` keeps by hand' >&2; fi
+  else KEEP_SAID="the keep did not complete"; mkdir -p -- "$HOUSE/run" && : > "$(keep_owed_mark)"; printf '%s\n' 'lares-container: the keep did not complete (above, and in $HOUSE/run/keep-last.log); down goes on, and `lares rite keep` keeps by hand' >&2; fi
 }
 
 # Make every bound class as the operator, so the engine never makes one owned by root.
@@ -1275,14 +1293,17 @@ resolve_image() { # $1 = a revision, or nothing for the prior image
 # THE PŪLAMA'S OWN STATUS (`pulama-main.js status`, read detached): whether it stands lit, and whether the admitted set it
 # reads under its key names the image and no tombstone ends it. An unlit pūlama lists no admission; a status that never
 # answers leaves both unread.
-ps_lit=""; ps_admitted=""; ps_vest=""; ps_struck=""; ps_pending=""; ps_lei=""
+ps_lit=""; ps_admitted=""; ps_vest=""; ps_struck=""; ps_pending=""; ps_stale=""; ps_lei=""
 pulama_status_read() { # $1 = the image digest
-  ps_lit=""; ps_admitted=""; ps_vest=""; ps_struck=""; ps_pending=""; ps_closure=""; ps_lei=""
+  ps_lit=""; ps_admitted=""; ps_vest=""; ps_struck=""; ps_pending=""; ps_stale=""; ps_closure=""; ps_lei=""
   ps_flat=$(compose --profile pulama exec -T "$(pulama_svc)" node "$PULAMA_MAIN" status </dev/null 2>/dev/null | tr -d ' \t\r\n') || return 0
   # THE KEEPER TALLY: the live commit's successor closure where it can vest, whether the struck fire is due, and any live commit.
   ps_vest=$(printf '%s' "$ps_flat" | sed -n 's/.*"vestReady":"\(sha256:[0-9a-f]\{64\}\)".*/\1/p')
   ps_pending=$(printf '%s' "$ps_flat" | sed -n 's/.*"pending":"\(sha256:[0-9a-f]\{64\}\)".*/\1/p')
   ps_closure=$(printf '%s' "$ps_flat" | sed -n 's/.*"closure":"\(sha256:[0-9a-f]\{64\}\)".*/\1/p')
+  # A STALE live commit (`stalePending`: a self-commit, or one a keeper of another closure rested) binds nothing current: the
+  # lei's commit supersedes it, so the lei reading treats it as none (the pūlama decides by closures and rows, never a clock).
+  case "$ps_flat" in *'"stalePending":true'*) ps_stale=$(printf '%s' "$ps_flat" | sed -n 's/.*"staleWhy":"\([a-z-]*\)".*/\1/p'); ps_stale=${ps_stale:-stale} ;; esac
   case "$ps_flat" in *'"struckDue":true'*) ps_struck=yes ;; esac
   # THE KEEPER LEI: a return could spend (the keeper's own bounds; the host adds its testimony at the spend).
   case "$ps_flat" in *'"leiReady":true'*) ps_lei=yes ;; esac
@@ -1322,7 +1343,7 @@ print_reading() {
          if [ "$pr_state" = moved ]; then
            if [ -n "$ps_struck" ]; then rd_keeper=',"keeper":"struck-due"'
            elif [ -n "$ps_vest" ] && [ "$ps_vest" = "$(closure_label image "$IMAGE_REF")" ]; then rd_keeper=',"keeper":"vests"'
-           elif [ -n "$ps_lei" ] && [ "$ps_lit" = yes ] && [ -z "$ps_pending" ]; then rd_keeper=',"keeper":"lei"'; fi
+           elif [ -n "$ps_lei" ] && [ "$ps_lit" = yes ] && { [ -z "$ps_pending" ] || [ -n "$ps_stale" ]; }; then rd_keeper=',"keeper":"lei"'; fi
          fi ;;
     esac
   fi
@@ -1471,7 +1492,7 @@ kukulu_reading() {
        if [ "$kr_pulama" = moved ]; then
          if [ -n "$ps_struck" ]; then kr_keeper=struck-due
          elif [ -n "$ps_vest" ] && [ "$ps_vest" = "$kr_mine" ]; then kr_keeper=vests
-         elif [ -n "$ps_lei" ] && [ "$ps_lit" = yes ] && [ -z "$ps_pending" ]; then kr_keeper=lei; fi
+         elif [ -n "$ps_lei" ] && [ "$ps_lit" = yes ] && { [ -z "$ps_pending" ] || [ -n "$ps_stale" ]; }; then kr_keeper=lei; fi
        fi ;;
   esac
   # THE KUKULU LEI on the checkout's branch, as the rite's leiStands reads it: yes (a return left), or the cause it stands not.
@@ -1740,7 +1761,8 @@ stand_house() {
     # now runs the closure the commit names, and a red pair stops loudly (it locks nothing). A plain relight on another closure leaves
     # the commit standing for its own rite.
     if [ -n "$ps_pending" ] && [ "$ps_closure" != "$ps_pending" ]; then
-      printf 'lares-container: rebuild: the live keeper commit names %s and this keeper runs %s; the commit stays for its own rite\n' "$ps_pending" "${ps_closure:-no reported closure}" >&2
+      if [ -n "$ps_stale" ]; then printf 'lares-container: rebuild: the live keeper commit names %s and reads stale (%s); the next kukulu lei commit supersedes it\n' "$ps_pending" "$ps_stale" >&2
+      else printf 'lares-container: rebuild: the live keeper commit names %s and this keeper runs %s; the commit stays for its own rite\n' "$ps_pending" "${ps_closure:-no reported closure}" >&2; fi
     fi
     if [ -n "$ps_pending" ] && [ "$ps_closure" = "$ps_pending" ]; then
       kl_out=$(compose --profile pulama exec -T "$(pulama_svc)" node "$PULAMA_MAIN" keeper-land </dev/null 2>/dev/null) || {

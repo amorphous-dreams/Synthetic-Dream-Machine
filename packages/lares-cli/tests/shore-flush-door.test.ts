@@ -13,7 +13,7 @@
  *       alone (where every lit face's projector stands); a flush and a settle take no face.
  */
 import { describe, expect, test } from "vitest";
-import { VERB_RESULT_KEY } from "@lararium/mesh";
+import { VERB_RESULT_KEY } from "@lararium/mesh/verb-tiddler";
 import { askShore, askShoreFlush, shoreFlushExit } from "../src/shore-core.js";
 import { cmdShore, shoreArgs, SHORE_ACTS } from "../src/commands/shore.js";
 import type { CustodyDoorAnswer } from "../src/custody-door.js";

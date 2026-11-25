@@ -22,10 +22,8 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
 
-import {
-  allowance, mintMarker, batchDigest, evaluateWalkerBatch, grantVerifiesAt,
-  HOSTING_MINT_SESSION_KIND, HOSTING_MINTED_SESSION_KIND,
-} from "@lararium/mesh";
+import { allowance, mintMarker, batchDigest, evaluateWalkerBatch, grantVerifiesAt } from "@lararium/mesh/hosting";
+import { HOSTING_MINT_SESSION_KIND, HOSTING_MINTED_SESSION_KIND } from "@lararium/mesh/walk-client";
 import type { WalkerSessionDoor } from "./hosting-carry.js";
 import { readHostingState, liveEpochs, spendMintMarker } from "./hosting-store.js";
 

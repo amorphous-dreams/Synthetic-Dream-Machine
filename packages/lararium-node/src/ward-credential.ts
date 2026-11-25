@@ -16,7 +16,9 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness#/the-ward
  */
 import { createHash, randomBytes } from "node:crypto";
-import { isWardBoundWiki, WardRefused, type Credential, type SlotSpec } from "@lararium/mesh";
+import { isWardBoundWiki } from "@lararium/mesh/promote";
+import { WardRefused } from "@lararium/mesh/ward-slots";
+import { type Credential, type SlotSpec } from "@lararium/mesh/keyslot-door";
 import { WardNeedsFreshUnlock } from "./custody-holder.js";
 
 declare const wardBrand: unique symbol;

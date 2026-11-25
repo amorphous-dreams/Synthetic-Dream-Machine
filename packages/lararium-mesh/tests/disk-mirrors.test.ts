@@ -13,7 +13,7 @@
 
 import { describe, test, expect } from "vitest";
 import { resolveDiskMirrors, type DiskMirrorGrant } from "../src/vessel-island-pool-core.js";
-import { wikiSlotUri, wikiBagUri } from "@lararium/mesh";
+import { wikiSlotUri, wikiBagUri } from "@lararium/mesh/wiki-recipe";
 import { personaScopedBagIds } from "../src/persona-scope.js";
 
 const LARES = "lar:///ha.ka.ba/bags/lares";

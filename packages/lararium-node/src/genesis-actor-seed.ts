@@ -23,7 +23,7 @@
 
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join, relative, sep }                   from "node:path";
-import { sha256HexBytesSync, utf8Bytes }         from "@lararium/mesh";
+import { sha256HexBytesSync, utf8Bytes } from "@lararium/mesh/crypto";
 
 export interface ActorSeedInputs {
   /** The tree root every label reads relative to (the repo). */

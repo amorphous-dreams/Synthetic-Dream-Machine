@@ -1,4 +1,4 @@
-import { sha256HexSync } from "@lararium/mesh";
+import { sha256HexSync } from "@lararium/mesh/crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
 
@@ -19,7 +19,7 @@ export interface ModuleManifest {
   modules: ModuleManifestEntry[];
 }
 
-export { sha256HexSync as sha256 } from "@lararium/mesh";
+export { sha256HexSync as sha256 } from "@lararium/mesh/crypto";
 
 export function writeModuleManifest(pathname: string, manifest: ModuleManifest): void {
   verifyModuleManifest(manifest, pathname);

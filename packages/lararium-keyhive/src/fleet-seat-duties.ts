@@ -22,10 +22,17 @@
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/kapae#/keys
  */
+import { countEdgeActs, foldEdgeReadings, edgeKapaeActsFromJson } from "@lararium/mesh/edge-kapae";
+import { fleetEdgeAuthority, deviceEdgeId } from "@lararium/mesh/dyad";
 import {
-  countEdgeActs, foldEdgeReadings, edgeKapaeActsFromJson, fleetEdgeAuthority, deviceEdgeId, planSeatDuties, signSeatRoll,
-  type SeatDuty, type SignedSeatRoll, type SeatRollSink, type SeatStanding, type SeatlessRaises,
-} from "@lararium/mesh";
+  planSeatDuties,
+  signSeatRoll,
+  type SeatDuty,
+  type SignedSeatRoll,
+  type SeatRollSink,
+  type SeatStanding,
+  type SeatlessRaises,
+} from "@lararium/mesh/seat-duties";
 import { keyhiveSeatShore, runSeatDuties, type SeatDutyOutcome, type SeatShoreProvider } from "./seat-duty-executor.js";
 
 /** What a vessel read off one fleet's edge board, as plain data a verb carries. */

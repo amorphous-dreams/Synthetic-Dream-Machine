@@ -7,7 +7,8 @@
  *   CONTROL: the right route on the fifth ask opens, and a decline stops the asks.
  */
 import { describe, expect, test } from "vitest";
-import { ATTEMPT_BUDGET, type Credential } from "@lararium/mesh";
+import { ATTEMPT_BUDGET } from "@lararium/mesh/attempt-budget";
+import { type Credential } from "@lararium/mesh/keyslot-door";
 import { askRoutes, type RouteAsk } from "../src/browser-boot-custody.js";
 
 const pass = (passphrase: string): Credential => ({ kind: "passphrase", passphrase });

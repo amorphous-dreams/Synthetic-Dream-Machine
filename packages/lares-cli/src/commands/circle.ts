@@ -27,10 +27,8 @@
  */
 
 import { readFileSync } from "node:fs";
-import {
-  composeFollow, composeUnfollow, listFollows, FollowRefused,
-  type HandleCard,
-} from "@lararium/mesh";
+import { composeFollow, composeUnfollow, listFollows, FollowRefused } from "@lararium/mesh/compose-follow";
+import { type HandleCard } from "@lararium/mesh/handle-card";
 import { parseHandleCardCarriage } from "../handle-carriage.js";
 import { bookFace, faceRootKey, loadHandleBook, saveHandleBook } from "../sealed-records.js";
 import { actingFace } from "../face-option.js";

@@ -15,11 +15,13 @@ import { Repo } from "@automerge/automerge-repo";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
 import { runFoundingCeremony } from "@lararium/keyhive";
 import * as ed25519 from "@noble/ed25519";
-import {
-  hex, personaPrefixOf, sealKeySetHash, deriveSelfRecoveryKey,
-  personaKelChainForPrefix, personaKelBoardDocUrl, personaRotationSigningBytes, mintPersonaRotation,
-  type LarDoc,
-} from "@lararium/mesh";
+import { hex } from "@lararium/mesh/crypto";
+import { personaPrefixOf, personaRotationSigningBytes, mintPersonaRotation } from "@lararium/mesh/persona-kel";
+import { sealKeySetHash } from "@lararium/mesh/wax-stamp";
+import { deriveSelfRecoveryKey } from "@lararium/mesh/persona-identity";
+import { personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";
+import { personaKelBoardDocUrl } from "@lararium/mesh/deterministic-doc";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 import { memorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";
 

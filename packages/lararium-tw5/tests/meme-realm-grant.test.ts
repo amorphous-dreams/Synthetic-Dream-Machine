@@ -9,11 +9,22 @@
  */
 import { describe, test, expect } from "vitest";
 import { createRequire } from "node:module";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { REALM_BAG_DOMAIN } from "@lararium/mesh/domains";
 import {
-  CompositeStore, REALM_BAG_DOMAIN, REALM_ID_TIDDLER, bagUri, deterministicDocUrl, emptyLarDoc, materializeSharedLarDoc,
-  realmDocPointer, realmDocUrl, realmStewardPointer, storedLarRecord, writeRealmStanding,
-  type LarDoc, type LarTiddlerStore, type RealmBagRegistration, type Repo as RepoType,
-} from "@lararium/mesh";
+  REALM_ID_TIDDLER,
+  realmDocPointer,
+  realmDocUrl,
+  realmStewardPointer,
+  writeRealmStanding,
+  type RealmBagRegistration,
+} from "@lararium/mesh/realm-bag";
+import { bagUri } from "@lararium/mesh/lar-uris";
+import { deterministicDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
+import { type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
+import { type Repo as RepoType } from "@lararium/mesh/automerge";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { makeMemePutReactor, makeMemeGetReactor, memeVerbOptions, type MemeVerbOptions } from "../src/meme-verbs.js";
 

@@ -13,7 +13,8 @@ import { describe, test, expect, beforeAll } from "vitest";
 import { createHash } from "node:crypto";
 import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
-import { skinnyHandleTiddler, cidUri } from "@lararium/mesh";
+import { skinnyHandleTiddler } from "@lararium/mesh/content-handle";
+import { cidUri } from "@lararium/mesh/lar-uris";
 
 const PNG = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==", "base64");
 const CID = createHash("sha256").update(PNG).digest("hex");

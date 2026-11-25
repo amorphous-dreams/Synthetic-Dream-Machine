@@ -9,11 +9,20 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/verb-vm
  */
 
-import type { BatchMode, ChoreReceiptMark, CompositeStore, Verb, VerbTargetResult } from "@lararium/mesh";
+import type { BatchMode, Verb, VerbTargetResult } from "@lararium/mesh/verb-tiddler";
+import type { ChoreReceiptMark } from "@lararium/mesh/chore-ask";
+import type { CompositeStore } from "@lararium/mesh/composite-store";
 import {
-  EFFECT_URI_PREFIX, VERB_RESULT_KEY, concludeVerb, buildVerb, buildRunningPatch,
-  canonicalJsonBytes, sha256HexBytesSync, verbInputDigest, isVerbRefusal, ControlHomeUnavailable,
-} from "@lararium/mesh";
+  EFFECT_URI_PREFIX,
+  VERB_RESULT_KEY,
+  concludeVerb,
+  buildVerb,
+  buildRunningPatch,
+  verbInputDigest,
+} from "@lararium/mesh/verb-tiddler";
+import { canonicalJsonBytes, sha256HexBytesSync } from "@lararium/mesh/crypto";
+import { isVerbRefusal } from "@lararium/mesh/verb-refusal";
+import { ControlHomeUnavailable } from "@lararium/mesh/control-home";
 import type { TW5Engine } from "./tw5-vm.js";
 
 // ── Effect index — single writer: the daemon worker (D1, P2.5 iter 4) ──────

@@ -3,7 +3,7 @@
  * its signed admission roster and its fleet standing, over the kāpae lower, the house cap and the push lei.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness#/the-swarm-slices
  */
-import { faceIntentVerbs } from "@lararium/mesh";
+import { faceIntentVerbs } from "@lararium/mesh/intent-verbs";
 import { nodeWardCosignPort } from "../src/commands/intent.js";
 import { wardCosignTable } from "../../lararium-mesh/tests/ward-cosign-table.js";
 

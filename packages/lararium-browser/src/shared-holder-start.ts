@@ -1,8 +1,9 @@
 import { refuseBufferedPorts, type ConnectBuffer } from "./connect-buffer.js";
 import { Repo } from "@automerge/automerge-repo";
 import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-indexeddb";
-import { shoreStorage, isTeardownFault, type IslandToVesselMsg } from "@lararium/mesh";
-import { attachMessageChannelSync } from "@lararium/mesh";
+import { shoreStorage } from "@lararium/mesh/prototype-key-shore-door";
+import { isTeardownFault, type IslandToVesselMsg } from "@lararium/mesh/island-protocol";
+import { attachMessageChannelSync } from "@lararium/mesh/island-repo-door";
 import { makeHolderRuntime } from "./shared-holder-runtime.js";
 import type { BrowserIslandScope } from "./browser-sovereign-island-model.js";
 import type { HolderIsland } from "./shared-holder-core.js";

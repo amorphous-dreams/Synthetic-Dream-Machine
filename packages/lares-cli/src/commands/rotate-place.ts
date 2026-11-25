@@ -10,7 +10,7 @@
  * `--cold-key <code>` stands in for the terminal on a staged test root alone: a card typed into a flag on a live machine
  * rests in the shell's history.
  */
-import { coldKeySeedFromCode, ColdKeyCardError } from "@lararium/mesh";
+import { coldKeySeedFromCode, ColdKeyCardError } from "@lararium/mesh/cold-key-card";
 import { rotatePlace } from "@lararium/node";
 import type { ParsedArgs } from "../parse-args.js";
 import { CardReadBackRefused, readBack } from "../cold-card-readback.js";

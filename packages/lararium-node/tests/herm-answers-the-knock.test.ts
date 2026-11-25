@@ -1,4 +1,4 @@
-import { placeSignerFromSeed } from "@lararium/mesh";
+import { placeSignerFromSeed } from "@lararium/mesh/place-signer";
 /**
  * herm-answers-the-knock.test.ts — A HERM ANSWERS THE KNOCK (operator ruling: siege-resilience "A HERM ANSWERS THE KNOCK";
  * stable-founding-road "A herm answers the knock"). A charterless herm answers ANY proven peer that knocked (`ownPlacePosture`):
@@ -21,7 +21,9 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
-import { FLOW_SOCKET_ROUTE, emptyFoundingCharterDoc, exportFlowSnapshot, type NexusDoc } from "@lararium/mesh";
+import { FLOW_SOCKET_ROUTE } from "@lararium/mesh/flow-read-client";
+import { emptyFoundingCharterDoc, type NexusDoc } from "@lararium/mesh/nexus-seal-seed";
+import { exportFlowSnapshot } from "@lararium/mesh/flow-substrate";
 import { mountHttpFaceDispatcher } from "../src/http-face-dispatcher.js";
 import { mountFlowReadFace, type FlowFloorFace } from "../src/flow-read-face.js";
 import { makeGateSorter, ownPlacePosture, type PlaceClass } from "../src/socket-sorter.js";

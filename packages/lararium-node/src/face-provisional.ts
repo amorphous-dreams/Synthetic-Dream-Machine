@@ -32,9 +32,14 @@
  */
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  faceLogViewImage, faceLogViewSigned, foldPersonaContests, nexusAidOf, readFaceLogViewLine,
-  type FaceLogView, type FaceLogViewParty, type NexusDoc,
-} from "@lararium/mesh";
+  faceLogViewImage,
+  faceLogViewSigned,
+  readFaceLogViewLine,
+  type FaceLogView,
+  type FaceLogViewParty,
+} from "@lararium/mesh/face-log-view";
+import { foldPersonaContests } from "@lararium/mesh/persona-kel";
+import { nexusAidOf, type NexusDoc } from "@lararium/mesh/nexus-seal-seed";
 import { readLocalPersonaKelEvents } from "./local-persona-kel.js";
 import { readCarriedCharters } from "./carried-set.js";
 import { readCustodyRecord, removeCustodyRecord, updateCustodyRecord } from "./custody-seat.js";

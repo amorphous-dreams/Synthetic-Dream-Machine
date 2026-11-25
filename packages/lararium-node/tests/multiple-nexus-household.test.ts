@@ -9,23 +9,20 @@
 import { describe, expect, test } from "vitest";
 import { load } from "@automerge/automerge";
 import { Repo, interpretAsDocumentId, stringifyAutomergeUrl, type BinaryDocumentId, type DocumentId } from "@automerge/automerge-repo";
+import { DeterministicFederationGate, shareConfigOf } from "@lararium/mesh/federation-gate";
 import {
-  DeterministicFederationGate,
   carriageDocUrl,
   crossroadsDocUrl,
   kapaeAntigenDocUrl,
   materializeSharedLarDoc,
-  nexusIdentity,
-  nexusScopeOrThrow,
   personaKelBoardDocUrl,
-  publicFlowMap,
-  shareConfigOf,
-  snapshotPublicFlowMap,
   whoBoardDocUrl,
-  type GenesisSeed,
-  type LarDoc,
-} from "@lararium/mesh";
-import { identityShareDecision } from "@lararium/mesh";
+} from "@lararium/mesh/deterministic-doc";
+import { nexusIdentity, nexusScopeOrThrow } from "@lararium/mesh/nexus-identity";
+import { publicFlowMap, snapshotPublicFlowMap } from "@lararium/mesh/mesh-palace";
+import { type GenesisSeed } from "@lararium/mesh/genesis-doc";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { identityShareDecision } from "@lararium/mesh/federation-gate";
 import { selfSlotShareDecision, NO_BANS, NOBODY_ASIDE, NOTHING_CLASSED } from "../src/self-slot-share.js";
 
 import { fixtureKey } from "./fixture-keys.js";

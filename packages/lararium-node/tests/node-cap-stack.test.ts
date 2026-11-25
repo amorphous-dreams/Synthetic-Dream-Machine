@@ -1,4 +1,4 @@
-import { placeSignerFromSeed } from "@lararium/mesh";
+import { placeSignerFromSeed } from "@lararium/mesh/place-signer";
 /**
  * node-cap-stack — the node #has-cap-stack wiring, witnessed in isolation (no genesis/TW5 needed).
  *
@@ -12,7 +12,9 @@ import { placeSignerFromSeed } from "@lararium/mesh";
 
 import { describe, test, expect, vi } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
-import { composeVessel, MESH_PALACE_BAG, type CapModule, type VesselDaemonVm } from "@lararium/mesh";
+import { composeVessel, type CapModule } from "@lararium/mesh/cap-compose";
+import { MESH_PALACE_BAG } from "@lararium/mesh/mesh-palace";
+import { type VesselDaemonVm } from "@lararium/tw5";
 // substrate + daemon caps moved to the SHARED tw5 core-caps (both Lararium + Herm compose over them);
 // node-caps keeps only the Herm-own caps (meshpalace, carriage, read-face).
 import { daemonCap, CORE_CAP } from "@lararium/tw5";

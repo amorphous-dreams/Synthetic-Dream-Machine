@@ -4,7 +4,7 @@
  * derivations and a face's standing.
  */
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { FLOOR_REST_KEY_INFO, GATE_BUNDLE_INFO, PERSONA_SCOPE_INFO } from "@lararium/mesh";
+import { FLOOR_REST_KEY_INFO, GATE_BUNDLE_INFO, PERSONA_SCOPE_INFO } from "@lararium/mesh/domains";
 import { CustodyLocked, CustodyRecordUnavailable, CustodyRecordUnknown, FaceLocked, type CustodyHolder } from "../src/custody-holder.js";
 import { faceAtomGroupFile } from "../src/face-atom-store.js";
 import { faceProofKeyFile } from "../src/face-key-custody.js";

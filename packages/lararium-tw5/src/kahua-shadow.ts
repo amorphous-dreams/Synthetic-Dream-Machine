@@ -14,7 +14,9 @@
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
-import { KAHUA_BAG, type CompositeStore, type LarTiddlerRecord } from "@lararium/mesh";
+import { KAHUA_BAG } from "@lararium/mesh/wiki-recipe";
+import { type CompositeStore } from "@lararium/mesh/composite-store";
+import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { KAHUA_SHADOW_PREFIX, kahuaShadowTitle } from "./kahua-shadow-title.js";
 
 export { KAHUA_SHADOW_PREFIX, kahuaShadowTitle };

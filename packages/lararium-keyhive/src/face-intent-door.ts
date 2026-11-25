@@ -1,7 +1,29 @@
 /** One face's causal effect door over its shared intent plane. */
-import type { DocHandle, LarDoc, PersonaKelEvent, FaceAnchor, IntentVerbRegistry, IntentView, IntentEntryBody, SignedIntentEntry, IntentPaneModel, IntentReadInput, IntentRelayResult } from "@lararium/mesh";
-import { buildIntent, buildOutcome, choreReceiptMark, choreReceiptMarkOf, faceRosterForIntents, intentEntryCid, intentEntryRecordsOfGroup, intentId, intentPaneModel, mayAct, readFace, readIntentPlane, writeIntentEntry, intentAdmissionRecordsOfGroup, readIntentAdmission, signIntentAdmission, writeIntentAdmission, localIntentHeads, decideAdmission } from "@lararium/mesh";
-import type { ChoreReceiptMark, IntentSigner } from "@lararium/mesh";
+import type { DocHandle } from "@lararium/mesh/automerge";
+import type { LarDoc } from "@lararium/mesh/base-doc";
+import type { PersonaKelEvent } from "@lararium/mesh/persona-kel";
+import type { FaceAnchor } from "@lararium/mesh/face-anchor";
+import type { IntentVerbRegistry } from "@lararium/mesh/intent-verbs";
+import type { IntentView, IntentReadInput } from "@lararium/mesh/intent-read";
+import type { IntentEntryBody, SignedIntentEntry } from "@lararium/mesh/intent-entry";
+import type { IntentPaneModel } from "@lararium/mesh/intent-view";
+import type { IntentRelayResult } from "@lararium/mesh/intent-relay-door";
+import { buildIntent, buildOutcome, faceRosterForIntents } from "@lararium/mesh/intent-issue";
+import { choreReceiptMark, choreReceiptMarkOf } from "@lararium/mesh/chore-ask";
+import { intentEntryCid, intentEntryRecordsOfGroup, intentId, writeIntentEntry } from "@lararium/mesh/intent-entry";
+import { intentPaneModel } from "@lararium/mesh/intent-view";
+import { mayAct, readIntentPlane } from "@lararium/mesh/intent-read";
+import { readFace } from "@lararium/mesh/face-reading";
+import {
+  intentAdmissionRecordsOfGroup,
+  readIntentAdmission,
+  signIntentAdmission,
+  writeIntentAdmission,
+  localIntentHeads,
+  decideAdmission,
+} from "@lararium/mesh/intent-admission";
+import type { ChoreReceiptMark } from "@lararium/mesh/chore-ask";
+import type { IntentSigner } from "@lararium/mesh/intent-issue";
 
 type Standing = "stands" | "aside" | "unknown";
 

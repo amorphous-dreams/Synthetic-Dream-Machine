@@ -6,7 +6,8 @@
  * Every red pairs with a CONTROL that still stamps a real shadow.
  */
 import { describe, expect, test } from "vitest";
-import { KAHUA_BAG, type LarTiddlerRecord } from "@lararium/mesh";
+import { KAHUA_BAG } from "@lararium/mesh/wiki-recipe";
+import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { kahuaShadowOf } from "../src/kahua-shadow.js";
 
 const FLOOR = "floor-bag", WORKING = "working-bag";

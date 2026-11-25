@@ -9,7 +9,7 @@ import { describe, expect, test } from "vitest";
 import { makeReceiptCapability } from "../src/receipt.js";
 import { wikiSkip, skipNote } from "./test-wiki.js";
 import { afterDispatch, ManualBoundary, openDraft, remote, saveSequence, shoreRig, tempBag, turns } from "./wiki-shore-rig.js";
-import type { LarTiddlerRecord } from "@lararium/mesh";
+import type { LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 
 describe.skipIf(wikiSkip)(`an act's receipt hold beside the volatile plane${skipNote}`, () => {
   test("RED: a confirm that marks a temp-plane title in the same dispatch receipts — CONTROL: the temp title rests in the memory store and the hold names a bag the island holds", async () => {

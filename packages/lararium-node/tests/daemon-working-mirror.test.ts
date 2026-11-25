@@ -21,7 +21,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { LarDiskProjector } from "../src/disk-projector.js";
 import { daemonWorkingMirror } from "../src/bag-paths.js";
-import { wikiSlotUri, DAEMON_BAG_ID } from "@lararium/mesh";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
 import type { CarrierFile } from "@lararium/tw5";
 
 const URI = "lar:///ha.ka.ba/t/daemon/note";

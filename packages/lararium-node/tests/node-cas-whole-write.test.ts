@@ -32,7 +32,7 @@ vi.mock("node:fs", async (importOriginal) => {
 // A setup file may have loaded the writer already: every module under test loads again, over the recording fs.
 vi.resetModules();
 const { writeCasEntriesFs, readVerifiedCasBlobFromFs } = await import("../src/node-cas.js");
-const { sha256HexBytesSync } = await import("@lararium/mesh");
+const { sha256HexBytesSync } = await import("@lararium/mesh/crypto");
 
 const roots: string[] = [];
 afterEach(() => { calls.length = 0; fds.clear(); for (const r of roots.splice(0)) rmSync(r, { recursive: true, force: true }); });

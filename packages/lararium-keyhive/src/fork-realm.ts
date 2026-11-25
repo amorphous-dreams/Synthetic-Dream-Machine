@@ -24,7 +24,7 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/cabal-realm
  */
 
-import type { CabalRealm } from "@lararium/mesh";
+import type { CabalRealm } from "@lararium/mesh/cabal-realm";
 
 /**
  * A fork of a captured realm — a fresh realm-identity carrying the legitimate maintainers,

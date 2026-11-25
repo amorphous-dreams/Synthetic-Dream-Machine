@@ -12,10 +12,7 @@
 import { mkdirSync, writeFileSync, readdirSync, readFileSync, renameSync } from "node:fs";
 import { join } from "node:path";
 import { randomBytes } from "node:crypto";
-import {
-  MEMBERSHIP_BROADCAST,
-  type MembershipChannel, type MembershipEnvelope,
-} from "@lararium/mesh";
+import { MEMBERSHIP_BROADCAST, type MembershipChannel, type MembershipEnvelope } from "@lararium/mesh/membership-channel";
 
 function forRecipient(e: MembershipEnvelope, recipient: string): boolean {
   return e.from !== recipient && (e.to === recipient || e.to === MEMBERSHIP_BROADCAST);

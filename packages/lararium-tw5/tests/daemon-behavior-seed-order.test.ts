@@ -8,8 +8,12 @@
  */
 import { memoryControlStore } from "./control-store-fixture.js";
 import { describe, expect, test } from "vitest";
-import { AutomergeDocStore, CompositeStore, HULLS_TS_ONLY, wikiBagUri, wikiSlotUri } from "@lararium/mesh";
-import type { DocHandle, LarDoc } from "@lararium/mesh";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { HULLS_TS_ONLY } from "@lararium/mesh/flow";
+import { wikiBagUri, wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import type { DocHandle } from "@lararium/mesh/automerge";
+import type { LarDoc } from "@lararium/mesh/base-doc";
 import { buildIslandRecipe, seedDrained } from "../src/island-recipe.js";
 import { bridgeWikiToAdaptor } from "../src/outbound-bridge.js";
 import { makeDaemonBehavior } from "../src/daemon-behavior.js";

@@ -20,10 +20,21 @@
 import { readFileSync } from "node:fs";
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  FLOOR_RELEASE_SURFACE, assembleFloorRelease, publicationDocUrl, floorReleaseEntriesFromBoard, foldFloorReleases, materializeSharedLarDoc,
-  floorRequiredBlobIds, openFloorReleaseBody, readPromotionApproval, resolveFloorWhole, sha256HexBytesSync, verifyFloorRelease, writeFloorRelease,
-  type FloorRelease, type FloorReleaseStanding, type FloorReleaseRefusal,
-} from "@lararium/mesh";
+  FLOOR_RELEASE_SURFACE,
+  assembleFloorRelease,
+  floorReleaseEntriesFromBoard,
+  foldFloorReleases,
+  openFloorReleaseBody,
+  verifyFloorRelease,
+  writeFloorRelease,
+  type FloorRelease,
+  type FloorReleaseStanding,
+  type FloorReleaseRefusal,
+} from "@lararium/mesh/floor-release";
+import { publicationDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { floorRequiredBlobIds, resolveFloorWhole } from "@lararium/mesh/floor-offering";
+import { readPromotionApproval } from "@lararium/mesh/promotion-approval";
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
 import { readNexusDoc } from "../nexus-doc.js";
 import { readGenesisSeed } from "../genesis-artifact.js";
 import { readVerifiedCasBlobFromFs, writeCasEntriesFs } from "../node-cas.js";

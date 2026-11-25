@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
-import { groupSecretOpenerFromSeed, type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh";
+import { groupSecretOpenerFromSeed } from "@lararium/mesh/persona-group-secret";
+import { type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
 import { runDeviceAdmitEdge } from "../src/ceremony-core.js";
 import { frontierFromFoundingSeed } from "./admit-acts.js";
 import { faceOperationTitle, readFaceOperation } from "../src/face-operation-record.js";

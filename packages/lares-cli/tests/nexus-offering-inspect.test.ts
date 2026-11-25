@@ -8,7 +8,7 @@ import { join } from "node:path";
 import { cmdNexus } from "../src/commands/nexus.js";
 import { cmdVessel } from "../src/commands/vessel.js";
 import type { ParsedArgs } from "../src/parse-args.js";
-import { sha256HexBytesSync } from "@lararium/mesh";
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
 import { generateOrLoadPersonaGroupRoot } from "@lararium/node";
 import { runNexusPublishPlugins, ownedStore } from "@lararium/node";
 import { larDataDir } from "@lararium/node";

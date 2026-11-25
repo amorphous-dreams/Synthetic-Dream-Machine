@@ -23,8 +23,8 @@
  * Meme: lar:///ha.ka.ba/lares/api/wiki-coherence-projection
  */
 
-import type { ConsistencyRadius } from "@lararium/mesh";
-import { CoalesceGate } from "@lararium/mesh";
+import type { ConsistencyRadius } from "@lararium/mesh/sensorium-consistency";
+import { CoalesceGate } from "@lararium/mesh/projection-nalu";
 import type { IslandContext } from "./island-context.js";
 import { WikiStoreAdapter } from "./wiki-store-adapter.js";
 import { capLoci } from "./wiki-sense-fold.js";

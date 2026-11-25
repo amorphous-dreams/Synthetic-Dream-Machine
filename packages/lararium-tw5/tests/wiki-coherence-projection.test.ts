@@ -20,7 +20,7 @@ import {
 } from "../src/wiki-coherence-projection.js";
 import type { CoherenceIndicatorFrame } from "../src/wiki-coherence-projection.js";
 import { runWikiConsistencyWitness } from "../src/wiki-store-adapter.js";
-import type { ConsistencyRadius } from "@lararium/mesh";
+import type { ConsistencyRadius } from "@lararium/mesh/sensorium-consistency";
 
 /** A hand-built radius reading — the pure organ takes ONLY this shape (no store needed). */
 function reading(over: Partial<ConsistencyRadius>): ConsistencyRadius {

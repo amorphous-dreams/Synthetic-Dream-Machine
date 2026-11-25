@@ -31,7 +31,14 @@
  *        lar:///ha.ka.ba/lares/api/pono/session-contract#/the-document-view
  */
 import { interpretAsDocumentId, type AutomergeUrl, type DocumentId, type PeerId } from "@automerge/automerge-repo";
-import { KAHUA_BAG, PERSONA_GROUP_ID_TIDDLER, SessionDocumentView, isFaceScopedBag, tiddlerText, type LarDoc, type DocumentFacet, type FaceGrantReading, type FederationGate, type SessionDocumentFacets, ownEntry } from "@lararium/mesh";
+import { KAHUA_BAG } from "@lararium/mesh/wiki-recipe";
+import { PERSONA_GROUP_ID_TIDDLER } from "@lararium/mesh/lar-uris";
+import { SessionDocumentView, type DocumentFacet, type SessionDocumentFacets } from "@lararium/mesh/session-document-view-door";
+import { isFaceScopedBag } from "@lararium/mesh/persona-scope";
+import { tiddlerText, type LarDoc } from "@lararium/mesh/base-doc";
+import { type FaceGrantReading } from "@lararium/mesh/session-face";
+import { type FederationGate } from "@lararium/mesh/federation-gate";
+import { ownEntry } from "@lararium/mesh/stored-value";
 import { bootDaemonUrl, bootFacePlanes } from "./boot-face-planes.js";
 import type { KahuCanonDocs } from "./kahu-realm.js";
 

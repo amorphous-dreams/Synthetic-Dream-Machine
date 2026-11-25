@@ -21,18 +21,18 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/catalog-accessor
  */
 
-import { wearOf } from "@lararium/mesh";
-import {
-  CATALOG_DOC_URI,
-  tiddlerText,
-  findOrThrow,
-  AutomergeDocStore,
-  type Repo,
-  type DocHandle,
-  type LarDoc,
-  type LarTiddlerRecord,
-  type LarTiddlerStore, ownEntry, plainField} from "@lararium/mesh";
-import { catalogRowHalf, houseCanonUrl, litFaceCatalogOf, makeCatalogView, plainRecordOrNull, realmStandingDocUrl, resolveHouseCanon, wikiCanonAddress } from "@lararium/mesh";
+import { wearOf } from "@lararium/mesh/repo-wear";
+import { CATALOG_DOC_URI } from "@lararium/mesh/lar-uris";
+import { tiddlerText, type LarDoc } from "@lararium/mesh/base-doc";
+import { findOrThrow } from "@lararium/mesh/find-or-throw";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { type Repo, type DocHandle } from "@lararium/mesh/automerge";
+import { type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
+import { ownEntry, plainField } from "@lararium/mesh/stored-value";
+import { catalogRowHalf, litFaceCatalogOf, makeCatalogView } from "@lararium/mesh/catalog-view";
+import { houseCanonUrl, resolveHouseCanon, wikiCanonAddress } from "@lararium/mesh/house-canon-doc";
+import { plainRecordOrNull } from "@lararium/mesh/stored-value";
+import { realmStandingDocUrl } from "@lararium/mesh/realm-bag";
 
 export interface CatalogAccessor {
   /** The `catalog` registry doc itself, resolved + cached (the floor with the face's rows laid over it, U1). */

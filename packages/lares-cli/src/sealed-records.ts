@@ -7,9 +7,9 @@
  * handle-book, and the seal rite's own acts: the arming of a head, a seat's hand on a roll, and the retirement of a
  * seat key nothing needs. A seat's key mints, signs and leaves behind the door; a command holds public halves alone.
  */
-import {
-  HandleBook, type HandleBookSnapshot, type OwnPersonaPetnameStore, type PersonaDeclaration, type PersonaDeclarationStore,
-} from "@lararium/mesh";
+import { HandleBook, type HandleBookSnapshot } from "@lararium/mesh/handle-book";
+import { type OwnPersonaPetnameStore } from "@lararium/mesh/persona-petname";
+import { type PersonaDeclaration, type PersonaDeclarationStore } from "@lararium/mesh/persona-declare";
 import type { ArmedGenesis, ArmedRoll, SeatKept } from "@lararium/node";
 import { readBackStandInSeated } from "@lararium/node";
 import { sealedAct } from "./sealed-act-door.js";

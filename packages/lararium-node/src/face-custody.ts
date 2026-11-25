@@ -7,10 +7,9 @@
  * outside the directory is the face's, and the node holds no key that opens a sibling's directory.
  */
 import { join } from "node:path";
-import {
-  decodeSlotTree, openTreeKey, settleFaceRotation,
-  type Credential, type CustodyIo, type FaceCarrier, type FaceCustodyKey, type SlotTree,
-} from "@lararium/mesh";
+import { decodeSlotTree, openTreeKey, type Credential, type SlotTree } from "@lararium/mesh/keyslot-door";
+import { settleFaceRotation, type CustodyIo } from "@lararium/mesh/sealed-writer";
+import { type FaceCarrier, type FaceCustodyKey } from "@lararium/mesh/fck";
 import { nativeKdf } from "@lararium/mesh/node";
 import { carrierTable, type CarrierRow, type CustodyHomes } from "./vault-carriers.js";
 import { FACE_TREE_FILE, FACES_DIR, WARD_TREE_FILE, faceDir, faceTreePath } from "./face-index.js";

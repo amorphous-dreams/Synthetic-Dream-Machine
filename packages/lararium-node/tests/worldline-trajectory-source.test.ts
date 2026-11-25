@@ -11,7 +11,7 @@
  */
 import { describe, it, expect } from "vitest";
 import { orderHandleTurnsToStubs, type HandleTurn } from "@lararium/mempalace";
-import { orderTrajectory, joinFormVectors, type SparseFormVector, type TrajectoryStep } from "@lararium/mesh";
+import { orderTrajectory, joinFormVectors, type SparseFormVector, type TrajectoryStep } from "@lararium/mesh/worldline-trajectory";
 
 describe("content-graph stubs → worldline trajectory (the verb composition)", () => {
   // Three content drawers for one handle, OUT of order on the wire (the palace returns no order).

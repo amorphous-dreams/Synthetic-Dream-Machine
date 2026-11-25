@@ -23,7 +23,10 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterAll, beforeAll, describe, expect, test, vi } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
-import { DAEMON_BAG_ID, materializeGenesisIsland, tiddlerText, type GenesisSeed } from "@lararium/mesh";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { materializeGenesisIsland } from "@lararium/mesh/genesis-intake";
+import { tiddlerText } from "@lararium/mesh/base-doc";
+import { type GenesisSeed } from "@lararium/mesh/genesis-doc";
 const held = vi.hoisted(() => ({ claims: [] as Array<{ release: () => Promise<void> }> }));
 
 vi.mock("../src/owned-store.js", async (orig) => {

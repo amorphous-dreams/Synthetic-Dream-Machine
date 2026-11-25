@@ -5,7 +5,9 @@
  */
 import { createRequire } from "node:module";
 import { afterEach, expect, test } from "vitest";
-import { emptyLarDoc, type IslandMsg_Manifest, type LarDoc, type Repo as RepoType } from "@lararium/mesh";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { type IslandMsg_Manifest } from "@lararium/mesh/island-protocol";
+import { type Repo as RepoType } from "@lararium/mesh/automerge";
 import { openDaemonVmCore, type DaemonVmHost } from "../src/daemon-vm-core.js";
 
 const Repo = createRequire(import.meta.resolve("@lararium/mesh"))("@automerge/automerge-repo").Repo as new (options: { sharePolicy?: () => Promise<boolean> }) => RepoType;
