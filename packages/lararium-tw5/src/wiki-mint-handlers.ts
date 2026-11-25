@@ -1,3 +1,4 @@
+import { askerRefusal } from "@lararium/mesh/hand-refusal";
 import type { AutomergeUrl } from "@lararium/mesh";
 import type { ChangeOrigin, LarTiddlerRecord } from "@lararium/mesh";
 import { catalogViewOf, houseCanonUrl, isFacePrivateSlug, ownEntry, refuseTw5DocsReserved, resolveHouseCanon, tiddlerText } from "@lararium/mesh";
@@ -223,7 +224,7 @@ export function makeRetireWikiReactor(opts: WikiRetireOptions): VerbReactor {
   return async (args, ctx) => {
     const slug = stringArg(args, "slug");
     if (!slug) throw new Error("args.slug is required (the wiki name)");
-    if (ctx?.asker !== "cli") {
+    if (askerRefusal(ctx?.asker, { terminal: true }) !== null) {
       throw new WikiRetireRefusal("retire-needs-hand", `retiring "${slug}" runs on a person's hand alone; this ask came from ${ctx?.asker ?? "no hand a door read"}`);
     }
     const canonBag = wikiBagUri(slug);
