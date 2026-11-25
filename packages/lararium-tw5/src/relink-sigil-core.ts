@@ -14,7 +14,7 @@
  * Typed values (a `{{…}}` reference, a `{{{…}}}` filter, a `<<…>>` call) keep their own grammar and stand untouched here.
  *
  * ── A VALUE THAT CANNOT HOLD THE NEW TITLE ───────────────────────────────────────────────────────────
- * The new value takes the delimiter the old one wore. Where it cannot (a tick inside a ticked value, a `lar:///` title moving
+ * The new value takes the delimiter the standing value wears. Where it cannot (a tick inside a ticked value, a `lar:///` title moving
  * onto a title that names no `lar:///` URI), the core answers `impossible` and rewrites nothing in that opener, the way
  * Relink marks a reference it cannot carry.
  *
@@ -73,7 +73,7 @@ export function sigilReferences(opener: string): SigilReference[] {
   return out;
 }
 
-/** Whether a value can stand inside the delimiter its predecessor wore. */
+/** Whether a value can stand inside the delimiter the standing value wears. */
 function fits(value: string, delimiter: string): boolean {
   if (delimiter === "") return value !== "" && !/[\s"'`]|>>/.test(value);
   const close = DELIMITERS.find(([open]) => open === delimiter)![1];
