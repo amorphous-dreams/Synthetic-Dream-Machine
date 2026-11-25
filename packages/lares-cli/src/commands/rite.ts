@@ -16,7 +16,10 @@
  *              cold wiki the house lists in turn before the cut, then hands the pins back
  *   begin      `rite-begin` in the vessel: derive the head's tree, return the rite's lei (a kūkulu: each lent face's own),
  *              rest the guest half of the tessera
- *   land       `rite-land` in the vessel that stands after: rest the host half, naming the begun half and the head
+ *   land       `rite-land` in the vessel that stands after: rest the host half, naming the begun half and the head.
+ *              `land --abandon --tessera <id>` (`rite-abandon`) sets a stale begun half down instead: a HAND act (the one hand gate,
+ *              `readOwnHand` here and the socket's `hand-act-only` for a seat) that spends nothing, records no par, and frees the
+ *              face to begin fresh; conferre reads the half abandoned
  *   receipts   `rite-receipts`: every half that verifies (`data.receipts`) and conferre's read of them (`data.conferre`)
  *   offer      `rite-offer` in the STANDING vessel, between the build and the lowering: gather every lent face's line, sign one
  *              vouch per face over the image the host built, and rest the offer the next vessel carries to the pūlama
@@ -47,11 +50,11 @@ import { houseExport, bundleRefusal, LIVE_BUNDLE_DOORS } from "./house-bundle.js
 import { runVerb } from "../verb-call.js";
 import { summaryOutput } from "../verb-result.js";
 import { vesselDid } from "../env.js";
-import { readOwnHand } from "@lararium/node";
+import { handRefusalOf, readOwnHand, type HandReading, type HandRefusal } from "@lararium/node";
 
 export class RiteUsage extends Error {}
 
-export type RiteVerb = "rite-begin" | "rite-land" | "rite-receipts" | "rite-offer";
+export type RiteVerb = "rite-begin" | "rite-land" | "rite-abandon" | "rite-receipts" | "rite-offer";
 export interface RitePlan { readonly verb: RiteVerb; readonly args: Record<string, unknown> }
 
 /** The host sub-verb's two spellings. */
@@ -92,6 +95,12 @@ export function ritePlan(args: ParsedArgs): RitePlan {
       throw new RiteUsage("a keeper move names the successor's key and the committed closure together: --keeper-to <64 hex> --keeper-next sha256:<64 hex>, as `keeper-stand` printed them (or neither, and the offer carries no move)");
     }
     return { verb: "rite-offer", args: { branch, head, image, ...face, ...(keeperTo === undefined ? {} : { keeperTo, keeperNext }) } };
+  }
+  if (act === "land" && args.flags["abandon"] === true) {
+    // THE HAND SETS A STALE HALF DOWN: it names the tessera and no head, since it records no landing.
+    const tessera = word(args.options["tessera"]);
+    if (tessera === undefined || head !== undefined || imageWord !== undefined) throw new RiteUsage("land --abandon names the tessera it sets down and no head or image (it records no landing): --abandon --tessera <id> [--face N]");
+    return { verb: "rite-abandon", args: { tessera, ...face } };
   }
   if (act === "land") {
     const tessera = word(args.options["tessera"]);
@@ -183,7 +192,27 @@ async function runKeepCut(args: ParsedArgs): Promise<number> {
   }
 }
 
+/**
+ * SETTING A BEGUN HALF DOWN STAYS A HAND ACT (ruling 2026-11-25, the abandon verb): the command reads its own branch through the
+ * one hand gate (`readOwnHand`) before any row; an AI harness refuses `hand-act-only`, an unread chain `hand-unattested`, each
+ * naming the line the operator runs at their own terminal. The socket refuses a seat's `rite-abandon` the same way. Null where a
+ * hand stands.
+ */
+export function abandonHandRefusal(rowArgs: Readonly<Record<string, unknown>>, hand: () => HandReading = () => readOwnHand({ proveRoute: false })): HandRefusal | null {
+  const read = hand();
+  if (!("refusal" in read)) return null;
+  const line = `lares rite land --abandon --tessera ${String(rowArgs["tessera"] ?? "<tessera>")}${typeof rowArgs["face"] === "number" ? ` --face ${rowArgs["face"]}` : ""}`;
+  return handRefusalOf(read.refusal, { act: "`lares rite land --abandon` (it sets a begun half down)", reads: "branch", line });
+}
+
 async function runRiteVerb(args: ParsedArgs, plan: RitePlan): Promise<number> {
+  if (plan.verb === "rite-abandon") {
+    const refused = abandonHandRefusal(plan.args);
+    if (refused !== null) {
+      emitAnswer(args, { ok: false, error: refused, human: () => console.error(`lares rite: ${refused.message}`) }, `lares rite: ${refused.message}`);
+      return exitFor(refused.code);
+    }
+  }
   try {
     const { output } = await storeVerb(plan.verb, plan.args);
     emitAnswer(args, { ok: true, data: output, human: () => console.log(JSON.stringify(output)) }, `lares rite ${plan.verb}: done`);
@@ -361,8 +390,8 @@ async function keepPins(dir: string): Promise<{ readonly ok: boolean; readonly l
  * One vessel row as the host's CLI line. The begin and the offer gather every lent face in the vessel, so they name none;
  * each landing names the face its tessera began under in its own arguments.
  */
-export const hostRowLine = (verb: "rite-begin" | "rite-land" | "rite-offer" | "rite-receipts", rowArgs: Record<string, unknown>): string[] =>
-  ["rite", verb.slice("rite-".length), ...flagsOf(rowArgs)];
+export const hostRowLine = (verb: "rite-begin" | "rite-land" | "rite-abandon" | "rite-offer" | "rite-receipts", rowArgs: Record<string, unknown>): string[] =>
+  verb === "rite-abandon" ? ["rite", "land", "--abandon", ...flagsOf(rowArgs)] : ["rite", verb.slice("rite-".length), ...flagsOf(rowArgs)];
 
 /**
  * The standing read's CLI line: it always names a face, the operator's where one is named, else face 0 (the keep's face), so a
