@@ -10,15 +10,17 @@ const h = vi.hoisted(() => ({
   calls: [] as Array<{ verb: string; args: Record<string, unknown> }>,
   reply: {} as Record<string, unknown>,
   offline: false,
+  fault: null as null | { code: string; message: string; requestId?: string },
 }));
 vi.mock("../src/verb-call.js", () => {
   class DaemonUnreachable extends Error {}
   return {
   DaemonUnreachable,
-  verbFailure: (err: unknown) => ({ code: "error", message: err instanceof Error ? err.message : String(err) }),
+  verbFailure: (err: unknown) => h.fault ?? ({ code: "error", message: err instanceof Error ? err.message : String(err) }),
   runVerb: async (verb: string, args: Record<string, unknown>) => {
     h.calls.push({ verb, args });
     if (h.offline) throw new DaemonUnreachable();
+    if (h.fault) throw new Error(h.fault.message);
     return { status: "done", requestId: "r", results: { summary: { ok: true, output: h.reply } } };
   },
 }; });
@@ -27,7 +29,7 @@ vi.mock("../src/env.js", async (orig) => ({
   vesselDid: async () => "0x" + "ab".repeat(32),
 }));
 
-import { ORACLE_THROW_STANDS, castFromCoins, castRecord, castText } from "@lararium/mesh/oracle-cast";
+import { ORACLE_THROW_STANDS, askingId, castFromCoins, castRecord, castText } from "@lararium/mesh/oracle-cast";
 import { cmdOracle, oraclePlan } from "../src/commands/oracle-cmd.js";
 import { COMMANDS } from "../src/bin/lares.js";
 import { helpLines } from "../src/command-help.js";
@@ -47,25 +49,70 @@ async function run(args: ParsedArgs): Promise<{ exit: number; out: string; err: 
   finally { so.mockRestore(); lo.mockRestore(); le.mockRestore(); }
 }
 
-afterEach(() => { h.calls.length = 0; h.reply = {}; h.offline = false; });
+afterEach(() => { h.calls.length = 0; h.reply = {}; h.offline = false; h.fault = null; });
+const MINT = (): string => "n0";
 
 describe("lares oracle cast", () => {
   test("RED: the verb stands in the command table, rides the vessel, and its help names the oracle's limit", () => {
     const row = COMMANDS.find((c) => c.name === "oracle");
     expect(row).toBeDefined();
-    expect(row?.accepts).toEqual(["bag", "caster", "coins", "face", "realm", "recipe"]);
+    expect(row?.accepts).toEqual(["asking", "bag", "caster", "coins", "face", "fresh", "realm", "recipe", "seed"]);
     expect(commandScope("oracle")).toBe("vessel");
     expect(row?.summary).toContain(ORACLE_THROW_STANDS);
     expect(helpLines("oracle").join("\n")).toContain(ORACLE_THROW_STANDS);
   });
 
-  test("the plan names the container, the time the CLI read, and no coins for a house cast", () => {
-    expect(oraclePlan(argv(["cast"], { recipe: "default" }), AT)).toEqual({ verb: "oracle-cast", args: { recipe: "default", at: AT, caster: "operator" } });
+  test("a bare cast's plan names the container, the time the CLI read, and the nonce it minted at the word", () => {
+    expect(oraclePlan(argv(["cast"], { recipe: "default" }), AT, MINT)).toEqual({ verb: "oracle-cast", args: { recipe: "default", at: AT, caster: "operator", nonce: "n0" } });
   });
 
   test("--coins rides as six line values, bottom first; --caster names who cast", () => {
-    expect(oraclePlan(argv(["cast"], { recipe: "default", coins: "7,8,9,6,7,7", caster: "h1" }), AT))
-      .toEqual({ verb: "oracle-cast", args: { recipe: "default", at: AT, caster: "h1", coins: [7, 8, 9, 6, 7, 7] } });
+    expect(oraclePlan(argv(["cast"], { recipe: "default", coins: "7,8,9,6,7,7", caster: "h1" }), AT, MINT))
+      .toEqual({ verb: "oracle-cast", args: { recipe: "default", at: AT, caster: "h1", nonce: "n0", coins: [7, 8, 9, 6, 7, 7] } });
+  });
+
+  test("--asking names the asking and mints no nonce, so the same words answer the same throw", () => {
+    expect(oraclePlan(argv(["cast"], { recipe: "default", asking: "which road?" }), AT, MINT))
+      .toEqual({ verb: "oracle-cast", args: { recipe: "default", at: AT, caster: "operator", asking: "which road?" } });
+  });
+
+  test("--fresh mints a nonce for the same words; --seed rides the person's words; the two never ride together", async () => {
+    expect(oraclePlan(argv(["cast"], { recipe: "default", asking: "which road?" }, { fresh: true }), AT, MINT).args)
+      .toMatchObject({ asking: "which road?", nonce: "n0", fresh: true });
+    expect(oraclePlan(argv(["cast"], { recipe: "default", seed: "kahiko" }), AT, MINT).args)
+      .toEqual({ recipe: "default", at: AT, caster: "operator", seed: "kahiko" });
+    for (const [options, flags] of [[{ recipe: "default", seed: "s" }, { fresh: true }], [{ recipe: "default", seed: "s", coins: "777777" }, {}]] as const) {
+      const r = await run(argv(["cast"], { ...options }, { ...flags, json: true }));
+      expect(r.exit).toBe(2);
+    }
+    expect(h.calls).toEqual([]);
+  });
+
+  test("a seat's fresh throw answers asks: the line a person runs, and a non-zero exit", async () => {
+    h.reply = { band: "asks", decision: "asks", asks: { who: "a person's hand", answer: "lares oracle cast --recipe default --asking \"q\" --fresh", why: "w" } };
+    const r = await run(argv(["cast"], { recipe: "default", asking: "q" }, { fresh: true, json: false }));
+    expect(r.exit).toBe(5);
+    expect(r.err).toContain("--fresh");
+    const j = await run(argv(["cast"], { recipe: "default", asking: "q" }, { fresh: true, json: true }));
+    expect(JSON.parse(j.out)).toMatchObject({ ok: false, data: { band: "asks" }, error: { code: "asks-a-hand" } });
+  });
+
+  test("a lost answer reads owed, never failed: the asking's id and the read-back ride with it", async () => {
+    h.fault = { code: "outcome-unknown", message: "stopped waiting", requestId: "r9" };
+    const r = await run(argv(["cast"], { recipe: "default", asking: "which road?" }, { json: true }));
+    expect(r.exit).toBe(6);
+    const out = JSON.parse(r.out);
+    expect(out).toMatchObject({ ok: false, requestId: "r9", data: { band: "owed", intent: askingId({ caster: "operator", asking: "which road?" }) }, error: { code: "outcome-unknown" } });
+    expect(out.error.hint).toContain("same line");
+    expect(out.error.hint).toContain("lares vessel request r9");
+  });
+
+  test("a replayed asking prints that its throw already stood", async () => {
+    const cast = castFromCoins([8, 8, 9, 6, 8, 8], { caster: "operator", at: AT });
+    h.reply = { band: "answered", replayed: true, decision: "exists", created: false, title: "t", cast: castRecord(cast), text: castText(cast), readings: [], note: ORACLE_THROW_STANDS };
+    const r = await run(argv(["cast"], { recipe: "default", asking: "which road?" }, { json: false }));
+    expect(r.exit).toBe(0);
+    expect(r.out).toContain("this asking already holds its throw");
   });
 
   test("coins that read wrong refuse before any vessel call", async () => {
