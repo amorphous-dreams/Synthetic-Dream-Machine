@@ -14,7 +14,7 @@
  *     presenter unreadable, so no presenter sorts same-operator.
  */
 import { describe, expect, test } from "vitest";
-import type { FaceScope, VesselFaceKey } from "@lararium/mesh";
+import type { FaceScope, VesselFaceKey } from "@lararium/mesh/face-proof-subjects";
 import { gateShadowRing, faceDevicesUnbound, type FaceDeviceReading } from "../src/gate-shadow-ring.js";
 
 const scope = (faceKey: string): FaceScope => ({ faceKey, nexus: "nexus-n" }) as FaceScope;

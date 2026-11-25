@@ -18,7 +18,7 @@ import { join } from "node:path";
 import { stringify as tomlStringify } from "smol-toml";
 import { Ledger, read, tend, undo, type Item } from "../../src/reality-tunnel/engine.js";
 import {
-  claudeHook, headLine, jsonFloor, jsonForeign, jsonIncludes, jsonSet, seedless, tomlForeign, tomlHook, tomlMcpServer,
+  claudeHook, claudeStatusLine, headLine, jsonFloor, jsonForeign, jsonIncludes, jsonSet, seedless, tomlForeign, tomlHook, tomlMcpServer,
   tomlTableKey, tomlTableUnset, tomlTopFloor,
 } from "../../src/reality-tunnel/kinds.js";
 
@@ -32,6 +32,7 @@ const JSON_KINDS: Array<[string, Kind]> = [
   ["jsonIncludes", jsonIncludes(["claudeMdExcludes"], ["**/x.md"])],
   ["claudeHook", claudeHook("Stop", "hook.sh", { type: "command", command: 'bash "/new/hook.sh"', timeout: 30 })],
   ["jsonIncludes.dotted", jsonIncludes(["permissions", "allow"], ["Bash(lares:*)", "mcp__lares__*"])],
+  ["claudeStatusLine", claudeStatusLine("tools/line.mjs", "node /new/tools/line.mjs /h/log")],
 ];
 const TOML_KINDS: Array<[string, Kind]> = [
   ["tomlTopFloor", tomlTopFloor("project_doc_max_bytes", 65536)],

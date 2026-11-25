@@ -14,7 +14,8 @@
  *
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store
  */
-import type { BookedSession, OwnPlace } from "@lararium/mesh";
+import type { BookedSession } from "@lararium/mesh/session-sign-book";
+import type { OwnPlace } from "@lararium/mesh/island-protocol";
 
 /** The daemon mount a place session stands for: its PersonaGroup and its atom. */
 export interface PlaceWorn { readonly group: string; readonly atomKey: string }

@@ -1,11 +1,15 @@
 import { describe, expect, test } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
-import {
-  emptyLarDoc, signFoundingLog, signPersonaAct, actCid, mintFaceAnchor, faceRootCommitment,
-  didFromVerifyingKey, ed25519VerifyingKeyFromSeed, ed25519SignerFromSeed,
-  provisionThresholdRecoveryAtFounding, recoveryContactRegistrationCard,
-  writePersonaKelEvent, personaKelChainForPrefix, proveFaceFromLog,
-} from "@lararium/mesh";
+import { emptyLarDoc } from "@lararium/mesh/base-doc";
+import { signFoundingLog, signPersonaAct } from "@lararium/mesh/persona-act-board";
+import { actCid } from "@lararium/mesh/signed-act";
+import { mintFaceAnchor, faceRootCommitment } from "@lararium/mesh/face-anchor";
+import { didFromVerifyingKey } from "@lararium/mesh/lar-did";
+import { ed25519VerifyingKeyFromSeed, ed25519SignerFromSeed } from "@lararium/mesh/ed25519-door";
+import { provisionThresholdRecoveryAtFounding } from "@lararium/mesh/recovery-keel-core";
+import { recoveryContactRegistrationCard } from "@lararium/mesh/recovery-registration";
+import { writePersonaKelEvent, personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";
+import { proveFaceFromLog } from "@lararium/mesh/face-boot-proof";
 import { appendPersonaActs, readFacePersonaRecords } from "../src/persona-act-store.js";
 import { taggedAdmission, testVesselTag } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 

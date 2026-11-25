@@ -12,8 +12,8 @@
  */
 import { describe, test, expect } from "vitest";
 import { KeyhiveProvider, runFaceJoin, type FaceJoinContext } from "@lararium/keyhive";
-import { buildDeviceDelegation } from "@lararium/mesh";
-import { tiddlerText } from "@lararium/mesh";
+import { buildDeviceDelegation } from "@lararium/mesh/device-delegation";
+import { tiddlerText } from "@lararium/mesh/base-doc";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 import { withMemorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";
 import { memorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";
@@ -260,7 +260,12 @@ describe("the hearth's door — kept where a joinee always reads it", () => {
     // and the joinee applies it. The apply refuses a bundle whose KEL carries no verified lineage or whose log is unfounded.
     const { Repo } = await import("@automerge/automerge-repo");
     const { foundThePlace, foundTheFace, runApplyAdmitPayload, runDeviceAdmitEdge } = await import("@lararium/keyhive");
-    const { HEARTH_DAEMON_URL_TIDDLER, seedDaemonDoc, makeIslandRepo, materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix, groupSecretOpenerFromSeed } = await import("@lararium/mesh");
+    const { HEARTH_DAEMON_URL_TIDDLER } = await import("@lararium/mesh/lar-uris");
+    const { seedDaemonDoc } = await import("@lararium/mesh/social-seed");
+    const { makeIslandRepo } = await import("@lararium/mesh/island-repo-door");
+    const { materializeSharedLarDoc, personaKelBoardDocUrl } = await import("@lararium/mesh/deterministic-doc");
+    const { personaKelChainForPrefix } = await import("@lararium/mesh/persona-kel-board");
+    const { groupSecretOpenerFromSeed } = await import("@lararium/mesh/persona-group-secret");
     const { founderAndJoineeActs, frontierFromFoundingSeed } = await import("./admit-acts.js");
 
     const HEARTH_DOOR = "automerge:2fakeHearthDoorUrl000000000";

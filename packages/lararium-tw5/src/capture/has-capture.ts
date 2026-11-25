@@ -18,7 +18,7 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/island-caps
  */
 
-import type { CaptureEngine, CapturePost } from "@lararium/mesh";
+import type { CaptureEngine, CapturePost } from "@lararium/mesh/capture/capture-engine";
 import type { SensoriumContract } from "@lararium/mesh/sensorium-contract";
 
 import type { IslandCap } from "../island-caps.js";

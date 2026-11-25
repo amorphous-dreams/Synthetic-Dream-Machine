@@ -8,7 +8,9 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import { join } from "node:path";
 import { afterEach, describe, expect, test } from "vitest";
 import { repoRoot } from "@lararium/mesh/node";
-import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI, foundingRecordDigests, type GenesisSeed } from "@lararium/mesh";
+import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "@lararium/mesh/lar-uris";
+import { foundingRecordDigests } from "@lararium/mesh/genesis-compare";
+import { type GenesisSeed } from "@lararium/mesh/genesis-doc";
 import { genesisSeedCid } from "@lararium/node";
 import { floorSeedRead, readSeedOffered } from "../src/seed-offered.js";
 import { cmdFloor, floorSeedLines } from "../src/commands/floor.js";

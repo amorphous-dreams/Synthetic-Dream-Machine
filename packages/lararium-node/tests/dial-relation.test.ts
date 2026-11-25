@@ -30,10 +30,13 @@
  */
 import { describe, expect, test } from "vitest";
 import { generateAutomergeUrl, interpretAsDocumentId, type DocumentId } from "@automerge/automerge-repo";
-import {
-  DAEMON_BAG_ID, DeterministicFederationGate, custodyRootDoor, deriveGateBundle, personaBagIdFor, personaMembershipEntries,
-  admitGatePinDigest, personaSiblingBagIds, sovereignGateRoot, sovereignRoute, type GateBundlePin, type PeerClass,
-} from "@lararium/mesh";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { DeterministicFederationGate } from "@lararium/mesh/federation-gate";
+import { custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute, type GateBundlePin } from "@lararium/mesh/gate-bundle-door";
+import { personaBagIdFor, personaSiblingBagIds } from "@lararium/mesh/persona-scope";
+import { personaMembershipEntries } from "@lararium/mesh/persona-planes";
+import { admitGatePinDigest } from "@lararium/mesh/admit-gate-pin";
+import { type PeerClass } from "@lararium/mesh/island-protocol";
 import { afterEach } from "vitest";
 import { chooseHearthDial } from "../src/hearth-gate-pins.js";
 import { keepFaceJoinRecord, readFaceJoinRecord } from "../src/fleet-join-custody.js";

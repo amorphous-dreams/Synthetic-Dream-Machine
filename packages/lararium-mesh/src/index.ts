@@ -25,14 +25,8 @@
  *     the same `lar-uris` namespace constants alongside it.
  */
 
-export {
-  load as automergeLoad,
-  save as automergeSave,
-  init as automergeInit,
-  change as automergeChange,
-  getHeads,
-} from "@automerge/automerge";
-export type { Heads, Doc as AutomergeDoc } from "@automerge/automerge";
+export { automergeLoad, automergeSave, automergeInit, automergeChange, getHeads } from "./automerge.js";
+export type { Heads, AutomergeDoc, Repo, DocHandle, AutomergeUrl, StorageAdapterInterface } from "./automerge.js";
 export * from "./base-doc.js";
 export * from "./stored-value.js";
 export * from "./stored-record.js";
@@ -147,6 +141,7 @@ export * from "./aperture-selector.js";
 export * from "./entropy-door.js";
 export * from "./ddate.js";
 export * from "./oracle-cast.js";
+export * from "./door-band.js";
 export * from "./epoch-lease.js";
 export { controlHomeUrlOf, standControlHome, readControlHome, nameControlHome, ControlHomeUnavailable, controlStoreOf, vesselOnlyDocIds, floorOnlyDocIds, makeVesselOnlyDocs, VESSEL_LOCKED, CONTROL_HOME_UNNAMED, controlHomeRefusal, assertControlHomeOpen, refusingControlStore, floorAnswerStore, isFloorAnswerTitle, FLOOR_ANSWER_RING, vesselLockedRefusal, type ControlHomeRefusal } from "./control-home.js";
 export { vesselOnlyBook, repoReverdict } from "./vessel-only-book.js";
@@ -317,7 +312,6 @@ export * from "./conformance-verb-breathing.js";
 export * from "./social-seed.js";
 export { didKeyFromVerifyingKey, buildCeremonyTiddlers } from "./cold-boot-ceremony.js";
 export type { CeremonyTiddler } from "./cold-boot-ceremony.js";
-export type { Repo, DocHandle, AutomergeUrl, StorageAdapterInterface } from "@automerge/automerge-repo";
 export { RECIPE_PLANES, effectiveRecipe, recipeRecordStands } from "./recipe-planes.js";
 export type { EffectiveRecipe, RecipePlane } from "./recipe-planes.js";
 export { resolveRecipePluginCids, deriveWikiRecipe, wikiSlugOfBag } from "./surface-recipe.js";

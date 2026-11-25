@@ -8,11 +8,22 @@ export interface GlassBootInputs {
   preloadedTiddlers: Record<string, unknown>[];
   /** The vessel's word that its store rests sealed (S's row): the plugin gate opens on it and on nothing else. */
   sealedRest: boolean;
+  /**
+   * The preload OBJECTS that are house skins: each came from the one blob whose bytes hash to the CID the vessel's founding record
+   * names for that skin title (`names.skinCids`). Attestation rides the object, never the title, so a second blob wearing a skin's
+   * title stays outside it. The CIDs come from the live founding-record rows (`floorSkinCids`), a self-consistency of the island's
+   * own rows; binding them to a re-verified genesis chain waits (course/glass-cid-rides-the-genesis-chain).
+   */
+  attestedSkins?: WeakSet<object>;
   /** The vessel's answer to which of the wiki's startup records this tab runs (`admitStartupRecords` behind it); absent, none runs. */
   startupAdmit?: (records: readonly PortWireRecord[]) => Promise<ReadonlySet<string>>;
 }
 /** The names the vessel gives for a wiki's boot set: the CIDs its island booted from. The bytes come from the island, over the port. */
-export interface GlassBootNames { coreCid: string; pluginCids: readonly string[]; sealedRest?: boolean }
+export interface GlassBootNames {
+  coreCid: string; pluginCids: readonly string[]; sealedRest?: boolean;
+  /** Skin title -> the CID the attested genesis names for that skin's bytes (`floorSkinCids`, off the island's blob rows). */
+  skinCids?: Readonly<Record<string, string>>;
+}
 
 const bytesOf = (base64: string): Uint8Array => {
   const binary = atob(base64);
@@ -80,11 +91,20 @@ export function makeBootHandoff(names: GlassBootNames | null, portId: string, ha
       };
       const coreBytes = whole(wanted[0]!);
       const preloadedTiddlers: Record<string, unknown>[] = [];
+      const attestedSkins = new WeakSet<object>();
       for (const cid of wanted.slice(1)) {
-        try { preloadedTiddlers.push(...preloadsFromCasBlob(whole(cid))); }
+        try {
+          const preloads = preloadsFromCasBlob(whole(cid));
+          // A skin preload is attested when the blob carrying it is the one the vessel names for that title; a same-titled preload from another blob is not.
+          for (const preload of preloads) {
+            const title = preload["title"];
+            if (typeof title === "string" && Object.hasOwn(names.skinCids ?? {}, title) && names.skinCids![title]!.toLowerCase() === cid) attestedSkins.add(preload);
+          }
+          preloadedTiddlers.push(...preloads);
+        }
         catch (error) { if (error instanceof Error && error.message.startsWith("mirror-boot-member-")) throw error; throw new Error(`mirror-boot-member-unreadable:${cid}`); }
       }
-      return { coreBytes, coreCid: wanted[0]!, preloadedTiddlers, sealedRest: names.sealedRest === true };
+      return { coreBytes, coreCid: wanted[0]!, preloadedTiddlers, sealedRest: names.sealedRest === true, attestedSkins };
     },
   };
 }

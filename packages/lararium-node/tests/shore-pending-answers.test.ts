@@ -14,7 +14,7 @@ import { describe, test, expect, afterEach } from "vitest";
 import { existsSync, mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
-import { carrierHash } from "@lararium/mesh";
+import { carrierHash } from "@lararium/mesh/crypto";
 import { MEME_EXT } from "@lararium/mesh/mirror-paths";
 import { LarDiskProjector } from "../src/disk-projector.js";
 import { SyncedTree, syncedTreeKey } from "../src/synced-tree.js";
@@ -221,7 +221,7 @@ describe("a sidecar standing alone", () => {
   test("a resolved pointer whose body a hand deleted stays deleted while its bytes fail to resolve, and pends once they return", async () => {
     const s = stand([URI]);
     const BYTES = Buffer.from("the pointer's own bytes");
-    const { sha256HexBytesSync } = await import("@lararium/mesh");
+    const { sha256HexBytesSync } = await import("@lararium/mesh/crypto");
     const cid = sha256HexBytesSync(BYTES);
     let tierHolds = true;
     const resolved: CarrierFile = { ext: ".txt", body: "", metaBody: META, encoding: "utf8", pointerCid: cid };

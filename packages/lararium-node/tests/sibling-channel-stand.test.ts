@@ -16,10 +16,13 @@ import { afterEach, describe, test, expect } from "vitest";
 import * as net from "node:net";
 import * as ed from "@noble/ed25519";
 import { Repo } from "@automerge/automerge-repo";
-import {
-  hex, ed25519SignerFromSeed, standSiblingChannel, enrolDevice, groupSecretOpenerFromSeed, dialSiblingHerm, SIBLING_ROUTE_SHUT,
-  provisionThresholdRecoveryAtFounding, recoveryContactRegistrationCard, type PersonaKelEvent, type SiblingRefusal,
-} from "@lararium/mesh";
+import { hex } from "@lararium/mesh/crypto";
+import { ed25519SignerFromSeed } from "@lararium/mesh/ed25519-door";
+import { standSiblingChannel, dialSiblingHerm, SIBLING_ROUTE_SHUT, type SiblingRefusal } from "@lararium/mesh/sibling-channel";
+import { enrolDevice, groupSecretOpenerFromSeed } from "@lararium/mesh/persona-group-secret";
+import { provisionThresholdRecoveryAtFounding } from "@lararium/mesh/recovery-keel-core";
+import { recoveryContactRegistrationCard } from "@lararium/mesh/recovery-registration";
+import { type PersonaKelEvent } from "@lararium/mesh/persona-kel";
 import { startHermRelayPort, type HermRelayPort } from "../src/herm-relay-port.js";
 
 const pubOf = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);

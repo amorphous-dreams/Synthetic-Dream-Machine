@@ -1,12 +1,18 @@
 import { describe, expect, test, vi } from "vitest";
-import { controlStoreOf } from "@lararium/mesh";
+import { controlStoreOf } from "@lararium/mesh/control-home";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createConnection, type Socket } from "node:net";
 import { Repo } from "@automerge/automerge-repo";
-import { AutomergeDocStore, CompositeStore, DAEMON_BAG_ID, emptyLarDoc, RECEIPT_FACT_URI_PREFIX, type SwitchIntent, type SwitchOutcome, concludeVerb, wikiSlotUri,
-  type LarDoc, type SessionFace } from "@lararium/mesh";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { RECEIPT_FACT_URI_PREFIX, concludeVerb } from "@lararium/mesh/verb-tiddler";
+import { type SwitchIntent, type SwitchOutcome } from "@lararium/mesh/session-switch";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import { type SessionFace } from "@lararium/mesh/session-contract";
 import { FactLedger, makeUdsSeat, serveUdsFront, type SessionAnchor, type UdsSessionDoor } from "../src/uds-channel.js";
 import { claimStore } from "../src/owned-store.js";
 

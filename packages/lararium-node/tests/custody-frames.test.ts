@@ -543,7 +543,7 @@ describe("the census frame", () => {
   beforeEach(() => { setMountedFace(undefined); });
   // A held key opens every standing face unless the row names otherwise (`allFacesOpen: false`): the census reads the
   // standing faces off this house's identity store, so the fake's open set follows that store.
-  const door = (heldSaves?: () => readonly import("@lararium/mesh").HeldSaves[] | null, unlocked = false, allFacesOpen = true) => custodyFrameHandler({
+  const door = (heldSaves?: () => readonly import("@lararium/mesh/sealed-doc-store").HeldSaves[] | null, unlocked = false, allFacesOpen = true) => custodyFrameHandler({
     holder: {
       isUnlocked: () => unlocked, openedSlot: () => null, attemptsLeft: () => 3,
       unlockedFaces: () => (unlocked && allFacesOpen ? listFaceCustodyIds().map((f) => f.fcid) : []),

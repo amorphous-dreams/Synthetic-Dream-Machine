@@ -18,10 +18,11 @@ import { Repo } from "@automerge/automerge-repo";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
 import { runFoundingCeremony, KeyhiveProvider, DaemonEventStore } from "@lararium/keyhive";
 import * as ed25519 from "@noble/ed25519";
-import {
-  hex,
-  CompositeStore, DAEMON_BAG_ID, AutomergeDocStore, type LarDoc,
-} from "@lararium/mesh";
+import { hex } from "@lararium/mesh/crypto";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 import { memorySecretHome, MEMORY_SEALED, memorySecretStore } from "../../lararium-mesh/tests/secret-home-fixture.js";
 

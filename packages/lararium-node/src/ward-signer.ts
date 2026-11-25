@@ -7,7 +7,8 @@
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness#/the-ward
  */
-import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, WardRefused } from "@lararium/mesh";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { WardRefused } from "@lararium/mesh/ward-slots";
 import { loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey } from "./node-vessel-identity.js";
 import { wardCredentialsOf, wardOrGather, type WardCredential } from "./ward-credential.js";
 

@@ -6,7 +6,8 @@
  * held write stays queued behind its turn and lands when the turn settles.
  */
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { CompositeStore, type Verb } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { type Verb } from "@lararium/mesh/verb-tiddler";
 import { makeActionReactorFor } from "../src/action-handler.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { placeMeme, type MemeSink } from "../src/place-meme.js";

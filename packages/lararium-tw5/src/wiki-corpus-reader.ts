@@ -12,7 +12,7 @@
  * Meme: lar:///ha.ka.ba/lares/api/wiki-sensorium-cap
  */
 
-import type { CompositeStore, CompositeEntry } from "@lararium/mesh";
+import type { CompositeStore, CompositeEntry } from "@lararium/mesh/composite-store";
 import { deriveDocStalk, senseBodyOf, IncrementalCorpusFold, type CorpusFold, type DocStalk, type WikiSenseDoc } from "./wiki-sense-fold.js";
 
 /** The shore ONE perceiver hull consumes — whole-record docs + a change pulse. Read-only. */

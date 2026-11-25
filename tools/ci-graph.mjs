@@ -309,15 +309,16 @@ export function runPlan(rootName, files, ctx, prefix = "", namePrefix = "") {
   for (const j of readJobs(text)) {
     const d = jobDetail(text, j.id);
     const needsOk = j.needs.every((n) => state.get(n) === "run");
-    const needs = Object.fromEntries(j.needs.map((n) => [n, state.get(n) === "run" ? { result: "success", outputs: { ...(ctx.outputs?.[n] ?? {}) } } : { result: "skipped", outputs: {} }]));
-    const jctx = { ...ctx, needs, needsOk };
+    // `ctx.red` names jobs that RUN and end failure (a planted red gate): a dependant reads `failure`, never `success`.
+    const needs = Object.fromEntries(j.needs.map((n) => [n, ctx.red?.includes(n) && state.get(n) === "run" ? { result: "failure", outputs: {} } : state.get(n) === "run" ? { result: "success", outputs: { ...(ctx.outputs?.[n] ?? {}) } } : { result: "skipped", outputs: {} }]));
+    const jctx = { ...ctx, needs, needsOk: needsOk && !j.needs.some((n) => ctx.red?.includes(n)) };
     const cond = j.ifText ?? "success()";
-    const runs = STATUS_FN.test(cond) ? evalExpr(cond, jctx) : needsOk && evalExpr(cond, jctx);
+    const runs = STATUS_FN.test(cond) ? evalExpr(cond, jctx) : jctx.needsOk && evalExpr(cond, jctx);
     state.set(j.id, runs ? "run" : "skipped");
     if (j.uses && runs) {
       const called = /^\.\/\.github\/workflows\/(.+)$/.exec(j.uses)[1];
       const inputs = Object.fromEntries(Object.entries(d.with).map(([k, v]) => [k, /^\$\{\{/.test(v) ? evalExpr(v, jctx) : v]));
-      out.push(...runPlan(called, files, { github: ctx.github, inputs }, `${prefix}${j.id}/`, `${namePrefix}${d.name} / `));
+      out.push(...runPlan(called, files, { github: ctx.github, inputs, red: ctx.red }, `${prefix}${j.id}/`, `${namePrefix}${d.name} / `));
       continue;
     }
     const steps = runs ? d.steps.filter((s) => s.ifText === null || STATUS_FN.test(s.ifText) || evalExpr(s.ifText, { ...jctx, needsOk: true })).map((s) => s.name) : [];

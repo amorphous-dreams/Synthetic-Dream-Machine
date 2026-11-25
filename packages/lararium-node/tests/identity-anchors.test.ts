@@ -27,7 +27,12 @@ import { ensureFaceCustodyOfGroup } from "../src/face-route.js";
 import { copyFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { mintFck, mintTreeKey, readFckCarrier, writeFaceCarrier, TreeKeyRefusal, type DeviceDelegationTiddler, type LarDid } from "@lararium/mesh";
+import { mintFck } from "@lararium/mesh/fck";
+import { mintTreeKey } from "@lararium/mesh/tree-key-door";
+import { readFckCarrier } from "@lararium/mesh/fck-envelope";
+import { writeFaceCarrier, TreeKeyRefusal } from "@lararium/mesh/sealed-writer";
+import { type DeviceDelegationTiddler } from "@lararium/mesh/device-delegation";
+import { type LarDid } from "@lararium/mesh/lar-did";
 import {
   persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas,
   persistVeilArchive, loadVeilArchive, veilArchivePath, veilArchiveFile, type IdentityAnchors,

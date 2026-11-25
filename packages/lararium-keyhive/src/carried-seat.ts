@@ -19,10 +19,21 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/keyhive/carried-seat
  */
+import { buildIntent, type IntentSigner } from "@lararium/mesh/intent-issue";
+import { faceIntentVerbs } from "@lararium/mesh/intent-verbs";
 import {
-  buildIntent, faceIntentVerbs, intentEntryCid, intentEntryRecordsOfGroup, intentId, ownEntry, readIntentEntry, storedLarRecord, tiddlerText, writeIntentEntry,
-  type DeviceDelegationTiddler, type DocHandle, type IntentSigner, type LarDoc, type SignedIntentEntry,
-} from "@lararium/mesh";
+  intentEntryCid,
+  intentEntryRecordsOfGroup,
+  intentId,
+  readIntentEntry,
+  writeIntentEntry,
+  type SignedIntentEntry,
+} from "@lararium/mesh/intent-entry";
+import { ownEntry } from "@lararium/mesh/stored-value";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
+import { tiddlerText, type LarDoc } from "@lararium/mesh/base-doc";
+import { type DeviceDelegationTiddler } from "@lararium/mesh/device-delegation";
+import { type DocHandle } from "@lararium/mesh/automerge";
 import { faceJoinNonce } from "./face-intent-door.js";
 import { FACE_GRANT_PREFIX, faceGrantRecordCid, faceGrantTitle, verifyFaceGrantRecord, type FaceGrantRecord, type FaceGrantVerdict, type FaceGrantVerifyContext } from "./face-grant-record.js";
 import type { FaceJoinSummons } from "./face-join.js";

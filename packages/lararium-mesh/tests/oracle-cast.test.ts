@@ -8,10 +8,11 @@ import { readFileSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
-  CAST_METHOD, OPERATOR_COINS, ORACLE_THROW_STANDS, castFields, castFromCoins, castReadingTitles, castText, castThreeCoins,
-  castTitle, figureOf, hexagramOf, parseCoins, readingTitle, throwLine, type LineValue,
+  CAST_METHOD, CAST_TITLE_PREFIX, OPERATOR_COINS, ORACLE_THROW_STANDS, askingCastTitle, askingId, castFields, castFromCoins,
+  castFromLines, castReadingTitles, castText, castThreeCoins, castTitle, figureOf, hexagramOf, normalizeAsking, parseCoins, readingTitle,
+  throwLine, type LineValue,
 } from "../src/oracle-cast.js";
-import { PLATFORM_ENTROPY, type EntropyDoor } from "../src/entropy-door.js";
+import { PLATFORM_ENTROPY, seededEntropy, type EntropyDoor } from "../src/entropy-door.js";
 
 /** A door that hands back the bytes it was given, in order, and names itself as a replay. */
 function scripted(bytes: readonly number[]): EntropyDoor {
@@ -201,5 +202,57 @@ describe("oracle-cast — the result as a tiddler, written once", () => {
     expect(text).toContain("operator:three-coins");
     expect(text).toContain(ORACLE_THROW_STANDS);
     expect(ORACLE_THROW_STANDS).toBe("a blind throw to collide uncertainty with: the throw stands, the reading stays open");
+  });
+});
+
+describe("oracle-cast — one asking, one throw", () => {
+  const asking = { asker: "cli:0xab", asking: "which road first?" };
+
+  test("the asking's id hashes the booked asker, what, the nonce, the seed and typed coins, and never the time", () => {
+    const id = askingId(asking);
+    expect(id).toMatch(/^[0-9a-f]{64}$/);
+    expect(askingId({ ...asking })).toBe(id);
+    expect(askingId({ ...asking, asker: "seat:0xab" })).not.toBe(id);
+    expect(askingId({ ...asking, asking: "which road last?" })).not.toBe(id);
+    expect(askingId({ ...asking, nonce: "n1" })).not.toBe(id);
+    expect(askingId({ ...asking, seed: "s1" })).not.toBe(id);
+    expect(askingId({ ...asking, coins: [7, 7, 7, 7, 7, 7] })).not.toBe(id);
+  });
+
+  test("trivial edits to the words replay the same asking: case, spacing, Unicode form and trailing punctuation", () => {
+    const id = askingId(asking);
+    for (const words of ["Which Road First?", "  which   road\tfirst ", "which road first", "which road first?!.", "WHICH ROAD FIRST…"]) {
+      expect(normalizeAsking(words)).toBe("which road first");
+      expect(askingId({ ...asking, asking: words })).toBe(id);
+    }
+    expect(normalizeAsking("café")).toBe(normalizeAsking("café"));
+  });
+
+  test("an asking's title sits under casts/ and names the asking, so a second ask finds the first throw", () => {
+    const id = askingId(asking);
+    expect(askingCastTitle(id)).toBe(`${CAST_TITLE_PREFIX}asked-${id.slice(0, 16)}`);
+  });
+
+  test("a seeded door throws the same coins for the same seed and names the seed's digest, never the seed", () => {
+    const one = castThreeCoins(seededEntropy("kahiko"), ASK);
+    expect(castThreeCoins(seededEntropy("kahiko"), ASK)).toEqual(one);
+    expect(one.entropy).toMatch(/^seed:sha256:[0-9a-f]{16}$/);
+    expect(one.entropy).not.toContain("kahiko");
+    expect(castThreeCoins(seededEntropy("other"), ASK).entropy).not.toBe(one.entropy);
+  });
+
+  test("a standing cast reads back from its lines and its door, the same figure", () => {
+    const cast = castFromCoins([8, 8, 9, 6, 8, 8], ASK);
+    const back = castFromLines([8, 8, 9, 6, 8, 8], "platform:crypto.getRandomValues", ASK);
+    expect(back.primary).toEqual(cast.primary);
+    expect(back.relating).toEqual(cast.relating);
+    expect(back.entropy).toBe("platform:crypto.getRandomValues");
+  });
+
+  test("the fields an asking writes carry its title, its intent and its words", () => {
+    const cast = castFromCoins([8, 8, 9, 6, 8, 8], ASK);
+    const id = askingId(asking);
+    const fields = castFields(cast, { title: askingCastTitle(id), intent: id, asking: asking.asking });
+    expect(fields).toMatchObject({ title: askingCastTitle(id), intent: id, asking: "which road first?", primary: "15" });
   });
 });

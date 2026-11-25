@@ -33,33 +33,79 @@
  * Meme:    lar:///ha.ka.ba/lararium/api/residency-model
  */
 
-import { refuseTw5DocsReserved, refuseTw5DocsWrite, wearOf } from "@lararium/mesh";
+import { refuseTw5DocsReserved, refuseTw5DocsWrite } from "@lararium/mesh/tw5-docs-name";
+import { wearOf } from "@lararium/mesh/repo-wear";
+import type { CompositeStore } from "@lararium/mesh/composite-store";
+import type { LarTiddlerRecord, LarTiddlerStore, ChangeOrigin } from "@lararium/mesh/tiddler-store";
+import type { Verb } from "@lararium/mesh/verb-tiddler";
+import type { Repo } from "@lararium/mesh/automerge";
 import type {
-  CompositeStore,
-  LarTiddlerRecord,
-  LarTiddlerStore,
-  ChangeOrigin,
-  Verb,
-  Repo,
-  ResidencyAction, AddAction, CopyAction, MoveAction, ClearAction, DropAction, LoadAction, IngestAction, CreateAction,
-  WikiSlotKind,
-} from "@lararium/mesh";
-import { isHouseCanonBag, holdsKahuReach, plainRecordOrNull, admitSeatExecutable, requireKahuReach, resolveHouseCanon, ownEntry, isExecutableRecord, renderedFromOf, renderedRungOf, renderedRungWarning, RENDERED_ALERT_KIND, type RenderedRung } from "@lararium/mesh";
-import type { KahuReachSource } from "@lararium/mesh";
+  ResidencyAction,
+  AddAction,
+  CopyAction,
+  MoveAction,
+  ClearAction,
+  DropAction,
+  LoadAction,
+  IngestAction,
+  CreateAction,
+} from "@lararium/mesh/residency-actions";
+import type { WikiSlotKind } from "@lararium/mesh/wiki-recipe";
+import { isHouseCanonBag, holdsKahuReach, requireKahuReach } from "@lararium/mesh/kahu-canon-reach";
+import { plainRecordOrNull, ownEntry } from "@lararium/mesh/stored-value";
+import { admitSeatExecutable } from "@lararium/mesh/seat-startup-offer";
+import { resolveHouseCanon } from "@lararium/mesh/house-canon-doc";
+import { isExecutableRecord } from "@lararium/mesh/executable-class";
 import {
-  ACTION_VERBS, type ActionVerb, AutomergeDocStore,
-  parseResidencyAction, withEffectRecord, sha256HexBytesSync, carrierHash, digestsEqual,
-  emptyLarDoc, storedLarRecord, CATALOG_DOC_URI, ORACLE_DOC_URI,
-  ORIGINAL_TIDDLER_PATHS, parseProvenance, serializeProvenance, recordPack, membersOfPack,
-  ORIGINAL_TIDDLER_HASHES, parseHashes, serializeHashes, recordPackHashes, hashOfMember,
-  skinnyHandleTiddler, isOversizedBody, ridesAsPointer,
-  crossingDirection, type CapTier,
-  isEffectRecordUri, effectRecordUri, RETIRED_EVENT_ID, isRetirementMarker, storeIsRetired,
-  writesBag, VerbRefusal, workingLayerOfCanon, canonOfWorkingLayer, isWorkingLayerBag, overrideBaseOf, carrierHashOf, OVERRIDE_BASE_META,
-  CONTROL_HOME_ID, SECRET_HOME_ID,
-  yieldToHost, standoffOf,
-} from "@lararium/mesh";
-import type { HostTaskYield } from "@lararium/mesh";
+  renderedFromOf,
+  renderedRungOf,
+  renderedRungWarning,
+  RENDERED_ALERT_KIND,
+  type RenderedRung,
+} from "@lararium/mesh/rendered-derives";
+import type { KahuReachSource } from "@lararium/mesh/kahu-canon-reach";
+import { ACTION_VERBS, type ActionVerb, parseResidencyAction, writesBag } from "@lararium/mesh/residency-actions";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import {
+  withEffectRecord,
+  isEffectRecordUri,
+  effectRecordUri,
+  RETIRED_EVENT_ID,
+  isRetirementMarker,
+  storeIsRetired,
+} from "@lararium/mesh/effect-record";
+import { sha256HexBytesSync, carrierHash } from "@lararium/mesh/crypto";
+import { digestsEqual } from "@lararium/mesh/agile-digest";
+import { emptyLarDoc } from "@lararium/mesh/base-doc";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
+import { CATALOG_DOC_URI, ORACLE_DOC_URI, CONTROL_HOME_ID, SECRET_HOME_ID } from "@lararium/mesh/lar-uris";
+import {
+  ORIGINAL_TIDDLER_PATHS,
+  parseProvenance,
+  serializeProvenance,
+  recordPack,
+  membersOfPack,
+  ORIGINAL_TIDDLER_HASHES,
+  parseHashes,
+  serializeHashes,
+  recordPackHashes,
+  hashOfMember,
+} from "@lararium/mesh/pack-provenance";
+import { skinnyHandleTiddler, isOversizedBody, ridesAsPointer } from "@lararium/mesh/content-handle";
+import { crossingDirection } from "@lararium/mesh/crossing-direction";
+import { type CapTier } from "@lararium/mesh/cap-tier";
+import { VerbRefusal } from "@lararium/mesh/verb-refusal";
+import {
+  workingLayerOfCanon,
+  canonOfWorkingLayer,
+  isWorkingLayerBag,
+  overrideBaseOf,
+  OVERRIDE_BASE_META,
+} from "@lararium/mesh/override-base";
+import { carrierHashOf } from "@lararium/mesh/carrier-form";
+import { yieldToHost } from "@lararium/mesh/host-task";
+import { standoffOf } from "@lararium/mesh/standoff-watch";
+import type { HostTaskYield } from "@lararium/mesh/host-task";
 import type { SessionWorn, VerbReactor, VerbTable } from "./verb-dispatcher.js";
 import type { TW5Instance } from "./types/tiddlywiki.js";
 import { findOrThrow, makeCatalogAccessor } from "./catalog-accessor.js";

@@ -60,26 +60,28 @@ import type { WardCredential } from "./ward-credential.js";
 import {
   generateOrLoadKeypair,
   signingSeedFromHex,
-  assertHandleIndex,
   type KeypairStore,
   type KeypairCrypto,
   type PersistedKeypair,
-  type PersonaVault,
-  type ActivePersonaStore,
-  type PersonaRoot,
-  type OwnPersonaPetnameStore,
-  type PersonaDeclaration,
-  type PersonaDeclarationStore,
-  type OwnPublicHandleStore,
-  type PersonaPublicHandleRecord,
-  armPlaceInception, PlaceFoundingCardUnread, type PlaceFoundingCard, mintPlaceRotation, placeNextDigest, verifyPlaceKel, decodePlaceKelEvent,
-  mintColdKey, canonicalJson, hex, type PlaceKelEvent, type PlaceRotation, type RandomProvider,
-  ALL_DOMAINS,
-  GATE_BUNDLE_INFO,
-  floorKeyDoor,
-  type FloorKeyDoor,
-  placeSignerFromSeed, type PlaceSigner,
-} from "@lararium/mesh";
+} from "@lararium/mesh/vessel-identity-core";
+import { assertHandleIndex, type PersonaVault, type ActivePersonaStore, type PersonaRoot } from "@lararium/mesh/persona-vault";
+import { type OwnPersonaPetnameStore } from "@lararium/mesh/persona-petname";
+import { type PersonaDeclaration, type PersonaDeclarationStore } from "@lararium/mesh/persona-declare";
+import { type OwnPublicHandleStore, type PersonaPublicHandleRecord } from "@lararium/mesh/persona-glamour";
+import { armPlaceInception, PlaceFoundingCardUnread, type PlaceFoundingCard } from "@lararium/mesh/place-founding-card";
+import {
+  mintPlaceRotation,
+  placeNextDigest,
+  verifyPlaceKel,
+  decodePlaceKelEvent,
+  type PlaceKelEvent,
+  type PlaceRotation,
+} from "@lararium/mesh/vessel-kel";
+import { mintColdKey } from "@lararium/mesh/cold-key-card";
+import { canonicalJson, hex, type RandomProvider } from "@lararium/mesh/crypto";
+import { ALL_DOMAINS, GATE_BUNDLE_INFO } from "@lararium/mesh/domains";
+import { floorKeyDoor, type FloorKeyDoor } from "@lararium/mesh/gate-bundle-door";
+import { placeSignerFromSeed, type PlaceSigner } from "@lararium/mesh/place-signer";
 import { readBackStandsIn } from "./seal-ceremony.js";
 import { nodeAnchorStore } from "./identity-anchors.js";
 import { nodeRecoveryShareStore } from "./recovery-share-store.js";

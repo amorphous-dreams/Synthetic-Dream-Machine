@@ -6,7 +6,12 @@
  * whose bag classifies device-private) still stays on this vessel: a wire peer, sibling or other device reads none of it.
  */
 import { describe, expect, test } from "vitest";
-import { CONTROL_HOME_ID, SECRET_HOME_ID, daemonFaceCanonBag, emptyLarDoc, makeVesselOnlyDocs, storedLarRecord, wikiBagUri, wikiSlotUri, deviceDaemonDocs, type LarDoc } from "@lararium/mesh";
+import { CONTROL_HOME_ID, SECRET_HOME_ID } from "@lararium/mesh/lar-uris";
+import { daemonFaceCanonBag, wikiBagUri, wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { makeVesselOnlyDocs } from "@lararium/mesh/control-home";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
+import { deviceDaemonDocs } from "@lararium/mesh/device-daemon-docs";
 import { isDevicePrivateBag, vesselOnlyClass, vesselOnlyShareVerdict } from "../src/vessel-only-share.js";
 
 const F1 = "11111111-1111-4111-8111-111111111111";

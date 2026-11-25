@@ -1,9 +1,12 @@
 /** The browser island's peer reading must see rolls kept by the vessel's main Repo. */
 import { describe, expect, test, vi } from "vitest";
-import {
-  CompositeStore, deviceEdgeId, edgeLedgerDocUrl, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed,
-  emptyLarDoc, fleetEdgeBoardDocUrl, makeIslandRepo, materializeSharedLarDoc, signEdgeKapae, writeEdgeKapae,
-} from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { deviceEdgeId } from "@lararium/mesh/dyad";
+import { edgeLedgerDocUrl, fleetEdgeBoardDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { emptyLarDoc } from "@lararium/mesh/base-doc";
+import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
+import { signEdgeKapae, writeEdgeKapae } from "@lararium/mesh/edge-kapae";
 import { markRaiseRolled } from "../../lararium-mesh/src/edge-ledger.js";
 import { signSeatRoll } from "../../lararium-mesh/src/seat-duties.js";
 /** A roll under this vessel's own receipt, as its island signs it (road `T33`): a mark counts under nothing less. */

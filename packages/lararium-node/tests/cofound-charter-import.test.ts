@@ -10,7 +10,10 @@ import { describe, expect } from "vitest";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
-import { cidV1Sha256, coldKeyFromSeed, foundingRoster, hex, seatFingerprint, type NexusDoc, type SealEpoch } from "@lararium/mesh";
+import { cidV1Sha256, hex } from "@lararium/mesh/crypto";
+import { coldKeyFromSeed } from "@lararium/mesh/cold-key-card";
+import { foundingRoster, seatFingerprint, type NexusDoc } from "@lararium/mesh/nexus-seal-seed";
+import { type SealEpoch } from "@lararium/mesh/wax-stamp";
 import {
   charterInceptionBytes, cofoundGenesis, cofoundJoin, cofoundOffer, sealCofound,
 } from "../../lararium-mesh/src/cofound.js";

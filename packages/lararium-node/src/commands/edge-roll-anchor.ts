@@ -25,11 +25,19 @@
  */
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  edgeRollAnchorParents, signEdgeRollAnchor, edgeRollAnchorCounts, edgeRollAnchorCid, writeEdgeRollAnchor,
-  charterHandLineage, prepareRealmFrontier, registerRealmFrontierInto, realmRaiseCids, type SealEpoch,
-  keptFromLedger, ledgerScopes, ledgerRealms, keepInLedger, edgeLedgerDocUrl, realmEdgeBoardDocUrl, materializeSharedLarDoc,
-  type KahuQuorumSeats, type LarDoc,
-} from "@lararium/mesh";
+  edgeRollAnchorParents,
+  signEdgeRollAnchor,
+  edgeRollAnchorCounts,
+  edgeRollAnchorCid,
+  writeEdgeRollAnchor,
+} from "@lararium/mesh/edge-kapae";
+import { charterHandLineage } from "@lararium/mesh/charter-hand-lineage";
+import { prepareRealmFrontier, registerRealmFrontierInto, realmRaiseCids } from "@lararium/mesh/realm-frontier";
+import { type SealEpoch } from "@lararium/mesh/wax-stamp";
+import { keptFromLedger, ledgerScopes, ledgerRealms, keepInLedger } from "@lararium/mesh/edge-ledger";
+import { edgeLedgerDocUrl, realmEdgeBoardDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { type KahuQuorumSeats } from "@lararium/mesh/kapae-antigen";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { readNexusDoc } from "../nexus-doc.js";
 import { loadFaceAtomKey } from "../face-atom-store.js";
 import { unlockedFaceOrdinals } from "../custody-seat.js";

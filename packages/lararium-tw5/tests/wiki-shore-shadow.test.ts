@@ -5,7 +5,9 @@
  * reload.
  */
 import { describe, expect, test, vi } from "vitest";
-import { CompositeStore, emptyLarDoc, type LarDoc, wikiBagUri } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { wikiBagUri } from "@lararium/mesh/wiki-recipe";
 import { bridgeWikiToAdaptor } from "../src/outbound-bridge.js";
 import { buildIslandRecipe, seedDrained } from "../src/island-recipe.js";
 import { unroutedSaveAlertTitle } from "../src/island-adaptor.js";

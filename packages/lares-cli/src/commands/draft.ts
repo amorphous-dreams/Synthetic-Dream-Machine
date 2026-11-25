@@ -16,7 +16,7 @@ import { createInterface } from "node:readline/promises";
 import { stdin, stdout } from "node:process";
 import { vesselDid } from "../env.js";
 import { summaryOutput } from "../verb-result.js";
-import { OUTCOME_URI_PREFIX } from "@lararium/mesh";
+import { OUTCOME_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
 import { runVerb, verbFailure } from "../verb-call.js";
 import { emit, wantsJson, exitFor } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";

@@ -1,5 +1,7 @@
 import { describe, expect, test } from "vitest";
-import { buildVerb, parseVerb, verbInputDigest, VERB_URI_PREFIX, type CompositeStore, type LarTiddlerRecord } from "@lararium/mesh";
+import { buildVerb, parseVerb, verbInputDigest, VERB_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
+import { type CompositeStore } from "@lararium/mesh/composite-store";
+import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { placeVerb, writeOutcome } from "../src/verb-vm.js";
 
 class Wiki {

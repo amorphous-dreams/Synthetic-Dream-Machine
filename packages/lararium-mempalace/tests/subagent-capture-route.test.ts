@@ -8,7 +8,7 @@
  */
 
 import { describe, expect, test } from "vitest";
-import { deriveAgent, deriveHandle, deriveSurface } from "@lararium/mesh";
+import { deriveAgent, deriveHandle, deriveSurface } from "@lararium/mesh/capture/branch-frontier";
 import { spiritCaptureSourceFile, spiritStageBasename, spiritsWing } from "../src/subagent-mine.js";
 
 describe("spiritCaptureSourceFile", () => {

@@ -11,11 +11,22 @@ import { describe, test, expect } from "vitest";
 import { createRequire } from "node:module";
 import { buildIslandRecipe } from "../src/island-recipe.js";
 import { openDaemonVmCore, type DaemonVmHost } from "../src/daemon-vm-core.js";
-import {
-  CompositeStore, AutomergeDocStore, emptyLarDoc, expandRecipe, kahuaRecipe, slotLayerFlags, wikiBagUri, wikiSlotUri, DAEMON_BAG_ID, KAHUA_BAG, ORACLE_BAG, OUTCOME_URI_PREFIX,
-  ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, kahuaStageDocUrl, materializeSharedLarDoc, signKahuaLift, storedLarRecord, writeKahuaAct, kahuaStageStore,
-} from "@lararium/mesh";
-import type { ChangeOrigin, DocHandle, IslandMsg_Manifest, LarDoc, Repo as RepoType, SlotUri } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { emptyLarDoc } from "@lararium/mesh/base-doc";
+import { expandRecipe, kahuaRecipe, slotLayerFlags, wikiBagUri, wikiSlotUri, KAHUA_BAG, ORACLE_BAG } from "@lararium/mesh/wiki-recipe";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { OUTCOME_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { kahuaStageDocUrl, signKahuaLift, writeKahuaAct } from "@lararium/mesh/kahua-stage";
+import { materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
+import { kahuaStageStore } from "@lararium/mesh/kahua-stage-store";
+import type { ChangeOrigin } from "@lararium/mesh/tiddler-store";
+import type { DocHandle, Repo as RepoType } from "@lararium/mesh/automerge";
+import type { IslandMsg_Manifest } from "@lararium/mesh/island-protocol";
+import type { LarDoc } from "@lararium/mesh/base-doc";
+import type { SlotUri } from "@lararium/mesh/wiki-recipe";
 import type { TW5Engine } from "../src/tw5-vm.js";
 
 const Repo = createRequire(import.meta.resolve("@lararium/mesh"))("@automerge/automerge-repo").Repo as new (options: { sharePolicy?: () => Promise<boolean> }) => RepoType;

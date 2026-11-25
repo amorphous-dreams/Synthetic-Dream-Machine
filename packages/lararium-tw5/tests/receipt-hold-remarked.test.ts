@@ -5,7 +5,7 @@
  * write: the first act's verdict must read kept, not `receipt-refused` (seen as `receipt-refused@3` on quick successive new tiddlers).
  */
 import { describe, expect, test } from "vitest";
-import { type LarTiddlerRecord } from "@lararium/mesh";
+import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { wikiSkip, skipNote } from "./test-wiki.js";
 import { afterDispatch, ManualBoundary, openDraft, remote, saveSequence, shoreRig, turns } from "./wiki-shore-rig.js";
 

@@ -10,7 +10,7 @@
  */
 import { afterEach, beforeEach, describe, expect, test as plain, vi } from "vitest";
 import { fc, test } from "@fast-check/vitest";
-import { ACTION_VERBS, isBagVerb, isTransferVerb } from "@lararium/mesh";
+import { ACTION_VERBS, isBagVerb, isTransferVerb } from "@lararium/mesh/residency-actions";
 
 const h = vi.hoisted(() => ({
   calls: [] as Array<{ verb: string; args: Record<string, unknown>; opts: Record<string, unknown> }>,

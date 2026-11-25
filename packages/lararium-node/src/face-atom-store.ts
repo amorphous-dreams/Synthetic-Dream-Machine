@@ -1,6 +1,9 @@
 /** Each face's atom rests in an identity row named by its PersonaGroup digest. */
 import { createHash } from "node:crypto";
-import { keepFaceAtomSeed, mintFaceAtomSeed, readFaceAtom, standFaceAtomSeed, tiddlerText, type FaceAtomRecords, type StoredLarRecord } from "@lararium/mesh";
+import { keepFaceAtomSeed, readFaceAtom, standFaceAtomSeed, type FaceAtomRecords } from "@lararium/mesh/face-atom-custody";
+import { mintFaceAtomSeed } from "@lararium/mesh/face-atom";
+import { tiddlerText } from "@lararium/mesh/base-doc";
+import { type StoredLarRecord } from "@lararium/mesh/stored-value";
 import { openCheckpoint } from "@lararium/keyhive";
 import { readCustodyRecord, removeCustodyRecord, updateCustodyRecord, moveCustodyRecord, withCustodyRecords, openFaceFileNames } from "./custody-seat.js";
 import { listAnchoredPersonas, loadIdentityAnchors } from "./identity-anchors.js";

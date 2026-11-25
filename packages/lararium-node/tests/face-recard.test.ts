@@ -18,7 +18,7 @@
 import { afterEach, expect, test, vi } from "vitest";
 import { ContentKeyNotHeld, InMemoryEventStore, KeyhiveProvider } from "@lararium/keyhive";
 import { operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
-import { BAG_IDS, DAEMON_BAG_ID } from "@lararium/mesh";
+import { BAG_IDS, DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
 import { standFoundedIsland } from "./stand-founded-island.js";
 import { STALE_LIGHT } from "../src/custody-frames.js";
 vi.setConfig({ testTimeout: 900_000, hookTimeout: 900_000 });

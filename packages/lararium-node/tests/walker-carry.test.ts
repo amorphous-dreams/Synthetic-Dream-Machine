@@ -16,10 +16,18 @@ import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import { rmSync, readdirSync, statSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import {
-  carryDocument, fetchDocument, openCarried, watchCarryNotice, takeInvite, issueGrant, encodeInvite, mintHostToken, utf8Bytes, hex,
-  walkCarrySecret, walkCarryDocumentKey, sha256HexBytesSync, base64UrlEncode, base64UrlDecode, verifyCiphertextCid,
-  HOSTING_NOTICE_SESSION_KIND, type HostingGrant, type LarSessionMsg, type WalkRecord, type WalkStore,
-} from "@lararium/mesh";
+  carryDocument,
+  fetchDocument,
+  openCarried,
+  watchCarryNotice,
+  walkCarryDocumentKey,
+  HOSTING_NOTICE_SESSION_KIND,
+} from "@lararium/mesh/walk-carry";
+import { takeInvite, type WalkRecord, type WalkStore } from "@lararium/mesh/walk-client";
+import { issueGrant, encodeInvite, mintHostToken, walkCarrySecret, type HostingGrant } from "@lararium/mesh/hosting";
+import { utf8Bytes, hex, sha256HexBytesSync, base64UrlEncode, base64UrlDecode } from "@lararium/mesh/crypto";
+import { verifyCiphertextCid } from "@lararium/mesh/ciphertext-cas";
+import { type LarSessionMsg } from "@lararium/mesh/leaf-presentation";
 import { serveHostingCarry } from "../src/hosting-carry.js";
 import { rollHosting, readHostingState, liveEpochs } from "../src/hosting-store.js";
 import { hostingDirPath, hostingRecordDir } from "../src/hosting-face.js";

@@ -36,7 +36,7 @@ import { asIslandStore } from "./island-store-double.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { PERSONAL_TITLE_EXACT, PERSONAL_TITLE_PREFIXES } from "../src/filters/lar-kind.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
-import type { ChangeOrigin, LarTiddlerRecord, LarWriteOptions } from "@lararium/mesh";
+import type { ChangeOrigin, LarTiddlerRecord, LarWriteOptions } from "@lararium/mesh/tiddler-store";
 
 const SLOT_WORKING  = "lar:///ha.ka.ba/wikis/test/working";
 const SLOT_DRAFT    = "lar:///ha.ka.ba/wikis/test/draft";

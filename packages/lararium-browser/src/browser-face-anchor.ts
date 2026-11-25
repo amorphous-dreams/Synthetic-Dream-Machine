@@ -1,5 +1,6 @@
 /** The browser's sealed, PersonaGroup-named face anchor custody row. */
-import { keepFaceAnchor, loadFaceAnchor, requireFaceAnchor, type FaceAnchor, type FaceAnchorRecords } from "@lararium/mesh";
+import { keepFaceAnchor, loadFaceAnchor, requireFaceAnchor, type FaceAnchorRecords } from "@lararium/mesh/face-anchor-custody";
+import { type FaceAnchor } from "@lararium/mesh/face-anchor";
 import { readKeystoreRecord, withCustodyRecords } from "./browser-custody.js";
 
 export function faceAnchorRecord(personaGroup: string): string {

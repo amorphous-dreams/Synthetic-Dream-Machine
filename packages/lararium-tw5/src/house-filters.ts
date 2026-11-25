@@ -17,7 +17,8 @@
  * Meme: lar:///ha.ka.ba/lares/api/filters
  */
 
-import { VerbRefusal, type CompositeStore } from "@lararium/mesh";
+import { VerbRefusal } from "@lararium/mesh/verb-refusal";
+import { type CompositeStore } from "@lararium/mesh/composite-store";
 import { LAW_CANON_BAG_PATTERN } from "./daemon-law-tiddlers.js";
 
 /** The one canon carrier that defines the house's functions. */

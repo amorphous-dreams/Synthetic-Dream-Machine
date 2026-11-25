@@ -9,7 +9,7 @@
  * and record decouple; this module holds the record's surface.
  */
 
-import { VERB_RESULT_KEY } from "@lararium/mesh";
+import { VERB_RESULT_KEY } from "@lararium/mesh/verb-tiddler";
 
 export interface SubmitOptions {
   /** Total timeout in ms (default 10000). */

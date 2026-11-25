@@ -30,13 +30,20 @@
  * environment and the hearth pin decide, in the boot's order.
  */
 
-import { nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, nexusAidOf, type NexusIdentityAt, type NexusIdentity } from "@lararium/mesh";
+import {
+  nexusIdentity,
+  nexusScopeOrThrow,
+  nexusIslandsBelow,
+  type NexusIdentityAt,
+  type NexusIdentity,
+} from "@lararium/mesh/nexus-identity";
+import { nexusAidOf } from "@lararium/mesh/nexus-seal-seed";
 
 // `admittedJoineeIsland` moved to `@lararium/mesh/nexus-identity.ts` — it composes only `nexusIdentity`/
 // `nexusScopeOrThrow` and touches no disk, so it belongs beside them rather than in this node-only module.
 // Re-exported here so existing importers (`init.ts`, `hearth-dial-pin.ts`) need no path change; the browser
 // leaf imports it straight from `@lararium/mesh`, with no node dependency.
-export { admittedJoineeIsland } from "@lararium/mesh";
+export { admittedJoineeIsland } from "@lararium/mesh/nexus-identity";
 
 import { readNexusDoc, nexusCharterStands } from "./nexus-doc.js";
 import { readHearthIslandPin } from "./hearth-dial-pin.js";

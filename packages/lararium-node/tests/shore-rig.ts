@@ -14,8 +14,12 @@ import { houseSkins, skinPins, vendoredCore } from "../../lararium-tw5/tests/tes
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { CompositeStore, VERB_RESULT_KEY, bagUri } from "@lararium/mesh";
-import type { CapabilityAccess, CapabilityVerifyResult, Verb, VerbContext } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { VERB_RESULT_KEY } from "@lararium/mesh/verb-tiddler";
+import { bagUri } from "@lararium/mesh/lar-uris";
+import type { CapabilityAccess, CapabilityVerifyResult } from "@lararium/mesh/capability";
+import type { Verb } from "@lararium/mesh/verb-tiddler";
+import type { VerbContext } from "@lararium/tw5";
 import { MemoryTiddlerStore } from "../../lararium-tw5/src/memory-store.js";
 import { VerbTable } from "../../lararium-tw5/src/verb-dispatcher.js";
 import { registerActionReactors, makeTw5Deserializer } from "../../lararium-tw5/src/action-handler.js";

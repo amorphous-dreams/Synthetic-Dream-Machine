@@ -16,9 +16,10 @@ import { hkdfSync } from "node:crypto";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, describe, expect, test } from "vitest";
-import {
-  DOMAIN_ROOT, faceAtomKeyFromSeed, fleetJoinOffer, mintFaceAtomSeed, vesselFaceTagFields, type FleetJoinRequest,
-} from "@lararium/mesh";
+import { DOMAIN_ROOT } from "@lararium/mesh/domains";
+import { faceAtomKeyFromSeed, mintFaceAtomSeed } from "@lararium/mesh/face-atom";
+import { fleetJoinOffer, type FleetJoinRequest } from "@lararium/mesh/fleet-join";
+import { vesselFaceTagFields } from "@lararium/mesh/vessel-face-tag";
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
 import { runFleetJoinAbandon, runFleetJoinRequest } from "../src/commands/fleet-join.js";
 import { runFoundTheFace } from "../src/commands/init.js";

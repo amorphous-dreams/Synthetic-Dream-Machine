@@ -14,7 +14,10 @@ import { IslandAdaptor }      from "../src/island-adaptor.js";
 import { asIslandStore } from "./island-store-double.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { isPersonalTitle }  from "../src/filters/lar-kind.js";
-import { wikiSlotUri, VERB_URI_PREFIX, CompositeStore, type LarTiddlerChange, type ChangeOrigin, type LarTiddlerRecord } from "@lararium/mesh";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import { VERB_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { type LarTiddlerChange, type ChangeOrigin, type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 
 const BAG_PATHS_CONFIG = "lar:///ha.ka.ba/lararium/config/bag-paths";
 const SHIPPED_TID = join(dirname(fileURLToPath(import.meta.url)), "..", "tiddlers", "lar-bag-paths.tid");

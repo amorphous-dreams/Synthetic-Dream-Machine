@@ -11,7 +11,7 @@
  */
 import { createServer, type Server } from "node:http";
 import { afterEach, describe, expect, test } from "vitest";
-import type { MountManifest } from "@lararium/mesh";
+import type { MountManifest } from "@lararium/mesh/open-vessel-core";
 import { HELD_HAND_ACT } from "../src/engine-fall.js";
 import { heldPlaneLines, quarantineMoveLine, QUARANTINE_RELEASE_ACT } from "../src/doc-load-probe.js";
 import { createReadinessState, mountReadinessFace } from "../src/readiness-face.js";

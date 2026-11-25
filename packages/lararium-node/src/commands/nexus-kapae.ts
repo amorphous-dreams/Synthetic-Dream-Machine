@@ -35,14 +35,29 @@
  */
 
 import type { Repo } from "@automerge/automerge-repo";
+import { antigenEntriesFromBoard, writeAntigenEntry } from "@lararium/mesh/antigen-board";
 import {
-  antigenEntriesFromBoard, antigenActCid, writeAntigenEntry, signAntigenEntry,
-  makeMultiSigQuorumVerifier, foldAntigenSet, isKapaed, foundingRoster, nexusAidOf,
-  kapaeAntigenDocUrl, materializeSharedLarDoc,
-  judgeNexusActPartial, cosignNexusActPartial, nexusActPartial, readNexusActPartial, NexusPartialRefusal,
-  type NexusActPartial, type NexusPartialReader, type PartialVerdict,
-  type KapaeAction, type KapaeAntigenEntry, type KahuQuorumSeats,
-} from "@lararium/mesh";
+  antigenActCid,
+  signAntigenEntry,
+  makeMultiSigQuorumVerifier,
+  foldAntigenSet,
+  isKapaed,
+  type KapaeAction,
+  type KapaeAntigenEntry,
+  type KahuQuorumSeats,
+} from "@lararium/mesh/kapae-antigen";
+import { foundingRoster, nexusAidOf } from "@lararium/mesh/nexus-seal-seed";
+import { kapaeAntigenDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import {
+  judgeNexusActPartial,
+  cosignNexusActPartial,
+  nexusActPartial,
+  readNexusActPartial,
+  NexusPartialRefusal,
+  type NexusActPartial,
+  type NexusPartialReader,
+} from "@lararium/mesh/nexus-partial";
+import { type PartialVerdict } from "@lararium/mesh/edge-partial";
 import { readNexusDoc } from "../nexus-doc.js";
 import { loadVesselVerifyingKey } from "../node-vessel-identity.js";
 import { heldSeatSigners, selectHeldQuorumSigners } from "../held-quorum.js";

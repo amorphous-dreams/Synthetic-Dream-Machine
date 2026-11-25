@@ -266,3 +266,49 @@ test("D6b CONTROL: a job reads the outputs of its direct needs alone, as Actions
   const plan = runPlan("x.yml", { "x.yml": text }, { ...eventContext("push"), outputs: { s: { go: "true" } } });
   assert.deepEqual(plan.map((j) => `${j.key}:${j.state}`), ["s:run", "a:run", "b:skipped"], "b names no needs on s, so it cannot read s's outputs");
 });
+
+// ── LANE FAIL-FAST (research lar:///ha.ka.ba/kahua/memory/research/ci-throughput, cure 1) ─────────────────────────────
+// A lane run whose Quick gates read red at minute ~9 spent ~200 more runner-minutes on cells that cannot change the answer.
+// On a lane ref the heavy jobs (test cells, witness cells, e2e shards) wait on Quick and stop when it reads red; develop, main
+// and merge_group run every job whatever Quick answered, so each merged head keeps a full run. A skipped heavy job must read
+// RED overall (the Test and Witnesses gates, the Quick check itself), never green by absence.
+
+const redQuick = (ctx) => ({ ...ctx, red: ["quick"] });
+
+test("F1 RED: a lane push whose Quick gates read red runs none of the heavy jobs, and its e2e gate walks the doorstep", () => {
+  const files = liveFiles(ROOT);
+  for (const branch of [...LANES, "spirit/ci-warden", "feature/green-jello-dinosaur-5"]) {
+    const plan = runPlan("ci.yml", files, redQuick(scoped(eventContext("push", { branch }), false, true)));
+    const got = ran(plan);
+    assert.ok(!got.includes("test-cells") && !got.includes("witness-cells") && !got.includes("e2e/shard"), `${branch}: a heavy cell ran behind a red Quick: ${got.join(", ")}`);
+    const merge = plan.find((j) => j.key === "e2e/merge");
+    assert.match(merge.steps.join(" "), /^Doorstep/, `${branch}: the e2e gate must walk the doorstep, not the shards' merge`);
+  }
+});
+
+test("F2 RED: develop, main, merge_group and a dispatch-free full run still run every heavy job behind a red Quick", () => {
+  const files = liveFiles(ROOT);
+  for (const [what, ctx] of FULL.filter(([w]) => /merge_group|develop|main/.test(w))) {
+    const plan = runPlan("ci.yml", files, redQuick(scoped(ctx, false, true)));
+    const got = ran(plan);
+    for (const k of ["test-cells", "witness-cells", "test", "witnesses"]) assert.ok(got.includes(k), `${what}: ${k} skipped behind a red Quick, the merged head loses its full run`);
+    assert.ok(got.includes("e2e/shard"), `${what}: the e2e shards skipped behind a red Quick`);
+  }
+});
+
+test("F3 RED: the gates read a skipped heavy job as red, never green by absence", () => {
+  const text = readFileSync(join(ROOT, ".github/workflows/ci.yml"), "utf8");
+  const block = (id) => new RegExp(`^  ${id}:\\n((?: {4}.*\\n|\\n| {6}.*\\n)+)`, "m").exec(text)?.[1] ?? "";
+  assert.match(block("test"), /needs\.test-cells\.result"? != "success"|\$CELLS_RESULT" != "success"/, "Test must fail unless its cells ended success");
+  assert.match(block("witnesses"), /CELLS_RESULT" != "success"/, "Witnesses must fail unless its cells ended success");
+  assert.match(block("witnesses"), /QUICK_RESULT" != "success"/);
+  // The heavy jobs wait on Quick, so a red Quick reaches them at all.
+  for (const id of ["test-cells", "witness-cells", "e2e"]) assert.match(block(id), /^ {4}needs: \[scope, quick\]$/m, `${id} never waits on quick`);
+});
+
+test("F4 RED: held-out reads the newest develop/main head alone (a newer push cancels the older run) and runs nightly", () => {
+  const text = readFileSync(join(ROOT, ".github/workflows/held-out.yml"), "utf8").replace(/^\s*#.*$/gm, "");
+  assert.match(text, /^ {2}cancel-in-progress: true$/m, "held-out lets an older head's run finish beside the newest");
+  assert.match(text, /cron: "\d+ \d+ \* \* \*"/, "held-out carries no nightly schedule");
+  assert.ok(triggers(text).includes("workflow_dispatch"));
+});

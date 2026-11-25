@@ -12,9 +12,14 @@
  */
 import { vi } from "vitest";
 import {
-  LAR_KEY_SURFACE, mkLarControlEvent, readLarControlResult, readLarFrame,
-  type LarMsg_ControlEvent, type LarMsg_ControlResult, type LarMsg_Frame,
-} from "@lararium/mesh";
+  LAR_KEY_SURFACE,
+  mkLarControlEvent,
+  readLarControlResult,
+  readLarFrame,
+  type LarMsg_ControlEvent,
+  type LarMsg_ControlResult,
+  type LarMsg_Frame,
+} from "@lararium/mesh/lar-camera";
 import { mountProjection } from "../src/tw5-projection.js";
 import type { IslandContext } from "../src/island-context.js";
 import type { ReceiptCapability } from "../src/receipt.js";

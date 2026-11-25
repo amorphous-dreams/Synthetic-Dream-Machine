@@ -8,7 +8,7 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/wiki-activation
  */
 import { routingString } from "./routing-arg.js";
-import type { WikiActivationCap } from "@lararium/mesh";
+import type { WikiActivationCap } from "@lararium/mesh/wiki-activation";
 
 export interface WikiSwitchDeps {
   readonly activation: WikiActivationCap;

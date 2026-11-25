@@ -23,7 +23,9 @@
  */
 
 import { closeSync, openSync, readSync } from "node:fs";
-import { readFckCarrier, readWardCarrier, readSCarrier } from "@lararium/mesh";
+import { readFckCarrier } from "@lararium/mesh/fck-envelope";
+import { readWardCarrier } from "@lararium/mesh/ward-slots";
+import { readSCarrier } from "@lararium/mesh/s-envelope";
 import { carrierCensus, type CarrierEntry, type CustodyHome, type CustodyHomes } from "./vault-carriers.js";
 
 /** Where the fresh start's by-hand move stands written. */

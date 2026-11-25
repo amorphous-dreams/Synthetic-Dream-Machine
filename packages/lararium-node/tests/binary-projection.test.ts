@@ -18,7 +18,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { LarDiskProjector } from "../src/disk-projector.js";
 import { SyncedTree, syncedTreeKey } from "../src/index.js";
-import { carrierHash, personaScopedBagIds, wikiBagUri } from "@lararium/mesh";
+import { carrierHash } from "@lararium/mesh/crypto";
+import { personaScopedBagIds } from "@lararium/mesh/persona-scope";
+import { wikiBagUri } from "@lararium/mesh/wiki-recipe";
 
 const PNG = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0xff, 0x00, 0xfe, 0x01]);
 const CID = createHash("sha256").update(PNG).digest("hex");

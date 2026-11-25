@@ -10,7 +10,7 @@ import { join } from "node:path";
 import { from as automergeFrom, save } from "@automerge/automerge";
 import { describe, expect, test } from "vitest";
 
-import { precheckChunkBytes } from "@lararium/mesh";
+import { precheckChunkBytes } from "@lararium/mesh/store-integrity";
 import { precheckDocStore } from "../src/store-integrity.js";
 
 function realDocBytes(): Uint8Array {

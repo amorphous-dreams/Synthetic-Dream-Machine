@@ -12,15 +12,11 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/wiki-behavior
  */
 
-import {
-  mkWikiVerbResult,
-  wikiSlotUri,
-  type BatchMode,
-  type WikiMsg_PlaceVerb,
-  type Verb,
-  type ChangeOrigin,
-} from "@lararium/mesh";
-import type { CompositeStore } from "@lararium/mesh";
+import { mkWikiVerbResult, type WikiMsg_PlaceVerb } from "@lararium/mesh/island-protocol";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import { type BatchMode, type Verb } from "@lararium/mesh/verb-tiddler";
+import { type ChangeOrigin } from "@lararium/mesh/tiddler-store";
+import type { CompositeStore } from "@lararium/mesh/composite-store";
 import { registerActionReactors, makeTw5Deserializer } from "./action-handler.js";
 import { VerbTable } from "./verb-dispatcher.js";
 import { composeIsland } from "./island-caps.js";

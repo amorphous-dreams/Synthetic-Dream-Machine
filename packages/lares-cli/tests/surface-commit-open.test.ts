@@ -9,7 +9,7 @@
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { existsSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { carrierHash } from "@lararium/mesh";
+import { carrierHash } from "@lararium/mesh/crypto";
 import { ensureRealmLabel, faceRoot, kapaeShadowBody, syncedTreeKey } from "@lararium/node";
 import { cmdSurface, LIVE_SURFACE_DOORS, SURFACE_EDITOR_FILE, SURFACE_EDITOR_TITLE } from "../src/commands/surface.js";
 import { git, openSurfaceRig, plant, stubLaresOnPath, surfaceArgs, type SurfaceRig } from "./support/surface-rig.js";

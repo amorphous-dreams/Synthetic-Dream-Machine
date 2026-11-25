@@ -16,7 +16,9 @@
  *        holds its key before the lift opens it; the floor seals and registers none
  */
 import { describe, expect, test } from "vitest";
-import { FACE_CATALOG_BAG_ID, deriveRegisterBags, wikiSlotUri, wornFaceWikiBags } from "@lararium/mesh";
+import { FACE_CATALOG_BAG_ID } from "@lararium/mesh/catalog-view";
+import { deriveRegisterBags, wornFaceWikiBags } from "@lararium/mesh/register-bags";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { ownChainStanding } from "../src/index.js";
 
 const USER_SLOT = { wikiBagId: "wikis/lares", workingBagId: wikiSlotUri("lares", "working"), draftBagId: wikiSlotUri("lares", "draft") };

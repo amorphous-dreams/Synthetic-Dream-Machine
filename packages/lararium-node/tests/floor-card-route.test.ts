@@ -6,7 +6,8 @@
  * Meme: lar:///ha.ka.ba/kahua/memory/research/floor-mu#/shape
  */
 import { describe, expect, test } from "vitest";
-import { CompositeStore, bagUri } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { bagUri } from "@lararium/mesh/lar-uris";
 import { MemoryTiddlerStore } from "../../lararium-tw5/src/memory-store.js";
 import { makeTiddlerGetReactor, makeTiddlerPutReactor, type TiddlerVerbOptions } from "../../lararium-tw5/src/tiddler-verbs.js";
 import type { VerbContext } from "../../lararium-tw5/src/verb-dispatcher.js";

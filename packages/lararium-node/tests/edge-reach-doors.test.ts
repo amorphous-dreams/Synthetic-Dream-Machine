@@ -13,11 +13,16 @@ import { afterEach, beforeEach, describe, expect } from "vitest";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import * as ed from "@noble/ed25519";
-import {
-  hex, DAEMON_BAG_ID, seedDaemonDoc,
-  foundingRoster, memberEdgeId, materializeSharedLarDoc, realmEdgeBoardDocUrl, edgeRollAnchorsFromBoard,
-  edgeKapaeActsFromBoard, charterHandLineage, readRealmFrontier, rollAnchorsFromBoard, carriageDocUrl,
-} from "@lararium/mesh";
+import { hex } from "@lararium/mesh/crypto";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { seedDaemonDoc } from "@lararium/mesh/social-seed";
+import { foundingRoster } from "@lararium/mesh/nexus-seal-seed";
+import { memberEdgeId } from "@lararium/mesh/realm-edges";
+import { materializeSharedLarDoc, realmEdgeBoardDocUrl, carriageDocUrl } from "@lararium/mesh/deterministic-doc";
+import { edgeRollAnchorsFromBoard, edgeKapaeActsFromBoard } from "@lararium/mesh/edge-kapae";
+import { charterHandLineage } from "@lararium/mesh/charter-hand-lineage";
+import { readRealmFrontier } from "@lararium/mesh/realm-frontier";
+import { rollAnchorsFromBoard } from "@lararium/mesh/carriage-board";
 import {
   generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot,
 } from "../src/node-vessel-identity.js";
@@ -30,7 +35,8 @@ import { runEdgeKapae, EdgeKapaeError } from "../src/commands/edge-kapae-cmd.js"
 import { runEdgeRollAnchors } from "../src/commands/edge-roll-anchor.js";
 import { runCabalFace } from "../src/commands/cabal-face.js";
 import { FaceNotNamed } from "../src/face-selector.js";
-import { edgeLedgerDocUrl, keptFromLedger } from "@lararium/mesh";
+import { edgeLedgerDocUrl } from "@lararium/mesh/deterministic-doc";
+import { keptFromLedger } from "@lararium/mesh/edge-ledger";
 import { direct } from "./direct-store.js";
 import { storeDoorDirect, STORE_DOOR_FACE_VERBS } from "../src/store-door-verbs.js";
 import { nodeNexusIsland } from "../src/nexus-standing.js";

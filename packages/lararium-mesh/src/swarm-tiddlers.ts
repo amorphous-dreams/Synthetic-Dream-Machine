@@ -27,6 +27,9 @@
  *   tessera/<tessera>/guest · tessera/<tessera>/host
  *                              the two halves of one rite across a restart (`swarm-tessera.ts`): `rite-begun` rests before the
  *                              vessel goes down, `rite-landed` after it stands again; each the VESSEL's witness
+ *   tessera/<tessera>/abandoned
+ *                              `rite-abandoned`: the hand set a begun half down unlanded (a tombstone beside it, never a delete);
+ *                              the vessel witnesses it once the one hand gate admits the act
  *   house-cap · lane/<lane>/share
  *                              ride the face-private board (`swarm-board.ts`) so a fleet folds one cap; their titles belong to this family
  *
@@ -123,9 +126,9 @@ export const swarmLeiReturnedTitle = (leiCid: string, n: number): string => {
 };
 /** The prefix every tessera half rests under. */
 export const swarmTesseraPrefix = (): string => `${SWARM_URI_PREFIX}tessera/`;
-/** One half of a tessera: the `guest` half (`rite-begun`) or the `host` half (`rite-landed`). */
-export const swarmTesseraTitle = (tessera: string, half: "guest" | "host"): string => {
-  if (half !== "guest" && half !== "host") malformed("a tessera holds a guest half and a host half");
+/** One half of a tessera: the `guest` half (`rite-begun`), the `host` half (`rite-landed`), or the hand's set-down mark (`rite-abandoned`). */
+export const swarmTesseraTitle = (tessera: string, half: "guest" | "host" | "abandoned"): string => {
+  if (half !== "guest" && half !== "host" && half !== "abandoned") malformed("a tessera holds a guest half, a host half, and the hand's set-down mark");
   return `${swarmTesseraPrefix()}${segment(tessera)}/${half}`;
 };
 export const swarmLeiUnstrungTitle = (leiCid: string): string => `${SWARM_URI_PREFIX}lei-unstrung/${segment(leiCid)}`;
@@ -159,7 +162,13 @@ export interface SwarmRiteBegunBody { readonly act: "rite-begun"; readonly group
 export interface SwarmRiteLandedBody { readonly act: "rite-landed"; readonly group: string; readonly rite: SwarmLeiRite; readonly tessera: string; readonly begun: string; readonly head: string;
   /** The image the vessel stands from, where the landing names one. */
   readonly image?: string }
-export type SwarmBodyParts = SwarmLeiBody | SwarmLeiReturnedBody | SwarmLeiUnstrungBody | SwarmRiteBegunBody | SwarmRiteLandedBody | SwarmLaneStateBody | SwarmRosterBody;
+/**
+ * The hand set a begun half down unlanded (a kāpae over it): the half rests, its return stays spent, and no landing takes it
+ * after. `begun` names the exact guest half by its cid; `by` names who set it down (the hand, whose gate admitted the act); the
+ * vessel witnesses it, as it witnesses both halves.
+ */
+export interface SwarmRiteAbandonedBody { readonly act: "rite-abandoned"; readonly group: string; readonly rite: SwarmLeiRite; readonly branch: string; readonly tessera: string; readonly begun: string; readonly by: "hand" }
+export type SwarmBodyParts = SwarmLeiBody | SwarmLeiReturnedBody | SwarmLeiUnstrungBody | SwarmRiteBegunBody | SwarmRiteLandedBody | SwarmRiteAbandonedBody | SwarmLaneStateBody | SwarmRosterBody;
 export type SwarmBody = SwarmBodyParts & { readonly kind: typeof SWARM_ACT_DOMAIN };
 export interface SignedSwarmAct { readonly body: SwarmBody; readonly signer: string; readonly sig: string }
 export type SwarmReadRefusal = "absent" | "shape" | "domain" | "group" | "signature" | "title" | "role";
@@ -185,6 +194,7 @@ function shape(b: Record<string, unknown>): boolean {
     case "lei-unstrung": return hex(b["lei"], 64) && isSwarmLeiRite(b["rite"]) && str(b["branch"]);
     case "rite-begun": return isSwarmLeiRite(b["rite"]) && str(b["branch"]) && str(b["head"]) && str(b["tree"]) && hex(b["lei"], 64) && positive(b["n"]) && hex(b["tessera"], 64) && imageOrNone(b);
     case "rite-landed": return isSwarmLeiRite(b["rite"]) && hex(b["tessera"], 64) && hex(b["begun"], 64) && str(b["head"]) && imageOrNone(b);
+    case "rite-abandoned": return isSwarmLeiRite(b["rite"]) && str(b["branch"]) && hex(b["tessera"], 64) && hex(b["begun"], 64) && b["by"] === "hand";
     case "lane-state": return str(b["lane"]) && str(b["seat"]) && object(b["state"]) && Object.values(b["state"]).every((v) => v === null || ["string", "number", "boolean"].includes(typeof v));
     case "roster": return str(b["seat"]) && str(b["model"]) && str(b["mode"]) && count(b["reading"]) && count(b["ceiling"]) && str(b["outcome"]);
     default: return false;
@@ -200,6 +210,7 @@ function titleOf(b: SwarmBody): string | null {
       case "lei-unstrung": return swarmLeiUnstrungTitle(b.lei);
       case "rite-begun": return swarmTesseraTitle(b.tessera, "guest");
       case "rite-landed": return swarmTesseraTitle(b.tessera, "host");
+      case "rite-abandoned": return swarmTesseraTitle(b.tessera, "abandoned");
       case "lane-state": return swarmLaneStateTitle(b.lane);
       case "roster": return swarmRosterTitle(b.seat);
     }
@@ -218,7 +229,7 @@ const allowed = (b: SwarmBody, key: string, trust: SwarmTrust): boolean => {
   switch (b.act) {
     case "lei": case "lei-unstrung": return trust.hand(key);
     case "lane-state": return trust.lead(b.seat, b.lane, key);
-    case "lei-returned": case "rite-begun": case "rite-landed": case "roster": return trust.vessel(key);
+    case "lei-returned": case "rite-begun": case "rite-landed": case "rite-abandoned": case "roster": return trust.vessel(key);
   }
 };
 

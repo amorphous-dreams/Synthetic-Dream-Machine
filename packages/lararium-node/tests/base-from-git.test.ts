@@ -19,7 +19,7 @@ import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { carrierHash } from "@lararium/mesh";
+import { carrierHash } from "@lararium/mesh/crypto";
 import { ShoreRig, RIG_BAG, coreBlobSkip } from "./shore-rig.js";
 import { syncedTreeKey } from "../src/synced-tree.js";
 import { candidatesOf, fileToUriForSource, listSourceFiles, scanFiles, settleIngest } from "../src/ingest-scan.js";

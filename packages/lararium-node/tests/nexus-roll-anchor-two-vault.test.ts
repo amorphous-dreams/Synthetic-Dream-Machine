@@ -39,11 +39,15 @@ vi.mock("../src/seat-key-store.js", async (importOriginal) => {
   const real = await importOriginal<typeof import("../src/seat-key-store.js")>();
   return { ...real, signAsSeat: async (key: string, image: Uint8Array): Promise<Uint8Array> => { signing.calls += 1; return real.signAsSeat(key, image); } };
 });
-import {
-  foundingRoster, carriageDocUrl, materializeSharedLarDoc, rollAnchorsFromBoard, rollAnchorCid, presentationFromBoardDoc,
-  nexusAidOf, nexusActPartial, KAPAE_ANTIGEN_DOMAIN, antigenActCid, type KapaeAntigenEntry,
-  realmEdgeBoardDocUrl, edgeRollAnchorsFromBoard, edgeKapaeActsFromBoard, signEdgeKapae, writeEdgeKapae, ed25519SignerFromSeed,
-} from "@lararium/mesh";
+import { foundingRoster, nexusAidOf } from "@lararium/mesh/nexus-seal-seed";
+import { carriageDocUrl, materializeSharedLarDoc, realmEdgeBoardDocUrl } from "@lararium/mesh/deterministic-doc";
+import { rollAnchorsFromBoard, presentationFromBoardDoc } from "@lararium/mesh/carriage-board";
+import { rollAnchorCid } from "@lararium/mesh/carriage-registry";
+import { nexusActPartial } from "@lararium/mesh/nexus-partial";
+import { KAPAE_ANTIGEN_DOMAIN } from "@lararium/mesh/domains";
+import { antigenActCid, type KapaeAntigenEntry } from "@lararium/mesh/kapae-antigen";
+import { edgeRollAnchorsFromBoard, edgeKapaeActsFromBoard, signEdgeKapae, writeEdgeKapae } from "@lararium/mesh/edge-kapae";
+import { ed25519SignerFromSeed } from "@lararium/mesh/ed25519-door";
 import {
   NexusContractError, runEdgeRollAnchorOpen, runEdgeRollAnchorPartial, runNexusContractOpen, runNexusContractPartial, runNexusRollAnchorOpen,
   runNexusRollAnchorPartial, runNexusRollPriorAnchorCheck,

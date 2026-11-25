@@ -21,7 +21,7 @@ import { stdin, stdout } from "process";
 import type { ParsedArgs } from "../parse-args.js";
 import { emit, wantsJson, exitFor } from "../render.js";
 import { summaryOutput } from "../verb-result.js";
-import { OUTCOME_URI_PREFIX } from "@lararium/mesh";
+import { OUTCOME_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
 import { larRoot, larBagsDir, larWikisDir, larProjectionsDirOrNone, vesselDid } from "../env.js";
 import { openSyncedTree, scanSource, skipLines, fileToUriForSource, candidatesOf, settleIngest, ingestVerdict, applyConfirmedRenames, type IngestSettlement } from "../ingest-core.js";
 import { carrierNeedsTag, tagBlobs } from "../tag-blobs.js";

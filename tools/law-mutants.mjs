@@ -25,7 +25,9 @@ const run = (tests) => spawnSync("npx", ["vitest", "run", "-c", suite, ...tests]
 let failed = 0;
 const unnamed = catalog.mutants.filter((m) => !Array.isArray(m.tests) || m.tests.length === 0);
 if (unnamed.length) { for (const m of unnamed) console.log(`  UNNAMED   ${m.law}: ${m.why} — names no law file to kill it`); process.exit(1); }
-if (run([...new Set(catalog.mutants.flatMap((m) => m.tests))]) !== 0) { console.log("law-mutants: the clean source reads red; no mutant measures anything"); process.exit(1); }
+// The clean run reads every file the suite config holds, never the catalog's list alone: a law the config breaks
+// (a setup file it lacks) reads red here, though no mutant names it.
+if (run([]) !== 0) { console.log("law-mutants: the clean source reads red under the suite config; no mutant measures anything"); process.exit(1); }
 for (const m of catalog.mutants) {
   const file = join(pkg, m.file);
   const bytes = readFileSync(file, "utf8");

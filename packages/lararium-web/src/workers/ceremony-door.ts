@@ -15,7 +15,7 @@
  * (null) refuses `clear-face-absent`; a local handle index `h<N>` names no face (`face-names-a-handle`). A refused ask reaches
  * no page.
  */
-import type { Credential } from "@lararium/mesh";
+import type { Credential } from "@lararium/mesh/keyslot-door";
 import type { CeremonyAnswer, CeremonyAsk, CeremonyAskKind, CeremonyPasskey, CeremonyRoute, CeremonyToVessel, VesselToCeremony } from "../ceremony-protocol.js";
 
 /** A refusal by name: the error carries the name and never a byte of a route. */

@@ -39,7 +39,10 @@
  *
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set
  */
-import { CROSS_FACE_READ_VERBS, VerbRefusal, bagUri, crossFacePrivateRefusal, CROSS_FACE_PRIVATE, type LarTiddlerStore } from "@lararium/mesh";
+import { CROSS_FACE_READ_VERBS, crossFacePrivateRefusal, CROSS_FACE_PRIVATE } from "@lararium/mesh/cross-face-reach";
+import { VerbRefusal } from "@lararium/mesh/verb-refusal";
+import { bagUri } from "@lararium/mesh/lar-uris";
+import { type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
 import type { FaceEngine, VerbContext, VerbReactor } from "@lararium/tw5";
 
 /** The tiddler door's verbs a lit sibling reaches in its own engine (`faceEngineReactor`). */

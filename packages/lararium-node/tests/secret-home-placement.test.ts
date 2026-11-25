@@ -13,11 +13,18 @@ import { join } from "node:path";
 import { Repo, type AutomergeUrl, type Chunk, type StorageAdapterInterface, type StorageKey } from "@automerge/automerge-repo";
 import { afterAll, describe, expect, test } from "vitest";
 import { foundTheFace, foundThePlace, runDeviceAdmitEdge } from "@lararium/keyhive";
-import {
-  DAEMON_BAG_ID, SECRET_HOME_ID, SealedDocumentStore, bindSecretHomeRest, vesselHeldHomes, faceAtomKeyFromSeed, groupSecretSealTitle,
-  makeIslandRepo, materializeSharedLarDoc, controlHomeUrlOf, controlHomeRefusal, standControlHome, CONTROL_HOME_UNNAMED, personaKelBoardDocUrl, personaKelChainForPrefix, plainRecord,
-  type HeldRestKey, type LarDoc,
-} from "@lararium/mesh";
+import { DAEMON_BAG_ID, SECRET_HOME_ID } from "@lararium/mesh/lar-uris";
+import { SealedDocumentStore } from "@lararium/mesh/sealed-doc-store";
+import { bindSecretHomeRest, vesselHeldHomes } from "@lararium/mesh/secret-home";
+import { faceAtomKeyFromSeed } from "@lararium/mesh/face-atom";
+import { groupSecretSealTitle } from "@lararium/mesh/persona-group-secret";
+import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
+import { materializeSharedLarDoc, personaKelBoardDocUrl } from "@lararium/mesh/deterministic-doc";
+import { controlHomeUrlOf, controlHomeRefusal, standControlHome, CONTROL_HOME_UNNAMED } from "@lararium/mesh/control-home";
+import { personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";
+import { plainRecord } from "@lararium/mesh/stored-value";
+import { type HeldRestKey } from "@lararium/mesh/held-rest-key";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
 import { runFoundTheFace, runInit } from "../src/commands/init.js";
 import { seatedCustody, unseatCustody } from "../src/custody-seat.js";

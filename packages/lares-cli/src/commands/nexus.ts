@@ -43,7 +43,7 @@ import {
   runNexusCarryFor, NexusContractError, SealedActRefused,
   AdmitBundleError, CarryBundleError, type NexusContractResult, type NexusContractPartialResult, type NexusMembersListResult,
 } from "@lararium/node";
-import { presentationFindingLine } from "@lararium/mesh";
+import { presentationFindingLine } from "@lararium/mesh/carriage-registry";
 import { larSealHome, vesselDid } from "../env.js";
 import { runVerb } from "../verb-call.js";
 import { summaryOutput } from "../verb-result.js";

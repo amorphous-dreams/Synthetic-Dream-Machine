@@ -10,14 +10,9 @@
  */
 
 import { describe, test, expect, afterEach } from "vitest";
-import {
-  delegationEdge,
-  communicationEdge,
-  retireClose,
-  worldlineHandles,
-  mkDaemonWorldlineCompareRequest,
-  mkDaemonWorldlineTrajectoryRequest,
-} from "@lararium/mesh";
+import { delegationEdge, communicationEdge, retireClose } from "@lararium/mesh/worldline-edge";
+import { worldlineHandles } from "@lararium/mesh/worldline-clock";
+import { mkDaemonWorldlineCompareRequest, mkDaemonWorldlineTrajectoryRequest } from "@lararium/mesh/island-protocol";
 import {
   computeWorldlineCompare,
   computeWorldlineTrajectory,

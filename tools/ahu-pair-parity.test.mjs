@@ -10,7 +10,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync, appendFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { test } from "node:test";
 import { stampWasm } from "./stamp-build.mjs";
 
@@ -25,15 +25,15 @@ function sweep(env = {}) {
   return spawnSync(process.execPath, [WITNESS], { cwd: ROOT, encoding: "utf8", env: { ...process.env, ...env } });
 }
 
-/** A scratch git tree holding `bags/planted.mem` = HEAD + body, swept by the witness. */
-function plant(body) {
+/** A scratch git tree holding `at` (default `bags/planted.mem`) = HEAD + body, swept by the witness. */
+function plant(body, at = "bags/planted.mem") {
   const repo = mkdtempSync(join(tmpdir(), "ahu-pair-parity-"));
   try {
-    mkdirSync(join(repo, "bags"), { recursive: true });
-    writeFileSync(join(repo, "bags", "planted.mem"), HEAD + body);
+    mkdirSync(dirname(join(repo, at)), { recursive: true });
+    writeFileSync(join(repo, at), HEAD + body);
     const git = (...a) => assert.equal(spawnSync("git", a, { cwd: repo }).status, 0, `git ${a.join(" ")}`);
     git("init", "-q");
-    git("add", "bags/planted.mem");
+    git("add", at);
     return sweep({ REPO: repo });
   } finally {
     rmSync(repo, { recursive: true, force: true });
@@ -95,6 +95,16 @@ await test("a planted mismatched pair reads red: an ahu opener closed by `<</fra
   const run = plant("<<~ ahu slot=`#/a`>>\nx\n<</fragment>>\n");
   assert.equal(run.status, 1, run.stdout + run.stderr);
   assert.match(run.stdout, new RegExp(`MISSING  bags/planted\\.mem:${OFFSET} \\(line 3\\)`));
+});
+
+await test("a wiki home's carrier enters the walk: a mismatched pair under wikis/ reads red, a balanced one green", () => {
+  const at = "wikis/workshop/ha.ka.ba/lares/docs/history/workshop/planted.mem";
+  const red = plant("<<~ ahu slot=`#/a`>>\nx\n<</fragment>>\n", at);
+  assert.equal(red.status, 1, red.stdout + red.stderr);
+  assert.match(red.stdout, new RegExp(`MISSING  ${at.replace(/\./g, "\\.")}:${OFFSET} \\(line 3\\)`));
+  const green = plant("<<~ ahu slot=`#/a`>>\nx\n<<~/ahu>>\n", at);
+  assert.equal(green.status, 0, green.stdout + green.stderr);
+  assert.match(green.stdout, /1 carriers · scanAhu pairs 1 · the grammar reproduces 1 of 1/);
 });
 
 await test("a carrier the grammar parses in error reads red, even holding no pair the two dispute", () => {

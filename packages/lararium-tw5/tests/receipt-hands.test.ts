@@ -7,7 +7,7 @@ import { describe, expect, test } from "vitest";
 import { makeReceiptCapability } from "../src/receipt.js";
 import { wikiSkip, skipNote } from "./test-wiki.js";
 import { afterDispatch, ManualBoundary, openDraft, personalBag, remote, saveSequence, shoreRig, turns, typeInto, workingBag, type Rig } from "./wiki-shore-rig.js";
-import type { LarTiddlerRecord } from "@lararium/mesh";
+import type { LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 
 const STORY = "$:/StoryList";
 

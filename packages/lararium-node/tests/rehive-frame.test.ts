@@ -16,7 +16,7 @@
 import { EventEmitter } from "node:events";
 import type { Socket } from "node:net";
 import { afterEach, describe, expect, test } from "vitest";
-import type { Credential } from "@lararium/mesh";
+import type { Credential } from "@lararium/mesh/keyslot-door";
 import { custodyFrameHandler } from "../src/custody-frames.js";
 import type { CustodyHolder } from "../src/custody-holder.js";
 import { RehiveRefused, type RehiveOutcome } from "../src/face-rehive.js";

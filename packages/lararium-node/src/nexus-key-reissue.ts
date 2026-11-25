@@ -24,10 +24,10 @@
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-key-hierarchy
  */
 import type { Repo } from "@automerge/automerge-repo";
-import {
-  admittedKeyOf, carriageDocUrl, ed25519SignerFromSeed, foundingRoster, materializeSharedLarDoc, signNexusKeyHandOver,
-  writeNexusKeyHandOver, nexusKeyHandOverId,
-} from "@lararium/mesh";
+import { admittedKeyOf, signNexusKeyHandOver, writeNexusKeyHandOver, nexusKeyHandOverId } from "@lararium/mesh/nexus-key-line";
+import { carriageDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { ed25519SignerFromSeed } from "@lararium/mesh/ed25519-door";
+import { foundingRoster } from "@lararium/mesh/nexus-seal-seed";
 import { abandonNexusKeyReissue, beginNexusKeyReissue, finishNexusKeyReissue, nexusKeyPublicOf, readNexusKey } from "./face-key-custody.js";
 import { charterHomeFor, keepKeyLine, primaryNexusAid } from "./carried-set.js";
 import { keyLineAt } from "./nexus-carriage.js";

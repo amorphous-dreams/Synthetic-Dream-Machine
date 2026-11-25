@@ -12,9 +12,15 @@
  */
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  composeHearthRoster, intentAdmissionRecordsOfGroup, intentEntryRecordsOfGroup, planeRosterOf, readIntentPlane,
-  type HearthLocalSeat, type HearthPlaneDigest, type HearthRoster,
-} from "@lararium/mesh";
+  composeHearthRoster,
+  planeRosterOf,
+  type HearthLocalSeat,
+  type HearthPlaneDigest,
+  type HearthRoster,
+} from "@lararium/mesh/hearth-roster";
+import { intentAdmissionRecordsOfGroup } from "@lararium/mesh/intent-admission";
+import { intentEntryRecordsOfGroup } from "@lararium/mesh/intent-entry";
+import { readIntentPlane } from "@lararium/mesh/intent-read";
 import { loadIntentFace } from "./commands/intent.js";
 
 /** The verb the channel answers itself: a read of who is home. */

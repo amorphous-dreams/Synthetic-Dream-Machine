@@ -8,7 +8,7 @@ import {
   forkSurvivors, forkGenesisUri, repointToFork,
   type RealmFork,
 } from "../src/fork-realm.js";
-import type { CabalRealm } from "@lararium/mesh";
+import type { CabalRealm } from "@lararium/mesh/cabal-realm";
 
 const OLD_ROSTER = ["0xsurvivor_a", "0xsurvivor_b", "0xcaptor"];
 

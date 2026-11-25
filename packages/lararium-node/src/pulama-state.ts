@@ -18,7 +18,7 @@
 import { createHash } from "node:crypto";
 import { closeSync, fsyncSync, mkdirSync, openSync, readFileSync, readdirSync, renameSync, writeSync } from "node:fs";
 import { join } from "node:path";
-import type { SwarmWikiPort } from "@lararium/mesh";
+import type { SwarmWikiPort } from "@lararium/mesh/swarm-tiddlers";
 
 const rowName = (title: string): string => `${createHash("sha256").update(title).digest("hex")}.json`;
 

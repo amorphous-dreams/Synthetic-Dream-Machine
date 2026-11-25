@@ -21,7 +21,7 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/read-gradient
  */
 
-import { VerbRefusal } from "@lararium/mesh";
+import { VerbRefusal } from "@lararium/mesh/verb-refusal";
 import { findTopLevelAhuBlocks, type AhuBlock } from "./meme-ast/ahu-scan.js";
 
 /** THE ONE PAGE: the bytes a read answers whole within (the house page a filter page and a render hold too). */

@@ -10,7 +10,9 @@
 import { seatSuiteWard } from "./support/scratch-custody-setup.js";
 seatSuiteWard();
 import { beforeEach, describe, expect } from "vitest";
-import { canonicalJsonBytes, ed25519VerifyHex, verifyVeilLift } from "@lararium/mesh";
+import { canonicalJsonBytes } from "@lararium/mesh/crypto";
+import { ed25519VerifyHex } from "@lararium/mesh/ed25519-door";
+import { verifyVeilLift } from "@lararium/mesh/veil-lift";
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { keepNodeVeilLift, readNodeVeilLift, veilLiftGroupFile } from "../src/node-veil-lift.js";
 import { carrierTable } from "../src/vault-carriers.js";

@@ -26,7 +26,10 @@ import { bindSyntheticBrowserCustodySlot, bindSyntheticFace, fixtureWardDialog }
 import { openBrowserVessel, type BrowserVesselOptions } from "../src/open-browser-vessel.js";
 import { openVesselIdb, generateOrLoadBrowserVesselIdentity } from "../src/browser-vessel-identity.js";
 import { clearFaceCustody } from "../src/browser-face-custody.js";
-import { admittedJoineeIsland, materializeSharedLarDoc, mintPersonaInception, personaKelBoardDocUrl, personaKelChainForPrefix, writePersonaKelEvent } from "@lararium/mesh";
+import { admittedJoineeIsland } from "@lararium/mesh/nexus-identity";
+import { materializeSharedLarDoc, personaKelBoardDocUrl } from "@lararium/mesh/deterministic-doc";
+import { mintPersonaInception } from "@lararium/mesh/persona-kel";
+import { personaKelChainForPrefix, writePersonaKelEvent } from "@lararium/mesh/persona-kel-board";
 
 /** What the faked seams saw: the island each landing's ceremony seeded, and the island each boot's crossing decision read. */
 const seen = vi.hoisted(() => ({ landed: [] as string[], islands: [] as string[], seat: null as null | ((repo: unknown, island: string) => Promise<void>) }));

@@ -5,8 +5,10 @@
  * as unregistered, with no plane reason beside it.
  */
 import { describe, test, expect } from "vitest";
-import { CompositeStore } from "@lararium/mesh";
-import type { Repo, DocHandle, LarDoc, Verb } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import type { Repo, DocHandle } from "@lararium/mesh/automerge";
+import type { LarDoc } from "@lararium/mesh/base-doc";
+import type { Verb } from "@lararium/mesh/verb-tiddler";
 import { makeActionReactorFor } from "../src/action-handler.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
 

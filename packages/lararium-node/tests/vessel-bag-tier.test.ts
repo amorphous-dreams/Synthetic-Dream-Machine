@@ -11,7 +11,7 @@ import { describe, test, expect } from "vitest";
 import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { BagHomeRoots } from "@lararium/mesh";
+import type { BagHomeRoots } from "@lararium/mesh/bag-home";
 import { makeBagTierReader, bagNameFromBagUrl } from "../src/vessel-bag-tier.js";
 
 function makeHearth(): { roots: BagHomeRoots; hearth: string } {

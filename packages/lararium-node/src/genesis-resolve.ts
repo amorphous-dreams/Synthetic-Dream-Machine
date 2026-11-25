@@ -24,7 +24,13 @@
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { compareGenesisDigests, foundingRecordDigests, ratchetWords, type GenesisDigests, type GenesisRecordLike } from "@lararium/mesh";
+import {
+  compareGenesisDigests,
+  foundingRecordDigests,
+  ratchetWords,
+  type GenesisDigests,
+  type GenesisRecordLike,
+} from "@lararium/mesh/genesis-compare";
 
 export type GenesisSource = "explicit" | "configured" | "root" | "shipped";
 

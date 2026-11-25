@@ -3,9 +3,14 @@ import { Repo } from "@automerge/automerge-repo";
 import * as ed from "@noble/ed25519";
 import { runFoundingCeremony } from "@lararium/keyhive";
 import {
-  composeFleetJoinRequest, ed25519SignerFromSeed, fleetJoinOffer, fleetJoinRequestImage,
-  fleetJoinSealPair, hex, readFleetJoinRequest,
-} from "@lararium/mesh";
+  composeFleetJoinRequest,
+  fleetJoinOffer,
+  fleetJoinRequestImage,
+  fleetJoinSealPair,
+  readFleetJoinRequest,
+} from "@lararium/mesh/fleet-join";
+import { ed25519SignerFromSeed } from "@lararium/mesh/ed25519-door";
+import { hex } from "@lararium/mesh/crypto";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 import { memorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";
 

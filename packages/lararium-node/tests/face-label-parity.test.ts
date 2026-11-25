@@ -9,7 +9,7 @@ import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { FACE_LABELS_DIR, faceLabelBytes, faceLabelOf } from "@lararium/mesh";
+import { FACE_LABELS_DIR, faceLabelBytes, faceLabelOf } from "@lararium/mesh/face-label";
 import { writeFaceLabel, readFaceLabel, faceLabelPath } from "../src/face-labels.js";
 import { writeBrowserFaceLabel, readBrowserFaceLabel, BROWSER_LABEL_NO_OPFS, type OpfsDirectoryLike } from "../../lararium-browser/src/browser-face-labels.js";
 

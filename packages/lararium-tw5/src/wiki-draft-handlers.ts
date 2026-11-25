@@ -1,7 +1,9 @@
-import type { AutomergeUrl } from "@lararium/mesh";
-import { plainEntries, requireKahuReach } from "@lararium/mesh";
-import type { ChangeOrigin, LarTiddlerRecord } from "@lararium/mesh";
-import { type LarDoc, wikiSlotUri } from "@lararium/mesh";
+import type { AutomergeUrl } from "@lararium/mesh/automerge";
+import { plainEntries } from "@lararium/mesh/stored-value";
+import { requireKahuReach } from "@lararium/mesh/kahu-canon-reach";
+import type { ChangeOrigin, LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import type { VerbReactor } from "./verb-dispatcher.js";
 import { numberArg, stringArg } from "./handler-args.js";
 import type { DraftHandlerOptions, PruneStaleOptions } from "./wiki-handler-options.js";

@@ -1,5 +1,6 @@
 /** The node's sealed, PersonaGroup-named face anchor row. */
-import { keepFaceAnchor, loadFaceAnchor, requireFaceAnchor, type FaceAnchor, type FaceAnchorRecords } from "@lararium/mesh";
+import { keepFaceAnchor, loadFaceAnchor, requireFaceAnchor, type FaceAnchorRecords } from "@lararium/mesh/face-anchor-custody";
+import { type FaceAnchor } from "@lararium/mesh/face-anchor";
 import { readCustodyRecord, writeCustodyRecord } from "./custody-seat.js";
 import { personaGroupDigest } from "./persona-group-file.js";
 

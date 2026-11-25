@@ -3,13 +3,9 @@
  * source, then verifies the exact named bytes in OPFS before a worker is eligible.
  */
 import { describe, expect, test, vi } from "vitest";
-import {
-  buildGenesisDoc,
-  genesisCasManifestFromSeed,
-  LARES_MEMETIC_WIKITEXT_PLUGIN_URI,
-  sha256HexBytesSync,
-  utf8Bytes,
-} from "@lararium/mesh";
+import { buildGenesisDoc, genesisCasManifestFromSeed } from "@lararium/mesh/genesis-doc";
+import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "@lararium/mesh/lar-uris";
+import { sha256HexBytesSync, utf8Bytes } from "@lararium/mesh/crypto";
 import { fetchGenesisCasToOpfs, readCasBlobFromOpfs } from "../src/browser-genesis.js";
 
 describe("Browser startup contract — seed-derived HTTP/OPFS source", () => {

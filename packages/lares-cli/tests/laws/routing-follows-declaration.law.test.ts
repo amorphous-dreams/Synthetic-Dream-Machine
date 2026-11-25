@@ -30,7 +30,7 @@ vi.mock("../../src/env.js", async (orig) => ({
   vesselDid: async () => "0x" + "ab".repeat(32),
 }));
 
-import { ACTION_VERBS } from "@lararium/mesh";
+import { ACTION_VERBS } from "@lararium/mesh/residency-actions";
 import { cmdAct } from "../../src/commands/act.js";
 import { projectPlan, PROJECT_TARGETS } from "../../src/commands/meme.js";
 import { listPlan, memePlan } from "../../src/commands/family.js";

@@ -20,7 +20,12 @@
  * Meme: lar:///ha.ka.ba/lararium/browser/hearth-canon
  */
 import { interpretAsDocumentId, isValidAutomergeUrl, type AutomergeUrl, type DocumentId, type PeerId } from "@automerge/automerge-repo";
-import { DeterministicFederationGate, LARES_DOC_URI, LARARIUM_DOC_URI, storedLarRecord, oracleGenesisDocUrl, tiddlerText, type FederationGate, type LarDoc, ownEntry } from "@lararium/mesh";
+import { DeterministicFederationGate, type FederationGate } from "@lararium/mesh/federation-gate";
+import { LARES_DOC_URI, LARARIUM_DOC_URI } from "@lararium/mesh/lar-uris";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
+import { oracleGenesisDocUrl } from "@lararium/mesh/genesis-doc";
+import { tiddlerText, type LarDoc } from "@lararium/mesh/base-doc";
+import { ownEntry } from "@lararium/mesh/stored-value";
 
 /** The canon titles an admit may name: the bags a leaf's wiki reads from its hearth. */
 export const HEARTH_CANON_TITLES: readonly string[] = [LARES_DOC_URI, LARARIUM_DOC_URI];

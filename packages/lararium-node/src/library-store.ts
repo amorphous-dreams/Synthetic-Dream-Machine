@@ -37,10 +37,9 @@
 
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
-import {
-  parseLibraryRef, metaMatchesDir, libraryRef,
-  mediaTypeFromExt, niUriSha256FromHex, sha256HexBytesSync, type LibraryEntryMeta,
-} from "@lararium/mesh";
+import { parseLibraryRef, metaMatchesDir, libraryRef, type LibraryEntryMeta } from "@lararium/mesh/library-tier";
+import { mediaTypeFromExt } from "@lararium/mesh/content-handle";
+import { niUriSha256FromHex, sha256HexBytesSync } from "@lararium/mesh/crypto";
 import { kv, metaFieldsFromBody, renderCarrier } from "./carrier-render.js";
 import { larLibraryRoot } from "./vessel-paths.js";
 import { atomicWriteFileSync } from "./fs-atomic.js";

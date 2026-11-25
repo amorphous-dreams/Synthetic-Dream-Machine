@@ -42,30 +42,70 @@
  * Meme: lar:///ha.ka.ba/lararium/keyhive/ceremony-core
  */
 
-import type { Repo } from "@lararium/mesh";
+import type { Repo } from "@lararium/mesh/automerge";
 import {
-  IDENTITIES_NAMESPACE, SECRET_HOME_ID,
+  IDENTITIES_NAMESPACE,
+  SECRET_HOME_ID,
   MESH_CABAL_SENTINEL_URI,
-  PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
+  PERSONA_GROUP_ID_TIDDLER,
+  MESH_CABAL_DOC_ID_TIDDLER,
   HEARTH_DAEMON_URL_TIDDLER,
-  SIGNER_DID_TIDDLER, HEARTH_TRUE_NAME_TIDDLER, DEVICE_DELEGATION_SELF_TIDDLER, PERSONA_KEL_PREFIX_TIDDLER,
+  SIGNER_DID_TIDDLER,
+  HEARTH_TRUE_NAME_TIDDLER,
+  DEVICE_DELEGATION_SELF_TIDDLER,
+  PERSONA_KEL_PREFIX_TIDDLER,
   CAP_EVENT_TAG,
-  seedIdentitiesDoc, seedCirclesDoc, seedSessionsDoc, seedIntentsDoc, seedDaemonDoc, seedPersonaDoc,
-  personaScopedBagIds, readFace,
-  buildDeviceDelegation, countersignDeviceDelegation, verifyDeviceDelegation, type DeviceDelegationTiddler, type DeviceDelegationRootHalf,
-  personaKelBoardDocUrl, writePersonaKelEvent, materializeSharedLarDoc, fleetEdgeBoardDocUrl, writeEdgeFrontier, writeFrontierSnapshot, frontierSnapshotCid, verifyingKeyFromDid, type EdgeFrontier,
-  type PersonaKelEvent,
-  dyadId, signDyadBindingWithSeed, writeDyad,
-  mintFaceAtomSeed, faceAtomKeyFromSeed, FACE_CHECKPOINT_INFO,
-  DYAD_ID_DOMAIN, type DyadRecord, type DyadRef,
-  deriveSelfRecoveryKey, provisionThresholdRecoveryAtFounding, recoveryContactRegistrationCard,
-  enrolDevice, sealGroupSecret, groupSecretSealTitle, type GroupSecretSeal,
-  type LarTiddlerStore, writePersonaAct,
-  FACE_PLANE, faceRelationOf, mintFaceRelation, signFoundingLog, faceRootCommitment, edgeBodyDigest, landFleetGenesis, makeHandLineage, KAHUA_PLANE, kahuaStageDocUrl, PROMOTE_PLANE, promoteBoardDocUrl, promotePlaneUrl,
-  ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, type LarDoc, ownEntry, type VesselFaceTagDoor} from "@lararium/mesh";
+} from "@lararium/mesh/lar-uris";
+import {
+  seedIdentitiesDoc,
+  seedCirclesDoc,
+  seedSessionsDoc,
+  seedIntentsDoc,
+  seedDaemonDoc,
+  seedPersonaDoc,
+} from "@lararium/mesh/social-seed";
+import { personaScopedBagIds } from "@lararium/mesh/persona-scope";
+import { readFace } from "@lararium/mesh/face-reading";
+import {
+  buildDeviceDelegation,
+  countersignDeviceDelegation,
+  verifyDeviceDelegation,
+  type DeviceDelegationTiddler,
+  type DeviceDelegationRootHalf,
+} from "@lararium/mesh/device-delegation";
+import { personaKelBoardDocUrl, materializeSharedLarDoc, fleetEdgeBoardDocUrl } from "@lararium/mesh/deterministic-doc";
+import { writePersonaKelEvent } from "@lararium/mesh/persona-kel-board";
+import { writeEdgeFrontier, writeFrontierSnapshot } from "@lararium/mesh/edge-frontier-board";
+import { frontierSnapshotCid, type EdgeFrontier } from "@lararium/mesh/edge-frontier";
+import { verifyingKeyFromDid } from "@lararium/mesh/lar-did";
+import { type PersonaKelEvent } from "@lararium/mesh/persona-kel";
+import { dyadId, signDyadBindingWithSeed, writeDyad, type DyadRecord, type DyadRef } from "@lararium/mesh/dyad";
+import { mintFaceAtomSeed, faceAtomKeyFromSeed } from "@lararium/mesh/face-atom";
+import { FACE_CHECKPOINT_INFO, DYAD_ID_DOMAIN } from "@lararium/mesh/domains";
+import { deriveSelfRecoveryKey } from "@lararium/mesh/persona-identity";
+import { provisionThresholdRecoveryAtFounding } from "@lararium/mesh/recovery-keel-core";
+import { recoveryContactRegistrationCard } from "@lararium/mesh/recovery-registration";
+import { enrolDevice, sealGroupSecret, groupSecretSealTitle, type GroupSecretSeal } from "@lararium/mesh/persona-group-secret";
+import { type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
+import { writePersonaAct, signFoundingLog } from "@lararium/mesh/persona-act-board";
+import { FACE_PLANE, faceRelationOf, mintFaceRelation } from "@lararium/mesh/face-relation";
+import { faceRootCommitment, edgeBodyDigest } from "@lararium/mesh/face-anchor";
+import { landFleetGenesis } from "@lararium/mesh/fleet-frontier";
+import { makeHandLineage } from "@lararium/mesh/hand-lineage";
+import { KAHUA_PLANE, kahuaStageDocUrl } from "@lararium/mesh/kahua-stage";
+import { PROMOTE_PLANE, promoteBoardDocUrl, promotePlaneUrl } from "@lararium/mesh/promote-board";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { ownEntry } from "@lararium/mesh/stored-value";
+import { type VesselFaceTagDoor } from "@lararium/mesh/vessel-face-tag";
 
 import { bytesToBase64, base64ToBytes } from "./bytes-base64.js";
-import { buildCeremonyTiddlers, webDigest, hex as hexEncode, plainEntries, storedRecord, tiddlerText, kahuaPlaneUrl, type StoredTiddlers } from "@lararium/mesh";
+import { buildCeremonyTiddlers } from "@lararium/mesh/cold-boot-ceremony";
+import { webDigest, hex as hexEncode } from "@lararium/mesh/crypto";
+import { plainEntries, type StoredTiddlers } from "@lararium/mesh/stored-value";
+import { storedRecord } from "@lararium/mesh/stored-record";
+import { tiddlerText } from "@lararium/mesh/base-doc";
+import { kahuaPlaneUrl } from "@lararium/mesh/kahua-stage";
 import { KeyhiveProvider } from "./keyhive-provider.js";
 import { FacelessKeyhiveRefused } from "./boot-daemon-keyhive.js";
 import { InMemoryEventStore } from "./event-store.js";

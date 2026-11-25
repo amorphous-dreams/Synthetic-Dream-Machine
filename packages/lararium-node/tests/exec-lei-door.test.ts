@@ -9,7 +9,11 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { expect, test } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
-import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, emptyLarDoc, execLeiBranch, swarmCommand, type LarDoc, type SwarmDoorDeps, type WardCosignPort } from "@lararium/mesh";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { execLeiBranch } from "@lararium/mesh/exec-lei";
+import { swarmCommand, type SwarmDoorDeps } from "@lararium/mesh/swarm-door";
+import { type WardCosignPort } from "@lararium/mesh/ward-cosign-gate";
 import { controlSwarmWiki } from "../src/swarm-wiki.js";
 import { makeExecLeiSpendReactor } from "../src/exec-lei-door.js";
 

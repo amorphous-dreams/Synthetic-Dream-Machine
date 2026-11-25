@@ -3,8 +3,8 @@
   "unbaked": [
     {
       "source": "packages/lararium-tw5/plugins/lares-lararium.json",
-      "sha256": "fbb7c7dc96a812e4a118602ceb59fbcea5cf07674b9cec30351f7923bb915a34",
-      "why": "The family-turn-settle lane (the clock sweeper) re-packs the house skin: a held family turn waits on its settle and answers owed, never on a timer. The next labelled GENESIS RE-BAKE carries these bytes and deletes this row."
+      "sha256": "f4e9e9ab9e9a7b680bb4643d1e6ece1aae702e2cdacec602ccfc669f994c4842",
+      "why": "The door-gradient lane (the door bands, the oracle's asking and seed door) and the family-turn-settle lane (the clock sweeper: a held family turn waits on its settle and answers owed, never on a timer) re-pack the house skin. The next labelled GENESIS RE-BAKE carries these bytes and deletes this row."
     }
   ]
 }

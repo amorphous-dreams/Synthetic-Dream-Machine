@@ -20,10 +20,13 @@
  */
 import type { IncomingMessage, Server, ServerResponse } from "node:http";
 import type { Repo } from "@automerge/automerge-repo";
-import {
-  NEXUS_AID_PATTERN, publicationDocUrl, floorAnswerOf, floorReleaseEntriesFromBoard, foldFloorReleases, materializeSharedLarDoc, readFloorManifest, readFloorOffering, floorBlobCids,
-  type LarDoc,
-} from "@lararium/mesh";
+import { NEXUS_AID_PATTERN } from "@lararium/mesh/wax-stamp";
+import { publicationDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { floorAnswerOf } from "@lararium/mesh/floor-answer";
+import { floorReleaseEntriesFromBoard, foldFloorReleases } from "@lararium/mesh/floor-release";
+import { readFloorManifest, floorBlobCids } from "@lararium/mesh/floor-manifest";
+import { readFloorOffering } from "@lararium/mesh/floor-offering";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { CAS_BLOB_RE, answerClosedDoor } from "./bulb-routes.js";
 import { readVerifiedCasBlobFromFs } from "./node-cas.js";
 import type { HttpFaceDispatcher } from "./http-face-dispatcher.js";

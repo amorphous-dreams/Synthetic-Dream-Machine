@@ -18,10 +18,11 @@ import { tmpdir } from "node:os";
 import { join, relative, basename, dirname } from "node:path";
 import { LarDiskProjector } from "../src/disk-projector.js";
 import { daemonDiskMirrors, daemonWorkingMirror, kahuaStageMirror } from "../src/bag-paths.js";
-import {
-  CROSSROADS_DOC_URI, DAEMON_BAG_ID, KAHUA_BAG, OUTCOME_URI_PREFIX, PERSONAL_BINDINGS_PREFIX, PERSONA_ACT_ENTRY_PREFIX,
-  groupSecretSealTitle, wikiSlotUri,
-} from "@lararium/mesh";
+import { CROSSROADS_DOC_URI, DAEMON_BAG_ID, PERSONAL_BINDINGS_PREFIX } from "@lararium/mesh/lar-uris";
+import { KAHUA_BAG, wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import { OUTCOME_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
+import { PERSONA_ACT_ENTRY_PREFIX } from "@lararium/mesh/persona-act-board";
+import { groupSecretSealTitle } from "@lararium/mesh/persona-group-secret";
 import type { CarrierFile } from "@lararium/tw5";
 
 type Flushable = { flush: (b: string, u: string) => Promise<void> };

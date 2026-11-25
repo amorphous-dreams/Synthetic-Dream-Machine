@@ -1,4 +1,4 @@
-import { faceAtomKeyFromSeed, type FaceAtomKey } from "@lararium/mesh";
+import { faceAtomKeyFromSeed, type FaceAtomKey } from "@lararium/mesh/face-atom";
 import "./found-route.js";
 import { ensureFaceCustodyOfGroup } from "../src/face-route.js";
 import { bindFaceCustody, faceStandingCustody } from "../src/custody-seat.js";

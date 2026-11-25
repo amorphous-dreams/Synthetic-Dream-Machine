@@ -19,12 +19,16 @@
 
 import { describe, test, expect } from "vitest";
 import { Repo }                    from "@automerge/automerge-repo";
-import { mutableLarRecord } from "@lararium/mesh";
-import type { LarDoc, IslandMsg_Event, LarTiddlerRecord } from "@lararium/mesh";
+import { mutableLarRecord } from "@lararium/mesh/base-doc";
+import type { LarDoc } from "@lararium/mesh/base-doc";
+import type { IslandMsg_Event } from "@lararium/mesh/island-protocol";
+import type { LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import {
-  findVerbBreathingEvent, assertVerbBreathingEvent, dispatchTiddlerFields,
+  findVerbBreathingEvent,
+  assertVerbBreathingEvent,
+  dispatchTiddlerFields,
   type VerbBreathingContract,
-} from "@lararium/mesh";
+} from "@lararium/mesh/conformance-verb-breathing";
 import { BrowserVesselIslandPool }   from "../src/browser-vessel-island-pool.js";
 
 const FIXTURE_WORKER_URL = new URL("./fixtures/browser-verb-island.mjs", import.meta.url);

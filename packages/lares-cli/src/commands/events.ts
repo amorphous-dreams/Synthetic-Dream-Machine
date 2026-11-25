@@ -2,7 +2,7 @@ import { runVerb, verbFailure } from "../verb-call.js";
 import { vesselDid } from "../env.js";
 import { emit, exitFor } from "../render.js";
 import { summaryOutput } from "../verb-result.js";
-import type { JournalCursor } from "@lararium/mesh";
+import type { JournalCursor } from "@lararium/mesh/vessel-journal";
 import type { ParsedArgs } from "../parse-args.js";
 
 type EventKind = "bag-projected";

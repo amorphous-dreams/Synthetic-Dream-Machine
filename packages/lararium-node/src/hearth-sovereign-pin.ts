@@ -22,10 +22,18 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/node/hearth-sovereign-pin
  */
+import { FLOW_SOCKET_ROUTE } from "@lararium/mesh/flow-read-client";
+import { SOVEREIGN_SYNC_ROUTE } from "@lararium/mesh/admit-gate-pin";
 import {
-  FLOW_SOCKET_ROUTE, SOVEREIGN_SYNC_ROUTE, deriveGateBundle, floorGateRoot, floorRoute, sovereignGateRoot, sovereignRoute,
-  type CustodyRootDoor, type FloorKeyDoor, type GateBundlePin,
-} from "@lararium/mesh";
+  deriveGateBundle,
+  floorGateRoot,
+  floorRoute,
+  sovereignGateRoot,
+  sovereignRoute,
+  type CustodyRootDoor,
+  type FloorKeyDoor,
+  type GateBundlePin,
+} from "@lararium/mesh/gate-bundle-door";
 import { custodyGateDoor } from "./custody-seat.js";
 import { primaryNexusAid } from "./carried-set.js";
 

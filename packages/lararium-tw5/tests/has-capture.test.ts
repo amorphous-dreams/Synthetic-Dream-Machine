@@ -6,7 +6,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { hasCapture, TELEMETRY_FRAME } from "../src/capture/has-capture.js";
-import type { CaptureEngine, CapturePost } from "@lararium/mesh";
+import type { CaptureEngine, CapturePost } from "@lararium/mesh/capture/capture-engine";
 import type { IslandContext } from "../src/island-context.js";
 
 function fakeEngine() {

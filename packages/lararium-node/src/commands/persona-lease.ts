@@ -19,8 +19,14 @@
  */
 import type { WardCredential } from "../ward-credential.js";
 import type { AutomergeUrl, Repo } from "@automerge/automerge-repo";
-import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, raiseFaceFrontier, personaBagIdFor, type LarDoc, type FaceReading, ownEntry } from "@lararium/mesh";
-import { DAEMON_BAG_ID, standControlHome } from "@lararium/mesh";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { raiseFaceFrontier } from "@lararium/mesh/face-anchor";
+import { personaBagIdFor } from "@lararium/mesh/persona-scope";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { type FaceReading } from "@lararium/mesh/face-reading";
+import { ownEntry } from "@lararium/mesh/stored-value";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { standControlHome } from "@lararium/mesh/control-home";
 import { readFileSync } from "node:fs";
 import { loadIdentityAnchors } from "../identity-anchors.js";
 import { loadFaceAnchorOfGroup, keepFaceAnchorOfGroup } from "../face-anchor-store.js";

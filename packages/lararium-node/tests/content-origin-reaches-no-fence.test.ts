@@ -13,7 +13,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
-import { islandEventAsk } from "@lararium/mesh";
+import { islandEventAsk } from "@lararium/mesh/lar-uris";
 import { VerbTable, placedAskIsLocal } from "@lararium/tw5";
 import { standFoundedIsland } from "./stand-founded-island.js";
 import { nodeSealedStoreShore } from "../src/sealed-store-island.js";

@@ -8,7 +8,7 @@
  * Control: the same envelopes queued one by one (each a family of one) cut at the quota.
  */
 import { describe, expect, test } from "vitest";
-import type { LarTiddlerChange } from "@lararium/mesh";
+import type { LarTiddlerChange } from "@lararium/mesh/tiddler-store";
 import { WaveLanding } from "../src/wave-landing.js";
 
 const change = (title: string): LarTiddlerChange => ({ title, record: { tiddler: { title, text: title } }, origin: { kind: "crdt-remote", edgeIsland: "peer" } });

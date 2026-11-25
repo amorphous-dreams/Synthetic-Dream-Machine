@@ -12,8 +12,11 @@
  * (kapae'd) or unknown issues none; a leaf with no card, no edge or no admitted hearth issues none.
  */
 import { describe, expect, test } from "vitest";
-import { faceIntentVerbs, intentEntryRecordsOfGroup, intentId, type DocHandle, type LarDoc } from "@lararium/mesh";
-import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh";
+import { faceIntentVerbs } from "@lararium/mesh/intent-verbs";
+import { intentEntryRecordsOfGroup, intentId } from "@lararium/mesh/intent-entry";
+import { type DocHandle } from "@lararium/mesh/automerge";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
 import { makeSeatSummons, standingOfReading } from "../src/face-seat-summons.js";
 
 const seedOf = (n: number): Uint8Array => new Uint8Array(32).fill(n);

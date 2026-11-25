@@ -22,13 +22,14 @@ import { keepNodeVeilLift } from "../node-veil-lift.js";
 import { wardCredentialOfRoute, type WardCredential } from "../ward-credential.js";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import type { Repo } from "@automerge/automerge-repo";
-import {
-  DAEMON_BAG_ID, personaMembershipEntries, personaScopedBagIds, nameControlHome,
-  seedDaemonDoc,
-  PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
-  nexusIdentity, nexusScopeOrThrow, nexusAidOf,
-  mintFaceAnchor, raiseFaceFrontier,
-} from "@lararium/mesh";
+import { DAEMON_BAG_ID, PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER } from "@lararium/mesh/lar-uris";
+import { personaMembershipEntries } from "@lararium/mesh/persona-planes";
+import { personaScopedBagIds } from "@lararium/mesh/persona-scope";
+import { nameControlHome } from "@lararium/mesh/control-home";
+import { seedDaemonDoc } from "@lararium/mesh/social-seed";
+import { nexusIdentity, nexusScopeOrThrow } from "@lararium/mesh/nexus-identity";
+import { nexusAidOf } from "@lararium/mesh/nexus-seal-seed";
+import { mintFaceAnchor, raiseFaceFrontier } from "@lararium/mesh/face-anchor";
 import { daemonGenesisDir, daemonCorpusRoot, loadLaresConfig } from "../lares-config.js";
 import { repoRoot } from "@lararium/mesh/node";
 import { genesisFoundingLine, genesisResolutionAt, pinGenesisSeed } from "../genesis-resolve.js";
@@ -58,9 +59,10 @@ import {
   generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed,
 } from "../node-vessel-identity.js";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
-import type { LarDoc, SlotSpec } from "@lararium/mesh";
-import type { RandomProvider } from "@lararium/mesh";
-import type { PlaceFoundingCard } from "@lararium/mesh";
+import type { LarDoc } from "@lararium/mesh/base-doc";
+import type { SlotSpec } from "@lararium/mesh/keyslot-door";
+import type { RandomProvider } from "@lararium/mesh/crypto";
+import type { PlaceFoundingCard } from "@lararium/mesh/place-founding-card";
 import { GENESIS_ENGINE_CID } from "../genesis-artifact.js";
 import {
   foundThePlace, foundTheFace, runApplyAdmitPayload, archiveIsOf,

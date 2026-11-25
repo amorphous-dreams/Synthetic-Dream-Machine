@@ -12,7 +12,10 @@
 import { describe, expect, test as plain } from "vitest";
 import { fc, test } from "@fast-check/vitest";
 import * as ed from "@noble/ed25519";
-import { base64UrlEncode, hex, utf8Bytes, verifyEd25519, HANDLE_CARD_DOMAIN, type HandleCard } from "@lararium/mesh";
+import { base64UrlEncode, hex, utf8Bytes } from "@lararium/mesh/crypto";
+import { verifyEd25519 } from "@lararium/mesh/ed25519-door";
+import { HANDLE_CARD_DOMAIN } from "@lararium/mesh/domains";
+import { type HandleCard } from "@lararium/mesh/handle-card";
 import { stampCarrier, verifyBcc, checkSpan } from "@lararium/memetic-frame";
 import { mintPromotionReceipt, verifyPromotionReceipt, type PromotionReceipt } from "../../src/promotion-receipt.js";
 import { parseHandleCardCarriage, toHandleCardCarriage } from "../../src/handle-carriage.js";

@@ -11,7 +11,10 @@
  */
 import { memoryControlStore } from "./control-store-fixture.js";
 import { describe, expect, test } from "vitest";
-import { CompositeStore, DAEMON_BAG_ID, WARD_AUDIT_URI_PREFIX, wikiSlotUri } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { WARD_AUDIT_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { makeWardAlertReactor, ACTIVE_WIKI_URI } from "../src/index.js";
 import type { DaemonMsg_WikiAlert } from "../src/index.js";

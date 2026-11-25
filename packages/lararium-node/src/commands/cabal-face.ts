@@ -20,7 +20,9 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-steward-signer
  */
 import type { Repo } from "@automerge/automerge-repo";
-import { newRequestId, realmFeedAskImage, signAsFaceAtom, signFaceLeafBond } from "@lararium/mesh";
+import { newRequestId } from "@lararium/mesh/verb-tiddler";
+import { realmFeedAskImage, signFaceLeafBond } from "@lararium/mesh/face-leaf-bond";
+import { signAsFaceAtom } from "@lararium/mesh/face-atom";
 import { loadFaceAtom, loadFaceAtomKey } from "../face-atom-store.js";
 import { actingRealmNexus, noteVesselRealm } from "../edge-board.js";
 import { mintFaceNexusLeaf, faceNexusLeaf } from "../nexus-leaf.js";

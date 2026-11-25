@@ -18,11 +18,27 @@
 import type { AutomergeUrl, DocHandle, DocumentId, Repo } from "@automerge/automerge-repo";
 import { interpretAsDocumentId } from "@automerge/automerge-repo";
 import {
-  fleetEdgeBoardDocUrl, realmEdgeBoardDocUrl, realmVouchBoardDocUrl, materializeSharedLarDoc,
-  fleetEdgeAuthority, deviceEdgeId, realmEdgeAuthority, memberEdgeId, memberStandsAside, lineageStanding,
-  readLedgeredVouches, canonicalIdentity, edgeLedgerDocUrl, ledgerRealms, edgeStandingAsOf, raisesSeenThrough, readFleetFrontier, fleetRaiseCids, readFrontierPins, writeFrontierPin, FLEET_HAND, charterHandLineage, readRealmBoardFrontiers, holderHand, vouchEdgeId,
-  type CabalInvite, type EdgeReading, type EdgeStanding, type LarDoc, type ShadowConsult, type HandLineage, type WideningRead,
-} from "@lararium/mesh";
+  fleetEdgeBoardDocUrl,
+  realmEdgeBoardDocUrl,
+  realmVouchBoardDocUrl,
+  materializeSharedLarDoc,
+  edgeLedgerDocUrl,
+} from "@lararium/mesh/deterministic-doc";
+import { fleetEdgeAuthority, deviceEdgeId } from "@lararium/mesh/dyad";
+import { realmEdgeAuthority, memberEdgeId, memberStandsAside, lineageStanding } from "@lararium/mesh/realm-edges";
+import { readLedgeredVouches, ledgerRealms, raisesSeenThrough } from "@lararium/mesh/edge-ledger";
+import { canonicalIdentity } from "@lararium/mesh/vouch-dag";
+import { edgeStandingAsOf, type EdgeReading, type EdgeStanding } from "@lararium/mesh/edge-kapae";
+import { readFleetFrontier, fleetRaiseCids, FLEET_HAND } from "@lararium/mesh/fleet-frontier";
+import { readFrontierPins, writeFrontierPin } from "@lararium/mesh/edge-frontier-board";
+import { charterHandLineage } from "@lararium/mesh/charter-hand-lineage";
+import { readRealmBoardFrontiers, holderHand } from "@lararium/mesh/realm-frontier";
+import { vouchEdgeId } from "@lararium/mesh/vouch-board";
+import { type CabalInvite } from "@lararium/mesh/cabal-invite";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { type ShadowConsult } from "@lararium/mesh/federation-gate";
+import { type HandLineage } from "@lararium/mesh/hand-lineage";
+import { type WideningRead } from "@lararium/mesh/edge-frontier";
 import { readVesselEdgeBoard, realmNexusIn, vesselEdgeCharter } from "./edge-board.js";
 
 const bare = (key: string): string => key.trim().toLowerCase().replace(/^0x/, "").slice(-64);
