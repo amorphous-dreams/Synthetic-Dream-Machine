@@ -65,7 +65,7 @@ import { stdin } from "node:process";
 import { readOwnHand, type HandReading } from "@lararium/node";
 import { CARRIER_TYPE, isCarrierType } from "@lararium/mesh/carrier-type";
 import {
-  ASH_ROUNDS, INSTANCE_ID, INSTANCES_SLOT, CAS_ROUNDS, DISTILL_SLOT, LINEAGE_FIELDS, MEMORY_PREFIX, PET_NAME, PRECOMPACT_CARD_CHARS, RECORD_KINDS,
+  ASH_ROUNDS, INSTANCE_ID, CAS_ROUNDS, DISTILL_SLOT, LINEAGE_FIELDS, MEMORY_PREFIX, PET_NAME, PRECOMPACT_CARD_CHARS, RECORD_KINDS,
   RESIDUE_CAP_CHARS, SLOT_DIGEST, SLUG_CHARS, SPIRIT_RECIPE, SPIRIT_SOURCES, SpiritRefusal, TRUE_UP_EVERY, OM_CAP_CHARS,
   advisoryLine, ashLedgerOf, attentionLines, attentionTitles, instancesLine, burnLine, burnTally, bytesOf, carryFields, carryFilter,
   carryDepth, carryInstanceOf, carryParent, carryParents, carryRows, compactionTitle, crossingRefusal, crossingWrite, digestOf, distillHold,
