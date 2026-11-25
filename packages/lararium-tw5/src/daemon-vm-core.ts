@@ -20,6 +20,7 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/daemon-vm-core
  */
 
+import { inCallScope, takeCallTouches } from "@lararium/mesh/call-touches";
 import { wearOf } from "@lararium/mesh/repo-wear";
 import { canonicalJson } from "@lararium/mesh/crypto";
 import { DAEMON_BAG_ID, CROSSROADS_DOC_URI, verbArgsFromPayload } from "@lararium/mesh/lar-uris";
@@ -744,17 +745,20 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
         batchMode:   (msg.batchMode ?? "best-effort") as BatchMode,
         status:      "pending" as const,
       };
-      runLocalVerb(invocationLike, {
+      // THE DELEGATED RUN TAGS ITS CALL (`call-touches`): what main changes for it rides back with the answer, so the island's
+      // outcome names it and the seat owes it (a postMessage carries no async context; the id does).
+      inCallScope(msg.requestId, () => runLocalVerb(invocationLike, {
         daemon:   composite,
-        registry: _registry,
+        registry: _registry!,
         ...(worn ? { wornOf: () => worn, localOf: () => true } : {}),
         ...(asker ? { askerOf: () => asker } : {}),
-      }).then((result) => {
-        worker.post(mkDaemonVerbResult({ requestId: msg.requestId, result }));
+      })).then((result) => {
+        worker.post(mkDaemonVerbResult({ requestId: msg.requestId, result, touched: takeCallTouches(msg.requestId) ?? {} }));
       }).catch((err: unknown) => {
         worker.post(mkDaemonVerbResult({
           requestId: msg.requestId,
           error: err instanceof Error ? err.message : String(err),
+          touched: takeCallTouches(msg.requestId) ?? {},
         }));
       });
       return;

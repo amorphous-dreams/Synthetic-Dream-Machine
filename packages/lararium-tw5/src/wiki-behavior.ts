@@ -12,6 +12,7 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/wiki-behavior
  */
 
+import { inCallScope, takeCallTouches } from "@lararium/mesh/call-touches";
 import { mkWikiVerbResult, type WikiMsg_PlaceVerb } from "@lararium/mesh/island-protocol";
 import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { type BatchMode, type Verb } from "@lararium/mesh/verb-tiddler";
@@ -162,14 +163,15 @@ export function makeWikiBehavior(opts: WikiBehaviorOptions = {}): IslandBehavior
         requestedBy: msg.requestedBy,
         requestedAt: new Date().toISOString(),
       };
-      void handler(msg.args, {
+      // THE WIKI ISLAND'S VERB TAGS ITS CALL (`call-touches`): its answer reports what it changed, even nothing.
+      void inCallScope(requestId, () => handler(msg.args, {
         daemon: ctx.composite,
         invocation,
         cap:   async () => ({ ok: true, reason: "worker-trust" }),
-      }).then((result) => {
-        if (msg.requestId) ctx.post(mkWikiVerbResult({ requestId, result }));
+      })).then((result) => {
+        if (msg.requestId) ctx.post(mkWikiVerbResult({ requestId, result, touched: takeCallTouches(requestId) ?? {} }));
       }).catch((err: unknown) => {
-        if (msg.requestId) ctx.post(mkWikiVerbResult({ requestId, error: String(err) }));
+        if (msg.requestId) ctx.post(mkWikiVerbResult({ requestId, error: String(err), touched: takeCallTouches(requestId) ?? {} }));
       });
       return true;
     },

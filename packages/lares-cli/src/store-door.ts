@@ -11,6 +11,7 @@
  * caller names exactly as it names a refusal on the direct path.
  */
 
+import { owedLine } from "./verb-result.js";
 import { wardTicketFor } from "./ward-door.js";
 import { ControlHomeUnavailable, VESSEL_LOCKED } from "@lararium/mesh/control-home";
 import { newRequestId } from "@lararium/mesh/verb-tiddler";
@@ -78,6 +79,9 @@ async function invokeInSession(
   const requestId = opts.requestId;
   try {
     const { answer } = await session.act(verb, args, { requestId });
+    // NO SILENT LOSS, THE SAME STAMP: an act whose own changes wait unsealed refuses `owed` (exit 6), its receipt in the line.
+    const owed = owedLine({ rest: answer["rest"] });
+    if (owed !== null) throw new RoutedVerbRefused(owed, "owed");
     if (answer["status"] === "error") {
       const reason = typeof answer["reason"] === "string" ? answer["reason"] : undefined;
       throw new RoutedVerbRefused(typeof answer["errorMessage"] === "string" ? answer["errorMessage"] : reason ?? `${verb} failed`, reason);

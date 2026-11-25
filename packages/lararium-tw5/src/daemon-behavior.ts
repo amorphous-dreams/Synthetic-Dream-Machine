@@ -16,6 +16,7 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/daemon-behavior
  */
 
+import { addCallTouches, readCallTouches } from "@lararium/mesh/call-touches";
 import { EXEC_LEI_SPEND_VERB } from "@lararium/mesh/exec-lei";
 import { islandExecLeiPort } from "./exec-lei-route.js";
 import { makeDelegationBook } from "./delegation-book.js";
@@ -276,6 +277,8 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
 
       if (type === "daemon:verb-result") {
         const msg = raw as DaemonMsg_VerbResult;
+        // MAIN'S CHANGES FOR THE DELEGATED CALL fold into the island's tally before the answer resumes the call.
+        addCallTouches(msg.requestId, readCallTouches(msg.touched));
         delegations.answer(msg.requestId, { ...(msg.error ? { error: msg.error } : {}), ...(msg.result ? { result: msg.result } : {}) });
         void post;
         return true;

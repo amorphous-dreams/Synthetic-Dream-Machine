@@ -9,6 +9,7 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/verb-vm
  */
 
+import { inCallScope, takeCallTouches, type CallTouches } from "@lararium/mesh/call-touches";
 import type { BatchMode, Verb, VerbTargetResult } from "@lararium/mesh/verb-tiddler";
 import type { ChoreReceiptMark } from "@lararium/mesh/chore-ask";
 import type { CompositeStore } from "@lararium/mesh/composite-store";
@@ -176,6 +177,8 @@ export async function writeOutcome(
     refusal?:      string;
     /** The chore's receipt mark the island booked with this ask; it rests in the outcome beside the result. */
     chore?:        ChoreReceiptMark;
+    /** What the handler changed (`call-touches`), tagged at each change. */
+    touched?:      CallTouches;
   },
 ): Promise<void> {
   const origin = { kind: "lares-verb" as const, requestId: opts.invocation.requestId };
@@ -205,6 +208,7 @@ export async function writeOutcome(
     ...(opts.errorMessage !== undefined && { errorMessage: opts.errorMessage }),
     ...(opts.refusal      !== undefined && { refusal:      opts.refusal }),
     ...(opts.chore        !== undefined && { chore:        opts.chore }),
+    ...(opts.touched      !== undefined && { touched:      opts.touched }),
     inputDigest,
     ...(opts.invocation.effectKey !== undefined && { effectKey: opts.invocation.effectKey }),
   });
@@ -252,6 +256,8 @@ export async function copyEffectOutcome(
     inputDigest: opts.inputDigest,
     ...(invocation.effectKey !== undefined && { effectKey: invocation.effectKey }),
     effectOf:    opts.priorRequestId,
+    // A COPY RAN NOTHING: it reports an empty tally, tracked.
+    touched:     {},
     ...(opts.chore !== undefined && { chore: opts.chore }),
   });
   await control.put(outcome, origin);
@@ -286,12 +292,16 @@ export async function dispatchVerb(
   patchVerb(tw5, invocation.title, buildRunningPatch());
   const mark = chore !== undefined ? { chore } : {};
 
+  // THE CALL'S OWN CHANGES TAG AT THE CHANGE (`call-touches`): the handler runs inside its call's scope, and the outcome
+  // names the documents it changed, so the seat owes this call's writes alone (sealed-store#/owed).
+  // ALWAYS A REPORT, EVEN EMPTY: the seat reads an outcome with no `touched` as untracked (owed), never as sealed.
+  const touchedOf = (): { touched: CallTouches } => ({ touched: takeCallTouches(invocation.requestId) ?? {} });
   try {
-    const result = await run();
-    await writeOutcome(control, { invocation, status: "done", result, ...mark });
+    const result = await inCallScope(invocation.requestId, run);
+    await writeOutcome(control, { invocation, status: "done", result, ...mark, ...touchedOf() });
   } catch (err) {
     await writeOutcome(control, {
-      invocation, status: "error", errorMessage: errorText(err), ...mark,
+      invocation, status: "error", errorMessage: errorText(err), ...mark, ...touchedOf(),
       // A reactor that refuses by name hands its machine-read reason to the outcome; a plain
       // failure carries none. An act that wrote a control fact on a place with no readable control
       // document refuses by that document's name (`control-home-unnamed`, `vessel-locked`).

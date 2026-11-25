@@ -9,6 +9,8 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 const h = vi.hoisted(() => ({
   calls: [] as Array<{ verb: string; args: Record<string, unknown> }>,
   answer: (_verb: string, _args: Record<string, unknown>): Record<string, unknown> | Promise<Record<string, unknown>> => ({}),
+  /** The vessel's owed band for one call (`rest`), as the seat stamps it; null: the call's changes sealed. */
+  restFor: (_verb: string, _args: Record<string, unknown>): Record<string, unknown> | null => null,
 }));
 vi.mock("../src/verb-call.js", () => ({
   DaemonUnreachable: class extends Error {},
@@ -20,7 +22,8 @@ vi.mock("../src/verb-call.js", () => ({
     try { output = await h.answer(verb, args); } catch (e) { return { status: "error", requestId: "r", errorMessage: e instanceof Error ? e.message : String(e) }; }
     // A refusal crosses as the vessel sends one: the verb's own code leads its message.
     if (typeof output["refuse"] === "string") return { status: "error", requestId: "r", errorMessage: output["refuse"] };
-    return { status: "done", requestId: "r", results: { summary: { ok: true, output } } };
+    const rest = h.restFor(verb, args);
+    return { status: "done", requestId: "r", results: { summary: { ok: true, output } }, ...(rest !== null ? { rest } : {}) };
   },
   // A face session answers as the vessel's own: these suites read what the door asks, never which session carried it.
   runVerbAsFace: async (verb: string, args: Record<string, unknown>) => {
@@ -697,6 +700,35 @@ describe("om reads by source and reads the carry as testimony", () => {
     const r = await run(argv(["om", "lares-alpha"], { source: "resume" }));
     expect(String(data(r)["text"])).toMatch(/^Lares spirit om · lares-alpha: this instance resumes; the card reads f5f5f5f5f5f5 now, and an earlier wake may read stale/);
     expect(String(data(r)["text"]).split("\n")).toHaveLength(1);
+  });
+
+  test("om reads past an owed presence stamp: the card renders whole and the testimony names the stamp that waits", async () => {
+    stage({ side: { lease: "inst-a 1 2026-11-24T11:00:00.000Z" } });
+    const band = { band: "owed", documents: [{ documentId: "4Z7nNfywXcoGg7zH8y3fUGqCgqBK", refusal: "save-unsealed", error: "record-refused", cause: "signer-refused" }] };
+    h.restFor = (verb, args) => (verb === "tiddler-put" && args["title"] === SIDE ? band : null);
+    try {
+      const r = await run(argv(["om", "lares-alpha"], { source: "startup", instance: "inst-b" }));
+      expect(r.exit).toBe(0);
+      expect(r.printed["ok"]).toBe(true);
+      const text = String(data(r)["text"]);
+      expect(text).toContain("a loop");
+      expect(text).toContain("This wake's own stamp waits unsealed (the card below reads whole): owed:");
+      expect(text).toContain("4Z7nNfywXcoG");
+      const owed = data(r)["owed"] as string[];
+      expect(owed.length).toBeGreaterThan(0);
+      expect(owed.every((line) => line.startsWith("owed: "))).toBe(true);
+    } finally { h.restFor = () => null; }
+  });
+
+  test("outside the wake's own stamps, a spirit write the vessel answers owed refuses owed (exit 6)", async () => {
+    stage({});
+    const band = { band: "owed", documents: [{ documentId: "2hUgpNYoRGAkCcCXTgZGecaQBXsp", refusal: "save-unsealed" }] };
+    h.restFor = (verb) => (verb === "tiddler-put" ? band : null);
+    try {
+      const r = await run(argv(["ah", "lares-alpha"], { slot: "#/instances", add: "* two" }));
+      expect(r.exit).toBe(6);
+      expect(r.printed).toMatchObject({ ok: false, error: { code: "owed" } });
+    } finally { h.restFor = () => null; }
   });
 
   test("a fork wakes framed as a fork, holding the raised epoch", async () => {

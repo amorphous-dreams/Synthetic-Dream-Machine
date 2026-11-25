@@ -16,6 +16,7 @@ import { getHeads } from "@automerge/automerge";
 import type { PeerId, StorageAdapterInterface } from "@automerge/automerge-repo";
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
 import { peerArrivals } from "./peer-arrivals.js";
+import { watchCallTouches } from "./call-touches.js";
 import { shoreInbound } from "./prototype-key-shore.js";
 
 export interface IslandRepoConfig {
@@ -96,6 +97,14 @@ export function hardenedSyncPort(port: MessagePort, onDropped?: (why: string) =>
 
 /** Construct an island's sovereign Repo over its transferred syncPort. */
 export function makeIslandRepo(cfg: IslandRepoConfig): Repo {
+  // THE CALL'S OWN CHANGES TAG AT THE CHANGE (`call-touches`): a verb's handler runs in its call's scope, and every change
+  // this island's Repo makes inside it names the call's documents, so the seat owes that call's writes alone.
+  const repo = islandRepoOf(cfg);
+  watchCallTouches(repo as never);
+  return repo;
+}
+
+function islandRepoOf(cfg: IslandRepoConfig): Repo {
   return new Repo({
     ...(cfg.storage ? { storage: cfg.storage } : {}),
     ...(cfg.peerId ? { peerId: cfg.peerId as PeerId } : {}),

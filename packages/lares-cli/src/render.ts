@@ -131,6 +131,9 @@ export const EXIT_FOR: Readonly<Record<string, number>> = {
   "store-held":        4,
   // The "nothing answered" family (3): the store door's own budgeted wait named a holder and gave up.
   "store-door-timeout": 3,
+  // outcome-committed's kin (6): the write landed in the vessel's memory and its save waits unsealed (`rest` band `owed`,
+  // sealed-store#/owed): it rests nowhere yet, and a down before a session seals it loses it. Never a bare ok, never a fault.
+  "owed":              6,
   error:               1,
 };
 

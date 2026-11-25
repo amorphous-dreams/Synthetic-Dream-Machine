@@ -73,7 +73,33 @@ import { switchSession } from "@lararium/mesh/session-switch";
 import { ingestWaveRefusal } from "@lararium/mesh/ingest-wave-budget";
 import type { CapabilityProfile, Hand, Session, SessionFace } from "@lararium/mesh/session-contract";
 import type { SwitchIntent, SwitchOutcome } from "@lararium/mesh/session-switch";
+import { answersUntracked, inCallScope, takeCallTouches, takeCallUntracked, type CallTouches } from "@lararium/mesh/call-touches";
 import type { SwitchActLog } from "./switch-act-log.js";
+
+/** The band a write door's answer carries where a document its call wrote still waits unsealed (`RestOwed`, sealed-rest). */
+export interface RestOwedBand {
+  readonly band: "owed";
+  readonly documents: ReadonlyArray<{ readonly documentId: string; readonly refusal: string; readonly error?: string; readonly cause?: string }>;
+}
+/** Merge the documents a call changed on the island (its outcome's `touched`) with those it changed here: the later heads win. */
+export function mergeCallTouches(...parts: ReadonlyArray<CallTouches | null | undefined>): CallTouches | null {
+  const out: Record<string, readonly string[]> = {};
+  for (const part of parts) if (part) for (const [id, heads] of Object.entries(part)) out[id] = heads;
+  return Object.keys(out).length > 0 ? out : null;
+}
+/** An outcome's `touched` field, read with no trust: a malformed one reads as none. */
+export function touchedOfField(raw: unknown): CallTouches | null {
+  if (typeof raw !== "string" || raw.length === 0) return null;
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return null;
+    const out: Record<string, readonly string[]> = {};
+    for (const [id, heads] of Object.entries(parsed as Record<string, unknown>)) {
+      if (Array.isArray(heads) && heads.every((h: unknown) => typeof h === "string")) out[id] = heads as string[];
+    }
+    return Object.keys(out).length > 0 ? out : null;
+  } catch { return null; }
+}
 // The adaptive-timeout SERVO (fail on a GRADIENT, never a cliff): a per-verb wait that GROWS with the
 // observed durations and clamps FLOOR..CEIL. The machine-code work stays Python; this is the
 // coordinator's PATIENCE, servo'd so a long-but-honest verb (a big-session capture, a refresh queued
@@ -178,6 +204,9 @@ export interface UdsChannelOptions {
   /** The lock ritual's first move, before a session's signer drops (sealed-store#/owed, R2): the vessel flushes its Repo
    *  and its sealed rest, so every save the session booked lands sealed under it. Absent → the signer drops at once. */
   readonly beforeSignerDrops?: (signer: UdsSessionSigner) => Promise<void>;
+  /** NO SILENT LOSS (sealed-store#/owed): a write verb's answer reads, after the Repo's flush, which documents held a save
+   *  since its call began and still wait unsealed; a `done` answer then carries `rest: { band: "owed", … }`. */
+  readonly restOwed?: { mark(): number; owed(since: number, touches: CallTouches | null): Promise<RestOwedBand | null> };
   /** The vessel's control document (`standControlHome`): its heads name a receipt's durability. */
   readonly controlHandle: DocHandle<LarDoc>;
   /** The verbs a one-shot runs while the control document stands as a stand-in (`floor-verbs`); every other refuses by its name. */
@@ -1067,6 +1096,8 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       // concurrent re-read of an id this process already committed) can tell a dedup answer from a
       // verb this attempt actually ran.
       ...(typeof fields["effect-of"] === "string" ? { effectOf: fields["effect-of"] } : {}),
+      // THE CALL'S OWN CHANGES on the island (`call-touches`): the seat reads them for the owed band and strips them.
+      ...(typeof fields["touched"] === "string" ? { touched: fields["touched"] } : {}),
     };
   };
 
@@ -1596,12 +1627,16 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       if (verdict.verdict === "refuse") return sessionRefuse(sock, verdict.reason, requestId);
       let answer: Record<string, unknown>;
       ran = true;
+      const owedSince = opts.restOwed ? opts.restOwed.mark() : null;
       try {
-        answer = await run(name, bound, worn);
+        // AN ACT RUNS IN ITS OWN SCOPE (`call-touches`): what it changes here tags it, and its answer carries the owed band.
+        answer = await inCallScope(scoped, () => run(name, bound, worn));
       } catch (error) {
         log(`session act ${name} faulted for ${requestId}: ${error instanceof Error ? error.message : String(error)}`);
         answer = { status: "error", reason: "act-faulted" };
       }
+      const actRest = await owedFor(owedSince, touchesOf(scoped, undefined), takeCallUntracked(scoped));
+      if (actRest !== null) answer = { ...answer, rest: actRest };
       const status = answer["status"] === "error" ? "error" : "done";
       try {
         await ledger.observeOutcome(scoped, status, digest, 0, face, action);
@@ -1703,7 +1738,36 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
   const settleOne = (sock: Socket): void => {
     if (inFlight.delete(sock) && idle()) drained?.();
   };
+  /** EVERY CALL RUNS IN ITS OWN SCOPE (`call-touches`): what the vessel's main thread changes for it tags the call's id. */
   const handle = (parsed: unknown, sock: Socket, sessionRequestId?: string, onSessionReply?: () => void, mark?: ChoreReceiptMark, gate?: DoorGate): void => {
+    const callId = parsed && typeof parsed === "object" ? (parsed as Record<string, unknown>)["requestId"] : undefined;
+    if (typeof callId !== "string" || callId.length === 0) return handleCall(parsed, sock, null, sessionRequestId, onSessionReply, mark, gate);
+    return inCallScope(callId, () => handleCall(parsed, sock, callId, sessionRequestId, onSessionReply, mark, gate));
+  };
+  /** The documents a call changed here and on the island, the control document's own bookkeeping left out. */
+  const touchesOf = (callId: string | null, island: unknown): CallTouches | null => {
+    const merged = mergeCallTouches(touchedOfField(island), callId !== null ? takeCallTouches(callId) : null);
+    if (merged === null) return null;
+    const { [controlHandle.documentId]: _control, ...rest } = merged;
+    return Object.keys(rest).length > 0 ? rest : null;
+  };
+  /** The owed band for one call's own changes; a reading that fails answers owed by name, never sealed. A path that ran
+   *  for the call and reported nothing (`untracked`) joins the band by its verb: visible, never ok. */
+  const owedFor = async (since: number | null, touches: CallTouches | null, untracked: readonly string[] = []): Promise<RestOwedBand | null> => {
+    if (since === null || !opts.restOwed) return null;
+    let band: RestOwedBand | null = null;
+    if (touches !== null) {
+      try { band = await opts.restOwed.owed(since, touches); }
+      catch (error) { band = { band: "owed", documents: Object.keys(touches).map((documentId) => ({ documentId, refusal: "owed-unread", error: error instanceof Error ? error.message : String(error) })) }; }
+    }
+    if (untracked.length === 0) return band;
+    return { band: "owed", documents: [...(band?.documents ?? []), ...untracked.map((what) => ({ documentId: "untracked", refusal: "untracked", error: `${what}: no change report reached the seat, so whether its writes rest stands unread` }))] };
+  };
+  const handleCall = (parsed: unknown, sock: Socket, callId: string | null, sessionRequestId?: string, onSessionReply?: () => void, mark?: ChoreReceiptMark, gate?: DoorGate): void => {
+    // THE REST-OWED MARK: every call notes the held saves standing as it begins; its answer names what its own changes left owed.
+    const owedSince = opts.restOwed ? opts.restOwed.mark() : null;
+    /** The verb this call dispatched to the island (its answer carries the island's change report, or reads untracked). */
+    let dispatched: string | null = null;
     // The receipt mark of a dispatched chore (`ChoreReceiptMark`: the acting face, the asker's hand, its session), carried on
     // its answer as `chore`; unset for a read or a refusal. A session's door hands it in; a one-shot's deferred tick reads it.
     let choreMark: ChoreReceiptMark | undefined = mark;
@@ -1757,7 +1821,16 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     };
     const respond = (answer: Record<string, unknown>): void => {
       void (async () => {
-        const named = choreMark !== undefined ? { ...answer, chore: choreMark } : answer;
+        // A WRITE THAT CANNOT SEAL ANSWERS `owed`, NEVER A BARE OK: the change stands in memory and rests nowhere yet.
+        // ONE PLACE FOR EVERY VERB: whatever the call changed (on the island, or here) reads its rest before the answer leaves.
+        const { touched: islandTouched, ...plain } = answer;
+        const terminal = answer["status"] === "done" || answer["status"] === "error";
+        // FAIL-SAFE: a dispatched verb no read allow-list names, whose answer carries no change report, reads untracked.
+        const untracked = callId !== null ? takeCallUntracked(callId) : [];
+        if (terminal && dispatched !== null && answersUntracked(dispatched, islandTouched !== undefined)) untracked.push(dispatched);
+        const rest = terminal ? await owedFor(owedSince, touchesOf(callId, islandTouched), untracked) : null;
+        const stamped = rest !== null ? { ...plain, rest } : plain;
+        const named = choreMark !== undefined ? { ...stamped, chore: choreMark } : stamped;
         const payload = sessionRequestId === undefined ? named : {
           kind: "session:result", ...named, requestId: sessionRequestId,
           ...((answer["status"] === "done" || answer["status"] === "error") && controlHomeRefusal(controlHandle) === null ? { durable: await settleDurably() } : {}),
@@ -1960,6 +2033,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
           }
           const held = await retrievedOutcome(requestId);
           if (held) return respond(held);
+          dispatched = inv.verb;
           runVerb(inv, requestId).then(
             (outcome) => { respond(outcome); },
             (err) => {
@@ -2012,6 +2086,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
           // A genuine concurrent re-read of an id THIS process already dispatched OR a same-digest
           // dispatch attempt reaching a fact a PRIOR process already drove to `done`/`error` (H1R,
           // across a restart) — answer the existing outcome, never a second `placeVerb`.
+          dispatched = inv.verb;
           const awaited = awaitOutcome(inv.verb, requestId, inv.timeoutMs);
           releaseWhenSettled(awaited, requestId);
           // A RE-ASK READS BACK, never the live answer: a visit's body stays withheld under a reused id.
@@ -2037,6 +2112,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         // THE ADMISSION SETTLED DURABLY (its committed fact flushed): the last settled wave a fall names.
         try { opts.engine?.settled(controlHandle.heads()); } catch { /* heads unread: the admission still landed */ }
         // The work releases when the verb itself settles, never when this caller's wait gives up.
+        dispatched = inv.verb;
         const running = runVerb(inv, requestId);
         releaseWhenSettled(running, requestId);
         running.then(

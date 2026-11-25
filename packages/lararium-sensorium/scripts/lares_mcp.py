@@ -1152,6 +1152,11 @@ def build_mcp(coordinator: LaresCoordinator):
         summary = ((out.get("results") or {}).get("summary")) or {}
         if summary.get("ok") is False:
             raise uds.LaresVerbError(str(summary.get("error") or f"verb {verb!r} failed"))
+        # NO SILENT LOSS (sealed-store#/owed): a write whose save waits unsealed, or refused outright, carries the vessel's
+        # `rest` band; every MCP write rides this one wire, so each answers `owed` naming the band, never a bare ok.
+        owed = uds.owed_error(verb, out.get("rest"), summary.get("output"))
+        if owed is not None:
+            raise owed
         return summary.get("output")
 
     def meme_put(uri: str, text: str, recipe: "str | None" = None, bag: "str | None" = None,

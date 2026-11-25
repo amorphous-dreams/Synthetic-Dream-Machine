@@ -24,6 +24,7 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/vessel-island-pool-core
  */
 
+import { addCallTouches, currentCall, markCallUntracked, readCallTouches } from "./call-touches.js";
 import { attachMessageChannelSync, markWikiIslandPeer } from "./island-repo.js";
 import { awaitIslandMsg } from "./vessel-host.js";
 import { SYSTEM_BAGS, expandRecipe, wikiBagUri, wikiSlotUri, type WikiSlotKind } from "./wiki-recipe.js";
@@ -449,6 +450,8 @@ export class VesselIslandPoolCore {
     key:     string;
     resolve: (r: Record<string, unknown>) => void;
     reject:  (e: Error) => void;
+    /** The seat's call this verb runs inside (`call-touches`): the island's report folds into it. */
+    call?:   string;
   }>();
   // THE SESSION FENCES. A session that ended mounts nothing again, and a session that switched mounts nothing
   // under a generation it left. Ids and floors alone: no face, no surface, nothing a reader could list.
@@ -1051,7 +1054,8 @@ export class VesselIslandPoolCore {
     return new Promise<Record<string, unknown>>((resolve, reject) => {
       // The verb ends on the island's answer, its unmount (a lease that dropped), or its exit or error (`_failParkedVerbs`);
       // no timer answers for a verb running long on a live island.
-      this._pendingWikiVerbs.set(requestId, { key: wikiId, resolve, reject });
+      const call = currentCall();
+      this._pendingWikiVerbs.set(requestId, { key: wikiId, resolve, reject, ...(call !== undefined ? { call } : {}) });
       worker.post(mkWikiPlaceVerb({ ...opts, requestId }));
     });
   }
@@ -1337,6 +1341,12 @@ export class VesselIslandPoolCore {
         const pending = this._pendingWikiVerbs.get(result.requestId);
         if (pending) {
           this._pendingWikiVerbs.delete(result.requestId);
+          // THE WIKI ISLAND'S REPORT folds into the seat's call; one that reports none marks that call untracked.
+          if (pending.call !== undefined) {
+            const touched = readCallTouches(result.touched);
+            if (touched === null) markCallUntracked(pending.call, "wiki-verb");
+            else addCallTouches(pending.call, touched);
+          }
           if (result.error) pending.reject(new Error(result.error));
           else              pending.resolve(result.result ?? {});
         }

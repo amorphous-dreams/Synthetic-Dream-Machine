@@ -986,6 +986,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     siblingFaceOf: (presenter) => result.siblingFaceOf(presenter),
     signers:      result.sessionSigns,
     beforeSignerDrops: (signer) => result.sealedRestLock(signer),
+    restOwed:     result.restOwed,
     switchActs:   nodeSwitchActLog,
     sessionVerbs: STORE_DOOR_FACE_VERBS,
     handOnlyActs: STORE_DOOR_HAND_ONLY_ACTS,

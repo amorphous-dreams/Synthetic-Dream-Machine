@@ -6,6 +6,9 @@
  */
 
 import { parentPort } from "worker_threads";
+import { seatNodeCallScope } from "./node-call-scope.js";
+// A verb's changes tag its call across every await (`call-touches`): the seat owes that call's writes alone.
+seatNodeCallScope();
 import { runSovereignWorker, vesselReceiptAsker, vesselCustodyWriter, vesselDyadAsker, vesselSessionDoor } from "./sovereign-island-model.js";
 import { makeOperatorDaemonBehavior } from "@lararium/keyhive/operator-daemon-behavior";
 import { litFaceProjector, litFaceProjectorFaces, mountDiskProjection, mountLitFaceProjection, mountedDiskProjector } from "./island-behaviors.js";
