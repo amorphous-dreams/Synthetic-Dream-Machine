@@ -69,8 +69,9 @@ export function floorHeld({ lock, pid = process.pid, proc = '/proc' } = {}) {
   try { real = realpathSync(lock); ino = statSync(real).ino; } catch { return false; }
   let table;
   try { table = flocksOf(readFileSync(join(proc, 'locks'), 'utf8')); } catch { return false; }
-  const holders = table.get(ino);
-  if (!holders || holders.size === 0) return false;
+  // /proc/locks may name no holder at all (WSL lists a flock(1) lock with pid 0, or not under this inode), so an
+  // empty table never decides: the open-file witness below reads the hold either way.
+  const holders = table.get(ino) ?? new Set();
   const line = ancestry(pid, proc);
   if (line.some((p) => holders.has(p))) return true;
   // By open file: an ancestor's descriptor on the lock file, its fdinfo naming the FLOCK that open file owns.
