@@ -310,7 +310,7 @@ export { runEdgePartial, runEdgeCosign, EdgeCosignError, type EdgePartialResult,
 export { runPromoteOpen, runPromoteSign, runPromoteCheck, runPromoteCheckBytes, promotionStatementDigest, PromoteError, type PromoteOpenResult, type PromoteSignResult } from "./commands/nexus-promote.js";
 export { runCabalAct, runCabalCosign, runCabalStanding, readKahuCabalBoard, landFoundingAdmission, NexusCabalError, type NexusCabalActResult } from "./commands/nexus-cabal.js";
 export { runFloorRelease, runFloorReleaseStanding, type NexusReleaseResult } from "./commands/nexus-release.js";
-export { runFloorStatus, runFloorAccept, nodeFloorPorts, FloorRefused, type NodeFloorOptions } from "./commands/floor.js";
+export { runFloorStatus, runFloorAccept, runFloorAdopt, runFloorSettle, nodeFloorPorts, FloorRefused, type NodeFloorOptions } from "./commands/floor.js";
 export { runFloorCut, runFloorCutOver, type FloorCutResult } from "./commands/floor-cut.js";
 export { runOfferRetire, heldCharterSeat, OFFER_RETIRE_WAIT_MS } from "./commands/offer-retire.js";
 export type { CabalVouchOptions, CabalVouchResult } from "./commands/cabal-vouch.js";

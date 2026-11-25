@@ -5,5 +5,5 @@
  * subpath instead of the barrel reaches this door, which carries exactly the barrel's names from that module and
  * nothing else. `tools/mesh-barrel-witness.test.mjs` holds every exported subpath to the barrel's reach.
  */
-export { resolveRecipePluginCids, deriveWikiRecipe, wikiSlugOfBag } from "./surface-recipe.js";
-export type { WikiRecipeDerivation } from "./surface-recipe.js";
+export { resolveRecipePluginCids, deriveWikiRecipe, wikiSlugOfBag, floorMountSet } from "./surface-recipe.js";
+export type { WikiRecipeDerivation, FloorMountReading } from "./surface-recipe.js";

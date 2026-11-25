@@ -31,10 +31,10 @@
  * one of `VALUE_OR_FLAG`.
  */
 export const BOOLEAN_FLAGS: ReadonlySet<string> = new Set([
-  "abandon", "accept-loss", "accept-omissions", "added", "all", "all-strata", "apply", "approve", "brief", "bulk", "cancel", "cards", "collapse", "cosign", "confirm", "create", "cut", "drain",
+  "abandon", "accept-loss", "accept-omissions", "added", "all", "all-strata", "apply", "approve", "brief", "bulk", "cancel", "cards", "collapse", "commit", "cosign", "confirm", "create", "cut", "drain",
   "deny", "docs", "draft", "drop", "dry-run", "edge", "ephemeral", "every", "executable", "family", "force", "fresh", "foreground", "from-persona", "held", "help", "help-mempalace", "history",
   "hearth", "hold", "if-due", "in-wiki", "init", "join", "json", "keep", "keep-hooks", "keyhive-trace", "lag", "launch", "list", "meme", "memory", "new", "observe", "offer", "orphans", "over-fresher",
-  "page", "pair", "palaces", "paper", "partial", "passphrase", "pending", "probe", "quorum", "overwrite", "remove", "repour", "restart", "rotate", "seat", "sessions", "shadow", "skinny", "skip-build", "spectral", "split-root",
+  "page", "pair", "palaces", "paper", "partial", "passphrase", "pending", "probe", "quorum", "overwrite", "remove", "repour", "restart", "revert", "rotate", "seat", "sessions", "shadow", "skinny", "skip-build", "spectral", "split-root",
   "staged", "sweep", "tag-blobs", "terms", "tree", "verbose", "wait", "watch", "with-web", "workbench", "writeback", "yes",
 ]);
 

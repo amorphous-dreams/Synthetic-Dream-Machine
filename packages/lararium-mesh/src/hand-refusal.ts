@@ -99,7 +99,7 @@ export const HAND_ADMITS: Readonly<Record<string, HandAdmitRow>> = Object.freeze
   "retire-wiki": row("retire", "retire-needs-hand"),
   "wear accept-loss": row("accept-loss", "accept-loss-needs-hand"),
   "share-set": SHARE, "share-apply": SHARE,
-  "floor-accept": row("floor", "floor-needs-hand"),
+  "floor-accept": row("floor", "floor-needs-hand"), "floor-adopt-apply": row("floor", "floor-needs-hand"),
   "wiki-render-out": row("render-output", "render-output-needs-hand"),
 });
 

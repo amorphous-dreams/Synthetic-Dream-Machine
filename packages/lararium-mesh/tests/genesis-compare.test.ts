@@ -11,6 +11,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   compareGenesisDigests, compareSeedToFoundingRecord, floorPinDigests, foundingRecordDigests, ratchetWords,
+  seedRatchetStances, seedStanceWords, SEED_HELD_NEXT, SEED_OFFER_NEXT,
 } from "../src/genesis-compare.js";
 import { GENESIS_CID_ENGINE_TIDDLER, GENESIS_CID_GRAMMAR_TIDDLER, GENESIS_CID_PLUGINS_TIDDLER, type GenesisSeed } from "../src/genesis-doc.js";
 import { GENESIS_FLOOR_TIDDLER } from "../src/floor-manifest.js";
@@ -121,5 +122,32 @@ describe("the floor pin beside the founding record", () => {
     expect(ratchetWords(read.floorPin!)).toBe("engine same · grammar absent · lararium absent · plugins absent · floor same");
     expect(ratchetWords(compareGenesisDigests(record, floorPinDigests("a".repeat(64), { engine: record.engine!, plugins: "b".repeat(64) }))))
       .toBe("engine same · grammar absent · lararium absent · plugins absent · floor moved");
+  });
+});
+
+describe("the seed's stances: each moved ratchet reads offer or held (engine), with one runnable line (follow-lei S0)", () => {
+  const record = { engine: "e1", grammar: "g1", lararium: "l1", plugins: "p1", floor: "f1" };
+
+  it("RED: a moved skin reads offer and a moved engine reads held (engine), each with its own runnable line; same ratchets leave the list", () => {
+    const moved = compareGenesisDigests(record, { engine: "e2", grammar: "g2", lararium: "l1", plugins: "p1", floor: "f2" });
+    const stances = seedRatchetStances(moved);
+    expect(stances).toEqual([
+      { ratchet: "engine", stance: "held (engine)", next: SEED_HELD_NEXT },
+      { ratchet: "grammar", stance: "offer", next: SEED_OFFER_NEXT },
+      { ratchet: "floor", stance: "offer", next: SEED_OFFER_NEXT },
+    ]);
+    const words = seedStanceWords(stances);
+    expect(words).toContain("offer: grammar, the seed's floor adopt over a local floor");
+    expect(words).toContain(`\`${SEED_OFFER_NEXT}\``);
+    expect(words).toContain("held (engine): the engine stays behind its own cadence threshold");
+    expect(words).toContain(`\`${SEED_HELD_NEXT}\``);
+    expect(words).not.toContain("only a re-found");
+  });
+
+  it("CONTROL: a seed the same on every ratchet reads no stance, and an absent ratchet reads as an offer, never same", () => {
+    expect(seedRatchetStances(compareGenesisDigests(record, record))).toEqual([]);
+    expect(seedStanceWords([])).toBe("");
+    const absent = seedRatchetStances(compareGenesisDigests(record, { ...record, plugins: null }));
+    expect(absent).toEqual([{ ratchet: "plugins", stance: "offer", next: SEED_OFFER_NEXT }]);
   });
 });

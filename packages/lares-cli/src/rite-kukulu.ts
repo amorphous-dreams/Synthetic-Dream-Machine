@@ -55,7 +55,7 @@
  * genesis island), ratchet by ratchet (`seedOffer`, `kukuluSeedLine`). The kūkulu moves no ratchet: the new vessel serves the
  * founding record it reloads, and the line only names what waits.
  */
-import { compareGenesisDigests, ratchetWords, ratchetsDiffer, type GenesisDigests } from "@lararium/mesh/genesis-compare";
+import { compareGenesisDigests, ratchetWords, ratchetsDiffer, type GenesisDigests, seedRatchetStances, seedStanceWords } from "@lararium/mesh/genesis-compare";
 
 export type RiteVerbAnswer =
   | { readonly ok: true; readonly output: Record<string, unknown> }
@@ -270,7 +270,7 @@ export interface SeedOffer {
 export function kukuluSeedLine(head: string, offer: SeedOffer): string {
   const ratchets = compareGenesisDigests(offer.record, offer.seed.digests);
   return ratchetsDiffer(ratchets)
-    ? `kūkulu: the image at ${head} offers seed ${offer.seed.cid} beside the founding record: a newer seed waits: ${ratchetWords(ratchets)}; the founding record keeps serving, and the kūkulu moves no ratchet`
+    ? `kūkulu: the image at ${head} offers seed ${offer.seed.cid} beside the founding record: a newer seed waits: ${ratchetWords(ratchets)}; the founding record keeps serving, and the kūkulu moves no ratchet; ${seedStanceWords(seedRatchetStances(ratchets))}`
     : `kūkulu: the image at ${head} offers seed ${offer.seed.cid}: same on every ratchet as the founding record`;
 }
 
