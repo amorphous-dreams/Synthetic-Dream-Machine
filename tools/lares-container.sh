@@ -161,13 +161,17 @@ keep_owed_mark() { printf '%s' "$HOUSE/run/keep-owed"; }
 # never blocks the keep (stderr then flows to the terminal alone).
 keep_run() {
   kr_log="$HOUSE/run/keep-last.log"; kr_fifo="$HOUSE/run/.keep-last.fifo.$$"
-  if mkdir -p -- "$HOUSE/run" 2>/dev/null && mkfifo "$kr_fifo" 2>/dev/null; then
-    tee -- "$kr_log" < "$kr_fifo" >&2 &
+  # The log and the fifo are the operator's alone (umask 077 in this subshell-bound scope; a keep's words may name paths).
+  kr_umask=$(umask); umask 077
+  if mkdir -p -- "$HOUSE/run" 2>/dev/null && mkfifo -m 600 "$kr_fifo" 2>/dev/null; then
+    umask "$kr_umask"
+    ( umask 077; exec tee -- "$kr_log" < "$kr_fifo" >&2 ) &
     kr_tee=$!
     "$@" rite keep --if-due --json 2>"$kr_fifo"; kr_rc=$?
     wait "$kr_tee" 2>/dev/null; rm -f -- "$kr_fifo"
     return "$kr_rc"
   fi
+  umask "$kr_umask"
   "$@" rite keep --if-due --json
 }
 keep_before_down() {

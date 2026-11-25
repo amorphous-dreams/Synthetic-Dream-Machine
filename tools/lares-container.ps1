@@ -576,6 +576,8 @@ function KeepBeforeDown {
   # THE KEEP'S WORDS OUTLIVE THE PASTE: its stderr rests at the house's run/keep-last.log (overwritten each keep), then reaches the terminal.
   $kbLog = Join-Path (Join-Path $House 'run') 'keep-last.log'
   New-Item -ItemType Directory -Force -Path (Join-Path $House 'run') -ErrorAction SilentlyContinue | Out-Null
+  # No world-read: on a POSIX pwsh the log is created empty at 0600 before the keep writes it.
+  if (-not $IsWindows -and (Get-Command chmod -ErrorAction SilentlyContinue)) { New-Item -ItemType File -Force -Path $kbLog -ErrorAction SilentlyContinue | Out-Null; & chmod 600 $kbLog 2>$null }
   $kbLines = @(& $cmd @pre rite keep --if-due --json 2> $kbLog)
   $kbRc = $LASTEXITCODE
   if (Test-Path -LiteralPath $kbLog) { $kbSaid = Get-Content -LiteralPath $kbLog -Raw; if ($kbSaid) { [Console]::Error.Write($kbSaid) } }

@@ -228,7 +228,7 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
     for (const c of ["hearth", "sensoriums", "projections", "library", "config", "pulama/socket"]) { try { await readdir(join(house, c)); made[c] = true; } catch { made[c] = false; } }
     let cacheLeft = null; try { cacheLeft = await readdir(join(house, "cache")); } catch {}
     let vesselLog = null; try { vesselLog = await readFile(join(house, "run", "vessel-last.log"), "utf8"); } catch {}
-    const read = {}; for (const rel of readFiles) { try { read[rel] = await readFile(join(house, rel), "utf8"); } catch {} }
+    const read = {}; for (const rel of readFiles) { try { read[rel] = await readFile(join(house, rel), "utf8"); read[`${rel}:mode`] = (await stat(join(house, rel))).mode & 0o777; } catch {} }
     let keepOwed = false; try { await stat(join(house, "run", "keep-owed")); keepOwed = true; } catch {}
     return { ...r, read, calls, received, dir, made, worn, seat, seatMode, cacheLeft, vesselLog, keepOwed, house };
   } finally { await rm(dir, { recursive: true, force: true }); }
@@ -1067,6 +1067,7 @@ for (const [name, shim] of shims) {
     assert.equal(r.status, 0, r.stderr);
     assert.match(r.stderr, /swarm-lei-returns-spent: the hand strings one/);
     assert.match(r.read?.["run/keep-last.log"] ?? "", /swarm-lei-returns-spent: the hand strings one/);
+    if (name === "sh") { const m = (r.read["run/keep-last.log:mode"] ?? 0o777) & 0o077; assert.equal(m, 0, "the log carries no group or world access"); }
   });
   test(`${name}: CONTROL down with no keep workspace named runs no keep`, async () => {
     const cli = await fakeHostCli(0);

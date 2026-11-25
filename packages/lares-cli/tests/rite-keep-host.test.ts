@@ -249,7 +249,8 @@ describe("the keep rite, host half", () => {
     r.state.notes = { heron: `remember the heron\ntoken ${"ghp_"}${"x".repeat(30)}\n` };
     const out = await riteKeepHost(r.ports, { workspace: "backup" });
     expect(out).toMatchObject({ code: 1, data: { refusal: "keep-secret-shaped", stopped: "guard" } });
-    expect(String(out.data["message"])).toMatch(/heron\.tid \(ghp_xxxx…\)/);
+    expect(String(out.data["message"])).toMatch(/heron\.tid \(github-token\)/);
+    expect(JSON.stringify(out.data)).not.toMatch(/ghp_|xxxx/);
     expect(r.commits()).toBe(n);
     expect(r.calls.some((c) => c.startsWith("land"))).toBe(false);
   });
@@ -381,9 +382,10 @@ describe("the keep rite, host half", () => {
     expect(r.commits()).toBe(n + 1);
     const line = r.said.filter((l) => /withheld from the commit/.test(l));
     expect(line).toHaveLength(1);
-    expect(line[0]).toContain(`${r.device}/projects/-home-me-proj/memory/token.md (ghp_yyyy…)`);
-    expect(line[0]).toContain(`${r.device}/projects/-home-me-proj/sessions/bbbb.jsonl.zst (sk-ant-z…)`);
+    expect(line[0]).toContain(`${r.device}/projects/-home-me-proj/memory/token.md (github-token)`);
+    expect(line[0]).toContain(`${r.device}/projects/-home-me-proj/sessions/bbbb.jsonl.zst (anthropic-key)`);
     expect(line[0]).toContain(r.sessions.claude);
+    expect(r.said.join("\n")).not.toMatch(/ghp_|sk-ant-|yyyy|zzzz/);
     const carried = must(r.remote, "show", "--name-only", "--format=", "main").split("\n");
     expect(carried).toContain(`${r.device}/config/CLAUDE.md`);
     expect(carried).not.toContain(`${r.device}/projects/-home-me-proj/memory/token.md`);
@@ -505,7 +507,7 @@ describe("the keep rite, host half", () => {
     r.said.length = 0;
     const planted = await riteKeepHost(r.ports, { workspace: "backup" });
     expect(planted.code, JSON.stringify(planted.data)).toBe(0);
-    expect(r.said.some((l) => l.includes(`${r.device}/projects/-home-me-proj/sessions/dddd.jsonl.zst (-----BEG…)`))).toBe(true);
+    expect(r.said.some((l) => l.includes(`${r.device}/projects/-home-me-proj/sessions/dddd.jsonl.zst (private-key)`))).toBe(true);
     expect(must(r.remote, "ls-tree", "-r", "--name-only", "main")).not.toContain("dddd.jsonl.zst");
     // BUNDLE, planted: a record carrying the header and its body refuses at the bundle guard and commits nothing.
     const b = rig({ at: join(scratch, "bundle") });
@@ -513,7 +515,7 @@ describe("the keep rite, host half", () => {
     b.state.notes = { heron: `remember the heron\n${BEGIN}\n${body.join("\n")}\n${END}\n` };
     const bundled = await riteKeepHost(b.ports, { workspace: "backup", sessions: false });
     expect(bundled).toMatchObject({ code: 1, data: { refusal: "keep-secret-shaped", stopped: "guard" } });
-    expect(String(bundled.data["message"])).toMatch(/heron\.tid \(-----BEG…\)/);
+    expect(String(bundled.data["message"])).toMatch(/heron\.tid \(private-key\)/);
     expect(b.commits()).toBe(m);
   });
 

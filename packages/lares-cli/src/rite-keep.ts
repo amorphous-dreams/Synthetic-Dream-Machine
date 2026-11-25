@@ -132,7 +132,7 @@ export function keepLeiGate(read: RiteVerbAnswer, name: string, named?: number):
   type Lei = { standing?: unknown; after?: unknown; tip?: unknown; refusal?: string; returns?: unknown };
   const rows = Array.isArray(read.output["faces"])
     ? (read.output["faces"] as { face?: unknown; lei?: Lei }[]).map((f) => ({ face: typeof f.face === "number" ? f.face : KEEP_FACE_DEFAULT, lei: f.lei }))
-    : [{ face: named ?? KEEP_FACE_DEFAULT, lei: read.output["lei"] as Lei | undefined }];
+    : [{ face: named ?? (typeof read.output["face"] === "number" ? read.output["face"] : typeof (read.output["lei"] as { face?: unknown } | undefined)?.face === "number" ? (read.output["lei"] as { face: number }).face : KEEP_FACE_DEFAULT), lei: read.output["lei"] as Lei | undefined }];
   if (rows.some((r) => r.lei?.standing === true)) return null;
   const held = (l: Lei | undefined): boolean => (typeof l?.after === "string" && l.after !== "") || (typeof l?.tip === "string" && l.tip !== "");
   const at = named !== undefined ? rows.find((r) => r.face === named) : rows.find((r) => held(r.lei));
