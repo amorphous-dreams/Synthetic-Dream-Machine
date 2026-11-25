@@ -213,7 +213,7 @@ projector onRefusal (wiki island)
   → admin VM "ward-alert" reactor:
       (a) DURABLE audit record  lar:///ha.ka.ba/bags/control/ledger/ward/<id>
           — lands in the vessel control document, which no mirror names
-      (b) reads its own active-wiki marker → the operator's PINNED VM
+      (b) reads the face's home-preference record → the face's HOME WIKI
   → admin:wiki-alert (kind "disk-ward") → main → system-alert verb
   → pinned island writes $:/temp/lares/alert/disk-ward tagged $:/tags/Alert
       — ring-0 operator surface (@temp, island-local, self-clearing on reboot)
@@ -264,6 +264,6 @@ between casual chat-use and the defined parser core.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;8GGgzEKZN3C7e1Bpr_fNr6coujbu40EQnUAi1AKlAtQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;My3GSQZQdiB4IgThgp7QnxKFK3MtM02x2apjXAiIgVM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

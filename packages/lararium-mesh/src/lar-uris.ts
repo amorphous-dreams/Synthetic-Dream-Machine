@@ -348,7 +348,7 @@ export function parseMeshScale(s: string | null | undefined): MeshScale | undefi
 // ── Daemon bag + Persona bag ─────────────────────────────────────────────────
 
 /** The vessel's daemon document — `bags/daemon`, SOVEREIGN-per-vessel and never shared across vessels. It holds vessel
- *  state (bindings, the bag-doc ledger, the active-wiki marker) and names the control document; it carries no canon role
+ *  state (bindings, the bag-doc ledger) and names the control document; it carries no canon role
  *  (the daemon wiki's canon follows the worn face, `daemonFaceCanonBag`) and no mirror. */
 export const DAEMON_BAG_ID    = bagUri("daemon");
 /** Vessel-private homes: hosts address these documents by bag coordinate; pages never mount them. The control home rests

@@ -31,7 +31,7 @@ import { describe, expect, test } from "vitest";
 import { CompositeStore } from "@lararium/mesh/composite-store";
 import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
-import { makeWardAlertReactor, ACTIVE_WIKI_URI } from "../src/index.js";
+import { makeWardAlertReactor, HOME_WIKI_TITLE } from "../src/index.js";
 import type { DaemonMsg_WikiAlert } from "../src/index.js";
 
 /** The daemon bag, in memory — the ledger this cure writes into is an ordinary bag write. */
@@ -90,8 +90,8 @@ describe("CURE 4 — the refusal reaches a durable audience", () => {
     const composite = await daemonStore();
     const posted: DaemonMsg_WikiAlert[] = [];
 
-    // No ACTIVE_WIKI_URI marker stands — a Herm/floor boot with no pinned VM.
-    expect(await composite.get(ACTIVE_WIKI_URI)).toBeFalsy();
+    // No home-preference record stands — a Herm/floor boot with no lit face.
+    expect(await composite.get(HOME_WIKI_TITLE)).toBeFalsy();
 
     const out = await react(composite, (m) => posted.push(m));
     expect((await wardLedger(composite)).length, "recorded even with nobody watching").toBe(1);
@@ -107,7 +107,7 @@ describe("CURE 4 — the refusal reaches a durable audience", () => {
     const composite = await daemonStore();
     const posted: DaemonMsg_WikiAlert[] = [];
     await composite.put(
-      { tiddler: { title: ACTIVE_WIKI_URI, text: "home" } },
+      { tiddler: { title: HOME_WIKI_TITLE, text: "[[home]]" } },
       { kind: "lares-verb", requestId: "pin" },
     );
 
@@ -125,7 +125,7 @@ describe("CURE 4 — the refusal reaches a durable audience", () => {
     const composite = await daemonStore();
     const posted: DaemonMsg_WikiAlert[] = [];
     await composite.put(
-      { tiddler: { title: ACTIVE_WIKI_URI, text: "home" } },
+      { tiddler: { title: HOME_WIKI_TITLE, text: "[[home]]" } },
       { kind: "lares-verb", requestId: "pin" },
     );
 

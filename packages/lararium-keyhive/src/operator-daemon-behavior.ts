@@ -20,7 +20,7 @@ import {
   makePinReactor, makeUnpinReactor, makeRegisterColdReactor, registerActionReactors, makeFresherCanonReactor, makeOverrideBasesReactor, makeTw5Deserializer,
   makeWikiPinReactor, makeWikiUnpinReactor,
   makeCatalogAccessor, findOrThrow,
-  makeInitWikiReactor, makeOpenWikiReactor, makeRetireWikiReactor, makeDraftReactor, makePruneStaleReactor,
+  makeInitWikiReactor, makeRetireWikiReactor, makeDraftReactor, makePruneStaleReactor,
   makeMemePutReactor, makeMemeGetReactor, makeMemePatchReactor, makeMemeListReactor, makeMemeDeleteReactor, makeMemeProjectReactor, memeVerbOptions, VERB_SURFACE,
   makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeWikiRenderOutReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor, makeTiddlerRenameReactor, makeWikiStatusReactor, makeWikiActionReactor,
   makeOracleCastReactor,
@@ -2005,7 +2005,6 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             }),
           }),
         }) : lightAFace("retire-wiki"), { summary: "Retire a wiki shell the worn face minted (its catalog rows, its workbench's ledger rows, its slot bindings and its Keyhive bindings) so the slug mints again under another face; the canon bag and its files stay. A person's hand alone; refuses a face that does not own it, a shell another face reaches, and a shell that holds records unless forced with the count.", surfaces: [VERB_SURFACE.cli] });
-        registry.register("open-wiki",   makeOpenWikiReactor({ composite: ctx.composite, catalog, post: ctx.post }));
         registry.register("prune-stale", underFace("prune-stale", makePruneStaleReactor(wikiMintOpts)));
         registry.register("list-wikis",  makeListWikisReactor(catalog, sysPlane, systemCanonUrl));
         // Whole-wiki residency policy — read the catalog recipe, command main's manager

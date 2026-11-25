@@ -16,7 +16,7 @@ import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
 import { WARD_AUDIT_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
 import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
-import { makeWardAlertReactor, ACTIVE_WIKI_URI } from "../src/index.js";
+import { makeWardAlertReactor, HOME_WIKI_TITLE } from "../src/index.js";
 import type { DaemonMsg_WikiAlert } from "../src/index.js";
 import { placeSystemAlert, systemAlertTitle } from "../src/wiki-behavior.js";
 import { fileWardRefusal } from "../src/worker-data-verbs.js";
@@ -24,7 +24,7 @@ import { fileWardRefusal } from "../src/worker-data-verbs.js";
 async function daemon(): Promise<CompositeStore> {
   const composite = new CompositeStore();
   composite.addLayer({ bagId: DAEMON_BAG_ID, store: new MemoryTiddlerStore(DAEMON_BAG_ID), writable: true });
-  await composite.put({ tiddler: { title: ACTIVE_WIKI_URI, text: "elyncia" } }, { kind: "lares-verb", requestId: "seed" });
+  await composite.put({ tiddler: { title: HOME_WIKI_TITLE, text: "[[elyncia]]" } }, { kind: "lares-verb", requestId: "seed" });
   return composite;
 }
 const rows = async (store: CompositeStore): Promise<string[]> => (await store.listVisible()).filter((t) => t.startsWith(WARD_AUDIT_URI_PREFIX));

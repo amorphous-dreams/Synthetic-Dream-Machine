@@ -425,7 +425,7 @@ export { makeWhereReactor, makeResolveReactor } from "@lararium/tw5";
 // The verb-plane reactors live at their pono home @lararium/tw5 (composite/repo-only, not
 // node-specific; both vessels hold them); a node caller reads them through this barrel.
 export {
-  makeListWikisReactor, makeInitWikiReactor, makeOpenWikiReactor,
+  makeListWikisReactor, makeInitWikiReactor,
   makeWikiPinReactor, makeWikiUnpinReactor,
   makeAddBagReactor, makeRemoveBagReactor,
   makePruneStaleReactor, makeDraftReactor,

@@ -896,8 +896,8 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
       console.log(`[lararium] phase → ${phase}`);
     },
   });
-  if (result.activeWikiSource === "daemon-marker" && result.activeWikiId !== wikiId) {
-    console.log(`[lararium] active wiki marker: ${wikiId} → ${result.activeWikiId}`);
+  if (result.activeWikiSource === "home-preference" && result.activeWikiId !== wikiId) {
+    console.log(`[lararium] home wiki preference: ${wikiId} → ${result.activeWikiId}`);
   }
   console.log(`[lararium] live — wiki: ${result.activeWikiId} | storage: ${storageDir} | root: ${rootDir}`);
   console.log(`[lararium] catalog:  ${result.catalogHandleUrl ?? "(none)"}`);
