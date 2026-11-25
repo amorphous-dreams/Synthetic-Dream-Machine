@@ -691,10 +691,28 @@ describe("A9 — a workbench founded closed before its realm bound it admits fro
     const ACT = `${REALM_STATE_ROLL_ACT}forged-by-the-member`;
     const forger = seat(b, a, { countedRaises: () => new Set([ACT]) });
     const before = await versions();
-    await contentKeyRollSink(forger.holder.rollerPorts({ bagsOf: () => [WORKING], signer: () => b.signer }))({ kind: "seat-roll", scope: "realm", edgeId: "realm-roster", raiseCids: [ACT], how: "revoked" });
-    expect(await versions(), "the forged roll mints on the forger's seat and rests where the owner reads").toBe(before + 1);
+    // THE PREFIX READS FIRST on the forger's own seat too: its counted raises admit no roll its owner never signed, so it mints none.
+    await expect(contentKeyRollSink(forger.holder.rollerPorts({ bagsOf: () => [WORKING], signer: () => b.signer }))({ kind: "seat-roll", scope: "realm", edgeId: "realm-roster", raiseCids: [ACT], how: "revoked" }))
+      .rejects.toThrow(/mint-failed/);
+    expect(await versions(), "the forged roll mints nowhere").toBe(before);
     const read = await seat(a, b).holder.reading(WORKING);
-    expect("foundings" in read && [...read.foundings[0]!.heads].sort(), "the owner counts no roll the member signed").toEqual(heads);
+    expect("foundings" in read && [...read.foundings[0]!.heads].sort(), "the owner's heads stand").toEqual(heads);
+  });
+
+  test("C6b: the owner's gate covers every count path: a roll-prefixed act planted in a reader's counted raises still counts nowhere unsigned by the owner", async () => {
+    const { a, b, landAgain, seat, versions } = await closedThenSeated([0xdd, 0xde]);
+    expect((await landAgain(seat(a, b))).unhanded).toEqual([]);
+    const ownerBefore = await seat(a, b).holder.reading(WORKING);
+    const heads = "foundings" in ownerBefore ? [...ownerBefore.foundings[0]!.heads].sort() : [];
+    const ACT = `${REALM_STATE_ROLL_ACT}planted-in-the-count`;
+    // A FORGER WHOSE OWN STANDING LIES (it names itself the owner) mints the roll and rests it where the owner reads.
+    const liar: WriterStanding = { holdsWrite: () => true, signedByRealmOwner: () => true };
+    const before = await versions();
+    await contentKeyRollSink(seat(b, a, { session: { signer: () => null, standing: liar } }).holder.rollerPorts({ bagsOf: () => [WORKING], signer: () => b.signer }))({ kind: "seat-roll", scope: "realm", edgeId: "realm-roster", raiseCids: [ACT], how: "revoked" });
+    expect(await versions(), "the forged roll rests where the owner reads").toBe(before + 1);
+    // THE OWNER'S OWN SEAT carries the act among its counted raises (a projection noted it): the prefix still asks the owner's hand.
+    const read = await seat(a, b, { countedRaises: () => new Set([ACT]) }).holder.reading(WORKING);
+    expect("foundings" in read && [...read.foundings[0]!.heads].sort(), "a planted roll counts nowhere without the owner's signature").toEqual(heads);
     expect("foundings" in read && read.foundings[0]!.uncounted.map((u) => u.why), "it reads unverified").toContain("cause-unverified");
   });
 
