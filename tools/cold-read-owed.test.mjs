@@ -486,3 +486,59 @@ test("the command line re-judges a merge: `--check-merge HEAD <head-sha>` after 
   const wrong = run("--check-merge", "HEAD", f.base);
   assert.match(wrong.stdout, /^COLD READ OWED: \(unread: .*lane moved after the read/);
 });
+
+test("RED: a --base other than origin/develop drops the land line and marks the record line; CONTROL: the default base and a --base naming develop's own sha keep the land line", (t) => {
+  const f = fixture(t);
+  f.lane("lane", (r) => put(r, ".github/a.yml", "a\n"));
+  const mark = "base≠origin/develop";
+  for (const r of [coldRead({ root: f.root, lane: "lane" }), coldRead({ root: f.root, lane: "lane", base: f.base }), coldRead({ root: f.root, lane: "lane", base: "develop" })]) {
+    assert.equal(r.unread, false);
+    assert.equal(lines(r).length, 3, "CONTROL: the land line rides");
+    assert.ok(!lines(r)[1].includes(mark));
+  }
+  put(f.root, "notes/plain.md", "later\n");
+  f.commit("develop moves on");
+  sh(f.root, "update-ref", "refs/heads/off", f.base);
+  for (const base of [f.base, "off"]) {
+    const r = coldRead({ root: f.root, lane: "lane", base });
+    assert.equal(r.unread, false, r.paths[0]);
+    assert.deepEqual(r.paths, [".github/a.yml"], "the verdict still prints");
+    const out = lines(r);
+    assert.equal(out.length, 2);
+    assert.equal(out[0], "COLD READ OWED: .github/a.yml");
+    assert.ok(out[1].endsWith(` · record-hash ${r.hash} · ${mark}`));
+    assert.ok(!out.some((l) => l.startsWith("land:")), "no land command rides a typed base");
+  }
+});
+
+test("RED: --check-merge held to a judge whose bytes differ from the first parent's reads unread; CONTROL: the base's own judge reads", (t) => {
+  const f = fixture(t);
+  const head = f.lane("lane", (r) => put(r, "notes/plain.md", "moved\n"));
+  const r = coldRead({ root: f.root, lane: "lane" });
+  sh(f.root, "merge", "-q", "--no-ff", "-m", "land the lane", "-m", `Cold-Read: ${r.hash}`, head);
+  put(f.root, "elsewhere/judge.mjs", "export const checkMerge = () => ({ owed: false });\n");
+  for (const forged of [checkMerge({ root: f.root, merge: "HEAD", self: join(f.root, "elsewhere/judge.mjs") }), checkMerge({ root: f.root, merge: "HEAD", head, self: join(f.root, "elsewhere/judge.mjs") })]) {
+    assert.equal(forged.unread, true);
+    assert.equal(forged.owed, true);
+    assert.match(forged.paths[0], /bytes differ/);
+    assert.match(lines(forged)[0], /^COLD READ OWED: \(unread: /);
+  }
+  assert.equal(checkMerge({ root: f.root, merge: "HEAD", head }).unread, false, "CONTROL: the base's own judge reads");
+});
+
+test("RED: --base naming a lane commit reads the slice above it and drops the land line; CONTROL: the earlier lane commit stays out of that slice", (t) => {
+  const f = fixture(t);
+  const first = f.lane("lane", (r) => put(r, ".github/first.yml", "one\n"));
+  const second = f.advance("lane", (r) => put(r, "docs/Custody-second.md", "two\n"));
+  const whole = coldRead({ root: f.root, lane: "lane" });
+  assert.deepEqual(whole.paths, [".github/first.yml", "docs/Custody-second.md"]);
+  const slice = coldRead({ root: f.root, lane: "lane", base: first });
+  assert.equal(slice.unread, false, slice.paths[0]);
+  assert.deepEqual(slice.paths, ["docs/Custody-second.md"]);
+  assert.equal(slice.base, first);
+  assert.equal(slice.head, second);
+  const out = lines(slice);
+  assert.equal(out.length, 2);
+  assert.ok(out[1].endsWith("· base≠origin/develop"));
+  assert.ok(!out.some((l) => l.startsWith("land:")));
+});
