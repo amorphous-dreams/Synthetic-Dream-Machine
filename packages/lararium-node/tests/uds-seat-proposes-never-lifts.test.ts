@@ -239,17 +239,17 @@ test("RED: a seat's `wiki-render-out` refuses `render-output-needs-hand` at the 
   expect(w.placed.map((p) => p.verb)).toEqual(["wiki-render-out"]);
 });
 
-test("RED: a seat-marked one-shot line's shore take-records, restore and remove refuse `shore-needs-hand` and place nothing, on the shore verb and through wiki-act; a seat session's call refuses the same; CONTROL: the seat lists, and a cli session's remove places", async () => {
+test("RED: a seat-marked one-shot line's shore take-records, restore and remove refuse `hand-act-only` and place nothing, on the shore verb and through wiki-act; a seat session's call refuses the same; CONTROL: the seat lists, and a cli session's remove places", async () => {
   const v = await stand();
   for (const op of ["take-records", "restore", "remove"]) {
     for (const [verb, args] of [["shore", { op, uri: "lar:///a.b.c/x", key: "k" }], ["wiki-act", { verb: "shore", args: { op, uri: "lar:///a.b.c/x", key: "k" } }]] as const) {
       const reply = await (await v.line()).ask({ verb, requestedBy: "seat-line", requestId: `seat-${verb}-${op}`, seat: "ai", args });
-      expect(JSON.stringify(reply), `${verb} ${op}`).toContain("shore-needs-hand");
+      expect(JSON.stringify(reply), `${verb} ${op}`).toContain("hand-act-only");
     }
   }
   const env = await v.open("hint-a", "seat");
   expect(await v.peer.ask({ op: "session:call", ...env, requestId: "seat-call-remove", verb: "shore", args: { op: "remove", uris: ["lar:///a.b.c/x"] } }))
-    .toMatchObject({ kind: "session:refused", refusal: "shore-needs-hand" });
+    .toMatchObject({ kind: "session:refused", refusal: "hand-act-only" });
   expect(v.placed).toEqual([]);
   await (await v.line()).ask({ verb: "shore", requestedBy: "seat-line", requestId: "seat-list", seat: "ai", args: { op: "list" } });
   expect(v.placed.map((p) => p.verb)).toEqual(["shore"]);
@@ -265,7 +265,7 @@ test("RED H1: an inner verb wrapped in an array never slips the gate: a seat's w
     const args = { verb: ["shore"], args: { op, uri: "lar:///a.b.c/x", uris: ["lar:///a.b.c/x"], key: "k" } };
     const reply = await (await v.line()).ask({ verb: "wiki-act", requestedBy: "seat-line", requestId: `seat-wrapped-${op}`, seat: "ai", args });
     expect(reply["status"], op).toBe("error");
-    expect(JSON.stringify(reply), op).toMatch(/shore-needs-hand|routing-arg-malformed/);
+    expect(JSON.stringify(reply), op).toMatch(/hand-act-only|routing-arg-malformed/);
   }
   const env = await v.open("hint-a", "seat");
   for (const op of ["remove", "take-records"]) {
@@ -298,7 +298,7 @@ test("RED L3: a session opened with hand cli but marked by a seat (`seat: \"ai\"
   const opened = await v.peer.ask({ op: "session:open", requestId: "open-marked", faceRef: "hint-a", hand: "cli", seat: "ai" });
   const env = { ownerEpoch: opened["ownerEpoch"], sessionId: opened["sessionId"], generation: opened["generation"], faceRef: opened["faceRef"] };
   expect(await v.peer.ask({ op: "session:call", ...env, requestId: "marked-remove", verb: "shore", args: { op: "remove", uris: ["lar:///a.b.c/x"] } }))
-    .toMatchObject({ kind: "session:refused", refusal: "shore-needs-hand" });
+    .toMatchObject({ kind: "session:refused", refusal: "hand-act-only" });
   expect(v.placed).toEqual([]);
 });
 

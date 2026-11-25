@@ -34,6 +34,7 @@ import type { ResidencyAction, ActionVerb } from "./residency-actions.js";
 import { stableTagUri } from "./lar-uris.js";
 import type { LarTiddlerRecord, LarTiddlerStore, ChangeOrigin } from "./tiddler-store.js";
 import { VerbRefusal } from "./verb-refusal.js";
+import { mintRandomId } from "./entropy-door.js";
 import { isShellLeavingUri } from "./shell-leaving-record.js";
 
 // ── Archival verb vocabulary ────────────────────────────────────────────────
@@ -216,12 +217,9 @@ export interface EffectRecord {
 
 // ── Factories ──────────────────────────────────────────────────────────────
 
-/** Mint a fresh event-id. Same base-32 format as request-id / change-id. */
+/** Mint a fresh event-id: the shared random mint (`mintRandomId`), no clock in it. */
 export function newEventId(): string {
-  const ms = Date.now().toString(32).padStart(9, "0");
-  let rand = "";
-  for (let i = 0; i < 8; i++) rand += Math.floor(Math.random() * 32).toString(32);
-  return `${ms}-${rand}`;
+  return mintRandomId();
 }
 
 /** Build a LarTiddlerRecord for writing an EffectRecord into a bag. */

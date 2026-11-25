@@ -843,7 +843,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   tiddler: {
-    usage: "usage: lares tiddler <get | put | delete> <title> --recipe <slug>   (get also takes --bag <slug>: that one bag's record)",
+    usage: "usage: lares tiddler <get | put | delete | rename> <title> [<new title>] --recipe <slug>   (get also takes --bag <slug>: that one bag's record)",
     synopsis:
       "THE TIDDLER DOOR — one record with its fields, whatever its type: a plain note, a data tiddler, a meme's root " +
       "or one of its slots. Every verb runs in the wiki's own TiddlyWiki engine through the daemon, but `get --bag <slug>`, which reads one bag's record with no engine: `--recipe default` " +
@@ -865,7 +865,17 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "refuses `delete-mode-needed` and names both meanings: `--mode kapae` raises a tombstone that keeps the " +
       "records beneath hidden (they stay in their bags); `--mode reveal` retracts the topmost record and the one " +
       "beneath surfaces. A delete of a title the wiki reads absent retracts a kāpae that hides nothing (its " +
-      "`.kapae` shadow leaves the disk); `--mode reveal` retracts one that hides a lower record. A meme root or slot " +
+      "`.kapae` shadow leaves the disk); `--mode reveal` retracts one that hides a lower record. `rename <old> <new>` moves " +
+      "the record (a meme root takes its slots along) over TiddlyWiki's own relink: every reference the engine's " +
+      "relinkers rewrite follows (the core relinks tags and list fields; wikitext links follow only where a relink " +
+      "plugin mounts), and the old title stays as a forwarder, a pointer tiddler (`forward-to`) whose text transcludes " +
+      "the new one, so old roads keep answering. The move lands in the working layer alone: a record resting in another " +
+      "layer (or one the shore still carries, with no layer named yet) refuses `rename-source-layer`, referrers outside it " +
+      "refuse `rename-referrers-unreachable` (a count, never titles), a standing target refuses `rename-target-stands` and " +
+      "names the delete that clears it, a slot refuses `slot-without-root` and names its root, and a `lar:` title another " +
+      "layer holds too takes a hand alone. A `$:/` title on either side refuses `rename-system-title` (a forwarder would " +
+      "answer as the setting; `put` the new title, then `delete` the standing one). An answer names only records this face " +
+      "reads and counts the rest (`withheld`); a referrer that stays home keeps its fields (`skipped`). A meme root or slot " +
       "takes a field or tag patch here; its text moves through `lares tiddler put --meme`. `--base` carries the hash last " +
       "read: a record that moved past it answers `conflict` and nothing lands. The engine verbs stand beside this " +
       "door: `lares wiki filter | render | status --recipe <slug>`; bare status surveys the vessel.",
@@ -881,6 +891,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "date +'%F a dated note' | lares tiddler put \"Ledger\" --recipe default --append -   # lands at the end; two seats appending through the door at once both land",
       "lares tiddler put lar:///ha.ka.ba/kahua/memory/x --recipe default --meme --slot '#/log' --append note.txt   # a slot append, no base; the family reseals",
       "lares tiddler delete \"Old Note\" --recipe default --if-match <hash>   # a stale base moves nothing",
+      "lares tiddler rename \"Room 4\" \"Room Four\" --recipe default      # references follow; \"Room 4\" stays as a forwarder",
       "lares tiddler delete lar:///t/x --recipe default --family              # a meme root and its slots, one change",
       "lares tiddler delete \"Room 4\" --recipe default --mode reveal          # drop my copy; the layer beneath surfaces",
       "lares tiddler delete \"Room 4\" --recipe default --mode kapae           # hide the title; the layers beneath keep theirs",
@@ -915,7 +926,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--text <words>       (put) the new text (with `--meme --slot`: the slot's whole body)   ·   --file <host path | ->  the new text from a host file or stdin",
       "--base <hash>        (put) the hash last read; stale → conflict, nothing lands (a base guards honest reuse, never a lock)",
       "--create             (put) land only where no tiddler stands; an existing one answers `exists`",
-      "--if-match <hash>    (delete) the hash last read; stale → conflict, nothing moves",
+      "--if-match <hash>    (delete | rename) the hash last read; stale → conflict, nothing moves",
       "--family             (delete) name the family act: a meme root leaves with its slots, as one change",
       "--mode <kapae|reveal> (delete) over a lower layer's record: kapae hides it   ·   reveal surfaces it (none: a plain delete)",
       "--max-bytes <N>      (get) the byte cap on the answer; the largest fields leave first and get named",

@@ -21,7 +21,7 @@ import { describe, expect, test } from "vitest";
 
 const REPO = join(import.meta.dirname, "..", "..", "..");
 const ROOTS = ["packages", "tools", "tests", "deploy", ".github"];
-const SKIP_DIRS = new Set(["node_modules", "dist", ".git", "fixtures", "VSCode-TW5-Syntax", "tiddlers", "lararium-sensorium"]);
+const SKIP_DIRS = new Set(["node_modules", "dist", ".git", "fixtures", "VSCode-TW5-Syntax", "tiddlers", "tiddlers-lararium", "lararium-sensorium"]);
 const CODE = /\.(ts|mjs|js|sh|yml|conf)$/;
 
 const SLICE5 = "slice 5 (w26-floor-lane #/owed): the genesis island doc keeps its name until the floor read-face replaces its layer";

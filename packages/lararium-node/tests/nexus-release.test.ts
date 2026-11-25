@@ -82,8 +82,8 @@ afterEach(async () => {
   for (const root of [...roots, work]) rmSync(root, { recursive: true, force: true });
 });
 
-/** The blobs every mount needs, as the shipped genesis seed declares them: every floor here offers them, so its release door passes. */
-const REQUIRED_IDS = ["lar:///ha.ka.ba/lararium/plugins/lares/memetic-wikitext", "lararium-boot-shadows"];
+/** The blobs every mount needs, as the shipped genesis seed declares them (grammar, house, base): every floor here offers them, so its release door passes. */
+const REQUIRED_IDS = ["lar:///ha.ka.ba/lararium/plugins/lares/memetic-wikitext", "lar:///ha.ka.ba/lararium/plugins/lares/lararium", "lararium-boot-shadows"];
 const PROVENANCE = { source: "https://example.test", commit: "0".repeat(40), path: "plugin.json", licence: "MIT" };
 const casOf = () => join(work, "cas");
 
@@ -129,7 +129,7 @@ describe("a release names a floor this hearth holds whole", () => {
     writeCasEntriesFs([f.snapshots[1]!], cas);                                                            // every snapshot
     await expect(go()).rejects.toThrow(/offering absent/);
     writeCasEntriesFs([f.offering], cas);                                                                 // the offering, not its blobs
-    await expect(go()).rejects.toThrow(/memetic-wikitext absent/);
+    await expect(go()).rejects.toThrow(/Floor blob lar:\/\/\/ha\.ka\.ba\/lararium\/plugins\/lares\/\S+ absent/);
     expect(readCasBlobFromFs(f.cid, cas), "a refused release stages nothing").toBeNull();
     writeCasEntriesFs(f.blobs, cas);                                                                      // the whole floor
     const landed = await go();

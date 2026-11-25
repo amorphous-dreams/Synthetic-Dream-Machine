@@ -110,7 +110,7 @@ describe("the seed a genesis dir offers, beside the founding record", () => {
     const cid = genesisSeedCid(new Uint8Array(shippedBytes()));
     expect(readSeedOffered(dir)).toEqual({ cid, digests: record });
     const read = await floorSeedRead({ genesisDir: dir, record: async () => ({ record }) });
-    expect(read).toMatchObject({ genesis: dir, offer: { record, seed: { cid, digests: record } }, ratchets: "engine same · grammar same · plugins same · floor same" });
+    expect(read).toMatchObject({ genesis: dir, offer: { record, seed: { cid, digests: record } }, ratchets: "engine same · grammar same · lararium same · plugins same · floor same" });
     expect(read.seed).toBe(`seed ${cid}: same on every ratchet as the founding record`);
   });
 
@@ -121,8 +121,8 @@ describe("the seed a genesis dir offers, beside the founding record", () => {
     const cid = genesisSeedCid(new TextEncoder().encode(bytes));
     const read = await floorSeedRead({ genesisDir: dir, record: async () => ({ record }) });
     expect(read.offer?.seed.cid).toBe(cid);
-    expect(read.ratchets).toBe("engine same · grammar moved · plugins same · floor same");
-    expect(read.seed).toBe(`seed ${cid}: a newer seed waits: engine same · grammar moved · plugins same · floor same; the founding record keeps serving`);
+    expect(read.ratchets).toBe("engine same · grammar moved · lararium same · plugins same · floor same");
+    expect(read.seed).toBe(`seed ${cid}: a newer seed waits: engine same · grammar moved · lararium same · plugins same · floor same; the founding record keeps serving`);
   });
 
   test("CONTROL: no house answers: the seed still reads, the line names the founding record unread and its reason, and no offer pairs", async () => {

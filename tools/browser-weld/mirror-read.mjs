@@ -38,6 +38,8 @@ export function unbakedSources(text) {
 const STOCK_THEME = /^packages\/lararium-tw5\/plugins\/tiddlywiki-[^/]+\.json$/;
 const BOOT_SHADOWS = "packages/lararium-tw5/plugins/lararium-boot-shadows.json";
 const GRAMMAR = "packages/lararium-tw5/plugins/lares-memetic-wikitext.json";
+// The landing shadow ($:/DefaultTiddlers) and the story module ride the house skin; the grammar carries the render.
+const HOUSE = "packages/lararium-tw5/plugins/lares-lararium.json";
 
 /** A red reading: a gap naming the declared row where the tree declares the source behind it, else a failure. */
 function red(name, message, declared, row) {
@@ -115,8 +117,8 @@ export function contentReading(firstTitle, reading, unbaked) {
   if (firstTitle !== first) {
     return { name, status: "bad", message: `the first story title "${firstTitle ?? "(empty story)"}" differs from the wiki's $:/DefaultTiddlers "${first ?? "(empty)"}": the story opened before the wiki landed` };
   }
-  const grammar = unbaked.includes(GRAMMAR) ? GRAMMAR : undefined;
-  return red(name, `the story opens on "${firstTitle ?? "(empty story)"}": the shown wiki names no landing of its own`, grammar, `${grammar}; its landing record rides the next floor cut`);
+  const skin = [HOUSE, GRAMMAR].find((source) => unbaked.includes(source));
+  return red(name, `the story opens on "${firstTitle ?? "(empty story)"}": the shown wiki names no landing of its own`, skin, `${skin}; its landing record rides the next floor cut`);
 }
 
 /** THE LABEL READING: the pane's heading names the shown wiki in the vessel card's own word. */

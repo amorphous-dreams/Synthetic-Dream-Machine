@@ -3,9 +3,8 @@
 import { describe, test, expect, vi } from "vitest";
 import * as kernel from "../src/sovereign-kernel.js";
 import { TW5Engine } from "../src/tw5-vm.js";
-import { grammarPins, vendoredCore } from "./test-wiki.js";
+import { houseSkins, skinPins, vendoredCore } from "./test-wiki.js";
 import { modulePinsOf } from "../src/module-pins.js";
-import { LARES_MEMETIC_WIKITEXT_PLUGIN } from "../src/plugin-tiddler.generated.js";
 import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
 import { IslandAdaptor } from "../src/island-adaptor.js";
 import { asIslandStore } from "./island-store-double.js";
@@ -50,10 +49,10 @@ async function bootWith(opts: { stand?: (engine: TW5Engine) => Promise<void>; mo
   const seen: Record<string, unknown> = {};
   const probe = moduleTiddler("$:/test/probe-after-writable", MODULE_TEXT(opts.module));
   await engine.boot(vendoredCore(), [
-    LARES_MEMETIC_WIKITEXT_PLUGIN as unknown as Record<string, unknown>,
+    ...houseSkins(),
     probe,
   ], undefined, {
-    modulePins: new Set([...grammarPins(), ...modulePinsOf([probe])]),
+    modulePins: new Set([...skinPins(), ...modulePinsOf([probe])]),
     onInstance(instance) {
       const tw = instance as unknown as { larariumWritableStand?: () => Promise<unknown>; __seen?: Record<string, unknown> };
       tw.__seen = seen;
@@ -131,9 +130,9 @@ describe.skipIf(wikiSkip)(`writable marker — the scheduler holds a dependent u
     let earlyUnchanged = false;
     const probe = moduleTiddler("$:/test/probe-before-door", `exports.name="probe-before-door";exports.before=["lararium-writable"];exports.after=["startup"];exports.synchronous=false;exports.startup=function(done){var door=$tw.larariumWritableStand;door().then(function(){$tw.__earlyCheck(door);done();});};`);
     await engine.boot(vendoredCore(), [
-      LARES_MEMETIC_WIKITEXT_PLUGIN as unknown as Record<string, unknown>,
+      ...houseSkins(),
       probe,
-    ], undefined, { modulePins: new Set([...grammarPins(), ...modulePinsOf([probe])]), onInstance(instance) {
+    ], undefined, { modulePins: new Set([...skinPins(), ...modulePinsOf([probe])]), onInstance(instance) {
       const tw = instance as unknown as Record<string, unknown>;
       tw.__earlyCheck = (door: unknown) => { earlyUnchanged = tw.larariumWritableStand === door && calls === 0 && !adaptor.value; };
       Object.defineProperty(instance, "larariumWritableStand", { configurable: true, value: async () => {
@@ -154,9 +153,9 @@ describe.skipIf(wikiSkip)(`writable marker — the scheduler holds a dependent u
     const engine = new TW5Engine();
     const probe = moduleTiddler("$:/test/probe-early", `exports.name="probe-early";exports.before=["lararium-writable"];exports.after=["startup"];exports.synchronous=true;exports.startup=function(){$tw.wiki.addTiddler({title:"probe/early",text:"ran"});};`);
     await engine.boot(vendoredCore(), [
-      LARES_MEMETIC_WIKITEXT_PLUGIN as unknown as Record<string, unknown>,
+      ...houseSkins(),
       probe,
-    ], undefined, { modulePins: new Set([...grammarPins(), ...modulePinsOf([probe])]), onInstance(instance) { Object.defineProperty(instance, "larariumWritableStand", { configurable: true, enumerable: false, value: async () => { await stoodShore(store, adaptor)(engine); return { state: "standing" }; } }); } });
+    ], undefined, { modulePins: new Set([...skinPins(), ...modulePinsOf([probe])]), onInstance(instance) { Object.defineProperty(instance, "larariumWritableStand", { configurable: true, enumerable: false, value: async () => { await stoodShore(store, adaptor)(engine); return { state: "standing" }; } }); } });
     await adaptor.value!.handsRested();
     await new Promise((r) => setTimeout(r, 30));
     spy.mockRestore();

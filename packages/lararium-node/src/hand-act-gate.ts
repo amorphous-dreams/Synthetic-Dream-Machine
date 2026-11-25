@@ -13,6 +13,15 @@
  * The same gate serves every hand act on the custody door and the pūlama's hand door; `rite abandon`'s hand gate (#409) names the
  * same need and takes this helper when the two land.
  *
+ * THE VERB SOCKET'S BOOKED ASKER STANDS AS THIS GATE'S CACHED READING. The socket (`uds-channel`) reads each line's or session's peer
+ * once, through the same `peerKindOf` (or the reader a suite names), and books what it read: `ai` books the seat's hand and
+ * profile, `hand` books the `cli` asker, `unknown` books none and marks the session unattested. A verb downstream reads that
+ * booking (`ctx.asker`) rather than the peer again; `askerRefusal` (`@lararium/mesh/hand-refusal`) reads it as this gate's
+ * verdict. So the socket keeps its booking, by design: one reading per line, read through this gate's reader.
+ *
+ * ONE SENTENCE REFUSES. Every door that refuses a hand act words it through `handRefusalOf` (`@lararium/mesh/hand-refusal`,
+ * re-exported here), naming what the reading looked at (a command's own branch, or a line's peer) and the command the cure runs.
+ *
  * A COMMAND WITH NO SOCKET reads its own branch (`readOwnHand`): the sense lifecycle's hand verbs (`lares sense harden`,
  * `retire`, `un-retire`, `purge`, `teardown --confirm`) run direct over the store, so the CLI asks the same three readings of the
  * process that runs the command. A flag the command carries (`--approve`, `--confirm`) names the intent; only this reading
@@ -21,6 +30,8 @@
  */
 import type { Socket } from "node:net";
 import { branchKind, harnessMark, peerKindOf, PROC, type PeerKind, type ProcReader } from "./uds-peer.js";
+
+export { askerRefusal, handRefusalOf, type HandReads, type HandRefusal, type HandRefusalCode } from "@lararium/mesh/hand-refusal";
 
 export type HandReading =
   | { readonly admit: "hand" | "route-proves" }
