@@ -13,6 +13,7 @@
  *   tiddler-put    { recipe, title, text?, fields?, unset?, tagsAdd?, tagsRemove?, base?, create? }
  *                                                                         → { recipe, title, decision: put|noop|conflict|exists, bag, created, changed, hash, textHash, position, family? }
  *   tiddler-delete { recipe, title, base?, family?, mode? }               → { recipe, title, decision: removed|absent|conflict|refused, mode, tombstoned, retracted, hash?, refusal?, why?, consequence? }
+ *   tiddler-rename { recipe, title, to, base? }                          → { recipe, title, to, decision: renamed|absent|conflict|refused, forwarder?, relinked?, skipped?, hash?, refusal?, why?, consequence? }
  *   wiki-status    { recipe }                                             → { recipe, working, layers: [{ bag, mounted: writable|read-only|promotion-only, read, write, working?, why? }] }
  *
  * EVERY WIKI ITS ENGINE. `recipe: "default"` answers through the daemon island's live `$tw.wiki`, the daemon mount's daemon
@@ -73,7 +74,7 @@ import {
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { consequence, familyOf, retractsOf, rootAddressOf, tombstonesOf, type Consequence, type DeleteMode, type FamilyPosition, type FamilyView } from "@lararium/mesh/family";
 import { anchorBagOf, readBagStore, readContainer, type MemeVerbOptions } from "./meme-verbs.js";
-import { isMemeRoot, readMeme, wikiFamilyView, stageMemeTitle, STAGE_PATH_SHAPE_CODE, STAGE_MEME_PREFIX, type MemeSink } from "./place-meme.js";
+import { isMemeRoot, readMeme, renameFamilyInWiki, wikiFamilyView, stageMemeTitle, STAGE_PATH_SHAPE_CODE, STAGE_MEME_PREFIX, type MemeSink } from "./place-meme.js";
 import { READ_PAGE_BYTES, byteLength, cardBase, memeBase, readBase, grainOf, hasLine, memeGradient, param, slotHasLines, tagTokens, type CarrierSlot, type GrainEcho, type ReadGrain } from "./read-gradient.js";
 import { skinnyCid } from "./lazy-resolver.js";
 import { readCarrierShape } from "./carrier-shape.js";
@@ -151,6 +152,7 @@ interface EngineWiki extends FilterWiki {
   tiddlerExists(title: string): boolean;
   addTiddler(tiddler: unknown): void;
   deleteTiddler(title: string): void;
+  relinkTiddler(from: string, to: string, options?: unknown): void;
   each(callback: (tiddler: EngineTiddler, title: string) => void): void;
   eachShadow(callback: (tiddler: EngineTiddler, title: string) => void): void;
   eachTiddlerPlusShadows(callback: (tiddler: EngineTiddler, title: string) => void): void;
@@ -1196,6 +1198,159 @@ export const makeWikiActionReactor = everyWiki("wiki-action", true, (opts: Tiddl
       recipe: anchor.recipe, name, action: action.title, title: action.target, expected,
       resulting: put["decision"] === "put" ? resulting : observed, decision: put["decision"],
       receipt: ctx.invocation.requestId, change: put };
+  };
+});
+
+// ── tiddler-rename ────────────────────────────────────────────────────────────────────────────────────
+
+/** The forwarder's text: a transclusion of the new title, so an old road renders what the new one holds. */
+const forwarderText = (to: string): string => `<$transclude $tiddler=\`\`\`${to}\`\`\` mode="block"/>`;
+
+/**
+ * THE RENAME DOOR over TiddlyWiki's own relink. The record moves to `to` with its fields; every reference the engine's
+ * relinkers rewrite (the core's tags and list fields, and whatever relinker a plugin mounts) follows; the old title stays as
+ * a FORWARDER, a pointer tiddler whose `forward-to` names the new title and whose text transcludes it, so an old road keeps
+ * answering. A meme root re-titles through the family law's rename (its slots follow; one forwarder stands at the old root).
+ *
+ * THE FENCES, in the order put and delete keep them: withheld titles, the effect ledger and the collapse rule on BOTH
+ * titles, the Kahu predicate and the write cap, then the rendered and seat-executable walls. The move lands in the working
+ * layer alone: a record resting in any other layer refuses `rename-source-layer` (a copy-up would hand its content to a
+ * layer with other readers), and a `lar:` title that stands in another layer too takes a hand alone (`hand-act-only`).
+ *
+ * THE RELINK RUNS AS A DRY RUN FIRST. The engine's relinkers run with the wiki's writes captured, never applied: each record
+ * they would rewrite must rest in the working layer, else the rename refuses `rename-referrers-unreachable` with a COUNT of
+ * the records it could not relink (never their titles: the face may not read them), and nothing moves. Then the move, the
+ * captured relinks and the forwarder land in one synchronous step that begins by re-reading the record against the hash this
+ * call read, so `base` and a concurrent edit both hold (a moved record sends the round back to read again, bounded).
+ */
+const RENAME_SETTLE_ROUNDS = 16;
+export const makeTiddlerRenameReactor = everyWiki("tiddler-rename", true, (opts: TiddlerVerbOptions): VerbReactor => {
+  return async (args, ctx) => {
+    const anchor = anchorOf(opts, args, "tiddler-rename", true);
+    const title = stringArg(args, "title");
+    if (!title) throw new Error("tiddler-rename: args.title is required");
+    const to = stringArg(args, "to");
+    if (!to) throw new Error("tiddler-rename: args.to is required (the new title)");
+    for (const named of [title, to]) {
+      refuseWithheld(named, "tiddler-rename");
+      refuseEffectLedgerWrite(named, "tiddler-rename");
+      refuseUnhandedCollapseRule(named, "tiddler rename", ctx.asker);
+    }
+    await requireWrite(opts, anchor, ctx.cap, "tiddler rename", ctx.asker);
+    if (to.includes("```")) throw new VerbRefusal("fields-malformed", "fields-malformed: a new title carries no triple backtick (the forwarder quotes it).");
+    refuseMalformedStagePath(to);
+    const { wiki, Tiddler } = anchor.engine;
+    const { mayRead } = await viewFor(opts, anchor, ctx.cap);
+    const { readable } = await layerReach(opts, anchor, ctx.cap, mayRead, ctx.asker);
+    const face = wornOrigin(ctx.worn).face;
+    const base = readBase(optionalStringArg(args, "base"), "tiddler-rename", false);
+    let admitted = false;
+
+    for (let round = 0; ; round++) {
+      const standing = wiki.tiddlerExists(title) ? wiki.getTiddler(title) : undefined;
+      if (!standing) return { recipe: anchor.recipe, title, to, decision: "absent" };
+      const { fields, bag } = readRecord(standing);
+      if (!(await mayRead(bag))) throw new Error(`cap-denied: read on ${bag} required (the bag that answers "${title}")`);
+      const hash = hashOf(fields);
+      const refused = (refusal: string, why: string, more: Record<string, unknown> = {}): Record<string, unknown> =>
+        ({ recipe: anchor.recipe, title, to, decision: "refused", refusal, why: `${refusal}: ${why}`, hash, ...more });
+      if (round >= RENAME_SETTLE_ROUNDS) return { recipe: anchor.recipe, title, to, decision: "conflict", hash, unsettled: round };
+      if (to === title) return refused("rename-same-title", `"${title}" already stands at that title; name a different new title.`);
+      if (base !== null && base !== hash) return { recipe: anchor.recipe, title, to, decision: "conflict", hash };
+
+      // THE LAYERS: the record, and every member of its family, move out of the working layer alone.
+      const here = bag ?? anchor.bag;
+      if (here !== anchor.bag) {
+        return refused("rename-source-layer", `"${title}" rests in ${here}, not in the working layer ${anchor.bag}; a rename would copy its content into a layer with other readers. A hand that writes ${here} renames it there. Nothing moved.`);
+      }
+      // A `lar:` title another layer holds too (canon under the working copy) takes a hand alone: the rename would shadow canon.
+      for (const named of [title, to]) {
+        if (!named.startsWith("lar:///")) continue;
+        for (const other of readable) {
+          if (other === anchor.bag) continue;
+          const held = await opts.composite.storeForBag(other)?.get(named);
+          if (held && !held.meta?.deleted && ctx.asker !== "cli" && ctx.asker !== "tab") {
+            const code = ctx.asker === "seat" ? "hand-act-only" : "hand-unattested";
+            throw new VerbRefusal(code, `${code}: "${named}" also stands in ${other}, a layer a rename would shadow, so a person alone renames it; a seat proposes. Ask the operator to run \`lares tiddler rename "${title}" "${to}" --recipe ${anchor.recipe}\` on their own terminal.`);
+          }
+        }
+      }
+      const rendered = renderedWriteFault(title, fields, null, "tiddler rename");
+      if (rendered !== null) return refused(RENDERED_DERIVES_REASON, rendered.slice(RENDERED_DERIVES_REASON.length + 2) + " Nothing moved.");
+      if (!admitted) {
+        await admitSeatExecutable(to, { ...fields, title: to }, "tiddler rename", ctx.asker, { wiki: anchor.recipe, port: ctx.execLei });
+        admitted = true;
+      }
+
+      // THE FAMILY LAW reads what a rename moves over the whole wiki (the face's own view hides what it may not read, and a
+      // member it cannot see would strand): a slot refuses, a root takes its slots, every member rests in the working layer.
+      const read: Consequence = consequence(wikiFamilyView(wiki as never), { kind: "rename", title, to });
+      if (read.refusals.length > 0) {
+        const first = read.refusals[0]!;
+        const why = first.code === "slot-without-root"
+          ? `"${title}" stands as a slot of ${read.family}; rename the root (\`lares tiddler rename "${read.family}" <new> --recipe ${anchor.recipe}\`) and its slots follow. Nothing moved.`
+          : first.code === "rename-target-stands"
+            ? `"${first.title}" already stands; run \`lares tiddler delete "${first.title}" --recipe ${anchor.recipe}\` to clear it (or name another title), then rename again. Nothing moved.`
+            : `a member of this family refuses the rename (${first.code}); nothing moved.`;
+        return refused(first.code, why, { consequence: read });
+      }
+      if (wiki.tiddlerExists(to)) {
+        return refused("rename-target-stands", `"${to}" already stands; run \`lares tiddler delete "${to}" --recipe ${anchor.recipe}\` to clear it (or name another title), then rename again. Nothing moved.`);
+      }
+      if (read.position !== "plain" && read.position !== "root") return refused("tiddler-rename-in-a-family", `"${title}" stands as a meme ${read.position}; nothing moved.`, { consequence: read });
+      const members = read.acts.filter((row) => row.act === "retitle").map((row) => row.title);
+      for (const member of members) {
+        const record = wiki.getTiddler(member);
+        const memberBag = (record ? readRecord(record).bag : null) ?? anchor.bag;
+        if (memberBag !== anchor.bag || !(await mayRead(memberBag))) {
+          return refused("rename-source-layer", `a member of "${title}"'s family rests outside the working layer ${anchor.bag}, so the family would split across layers. A hand that writes that layer renames it there. Nothing moved.`, { consequence: read });
+        }
+      }
+
+      // ── THE SYNCHRONOUS STEP: no await from here to the last write. ──
+      const now = wiki.getTiddler(title);
+      if ((now ? hashOf(readRecord(now).fields) : null) !== hash) continue;
+      // DRY RUN: the engine's relinkers run with every write captured, so each record they would rewrite is known before anything moves.
+      const captured = new Map<string, EngineTiddler>();
+      const original = wiki.addTiddler;
+      wiki.addTiddler = (record: unknown) => { const next = record as EngineTiddler; captured.set(String(next.fields["title"]), next); };
+      try { wiki.relinkTiddler(title, to); } finally { wiki.addTiddler = original; }
+      const unreachable = [...captured.keys()].filter((name) => {
+        const held = wiki.getTiddler(name);
+        return !held || (readRecord(held).bag ?? anchor.bag) !== anchor.bag;
+      }).length;
+      if (unreachable > 0) {
+        return refused("rename-referrers-unreachable", `${unreachable} record${unreachable === 1 ? "" : "s"} naming "${title}" rest outside the working layer ${anchor.bag}, which this face may not rewrite, so the rename would leave stale references. A hand that writes those layers renames it, or those records move to the working layer first. Nothing moved.`, { skipped: unreachable });
+      }
+      const target = (member: string): string => (member === title ? to : to + member.slice(title.length));
+      wikiWearsNext(opts.tw5, to, face);
+      if (read.position === "root") {
+        for (const member of members) wikiWearsNext(opts.tw5, target(member), face);
+        wikiWearsNext(opts.tw5, title, face);
+        renameFamilyInWiki(wiki as never, title, to);
+      } else {
+        const moved: Record<string, string> = { ...fields, title: to };
+        if (typeof fields["uri-path"] === "string" && to.startsWith("lar:///")) moved["uri-path"] = to.slice("lar:///".length);
+        wiki.addTiddler(new Tiddler(moved));
+      }
+      for (const [name, record] of captured) { wikiWearsNext(opts.tw5, name, face); wiki.addTiddler(record); }
+      wikiWearsNext(opts.tw5, title, face);
+      wiki.addTiddler(new Tiddler({ title, type: WIKITEXT, text: forwarderText(to), "forward-to": to }));
+      // THE FAMILY HOLDS AFTER THE MOVE: every member stands under its new title with its parent edge, else the rename fails loudly.
+      const landedSlots: Record<string, string> = {};
+      for (const member of members) {
+        const record = wiki.getTiddler(target(member));
+        if (!record || (member !== title && !String(readRecord(record).fields["$fragment-parent"] ?? "").startsWith(to))) {
+          throw new Error(`tiddler-rename-incomplete: "${target(member)}" did not land under "${to}" with its parent edge; the family reads split. Read ${title} and ${to} before another rename.`);
+        }
+        landedSlots[target(member)] = hashOf(readRecord(record).fields);
+      }
+      const landed = readRecord(wiki.getTiddler(to)!).fields;
+      return {
+        recipe: anchor.recipe, title, to, decision: "renamed", forwarder: title, relinked: [...captured.keys()], hash: hashOf(landed),
+        ...(read.position === "root" ? { moved: landedSlots } : {}), consequence: read,
+      };
+    }
   };
 });
 

@@ -14,7 +14,7 @@ import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { evaluateMeme, placeMeme, readMeme, wikiMemeSink } from "../src/place-meme.js";
 import { stampCarrier, verifyBcc } from "@lararium/memetic-frame";
 import {
-  makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeWikiRenderOutReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor,
+  makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeWikiRenderOutReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor, makeTiddlerRenameReactor,
   makeWikiStatusReactor, makeWikiActionReactor, pageFilterAnswer, WIKI_FILTER_ROWS, SHORE_COLLAPSE_CONFIG_PREFIX, type FilterPage, type TiddlerVerbOptions,
 } from "../src/tiddler-verbs.js";
 import { AUDIT_ARRAY_CAP, boundOutcomeOutput, placeVerb, removeVerb } from "../src/verb-vm.js";
@@ -945,6 +945,155 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
       consequence: { act: "delete", target: "Other", position: "plain", family: null, acts: [{ title: "Other", act: "retract", bag: DAEMON }], leaves: [], orphans: [], refusals: [] } });
     expect(r.engine.wiki.tiddlerExists("Other")).toBe(false);
     expect(await del({ ...A, title: "Other" }, ctx())).toMatchObject({ decision: "absent", tombstoned: [] });
+  });
+
+  // ── tiddler-rename ──
+  test("tiddler-rename relinks: a tag and a list reference follow the new title through TiddlyWiki's own relink, the record moves with its fields; CONTROL: an unrelated reference stays", async () => {
+    const r = await rig();
+    const wiki = r.engine.wiki;
+    wiki.addTiddler({ title: "Child", tags: "[[Note 01]] keep" });
+    wiki.addTiddler({ title: "Shelf", list: "[[Note 01]] Other" });
+    wiki.addTiddler({ title: "Bystander", tags: "keep" });
+    const before = wiki.getTiddler("Note 01")!.getFieldStrings();
+    const out = await makeTiddlerRenameReactor(r.opts)({ ...A, title: "Note 01", to: "Note One" }, ctx());
+    expect(out).toMatchObject({ recipe: "default", title: "Note 01", to: "Note One", decision: "renamed", forwarder: "Note 01" });
+    expect([...(out["relinked"] as string[])].sort()).toEqual(["Child", "Shelf"]);
+    const moved = wiki.getTiddler("Note One")!.getFieldStrings();
+    expect(moved["text"]).toBe(before["text"]);
+    expect(moved["tags"]).toBe(before["tags"]);
+    expect(wiki.getTiddler("Child")!.fields["tags"]).toEqual(["Note One", "keep"]);
+    expect(wiki.getTiddler("Shelf")!.fields["list"]).toEqual(["Note One", "Other"]);
+    expect(wiki.getTiddler("Bystander")!.fields["tags"]).toEqual(["keep"]);
+  });
+
+  test("tiddler-rename forwarder: the old title answers a pointer tiddler to the new one and renders the new content; CONTROL: the new title reads the moved record, no pointer", async () => {
+    const r = await rig();
+    await makeTiddlerRenameReactor(r.opts)({ ...A, title: "Note 01", to: "Note One" }, ctx());
+    const old = await makeTiddlerGetReactor(r.opts)({ ...A, title: "Note 01" }, ctx());
+    expect((old["tiddler"] as { fields: Record<string, string> }).fields).toMatchObject({ title: "Note 01", "forward-to": "Note One" });
+    const html = await makeWikiRenderReactor(r.opts)({ ...A, title: "Note 01", form: "text" }, ctx());
+    expect(String(html["text"])).toContain("the first note");
+    const fresh = await makeTiddlerGetReactor(r.opts)({ ...A, title: "Note One" }, ctx());
+    expect((fresh["tiddler"] as { fields: Record<string, string> }).fields).not.toHaveProperty("forward-to");
+  });
+
+  test("tiddler-rename refuses with a cure: a standing target, a slot, a stale base, the same title, a withheld title, a read-only seat; nothing moves", async () => {
+    const r = await rig();
+    await placeMeme({ uri: MEME, text: memeText(["a"]) }, wikiMemeSink(r.engine.wiki));
+    const rename = makeTiddlerRenameReactor(r.opts);
+    const onto = await rename({ ...A, title: "Note 01", to: "Other" }, ctx());
+    expect(onto).toMatchObject({ decision: "refused", refusal: "rename-target-stands" });
+    expect(String(onto["why"])).toMatch(/lares tiddler delete "Other"/);
+    expect(r.engine.wiki.getTiddler("Note 01")!.fields["text"]).toBe("the first note");
+    const slot = await rename({ ...A, title: `${MEME}#/a`, to: `${MEME}#/z` }, ctx());
+    expect(slot).toMatchObject({ decision: "refused", refusal: "slot-without-root" });
+    expect(String(slot["why"])).toContain(`lares tiddler rename "${MEME}"`);
+    expect(await rename({ ...A, title: "Missing", to: "Else" }, ctx())).toMatchObject({ decision: "absent" });
+    expect(await rename({ ...A, title: "Note 02", to: "Note Two", base: "sha256-" + "0".repeat(64) }, ctx())).toMatchObject({ decision: "conflict" });
+    expect(r.engine.wiki.tiddlerExists("Note Two")).toBe(false);
+    await expect(rename({ ...A, title: "$:/temp/lares/secret", to: "Leak" }, ctx())).rejects.toMatchObject({ reason: "tiddler-withheld" });
+    await expect(rename({ ...A, title: "Note 02", to: "Note Two" }, ctx(reader))).rejects.toThrow(/cap-denied/);
+    expect(await rename({ ...A, title: "Note 02", to: "Note 02" }, ctx())).toMatchObject({ decision: "refused", refusal: "rename-same-title" });
+  });
+
+  test("tiddler-rename of a meme root: the slots follow with their parent edges and a forwarder stands at the old root; a slot standing at a new slot title refuses, nothing moves", async () => {
+    const r = await rig();
+    await placeMeme({ uri: MEME, text: memeText(["a"]) }, wikiMemeSink(r.engine.wiki));
+    const to = "lar:///t/y";
+    r.engine.wiki.addTiddler({ title: `${to}#/a`, text: "squatter" });
+    const blocked = await makeTiddlerRenameReactor(r.opts)({ ...A, title: MEME, to }, ctx());
+    expect(blocked).toMatchObject({ decision: "refused", refusal: "rename-target-stands" });
+    expect(r.engine.wiki.tiddlerExists(`${MEME}#/a`)).toBe(true);
+    r.engine.wiki.deleteTiddler(`${to}#/a`);
+    const out = await makeTiddlerRenameReactor(r.opts)({ ...A, title: MEME, to }, ctx());
+    expect(out).toMatchObject({ decision: "renamed", consequence: { act: "rename", position: "root" } });
+    expect(Object.keys(out["moved"] as object).sort()).toEqual([to, `${to}#/a`]);
+    expect(String(r.engine.wiki.getTiddler(`${to}#/a`)!.fields["$fragment-parent"])).toBe(to);
+    expect(r.engine.wiki.tiddlerExists(`${MEME}#/a`)).toBe(false);
+    expect(r.engine.wiki.getTiddler(MEME)!.fields["forward-to"]).toBe(to);
+  });
+
+  test("RED (the guards put and delete keep): a rename onto or away from an effect-ledger title or a collapse rule refuses for the asker that may not write it; nothing lands", async () => {
+    const r = await rig();
+    const rename = makeTiddlerRenameReactor(r.opts);
+    const ledger = effectRecordUri(DAEMON, "real");
+    const RULE = `${SHORE_COLLAPSE_CONFIG_PREFIX}slot-disjoint`;
+    for (const asker of [undefined, "seat", "cli"] as const) {
+      const as = { ...ctx(), ...(asker ? { asker } : {}) };
+      await expect(rename({ ...A, title: "Note 02", to: ledger }, as)).rejects.toMatchObject({ reason: "effect-ledger-house-only" });
+      await expect(rename({ ...A, title: ledger, to: "Note Two" }, as)).rejects.toMatchObject({ reason: "effect-ledger-house-only" });
+    }
+    await expect(rename({ ...A, title: "Note 02", to: RULE }, { ...ctx(), asker: "seat" })).rejects.toMatchObject({ reason: "hand-act-only" });
+    await expect(rename({ ...A, title: RULE, to: "Note Two" }, { ...ctx(), asker: "seat" })).rejects.toMatchObject({ reason: "hand-act-only" });
+    await expect(rename({ ...A, title: "Note 02", to: RULE }, ctx())).rejects.toMatchObject({ reason: "hand-unattested" });
+    expect(r.engine.wiki.tiddlerExists(RULE)).toBe(false);
+    expect(r.engine.wiki.tiddlerExists("Note Two")).toBe(false);
+  });
+
+  test("RED (relink never crosses caps): a referrer resting in a layer this face cannot write refuses the rename with a COUNT and no title; nothing moves; CONTROL: working-layer referrers relink", async () => {
+    const r = await rig();
+    const wiki = r.engine.wiki;
+    wiki.addTiddler({ title: "Mine", tags: "[[Note 01]]" });
+    wiki.addTiddler({ title: "Their Secret Child", tags: "[[Note 01]]", "$origin-bag": CANON });
+    const out = await makeTiddlerRenameReactor(r.opts)({ ...A, title: "Note 01", to: "Note One" }, ctx());
+    expect(out).toMatchObject({ decision: "refused", refusal: "rename-referrers-unreachable", skipped: 1 });
+    expect(JSON.stringify(out)).not.toContain("Their Secret Child");
+    expect(wiki.tiddlerExists("Note One")).toBe(false);
+    expect(wiki.getTiddler("Mine")!.fields["tags"]).toEqual(["Note 01"]);
+    wiki.deleteTiddler("Their Secret Child");
+    expect(await makeTiddlerRenameReactor(r.opts)({ ...A, title: "Note 01", to: "Note One" }, ctx())).toMatchObject({ decision: "renamed", relinked: ["Mine"] });
+  });
+
+  test("RED (no copy-up): a record resting in a layer other than the working layer refuses rename-source-layer and names that layer; the working copy of a family member elsewhere refuses too", async () => {
+    const r = await rig();
+    const wiki = r.engine.wiki;
+    wiki.addTiddler({ title: "Canon Note", text: "canon words", "$origin-bag": CANON });
+    const out = await makeTiddlerRenameReactor(r.opts)({ ...A, title: "Canon Note", to: "Mine Now" }, ctx());
+    expect(out).toMatchObject({ decision: "refused", refusal: "rename-source-layer" });
+    expect(String(out["why"])).toContain(CANON);
+    expect(wiki.tiddlerExists("Mine Now")).toBe(false);
+    await placeMeme({ uri: MEME, text: memeText(["a"]) }, wikiMemeSink(wiki));
+    const slot = wiki.getTiddler(`${MEME}#/a`)!.fields;
+    wiki.addTiddler({ ...slot, "$origin-bag": CANON });
+    expect(await makeTiddlerRenameReactor(r.opts)({ ...A, title: MEME, to: "lar:///t/y" }, ctx())).toMatchObject({ decision: "refused", refusal: "rename-source-layer" });
+    expect(wiki.tiddlerExists("lar:///t/y")).toBe(false);
+  });
+
+  test("RED (hand-only over canon): a `lar:` title another layer holds too takes a hand alone; a seat refuses hand-act-only, the operator's line renames", async () => {
+    const r = await rig();
+    const lar = "lar:///t/note";
+    r.engine.wiki.addTiddler({ title: lar, text: "words" });
+    await r.hold(DAEMON, [lar]);
+    await r.composite.storeForBag(CANON)!.put({ tiddler: { title: lar, text: "canon words" }, meta: {} }, { kind: "lares-verb", requestId: "seed" }, { bag: CANON as never });
+    await r.landed();
+    const rename = makeTiddlerRenameReactor(r.opts);
+    await expect(rename({ ...A, title: lar, to: "lar:///t/moved" }, { ...ctx(), asker: "seat" })).rejects.toMatchObject({ reason: "hand-act-only" });
+    expect(r.engine.wiki.tiddlerExists("lar:///t/moved")).toBe(false);
+    expect(await rename({ ...A, title: lar, to: "lar:///t/moved" }, { ...ctx(), asker: "cli" })).toMatchObject({ decision: "renamed" });
+  });
+
+  test("RED (check-then-act): a record edited while the rename awaits is re-read; with a base the moved record answers conflict and nothing moves; without one the rename carries the newer record", async () => {
+    for (const withBase of [true, false]) {
+      const r = await rig();
+      const lar = "lar:///t/race";
+      r.engine.wiki.addTiddler({ title: lar, text: "first" });
+      const base = String(((await makeTiddlerGetReactor(r.opts)({ ...A, title: lar }, ctx()))["tiddler"] as { hash: string }).hash);
+      const store = r.composite.storeForBag(CANON)!;
+      const get = store.get.bind(store);
+      let edited = false;
+      store.get = (async (title: string) => {
+        if (!edited && title === lar) { edited = true; r.engine.wiki.addTiddler({ title: lar, text: "second, written mid-rename" }); }
+        return get(title);
+      }) as typeof store.get;
+      const out = await makeTiddlerRenameReactor(r.opts)({ ...A, title: lar, to: "lar:///t/raced", ...(withBase ? { base } : {}) }, { ...ctx(), asker: "cli" });
+      if (withBase) {
+        expect(out).toMatchObject({ decision: "conflict" });
+        expect(r.engine.wiki.tiddlerExists("lar:///t/raced")).toBe(false);
+      } else {
+        expect(out).toMatchObject({ decision: "renamed" });
+        expect(r.engine.wiki.getTiddler("lar:///t/raced")!.fields["text"]).toBe("second, written mid-rename");
+      }
+    }
   });
 
   test("family-law-decides-position: a kahea-called slot with no parent edge reads slot, an orphan names its root address, a plain-typed parent by edge reads root; CONTROL: an edge-less `<root>#…` title nobody calls reads plain", async () => {

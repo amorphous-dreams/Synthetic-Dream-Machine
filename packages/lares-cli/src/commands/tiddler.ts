@@ -36,7 +36,7 @@ import { cmdFamily } from "./family.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 /** Every verb the tiddler door answers. */
-export const TIDDLER_VERBS = ["get", "put", "delete"] as const;
+export const TIDDLER_VERBS = ["get", "put", "delete", "rename"] as const;
 const SUBS = TIDDLER_VERBS;
 type Sub = typeof SUBS[number];
 
@@ -72,6 +72,15 @@ export function tiddlerPlan(sub: Sub, args: ParsedArgs): DoorPlan {
     const maxBytes = countOf(args.options["max-bytes"], "max-bytes");
     if (maxBytes !== null) out["maxBytes"] = maxBytes;
     return { verb: "tiddler-get", args: out };
+  }
+  if (sub === "rename") {
+    // `lares tiddler rename <old> <new>`: the verb reads the new title as `to`, the base as the hash last read.
+    const to = args.positional[2];
+    if (!to) throw new DoorUsage(`the new title is required (e.g. \`lares tiddler rename "${title}" "New Title" --recipe default\`)`);
+    out["to"] = to;
+    const base = wordOf(args.options["if-match"]) ?? wordOf(args.options["base"]);
+    if (base) out["base"] = base;
+    return { verb: "tiddler-rename", args: out };
   }
   if (sub === "delete") {
     // The meme door's own spelling of the base on a delete, kept: one hash, the verb reads it as `base`.
@@ -306,6 +315,32 @@ async function tiddlerDelete(args: ParsedArgs): Promise<number> {
   return exitFor(code);
 }
 
+async function tiddlerRename(args: ParsedArgs): Promise<number> {
+  const plan = tiddlerPlan("rename", args);
+  const ran = await runDoor(args, "tiddler rename", plan);
+  if (!ran.ok) return ran.exit;
+  const receipt = ran.output;
+  const decision = String(receipt["decision"] ?? "");
+  const code = decision === "renamed" ? "ok" : decision === "conflict" ? "conflict" : decision === "absent" ? "not-found" : "verb-error";
+  const refusal = decision === "refused" && typeof receipt["refusal"] === "string" ? receipt["refusal"] : null;
+  const message = decision === "conflict" ? `conflict: the record moved past ${plan.args["base"] ?? "the base"}; it reads ${receipt["hash"] ?? "absent"} now`
+                : decision === "absent" ? `no tiddler at ${plan.args["title"]}`
+                : refusal ? String(receipt["why"] ?? `${refusal}: ${plan.args["title"]}`) : `${decision}: ${plan.args["title"]}`;
+  const relinked = Array.isArray(receipt["relinked"]) ? (receipt["relinked"] as string[]) : [];
+  emit(args, {
+    ok: code === "ok", requestId: ran.requestId, data: receipt,
+    ...(code === "ok" ? {} : { error: { code, message, ...(refusal ? { hint: `refusal: ${refusal}` } : {}) } }),
+    human: () => {
+      if (code !== "ok") { console.error(`lares tiddler rename: ${message}`); return; }
+      console.log(`renamed: ${plan.args["title"]} -> ${plan.args["to"]}`);
+      console.log(`  forwarder stands at ${plan.args["title"]}`);
+      for (const name of relinked) console.log(`  relinked ${name}`);
+      if (receipt["hash"]) console.log(`  base: ${receipt["hash"]}`);
+    },
+  });
+  return exitFor(code);
+}
+
 export async function cmdTiddler(args: ParsedArgs): Promise<number> {
   const sub = args.positional[0];
   if (args.flags["meme"] === true && (sub === "get" && !args.positional[1] || sub === "put" || sub === "delete")) {
@@ -334,6 +369,7 @@ export async function cmdTiddler(args: ParsedArgs): Promise<number> {
       case "get":    return await tiddlerGet(args);
       case "put":    return await tiddlerPut(args);
       case "delete": return await tiddlerDelete(args);
+      case "rename": return await tiddlerRename(args);
     }
   });
 }
