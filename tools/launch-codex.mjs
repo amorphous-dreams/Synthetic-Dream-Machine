@@ -357,7 +357,7 @@ export function leadLaw() {
 * Never write the main checkout (~/Synthetic-Dream-Machine) or its submodule worktrees; work in your own worktree under ~/.lares-scratch only.
 * Never read a credential file or the controller's directory.
 * Never boot a daemon in-tree bare; any boot uses a scratch LAR_ROOT and no global LAR_BAGS.
-* No local e2e loops (unit first; e2e in CI via tools/e2e-shards.mjs or a raw ci/* branch).
+* No local e2e loops (unit first; e2e in CI on a raw ci/* branch push).
 * Seats start only through the broker's launch door; a Sol seat only through the controller.
 * A stop that needs more than this wall names itself in out.md and stops.
 * Report to the controller (final.md) for any push beyond the lane's lei, and never push without its lei.

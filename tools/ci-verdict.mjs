@@ -37,8 +37,7 @@
  *   --interval  seconds between rounds of reads (a round issues several gh calls back to back), for the --wait rounds and the UNREADABLE retries alike. It defaults to the house
  *               poll floor, POLL_FLOOR_S (180: the operator's law of 2026-11-05, after the GitHub API limit ran out,
  *               polls CI no closer than three minutes), and a value under the floor refuses by name
- *               (`poll-under-floor: 30 < 180`, exit 3) before any read. No env var moves it. tools/land-train.mjs reads
- *               the same constant for every wait it makes.
+ *               (`poll-under-floor: 30 < 180`, exit 3) before any read. No env var moves it.
  *   --retries   how many times an UNREADABLE read (network, 5xx, timeout, rate limit) reads again before the door
  *               says so (default 6). Applies with or without --wait.
  * Exit: 0 green · 1 red · 2 unread · 3 the reader itself could not read (gh absent, no such branch, a 4xx) or a
@@ -64,7 +63,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { DRIVERS } from "./held-out-cells.mjs";
 
 /** The house poll floor in seconds: CI poll rounds stand at least three minutes apart (operator law, 2026-11-05); the calls within one round run back to back. Every wait in
- *  this reader and in tools/land-train.mjs reads it; a poll under it refuses by name. */
+ *  this reader reads it; a poll under it refuses by name. */
 export const POLL_FLOOR_S = 180;
 /** The longest delay a Node timer holds, in milliseconds; above it the timer fires at once and slips under the pace. */
 const TIMER_LIMIT_MS = 2147483647;

@@ -77,7 +77,7 @@ Each red lands as its own commit, red on that commit, before its cure; each cont
 * ''Split by ground'': the Sol takes the judgment-heavy half (the node routing and the isolation red), the Copilot the browser holder and the mechanical modules; the composer hunks pass through the Episkopos alone.
 * ''The controller'' reads the lane's whole diff before merge, the lane's CI and held-out both, and merges it by train onto a span that reads green.
 
-The lane law stands at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/controller-handoff`>> #/the-lane-law and the swarm's at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm`>>: red-first per commit; no `git stash`; never `--no-verify`; a scratch `LAR_ROOT` per vessel and no global `LAR_BAGS`; a kill names its own pid; a push only while no CI run stands in flight on that branch; `node tools/ci-verdict.mjs --branch <b> --head <sha>` read after each push; `node tools/e2e-shards.mjs push <lane>`; `tools/witness-all.sh` before the handback; every touched package's whole suite over the built tree.
+The lane law stands at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/controller-handoff`>> #/the-lane-law and the swarm's at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm`>>: red-first per commit; no `git stash`; never `--no-verify`; a scratch `LAR_ROOT` per vessel and no global `LAR_BAGS`; a kill names its own pid; a push only while no CI run stands in flight on that branch; `node tools/ci-verdict.mjs --branch <b> --head <sha>` read after each push; `tools/witness-all.sh` before the handback; every touched package's whole suite over the built tree.
 
 <<~/ahu>>
 
@@ -116,6 +116,6 @@ The lane law stands at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/controlle
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;YQyMq8anJY9uHuxmCfme0Gh35V-rNB7oXylVJPQ8HuU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Xz4LOB0wzoCzV40DcNpm0rqMcL-hSbt29WWp3VAyIWA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

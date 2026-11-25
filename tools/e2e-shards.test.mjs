@@ -4,12 +4,10 @@
 // same inputs, lawful, pass clean — so a gate that refused everything would still read red here.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync, chmodSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { spawnSync } from "node:child_process";
 import { join } from "node:path";
-import { POLL_FLOOR_S } from "./ci-verdict.mjs";
-import { evaluateMergeGate, relativeToE2eDir, readShardReports, pushLaneAndWatch } from "./e2e-shards.mjs";
+import { evaluateMergeGate, relativeToE2eDir, readShardReports } from "./e2e-shards.mjs";
 
 const TRACKED = ["tests/e2e/alpha.test.ts", "tests/e2e/beta.test.ts"];
 
@@ -365,163 +363,6 @@ test("readShardReports: a present, valid, and missing shard each read as the gat
     assert.ok(verdict.problems.some((p) => p.includes("missing artifact: shard 3")));
   } finally {
     rmSync(dir, { recursive: true, force: true });
-  }
-});
-
-// ── L7: a log-fetch throw must never leave the lane branch standing ─────────────────────────────
-// Fake `git`/`gh` on PATH: the branch push, run-discovery and watch all succeed; `gh run view --log`
-// throws (a non-zero exit). The docblock claims `pushLaneAndWatch` "always deletes the branch, even
-// on a red run" — before this fix, that throw ran before `deleteBranch` and skipped it (gp1-episkopos
-// L7). This test's marker file proves the delete call ran, even though the function itself still
-// throws (the real error must still surface — cleanup must never swallow it).
-test("L7 — a log-fetch throw inside pushLaneAndWatch still deletes the lane branch", async () => {
-  const bin = mkdtempSync(join(tmpdir(), "e2e-shards-fakebin-"));
-  const marker = join(bin, "deleted.marker");
-  writeFileSync(
-    join(bin, "git"),
-    `#!/usr/bin/env bash
-set -e
-args="$*"
-case "$args" in
-  *"config --get core.bare"*) echo false; exit 0 ;;
-  *"rev-parse HEAD"*) echo "deadbeefcafef00d"; exit 0 ;;
-  *"push origin HEAD:refs/heads/"*) exit 0 ;;
-  *"push origin --delete "*) echo ok > "${marker}"; exit 0 ;;
-  *) exit 0 ;;
-esac
-`,
-  );
-  writeFileSync(
-    join(bin, "gh"),
-    `#!/usr/bin/env bash
-set -e
-args="$*"
-case "$args" in
-  *"run list --branch"*) echo '[{"databaseId":42,"headSha":"deadbeefcafef00d"}]'; exit 0 ;;
-  *"run watch 42"*) exit 0 ;;
-  *"run view 42 --log"*) echo "gh: the log is gone" >&2; exit 1 ;;
-  *) exit 0 ;;
-esac
-`,
-  );
-  chmodSync(join(bin, "git"), 0o755);
-  chmodSync(join(bin, "gh"), 0o755);
-
-  const prevPath = process.env.PATH;
-  process.env.PATH = `${bin}:${prevPath}`;
-  try {
-    await assert.rejects(
-      () => pushLaneAndWatch({ repoRoot: tmpdir(), lane: "l7-probe", findBudgetMs: 5000, pollMs: 10 }),
-      /run view 42 --log/,
-    );
-  } finally {
-    process.env.PATH = prevPath;
-  }
-  const { existsSync } = await import("node:fs");
-  assert.ok(existsSync(marker), "deleteBranch must run even though the log fetch threw");
-  rmSync(bin, { recursive: true, force: true });
-});
-
-function fakeFindBin(dir, { found }) {
-  const counter = join(dir, "reads.count");
-  writeFileSync(join(dir, "git"), `#!/usr/bin/env bash
-case "$*" in
-  *"rev-parse HEAD"*) echo "deadbeefcafef00d" ;;
-  *"config --get core.bare"*) echo false ;;
-esac
-exit 0
-`);
-  writeFileSync(join(dir, "gh"), `#!/usr/bin/env bash
-case "$*" in
-  *"run list --branch"*) echo x >> "${counter}"; echo '${found ? '[{"databaseId":42,"headSha":"deadbeefcafef00d"}]' : "[]"}' ;;
-  *"run view 42 --log"*) echo "MERGE-VERIFY: ok=true" ;;
-esac
-exit 0
-`);
-  chmodSync(join(dir, "git"), 0o755);
-  chmodSync(join(dir, "gh"), 0o755);
-  return counter;
-}
-
-// The find loop spaces its rounds at the house pace: no sleep under POLL_FLOOR_S, at most three rounds when the
-// run never shows; a run found on the first read sleeps zero times.
-test("the pushLaneAndWatch find loop sleeps at the house pace and runs at most three rounds", async () => {
-  const bin = mkdtempSync(join(tmpdir(), "e2e-shards-find-"));
-  const counter = fakeFindBin(bin, { found: false });
-  const prevPath = process.env.PATH;
-  process.env.PATH = `${bin}:${prevPath}`;
-  const sleeps = []; let t = 0;
-  try {
-    await assert.rejects(
-      () => pushLaneAndWatch({ repoRoot: tmpdir(), lane: "find-probe", now: () => t, sleep: async (ms) => { sleeps.push(ms); t += ms; } }),
-      /no e2e-shards.yml run appeared/,
-    );
-  } finally { process.env.PATH = prevPath; }
-  const { readFileSync: rf, existsSync: ex } = await import("node:fs");
-  const reads = ex(counter) ? rf(counter, "utf8").trim().split("\n").length : 0;
-  rmSync(bin, { recursive: true, force: true });
-  assert.ok(sleeps.every((ms) => ms >= POLL_FLOOR_S * 1000), `sleeps ${sleeps}`);
-  assert.ok(reads <= 3, `reads ${reads}`);
-});
-
-test("a run found on the first read sleeps zero times in pushLaneAndWatch", async () => {
-  const bin = mkdtempSync(join(tmpdir(), "e2e-shards-find1-"));
-  fakeFindBin(bin, { found: true });
-  const prevPath = process.env.PATH;
-  process.env.PATH = `${bin}:${prevPath}`;
-  const sleeps = [];
-  try {
-    await pushLaneAndWatch({ repoRoot: tmpdir(), lane: "find-probe", sleep: async (ms) => { sleeps.push(ms); } }).catch(() => {});
-  } finally { process.env.PATH = prevPath; }
-  rmSync(bin, { recursive: true, force: true });
-  assert.equal(sleeps.length, 0);
-});
-
-test("the printed CI hint names the branch full CI runs on, from attached and detached checkouts", () => {
-  const bin = mkdtempSync(join(tmpdir(), "e2e-shards-hint-"));
-  const root = fileURLToPath(new URL("../", import.meta.url));
-  try {
-    writeFileSync(join(bin, "git"), `#!/usr/bin/env bash
-case "$*" in
-  *"config --get core.bare"*) echo false ;;
-  *"rev-parse --abbrev-ref HEAD"*) echo "$TEST_BRANCH" ;;
-  *"rev-parse HEAD"*|*"rev-parse deadbeefcafef00d"*) echo deadbeefcafef00d ;;
-  *"branch -r --points-at"*) printf 'origin/ci/hint-probe\n%s' "$TEST_TIPS" ;;
-esac
-`);
-    writeFileSync(join(bin, "gh"), `#!/usr/bin/env bash
-case "$*" in
-  *"run list"*"--event push"*) echo '[{"databaseId":42,"headSha":"deadbeefcafef00d"}]' ;;
-  *"run list"*) echo '[]' ;;
-  *"run view 42 --log"*) echo 'MERGE-VERIFY: ok=true shards=5 totalTests=10 executedFiles=2 trackedFiles=2' ;;
-  *"run view 42 --json"*) echo '{"conclusion":"success","url":"https://example.test/42"}' ;;
-esac
-`);
-    chmodSync(join(bin, "git"), 0o755);
-    chmodSync(join(bin, "gh"), 0o755);
-    const hintFor = (tips) => {
-      const env = { ...process.env, PATH: `${bin}:${process.env.PATH}`, TEST_TIPS: tips };
-      const pushed = spawnSync(process.execPath, [join(root, "tools/e2e-shards.mjs"), "push", "hint-probe"], { cwd: root, encoding: "utf8", env });
-      assert.equal(pushed.status, 0, pushed.stderr);
-      const hint = pushed.stdout.split("\n").find((line) => line.startsWith("HALF A VERDICT:"));
-      assert.ok(hint, pushed.stdout);
-      return { env, args: hint.slice(hint.indexOf("node tools/ci-verdict.mjs")).split(" ").slice(2) };
-    };
-    // The full run stands on the feature branch the head rides; `ci.yml` never runs on a `ci/` lane branch.
-    const { env, args } = hintFor("origin/feature/hint-probe");
-    assert.ok(!args.join(" ").includes("ci/hint-probe"), args.join(" "));
-    for (const branch of ["feature/hint-probe", "HEAD"]) {
-      const read = spawnSync(process.execPath, [join(root, "tools/ci-verdict.mjs"), ...args], {
-        cwd: root, encoding: "utf8", env: { ...env, TEST_BRANCH: branch },
-      });
-      assert.equal(read.status, 2, `${branch}: ${read.stderr}`);
-      assert.match(read.stdout, /ci-verdict: branch feature\/hint-probe/);
-    }
-    // CONTROL: a head no non-lane branch carries names no branch, rather than the lane branch.
-    const bare = hintFor("");
-    assert.match(bare.args.join(" "), /--branch <the branch this head rides>/);
-  } finally {
-    rmSync(bin, { recursive: true, force: true });
   }
 });
 
