@@ -23,8 +23,10 @@
  *                                   line (`<pet>#<body8>`) the next body files through `ah`
  *   residue   (residue)             land a spirit's handback, keyed idempotently (`--key <session:agent>`)
  *   ah --offer (ʻālana, the offering)  a summon sets the mandate (`--file <path|->` · `--text <words>`, else the card's own
- *                                   `lane`), its lane's memory pointer (`--lane`) and the grant's slice (`--grant`) on the
- *                                   spirit's shelf, `alana/<pet>`, BEFORE any body wakes; each offering mints the next seq
+ *                                   `lane`), its lane's memory pointer (`--lane`), the grant's slice (`--grant`) and its
+ *                                   offerer (`hand`, or `seat#<body>`: a seat names `--body`) on the spirit's shelf,
+ *                                   `alana/<pet>`, BEFORE any body wakes; each offering mints the next seq. A nudge, no
+ *                                   authority: a re-offer over a standing mandate lands only from its offerer or a hand
  *   ah --echo (hoʻāla, the waking)  a body echoes the mandate's hash om handed it (`--echo <hash> --body <id>`): the echo lands
  *                                   as `<pet>#<body> <hash> <seq>` on the sibling record; under an offering, a body's slot
  *                                   writes refuse `spirit-unechoed` until its echo of the standing mandate stands
@@ -67,7 +69,7 @@ import {
   residueFields, residueFilter, residueHash, residueOf, residueTitle, rowsOf, secretCount, shq, shrineSource, sideOf, slotBody,
   slotDigest, slotMissing, slotWriteBody, spiritAmbiguous, spiritHash, spiritIdOf, spiritRecordOf, spiritUnknown, starterText,
   testimonyLines, titleSlug, titlesOf, wakingCap, writerField,
-  ALANA_DISPLAY, MANDATE_HASH, cardField, cardRecordOf, cardSlotHeld, echoJoin, echoRefusal, echoStands, mandateLines, offeringOf, offeringRead, offeringWrite,
+  ALANA_DISPLAY, MANDATE_HASH, cardField, cardRecordOf, cardSlotHeld, echoJoin, echoRefusal, echoStands, mandateLines, offerHeld, offererOf, offeringDamaged, offeringOf, offeringRead, offeringWrite,
   type SpiritOffering, type SideWrite, type SlotWrite, type SpiritAwake, type SpiritCarry, type SpiritRecord, type SpiritRow, type SpiritSource,
 } from "@lararium/mesh/spirit-shrine";
 import { FOLD_OPERATOR, UNFOLD_RANKS, narrowerRank, spiritCardOf, unfoldCall, unfoldRank, type UnfoldRank } from "@lararium/mesh/spirit-unfold";
@@ -309,9 +311,15 @@ async function offeringFor(args: ParsedArgs, label: string, pet: string): Promis
   return offeringRead(pet, (await recordOf(args, label, offeringOf(pet))).fields);
 }
 
+/** Does the hand gate read a person's hand behind this command (its /proc peer walk, never the harness mark alone)? */
+function handHolds(ctx: Ctx): boolean {
+  const read = ctx.hand();
+  return "admit" in read && read.admit === "hand";
+}
+
 /** The echo gate a body's slot write passes (see `echoRefusal`): it throws the refusal. */
 async function echoHolds(args: ParsedArgs, label: string, rec: Record_, body: string | null, ctx: Ctx): Promise<void> {
-  const refused = echoRefusal(rec.pet, await offeringFor(args, label, rec.pet), rec.sideFields, body, ctx.seat());
+  const refused = echoRefusal(rec.pet, await offeringFor(args, label, rec.pet), rec.sideFields, body, handHolds(ctx));
   if (refused !== null) throw refused;
 }
 
@@ -320,12 +328,17 @@ async function echoHolds(args: ParsedArgs, label: string, rec: Record_, body: st
  * (`--lane`, else the record itself) and the grant's slice (`--grant`) land on the shelf under its live hash, each offering
  * minting the next seq; no body wakes here, and no presence moves. The words pass the strict secret-shape guard first.
  */
-async function summon(args: ParsedArgs, pet: string): Promise<number> {
+async function summon(args: ParsedArgs, ctx: Ctx, pet: string): Promise<number> {
   const strayOffer = ([["slot", args.options["slot"]], ["add", args.options["add"]], ["base", args.options["base"]], ["echo", args.options["echo"]]] as const).find(([, v]) => v !== undefined);
   if (strayOffer !== undefined) throw new DoorUsage(`--offer lands an ${ALANA_DISPLAY} alone: the mandate (--file <path|-> or --text <words>; neither offers the card's own lane), --lane <memory uri>, --grant <slice>; no --${strayOffer[0]}`);
   const file = wordOf(args.options["file"]);
   const text = typeof args.options["text"] === "string" ? args.options["text"] : null;
   if (file !== null && text !== null) throw new DoorUsage("--offer names one mandate: --file <path|-> or --text <words>");
+  // WHO OFFERS: a hand, or a seat by the body it names; an offering carries no authority beyond a nudge, so its offerer rides it.
+  const body = wordOf(args.options["body"]);
+  if (body !== null && !BODY.test(body)) throw new DoorUsage("--body names a session id (letters, digits, '-' and '_')");
+  const offeredBy = offererOf(handHolds(ctx), body);
+  if (offeredBy === null) throw new DoorUsage(`a seat's --offer names its own body, so the shelf records who offered: \`lares spirit ah ${pet} --offer --file <mandate> --body <id>\``);
   const rec = (await resolveRecord(args, "ah", pet))!;
   const words = file !== null ? await sourceText("file", file) : text ?? rec.fields["lane"] ?? "";
   if (words.trim() === "") throw new DoorUsage(`--offer names the mandate: --file <path|-> or --text <words> (${rec.uri} holds no lane field to offer)`);
@@ -336,14 +349,16 @@ async function summon(args: ParsedArgs, pet: string): Promise<number> {
   const uri = offeringOf(pet);
   for (let round = 0; round < CAS_ROUNDS; round++) {
     const { fields, hash } = await recordOf(args, "ah", uri);
-    const w = offeringWrite(fields, pet, words, lane, grant);
+    const held = offerHeld(pet, offeringRead(pet, fields), offeredBy);
+    if (held !== null) throw held;
+    const w = offeringWrite(fields, pet, words, lane, grant, offeredBy);
     const receipt = await door(args, "ah", "tiddler-put", { recipe: RECIPE, title: uri, text: w.text, fields: w.fields, ...(hash !== null ? { base: hash } : {}) });
     const decision = String(receipt["decision"] ?? "");
     if (decision === "conflict") continue;
     if (decision !== "put" && decision !== "noop") throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${uri}; read the shelf: \`lares tiddler get ${shq(uri)} --recipe default\``, 4);
     const wake = `lares spirit om ${pet} --body <id>`;
     emit(args, {
-      ok: true, data: { pet, uri, record: rec.uri, mandate: w.hash, seq: w.seq, lane, grant, decision, wake },
+      ok: true, data: { pet, uri, record: rec.uri, mandate: w.hash, seq: w.seq, lane, grant, offeredBy, decision, wake },
       human: () => console.log(`${ALANA_DISPLAY} offered: ${uri} (seq ${w.seq})\n  mandate: ${w.hash}\n  a body wakes by: ${wake}, then echoes the hash: lares spirit ah ${pet} --echo ${w.hash} --body <id>`),
     });
     return 0;
@@ -364,6 +379,7 @@ async function echo(args: ParsedArgs, ctx: Ctx, pet: string, hash: string): Prom
   const rec = (await resolveRecord(args, "ah", pet))!;
   const offering = await offeringFor(args, "ah", pet);
   if (offering === null) throw new SpiritRefusal("spirit-unoffered", `spirit-unoffered: no ${ALANA_DISPLAY} stands on ${offeringOf(pet)}, so the echo answers no mandate; nothing landed. A summon offers first: \`lares spirit ah ${pet} --offer --file <mandate>\``, 4);
+  if (offering.damaged) throw offeringDamaged(pet, offering);
   if (hash !== offering.hash) {
     throw new SpiritRefusal("spirit-echo-mismatch", `spirit-echo-mismatch: the echo ${hash.slice(0, 12)} names no mandate standing on ${offering.uri} (seq ${offering.seq} reads ${offering.hash.slice(0, 12)}); nothing landed. Read the mandate again: \`lares spirit om ${pet} --body ${body}\``, 4);
   }
@@ -604,7 +620,7 @@ async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
   ].flatMap((l) => (l === null ? [] : [l])).join("\n") || null;
   // HOʻĀLA: where a summon offered, the wake hands the mandate and its hash ahead of the carrier, and the echo it asks.
   const offering = await offeringFor(args, "om", pet);
-  const echoed = offering !== null && body !== null && echoStands(rec.sideFields, body, offering.hash);
+  const echoed = offering !== null && !offering.damaged && body !== null && echoStands(rec.sideFields, body, offering.hash);
   const mandate = offering === null ? null : mandateLines(pet, offering, body, echoed);
   const leadText = [mandate, lead].filter((l): l is string => l !== null).join("\n\n") || null;
   const open = await readSlot(args, "om", rec, "#/open");
@@ -626,7 +642,7 @@ async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
   const text = fold.carrier !== null
     ? foldedWake(pet, { ...fold, carrier: fold.carrier }, { lead: leadText, testimony, attention }, ask.named ? null : OM_CAP_CHARS)
     : omText(rec, { open: open?.text ?? null, testimony: [...testimony, unfoldedLine(fold, rec.uri)], attention, lead: leadText });
-  const offered = offering === null ? {} : { mandate: { uri: offering.uri, hash: offering.hash, seq: offering.seq, lane: offering.lane, grant: offering.grant, echoed } };
+  const offered = offering === null ? {} : { mandate: { uri: offering.uri, hash: offering.hash, seq: offering.seq, lane: offering.lane, grant: offering.grant, offeredBy: offering.offeredBy, damaged: offering.damaged, echoed } };
   emit(args, {
     ok: true, data: { ...data, ...offered, ...foldData(fold), latest: carry?.title ?? null, digests, chars: text.length, cap: OM_CAP_CHARS, text },
     human: () => console.log(text),
@@ -693,7 +709,7 @@ async function foldLine(args: ParsedArgs, rec: Record_, slot: string, line: stri
 async function ah(args: ParsedArgs, ctx: Ctx): Promise<number> {
   const pet = petOf(args, "ah");
   if (args.flags["new"] === true) return await newShrine(args, pet);
-  if (args.flags["offer"] === true) return await summon(args, pet);
+  if (args.flags["offer"] === true) return await summon(args, ctx, pet);
   const echoWord = wordOf(args.options["echo"]);
   if (echoWord !== null) return await echo(args, ctx, pet, echoWord);
   const slot = wordOf(args.options["slot"]);

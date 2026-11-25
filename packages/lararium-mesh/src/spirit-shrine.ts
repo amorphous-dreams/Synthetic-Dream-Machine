@@ -580,12 +580,14 @@ export const burnTally = (day: string, pet: string, burned: readonly string[], b
  * A SPIRIT HOLDING A CARD ALONE (`spirit-card/<pet>`: metadata as fields, a text that transcludes its template) answers the
  * slot verbs through its FIELDS: `#/<name>` reads and writes the card's field `<name>` (reference/tasked-spirit names the card
  * "metadata as FIELDS only", and its brief bids each body "true it (`bodies`, `open`)"), so no shrine gets minted beside a
- * card, and the template renders each truing where it already reads. These fields hold the card's identity and its frame, so
- * no slot verb writes them.
+ * card, and the template renders each truing where it already reads. These fields hold the card's identity and its frame (the
+ * lane a bare `--offer` takes as its mandate, and the fields the template renders as wikitext), so no slot verb writes them.
  */
 export const CARD_HELD_FIELDS: ReadonlySet<string> = new Set([
   "title", "text", "tags", "type", "pet", "description", "created", "modified", "creator", "modifier", "revision", "bag",
   "spirit-id", "slot-budget", "record-budget", "true-up-every", "distilled", "aliases",
+  // THE FRAME: the lane a bare offer takes as its mandate, and the fields the template renders as wikitext; the hand sets them.
+  "lane", "model", "feeds", "wave", "waits",
 ]);
 /** The card field a slot names (`#/open` -> `open`), or null where the slot names no writable field. */
 export function cardField(slot: string): string | null {
@@ -617,8 +619,12 @@ export function cardRecordOf(pet: string, uri: string, out: Record<string, unkno
 // ── THE ʻĀLANA CIRCLE: THE OFFERING AND THE ECHO ──────────────────────────────────────────────────────────────────
 /**
  * ʻĀLANA, THE OFFERING (docs/pono/spirit-circle #/the-circle). A summon sets the mandate (the lane's words and their sha256),
- * the lane's memory pointer and the grant's slice on the spirit's shelf, `alana/<pet>`, a record the spirit door alone writes,
- * BEFORE any body wakes. HOʻĀLA, THE WAKING: a body's om pulls the mandate and its hash through the door, and the body echoes
+ * the lane's memory pointer, the grant's slice and WHO offered it (`hand`, or `seat#<body>`) on the spirit's shelf,
+ * `alana/<pet>`, BEFORE any body wakes. The spirit door writes the shelf; the tiddler door still reaches the `alana/` prefix
+ * (a course item: guard it at the tiddler door as the other door-owned prefixes stand guarded), so a damaged shelf (a hash its
+ * words disagree with) FAILS CLOSED: every body's write refuses `spirit-offering-damaged` until the offerer offers again.
+ * AN OFFERING CARRIES NO AUTHORITY BEYOND A NUDGE until per-summon seats get minted (spirit-circle #/admission, #/open): it
+ * records its offerer, om names it, and a re-offer over a standing mandate lands only from the same offerer or a hand. HOʻĀLA, THE WAKING: a body's om pulls the mandate and its hash through the door, and the body echoes
  * the hash back (`ah <pet> --echo <hash> --body <id>`); the echo lands on the card's sibling record as `<pet>#<body> <hash>
  * <seq>`, the seq door-minted, so no clock orders an echo. Where an offering stands, the door refuses a body's slot writes
  * until that body's echo of the standing mandate stands (`spirit-unechoed`); a fresh offering asks every body to echo again.
@@ -634,23 +640,46 @@ export const MANDATE_HASH = /^[0-9a-f]{64}$/;
 /** At most this many echoes stand on the sibling record, the highest seq kept; never dropped by age. */
 export const ECHO_CAP = 64;
 
-export interface SpiritOffering { readonly uri: string; readonly hash: string; readonly seq: number; readonly lane: string; readonly grant: string; readonly text: string }
-
-/** The offering the shelf holds, read from its fields; null where none stands (or its hash disagrees with its words). */
-export function offeringRead(pet: string, fields: Readonly<Record<string, string>>): SpiritOffering | null {
-  const hash = fields["mandate-hash"] ?? "";
-  const text = fields["text"] ?? "";
-  if (!MANDATE_HASH.test(hash) || sha256HexSync(text) !== hash) return null;
-  return { uri: offeringOf(pet), hash, seq: countField(fields["offer-seq"], 1), lane: fields["lane"] ?? "", grant: fields["grant"] ?? "", text };
+export interface SpiritOffering {
+  readonly uri: string; readonly hash: string; readonly seq: number; readonly lane: string; readonly grant: string; readonly text: string;
+  /** Who offered: `hand`, or `seat#<body>`; empty where the shelf names none. */
+  readonly offeredBy: string;
+  /** The stored hash disagrees with the words (or names no hash): the gate fails closed on it. */
+  readonly damaged: boolean;
 }
 
+/**
+ * The offering the shelf holds, read from its fields: null only where no offering ever landed (no `mandate-hash`, no
+ * `offer-seq`); a shelf whose hash disagrees with its words reads `damaged`, never absent, so the gate it holds fails closed.
+ */
+export function offeringRead(pet: string, fields: Readonly<Record<string, string>>): SpiritOffering | null {
+  const hash = fields["mandate-hash"];
+  if (hash === undefined && fields["offer-seq"] === undefined) return null;
+  const text = fields["text"] ?? "";
+  const damaged = hash === undefined || !MANDATE_HASH.test(hash) || sha256HexSync(text) !== hash;
+  return { uri: offeringOf(pet), hash: hash ?? "", seq: countField(fields["offer-seq"], 1), lane: fields["lane"] ?? "", grant: fields["grant"] ?? "", text, offeredBy: fields["offered-by"] ?? "", damaged };
+}
+
+/** The offerer a summon names: a hand, or a seat by the body it names (a seat with no body names none: null). */
+export const offererOf = (hand: boolean, body: string | null): string | null => (hand ? "hand" : body === null ? null : `seat#${body}`);
+
+/** A re-offer over a standing mandate lands only from its own offerer or a hand; null where it lands. */
+export function offerHeld(pet: string, standing: SpiritOffering | null, offeredBy: string): SpiritRefusal | null {
+  if (standing === null || offeredBy === "hand" || (standing.offeredBy !== "" && standing.offeredBy === offeredBy)) return null;
+  return new SpiritRefusal("spirit-offer-held", `spirit-offer-held: ${standing.uri} holds a mandate ${standing.offeredBy === "" ? "no offerer names" : `${standing.offeredBy} offered`} (seq ${standing.seq}), and an offering carries no authority to replace another's; nothing landed. The same offerer offers again, or a person's hand at the terminal does: \`lares spirit ah ${pet} --offer --file <mandate>\``, 4);
+}
+
+/** A damaged shelf: the refusal every body's write and echo meets until its offerer offers again. */
+export const offeringDamaged = (pet: string, offering: SpiritOffering): SpiritRefusal =>
+  new SpiritRefusal("spirit-offering-damaged", `spirit-offering-damaged: ${offering.uri} holds a mandate whose stored hash disagrees with its words (seq ${offering.seq}${offering.offeredBy === "" ? "" : `, offered by ${offering.offeredBy}`}), so the gate holds closed; nothing landed. Its offerer (or a hand) offers again: \`lares spirit ah ${pet} --offer --file <mandate>\`, then each body wakes and echoes`, 4);
+
 /** The write an offering lands over the shelf's fields read: the words, their hash, the pointer, the slice, and the next door-minted seq. */
-export function offeringWrite(was: Readonly<Record<string, string>>, pet: string, words: string, lane: string, grant: string): { text: string; fields: Record<string, string>; hash: string; seq: number } {
+export function offeringWrite(was: Readonly<Record<string, string>>, pet: string, words: string, lane: string, grant: string, offeredBy: string): { text: string; fields: Record<string, string>; hash: string; seq: number } {
   const hash = sha256HexSync(words);
   const seq = countField(was["offer-seq"], 0) + 1;
   return {
     text: words, hash, seq,
-    fields: { pet, "mandate-hash": hash, "offer-seq": String(seq), lane, grant, description: `${ALANA_DISPLAY} for ${pet}: the mandate a summon offered (seq ${seq}), its lane's memory and its grant's slice` },
+    fields: { pet, "mandate-hash": hash, "offer-seq": String(seq), lane, grant, "offered-by": offeredBy, description: `${ALANA_DISPLAY} for ${pet}: the mandate a summon offered (seq ${seq}), its lane's memory and its grant's slice` },
   };
 }
 
@@ -679,12 +708,14 @@ const echoCure = (pet: string, body: string): string =>
 
 /**
  * The gate a slot write passes where an offering stands: a write naming a body lands once that body's echo of the standing
- * mandate stands; an AI seat naming no body names one first; a person's terminal writes freely. Null where it passes.
+ * mandate stands; a write naming no body lands only from a person's hand (the hand gate's reading, never the harness mark
+ * alone); a damaged shelf holds every other write closed. Null where it passes.
  */
-export function echoRefusal(pet: string, offering: SpiritOffering | null, sideFields: Readonly<Record<string, string>>, body: string | null, seat: boolean): SpiritRefusal | null {
+export function echoRefusal(pet: string, offering: SpiritOffering | null, sideFields: Readonly<Record<string, string>>, body: string | null, hand: boolean): SpiritRefusal | null {
   if (offering === null) return null;
+  if (body === null && hand) return null;
+  if (offering.damaged) return offeringDamaged(pet, offering);
   if (body === null) {
-    if (!seat) return null;
     return new SpiritRefusal("spirit-unechoed", `spirit-unechoed: ${pet} stands under an ${ALANA_DISPLAY} (mandate ${offering.hash.slice(0, 12)}, seq ${offering.seq}), and an AI seat's slot write names the body that echoed it; nothing landed. Name your body: ${echoCure(pet, "<id>")}, then write with --body <id>`, 4);
   }
   if (echoStands(sideFields, body, offering.hash)) return null;
@@ -697,5 +728,6 @@ export function mandateLines(pet: string, offering: SpiritOffering, body: string
   const ask = echoed
     ? `This body's echo stands (${pet}#${body}).`
     : `Echo it before any slot write: lares spirit ah ${pet} --echo ${offering.hash} --body ${body ?? "<id>"}`;
-  return `${ALANA_DISPLAY} · the mandate offered ${pet} (seq ${offering.seq}) · hash ${offering.hash}\nlane: ${offering.lane || "(none named)"} · grant: ${offering.grant || "(none named)"}\n${words}\n${ask}`;
+  if (offering.damaged) return `${ALANA_DISPLAY} · DAMAGED: ${offering.uri} (seq ${offering.seq}${offering.offeredBy === "" ? "" : `, offered by ${offering.offeredBy}`}) holds a hash its words disagree with, so no body's write lands until its offerer offers again: lares spirit ah ${pet} --offer --file <mandate>`;
+  return `${ALANA_DISPLAY} · the mandate offered ${pet} (seq ${offering.seq}, offered by ${offering.offeredBy || "no one named"}; a nudge, no authority) · hash ${offering.hash}\nlane: ${offering.lane || "(none named)"} · grant: ${offering.grant || "(none named)"}\n${words}\n${ask}`;
 }
