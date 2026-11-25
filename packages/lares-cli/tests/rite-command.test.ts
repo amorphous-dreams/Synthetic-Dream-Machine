@@ -18,7 +18,7 @@ import { hostSeedOfferPort } from "../src/seed-offered.js";
 import { parseArgs } from "../src/parse-args.js";
 import { RiteUsage, hostRefill, leiReading, hostRowLine, ritePlan, rollbackOf, standingOf, standingRowLine, syncCheckout } from "../src/commands/rite.js";
 import { storeVerbRidesWorn } from "../src/store-door.js";
-import { KUKULU_LEI_RETURNS, kukuluSeedLine, priorImageRef, riteKukulu, syncPlan, type RitePorts, type RiteVerbAnswer, type StandReading } from "../src/rite-kukulu.js";
+import { KUKULU_LEI_RETURNS, kukuluHand, kukuluSeedLine, priorImageRef, riteKukulu, syncPlan, type HandFacts, type RitePorts, type RiteVerbAnswer, type StandReading } from "../src/rite-kukulu.js";
 import { decideRoute } from "../src/host-bridge.js";
 import { COMMAND_NAMES, COMMANDS, unknownFlags } from "../src/bin/lares.js";
 
@@ -202,6 +202,38 @@ describe("kukulu-asks-a-route-only-where-the-day-owes-one", () => {
     const u = fakes({ reading: { pulama: "unread" } });
     expect(await riteKukulu(u.ports, {})).toMatchObject({ code: 1, data: { stopped: "pulama", refusal: "kukulu-pulama-unread" } });
     expect(u.calls).toEqual(["checkout", STAGE]);
+  });
+});
+
+/** THE PRE-RITE READING'S TABLE (course pulama-unblur), shared with tools/lares-container.test.mjs, which reads the shim's line. */
+type HandRow = { name: string; facts: Partial<HandFacts> & Pick<HandFacts, "pulama" | "lit" | "lei">; line: string };
+const HAND_TABLE = JSON.parse(readFileSync(join(import.meta.dirname, "fixtures", "kukulu-hand.json"), "utf8")) as { rows: HandRow[] };
+const handFacts = (f: HandRow["facts"]): HandFacts => ({ vessel: "standing", current: false, admitted: false, offer: false, keeper: null, ...f });
+
+describe("the closure speaks: a pre-rite reading names whether the kūkulu needs a hand", () => {
+  it("RED: each row of the shared table reads its one line", () => {
+    for (const row of HAND_TABLE.rows) expect(kukuluHand(handFacts(row.facts)), row.name).toBe(row.line);
+  });
+
+  it("RED (the reading never disagrees with the rite): with no terminal, a row that reads alone raises the house, a row that needs a hand stops before the raise, and a row that reads unknown stops on the pūlama", async () => {
+    const to = "c".repeat(64), closure = "sha256:" + "9".repeat(64);
+    for (const row of HAND_TABLE.rows) {
+      const facts = handFacts(row.facts);
+      const begin: RiteVerbAnswer | undefined = facts.lei === true ? undefined : facts.lei === "returns-spent" ? { ok: false, code: "swarm-lei-returns-spent", message: "spent" } : ABSENT;
+      const f = fakes({
+        tty: false, keeper: { to, closure }, leiSpend: true, ...(begin === undefined ? {} : { begin }), ...(facts.lei === null ? {} : { leiStands: facts.lei }),
+        reading: { pulama: facts.pulama === "level" ? "closure-level" : facts.pulama, lit: facts.lit, keeper: (facts.keeper ?? null) as NonNullable<StandReading["keeper"]> | null, vessel: facts.vessel, current: facts.current, admitted: facts.admitted, offer: facts.offer },
+      });
+      const out = await riteKukulu(f.ports, {});
+      const raised = f.calls.some((c) => c.startsWith("raise"));
+      if (row.line.startsWith("reads unknown")) expect(out.data, row.name).toMatchObject({ refusal: "kukulu-pulama-unread" });
+      else if (row.line.startsWith("needs your hand")) expect(raised, `${row.name}: ${f.said.join(" | ")}`).toBe(false);
+      else {
+        expect(raised && out.code === 0, `${row.name}: ${f.said.join(" | ")}`).toBe(true);
+        if (row.line.startsWith("keeper vests")) expect(f.calls, row.name).toContain(`raise ${HEAD} --keeper-to ${to}`);
+        if (row.line === "keeper vests under the standing lei") expect(f.calls, row.name).toContain(`keeper-lei-spend ${HEAD} main`);
+      }
+    }
   });
 });
 

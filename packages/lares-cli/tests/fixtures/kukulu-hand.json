@@ -1,0 +1,20 @@
+{
+  "about": "One table welds the pre-rite kūkulu reading: rite-command.test.ts reads each row through kukuluHand (rite-kukulu.ts) and through riteKukulu itself with no terminal; tools/lares-container.test.mjs plants the same facts behind the shim's `pulama status` and reads its line. Unnamed facts read vessel standing, current false, admitted false, offer false. `lei`: true (a return left), \"absent\", \"returns-spent\", or null (unread).",
+  "rows": [
+    { "name": "level-lei", "facts": { "pulama": "level", "lit": true, "keeper": null, "lei": true }, "line": "runs alone" },
+    { "name": "level-no-lei", "facts": { "pulama": "level", "lit": true, "keeper": null, "lei": "absent" }, "line": "needs your hand: no standing kukulu lei (the pūlama's admit of the new image reads your route)" },
+    { "name": "level-current", "facts": { "pulama": "level", "lit": true, "keeper": null, "lei": "absent", "current": true }, "line": "runs alone" },
+    { "name": "level-spent", "facts": { "pulama": "level", "lit": true, "keeper": null, "lei": "returns-spent" }, "line": "needs your hand: the kukulu lei's returns lie spent" },
+    { "name": "level-down", "facts": { "pulama": "level", "lit": true, "keeper": null, "lei": null, "vessel": "down" }, "line": "needs your hand: no vessel stands to begin the rite (the pūlama's admit of the new image reads your route)" },
+    { "name": "level-unlit", "facts": { "pulama": "level", "lit": false, "keeper": null, "lei": true }, "line": "needs your hand: the pūlama stands unlit" },
+    { "name": "level-unread", "facts": { "pulama": "level", "lit": null, "keeper": null, "lei": true }, "line": "reads unknown: whether the pūlama stands lit, or what it runs (read it with `lares pulama status`)" },
+    { "name": "absent", "facts": { "pulama": "absent", "lit": null, "keeper": null, "lei": true }, "line": "needs your hand: no pūlama runs" },
+    { "name": "moved-lei-path-off", "facts": { "pulama": "moved", "lit": true, "keeper": null, "lei": true }, "line": "needs your hand: closure moved; keeper lei path off" },
+    { "name": "moved-no-lei", "facts": { "pulama": "moved", "lit": true, "keeper": null, "lei": "absent" }, "line": "needs your hand: closure moved; no standing kukulu lei" },
+    { "name": "moved-struck", "facts": { "pulama": "moved", "lit": true, "keeper": "struck-due", "lei": true }, "line": "needs your hand: closure moved; struck due" },
+    { "name": "moved-vests", "facts": { "pulama": "moved", "lit": true, "keeper": "vests", "lei": true }, "line": "keeper vests under your keeper commit" },
+    { "name": "moved-vests-no-lei", "facts": { "pulama": "moved", "lit": true, "keeper": "vests", "lei": "absent" }, "line": "needs your hand: closure moved; no standing kukulu lei" },
+    { "name": "moved-keeper-lei", "facts": { "pulama": "moved", "lit": true, "keeper": "lei", "lei": true }, "line": "keeper vests under the standing lei" },
+    { "name": "moved-keeper-lei-no-lei", "facts": { "pulama": "moved", "lit": true, "keeper": "lei", "lei": "absent" }, "line": "needs your hand: closure moved; no standing kukulu lei" }
+  ]
+}

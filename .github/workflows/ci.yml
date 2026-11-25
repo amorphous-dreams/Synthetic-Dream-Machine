@@ -201,6 +201,17 @@ jobs:
         run: |
           git fetch --no-tags --no-recurse-submodules --filter=blob:none --unshallow origin "${{ github.base_ref || 'develop' }}"
           node tools/trailer-keys.mjs "$(git merge-base FETCH_HEAD HEAD)..HEAD"
+      # THE PŪLAMA CLOSURE, NAMED (course pulama-unblur): whether this change moves the closure the pūlama runs, read at the head
+      # against its merge base with the base branch (a push to that branch itself reads against its parent), into the job
+      # summary. Informational, never a gate: the step cannot fail the job. This costs no build.
+      - name: Moves the pūlama closure (informational)
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        run: |
+          git fetch --no-tags --no-recurse-submodules --filter=blob:none origin "${{ github.base_ref || 'develop' }}"
+          base=$(git merge-base FETCH_HEAD HEAD)
+          [ "$base" != "$(git rev-parse HEAD)" ] || base=$(git rev-parse HEAD^)
+          node tools/pulama-closure-moves.mjs "$base" HEAD | tee -a "$GITHUB_STEP_SUMMARY"
       - name: Generated artifacts must be fresh (build emits no tracked diff)
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: |

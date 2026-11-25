@@ -305,6 +305,61 @@ export function leiClearing(refusal: string, branch: string, face?: number): str
 export const owesLight = (r: StandReading): boolean => r.pulama === "absent" || (r.pulama === "moved" && !(r.keeper === "vests" && r.lit === true)) || r.lit === false;
 
 /**
+ * THE FACTS A PRE-RITE READING READS (course pulama-unblur): the stand as the rite would read it for the checkout's head, before
+ * any image builds. `pulama` compares the checkout's closure with the running pūlama's; `keeper` adds `lei` where the pūlama names
+ * `leiReady` (the kukulu lei could license the keeper's commit); `lei` reads as `leiStands` answers (true: a kukulu lei stands
+ * on the line with a return left); `current`, `admitted` and `offer` name the image the vessel already runs, where it carries the head.
+ */
+export interface HandFacts {
+  readonly pulama: StandReading["pulama"];
+  readonly lit: boolean | null;
+  readonly keeper?: "vests" | "struck-due" | "lei" | null;
+  readonly vessel: "standing" | "down";
+  readonly current: boolean;
+  readonly admitted: boolean | null;
+  readonly offer: boolean;
+  readonly lei: boolean | string | null;
+}
+
+/**
+ * WHETHER THE NEXT KŪKULU NEEDS A HAND (course pulama-unblur): one line, read off the facts a no-terminal rite reads and through
+ * the same gates it walks (the light `owesLight` names, the admit gate, a spent lei's begin), so the reading and the rite never
+ * disagree. `tools/lares-container.sh pulama status` prints the same line from the shim's own facts (one table welds the two).
+ *   runs alone                            the rite raises with no route
+ *   keeper vests under your keeper commit the living fire passes to the successor the hand named ahead
+ *   keeper vests under the standing lei   the kukulu lei licenses the keeper's commit and the fire passes with no route
+ *   needs your hand: <why>                a no-terminal rite stops and names `lares rite kukulu` on a terminal
+ *   reads unknown: <why>                  the rite stops before anything moves (`kukulu-pulama-unread`)
+ */
+export function kukuluHand(f: HandFacts): string {
+  if (f.pulama === "off") return "runs alone";
+  if (f.pulama === "unread" || (f.pulama !== "absent" && f.pulama !== "moved" && f.lit === null)) return "reads unknown: whether the pūlama stands lit, or what it runs (read it with `lares pulama status`)";
+  const moved = f.pulama === "moved";
+  const leiOk = f.lei === true;
+  // The rite's leiGone: an absent lei, or one that stands not for a cause other than spent returns (a spent lei meets its begin).
+  const leiGone = f.lei === false || (typeof f.lei === "string" && f.lei !== RETURNS_SPENT_REFUSAL);
+  const byLei = moved && f.keeper === "lei" && f.lit === true && leiOk;
+  const keeper = byLei ? "vests" : leiGone && f.keeper === "vests" ? null : f.keeper === "lei" ? null : f.keeper ?? null;
+  const read: StandReading = { revision: "", image: "", how: "stood", vessel: f.vessel, current: f.current, pulama: f.pulama, keeper, lit: f.lit, admitted: f.admitted, offer: f.offer };
+  if (owesLight(read)) {
+    const why = f.pulama === "absent" ? "no pūlama runs"
+      : f.lit === false ? "the pūlama stands unlit"
+      : keeper === "struck-due" ? "closure moved; struck due"
+      : !leiOk ? "closure moved; no standing kukulu lei"
+      : "closure moved; keeper lei path off";
+    return `needs your hand: ${why}`;
+  }
+  if (f.current && !moved) return "runs alone";
+  // THE ADMIT GATE: a new vessel enters on an admission, a resting offer, or a begun rite (a kukulu lei's return spent).
+  const begins = f.vessel === "standing" && leiOk;
+  if (f.vessel === "standing" && f.lei === RETURNS_SPENT_REFUSAL) return "needs your hand: the kukulu lei's returns lie spent";
+  if (!begins && f.admitted !== true && !f.offer) return `needs your hand: ${f.vessel === "down" ? "no vessel stands to begin the rite" : "no standing kukulu lei"} (the pūlama's admit of the new image reads your route)`;
+  if (byLei) return "keeper vests under the standing lei";
+  if (moved && keeper === "vests") return "keeper vests under your keeper commit";
+  return "runs alone";
+}
+
+/**
  * `face` names the face the begin's and the offer's sessions act as where several faces stand open; each row still gathers
  * every lent face, one lei and one vouch apiece. Naming none, the rows name none, and their sessions ride the face the operator
  * wears. `rollback` stands the image that ran before (`true`) or the image of an older revision, with no checkout move.

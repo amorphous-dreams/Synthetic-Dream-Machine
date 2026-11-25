@@ -1336,6 +1336,108 @@ print_reading() {
   printf '{"op":"rebuild-image","revision":"%s","image":"%s","how":"%s","vessel":"%s","current":%s,"pulama":"%s","lit":%s,"admitted":%s,"offer":%s%s%s}\n' \
     "$R_REV" "$rd_image" "$R_HOW" "$rd_vessel" "$rd_current" "$rd_pulama" "$rd_lit" "$rd_admitted" "$rd_offer" "$rd_keeper" "$rd_at"
 }
+# THE KŪKULU READING (course pulama-unblur): before any rite, one line says whether the next `lares rite kukulu` runs alone or
+# needs a hand, read off the checkout's own closure (tools/pulama-closure.mjs over a fresh archive of HEAD, the tree a build reads)
+# against the running pūlama's label, the pūlama's own status (lit, struckDue, vestReady, leiReady, pending), the kukulu lei on
+# the checkout's branch (`lei show` in the standing vessel) and the image the vessel runs. The verdict walks the gates the rite
+# walks with no terminal (packages/lares-cli/src/rite-kukulu.ts `kukuluHand`); one table welds the two (lares-container.test.mjs).
+kukulu_reading() {
+  kr_top=$(git -C "$SHIM_DIR" rev-parse --show-toplevel 2>/dev/null) || kr_top=""
+  kr_head=""; kr_branch=""; kr_mine=""
+  if [ -n "$kr_top" ]; then
+    kr_head=$(git -C "$kr_top" rev-parse HEAD 2>/dev/null) || kr_head=""
+    kr_branch=$(git -C "$kr_top" rev-parse --abbrev-ref HEAD 2>/dev/null) || kr_branch=""
+  fi
+  kr_paths=""
+  for kr_p in packages pnpm-workspace.yaml tsconfig.base.json pnpm-lock.yaml; do
+    [ -z "$kr_head" ] || ! git -C "$kr_top" cat-file -e "$kr_head:$kr_p" 2>/dev/null || kr_paths="$kr_paths $kr_p"
+  done
+  if [ -n "$kr_paths" ] && command -v node >/dev/null 2>&1 && kr_ctx=$(mktemp -d); then
+    # shellcheck disable=SC2086
+    if git -C "$kr_top" archive --format=tar "$kr_head" -- $kr_paths 2>/dev/null | tar -xf - -C "$kr_ctx" 2>/dev/null; then
+      kr_mine=$(node "$HERE/pulama-closure.mjs" "$kr_ctx" 2>/dev/null | tr -d '\r') || kr_mine=""
+    fi
+    rm -rf -- "$kr_ctx"
+  fi
+  printf '%s' "$kr_mine" | grep -Eq '^sha256:[0-9a-f]{64}$' || kr_mine=""
+  kr_at=$(printf '%s' "${kr_head:-no-head}" | cut -c1-12)
+  if [ -z "$kr_mine" ]; then
+    printf "lares-container: kūkulu at %s: reads unknown: the checkout's pūlama closure reads nowhere (no host node, no checkout, or no pūlama entry)\n" "$kr_at" >&2
+    return 0
+  fi
+  # THE PŪLAMA AGAINST THE CHECKOUT: absent, level (the same closure), moved (another, or none labelled), unread.
+  kr_pulama=unread; kr_ran=""; kr_lit=""; kr_keeper=""
+  if kr_id=$(compose --profile pulama ps -q --status running "$(pulama_svc)" 2>/dev/null); then
+    if [ -z "$kr_id" ]; then kr_pulama=absent
+    else
+      kr_ran=$(closure_label container "$kr_id")
+      if [ -n "$kr_ran" ] && [ "$kr_ran" = "$kr_mine" ]; then kr_pulama=level; else kr_pulama=moved; fi
+    fi
+  fi
+  # THE VESSEL: whether one stands, and whether it already runs the image of the checkout's head (its revision label).
+  kr_vessel=down; kr_current=false; kr_image=""
+  kr_vid=$(compose ps -q --status running lares 2>/dev/null) || kr_vid=""
+  kr_vid=$(printf '%s\n' "$kr_vid" | tr -d '\r' | sed -n '1p')
+  if [ -n "$kr_vid" ]; then
+    kr_vessel=standing
+    kr_image=$(docker inspect --format '{{.Image}}' "$kr_vid" 2>/dev/null | tr -d '\r') || kr_image=""
+    if [ -n "$kr_image" ] && [ "$(label_of "$kr_image")" = "$kr_head" ]; then kr_current=true; fi
+  fi
+  kr_admitted=false; kr_offer=false
+  case "$kr_pulama" in
+    absent|unread) ;;
+    *) pulama_status_read "$kr_image"
+       kr_lit=$ps_lit
+       if [ "$kr_current" = true ]; then
+         [ "$ps_admitted" != yes ] || kr_admitted=true
+         ! offer_carries "$kr_image" || kr_offer=true
+       fi
+       if [ "$kr_pulama" = moved ]; then
+         if [ -n "$ps_struck" ]; then kr_keeper=struck-due
+         elif [ -n "$ps_vest" ] && [ "$ps_vest" = "$kr_mine" ]; then kr_keeper=vests
+         elif [ -n "$ps_lei" ] && [ "$ps_lit" = yes ] && [ -z "$ps_pending" ]; then kr_keeper=lei; fi
+       fi ;;
+  esac
+  # THE KUKULU LEI on the checkout's branch, as the rite's leiStands reads it: yes (a return left), or the cause it stands not.
+  kr_lei=""
+  if [ "$kr_vessel" = standing ] && [ -n "$kr_branch" ]; then
+    kr_lei=$(compose exec -T lares node "$CLI" lei show --rite kukulu --branch "$kr_branch" --json </dev/null 2>/dev/null | node -e '
+      let s = ""; process.stdin.on("data", (d) => { s += d; }).on("end", () => {
+        let o; try { o = JSON.parse(s.trim().split("\n").at(-1) ?? "").data; } catch { return; }
+        if (!o || typeof o !== "object") return;
+        const read = (Array.isArray(o.faces) ? o.faces.map((f) => f.lei) : [o.lei]).filter((l) => typeof l === "object" && l !== null);
+        if (read.length === 0) return;
+        if (read.some((l) => l.standing === true && Number(l.returnsLeft ?? 0) > 0)) { process.stdout.write("yes"); return; }
+        const causes = read.map((l) => (l.standing === true ? "returns-spent" : typeof l.refusal === "string" ? l.refusal : null));
+        if (causes.every((c) => c === null)) return;
+        process.stdout.write(causes.find((c) => c !== null && c !== "absent") ?? "absent");
+      });' 2>/dev/null) || kr_lei=""
+  fi
+  # THE VERDICT, gate by gate as the rite walks them with no terminal (rite-kukulu.ts `kukuluHand`).
+  kr_lei_ok=""; kr_lei_gone=""
+  case "$kr_lei" in yes) kr_lei_ok=yes ;; ''|returns-spent) ;; *) kr_lei_gone=yes ;; esac
+  kr_by_lei=""
+  if [ "$kr_pulama" = moved ] && [ "$kr_keeper" = lei ] && [ "$kr_lit" = yes ] && [ -n "$kr_lei_ok" ]; then kr_by_lei=yes; kr_keeper=vests
+  elif [ "$kr_keeper" = lei ] || { [ "$kr_keeper" = vests ] && [ -n "$kr_lei_gone" ]; }; then kr_keeper=""; fi
+  if [ "$kr_pulama" = unread ] || { [ "$kr_pulama" = level ] && [ -z "$kr_lit" ]; }; then
+    # shellcheck disable=SC2016
+    kr_say='reads unknown: whether the pūlama stands lit, or what it runs (read it with `lares pulama status`)'
+  elif [ "$kr_pulama" = absent ]; then kr_say='needs your hand: no pūlama runs'
+  elif [ "$kr_lit" = no ]; then kr_say='needs your hand: the pūlama stands unlit'
+  elif [ "$kr_pulama" = moved ] && ! { [ "$kr_keeper" = vests ] && [ "$kr_lit" = yes ]; }; then
+    if [ "$kr_keeper" = struck-due ]; then kr_say='needs your hand: closure moved; struck due'
+    elif [ -z "$kr_lei_ok" ]; then kr_say='needs your hand: closure moved; no standing kukulu lei'
+    else kr_say='needs your hand: closure moved; keeper lei path off'; fi
+  elif [ "$kr_current" = true ] && [ "$kr_pulama" != moved ]; then kr_say='runs alone'
+  elif [ "$kr_vessel" = standing ] && [ "$kr_lei" = returns-spent ]; then kr_say="needs your hand: the kukulu lei's returns lie spent"
+  elif ! { [ "$kr_vessel" = standing ] && [ -n "$kr_lei_ok" ]; } && [ "$kr_admitted" != true ] && [ "$kr_offer" != true ]; then
+    if [ "$kr_vessel" = down ]; then kr_say="needs your hand: no vessel stands to begin the rite (the pūlama's admit of the new image reads your route)"
+    else kr_say="needs your hand: no standing kukulu lei (the pūlama's admit of the new image reads your route)"; fi
+  elif [ -n "$kr_by_lei" ]; then kr_say='keeper vests under the standing lei'
+  elif [ "$kr_pulama" = moved ] && [ "$kr_keeper" = vests ]; then kr_say='keeper vests under your keeper commit'
+  else kr_say='runs alone'; fi
+  printf 'lares-container: kūkulu at %s: %s · closure %s · pūlama %s\n' "$kr_at" "$kr_say" "$(printf '%s' "$kr_mine" | cut -c1-19)" "$(if [ -n "$kr_ran" ]; then printf '%s' "$kr_ran" | cut -c1-19; else printf none; fi)" >&2
+}
 HAND_LINE='your hand: lares rite kukulu on a terminal'
 # THE KEEP AFTER THE RAISE: a keep a down left owed (`run/keep-owed`, this run's or an earlier one's) runs again once the new
 # vessel's census reads clean, so a restand never skips the keep silently; a census that still names items defers it by name.
@@ -1781,7 +1883,7 @@ case "$verb" in
         keeper_settle
         compose --profile pulama exec -T "$(pulama_svc)" node "$PULAMA_MAIN" status </dev/null ;;
       status|tessera)
-        [ "$1" != status ] || warn_pulama_skew
+        if [ "$1" = status ]; then warn_pulama_skew; kukulu_reading; fi
         # light reads the operator's route on a real terminal inside the pūlama, never through a pipe.
         # shellcheck disable=SC2046
         compose --profile pulama exec $(tty_flag) "$(pulama_svc)" node "$PULAMA_MAIN" "$1" ;;

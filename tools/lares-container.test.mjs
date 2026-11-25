@@ -10,6 +10,7 @@ import assert from "node:assert/strict";
 import { mkdir, mkdtemp, readFile, readdir, writeFile, chmod, rm, stat } from "node:fs/promises";
 import { readFileSync } from "node:fs";
 import { spawn, spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { test } from "node:test";
@@ -104,6 +105,8 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       `case " $* " in *"pulama-main.js keeper-vest"*) printf '%s\\n' "\${FAKE_VEST_ANSWER:-}"; exit "\${FAKE_VEST_RC:-0}";; esac\n` +
       `case " $* " in *"pulama-main.js keeper-receive"*) printf '%s\\n' "\${FAKE_RECEIVE_ANSWER:-{\\"reading\\":\\"landed\\"}}"; exit "\${FAKE_RECEIVE_RC:-0}";; esac\n` +
       `case " $* " in *"pulama-main.js status"*) lit='{"op":"status","lit":true}'; if [ -e "$CALL_LOG.lit" ] && [ -n "\${FAKE_PULAMA_STATUS_AFTER:-}" ]; then printf '%s\\n' "\${FAKE_PULAMA_STATUS_AFTER}"; else printf '%s\\n' "\${FAKE_PULAMA_STATUS-$lit}"; fi; exit 0;; esac\n` +
+      // THE KUKULU LEI on a branch, as the standing vessel's `lei show --json` answers it (the kūkulu reading reads it).
+      `case " $* " in *" lei show --rite kukulu "*) printf '%s\\n' "\${FAKE_LEI_SHOW:-}"; exit 0;; esac\n` +
       `case " $* " in *" lei terms "*) printf '%s\\n' "\${FAKE_LEI_TERMS:-}"; exit "\${FAKE_TERMS_RC:-0}";; esac\n` +
       `case " $* " in *" rite receipts "*) printf '%s\\n' "\${FAKE_RECEIPTS:-}"; exit "\${FAKE_RECEIPTS_RC:-0}";; esac\n` +
       `case " $* " in *"pulama-main.js lei "*) case " $* " in *" exec --no-TTY=false pulama "*) ;; *) printf '%s\\n' '[pulama] a lei reads its route from a real terminal alone'; exit 1;; esac; printf '%s\\r\\n' 'pūlama route, to kui a push lei: '; [ -z "\${FAKE_LEI_ANSWER:-}" ] || printf '%s\\n' "\${FAKE_LEI_ANSWER}" | node -e 'let s="";process.stdin.on("data",(d)=>s+=d).on("end",()=>process.stdout.write(JSON.stringify(JSON.parse(s),null,2).split("\\n").join("\\r\\n")+"\\r\\n"))'; exit "\${FAKE_LEI_RC:-0}";; esac\n` +
@@ -2285,6 +2288,84 @@ test(`${name}: pulama light reaches the pūlama's hand verb, and pulama down sto
   assert.match(bad.stderr, /pulama takes/);
 });
 }
+
+// THE CLOSURE NAMES ITS MEMBERS IN ONE ORDER (course pulama-unblur): `--list` prints each `<sha256>  <path>` it hashes, sorted by
+// path, the same lines on every read, and the digest hashes exactly those lines.
+test("pulama-closure: --list names every member it hashes, sorted by path and the same on each read, and the digest hashes those lines", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "pulama-closure-"));
+  try {
+    await plantPulamaTree(dir);
+    const read = (...a) => { const r = spawnSync("node", [join(ROOT, "tools/pulama-closure.mjs"), dir, ...a], { encoding: "utf8" }); assert.equal(r.status, 0, r.stderr); return r.stdout; };
+    const list = read("--list");
+    assert.equal(read("--list"), list, "two reads name the same members");
+    const paths = list.trim().split("\n").map((l) => l.replace(/^[0-9a-f]{64}  /, ""));
+    assert.deepEqual(paths, [...paths].sort(), "members print sorted by path");
+    assert.deepEqual(paths, ["packages/lararium-mesh/package.json", "packages/lararium-mesh/src/index.ts", "packages/lararium-node/package.json", "packages/lararium-node/src/pulama-a.ts", "packages/lararium-node/src/pulama-main.ts"]);
+    assert.equal(read().trim(), `sha256:${createHash("sha256").update(list).digest("hex")}`);
+  } finally { await rm(dir, { recursive: true, force: true }); }
+});
+
+// A PULL REQUEST NAMES WHETHER IT MOVES THE CLOSURE (course pulama-unblur): tools/pulama-closure-moves.mjs reads two revisions of a
+// checkout and prints `yes` with the members that moved, `no`, or `unread`; every reading exits 0, informational in CI.
+test("pulama-closure-moves: a commit the pūlama never reaches reads no; one it reaches reads yes and names the member; an unknown revision reads unread; all exit 0", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "pulama-closure-moves-"));
+  try {
+    await plantPulamaTree(dir);
+    const git = (...a) => spawnSync("git", ["-C", dir, "-c", "user.name=t", "-c", "user.email=t@t", ...a], { encoding: "utf8" });
+    git("init", "-q"); git("add", "."); git("commit", "-qm", "seed");
+    await writeFile(join(dir, "packages/lararium-node/src/main.ts"), "export const vessel = 9;\n");
+    git("commit", "-qam", "vessel only");
+    await writeFile(join(dir, "packages/lararium-node/src/pulama-a.ts"), "export const a = 9;\n");
+    git("commit", "-qam", "pulama");
+    const moves = (...a) => spawnSync("node", [join(ROOT, "tools/pulama-closure-moves.mjs"), ...a], { cwd: dir, encoding: "utf8", env: { ...process.env, GIT_CEILING_DIRECTORIES: tmpdir() } });
+    const no = moves("HEAD~2", "HEAD~1");
+    assert.equal(no.status, 0, no.stderr);
+    assert.match(no.stdout, /^moves the pūlama closure: no \(sha256:[0-9a-f]{12}\)$/m);
+    const yes = moves("HEAD~1", "HEAD");
+    assert.equal(yes.status, 0, yes.stderr);
+    assert.match(yes.stdout, /^moves the pūlama closure: yes \(sha256:[0-9a-f]{12} -> sha256:[0-9a-f]{12}\)/m);
+    assert.match(yes.stdout, /^- `packages\/lararium-node\/src\/pulama-a\.ts` moves$/m);
+    assert.doesNotMatch(yes.stdout, /main\.ts/);
+    const unread = moves("no-such-rev", "HEAD");
+    assert.equal(unread.status, 0);
+    assert.match(unread.stdout, /^moves the pūlama closure: unread \(no-such-rev: /m);
+    assert.equal(moves().status, 2);
+  } finally { await rm(dir, { recursive: true, force: true }); }
+});
+
+// THE KŪKULU READING (course pulama-unblur): `pulama status` names, from the checkout's closure against the running pūlama's, the
+// pūlama's status and the kukulu lei on the checkout's branch, whether the next kūkulu runs alone or needs a hand. One table
+// (packages/lares-cli/tests/fixtures/kukulu-hand.json) welds this line to rite-kukulu.ts `kukuluHand` and to the rite itself.
+test("sh: pulama-status-names-the-kukulu-reading: each row of the shared table reads its one line behind `pulama status`", async () => {
+  const table = JSON.parse(await readFile(join(ROOT, "packages/lares-cli/tests/fixtures/kukulu-hand.json"), "utf8"));
+  const planted = await mkdtemp(join(tmpdir(), "pulama-closure-"));
+  let mine;
+  try { await plantPulamaTree(planted); mine = spawnSync("node", [join(ROOT, "tools/pulama-closure.mjs"), planted], { encoding: "utf8" }).stdout.trim(); }
+  finally { await rm(planted, { recursive: true, force: true }); }
+  const leiShow = { true: { standing: true, returnsLeft: 3 }, absent: { refusal: "absent" }, "returns-spent": { standing: true, returnsLeft: 0 } };
+  for (const row of table.rows) {
+    const f = { vessel: "standing", current: false, keeper: null, ...row.facts };
+    const status = { op: "status", ...(f.lit === null ? {} : { lit: f.lit }), ...(f.keeper === "struck-due" ? { keeper: { struckDue: true } } : {}), ...(f.keeper === "vests" ? { vestReady: mine } : {}), ...(f.keeper === "lei" ? { leiReady: true } : {}) };
+    const env = {
+      FAKE_IMAGE_ID: "sha256:new",
+      ...(f.pulama === "absent" ? {} : { FAKE_PULAMA_ID: "p1", FAKE_PULAMA_IMAGE: "sha256:old", FAKE_PULAMA_CLOSURE: f.pulama === "level" ? mine : `sha256:${"b".repeat(64)}`, FAKE_PULAMA_STATUS: JSON.stringify(status) }),
+      ...(f.vessel === "standing" ? { FAKE_RUNNING_ID: "cid", FAKE_VESSEL_IMAGE: "sha256:vimg", FAKE_IMAGE_REV_LABEL: f.current ? "@HEAD@" : "f".repeat(40) } : {}),
+      ...(f.lei === null ? {} : { FAKE_LEI_SHOW: JSON.stringify({ ok: true, data: { lei: leiShow[String(f.lei)] } }) }),
+    };
+    const r = await run(SH, ["pulama", "status"], { envFile: PULAMA_ENV, checkout: "pulama", env });
+    assert.equal(r.status, 0, `${row.name}: ${r.stderr}`);
+    const said = /^lares-container: kūkulu at [0-9a-f]{12}: (.*) · closure (sha256:[0-9a-f]{12}) · pūlama (\S+)$/m.exec(r.stderr);
+    assert.ok(said, `${row.name}: no kūkulu line in ${r.stderr}\nCALLS ${r.calls}`);
+    assert.equal(said[1], row.line, row.name);
+    assert.equal(said[2], mine.slice(0, 19), `${row.name}: the line names the checkout's closure`);
+    if (f.lei !== null && f.vessel === "standing") assert.match(r.calls, /exec -T lares node \S+ lei show --rite kukulu --branch \S+ --json/, row.name);
+  }
+  // No closure reads (a checkout with no pūlama entry): the line says so, and the status still answers.
+  const bare = await run(SH, ["pulama", "status"], { envFile: PULAMA_ENV, checkout: "clean", env: { FAKE_PULAMA_ID: "p1" } });
+  assert.equal(bare.status, 0, bare.stderr);
+  assert.match(bare.stderr, /^lares-container: kūkulu at [0-9a-f]{12}: reads unknown: the checkout's pūlama closure reads nowhere/m);
+  assert.match(bare.calls, /pulama-main\.js status/);
+});
 
 // THE PŪLAMA'S CODE CLOSURE (tools/pulama-closure.mjs): a vessel-only change keeps the digest; a change the pūlama reaches moves it.
 test("pulama-closure: a vessel-only change keeps the digest; a module the entry imports, or a workspace package it imports, moves it", async () => {
