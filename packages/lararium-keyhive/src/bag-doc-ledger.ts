@@ -14,30 +14,39 @@ export interface BagDocLedger {
 
 /**
  * What a durable registration did: each bag whose recorded Document this stand held no hand in, so a fresh Document took its
- * place (`remintBag`). Content sealed under the Document that left stays unreadable to this face.
+ * place (`remintBag`). Content sealed under the Document that left stays unreadable to this face. `commit` puts the rows a held
+ * registration kept back (an ordinary one put each as it registered, so its commit moves nothing).
  */
-export interface DurableRegistration { readonly reminted: readonly string[] }
+export interface DurableRegistration { readonly reminted: readonly string[]; commit(): Promise<void> }
 
-export async function registerBagsDurably({ provider, bags, ledger }: {
+/**
+ * Register each bag on the provider, adopting the Document the ledger records where this stand holds a hand in it. `hold` (a
+ * recard's stale pass) keeps every row back: the Documents it mints ride a card whose secret only the Archive after it holds, so
+ * the caller commits the rows once that Archive rests, and a recard refused `archive-unrested` leaves the ledger as it stood.
+ */
+export async function registerBagsDurably({ provider, bags, ledger, hold = false }: {
   provider: CapabilityProvider;
   bags: readonly string[];
   ledger: BagDocLedger;
+  hold?: boolean;
 }): Promise<DurableRegistration> {
   const reminted: string[] = [];
+  const held: Array<readonly [string, string]> = [];
+  const rest = async (bag: string, docId: string): Promise<void> => { if (hold) held.push([bag, docId]); else await ledger.put(bag, docId); };
   for (const bag of bags) {
     const recorded = await ledger.get(bag);
     if (recorded) {
       provider.adoptBag(bag, recorded);
       if (await provider.holdsHand(bag)) continue;
       const { docId } = await provider.remintBag(bag);
-      await ledger.put(bag, docId);
+      await rest(bag, docId);
       reminted.push(bag);
     } else {
       const { docId } = await provider.registerBag(bag);
-      await ledger.put(bag, docId);
+      await rest(bag, docId);
     }
   }
-  return { reminted };
+  return { reminted, commit: async () => { for (const [bag, docId] of held.splice(0)) await ledger.put(bag, docId); } };
 }
 
 async function titleFor(bag: string, vessel: boolean, face?: string): Promise<string> {

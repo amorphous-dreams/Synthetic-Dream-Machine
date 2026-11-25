@@ -187,9 +187,13 @@ describe("a document named for a sealed bag before its first byte maps as the ba
     await store.save(["sealed-then-dropped", "incremental", "b"], A.save(A.from({ note: SECRET })));
     expect(store.heldRefusalOf("sealed-then-dropped")).toBe("save-unmapped");
     expect(await store.load(["sealed-then-dropped", "incremental", "b"])).toBeUndefined();
+    // receipt-roads-hold-alike row 5: the RANGE read keeps the same law, so a sealed-class save waiting unmapped never rides a
+    // loadRange back as if it were clear (it did: the waiting walk pushed every entry under the prefix).
+    expect((await store.loadRange(["sealed-then-dropped"])).filter((c) => c.key[2] === "b")).toEqual([]);
     // AN UNNAMED SAVE reads back from memory.
     await store.save(["an-unnamed-push", "incremental", "a"], Uint8Array.of(7));
     expect(await store.load(["an-unnamed-push", "incremental", "a"])).toEqual(Uint8Array.of(7));
+    expect((await store.loadRange(["an-unnamed-push"])).map((c) => c.data)).toEqual([Uint8Array.of(7)]);
   });
 
   test("M7 RED — an unnamed row reads content-free only where its sync states alone wait; any held content save, a peer's push among them, keeps it owed; its age leaves with its last save", async () => {

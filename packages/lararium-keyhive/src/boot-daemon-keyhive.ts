@@ -20,6 +20,7 @@
 
 import { KeyhiveProvider, PrekeySecretAbsent } from "./keyhive-provider.js";
 import { registerBagsDurably, type BagDocLedger, type DurableRegistration } from "./bag-doc-ledger.js";
+import type { ArchiveFloorOutcome } from "./archive-floor-write.js";
 import type { CapabilityProviderInitOpts, ProviderChunkRest } from "./capability-provider.js";
 import { checkFacePins, leaseEpochUnderAnchor, type FaceAnchor } from "@lararium/mesh/face-anchor";
 import { verifyEdgeAgainstPersonaKel, type PersonaKelEvent } from "@lararium/mesh/persona-kel";
@@ -89,7 +90,8 @@ export interface BootDaemonKeyhiveInput {
   readonly recard?: true;
 }
 
-/** What a recard did: whether the stand met the fault at all, and each bag whose recorded Document it could not hold. */
+/** What a recard did: whether the stand met the fault at all, and each bag whose recorded Document it could not hold; a stale
+ *  pass's ledger rows wait on `commit`, which the caller runs once the Archive after the card rests. */
 export interface BootDaemonKeyhiveRecard extends DurableRegistration { readonly stale: boolean }
 
 export interface BootDaemonKeyhiveResult {
@@ -103,6 +105,35 @@ export interface BootDaemonKeyhiveResult {
   readonly unreadable: string | null;
   /** Present where the input asked a recard: what it did. */
   readonly recard?: BootDaemonKeyhiveRecard;
+}
+
+/**
+ * THE RECARD'S REGISTRATION: an ordinary pass first; where it meets `PrekeySecretAbsent`, the card mints FIRST (rotating in a
+ * prekey whose secret this stand holds) and the registration runs again, HOLDING its ledger rows, since every Document it mints
+ * now rides a card whose secret only the Archive after it holds. Nothing minted in the refused pass (the fault meets the first
+ * mint). A second fault refuses `still-refuses`.
+ */
+export async function recardRegistration(register: (hold: boolean) => Promise<DurableRegistration>, card: () => Promise<unknown>, face: string): Promise<BootDaemonKeyhiveRecard> {
+  try { return { stale: false, ...(await register(false)) }; }
+  catch (error) { if (!(error instanceof PrekeySecretAbsent)) throw error; }
+  await card();
+  try { return { stale: true, ...(await register(true)) }; }
+  catch (again) {
+    if (again instanceof PrekeySecretAbsent) throw new FaceRecardRefused("still-refuses", `face ${face.slice(0, 16)}… held no prekey secret even after its card; read \`lares vault status --verbose\` and keep the face dark`);
+    throw again;
+  }
+}
+
+/**
+ * THE RECARD LANDS ONLY WITH ITS ARCHIVE: a stale stand's card and its fresh Documents live in the Archive after the card alone,
+ * so a stale recard whose Archive rested nothing (or met a refusing row) refuses `archive-unrested` and commits no ledger row;
+ * past that check the rows the stale pass held rest. A stand that never met the fault held none, and commits as it lands.
+ */
+export async function landRecard(recard: BootDaemonKeyhiveRecard, floor: Pick<ArchiveFloorOutcome, "wrote" | "refusals" | "barred">, handle: string, handleIndex?: number): Promise<void> {
+  if (recard.stale && (floor.wrote.length === 0 || floor.refusals.length > 0)) {
+    throw new FaceRecardRefused("archive-unrested", `the Archive of face ${handle} did not rest after its card (${floor.refusals.map((r) => r.message).join("; ") || (floor.barred ? "the archive holds shut" : "no row took it")}), so its next light would hold no prekey secret again; it stays dark, and the recard spends its arm. Read the refusing row with \`lares vault status --verbose\` first; where custody reads locked, unlock it (\`lares vault unlock\`) so its Archive rows take writes, then \`${recardCommand(handleIndex)}\` again`);
+  }
+  await recard.commit();
 }
 
 /** The command that recards a face, by its handle where known. */
@@ -250,26 +281,21 @@ export async function bootDaemonKeyhive(input: BootDaemonKeyhiveInput): Promise<
   // dance + the affiliation layer; boot itself proves identity only and does not read them.
 
   // Register the operator's writable bags so cap checks resolve against lar: URIs.
-  const register = async (): Promise<DurableRegistration> => {
-    if (input.ledger) return registerBagsDurably({ provider: keyhive, bags: input.registerBags, ledger: input.ledger });
+  // A RECARD'S STALE PASS HOLDS ITS LEDGER ROWS (`hold`): the caller commits them once the Archive after the card rests.
+  const register = async (hold = false): Promise<DurableRegistration> => {
+    if (input.ledger) return registerBagsDurably({ provider: keyhive, bags: input.registerBags, ledger: input.ledger, hold });
     for (const bagUrl of input.registerBags) await keyhive.registerBag(bagUrl);
-    return { reminted: [] };
+    return { reminted: [], commit: async () => {} };
   };
   let recard: BootDaemonKeyhiveRecard | undefined;
-  if (input.recard) keyhive.markRecard();
-  try {
-    const registered = await register();
-    if (input.recard) recard = { stale: false, ...registered };
-  } catch (error) {
-    if (!(error instanceof PrekeySecretAbsent)) throw error;
-    if (!input.recard) throw new FaceHoldsNoPrekeySecret(input.faceVerifyingKey, error, input.handle);
-    // THE RECARD: the card mints FIRST, rotating in a prekey whose secret this stand holds, and the registration runs again;
-    // every Document it mints now rides that prekey. Nothing minted in the refused pass (the fault meets the first mint).
-    await keyhive.contactCard();
-    try { recard = { stale: true, ...(await register()) }; }
-    catch (again) {
-      if (again instanceof PrekeySecretAbsent) throw new FaceRecardRefused("still-refuses", `face ${input.faceVerifyingKey.slice(0, 16)}… held no prekey secret even after its card; read \`lares vault status --verbose\` and keep the face dark`);
-      throw again;
+  if (input.recard) {
+    keyhive.markRecard();
+    recard = await recardRegistration(register, () => keyhive.contactCard(), input.faceVerifyingKey);
+  } else {
+    try { await register(); }
+    catch (error) {
+      if (!(error instanceof PrekeySecretAbsent)) throw error;
+      throw new FaceHoldsNoPrekeySecret(input.faceVerifyingKey, error, input.handle);
     }
   }
 

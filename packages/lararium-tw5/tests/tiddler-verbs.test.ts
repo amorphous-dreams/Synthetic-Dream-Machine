@@ -293,6 +293,19 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     await expect(makeWikiRenderReactor(r.opts)({ ...A, title: "$:/temp/lares/secret" }, ctx())).rejects.toMatchObject({ reason: "tiddler-withheld" });
   });
 
+  // swarm-titles-stay-unreachable (offer-binder kāpae read, b9969f391): the kāpae read of unstring rows trusts that no seat writes
+  // under `$:/lares/swarm/` (the control document's swarm wiki). The door holds that law by name, not by a header comment: a put,
+  // a delete and a get at a swarm title refuse `tiddler-withheld`, so no wiki layer carries a row a swarm reader could mistake.
+  test("RED: a swarm title takes no put, no delete and answers no get through the tiddler door; CONTROL: another $:/lares/ title lands", async () => {
+    const r = await rig();
+    const SWARM = "$:/lares/swarm/lei-unstrung/" + "c".repeat(64);
+    await expect(makeTiddlerPutReactor(r.opts)({ ...A, title: SWARM, text: "{}" }, ctx())).rejects.toMatchObject({ reason: "tiddler-withheld" });
+    await expect(makeTiddlerDeleteReactor(r.opts)({ ...A, title: SWARM }, ctx())).rejects.toMatchObject({ reason: "tiddler-withheld" });
+    await expect(makeTiddlerGetReactor(r.opts)({ ...A, title: SWARM }, ctx())).rejects.toMatchObject({ reason: "tiddler-withheld" });
+    expect(r.engine.wiki.tiddlerExists(SWARM)).toBe(false);
+    expect(await makeTiddlerPutReactor(r.opts)({ ...A, title: "$:/lares/swarm-notes", text: "a note beside, not under" }, ctx())).toMatchObject({ decision: "put" });
+  });
+
   test("RED: an alert the house raises (`$:/temp/lares/alert/…`) reads through the one door, a get, a filter and a render alike, and takes no write; CONTROL: every other temp title still stays home", async () => {
     const r = await rig();
     const ALERT = "$:/temp/lares/alert/refused/module-unpinned/$:/plugins/x/evil.js";

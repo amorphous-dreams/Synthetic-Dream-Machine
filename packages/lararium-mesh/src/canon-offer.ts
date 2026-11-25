@@ -43,7 +43,7 @@ import { digestsEqual } from "./agile-digest.js";
 import { overrideBaseOf } from "./override-base.js";
 import { isHouseCanonBag } from "./kahu-canon-reach.js";
 import { projectionWithheld, resolvedTitlePath } from "./projection-filter.js";
-import { bagUri, CONTROL_HOME_ID, SECRET_HOME_ID } from "./lar-uris.js";
+import { bagUri, CONTROL_HOME_ID, SECRET_HOME_ID, SWARM_URI_PREFIX } from "./lar-uris.js";
 import type { LarTiddlerRecord } from "./tiddler-store.js";
 import { FloorManifestRefusal, cutCanonFloor, floorCarriesTier, floorSlugs, openFloorSnapshot, readFloorManifest, FLOOR_REQUIRED_SLUGS } from "./floor-manifest.js";
 import type { CapTier } from "./cap-tier.js";
@@ -162,11 +162,15 @@ const HOME_PREFIXES = [CONTROL_HOME_ID, SECRET_HOME_ID];
 const CAP_PATH = /^lar:\/\/\/ha\.ka\.ba\/bags\/[^/]+\/cap(?:\/|$)/;
 
 /**
- * Whether a title stays home: the projection filter's base (TW5's volatile namespaces: temp, state, status, story, history), the control and secret homes,
- * and every `cap/**` row under a bag home (`bags/<home>/cap/…`), read on the title's resolved path so no spelling slips past.
+ * Whether a title stays home: the projection filter's base (TW5's volatile namespaces: temp, state, status, story, history), the
+ * control and secret homes, the swarm's records (`$:/lares/swarm/`, which rest in the control document alone), and every `cap/**`
+ * row under a bag home (`bags/<home>/cap/…`), read on the title's resolved path so no spelling slips past. The swarm prefix holds
+ * by name, never by a header comment: the kāpae read of an unstring row trusts that no door writes one, so no wiki layer may carry
+ * a row a swarm reader could mistake for the control document's.
  */
 export function offerWithheldTitle(title: string): boolean {
   if (projectionWithheld(title)) return true;
+  if (title.startsWith(SWARM_URI_PREFIX)) return true;
   const path = resolvedTitlePath(title);
   if (HOME_PREFIXES.some((home) => path === home || path.startsWith(`${home}/`))) return true;
   return CAP_PATH.test(path);
