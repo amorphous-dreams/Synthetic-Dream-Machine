@@ -190,7 +190,7 @@ export const spiritAmbiguous = (pet: string, uris: readonly string[]): SpiritRef
   new SpiritRefusal("spirit-ambiguous", `spirit-ambiguous: the pet name "${pet}" answers at ${uris.join(" and ")}; the door guesses neither. Read both (\`lares tiddler get <uri> --recipe default --meme --skinny\`), then rename one: one pet name, one record`, 4);
 /** No record answers a pet name. */
 export const spiritUnknown = (pet: string): SpiritRefusal =>
-  new SpiritRefusal("spirit-unknown", `spirit-unknown: no record answers the pet name "${pet}" at ${MEMORY_PREFIX}familiar/${pet} or ${MEMORY_PREFIX}spirit/${pet}; list the records: \`lares wiki filter '[prefix[${MEMORY_PREFIX}familiar/]!regexp[#]] [prefix[${MEMORY_PREFIX}spirit/]!regexp[#]]' --recipe default\``, 3);
+  new SpiritRefusal("spirit-unknown", `spirit-unknown: no record answers the pet name "${pet}" at ${MEMORY_PREFIX}familiar/${pet}, ${MEMORY_PREFIX}spirit/${pet} or a card naming it at ${MEMORY_PREFIX}spirit-card/${pet}; list the records: \`lares wiki filter '[prefix[${MEMORY_PREFIX}familiar/]!regexp[#]] [prefix[${MEMORY_PREFIX}spirit/]!regexp[#]] [prefix[${MEMORY_PREFIX}spirit-card/]]' --recipe default\``, 3);
 /** A slot the record lacks. */
 export const slotMissing = (rec: Pick<SpiritRecord, "uri" | "slots" | "pet">, slot: string): SpiritRefusal =>
   new SpiritRefusal("spirit-slot-missing", `spirit-slot-missing: ${rec.uri} holds no slot ${slot}; its slots: ${rec.slots.map((s) => s.slot).join(" ") || "(none)"} (\`lares spirit hum ${rec.pet}\` measures each)`, 3);
@@ -574,3 +574,128 @@ export function burnLine(day: string, pet: string, title: string, text: string, 
 /** The ash line a burn closes on: how many burned, and what still stands. */
 export const burnTally = (day: string, pet: string, burned: readonly string[], burnable: readonly string[]): string =>
   `* ${day} · otakiage ${pet} burned ${burned.length} of ${burnable.length}${burned.length < burnable.length ? `; still standing: ${burnable.filter((t) => !burned.includes(t)).join(", ")}` : ""}`;
+
+// ── THE CARD-BACKED SPIRIT ────────────────────────────────────────────────────────────────────────────────────────
+/**
+ * A SPIRIT HOLDING A CARD ALONE (`spirit-card/<pet>`: metadata as fields, a text that transcludes its template) answers the
+ * slot verbs through its FIELDS: `#/<name>` reads and writes the card's field `<name>` (reference/tasked-spirit names the card
+ * "metadata as FIELDS only", and its brief bids each body "true it (`bodies`, `open`)"), so no shrine gets minted beside a
+ * card, and the template renders each truing where it already reads. These fields hold the card's identity and its frame, so
+ * no slot verb writes them.
+ */
+export const CARD_HELD_FIELDS: ReadonlySet<string> = new Set([
+  "title", "text", "tags", "type", "pet", "description", "created", "modified", "creator", "modifier", "revision", "bag",
+  "spirit-id", "slot-budget", "record-budget", "true-up-every", "distilled", "aliases",
+]);
+/** The card field a slot names (`#/open` -> `open`), or null where the slot names no writable field. */
+export function cardField(slot: string): string | null {
+  const name = /^#\/([a-z][a-z0-9-]{0,62})$/.exec(slot)?.[1];
+  return name === undefined || CARD_HELD_FIELDS.has(name) ? null : name;
+}
+/** A card field a slot verb never writes: the card's identity or frame, or a name no field takes. */
+export const cardSlotHeld = (rec: Pick<SpiritRecord, "uri" | "pet">, slot: string): SpiritRefusal =>
+  new SpiritRefusal("spirit-slot-held", `spirit-slot-held: ${rec.uri} answers ${slot} as no writable field (a card's slot names one lower-case field outside ${[...CARD_HELD_FIELDS].join(" ")}); nothing landed. The card's own fields: \`lares tiddler get ${shq(rec.uri)} --recipe default\``, 2);
+
+/** The record a card answers as: its fields as the slots, its record hash as the base every field write names. */
+export function cardRecordOf(pet: string, uri: string, out: Record<string, unknown>, sideFields: Record<string, string>): SpiritRecord {
+  const { fields, hash } = fieldsAndHashOf(out);
+  const slots = Object.keys(fields).filter((k) => cardField(`#/${k}`) !== null).sort().map((k) => {
+    const v = String(fields[k] ?? "");
+    return { slot: `#/${k}`, bytes: bytesOf(v), first: v.split("\n")[0] ?? null };
+  });
+  const base = hash ?? "";
+  return {
+    pet, uri, kind: "card", has: String(out["has"] ?? ""), base, bytes: slots.reduce((n, s) => n + s.bytes, 0), slots, fields,
+    budgets: { slot: fields["slot-budget"] === undefined ? null : countField(fields["slot-budget"], 0) || null, record: countField(fields["record-budget"], RECORD_BUDGET_BYTES) },
+    every: countField(fields["true-up-every"], TRUE_UP_EVERY),
+    id: PET_NAME.test(fields["spirit-id"] ?? "") ? fields["spirit-id"]! : null,
+    lease: leaseOf(sideFields["lease"]), distilled: sideFields["distilled"] || fields["distilled"] || null, crossing: sideFields["crossing"] || null,
+    side: sideOf(pet), sideFields,
+  };
+}
+
+// ── THE ʻĀLANA CIRCLE: THE OFFERING AND THE ECHO ──────────────────────────────────────────────────────────────────
+/**
+ * ʻĀLANA, THE OFFERING (docs/pono/spirit-circle #/the-circle). A summon sets the mandate (the lane's words and their sha256),
+ * the lane's memory pointer and the grant's slice on the spirit's shelf, `alana/<pet>`, a record the spirit door alone writes,
+ * BEFORE any body wakes. HOʻĀLA, THE WAKING: a body's om pulls the mandate and its hash through the door, and the body echoes
+ * the hash back (`ah <pet> --echo <hash> --body <id>`); the echo lands on the card's sibling record as `<pet>#<body> <hash>
+ * <seq>`, the seq door-minted, so no clock orders an echo. Where an offering stands, the door refuses a body's slot writes
+ * until that body's echo of the standing mandate stands (`spirit-unechoed`); a fresh offering asks every body to echo again.
+ * A spirit no summon offered (a familiar) writes as before. The grant rides as a declared slice: the leased register entry it
+ * names waits on its own talk-story (ruling 2026-11-25-alana-circle-code).
+ */
+export const ALANA_WORD = "alana" as const;
+export const ALANA_DISPLAY = "ʻālana" as const;
+/** The spirit's shelf: where its offering rests. */
+export const offeringOf = (pet: string): string => `${MEMORY_PREFIX}${ALANA_WORD}/${pet}`;
+/** A mandate's hash: the full sha256 hex of its words. */
+export const MANDATE_HASH = /^[0-9a-f]{64}$/;
+/** At most this many echoes stand on the sibling record, the highest seq kept; never dropped by age. */
+export const ECHO_CAP = 64;
+
+export interface SpiritOffering { readonly uri: string; readonly hash: string; readonly seq: number; readonly lane: string; readonly grant: string; readonly text: string }
+
+/** The offering the shelf holds, read from its fields; null where none stands (or its hash disagrees with its words). */
+export function offeringRead(pet: string, fields: Readonly<Record<string, string>>): SpiritOffering | null {
+  const hash = fields["mandate-hash"] ?? "";
+  const text = fields["text"] ?? "";
+  if (!MANDATE_HASH.test(hash) || sha256HexSync(text) !== hash) return null;
+  return { uri: offeringOf(pet), hash, seq: countField(fields["offer-seq"], 1), lane: fields["lane"] ?? "", grant: fields["grant"] ?? "", text };
+}
+
+/** The write an offering lands over the shelf's fields read: the words, their hash, the pointer, the slice, and the next door-minted seq. */
+export function offeringWrite(was: Readonly<Record<string, string>>, pet: string, words: string, lane: string, grant: string): { text: string; fields: Record<string, string>; hash: string; seq: number } {
+  const hash = sha256HexSync(words);
+  const seq = countField(was["offer-seq"], 0) + 1;
+  return {
+    text: words, hash, seq,
+    fields: { pet, "mandate-hash": hash, "offer-seq": String(seq), lane, grant, description: `${ALANA_DISPLAY} for ${pet}: the mandate a summon offered (seq ${seq}), its lane's memory and its grant's slice` },
+  };
+}
+
+export interface SpiritEcho { readonly tag: string; readonly body: string; readonly hash: string; readonly seq: number }
+/** The `echoes` field read: one `<pet>#<body> <mandate hash> <seq>` per line; a line that parses not drops. */
+export function echoesOf(raw: string | undefined): SpiritEcho[] {
+  return String(raw ?? "").split("\n").flatMap((line) => {
+    const m = /^(\S+#([A-Za-z0-9_-]{1,128})) ([0-9a-f]{64}) ([0-9]{1,15})$/.exec(line.trim());
+    return m ? [{ tag: m[1]!, body: m[2]!, hash: m[3]!, seq: Number(m[4]) }] : [];
+  });
+}
+/** A body's echo joins the sibling record: its own line replaced, seq = max + 1 inside the CAS write, the highest `ECHO_CAP` kept. */
+export function echoJoin(fields: Readonly<Record<string, string>>, pet: string, body: string, hash: string): { seq: number; write: SideWrite } {
+  const was = echoesOf(fields["echoes"]);
+  const seq = was.reduce((m, e) => Math.max(m, e.seq), 0) + 1;
+  const kept = [...was.filter((e) => e.body !== body), { tag: `${pet}#${body}`, body, hash, seq }].sort((x, y) => x.seq - y.seq).slice(-ECHO_CAP);
+  return { seq, write: { patch: { echoes: kept.map((e) => `${e.tag} ${e.hash} ${e.seq}`).join("\n") } } };
+}
+/** Does this body's echo of this mandate stand? */
+export const echoStands = (sideFields: Readonly<Record<string, string>>, body: string, hash: string): boolean =>
+  echoesOf(sideFields["echoes"]).some((e) => e.body === body && e.hash === hash);
+
+/** The two commands that cure an unechoed body: the om that hands the hash, the ah that echoes it. */
+const echoCure = (pet: string, body: string): string =>
+  `\`lares spirit om ${pet} --body ${body}\` (it hands the mandate's hash), then \`lares spirit ah ${pet} --echo <hash> --body ${body}\``;
+
+/**
+ * The gate a slot write passes where an offering stands: a write naming a body lands once that body's echo of the standing
+ * mandate stands; an AI seat naming no body names one first; a person's terminal writes freely. Null where it passes.
+ */
+export function echoRefusal(pet: string, offering: SpiritOffering | null, sideFields: Readonly<Record<string, string>>, body: string | null, seat: boolean): SpiritRefusal | null {
+  if (offering === null) return null;
+  if (body === null) {
+    if (!seat) return null;
+    return new SpiritRefusal("spirit-unechoed", `spirit-unechoed: ${pet} stands under an ${ALANA_DISPLAY} (mandate ${offering.hash.slice(0, 12)}, seq ${offering.seq}), and an AI seat's slot write names the body that echoed it; nothing landed. Name your body: ${echoCure(pet, "<id>")}, then write with --body <id>`, 4);
+  }
+  if (echoStands(sideFields, body, offering.hash)) return null;
+  return new SpiritRefusal("spirit-unechoed", `spirit-unechoed: ${pet}#${body} has echoed no hash of the standing ${ALANA_DISPLAY} (mandate ${offering.hash.slice(0, 12)}, seq ${offering.seq}), so its slot writes wait; nothing landed. Wake and echo: ${echoCure(pet, body)}`, 4);
+}
+
+/** The mandate a wake reads ahead of the carrier: its seq, hash, pointer, slice, words (cut) and the echo it asks. */
+export function mandateLines(pet: string, offering: SpiritOffering, body: string | null, echoed: boolean, cut = 1200): string {
+  const words = offering.text.length <= cut ? offering.text : `${offering.text.slice(0, cut)}\n… the mandate cut at ${cut} chars; read it whole: lares tiddler get ${shq(offering.uri)} --recipe default`;
+  const ask = echoed
+    ? `This body's echo stands (${pet}#${body}).`
+    : `Echo it before any slot write: lares spirit ah ${pet} --echo ${offering.hash} --body ${body ?? "<id>"}`;
+  return `${ALANA_DISPLAY} · the mandate offered ${pet} (seq ${offering.seq}) · hash ${offering.hash}\nlane: ${offering.lane || "(none named)"} · grant: ${offering.grant || "(none named)"}\n${words}\n${ask}`;
+}

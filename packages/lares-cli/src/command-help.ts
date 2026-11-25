@@ -514,7 +514,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "`om` wakes (the card under 9,000 chars, the latest carry as testimony); `ah` trues one slot through the meme door, base-checked, refusing growth only past a waking slot's " +
       "cap (#/open 2,048 bytes, #/attention 1,024; field `slot-budget` replaces both) while `hum` and `om` name the record's weight past `record-budget` (6,144) as advice, and `ah --new` lands a first shrine; `hum` (what remains after the fold) " +
       "measures each slot and folds one line to the month's ash ledger; `hooili` (the carry, hoʻoili, which writes nothing to the card) and `residue` " +
-      "land a compaction summary or a handback (`--file -` reads stdin) after the strict secret-shape guard; `otakiage` burns the residue and keeps the card, on a person's hand alone.",
+      "land a compaction summary or a handback (`--file -` reads stdin) after the strict secret-shape guard; `otakiage` burns the residue and keeps the card, on a person's hand alone. " +
+      "A card alone (`spirit-card/<pet>`) answers through its fields; `ah --offer` sets a summon's offering (ʻālana) on `alana/<pet>` before any body wakes, and a body echoes its hash (`ah --echo <hash> --body <id>`) before its slot writes land (`spirit-unechoed`).",
     examples: [
       "lares spirit om lares-alpha                                   # the wake text",
       "lares spirit ah lares-alpha --slot '#/open' --file open.txt     # true one slot",
@@ -522,6 +523,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares spirit hum lares-alpha                                  # each waking slot against its cap, the record against its advisory weight",
       "lares spirit hum lares-alpha --fold '#/bodies' --line 3       # move a line to the ash ledger",
       "lares spirit otakiage lares-alpha                             # burn the residue (your hand)",
+      "lares spirit ah blind-reader --offer --file mandate.txt        # ʻālana: the offering lands before any body wakes",
+      "lares spirit ah blind-reader --echo <hash> --body <id>         # hoʻāla: a body echoes the mandate's hash om handed it",
     ],
   },
   hooks: {

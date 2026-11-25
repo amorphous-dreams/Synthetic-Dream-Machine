@@ -70,12 +70,18 @@ describe.skipIf(wikiSkip)(`a spirit folds as a carrier by aperture${skipNote}`, 
     expect(commandsIn(text)).toEqual(SLOTS.filter((slot) => slot !== "#/entry").map((slot) => slotCommand(SHRINE, slot)));
   });
 
-  test("measure unfolds the entry, attention and open slots, and arc reads the same grain", () => {
+  test("measure unfolds the entry, attention and open slots", () => {
     const text = unfold("verb-wright", "measure");
     canonical(text);
     for (const slot of ["#/entry", "#/attention", "#/open"]) expect(text).toContain(carrierSlotText(CARRIER, slot)!);
     expect(commandsIn(text)).toEqual(SLOTS.filter((slot) => !["#/entry", "#/attention", "#/open"].includes(slot)).map((slot) => slotCommand(SHRINE, slot)));
-    expect(unfold("verb-wright", "arc").replace("aperture/arc", "aperture/measure")).toBe(text);
+  });
+
+  test("arc unfolds measure plus #/bodies, the path across turns, so a reader sees the spirit's lineage (ruling 2026-11-25-the-open-items-decided)", () => {
+    const text = unfold("verb-wright", "arc");
+    canonical(text);
+    for (const slot of ["#/entry", "#/attention", "#/open", "#/bodies"]) expect(text).toContain(carrierSlotText(CARRIER, slot)!);
+    expect(commandsIn(text)).toEqual(SLOTS.filter((slot) => !["#/entry", "#/attention", "#/open", "#/bodies"].includes(slot)).map((slot) => slotCommand(SHRINE, slot)));
   });
 
   test("theme unfolds every slot: each slot's span rides byte for byte and no slot command stands", () => {
@@ -148,8 +154,8 @@ describe("the fold's pure core", () => {
   });
 
   test("each rank names the slots it unfolds, and each rank narrows one grain at a time", () => {
-    expect(UNFOLD_OPEN).toEqual({ pulse: [], beat: ["#/entry"], measure: ["#/entry", "#/attention", "#/open"], arc: ["#/entry", "#/attention", "#/open"], theme: null });
-    expect(UNFOLD_RANKS.map((rank) => narrowerRank(rank))).toEqual([null, "pulse", "beat", "beat", "measure"]);
+    expect(UNFOLD_OPEN).toEqual({ pulse: [], beat: ["#/entry"], measure: ["#/entry", "#/attention", "#/open"], arc: ["#/entry", "#/attention", "#/open", "#/bodies"], theme: null });
+    expect(UNFOLD_RANKS.map((rank) => narrowerRank(rank))).toEqual([null, "pulse", "beat", "measure", "arc"]);
   });
 
   test("the call a door sends names the rank and the face, and a malformed word answers none", () => {

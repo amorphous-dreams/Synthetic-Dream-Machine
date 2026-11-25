@@ -48,6 +48,8 @@ const URI = `${MEMORY_PREFIX}familiar/lares-alpha`;
 const SIDE = `${MEMORY_PREFIX}presence/lares-alpha`;
 const CARD_PREFIX = `${MEMORY_PREFIX}spirit-card/`;
 const CARD = `${CARD_PREFIX}lares-alpha`;
+const ALANA = `${MEMORY_PREFIX}alana/lares-alpha`;
+const sha = (text: string): string => createHash("sha256").update(text).digest("hex");
 /** A slot's digest as the door hands it back: the first 16 hex of the sha256 of its body. */
 const digest = (body: string): string => createHash("sha256").update(body).digest("hex").slice(0, 16);
 const OPEN_CAP = WAKING_SLOT_BUDGETS["#/open"]!;
@@ -88,6 +90,10 @@ interface StageOpts {
   /** Slot patches answer `conflict` this many times, a sibling body's words landing first (`sibling`, by slot) at each. */
   patchConflicts?: number;
   sibling?: Record<string, string>;
+  /** The spirit's card (`spirit-card/lares-alpha`) fields, where one stands; a field put on it lands here and moves its hash. */
+  card?: Record<string, string>;
+  /** The shelf's offering (`alana/lares-alpha`) fields, text included, where one stands; a put on the shelf lands here. */
+  offering?: Record<string, string>;
 }
 
 /** A stage holding one familiar record (or two, or none); its slots hold these words, its fields these, every write answers by its verb. */
@@ -106,6 +112,7 @@ function stage(opts: StageOpts = {}) {
   let ledgerRefuse = opts.ledgerRefuse ?? 0;
   // The card's live canonical hash: its fields render into the carrier's meta, so a field put on the card moves it, as a slot patch does.
   let rev = 0;
+  let cardRev = 0;
   const live = (): string => (rev === 0 ? FULL : "sha256:" + rev.toString(16).padStart(2, "0").repeat(32));
   const isSide = (title: unknown): boolean => String(title).startsWith(`${MEMORY_PREFIX}presence/`);
   const texts: Record<string, string> = { "#/bodies": opts.bodies ?? "!! Bodies\n\n* one", "#/open": opts.open ?? "!! Open\n\n* a loop", ...(opts.slotTexts ?? {}) };
@@ -124,6 +131,8 @@ function stage(opts: StageOpts = {}) {
       const rank = /aperture:"([a-z]+)"/.exec(String(args["text"]))?.[1] ?? "";
       return { recipe: args["recipe"], form: args["form"], text: typeof opts.carrier === "function" ? opts.carrier(rank) : opts.carrier ?? "", truncated: opts.truncated === true, next: null };
     }
+    if (verb === "tiddler-get" && args["title"] === CARD && opts.card) return { has: "<<~ has name=`card`>>", tiddler: { fields: { title: CARD, ...opts.card }, hash: `sha256-card-${cardRev}` } };
+    if (verb === "tiddler-get" && args["title"] === ALANA) return { tiddler: opts.offering ? { fields: { title: ALANA, ...opts.offering }, hash: "sha256-alana" } : null };
     if (verb === "tiddler-get") {
       if (isSide(args["title"])) return { tiddler: opts.side ? { fields: { title: args["title"], ...opts.side }, hash: "sha256-side" } : null };
       const o = other(args["title"]);
@@ -139,6 +148,16 @@ function stage(opts: StageOpts = {}) {
       return { decision: opts.patch ?? "ingest", canonicalHash: live() };
     }
     if (verb === "meme-put") return { decision: "ingest", canonicalHash: "sha256:" + "22".repeat(32) };
+    if (verb === "tiddler-put" && args["title"] === CARD && opts.card) {
+      if (args["base"] !== undefined && args["base"] !== `sha256-card-${cardRev}`) return { decision: "conflict" };
+      Object.assign(opts.card, (args["fields"] ?? {}) as Record<string, string>);
+      cardRev++;
+      return { decision: "put", hash: `sha256-card-${cardRev}` };
+    }
+    if (verb === "tiddler-put" && args["title"] === ALANA) {
+      opts.offering = { ...(opts.offering ?? {}), ...((args["fields"] ?? {}) as Record<string, string>), ...(typeof args["text"] === "string" ? { text: args["text"] } : {}) };
+      return { decision: "put" };
+    }
     if (verb === "tiddler-put") {
       // The tiddler door's own laws (tiddler-verbs.ts): an append carries no text, base, field patch or unset; an append to a
       // title no record holds refuses unless `create` names it. The real reactor's own test rides below.
@@ -195,7 +214,7 @@ describe("the spirit door stands in the command table", () => {
   test("its row names every verb and every option its handler reads", () => {
     const row = COMMANDS.find((c) => c.name === "spirit")!;
     expect(row.verbs).toEqual(["help", "om", "ah", "hum", "otakiage", COMPACTION_WORD, "residue"]);
-    expect(row.accepts).toEqual(expect.arrayContaining(["add", "aperture", "base", "file", "fold", "line", "slot", "text"]));
+    expect(row.accepts).toEqual(expect.arrayContaining(["add", "aperture", "base", "echo", "file", "fold", "grant", "lane", "line", "offer", "slot", "text"]));
   });
 });
 
@@ -1281,5 +1300,135 @@ describe("the pure parts", () => {
   });
   test("the ash ledger follows the month", () => {
     expect(ashLedgerOf(new Date("2026-12-02T00:00:00Z"))).toBe(`${MEMORY_PREFIX}state/ashes-2026-12`);
+  });
+});
+
+describe("the ʻĀlana Circle: a card answers the slot verbs, a summon offers first, a body echoes before it writes", () => {
+  const CARD_FIELDS = (): Record<string, string> => ({ pet: "lares-alpha", lane: "read a PR cold and return PASS or FAIL", bodies: "2026-11-24 · one", text: "{{||lar:///ha.ka.ba/kahua/memory/template/tasked-spirit}}", tags: "stage/spirit-card" });
+  const flagged = (positional: string[], options: Record<string, string>, flags: Record<string, boolean>): ParsedArgs =>
+    ({ command: "spirit", positional, options, flags: { json: true, ...flags } } as unknown as ParsedArgs);
+  const MANDATE = "read PR 564 cold and return PASS or FAIL with file:line findings";
+  const offered = (): Record<string, string> => ({ pet: "lares-alpha", text: MANDATE, "mandate-hash": sha(MANDATE), "offer-seq": "1", lane: CARD, grant: "read-only" });
+
+  test("a card-only spirit trues a slot as its field: --add appends a line under the card's live hash, and no meme door opens", async () => {
+    const card = CARD_FIELDS();
+    stage({ kind: "none", card });
+    const r = await run(argv(["ah", "lares-alpha"], { slot: "#/bodies", add: "2026-11-25 · verb-vesseler#4" }));
+    expect(r.exit, JSON.stringify(r.printed)).toBe(0);
+    expect(card["bodies"]).toBe("2026-11-24 · one\n2026-11-25 · verb-vesseler#4");
+    expect(puts(CARD).at(-1)!.args).toMatchObject({ base: expect.stringMatching(/^sha256-card-/), fields: { bodies: card["bodies"] } });
+    expect(h.calls.filter((c) => c.verb === "meme-patch")).toEqual([]);
+    expect(data(r)).toMatchObject({ uri: CARD, slot: "#/bodies", decision: "ingest" });
+  });
+
+  test("a card trues a field no slot held yet (#/open), and refuses its identity fields by name", async () => {
+    const card = CARD_FIELDS();
+    stage({ kind: "none", card });
+    const r = await run(argv(["ah", "lares-alpha"], { slot: "#/open", text: "* a loop" }));
+    expect(r.exit, JSON.stringify(r.printed)).toBe(0);
+    expect(card["open"]).toBe("* a loop");
+    for (const slot of ["#/pet", "#/title", "#/text"]) {
+      const held = await run(argv(["ah", "lares-alpha"], { slot, text: "x" }));
+      expect(error(held).code).toBe("spirit-slot-held");
+    }
+    expect(card["pet"]).toBe("lares-alpha");
+  });
+
+  test("a card's om with a body joins the presence as <pet>#<body> and names the card", async () => {
+    stage({ kind: "none", card: CARD_FIELDS(), carrier: "<<the card as a carrier>>" });
+    const r = await run(argv(["om", "lares-alpha"], { body: "s-1" }));
+    expect(r.exit, JSON.stringify(r.printed)).toBe(0);
+    expect(data(r)).toMatchObject({ pet: "lares-alpha", kind: "card", uri: CARD });
+    expect(String(puts(SIDE).find((p) => (p.args["fields"] as Record<string, string> | undefined)?.["bodies-awake"])?.args["fields"]?.["bodies-awake" as never] ?? "")).toContain("lares-alpha#s-1 ");
+  });
+
+  test("hum --fold numbers a card field's lines", async () => {
+    stage({ kind: "none", card: { ...CARD_FIELDS(), bodies: "one\ntwo" } });
+    const r = await run(argv(["hum", "lares-alpha"], { fold: "#/bodies" }));
+    expect(r.exit, JSON.stringify(r.printed)).toBe(0);
+    expect((data(r)["lines"] as Array<{ text: string }>).map((l) => l.text)).toEqual(["one", "two"]);
+  });
+
+  test("ʻālana: a summon lands the offering on the shelf (the mandate, its hash, the lane's memory, the grant) and wakes no body", async () => {
+    const o: StageOpts = { kind: "none", card: CARD_FIELDS() };
+    stage(o);
+    const r = await run(flagged(["ah", "lares-alpha"], { text: MANDATE, lane: "lar:///ha.ka.ba/kahua/memory/wave/w1", grant: "read-only" }, { offer: true }));
+    expect(r.exit, JSON.stringify(r.printed)).toBe(0);
+    expect(puts(ALANA)).toHaveLength(1);
+    expect(o.offering).toMatchObject({ text: MANDATE, "mandate-hash": sha(MANDATE), "offer-seq": "1", lane: "lar:///ha.ka.ba/kahua/memory/wave/w1", grant: "read-only" });
+    expect(data(r)).toMatchObject({ uri: ALANA, mandate: sha(MANDATE), seq: 1 });
+    expect(puts(SIDE)).toEqual([]);
+  });
+
+  test("a summon naming no words offers the card's own lane, and a second offering mints the next seq", async () => {
+    const o: StageOpts = { kind: "none", card: CARD_FIELDS() };
+    stage(o);
+    await run(flagged(["ah", "lares-alpha"], {}, { offer: true }));
+    expect(o.offering).toMatchObject({ text: CARD_FIELDS()["lane"], lane: CARD, "offer-seq": "1" });
+    const again = await run(flagged(["ah", "lares-alpha"], { text: MANDATE }, { offer: true }));
+    expect(data(again)).toMatchObject({ seq: 2 });
+  });
+
+  test("hoʻāla: a body's om hands back the mandate's hash and the echo it asks", async () => {
+    stage({ kind: "none", card: CARD_FIELDS(), offering: offered() });
+    const r = await run(argv(["om", "lares-alpha"], { body: "s-1" }));
+    expect(r.exit, JSON.stringify(r.printed)).toBe(0);
+    expect(data(r)["mandate"]).toMatchObject({ hash: sha(MANDATE), seq: 1, echoed: false });
+    expect(String(data(r)["text"])).toContain(`lares spirit ah lares-alpha --echo ${sha(MANDATE)} --body s-1`);
+    expect(String(data(r)["text"])).toContain(MANDATE);
+  });
+
+  test("an unechoed body's slot write refuses spirit-unechoed, naming om and the echo; nothing lands", async () => {
+    const card = CARD_FIELDS();
+    stage({ kind: "none", card, offering: offered() });
+    const r = await run(argv(["ah", "lares-alpha"], { slot: "#/bodies", add: "x", body: "s-1" }));
+    expect(error(r).code).toBe("spirit-unechoed");
+    expect(error(r).message).toContain("lares spirit om lares-alpha --body s-1");
+    expect(error(r).message).toContain("--echo <hash> --body s-1");
+    expect(puts(CARD)).toEqual([]);
+  });
+
+  test("a body echoes the hash: the echo lands as <pet>#<body> <hash> <seq> on the sibling record, beside its presence", async () => {
+    stage({ kind: "none", card: CARD_FIELDS(), offering: offered() });
+    const r = await run(argv(["ah", "lares-alpha"], { echo: sha(MANDATE), body: "s-1" }));
+    expect(r.exit, JSON.stringify(r.printed)).toBe(0);
+    const fields = puts(SIDE).map((p) => p.args["fields"] as Record<string, string>);
+    expect(fields.some((f) => f["echoes"] === `lares-alpha#s-1 ${sha(MANDATE)} 1`)).toBe(true);
+    expect(fields.some((f) => String(f["bodies-awake"] ?? "").startsWith("lares-alpha#s-1 "))).toBe(true);
+    expect(data(r)).toMatchObject({ body: "lares-alpha#s-1", echo: sha(MANDATE), seq: 1 });
+  });
+
+  test("an echoed body writes; an echo of an older mandate refuses once a fresh offering stands", async () => {
+    const card = CARD_FIELDS();
+    stage({ kind: "none", card, offering: offered(), side: { echoes: `lares-alpha#s-1 ${sha(MANDATE)} 1` } });
+    const r = await run(argv(["ah", "lares-alpha"], { slot: "#/bodies", add: "x", body: "s-1" }));
+    expect(r.exit, JSON.stringify(r.printed)).toBe(0);
+    const fresh = "a fresh mandate";
+    stage({ kind: "none", card, offering: { ...offered(), text: fresh, "mandate-hash": sha(fresh), "offer-seq": "2" }, side: { echoes: `lares-alpha#s-1 ${sha(MANDATE)} 1` } });
+    const stale = await run(argv(["ah", "lares-alpha"], { slot: "#/bodies", add: "y", body: "s-1" }));
+    expect(error(stale).code).toBe("spirit-unechoed");
+  });
+
+  test("an echo naming another hash refuses spirit-echo-mismatch; an echo with no offering refuses spirit-unoffered; an echo names its body", async () => {
+    stage({ kind: "none", card: CARD_FIELDS(), offering: offered() });
+    expect(error(await run(argv(["ah", "lares-alpha"], { echo: "0".repeat(64), body: "s-1" }))).code).toBe("spirit-echo-mismatch");
+    expect((await run(argv(["ah", "lares-alpha"], { echo: sha(MANDATE) }))).exit).toBe(2);
+    stage({ kind: "none", card: CARD_FIELDS() });
+    expect(error(await run(argv(["ah", "lares-alpha"], { echo: sha(MANDATE), body: "s-1" }))).code).toBe("spirit-unoffered");
+  });
+
+  test("under an offering, an AI seat naming no body refuses; a person's terminal writes freely; a spirit no summon offered writes as before", async () => {
+    const card = CARD_FIELDS();
+    stage({ kind: "none", card, offering: offered() });
+    expect(error(await run(argv(["ah", "lares-alpha"], { slot: "#/bodies", add: "x" }), { seat: () => true })).code).toBe("spirit-unechoed");
+    expect((await run(argv(["ah", "lares-alpha"], { slot: "#/bodies", add: "x" }))).exit).toBe(0);
+    stage();
+    expect((await run(argv(["ah", "lares-alpha"], { slot: "#/open", add: "* y", body: "s-1" }))).exit).toBe(0);
+  });
+
+  test("hum's fold of a line waits on the echo too", async () => {
+    stage({ kind: "none", card: { ...CARD_FIELDS(), bodies: "one\ntwo" }, offering: offered() });
+    const r = await run(argv(["hum", "lares-alpha"], { fold: "#/bodies", line: "1", expect: digest("one"), body: "s-1" }));
+    expect(error(r).code).toBe("spirit-unechoed");
   });
 });
