@@ -434,7 +434,7 @@ export {
   makePinReactor, makeUnpinReactor, makeRegisterColdReactor,
 } from "@lararium/tw5";
 export type {
-  WikiHandlerOptions, WikiMintHandlerOptions,
+  WikiMintHandlerOptions,
   WikiComposeOptions, DraftHandlerOptions,
   EpochHandlerOptions, RotateRecipeOptions, ResidencyHandlerOptions,
 } from "@lararium/tw5";
