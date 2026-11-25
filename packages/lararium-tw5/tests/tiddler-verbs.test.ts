@@ -6,6 +6,8 @@
  * A real engine boots here (`bootTestWiki`), so a filter, a backlink and a render answer as TiddlyWiki answers them.
  */
 import { describe, test, expect } from "vitest";
+import { readFileSync } from "node:fs";
+import { modulePinsOf } from "../src/module-pins.js";
 import { SwarmRefused, sha256HexBytesSync } from "@lararium/mesh";
 import { CompositeStore, bagUri, wikiSlotUri, VERB_URI_PREFIX, buildEffectRecordTiddler, effectRecordUri, LARES_EFFECT_RECORD_TAG, buildRetiredShellRecord, retiredShellUri, unionRetiredShell } from "@lararium/mesh";
 import { CARRIER_TYPE as CARRIER } from "@lararium/mesh/carrier-type";
@@ -38,8 +40,11 @@ const reader: Cap = async (access) => (access === "read" ? { ok: true } : { ok: 
 const stranger: Cap = async () => ({ ok: false, reason: "no-grant" });
 const ctx = (cap: Cap = writer): VerbContext => ({ daemon: {} as CompositeStore, invocation: { requestId: "r1" } as VerbContext["invocation"], cap });
 
-async function rig(more: { personal?: boolean } = {}) {
-  const engine = await bootTestWiki({ tiddlers: [
+/** The Relink offering's pinned plugin, read off the committed pack: a rig opts in with `relink`. */
+const RELINK_PLUGIN = JSON.parse(readFileSync(new URL("../offerings/relink/relink-plugin.json", import.meta.url), "utf8")) as Record<string, unknown>;
+
+async function rig(more: { personal?: boolean; relink?: boolean } = {}) {
+  const engine = await bootTestWiki({ ...(more.relink ? { extraPlugins: [RELINK_PLUGIN], modulePins: modulePinsOf([RELINK_PLUGIN]) } : {}), tiddlers: [
     { title: WORKING_POINTER, text: DAEMON },
     ...Array.from({ length: 12 }, (_, i) => ({
       title: `Note ${String(i + 1).padStart(2, "0")}`, type: "text/vnd.tiddlywiki", tags: "memory", priority: i % 2 ? "low" : "high",
@@ -1052,6 +1057,45 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(wiki.getTiddler("Mine")!.fields["tags"]).toEqual(["Note 01"]);
     wiki.deleteTiddler("Their Secret Child");
     expect(await makeTiddlerRenameReactor(r.opts)({ ...A, title: "Note 01", to: "Note One" }, ctx())).toMatchObject({ decision: "renamed", relinked: ["Mine"] });
+  });
+
+  test("RED (relink impossible): with the Relink offering loaded, a referrer holding a link the new title cannot fit refuses rename-relink-impossible by name, counts the referrers this face cannot read, and nothing lands; CONTROL: a title that fits renames, and without the offering the rename stands as before", async () => {
+    const r = await rig({ relink: true });
+    const wiki = r.engine.wiki;
+    // A list or tag field cannot quote a title holding `]]`: Relink marks that referrer impossible and leaves it stale, silently.
+    const put = (w: typeof wiki, extra: Record<string, unknown>): void => {
+      w.addTiddler({ title: "Hub", text: "the hub", ...HOME });
+      w.addTiddler({ title: "Shelf", list: "[[Hub]]", ...HOME });
+      w.addTiddler({ title: "Prose", type: "text/vnd.tiddlywiki", text: "see [[Hub]] here", ...HOME });
+      for (const [name, fields] of Object.entries(extra)) w.addTiddler({ title: name, ...(fields as object) });
+    };
+    put(wiki, { "Their Secret Shelf": { tags: "[[Hub]]", "$origin-bag": CANON } });
+    rest(wiki, DAEMON, ["Hub"]);
+    const blind: Cap = async (access, bag) => (bag === DAEMON || (access === "read" && bag !== CANON) ? { ok: true } : { ok: false, reason: "no-grant" });
+    const out = await makeTiddlerRenameReactor(r.opts)({ ...A, title: "Hub", to: "Hub ]] Two" }, ctx(blind));
+    expect(out).toMatchObject({ decision: "refused", refusal: "rename-relink-impossible", impossible: 2 });
+    expect(String(out["why"])).toContain('"Shelf"');
+    expect(String(out["why"])).toContain("1 more held by records this face may not read");
+    expect(String(out["why"])).toContain("edit the referrer by hand");
+    expect(JSON.stringify(out)).not.toContain("Their Secret Shelf");
+    expect(wiki.tiddlerExists("Hub ]] Two")).toBe(false);
+    expect(wiki.getTiddler("Prose")!.fields["text"]).toBe("see [[Hub]] here");
+    expect(wiki.getTiddler("Shelf")!.fields["list"]).toEqual(["Hub"]);
+    // CONTROL: a title the links can hold renames, and the referrers follow.
+    wiki.deleteTiddler("Their Secret Shelf");
+    expect(await makeTiddlerRenameReactor(r.opts)({ ...A, title: "Hub", to: "Hub Two" }, ctx())).toMatchObject({ decision: "renamed", relinked: expect.arrayContaining(["Shelf", "Prose"]) });
+    expect(wiki.getTiddler("Prose")!.fields["text"]).toBe("see [[Hub Two]] here");
+    // CONTROL: a plugin quoting the title never refuses (no hand edits a plugin in place; Relink never rewrites one).
+    const withPlugin = await rig({ relink: true });
+    withPlugin.engine.wiki.addTiddler({ title: "Hub", text: "the hub", ...HOME });
+    withPlugin.engine.wiki.addTiddler({ title: "Plug", "plugin-type": "plugin", tags: "[[Hub]]", ...HOME });
+    rest(withPlugin.engine.wiki, DAEMON, ["Hub"]);
+    expect(await makeTiddlerRenameReactor(withPlugin.opts)({ ...A, title: "Hub", to: "Hub ]] Two" }, ctx())).toMatchObject({ decision: "renamed" });
+    // CONTROL: the offering absent, the door answers as it always did.
+    const bare = await rig();
+    put(bare.engine.wiki, {});
+    rest(bare.engine.wiki, DAEMON, ["Hub"]);
+    expect(await makeTiddlerRenameReactor(bare.opts)({ ...A, title: "Hub", to: "Hub ]] Two" }, ctx())).toMatchObject({ decision: "renamed" });
   });
 
   test("RED (no copy-up): a record resting in a layer other than the working layer refuses rename-source-layer and names that layer; the working copy of a family member elsewhere refuses too", async () => {
