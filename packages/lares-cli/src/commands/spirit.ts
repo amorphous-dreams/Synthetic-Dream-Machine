@@ -15,7 +15,7 @@
  *                                   presence on the card's sibling record, stamps a wake epoch (an ordering stamp, never a
  *                                   fence), and hands back each slot's digest.
  *   ah        (true, Discord ⏿)     replace one slot (`--file <path|->` · `--text <words>`) or add one line (`--add <line>`),
- *                                   base-checked, inside the slot's budget and the record's
+ *                                   base-checked; only the waking slots (#/open, #/attention) hold a cap
  *   hum       (what remains after the fold, Confusion ◇)   measure each slot; `--fold <slot> --line <n>` moves one line to
  *                                   the ash ledger, and what stays reads as the card
  *   hooili    (the carry, hoʻoili)  land a compaction summary as `hooili/<spirit-id>-<hash12>` with its lineage (`parent`,
@@ -35,7 +35,7 @@
  * and burns it only once the patch lands. Each body's hoʻoili chain runs its own lineage. The crossing runs per body and stays
  * advisory: between a body's PreCompact mark and its own next wake, that body's ah and hum (`--body`) refuse `spirit-crossing`.
  *
- * THE BUDGET REFUSES GROWTH, THE BODY CHOOSES WHAT FOLDS. Budgets and the true-up cadence read from the record's own fields
+ * THE WAKING CAPS REFUSE GROWTH, THE BODY CHOOSES WHAT FOLDS; THE REST ADVISES. Budgets and the true-up cadence read from the record's own fields
  * (`slot-budget`, `record-budget`, `true-up-every`), the constants below their defaults. Residue and carries pass the strict
  * secret-shape guard, read uncut, before they land.
  *
@@ -75,9 +75,13 @@ export const RECORD_KINDS = ["familiar", "spirit"] as const;
 export const sideOf = (pet: string): string => `${MEMORY_PREFIX}presence/${pet}`;
 /** The wake's hard cap: SessionStart shows the model a preview past 10,000 chars, so `om` stays under this. */
 export const OM_CAP_CHARS = 9000;
-/** One slot's body budget, in bytes, where the record names none (`slot-budget`). */
-export const SLOT_BUDGET_BYTES = 1024;
-/** The record's budget, the sum of its slots' bytes, where the record names none (`record-budget`). */
+/**
+ * THE WAKING SLOTS' BODY CAPS, in bytes: the only refusals the door keeps. `om` prints #/open whole and unfolds the titles
+ * #/attention names, so their growth costs the wake's 9000 chars; every other slot rests in the store and reads whole by
+ * its door, so it never refuses. A record's `slot-budget` field, where it names one, replaces both caps.
+ */
+export const WAKING_SLOT_BUDGETS: Readonly<Record<string, number>> = { "#/open": 2048, "#/attention": 1024 };
+/** The record's advisory weight, in bytes, where the record names none (`record-budget`): `hum` and `om` name a record past it; nothing refuses. */
 export const RECORD_BUDGET_BYTES = 6144;
 /** Stops between two true-up nudges, where the record names none (`true-up-every`). */
 export const TRUE_UP_EVERY = 25;
@@ -167,7 +171,7 @@ interface Lease { readonly body: string; readonly epoch: number }
 interface Record_ {
   readonly pet: string; readonly uri: string; readonly kind: string; readonly has: string; readonly base: string; readonly bytes: number;
   readonly slots: readonly Slot[]; readonly fields: Readonly<Record<string, string>>;
-  readonly budgets: { readonly slot: number; readonly record: number }; readonly every: number;
+  readonly budgets: { readonly slot: number | null; readonly record: number }; readonly every: number;
   readonly id: string | null; readonly lease: Lease | null; readonly distilled: string | null; readonly crossing: string | null;
   /** The sibling record's address and fields (see `sideOf`). */
   readonly side: string; readonly sideFields: Readonly<Record<string, string>>;
@@ -229,7 +233,7 @@ async function resolveRecord(args: ParsedArgs, label: string, pet: string, soft 
   return {
     pet, uri: hit.uri, kind: hit.kind, has: String(hit.out["has"] ?? ""), base: String(meme.canonicalHash ?? ""), bytes: Number(meme.bytes ?? 0),
     slots: meme.slots ?? [], fields,
-    budgets: { slot: countField(fields["slot-budget"], SLOT_BUDGET_BYTES), record: countField(fields["record-budget"], RECORD_BUDGET_BYTES) },
+    budgets: { slot: fields["slot-budget"] === undefined ? null : countField(fields["slot-budget"], 0) || null, record: countField(fields["record-budget"], RECORD_BUDGET_BYTES) },
     every: countField(fields["true-up-every"], TRUE_UP_EVERY),
     id: PET.test(fields["spirit-id"] ?? "") ? fields["spirit-id"]! : null,
     lease: leaseOf(sideFields["lease"]), distilled: sideFields["distilled"] || fields["distilled"] || null, crossing: sideFields["crossing"] || null,
@@ -640,6 +644,8 @@ async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
     if (read !== null) digests[s.slot] = slotDigest(read.body);
   }
   testimony.push(`Slot digests (a whole-slot ah names its slot's as --base; --add needs none): ${Object.entries(digests).map(([k, v]) => `${k}=${v}`).join(" ")}`);
+  const advisory = advisoryLine(rec);
+  if (advisory !== null) testimony.push(advisory);
   const text = omText(rec, { open: open?.text ?? null, testimony, attention, lead });
   emit(args, {
     ok: true, data: { ...data, latest: carry?.title ?? null, digests, chars: text.length, cap: OM_CAP_CHARS, text },
@@ -650,17 +656,30 @@ async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
 
 // ── ah ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-/** What a slot write would leave, measured against both budgets: the refusal where it grows past one, else null. */
-export function budgetRefusal(rec: Pick<Record_, "pet" | "uri" | "slots"> & { budgets?: Record_["budgets"] }, slot: string, oldBody: string, newBody: string): SpiritRefusal | null {
-  const budgets = rec.budgets ?? { slot: SLOT_BUDGET_BYTES, record: RECORD_BUDGET_BYTES };
+/** The cap a slot's body answers to: a waking slot's, else null (the slot never refuses). */
+export const wakingCap = (budgets: Record_["budgets"] | undefined, slot: string): number | null => {
+  const base = WAKING_SLOT_BUDGETS[slot];
+  return base === undefined ? null : budgets?.slot ?? base;
+};
+
+/** What a slot write would leave, measured against its cap: the refusal where a waking slot grows past it, else null. Every other slot and the record's total only advise (`advisoryLine`). */
+export function budgetRefusal(rec: Pick<Record_, "pet" | "uri" | "slots"> & { budgets?: Record_["budgets"] }, slot: string, oldBody: string, newBody: string, factor = 1): SpiritRefusal | null {
+  const cap = wakingCap(rec.budgets, slot);
+  if (cap === null) return null;
   const was = bytesOf(oldBody);
   const now = bytesOf(newBody);
   if (now <= was) return null;
   const fold = `\`lares spirit hum ${rec.pet} --fold '${slot}'\` lists its lines with their digests; \`--line <n> --expect <digest>\` moves one to the ash ledger`;
-  if (now > budgets.slot) return new SpiritRefusal("spirit-slot-over-budget", `spirit-slot-over-budget: ${slot} would hold ${now} bytes, past its ${budgets.slot}-byte budget (it holds ${was}); nothing landed. Fold first: ${fold}, then true it again`);
-  const total = rec.slots.reduce((n, s) => n + s.bytes, 0) + (now - was);
-  if (total > budgets.record) return new SpiritRefusal("spirit-record-over-budget", `spirit-record-over-budget: ${rec.uri} would hold ${total} bytes across its slots, past its ${budgets.record}-byte budget; nothing landed. \`lares spirit hum ${rec.pet}\` names the heaviest slots; ${fold}`);
+  if (now > cap * factor) return new SpiritRefusal("spirit-slot-over-budget", `spirit-slot-over-budget: ${slot} would hold ${now} bytes, past its ${cap * factor}-byte waking cap (om prints it into the wake; it holds ${was}); nothing landed. Fold first: ${fold}, then true it again`);
   return null;
+}
+
+/** The advisory line for a record's weight: its total and its heaviest slots; null where the record stands under its advisory weight (unless `always`). */
+export function advisoryLine(rec: Pick<Record_, "slots"> & { budgets?: Record_["budgets"] }, always = false): string | null {
+  const m = measure(rec);
+  if (!always && !m.over) return null;
+  const heavy = [...rec.slots].sort((a, b) => b.bytes - a.bytes).slice(0, 3).map((s) => `${s.slot} ${s.bytes}`);
+  return `advisory: the record holds ${m.total} bytes${m.over ? `, past ${m.budget}` : ""}; heaviest ${heavy.join(", ")}`;
 }
 
 async function sourceText(flag: "file", source: string): Promise<string> {
@@ -673,7 +692,7 @@ async function sourceText(flag: "file", source: string): Promise<string> {
 }
 
 /** The guards every slot write passes: the secret-shape guard over the lines it brings, and (unless a conflict stanza lands) both budgets. */
-function guardWords(rec: Pick<Record_, "pet" | "uri" | "slots" | "budgets">, slot: string, was: string, body: string, budget: boolean): void {
+function guardWords(rec: Pick<Record_, "pet" | "uri" | "slots" | "budgets">, slot: string, was: string, body: string, budget: boolean, factor = 1): void {
   // The guard reads the lines this write brings, never the ones already standing: a standing line answers to its own fold.
   const standing = new Set(was.split("\n"));
   const brought = body.split("\n").map((line, i) => ({ line, n: i + 1 })).filter(({ line }) => !standing.has(line));
@@ -682,7 +701,7 @@ function guardWords(rec: Pick<Record_, "pet" | "uri" | "slots" | "budgets">, slo
     throw new SpiritRefusal("spirit-secret-shaped", `spirit-secret-shaped: line ${shaped.n} of the words for ${rec.uri}${slot} holds a secret-shaped string (${redacted(shaped.line).slice(0, 120)}), so nothing landed; clear it, then true the slot again: \`lares spirit ah ${rec.pet} --slot '${slot}' --file <scrubbed path>\``, 4);
   }
   if (!budget) return;
-  const over = budgetRefusal(rec, slot, was, body);
+  const over = budgetRefusal(rec, slot, was, body, factor);
   if (over) throw over;
 }
 
@@ -737,7 +756,7 @@ async function mergeSlot(args: ParsedArgs, rec: Record_, slot: string, write: { 
       body = conflictStanza(slot, [{ who: write.who, words: write.words }, { who: last, words: read.body }]);
     }
     body = body.replace(/^\n+/, "").replace(/\s+$/, "");
-    guardWords(clash ? { ...rec, budgets: { slot: rec.budgets.slot * 2, record: rec.budgets.record } } : rec, slot, read.body, body, true);
+    guardWords(rec, slot, read.body, body, true, clash ? 2 : 1);
     const receipt = await door(args, "ah", "meme-patch", { recipe: RECIPE, uri: rec.uri, slot, replace: body, base: read.base });
     const decision = String(receipt["decision"] ?? "");
     if (decision === "ingest" || decision === "noop") return { ...receipt, bytes: bytesOf(body), was: bytesOf(first.body), digest: slotDigest(body), ...(clash ? { conflict: true } : {}) };
@@ -800,17 +819,17 @@ async function ah(args: ParsedArgs, ctx: Ctx): Promise<number> {
   }
   emit(args, {
     ok: true, data: { pet, uri: rec.uri, slot, ...receipt },
-    human: () => console.log(`${String(receipt["decision"])}: ${rec.uri}${slot} (${String(receipt["bytes"])} of ${rec.budgets.slot} bytes)\n  base: ${String(receipt["canonicalHash"] ?? "")}`),
+    human: () => console.log(`${String(receipt["decision"])}: ${rec.uri}${slot} (${String(receipt["bytes"])} bytes${wakingCap(rec.budgets, slot) === null ? "" : ` of ${wakingCap(rec.budgets, slot)}`})\n  base: ${String(receipt["canonicalHash"] ?? "")}`),
   });
   return 0;
 }
 
 // ── hum ────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-/** Each slot against its budget, and the record's total against its own. */
-export function measure(rec: Pick<Record_, "slots"> & { budgets?: Record_["budgets"] }): { slots: Array<Slot & { budget: number; over: boolean }>; total: number; budget: number; over: boolean } {
-  const budgets = rec.budgets ?? { slot: SLOT_BUDGET_BYTES, record: RECORD_BUDGET_BYTES };
-  const slots = rec.slots.map((s) => ({ ...s, budget: budgets.slot, over: s.bytes > budgets.slot }));
+/** Each waking slot against its cap (others carry none), and the record's total against its advisory weight. */
+export function measure(rec: Pick<Record_, "slots"> & { budgets?: Record_["budgets"] }): { slots: Array<Slot & { budget: number | null; over: boolean }>; total: number; budget: number; over: boolean } {
+  const budgets = rec.budgets ?? { slot: null, record: RECORD_BUDGET_BYTES };
+  const slots = rec.slots.map((s) => { const budget = wakingCap(budgets, s.slot); return { ...s, budget, over: budget !== null && s.bytes > budget }; });
   const total = rec.slots.reduce((n, s) => n + s.bytes, 0);
   return { slots, total, budget: budgets.record, over: total > budgets.record };
 }
@@ -846,11 +865,11 @@ async function hum(args: ParsedArgs, ctx: Ctx): Promise<number> {
     const m = measure(rec);
     const over = m.slots.filter((s) => s.over);
     emit(args, {
-      ok: true, data: { pet, uri: rec.uri, ...m, every: rec.every, oversize: over.map((s) => s.slot) },
+      ok: true, data: { pet, uri: rec.uri, ...m, advisory: advisoryLine(rec), every: rec.every, oversize: over.map((s) => s.slot) },
       human: () => {
         console.log(`lares spirit hum ${pet} · ${rec.uri}`);
-        for (const s of m.slots) console.log(`  ${s.over ? "⚠" : " "} ${s.slot.padEnd(14)} ${String(s.bytes).padStart(5)} / ${s.budget}`);
-        console.log(`  ${m.over ? "⚠" : " "} ${"total".padEnd(14)} ${String(m.total).padStart(5)} / ${m.budget}`);
+        for (const s of m.slots) console.log(`  ${s.over ? "⚠" : " "} ${s.slot.padEnd(14)} ${String(s.bytes).padStart(5)}${s.budget === null ? "" : ` / ${s.budget}`}`);
+        console.log(`  ${advisoryLine(rec, true)}`);
         if (over.length > 0) console.log(`  fold a line from each: lares spirit hum ${pet} --fold '${over[0]!.slot}' (lists its lines), then --line <n>`);
       },
     });

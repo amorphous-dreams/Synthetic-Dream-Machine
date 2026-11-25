@@ -511,15 +511,15 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     usage: "usage: lares spirit <verb> <pet-name> [...]  (the verbs: `lares spirit` with no word lists the door's table)",
     synopsis:
       "A spirit's record by its pet name: `familiar/<pet>` or `spirit/<pet>` on the worn face's memory stage (recipe default); both standing refuses, naming both. " +
-      "`om` wakes (the card under 9,000 chars, the latest carry as testimony); `ah` trues one slot through the meme door, base-checked, inside the slot's " +
-      "budget and the record's (fields `slot-budget`, `record-budget`; 1,024 and 6,144 by default), and `ah --new` lands a first shrine; `hum` (what remains after the fold) " +
+      "`om` wakes (the card under 9,000 chars, the latest carry as testimony); `ah` trues one slot through the meme door, base-checked, refusing growth only past a waking slot's " +
+      "cap (#/open 2,048 bytes, #/attention 1,024; field `slot-budget` replaces both) while `hum` and `om` name the record's weight past `record-budget` (6,144) as advice, and `ah --new` lands a first shrine; `hum` (what remains after the fold) " +
       "measures each slot and folds one line to the month's ash ledger; `hooili` (the carry, hoʻoili, which writes nothing to the card) and `residue` " +
       "land a compaction summary or a handback (`--file -` reads stdin) after the strict secret-shape guard; `otakiage` burns the residue and keeps the card, on a person's hand alone.",
     examples: [
       "lares spirit om lares-alpha                                   # the wake text",
       "lares spirit ah lares-alpha --slot '#/open' --file open.txt     # true one slot",
       "lares spirit ah lares-alpha --slot '#/voice' --add '* a tell'  # one line at its end",
-      "lares spirit hum lares-alpha                                  # each slot against its budget",
+      "lares spirit hum lares-alpha                                  # each waking slot against its cap, the record against its advisory weight",
       "lares spirit hum lares-alpha --fold '#/bodies' --line 3       # move a line to the ash ledger",
       "lares spirit otakiage lares-alpha                             # burn the residue (your hand)",
     ],
