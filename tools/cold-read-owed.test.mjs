@@ -496,8 +496,8 @@ test("RED: a --base other than origin/develop drops the land line and marks the 
     assert.equal(lines(r).length, 3, "CONTROL: the land line rides");
     assert.ok(!lines(r)[1].includes(mark));
   }
-  const dev = f.commit("develop moves on");
   put(f.root, "notes/plain.md", "later\n");
+  f.commit("develop moves on");
   sh(f.root, "update-ref", "refs/heads/off", f.base);
   for (const base of [f.base, "off"]) {
     const r = coldRead({ root: f.root, lane: "lane", base });
@@ -509,7 +509,6 @@ test("RED: a --base other than origin/develop drops the land line and marks the 
     assert.ok(out[1].endsWith(` · record-hash ${r.hash} · ${mark}`));
     assert.ok(!out.some((l) => l.startsWith("land:")), "no land command rides a typed base");
   }
-  assert.ok(dev);
 });
 
 test("RED: --check-merge held to a judge whose bytes differ from the first parent's reads unread; CONTROL: the base's own judge reads", (t) => {
