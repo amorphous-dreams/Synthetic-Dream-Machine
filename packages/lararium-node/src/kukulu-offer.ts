@@ -18,8 +18,20 @@
  * ── NOTHING SECRET RESTS IN THE FILE ────────────────────────────────────────────────────────────
  * Each part holds a signed record or a public digest. The file lands whole (a sibling temp, then a rename), owner-only.
  *
+ * ── THE VOUCH BINDS TO THE LEI (operator ruling 2026-11-25) ─────────────────────────────────────
+ * The vessel signs no head, tree or image its caller picks. Per face it reads the LIVE lei that ends the line (`readLei`, its
+ * spent return allowed: the begin just spent it for this very rite) and the unlanded begun half that lei's return paid for, and
+ * the vouch names that half's head, tree and image. Each refuses by the pūlama gate's own name before anything rests:
+ * `swarm-lei-unstrung`, `swarm-lei-forked`, `swarm-lei-head-mismatch` (a lei that pins another head), `rite-begun-absent` (no
+ * begin spent the lei), `rite-offer-differs` (a caller's head or tree the begun half never named), `kukulu-image-mismatch` (an
+ * image the begun half never named). Earlier lei on the line whose unstringing rests still ride whole, so the pūlama reads them
+ * ended. THE KEEPER MOVE rides as the host names it: no vessel record names one, and the pūlama's vest holds it to the
+ * keeper commit's own closure (`closure-differs`).
+ *
  * ── ONE KŪKULU, ONE OFFER ───────────────────────────────────────────────────────────────────────
- * A later rite writes over the file, so the newest offer supersedes the last. The vessel that the pūlama serves removes
+ * A later rite writes over the file, so the newest offer supersedes the last, ONLY over the base it read: the overwrite names the
+ * hash of the resting file (`kukuluOfferBase`, what `rite receipts --rite kukulu` answers as `offerBase`), and a resting file
+ * that reads otherwise refuses `conflict`, so no seat swaps a good offer for its own between the read and the lowering. The vessel that the pūlama serves removes
  * the file once its session stands (`consumeKukuluOffer`): a plain restart afterwards finds no offer and wears nothing. A
  * hello the pūlama refuses leaves the file, so the same offer rides the next dial (after the operator lights the pūlama).
  *
@@ -27,11 +39,12 @@
  * compares it with the digest the host reports at its own hand door, and a vessel that named another gains nothing.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
  */
-import { closeSync, fsyncSync, mkdirSync, openSync, renameSync, rmSync, writeSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { closeSync, fsyncSync, mkdirSync, openSync, readFileSync, renameSync, rmSync, writeSync } from "node:fs";
 import { dirname, join } from "node:path";
 import {
-  SwarmRefused, kukuluVouchDigest, readLeiChain, signKukuluVouch, swarmLeiUnstrungTitle,
-  type SignedKukuluVouch, type SignedSwarmAct, type SwarmTrust, type SwarmWikiPort, type WardActWitness,
+  SwarmRefused, kukuluVouchDigest, readLei, readLeiChain, signKukuluVouch, swarmLeiUnstrungTitle, swarmTesseraTitle, tesseraOf, verifySwarmRecord,
+  type SignedKukuluVouch, type SwarmRiteBegunBody, type SignedSwarmAct, type SwarmTrust, type SwarmWikiPort, type WardActWitness,
 } from "@lararium/mesh";
 import type { CustodyHolder } from "./custody-holder.js";
 import { vouchSignerOf } from "./kukulu-gate.js";
@@ -53,9 +66,32 @@ export interface KukuluOfferFace { readonly group: string; readonly trust: Swarm
 
 const IMAGE_DIGEST = /^[a-z0-9]+:[0-9a-f]{32,128}$/;
 
+/** The resting offer's base: `sha256:<hex>` over the file's bytes, or null where none rests. An overwrite names it. */
+export function kukuluOfferBase(path: string): string | null {
+  let bytes: Buffer;
+  try { bytes = readFileSync(path); } catch { return null; }
+  return `sha256:${createHash("sha256").update(bytes).digest("hex")}`;
+}
+
+/** The unlanded begun half the face's live lei paid for: its highest return whose guest half verifies and rests with no host half. */
+async function begunOf(wiki: SwarmWikiPort, face: KukuluOfferFace, lei: { readonly cid: string; readonly returns: number }, branch: string): Promise<SwarmRiteBegunBody | null> {
+  for (let n = lei.returns; n >= 1; n--) {
+    const tessera = tesseraOf({ lei: lei.cid, n });
+    const title = swarmTesseraTitle(tessera, "guest");
+    const read = verifySwarmRecord(await wiki.read(title), title, face.trust, face.group);
+    if (!read.ok || read.act.body.act !== "rite-begun") continue;
+    const body = read.act.body;
+    if (body.rite !== "kukulu" || body.branch !== branch || body.lei !== lei.cid) continue;
+    if ((await wiki.read(swarmTesseraTitle(tessera, "host"))) !== null) continue;
+    return body;
+  }
+  return null;
+}
+
 /**
  * Gather the offer for one line and rest it at `path`. Refuses by name, writing nothing: `rite-offer-malformed` (an image
- * that reads as no digest), `swarm-lei-absent` (no kukulu lei rests on any face's line).
+ * that reads as no digest), `swarm-lei-absent` (no kukulu lei rests on any face's line), each binding refusal the head of this
+ * file names, and `conflict` (a resting offer the base does not name).
  */
 export async function writeKukuluOffer(a: {
   readonly wiki: SwarmWikiPort;
@@ -70,6 +106,8 @@ export async function writeKukuluOffer(a: {
   /** THE KEEPER MOVE this rite carries (the keeper tally): the successor's announced key and the committed closure; each vouch
    *  names them beside its face's device count, so the pūlama's vest proceeds only inside this rite. */
   readonly keeper?: { readonly to: string; readonly next: string };
+  /** THE BASE the caller last read (`kukuluOfferBase`): null or absent where it read none resting. */
+  readonly base?: string | null;
 }): Promise<{
   readonly path: string; readonly vouch: readonly string[]; readonly lei: number;
   /** Every face the offer vouches for, by name, in the order asked. */
@@ -80,9 +118,29 @@ export async function writeKukuluOffer(a: {
   if (!IMAGE_DIGEST.test(a.image)) throw new SwarmRefused("rite-offer-malformed", "an offer names the image by its digest, `<algorithm>:<hex>`");
   const lei: SignedSwarmAct[] = [], unstrung: unknown[] = [], waits: string[] = [];
   const nameOf = (face: KukuluOfferFace): string => face.name ?? face.group;
+  const kui = `lares lei kui --rite kukulu --branch ${a.branch} --returns <n> --all`;
   for (const face of a.faces) {
     const chain = await readLeiChain(a.wiki, { rite: "kukulu", branch: a.branch }, face.trust, face.group, face.ward);
-    if (chain.cosigned.length === 0) waits.push(nameOf(face));
+    if (chain.cosigned.length === 0) { waits.push(nameOf(face)); continue; }
+    // THE LIVE LEI: the line's one tip, never unstrung, pinning this head where it pins one. Its return stays spent: the begin
+    // spent it for this very rite, and the pūlama counts its own.
+    const live = await readLei(a.wiki, { rite: "kukulu", branch: a.branch, head: a.head }, face.trust, face.group, face.ward, { spent: true });
+    if (!live.ok) {
+      const why = live.refusal === "unstrung" ? `the hand unstrung the lei that ends ${nameOf(face)}'s line, so no vouch rides it; string a fresh one: ${kui}`
+        : live.refusal === "forked" ? `${nameOf(face)}'s line reads two lei at one link, and neither stands; a fresh lei names one tip: ${kui}`
+        : live.refusal === "head-mismatch" ? `${nameOf(face)}'s lei pins another head than ${a.head}; run \`lares rite kukulu\` at the head it pins, or string a lei for this one: ${kui}`
+        : `${nameOf(face)}'s lei does not stand (${live.refusal}); string a fresh one: ${kui}`;
+      throw new SwarmRefused(`swarm-lei-${live.refusal}`, why);
+    }
+    const returns = live.reach === "wide" ? (live.act.body as { readonly returns: number }).returns : 1;
+    const begun = await begunOf(a.wiki, face, { cid: live.cid, returns }, a.branch);
+    if (begun === null) throw new SwarmRefused("rite-begun-absent", `no begun half of ${nameOf(face)}'s lei rests unlanded on "${a.branch}", so no head binds its vouch; begin the rite first: lares rite kukulu`);
+    if (begun.head !== a.head || begun.tree !== a.tree) {
+      throw new SwarmRefused("rite-offer-differs", `${nameOf(face)}'s begun half names head ${begun.head} (tree ${begun.tree}), and the offer names ${a.head} (tree ${a.tree}); the vessel vouches only for what the rite began: run \`lares rite kukulu\`, which offers over the head it began at`);
+    }
+    if (begun.image !== a.image) {
+      throw new SwarmRefused("kukulu-image-mismatch", `${nameOf(face)}'s begun half names ${begun.image === undefined ? "no image" : `image ${begun.image}`}, and the offer names ${a.image}; run \`lares rite kukulu\`, which offers over the image it began with`);
+    }
     for (const row of chain.cosigned) {
       lei.push(row.act);
       const text = await a.wiki.read(swarmLeiUnstrungTitle(row.cid));
@@ -90,7 +148,11 @@ export async function writeKukuluOffer(a: {
       try { unstrung.push(JSON.parse(text)); } catch { /* a row that forms no record ends nothing at the pūlama */ }
     }
   }
-  if (lei.length === 0) throw new SwarmRefused("swarm-lei-absent", `no kukulu lei rests for "${a.branch}" on any face's line, so this kūkulu wears none`);
+  if (lei.length === 0) throw new SwarmRefused("swarm-lei-absent", `no kukulu lei rests for "${a.branch}" on any face's line, so this kūkulu wears none; string one: ${kui}`);
+  const resting = kukuluOfferBase(a.path);
+  if (resting !== null && resting !== (a.base ?? null)) {
+    throw new SwarmRefused("conflict", `an offer rests at ${a.path} as ${resting}, and this offer names ${a.base ? `base ${a.base}` : "no base"}; read it again (\`lares rite receipts --rite kukulu --branch ${a.branch}\` answers its offerBase) and offer over that base, or run \`lares rite kukulu\`, which reads it first`);
+  }
   const signer = await vouchSignerOf(a.holder);
   const vouch: SignedKukuluVouch[] = [];
   for (const face of a.faces) vouch.push(await signKukuluVouch({ group: face.group, branch: a.branch, head: a.head, tree: a.tree, image: a.image,

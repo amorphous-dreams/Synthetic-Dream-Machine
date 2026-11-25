@@ -91,12 +91,16 @@ export function ritePlan(args: ParsedArgs): RitePlan {
     if ((keeperTo === undefined) !== (keeperNext === undefined) || (keeperTo !== undefined && (!/^[0-9a-f]{64}$/.test(keeperTo) || !/^sha256:[0-9a-f]{64}$/.test(keeperNext ?? "")))) {
       throw new RiteUsage("a keeper move names the successor's key and the committed closure together: --keeper-to <64 hex> --keeper-next sha256:<64 hex>, as `keeper-stand` printed them (or neither, and the offer carries no move)");
     }
-    return { verb: "rite-offer", args: { branch, head, image, ...face, ...(keeperTo === undefined ? {} : { keeperTo, keeperNext }) } };
+    // THE BASE: the hash of the resting offer this line read (`rite receipts --rite kukulu` answers it as `offerBase`); an
+    // overwrite without it refuses `conflict`.
+    const base = word(args.options["base"]);
+    return { verb: "rite-offer", args: { branch, head, image, ...face, ...(keeperTo === undefined ? {} : { keeperTo, keeperNext }), ...(base === undefined ? {} : { base }) } };
   }
   if (act === "land") {
     const tessera = word(args.options["tessera"]);
-    if (tessera === undefined || head === undefined) throw new RiteUsage("land names its tessera and the head the vessel stands at: --tessera <id> --head <commit>");
-    return { verb: "rite-land", args: { tessera, head, ...image, ...face } };
+    // THE BEGUN HALF NAMES WHAT LANDS: a --head or --image named here must match it, or the vessel refuses `rite-land-differs`.
+    if (tessera === undefined) throw new RiteUsage("land names its tessera: --tessera <id> (a --head or --image must match what the half began at)");
+    return { verb: "rite-land", args: { tessera, ...(head === undefined ? {} : { head }), ...image, ...face } };
   }
   throw new RiteUsage(isKukulu(act) ? "kukulu runs on the host and plans no single row" : act === "keep" || act === "keep-cut" ? `${act} runs several rows and plans no single one` : `name a sub-verb: ${RITE_VERBS.join(", ")}`);
 }
@@ -376,7 +380,7 @@ export const standingRowLine = (branch: string, face?: number): string[] => host
  * kūkulu halves resting unlanded on the line (each lands under the worn face): the vessel standing during the very next run
  * is the one that stopped, and it never begins over a half it already rests.
  */
-export function standingOf(output: Record<string, unknown>, branch: string): { begins: StandingBegin[]; pending?: PendingBegin[]; offer?: OfferVouch[] | null } {
+export function standingOf(output: Record<string, unknown>, branch: string): { begins: StandingBegin[]; pending?: PendingBegin[]; offer?: OfferVouch[] | null; offerBase?: string | null } {
   const rows = (v: unknown): Array<Record<string, unknown>> => (Array.isArray(v) ? v.filter((x): x is Record<string, unknown> => typeof x === "object" && x !== null) : []);
   const image = (r: Record<string, unknown>): { image?: string } => (typeof r["image"] === "string" ? { image: r["image"] } : {});
   if (Array.isArray(output["standing"])) {
@@ -384,7 +388,9 @@ export function standingOf(output: Record<string, unknown>, branch: string): { b
     // A REPLY NAMING NO `pending` reads its debt as unread (the rite fills it from what it stands), never as empty.
     const pending = Array.isArray(output["pending"]) ? rows(output["pending"]).map((p) => ({ tessera: String(p["tessera"]), group: String(p["group"]), head: String(p["head"]), ...image(p), ...(typeof p["face"] === "string" ? { face: p["face"] } : {}) })) : undefined;
     const offer = Array.isArray(output["offer"]) ? rows(output["offer"]).map((v) => ({ ...(typeof v["face"] === "string" ? { face: v["face"] } : {}), group: String(v["group"]), branch: String(v["branch"]), head: String(v["head"]), image: String(v["image"]) })) : null;
-    return { begins, ...(pending === undefined ? {} : { pending, offer }) };
+    // THE BASE an overwrite of the resting offer names; a vessel of an older image names none.
+    const offerBase = typeof output["offerBase"] === "string" ? output["offerBase"] : output["offerBase"] === null ? null : undefined;
+    return { begins, ...(pending === undefined ? {} : { pending, offer }), ...(offerBase === undefined ? {} : { offerBase }) };
   }
   // AN ANSWER THAT NAMES NO `standing` ROWS carries its worn face's receipts and conferre: its unlanded kūkulu halves on the line, with no raw debt read.
   const conf = output["conferre"];

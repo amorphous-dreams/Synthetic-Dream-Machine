@@ -17,8 +17,8 @@
  * orphan return; the next begin at the same branch, head, tree and image reuses it (`checkReturn` finds it, even past the
  * lei's count), so a retry never spends twice.
  *
- * THE IMAGE BINDS A KŪKULU. A begin that names the image it raises rests it in the guest half, and a landing reads par only
- * over the same image (`image-differs` otherwise). A half resting unlanded reads as debt off its raw rows (`pendingBegins`),
+ * THE IMAGE BINDS A KŪKULU. A begin that names the image it raises rests it in the guest half, and the landing rests that image
+ * (a caller naming another refuses `rite-land-differs`; an older off-par host half reads `image-differs`). A half resting unlanded reads as debt off its raw rows (`pendingBegins`),
  * whatever face's trust still verifies it; only a landing ends it.
  *
  * CONFERRE matches the halves, at each wake and with no clock: a pair reads `par` where the host half names the guest half's
@@ -75,20 +75,27 @@ export async function beginChecked(wiki: SwarmWikiPort, checked: SwarmReturnable
 }
 
 /**
- * Land a rite: the vessel that stands after rests the host half, naming the begun half by its cid, the head it stands at, and
- * the image it stands from where the caller names one. The answer reads `par` where that head equals the head the rite began
- * at and, where the begin named an image, the landing names the same one. A landing writes once.
+ * Land a rite: the vessel that stands after rests the host half, naming the begun half by its cid and the head and image THAT
+ * HALF names (operator ruling 2026-11-25), never the caller's: a caller that names another head, or another image where the half
+ * names one, refuses `rite-land-differs` and rests nothing, so no seat lands a wrong head first and blocks the true landing. The
+ * answer reads `par`; conferre still reads an off-par host half an older vessel rested red. A landing writes once.
  */
-export async function landRite(wiki: SwarmWikiPort, at: { readonly tessera: string; readonly head: string; readonly image?: string }, trust: SwarmTrust, group: string, vessel: SwarmSignerPort):
+export async function landRite(wiki: SwarmWikiPort, at: { readonly tessera: string; readonly head?: string; readonly image?: string }, trust: SwarmTrust, group: string, vessel: SwarmSignerPort):
   Promise<{ tessera: string; rite: SwarmLeiRite; begun: string; landed: string; par: boolean }> {
   const guestTitle = swarmTesseraTitle(at.tessera, "guest");
   const guest = verifySwarmRecord(await wiki.read(guestTitle), guestTitle, trust, group);
   if (!guest.ok || guest.act.body.act !== "rite-begun") throw new SwarmRefused("rite-begun-absent", `no begun half stands for tessera ${at.tessera}${guest.ok ? "" : ` (${guest.refusal})`}`);
   if (!trust.vessel(vessel.key.toLowerCase())) throw new SwarmRefused("rite-land-role", "the vessel alone lands a rite");
   const begun = guest.act.body;
-  const act = await signSwarmAct({ act: "rite-landed", group, rite: begun.rite, tessera: at.tessera, begun: guest.cid, head: at.head, ...(at.image === undefined ? {} : { image: at.image }) }, vessel);
+  // THE BEGUN HALF NAMES WHAT LANDS: a caller's head or image that reads otherwise refuses, and the host half never rests.
+  const differs = [
+    ...(at.head !== undefined && at.head !== begun.head ? [`head ${at.head} (the half began at ${begun.head})`] : []),
+    ...(at.image !== undefined && begun.image !== undefined && at.image !== begun.image ? [`image ${at.image} (the half began over ${begun.image})`] : []),
+  ];
+  if (differs.length > 0) throw new SwarmRefused("rite-land-differs", `the landing of tessera ${at.tessera} names ${differs.join(" and ")}; a landing rests what its begun half names, so name none: lares rite land --tessera ${at.tessera}`);
+  const act = await signSwarmAct({ act: "rite-landed", group, rite: begun.rite, tessera: at.tessera, begun: guest.cid, head: begun.head, ...(begun.image === undefined ? {} : { image: begun.image }) }, vessel);
   if (!(await wiki.writeNew(swarmTesseraTitle(at.tessera, "host"), JSON.stringify(act)))) throw new SwarmRefused("rite-already-landed", `a host half already rests for tessera ${at.tessera}`);
-  return { tessera: at.tessera, rite: begun.rite, begun: guest.cid, landed: swarmActCid(act), par: begun.head === at.head && (begun.image === undefined || begun.image === at.image) };
+  return { tessera: at.tessera, rite: begun.rite, begun: guest.cid, landed: swarmActCid(act), par: true };
 }
 
 /**
