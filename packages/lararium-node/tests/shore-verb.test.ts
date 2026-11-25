@@ -96,13 +96,13 @@ describe("the shore verb answers from the projector", () => {
 });
 
 describe("settling a stand-off stays a hand act", () => {
-  test("a seat's take-records refuses shore-needs-hand, a line no door attested refuses hand-unattested, and the file stays", async () => {
+  test("a seat's take-records refuses hand-act-only, a line no door attested refuses hand-unattested, and the file stays", async () => {
     const s = await stand();
     const seat = await answerShore(s.projector, { op: "take-records", uri: URI, key: s.key }, "seat");
-    expect(seat).toMatchObject({ ok: false, refusal: "shore-needs-hand" });
+    expect(seat).toMatchObject({ ok: false, refusal: "hand-act-only" });
     expect(String(seat["why"])).toContain(`lares shore take-records ${URI} --key ${s.key}`);
     expect(await answerShore(s.projector, { op: "take-records", uri: URI, key: s.key })).toMatchObject({ ok: false, refusal: "hand-unattested" });
-    expect(await answerShore(s.projector, { op: "keep-both", uri: URI, key: s.key }, "seat")).toMatchObject({ ok: false, refusal: "shore-needs-hand" });
+    expect(await answerShore(s.projector, { op: "keep-both", uri: URI, key: s.key }, "seat")).toMatchObject({ ok: false, refusal: "hand-act-only" });
     expect(readFileSync(s.file, "utf-8")).toBe(HAND);
     expect(s.resolved).toEqual([]);
   });
@@ -141,7 +141,7 @@ describe("the island's shore door", () => {
       claimShoreVerb("wiki:place-verb", place(SHORE_VERB, { op: "take-records", uri: URI, key: s.key }, "req-5", "seat"), (msg) => { posted.push(msg as unknown as Record<string, unknown>); resolve(); }, () => s.projector);
     });
     await done;
-    expect(posted[0]).toMatchObject({ requestId: "req-5", result: { ok: false, refusal: "shore-needs-hand" } });
+    expect(posted[0]).toMatchObject({ requestId: "req-5", result: { ok: false, refusal: "hand-act-only" } });
     expect(readFileSync(s.file, "utf-8")).toBe(HAND);
   });
 
