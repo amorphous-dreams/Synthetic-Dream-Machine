@@ -9,10 +9,12 @@ export interface GlassBootInputs {
   /** The vessel's word that its store rests sealed (S's row): the plugin gate opens on it and on nothing else. */
   sealedRest: boolean;
   /**
-   * The house skins whose bytes hash to the CID the attested genesis names for them (`names.skinCids`): content identity, never the
-   * title. The mirror's census admits a skin plugin only from this set.
+   * The preload OBJECTS that are house skins: each came from the one blob whose bytes hash to the CID the vessel's founding record
+   * names for that skin title (`names.skinCids`). Attestation rides the object, never the title, so a second blob wearing a skin's
+   * title stays outside it. The CIDs come from the live founding-record rows (`floorSkinCids`), a self-consistency of the island's
+   * own rows; binding them to a re-verified genesis chain waits (course/glass-cid-rides-the-genesis-chain).
    */
-  attestedSkins?: ReadonlySet<string>;
+  attestedSkins?: WeakSet<object>;
   /** The vessel's answer to which of the wiki's startup records this tab runs (`admitStartupRecords` behind it); absent, none runs. */
   startupAdmit?: (records: readonly PortWireRecord[]) => Promise<ReadonlySet<string>>;
 }
@@ -89,14 +91,14 @@ export function makeBootHandoff(names: GlassBootNames | null, portId: string, ha
       };
       const coreBytes = whole(wanted[0]!);
       const preloadedTiddlers: Record<string, unknown>[] = [];
-      const attestedSkins = new Set<string>();
+      const attestedSkins = new WeakSet<object>();
       for (const cid of wanted.slice(1)) {
         try {
           const preloads = preloadsFromCasBlob(whole(cid));
-          // A skin is attested when the blob carrying it hashes (it just did) to the CID the genesis names for that title.
+          // A skin preload is attested when the blob carrying it is the one the vessel names for that title; a same-titled preload from another blob is not.
           for (const preload of preloads) {
             const title = preload["title"];
-            if (typeof title === "string" && Object.hasOwn(names.skinCids ?? {}, title) && names.skinCids![title]!.toLowerCase() === cid) attestedSkins.add(title);
+            if (typeof title === "string" && Object.hasOwn(names.skinCids ?? {}, title) && names.skinCids![title]!.toLowerCase() === cid) attestedSkins.add(preload);
           }
           preloadedTiddlers.push(...preloads);
         }

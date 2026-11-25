@@ -25,7 +25,8 @@ const nameOf = (error: unknown): string => error instanceof Error ? error.name :
 const HOUSE_SKINS: ReadonlySet<string> = new Set([LARES_MEMETIC_WIKITEXT_PLUGIN_URI, LARES_LARARIUM_PLUGIN_URI]);
 /**
  * THE CENSUS AND THE GATE, before any module evaluates. A SKIN IS ADMITTED BY ITS BYTES: a plugin wearing a house skin's title boots
- * only when `attestedSkins` holds that title, meaning its blob hashed to the CID the attested genesis names for the skin. The URI
+ * only when `attestedSkins` holds that preload object, meaning the blob it came from hashed to the CID the vessel's founding record names for the skin
+ * (the live island rows, a self-consistency; the genesis chain binding is owed: course/glass-cid-rides-the-genesis-chain). A second blob wearing the title never rides the true skin's attestation. The URI
  * names; it proves no bytes. Any other bytes under a skin title refuse as `skin-unattested` (the seal never lifts it), and the cure
  * rebuilds the skin through the pipeline. A plugin of any type carrying a `syncadaptor` or a `saver` shadow, or a
  * promoted loose module carrying either type, refuses: the mirror is fed by the port alone. Every other person's plugin (not the
@@ -37,7 +38,7 @@ const HOUSE_SKINS: ReadonlySet<string> = new Set([LARES_MEMETIC_WIKITEXT_PLUGIN_
  * carries by CID among them). A theme or language that carries a module waits on the seal like any plugin. The inputs come from
  * the vessel, never from a page value.
  */
-export function censusPreloads(preloads: Record<string, unknown>[], sealedRest: boolean, attestedSkins: ReadonlySet<string> = new Set()) {
+export function censusPreloads(preloads: Record<string, unknown>[], sealedRest: boolean, attestedSkins: { has(preload: object): boolean } = new WeakSet()) {
   const refused: { title: string; kind: string }[] = [];
   const accepted = preloads.filter(plugin => {
     const title = String(plugin.title ?? "");
@@ -46,7 +47,7 @@ export function censusPreloads(preloads: Record<string, unknown>[], sealedRest: 
       return false;
     }
     if (plugin["plugin-type"] === undefined) return true;
-    if (HOUSE_SKINS.has(title) && !attestedSkins.has(title)) { refused.push({ title, kind: "skin-unattested" }); return false; }
+    if (HOUSE_SKINS.has(title) && !attestedSkins.has(plugin)) { refused.push({ title, kind: "skin-unattested" }); return false; }
     let shadows: Record<string, unknown> = {};
     try { shadows = (JSON.parse(String(plugin.text ?? "{}")) as { tiddlers?: Record<string, unknown> }).tiddlers ?? {}; }
     catch { /* Invalid plugin content is left to the engine. */ }
@@ -54,7 +55,7 @@ export function censusPreloads(preloads: Record<string, unknown>[], sealedRest: 
     const dangerous = fields.some(value => ["syncadaptor", "saver"].includes(String(value["module-type"])));
     const evaluates = fields.some(value => value["module-type"] !== undefined || value["type"] === "application/javascript");
     const gated = plugin["plugin-type"] === "plugin" || evaluates;
-    const kind = dangerous ? "plugin-syncadaptor" : gated && !sealedRest && !attestedSkins.has(title) && title !== "$:/core" ? "plugin-gate" : "";
+    const kind = dangerous ? "plugin-syncadaptor" : gated && !sealedRest && !(HOUSE_SKINS.has(title) && attestedSkins.has(plugin)) && title !== "$:/core" ? "plugin-gate" : "";
     if (kind) refused.push({ title, kind });
     return !kind;
   });
@@ -161,7 +162,7 @@ export function bootSetTitles(preloads: readonly Record<string, unknown>[]): Set
 export async function openMirror(options: Omit<GlassPortOptions, "wiki" | "Tiddler" | "adopt" | "inheritTags" | "inheritDeferred" | "opened"> & {
   inputs: { coreBytes: Uint8Array; coreCid: string; preloadedTiddlers: Record<string, unknown>[]; sealedRest?: boolean;
     /** The skins whose bytes hash to the attested genesis CID (`GlassBootInputs.attestedSkins`); a skin title outside it refuses. */
-    attestedSkins?: ReadonlySet<string>;
+    attestedSkins?: { has(preload: object): boolean };
     /** The vessel's answer to which of the wiki's startup records this tab runs (`admitStartupRecords` behind it); absent, none runs. */
     startupAdmit?: (records: readonly PortWireRecord[]) => Promise<ReadonlySet<string>> };
   shadowRoot: ShadowRoot;
@@ -213,7 +214,7 @@ export async function openMirror(options: Omit<GlassPortOptions, "wiki" | "Tiddl
   try {
     try {
       await seams.bootEngine?.();
-      const census = censusPreloads(options.inputs.preloadedTiddlers, options.inputs.sealedRest === true, options.inputs.attestedSkins ?? new Set());
+      const census = censusPreloads(options.inputs.preloadedTiddlers, options.inputs.sealedRest === true, options.inputs.attestedSkins ?? new WeakSet());
       const sealed = options.inputs.sealedRest === true;
       const startups = options.opened ? options.opened.records.filter(record => !record.deleted && isStartupRecord(record)) : [];
       const startupAdmitted = options.inputs.startupAdmit && startups.length > 0 ? await options.inputs.startupAdmit(startups) : options.inputs.startupAdmit ? new Set<string>() : null;
