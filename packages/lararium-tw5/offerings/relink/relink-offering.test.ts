@@ -15,8 +15,9 @@
  *
  * This test reads the committed descriptor rather than re-running the pack (packing shells out to
  * the TW5 CLI; re-running it on every test run would make this suite as slow and as
- * network/toolchain-fragile as the pack step itself) — `pack-relink-offering.test.ts` covers
- * reproducibility by re-running the script itself and diffing the bytes.
+ * network-bound as the pack step itself, which fetches the public upstream). The suite stays offline;
+ * `tsx scripts/pack-relink-offering.ts --verify` re-packs and diffs the bytes, run by hand when
+ * re-pinning.
  */
 import { describe, test, expect } from "vitest";
 import { readFileSync } from "node:fs";
@@ -99,6 +100,11 @@ describe("the relink offering's pinned bytes", () => {
 
   test("the packed file hashes to the descriptor's sha256", () => {
     expect(createHash("sha256").update(pluginBytes).digest("hex")).toBe(blob.sha256);
+  });
+
+  test("carries its licence tiddler", () => {
+    const plugin = JSON.parse(pluginBytes.toString("utf8")) as { text: string };
+    expect(Object.keys(JSON.parse(plugin.text).tiddlers)).toContain("$:/plugins/flibbles/relink/license");
   });
 
   test("the pack carries Relink alone: the relink-titles add-on stays out", () => {

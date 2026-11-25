@@ -14,8 +14,11 @@
  * Only `plugins/relink` packs. The sibling `relink-titles` add-on rewrites derived titles through
  * `wiki.deleteTiddler`, which escapes the rename door's dry-run capture, so it never rides here.
  *
- * Run via: tsx packages/lararium-tw5/scripts/pack-relink-offering.ts
- * A reproducibility test sets RELINK_OFFERING_OUT_DIR to a scratch directory and diffs the bytes.
+ * Run via: tsx packages/lararium-tw5/scripts/pack-relink-offering.ts [--out <dir>] [--verify]
+ *   --out <dir>  write the pack there instead of `offerings/relink/`.
+ *   --verify     pack into a scratch directory and diff it byte-for-byte against the committed
+ *                artifacts; exit 1 on any difference. It fetches the public upstream, so it needs the
+ *                network: run it by hand when re-pinning, never from the vitest suite.
  */
 import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, rmSync, cpSync } from "node:fs";
@@ -28,7 +31,14 @@ import { sha256HexBytesSync } from "@lararium/mesh";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT     = path.resolve(__dirname, "..");
 const REPO_ROOT = path.resolve(ROOT, "../..");
-const OUT_DIR  = process.env["RELINK_OFFERING_OUT_DIR"] ?? path.join(ROOT, "offerings", "relink");
+const COMMITTED_DIR = path.join(ROOT, "offerings", "relink");
+const ARGV = process.argv.slice(2);
+const VERIFY = ARGV.includes("--verify");
+const OUT_FLAG = ARGV.indexOf("--out");
+if (OUT_FLAG >= 0 && !ARGV[OUT_FLAG + 1]) throw new Error("[relink-offering] --out takes a directory");
+const OUT_DIR  = VERIFY
+  ? mkdtempSync(path.join(tmpdir(), "relink-offering-verify-"))
+  : OUT_FLAG >= 0 ? path.resolve(ARGV[OUT_FLAG + 1]!) : COMMITTED_DIR;
 
 const UPSTREAM_URL = "https://github.com/flibbles/tw5-relink.git";
 const COMMIT_PIN   = "51266a1e853c616c5f0b401a9c881d518dddb9bc";
@@ -103,6 +113,18 @@ async function main(): Promise<void> {
   writeFileSync(path.join(OUT_DIR, "offering.json"), JSON.stringify({ blobs: [blob] }, null, 2) + "\n", "utf8");
 
   console.log(`[relink-offering] ✓ blob ${PLUGIN_TITLE}  sha256=${blobSha256.slice(0, 16)}…`);
+  if (VERIFY) {
+    try {
+      const drift = ["relink-plugin.json", "offering.json", "NOTICES.txt"].filter(
+        (f) => readFileSync(path.join(OUT_DIR, f), "utf8") !== readFileSync(path.join(COMMITTED_DIR, f), "utf8"),
+      );
+      if (drift.length) throw new Error(`[relink-offering] re-pack differs from the committed bytes: ${drift.join(", ")}`);
+      console.log("[relink-offering] ✓ verify: the re-pack matches the committed artifacts byte-for-byte");
+    } finally {
+      rmSync(OUT_DIR, { recursive: true, force: true });
+    }
+    return;
+  }
   console.log(`[relink-offering] ✓ wrote ${path.relative(REPO_ROOT, OUT_DIR)}/{relink-plugin.json,offering.json,NOTICES.txt} (UNSIGNED — \`nexus publish --source\` signs it)`);
 }
 
