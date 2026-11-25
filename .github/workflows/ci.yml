@@ -347,7 +347,7 @@ jobs:
     needs: [scope, quick]
     # LANE FAIL-FAST: on a lane ref a red Quick gate stops the heavy cells before they spend a runner (the Test gate below reads the
     # skipped cells as red); develop, main and merge_group still run every cell whatever Quick answered, so each merged head
-    # keeps a full run. `!cancelled()` plus the scope's own success keeps the old skip-behind-scope law.
+    # keeps a full run. `!cancelled()` plus the scope's own success skips the heavy cells behind a failed scope.
     if: ${{ !cancelled() && needs.scope.result == 'success' && (needs.quick.result == 'success' || !(!startsWith(github.ref, 'refs/heads/gh-readonly-queue/') && github.ref != 'refs/heads/develop' && github.ref != 'refs/heads/main')) && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork) && !(github.event_name == 'push' && (needs.scope.outputs.canon == 'true')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
