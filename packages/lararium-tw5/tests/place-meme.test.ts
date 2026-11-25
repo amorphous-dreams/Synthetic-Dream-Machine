@@ -43,28 +43,51 @@ describe("★ placeMeme lands a meme from text alone ★", () => {
     expect(sink.store.has(`${URI}#/b`)).toBe(true);
   });
 
-  test("a second write waits on the first's settle: a clock skewed far changes nothing, the held turn released lets the second land", async () => {
+  test("a default caller against a hung first write is answered `owed` at the pace; the write stays queued and lands on release", async () => {
     const sink = memorySink();
     const root = URI;
     let release!: () => void;
     const hung = placeMeme({ uri: root, text: meme(["a"]), vet: () => new Promise<void>((resolve) => { release = resolve; }) }, sink);
     const notes: string[] = [];
-    // The pacing timer fires (a tiny bound stands for a clock leaped far ahead); it prints, and decides nothing.
-    const second = placeMeme({ uri: root, text: meme(["a", "b"]), heldNoticeMs: 20, onHeld: (note) => notes.push(note) }, sink);
-    let settled = false;
-    void second.then(() => { settled = true; }, () => { settled = true; });
-    await new Promise((resolve) => setTimeout(resolve, 80));
-    expect(notes).toEqual(["the family's turn is held; the write stays owed"]);
-    expect(settled).toBe(false);
+    // No signal passed: the door still hears the held note, and the pace only times the answer.
+    const answer = await placeMeme({ uri: root, text: meme(["a", "b"]), heldNoticeMs: 20, onHeld: (n) => notes.push(n) }, sink);
+    expect(answer.decision).toBe("owed");
+    expect(answer.root).toBe(root);
+    expect(answer.reason).toBe("the family's turn is held; the write stays owed");
+    expect(notes).toEqual([answer.reason]);
     expect(sink.store.has(`${root}#/b`)).toBe(false);
-    // A third write queues behind the held turn rather than skipping it, and lands once that turn settles.
-    const third = placeMeme({ uri: root, text: meme(["a", "b", "c"]) }, sink);
+    // A third write queues behind the owed one rather than skipping it.
+    const third = placeMeme({ uri: root, text: meme(["a", "b", "c"]), holdAnswer: true }, sink);
     release();
     expect((await hung).decision).toBe("ingest");
-    expect((await second).decision).toBe("ingest");
+    expect((await answer.settled!).decision).toBe("ingest");
     expect((await third).decision).toBe("ingest");
     expect(sink.store.has(`${root}#/b`)).toBe(true);
     expect(sink.store.has(`${root}#/c`)).toBe(true);
+  });
+
+  test("a clock skewed far changes nothing: the pace never reached, the second write waits and lands with its own receipt", async () => {
+    const sink = memorySink();
+    let release!: () => void;
+    const hung = placeMeme({ uri: URI, text: meme(["a"]), vet: () => new Promise<void>((resolve) => { release = resolve; }) }, sink);
+    const second = placeMeme({ uri: URI, text: meme(["a", "b"]), heldNoticeMs: 2 ** 30 }, sink);
+    await new Promise((resolve) => setTimeout(resolve, 40));
+    expect(sink.store.has(`${URI}#/b`)).toBe(false);
+    release();
+    await hung;
+    expect((await second).decision).toBe("ingest");
+    expect(sink.store.has(`${URI}#/b`)).toBe(true);
+  });
+
+  test("a caller that holds its answer (`holdAnswer`) waits for the settle and never hears owed", async () => {
+    const sink = memorySink();
+    let release!: () => void;
+    const hung = placeMeme({ uri: URI, text: meme(["a"]), vet: () => new Promise<void>((resolve) => { release = resolve; }) }, sink);
+    const held = placeMeme({ uri: URI, text: meme(["a", "b"]), heldNoticeMs: 10, holdAnswer: true }, sink);
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    release();
+    await hung;
+    expect((await held).decision).toBe("ingest");
   });
 
   test("an interrupt ends a held wait by name and moves nothing; the root stays held behind the first turn", async () => {

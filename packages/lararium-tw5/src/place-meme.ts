@@ -219,12 +219,35 @@ export interface PlaceMemeInput {
   /** How long this write waits on the root's turn before `onHeld` prints the owed note; defaults to `FAMILY_TURN_NOTICE_MS`.
    *  A pace for the note only: no clock ends the wait. */
   readonly heldNoticeMs?: number;
-  /** Prints "the family's turn is held; the write stays owed" once the notice pace passes; the write keeps waiting. */
+  /** Also hears "the family's turn is held; the write stays owed" once the notice pace passes (the answer below rides it too). */
   readonly onHeld?: (note: string) => void;
+  /** True where the caller holds its own answer for the settle (a syncer pass, the backstop): no `owed` answer at the pace, the
+   *  write keeps waiting. Absent, a door hears `owed` at the pace and the write stays queued. */
+  readonly holdAnswer?: boolean;
   /** An interrupt: aborting ends the wait by name (`family-turn-interrupted`) and moves nothing. */
   readonly signal?: AbortSignal;
   /** Reads every record an `ingest` decision would land, before the first lands; a throw lands nothing (a door's own wall). */
   readonly vet?: (records: readonly Record<string, unknown>[]) => void | Promise<void>;
+}
+
+/**
+ * THE OWED ANSWER. The pace of a held family turn times the ANSWER, never the outcome: the door answers `owed` with the
+ * family's root and the base the write will meet (`canonicalHash`, a read-back to poll), and the write stays queued, landing
+ * when the earlier turn settles or ending `family-turn-interrupted` on an interrupt. `settled` carries that outcome to an
+ * in-process caller (non-enumerable, so a door's JSON answer never prints it).
+ */
+export interface PlaceMemeOwed {
+  readonly uri: string;
+  readonly decision: "owed";
+  readonly root: string;
+  readonly reason: string;
+  readonly canonicalHash?: string;
+  readonly landed: readonly string[];
+  readonly tombstoned: readonly string[];
+  readonly warnings: readonly string[];
+  readonly diagnostics: readonly MemeDiagnostic[];
+  readonly grade?: undefined;
+  readonly settled?: Promise<PlaceMemeReceipt>;
 }
 
 export interface PlaceMemeReceipt {
@@ -538,8 +561,29 @@ function receiptOfNonIngest(
  * Place one meme into a sink through the Confluence gate. Never throws on a bad meme — the receipt
  * carries the refusal; a sink verb that throws propagates.
  */
-export function placeMeme(input: PlaceMemeInput, sink: MemeSink): Promise<PlaceMemeReceipt> {
-  return inFamilyTurn(input.uri, () => placeMemeNow(input, sink), input);
+export function placeMeme(input: PlaceMemeInput & { readonly holdAnswer: true }, sink: MemeSink): Promise<PlaceMemeReceipt>;
+export function placeMeme(input: PlaceMemeInput, sink: MemeSink): Promise<PlaceMemeReceipt | PlaceMemeOwed>;
+export function placeMeme(input: PlaceMemeInput, sink: MemeSink): Promise<PlaceMemeReceipt | PlaceMemeOwed> {
+  if (input.holdAnswer) return inFamilyTurn(input.uri, () => placeMemeNow(input, sink), input);
+  return new Promise((resolve, reject) => {
+    let answered = false;
+    const run = inFamilyTurn(input.uri, () => placeMemeNow(input, sink), input, () => {
+      if (answered) return;
+      answered = true;
+      void owedOf(input, sink, run).then(resolve, reject);
+    });
+    run.then((receipt) => { if (!answered) { answered = true; resolve(receipt); } }, (err: unknown) => { if (!answered) { answered = true; reject(err); } });
+  });
+}
+
+async function owedOf(input: PlaceMemeInput, sink: MemeSink, settled: Promise<PlaceMemeReceipt>): Promise<PlaceMemeOwed> {
+  const read = await readMeme(input.uri, sink, input.hash).catch(() => null);
+  const owed: PlaceMemeOwed = {
+    uri: input.uri, decision: "owed", root: rootAddressOf(input.uri), reason: FAMILY_TURN_HELD_NOTE,
+    ...(read ? { canonicalHash: read.canonicalHash } : {}), landed: [], tombstoned: [], warnings: [FAMILY_TURN_HELD_NOTE], diagnostics: [],
+  };
+  settled.catch(() => undefined); // an owed write ending in a refusal reaches whoever reads `settled`, never the process
+  return Object.defineProperty(owed, "settled", { value: settled, enumerable: false });
 }
 
 /**
@@ -560,7 +604,7 @@ export const FAMILY_TURN_NOTICE_MS = 30_000;
 const FAMILY_TURN_HELD_NOTE = "the family's turn is held; the write stays owed";
 const FAMILY_TURN_INTERRUPTED = "family-turn-interrupted";
 const familyTurns = new Map<string, Promise<void>>();
-function inFamilyTurn<T>(uri: string, act: () => Promise<T>, wait: Pick<PlaceMemeInput, "heldNoticeMs" | "onHeld" | "signal"> = {}): Promise<T> {
+function inFamilyTurn<T>(uri: string, act: () => Promise<T>, wait: Pick<PlaceMemeInput, "heldNoticeMs" | "onHeld" | "signal"> = {}, onPace?: () => void): Promise<T> {
   const key = rootAddressOf(uri);
   const before = familyTurns.get(key) ?? Promise.resolve();
   const turn = (async () => {
@@ -573,7 +617,7 @@ function inFamilyTurn<T>(uri: string, act: () => Promise<T>, wait: Pick<PlaceMem
       if (signal.aborted) onAbort(); else signal.addEventListener("abort", onAbort, { once: true });
     });
     // The pacing timer prints the owed note; it never settles the wait.
-    if (wait.onHeld) timer = setTimeout(() => wait.onHeld?.(FAMILY_TURN_HELD_NOTE), wait.heldNoticeMs ?? FAMILY_TURN_NOTICE_MS);
+    if (wait.onHeld || onPace) timer = setTimeout(() => { wait.onHeld?.(FAMILY_TURN_HELD_NOTE); onPace?.(); }, wait.heldNoticeMs ?? FAMILY_TURN_NOTICE_MS);
     let ready: boolean;
     try { ready = await Promise.race([before.then(() => true as const), interrupted]); }
     finally { clearTimeout(timer); if (onAbort) wait.signal?.removeEventListener("abort", onAbort); }

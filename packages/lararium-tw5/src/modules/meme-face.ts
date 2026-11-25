@@ -48,7 +48,7 @@ declare const $tw: (Partial<TW5Instance> & LaresTw5Extension) | undefined;
 export function memeFaceOf(wiki: TW5Instance["wiki"]): LaresMemeFace {
   const sink = wikiMemeSink(wiki);
   return {
-    place: (uri, text, base) => placeMeme({ uri, text, baseHash: base ?? null }, sink),
+    place: (uri, text, base) => placeMeme({ uri, text, baseHash: base ?? null, holdAnswer: true }, sink),
     // The face hands a wiki-side caller the meme's TEXT: a pointer whose body this wiki holds none of refuses by name.
     read: async (uri) => {
       if (await holdsUnreadPointer(uri, sink)) throw new Error(`${POINTER_BODY_CODE}: ${uri} holds a pointer whose body rests in the content tier; the meme face reads no pointer body`);

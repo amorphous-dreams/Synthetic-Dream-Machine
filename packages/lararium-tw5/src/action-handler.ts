@@ -1509,7 +1509,7 @@ async function executeIngest(action: IngestAction, access: BagAccess, opts: Acti
       // The ONE placement law (place-meme.ts): group · gate · land · tombstone, over a bag sink.
       // The gesture's Synced-tree hash rides as the base the gate merges against.
       const placed = await placeMeme(
-        { uri, text: carrierText, baseHash: carrier.syncedHash, baseRecordsHash: carrier.syncedRecordsHash ?? null, hash: renderHash, ...(unattended ? { unattended } : {}) },
+        { uri, text: carrierText, holdAnswer: true as const, baseHash: carrier.syncedHash, baseRecordsHash: carrier.syncedRecordsHash ?? null, hash: renderHash, ...(unattended ? { unattended } : {}) },
         bagMemeSink(access, action.toBag, action.changeId, o),
       );
       // An `ingest` receipt carries the placement's warnings — the quoteblock floor's account of a fence

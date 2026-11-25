@@ -3,13 +3,13 @@
   "canonicalTitle": "lar:///ha.ka.ba/lararium/plugins/lares/memetic-wikitext",
   "compatibilityTitle": "$:/plugins/lares/memetic-wikitext",
   "moduleManifestPath": "dist-plugin/module-manifest.json",
-  "moduleManifestSha256": "aab4c0af64184e4187667dfcb1c28f561749ca202d9de7b7f394ffb8e082eec1",
+  "moduleManifestSha256": "e8728744769bb19cef67a950e17ae77c2052795c8a0bc3aa02ef1b114d290f34",
   "sourceManifestPath": "dist-plugin/plugin-source-manifest.json",
-  "sourceManifestSha256": "8dbc39ace182b29858d0bb641426faf1cc4cd4c778f19744a5382ce56c31d642",
+  "sourceManifestSha256": "e46ef71c8891bfefb31196b3e0fc94803e22b7239b5f94d14e6ce6bfb45ce4c0",
   "packTranscriptPath": "dist-plugin/pack-transcript.json",
-  "packTranscriptSha256": "24e59476ecfb3758a8609c66d87593427edde08e508bc1466d2fb5fffb0e1508",
+  "packTranscriptSha256": "44688452eae70419f8a2d6a70aadbfe4cc85420a8e2616b80e7c40a81ed1d2ad",
   "moduleCount": 50,
   "packedTiddlerCount": 203,
-  "pluginJsonSha256": "8e50944c86077acc4b82d122ddfcfc5e437035940e50424d244cfc7521a518e2",
-  "pluginTw5Sha256": "ca4e496f6da02926f181b7b531e37ed94965a35c878116040861afcbb504fc38"
+  "pluginJsonSha256": "bb7559ed6a5a09eecd219a8906b6332f152eb5ec9c00b3b9aa226a01631da87e",
+  "pluginTw5Sha256": "64a4ce7492e317be6ac28999efb03780ada6d6cbcdd3d29616c22a1070cde240"
 }

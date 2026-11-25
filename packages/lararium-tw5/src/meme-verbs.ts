@@ -545,7 +545,7 @@ export function makeMemePutReactor(opts: MemeVerbOptions): VerbReactor {
         await admitSeatExecutable(title, record, "meme put", ctx.asker, { wiki, port: ctx.execLei });
       }
     };
-    const receipt = await placeMeme({ uri: target.uri, text, baseHash, vet }, sink);
+    const receipt = await placeMeme({ uri: target.uri, text, baseHash, vet, ...(ctx.signal ? { signal: ctx.signal } : {}) }, sink);
     // THE ANSWER NAMES THE LAYER: the bag the put landed in, and for a named wiki the slot of it (`working`, or `personal`
     // where the face holds no writer's seat in the wiki's workbench).
     const layer = target.recipe && target.recipe !== "default" ? wikiSlotKindOf(target.recipe, bag) : null;
