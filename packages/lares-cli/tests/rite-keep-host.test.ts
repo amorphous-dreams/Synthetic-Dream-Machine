@@ -539,6 +539,30 @@ describe("the keep rite, host half", () => {
     expect(r.commits()).toBe(n + 1);
   });
 
+  test("KH14b RED: a spent keep lei refuses first, before the mirror, the secret scan or the shore flush run, and names the cure; CONTROL: a standing lei lets the same keep through", async () => {
+    const r = rig();
+    const touched: string[] = [];
+    const lei = (standing: boolean): KeepHostPorts["leiShow"] => async () => ({ ok: true, output: { lei: standing ? { standing: true } : { standing: false, refusal: "returns-spent", after: "a".repeat(64), returns: 12 } } });
+    const watched = (standing: boolean): KeepHostPorts => ({
+      ...r.ports, leiShow: lei(standing),
+      sessions: { ...r.sessions.sources, unzstd: (f) => { touched.push("scan"); return r.sessions.sources.unzstd(f); } },
+      flush: async () => { touched.push("flush"); return null; },
+      row: async (verb, args) => { touched.push(`row:${verb}`); return r.ports.row(verb, args); },
+    });
+    const out = await riteKeepHost(watched(false), { workspace: "backup", face: 0 });
+    expect(out).toMatchObject({ code: 1, data: { refusal: "swarm-lei-returns-spent" } });
+    expect(String(out.data["message"])).toContain("`lares lei kui --rite keep --branch backup --returns 12 --face 0`");
+    expect(touched).toEqual([]);
+    expect(r.calls).toEqual([]);
+    expect(existsSync(join(r.ws, r.device))).toBe(false);
+    const unnamed = await riteKeepHost(watched(false), { workspace: "backup" });
+    expect(unnamed).toMatchObject({ code: 1, data: { refusal: "swarm-lei-returns-spent" } });
+    expect(touched).toEqual([]);
+    const ok = await riteKeepHost(watched(true), { workspace: "backup" });
+    expect(ok.code).toBe(0);
+    expect(touched).toContain("flush");
+  });
+
   test("KH15 RED: moved sessions over an unmoved house spend a return of their own before anything commits; with none left, nothing commits or pushes", async () => {
     const r = rig();
     expect((await riteKeepHost(r.ports, { workspace: "backup" })).code).toBe(0);

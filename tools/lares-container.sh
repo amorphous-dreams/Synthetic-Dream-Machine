@@ -156,6 +156,20 @@ done
 # `run/keep-owed` mark, which outlives this invocation (a Ctrl+C, a later run), and a keep that keeps clears it.
 KEEP_SAID=""
 keep_owed_mark() { printf '%s' "$HOUSE/run/keep-owed"; }
+# THE KEEP'S WORDS OUTLIVE THE PASTE: the keep's stderr (its refusal text included) streams to the terminal and rests at the
+# house's run/keep-last.log, overwritten each keep, so the next refusal leaves its words on disk. A log that cannot be written
+# never blocks the keep (stderr then flows to the terminal alone).
+keep_run() {
+  kr_log="$HOUSE/run/keep-last.log"; kr_fifo="$HOUSE/run/.keep-last.fifo.$$"
+  if mkdir -p -- "$HOUSE/run" 2>/dev/null && mkfifo "$kr_fifo" 2>/dev/null; then
+    tee -- "$kr_log" < "$kr_fifo" >&2 &
+    kr_tee=$!
+    "$@" rite keep --if-due --json 2>"$kr_fifo"; kr_rc=$?
+    wait "$kr_tee" 2>/dev/null; rm -f -- "$kr_fifo"
+    return "$kr_rc"
+  fi
+  "$@" rite keep --if-due --json
+}
 keep_before_down() {
   KEEP_SAID="no keep workspace named"
   [ -n "$(value_of LARES_KEEP_WORKSPACE)$(value_of LARES_WORKSPACES)" ] || return 0
@@ -167,7 +181,7 @@ keep_before_down() {
   printf '%s\n' 'lares-container: keeping first (rite keep --if-due): a house that moved cuts and pushes its keep before the stop' >&2
   # THE MARK CLEARS ON A REAL KEEP alone: a successful envelope (`"ok":true`) naming its workspace (`data.workspace`, non-empty).
   # An answer naming no workspace kept nothing; an empty or malformed one reads as nothing kept. Either way the keep stays owed.
-  if kb_out=$("$@" rite keep --if-due --json); then
+  if kb_out=$(keep_run "$@"); then
     # The envelope parses as JSON (python3: the host carries no jq); a reader that cannot parse it reads nothing kept.
     # STRICT: no NaN or Infinity, `ok` the boolean true, `data` an object, `data.workspace` a non-empty string (or null: none named).
     kb_rc=0
@@ -195,7 +209,7 @@ elif isinstance(w, str) and w.strip():
          else KEEP_SAID="the keep answered no envelope naming its workspace, so nothing reads kept; the keep stays owed"; fi ;;
     esac
     [ "$kb_read" = kept ] || { mkdir -p -- "$HOUSE/run" && : > "$(keep_owed_mark)"; }
-  else KEEP_SAID="the keep did not complete"; mkdir -p -- "$HOUSE/run" && : > "$(keep_owed_mark)"; printf '%s\n' 'lares-container: the keep did not complete (above); down goes on, and `lares rite keep` keeps by hand' >&2; fi
+  else KEEP_SAID="the keep did not complete"; mkdir -p -- "$HOUSE/run" && : > "$(keep_owed_mark)"; printf '%s\n' 'lares-container: the keep did not complete (above, and in $HOUSE/run/keep-last.log); down goes on, and `lares rite keep` keeps by hand' >&2; fi
 }
 
 # Make every bound class as the operator, so the engine never makes one owned by root.

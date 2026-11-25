@@ -50,7 +50,7 @@ import { join } from "node:path";
 import { MANIFEST_FILE, unsafeRelPath } from "./bundle-manifest.js";
 import { configuredKeepSessions } from "./keep-config.js";
 import { DEVICES_DIR, SessionsRefused, mirrorSessions, readDevice, readOrMintDevice, sessionSources, type KeepDevice, type SessionSources } from "./keep-sessions.js";
-import { KEEP_INTO, KeepRefused, RITE_KEEP, codedMessage, keepFaceLine } from "./rite-keep.js";
+import { KEEP_INTO, KeepRefused, RITE_KEEP, codedMessage, keepFaceLine, keepLeiGate } from "./rite-keep.js";
 import { RETURNS_SPENT, type RefillPort, type RiteVerbAnswer } from "./rite-kukulu.js";
 import type { ShoreFlushReading } from "./shore-core.js";
 
@@ -78,6 +78,11 @@ export interface KeepHostPorts {
    * decides (`configuredKeepSessions`) and the sources read this process's own environment.
    */
   readonly sessions?: SessionSources | null;
+  /**
+   * The keep line as `lares lei show --rite keep --branch <name> [--face N] --json` reads it (one `{ lei }`, or `{ faces }`),
+   * asked FIRST, so a spent lei refuses in seconds, before the mirror, the scan or the flush. Absent, the vessel half decides alone.
+   */
+  leiShow?(branch: string, face?: number): Promise<RiteVerbAnswer>;
   /** git in `dir`; never throws. */
   git(dir: string, argv: readonly string[]): Promise<GitAnswer>;
   say(line: string): void;
@@ -205,6 +210,18 @@ export async function riteKeepHost(ports: KeepHostPorts, opts: KeepHostOptions):
       }
       return found;
     };
+
+    // ── 1b. THE KEEP LEI, before the mirror, the scan and the flush spend their minutes ────────────────────────
+    if (ports.leiShow) {
+      let spent = keepLeiGate(await ports.leiShow(name, opts.face), name, opts.face);
+      if (spent !== null && ports.refill) {
+        // A SPENT KEEP LEI OFFERS ITS OWN REFILL on a terminal; the keep goes on once strung.
+        const returns = /--returns (\d+)/.exec(spent.message)?.[1], at = /--face (\d+)/.exec(spent.message)?.[1];
+        const again = await ports.refill({ rite: "keep", branch: name, ...(returns ? { returns: Number(returns) } : {}), ...(at ? { face: Number(at) } : opts.face !== undefined ? { face: opts.face } : {}) });
+        if (again.strung) spent = keepLeiGate(await ports.leiShow(name, opts.face), name, opts.face);
+      }
+      if (spent !== null) throw new HostRefused(spent.code, spent.message);
+    }
 
     // ── 2. THE SESSIONS, on the host, before anything spends ──────────────────────────────────────────────────
     let sessionsMoved = false;
