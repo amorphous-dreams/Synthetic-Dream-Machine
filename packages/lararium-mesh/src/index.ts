@@ -726,3 +726,4 @@ export * from "./share-config.js";
 export * from "./face-label.js";
 export * from "./secret-shapes.js";
 export * from "./attempt-budget.js";
+export * from "./spirit-unfold.js";
