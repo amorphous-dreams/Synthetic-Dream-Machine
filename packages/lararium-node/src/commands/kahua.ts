@@ -125,6 +125,8 @@ export async function runKahuaCommand(opts: KahuaCommandOptions): Promise<Record
     cap: opts.cap ?? null,
     register: (bagId, url) => catalog.change((d) => { d.tiddlers[bagId] = storedLarRecord(bagId, { text: url, kind: "oracle" }, "kahua-pin"); }),
     session: () => session,
+    // A SESSION THE CALLER NAMED binds a hand land to it; a fresh CLI land takes the session its terms read and names it.
+    ...(opts.session !== undefined ? { sessionBound: true } : {}),
     ...(opts.faceCanon ? { faceCanon: opts.faceCanon } : {}),
     // THE CHORE CHECK: the face this row names against the lend and the daemon mount; a row for a lent face the vessel does
     // not mount refuses before a document opens. The operator's hand asks it here; a session's or a seat's door judged it first.

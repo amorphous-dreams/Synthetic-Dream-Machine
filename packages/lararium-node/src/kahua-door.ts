@@ -72,6 +72,11 @@ export interface KahuaDoorPorts {
   /** The session a lift by hand names in its origin. */
   readonly session: () => string;
   /**
+   * Whether `session` names a session the caller bound this door to. A hand LAND under a bound door lands only a record naming
+   * that session (`kahua-hand-session`); an unbound door (a fresh CLI land) takes the session the terms read and names it.
+   */
+  readonly sessionBound?: boolean;
+  /**
    * The face's LOCAL canon `bags/daemon-<F>` by the face's relation: the document a lift reads its staged row from and a
    * stage writes into. Absent (a direct act, no vessel standing to open the sealed canon) or answering null: a lift refuses
    * `kahua-lift-unstaged`, never a body from the hand.
@@ -181,7 +186,8 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
     const read = readKahuaAct(act, { group, grant: ports.currentSigner });
     if (!read.ok) throw new KahuaRefused(`kahua-act-refused: ${read.refusal}`);
     const handle = await stage();
-    handle.change((d) => writeKahuaAct(d, act));
+    // THE STAGE TAKES THE READER'S OWN ACT (its signed parts alone), never the record the caller handed in.
+    handle.change((d) => writeKahuaAct(d, read.act));
     return read.cid;
   };
   /** The signer a hand act names: the root's public key (terms) or the signed record's signer (land), each under the CURRENT grant. */
@@ -288,6 +294,9 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
       const text = row.text;
       // A LAND names the session its terms read: the signed body carries it, and the body this vessel builds again takes it back.
       const signedSession = hand && "signed" in hand ? (hand.signed as { body?: { origin?: { session?: unknown } } } | null)?.body?.origin?.session : undefined;
+      if (hand && "signed" in hand && !input.proposal && ports.sessionBound && signedSession !== ports.session()) {
+        throw new KahuaRefused(`kahua-hand-session: the signed record names session ${JSON.stringify(signedSession)}, and this land runs under ${JSON.stringify(ports.session())}; read the terms under this session`);
+      }
       let origin = { seat: "", device: ports.atom.key, session: typeof signedSession === "string" && signedSession.length > 0 ? signedSession : ports.session() };
       let taint = [...input.taint];
       let sources = [kahuaStagedSource(row), ...(input.sources ?? []).filter((s) => !(s.title === row.title && s.revision === kahuaStagedSource(row).revision))];
@@ -335,7 +344,7 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
           ports.intents.change((d) => writeIntentEntry(d, outcome));
         }
         await ports.repo.flush();
-        return marked({ cid: done.cid, parent, landed: true }, mark);
+        return marked({ cid: done.cid, parent, landed: true, session: origin.session }, mark);
       }
       let act;
       try {

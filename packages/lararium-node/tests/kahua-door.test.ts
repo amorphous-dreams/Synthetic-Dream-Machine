@@ -527,6 +527,29 @@ describe("the hand at the pūlama (gate-unifier: a lift under a pūlama refused 
     expect(f.roots.n).toBe(0);
   });
 
+  test("RED (cold read F1): a signed record carrying a key beside body/signer/sig lands nothing, and what lands holds exactly the signed parts; CONTROL: the clean record lands", async () => {
+    const f = await face();
+    const door = kahuaDoor(f.ports({ rootKey: async () => f.root.key }));
+    const row = f.st("t", "x");
+    const signed = await signKahuaActBody(recordOf(await door.liftByHand({ ...row, taint: [], sources: src }, { terms: true })), f.root);
+    await expect(door.liftByHand({ ...row, taint: [], sources: src }, { signed: { ...signed, rider: "unsigned payload" } })).rejects.toThrow(/kahua-act-refused: shape/);
+    expect(await door.list()).toEqual([]);
+    await door.liftByHand({ ...row, taint: [], sources: src }, { signed });
+    const stage = await f.repo.find<LarDoc>(kahuaStageDocUrl(GROUP) as never);
+    const texts = Object.values(stage.doc()!.tiddlers).map((r) => tiddlerText(r)).filter((t): t is string => typeof t === "string" && t.startsWith("{"));
+    expect(texts.map((t) => Object.keys(JSON.parse(t) as object).sort())).toEqual([["body", "sig", "signer"]]);
+  });
+
+  test("RED (cold read F3): a land under a door bound to its own session refuses a record that names another session; CONTROL: a door bound to the terms' session lands it, and an unbound door names the session it carried", async () => {
+    const f = await face();
+    const door = kahuaDoor(f.ports({ rootKey: async () => f.root.key }));
+    const row = f.st("t", "x");
+    const signed = await signKahuaActBody(recordOf(await door.liftByHand({ ...row, taint: [], sources: src }, { terms: true })), f.root);
+    await expect(kahuaDoor(f.ports({ session: () => "cli-other", sessionBound: true })).liftByHand({ ...row, taint: [], sources: src }, { signed })).rejects.toThrow(/^kahua-hand-session: /);
+    expect(await door.list()).toEqual([]);
+    expect(await kahuaDoor(f.ports({ session: () => "cli-other" })).liftByHand({ ...row, taint: [], sources: src }, { signed })).toMatchObject({ landed: true, session: "cli-session-1" });
+  });
+
   test("RED: a withdraw and a carry ride the same hand: terms name one body, the signed record lands; CONTROL: the stage reads the withdraw", async () => {
     const f = await face();
     const door = kahuaDoor(f.ports({ rootKey: async () => f.root.key }));

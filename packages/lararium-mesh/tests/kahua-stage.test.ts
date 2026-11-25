@@ -7,6 +7,7 @@
 import { describe, expect, test } from "vitest";
 import type { LarDoc } from "../src/base-doc.js";
 import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "../src/ed25519-door.js";
+import { canonicalJsonBytes } from "../src/crypto.js";
 import { fixtureIntentVerbs, faceIntentVerbs } from "../src/intent-verbs.js";
 import { intentEntryCid, readIntentEntry } from "../src/intent-entry.js";
 import {
@@ -163,5 +164,28 @@ describe("the pin and the proposal", () => {
     expect(intentEntryCid(entry)).toMatch(/^[0-9a-f]{64}$/);
     await expect(buildKahuaProposal({ group: GROUP, signer: atom, session: "s", nonce: "n", verbs: fixtureIntentVerbs({}), proposals: [] })).rejects.toThrow(/proposals/);
     await expect(buildKahuaProposal({ group: GROUP, signer: atom, session: "s", nonce: "n", verbs: fixtureIntentVerbs({}), proposals: [{ title: "t", revision: "r", digest: "a".repeat(64) } as never] })).rejects.toThrow(/taint/);
+  });
+});
+
+describe("an act carries no riders (cold read F1/F2: an unsigned key rode beside a signed body into the fleet-synced stage)", () => {
+  test("RED: a key beside body/signer/sig, or an unknown key at the body's top, inside its origin or inside a source, refuses `shape` even with a valid signature over the whole body; signing such a body refuses; CONTROL: the closed act reads", async () => {
+    const { root, grant, lift } = await fixture();
+    const ok = await lift("t", "x", null);
+    expect(readKahuaAct(ok, { group: GROUP, grant }).ok).toBe(true);
+    // A RIDER BESIDE THE SIGNED PARTS: the signature still verifies over the body, yet the record carries an unsigned key.
+    expect(readKahuaAct({ ...ok, rider: "unsigned payload" }, { group: GROUP, grant })).toEqual({ ok: false, refusal: "shape" });
+    // RIDERS INSIDE THE BODY, each signed over by the root itself: the closed shape refuses them still.
+    const resign = async (body: Record<string, unknown>) => ({ body, signer: root.key, sig: await root.sign(canonicalJsonBytes(body)) });
+    const b = ok.body as unknown as Record<string, unknown>;
+    for (const body of [
+      { ...b, rider: "x" },
+      { ...b, origin: { ...(b.origin as object), rider: "x" } },
+      { ...b, sources: [{ ...(b.sources as object[])[0], rider: "x" }] },
+    ]) {
+      expect(readKahuaAct(await resign(body), { group: GROUP, grant }), JSON.stringify(body).slice(0, 120)).toMatchObject({ ok: false });
+      await expect(lift("t", "x", null, root, { ...(body.rider ? { rider: "x" } : {}), origin: body.origin, sources: body.sources })).rejects.toThrow(/kahua-act: /);
+    }
+    const w = await signKahuaWithdraw({ group: GROUP, epoch: 0, target: ok.signer.padEnd(64, "0").slice(0, 64) }, root);
+    expect(readKahuaAct(await resign({ ...(w.body as unknown as Record<string, unknown>), rider: 1 }), { group: GROUP, grant })).toMatchObject({ ok: false });
   });
 });

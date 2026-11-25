@@ -121,6 +121,9 @@ describe("the hand signs ONE record of the closed set at the pūlama's hand door
       [{ ...frame, record: { ...body, kind: "lar:something-else" } }, "sign-malformed"],
       [{ ...frame, record: { ...body, act: "mint" } }, "sign-malformed"],
       [{ ...frame, record: { ...body, fields: { "kahua-stamp": "x" } } }, "sign-malformed"],
+      [{ ...frame, record: { ...body, rider: "an unsigned rider" } }, "sign-malformed"],
+      [{ ...frame, record: { ...body, origin: { ...(body as { origin: object }).origin, rider: "x" } } }, "sign-malformed"],
+      [{ ...frame, record: { ...body, sources: [{ title: "s", revision: "r", rider: "x" }] } }, "sign-malformed"],
       [{ ...frame, record: { ...body, group: "another-face" } }, "sign-key-mismatch"],
       [{ ...frame, record: await liftBody({ origin: { seat: other, device: "d".repeat(64), session: "s" } }) }, "sign-key-mismatch"],
       [{ ...frame, kind: "plugin-offering", record: { offeror: other, pluginsCid: computePluginsCid(BLOBS), blobs: BLOBS } }, "sign-key-mismatch"],
@@ -156,6 +159,16 @@ describe("the hand signs ONE record of the closed set at the pūlama's hand door
     const bare = await stand({ sign: false });
     await bare.light();
     expect(await bare.door({ op: "sign", face: 0, kind: "kahua-act", record: await liftBody(), credentials: route })).toEqual({ op: "sign", reading: "sign-unavailable" });
+  });
+});
+
+describe("the route's prompt names what the root signs (cold read F4)", () => {
+  test("RED: a lift's words name its title scrubbed of control characters, its text length, fields, sources, taint and parent; CONTROL: a withdraw names its target", async () => {
+    const body = await liftBody({ title: "note\u001b[2Jfake\u202e", text: "x".repeat(42), fields: { type: "text/plain" }, taint: ["web:example"] });
+    const words = PULAMA_SIGN_KINDS["kahua-act"]!.describe(body);
+    expect(words).not.toMatch(/[\u0000-\u001f\u007f-\u009f\u200e\u200f\u202a-\u202e\u2066-\u2069]/);
+    for (const part of ["42", "type", "1 source", "web:example", "parent none"]) expect(words, part).toContain(part);
+    expect(PULAMA_SIGN_KINDS["kahua-act"]!.describe(kahuaActBody({ group: GROUP, act: "withdraw", epoch: 0, target: "c".repeat(64) }))).toContain("c".repeat(64));
   });
 });
 

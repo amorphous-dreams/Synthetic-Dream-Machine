@@ -95,11 +95,22 @@ const RESERVED_FIELDS = new Set(["title", "text"]);
 const liftField = (k: string, v: unknown): boolean =>
   string(v) && !RESERVED_FIELDS.has(k) && !k.startsWith("kahua-");
 
+/** THE CLOSED KEY SETS: an act carries its signed parts and nothing beside them, at every level (no riders). */
+const ACT_KEYS: Readonly<Record<string, ReadonlySet<string>>> = {
+  lift: new Set(["kind", "group", "act", "epoch", "title", "text", "fields", "parent", "origin", "taint", "sources", "proposal"]),
+  withdraw: new Set(["kind", "group", "act", "epoch", "target"]),
+  carry: new Set(["kind", "group", "act", "epoch", "carries"]),
+};
+const ORIGIN_KEYS: ReadonlySet<string> = new Set(["seat", "device", "session"]);
+const SOURCE_KEYS: ReadonlySet<string> = new Set(["title", "revision"]);
+const RECORD_KEYS: ReadonlySet<string> = new Set(["body", "signer", "sig"]);
+const closed = (x: Record<string, unknown>, keys: ReadonlySet<string>): boolean => Object.keys(x).every((k) => keys.has(k));
+
 /** Which lift field fails its shape, or null; `origin`, `taint` and `sources` refuse by their own names. */
 function liftFault(b: Record<string, unknown>): KahuaActRefusal | null {
-  if (!object(b.origin) || !hex64(b.origin.seat) || !hex64(b.origin.device) || !string(b.origin.session) || b.origin.session.length === 0) return "origin";
+  if (!object(b.origin) || !closed(b.origin, ORIGIN_KEYS) || !hex64(b.origin.seat) || !hex64(b.origin.device) || !string(b.origin.session) || b.origin.session.length === 0) return "origin";
   if (!Array.isArray(b.taint) || !b.taint.every((t) => string(t) && t.length > 0)) return "taint";
-  if (!Array.isArray(b.sources) || b.sources.length === 0 || !b.sources.every((s) => object(s) && string(s.title) && s.title.length > 0 && string(s.revision))) return "sources";
+  if (!Array.isArray(b.sources) || b.sources.length === 0 || !b.sources.every((s) => object(s) && closed(s, SOURCE_KEYS) && string(s.title) && s.title.length > 0 && string(s.revision))) return "sources";
   if (!(b.parent === null || hex64(b.parent))) return "parent";
   if (!string(b.title) || b.title.length === 0 || b.title.startsWith(KAHUA_ACT_PREFIX) || !string(b.text) || !object(b.fields)) return "shape";
   // A lift title names its path plainly: a `.` or `..` segment refuses, so no spelling resolves elsewhere than it reads.
@@ -111,6 +122,8 @@ function liftFault(b: Record<string, unknown>): KahuaActRefusal | null {
 }
 function bodyFault(b: Record<string, unknown>): KahuaActRefusal | null {
   if (!string(b.group) || !Number.isSafeInteger(b.epoch) || (b.epoch as number) < 0) return "shape";
+  const keys = typeof b.act === "string" && Object.hasOwn(ACT_KEYS, b.act) ? ACT_KEYS[b.act]! : null;
+  if (keys === null || !closed(b, keys)) return "shape";
   if (b.act === "lift") return liftFault(b);
   if (b.act === "withdraw") return hex64(b.target) ? null : "shape";
   if (b.act === "carry") {
@@ -168,7 +181,7 @@ type Judged = { readonly ok: true; readonly act: SignedKahuaAct; readonly cid: s
 
 /** Judge one record against the face: shape, domain, group, signature, then which roster seats its signer. */
 function judgeKahuaAct(raw: unknown, face: KahuaFoldFace): Judged {
-  if (!object(raw) || !object(raw.body) || !hex64(raw.signer) || !string(raw.sig)) return { ok: false, refusal: "shape" };
+  if (!object(raw) || !closed(raw, RECORD_KEYS) || !object(raw.body) || !hex64(raw.signer) || !string(raw.sig)) return { ok: false, refusal: "shape" };
   const body = raw.body;
   if (body.kind !== KAHUA_ACT_DOMAIN) return { ok: false, refusal: "domain" };
   if (body.group !== face.group) return { ok: false, refusal: "group" };

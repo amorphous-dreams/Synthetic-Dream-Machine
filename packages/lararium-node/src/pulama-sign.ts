@@ -35,12 +35,19 @@ export interface PulamaSignKind<T> {
   verify(record: unknown, face: PulamaSignContext): Promise<string | null>;
 }
 
+/** A string as a terminal may print it: C0/C1 controls and bidi or zero-width marks each show as `?`, and a long one clips. */
+export function printable(s: string, max = 120): string {
+  const clean = s.replace(/[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u2028\u2029\u202a-\u202e\u2060-\u2069\ufeff]/gu, "?");
+  return clean.length > max ? `${clean.slice(0, max)}…` : clean;
+}
+
 const kahuaAct: PulamaSignKind<KahuaActBody> = {
   domain: KAHUA_ACT_DOMAIN,
   async termsOf(raw, face) {
     const fault = kahuaActBodyFault(raw);
     if (fault) return { detail: `a kahua act reads ${fault}: the root signs a lift, a withdraw or a carry whose shape the stage's reader takes` };
-    const body = raw as KahuaActBody;
+    // THE CLOSED SHAPE refused every rider above (body, origin, sources); the root signs a fresh copy of the parts that read.
+    const body = JSON.parse(JSON.stringify(raw)) as KahuaActBody;
     if (face.group === null) return { detail: "the face's anchors name no group, so no kahua act signs for it" };
     if (body.group !== face.group) return { detail: `the act names group ${body.group}, and the face reads ${face.group}`, mismatch: true };
     // A LIFT BY HAND names the root as its seat; a lift that answers a proposal names the proposer, as the stage reader checks.
@@ -48,7 +55,12 @@ const kahuaAct: PulamaSignKind<KahuaActBody> = {
     return { terms: body };
   },
   describe(b) {
-    return b.act === "lift" ? `a kahua lift of "${b.title}" (epoch ${b.epoch})` : b.act === "withdraw" ? `a kahua withdraw of ${b.target}` : `a kahua carry of ${b.carries.length} revision(s)`;
+    if (b.act === "withdraw") return `a kahua withdraw of ${b.target} (epoch ${b.epoch})`;
+    if (b.act === "carry") return `a kahua carry of ${b.carries.length} revision(s) (epoch ${b.epoch})`;
+    // THE PROMPT NAMES WHAT THE ROOT SIGNS, every string scrubbed of control and direction marks so none repaints the terminal.
+    const fields = Object.keys(b.fields).sort().map((k) => printable(k));
+    return `a kahua lift of "${printable(b.title)}" (epoch ${b.epoch}): ${b.text.length} char(s) of text; fields ${fields.length ? fields.join(", ") : "none"}; `
+      + `${b.sources.length} source(s); taint ${b.taint.length ? b.taint.map((t) => printable(t)).join(", ") : "none"}; parent ${b.parent ?? "none"}${b.proposal ? `; answers proposal ${b.proposal}` : ""}`;
   },
   async sign(body, root) {
     const record = await signKahuaActBody(body, root);
