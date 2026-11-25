@@ -72,7 +72,7 @@ appendFileSync(process.env.CALL_LOG, "BENCH " + a.join(" ") + "\\n");
 const how = process.env.FAKE_BENCH ?? "green";
 const git = (r) => execFileSync("git", ["rev-parse", r], { encoding: "utf8" }).trim();
 const code = how === "red" ? 1 : 0;
-const line = code ? "BENCH GATE REFUSES: build (exit 1) · 4 s" : "BENCH GATE GREEN at " + git("--short=9 HEAD") + " over develop - · 4 steps · 4 s";
+const line = code ? "BENCH GATE REFUSES: build (exit 1) · 4 s" : "BENCH GATE GREEN at " + git("HEAD").slice(0, 9) + " over develop - · 4 steps · 4 s";
 if (how !== "none") writeFileSync(a[a.indexOf("--verdict") + 1], JSON.stringify({ kind: "lares-bench-verdict", v: 1, rev: git("HEAD"), tree: git("HEAD^{tree}"), code, line, steps: [{ name: "build", code, secs: 4 }], secs: 4 }));
 console.log(line);
 process.exit(code);
