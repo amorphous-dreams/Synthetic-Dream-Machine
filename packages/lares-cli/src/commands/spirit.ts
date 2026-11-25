@@ -148,7 +148,7 @@ const fieldsOf = async (args: ParsedArgs, label: string, title: string): Promise
 
 /**
  * Resolve a pet name to its record. THE ONE RECORD answers first (`lares/spirit/<pet>`: a carrier with slots, or a field-shaped
- * record naming its own pet), and no legacy address gets read past it. Else the addresses that stood before it read through:
+ * record naming its own pet), and no seat address gets read past it. Else the addresses that stood before it read through:
  * `familiar/<pet>` or `spirit/<pet>` (both standing refuses, naming both), then a card naming the pet at `spirit-card/<pet>`
  * or `mask-card/<pet>`. Null where none answers and `soft`.
  */
@@ -308,11 +308,11 @@ async function readSlot(args: ParsedArgs, label: string, rec: Record_, slot: str
     const field = cardField(slot);
     if (field === null) return null;
     const { fields, hash } = await recordOf(args, label, rec.uri);
-    // The read-through: #/instances reads a card's legacy `bodies` field where no `instances` field stands yet.
+    // The read-through: #/instances reads a card's `bodies` field where no `instances` field stands.
     const body = fields[field] ?? (slot === INSTANCES_SLOT ? fields[LEGACY_INSTANCE_NAMES.field] : undefined) ?? "";
     return { text: body, body, base: hash ?? "" };
   }
-  // The read-through: #/instances reads a shrine's legacy #/bodies slot where only the old one stands.
+  // The read-through: #/instances reads a shrine's #/bodies slot where only #/bodies stands.
   const held = slotHeldAs(rec.slots.map((s) => s.slot), slot);
   if (!rec.slots.some((s) => s.slot === held)) return null;
   const out = await door(args, label, "tiddler-get", { recipe: RECIPE, title: rec.uri, meme: true, slot: held });
@@ -340,9 +340,9 @@ async function patchSlot(args: ParsedArgs, label: string, rec: Record_, slot: st
     const decision = String(receipt["decision"] ?? "");
     return { ...receipt, decision: decision === "put" ? "ingest" : decision, canonicalHash: String(receipt["hash"] ?? "") };
   }
-  // A shrine's lineage write lands on its legacy #/bodies slot until a hand renames the slot through the doors.
+  // A shrine's lineage write lands on its #/bodies slot until a hand renames the slot through the doors.
   if (rec.kind !== "card") return await door(args, label, "meme-patch", { recipe: RECIPE, uri: rec.uri, slot: slotHeldAs(rec.slots.map((s) => s.slot), slot), replace: body, base });
-  // A card's lineage write lands as `instances` and unsets the legacy `bodies` field in the same put: the migration, one way.
+  // A card's lineage write lands as `instances` and unsets the `bodies` field in the same put: one way.
   const legacy = slot === INSTANCES_SLOT && rec.fields[LEGACY_INSTANCE_NAMES.field] !== undefined ? { unset: [LEGACY_INSTANCE_NAMES.field] } : {};
   const receipt = await door(args, label, "tiddler-put", { recipe: RECIPE, title: rec.uri, ...(base !== "" ? { base } : {}), fields: { [cardField(slot)!]: body }, ...legacy });
   const decision = String(receipt["decision"] ?? "");
@@ -644,7 +644,7 @@ async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
   const awake = instance !== null ? await joinPresence(args, rec, instance, ctx) : presenceRead(rec.sideFields);
   const leaseLine = epoch === null ? null : `Lares spirit wake epoch ${epoch}: an ordering stamp; no write needs it, and no instance locks another out.`;
   const presence = instance !== null ? presenceLine(pet, awake) : presenceSeenLine(pet, awake);
-  // THE STACK: what this spirit holds, cap by cap, and the profiles those caps sign (a legacy address signs its own).
+  // THE STACK: what this spirit holds, cap by cap, and the profiles those caps sign (a seat address signs its own).
   const stack = stackOf(rec.fields, rec.uri);
   const data = { pet, uri: rec.uri, kind: rec.kind, profiles: profilesOf(stack), stack: stack.map((h) => ({ cap: h.cap, value: h.value, tagged: h.tagged })), base: rec.base, spiritId: key, epoch, every: rec.every, budgets: rec.budgets, source, ...(turn.to !== null ? { turnedFrom: given } : {}) };
   // A resumed instance ends its own crossing too: it never reaches the wake's clear below, and no timer lifts a mark.

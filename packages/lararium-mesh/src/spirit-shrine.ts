@@ -85,16 +85,16 @@ export const INSTANCE_ID = /^[A-Za-z0-9_-]{1,128}$/;
 /** The lineage slot: one line per instance that wore the spirit. */
 export const INSTANCES_SLOT = "#/instances";
 /**
- * A MIGRATION, ONE WAY. A record written before the rename names its instances by the old word: a shrine's `#/bodies` slot, a
- * card's `bodies` field, a sibling's `bodies-awake`, a carry's `body`. The door reads the old name where the new one stands not,
- * and every write answers in the new one: a card's lineage write lands as `instances` and unsets `bodies`, and a presence write
- * lands as `instances-awake` and unsets `bodies-awake`. A shrine's slot keeps its old name until a hand renames it through the
- * doors; its lineage writes land there meanwhile. Once no live record holds an old name, this table and its reads burn.
+ * ONE WAY, TWO NAMES. A record may name its instances by `bodies`: a shrine's `#/bodies` slot, a card's `bodies` field, a
+ * sibling's `bodies-awake`, a carry's `body`. The door reads that name where no `instances` name stands, and every write answers
+ * in `instances`: a card's lineage write lands as `instances` and unsets `bodies`, and a presence write lands as
+ * `instances-awake` and unsets `bodies-awake`. A shrine's `#/bodies` slot keeps its name until a hand renames it through the
+ * doors; its lineage writes land there meanwhile. Once no live record holds a `bodies` name, this table and its reads burn.
  */
 export const LEGACY_INSTANCE_NAMES = { slot: "#/bodies", field: "bodies", awake: "bodies-awake", carry: "body" } as const;
 /** The instance a carry names: its `instance` field, else the `body` a carry landed before the rename. */
 export const carryInstanceOf = (fields: Readonly<Record<string, string>>): string => fields["instance"] ?? fields[LEGACY_INSTANCE_NAMES.carry] ?? "";
-/** The slot a record answers a slot name by: `#/instances` reads the old `#/bodies` where only the old one stands. */
+/** The slot a record answers a slot name by: `#/instances` reads `#/bodies` where only `#/bodies` stands. */
 export const slotHeldAs = (held: readonly string[], slot: string): string =>
   slot === INSTANCES_SLOT && !held.includes(slot) && held.includes(LEGACY_INSTANCE_NAMES.slot) ? LEGACY_INSTANCE_NAMES.slot : slot;
 /** A slot digest: 16 hex. */
@@ -630,7 +630,7 @@ export function cardRecordOf(pet: string, uri: string, out: Record<string, unkno
   const { fields, hash } = fieldsAndHashOf(out);
   const slots = Object.keys(fields).filter((k) => cardField(`#/${k}`) !== null).sort().map((k) => {
     const v = String(fields[k] ?? "");
-    // The read-through: a card's legacy `bodies` field answers as #/instances where no `instances` field stands.
+    // The read-through: a card's `bodies` field answers as #/instances where no `instances` field stands.
     const slot = k === LEGACY_INSTANCE_NAMES.field && fields["instances"] === undefined ? INSTANCES_SLOT : `#/${k}`;
     return { slot, bytes: bytesOf(v), first: v.split("\n")[0] ?? null };
   });

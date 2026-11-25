@@ -238,7 +238,7 @@ describe("the vessel half: `vessel lay --lag` and `vessel lay --workbench`", () 
     const log = console.log;
     console.log = (...a: unknown[]) => { out.push(a.map(String).join(" ")); };
     try {
-      expect(await cmdLay({ command: "vessel", positional: [], options: {}, flags: { workbench: true, apply: true } } as unknown as ParsedArgs, owned)).toBe(0);
+      expect(await cmdLay({ command: "vessel", positional: [], options: {}, flags: { workbench: true, apply: true, yes: true } } as unknown as ParsedArgs, owned)).toBe(0);
     } finally { console.log = log; }
     expect(waves).toEqual([]);
     expect(out.join("\n")).toMatch(/the wiki notes re-stands at its owner's wear: wear someone-else/);
@@ -329,7 +329,7 @@ describe("the vessel half: `vessel lay --lag` and `vessel lay --workbench`", () 
     const log = console.log;
     console.log = () => {};
     try {
-      expect(await cmdLay({ command: "vessel", positional: [], options: {}, flags: { workbench: true, apply: true } } as unknown as ParsedArgs, await doors({ writeSlot: "working", bound: true }, waves))).toBe(0);
+      expect(await cmdLay({ command: "vessel", positional: [], options: {}, flags: { workbench: true, apply: true, yes: true } } as unknown as ParsedArgs, await doors({ writeSlot: "working", bound: true }, waves))).toBe(0);
     } finally { console.log = log; }
     expect(waves.map((w) => [w.source, w.toBag])).toEqual([[join(dir, "wikis", "notes"), "lar:///ha.ka.ba/wikis/notes/working"]]);
     const { cmdIngest } = await import("../src/commands/ingest.js");

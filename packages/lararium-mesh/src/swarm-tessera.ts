@@ -87,7 +87,7 @@ export async function beginChecked(wiki: SwarmWikiPort, checked: SwarmReturnable
  * Land a rite: the vessel that stands after rests the host half, naming the begun half by its cid and the head and image THAT
  * HALF names (operator ruling 2026-11-25), never the caller's: a caller that names another head, or another image where the half
  * names one, refuses `rite-land-differs` and rests nothing, so no seat lands a wrong head first and blocks the true landing. The
- * answer reads `par`; conferre still reads an off-par host half an older vessel rested red. A landing writes once.
+ * answer reads `par`; conferre reads any off-par host half red. A landing writes once.
  */
 export async function landRite(wiki: SwarmWikiPort, at: { readonly tessera: string; readonly head?: string; readonly image?: string }, trust: SwarmTrust, group: string, vessel: SwarmSignerPort):
   Promise<{ tessera: string; rite: SwarmLeiRite; begun: string; landed: string; par: boolean }> {

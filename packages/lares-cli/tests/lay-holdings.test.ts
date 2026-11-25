@@ -43,7 +43,7 @@ describe("discoverHoldings — the discovered holdings map", () => {
     console.log = (...a: unknown[]) => { lines.push(a.join(" ")); };
     console.error = (...a: unknown[]) => { errors.push(a.join(" ")); };
     try {
-      const code = await cmdLay({ command: "vessel", positional: [], options: {}, flags: { apply: true, json: false } } as unknown as ParsedArgs);
+      const code = await cmdLay({ command: "vessel", positional: [], options: {}, flags: { apply: true, yes: true, json: false } } as unknown as ParsedArgs);
       expect(code).toBe(0);
       expect(lines).toContain("lay notes: 1 files…");
       expect(lines.some((line) => /^✓ notes: 1 files · \d+s · retry safe$/.test(line))).toBe(true);
