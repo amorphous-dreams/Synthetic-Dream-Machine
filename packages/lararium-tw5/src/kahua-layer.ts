@@ -8,10 +8,15 @@
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
-import {
-  KAHUA_BAG, kahuaStageStore, personaKelChainForPrefix, readFace,
-  type DocHandle, type FaceAnchor, type KahuaStageFace, type LarDoc, type LarTiddlerStore, type PersonaKelEvent,
-} from "@lararium/mesh";
+import { KAHUA_BAG } from "@lararium/mesh/wiki-recipe";
+import { kahuaStageStore, type KahuaStageFace } from "@lararium/mesh/kahua-stage-store";
+import { personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";
+import { readFace } from "@lararium/mesh/face-reading";
+import { type DocHandle } from "@lararium/mesh/automerge";
+import { type FaceAnchor } from "@lararium/mesh/face-anchor";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
+import { type PersonaKelEvent } from "@lararium/mesh/persona-kel";
 
 /**
  * The document a library slot mounts from. `bags/kahua` answers from the grant alone and never asks the catalog;

@@ -20,7 +20,10 @@
  */
 import { describe, expect, test } from "vitest";
 import { Repo } from "./wiki-shore-rig.js";
-import { AutomergeDocStore, CompositeStore, emptyLarDoc, type Verb } from "@lararium/mesh";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { emptyLarDoc } from "@lararium/mesh/base-doc";
+import { type Verb } from "@lararium/mesh/verb-tiddler";
 import { makeActionReactorFor } from "../src/action-handler.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
 

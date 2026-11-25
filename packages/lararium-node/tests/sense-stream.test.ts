@@ -7,7 +7,8 @@ import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { textStreamAdapter, type PlaneSink, type StreamAdapter, type StreamFrame } from "@lararium/mesh";
+import { textStreamAdapter } from "@lararium/mesh/text-stream-adapter";
+import { type PlaneSink, type StreamAdapter, type StreamFrame } from "@lararium/mesh/stream-adapter";
 import { composeStreamSensorium } from "../src/sense-stream.js";
 import type { SensoriumIngest } from "../src/sense-sensorium.js";
 

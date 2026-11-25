@@ -38,7 +38,7 @@ import { houseFaces } from "../custody-door.js";
 import { gatherWardRoute } from "../ward-door.js";
 import { keepFaceOf, lineHeld, type HouseFaces } from "../rite-keep.js";
 import type { RiteVerbAnswer } from "../rite-kukulu.js";
-import { execLeiBranch } from "@lararium/mesh";
+import { execLeiBranch } from "@lararium/mesh/exec-lei";
 
 export class LeiUsage extends Error {}
 /** A terms line the vessel's own reading refuses, by name: no lei to restring, a forked line, a keep lei standing unseen. */

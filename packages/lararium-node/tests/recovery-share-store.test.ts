@@ -17,7 +17,8 @@
  */
 import { copyFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { afterEach, describe, expect, test } from "vitest";
-import { readFckCarrier, type RecoveryShare } from "@lararium/mesh";
+import { readFckCarrier } from "@lararium/mesh/fck-envelope";
+import { type RecoveryShare } from "@lararium/mesh/recovery-share";
 import { CustodyLocked, CustodyRecordUnavailable } from "../src/custody-holder.js";
 import { seatCustody, writeCustodyRecord } from "../src/custody-seat.js";
 import {

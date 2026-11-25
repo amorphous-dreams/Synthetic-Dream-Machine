@@ -27,7 +27,7 @@
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/page-controls#/shadow-widgets
  */
-import type { LarRefusal } from "@lararium/mesh";
+import type { LarRefusal } from "@lararium/mesh/lar-camera";
 
 type Tw = Record<string, any>;
 

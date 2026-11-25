@@ -16,13 +16,15 @@
  * Or via:   pnpm --filter @lararium/node test:quine
  */
 
-import { automergeLoad, GENESIS_CID_ENGINE_TIDDLER, GENESIS_CID_PLUGINS_TIDDLER } from "@lararium/mesh";
+import { automergeLoad } from "@lararium/mesh/automerge";
+import { GENESIS_CID_ENGINE_TIDDLER, GENESIS_CID_PLUGINS_TIDDLER } from "@lararium/mesh/genesis-doc";
 import { existsSync } from "fs";
 
 import { TW5Engine, casBlobPreloads, modulePinsOf } from "@lararium/tw5";
 import type { TW5TiddlerFields } from "@lararium/tw5";
-import type { LarDoc } from "@lararium/mesh";
-import { ENGINE_CORE_ID, GRAMMAR_TAG, LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "@lararium/mesh";
+import type { LarDoc } from "@lararium/mesh/base-doc";
+import { ENGINE_CORE_ID } from "@lararium/mesh/base-doc";
+import { GRAMMAR_TAG, LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "@lararium/mesh/lar-uris";
 import { readGenesisCasManifest, genesisCasDir } from "../src/genesis-artifact.js";
 import { readCasBlobFromFs } from "../src/node-cas.js";
 import { GENESIS_SEED, loadGenesisBytes } from "../tests/genesis-test-source.js";

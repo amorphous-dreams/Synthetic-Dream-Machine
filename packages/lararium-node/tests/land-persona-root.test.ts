@@ -15,7 +15,7 @@ seatSuiteWard();
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import * as ed from "@noble/ed25519";
-import { hex } from "@lararium/mesh";
+import { hex } from "@lararium/mesh/crypto";
 import { CustodyRecordUnavailable } from "../src/custody-holder.js";
 import { removeCustodyRecord } from "../src/custody-seat.js";
 import {

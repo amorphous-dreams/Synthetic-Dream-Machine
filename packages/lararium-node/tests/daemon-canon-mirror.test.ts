@@ -5,9 +5,12 @@
  */
 import { describe, test, expect } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
-import { CONTROL_HOME_ID, DAEMON_BAG_ID, KAHUA_BAG, daemonFaceCanonBag, emptyLarDoc, expandRecipe, kahuaRecipe, ownEntry, tiddlerText, wikiSlotUri, type LarDoc } from "@lararium/mesh";
+import { CONTROL_HOME_ID, DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { KAHUA_BAG, daemonFaceCanonBag, expandRecipe, kahuaRecipe, wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import { emptyLarDoc, tiddlerText, type LarDoc } from "@lararium/mesh/base-doc";
+import { ownEntry } from "@lararium/mesh/stored-value";
 import { daemonDiskMirrors } from "../src/bag-paths.js";
-import { standFaceDaemonCanon } from "@lararium/mesh";
+import { standFaceDaemonCanon } from "@lararium/mesh/face-daemon-canon";
 
 const F = "123e4567-e89b-42d3-a456-426614174000";
 

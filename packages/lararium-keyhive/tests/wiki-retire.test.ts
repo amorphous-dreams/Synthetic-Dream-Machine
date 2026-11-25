@@ -41,11 +41,18 @@
  *    where it rests and the answer names it (`leftBehind`).
  */
 import { describe, test, expect } from "vitest";
-import {
-  DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX, buildEffectRecordTiddler, effectRecordUri, emptyLarDoc, LARES_EFFECT_RECORD_TAG, ledgerWorkbenchRealms, makeCatalogView, makeIslandRepo, materializeSharedLarDoc, noteWorkbench, noteWorkbenchSeat,
-  parseRetiredShellRecord, plainRecord, privateCabalRealmId, realmWorkbenchDocUrl, recipeUri, retiredShellUri, wikiBagUri, wikiSlotUri, workbenchSeats,
-  type DocHandle, type LarDoc, type LarTiddlerRecord, type Repo,
-} from "@lararium/mesh";
+import { DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX, recipeUri } from "@lararium/mesh/lar-uris";
+import { buildEffectRecordTiddler, effectRecordUri, LARES_EFFECT_RECORD_TAG } from "@lararium/mesh/effect-record";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { ledgerWorkbenchRealms, noteWorkbench, noteWorkbenchSeat, privateCabalRealmId, workbenchSeats } from "@lararium/mesh/workbench";
+import { makeCatalogView } from "@lararium/mesh/catalog-view";
+import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
+import { materializeSharedLarDoc, realmWorkbenchDocUrl } from "@lararium/mesh/deterministic-doc";
+import { parseRetiredShellRecord, retiredShellUri } from "@lararium/mesh/shell-leaving-record";
+import { plainRecord } from "@lararium/mesh/stored-value";
+import { wikiBagUri, wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import { type DocHandle, type Repo } from "@lararium/mesh/automerge";
+import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { makeCatalogAccessorOver, makeInitWikiReactor, makeRetireWikiReactor, type VerbContext, type WikiShellPorts } from "@lararium/tw5";
 import { InMemoryEventStore, KeyhiveProvider } from "../src/index.js";
 import { standWorkbench, type LedgerDoc } from "../src/workbench-realm.js";

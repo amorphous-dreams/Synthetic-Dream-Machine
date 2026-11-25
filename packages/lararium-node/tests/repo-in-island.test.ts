@@ -19,7 +19,7 @@
 
 import { describe, test, expect, afterEach } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
-import type { IslandMsg_Event } from "@lararium/mesh";
+import type { IslandMsg_Event } from "@lararium/mesh/island-protocol";
 import { VesselIslandPool } from "../src/vessel-island-pool.js";
 
 // ---------------------------------------------------------------------------

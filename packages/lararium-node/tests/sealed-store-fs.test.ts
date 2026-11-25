@@ -8,7 +8,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, 
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fsSealedStoreRest, sealedStoreDir } from "../src/sealed-store-fs.js";
-import { isRestKind, mintOutboxKey, readsAsOutboxSeal, restDigest, SealedStore, type RestKind } from "@lararium/mesh";
+import { isRestKind, mintOutboxKey, readsAsOutboxSeal, restDigest, SealedStore, type RestKind } from "@lararium/mesh/sealed-store-rest";
 
 const root = () => mkdtempSync(join(tmpdir(), "sealed-fs-"));
 const tree = (path: string): string[] => {

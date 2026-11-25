@@ -31,7 +31,8 @@
  */
 import { readFileSync, statSync } from "node:fs";
 import { interpretAsDocumentId, type AutomergeUrl, type DocumentId, type PeerId } from "@automerge/automerge-repo";
-import { edgeLedgerDocUrl, type FederationGate } from "@lararium/mesh";
+import { edgeLedgerDocUrl } from "@lararium/mesh/deterministic-doc";
+import { type FederationGate } from "@lararium/mesh/federation-gate";
 import { bootDaemonUrl, bootFacePlanes } from "./boot-face-planes.js";
 
 type BootTiddlers = Readonly<Record<string, { text?: string }>>;

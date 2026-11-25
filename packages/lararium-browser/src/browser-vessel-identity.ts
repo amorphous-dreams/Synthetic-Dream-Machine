@@ -14,31 +14,25 @@
  * Meme: lar:///ha.ka.ba/lararium/browser/browser-vessel-identity
  */
 
+import { generateOrLoadKeypair, signingSeedFromHex, type KeypairStore, type KeypairCrypto } from "@lararium/mesh/vessel-identity-core";
+import { readIdentityAnchors, type AnchorStore, type IdentityAnchors } from "@lararium/mesh/anchor-store";
 import {
-  generateOrLoadKeypair,
-  signingSeedFromHex,
-  readIdentityAnchors,
   loadPersonaRootSeed,
   assertHandleIndex,
   wearPersona as coreWearPersona,
   loadActivePersona as coreLoadActivePersona,
   personaRootExists as corePersonaRootExists,
   listPersonaRoots as coreListPersonaRoots,
-  type KeypairStore,
-  type KeypairCrypto,
   type PersonaVault,
   type PersonaRoot,
   type ActivePersonaStore,
-  type AnchorStore,
-  type IdentityAnchors,
-  type OwnPersonaPetnameStore,
-  type PersonaDeclaration,
-  type PersonaDeclarationStore,
-  type OwnPublicHandleStore,
-  type PersonaPublicHandleRecord,
-  armPlaceInception, verifyPlaceKel, foldPlaceKel, acceptPlaceHead, PlaceFoundingCardUnread,
-  type PlaceFoundingCard, type PlaceKelEvent, type PlaceKelReading, type RandomProvider,
-} from "@lararium/mesh";
+} from "@lararium/mesh/persona-vault";
+import { type OwnPersonaPetnameStore } from "@lararium/mesh/persona-petname";
+import { type PersonaDeclaration, type PersonaDeclarationStore } from "@lararium/mesh/persona-declare";
+import { type OwnPublicHandleStore, type PersonaPublicHandleRecord } from "@lararium/mesh/persona-glamour";
+import { armPlaceInception, PlaceFoundingCardUnread, type PlaceFoundingCard } from "@lararium/mesh/place-founding-card";
+import { verifyPlaceKel, foldPlaceKel, acceptPlaceHead, type PlaceKelEvent, type PlaceKelReading } from "@lararium/mesh/vessel-kel";
+import { type RandomProvider } from "@lararium/mesh/crypto";
 import type { SeedWrapRecord } from "./seed-wrap-prf.js";
 
 import { assertCanMint } from "./secure-context-gate.js";

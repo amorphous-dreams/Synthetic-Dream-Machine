@@ -11,7 +11,11 @@
  * still runs, once, at the engine's own boot pass (the CONTROL).
  */
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { CompositeStore, emptyLarDoc, wikiSlotUri, type DocHandle, type LarDoc, type LarTiddlerRecord } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import { type DocHandle } from "@lararium/mesh/automerge";
+import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { canonicalJsonBytes, sha256HexBytesSync } from "@lararium/mesh/crypto";
 import { createHash } from "node:crypto";

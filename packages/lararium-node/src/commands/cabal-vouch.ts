@@ -25,20 +25,22 @@
  */
 
 import type { Repo } from "@automerge/automerge-repo";
-import {
-  signCabalInvite, writeVouch, verifiedVouchesFromBoard, vouchDagFromInvites, vouchEdgeId,
-  realmVouchBoardDocUrl, realmEdgeBoardDocUrl, materializeSharedLarDoc,
-  prepareHolderFrontier, registerHandFrontierInto, realmAdmitBundle, type RealmAdmitBundle,
-  type CabalInvite, readControlHome } from "@lararium/mesh";
+import { signCabalInvite, type CabalInvite } from "@lararium/mesh/cabal-invite";
+import { writeVouch, verifiedVouchesFromBoard, vouchEdgeId } from "@lararium/mesh/vouch-board";
+import { vouchDagFromInvites } from "@lararium/mesh/vouch-dag";
+import { realmVouchBoardDocUrl, realmEdgeBoardDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { prepareHolderFrontier, registerHandFrontierInto } from "@lararium/mesh/realm-frontier";
+import { realmAdmitBundle, type RealmAdmitBundle } from "@lararium/mesh/realm-admit-bundle";
+import { readControlHome } from "@lararium/mesh/control-home";
 import { loadFaceAtomKey } from "../face-atom-store.js";
 import { daemonDocUrlFromBootstrap, cabalAdmissionEpoch } from "./cabal-join.js";
 import { actingRealmNexus, noteVesselRealm } from "../edge-board.js";
 import { leaseLineageOfNexus } from "../lease-charter.js";
 import { registerRealmFrontier } from "../realm-frontier-door.js";
-import type { HandLineage } from "@lararium/mesh";
+import type { HandLineage } from "@lararium/mesh/hand-lineage";
 import { nodeStewardVault, faceStewardSigner, StewardRefused, type StewardVault } from "../realm-steward.js";
 import { faceNexusLeaf } from "../nexus-leaf.js";
-import { verifyEd25519 } from "@lararium/mesh";
+import { verifyEd25519 } from "@lararium/mesh/ed25519-door";
 
 /** A nym reads valid only at the exact ed25519 verifying-key shape — a stray value never becomes an edge. */
 const NYM_RE = /^[0-9a-f]{64}$/;

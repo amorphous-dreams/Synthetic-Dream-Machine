@@ -17,11 +17,25 @@ import { join } from "node:path";
 import { createConnection } from "node:net";
 import * as A from "@automerge/automerge";
 import { Repo, type Chunk, type StorageAdapterInterface, type StorageKey } from "@automerge/automerge-repo";
+import { SealedDocumentStore } from "@lararium/mesh/sealed-doc-store";
 import {
-  SealedDocumentStore, bindSecretHomeRest, concludeVerb, controlHomeRefusal, controlStoreOf, emptyLarDoc, enrollSecretHome,
-  mintSecretHomeAddress, mintVesselDocumentId, nameControlHome, openSecretHome, standControlHome, vesselHeldHomes,
-  OUTCOME_URI_PREFIX, RECEIPT_FACT_URI_PREFIX, VESSEL_LOCKED, CONTROL_HOME_UNNAMED, type LarDoc,
-} from "@lararium/mesh";
+  bindSecretHomeRest,
+  enrollSecretHome,
+  mintSecretHomeAddress,
+  mintVesselDocumentId,
+  openSecretHome,
+  vesselHeldHomes,
+} from "@lararium/mesh/secret-home";
+import { concludeVerb, OUTCOME_URI_PREFIX, RECEIPT_FACT_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
+import {
+  controlHomeRefusal,
+  controlStoreOf,
+  nameControlHome,
+  standControlHome,
+  VESSEL_LOCKED,
+  CONTROL_HOME_UNNAMED,
+} from "@lararium/mesh/control-home";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
 import { FactLedger, startUdsChannel } from "../src/uds-channel.js";
 import { claimStore } from "../src/owned-store.js";
 

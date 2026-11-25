@@ -18,7 +18,8 @@ import { cmdNexus } from "../src/commands/nexus.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 import { larSealHome } from "../src/env.js";
 import { carriedCharterHome, generateOrLoadPersonaGroupRoot, listSeatKeys, readNexusDoc } from "@lararium/node";
-import { cidV1Sha256, cidV1Sha256FromHex, seatFingerprint } from "@lararium/mesh";
+import { cidV1Sha256, cidV1Sha256FromHex } from "@lararium/mesh/crypto";
+import { seatFingerprint } from "@lararium/mesh/nexus-seal-seed";
 import { seatScratchCustody, type ScratchCustody } from "./support/scratch-custody.js";
 
 vi.setConfig({ testTimeout: 120_000, hookTimeout: 120_000 });

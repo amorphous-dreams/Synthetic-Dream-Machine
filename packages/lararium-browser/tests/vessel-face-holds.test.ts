@@ -25,7 +25,7 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift
  */
 import { afterEach, describe, expect, test } from "vitest";
-import { encodeInvite } from "@lararium/mesh";
+import { encodeInvite } from "@lararium/mesh/hosting";
 import { overwriteBrowserCustody, readBrowserCustody, sealBrowserKeystore } from "../src/browser-custody.js";
 import {
   bindFirstFaceSlot, checkFaceName, faceCustodyHeld, heldUnnamedFace, lockFaceCustody, standUnnamedFace, unlockFaceCustody,

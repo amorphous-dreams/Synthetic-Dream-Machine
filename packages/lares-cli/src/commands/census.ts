@@ -25,7 +25,7 @@
  *
  * Meme: lar:///ha.ka.ba/lares/cli/vessel-door
  */
-import { HELD_REFUSALS } from "@lararium/mesh";
+import { HELD_REFUSALS } from "@lararium/mesh/sealed-doc-store";
 import type { ParsedArgs } from "../parse-args.js";
 import { sendCustodyFrame, type CustodyDoorAnswer } from "../custody-door.js";
 import { askShoreCensus, type ShoreCensus } from "../shore-core.js";

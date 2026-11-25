@@ -7,7 +7,7 @@ import { describe, test, expect, afterEach } from "vitest";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { verbArgsFromPayload } from "@lararium/mesh";
+import { verbArgsFromPayload } from "@lararium/mesh/lar-uris";
 import { admitJournalAppend, bagProjectedEvent, mirrorStands } from "../src/journal-append-gate.js";
 
 const roots: string[] = [];

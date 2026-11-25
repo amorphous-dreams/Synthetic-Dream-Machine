@@ -15,7 +15,7 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { Credential } from "@lararium/mesh";
+import type { Credential } from "@lararium/mesh/keyslot-door";
 import { FsCustodyIo } from "../src/custody-io.js";
 import { foundCustody } from "../src/custody-session.js";
 import { makeCustodyHolder } from "../src/custody-holder.js";

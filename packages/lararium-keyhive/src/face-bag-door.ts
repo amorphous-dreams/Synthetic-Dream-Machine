@@ -1,4 +1,4 @@
-import type { CapabilityVerifier } from "@lararium/mesh";
+import type { CapabilityVerifier } from "@lararium/mesh/capability";
 import type { CapabilityProvider, KeyhiveAccess } from "./capability-provider.js";
 import type { KeyhiveProvider } from "./keyhive-provider.js";
 import type { BagDocLedger } from "./bag-doc-ledger.js";

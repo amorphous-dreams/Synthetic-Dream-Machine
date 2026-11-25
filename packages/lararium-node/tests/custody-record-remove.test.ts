@@ -12,7 +12,7 @@
  */
 import { copyFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { afterEach, describe, expect, test } from "vitest";
-import { SEALING_SUFFIX } from "@lararium/mesh";
+import { SEALING_SUFFIX } from "@lararium/mesh/sealed-writer";
 import { CustodyLocked, CustodyRecordUnavailable, CustodyRecordUnknown } from "../src/custody-holder.js";
 import { readCustodyRecord, removeColdCustodyRecord, removeCustodyRecord, writeCustodyRecord } from "../src/custody-seat.js";
 import { seatHostingCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";

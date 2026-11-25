@@ -41,7 +41,7 @@ import { mkdir } from "node:fs/promises";
 import { dirname, join, sep } from "node:path";
 
 import { atomicWriteFile } from "./fs-atomic.js";
-import { shoreStorage } from "@lararium/mesh";
+import { shoreStorage } from "@lararium/mesh/prototype-key-shore-door";
 
 /** The temp spellings `fs-atomic` stages beside a target: `<target>.<pid>.<suffix>.tmp` and `<target>.<pid>.tmp`. */
 const STAGED_TEMP = /^(.+)\.(\d+)\.(?:[^./]+\.)?tmp$/;

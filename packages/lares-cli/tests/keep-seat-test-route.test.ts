@@ -17,7 +17,7 @@ import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { FsCustodyIo, foundCustody, vesselCustodyHomes } from "@lararium/node";
-import type { Credential } from "@lararium/mesh";
+import type { Credential } from "@lararium/mesh/keyslot-door";
 import { houseExport, houseImport, type BundleDoors } from "../src/commands/house-bundle.js";
 import { keepSeatPath, openKeepSeat, readKeepSeat, seatKeepAtUnlock } from "../src/keep-seat.js";
 import { TEST_ROUTE_PASSPHRASE } from "../src/offline-custody.js";

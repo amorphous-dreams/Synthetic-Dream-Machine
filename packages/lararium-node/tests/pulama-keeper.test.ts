@@ -5,7 +5,8 @@
  * the fire; the budget carries.
  */
 import { linkSync, mkdtempSync, rmSync, statSync, unlinkSync } from "node:fs";
-import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, signKukuluVouch } from "@lararium/mesh";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { signKukuluVouch } from "@lararium/mesh/kukulu-vouch";
 import { keeperRiteOver, pulamaSignerOf, vouchSignerOf } from "../src/kukulu-gate.js";
 import { tmpdir } from "node:os";
 import { join } from "node:path";

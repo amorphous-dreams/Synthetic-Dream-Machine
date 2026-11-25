@@ -5,9 +5,14 @@
 import { describe, expect, test, vi } from "vitest";
 import { createRequire } from "node:module";
 import { createHash } from "node:crypto";
-import { AutomergeDocStore, CompositeStore, emptyLarDoc, type LarDoc, type LarTiddlerRecord, type Repo as RepoType, wikiBagUri, wikiSlotUri } from "@lararium/mesh";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
+import { type Repo as RepoType } from "@lararium/mesh/automerge";
+import { wikiBagUri, wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
-import { plainEntries } from "@lararium/mesh";
+import { plainEntries } from "@lararium/mesh/stored-value";
 
 /** A document as a test reads it: every record unwrapped through the one door. */
 const plainDoc = (doc: unknown): { tiddlers: Record<string, LarTiddlerRecord> } =>

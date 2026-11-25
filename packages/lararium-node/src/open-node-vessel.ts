@@ -19,8 +19,39 @@ import { shutdownComposition, closeCompositionRepo, ownDialPresentation, IslandS
  */
 import { provedLitRelation } from "./lit-relation.js";
 import { takeWardTicket, type WardCredential } from "./ward-credential.js";
-import { receiptInStore, WardRefused, wornAtOf, composeSealedRest, clearRosterOf, watchCatalogNames, docStorePortCell, documentIdOfUrl, mountedDocumentId, sealedBagMap, standingSessionSeat, vesselDocStoreDoor, DOCSTORE_SEAL_VERB, bindSecretHomeRest, vesselHeldHomes, enrollBesideSecretHome, releaseBesideSecretHome, standFloorKeyOn, floorKeyStandsOn, floorRestKey, type HeldRestKey, SecretHomeUnavailable, type SecretHome, type SealedBag, type BookedSession, type SessionOwnChain, preparePlaceFace, signAsFaceAtom, seatMintCensus, capMintsUnpointed } from "@lararium/mesh";
-import { wikiIslandWithholds, vesselDocBags, refuseTw5DocsWrite, type WikiIslandMount } from "@lararium/mesh";
+import { receiptInStore } from "@lararium/mesh/receipt-with-heads";
+import { WardRefused } from "@lararium/mesh/ward-slots";
+import { wornAtOf } from "@lararium/mesh/sealed-doc-store";
+import {
+  composeSealedRest,
+  clearRosterOf,
+  watchCatalogNames,
+  docStorePortCell,
+  documentIdOfUrl,
+  mountedDocumentId,
+  sealedBagMap,
+  vesselDocStoreDoor,
+  DOCSTORE_SEAL_VERB,
+  type SealedBag,
+} from "@lararium/mesh/sealed-rest";
+import { standingSessionSeat, type BookedSession } from "@lararium/mesh/session-sign-book";
+import {
+  bindSecretHomeRest,
+  vesselHeldHomes,
+  enrollBesideSecretHome,
+  releaseBesideSecretHome,
+  standFloorKeyOn,
+  floorKeyStandsOn,
+  SecretHomeUnavailable,
+  type SecretHome,
+} from "@lararium/mesh/secret-home";
+import { floorRestKey, type HeldRestKey } from "@lararium/mesh/held-rest-key";
+import { type SessionOwnChain } from "@lararium/mesh/island-protocol";
+import { preparePlaceFace } from "@lararium/mesh/session-face";
+import { signAsFaceAtom } from "@lararium/mesh/face-atom";
+import { seatMintCensus, capMintsUnpointed } from "@lararium/mesh/mint-census";
+import { wikiIslandWithholds, vesselDocBags, type WikiIslandMount } from "@lararium/mesh/wiki-island-reach";
+import { refuseTw5DocsWrite } from "@lararium/mesh/tw5-docs-name";
 import * as A from "@automerge/automerge";
 
 /** A summoned panel verb's ward: the ref the CLI parked, spent only on the verb and arguments it was bound to. */
@@ -47,31 +78,80 @@ import { DurableNodeFSStorageAdapter } from "./durable-storage-adapter.js";
 import { claimStore, type StoreClaim } from "./owned-store.js";
 import { NodeWSServerAdapter }          from "@automerge/automerge-repo-network-websocket";
 import type { WebSocketServer }         from "isomorphic-ws";
-import type {
-  LarDoc,
-  LarariumVesselOptions, VesselResult, LarOpenPhase,
-  VesselBootstrap, VesselCoreAssembly,
-  CompositeStore, DiskMirrorGrant,
-} from "@lararium/mesh";
+import type { LarDoc } from "@lararium/mesh/base-doc";
+import type { LarariumVesselOptions, VesselResult, LarOpenPhase } from "@lararium/mesh/lararium-vessel";
+import type { VesselBootstrap, VesselCoreAssembly } from "@lararium/mesh/open-vessel-core";
+import type { CompositeStore } from "@lararium/mesh/composite-store";
+import type { DiskMirrorGrant } from "@lararium/mesh/vessel-island-pool-core-door";
+import { emptyLarDoc, tiddlerText, ENGINE_CORE_ID } from "@lararium/mesh/base-doc";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
+import { plainRecord, plainRecordOrNull } from "@lararium/mesh/stored-value";
 import {
-  emptyLarDoc, storedLarRecord, tiddlerText, plainRecord, plainRecordOrNull,
-  LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI, CROSSROADS_DOC_URI, recipeHostFacets,
+  LARARIUM_DOC_URI,
+  CATALOG_DOC_URI,
+  LARES_DOC_URI,
+  CROSSROADS_DOC_URI,
   DAEMON_BAG_ID,
-  BAG_IDS, slugFromUri, islandEventAsk, registerCrossroadsPointer,
-  whoFaceCap, materializeSharedLarDoc, crossroadsDocUrl, realmAnnounceDocUrl, publicationDocUrl,
-  type RealmBagRegistration, MEMORY_CUT_SHADOW_READ,
-  PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
-  DEVICE_DELEGATION_SELF_TIDDLER, type DeviceDelegationTiddler,
-  ENGINE_CORE_ID, BagStowage,
-  deriveRegisterBags, catalogNamedBags, catalogFaceSlotBags, wornFaceWikiBags, isFaceSlotBag, standingDaemonCanonBag, standFaceDaemonCanon, FACE_CATALOG_BAG_ID, faceViewBook, makeCatalogView, catalogViewOf, openFaceCatalog, faceCatalogDocUrl, facelessWikiWaits, FLOOR_WIKI, type FloorWikiRefusal, liftFaceCatalogRows, catalogRowHalf, standLitFaceCatalog, faceCatalogUrlOf, wikiSlotUri, personaBagIdFor, personaSiblingBagIds,
-  coupleMesh, crystallize,
-  nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, nexusAidOf, foundingRoster, type NexusIdentityAt,
-  climbNexusBoards, sha256HexBytesSync, RealmBoardGate,
-  faceAtomKeyFromSeed, type FaceAtomKey, siblingPlaneMounts,
-  carriageFloorDutyOf, type PlaceSigner,
-  genesisCasCidsFromOracle, provenVesselKeyOf,
-  wikiSlugOfBag, resolveDiskMirrors, gateSweep, promoteWiring, promoteWikiItems, promotePanelApi, isQuietSnapshot, promoteMainVerbs, promoteBoardDoor, promotions, promoteBoardRecords, writePromoteAct, type GateSweepSeat,
-}                                       from "@lararium/mesh";
+  BAG_IDS,
+  islandEventAsk,
+  PERSONA_GROUP_ID_TIDDLER,
+  MESH_CABAL_DOC_ID_TIDDLER,
+  DEVICE_DELEGATION_SELF_TIDDLER,
+} from "@lararium/mesh/lar-uris";
+import { recipeHostFacets, slugFromUri, wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import { registerCrossroadsPointer } from "@lararium/mesh/who-face";
+import { whoFaceCap } from "@lararium/mesh/who-face-cap";
+import { materializeSharedLarDoc, crossroadsDocUrl, realmAnnounceDocUrl, publicationDocUrl } from "@lararium/mesh/deterministic-doc";
+import { type RealmBagRegistration, RealmBoardGate } from "@lararium/mesh/realm-bag";
+import { MEMORY_CUT_SHADOW_READ } from "@lararium/mesh/memory-section";
+import { type DeviceDelegationTiddler } from "@lararium/mesh/device-delegation";
+import { BagStowage } from "@lararium/mesh/bag-residency";
+import {
+  deriveRegisterBags,
+  catalogNamedBags,
+  catalogFaceSlotBags,
+  wornFaceWikiBags,
+  isFaceSlotBag,
+  standingDaemonCanonBag,
+} from "@lararium/mesh/register-bags";
+import { standFaceDaemonCanon } from "@lararium/mesh/face-daemon-canon";
+import {
+  FACE_CATALOG_BAG_ID,
+  faceViewBook,
+  makeCatalogView,
+  catalogViewOf,
+  openFaceCatalog,
+  faceCatalogDocUrl,
+  facelessWikiWaits,
+  FLOOR_WIKI,
+  type FloorWikiRefusal,
+  liftFaceCatalogRows,
+  catalogRowHalf,
+  standLitFaceCatalog,
+  faceCatalogUrlOf,
+} from "@lararium/mesh/catalog-view";
+import { personaBagIdFor, personaSiblingBagIds } from "@lararium/mesh/persona-scope";
+import { coupleMesh } from "@lararium/mesh/mesh-couple";
+import { crystallize } from "@lararium/mesh/crystallization";
+import { nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, type NexusIdentityAt } from "@lararium/mesh/nexus-identity";
+import { nexusAidOf, foundingRoster } from "@lararium/mesh/nexus-seal-seed";
+import { climbNexusBoards } from "@lararium/mesh/nexus-board-climb";
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
+import { faceAtomKeyFromSeed, type FaceAtomKey } from "@lararium/mesh/face-atom";
+import { siblingPlaneMounts } from "@lararium/mesh/sibling-plane-mount";
+import { carriageFloorDutyOf, type PlaceSigner } from "@lararium/mesh/place-signer";
+import { genesisCasCidsFromOracle } from "@lararium/mesh/genesis-intake";
+import { provenVesselKeyOf } from "@lararium/mesh/persona-group-ring";
+import { wikiSlugOfBag } from "@lararium/mesh/surface-recipe-door";
+import { resolveDiskMirrors } from "@lararium/mesh/vessel-island-pool-core-door";
+import { gateSweep, type GateSweepSeat } from "@lararium/mesh/gate-sweep";
+import { promoteWiring } from "@lararium/mesh/promote-wiring";
+import { promoteWikiItems } from "@lararium/mesh/promote-wiki-items";
+import { promotePanelApi, isQuietSnapshot } from "@lararium/mesh/promote-panel-api";
+import { promoteMainVerbs } from "@lararium/mesh/promote-main-verbs";
+import { promoteBoardDoor } from "@lararium/mesh/promote-board-door";
+import { promotions } from "@lararium/mesh/promote-door";
+import { promoteBoardRecords, writePromoteAct } from "@lararium/mesh/promote-board";
 import { resolveNodeIslandPluginCids, nodeOfferingLookup } from "./node-plugin-resolution.js";
 import { registerStoreDoorReactors } from "./store-door-registry.js";
 import { makeDurableMailbox, type DurableMailbox } from "./vessel-mailbox.js";
@@ -79,19 +159,47 @@ import { makeRealmPlane, type RealmPlanesHolder } from "./realm-plane.js";
 import { noteVesselRealm, readVesselRealms } from "./edge-board.js";
 import { makeEdgeShadowRing, ringDyadDoor, type EdgeShadowRing } from "./edge-shadow-ring.js";
 import { floorShadowRing } from "./floor-fleet-lanes.js";
-import type { JoinedFaceAuth, WikiActivationCap, PortIslandToVesselMsg } from "@lararium/mesh";
+import type { JoinedFaceAuth } from "@lararium/mesh/island-protocol";
+import type { WikiActivationCap } from "@lararium/mesh/wiki-activation";
+import type { PortIslandToVesselMsg } from "@lararium/mesh/record-port";
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
-import type { DocCensusReading, DocRef, HeldSaves, MountManifest } from "@lararium/mesh";
+import type { DocCensusReading, DocRef } from "@lararium/mesh/doc-census";
+import type { HeldSaves } from "@lararium/mesh/sealed-doc-store";
+import type { MountManifest } from "@lararium/mesh/open-vessel-core";
 import { readDocCensus, type DocCensusDoor } from "./doc-census-door.js";
 import { nodePromoteStores, nodePromoteCas } from "./promoted-store.js";
 import { casDirForStorage, casFetchReading, corpusCasDirFromEnv, makeNodeCasResolver, type IslandCasData, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, hermCasTransitFromEnv } from "./node-cas.js";
-import { adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard } from "@lararium/mesh";
-import { workbenchDocIds, workbenchDecider, workbenchSeatHolds, edgeLedgerDocUrl, realmMaintenanceFromBoard, shareConfigOf, wireIdentityOf, seatRepoWear, seatDialLeg, SessionTable, sessionBinding, protectedDocGuard, islandPeersOf, wikiIslandPeersOf, peerArrivals, admitGatePinDigest, ownEntry, plainField, CATALOG_ENTRY_TIER_FIELD, SHARE_CONFIG_FILE, parseShareFile, shareEntryOf, shareEntryFields, reconcileShareEntries, shareEntryTitle, plainValue, type ShareEntry } from "@lararium/mesh";
+import { adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow } from "@lararium/mesh/kahua-adopt";
+import { adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard } from "@lararium/mesh/promote-board";
+import { workbenchDocIds, workbenchDecider, workbenchSeatHolds } from "@lararium/mesh/workbench";
+import { edgeLedgerDocUrl } from "@lararium/mesh/deterministic-doc";
+import { realmMaintenanceFromBoard } from "@lararium/mesh/cabal-realm-clock";
+import { shareConfigOf } from "@lararium/mesh/federation-gate";
+import { wireIdentityOf, seatDialLeg } from "@lararium/mesh/wire-identity-door";
+import { seatRepoWear } from "@lararium/mesh/repo-wear";
+import { SessionTable, sessionBinding } from "@lararium/mesh/session-contract";
+import { protectedDocGuard } from "@lararium/mesh/protected-doc-guard";
+import { islandPeersOf, wikiIslandPeersOf } from "@lararium/mesh/island-repo-door";
+import { peerArrivals } from "@lararium/mesh/peer-arrivals";
+import { admitGatePinDigest } from "@lararium/mesh/admit-gate-pin";
+import { ownEntry, plainField, plainValue } from "@lararium/mesh/stored-value";
+import { CATALOG_ENTRY_TIER_FIELD } from "@lararium/mesh/catalog-view";
+import {
+  SHARE_CONFIG_FILE,
+  parseShareFile,
+  shareEntryOf,
+  shareEntryFields,
+  reconcileShareEntries,
+  shareEntryTitle,
+  type ShareEntry,
+} from "@lararium/mesh/share-config";
 import { collapseConfigOf } from "./standoff-collapse.js";
 import { makeBagTierReader } from "./vessel-bag-tier.js";
-import type { ShareVerdictRecord, ShareVerdictSink } from "@lararium/mesh";
-import type { CapabilityRecord, CustodyWriter, DyadReader, LarVessel, ReceiptIssuer } from "@lararium/mesh";
-import { composeVessel, islandFloorStack, islandLiftStack, larVesselOf } from "@lararium/mesh";
+import type { ShareVerdictRecord, ShareVerdictSink } from "@lararium/mesh/federation-gate";
+import type { CapabilityRecord, CustodyWriter, DyadReader, ReceiptIssuer } from "@lararium/mesh/capability-record";
+import type { LarVessel } from "@lararium/mesh/lar-vessel";
+import { composeVessel } from "@lararium/mesh/cap-compose";
+import { islandFloorStack, islandLiftStack, larVesselOf } from "@lararium/mesh/lar-vessel";
 import {
   DaemonRestarting, ACTIVE_WIKI_URI,
   MemoryTiddlerStore,
@@ -122,33 +230,53 @@ import { fenceReceiptAtStop } from "./stop-receipt-fence.js";
 import { daemonGenesisDir, daemonBagsDir, loadLaresConfig, tempConsentedSlugs } from "./lares-config.js";
 import { projectionRoots, workspaceRootsOf, workbenchFolders, litFaceDiskMirrors, FACES_PROJECTION_DIR, REALMS_PROJECTION_DIR, faceRoot, type WorkbenchFolder } from "./bag-paths.js";
 import { ensureRealmLabel, realmPlacement, settleRealmMoves } from "./realm-labels.js";
-import { ledgerWorkbenches, ledgerWorkbenchRealms, wikiSlotOf, workbenchSeats } from "@lararium/mesh";
+import { ledgerWorkbenches, ledgerWorkbenchRealms, workbenchSeats } from "@lararium/mesh/workbench";
+import { wikiSlotOf } from "@lararium/mesh/wiki-island-reach";
 import { armFacePoolWatch, armWorkspaceWatch, tendLitFacePool, type FacePoolWatch } from "./watch-core.js";
 import { ensurePoolTree, faceShelvingLine, healPoolTrees, poolTreeLine, shelveFaceRoot } from "./pool-tree.js";
 import { islandIngestSubmit, openSyncedTree, poolIngestPorts, workspaceIngestPorts } from "./ingest-scan.js";
 import { poolHeads } from "./pool-head.js";
-import { newRequestId, KAHUA_BAG } from "@lararium/mesh";
+import { newRequestId } from "@lararium/mesh/verb-tiddler";
+import { KAHUA_BAG } from "@lararium/mesh/wiki-recipe";
 import { orderHandleTurnsToStubs, type HandleTurn } from "@lararium/mempalace";
 import { writebackWing, TelemetryUnavailable } from "@lararium/sensorium";
-import { DeterministicFederationGate, carriageDocUrl, hostingDocUrl } from "@lararium/mesh";
+import { DeterministicFederationGate } from "@lararium/mesh/federation-gate";
+import { carriageDocUrl, hostingDocUrl } from "@lararium/mesh/deterministic-doc";
 import {
-  standSiblingChannel, siblingRefusalLine, groupSecretSealTitle, verifyGroupSecretSeal,
-  leaseEpochPrefix, standControlHome, vesselFloorCid, raiseFloorAlert, readFace, proveFaceFromLog, adoptKahuaStage, joinFaceDocumentsOnArrival, raiseFaceFrontier, heldDocOf, personaKelChainForPrefix, personaKelBoardDocUrl,
-  type SiblingNetworkAdapter, type SiblingChannelStatus,
-} from "@lararium/mesh";
+  standSiblingChannel,
+  siblingRefusalLine,
+  type SiblingNetworkAdapter,
+  type SiblingChannelStatus,
+} from "@lararium/mesh/sibling-channel";
+import { groupSecretSealTitle, verifyGroupSecretSeal } from "@lararium/mesh/persona-group-secret";
+import { leaseEpochPrefix } from "@lararium/mesh/epoch-lease";
+import { standControlHome } from "@lararium/mesh/control-home";
+import { vesselFloorCid, raiseFloorAlert } from "@lararium/mesh/floor-pin";
+import { readFace } from "@lararium/mesh/face-reading";
+import { proveFaceFromLog } from "@lararium/mesh/face-boot-proof";
+import { adoptKahuaStage } from "@lararium/mesh/kahua-stage";
+import { joinFaceDocumentsOnArrival } from "@lararium/mesh/join-face-documents";
+import { raiseFaceFrontier } from "@lararium/mesh/face-anchor";
+import { heldDocOf } from "@lararium/mesh/persona-act-board";
+import { personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";
+import { personaKelBoardDocUrl } from "@lararium/mesh/deterministic-doc";
 import { nodeHandleBookReading, runRealmBag, runRealmBags, stewardGuard } from "./realm-steward.js";
 import { LarEventBusImpl, DEFAULT_RINGS } from "./lar-event-bus-impl.js";
-import type { SessionSignDoor } from "@lararium/mesh";
-import type { SparseFormVector, AntigenRing, FederationGate, FederationPosture, NexusMembership, PeerClass, PersonaGroupIdentityRing } from "@lararium/mesh";
+import type { SessionSignDoor } from "@lararium/mesh/capability-record";
+import type { SparseFormVector } from "@lararium/mesh/worldline-trajectory";
+import type { AntigenRing, FederationGate, FederationPosture, NexusMembership } from "@lararium/mesh/federation-gate";
+import type { PeerClass } from "@lararium/mesh/island-protocol";
+import type { PersonaGroupIdentityRing } from "@lararium/mesh/persona-group-ring";
 import { selfSlotShareDecision } from "./self-slot-share.js";
 import { vesselOnlyShareVerdict, vesselOnlyClass } from "./vessel-only-share.js";
-import { deviceDaemonDocs, vesselHeldBagOf, DAEMON_SLOT_PREFIX, type LitDeviceFaces } from "@lararium/mesh";
-import { selvesRecordBagOf, selvesRestOf, type SelvesRecordRef } from "@lararium/mesh";
-import { vesselOnlyBook } from "@lararium/mesh";
+import { deviceDaemonDocs, vesselHeldBagOf, DAEMON_SLOT_PREFIX, type LitDeviceFaces } from "@lararium/mesh/device-daemon-docs";
+import { selvesRecordBagOf, selvesRestOf, type SelvesRecordRef } from "@lararium/mesh/persona-planes";
+import { vesselOnlyBook } from "@lararium/mesh/vessel-only-book";
 import { classDeviceLedgers, readBootTiddlers, vesselPrivateBook, vesselPrivateRelationOpens } from "./vessel-private.js";
 import { makeAntigenRingHolder } from "./antigen-ring.js";
 import { makePersonaKelRingHolder, carryPersonaKelUpTheGradient } from "./persona-kel-ring.js";
-import { vesselDyads, verifiedFleetOfGroup, type LarDid } from "@lararium/mesh";
+import { vesselDyads, verifiedFleetOfGroup } from "@lararium/mesh/dyad";
+import { type LarDid } from "@lararium/mesh/lar-did";
 import {
   makeNexusMembership, makeRealmCharterConsult, readCarriedNexuses, liveBoardOpener,
   type NexusMembershipHolder, type SocketBinding, type CarriedNexusReading,
@@ -167,7 +295,8 @@ import { makeSealedPlaneRegistry } from "./plane-seal.js";
 import { cadSealDir, registerSealedCarrier } from "./seal-carrier-federation.js";
 import { makeBagTracker } from "./bag-tracker.js";
 import { startCarriageRelay, type CarriageRelay } from "./carriage-relay.js";
-import { makeCarriageLog, placeSignerKeyAt, type PlaceKelEvent } from "@lararium/mesh";
+import { makeCarriageLog } from "@lararium/mesh/carriage-log";
+import { placeSignerKeyAt, type PlaceKelEvent } from "@lararium/mesh/vessel-kel";
 import { CARRIAGE_LOG_FILE, fileCarriageJournal } from "./carriage-log-file.js";
 import { openRelayGateSeed } from "./relay-gate-seed.js";
 import { maybeStartNexusClientDial, type NexusClientDial } from "./nexus-client-dial.js";
@@ -190,7 +319,9 @@ import { dialAnchorCell, nodeSessionDoor } from "./uds-session-door.js";
 import { SessionSignBook } from "./session-sign-door.js";
 import { faceProofSubjectRef, placeProofSubjectRef } from "@lararium/mesh/face-proof-subjects";
 import type { UdsSessionDoor } from "./uds-channel.js";
-import { hexToBytes as carriageHexToBytes, type MeshPalaceDoc, type FlowPullResult } from "@lararium/mesh";
+import { hexToBytes as carriageHexToBytes } from "@lararium/mesh/crypto";
+import { type MeshPalaceDoc } from "@lararium/mesh/mesh-palace";
+import { type FlowPullResult } from "@lararium/mesh/flow-read-client";
 import { gateReadingsFor, layStatementOn, flowFloorPinAt, vesselCarriagePull } from "./herm-carriage.js";
 import { readKeptAdmitBundles } from "./admit-bundle.js";
 import { readCasBlobFromFs } from "./node-cas.js";
@@ -235,7 +366,7 @@ import { askIslandMemory, askIslandVerb, askSeatDuties, IslandVerbRefused, type 
 import { islandAskRefusal, tapInboundDocs, ISOLATE_ENGINE } from "./engine-watch.js";
 import { fallAwareProbeDoors, heldBackReason, heldInFlight, holdBackStorage, readEngineFalls, type ProbeDoors } from "./engine-fall.js";
 import { ROUTING_ARG_MALFORMED, routingObject, routingString } from "./routing-arg.js";
-import { VerbRefusal } from "@lararium/mesh";
+import { VerbRefusal } from "@lararium/mesh/verb-refusal";
 import { flushEveryShore, shoreFlushStandDown, type ShoreFlushReading, type ShoreIslandAsk } from "./shore-verb.js";
 import { faceCanonThroughControl } from "./commands/kahua.js";
 import type { BackupDoor }                from "./face-bundle-cut.js";
@@ -276,22 +407,30 @@ import { hearthFloorProof }                      from "./hearth-floor-claims.js"
 import { readKeptHearthFloorPins }               from "./hearth-floor-pin-store.js";
 import type { FlowGateArgs, FlowReadGate }  from "./flow-read-face.js";
 import {
-  deriveGateBundle, sovereignGateRoot, floorGateRoot, sovereignRoute, floorRoute, storedWithdrawals, memoryBackedWithdrawals,
-  SOVEREIGN_SYNC_ROUTE, FLOW_SOCKET_ROUTE, cosignPortWitness, WARD_WITNESS_CLOSED,
-  type GateBundle, type GateSession, type GateSessionTable,
-} from "@lararium/mesh";
+  deriveGateBundle,
+  sovereignGateRoot,
+  floorGateRoot,
+  sovereignRoute,
+  floorRoute,
+  type GateBundle,
+} from "@lararium/mesh/gate-bundle-door";
+import { storedWithdrawals } from "@lararium/mesh/gate-withdrawal-store-door";
+import { memoryBackedWithdrawals, type GateSession, type GateSessionTable } from "@lararium/mesh/face-gate-door";
+import { SOVEREIGN_SYNC_ROUTE } from "@lararium/mesh/admit-gate-pin";
+import { FLOW_SOCKET_ROUTE } from "@lararium/mesh/flow-read-client";
+import { cosignPortWitness, WARD_WITNESS_CLOSED } from "@lararium/mesh/ward-cosign-gate";
 import { placeCarriedNexuses, unionReadings }      from "./vessel-raise.js";
 import { landEveryHostingAct }                    from "./commands/host.js";
 import { loadNodeWardCosignPort, loadFaceFold }    from "./commands/intent.js";
 import { makeExecLeiSpendReactor }                 from "./exec-lei-door.js";
-import { EXEC_LEI_SPEND_VERB }                     from "@lararium/mesh";
+import { EXEC_LEI_SPEND_VERB } from "@lararium/mesh/exec-lei";
 import { listWalkRecords }        from "./node-walk-store.js";
 import { storeDoorReactors, awaitOnRolled }       from "./store-door-verbs.js";
 import { controlSwarmWiki }                       from "./swarm-wiki.js";
 import { carriedSet, readCarriedCharters }       from "./carried-set.js";
 import { composeLararium, composeHerm, carriageStack, type MeshSelf } from "./node-caps.js";
-import { PLANE_LABELS } from "@lararium/mesh";
-import { shoreInbound } from "@lararium/mesh";
+import { PLANE_LABELS } from "@lararium/mesh/plane-labels";
+import { shoreInbound } from "@lararium/mesh/prototype-key-shore-door";
 
 /** The genesis dir when a caller sites none — resolves through the composable genesis cap
  *  (`LAR_GENESIS` → `<root>/config/config.json` → repo-relative `<corpus>/genesis`). Genesis stays
@@ -3781,7 +3920,7 @@ async function prepareNodeBootOn(
         if (!chain || chain.length === 0) return null;
         const otherFace = faceBootTiddlers ? bootFacePlanes(faceBootTiddlers, plane.personaGroupId) : null;
         if (!otherFace?.intentsUrl) return null;
-        const { faceRelationOf } = await import("@lararium/mesh");
+        const { faceRelationOf } = await import("@lararium/mesh/face-relation");
         // A SIBLING'S PLANE RESTS UNMOUNTED: the composition mounts the worn face's plane alone, so the proof reads the plane's
         // bytes from this vessel's own face-gated store into a scratch document (`proveSiblingFromRest`): no Repo handle, no
         // peer. Custody binds by OPENING (`faceOpening`): the face stands open before the read, the read keys to that opening,
@@ -3893,7 +4032,7 @@ async function prepareNodeBootOn(
     const faceLit = activeAtom !== null && atomSeed !== null;
     // THE DAEMON WIKI'S CANON FOLLOWS THE WORN FACE (`daemonFaceCanonBag`): `bags/daemon-<F>`, the document the control
     // document names, minted at the face's first lit stand. A face that stands unlit or unproven, and the floor, read no canon.
-    const wornRelation = wornFaceProved && wornFaceProjection && personaGroupId ? (await import("@lararium/mesh")).faceRelationOf(wornFaceProjection) : null;
+    const wornRelation = wornFaceProved && wornFaceProjection && personaGroupId ? (await import("@lararium/mesh/face-relation")).faceRelationOf(wornFaceProjection) : null;
     // R1: the bags the sealed rest seals, the daemon mount's own wiki bags, the daemon wiki's slots and canon (U1's D half), only
     // while that face stands lit and proved; the face's hive registers each (`wornFaceWikiBags`). The canon stands only where
     // its bag stands registered (`standingDaemonCanonBag`), and the map names it before the canon's document moves a byte.
@@ -4249,7 +4388,7 @@ async function prepareNodeBootOn(
         ...(bootstrap.personaUrl   ? { personaUrl:   bootstrap.personaUrl }   : {}),
         ...(bootstrap.personaBagId ? { personaBagId: bootstrap.personaBagId } : {}),
         ...await (async () => {
-          const relation = wornFaceProjection ? (await import("@lararium/mesh")).faceRelationOf(wornFaceProjection) : null;
+          const relation = wornFaceProjection ? (await import("@lararium/mesh/face-relation")).faceRelationOf(wornFaceProjection) : null;
           // The worn face's folder under `faces/`: the pet name carries across a re-found, so the folder does too.
           return { faceRelation: relation, faceSegment: relation === null ? null : relation === wornDeviceRelation && wornFaceSegment !== null ? wornFaceSegment : await faceSegmentOf(relation, wornMount?.handleIndex ?? 0) };
         })(),

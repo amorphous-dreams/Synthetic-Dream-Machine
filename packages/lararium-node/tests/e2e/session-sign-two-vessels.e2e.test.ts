@@ -20,7 +20,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { createServer, type Server } from "node:http";
 import { WebSocketServer } from "ws";
-import type { CapabilityRecord } from "@lararium/mesh";
+import type { CapabilityRecord } from "@lararium/mesh/capability-record";
 
 const captured: CapabilityRecord[] = [];
 const seen = vi.hoisted(() => ({
@@ -40,13 +40,13 @@ vi.mock("worker_threads", async (importOriginal) => {
   }
   return { ...actual, Worker: RecordingWorker };
 });
-vi.mock("@lararium/mesh", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@lararium/mesh")>();
+vi.mock("@lararium/mesh/who-face-cap", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@lararium/mesh/who-face-cap")>();
   // Count the role caps a lift builds and disposes: the who-face cap stands as a role cap that carries a disposer.
   return { ...actual, whoFaceCap: (deps: Parameters<typeof actual.whoFaceCap>[0]) => {
     const cap = actual.whoFaceCap(deps);
     return { ...cap, build: async (resolve: never) => { const c = await (cap.build as (r: never) => Promise<unknown>)(resolve); seen.role.built++; return c; }, dispose: () => { seen.role.disposed++; } };
-  } };
+  }, };
 });
 vi.mock("../../dist/src/vessel-island-pool.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../../dist/src/vessel-island-pool.js")>();

@@ -9,7 +9,7 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import { createHash, randomBytes } from "node:crypto";
 import { assertFoundingRoute } from "./custody-session.js";
-import type { SlotSpec } from "@lararium/mesh";
+import type { SlotSpec } from "@lararium/mesh/keyslot-door";
 import { bindFaceAskCustody, bindFaceCustody, faceStandingCustody, foundFaceCustody, retireFaceAskCustody } from "./custody-seat.js";
 import { personaGroupDigest } from "./persona-group-file.js";
 

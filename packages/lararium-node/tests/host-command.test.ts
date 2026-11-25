@@ -17,16 +17,17 @@
 import { seatSuiteWard } from "./support/scratch-custody-setup.js";
 // This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
 seatSuiteWard();
-import { HOSTING_ACT_DOMAIN, writeHostingAct, mintHostingAct } from "@lararium/mesh";
+import { HOSTING_ACT_DOMAIN } from "@lararium/mesh/domains";
+import { writeHostingAct, mintHostingAct } from "@lararium/mesh/hosting";
 import { afterEach, describe, expect } from "vitest";
 import { seatedCustody } from "../src/custody-seat.js";
 import { holdSealsUntilBothArrive } from "./custody-seat-fixture.js";
 import { rmSync, existsSync } from "node:fs";
 import * as ed from "@noble/ed25519";
-import {
-  hex, carriageDocUrl, hostingDocUrl, materializeSharedLarDoc, hostingActsFromBoard, hostingActCid, decodeInvite,
-  tokenVerifiesAt, redeemClaim, claimDigest, type NexusDoc,
-} from "@lararium/mesh";
+import { hex } from "@lararium/mesh/crypto";
+import { carriageDocUrl, hostingDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { hostingActsFromBoard, hostingActCid, decodeInvite, tokenVerifiesAt, redeemClaim, claimDigest } from "@lararium/mesh/hosting";
+import { type NexusDoc } from "@lararium/mesh/nexus-seal-seed";
 import { restEvery, restingRepo } from "./resting-repo.js";
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { larDataDir, larSealHome } from "../src/vessel-paths.js";

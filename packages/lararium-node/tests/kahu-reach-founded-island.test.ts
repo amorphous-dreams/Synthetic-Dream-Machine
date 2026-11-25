@@ -13,11 +13,14 @@
 import { afterEach, describe, expect, test } from "vitest";
 import * as ed from "@noble/ed25519";
 import { DaemonEventStore, KeyhiveProvider, kahuReachSourceOf } from "@lararium/keyhive";
-import { hex, hexToBytes, kahuRealmGroup, kahuReachAccess, openKahuCabalAct, signKahuCabalAct, type KahuCabalBoardReader, type KahuQuorumSeats } from "@lararium/mesh";
+import { hex, hexToBytes } from "@lararium/mesh/crypto";
+import { kahuRealmGroup, kahuReachAccess, type KahuCabalBoardReader } from "@lararium/mesh/kahu-canon-reach";
+import { openKahuCabalAct, signKahuCabalAct } from "@lararium/mesh/kahu-cabal-admission";
+import { type KahuQuorumSeats } from "@lararium/mesh/kapae-antigen";
 import { cpSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { kahuCabalCanonAccess } from "@lararium/mesh";
+import { kahuCabalCanonAccess } from "@lararium/mesh/kahu-cabal-admission";
 import { standFoundedIsland } from "./stand-founded-island.js";
 import { foundHearthDirect } from "./found-route.js";
 import { readKahuCabalBoard } from "../src/commands/nexus-cabal.js";

@@ -3,7 +3,9 @@
  * as a title list of pet-names), `share-list` answers them; a filter operator or a torn slug refuses by name.
  */
 import { describe, expect, test } from "vitest";
-import { CompositeStore, CONTROL_HOME_ID, type Verb } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
+import { type Verb } from "@lararium/mesh/verb-tiddler";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { makeShareListReactor, makeShareSetReactor } from "../src/share-verbs.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";

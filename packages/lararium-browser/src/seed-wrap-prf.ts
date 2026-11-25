@@ -32,7 +32,9 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026#/pattern-integrity-rhymes
  */
 
-import { SEED_WRAP_PRF_INFO, type KeyClass, hex as meshHex } from "@lararium/mesh";
+import { SEED_WRAP_PRF_INFO } from "@lararium/mesh/domains";
+import { type KeyClass } from "@lararium/mesh/key-class";
+import { hex as meshHex } from "@lararium/mesh/crypto";
 
 /** The HKDF `info` for the seed wrap — minted once in the registry, never built at a call site, never another seal's. */
 export const SEED_WRAP_HKDF_INFO = SEED_WRAP_PRF_INFO;

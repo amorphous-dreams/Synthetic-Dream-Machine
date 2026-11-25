@@ -97,7 +97,7 @@ import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
 import { projectSubmission, PROFILES, profileOf, recordedTargetOf, resolveWeaveTarget, type WeaveProfile } from "@lararium/tw5/weave";
 import { homedInTheKahuWorkbench, readCarrierShape, readCarrierEdges, readCarrierLifecycle, checkCarrierLifecycle, memeticVerdict } from "@lararium/tw5";
 import { verifyBcc, classifyPostEot, stampCarrier } from "@lararium/memetic-frame";
-import { newChangeId } from "@lararium/mesh";
+import { newChangeId } from "@lararium/mesh/residency-actions";
 import { faceSigningSeat, listFaceOrdinals, runPromoteCheckBytes } from "@lararium/node";
 import { vesselDid, larSealHome } from "../env.js";
 import { containerArgs } from "../container-target.js";

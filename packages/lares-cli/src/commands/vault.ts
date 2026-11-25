@@ -14,7 +14,8 @@ import {
   FsCustodyIo, unlockCustody, bindCustodySlot, unbindCustodySlot, custodyStatus, bindFaceSlot, unbindFaceSlot, openFaceTree, readFaceIndexSync,
   type CustodyHomes, type CustodyStatus, type CustodyStatusRow,
 } from "@lararium/node";
-import { ATTEMPT_BUDGET, attemptWarning, openTreeKey, decodeSlotTree, slotsOpenedBy, type Credential, type SlotSpec, type SlotTree } from "@lararium/mesh";
+import { ATTEMPT_BUDGET, attemptWarning } from "@lararium/mesh/attempt-budget";
+import { openTreeKey, decodeSlotTree, slotsOpenedBy, type Credential, type SlotSpec, type SlotTree } from "@lararium/mesh/keyslot-door";
 import { nativeKdf } from "@lararium/mesh/node";
 import { larIdentityDir, larDataDir, larSealHome } from "../env.js";
 import { askYesNo, gatherBundleRoute, gatherCards, gatherCredentials, gatherNewSlot, gatherStayingSlot } from "../custody-prompt.js";

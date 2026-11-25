@@ -30,9 +30,15 @@
 import { closeSync, fsyncSync, mkdirSync, openSync, renameSync, rmSync, writeSync } from "node:fs";
 import { dirname, join } from "node:path";
 import {
-  SwarmRefused, kukuluVouchDigest, readLeiChain, signKukuluVouch, swarmLeiUnstrungTitle,
-  type SignedKukuluVouch, type SignedSwarmAct, type SwarmTrust, type SwarmWikiPort, type WardActWitness,
-} from "@lararium/mesh";
+  SwarmRefused,
+  readLeiChain,
+  swarmLeiUnstrungTitle,
+  type SignedSwarmAct,
+  type SwarmTrust,
+  type SwarmWikiPort,
+} from "@lararium/mesh/swarm-tiddlers";
+import { kukuluVouchDigest, signKukuluVouch, type SignedKukuluVouch } from "@lararium/mesh/kukulu-vouch";
+import { type WardActWitness } from "@lararium/mesh/ward-cosign";
 import type { CustodyHolder } from "./custody-holder.js";
 import { vouchSignerOf } from "./kukulu-gate.js";
 import { larConfigHome } from "./vessel-paths.js";

@@ -7,7 +7,8 @@
  * a named bag still asks admin over that bag.
  */
 import { describe, expect, test } from "vitest";
-import { DAEMON_BAG_ID, type Verb } from "@lararium/mesh";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { type Verb } from "@lararium/mesh/verb-tiddler";
 import { deriveRoutedCap } from "../src/verb-local-dispatch.js";
 
 const BOOK = "lar:///ha.ka.ba/bags/meme-witness-book";

@@ -45,7 +45,7 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
 import { existsSync, readFileSync, statSync } from "node:fs";
-import { secretShapes } from "@lararium/mesh";
+import { secretShapes } from "@lararium/mesh/secret-shapes";
 import { join } from "node:path";
 import { MANIFEST_FILE, unsafeRelPath } from "./bundle-manifest.js";
 import { configuredKeepSessions } from "./keep-config.js";
@@ -56,7 +56,15 @@ import type { ShoreFlushReading } from "./shore-core.js";
 
 // THE SECRET-SHAPE SCAN has one owner, `@lararium/mesh` (`secret-shapes.ts`): the keep's guard and the house alert's read
 // redaction read the same list, so a shape added once guards both.
-export { KEEP_SECRET_PATTERN, KEEP_KEY_HEADER, KEEP_KEY_BODY_MIN, KEEP_KEY_BODY_LINES, KEEP_KEY_LINE_MIN, KEEP_SECRET_ALLOW, secretShapes } from "@lararium/mesh";
+export {
+  KEEP_SECRET_PATTERN,
+  KEEP_KEY_HEADER,
+  KEEP_KEY_BODY_MIN,
+  KEEP_KEY_BODY_LINES,
+  KEEP_KEY_LINE_MIN,
+  KEEP_SECRET_ALLOW,
+  secretShapes,
+} from "@lararium/mesh/secret-shapes";
 
 /**
  * THE KEEP'S OWN NAME ON ITS COMMITS: a keep's remote crosses to another vessel, so its commits carry this fixed neutral author

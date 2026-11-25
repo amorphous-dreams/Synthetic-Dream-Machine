@@ -8,7 +8,9 @@
  * the operation answers its own outcome.
  */
 import { describe, expect, test } from "vitest";
-import { buildDeviceDelegation, faceAtomKeyFromSeed, type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh";
+import { buildDeviceDelegation } from "@lararium/mesh/device-delegation";
+import { faceAtomKeyFromSeed } from "@lararium/mesh/face-atom";
+import { type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
 import { InMemoryEventStore, KeyhiveProvider, runFaceJoinOperation, verifyFaceGrantRecord } from "../src/index.js";
 import type { FaceJoinContext } from "../src/index.js";
 
@@ -38,7 +40,10 @@ function memoryStore() {
 
 /** The founder's anchor-pinned persona lineage: an inception under ROOT's op-key (1-of-1 self-recovery). */
 async function founderLineage() {
-  const { ed25519VerifyingKeyFromSeed, deriveSelfRecoveryKey, mintPersonaInception, sealKeySetHash } = await import("@lararium/mesh");
+  const { ed25519VerifyingKeyFromSeed } = await import("@lararium/mesh/ed25519-door");
+  const { deriveSelfRecoveryKey } = await import("@lararium/mesh/persona-identity");
+  const { mintPersonaInception } = await import("@lararium/mesh/persona-kel");
+  const { sealKeySetHash } = await import("@lararium/mesh/wax-stamp");
   const selfRecovery = await deriveSelfRecoveryKey(ROOT);
   const inception = mintPersonaInception(`0x${await ed25519VerifyingKeyFromSeed(ROOT)}`, sealKeySetHash([selfRecovery.verifyingKey], 1));
   return { prefix: inception.prefix, chain: [inception] };

@@ -8,7 +8,12 @@
  * (circlePanelStateArgs) the `circle-state` worker verb writes.
  */
 import { describe, test, expect, afterEach } from "vitest";
-import { signHandleCard, ed25519SignerFromSeed, derivePersonaKeypair, signingSeedFromHex, mintHandleInception, type FollowView } from "@lararium/mesh";
+import { signHandleCard } from "@lararium/mesh/handle-card";
+import { ed25519SignerFromSeed } from "@lararium/mesh/ed25519-door";
+import { derivePersonaKeypair } from "@lararium/mesh/persona-hd";
+import { signingSeedFromHex } from "@lararium/mesh/vessel-identity-core";
+import { mintHandleInception } from "@lararium/mesh/handle-kel";
+import { type FollowView } from "@lararium/mesh/compose-follow";
 import {
   browserComposeFollow, browserComposeUnfollow, browserListFollows, makeBrowserCircleStore,
 } from "../src/browser-circle-store.js";

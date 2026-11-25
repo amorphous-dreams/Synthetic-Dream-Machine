@@ -29,10 +29,16 @@
 import { KeyhiveProvider, InMemoryEventStore } from "../src/index.js";
 import { foundCabalRealm, openDwelling, dwellersHolding } from "../src/cabal-realm-ceremony.js";
 import {
-  foundMeCircle, contractPersona, releasePersona, activePersona, withActivePersona,
-  meCircleDegeneracy, cabalRealmMaintenanceProvenance, cabalRealmLeaseSlot,
+  foundMeCircle,
+  contractPersona,
+  releasePersona,
+  activePersona,
+  withActivePersona,
+  meCircleDegeneracy,
   type MeCircle,
-} from "@lararium/mesh";
+} from "@lararium/mesh/me-circle";
+import { cabalRealmMaintenanceProvenance } from "@lararium/mesh/cabal-realm-clock";
+import { cabalRealmLeaseSlot } from "@lararium/mesh/cabal-realm";
 
 const ME_URI       = "lar:///me.constellation.overlaps/josh";
 const ME_SUBSTRATE = "automerge:me-realm-substrate-probe";

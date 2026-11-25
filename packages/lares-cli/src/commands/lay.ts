@@ -38,7 +38,9 @@
 
 import { existsSync, readdirSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { houseCanonSlugs, namesTw5Docs, type FloorDriftReading } from "@lararium/mesh";
+import { houseCanonSlugs } from "@lararium/mesh/kahu-canon-reach";
+import { namesTw5Docs } from "@lararium/mesh/tw5-docs-name";
+import { type FloorDriftReading } from "@lararium/mesh/floor-drift";
 import type { ParsedArgs } from "../parse-args.js";
 import { emit } from "../render.js";
 import { larBagsDir, larProjectionsDirOrNone, larRoot, larWikisDir, vesselDid } from "../env.js";

@@ -31,9 +31,14 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/identity-slot-policy
  */
 import {
-  makePersonaGroupIdentityRing, personaScopedBagIds, governedPlaneDocIds, provenVesselKeyOf,
-  type PersonaGroupIdentityRing, type PersonaKelEvent, type PlaneCatalog,
-} from "@lararium/mesh";
+  makePersonaGroupIdentityRing,
+  governedPlaneDocIds,
+  provenVesselKeyOf,
+  type PersonaGroupIdentityRing,
+  type PlaneCatalog,
+} from "@lararium/mesh/persona-group-ring";
+import { personaScopedBagIds } from "@lararium/mesh/persona-scope";
+import { type PersonaKelEvent } from "@lararium/mesh/persona-kel";
 import { verifyFaceGrantRecord, FACE_GRANT_PREFIX } from "./face-grant-record.js";
 
 type RingPeerId = Parameters<PersonaGroupIdentityRing["admitsPeer"]>[1];

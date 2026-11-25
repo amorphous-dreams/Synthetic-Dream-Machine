@@ -12,7 +12,10 @@
  * projector's own echo); a native file carrying no `rendered-from` lands.
  */
 import { describe, test, expect } from "vitest";
-import { CompositeStore, bagUri, isVerbRefusal, type Verb } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { bagUri } from "@lararium/mesh/lar-uris";
+import { isVerbRefusal } from "@lararium/mesh/verb-refusal";
+import { type Verb } from "@lararium/mesh/verb-tiddler";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { makeMemePutReactor, type MemeVerbOptions } from "../src/meme-verbs.js";
 import { makeActionReactorFor, makeTw5Deserializer, type IngestAlert } from "../src/action-handler.js";

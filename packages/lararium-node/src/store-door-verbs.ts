@@ -66,7 +66,9 @@
 
 import { routingString } from "./routing-arg.js";
 import { takeWardTicket, type WardCredential } from "./ward-credential.js";
-import { WardRefused, CanonOfferRefused, type FloorRemount } from "@lararium/mesh";
+import { WardRefused } from "@lararium/mesh/ward-slots";
+import { CanonOfferRefused } from "@lararium/mesh/canon-offer";
+import { type FloorRemount } from "@lararium/mesh/floor-pin";
 
 /** The route a row's own ticket resolved to, carried beside its arguments under a key no wire spells (seat-harness#/the-ward). */
 const WARD_ARG: unique symbol = Symbol("ward");
@@ -88,14 +90,25 @@ import { unlockedFaceOrdinals } from "./custody-seat.js";
 import { runPromoteVerb } from "./commands/promote.js";
 import { runSwarmVerb } from "./commands/swarm.js";
 import { runRiteVerb, type RiteAction } from "./commands/rite.js";
-import { PromoteRefused, KapaeRefused, SwarmRefused, SWARM_VERB_HAND_CODES, SENSE_HAND_CODES, type PromoteCommandRequest, type SwarmWikiPort } from "@lararium/mesh";
+import { PromoteRefused } from "@lararium/mesh/promote";
+import { KapaeRefused } from "@lararium/mesh/promote-kapae";
+import { SwarmRefused, type SwarmWikiPort } from "@lararium/mesh/swarm-tiddlers";
+import { SWARM_VERB_HAND_CODES } from "@lararium/mesh/swarm-door";
+import { SENSE_HAND_CODES } from "@lararium/mesh/sensorium-lifecycle";
+import { type PromoteCommandRequest } from "@lararium/mesh/promote-command";
 import { faceRouteBindDigest, FaceRouteRefused, withFaceRoute } from "./face-route.js";
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
-import type { LarDoc } from "@lararium/mesh";
+import type { LarDoc } from "@lararium/mesh/base-doc";
 import { randomBytes } from "node:crypto";
 import { hasLine, pagePlaneRows, param, type VerbReactor } from "@lararium/tw5";
-import type { HandleClaim } from "@lararium/mesh";
-import { federationPostureFromDoc, isVerbRefusal, readNexusActPartial, type FederationPosture, type CarriageAction, type KahuQuorumSeats, type SealEpoch } from "@lararium/mesh";
+import type { HandleClaim } from "@lararium/mesh/handle-kel";
+import { federationPostureFromDoc } from "@lararium/mesh/nexus-seal-seed";
+import { isVerbRefusal } from "@lararium/mesh/verb-refusal";
+import { readNexusActPartial } from "@lararium/mesh/nexus-partial";
+import { type FederationPosture } from "@lararium/mesh/federation-gate";
+import { type CarriageAction } from "@lararium/mesh/carriage-registry";
+import { type KahuQuorumSeats } from "@lararium/mesh/kapae-antigen";
+import { type SealEpoch } from "@lararium/mesh/wax-stamp";
 import { runCabalAct, runCabalCosign, runCabalStanding, NexusCabalError } from "./commands/nexus-cabal.js";
 import { runFloorRelease } from "./commands/nexus-release.js";
 import { runFloorCut } from "./commands/floor-cut.js";

@@ -3,7 +3,7 @@
  * hold separate wrapped keys, separate KDF salts and separate slot ids. A rotation or unbind on one leaves the other opening.
  */
 import { afterEach, describe, expect, test } from "vitest";
-import { decodeSlotTree, type SlotSpec } from "@lararium/mesh";
+import { decodeSlotTree, type SlotSpec } from "@lararium/mesh/keyslot-door";
 import { rotateCustody, unlockCustody } from "../src/custody-session.js";
 import { bindFaceSlot, unbindFaceSlot } from "../src/face-slot-ops.js";
 import { openFaceTree } from "../src/face-custody.js";

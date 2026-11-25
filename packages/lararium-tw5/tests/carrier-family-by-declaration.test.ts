@@ -9,7 +9,11 @@
  * projector then sited the record as `.txt`.
  */
 import { describe, test, expect, beforeAll } from "vitest";
-import { CompositeStore, isEffectRecordUri, type CapabilityAccess, type CapabilityVerifyResult, type Verb, type VerbContext } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { isEffectRecordUri } from "@lararium/mesh/effect-record";
+import { type CapabilityAccess, type CapabilityVerifyResult } from "@lararium/mesh/capability";
+import { type Verb } from "@lararium/mesh/verb-tiddler";
+import { type VerbContext } from "../src/verb-dispatcher.js";
 import { carrierHash } from "@lararium/mesh/crypto";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { MemoryTiddlerStore } from "../src/memory-store.js";

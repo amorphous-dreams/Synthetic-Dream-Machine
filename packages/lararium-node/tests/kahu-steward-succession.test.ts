@@ -17,10 +17,11 @@ import { afterAll, describe, expect, test, vi } from "vitest";
 import { cpSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import {
-  LARARIUM_DOC_URI, LARES_DOC_URI, PERSONA_GROUP_ID_TIDDLER, carriageDocUrl, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed,
-  materializeSharedLarDoc, realmBagKey, realmDocUrl, signNexusKeyHandOver, writeNexusKeyHandOver, type RealmBagRegistration,
-} from "@lararium/mesh";
+import { LARARIUM_DOC_URI, LARES_DOC_URI, PERSONA_GROUP_ID_TIDDLER } from "@lararium/mesh/lar-uris";
+import { carriageDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { realmBagKey, realmDocUrl, type RealmBagRegistration } from "@lararium/mesh/realm-bag";
+import { signNexusKeyHandOver, writeNexusKeyHandOver } from "@lararium/mesh/nexus-key-line";
 import { standKahuCanon } from "../src/kahu-realm.js";
 import { readNexusDoc } from "../src/nexus-doc.js";
 import { readNexusKey, nexusKeyPublicOf } from "../src/face-key-custody.js";

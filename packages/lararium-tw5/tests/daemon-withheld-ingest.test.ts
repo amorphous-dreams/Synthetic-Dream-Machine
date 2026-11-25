@@ -8,7 +8,13 @@
  * title as ordinary content, a cap-shaped or seal-shaped title included.
  */
 import { describe, test, expect, beforeAll } from "vitest";
-import { CompositeStore, DAEMON_BAG_ID, daemonFaceCanonBag, isEffectRecordUri, type CapabilityAccess, type CapabilityVerifyResult, type Verb, type VerbContext } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { daemonFaceCanonBag } from "@lararium/mesh/wiki-recipe";
+import { isEffectRecordUri } from "@lararium/mesh/effect-record";
+import { type CapabilityAccess, type CapabilityVerifyResult } from "@lararium/mesh/capability";
+import { type Verb } from "@lararium/mesh/verb-tiddler";
+import { type VerbContext } from "../src/verb-dispatcher.js";
 import { carrierHash } from "@lararium/mesh/crypto";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { registerActionReactors, makeTw5Deserializer } from "../src/action-handler.js";

@@ -5,7 +5,7 @@
  */
 import { existsSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { readFloorShadowTally, type FloorShadowStore, type FloorShadowTally } from "@lararium/mesh";
+import { readFloorShadowTally, type FloorShadowStore, type FloorShadowTally } from "@lararium/mesh/floor-shadow";
 
 /** The tally's file name inside the vessel store dir. */
 export const FLOOR_SHADOW_FILE = "floor-shadow.json";

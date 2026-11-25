@@ -1,5 +1,8 @@
 import { describe, expect, test } from "vitest";
-import { CompositeStore, CONTROL_HOME_ID, WARD_AUDIT_URI_PREFIX, wikiSlotUri } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
+import { WARD_AUDIT_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { fileWardRefusal } from "../src/worker-data-verbs.js";
 

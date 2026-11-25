@@ -6,7 +6,8 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
 import { describe, expect, test } from "vitest";
-import { EMPTY_KAPAE_LOCAL, EMPTY_LEDGER, ledgerCommit, promoteDigest, promoteEdgeKey } from "@lararium/mesh";
+import { EMPTY_KAPAE_LOCAL } from "@lararium/mesh/promote-kapae";
+import { EMPTY_LEDGER, ledgerCommit, promoteDigest, promoteEdgeKey } from "@lararium/mesh/promote";
 import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
 import { readKeystoreRecord } from "../src/browser-custody.js";
 import { browserPromoteCas, browserPromoteStores, kapaeRecord, promotedRecord } from "../src/browser-promoted-store.js";

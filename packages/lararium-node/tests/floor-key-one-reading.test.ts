@@ -17,7 +17,7 @@ import { createServer } from "node:http";
 import { cpSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { wikiSlotUri } from "@lararium/mesh";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
 import { direct } from "./direct-store.js";
 import { TEST_CUSTODY, TEST_SLOT } from "./found-route.js";

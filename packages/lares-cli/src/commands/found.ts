@@ -28,7 +28,10 @@
  */
 
 import { readFileSync } from "node:fs";
-import { OccupiedStoreRefusal, assertStoreUnoccupied, openBundleKey, readFaceBundle, seatFingerprint, type Credential, type SlotSpec } from "@lararium/mesh";
+import { OccupiedStoreRefusal, assertStoreUnoccupied } from "@lararium/mesh/sealed-writer";
+import { openBundleKey, readFaceBundle } from "@lararium/mesh/face-bundle";
+import { seatFingerprint } from "@lararium/mesh/nexus-seal-seed";
+import { type Credential, type SlotSpec } from "@lararium/mesh/keyslot-door";
 import { nativeKdf } from "@lararium/mesh/node";
 import {
   runInit, runFoundHearth, ownedStore, StoreHeld, CustodyFoundingRefused, FsCustodyIo, custodyTreeStands,

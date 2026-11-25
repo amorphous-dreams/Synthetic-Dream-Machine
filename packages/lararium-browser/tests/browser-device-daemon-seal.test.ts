@@ -13,11 +13,21 @@
  */
 import { describe, expect, test } from "vitest";
 import { Repo, type Chunk, type StorageAdapterInterface, type StorageKey } from "@automerge/automerge-repo";
+import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
+import { SealedDocumentStore } from "@lararium/mesh/sealed-doc-store";
 import {
-  CONTROL_HOME_ID, SealedDocumentStore, bindSecretHomeRest, daemonFaceCanonBag, emptyLarDoc, enrollSecretHome,
-  floorDaemonSlotTitle, floorRestKey, seedFloorDoor, standFloorKeyOn,
-  mintSecretHomeAddress, mintVesselDocumentId, openSecretHome, storedLarRecord, wikiSlotUri, type LarDoc, type LitDeviceFace,
-} from "@lararium/mesh";
+  bindSecretHomeRest,
+  enrollSecretHome,
+  standFloorKeyOn,
+  mintSecretHomeAddress,
+  mintVesselDocumentId,
+  openSecretHome,
+} from "@lararium/mesh/secret-home";
+import { daemonFaceCanonBag, wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { floorDaemonSlotTitle, type LitDeviceFace } from "@lararium/mesh/device-daemon-docs";
+import { floorRestKey, seedFloorDoor } from "@lararium/mesh/held-rest-key";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
 import { browserDeviceFiling } from "../src/browser-device-filing.js";
 
 const WORKING = wikiSlotUri("daemon", "working");

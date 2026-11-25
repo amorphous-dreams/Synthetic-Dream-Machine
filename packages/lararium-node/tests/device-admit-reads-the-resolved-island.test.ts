@@ -34,7 +34,9 @@ import { join, dirname } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 
-import { nexusIdentity, nexusScopeOrThrow, personaKelBoardDocUrl, nexusAidOf } from "@lararium/mesh";
+import { nexusIdentity, nexusScopeOrThrow } from "@lararium/mesh/nexus-identity";
+import { personaKelBoardDocUrl } from "@lararium/mesh/deterministic-doc";
+import { nexusAidOf } from "@lararium/mesh/nexus-seal-seed";
 
 import { writeNexusDoc, readNexusDoc, nexusCharterStands } from "../src/nexus-doc.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
@@ -314,7 +316,7 @@ describe("device-admit carries the founder's RESOLVED island, not just its gate 
     expect(meshIdentitySrc, "the composed resolver stands in mesh, platform-blind")
       .toMatch(/export function admittedJoineeIsland\(/);
     expect(standingSrc, "nexus-standing.ts re-exports it rather than restating it")
-      .toMatch(/export \{ admittedJoineeIsland \} from "@lararium\/mesh";/);
+      .toMatch(/export \{ admittedJoineeIsland \} from "@lararium\/mesh\/nexus-identity";/);
     expect(initSrc, "init.ts composes the shared resolution rather than restating it").toMatch(/admittedJoineeIsland\(/);
     expect(admitSrc, "device-admit.ts reads the resolved kind").toMatch(/islandKind: founderIdentity\.kind/);
     expect(admitSrc, "device-admit.ts reads the resolved scope").toMatch(/islandScope: founderIdentity\.scope/);

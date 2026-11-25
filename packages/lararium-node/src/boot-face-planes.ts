@@ -7,10 +7,15 @@
  * The mounted face stays a parameter; nothing here reads a vault pointer.
  */
 
+import { PERSONA_GROUP_ID_TIDDLER, DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
 import {
-  PERSONA_GROUP_ID_TIDDLER, readPersonaPlanes, mountedPlaneBagId, personaPlanesFault,
-  personaSiblingBagIds, DAEMON_BAG_ID, type PersonaPlaneRef, type PlaneEntry,
-} from "@lararium/mesh";
+  readPersonaPlanes,
+  mountedPlaneBagId,
+  personaPlanesFault,
+  type PersonaPlaneRef,
+  type PlaneEntry,
+} from "@lararium/mesh/persona-planes";
+import { personaSiblingBagIds } from "@lararium/mesh/persona-scope";
 
 export interface BootFacePlanes {
   readonly personaPlanes:  PersonaPlaneRef[];

@@ -21,9 +21,13 @@
  */
 import { afterEach, describe, expect, test } from "vitest";
 import {
-  LAR_CAMERA_STORY, LAR_SERVICE, mkLarResend, readLarService,
-  type LarMsg_Service, type LarServiceKind,
-} from "@lararium/mesh";
+  LAR_CAMERA_STORY,
+  LAR_SERVICE,
+  mkLarResend,
+  readLarService,
+  type LarMsg_Service,
+  type LarServiceKind,
+} from "@lararium/mesh/lar-camera";
 import { dispatchLarControlEvent, resendLarCamera } from "../src/tw5-projection.js";
 import { htmlOf, mountSurface, type Surface } from "./projection-surface.js";
 import { skipNote, wikiSkip } from "./test-wiki.js";

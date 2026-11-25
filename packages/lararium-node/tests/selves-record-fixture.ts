@@ -4,7 +4,11 @@
  * composed as the node composes it: the record's rest read off the vessel's own bag map.
  */
 import type { Repo } from "@automerge/automerge-repo";
-import { AutomergeDocStore, emptyLarDoc, personaBagIdFor, selvesRecordBagOf, selvesRecordOf, selvesRestOf, SIGNER_DID_TIDDLER, type LarDoc } from "@lararium/mesh";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { personaBagIdFor } from "@lararium/mesh/persona-scope";
+import { selvesRecordBagOf, selvesRecordOf, selvesRestOf } from "@lararium/mesh/persona-planes";
+import { SIGNER_DID_TIDDLER } from "@lararium/mesh/lar-uris";
 import { repoPersonaSelvesPlane } from "../src/persona-selves-plane.js";
 
 /** The group the witnesses' face stands in, and its selves record. */

@@ -115,7 +115,11 @@ test("RED: a daemon or kahua ledger row written straight into custody, with no w
   const { wardRootSigner } = await import("../src/ward-signer.js");
   const { nodePromoteStores, promotedFile } = await import("../src/promoted-store.js");
   const { updateCustodyRecord } = await import("../src/custody-seat.js");
-  const { EMPTY_LEDGER, decodeLedger, encodeLedger, ledgerCommit, promoteDigest, promotions, readPromoteBoard, promoteBoardDoor, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } = await import("@lararium/mesh");
+  const { EMPTY_LEDGER, decodeLedger, encodeLedger, ledgerCommit, promoteDigest } = await import("@lararium/mesh/promote");
+  const { promotions } = await import("@lararium/mesh/promote-door");
+  const { readPromoteBoard } = await import("@lararium/mesh/promote-board");
+  const { promoteBoardDoor } = await import("@lararium/mesh/promote-board-door");
+  const { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } = await import("@lararium/mesh/ed25519-door");
   const PASS = "promote-ward-route", GROUP = "promote-ward-group";
   const seat = await seatScratchCustody("promote-ward");
   try {

@@ -5,9 +5,18 @@
  */
 import * as ed from "@noble/ed25519";
 import {
-  charterInceptionBytes, charterInceptionImage, genesisOfInception, hex, mintCharterEpoch, rotateSealEpoch, seatNextDigest,
-  sealKeySetHash, sealRollBytes, sha256HexBytesSync, type SealEpoch, type SealRollSigner,
-} from "@lararium/mesh";
+  charterInceptionBytes,
+  charterInceptionImage,
+  genesisOfInception,
+  mintCharterEpoch,
+  rotateSealEpoch,
+  sealKeySetHash,
+  sealRollBytes,
+  type SealEpoch,
+  type SealRollSigner,
+} from "@lararium/mesh/wax-stamp";
+import { hex, sha256HexBytesSync } from "@lararium/mesh/crypto";
+import { seatNextDigest } from "@lararium/mesh/cold-key-card";
 
 const seedOf = (family: number, generation: number): Uint8Array => {
   const out = new Uint8Array(32);

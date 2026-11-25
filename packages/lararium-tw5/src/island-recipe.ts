@@ -13,10 +13,10 @@
  * stays one shape across platforms.
  */
 
-import type { FaceActorDoor } from "@lararium/mesh";
+import type { FaceActorDoor } from "@lararium/mesh/automerge-doc-store";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
 import {
-  CompositeStore,
-  AutomergeDocStore,
   defaultWritableSlot,
   expandRecipe,
   slotLayerFlags,
@@ -24,15 +24,14 @@ import {
   wikiSlotUri,
   ORACLE_BAG,
   KAHUA_BAG,
-  floorReadFace,
-  type KahuaStageFace,
-  type LarDoc,
-  type DocHandle,
   type WikiRecipe,
   type SlotUri,
-  type LarTiddlerRecord,
-  type LarTiddlerStore,
-} from "@lararium/mesh";
+} from "@lararium/mesh/wiki-recipe";
+import { floorReadFace } from "@lararium/mesh/floor-manifest";
+import { type KahuaStageFace } from "@lararium/mesh/kahua-stage-store";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { type DocHandle } from "@lararium/mesh/automerge";
+import { type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
 import { IslandAdaptor } from "./island-adaptor.js";
 import { kahuaLayerStore } from "./kahua-layer.js";
 import { MemoryTiddlerStore } from "./memory-store.js";

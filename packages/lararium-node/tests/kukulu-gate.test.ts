@@ -6,11 +6,22 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
+import { conferre } from "@lararium/mesh/swarm-tessera";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { signKukuluVouch, type KukuluVouchParts, type SignedKukuluVouch } from "@lararium/mesh/kukulu-vouch";
 import {
-  conferre, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, signKukuluVouch, signSwarmAct, swarmActCid,
-  swarmLeiReturnedPrefix, swarmLeiRecordTitle, swarmTesseraPrefix, verifySwarmRecord,
-  type KukuluVouchParts, type SignedKukuluVouch, type SignedSwarmAct, type SwarmLeiTerms, type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort,
-} from "@lararium/mesh";
+  signSwarmAct,
+  swarmActCid,
+  swarmLeiReturnedPrefix,
+  swarmLeiRecordTitle,
+  swarmTesseraPrefix,
+  verifySwarmRecord,
+  type SignedSwarmAct,
+  type SwarmLeiTerms,
+  type SwarmSignerPort,
+  type SwarmTrust,
+  type SwarmWikiPort,
+} from "@lararium/mesh/swarm-tiddlers";
 import type { CustodyHolder } from "../src/custody-holder.js";
 import { KUKULU_COLD_READS, kukuluGate, pulamaSignerOf, vouchSignerOf } from "../src/kukulu-gate.js";
 import { kukuluRiteOver } from "../src/kukulu-lei-seat.js";

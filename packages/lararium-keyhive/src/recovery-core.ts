@@ -12,7 +12,7 @@
  * the SAME Binding Gate against the SAME pinned root (the reconstructed root == the original root).
  */
 
-import type { ReadmissionSecret } from "@lararium/mesh";
+import type { ReadmissionSecret } from "@lararium/mesh/recovery-share";
 import { runDeviceAdmitEdge, type DeviceAdmitEdgeInput } from "./ceremony-core.js";
 import type { DeviceAdmitPayload } from "./index.js";
 

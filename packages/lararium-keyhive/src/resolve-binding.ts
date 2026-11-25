@@ -18,19 +18,12 @@
  * Canon: lar:///ha.ka.ba/lararium/api/personal-slot
  */
 
-import {
-  type LarDoc,
-  type CompositeStore,
-  type ChangeOrigin,
-  DAEMON_BAG_ID,
-  emptyLarDoc,
-  mutableLarRecord,
-  tiddlerText,
-  canonicalJson,
-  slotBindingKey,
-  type CapMint,
-  pointMint,
-} from "@lararium/mesh";
+import { type LarDoc, emptyLarDoc, mutableLarRecord, tiddlerText } from "@lararium/mesh/base-doc";
+import { type CompositeStore } from "@lararium/mesh/composite-store";
+import { type ChangeOrigin } from "@lararium/mesh/tiddler-store";
+import { DAEMON_BAG_ID, slotBindingKey } from "@lararium/mesh/lar-uris";
+import { canonicalJson } from "@lararium/mesh/crypto";
+import { type CapMint, pointMint } from "@lararium/mesh/mint-census";
 import type { CapabilityProvider } from "./capability-provider.js";
 import type { FaceBagDoor } from "./face-bag-door.js";
 

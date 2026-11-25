@@ -17,7 +17,9 @@
  * Written beside the cure (written, unrun here; CI runs it).
  */
 import { describe, expect, test } from "vitest";
-import { CompositeStore, parseResidencyAction, type Verb } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { parseResidencyAction } from "@lararium/mesh/residency-actions";
+import { type Verb } from "@lararium/mesh/verb-tiddler";
 import { makeActionReactorFor, isFaceOwnedLayer, type FaceTargetResolver } from "../src/action-handler.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";

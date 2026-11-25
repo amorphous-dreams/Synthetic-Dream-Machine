@@ -15,7 +15,13 @@
  *   - `lar:story-order` carries the story and the history tail; `lar:route` navigates, and an unknown title refuses.
  */
 import { afterEach, describe, expect, test } from "vitest";
-import { LAR_CONTROL_DOCUMENT, LAR_KEY_MEMBERSHIP, LAR_KEY_SHORTCUTS, LAR_KEY_STORY_ORDER, type LarMsg_ControlEvent } from "@lararium/mesh";
+import {
+  LAR_CONTROL_DOCUMENT,
+  LAR_KEY_MEMBERSHIP,
+  LAR_KEY_SHORTCUTS,
+  LAR_KEY_STORY_ORDER,
+  type LarMsg_ControlEvent,
+} from "@lararium/mesh/lar-camera";
 import { dispatchLarControlEvent } from "../src/tw5-projection.js";
 import { htmlOf, keyOf, mountSurface, ridOfClass, type Surface } from "./projection-surface.js";
 import { skipNote, wikiSkip } from "./test-wiki.js";

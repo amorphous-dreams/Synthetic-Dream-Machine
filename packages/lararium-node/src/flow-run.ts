@@ -22,7 +22,7 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/flow
  */
 
-import { FLOW_SEEDS, flowSeedByPetname, type CapStep } from "@lararium/mesh";
+import { FLOW_SEEDS, flowSeedByPetname, type CapStep } from "@lararium/mesh/flow";
 
 /** The instrument handles the daemon wires — each routes one cap-step to the hull that computes it. */
 export interface FlowRunDeps {

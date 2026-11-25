@@ -12,10 +12,8 @@
  */
 import { bindSyntheticBrowserCustodySlot, FIXTURE_WARD } from "./browser-custody-fixture.js";
 import { describe, test, expect, afterEach } from "vitest";
-import {
-  encodeInvite, takeInvite, walkArm, popInvite,
-  type HostingGrant, type InviteToken,
-} from "@lararium/mesh";
+import { encodeInvite, type HostingGrant, type InviteToken } from "@lararium/mesh/hosting";
+import { takeInvite, walkArm, popInvite } from "@lararium/mesh/walk-client";
 import { browserWalkStore, browserWalkLeaf } from "../src/browser-walk.js";
 import { generateOrLoadBrowserPersonaRoot } from "../src/browser-vessel-identity.js";
 import { readKeystoreRecord } from "../src/browser-custody.js";

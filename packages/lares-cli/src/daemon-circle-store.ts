@@ -14,7 +14,7 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-two-stacks
  */
 
-import type { CircleStore } from "@lararium/mesh";
+import type { CircleStore } from "@lararium/mesh/compose-follow";
 import { runVerb, type RunVerbOptions } from "./verb-call.js";
 import { summaryOutput } from "./verb-result.js";
 

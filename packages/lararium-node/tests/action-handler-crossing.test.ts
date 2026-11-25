@@ -15,11 +15,13 @@
  */
 
 import { describe, test, expect } from "vitest";
-import { CompositeStore } from "@lararium/mesh";
-import type {
-  ActionVerb, ChangeOrigin, LarTiddlerRecord, VerbContext, Verb,
-  CapabilityAccess, CapabilityVerifyResult, CapTier,
-} from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import type { ActionVerb } from "@lararium/mesh/residency-actions";
+import type { ChangeOrigin, LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
+import type { VerbContext } from "@lararium/tw5";
+import type { Verb } from "@lararium/mesh/verb-tiddler";
+import type { CapabilityAccess, CapabilityVerifyResult } from "@lararium/mesh/capability";
+import type { CapTier } from "@lararium/mesh/cap-tier";
 import { MemoryTiddlerStore } from "../../lararium-tw5/src/memory-store.js";
 import { VerbTable } from "../../lararium-tw5/src/verb-dispatcher.js";
 import { registerActionReactors } from "../../lararium-tw5/src/action-handler.js";

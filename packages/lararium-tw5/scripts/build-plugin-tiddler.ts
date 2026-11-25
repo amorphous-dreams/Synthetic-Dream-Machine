@@ -28,7 +28,8 @@
  *   - src/*.js      — generated CJS module tiddlers (built by Vite)
  */
 
-import { sha256HexSync, PROJECTION_FILTER, PROJECTION_FILTER_TEXT, projectionFilterTitle, type ProjectionClass } from "@lararium/mesh";
+import { sha256HexSync } from "@lararium/mesh/crypto";
+import { PROJECTION_FILTER, PROJECTION_FILTER_TEXT, projectionFilterTitle, type ProjectionClass } from "@lararium/mesh/projection-filter";
 import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, rmSync, cpSync, copyFileSync } from "fs";
 import { spawnSync } from "child_process";
 import { tmpdir } from "os";

@@ -15,7 +15,7 @@ import {
   originCompositionForFace, flowOriginForFace, crossingBannerLines, floorCarriageBannerLines, assertWaystoneCustody,
   OriginCustodyRefusal, type ReachFace,
 } from "../src/lan-address.js";
-import { floorCardCarriageText, readFloorCardCarriage } from "@lararium/mesh";
+import { floorCardCarriageText, readFloorCardCarriage } from "@lararium/mesh/hearth-floor-pins";
 import { pronaosShoreBootNotice } from "../src/pronaos-composition.js";
 
 const FACE: ReachFace = { kind: "lan", host: "192.168.1.42:8080", origin: "http://192.168.1.42:8080" };

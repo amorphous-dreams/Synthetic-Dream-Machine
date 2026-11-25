@@ -17,7 +17,16 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { bindSlot, confirmHeldPaper, confirmPaperPin, draftPaperPin, mintTreeKey, nobleKdf, slotsOpenedBy, type Credential } from "@lararium/mesh";
+import {
+  bindSlot,
+  confirmHeldPaper,
+  confirmPaperPin,
+  draftPaperPin,
+  nobleKdf,
+  slotsOpenedBy,
+  type Credential,
+} from "@lararium/mesh/keyslot-door";
+import { mintTreeKey } from "@lararium/mesh/tree-key-door";
 
 vi.setConfig({ testTimeout: 240_000 });
 

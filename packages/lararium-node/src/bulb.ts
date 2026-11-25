@@ -26,12 +26,9 @@
  * Meme: lar:///ha.ka.ba/lararium/node/bulb
  */
 
-import {
-  genesisCasManifestFromSeed,
-  sha256HexBytesSync,
-  type GenesisSeed,
-  type GenesisCasManifest,
-} from "@lararium/mesh";
+import { genesisCasManifestFromSeed, type GenesisSeed } from "@lararium/mesh/genesis-doc";
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
+import { type GenesisCasManifest } from "@lararium/mesh/cas";
 import { readGenesisSeedBytes, parseGenesisSeed, genesisSeedCid, genesisCasDir } from "./genesis-artifact.js";
 import { readCasBlobFromFs } from "./node-cas.js";
 

@@ -15,10 +15,10 @@
  * rides the custody door (`sealed-acts`).
  */
 import { islandAskRefusal, type EngineWatch } from "./engine-watch.js";
-import {
-  OUTCOME_URI_PREFIX, VERB_RESULT_KEY, newRequestId, signMemoryAsk, signSeatDutiesAsk,
-  type CompositeStore, type MemoryAct,
-} from "@lararium/mesh";
+import { OUTCOME_URI_PREFIX, VERB_RESULT_KEY, newRequestId } from "@lararium/mesh/verb-tiddler";
+import { signMemoryAsk, type MemoryAct } from "@lararium/mesh/memory-section";
+import { signSeatDutiesAsk } from "@lararium/mesh/seat-duties";
+import { type CompositeStore } from "@lararium/mesh/composite-store";
 
 /** The island's direct channel, as the daemon VM hands it out. */
 export type PlaceIslandVerb = (o: { verb: string; args: Record<string, unknown>; requestedBy: string; requestId: string }) => void;

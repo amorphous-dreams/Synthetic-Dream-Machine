@@ -15,21 +15,25 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/vessel-steps
  */
 
-import { wearOf } from "@lararium/mesh";
+import { wearOf } from "@lararium/mesh/repo-wear";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
 import {
-  AutomergeDocStore,
   computeRecipeFingerprint,
-  LARES_DOC_URI, LARARIUM_DOC_URI,
-  wikiBagUri, wikiSlotUri,
-  type DocHandle,
-  type AutomergeUrl,
-  type LarDoc,
-  type LarTiddlerRecord,
-  type CompositeStore,
+  wikiBagUri,
+  wikiSlotUri,
   type SlotUri,
   type WikiRecipe,
   type WikiMountSpec,
-  type IslandGrants, ownEntry, litFaceCatalogOf, isFloorCanonAddress} from "@lararium/mesh";
+} from "@lararium/mesh/wiki-recipe";
+import { LARES_DOC_URI, LARARIUM_DOC_URI } from "@lararium/mesh/lar-uris";
+import { type DocHandle, type AutomergeUrl } from "@lararium/mesh/automerge";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
+import { type CompositeStore } from "@lararium/mesh/composite-store";
+import { type IslandGrants } from "@lararium/mesh/island-protocol";
+import { ownEntry } from "@lararium/mesh/stored-value";
+import { litFaceCatalogOf } from "@lararium/mesh/catalog-view";
+import { isFloorCanonAddress } from "@lararium/mesh/house-canon-doc";
 import { VERB_SURFACE, type VerbTable } from "./verb-dispatcher.js";
 import { ddateVerb } from "./ddate-verb.js";
 import { effectiveRecipe } from "./recipe-planes.js";

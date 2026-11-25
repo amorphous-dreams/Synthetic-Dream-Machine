@@ -49,10 +49,9 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/circle-verbs
  */
 
-import {
-  circleTiddlerUri, CIRCLES_INNER, MEMBER_ADD_PREFIX,
-  type LarTiddlerStore, type LarTiddlerRecord,
-} from "@lararium/mesh";
+import { circleTiddlerUri, CIRCLES_INNER } from "@lararium/mesh/lar-uris";
+import { MEMBER_ADD_PREFIX } from "@lararium/mesh/social-tiddlers";
+import { type LarTiddlerStore, type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import type { VerbReactor } from "./verb-dispatcher.js";
 import type { TW5Engine } from "./tw5-vm.js";
 import { CIRCLE_STATE_TITLE } from "./daemon-circle-tiddlers.js";

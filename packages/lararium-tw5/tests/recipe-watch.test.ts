@@ -1,19 +1,11 @@
 import { describe, test, expect, vi } from "vitest";
-import {
-  CompositeStore,
-  TEMP_BAG,
-  LARES_BAG,
-  ORACLE_BAG,
-  wikiBagUri,
-  wikiSlotUri,
-  recipeUri,
-  type DocHandle,
-  type LarDoc,
-  type LarTiddlerChange,
-  type LarTiddlerRecord,
-  type Repo,
-  type WikiRecipe,
-} from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { TEMP_BAG } from "@lararium/mesh";
+import { LARES_BAG, ORACLE_BAG, wikiBagUri, wikiSlotUri, type WikiRecipe } from "@lararium/mesh/wiki-recipe";
+import { recipeUri } from "@lararium/mesh/lar-uris";
+import { type DocHandle, type Repo } from "@lararium/mesh/automerge";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { type LarTiddlerChange, type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { startRecipeWatch } from "../src/recipe-watch.js";
 import { REBOOT_ALERT_TITLE } from "../src/wiki-behavior.js";

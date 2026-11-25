@@ -1,4 +1,4 @@
-import { placeSignerFromSeed } from "@lararium/mesh";
+import { placeSignerFromSeed } from "@lararium/mesh/place-signer";
 /**
  * flow-floor-resweep — the flow face's floor gates follow the Nexuses this vessel stands in, at every refold, as the
  * sync gates do (`mountFlowReadFace`'s `gates.onMoved`).
@@ -20,7 +20,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { Duplex } from "node:stream";
 import { Repo } from "@automerge/automerge-repo";
-import { FLOW_SOCKET_ROUTE, type GateSessionTable, type MeshPalaceDoc } from "@lararium/mesh";
+import { FLOW_SOCKET_ROUTE } from "@lararium/mesh/flow-read-client";
+import { type GateSessionTable } from "@lararium/mesh/face-gate-door";
+import { type MeshPalaceDoc } from "@lararium/mesh/mesh-palace";
 import { mountFlowMapReadFace, type FlowFloorFace, type FlowReadGate } from "../src/flow-read-face.js";
 import { gatePath } from "../src/face-gate-server.js";
 import type { HttpFaceDispatcher } from "../src/http-face-dispatcher.js";

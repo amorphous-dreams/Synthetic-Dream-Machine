@@ -5,11 +5,12 @@ seatSuiteWard();
 import { afterEach, beforeEach, describe, expect } from "vitest";
 import * as ed from "@noble/ed25519";
 import { restEvery, restingRepo } from "./resting-repo.js";
-import {
-  hex, realmEdgeBoardDocUrl, fleetEdgeBoardDocUrl, edgeLedgerDocUrl, materializeSharedLarDoc,
-  edgeKapaeActsFromBoard, keptFromLedger, mutableLarRecord, signEdgeKapae,
-  deviceEdgeId, countEdgeActs, foldEdgeReadings, edgeKapaeKey,
-} from "@lararium/mesh";
+import { hex } from "@lararium/mesh/crypto";
+import { realmEdgeBoardDocUrl, fleetEdgeBoardDocUrl, edgeLedgerDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { edgeKapaeActsFromBoard, signEdgeKapae, countEdgeActs, foldEdgeReadings, edgeKapaeKey } from "@lararium/mesh/edge-kapae";
+import { keptFromLedger } from "@lararium/mesh/edge-ledger";
+import { mutableLarRecord } from "@lararium/mesh/base-doc";
+import { deviceEdgeId } from "@lararium/mesh/dyad";
 import {
   generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot,
   loadVesselVerifyingKey, loadPersonaGroupRootVerifyingKey, loadPersonaGroupRootSeed,

@@ -6,7 +6,7 @@
  * Meme: lar:///ha.ka.ba/lararium/api/agent-worldline#/time
  */
 import { describe, expect, test } from "vitest";
-import { delegationEdge, communicationEdge, handbackEdge } from "@lararium/mesh";
+import { delegationEdge, communicationEdge, handbackEdge } from "@lararium/mesh/worldline-edge";
 import { worldlineVerbCap, VERB_PROVIDER, type DaemonVerbProvider, type SpiritEdges } from "../src/verb-caps.js";
 import type { VerbTable } from "../src/verb-dispatcher.js";
 

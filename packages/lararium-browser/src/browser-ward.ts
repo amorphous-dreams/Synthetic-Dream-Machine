@@ -21,7 +21,7 @@ import { chargeWardAttempt, landBrowserWardRows, readBrowserWardKey, readBrowser
 import {
   wardCredentialOf, wardSignRecordsOf, type WardActAnswer, type WardActRequest, type WardKeyActRequest, type WardKeyMintAnswer, type WardKeyMintRequest, type WardRoute,
 } from "./ward-core.js";
-import { WardRefused } from "@lararium/mesh";
+import { WardRefused } from "@lararium/mesh/ward-slots";
 
 export { BrowserWardRefused } from "./browser-custody.js";
 export { WARD_ATTEMPTS_PER_PAGE } from "./browser-ward-tree.js";

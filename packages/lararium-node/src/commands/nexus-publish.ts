@@ -32,20 +32,19 @@ import type { WardCredential } from "../ward-credential.js";
 import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import type { Repo } from "@automerge/automerge-repo";
+import { publicationDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
 import {
-  publicationDocUrl,
-  materializeSharedLarDoc,
   pluginOfferingCid,
   signPluginOffering,
   verifyPluginOffering,
-  verifyCasBytes,
-  computePluginsCid,
-  writeOfferingAnnounce,
-  sha256HexBytesSync,
   type OfferedBlob,
   type PluginOffering,
   type PluginProvenance,
-} from "@lararium/mesh";
+} from "@lararium/mesh/plugin-offering";
+import { verifyCasBytes } from "@lararium/mesh/cas";
+import { computePluginsCid } from "@lararium/mesh/genesis-doc";
+import { writeOfferingAnnounce } from "@lararium/mesh/offering-announce";
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
 import { readGenesisCasManifest } from "../genesis-artifact.js";
 import { FaceNotNamed, resolveFace } from "../face-selector.js";
 import { casDirForStorage, writeCasEntriesFs } from "../node-cas.js";

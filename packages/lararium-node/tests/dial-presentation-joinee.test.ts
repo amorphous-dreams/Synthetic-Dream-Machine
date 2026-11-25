@@ -25,12 +25,22 @@ import * as ed from "@noble/ed25519";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { Repo, type AutomergeUrl, type DocHandle, type PeerId } from "@automerge/automerge-repo";
 import { NodeWSServerAdapter } from "@automerge/automerge-repo-network-websocket";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
 import {
-  DAEMON_BAG_ID, admitCarriageCommit, custodyRootDoor, deriveGateBundle, hearthPinIndex, heldNexusRoot, hex,
-  makeMultiSigQuorumVerifier, memoryBackedWithdrawals, nexusAidOf, signCarriageContract, signCarriageQuorum,
-  sovereignGateRoot, sovereignRoute,
-  type AdmitOpening, type CarriageEntry, type FaceScope, type GateBundle, type GateSession, type NexusDoc,
-} from "@lararium/mesh";
+  admitCarriageCommit,
+  signCarriageContract,
+  signCarriageQuorum,
+  type AdmitOpening,
+  type CarriageEntry,
+} from "@lararium/mesh/carriage-registry";
+import { custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute, type GateBundle } from "@lararium/mesh/gate-bundle-door";
+import { hearthPinIndex } from "@lararium/mesh/admit-gate-pin";
+import { heldNexusRoot } from "@lararium/mesh/held-nexus-root";
+import { hex } from "@lararium/mesh/crypto";
+import { makeMultiSigQuorumVerifier } from "@lararium/mesh/kapae-antigen";
+import { memoryBackedWithdrawals, type GateSession } from "@lararium/mesh/face-gate-door";
+import { nexusAidOf, type NexusDoc } from "@lararium/mesh/nexus-seal-seed";
+import { type FaceScope } from "@lararium/mesh/face-proof-subjects";
 import { SessionTable, sessionBinding } from "../../lararium-mesh/src/session-contract.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { admitBundlePathFor } from "../src/admit-bundle.js";

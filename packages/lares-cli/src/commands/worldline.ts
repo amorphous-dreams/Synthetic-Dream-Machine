@@ -51,7 +51,7 @@
 import { DatabaseSync } from "node:sqlite";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { PRED_DELEGATION, PRED_COMMUNICATION } from "@lararium/mesh";
+import { PRED_DELEGATION, PRED_COMMUNICATION } from "@lararium/mesh/worldline-edge";
 import { resolvePalacePath } from "@lararium/mempalace";
 import { runFfzEnrich, FfzEnrichUnavailable } from "@lararium/sensorium";
 import { emit, exitFor } from "../render.js";

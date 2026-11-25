@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "vitest";
-import { controlStoreOf } from "@lararium/mesh";
+import { controlStoreOf } from "@lararium/mesh/control-home";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -8,7 +8,12 @@ import { claimStore } from "../src/owned-store.js";
 import { makeUdsSeat, serveUdsFront, startUdsChannel, type UdsSeat } from "../src/uds-channel.js";
 import { Repo } from "@automerge/automerge-repo";
 import { arrival, type Arrival } from "../../lararium-mesh/tests/handshake.js";
-import { emptyLarDoc, AutomergeDocStore, CompositeStore, wikiSlotUri, DAEMON_BAG_ID, OUTCOME_URI_PREFIX, type LarDoc } from "@lararium/mesh";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { OUTCOME_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
 
 const dirs: string[] = [];
 const sockets: Socket[] = [];

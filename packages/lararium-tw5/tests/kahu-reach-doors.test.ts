@@ -13,9 +13,18 @@
  */
 import { describe, test, expect } from "vitest";
 import { Repo } from "./wiki-shore-rig.js";
-import { AutomergeDocStore, CompositeStore, bagUri, emptyLarDoc, isVerbRefusal, plainField, recipeUri, wikiBagUri, type DocHandle, type LarDoc, type LarTiddlerRecord, type LarTiddlerStore, type Repo as RepoType, type Verb } from "@lararium/mesh";
-import type { KahuReachSource } from "@lararium/mesh";
-import { storedLarRecord } from "@lararium/mesh";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { bagUri, recipeUri } from "@lararium/mesh/lar-uris";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { isVerbRefusal } from "@lararium/mesh/verb-refusal";
+import { plainField } from "@lararium/mesh/stored-value";
+import { wikiBagUri } from "@lararium/mesh/wiki-recipe";
+import { type DocHandle, type Repo as RepoType } from "@lararium/mesh/automerge";
+import { type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
+import { type Verb } from "@lararium/mesh/verb-tiddler";
+import type { KahuReachSource } from "@lararium/mesh/kahu-canon-reach";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
 import { makeActionReactorFor } from "../src/action-handler.js";
 import { makeMemePutReactor, makeMemeDeleteReactor, makeMemeGetReactor, makeMemeListReactor, memeVerbOptions, type MemeVerbOptions } from "../src/meme-verbs.js";
 import { makeDraftReactor } from "../src/wiki-draft-handlers.js";

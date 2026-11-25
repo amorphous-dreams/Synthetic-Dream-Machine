@@ -6,7 +6,9 @@
  */
 import { expect, test } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
-import { emptyLarDoc, ownEntry, swarmLeiRecordTitle, swarmLeiTitle, swarmLeiReturnedTitle, type LarDoc } from "@lararium/mesh";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { ownEntry } from "@lararium/mesh/stored-value";
+import { swarmLeiRecordTitle, swarmLeiTitle, swarmLeiReturnedTitle } from "@lararium/mesh/swarm-tiddlers";
 import { controlSwarmWiki } from "../src/swarm-wiki.js";
 
 function stand() {

@@ -20,10 +20,12 @@ import { tmpdir } from "os";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import { randomBytes } from "crypto";
-import {
-  bootSetPluginCids, authorizeAddress, openPrivateBody, readContentKey,
-  type AntigenRing, type LarDoc, type MembershipEnvelope, type NexusMembership, type PrivateBodyKey,
-} from "@lararium/mesh";
+import { bootSetPluginCids } from "@lararium/mesh/cas";
+import { authorizeAddress, readContentKey } from "@lararium/mesh/sealed-chunk-door";
+import { openPrivateBody, type PrivateBodyKey } from "@lararium/mesh/ciphertext-cas";
+import { type AntigenRing, type NexusMembership } from "@lararium/mesh/federation-gate";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { type MembershipEnvelope } from "@lararium/mesh/membership-channel";
 import { casDirForStorage, mirrorGenesisCasFs } from "../src/node-cas.js";
 import { readGenesisCasManifest, genesisCasDir } from "../src/genesis-artifact.js";
 import { makeSealedPlaneRegistry } from "../src/plane-seal.js";

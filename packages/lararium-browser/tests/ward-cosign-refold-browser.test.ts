@@ -9,7 +9,10 @@
  */
 import { expect, test } from "vitest";
 import * as ed from "@noble/ed25519";
-import { faceRecordsOf, intentEntryRecordsOfGroup, readFace, wardCosignGate, type LarDoc } from "@lararium/mesh";
+import { faceRecordsOf, readFace } from "@lararium/mesh/face-reading";
+import { intentEntryRecordsOfGroup } from "@lararium/mesh/intent-entry";
+import { wardCosignGate } from "@lararium/mesh/ward-cosign-gate";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { hex } from "../../lararium-mesh/src/crypto.js";
 import { emptyLarDoc } from "../../lararium-mesh/src/base-doc.js";
 import { didFromVerifyingKey } from "../../lararium-mesh/src/lar-did.js";

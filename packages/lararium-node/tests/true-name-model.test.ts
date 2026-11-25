@@ -20,7 +20,8 @@ import { afterEach, beforeEach, describe, test, expect } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { buildDeviceDelegation, faceAtomKeyFromSeed, mintFaceAtomSeed, verifyDeviceDelegation } from "@lararium/mesh";
+import { buildDeviceDelegation, verifyDeviceDelegation } from "@lararium/mesh/device-delegation";
+import { faceAtomKeyFromSeed, mintFaceAtomSeed } from "@lararium/mesh/face-atom";
 import {
   generateOrLoadVesselIdentity,
   generateOrLoadPersonaGroupRoot,

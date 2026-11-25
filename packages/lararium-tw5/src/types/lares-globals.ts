@@ -4,7 +4,7 @@
  * The engine applies inbound changes synchronously; the shore installs the queue door.
  */
 
-import type { LarTiddlerChange } from "@lararium/mesh";
+import type { LarTiddlerChange } from "@lararium/mesh/tiddler-store";
 import type { MemeListing, PlaceMemeReceipt } from "../place-meme.js";
 import type { NormalizeResult } from "../meme-normalize.js";
 import type { CarrierShape } from "../carrier-shape.js";

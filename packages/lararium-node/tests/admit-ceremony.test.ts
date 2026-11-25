@@ -19,8 +19,14 @@ import { Repo } from "@automerge/automerge-repo";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
 import { runFoundingCeremony, runDeviceAdmitEdge, runApplyAdmitPayload, KeyhiveProvider, InMemoryEventStore } from "@lararium/keyhive";
 import * as ed25519 from "@noble/ed25519";
-import { hex, seedDaemonDoc, personaKelBoardDocUrl, materializeSharedLarDoc, personaKelChainForPrefix, fleetEdgeBoardDocUrl, edgeFrontierRecords, frontierSnapshots, readFleetFrontier, makeHandLineage, FLEET_HAND } from "@lararium/mesh";
-import { tiddlerText } from "@lararium/mesh";
+import { hex } from "@lararium/mesh/crypto";
+import { seedDaemonDoc } from "@lararium/mesh/social-seed";
+import { personaKelBoardDocUrl, materializeSharedLarDoc, fleetEdgeBoardDocUrl } from "@lararium/mesh/deterministic-doc";
+import { personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";
+import { edgeFrontierRecords, frontierSnapshots } from "@lararium/mesh/edge-frontier-board";
+import { readFleetFrontier, FLEET_HAND } from "@lararium/mesh/fleet-frontier";
+import { makeHandLineage } from "@lararium/mesh/hand-lineage";
+import { tiddlerText } from "@lararium/mesh/base-doc";
 
 import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";

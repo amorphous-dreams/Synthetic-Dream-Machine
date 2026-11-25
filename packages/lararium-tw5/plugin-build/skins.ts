@@ -20,7 +20,7 @@
  * Meme: lar:///ha.ka.ba/kahua/memory/wave/three-skins-two-roads
  */
 
-import { LARES_LARARIUM_PLUGIN_URI, LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "@lararium/mesh";
+import { LARES_LARARIUM_PLUGIN_URI, LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "@lararium/mesh/lar-uris";
 
 export type SkinName = "grammar" | "lararium";
 

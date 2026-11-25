@@ -35,11 +35,10 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { mkdtempSync, rmSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import {
-  readFckCarrier, readSCarrier,
-  mintPlaceInception, verifyPlaceKel,
-  GATE_FLOOR_BUNDLE_INFO,
-} from "@lararium/mesh";
+import { readFckCarrier } from "@lararium/mesh/fck-envelope";
+import { readSCarrier } from "@lararium/mesh/s-envelope";
+import { mintPlaceInception, verifyPlaceKel } from "@lararium/mesh/vessel-kel";
+import { GATE_FLOOR_BUNDLE_INFO } from "@lararium/mesh/domains";
 import {
   generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey,
   listPersonaRoots, listPersonaRosterLines, personaRootExists, orphanPersonaRoots,

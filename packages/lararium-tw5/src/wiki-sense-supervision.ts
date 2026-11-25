@@ -24,13 +24,10 @@
  * Meme: lar:///ha.ka.ba/lares/api/wiki-sense-supervision
  */
 
-import { DAEMON_BAG_ID, stableTagUri, newEventId } from "@lararium/mesh";
-import type {
-  LarTiddlerRecord,
-  LarTiddlerStore,
-  ChangeOrigin,
-  SensoriumSignalType,
-} from "@lararium/mesh";
+import { DAEMON_BAG_ID, stableTagUri } from "@lararium/mesh/lar-uris";
+import { newEventId } from "@lararium/mesh/effect-record";
+import type { LarTiddlerRecord, LarTiddlerStore, ChangeOrigin } from "@lararium/mesh/tiddler-store";
+import type { SensoriumSignalType } from "@lararium/mesh/island-protocol";
 import { SENSORIUM_SIGNAL } from "./wiki-sensorium-cap.js";
 import type { WikiCoherenceVerdict, WikiRecallQuery, WikiRecallResult } from "./wiki-sensorium-cap.js";
 import { capLoci } from "./wiki-sense-fold.js";

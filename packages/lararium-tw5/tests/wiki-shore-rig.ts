@@ -8,11 +8,13 @@
  */
 import { vi } from "vitest";
 import { createRequire } from "node:module";
-import {
-  AutomergeDocStore, CompositeStore, emptyLarDoc,
-  type LarDoc, type LarTiddlerRecord, type Repo as RepoType, wikiSlotUri,
-} from "@lararium/mesh";
-import { plainEntries } from "@lararium/mesh";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
+import { type Repo as RepoType } from "@lararium/mesh/automerge";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import { plainEntries } from "@lararium/mesh/stored-value";
 import { IslandAdaptor } from "../src/island-adaptor.js";
 import { bridgeWikiToAdaptor } from "../src/outbound-bridge.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";

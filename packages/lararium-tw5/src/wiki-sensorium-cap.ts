@@ -32,8 +32,10 @@
  * Meme: lar:///ha.ka.ba/lares/api/wiki-sensorium-cap
  */
 
-import type { CompositeStore, SensoriumContract, SensoriumSignalType } from "@lararium/mesh";
-import { cosineDistance } from "@lararium/mesh";
+import type { CompositeStore } from "@lararium/mesh/composite-store";
+import type { SensoriumContract } from "@lararium/mesh/sensorium-contract";
+import type { SensoriumSignalType } from "@lararium/mesh/island-protocol";
+import { cosineDistance } from "@lararium/mesh/sensorium-consistency";
 import type { IslandCap } from "./island-caps.js";
 import type { IslandContext } from "./island-context.js";
 import { buildFixtureIsland, GLUE_SEEDS, OBSTRUCT_SEEDS } from "./wiki-store-adapter.js";

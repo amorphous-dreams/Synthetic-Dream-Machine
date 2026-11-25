@@ -59,7 +59,7 @@ export interface CharterChair {
   readonly verifyingKey: string | null;
 }
 
-import { seatFingerprint } from "@lararium/mesh";
+import { seatFingerprint } from "@lararium/mesh/nexus-seal-seed";
 
 export interface ForeignSeatVerdict {
   readonly ok:      boolean;

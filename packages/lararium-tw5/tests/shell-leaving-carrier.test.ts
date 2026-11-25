@@ -6,7 +6,12 @@
  * body and fields alone, so a re-ingested copy reads as no retirement record until the house's own writer stamps it again.
  */
 import { beforeAll, describe, expect, test } from "vitest";
-import { buildRetiredShellRecord, parseRetiredShellRecord, unionRetiredShell, type CarriedEffectRecord } from "@lararium/mesh";
+import {
+  buildRetiredShellRecord,
+  parseRetiredShellRecord,
+  unionRetiredShell,
+  type CarriedEffectRecord,
+} from "@lararium/mesh/shell-leaving-record";
 import { TW5Engine } from "../src/tw5-vm.js";
 import { exportCarrierFile } from "../src/meme-write.js";
 import { makeTw5Deserializer } from "../src/action-handler.js";

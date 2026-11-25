@@ -4,7 +4,9 @@
  * runtime CAS already has a file under a named CID.
  */
 import { afterEach, describe, expect, test } from "vitest";
-import { buildGenesisDoc, LARES_MEMETIC_WIKITEXT_PLUGIN_URI, sha256HexBytesSync, utf8Bytes } from "@lararium/mesh";
+import { buildGenesisDoc } from "@lararium/mesh/genesis-doc";
+import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "@lararium/mesh/lar-uris";
+import { sha256HexBytesSync, utf8Bytes } from "@lararium/mesh/crypto";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";

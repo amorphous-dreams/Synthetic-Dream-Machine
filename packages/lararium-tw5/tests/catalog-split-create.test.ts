@@ -12,10 +12,14 @@
  */
 import { describe, expect, test } from "vitest";
 import { Repo } from "./wiki-shore-rig.js";
-import {
-  CompositeStore, emptyLarDoc, faceCatalogDocUrl, openFaceCatalog, standLitFaceCatalog, tiddlerText, ownEntry,
-  storedLarRecord, AutomergeDocStore, seatHouseCanon, type LarDoc, type Verb,
-} from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { emptyLarDoc, tiddlerText, type LarDoc } from "@lararium/mesh/base-doc";
+import { faceCatalogDocUrl, openFaceCatalog, standLitFaceCatalog } from "@lararium/mesh/catalog-view";
+import { ownEntry } from "@lararium/mesh/stored-value";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { seatHouseCanon } from "@lararium/mesh/kahu-canon-reach";
+import { type Verb } from "@lararium/mesh/verb-tiddler";
 import { makeActionReactorFor, HOUSE_CANON_READS_FLOOR } from "../src/action-handler.js";
 import { kahuHand, strangerHand } from "../../lararium-mesh/tests/kahu-reach-fixture.js";
 import { makeCatalogAccessor, libraryDocUrl } from "../src/catalog-accessor.js";

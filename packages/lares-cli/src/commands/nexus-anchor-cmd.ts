@@ -22,7 +22,7 @@
  */
 import { readFileSync } from "node:fs";
 import { NexusContractError, SealedActRefused, type NexusRollAnchorPartialResult } from "@lararium/node";
-import { readNexusActPartial } from "@lararium/mesh";
+import { readNexusActPartial } from "@lararium/mesh/nexus-partial";
 import { sealedAct } from "../sealed-act-door.js";
 import { storeVerb, storeFailure, proveFaceSession } from "../store-door.js";
 import { faceOption } from "../face-option.js";
