@@ -7,7 +7,7 @@
 import { expect, test } from "vitest";
 import { STORE_DOOR_FACE_VERBS, STORE_DOOR_HAND_CODES, STORE_DOOR_HAND_ONLY_ACTS, STORE_DOOR_VERBS, rowRefusalName, storeDoorReactors, type StoreDoorDeps } from "../src/store-door-verbs.js";
 import { storeVerbGatesFirst, storeVerbNeedsWard } from "../src/ward-credential.js";
-import { beginLentFaces, lentOfferFaces, offerVouchesOf, refuseStandingBegin, standingKukuluBegins } from "../src/commands/rite.js";
+import { beginLentFaces, lentOfferFaces, offerVouchesOf, refuseStandingBegin, standingKukuluBegins, tesseraFaceRefusal } from "../src/commands/rite.js";
 import { kukuluRiteOver } from "../src/kukulu-lei-seat.js";
 import {
   SwarmRefused,
@@ -202,6 +202,35 @@ test("RED: a face rehived since its begin (its old half verifies under no trust 
   expect(await standingKukuluBegins([0], rehivedRed, "develop")).toEqual([]);
   const debt = await pendingBegins(wiki, "kukulu", "develop");
   expect(() => refuseStandingBegin(debt)).toThrow(expect.objectContaining({ code: "rite-begun-stands", message: expect.stringMatching(new RegExp(`old-group tessera ${begun.tessera}[\\s\\S]*lares rite land --abandon --tessera`)) }));
+});
+
+test("RED (land-names-its-face): a landing or an abandon acting as a face that does not carry the begun half names the face that does, and the --face cure; CONTROL: a half no lent face carries names its group and the unlock, and another refusal passes untouched", async () => {
+  const keyed = async (n: number) => ({ key: await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(n)), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(n)) });
+  const rows = new Map<string, string>();
+  const wiki: SwarmWikiPort = { read: async (t) => rows.get(t) ?? null, write: async (t, x) => { rows.set(t, x); }, writeNew: async (t, x) => (rows.has(t) ? false : (rows.set(t, x), true)),
+    list: async (prefix) => [...rows.keys()].filter((t) => t.startsWith(prefix)) };
+  const hand = await keyed(60), atom = await keyed(61);
+  const trust: SwarmTrust = { hand: (k) => k === hand.key, vessel: (k) => k === atom.key, lead: () => false };
+  const lei = await signSwarmAct({ act: "lei", group: "keep-group", rite: "keep", branch: "backup", after: null, reach: "wide", returns: 3 }, hand);
+  await wiki.write(swarmLeiRecordTitle("keep", "backup", swarmActCid(lei)), JSON.stringify(lei));
+  const begun = await beginChecked(wiki, await checkReturn(wiki, { rite: "keep", branch: "backup", head: "a".repeat(40), tree: "b".repeat(40) }, trust, "keep-group", atom, { accepts: () => true }));
+  // The worn face (h1) carries another group: the half verifies as no record of its own.
+  let refused: unknown;
+  try { await landRite(wiki, { tessera: begun.tessera }, trust, "worn-group", atom); } catch (e) { refused = e; }
+  expect(refused).toMatchObject({ code: "rite-begun-absent", message: expect.stringContaining("(group)") });
+  const named = await tesseraFaceRefusal(refused, wiki, begun.tessera, new Map([["keep-group", "h0"], ["worn-group", "h1"]]), "land");
+  expect(named).toMatchObject({ code: "rite-begun-absent", message: expect.stringContaining(`rests under h0`) });
+  expect((named as Error).message).toContain(`lares rite land --tessera ${begun.tessera} --face 0`);
+  const setDown = await tesseraFaceRefusal(refused, wiki, begun.tessera, new Map([["keep-group", "h0"]]), "abandon");
+  expect((setDown as Error).message).toContain(`lares rite land --abandon --tessera ${begun.tessera} --face 0`);
+  // CONTROL: no lent face carries the half's group (shut or rehived): the group and the unlock, never a face it cannot name.
+  const unlent = await tesseraFaceRefusal(refused, wiki, begun.tessera, new Map([["worn-group", "h1"]]), "land");
+  expect((unlent as Error).message).toMatch(/group keep-group[\s\S]*no lent face carries[\s\S]*unlock/);
+  // CONTROL: any other refusal, and an absent half, pass untouched.
+  const other = new SwarmRefused("rite-land-differs", "x");
+  expect(await tesseraFaceRefusal(other, wiki, begun.tessera, new Map(), "land")).toBe(other);
+  const absent = new SwarmRefused("rite-begun-absent", `no begun half stands for tessera ${"d".repeat(64)} (absent)`);
+  expect(await tesseraFaceRefusal(absent, wiki, "d".repeat(64), new Map([["keep-group", "h0"]]), "land")).toBe(absent);
 });
 
 test("RED: the resting offer reads back as its vouches, each named by the lent face whose group it carries; CONTROL: a vouch for a group no lent face carries stays unnamed, and a file that reads as no offer reads none", () => {

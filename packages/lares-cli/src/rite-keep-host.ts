@@ -394,8 +394,11 @@ export async function riteKeepHost(ports: KeepHostPorts, opts: KeepHostOptions):
     if (!(err instanceof HostRefused) && !(err instanceof KeepRefused) && !(err instanceof SessionsRefused)) throw err;
     const extra = err instanceof HostRefused ? err.extra : {};
     const t = base["tessera"] as string | undefined, id = base["bundleId"] as string | undefined;
+    // THE LANDING NAMES ITS FACE: the half rests under the face the cut acted as (the keep's face where none was named), so a
+    // terminal wearing another face lands it only by naming that face.
+    const at = typeof base["face"] === "number" ? ` --face ${base["face"]}` : "";
     const cure = stage === "push" || stage === "land"
-      ? ` The bundle rests in the workspace and ${t !== undefined ? `tessera ${t} reads red (landed-absent)` : "any tessera it owes reads red"}: mend the remote and run \`lares rite keep --workspace ${name}${opts.into !== undefined ? ` --into ${into}` : ""}\` again (it pushes what waits and lands it)${t !== undefined && id !== undefined ? `, or by hand: git push, then \`lares rite land --tessera ${t} --head ${id}\`` : ""}.`
+      ? ` The bundle rests in the workspace and ${t !== undefined ? `tessera ${t} reads red (landed-absent)` : "any tessera it owes reads red"}: mend the remote and run \`lares rite keep --workspace ${name}${opts.into !== undefined ? ` --into ${into}` : ""}\` again (it pushes what waits and lands it)${t !== undefined && id !== undefined ? `, or by hand: git push, then \`lares rite land --tessera ${t} --head ${id}${at}\`` : ""}.`
       : stage === "guard" && t !== undefined ? ` The return stays spent and tessera ${t} reads red until a keep lands it.`
       : stage === "commit" && (base["sessions"] as { tessera?: string } | undefined)?.tessera !== undefined ? ` The return the sessions spent stays spent, and tessera ${(base["sessions"] as { tessera: string }).tessera} reads red until a keep lands it.` : "";
     const message = `${err.message}${cure}`;
