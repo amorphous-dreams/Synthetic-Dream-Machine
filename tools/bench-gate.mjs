@@ -230,7 +230,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     if (git(["status", "--porcelain", "--untracked-files=no"]).stdout.trim() !== "") { console.error("bench-gate: --verdict reads a clean tracked tree, and this checkout carries uncommitted changes; commit or drop them, then run it again"); process.exit(2); }
     const rev = git(["rev-parse", "HEAD"]).stdout.trim(), tree = git(["rev-parse", "HEAD^{tree}"]).stdout.trim();
     const r = runGate(plan({ verdict: true }), exec, console.log, { head: rev.slice(0, 9), base: "-" });
-    // A STEP THAT MOVED THE TRACKED TREE voids the verdict: it no longer reads the revision it names.
+    // A STEP THAT MOVED THE TRACKED TREE voids the verdict: a moved tree reads another revision than the one the verdict names.
     const moved = git(["status", "--porcelain", "--untracked-files=no"]).stdout.trim() !== "" || git(["rev-parse", "HEAD"]).stdout.trim() !== rev;
     const out = moved ? { ...r, code: 1, line: `BENCH GATE REFUSES: the tracked tree moved under the gate · ${r.secs} s` } : r;
     writeFileSync(verdictFile, JSON.stringify(verdictOf(out, { rev, tree })));
