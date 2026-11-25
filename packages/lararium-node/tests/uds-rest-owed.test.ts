@@ -23,7 +23,11 @@ import { watchCallTouches } from "@lararium/mesh/call-touches";
 import { seatNodeCallScope } from "../src/node-call-scope.js";
 
 /** The fixture door's mint: a signer the seat can drop, holding no key. */
-const fixtureMint = async () => ({ ok: true as const, signer: { dropped: false, drop() { (this as { dropped: boolean }).dropped = true; } } });
+const fixtureMint = async () => ({ ok: true as const, signer: {
+  dropped: false, certificate: null,
+  drop() { (this as { dropped: boolean }).dropped = true; },
+  sign: async () => ({ refusal: "fixture-signer-signs-nothing" }),
+} });
 
 const face = (name: string): SessionFace => ({
   personaGroup: `group-${name}`, proofSubject: `proof-${name}`, admitRef: `admit-${name}`,
