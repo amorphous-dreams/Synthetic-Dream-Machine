@@ -50,7 +50,7 @@ import { larRoot, larBagsDir, larWikisDir, larProjectionsDirOrNone, vesselDid } 
 const projectionsDirs = (): { projections?: string } => { const p = larProjectionsDirOrNone(); return p === undefined ? {} : { projections: p }; };
 import { openSyncedTree, scanFiles, skipLines, fileToUriForSource, candidatesOf, deletionsOf, settleIngest, applyConfirmedRenames, standingAfterWave, standingAfterFault, standsClean, renamedSources, absentSources, NO_STANDING_ASKS, type StandingAsks } from "../ingest-core.js";
 import { askShore } from "../shore-core.js";
-import { OUTCOME_URI_PREFIX } from "@lararium/mesh";
+import { OUTCOME_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
 
 const DEFAULT_DEBOUNCE_MS = 400;   // twillm's field-tested trailing window
 

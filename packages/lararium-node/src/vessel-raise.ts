@@ -49,19 +49,31 @@
 
 
 import {
-  mintRaiseChallenge, verifyRaiseGrant, raiseStands, standingClass,
-  quorumLeaseEpochOnBoard, type HandLineage,
-  foundingRoster, foldCarrierSet, carriageAncestryFromBoard, carriageEntriesFromBoard, antigenEntriesFromBoard, heldNexusRoot, makeMultiSigQuorumVerifier,
-  carriageDocUrl, kapaeAntigenDocUrl, federationPostureFromDoc,
-  type RaiseChallenge, type RaiseGrant, type RaiseRefused, type RaisedCaps, type VesselClass,
-  type RaiseNexusReading, type LarDoc,
-} from "@lararium/mesh";
+  mintRaiseChallenge,
+  verifyRaiseGrant,
+  type RaiseChallenge,
+  type RaiseGrant,
+  type RaiseRefused,
+  type RaiseNexusReading,
+} from "@lararium/mesh/raise-challenge";
+import { raiseStands, standingClass, type RaisedCaps, type VesselClass } from "@lararium/mesh/vessel-standing";
+import { quorumLeaseEpochOnBoard } from "@lararium/mesh/quorum-lease";
+import { type HandLineage } from "@lararium/mesh/hand-lineage";
+import { foundingRoster, federationPostureFromDoc } from "@lararium/mesh/nexus-seal-seed";
+import { foldCarrierSet } from "@lararium/mesh/carriage-registry";
+import { carriageAncestryFromBoard, carriageEntriesFromBoard } from "@lararium/mesh/carriage-board";
+import { antigenEntriesFromBoard } from "@lararium/mesh/antigen-board";
+import { heldNexusRoot } from "@lararium/mesh/held-nexus-root";
+import { makeMultiSigQuorumVerifier } from "@lararium/mesh/kapae-antigen";
+import { carriageDocUrl, kapaeAntigenDocUrl } from "@lararium/mesh/deterministic-doc";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import type { DocHandle } from "@automerge/automerge-repo";
 import { keyLineAt, type BoardOpener, type CarriedNexusReading } from "./nexus-carriage.js";
 import { charterHomeFor, primaryNexusAid, readCarriedCharters } from "./carried-set.js";
 import { readNexusDoc } from "./nexus-doc.js";
 import { nodeNexusIsland } from "./nexus-standing.js";
-import { verifyEd25519, controlHomeRefusal } from "@lararium/mesh";
+import { verifyEd25519 } from "@lararium/mesh/ed25519-door";
+import { controlHomeRefusal } from "@lararium/mesh/control-home";
 
 export interface RaiseDoorOptions {
   /** This vessel's own verifying key — a grant for any other vessel answers nothing here. */

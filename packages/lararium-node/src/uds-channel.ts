@@ -48,17 +48,31 @@ import { type Socket } from "node:net";
 import { PARK_LIMIT } from "./owned-store.js";
 import { FLOOR_VERBS } from "./floor-verbs.js";
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
+import { CompositeStore, NoWorkingLayerRefusal } from "@lararium/mesh/composite-store";
 import {
-  CompositeStore,
-  NoWorkingLayerRefusal, newRequestId, OUTCOME_URI_PREFIX, type LarDoc,
-  CONTROL_HOME_ID, ControlHomeUnavailable, controlHomeRefusal, assertControlHomeOpen,
-  RECEIPT_FACT_URI_PREFIX, RECEIPT_RING_DEFAULT, RECEIPT_RING_BYTES_DEFAULT, buildReceiptFact, parseReceiptFact, outcomeBytesOf,
-  verbInputDigest, SessionTable, sessionBinding, type SessionBinding,
-  faceScopedId, type SessionReceipt, type DurabilityReceipt,
-  type ReceiptFact, type ReceiptFactDraft, switchSession, ingestWaveRefusal,
-} from "@lararium/mesh";
+  newRequestId,
+  OUTCOME_URI_PREFIX,
+  RECEIPT_FACT_URI_PREFIX,
+  RECEIPT_RING_DEFAULT,
+  RECEIPT_RING_BYTES_DEFAULT,
+  buildReceiptFact,
+  parseReceiptFact,
+  outcomeBytesOf,
+  verbInputDigest,
+  type ReceiptFact,
+  type ReceiptFactDraft,
+} from "@lararium/mesh/verb-tiddler";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
+import { ControlHomeUnavailable, controlHomeRefusal, assertControlHomeOpen } from "@lararium/mesh/control-home";
+import { SessionTable, sessionBinding, type SessionBinding } from "@lararium/mesh/session-contract";
+import { faceScopedId } from "@lararium/mesh/face-scoped-id";
+import { type SessionReceipt } from "@lararium/mesh/session-receipt";
+import { type DurabilityReceipt } from "@lararium/mesh/durability-receipt";
+import { switchSession } from "@lararium/mesh/session-switch";
+import { ingestWaveRefusal } from "@lararium/mesh/ingest-wave-budget";
 import type { CapabilityProfile, Hand, Session, SessionFace } from "@lararium/mesh/session-contract";
-import type { SwitchIntent, SwitchOutcome } from "@lararium/mesh";
+import type { SwitchIntent, SwitchOutcome } from "@lararium/mesh/session-switch";
 import type { SwitchActLog } from "./switch-act-log.js";
 // The adaptive-timeout SERVO (fail on a GRADIENT, never a cliff): a per-verb wait that GROWS with the
 // observed durations and clamps FLOOR..CEIL. The machine-code work stays Python; this is the

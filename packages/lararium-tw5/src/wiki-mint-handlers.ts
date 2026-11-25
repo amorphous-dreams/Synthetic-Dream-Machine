@@ -1,20 +1,18 @@
 import { askerRefusal } from "@lararium/mesh/hand-refusal";
-import type { AutomergeUrl } from "@lararium/mesh";
-import type { ChangeOrigin, LarTiddlerRecord } from "@lararium/mesh";
-import { catalogViewOf, houseCanonUrl, isFacePrivateSlug, ownEntry, refuseTw5DocsReserved, resolveHouseCanon, tiddlerText } from "@lararium/mesh";
+import type { AutomergeUrl } from "@lararium/mesh/automerge";
+import type { ChangeOrigin, LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
+import { catalogViewOf } from "@lararium/mesh/catalog-view";
+import { houseCanonUrl, resolveHouseCanon } from "@lararium/mesh/house-canon-doc";
+import { isFacePrivateSlug } from "@lararium/mesh/workbench";
+import { ownEntry } from "@lararium/mesh/stored-value";
+import { refuseTw5DocsReserved } from "@lararium/mesh/tw5-docs-name";
+import { tiddlerText } from "@lararium/mesh/base-doc";
 import { ACTIVE_WIKI_URI, buildActiveWikiRecord, readActiveWikiSlug } from "./active-wiki.js";
-import {
-  DAEMON_BAG_ID,
-  emptyLarDoc,
-  storedLarRecord,
-  mkDaemonWikiAlert,
-  recipeRecordFields,
-  recipeUri,
-  SYSTEM_BAGS,
-  wikiBagUri,
-  wikiSlotUri,
-  wikiUri,
-} from "@lararium/mesh";
+import { DAEMON_BAG_ID, recipeUri, wikiUri } from "@lararium/mesh/lar-uris";
+import { emptyLarDoc } from "@lararium/mesh/base-doc";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
+import { mkDaemonWikiAlert } from "@lararium/mesh/island-protocol";
+import { recipeRecordFields, SYSTEM_BAGS, wikiBagUri, wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { effectiveRecipeOf } from "./recipe-planes.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
 import { makeRequestId, stringArg } from "./handler-args.js";

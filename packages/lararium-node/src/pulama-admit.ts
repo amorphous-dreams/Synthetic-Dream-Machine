@@ -36,9 +36,12 @@
  * No route and no key rests in any row: each holds digests, faces' custody ids and a signature.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
  */
-import type { KeeperCosign } from "@lararium/mesh";
+import type { KeeperCosign } from "@lararium/mesh/keeper-cosign";
 import { randomUUID } from "node:crypto";
-import { PULAMA_TESSERA_DOMAIN, canonicalJsonBytes, sha256HexBytesSync, verifyEd25519, type SwarmWikiPort } from "@lararium/mesh";
+import { PULAMA_TESSERA_DOMAIN } from "@lararium/mesh/domains";
+import { canonicalJsonBytes, sha256HexBytesSync } from "@lararium/mesh/crypto";
+import { verifyEd25519 } from "@lararium/mesh/ed25519-door";
+import { type SwarmWikiPort } from "@lararium/mesh/swarm-tiddlers";
 import { lentFacesOf, lentFacesWire, type LentFacesRefusal } from "@lararium/mesh/lent-faces";
 import type { KukuluSigner } from "./kukulu-gate.js";
 

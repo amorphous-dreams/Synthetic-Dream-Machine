@@ -39,7 +39,9 @@ import { EventEmitter } from "node:events";
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
 import { Repo, type Chunk, type StorageAdapterInterface, type StorageKey } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
-import { emptyLarDoc, sealedUnopened, seatSealedRest, standsIn, waitHandle, type LarDoc } from "@lararium/mesh";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { sealedUnopened, standsIn } from "@lararium/mesh/automerge-doc-store";
+import { seatSealedRest, waitHandle } from "@lararium/mesh/wait-handle-door";
 import { createEngineWatch, tapInboundDocs, tapRepoLogs } from "../src/engine-watch.js";
 import { createReadinessState } from "../src/readiness-face.js";
 import {

@@ -16,7 +16,7 @@
  * The vessel's rows answer from a recorded fake; the terminal stands behind a port.
  */
 import { describe, expect, test } from "vitest";
-import type { Credential } from "@lararium/mesh";
+import type { Credential } from "@lararium/mesh/keyslot-door";
 import { KEEP_LEI_RETURNS, offerKeepLei, type KeepOfferPorts } from "../src/keep-at-unlock.js";
 import { keepWorkspaceName } from "../src/keep-config.js";
 import { wardTicketFor } from "../src/ward-door.js";

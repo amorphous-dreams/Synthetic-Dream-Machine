@@ -533,9 +533,9 @@ export type {
 // makeNodeCaptureEngine.
 
 // ── The cleartext `cid/` CAS tier — read · list · sweep (tiddler-carriage #/pin-and-release) ──
-export { KEY_CLASSES, isKeyClass, isRelationClass } from "@lararium/mesh";
+export { KEY_CLASSES, isKeyClass, isRelationClass } from "@lararium/mesh/key-class";
 export { FsCustodyIo, vesselCustodyIo, CustodyLockRefused, CUSTODY_CLAIM_NAME, type FsCustodyIoOptions } from "./custody-io.js";
-export type { KeyClass } from "@lararium/mesh";
+export type { KeyClass } from "@lararium/mesh/key-class";
 // The ONE carrier table: every carrier at rest by home, custody class and writer. The custody status, the S key
 // rotation, the bundle's cut and the custody shape reader all derive from it — see `vault-carriers`.
 export {

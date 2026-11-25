@@ -14,13 +14,7 @@
 
 import { readyWorker } from "./fixtures/ready-worker.js";
 import { describe, test, expect, afterEach } from "vitest";
-import {
-  isIslandToVesselMsg,
-  mkTeardown,
-  mkManifest,
-  type IslandMsg_Ea,
-    type IslandMsg_Event,
-} from "@lararium/mesh";
+import { isIslandToVesselMsg, mkTeardown, mkManifest, type IslandMsg_Ea, type IslandMsg_Event } from "@lararium/mesh/island-protocol";
 
 const FIXTURE_URL = new URL("./fixtures/teardown-echo-browser.mjs", import.meta.url);
 

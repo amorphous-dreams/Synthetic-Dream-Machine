@@ -1,6 +1,9 @@
 /** Device-local promotion records, sealed under the browser's custody slot. */
-import { EMPTY_LEDGER, EMPTY_KAPAE_LOCAL, decodeLedger, decodeKapaeLocal, encodeLedger, encodeKapaeLocal, sha256HexBytesSync } from "@lararium/mesh";
-import type { PromotionLedger, KapaeLocal } from "@lararium/mesh";
+import { EMPTY_LEDGER, decodeLedger, encodeLedger } from "@lararium/mesh/promote";
+import { EMPTY_KAPAE_LOCAL, decodeKapaeLocal, encodeKapaeLocal } from "@lararium/mesh/promote-kapae";
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
+import type { PromotionLedger } from "@lararium/mesh/promote";
+import type { KapaeLocal } from "@lararium/mesh/promote-kapae";
 import { readKeystoreRecord, withCustodyRecords } from "./browser-custody.js";
 import { OPFS_CAS_DIR } from "./browser-genesis.js";
 

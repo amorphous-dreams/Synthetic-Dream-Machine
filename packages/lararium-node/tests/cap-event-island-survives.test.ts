@@ -15,7 +15,8 @@
 import { describe, test, expect } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import { foundThePlace, foundTheFace, replayCapEvents } from "@lararium/keyhive";
-import { SECRET_HOME_ID, hex } from "@lararium/mesh";
+import { SECRET_HOME_ID } from "@lararium/mesh/lar-uris";
+import { hex } from "@lararium/mesh/crypto";
 import * as ed from "@noble/ed25519";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 import { MEMORY_SEALED, withMemorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";

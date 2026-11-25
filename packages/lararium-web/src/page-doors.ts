@@ -1,4 +1,4 @@
-import type { LarServiceKind } from "@lararium/mesh";
+import type { LarServiceKind } from "@lararium/mesh/lar-camera";
 import type { LarHostDoor } from "./projection-sink.js";
 
 /**

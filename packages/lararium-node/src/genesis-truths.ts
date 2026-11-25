@@ -13,9 +13,14 @@
  */
 
 import {
-  compareSeedToFoundingRecord, ratchetWords, ratchetsDiffer,
-  type FloorPinLike, type GenesisDigests, type GenesisRecordLike, type RatchetDifference,
-} from "@lararium/mesh";
+  compareSeedToFoundingRecord,
+  ratchetWords,
+  ratchetsDiffer,
+  type FloorPinLike,
+  type GenesisDigests,
+  type GenesisRecordLike,
+  type RatchetDifference,
+} from "@lararium/mesh/genesis-compare";
 import { genesisSeedCid, parseGenesisSeed, readGenesisSeedBytes } from "./genesis-artifact.js";
 
 export interface FoundingRecordTruths {

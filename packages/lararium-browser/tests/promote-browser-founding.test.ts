@@ -15,10 +15,12 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
 import { describe, expect, test, vi } from "vitest";
-import {
-  heldDocOf, PROMOTE_PLANE, promotePlaneUrl, promoteBoardDocUrl, makeHandLineage, personaActRecordsOfGroup, projectPersonaLog, verifyingKeyFromDid,
-  type LarDoc,
-} from "@lararium/mesh";
+import { heldDocOf, personaActRecordsOfGroup } from "@lararium/mesh/persona-act-board";
+import { PROMOTE_PLANE, promotePlaneUrl, promoteBoardDocUrl } from "@lararium/mesh/promote-board";
+import { makeHandLineage } from "@lararium/mesh/hand-lineage";
+import { projectPersonaLog } from "@lararium/mesh/persona-act";
+import { verifyingKeyFromDid } from "@lararium/mesh/lar-did";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { openBrowserVessel, type BrowserVesselOptions } from "../src/open-browser-vessel.js";
 import { bindSyntheticBrowserCustodySlot, fixtureWardDialog } from "./browser-custody-fixture.js";
 import { BootHalted } from "./wire-vessel-rig.js";
@@ -76,7 +78,9 @@ describe("a one-device browser fleet lowers a kāpae under the fresh unlock alon
     const { generateOrLoadBrowserPersonaRoot } = await import("../src/browser-vessel-identity.js");
     const { runWardAct } = await import("../src/ward-core.js");
     const { browserWardSigner, BrowserWardRefused } = await import("../src/browser-ward.js");
-    const { promoteBoardDoor, readPromoteBoard, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } = await import("@lararium/mesh");
+    const { promoteBoardDoor } = await import("@lararium/mesh/promote-board-door");
+    const { readPromoteBoard } = await import("@lararium/mesh/promote-board");
+    const { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } = await import("@lararium/mesh/ed25519-door");
     const idbName = `lares:lower-${globalThis.crypto.randomUUID()}`, PASS = "one device's route", GROUP = "one-device-face", D = "d".repeat(64);
     const { bindFirstFaceSlot, lockFaceCustody } = await import("../src/browser-face-custody.js");
     const { wearFaceOfVessel } = await import("../src/browser-vessel-identity.js");

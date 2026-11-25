@@ -6,7 +6,7 @@
  * control in the same test.
  */
 import { describe, expect, test } from "vitest";
-import { type LarTiddlerRecord } from "@lararium/mesh";
+import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { wikiSkip, skipNote } from "./test-wiki.js";
 import { sameHeads } from "../src/draft-book.js";
 import { parallelDraftAlertTitle, unroutedSaveAlertTitle } from "../src/island-adaptor.js";

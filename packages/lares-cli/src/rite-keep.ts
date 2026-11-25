@@ -34,7 +34,7 @@ import { existsSync, lstatSync, mkdirSync, readFileSync, realpathSync, renameSyn
 import { randomBytes } from "node:crypto";
 import { basename, dirname, join, relative, sep } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
-import { WORKSPACE_NAME_RE } from "@lararium/mesh";
+import { WORKSPACE_NAME_RE } from "@lararium/mesh/workbench";
 import { larHearthHome, larWorkspacesHome } from "@lararium/node";
 import { BUNDLE_SCHEMA, MANIFEST_FILE, unsafeRelPath, verifyBundle, type BundleManifest } from "./bundle-manifest.js";
 import type { RiteVerbAnswer } from "./rite-kukulu.js";
@@ -115,6 +115,28 @@ export async function keepFaceOf(show: (face: number) => Promise<RiteVerbAnswer>
     if (!line.ok) unread.push(face);
   }
   return { face: KEEP_FACE_DEFAULT, line: first, unread };
+}
+
+/** The refusal a keep line that stands no lei throws: its own code, and the hand's cure (the same returns, the same face, no cid). */
+export function keepLeiRefused(name: string, lei: { readonly refusal?: string; readonly returns?: unknown } | undefined, face: number): KeepRefused {
+  return new KeepRefused(`swarm-lei-${lei?.refusal ?? "absent"}`, `no keep lei stands for the workspace "${name}" (${lei?.refusal ?? "absent"}); the hand strings one: \`lares lei kui --rite keep --branch ${name} --returns ${typeof lei?.returns === "number" ? lei.returns : "<n>"} --face ${face}\``);
+}
+
+/**
+ * THE HOST'S EARLY READ of the keep line (`lares lei show --rite keep --branch <name> [--face N]`, one face's `{ lei }` or
+ * every open face's `{ faces: [{ face, lei }] }`): the refusal a spent or absent lei earns, or null where a lei stands or the
+ * vessel half must decide (no line held anywhere and no face named: a lei may stand on a face the read never saw).
+ */
+export function keepLeiGate(read: RiteVerbAnswer, name: string, named?: number): KeepRefused | null {
+  if (!read.ok) return null;
+  type Lei = { standing?: unknown; after?: unknown; tip?: unknown; refusal?: string; returns?: unknown };
+  const rows = Array.isArray(read.output["faces"])
+    ? (read.output["faces"] as { face?: unknown; lei?: Lei }[]).map((f) => ({ face: typeof f.face === "number" ? f.face : KEEP_FACE_DEFAULT, lei: f.lei }))
+    : [{ face: named ?? (typeof read.output["face"] === "number" ? read.output["face"] : typeof (read.output["lei"] as { face?: unknown } | undefined)?.face === "number" ? (read.output["lei"] as { face: number }).face : KEEP_FACE_DEFAULT), lei: read.output["lei"] as Lei | undefined }];
+  if (rows.some((r) => r.lei?.standing === true)) return null;
+  const held = (l: Lei | undefined): boolean => (typeof l?.after === "string" && l.after !== "") || (typeof l?.tip === "string" && l.tip !== "");
+  const at = named !== undefined ? rows.find((r) => r.face === named) : rows.find((r) => held(r.lei));
+  return at === undefined ? null : keepLeiRefused(name, at.lei, at.face);
 }
 
 /** A row refused at the door's chore gate names whose act the keep is. */
@@ -223,7 +245,6 @@ export async function riteKeep(ports: KeepPorts, opts: KeepOptions): Promise<Kee
     if (!lineHeld(keep.line)) unseen = { shut: house.shut, unread: keep.unread.filter((f) => f !== keep.face) };
   }
   const face = { face: acting.face! };
-  const hintFace = ` --face ${acting.face!}`;
   // A LEI THE KEEP CANNOT SEE: none read standing while a face stands shut, or its line went unread; name it, string nothing.
   if (unseen.shut.length > 0 || unseen.unread.length > 0) {
     const where = [
@@ -236,8 +257,7 @@ export async function riteKeep(ports: KeepPorts, opts: KeepOptions): Promise<Kee
   const lei = line.output["lei"] as { standing?: boolean; refusal?: string } | undefined;
   if (lei?.standing !== true) {
     // A SPENT LINE NAMES ITS OWN REFILL: the same returns as the lei that ran out, the same face, and no cid (a kui follows the tip itself).
-    const again = (lei as { returns?: unknown } | undefined)?.returns;
-    throw new KeepRefused(`swarm-lei-${lei?.refusal ?? "absent"}`, `no keep lei stands for the workspace "${name}" (${lei?.refusal ?? "absent"}); the hand strings one: \`lares lei kui --rite keep --branch ${name} --returns ${typeof again === "number" ? again : "<n>"}${hintFace}\``);
+    throw keepLeiRefused(name, lei, acting.face!);
   }
 
   const parent = dirname(target);

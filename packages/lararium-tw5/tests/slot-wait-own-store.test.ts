@@ -17,7 +17,8 @@
  */
 import { describe, expect, test } from "vitest";
 import { createRequire } from "node:module";
-import { islandRestGuard, type Repo as RepoType, type StorageAdapterInterface } from "@lararium/mesh";
+import { islandRestGuard } from "@lararium/mesh/sealed-rest";
+import { type Repo as RepoType, type StorageAdapterInterface } from "@lararium/mesh/automerge";
 import { waitForSlotDocument, type SlotWaitBudgets } from "../src/slot-wait.js";
 import { storeLiveness } from "../src/store-liveness.js";
 

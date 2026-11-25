@@ -14,7 +14,9 @@
  */
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { ENGINE_CORE_ID, GENESIS_FLOOR_TIDDLER, LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "@lararium/mesh";
+import { ENGINE_CORE_ID } from "@lararium/mesh/base-doc";
+import { GENESIS_FLOOR_TIDDLER } from "@lararium/mesh/floor-manifest";
+import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "@lararium/mesh/lar-uris";
 import { afterEach, describe, expect, test } from "vitest";
 import { checkGenesisPin, genesisFoundingLine, pinGenesisSeed, resolveGenesis } from "../src/genesis-resolve.js";
 import { genesisSeedCid, readGenesisSeedBytes } from "../src/genesis-artifact.js";

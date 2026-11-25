@@ -42,7 +42,7 @@
  */
 import { createPrivateKey, createPublicKey, randomFillSync, sign } from "node:crypto";
 import { faceFileNames } from "./face-index.js";
-import { bytesEqual, sha256HexBytesSync } from "@lararium/mesh";
+import { bytesEqual, sha256HexBytesSync } from "@lararium/mesh/crypto";
 import { CustodyRecordUnavailable } from "./custody-holder.js";
 import { openColdCustodyRecord, openFaceFileNames, removeColdCustodyRecord, updateColdCustodyRecord } from "./custody-seat.js";
 import { larIdentityDir } from "./vessel-paths.js";

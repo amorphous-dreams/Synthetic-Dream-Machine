@@ -24,7 +24,7 @@
 
 import { join } from "node:path";
 import { KeyhiveProvider, InMemoryEventStore, foundCabalRealm, openDwelling, dwellersHolding } from "@lararium/keyhive";
-import { MEMBERSHIP_BROADCAST, type MembershipChannel } from "@lararium/mesh";
+import { MEMBERSHIP_BROADCAST, type MembershipChannel } from "@lararium/mesh/membership-channel";
 import { FileMembershipChannel } from "../src/file-membership-channel.js";
 import { loadIdentityAnchors } from "../src/identity-anchors.js";
 import { loadFaceAtomOfGroup } from "../src/face-atom-store.js";

@@ -15,7 +15,7 @@
  */
 
 import { readFileSync } from "node:fs";
-import { FLOW_SEEDS } from "@lararium/mesh";
+import { FLOW_SEEDS } from "@lararium/mesh/flow";
 import { TIMEOUT_CEIL_MS } from "@lararium/mempalace";
 import { vesselDid } from "../env.js";
 import { runVerb, verbFailure } from "../verb-call.js";

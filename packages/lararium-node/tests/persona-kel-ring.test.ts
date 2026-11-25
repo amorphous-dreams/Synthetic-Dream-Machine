@@ -13,13 +13,17 @@
 import { afterEach, beforeAll, describe, test, expect } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
-import {
-  type LarDoc, type PersonaKelEvent,
-  CompositeStore, AutomergeDocStore, DAEMON_BAG_ID,
-  materializeSharedLarDoc, personaKelBoardDocUrl, writePersonaKelEvent, enrolmentDigestOf, personaEventCidOf,
-  verifyEdgeAgainstPersonaKel, attestAndRotate, rollEnrolments, sha256HexSync,
-  mintFaceAnchor,
-} from "@lararium/mesh";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { type PersonaKelEvent, enrolmentDigestOf, personaEventCidOf, verifyEdgeAgainstPersonaKel } from "@lararium/mesh/persona-kel";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { materializeSharedLarDoc, personaKelBoardDocUrl } from "@lararium/mesh/deterministic-doc";
+import { writePersonaKelEvent } from "@lararium/mesh/persona-kel-board";
+import { attestAndRotate } from "@lararium/mesh/recovery-keel-core";
+import { rollEnrolments } from "@lararium/mesh/persona-group-secret";
+import { sha256HexSync } from "@lararium/mesh/crypto";
+import { mintFaceAnchor } from "@lararium/mesh/face-anchor";
 import { KeyhiveProvider, DaemonEventStore, bootDaemonKeyhive, runFoundingCeremony } from "@lararium/keyhive";
 import { makePersonaKelRingHolder, type PersonaKelRingHolder } from "../src/persona-kel-ring.js";
 import { SEEDS, pubOf, didOf, signerOf, founded, enrol, rotatedKeeping } from "../../lararium-mesh/tests/fixtures/sibling-fleet.js";

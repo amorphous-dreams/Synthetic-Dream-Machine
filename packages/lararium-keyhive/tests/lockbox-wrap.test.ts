@@ -4,7 +4,9 @@
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store
  */
 import { describe, expect, test } from "vitest";
-import { bagLocatorOf, keyVersionIdOf, mintContentKey, wrapLockbox, openLockbox, readKeyParcel, encodeKeyParcel } from "@lararium/mesh";
+import { bagLocatorOf } from "@lararium/mesh/sealed-records";
+import { keyVersionIdOf, mintContentKey } from "@lararium/mesh/sealed-chunk-door";
+import { wrapLockbox, openLockbox, readKeyParcel, encodeKeyParcel } from "@lararium/mesh/lockbox-wrap";
 import { InMemoryEventStore, KeyhiveProvider, encodeLockboxBox, keyhiveLockboxShore, readLockboxBox } from "../src/index.js";
 
 const enc = (s: string) => new TextEncoder().encode(s);

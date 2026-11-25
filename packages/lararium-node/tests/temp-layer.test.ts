@@ -12,7 +12,8 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, 
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
-import { volatileVmUri, wikiSlotUri } from "@lararium/mesh";
+import { volatileVmUri } from "@lararium/mesh/lar-uris";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { resolveDiskMirrors, type DiskMirrorGrant } from "../../lararium-mesh/src/vessel-island-pool-core.js";
 import { MemoryTiddlerStore } from "../../lararium-tw5/src/memory-store.js";
 import { LarDiskProjector } from "../src/disk-projector.js";
@@ -332,7 +333,7 @@ describe("opt-in expiry", () => {
 
 describe("the mount", () => {
   test("a consented temp mirror reads its carriers back before the first pass, projects new user rows, and bars internal state", async () => {
-    const { CompositeStore } = await import("@lararium/mesh");
+    const { CompositeStore } = await import("@lararium/mesh/composite-store");
     const { TW5Engine } = await import("../../lararium-tw5/src/tw5-vm.js");
     const { mountDiskProjection, mountedDiskProjector } = await import("../src/island-behaviors.js");
     const { larProjectionsHome } = await import("../src/vessel-paths.js");

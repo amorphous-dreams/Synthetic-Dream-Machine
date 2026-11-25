@@ -43,12 +43,16 @@ import { Repo } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
 import {
-  DAEMON_BAG_ID, SECRET_HOME_ID,
-  PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
+  DAEMON_BAG_ID,
+  SECRET_HOME_ID,
+  PERSONA_GROUP_ID_TIDDLER,
+  MESH_CABAL_DOC_ID_TIDDLER,
   CAP_EVENT_TAG,
-  PERSONA_KEL_PREFIX_TIDDLER, SIGNER_DID_TIDDLER,
-  HEARTH_TRUE_NAME_TIDDLER, DEVICE_DELEGATION_SELF_TIDDLER,
-} from "@lararium/mesh";
+  PERSONA_KEL_PREFIX_TIDDLER,
+  SIGNER_DID_TIDDLER,
+  HEARTH_TRUE_NAME_TIDDLER,
+  DEVICE_DELEGATION_SELF_TIDDLER,
+} from "@lararium/mesh/lar-uris";
 import { InMemoryEventStore } from "@lararium/keyhive";
 import { runFoundTheFace, runFleetJoinOffer, runFleetJoinRequest, runFleetJoinAnswer, runFleetJoinLand } from "../../src/index.js";
 import { larSealHome } from "../../src/vessel-paths.js";
@@ -58,7 +62,8 @@ import { withLarRoot } from "../../../../tests/harness/with-lar-root.js";
 import { direct } from "../direct-store.js";
 import { standFacePlane } from "../face-plane-fixture.js";
 import { foundDirect, openTestCustody, sealTestCustody, seatSeedCharter } from "../found-route.js";
-import { plainEntries, tiddlerText } from "@lararium/mesh";
+import { plainEntries } from "@lararium/mesh/stored-value";
+import { tiddlerText } from "@lararium/mesh/base-doc";
 
 // ---------------------------------------------------------------------------
 // Test isolation directories

@@ -5,7 +5,8 @@
  * the fire; the budget carries.
  */
 import { linkSync, mkdtempSync, rmSync, statSync, unlinkSync } from "node:fs";
-import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, signKukuluVouch } from "@lararium/mesh";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { signKukuluVouch } from "@lararium/mesh/kukulu-vouch";
 import { keeperRiteOver, pulamaSignerOf, vouchSignerOf } from "../src/kukulu-gate.js";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -15,7 +16,7 @@ import { UNLOCK_ATTEMPTS_PER_BOOT, makeCustodyHolder, type CustodyHolder } from 
 import { personaGroupDigest } from "../src/persona-group-file.js";
 import { pulamaAdmissions, signPulamaRecord, verifiedPulamaRecord } from "../src/pulama-admit.js";
 import { pulamaHandDoor, type PulamaHandAnswer } from "../src/pulama-hand.js";
-import { KEEPER_STRUCK_EVERY, keeperCommit, keeperEphemeral, keeperFold, keeperSlotOpen, pulamaKeeperPrefix } from "../src/pulama-keeper.js";
+import { KEEPER_STRUCK_EVERY, keeperCommit, keeperEphemeral, keeperFold, keeperPendingStale, keeperSlotOpen, pulamaKeeperPrefix } from "../src/pulama-keeper.js";
 import { servePulama } from "../src/pulama-server.js";
 import { listenPulama, pulamaAnswers } from "../src/pulama-socket.js";
 import { pulamaImage, pulamaRecords } from "../src/pulama-state.js";
@@ -599,6 +600,43 @@ describe("RED the keeper lei: the kukulu lei licenses the handed fire (operator 
     expect(await h.commit(D2)).toMatchObject({ reading: "committed", supersedes: expect.stringMatching(/^[0-9a-f]{64}$/) });
   });
 
+  test("keeper-lei-supersedes-a-stale-self-commit (the 2026-11-24 shape): a hand commit at v1, prev null, whose next equals its own from-closure, reads stale; status reads `stalePending` and leiReady; a licensed lei supersedes it", async () => {
+    const h = await house("keeper-lei-stale-self");
+    const self = await h.commit(D);
+    expect(self).toMatchObject({ reading: "committed", v: 1 });
+    const by = await pulamaSignerOf(fx!.kept);
+    const before = (await keeperFold(h.records, by)).pending;
+    expect(before?.body).toMatchObject({ v: 1, prev: null, closure: D, next: D });
+    expect(await h.old({ op: "status" })).toMatchObject({ keeper: { pending: D, stalePending: true, staleWhy: "self-commit" }, leiReady: true });
+    expect(await spend(h.old)).toMatchObject({ reading: "committed", v: 1, next: D2 });
+    const after = (await keeperFold(h.records, by)).pending;
+    expect(after?.next).toBe(D2);
+    expect(after?.body).toMatchObject({ supersedes: before!.begun, licensed: { by: "kukulu-lei" } });
+    expect(await h.old({ op: "status" })).toMatchObject({ keeper: { pending: D2, stalePending: false } });
+  });
+
+  test("keeper-lei-supersedes-a-moved-keeper's-commit: a hand commit read under another closure than the keeper now runs reads stale; a live, current hand commit still refuses", async () => {
+    const h = await house("keeper-lei-stale-moved");
+    expect(await h.commit(D3)).toMatchObject({ reading: "committed" });
+    expect(await h.old({ op: "status" })).toMatchObject({ keeper: { pending: D3, stalePending: false } });
+    expect(await h.old({ op: "status" })).not.toHaveProperty("leiReady");
+    expect(await spend(h.old)).toMatchObject({ reading: "keeper-lei-hand-pending" });
+    // THE KEEPER MOVED PAST IT: it now runs another closure than the one the commit handed from (and not the one it names).
+    const moved = "sha256:" + "e7".repeat(32);
+    await h.old({ op: "closure", digest: moved });
+    expect(await h.old({ op: "status" })).toMatchObject({ keeper: { pending: D3, stalePending: true, staleWhy: "keeper-moved" }, leiReady: true });
+    expect(await spend(h.old)).toMatchObject({ reading: "committed", next: D2 });
+    expect((await keeperFold(h.records, await pulamaSignerOf(fx!.kept))).pending?.next).toBe(D2);
+  });
+
+  test("keeper-lei-arrival-stays-live: a keeper that now runs the very closure the commit names reads it live (its landing waits), never stale", async () => {
+    const h = await house("keeper-lei-stale-arrival");
+    await h.commit(D3);
+    await h.old({ op: "closure", digest: D3 });
+    expect(await h.old({ op: "status" })).toMatchObject({ keeper: { pending: D3, stalePending: false } });
+    expect(await spend(h.old)).toMatchObject({ reading: "keeper-lei-hand-pending" });
+  });
+
   test("keeper-lei-red-refuses: a red last pair refuses `keeper-lei-red`; a face of two devices refuses `keeper-lei-cosign-owed` and none read `keeper-lei-devices-unread`; testimony that does not hold refuses by name; none rests a commit", async () => {
     const h = await house("keeper-lei-red");
     expect(await spend(h.old, D2, { devices: 2 })).toMatchObject({ reading: "keeper-lei-cosign-owed", detail: expect.stringContaining("lares pulama keeper-commit") });
@@ -687,5 +725,19 @@ describe("RED the keeper lei's cold read (F1, F3, F5, F6): a licensed commit ves
     const out = await keeperCommit(h.records, by, { closure: D, image: IMAGE, faces: [], worn: 0, spent: 0, next: D2, devices: 1, noSupersede: true } as never);
     expect(out).toMatchObject({ refusal: "keeper-lei-hand-pending" });
     expect((await keeperFold(h.records, by)).pending?.next).toBe(D3);
+    // A STALE commit (the standing reads another closure than the commit handed from) yields on that very fold, superseding it.
+    const past = await keeperCommit(h.records, by, { closure: D2, image: IMAGE, faces: [], worn: 0, spent: 0, next: D2, devices: 1, noSupersede: true } as never);
+    expect(past).toMatchObject({ next: D2, supersedes: expect.stringMatching(/^[0-9a-f]{64}$/) });
+  });
+
+  test("keeperPendingStale reads closures and rows alone: self-commit, keeper-moved, arrival, unreported", () => {
+    const at = (closure: string, next: string) => ({ tessera: "t", v: 1, next, begun: "c", devices: 1, body: { closure, next } as never });
+    expect(keeperPendingStale(null, D)).toBeNull();
+    expect(keeperPendingStale(at(D, D), D)).toBe("self-commit");
+    expect(keeperPendingStale(at(D, D), null)).toBe("self-commit");
+    expect(keeperPendingStale(at(D, D3), D)).toBeNull();
+    expect(keeperPendingStale(at(D, D3), D2)).toBe("keeper-moved");
+    expect(keeperPendingStale(at(D, D3), D3)).toBeNull();
+    expect(keeperPendingStale(at(D, D3), null)).toBeNull();
   });
 });

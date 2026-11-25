@@ -16,7 +16,7 @@ import { afterAll, describe, expect, test } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { parseShareFile, serializeShareFile, type ShareFace } from "@lararium/mesh";
+import { parseShareFile, serializeShareFile, type ShareFace } from "@lararium/mesh/share-config";
 import { cmdShare, petnamesOf, shareListJson, shareListLines } from "../src/commands/share-cmd.js";
 import { cmdRealm } from "../src/commands/realm.js";
 import { readBackOnExpiry, unhandedLine, type ShareDoors } from "../src/share-doors.js";

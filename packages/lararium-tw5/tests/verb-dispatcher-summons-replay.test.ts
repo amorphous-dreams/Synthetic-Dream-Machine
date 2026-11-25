@@ -1,5 +1,7 @@
 import { describe, expect, test } from "vitest";
-import { CompositeStore, CONTROL_HOME_ID, summon } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
+import { summon } from "@lararium/mesh/verb-tiddler";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { VerbDispatcher, VerbTable } from "../src/verb-dispatcher.js";
 import type { TW5Engine } from "../src/tw5-vm.js";

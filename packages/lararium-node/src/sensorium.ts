@@ -34,18 +34,27 @@
 import { spawn } from "node:child_process";
 import { existsSync, readFileSync, realpathSync } from "node:fs";
 import { isAbsolute, join, relative, resolve } from "node:path";
-import type {
-  PersistencePolicy, SensoriumContract, SensoriumOrderEvidence, Variance,
-  Testimony, Witness, StoreCode,
-} from "@lararium/mesh";
+import type { PersistencePolicy, Testimony, Witness, StoreCode } from "@lararium/mesh/persistence-keel";
+import type { SensoriumContract, SensoriumOrderEvidence } from "@lararium/mesh/sensorium-contract";
+import type { Variance } from "@lararium/mesh/sensorium-consistency";
+import { declareSensoriumContract } from "@lararium/mesh/sensorium-contract";
+import { SHEAF_PLANES, COSHEAF_PLANES } from "@lararium/mesh/sensorium-consistency";
+import { canonicalJsonBytes, defaultCryptoProvider, sha256Hex } from "@lararium/mesh/crypto";
 import {
-  declareSensoriumContract, SHEAF_PLANES, COSHEAF_PLANES,
-  canonicalJsonBytes, defaultCryptoProvider, sha256Hex,
-  reentryPrior, admit as keelAdmit, storeCodeFrom, observeClaim,
-  verifyWitnessSig, WITNESS_POLICY,
-  deriveLifecycle, isLifecycleState, type SensoriumLifecycleState,
-  parseRetirementRecord, type RetirementRecord,
-} from "@lararium/mesh";
+  reentryPrior,
+  admit as keelAdmit,
+  storeCodeFrom,
+  observeClaim,
+  verifyWitnessSig,
+  WITNESS_POLICY,
+} from "@lararium/mesh/persistence-keel";
+import {
+  deriveLifecycle,
+  isLifecycleState,
+  type SensoriumLifecycleState,
+  parseRetirementRecord,
+  type RetirementRecord,
+} from "@lararium/mesh/sensorium-lifecycle";
 import {
   resolveHolderCapEnv, resolveContentPalaceSpawn, resolvePersistencePalaceSpawn,
   resolveStructurePalaceSpawn,
@@ -75,8 +84,8 @@ export const SENSORIUM_MANIFEST = "manifest.json";
  * The keystone: mixing them under ONE contravariant gluing SILENTLY corrupts — it penalizes
  * the flow (ki) for failing to be static (li). Consistency runs SEPARATELY per posture, never merged.
  */
-export { SHEAF_PLANES, COSHEAF_PLANES } from "@lararium/mesh";
-export type { Variance } from "@lararium/mesh";
+export { SHEAF_PLANES, COSHEAF_PLANES } from "@lararium/mesh/sensorium-consistency";
+export type { Variance } from "@lararium/mesh/sensorium-consistency";
 
 /**
  * A FIBER-cap edge — THIN by law (has-stack clause 7): `dir` (relative-if-inside / absolute-if-outside)

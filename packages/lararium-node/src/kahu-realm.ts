@@ -23,13 +23,28 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane#/the-slices
  */
 import { interpretAsDocumentId, type AutomergeUrl, type Repo } from "@automerge/automerge-repo";
+import { LARARIUM_DOC_URI, LARES_DOC_URI } from "@lararium/mesh/lar-uris";
+import { deterministicDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { faceAtomKeyFromSeed } from "@lararium/mesh/face-atom";
+import { kahuCabalStanding, kahuCabalActsFromBoard } from "@lararium/mesh/kahu-cabal-admission";
+import { kahuRealmGroup, houseCanonBagsSeated, houseCanonSlugsSeated, seatHouseCanon } from "@lararium/mesh/kahu-canon-reach";
+import { canonicalJson } from "@lararium/mesh/crypto";
 import {
-  LARARIUM_DOC_URI, LARES_DOC_URI, deterministicDocUrl, faceAtomKeyFromSeed, kahuCabalStanding, kahuRealmGroup, materializeSharedLarDoc,
-  canonicalJson, parseRealmBagRegistration, realmBagRegistrationCounts, realmBagRegistrationsFromDoc, realmDocUrl, signRealmBagRegistration,
-  writeRealmBagRegistration, ed25519SignerFromSeed, admittedKeyOf, followNexusKeyLine, kahuCabalActsFromBoard, realmBagKey, foundingRoster, nexusAidOf,
-  houseCanonBagsSeated, houseCanonSlugsSeated, seatHouseCanon,
-  type LarDoc, type ProtectedDocClass, type RealmBagRegistration, type StewardSigner,
-} from "@lararium/mesh";
+  parseRealmBagRegistration,
+  realmBagRegistrationCounts,
+  realmBagRegistrationsFromDoc,
+  realmDocUrl,
+  signRealmBagRegistration,
+  writeRealmBagRegistration,
+  realmBagKey,
+  type RealmBagRegistration,
+  type StewardSigner,
+} from "@lararium/mesh/realm-bag";
+import { ed25519SignerFromSeed } from "@lararium/mesh/ed25519-door";
+import { admittedKeyOf, followNexusKeyLine } from "@lararium/mesh/nexus-key-line";
+import { foundingRoster, nexusAidOf } from "@lararium/mesh/nexus-seal-seed";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { type ProtectedDocClass } from "@lararium/mesh/protected-doc-guard";
 import { createHmac } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";

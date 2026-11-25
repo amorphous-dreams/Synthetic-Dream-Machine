@@ -13,7 +13,8 @@
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { carrierHash, serializeShareFile, type ShareEntry } from "@lararium/mesh";
+import { carrierHash } from "@lararium/mesh/crypto";
+import { serializeShareFile, type ShareEntry } from "@lararium/mesh/share-config";
 import { faceRoot, nameRealm, placeInRealm, realmRoot, syncedTreeDir, syncedTreeKey, SyncedTree, writeFaceLabel } from "@lararium/node";
 import { cmdSurface, liveSurfaceDoors, type SurfaceDoors } from "../src/commands/surface.js";
 import { git, openSurfaceRig, plant, stubLaresOnPath, surfaceArgs, type SurfaceRig } from "./support/surface-rig.js";

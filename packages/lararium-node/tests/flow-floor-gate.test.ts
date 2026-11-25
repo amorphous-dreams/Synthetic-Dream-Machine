@@ -1,4 +1,4 @@
-import { placeSignerFromSeed } from "@lararium/mesh";
+import { placeSignerFromSeed } from "@lararium/mesh/place-signer";
 /**
  * flow-floor-gate — the flow read face's server half on the floor gate (the flow converts where browser boot
  * reads it: the shut-routes house ruling). A reader dials the floor gate its pair index pins at (hearth, Nexus, "/flow",
@@ -22,10 +22,11 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
 import WsSocket from "ws";
-import {
-  pullAndVerifyFlow, dialEntryToRecord, ed25519VerifyingKeyFromSeed, dialFaceGate, dialedChannel, FLOW_SOCKET_ROUTE,
-  type MeshPalaceDoc,
-} from "@lararium/mesh";
+import { pullAndVerifyFlow, FLOW_SOCKET_ROUTE } from "@lararium/mesh/flow-read-client";
+import { dialEntryToRecord, type MeshPalaceDoc } from "@lararium/mesh/mesh-palace";
+import { ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { dialFaceGate } from "@lararium/mesh/face-dial";
+import { dialedChannel } from "@lararium/mesh/gate-session-channel";
 import { wsDialSocket, type WsLike } from "../../lararium-mesh/src/ws-dial-socket.js";
 import { mountFlowMapReadFace, type FlowFloorFace } from "../src/flow-read-face.js";
 import { gatePath } from "../src/face-gate-server.js";

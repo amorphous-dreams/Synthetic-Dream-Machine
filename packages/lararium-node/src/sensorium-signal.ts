@@ -25,7 +25,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { readManifest, resolveCapDir } from "./sensorium.js";
 import type { SensoriumChild, SensoriumManifest } from "./sensorium.js";
-import type { ChildSignalMV } from "@lararium/mesh";
+import type { ChildSignalMV } from "@lararium/mesh/mesh-coupling-mv";
 
 /** The per-child SIGNAL sidecar filename — a time-series the re-pour lands per child (rows=time, cols=dims). */
 export const CHILD_SIGNAL_SIDECAR = "signal.json";

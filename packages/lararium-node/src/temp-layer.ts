@@ -28,7 +28,7 @@
 import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, rmdirSync, statSync, unlinkSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { dirname, join, relative, resolve, sep } from "node:path";
-import { carrierHash } from "@lararium/mesh";
+import { carrierHash } from "@lararium/mesh/crypto";
 import { isTempLayerInternalTitle } from "./bag-paths.js";
 
 /** One day, the housekeeping period. */

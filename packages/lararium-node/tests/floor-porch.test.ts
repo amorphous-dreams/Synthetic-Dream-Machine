@@ -14,10 +14,12 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
-import {
-  assembleFloorRelease, crossroadsDocUrl, publicationDocUrl, cutFloorSnapshot, floorManifestBytes, materializeSharedLarDoc, openFloorReleaseBody, readFloorAnswer,
-  sha256HexBytesSync, signFloorOffering, writeFloorRelease, type FloorRelease,
-} from "@lararium/mesh";
+import { assembleFloorRelease, openFloorReleaseBody, writeFloorRelease, type FloorRelease } from "@lararium/mesh/floor-release";
+import { crossroadsDocUrl, publicationDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { cutFloorSnapshot, floorManifestBytes } from "@lararium/mesh/floor-manifest";
+import { readFloorAnswer } from "@lararium/mesh/floor-answer";
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
+import { signFloorOffering } from "@lararium/mesh/floor-offering";
 import { mountHttpFaceDispatcher } from "../src/http-face-dispatcher.js";
 import { mountFloorPorch, releasedFloorCids } from "../src/floor-porch.js";
 import { writeCasEntriesFs } from "../src/node-cas.js";

@@ -1,9 +1,14 @@
 import { describe, test, expect } from "vitest";
-import { CompositeStore, CONTROL_HOME_ID, leaseEpochSlotUri, currentSignerOf, makeHandLineage,
-  signLeaseAdvance, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
+import { leaseEpochSlotUri } from "@lararium/mesh/epoch-lease";
+import { currentSignerOf, makeHandLineage } from "@lararium/mesh/hand-lineage";
+import { signLeaseAdvance } from "@lararium/mesh/lease-advance";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
 import { MemoryTiddlerStore } from "@lararium/tw5";
 import { readLeaseFrontier, readLeaseUnderFace } from "../src/lease-frontier.js";
-import { readFace, mintFaceAnchor, raiseFaceFrontier } from "@lararium/mesh";
+import { readFace } from "@lararium/mesh/face-reading";
+import { mintFaceAnchor, raiseFaceFrontier } from "@lararium/mesh/face-anchor";
 import { realKel } from "../../lararium-mesh/tests/kel-fixture.js";
 
 const group = "ab".repeat(16);

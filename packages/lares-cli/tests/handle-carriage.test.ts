@@ -11,13 +11,12 @@
  *   · the decoder only SHAPES — a tampered signature still decodes (the trust gate is `ingest`, not the parser).
  */
 import { describe, test, expect } from "vitest";
-import {
-  HandleBook, signHandleCard, ed25519SignerFromSeed,
-  composeFollow, FollowRefused,
-  mintHandleInception, mintHandleRotation, handleKeyDigestOf,
-  hex,
-  type CircleStore, type HandleCard, type HandleKelEvent,
-} from "@lararium/mesh";
+import { HandleBook } from "@lararium/mesh/handle-book";
+import { signHandleCard, type HandleCard } from "@lararium/mesh/handle-card";
+import { ed25519SignerFromSeed } from "@lararium/mesh/ed25519-door";
+import { composeFollow, FollowRefused, type CircleStore } from "@lararium/mesh/compose-follow";
+import { mintHandleInception, mintHandleRotation, handleKeyDigestOf, type HandleKelEvent } from "@lararium/mesh/handle-kel";
+import { hex } from "@lararium/mesh/crypto";
 import {
   parseHandleCardCarriage, toHandleCardCarriage, carriageMode, fitsQrCarriage, QR_CARRIAGE_MAX_EVENTS,
 } from "../src/handle-carriage.js";

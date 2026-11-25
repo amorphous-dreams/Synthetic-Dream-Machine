@@ -5,7 +5,7 @@
  * route here is a fixed test passphrase; `foundDirect(opts)` reads as `runInit` itself (the direct opener holds the
  * store for the act) with that route filled in. A suite that proves the refusal passes `custody: { slots: [] }`.
  */
-import type { SlotSpec } from "@lararium/mesh";
+import type { SlotSpec } from "@lararium/mesh/keyslot-door";
 import { runInit, type InitOptions } from "../src/commands/init.js";
 import { foundSeedCharter, runFoundHearth, type FoundHearthOptions } from "../src/commands/found-hearth.js";
 import { direct } from "./direct-store.js";

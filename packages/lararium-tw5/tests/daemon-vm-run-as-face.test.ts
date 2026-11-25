@@ -5,7 +5,10 @@
  */
 import { createRequire } from "node:module";
 import { afterEach, expect, test } from "vitest";
-import { DAEMON_BAG_ID, emptyLarDoc, mkDaemonGateVerbResult, mkEa, mkFault, type IslandMsg_Manifest, type LarDoc, type Repo as RepoType } from "@lararium/mesh";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { mkDaemonGateVerbResult, mkEa, mkFault, type IslandMsg_Manifest } from "@lararium/mesh/island-protocol";
+import { type Repo as RepoType } from "@lararium/mesh/automerge";
 import { openDaemonVmCore, type DaemonVmHost } from "../src/daemon-vm-core.js";
 import { VerbTable } from "../src/verb-dispatcher.js";
 

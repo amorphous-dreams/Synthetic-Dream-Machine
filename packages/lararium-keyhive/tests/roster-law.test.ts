@@ -1,6 +1,9 @@
 import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
 import { describe, expect, it } from "vitest";
-import { makeIslandRepo, groupSecretOpenerFromSeed, materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix } from "@lararium/mesh";
+import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
+import { groupSecretOpenerFromSeed } from "@lararium/mesh/persona-group-secret";
+import { materializeSharedLarDoc, personaKelBoardDocUrl } from "@lararium/mesh/deterministic-doc";
+import { personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";
 import { foundTheFace, foundThePlace, InMemoryEventStore, KeyhiveProvider, runApplyAdmitPayload, runDeviceAdmitEdge } from "../src/index.js";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 import { withMemorySecretHome } from "../../lararium-mesh/tests/secret-home-fixture.js";

@@ -6,7 +6,7 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/founding-runbook
  */
-import { bagUri } from "@lararium/mesh";
+import { bagUri } from "@lararium/mesh/lar-uris";
 
 /** One row the daemon's `fresher-canon` read answers. */
 export interface FresherRow {

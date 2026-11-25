@@ -38,7 +38,8 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/content-resolution#/tw5-shore
  */
 
-import { sha256HexBytesSync, cidFromUri } from "@lararium/mesh";
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
+import { cidFromUri } from "@lararium/mesh/lar-uris";
 import type { TW5Engine } from "./tw5-vm.js";
 import type { LaresTw5Extension } from "./types/lares-globals.js";
 

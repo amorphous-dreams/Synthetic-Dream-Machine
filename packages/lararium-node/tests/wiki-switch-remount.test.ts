@@ -8,7 +8,8 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/vessel-island-pool-core
  */
 import { describe, test, expect, afterEach } from "vitest";
-import { makeWikiActivationCap, type WikiMountSpec } from "@lararium/mesh";
+import { makeWikiActivationCap } from "@lararium/mesh/wiki-activation";
+import { type WikiMountSpec } from "@lararium/mesh/wiki-recipe";
 import { VesselIslandPool } from "../src/vessel-island-pool.js";
 import { wikiSwitchVerb } from "../src/wiki-switch-verb.js";
 

@@ -10,10 +10,10 @@
  * suite (`meshpalace-mints-once`), where a real Repo stands.
  */
 import { describe, expect, test } from "vitest";
-import {
-  DAEMON_BAG_ID, type CompositeStore, composeVessel,
-  seatMintCensus, pointMint, capMintsUnpointed, type CapModule,
-} from "@lararium/mesh";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { type CompositeStore } from "@lararium/mesh/composite-store";
+import { composeVessel, type CapModule } from "@lararium/mesh/cap-compose";
+import { seatMintCensus, pointMint, capMintsUnpointed } from "@lararium/mesh/mint-census";
 import { unboundMints } from "../src/resolve-binding.js";
 
 const noRows = { entries: async () => [] } as unknown as CompositeStore;

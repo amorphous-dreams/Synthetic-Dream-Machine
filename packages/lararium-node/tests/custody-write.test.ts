@@ -15,7 +15,7 @@
  */
 import { EventEmitter } from "node:events";
 import { beforeEach, describe, expect, test } from "vitest";
-import type { CapabilityRecord } from "@lararium/mesh";
+import type { CapabilityRecord } from "@lararium/mesh/capability-record";
 import { answerCustodyWrite } from "../src/worker-handle.js";
 import { vesselCustodyWriter } from "../src/sovereign-island-model.js";
 

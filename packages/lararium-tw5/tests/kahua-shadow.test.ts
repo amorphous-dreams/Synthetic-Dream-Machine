@@ -7,7 +7,7 @@
  * device's cascade alone: the stamp lives in the temp plane and never reaches a store.
  */
 import { afterEach, describe, expect, test } from "vitest";
-import { KAHUA_BAG } from "@lararium/mesh";
+import { KAHUA_BAG } from "@lararium/mesh/wiki-recipe";
 import { seedDaemonUiTiddlers } from "../src/daemon-ui-tiddlers.js";
 import { GLOBAL_IMPORT, wikiSkip, skipNote } from "./test-wiki.js";
 import { afterDispatch, ManualBoundary, remote, shoreRig, storeText, turns, workingBag, type Rig } from "./wiki-shore-rig.js";

@@ -44,7 +44,7 @@
  */
 import { readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
-import { isCondemned, type DocLoadProbe, type ProbeResult } from "@lararium/mesh";
+import { isCondemned, type DocLoadProbe, type ProbeResult } from "@lararium/mesh/doc-load-probe-contract";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 import { engineFatalCauseOf, type EngineFall, type EngineWatch } from "./engine-watch.js";
 import type { StorageAdapterInterface, StorageKey } from "@automerge/automerge-repo/slim";

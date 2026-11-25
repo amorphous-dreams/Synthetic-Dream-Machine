@@ -19,10 +19,20 @@
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/wiki-surface-scout
  */
-import { TW5_DOCS_SLUG, floorReadFace, wikiBagUri, type LarTiddlerRecord, type LarTiddlerStore, type WikiRecipe } from "@lararium/mesh";
+import { TW5_DOCS_SLUG } from "@lararium/mesh/tw5-docs-name";
+import { floorReadFace } from "@lararium/mesh/floor-manifest";
+import { wikiBagUri, type WikiRecipe } from "@lararium/mesh/wiki-recipe";
+import { type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
 
 // The name and the two refusals rest in the mesh (`tw5-docs-name`), where the doors that stand a store read them too.
-export { TW5_DOCS_READ_ONLY, TW5_DOCS_RESERVED, TW5_DOCS_SLUG, namesTw5Docs, refuseTw5DocsReserved, refuseTw5DocsWrite } from "@lararium/mesh";
+export {
+  TW5_DOCS_READ_ONLY,
+  TW5_DOCS_RESERVED,
+  TW5_DOCS_SLUG,
+  namesTw5Docs,
+  refuseTw5DocsReserved,
+  refuseTw5DocsWrite,
+} from "@lararium/mesh/tw5-docs-name";
 
 /** The library's one layer: the wiki's canon slot, which the packed edition fills. */
 export const TW5_DOCS_BAG: string = wikiBagUri(TW5_DOCS_SLUG);

@@ -46,10 +46,8 @@
 
 import { readdirSync } from "node:fs";
 import { join } from "node:path";
-import {
-  sha256HexSync, isHostingAct, hostingActCid, hostingEpochOf, mintHostingAct,
-  type HostingAct, type HostingEpoch,
-} from "@lararium/mesh";
+import { sha256HexSync } from "@lararium/mesh/crypto";
+import { isHostingAct, hostingActCid, hostingEpochOf, mintHostingAct, type HostingAct, type HostingEpoch } from "@lararium/mesh/hosting";
 import { CustodyRecordUnavailable } from "./custody-holder.js";
 import { openedCustody, readCustodyRecord, removeCustodyRecord, updateCustodyRecord } from "./custody-seat.js";
 import { HostingFaceAbsent, hostingDirPath, hostingFaceOf, hostingRecordDir } from "./hosting-face.js";

@@ -13,9 +13,13 @@
  * (the daemon island's own key for the face), never its root, so seating a device the root already admitted asks nobody.
  */
 import type { AutomergeUrl, Repo } from "@automerge/automerge-repo";
-import {
-  DOCUMENT_HANG_BOUND_MS, ed25519SignerFromSeed, faceAtomKeyFromSeed, faceRecordsOf, type EdgeStanding, type HandLineage, type LarDoc,
-} from "@lararium/mesh";
+import { DOCUMENT_HANG_BOUND_MS } from "@lararium/mesh/find-or-throw";
+import { ed25519SignerFromSeed } from "@lararium/mesh/ed25519-door";
+import { faceAtomKeyFromSeed } from "@lararium/mesh/face-atom";
+import { faceRecordsOf } from "@lararium/mesh/face-reading";
+import { type EdgeStanding } from "@lararium/mesh/edge-kapae";
+import { type HandLineage } from "@lararium/mesh/hand-lineage";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import {
   CarriedSeatRefused, boardDyadReader, composeSeatRequest, dropCarriedSeatGrant, keepCarriedSeatGrant, keptSeatGrant, placeSeatRequest, readSeatGrant, readSeatRequest, seatGrantAnswering, verifyCarriedSeatGrant,
   type FaceGrantVerdict, type FleetSeatGrant, type FleetSeatRequest, type FounderLineage,

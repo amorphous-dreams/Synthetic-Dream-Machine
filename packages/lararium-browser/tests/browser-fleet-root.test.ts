@@ -12,7 +12,10 @@
  *   R7  the same vessel under another atom refuses `vessel-already-admitted`: the tag law holds on a leaf's root
  */
 import { describe, expect, test, vi } from "vitest";
-import { admittedJoineeIsland, heldDocOf, personaActRecordsOfGroup, readFleetJoinOffer, fleetJoinHearthOf, type FleetJoinAnswer, type FleetJoinRequest, type LarDoc } from "@lararium/mesh";
+import { admittedJoineeIsland } from "@lararium/mesh/nexus-identity";
+import { heldDocOf, personaActRecordsOfGroup } from "@lararium/mesh/persona-act-board";
+import { readFleetJoinOffer, fleetJoinHearthOf, type FleetJoinAnswer, type FleetJoinRequest } from "@lararium/mesh/fleet-join";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import type { Repo } from "@automerge/automerge-repo";
 import { openBrowserVessel, type BrowserVesselOptions } from "../src/open-browser-vessel.js";
 import { generateOrLoadBrowserVesselIdentity } from "../src/browser-vessel-identity.js";

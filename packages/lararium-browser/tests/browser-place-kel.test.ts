@@ -11,9 +11,11 @@ import { placeSeed } from "./browser-place-seed.fixture.js";
  *     an unrotated head reads unchanged.
  */
 import { describe, test, expect, afterEach } from "vitest";
-import {
-  PlaceFoundingCardUnread, coldKeyCode, mintPlaceRotation, mintColdKey, placeSignerFromSeed, type PlaceKelEvent, type RandomProvider,
-} from "@lararium/mesh";
+import { PlaceFoundingCardUnread } from "@lararium/mesh/place-founding-card";
+import { coldKeyCode, mintColdKey } from "@lararium/mesh/cold-key-card";
+import { mintPlaceRotation, type PlaceKelEvent } from "@lararium/mesh/vessel-kel";
+import { placeSignerFromSeed } from "@lararium/mesh/place-signer";
+import { type RandomProvider } from "@lararium/mesh/crypto";
 import {
   foundBrowserPlaceKel, generateOrLoadBrowserVesselIdentity, loadBrowserPlaceKel, readBrowserPlaceHead,
   openVesselIdb, idbGet,

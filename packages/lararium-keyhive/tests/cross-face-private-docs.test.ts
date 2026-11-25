@@ -12,7 +12,10 @@
  *       document, no control reader while faces stand lit, no daemon store; a face whose private slot never minted reads whole
  */
 import { describe, expect, it } from "vitest";
-import { CONTROL_HOME_ID, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX, wikiSlotUri, type CompositeStore, type LarTiddlerRecord } from "@lararium/mesh";
+import { CONTROL_HOME_ID, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX } from "@lararium/mesh/lar-uris";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import { type CompositeStore } from "@lararium/mesh/composite-store";
+import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { crossFacePrivateDocs } from "../src/face-engine-source.js";
 import { resolveOrMintBinding } from "../src/resolve-binding.js";
 

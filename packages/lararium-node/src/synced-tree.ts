@@ -52,12 +52,21 @@
  * wiki. The agreement a base records holds between a file and ONE document's records, so a projector that reads
  * another document treats the file as that other document's (`disk-projector.ts`, `otherDocument`). A writer that
  * names no document (the ingest gesture, a mirror over a store with none) leaves `doc` off the row.
+ *
+ * A BASE NAMES THE HISTORY ITS RECORDS SIDE READ (`heads`), where its writer holds one: the document's heads when the
+ * agreement stood. Two hashes say what each side held and nothing of which came first, so a document that reads back
+ * WITHOUT the write an agreement saw (a save that never rested, a snapshot restored, a blank doc standing in for one
+ * that failed to load) looks exactly like records that moved on. The heads tell the two apart by causal identity, no
+ * clock: a document that still holds the base's heads moved forward from the agreement, and one that lacks them fell
+ * behind it. The projector reads the second as a standoff and writes nothing over the file (`disk-projector.ts`,
+ * `pastRecords`). A row with no heads vouches as it always did.
  */
 
 import { readFileSync, writeFileSync, renameSync, mkdirSync, readdirSync, unlinkSync, statSync } from "fs";
 import { join, resolve, sep } from "path";
 import { randomBytes } from "crypto";
-import { tagDigest, formatDigest, sha256HexSync } from "@lararium/mesh";
+import { tagDigest, formatDigest } from "@lararium/mesh/agile-digest";
+import { sha256HexSync } from "@lararium/mesh/crypto";
 
 /** A text's tagged sha256 digest (`sha256:<hex>`) — the body-only hash the projector's byte-skip compares. */
 export function contentHash(text: string): string {
@@ -93,6 +102,8 @@ export interface SyncedBase {
   readonly records: string;
   /** The document whose records the agreement read, where the writer named one. */
   readonly doc?: string;
+  /** The heads that document stood at when the agreement was read, where the writer held them. */
+  readonly heads?: readonly string[];
 }
 
 /** One row as it rests: the carrier's key beside its base. */
@@ -103,9 +114,10 @@ const filled = (v: unknown): v is string => typeof v === "string" && v !== "";
 /** A row file reads as a row only in the one shape this tree writes; any other value names no base. */
 function rowOf(value: unknown): Row | null {
   if (value === null || typeof value !== "object" || Array.isArray(value)) return null;
-  const { key, path, disk, records, doc } = value as Record<string, unknown>;
+  const { key, path, disk, records, doc, heads } = value as Record<string, unknown>;
   if (!(filled(key) && filled(path) && filled(disk) && filled(records)) || (doc !== undefined && !filled(doc))) return null;
-  return { key, base: { path, disk, records, ...(doc !== undefined ? { doc } : {}) } };
+  if (heads !== undefined && !(Array.isArray(heads) && heads.length > 0 && heads.every(filled))) return null;
+  return { key, base: { path, disk, records, ...(doc !== undefined ? { doc } : {}), ...(heads !== undefined ? { heads: heads as string[] } : {}) } };
 }
 
 const stem = (s: string): string => sha256HexSync(s).slice(0, 32);
@@ -252,11 +264,15 @@ export class SyncedTree {
    * Record an agreement, and land its row before returning. `file` names the content file the
    * agreement stands at; `diskHash` names the bytes the disk holds there; `recordsHash` names the render
    * the records carry, and equals `diskHash` where the disk holds that render (a projector write, a
-   * byte-identical skip). `doc` names the document whose records the agreement read, where the writer holds one.
-   * The carrier's bases at other paths stand as they stood.
+   * byte-identical skip). `doc` names the document whose records the agreement read, where the writer holds one, and
+   * `heads` the heads it stood at then. The carrier's bases at other paths stand as they stood.
    */
-  set(key: string, file: string, diskHash: string, recordsHash: string = diskHash, doc?: string): void {
-    const row: Row = { key, base: { path: syncedPath(file), disk: diskHash, records: recordsHash, ...(doc !== undefined && doc !== "" ? { doc } : {}) } };
+  set(key: string, file: string, diskHash: string, recordsHash: string = diskHash, doc?: string, heads?: readonly string[]): void {
+    const row: Row = { key, base: {
+      path: syncedPath(file), disk: diskHash, records: recordsHash,
+      ...(doc !== undefined && doc !== "" ? { doc } : {}),
+      ...(heads !== undefined && heads.length > 0 ? { heads: [...heads] } : {}),
+    } };
     const before = this.map.get(rowId(key, row.base.path)) ?? null;
     this.put(row);
     if (!this.land(row)) this.takeBack(key, row.base.path, before);

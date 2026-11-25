@@ -9,7 +9,7 @@
  */
 import { readFileSync } from "node:fs";
 import { describe, expect, test } from "vitest";
-import type { IslandToVesselMsg } from "@lararium/mesh";
+import type { IslandToVesselMsg } from "@lararium/mesh/island-protocol";
 import { answerTeardown } from "../src/sovereign-kernel.js";
 
 const WIKI = "lar:///ha.ka.ba/bags/test/wiki";

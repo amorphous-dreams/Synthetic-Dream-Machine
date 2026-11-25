@@ -27,12 +27,32 @@
  */
 import { randomBytes } from "node:crypto";
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
+import { KAHUA_BAG } from "@lararium/mesh/wiki-recipe";
 import {
-  KAHUA_BAG, buildKahuaProposal, buildOutcome, intentEntryCid, intentId, faceRelationOf, readKahuaStagedMeme, stageKahuaMeme, kahuaStagedSource,
-  KAHUA_CARRY_MAX, kahuaActRecords, kahuaBodyDigest, kahuaCarryCandidates, kahuaPlaneUrl, findKahuaProposal, readKahuaAct,
-  readKahuaStage, signKahuaCarry, signKahuaLift, signKahuaWithdraw, writeIntentEntry, writeKahuaAct,
-  type IntentVerbRegistry, type KahuaItem, type KahuaStagedMeme, type KahuaRevision, type KahuaSource, type LarDoc, type PersonaProjection,
-} from "@lararium/mesh";
+  buildKahuaProposal,
+  KAHUA_CARRY_MAX,
+  kahuaActRecords,
+  kahuaBodyDigest,
+  kahuaCarryCandidates,
+  kahuaPlaneUrl,
+  findKahuaProposal,
+  readKahuaAct,
+  readKahuaStage,
+  signKahuaCarry,
+  signKahuaLift,
+  signKahuaWithdraw,
+  writeKahuaAct,
+  type KahuaItem,
+  type KahuaRevision,
+  type KahuaSource,
+} from "@lararium/mesh/kahua-stage";
+import { buildOutcome } from "@lararium/mesh/intent-issue";
+import { intentEntryCid, intentId, writeIntentEntry } from "@lararium/mesh/intent-entry";
+import { faceRelationOf } from "@lararium/mesh/face-relation";
+import { readKahuaStagedMeme, stageKahuaMeme, kahuaStagedSource, type KahuaStagedMeme } from "@lararium/mesh/kahua-staged";
+import { type IntentVerbRegistry } from "@lararium/mesh/intent-verbs";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { type PersonaProjection } from "@lararium/mesh/persona-act";
 import { actingFaceOf, choreReceiptMark, type ChoreAsk, type ChoreReceiptMark } from "@lararium/mesh/chore-ask";
 import { lentFacesOf } from "@lararium/mesh/lent-faces";
 

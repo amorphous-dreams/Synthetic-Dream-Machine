@@ -28,16 +28,12 @@
  */
 
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
-import {
-  type AntigenRing,
-  type LarDoc,
-  antigenEntriesFromBoard,
-  foldAntigenSet,
-  foundingRoster,
-  kapaeAntigenDocUrl,
-  makeMultiSigQuorumVerifier,
-  materializeSharedLarDoc,
-} from "@lararium/mesh";
+import { type AntigenRing } from "@lararium/mesh/federation-gate";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { antigenEntriesFromBoard } from "@lararium/mesh/antigen-board";
+import { foldAntigenSet, makeMultiSigQuorumVerifier } from "@lararium/mesh/kapae-antigen";
+import { foundingRoster } from "@lararium/mesh/nexus-seal-seed";
+import { kapaeAntigenDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
 import { readNexusDoc } from "./nexus-doc.js";
 
 /** A verifying-key nym reads clean only at the exact ed25519 length — a stray value never matches a ban. */

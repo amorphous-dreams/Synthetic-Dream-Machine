@@ -18,7 +18,9 @@
  * Canon: lar:///ha.ka.ba/lararium/mesh/custody#/the-restore
  */
 import { readFileSync } from "node:fs";
-import { canonicalJsonBytes, hex, mintBundleKey, openBundleKey, readFaceBundle, sealFaceBundleBody, type Credential } from "@lararium/mesh";
+import { canonicalJsonBytes, hex } from "@lararium/mesh/crypto";
+import { mintBundleKey, openBundleKey, readFaceBundle, sealFaceBundleBody } from "@lararium/mesh/face-bundle";
+import { type Credential } from "@lararium/mesh/keyslot-door";
 import { nativeKdf } from "@lararium/mesh/node";
 import { CardRestoreRefused, buildCardBody, type FaceNamed, type PresentedCard } from "@lararium/node";
 import { SEALED_BYTES_LINE } from "./vault-backup.js";

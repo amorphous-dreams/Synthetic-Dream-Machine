@@ -263,7 +263,7 @@ describe("L4 · tend writes its radius alone", () => {
 describe("L4 · workspace imports resolve to this checkout", () => {
   plain("the mesh package import returns this worktree's source export", async () => {
     const own = await import("../../../lararium-mesh/src/promotion-approval.js");
-    const { openPromotionApproval } = await import("@lararium/mesh");
+    const { openPromotionApproval } = await import("@lararium/mesh/promotion-approval");
     expect(typeof own.openPromotionApproval).toBe("function");
     expect(openPromotionApproval).toBe(own.openPromotionApproval);
   });

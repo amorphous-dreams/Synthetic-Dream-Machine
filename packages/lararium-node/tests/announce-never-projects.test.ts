@@ -10,10 +10,27 @@ import { join } from "node:path";
 import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
 import * as ed from "@noble/ed25519";
 import {
-  REALM_BAG_ANNOUNCE_PREFIX, CROSSROADS_DOC_URI, realmBagAnnounceOf, crossroadsDocUrl, hex, materializeSharedLarDoc,
-  mutableLarRecord, publicRealmBooksFromDoc, realmAnnounceDocUrl, publicationDocUrl, whoBoardDocUrl, realmBagAnnounceKey, realmDocUrl,
-  reAnnounceRealmBooksAtIsland, signRealmBagRegistration, writeRealmBagRegistration, writeOfferingAnnounce, PLUGIN_OFFERING_DOMAIN, type LarDoc,
-} from "@lararium/mesh";
+  REALM_BAG_ANNOUNCE_PREFIX,
+  realmBagAnnounceOf,
+  publicRealmBooksFromDoc,
+  realmBagAnnounceKey,
+  realmDocUrl,
+  signRealmBagRegistration,
+  writeRealmBagRegistration,
+} from "@lararium/mesh/realm-bag";
+import { CROSSROADS_DOC_URI } from "@lararium/mesh/lar-uris";
+import {
+  crossroadsDocUrl,
+  materializeSharedLarDoc,
+  realmAnnounceDocUrl,
+  publicationDocUrl,
+  whoBoardDocUrl,
+} from "@lararium/mesh/deterministic-doc";
+import { hex } from "@lararium/mesh/crypto";
+import { mutableLarRecord, type LarDoc } from "@lararium/mesh/base-doc";
+import { reAnnounceRealmBooksAtIsland } from "@lararium/mesh/nexus-board-climb";
+import { writeOfferingAnnounce } from "@lararium/mesh/offering-announce";
+import { PLUGIN_OFFERING_DOMAIN } from "@lararium/mesh/domains";
 import { daemonDiskMirrors } from "../src/bag-paths.js";
 import { LarDiskProjector } from "../src/disk-projector.js";
 import { hermRealmShoreBooks } from "../src/bulb-read-face.js";

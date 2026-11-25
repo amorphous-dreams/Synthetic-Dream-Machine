@@ -5,7 +5,9 @@
  */
 import { describe, expect, test } from "vitest";
 import { InMemoryEventStore, KeyhiveProvider, memoryProviderChunkRest, keyhiveLockboxShore } from "../src/index.js";
-import { mintContentKey, bagLocatorOf, keyVersionIdOf, wrapLockbox } from "@lararium/mesh";
+import { mintContentKey, keyVersionIdOf } from "@lararium/mesh/sealed-chunk-door";
+import { bagLocatorOf } from "@lararium/mesh/sealed-records";
+import { wrapLockbox } from "@lararium/mesh/lockbox-wrap";
 
 const bytes = (s: string) => new TextEncoder().encode(s);
 async function stand(seed: number, chunkRest?: ReturnType<typeof memoryProviderChunkRest>) {

@@ -8,7 +8,8 @@
  *       CONTROL: the plane's public row rests verbatim, so the measure reads a clear rest and finds what one holds.
  */
 import { afterEach, describe, expect, test } from "vitest";
-import { PERSONA_SELVES_PREFIX, type LarDoc } from "@lararium/mesh";
+import { PERSONA_SELVES_PREFIX } from "@lararium/mesh/lar-uris";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { faceProofSubjectRef } from "../../lararium-mesh/src/face-proof-subjects.js";
 import { chain } from "../../lararium-mesh/tests/face-proof-fixture.js";
 import { FLEET_NEXUS, fleet } from "../../lararium-keyhive/tests/content-key-fleet.js";

@@ -3,7 +3,7 @@
  * The question stands each time with no default and names its cost in one line; either answer leaves the two trees independent.
  */
 import { beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
-import type { SlotSpec } from "@lararium/mesh";
+import type { SlotSpec } from "@lararium/mesh/keyslot-door";
 
 const asked: string[] = [];
 let answer = true;

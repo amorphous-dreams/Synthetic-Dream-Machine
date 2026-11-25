@@ -9,17 +9,17 @@
  */
 
 import type { Repo, DocHandle }  from "@automerge/automerge-repo";
-import type { LarDoc } from "@lararium/mesh";
+import type { LarDoc } from "@lararium/mesh/base-doc";
 import {
   DAEMON_BAG_ID,
-  emptyLarDoc,
   emptyIdentitiesDoc,
   emptyCirclesDoc,
   emptySessionsDoc,
   emptyIntentsDoc,
-  storedLarRecord,
   circleTiddlerUri,
-} from "@lararium/mesh";
+} from "@lararium/mesh/lar-uris";
+import { emptyLarDoc } from "@lararium/mesh/base-doc";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
 
 export function seedIdentitiesDoc(repo: Repo, bagId: string): DocHandle<LarDoc> {
   const handle = repo.create<LarDoc>(emptyIdentitiesDoc());

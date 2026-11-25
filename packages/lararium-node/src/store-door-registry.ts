@@ -7,7 +7,7 @@
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
-import { PROMOTE_PANEL_OWNED_VERBS } from "@lararium/mesh";
+import { PROMOTE_PANEL_OWNED_VERBS } from "@lararium/mesh/promote-main-verbs";
 import type { VerbReactor, VerbTable } from "@lararium/tw5";
 
 export function registerStoreDoorReactors(registry: VerbTable, doors: Readonly<Record<string, VerbReactor>>): void {

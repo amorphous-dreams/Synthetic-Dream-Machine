@@ -1,4 +1,7 @@
-import { deriveRegisterBags, litFaceOwnBags, personaScopedBagIds, type IdentityAnchors, type JoinedFaceAuth } from "@lararium/mesh";
+import { deriveRegisterBags, litFaceOwnBags } from "@lararium/mesh/register-bags";
+import { personaScopedBagIds } from "@lararium/mesh/persona-scope";
+import { type IdentityAnchors } from "@lararium/mesh/anchor-store";
+import { type JoinedFaceAuth } from "@lararium/mesh/island-protocol";
 
 type FaceAnchor = JoinedFaceAuth["faceAnchor"];
 type Chain = JoinedFaceAuth["personaKel"]["chain"];

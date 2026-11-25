@@ -31,12 +31,23 @@ import { afterAll, beforeAll, describe, expect, test } from "vitest";
 import { Repo, type AutomergeUrl, type DocHandle, type PeerId } from "@automerge/automerge-repo";
 import { NodeWSServerAdapter } from "@automerge/automerge-repo-network-websocket";
 import * as ed25519 from "@noble/ed25519";
+import { DAEMON_BAG_ID, PERSONA_GROUP_ID_TIDDLER } from "@lararium/mesh/lar-uris";
+import { SOVEREIGN_SYNC_ROUTE } from "@lararium/mesh/admit-gate-pin";
+import { FLOW_SOCKET_ROUTE } from "@lararium/mesh/flow-read-client";
 import {
-  DAEMON_BAG_ID, PERSONA_GROUP_ID_TIDDLER, SOVEREIGN_SYNC_ROUTE, FLOW_SOCKET_ROUTE, deriveGateBundle, fleetJoinAnswerImage, heldNexusRoot,
-  custodyRootDoor, gateBundleDigest,
-  hex, makeMultiSigQuorumVerifier, memoryBackedWithdrawals, nexusAidOf, sovereignGateRoot, sovereignRoute, utf8Bytes,
-  type FleetJoinAnswer, type GateBundle, type GateSession,
-} from "@lararium/mesh";
+  deriveGateBundle,
+  custodyRootDoor,
+  gateBundleDigest,
+  sovereignGateRoot,
+  sovereignRoute,
+  type GateBundle,
+} from "@lararium/mesh/gate-bundle-door";
+import { fleetJoinAnswerImage, type FleetJoinAnswer } from "@lararium/mesh/fleet-join";
+import { heldNexusRoot } from "@lararium/mesh/held-nexus-root";
+import { hex, utf8Bytes } from "@lararium/mesh/crypto";
+import { makeMultiSigQuorumVerifier } from "@lararium/mesh/kapae-antigen";
+import { memoryBackedWithdrawals, type GateSession } from "@lararium/mesh/face-gate-door";
+import { nexusAidOf } from "@lararium/mesh/nexus-seal-seed";
 import { SessionTable, sessionBinding } from "../../../lararium-mesh/src/session-contract.js";
 import { runFoundTheFace, runFleetJoinOffer, runFleetJoinRequest, runFleetJoinAnswer, runFleetJoinLand } from "../../src/index.js";
 import { readKeptAdmitBundles } from "../../src/admit-bundle.js";

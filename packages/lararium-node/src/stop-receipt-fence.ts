@@ -7,7 +7,8 @@
  * that flush would claim a durability the save lacks. So, from the stop's first step, a receipt whose document holds a save
  * in memory refuses by name (`held-in-memory`), and the island records no binding over it.
  */
-import type { HeldSaves, ReceiptIssuer } from "@lararium/mesh";
+import type { HeldSaves } from "@lararium/mesh/sealed-doc-store";
+import type { ReceiptIssuer } from "@lararium/mesh/capability-record";
 
 export interface StopFence {
   /** Whether the composition's stop has begun. */

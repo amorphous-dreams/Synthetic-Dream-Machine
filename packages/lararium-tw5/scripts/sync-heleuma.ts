@@ -42,7 +42,7 @@ import { resolve, relative, dirname } from "path";
 import { fileURLToPath } from "url";
 import { repoRoot } from "@lararium/mesh/node";
 import { formatDigest, digestsEqual } from "@lararium/mesh/agile-digest";
-import { sha256HexSync } from "@lararium/mesh";
+import { sha256HexSync } from "@lararium/mesh/crypto";
 import { frameCarrier, headUriOf } from "@lararium/memetic-frame";
 import { moduleBodyDigest, applySourceSha256Patch, sourceTiddlerMatches, stampSourceAnchor } from "./heleuma-digest.js";
 import { rootMetaFields } from "../src/root-meta.js";

@@ -35,7 +35,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
-import { sha256HexBytesSync } from "@lararium/mesh";
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT        = path.resolve(__dirname, "..");

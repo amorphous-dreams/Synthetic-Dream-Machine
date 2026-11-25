@@ -4,7 +4,7 @@
  * the act still signs, and the watch itself finds a planted copy.
  */
 import { afterEach, describe, expect, test } from "vitest";
-import { verifyAttestation, type HandleKelEvent } from "@lararium/mesh";
+import { verifyAttestation, type HandleKelEvent } from "@lararium/mesh/handle-kel";
 import { generateOrLoadBrowserPersonaRoot, loadBrowserPersonaRootSeed } from "../src/browser-vessel-identity.js";
 import { sealBrowserKeystore } from "../src/browser-custody.js";
 import { publishHandleBrowser } from "../src/browser-handle-publish.js";

@@ -33,11 +33,13 @@ import { atomicWriteFileSync } from "./fs-atomic.js";
 import { readFileSync, mkdirSync, existsSync } from "node:fs";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { join, dirname } from "node:path";
-import {
-  NEXUS_DOC_DOMAIN, NEXUS_CHARTER_URI, parseNexusDoc as parseNexusText,
-  type NexusDoc, type NexusCharterKahu, type SealEpoch,
-  type FederationPosture, type CabalJoinPolicy, type AdmissionDials,
-} from "@lararium/mesh";
+import { NEXUS_DOC_DOMAIN } from "@lararium/mesh/domains";
+import { NEXUS_CHARTER_URI, type NexusDoc, type NexusCharterKahu } from "@lararium/mesh/nexus-seal-seed";
+import { parseNexusDoc as parseNexusText } from "@lararium/mesh/nexus-doc-text";
+import { type SealEpoch } from "@lararium/mesh/wax-stamp";
+import { type FederationPosture } from "@lararium/mesh/federation-gate";
+import { type CabalJoinPolicy } from "@lararium/mesh/cabal-invite";
+import { type AdmissionDials } from "@lararium/mesh/admission-price";
 import { stampCarrier } from "@lararium/memetic-frame";
 import { renderCarrier } from "./carrier-render.js";
 

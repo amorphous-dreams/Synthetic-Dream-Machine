@@ -7,7 +7,13 @@
  * stands unknown.
  */
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
-import { materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix, readFace, type FaceAnchor, type FaceReading, type HandLineage, type LarDoc, type PersonaKelEvent } from "@lararium/mesh";
+import { materializeSharedLarDoc, personaKelBoardDocUrl } from "@lararium/mesh/deterministic-doc";
+import { personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";
+import { readFace, type FaceReading } from "@lararium/mesh/face-reading";
+import { type FaceAnchor } from "@lararium/mesh/face-anchor";
+import { type HandLineage } from "@lararium/mesh/hand-lineage";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { type PersonaKelEvent } from "@lararium/mesh/persona-kel";
 import { CustodyLocked } from "./custody-holder.js";
 import { listAnchoredPersonas, loadIdentityAnchors } from "./identity-anchors.js";
 import { nodeNexusIsland, nodeNexusIslandsBelow } from "./nexus-standing.js";

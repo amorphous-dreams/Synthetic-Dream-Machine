@@ -9,7 +9,7 @@
  * Control: a refold of an unmoved body answers the SAME stalk object (the memo still saves the work).
  */
 import { describe, expect, test } from "vitest";
-import { CompositeStore } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { compositeCorpusReader } from "../src/wiki-corpus-reader.js";
 

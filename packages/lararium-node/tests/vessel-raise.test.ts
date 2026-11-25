@@ -10,11 +10,20 @@ import { describe, expect } from "vitest";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 
+import { hex } from "@lararium/mesh/crypto";
 import {
-  hex, signCarriageQuorum, signCarriageContract, signCarrierContract, carriageEntryActCid,
-  signRaiseGrant, emptyLarDoc, writeCarriageEntry, carriageDocUrl, makeMultiSigQuorumVerifier,
-  type RaiseChallenge, type RaiseNexusReading, type CarriageEntry, type KahuQuorumSeats, type LarDoc, type NexusDoc,
-} from "@lararium/mesh";
+  signCarriageQuorum,
+  signCarriageContract,
+  signCarrierContract,
+  carriageEntryActCid,
+  type CarriageEntry,
+} from "@lararium/mesh/carriage-registry";
+import { signRaiseGrant, type RaiseChallenge, type RaiseNexusReading } from "@lararium/mesh/raise-challenge";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { writeCarriageEntry } from "@lararium/mesh/carriage-board";
+import { carriageDocUrl } from "@lararium/mesh/deterministic-doc";
+import { makeMultiSigQuorumVerifier, type KahuQuorumSeats } from "@lararium/mesh/kapae-antigen";
+import { type NexusDoc } from "@lararium/mesh/nexus-seal-seed";
 import {
   standRaiseDoor, placeCarriedNexuses, unionReadings, verifyNymSignature, type RaiseDoorOptions,
 } from "../src/vessel-raise.js";

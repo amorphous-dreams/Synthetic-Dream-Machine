@@ -24,7 +24,11 @@ import { join } from "node:path";
 import { describe, expect, test, vi, afterEach } from "vitest";
 import { next as A } from "@automerge/automerge";
 import { Repo, type DocHandle } from "@automerge/automerge-repo";
-import { VesselIslandPoolCore, emptyLarDoc, mkEa, mkTeardownAck, type CapabilityRecord, type LarDoc, type VesselIslandHost } from "@lararium/mesh";
+import { VesselIslandPoolCore } from "@lararium/mesh/vessel-island-pool-core-door";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { mkEa, mkTeardownAck } from "@lararium/mesh/island-protocol";
+import { type CapabilityRecord } from "@lararium/mesh/capability-record";
+import { type VesselIslandHost } from "@lararium/mesh/vessel-host";
 import { nodeWorkerHandle } from "../src/worker-handle.js";
 
 /** The worker type the handle wraps, read off the handle itself: this suite stands no thread, only an emitter. */

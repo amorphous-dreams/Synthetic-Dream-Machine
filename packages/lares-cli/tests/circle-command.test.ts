@@ -59,7 +59,12 @@ vi.mock("../src/env.js", async (orig) => ({
 import { cmdCircle } from "../src/commands/circle.js";
 import { larIdentityDir } from "../src/env.js";
 import type { ParsedArgs } from "../src/parse-args.js";
-import { signHandleCard, ed25519SignerFromSeed, derivePersonaKeypair, signingSeedFromHex, mintHandleInception, readFckCarrier } from "@lararium/mesh";
+import { signHandleCard } from "@lararium/mesh/handle-card";
+import { ed25519SignerFromSeed } from "@lararium/mesh/ed25519-door";
+import { derivePersonaKeypair } from "@lararium/mesh/persona-hd";
+import { signingSeedFromHex } from "@lararium/mesh/vessel-identity-core";
+import { mintHandleInception } from "@lararium/mesh/handle-kel";
+import { readFckCarrier } from "@lararium/mesh/fck-envelope";
 import { generateOrLoadPersonaGroupRoot, faceFileNames, faceFilePathSync } from "@lararium/node";
 import { seatScratchCustody, type ScratchCustody } from "./support/scratch-custody.js";
 

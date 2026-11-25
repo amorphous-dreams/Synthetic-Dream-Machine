@@ -1,5 +1,8 @@
 /** A face's issued operation bytes rest sealed on that face's PersonaGroup plane. */
-import { FACE_OPERATION_RECORD_INFO, hex, mutableLarRecord, tiddlerText, type LarTiddlerStore } from "@lararium/mesh";
+import { FACE_OPERATION_RECORD_INFO } from "@lararium/mesh/domains";
+import { hex } from "@lararium/mesh/crypto";
+import { mutableLarRecord, tiddlerText } from "@lararium/mesh/base-doc";
+import { type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
 import { openCheckpoint, sealCheckpoint } from "./ceremony-core.js";
 
 export async function faceOperationTitle(signedInput: Uint8Array): Promise<string> {

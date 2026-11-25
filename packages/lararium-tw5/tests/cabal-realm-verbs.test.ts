@@ -14,7 +14,10 @@ import { describe, expect, test } from "vitest";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { makeCabalRealmReactors } from "../src/cabal-realm-verbs.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
-import { DAEMON_BAG_ID, faceAtomPublicKey, realmFeedAskImage, realmFeedSlotUri, signAsFaceAtom, signFaceLeafBond } from "@lararium/mesh";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { faceAtomPublicKey, signAsFaceAtom } from "@lararium/mesh/face-atom";
+import { realmFeedAskImage, signFaceLeafBond } from "@lararium/mesh/face-leaf-bond";
+import { realmFeedSlotUri } from "@lararium/mesh/cabal-realm";
 
 const CTX   = {} as VerbContext;
 const REALM = "ab".repeat(32);

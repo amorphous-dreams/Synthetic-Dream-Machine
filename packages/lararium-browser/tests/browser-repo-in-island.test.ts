@@ -1,7 +1,7 @@
 import { describe, test, expect, afterEach } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import { BrowserVesselIslandPool } from "../src/browser-vessel-island-pool.js";
-import type { IslandMsg_Event } from "@lararium/mesh";
+import type { IslandMsg_Event } from "@lararium/mesh/island-protocol";
 
 const FIXTURE_URL = new URL("./fixtures/browser-repo-in-island-echo.mjs", import.meta.url);
 

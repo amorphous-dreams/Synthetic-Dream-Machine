@@ -24,15 +24,12 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/engine-watch
  */
 
-import {
-  BAG_IDS,
-  ENGINE_CORE_ID,
-  ownEntry,
-  wikiSlotUri,
-  type ChangeOrigin,
-  type DocHandle,
-  type LarDoc,
-} from "@lararium/mesh";
+import { BAG_IDS } from "@lararium/mesh/lar-uris";
+import { ENGINE_CORE_ID, type LarDoc } from "@lararium/mesh/base-doc";
+import { ownEntry } from "@lararium/mesh/stored-value";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import { type ChangeOrigin } from "@lararium/mesh/tiddler-store";
+import { type DocHandle } from "@lararium/mesh/automerge";
 import type { IslandContext } from "./island-context.js";
 
 /** The engine-waiting alert tiddler title. Stable title = one coalesced alert;

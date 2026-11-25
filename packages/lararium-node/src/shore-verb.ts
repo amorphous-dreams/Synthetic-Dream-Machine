@@ -63,7 +63,7 @@
  */
 
 import type { ShutdownEntry } from "./composition-shutdown.js";
-import { sha256HexBytesSync } from "@lararium/mesh";
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
 import type { Hand } from "@lararium/mesh/session-contract";
 import { askerRefusal, handCodesOf, handRefusalOf } from "./hand-act-gate.js";
 import type { LarDiskProjector } from "./disk-projector.js";

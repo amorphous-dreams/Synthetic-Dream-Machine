@@ -1,6 +1,7 @@
 /** Found a realm board through the charter quorum's signed genesis door. */
 import type { DocHandle } from "@automerge/automerge-repo";
-import { charterHandLineage, type LarDoc } from "@lararium/mesh";
+import { charterHandLineage } from "@lararium/mesh/charter-hand-lineage";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import type { SeatedCharter, StandingCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { prepareRealmFrontier, registerRealmFrontierInto } from "../src/realm-frontier-door.js";
 

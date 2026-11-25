@@ -24,7 +24,7 @@ const seam = vi.hoisted(() => ({
 
 vi.mock("../src/vessel-paths.js", () => ({ larBootstrapPath: () => seam.bootstrapPath, larSealHome: () => "seal-home-under-test" }));
 vi.mock("../src/hearth-sovereign-pin.js", async () => {
-  const mesh = await vi.importActual<typeof import("@lararium/mesh")>("@lararium/mesh");
+  const mesh = { ...(await vi.importActual<typeof import("@lararium/mesh/admit-gate-pin")>("@lararium/mesh/admit-gate-pin")), ...(await vi.importActual<typeof import("@lararium/mesh/gate-bundle-door")>("@lararium/mesh/gate-bundle-door")) };
   return {
     stoodSovereignPin: () => {
       const bundle = mesh.deriveGateBundle(mesh.sovereignGateRoot(mesh.custodyRootDoor({ derive: () => new Uint8Array(32).fill(7) })), new TextEncoder().encode("hearth-aid"), mesh.sovereignRoute(mesh.SOVEREIGN_SYNC_ROUTE));
@@ -35,7 +35,7 @@ vi.mock("../src/hearth-sovereign-pin.js", async () => {
 vi.mock("../src/face-selector.js", () => ({ resolveFace: async (named?: number) => named ?? 0, FaceNotNamed: class extends Error {} }));
 vi.mock("../src/identity-anchors.js", () => ({ loadIdentityAnchors: async () => ({ personaGroupId: "ab".repeat(16) }) }));
 vi.mock("../src/node-vessel-identity.js", async () => {
-  const mesh = await vi.importActual<typeof import("@lararium/mesh")>("@lararium/mesh");
+  const mesh = await vi.importActual<typeof import("@lararium/mesh/ed25519-door")>("@lararium/mesh/ed25519-door");
   return {
     loadPersonaGroupRootSeed: async () => seam.rootSeed,
     // The fleet's own reading runs only where the test stands a set-aside dyad (r2); elsewhere the fleet reads no root.
@@ -62,34 +62,73 @@ vi.mock("../src/persona-kel-ring.js", () => ({ carryPersonaKelUpTheGradient: asy
 vi.mock("../src/kahu-realm.js", () => ({ admitCanonDocs: async () => ({}), hearthCustodyGroup: async () => "group-zero" }));
 vi.mock("../src/hearth-aid.js", () => ({ hearthAid: () => "hearth-aid" }));
 vi.mock("../src/lan-address.js", () => ({ wsUrlForOrigin: () => null }));
-vi.mock("@lararium/mesh", async (real) => {
+vi.mock("@lararium/mesh/lar-uris", async (real) => {
   const mesh = await real<Record<string, unknown>>();
   return {
     ...mesh,
     DAEMON_BAG_ID: T.daemon, PERSONA_GROUP_ID_TIDDLER: T.group, MESH_CABAL_DOC_ID_TIDDLER: T.cabal, PERSONA_KEL_PREFIX_TIDDLER: T.kel,
+  };
+});
+vi.mock("@lararium/mesh/persona-scope", async (real) => {
+  const mesh = await real<Record<string, unknown>>();
+  return {
+    ...mesh,
     personaBagIdFor: (group: string) => `plane:${group}`,
+  };
+});
+vi.mock("@lararium/mesh/automerge-doc-store", async (real) => {
+  const mesh = await real<Record<string, unknown>>();
+  return {
+    ...mesh,
     // Keep the operation cache on the same memory store across opens and retries.
     AutomergeDocStore: class {
       constructor(_handle: unknown, readonly bagId: string) {}
       get(...args: Parameters<MemoryTiddlerStore["get"]>) { return (seam.store as MemoryTiddlerStore).get(...args); }
       put(...args: Parameters<MemoryTiddlerStore["put"]>) { return (seam.store as MemoryTiddlerStore).put(...args); }
     },
+  };
+});
+vi.mock("@lararium/mesh/deterministic-doc", async (real) => {
+  const mesh = await real<Record<string, unknown>>();
+  return {
+    ...mesh,
     // The KEL board this replica holds: the real inception, read by the real `personaKelChainForPrefix`.
     materializeSharedLarDoc: async () => ({ doc: () => seam.kelBoard }),
     personaKelBoardDocUrl: () => "board",
+  };
+});
+vi.mock("@lararium/mesh/base-doc", async (real) => {
+  const mesh = await real<Record<string, unknown>>();
+  return {
+    ...mesh,
     tiddlerText: (entry: { text?: string } | undefined) => entry?.text,
+  };
+});
+vi.mock("@lararium/mesh/fleet-frontier", async (real) => {
+  const mesh = await real<Record<string, unknown>>();
+  return {
+    ...mesh,
     readFleetFrontier: () => ({ status: "known", missing: [] }),
   };
 });
 
 import { Repo, type DocHandle } from "@automerge/automerge-repo";
-import {
-  emptyLarDoc, signFoundingLog, mintFaceAnchor, faceRootCommitment, didFromVerifyingKey, ed25519VerifyingKeyFromSeed,
-  ed25519SignerFromSeed, provisionThresholdRecoveryAtFounding, recoveryContactRegistrationCard, writePersonaKelEvent,
-  personaKelChainForPrefix, proveFaceFromLog, edgeBodyDigest, signLeaseAdvance, leaseEpochSlotUri, readFace, CONTROL_HOME_ID,
-  countersignDeviceDelegation, verifyEdgeAgainstPersonaKel, deviceEdgeId, buildDeviceDelegation,
-  type LarDoc, type PersonaKelEvent,
-} from "@lararium/mesh";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { signFoundingLog } from "@lararium/mesh/persona-act-board";
+import { mintFaceAnchor, faceRootCommitment, edgeBodyDigest } from "@lararium/mesh/face-anchor";
+import { didFromVerifyingKey } from "@lararium/mesh/lar-did";
+import { ed25519VerifyingKeyFromSeed, ed25519SignerFromSeed } from "@lararium/mesh/ed25519-door";
+import { provisionThresholdRecoveryAtFounding } from "@lararium/mesh/recovery-keel-core";
+import { recoveryContactRegistrationCard } from "@lararium/mesh/recovery-registration";
+import { writePersonaKelEvent, personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";
+import { proveFaceFromLog } from "@lararium/mesh/face-boot-proof";
+import { signLeaseAdvance } from "@lararium/mesh/lease-advance";
+import { leaseEpochSlotUri } from "@lararium/mesh/epoch-lease";
+import { readFace } from "@lararium/mesh/face-reading";
+import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
+import { countersignDeviceDelegation, buildDeviceDelegation } from "@lararium/mesh/device-delegation";
+import { verifyEdgeAgainstPersonaKel, type PersonaKelEvent } from "@lararium/mesh/persona-kel";
+import { deviceEdgeId } from "@lararium/mesh/dyad";
 import { MemoryTiddlerStore } from "@lararium/tw5";
 import { runDeviceAdmit } from "../src/commands/device-admit.js";
 import { readFacePersonaRecords, appendPersonaActs } from "../src/persona-act-store.js";

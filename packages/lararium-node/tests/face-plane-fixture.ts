@@ -10,7 +10,9 @@
  */
 import { readFileSync } from "node:fs";
 import type { Repo } from "@automerge/automerge-repo";
-import { ownEntry, personaBagIdFor, type LarDoc } from "@lararium/mesh";
+import { ownEntry } from "@lararium/mesh/stored-value";
+import { personaBagIdFor } from "@lararium/mesh/persona-scope";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { ownedStore } from "../src/owned-store.js";
 import { loadIdentityAnchors } from "../src/identity-anchors.js";
 import { larBootstrapPath } from "../src/vessel-paths.js";

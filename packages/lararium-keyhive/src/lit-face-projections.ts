@@ -17,7 +17,7 @@
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set
  */
 import type { FaceEngine } from "@lararium/tw5";
-import type { IslandMsg_Manifest } from "@lararium/mesh";
+import type { IslandMsg_Manifest } from "@lararium/mesh/island-protocol";
 
 /** What a lit face's projection reads off its light: its handle index and the grants the vessel named for it. */
 export interface LitFaceProjectionEntry {

@@ -8,17 +8,11 @@
  */
 import { describe, expect, test } from "vitest";
 import * as ed25519 from "@noble/ed25519";
-import {
-  buildDeviceDelegation,
-  DEFAULT_JOIN_POLICY,
-  signCabalInvite,
-  signHandleCard,
-  verifyDeviceDelegation,
-  verifyHandleCard,
-  mintHandleInception,
-  type AdmissionDials,
-  type DeviceDelegationTiddler,
-} from "@lararium/mesh";
+import { buildDeviceDelegation, verifyDeviceDelegation, type DeviceDelegationTiddler } from "@lararium/mesh/device-delegation";
+import { DEFAULT_JOIN_POLICY, signCabalInvite } from "@lararium/mesh/cabal-invite";
+import { signHandleCard, verifyHandleCard } from "@lararium/mesh/handle-card";
+import { mintHandleInception } from "@lararium/mesh/handle-kel";
+import { type AdmissionDials } from "@lararium/mesh/admission-price";
 import { hex, hexToBytes } from "@lararium/mesh/crypto";
 import { admitToRealm } from "../src/realm-admission.js";
 

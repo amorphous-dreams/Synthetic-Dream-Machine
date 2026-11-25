@@ -13,11 +13,27 @@
  */
 import * as ed25519 from "@noble/ed25519";
 import { createHash, hkdfSync } from "node:crypto";
-import { SessionTable, checkVesselChain, classifySocket, custodyRootDoor, deriveGateBundle, foldWithdrawals, hex, makeFaceGate, makeMultiSigQuorumVerifier, memoryBackedWithdrawals, presentedAdmitReader, sessionBinding, signCarriageContract, signCarriageQuorum, sovereignGateRoot, sovereignRoute, utf8Bytes } from "@lararium/mesh";
+import { SessionTable, sessionBinding } from "@lararium/mesh/session-contract";
+import { checkVesselChain, foldWithdrawals } from "@lararium/mesh/face-authority-door";
+import { classifySocket } from "@lararium/mesh/federation-gate";
+import { custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute } from "@lararium/mesh/gate-bundle-door";
+import { hex, utf8Bytes } from "@lararium/mesh/crypto";
+import { makeFaceGate, memoryBackedWithdrawals, presentedAdmitReader } from "@lararium/mesh/face-gate-door";
+import { makeMultiSigQuorumVerifier } from "@lararium/mesh/kapae-antigen";
+import { signCarriageContract, signCarriageQuorum } from "@lararium/mesh/carriage-registry";
 import { certificateImage } from "@lararium/mesh/face-proof-subjects";
 import { mintSessionSigner } from "@lararium/mesh/session-signer";
 import { supplySessionFace } from "@lararium/mesh/session-face";
-import type { PeerClass, PresentationArm, CarriageEntry, FaceGate, FaceKey, FaceScope, FederationPosture, GateBundlePin, GateDeadlines, GateRootDoor, GateSessionTable, HeldNexusRoot, KahuQuorumSeats, KapaeAntigenEntry, VesselFaceCertificate, VesselFaceKey, VesselFaceKeyCustody, WithdrawalMemory } from "@lararium/mesh";
+import type { PeerClass } from "@lararium/mesh/island-protocol";
+import type { PresentationArm } from "@lararium/mesh/gate-exchange-door";
+import type { CarriageEntry } from "@lararium/mesh/carriage-registry";
+import type { FaceGate, GateDeadlines, GateSessionTable } from "@lararium/mesh/face-gate-door";
+import type { FaceKey, FaceScope, VesselFaceCertificate, VesselFaceKey } from "@lararium/mesh/face-proof-subjects";
+import type { FederationPosture } from "@lararium/mesh/federation-gate";
+import type { GateBundlePin, GateRootDoor } from "@lararium/mesh/gate-bundle-door";
+import type { HeldNexusRoot } from "@lararium/mesh/held-nexus-root";
+import type { KahuQuorumSeats, KapaeAntigenEntry } from "@lararium/mesh/kapae-antigen";
+import type { VesselFaceKeyCustody, WithdrawalMemory } from "@lararium/mesh/face-authority-door";
 
 /** The audience the crossing gate arms; a presentation bound to any other is refused. */
 export const CROSSING_AUDIENCE = "lar:///ha.ka.ba/bags/daemon";
@@ -41,7 +57,9 @@ const epochOf = (nexus: string): string => `epoch-${nexus}`;
 // THE ONE MODULE INSTANCE. A withdrawal memory is branded by a module-private WeakSet, so a dialer built from another copy of the mesh
 // package (a suite importing its TypeScript source beside this probe's built package) refuses every face this world wears as
 // `history-foreign`. A suite that dials with a face from this world takes the dialer from here.
-export { LarWSClientAdapter, hearthPinIndex, DAEMON_BAG_ID } from "@lararium/mesh";
+export { LarWSClientAdapter } from "@lararium/mesh/lar-ws-client-adapter";
+export { hearthPinIndex } from "@lararium/mesh/admit-gate-pin";
+export { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
 
 /** The clock deadlines the gate draws on the process clock. */
 export function clockDeadlines(ms: number): GateDeadlines {

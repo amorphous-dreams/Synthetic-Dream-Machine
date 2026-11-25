@@ -20,12 +20,29 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/kapae#/edge-hands
  */
 import type { Repo } from "@automerge/automerge-repo";
+import { signEdgeKapae, writeEdgeKapae, edgeLineHeads, type EdgeKapaeVerdict, type EdgeSigner } from "@lararium/mesh/edge-kapae";
+import { realmEdgeBoardDocUrl } from "@lararium/mesh/deterministic-doc";
+import { realmEdgeAuthority } from "@lararium/mesh/realm-edges";
+import { readLedgeredVouches } from "@lararium/mesh/edge-ledger";
+import { realmRaiseCids } from "@lararium/mesh/realm-frontier";
 import {
-  signEdgeKapae, writeEdgeKapae, edgeLineHeads, realmEdgeBoardDocUrl, realmEdgeAuthority, readLedgeredVouches, realmRaiseCids,
-  edgeActPartial, readEdgeActPartial, judgeEdgeActPartial, cosignEdgeActPartial, edgeIdOfSubject,
-  carryOfPrepared, cosignFrontierCarry, frontierCarryAgrees, frontierCarryStands, landFrontierCarry,
-  type EdgeActPartial, type EdgeKapaeVerdict, type EdgePartialSubject, type EdgeSigner, type KahuQuorumSeats, type PartialVerdict,
-} from "@lararium/mesh";
+  edgeActPartial,
+  readEdgeActPartial,
+  judgeEdgeActPartial,
+  cosignEdgeActPartial,
+  edgeIdOfSubject,
+  type EdgeActPartial,
+  type EdgePartialSubject,
+  type PartialVerdict,
+} from "@lararium/mesh/edge-partial";
+import {
+  carryOfPrepared,
+  cosignFrontierCarry,
+  frontierCarryAgrees,
+  frontierCarryStands,
+  landFrontierCarry,
+} from "@lararium/mesh/frontier-carry";
+import { type KahuQuorumSeats } from "@lararium/mesh/kapae-antigen";
 import { loadFaceAtomKey } from "../face-atom-store.js";
 import { heldSeatSigners as heldSeats } from "../held-quorum.js";
 import { actingRealmNexus, nexusOfEpoch, noteVesselRealm, readVesselEdgeBoard, vesselEdgeCharter } from "../edge-board.js";

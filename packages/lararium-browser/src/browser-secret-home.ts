@@ -11,9 +11,15 @@
  */
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  decodeSecretHomeAddress, encodeSecretHomeAddress, enrollSecretHome, mintSecretHomeAddress, mintVesselDocumentId, openSecretHome,
-  SecretHomeUnavailable, type SecretHome,
-} from "@lararium/mesh";
+  decodeSecretHomeAddress,
+  encodeSecretHomeAddress,
+  enrollSecretHome,
+  mintSecretHomeAddress,
+  mintVesselDocumentId,
+  openSecretHome,
+  SecretHomeUnavailable,
+  type SecretHome,
+} from "@lararium/mesh/secret-home";
 import { readKeystoreRecord, withCustodyRecords } from "./browser-custody.js";
 
 /** The keystore row the browser's secret home's address rests in. */

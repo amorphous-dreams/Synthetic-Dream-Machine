@@ -20,19 +20,19 @@ import { mkdtempSync, rmSync, writeFileSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
-import {
-  buildGenesisDoc, didKeyFromVerifyingKey, identityTiddlerUri,
-  LARES_MEMETIC_WIKITEXT_PLUGIN_URI, sha256HexBytesSync, utf8Bytes,
-  type GenesisInputs, type LarDoc,
-} from "@lararium/mesh";
+import { buildGenesisDoc, type GenesisInputs } from "@lararium/mesh/genesis-doc";
+import { didKeyFromVerifyingKey } from "@lararium/mesh/cold-boot-ceremony";
+import { identityTiddlerUri, LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "@lararium/mesh/lar-uris";
+import { sha256HexBytesSync, utf8Bytes } from "@lararium/mesh/crypto";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { readBulbArtifact, buildBulb, assembleBulb, bulbSeed, type BulbArtifact } from "../src/bulb.js";
 import { mountBulbReadFace } from "../src/bulb-read-face.js";
-import { verifyPlaceKel } from "@lararium/mesh";
+import { verifyPlaceKel } from "@lararium/mesh/vessel-kel";
 import { loadPlaceKelChain } from "../src/node-vessel-identity.js";
 import { pullBulb, kindleFromBulb, httpBulbTransport, type KindleResult } from "../src/kindle.js";
 import { writeCasEntriesFs } from "../src/node-cas.js";
 import { readGenesisSeed, genesisCasDir, genesisSeedFileBytes, genesisSeedCid } from "../src/genesis-artifact.js";
-import { plainField } from "@lararium/mesh";
+import { plainField } from "@lararium/mesh/stored-value";
 
 /** A fixture bulb — a fake core blob + a plugin under the Lares plugin id (validateGenesisBytes requires both). */
 function fixtureBulb(actorSeed = "abc123"): BulbArtifact {

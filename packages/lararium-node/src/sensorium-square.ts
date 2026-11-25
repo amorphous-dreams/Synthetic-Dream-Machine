@@ -28,8 +28,10 @@
 
 import { readManifest, resolveCapDir } from "./sensorium.js";
 import { defaultChildRestriction, type ChildRestriction } from "./sensorium-coupling.js";
-import { consistencyRadius, fuse } from "@lararium/mesh";
-import type { ConsistencyRadius, PlaneRestriction, ComparisonStalk, FuseResult, FuseOptions } from "@lararium/mesh";
+import { consistencyRadius } from "@lararium/mesh/sensorium-consistency";
+import { fuse } from "@lararium/mesh/sensorium-fusion";
+import type { ConsistencyRadius, PlaneRestriction, ComparisonStalk } from "@lararium/mesh/sensorium-consistency";
+import type { FuseResult, FuseOptions } from "@lararium/mesh/sensorium-fusion";
 
 /** below this the round-trip counts as the identity — a glued consensus restricts back to its own sections exactly. */
 const COHERE_EPS = 1e-12;

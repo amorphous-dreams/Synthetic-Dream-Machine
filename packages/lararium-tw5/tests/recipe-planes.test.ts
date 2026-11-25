@@ -1,5 +1,6 @@
 import { describe, test, expect } from "vitest";
-import { recipeUri, type LarTiddlerRecord } from "@lararium/mesh";
+import { recipeUri } from "@lararium/mesh/lar-uris";
+import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { RECIPE_PLANES, effectiveRecipe, effectiveRecipeOf } from "../src/recipe-planes.js";
 import type { CatalogAccessor } from "../src/catalog-accessor.js";
 

@@ -46,9 +46,12 @@ import WebSocket                         from "isomorphic-ws";
 import { resolve }                       from "path";
 import { deriveReachFaces, wsUrlForOrigin, crossingBannerLines, floorCarriageBannerLines, originCompositionForFace, assertWaystoneCustody, OriginCustodyRefusal, type ExplicitOriginComposition, type InterfaceTable } from "./lan-address.js";
 import { openNodeVessel, openNodeHerm, standNodeFloor, seatedSovereignReaders, type AskedStanding, type NodeFloor, type SovereignReaders } from "./open-node-vessel.js";
-import type { DocCensusReading, HeldSaves } from "@lararium/mesh";
+import type { DocCensusReading } from "@lararium/mesh/doc-census";
+import type { HeldSaves } from "@lararium/mesh/sealed-doc-store";
 import { bootFaultReport }                 from "./boot-fault.js";
-import { standAs, FLOW_SOCKET_ROUTE, HEARTH_FLOOR_CARD_ROUTE, hearthFloorCardText, floorCardCarriageText } from "@lararium/mesh";
+import { standAs } from "@lararium/mesh/vessel-standing";
+import { FLOW_SOCKET_ROUTE } from "@lararium/mesh/flow-read-client";
+import { HEARTH_FLOOR_CARD_ROUTE, hearthFloorCardText, floorCardCarriageText } from "@lararium/mesh/hearth-floor-pins";
 import { hearthFloorProof } from "./hearth-floor-claims.js";
 import { randomBytes } from "node:crypto";
 import {
@@ -57,12 +60,12 @@ import {
 import { readCarriedNexuses, type BoardOpener } from "./nexus-carriage.js";
 import { larSealHome } from "./vessel-paths.js";
 import { leaseLineageOfNexus } from "./lease-charter.js";
-import { materializeSharedLarDoc } from "@lararium/mesh";
+import { materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
 import { loadVesselVerifyingKey } from "./node-vessel-identity.js";
 import { faceStands } from "./commands/init.js";
 import { deriveMeshSelf } from "./node-caps.js";
-import { parseMeshPeer } from "@lararium/mesh";
-import { ratedReceiptRing, ratedReceiptRingBytes } from "@lararium/mesh";
+import { parseMeshPeer } from "@lararium/mesh/carriage-caps";
+import { ratedReceiptRing, ratedReceiptRingBytes } from "@lararium/mesh/verb-tiddler";
 import { makeUdsSeat, serveUdsFront, type UdsChannelOptions, type UdsFront } from "./uds-channel.js";
 import { hearthPlanesOver, readHearthPlane } from "./hearth-roster-read.js";
 import { floorVerbsFor } from "./floor-verbs.js";
@@ -83,11 +86,11 @@ import { vesselCustodyHomes } from "./vault-carriers.js";
 import { rendezvousDir, standingPath, markerIsOurs } from "@lararium/mesh/rendezvous-path";
 import { loadVesselIdentity, vesselFloorKeyDoor, sovereignStands, makeNodePersonaPetnameStore } from "./node-vessel-identity.js";
 import { CROSS_FACE_READ_VERBS } from "@lararium/mesh/cross-face-reach";
-import { KUKULU_OFFER_ENV, cleanGoodbye, lifeCloses, namesPulama, pulamaStandBy, vesselPulamaHolder } from "./pulama-seat.js";
+import { KUKULU_OFFER_ENV, cleanGoodbye, lifeCloses, namesPulama, pulamaStandBy, readHouseWornFace, vesselPulamaHolder } from "./pulama-seat.js";
 import { consumeKukuluOffer } from "./kukulu-offer.js";
 import { NoStoodNexus, stoodFloorPins } from "./hearth-sovereign-pin.js";
 import { getMempalaceClient }           from "@lararium/mempalace";
-import { larDataDir }                   from "./vessel-paths.js";
+import { larConfigHome, larDataDir }    from "./vessel-paths.js";
 import { mkdirSync, writeFileSync, rmSync, readFileSync } from "fs";
 import { REPO_ROOT }   from "./node-host.js";
 import { resolveGenesis, checkGenesisPin, type GenesisResolution } from "./genesis-resolve.js";
@@ -540,6 +543,7 @@ async function main(): Promise<void> {
   const standBy = pulama === null ? null : pulamaStandBy({
     holder: pulama, recompose: (sovereign) => recompose(sovereign), onLog: (line) => console.log(`[pulama] ${line}`),
     consumeOffer: () => consumeKukuluOffer(process.env[KUKULU_OFFER_ENV]),
+    houseWorn: () => readHouseWornFace(larConfigHome),
   });
   custodyDoor = custodyFrameHandler({
     holder, recompose, testScratch,

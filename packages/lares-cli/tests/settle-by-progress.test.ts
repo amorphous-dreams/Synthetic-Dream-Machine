@@ -14,7 +14,7 @@ import { closeScratch, openScratch, type Scratch } from "../../lararium-node/tes
 import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { VERB_RESULT_KEY } from "@lararium/mesh";
+import { VERB_RESULT_KEY } from "@lararium/mesh/verb-tiddler";
 import type { SubmitResult } from "../src/verb-result.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 

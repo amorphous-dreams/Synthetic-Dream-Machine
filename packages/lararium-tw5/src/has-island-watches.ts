@@ -16,7 +16,7 @@ import { wikiHandBoundary, wikiHandBoundaryAfterAct } from "./island-recipe.js";
 import { dispatchLarControlEvent, resendLarCamera } from "./tw5-projection.js";
 import type { IslandCap } from "./island-caps.js";
 import type { IslandContext } from "./island-context.js";
-import { LAR_CONTROL_EVENT, LAR_RESEND, readLarControlEvent, readLarResend } from "@lararium/mesh";
+import { LAR_CONTROL_EVENT, LAR_RESEND, readLarControlEvent, readLarResend } from "@lararium/mesh/lar-camera";
 
 /** `#has` engine-epoch drift watch — self-writes the engine-waiting alert when a new genesis
  *  merges into the live lararium doc under this running island (alert-only; reboot adopts). */

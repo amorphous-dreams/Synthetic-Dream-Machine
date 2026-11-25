@@ -462,7 +462,7 @@ function RouteCli([string[]]$argv, [bool]$followUp) {
   $isPut = $argv.Count -ge 3 -and (($argv[0] -ceq 'tiddler' -and $argv[1] -ceq 'put') -or ($argv[0] -ceq 'spirit' -and $argv[1] -cin @('ah', 'hooili', 'residue')))
   if ($argv.Count -gt 0) {
     $alwaysValued = @('--fields', '--note', '--reason', '--text')
-    $boolean = @('accept-loss', 'accept-omissions', 'added', 'all', 'all-strata', 'apply', 'approve', 'brief', 'bulk', 'cancel', 'cards', 'collapse', 'cosign', 'confirm', 'create', 'cut', 'drain', 'deny', 'docs', 'draft', 'drop', 'dry-run', 'edge', 'ephemeral', 'every', 'executable', 'family', 'force', 'foreground', 'fresh', 'from-persona', 'held', 'help', 'help-mempalace', 'history', 'hearth', 'hold', 'if-due', 'in-wiki', 'init', 'join', 'json', 'keep', 'keep-hooks', 'keyhive-trace', 'lag', 'launch', 'list', 'meme', 'memory', 'new', 'observe', 'orphans', 'over-fresher', 'page', 'pair', 'palaces', 'paper', 'partial', 'passphrase', 'pending', 'probe', 'quorum', 'overwrite', 'remove', 'repour', 'restart', 'rotate', 'seat', 'sessions', 'shadow', 'skinny', 'skip-build', 'spectral', 'split-root', 'staged', 'sweep', 'tag-blobs', 'tree', 'verbose', 'wait', 'watch', 'with-web', 'workbench', 'writeback', 'yes')
+    $boolean = @('abandon', 'accept-loss', 'accept-omissions', 'added', 'all', 'all-strata', 'apply', 'approve', 'brief', 'bulk', 'cancel', 'cards', 'collapse', 'cosign', 'confirm', 'create', 'cut', 'drain', 'deny', 'docs', 'draft', 'drop', 'dry-run', 'edge', 'ephemeral', 'every', 'executable', 'family', 'force', 'foreground', 'fresh', 'from-persona', 'held', 'help', 'help-mempalace', 'history', 'hearth', 'hold', 'if-due', 'in-wiki', 'init', 'join', 'json', 'keep', 'keep-hooks', 'keyhive-trace', 'lag', 'launch', 'list', 'meme', 'memory', 'new', 'observe', 'orphans', 'over-fresher', 'page', 'pair', 'palaces', 'paper', 'partial', 'passphrase', 'pending', 'probe', 'quorum', 'overwrite', 'remove', 'repour', 'restart', 'rotate', 'seat', 'sessions', 'shadow', 'skinny', 'skip-build', 'spectral', 'split-root', 'staged', 'sweep', 'tag-blobs', 'tree', 'verbose', 'wait', 'watch', 'with-web', 'workbench', 'writeback', 'yes')
     $sources = @()
     for ($i = 0; $i -lt $argv.Count; $i++) {
       $word = $argv[$i]
@@ -573,8 +573,14 @@ function KeepBeforeDown {
   # SAID UP FRONT: a house that moved cuts and pushes a keep inside the stop, which can take minutes.
   [Console]::Error.WriteLine('lares-container: keeping first (rite keep --if-due): a house that moved cuts and pushes its keep before the stop')
   # THE MARK CLEARS ON A REAL KEEP: an answer naming no workspace (`"workspace":null`) kept nothing, and the keep stays owed.
-  $kbLines = @(& $cmd @pre rite keep --if-due --json)
+  # THE KEEP'S WORDS OUTLIVE THE PASTE: its stderr rests at the house's run/keep-last.log (overwritten each keep), then reaches the terminal.
+  $kbLog = Join-Path (Join-Path $House 'run') 'keep-last.log'
+  New-Item -ItemType Directory -Force -Path (Join-Path $House 'run') -ErrorAction SilentlyContinue | Out-Null
+  # No world-read: on a POSIX pwsh the log is created empty at 0600 before the keep writes it.
+  if (-not $IsWindows -and (Get-Command chmod -ErrorAction SilentlyContinue)) { New-Item -ItemType File -Force -Path $kbLog -ErrorAction SilentlyContinue | Out-Null; & chmod 600 $kbLog 2>$null }
+  $kbLines = @(& $cmd @pre rite keep --if-due --json 2> $kbLog)
   $kbRc = $LASTEXITCODE
+  if (Test-Path -LiteralPath $kbLog) { $kbSaid = Get-Content -LiteralPath $kbLog -Raw; if ($kbSaid) { [Console]::Error.Write($kbSaid) } }
   # THE MARK CLEARS ON A REAL KEEP alone: a successful envelope (`"ok":true`) naming its workspace (`data.workspace`, non-empty),
   # parsed as JSON; an answer that parses as none reads nothing kept.
   if ($kbRc -eq 0) {
@@ -604,7 +610,7 @@ function KeepBeforeDown {
     $script:KeepSaid = 'the keep did not complete'
     New-Item -ItemType Directory -Force -Path (Join-Path $House 'run') | Out-Null
     New-Item -ItemType File -Force -Path (KeepOwedMark) | Out-Null
-    [Console]::Error.WriteLine('lares-container: the keep did not complete (above); down goes on, and `lares rite keep` keeps by hand')
+    [Console]::Error.WriteLine('lares-container: the keep did not complete (above, and in run/keep-last.log of the house); down goes on, and `lares rite keep` keeps by hand')
   }
   else { $script:KeepSaid = 'kept (rite keep --if-due)'; Remove-Item -LiteralPath (KeepOwedMark) -Force -ErrorAction SilentlyContinue }
 }
@@ -1256,15 +1262,17 @@ function ResolveImage([string]$want) {
 # THE PŪLAMA'S OWN STATUS (`pulama-main.js status`, read detached): whether it stands lit, and whether the admitted set it
 # reads under its key names the image and no tombstone ends it. An unlit pūlama lists no admission; a status that never
 # answers leaves both unread.
-$script:PsLit = ''; $script:PsAdmitted = ''; $script:PsVest = ''; $script:PsStruck = $false; $script:PsPending = ''
+$script:PsLit = ''; $script:PsAdmitted = ''; $script:PsVest = ''; $script:PsStruck = $false; $script:PsPending = ''; $script:PsStale = ''
 function PulamaStatusRead([string]$digest) {
-  $script:PsLit = ''; $script:PsAdmitted = ''; $script:PsVest = ''; $script:PsStruck = $false; $script:PsPending = ''; $script:PsClosure = ''
+  $script:PsLit = ''; $script:PsAdmitted = ''; $script:PsVest = ''; $script:PsStruck = $false; $script:PsPending = ''; $script:PsStale = ''; $script:PsClosure = ''
   $out = $null | & docker compose @Base --profile pulama exec -T (PulamaSvc) node $PulamaMain status 2>$null
   if ($LASTEXITCODE -ne 0) { return }
   $flat = (($out -join '') -replace '\s', '')
   # THE KEEPER TALLY: the live commit's successor closure where it can vest, whether the struck fire is due, and any live commit.
   $script:PsVest = ([regex]::Match($flat, '"vestReady":"(sha256:[0-9a-f]{64})"')).Groups[1].Value
   $script:PsPending = ([regex]::Match($flat, '"pending":"(sha256:[0-9a-f]{64})"')).Groups[1].Value
+  # A STALE live commit (`stalePending`, its `staleWhy`) binds nothing current: the next kukulu lei commit supersedes it.
+  if ($flat -match '"stalePending":true') { $why = ([regex]::Match($flat, '"staleWhy":"([a-z-]+)"')).Groups[1].Value; $script:PsStale = if ($why) { $why } else { 'stale' } }
   $script:PsClosure = ([regex]::Match($flat, '"closure":"(sha256:[0-9a-f]{64})"')).Groups[1].Value
   $script:PsStruck = $flat.Contains('"struckDue":true')
   if ($flat.Contains('"lit":true')) { $script:PsLit = 'yes' }
@@ -1492,7 +1500,8 @@ function StandHouse {
     # closure leaves the commit standing for its own rite.
     if ($script:PsPending -and $script:PsClosure -ne $script:PsPending) {
       $runs = if ($script:PsClosure) { $script:PsClosure } else { 'no reported closure' }
-      [Console]::Error.WriteLine("lares-container: rebuild: the live keeper commit names $($script:PsPending) and this keeper runs $runs; the commit stays for its own rite")
+      if ($script:PsStale) { [Console]::Error.WriteLine("lares-container: rebuild: the live keeper commit names $($script:PsPending) and reads stale ($($script:PsStale)); the next kukulu lei commit supersedes it") }
+      else { [Console]::Error.WriteLine("lares-container: rebuild: the live keeper commit names $($script:PsPending) and this keeper runs $runs; the commit stays for its own rite") }
     }
     if ($script:PsPending -and $script:PsClosure -eq $script:PsPending) {
       $land = $null | & docker compose @Base --profile pulama exec -T (PulamaSvc) node $PulamaMain keeper-land 2>$null

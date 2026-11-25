@@ -15,9 +15,9 @@
  * A relay verifies the ciphertext address while holding no key. The CARRY + Mu below hold regardless.
  */
 import { describe, test, expect } from "vitest";
-import {
-  DeterministicFederationGate, InMemoryMembershipChannel, utf8Bytes,
-} from "@lararium/mesh";
+import { DeterministicFederationGate } from "@lararium/mesh/federation-gate";
+import { InMemoryMembershipChannel } from "@lararium/mesh/membership-channel";
+import { utf8Bytes } from "@lararium/mesh/crypto";
 import { makeSealedPlaneRegistry } from "../src/plane-seal.js";
 import { serveCasWire, decideAndServeWantBlock, fetchSealedCidOverWire, muWireBytes, type CasWireServerDeps } from "../src/cas-wire.js";
 import { membershipOf, antigenOf, sealABody, openAsMember, freshTestBodyKey } from "./cas-test-setup.js";
@@ -122,7 +122,7 @@ describe("cas-wire — E1a Kapae-Mu (denial ≡ satiety, byte-identical)", () =>
 import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { sha256HexBytesSync } from "@lararium/mesh";
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
 
 describe("cas-wire — the fetch door: a cleartext cid answers a FLEET peer and draws Mu for everyone else", () => {
   const CLEAR = utf8Bytes("a family likeness, shared in the clear");

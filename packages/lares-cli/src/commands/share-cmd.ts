@@ -30,9 +30,17 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-share-config
  */
 import {
-  assertShareKindFree, parseShareFile, parseShareFilter, resolveShare, serializeShareFile, shareEntryBag, ShareConfigRefusal, SHARE_CONFIG_FILE,
-  type ShareFace, type ShareEntry,
-} from "@lararium/mesh";
+  assertShareKindFree,
+  parseShareFile,
+  parseShareFilter,
+  resolveShare,
+  serializeShareFile,
+  shareEntryBag,
+  ShareConfigRefusal,
+  SHARE_CONFIG_FILE,
+  type ShareFace,
+  type ShareEntry,
+} from "@lararium/mesh/share-config";
 import { ensureRealmLabel, handCodeOf, handRefusalOf, readOwnHand } from "@lararium/node";
 import type { ParsedArgs } from "../parse-args.js";
 import { LIVE_SHARE_DOORS, landShares, shareSetArgs, type ShareDoors } from "../share-doors.js";

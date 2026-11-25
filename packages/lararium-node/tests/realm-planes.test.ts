@@ -41,12 +41,23 @@ import { createHash } from "node:crypto";
 import { describe, expect, test, vi } from "vitest";
 import * as ed from "@noble/ed25519";
 import { Repo, interpretAsDocumentId, type DocHandle } from "@automerge/automerge-repo";
+import { deterministicDocUrl, realmEdgeBoardDocUrl, realmVouchBoardDocUrl } from "@lararium/mesh/deterministic-doc";
+import { emptyLarDoc, mutableLarRecord, tiddlerText, type LarDoc } from "@lararium/mesh/base-doc";
+import { hex } from "@lararium/mesh/crypto";
 import {
-  deterministicDocUrl, emptyLarDoc, hex, mutableLarRecord, realmDocUrl, tiddlerText,
-  realmDocPointer, realmEdgeBoardDocUrl, realmStandingPointer, realmStewardPointer, realmVouchBoardDocUrl,
-  REALM_ID_TIDDLER, RealmBagGate, RealmBoardGate, signRealmBagRegistration, writeRealmBagRegistration, type FederationGate, type LarDoc, type NexusDoc, type NexusMembership,
+  realmDocUrl,
+  realmDocPointer,
+  realmStandingPointer,
+  realmStewardPointer,
+  REALM_ID_TIDDLER,
+  RealmBagGate,
+  RealmBoardGate,
+  signRealmBagRegistration,
+  writeRealmBagRegistration,
   type RealmCharterConsult,
-} from "@lararium/mesh";
+} from "@lararium/mesh/realm-bag";
+import { type FederationGate, type NexusMembership } from "@lararium/mesh/federation-gate";
+import { type NexusDoc } from "@lararium/mesh/nexus-seal-seed";
 import { makeRealmPlane, type NotedRealm, type RealmPlaneHolder } from "../src/realm-plane.js";
 import { noteVesselRealm, readVesselRealms } from "../src/edge-board.js";
 import { runRealmBag, runRealmBags, stewardGuard, type RealmDoorPlanes, type StewardVault } from "../src/realm-steward.js";

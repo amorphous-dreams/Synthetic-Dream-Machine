@@ -1,5 +1,5 @@
 /** A joinee's one serialized grant take and floor lift, driven only by causal wakes. */
-import type { EdgeStanding } from "@lararium/mesh";
+import type { EdgeStanding } from "@lararium/mesh/edge-kapae";
 import { FACE_GRANT_PREFIX, type FaceGrantRecord, type FaceGrantVerdict, type FaceGrantVerifyContext } from "./face-grant-record.js";
 import { IngestOvertaken } from "./daemon-event-store.js";
 

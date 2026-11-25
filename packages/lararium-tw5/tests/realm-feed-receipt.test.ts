@@ -6,9 +6,11 @@
  * pairs a face with its leaf, and the owner who holds the leaf proves the tie by recomputing the digest.
  */
 import { describe, expect, test } from "vitest";
-import {
-  CONTROL_HOME_ID, defaultCryptoProvider, faceAtomPublicKey, realmFeedAskImage, realmFeedSlotUri, sha256Hex, signAsFaceAtom, signFaceLeafBond,
-} from "@lararium/mesh";
+import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
+import { defaultCryptoProvider, sha256Hex } from "@lararium/mesh/crypto";
+import { faceAtomPublicKey, signAsFaceAtom } from "@lararium/mesh/face-atom";
+import { realmFeedAskImage, signFaceLeafBond } from "@lararium/mesh/face-leaf-bond";
+import { realmFeedSlotUri } from "@lararium/mesh/cabal-realm";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import * as verbs from "../src/cabal-realm-verbs.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";

@@ -23,10 +23,26 @@
  */
 import { readFileSync } from "node:fs";
 import {
-  openPromotionApproval, signPromotionApproval, verifyPromotionApproval, readPromotionApproval, foundingRoster,
-  charteredClassTable, classThreshold, countSeatedSignatures, classCovers, requiredClassFor, promotionApprovalBytes, exactBytesHash, verifyEd25519,
-  type ApprovalClass, type KahuQuorumSeats, type PromotionApproval, type PromotionApprovalVerdict,
-} from "@lararium/mesh";
+  openPromotionApproval,
+  signPromotionApproval,
+  verifyPromotionApproval,
+  readPromotionApproval,
+  promotionApprovalBytes,
+  exactBytesHash,
+  type ApprovalClass,
+  type PromotionApproval,
+  type PromotionApprovalVerdict,
+} from "@lararium/mesh/promotion-approval";
+import { foundingRoster } from "@lararium/mesh/nexus-seal-seed";
+import {
+  charteredClassTable,
+  classThreshold,
+  countSeatedSignatures,
+  classCovers,
+  requiredClassFor,
+} from "@lararium/mesh/chartered-classes";
+import { verifyEd25519 } from "@lararium/mesh/ed25519-door";
+import { type KahuQuorumSeats } from "@lararium/mesh/kapae-antigen";
 import { readNexusDoc } from "../nexus-doc.js";
 import { charterHomeFor, primaryNexusAid } from "../carried-set.js";
 import { heldSeatSigners } from "../held-quorum.js";

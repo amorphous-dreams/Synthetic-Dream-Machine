@@ -28,7 +28,8 @@
 import { memoryControlStore } from "./control-store-fixture.js";
 import { describe, expect, test } from "vitest";
 
-import { CompositeStore, DAEMON_BAG_ID } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { makeWardAlertReactor, ACTIVE_WIKI_URI } from "../src/index.js";
 import type { DaemonMsg_WikiAlert } from "../src/index.js";

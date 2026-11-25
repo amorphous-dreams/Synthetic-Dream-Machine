@@ -12,7 +12,16 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, swarmActCid, swarmLeiRecordTitle, swarmLeiUnstrungTitle, verifySwarmRecord, WardRefused, type Credential, type SwarmSignerPort } from "@lararium/mesh";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import {
+  swarmActCid,
+  swarmLeiRecordTitle,
+  swarmLeiUnstrungTitle,
+  verifySwarmRecord,
+  type SwarmSignerPort,
+} from "@lararium/mesh/swarm-tiddlers";
+import { WardRefused } from "@lararium/mesh/ward-slots";
+import { type Credential } from "@lararium/mesh/keyslot-door";
 import { FsCustodyIo } from "../src/custody-io.js";
 import { makeCustodyHolder } from "../src/custody-holder.js";
 import { pulamaHandDoor } from "../src/pulama-hand.js";

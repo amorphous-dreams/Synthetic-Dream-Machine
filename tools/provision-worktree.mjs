@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /** Prepare a detached checkout from inputs, then compile its generated package outputs. */
-import { copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, readlinkSync, readdirSync, realpathSync, rmSync, statSync, symlinkSync } from 'node:fs';
+import { copyFileSync, cpSync, existsSync, lstatSync, mkdirSync, readFileSync, readlinkSync, readdirSync, realpathSync, rmSync, statSync, symlinkSync } from 'node:fs';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -8,7 +8,8 @@ import { assertDisk } from './disk-guard.mjs';
 import { wasmStampBody } from './stamp-build.mjs';
 import { treeSharedInodes } from './module-inodes.mjs';
 
-export const USAGE = 'usage: provision-worktree.mjs <empty-dir>';
+export const USAGE_EXISTING = 'usage: provision-worktree.mjs --existing <worktree>';
+export const USAGE = `usage: provision-worktree.mjs <empty-dir>  |  ${USAGE_EXISTING}  (an existing branch worktree: submodules, then its own offline frozen pnpm install)`;
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const WASM = 'tree-sitter-memetic-wikitext';
 const canNest = (a, b) => b === a || b.startsWith(a + sep);
@@ -112,6 +113,68 @@ function packageOrder(destination) {
   return ordered;
 }
 
+/** Seat the two submodules a build reads. `protocol.file.allow=always` lets git clone from the local module objects (git refuses the
+ *  `file` transport by default, which leaves a bare `git worktree add` bench without TiddlyWiki5 and so without `pnpm install`). */
+function initSubmodules({ source, destination, run, log }) {
+  // Borrow the objects the source already holds (its own .git, or the common dir when the source is a linked tree),
+  // so a new tree does not clone them again.
+  let common = join(source, '.git');
+  try { common = resolve(source, run('git', ['-C', source, 'rev-parse', '--git-common-dir'], source).trim()); } catch { /* the plain .git stands in */ }
+  for (const name of ['TiddlyWiki5', 'mempalace']) {
+    // A submodule checked out with its own .git directory (mempalace in the main checkout) holds its objects there, not under modules/.
+    const objects = [join(source, '.git/modules', name), join(common, 'modules', name), join(source, name, '.git'), join(dirname(common), name, '.git')].find(dir => existsSync(join(dir, 'objects')));
+    const plain = ['-c', 'protocol.file.allow=always', '-C', destination, 'submodule', 'update', '--init', '--', name];
+    if (!objects) {
+      log(`SUBMODULE ${name}: no local module objects stand; the clone dials the network`);
+      run('git', plain, destination);
+      continue;
+    }
+    try {
+      run('git', ['-c', 'protocol.file.allow=always', '-C', destination, 'submodule', 'update', '--init', '--reference', objects, '--', name], destination);
+      log(`SUBMODULE ${name}: cloned against ${objects}`);
+    } catch (error) {
+      // A reference clone can still dial the network for objects the reference lacks; name it, retry plain, never fail on it.
+      log(`SUBMODULE ${name}: reference clone refused (${error.message.split('\n')[0]}); retrying plain, which dials the network`);
+      run('git', plain, destination);
+    }
+  }
+}
+
+/** Where a tree's pnpm links must stay its own: a symlinked node_modules reaches into another tree (main's), and a write through it lands there. */
+function modulePathsOf(tree) {
+  const paths = ['node_modules', 'tests/node_modules', 'TiddlyWiki5/node_modules'];
+  const base = join(tree, 'packages');
+  if (existsSync(base)) for (const name of readdirSync(base)) paths.push(`packages/${name}/node_modules`);
+  return paths;
+}
+function assertNoLinkedModules(tree) {
+  for (const rel of modulePathsOf(tree)) {
+    let stat = null;
+    try { stat = lstatSync(join(tree, rel)); } catch { /* absent */ }
+    if (stat?.isSymbolicLink()) throw new Error(`${rel} is a symlink to ${readlinkSync(join(tree, rel))}: a write through it lands in another tree. Remove it (\`rm ${join(tree, rel)}\`) and run \`node tools/provision-worktree.mjs --existing ${tree}\` again`);
+  }
+}
+
+/** Provision a branch worktree that already exists (`git worktree add`): seat its submodules, then fill its OWN node_modules from the
+ *  pnpm store, offline and frozen. It refuses a node_modules that links elsewhere, and it never hand-links another tree's modules. */
+export function provisionExisting({ worktree, run = defaultRun, log = console.log, guard = assertDisk }) {
+  if (!worktree) throw new Error(USAGE_EXISTING);
+  if (!existsSync(worktree) || !statSync(worktree).isDirectory()) throw new Error(`${worktree} is no directory; create it first: git worktree add <path> -b <branch> origin/develop`);
+  worktree = realpathSync(worktree);
+  const top = realpathSync(run('git', ['-C', worktree, 'rev-parse', '--show-toplevel'], worktree).trim());
+  if (top !== worktree) throw new Error(`${worktree} is no git worktree root (git reports ${top})`);
+  assertNoLinkedModules(worktree);
+  guard();
+  const common = resolve(worktree, run('git', ['-C', worktree, 'rev-parse', '--git-common-dir'], worktree).trim());
+  initSubmodules({ source: dirname(common), destination: worktree, run, log });
+  run('pnpm', ['install', '--frozen-lockfile', '--offline', '--package-import-method=copy'], worktree);
+  log('INSTALLED node_modules by pnpm install --frozen-lockfile --offline --package-import-method=copy (copies from the store)');
+  assertNoLinkedModules(worktree);
+  assertNoSharedInodes(worktree);
+  if (!existsSync(join(worktree, 'node_modules'))) throw new Error('pnpm install left no root node_modules');
+  return { worktree };
+}
+
 /** `run` receives (executable, argv, cwd); injection lets tests avoid git, npm and network. `guard` reads the disk before any bulk lands. */
 export function provision({ source = ROOT, destination, run = defaultRun, log = console.log, guard = assertDisk }) {
   if (!destination) throw new Error(USAGE);
@@ -125,28 +188,7 @@ export function provision({ source = ROOT, destination, run = defaultRun, log = 
   if (bare() !== 'false') throw new Error('core.bare must read false after worktree add');
   const head = run('git', ['-C', destination, 'rev-parse', 'HEAD'], destination).trim();
   log(`HEAD ${head}`);
-  // Borrow the objects the source already holds (its own .git, or the common dir when the source is a linked tree),
-  // so a new tree does not clone them again.
-  let common = join(source, '.git');
-  try { common = resolve(source, run('git', ['-C', source, 'rev-parse', '--git-common-dir'], source).trim()); } catch { /* the plain .git stands in */ }
-  for (const name of ['TiddlyWiki5', 'mempalace']) {
-    // A submodule checked out with its own .git directory (mempalace in the main checkout) holds its objects there, not under modules/.
-    const objects = [join(source, '.git/modules', name), join(common, 'modules', name), join(source, name, '.git'), join(dirname(common), name, '.git')].find(dir => existsSync(join(dir, 'objects')));
-    const plain = ['-C', destination, 'submodule', 'update', '--init', '--', name];
-    if (!objects) {
-      log(`SUBMODULE ${name}: no local module objects stand; the clone dials the network`);
-      run('git', plain, destination);
-      continue;
-    }
-    try {
-      run('git', ['-C', destination, 'submodule', 'update', '--init', '--reference', objects, '--', name], destination);
-      log(`SUBMODULE ${name}: cloned against ${objects}`);
-    } catch (error) {
-      // A reference clone can still dial the network for objects the reference lacks; name it, retry plain, never fail on it.
-      log(`SUBMODULE ${name}: reference clone refused (${error.message.split('\n')[0]}); retrying plain, which dials the network`);
-      run('git', plain, destination);
-    }
-  }
+  initSubmodules({ source, destination, run, log });
   for (const name of ['TiddlyWiki5/tiddlywiki.js', 'mempalace']) {
     if (!existsSync(join(destination, name))) throw new Error(`required submodule input absent: ${name}`);
   }
@@ -247,6 +289,8 @@ export function provision({ source = ROOT, destination, run = defaultRun, log = 
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   if (process.argv[2] === '--help') console.log(USAGE);
-  else if (process.argv.length !== 3) { console.error(USAGE); process.exitCode = 1; }
+  else if (process.argv[2] === '--existing') {
+    try { provisionExisting({ worktree: process.argv[3] }); } catch (error) { console.error(error.message); process.exitCode = 1; }
+  } else if (process.argv.length !== 3) { console.error(USAGE); process.exitCode = 1; }
   else try { provision({ destination: process.argv[2] }); } catch (error) { console.error(error.message); process.exitCode = 1; }
 }

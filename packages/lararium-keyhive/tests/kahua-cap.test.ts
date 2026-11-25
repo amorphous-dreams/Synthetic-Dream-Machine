@@ -5,7 +5,7 @@
  * member holds it, and a second ask mints nothing new. Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
 import { describe, expect, test } from "vitest";
-import { KAHUA_BAG } from "@lararium/mesh";
+import { KAHUA_BAG } from "@lararium/mesh/wiki-recipe";
 import { InMemoryEventStore, KeyhiveProvider, makeFaceBagDoor } from "../src/index.js";
 import { answerKahuaCap } from "../src/kahua-cap.js";
 

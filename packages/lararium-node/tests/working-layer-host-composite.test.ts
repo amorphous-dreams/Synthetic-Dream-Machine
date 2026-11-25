@@ -10,10 +10,11 @@
 import { afterEach, describe, expect, test } from "vitest";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
 import { operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
-import {
-  DAEMON_BAG_ID, RECEIPT_FACT_URI_PREFIX, emptyLarDoc, mkDaemonResolveBindingResult, mkEa, wikiSlotUri,
-  type IslandMsg_Manifest, type LarDoc,
-} from "@lararium/mesh";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { RECEIPT_FACT_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { mkDaemonResolveBindingResult, mkEa, type IslandMsg_Manifest } from "@lararium/mesh/island-protocol";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { openDaemonVmCore, type DaemonVmHost } from "@lararium/tw5";
 import { standFoundedIsland } from "./stand-founded-island.js";
 import { FactLedger } from "../src/uds-channel.js";

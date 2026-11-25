@@ -21,12 +21,12 @@
 import { seatSuiteWard } from "./support/scratch-custody-setup.js";
 // This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
 seatSuiteWard();
-import { emptyFoundingCharterDoc } from "@lararium/mesh";
+import { emptyFoundingCharterDoc } from "@lararium/mesh/nexus-seal-seed";
 import { beginNexusKeyReissue, faceProofKeyFile, listFaceProofKeys, mintNexusKey, nexusKeyPublicOf } from "../src/face-key-custody.js";
 import { runNexusKeyReissue } from "../src/nexus-key-reissue.js";
 import { keepKeyLine, readKeyLine } from "../src/carried-set.js";
 import { larIdentityDir } from "../src/vessel-paths.js";
-import { signNexusKeyHandOver, writeNexusKeyHandOver } from "@lararium/mesh";
+import { signNexusKeyHandOver, writeNexusKeyHandOver } from "@lararium/mesh/nexus-key-line";
 import { handleRecordPath } from "./face-paths.js";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
@@ -37,8 +37,13 @@ import { Repo } from "@automerge/automerge-repo";
 import { restEvery, restingRepo } from "./resting-repo.js";
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
 import { hearthSovereignPin } from "../src/hearth-sovereign-pin.js";
-import { hex, materializeSharedLarDoc, carriageDocUrl, carriageEntriesFromBoard, signCarriageQuorum, writeCarriageEntry, ed25519SignerFromSeed,
-  nexusAidOf, signerClass } from "@lararium/mesh";
+import { hex } from "@lararium/mesh/crypto";
+import { materializeSharedLarDoc, carriageDocUrl } from "@lararium/mesh/deterministic-doc";
+import { carriageEntriesFromBoard, writeCarriageEntry } from "@lararium/mesh/carriage-board";
+import { signCarriageQuorum } from "@lararium/mesh/carriage-registry";
+import { ed25519SignerFromSeed } from "@lararium/mesh/ed25519-door";
+import { nexusAidOf } from "@lararium/mesh/nexus-seal-seed";
+import { signerClass } from "@lararium/mesh/signer-class";
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed, loadVesselVerifyingKey,
   listPersonaRoots } from "../src/node-vessel-identity.js";
 
@@ -58,19 +63,22 @@ import { larDataDir } from "../src/vessel-paths.js";
 import { writeNexusDoc, readNexusDoc, nexusCharterDocPath } from "../src/nexus-doc.js";
 import { runNexusContract, runNexusAcceptCarriage, runNexusCarryFor, runNexusMembersList, NexusContractError,
   hasContractedInto, runNexusRollAnchor } from "../src/commands/nexus-contract.js";
-import { rollAnchorsFromBoard, rollAnchorCid, isRollAnchor, signRollAnchor, writeRollAnchor } from "@lararium/mesh";
+import { rollAnchorsFromBoard, writeRollAnchor } from "@lararium/mesh/carriage-board";
+import { rollAnchorCid, isRollAnchor, signRollAnchor } from "@lararium/mesh/carriage-registry";
 import { readConsent, writeConsent, carriageConsentPathFor, carriedCharterHome } from "../src/carried-set.js";
-import { signCarriageContract, verifyCarriageConsent } from "@lararium/mesh";
+import { signCarriageContract, verifyCarriageConsent } from "@lararium/mesh/carriage-registry";
 import { existsSync } from "node:fs";
 import { larSealHome } from "../src/vessel-paths.js";
 import { makeNexusMembership, readCarriedNexuses } from "../src/nexus-carriage.js";
 import { heldNexusLeaves, mintNexusLeaf, nexusLeafFor } from "../src/nexus-leaf.js";
-import { presentationFromBoardDoc, foundingRoster, type AdmitPresentation } from "@lararium/mesh";
+import { presentationFromBoardDoc } from "@lararium/mesh/carriage-board";
+import { foundingRoster } from "@lararium/mesh/nexus-seal-seed";
+import { type AdmitPresentation } from "@lararium/mesh/carriage-registry";
 import { nodeNexusIsland } from "../src/nexus-standing.js";
 import { runRaiseSign } from "../src/commands/raise-sign.js";
-import { mintRaiseChallenge, verifyRaiseGrant } from "@lararium/mesh";
+import { mintRaiseChallenge, verifyRaiseGrant } from "@lararium/mesh/raise-challenge";
 import { takeAdmitBundle, readKeptAdmitBundle } from "../src/admit-bundle.js";
-import { carriageEntryActCid } from "@lararium/mesh";
+import { carriageEntryActCid } from "@lararium/mesh/carriage-registry";
 import { direct } from "./direct-store.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { chairKey, chairSeed, seatChairs } from "./seat-fixture.js";

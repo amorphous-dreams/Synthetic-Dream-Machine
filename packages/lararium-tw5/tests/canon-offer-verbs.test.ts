@@ -12,8 +12,17 @@
  */
 import { beforeAll, describe, expect, test } from "vitest";
 import { Repo } from "./wiki-shore-rig.js";
-import { AutomergeDocStore, CompositeStore, bagUri, carrierHashOf, emptyLarDoc, faceAtomKeyFromSeed, isVerbRefusal, OVERRIDE_BASE_META, type LarDoc, type Verb } from "@lararium/mesh";
-import type { KahuReachSource, OfferSeat, OfferSigner } from "@lararium/mesh";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { bagUri } from "@lararium/mesh/lar-uris";
+import { carrierHashOf } from "@lararium/mesh/carrier-form";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { faceAtomKeyFromSeed } from "@lararium/mesh/face-atom";
+import { isVerbRefusal } from "@lararium/mesh/verb-refusal";
+import { OVERRIDE_BASE_META } from "@lararium/mesh/override-base";
+import { type Verb } from "@lararium/mesh/verb-tiddler";
+import type { KahuReachSource } from "@lararium/mesh/kahu-canon-reach";
+import type { OfferSeat, OfferSigner } from "@lararium/mesh/canon-offer";
 import type { Hand } from "@lararium/mesh/session-contract";
 import { seatedCharter, type SeatedCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { makeOfferMakeReactor, makeOfferListReactor, makeOfferPromoteReactor, makeOfferShowReactor, type CanonOfferVerbOptions } from "../src/canon-offer-verbs.js";
@@ -21,7 +30,7 @@ import type { VerbContext } from "../src/verb-dispatcher.js";
 import { kahuHand, strangerHand } from "../../lararium-mesh/tests/kahu-reach-fixture.js";
 import { placeMeme, readMeme } from "../src/place-meme.js";
 import { storeMemeSink } from "../src/meme-sinks.js";
-import { storedLarRecord } from "@lararium/mesh";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
 import { pagePlaneRows } from "../src/read-gradient.js";
 
 test("plane rows bound empty and many answers with a checked continuation", () => {

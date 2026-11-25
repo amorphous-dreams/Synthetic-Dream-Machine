@@ -10,7 +10,7 @@
  */
 
 import { describe, test, expect } from "vitest";
-import { memoryJournal, type VesselJournal, type JournalEntry } from "@lararium/mesh";
+import { memoryJournal, type VesselJournal, type JournalEntry } from "@lararium/mesh/vessel-journal";
 
 describe("memoryJournal", () => {
   test("RED: append bag-projected and read it back", () => {

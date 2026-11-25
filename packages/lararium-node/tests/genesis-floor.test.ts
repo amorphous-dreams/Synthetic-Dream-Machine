@@ -12,7 +12,12 @@ import { forgetCarrierFiles, rootMetaFields, storeMemeSink } from "@lararium/tw5
 // The one placement function every INGEST door lays through (the tw5 barrel keeps it host-internal).
 import { placeMeme } from "../../lararium-tw5/src/place-meme.js";
 import { carryGenesisFloor, cutGenesisFloor } from "../src/genesis-floor.js";
-import { AutomergeDocStore, bagUri, emptyLarDoc, openFloorSnapshot, readFloorDriftReading, type LarDoc, type LarTiddlerRecord } from "@lararium/mesh";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { bagUri } from "@lararium/mesh/lar-uris";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { openFloorSnapshot } from "@lararium/mesh/floor-manifest";
+import { readFloorDriftReading } from "@lararium/mesh/floor-drift";
+import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { Repo } from "@automerge/automerge-repo";
 
 const REPO = new URL("../../..", import.meta.url).pathname;

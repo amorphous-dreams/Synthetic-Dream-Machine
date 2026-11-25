@@ -44,8 +44,8 @@ import type {
   ChangeOrigin,
   LarRemoveOptions,
   LarWriteOptions,
-} from "@lararium/mesh";
-import { holdsOnly } from "@lararium/mesh";
+} from "@lararium/mesh/tiddler-store";
+import { holdsOnly } from "@lararium/mesh/tiddler-store";
 
 export class MemoryTiddlerStore implements LarTiddlerStore {
   constructor(private readonly bagId?: string) {}

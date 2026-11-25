@@ -10,7 +10,7 @@
  * can neither announce files that are absent nor take the bag's one entry ahead of the real one.
  */
 import { readdirSync, statSync } from "node:fs";
-import { LARES_VERB_ARGS_WIRE_FIELD } from "@lararium/mesh";
+import { LARES_VERB_ARGS_WIRE_FIELD } from "@lararium/mesh/lar-uris";
 
 export const JOURNAL_APPEND_VERB = "journal-append";
 export const JOURNAL_APPEND_REQUESTER = "disk-projector";

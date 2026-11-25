@@ -33,6 +33,11 @@ export interface Item {
   readonly transform?: (current: string | null) => string | null;
   /** A link item: the target the link names. */
   readonly link?: string;
+  /**
+   * The forced form of `transform`, for bytes that parse: under `--force` it replaces only what this item owns and keeps every
+   * other key. An item without it takes the whole target (a rebuild from nothing).
+   */
+  readonly taking?: (current: string | null) => string | null;
   /** Why the current bytes stand outside this item's ownership, or null when they are its to change. */
   readonly foreign?: (current: string | null) => string | null;
   /** A host-owned store the house changes through the host's own tool, never by hand. */
@@ -155,8 +160,14 @@ export class Ledger {
 // ── Read ────────────────────────────────────────────────────────────────────────────────────────
 
 function desiredOf(items: readonly Item[], live: Live, take = false): string | null {
-  let cur: string | null = live.kind === "file" && !take ? live.bytes : null;
-  for (const it of items) if (it.transform) cur = it.transform(cur);
+  const held = live.kind === "file" ? live.bytes : null;
+  // A forced tend rebuilds from nothing, unless every item that finds the bytes foreign names a forced form that keeps the rest.
+  const keeps = take && held !== null && items.every((it) => !it.foreign?.(held) || it.taking !== undefined);
+  let cur: string | null = !take || keeps ? held : null;
+  for (const it of items) {
+    const f = keeps && it.taking && it.foreign?.(cur) ? it.taking : it.transform;
+    if (f) cur = f(cur);
+  }
   return cur;
 }
 

@@ -13,10 +13,9 @@ import { afterEach, beforeEach, describe, test, expect } from "vitest";
 import { existsSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import {
-  renameOwnPersona, clearOwnPersonaPetname, ownPersonaPetname, personaMultitudeView,
-  publishPersonaGlamour, publicHandleViewOf, type LarDoc,
-} from "@lararium/mesh";
+import { renameOwnPersona, clearOwnPersonaPetname, ownPersonaPetname, personaMultitudeView } from "@lararium/mesh/persona-petname";
+import { publishPersonaGlamour, publicHandleViewOf } from "@lararium/mesh/persona-glamour";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import {
   makeNodePersonaPetnameStore, makeNodePublicHandleStore, makeNodeFsPersonaVault,
   generateOrLoadPersonaGroupRoot,

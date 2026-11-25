@@ -7,18 +7,23 @@
  * Reads keep their path, and a place row acts as the place.
  */
 import { CHORE_FREE_VERBS } from "../src/chore-face.js";
-import { controlStoreOf } from "@lararium/mesh";
+import { controlStoreOf } from "@lararium/mesh/control-home";
 import { afterEach, expect, test, vi } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createConnection, type Socket } from "node:net";
 import { Repo } from "@automerge/automerge-repo";
-import { AutomergeDocStore, CompositeStore, DAEMON_BAG_ID, emptyLarDoc, concludeVerb, wikiSlotUri, type LarDoc } from "@lararium/mesh";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { concludeVerb } from "@lararium/mesh/verb-tiddler";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import type { SessionFace } from "@lararium/mesh/session-contract";
 import { makeUdsSeat, serveUdsFront, type UdsSessionDoor, type UdsSessionSigner } from "../src/uds-channel.js";
 import { claimStore } from "../src/owned-store.js";
-import { SessionSignBook, type BookedSession } from "@lararium/mesh";
+import { SessionSignBook, type BookedSession } from "@lararium/mesh/session-sign-book";
 import { faceLives, type FaceLives } from "../src/face-lifecycle.js";
 
 // A caller's wait reads the seat's own floor alone here (no learned servo), so a test can let one give up in a breath.

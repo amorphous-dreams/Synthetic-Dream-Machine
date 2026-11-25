@@ -8,7 +8,7 @@
  */
 
 import type { VerbReactor } from "./verb-dispatcher.js";
-import type { BagStowage } from "@lararium/mesh";
+import type { BagStowage } from "@lararium/mesh/bag-residency";
 
 export interface ResidencyHandlerOptions {
   readonly residency: BagStowage;

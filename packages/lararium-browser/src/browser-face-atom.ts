@@ -11,19 +11,17 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/browser/browser-face-atom
  */
+import { faceAtomKeyFromSeed, type FaceAtomKey } from "@lararium/mesh/face-atom";
 import {
-  faceAtomKeyFromSeed,
   keepFaceAtomSeed,
   readFaceAtom,
   requireFaceAtomSeed,
   standFaceAtomSeed,
-  type FaceAtomKey,
   type FaceAtomRecords,
-  constantTimeBytesEqual,
-  vesselFaceTagFields,
-  wardKeyPopImage,
-  type VesselFaceTagDoor,
-} from "@lararium/mesh";
+} from "@lararium/mesh/face-atom-custody";
+import { constantTimeBytesEqual } from "@lararium/mesh/crypto";
+import { vesselFaceTagFields, type VesselFaceTagDoor } from "@lararium/mesh/vessel-face-tag";
+import { wardKeyPopImage } from "@lararium/mesh/ward-answer";
 import { readKeystoreRecord, withCustodyRecords } from "./browser-custody.js";
 import { browserWardBindRoute, browserWardKeyMint, browserWardKeyOf, browserWardKeySign, BrowserWardRefused, type WardAskKind } from "./browser-ward.js";
 import type { WardRoute } from "./ward-core.js";

@@ -19,11 +19,14 @@
 import { existsSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { Repo } from "@automerge/automerge-repo";
-import {
-  BAG_MANIFEST_FILE, FloorCutThin, cutReleaseFloor, floorPinOf, floorReleaseEntriesFromBoard, foldFloorReleases,
-  FloorManifestRefusal, publicationDocUrl, materializeSharedLarDoc, readFloorManifest, sha256HexBytesSync,
-  type CapTier,
-} from "@lararium/mesh";
+import { BAG_MANIFEST_FILE } from "@lararium/mesh/bag-manifest";
+import { FloorCutThin, cutReleaseFloor } from "@lararium/mesh/canon-offer";
+import { floorPinOf } from "@lararium/mesh/floor-pin";
+import { floorReleaseEntriesFromBoard, foldFloorReleases } from "@lararium/mesh/floor-release";
+import { FloorManifestRefusal, readFloorManifest } from "@lararium/mesh/floor-manifest";
+import { publicationDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
+import { type CapTier } from "@lararium/mesh/cap-tier";
 import { readBagManifest } from "../bag-declare.js";
 import { daemonBagsDir } from "../lares-config.js";
 import { readVerifiedCasBlobFromFs, writeCasEntriesFs } from "../node-cas.js";
