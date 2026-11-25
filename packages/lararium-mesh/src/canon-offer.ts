@@ -162,7 +162,7 @@ const HOME_PREFIXES = [CONTROL_HOME_ID, SECRET_HOME_ID];
 const CAP_PATH = /^lar:\/\/\/ha\.ka\.ba\/bags\/[^/]+\/cap(?:\/|$)/;
 
 /**
- * Whether a title stays home: the projection filter's base (TW5's temp and state namespaces), the control and secret homes,
+ * Whether a title stays home: the projection filter's base (TW5's volatile namespaces: temp, state, status, story, history), the control and secret homes,
  * and every `cap/**` row under a bag home (`bags/<home>/cap/…`), read on the title's resolved path so no spelling slips past.
  */
 export function offerWithheldTitle(title: string): boolean {

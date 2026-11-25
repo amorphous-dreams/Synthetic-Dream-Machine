@@ -95,3 +95,67 @@ for (const [verb, args] of VERBS) {
     expect(calls).toHaveLength(1);
   });
 }
+
+/**
+ * THE ONE-SHOT LINE'S HAND RIDES THE DELEGATE TOO. `lares shore take-records` reaches the vessel on a one-shot line (no session,
+ * no face, no ordinal): the UDS door reads the peer and books `cli`, the daemon island holds no `wiki-act` and delegates it back
+ * to main, and main runs it into the active wiki's island, whose shore reads `ctx.asker`. Main reads that asker from its own
+ * booking of the ask it placed, as it does a session's; a one-shot ask that booked none lent the island no hand, so a person at a
+ * real terminal read `hand-unattested`.
+ */
+test("RED: a one-shot line's wiki-act delegate carries the hand the door read; CONTROL: a seat's carries `seat`, an unplaced one none, and no face rides", async () => {
+  const { core, delegate } = (() => {
+    const listeners = new Set<(raw: unknown) => void>();
+    const crossed: unknown[] = [];
+    const repo = new Repo({ sharePolicy: async () => true });
+    const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
+    const ports: MessagePort[] = [];
+    const host: DaemonVmHost = {
+      spawnWorker: () => ({
+        post: (msg: unknown) => { crossed.push(msg); },
+        listen: (h: (raw: unknown) => void): (() => void) => { listeners.add(h); return () => { listeners.delete(h); }; },
+        onError: (): (() => void) => () => {},
+        terminate: () => {},
+      }),
+      newSyncChannel: () => {
+        const { port1, port2 } = new MessageChannel();
+        ports.push(port1, port2);
+        return { mainPort: port1 as unknown as IslandMsg_Manifest["syncPort"], syncPort: port2 as unknown as IslandMsg_Manifest["syncPort"] };
+      },
+    };
+    const core = openDaemonVmCore(host, {
+      repo, daemonHandle, controlHandle: repo.create<LarDoc>(emptyLarDoc()), recipe: { wikiSlug: "daemon" }, grants: { islandUrl: daemonHandle.url }, coreHash: null,
+      workerScriptUrl: new URL("file:///unused-scripted-island"), eaSilenceMs: 2 ** 30,
+    });
+    core.workerEa.catch(() => {});
+    cleanups.push(() => core.dispose());
+    cleanups.push(() => { for (const p of ports) p.close(); });
+    cleanups.push(() => repo.shutdown().then(() => {}));
+    const registry = new VerbTable();
+    registry.register("wiki-act", async (_args, ctx) => ({ asker: (ctx as { asker?: unknown }).asker ?? null, worn: (ctx as { worn?: unknown }).worn ?? null }));
+    core.mountMainVerbs(registry);
+    const delegate = async (requestId: string, args: Record<string, unknown>): Promise<{ result?: Record<string, unknown>; error?: string }> => {
+      const from = crossed.length;
+      for (const l of [...listeners]) l(mkDaemonDelegateVerb({ requestId, verb: "wiki-act", args, requestedBy: ATOM }));
+      for (let i = 0; i < 200; i++) {
+        const r = crossed.slice(from).find((m) => (m as { type?: string; requestId?: string }).type === "daemon:verb-result" && (m as { requestId?: string }).requestId === requestId);
+        if (r) return r as { result?: Record<string, unknown>; error?: string };
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      }
+      throw new Error(`no verb-result for ${requestId}`);
+    };
+    return { core, delegate };
+  })();
+  const take = { verb: "shore", args: { op: "take-records", uri: "$:/StoryList", key: "7512190c6349272585509689" } };
+  // The one-shot line: origin channel, a request id, the asker the door read; no face, no ordinal.
+  core.placeVerb({ origin: "channel", verb: "wiki-act", args: take, requestedBy: ATOM, requestId: "one-shot-cli", asker: "cli" } as never);
+  expect((await delegate("one-shot-cli", take)).result).toEqual({ asker: "cli", worn: null });
+  // CONTROL: the booking serves ONE delegate of the act it booked.
+  expect((await delegate("one-shot-cli", take)).result).toEqual({ asker: null, worn: null });
+  core.placeVerb({ origin: "channel", verb: "wiki-act", args: take, requestedBy: ATOM, requestId: "one-shot-seat", asker: "seat" } as never);
+  expect((await delegate("one-shot-seat", take)).result).toEqual({ asker: "seat", worn: null });
+  expect((await delegate("never-placed", take)).result).toEqual({ asker: null, worn: null });
+  // CONTROL: a delegate naming other args under a booked id lends no hand.
+  core.placeVerb({ origin: "channel", verb: "wiki-act", args: take, requestedBy: ATOM, requestId: "one-shot-other", asker: "cli" } as never);
+  expect((await delegate("one-shot-other", { ...take, args: { ...take.args, key: "other" } })).result).toEqual({ asker: null, worn: null });
+});
