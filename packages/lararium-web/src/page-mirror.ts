@@ -28,7 +28,7 @@ export async function standPageMirror(root: {
   port: ReturnTypeOfPagePort; host: HTMLElement; actor: string;
   surface: () => string | null;
   /** The vessel's names for the surface's boot set; the bytes come from its island over the port. */
-  mirrorInputs: (surface: string) => Promise<{ coreCid: string; pluginCids: readonly string[]; sealedRest?: boolean } | null>;
+  mirrorInputs: (surface: string) => Promise<{ coreCid: string; pluginCids: readonly string[]; sealedRest?: boolean; skinCids?: Readonly<Record<string, string>> } | null>;
   onState?: (state: MirrorState) => void;
   /** The vessel's answer to which of the wiki's startup records the tab runs (`read:startup-admit`); absent, none runs. */
   startupAdmit?: (surface: string, records: readonly { title: string; fields: Record<string, string> }[]) => Promise<readonly string[]>;

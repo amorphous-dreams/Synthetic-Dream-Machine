@@ -608,7 +608,7 @@ export interface BrowserVesselResult extends VesselResult<BrowserVesselIslandPoo
   sendControlEvent: (surface: string, ev: LarMsg_ControlEvent) => ReturnLegVerdict;
   ports: { place(surface: string, binding: string, msg: unknown): PortPlacement; close(binding: string): void };
   /** The core hash and plugin CIDs a mounted wiki surface boots from, for the page's mirror; null for the daemon, an unmounted surface, or inputs the vessel cannot name. */
-  mirrorInputs: (surface: string) => Promise<{ coreCid: string; pluginCids: readonly string[]; sealedRest?: true } | null>;
+  mirrorInputs: (surface: string) => Promise<{ coreCid: string; pluginCids: readonly string[]; skinCids?: Readonly<Record<string, string>>; sealedRest?: true } | null>;
   /**
    * THE TAB HALF OF THE EXEC LEI: which of a wiki's startup records the page's mirror runs (`admitStartupRecords`). A wiki the
    * wearing face alone writes runs them all; the house canon's run only where this vessel spends a return of a standing exec lei
