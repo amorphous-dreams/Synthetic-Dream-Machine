@@ -38,23 +38,27 @@
  "crossingsOf": [
   {
    "who": "sess-1",
-   "at": "2026-11-24T12:00:00Z"
+   "at": "2026-11-24T12:00:00Z",
+   "seq": 0
   },
   {
    "who": "sess-2",
-   "at": "2026-11-24T11:59:00Z"
+   "at": "2026-11-24T11:59:00Z",
+   "seq": 0
   }
  ],
  "presenceOf": [
   {
    "tag": "lares-alpha#sess-1",
    "body": "sess-1",
-   "at": "2026-11-24T12:00:00Z"
+   "at": "2026-11-24T12:00:00Z",
+   "seq": 0
   },
   {
    "tag": "lares-alpha#sess-2",
    "body": "sess-2",
-   "at": "2026-11-24T11:30:00Z"
+   "at": "2026-11-24T11:30:00Z",
+   "seq": 0
   }
  ],
  "presenceLine": "2 bodies wear lares-alpha: #sess-1aa (you), #sess-2bb since 11:30",

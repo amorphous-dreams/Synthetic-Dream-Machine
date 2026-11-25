@@ -27,7 +27,7 @@
  *
  * BUNREI: THE KAMI DIVIDES UNDIMINISHED. Many bodies may wear one pet at once, and none locks another out. What orders bodies
  * rides the card's sibling record (`sideOf`, outside the carrier's render, so no wake moves the card's base): each waking body
- * names itself in `bodies-awake` (`<pet>#<body> <iso>`, refreshed at every write the body names, sorted by stamp and capped by count,
+ * names itself in `bodies-awake` (`<pet>#<body> <iso>`, refreshed at every write the body names, ordered by a door-minted seq and capped by count,
  * at most `PRESENCE_CAP`), and om names the siblings awake and each live body's last carry. Concurrent writes merge: `ah --add`
  * appends and re-reads past a conflict, so a sibling's line survives; a whole-slot replace names the slot digest it read
  * (`--base`, required of an AI seat; om hands each slot's back) and, where the slot moved since, lands both versions in a
@@ -270,8 +270,8 @@ async function attentionUnfold(args: ParsedArgs, rec: Record_): Promise<string |
 
 /**
  * A waking body joins the card's presence on its sibling record (CAS, re-read past a conflict): it refreshes its own entry, drops
- * and keeps at most `PRESENCE_CAP`. Presence refreshes at every write the body names (a wake, ah, hum): the stamp sorts siblings
- * and never drops one. Answers who stands awake, this body first.
+ * and keeps at most `PRESENCE_CAP`. Presence refreshes at every write the body names (a wake, ah, hum): the stamp annotates; the minted seq orders siblings
+ * and no age drops one. Answers who stands awake, this body first.
  */
 async function joinPresence(args: ParsedArgs, rec: Record_, body: string, ctx: Ctx): Promise<Awake[]> {
   const now = ctx.now();
@@ -366,6 +366,8 @@ async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
   const leaseLine = epoch === null ? null : `Lares spirit wake epoch ${epoch}: an ordering stamp; no write needs it, and no body locks another out.`;
   const presence = body !== null ? presenceLine(pet, awake) : presenceSeenLine(pet, awake);
   const data = { pet, uri: rec.uri, kind: rec.kind, base: rec.base, spiritId: key, epoch, every: rec.every, budgets: rec.budgets, source, ...(turn.to !== null ? { turnedFrom: given } : {}) };
+  // A resumed body ends its own crossing too: it never reaches the wake's clear below, and no timer lifts a mark.
+  if (source === "resume" && rec.crossing !== null && body !== null) await markCrossing(args, rec, body, ctx, false);
   if (source === "resume") {
     const text = `Lares spirit om · ${pet}: this body resumes; the card reads ${digestOf(rec.base).slice(7, 19)} now${epoch !== null ? ` (wake epoch ${epoch})` : ""}, and an earlier wake may read stale: lares spirit om ${pet}`;
     emit(args, { ok: true, data: { ...data, chars: text.length, text }, human: () => console.log(text) });

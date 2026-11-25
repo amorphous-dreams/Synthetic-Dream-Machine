@@ -89,11 +89,11 @@ describe("the lifted core answers as spirit.ts answered", () => {
 
 describe("the merges the host loops ran inline", () => {
   const NOW = new Date("2026-11-24T12:00:00Z");
-  test("a waking body joins the presence first, drops none by age, and sorts the rest by stamp", () => {
+  test("a waking body joins the presence first, drops none by age, and orders the rest by seq (ties keep their order)", () => {
     const fields = { "bodies-awake": "p#old 2026-11-24T10:00:00Z\np#sib 2026-11-24T11:50:00Z\np#me 2026-11-24T11:00:00Z" };
     const { awake, write } = S.presenceJoin(fields, "p", "me", NOW);
-    expect(awake.map((a) => a.body)).toEqual(["me", "sib", "old"]);
-    expect(write).toEqual({ patch: { "bodies-awake": "p#me 2026-11-24T12:00:00.000Z\np#sib 2026-11-24T11:50:00Z\np#old 2026-11-24T10:00:00Z" } });
+    expect(awake.map((a) => a.body)).toEqual(["me", "old", "sib"]);
+    expect(write).toEqual({ patch: { "bodies-awake": "p#me 2026-11-24T12:00:00.000Z 1\np#old 2026-11-24T10:00:00Z 0\np#sib 2026-11-24T11:50:00Z 0" } });
   });
   test("presence caps by count, and a clock skewed 50 years either way changes nothing", () => {
     const many = Array.from({ length: S.PRESENCE_CAP + 4 }, (_, i) => `p#b${String(i).padStart(2, "0")} 2026-11-24T11:${String(i).padStart(2, "0")}:00Z`).join("\n");
@@ -113,7 +113,7 @@ describe("the merges the host loops ran inline", () => {
   });
   test("the crossing marks one body, keeps a sibling's mark, and clears to an unset", () => {
     const fields = { crossing: "sib 2026-11-24T11:55:00Z\nold 2026-11-24T11:00:00Z" };
-    expect(S.crossingWrite(fields, "me", NOW, true)).toEqual({ patch: { crossing: "sib 2026-11-24T11:55:00Z\nold 2026-11-24T11:00:00Z\nme 2026-11-24T12:00:00.000Z" } });
+    expect(S.crossingWrite(fields, "me", NOW, true)).toEqual({ patch: { crossing: "sib 2026-11-24T11:55:00Z 0\nold 2026-11-24T11:00:00Z 0\nme 2026-11-24T12:00:00.000Z 1" } });
     expect(S.crossingWrite({ crossing: "me 2026-11-24T11:59:00Z" }, "me", NOW, false)).toEqual({ unset: ["crossing"] });
     expect(S.crossingWrite({}, "me", NOW, false)).toBeNull();
     const rec = { crossing: "me 2026-11-24T11:59:00Z", uri: URI, pet: "lares-alpha" };
@@ -121,15 +121,42 @@ describe("the merges the host loops ran inline", () => {
     expect(S.crossingRefusal(rec, "sib")).toBeNull();
     expect(S.crossingRefusal(rec, null)).toBeNull();
   });
+  test("the cap orders by the minted seq: a +50y or -50y stamp on a sibling never reorders it, and a live body never drops for a skewed one", () => {
+    const lines = (stamps: string[]) => stamps.map((at, i) => `p#b${String(i).padStart(2, "0")} ${at} ${i + 1}`).join("\n");
+    const n = S.PRESENCE_CAP;
+    const plain = Array.from({ length: n }, () => "2026-11-24T11:00:00Z");
+    const skewed = plain.map((_, i) => (i === 0 ? "1976-11-24T11:00:00Z" : i === 1 ? "2076-11-24T11:00:00Z" : "2026-11-24T11:00:00Z"));
+    const a = S.presenceJoin({ "bodies-awake": lines(plain) }, "p", "me", NOW).awake.map((x) => x.body);
+    const b = S.presenceJoin({ "bodies-awake": lines(skewed) }, "p", "me", NOW).awake.map((x) => x.body);
+    expect(b).toEqual(a);
+    expect(b[0]).toBe("me");
+    expect(b).not.toContain("b00");
+    expect(b).toContain("b01");
+    // the minted seq rises by one past the highest seen, whatever the stamp says
+    expect(S.presenceJoin({ "bodies-awake": "p#x 2076-11-24T11:00:00Z 7" }, "p", "me", NOW).awake[0]!.seq).toBe(8);
+  });
+  test("a crossing mark drops only past CROSSING_CAP later marks, oldest seq first, never by stamp", () => {
+    const marks = Array.from({ length: S.CROSSING_CAP }, (_, i) => `b${i} ${i === 0 ? "2076-11-24T11:00:00Z" : "1976-11-24T11:00:00Z"} ${i + 1}`).join("\n");
+    const next = S.crossingsOf((S.crossingWrite({ crossing: marks }, "me", NOW, true) as { patch: { crossing: string } }).patch.crossing);
+    expect(next).toHaveLength(S.CROSSING_CAP);
+    expect(next.map((c) => c.who)).not.toContain("b0");
+    expect(next.map((c) => c.who)).toContain("b1");
+    expect(next.at(-1)).toMatchObject({ who: "me", seq: S.CROSSING_CAP + 1 });
+  });
+  test("the refusal names the hand cure with the body id filled in", () => {
+    const e = S.crossingRefusal({ crossing: "me 2026-11-24T11:59:00Z 1", uri: URI, pet: "lares-alpha" }, "me");
+    expect(e?.message).toContain("lares spirit om lares-alpha --body me");
+    expect(e?.message).toContain("crashed");
+  });
   test("a crossing lifts only on the body's own wake: a mark stamped 50 years either way still holds, and no clock clears it", () => {
     for (const at of ["1976-11-24T12:00:00Z", "2076-11-24T12:00:00Z"]) {
       const rec = { crossing: `me ${at}`, uri: URI, pet: "lares-alpha" };
       expect(S.crossingRefusal(rec, "me")?.code).toBe("spirit-crossing");
-      expect(S.crossingWrite({ crossing: `me ${at}\nsib ${at}` }, "me", NOW, false)).toEqual({ patch: { crossing: `sib ${at}` } });
+      expect(S.crossingWrite({ crossing: `me ${at}\nsib ${at}` }, "me", NOW, false)).toEqual({ patch: { crossing: `sib ${at} 0` } });
       expect(S.crossingWrite({ crossing: `me ${at}` }, "me", NOW, false)).toEqual({ unset: ["crossing"] });
     }
     const skewed = new Date(Date.UTC(2076, 10, 24, 12));
-    expect(S.crossingWrite({ crossing: "sib 2026-11-24T11:55:00Z" }, "me", skewed, true)).toEqual({ patch: { crossing: "sib 2026-11-24T11:55:00Z\nme 2076-11-24T12:00:00.000Z" } });
+    expect(S.crossingWrite({ crossing: "sib 2026-11-24T11:55:00Z" }, "me", skewed, true)).toEqual({ patch: { crossing: "sib 2026-11-24T11:55:00Z 0\nme 2076-11-24T12:00:00.000Z 1" } });
   });
   test("a slot write appends, replaces, or lands both versions in one stanza", () => {
     expect(S.slotWriteBody("#/open", "!! Open\n\n* a", { add: "* b" }, false, "x")).toBe("!! Open\n\n* a\n* b");

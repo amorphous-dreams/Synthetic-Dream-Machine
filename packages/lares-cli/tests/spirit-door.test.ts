@@ -639,7 +639,7 @@ describe("om reads by source and reads the carry as testimony", () => {
     stage({ slotTexts: { "#/carry-shape": "!! The carry's shape\n\nkeep what only this body knew" } });
     const r = await run(argv(["om", "lares-alpha"], { source: "precompact", body: "body-p00" }));
     expect(data(r)["carryShape"]).toBe("!! The carry's shape\n\nkeep what only this body knew");
-    expect((puts(SIDE).find((c) => (c.args["fields"] as Record<string, string> | undefined)?.["crossing"])!.args["fields"] as Record<string, string>)["crossing"]).toBe("body-p00 2026-11-24T12:00:00.000Z");
+    expect((puts(SIDE).find((c) => (c.args["fields"] as Record<string, string> | undefined)?.["crossing"])!.args["fields"] as Record<string, string>)["crossing"]).toBe("body-p00 2026-11-24T12:00:00.000Z 1");
   });
 
   test("a precompact crossing reads #/kulana beside #/open", async () => {
@@ -713,6 +713,19 @@ describe("the carry lands with its lineage", () => {
     stage({ side: { crossing: "body-c00 2026-11-24T11:59:00.000Z" } });
     await run(argv(["om", "lares-alpha"], { source: "compact", body: "body-c00" }));
     expect(puts(SIDE).some((c) => (c.args["unset"] as string[] | undefined)?.includes("crossing"))).toBe(true);
+  });
+
+  test("a resumed body ends its own crossing too, and a sibling's mark stands", async () => {
+    stage({ side: { crossing: "body-c00 2026-11-24T11:59:00.000Z 1\nbody-d00 2026-11-24T11:59:00.000Z 2" } });
+    await run(argv(["om", "lares-alpha"], { source: "resume", body: "body-c00" }));
+    const left = puts(SIDE).map((c) => (c.args["fields"] as Record<string, string> | undefined)?.["crossing"]).filter(Boolean).at(-1);
+    expect(left).toBe("body-d00 2026-11-24T11:59:00.000Z 2");
+  });
+
+  test("a crashed body's refusal names the hand cure, and the hand's om clears it", async () => {
+    stage({ side: { crossing: "body-a00 2026-11-24T11:58:00.000Z 1" } });
+    const r = await run(argv(["ah", "lares-alpha"], { slot: "#/open", add: "* y", body: "body-a00" }));
+    expect(error(r).message).toContain("lares spirit om lares-alpha --body body-a00");
   });
 
   test("a handback keyed by session and agent lands once per key", async () => {
@@ -860,7 +873,7 @@ describe("bunrei: many bodies wear one pet, and none locks another out", () => {
     stage({ side: { crossing: "body-a00 2026-11-24T11:58:00.000Z\nbody-b00 2026-11-24T11:59:00.000Z" } });
     await run(argv(["om", "lares-alpha"], { source: "compact", body: "body-b00" }));
     const left = puts(SIDE).map((c) => (c.args["fields"] as Record<string, string> | undefined)?.["crossing"]).filter(Boolean).at(-1);
-    expect(left).toBe("body-a00 2026-11-24T11:58:00.000Z");
+    expect(left).toBe("body-a00 2026-11-24T11:58:00.000Z 0");
   });
 
   test("the carry's handed-back line names the body, so its own crossing reaches its own writes", async () => {
@@ -875,7 +888,7 @@ describe("bunrei: many bodies wear one pet, and none locks another out", () => {
     expect(String(data(r)["text"])).toContain("3 bodies wear lares-alpha: #body-b00 (you), #body-a00 since 11:50, #body-old since 10:00");
     const awake = puts(SIDE).map((c) => (c.args["fields"] as Record<string, string> | undefined)?.["bodies-awake"]).filter(Boolean).at(-1)!;
     expect(awake).toContain("lares-alpha#body-a00 2026-11-24T11:50:00.000Z");
-    expect(awake).toContain("lares-alpha#body-b00-long 2026-11-24T12:00:00.000Z");
+    expect(awake).toContain("lares-alpha#body-b00-long 2026-11-24T12:00:00.000Z 1");
     expect(awake).toContain("lares-alpha#body-old 2026-11-24T10:00:00.000Z");
   });
 
@@ -884,7 +897,7 @@ describe("bunrei: many bodies wear one pet, and none locks another out", () => {
     const r = await run(argv(["ah", "lares-alpha"], { slot: "#/open", add: "* y", body: "body-b00" }), { now: () => new Date("2076-11-24T12:00:00Z") });
     expect(r.exit, JSON.stringify(r.printed)).toBe(0);
     const awake = String(puts(SIDE).map((c) => (c.args["fields"] as Record<string, string> | undefined)?.["bodies-awake"]).filter(Boolean).at(-1));
-    expect(awake).toContain("lares-alpha#body-b00 2076-11-24T12:00:00.000Z");
+    expect(awake).toContain("lares-alpha#body-b00 2076-11-24T12:00:00.000Z 1");
     expect(awake).toContain("lares-alpha#body-a00 2026-11-24T11:50:00.000Z");
   });
 
@@ -987,7 +1000,7 @@ describe("bunrei: many bodies wear one pet, and none locks another out", () => {
   });
 
   test("bodies-awake keeps at most 16 entries, by count", async () => {
-    const many = Array.from({ length: 20 }, (_, i) => `lares-alpha#body-${String(i).padStart(2, "0")} 2026-11-24T11:${String(30 + i).padStart(2, "0")}:00.000Z`).join("\n");
+    const many = Array.from({ length: 20 }, (_, i) => `lares-alpha#body-${String(i).padStart(2, "0")} 2026-11-24T11:${String(30 + i).padStart(2, "0")}:00.000Z ${i + 1}`).join("\n");
     stage({ side: { "bodies-awake": many } });
     await run(argv(["om", "lares-alpha"], { body: "body-me" }));
     const awake = String(puts(SIDE).map((c) => (c.args["fields"] as Record<string, string> | undefined)?.["bodies-awake"]).filter(Boolean).at(-1));
