@@ -87,7 +87,7 @@ describe("only the hand door lights the pūlama", () => {
     // NO ROUTE RIDES THE FRAME, and the verb sends it whole: the host's testimony alone.
     const routes: string[] = [];
     const spent = await runHandVerb("name-successor-lei", JSON.stringify({ ...frame, op: undefined }), { ask: (f) => door(f), route: async (label) => { routes.push(label); return FIXTURE_PASSPHRASE; } });
-    expect(spent).toMatchObject({ reading: "committed", v: 1, branch: "develop" });
+    expect(spent).toMatchObject({ reading: "named", v: 1, branch: "develop" });
     expect(routes).toEqual([]);
     expect(handVerbExit("name-successor-lei", spent)).toBe(0);
     expect(handVerbExit("name-successor-lei", { op: "name-successor-lei", reading: "keeper-lei-ci-red" })).toBe(1);

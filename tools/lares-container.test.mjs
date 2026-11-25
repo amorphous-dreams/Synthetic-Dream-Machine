@@ -2656,3 +2656,14 @@ for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
     }
   });
 }
+
+test("the hand verbs the shims send to the pūlama stay the names it dispatches (name-successor, name-successor-lei)", async () => {
+  const { readFileSync } = await import("node:fs");
+  const verbs = readFileSync(new URL("../packages/lararium-node/src/pulama-verbs.ts", import.meta.url), "utf8");
+  const sh = readFileSync(new URL("./lares-container.sh", import.meta.url), "utf8");
+  const ps = readFileSync(new URL("./lares-container.ps1", import.meta.url), "utf8");
+  for (const op of ["name-successor", "name-successor-lei"]) assert.ok(verbs.includes(`"${op}"`), `the pūlama dispatches ${op}`);
+  assert.match(sh, /node "\$PULAMA_MAIN" name-successor "/);
+  assert.match(sh, /node "\$PULAMA_MAIN" name-successor-lei "/);
+  assert.match(ps, /\$PulamaMain, 'name-successor'/);
+});

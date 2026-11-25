@@ -473,7 +473,7 @@ export function pulamaHandDoor(a: {
         const out = await keeperNameSuccessor(a.records, await pulamaSignerOf(holder), { ...await standing(), next, devices, cosign });
         if ("refusal" in out) return { op: "name-successor", reading: out.refusal, detail: out.detail };
         log(`keeper named a successor: v${out.v} names the successor closure${out.supersedes !== null ? ", superseding the commit before it" : ""}`);
-        return { op: "name-successor", reading: "committed", ...out };
+        return { op: "name-successor", reading: "named", ...out };
       }
       case "name-successor-lei": {
         // THE COMMIT THE KUKULU LEI LICENSES (no route: the consent rode the hand's kukulu lei, whose return the vest's rite spends).
@@ -488,7 +488,7 @@ export function pulamaHandDoor(a: {
         const out = await keeperNameSuccessorByLei(a.records, await pulamaSignerOf(holder), { ...await standing(), next, devices, branch: word("branch"), rev: word("rev"), tree: word("tree"), recheck: word("recheck"), image: word("image"), ci: word("ci"), floor: leiFloor });
         if ("refusal" in out) { log(`name-successor-lei: ${out.refusal}`); return { op: "name-successor-lei", reading: out.refusal, detail: out.detail }; }
         log(`keeper named a successor under the kukulu lei of ${out.branch}: v${out.v} names the successor closure; the vest's rite spends the lei's return`);
-        return { op: "name-successor-lei", reading: "committed", ...out };
+        return { op: "name-successor-lei", reading: "named", ...out };
       }
       case "keeper-offer": {
         if (holder.isUnlocked()) return { op: "keeper-offer", reading: "keeper-lit", detail: "a lit keeper holds a fire already; only an unlit successor offers a key" };

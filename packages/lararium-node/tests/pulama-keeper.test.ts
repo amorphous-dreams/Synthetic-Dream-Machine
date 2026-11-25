@@ -87,9 +87,9 @@ describe("RED name-successor names one successor under the hand's route", () => 
     expect(await h.old({ op: "name-successor", next: D2, credentials: [{ kind: "passphrase", passphrase: "not-the-route" }] })).toMatchObject({ reading: "no-slot-opens" });
     expect(await h.records.list(pulamaKeeperPrefix())).toEqual([]);
     const first = await h.commit(D3);
-    expect(first).toMatchObject({ reading: "committed", v: 1, next: D3, supersedes: null });
+    expect(first).toMatchObject({ reading: "named", v: 1, next: D3, supersedes: null });
     const second = await h.commit(D2);
-    expect(second).toMatchObject({ reading: "committed", v: 1, next: D2 });
+    expect(second).toMatchObject({ reading: "named", v: 1, next: D2 });
     expect(second["supersedes"]).toEqual(expect.stringMatching(/^[0-9a-f]{64}$/));
     expect(await h.old({ op: "status" })).toMatchObject({ keeper: { v: 0, successor: D2, fork: false }, vestReady: D2, closure: D });
   });
@@ -99,7 +99,7 @@ describe("RED name-successor names one successor under the hand's route", () => 
     const labels: string[] = [];
     const frames: Array<Readonly<Record<string, unknown>>> = [];
     const answer = await runHandVerb("name-successor", [D2, "--devices", "1"], { ask: (f) => { frames.push(f); return h.old(f); }, route: async (label) => { labels.push(label); return FIXTURE_PASSPHRASE; } });
-    expect(answer).toMatchObject({ reading: "committed", next: D2 });
+    expect(answer).toMatchObject({ reading: "named", next: D2 });
     expect(frames.at(-1)).toMatchObject({ op: "name-successor", devices: 1 });
     await expect(runHandVerb("name-successor", [D2, "--devices", "0"], { ask: (f) => h.old(f), route: async () => FIXTURE_PASSPHRASE })).rejects.toThrow(/usage/);
     expect(labels).toEqual([expect.stringContaining(D2)]);
@@ -184,7 +184,7 @@ describe("RED the vest hands the living fire, and the successor lands par", () =
     const h = await house("keeper-vest-cosigned");
     const nonce = "a1".repeat(32);
     const cosign = await cosignedCommit({ next: D2, prev: null, nonce });
-    expect(await h.old({ op: "name-successor", next: D2, devices: 2, cosign: { nonce, faces: [cosign] }, credentials: fixtureRoute })).toMatchObject({ reading: "committed", v: 1 });
+    expect(await h.old({ op: "name-successor", next: D2, devices: 2, cosign: { nonce, faces: [cosign] }, credentials: fixtureRoute })).toMatchObject({ reading: "named", v: 1 });
     // A co-signed commit reads vest-ready, and the rite's vessel-signed vouch counts the same two devices the co-sign's roster binds.
     expect(await h.old({ op: "status" })).toMatchObject({ vestReady: D2 });
     h.live.devices = 2;
@@ -222,7 +222,7 @@ describe("RED the vest hands the living fire, and the successor lands par", () =
     expect(await commit({ nonce, faces: [good] }, 3)).toMatchObject({ reading: "vest-cosign-refused" });
     expect(await h.records.list(pulamaKeeperPrefix())).toEqual([]);
     // A SPENT CO-SIGN NEVER RE-SPENDS: it rode one commit; a second commit under it refuses, and so does a second vest.
-    expect(await commit({ nonce, faces: [good] })).toMatchObject({ reading: "committed" });
+    expect(await commit({ nonce, faces: [good] })).toMatchObject({ reading: "named" });
     expect(await commit({ nonce, faces: [good] })).toMatchObject({ reading: "vest-cosign-spent", detail: expect.stringContaining("lares pulama name-successor") });
     h.live.devices = 2;
     h.live.faces = [{ ordinal: 0, group: KEEPER_FACE, devices: 2 }];
@@ -235,7 +235,7 @@ describe("RED the vest hands the living fire, and the successor lands par", () =
     const run = async (label: string, vouched: { ordinal: number; group: string; devices: number }[], group = KEEPER_FACE) => {
       const h = await house(label);
       const nonce = sha(label);
-      expect(await h.old({ op: "name-successor", next: D2, devices: 2, cosign: { nonce, faces: [await cosignedCommit({ next: D2, prev: null, nonce }, 0, group)] }, credentials: fixtureRoute })).toMatchObject({ reading: "committed" });
+      expect(await h.old({ op: "name-successor", next: D2, devices: 2, cosign: { nonce, faces: [await cosignedCommit({ next: D2, prev: null, nonce }, 0, group)] }, credentials: fixtureRoute })).toMatchObject({ reading: "named" });
       h.live.devices = 2; h.live.faces = vouched;
       return handoff(h, h.old);
     };
@@ -277,7 +277,7 @@ describe("RED the vest hands the living fire, and the successor lands par", () =
     const next = h.successor(D2); await next.report();
     const offer = await next.door({ op: "keeper-offer" });
     expect(await h.old({ op: "keeper-vest", to: offer["to"], closure: D2, offer: "rite" })).toMatchObject({ reading: "fork", detail: expect.stringContaining("lares pulama name-successor") });
-    expect(await h.commit(D2, 1)).toMatchObject({ reading: "committed" });
+    expect(await h.commit(D2, 1)).toMatchObject({ reading: "named" });
     expect(await h.old({ op: "status" })).toMatchObject({ keeper: { fork: false, successor: D2 } });
     expect((await handoff(h, h.old)).landed).toMatchObject({ reading: "landed" });
   });
@@ -373,7 +373,7 @@ describe("RED the struck fire and the budget", () => {
     const first = await handoff(h, h.old);
     expect(first.landed).toMatchObject({ reading: "landed", vestings: 1 });
     await first.next.door({ op: "image", digest: IMAGE, closure: D2 });
-    expect(await first.next.door({ op: "name-successor", next: D3, devices: 1, credentials: fixtureRoute })).toMatchObject({ reading: "committed", v: 2 });
+    expect(await first.next.door({ op: "name-successor", next: D3, devices: 1, credentials: fixtureRoute })).toMatchObject({ reading: "named", v: 2 });
     const struck = h.successor(D2);
     await struck.report();
     expect(await struck.door({ op: "light", credentials: fixtureRoute })).toMatchObject({ reading: "opens" });
@@ -381,7 +381,7 @@ describe("RED the struck fire and the budget", () => {
     const by = await pulamaSignerOf(struck.holder);
     expect(await keeperFold(h.records, by)).toMatchObject({ v: 1, vestings: 1, successor: null, fork: false });
     // The next commit links to v1's tip again, and a par vest extends the run to two.
-    expect(await first.next.door({ op: "name-successor", next: D3, devices: 1, credentials: fixtureRoute })).toMatchObject({ reading: "committed", v: 2 });
+    expect(await first.next.door({ op: "name-successor", next: D3, devices: 1, credentials: fixtureRoute })).toMatchObject({ reading: "named", v: 2 });
     expect((await handoff(h, first.next.door, D3)).landed).toMatchObject({ reading: "landed", vestings: 2 });
     await struck.holder.lock();
   });
@@ -420,7 +420,7 @@ describe("RED the struck fire and the budget", () => {
     let keeper = h.old, holder: CustodyHolder = fx!.kept;
     for (let n = 1; n <= KEEPER_STRUCK_EVERY; n++) {
       await keeper({ op: "image", digest: IMAGE, closure: n === 1 ? D : D2 });
-      expect(await keeper({ op: "name-successor", next: D2, devices: 1, credentials: fixtureRoute })).toMatchObject({ reading: "committed", v: n });
+      expect(await keeper({ op: "name-successor", next: D2, devices: 1, credentials: fixtureRoute })).toMatchObject({ reading: "named", v: n });
       const step = await handoff(h, keeper);
       expect(step.landed).toMatchObject({ reading: "landed", vestings: n });
       expect(step.next.holder.attemptsLeft()).toBe(UNLOCK_ATTEMPTS_PER_BOOT - 1);
@@ -565,7 +565,7 @@ describe("RED the keeper lei: the kukulu lei licenses the handed fire (operator 
     const h = await house("keeper-lei-licenses");
     expect(await h.old({ op: "status" })).toMatchObject({ keeperLei: { floor: true, licensed: [] }, leiReady: true });
     const first = await spend(h.old);
-    expect(first).toMatchObject({ reading: "committed", v: 1, next: D2, branch: "main" });
+    expect(first).toMatchObject({ reading: "named", v: 1, next: D2, branch: "main" });
     const successor = (await keeperFold(h.records, await pulamaSignerOf(fx!.kept))).successor;
     expect(successor?.body).toMatchObject({ devices: 1, licensed: { by: "kukulu-lei", ...TESTIMONY, image: D2 } });
     expect(await h.old({ op: "status" })).toMatchObject({ keeperLei: { licensed: [{ v: 1, next: D2, branch: "main", rev: TESTIMONY.rev, ci: TESTIMONY.ci, vested: false, leis: [] }] }, vestReady: D2 });
@@ -575,7 +575,7 @@ describe("RED the keeper lei: the kukulu lei licenses the handed fire (operator 
     // THE VEST NAMES THE KUKULU LEI RETURN ITS RITE SPENT: the license, read back on status.
     await one.next.door({ op: "image", digest: IMAGE, closure: D2 });
     expect(await one.next.door({ op: "status" })).toMatchObject({ keeperLei: { licensed: [{ v: 1, vested: true, leis: [{ lei: "11".repeat(32), n: 1 }] }] }, leiReady: true });
-    expect(await spend(one.next.door, D3)).toMatchObject({ reading: "committed", v: 2 });
+    expect(await spend(one.next.door, D3)).toMatchObject({ reading: "named", v: 2 });
     expect((await handoff(h, one.next.door, D3)).landed).toMatchObject({ reading: "landed", vestings: 2 });
     expect(JSON.stringify([h.lines, h.answers])).not.toContain(FIXTURE_PASSPHRASE);
     await one.next.holder.lock();
@@ -593,22 +593,22 @@ describe("RED the keeper lei: the kukulu lei licenses the handed fire (operator 
 
   test("keeper-lei-never-supersedes: a live hand commit refuses `keeper-lei-successor-stands` and rests nothing; the hand's own commit still supersedes", async () => {
     const h = await house("keeper-lei-hand");
-    expect(await h.commit(D3)).toMatchObject({ reading: "committed" });
+    expect(await h.commit(D3)).toMatchObject({ reading: "named" });
     expect(await spend(h.old)).toMatchObject({ reading: "keeper-lei-successor-stands", detail: expect.stringContaining("lares pulama name-successor") });
     expect(await h.old({ op: "status" })).not.toHaveProperty("leiReady");
     expect((await keeperFold(h.records, await pulamaSignerOf(fx!.kept))).successor?.next).toBe(D3);
-    expect(await h.commit(D2)).toMatchObject({ reading: "committed", supersedes: expect.stringMatching(/^[0-9a-f]{64}$/) });
+    expect(await h.commit(D2)).toMatchObject({ reading: "named", supersedes: expect.stringMatching(/^[0-9a-f]{64}$/) });
   });
 
   test("keeper-lei-supersedes-a-stale-self-successor (the 2026-11-24 shape): a hand commit at v1, prev null, whose next equals its own from-closure, reads stale; status reads `staleSuccessor` and leiReady; a licensed lei supersedes it", async () => {
     const h = await house("keeper-lei-stale-self");
     const self = await h.commit(D);
-    expect(self).toMatchObject({ reading: "committed", v: 1 });
+    expect(self).toMatchObject({ reading: "named", v: 1 });
     const by = await pulamaSignerOf(fx!.kept);
     const before = (await keeperFold(h.records, by)).successor;
     expect(before?.body).toMatchObject({ v: 1, prev: null, closure: D, next: D });
     expect(await h.old({ op: "status" })).toMatchObject({ keeper: { successor: D, staleSuccessor: true, staleSuccessorWhy: "self-successor" }, leiReady: true });
-    expect(await spend(h.old)).toMatchObject({ reading: "committed", v: 1, next: D2 });
+    expect(await spend(h.old)).toMatchObject({ reading: "named", v: 1, next: D2 });
     const after = (await keeperFold(h.records, by)).successor;
     expect(after?.next).toBe(D2);
     expect(after?.body).toMatchObject({ supersedes: before!.begun, licensed: { by: "kukulu-lei" } });
@@ -617,7 +617,7 @@ describe("RED the keeper lei: the kukulu lei licenses the handed fire (operator 
 
   test("keeper-lei-supersedes-a-moved-keeper's-commit: a hand commit read under another closure than the keeper now runs reads stale; a live, current hand commit still refuses", async () => {
     const h = await house("keeper-lei-stale-moved");
-    expect(await h.commit(D3)).toMatchObject({ reading: "committed" });
+    expect(await h.commit(D3)).toMatchObject({ reading: "named" });
     expect(await h.old({ op: "status" })).toMatchObject({ keeper: { successor: D3, staleSuccessor: false } });
     expect(await h.old({ op: "status" })).not.toHaveProperty("leiReady");
     expect(await spend(h.old)).toMatchObject({ reading: "keeper-lei-successor-stands" });
@@ -625,7 +625,7 @@ describe("RED the keeper lei: the kukulu lei licenses the handed fire (operator 
     const moved = "sha256:" + "e7".repeat(32);
     await h.old({ op: "closure", digest: moved });
     expect(await h.old({ op: "status" })).toMatchObject({ keeper: { successor: D3, staleSuccessor: true, staleSuccessorWhy: "keeper-moved" }, leiReady: true });
-    expect(await spend(h.old)).toMatchObject({ reading: "committed", next: D2 });
+    expect(await spend(h.old)).toMatchObject({ reading: "named", next: D2 });
     expect((await keeperFold(h.records, await pulamaSignerOf(fx!.kept))).successor?.next).toBe(D2);
   });
 
@@ -694,7 +694,7 @@ describe("RED the keeper lei's cold read (F1, F3, F5, F6): a licensed commit ves
     const h1 = await fx!.kept.foundFace({ group: personaGroupDigest("group-keeper-lei-f1-h1"), ordinal: 1, slots: fixtureSlots });
     const both = [{ group: "group-keeper-lei-f1", devices: 1 }, { group: "group-keeper-lei-f1-h1", devices: 1 }];
     h.live.absentGroup = "group-keeper-lei-f1-h1";
-    expect(await licensed(h)).toMatchObject({ reading: "committed" });
+    expect(await licensed(h)).toMatchObject({ reading: "named" });
     expect(await vestOver(h, h.old, both)).toMatchObject({ reading: "vested" });
     expect(h.begins).toEqual(["group-keeper-lei-f1"]);
     void h1;
@@ -702,14 +702,14 @@ describe("RED the keeper lei's cold read (F1, F3, F5, F6): a licensed commit ves
 
   test("F3: a licensed commit vests only over vouches naming its branch, revision and tree: another head lapses `keeper-lei-vouch-differs` and begins nothing", async () => {
     const h = await house("keeper-lei-f3", { realRite: true });
-    expect(await licensed(h)).toMatchObject({ reading: "committed" });
+    expect(await licensed(h)).toMatchObject({ reading: "named" });
     expect(await vestOver(h, h.old, [{ group: "group-keeper-lei-f3", devices: 1 }], "c".repeat(40))).toMatchObject({ reading: "keeper-lei-vouch-differs", detail: expect.stringContaining("lares rite kukulu") });
     expect(h.begins).toEqual([]);
   });
 
   test("F6: the floor off lapses a licensed commit at the vest (`keeper-lei-floor-off`); CONTROL: a routed commit vests under the same floor", async () => {
     const h = await house("keeper-lei-f6", { realRite: true });
-    expect(await licensed(h)).toMatchObject({ reading: "committed" });
+    expect(await licensed(h)).toMatchObject({ reading: "named" });
     const off = pulamaHandDoor({ holder: fx!.kept, server: fx!.server, image: h.image, records: h.records, keeperRite: h.keeperRite, keeperLeiStands: false });
     await off({ op: "closure", digest: D });
     expect(await vestOver(h, off, [{ group: "group-keeper-lei-f6", devices: 1 }])).toMatchObject({ reading: "keeper-lei-floor-off" });

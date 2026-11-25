@@ -105,7 +105,7 @@ export function handVerbExit(verb: string, answer: PulamaHandAnswer): 0 | 1 {
 }
 /** The one reading each act that must land answers; any other reading exits 1, so the host shim never reads a refusal as done. */
 const HAND_VERB_LANDS: Readonly<Record<string, string>> = {
-  rehive: "rehived", recard: "granted", "name-successor": "committed", "name-successor-lei": "committed", "keeper-offer": "offered", "keeper-vest": "vested", "keeper-receive": "landed", "keeper-land": "landed", "take-fire": "taken",
+  rehive: "rehived", recard: "granted", "name-successor": "named", "name-successor-lei": "named", "keeper-offer": "offered", "keeper-vest": "vested", "keeper-receive": "landed", "keeper-land": "landed", "take-fire": "taken",
 };
 
 /**
