@@ -175,7 +175,7 @@ interface Fold { readonly asked: UnfoldRank; readonly rank: UnfoldRank; readonly
  * shrine (or, with no shrine, the card) as a folded carrier, recomposed, cut and stamped inside the wiki that holds the records
  * (the lares-lararium skin's `spirit-fold`). A fold past `room` (a wake's cap) asks one grain narrower, so the carrier always
  * rides whole; a hand naming its aperture names no room. The fold never fails a wake: a wiki whose skin holds no fold, a render
- * door that refuses (a cap, a vessel that predates the verb's args) and a fold past the ceiling each answer no carrier and say
+ * door that refuses (a cap, a vessel whose render verb reads other args) and a fold past the ceiling each answer no carrier and say
  * which, and the caller reads as it read before the fold stood.
  */
 async function foldSpirit(args: ParsedArgs, pet: string, ask: FoldAsk, room: number | null): Promise<Fold> {
