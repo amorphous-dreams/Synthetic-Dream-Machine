@@ -928,7 +928,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--tag-remove <list>  (put) tags to remove",
       "--text <words>       (put) the new text (with `--meme --slot`: the slot's whole body)   ·   --file <host path | ->  the new text from a host file or stdin",
       "--base <hash>        (put) the hash last read; stale → conflict, nothing lands (a base guards honest reuse, never a lock)",
-      "--create             (put) land only where no tiddler stands; an existing one answers `exists`",
+      "--create             (put) land only where no tiddler stands; an existing one answers `exists`   ·   (put --meme) land the whole family only where none stands; a standing one answers `exists`, nothing moves (a slot patch refuses it: the family must stand)",
       "--if-match <hash>    (delete | rename) the hash last read; stale → conflict, nothing moves",
       "--family             (delete) name the family act: a meme root leaves with its slots, as one change",
       "--mode <kapae|reveal> (delete) over a lower layer's record: kapae hides it   ·   reveal surfaces it (none: a plain delete)",
