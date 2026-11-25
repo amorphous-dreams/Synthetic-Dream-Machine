@@ -1519,8 +1519,9 @@ def build_mcp(coordinator: LaresCoordinator):
         (default `agent`). The tiddler lands once under `lar:///ha.ka.ba/lares/oracle/casts/` in the wiki's working layer
         with fields method, entropy, lines, changing, primary, relating, caster, cast-at and readings; reading it again
         never casts again. ONE ASKING, ONE THROW: `asking` names the fork you cast at, in words; the same words by the same
-        caster answer the cast already standing (`replayed`), so a retried call never throws twice. With no `asking` each
-        call stands as its own asking. A fresh throw for the same words, or a seeded one, rides a person's hand alone (the
+        caster answer the cast already standing (`replayed`; case, spacing and trailing punctuation never re-roll, and the
+        throw keys on the seat the vessel booked, `caster` annotating alone), so a retried call never throws twice. Name the
+        query before the cast: a call with no `asking` reads band `asks`. A fresh throw for the same words, or a seeded one, rides a person's hand alone (the
         CLI's `--fresh` / `--seed`); a seat that asks either reads band `asks`. Returns {band, intent, replayed, decision,
         created, title, cast, text, readings, asOf, note} (`asOf` labels the readings by the digest of the bytes read): `readings` carries the house's imported DOA and e-jing texts for each hexagram this wiki holds,
         with their attribution and license, and names the ones it holds none of. A spirit's jolt rides this tool only when

@@ -17,10 +17,10 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
-import { PLATFORM_ENTROPY } from "@lararium/mesh/entropy-door";
+import { PLATFORM_ENTROPY, seededEntropy } from "@lararium/mesh/entropy-door";
 import { hex } from "@lararium/mesh";
 import {
-  ORACLE_THROW_STANDS, askingId, castFromCoins, castThreeCoins, castReadingTitles, castRecord, castText, parseCoins, type LineValue,
+  ORACLE_THROW_STANDS, castFromCoins, castThreeCoins, castReadingTitles, castRecord, castText, parseCoins,
 } from "@lararium/mesh/oracle-cast";
 import { DaemonUnreachable, verbFailure } from "../verb-call.js";
 import { containerArgs } from "../container-target.js";
@@ -61,20 +61,19 @@ export function oraclePlan(args: ParsedArgs, at: string, mint: () => string = mi
   return { verb: "oracle-cast", args: out };
 }
 
-/** The asking's id the plan names: the same id the vessel lands the cast under. */
-function intentOf(plan: DoorPlan): string {
-  const a = plan.args;
-  const word = (key: string): string => (typeof a[key] === "string" ? String(a[key]) : "");
-  return askingId({ caster: word("caster"), asking: word("asking"), nonce: word("nonce"), seed: word("seed"), ...(Array.isArray(a["coins"]) ? { coins: a["coins"] as LineValue[] } : {}) });
-}
-
 interface Reading { title: string; absent?: boolean; caption?: string; attribution?: string; license?: string; source?: string; text?: string }
 
 /** Read the checkout's carrier families using the same deserializer as the vessel. */
 async function offlineCast(plan: DoorPlan): Promise<Record<string, unknown>> {
   const ask = { caster: String(plan.args["caster"]), at: String(plan.args["at"]) };
   const coins = plan.args["coins"] as readonly unknown[] | undefined;
-  const cast = coins ? castFromCoins(coins, ask) : castThreeCoins(PLATFORM_ENTROPY, ask);
+  const seed = typeof plan.args["seed"] === "string" ? plan.args["seed"] : null;
+  // A SLEEPING VESSEL KEEPS NO ASKING: its one throw lives in the vessel's record, so an asking with no seed and no coins
+  // refuses here rather than draw coins no later ask could replay.
+  if (plan.args["asking"] !== undefined && seed === null && !coins && plan.args["fresh"] !== true) {
+    throw new DoorUsage("the vessel sleeps, and an asking keeps its one throw in the vessel's record: stand it (`lares vessel stand`) and ask again, or name a seed (`--seed <strong words>`) for a throw any later ask replays");
+  }
+  const cast = coins ? castFromCoins(coins, ask) : castThreeCoins(seed !== null ? seededEntropy(seed) : PLATFORM_ENTROPY, ask);
   const { deserializeCarrier } = await import("@lararium/tw5");
   const readings = castReadingTitles(cast).map((title) => {
     const relative = title.slice("lar:///ha.ka.ba/lares/library/oracles/".length);
@@ -93,7 +92,6 @@ async function offlineCast(plan: DoorPlan): Promise<Record<string, unknown>> {
 
 async function oracleCast(args: ParsedArgs): Promise<number> {
   const plan = oraclePlan(args, new Date().toISOString());
-  const intent = intentOf(plan);
   let ran: Awaited<ReturnType<typeof runDoor>>;
   try { ran = await runDoor(args, "oracle cast", plan); }
   catch (error) {
@@ -110,7 +108,7 @@ async function oracleCast(args: ParsedArgs): Promise<number> {
       const hint = asked ? `the cast stays owed: run the same line again and the same asking answers its standing cast, never a second throw; or ${readBack}` : `the cast stays owed: ${readBack} before casting again`;
       emit(args, {
         ok: false, ...(f.requestId !== undefined ? { requestId: f.requestId } : {}),
-        data: { band: "owed", intent },
+        data: { band: "owed", ...(plan.args["asking"] !== undefined ? { asking: plan.args["asking"] } : {}) },
         error: { code: f.code, message: f.message, hint },
         human: () => { console.error(`lares oracle cast: owed: ${f.message}`); console.error(`  ${hint}`); },
       });

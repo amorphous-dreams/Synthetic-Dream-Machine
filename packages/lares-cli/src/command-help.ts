@@ -85,7 +85,11 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "  standing (replayed), at any later time, so a retry never throws twice. A bare cast mints its own nonce at the word.",
       "  A person's hand opens the second mode: --fresh throws anew for the same words, --seed <words> throws the same coins for",
       "  the same seed; a seat that asks either reads `asks` with the line a person runs (exit 5). A lost answer reads owed",
-      "  (exit 6), never failed: the asking's id rides with it. The readings print as of the digest of the bytes read.",
+      "  (exit 6), never failed. The readings print as of the digest of the bytes read. The throw keys on the asker the",
+      "  vessel booked (--caster annotates) and on the words normalized (case, spacing, trailing punctuation never re-roll).",
+      "  A seat names its query before it casts: its bare cast reads `asks`. A sleeping vessel honors --seed and refuses a bare",
+      "  --asking. A weak seed reads back: the record names the seed by a 16-hex digest anyone can test guesses against, so",
+      "  choose a strong one.",
     ],
     examples: [
       "lares oracle cast --recipe default                       # a house cast through the platform's entropy door",

@@ -29,7 +29,7 @@ vi.mock("../src/env.js", async (orig) => ({
   vesselDid: async () => "0x" + "ab".repeat(32),
 }));
 
-import { ORACLE_THROW_STANDS, askingId, castFromCoins, castRecord, castText } from "@lararium/mesh/oracle-cast";
+import { ORACLE_THROW_STANDS, castFromCoins, castRecord, castText } from "@lararium/mesh/oracle-cast";
 import { cmdOracle, oraclePlan } from "../src/commands/oracle-cmd.js";
 import { COMMANDS } from "../src/bin/lares.js";
 import { helpLines } from "../src/command-help.js";
@@ -102,7 +102,7 @@ describe("lares oracle cast", () => {
     const r = await run(argv(["cast"], { recipe: "default", asking: "which road?" }, { json: true }));
     expect(r.exit).toBe(6);
     const out = JSON.parse(r.out);
-    expect(out).toMatchObject({ ok: false, requestId: "r9", data: { band: "owed", intent: askingId({ caster: "operator", asking: "which road?" }) }, error: { code: "outcome-unknown" } });
+    expect(out).toMatchObject({ ok: false, requestId: "r9", data: { band: "owed", asking: "which road?" }, error: { code: "outcome-unknown" } });
     expect(out.error.hint).toContain("same line");
     expect(out.error.hint).toContain("lares vessel request r9");
   });
@@ -174,6 +174,27 @@ describe("lares oracle cast", () => {
     expect(plain.out).toContain("Robert Shea");
     expect(plain.out).toContain("Kopyleft");
     expect(plain.out).toContain("no record was saved");
+  });
+
+  test("a sleeping vessel keeps no asking: --asking refuses offline with its cure, and never draws silent coins", async () => {
+    h.offline = true;
+    const r = await run(argv(["cast"], { recipe: "default", asking: "which road?" }, { json: true }));
+    expect(r.exit).toBe(2);
+    const out = JSON.parse(r.out);
+    expect(out.error.message).toContain("lares vessel stand");
+    expect(out.error.message).toContain("--seed");
+  });
+
+  test("a sleeping vessel honors --seed: the seed's coins, named by its digest", async () => {
+    h.offline = true;
+    const one = JSON.parse((await run(argv(["cast"], { recipe: "default", seed: "a strong seed", asking: "q" }, { json: true }))).out).data;
+    const two = JSON.parse((await run(argv(["cast"], { recipe: "default", seed: "a strong seed" }, { json: true }))).out).data;
+    expect(one.cast.entropy).toMatch(/^seed:sha256:[0-9a-f]{16}$/);
+    expect(one.cast.lines).toEqual(two.cast.lines);
+  });
+
+  test("the help warns that a weak seed reads back from its digest", () => {
+    expect(helpLines("oracle").join("\n")).toContain("guess");
   });
 
   test("a bare `lares oracle` prints its help, the limit included", async () => {
