@@ -99,8 +99,11 @@ export interface KeeperBegunBody {
 export interface KeeperLicense {
   readonly by: "kukulu-lei"; readonly branch: string;
   /** The revision, its source tree, the second fresh-archive closure (`same`), the built image's closure label (it equals `next`),
-   *  and the CI push run on the revision as the host read it (`<run id>:success`). */
+   *  and the CI push run on the revision as the host read it: annotation alone (`<run id>:<status>:<conclusion>`, or `unread`). */
   readonly rev: string; readonly tree: string; readonly recheck: "same"; readonly image: string; readonly ci: string;
+  /** THE LOCAL WITNESS (ruling 2026-11-25-web2-annotates): the bench verdict over `tree`, named by the sha256 the keeper took of the
+   *  bytes the host handed, and its verdict line. Absent on a commit licensed before the witness moved inside. */
+  readonly bench?: string; readonly benchLine?: string;
 }
 /** The vest's spend mark: the lit keeper sealed the house's end of the bond to ONE successor key, once per commit. No key rests in it. */
 export interface KeeperVestedBody {
@@ -110,6 +113,8 @@ export interface KeeperVestedBody {
   readonly rite: readonly string[];
   /** Each kukulu lei return the live rite spent (`lei` cid, `n`): what licensed a commit that rode no route. */
   readonly leis?: readonly { readonly lei: string; readonly n: number }[];
+  /** The local bench verdict the licensed commit named (its sha256): the vest names the witness that decided it. */
+  readonly bench?: string;
 }
 /** THE COMMIT LAPSES after one rite attempt that refused: the mark rests where a vest's would, so the commit never vests later. */
 export interface KeeperLapsedBody {

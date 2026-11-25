@@ -98,13 +98,14 @@
  *   take-fire      (a lit successor) claim the vessel socket; it refuses while another keeper still holds it.
  *   name-successor-lei  THE COMMIT THE KUKULU LEI LICENSES (no route; operator ruling 2026-11-24: no count of its own). The host,
  *                  having read a standing kukulu lei on the branch with returns left, testifies the branch, the revision, its tree, the
- *                  fresh-archive recheck, the built image's closure label (it must equal `next`), the CI push run and the device
- *                  count; the keeper refuses a face of more than one device, a fork, a live hand successor (a lei never supersedes
+ *                  fresh-archive recheck, the built image's closure label (it must equal `next`), the local bench verdict over that
+ *                  tree (whole: the keeper hashes and checks it), the CI push run (annotation alone, never a gate) and the device
+ *                  count; the keeper refuses a missing, foreign or red verdict, a face of more than one device, a fork, a live hand successor (a lei never supersedes
  *                  it), a vested commit unlanded, a red last pair and the struck fire due, then rests the same commit
  *                  `name-successor` rests, naming the license. The vest's live rite spends that lei's return (the same return the
  *                  rite spends for the lent face) and names it. `KEEPER_LEI_STANDS` (a code constant inside the closure) turns it off.
  *   `status` folds the chain while lit (`keeper`), and names `vestReady` where a live successor can vest; `keeperLei` names the floor
- *   and each licensed commit (branch, revision, CI run, the lei returns its vest spent), and `leiReady` where one could rest now.
+ *   and each licensed commit (branch, revision, the bench verdict's hash, the CI annotation, the lei returns its vest spent), and `leiReady` where one could rest now.
  *
  * An answer names a reading, a count or a public digest. No answer and no log line carries a route or a key; a slot carries keys
  * only sealed to one successor's key.
@@ -277,7 +278,7 @@ export function pulamaHandDoor(a: {
     const last = fold.pairs.at(-1);
     const stale = keeperSuccessorStale(fold.successor, closure);
     return {
-      // THE KEEPER LEI: the floor, and each commit a kukulu lei licensed with no route (its branch, revision, CI run and, once vested,
+      // THE KEEPER LEI: the floor, and each commit a kukulu lei licensed with no route (its branch, revision, bench hash, CI annotation and, once vested,
       // the lei returns its rite spent); `leiReady` where the kukulu lei could license one now (the host's stand reading follows it).
       keeperLei: { floor: leiFloor, licensed },
       ...(keeperLeiReady(fold, leiFloor, closure) && !passing ? { leiReady: true } : {}),
@@ -576,15 +577,15 @@ export function pulamaHandDoor(a: {
       }
       case "name-successor-lei": {
         // THE COMMIT THE KUKULU LEI LICENSES (no route: the consent rode the hand's kukulu lei, whose return the vest's rite spends).
-        // The host testifies what it read (the branch, the revision, its tree, the recheck, the image's closure label, the CI run, the
-        // device count); the keeper checks its own bounds and rests the commit.
+        // The host testifies what it read (the branch, the revision, its tree, the recheck, the image's closure label, the local bench
+        // verdict whole, the CI run as annotation, the device count); the keeper checks the verdict and its own bounds and rests the commit.
         if (passing) return passingRefusal("name-successor-lei");
         if (!holder.isUnlocked()) return { op: "name-successor-lei", reading: "pulama-locked", ...status() };
         const next = f["next"];
         if (typeof next !== "string" || !CLOSURE.test(next)) return { op: "name-successor-lei", reading: "next-malformed", detail: "the successor's closure reads `sha256:<64 hex>`" };
         const word = (k: string): string => (typeof f[k] === "string" ? f[k] : "");
         const devices = typeof f["devices"] === "number" && Number.isSafeInteger(f["devices"]) && f["devices"] >= 1 ? f["devices"] : null;
-        const out = await keeperNameSuccessorByLei(a.records, await pulamaSignerOf(holder), { ...await standing(), next, devices, branch: word("branch"), rev: word("rev"), tree: word("tree"), recheck: word("recheck"), image: word("image"), ci: word("ci"), floor: leiFloor });
+        const out = await keeperNameSuccessorByLei(a.records, await pulamaSignerOf(holder), { ...await standing(), next, devices, branch: word("branch"), rev: word("rev"), tree: word("tree"), recheck: word("recheck"), image: word("image"), bench: f["bench"], ci: word("ci"), floor: leiFloor });
         if ("refusal" in out) { log(`name-successor-lei: ${out.refusal}`); return { op: "name-successor-lei", reading: out.refusal, detail: out.detail }; }
         log(`keeper named a successor under the kukulu lei of ${out.branch}: v${out.v} names the successor closure; the vest's rite spends the lei's return`);
         return { op: "name-successor-lei", reading: "named", ...out };
