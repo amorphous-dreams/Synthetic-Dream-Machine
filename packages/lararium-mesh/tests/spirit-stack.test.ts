@@ -109,3 +109,10 @@ describe("the stack line", () => {
     expect(line).toContain("kind/masked canon.transcludes/lar:///ha.ka.ba/elyncia/lindwyrm");
   });
 });
+
+describe("any instance strings a cap (ruling 2026-11-25-body-becomes-instance)", () => {
+  test("a bare tag's holder reads instance", async () => {
+    const { capHolder } = await import("../src/spirit-stack.js");
+    expect(capHolder("lar:///a.bare.tag")).toBe("instance");
+  });
+});

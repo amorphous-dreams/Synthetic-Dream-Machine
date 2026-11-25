@@ -1710,3 +1710,41 @@ describe.skipIf(wikiSkip)(`the one record lands and holds its stack through the 
     expect(String(data(woke)["text"])).toContain("<<~ has entity=`spirit` name=`lares-alpha` params=`kind/tasked lane.holds/[[read a PR cold]]");
   });
 });
+
+describe("the instance names a spirit's model stream (ruling 2026-11-25-body-becomes-instance)", () => {
+  const MANDATE = "read PR 575 cold and return PASS or FAIL";
+  const offered = (): Record<string, string> => ({ pet: "lares-alpha", text: MANDATE, "mandate-hash": sha(MANDATE), "offer-seq": "1", lane: CARD, grant: "read-only", "offered-by": "hand" });
+  const card = (): Record<string, string> => ({ pet: "lares-alpha", lane: "read a PR cold", text: "{{||lar:///ha.ka.ba/kahua/memory/template/tasked-spirit}}", tags: "stage/spirit-card" });
+
+  test("the spirit row accepts --instance and refuses --body by name (alpha line, no alias)", () => {
+    const row = COMMANDS.find((c) => c.name === "spirit") as unknown as { accepts: string[] };
+    expect(row.accepts).toContain("instance");
+    expect(row.accepts).not.toContain("body");
+  });
+
+  test("an instance echoes: the receipt names <pet>#<instance>, and the presence lands as instances-awake", async () => {
+    stage({ kind: "none", card: card(), offering: offered() });
+    const r = await run(argv(["ah", "lares-alpha"], { echo: sha(MANDATE), instance: "s-1" }));
+    expect(r.exit, JSON.stringify(r.printed)).toBe(0);
+    expect(data(r)).toMatchObject({ instance: "lares-alpha#s-1" });
+    const fields = puts(SIDE).map((p) => p.args["fields"] as Record<string, string>);
+    expect(fields.some((f) => String(f["instances-awake"] ?? "").startsWith("lares-alpha#s-1 "))).toBe(true);
+  });
+
+  test("a card's legacy bodies field reads through as #/instances, and the write lands on instances and unsets bodies", async () => {
+    const held = { ...card(), bodies: "2026-11-24 · one" };
+    stage({ kind: "none", card: held });
+    const r = await run(argv(["ah", "lares-alpha"], { slot: "#/instances", add: "2026-11-25 · circle-keeper#4" }));
+    expect(r.exit, JSON.stringify(r.printed)).toBe(0);
+    expect(held["instances"]).toBe("2026-11-24 · one\n2026-11-25 · circle-keeper#4");
+    expect(held["bodies"]).toBeUndefined();
+  });
+
+  test("om under an offering names the unechoed instance and asks for --instance", async () => {
+    stage({ kind: "none", card: card(), offering: offered() });
+    const r = await run(argv(["om", "lares-alpha"], { instance: "s-1" }));
+    const text = String(data(r)["text"]);
+    expect(text).toContain(`unechoed: lares-alpha#s-1 has not read mandate ${sha(MANDATE)}`);
+    expect(text).toContain("1 instance wears lares-alpha");
+  });
+});

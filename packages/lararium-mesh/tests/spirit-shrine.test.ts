@@ -200,3 +200,31 @@ describe("the merges the host loops ran inline", () => {
     expect(S.spiritIdOf(URI, "skinny:sha256-" + "aa".repeat(32))).toBe(createHash("sha256").update(`${URI}\nsha256:${"aa".repeat(32)}`).digest("hex").slice(0, 12));
   });
 });
+
+describe("the instance names a spirit's model stream (ruling 2026-11-25-body-becomes-instance)", () => {
+  const NOW = new Date("2026-11-25T12:00:00Z");
+  const C = S as unknown as Record<string, any>;
+  test("the shrine's lineage slot reads #/instances, and the carry hands back an instances line naming <pet>#<instance>", () => {
+    expect(S.SHRINE_SLOTS.map(([slot]) => slot)).toContain("#/instances");
+    expect(S.SHRINE_SLOTS.map(([slot]) => slot)).not.toContain("#/bodies");
+    expect(C["instancesLine"]("2026-11-25", "0123456789abcdef", "p", "sess-1aaaaaaaa", "t")).toContain("p#sess-1aa");
+    expect(C["bodiesLine"]).toBeUndefined();
+  });
+  test("presence writes instances-awake, reads a legacy bodies-awake once, and unsets it", () => {
+    const { awake, write } = S.presenceJoin({ "bodies-awake": "p#sib 2026-11-25T11:00:00Z 3" }, "p", "me", NOW);
+    expect(awake.map((a) => (a as unknown as Record<string, string>)["instance"])).toEqual(["me", "sib"]);
+    expect(write).toEqual({ patch: { "instances-awake": "p#me 2026-11-25T12:00:00.000Z 4\np#sib 2026-11-25T11:00:00Z 3" }, unset: ["bodies-awake"] });
+    expect(S.presenceLine("p", awake)).toMatch(/^2 instances wear p: #me \(you\)/);
+  });
+  test("a carry lands its lineage as `instance`, and a carry landed as `body` still reads as its instance", () => {
+    const parent = { title: "t-mine", fields: { body: "me" } };
+    expect(S.carryParent([{ title: "t-other", fields: { instance: "sib" } }, parent], "me")).toBe(parent);
+    expect(S.carryFields({ pet: "p", key: ID, instance: "me", base: "x", parent: null, now: NOW } as never)).toMatchObject({ instance: "me" });
+    expect(S.LINEAGE_FIELDS).toContain("instance");
+  });
+  test("the unechoed receipt and the echo ask name the instance", () => {
+    const offering = { uri: "u", text: "m", hash: "h".repeat(64), seq: 1, offeredBy: "hand", damaged: false } as never;
+    expect(S.echoReceipt("p", offering, {}, null, false)).toEqual({ notice: `unechoed: p (a seat naming no instance) has not read mandate ${"h".repeat(64)}` });
+    expect(S.mandateLines("p", offering, null, false)).toContain("--instance <id>");
+  });
+});
