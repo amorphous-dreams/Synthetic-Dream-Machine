@@ -2208,7 +2208,7 @@ test(`${name}: rebuild-image-names-the-keeper: a moved closure a live commit nam
 test(`${name}: pulama-name-successor-reads-a-terminal: with no terminal the successor naming refuses and names the lares verb; nothing reaches the pūlama`, { skip }, async () => {
   const r = await run(shim, ["pulama", "name-successor"], { envFile: PULAMA_ENV, checkout: "clean" });
   assert.notEqual(r.status, 0);
-  assert.match(r.stderr, /pulama name-successor reads your route on a terminal; run `lares pulama name-successor` on one \(nothing committed\)/);
+  assert.match(r.stderr, /pulama name-successor reads your route on a terminal; run `lares pulama name-successor` on one \(no successor named\)/);
   assert.doesNotMatch(r.calls, /name-successor/);
   const land = await run(shim, ["pulama", "keeper-land"], { envFile: PULAMA_ENV });
   assert.equal(land.status, 0, land.stderr);
