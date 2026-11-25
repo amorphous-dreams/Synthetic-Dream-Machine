@@ -9,7 +9,7 @@
 import { describe, test, expect, vi, afterEach } from "vitest";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { parseArgs, ArgsError, BOOLEAN_FLAGS, VALUE_FLAGS, VALUE_OR_FLAG } from "../src/parse-args.js";
+import { parseArgs, ArgsError, BOOLEAN_FLAGS, LIST_FLAGS, VALUE_FLAGS, VALUE_OR_FLAG } from "../src/parse-args.js";
 import { dispatch, unknownFlags, COMMANDS } from "../src/bin/lares.js";
 
 afterEach(() => vi.restoreAllMocks());
@@ -101,6 +101,21 @@ describe("parseArgs: a boolean flag takes no value, in every position", () => {
     expect([...BOOLEAN_FLAGS].filter((n) => optionReads.has(n)), "declared boolean, read as an option").toEqual([]);
     expect([...VALUE_FLAGS].filter((n) => !optionReads.has(n) || flagReads.has(n) || BOOLEAN_FLAGS.has(n) || VALUE_OR_FLAG.has(n)), "value flag read other than as an option").toEqual([]);
     expect([...VALUE_OR_FLAG].filter((n) => !optionReads.has(n) || !flagReads.has(n)), "listed as dual, read one way only").toEqual([]);
+  });
+});
+
+describe("parseArgs: a list flag gathers every repeat (tag-add-keeps-one-list)", () => {
+  // Measured before: `--tag-add a --tag-add b` parsed to `{ "tag-add": "b" }`, so a multi-flag put dropped `a` without a word.
+  test("★ repeated --tag-add and --tag-remove join as one TiddlyWiki list, in order ★", () => {
+    expect(parseArgs(["tiddler", "put", "T", "--tag-add", "a", "--tag-add", "[[b c]]", "--tag-add=d"]).options).toEqual({ "tag-add": "a [[b c]] d" });
+    expect(parseArgs(["tiddler", "put", "T", "--tag-remove", "x", "--tag-remove", "y"]).options).toEqual({ "tag-remove": "x y" });
+  });
+  test("CONTROL: one --tag-add keeps its list as written, and any other valued name still takes the last", () => {
+    expect(parseArgs(["tiddler", "put", "T", "--tag-add", "[[a]] [[b]]"]).options).toEqual({ "tag-add": "[[a]] [[b]]" });
+    expect(parseArgs(["x", "--root", "/a", "--root", "/b"]).options).toEqual({ root: "/b" });
+  });
+  test("every list flag reads as an option, never a flag", () => {
+    for (const n of LIST_FLAGS) expect(BOOLEAN_FLAGS.has(n) || VALUE_OR_FLAG.has(n) || VALUE_FLAGS.has(n), n).toBe(false);
   });
 });
 
