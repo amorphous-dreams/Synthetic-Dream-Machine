@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * e2e-shards — the sharded e2e lane's only two doors: the merge gate that fails closed inside
- * `.github/workflows/e2e-shards.yml`, and the push/watch/delete helper that runs that lane from a
- * desk or from any other spirit's hand.
+ * e2e-shards — the sharded e2e lane's tables and its merge gate, the one that fails closed inside
+ * `.github/workflows/e2e-shards.yml`. It reads files and git alone; it pushes nothing and reads no
+ * GitHub run.
  *
  * ── THE MERGE GATE (`merge-verify`) ──────────────────────────────────────────────────────────────
  * `evaluateMergeGate` is the whole law, exported as a pure function so `e2e-shards.test.mjs` can
@@ -21,19 +21,11 @@
  *   - a zero total across every shard combined;
  *   - a union of executed files that differs from the tracked set (each set in `E2E_SETS` against its own glob) — a file
  *     no shard ran, or a file more than one shard ran, both read here.
- *
- * ── THE HELPER (`push`) ──────────────────────────────────────────────────────────────────────────
- * Pushes HEAD to `ci/<lane>`, finds the ONE run that push triggered (by head SHA, never by name
- * alone — a reused lane name must never pick up a stale run), watches it with `gh run watch`,
- * reads its conclusion, deletes the branch, and exits non-zero on any red. It NEVER also dispatches
- * — `e2e-shards.yml` carries `workflow_dispatch` for a human's own hand, not for this helper to
- * double-fire on top of its own push.
  */
 
-import { execFileSync, spawnSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { POLL_FLOOR_S } from "./ci-verdict.mjs";
 
 // ── the merge gate's pure law ───────────────────────────────────────────────────────────────────
 
@@ -292,8 +284,7 @@ function cliMergeVerify(args) {
   }
   const verdict = evaluateAllSets({ setReports, trackedBySet });
 
-  // One grep-able line, read both by a human in the log and by `e2e-shards.mjs push` watching the
-  // same run from outside — the helper never re-derives the verdict from raw JSON over the wire.
+  // One grep-able line in the run's log: a reader greps it and never re-derives the verdict from raw JSON.
   console.log(
     `MERGE-VERIFY: ok=${verdict.ok} shards=${shards} totalTests=${verdict.totalTests} ` +
     `executedFiles=${verdict.executedFileCount} trackedFiles=${trackedCount}`,
@@ -323,158 +314,14 @@ function readFlag(args, name) {
   return i === -1 ? undefined : args[i + 1];
 }
 
-// ── the push/watch/delete helper ───────────────────────────────────────────────────────────────────
-
-/** `git`/`gh`, run synchronously; throws with the command's own stderr on a non-zero exit. */
-function run(cmd, cmdArgs, opts = {}) {
-  const result = spawnSync(cmd, cmdArgs, { encoding: "utf8", ...opts });
-  if (result.status !== 0) {
-    const label = `${cmd} ${cmdArgs.join(" ")}`;
-    throw new Error(`${label} exited ${result.status}: ${(result.stderr || result.stdout || "").trim()}`);
-  }
-  return result.stdout;
-}
-
-/** `core.bare` must read `false` both sides of any git-structure operation this helper performs. */
-function assertNotBare(repoRoot) {
-  const bare = run("git", ["-C", repoRoot, "config", "--get", "core.bare"], { stdio: ["ignore", "pipe", "pipe"] }).trim();
-  if (bare === "true") throw new Error(`core.bare reads true at ${repoRoot} — refusing to push or delete a branch here`);
-}
-
-/**
- * Pushes HEAD to `ci/<lane>`, finds the ONE run that push triggered (matched by head SHA, within
- * `findBudgetMs`), watches it with `gh run watch --exit-status`, reads the merge job's own
- * `MERGE-VERIFY` log line as the verdict, deletes the remote branch, and returns
- * `{ ok, shardCounts, totalTests, run }`. Always deletes the branch, even on a red run — a proof
- * branch left standing after a red read is exactly the kind of debris this tool must not leave.
- */
-export async function pushLaneAndWatch({ repoRoot, lane, findBudgetMs = 2 * POLL_FLOOR_S * 1000, pollMs = POLL_FLOOR_S * 1000, sleep = (ms) => new Promise((r) => setTimeout(r, ms)), now = Date.now }) {
-  assertNotBare(repoRoot);
-  const branch = `ci/${lane}`;
-  const headSha = run("git", ["-C", repoRoot, "rev-parse", "HEAD"], { stdio: ["ignore", "pipe", "pipe"] }).trim();
-
-  run("git", ["-C", repoRoot, "push", "origin", `HEAD:refs/heads/${branch}`], { stdio: ["ignore", "pipe", "pipe"] });
-
-  let runId;
-  const deadline = now() + findBudgetMs;
-  while (now() < deadline) {
-    // NEVER `--workflow e2e-shards.yml` here: GitHub's API only resolves a workflow BY FILENAME
-    // once that file exists on the repo's default branch, and this tool exists to prove
-    // a workflow file that lives only on a throwaway `ci/<lane>` branch. `--branch` + `--event
-    // push` finds the same run without that registration — the headSha match right below is what
-    // keeps it the ONE run this push triggered, never a stale run of a reused lane name.
-    const listed = run(
-      "gh",
-      ["run", "list", "--branch", branch, "--event", "push", "--json", "databaseId,headSha", "--limit", "10"],
-      { cwd: repoRoot, stdio: ["ignore", "pipe", "pipe"] },
-    );
-    const runs = JSON.parse(listed);
-    const match = runs.find((r) => r.headSha === headSha);
-    if (match) { runId = match.databaseId; break; }
-    await sleep(pollMs);
-  }
-  if (!runId) {
-    deleteBranch(repoRoot, branch);
-    throw new Error(`no e2e-shards.yml run appeared for ${branch}@${headSha} within ${findBudgetMs}ms`);
-  }
-
-  // Watches to completion; a red run makes `gh run watch --exit-status` itself exit non-zero, so
-  // the watch result alone already answers "red or not" — this helper still reads the log line
-  // below for the shard counts and totals the report asks for.
-  // ONE ROUND OF READS PER POLL FLOOR (180 s, the house pace; a round may issue several gh calls back to back). `gh run watch` polls every three seconds by default, and each poll spends
-  // several calls of the 5000 an hour every lane, lead and tool on this account shares: a few lanes watching
-  // at once spend the hour's whole budget, and then every `gh` read refuses, this one included.
-  const watch = spawnSync("gh", ["run", "watch", String(runId), "--exit-status", "--interval", WATCH_INTERVAL_S], { cwd: repoRoot, encoding: "utf8" });
-  const watchOk = watch.status === 0;
-
-  // The run exists on the remote and MUST be deleted whether or not reading its log succeeds — a
-  // throw from either `gh run view` call here must never leave `ci/<lane>` standing. `finally`
-  // deletes once regardless of which branch below returns or throws.
-  let verdictLine = null;
-  let verdictLines = [];
-  let viewed;
-  try {
-    const log = run("gh", ["run", "view", String(runId), "--log"], { cwd: repoRoot, stdio: ["ignore", "pipe", "pipe"] });
-    // L2: EVERY `MERGE-VERIFY` line, not only the one-line summary — a red merge names its problems
-    // on their OWN `MERGE-VERIFY problem:` lines, and a caller that read only the summary line saw
-    // `ok=false` with no idea which of the five refusals fired.
-    verdictLines = log.split("\n").filter((l) => l.includes("MERGE-VERIFY"));
-    verdictLine = verdictLines.find((l) => l.includes("MERGE-VERIFY:")) ?? null;
-    viewed = JSON.parse(run("gh", ["run", "view", String(runId), "--json", "conclusion,createdAt,updatedAt,url"], { cwd: repoRoot, stdio: ["ignore", "pipe", "pipe"] }));
-  } catch (err) {
-    // A READ THAT FAILED SAYS NOTHING ABOUT THE RUN. `gh` refuses under the shared API rate limit, and a watch
-    // that died of it returns before the run ends: the run goes on and may well read green. The refusal names
-    // the run and the one command that reads it, so nobody takes this exit for a red.
-    throw new Error(`${unreadVerdict(runId)}\n  cause: ${String(err?.message ?? err).split("\n")[0]}`);
-  } finally {
-    deleteBranch(repoRoot, branch);
-  }
-
-  const ok = watchOk && viewed.conclusion === "success";
-  return { ok, runId, headSha, branch, verdictLine, verdictLines, conclusion: viewed.conclusion, url: viewed.url, createdAt: viewed.createdAt, updatedAt: viewed.updatedAt };
-}
-
-/** Seconds between the watch's looks at a run. */
-export const WATCH_INTERVAL_S = String(POLL_FLOOR_S);
-
-/** What `push` says when it pushed a run and could not read its verdict: neither green nor red. */
-export const unreadVerdict = (runId) =>
-  `UNREAD: run ${runId} stands pushed and its verdict went unread; it may still run. Read it by hand: `
-  + `gh run view ${runId} --json status,conclusion,url,jobs`;
-
-function deleteBranch(repoRoot, branch) {
-  // Best-effort: a branch already gone (deleted by a retry, or never actually pushed because the
-  // run-discovery failed first) must not mask the real verdict with a cleanup error.
-  spawnSync("git", ["-C", repoRoot, "push", "origin", "--delete", branch], { stdio: ["ignore", "pipe", "pipe"] });
-}
-
-/**
- * The branch whose full CI run measures `sha`: a remote branch that carries it as its tip, never a `ci/` lane
- * branch, since `ci.yml` ignores `ci/**` and no full run ever stands there. Exactly one such branch names
- * itself; none or several answer null, and the hint asks for the branch rather than guess one.
- */
-export function fullCiBranchOf(repoRoot, sha) {
-  const r = spawnSync("git", ["-C", repoRoot, "branch", "-r", "--points-at", sha, "--format=%(refname:short)"],
-    { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
-  if (r.status !== 0) return null;
-  const names = r.stdout.split("\n").map((l) => l.trim()).filter((l) => l.startsWith("origin/") && !l.startsWith("origin/ci/") && l !== "origin/HEAD")
-    .map((l) => l.slice("origin/".length));
-  return names.length === 1 ? names[0] : null;
-}
-
-/** The line `push` ends on, whatever the shards answered: where the other half of the verdict gets read. */
-export const HALF_VERDICT = "HALF A VERDICT: the shards ran the e2e sets alone — read the full CI workflow before calling this head green: node tools/ci-verdict.mjs --branch";
-
-async function cliPush(args, repoRoot) {
-  const lane = args[0];
-  if (!lane) { console.error("usage: e2e-shards.mjs push <lane>"); process.exitCode = 1; return; }
-  assertNotBare(repoRoot);
-  const result = await pushLaneAndWatch({ repoRoot, lane });
-  console.log(`run ${result.runId}: conclusion=${result.conclusion} url=${result.url}`);
-  // L2: print every MERGE-VERIFY line this run logged, not just the one-line summary — the problem
-  // lines are the ONLY place a red merge names which of the five refusals fired.
-  for (const line of result.verdictLines?.length ? result.verdictLines : (result.verdictLine ? [result.verdictLine] : [])) {
-    console.log(line);
-  }
-  // ONE HALF OF GREEN. This tool runs the e2e sets alone; the package suites, the witness fleet and the tool
-  // self-tests answer only in the full CI workflow, where a newer push cancels a run before it reports.
-  // The head this tool PUSHED, never the checkout's head at print time: other hands commit while the run goes.
-  console.log(`${HALF_VERDICT} ${fullCiBranchOf(repoRoot, result.headSha) ?? "<the branch this head rides>"} --head ${result.headSha.slice(0, 9)}`);
-  assertNotBare(repoRoot);
-  process.exitCode = result.ok ? 0 : 1;
-}
-
 // ── CLI entry ───────────────────────────────────────────────────────────────────────────────────
 
 async function main() {
   const [sub, ...rest] = process.argv.slice(2);
-  const repoRoot = resolve(".");
   if (sub === "merge-verify") { cliMergeVerify(rest); return; }
   if (sub === "shard-files") { cliShardFiles(rest); return; }
   if (sub === "sets") { for (const set of E2E_SETS) console.log(`${set.name} ${set.dir} ${set.config}`); return; }
-  if (sub === "push") { await cliPush(rest, repoRoot); return; }
   console.error("usage: e2e-shards.mjs merge-verify --artifacts-dir <dir> [--repo-root <dir>]");
-  console.error("       e2e-shards.mjs push <lane>");
   console.error("       e2e-shards.mjs shard-files --set <name> --shard <k> [--repo-root <dir>]");
   console.error("       e2e-shards.mjs sets");
   process.exitCode = 1;

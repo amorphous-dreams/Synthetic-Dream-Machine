@@ -597,3 +597,4 @@ export { COLLAPSE_CONFIG_PREFIX, COLLAPSE_RULES, collapseConfigOf, collapseRuleT
 export { StandoffKeeper, keeperWikiOf, standoffActions, standoffAlertWords, standoffDraftTitle, STANDOFF_FIELD, STANDOFF_KEPT_FIELD, STANDOFF_LOADED_FIELD, standoffLoadedDigest, type KeeperOutcome, type StandoffAlert } from "./standoff-drafts.js";
 
 export { FLOOR_WORDS, FLOOR_GRAINS, readFloorDrifts, rowInGrain, floorRowLine, floorCardFor, floorCardTitle, type FloorWord, type FloorGrain, type FloorDriftRow, type FloorCard, type FloorLagInput } from "./floor-card.js";
+export { VESSEL_LIVE_LOG, SHORE_ASH_DIR, openVesselLogSink, otakiageLiveLog, tapProcessStreams, mintBootId, type VesselLogSink, type VesselLogSinkOptions } from "./vessel-log-sink.js";

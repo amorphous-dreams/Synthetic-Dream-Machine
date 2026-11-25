@@ -720,6 +720,7 @@ export * from "./promote-main-verbs.js";
 export * from "./share-config.js";
 export * from "./face-label.js";
 export * from "./secret-shapes.js";
+export * from "./shore-log.js";
 export * from "./attempt-budget.js";
 
 // The one spirit record's stack and the fold's ranks and commands: each subpath lends what the barrel lends from its module.

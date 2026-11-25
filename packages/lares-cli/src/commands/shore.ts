@@ -13,6 +13,7 @@
  *   lares shore settle  --bag <bagUri|slug> --pending
  *   lares shore lift-kahua --count <n>
  *   lares shore flush
+ *   lares shore log [--kind <k>] [--held] [--boot <id>]
  *
  * The disk projector decides nothing a person owns.
  *
@@ -76,6 +77,7 @@ import { verbFailure } from "../verb-call.js";
 import { vesselDid } from "../env.js";
 import { askShore, askSettle, askShoreFlush, readShoreList, readSettlePending, shoreFlushExit, type ShoreAnswer, type ShoreFlushReading } from "../shore-core.js";
 import { takeDisk } from "../shore-take-disk.js";
+import { cmdShoreLog } from "./shore-log.js";
 import { openSyncedTree } from "../ingest-core.js";
 import { larRoot } from "../env.js";
 import { readKahuaPending, LIVE_MIRROR_DOORS } from "../seed-mirrors.js";
@@ -83,7 +85,7 @@ import { runMirrors } from "../seed-mirror-leg.js";
 import { otakiageLine, pendingReceipts, retirementLine, withRetiredBy, RETIREMENT_BOUND_MS, type Retirement } from "../shore-retirement.js";
 
 /** The acts this door carries. */
-export const SHORE_ACTS = ["list", "take-records", "take-disk", "keep-disk", "keep-records", "keep-both", "drafts", "restore", "remove", "settle", "lift-kahua", "flush"] as const;
+export const SHORE_ACTS = ["list", "take-records", "take-disk", "keep-disk", "keep-records", "keep-both", "drafts", "restore", "remove", "settle", "lift-kahua", "flush", "log"] as const;
 export type ShoreAct = (typeof SHORE_ACTS)[number];
 /** The acts a lit sibling's shore answers by its face (`--face N`); the rest read the worn face, or no face at all. */
 const FACE_ACTS: ReadonlySet<ShoreAct> = new Set(["list", "take-records", "restore", "remove"]);
@@ -103,6 +105,7 @@ export function shoreHelpLines(): string[] {
     "       lares shore settle  --bag <bagUri|slug> --pending",
     "       lares shore lift-kahua --count <n>",
     "       lares shore flush",
+    "       lares shore log [--kind <k>] [--held] [--boot <id>]",
     "  --face N      list or answer a lit sibling's shore (its own projector) without wearing it;",
     "  list          look at the disk, then name each standoff with its key and each pending removal;",
     "  take-records  write the records' render over the file of one standoff, named by its key;",
@@ -117,6 +120,8 @@ export function shoreHelpLines(): string[] {
     "  settle        resume a settle word that stalled, over the carriers its record names (--pending);",
     "  lift-kahua    lift the kahua items a lay left pending, each under its face's grant (--count names the preview's count);",
     "  flush         write what every island holds in memory to its mirrors now: the daemon's with each lit face's, and every resident wiki's;",
+    "  log           the vessel's log as records, one per distinct event: the counts by kind, then each record (--kind one kind,",
+    "                --held the unacknowledged, --boot one boot's ring); with no vessel answering, the flat run/vessel-live.log and its ash;",
     "  an answer over more than one carrier names the count that stands pending (--count).",
   ];
 }
@@ -136,6 +141,7 @@ export function shoreArgs(act: ShoreAct, args: ParsedArgs): { readonly args: Rec
   const withBag = { ...(bag ? { bag } : {}), ...(faceText !== undefined ? { face: Number(faceText) } : {}) };
   if (act === "list") return { args: { op: "list", ...withBag } };
   if (act === "flush") return { args: { op: "flush" } };
+  if (act === "log") return { args: { op: "log" } };
   if (act === "lift-kahua") {
     const countText = args.options["count"];
     if (countText === undefined || !/^(?:0|[1-9][0-9]*)$/.test(countText)) return { usage: "lift-kahua names the count of pending kahua items `lares shore` lists: lares shore lift-kahua --count <n>" };
@@ -211,6 +217,9 @@ export async function cmdShore(args: ParsedArgs, hand: ShoreHandRead = ownHand):
     emit(args, { ok: false, error: { code: "usage", message: shaped.usage }, human: () => { console.error(`lares shore: ${shaped.usage}`); printUsage(); } });
     return exitFor("usage");
   }
+
+  // LOG reads the vessel's log records (`shore-log`); it writes nothing and asks no hand.
+  if (act === "log") return cmdShoreLog(args);
 
   // LIFT-KAHUA: the count IS the confirmation, so it asks nothing more; the mirror leg refuses a count that moved.
   if (act === "lift-kahua") {

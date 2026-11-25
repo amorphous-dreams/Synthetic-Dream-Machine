@@ -6,6 +6,7 @@ import { discoverModules } from "./discover-modules.js";
 import { packagePath, packageRelative, ROOT } from "./paths.js";
 import { MODULE_MANIFEST_FORMAT, type ModuleManifestEntry, sha256, writeModuleManifest } from "./module-manifest.js";
 import { grammarRequiresHouse, PLUGIN_SKINS, skinOfModule, type SkinName } from "./skins.js";
+import { normalizeRegionPaths } from "./region-paths.js";
 
 /**
  * Compile every plugin-owned TS module into a CJS module tiddler, each written into the source island of the skin the
@@ -166,7 +167,8 @@ export async function buildPluginCjsTiddlers(): Promise<void> {
     });
 
     const outputPath = path.join(outDirAbs, `${mod.name}.js`);
-    const raw = readFileSync(outputPath, "utf8");
+    // BUILD LOCATION NEVER MOVES BYTES: a store region reads one spelling whichever node_modules the build resolved through.
+    const raw = normalizeRegionPaths(readFileSync(outputPath, "utf8"));
     const outputText = mod.banner + raw;
     writeFileSync(outputPath, outputText, "utf8");
     manifests.get(skin.name)!.push({

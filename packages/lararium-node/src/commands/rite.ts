@@ -28,7 +28,7 @@ import type { Repo } from "@automerge/automerge-repo";
 import { lstatSync, readFileSync, realpathSync } from "node:fs";
 import { join, sep } from "node:path";
 import { WORKSPACE_NAME_RE } from "@lararium/mesh/workbench";
-import { SwarmRefused, checkReturn, type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort } from "@lararium/mesh/swarm-tiddlers";
+import { SwarmRefused, checkReturn, swarmTesseraTitle, type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort } from "@lararium/mesh/swarm-tiddlers";
 import {
   abandonRite,
   beginChecked,
@@ -185,7 +185,30 @@ export function refuseStandingBegin(standing: ReadonlyArray<{ readonly tessera: 
   if (standing.length === 0) return;
   const heads = [...new Set(standing.map((s) => s.head.slice(0, 12)))].join(", ");
   const branch = standing[0]!.branch;
-  throw new SwarmRefused("rite-begun-stands", `a kūkulu begun at ${heads} on "${branch}" stands unlanded (${standing.map((s) => `${s.face ?? s.group ?? "a face"} tessera ${s.tessera}`).join(", ")}); \`lares rite kukulu\` resumes it and spends no second return, land it by hand where the vessel stands (\`lares rite land --tessera <tessera>\`, which rests the head and image the half began at), or set a stale half down by hand (\`lares rite land --abandon --tessera <tessera>\`; it spends nothing, records no par, and conferre reads it abandoned)`);
+  // EACH HALF'S CURE RUNS WHERE IT RESTS: a half a lent face carries sets down as that face; a half no lent face carries (shut or
+  // rehived) refuses rite-begun-absent under every trust held now, so its cure unlocks the face that carries its group first.
+  const setDown = standing.map((s) => /^h\d+$/.test(s.face ?? "")
+    ? `\`lares rite land --abandon --tessera ${s.tessera} --face ${s.face!.slice(1)}\``
+    : `tessera ${s.tessera} rests under group ${s.group ?? "(unnamed)"}, which no lent face carries: \`lares vault unlock\` the face that carries it, then \`lares rite land --abandon --tessera ${s.tessera} --face <that face>\``).join("; ");
+  throw new SwarmRefused("rite-begun-stands", `a kūkulu begun at ${heads} on "${branch}" stands unlanded (${standing.map((s) => `${s.face ?? s.group ?? "a face"} tessera ${s.tessera}`).join(", ")}); \`lares rite kukulu\` resumes it and spends no second return, land it by hand where the vessel stands (\`lares rite land --tessera <tessera>\`, which rests the head and image the half began at), or set a stale half down by hand (${setDown}; it spends nothing, records no par, and conferre reads it abandoned)`);
+}
+
+/**
+ * THE LANDING NAMES ITS FACE (course land-names-its-face). A landing or an abandon acts as one face, and a begun half another face
+ * rested (a keep acts as the keep's face) verifies as no record under it: `rite-begun-absent … (group)`, with no cure. This reads the
+ * raw guest row's group and names the face that carries it with the `--face` cure, or, where no lent face carries it (shut or
+ * rehived), its group and the unlock that lends it. Any other refusal, or a half that stands nowhere, passes as it came.
+ */
+export async function tesseraFaceRefusal(e: unknown, wiki: SwarmWikiPort, tessera: string, faceOf: ReadonlyMap<string, string>, act: "land" | "abandon"): Promise<unknown> {
+  if (!(e instanceof SwarmRefused) || e.code !== "rite-begun-absent" || !e.message.endsWith("(group)")) return e;
+  let group: unknown;
+  try { group = (JSON.parse((await wiki.read(swarmTesseraTitle(tessera, "guest"))) ?? "null") as { body?: { group?: unknown } } | null)?.body?.group; } catch { return e; }
+  if (typeof group !== "string") return e;
+  const face = faceOf.get(group);
+  const line = (at: string): string => `lares rite land${act === "abandon" ? " --abandon" : ""} --tessera ${tessera} --face ${at}`;
+  return face !== undefined && /^h\d+$/.test(face)
+    ? new SwarmRefused("rite-begun-absent", `${e.message}: the begun half rests under ${face}, and this call acts as another face; ${act} it as ${face}: ${line(face.slice(1))}`)
+    : new SwarmRefused("rite-begun-absent", `${e.message}: the begun half rests under group ${group}, which no lent face carries (shut or rehived); unlock that face (\`lares vault unlock\`), then ${act} it as that face: ${line("<that face>")}`);
 }
 
 /** One vouch the resting offer carries: the face whose group it names (where a lent face carries it), and its line, head and image. */
@@ -316,12 +339,14 @@ export async function runRiteVerb(opts: {
   if (opts.action === "land") {
     // THE BEGUN HALF NAMES WHAT LANDS: a head or image the caller names must match it (`rite-land-differs`), and may be left out.
     if (!/^[0-9a-f]{64}$/.test(str("tessera"))) throw new SwarmRefused("rite-malformed", "a landing names its tessera: lares rite land --tessera <64 hex>");
-    return { ...await landRite(opts.wiki, { tessera: str("tessera"), ...(str("head") === "" ? {} : { head: str("head") }), ...(str("image") === "" ? {} : { image: str("image") }) }, trust, group, vessel) };
+    try { return { ...await landRite(opts.wiki, { tessera: str("tessera"), ...(str("head") === "" ? {} : { head: str("head") }), ...(str("image") === "" ? {} : { image: str("image") }) }, trust, group, vessel) }; }
+    catch (e) { throw await tesseraFaceRefusal(e, opts.wiki, str("tessera"), await facesOfGroups(await (opts.lentOrdinals ?? unlockedFaceOrdinals)()).catch(() => new Map<string, string>()), "land"); }
   }
   if (opts.action === "abandon") {
     // THE HAND SETS A BEGUN HALF DOWN: the socket's hand gate admitted the act; the vessel witnesses the mark and spends nothing.
     if (!/^[0-9a-f]{64}$/.test(str("tessera"))) throw new SwarmRefused("rite-malformed", "an abandon names the tessera it sets down");
-    return { ...await abandonRite(opts.wiki, { tessera: str("tessera") }, trust, group, vessel) };
+    try { return { ...await abandonRite(opts.wiki, { tessera: str("tessera") }, trust, group, vessel) }; }
+    catch (e) { throw await tesseraFaceRefusal(e, opts.wiki, str("tessera"), await facesOfGroups(await (opts.lentOrdinals ?? unlockedFaceOrdinals)()).catch(() => new Map<string, string>()), "abandon"); }
   }
   const rite = opts.args["rite"];
   if (!isSwarmLeiRite(rite) || !str("branch") || !str("head")) throw new SwarmRefused("rite-malformed", "a rite names its rite, its branch and the head it runs at");

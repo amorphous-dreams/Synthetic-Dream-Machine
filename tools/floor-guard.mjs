@@ -17,7 +17,7 @@
  * position that RUNS a program opens a check: the lead word, the program a wrapper runs (`xargs pnpm test`, `sudo docker
  * build`, `timeout 600 node --test`, `flock <file> pnpm build`) and the program `find -exec` runs; a word elsewhere
  * (`git log --grep vitest`, `cat node_modules/.bin/tsc`) names data and passes. A quoted string stays one word (`rg 'pnpm test'`, a commit message, pass). Read verbs pass: `--list`,
- * `--help`, `--version`, `--lock-path`, `provision-worktree.mjs --source-only`, `land-train.mjs` without `--local`.
+ * `--help`, `--version`, `--lock-path`, `provision-worktree.mjs --source-only`.
  *
  * ── WHICH WAY IT FAILS ──────────────────────────────────────────────────────────────────────────
  * For a sub-agent, toward refusal: a command the lexer cannot read refuses where its raw text names a heavy program, and so
@@ -34,10 +34,10 @@ const READ_FLAGS = new Set(['--list', '--help', '-h', '--version', '-v', '-V', '
 const PNPM_VALUED = new Set(['--filter', '-F', '-C', '--dir', '--workspace-concurrency', '--reporter', '--loglevel', '--filter-prod']);
 const HEAVY_SCRIPT = /^(build|test|typecheck|vitest|tsc|playwright|e2e)([:._-].*)?$/;
 const HEAVY_BIN = new Set(['vitest', 'tsc', 'playwright', 'vite', 'tsx']);
-const HEAVY_TOOLS_MJS = new Set(['provision-worktree.mjs', 'bench-gate.mjs', 'battery-legs.mjs', 'land-train.mjs', 'floor-run.mjs']);
+const HEAVY_TOOLS_MJS = new Set(['provision-worktree.mjs', 'bench-gate.mjs', 'battery-legs.mjs', 'floor-run.mjs']);
 const HEAVY_TOOLS_SH = new Set(['battery.sh', 'witness-all.sh', 'typecheck-witness.sh', 'typecheck-tests-witness.sh', 'tree-clean-witness.sh', 'browser-ci.sh']);
 /** A raw command naming any of these, when the lexer cannot read it, refuses for a sub-agent. */
-const HEAVY_RAW = /\b(pnpm|npm|npx|vitest|tsc|playwright|docker|kukulu|provision-worktree|bench-gate|battery|witness-all|floor-run|land-train)\b|node\s+--test/;
+const HEAVY_RAW = /\b(pnpm|npm|npx|vitest|tsc|playwright|docker|kukulu|provision-worktree|bench-gate|battery|witness-all|floor-run)\b|node\s+--test/;
 
 export const REASON_HEAD = 'floor-guard: refused — a tasked spirit never runs builds, tests or image builds; only the familiar holds the floor, one heavy run at a time (operator, 2026-11-25)';
 
@@ -83,7 +83,6 @@ function nodeHeavy(words) {
     const args = words.slice(j + 1);
     if (hasRead(args)) return null;
     if (script === 'provision-worktree.mjs' && args.includes('--source-only')) return null;
-    if (script === 'land-train.mjs' && !args.includes('--local')) return null;
     if (script === 'bench-gate.mjs' && args.includes('--weigh')) return null;
     return `node ${script}`;
   }

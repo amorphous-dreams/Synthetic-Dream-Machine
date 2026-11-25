@@ -260,29 +260,6 @@ test("a detached checkout refuses an unnamed branch before reading runs; an atta
   }
 });
 
-test("the shard lane's push door ends on the line that names this reader", async () => {
-  const { HALF_VERDICT } = await import("./e2e-shards.mjs");
-  assert.match(HALF_VERDICT, /node tools\/ci-verdict\.mjs --branch$/);
-  const src = readFileSync(join(HERE, "e2e-shards.mjs"), "utf8");
-  const push = src.slice(src.indexOf("async function cliPush("), src.indexOf("\n}\n", src.indexOf("async function cliPush(")));
-  assert.match(push, /console\.log\(`\$\{HALF_VERDICT\} \$\{fullCiBranchOf\(repoRoot, result\.headSha\) \?\? "<the branch this head rides>"\} --head \$\{result\.headSha\.slice\(0, 9\)\}`\)/,
-    "the push door must name the branch whose full run measures the head it pushed, never the ci/ lane");
-  assert.match(src, /return \{ ok, runId, headSha, /);
-});
-
-test("the shard lane names a run whose verdict it could not read, and the command that reads it", async () => {
-  const { unreadVerdict } = await import("./e2e-shards.mjs");
-  assert.match(unreadVerdict(42), /^UNREAD: run 42 .*gh run view 42 --json status,conclusion,url,jobs$/);
-  const src = readFileSync(join(HERE, "e2e-shards.mjs"), "utf8");
-  const watch = src.slice(src.indexOf("const watch = spawnSync("), src.indexOf("function deleteBranch("));
-  const { WATCH_INTERVAL_S } = await import("./e2e-shards.mjs");
-  const { POLL_FLOOR_S } = await import("./ci-verdict.mjs");
-  assert.ok(Number(WATCH_INTERVAL_S) >= POLL_FLOOR_S, "a watch that looks more often than the house poll floor spends the shared API budget");
-  assert.equal(WATCH_INTERVAL_S, String(POLL_FLOOR_S), "the watch interval reads the floor, never a literal of its own");
-  assert.match(watch, /"run", "watch", String\(runId\), "--exit-status", "--interval", WATCH_INTERVAL_S\]/);
-  assert.match(watch, /catch \(err\) \{[\s\S]*throw new Error\(`\$\{unreadVerdict\(runId\)\}/, "a failed read of the run stopped naming the run as unread");
-});
-
 // ── B3: the three-state verdict, --wait, and the job-minutes line ─────────────────────────────────────────────
 const T0 = "2026-10-30T10:00:00Z", T1 = "2026-10-30T10:06:00Z";
 const SHA = "a".repeat(40);

@@ -23,6 +23,8 @@
  *   BENCH GATE GREEN at <sha> over develop <sha> · <n> steps · <s> s
  *   BENCH GATE REFUSES: <step> (exit n), ... · <s> s           (exit 1; a usage fault exits 2)
  * It stands as the familiar's step on the floor, never a git hook.
+ * The gate decides nothing about the security class: it runs the lane's own code, so the cold-read judge stands apart
+ * (`node tools/cold-read-owed.mjs <lane-ref>`, run by the familiar from the landing bench at develop before the merge).
  *
  * ── THE KEEPER'S LOCAL WITNESS (`--verdict <file>`, ruling 2026-11-25-web2-annotates) ─────────────────────────────────────
  * `lares rite kukulu`'s keeper lei step runs the gate over the exact tree the image carries (the checkout at that revision, its

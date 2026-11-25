@@ -52,6 +52,7 @@ import { composeIsland } from "./island-caps.js";
 import { hasEngineWatch, hasHandBoundary, hasProjection } from "./has-island-watches.js";
 import { hasRenderedTiddlers } from "./rendered-tiddler.js";
 import { hasCapture } from "./capture/has-capture.js";
+import { writeShoreLog } from "./shore-log-island.js";
 import { VerbDispatcher, VerbTable } from "./verb-dispatcher.js";
 import type { IslandCap } from "./island-caps.js";
 import type { IslandContext, IslandBehavior, WritableOutcome } from "./island-context.js";
@@ -248,6 +249,11 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
           () => post({ type: "daemon:face-settled", atomKey, op, ok: true }),
           (error) => post({ type: "daemon:face-settled", atomKey, op, ok: false, reason: error instanceof Error ? error.message : String(error) }),
         );
+        return true;
+      }
+      // THE VESSEL'S LOG RECORDS land in the worn face's daemon temp layer (`shore-log-island`); nothing answers.
+      if (type === "daemon:shore-log") {
+        void writeShoreLog(ctx, (raw as { records?: readonly unknown[] }).records ?? []);
         return true;
       }
       if (type === "daemon:place-verb") {

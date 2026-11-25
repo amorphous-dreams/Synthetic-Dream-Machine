@@ -84,8 +84,6 @@ test('RED: the heavy CLIs refuse outside the floor (64, naming the cure) and the
   const existing = node([join(TOOLS, 'provision-worktree.mjs'), '--existing', dir()]);
   assert.equal(existing.status, FLOOR_EXIT, existing.stderr);
   assert.equal(node([join(TOOLS, 'provision-worktree.mjs'), '--help']).status, 0);
-  const train = node([join(TOOLS, 'land-train.mjs'), '--local', `a:1:${'a'.repeat(40)}:/nonexistent/msg`]);
-  assert.equal(train.status, FLOOR_EXIT, train.stderr);
 });
 
 test('RED: the shim takes the floor around the compose build, prunes the build cache after it (never an image), and gives it back', async () => {

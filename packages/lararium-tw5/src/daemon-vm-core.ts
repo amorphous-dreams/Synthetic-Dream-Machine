@@ -23,6 +23,7 @@
 import { inCallScope, takeCallTouches } from "@lararium/mesh/call-touches";
 import { wearOf } from "@lararium/mesh/repo-wear";
 import { canonicalJson } from "@lararium/mesh/crypto";
+import type { ShoreLogPlacement } from "@lararium/mesh/shore-log";
 import { DAEMON_BAG_ID, CROSSROADS_DOC_URI, verbArgsFromPayload } from "@lararium/mesh/lar-uris";
 import { NoWorkingLayerRefusal, CompositeStore } from "@lararium/mesh/composite-store";
 import { WorkingDocumentUnavailableRefusal, DOCUMENT_HANG_BOUND_MS, findOrThrow } from "@lararium/mesh/find-or-throw";
@@ -38,6 +39,7 @@ import {
   mkDaemonPlaceVerb,
   mkDaemonFaceLit,
   mkDaemonFaceBags,
+  mkDaemonShoreLog,
   mkDaemonFaceDrop,
   type JoinedFaceAuth,
   mkTelemetryPlaceVerb,
@@ -286,6 +288,9 @@ export interface DaemonVmCore {
    *  `frontier` (optional) carries the turn-DAG fork-frontier so a same-session fork derives a
    *  distinct handle; absent on a non-forked turn. */
   placeTelemetry: (turnText: string, sourceFile: string, frontier?: readonly string[], turnKey?: string, chunkIndex?: number) => void;
+  /** HAND the vessel's changed log records (`shore-log`) to the daemon island, which writes each into the worn face's daemon
+   *  temp layer. Fire-and-forget; an empty batch posts nothing. */
+  placeShoreLog: (records: readonly ShoreLogPlacement[]) => void;
   /** REWIND (kapae) one turn's .structurepalace tally + salience down-weight, IN the daemon island (it owns
    *  the warm holder). Fire-and-forget — the convergence twin of the CLI-side KG valid-close. */
   placeStructurepalaceKapae: (turnKey: string, ended?: string) => void;
@@ -956,6 +961,9 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     },
     placeTelemetry: (turnText: string, sourceFile: string, frontier?: readonly string[], turnKey?: string, chunkIndex?: number) => {
       worker.post(mkTelemetryPlaceVerb({ turnText, sourceFile, ...(frontier && frontier.length ? { frontier } : {}), ...(turnKey ? { turnKey } : {}), ...(chunkIndex !== undefined ? { chunkIndex } : {}) }));
+    },
+    placeShoreLog: (records: readonly ShoreLogPlacement[]) => {
+      if (records.length > 0) worker.post(mkDaemonShoreLog(records));
     },
     placeStructurepalaceKapae: (turnKey: string, ended?: string) => {
       worker.post(mkStructurepalaceKapae({ turnKey, ...(ended ? { ended } : {}) }));

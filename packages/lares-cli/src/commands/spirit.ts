@@ -77,7 +77,7 @@ import {
   ALANA_DISPLAY, MANDATE_HASH, cardField, cardRecordOf, cardSlotHeld, echoJoin, echoReceipt, echoStands, mandateLines, offerHeld, offererOf, offeringDamaged, offeringOf, offeringRead, offeringWrite,
   type SpiritOffering, type SideWrite, type SlotWrite, type SpiritAwake, type SpiritCarry, type SpiritRecord, type SpiritRow, type SpiritSource,
 } from "@lararium/mesh/spirit-shrine";
-import { STACK_SLOT, capHolder, capLine, maskCardOf, profilesOf, spiritOf, stackBody, stackLine, stackOf, stackWrite } from "@lararium/mesh/spirit-stack";
+import { STACK_SLOT, capHolder, capLine, maskCardOf, profilesOf, sealedOf, spiritOf, stackBody, stackLine, stackOf, stackWrite } from "@lararium/mesh/spirit-stack";
 import { FOLD_OPERATOR, UNFOLD_RANKS, narrowerRank, spiritCardOf, unfoldCall, unfoldRank, type UnfoldRank } from "@lararium/mesh/spirit-unfold";
 import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
 import { stampCarrier } from "@lararium/memetic-frame";
@@ -399,6 +399,11 @@ async function summon(args: ParsedArgs, ctx: Ctx, pet: string): Promise<number> 
   const offeredBy = offererOf(handHolds(ctx), instance);
   if (offeredBy === null) throw new DoorUsage(`a seat's --offer names its own instance, so the shelf records who offered: \`lares spirit ah ${pet} --offer --file <mandate> --instance <id>\``);
   const rec = (await resolveRecord(args, "ah", pet))!;
+  // A SEALED LANE STAYS HOME: the bare offer's fallback copies the card's lane onto the shelf, and om hands the shelf's words
+  // to every instance it wakes, so a lane the card seals never rides that fallback; the summoner names the words.
+  if (file === null && text === null && sealedOf(rec.fields).has("lane")) {
+    throw new SpiritRefusal("spirit-lane-sealed", `spirit-lane-sealed: ${rec.uri} seals its lane, so a bare --offer never copies it onto the shelf; nothing landed. Name the mandate: \`lares spirit ah ${pet} --offer --file <mandate>\` (or --text <words>)`, 4);
+  }
   const words = file !== null ? await sourceText("file", file) : text ?? rec.fields["lane"] ?? "";
   if (words.trim() === "") throw new DoorUsage(`--offer names the mandate: --file <path|-> or --text <words> (${rec.uri} holds no lane field to offer)`);
   const lane = wordOf(args.options["lane"]) ?? rec.uri;

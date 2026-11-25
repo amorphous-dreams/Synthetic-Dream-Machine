@@ -484,7 +484,7 @@ Design:
 - No retry on the gating path for an unledgered test. A retry hides the signal the ledger needs.
 - The ledger's length carries a ceiling that only lowers.
 - No entry for a test in the do-not-cut register (section 6): those get fixed, never parked.
-- Detection: nightly, the full set runs three times on one sha, once under deliberate load; `tools/burst-bisect.mjs` already exists for the hunt.
+- Detection: nightly, the full set runs three times on one sha, once under deliberate load; the hunt names the first red between a proven green and a red, never a guess.
 
 ### 3.10 Hermetic e2e
 
@@ -669,6 +669,6 @@ Repo files read: `.github/workflows/ci.yml`, `e2e-shards.yml`, `held-out.yml` (h
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;SPCsUOsIcVjRFJ4n3UieBrsZpTQhU5MHgfKdoNpM8W8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;P_d16wyHYhI-o-OGEh69mBQEVn16x488cil6afTlhXo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -20,7 +20,7 @@
  * Output: one JSON receipt on stdout { range, picked[{sha, onto, subject, resolved[{path, law}]}], skipped[{sha, subject,
  * why}], rebuildOwed[path], evergreen[{sha, subject, ceilings, exceptions}], stopped: null | {sha, subject, paths[{path,
  * why}]} }. Exit 0 the range picked whole · 1 stopped for a hand · 2 usage, a dirty tree or a pick already open.
- * It never pushes; the span push stays its own gated step (tools/span-push.mjs).
+ * It never pushes; the push stays its own step.
  */
 import { spawnSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";

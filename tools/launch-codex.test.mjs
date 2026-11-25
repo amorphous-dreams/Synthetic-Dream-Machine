@@ -272,7 +272,7 @@ test("lead law launch twice", () => {
   assert.doesNotMatch(brief, /^## SEAT LAW/m);
   assert.doesNotMatch(brief, /forged/);
   assert.match(brief, /## Notes\nkeep/);
-  for (const phrase of ["git stash", "--no-verify", "git push -u", "force-push", ".git/config", "req-<id>.json", "lar:///w1.w2.w3 — summary", "COMMIT TRAILERS", "submodule worktrees", "credential file", "scratch LAR_ROOT", "global LAR_BAGS", "tools/e2e-shards.mjs", "ci/*", "launch door", "Sol seat", "out.md", "final.md", "never push without"]) assert.ok(brief.includes(phrase), phrase);
+  for (const phrase of ["git stash", "--no-verify", "git push -u", "force-push", ".git/config", "req-<id>.json", "lar:///w1.w2.w3 — summary", "COMMIT TRAILERS", "submodule worktrees", "credential file", "scratch LAR_ROOT", "global LAR_BAGS", "ci/*", "launch door", "Sol seat", "out.md", "final.md", "never push without"]) assert.ok(brief.includes(phrase), phrase);
 });
 
 test("--dry-run prints the whole argv and spawns nothing, writes nothing; a refusal exits 2 and names SEAT-REFUSED", () => {
