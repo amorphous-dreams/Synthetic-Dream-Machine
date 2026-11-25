@@ -6,7 +6,8 @@ name: Mutation nightly
 # readings from three distinct runs agree (decision 3 of lar:///ha.ka.ba/lararium/docs/test-architecture),
 # folded by a commit: `gh run download <run> -n mutation-lares-cli-<run>` then
 # `node tools/mutation-floor.mjs fold lares-cli <run>=<report.json>`. The run id labels each reading, so one run
-# never counts twice; the schedule paces the readings and never decides a floor.
+# never counts twice, and the report carries that id inside it. The schedule paces the readings and never
+# decides a floor; a Timeout (a clock running out) never counts as a kill, and a stalled run reads red.
 #
 # Develop carries the integration tree, so a scheduled run checks out develop whatever the default branch holds.
 # Local reporters only: the report rides an artifact, never a dashboard.
@@ -52,10 +53,13 @@ jobs:
       - name: Run StrykerJS over the law suite
         working-directory: packages/lares-cli
         run: npx stryker run < /dev/null
-      - name: Hold the report to the floor
+      # The report carries the run that made it, so a fold refuses a report under any other label.
+      - name: Stamp the run into the report
         run: |
+          node -e 'const fs = require("node:fs"); const [f, run] = process.argv.slice(1); const r = JSON.parse(fs.readFileSync(f, "utf8")); r.actionsRun = run; fs.writeFileSync(f, JSON.stringify(r));' packages/lares-cli/reports/mutation/mutation.json "${{ github.run_id }}"
           echo "fold label: ${{ github.run_id }} (head $(git rev-parse HEAD))"
-          node tools/mutation-floor.mjs check lares-cli packages/lares-cli/reports/mutation/mutation.json
+      - name: Hold the report to the floor
+        run: node tools/mutation-floor.mjs check lares-cli packages/lares-cli/reports/mutation/mutation.json
       - name: Upload the report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

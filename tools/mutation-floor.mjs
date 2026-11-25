@@ -3,24 +3,29 @@
  * mutation-floor — gate B's ratchet: a package's mutation floor stands by evidence, and a cut passes kill-set
  * containment against it.
  *
- * A Stryker JSON report yields a READING: each mutant's status counted apart, the score as detected over valid
- * (a timeout counts as detected and stays counted apart, so a rising timeout share reads as a clock-bound suite),
- * and the set of detected mutants keyed by file, start, operator and replacement (never Stryker's per-run id).
+ * A Stryker JSON report yields a READING: each mutant's status counted apart, the score as KILLED over valid, and
+ * the set of killed mutants keyed by file, start, operator and replacement (never Stryker's per-run id).
  *
- * FOLD records readings, each labelled by the run that made it (a CI run id or a commit, causal identity; no
- * clock decides anything here). A label counts once. When the last three readings agree on every count and on
- * the detected set, the floor stands at their score and keeps that set. A floor only rises: three equal readings
- * under a standing floor leave it where it stands.
+ * NO CLOCK DECIDES A KILL. A Timeout means a wall clock ran out, and whoever owns the runner's clock (or a stalled
+ * runner) picks when that happens; so a timeout never raises a score and never joins the killed set. It counts
+ * apart, and a timeout share past MAX_TIMEOUT_SHARE reads red in `check` and refuses a fold: a stalled runner
+ * reads red, never green.
+ *
+ * FOLD records readings, each labelled by the numeric GitHub Actions run id that made it; the report carries the
+ * same id (`actionsRun`, stamped by the nightly) or the fold refuses. A label counts once, ever: the baseline keeps
+ * every counted label, evicted readings' too. When the last three readings agree on every count and on the
+ * killed set's digest, the floor stands at their score and keeps that set. A floor only rises.
  *
  * CHECK holds one report to the package's floor. With no floor it reports (advisory) and names how many equal
- * readings it still waits on. Under a floor, a lower score reads red, and so does every mutant the floor's run
- * detected that this run lets through (kill-set containment: a level score that trades one kill for another
- * still reads red). A floor mutant the source no longer yields reads as moved, counted, never as a kill.
+ * readings it still waits on. Under a floor it first re-derives the digest of the floor's kill set and refuses a
+ * mismatch; then a lower score reads red, and so does every mutant the floor killed that this run lets through,
+ * a timeout included (kill-set containment: a level score that trades one kill for another still reads red). A
+ * floor mutant the source stops yielding reads as moved, counted, never as a kill.
  *
  * Silence never passes: a report with no file, no valid mutant or no test run refuses by name (`SilentReport`).
  *
  * Usage:  node tools/mutation-floor.mjs check <package> <report.json> [--baseline <file>]
- *         node tools/mutation-floor.mjs fold  <package> <run-label>=<report.json> … [--baseline <file>]
+ *         node tools/mutation-floor.mjs fold  <package> <actions-run-id>=<report.json> … [--baseline <file>]
  * Exit:   0 green (or advisory) · 1 red, a silent or unreadable report, or a refused fold · 2 usage
  */
 import { createHash } from "node:crypto";
@@ -29,8 +34,10 @@ import { fileURLToPath } from "node:url";
 
 export const BASELINE = fileURLToPath(new URL("./mutation-baseline.json", import.meta.url));
 const EQUAL_READINGS = 3;
-const DETECTED = new Set(["Killed", "Timeout"]);
-const UNDETECTED = new Set(["Survived", "NoCoverage"]);
+/** The share of valid mutants that may time out before a run reads as stalled (the pilot's first reading: 0.001). */
+export const MAX_TIMEOUT_SHARE = 0.01;
+const DETECTED = new Set(["Killed"]);
+const UNDETECTED = new Set(["Survived", "NoCoverage", "Timeout"]);
 const ERRORS = new Set(["CompileError", "RuntimeError"]);
 
 /** A report that carries nothing to measure. */
@@ -44,7 +51,7 @@ export const mutantKey = (file, m) => `${file}:${m.location.start.line}:${m.loca
 export function readReading(report) {
   const files = report && typeof report === "object" && report.files && typeof report.files === "object" ? report.files : null;
   if (!files || Object.keys(files).length === 0) throw new SilentReport("the report names no mutated file");
-  const r = { mutants: 0, killed: 0, timeout: 0, survived: 0, noCoverage: 0, errors: 0, ignored: 0, score: 0, detected: [], undetected: [] };
+  const r = { run: typeof report.actionsRun === "string" ? report.actionsRun : null, mutants: 0, killed: 0, timeout: 0, survived: 0, noCoverage: 0, errors: 0, ignored: 0, score: 0, detected: [], undetected: [] };
   let testsRan = 0;
   for (const [file, entry] of Object.entries(files).sort(([a], [b]) => a.localeCompare(b))) {
     for (const m of entry.mutants ?? []) {
@@ -64,19 +71,23 @@ export function readReading(report) {
   const valid = r.killed + r.timeout + r.survived + r.noCoverage;
   if (valid === 0) throw new SilentReport(`no valid mutant among ${r.mutants} (errors ${r.errors}, ignored ${r.ignored})`);
   if (testsRan === 0) throw new SilentReport(`no test ran against any of ${valid} valid mutants`);
-  r.score = Math.round(((r.killed + r.timeout) / valid) * 10000) / 100;
+  r.score = Math.round((r.killed / valid) * 10000) / 100;
+  r.timeoutShare = Math.round((r.timeout / valid) * 10000) / 10000;
   r.detected.sort();
   r.undetected.sort();
   r.detectedDigest = digestOf(r.detected);
   return r;
 }
 
+const stalled = (r) => r.timeoutShare > MAX_TIMEOUT_SHARE
+  ? `timeout share ${r.timeoutShare} passes the limit ${MAX_TIMEOUT_SHARE}: a clock decided ${r.timeout} of the run's mutants, so the run reads as stalled`
+  : null;
 const COUNTS = ["score", "mutants", "killed", "timeout", "survived", "noCoverage", "errors", "ignored"];
 /** The detected set's digest: what a kept reading holds in place of its keys, so three readings compare by content. */
 export const digestOf = (keys) => `sha256:${createHash("sha256").update(keys.join("\n")).digest("hex")}`;
 const sameReading = (a, b) => COUNTS.every((k) => a[k] === b[k]) && a.detectedDigest === b.detectedDigest;
 
-/** Fold labelled readings into a baseline; returns the new baseline and leaves the old one untouched. */
+/** Fold labelled readings into a baseline; returns the next baseline and leaves the given one untouched. */
 export function foldReadings(baseline, pkg, labelled) {
   const next = structuredClone(baseline ?? { packages: {} });
   next.packages ??= {};
@@ -84,9 +95,14 @@ export function foldReadings(baseline, pkg, labelled) {
   held.readings ??= [];
   held.floor ??= null;
   const latest = new Map();
-  const counted = new Set([...held.readings.map((r) => r.run), ...(held.floor?.runs ?? [])]);
+  const counted = new Set([...(held.counted ?? []), ...held.readings.map((r) => r.run), ...(held.floor?.runs ?? [])]);
   for (const [run, reading] of labelled) {
+    if (!/^[1-9][0-9]*$/.test(run)) throw new Error(`mutation-floor: ${run} names no Actions run id; label each report with the numeric run that made it`);
+    if (reading.run === null) throw new Error(`mutation-floor: the report for ${run} carries no run; the nightly stamps actionsRun into it`);
+    if (reading.run !== run) throw new Error(`mutation-floor: the report labelled ${run} carries run ${reading.run}, not ${run}`);
     if (counted.has(run)) throw new Error(`mutation-floor: ${run} already counted for ${pkg}; a run counts once`);
+    const stall = stalled(reading);
+    if (stall) throw new Error(`mutation-floor: run ${run}: ${stall}; it never counts toward a floor`);
     counted.add(run);
     held.readings.push({ run, ...reading });
     latest.set(run, reading.detected);
@@ -101,6 +117,7 @@ export function foldReadings(baseline, pkg, labelled) {
   }
   // A kept reading holds its counts and its detected set's digest; the keys ride the floor and the report alone.
   held.readings = held.readings.map(({ detected: _d, undetected: _u, ...rest }) => rest);
+  held.counted = [...counted];
   next.packages[pkg] = held;
   return next;
 }
@@ -110,12 +127,18 @@ export function checkReading(baseline, pkg, reading) {
   const held = baseline?.packages?.[pkg];
   const lines = [`mutation-floor: ${pkg} reads ${reading.score} (killed ${reading.killed} · timeout ${reading.timeout} · survived ${reading.survived} · no coverage ${reading.noCoverage} · errors ${reading.errors} of ${reading.mutants})`];
   const red = [];
+  const stall = stalled(reading);
+  if (stall) red.push(stall);
   if (!held?.floor) {
     const agree = (held?.readings ?? []).filter((r) => sameReading(r, reading)).length;
     lines.push(`advisory: no floor stands for ${pkg}; it waits on ${Math.max(0, EQUAL_READINGS - agree)} more equal readings, this one among them (fold each run's report: node tools/mutation-floor.mjs fold ${pkg} <run>=<report.json>)`);
     return { red, lines };
   }
   const floor = held.floor;
+  if (digestOf(floor.detected ?? []) !== floor.detectedDigest) {
+    red.push(`the floor's kill set does not match its digest (${floor.detectedDigest}); the baseline was edited outside a fold`);
+    return { red, lines };
+  }
   if (reading.score < floor.score) red.push(`score ${reading.score} under the floor's ${floor.score} (runs ${floor.runs.join(", ")})`);
   const now = new Set(reading.detected);
   const through = new Set(reading.undetected);
@@ -125,7 +148,7 @@ export function checkReading(baseline, pkg, reading) {
     if (through.has(key)) red.push(`${key} — the floor's run killed it, this run lets it through`);
     else moved++;
   }
-  if (moved) lines.push(`${moved} floor-killed mutant(s) the source no longer yields (moved, counted, never a kill)`);
+  if (moved) lines.push(`${moved} floor-killed mutant(s) the source stops yielding (moved, counted, never a kill)`);
   lines.push(red.length ? `mutation-floor: ${red.length} breach(es) of ${pkg}'s floor` : `mutation-floor: ${pkg} holds its floor of ${floor.score} and every kill it keeps`);
   return { red, lines };
 }

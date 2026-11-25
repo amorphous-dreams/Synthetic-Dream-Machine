@@ -1,5 +1,5 @@
 {
-  "//": "Per-package mutation floors (tools/mutation-floor.mjs). A floor stands when three readings from three distinct runs agree on every count and on the detected set's digest; it only rises. Until then a package's check reports, never gates. Fold each nightly's report: node tools/mutation-floor.mjs fold <package> <run>=<report.json>.",
+  "//": "Per-package mutation floors (tools/mutation-floor.mjs). A floor stands when three readings from three distinct Actions runs agree on every count and on the killed set's digest; it only rises, and a timeout never counts as a kill. Until then a package's check reports, never gates. Fold each nightly's report: node tools/mutation-floor.mjs fold <package> <run>=<report.json>.",
   "packages": {
     "lares-cli": {
       "config": "packages/lares-cli/stryker.config.json",
