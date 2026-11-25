@@ -96,7 +96,7 @@ import { composeBrowser }                    from "./browser-caps.js";
 import type { VesselWikiSlot, DaemonVmCore } from "@lararium/tw5";
 import { foundTheFace, runApplyAdmitPayload, foundThePlace, assemblePersonaGroupRing, archiveIsOf } from "@lararium/keyhive";
 import {
-  standControlHome, vesselFloorCid, raiseFloorAlert, genesisFloorCidOf, floorRequiredBlobIds, promotePanelApi, isQuietSnapshot, promoteMainVerbs, promoteBoardDoor, promotions, promoteBoardRecords, writePromoteAct, promoteWiring, promoteWikiItems, faceAtomKeyFromSeed, faceRootCommitment, heldDocOf, readFace, faceRecordsOf, adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard, KAHUA_BAG, joinFaceDocumentsOnArrival, mintFaceAnchor, raiseFaceFrontier, proveFaceFromLog,
+  standControlHome, vesselFloorCid, vesselMountFloorCid, raiseFloorAlert, genesisFloorCidOf, floorRequiredBlobIds, promotePanelApi, isQuietSnapshot, promoteMainVerbs, promoteBoardDoor, promotions, promoteBoardRecords, writePromoteAct, promoteWiring, promoteWikiItems, faceAtomKeyFromSeed, faceRootCommitment, heldDocOf, readFace, faceRecordsOf, adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard, KAHUA_BAG, joinFaceDocumentsOnArrival, mintFaceAnchor, raiseFaceFrontier, proveFaceFromLog,
   readFleetFrontier, fleetFrontierLinks, fleetRaiseCids, readFrontierPins, writeFrontierPin, FLEET_HAND, faceRelationOf,
   standFaceDaemonCanon, type FaceDaemonCanon, type WideningRead,
 } from "@lararium/mesh";
@@ -107,7 +107,7 @@ import {
 } from "./browser-keyhive-archive.js";
 import { vesselDyads, verifiedFleetOfGroup, type LarDid } from "@lararium/mesh";
 import type { CarriedAdmitPayload } from "@lararium/keyhive";
-import type { LarOpenPhase, PlaceFoundingCard } from "@lararium/mesh";
+import type { FloorMountReading, LarOpenPhase, PlaceFoundingCard } from "@lararium/mesh";
 import { readWornPersonaMount }              from "@lararium/mesh";
 import { browserFaceFold, browserWardAnswer, browserWardCosignPort } from "./browser-ward-cosign.js";
 import {
@@ -586,17 +586,30 @@ export function warnDroppedBrowserAlert(
  * the local OPFS CAS — missing or corrupt bytes refuse by name, never silently as an empty or
  * trimmed set. The daemon VM and the island pool both resolve THROUGH this function (M6).
  */
+/** A named floor that did not serve its plugin set: said once per floor and reason, never per mount. */
+const floorFallbacksSaid = new Set<string>();
+function logFloorFallback(wiki: string, reading: FloorMountReading): void {
+  if (reading.source !== "island") return;
+  const key = `${reading.manifest}\n${reading.why}`;
+  if (floorFallbacksSaid.has(key)) return;
+  floorFallbacksSaid.add(key);
+  console.warn(`[floor] ${wiki}: the floor ${reading.manifest?.slice(0, 12)}… did not serve its plugin set (${reading.why}); the founding record's boot set serves`);
+}
+
 export async function resolveBrowserIslandPluginCids(opts: {
   readonly islandBlobs: Record<string, { readonly id?: string; readonly sha256?: string; readonly mimeType?: string }> | undefined;
   readonly recipe: WikiRecipe;
   readonly promoted?: (wiki: string) => Promise<readonly string[]>;
   readonly onPromotedVoided?: (wiki: string, digests: readonly string[]) => void;
   readonly lookup: OfferingLookup;
+  /** The floor this mount loads its set from (`vesselMountFloorCid`); absent or null, the founding record's boot set serves. */
+  readonly floorCid?: string | null;
 }): Promise<{ readonly ok: true; readonly pluginCids: readonly string[] } | { readonly ok: false; readonly error: string }> {
   // The selection itself stands in mesh (`resolveRecipePluginCids`), the one function the node door and the
   // surface mount's resolver read too; this door hands it the browser's own inputs: the island document's
   // blobs, the Crossroads lookup and the origin's OPFS content store.
-  return resolveRecipePluginCids(opts.recipe, { islandBlobs: opts.islandBlobs, lookup: opts.lookup, readBytes: readCasBlobFromOpfs, ...(opts.promoted ? { promoted: opts.promoted } : {}), ...(opts.onPromotedVoided ? { onPromotedVoided: opts.onPromotedVoided } : {}) });
+  return resolveRecipePluginCids(opts.recipe, { islandBlobs: opts.islandBlobs, lookup: opts.lookup, readBytes: readCasBlobFromOpfs, ...(opts.promoted ? { promoted: opts.promoted } : {}), ...(opts.onPromotedVoided ? { onPromotedVoided: opts.onPromotedVoided } : {}),
+    ...(opts.floorCid !== undefined ? { floorCid: opts.floorCid } : {}), onFloorFallback: logFloorFallback });
 }
 
 /** Build the browser's offering lookup over the Nexus's publication board (R4): a verified selection re-verifies
@@ -2042,6 +2055,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       const resolveDaemonPlugins = async () => {
         const daemonPluginResolution = await resolveBrowserIslandPluginCids({
           islandBlobs: assembly.islandHandle.doc()?.blobs,
+          floorCid: await vesselMountFloorCid({ control: async () => watchedControl, islandDoc: () => assembly.islandHandle.doc() }),
           recipe: { wikiSlug: "daemon" },
           lookup: browserOfferingLookup(publicationHandle!.doc()),
           promoted: (slug) => promoteWiringRef ? promoteWiringRef.boot.promotedFor(slug) : Promise.resolve([]),
@@ -2589,6 +2603,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           publicationHandle ??= await materializeSharedLarDoc(repo, publicationDocUrl(nexusPubkey), "board:publication");
           return resolveBrowserIslandPluginCids({
             islandBlobs: assembly.islandHandle.doc()?.blobs,
+            floorCid: await vesselMountFloorCid({ control: async () => watchedControl, islandDoc: () => assembly.islandHandle.doc() }),
             recipe,
             lookup: browserOfferingLookup(publicationHandle.doc()),
             promoted: (slug) => promoteWiringRef ? promoteWiringRef.boot.promotedFor(slug) : Promise.resolve([]),

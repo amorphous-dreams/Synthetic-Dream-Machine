@@ -367,6 +367,16 @@ export async function vesselFloorCid(args: {
   return pick.source === "pin" ? pick.cid : null;
 }
 
+/**
+ * The floor a mount loads its plugin set from (the flip, 3c): the vessel's pin (`vesselFloorCid`), else the genesis floor the
+ * founding record names; null where neither stands, and the founding record's own boot set serves.
+ */
+export async function vesselMountFloorCid(args: Parameters<typeof vesselFloorCid>[0]): Promise<string | null> {
+  let island: LarDoc | null | undefined;
+  try { island = args.islandDoc(); } catch { island = null; }
+  return (await vesselFloorCid(args)) ?? genesisFloorCidOf(island);
+}
+
 /** The pool doors the floor alert rides: the live islands outside any session, and a wiki verb's placement. */
 export interface FloorAlertPool {
   inspect(): ReadonlyArray<{ readonly wikiId: string; readonly temperature: string }>;

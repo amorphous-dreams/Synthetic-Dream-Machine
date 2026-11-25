@@ -194,11 +194,14 @@ describe("★ M1 — the node resolver, driven over a real fs CAS and a real Cro
     // rebuild that drops every field but wikiSlug (and so every wiki's offerings) still calls the
     // SAME function, so only reading what's handed to it — not merely that it was called — proves
     // the regression stays caught here.
-    const poolHookBody = /resolvePluginCids:\s*\(recipe\)\s*=>\s*resolveNodeIslandPluginCids\(\{[\s\S]{0,900}?\}\)/.exec(src);
+    const poolHookBody = /resolvePluginCids:\s*(?:async\s*)?\(recipe\)\s*=>\s*resolveNodeIslandPluginCids\(\{[\s\S]{0,900}?\}\)/.exec(src);
     expect(importsFromModule, "open-node-vessel.ts must import resolveNodeIslandPluginCids from node-plugin-resolution.js").toBe(true);
     expect(daemonCallSite, "the daemon VM boot must call resolveNodeIslandPluginCids").not.toBeNull();
     expect(poolHookBody, "the island pool's resolvePluginCids hook must call resolveNodeIslandPluginCids").not.toBeNull();
     expect(poolHookBody?.[0] ?? "", "the pool hook must hand the resolver the caller's own recipe, never a rebuilt one that can silently drop fields").toMatch(/\brecipe,/);
+    // THE FLIP (3c): both call sites hand the resolver the floor the mount stands on.
+    expect(poolHookBody?.[0] ?? "", "the pool hook must hand the resolver the floor it stands on").toMatch(/floorCid:\s*await vesselMountFloorCid\(/);
+    expect(daemonCallSite?.[0] ?? "", "the daemon VM must hand the resolver the floor it stands on").toMatch(/floorCid:\s*await vesselMountFloorCid\(/);
     // Exactly TWO call sites — a third would mean a NEW path grew its own resolution again.
     const callCount = (src.match(/resolveNodeIslandPluginCids\(/g) ?? []).length;
     expect(callCount).toBe(2);

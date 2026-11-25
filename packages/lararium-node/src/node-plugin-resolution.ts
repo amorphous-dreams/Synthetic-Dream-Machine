@@ -27,11 +27,11 @@
  * Meme: lar:///ha.ka.ba/lararium/node/node-plugin-resolution
  */
 
-import type { LarDoc, WikiRecipe, OfferingLookup } from "@lararium/mesh";
+import type { FloorMountReading, LarDoc, WikiRecipe, OfferingLookup } from "@lararium/mesh";
 import { offeringAnnouncesFromDoc, resolveRecipePluginCids } from "@lararium/mesh";
 
 export type NodePluginResolutionVerdict =
-  | { readonly ok: true; readonly pluginCids: readonly string[] }
+  | { readonly ok: true; readonly pluginCids: readonly string[]; readonly floor?: FloorMountReading }
   | { readonly ok: false; readonly error: string };
 
 export interface ResolveNodeIslandPluginCidsOpts {
@@ -41,6 +41,9 @@ export interface ResolveNodeIslandPluginCidsOpts {
   readonly promoted?: (wikiSlug: string) => Promise<readonly string[]>;
   readonly lookup: OfferingLookup;
   readonly readBytes: (cid: string) => Uint8Array | null;
+  /** The floor this mount loads its set from (`vesselMountFloorCid`); absent or null, the founding record's boot set serves. */
+  readonly floorCid?: string | null;
+  readonly onFloorFallback?: (wiki: string, reading: FloorMountReading) => void;
 }
 
 /**
@@ -52,11 +55,21 @@ export interface ResolveNodeIslandPluginCidsOpts {
 export function resolveNodeIslandPluginCids(
   opts: ResolveNodeIslandPluginCidsOpts,
 ): Promise<NodePluginResolutionVerdict> {
-  return resolveRecipePluginCids(opts.recipe, { islandBlobs: opts.islandBlobs, lookup: opts.lookup, readBytes: opts.readBytes, ...(opts.promoted ? { promoted: opts.promoted } : {}), ...(opts.onPromotedVoided ? { onPromotedVoided: opts.onPromotedVoided } : {}) });
+  return resolveRecipePluginCids(opts.recipe, { islandBlobs: opts.islandBlobs, lookup: opts.lookup, readBytes: opts.readBytes, ...(opts.promoted ? { promoted: opts.promoted } : {}), ...(opts.onPromotedVoided ? { onPromotedVoided: opts.onPromotedVoided } : {}), ...(opts.floorCid !== undefined ? { floorCid: opts.floorCid } : {}), ...(opts.onFloorFallback ? { onFloorFallback: opts.onFloorFallback } : {}) });
 }
 
 /** @see the module docblock. */
 export function nodeOfferingLookup(publicationDoc: LarDoc | undefined | null): OfferingLookup {
   const byOfferingCid = new Map(offeringAnnouncesFromDoc(publicationDoc).map((a) => [a.offeringCid, a.offering]));
   return (cid) => byOfferingCid.get(cid);
+}
+
+/** A named floor that did not serve its plugin set: said once per floor and reason, never per mount. */
+const floorFallbacksSaid = new Set<string>();
+export function logFloorFallback(wiki: string, reading: FloorMountReading): void {
+  if (reading.source !== "island") return;
+  const key = `${reading.manifest}\n${reading.why}`;
+  if (floorFallbacksSaid.has(key)) return;
+  floorFallbacksSaid.add(key);
+  console.warn(`[floor] ${wiki}: the floor ${reading.manifest?.slice(0, 12)}… did not serve its plugin set (${reading.why}); the founding record's boot set serves`);
 }

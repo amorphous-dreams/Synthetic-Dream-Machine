@@ -20,7 +20,7 @@ import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "./ed25519-do
 import { ENGINE_CORE_ID } from "./base-doc.js";
 import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "./lar-uris.js";
 import { computePluginsCid } from "./genesis-doc.js";
-import { FLOOR_OFFERING_BLOB_ID, FLOOR_OFFERING_MIME, floorOfferingSetDiff, resolveFloor, type ResolvedFloor } from "./floor-manifest.js";
+import { FLOOR_OFFERING_BLOB_ID, FLOOR_OFFERING_MIME, floorOfferingSetDiff, resolveFloor, type FloorManifest, type ResolvedFloor } from "./floor-manifest.js";
 import {
   pluginOfferingRecordBytes, signPluginOffering, verifyPluginOffering, type OfferedBlob, type PluginOffering, type PluginProvenance,
 } from "./plugin-offering.js";
@@ -124,18 +124,15 @@ export function verifyFloorOfferingSet(
   return floorOfferingSetDiff(offering.blobs, floorMountBlobRows(rows));
 }
 
-/** Resolve a floor whole, offering and blobs included, re-hashing every byte. Never throws. */
-export async function resolveFloorWhole(
-  manifestCid: string,
+/** The offering a floor manifest names, verified as any offering is (shape, provenance, signature, fold), holding every id a
+ *  mount needs, each blob it carries re-hashed. The snapshots stay unread: a mount's plugin set needs the offering alone. Never throws. */
+export async function resolveFloorOffering(
+  manifest: Pick<FloorManifest, "plugins">,
   resolveByCid: (cid: string) => Promise<Uint8Array | null>,
   opts: { /** The ids every mount needs (`floorRequiredBlobIds`); an offering lacking any refuses `floor-offering-incomplete`. */ readonly required: readonly string[] },
-): Promise<
-  | (ResolvedFloor & { readonly offering: PluginOffering })
-  | { readonly refusal: Exclude<Awaited<ReturnType<typeof resolveFloor>>, ResolvedFloor>["refusal"] | FloorOfferingRefusal; readonly reason: string }> {
-  const floor = await resolveFloor(manifestCid, resolveByCid);
-  if ("refusal" in floor) return floor;
+): Promise<{ readonly offering: PluginOffering } | { readonly refusal: "floor-absent" | FloorOfferingRefusal; readonly reason: string }> {
   try {
-    const cid = floor.manifest.plugins;
+    const cid = manifest.plugins;
     const bytes = await resolveByCid(cid);
     if (!bytes) return { refusal: "floor-absent", reason: `Floor plugins offering absent: ${cid}` };
     const read = readFloorOffering(bytes, cid);
@@ -150,8 +147,22 @@ export async function resolveFloorWhole(
       if (!blobBytes) return { refusal: "floor-absent", reason: `Floor blob ${blob.id} absent: ${blob.sha256}` };
       if (sha256HexBytesSync(blobBytes) !== blob.sha256) return { refusal: "floor-absent", reason: `Floor blob ${blob.id} bytes differ from their CID: ${blob.sha256}` };
     }
-    return { ...floor, offering: read.offering };
+    return { offering: read.offering };
   } catch (error) {
     return { refusal: "floor-absent", reason: String(error) };
   }
+}
+
+/** Resolve a floor whole, offering and blobs included, re-hashing every byte. Never throws. */
+export async function resolveFloorWhole(
+  manifestCid: string,
+  resolveByCid: (cid: string) => Promise<Uint8Array | null>,
+  opts: { /** The ids every mount needs (`floorRequiredBlobIds`); an offering lacking any refuses `floor-offering-incomplete`. */ readonly required: readonly string[] },
+): Promise<
+  | (ResolvedFloor & { readonly offering: PluginOffering })
+  | { readonly refusal: Exclude<Awaited<ReturnType<typeof resolveFloor>>, ResolvedFloor>["refusal"] | FloorOfferingRefusal; readonly reason: string }> {
+  const floor = await resolveFloor(manifestCid, resolveByCid);
+  if ("refusal" in floor) return floor;
+  const offered = await resolveFloorOffering(floor.manifest, resolveByCid, opts);
+  return "refusal" in offered ? offered : { ...floor, offering: offered.offering };
 }
