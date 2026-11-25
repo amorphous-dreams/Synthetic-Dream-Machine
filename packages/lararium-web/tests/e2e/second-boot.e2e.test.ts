@@ -39,7 +39,7 @@ import { afterAll, beforeAll, test } from "vitest";
 import { resolve } from "node:path";
 import { chromium } from "playwright";
 import * as A from "@automerge/automerge";
-import { SEALED_CHUNK_MARK } from "@lararium/mesh";
+import { SEALED_CHUNK_MARK } from "@lararium/mesh/sealed-chunk-door";
 // The published test route answers the custody form a fresh vessel raises (a harness door; never a person's passphrase).
 import { armTestCustody } from "../../../lararium-node/dist/probes/browser-test-custody.js";
 

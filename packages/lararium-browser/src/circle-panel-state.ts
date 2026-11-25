@@ -14,7 +14,7 @@
  * Meme: lar:///ha.ka.ba/lararium/browser/circle-panel-state
  */
 
-import type { FollowView } from "@lararium/mesh";
+import type { FollowView } from "@lararium/mesh/compose-follow";
 
 /**
  * Shape the follow-panel push args for ONE circle. `list` = the positional indices (the TW5 list field the

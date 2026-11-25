@@ -351,10 +351,10 @@ export async function cmdTiddler(args: ParsedArgs): Promise<number> {
     const sources = [args.options["append"], args.options["text"], args.options["file"]].filter((value) => value !== undefined);
     const ambiguous = sub === "put" && (familySub === "patch" ? sources.length !== 1 : args.options["text"] !== undefined && args.options["file"] !== undefined);
     const incompatible = sub === "put" && [args.options["fields"], args.options["unset"], args.options["tag-add"], args.options["tag-remove"]].some((value) => value !== undefined)
-      || sub === "put" && args.flags["create"] === true
+      || familySub === "patch" && args.flags["create"] === true
       || sub === "delete" && (args.flags["family"] === true || args.options["mode"] !== undefined);
     if (ambiguous || incompatible) {
-      const message = ambiguous ? "a family write names one text source: --file <path> or --text <words> (a slot write: exactly one of --append <file>, --text, --file)" : "--meme takes family text or removal, not record fields, tags, or modes";
+      const message = ambiguous ? "a family write names one text source: --file <path> or --text <words> (a slot write: exactly one of --append <file>, --text, --file)" : "--meme takes family text or removal, not record fields, tags, or modes (--create rides a whole-family put, never a slot patch: a slot patch needs the family to stand)";
       emit(args, { ok: false, error: { code: "usage", message }, human: () => console.error(`lares tiddler ${sub}: ${message}`) });
       return exitFor("usage");
     }

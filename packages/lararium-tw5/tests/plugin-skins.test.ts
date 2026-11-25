@@ -13,7 +13,9 @@
 import { describe, test, expect, afterEach } from "vitest";
 import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { LARES_LARARIUM_PLUGIN_URI, LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "@lararium/mesh";
+import { LARES_LARARIUM_PLUGIN_URI, LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "@lararium/mesh/lar-uris";
+import { sha256HexSync } from "@lararium/mesh/crypto";
+import { rootMetaFields } from "../src/root-meta.js";
 import { GRAMMAR_MODULES, LARARIUM_MODULES, grammarRequiresHouse } from "../plugin-build/skins.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
 import { bootTestWiki, skipNote, wikiSkip } from "./test-wiki.js";
@@ -54,6 +56,29 @@ describe("two skins: the grammar and the house", () => {
     expect(unclassed, "modules no skin classes (plugin-build/skins.ts)").toEqual([]);
     expect(grammar.filter((t) => !GRAMMAR_MODULES.includes(t)), "grammar plugin holds a module classed elsewhere").toEqual([]);
     expect(house.filter((t) => !LARARIUM_MODULES.includes(t)), "house plugin holds a module classed elsewhere").toEqual([]);
+  });
+});
+
+describe("a skin packs its code-memes beside the modules they window", () => {
+  const CARRIER = "text/memetic-wikitext+tiddlywiki";
+  const metaOf = (text: string, key: string): string => rootMetaFields(text)[key] as string;
+
+  test("S4: each packed code-meme windows a module its own skin packs, and names that module's packed bytes", () => {
+    const seen: string[] = [];
+    for (const stem of ["lares-memetic-wikitext", "lares-lararium"]) {
+      const packed = packedOf(stem);
+      for (const [title, tiddler] of Object.entries(packed)) {
+        const text = tiddler["text"] ?? "";
+        if (tiddler["type"] !== CARRIER || !["ha", "ka", "ba"].includes(metaOf(text, "heleuma"))) continue;
+        seen.push(title);
+        expect(metaOf(text, "title"), `${title}: the carrier names its own tiddler`).toBe(title);
+        const ref = metaOf(text, "module-ref");
+        expect(packed[ref]?.["type"], `${title}: module-ref ${ref} names a module this skin packs`).toBe("application/javascript");
+        expect(text, `${title}: #/source windows the module by title`).toContain(`<$transclude $tiddler="${ref}"/>`);
+        expect(metaOf(text, "source-sha256"), `${title}: source-sha256 names the packed module's bytes (cure: pnpm --filter @lararium/tw5 build:heleuma:commit)`).toBe(`sha256:${sha256HexSync(packed[ref]!["text"]!)}`);
+      }
+    }
+    expect(seen, "the house skin packs the meme fold's code-meme").toContain("lar:///ha.ka.ba/lararium/tw5/heleuma/meme-fold");
   });
 });
 

@@ -15,7 +15,7 @@
  */
 
 import type { IncomingMessage, Server, ServerResponse } from "node:http";
-import type { MountManifest } from "@lararium/mesh";
+import type { MountManifest } from "@lararium/mesh/open-vessel-core";
 import type { HttpFaceDispatcher } from "./http-face-dispatcher.js";
 import { engineFallBody, type EngineWatch } from "./engine-watch.js";
 

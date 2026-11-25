@@ -29,12 +29,12 @@ import {
   foundCabalRealmWithGlamour, openDwelling, dwellersHolding, cabalRealmLiveness,
 } from "../src/cabal-realm-ceremony.js";
 import { forkCabalRealm } from "../src/fork-realm-ceremony.js";
-import {
-  BagStowage,
-  feedCabalRealm,
-  charterHandLineage, quorumLeaseEpoch, signQuorumLease, charterInceptionImage, inceptCharterEpoch,
-  ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed,
-} from "@lararium/mesh";
+import { BagStowage } from "@lararium/mesh/bag-residency";
+import { feedCabalRealm } from "@lararium/mesh/cabal-realm";
+import { charterHandLineage } from "@lararium/mesh/charter-hand-lineage";
+import { quorumLeaseEpoch, signQuorumLease } from "@lararium/mesh/quorum-lease";
+import { charterInceptionImage, inceptCharterEpoch } from "@lararium/mesh/wax-stamp";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
 import { projectRealmGlamour, realmGlamourSnapshot } from "../src/realm-glamour.js";
 
 const REALM_URI    = "lar:///crossroads.cabal.gathers/probe-realm";

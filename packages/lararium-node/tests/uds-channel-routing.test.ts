@@ -10,17 +10,19 @@
  * dispatcher does) and asserts the content never touches daemon.
  */
 
-import { controlStoreOf } from "@lararium/mesh";
+import { controlStoreOf } from "@lararium/mesh/control-home";
 import { describe, test, expect } from "vitest";
 import { mkdtempSync, existsSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createConnection } from "node:net";
 import { Repo } from "@automerge/automerge-repo";
-import {
-  emptyLarDoc, mutableLarRecord, concludeVerb,
-  SUMMONS_URI_PREFIX, OUTCOME_URI_PREFIX, DAEMON_BAG_ID, AutomergeDocStore, CompositeStore, wikiSlotUri, type LarDoc,
-} from "@lararium/mesh";
+import { emptyLarDoc, mutableLarRecord, type LarDoc } from "@lararium/mesh/base-doc";
+import { concludeVerb, SUMMONS_URI_PREFIX, OUTCOME_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
+import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { startUdsChannel } from "../src/uds-channel.js";
 import { claimStore, StoreHeld } from "../src/owned-store.js";
 

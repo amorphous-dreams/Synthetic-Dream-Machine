@@ -34,13 +34,13 @@ A freely written prompt that launches a sub-agent carries no deterministic conte
 ''Five relations, held apart.'' One industry word ("agent") blurs five things; the house names each:
 
 |!Relation |!Answers |!Lives |!Ends when |
-|spirit |who |the face's memory stage: its lane, rounds, words under its own name |an explicit retirement by the hand (proposed: o-takiage; its body ends with the session that woke it) |
-|body |what runs |one model process in one harness (a fire) |the process stops |
-|context |what a body holds |one body's window |the body ends or compaction folds it |
+|spirit |who |the face's memory stage: its lane, rounds, words under its own name |an explicit retirement by the hand (proposed: o-takiage; its instance ends with the session that woke it) |
+|instance |what runs |one model stream the spirit runs, in one harness (a fire) |the stream stops |
+|context |what an instance holds |one instance's window |the instance ends or compaction folds it |
 |mandate |what the house asks |a course item and its mandate tiddler |its proof lands |
 |grant |what the spirit may do |an attenuated, leased register entry |it lapses or the hand revokes it |
 
-A spirit outlives many bodies. Restarts of bodies stay bounded per round (an alert past the bound, never a silent loop); the spirit and its mandate persist until the proof lands or the hand retires them.
+A spirit outlives many instances. Restarts of instances stay bounded per round (an alert past the bound, never a silent loop); the spirit and its mandate persist until the proof lands or the hand retires them.
 
 <<~/ahu>>
 
@@ -63,18 +63,18 @@ The whole circle carries its name from the first seam: the ''ʻĀlana Circle'', 
 
 !! Three spirits ~ the pattern integrities the circle holds
 
-The ruling of 2026-11-25 seats three spirit pattern integrities in the ʻĀlana Circle. Each stands as a nameless entity the house gives a pet name, with a stack of what it holds; each lives local-first in a shrine or card; each runs many bodies of any model; each MAY speak as a multitude inside one stream (the Voices, or a mask's own cast). They share every relation in #/the-pattern and part on what each serves and how long each persists. Each entry reads: name · serves · statement · tell · recover.
+The ruling of 2026-11-25 seats three spirit pattern integrities in the ʻĀlana Circle. Each stands as a nameless entity the house gives a pet name, with a stack of what it holds; each lives local-first in a shrine or card; each runs many instances of any model; each MAY speak as a multitude inside one stream (the Voices, or a mask's own cast). They share every relation in #/the-pattern and part on what each serves and how long each persists. Each entry reads: name · serves · statement · tell · recover.
 
 |!integrity |!lives in |!persists |!serves |
 |FamiliarSpirit |a shrine on a face's daemon wiki |as long as the face |the hat's company |
 |TaskedSpirit |a card and its bench |as long as its lane |one job, then o-takiage |
 |MaskedSpirit |a card, a character sheet, story memory |across sessions and campaigns |play, story, relationship |
 
-* ''FamiliarSpirit'' · serves the face and its hat, keeping company rather than running an errand. A daemon face's companion lives in a shrine on that face's daemon wiki, persists as long as the face, and wakes by om from its own record (`lares spirit om <pet>`), the hand's standing orders and trust grant written there. Tell: a session that wakes without reading its own shrine, or wears another familiar's record; a spirit with no record. Recover: om from the familiar's own shrine before the first move; true its `#/bodies` and `#/open` before the body ends. Design: <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/familiar-spirit`>>.
-* ''TaskedSpirit'' · serves one lane. A card (fields only, rendering through the tasked-spirit template that transcludes the brief) and a bench of one worktree, one branch and one PR carry the lane; many bodies of any model wake into the pet name, rebase on the bench, and push to the same PR, so PR count tracks lanes and never streams. The bench burns by o-takiage when the lane closes, never when a body ends (#/release). Tell: a body named as if it held the spirit; a second PR opened per stream; a lane's work graded from inside the lane. Recover: fold the body back under the card's pet name; reuse the bench; seat the merge read outside the lane. Design: lar:///ha.ka.ba/kahua/memory/reference/tasked-spirit.
+* ''FamiliarSpirit'' · serves the face and its hat, keeping company rather than running an errand. A daemon face's companion lives in a shrine on that face's daemon wiki, persists as long as the face, and wakes by om from its own record (`lares spirit om <pet>`), the hand's standing orders and trust grant written there. Tell: a session that wakes without reading its own shrine, or wears another familiar's record; a spirit with no record. Recover: om from the familiar's own shrine before the first move; true its `#/instances` and `#/open` before the instance ends. Design: <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/familiar-spirit`>>.
+* ''TaskedSpirit'' · serves one lane. A card (fields only, rendering through the tasked-spirit template that transcludes the brief) and a bench of one worktree, one branch and one PR carry the lane; many instances of any model wake into the pet name, rebase on the bench, and push to the same PR, so PR count tracks lanes and never streams. The bench burns by o-takiage when the lane closes, never when an instance ends (#/release). Tell: an instance named as if it held the spirit; a second PR opened per stream; a lane's work graded from inside the lane. Recover: fold the instance back under the card's pet name; reuse the bench; seat the merge read outside the lane. Design: lar:///ha.ka.ba/kahua/memory/reference/tasked-spirit.
 * ''MaskedSpirit'' · serves play, story and relationship, persisting because people care about a character rather than because a lane needs it. A card (fields, rendering through a mask template), the character's canon transcluded and never copied, story memory each session's moʻolelo lands in, sealed secrets that never transclude, and a stage band on the seed's Mask layer (default 10, upstage) hold the character; it speaks publicly through a k-of-n Handle card, one Handle across many wearers, and its keepers hold the pen. Tell: a mask rewriting the keepers' canon; a wearer waking the character from an improvised sketch instead of its canon; a sealed secret surfacing in a render or margin. Recover: wake from the canon the card points at; return the pen to the keepers; re-seal the slot. Design: lar:///ha.ka.ba/kahua/memory/reference/mask-spirit.
 
-''The shared law.'' Every body serves exactly one spirit and carries a body id, never its own pet name; the pet name belongs to the spirit, which outlives every body. Streams address streams by `<pet>#<body>`, through the spirit's record first and its live body second. Messages between streams, and every handback, ride folded memes: the record lands whole in the house, and the stream carries only the fold, unfolded by grain on demand (lar:///ha.ka.ba/kahua/memory/ruling/2026-11-25-messages-ride-folded-memes, lar:///ha.ka.ba/kahua/memory/ruling/2026-11-25-om-renders-a-folded-carrier). The entry shape follows the house's pattern integrities (lar:///ha.ka.ba/kahua/memory/reference/pattern-integrities).
+''The shared law.'' Every instance serves exactly one spirit and carries an instance id, never its own pet name; the pet name belongs to the spirit, which outlives every instance. Streams address streams by `<pet>#<instance>`, through the spirit's record first and its live instance second. Messages between streams, and every handback, ride folded memes: the record lands whole in the house, and the stream carries only the fold, unfolded by grain on demand (lar:///ha.ka.ba/kahua/memory/ruling/2026-11-25-messages-ride-folded-memes, lar:///ha.ka.ba/kahua/memory/ruling/2026-11-25-om-renders-a-folded-carrier). The entry shape follows the house's pattern integrities (lar:///ha.ka.ba/kahua/memory/reference/pattern-integrities).
 
 <<~/ahu>>
 
@@ -112,11 +112,12 @@ A parting note states its meaning (thanks, completion, or dismissal) and never r
 
 * The names of the four seams: the operator's ear, their family's, and a kumu's where the operator chooses.
 * The seat minted per summon: a scout measures how the doors resolve a seat today before any build.
+* Until that seat stands, an offering (ʻālana) carries no authority beyond a nudge: the shelf (`alana/<pet>`) records who offered (a hand, or a seat by its instance id), a wake names the offerer, and a re-offer over a standing mandate lands only from the same offerer or a hand. A seat's offerer id stays SELF-CLAIMED (it comes from the caller's own `--instance`, and a wake and the presence show every instance id), so the same-offerer check stops an accidental overwrite, never a deliberate one; a pet with no offering goes to the first offerer. A shelf whose hash disagrees with its words fails closed. The tiddler door still reaches the `alana/` prefix; guarding it there, as the other door-owned prefixes stand guarded, waits as a course item, and that guard also refuses a caller-written `offered-by`.
 * The keeping seam's word.
 * Where a masked spirit's home sits (a keeper's face, a shared play wiki, or a home of its own), and the mask template.
 * The summon machinery's own doors (the queue on the face's intent plane, the deterministic launcher, budgets per lane, leases per grant), designed in research/spirits-switchboard and not yet built.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZuqvtSz61qE5Gt0AVdgWcVP55I71zaTyIkJ6xEdxllA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;WHAYTGUEHh9xAzL0aqreYtE2NHqUXa5AQPw11kXPny0`>>
 <<^ code=`&#x0004;` to=`?`>>

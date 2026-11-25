@@ -5,7 +5,8 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness#/the-swarm-slices
  */
 import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
-import { deviceEdgeId, FLEET_HAND } from "@lararium/mesh";
+import { deviceEdgeId } from "@lararium/mesh/dyad";
+import { FLEET_HAND } from "@lararium/mesh/fleet-frontier";
 import { browserWardCosignPort } from "../src/browser-ward-cosign.js";
 import { sealBrowserKeystore, lockBrowserCustody } from "../src/browser-custody.js";
 import { generateOrLoadBrowserPersonaRoot } from "../src/browser-vessel-identity.js";

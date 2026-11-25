@@ -21,7 +21,9 @@
  */
 
 import * as ed from "@noble/ed25519";
-import { hex, type CarriageLog, type MembershipEnvelope } from "@lararium/mesh";
+import { hex } from "@lararium/mesh/crypto";
+import { type CarriageLog } from "@lararium/mesh/carriage-log";
+import { type MembershipEnvelope } from "@lararium/mesh/membership-channel";
 import {
   startHermRelayPort,
   type HermRelayPort, type RelayAnnounceObserver,

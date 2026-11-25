@@ -1,6 +1,15 @@
 /** Read a device's standing from the island's own signed fleet board. */
-import { DOCUMENT_HANG_BOUND_MS, deviceEdgeId, edgeStandingAsOf, readFleetFrontier, fleetRaiseCids, readFrontierPins, writeFrontierPin, FLEET_HAND, findOrThrow, fleetEdgeAuthority, fleetEdgeBoardDocUrl, readEdgeBoard, keptFromLedger, keepInLedger, restoreToBoard, raisesSeenThrough, replicaHeads } from "@lararium/mesh";
-import type { Repo, LarDoc, DocHandle, HandLineage } from "@lararium/mesh";
+import { DOCUMENT_HANG_BOUND_MS, findOrThrow } from "@lararium/mesh/find-or-throw";
+import { deviceEdgeId, fleetEdgeAuthority } from "@lararium/mesh/dyad";
+import { edgeStandingAsOf, readEdgeBoard } from "@lararium/mesh/edge-kapae";
+import { readFleetFrontier, fleetRaiseCids, FLEET_HAND } from "@lararium/mesh/fleet-frontier";
+import { readFrontierPins, writeFrontierPin } from "@lararium/mesh/edge-frontier-board";
+import { fleetEdgeBoardDocUrl } from "@lararium/mesh/deterministic-doc";
+import { keptFromLedger, keepInLedger, restoreToBoard, raisesSeenThrough } from "@lararium/mesh/edge-ledger";
+import { replicaHeads } from "@lararium/mesh/island-repo-door";
+import type { Repo, DocHandle } from "@lararium/mesh/automerge";
+import type { LarDoc } from "@lararium/mesh/base-doc";
+import type { HandLineage } from "@lararium/mesh/hand-lineage";
 import type { DyadReader } from "./operator-daemon-behavior.js";
 import { watchHandles, witnessedStandings } from "./face-intent-door.js";
 import { standingOfReading } from "./face-seat-summons.js";

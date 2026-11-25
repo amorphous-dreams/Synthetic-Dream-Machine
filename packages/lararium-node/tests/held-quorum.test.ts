@@ -11,7 +11,7 @@ import { seatSuiteWard } from "./support/scratch-custody-setup.js";
 // This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
 seatSuiteWard();
 import { beforeEach, describe, expect } from "vitest";
-import type { KahuQuorumSeats } from "@lararium/mesh";
+import type { KahuQuorumSeats } from "@lararium/mesh/kapae-antigen";
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot } from "../src/node-vessel-identity.js";
 import { selectHeldQuorumSigners } from "../src/held-quorum.js";
 import { seatChairs } from "./seat-fixture.js";

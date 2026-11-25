@@ -15,10 +15,8 @@
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/persona-policy
  */
-import {
-  personaSelfTiddlerUri, PERSONA_SELVES_PREFIX,
-  type LarTiddlerStore, type LarTiddlerRecord,
-} from "@lararium/mesh";
+import { personaSelfTiddlerUri, PERSONA_SELVES_PREFIX } from "@lararium/mesh/lar-uris";
+import { type LarTiddlerStore, type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import {
   foldPersonaSelves, withPersonaSelfName, withoutPersonaSelfName,
   type PersonaSelfFields, type PersonaSelfName,

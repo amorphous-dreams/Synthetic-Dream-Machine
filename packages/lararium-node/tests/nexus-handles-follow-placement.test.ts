@@ -3,7 +3,7 @@ import { describe, expect, test, afterEach } from "vitest";
 import { mkdtempSync, rmSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { nexusHandlesUri } from "@lararium/mesh";
+import { nexusHandlesUri } from "@lararium/mesh/lar-uris";
 import { namedBagMirror } from "../src/bag-paths.js";
 import { LarDiskProjector } from "../src/disk-projector.js";
 

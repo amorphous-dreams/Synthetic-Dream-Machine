@@ -18,17 +18,15 @@
  */
 import { describe, test, expect } from "vitest";
 import * as ed from "@noble/ed25519";
-import {
-  hex,
-  ENGINE_CORE_ID,
-  sha256HexBytesSync,
-  signPluginOffering, pluginOfferingCid, computePluginsCid,
-  type OfferedBlob, type PluginOffering, type CasBlobLike,
-  type OfferingLookup,
-  mkEa, mkTeardownAck, type IslandMsg_Manifest,
-  type VesselIslandHost, type VesselWorkerHandle,
-  VesselIslandPoolCore,
-} from "@lararium/mesh";
+import { hex, sha256HexBytesSync } from "@lararium/mesh/crypto";
+import { ENGINE_CORE_ID } from "@lararium/mesh/base-doc";
+import { signPluginOffering, pluginOfferingCid, type OfferedBlob, type PluginOffering } from "@lararium/mesh/plugin-offering";
+import { computePluginsCid } from "@lararium/mesh/genesis-doc";
+import { type CasBlobLike } from "@lararium/mesh/cas";
+import { type OfferingLookup } from "@lararium/mesh/plugin-offering-selector";
+import { mkEa, mkTeardownAck, type IslandMsg_Manifest } from "@lararium/mesh/island-protocol";
+import { type VesselIslandHost, type VesselWorkerHandle } from "@lararium/mesh/vessel-host";
+import { VesselIslandPoolCore } from "@lararium/mesh/vessel-island-pool-core-door";
 import { writeBlobsToCasOpfs } from "../src/browser-genesis.js";
 import { resolveBrowserIslandPluginCids } from "../src/open-browser-vessel.js";
 import { BrowserVesselIslandPool } from "../src/browser-vessel-island-pool.js";

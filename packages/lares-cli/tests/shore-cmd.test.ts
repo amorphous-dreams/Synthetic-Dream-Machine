@@ -6,7 +6,7 @@
  * keeps its name, and a failed verb never reads as an answer.
  */
 import { describe, test, expect } from "vitest";
-import { VERB_RESULT_KEY } from "@lararium/mesh";
+import { VERB_RESULT_KEY } from "@lararium/mesh/verb-tiddler";
 import { SHORE_ACTS, shoreArgs } from "../src/commands/shore.js";
 import { SHORE_VERB, askShore, readShoreAnswer } from "../src/shore-core.js";
 import type { ParsedArgs } from "../src/parse-args.js";

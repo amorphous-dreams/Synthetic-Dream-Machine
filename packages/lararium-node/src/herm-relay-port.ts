@@ -29,9 +29,16 @@ import { dirname } from "node:path";
 import type { Duplex } from "node:stream";
 import * as ed from "@noble/ed25519";
 import {
-  PERSONA_KEL_DROP_ROUTE, makePersonaKelDropStore, PERSONA_KEL_DROP_BODY_CAP, hex, admitPersonaKelDropDeposit,
-  type CarriageLog, type MembershipEnvelope, type PersonaKelDropJournal, type PersonaKelDropStore,
-} from "@lararium/mesh";
+  PERSONA_KEL_DROP_ROUTE,
+  makePersonaKelDropStore,
+  PERSONA_KEL_DROP_BODY_CAP,
+  admitPersonaKelDropDeposit,
+  type PersonaKelDropJournal,
+  type PersonaKelDropStore,
+} from "@lararium/mesh/persona-kel-drop";
+import { hex } from "@lararium/mesh/crypto";
+import { type CarriageLog } from "@lararium/mesh/carriage-log";
+import { type MembershipEnvelope } from "@lararium/mesh/membership-channel";
 
 /** A running herm relay port: the HTTP server, its bound port and the gate key a dialer pins for it. */
 export interface HermRelayPort {

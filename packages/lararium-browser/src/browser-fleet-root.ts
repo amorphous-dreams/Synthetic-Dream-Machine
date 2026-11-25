@@ -28,14 +28,34 @@
  */
 import * as ed25519 from "@noble/ed25519";
 import type { AutomergeUrl, DocHandle, Repo } from "@automerge/automerge-repo";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { FLEET_HAND, fleetFrontierCarriage, fleetRaiseCids, readFleetFrontier } from "@lararium/mesh/fleet-frontier";
 import {
-  AutomergeDocStore, FLEET_HAND, FleetJoinRootRefused, DeviceSeatRefused, buildDeviceDelegationRootHalf, composeFleetJoinAnswer,
-  composeFleetJoinOffer, deviceEdgeId, faceAtomKeyFromSeed, fleetEdgeAuthority, fleetEdgeBoardDocUrl, fleetFrontierCarriage,
-  fleetRaiseCids, hex, leaseEpochPrefix, materializeSharedLarDoc, faceRecordsOf, personaBagIdFor, personaKelBoardDocUrl,
-  personaKelChainForPrefix, readControlHome, readFace, readFleetFrontier, readFrontierPins, readLedgeredEdgeBoard, seatDeviceInFace,
-  tiddlerText, writePersonaAct,
-  type DeviceDelegationTiddler, type FaceScope, type FleetJoinAnswer, type FleetJoinOffer, type FleetJoinRequest, type FleetJoinSeat, type LarDoc, type SignedAct,
-} from "@lararium/mesh";
+  FleetJoinRootRefused,
+  composeFleetJoinAnswer,
+  composeFleetJoinOffer,
+  type FleetJoinAnswer,
+  type FleetJoinOffer,
+  type FleetJoinRequest,
+  type FleetJoinSeat,
+} from "@lararium/mesh/fleet-join";
+import { DeviceSeatRefused, seatDeviceInFace } from "@lararium/mesh/device-seat";
+import { buildDeviceDelegationRootHalf, type DeviceDelegationTiddler } from "@lararium/mesh/device-delegation";
+import { deviceEdgeId, fleetEdgeAuthority } from "@lararium/mesh/dyad";
+import { faceAtomKeyFromSeed } from "@lararium/mesh/face-atom";
+import { fleetEdgeBoardDocUrl, materializeSharedLarDoc, personaKelBoardDocUrl } from "@lararium/mesh/deterministic-doc";
+import { hex } from "@lararium/mesh/crypto";
+import { leaseEpochPrefix } from "@lararium/mesh/epoch-lease";
+import { faceRecordsOf, readFace } from "@lararium/mesh/face-reading";
+import { personaBagIdFor } from "@lararium/mesh/persona-scope";
+import { personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";
+import { readControlHome } from "@lararium/mesh/control-home";
+import { readFrontierPins } from "@lararium/mesh/edge-frontier-board";
+import { readLedgeredEdgeBoard } from "@lararium/mesh/edge-ledger";
+import { tiddlerText, type LarDoc } from "@lararium/mesh/base-doc";
+import { writePersonaAct } from "@lararium/mesh/persona-act-board";
+import { type FaceScope } from "@lararium/mesh/face-proof-subjects";
+import { type SignedAct } from "@lararium/mesh/signed-act";
 import { runDeviceAdmitEdge, type DeviceAdmitPayload } from "@lararium/keyhive";
 import type { WardRoute } from "./ward-core.js";
 import { browserPersonaRootHeld, listBrowserPersonaRoots, readBrowserPersonaRootKey, loadBrowserPersonaRootSeed, FLEET_JOIN_STORE, idbGet, idbPut, openVesselIdb } from "./browser-vessel-identity.js";

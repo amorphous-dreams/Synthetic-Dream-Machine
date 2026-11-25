@@ -27,7 +27,7 @@ vi.mock("../src/prompt-secret.js", () => {
 });
 
 import { FsCustodyIo, foundCustody, custodyStatus, unlockCustody, vesselCustodyHomes, makeCustodyHolder, openFaceTree } from "@lararium/node";
-import { writeSealedCarrier } from "@lararium/mesh";
+import { writeSealedCarrier } from "@lararium/mesh/sealed-writer";
 import { helpLines } from "../src/command-help.js";
 import { parseArgs } from "../src/parse-args.js";
 

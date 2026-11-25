@@ -23,7 +23,9 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-two-stacks
  */
 
-import { base64UrlEncode, base64UrlDecode, utf8Bytes, HANDLE_CARD_DOMAIN, type HandleCard } from "@lararium/mesh";
+import { base64UrlEncode, base64UrlDecode, utf8Bytes } from "@lararium/mesh/crypto";
+import { HANDLE_CARD_DOMAIN } from "@lararium/mesh/domains";
+import { type HandleCard } from "@lararium/mesh/handle-card";
 
 /** The carriage key a HandleCard rides under — `#card=<base64url>`, a fragment key of its own. */
 export const HANDLE_CARD_CARRIAGE_KEY = "card" as const;

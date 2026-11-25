@@ -32,9 +32,8 @@ import {
   generateOrLoadPersonaGroupRoot, storeSeatKey, renderNexusDoc, writeNexusDoc, nexusCharterDocPath, carriedCharterHome, readConsent,
   parseNexusDoc,
 } from "@lararium/node";
-import {
-  hex, nexusAidOf, type NexusDoc,
-} from "@lararium/mesh";
+import { hex } from "@lararium/mesh/crypto";
+import { nexusAidOf, type NexusDoc } from "@lararium/mesh/nexus-seal-seed";
 import { heldCharter } from "./seal-rite-fixture.js";
 import { sealImportVerdict } from "../src/seal-import.js";
 

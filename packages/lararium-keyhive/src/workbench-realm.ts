@@ -34,11 +34,27 @@
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench
  */
+import { askerRefusal } from "@lararium/mesh/hand-refusal";
+import { REALM_ADMISSION_ACT, REALM_STATE_ROLL_ACT } from "@lararium/mesh/content-key-holder";
 import {
-  REALM_ADMISSION_ACT, REALM_STATE_ROLL_ACT, dropWorkbench, ledgerWorkbenchRealms, noteWorkbenchRemoval, noteWorkbench, noteWorkbenchKey, privateCabalRealmId, realmWorkbenchDocUrl, requireWorkbenchShareable,
-  wikiSlotUri, noteWorkbenchSeat, dropWorkbenchSeat, workbenchKeyDocs, workbenchSeats, WorkbenchRefusal,
-  type AutomergeUrl, type CabalRealm, type LarDoc,
-} from "@lararium/mesh";
+  dropWorkbench,
+  ledgerWorkbenchRealms,
+  noteWorkbenchRemoval,
+  noteWorkbench,
+  noteWorkbenchKey,
+  privateCabalRealmId,
+  requireWorkbenchShareable,
+  noteWorkbenchSeat,
+  dropWorkbenchSeat,
+  workbenchKeyDocs,
+  workbenchSeats,
+  WorkbenchRefusal,
+} from "@lararium/mesh/workbench";
+import { realmWorkbenchDocUrl } from "@lararium/mesh/deterministic-doc";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import { type AutomergeUrl } from "@lararium/mesh/automerge";
+import { type CabalRealm } from "@lararium/mesh/cabal-realm";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { foundCabalRealm } from "./cabal-realm-ceremony.js";
 import type { KeyhiveProvider } from "./keyhive-provider.js";
 
@@ -363,10 +379,11 @@ export async function landWorkbench(
 
 /**
  * WHETHER A LANDING ASKS UNDER A PERSON'S HAND: the owner's holder signs a hand-over only for an ask the operator's own CLI placed
- * (`asker: "cli"`); a seat, a tab, a watcher and an ask no door read leave the cure to the person.
+ * (`asker: "cli"`, the gate's terminal reading `askerRefusal(…, { terminal: true })`); a seat, a tab, a watcher and an ask no
+ * door read leave the cure to the person.
  */
 export function landsUnderAHand(context: { readonly asker?: string }): boolean {
-  return context.asker === "cli";
+  return askerRefusal(context.asker, { terminal: true }) === null;
 }
 
 /**

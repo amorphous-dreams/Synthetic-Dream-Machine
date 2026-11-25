@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import * as ed from "@noble/ed25519";
-import { deviceAtomProofBytes, hex, verifyDeviceDelegation, type DeviceDelegationTiddler } from "@lararium/mesh";
+import { deviceAtomProofBytes, verifyDeviceDelegation, type DeviceDelegationTiddler } from "@lararium/mesh/device-delegation";
+import { hex } from "@lararium/mesh/crypto";
 import { openBrowserVessel, type BrowserVesselOptions } from "../src/open-browser-vessel.js";
 import { idbGet, openVesselIdb } from "../src/browser-vessel-identity.js";
 import { browserFaceAtom, requireBrowserFaceAtomSeed } from "../src/browser-face-atom.js";

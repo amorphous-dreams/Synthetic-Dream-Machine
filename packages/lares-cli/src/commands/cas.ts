@@ -17,9 +17,10 @@
 
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
-import { casReferences, summarizeCas, type CasReferenceEntry } from "@lararium/mesh";
+import { casReferences, summarizeCas, type CasReferenceEntry } from "@lararium/mesh/cas";
 import { listCasBlobs, genesisProtectSet, readCasPins, pinCas, releaseCas, readVesselLife } from "@lararium/node";
-import { parseCapTier, type PinCap } from "@lararium/mesh";
+import { parseCapTier } from "@lararium/mesh/cap-tier";
+import { type PinCap } from "@lararium/mesh/cas-caps";
 import { larCasDir, larBagsDir, larWikisDir, larGenesisDir, larDataDir, vesselDid } from "../env.js";
 import { runVerb } from "../verb-call.js";
 import { summaryOutput } from "../verb-result.js";

@@ -11,9 +11,18 @@
  */
 import { afterEach, describe, expect, test } from "vitest";
 import {
-  LAR_CAMERA_STORY, LAR_CONTROL_EVENT, LAR_FRAME, LAR_KEY_MEMBERSHIP, LAR_KEY_SHORTCUTS, LAR_KEY_STORY_ORDER, LAR_KEY_STYLE, LAR_KEY_SURFACE, LAR_RESEND,
-  mkLarResend, readLarFrame,
-} from "@lararium/mesh";
+  LAR_CAMERA_STORY,
+  LAR_CONTROL_EVENT,
+  LAR_FRAME,
+  LAR_KEY_MEMBERSHIP,
+  LAR_KEY_SHORTCUTS,
+  LAR_KEY_STORY_ORDER,
+  LAR_KEY_STYLE,
+  LAR_KEY_SURFACE,
+  LAR_RESEND,
+  mkLarResend,
+  readLarFrame,
+} from "@lararium/mesh/lar-camera";
 import { hasProjection } from "../src/has-island-watches.js";
 import { htmlOf, keyOf, mountSurface, type Surface } from "./projection-surface.js";
 import { skipNote, wikiSkip } from "./test-wiki.js";

@@ -9,7 +9,8 @@
  */
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { existsSync, readFileSync } from "node:fs";
-import { openOutboxParcel, readOutboxKey, readFckCarrier, sealOutboxParcel } from "@lararium/mesh";
+import { openOutboxParcel, readOutboxKey, sealOutboxParcel } from "@lararium/mesh/sealed-store-rest";
+import { readFckCarrier } from "@lararium/mesh/fck-envelope";
 import { openOutboxKey, outboxKeyFile, OutboxKeyUnreadable } from "../src/outbox-key.js";
 import { CustodyLocked, makeCustodyHolder } from "../src/custody-holder.js";
 import { seatCustody } from "../src/custody-seat.js";

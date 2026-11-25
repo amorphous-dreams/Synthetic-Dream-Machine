@@ -23,9 +23,9 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/recipe-watch
  */
 
-import { wearOf } from "@lararium/mesh";
+import { wearOf } from "@lararium/mesh/repo-wear";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
 import {
-  AutomergeDocStore,
   LARES_BAG,
   KAHUA_BAG,
   ORACLE_BAG,
@@ -34,9 +34,10 @@ import {
   wikiSlotKindOf,
   expandRecipe,
   recipeFromRecord,
-  bagStackFromRec,
-  type ChangeOrigin,
-  type LarTiddlerRecord, ownEntry} from "@lararium/mesh";
+} from "@lararium/mesh/wiki-recipe";
+import { bagStackFromRec } from "@lararium/mesh/bag-stack-from-rec";
+import { type ChangeOrigin, type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
+import { ownEntry } from "@lararium/mesh/stored-value";
 import { makeCatalogAccessor, findOrThrow, libraryDocUrl } from "./catalog-accessor.js";
 import { kahuaLayerStore, librarySlotUrl } from "./kahua-layer.js";
 import { effectiveRecipe } from "./recipe-planes.js";

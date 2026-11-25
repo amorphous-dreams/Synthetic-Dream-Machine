@@ -21,8 +21,12 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/read-gradient
  */
 
-import { VerbRefusal } from "@lararium/mesh";
+import { VerbRefusal } from "@lararium/mesh/verb-refusal";
 import { findTopLevelAhuBlocks, type AhuBlock } from "./meme-ast/ahu-scan.js";
+import { byteLength, carrierSlots, hasLine, param, blockSpan, type CarrierSlot } from "./has-line.js";
+
+// THE `has` LINE AND THE SLOT MEASURES stand in `has-line.ts` (a fold bundles them without this module's refusals); they ride on from here.
+export { byteLength, carrierSlots, hasLine, param, type CarrierSlot };
 
 /** THE ONE PAGE: the bytes a read answers whole within (the house page a filter page and a render hold too). */
 export const READ_PAGE_BYTES = 65_536;
@@ -45,8 +49,6 @@ export interface GrainEcho {
   readonly why: string;
 }
 
-const utf8 = new TextEncoder();
-export const byteLength = (text: string): number => utf8.encode(text).length;
 
 // ── the card's base ──────────────────────────────────────────────────────────────────────────────────
 
@@ -122,33 +124,7 @@ export function readBase(raw: string | null, verb: string, writesText: boolean, 
   return raw.slice(CARD_BASE_PREFIX.length);
 }
 
-// ── the has line ─────────────────────────────────────────────────────────────────────────────────────
-
-/** A value quoted for a sigil attribute: one backtick each side, or three where the value holds a backtick. */
-function quoted(value: string): string {
-  return value.includes("`") ? `\`\`\`${value}\`\`\`` : `\`${value}\``;
-}
-
-/** One param token: `key/value`, a value with whitespace bracketed as TiddlyWiki brackets a title. */
-export function param(key: string, value: string | number | boolean): string {
-  const text = String(value);
-  return `${key}/${/\s/.test(text) ? `[[${text}]]` : text}`;
-}
-
-/** A tagline, one line and short: the description or role a reader meets first. */
-function taglineOf(raw: string | null | undefined): string | null {
-  if (typeof raw !== "string") return null;
-  const line = raw.replace(/\s+/g, " ").trim();
-  if (line === "") return null;
-  return line.length > 160 ? `${line.slice(0, 157)}...` : line;
-}
-
-/** THE `has` LINE: `<<~ has name=`…` params=`… ~ tagline`>>`. */
-export function hasLine(name: string, params: readonly string[], tagline?: string | null): string {
-  const tail = taglineOf(tagline);
-  const body = [...params, ...(tail ? [`~ ${tail}`] : [])].join(" ");
-  return `<<~ has name=${quoted(name)} params=${quoted(body)}>>`;
-}
+// ── the plane rows ───────────────────────────────────────────────────────────────────────────────────
 
 /** A bounded page of plane rows. The cursor carries the offset and a fingerprint of the full answer. */
 export function pagePlaneRows<T>(rows: readonly T[], after?: string | null, limit = 32): { rows: T[]; count: number; next: string | null } {
@@ -186,13 +162,6 @@ export function tagTokens(tags: string | undefined): string[] {
 
 // ── the carrier's slots ──────────────────────────────────────────────────────────────────────────────
 
-/** One top-level slot of a carrier: its name, its bytes, and its first line (the tagline a has line quotes). */
-export interface CarrierSlot {
-  readonly slot: string;
-  readonly bytes: number;
-  readonly first: string | null;
-}
-
 /**
  * THE CARRIER CUT AT ITS SLOT BOUNDARIES: segments whose join reads the carrier byte for byte. The cut reads the decomposer's own
  * ahu scan (`scanAhu`: the fence and inline-code mask, the line law, one pairing stack), so the slots a read names ARE the slots
@@ -214,29 +183,6 @@ export function carrierSegments(text: string): { readonly segments: string[]; re
   segments.push(text.slice(from));
   slots.push(slot);
   return { segments, slots, blocks };
-}
-
-/** The first prose line of a slot's body: its heading, the `!` marks dropped. */
-function firstLineOf(body: string): string | null {
-  for (const line of body.split("\n")) {
-    const bare = line.trim();
-    if (bare === "" || bare.startsWith("<<~") || bare.startsWith("<<^")) continue;
-    return bare.replace(/^!+\s*/, "");
-  }
-  return null;
-}
-
-/** The span a block owns: its opener through its closer, and the line end that follows. */
-function blockSpan(text: string, block: AhuBlock): string {
-  const end = text.startsWith("\r\n", block.closeEnd) ? block.closeEnd + 2 : text[block.closeEnd] === "\n" ? block.closeEnd + 1 : block.closeEnd;
-  return text.slice(block.openStart, end);
-}
-
-/** Every top-level slot of a carrier, in order, with its bytes and first line. */
-export function carrierSlots(text: string): CarrierSlot[] {
-  return findTopLevelAhuBlocks(text).map((block) => ({
-    slot: block.slot, bytes: byteLength(blockSpan(text, block)), first: firstLineOf(text.slice(block.bodyStart, block.bodyEnd)),
-  }));
 }
 
 /** One slot's own span of the carrier (its opening line through its close), or null where the carrier holds no such slot. */

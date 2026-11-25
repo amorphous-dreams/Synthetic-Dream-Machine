@@ -25,9 +25,15 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 import {
-  BAG_MANIFEST_FILE, bagManifestFromMeta, bagManifestUri, defaultBagManifest, planBagMove,
-  type BagHome, type BagHomeRoots, type BagManifest, type BagMove, type RepoRegistration,
-} from "@lararium/mesh";
+  BAG_MANIFEST_FILE,
+  bagManifestFromMeta,
+  bagManifestUri,
+  defaultBagManifest,
+  planBagMove,
+  type BagManifest,
+  type BagMove,
+} from "@lararium/mesh/bag-manifest";
+import { type BagHome, type BagHomeRoots, type RepoRegistration } from "@lararium/mesh/bag-home";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { kv, metaFieldsFromBody, renderCarrier } from "./carrier-render.js";
 import { larConfigHome, larProjectionsHome } from "./vessel-paths.js";

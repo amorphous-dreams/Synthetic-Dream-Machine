@@ -1,6 +1,13 @@
 /** The carried seat's two files: their shapes, the device and face they bind, and the seat's second source. */
 import { describe, expect, test } from "vitest";
-import { buildOutcome, tiddlerText, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, faceIntentVerbs, intentEntryRecordsOfGroup, intentId, readIntentEntry, storedLarRecord, writeIntentEntry, type DeviceDelegationTiddler, type DocHandle, type LarDoc } from "@lararium/mesh";
+import { buildOutcome } from "@lararium/mesh/intent-issue";
+import { tiddlerText, type LarDoc } from "@lararium/mesh/base-doc";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { faceIntentVerbs } from "@lararium/mesh/intent-verbs";
+import { intentEntryRecordsOfGroup, intentId, readIntentEntry, writeIntentEntry } from "@lararium/mesh/intent-entry";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
+import { type DeviceDelegationTiddler } from "@lararium/mesh/device-delegation";
+import { type DocHandle } from "@lararium/mesh/automerge";
 import {
   carriedSeatGrants, composeSeatRequest, keepCarriedSeatGrant, placeSeatRequest, readSeatGrant, readSeatRequest, seatGrantAnswering, seatGrantOnPlane, seatRequestDevice,
 } from "../src/carried-seat.js";

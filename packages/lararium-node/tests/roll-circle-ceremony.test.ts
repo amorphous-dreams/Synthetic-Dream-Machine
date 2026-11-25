@@ -28,9 +28,10 @@ vi.mock("../src/seat-key-store.js", async (importOriginal) => {
 });
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import {
-  cidV1Sha256, foundingRoster, hex, mintColdKey, seatFingerprint, type CofoundOffer, type ColdKey,
-} from "@lararium/mesh";
+import { cidV1Sha256, hex } from "@lararium/mesh/crypto";
+import { foundingRoster, seatFingerprint } from "@lararium/mesh/nexus-seal-seed";
+import { mintColdKey, type ColdKey } from "@lararium/mesh/cold-key-card";
+import { type CofoundOffer } from "@lararium/mesh/cofound";
 import { charterHomeFor, importCarriedCharter, primaryNexusAid } from "../src/carried-set.js";
 import { runNexusRollAnchorOpen, runNexusRollAnchorPartial } from "../src/commands/nexus-contract.js";
 import { nexusCharterDocRelPath, readNexusDoc, writeNexusDoc } from "../src/nexus-doc.js";

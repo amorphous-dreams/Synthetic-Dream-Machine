@@ -3,10 +3,9 @@
  * family, the worn pin, a plane's url or a sibling plane.
  */
 import { describe, test, expect } from "vitest";
-import {
-  personaBagIdFor, personaSiblingBagIds, personaMembershipEntries, personaScopedBagIds,
-  PERSONA_GROUP_ID_TIDDLER, DAEMON_BAG_ID, type PlaneEntry,
-} from "@lararium/mesh";
+import { personaBagIdFor, personaSiblingBagIds, personaScopedBagIds } from "@lararium/mesh/persona-scope";
+import { personaMembershipEntries, type PlaneEntry } from "@lararium/mesh/persona-planes";
+import { PERSONA_GROUP_ID_TIDDLER, DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
 import { bootFacePlanes, bootDaemonUrl } from "../src/boot-face-planes.js";
 
 const G1 = "11".repeat(16);

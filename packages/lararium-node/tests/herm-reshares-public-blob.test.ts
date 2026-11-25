@@ -16,10 +16,11 @@ import { createServer, type Server } from "node:http";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import {
-  buildGenesisDoc, sha256HexBytesSync, utf8Bytes, LARES_MEMETIC_WIKITEXT_PLUGIN_URI,
-  type GenesisInputs, type CasReferenceEntry, type CapTier,
-} from "@lararium/mesh";
+import { buildGenesisDoc, type GenesisInputs } from "@lararium/mesh/genesis-doc";
+import { sha256HexBytesSync, utf8Bytes } from "@lararium/mesh/crypto";
+import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "@lararium/mesh/lar-uris";
+import { type CasReferenceEntry } from "@lararium/mesh/cas";
+import { type CapTier } from "@lararium/mesh/cap-tier";
 import { mountBulbReadFace, publicCasShore } from "../src/bulb-read-face.js";
 import { writeCasEntriesFs } from "../src/node-cas.js";
 import { mountHttpFaceDispatcher } from "../src/http-face-dispatcher.js";

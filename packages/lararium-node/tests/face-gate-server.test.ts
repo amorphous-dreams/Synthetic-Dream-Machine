@@ -16,7 +16,11 @@
 import { createServer, type Server } from "node:http";
 import { EventEmitter } from "node:events";
 import { afterEach, describe, expect, test } from "vitest";
-import { NOISE_MAX_MESSAGE_BYTES, dialFaceGate, dialedChannel, gateFlightProtocols, type FaceGate, type GateOutcome, type GateSession, type GateSessionChannel } from "@lararium/mesh";
+import { NOISE_MAX_MESSAGE_BYTES } from "@lararium/mesh/noise-ik-door";
+import { dialFaceGate } from "@lararium/mesh/face-dial";
+import { dialedChannel, type GateSessionChannel } from "@lararium/mesh/gate-session-channel";
+import { gateFlightProtocols } from "@lararium/mesh/gate-exchange-door";
+import { type FaceGate, type GateOutcome, type GateSession } from "@lararium/mesh/face-gate-door";
 import {
   GATE_DEADLINE_MAX_BASE_MS, GATE_SERVER_MAX_SOCKETS, GATE_SOCKET_QUEUE_BOUND, faceGateServer, gatePath, gateSessionRegistry, timerGateDeadlines,
   wsGateSocket, type FaceGateServer, type FaceGateServerOptions, type GateWire,

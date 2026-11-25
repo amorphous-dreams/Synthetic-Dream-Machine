@@ -40,10 +40,8 @@ import { faceRouteBindDigest, FaceRouteRefused, withFaceRoute } from "./face-rou
 import { wardCredentialOfArgs, type WardCredential } from "./ward-credential.js";
 import { FaceNotNamed, resolveFace } from "./face-selector.js";
 import { unlockedFaceOrdinals } from "./custody-seat.js";
-import {
-  HandleBook,
-  type HandleBookSnapshot, type PersonaDeclaration,
-} from "@lararium/mesh";
+import { HandleBook, type HandleBookSnapshot } from "@lararium/mesh/handle-book";
+import { type PersonaDeclaration } from "@lararium/mesh/persona-declare";
 import { CarriedCharterError, carriedReadings } from "./carried-set.js";
 import { acceptCofound, joinCofound, openCofound, sealCofoundAct } from "./cofound-ceremony.js";
 import { abandonRollCircleAct, cardOf, fileRollCircleAct, joinRollCircleAct, openRollCircleAct, signRollCircleAct } from "./roll-circle-ceremony.js";

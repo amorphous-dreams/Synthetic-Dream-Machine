@@ -14,7 +14,7 @@
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
-import type { Credential } from "@lararium/mesh";
+import type { Credential } from "@lararium/mesh/keyslot-door";
 import type { RiteVerbAnswer } from "./rite-kukulu.js";
 import { RITE_KEEP, keepFaceLine, keepFaceOf, lineHeld, type HouseFaces, type KeepFaceBy } from "./rite-keep.js";
 

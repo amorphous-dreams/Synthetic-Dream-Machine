@@ -17,7 +17,7 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift
  */
 import { describe, expect, test } from "vitest";
-import { nobleKdf } from "@lararium/mesh";
+import { nobleKdf } from "@lararium/mesh/keyslot-door";
 import { bindSyntheticBrowserCustodySlot, bindSyntheticFace, FIXTURE_WARD } from "./browser-custody-fixture.js";
 import * as faceCustody from "../src/browser-face-custody.js";
 import { CLEAR_FACE_QUESTION, clearFaceCustody, faceTreeIdOf, nameFace, writeFaceRecord } from "../src/browser-face-custody.js";

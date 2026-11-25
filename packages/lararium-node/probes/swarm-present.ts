@@ -21,7 +21,8 @@
  */
 
 import { createHash, randomBytes } from "node:crypto";
-import { canonicalJsonBytes, ed25519SignerFromSeed, ed25519VerifyHex } from "@lararium/mesh";
+import { canonicalJsonBytes } from "@lararium/mesh/crypto";
+import { ed25519SignerFromSeed, ed25519VerifyHex } from "@lararium/mesh/ed25519-door";
 
 /** What the founder's admit carries to one joiner. */
 export interface SwarmAdmit {

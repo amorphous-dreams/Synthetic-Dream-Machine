@@ -20,10 +20,11 @@
  *
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store
  */
-import type { IslandMsg_SessionSign, IslandMsg_SessionSigned, RecordSigner, WriterStanding } from "@lararium/mesh";
+import type { IslandMsg_SessionSign, IslandMsg_SessionSigned } from "@lararium/mesh/island-protocol";
+import type { RecordSigner, WriterStanding } from "@lararium/mesh/sealed-records";
 import type { Signature } from "@lararium/mesh/face-proof-subjects";
 import { faceProofSubjectRef, placeProofSubjectRef } from "@lararium/mesh/face-proof-subjects";
-import type { SessionOwnChain } from "@lararium/mesh";
+import type { SessionOwnChain } from "@lararium/mesh/island-protocol";
 
 /** The invocation a session placed, as the island names it: its request id and the verb it placed. */
 export interface SessionAsk {

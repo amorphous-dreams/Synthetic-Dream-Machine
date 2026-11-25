@@ -21,7 +21,7 @@ import {
   keyhiveSeatShore,
 } from "@lararium/keyhive";
 import * as ed25519 from "@noble/ed25519";
-import { hex } from "@lararium/mesh";
+import { hex } from "@lararium/mesh/crypto";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 import { memorySecretHome, MEMORY_SEALED } from "../../lararium-mesh/tests/secret-home-fixture.js";
 

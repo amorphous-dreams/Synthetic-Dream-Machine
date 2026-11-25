@@ -9,7 +9,9 @@ import { cmdNexus } from "../src/commands/nexus.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 import { larSealHome } from "../src/env.js";
 import { generateOrLoadPersonaGroupRoot, makeNodePersonaDeclarationStore, makeNodePersonaPetnameStore, nexusCharterDocPath, readNexusDoc, signAsSeat, writeNexusDoc } from "@lararium/node";
-import { charterInceptionBytes, charterInceptionImage, genesisOfInception, renameOwnPersona, sealKeySetHash, standForKahuSeat, type SealEpoch } from "@lararium/mesh";
+import { charterInceptionBytes, charterInceptionImage, genesisOfInception, sealKeySetHash, type SealEpoch } from "@lararium/mesh/wax-stamp";
+import { renameOwnPersona } from "@lararium/mesh/persona-petname";
+import { standForKahuSeat } from "@lararium/mesh/persona-declare";
 import { seatScratchCustody, type ScratchCustody } from "./support/scratch-custody.js";
 import { sealRite, type SealRite } from "./seal-rite-fixture.js";
 

@@ -12,7 +12,7 @@
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/session-contract#/the-document-view
  */
-import { type IslandToVesselMsg } from "@lararium/mesh";
+import { type IslandToVesselMsg } from "@lararium/mesh/island-protocol";
 
 export interface ViewChannel {
   /** Resolve a catalog name through the session's view: the document, or null when the view refuses. */

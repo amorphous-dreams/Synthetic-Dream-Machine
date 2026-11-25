@@ -35,10 +35,10 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 import { dirname, join } from "node:path";
-import {
-  admittedKeyOf, foundingRoster, nexusAidOf, readNexusKeyHandOver, NEXUS_AID_PATTERN, verifyCarriageConsent,
-  type NexusDoc, type NexusKeyHandOver,
-} from "@lararium/mesh";
+import { admittedKeyOf, readNexusKeyHandOver, type NexusKeyHandOver } from "@lararium/mesh/nexus-key-line";
+import { foundingRoster, nexusAidOf, type NexusDoc } from "@lararium/mesh/nexus-seal-seed";
+import { NEXUS_AID_PATTERN } from "@lararium/mesh/wax-stamp";
+import { verifyCarriageConsent } from "@lararium/mesh/carriage-registry";
 import { readNexusDoc, parseNexusDoc, nexusCharterDocRelPath } from "./nexus-doc.js";
 import { heldNexusLeaves } from "./nexus-leaf.js";
 import { listPersonaRoots } from "./node-vessel-identity.js";

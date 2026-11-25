@@ -18,7 +18,7 @@ import { createHash } from "node:crypto";
 import { closeSync, existsSync, openSync, readFileSync, readSync, readdirSync, statSync } from "node:fs";
 import { isAbsolute, join, resolve } from "node:path";
 import { constants, inflateSync } from "node:zlib";
-import { SwarmRefused } from "@lararium/mesh";
+import { SwarmRefused } from "@lararium/mesh/swarm-tiddlers";
 
 export interface GitObject { readonly type: string; readonly data: Buffer; /** How many deltas the read crossed to reach these bytes. */ readonly deltas: number }
 

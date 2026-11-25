@@ -26,9 +26,14 @@
  */
 import type { WardCredential } from "./ward-credential.js";
 import {
-  bundleMemoryKeypair, faceBundleBodyBytes, sealFaceBundleBody, verifyPersonaKelFull,
-  type FaceBundleBody, type FaceBundleRecoveryContactSet, type FaceBundleHolding, type PersonaKelEvent,
-} from "@lararium/mesh";
+  bundleMemoryKeypair,
+  faceBundleBodyBytes,
+  sealFaceBundleBody,
+  type FaceBundleBody,
+  type FaceBundleRecoveryContactSet,
+  type FaceBundleHolding,
+} from "@lararium/mesh/face-bundle";
+import { verifyPersonaKelFull, type PersonaKelEvent } from "@lararium/mesh/persona-kel";
 import { listFaceProofKeys } from "./face-key-custody.js";
 import { readFaceAddressSecret } from "./fleet-join-custody.js";
 import { readRecoveryContactSet } from "./recovery-contact-enrolment.js";

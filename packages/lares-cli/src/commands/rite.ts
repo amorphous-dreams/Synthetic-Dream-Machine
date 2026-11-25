@@ -16,7 +16,10 @@
  *              cold wiki the house lists in turn before the cut, then hands the pins back
  *   begin      `rite-begin` in the vessel: derive the head's tree, return the rite's lei (a kūkulu: each lent face's own),
  *              rest the guest half of the tessera
- *   land       `rite-land` in the vessel that stands after: rest the host half, naming the begun half and the head
+ *   land       `rite-land` in the vessel that stands after: rest the host half, naming the begun half and the head.
+ *              `land --abandon --tessera <id>` (`rite-abandon`) sets a stale begun half down instead: a HAND act (the one hand gate,
+ *              `readOwnHand` here and the socket's `hand-act-only` for a seat) that spends nothing, records no par, and frees the
+ *              face to begin fresh; conferre reads the half abandoned
  *   receipts   `rite-receipts`: every half that verifies (`data.receipts`) and conferre's read of them (`data.conferre`)
  *   offer      `rite-offer` in the STANDING vessel, between the build and the lowering: gather every lent face's line, sign one
  *              vouch per face over the image the host built, and rest the offer the next vessel carries to the pūlama
@@ -47,11 +50,11 @@ import { houseExport, bundleRefusal, LIVE_BUNDLE_DOORS } from "./house-bundle.js
 import { runVerb } from "../verb-call.js";
 import { summaryOutput } from "../verb-result.js";
 import { vesselDid } from "../env.js";
-import { readOwnHand } from "@lararium/node";
+import { handRefusalOf, readOwnHand, type HandReading, type HandRefusal } from "@lararium/node";
 
 export class RiteUsage extends Error {}
 
-export type RiteVerb = "rite-begin" | "rite-land" | "rite-receipts" | "rite-offer";
+export type RiteVerb = "rite-begin" | "rite-land" | "rite-abandon" | "rite-receipts" | "rite-offer";
 export interface RitePlan { readonly verb: RiteVerb; readonly args: Record<string, unknown> }
 
 /** The host sub-verb's two spellings. */
@@ -91,12 +94,22 @@ export function ritePlan(args: ParsedArgs): RitePlan {
     if ((keeperTo === undefined) !== (keeperNext === undefined) || (keeperTo !== undefined && (!/^[0-9a-f]{64}$/.test(keeperTo) || !/^sha256:[0-9a-f]{64}$/.test(keeperNext ?? "")))) {
       throw new RiteUsage("a keeper move names the successor's key and the committed closure together: --keeper-to <64 hex> --keeper-next sha256:<64 hex>, as `keeper-stand` printed them (or neither, and the offer carries no move)");
     }
-    return { verb: "rite-offer", args: { branch, head, image, ...face, ...(keeperTo === undefined ? {} : { keeperTo, keeperNext }) } };
+    // THE BASE: the hash of the resting offer this line read (`rite receipts --rite kukulu` answers it as `offerBase`); an
+    // overwrite without it refuses `conflict`.
+    const base = word(args.options["base"]);
+    return { verb: "rite-offer", args: { branch, head, image, ...face, ...(keeperTo === undefined ? {} : { keeperTo, keeperNext }), ...(base === undefined ? {} : { base }) } };
+  }
+  if (act === "land" && args.flags["abandon"] === true) {
+    // THE HAND SETS A STALE HALF DOWN: it names the tessera and no head, since it records no landing.
+    const tessera = word(args.options["tessera"]);
+    if (tessera === undefined || head !== undefined || imageWord !== undefined) throw new RiteUsage("land --abandon names the tessera it sets down and no head or image (it records no landing): --abandon --tessera <id> [--face N]");
+    return { verb: "rite-abandon", args: { tessera, ...face } };
   }
   if (act === "land") {
     const tessera = word(args.options["tessera"]);
-    if (tessera === undefined || head === undefined) throw new RiteUsage("land names its tessera and the head the vessel stands at: --tessera <id> --head <commit>");
-    return { verb: "rite-land", args: { tessera, head, ...image, ...face } };
+    // THE BEGUN HALF NAMES WHAT LANDS: a --head or --image named here must match it, or the vessel refuses `rite-land-differs`.
+    if (tessera === undefined) throw new RiteUsage("land names its tessera: --tessera <id> (a --head or --image must match what the half began at)");
+    return { verb: "rite-land", args: { tessera, ...(head === undefined ? {} : { head }), ...image, ...face } };
   }
   throw new RiteUsage(isKukulu(act) ? "kukulu runs on the host and plans no single row" : act === "keep" || act === "keep-cut" ? `${act} runs several rows and plans no single one` : `name a sub-verb: ${RITE_VERBS.join(", ")}`);
 }
@@ -183,7 +196,27 @@ async function runKeepCut(args: ParsedArgs): Promise<number> {
   }
 }
 
+/**
+ * SETTING A BEGUN HALF DOWN STAYS A HAND ACT (ruling 2026-11-25, the abandon verb): the command reads its own branch through the
+ * one hand gate (`readOwnHand`) before any row; an AI harness refuses `hand-act-only`, an unread chain `hand-unattested`, each
+ * naming the line the operator runs at their own terminal. The socket refuses a seat's `rite-abandon` the same way. Null where a
+ * hand stands.
+ */
+export function abandonHandRefusal(rowArgs: Readonly<Record<string, unknown>>, hand: () => HandReading = () => readOwnHand({ proveRoute: false })): HandRefusal | null {
+  const read = hand();
+  if (!("refusal" in read)) return null;
+  const line = `lares rite land --abandon --tessera ${String(rowArgs["tessera"] ?? "<tessera>")}${typeof rowArgs["face"] === "number" ? ` --face ${rowArgs["face"]}` : ""}`;
+  return handRefusalOf(read.refusal, { act: "`lares rite land --abandon` (it sets a begun half down)", reads: "branch", line });
+}
+
 async function runRiteVerb(args: ParsedArgs, plan: RitePlan): Promise<number> {
+  if (plan.verb === "rite-abandon") {
+    const refused = abandonHandRefusal(plan.args);
+    if (refused !== null) {
+      emitAnswer(args, { ok: false, error: refused, human: () => console.error(`lares rite: ${refused.message}`) }, `lares rite: ${refused.message}`);
+      return exitFor(refused.code);
+    }
+  }
   try {
     const { output } = await storeVerb(plan.verb, plan.args);
     emitAnswer(args, { ok: true, data: output, human: () => console.log(JSON.stringify(output)) }, `lares rite ${plan.verb}: done`);
@@ -361,8 +394,8 @@ async function keepPins(dir: string): Promise<{ readonly ok: boolean; readonly l
  * One vessel row as the host's CLI line. The begin and the offer gather every lent face in the vessel, so they name none;
  * each landing names the face its tessera began under in its own arguments.
  */
-export const hostRowLine = (verb: "rite-begin" | "rite-land" | "rite-offer" | "rite-receipts", rowArgs: Record<string, unknown>): string[] =>
-  ["rite", verb.slice("rite-".length), ...flagsOf(rowArgs)];
+export const hostRowLine = (verb: "rite-begin" | "rite-land" | "rite-abandon" | "rite-offer" | "rite-receipts", rowArgs: Record<string, unknown>): string[] =>
+  verb === "rite-abandon" ? ["rite", "land", "--abandon", ...flagsOf(rowArgs)] : ["rite", verb.slice("rite-".length), ...flagsOf(rowArgs)];
 
 /**
  * The standing read's CLI line: it always names a face, the operator's where one is named, else face 0 (the keep's face), so a
@@ -376,7 +409,7 @@ export const standingRowLine = (branch: string, face?: number): string[] => host
  * kūkulu halves resting unlanded on the line (each lands under the worn face): the vessel standing during the very next run
  * is the one that stopped, and it never begins over a half it already rests.
  */
-export function standingOf(output: Record<string, unknown>, branch: string): { begins: StandingBegin[]; pending?: PendingBegin[]; offer?: OfferVouch[] | null } {
+export function standingOf(output: Record<string, unknown>, branch: string): { begins: StandingBegin[]; pending?: PendingBegin[]; offer?: OfferVouch[] | null; offerBase?: string | null } {
   const rows = (v: unknown): Array<Record<string, unknown>> => (Array.isArray(v) ? v.filter((x): x is Record<string, unknown> => typeof x === "object" && x !== null) : []);
   const image = (r: Record<string, unknown>): { image?: string } => (typeof r["image"] === "string" ? { image: r["image"] } : {});
   if (Array.isArray(output["standing"])) {
@@ -384,7 +417,9 @@ export function standingOf(output: Record<string, unknown>, branch: string): { b
     // A REPLY NAMING NO `pending` reads its debt as unread (the rite fills it from what it stands), never as empty.
     const pending = Array.isArray(output["pending"]) ? rows(output["pending"]).map((p) => ({ tessera: String(p["tessera"]), group: String(p["group"]), head: String(p["head"]), ...image(p), ...(typeof p["face"] === "string" ? { face: p["face"] } : {}) })) : undefined;
     const offer = Array.isArray(output["offer"]) ? rows(output["offer"]).map((v) => ({ ...(typeof v["face"] === "string" ? { face: v["face"] } : {}), group: String(v["group"]), branch: String(v["branch"]), head: String(v["head"]), image: String(v["image"]) })) : null;
-    return { begins, ...(pending === undefined ? {} : { pending, offer }) };
+    // THE BASE an overwrite of the resting offer names; a vessel of an older image names none.
+    const offerBase = typeof output["offerBase"] === "string" ? output["offerBase"] : output["offerBase"] === null ? null : undefined;
+    return { begins, ...(pending === undefined ? {} : { pending, offer }), ...(offerBase === undefined ? {} : { offerBase }) };
   }
   // AN ANSWER THAT NAMES NO `standing` ROWS carries its worn face's receipts and conferre: its unlanded kūkulu halves on the line, with no raw debt read.
   const conf = output["conferre"];
@@ -609,6 +644,7 @@ async function runKeepHost(args: ParsedArgs): Promise<number> {
   const ports: KeepHostPorts = {
     workspaceDir: hostWorkspaceDir,
     row: (verb, rowArgs) => cliVerb(["rite", verb, ...flagsOf(rowArgs)]),
+    leiShow: (branch, face) => cliVerb(["lei", "show", "--rite", "keep", "--branch", branch, ...(face !== undefined ? ["--face", String(face)] : [])]),
     git: gitIn,
     say: (line) => console.error(line),
     // THE SHORE'S FLUSH BEFORE THE CUT rides the hand door that stands (daemon and active wiki alone); no reach widens for it.

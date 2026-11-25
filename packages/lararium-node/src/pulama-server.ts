@@ -61,7 +61,7 @@
  * runs the same lock.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
  */
-import { isLent, lentFacesOf, lentFacesWire, renderLentFaces, servedOf, type LentFaces } from "@lararium/mesh";
+import { isLent, lentFacesOf, lentFacesWire, renderLentFaces, servedOf, type LentFaces } from "@lararium/mesh/lent-faces";
 import type { CustodyHolder, FaceRef, RecordReading } from "./custody-holder.js";
 import { readFaceIndexSync } from "./face-index.js";
 import { PulamaRefused, copyReading, packRefusal, readingOf, sameBytes, sameReading, type PulamaChannel, type PulamaFrame } from "./pulama-wire.js";

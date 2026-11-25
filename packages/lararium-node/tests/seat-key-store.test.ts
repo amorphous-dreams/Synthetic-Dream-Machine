@@ -27,7 +27,7 @@
 import { createPrivateKey, createPublicKey, verify } from "node:crypto";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { readFckCarrier } from "@lararium/mesh";
+import { readFckCarrier } from "@lararium/mesh/fck-envelope";
 import {
   SEAT_KEY_FILE, heldSeatKey, listSeatKeys, mintSeatKey, retireSeatKey, seatKeyFile, seatKeyName, signAsSeat, storeSeatKey,
 } from "../src/seat-key-store.js";

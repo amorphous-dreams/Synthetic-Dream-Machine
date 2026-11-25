@@ -23,11 +23,15 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import { Repo, type DocHandle, type PeerId } from "@automerge/automerge-repo";
-import {
-  ENGINE_CORE_ID, LARES_BAG, computePluginsCid, emptyLarDoc, hex, pluginOfferingAnnounceOf, pluginOfferingCid, recipeRecordFields,
-  recipeUri, sha256HexBytesSync, signPluginOffering, storedLarRecord, wikiBagUri, wikiUri,
-  type LarDoc, type OfferedBlob, type PluginOffering, type WikiRecipe, type CapabilityRecord,
-} from "@lararium/mesh";
+import { ENGINE_CORE_ID, emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { LARES_BAG, recipeRecordFields, wikiBagUri, type WikiRecipe } from "@lararium/mesh/wiki-recipe";
+import { computePluginsCid } from "@lararium/mesh/genesis-doc";
+import { hex, sha256HexBytesSync } from "@lararium/mesh/crypto";
+import { pluginOfferingAnnounceOf } from "@lararium/mesh/offering-announce";
+import { pluginOfferingCid, signPluginOffering, type OfferedBlob, type PluginOffering } from "@lararium/mesh/plugin-offering";
+import { recipeUri, wikiUri } from "@lararium/mesh/lar-uris";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
+import { type CapabilityRecord } from "@lararium/mesh/capability-record";
 import { resolveSurfaceRecipe, type SurfaceRecipe } from "../../lararium-mesh/src/surface-recipe.js";
 import { casDirForStorage, readCasBlobFromFs } from "../src/node-cas.js";
 import { nodeOfferingLookup } from "../src/node-plugin-resolution.js";

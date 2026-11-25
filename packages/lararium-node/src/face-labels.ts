@@ -26,11 +26,20 @@
  */
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync } from "node:fs";
 import { join } from "node:path";
+import { plainMeta, storedDeleted, isPrototypeKey, type StoredTiddlers } from "@lararium/mesh/stored-value";
 import {
-  plainMeta, storedDeleted, isPrototypeKey, type StoredTiddlers,
-  FACE_LABELS_DIR, FACE_LABEL_SCHEMA, FACE_BASES_SCHEMA, faceLabelFileName, faceBasesFileName, faceLabelBytes, parseFaceLabel,
-  faceLabelToWrite, isFaceLabelRelation, type FaceLabel, type FaceLabelInput,
-} from "@lararium/mesh";
+  FACE_LABELS_DIR,
+  FACE_LABEL_SCHEMA,
+  FACE_BASES_SCHEMA,
+  faceLabelFileName,
+  faceBasesFileName,
+  faceLabelBytes,
+  parseFaceLabel,
+  faceLabelToWrite,
+  isFaceLabelRelation,
+  type FaceLabel,
+  type FaceLabelInput,
+} from "@lararium/mesh/face-label";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 import { faceSegmentRefusal, type FaceSegmentCode, type FaceSite } from "./bag-paths.js";
 

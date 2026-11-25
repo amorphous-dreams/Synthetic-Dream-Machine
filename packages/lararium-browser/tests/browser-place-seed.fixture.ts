@@ -1,4 +1,4 @@
-import { signingSeedFromHex } from "@lararium/mesh";
+import { signingSeedFromHex } from "@lararium/mesh/vessel-identity-core";
 import { readKeystoreRecord } from "../src/browser-custody.js";
 
 /** Test-only access to the place KEL seed for thief and custody vectors. */

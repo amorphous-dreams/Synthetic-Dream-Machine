@@ -9,7 +9,15 @@
  */
 import { describe, expect, test } from "vitest";
 import { generateAutomergeUrl, interpretAsDocumentId, type DocumentId } from "@automerge/automerge-repo";
-import { CONTROL_HOME_ID, DAEMON_BAG_ID, DeterministicFederationGate, deviceDaemonDocs, emptyLarDoc, makeVesselOnlyDocs, personaBagIdFor, personaMembershipEntries, personaSiblingBagIds, storedLarRecord, type FaceGrantReading, type LarDoc } from "@lararium/mesh";
+import { CONTROL_HOME_ID, DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { DeterministicFederationGate } from "@lararium/mesh/federation-gate";
+import { deviceDaemonDocs } from "@lararium/mesh/device-daemon-docs";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { makeVesselOnlyDocs } from "@lararium/mesh/control-home";
+import { personaBagIdFor, personaSiblingBagIds } from "@lararium/mesh/persona-scope";
+import { personaMembershipEntries } from "@lararium/mesh/persona-planes";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
+import { type FaceGrantReading } from "@lararium/mesh/session-face";
 import { faceFleetViews } from "../src/face-fleet-view.js";
 import { vesselOnlyClass, vesselOnlyShareVerdict } from "../src/vessel-only-share.js";
 import { selfSlotShareDecision, NO_BANS, NOBODY_ASIDE, NOTHING_CLASSED } from "../src/self-slot-share.js";

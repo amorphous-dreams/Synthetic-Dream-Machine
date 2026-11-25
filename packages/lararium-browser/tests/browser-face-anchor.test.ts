@@ -1,6 +1,6 @@
 /** Browser face anchors rest in PersonaGroup-named custody rows and refuse old archive shapes. */
 import { describe, expect, test } from "vitest";
-import { mintFaceAnchor } from "@lararium/mesh";
+import { mintFaceAnchor } from "@lararium/mesh/face-anchor";
 import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
 import { faceAnchorRecord, keepBrowserFaceAnchor, loadBrowserFaceAnchor, requireBrowserFaceAnchor } from "../src/browser-face-anchor.js";
 import { readKeystoreRecord } from "../src/browser-custody.js";

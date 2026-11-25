@@ -127,7 +127,7 @@ describe("the census of Ed25519 verifiers", () => {
     const callers = ground.filter((f) => f !== DOOR && /\bverifyEd25519\s*\(/.test(readFileSync(join(REPO, f), "utf8")));
     expect(callers.length).toBeGreaterThan(20);
     for (const f of callers) {
-      expect(readFileSync(join(REPO, f), "utf8"), f).toMatch(/import\s*\{[^}]*\bverifyEd25519\b[^}]*\}\s*from\s*["'](?:\.\/ed25519-door\.js|@lararium\/mesh)["']/);
+      expect(readFileSync(join(REPO, f), "utf8"), f).toMatch(/import\s*\{[^}]*\bverifyEd25519\b[^}]*\}\s*from\s*["'](?:\.\/ed25519-door\.js|@lararium\/mesh\/ed25519-door)["']/);
     }
   });
 });

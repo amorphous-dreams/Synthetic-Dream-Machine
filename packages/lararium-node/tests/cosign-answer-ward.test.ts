@@ -18,7 +18,8 @@
  * No suite person is seated here: a row that forgets its route reads red.
  */
 import { afterEach, beforeEach, expect, test } from "vitest";
-import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, verifyEd25519, wardAnswerImage } from "@lararium/mesh";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, verifyEd25519 } from "@lararium/mesh/ed25519-door";
+import { wardAnswerImage } from "@lararium/mesh/ward-answer";
 import { vesselFaceTagDoor } from "../src/vessel-face-tag-store.js";
 import { signIntentAnswer } from "../src/commands/intent.js";
 import { ensureFaceCustodyOfGroup } from "../src/face-route.js";

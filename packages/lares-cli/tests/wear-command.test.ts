@@ -43,14 +43,17 @@ vi.mock("../src/share-doors.js", async (real) => ({
 }));
 
 import { parseArgs } from "../src/parse-args.js";
+import { readOwnHand } from "@lararium/node";
 
 let cmdWear: (args: ReturnType<typeof parseArgs>) => Promise<number>;
+/** The hand gate's seam: how the command reads its own branch. A hand by default; a test names another reading. */
+let setWearHand: (read: () => import("@lararium/node").HandReading) => void = () => {};
 let cmdVault: typeof import("../src/commands/vault.js").cmdVault;
 let COMMANDS: typeof import("../src/bin/lares.js").COMMANDS;
 beforeAll(async () => {
   vi.resetModules();
   const wearModule = "../src/commands/wear.js";
-  ({ cmdWear } = await import(/* @vite-ignore */ wearModule).catch(() => ({ cmdWear: async () => { throw new Error("no `wear` command stands"); } })));
+  ({ cmdWear, setWearHand = setWearHand } = await import(/* @vite-ignore */ wearModule).catch(() => ({ cmdWear: async () => { throw new Error("no `wear` command stands"); } })));
   ({ cmdVault } = await import("../src/commands/vault.js"));
   ({ COMMANDS } = await import("../src/bin/lares.js"));
 });
@@ -67,6 +70,7 @@ beforeEach(() => {
   priorEnv = Object.fromEntries(ENV_KEYS.map((k) => [k, process.env[k]]));
   for (const k of ENV_KEYS) delete process.env[k];
   process.env["HOME"] = join(root, "operator");
+  setWearHand(() => ({ admit: "hand" }));
   vi.spyOn(console, "log").mockImplementation((...a: unknown[]) => { out.push(a.join(" ")); });
   vi.spyOn(console, "error").mockImplementation((...a: unknown[]) => { out.push(a.join(" ")); });
   vi.spyOn(process.stdout, "write").mockImplementation((c) => { out.push(String(c)); return true; });
@@ -227,6 +231,8 @@ describe("RED a seat wears on word (the command)", () => {
   for (const [mark, value] of [["CLAUDECODE", "1"], ["CODEX_SANDBOX", "seatbelt"], ["CODEX_SANDBOX_NETWORK_DISABLED", "1"]] as const) {
     it(`under the harness's mark ${mark}, the wear frame carries \`seat: "ai"\` and the door's answer moves the mount`, async () => {
       process.env[mark] = value;
+      // The house hand gate itself reads the branch: a mark in the command's own environment reads ai before any walk.
+      setWearHand(() => readOwnHand({ proveRoute: false }));
       door = (frame) => frame["op"] === "custody" ? custody(true)
         : { op: "wear", face: 1, held: true, standing: "hearth" };
       expect(await wear("1")).toBe(0);
@@ -238,6 +244,32 @@ describe("RED a seat wears on word (the command)", () => {
     door = (frame) => frame["op"] === "custody" ? custody(true) : { op: "wear", face: 1, held: true, standing: "hearth" };
     expect(await wear("1")).toBe(0);
     expect(frames.at(-1)).toEqual({ op: "wear", face: 1 });
+  });
+});
+
+describe("RED the loss reads the hand through the one gate, never a mark alone", () => {
+  for (const refusal of ["hand-act-only", "hand-unattested"] as const) {
+    it(`an UNMARKED caller whose branch reads ${refusal} sends no wear for --accept-loss, even typed at a terminal`, async () => {
+      setWearHand(() => ({ refusal }));
+      door = (frame) => frame["op"] === "custody" ? custody(true) : { op: "wear", face: 1, held: true, standing: "hearth" };
+      typedLine = "accept-loss"; terminal = true;
+      try {
+        expect(await wear("1", "--accept-loss")).toBe(1);
+      } finally { typedLine = ""; }
+      expect(frames.filter((f) => f["op"] === "wear")).toEqual([]);
+      expect(prompts, "the gate refuses before any word is asked").toBe(0);
+      const a = answer();
+      expect(a).toMatchObject({ ok: false, error: { code: "accept-loss-needs-hand" } });
+      expect(a.error!.message).toContain(refusal);
+      expect(a.error!.message).toContain("lares wear 1 --accept-loss");
+    });
+  }
+
+  it("an unmarked branch that reads ai names the frame's seat on a plain wear, which the vessel answers as the operator's own", async () => {
+    setWearHand(() => ({ refusal: "hand-act-only" }));
+    door = (frame) => frame["op"] === "custody" ? custody(true) : { op: "wear", face: 1, held: true, standing: "hearth" };
+    expect(await wear("1")).toBe(0);
+    expect(frames.at(-1)).toEqual({ op: "wear", face: 1, seat: "ai" });
   });
 });
 

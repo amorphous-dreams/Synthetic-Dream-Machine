@@ -8,7 +8,8 @@
  */
 import { describe, test, expect } from "vitest";
 import * as ed from "@noble/ed25519";
-import { hex, sealKeySetHash } from "@lararium/mesh";
+import { hex } from "@lararium/mesh/crypto";
+import { sealKeySetHash } from "@lararium/mesh/wax-stamp";
 import {
   reserveTransitionBytes, mintReserveTransition, verifyReserveTransition,
 } from "@lararium/node";

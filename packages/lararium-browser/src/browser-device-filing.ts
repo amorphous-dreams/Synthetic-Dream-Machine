@@ -8,7 +8,9 @@
  * `openBrowserVessel` composes its sealed rest over this filing, so a suite that stands it stands the vessel's own path.
  */
 import type { Repo } from "@automerge/automerge-repo";
-import { deviceDaemonDocs, enrollBesideSecretHome, releaseBesideSecretHome, vesselHeldBagOf, vesselHeldHomes, type LitDeviceFaces, type SealedBag } from "@lararium/mesh";
+import { deviceDaemonDocs, vesselHeldBagOf, type LitDeviceFaces } from "@lararium/mesh/device-daemon-docs";
+import { enrollBesideSecretHome, releaseBesideSecretHome, vesselHeldHomes } from "@lararium/mesh/secret-home";
+import { type SealedBag } from "@lararium/mesh/sealed-rest";
 
 export interface BrowserDeviceFiling {
   readonly deviceDocs: ReturnType<typeof deviceDaemonDocs>;

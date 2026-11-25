@@ -3,10 +3,13 @@
  * the floor offering's set; a named floor that does not serve says so once (the island's set serves), never per mount.
  */
 import { describe, expect, test, vi } from "vitest";
-import {
-  ENGINE_CORE_ID, FLOOR_MANIFEST_FORMAT, LARES_MEMETIC_WIKITEXT_PLUGIN_URI, computeEngineCid, floorManifestBytes, sha256HexBytesSync,
-  signFloorOffering, utf8Bytes,
-} from "@lararium/mesh";
+import { ENGINE_CORE_ID } from "@lararium/mesh/base-doc";
+import { FLOOR_MANIFEST_FORMAT } from "@lararium/mesh/wire-names";
+import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "@lararium/mesh/lar-uris";
+import { computeEngineCid } from "@lararium/mesh/genesis-doc";
+import { floorManifestBytes } from "@lararium/mesh/floor-manifest";
+import { sha256HexBytesSync, utf8Bytes } from "@lararium/mesh/crypto";
+import { signFloorOffering } from "@lararium/mesh/floor-offering";
 import { logFloorFallback, resolveNodeIslandPluginCids } from "../src/node-plugin-resolution.js";
 
 const row = (id: string, label: string, kind: string, mimeType = "application/json") => {

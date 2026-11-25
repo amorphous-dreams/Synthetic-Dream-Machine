@@ -15,7 +15,10 @@
  */
 import { describe, expect, test } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
-import { AutomergeDocStore, emptyLarDoc, personaSelfTiddlerUri, selvesRecordOf, type LarDoc } from "@lararium/mesh";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { personaSelfTiddlerUri } from "@lararium/mesh/lar-uris";
+import { selvesRecordOf } from "@lararium/mesh/persona-planes";
 import { writePersonaSelfName } from "@lararium/tw5";
 import { personaSelvesPlaneOver, repoPersonaSelvesPlane } from "../src/persona-selves-plane.js";
 

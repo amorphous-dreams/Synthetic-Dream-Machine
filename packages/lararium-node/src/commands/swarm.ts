@@ -10,15 +10,18 @@
  * and runs the act it names over the record's own signature (a restring lands as the kui after the tip it names).
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
-import type { ExecLeiScope } from "@lararium/mesh";
+import type { ExecLeiScope } from "@lararium/mesh/exec-lei";
 import { wardRootSigner } from "../ward-signer.js";
 import { loadPersonaGroupRootVerifyingKey } from "../node-vessel-identity.js";
 import type { WardCredential } from "../ward-credential.js";
 import type { Repo } from "@automerge/automerge-repo";
-import {
-  SwarmRefused, faceRecordsOf, promotePlaneUrl, swarmBoardRecords, swarmCommand, writeSwarmBoardAct,
-  type LarDoc, type SwarmLeiReach, type SwarmLeiRite, type SwarmRequest, type SwarmSignerPort, type SwarmWikiPort,
-} from "@lararium/mesh";
+import { SwarmRefused, type SwarmLeiReach, type SwarmSignerPort, type SwarmWikiPort } from "@lararium/mesh/swarm-tiddlers";
+import { faceRecordsOf } from "@lararium/mesh/face-reading";
+import { promotePlaneUrl } from "@lararium/mesh/promote-board";
+import { swarmBoardRecords, writeSwarmBoardAct } from "@lararium/mesh/swarm-board";
+import { swarmCommand, type SwarmRequest } from "@lararium/mesh/swarm-door";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { type SwarmLeiRite } from "@lararium/mesh/swarm-lei-rite";
 import { loadFaceFold, nodeWardCosignPortOf, IntentRefused, type FaceFold } from "./intent.js";
 
 export async function runSwarmVerb(opts: {

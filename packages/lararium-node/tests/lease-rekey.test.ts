@@ -2,10 +2,11 @@
 import { describe, test, expect, afterEach } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import { init as amInit, from as amFrom, clone as amClone, change as amChange, merge as amMerge, getConflicts, type Doc } from "@automerge/automerge";
-import {
-  emptyLarDoc, charterHandLineage, quorumLeaseEpochOnBoard, leaseEpochSlotUri, storedLarRecord,
-  type LarDoc,
-} from "@lararium/mesh";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { charterHandLineage } from "@lararium/mesh/charter-hand-lineage";
+import { quorumLeaseEpochOnBoard } from "@lararium/mesh/quorum-lease";
+import { leaseEpochSlotUri } from "@lararium/mesh/epoch-lease";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
 import { seatedCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { rollQuorumLeaseOnBoard } from "../src/lease-rekey.js";
 

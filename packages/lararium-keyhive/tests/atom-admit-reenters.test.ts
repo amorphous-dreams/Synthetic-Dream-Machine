@@ -1,5 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
-import { makeIslandRepo, groupSecretOpenerFromSeed, materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix, vesselDyads, seedDaemonDoc, verifyDeviceDelegation, type DeviceDelegationTiddler } from "@lararium/mesh";
+import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
+import { groupSecretOpenerFromSeed } from "@lararium/mesh/persona-group-secret";
+import { materializeSharedLarDoc, personaKelBoardDocUrl } from "@lararium/mesh/deterministic-doc";
+import { personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";
+import { vesselDyads } from "@lararium/mesh/dyad";
+import { seedDaemonDoc } from "@lararium/mesh/social-seed";
+import { verifyDeviceDelegation, type DeviceDelegationTiddler } from "@lararium/mesh/device-delegation";
 import { founderAndJoineeActs, frontierFromFoundingSeed } from "./admit-acts.js";
 import { foundThePlace, foundTheFace, runDeviceAdmitEdge, runApplyAdmitPayload } from "../src/index.js";
 import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";

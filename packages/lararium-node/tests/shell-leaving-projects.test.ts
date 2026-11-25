@@ -10,7 +10,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { LarDiskProjector } from "../src/disk-projector.js";
 import { daemonWorkingMirror } from "../src/bag-paths.js";
-import { isEffectRecordUri, retiredShellUri, wikiSlotUri } from "@lararium/mesh";
+import { isEffectRecordUri } from "@lararium/mesh/effect-record";
+import { retiredShellUri } from "@lararium/mesh/shell-leaving-record";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import type { CarrierFile } from "@lararium/tw5";
 
 const DAEMON_WORKING = wikiSlotUri("daemon", "working");

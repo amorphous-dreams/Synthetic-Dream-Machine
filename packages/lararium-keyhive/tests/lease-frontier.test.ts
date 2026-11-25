@@ -7,7 +7,10 @@
  *   a read that faults
  */
 import { describe, test, expect } from "vitest";
-import { CompositeStore, CONTROL_HOME_ID, leaseEpochSlotUri, type LarTiddlerStore } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
+import { leaseEpochSlotUri } from "@lararium/mesh/epoch-lease";
+import { type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
 import { MemoryTiddlerStore } from "@lararium/tw5";
 import { readLeaseFrontier } from "../src/lease-frontier.js";
 

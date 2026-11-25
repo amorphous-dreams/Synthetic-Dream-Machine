@@ -1,6 +1,12 @@
 /** The operator projection knob agrees with TiddlyWiki's own filter engine. */
 import { describe, test, expect, beforeAll } from "vitest";
-import { PROJECTION_FILTER, PROJECTION_FILTER_TEXT, projectionFilterTitle, filterSelects, type ProjectionClass } from "@lararium/mesh";
+import {
+  PROJECTION_FILTER,
+  PROJECTION_FILTER_TEXT,
+  projectionFilterTitle,
+  filterSelects,
+  type ProjectionClass,
+} from "@lararium/mesh/projection-filter";
 import type { TW5Engine } from "../src/tw5-vm.js";
 import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
 

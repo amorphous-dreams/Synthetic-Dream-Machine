@@ -11,7 +11,11 @@
 import { describe, test, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { carrierFiles } from "../src/carrier-files.js";
-import { CompositeStore, bagUri, ORACLE_BAG, SYSTEM_CANON_SLUGS, HULLS_TS_ONLY } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { bagUri } from "@lararium/mesh/lar-uris";
+import { ORACLE_BAG } from "@lararium/mesh/wiki-recipe";
+import { SYSTEM_CANON_SLUGS } from "@lararium/mesh/kahu-canon-reach";
+import { HULLS_TS_ONLY } from "@lararium/mesh/flow";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { makeWikiFilterReactor, makeWikiRenderReactor, makeTiddlerGetReactor, makeTiddlerPutReactor, type TiddlerVerbOptions } from "../src/tiddler-verbs.js";
 import {

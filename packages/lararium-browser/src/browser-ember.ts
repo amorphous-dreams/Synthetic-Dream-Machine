@@ -14,7 +14,7 @@
  * The exchange's group (Tang's blinded exchange) belongs to the ember pin's own build under its registered domain; this module
  * takes it as a port (`EmberExchange`) and keeps the row, its door and its refusals.
  */
-import { verifyEd25519 } from "@lararium/mesh";
+import { verifyEd25519 } from "@lararium/mesh/ed25519-door";
 import { FaceCustodyRefused, readFaceCustody, readFaceRecord, writeFaceRecord } from "./browser-face-custody.js";
 
 /** The ember pin's group: the public point of a secret, and the secret's answer to a blinded point. */

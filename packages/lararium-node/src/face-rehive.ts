@@ -30,7 +30,9 @@
  */
 import { createHash } from "node:crypto";
 import { ArchiveIdentityMismatch, requireArchiveOf } from "@lararium/keyhive";
-import { openFaceCarrier, updateFaceCarrier, writeFaceCarrier, type Credential, type CustodyIo, type FaceCustodyKey } from "@lararium/mesh";
+import { openFaceCarrier, updateFaceCarrier, writeFaceCarrier, type CustodyIo } from "@lararium/mesh/sealed-writer";
+import { type Credential } from "@lararium/mesh/keyslot-door";
+import { type FaceCustodyKey } from "@lararium/mesh/fck";
 import type { CustodyHolder } from "./custody-holder.js";
 import { faceCarrierFor } from "./face-custody.js";
 import { faceDir, faceTreePath } from "./face-index.js";

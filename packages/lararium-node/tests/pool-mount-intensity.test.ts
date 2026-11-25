@@ -12,7 +12,7 @@
 
 import { describe, test, expect, afterEach, vi } from "vitest";
 import { VesselIslandPool } from "../src/vessel-island-pool.js";
-import type { WikiMountSpec } from "@lararium/mesh";
+import type { WikiMountSpec } from "@lararium/mesh/wiki-recipe";
 
 const SILENT_FIXTURE_URL = new URL("./fixtures/silent-island.mjs", import.meta.url);
 const ECHO_FIXTURE_URL   = new URL("./fixtures/vm-pool-echo.mjs",  import.meta.url);

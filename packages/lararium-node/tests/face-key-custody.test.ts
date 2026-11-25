@@ -21,7 +21,9 @@
 import { createPrivateKey, createPublicKey, verify } from "node:crypto";
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { mintFck, readFckCarrier, writeFaceCarrier, TreeKeyRefusal } from "@lararium/mesh";
+import { mintFck } from "@lararium/mesh/fck";
+import { readFckCarrier } from "@lararium/mesh/fck-envelope";
+import { writeFaceCarrier, TreeKeyRefusal } from "@lararium/mesh/sealed-writer";
 import { FACE_PROOF_CUSTODY_RECORDS } from "../../lararium-mesh/src/face-authority.js";
 import {
   faceProofKeyFile, vesselFaceKeyFile, storeFaceProofKey, storeVesselFaceKey, nodeFaceKeyCustody, nodeVesselFaceKeyCustody,

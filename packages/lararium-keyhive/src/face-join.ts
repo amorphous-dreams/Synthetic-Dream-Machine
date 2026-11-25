@@ -33,7 +33,8 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/face-join
  */
-import { verifyDeviceDelegation, type DeviceDelegationTiddler, type EdgeStanding } from "@lararium/mesh";
+import { verifyDeviceDelegation, type DeviceDelegationTiddler } from "@lararium/mesh/device-delegation";
+import { type EdgeStanding } from "@lararium/mesh/edge-kapae";
 import { bytesToBase64 } from "./bytes-base64.js";
 
 /** The summons a joinee writes: what it holds (the card) and what licenses it (the edge). */

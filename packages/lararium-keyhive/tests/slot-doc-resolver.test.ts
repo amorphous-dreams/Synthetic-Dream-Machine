@@ -18,13 +18,18 @@
  *        floor's own wiki boots on its canon with no default writable (the herm's floor never breaks over the workbench law)
  */
 import { describe, test, expect } from "vitest";
-import { makeIslandRepo, type Repo } from "@lararium/mesh";
-import {
-  CompositeStore, CONTROL_HOME_ID, DAEMON_BAG_ID, DRAFT_BINDINGS_PREFIX, slotBindingKey, computeRecipeFingerprint, didFromVerifyingKey, emptyLarDoc,
-  mutableLarRecord, wikiBagUri, wikiDraftDocKey, wikiSlotUri, realmWorkbenchDocUrl, ledgerWorkbenches, materializeSharedLarDoc, workbenchKeyDocs,
-  refusingControlStore, vesselLockedRefusal, VESSEL_LOCKED, floorRegistryOf,
-  type LarDoc, type LarTiddlerRecord,
-} from "@lararium/mesh";
+import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
+import { type Repo } from "@lararium/mesh/automerge";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { CONTROL_HOME_ID, DAEMON_BAG_ID, DRAFT_BINDINGS_PREFIX, slotBindingKey } from "@lararium/mesh/lar-uris";
+import { computeRecipeFingerprint, wikiBagUri, wikiDraftDocKey, wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import { didFromVerifyingKey } from "@lararium/mesh/lar-did";
+import { emptyLarDoc, mutableLarRecord, type LarDoc } from "@lararium/mesh/base-doc";
+import { realmWorkbenchDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { ledgerWorkbenches, workbenchKeyDocs } from "@lararium/mesh/workbench";
+import { refusingControlStore, vesselLockedRefusal, VESSEL_LOCKED } from "@lararium/mesh/control-home";
+import { floorRegistryOf } from "@lararium/mesh/floor-registry";
+import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { MemoryTiddlerStore, makeCatalogAccessor, makeInitWikiReactor, makePruneStaleReactor, makeMemePutReactor, type MemeVerbOptions } from "@lararium/tw5";
 import { KeyhiveProvider } from "../src/keyhive-provider.js";
 import { makeSlotDocResolver, type SlotDocResolver } from "../src/slot-doc-resolver.js";

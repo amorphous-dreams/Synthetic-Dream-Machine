@@ -24,17 +24,17 @@ import { describe, test, expect } from "vitest";
 import { existsSync } from "fs";
 import { fileURLToPath } from "url";
 import { Repo } from "@automerge/automerge-repo";
+import { automergeLoad } from "@lararium/mesh/automerge";
+import { ENGINE_CORE_ID, mutableLarRecord } from "@lararium/mesh/base-doc";
+import { LARARIUM_BAG } from "@lararium/mesh/wiki-recipe";
+import type { LarDoc } from "@lararium/mesh/base-doc";
+import type { IslandMsg_Event } from "@lararium/mesh/island-protocol";
 import {
-  automergeLoad,
-  ENGINE_CORE_ID,
-  mutableLarRecord,
-  LARARIUM_BAG,
-} from "@lararium/mesh";
-import type { LarDoc, IslandMsg_Event } from "@lararium/mesh";
-import {
-  findVerbBreathingEvent, assertVerbBreathingEvent, dispatchTiddlerFields,
+  findVerbBreathingEvent,
+  assertVerbBreathingEvent,
+  dispatchTiddlerFields,
   type VerbBreathingContract,
-} from "@lararium/mesh";
+} from "@lararium/mesh/conformance-verb-breathing";
 import { VesselIslandPool } from "../src/vessel-island-pool.js";
 import { setupCasFromGenesis } from "./cas-test-setup.js";
 import { GENESIS_SEED, loadGenesisBytes } from "./genesis-test-source.js";

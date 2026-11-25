@@ -23,10 +23,11 @@
  * Meme: lar:///ha.ka.ba/lararium/node/gate-sync-server
  */
 import { EventEmitter } from "node:events";
-import {
-  HEARTH_FLOOR_PINS_SESSION_KIND, hearthFloorPinsBody, mkLarSessionMsg,
-  type GateBundlePin, type GateSession, type GateSessionChannel, type HearthFloorProof,
-} from "@lararium/mesh";
+import { HEARTH_FLOOR_PINS_SESSION_KIND, hearthFloorPinsBody, type HearthFloorProof } from "@lararium/mesh/hearth-floor-pins";
+import { mkLarSessionMsg } from "@lararium/mesh/leaf-presentation";
+import { type GateBundlePin } from "@lararium/mesh/gate-bundle-door";
+import { type GateSession } from "@lararium/mesh/face-gate-door";
+import { type GateSessionChannel } from "@lararium/mesh/gate-session-channel";
 
 const OPEN = 1;
 const CLOSED = 3;

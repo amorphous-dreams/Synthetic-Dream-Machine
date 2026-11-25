@@ -9,9 +9,7 @@
  */
 import { bindSyntheticBrowserCustodySlot, FIXTURE_WARD } from "./browser-custody-fixture.js";
 import { describe, test, expect, afterEach } from "vitest";
-import {
-  personaMultitudeView, renameOwnPersona, type PersonaMultitudeEntry,
-} from "@lararium/mesh";
+import { personaMultitudeView, renameOwnPersona, type PersonaMultitudeEntry } from "@lararium/mesh/persona-petname";
 import {
   generateOrLoadBrowserPersonaRoot, wearBrowserPersona,
   listBrowserPersonaRoots, loadBrowserActivePersona,

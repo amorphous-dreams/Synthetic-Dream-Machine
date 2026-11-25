@@ -15,11 +15,15 @@
  */
 
 import { addReadOnlyLayer } from "./vessel-steps.js";
-import {
-  CATALOG_CORPUS_PREFIX, parseMeshScale, resolveBootDoc, isStillJoining,
-  corpusBagId, corpusLarUri, catalogCorpusEntryUri, storedLarRecord, tiddlerText,
-  type MeshScale, type Repo, type DocHandle, type LarDoc, type AutomergeUrl, type CompositeStore, ownEntry, sealedUnopened} from "@lararium/mesh";
-import { plainField } from "@lararium/mesh";
+import { CATALOG_CORPUS_PREFIX, parseMeshScale, corpusLarUri, catalogCorpusEntryUri, type MeshScale } from "@lararium/mesh/lar-uris";
+import { resolveBootDoc, isStillJoining } from "@lararium/mesh/boot-resolver";
+import { corpusBagId, type CompositeStore } from "@lararium/mesh/composite-store";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
+import { tiddlerText, type LarDoc } from "@lararium/mesh/base-doc";
+import { type Repo, type DocHandle, type AutomergeUrl } from "@lararium/mesh/automerge";
+import { ownEntry } from "@lararium/mesh/stored-value";
+import { sealedUnopened } from "@lararium/mesh/automerge-doc-store";
+import { plainField } from "@lararium/mesh/stored-value";
 
 export interface CorpusLoaderDeps {
   readonly repo: Repo;

@@ -10,9 +10,10 @@
  *   U3 — CONTROL: custody open, the same act stands the control document itself
  */
 import { describe, expect } from "vitest";
-import {
-  controlHomeRefusal, nameControlHome, seedDaemonDoc, standControlHome, mintVesselDocumentId, VESSEL_LOCKED, CONTROL_HOME_UNNAMED, type LarDoc,
-} from "@lararium/mesh";
+import { controlHomeRefusal, nameControlHome, standControlHome, VESSEL_LOCKED, CONTROL_HOME_UNNAMED } from "@lararium/mesh/control-home";
+import { seedDaemonDoc } from "@lararium/mesh/social-seed";
+import { mintVesselDocumentId } from "@lararium/mesh/secret-home";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { generateOrLoadVesselIdentity } from "../src/node-vessel-identity.js";
 import { larDataDir } from "../src/vessel-paths.js";
 import { ownedStore } from "../src/owned-store.js";

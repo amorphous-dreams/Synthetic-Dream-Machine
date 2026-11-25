@@ -19,7 +19,7 @@
  */
 
 import { RaiseSignError, type RaiseSignResult } from "@lararium/node";
-import { presentationFindingLine } from "@lararium/mesh";
+import { presentationFindingLine } from "@lararium/mesh/carriage-registry";
 import type { ParsedArgs } from "../parse-args.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";

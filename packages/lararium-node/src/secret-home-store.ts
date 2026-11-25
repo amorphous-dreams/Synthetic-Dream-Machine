@@ -21,10 +21,18 @@
  */
 import { mkdirSync } from "node:fs";
 import type { Repo } from "@automerge/automerge-repo";
+import { bytesEqual } from "@lararium/mesh/crypto";
 import {
-  bytesEqual, decodeSecretHomeAddress, encodeSecretHomeAddress, enrollSecretHome, mintSecretHomeAddress, mintVesselDocumentId, openSecretHome,
-  SecretHomeUnavailable, type SecretHome, type SecretHomeAddress,
-} from "@lararium/mesh";
+  decodeSecretHomeAddress,
+  encodeSecretHomeAddress,
+  enrollSecretHome,
+  mintSecretHomeAddress,
+  mintVesselDocumentId,
+  openSecretHome,
+  SecretHomeUnavailable,
+  type SecretHome,
+  type SecretHomeAddress,
+} from "@lararium/mesh/secret-home";
 import { CustodyRecordUnavailable } from "./custody-holder.js";
 import { readCustodyRecord, updateCustodyRecord } from "./custody-seat.js";
 import { larIdentityDir } from "./vessel-paths.js";

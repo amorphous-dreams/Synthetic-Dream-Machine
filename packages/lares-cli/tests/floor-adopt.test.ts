@@ -6,7 +6,9 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, test } from "vitest";
-import { GENESIS_FLOOR_TIDDLER, sha256HexBytesSync, type FloorAdoptOutcome } from "@lararium/mesh";
+import { GENESIS_FLOOR_TIDDLER } from "@lararium/mesh/floor-manifest";
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
+import { type FloorAdoptOutcome } from "@lararium/mesh/floor-pin";
 import { floorAdoptLines, floorSettleLines, seedFloorOf } from "../src/commands/floor.js";
 
 const scratch: string[] = [];

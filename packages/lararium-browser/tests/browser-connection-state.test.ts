@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { createBrowserConnectionState, crossingStandingOf, observeRelayConnection } from "../src/browser-connection-state.js";
 import { composeBrowserFacePresentation } from "../src/browser-face-presentation.js";
-import { custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute } from "@lararium/mesh";
+import { custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute } from "@lararium/mesh/gate-bundle-door";
 
 class FakeRelayAdapter {
   session: { nonce: string; gatePubKey: string } | null = null;

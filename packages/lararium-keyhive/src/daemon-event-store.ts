@@ -19,11 +19,16 @@
  */
 
 import {
-  SECRET_HOME_ID, type SecretHomeStore,
-  CAP_EVENT_TAG, CAP_EVENT_PREKEY_TAG, CAP_EVENT_CGKA_TAG,
-  CAP_EVENT_DELEGATION_TAG, CAP_EVENT_REVOCATION_TAG,
-} from "@lararium/mesh";
-import { type ChangeOrigin, type LarTiddlerRecord, toLarTiddlerRecord, hex, sha256HexBytesSync } from "@lararium/mesh";
+  SECRET_HOME_ID,
+  CAP_EVENT_TAG,
+  CAP_EVENT_PREKEY_TAG,
+  CAP_EVENT_CGKA_TAG,
+  CAP_EVENT_DELEGATION_TAG,
+  CAP_EVENT_REVOCATION_TAG,
+} from "@lararium/mesh/lar-uris";
+import { type SecretHomeStore } from "@lararium/mesh/secret-home";
+import { type ChangeOrigin, type LarTiddlerRecord, toLarTiddlerRecord } from "@lararium/mesh/tiddler-store";
+import { hex, sha256HexBytesSync } from "@lararium/mesh/crypto";
 import type { EventStore, EventRecord } from "./event-store.js";
 import { inIslandSlice } from "./event-store.js";
 import { bytesToBase64, base64ToBytes } from "./bytes-base64.js";

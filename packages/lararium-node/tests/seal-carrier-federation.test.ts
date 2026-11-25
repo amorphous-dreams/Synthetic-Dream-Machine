@@ -16,10 +16,9 @@ import { afterEach, beforeEach, describe, test, expect } from "vitest";
 import { mkdtempSync, rmSync, existsSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import {
-  verifyCiphertextCid, makeCidResolver, sha256HexBytesSync, utf8Bytes,
-  type CasTransitTransport,
-} from "@lararium/mesh";
+import { verifyCiphertextCid } from "@lararium/mesh/ciphertext-cas";
+import { makeCidResolver, type CasTransitTransport } from "@lararium/mesh/cas-transit";
+import { sha256HexBytesSync, utf8Bytes } from "@lararium/mesh/crypto";
 import { freshTestBodyKey, TEST_SCOPE, TEST_NEXUS_AID, TEST_HEAD_EPOCH, openAsMember } from "./cas-test-setup.js";
 import { cadSealDir, sealCarrierForFederation, ContentKeyUnavailable } from "../src/seal-carrier-federation.js";
 import { makeSealedPlaneRegistry } from "../src/plane-seal.js";

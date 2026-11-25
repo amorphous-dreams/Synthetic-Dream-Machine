@@ -19,13 +19,26 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
 import { describe, expect, test } from "vitest";
-import {
-  AutomergeDocStore, KAHUA_BAG, KAHUA_PLANE, ORACLE_BAG, actCid, adoptKahuaPlane, adoptedKahuaUrl, ed25519SignerFromSeed,
-  ed25519VerifyingKeyFromSeed, emptyLarDoc, faceRecordsOf, groupSecretOpenerFromSeed, kahuaCatalogRow, kahuaRecipe, makeIslandRepo,
-  kahuaStageDocUrl, materializeSharedLarDoc, mintFaceAnchor, personaKelBoardDocUrl, personaKelChainForPrefix, proveFaceFromLog,
-  readFace, seedDaemonDoc, signKahuaLift, signPersonaAct, storedLarRecord, writeKahuaAct, CompositeStore, wikiSlotUri,
-  type ChangeOrigin, type DocHandle, type LarDoc, type SlotUri,
-} from "@lararium/mesh";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { KAHUA_BAG, ORACLE_BAG, kahuaRecipe, wikiSlotUri, type SlotUri } from "@lararium/mesh/wiki-recipe";
+import { KAHUA_PLANE, kahuaStageDocUrl, signKahuaLift, writeKahuaAct } from "@lararium/mesh/kahua-stage";
+import { actCid } from "@lararium/mesh/signed-act";
+import { adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow } from "@lararium/mesh/kahua-adopt";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { faceRecordsOf, readFace } from "@lararium/mesh/face-reading";
+import { groupSecretOpenerFromSeed } from "@lararium/mesh/persona-group-secret";
+import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
+import { materializeSharedLarDoc, personaKelBoardDocUrl } from "@lararium/mesh/deterministic-doc";
+import { mintFaceAnchor } from "@lararium/mesh/face-anchor";
+import { personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";
+import { proveFaceFromLog } from "@lararium/mesh/face-boot-proof";
+import { seedDaemonDoc } from "@lararium/mesh/social-seed";
+import { signPersonaAct } from "@lararium/mesh/persona-act-board";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { type ChangeOrigin } from "@lararium/mesh/tiddler-store";
+import { type DocHandle } from "@lararium/mesh/automerge";
 import { foundTheFace, foundThePlace, runApplyAdmitPayload, runDeviceAdmitEdge } from "@lararium/keyhive";
 import { buildIslandRecipe, kahuaShadowOf, librarySlotUrl, type TW5Engine } from "@lararium/tw5";
 import { founderAndJoineeActs, frontierFromFoundingSeed } from "../../lararium-keyhive/tests/admit-acts.js";

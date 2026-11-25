@@ -16,15 +16,17 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/daemon-behavior
  */
 
-import { EXEC_LEI_SPEND_VERB } from "@lararium/mesh";
+import { EXEC_LEI_SPEND_VERB } from "@lararium/mesh/exec-lei";
 import { islandExecLeiPort } from "./exec-lei-route.js";
 import { makeDelegationBook } from "./delegation-book.js";
 import { makeIslandWearDoor, type IslandWearDoor } from "./island-wear.js";
-import { seatRepoWear, type DaemonMsg_WearActorResult } from "@lararium/mesh";
+import { seatRepoWear } from "@lararium/mesh/repo-wear";
+import { type DaemonMsg_WearActorResult } from "@lararium/mesh/island-protocol";
+import { handCodeOf } from "@lararium/mesh/hand-refusal";
 import type { SessionWorn } from "./verb-dispatcher.js";
+import { PROMOTE_PANEL_HAND_CODES } from "@lararium/mesh/promote-main-verbs";
+import { SWARM_VERB_HAND_CODES } from "@lararium/mesh/swarm-door";
 import {
-  PROMOTE_PANEL_HAND_CODES,
-  SWARM_VERB_HAND_CODES,
   mkDaemonResolveBindingResult,
   mkDaemonGateVerbResult,
   mkDaemonWorldlineCompareResult,
@@ -38,13 +40,11 @@ import {
   type DaemonMsg_GateVerbRequest,
   type DaemonMsg_WorldlineCompareRequest,
   type DaemonMsg_WorldlineTrajectoryRequest,
-  type BatchMode,
-  type Verb,
-  type ChoreReceiptMark,
-  type CapabilityVerifier,
-  type CaptureEngine,
-  type CapturePost,
-} from "@lararium/mesh";
+} from "@lararium/mesh/island-protocol";
+import { type BatchMode, type Verb } from "@lararium/mesh/verb-tiddler";
+import { type ChoreReceiptMark } from "@lararium/mesh/chore-ask";
+import { type CapabilityVerifier } from "@lararium/mesh/capability";
+import { type CaptureEngine, type CapturePost } from "@lararium/mesh/capture/capture-engine";
 import type { Hand } from "@lararium/mesh/session-contract";
 import { placeVerb } from "./verb-vm.js";
 import { composeIsland } from "./island-caps.js";
@@ -55,9 +55,11 @@ import { VerbDispatcher, VerbTable } from "./verb-dispatcher.js";
 import type { IslandCap } from "./island-caps.js";
 import type { IslandContext, IslandBehavior, WritableOutcome } from "./island-context.js";
 import { controlOf } from "./island-context.js";
-import type { RunnableHulls } from "@lararium/mesh";
+import type { RunnableHulls } from "@lararium/mesh/flow";
 import { seedDaemonProtocol } from "./daemon-protocol-seed.js";
-import { canonicalJson, wikiSlotUri, VERB_URI_PREFIX } from "@lararium/mesh";
+import { canonicalJson } from "@lararium/mesh/crypto";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import { VERB_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
 
 const WRITE_LAYER_POINTER = "lar:///ha.ka.ba/lararium/config/current-wiki-bag";
 
@@ -426,7 +428,7 @@ export interface LocalAsk {
  * six, the store door's `promote-orphan`, and the swarm's three that set or issue (`swarm-show` stays open). A session-cleared face row
  * passes (the socket already refused a seat); a channel ask, a meme put and a synced verb tiddler refuse by code.
  */
-export const DAEMON_HAND_ONLY_CODES: Readonly<Record<string, string>> = { ...PROMOTE_PANEL_HAND_CODES, "promote-orphan": "promote-needs-hand", ...SWARM_VERB_HAND_CODES,
+export const DAEMON_HAND_ONLY_CODES: Readonly<Record<string, string>> = { ...PROMOTE_PANEL_HAND_CODES, "promote-orphan": handCodeOf("promote-orphan")!, ...SWARM_VERB_HAND_CODES,
   // The island's own spend route (`islandExecLeiPort`) never rides the dispatcher; an ask for it from outside answers nothing.
   [EXEC_LEI_SPEND_VERB]: "exec-lei-spend-internal" };
 

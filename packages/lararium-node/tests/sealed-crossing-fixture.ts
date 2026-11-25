@@ -9,10 +9,10 @@
  */
 import { Repo, type AutomergeUrl, type Chunk, type PeerId, type StorageAdapterInterface, type StorageKey } from "@automerge/automerge-repo";
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
-import {
-  REST_KINDS, answerDocStoreAsks, composeSealedRest, utf8Bytes, vesselDocStoreDoor,
-  type SealedAddress, type SealedBag, type SealedStoreRest,
-} from "@lararium/mesh";
+import { REST_KINDS, type SealedStoreRest } from "@lararium/mesh/sealed-store-rest";
+import { answerDocStoreAsks, composeSealedRest, vesselDocStoreDoor, type SealedBag } from "@lararium/mesh/sealed-rest";
+import { utf8Bytes } from "@lararium/mesh/crypto";
+import { type SealedAddress } from "@lararium/mesh/sealed-chunk-door";
 import type { Device } from "../../lararium-keyhive/tests/content-key-fleet.js";
 
 /** What each test stood, torn down after it (`afterEach(drain)`). */

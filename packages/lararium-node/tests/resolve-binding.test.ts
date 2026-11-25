@@ -18,19 +18,13 @@
 
 import { describe, test, expect } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
-import {
-  type LarDoc,
-  CompositeStore, AutomergeDocStore, DAEMON_BAG_ID,
-  emptyLarDoc,
-  mutableLarRecord,
-  tiddlerText,
-  PERSONAL_BINDINGS_PREFIX,
-  DRAFT_BINDINGS_PREFIX,
-  slotBindingKey,
-} from "@lararium/mesh";
+import { type LarDoc, emptyLarDoc, mutableLarRecord, tiddlerText } from "@lararium/mesh/base-doc";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { DAEMON_BAG_ID, PERSONAL_BINDINGS_PREFIX, DRAFT_BINDINGS_PREFIX, slotBindingKey } from "@lararium/mesh/lar-uris";
 import type { DocHandle } from "@automerge/automerge-repo";
 import { resolveOrMintBinding, makeFaceBagDoor, type CapabilityProvider, type DelegateArgs } from "@lararium/keyhive";
-import { plainRecordOrNull } from "@lararium/mesh";
+import { plainRecordOrNull } from "@lararium/mesh/stored-value";
 
 const AGENT_HEX  = "0xfeedface";
 const MINTED_BY  = "0xdeadbeef";

@@ -10,7 +10,7 @@
 
 export * from "@lararium/tw5/memetic-wikitext-sensorium";
 
-import { FFZ_ADDRESS_ORDER } from "@lararium/mesh";
+import { FFZ_ADDRESS_ORDER } from "@lararium/mesh/ffz-project";
 import { buildSensoriumManifest, type SensoriumManifest, type SensoriumBands } from "./sensorium.js";
 
 export function defaultSensoriumBands(): SensoriumBands {

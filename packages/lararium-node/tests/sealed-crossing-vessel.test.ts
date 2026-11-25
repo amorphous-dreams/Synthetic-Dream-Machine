@@ -21,7 +21,7 @@
  */
 import { afterEach, describe, expect, test } from "vitest";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
-import { SealedStore } from "@lararium/mesh";
+import { SealedStore } from "@lararium/mesh/sealed-store-rest";
 import { faceProofSubjectRef } from "../../lararium-mesh/src/face-proof-subjects.js";
 import { chain, siblingChain } from "../../lararium-mesh/tests/face-proof-fixture.js";
 import { FLEET_NEXUS, fleet, type Device } from "../../lararium-keyhive/tests/content-key-fleet.js";

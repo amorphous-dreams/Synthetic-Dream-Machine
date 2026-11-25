@@ -31,7 +31,7 @@ import { paintCeremonyAsk, paintResetAsk, resetAskAnswer, settleCeremonyAsk, sta
 import { RESET_CHANNEL } from "./ceremony-protocol.js";
 import { originAskRecord } from "./ceremony/reset-core.js";
 import { standResetTab } from "./reset-tab.js";
-import type { GenesisSeed } from "@lararium/mesh";
+import type { GenesisSeed } from "@lararium/mesh/genesis-doc";
 import { LAR_WHOLE_VALUE_MAX_CHARS } from "@lararium/mesh/lar-camera";
 import { readFloorCardCarriage, readHearthFloorCard } from "@lararium/mesh/hearth-floor-pins";
 import { createProjectionSink } from "./projection-sink.js";

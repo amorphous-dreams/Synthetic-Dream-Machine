@@ -5,7 +5,7 @@
  *   F2  CONTROL: before the stop, and past it for a document that holds nothing, the receipt lands as the inner one does.
  */
 import { describe, expect, test } from "vitest";
-import type { HeldSaves } from "@lararium/mesh";
+import type { HeldSaves } from "@lararium/mesh/sealed-doc-store";
 import { fenceReceiptAtStop } from "../src/stop-receipt-fence.js";
 
 describe("the stop's receipt fence", () => {

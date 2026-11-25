@@ -32,7 +32,10 @@
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane#/the-vessel-pin
  */
-import { GENESIS_FLOOR_TIDDLER, ratchetWords, ratchetsDiffer, type FloorAcceptOutcome, type FloorAdoptOutcome, type FloorLocalAct, type FloorPin, type FloorDrift, type FloorStatus, type GenesisDigests, type RatchetDifference } from "@lararium/mesh";
+import { ratchetWords, ratchetsDiffer, type GenesisDigests, type RatchetDifference } from "@lararium/mesh/genesis-compare";
+import { type FloorAcceptOutcome, type FloorStatus, type FloorAdoptOutcome, type FloorLocalAct, type FloorPin } from "@lararium/mesh/floor-pin";
+import { type FloorDrift } from "@lararium/mesh/floor-drift";
+import { GENESIS_FLOOR_TIDDLER } from "@lararium/mesh/floor-manifest";
 import { FloorRefused, FLOOR_GRAINS, floorCardFor, floorRowLine, readFloorDrifts, rowInGrain, type FloorCard, type FloorDriftRow, type FloorGrain, type FloorLagInput } from "@lararium/node";
 import { emit, exitFor } from "../render.js";
 import { storeVerb, storeFailure } from "../store-door.js";

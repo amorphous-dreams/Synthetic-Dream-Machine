@@ -15,7 +15,9 @@ import {
 import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
 import type { LaresMemeFace } from "../src/types/lares-globals.js";
-import { CompositeStore, bagUri, type LarTiddlerStore } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { bagUri } from "@lararium/mesh/lar-uris";
+import { type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { makeMemePutReactor, makeMemeProjectReactor, type MemeVerbOptions } from "../src/meme-verbs.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";

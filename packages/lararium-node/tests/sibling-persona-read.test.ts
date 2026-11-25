@@ -25,11 +25,16 @@
  */
 import { describe, expect, test } from "vitest";
 import { Repo, type Chunk, type StorageAdapterInterface, type StorageKey } from "@automerge/automerge-repo";
-import {
-  emptyLarDoc, signFoundingLog, mintFaceAnchor, faceRootCommitment, didFromVerifyingKey, ed25519VerifyingKeyFromSeed,
-  ed25519SignerFromSeed, provisionThresholdRecoveryAtFounding, recoveryContactRegistrationCard, writePersonaKelEvent,
-  personaKelChainForPrefix, proveFaceFromLog, writePersonaAct, RESTING_DOC_MAX_BYTES, type LarDoc, type SignedAct,
-} from "@lararium/mesh";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { signFoundingLog, writePersonaAct, RESTING_DOC_MAX_BYTES } from "@lararium/mesh/persona-act-board";
+import { mintFaceAnchor, faceRootCommitment } from "@lararium/mesh/face-anchor";
+import { didFromVerifyingKey } from "@lararium/mesh/lar-did";
+import { ed25519VerifyingKeyFromSeed, ed25519SignerFromSeed } from "@lararium/mesh/ed25519-door";
+import { provisionThresholdRecoveryAtFounding } from "@lararium/mesh/recovery-keel-core";
+import { recoveryContactRegistrationCard } from "@lararium/mesh/recovery-registration";
+import { writePersonaKelEvent, personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";
+import { proveFaceFromLog } from "@lararium/mesh/face-boot-proof";
+import { type SignedAct } from "@lararium/mesh/signed-act";
 import { proveSiblingFromRest, SIBLING_PLANE_USE, type SiblingFaceGate, type SiblingPlaneReading } from "../src/persona-act-store.js";
 import { testVesselTag } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
 

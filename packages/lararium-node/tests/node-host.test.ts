@@ -11,11 +11,7 @@
  */
 
 import { describe, test, expect } from "vitest";
-import {
-  resolveLarUri,
-  parseHostfulLarUri,
-  isHostfulLarUri,
-} from "@lararium/mesh";
+import { resolveLarUri, parseHostfulLarUri, isHostfulLarUri } from "@lararium/mesh/resolver";
 
 // Minimal inline grammar fixture — exercises [[sigils]] and [[families]] TOML
 // ---------------------------------------------------------------------------

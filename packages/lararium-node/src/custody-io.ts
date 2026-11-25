@@ -31,7 +31,7 @@
 import { closeSync, fsyncSync, mkdirSync, openSync, readFileSync, readdirSync, renameSync, rmSync, writeSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 import { dirname, join } from "node:path";
-import type { CustodyIo } from "@lararium/mesh";
+import type { CustodyIo } from "@lararium/mesh/sealed-writer";
 import { anchoredName, answers, claimName, letGo, NameHeld } from "./socket-claim.js";
 import { vesselCustodyHomes, type CustodyHomes } from "./vault-carriers.js";
 

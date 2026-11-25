@@ -4,7 +4,7 @@ import type {
   CapabilityVerifyArgs,
   CapabilityVerifyResult,
   CapabilityVerifier,
-} from "@lararium/mesh";
+} from "@lararium/mesh/capability";
 
 /**
  * CapabilityProvider — narrow interface over Keyhive's pre-alpha API.

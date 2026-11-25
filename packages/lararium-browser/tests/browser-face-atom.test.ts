@@ -12,11 +12,8 @@ import { placeSeed } from "./browser-place-seed.fixture.js";
  *   A4  a vessel with no slot mints no atom: a face's secret rows take a slot first.
  */
 import { describe, expect, test } from "vitest";
-import {
-  FaceAtomConflict,
-  FaceAtomMissing,
-  groupSecretOpenerFromSeed, sealGroupSecret,
-} from "@lararium/mesh";
+import { FaceAtomConflict, FaceAtomMissing } from "@lararium/mesh/face-atom-custody";
+import { groupSecretOpenerFromSeed, sealGroupSecret } from "@lararium/mesh/persona-group-secret";
 import { bindSyntheticBrowserCustodySlot, bindSyntheticFace } from "./browser-custody-fixture.js";
 import { readKeystoreRecord } from "../src/browser-custody.js";
 import {

@@ -37,13 +37,14 @@
  * Meme: lar:///ha.ka.ba/kahua/memory/project/backlog-awakens
  */
 
-import { PROJECTION_FIELD, PROJECTION_RENDERED, RENDERED_FROM_FIELD, renderedFromOf, type ChangeOrigin, type LarTiddlerRecord } from "@lararium/mesh";
+import { PROJECTION_FIELD, PROJECTION_RENDERED, RENDERED_FROM_FIELD, renderedFromOf } from "@lararium/mesh/rendered-derives";
+import { type ChangeOrigin, type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { canonFiltersTextOfWiki, functionPragmasOf } from "./house-filters.js";
 import type { TW5Engine } from "./tw5-vm.js";
 import type { IslandCap } from "./island-caps.js";
 import type { IslandContext } from "./island-context.js";
 
-export { RENDERED_FROM_FIELD, PROJECTION_FIELD, PROJECTION_RENDERED } from "@lararium/mesh";
+export { RENDERED_FROM_FIELD, PROJECTION_FIELD, PROJECTION_RENDERED } from "@lararium/mesh/rendered-derives";
 
 /** The field naming the rendered tiddler's content type, and the field naming its title. */
 export const RENDER_TYPE_FIELD = "render-type" as const;

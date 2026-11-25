@@ -44,11 +44,28 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import * as ed from "@noble/ed25519";
+import { HandleBook } from "@lararium/mesh/handle-book";
+import { attestAndRotate } from "@lararium/mesh/recovery-keel-core";
+import { faceLogViewLine, signFaceLogView } from "@lararium/mesh/face-log-view";
+import { canonicalJsonBytes, hex } from "@lararium/mesh/crypto";
+import { coldKeySeedFromCode } from "@lararium/mesh/cold-key-card";
+import { sealKeySetHash } from "@lararium/mesh/wax-stamp";
 import {
-  HandleBook, attestAndRotate, faceLogViewLine, signFaceLogView, canonicalJsonBytes, coldKeySeedFromCode, sealKeySetHash, recoverySetCommitment, deriveSelfRecoveryKey, faceAtomKeyFromSeed, foldPersonaContests, recoveryContactRegistrationCard, hex, mintBundleKey, mintHandleInception, mintPersonaInception, mintVeto,
-  faceCatalogDocUrl, personaBagIdFor, openFaceBundleBody, readFaceBundleBody, sealFaceBundleBody, sealMemorySection, signHandleCard,
-  type FaceBundleBody, type HandleCard, type HandleKelEvent, type PersonaKelEvent,
-} from "@lararium/mesh";
+  recoverySetCommitment,
+  foldPersonaContests,
+  mintPersonaInception,
+  mintVeto,
+  type PersonaKelEvent,
+} from "@lararium/mesh/persona-kel";
+import { deriveSelfRecoveryKey } from "@lararium/mesh/persona-identity";
+import { faceAtomKeyFromSeed } from "@lararium/mesh/face-atom";
+import { recoveryContactRegistrationCard } from "@lararium/mesh/recovery-registration";
+import { mintBundleKey, openFaceBundleBody, readFaceBundleBody, sealFaceBundleBody, type FaceBundleBody } from "@lararium/mesh/face-bundle";
+import { mintHandleInception, type HandleKelEvent } from "@lararium/mesh/handle-kel";
+import { faceCatalogDocUrl } from "@lararium/mesh/catalog-view";
+import { personaBagIdFor } from "@lararium/mesh/persona-scope";
+import { sealMemorySection } from "@lararium/mesh/memory-section";
+import { signHandleCard, type HandleCard } from "@lararium/mesh/handle-card";
 import * as init from "../src/commands/init.js";
 import { removeCustodyRecord, seatedCustody, unseatCustody, writeCustodyRecord } from "../src/custody-seat.js";
 import { cutFaceBundle } from "../src/face-bundle-cut.js";
@@ -78,7 +95,7 @@ import { unlockCustody } from "../src/custody-session.js";
 import { openFaceTree } from "../src/face-custody.js";
 import { FIXTURE_PASSPHRASE, seatScratchCustody } from "./custody-seat-fixture.js";
 import { nodeSessionDoor } from "../src/uds-session-door.js";
-import { SessionTable, sessionBinding } from "@lararium/mesh";
+import { SessionTable, sessionBinding } from "@lararium/mesh/session-contract";
 
 vi.setConfig({ testTimeout: 600_000, hookTimeout: 600_000 });
 

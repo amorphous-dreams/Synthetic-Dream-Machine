@@ -8,7 +8,8 @@ import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
 import { createHash } from "node:crypto";
 import { afterAll, describe, expect, test, vi } from "vitest";
-import { hex, personaScopedBagIds } from "@lararium/mesh";
+import { hex } from "@lararium/mesh/crypto";
+import { personaScopedBagIds } from "@lararium/mesh/persona-scope";
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
 
 const fault = vi.hoisted(() => ({ afterGroup: false, afterAnchors: false, group: "" }));

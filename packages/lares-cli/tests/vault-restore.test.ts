@@ -22,7 +22,16 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { webcrypto } from "node:crypto";
 import * as ed from "@noble/ed25519";
-import { bindBundleRoutes, encodeFaceBundle, hex, mintBundleKey, openFaceBundleBody, readFaceBundleBody, sealFaceBundleBody, splitRootAtFounding, hexToBytes } from "@lararium/mesh";
+import {
+  bindBundleRoutes,
+  encodeFaceBundle,
+  mintBundleKey,
+  openFaceBundleBody,
+  readFaceBundleBody,
+  sealFaceBundleBody,
+} from "@lararium/mesh/face-bundle";
+import { hex, hexToBytes } from "@lararium/mesh/crypto";
+import { splitRootAtFounding } from "@lararium/mesh/recovery-keel-core";
 import { SEALED_BYTES_LINE } from "../src/vault-backup.js";
 import { importLines, restoreFromBundle, restoreFromCards, restoreLines, type RestoreLanded, type RunAct } from "../src/vault-restore.js";
 import { nativeKdf } from "@lararium/mesh/node";

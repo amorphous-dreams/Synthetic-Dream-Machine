@@ -25,7 +25,8 @@ import { readCarrierShape } from "@lararium/tw5";
 import { canonicalizeCarrierText } from "@lararium/tw5/carrier-canonical";
 import { findTopLevelAhuBlocks } from "@lararium/tw5/meme-ast";
 import { verifyBcc } from "@lararium/memetic-frame";
-import { bagManifestUri, type LibraryEntryMeta } from "@lararium/mesh";
+import { bagManifestUri } from "@lararium/mesh/bag-manifest";
+import { type LibraryEntryMeta } from "@lararium/mesh/library-tier";
 import { writeBagManifest, readBagManifest } from "../src/bag-declare.js";
 import { kv, renderCarrier, metaFieldsFromBody } from "../src/carrier-render.js";
 

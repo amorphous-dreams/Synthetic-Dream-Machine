@@ -10,7 +10,7 @@ describe("in-process workspace imports", () => {
   });
 
   test("the mesh package import resolves to this worktree's source", async () => {
-    const { openPromotionApproval } = await import("@lararium/mesh");
+    const { openPromotionApproval } = await import("@lararium/mesh/promotion-approval");
     expect(openPromotionApproval).toBe(sourceOpenPromotionApproval);
   });
 

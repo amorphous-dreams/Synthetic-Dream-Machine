@@ -10,7 +10,7 @@
 import { primaryNexusAid, readCarriedCharters } from "./carried-set.js";
 import { nexusKeyPublicOf, readNexusKey } from "./face-key-custody.js";
 import { loadPersonaGroupRootVerifyingKey } from "./node-vessel-identity.js";
-import type { FaceScope } from "@lararium/mesh";
+import type { FaceScope } from "@lararium/mesh/face-proof-subjects";
 import type { GateRootHolding } from "./gate-rings.js";
 
 /** Every (face key, Nexus) scope the face at `face` stands at here, sorted by Nexus. Reads only; mints no key. */

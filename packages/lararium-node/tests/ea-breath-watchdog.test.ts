@@ -15,13 +15,8 @@
 import { describe, test, expect, afterEach, vi } from "vitest";
 import { MessageChannel, type MessagePort as NodeMessagePort } from "worker_threads";
 import { Repo } from "@automerge/automerge-repo";
-import {
-  emptyLarDoc,
-  mkEa, mkBreath,
-  mkReady,
-  type LarDoc,
-  type IslandMsg_Manifest,
-} from "@lararium/mesh";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { mkEa, mkBreath, mkReady, type IslandMsg_Manifest } from "@lararium/mesh/island-protocol";
 import { openDaemonVmCore, type DaemonVmHost } from "@lararium/tw5";
 
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));

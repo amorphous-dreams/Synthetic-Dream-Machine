@@ -41,7 +41,7 @@ on:
       - "wikis/**"
       - "CHANGELOG.md"
   schedule:
-    - cron: "17 6 * * 0"
+    - cron: "17 6 * * *"
   workflow_dispatch:
 
 # A newer head supersedes an older run of the same ref.
@@ -49,7 +49,9 @@ concurrency:
   group: held-out-${{ github.ref }}
   # A develop or main run finishes once begun: a newer push queues behind it (queued runs coalesce to the newest head),
   # so a burst of merges never cuts a held-out reading off mid-run. A lane's run still yields to its next push.
-  cancel-in-progress: ${{ github.ref != 'refs/heads/develop' && github.ref != 'refs/heads/main' }}
+  # ONE READING OF THE NEWEST HEAD: a newer develop/main push cancels the held-out run still on an older head (pending runs
+  # already coalesce to the newest), so intermediate heads spend no held-out seats; the nightly schedule reads the head at 06:17.
+  cancel-in-progress: true
 
 permissions:
   contents: read

@@ -19,7 +19,9 @@
  * Meme: lar:///ha.ka.ba/kahua/memory/research/floor-mu#/shape
  */
 import { createHash } from "node:crypto";
-import { ratchetsDiffer, seedRatchetStances, seedStanceWords, SEED_HELD_NEXT, SEED_OFFER_NEXT, type FloorDrift, type FloorShadowTally, type RatchetDifference } from "@lararium/mesh";
+import { ratchetsDiffer, type RatchetDifference, seedRatchetStances, seedStanceWords, SEED_HELD_NEXT, SEED_OFFER_NEXT } from "@lararium/mesh/genesis-compare";
+import { type FloorDrift } from "@lararium/mesh/floor-drift";
+import { type FloorShadowTally } from "@lararium/mesh/floor-shadow";
 
 export const FLOOR_WORDS = ["disk lag", "working ahead", "canon floor drift", "seed offer", "shadow tally"] as const;
 export type FloorWord = (typeof FLOOR_WORDS)[number];

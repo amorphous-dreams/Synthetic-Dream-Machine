@@ -10,11 +10,16 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
 import { describe, expect, test } from "vitest";
-import {
-  AutomergeDocStore, CompositeStore, KAHUA_BAG, KAHUA_PROPOSE_VERB, ORACLE_BAG, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed,
-  emptyLarDoc, faceIntentVerbs, intentEntryRecordsOfGroup, kahuaBodyDigest, makeIslandRepo, readIntentEntry, readKahuaProposal,
-  wikiSlotUri, type ChangeOrigin, type LarDoc,
-} from "@lararium/mesh";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { KAHUA_BAG, ORACLE_BAG, wikiSlotUri } from "@lararium/mesh/wiki-recipe";
+import { KAHUA_PROPOSE_VERB, kahuaBodyDigest, readKahuaProposal } from "@lararium/mesh/kahua-stage";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { faceIntentVerbs } from "@lararium/mesh/intent-verbs";
+import { intentEntryRecordsOfGroup, readIntentEntry } from "@lararium/mesh/intent-entry";
+import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
+import { type ChangeOrigin } from "@lararium/mesh/tiddler-store";
 import { proposeDraftsToKahua, KahuaProposeRefused } from "../src/kahua-page-propose.js";
 
 const GROUP = "ab".repeat(16);

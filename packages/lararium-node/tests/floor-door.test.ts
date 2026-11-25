@@ -23,10 +23,23 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, describe, expect, test, vi } from "vitest";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { BAG_IDS, DAEMON_BAG_ID, bagUri } from "@lararium/mesh/lar-uris";
 import {
-  AutomergeDocStore, BAG_IDS, DAEMON_BAG_ID, bagUri, realmStandingDocUrl, REALM_ID_TIDDLER, emptyLarDoc, foldRealmBags, genesisFloorCidOf, materializeSharedLarDoc, realmDocPointer, realmDocUrl, resolveFloor,
-  sha256HexBytesSync, storedLarRecord, writeRealmStanding, type FloorDrift, type LarDoc,
-} from "@lararium/mesh";
+  realmStandingDocUrl,
+  REALM_ID_TIDDLER,
+  foldRealmBags,
+  realmDocPointer,
+  realmDocUrl,
+  writeRealmStanding,
+} from "@lararium/mesh/realm-bag";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { genesisFloorCidOf } from "@lararium/mesh/floor-pin";
+import { materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { resolveFloor } from "@lararium/mesh/floor-manifest";
+import { sha256HexBytesSync } from "@lararium/mesh/crypto";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
+import { type FloorDrift } from "@lararium/mesh/floor-drift";
 import { STORE_DOOR_FACE_VERBS, STORE_DOOR_HAND_CODES, STORE_DOOR_HAND_ONLY_ACTS, STORE_DOOR_VERBS, storeDoorDirect } from "../src/store-door-verbs.js";
 import { genesisCasDir, loadOrMaterializeOracle, readGenesisCasManifest } from "../src/genesis-artifact.js";
 import { casDirForStorage, mirrorGenesisCasFs, readVerifiedCasBlobFromFs } from "../src/node-cas.js";

@@ -6,11 +6,17 @@
  */
 import { fixtureWard } from "./custody-seat-fixture.js";
 import type { Repo } from "@automerge/automerge-repo";
-import {
-  buildDeviceDelegation, recoveryContactRegistrationCard, landFleetGenesis, fleetEdgeBoardDocUrl, materializeSharedLarDoc,
-  mintFaceAnchor, personaKelBoardDocUrl, personaLineageFromKel, provisionThresholdRecoveryAtFounding, writePersonaKelEvent,
-  ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, type HandLineage, type LarDoc,
-} from "@lararium/mesh";
+import { buildDeviceDelegation } from "@lararium/mesh/device-delegation";
+import { recoveryContactRegistrationCard } from "@lararium/mesh/recovery-registration";
+import { landFleetGenesis } from "@lararium/mesh/fleet-frontier";
+import { fleetEdgeBoardDocUrl, materializeSharedLarDoc, personaKelBoardDocUrl } from "@lararium/mesh/deterministic-doc";
+import { mintFaceAnchor } from "@lararium/mesh/face-anchor";
+import { personaLineageFromKel } from "@lararium/mesh/persona-act-board";
+import { provisionThresholdRecoveryAtFounding } from "@lararium/mesh/recovery-keel-core";
+import { writePersonaKelEvent } from "@lararium/mesh/persona-kel-board";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { type HandLineage } from "@lararium/mesh/hand-lineage";
+import { type LarDoc } from "@lararium/mesh/base-doc";
 import { loadPersonaGroupRootSeed, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { loadIdentityAnchors, persistIdentityAnchors } from "../src/identity-anchors.js";
 import { keepFaceAnchorOfGroup } from "../src/face-anchor-store.js";

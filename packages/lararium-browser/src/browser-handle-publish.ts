@@ -9,10 +9,12 @@
  * and no daemon document chooses its owner.
  */
 import type { DocHandle } from "@automerge/automerge-repo";
-import {
-  publishHandleForFace, loadPersonaRootSeed, readFaceOwner, personaKelChainForPrefix,
-  type LarDoc, type HandleCard, type FaceOwner,
-} from "@lararium/mesh";
+import { publishHandleForFace } from "@lararium/mesh/handle-publish";
+import { loadPersonaRootSeed } from "@lararium/mesh/persona-vault";
+import { readFaceOwner, type FaceOwner } from "@lararium/mesh/face-reading";
+import { personaKelChainForPrefix } from "@lararium/mesh/persona-kel-board";
+import { type LarDoc } from "@lararium/mesh/base-doc";
+import { type HandleCard } from "@lararium/mesh/handle-card";
 import { makeBrowserIdbPersonaVault, makeBrowserPublicHandleStore } from "./browser-vessel-identity.js";
 import { loadBrowserFaceAnchor } from "./browser-face-anchor.js";
 import type { WardRoute } from "./ward-core.js";

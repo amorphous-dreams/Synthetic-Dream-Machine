@@ -23,8 +23,8 @@
 import { describe, test, expect } from "vitest";
 import { interpretAsDocumentId, stringifyAutomergeUrl, type BinaryDocumentId, type DocumentId } from "@automerge/automerge-repo";
 import { randomBytes } from "node:crypto";
-import { DeterministicFederationGate, type AntigenRing, type NexusMembership, type PlaneSeal } from "@lararium/mesh";
-import { crossroadsDocUrl, whoBoardDocUrl, kapaeAntigenDocUrl, carriageDocUrl, hostingDocUrl } from "@lararium/mesh";
+import { DeterministicFederationGate, type AntigenRing, type NexusMembership, type PlaneSeal } from "@lararium/mesh/federation-gate";
+import { crossroadsDocUrl, whoBoardDocUrl, kapaeAntigenDocUrl, carriageDocUrl, hostingDocUrl } from "@lararium/mesh/deterministic-doc";
 import { selfSlotShareDecision, NO_BANS, NOBODY_ASIDE, NOTHING_CLASSED } from "../src/self-slot-share.js";
 
 // This vessel's operator identity (its Nexus pubkey) — the federatable planes derive from it.

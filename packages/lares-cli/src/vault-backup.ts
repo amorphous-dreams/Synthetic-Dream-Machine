@@ -15,10 +15,9 @@
  * Canon: lar:///ha.ka.ba/lararium/mesh/custody#/the-cut
  */
 import { existsSync, writeFileSync } from "node:fs";
-import {
-  bindBundleRoutes, encodeFaceBundle, hex, mintBundleKey,
-  type Credential, type FaceBundleHolding, type SlotSpec,
-} from "@lararium/mesh";
+import { bindBundleRoutes, encodeFaceBundle, mintBundleKey, type FaceBundleHolding } from "@lararium/mesh/face-bundle";
+import { hex } from "@lararium/mesh/crypto";
+import { type Credential, type SlotSpec } from "@lararium/mesh/keyslot-door";
 import { nativeKdf } from "@lararium/mesh/node";
 import type { CustodyDoorAnswer, CustodyFrame } from "./custody-door.js";
 

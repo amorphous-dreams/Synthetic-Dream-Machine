@@ -7,9 +7,13 @@
  */
 import { describe, test, expect } from "vitest";
 import { createRequire } from "node:module";
-import {
-  makeCatalogView, openFaceCatalog, faceCatalogDocUrl, emptyLarDoc, bagUri, catalogNamedBags, storedLarRecord, type CapTier, type LarDoc, type Repo as RepoType,
-} from "@lararium/mesh";
+import { makeCatalogView, openFaceCatalog, faceCatalogDocUrl } from "@lararium/mesh/catalog-view";
+import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
+import { bagUri } from "@lararium/mesh/lar-uris";
+import { catalogNamedBags } from "@lararium/mesh/register-bags";
+import { storedLarRecord } from "@lararium/mesh/stored-record";
+import { type CapTier } from "@lararium/mesh/cap-tier";
+import { type Repo as RepoType } from "@lararium/mesh/automerge";
 
 const Repo = createRequire(import.meta.resolve("@lararium/mesh"))("@automerge/automerge-repo").Repo as new (options: { network: [] }) => RepoType;
 import { makeRestampBagTierReactor } from "../src/bag-tier-restamp.js";

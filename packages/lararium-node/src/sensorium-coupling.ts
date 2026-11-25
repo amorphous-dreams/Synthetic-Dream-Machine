@@ -28,8 +28,9 @@ import { join } from "node:path";
 import { memeticWikitextSensoriumDir } from "./vessel-paths.js";
 import { readManifest, resolveCapDir } from "./sensorium.js";
 import type { SensoriumChild, SensoriumManifest } from "./sensorium.js";
-import { fuse } from "@lararium/mesh";
-import type { FuseOptions, FuseResult, SheafAssignment, PlaneRestriction } from "@lararium/mesh";
+import { fuse } from "@lararium/mesh/sensorium-fusion";
+import type { FuseOptions, FuseResult, SheafAssignment } from "@lararium/mesh/sensorium-fusion";
+import type { PlaneRestriction } from "@lararium/mesh/sensorium-consistency";
 
 /** The per-child SALIENCE sidecar filename — a `{ unit: [0,1] }` map the parallel writes per peer. */
 export const SALIENCES_SIDECAR = "saliences.json";

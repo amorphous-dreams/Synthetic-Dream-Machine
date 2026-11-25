@@ -13,7 +13,7 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set
  */
-import { wikiSlotUri } from "@lararium/mesh";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 
 const DAEMON_WORKING_SLOT = wikiSlotUri("daemon", "working");
 

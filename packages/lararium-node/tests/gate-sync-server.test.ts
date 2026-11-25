@@ -21,7 +21,11 @@
 import { describe, expect, test } from "vitest";
 import { NodeWSServerAdapter } from "@automerge/automerge-repo-network-websocket";
 import { cbor } from "@automerge/automerge-repo/slim";
-import { HEARTH_FLOOR_PINS_SESSION_KIND, type GateBundlePin, type GateSession, type GateSessionChannel, type SealedMessage } from "@lararium/mesh";
+import { HEARTH_FLOOR_PINS_SESSION_KIND } from "@lararium/mesh/hearth-floor-pins";
+import { type GateBundlePin } from "@lararium/mesh/gate-bundle-door";
+import { type GateSession } from "@lararium/mesh/face-gate-door";
+import { type GateSessionChannel } from "@lararium/mesh/gate-session-channel";
+import { type SealedMessage } from "@lararium/mesh/sealed-carriage";
 import { ListeningWSServerAdapter } from "../src/open-node-vessel.js";
 import { gateSyncServer, type GateSyncSocket } from "../src/gate-sync-server.js";
 

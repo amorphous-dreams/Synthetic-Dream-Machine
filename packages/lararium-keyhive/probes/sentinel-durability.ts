@@ -16,7 +16,7 @@
  */
 
 import { KeyhiveProvider, InMemoryEventStore } from "@lararium/keyhive";
-import { MESH_CABAL_SENTINEL_URI } from "@lararium/mesh";
+import { MESH_CABAL_SENTINEL_URI } from "@lararium/mesh/lar-uris";
 
 function pass(msg: string) { console.log(`  ✓ ${msg}`); }
 function fail(msg: string) { console.error(`  ✗ ${msg}`); process.exitCode = 1; }

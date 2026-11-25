@@ -12,12 +12,19 @@
  */
 
 import { describe, test, expect } from "vitest";
-import { CompositeStore, emptyLarDoc, AutomergeDocStore, effectRecordUri, isVerbRefusal } from "@lararium/mesh";
-import type { Repo, DocHandle, LarDoc, Verb } from "@lararium/mesh";
+import { CompositeStore } from "@lararium/mesh/composite-store";
+import { emptyLarDoc } from "@lararium/mesh/base-doc";
+import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
+import { effectRecordUri } from "@lararium/mesh/effect-record";
+import { isVerbRefusal } from "@lararium/mesh/verb-refusal";
+import type { Repo, DocHandle } from "@lararium/mesh/automerge";
+import type { LarDoc } from "@lararium/mesh/base-doc";
+import type { Verb } from "@lararium/mesh/verb-tiddler";
 import { makeActionReactorFor } from "../src/action-handler.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
 import { kahuHand } from "../../lararium-mesh/tests/kahu-reach-fixture.js";
-import { plainEntries, plainRecord, tiddlerText } from "@lararium/mesh";
+import { plainEntries, plainRecord } from "@lararium/mesh/stored-value";
+import { tiddlerText } from "@lararium/mesh/base-doc";
 
 const CATALOG_URL = "automerge:catalog-doc";
 

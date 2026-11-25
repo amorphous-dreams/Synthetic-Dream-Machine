@@ -14,7 +14,9 @@
  *       prompt); CONTROL: a face this vessel holds no root for presents nowhere.
  */
 import { describe, expect, test } from "vitest";
-import { bindSlot, decodeSlotTree, encodeSlotTree, nobleKdf, verifyEd25519, type Credential, type DeviceDelegationTiddler } from "@lararium/mesh";
+import { bindSlot, decodeSlotTree, encodeSlotTree, nobleKdf, type Credential } from "@lararium/mesh/keyslot-door";
+import { verifyEd25519 } from "@lararium/mesh/ed25519-door";
+import { type DeviceDelegationTiddler } from "@lararium/mesh/device-delegation";
 import {
   lockBrowserCustody, readKeystoreRecord, sealBrowserKeystore, unlockBrowserCustody, withCustodyRecords, writeKeystoreRecord,
 } from "../src/browser-custody.js";

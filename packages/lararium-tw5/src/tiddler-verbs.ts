@@ -67,10 +67,17 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/tiddler-verbs
  */
 
-import {
-  NoWorkingLayerRefusal, VerbRefusal, verifyCidBytes, canonicalJsonBytes, refuseEffectLedgerWrite, refuseRenderedWrite, admitSeatExecutable, executableClassOf, renderedWriteFault, requireKahuReach, RENDERED_DERIVES_REASON, sha256HexBytesSync, wikiSlotKindOf, DAEMON_WIKI_SLUG,
-  type ChangeOrigin, type CompositeStore, type KahuReachSource, type LarTiddlerStore,
-} from "@lararium/mesh";
+import { NoWorkingLayerRefusal, type CompositeStore } from "@lararium/mesh/composite-store";
+import { VerbRefusal } from "@lararium/mesh/verb-refusal";
+import { verifyCidBytes } from "@lararium/mesh/cas-transit";
+import { canonicalJsonBytes, sha256HexBytesSync } from "@lararium/mesh/crypto";
+import { refuseEffectLedgerWrite } from "@lararium/mesh/effect-record";
+import { refuseRenderedWrite, renderedWriteFault, RENDERED_DERIVES_REASON } from "@lararium/mesh/rendered-derives";
+import { admitSeatExecutable } from "@lararium/mesh/seat-startup-offer";
+import { executableClassOf } from "@lararium/mesh/executable-class";
+import { requireKahuReach, type KahuReachSource } from "@lararium/mesh/kahu-canon-reach";
+import { wikiSlotKindOf, DAEMON_WIKI_SLUG } from "@lararium/mesh/wiki-recipe";
+import { type ChangeOrigin, type LarTiddlerStore } from "@lararium/mesh/tiddler-store";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { askerRefusal, handRefusalOf } from "@lararium/mesh/hand-refusal";
 import { consequence, familyOf, retractsOf, rootAddressOf, tombstonesOf, type Consequence, type DeleteMode, type FamilyPosition, type FamilyView } from "@lararium/mesh/family";
@@ -1313,8 +1320,9 @@ export const makeTiddlerRenameReactor = everyWiki("tiddler-rename", true, (opts:
         for (const other of readable) {
           if (other === anchor.bag) continue;
           const held = await opts.composite.storeForBag(other)?.get(named);
-          if (held && !held.meta?.deleted && ctx.asker !== "cli" && ctx.asker !== "tab") {
-            const code = ctx.asker === "seat" ? "hand-act-only" : "hand-unattested";
+          // The booked asker reads as the hand gate's verdict (`askerRefusal`), never a bare compare.
+          const code = held && !held.meta?.deleted ? askerRefusal(ctx.asker) : null;
+          if (code !== null) {
             throw new VerbRefusal(code, `${code}: "${named}" also stands in ${other}, a layer a rename would shadow, so a person alone renames it; a seat proposes. Ask the operator to run \`lares tiddler rename "${title}" "${to}" --recipe ${anchor.recipe}\` on their own terminal.`);
           }
         }

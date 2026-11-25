@@ -8,7 +8,7 @@ import {
   type PronaosProjection,
 } from "../src/pronaos-adapter.js";
 import { mountHttpFaceDispatcher } from "../src/http-face-dispatcher.js";
-import type { PublicArtifactPublication } from "@lararium/mesh";
+import type { PublicArtifactPublication } from "@lararium/mesh/pronaos";
 
 const bytes = new TextEncoder().encode("operator-published bytes");
 const cid = `sha256:${createHash("sha256").update(bytes).digest("hex")}`;

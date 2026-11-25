@@ -8,10 +8,15 @@
  *   · `kelWalkNote` (`operator-daemon-behavior`) — the note any admission verdict carries, pinned here by behaviour.
  */
 import { describe, test, expect } from "vitest";
+import { buildDeviceDelegation } from "@lararium/mesh/device-delegation";
+import { ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
 import {
-  buildDeviceDelegation, ed25519VerifyingKeyFromSeed, mintPersonaInception, enrolmentDigestOf, personaEventCidOf,
-  verifyEdgeAgainstPersonaKel, type PersonaKelEvent,
-} from "@lararium/mesh";
+  mintPersonaInception,
+  enrolmentDigestOf,
+  personaEventCidOf,
+  verifyEdgeAgainstPersonaKel,
+  type PersonaKelEvent,
+} from "@lararium/mesh/persona-kel";
 import { kelWalkNote } from "../src/operator-daemon-behavior.js";
 
 const ROOT = new Uint8Array(32).fill(7);

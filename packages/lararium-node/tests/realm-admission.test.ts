@@ -10,11 +10,10 @@
  */
 import { describe, test, expect } from "vitest";
 import * as ed from "@noble/ed25519";
-import {
-  signCabalInvite, DEFAULT_JOIN_POLICY,
-  type AdmissionDials, type VouchEdge,
-  hex, hexToBytes,
-} from "@lararium/mesh";
+import { signCabalInvite, DEFAULT_JOIN_POLICY } from "@lararium/mesh/cabal-invite";
+import { type AdmissionDials } from "@lararium/mesh/admission-price";
+import { type VouchEdge } from "@lararium/mesh/lineage-rank";
+import { hex, hexToBytes } from "@lararium/mesh/crypto";
 import { admitToRealm } from "../src/realm-admission.js";
 
 const VOUCHER_SEED = new Uint8Array(32).fill(7);

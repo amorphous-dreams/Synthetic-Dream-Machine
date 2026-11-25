@@ -5,7 +5,9 @@
  * main thread, which spends under its own signer (node: `exec-lei-door.ts`). A refusal crosses back as its message and reads back
  * by its code (`swarmRefusedFromMessage`); a route that answers nothing reads `swarm-lei-port-unanswered`, so the door offers.
  */
-import { EXEC_LEI_SPEND_VERB, swarmRefusedFromMessage, type ExecLeiPort, type Verb } from "@lararium/mesh";
+import { EXEC_LEI_SPEND_VERB, swarmRefusedFromMessage } from "@lararium/mesh/exec-lei";
+import { type ExecLeiPort } from "@lararium/mesh/seat-startup-offer";
+import { type Verb } from "@lararium/mesh/verb-tiddler";
 
 export function islandExecLeiPort(route: (invocation: Verb) => Promise<Record<string, unknown>>, newId: () => string): ExecLeiPort {
   return { spend: async (land) => {

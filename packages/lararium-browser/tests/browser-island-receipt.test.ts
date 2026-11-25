@@ -8,7 +8,7 @@
 import { describe, expect, test } from "vitest";
 import * as A from "@automerge/automerge";
 import { Repo, generateAutomergeUrl } from "@automerge/automerge-repo";
-import { attachMessageChannelSync, makeIslandRepo } from "@lararium/mesh";
+import { attachMessageChannelSync, makeIslandRepo } from "@lararium/mesh/island-repo-door";
 import { browserIslandReceipt } from "../src/browser-island-caps.js";
 
 async function pair() {

@@ -7,7 +7,7 @@
  * its request id. The wait itself scales with the carriers and bytes the wave sends, capped. Stubs stand in for every door here.
  */
 import { describe, expect, test } from "vitest";
-import { VERB_RESULT_KEY } from "@lararium/mesh";
+import { VERB_RESULT_KEY } from "@lararium/mesh/verb-tiddler";
 import { INGEST_WAIT_CAP_MS, type ScanRow } from "@lararium/node";
 import { submitIngest, WaveWaitEnded, type IngestDoors } from "../src/ingest-core.js";
 import { LocalWaitExpired, type ReceiptAnswer } from "../src/local-connector.js";

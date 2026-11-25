@@ -50,6 +50,23 @@ describe("a landed carrier records its observation", () => {
     expect(tree.get(syncedTreeKey(BAG, uri))).toBe(candidates[0]!.diskHash);
   });
 
+  test("a base the projector already pinned at this agreement keeps the document and the heads it names", () => {
+    // The projector pins the agreement first, with the document and heads its records side read; the gesture then
+    // records the same agreement. A row the gesture rewrote would name neither, and the next boot could no longer tell
+    // records that fell behind the agreement from records that moved on (`disk-projector.ts`, `pastRecords`).
+    const { file, tree, candidates } = seed();
+    const uri = candidates[0]!.uri;
+    const key = syncedTreeKey(BAG, uri);
+    tree.set(key, file, candidates[0]!.diskHash, candidates[0]!.diskHash, "automerge:working", ["h2"]);
+    expect(recordLandedCarriers(tree, BAG, candidates, [{ uri, decision: "ingest" }])).toBe(1);
+    expect(tree.baseAt(key, file)).toMatchObject({ disk: candidates[0]!.diskHash, doc: "automerge:working", heads: ["h2"] });
+    // CONTROL: an agreement the row does not name yet moves the row, as before.
+    tree.set(key, file, "sha256:an-older-disk", "sha256:an-older-render", "automerge:working", ["h1"]);
+    expect(recordLandedCarriers(tree, BAG, candidates, [{ uri, decision: "ingest" }])).toBe(1);
+    expect(tree.baseAt(key, file)?.disk).toBe(candidates[0]!.diskHash);
+    expect("heads" in tree.baseAt(key, file)!).toBe(false);
+  });
+
   test("a disk that moved after the scan records nothing", () => {
     const { file, tree, candidates } = seed();
     const uri = candidates[0]!.uri;

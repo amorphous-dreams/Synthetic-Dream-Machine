@@ -31,9 +31,19 @@ import { join } from "node:path";
 import { afterAll, describe, expect, test, vi } from "vitest";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
 import {
-  DAEMON_BAG_ID, HEARTH_TRUE_NAME_TIDDLER, federationPostureFromDoc, genesisCharterEpoch, kahuRealmGroup, foldRealmBags, realmDocUrl, materializeSharedLarDoc, LARES_DOC_URI, LARARIUM_DOC_URI, seatedKahuKeys, NEXUS_AID_PATTERN, PERSONA_GROUP_ID_TIDDLER, tiddlerText, verifiedFleetOfGroup, vesselDyads,
-  type LarDoc,
-} from "@lararium/mesh";
+  DAEMON_BAG_ID,
+  HEARTH_TRUE_NAME_TIDDLER,
+  LARES_DOC_URI,
+  LARARIUM_DOC_URI,
+  PERSONA_GROUP_ID_TIDDLER,
+} from "@lararium/mesh/lar-uris";
+import { federationPostureFromDoc, seatedKahuKeys } from "@lararium/mesh/nexus-seal-seed";
+import { genesisCharterEpoch, NEXUS_AID_PATTERN } from "@lararium/mesh/wax-stamp";
+import { kahuRealmGroup } from "@lararium/mesh/kahu-canon-reach";
+import { foldRealmBags, realmDocUrl } from "@lararium/mesh/realm-bag";
+import { materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { tiddlerText, type LarDoc } from "@lararium/mesh/base-doc";
+import { verifiedFleetOfGroup, vesselDyads } from "@lararium/mesh/dyad";
 import { runFoundTheFace } from "../src/commands/init.js";
 import { runCabalStanding } from "../src/commands/nexus-cabal.js";
 import { nexusLeafFor } from "../src/nexus-leaf.js";

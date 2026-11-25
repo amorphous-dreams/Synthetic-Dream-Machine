@@ -123,6 +123,9 @@ export const EXIT_FOR: Readonly<Record<string, number>> = {
   "waking-floor":      2,
   // The cap-denied family (5): the crossing relaxes confinement and wants the kahu quorum.
   "crossing-outward":  5,
+  // The cap-denied family (5): the door answered on its `asks` band: a person's hand gives this act (a fresh or seeded
+  // oracle throw), and the answer names the line a person runs. Nothing moved.
+  "asks-a-hand":       5,
   // The CONFLICT family (4): another holder holds the store this command would open: a standing vessel that
   // answers no socket here, or another command mid-act.
   "store-held":        4,

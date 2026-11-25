@@ -1,10 +1,13 @@
 import { describe, expect, test } from "vitest";
-import {
-  deviceEdgeId, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, emptyLarDoc,
-  fleetEdgeBoardDocUrl, landFleetGenesis, makeHandLineage, makeIslandRepo,
-  materializeSharedLarDoc, signEdgeKapae, writeEdgeFrontier, writeFrontierSnapshot,
-  writeEdgeKapae, readFrontierPins, FLEET_HAND,
-} from "@lararium/mesh";
+import { deviceEdgeId } from "@lararium/mesh/dyad";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh/ed25519-door";
+import { emptyLarDoc } from "@lararium/mesh/base-doc";
+import { fleetEdgeBoardDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
+import { landFleetGenesis, FLEET_HAND } from "@lararium/mesh/fleet-frontier";
+import { makeHandLineage } from "@lararium/mesh/hand-lineage";
+import { makeIslandRepo } from "@lararium/mesh/island-repo-door";
+import { signEdgeKapae, writeEdgeKapae } from "@lararium/mesh/edge-kapae";
+import { writeEdgeFrontier, writeFrontierSnapshot, readFrontierPins } from "@lararium/mesh/edge-frontier-board";
 import { boardDyadReader } from "../src/board-dyad-reader.js";
 
 const seed = new Uint8Array(32).fill(97);

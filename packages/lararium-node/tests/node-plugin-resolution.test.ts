@@ -12,11 +12,11 @@ import { mkdtempSync, rmSync, mkdirSync, writeFileSync, readFileSync } from "nod
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
-import {
-  hex, sha256HexBytesSync, ENGINE_CORE_ID,
-  signPluginOffering, pluginOfferingCid, computePluginsCid,
-  pluginOfferingAnnounceOf, type OfferedBlob, type PluginOffering, type LarDoc,
-} from "@lararium/mesh";
+import { hex, sha256HexBytesSync } from "@lararium/mesh/crypto";
+import { ENGINE_CORE_ID, type LarDoc } from "@lararium/mesh/base-doc";
+import { signPluginOffering, pluginOfferingCid, type OfferedBlob, type PluginOffering } from "@lararium/mesh/plugin-offering";
+import { computePluginsCid } from "@lararium/mesh/genesis-doc";
+import { pluginOfferingAnnounceOf } from "@lararium/mesh/offering-announce";
 import { casDirForStorage } from "../src/node-cas.js";
 import { resolveNodeIslandPluginCids, nodeOfferingLookup } from "../src/node-plugin-resolution.js";
 
