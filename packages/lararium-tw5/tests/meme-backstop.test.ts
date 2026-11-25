@@ -458,3 +458,31 @@ describe("★ RE-MEASURED: re-placing a root from its records refuses two shapes
     expect(receipt.grade).toBe("error");
   });
 });
+
+describe("★ a root edited while its placement hangs re-grades on settle (no clock decides) ★", () => {
+  test("an edit raised in flight places again from the live text once the first placement settles", async () => {
+    const wiki = fakeWiki();
+    (globalThis as Record<string, unknown>)["$tw"] = { node: true, wiki, boot: { files: {} } };
+    startup({ log: () => {} });
+    try {
+      let edited = false;
+      const land = wiki.addTiddler;
+      wiki.addTiddler = (f) => {
+        land(f);
+        // the first placement's own landing: the operator's edit arrives mid-hang
+        if (!edited && String(f.title) === `${URI}#/a`) {
+          edited = true;
+          land({ title: URI, type: CARRIER, text: meme(["c", "d"]) });
+        }
+      };
+      wiki.addTiddler({ title: URI, type: CARRIER, text: meme(["a", "b"]) });
+      await settle();
+      expect(edited).toBe(true);
+      const titles = [...wiki.store.keys()];
+      expect(titles).toContain(`${URI}#/c`);
+      expect(titles).toContain(`${URI}#/d`);
+    } finally {
+      delete (globalThis as Record<string, unknown>)["$tw"];
+    }
+  });
+});

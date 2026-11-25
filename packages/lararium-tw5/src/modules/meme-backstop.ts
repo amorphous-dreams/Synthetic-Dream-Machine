@@ -249,6 +249,28 @@ export function armBackstop(tw: TwBackstop, options: BackstopOptions = {}): void
     });
   };
 
+  // A framed root's placement can hang (a held family turn); edits made while it hangs raise change
+  // events the listener skips. No clock decides: on settle the live text is compared with the text
+  // placed, and a root still framed with different text is placed again.
+  const placeRoot = (title: string, placedText: string): void => {
+    const door = tw.boot?.files && Object.prototype.hasOwnProperty.call(tw.boot.files, title) ? "the wiki folder" : "a native write";
+    inFlight.add(title);
+    placeMeme({ uri: title, text: placedText }, sink).then((receipt) => {
+      if (receipt.decision === "ingest") {
+        log(`[memetic-wikitext] re-stamped ${title} (landed via ${door})`);
+      } else if (receipt.decision !== "noop") {
+        const why = receipt.reason ?? receipt.warnings[0] ?? receipt.diagnostics[0]?.message ?? receipt.decision;
+        log(`[memetic-wikitext] refused to re-stamp ${title} (landed via ${door}): ${why}`);
+      }
+    }, (err: unknown) => {
+      log(`[memetic-wikitext] refused to re-stamp ${title} (landed via ${door}): ${err instanceof Error ? err.message : String(err)}`);
+    }).finally(() => {
+      inFlight.delete(title);
+      const live = wiki.getTiddler(title)?.fields;
+      if (live && framedRootOf(live) !== null && String(live["text"] ?? "") !== placedText) placeRoot(title, String(live["text"] ?? ""));
+    });
+  };
+
   wiki.addEventListener("change", (changes) => {
     const childrenByRoot = new Map<string, string[]>();
     for (const title of Object.keys(changes)) {
@@ -276,18 +298,7 @@ export function armBackstop(tw: TwBackstop, options: BackstopOptions = {}): void
         continue;
       }
 
-      const door = tw.boot?.files && Object.prototype.hasOwnProperty.call(tw.boot.files, title) ? "the wiki folder" : "a native write";
-      inFlight.add(title);
-      placeMeme({ uri: title, text: String(fields["text"] ?? "") }, sink).then((receipt) => {
-        if (receipt.decision === "ingest") {
-          log(`[memetic-wikitext] re-stamped ${title} (landed via ${door})`);
-        } else if (receipt.decision !== "noop") {
-          const why = receipt.reason ?? receipt.warnings[0] ?? receipt.diagnostics[0]?.message ?? receipt.decision;
-          log(`[memetic-wikitext] refused to re-stamp ${title} (landed via ${door}): ${why}`);
-        }
-      }, (err: unknown) => {
-        log(`[memetic-wikitext] refused to re-stamp ${title} (landed via ${door}): ${err instanceof Error ? err.message : String(err)}`);
-      }).finally(() => { inFlight.delete(title); });
+      placeRoot(title, String(fields["text"] ?? ""));
     }
     for (const [root, children] of childrenByRoot) runChildGate(root, children);
   });
