@@ -24,6 +24,10 @@
       "import": "./dist/oracle-cast.js",
       "types": "./dist/oracle-cast.d.ts"
     },
+    "./spirit-shrine": {
+      "import": "./dist/spirit-shrine.js",
+      "types": "./dist/spirit-shrine.d.ts"
+    },
     "./bures-metric": {
       "import": "./dist/bures-metric.js",
       "types": "./dist/bures-metric.d.ts"

@@ -1,0 +1,211 @@
+{
+ "sideOf": "lar:///ha.ka.ba/kahua/memory/presence/lares-alpha",
+ "ashLedgerOf": "lar:///ha.ka.ba/kahua/memory/state/ashes-2026-12",
+ "compactionTitle": "lar:///ha.ka.ba/kahua/memory/hooili/abcdef012345-0123456789ab",
+ "residueTitle": "lar:///ha.ka.ba/kahua/memory/spirit/om-wright-handback-fedcba987654",
+ "shq": "'it'\\''s a '\\''quote'\\'''",
+ "slotDigest": [
+  "ee0c1781fd2256f7",
+  "e3b0c44298fc1c14",
+  "568bb28a281620fe"
+ ],
+ "slotBody": [
+  "!! X\n\n* a",
+  "no frame",
+  ""
+ ],
+ "residueOf": [
+  [
+   "lar:///ha.ka.ba/kahua/memory/hooili/lares-alpha-0123456789ab",
+   "lar:///ha.ka.ba/kahua/memory/spirit/abcdef012345-handback-ba9876543210"
+  ],
+  [
+   "lar:///ha.ka.ba/kahua/memory/hooili/lares-alpha-0123456789ab"
+  ]
+ ],
+ "secretCount": [
+  1,
+  0
+ ],
+ "leaseOf": [
+  {
+   "body": "sess-1",
+   "epoch": 3
+  },
+  null,
+  null
+ ],
+ "crossingsOf": [
+  {
+   "who": "sess-1",
+   "at": "2026-11-24T12:00:00Z"
+  },
+  {
+   "who": "sess-2",
+   "at": "2026-11-24T11:59:00Z"
+  }
+ ],
+ "presenceOf": [
+  {
+   "tag": "lares-alpha#sess-1",
+   "body": "sess-1",
+   "at": "2026-11-24T12:00:00Z"
+  },
+  {
+   "tag": "lares-alpha#sess-2",
+   "body": "sess-2",
+   "at": "2026-11-24T11:30:00Z"
+  }
+ ],
+ "presenceLine": "2 bodies wear lares-alpha: #sess-1aa (you), #sess-2bb since 11:30",
+ "testimonyLines": [
+  [
+   "Latest hoʻoili (testimony, never mandate): lar:///ha.ka.ba/kahua/memory/hooili/abcdef012345-0123456789ab (hash 0123456789ab, depth 5, body sess-1); read it: lares tiddler get 'lar:///ha.ka.ba/kahua/memory/hooili/abcdef012345-0123456789ab' --recipe default",
+   "⚠ the record moved since this hoʻoili read it (111111111111 -> 222222222222): the card outranks the carry.",
+   "⚠ this hoʻoili stands 5 deep: a chain past 3 remembers only itself, so it outranks nothing; re-true its handles against gh.",
+   "⚠ 2 carries name the parent aaaaaaaaaaaa: a fork; two bodies carried from one wake."
+  ],
+  [
+   "Latest hoʻoili: none stands yet; this wake reads the card alone."
+  ]
+ ],
+ "omText": [
+  {
+   "sha256": "69e312ab1b83a8c67738a669f69ec4665823b438eee803876db940b449c1d447",
+   "length": 8999
+  },
+  "lead\nLares spirit om · p (lar:///ha.ka.ba/kahua/memory/familiar/lares-alpha): the card a waking body reads first, before any summary.\nhas\nt1\nt2\n\nopen\natt\nRead a slot whole: lares tiddler get lar:///ha.ka.ba/kahua/memory/familiar/lares-alpha --recipe default --meme --slot '#/<name>' · true one: lares spirit ah p --slot '#/<name>' --file <path> (or --add <line>) · fold: lares spirit hum p"
+ ],
+ "wakingCap": [
+  2048,
+  500,
+  null
+ ],
+ "budgetRefusal": [
+  {
+   "code": "spirit-slot-over-budget",
+   "message": "spirit-slot-over-budget: #/open would hold 3000 bytes, past its 2048-byte waking cap (om prints it into the wake; it holds 1); nothing landed. Fold first: `lares spirit hum lares-alpha --fold '#/open'` lists its lines with their digests; `--line <n> --expect <digest>` moves one to the ash ledger, then true it again",
+   "exit": 4
+  },
+  null,
+  null,
+  null
+ ],
+ "advisoryLine": [
+  "advisory: the record holds 7600 bytes, past 6144; heaviest #/bodies 4000, #/open 2400, #/entry 900",
+  null,
+  "advisory: the record holds 900 bytes; heaviest #/entry 900"
+ ],
+ "measure": {
+  "slots": [
+   {
+    "slot": "#/entry",
+    "bytes": 900,
+    "first": "entry",
+    "budget": null,
+    "over": false
+   },
+   {
+    "slot": "#/open",
+    "bytes": 2400,
+    "first": "open",
+    "budget": 2048,
+    "over": true
+   },
+   {
+    "slot": "#/attention",
+    "bytes": 300,
+    "first": "attention",
+    "budget": 1024,
+    "over": false
+   },
+   {
+    "slot": "#/bodies",
+    "bytes": 4000,
+    "first": "bodies",
+    "budget": null,
+    "over": false
+   }
+  ],
+  "total": 7600,
+  "budget": 7000,
+  "over": true
+ },
+ "stanzaVersions": [
+  null,
+  [
+   {
+    "who": "a#1",
+    "words": "one"
+   },
+   {
+    "who": "b",
+    "words": "two"
+   }
+  ]
+ ],
+ "conflictStanza": "!! conflict · #/open: two bodies wrote this slot whole at once; settle it with hum (fold the lines that lose)\n\n''c#3 wrote:''\n\nthree\n\n''a#1 wrote:''\n\none\n\n''b wrote:''\n\ntwo\n\n!! end conflict",
+ "starterText": {
+  "sha256": "28a438bb823d34df2355d62e40b6be4c80dfc20357507e6874449c0bd1922d59",
+  "length": 1413
+ },
+ "shrineSlots": [
+  [
+   "#/entry",
+   "! <the pet name> ~ a familiar's record\n\nWho this pet name names, how a body wakes into it, and how the record stays small.\n\n''Named by'' <who> ''on'' <date>; ''renames:'' <old -> new, each as it lands>."
+  ],
+  [
+   "#/orders",
+   "!! The operator's standing orders\n\nQuote them as given; never paraphrase."
+  ],
+  [
+   "#/grant",
+   "!! The grant\n\nWhat it covers; what it never covers (the hand acts stay the operator's)."
+  ],
+  [
+   "#/attention",
+   "!! Where attention starts\n\nThe canon and stage titles to read first, by lar:/// address."
+  ],
+  [
+   "#/open",
+   "!! Open loops\n\nPR numbers, heads, what each waits on and whose hand it needs."
+  ],
+  [
+   "#/kulana",
+   "!! Kūlana ~ the posture this spirit stands in\n\nCatmas held loosely, joints to watch, and outside memes transcluded in place."
+  ],
+  [
+   "#/carry-shape",
+   "!! The carry's shape\n\nWhat a compaction hands down as the hoʻoili; the PreCompact hook reads this to the summarizer."
+  ],
+  [
+   "#/bodies",
+   "!! Bodies\n\nOne line each; fold the oldest when a new one lands."
+  ]
+ ],
+ "bodiesLine": [
+  "* ''2026-11-24 (hoʻoili 0123456789ab) lares-alpha#sess-1aa:'' lar:///ha.ka.ba/kahua/memory/hooili/lares-alpha-0123456789ab",
+  "* ''2026-11-24 (hoʻoili 0123456789ab) lares-alpha:'' lar:///ha.ka.ba/kahua/memory/hooili/lares-alpha-0123456789ab"
+ ],
+ "constants": {
+  "OM_CAP_CHARS": 9000,
+  "WAKING_SLOT_BUDGETS": {
+   "#/open": 2048,
+   "#/attention": 1024
+  },
+  "RECORD_BUDGET_BYTES": 6144,
+  "TRUE_UP_EVERY": 25,
+  "RESIDUE_CAP_CHARS": 60000,
+  "DEEP_CARRY": 3,
+  "PRESENCE_STALE_MS": 1800000,
+  "PRESENCE_CAP": 16,
+  "CROSSING_MS": 600000,
+  "PRECOMPACT_CARD_CHARS": 4000,
+  "ATTENTION_TITLES": 12,
+  "MEMORY_PREFIX": "lar:///ha.ka.ba/kahua/memory/",
+  "RECORD_KINDS": [
+   "familiar",
+   "spirit"
+  ]
+ }
+}
