@@ -147,7 +147,7 @@ const muCallsNameTools = (text: string): string[] => {
 };
 
 interface Retired { slot: string; name: string }
-const RETIRED_SLOTS = ["sigil", "key", "word", "phrase"];
+const CUT_SLOTS = ["sigil", "key", "word", "phrase"];
 
 /** The retired names one canon row carries: ``<<has entity=`kupono-cut` name=`retired` params=`slot/name …`>>``. */
 const retiredOf = (record: string): Retired[] =>
@@ -170,7 +170,7 @@ const retiredSurface = (text: string, retired: Retired[] = retiredOf(canon)): st
   const calls = callsOf(text);
   const lines = text.split("\n");
   for (const { slot, name } of retired) {
-    if (!RETIRED_SLOTS.includes(slot) || name === "") { found.push(`the retired row carries «${slot}/${name}», a slot no law reads`); continue; }
+    if (!CUT_SLOTS.includes(slot) || name === "") { found.push(`the retired row carries «${slot}/${name}», a slot no law reads`); continue; }
     const n = esc(name);
     if (slot === "sigil") {
       if (new RegExp(`^\\\\procedure ~${n}\\(`, "m").test(text)) found.push(`\\procedure ~${name} still stands`);
@@ -427,7 +427,7 @@ describe("controls: each law names its planted fault", () => {
     expect(retiredSurface("<<~ season name=`Bureaucracy` params=`patron/Zarathud`>>\n<<~ stance named=`poet`>> · <<~ mu name=`*?`>>\n<<~ set aperture=`9/measure` drift-ward=`w`>>", row)).toEqual([]);
     expect(slashedCites("<<~ ahu slot=`#/ooda-ha`>>\nthe tally lives at #/ooda-ha; `#section` stays a placeholder; &#x0001;\n<<~/ahu>>")).toEqual([]);
   });
-  test("the retired names follow the canon row: a name that leaves the row reads pono, an unread row reads red", () => {
+  test("the cut names follow the canon row: a name that leaves the row reads pono, an unread row reads red", () => {
     const call = "<<~ frame name=`set`>>";
     expect(retiredSurface(call, retiredOf(ROW)).length).toBeGreaterThan(0);
     expect(retiredSurface(call, retiredOf(ROW.replace("sigil/frame ", "")))).toEqual([]);
@@ -437,7 +437,7 @@ describe("controls: each law names its planted fault", () => {
   test("the canon row stands and names retirements (vacuity gate on the record)", () => {
     const row = retiredOf(canon);
     expect(row.length).toBeGreaterThan(0);
-    expect(row.every((r) => RETIRED_SLOTS.includes(r.slot) && r.name !== "")).toBe(true);
+    expect(row.every((r) => CUT_SLOTS.includes(r.slot) && r.name !== "")).toBe(true);
   });
   test("★ <<~ lares action=`…`>> reads pono; the old frame on any head reads red ★", () => {
     const act = FRAME_OWNERS + "\n``<<~ lares action=`refreshes the libation dish, the shrine incense burns`>> ${pet-name} (Lares Spirit)``";
@@ -498,8 +498,8 @@ describe("the boot seed speaks the kupono grammar", () => {
 });
 
 // ── THE SHELF ──────────────────────────────────────────────────────────────────────────────────────────
-describe("no retired name keeps a sigil tiddler", () => {
-  test("CONTROL — a planted tiddler under a retired name reads red, under any slot; a name that leaves the row frees its tiddler", () => {
+describe("no cut name keeps a sigil tiddler", () => {
+  test("CONTROL — a planted tiddler under a cut name reads red, under any slot; a name that leaves the row frees its tiddler", () => {
     const planted = (file: string) => (f: string) => f === file;
     expect(retiredOnShelf(retiredOf(ROW), planted("sigil-frame.tid"))).toEqual(["sigil-frame.tid still stands on the shelf"]);
     expect(retiredOnShelf(retiredOf(ROW), planted("sigil-hud.tid"))).toEqual(["sigil-hud.tid still stands on the shelf"]);

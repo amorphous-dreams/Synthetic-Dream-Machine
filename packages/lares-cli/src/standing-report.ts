@@ -20,7 +20,8 @@ import { existsSync, readFileSync } from "node:fs";
 import { standingPath, standingVerdict } from "@lararium/mesh/rendezvous-path";
 import { faceStandsOnDisk } from "./floor-cure.js";
 import { larBootstrapPath, larDataDir } from "./env.js";
-import { ASK_BUDGET_FLAG, askBudgetMs, udsAlive } from "./local-connector.js";
+import { ASK_BUDGET_FLAG, askBudgetMs } from "./ask-budget.js";
+import { udsAlive } from "./local-connector.js";
 
 /** The flag the host shim asks by: the verdict rides the exit code of the one process that ran the verb. */
 export const STANDING_REPORT_FLAG = "--standing-report";

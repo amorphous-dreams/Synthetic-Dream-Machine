@@ -320,7 +320,8 @@ describe.skipIf(!builtExists)("the built `lares` forwards through the real shim"
       const exec = execCall(b);
       expect(exec).toBeDefined();
       const at = exec!.indexOf("packages/lares-cli/bin/lares.mjs");
-      expect(exec!.slice(at + 1)).toEqual(argv);
+      // The shim's standing ask rides the exec's last word (the CLI's entry takes it off); the call's own argv precedes it whole.
+      expect(exec!.slice(at + 1)).toEqual([...argv, "--standing-report"]);
       expect(exec).toContain("-T");
     } finally { rmSync(b.dir, { recursive: true, force: true }); }
   });
@@ -402,7 +403,7 @@ describe.skipIf(!builtExists)("the built `lares` forwards through the real shim"
       mkdirSync(join(house, "config"), { recursive: true });
       const r = spawnSync(process.execPath, [BIN, "export", "carry/b1"], { env: b.env, cwd: join(house, "config"), encoding: "utf8" });
       expect(r.status, r.stderr).toBe(0);
-      expect(execCall(b)!.slice(-2)).toEqual(["export", "/lar/config/carry/b1"]);
+      expect(execCall(b)!.slice(-3)).toEqual(["export", "/lar/config/carry/b1", "--standing-report"]);
       const b2 = bench();
       try {
         const out = spawnSync(process.execPath, [BIN, "export", join(b2.dir, "elsewhere")], { env: b2.env, encoding: "utf8" });
@@ -452,7 +453,7 @@ describe.skipIf(!builtExists)("the built `lares` forwards through the real shim"
       const exec = execCall(b)!;
       expect(exec).toBeDefined();
       expect(exec).not.toContain("-T");
-      expect(exec.slice(-2)).toEqual(["vault", "unlock"]);
+      expect(exec.slice(-3)).toEqual(["vault", "unlock", "--standing-report"]);
     } finally { rmSync(b.dir, { recursive: true, force: true }); }
   });
 

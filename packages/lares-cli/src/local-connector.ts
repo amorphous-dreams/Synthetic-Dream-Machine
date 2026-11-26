@@ -20,6 +20,7 @@ import { rendezvousPath } from "@lararium/mesh/rendezvous-path";
 import { newRequestId } from "@lararium/mesh/verb-tiddler";
 import { larDataDir } from "./env.js";
 import type { SubmitResult, SubmitOptions } from "./verb-result.js";
+import { ASK_BUDGET_FLAG } from "./ask-budget.js";
 
 /** The agreed socket path — both sides derive the rendezvous from the substrate dir (`rendezvousPath`). */
 export function udsSocketPath(dataDir?: string | null): string {
@@ -480,15 +481,9 @@ export async function invokeLocal(
   });
 }
 
-/** The flag a caller declares its own wait by (`--ask-budget-ms=<N>`), in whole milliseconds counted from this process's start. */
-export const ASK_BUDGET_FLAG = "--ask-budget-ms";
+export { ASK_BUDGET_FLAG, askBudgetMs } from "./ask-budget.js";
 /** The code a process leaves by when its caller's budget ran out: the `outcome-unknown` family's own (`render.ts`). */
 export const ASK_BUDGET_EXIT = 6;
-
-/** The budget a flag's value declares, or null where it names none (absent, or anything but a positive whole number). */
-export function askBudgetMs(raw: string | undefined): number | null {
-  return raw !== undefined && /^[1-9]\d{0,8}$/.test(raw) ? Number(raw) : null;
-}
 
 /**
  * A CALLER GONE LEAVES NO ASK WAITING. A caller that waits a bounded while (a hook under its harness's bound) declares

@@ -79,7 +79,7 @@ for (const face of [{ relation: F, segment: "witness" }, null]) {
 }
 // Each control writer names the control store, never a wiki layer or the daemon document.
 const controlWriters = [
-  ["packages/lararium-tw5/src/verb-vm.ts", /control\.put\(outcome/, /daemon\.put\(/],
+  ["packages/lararium-tw5/src/verb-vm.ts", /await control\.put\(row, origin\)/, /daemon\.put\(/],
   ["packages/lararium-tw5/src/worker-data-verbs.ts", /await control\.put\(/, /composite\.put\(\s*\{ tiddler: \{ title: auditTitle/],
   ["packages/lararium-tw5/src/verb-summons.ts", /opts\.control\.tombstoneInBag/, /opts\.daemon\./],
   ["packages/lararium-node/src/vessel-mailbox.ts", /\{ bag: CONTROL_HOME_ID \}/, /DAEMON_BAG_ID/],

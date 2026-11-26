@@ -1172,6 +1172,9 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     if (held) return !needsRow || await rowFieldsOf(requestId) !== null ? toldOutcome(held, requestId) : null;
     const row = await rowFieldsOf(requestId);
     if (row === null) return null;
+    // THE RING MAY HAVE TAKEN THE ANSWER DURING THE ROW'S READ (its put clears the owed mark): the whole answer wins.
+    const landed = heldFieldsOf(requestId);
+    if (landed) return toldOutcome(landed, requestId);
     // A row that rests a whole record answers by itself; a verdict whose answer still rides toward the ring waits for it.
     if (typeof row["results"] !== "string" && answerOwed.has(requestId)) return null;
     answerOwed.delete(requestId);
@@ -2157,7 +2160,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         }
         // A READ RIDES THE ANSWER RING AND LEAVES THE LEDGER ALONE (`ridesAnswerRing`: a READ verb, no effect key): no
         // receipt fact, no outcome row, no flush. Its laws hold in memory for the life of the ring entry. An id the
-        // ledger already knows (a cancel's abandonment, a fact a `read-verb-wrote` minted, a row from before this road)
+        // ledger already knows (a cancel's abandonment, a fact a `read-verb-wrote` minted, a row another road rests)
         // keeps the ledger's road below, so no standing verdict gets talked past.
         if (ridesAnswerRing(inv.verb, inv.effectKey) && await ledger.get(requestId) === null) {
           // A read whose caller left never runs and records nothing: the caller reads again under any id.
@@ -2178,7 +2181,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
           };
           // THE HELD ANSWER: the same id with the same input reads it back and places nothing (a visit's body withheld);
           // the same id with changed input refuses by name.
-          // A row that rests under the id (written before this road, or by another road) answers the same way.
+          // A row that rests under the id (another road rests it) answers the same way.
           const held = heldFieldsOf(requestId) ?? await rowFieldsOf(requestId);
           if (held) {
             settled();

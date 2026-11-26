@@ -914,7 +914,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       if (!resolved) throw new Error("working slot did not resolve");
       const workingUrl = resolved.url;
       const handle = await bootWait("island-working-doc", "the daemon working layer's document, hydrating from the store", findOrThrow(ctx.repo, workingUrl, `${working} (the daemon's working layer)`, { timeoutMs: DOCUMENT_HANG_BOUND_MS }),
-        (opened) => `${Object.keys((opened.doc() as { tiddlers?: Record<string, unknown> } | undefined)?.tiddlers ?? {}).length} record(s)`);
+        (opened) => `${Object.keys((opened.doc() as LarDoc | undefined)?.tiddlers ?? {}).length} record(s)`);
       const store = new AutomergeDocStore(handle, working, wearOf(ctx.repo));
       // The face canon mounts after ea, so the working layer reads its seat off the recipe, never off the canon alone: an
       // absent canon read as index -1 seated working beneath the kahua stage, which then shadowed every working edit.

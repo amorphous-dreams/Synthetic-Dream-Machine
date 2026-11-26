@@ -81,10 +81,15 @@ export class DurableNodeFSStorageAdapter extends NodeFSStorageAdapter {
     return join(this.#root, firstKey.slice(0, 2), firstKey.slice(2), ...rest);
   }
 
-  /** Whether `keyArray` names a staged temp; a temp no save of this adapter has in flight is named once. */
-  #passOver(keyArray: StorageKey, live?: ReadonlySet<string>): boolean {
+  /**
+   * Whether `keyArray` names a staged temp; a temp no save of this adapter has in flight is named once. `quiet`
+   * passes over without naming: the base walk loads each listed key through `load`, and only the walk's own filter,
+   * holding every save that joined it, may name a temp stranded.
+   */
+  #passOver(keyArray: StorageKey, live?: ReadonlySet<string>, quiet = false): boolean {
     const m = STAGED_TEMP.exec(keyArray[keyArray.length - 1] ?? "");
     if (!m) return false;
+    if (quiet) return true;
     const path = this.#pathOf(keyArray);
     const ours = Number(m[2]) === process.pid && (live ? live.has(join(dirname(path), m[1]!)) : this.#inFlight.has(join(dirname(path), m[1]!)));
     if (!ours && !this.#named.has(path)) {
@@ -95,7 +100,7 @@ export class DurableNodeFSStorageAdapter extends NodeFSStorageAdapter {
   }
 
   override async load(keyArray: StorageKey): Promise<Uint8Array | undefined> {
-    if (this.#passOver(keyArray)) return undefined;
+    if (this.#passOver(keyArray, undefined, this.#walks.size > 0)) return undefined;
     return this.#pending.get(this.#pathOf(keyArray))?.binary ?? await super.load(keyArray);
   }
 

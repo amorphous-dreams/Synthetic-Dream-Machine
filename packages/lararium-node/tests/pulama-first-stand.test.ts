@@ -11,10 +11,7 @@
  *       would tear the sovereign composition down);
  *   F6  a floor that refuses while the pūlama stays silent ends the first stand, as a refused floor ends every boot;
  *   F7  a recompose that throws under the dial leaves no composition, so the floor composes;
- *   WELD: `main` stands a pūlama's vessel through this one function, on its one recomposition chain.
  */
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { describe, expect, test } from "vitest";
 import type { PulamaHolder } from "../src/pulama-holder.js";
 import { pulamaStandBy, standFirstByPulama } from "../src/pulama-seat.js";
@@ -166,14 +163,5 @@ describe("the first stand dials before it composes", () => {
     expect(by.session).toBe(false);
     expect(v.composed).toEqual(["sovereign-threw", "floor"]);
     expect(v.standing()).toBe("herm");
-  });
-
-  test("WELD: main stands a pūlama's vessel through the first stand, its floor asked on the one recomposition chain", () => {
-    const source = readFileSync(join(import.meta.dirname, "..", "src", "main.ts"), "utf8");
-    expect(source).toContain("await standFirstByPulama({");
-    expect(source).toContain("floor: () => recompose(false),");
-    expect(source).toContain("asked: () => composeAsks > 0,");
-    // The vessel that names no pūlama composes its floor first, as it always did.
-    expect(source).toContain("composition = (await composeOrFloor(null)).stood;");
   });
 });

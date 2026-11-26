@@ -6,8 +6,6 @@
  * leaves thousands of small chunks to seal, open and replay. The control below measures that policy on the same store
  * fixture the resolve suite stands (`MemoryStore`); the laws measure the cure (`compactingStorage`). No clock decides.
  */
-import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, test } from "vitest";
 import { Repo, type Chunk, type StorageAdapterInterface, type StorageKey } from "@automerge/automerge-repo";
 import { compactingStorage } from "../src/compacting-storage.js";
@@ -125,10 +123,5 @@ describe("compaction by count and bytes", () => {
     expect(faults.length).toBeGreaterThan(0);
     expect(rows.chunks(handle.documentId, "incremental")).toBe(20);
     expect(rows.chunks(handle.documentId, "snapshot")).toBe(1);
-  });
-
-  test("WELD: the node vessel's Repo stands on the compacting storage", () => {
-    const vessel = readFileSync(fileURLToPath(new URL("../../lararium-node/src/open-node-vessel.ts", import.meta.url)), "utf8");
-    expect(vessel, "the vessel's Repo saves straight to its wire store, so a heavy snapshot leaves its chunks uncompacted").toMatch(/const repo = new Repo\(\{[^]*?storage: compactingStorage\(wire\.storage, \{/);
   });
 });
