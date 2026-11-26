@@ -1165,7 +1165,7 @@ describe("the base pins what sealed: a document's heads rest only once its saves
     });
     const doc = repo.create<{ note?: string }>();
     doc.change((d) => { d.note = SECRET; });   // no session booked it: the save waits in memory
-    const heads = A.getHeads(doc.doc());
+    const heads = A.getHeads(doc.doc()!);
     expect(await restsAt(doc.documentId, heads)).toBe("waiting");
     expect(await restsAt(doc.documentId, ["0".repeat(64)])).toBe("waiting");
     await rest.rebook({ id: "s-next", subject: r.own, signer: a.signer });

@@ -4,7 +4,7 @@
  * vessel's reading off a real Repo's handle table (`repoHeadsRestAt`), keyed as an `AutomergeDocStore` names its document.
  * A document id the two sides spell apart would read `waiting` forever and fail closed in silence; this reads it whole.
  *
- * The island runs the BUILT module (`dist/heads-rest.js`), as a vessel's island thread runs it.
+ * The island runs the BUILT module (`dist/src/heads-rest.js`), as a vessel's island thread runs it.
  *
  *   W1  an island asks its vessel for heads its Repo holds and its sealed rest keeps none waiting: `rested`; heads it lacks: `waiting`
  *   W2  the vessel's save-book word (`rest:rested`) reaches the island thread's listeners
@@ -18,7 +18,7 @@ import type { CapabilityRecord } from "@lararium/mesh/capability-record";
 import { nodeWorkerHandle } from "../src/worker-handle.js";
 import { repoHeadsRestAt } from "../src/heads-rest.js";
 
-const BUILT = new URL("../dist/heads-rest.js", import.meta.url).href;
+const BUILT = new URL("../dist/src/heads-rest.js", import.meta.url).href;
 
 /** An island thread that asks once per `ask` message it hears, and reports each reading and each rested word it hears. */
 const ISLAND = `
@@ -60,7 +60,7 @@ test("W1 an island asks through the production door and reads the vessel's Repo 
   const repo = new Repo({ network: [] });
   const doc = repo.create<{ note?: string }>();
   doc.change((d) => { d.note = "a heron stands"; });
-  const heads = A.getHeads(doc.doc());
+  const heads = A.getHeads(doc.doc()!);
   const waiting = new Map<string, number>();
   const island = await standIsland({ restsAt: repoHeadsRestAt(repo as never, (id) => waiting.get(id) ?? 0) });
   // The id an AutomergeDocStore names (`handle.documentId`) reaches the vessel's handle table whole.
