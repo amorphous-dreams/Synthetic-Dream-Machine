@@ -282,6 +282,9 @@ export async function cmdIngest(args: ParsedArgs, sink?: IngestSink): Promise<nu
   if (settled.bases !== undefined && settled.bases.unread > 0) {
     console.error(`  ${settled.bases.unread} base(s) pinned nothing: the island could not read the file there (it left, or it rests where the island cannot read); the next scan asks again`);
   }
+  if (settled.bases !== undefined && settled.bases.outsideMirror > 0) {
+    console.error(`  ${settled.bases.outsideMirror} base(s) pinned nothing: each file lies outside every mirror root of the bag, so a rescan changes nothing; move the file under a mirror root or leave it unpinned`);
+  }
   if (settled.bases !== undefined && settled.bases.owed > 0) {
     console.error(`  ${settled.bases.owed} base(s) reached no owner (${settled.bases.why ?? "the island gave no answer"}): each such carrier reads as moved at the next scan, and its base asks again then`);
   }
