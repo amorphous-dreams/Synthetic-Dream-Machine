@@ -166,7 +166,7 @@ import { noteVesselRealm, readVesselRealms } from "./edge-board.js";
 import { makeEdgeShadowRing, ringDyadDoor, type EdgeShadowRing } from "./edge-shadow-ring.js";
 import { floorShadowRing } from "./floor-fleet-lanes.js";
 import type { JoinedFaceAuth } from "@lararium/mesh/island-protocol";
-import type { WikiActivationCap } from "@lararium/mesh/wiki-activation";
+import { type WikiActivationCap, activationRefusal } from "@lararium/mesh/wiki-activation";
 import type { PortIslandToVesselMsg } from "@lararium/mesh/record-port";
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import type { DocCensusReading, DocRef } from "@lararium/mesh/doc-census";
@@ -2820,7 +2820,8 @@ async function prepareNodeBootOn(
       await restartDaemonNow();
     } else {
       await vmManager.unmountWiki(wiki);
-      await wikiActivation.ensureActive(wiki);
+      const refused = activationRefusal(await wikiActivation.ensureActive(wiki));
+      if (refused !== null) throw new Error(`reload ${wiki}: the wiki did not come back: ${refused}`);
     }
   };
   // The store door's own verbs (commit, drop) run INSIDE the act that asks for the reload, so the daemon reload follows that act's completion.
@@ -4962,7 +4963,8 @@ async function prepareNodeBootOn(
     registry.register("sync-wiki", async (args, ctx) => {
       // Resolver-as-activator: a reference wakes a cold grain before the verb lands
       // (the pinned home wiki is already live → a cheap no-op).
-      await wikiActivation.ensureActive(slotActiveWikiId);
+      const refused = activationRefusal(await wikiActivation.ensureActive(slotActiveWikiId));
+      if (refused !== null) throw new Error(`sync-wiki: ${refused}`);
       return vmManager.placeWikiVerb(slotActiveWikiId, {
         verb: "sync-wiki", args: args as Record<string, unknown>, requestedBy: ctx.invocation.requestedBy,
       });
