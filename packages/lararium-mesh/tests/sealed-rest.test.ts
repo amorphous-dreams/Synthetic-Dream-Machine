@@ -15,7 +15,7 @@ import { utf8Bytes } from "../src/crypto.js";
 import { faceProofSubjectRef, sessionSignatureImage } from "../src/face-proof-subjects.js";
 import type { RecordSigner } from "../src/sealed-records.js";
 import { SEALED_DOCUMENT_REFUSALS, SealedDocumentStore } from "../src/sealed-doc-store.js";
-import { announceSlotDoc, answerDocStoreAsks, composeSealedRest, docStorePortCell, islandRestGuard, sealedBagMap, vesselDocStoreDoor, vesselRestAsker, type SealedRest } from "../src/sealed-rest.js";
+import { announceSlotDoc, answerDocStoreAsks, answerHeadsAsks, composeSealedRest, docStorePortCell, headsRestAt, islandRestGuard, sealedBagMap, vesselDocStoreDoor, vesselHeadsAsker, vesselRestAsker, type SealedRest } from "../src/sealed-rest.js";
 import { answerRestAsk } from "../src/capability-record.js";
 import { vessel, world, type Vessel } from "./content-key-fixture.js";
 import { chain, signHex } from "./face-proof-fixture.js";
@@ -1123,5 +1123,59 @@ describe("the floor's door never waits on a holder that never stood", () => {
     answerDocStoreAsks(islandSide, { seal: async () => ({ refusal: "seal-refused" }) as never, open: async () => ({ refusal: "bag-unknown" }) as never });
     await settle(50);
     expect(await door.open({ bagId: BAG, role: "change", ref: "cd".repeat(32) })).toMatchObject({ refusal: "bag-unknown" });
+  });
+});
+
+describe("the base pins what sealed: a document's heads rest only once its saves seal", () => {
+  it("heads a save holds unbooked rest nowhere; the next session's seal rests them; heads this replica lacks read not yet (control: a rest that holds them)", async () => {
+    const w = world();
+    const a = await vessel(w, "a");
+    const inner = memoryAdapter();
+    const r = standRest(a, inner);
+    const rest = composeSealedRest<Session>({
+      inner, bagOf: () => ({ bagId: BAG, face: r.own }), sessionFace: () => r.own,
+      door: { seal: (args) => a.holder.sealValues({ ...args, signer: args.session ? (args.session as Session).signer : null }), open: (args) => a.holder.openValue(args) },
+      flushRepo: async () => { await repo.flush(); },
+    });
+    const repo = new Repo({ storage: rest.store, network: [] });
+    const restsAt = headsRestAt({
+      holds: (documentId, heads) => { const h = repo.handles[documentId as never] as { isReady(): boolean; doc(): unknown } | undefined; return h?.isReady() === true && A.hasHeads(h.doc() as A.Doc<unknown>, [...heads]); },
+      flush: (documentId) => repo.flush([documentId as never]),
+      waiting: (documentId) => rest.store.waiting(documentId),
+    });
+    const doc = repo.create<{ note?: string }>();
+    doc.change((d) => { d.note = SECRET; });   // no session booked it: the save waits in memory
+    const heads = A.getHeads(doc.doc());
+    expect(await restsAt(doc.documentId, heads)).toBe(false);
+    expect(await restsAt(doc.documentId, ["0".repeat(64)])).toBe(false);
+    await rest.rebook({ id: "s-next", subject: r.own, signer: a.signer });
+    expect(rest.store.waiting(doc.documentId)).toBe(0);
+    expect(await restsAt(doc.documentId, heads)).toBe(true);
+    await repo.shutdown();
+  });
+
+  it("the island asks across the port and reads the vessel's answer; a vessel with no sealed rest answers rested, a malformed ask and a faulted rest answer not yet", async () => {
+    const channel = new MessageChannel();
+    const vesselSide = portOf(channel.port1), islandSide = portOf(channel.port2);
+    let door: ((documentId: string, heads: readonly string[]) => Promise<boolean>) | undefined = async (documentId) => documentId === "doc-rested";
+    const stop = answerHeadsAsks(vesselSide, () => door);
+    const ask = vesselHeadsAsker(islandSide, { idPrefix: "heads" });
+    expect(await ask("doc-rested", ["h1"])).toBe(true);
+    expect(await ask("doc-waiting", ["h1"])).toBe(false);
+    door = async () => { throw new Error("the rest broke"); };
+    expect(await ask("doc-rested", ["h1"])).toBe(false);
+    door = undefined;
+    expect(await ask("doc-any", ["h1"])).toBe(true);
+    door = async () => true;
+    const answered: unknown[] = [];
+    islandSide.listen((raw) => { if ((raw as { requestId?: string }).requestId === "bad-1") answered.push(raw); });
+    islandSide.post({ type: "rest:heads", requestId: "bad-1", documentId: "doc-a", heads: "h1" });
+    await new Promise((resolve) => setImmediate(resolve));
+    await new Promise((resolve) => setImmediate(resolve));
+    expect(answered).toEqual([{ type: "rest:heads-answer", requestId: "bad-1", rested: false }]);
+    const broken = vesselHeadsAsker({ post: () => { throw new Error("the port closed"); }, listen: () => () => {} }, { idPrefix: "broken" });
+    expect(await broken("doc-a", ["h1"])).toBe(false);
+    stop();
+    channel.port1.close();
   });
 });

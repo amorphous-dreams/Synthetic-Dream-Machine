@@ -30,7 +30,8 @@
  * moment drop no row: no lock, no holder to outlive, no clock.
  *
  * AN OBSERVATION RESTS THE MOMENT IT GETS RECORDED. `set` lands its row and `deleteAt` unlinks
- * its row before either returns; no instance holds a change back for a later write. Two writers of
+ * its row before either returns; no instance holds a change back for a later write, save a pin that waits on its
+ * seal (THE BASE PINS ONLY WHAT SEALED, below). Two writers of
  * the SAME row therefore leave the LATER OBSERVATION standing, whole: a row never lands behind a
  * sibling's newer word, and a row a sibling removed never returns from another instance's memory.
  * THE DIRECTORY'S WORD STANDS. A landing the disk refuses gets named, and the instance reads that one row
@@ -60,6 +61,15 @@
  * clock: a document that still holds the base's heads moved forward from the agreement, and one that lacks them fell
  * behind it. The projector reads the second as a standoff and writes nothing over the file (`disk-projector.ts`,
  * `pastRecords`). A row with no heads vouches as it always did.
+ *
+ * THE BASE PINS ONLY WHAT SEALED. A tree handed a rest (`rests`: the vessel's reading of a document's heads at rest) holds a
+ * row that names a document and its heads in memory as PENDING, and lands it in the directory only once those heads rest in
+ * the vessel's sealed rest. A base that vouched for heads no rest holds would read, after a crash, as records that fell
+ * behind, and stand off a file the house itself wrote. The pending row answers every read in this instance at once, so the
+ * projector decides as it always did; only its landing waits. The tree asks at the pin, and again at each settle (`settle`:
+ * the projector's idle, the shore's flush), never on a timer. A pending row a crash takes costs nothing: the projector wrote
+ * the canonical render, so the next boot reads disk == records with no base between them and pins again. A row that names
+ * no document or no heads (the ingest gesture, a store with no history) lands at once, as before.
  */
 
 import { readFileSync, writeFileSync, renameSync, mkdirSync, readdirSync, unlinkSync, statSync } from "fs";
@@ -183,10 +193,21 @@ export class SyncedTree {
   /** The keys whose base stands at each path: DERIVED like `byHash`, rebuilt on the first `uriAt` after a change. */
   private byPath: Map<string, Set<string>> | null = null;
 
+  /** `rowId` → a pin whose heads rest nowhere yet: it stands in `map`, and lands in the directory once its heads rest. */
+  private readonly pendingRows = new Map<string, Row>();
+  /** The rest a pending pin asks, or null: every pin lands at once. */
+  private readonly rests: ((doc: string, heads: readonly string[]) => Promise<boolean>) | null;
+
   constructor(
     /** The directory the tree rests in. Null holds the bases in memory for this instance's life and persists nothing. */
     private dirPath: string | null,
+    opts: {
+      /** The vessel's reading of a document's heads at rest (`headsRestAt`, `@lararium/mesh/sealed-rest`). Present, a row
+       *  that names a document and its heads waits pending until they rest. */
+      readonly rests?: (doc: string, heads: readonly string[]) => Promise<boolean>;
+    } = {},
   ) {
+    this.rests = opts.rests ?? null;
     if (dirPath === null) return;
     // A file standing at the directory's own path leaves this tree nowhere to rest: it holds its bases in memory.
     let isFile = false;
@@ -273,10 +294,62 @@ export class SyncedTree {
       ...(doc !== undefined && doc !== "" ? { doc } : {}),
       ...(heads !== undefined && heads.length > 0 ? { heads: [...heads] } : {}),
     } };
-    const before = this.map.get(rowId(key, row.base.path)) ?? null;
+    const id = rowId(key, row.base.path);
+    const before = this.map.get(id) ?? null;
     this.put(row);
+    if (this.rests !== null && row.base.doc !== undefined && row.base.heads !== undefined) {
+      // THE PIN WAITS ON ITS SEAL: it answers every read here at once, and reaches the directory once its heads rest.
+      this.pendingRows.set(id, row);
+      void this.landSealed(id, row);
+      return;
+    }
+    this.pendingRows.delete(id);
     if (!this.land(row)) this.takeBack(key, row.base.path, before);
   }
+
+  /** How many pins stand in memory waiting on their seal. */
+  get pending(): number { return this.pendingRows.size; }
+
+  /**
+   * THE SETTLE: ask the rest again for every pending pin, and land each whose heads now rest. The projector's idle and the
+   * shore's flush call it; nothing calls it on a timer. Answers how many landed.
+   */
+  async settle(): Promise<number> {
+    // AN ASK IN FLIGHT MAY READ THE REST AS IT STOOD BEFORE THIS SETTLE (ahead of a stand-down's seal): it answers first, and
+    // every pin still pending after it asks afresh.
+    const before = this.sealedLandings;
+    await Promise.all([...this.asking.values()]);
+    await Promise.all([...this.pendingRows].map(([id, row]) => this.landSealed(id, row)));
+    return this.sealedLandings - before;
+  }
+
+  /** The asks in flight, one per document and heads: a wave pins many carriers at one document's heads, and asks once. */
+  private readonly asking = new Map<string, Promise<boolean>>();
+
+  /** Ask the rest whether `heads` of `doc` rest, joining an ask already in flight for the same pair. */
+  private askRest(doc: string, heads: readonly string[]): Promise<boolean> {
+    const at = `${doc}\0${[...heads].sort().join(" ")}`;
+    let ask = this.asking.get(at);
+    if (ask === undefined) {
+      ask = this.rests!(doc, heads).then((rested) => rested === true, () => false).finally(() => { this.asking.delete(at); });
+      this.asking.set(at, ask);
+    }
+    return ask;
+  }
+
+  /** Ask whether one pending pin's heads rest, and land it where they do and it still stands as asked. */
+  private async landSealed(id: string, row: Row): Promise<boolean> {
+    const rested = await this.askRest(row.base.doc!, row.base.heads!);
+    // A NEWER PIN OR A REMOVAL OF THE SAME ROW SINCE THE ASK SUPERSEDES IT: only the row still pending lands.
+    if (!rested || this.pendingRows.get(id) !== row) return false;
+    this.pendingRows.delete(id);
+    if (!this.land(row)) { this.takeBack(row.key, row.base.path, null); return false; }
+    this.sealedLandings += 1;
+    return true;
+  }
+
+  /** How many pending pins landed over this instance's life. */
+  private sealedLandings = 0;
 
   /**
    * The disk refused an act on one row: memory takes the directory's word for it. Where the disk refuses
@@ -296,6 +369,7 @@ export class SyncedTree {
   deleteAt(key: string, file: string): void {
     const path = syncedPath(file);
     const before = this.map.get(rowId(key, path)) ?? null;
+    this.pendingRows.delete(rowId(key, path));
     this.drop(key, path);
     if (this.dirPath === null) return;
     const name = join(this.dirPath, rowFile(key, path));
@@ -467,8 +541,8 @@ export class SyncedTree {
    * Read the directory afresh: every row, or the rows of one carrier where `key` names it. A sibling
    * writer (another island, the ingest gesture) may have pinned or removed a base since this instance
    * loaded; a caller about to surface a divergence reads through here first, so a base a sibling pinned
-   * answers before an alert does. Every change this instance made already rests in the directory, so the
-   * directory's word replaces this instance's own.
+   * answers before an alert does. Every change this instance made already rests in the directory, save a pin
+   * still waiting on its seal, so the directory's word replaces this instance's own, and each pending pin stands over it.
    */
   reread(key?: string): void {
     if (this.dirPath === null) return;
@@ -477,6 +551,8 @@ export class SyncedTree {
       this.drop(row.key, row.base.path);
     }
     for (const row of rows) this.put(row);
+    // A PIN WAITING ON ITS SEAL STANDS OVER THE DIRECTORY'S WORD: it rests nowhere yet, and stays this instance's own.
+    for (const row of this.pendingRows.values()) if (key === undefined || row.key === key) this.put(row);
   }
 
   /** Per-process write counter — one half of the temp file's unique name. */

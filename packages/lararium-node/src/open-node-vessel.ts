@@ -24,6 +24,7 @@ import { WardRefused } from "@lararium/mesh/ward-slots";
 import { wornAtOf } from "@lararium/mesh/sealed-doc-store";
 import {
   composeSealedRest,
+  headsRestAt,
   restOwedWatch,
   type RestOwed,
   clearRosterOf,
@@ -1417,6 +1418,16 @@ async function prepareNodeBootOn(
   const docStoreDoor: NonNullable<CapabilityRecord["docStore"]> = (port) => docStorePort.attach(port);
   // V2: each island's own store rests no document this rest seals (`islandRestGuard`).
   const restsSealedDoor: NonNullable<CapabilityRecord["restsSealed"]> = (documentId) => sealedRest.restsSealed(documentId);
+  // THE BASE PINS WHAT SEALED: each island's Synced tree asks whether the heads a pin read rest here before the pin reaches
+  // its directory. This replica holds them, that one document's flush lands, and no save of it waits in memory.
+  const restsAtDoor: NonNullable<CapabilityRecord["restsAt"]> = headsRestAt({
+    holds: (documentId, heads) => {
+      const handle = (repo.handles as Record<string, { isReady(): boolean; doc(): unknown } | undefined>)[documentId];
+      try { return handle?.isReady() === true && A.hasHeads(handle.doc() as A.Doc<unknown>, [...heads]); } catch { return false; }
+    },
+    flush: (documentId) => repo.flush([documentId as never]),
+    waiting: (documentId) => sealedRest.store.waiting(documentId),
+  });
   // THE TRAP-NAMED DOCUMENTS HOLD ON EVERY LOAD PATH (`engine-fall`): each document a resting engine fall names in flight
   // reaches the engine through no path, the storage source's included, until the hand clears the count.
   const heldBack = heldInFlight(readEngineFalls(storageDir));
@@ -1884,6 +1895,14 @@ async function prepareNodeBootOn(
     },
     onSettled: ({ documentId, status, reason }) => { if (status !== "mounted") console.warn(`[sealed-rest] ${documentId.slice(0, 12)}… stands ${status}, read-only: ${reason ?? ""}`); },
   });
+  // THE STAND-DOWN SEALS ONCE, BEFORE THE SHORE'S LAST PINS: the shore's flush entry runs it first (`shoreFlushStandDown`'s
+  // `seal`), so every pin its islands still hold pending meets heads that rest; the sealed rest's own entry then reads the
+  // same run. A boot that never went live stands no shore flush, and the sealed rest's entry runs it alone.
+  let sealedRestDowned: Promise<void> | null = null;
+  const sealedRestDown = (): Promise<void> => (sealedRestDowned ??= (async () => {
+    const waiting = await sealedRest.standDown((sealedCells.book?.seated() ?? []).map(saveSessionOf));
+    if (waiting > 0) nameHeldSaves(waiting);
+  })());
   // The Repo stands down after everything that writes through it: it flushes, then closes its storage and network.
   stood.push({ what: "the Repo", phase: "repo", down: () => closeCompositionRepo({
     flush: () => repo.flush(),
@@ -1895,10 +1914,7 @@ async function prepareNodeBootOn(
     endHydration: () => sealedRest.store.endHydration(),
     shutdown: () => repo.shutdown(),
   }) });
-  stood.push({ what: "the sealed rest", phase: "flush", down: async () => {
-    const waiting = await sealedRest.standDown((sealedCells.book?.seated() ?? []).map(saveSessionOf));
-    if (waiting > 0) nameHeldSaves(waiting);
-  } });
+  stood.push({ what: "the sealed rest", phase: "flush", down: () => sealedRestDown() });
   stood.push({ what: "the Repo's final session flush", phase: "flush", down: () => repo.flush() });
   // THE COMPOSITION'S ACTOR DOOR, seated on its Repo: every store over this Repo's documents (`wearOf(repo)`) writes a worn
   // face's change under the actor the wire identity derives, and the daemon island's own Repo asks for its actors here.
@@ -3047,7 +3063,7 @@ async function prepareNodeBootOn(
   // THE FLOOR COMPOSES (slice 5b): one record through the one composer, before any island stands. Its stand-down runs
   // after the islands shut (T27): its resource phase follows their shutdown phase, so their final asks still read the floor.
   const islandFloor = await composeVessel(islandFloorStack({
-    receipt: receiptDoor, cas: resolveCid, dyad: dyadDoor, docStore: docStoreDoor, restsSealed: restsSealedDoor,
+    receipt: receiptDoor, cas: resolveCid, dyad: dyadDoor, docStore: docStoreDoor, restsSealed: restsSealedDoor, restsAt: restsAtDoor,
   }));
   const islandVessel = larVesselOf(islandFloor);
   const islandCaps = islandVessel.record;
@@ -5491,8 +5507,9 @@ async function prepareNodeBootOn(
     const stopPromoteWatch = promoteWiringRef?.watch();
     if (stopPromoteWatch) stood.push({ what: "the promote watcher", phase: "producers", down: stopPromoteWatch });
     // THE TEARDOWN'S FLUSH PHASE ASKS EVERY SHORE FIRST: pushed after the Repo's own flush entries, it runs ahead of them (the
-    // registry stands down in reverse), so what the islands hold reaches the mirrors while the islands still stand.
-    stood.push(shoreFlushStandDown(flushShores));
+    // registry stands down in reverse), so what the islands hold reaches the mirrors while the islands still stand. It seals
+    // first: the shore's last pins reach each Synced tree's directory only once their heads rest sealed.
+    stood.push(shoreFlushStandDown(flushShores, { seal: sealedRestDown }));
     // THE WATCH OVER THE WORN FACE'S POOL (face-pools W1, W2): armed here, off the boot path (the arm hands back at once), over
     // `faces/<pet name>/`. It names the wake's stage edits, catches up once, and lands each settled wave by itself
     // (`poolIngestPorts`): an UNATTENDED INGEST wave per plane on the daemon island (`islandIngestSubmit`), the working layer

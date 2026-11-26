@@ -297,9 +297,21 @@ export async function flushEveryShore(asks: readonly ShoreIslandAsk[], boundMs =
  * phase. Pushed after the Repo's own flush entries it runs ahead of them (the registry stands down in reverse), and always before
  * the `islands` phase stands any island down: so a graceful stop (SIGTERM, a lock, a wear's recompose) writes what every island
  * holds to its mirrors while the islands still stand. Each island that gave no answer, or left carriers unwritten, warns by name.
+ *
+ * THE STAND-DOWN SEALS BEFORE THE SHORE'S LAST PINS LAND (`seal`): a Synced base pins only heads that rest sealed, so the sealed
+ * rest's stand-down runs first and the flush after it, and every pin an island still holds pending meets heads that rest. A
+ * seal that faults warns by name and the flush still runs: its pins stay pending, and the next boot reads disk == records and
+ * pins again.
  */
-export function shoreFlushStandDown(flush: () => Promise<ShoreFlushReading>, warn: (line: string) => void = console.warn): ShutdownEntry {
+export function shoreFlushStandDown(flush: () => Promise<ShoreFlushReading>, opts: {
+  readonly seal?: () => Promise<void>;
+  readonly warn?: (line: string) => void;
+} = {}): ShutdownEntry {
+  const warn = opts.warn ?? console.warn;
   return { what: "the shore's flush", phase: "flush", down: async () => {
+    if (opts.seal) {
+      try { await opts.seal(); } catch (err) { warn(`[lararium] teardown: the shore's flush: the sealed rest's stand-down faulted ahead of it: ${err instanceof Error ? err.message : String(err)}`); }
+    }
     const reading = await flush();
     for (const part of reading.islands) {
       if (!part.answered) warn(`[lararium] teardown: the shore's flush: the ${part.island} island did not answer: ${part.why}`);

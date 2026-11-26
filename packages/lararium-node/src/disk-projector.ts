@@ -786,11 +786,13 @@ export class LarDiskProjector {
     }
   }
 
-  /** Resolve when no reconcile runs and no root waits in the queue, and every pending-removal set that moved has surfaced. */
+  /** Resolve when no reconcile runs and no root waits in the queue, and every pending-removal set that moved has surfaced.
+   *  The settle lands too each Synced base pin whose heads now rest sealed (`SyncedTree.settle`). */
   async idle(): Promise<void> {
     await this.recoveryScan;
     await (this.gate?.idle() ?? Promise.resolve());
     this._surfacePending();
+    await this.syncedTree.settle();
   }
 
   async stop(): Promise<void> {
