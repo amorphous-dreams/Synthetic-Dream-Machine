@@ -5,11 +5,11 @@
   "moduleManifestPath": "dist-plugin/module-manifest.json",
   "moduleManifestSha256": "bec3833b4a328035de07eefa42961f16f4c3874cb7471ea0d8ca8d25bb613272",
   "sourceManifestPath": "dist-plugin/plugin-source-manifest.json",
-  "sourceManifestSha256": "f2b86d7a89018bbdc70d73c7137e657629ec35e456e20d90f11427eb79d19a7d",
+  "sourceManifestSha256": "340a3ec924be0540794785d5e5c8697ff0d29fa8ced66c6062e12736e8047f5e",
   "packTranscriptPath": "dist-plugin/pack-transcript.json",
-  "packTranscriptSha256": "6cbb92f51d05047ace6cd12a4a9407f3bf95610c4beed67d09c9ccafa58b69c6",
+  "packTranscriptSha256": "681ef874fabc7e4be4a0fa5dd9d001969f6771b662cc2903113fe2da63aebe62",
   "moduleCount": 24,
   "packedTiddlerCount": 167,
-  "pluginJsonSha256": "ba5aa49b2cb914cd380604baa97f52e0ff1003015ed29a5439c54d71afda5478",
-  "pluginTw5Sha256": "5638d5ab7a28d76045fc954941cab17fa130a3aec972f5c44bdc5ed9693bd244"
+  "pluginJsonSha256": "972060dc30ad95ce4947fc6b773ebb2efb05b1266126e4968609ef65bdaf082a",
+  "pluginTw5Sha256": "32f6163894f506944aa1103de2ef494a81c4a5b8593674f4ae7577337a57f91e"
 }

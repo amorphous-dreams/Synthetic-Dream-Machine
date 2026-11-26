@@ -14,6 +14,6 @@
   "lares-canonical-title": "lar:///ha.ka.ba/lararium/plugins/lares/memetic-wikitext",
   "lares-module-count": "24",
   "lares-module-manifest-sha256": "bec3833b4a328035de07eefa42961f16f4c3874cb7471ea0d8ca8d25bb613272",
-  "lares-source-manifest-sha256": "f2b86d7a89018bbdc70d73c7137e657629ec35e456e20d90f11427eb79d19a7d",
+  "lares-source-manifest-sha256": "340a3ec924be0540794785d5e5c8697ff0d29fa8ced66c6062e12736e8047f5e",
   "lares-build-attestation-format": "lararium-tw5-plugin-build"
 }
