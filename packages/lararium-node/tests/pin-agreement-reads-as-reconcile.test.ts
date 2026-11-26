@@ -16,7 +16,7 @@ import type { CarrierFile } from "@lararium/tw5";
 const WORK = "lar:///ha.ka.ba/wikis/notes/working";
 const DRAFT = "lar:///ha.ka.ba/wikis/notes/draft";
 const TITLE = "lar:///ha.ka.ba/t/notes/pinned";
-const origin = { kind: "test" } as const;
+const origin = { kind: "operator-import", sessionId: "test" } as const;
 let root = "";
 afterEach(() => { if (root) rmSync(root, { recursive: true, force: true }); root = ""; });
 
