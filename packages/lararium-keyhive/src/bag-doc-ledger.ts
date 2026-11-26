@@ -17,7 +17,8 @@ export interface BagDocLedger {
  * place (`remintBag`). Content sealed under the Document that left stays unreadable to this face. `commit` puts the rows a held
  * registration kept back (an ordinary one put each as it registered, so its commit moves nothing).
  */
-export interface DurableRegistration { readonly reminted: readonly string[]; commit(): Promise<void> }
+/** `held` names each bag whose ledger row a `hold` registration keeps back until `commit`. */
+export interface DurableRegistration { readonly reminted: readonly string[]; readonly held?: readonly string[]; commit(): Promise<void> }
 
 /**
  * Register each bag on the provider, adopting the Document the ledger records where this stand holds a hand in it. `hold` (a
@@ -46,7 +47,7 @@ export async function registerBagsDurably({ provider, bags, ledger, hold = false
       await rest(bag, docId);
     }
   }
-  return { reminted, commit: async () => { for (const [bag, docId] of held.splice(0)) await ledger.put(bag, docId); } };
+  return { reminted, held: held.map(([bag]) => bag), commit: async () => { for (const [bag, docId] of held.splice(0)) await ledger.put(bag, docId); } };
 }
 
 async function titleFor(bag: string, vessel: boolean, face?: string): Promise<string> {

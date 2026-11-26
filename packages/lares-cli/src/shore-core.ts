@@ -536,6 +536,10 @@ export type ShoreFlushPart =
     readonly written: ReadonlyArray<Record<string, unknown>>; readonly writtenCount: number;
     readonly unwritten: ReadonlyArray<Record<string, unknown>>; readonly unwrittenCount: number;
     readonly fileWrites: number; readonly drained: boolean;
+    /** NO BASE WAITS SILENT: the island's Synced base pins still waiting on their seal, how many wait on a rest that answered
+     *  nothing readable, and how many of the waves' bases wait with a pin (`pinsWaiting`, `@lararium/node` shore-verb). */
+    readonly pendingPins?: ReadonlyArray<Record<string, unknown>>; readonly pendingPinCount?: number;
+    readonly pendingPinUnreadCount?: number; readonly waitingBaseCount?: number;
   }
   | { readonly island: string; readonly answered: false; readonly refusal: string; readonly why: string };
 
@@ -579,6 +583,9 @@ export async function askShoreFlush(line: ShoreFlushLine = LIVE_FLUSH_LINE): Pro
       written: (o["written"] ?? []) as Array<Record<string, unknown>>, writtenCount: Number(o["writtenCount"] ?? 0),
       unwritten: (o["unwritten"] ?? []) as Array<Record<string, unknown>>, unwrittenCount: Number(o["unwrittenCount"] ?? 0),
       fileWrites: Number(o["fileWrites"] ?? 0), drained: o["drained"] === true,
+      pendingPins: (Array.isArray(o["pendingPins"]) ? o["pendingPins"] : []) as Array<Record<string, unknown>>,
+      pendingPinCount: Number(o["pendingPinCount"] ?? 0), pendingPinUnreadCount: Number(o["pendingPinUnreadCount"] ?? 0),
+      waitingBaseCount: Number(o["waitingBaseCount"] ?? 0),
     };
   });
   return { islands, whole: islands.every((i) => i.answered && i.unwrittenCount === 0) };

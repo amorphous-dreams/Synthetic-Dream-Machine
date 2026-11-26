@@ -86,7 +86,7 @@ A session reads this carrier and the roadmap alone; no note outside the reposito
 
 !!! The battery
 * One named e2e file whose own waits exceed the cap runs locally under `timeout 600`, still headless in the bwrap PID namespace with the 1536 MB heap; every other run keeps `timeout 180`, and no whole suite runs locally (operator, 2026-11-06: //"Approve the 600s e2e cap, OODA-HA."//). The 180 s CI poll floor separately governs GitHub reads.
-* A lane runs `node tools/pre-push-gate.mjs` before every lane push, as its own step and never a git hook: the fast witnesses (`witness-all.sh --fast`) and the census and naming-law suites of `lararium-mesh`, about three minutes; it runs every step and refuses by name (`PRE-PUSH GATE REFUSES: <step>`, exit 1), and a lane cures the named step before it pushes.
+* A lane's bench gate runs on the floor before it lands, as the familiar's step and never a git hook: `node tools/floor-run.mjs -- node tools/bench-gate.mjs` runs the familiar's lane checks over the lane's touched packages with develop merged in (the fast witnesses, the carrier pins, the tool tests and each touched package's suites), so the sum of lanes reads green before any lane joins it; it runs every step and refuses by name (`BENCH GATE REFUSES: <step>`, exit 1), and a lane cures the named step before it lands.
 * One battery per batch, run through the battery lock as `mixed-model-swarm#/the-battery` orders it; one e2e file runs locally and the whole sets ride the lane branch's CI. A red CI run gets bisected (a `ci/<lane>` push per suspect head, the first red named between a proven green and a red), never guessed. A live commit says so in its message and ends a batch only where later work builds on its bytes.
 * Suites run from source under a scratch `HOME` and a scratch `LAR_ROOT`, with `LAR_BAGS` unset. Never `pnpm install` in the main tree. Before landing a test file, the charter and gate-dial funnels and the unbuilt-laws witness run.
 * No standing test code produces load; a race gets pinned by a handshake between the parties.
@@ -159,6 +159,6 @@ A session can close and a fresh one boot from carriers; a ''live'' handoff lets 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;0gL9XhW-iq4TYDBymY0zipIMa_yew8j5QrFzdg6lLvg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;FmX71KrOSwcXqhsz6-Gwnjwp6qCSQL_oSfiJpMLyA-8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

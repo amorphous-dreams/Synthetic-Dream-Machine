@@ -388,51 +388,224 @@ function headBaseOf(uri: string, head: { readonly body: string; readonly meta?: 
 }
 
 /**
- * Record a landed carrier's synced observation. The gesture records what it landed;
- * the projector records what it projects; both write the same key and the same hash
- * where they agree. A bag no mounted wiki mirrors never projects, and a pack file
- * never projects back, so without the gesture's record the next scan reads every
- * landed carrier `new` and a vanished file never reads as a deletion.
+ * ONE BASE A WAVE NAMES: the carrier, the file the agreement stands at, the bytes the disk held there, and what the wave
+ * knows of the records side. A caller that owns its tree lands it whole (`landBases`). The door to an island sends the
+ * carrier, the file and a rename's source alone (`islandBaseDoor`): the island reads every hash, the document and the heads
+ * itself, so nothing a caller computed lands in an island's tree.
+ */
+export interface BaseAsk {
+  readonly uri: string;
+  /** The content file the agreement stands at. */
+  readonly file: string;
+  /** The whole-carrier hash of the bytes the wave's scan read there. */
+  readonly disk: string;
+  /** The hash of the render the records carry, where the wave holds one (the island's row, an echo of HEAD's base, the
+   *  gesture's own read). Absent: a base the owner's tree already holds for these bytes names it, else the disk hash does. */
+  readonly records?: string;
+  /** The causal heads the wave's records landed at (the row's own, else its wave's): the base vouches for that history. */
+  readonly heads?: readonly string[];
+  /** A RENAME THE ISLAND CONFIRMED: the vanished source this carrier re-homed from. The source's base of these bytes gives
+   *  its records side, its document and its heads to the new row, and leaves where its own file stands no more. */
+  readonly from?: string;
+}
+
+/** What the owner answers a wave's bases, by count: every ask lands in exactly one. */
+export interface BaseAnswer {
+  /** A row the owner's tree took: it landed, or it waits pending on its seal as the owner's own pin. */
+  readonly recorded: number;
+  /** A base the tree already named, row for row: nothing moved. */
+  readonly kept: number;
+  /** A pin of the same agreement already waits on its seal there: the ask waits with it. */
+  readonly waiting: number;
+  /** The file moved since the wave's scan: its next reader owns that observation, and nothing recorded. */
+  readonly moved: number;
+  /** The island that projects the bag reads no file there (it left, or it rests where that island cannot read): nothing lands. */
+  readonly unread: number;
+  /** The island read the file and its own records, and they say different things (or it holds no such record): no agreement
+   *  stands to pin, and the gate weighs the carrier as it stands. */
+  readonly differs: number;
+  /** No owner answered (the door faulted or refused, or no island projects the bag): nothing recorded, and the next wave
+   *  over the file asks again. */
+  readonly owed: number;
+  /** Why the owner gave no answer, where `owed` counts any. */
+  readonly why?: string;
+}
+
+const NO_BASES: BaseAnswer = { recorded: 0, kept: 0, waiting: 0, moved: 0, unread: 0, differs: 0, owed: 0 };
+const sumBases = (a: BaseAnswer, b: BaseAnswer): BaseAnswer => ({
+  recorded: a.recorded + b.recorded, kept: a.kept + b.kept, waiting: a.waiting + b.waiting, moved: a.moved + b.moved,
+  unread: a.unread + b.unread, differs: a.differs + b.differs, owed: a.owed + b.owed,
+  ...((a.why ?? b.why) !== undefined ? { why: (a.why ?? b.why)! } : {}),
+});
+/** The asks a wave's next scan reads as agreed: taken, already named, or waiting on the owner's pin. */
+const basesAnswered = (a: BaseAnswer): number => a.recorded + a.kept + a.waiting;
+
+/**
+ * LAND A WAVE'S BASES IN A TREE THE CALLER ITSELF OWNS (`SyncedTree`, ONE OWNER OF PENDING STATE): the gesture's own process,
+ * over a tree no island stands over (a tree held in memory, a rig, a caller that lends its own submit). An island never
+ * runs this on a caller's word: it reads each agreement itself (`pinAgreement`, `disk-projector.ts`; the shore's `base`
+ * act). `doc` names the document the owner reads for the bag, where it names one.
  *
- * Records a BASE for each result that decided `ingest` or `noop` (a noop says the
- * records already say what the disk says): the candidate's disk hash on the disk
- * side, and on the records side the hash the island answered for the render its
- * records hold (`canonicalHash`). A row that names no render (an echo noop, a
- * pointer) keeps the records side a standing base already holds for these same
- * bytes, else the disk hash names both sides. Never records `conflict`, `refuse`,
- * or a result naming no candidate. Before recording, the file is hashed as it
- * stands NOW: where the disk moved since the scan, the projector wrote it and owns
- * that observation, so nothing records. Returns the count recorded.
+ *   · THE FILE MOVED SINCE THE WAVE HASHED IT (the wave hashed it last, `baseAsksOf`): its next reader owns that observation.
+ *   · A PIN OF THE SAME AGREEMENT WAITS THERE: the ask waits with it (`metWaiting`). The pin lands the row, with its heads,
+ *     once they rest; the projector's own echo meets this.
+ *   · THE TREE ALREADY NAMES THE AGREEMENT, with heads or with none to add: the row stays put.
+ *   · ELSE THE ROW SETS, with the owner's document and the wave's heads. A newer agreement supersedes a waiting pin.
+ */
+export function landBases(tree: SyncedTree, bag: string, asks: readonly BaseAsk[], doc?: string): BaseAnswer {
+  const tally = { recorded: 0, kept: 0, waiting: 0, moved: 0, unread: 0, differs: 0, owed: 0 };
+  for (const ask of asks) {
+    const now = diskHashNow(ask.file);
+    if (now !== null && !digestsEqual(now, ask.disk)) { tally.moved += 1; continue; }
+    const key = syncedTreeKey(bag, ask.uri);
+    // The base the source held for these bytes travels with a confirmed rename: its records side, its document, its heads.
+    const fromKey = ask.from !== undefined ? syncedTreeKey(bag, ask.from) : null;
+    const carried = fromKey === null ? [] : tree.bases(fromKey).filter((b) => digestsEqual(b.disk, ask.disk));
+    const source = carried[0];
+    const standing = tree.baseAt(key, ask.file);
+    const records = ask.records ?? source?.records ?? (standing !== null && digestsEqual(standing.disk, ask.disk) ? standing.records : ask.disk);
+    const heads = ask.heads !== undefined && ask.heads.length > 0 ? ask.heads : source?.heads;
+    const rowDoc = source?.doc ?? doc;
+    // A BASE LEAVES WITH ITS OWN FILE: the source gives up each base of these bytes whose file stands no more.
+    if (fromKey !== null) for (const b of carried) if (!existsSync(b.path)) tree.deleteAt(fromKey, b.path);
+    const agrees = standing !== null && digestsEqual(standing.disk, ask.disk) && digestsEqual(standing.records, records);
+    if (agrees && tree.pendingAt(key, ask.file)) { tree.metWaiting(key, ask.file); tally.waiting += 1; continue; }
+    // A ROW THAT ALREADY NAMES THIS AGREEMENT STAYS PUT, unless the wave names heads the row lacks: a row rewritten headless
+    // would drop the history its writer vouched for.
+    if (agrees && (heads === undefined || standing!.heads !== undefined)) { tally.kept += 1; continue; }
+    tree.set(key, ask.file, ask.disk, records, rowDoc, heads);
+    tally.recorded += 1;
+  }
+  return tally;
+}
+
+/**
+ * THE BASE DOOR: where a wave's bases land. One owner holds each tree's pending pins, so a wave hands its bases to that
+ * owner and lands none by its own hand where an island stands.
+ */
+export interface BaseDoor {
+  land(bag: string, asks: readonly BaseAsk[]): Promise<BaseAnswer>;
+}
+
+/** The door over a tree the caller itself owns: a tree held in memory, a house with no island over the tree, a test's rig. */
+export function treeBaseDoor(tree: SyncedTree, doc?: string): BaseDoor {
+  return { land: async (bag, asks) => landBases(tree, bag, asks, doc) };
+}
+
+/** How many bases one `base` act carries: each names a carrier and a file, well inside a verb's frame. */
+export const BASE_PAGE = 256;
+
+/** One road to an island's shore: the `base` act out, the island's answer back. */
+export type BaseRoad = (args: Record<string, unknown>) => Promise<unknown>;
+
+/**
+ * THE DOOR TO THE ISLAND THAT PROJECTS THE BAG. Every island's Synced tree rests in one directory, and each island's pins
+ * live in its own memory, so a base lands only through the island whose projector mirrors its bag: that island alone holds
+ * the pin a row there would meet, and the document and heads the row vouches for. `roads` names the islands to ask for a
+ * bag, the likeliest first (the island that took the wave); an island that mounts no disk shore (`no-disk-shore`) or whose
+ * projector holds no mirror of the bag (`bag-unprojected`) passes the ask to the next road.
+ *
+ * Each page of bases rides the shore's `base` act carrying the carrier, the file and a rename's source ALONE: the island
+ * hashes the file, renders its own records and names its own document and heads (`pinAgreement`), so no hash this caller
+ * computed lands. Where no island projects the bag, where an island refuses, and where a road faults, nothing lands and the
+ * page counts `owed`, with why: the door never writes a row by its own hand. After an answer the gesture's own tree reads
+ * each carrier's rows afresh, so what the island landed answers the gesture's next read.
+ */
+export function islandBaseDoor(roads: (bag: string) => readonly BaseRoad[], tree: SyncedTree): BaseDoor {
+  const count = (o: Record<string, unknown>, name: string): number => (typeof o[name] === "number" && Number.isSafeInteger(o[name]) && (o[name] as number) >= 0 ? (o[name] as number) : 0);
+  return {
+    land: async (bag, asks) => {
+      const asked = roads(bag);
+      let total = NO_BASES;
+      for (let at = 0; at < asks.length; at += BASE_PAGE) {
+        const page = asks.slice(at, at + BASE_PAGE);
+        const bases = page.map((a) => ({ uri: a.uri, file: a.file, ...(a.from !== undefined ? { from: a.from } : {}) }));
+        const owed = (why: string): BaseAnswer => ({ ...NO_BASES, owed: page.length, why });
+        let answer: BaseAnswer | null = null;
+        // A road that faulted names why, and the next road still gets asked: the island that projects the bag may stand behind it.
+        let fault: string | null = null;
+        for (const road of asked) {
+          let o: Record<string, unknown>;
+          try { o = ((await road({ op: "base", bag, bases })) ?? {}) as Record<string, unknown>; }
+          catch (err) { fault ??= err instanceof Error ? err.message : String(err); continue; }
+          if (o["ok"] === true) { answer = { ...NO_BASES, recorded: count(o, "recorded"), kept: count(o, "kept"), waiting: count(o, "waiting"), unread: count(o, "unread"), differs: count(o, "differs") }; break; }
+          if (o["refusal"] === "no-disk-shore" || o["refusal"] === "bag-unprojected") continue;
+          answer = owed(`${typeof o["refusal"] === "string" ? o["refusal"] : "base-answer-unread"}: ${typeof o["why"] === "string" ? o["why"] : "the island answered no base act"}`);
+          break;
+        }
+        total = sumBases(total, answer ?? owed(fault ?? `no island projects ${bag}: its bases wait for an island that mirrors it`));
+        for (const a of page) { tree.reread(syncedTreeKey(bag, a.uri)); if (a.from !== undefined) tree.reread(syncedTreeKey(bag, a.from)); }
+      }
+      return total;
+    },
+  };
+}
+
+/** The carriers a shore `base` act names, read whole or not at all: each `{ uri, file, from? }`. Any other field a caller
+ *  sends (a hash, heads, a document) gets read by no one: the island computes each itself. */
+export function basePathsNamed(value: unknown): Array<{ readonly uri: string; readonly file: string; readonly from?: string }> | null {
+  if (!Array.isArray(value)) return null;
+  const filled = (v: unknown): v is string => typeof v === "string" && v !== "";
+  const paths: Array<{ readonly uri: string; readonly file: string; readonly from?: string }> = [];
+  for (const raw of value as unknown[]) {
+    if (raw === null || typeof raw !== "object" || Array.isArray(raw)) return null;
+    const { uri, file, from } = raw as Record<string, unknown>;
+    if (!filled(uri) || !filled(file) || (from !== undefined && !filled(from))) return null;
+    paths.push({ uri, file, ...(from !== undefined ? { from } : {}) });
+  }
+  return paths;
+}
+
+/**
+ * The bases a wave's answered rows name. The gesture records what it landed; the projector records what it projects; both
+ * name the same key and the same hash where they agree. A bag no mounted wiki mirrors never projects, and a pack file never
+ * projects back, so without the gesture's base the next scan reads every landed carrier `new` and a vanished file never
+ * reads as a deletion.
+ *
+ * One base for each result that decided `ingest` or `noop` (a noop says the records already say what the disk says): the
+ * candidate's disk hash on the disk side, and on the records side the hash the island answered for the render its records
+ * hold (`canonicalHash`). A row that names no render (an echo noop, a pointer) leaves the records side to the tree's owner
+ * (`landBases`). Never `conflict`, `refuse`, or a result naming no candidate. Each base carries the heads its row names,
+ * else its wave's (`waveHeads`): the document's history when the agreement stood.
+ */
+export function baseAsksOf(
+  candidates: readonly ScanRow[],
+  resultCarriers: ReadonlyArray<Record<string, unknown>>,
+  waveHeads?: readonly string[],
+): BaseAsk[] {
+  const byUri = new Map(candidates.map((c) => [c.uri, c] as const));
+  const asks: BaseAsk[] = [];
+  for (const c of resultCarriers) {
+    if (c["decision"] !== "ingest" && c["decision"] !== "noop") continue;
+    const cand = byUri.get(String(c["uri"]));
+    if (!cand || cand.diskHash === "") continue;
+    // THE FILE GETS HASHED AS IT STANDS NOW: where the disk moved since the scan, or reads no more, its next reader owns that
+    // observation, and this wave names no base for it.
+    if (diskHashNow(cand.file) !== cand.diskHash) continue;
+    // AN ECHO OF HEAD'S BASE PINS HEAD'S RECORDS SIDE: the disk stands at HEAD, and the records may have moved past it, so
+    // the records' present render would name an agreement no side reached, and so would the wave's heads. The projector
+    // then reads the records moved.
+    const headEcho = cand.headBase === true && c["decision"] === "noop" && c["reason"] === "disk-matches-synced" && cand.syncedHash !== null;
+    const answered = typeof c["canonicalHash"] === "string" && c["canonicalHash"] ? (c["canonicalHash"] as string) : undefined;
+    const records = headEcho ? (cand.syncedRecordsHash ?? cand.syncedHash!) : answered;
+    const heads = headEcho ? undefined : headsNamed(c["heads"]) ?? waveHeads;
+    asks.push({ uri: cand.uri, file: cand.file, disk: cand.diskHash, ...(records !== undefined ? { records } : {}), ...(heads !== undefined ? { heads } : {}) });
+  }
+  return asks;
+}
+
+/**
+ * Record a wave's landed carriers in a tree the caller itself owns (`baseAsksOf`, `landBases`): the settle's own road where
+ * no island stands over the tree. Returns the count the next scan reads as agreed.
  */
 export function recordLandedCarriers(
   tree: SyncedTree,
   toBag: string,
   candidates: readonly ScanRow[],
   resultCarriers: ReadonlyArray<Record<string, unknown>>,
+  waveHeads?: readonly string[],
 ): number {
-  const byUri = new Map(candidates.map((c) => [c.uri, c] as const));
-  let recorded = 0;
-  for (const c of resultCarriers) {
-    if (c["decision"] !== "ingest" && c["decision"] !== "noop") continue;
-    const cand = byUri.get(String(c["uri"]));
-    if (!cand || cand.diskHash === "") continue;
-    if (diskHashNow(cand.file) !== cand.diskHash) continue;
-    const key = syncedTreeKey(toBag, cand.uri);
-    const standing = tree.baseAt(key, cand.file);
-    // AN ECHO OF HEAD'S BASE PINS HEAD'S RECORDS SIDE: the disk stands at HEAD, and the records may have moved past it, so
-    // the records' present render would name an agreement no side reached. The projector then reads the records moved.
-    const headEcho = cand.headBase === true && c["decision"] === "noop" && c["reason"] === "disk-matches-synced" && cand.syncedHash !== null;
-    const answered = typeof c["canonicalHash"] === "string" && c["canonicalHash"] ? (c["canonicalHash"] as string) : null;
-    const recordsHash = headEcho ? (cand.syncedRecordsHash ?? cand.syncedHash!)
-      : answered ?? (standing !== null && digestsEqual(standing.disk, cand.diskHash) ? standing.records : cand.diskHash);
-    // A BASE THAT ALREADY NAMES THIS AGREEMENT STAYS PUT. The projector may have pinned it first, with the document and
-    // the heads its records side read (`SyncedBase.heads`); this gesture names neither, and a row it rewrote would drop them.
-    if (!(standing !== null && digestsEqual(standing.disk, cand.diskHash) && digestsEqual(standing.records, recordsHash))) {
-      tree.set(key, cand.file, cand.diskHash, recordsHash);
-    }
-    recorded++;
-  }
-  return recorded;
+  return basesAnswered(landBases(tree, toBag, baseAsksOf(candidates, resultCarriers, waveHeads)));
 }
 
 /**
@@ -522,8 +695,12 @@ export interface IngestSettlement {
   readonly tallies:  Readonly<Record<string, number>>;
   /** The first wave's deletion summary: the re-links, the absent sources, the declined addresses. */
   readonly deletions: Record<string, unknown> | undefined;
-  /** How many bases the gesture pinned. */
+  /** How many bases the gesture's next scan reads as agreed: taken by the tree's owner, already named there, or waiting on
+   *  the owner's own pin. */
   readonly recorded: number;
+  /** What the tree's owner answered the gesture's bases, by count (`BaseAnswer`): `waiting` bases ride an island's pending
+   *  pin until its heads rest, and `owed` ones reached no owner and ask again at the next wave over their files. */
+  readonly bases?: BaseAnswer;
   /** Each carrier whose records the gesture moved (`ingest`), with the hash its records render as the island
    *  named it, or as the one pure door read it where the rows stayed behind the cap. The settle word asks the
    *  projection after exactly these (`settle`, `shore-verb.ts`). */
@@ -705,12 +882,14 @@ export async function settleIngest(
   tree: SyncedTree,
   submit: IngestSubmit,
   pacing: IngestPacing = {},
+  /** Where the gesture's bases land (`BaseDoor`): the island that takes its waves, else the tree the caller itself owns. */
+  base: BaseDoor = treeBaseDoor(tree),
 ): Promise<IngestSettlement> {
   const limits = pacing.limits ?? INGEST_WAVE_LIMITS;
   const families = familiesOf(opts);
   const whole = families.reduce<WaveWeight>((w, f) => addWeight(w, familyWeight(f)), { count: 0 });
   if (families.length <= 1 || fitsWave(whole, limits)) {
-    const s = await settleWave(opts, tree, submit);
+    const s = await settleWave(opts, submit, base);
     return { ...s, waves: [{ requestId: s.first.requestId, carriers: opts.candidates.length, deletions: opts.deletions?.length ?? 0, status: s.first.status }] };
   }
 
@@ -732,7 +911,7 @@ export async function settleIngest(
     const t0 = now();
     let s: IngestSettlement;
     try {
-      s = await settleWave(page, tree, submit);
+      s = await settleWave(page, submit, base);
     } catch (err) {
       // The first wave's own fault reads as it always did; a later one stops the gesture and names what it knows.
       if (settled.length === 0) throw err;
@@ -904,6 +1083,7 @@ function mergeSettlements(
     unanswered: asked.filter((uri) => !landed.has(uri) && !asking.has(uri)),
     named, refused, conflicts, derived: all.flatMap((s) => s.derived), tallies, deletions,
     recorded: all.reduce((n, s) => n + s.recorded, 0),
+    bases: all.reduce<BaseAnswer>((sum, s) => sumBases(sum, s.bases ?? NO_BASES), NO_BASES),
     rendered: all.flatMap((s) => s.rendered),
     waves,
     ...(pageError !== undefined ? { pageError } : {}),
@@ -929,8 +1109,8 @@ function mergeSettlements(
  */
 async function settleWave(
   opts: SubmitIngestOpts,
-  tree: SyncedTree,
   submit: IngestSubmit,
+  base: BaseDoor,
 ): Promise<IngestSettlement> {
   const first = await submit(opts);
   const asked = opts.candidates.map((c) => c.uri);
@@ -950,7 +1130,9 @@ async function settleWave(
   const named = new Map<string, Record<string, unknown>>();
   for (const row of answer.rows) named.set(String(row["uri"]), row);
   const pages: IngestSubmitResult[] = [];
-  let recorded = 0;
+  /** What the tree's owner answered this wave's bases. */
+  let bases: BaseAnswer = NO_BASES;
+  const land = async (asks: readonly BaseAsk[]): Promise<void> => { if (asks.length > 0) bases = sumBases(bases, await base.land(opts.toBag, asks)); };
   /** The records sides the pure door read for landed carriers no row named. */
   const ownRendered: Array<{ uri: string; records: string; heads?: readonly string[] }> = [];
   /** The wave heads each later page's summary named, by carrier: a row that names none rides its page's. */
@@ -965,7 +1147,7 @@ async function settleWave(
   const rehomed = new Set<string>(renamesOf(deletions).map((r) => r.toUri));
 
   if (!answer.bounded) {
-    recorded += recordLandedCarriers(tree, opts.toBag, opts.candidates, answer.rows);
+    await land(baseAsksOf(opts.candidates, answer.rows, waveHeads));
   } else {
     // Who stays unread. Each unnamed carrier landed only where the answer PROVES it: no refusal stays
     // unnamed, and the tally's landed count equals the unnamed carriers. Where the tally proves less (a row
@@ -984,7 +1166,7 @@ async function settleWave(
         if (records === null) askAgain.push(c);
         else { own.push({ uri: c.uri, decision: "ingest", canonicalHash: records }); ownRendered.push({ uri: c.uri, records, ...(waveHeads !== undefined ? { heads: waveHeads } : {}) }); }
       }
-      recorded += recordLandedCarriers(tree, opts.toBag, opts.candidates, own);
+      await land(baseAsksOf(opts.candidates, own, waveHeads));
     }
     for (let at = 0; at < askAgain.length && pageError === undefined; at += INGEST_PAGE) {
       const page = askAgain.slice(at, at + INGEST_PAGE);
@@ -1000,9 +1182,14 @@ async function settleWave(
       const rows = readCarrierAnswer(pageOut?.carriers).rows;
       const heads = headsNamed(pageOut?.heads);
       for (const row of rows) { named.set(String(row["uri"]), row); if (heads !== undefined) pageHeads.set(String(row["uri"]), heads); }
-      recorded += recordLandedCarriers(tree, opts.toBag, page, rows);
+      await land(baseAsksOf(page, rows, heads ?? waveHeads));
     }
   }
+
+  // A RENAME THE ISLAND CONFIRMED MOVES ITS BASE through the same door: the source's base leaves with its file, and the moved
+  // carrier's stands at the new location with the history the source's base vouched for (`renameBaseAsksOf`).
+  await land(renameBaseAsksOf(opts.candidates, deletions, waveHeads));
+  const recorded = basesAnswered(bases);
 
   const asking = (decision: string): AskingCarrier[] => [...named.values()]
     .filter((row) => row["decision"] === decision)
@@ -1050,7 +1237,7 @@ async function settleWave(
   }
   return {
     first, pages, submitted: asked.length, asked, askedDeletions, landed, unanswered,
-    named, refused, conflicts, derived, tallies, deletions, recorded, rendered,
+    named, refused, conflicts, derived, tallies, deletions, recorded, bases, rendered,
     ...(pageError !== undefined ? { pageError } : {}),
   };
 }
@@ -1079,13 +1266,32 @@ export function candidatesOf(rows: readonly ScanRow[]): ScanRow[] {
 }
 
 /**
- * R2 — move the Synced observation for each rename the island CONFIRMED. Reads the
- * authoritative `deletions.renames` the island returned (never the CLI's own guess),
- * so a pair the island declined moves nothing. For each `fromUri → toUri`
- * it drops the source's base AT THE PATH THE FILE LEFT and records the moved carrier's hash at the
- * new location — so the NEXT scan reads the moved carrier `unchanged` and never
- * re-lands it. A base the source holds at another path (a holding copy that still stands) stays with
- * its file. Returns the count moved.
+ * R2 — the bases of the renames the island CONFIRMED. Reads the authoritative `deletions.renames` the island returned (never
+ * the gesture's own guess), so a pair the island declined names nothing. Each `fromUri → toUri` names one base at the file
+ * that arrived, re-homed from its source (`BaseAsk.from`): the tree's owner drops the source's base AT THE PATH THE FILE LEFT
+ * and stands the moved carrier's at the new location, with the records side, the document and the heads the source's base
+ * held, so the NEXT scan reads the moved carrier `unchanged` and its base still vouches for its history. A base the source
+ * holds at another path (a holding copy that still stands) stays with its file.
+ */
+export function renameBaseAsksOf(
+  candidates: readonly ScanRow[],
+  deletionSummary: Record<string, unknown> | undefined,
+  waveHeads?: readonly string[],
+): BaseAsk[] {
+  const byUri = new Map(candidates.map((c) => [c.uri, c] as const));
+  const asks: BaseAsk[] = [];
+  for (const { fromUri, toUri } of renamesOf(deletionSummary)) {
+    const arrived = byUri.get(toUri);
+    if (arrived === undefined || arrived.diskHash === "") continue;   // a rename this wave did not submit: it stays as it stood
+    asks.push({ uri: toUri, file: arrived.file, disk: arrived.diskHash, from: fromUri, ...(waveHeads !== undefined ? { heads: waveHeads } : {}) });
+  }
+  return asks;
+}
+
+/**
+ * Move the base of each rename the island confirmed, in a tree the caller itself owns (`renameBaseAsksOf`, `landBases`). The
+ * settle moves them through its base door (`settleIngest`); this road serves a caller that holds the tree alone. Returns
+ * the count moved.
  */
 export function applyConfirmedRenames(
   tree: SyncedTree,
@@ -1093,22 +1299,7 @@ export function applyConfirmedRenames(
   candidates: readonly ScanRow[],
   deletionSummary: Record<string, unknown> | undefined,
 ): number {
-  const byUri = new Map(candidates.map((c) => [c.uri, c] as const));
-  let moved = 0;
-  for (const { fromUri, toUri } of renamesOf(deletionSummary)) {
-    const arrived = byUri.get(toUri);
-    if (arrived === undefined) continue;   // a rename we did not submit — leave it be
-    const diskHash = arrived.diskHash;
-    // The records re-homed whole, so the base's records side travels with them where the moved file
-    // holds the bytes the source's base named.
-    const held = tree.bases(syncedTreeKey(toBag, fromUri)).filter((b) => digestsEqual(b.disk, diskHash));
-    const source = held[0];
-    // A BASE LEAVES WITH ITS OWN FILE: the source gives up each base of these bytes whose file stands no more.
-    for (const b of held) if (!existsSync(b.path)) tree.deleteAt(syncedTreeKey(toBag, fromUri), b.path);
-    tree.set(syncedTreeKey(toBag, toUri), arrived.file, diskHash, source !== undefined ? source.records : diskHash);
-    moved++;
-  }
-  return moved;
+  return basesAnswered(landBases(tree, toBag, renameBaseAsksOf(candidates, deletionSummary)));
 }
 
 /** The vanished carriers in a scan — DELETED rows, as the watcher's ARMED set (§2.2): each one DID
@@ -1351,6 +1542,8 @@ export interface MirrorLaid {
 export interface LayPorts {
   readonly did: () => Promise<string>;
   readonly submit: IngestSubmit;
+  /** Where the lay's bases land, over the tree the lay opened (`BaseDoor`); absent, that tree itself. */
+  readonly base?: (tree: SyncedTree, wave: Pick<MirrorWave, "wiki">) => BaseDoor;
 }
 
 /** A wave the island refused whole: one refused row per candidate and per kāpae title, each with the island's words. */
@@ -1413,7 +1606,7 @@ export async function liveLay(wave: MirrorWave, apply: boolean, ports: LayPorts)
     source: wave.source, toBag: wave.toBag, candidates, did: await ports.did(), unattended: true,
     ...(wave.face !== undefined ? { face: wave.face } : {}),
     ...(wave.wiki !== undefined ? { inWiki: true, wiki: wave.wiki } : {}), ...(kapae.length > 0 ? { kapae } : {}),
-  }, tree, ports.submit);
+  }, tree, ports.submit, {}, ports.base?.(tree, wave));
   if (settled.first.status === "error") {
     const folded = foldWaveRefusal(settled.first.errorMessage ?? "INGEST refused", candidates, kapae);
     return { ...read, refused: [...refused, ...folded.refused, ...folded.kapaeRefused] };
@@ -1449,6 +1642,9 @@ export interface PoolIngestOptions {
   readonly did: string;
   /** The Synced tree each wave reads afresh; absent, the projection checkpoint's (`openSyncedTree`). */
   readonly tree?: () => SyncedTree;
+  /** Where each wave's bases land, over the tree that wave read (`islandBaseDoor` over the daemon island's shore in the
+   *  vessel); absent, that tree itself. */
+  readonly base?: (tree: SyncedTree) => BaseDoor;
   /** HEAD's words for a pool file with no synced base (`poolHeads(pool)` in the vessel): absent, no history stands in. */
   readonly heads?: BaseFromGit;
   readonly log?: (line: string) => void;
@@ -1491,7 +1687,7 @@ type FolderWaveReading = { readonly sense: string[]; readonly vanishedNow: boole
  */
 async function folderWave(
   folder: WaveFolder, gone: Map<string, { syncedHash: string; file: string }>, touched: readonly string[],
-  o: { readonly submit: IngestSubmit; readonly did: string; readonly tree?: () => SyncedTree; readonly heads?: BaseFromGit; readonly log: (line: string) => void },
+  o: { readonly submit: IngestSubmit; readonly did: string; readonly tree?: () => SyncedTree; readonly base?: (tree: SyncedTree) => BaseDoor; readonly heads?: BaseFromGit; readonly log: (line: string) => void },
 ): Promise<FolderWaveReading> {
   const log = o.log;
   // Every wave re-stats each vanished file too: a lost event never leaves a returned file reading as gone.
@@ -1513,7 +1709,7 @@ async function folderWave(
   const settled = await settleIngest({
     source: folder.dir, toBag: folder.bag, candidates, did: o.did, deletions: ride, unattended: true,
     ...(folder.wiki !== undefined ? { inWiki: true, wiki: folder.wiki } : {}),
-  }, tree, o.submit);
+  }, tree, o.submit, {}, o.base?.(tree));
   if (settled.first.status === "error") {
     log(`a wave over ${folder.label} refused (${settled.first.errorMessage ?? "the island named no reason"}): the shore weighs its ${candidates.length} carrier(s)`);
     sense.push(...candidates.map((c) => c.uri));
@@ -1526,7 +1722,12 @@ async function folderWave(
     else if (absent.has(d.uri)) { gone.delete(d.uri); sense.push(d.uri); }
     else sense.push(d.uri);
   }
-  applyConfirmedRenames(tree, folder.bag, candidates, settled.deletions);
+  // NO BASE WAITS SILENT: the settle landed each base, and each confirmed rename's, through the base door. One that rides
+  // the island's pending pin, and one that reached no owner, each get named here, and the shore counts the pins that wait.
+  const bases = settled.bases;
+  if (bases !== undefined && bases.waiting > 0) log(`${bases.waiting} base(s) from ${folder.label} wait on the island's pending pin until its heads rest; \`lares shore flush\` names each pin that waits`);
+  if (bases !== undefined && bases.unread + bases.differs > 0) log(`${bases.unread + bases.differs} base(s) from ${folder.label} pinned nothing: the island that projects ${folder.bag} read ${bases.differs} carrier(s) whose file and records differ and ${bases.unread} file(s) it could not read; its gate weighs each as it stands`);
+  if (bases !== undefined && bases.owed > 0) log(`${bases.owed} base(s) from ${folder.label} reached no owner (${bases.why ?? "the island gave no answer"}); the next wave over those files asks again`);
   // A CARRIER THAT STOOD OFF GOES TO THE SHORE: the gate landed nothing for it, and the projector raises its keyed alert.
   for (const c of settled.conflicts) { sense.push(c.uri); log(`stands off: ${c.uri} (${c.why}); \`lares shore\` names it with its key`); }
   for (const r of settled.refused) log(`refuses: ${r.uri} (${r.why})`);
@@ -1552,7 +1753,7 @@ export function poolIngestPorts(o: PoolIngestOptions): Pick<FacePoolPorts, "catc
   /** One plane's wave: what it owes the shore, and whether a carrier newly vanished. */
   const planeWave = (plane: PoolWavePlane, bag: string, touched: readonly string[]): Promise<FolderWaveReading> => folderWave(
     { dir: join(o.pool, FACE_PLANES[plane]), bag, site: (file, tree) => siteFaceFile(o.pool, file, tree), label: `${FACE_PLANES[plane]}/` },
-    vanished.get(plane)!, touched, { submit: o.submit, did: o.did, ...(o.tree ? { tree: o.tree } : {}), ...(o.heads ? { heads: o.heads } : {}), log },
+    vanished.get(plane)!, touched, { submit: o.submit, did: o.did, ...(o.tree ? { tree: o.tree } : {}), ...(o.base ? { base: o.base } : {}), ...(o.heads ? { heads: o.heads } : {}), log },
   );
 
   const waveOver = async (files: readonly string[], whole: boolean): Promise<void> => {
@@ -1614,6 +1815,9 @@ export interface WorkspaceIngestOptions {
   /** The worn face's actor: every wave lands under it, whichever face last wrote the shared copy. */
   readonly did: string;
   readonly tree?: () => SyncedTree;
+  /** Where each wave's bases land, over the tree that wave read (`islandBaseDoor` over the wiki island's shore in the
+   *  vessel); absent, that tree itself. */
+  readonly base?: (tree: SyncedTree) => BaseDoor;
   readonly log?: (line: string) => void;
 }
 
@@ -1670,7 +1874,7 @@ export function workspaceIngestPorts(o: WorkspaceIngestOptions): Pick<FacePoolPo
     // THE CATCH-UP WAKES ON A DIFF: a folder that stands as the last sync left it asks nothing of its wiki, so a cold wiki
     // stays cold (`wsSense` and the wave's submit both activate it).
     if (whole && gone.size === 0 && !folderDiffers(folder, touched, (o.tree?.() ?? openSyncedTree()), skipped, o.heads)) return;
-    const r = await folderWave(folder, gone, touched, { submit: o.submit, did: o.did, ...(o.tree ? { tree: o.tree } : {}), ...(o.heads ? { heads: o.heads } : {}), log });
+    const r = await folderWave(folder, gone, touched, { submit: o.submit, did: o.did, ...(o.tree ? { tree: o.tree } : {}), ...(o.base ? { base: o.base } : {}), ...(o.heads ? { heads: o.heads } : {}), log });
     if (whole || r.vanishedNow) await o.sense();
     else if (r.sense.length > 0) await o.sense([...new Set(r.sense)]);
   };

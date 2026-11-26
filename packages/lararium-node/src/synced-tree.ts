@@ -30,7 +30,8 @@
  * moment drop no row: no lock, no holder to outlive, no clock.
  *
  * AN OBSERVATION RESTS THE MOMENT IT GETS RECORDED. `set` lands its row and `deleteAt` unlinks
- * its row before either returns; no instance holds a change back for a later write. Two writers of
+ * its row before either returns; no instance holds a change back for a later write, save a pin that waits on its
+ * seal (THE BASE PINS ONLY WHAT SEALED, below). Two writers of
  * the SAME row therefore leave the LATER OBSERVATION standing, whole: a row never lands behind a
  * sibling's newer word, and a row a sibling removed never returns from another instance's memory.
  * THE DIRECTORY'S WORD STANDS. A landing the disk refuses gets named, and the instance reads that one row
@@ -60,6 +61,27 @@
  * clock: a document that still holds the base's heads moved forward from the agreement, and one that lacks them fell
  * behind it. The projector reads the second as a standoff and writes nothing over the file (`disk-projector.ts`,
  * `pastRecords`). A row with no heads vouches as it always did.
+ *
+ * THE BASE PINS ONLY WHAT SEALED. A tree handed a rest (`rests`: the vessel's reading of a document's heads at rest) holds a
+ * row that names a document and its heads in memory as PENDING, and lands it in the directory only once those heads rest in
+ * the vessel's sealed rest. A base that vouched for heads no rest holds would read, after a crash, as records that fell
+ * behind, and stand off a file the house itself wrote. The pending row answers every read in this instance at once, so the
+ * projector decides as it always did; only its landing waits. The tree asks at the pin, and again at each settle (`settle`:
+ * the projector's idle, the shore's flush), never on a timer. A pending row a crash takes costs nothing: the projector wrote
+ * the canonical render, so the next boot reads disk == records with no base between them and pins again. A row that names
+ * no document or no heads (the ingest gesture, a store with no history) lands at once, as before. A rest that answers
+ * nothing it can read (none stands, it faulted, the ask never crossed) reads `unread`, never rested: the pin stays pending,
+ * named so where the shore shows pins. The landing compares and sets on the directory's row the pin was set over, so a
+ * sibling island's newer row for the same path stands and the superseded pin drops with no write.
+ *
+ * ONE OWNER OF PENDING STATE. A pending pin lives in its island's memory and nowhere else: the directory holds no word of
+ * it, so no reader of the directory meets a claim whose writer stopped. A wave that lands carriers (the face pool's, on the
+ * vessel's thread; a gesture, in another process) opens its own instance and never sees the pin, so it lands no base by its
+ * own hand where an island stands: it asks the island that took its INGEST to land each base in the island's own tree
+ * (`landBases`, `ingest-scan.ts`; the shore's `base` act). That island answers from the one tree that holds the pin: an
+ * agreement the pin already names waits with it, and a newer one supersedes it, with its document and its heads. An island
+ * that stops takes its pins with it and blocks nothing; the next boot reads disk == records and pins again. The tree
+ * re-asks a pending pin's rest whenever the vessel says that document's saves rested (`rested`), never on a timer.
  */
 
 import { readFileSync, writeFileSync, renameSync, mkdirSync, readdirSync, unlinkSync, statSync } from "fs";
@@ -93,6 +115,9 @@ export function syncedTreeDir(projectionDir: string): string {
 }
 
 /** One base: where the agreement stood, what the disk held there and what the records rendered. */
+/** The vessel's reading of a document's heads at rest (`@lararium/mesh/sealed-rest`, `headsRestAt`). */
+export type HeadsRestReading = "rested" | "waiting" | "unread";
+
 export interface SyncedBase {
   /** The content file the agreement stood at (`syncedPath`). */
   readonly path: string;
@@ -130,6 +155,24 @@ const rowFile = (key: string, path: string): string => `${stem(key)}.${stem(path
 const rowId = (key: string, path: string): string => `${key}\0${path}`;
 /** A row file's name, as against a temp file or a stranger's. */
 const ROW_NAME = /^[0-9a-f]{32}\.[0-9a-f]{32}\.json$/;
+
+/** A pin waiting on its seal: its row, the directory's row it was set over (undefined where the disk refused that read),
+ *  why it still waits, and how many of a wave's bases met it waiting (`metWaiting`). */
+interface PendingPin { readonly row: Row; readonly over: Row | null | undefined; why: string; met: number }
+const PENDING_ASKED = "pending: rest asked";
+const PENDING_WAITING = "pending: heads not yet sealed";
+/** Why a pin waits where its rest answered nothing readable (none stands, it faulted, the ask never crossed). */
+export const PENDING_UNREAD = "pending: rest unread";
+const PENDING_UNREAD_ROW = "pending: the directory's row unread";
+
+/** Two rows name one agreement: the same carrier, path, both hashes, document and heads. */
+function sameRow(a: Row | null | undefined, b: Row | null | undefined): boolean {
+  if (a === undefined || b === undefined) return false;
+  if (a === null || b === null) return a === b;
+  const heads = (r: Row): string => [...(r.base.heads ?? [])].sort().join(" ");
+  return a.key === b.key && a.base.path === b.base.path && a.base.disk === b.base.disk && a.base.records === b.base.records
+    && a.base.doc === b.base.doc && heads(a) === heads(b);
+}
 
 /** Read ONE row's file: the row, null where no file stands (or it reads as no row), undefined where the disk refuses the read. */
 function readRow(dir: string, key: string, path: string): Row | null | undefined {
@@ -183,10 +226,26 @@ export class SyncedTree {
   /** The keys whose base stands at each path: DERIVED like `byHash`, rebuilt on the first `uriAt` after a change. */
   private byPath: Map<string, Set<string>> | null = null;
 
+  /** `rowId` → a pin whose heads rest nowhere yet: it stands in `map`, and lands in the directory once its heads rest. */
+  private readonly pendingRows = new Map<string, PendingPin>();
+  /** The rest a pending pin asks, or null: every pin lands at once. */
+  private readonly rests: ((doc: string, heads: readonly string[]) => Promise<HeadsRestReading>) | null;
+
   constructor(
     /** The directory the tree rests in. Null holds the bases in memory for this instance's life and persists nothing. */
     private dirPath: string | null,
+    opts: {
+      /** The vessel's reading of a document's heads at rest (`headsRestAt`, `@lararium/mesh/sealed-rest`). Present, a row
+       *  that names a document and its heads waits pending until they rest. */
+      readonly rests?: (doc: string, heads: readonly string[]) => Promise<HeadsRestReading>;
+      /** The vessel's word that a document's saves rested (`rest:rested`): each pending pin of that document asks again. */
+      readonly rested?: (listener: (doc: string) => void) => () => void;
+    } = {},
   ) {
+    this.rests = opts.rests ?? null;
+    this.unhearRested = this.rests !== null && opts.rested ? opts.rested((doc) => {
+      for (const [id, pin] of [...this.pendingRows]) if (pin.row.base.doc === doc) void this.landSealed(id, pin);
+    }) : null;
     if (dirPath === null) return;
     // A file standing at the directory's own path leaves this tree nowhere to rest: it holds its bases in memory.
     let isFile = false;
@@ -273,10 +332,108 @@ export class SyncedTree {
       ...(doc !== undefined && doc !== "" ? { doc } : {}),
       ...(heads !== undefined && heads.length > 0 ? { heads: [...heads] } : {}),
     } };
-    const before = this.map.get(rowId(key, row.base.path)) ?? null;
+    const id = rowId(key, row.base.path);
+    const before = this.map.get(id) ?? null;
     this.put(row);
+    if (this.rests !== null && row.base.doc !== undefined && row.base.heads !== undefined) {
+      // THE PIN WAITS ON ITS SEAL: it answers every read here at once, and reaches the directory once its heads rest. It
+      // remembers the directory's row it was set over, for the compare at its landing.
+      const pin: PendingPin = { row, over: this.dirPath === null ? null : readRow(this.dirPath, key, row.base.path), why: PENDING_ASKED, met: 0 };
+      this.pendingRows.set(id, pin);
+      void this.landSealed(id, pin);
+      return;
+    }
+    this.pendingRows.delete(id);
     if (!this.land(row)) this.takeBack(key, row.base.path, before);
   }
+
+  /** How many pins stand in memory waiting on their seal. */
+  get pending(): number { return this.pendingRows.size; }
+
+  /** The tree's projector stopped: it stops hearing the vessel's rested word, and every pin still waiting leaves with it
+   *  (an ask in flight lands nothing). The rows this instance read stay readable; the directory holds what sealed. */
+  dispose(): void { this.unhearRested?.(); this.unhearRested = null; this.pendingRows.clear(); }
+  private unhearRested: (() => void) | null;
+
+  /** Whether this tree rests in a directory: a tree held in memory persists nothing, and no island owns its rows. */
+  get persists(): boolean { return this.dirPath !== null; }
+
+  /**
+   * Whether a pin of THIS instance waits on its seal at `file` for this carrier. The pin lives in this instance's memory
+   * alone (ONE OWNER OF PENDING STATE): another instance over the same directory answers false, and asks the owner.
+   */
+  pendingAt(key: string, file: string): boolean {
+    return this.pendingRows.has(rowId(key, syncedPath(file)));
+  }
+
+  /** A wave's base met this instance's pin waiting at `file` and waits with it: the pin counts the meeting for the shore. */
+  metWaiting(key: string, file: string): void {
+    const pin = this.pendingRows.get(rowId(key, syncedPath(file)));
+    if (pin !== undefined) pin.met += 1;
+  }
+
+  /** How many of the waves' bases met a pin that still waits: each waits on that pin's seal, and none landed a row. */
+  get waitingBases(): number {
+    let n = 0;
+    for (const pin of this.pendingRows.values()) n += pin.met;
+    return n;
+  }
+
+  /** Every pin standing in memory waiting on its seal, with why it waits (`pending: rest unread`, ...): the shore shows them. */
+  pendingPins(): Array<{ readonly bagId: string; readonly uri: string; readonly path: string; readonly why: string }> {
+    return [...this.pendingRows.values()].map(({ row, why }) => ({ ...this.splitKey(row.key), path: row.base.path, why }));
+  }
+
+  /**
+   * THE SETTLE: ask the rest again for every pending pin, and land each whose heads now rest. The projector's idle and the
+   * shore's flush call it; nothing calls it on a timer. Answers how many landed.
+   */
+  async settle(): Promise<number> {
+    // AN ASK IN FLIGHT MAY READ THE REST AS IT STOOD BEFORE THIS SETTLE (ahead of a stand-down's seal): it answers first, and
+    // every pin still pending after it asks afresh.
+    const before = this.sealedLandings;
+    await Promise.all([...this.asking.values()]);
+    await Promise.all([...this.pendingRows].map(([id, pin]) => this.landSealed(id, pin)));
+    return this.sealedLandings - before;
+  }
+
+  /** The asks in flight, one per document and heads: a wave pins many carriers at one document's heads, and asks once. */
+  private readonly asking = new Map<string, Promise<HeadsRestReading>>();
+
+  /** Ask the rest whether `heads` of `doc` rest, joining an ask already in flight for the same pair. A fault reads `unread`. */
+  private askRest(doc: string, heads: readonly string[]): Promise<HeadsRestReading> {
+    const at = `${doc}\0${[...heads].sort().join(" ")}`;
+    let ask = this.asking.get(at);
+    if (ask === undefined) {
+      ask = this.rests!(doc, heads).then((reading) => (reading === "rested" || reading === "waiting" ? reading : "unread"), () => "unread" as const).finally(() => { this.asking.delete(at); });
+      this.asking.set(at, ask);
+    }
+    return ask;
+  }
+
+  /**
+   * Ask whether one pending pin's heads rest, and land it where they do and it still stands as asked. THE LANDING COMPARES
+   * AND SETS ON THE BASE IT READ, never last-writer-wins: the directory's row for that path must still stand as the pin found
+   * it when set (`over`). A sibling island that landed its own row there meanwhile wrote the newer word, so the pending pin
+   * drops with no write, and memory takes the directory's row.
+   */
+  private async landSealed(id: string, pin: PendingPin): Promise<boolean> {
+    const { row } = pin;
+    const reading = await this.askRest(row.base.doc!, row.base.heads!);
+    // A NEWER PIN OR A REMOVAL OF THE SAME ROW SINCE THE ASK SUPERSEDES IT: only the pin still pending lands.
+    if (this.pendingRows.get(id) !== pin) return false;
+    if (reading !== "rested") { pin.why = reading === "unread" ? PENDING_UNREAD : PENDING_WAITING; return false; }
+    const stands = this.dirPath === null ? null : readRow(this.dirPath, row.key, row.base.path);
+    if (stands === undefined) { pin.why = PENDING_UNREAD_ROW; return false; }
+    this.pendingRows.delete(id);
+    if (!sameRow(stands, pin.over)) { this.takeBack(row.key, row.base.path, stands); return false; }
+    if (!this.land(row)) { this.takeBack(row.key, row.base.path, null); return false; }
+    this.sealedLandings += 1;
+    return true;
+  }
+
+  /** How many pending pins landed over this instance's life. */
+  private sealedLandings = 0;
 
   /**
    * The disk refused an act on one row: memory takes the directory's word for it. Where the disk refuses
@@ -296,6 +453,7 @@ export class SyncedTree {
   deleteAt(key: string, file: string): void {
     const path = syncedPath(file);
     const before = this.map.get(rowId(key, path)) ?? null;
+    this.pendingRows.delete(rowId(key, path));
     this.drop(key, path);
     if (this.dirPath === null) return;
     const name = join(this.dirPath, rowFile(key, path));
@@ -397,7 +555,8 @@ export class SyncedTree {
     let moved = 0;
     for (const { key, base } of [...this.map.values()]) {
       if (base.path !== src && !base.path.startsWith(src + sep)) continue;
-      this.set(key, dst + base.path.slice(src.length), base.disk, base.records, base.doc);
+      // THE MOVE CARRIES THE AGREEMENT WHOLE, its heads with it: a moved base still names the history it vouches for.
+      this.set(key, dst + base.path.slice(src.length), base.disk, base.records, base.doc, base.heads);
       this.deleteAt(key, base.path);
       moved++;
     }
@@ -467,8 +626,8 @@ export class SyncedTree {
    * Read the directory afresh: every row, or the rows of one carrier where `key` names it. A sibling
    * writer (another island, the ingest gesture) may have pinned or removed a base since this instance
    * loaded; a caller about to surface a divergence reads through here first, so a base a sibling pinned
-   * answers before an alert does. Every change this instance made already rests in the directory, so the
-   * directory's word replaces this instance's own.
+   * answers before an alert does. Every change this instance made already rests in the directory, save a pin
+   * still waiting on its seal, so the directory's word replaces this instance's own, and each pending pin stands over it.
    */
   reread(key?: string): void {
     if (this.dirPath === null) return;
@@ -477,6 +636,8 @@ export class SyncedTree {
       this.drop(row.key, row.base.path);
     }
     for (const row of rows) this.put(row);
+    // A PIN WAITING ON ITS SEAL STANDS OVER THE DIRECTORY'S WORD: it rests nowhere yet, and stays this instance's own.
+    for (const { row } of this.pendingRows.values()) if (key === undefined || row.key === key) this.put(row);
   }
 
   /** Per-process write counter — one half of the temp file's unique name. */

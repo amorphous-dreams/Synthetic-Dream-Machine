@@ -221,6 +221,12 @@ export class ShoreRig {
     await this.written(() => { $tw.wiki.addTiddler(new $tw.Tiddler(held.fields, { text })); });
   }
 
+  /** A HAND IN THE WIKI: a record stands whole (a native carrier the rig's corpus never held), stamped with the rig's bag. */
+  async put(fields: Record<string, unknown>): Promise<void> {
+    const $tw = this.$tw;
+    await this.written(() => { $tw.wiki.addTiddler(new $tw.Tiddler(fields, { "$origin-bag": RIG_BAG })); });
+  }
+
   titlesOf(uri: string): string[] {
     return this.$tw.wiki.allTitles().filter((t) => t === uri || t.startsWith(`${uri}#`));
   }

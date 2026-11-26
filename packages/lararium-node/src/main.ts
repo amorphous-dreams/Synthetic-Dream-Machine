@@ -911,9 +911,13 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
       console.log(`[lararium] phase → ${phase}`);
     },
   });
-  if (result.activeWikiSource === "home-preference" && result.activeWikiId !== wikiId) {
-    console.log(`[lararium] home wiki preference: ${wikiId} → ${result.activeWikiId}`);
-  }
+  // The home preference reads once the daemon's working layer mounts; the line reads the settled slot, and the boot
+  // never waits on it (the socket and the standing record go up while the home wiki activates).
+  void result.homeWikiSettled().then(() => {
+    if (result.activeWikiSource === "home-preference" && result.activeWikiId !== wikiId) {
+      console.log(`[lararium] home wiki preference: ${wikiId} → ${result.activeWikiId}`);
+    }
+  });
   console.log(`[lararium] live — wiki: ${result.activeWikiId} | storage: ${storageDir} | root: ${rootDir}`);
   console.log(`[lararium] catalog:  ${result.catalogHandleUrl ?? "(none)"}`);
   console.log(`[lararium] oracle:   ${result.oracleDocUrl ?? "(none)"}`);
