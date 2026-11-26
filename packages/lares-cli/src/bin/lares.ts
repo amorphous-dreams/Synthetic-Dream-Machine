@@ -29,7 +29,7 @@ import { CustodyLocked, CustodyRecordUnavailable, SealedActRefused } from "@lara
 import { bridge, commandScope, shimHelpLines, HOUSE_ABSENT_EXIT } from "../host-bridge.js";
 import { armAskBudget } from "../local-connector.js";
 import { ASK_BUDGET_FLAG } from "../ask-budget.js";
-import { standingExit, takeEntryAsks } from "../standing-report.js";
+import { reportStanding, takeEntryAsks } from "../standing-report.js";
 import { seatOfflineCustody, OfflineCustodyRefused } from "../offline-custody.js";
 import { seatNewFaceRoute } from "../face-route-prompt.js";
 import { cmdHerm }                    from "../commands/herm.js";
@@ -599,29 +599,32 @@ async function drainStdout(): Promise<void> {
 }
 
 /**
- * TWO ASKS RIDE THE ARGV INTO THIS ENTRY, and the entry takes both off before any verb reads it (`takeEntryAsks`), so
- * no verb's parser meets them and no child a verb spawns inherits them. A caller's declared budget (`--ask-budget-ms=<N>`)
- * bounds this process's own wait (`armAskBudget`: the verb's answer disarms it, and a budget that runs out first leaves at
- * once, since nothing answered and so nothing waits to drain). The host shim's ask (`--standing-report`) rides the exit:
- * a verb that succeeded names the standing verdict in its code (`standingExit`), so one process serves one call.
+ * ONE WORD RIDES THE ARGV INTO THIS ENTRY, and the entry takes it off before any verb reads it (`takeEntryAsks`), so no
+ * verb's parser meets it and no child a verb spawns inherits it: a caller's declared budget (`--ask-budget-ms=<N>`) bounds
+ * this process's own wait (`armAskBudget`: the verb's answer disarms it, and a budget that runs out first leaves at once,
+ * since nothing answered and so nothing waits to drain). THE STANDING RIDES NO WORD AND NO EXIT CODE: a verb that succeeded
+ * under a shim's exec tag REPORTS the standing verdict into the house's config bind as it leaves (`reportStanding`), and
+ * the exit code stays the verb's own, so one process serves one call and no caller reads a changed code.
  */
 export function runCli(): void {
-  const { argv, standing: asked, budgetMs } = takeEntryAsks(process.argv.slice(2));
+  const { argv, budgetMs, retiredAsk } = takeEntryAsks(process.argv.slice(2));
   const disarm = armAskBudget(budgetMs);
   bridge(forwardedArgv(argv, budgetMs), COMMAND_NAMES).then((forwarded) => forwarded ?? dispatch(argv)).then(
     async (code) => {
       disarm?.();
       try { await drainStdout(); }
       catch (err) { console.error(err); process.exitCode = 1; return; }
-      process.exitCode = await standingExit(code, asked);
+      process.exitCode = code;
+      // A forwarded call reports nothing here (the shim's exec ran the verb, and that process reports); a call carrying the
+      // retired ask comes from a shim that reads no report, so none gets written for it.
+      if (!retiredAsk) await reportStanding(code);
     },
     (err)  => { disarm?.(); console.error(crashReading(err)); process.exitCode = houseRootUnnamed(err) ? HOUSE_ABSENT_EXIT : 1; },
   );
 }
 
 /**
- * A FORWARDED CALL KEEPS ITS BUDGET (the process that reaches the vessel leaves under it too) and never the standing ask:
- * the shim alone asks for that, on the exec it runs.
+ * A FORWARDED CALL KEEPS ITS BUDGET (the process that reaches the vessel leaves under it too).
  */
 function forwardedArgv(argv: string[], budgetMs: number | null): string[] {
   return budgetMs === null ? argv : [...argv, `${ASK_BUDGET_FLAG}=${budgetMs}`];

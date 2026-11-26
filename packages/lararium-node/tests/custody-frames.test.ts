@@ -555,18 +555,18 @@ describe("the census frame", () => {
 
   test("N1 — each held document answers by id, refusal, count and bag, and never a body", async () => {
     const held = [{ documentId: "doc-a", refusal: "save-unbooked" as const, saves: 2, bagId: "lar:///ha.ka.ba/bags/notes" }];
-    expect(await ask(door(() => held))).toEqual({ op: "census", held, standing: "hearth", locked: true });
+    expect(await ask(door(() => held))).toEqual({ op: "census", held, standing: "hearth", locked: true, everOpened: false });
   });
 
   test("N2 — no composition sitting answers held null; CONTROL: a door with no census wired answers null", async () => {
-    expect(await ask(door(() => null))).toEqual({ op: "census", held: null, standing: "hearth", locked: true });
-    expect(await ask(door())).toEqual({ op: "census", held: null, standing: "hearth", locked: true });
+    expect(await ask(door(() => null))).toEqual({ op: "census", held: null, standing: "hearth", locked: true, everOpened: false });
+    expect(await ask(door())).toEqual({ op: "census", held: null, standing: "hearth", locked: true, everOpened: false });
   });
 
   test("N3 — the census names whether the key stands shut, so a stop can say unlock first", async () => {
     // Under a held key every standing face reads lit (the fake opens them all), so `facesLit` names each; none standing leaves it absent.
     const lit = listFaceCustodyIds().map((f) => f.ordinal);
-    expect(await ask(door(() => [], true))).toEqual({ op: "census", held: [], standing: "hearth", locked: false, ...(lit.length > 0 ? { facesLit: lit } : {}) });
+    expect(await ask(door(() => [], true))).toEqual({ op: "census", held: [], standing: "hearth", locked: false, everOpened: true, ...(lit.length > 0 ? { facesLit: lit } : {}) });
     expect(await ask(door(() => [], false))).toMatchObject({ locked: true });
     expect(await ask(door(() => [], false)), "a shut node key lights no face").not.toHaveProperty("facesLit");
   });

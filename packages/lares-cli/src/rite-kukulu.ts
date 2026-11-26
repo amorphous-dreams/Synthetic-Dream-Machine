@@ -97,6 +97,13 @@ export interface StandReading {
   readonly current: boolean;
   readonly pulama: "off" | "absent" | "level" | "closure-level" | "moved" | "unread";
   /**
+   * A HOʻĀLA LEI STANDS WITH A RETURN LEFT at the pūlama (the shim reads its status). The hand's stringing already authorized the
+   * waking's acts (operator rulings, 2026-11-26: standing lei caps carry the authorization until the lei expires by spends, and a
+   * moved keeper code changes nothing, since the leis and the rollback cover it): the raise lights the keeper and admits the image
+   * under the lei, one return each, with no route; the prior keeper image stays tagged as the rollback. Absent or false: as before.
+   */
+  readonly hoala?: boolean;
+  /**
    * THE KEEPER TALLY, where the pūlama's code moved and it stands lit: `vests` where a successor the hand made names the
    * closure the new image carries (the raise hands the living fire to a successor, unattended, and asks no route); `struck-due`
    * where the handed run reached its count (the hand lights the successor); `lei` where no commit names the closure yet and the
@@ -556,7 +563,10 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
     ports.say(`kūkulu: ${why}; the house stands as it stood, the image waits built, and nothing spent; your hand: ${HAND_ACT} on a terminal`);
     return { code: 0, data: { ...base, ...extra, begun: false, awaits: "hand", hand: HAND_ACT } };
   };
-  if (light && !tty) {
+  // THE HOʻĀLA LEI LICENSES THE LIGHT, a moved closure included: the raise spends its return where the keeper stands dark, and steps
+  // back to the prior keeper closure where the new code fails its waking. No hand gets asked while a return stands.
+  if (light && !tty && r.hoala === true) ports.say(`kūkulu: the keeper owes its light (${r.pulama === "moved" ? "its code closure moved" : r.pulama === "absent" ? "no pūlama runs" : "it stands unlit"}), and a hoʻāla lei holds a return: the raise wakes the keeper under the lei with no route; the prior keeper image stays tagged as the rollback (lares rite kukulu --rollback)`);
+  else if (light && !tty) {
     const why = r.pulama === "moved" ? (r.keeper === "struck-due" ? "the pūlama's code closure moved and the keeper's handed run owes the struck fire" : "the pūlama's code closure moved") : r.pulama === "absent" ? "no pūlama runs" : "the pūlama stands unlit";
     // A MOVED CLOSURE NAMES THE HANDED FIRE TOO: a successor on a terminal lets the next run vest the successor with no route.
     const handed = r.pulama === "moved" && r.lit === true && r.keeper !== "struck-due" ? " (or name its successor ahead on a terminal: lares pulama name-successor, and the next run hands it the living fire with no route; a kukulu lei with returns left on the line licenses that commit itself)" : "";
@@ -769,7 +779,8 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
   const begun = begunFaces.length > 0;
   // THE ADMIT GATE: a new vessel under a pūlama enters on an admission, a kukulu offer, or the hand's admit (a route).
   const raisesNew = !r.current || r.pulama === "absent" || r.pulama === "moved";
-  if (pulama && !light && raisesNew && !begun && r.admitted !== true && !r.offer && !tty) {
+  // A HOʻĀLA LEI WITH A RETURN LEFT LICENSES THE ADMIT TOO: the raise admits the image under it, and no hand gets asked.
+  if (pulama && !light && raisesNew && !begun && r.admitted !== true && !r.offer && !tty && r.hoala !== true) {
     return awaitsHand(`the pūlama has not admitted the image of ${short}, no kukulu lei carries it, and its admit reads your route on a terminal (or string a lei first: lares lei kui --rite kukulu --branch ${branch} --returns <n> --all)`, spent);
   }
   const landCall = landCallOf(begunFaces);
