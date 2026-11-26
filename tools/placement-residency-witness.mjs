@@ -147,7 +147,7 @@ for (const [path, needle] of [
   ["packages/lararium-node/src/commands/nexus-release.ts", "materializeSharedLarDoc(repo, publicationDocUrl("],
   ["packages/lararium-node/src/commands/nexus-offering-inspect.ts", "const boardUrl = publicationDocUrl("],
   ["packages/lararium-node/src/floor-porch.ts", "materializeSharedLarDoc(repo, publicationDocUrl(nexusPubkey)"],
-  ["packages/lararium-node/src/open-node-vessel.ts", "publicationHandle ??= await materializeSharedLarDoc(repo, publicationDocUrl(nexusPubkey)"],
+  ["packages/lararium-node/src/open-node-vessel.ts", "materializeSharedLarDoc(repo, publicationDocUrl(nexusPubkey), \"board:publication\")"],
   ["packages/lararium-browser/src/open-browser-vessel.ts", "publicationHandle ??= await materializeSharedLarDoc(repo, publicationDocUrl(nexusPubkey)"],
   ["packages/lararium-mesh/src/federation-gate.ts", "publicationDocUrl(key)"],
 ]) if (!read(path).includes(needle)) throw new Error(`${path} lost the publication board's seat: ${needle}`);

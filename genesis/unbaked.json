@@ -8,7 +8,7 @@
   },
   {
    "source": "packages/lararium-tw5/plugins/lares-memetic-wikitext.json",
-   "sha256": "44c0e9ac433b500071b71f883d38f02a1c7c6ef3dbb19944a74a6a1c26e92fb8",
+   "sha256": "008a66b28a5ba53b8ee74bc05497123135355ac0b1218ccfae68d9e74126046b",
    "why": "The projection preference: the grammar-cache module carries the shipped `$:/config/lares/ProjectionFilter` base text, which now withholds TW5's status prefix and the story and history lists (UI navigation state, as TW5's own SaverFilter keeps them unsaved). The next labelled GENESIS RE-BAKE carries these bytes and deletes this row; until then a founded vessel's in-VM wiki reads the earlier base, and the daemon-side projector reads the new one from dist. The home preference re-packs the grammar skin too (the active-wiki meme burns its boot pointer). The spirit-swarm relink (the seed slot renamed from worker-swarm, the lar-pono-uri of sigil-node re-pointed) rides the same wait, and so does the act sigil's head (sigil-node turns sigil-lares and defines ~lares(action))."
   }
  ]
