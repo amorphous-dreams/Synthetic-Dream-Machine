@@ -19,7 +19,7 @@ import { hostSeedOfferPort } from "../src/seed-offered.js";
 import { parseArgs } from "../src/parse-args.js";
 import { RiteUsage, abandonHandRefusal, hostRefill, leiReading, hostRowLine, ritePlan, rollbackOf, standingOf, standingRowLine, syncCheckout } from "../src/commands/rite.js";
 import { storeVerbRidesWorn } from "../src/store-door.js";
-import { KUKULU_LEI_RETURNS, kukuluHand, kukuluSeedLine, priorImageRef, riteKukulu, syncPlan, type HandFacts, type RitePorts, type RiteVerbAnswer, type StandReading } from "../src/rite-kukulu.js";
+import { KUKULU_LEI_RETURNS, LEI_UNREAD_REFUSAL, kukuluHand, kukuluSeedLine, priorImageRef, riteKukulu, syncPlan, type HandFacts, type RitePorts, type RiteVerbAnswer, type StandReading } from "../src/rite-kukulu.js";
 import { decideRoute } from "../src/host-bridge.js";
 import { COMMAND_NAMES, COMMANDS, unknownFlags } from "../src/bin/lares.js";
 
@@ -31,14 +31,18 @@ const READING: StandReading = { revision: HEAD, image: IMAGE, how: "built", vess
 const LIT: Partial<StandReading> = { pulama: "closure-level", lit: true, admitted: false };
 
 /** Ports that record every call in order and answer from a script. */
-function fakes(over: { begin?: RiteVerbAnswer; land?: RiteVerbAnswer; reading?: Partial<StandReading>; stage?: number; raise?: number; tty?: boolean; keeper?: { to: string; closure: string } | null; leiStands?: boolean | string; leiSpend?: boolean } = {}) {
-  const calls: string[] = [], said: string[] = [];
+function fakes(over: { begin?: RiteVerbAnswer; land?: RiteVerbAnswer; reading?: Partial<StandReading>; stage?: number; raise?: number; tty?: boolean; keeper?: { to: string; closure: string } | null; leiStands?: boolean | string | null | ReadonlyArray<boolean | string | null>; leiSpend?: boolean } = {}) {
+  const calls: string[] = [], said: string[] = [], leiReads: string[] = [];
   const ports: RitePorts = {
     checkout: async () => { calls.push("checkout"); return { head: HEAD, branch: "main" }; },
     stage: async (target) => { calls.push(`stage ${JSON.stringify(target)}`); return { code: over.stage ?? 0, reading: { ...READING, ...over.reading } }; },
     raise: async (rev, keeper) => { calls.push(`raise ${rev}${keeper ? ` --keeper-to ${keeper.to}` : ""}`); return over.raise ?? 0; },
     ...(over.keeper === undefined ? {} : { keeperStand: async () => { calls.push("keeper-stand"); return over.keeper ?? null; } }),
-    ...(over.leiStands === undefined ? {} : { leiStands: async () => over.leiStands as boolean | string }),
+    // One answer for every lei read, or a list read in order (its last answer repeats): `leiReads` records each read's branch.
+    ...(over.leiStands === undefined ? {} : { leiStands: (() => {
+      const answers = Array.isArray(over.leiStands) ? [...over.leiStands] as Array<boolean | string | null> : null;
+      return async (branch: string) => { leiReads.push(branch); return answers === null ? over.leiStands as boolean | string | null : answers.length > 1 ? answers.shift()! : answers[0]!; };
+    })() }),
     ...(over.leiSpend === undefined ? {} : { keeperLeiSpend: async (rev: string, branch: string) => { calls.push(`keeper-lei-spend ${rev} ${branch}`); return over.leiSpend as boolean; } }),
     ...(over.tty === undefined ? {} : { tty: () => over.tty as boolean }),
     row: async (verb, args) => {
@@ -49,7 +53,7 @@ function fakes(over: { begin?: RiteVerbAnswer; land?: RiteVerbAnswer; reading?: 
     },
     say: (line) => { said.push(line); },
   };
-  return { ports, calls, said };
+  return { ports, calls, said, leiReads };
 }
 const BEGIN = `rite-begin ${JSON.stringify({ rite: "kukulu", branch: "main", head: HEAD, image: IMAGE })}`;
 const OFFER = `rite-offer ${JSON.stringify({ branch: "main", head: HEAD, image: IMAGE })}`;
@@ -170,6 +174,75 @@ describe("kukulu-asks-a-route-only-where-the-day-owes-one", () => {
     expect(t.calls).toContain(`raise ${HEAD}`);
   });
 
+  it("RED (lei-wright): one lei strung once restands the whole house across a closure move with no terminal: a lei read the vessel held behind another act reads once more at its point of use, licenses the successor, spends the rite's return and lands a tessera per face; CONTROL: a first read that answers reads once", async () => {
+    const to = "c".repeat(64), closure = "sha256:" + "9".repeat(64);
+    const keeperLei = { tty: false, reading: { pulama: "moved" as const, lit: true, keeper: "lei" as const }, keeper: { to, closure }, leiSpend: true };
+    const f = fakes({ ...keeperLei, leiStands: [null, true] });
+    const out = await riteKukulu(f.ports, {});
+    const offer = `rite-offer ${JSON.stringify({ branch: "main", head: HEAD, image: IMAGE, keeperTo: to, keeperNext: closure })}`;
+    expect(f.calls).toEqual(["checkout", "checkout", STAGE, `keeper-lei-spend ${HEAD} main`, BEGIN, "keeper-stand", offer, `raise ${HEAD} --keeper-to ${to}`, LAND]);
+    expect(out).toMatchObject({ code: 0, data: { begun: true, landed: true, par: true, tesserae: [{ face: "h0", tessera: TESSERA }] } });
+    expect(f.leiReads).toEqual(["main", "main"]);
+    expect(f.said.join("\n")).toMatch(/the kukulu lei on main answered no reading before the image step; the rite reads it once more here[\s\S]*the kukulu lei on main stands with a return left[\s\S]*the living fire passes with no route/);
+    expect(f.said.join("\n")).not.toMatch(/reads your route on a terminal/);
+    const once = fakes({ ...keeperLei, leiStands: true });
+    expect((await riteKukulu(once.ports, {})).code).toBe(0);
+    expect(once.leiReads).toEqual(["main"]);
+  });
+
+  it("RED (lei-wright): a kukulu lei that answers no reading twice stops the rite by name, asks no route and no hand, and moves nothing; CONTROL: with no vessel standing to read it, or with no lei read at all, the light's own line stands", async () => {
+    const to = "c".repeat(64), closure = "sha256:" + "9".repeat(64);
+    const keeperLei = { tty: false, reading: { pulama: "moved" as const, lit: true, keeper: "lei" as const }, keeper: { to, closure }, leiSpend: true };
+    const f = fakes({ ...keeperLei, leiStands: null });
+    const out = await riteKukulu(f.ports, {});
+    expect(out).toEqual({ code: 1, data: { rite: "kukulu", branch: "main", head: HEAD, begun: false, stopped: "lei", refusal: LEI_UNREAD_REFUSAL } });
+    expect(f.leiReads).toEqual(["main", "main"]);
+    expect(f.calls).toEqual(["checkout", "checkout", STAGE]);
+    expect(f.said.join("\n")).toMatch(/the kukulu lei on main answered no reading twice[\s\S]*licenses no successor and asks no route[\s\S]*nothing spent; read it with `lares lei show --rite kukulu --branch main`, then run `lares rite kukulu` again from this seat/);
+    expect(f.said.join("\n")).not.toMatch(/your hand|reads your route/);
+    const down = fakes({ ...keeperLei, reading: { ...keeperLei.reading, vessel: "down" as const }, leiStands: null });
+    expect(await riteKukulu(down.ports, {})).toMatchObject({ code: 0, data: { begun: false, awaits: "hand", hand: "lares rite kukulu" } });
+    expect(down.leiReads).toEqual(["main"]);
+    const unported = fakes(keeperLei);
+    expect(await riteKukulu(unported.ports, {})).toMatchObject({ code: 0, data: { begun: false, awaits: "hand", hand: "lares rite kukulu" } });
+    expect(unported.said.join("\n")).toMatch(/its light reads your route on a terminal/);
+  });
+
+  it("RED (lei-wright): returns spent stops the rite naming the re-string as the hand's one act, and nothing lights; an unstrung lei refuses the next rite the same way (revoke wins: a read after the unstring licenses nothing); CONTROL: a seat no lei ever served keeps the terminal ask beside the string", async () => {
+    const to = "c".repeat(64), closure = "sha256:" + "9".repeat(64);
+    const keeperLei = { tty: false, reading: { pulama: "moved" as const, lit: true, keeper: "lei" as const }, keeper: { to, closure }, leiSpend: true };
+    const kui = `lares lei kui --rite kukulu --branch main --returns ${KUKULU_LEI_RETURNS} --all`;
+    const untouched = (g: ReturnType<typeof fakes>) => g.calls.filter((c) => c.startsWith("keeper-lei-spend") || c === "keeper-stand" || c.startsWith("rite-") || c.startsWith("raise"));
+    const spent = fakes({ ...keeperLei, leiStands: "returns-spent" });
+    expect(await riteKukulu(spent.ports, {})).toEqual({ code: 0, data: { rite: "kukulu", branch: "main", head: HEAD, lei: "returns-spent", begun: false, awaits: "hand", hand: kui } });
+    expect(untouched(spent)).toEqual([]);
+    expect(spent.said.join("\n")).toMatch(/the kukulu lei on main stands with no return left, so no successor takes the living fire and nothing lights; one route on a terminal strings more, and the next `lares rite kukulu` from this seat then restands with no route; the house stands as it stood, the image waits built, and nothing spent; your hand: lares lei kui --rite kukulu --branch main --returns \d+ --all on a terminal/);
+    expect(spent.said.join("\n")).not.toMatch(/its light reads your route/);
+    // THE UNSTRING WINS OVER A RETURN A RACING READ SAW: the first read saw the lei standing (never asked again), the hand
+    // unstrung it, and the next rite reads it unstrung; and a rite whose own second read lands after the unstring licenses nothing.
+    for (const leiStands of ["unstrung", [null, "unstrung"]] as const) {
+      const gone = fakes({ ...keeperLei, leiStands: leiStands as string | ReadonlyArray<string | null> });
+      expect(await riteKukulu(gone.ports, {}), String(leiStands)).toMatchObject({ code: 0, data: { begun: false, awaits: "hand", lei: "unstrung", hand: kui } });
+      expect(untouched(gone), String(leiStands)).toEqual([]);
+      expect(gone.said.join("\n"), String(leiStands)).toMatch(/no kukulu lei stands on main \(unstrung\), so no successor takes the living fire and nothing lights; a fresh lei restrings the line: lares lei kui --rite kukulu --branch main/);
+    }
+    const never = fakes({ ...keeperLei, leiStands: "absent" });
+    expect(await riteKukulu(never.ports, {})).toMatchObject({ code: 0, data: { begun: false, awaits: "hand", lei: "absent", hand: kui } });
+    expect(untouched(never)).toEqual([]);
+    // No keeper lei path (the pūlama offers none: a hand's own successor, or its floor off): the terminal ask stands as it stood.
+    const off = fakes({ tty: false, reading: { pulama: "moved", lit: true, keeper: null }, keeper: { to, closure }, leiSpend: true, leiStands: "absent" });
+    expect(await riteKukulu(off.ports, {})).toMatchObject({ code: 0, data: { begun: false, awaits: "hand", hand: "lares rite kukulu" } });
+    expect(off.said.join("\n")).toMatch(/its light reads your route on a terminal, which this seat holds none of/);
+  });
+
+  it("RED (lei-wright): a guard that refuses the licensed successor names its own cure from this seat, never a lei the line already holds", async () => {
+    const to = "c".repeat(64), closure = "sha256:" + "9".repeat(64);
+    const refused = fakes({ tty: false, reading: { pulama: "moved", lit: true, keeper: "lei" }, keeper: { to, closure }, leiSpend: false, leiStands: true });
+    expect(await riteKukulu(refused.ports, {})).toMatchObject({ code: 0, data: { begun: false, awaits: "hand", lei: "guard-refused", hand: "lares rite kukulu" } });
+    expect(refused.said.join("\n")).toMatch(/the kukulu lei on main holds a return, and a guard refused the successor it licenses \(the lines above name the guard and its cure\): cure it and run `lares rite kukulu` again from this seat/);
+    expect(refused.said.join("\n")).not.toMatch(/a kukulu lei with returns left on the line licenses that commit itself/);
+  });
+
   it("RED: a successor that stands no key leaves the rite with no keeper move: the offer names none and the raise carries none (it relights struck)", async () => {
     const f = fakes({ tty: true, reading: { pulama: "moved", lit: true, keeper: "vests" }, keeper: null });
     expect((await riteKukulu(f.ports, {})).code).toBe(0);
@@ -222,7 +295,7 @@ describe("the closure speaks: a pre-rite reading names whether the kūkulu needs
       const facts = handFacts(row.facts);
       const begin: RiteVerbAnswer | undefined = facts.lei === true ? undefined : facts.lei === "returns-spent" ? { ok: false, code: "swarm-lei-returns-spent", message: "spent" } : ABSENT;
       const f = fakes({
-        tty: false, keeper: { to, closure }, leiSpend: true, ...(begin === undefined ? {} : { begin }), ...(facts.lei === null ? {} : { leiStands: facts.lei }),
+        tty: false, keeper: { to, closure }, leiSpend: true, ...(begin === undefined ? {} : { begin }), leiStands: facts.lei,
         reading: { pulama: facts.pulama === "level" ? "closure-level" : facts.pulama, lit: facts.lit, keeper: (facts.keeper ?? null) as NonNullable<StandReading["keeper"]> | null, vessel: facts.vessel, current: facts.current, admitted: facts.admitted, offer: facts.offer },
       });
       // THE SYNC the rite reads first answers as syncCheckout would over the same reading: a stop refuses, a stand or a fast-forward goes on.
@@ -230,8 +303,12 @@ describe("the closure speaks: a pre-rite reading names whether the kūkulu needs
       if (sync !== undefined) Object.assign(f.ports, { sync: async () => ({ ok: syncPlan(sync).act !== "stop", line: syncPlan(sync).act }) });
       const out = await riteKukulu(f.ports, {});
       const raised = f.calls.some((c) => c.startsWith("raise"));
-      // A lei that answered no read leaves the rite to the begin's own answer, which the reading never saw: it names no verdict.
-      if (row.line.startsWith("reads unknown: the kukulu lei")) continue;
+      // A lei that answered no read stops the keeper lei's path by name (asked twice, route unasked); elsewhere it leaves the rite
+      // to the begin's own answer, which the reading never saw, so the row names no verdict.
+      if (row.line.startsWith("reads unknown: the kukulu lei")) {
+        if (facts.pulama === "moved") { expect(out, row.name).toMatchObject({ code: 1, data: { refusal: LEI_UNREAD_REFUSAL } }); expect(raised, row.name).toBe(false); }
+        continue;
+      }
       if (row.line.startsWith("reads unknown")) expect(out.data, row.name).toMatchObject({ refusal: "kukulu-pulama-unread" });
       else if (row.line.startsWith("needs your hand")) expect(raised, `${row.name}: ${f.said.join(" | ")}`).toBe(false);
       else {

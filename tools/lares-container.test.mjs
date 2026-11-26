@@ -378,12 +378,15 @@ test("sh: RED reset under an AI seat refuses hand-act-only by name before the te
   for (const argv of verbs) {
     const label = argv.join(" ");
     test(`sh: RED ai-restand-spends-the-lei: ${label} refuses an AI seat with no standing kukulu lei, names the cure, and runs nothing`, async () => {
-      for (const [lei, why] of [[undefined, /answered no reading/], [leiOf({ standing: false, refusal: "absent" }), /no standing kukulu lei on \S+ \(absent\)/], [leiOf({ standing: true, returnsLeft: 0 }), /no return left/]]) {
+      // A lei that answered no reading names its read (a lei may stand there whole); an absent or spent one names the hand's string.
+      const kui = /lares lei kui --rite kukulu --branch \S+ --returns <n> --all/, reread = new RegExp(`read it with \`lares lei show --rite kukulu --branch \\S+\`, then run \`${label}\` again`);
+      for (const [lei, why, cure] of [[undefined, /answered no reading, so nothing licenses it yet/, reread], [leiOf({ standing: false, refusal: "absent" }), /no standing kukulu lei on \S+ \(absent\)/, kui], [leiOf({ standing: true, returnsLeft: 0 }), /no return left/, kui]]) {
         const r = await run(SH, argv, { checkout: "clean", env: { ...AI, FAKE_RUNNING_ID: "cid", ...(lei ? { FAKE_LEI_SHOW: lei } : {}) }, rawSeat: true });
         assert.equal(r.status, 2, r.stderr);
         assert.match(r.stderr, new RegExp(`${label} refused to an AI seat`));
         assert.match(r.stderr, why);
-        assert.match(r.stderr, /lares lei kui --rite kukulu --branch \S+ --returns <n> --all/);
+        assert.match(r.stderr, cure);
+        if (cure === reread) assert.doesNotMatch(r.stderr, kui, "a lei unread asks no string");
         assert.equal(acted(r.calls), false, r.calls);
       }
     });

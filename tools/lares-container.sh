@@ -1440,7 +1440,7 @@ kukulu_lei_word() { # $1 = the branch
 # `ai`) runs up, down, vessel stand, vessel stop and build only under a standing kukulu lei on the checkout's branch with a
 # return left, read as the rite reads it; one standing lei among the vessel's faces licenses. A hand (chain reads `hand`) passes
 # untouched. The rite's own steps (`rebuild`, `keeper-stand`, `keep-owed`) never come through here. With no vessel standing the
-# lei reads nowhere, and the refusal says so.
+# lei reads nowhere, and the refusal says so. A lei that answered no reading refuses too, and names the read to take again.
 ai_restand_gate() { # $1 = the verb as typed
   [ "$HOST_CHAIN" = ai ] || return 0
   ag_top=$(git -C "$SHIM_DIR" rev-parse --show-toplevel 2>/dev/null) || ag_top=""
@@ -1456,7 +1456,8 @@ ai_restand_gate() { # $1 = the verb as typed
   ag_lei=$(kukulu_lei_word "$ag_branch") || ag_lei=""
   if [ "$ag_lei" = yes ]; then return 0; fi
   case "$ag_lei" in
-    '') ag_why="the kukulu lei on $ag_branch answered no reading" ;;
+    # A LEI UNREAD NAMES ITS READ, never a string: the vessel held the read behind another act, and a lei may stand there whole.
+    '') die "$1 refused to an AI seat: the kukulu lei on $ag_branch answered no reading, so nothing licenses it yet; read it with \`lares lei show --rite kukulu --branch $ag_branch\`, then run \`$1\` again (nothing ran)" ;;
     returns-spent) ag_why="the kukulu lei on $ag_branch stands with no return left" ;;
     *) ag_why="no standing kukulu lei on $ag_branch ($ag_lei)" ;;
   esac
@@ -1580,6 +1581,7 @@ kukulu_reading() {
     if [ "$kr_keeper" = struck-due ]; then kr_say='needs your hand: closure moved; struck due'
     elif [ "$kr_offered" = lei ] && [ -z "$kr_lei" ] && [ "$kr_vessel" = standing ] && [ "$kr_lit" = yes ]; then kr_say=$kr_lei_unread
     elif [ -z "$kr_lei" ] && [ "$kr_vessel" = down ]; then kr_say='needs your hand: closure moved; no vessel stands to read the kukulu lei'
+    elif [ "$kr_offered" = lei ] && [ "$kr_lei" = returns-spent ]; then kr_say="needs your hand: closure moved; the kukulu lei's returns lie spent"
     elif [ -n "$kr_lei_ok" ] || [ -z "$kr_lei" ]; then kr_say='needs your hand: closure moved; keeper lei path off'
     else kr_say='needs your hand: closure moved; no standing kukulu lei'; fi
   elif [ "$kr_current" = true ] && [ "$kr_pulama" != moved ]; then kr_say='runs alone'
