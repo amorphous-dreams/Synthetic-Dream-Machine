@@ -33,8 +33,10 @@
  *                                   `alana/<pet>`, BEFORE any instance wakes; each offering mints the next seq. A nudge, no
  *                                   authority: a re-offer over a standing mandate lands only from its offerer or a hand
  *   ah --echo (hoʻāla, the waking)  an instance echoes the mandate's hash om handed it (`--echo <hash> --instance <id>`): the echo lands
- *                                   as `<pet>#<instance> <hash> <seq>` on the sibling record, as lineage; under an offering, a
- *                                   slot write from an instance that has not echoed lands and carries an `unechoed:` notice
+ *                                   as `<pet>#<instance> <hash> <seq> h<N>` on the sibling record, as lineage, `h<N>` the face
+ *                                   that answered; under an offering, a slot write from an instance that has not echoed lands
+ *                                   and carries an `unechoed:` notice, and one whose echo names another face than the one
+ *                                   answering refuses `spirit-face-turned`, naming its cure (`--face N`)
  *   otakiage  (Aftermath ↺)         by a person's hand: write the ash lines ahead, then burn the residue the last distill mark
  *                                   covers and no link still reaches; the card stays
  *
@@ -74,11 +76,11 @@ import {
   residueFields, residueFilter, residueHash, residueOf, residueTitle, rowsOf, secretCount, shq, shrineSource, sideOf, slotBody,
   slotDigest, slotMissing, slotWriteBody, spiritAmbiguous, spiritHash, spiritIdOf, spiritRecordOf, spiritUnknown, starterText,
   testimonyLines, titleSlug, titlesOf, wakingCap, writerField,
-  ALANA_DISPLAY, MANDATE_HASH, cardField, cardRecordOf, cardSlotHeld, echoJoin, echoReceipt, echoStands, mandateLines, offerHeld, offererOf, offeringDamaged, offeringOf, offeringRead, offeringWrite,
+  ALANA_DISPLAY, MANDATE_HASH, cardField, cardRecordOf, cardSlotHeld, echoJoin, echoReceipt, echoStands, echoTurned, mandateLines, offerHeld, offererOf, offeringDamaged, offeringOf, offeringRead, offeringWrite,
   type SpiritOffering, type SideWrite, type SlotWrite, type SpiritAwake, type SpiritCarry, type SpiritRecord, type SpiritRow, type SpiritSource,
 } from "@lararium/mesh/spirit-shrine";
 import { STACK_SLOT, capHolder, capLine, maskCardOf, profilesOf, sealedOf, spiritOf, stackBody, stackLine, stackOf, stackWrite } from "@lararium/mesh/spirit-stack";
-import { FOLD_OPERATOR, UNFOLD_RANKS, narrowerRank, spiritCardOf, unfoldCall, unfoldRank, type UnfoldRank } from "@lararium/mesh/spirit-unfold";
+import { FOLD_OPERATOR, UNFOLD_RANKS, faceBound, narrowerRank, spiritCardOf, unfoldCall, unfoldRank, type UnfoldRank } from "@lararium/mesh/spirit-unfold";
 import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
 import { stampCarrier } from "@lararium/memetic-frame";
 import { COMPACTION_DISPLAY, COMPACTION_WORD } from "../spirit-words.js";
@@ -137,6 +139,7 @@ function petOf(args: ParsedArgs, verb: string): string {
 async function door(args: ParsedArgs, label: string, verb: string, verbArgs: Record<string, unknown>): Promise<Record<string, unknown>> {
   const ran = await runDoor(args, `spirit ${label}`, { verb, args: verbArgs }, { carryOwed: owedCarry !== null });
   if (!ran.ok) throw new Printed(ran.exit);
+  if (typeof ran.output["face"] === "number") answeredFace = ran.output["face"];
   const owed = owedCarry !== null ? owedLine(ran.output) : null;
   if (owed !== null) owedCarry!.push(owed);
   return ran.output;
@@ -147,6 +150,12 @@ async function door(args: ParsedArgs, label: string, verb: string, verbArgs: Rec
  * outside that span: every other write refuses `owed` as any door does.
  */
 let owedCarry: string[] | null = null;
+/**
+ * THE FACE THAT ANSWERED: the island names the face each door call answered from (the mount's, or the face `--face N` named), and
+ * the door keeps the latest word for this command. An echo records it; a slot write from an instance whose echo names another
+ * face refuses `spirit-face-turned` (plan/companion-context #/4). Null where no answer named a face.
+ */
+let answeredFace: number | null = null;
 class Printed extends Error { constructor(readonly exit: number) { super("printed"); } }
 
 /** A record's fields and its live hash (the base a put names), read on the record lens. */
@@ -376,6 +385,8 @@ function capHolds(pet: string, cap: string): void {
 
 /** The echo receipt a slot write carries (see `echoReceipt`): a damaged shelf throws its refusal; an unechoed write answers its notice. */
 async function echoHolds(args: ParsedArgs, label: string, rec: Record_, instance: string | null, ctx: Ctx): Promise<string | null> {
+  const turned = echoTurned(rec.pet, rec.sideFields, instance, answeredFace, label);
+  if (turned !== null) throw turned;
   const receipt = echoReceipt(rec.pet, await offeringFor(args, label, rec.pet), rec.sideFields, instance, handHolds(ctx));
   if (receipt === null) return null;
   if ("refusal" in receipt) throw receipt.refusal;
@@ -441,6 +452,9 @@ async function echo(args: ParsedArgs, ctx: Ctx, pet: string, hash: string): Prom
   const strayEcho = ([["slot", args.options["slot"]], ["add", args.options["add"]], ["text", args.options["text"]], ["file", args.options["file"]], ["base", args.options["base"]]] as const).find(([, v]) => v !== undefined);
   if (strayEcho !== undefined) throw new DoorUsage(`--echo lands alone; no --${strayEcho[0]}`);
   const rec = (await resolveRecord(args, "ah", pet))!;
+  // An instance re-echoes under the face it woke under alone: an echo under a turned mount would re-home it.
+  const turned = echoTurned(pet, rec.sideFields, instance, answeredFace, "ah");
+  if (turned !== null) throw turned;
   const offering = await offeringFor(args, "ah", pet);
   if (offering === null) throw new SpiritRefusal("spirit-unoffered", `spirit-unoffered: no ${ALANA_DISPLAY} stands on ${offeringOf(pet)}, so the echo answers no mandate; nothing landed. A summon offers first: \`lares spirit ah ${pet} --offer --file <mandate>\``, 4);
   if (offering.damaged) throw offeringDamaged(pet, offering);
@@ -448,10 +462,10 @@ async function echo(args: ParsedArgs, ctx: Ctx, pet: string, hash: string): Prom
     throw new SpiritRefusal("spirit-echo-mismatch", `spirit-echo-mismatch: the echo ${hash.slice(0, 12)} names no mandate standing on ${offering.uri} (seq ${offering.seq} reads ${offering.hash.slice(0, 12)}); nothing landed. Read the mandate again: \`lares spirit om ${pet} --instance ${instance}\``, 4);
   }
   let seq = 0;
-  await casFields(args, "ah", rec.side, (fields) => { const joined = echoJoin(fields, pet, instance, hash); seq = joined.seq; return joined.write; });
+  await casFields(args, "ah", rec.side, (fields) => { const joined = echoJoin(fields, pet, instance, hash, answeredFace); seq = joined.seq; return joined.write; });
   await joinPresence(args, rec, instance, ctx);
   emit(args, {
-    ok: true, data: { pet, uri: rec.uri, instance: `${pet}#${instance}`, echo: hash, seq, offering: offering.uri, offerSeq: offering.seq },
+    ok: true, data: { pet, uri: rec.uri, instance: `${pet}#${instance}`, echo: hash, seq, offering: offering.uri, offerSeq: offering.seq, face: answeredFace },
     human: () => console.log(`echoed: ${pet}#${instance} answers the ${ALANA_DISPLAY} (seq ${offering.seq}, mandate ${hash.slice(0, 12)}); its slot writes land`),
   });
   return 0;
@@ -625,13 +639,18 @@ async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
   if (instance !== null && !INSTANCE.test(instance)) throw new DoorUsage("--instance names a session id (letters, digits, '-' and '_')");
   const title = typeof args.options["title"] === "string" ? args.options["title"] : null;
   const seated = await resolveRecord(args, "om", given, true);
+  // THE WAKE BINDS TO THE FACE THAT ANSWERED IT: the fold and every command om hands back name it (`--face N`), so after the
+  // operator turns the mount this instance's next call still lands under the face it woke under (plan/companion-context #/4).
+  const bind = (text: string): string => faceBound(text, answeredFace);
+  const bound: FoldAsk = { ...ask, face: ask.face ?? (answeredFace === null ? null : String(answeredFace)) };
+  const faced = answeredFace === null ? {} : { face: answeredFace };
   // A CARD WITH NO SHRINE wakes on the card alone: the wiki answers it as a carrier, and nothing writes (presence and the wake
   // epoch rest on a shrine's sibling record). With no card either, the wiki answers nothing and the starter reads below.
   if (seated === null && source !== "precompact") {
-    const alone = await foldSpirit(args, given, ask, null);
+    const alone = await foldSpirit(args, given, bound, null);
     if (alone.carrier !== null) {
-      const text = alone.carrier;
-      emit(args, { ok: true, data: { pet: given, uri: spiritCardOf(given), kind: "card", source, ...foldData(alone), chars: text.length, text }, human: () => console.log(text) });
+      const text = bind(alone.carrier);
+      emit(args, { ok: true, data: { pet: given, uri: spiritCardOf(given), kind: "card", source, ...faced, ...foldData(alone), chars: text.length, text }, human: () => console.log(text) });
       return 0;
     }
   }
@@ -642,7 +661,7 @@ async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
   const pet = turn.starter ?? turn.to?.pet ?? given;
   if (found === null) {
     // A first wake: no record yet. The instance reads the skeleton and lands its own shrine; a precompact hands back no shape.
-    const text = source === "precompact" ? "" : [turn.line, starterText(pet)].flatMap((l) => (l === null ? [] : [l])).join("\n\n");
+    const text = source === "precompact" ? "" : bind([turn.line, starterText(pet)].flatMap((l) => (l === null ? [] : [l])).join("\n\n"));
     emit(args, { ok: true, data: { pet, starter: true, ...(turn.starter !== null ? { offer: true } : {}), source, every: TRUE_UP_EVERY, carryShape: null, chars: text.length, text }, human: () => console.log(text) });
     return 0;
   }
@@ -659,11 +678,11 @@ async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
   const presence = instance !== null ? presenceLine(pet, awake) : presenceSeenLine(pet, awake);
   // THE STACK: what this spirit holds, cap by cap, and the profiles those caps sign (a seat address signs its own).
   const stack = stackOf(rec.fields, rec.uri);
-  const data = { pet, uri: rec.uri, kind: rec.kind, profiles: profilesOf(stack), stack: stack.map((h) => ({ cap: h.cap, value: h.value, tagged: h.tagged })), base: rec.base, spiritId: key, epoch, every: rec.every, budgets: rec.budgets, source, ...(turn.to !== null ? { turnedFrom: given } : {}), ...(owedStamps.length > 0 ? { owed: owedStamps } : {}) };
+  const data = { pet, uri: rec.uri, kind: rec.kind, profiles: profilesOf(stack), stack: stack.map((h) => ({ cap: h.cap, value: h.value, tagged: h.tagged })), base: rec.base, spiritId: key, epoch, every: rec.every, budgets: rec.budgets, source, ...faced, ...(turn.to !== null ? { turnedFrom: given } : {}), ...(owedStamps.length > 0 ? { owed: owedStamps } : {}) };
   // A resumed instance ends its own crossing too: it never reaches the wake's clear below, and no timer lifts a mark.
   if (source === "resume" && rec.crossing !== null && instance !== null) await markCrossing(args, rec, instance, ctx, false);
   if (source === "resume") {
-    const text = `Lares spirit om · ${pet}: this instance resumes; the card reads ${digestOf(rec.base).slice(7, 19)} now${epoch !== null ? ` (wake epoch ${epoch})` : ""}, and an earlier wake may read stale: lares spirit om ${pet}`;
+    const text = bind(`Lares spirit om · ${pet}: this instance resumes; the card reads ${digestOf(rec.base).slice(7, 19)} now${epoch !== null ? ` (wake epoch ${epoch})` : ""}, and an earlier wake may read stale: lares spirit om ${pet}`);
     emit(args, { ok: true, data: { ...data, chars: text.length, text }, human: () => console.log(text) });
     return 0;
   }
@@ -703,7 +722,8 @@ async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
   const echoed = offering !== null && !offering.damaged && instance !== null && echoStands(rec.sideFields, instance, offering.hash);
   const unechoedLine = offering === null || offering.damaged || echoed || instance === null ? null : `unechoed: ${pet}#${instance} has not read mandate ${offering.hash}`;
   const mandate = offering === null ? null : [mandateLines(pet, offering, instance, echoed), unechoedLine].filter((l): l is string => l !== null).join("\n");
-  const leadText = [mandate, lead].filter((l): l is string => l !== null).join("\n\n") || null;
+  const worn = answeredFace === null ? null : `worn: h${answeredFace} · every command below names --face ${answeredFace}, so a turn of the mount leaves this instance under the face it woke under`;
+  const leadText = [worn, mandate, lead].filter((l): l is string => l !== null).join("\n\n") || null;
   const open = await readSlot(args, "om", rec, "#/open");
   const attention = await attentionUnfold(args, rec);
   // Each slot's digest, the view this instance woke on: a whole-slot write names its slot's as --base, so a sibling's write since reads.
@@ -721,11 +741,12 @@ async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
   if (advisory !== null) testimony.push(advisory);
   // THE WAKE READS THE SHRINE AS A FOLDED CARRIER, whole under the cap: the testimony and the doors ride past its release, so the
   // whole text parses as one canonical carrier. A hand naming its aperture reads past the cap.
-  const fixed = (leadText?.length ?? 0) + testimony.join("\n").length + 600;
-  const fold = await foldSpirit(args, pet, ask, ask.named ? null : Math.max(0, OM_CAP_CHARS - fixed));
-  const text = fold.carrier !== null
+  // The face each handed command carries rides inside the room the cap leaves.
+  const fixed = (leadText?.length ?? 0) + testimony.join("\n").length + 600 + (answeredFace === null ? 0 : 240);
+  const fold = await foldSpirit(args, pet, bound, ask.named ? null : Math.max(0, OM_CAP_CHARS - fixed));
+  const text = bind(fold.carrier !== null
     ? foldedWake(pet, { ...fold, carrier: fold.carrier }, { lead: leadText, testimony, attention }, ask.named ? null : OM_CAP_CHARS)
-    : omText(rec, { open: open?.text ?? null, testimony: [...testimony, unfoldedLine(fold, rec.uri)], attention, lead: leadText });
+    : omText(rec, { open: open?.text ?? null, testimony: [...testimony, unfoldedLine(fold, rec.uri)], attention, lead: leadText }));
   const offered = offering === null ? {} : { mandate: { uri: offering.uri, hash: offering.hash, seq: offering.seq, lane: offering.lane, grant: offering.grant, offeredBy: offering.offeredBy, damaged: offering.damaged, echoed } };
   emit(args, {
     ok: true, data: { ...data, ...offered, ...foldData(fold), latest: carry?.title ?? null, digests, chars: text.length, cap: OM_CAP_CHARS, text },
@@ -1096,6 +1117,7 @@ export async function cmdSpirit(args: ParsedArgs, seams: SpiritSeams = {}): Prom
     hand: seams.hand ?? (() => readOwnHand({ proveRoute: false })),
     now: seams.now ?? (() => new Date()),
   };
+  answeredFace = null;
   return guardDoor(args, `spirit ${verb}`, async () => {
     try {
       const v = verb as Exclude<Verb, "help">;
