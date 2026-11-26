@@ -17,7 +17,7 @@
  *       the door's booked asker). Every flush counts the pins that wait, those on an unread rest, and the wave bases with them.
  */
 import { afterEach, describe, expect, test } from "vitest";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -149,8 +149,11 @@ describe("the shore's flush", () => {
   test("RED S7 — the `base` act pins only what the island reads itself, a seat lands none, and a flush counts each pin that waits", async () => {
     if (root) roots.push(root);
     root = mkdtempSync(join(tmpdir(), "lar-shore-flush-"));
-    const aside = mkdtempSync(join(tmpdir(), "lar-shore-flush-aside-"));
-    roots.push(aside);
+    // The asides lie inside the mirror root: the island reads a file there and refuses one beyond it (`outside-mirror`).
+    const aside = join(root, "hand-asides");
+    mkdirSync(aside);
+    const beyond = mkdtempSync(join(tmpdir(), "lar-shore-flush-beyond-"));
+    roots.push(beyond);
     const dir = join(root, ".projection", "synced-tree");
     const rest = { reading: "unread" as "rested" | "waiting" | "unread" };
     const projector = new LarDiskProjector({
@@ -181,6 +184,10 @@ describe("the shore's flush", () => {
     // THE ECHO: the wave names the carrier and its file; the island reads the agreement itself, meets its own pin, and the
     // ask waits with it. Every hash, head and document a caller sends beside the path gets read by no one.
     expect(await answerShore(projector, { op: "base", bag: BAG, bases: [{ uri: LANDS, file, ...made }] })).toMatchObject({ ok: true, op: "base", bag: BAG, recorded: 0, kept: 0, waiting: 1, unread: 0, differs: 0, pendingPinCount: 1, pendingPinUnreadCount: 1, waitingBaseCount: 1 });
+    // A FILE BEYOND THE MIRROR ROOT PINS NOTHING, whatever stands in it, and counts apart from an unread one.
+    const beyondFile = join(beyond, "copy.mem");
+    writeFileSync(beyondFile, readFileSync(file));
+    expect(await answerShore(projector, { op: "base", bag: BAG, bases: [{ uri: LANDS, file: beyondFile }] })).toMatchObject({ ok: true, recorded: 0, waiting: 0, unread: 0, differs: 0, outsideMirror: 1, pendingPinCount: 1 });
     // A FILE THE ISLAND CANNOT READ LANDS NOTHING, whatever disk hash the caller sent with it.
     expect(await answerShore(projector, { op: "base", bag: BAG, bases: [{ uri: LANDS, file: join(aside, "never-written.mem"), ...made }] })).toMatchObject({ ok: true, recorded: 0, waiting: 0, unread: 1, differs: 0, pendingPinCount: 1 });
     // A FILE WHOSE WORDS DIFFER FROM THIS ISLAND'S RECORDS LANDS NOTHING: a hand's edit no wave landed stays an edit, and the

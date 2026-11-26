@@ -23,7 +23,7 @@ import { join } from "node:path";
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
 import { OUTCOME_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
 import { plainField } from "@lararium/mesh/stored-value";
-import { withLarRoot } from "../../../../tests/harness/with-lar-root.js";
+import { holdLarRoot, withLarRoot } from "../../../../tests/harness/with-lar-root.js";
 import { direct } from "../direct-store.js";
 import { TEST_CUSTODY, TEST_SLOT } from "../found-route.js";
 import { runInit, runFoundTheFace, foundSeedCharter, openNodeVessel, runEdgeKapae, seatFaceRoute, seatWardGatherer } from "../../dist/src/index.js";
@@ -42,13 +42,17 @@ async function stand(owesRaise: boolean): Promise<{ root: string; vessel: NodeVe
   const storageDir = join(root, "hearth", "vessel");
   cpSync(join(import.meta.dirname, "..", "..", "..", "..", "genesis"), genesisDir, { recursive: true });
   let vessel: NodeVesselResult | null = null;
-  leaving.push(async () => { if (vessel) await withLarRoot(root, () => vessel!.teardown()); rmSync(root, { recursive: true, force: true }); });
+  let release = (): void => {};
+  leaving.push(async () => { try { if (vessel) await vessel.teardown(); } finally { release(); } rmSync(root, { recursive: true, force: true }); });
   await withLarRoot(root, () => direct(runInit)({ storageDir, genesisDir, custody: TEST_CUSTODY, placeFoundingCard: { readBack: async () => {} } }));
   await withLarRoot(root, () => foundSeedCharter({ name: "settle founder", readBack: async () => {} }));
   await withLarRoot(root, () => direct(runFoundTheFace)({ storageDir, genesisDir }));
   // The owed raise: another device's edge raised on this face's fleet board, which this vessel has not seen through.
   if (owesRaise) await withLarRoot(root, () => direct(runEdgeKapae)({ device: "ab".repeat(32), raised: true }));
-  vessel = await withLarRoot(root, () => openNodeVessel({ hostId: "settle", wikiId: "settle", storageDir, genesisDir, wss: new EventEmitter() as never }));
+  // The root holds for the vessel's whole life: islands spawn after `openNodeVessel` returns and copy the env at their spawn.
+  const held = await holdLarRoot(root, () => openNodeVessel({ hostId: "settle", wikiId: "settle", storageDir, genesisDir, wss: new EventEmitter() as never }));
+  vessel = held.value;
+  release = held.release;
   await vessel.daemon.workerEa;
   return { root, vessel };
 }

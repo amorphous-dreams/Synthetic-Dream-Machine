@@ -419,7 +419,7 @@ export interface BaseAnswer {
   readonly waiting: number;
   /** The file moved since the wave's scan: its next reader owns that observation, and nothing recorded. */
   readonly moved: number;
-  /** The island that projects the bag reads no file there (it left, or it rests where that island cannot read): nothing lands. */
+  /** The island that projects the bag reads no file there (it left, it rests where that island cannot read, or it lies outside the bag's mirror root): nothing lands. */
   readonly unread: number;
   /** The island read the file and its own records, and they say different things (or it holds no such record): no agreement
    *  stands to pin, and the gate weighs the carrier as it stands. */
@@ -528,7 +528,7 @@ export function islandBaseDoor(roads: (bag: string) => readonly BaseRoad[], tree
           let o: Record<string, unknown>;
           try { o = ((await road({ op: "base", bag, bases })) ?? {}) as Record<string, unknown>; }
           catch (err) { fault ??= err instanceof Error ? err.message : String(err); continue; }
-          if (o["ok"] === true) { answer = { ...NO_BASES, recorded: count(o, "recorded"), kept: count(o, "kept"), waiting: count(o, "waiting"), unread: count(o, "unread"), differs: count(o, "differs") }; break; }
+          if (o["ok"] === true) { answer = { ...NO_BASES, recorded: count(o, "recorded"), kept: count(o, "kept"), waiting: count(o, "waiting"), unread: count(o, "unread") + count(o, "outsideMirror"), differs: count(o, "differs") }; break; }
           if (o["refusal"] === "no-disk-shore" || o["refusal"] === "bag-unprojected") continue;
           answer = owed(`${typeof o["refusal"] === "string" ? o["refusal"] : "base-answer-unread"}: ${typeof o["why"] === "string" ? o["why"] : "the island answered no base act"}`);
           break;

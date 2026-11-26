@@ -672,10 +672,11 @@ export async function answerShore(projector: LarDiskProjector, args: Readonly<Re
     const paths = basePathsNamed(args["bases"]);
     if (bag === null || paths === null) return { ok: false, op, refusal: "shore-answer-incomplete", why: "base names the bag the wave landed in (`bag`) and each carrier with its file (`bases`: `{ uri, file, from? }`)" };
     if (!projector.projects(bag)) return { ok: false, op, bag, refusal: "bag-unprojected", why: `this island's projector holds no mirror of ${bag}: the island that projects it pins its bases` };
-    const tally = { recorded: 0, kept: 0, waiting: 0, unread: 0, differs: 0 };
+    const tally = { recorded: 0, kept: 0, waiting: 0, unread: 0, differs: 0, outsideMirror: 0 };
     for (const path of paths) {
       const read = await projector.pinAgreement(bag, path.uri, path.file, path.from);
-      if (read !== "unprojected") tally[read] += 1;
+      if (read === "outside-mirror") tally.outsideMirror += 1;
+      else if (read !== "unprojected") tally[read] += 1;
     }
     await projector.settlePins();
     return { ok: true, op, bag, ...tally, ...pinsWaiting(projector) };
