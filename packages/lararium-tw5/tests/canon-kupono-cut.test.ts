@@ -5,7 +5,8 @@
  * The law memes (memetic-wikitext and its framing, the sigil laws, the exchange-vector and panel carriers,
  * the voices) teach the house grammar by statement and by example. Train Q's rulings
  * (lar:///ha.ka.ba/lares/docs/pono/grammar-watch#/the-kupono-cut) retire the arrow between values, the
- * whitespace-led at-sign, the quoted or positional value, and the `hud` key with the `~lares` sigil. A law
+ * whitespace-led at-sign, the quoted or positional value, and the `hud` key with the old `lares` frame call
+ * (the head itself lives on as the house's act line, ``<<~ lares action=`…`>>``). A law
  * meme that states one grammar and prints another teaches both, and the bulk tool skips these carriers, so
  * their bodies MUST already read cut. Their frame envelope (the declaration, SOH, STX, ETX and EOT lines)
  * keeps the old form until the readers flip; the body, fences included, speaks the new one.
@@ -18,6 +19,10 @@
 
 import { describe, test, expect } from "vitest";
 import { readFileSync } from "node:fs";
+
+/** The act line's own pattern, read off the shelf tiddler that defines the sigil: this gate spares what that tiddler reads. */
+const LARES_TID = readFileSync(new URL("../tiddlers/sigil-lares.tid", import.meta.url).pathname, "utf8");
+const LARES_ACT = /^lar-pattern: (.+)$/m.exec(LARES_TID)?.[1] ?? "(?!)";
 
 const BAG = new URL("../../../bags/lares/ha.ka.ba/lares/", import.meta.url).pathname;
 
@@ -99,12 +104,13 @@ const unnamedOrQuotedValues = (text: string): string[] =>
  * Cut 4: the `hud` key and the old `~lares` frame sigil retire, and the standalone gauges with them. A `lares`
  * head reads retired by the frame it once carried: ``<<~ lares action=`…`>>``, the house's own act line, reads
  * pono (operator ruling 2026-11-26, grammar-watch#/the-kupono-cut), and every other `<<~ lares …>>` reads red.
+ * The spared form comes from `sigil-lares.tid`'s own `lar-pattern`, so the gate and the shelf read one act line.
  */
 const retiredFrame = (text: string): string[] =>
   bodyOf(text).flatMap(({ line, text: t }) => {
     const found: string[] = [];
     if (/\bhud=/.test(t)) found.push(`${line}: hud= key · ${t.trim().slice(0, 70)}`);
-    if (/<<~\s*lares\b(?!\s+action=`[^`]*`\s*>>)/.test(t)) found.push(`${line}: ~lares frame call · ${t.trim().slice(0, 70)}`);
+    if (/<<~\s*lares\b/.test(t.replace(new RegExp(LARES_ACT, "g"), ""))) found.push(`${line}: ~lares frame call · ${t.trim().slice(0, 70)}`);
     if (/<<~\s*(aperture|ooda-ha|drift-ward)\b/.test(t)) found.push(`${line}: standalone gauge · ${t.trim().slice(0, 70)}`);
     return found;
   });
@@ -139,7 +145,7 @@ const LAWS: [string, (t: string) => string[]][] = [
   ["no bare arrow between values", arrowsBetweenValues],
   ["no at-sign after whitespace", spacedAtSigns],
   ["every call value named in a backtick span", unnamedOrQuotedValues],
-  ["no hud key, no ~lares call, no standalone gauge", retiredFrame],
+  ["no hud key, no ~lares frame call, no standalone gauge", retiredFrame],
   ["a set firing seats its keys in the bracket order", firingOrder],
 ];
 
@@ -157,7 +163,7 @@ describe("CONTROLS: each law names the fault planted for it", () => {
     "no bare arrow between values": "<<~ pranala from=`A` -> to=`B`>>",
     "no at-sign after whitespace": "a plane named @daemon here",
     "every call value named in a backtick span": '<<~ loulou "lar:///x">>',
-    "no hud key, no ~lares call, no standalone gauge": '<<~ set hud=`aim` aperture=`1/pulse`>>',
+    "no hud key, no ~lares frame call, no standalone gauge": '<<~ set hud=`aim` aperture=`1/pulse`>>',
     "a set firing seats its keys in the bracket order": "<<~ set lares=`aim` mode=`draft` to=`lar:///a.b.c` from=`lar:///d.e.f` drift-ward=`w`>>",
   };
   for (const [name, law] of LAWS) {
@@ -168,6 +174,13 @@ describe("CONTROLS: each law names the fault planted for it", () => {
   test("a positional value and a quoted key are each named", () => {
     expect(unnamedOrQuotedValues(carrier("<<~ ahu #/head>>")).length).toBe(1);
     expect(unnamedOrQuotedValues(carrier('<<~ has entity=`a` name="b">>')).some((f) => f.includes("quoted key"))).toBe(true);
+  });
+  test("the act line reads pono by the shelf's own pattern; the old frame on the lares head reads red", () => {
+    expect(LARES_ACT, "sigil-lares.tid carries a lar-pattern").toContain("lares");
+    const example = /^lar-example: (.+)$/m.exec(LARES_TID)![1]!;
+    expect(LAWS.flatMap(([, law]) => law(carrier(example + " ${pet-name} (Lares Spirit)")))).toEqual([]);
+    for (const old of ['<<~ lares aim "x">>', "<<~ lares fires=`aim` from=`a`>>", "<<~ lares action=`a` fires=`yield`>>", "<<~ lares>>", "<<~ lares action=`a`>> then <<~ lares aim from=`a`>>"])
+      expect(retiredFrame(carrier(old)).join("\n"), old).toContain("~lares frame call");
   });
   test("an old-form envelope stands outside the body", () => {
     expect(bodyOf(carrier("x")).map((l) => l.text)).toEqual(["x"]);
