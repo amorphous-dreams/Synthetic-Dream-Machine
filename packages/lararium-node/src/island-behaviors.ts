@@ -10,6 +10,7 @@
  * Meme: lar:///ha.ka.ba/lararium/node/island-behaviors
  */
 
+import { inCallScope, takeCallTouches } from "@lararium/mesh/call-touches";
 import { existsSync, readFileSync, realpathSync } from "node:fs";
 import { basename, dirname, join as joinPath, resolve as resolvePath, sep } from "node:path";
 import { mkWikiVerbResult } from "@lararium/mesh/island-protocol";
@@ -67,10 +68,11 @@ export function claimShoreVerb(
   const mounted = projector();
   const answer = mounted === null
     ? Promise.resolve<Record<string, unknown>>({ ok: false, refusal: "no-disk-shore", why: "this island mounts no disk projection" })
-    : answerShore(mounted, msg.args ?? {}, msg.asker);
+    : (requestId ? inCallScope(requestId, () => answerShore(mounted, msg.args ?? {}, msg.asker)) : answerShore(mounted, msg.args ?? {}, msg.asker));
+  const touched = (): Record<string, readonly string[]> => (requestId ? takeCallTouches(requestId) ?? {} : {});
   void answer.then(
-    (result) => { if (requestId) post(mkWikiVerbResult({ requestId, result })); },
-    (err: unknown) => { if (requestId) post(mkWikiVerbResult({ requestId, error: err instanceof Error ? err.message : String(err) })); },
+    (result) => { if (requestId) post(mkWikiVerbResult({ requestId, result, touched: touched() })); },
+    (err: unknown) => { if (requestId) post(mkWikiVerbResult({ requestId, error: err instanceof Error ? err.message : String(err), touched: touched() })); },
   );
   return true;
 }

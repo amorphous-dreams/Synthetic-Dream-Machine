@@ -81,22 +81,10 @@ export const PET_NAME = /^[a-z0-9][a-z0-9-]{0,62}$/;
 /** An instance names itself by its session id. */
 export const INSTANCE_ID = /^[A-Za-z0-9_-]{1,128}$/;
 
-// ── THE ONE-WAY READ-THROUGH (ruling 2026-11-25-body-becomes-instance) ────────────────────────────────────────────
 /** The lineage slot: one line per instance that wore the spirit. */
 export const INSTANCES_SLOT = "#/instances";
-/**
- * A MIGRATION, ONE WAY. A record written before the rename names its instances by the old word: a shrine's `#/bodies` slot, a
- * card's `bodies` field, a sibling's `bodies-awake`, a carry's `body`. The door reads the old name where the new one stands not,
- * and every write answers in the new one: a card's lineage write lands as `instances` and unsets `bodies`, and a presence write
- * lands as `instances-awake` and unsets `bodies-awake`. A shrine's slot keeps its old name until a hand renames it through the
- * doors; its lineage writes land there meanwhile. Once no live record holds an old name, this table and its reads burn.
- */
-export const LEGACY_INSTANCE_NAMES = { slot: "#/bodies", field: "bodies", awake: "bodies-awake", carry: "body" } as const;
-/** The instance a carry names: its `instance` field, else the `body` a carry landed before the rename. */
-export const carryInstanceOf = (fields: Readonly<Record<string, string>>): string => fields["instance"] ?? fields[LEGACY_INSTANCE_NAMES.carry] ?? "";
-/** The slot a record answers a slot name by: `#/instances` reads the old `#/bodies` where only the old one stands. */
-export const slotHeldAs = (held: readonly string[], slot: string): string =>
-  slot === INSTANCES_SLOT && !held.includes(slot) && held.includes(LEGACY_INSTANCE_NAMES.slot) ? LEGACY_INSTANCE_NAMES.slot : slot;
+/** The instance a carry names: its `instance` field. */
+export const carryInstanceOf = (fields: Readonly<Record<string, string>>): string => fields["instance"] ?? "";
 /** A slot digest: 16 hex. */
 export const SLOT_DIGEST = /^[0-9a-f]{16}$/;
 /** The wake sources `om` reads. */
@@ -304,8 +292,7 @@ export function shrineSource(pet: string, words: string, carrierType: string): s
 export interface SpiritCarry { readonly title: string; readonly fields: Readonly<Record<string, string>>; readonly text: string }
 export interface SpiritRow { readonly title: string; readonly fields: Readonly<Record<string, string>> }
 /** The lineage a carry's listing reads in one filter call, no read per carry. */
-/** The lineage fields a carry listing reads; `body` rides for the carries that landed before the rename (the read-through). */
-export const LINEAGE_FIELDS = ["title", "landed", "parent", "depth", "instance", "record-base", "body"] as const;
+export const LINEAGE_FIELDS = ["title", "landed", "parent", "depth", "instance", "record-base"] as const;
 
 /** Rows a filter answers with fields: each title beside the fields it asked. */
 export function rowsOf(out: Record<string, unknown>): SpiritRow[] {
@@ -376,21 +363,20 @@ export function presenceOf(raw: string | undefined): SpiritAwake[] {
     return m ? [{ tag: m[1]!, instance: m[2]!, at: m[3]!, seq: m[4] === undefined ? 0 : Number(m[4]) }] : [];
   });
 }
-/** Who stands awake on a sibling record: its `instances-awake`, else the `bodies-awake` a sibling held before the rename. */
-export const presenceRead = (fields: Readonly<Record<string, string>>): SpiritAwake[] => presenceOf(fields["instances-awake"] ?? fields[LEGACY_INSTANCE_NAMES.awake]);
+/** Who stands awake on a sibling record: its `instances-awake`. */
+export const presenceRead = (fields: Readonly<Record<string, string>>): SpiritAwake[] => presenceOf(fields["instances-awake"]);
 
 /**
  * A waking instance joins the card's presence: it refreshes its own entry and keeps at most `PRESENCE_CAP`, the
  * highest minted seq (the door mints seq = max + 1 inside the CAS write; the stamp annotates and never orders or drops). Answers who stands awake, this instance first, and the write over the sibling's fields read.
  */
 export function presenceJoin(fields: Readonly<Record<string, string>>, pet: string, instance: string, now: Date): { awake: SpiritAwake[]; write: SideWrite } {
-  const legacy = fields["instances-awake"] === undefined && fields[LEGACY_INSTANCE_NAMES.awake] !== undefined;
-  const was = presenceOf(legacy ? fields[LEGACY_INSTANCE_NAMES.awake] : fields["instances-awake"]);
+  const was = presenceOf(fields["instances-awake"]);
   const me: SpiritAwake = { tag: `${pet}#${instance}`, instance, at: now.toISOString(), seq: was.reduce((m, a) => Math.max(m, a.seq), 0) + 1 };
   const others = was.filter((a) => a.instance !== instance).sort((x, y) => y.seq - x.seq);
   const awake = [me, ...others].slice(0, PRESENCE_CAP);
   const patch = { "instances-awake": awake.map((a) => `${a.tag} ${a.at} ${a.seq}`).join("\n") };
-  return { awake, write: legacy ? { patch, unset: [LEGACY_INSTANCE_NAMES.awake] } : { patch } };
+  return { awake, write: { patch } };
 }
 
 /** The presence line: how many instances wear the pet, this one first. */
@@ -630,9 +616,7 @@ export function cardRecordOf(pet: string, uri: string, out: Record<string, unkno
   const { fields, hash } = fieldsAndHashOf(out);
   const slots = Object.keys(fields).filter((k) => cardField(`#/${k}`) !== null).sort().map((k) => {
     const v = String(fields[k] ?? "");
-    // The read-through: a card's legacy `bodies` field answers as #/instances where no `instances` field stands.
-    const slot = k === LEGACY_INSTANCE_NAMES.field && fields["instances"] === undefined ? INSTANCES_SLOT : `#/${k}`;
-    return { slot, bytes: bytesOf(v), first: v.split("\n")[0] ?? null };
+    return { slot: `#/${k}`, bytes: bytesOf(v), first: v.split("\n")[0] ?? null };
   });
   const base = hash ?? "";
   return {

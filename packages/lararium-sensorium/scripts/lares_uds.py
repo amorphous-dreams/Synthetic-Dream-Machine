@@ -41,6 +41,21 @@ class LaresDaemonUnreachable(Exception):
     """No daemon holds the socket. The caller renders it; it never falls back to opening a store."""
 
 
+def owed_error(what: str, rest: object, receipt: object) -> "LaresVerbError | None":
+    """NO SILENT LOSS (sealed-store#/owed): the vessel stamps `rest: {band: "owed"}` on any call whose own changes still
+    wait unsealed (or refused, or never reached its replica); every seat door raises it by the one name, `owed`."""
+    if not isinstance(rest, dict) or rest.get("band") != "owed":
+        return None
+    docs = ", ".join(
+        f"{str(d.get('documentId', ''))[:12]}… ({d.get('refusal')}"
+        + ((f": {d.get('error')}" + (f" {d.get('cause')}" if d.get("cause") else "")) if d.get("error") else "") + ")"
+        for d in (rest.get("documents") or []) if isinstance(d, dict))
+    tail = json.dumps({"rest": rest, "receipt": receipt}, ensure_ascii=False, separators=(",", ":"))
+    return LaresVerbError(
+        f"owed: the {what} landed in the vessel's memory, and its save waits unsealed: {docs}. It rests nowhere until a "
+        f"session seals it, and a down before then loses it; `lares vessel census` names it · {tail[:4000]}", "owed")
+
+
 class LaresVerbError(Exception):
     """The daemon ran the verb and it failed, or refused it by name. Carries the daemon's own message, and the
     refusal's name in `refusal` where the vessel gave one (`vessel-locked`, `control-home-unnamed`, ...)."""
@@ -344,6 +359,9 @@ def session_act(act: str, args: "dict | None" = None, *, face: "int | None" = No
     if result.get("kind") != "session:act-result" or not isinstance(result.get("answer"), dict):
         raise LaresVerbError("malformed act result from the vessel")
     answer = result["answer"]
+    owed = owed_error(act, answer.get("rest"), answer.get("output"))
+    if owed is not None:
+        raise owed
     if answer.get("status") == "error":
         raise LaresVerbError(str(answer.get("errorMessage") or answer.get("reason") or f"{act} failed"))
     output = answer.get("output")

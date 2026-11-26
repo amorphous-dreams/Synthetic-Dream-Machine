@@ -41,10 +41,10 @@ export const BOOLEAN_FLAGS: ReadonlySet<string> = new Set([
 /**
  * Names a command reads as a flag in one spelling and as a valued option in another (`meme project --check`
  * alone or `--check <x>`; `--grammar`; `rite kukulu --rollback` alone or `--rollback <rev>`). The parser cannot tell which spelling comes, so these
- * stay greedy. `--face` takes a value (`fleet join offer --face 1`), and so does `--target` (`tiddler get T --target h1`);
- * each flag read only refuses the bare spelling.
+ * stay greedy. `--face` takes a value (`fleet join offer --face 1`), and so does `--target` (`tiddler get T --target h1`) and `--land`
+ * (`kahua lift <uri> --land <answer>`); each flag read only refuses the bare spelling.
  */
-export const VALUE_OR_FLAG: ReadonlySet<string> = new Set(["check", "face", "grammar", "rollback", "target", "recipe", "realm"]);
+export const VALUE_OR_FLAG: ReadonlySet<string> = new Set(["check", "face", "grammar", "land", "rollback", "target", "recipe", "realm"]);
 
 
 /**
@@ -54,6 +54,19 @@ export const VALUE_OR_FLAG: ReadonlySet<string> = new Set(["check", "face", "gra
  * reds a name here that a handler reads as a flag, or that sits in `BOOLEAN_FLAGS` / `VALUE_OR_FLAG`.
  */
 export const VALUE_FLAGS: ReadonlySet<string> = new Set(["fields", "note", "reason", "text"]);
+
+/**
+ * THE LIST FLAGS: names that carry one TiddlyWiki list (`--tag-add 'one [[two words]]'`). A repeat gathers: each later
+ * value joins the earlier with a space, in the order written, so `--tag-add a --tag-add b` reads `a b` and no tag drops
+ * without a word (every other valued name keeps its last spelling).
+ */
+export const LIST_FLAGS: ReadonlySet<string> = new Set(["tag-add", "tag-remove"]);
+
+/** One valued option into the table: a list flag's repeat joins the list, every other name takes the latest value. */
+function setOption(options: Record<string, string>, key: string, value: string): void {
+  const held = options[key];
+  options[key] = LIST_FLAGS.has(key) && held !== undefined && held !== "" ? (value === "" ? held : `${held} ${value}`) : value;
+}
 
 /** A command line the grammar itself refuses (`--no-key=…`, `--=v`); the dispatcher turns it into exit 2. */
 export class ArgsError extends Error {
@@ -95,14 +108,14 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
         const key = body.slice(0, eq);
         if (key === "") throw new ArgsError(`${tok}: a flag needs a name before "="`);
         if (BOOLEAN_FLAGS.has(key)) throw new ArgsError(`${tok}: --${key} is a flag and takes no value`);
-        options[key] = body.slice(eq + 1);
+        setOption(options, key, body.slice(eq + 1));
         continue;
       }
       if (BOOLEAN_FLAGS.has(body) || (command === "wiki" && positional[0] === "pin" && ["bag", "release"].includes(body)) || (command === "wiki" && positional[0] === "switch" && body === "next-boot")) { flags[body] = true; continue; }
       const next = tokens[0];
       // --key value form: peek; consume next token if it does not look like an option (a VALUE_FLAGS name consumes it whatever it starts with).
       if (next !== undefined && (VALUE_FLAGS.has(body) || !next.startsWith("--"))) {
-        options[body] = next;
+        setOption(options, body, next);
         tokens.shift();
       } else {
         flags[body] = true;

@@ -459,6 +459,10 @@ export function concludeVerb(opts: {
    *  signature, so the outcome still names no requester. Stamped as the `chore` field, its JSON; read back through
    *  `choreReceiptMarkOf`. */
   chore?:        ChoreReceiptMark;
+  /** The documents the handler changed and the heads each reached (`call-touches`), tagged at the change: the seat
+   *  waits for those heads, flushes those documents and answers `owed` where one still waits unsealed. Stamped as the
+   *  `touched` field, its JSON. */
+  touched?:      Readonly<Record<string, readonly string[]>>;
 }): LarTiddlerRecord {
   const title = `${OUTCOME_URI_PREFIX}${opts.requestId}`;
   const base = {
@@ -481,6 +485,7 @@ export function concludeVerb(opts: {
       ...(opts.effectOf     !== undefined && { "effect-of":     opts.effectOf }),
       ...(opts.refusal      !== undefined && { refusal:         opts.refusal }),
       ...(opts.chore        !== undefined && { chore:           JSON.stringify(opts.chore) }),
+      ...(opts.touched      !== undefined && { touched:         JSON.stringify(opts.touched) }),
     },
     meta: { authority: opts.authority ?? "lares-dispatcher" },
   };

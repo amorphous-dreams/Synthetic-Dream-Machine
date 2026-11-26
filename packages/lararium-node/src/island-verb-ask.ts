@@ -14,6 +14,7 @@
  * clear at the floor and sealed under a lit face, so nothing a sealed row holds rides here: a sealed row's act
  * rides the custody door (`sealed-acts`).
  */
+import { addCallTouches, currentCall, markCallUntracked, readCallTouches, type CallTouches } from "@lararium/mesh/call-touches";
 import { islandAskRefusal, type EngineWatch } from "./engine-watch.js";
 import { OUTCOME_URI_PREFIX, VERB_RESULT_KEY, newRequestId } from "@lararium/mesh/verb-tiddler";
 import { signMemoryAsk, type MemoryAct } from "@lararium/mesh/memory-section";
@@ -43,7 +44,7 @@ export interface IslandAsk {
 }
 
 /** The terminal outcome of one request, read through the control store, or null while none stands. */
-async function outcomeOf(store: Pick<CompositeStore, "get">, requestId: string): Promise<{ readonly status: "done" | "error"; readonly output: Record<string, unknown>; readonly errorMessage?: string; readonly refusal?: string } | null> {
+async function outcomeOf(store: Pick<CompositeStore, "get">, requestId: string): Promise<{ readonly status: "done" | "error"; readonly output: Record<string, unknown>; readonly errorMessage?: string; readonly refusal?: string; readonly touched: CallTouches | null } | null> {
   const record = await store.get(`${OUTCOME_URI_PREFIX}${requestId}`);
   if (!record || record.meta?.deleted) return null;
   const fields = record.tiddler as Record<string, unknown>;
@@ -60,6 +61,7 @@ async function outcomeOf(store: Pick<CompositeStore, "get">, requestId: string):
     status, output,
     ...(typeof fields["error-message"] === "string" ? { errorMessage: fields["error-message"] } : {}),
     ...(typeof fields["refusal"] === "string" ? { refusal: fields["refusal"] } : {}),
+    touched: readCallTouches(fields["touched"]),
   };
 }
 
@@ -82,6 +84,14 @@ export function askIslandVerb(opts: {
   const gated = islandAskRefusal(opts.verb, opts.args, opts.engine);
   if (gated !== null) return { answer: Promise.reject(new IslandVerbRefused(opts.verb, gated.message, gated.refusal)), abandon: () => {} };
   let abandon: () => void = () => {};
+  // THE SEAT'S CALL THIS ASK RIDES INSIDE (`call-touches`): the island's report folds into it; an outcome with none marks
+  // the call untracked, so its door answers owed by name, never a bare ok.
+  const call = currentCall();
+  const fold = (touched: CallTouches | null): void => {
+    if (call === undefined) return;
+    if (touched === null) markCallUntracked(call, opts.verb);
+    else addCallTouches(call, touched);
+  };
   const answer = new Promise<Record<string, unknown>>((resolve, reject) => {
     let settled = false;
     const settle = (fn: () => void): void => {
@@ -93,6 +103,7 @@ export function askIslandVerb(opts: {
     const check = async (): Promise<void> => {
       const outcome = await outcomeOf(opts.control, opts.requestId);
       if (!outcome) return;
+      fold(outcome.touched);
       if (outcome.status === "done") settle(() => resolve(outcome.output));
       else settle(() => reject(new IslandVerbRefused(opts.verb, outcome.errorMessage ?? `${opts.verb} ended in an error`, outcome.refusal ?? null)));
     };

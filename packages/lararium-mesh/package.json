@@ -1184,6 +1184,10 @@
       "import": "./dist/sealed-records.js",
       "types": "./dist/sealed-records.d.ts"
     },
+    "./call-touches": {
+      "import": "./dist/call-touches.js",
+      "types": "./dist/call-touches.d.ts"
+    },
     "./sealed-rest": {
       "import": "./dist/sealed-rest.js",
       "types": "./dist/sealed-rest.d.ts"
@@ -1247,6 +1251,10 @@
     "./shell-leaving-record": {
       "import": "./dist/shell-leaving-record.js",
       "types": "./dist/shell-leaving-record.d.ts"
+    },
+    "./shore-log": {
+      "import": "./dist/shore-log.js",
+      "types": "./dist/shore-log.d.ts"
     },
     "./sibling-channel": {
       "import": "./dist/sibling-channel.js",

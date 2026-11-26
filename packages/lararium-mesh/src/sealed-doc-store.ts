@@ -210,6 +210,10 @@ export interface SealedDocumentPorts {
    *  refusal (`error`) and its cause beside it. A `save-unnamed` tells once per document while its saves wait, so a peer's
    *  push names itself once. */
   onHeld?(held: HeldNotice): void;
+  /** Told once per save the store REFUSED outright (it throws, keeps nothing in memory and rests nothing): a face-foreign
+   *  session, an unmapped bag over a sealed rest, a seal that refused at the held or published key. The change lives only
+   *  in the engine's own memory, so a write door reads it as owed, never ok (`restOwedWatch`). */
+  onRefused?(refused: { readonly documentId: string; readonly refusal: string; readonly cause?: string }): void;
   /** Told once per document and refusal when a hydrating load waits (`hydrates`): which refusal it waits on, and the bag
    *  the map names for that document now (null: none). */
   onHydrationWait?(wait: { readonly documentId: string; readonly refusal: string; readonly bagId: string | null }): void;
@@ -618,6 +622,16 @@ export class SealedDocumentStore implements StorageAdapterInterface {
   }
 
   async save(key: StorageKey, data: Uint8Array): Promise<void> {
+    try { return await this.#save(key, data); }
+    catch (error) {
+      if (error instanceof SealedDocumentRefusal && typeof key[0] === "string") {
+        try { this.#ports.onRefused?.({ documentId: key[0], refusal: error.refusal, ...(error.why !== undefined ? { cause: error.why } : {}) }); } catch { /* a listener's fault never hides the refusal */ }
+      }
+      throw error;
+    }
+  }
+
+  async #save(key: StorageKey, data: Uint8Array): Promise<void> {
     this.#saves++;
     const bag = this.#bagOf(key);
     if (bag === null) {
@@ -854,9 +868,12 @@ export class SealedDocumentStore implements StorageAdapterInterface {
       const data = await this.#open(bag, chunk.key, face ?? this.#face(bag), chunk.data);
       if (data !== undefined) out.push({ key: chunk.key, data });
     }
-    for (const { key, data } of this.#waiting.values()) {
+    for (const { key, data, refusal } of this.#waiting.values()) {
       if (key.slice(0, prefix.length).join("\u0000") !== nameOf(prefix)) continue;
       const bag = this.#bagOf(key);
+      // THE RANGE READ KEEPS THE ONE-KEY LAW (`#load`): unmapped, an unnamed save reads back from memory, and a sealed-class save
+      // that waits unmapped never rides out as if it were clear.
+      if (bag === null && refusal !== "save-unnamed") continue;
       if (bag !== null && !isKeyed(bag)) this.#face(bag);
       out.push({ key: [...key], data: Uint8Array.from(data) });
     }

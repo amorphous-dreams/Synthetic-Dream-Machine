@@ -88,7 +88,7 @@ describe("the holder routes every consumer to the NEW daemon VM", () => {
     const facade = held.vm;
     const placeVerb = facade.placeVerb;               // a destructured method must survive the swap
     await held.restart("kapae-raise");
-    placeVerb({ origin: "channel", verb: "open-wiki", args: {} } as never);
+    placeVerb({ origin: "channel", verb: "list-wikis", args: {} } as never);
     facade.retireAsk("r1");
     expect(await facade.runAsFace({ verb: "v", args: {}, worn: {} as never })).toEqual({ vm: next.id });
     expect((await facade.worldlineCompare({ a: "a", b: "b", opens: [] })).order).toBe(`vm${next.id}`);
@@ -97,7 +97,7 @@ describe("the holder routes every consumer to the NEW daemon VM", () => {
     expect(facade.daemonHandle).toBe(next.daemonHandle);
     expect(facade.composite).toBe(next.composite);
     expect(facade.worker).toBe(next.worker);
-    expect(next.calls).toEqual(expect.arrayContaining(["placeVerb:open-wiki", "retireAsk:r1", "runAsFace:v", "worldlineCompare"]));
+    expect(next.calls).toEqual(expect.arrayContaining(["placeVerb:list-wikis", "retireAsk:r1", "runAsFace:v", "worldlineCompare"]));
     expect(first.calls).toEqual([]);                  // nothing landed on the disposed VM
     // CONTROL: the raw capture still answers from the old VM, so the instrument reads a stale capture as red.
     expect(await staleCapture.syncLegReady()).toBe(`leg-${first.id}`);

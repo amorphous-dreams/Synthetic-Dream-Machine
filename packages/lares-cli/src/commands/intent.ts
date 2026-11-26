@@ -24,7 +24,7 @@ export async function cmdIntent(args: ParsedArgs): Promise<number> {
     const steer = act === "claim" || act === "takeover" || act === "release";
     if (act === "keeper-cosign") {
       // `lares intent keeper-cosign <sha256:D′> --prev <chain head|none> --nonce <64 hex> [--face N]`: the keeper vest's co-sign over
-      // one commit; prints the face's carried co-sign as JSON (the host shim gathers each lit face's into the keeper commit).
+      // one commit; prints the face's carried co-sign as JSON (the host shim gathers each lit face's into the successor).
       if (!target || args.options["prev"] === undefined || args.options["nonce"] === undefined) throw new Error("keeper-cosign: name the successor closure, --prev <chain head|none> and --nonce <64 hex>");
       const { output } = await storeVerb("intent-ask", { ...face, action: "keeper-cosign", next: target, prev: args.options["prev"], nonce: args.options["nonce"] });
       console.log(JSON.stringify(output["cosign"]));

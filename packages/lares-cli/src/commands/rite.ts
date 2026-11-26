@@ -184,8 +184,8 @@ async function runKeepCut(args: ParsedArgs): Promise<number> {
       console.log(`keep: bundle ${out.bundleId.slice(0, 16)} rests at ${out.dest} (faces: ${out.faces.join(", ") || "(none)"}), return ${out.n} of the keep lei spent`);
       for (const o of out.omissions) console.log(`  left behind: ${o.kind}${o.count !== undefined ? ` (${o.count})` : ""} — ${o.detail}`);
       if ((out.unreadFaces?.length ?? 0) > 0) console.log(`    standing heads left behind for ${out.unreadFaces!.map((i) => `h${i}`).join(", ")} (this terminal alone names them)`);
-      console.log(`keep: the bundle rests unencrypted (private memory as plain files); the host half commits and pushes it, then lands the rite: lares rite land --tessera ${out.tessera} --head ${out.bundleId}`);
-    } }, out.kept ? `keep: bundle ${out.bundleId.slice(0, 16)} rests at ${out.dest}, return ${out.n} of the keep lei spent; land it: lares rite land --tessera ${out.tessera} --head ${out.bundleId}` : `keep: ${out.dest} already holds bundle ${out.bundleId.slice(0, 16)}; nothing spent and nothing moved`);
+      console.log(`keep: the bundle rests unencrypted (private memory as plain files); the host half commits and pushes it, then lands the rite: lares rite land --tessera ${out.tessera} --head ${out.bundleId}${out.face !== undefined ? ` --face ${out.face}` : ""}`);
+    } }, out.kept ? `keep: bundle ${out.bundleId.slice(0, 16)} rests at ${out.dest}, return ${out.n} of the keep lei spent; land it: lares rite land --tessera ${out.tessera} --head ${out.bundleId}${out.face !== undefined ? ` --face ${out.face}` : ""}` : `keep: ${out.dest} already holds bundle ${out.bundleId.slice(0, 16)}; nothing spent and nothing moved`);
     return 0;
   } catch (err) {
     if (err instanceof KeepRefused) {
@@ -576,7 +576,7 @@ function hostPorts(shim: string, say: (line: string) => void): RitePorts {
       } catch { return null; }
     },
     // THE COMMIT THE KUKULU LEI LICENSES: the shim's guards, then the keeper rests it; its lines name any refusal.
-    keeperLeiSpend: async (revision, branch) => (await runShim(shim, ["pulama", "keeper-commit", "--lei", revision, branch])) === 0,
+    keeperLeiSpend: async (revision, branch) => (await runShim(shim, ["pulama", "name-successor", "--lei", revision, branch])) === 0,
     tty: () => process.stdin.isTTY === true && process.stdout.isTTY === true,
     row: (verb, rowArgs) => cliVerb(hostRowLine(verb, rowArgs)),
     standing: async (branch, face) => {

@@ -64,6 +64,12 @@ export class SaveBook<S extends SaveSession = SaveSession> {
     this.#by.set(documentId, { session, writer: was?.writer ?? `session:${session.id}` });
   }
   of(documentId: string): S | null { return this.#by.get(documentId)?.session ?? null; }
+  /** The booked session's signer dropped: the document keeps its writer and holds no session, so its save waits
+   *  (`save-unbooked`) for the next session that books it, never signing under the dead one. */
+  release(documentId: string): void {
+    const was = this.#by.get(documentId);
+    if (was !== undefined) this.#by.set(documentId, { session: null, writer: was.writer });
+  }
   /** Who wrote a document's latest change, as booked; null: no booking stands. */
   writerOf(documentId: string): string | null { return this.#by.get(documentId)?.writer ?? null; }
   /** Drop one document's booking (its face left the lit set). */
@@ -518,6 +524,8 @@ export function composeSealedRest<S extends SaveSession>(input: {
   /** The Repo's own flush: every document, or the named ones alone (a face's drain names its own). */
   readonly flushRepo: (documentIds?: readonly string[]) => Promise<void>;
   readonly onHeld?: (held: HeldNotice) => void;
+  /** A save the store refused outright (`SealedDocumentPorts.onRefused`): it rests nowhere and waits nowhere. */
+  readonly onRefused?: (refused: { readonly documentId: string; readonly refusal: string; readonly cause?: string }) => void;
   /** A hydrating load waits (`SealedDocumentPorts.onHydrationWait`): once per document and refusal, with the bag the map names. */
   readonly onHydrationWait?: (wait: { readonly documentId: string; readonly refusal: string; readonly bagId: string | null }) => void;
   /** A restart's hydration: a sealed document's load waits for its map (`SealedDocumentStore.mapMoved`) until the rest
@@ -526,6 +534,8 @@ export function composeSealedRest<S extends SaveSession>(input: {
   /** The vessel's own held key where it stands open (`SealedDocumentPorts.vesselKey`): a document the veil floor minted
    *  and a face lifted opens its floor values with it, and `sealMapped` re-files them under the face. */
   readonly vesselKey?: () => HeldRestKey | null;
+  /** Does `session` still stand (its signer not dropped)? Absent: a session that carries a signer reads its `dropped`. */
+  readonly stands?: (session: S) => boolean;
 }): SealedRest<S> {
   const book = new SaveBook<S>();
   let watched: { readonly standing: (documentId: string) => S | null; readonly actorOf: (documentId: string) => string | null } | null = null;
@@ -542,6 +552,10 @@ export function composeSealedRest<S extends SaveSession>(input: {
     const bag = store.bagOf(documentId);
     return bag === null || bag.held !== undefined || bag.face === null || wears(bag.face, session.subject, bag.bagId) ? session : null;
   };
+  // A DROPPED SIGNER SIGNS NOTHING (session-sign-book's law): a lock, a close, a switch, a place session's re-mint or an
+  // anchor move drops a signer, and only the lock unbooks it here. So every reading of a booking asks whether its session
+  // still stands, by the port the vessel hands, else by the signer the session carries.
+  const stands = (session: S): boolean => input.stands ? input.stands(session) : !(session as { signer?: { dropped?: unknown } }).signer?.dropped;
   // T4: the save reads its change's own writer off its bytes. A change this replica made books the session standing; a
   // peer's change books its peer writer, and its save rests as received under the session that holds the rest.
   const sessionOf = (documentId: string, data?: Uint8Array): S | null => {
@@ -557,7 +571,14 @@ export function composeSealedRest<S extends SaveSession>(input: {
       else if (actors !== null && session !== null) book.book(documentId, session);
       else if (session !== null && book.of(documentId) === null) book.seal(documentId, session);
     }
-    return book.of(documentId);
+    const booked = book.of(documentId);
+    if (booked === null || stands(booked)) return booked;
+    // THE BOOKED SESSION'S SIGNER DROPPED: the session standing for the document now takes its save, else the save waits
+    // `save-unbooked` (the next session's rebook seals it), never asked of the dead signer to refuse `signer-refused`.
+    const standing = standingFor(documentId);
+    if (standing !== null && stands(standing)) { book.seal(documentId, standing); return standing; }
+    book.release(documentId);
+    return null;
   };
   const store = new SealedDocumentStore({
     inner: input.inner, bagOf: input.bagOf, sessionFace: input.sessionFace,
@@ -572,6 +593,7 @@ export function composeSealedRest<S extends SaveSession>(input: {
     waitOverSealed: true,
     seal: input.door.seal, open: input.door.open,
     ...(input.onHeld ? { onHeld: input.onHeld } : {}),
+    ...(input.onRefused ? { onRefused: input.onRefused } : {}),
     ...(input.onHydrationWait ? { onHydrationWait: input.onHydrationWait } : {}),
     ...(input.hydrates === true ? { hydrates: true } : {}),
     ...(input.vesselKey ? { vesselKey: input.vesselKey } : {}),
@@ -592,6 +614,8 @@ export function composeSealedRest<S extends SaveSession>(input: {
       return () => { watched = null; };
     },
     async rebook(session) {
+      // A dropped signer books nothing: its rebook would only ask the dead signer to refuse.
+      if (!stands(session)) return 0;
       for (const id of store.waitingDocuments()) {
         const bag = store.bagOf(id);
         if (bag !== null && wears(bag.face, session.subject, bag.bagId)) book.seal(id, session);
@@ -605,7 +629,7 @@ export function composeSealedRest<S extends SaveSession>(input: {
       const ids = new Set(documentIds);
       for (const id of store.waitingDocuments()) {
         const bag = store.bagOf(id);
-        if (ids.has(id) && bag !== null && wears(bag.face, session.subject, bag.bagId)) book.seal(id, session);
+        if (ids.has(id) && bag !== null && stands(session) && wears(bag.face, session.subject, bag.bagId)) book.seal(id, session);
       }
       await store.reseal(documentIds);
       await input.flushRepo(documentIds);
@@ -621,7 +645,7 @@ export function composeSealedRest<S extends SaveSession>(input: {
     async standDown(standing) {
       for (const id of store.waitingDocuments()) {
         const face = store.bagOf(id)?.face;
-        const session = standing.find((s) => wears(face, s.subject));
+        const session = standing.find((s) => stands(s) && wears(face, s.subject));
         if (session) book.seal(id, session);
       }
       try { await input.flushRepo(); } catch { /* a save that refused keeps its change in the store's memory */ }
@@ -862,4 +886,55 @@ export function vesselRestAsker(port: { post(msg: unknown): void; listen(cb: (ms
     pending.set(requestId, { documentId, resolve, reject });
     try { port.post({ type: "rest:ask", requestId, documentId }); } catch { pending.delete(requestId); reject(new RestAskRefusal("vessel-unreached", documentId)); }
   });
+}
+
+/** A write door's honest band where a document its call wrote still waits unsealed, or refused outright, after the flush
+ *  (sealed-store#/owed): the change stands in memory and rests nowhere until a session seals it, so the door answers
+ *  `owed`, never a bare ok. */
+export interface RestOwed {
+  readonly band: "owed";
+  readonly documents: ReadonlyArray<{ readonly documentId: string; readonly refusal: string; readonly error?: string; readonly cause?: string }>;
+}
+
+/** What the watch hears about one document's save: a hold (`onHeld`) or an outright refusal (`onRefused`, `save-refused`). */
+export interface RestNotice { readonly documentId: string; readonly refusal: string; readonly error?: string; readonly cause?: string }
+
+/**
+ * THE REST-OWED WATCH, SCOPED TO THE CALL'S OWN CHANGES. A door marks the notice count as its call begins; when it
+ * answers, it hands the documents that call changed (`call-touches`: tagged at the change, so a concurrent call's write, a
+ * peer's sync or a document that waited long before never reads as this call's debt). After the vessel's flush of those
+ * documents alone, each owes where it still waits, refused outright since the mark, failed its flush (`flushError`), or
+ * never reached this vessel's replica within the bound (`unsynced`). Notices fold into one latest reading per document,
+ * counted, never sampled. Null: the call changed nothing, or every change it made sealed.
+ */
+export function restOwedWatch(ports: { readonly waiting: (documentId: string) => number }): {
+  notice(notice: RestNotice): void;
+  mark(): number;
+  owed(since: number, touched: readonly string[], opts?: { readonly flushError?: string; readonly unsynced?: readonly string[] }): RestOwed | null;
+} {
+  let seq = 0;
+  const latest = new Map<string, { readonly seq: number; readonly notice: RestNotice }>();
+  return {
+    notice(notice) { latest.set(notice.documentId, { seq: ++seq, notice }); },
+    mark: () => seq,
+    owed(since, touched, opts = {}) {
+      const unsynced = new Set(opts.unsynced ?? []);
+      const documents: Array<RestOwed["documents"][number]> = [];
+      for (const documentId of new Set(touched)) {
+        const heard = latest.get(documentId);
+        const fresh = heard !== undefined && heard.seq > since ? heard.notice : null;
+        const waits = ports.waiting(documentId) > 0;
+        if (unsynced.has(documentId)) { documents.push({ documentId, refusal: "save-unsynced", error: "the change never reached this vessel's replica within the bound" }); continue; }
+        if (opts.flushError === undefined && !waits && fresh?.refusal !== "save-refused") continue;
+        const named = fresh ?? (waits ? heard?.notice ?? null : null);
+        documents.push({
+          documentId,
+          refusal: opts.flushError !== undefined && named === null ? "flush-refused" : named?.refusal ?? "save-waiting",
+          ...(named?.error !== undefined ? { error: named.error } : opts.flushError !== undefined ? { error: opts.flushError } : {}),
+          ...(named?.cause !== undefined ? { cause: named.cause } : {}),
+        });
+      }
+      return documents.length > 0 ? { band: "owed", documents } : null;
+    },
+  };
 }

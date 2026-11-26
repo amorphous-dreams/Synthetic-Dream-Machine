@@ -34,8 +34,8 @@ describe("a bag that declares nothing still answers", () => {
     expect(m.home).toBe("hearth");     // torn, fail-closed on its OWN axis
   });
 
-  test("either spelling of the tier key reads, because a human writes this by hand", () => {
-    expect(bagManifestFromMeta("@x", { tier: "contract" }).tier).toBe("contract");
+  test("the tier reads off `cap-tier` alone: a bare `tier` key declares nothing and the bag reads tightest", () => {
+    expect(bagManifestFromMeta("@x", { tier: "contract" }).tier).toBe("veil");
     expect(bagManifestFromMeta("@x", { "cap-tier": "contract" }).tier).toBe("contract");
   });
 });

@@ -93,7 +93,7 @@ export const FLOOR_WIKI = "lares";
  * every boot rests at the floor (stable-founding-road#/cold-start): the floor STANDS, since a floor that ended its process
  * over a wiki would leave its operator no unlock door. So either shore refuses THAT wiki by name, stands on `FLOOR_WIKI`,
  * and names the waiting wiki where the page and the CLI read it, never on the island's mount silence. `source` names who
- * chose the wiki: the boot's own ask (`boot-arg`) or the daemon's active-wiki marker.
+ * chose the wiki: the boot's own ask (`boot-arg`) or a lit face's home preference (`home-preference`).
  */
 export class FloorWikiRefusal extends Error {
   override readonly name = "FloorWikiRefusal";

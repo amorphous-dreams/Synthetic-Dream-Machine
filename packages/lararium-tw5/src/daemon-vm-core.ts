@@ -20,8 +20,10 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/daemon-vm-core
  */
 
+import { inCallScope, takeCallTouches } from "@lararium/mesh/call-touches";
 import { wearOf } from "@lararium/mesh/repo-wear";
 import { canonicalJson } from "@lararium/mesh/crypto";
+import type { ShoreLogPlacement } from "@lararium/mesh/shore-log";
 import { DAEMON_BAG_ID, CROSSROADS_DOC_URI, verbArgsFromPayload } from "@lararium/mesh/lar-uris";
 import { NoWorkingLayerRefusal, CompositeStore } from "@lararium/mesh/composite-store";
 import { WorkingDocumentUnavailableRefusal, DOCUMENT_HANG_BOUND_MS, findOrThrow } from "@lararium/mesh/find-or-throw";
@@ -37,6 +39,7 @@ import {
   mkDaemonPlaceVerb,
   mkDaemonFaceLit,
   mkDaemonFaceBags,
+  mkDaemonShoreLog,
   mkDaemonFaceDrop,
   type JoinedFaceAuth,
   mkTelemetryPlaceVerb,
@@ -285,6 +288,9 @@ export interface DaemonVmCore {
    *  `frontier` (optional) carries the turn-DAG fork-frontier so a same-session fork derives a
    *  distinct handle; absent on a non-forked turn. */
   placeTelemetry: (turnText: string, sourceFile: string, frontier?: readonly string[], turnKey?: string, chunkIndex?: number) => void;
+  /** HAND the vessel's changed log records (`shore-log`) to the daemon island, which writes each into the worn face's daemon
+   *  temp layer. Fire-and-forget; an empty batch posts nothing. */
+  placeShoreLog: (records: readonly ShoreLogPlacement[]) => void;
   /** REWIND (kapae) one turn's .structurepalace tally + salience down-weight, IN the daemon island (it owns
    *  the warm holder). Fire-and-forget — the convergence twin of the CLI-side KG valid-close. */
   placeStructurepalaceKapae: (turnKey: string, ended?: string) => void;
@@ -408,6 +414,11 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
   // The booking also keeps the asker's hand the vessel's door read (`cli`, `seat`, …): a delegate of the booked act runs with
   // that asker (`ctx.asker`), so a hand verb answers a terminal's session and refuses every other (hitl-reads-a-hand).
   const sessionAsks = new Map<string, SessionWorn & { readonly act: string; readonly asker?: Hand }>();
+  // THE ONE-SHOT LINE BOOKS ITS HAND THE SAME WAY (hitl-reads-a-hand): a channel ask with no session (`lares shore take-records`,
+  // any hand verb the operator's line places whole) books the asker its door read against the exact act, and the first delegate
+  // of that act consumes it. The island delegates what its own table lacks (`wiki-act` into a wiki's island), so without this
+  // book a person's terminal reached the wiki's hand gate as no asker and read `hand-unattested`.
+  const lineAsks = new Map<string, { readonly act: string; readonly asker: Hand }>();
   // A booking names the exact act its session placed: its verb and its args, so no other invocation under the id wears it.
   const actOf = (verb: string, args: unknown): string => canonicalJson([verb, JSON.parse(JSON.stringify(args ?? {}))]);
   // Pool eviction mechanism — set via onEvictRequest() after the pool exists.
@@ -731,8 +742,11 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
       // the act booked spends the booking: one naming another verb or other args under that id leaves it standing.
       const booked = sessionAsks.get(msg.requestId);
       const worn: SessionWorn | undefined = booked && booked.act === actOf(msg.verb, msg.args) ? { ordinal: booked.ordinal, presenter: booked.presenter, ...(booked.group !== undefined ? { group: booked.group } : {}) } : undefined;
-      const asker: Hand | undefined = worn ? booked?.asker : undefined;
+      const line = lineAsks.get(msg.requestId);
+      const lineAsker: Hand | undefined = line && line.act === actOf(msg.verb, msg.args) ? line.asker : undefined;
+      const asker: Hand | undefined = worn ? booked?.asker : lineAsker;
       if (worn) sessionAsks.delete(msg.requestId);
+      if (lineAsker !== undefined) lineAsks.delete(msg.requestId);
       const invocationLike = {
         title:       `${DAEMON_BAG_ID}/delegate/${msg.requestId}`,
         requestId:   msg.requestId,
@@ -744,17 +758,20 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
         batchMode:   (msg.batchMode ?? "best-effort") as BatchMode,
         status:      "pending" as const,
       };
-      runLocalVerb(invocationLike, {
+      // THE DELEGATED RUN TAGS ITS CALL (`call-touches`): what main changes for it rides back with the answer, so the island's
+      // outcome names it and the seat owes it (a postMessage carries no async context; the id does).
+      inCallScope(msg.requestId, () => runLocalVerb(invocationLike, {
         daemon:   composite,
-        registry: _registry,
+        registry: _registry!,
         ...(worn ? { wornOf: () => worn, localOf: () => true } : {}),
         ...(asker ? { askerOf: () => asker } : {}),
-      }).then((result) => {
-        worker.post(mkDaemonVerbResult({ requestId: msg.requestId, result }));
+      })).then((result) => {
+        worker.post(mkDaemonVerbResult({ requestId: msg.requestId, result, touched: takeCallTouches(msg.requestId) ?? {} }));
       }).catch((err: unknown) => {
         worker.post(mkDaemonVerbResult({
           requestId: msg.requestId,
           error: err instanceof Error ? err.message : String(err),
+          touched: takeCallTouches(msg.requestId) ?? {},
         }));
       });
       return;
@@ -898,7 +915,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     lightFace: (entry) => askFace(entry.atom.key, "lit", mkDaemonFaceLit(entry)),
     dropFace: (atomKey) => askFace(atomKey, "dropped", mkDaemonFaceDrop(atomKey)),
     registerFaceBags: (atomKey, bags) => askFace(atomKey, "bags", mkDaemonFaceBags(atomKey, bags)),
-    retireAsk: (requestId: string) => { sessionAsks.delete(requestId); },
+    retireAsk: (requestId: string) => { sessionAsks.delete(requestId); lineAsks.delete(requestId); },
     runAsFace: async ({ verb, args, worn }) => {
       const registry = _registry;
       if (!registry) throw new Error(`[openDaemonVm] a face row ran before mountMainVerbs — verb="${verb}"`);
@@ -918,6 +935,9 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
         const group = opts.wornGroupOf?.(o.ordinal) ?? null;
         sessionAsks.set(o.requestId, { ordinal: o.ordinal, presenter: o.requestedBy, ...(group !== null ? { group } : {}), ...(o.asker ? { asker: o.asker } : {}), act: actOf(o.verb, o.args) });
         if (sessionAsks.size > 4096) sessionAsks.delete(sessionAsks.keys().next().value as string);
+      } else if (o.origin === "channel" && o.requestId && o.asker) {
+        lineAsks.set(o.requestId, { act: actOf(o.verb, o.args), asker: o.asker });
+        if (lineAsks.size > 4096) lineAsks.delete(lineAsks.keys().next().value as string);
       }
       // THE SESSION'S FACE RIDES THE ACT INTO THE ISLAND: the ordinal, the presenter its door verified, and the group the
       // vessel's worn face maps the ordinal to. Booked the same way as the delegate's worn face above.
@@ -941,6 +961,9 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     },
     placeTelemetry: (turnText: string, sourceFile: string, frontier?: readonly string[], turnKey?: string, chunkIndex?: number) => {
       worker.post(mkTelemetryPlaceVerb({ turnText, sourceFile, ...(frontier && frontier.length ? { frontier } : {}), ...(turnKey ? { turnKey } : {}), ...(chunkIndex !== undefined ? { chunkIndex } : {}) }));
+    },
+    placeShoreLog: (records: readonly ShoreLogPlacement[]) => {
+      if (records.length > 0) worker.post(mkDaemonShoreLog(records));
     },
     placeStructurepalaceKapae: (turnKey: string, ended?: string) => {
       worker.post(mkStructurepalaceKapae({ turnKey, ...(ended ? { ended } : {}) }));

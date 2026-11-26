@@ -656,6 +656,20 @@ describe("the keep rite, host half", () => {
     expect(named.data).toMatchObject({ face: 2, faceBy: "named" });
   });
 
+  test("KH17b land-names-its-face: a push that fails after a keep acting as the keep's face names that face in the by-hand landing, so a terminal wearing another face lands it", async () => {
+    const r = rig();
+    const row = r.ports.row;
+    const ports: KeepHostPorts = { ...r.ports, sessions: null, row: async (verb, args) => {
+      const a = await row(verb, args);
+      return verb === "keep-cut" && a.ok ? { ok: true, output: { ...a.output, face: 0, faceBy: "keep" } } : a;
+    } };
+    must(r.ws, "remote", "set-url", "origin", join(scratch, "nowhere-face.git"));
+    const out = await riteKeepHost(ports, { workspace: "backup" });
+    const { tessera, bundleId } = out.data as { tessera: string; bundleId: string };
+    expect(out).toMatchObject({ code: 1, data: { stopped: "push", face: 0 } });
+    expect(String(out.data["message"])).toContain(`lares rite land --tessera ${tessera} --head ${bundleId} --face 0`);
+  });
+
   test("KH19 spent-lei-offers-its-refill: a keep stopped on a spent lei strings the refill the refusal names (its returns, its face) through the refill port and goes on once; declined or on a pipe it keeps today's refusal", async () => {
     const spentRow = (r: ReturnType<typeof rig>, strung: { n: number }): KeepHostPorts["row"] => async (verb, args) => {
       if (verb === "keep-cut" && strung.n === 0) { r.calls.push(`${verb} ${JSON.stringify(args)}`); return { ok: false, code: "swarm-lei-returns-spent", message: "no keep lei stands for the workspace \"backup\" (returns-spent); the hand strings one: `lares lei kui --rite keep --branch backup --returns 6 --face 0`" }; }

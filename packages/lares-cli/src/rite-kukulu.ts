@@ -97,7 +97,7 @@ export interface StandReading {
   readonly current: boolean;
   readonly pulama: "off" | "absent" | "level" | "closure-level" | "moved" | "unread";
   /**
-   * THE KEEPER TALLY, where the pūlama's code moved and it stands lit: `vests` where a keeper commit the hand made names the
+   * THE KEEPER TALLY, where the pūlama's code moved and it stands lit: `vests` where a successor the hand made names the
    * closure the new image carries (the raise hands the living fire to a successor, unattended, and asks no route); `struck-due`
    * where the handed run reached its count (the hand lights the successor); `lei` where no commit names the closure yet and the
    * keeper could rest one the kukulu lei licenses (`keeperLeiSpend`, no route). Absent, or null, the light rides as it did.
@@ -156,8 +156,9 @@ export interface RitePorts {
   keeperStand?(): Promise<{ readonly to: string; readonly closure: string } | null>;
   /**
    * THE COMMIT THE KUKULU LEI LICENSES (no route; operator ruling 2026-11-24: the keeper lei keeps no count of its own): the shim's
-   * internal step (`pulama keeper-commit --lei <rev> <branch>`, no hand verb) checks the revision reachable from origin, the image's closure label equal to its D′
-   * and its CI push run green, and the keeper rests a commit naming D′ and the license. The rite's own begin spends the lei's
+   * internal step (`pulama name-successor --lei <rev> <branch>`, no hand verb) checks the revision reachable from origin, the image's closure label equal to its D′
+   * and a green LOCAL bench verdict over that very tree (the host runs `node tools/bench-gate.mjs --verdict`; CI rides beside it as
+   * annotation and never blocks, ruling 2026-11-25-web2-annotates), and the keeper rests a commit naming D′, the verdict's hash and the license. The rite's own begin spends the lei's
    * return (the same return it spends for the lent face), and the vest names it. True where the commit rests (the stand then reads
    * `vests`); false where any guard refused (its lines name why). Absent, nothing licenses a commit.
    */
@@ -303,7 +304,7 @@ export function leiClearing(refusal: string, branch: string, face?: number): str
   return `read the refusal with \`${show}\` and clear what it names before the rite runs`;
 }
 
-/** Whether the day owes the pūlama a light: none runs, its code moved (unless a keeper commit vests it; a lei unspent vests nothing), or it stands unlit. */
+/** Whether the day owes the pūlama a light: none runs, its code moved (unless a successor vests it; a lei unspent vests nothing), or it stands unlit. */
 export const owesLight = (r: StandReading): boolean => r.pulama === "absent" || (r.pulama === "moved" && !(r.keeper === "vests" && r.lit === true)) || r.lit === false;
 
 /**
@@ -334,7 +335,7 @@ const LEI_UNREAD = "reads unknown: the kukulu lei answered no reading (read it w
  * the same gates it walks (the light `owesLight` names, the admit gate, a spent lei's begin), so the reading and the rite never
  * disagree. `tools/lares-container.sh pulama status` prints the same line from the shim's own facts (one table welds the two).
  *   runs alone                            the rite raises with no route
- *   keeper vests under your keeper commit the living fire passes to the successor the hand named ahead
+ *   keeper vests under your successor the living fire passes to the successor the hand named ahead
  *   keeper vests under the standing lei   the kukulu lei licenses the keeper's commit and the fire passes with no route
  *   needs your hand: <why>                a no-terminal rite stops and names `lares rite kukulu` on a terminal
  *   reads unknown: <why>                  the rite stops before anything moves (`kukulu-pulama-unread`)
@@ -380,7 +381,7 @@ function handVerdict(f: HandFacts): string {
     return `needs your hand: ${f.vessel === "down" ? "no vessel stands to begin the rite" : "no standing kukulu lei"} (the pūlama's admit of the new image reads your route)`;
   }
   if (byLei) return "keeper vests under the standing lei";
-  if (moved && keeper === "vests") return "keeper vests under your keeper commit";
+  if (moved && keeper === "vests") return "keeper vests under your successor";
   return "runs alone";
 }
 
@@ -487,7 +488,7 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
   if (ports.leiStands) {
     const line = opts.branch ?? (await ports.checkout()).branch;
     const stands = await ports.leiStands(line, opts.face).catch(() => null);
-    // A LEI THAT STANDS WITH RETURNS LEFT licenses a keeper commit with no route; a spent one waits for its refill and licenses none.
+    // A LEI THAT STANDS WITH RETURNS LEFT licenses a successor with no route; a spent one waits for its refill and licenses none.
     leiLicenses = stands === true;
     if (stands === false || stands === "absent") {
       const offer = ports.refill ? await ports.refill({ rite: "kukulu", branch: line, absent: true, returns: KUKULU_LEI_RETURNS, ...(opts.face === undefined ? { all: true } : { face: opts.face }) }) : null;
@@ -540,13 +541,13 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
     ports.say("kūkulu: whether the pūlama stands lit, or what it runs, reads unknown; read it with `tools/lares-container.sh pulama status`; nothing spent, nothing moved");
     return { code: 1, data: { ...base, begun: false, stopped: "pulama", refusal: "kukulu-pulama-unread" } };
   }
-  // THE KUKULU LEI LICENSES THE KEEPER COMMIT where no commit names the moved closure yet (no route): the commit then rests, and the
+  // THE KUKULU LEI LICENSES THE SUCCESSOR where no successor names the moved closure yet (no route): the commit then rests, and the
   // stand reads as a hand's commit would (`vests`); this rite's own begin spends the lei's return, and the vest names it. A refusal
   // names its guard and the light stays owed. With no kukulu lei holding returns, or no successor to stand, nothing licenses one.
   // AT A TERMINAL the hand stands present and the light asks its route, so the rite takes no licensed step (the step refuses a terminal).
   if (r.keeper === "lei" && r.pulama === "moved" && r.lit === true && !tty && leiLicenses && ports.keeperStand && ports.keeperLeiSpend) {
     const spent = await ports.keeperLeiSpend(head, branch).catch(() => false);
-    if (spent) { ports.say(`kūkulu: the kukulu lei on ${branch} licenses a keeper commit naming the closure of ${short}; the rite's return spends on it, and the living fire passes with no route`); r = { ...r, keeper: "vests" }; }
+    if (spent) { ports.say(`kūkulu: the kukulu lei on ${branch} licenses a successor naming the closure of ${short}; the rite's return spends on it, and the living fire passes with no route`); r = { ...r, keeper: "vests" }; }
     else ports.say("kūkulu: the keeper rested no commit under the kukulu lei (the lines above name the guard that refused), so the moved closure owes the light");
   }
   // A KEEPER MOVE RIDES A LIVE RITE: with no lei to begin one, a moved closure relights struck, so the light stays owed.
@@ -557,8 +558,8 @@ async function raiseHouse(ports: RitePorts, opts: { readonly branch?: string; re
   };
   if (light && !tty) {
     const why = r.pulama === "moved" ? (r.keeper === "struck-due" ? "the pūlama's code closure moved and the keeper's handed run owes the struck fire" : "the pūlama's code closure moved") : r.pulama === "absent" ? "no pūlama runs" : "the pūlama stands unlit";
-    // A MOVED CLOSURE NAMES THE HANDED FIRE TOO: a keeper commit on a terminal lets the next run vest the successor with no route.
-    const handed = r.pulama === "moved" && r.lit === true && r.keeper !== "struck-due" ? " (or name its successor ahead on a terminal: lares pulama keeper-commit, and the next run hands it the living fire with no route; a kukulu lei with returns left on the line licenses that commit itself)" : "";
+    // A MOVED CLOSURE NAMES THE HANDED FIRE TOO: a successor on a terminal lets the next run vest the successor with no route.
+    const handed = r.pulama === "moved" && r.lit === true && r.keeper !== "struck-due" ? " (or name its successor ahead on a terminal: lares pulama name-successor, and the next run hands it the living fire with no route; a kukulu lei with returns left on the line licenses that commit itself)" : "";
     return awaitsHand(`${why}, and its light reads your route on a terminal, which this seat holds none of${handed}`);
   }
   const tesseraeOf = (faces: readonly StandingBegin[]) => faces.map((f) => ({ face: f.face, tessera: f.tessera }));

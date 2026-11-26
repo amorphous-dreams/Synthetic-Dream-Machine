@@ -53,7 +53,7 @@ describe("a burned filter refuses in any spelling", () => {
 describe("a fusion-only knob refuses off the dual fuse", () => {
   const knobs: ReadonlyArray<readonly [string, unknown]> = [
     ["register", "r"], ["grammarLayer", "wikitext"], ["grammar_layer", "wikitext"], ["formWeight", 2],
-    ["apertureGrain", 10], ["aperture_grain", 10], ["aperture", "paragraph"], ["apertureWidth", 5], ["aperture_width", 5],
+    ["apertureGrain", 10], ["aperture", "paragraph"], ["apertureWidth", 5],
   ];
   const paths: ReadonlyArray<readonly [string, Record<string, unknown>]> = [
     ["search", { query: "q" }], ["list", {}], ["imago", { imago: "cid-1" }],
@@ -71,6 +71,29 @@ describe("a fusion-only knob refuses off the dual fuse", () => {
     const { recall, calls } = harness();
     await recall({ query: "q", dual: true, register: "r", formWeight: 2, aperture: "paragraph" });
     expect(calls[0]).toMatchObject({ op: "multi", args: { query: "q", register: "r", formWeight: 2, apertureGrain: "paragraph" } });
+  });
+});
+
+describe("a knob spelled in snake case refuses, naming the camel-case knob (recall-snake-case-refuses)", () => {
+  // No path reads aperture_grain or aperture_width, so a caller sending one would see it fall away on every path, the dual fuse
+  // included, while the answer read as if it narrowed.
+  const renamed: ReadonlyArray<readonly [string, string]> = [["aperture_grain", "apertureGrain"], ["aperture_width", "apertureWidth"]];
+  const paths: ReadonlyArray<readonly [string, Record<string, unknown>]> = [
+    ["dual", { query: "q", dual: true }], ["search", { query: "q" }], ["list", {}], ["imago", { imago: "cid-1" }],
+  ];
+  for (const [name, current] of renamed) {
+    for (const [path, extra] of paths) {
+      test(`★ ${name} refuses on the ${path} path, naming ${current} ★`, async () => {
+        const { recall, calls } = harness();
+        await expect(recall({ ...extra, [name]: 10 })).rejects.toThrow(new RegExp(`${name}[\\s\\S]*${current}`));
+        expect(calls).toEqual([]);
+      });
+    }
+  }
+  test("CONTROL — the camel-case knobs still ride the dual fuse", async () => {
+    const { recall, calls } = harness();
+    await recall({ query: "q", dual: true, apertureGrain: 10, apertureWidth: 5 });
+    expect(calls[0]).toMatchObject({ op: "multi", args: { apertureGrain: 10, apertureWidth: 5 } });
   });
 });
 

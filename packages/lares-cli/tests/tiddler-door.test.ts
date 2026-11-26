@@ -18,6 +18,7 @@ const h = vi.hoisted(() => ({
   reply: {} as Record<string, unknown>,
   refuse: "" as string,
   replyFor: null as null | ((args: Record<string, unknown>) => Record<string, unknown>),
+  rest: null as null | Record<string, unknown>,
 }));
 vi.mock("../src/verb-call.js", () => ({
   DaemonUnreachable: class extends Error {},
@@ -25,11 +26,11 @@ vi.mock("../src/verb-call.js", () => ({
   runVerb: async (verb: string, args: Record<string, unknown>) => {
     h.calls.push({ verb, args });
     if (h.refuse) return { status: "error", requestId: "r", errorMessage: h.refuse };
-    return { status: "done", requestId: "r", results: { summary: { ok: true, output: h.replyFor ? h.replyFor(args) : h.reply } } };
+    return { status: "done", requestId: "r", results: { summary: { ok: true, output: h.replyFor ? h.replyFor(args) : h.reply } }, ...(h.rest ? { rest: h.rest } : {}) };
   },
   runVerbAsFace: async (verb: string, args: Record<string, unknown>) => {
     h.calls.push({ verb, args });
-    return { status: "done", requestId: "r", results: { summary: { ok: true, output: h.replyFor ? h.replyFor(args) : h.reply } } };
+    return { status: "done", requestId: "r", results: { summary: { ok: true, output: h.replyFor ? h.replyFor(args) : h.reply } }, ...(h.rest ? { rest: h.rest } : {}) };
   },
 }));
 vi.mock("../src/store-door.js", () => ({
@@ -75,7 +76,7 @@ async function run(args: ParsedArgs): Promise<{ exit: number; printed: Record<st
   } finally { spy.mockRestore(); log.mockRestore(); err.mockRestore(); }
 }
 
-afterEach(() => { h.calls.length = 0; h.refuse = ""; h.replyFor = null; h.reply = {}; });
+afterEach(() => { h.calls.length = 0; h.refuse = ""; h.replyFor = null; h.reply = {}; h.rest = null; });
 
 describe("verb-table-parity — the CLI half of the tiddler door's one table", () => {
   test("the table names all six verbs, and every door it names stands in the command table", () => {
@@ -321,8 +322,7 @@ describe("wiki residency and switch wire", () => {
     expect(h.calls).toEqual([{ verb, args: wireArgs }]);
     vi.restoreAllMocks();
   });
-  test.each([[{}, "wiki-switch", { slug: "works", remount: true }],
-    [{ "next-boot": true }, "open-wiki", { slug: "works" }]])(
+  test.each([[{}, "wiki-switch", { slug: "works", remount: true }]])(
     "switch flags %j send %s", async (flags, verb, wireArgs) => {
       vi.spyOn(console, "log").mockImplementation(() => {});
       await cmdWiki(argv("wiki", ["switch", "works"], {}, flags));
@@ -374,6 +374,32 @@ describe("tiddler rename — the sub-verb of the one door", () => {
     expect((await run(argv("tiddler", ["rename", "Old", "New"], { recipe: "default", base: "sha256-old" }))).exit).toBe(4);
     h.reply = { decision: "refused", refusal: "rename-target-stands", why: "rename-target-stands: \"New\" already stands; run `lares tiddler delete \"New\"` first" };
     expect(await run(argv("tiddler", ["rename", "Old", "New"], { recipe: "default" }))).toMatchObject({ exit: 4, printed: { ok: false, error: { code: "verb-error", hint: "refusal: rename-target-stands", message: expect.stringContaining("lares tiddler delete") } } });
+  });
+});
+
+describe("no silent loss: a put whose save cannot seal answers owed, never a bare ok", () => {
+  // The live house (2026-11-25): face 1's put answered ok while its save refused `signer-refused` and evaporated at the
+  // next down. The vessel's door now stamps `rest: { band: "owed" }` on a write whose document still waits unsealed.
+  const owed = { band: "owed", documents: [{ documentId: "2hUgpNYoRGAkCcCXTgZGecaQBXsp", refusal: "save-unsealed", error: "record-refused", cause: "signer-refused:signer-refused" }] };
+  test("a put the vessel answers owed exits owed, carries the band in data and names the waiting document", async () => {
+    h.reply = { decision: "put", hash: "sha256-new", changed: ["text"], bag: "lar:///ha.ka.ba/wikis/lares/working" };
+    h.rest = owed;
+    const put = await run(argv("tiddler", ["put", "T"], { recipe: "lares", text: "x", face: "1" }));
+    expect(put).toMatchObject({ exit: 6, printed: { ok: false, error: { code: "owed", message: expect.stringContaining("2hUgpNYoRGAk") }, data: { decision: "put", rest: owed } } });
+  });
+  test("one path for every door: readVerbOutcome reads an owed answer as a refusal by code owed, the receipt kept beside it", async () => {
+    const { readVerbOutcome } = await import("../src/verb-result.js");
+    const read = readVerbOutcome({ status: "done", requestId: "r", results: { summary: { ok: true, output: { decision: "put" } } }, rest: owed as never });
+    expect(read).toMatchObject({ ok: false, code: "owed", output: { decision: "put", rest: owed }, error: expect.stringMatching(/^owed: .*2hUgpNYoRGAk/) });
+    expect(readVerbOutcome({ status: "done", requestId: "r", results: { summary: { ok: true, output: { decision: "noop" } } } })).toMatchObject({ ok: true });
+  });
+  test("a delete the vessel answers owed exits owed too; a put with no band stays ok", async () => {
+    h.reply = { decision: "removed", tombstoned: ["T"] };
+    h.rest = owed;
+    expect(await run(argv("tiddler", ["delete", "T"], { recipe: "lares" }))).toMatchObject({ exit: 6, printed: { ok: false, error: { code: "owed" } } });
+    h.rest = null;
+    h.reply = { decision: "put", hash: "sha256-new", changed: ["text"] };
+    expect(await run(argv("tiddler", ["put", "T"], { recipe: "lares", text: "x" }))).toMatchObject({ exit: 0, printed: { ok: true } });
   });
 });
 

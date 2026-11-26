@@ -67,6 +67,7 @@ import type { ChoreReceiptMark } from "./chore-ask.js";
 import type { PersonaKelEvent } from "./persona-kel.js";
 import type { WorldlineEdgeTriple, WorldlineEdgeClose } from "./worldline-edge.js";
 import type { SparseFormVector } from "./worldline-trajectory.js";
+import { readShoreLogPlacement, type ShoreLogPlacement } from "./shore-log.js";
 import type { DocStoreMsg_Answering, DocStoreMsg_Live, DocStoreMsg_Opened, DocStoreMsg_Sealed, DocStoreMsg_Silent, DocStoreMsg_Slot } from "./sealed-rest.js";
 import {
   LAR_CONTROL_EVENT, LAR_CONTROL_RESULT, LAR_FRAME, LAR_RESEND, LAR_SERVICE,
@@ -611,6 +612,8 @@ export interface DaemonMsg_VerbResult {
   requestId: string;
   result?: Record<string, unknown>;
   error?: string;
+  /** What main's run of the delegated verb changed (`call-touches`): the island folds it into the call's tally. */
+  touched?: Readonly<Record<string, readonly string[]>>;
 }
 
 
@@ -639,6 +642,16 @@ export const isDaemonFaceDrop = (v: VesselToIslandMsg): v is DaemonMsg_FaceDrop 
 export interface DaemonMsg_FaceBags { type: "daemon:face-bags"; atomKey: string; bags: readonly string[]; }
 export const mkDaemonFaceBags = (atomKey: string, bags: readonly string[]): DaemonMsg_FaceBags => ({ type: "daemon:face-bags", atomKey, bags: [...bags] });
 export const isDaemonFaceBags = (v: VesselToIslandMsg): v is DaemonMsg_FaceBags => v.type === "daemon:face-bags";
+
+/**
+ * THE VESSEL'S LOG AS RECORDS (`shore-log`): the host's sink folds its console into one record per distinct event and hands
+ * each changed record here in one batch; the daemon island writes each into the worn face's daemon temp layer
+ * (`wikis/daemon/temp`), keeping the record's `ack` where a hand set one. Fire-and-forget: nothing answers it, and a batch
+ * whose placement reads malformed is dropped at the island door.
+ */
+export interface DaemonMsg_ShoreLog { type: "daemon:shore-log"; records: readonly ShoreLogPlacement[]; }
+export const mkDaemonShoreLog = (records: readonly ShoreLogPlacement[]): DaemonMsg_ShoreLog => ({ type: "daemon:shore-log", records: records.map((r) => ({ title: r.title, fields: { ...r.fields } })) });
+export const isDaemonShoreLog = (v: VesselToIslandMsg): v is DaemonMsg_ShoreLog => v.type === "daemon:shore-log";
 
 /**
  * PeerClass — the class a gate's sorter answers for an admitted socket, before its verdict; the node
@@ -860,6 +873,7 @@ export type VesselToIslandMsg =
   | DaemonMsg_FaceLit
   | DaemonMsg_FaceDrop
   | DaemonMsg_FaceBags
+  | DaemonMsg_ShoreLog
   | DaemonMsg_ResolveBindingRequest
   | DaemonMsg_GateVerbRequest
   | DaemonMsg_EvictResult
@@ -1193,6 +1207,8 @@ export interface WikiMsg_VerbResult {
   requestId:      string;
   result?:        Record<string, unknown>;
   error?:         string;
+  /** What the wiki island's verb changed (`call-touches`); present (even empty) wherever the island tracked the call. */
+  touched?:       Readonly<Record<string, readonly string[]>>;
 }
 
 /**
@@ -1276,7 +1292,9 @@ export function isVesselToIslandMsg(v: unknown): v is VesselToIslandMsg {
   if (v.type === LAR_CONTROL_EVENT) return readLarControlEvent(v) !== null;
   if (v.type === LAR_RESEND) return readLarResend(v) !== null;
   if (isPortKind(v.type)) return readPortVesselMsg(v) !== null;   // the record port reads whole at the door too
-  return (["manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:face-lit", "daemon:face-drop", "daemon:face-bags", "daemon:verify-request", "daemon:resolve-binding-request", "daemon:gate-verb-request", "daemon:evict-result", "daemon:residency-op-result", "daemon:wear-actor-result", "wiki:place-verb", "cas:block", "dyad:read", "receipt:issued", "rest:answer", "custody:written", "session:signed", "view:catalog-result", "view:content-result", "view:settled"] as const)
+  // The log batch reads whole at the door: every placement a title under the shore-log prefix with string fields.
+  if (v.type === "daemon:shore-log") { const records = (v as { records?: unknown }).records; return Array.isArray(records) && records.length <= 4096 && records.every((r) => readShoreLogPlacement(r) !== null); }
+  return (["manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:face-lit", "daemon:face-drop", "daemon:face-bags", "daemon:shore-log", "daemon:verify-request", "daemon:resolve-binding-request", "daemon:gate-verb-request", "daemon:evict-result", "daemon:residency-op-result", "daemon:wear-actor-result", "wiki:place-verb", "cas:block", "dyad:read", "receipt:issued", "rest:answer", "custody:written", "session:signed", "view:catalog-result", "view:content-result", "view:settled"] as const)
     .includes(v.type as Exclude<VesselToIslandMsg["type"], "receipt:close" | "wiki:request-drain" | SensoriumSignalType | typeof LAR_CONTROL_EVENT | typeof LAR_RESEND | PortVesselToIslandMsg["type"]>) || isSensoriumSignalType(v.type);
 }
 
@@ -1553,6 +1571,7 @@ export function mkDaemonVerbResult(opts: {
   requestId: string;
   result?: Record<string, unknown>;
   error?: string;
+  touched?: Readonly<Record<string, readonly string[]>>;
 }): DaemonMsg_VerbResult {
   const msg: DaemonMsg_VerbResult = {
     type: "daemon:verb-result",
@@ -1560,6 +1579,7 @@ export function mkDaemonVerbResult(opts: {
   };
   if (opts.result !== undefined) msg.result = opts.result;
   if (opts.error  !== undefined) msg.error  = opts.error;
+  if (opts.touched !== undefined) msg.touched = opts.touched;
   return msg;
 }
 
@@ -1708,6 +1728,7 @@ export function mkWikiVerbResult(opts: {
   requestId: string;
   result?: Record<string, unknown>;
   error?: string;
+  touched?: Readonly<Record<string, readonly string[]>>;
 }): WikiMsg_VerbResult {
   const msg: WikiMsg_VerbResult = {
     type: "wiki:verb-result",
@@ -1715,6 +1736,7 @@ export function mkWikiVerbResult(opts: {
   };
   if (opts.result !== undefined) msg.result = opts.result;
   if (opts.error  !== undefined) msg.error  = opts.error;
+  if (opts.touched !== undefined) msg.touched = opts.touched;
   return msg;
 }
 

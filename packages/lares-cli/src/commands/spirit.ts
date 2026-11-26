@@ -65,19 +65,19 @@ import { stdin } from "node:process";
 import { readOwnHand, type HandReading } from "@lararium/node";
 import { CARRIER_TYPE, isCarrierType } from "@lararium/mesh/carrier-type";
 import {
-  ASH_ROUNDS, INSTANCE_ID, INSTANCES_SLOT, LEGACY_INSTANCE_NAMES, CAS_ROUNDS, DISTILL_SLOT, LINEAGE_FIELDS, MEMORY_PREFIX, PET_NAME, PRECOMPACT_CARD_CHARS, RECORD_KINDS,
+  ASH_ROUNDS, INSTANCE_ID, CAS_ROUNDS, DISTILL_SLOT, LINEAGE_FIELDS, MEMORY_PREFIX, PET_NAME, PRECOMPACT_CARD_CHARS, RECORD_KINDS,
   RESIDUE_CAP_CHARS, SLOT_DIGEST, SLUG_CHARS, SPIRIT_RECIPE, SPIRIT_SOURCES, SpiritRefusal, TRUE_UP_EVERY, OM_CAP_CHARS,
   advisoryLine, ashLedgerOf, attentionLines, attentionTitles, instancesLine, burnLine, burnTally, bytesOf, carryFields, carryFilter,
   carryDepth, carryInstanceOf, carryParent, carryParents, carryRows, compactionTitle, crossingRefusal, crossingWrite, digestOf, distillHold,
   fieldsAndHashOf, foldAshLine, foldOut, guardWords, handRefusal, isCarry, leaseClaim, ledgerDescription, measure, namesTitleIn,
   omText, pickLine, presenceJoin, presenceLine, presenceRead, presenceSeenLine, rawSlug, redactedText, residueCut,
   residueFields, residueFilter, residueHash, residueOf, residueTitle, rowsOf, secretCount, shq, shrineSource, sideOf, slotBody,
-  slotDigest, slotMissing, slotWriteBody, spiritAmbiguous, spiritHash, spiritIdOf, spiritRecordOf, spiritUnknown, slotHeldAs, starterText,
+  slotDigest, slotMissing, slotWriteBody, spiritAmbiguous, spiritHash, spiritIdOf, spiritRecordOf, spiritUnknown, starterText,
   testimonyLines, titleSlug, titlesOf, wakingCap, writerField,
   ALANA_DISPLAY, MANDATE_HASH, cardField, cardRecordOf, cardSlotHeld, echoJoin, echoReceipt, echoStands, mandateLines, offerHeld, offererOf, offeringDamaged, offeringOf, offeringRead, offeringWrite,
   type SpiritOffering, type SideWrite, type SlotWrite, type SpiritAwake, type SpiritCarry, type SpiritRecord, type SpiritRow, type SpiritSource,
 } from "@lararium/mesh/spirit-shrine";
-import { STACK_SLOT, capHolder, capLine, maskCardOf, profilesOf, spiritOf, stackBody, stackLine, stackOf, stackWrite } from "@lararium/mesh/spirit-stack";
+import { STACK_SLOT, capHolder, capLine, maskCardOf, profilesOf, sealedOf, spiritOf, stackBody, stackLine, stackOf, stackWrite } from "@lararium/mesh/spirit-stack";
 import { FOLD_OPERATOR, UNFOLD_RANKS, narrowerRank, spiritCardOf, unfoldCall, unfoldRank, type UnfoldRank } from "@lararium/mesh/spirit-unfold";
 import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
 import { stampCarrier } from "@lararium/memetic-frame";
@@ -85,6 +85,7 @@ import { COMPACTION_DISPLAY, COMPACTION_WORD } from "../spirit-words.js";
 import { emit, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
 import { DoorUsage, guardDoor, runDoor, tryDoor, wordOf } from "./door-call.js";
+import { owedLine } from "../verb-result.js";
 import { tableCovers } from "../verb-table.js";
 import type { ParsedArgs } from "../parse-args.js";
 
@@ -134,10 +135,18 @@ function petOf(args: ParsedArgs, verb: string): string {
 
 /** One door call; a refusal the door already printed rides out as its exit. */
 async function door(args: ParsedArgs, label: string, verb: string, verbArgs: Record<string, unknown>): Promise<Record<string, unknown>> {
-  const ran = await runDoor(args, `spirit ${label}`, { verb, args: verbArgs });
+  const ran = await runDoor(args, `spirit ${label}`, { verb, args: verbArgs }, { carryOwed: owedCarry !== null });
   if (!ran.ok) throw new Printed(ran.exit);
+  const owed = owedCarry !== null ? owedLine(ran.output) : null;
+  if (owed !== null) owedCarry!.push(owed);
   return ran.output;
 }
+/**
+ * THE WAKE NEVER LOSES THE SHRINE TO ITS OWN BOOKKEEPING: while `om` stamps its key, lease and presence, an owed answer
+ * rides here instead of refusing before the card, and the wake names each in its testimony (sealed-store#/owed). Null
+ * outside that span: every other write refuses `owed` as any door does.
+ */
+let owedCarry: string[] | null = null;
 class Printed extends Error { constructor(readonly exit: number) { super("printed"); } }
 
 /** A record's fields and its live hash (the base a put names), read on the record lens. */
@@ -148,7 +157,7 @@ const fieldsOf = async (args: ParsedArgs, label: string, title: string): Promise
 
 /**
  * Resolve a pet name to its record. THE ONE RECORD answers first (`lares/spirit/<pet>`: a carrier with slots, or a field-shaped
- * record naming its own pet), and no legacy address gets read past it. Else the addresses that stood before it read through:
+ * record naming its own pet), and no seat address gets read past it. Else the addresses that stood before it read through:
  * `familiar/<pet>` or `spirit/<pet>` (both standing refuses, naming both), then a card naming the pet at `spirit-card/<pet>`
  * or `mask-card/<pet>`. Null where none answers and `soft`.
  */
@@ -308,14 +317,11 @@ async function readSlot(args: ParsedArgs, label: string, rec: Record_, slot: str
     const field = cardField(slot);
     if (field === null) return null;
     const { fields, hash } = await recordOf(args, label, rec.uri);
-    // The read-through: #/instances reads a card's legacy `bodies` field where no `instances` field stands yet.
-    const body = fields[field] ?? (slot === INSTANCES_SLOT ? fields[LEGACY_INSTANCE_NAMES.field] : undefined) ?? "";
+    const body = fields[field] ?? "";
     return { text: body, body, base: hash ?? "" };
   }
-  // The read-through: #/instances reads a shrine's legacy #/bodies slot where only the old one stands.
-  const held = slotHeldAs(rec.slots.map((s) => s.slot), slot);
-  if (!rec.slots.some((s) => s.slot === held)) return null;
-  const out = await door(args, label, "tiddler-get", { recipe: RECIPE, title: rec.uri, meme: true, slot: held });
+  if (!rec.slots.some((s) => s.slot === slot)) return null;
+  const out = await door(args, label, "tiddler-get", { recipe: RECIPE, title: rec.uri, meme: true, slot });
   const meme = out["meme"] as { slotText?: string; canonicalHash?: string } | undefined;
   if (typeof meme?.slotText !== "string") return null;
   return { text: meme.slotText, body: slotBody(meme.slotText), base: String(meme.canonicalHash ?? "") };
@@ -340,11 +346,8 @@ async function patchSlot(args: ParsedArgs, label: string, rec: Record_, slot: st
     const decision = String(receipt["decision"] ?? "");
     return { ...receipt, decision: decision === "put" ? "ingest" : decision, canonicalHash: String(receipt["hash"] ?? "") };
   }
-  // A shrine's lineage write lands on its legacy #/bodies slot until a hand renames the slot through the doors.
-  if (rec.kind !== "card") return await door(args, label, "meme-patch", { recipe: RECIPE, uri: rec.uri, slot: slotHeldAs(rec.slots.map((s) => s.slot), slot), replace: body, base });
-  // A card's lineage write lands as `instances` and unsets the legacy `bodies` field in the same put: the migration, one way.
-  const legacy = slot === INSTANCES_SLOT && rec.fields[LEGACY_INSTANCE_NAMES.field] !== undefined ? { unset: [LEGACY_INSTANCE_NAMES.field] } : {};
-  const receipt = await door(args, label, "tiddler-put", { recipe: RECIPE, title: rec.uri, ...(base !== "" ? { base } : {}), fields: { [cardField(slot)!]: body }, ...legacy });
+  if (rec.kind !== "card") return await door(args, label, "meme-patch", { recipe: RECIPE, uri: rec.uri, slot, replace: body, base });
+  const receipt = await door(args, label, "tiddler-put", { recipe: RECIPE, title: rec.uri, ...(base !== "" ? { base } : {}), fields: { [cardField(slot)!]: body } });
   const decision = String(receipt["decision"] ?? "");
   return { ...receipt, decision: decision === "put" ? "ingest" : decision, canonicalHash: String(receipt["hash"] ?? "") };
 }
@@ -396,6 +399,11 @@ async function summon(args: ParsedArgs, ctx: Ctx, pet: string): Promise<number> 
   const offeredBy = offererOf(handHolds(ctx), instance);
   if (offeredBy === null) throw new DoorUsage(`a seat's --offer names its own instance, so the shelf records who offered: \`lares spirit ah ${pet} --offer --file <mandate> --instance <id>\``);
   const rec = (await resolveRecord(args, "ah", pet))!;
+  // A SEALED LANE STAYS HOME: the bare offer's fallback copies the card's lane onto the shelf, and om hands the shelf's words
+  // to every instance it wakes, so a lane the card seals never rides that fallback; the summoner names the words.
+  if (file === null && text === null && sealedOf(rec.fields).has("lane")) {
+    throw new SpiritRefusal("spirit-lane-sealed", `spirit-lane-sealed: ${rec.uri} seals its lane, so a bare --offer never copies it onto the shelf; nothing landed. Name the mandate: \`lares spirit ah ${pet} --offer --file <mandate>\` (or --text <words>)`, 4);
+  }
   const words = file !== null ? await sourceText("file", file) : text ?? rec.fields["lane"] ?? "";
   if (words.trim() === "") throw new DoorUsage(`--offer names the mandate: --file <path|-> or --text <words> (${rec.uri} holds no lane field to offer)`);
   const lane = wordOf(args.options["lane"]) ?? rec.uri;
@@ -639,14 +647,19 @@ async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
     return 0;
   }
   const rec = found;
-  const key = await keyOf(args, "om", rec);
-  const epoch = instance !== null ? await claimLease(args, rec, instance, ctx) : rec.lease?.epoch ?? null;
-  const awake = instance !== null ? await joinPresence(args, rec, instance, ctx) : presenceRead(rec.sideFields);
+  owedCarry = [];
+  let key: string, epoch: number | null, awake: ReturnType<typeof presenceRead>, owedStamps: string[];
+  try {
+    key = await keyOf(args, "om", rec);
+    epoch = instance !== null ? await claimLease(args, rec, instance, ctx) : rec.lease?.epoch ?? null;
+    awake = instance !== null ? await joinPresence(args, rec, instance, ctx) : presenceRead(rec.sideFields);
+  } finally { owedStamps = owedCarry; owedCarry = null; }
+  const owedTestimony = owedStamps.map((line) => `This wake's own stamp waits unsealed (the card below reads whole): ${line}`);
   const leaseLine = epoch === null ? null : `Lares spirit wake epoch ${epoch}: an ordering stamp; no write needs it, and no instance locks another out.`;
   const presence = instance !== null ? presenceLine(pet, awake) : presenceSeenLine(pet, awake);
-  // THE STACK: what this spirit holds, cap by cap, and the profiles those caps sign (a legacy address signs its own).
+  // THE STACK: what this spirit holds, cap by cap, and the profiles those caps sign (a seat address signs its own).
   const stack = stackOf(rec.fields, rec.uri);
-  const data = { pet, uri: rec.uri, kind: rec.kind, profiles: profilesOf(stack), stack: stack.map((h) => ({ cap: h.cap, value: h.value, tagged: h.tagged })), base: rec.base, spiritId: key, epoch, every: rec.every, budgets: rec.budgets, source, ...(turn.to !== null ? { turnedFrom: given } : {}) };
+  const data = { pet, uri: rec.uri, kind: rec.kind, profiles: profilesOf(stack), stack: stack.map((h) => ({ cap: h.cap, value: h.value, tagged: h.tagged })), base: rec.base, spiritId: key, epoch, every: rec.every, budgets: rec.budgets, source, ...(turn.to !== null ? { turnedFrom: given } : {}), ...(owedStamps.length > 0 ? { owed: owedStamps } : {}) };
   // A resumed instance ends its own crossing too: it never reaches the wake's clear below, and no timer lifts a mark.
   if (source === "resume" && rec.crossing !== null && instance !== null) await markCrossing(args, rec, instance, ctx, false);
   if (source === "resume") {
@@ -675,7 +688,7 @@ async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
     const tip = rows.find((r) => carryInstanceOf(r.fields) === a.instance);
     return tip === undefined ? [] : [`#${a.instance.slice(0, 8)}'s chain: ${tip.title} (depth ${tip.fields["depth"] ?? "?"})`];
   });
-  const testimony = [...(presence === null ? [] : [presence]), ...testimonyLines(rec, carry, siblings), ...chains, ...(leaseLine === null ? [] : [leaseLine])];
+  const testimony = [...(presence === null ? [] : [presence]), ...testimonyLines(rec, carry, siblings), ...chains, ...(leaseLine === null ? [] : [leaseLine]), ...owedTestimony];
   if (source === "compact" && carry !== null) {
     testimony.push(`This instance inherits ${carry.title} (hash ${carry.title.slice(-12)}): "${carry.text.replace(/\s+/g, " ").trim().slice(0, 120)}"`);
   }
@@ -697,7 +710,7 @@ async function om(args: ParsedArgs, ctx: Ctx): Promise<number> {
   const digests: Record<string, string> = {};
   for (const s of rec.slots) {
     const field = rec.kind === "card" ? cardField(s.slot) : null;
-    const read = field !== null ? { body: rec.fields[field] ?? (s.slot === INSTANCES_SLOT ? rec.fields[LEGACY_INSTANCE_NAMES.field] : undefined) ?? "" } : s.slot === "#/open" ? open : await readSlot(args, "om", rec, s.slot);
+    const read = field !== null ? { body: rec.fields[field] ?? "" } : s.slot === "#/open" ? open : await readSlot(args, "om", rec, s.slot);
     if (read !== null) digests[s.slot] = slotDigest(read.body);
   }
   digests[STACK_SLOT] = slotDigest(stackBody(stack));

@@ -73,7 +73,7 @@ export function bagManifestFromMeta(bag: string, meta: Record<string, unknown> |
   const role  = typeof table["role"] === "string" ? table["role"].trim() : "";
   return {
     bag,
-    tier: parseCapTier(table["cap-tier"] ?? table["tier"]),
+    tier: parseCapTier(table["cap-tier"]),
     home,
     // A repo id only rides where a repository home does. Carrying one on a hearth bag would leave a stale
     // pointer that reads as intent the next time somebody moves it.

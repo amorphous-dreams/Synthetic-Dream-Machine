@@ -5,7 +5,8 @@
  * A config under `packages/<pkg>/` or `tests/` that no workflow, tool or package script names never runs on a push: the
  * suite it collects reads green by silence. The default `vitest.config.ts` runs under a bare `vitest run` (the package's
  * `test` script), so only a NAMED config (`vitest.crossing.config.ts`, `vitest.e2e.config.ts`, ...) needs a caller, found in
- * `.github/workflows/*.yml`, a `tools/` script or a `package.json` script.
+ * `.github/workflows/*.yml`, a `tools/` script, a `package.json` script, or a `stryker.config.json` (the mutation runner's
+ * config names its vitest config, and a workflow runs the runner).
  *
  * Usage: node tools/vitest-config-callers.mjs   (exit 1 and name each caller-less config)
  */
@@ -32,7 +33,7 @@ export function callerless(configs, callers) {
 export function repoState() {
   const env = { ...process.env }; for (const k of ["GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE"]) delete env[k];
   const files = execFileSync("git", ["ls-files"], { cwd: ROOT, env, maxBuffer: 1 << 28 }).toString().split("\n").filter(Boolean);
-  const callers = new Map(files.filter((f) => /^\.github\/workflows\/.*\.yml$|^tools\/[^/]+\.(sh|mjs)$|(^|\/)package\.json$/.test(f))
+  const callers = new Map(files.filter((f) => /^\.github\/workflows\/.*\.yml$|^tools\/[^/]+\.(sh|mjs)$|(^|\/)package\.json$|(^|\/)stryker\.config\.json$/.test(f))
     .map((f) => [f, readFileSync(resolve(ROOT, f), "utf8")]));
   return { configs: namedConfigs(files), callers };
 }

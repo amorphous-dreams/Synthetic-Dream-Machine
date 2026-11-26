@@ -10,9 +10,8 @@ name: E2E shards
 # must read exactly as loud as a failing assertion. `tools/e2e-shards.mjs#evaluateMergeGate`
 # carries that law; this job's "Merge gate" step is its only caller in anger.
 #
-# TWO DOORS, ONE MATRIX. `tools/e2e-shards.mjs` pushes a throwaway `ci/<lane>` branch, watches the ONE
-# run that push triggers here, reads this workflow's verdict, and deletes the branch — never a second
-# `workflow_dispatch` on top of that push (see the helper's docblock). `ci.yml` CALLS this workflow as
+# TWO DOORS, ONE MATRIX. A push of a throwaway `ci/<lane>` branch raises ONE run here (a hand that pushes
+# it deletes it after, and never dispatches a second run on top of the push). `ci.yml` CALLS this workflow as
 # its `E2E` job (`workflow_call`), so a branch push takes its e2e verdict from this same matrix and
 # merge gate; a lane push (`develop--*`, `lane/*`) and a canon-only push (ci.yml's scope job) hand in `doorstep`, and the
 # merge queue's run walks the shards. `ci.yml`'s own push trigger excludes `ci/**`, so a lane push never raises full CI beside
@@ -37,9 +36,10 @@ on:
         default: false
 
 # Called from `ci.yml`, this group reads under the CALLER's ref, beside the caller's own `ci-<ref>` group:
-# two names, so the pair never waits on itself.
+# two names, so the pair never waits on itself. On develop and main it carries the run id too, as ci.yml's does: a shared
+# group there keeps one pending call and cancels the older one, cutting a run of the sum off its verdict.
 concurrency:
-  group: e2e-shards-${{ github.ref }}
+  group: e2e-shards-${{ github.ref }}${{ (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main') && format('-{0}', github.run_id) || '' }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/develop' && github.ref != 'refs/heads/main' }}
 
 jobs:

@@ -87,7 +87,7 @@ export async function beginChecked(wiki: SwarmWikiPort, checked: SwarmReturnable
  * Land a rite: the vessel that stands after rests the host half, naming the begun half by its cid and the head and image THAT
  * HALF names (operator ruling 2026-11-25), never the caller's: a caller that names another head, or another image where the half
  * names one, refuses `rite-land-differs` and rests nothing, so no seat lands a wrong head first and blocks the true landing. The
- * answer reads `par`; conferre still reads an off-par host half an older vessel rested red. A landing writes once.
+ * answer reads `par`; conferre reads any off-par host half red. A landing writes once.
  */
 export async function landRite(wiki: SwarmWikiPort, at: { readonly tessera: string; readonly head?: string; readonly image?: string }, trust: SwarmTrust, group: string, vessel: SwarmSignerPort):
   Promise<{ tessera: string; rite: SwarmLeiRite; begun: string; landed: string; par: boolean }> {
@@ -124,7 +124,7 @@ async function markOf(wiki: SwarmWikiPort, tessera: string, begun: string, vesse
 /**
  * THE HAND SETS A BEGUN HALF DOWN: the vessel rests the `rite-abandoned` mark beside the guest half, binding its cid and naming
  * the hand, once the one hand gate admitted the act upstream. It spends no return and rests no host half. A tessera with no
- * begun half refuses `rite-begun-absent`, a landed one `rite-already-landed`, one already set down `rite-already-abandoned`, and
+ * begun half refuses `rite-begun-absent`, a landed one `rite-already-landed` (a host row that verifies as no landing `rite-host-refused`), one already set down `rite-already-abandoned`, and
  * a key the face holds as no vessel `rite-abandon-role`. A row resting there that verifies as no mark yields to the hand's.
  */
 export async function abandonRite(wiki: SwarmWikiPort, at: { readonly tessera: string }, trust: SwarmTrust, group: string, vessel: SwarmSignerPort):
@@ -133,7 +133,15 @@ export async function abandonRite(wiki: SwarmWikiPort, at: { readonly tessera: s
   const guest = verifySwarmRecord(await wiki.read(guestTitle), guestTitle, trust, group);
   if (!guest.ok || guest.act.body.act !== "rite-begun") throw new SwarmRefused("rite-begun-absent", `no begun half stands for tessera ${at.tessera}${guest.ok ? "" : ` (${guest.refusal})`}`);
   if (!trust.vessel(vessel.key.toLowerCase())) throw new SwarmRefused("rite-abandon-role", "the vessel alone witnesses the hand's abandon");
-  if ((await wiki.read(swarmTesseraTitle(at.tessera, "host"))) !== null) throw new SwarmRefused("rite-already-landed", `a host half already rests for tessera ${at.tessera}; a landed rite sets nothing down`);
+  // A ROW AT THE HOST HALF ends every abandon (no landing writes past it either), and the refusal reads that row as it verifies:
+  // a true landing reads landed; a row that verifies as none names its own reading, the red conferre already shows.
+  const hostTitle = swarmTesseraTitle(at.tessera, "host");
+  const hostText = await wiki.read(hostTitle);
+  if (hostText !== null) {
+    const host = verifySwarmRecord(hostText, hostTitle, trust, group);
+    if (host.ok && host.act.body.act === "rite-landed") throw new SwarmRefused("rite-already-landed", `a host half already rests for tessera ${at.tessera}; a landed rite sets nothing down`);
+    throw new SwarmRefused("rite-host-refused", `a row at tessera ${at.tessera}'s host half verifies as no landing (${host.ok ? host.act.body.act : host.refusal}), so conferre reads the tessera red landed-refused and no abandon or landing writes past it; read it: lares rite receipts`);
+  }
   const title = swarmTesseraTitle(at.tessera, "abandoned");
   if (await markOf(wiki, at.tessera, guest.cid, (key) => trust.vessel(key), group) !== null) throw new SwarmRefused("rite-already-abandoned", `the hand already set tessera ${at.tessera} down`);
   const begun = guest.act.body;

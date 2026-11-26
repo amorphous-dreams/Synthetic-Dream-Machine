@@ -16,7 +16,7 @@ function ports(lit: boolean) {
     frames, asked,
     ask: async (frame: Readonly<Record<string, unknown>>) => {
       frames.push({ ...frame });
-      return frame["op"] === "status" ? { op: "status", lit } : { op: String(frame["op"]), reading: "signed" };
+      return frame["op"] === "status" ? { op: "status", lit } : frame["check"] === true ? { op: String(frame["op"]), reading: "ready" } : { op: String(frame["op"]), reading: "signed" };
     },
     route: async (label: string) => { asked.push(label); return "the-route"; },
   };
@@ -28,14 +28,14 @@ describe("the hand's lei verb at the pūlama", () => {
     expect(await runHandVerb("status", undefined, p)).toEqual({ op: "status", lit: true });
     p.frames.length = 0;
     expect(await runHandVerb("lei", ["kui", JSON.stringify({ face: 0, rite: "kukulu", branch: "main", returns: 2 })], p)).toEqual({ op: "lei", reading: "signed" });
-    expect(p.frames).toEqual([{ op: "status" }, { op: "lei", act: "kui", face: 0, rite: "kukulu", branch: "main", returns: 2, credentials: [{ kind: "passphrase", passphrase: "the-route" }] }]);
+    expect(p.frames).toEqual([{ op: "status" }, { op: "lei", act: "kui", face: 0, rite: "kukulu", branch: "main", returns: 2, check: true }, { op: "lei", act: "kui", face: 0, rite: "kukulu", branch: "main", returns: 2, credentials: [{ kind: "passphrase", passphrase: "the-route" }] }]);
     expect(p.asked).toHaveLength(1);
     expect(p.asked[0]).toContain("kukulu");
     expect(p.asked[0]).toContain("main");
     expect(p.asked[0]).toContain("h0");
     await runHandVerb("lei", ["restring", JSON.stringify({ face: 2, rite: "keep", branch: "house-backup", after: CID, returns: 6 })], p);
     await runHandVerb("lei", ["unstring", JSON.stringify({ face: 2, rite: "keep", branch: "house-backup", lei: CID })], p);
-    expect(p.frames.filter((f) => f["op"] === "lei").map((f) => [f["act"], f["face"]])).toEqual([["kui", 0], ["restring", 2], ["unstring", 2]]);
+    expect(p.frames.filter((f) => f["op"] === "lei" && f["check"] !== true).map((f) => [f["act"], f["face"]])).toEqual([["kui", 0], ["restring", 2], ["unstring", 2]]);
   });
 
   test("RED: terms naming every open face (`faces`) read the route ONCE, naming each face, and hand one lei frame per face under it, each that face's own; the answer names each face's", async () => {
@@ -45,7 +45,7 @@ describe("the hand's lei verb at the pūlama", () => {
     expect(p.asked).toHaveLength(1);
     expect(p.asked[0]).toMatch(/h0, h1/);
     const route = [{ kind: "passphrase", passphrase: "the-route" }];
-    expect(p.frames).toEqual([{ op: "status" }, { op: "lei", act: "kui", ...each(0, null), credentials: route }, { op: "lei", act: "kui", ...each(1, CID), credentials: route }]);
+    expect(p.frames).toEqual([{ op: "status" }, { op: "lei", act: "kui", ...each(0, null), check: true }, { op: "lei", act: "kui", ...each(1, CID), check: true }, { op: "lei", act: "kui", ...each(0, null), credentials: route }, { op: "lei", act: "kui", ...each(1, CID), credentials: route }]);
     expect(answer).toEqual({ op: "lei", act: "kui", reading: "signed", faces: [{ op: "lei", reading: "signed" }, { op: "lei", reading: "signed" }] });
   });
 
@@ -55,12 +55,13 @@ describe("the hand's lei verb at the pūlama", () => {
     const ask = async (frame: Readonly<Record<string, unknown>>) => {
       p.frames.push({ ...frame });
       if (frame["op"] === "status") return { op: "status", lit: true };
+      if (frame["check"] === true) return { op: "lei", reading: "ready", face: frame["face"] as number };
       n += 1;
       return n === 1 ? { op: "lei", reading: "signed", face: 0 } : { op: "lei", reading: "ward-no-slot-opens", face: frame["face"] as number };
     };
     const each = (face: number) => ({ face, rite: "kukulu", branch: "main", returns: 1, after: null });
     const answer = await runHandVerb("lei", ["kui", JSON.stringify({ faces: [each(0), each(1), each(2)] })], { ...p, ask });
-    expect(p.frames.filter((f) => f["op"] === "lei").map((f) => f["face"])).toEqual([0, 1]);
+    expect(p.frames.filter((f) => f["op"] === "lei" && f["check"] !== true).map((f) => f["face"])).toEqual([0, 1]);
     expect(answer).toEqual({ op: "lei", act: "kui", reading: "ward-no-slot-opens", faces: [{ op: "lei", reading: "signed", face: 0 }, { op: "lei", reading: "ward-no-slot-opens", face: 1 }] });
     // Usage: `faces` names no list, an empty one, or one whose entry reads as no object, or carries a route.
     for (const bad of [{ faces: 1 }, { faces: [] }, { faces: [1] }, { faces: [{ ...each(0), credentials: [] }] }]) {
@@ -68,6 +69,21 @@ describe("the hand's lei verb at the pūlama", () => {
       await expect(runHandVerb("lei", ["kui", JSON.stringify(bad)], q), JSON.stringify(bad)).rejects.toBeInstanceOf(PulamaVerbUsage);
       expect(q.frames).toEqual([]);
     }
+  });
+
+  test("RED (hand-door-publish-follow-ups): every face's lei reads the door's check before the route, so an unopened face or malformed terms ask no route; CONTROL: every face ready asks once", async () => {
+    const p = ports(true);
+    const ask = async (frame: Readonly<Record<string, unknown>>) => {
+      p.frames.push({ ...frame });
+      if (frame["op"] === "status") return { op: "status", lit: true };
+      if (frame["check"] === true) return frame["face"] === 1 ? { op: "lei", act: "kui", reading: "face-locked", face: 1 } : { op: "lei", act: "kui", reading: "ready", face: frame["face"] as number };
+      return { op: "lei", reading: "signed" };
+    };
+    const each = (face: number) => ({ face, rite: "kukulu", branch: "main", returns: 1, after: null });
+    expect(await runHandVerb("lei", ["kui", JSON.stringify({ faces: [each(0), each(1)] })], { ...p, ask })).toMatchObject({ op: "lei", reading: "face-locked", face: 1 });
+    expect(await runHandVerb("lei", ["kui", JSON.stringify(each(1))], { ...p, ask })).toMatchObject({ reading: "face-locked" });
+    expect(p.asked).toEqual([]);
+    expect(p.frames.some((f) => f["credentials"] !== undefined)).toBe(false);
   });
 
   test("RED: an unlit pūlama answers `pulama-locked` and asks no route; CONTROL: a lit one asks once", async () => {

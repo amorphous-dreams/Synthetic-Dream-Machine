@@ -90,7 +90,8 @@ import { KUKULU_OFFER_ENV, cleanGoodbye, lifeCloses, namesPulama, pulamaStandBy,
 import { consumeKukuluOffer } from "./kukulu-offer.js";
 import { NoStoodNexus, stoodFloorPins } from "./hearth-sovereign-pin.js";
 import { getMempalaceClient }           from "@lararium/mempalace";
-import { larConfigHome, larDataDir }    from "./vessel-paths.js";
+import { larConfigHome, larDataDir, larRuntimeHome } from "./vessel-paths.js";
+import { openVesselLogSink, tapProcessStreams, VESSEL_LIVE_LOG, type VesselLogSink } from "./vessel-log-sink.js";
 import { mkdirSync, writeFileSync, rmSync, readFileSync } from "fs";
 import { REPO_ROOT }   from "./node-host.js";
 import { resolveGenesis, checkGenesisPin, type GenesisResolution } from "./genesis-resolve.js";
@@ -224,10 +225,23 @@ const engineWatch = ISOLATE_ENGINE;
 let engineMeter: EngineMeter | null = null;
 /** The fall's keeper, armed at the top of `main`; the boot's own rejection asks it first. */
 let fallKeeper: FallKeeper | null = null;
+/** THE BOOT'S LOG SINK (`vessel-log-sink`), opened at the top of `main`: every line the process writes folds into one record per
+ *  event, flushed to `run/vessel-live.log` and, once the daemon island stands, into the worn face's daemon temp layer. */
+let shoreLog: VesselLogSink | null = null;
 /** The hold's tick: the longest a Node timer takes. It decides nothing; it only keeps a stayed-down process's loop open. */
 const HOLD_TICK_MS = 2 ** 31 - 1;
 
 async function main(): Promise<void> {
+  // THE LOG FOLDS AT THE SOURCE from the first line on; a run dir that refuses keeps the records for the island alone.
+  try {
+    let runDir: string | null = null;
+    try { runDir = larRuntimeHome(); } catch { runDir = null; }
+    shoreLog = openVesselLogSink({ runDir });
+    tapProcessStreams(shoreLog);
+    console.log(`[shore-log] boot ${shoreLog.boot}: each distinct event folds into one record${runDir !== null ? ` (${resolve(runDir, VESSEL_LIVE_LOG)})` : ""}; \`lares shore log\` reads them`);
+  } catch (err) {
+    console.warn(`[shore-log] the sink stands not (${err instanceof Error ? err.message : String(err)}); the console stays the flat log alone`);
+  }
   // The Repo catches an inbound message's throw and logs it; the tap hands that error to the watch (the network path).
   setLoggerFactory(tapRepoLogs(engineWatch));
   engineMeter = createEngineMeter({ isolate: "main", processWasm: readProcessWasm, log: (line) => console.warn(`[lararium] ${line}`) }).arm();
@@ -879,6 +893,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
   // derived meshSelf — a hearth that navigates the mesh, not a destination beside the roads.
   const result = await openNodeVessel({
     hostId:     "lararium-node",
+    ...(shoreLog ? { shoreLog } : {}),
     floor,
     sovereign,
     ...(ward ? { bootWard: ward } : {}),
@@ -896,8 +911,8 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
       console.log(`[lararium] phase → ${phase}`);
     },
   });
-  if (result.activeWikiSource === "daemon-marker" && result.activeWikiId !== wikiId) {
-    console.log(`[lararium] active wiki marker: ${wikiId} → ${result.activeWikiId}`);
+  if (result.activeWikiSource === "home-preference" && result.activeWikiId !== wikiId) {
+    console.log(`[lararium] home wiki preference: ${wikiId} → ${result.activeWikiId}`);
   }
   console.log(`[lararium] live — wiki: ${result.activeWikiId} | storage: ${storageDir} | root: ${rootDir}`);
   console.log(`[lararium] catalog:  ${result.catalogHandleUrl ?? "(none)"}`);
@@ -986,6 +1001,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     siblingFaceOf: (presenter) => result.siblingFaceOf(presenter),
     signers:      result.sessionSigns,
     beforeSignerDrops: (signer) => result.sealedRestLock(signer),
+    restOwed:     result.restOwed,
     switchActs:   nodeSwitchActLog,
     sessionVerbs: STORE_DOOR_FACE_VERBS,
     handOnlyActs: STORE_DOOR_HAND_ONLY_ACTS,
@@ -1080,10 +1096,12 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
       // A CLEAN STOP CLEARS THE RESTART COUNT (`engine-fall`): this life ran and closed whole.
       clearEngineFalls(storageDir);
       console.log(`[lararium] shutdown complete — composition closed durably (${spans.join(" · ")})`);
+      shoreLog?.close();
       process.exit(0);
     } catch (e) {
       clearTimeout(pastBudget);
       console.error("[lararium] shutdown error:", e instanceof Error ? e.message : String(e));
+      shoreLog?.close();
       process.exit(shutdownExitCode(e));
     }
   };

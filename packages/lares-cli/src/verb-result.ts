@@ -60,6 +60,23 @@ export interface SubmitResult {
    * ran for real.
    */
   readonly effectOf?: string;
+  /** NO SILENT LOSS (sealed-store#/owed): a write whose document still waits unsealed after the vessel's flush answers
+   *  `rest: { band: "owed", documents }`; the change stands in memory and rests nowhere until a session seals it. */
+  readonly rest?: RestOwedReading;
+}
+
+/** The vessel's `owed` band on a write's answer: each document that still waits, with the refusal that holds it. */
+export interface RestOwedReading {
+  readonly band: "owed";
+  readonly documents: ReadonlyArray<{ readonly documentId: string; readonly refusal: string; readonly error?: string; readonly cause?: string }>;
+}
+
+/** The `owed` band a receipt carries (`readVerbOutcome` folds it in as `rest`), as a refusal line; null where none. */
+export function owedLine(receipt: Record<string, unknown>): string | null {
+  const rest = receipt["rest"] as RestOwedReading | undefined;
+  if (!rest || rest.band !== "owed" || !Array.isArray(rest.documents) || rest.documents.length === 0) return null;
+  const docs = rest.documents.map((d) => `${String(d.documentId).slice(0, 12)}… (${d.refusal}${d.error ? `: ${d.error}${d.cause ? ` ${d.cause}` : ""}` : ""})`).join(", ");
+  return `owed: the write landed in the vessel's memory, and its save waits unsealed: ${docs}. It rests nowhere until a session seals it, and a down before then loses it. See it with \`lares vessel census\`; the next call of a session of that face seals it`;
 }
 
 export function summaryOutput(result: SubmitResult): Record<string, unknown> | undefined {
@@ -71,6 +88,9 @@ export interface VerbOutcome {
   readonly ok:     boolean;
   readonly output: Record<string, unknown>;
   readonly error:  string | null;
+  /** `owed`: the verb ran and its write landed in the vessel's memory alone (the answer's `rest` band); every door reads it as a
+   *  refusal by that code (exit 6), never as ok. */
+  readonly code?:  "owed";
 }
 
 /**
@@ -85,5 +105,9 @@ export function readVerbOutcome(result: SubmitResult): VerbOutcome {
   if (result.status === "error") {
     return { ok: false, output: {}, error: result.errorMessage ?? "the daemon refused and named no reason" };
   }
-  return { ok: true, output: summaryOutput(result) ?? {}, error: null };
+  const output = summaryOutput(result) ?? {};
+  // NO SILENT LOSS, ONE PATH FOR EVERY DOOR: a write the vessel answers `owed` reads as a refusal by that code.
+  const owed = result.rest ? owedLine({ rest: result.rest }) : null;
+  if (owed !== null) return { ok: false, output: { ...output, rest: result.rest }, error: owed, code: "owed" };
+  return { ok: true, output, error: null };
 }

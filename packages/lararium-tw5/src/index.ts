@@ -30,13 +30,8 @@ export { TW5Engine } from "./tw5-vm.js";
 export { bagScopeOf, qualifyStackTag, stackOf } from "./has-stack.js";
 export type { StackEntry } from "./has-stack.js";
 export type { TW5CoreBootBlob } from "./tw5-vm.js";
-export {
-  ACTIVE_WIKI_URI,
-  buildActiveWikiRecord,
-  readActiveWikiSlug,
-  selectActiveWikiSlug,
-} from "./active-wiki.js";
-export type { ActiveWikiSelectionSource } from "./active-wiki.js";
+export { HOME_WIKI_TITLE, HOME_WIKI_DEFAULT, homeWikiFilter, readHomeWikiSlug, selectHomeWikiSlug } from "./home-wiki.js";
+export type { HomeWikiSelectionSource } from "./home-wiki.js";
 export type { CameraMount } from "./tw5-camera.js";
 export { mountCamera } from "./tw5-camera.js";
 export { mountGlassCamera } from "./glass-camera.js";
@@ -217,7 +212,7 @@ export type { PersonaSelfEntry } from "./persona-selves-plane.js";
 export { makeCabalRealmReactors, makeRealmFeedReactor, makeRealmClockReactor } from "./cabal-realm-verbs.js";
 export type { CabalRealmVerbOptions, ResolveDaemonStore } from "./cabal-realm-verbs.js";
 // Verb-plane reactors (composite/repo-only — pono home is tw5, not node; both vessels hold them).
-export { makeInitWikiReactor, makeOpenWikiReactor, makeRetireWikiReactor, WikiRetireRefusal } from "./wiki-mint-handlers.js";
+export { makeInitWikiReactor, makeRetireWikiReactor, WikiRetireRefusal } from "./wiki-mint-handlers.js";
 export { makeDraftReactor, makePruneStaleReactor }    from "./wiki-draft-handlers.js";
 export { makeMemePutReactor, makeMemeGetReactor, makeMemePatchReactor, makeMemeListReactor, makeMemeDeleteReactor, makeMemeProjectReactor, memeVerbOptions } from "./meme-verbs.js";
 export { READ_PAGE_BYTES, READ_GRAINS, grainOf, hasLine, param, pagePlaneRows, tagTokens, carrierSlots, carrierSlotText, pageCarrier, memeGradient, slotHasLines, type ReadGrain, type GrainEcho, type CarrierSlot, type MemeGradient } from "./read-gradient.js";
@@ -237,7 +232,7 @@ export type { LaresMemeFace, MemeCheck } from "./types/lares-globals.js";
 export { storeMemeSink, compositeMemeSink } from "./meme-sinks.js";
 export { makeAddBagReactor, makeRemoveBagReactor }    from "./wiki-compose-handlers.js";
 export type {
-  WikiHandlerOptions, WikiMintHandlerOptions, WikiRetireOptions, WikiShellPorts, WikiShellCounts, RetiredShellCarry, PruneStaleOptions, WikiComposeOptions, DraftHandlerOptions,
+  WikiMintHandlerOptions, WikiRetireOptions, WikiShellPorts, WikiShellCounts, RetiredShellCarry, PruneStaleOptions, WikiComposeOptions, DraftHandlerOptions,
 } from "./wiki-handler-options.js";
 export { makeCompactBagReactor, makeRotateRecipeReactor } from "./compaction-handlers.js";
 export { makeRestampBagTierReactor } from "./bag-tier-restamp.js";

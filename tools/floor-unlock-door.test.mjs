@@ -1,16 +1,16 @@
 // floor-unlock-door — the floor STANDS and the unlock mounts the marker's wiki, driven live through the built `lares` CLI
 // over a scratch root a harness staged (stable-founding-road#/cold-start: every boot rests at the floor).
 //
-// A founded vessel's daemon active-wiki marker names a user wiki (the operator's last `lares wiki switch --next-boot`). A fresh boot
+// A founded face's home preference (`$:/config/lares/home/wiki`, a record in its own daemon wiki) names a user wiki. A fresh boot
 // holds no key, so the process composes at the floor and lives; `lares vault unlock` hands the key in on the custody
-// door, and the composition that opens mounts the marker's wiki.
+// door, and the composition that opens mounts the face's home wiki at light.
 //
-//   F0  the unlocked vessel takes `lares wiki init` + `lares wiki switch --next-boot`: the marker names the user wiki for the next boot.
+//   F0  the unlocked vessel takes `lares wiki init` + a `lares tiddler put` of the home preference: the face names the user wiki.
 //   F1  a fresh `lares vessel stand` stands the floor: the process lives, the custody door reads the key not held, and
 //       the marker's wiki stands unmounted (`lares wiki status` names it not). The floor stands as the herm and names no
-//       wiki: the marker rests in the face's sealed daemon doc, behind the key the floor waits on.
+//       wiki: the preference rests in the face's sealed daemon wiki, behind the key the floor waits on.
 //   F2  `lares vault unlock` (the harness's test route, tools/unlock-test-custody.mjs) opens the key, the composition
-//       stands as the hearth, `lares wiki status` names the marker's wiki, and the custody door names none waiting.
+//       stands as the hearth, `lares wiki status` names the home wiki, and the custody door names none waiting.
 //
 // Run under bwrap with a scratch HOME and LAR_ROOT, LAR_BAGS unset: it stands real daemons.
 import "./test-ward-env.mjs";   // the CLI processes this test spawns take the harness's explicit routes
@@ -33,7 +33,7 @@ const freePort = () => new Promise((resolve) => {
   s.listen(0, "127.0.0.1", () => { const { port } = s.address(); s.close(() => resolve(port)); });
 });
 
-test("the floor stands over the marker's user wiki and lives; the unlock mounts it", { timeout: 1_200_000 }, async () => {
+test("the floor stands over the face's home wiki and lives; the unlock mounts it", { timeout: 1_200_000 }, async () => {
   const root = mkdtempSync(join(tmpdir(), "lares-floor-unlock-"));
   const port = await freePort();
   const env = { ...process.env, LAR_ROOT: root, LAR_PORT: String(port), LAR_SAME_ORIGIN: "true" };
@@ -56,19 +56,19 @@ test("the floor stands over the marker's user wiki and lives; the unlock mounts 
     cpSync(join(repo, "genesis"), join(root, "genesis"), { recursive: true });
     ok("vessel", "found", "--hearth", "--name", "floor witness", "--root", root, "--skip-build");
 
-    // F0: the unlocked vessel takes `wiki switch --next-boot`, and the marker names the user wiki for the next boot.
+    // F0: the unlocked vessel writes the face's home preference, and it names the user wiki at the next light.
     stand();
     const first = await unlockTestCustody(root);
     assert.equal(first?.reading, "opens", JSON.stringify(first));
     ok("wiki", "init", WIKI);
-    ok("wiki", "switch", WIKI, "--next-boot");
+    ok("tiddler", "put", "$:/config/lares/home/wiki", "--recipe", "default", "--text", `[[${WIKI}]]`);
     ok("vessel", "stop", "--port", String(port));
 
     // F1: a fresh boot holds no key, so it stands at the floor, and the process lives.
     stand();
     const atFloor = door();
     assert.equal(atFloor?.unlocked, false, `the vessel stands at the floor: ${JSON.stringify(atFloor)}`);
-    assert.doesNotMatch(lares("wiki", "status").out, new RegExp(WIKI), "the floor mounts not the marker's wiki");
+    assert.doesNotMatch(lares("wiki", "status").out, new RegExp(WIKI), "the floor mounts not the home wiki");
     assert.equal(atFloor?.standing, "herm", JSON.stringify(atFloor));
     assert.ok(atFloor?.wikiAwaits == null, `the herm names no wiki: ${JSON.stringify(atFloor)}`);
 

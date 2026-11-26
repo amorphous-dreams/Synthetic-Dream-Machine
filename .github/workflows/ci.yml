@@ -68,8 +68,8 @@ on:
     # workflow syntax), so this replaces the blanket `branches: ["**"]` rather than sitting beside
     # it — the two names mean the same "every branch" before the exclusion.
     #
-    # A lane push to `ci/<lane>` is e2e-shards.yml's own single-fire trigger (tools/e2e-shards.mjs
-    # pushes it and watches that ONE run). Without this exclusion the same push would also raise the
+    # A lane push to `ci/<lane>` is e2e-shards.yml's own single-fire trigger (it raises that ONE
+    # run). Without this exclusion the same push would also raise the
     # whole full-CI matrix here — two answers to one push, and the shard lane's point (a cheap,
     # throwaway proof run) would cost a full CI run every time.
     #
@@ -84,7 +84,7 @@ on:
   # names the queue and its required checks); the queue builds each group on top of the groups ahead of it and raises
   # `merge_group` on the group's merge commit. That run raises the same ten jobs a push does, and on green the queue moves
   # `develop` to that exact sha. The scope job reads a push alone, so a group of canon-only lanes still raises a full run
-  # here: a canon pull request enqueues on its doorstep checks, and canon may still go direct (tools/span-push.mjs).
+  # here: a canon pull request enqueues on its doorstep checks, and canon may still go direct.
   # held-out.yml answers the push of the group's merge onto `develop`, not the queue.
   merge_group:
     types: [checks_requested]
@@ -93,11 +93,15 @@ on:
   # runs the doorstep alone, and the land guard reads a head's verdict, not its ancestor's alone.
   workflow_dispatch:
 
-# A newer push to a lane or a feature span supersedes its older run. On `develop` and `main` the run in flight finishes: a
-# canon push there raises a run of its own (THE CANON DOORSTEP), and its doorstep must never cancel the battery a
-# code push before it raised, the way a canon push that raised no run never did (tools/span-push.mjs pushes canon on it).
+# A newer push to a lane or a feature span supersedes its older run. On `develop` and `main` EVERY run reaches its verdict:
+# a canon push there raises a run of its own (THE CANON DOORSTEP), and its doorstep must never cancel the battery a
+# code push before it raised, the way a canon push that raised no run never did.
+# `cancel-in-progress: false` alone never held that: GitHub keeps ONE pending run per group and cancels the older pending
+# run when a newer one queues, whatever the flag says. So each develop/main run holds a group of its own (its run id) and
+# never waits on, or cancels, another (tools/ci-graph.test.mjs G1; runs 45643576902 and 45645396427 read `cancelled`
+# with zero jobs run, each pending behind a two-hour run when the next merge queued).
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-${{ github.ref }}${{ (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main') && format('-{0}', github.run_id) || '' }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/develop' && github.ref != 'refs/heads/main' }}
 
 jobs:
@@ -722,9 +726,9 @@ jobs:
     # input then reads code, and the shards answer (a lane still answers on its doorstep).
     needs: [scope, quick]
     if: ${{ !cancelled() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork) }}
+    # A lane whose Quick gates read red walks the doorstep too: the shards spend no runner on a head already red (the Quick
+    # check carries the red); develop, main and merge_group walk every shard whatever Quick answered.
     uses: ./.github/workflows/e2e-shards.yml
     with:
-      # A lane whose Quick gates read red walks the doorstep too: the shards spend no runner on a head already red (the Quick
-      # check carries the red); develop, main and merge_group walk every shard whatever Quick answered.
       doorstep: ${{ (github.event_name == 'push' && (startsWith(github.ref, 'refs/heads/develop--') || startsWith(github.ref, 'refs/heads/lane/') || needs.scope.outputs.canon == 'true')) || !(needs.quick.result == 'success' || !(!startsWith(github.ref, 'refs/heads/gh-readonly-queue/') && github.ref != 'refs/heads/develop' && github.ref != 'refs/heads/main')) }}
 

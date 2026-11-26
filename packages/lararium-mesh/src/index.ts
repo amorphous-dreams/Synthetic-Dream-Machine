@@ -697,6 +697,7 @@ export * from "./lockbox-wrap.js";
 export * from "./content-key-holder.js";
 export * from "./sealed-doc-store.js";
 export * from "./sealed-rest.js";
+export * from "./call-touches.js";
 export { deviceDaemonDocs, vesselHeldBagOf, daemonSlotTitle, hearthDaemonOf, DAEMON_SLOT_PREFIX, FLOOR_REGISTRY_ROOT, FLOOR_SLOT_ROOT, FLOOR_DAEMON_SLOT_ROOT, floorSlotTitle, floorDaemonSlotTitle, isFloorRegistryTitle, floorSlotOf, type DeviceDaemonDocs, type LitDeviceFace, type LitDeviceFaces } from "./device-daemon-docs.js";
 export * from "./published-bag-key.js";
 export * from "./held-rest-key.js";
@@ -719,6 +720,7 @@ export * from "./promote-main-verbs.js";
 export * from "./share-config.js";
 export * from "./face-label.js";
 export * from "./secret-shapes.js";
+export * from "./shore-log.js";
 export * from "./attempt-budget.js";
 
 // The one spirit record's stack and the fold's ranks and commands: each subpath lends what the barrel lends from its module.

@@ -24,6 +24,8 @@ import { WardRefused } from "@lararium/mesh/ward-slots";
 import { wornAtOf } from "@lararium/mesh/sealed-doc-store";
 import {
   composeSealedRest,
+  restOwedWatch,
+  type RestOwed,
   clearRosterOf,
   watchCatalogNames,
   docStorePortCell,
@@ -53,6 +55,9 @@ import { seatMintCensus, capMintsUnpointed } from "@lararium/mesh/mint-census";
 import { wikiIslandWithholds, vesselDocBags, type WikiIslandMount } from "@lararium/mesh/wiki-island-reach";
 import { refuseTw5DocsWrite } from "@lararium/mesh/tw5-docs-name";
 import * as A from "@automerge/automerge";
+import { watchCallTouches, type CallTouches } from "@lararium/mesh/call-touches";
+import { awaitCallHeads, REST_OWED_SYNC_BOUND_MS } from "./call-heads.js";
+import { seatNodeCallScope } from "./node-call-scope.js";
 
 /** A summoned panel verb's ward: the ref the CLI parked, spent only on the verb and arguments it was bound to. */
 function takeSummonedWard(raw: unknown): WardCredential | undefined {
@@ -201,9 +206,8 @@ import type { LarVessel } from "@lararium/mesh/lar-vessel";
 import { composeVessel } from "@lararium/mesh/cap-compose";
 import { islandFloorStack, islandLiftStack, larVesselOf } from "@lararium/mesh/lar-vessel";
 import {
-  DaemonRestarting, ACTIVE_WIKI_URI,
+  DaemonRestarting, HOME_WIKI_TITLE, readHomeWikiSlug,
   MemoryTiddlerStore,
-  selectActiveWikiSlug,
   seedVesselDefaults,
   loadCatalogCorpora,
   composeVerbPlane,
@@ -228,6 +232,7 @@ import { custodyOpens, duringLight, faceNamedCustodyWrite } from "./face-named-c
 import { armedLight, recardArms } from "./recard-arms.js";
 import { fenceReceiptAtStop } from "./stop-receipt-fence.js";
 import { daemonGenesisDir, daemonBagsDir, loadLaresConfig, tempConsentedSlugs } from "./lares-config.js";
+import type { VesselLogSink } from "./vessel-log-sink.js";
 import { projectionRoots, workspaceRootsOf, workbenchFolders, litFaceDiskMirrors, FACES_PROJECTION_DIR, REALMS_PROJECTION_DIR, faceRoot, type WorkbenchFolder } from "./bag-paths.js";
 import { ensureRealmLabel, realmPlacement, settleRealmMoves } from "./realm-labels.js";
 import { ledgerWorkbenches, ledgerWorkbenchRealms, workbenchSeats } from "@lararium/mesh/workbench";
@@ -558,6 +563,12 @@ export interface NodeVesselOptions extends LarariumVesselOptions {
    * boot dial alone may issue the founder's certificate at a new scope under it, and drops it once that dial settles.
    */
   readonly bootWard?: WardCredential;
+  /**
+   * The boot's log sink (`vessel-log-sink`): once the daemon island stands it takes the sink's records into the worn face's
+   * daemon temp layer, and each island restart replays the whole ring (a re-opened temp layer stands empty). Absent: the
+   * vessel's console stays the flat log alone.
+   */
+  readonly shoreLog?: Pick<VesselLogSink, "attach" | "replay">;
   portPolicy?: PortPolicy;
   onPortMessage?: (binding: string, islandKey: string, msg: PortIslandToVesselMsg) => void;
   storageDir: string;
@@ -824,6 +835,9 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   /** The lock ritual's first move for one session (sealed-store#/owed, R2): flush the Repo and the sealed rest, so every
    *  save that session booked lands sealed, then drop its bookings. The UDS seat awaits it before the signer drops. */
   sealedRestLock: (signer: object) => Promise<void>;
+  /** NO SILENT LOSS at a write door: the count of held saves as a call begins (`mark`), and after its answer, the Repo's
+   *  flush and the documents that held a save since the mark and still wait unsealed (`owed`; null: every save sealed). */
+  restOwed: { mark(): number; owed(since: number, touches: CallTouches | null): Promise<RestOwed | null> };
   /** The stand-down's last flush of the sealed rest (T3), after every session closed and before the daemon island goes:
    *  answers how many saves still wait unbooked (each rests nowhere new; its change returns by sync). */
   sealedRestStandDown: () => Promise<number>;
@@ -933,6 +947,7 @@ interface NodeBootPrep {
   sessionDoor:     UdsSessionDoor;
   /** The sealed rest's lock for one session's signer: the Repo and the rest flush, then its bookings drop. */
   sealedRestLock:  (signer: object) => Promise<void>;
+  restOwed: { mark(): number; owed(since: number, touches: CallTouches | null): Promise<RestOwed | null> };
   /** The stand-down's last flush of the sealed rest (T3), after every session closed: answers how many saves still wait. */
   sealedRestStandDown: () => Promise<number>;
   /** The stand-down's watch close over the worn face's pool: the final wave, then the commit seam, as a down. */
@@ -1011,7 +1026,7 @@ interface NodeBootPrep {
   daemonIslandState: () => Promise<{ restarts: number; leg: string }>;
   eventBus:         () => LarEventBusImpl;
   slotActiveWikiId: () => string;
-  activeWikiSource: () => "boot-arg" | "daemon-marker" | "floor";
+  activeWikiSource: () => "boot-arg" | "home-preference" | "floor";
   /** The wiki this composition stands in for on its floor wiki, waiting on a face; null where none waits. */
   wikiAwaitsFace:   () => FloorWikiRefusal | null;
   /** Stand down everything the prep and its closures stood, then the Repo; releases a floor the prep stood itself. */
@@ -1290,9 +1305,11 @@ async function prepareNodeBootOn(
       : [...deviceDocs.docsOf(bagId, litDevices()), sealedCells.mounted(bagId), ...(slotDocsNamed.get(bagId) ?? []), documentIdOfUrl(tiddlerText(ownEntry(sealedCells.catalog()?.tiddlers, bagId)))],
   });
   // The session that stands for the daemon mount now: a call's, else a seated one (the dial's own, V6).
+  // A dropped signer never stands, and a call of another face that merely stands first never stands for the worn face.
   const standingSaveSession = (): NodeSaveSession | null => {
     const face = sealedCells.face();
-    const standing = sealedCells.book?.standing()[0] ?? sealedCells.book?.seated().find((s) => s.subject === face);
+    if (face === null) return null;
+    const standing = sealedCells.book?.standingFor((s) => s.subject === face || sealedCells.wornAt(face, s.subject)) ?? null;
     return standing ? saveSessionOf(standing) : null;
   };
   // THE SESSION OF A FACE (the lit set): the daemon mount's standing session for its own bags; a sibling's seated session for a
@@ -1403,6 +1420,9 @@ async function prepareNodeBootOn(
   // THE TRAP-NAMED DOCUMENTS HOLD ON EVERY LOAD PATH (`engine-fall`): each document a resting engine fall names in flight
   // reaches the engine through no path, the storage source's included, until the hand clears the count.
   const heldBack = heldInFlight(readEngineFalls(storageDir));
+  // THE REST-OWED WATCH (No silent loss): every save held back numbers here, so a write door reads, after its flush, which
+  // documents its call wrote still wait unsealed, and answers `owed` rather than a bare ok (`restOwedAfter`).
+  const owedWatch = restOwedWatch({ waiting: (documentId) => sealedRest.store.waiting(documentId) });
   const sealedRest = composeSealedRest<NodeSaveSession>({
     inner: holdBackStorage(new DurableNodeFSStorageAdapter(storageDir), heldBack, (line) => console.warn(`[lararium] ${line}`)),
     bagOf: sealedBagOf,
@@ -1433,8 +1453,16 @@ async function prepareNodeBootOn(
       faceKeyOf: (subject) => faceKeyOfSubject(subject),
     }),
     flushRepo: async (documentIds) => { await repo.flush(documentIds as never); },
+    // A DROPPED SIGNER STANDS FOR NOTHING: a booking whose session's signer dropped (a place session's re-mint, an anchor
+    // move, a switch) gives way to the session standing now, or waits `save-unbooked`, never `signer-refused`.
+    stands: (session) => !session.signer.dropped,
     // A SAVE HELD BACK NAMES WHY: the store's refusal, and for a seal the holder refused, the holder's own refusal and cause.
-    onHeld: ({ refusal, documentId, error, cause }) => console.log(`[sealed-rest] ${refusal}${error ? ` (${error}${cause ? `: ${cause}` : ""})` : ""}: ${documentId.slice(0, 12)}… waits in memory, never clear, until a session seals it`),
+    // A SAVE REFUSED OUTRIGHT rests nowhere and waits nowhere: the watch hears it, so its write door answers owed.
+    onRefused: ({ documentId, refusal, cause }) => {
+      owedWatch.notice({ documentId, refusal: "save-refused", error: refusal, ...(cause !== undefined ? { cause } : {}) });
+      console.log(`[sealed-rest] save-refused (${refusal}${cause ? `: ${cause}` : ""}): ${documentId.slice(0, 12)}… rests nowhere; its change lives in the engine's memory alone`);
+    },
+    onHeld: (held) => { owedWatch.notice(held); const { refusal, documentId, error, cause } = held; console.log(`[sealed-rest] ${refusal}${error ? ` (${error}${cause ? `: ${cause}` : ""})` : ""}: ${documentId.slice(0, 12)}… waits in memory, never clear, until a session seals it`); },
     // A HYDRATING LOAD THAT WAITS NAMES WHAT IT WAITS ON, once per document and refusal: the refusal and the bag holding it.
     onHydrationWait: ({ documentId, refusal, bagId }) => console.log(`[sealed-rest] ${documentId.slice(0, 12)}… waits to hydrate on ${refusal}${bagId ? ` in ${bagId}` : " (no bag names it yet)"}; it reads again at the next map move`),
     // A restart's hydration: a sealed document the engine asks for ahead of the dial waits for its map, never strands;
@@ -1834,6 +1862,10 @@ async function prepareNodeBootOn(
       });
     }, wireProbe ?? undefined),
   });
+  // THE CALL'S OWN CHANGES TAG AT THE CHANGE (`call-touches`): a seat's act or verb runs in its call's scope, and every change
+  // this Repo makes inside it names that call's documents, so the door owes the call's own writes alone (sealed-store#/owed).
+  seatNodeCallScope();
+  watchCallTouches(repo as never);
   // A SEALED BAG MOUNTS NO WRITABLE FALLBACK (`seatSealedRest`): every `waitHandle` over this Repo (the social planes, the
   // wiki layers, the corpora) holds a sealed document read-only over its own id until its keyed load opens it. A load refused
   // on integrity evidence moves the bytes aside through the probe's own quarantine, held across boots.
@@ -2878,7 +2910,7 @@ async function prepareNodeBootOn(
   let personaSelves: PersonaSelvesPlane | null = null;   // the carried faces' selves records, built at the first ask
   let selvesCatalogRow: ((record: SelvesRecordRef) => void) | null = null;   // each record's row in its own face's catalog
   let slotActiveWikiId = "";               // captured in wikiSlot
-  let activeWikiSource: "boot-arg" | "daemon-marker" | "floor" = "boot-arg";
+  let activeWikiSource: "boot-arg" | "home-preference" | "floor" = "boot-arg";
   let wikiAwaitsFace: FloorWikiRefusal | null = null;   // captured in wikiSlot
   // The recall FORM leg holder — opened ONCE, lazily, shared by BOTH the dual recall fuse and the
   // worldline form pre-fetch (makeFormPalace ref-counts per canonical dir → one reference, never a
@@ -3312,7 +3344,9 @@ async function prepareNodeBootOn(
 
   // Active-wiki slot — slug from the daemon-doc marker (post-genesis).
   const wikiSlot = async (assembly: VesselCoreAssembly): Promise<VesselWikiSlot> => {
-    const sel = selectActiveWikiSlug(wikiId, ownEntry((await readDaemonDoc()).doc()?.tiddlers, ACTIVE_WIKI_URI) ?? null);
+    // EVERY BOOT STANDS ON THE BOOT'S OWN ASK (the floor's wiki); no vessel-scope pointer names a wiki before any face lights. A
+    // lit face's home preference selects its wiki at light (`afterLive`), read from that face's own daemon wiki.
+    const sel = { slug: wikiId, source: "boot-arg" as const };
     // A COMPOSITION THAT WEARS NO FACE BOOTS NO USER WIKI (the sealing scope): before a face lights (a floor, or a place
     // that founded none), a wiki whose canon bag rests on a face's half reads sealed to a face no session wears, so its
     // documents neither load nor rest. The floor STANDS all the same (every boot rests at the floor; its unlock door must
@@ -4445,6 +4479,12 @@ async function prepareNodeBootOn(
     // restart) releases each closing face the composition left out.
     restartForFaces = async (reason) => { await daemonHolder.restart(reason); };
     daemonHolder.onRestarted(() => faceLife.recomposed(composedWith));
+    // THE VESSEL'S LOG RECORDS reach the daemon temp layer from here on (`vessel-log-sink`), and every re-opened island takes the whole ring again.
+    if (opts.shoreLog) {
+      const shoreLog = opts.shoreLog;
+      shoreLog.attach((records) => daemonVm.placeShoreLog(records));
+      daemonHolder.onRestarted(() => shoreLog.replay());
+    }
     standDaemonVm();
     // THE FACE'S CATALOG OPENS AFTER ITS HOLDER STANDS (T2): the island stood with its holder, so the sealed catalog
     // hydrates; the island then registers every bag it names beyond the set its open carried (the face's user bags, a
@@ -5103,11 +5143,11 @@ async function prepareNodeBootOn(
     });
 
     // ── The wiki-SWITCHER surface (the FACE over the activation cap) ──────────────
-    // The LIVE chokepoint (distinct from boot-time `open-wiki`): a reference ACTIVATES
+    // The LIVE chokepoint (the boot reads a face's home preference at light): a reference ACTIVATES
     // the grain (resolveWikiSpec wakes ANY registered wiki cold, single-flight). node is
     // headless — no #projection surface to flip — so a switch here is pure activation.
     registry.register("wiki-switch", (args) => wikiSwitchVerb(args, { activation: wikiActivation, pool: vmManager }));
-    // wiki-hold / wiki-release — the ROTATABLE active-wiki pin (the switcher's pin
+    // wiki-hold / wiki-release — the ROTATABLE keep-warm hold (the switcher's pin
     // control), budget-enforced by the cap (the daemon bag always + pinBudget rotatable).
     // Distinct from the recipe-bag `pin-wiki`: this pins the wiki GRAIN in the collector.
     registry.register("wiki-hold", async (args) => {
@@ -5503,7 +5543,15 @@ async function prepareNodeBootOn(
         stood.push({ what: `the workbench ${name}'s watch`, phase: "producers", down: async () => { await wsWatch.down("lock"); workspaceWatches.delete(wsWatch); if (workspaceWatches.size === 0) settleRealmFolders(); } });
       }
     }
-    if (slotActiveWikiId) void residency.pin(slotActiveWikiId, "boot:home-wiki", "wiki");
+    // A FACE'S HOME WIKI IS ITS OWN PREFERENCE, READ AT LIGHT (research/pin-mu#S2): the record sits in the lit face's own daemon
+    // wiki's working layer, so only a face that stands lit reads it, and no boot pin names a wiki for the vessel.
+    if (wornDeviceGroup !== null) void (async () => {
+      const home = readHomeWikiSlug(await daemonVm.composite.get(HOME_WIKI_TITLE));
+      if (home === null || home === slotActiveWikiId) return;
+      if (!(await wikiActivation.ensureActive(home))) return;
+      slotActiveWikiId = home;
+      activeWikiSource = "home-preference";
+    })().catch((e: unknown) => console.warn(`[home-wiki] the lit face's home preference did not open: ${e instanceof Error ? e.message : String(e)}`));
   };
 
   const orchestration: VesselOrchestration<VesselIslandPool> = {
@@ -5560,6 +5608,20 @@ async function prepareNodeBootOn(
       const session = sessionIds.get(signer);
       if (session) { try { await sealedRest.rebook(session); } catch { /* it keeps waiting */ } }
       await sealedRest.lock(session?.id ?? "no-session-booked-here");
+    },
+    restOwed: {
+      mark: () => owedWatch.mark(),
+      // THE CALL'S OWN CHANGES (`call-touches`): each document waits until this replica holds the heads the call reached
+      // (an island's change crosses its sync leg first), then those documents alone flush. A change that never arrives
+      // within the bound, and a flush that fails, answer owed by name, never sealed.
+      owed: async (since, touches) => {
+        const ids = Object.keys(touches ?? {});
+        if (ids.length === 0) return null;
+        const unsynced = await awaitCallHeads(repo, touches!, REST_OWED_SYNC_BOUND_MS);
+        try { await repo.flush(ids.filter((id) => !unsynced.includes(id)) as never); }
+        catch (error) { return owedWatch.owed(since, ids, { flushError: error instanceof Error ? error.message : String(error), unsynced }); }
+        return owedWatch.owed(since, ids, { unsynced });
+      },
     },
     sealedRestStandDown: async () => {
       const waiting = await sealedRest.standDown((sealedCells.book?.seated() ?? []).map(saveSessionOf));
@@ -5823,6 +5885,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     sessionDoor:     p.sessionDoor,
     sessionSigns:    sessionSign.book,
     sealedRestLock:  p.sealedRestLock,
+    restOwed:        p.restOwed,
     sealedRestStandDown: p.sealedRestStandDown,
     facePoolStandDown: p.facePoolStandDown,
     heldSaves:       p.heldSaves,

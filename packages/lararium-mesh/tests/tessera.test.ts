@@ -90,7 +90,7 @@ describe("wake-reads-unmatched-half-red", () => {
     await f.kui("kukulu", { reach: "wide", returns: 3 });
     const matched = await f.begin(), other = await f.begin(), open = await f.begin();
     const landed = await f.land(matched.tessera);
-    // A landing at another head refuses now (rite-land-differs); a host half an older vessel rested off par still reads red.
+    // A landing at another head refuses (rite-land-differs); a host half resting off par reads red.
     await expect(f.land(other.tessera, HEAD2)).rejects.toMatchObject({ code: "rite-land-differs" });
     const off = await signSwarmAct({ act: "rite-landed", group: GROUP, rite: "kukulu", tessera: other.tessera, begun: other.begun, head: HEAD2 }, f.vessel);
     await putSwarmAct(f.wiki, swarmTesseraTitle(other.tessera, "host"), off);
@@ -283,5 +283,28 @@ describe("a-begun-rite-sets-down", () => {
     await abandonRite(f.wiki, { tessera: open.tessera }, f.trust, GROUP, f.vessel);
     await expect(abandonRite(f.wiki, { tessera: open.tessera }, f.trust, GROUP, f.vessel)).rejects.toMatchObject({ code: "rite-already-abandoned" });
     expect((await pendingBegins(f.wiki, "kukulu", BRANCH)).map((p) => p.tessera)).toEqual([other.tessera]);
+  });
+
+  // From the #571 cold read (abandon-follow-ups d, c).
+  test("RED (d): a forged abandoned mark stops no landing: an outsider's mark, or the vessel's over another guest, and landRite still rests the host half at par", async () => {
+    const f = await fixture();
+    await f.kui("kukulu", { reach: "wide", returns: 3 });
+    const a = await f.begin(), b = await f.begin(HEAD2);
+    f.rows.set(swarmTesseraTitle(a.tessera, "abandoned"), JSON.stringify(await signSwarmAct({ act: "rite-abandoned", group: GROUP, rite: "kukulu", branch: BRANCH, tessera: a.tessera, begun: a.begun, by: "hand" }, f.outsider)));
+    f.rows.set(swarmTesseraTitle(b.tessera, "abandoned"), JSON.stringify(await signSwarmAct({ act: "rite-abandoned", group: GROUP, rite: "kukulu", branch: BRANCH, tessera: b.tessera, begun: a.begun, by: "hand" }, f.vessel)));
+    expect(await f.land(a.tessera)).toMatchObject({ tessera: a.tessera, par: true });
+    expect(await f.land(b.tessera, HEAD2)).toMatchObject({ tessera: b.tessera, par: true });
+    expect((await conferre(f.wiki, f.trust, GROUP)).par.map((r) => r.tessera).sort()).toEqual([a.tessera, b.tessera].sort());
+  });
+
+  test("RED (c): a host row that verifies as no landing refuses the abandon by its own reading, never as already landed; CONTROL: a true landing still refuses rite-already-landed", async () => {
+    const f = await fixture();
+    await f.kui("kukulu", { reach: "wide", returns: 3 });
+    const forged = await f.begin(), landed = await f.begin(HEAD2);
+    f.rows.set(swarmTesseraTitle(forged.tessera, "host"), "not a record");
+    await expect(abandonRite(f.wiki, { tessera: forged.tessera }, f.trust, GROUP, f.vessel)).rejects.toMatchObject({ code: "rite-host-refused", message: expect.stringMatching(/verifies as no landing \(shape\)[\s\S]*landed-refused/) });
+    expect(f.rows.has(swarmTesseraTitle(forged.tessera, "abandoned"))).toBe(false);
+    await f.land(landed.tessera, HEAD2);
+    await expect(abandonRite(f.wiki, { tessera: landed.tessera }, f.trust, GROUP, f.vessel)).rejects.toMatchObject({ code: "rite-already-landed" });
   });
 });

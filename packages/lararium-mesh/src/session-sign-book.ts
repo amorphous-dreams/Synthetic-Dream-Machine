@@ -72,8 +72,15 @@ export class SessionSignBook {
   /** The sessions seated now: open, their signers standing. */
   seated(): BookedSession[] { return [...this.#seated.values()].filter((s) => !s.signer.dropped); }
 
-  /** The sessions whose calls stand booked now, each once. */
-  standing(): BookedSession[] { return [...new Set([...this.#held.values()].map((b) => b.session))]; }
+  /** The sessions whose calls stand booked now, each once; a session whose signer dropped stands for nothing, even while
+   *  a call it booked (a seal it asked) still runs. */
+  standing(): BookedSession[] { return [...new Set([...this.#held.values()].map((b) => b.session))].filter((s) => !s.signer.dropped); }
+
+  /** THE LIVE SESSION THAT STANDS FOR A FACE: the first call's session that `wears` passes, else the first seated one; never
+   *  a dropped signer, and never a call of another face that merely stands first. Null: none stands, and a save waits. */
+  standingFor(wears: (session: BookedSession) => boolean): BookedSession | null {
+    return this.standing().find(wears) ?? this.seated().find(wears) ?? null;
+  }
 
   /** Book one call a session placed; the returned release drops this booking alone. An id already booked keeps its
    *  first booking: a second call under it (a retry, a sibling socket of the same face) books nothing, so no later

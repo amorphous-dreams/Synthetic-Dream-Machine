@@ -210,17 +210,24 @@ describe("the instance names a spirit's model stream (ruling 2026-11-25-body-bec
     expect(C["instancesLine"]("2026-11-25", "0123456789abcdef", "p", "sess-1aaaaaaaa", "t")).toContain("p#sess-1aa");
     expect(C["bodiesLine"]).toBeUndefined();
   });
-  test("presence writes instances-awake, reads a legacy bodies-awake once, and unsets it", () => {
+  test("presence reads and writes instances-awake alone: a row under any other key reads as nobody awake", () => {
     const { awake, write } = S.presenceJoin({ "bodies-awake": "p#sib 2026-11-25T11:00:00Z 3" }, "p", "me", NOW);
-    expect(awake.map((a) => (a as unknown as Record<string, string>)["instance"])).toEqual(["me", "sib"]);
-    expect(write).toEqual({ patch: { "instances-awake": "p#me 2026-11-25T12:00:00.000Z 4\np#sib 2026-11-25T11:00:00Z 3" }, unset: ["bodies-awake"] });
-    expect(S.presenceLine("p", awake)).toMatch(/^2 instances wear p: #me \(you\)/);
+    expect(awake.map((a) => a.instance)).toEqual(["me"]);
+    expect(write).toEqual({ patch: { "instances-awake": "p#me 2026-11-25T12:00:00.000Z 1" } });
+    expect(S.presenceRead({ "bodies-awake": "p#sib 2026-11-25T11:00:00Z 3" })).toEqual([]);
+    const joined = S.presenceJoin({ "instances-awake": "p#sib 2026-11-25T11:00:00Z 3" }, "p", "me", NOW);
+    expect(joined.write).toEqual({ patch: { "instances-awake": "p#me 2026-11-25T12:00:00.000Z 4\np#sib 2026-11-25T11:00:00Z 3" } });
+    expect(S.presenceLine("p", joined.awake)).toMatch(/^2 instances wear p: #me \(you\)/);
   });
-  test("a carry lands its lineage as `instance`, and a carry landed as `body` still reads as its instance", () => {
-    const parent = { title: "t-mine", fields: { body: "me" } };
+  test("a carry names its instance by `instance` alone, and the lineage listing asks for no `body`", () => {
+    const parent = { title: "t-mine", fields: { instance: "me" } };
     expect(S.carryParent([{ title: "t-other", fields: { instance: "sib" } }, parent], "me")).toBe(parent);
+    expect(S.carryInstanceOf({ body: "me" })).toBe("");
     expect(S.carryFields({ pet: "p", key: ID, instance: "me", base: "x", parent: null, now: NOW } as never)).toMatchObject({ instance: "me" });
     expect(S.LINEAGE_FIELDS).toContain("instance");
+    expect(S.LINEAGE_FIELDS).not.toContain("body");
+    expect(C["LEGACY_INSTANCE_NAMES"]).toBeUndefined();
+    expect(C["slotHeldAs"]).toBeUndefined();
   });
   test("the unechoed receipt and the echo ask name the instance", () => {
     const offering = { uri: "u", text: "m", hash: "h".repeat(64), seq: 1, offeredBy: "hand", damaged: false } as never;

@@ -41,7 +41,9 @@ export function namesOf(raw: string | undefined): string[] | null {
 /** One planned call's answer: the verb's own output, or the refusal as the vessel worded it, its code where it named one. */
 export type DoorAnswer =
   | { readonly ok: true; readonly requestId: string; readonly output: Record<string, unknown> }
-  | { readonly ok: false; readonly requestId: string; readonly message: string; readonly named: string | null };
+  | { readonly ok: false; readonly requestId: string; readonly message: string; readonly named: string | null;
+      /** `owed`: the verb ran and its write waits unsealed (the answer's `rest` band); `output` carries the receipt beside it. */
+      readonly owed?: { readonly output: Record<string, unknown> } };
 
 /**
  * RUN ONE PLANNED CALL AND HAND BACK ITS ANSWER, printing nothing: a caller holding another way to read (a fold falling back to
@@ -56,9 +58,11 @@ export async function tryDoor(args: ParsedArgs, plan: DoorPlan): Promise<DoorAns
   const result = face.face === undefined ? await runVerb(plan.verb, plan.args, await vesselDid()) : await runVerbAsFace(plan.verb, plan.args, face.face);
   const outcome = readVerbOutcome(result);
   // The island names the face it answered from (a visit names the face it read): its word stands over the session's face.
-  if (outcome.ok) return { ok: true, requestId: result.requestId, output: face.face === undefined ? outcome.output : { face: face.face, ...outcome.output } };
+  const output = face.face === undefined ? outcome.output : { face: face.face, ...outcome.output };
+  if (outcome.ok) return { ok: true, requestId: result.requestId, output };
   const message = outcome.error ?? "the verb refused";
-  return { ok: false, requestId: result.requestId, message, named: /^([a-z][a-z0-9]*(?:-[a-z0-9]+)+):/.exec(message)?.[1] ?? null };
+  return { ok: false, requestId: result.requestId, message, named: /^([a-z][a-z0-9]*(?:-[a-z0-9]+)+):/.exec(message)?.[1] ?? null,
+    ...(outcome.code === "owed" ? { owed: { output } } : {}) };
 }
 
 /**
@@ -66,15 +70,20 @@ export async function tryDoor(args: ParsedArgs, plan: DoorPlan): Promise<DoorAns
  * the house's own code where the vessel named one (`filter-malformed`, `tiddler-delete-in-a-family`, `cap-denied`, …):
  * the code leads the message, so a script branches on it.
  */
-export async function runDoor(args: ParsedArgs, label: string, plan: DoorPlan): Promise<{ ok: true; requestId: string; output: Record<string, unknown> } | { ok: false; exit: number }> {
+/** `carryOwed`: an owed answer hands back its receipt (with `rest`) unprinted, for a caller that names the band itself in its
+ *  own testimony (the wake's bookkeeping writes): the band still rides the output, never dropped. */
+export async function runDoor(args: ParsedArgs, label: string, plan: DoorPlan, opts: { readonly carryOwed?: boolean } = {}): Promise<{ ok: true; requestId: string; output: Record<string, unknown> } | { ok: false; exit: number }> {
   const answer = await tryDoor(args, plan);
   if (answer.ok) return answer;
+  if (answer.owed !== undefined && opts.carryOwed === true) return { ok: true, requestId: answer.requestId, output: answer.owed.output };
   const { message, named } = answer;
-  const code = named === "cap-denied" ? "cap-denied" : named === "face-not-open" ? "face-not-open" : "verb-error";
+  const code = answer.owed !== undefined ? "owed" : named === "cap-denied" ? "cap-denied" : named === "face-not-open" ? "face-not-open" : "verb-error";
   // A visit's refusals name themselves in the hint (`cross-face-private`, `cross-face-write-refused`, `target-unknown`, …).
   emit(args, {
     ok: false, requestId: answer.requestId,
-    error: { code, message, ...(named && named !== "cap-denied" ? { hint: `refusal: ${named}` } : {}) },
+    // An owed write carries what the verb answered beside the band: the write ran, and the receipt names what it moved.
+    ...(answer.owed !== undefined ? { data: answer.owed.output } : {}),
+    error: { code, message, ...(named && named !== "cap-denied" && code !== "owed" ? { hint: `refusal: ${named}` } : {}) },
     human: () => console.error(`lares ${label}: ${message}`),
   });
   return { ok: false, exit: exitFor(code) };

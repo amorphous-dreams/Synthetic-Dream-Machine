@@ -5,7 +5,7 @@ import { cpSync, mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } fr
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { runGate } from './pre-push-gate.mjs';
+import { runGate } from './bench-gate.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const run = (cmd, args, options = {}) => spawnSync(cmd, args, { cwd: root, encoding: 'utf8', ...options });
@@ -18,10 +18,22 @@ test('stash refusal teaches a procedure', () => {
   endsInPono(r.stderr);
 });
 
-test('pre-push refusal teaches a procedure', () => {
+test('floor-guard refusal teaches a procedure (RED-FIRST, mandate/floor-gate-1)', () => {
+  const r = run(process.execPath, ['tools/floor-guard.mjs'], { input: JSON.stringify({ agent_id: 'a1', tool_input: { command: 'pnpm test' }, cwd: root }) });
+  assert.equal(r.status, 2, r.stderr);
+  endsInPono(r.stderr);
+});
+
+test('the floor wall refusal teaches a procedure (RED-FIRST, mandate/floor-gate-1)', () => {
+  const r = run(process.execPath, ['tools/bench-gate.mjs'], { env: { ...process.env, LARES_BATTERY_LOCK: join(mkdtempSync(join(tmpdir(), 'guard-floor-')), 'lock') } });
+  assert.equal(r.status, 64, r.stderr);
+  endsInPono(r.stderr);
+});
+
+test('bench-gate refusal teaches a procedure', () => {
   const lines = [];
   assert.equal(runGate([{ name: 'fixture' }], () => 1, line => lines.push(line)).code, 1);
-  assert.match(lines.join('\n'), /PRE-PUSH GATE REFUSES/);
+  assert.match(lines.join('\n'), /BENCH GATE REFUSES/);
   endsInPono(lines.join('\n'));
 });
 
@@ -39,7 +51,7 @@ test('evergreen witness refusal teaches a procedure', () => {
 });
 
 test('disk witness refusal teaches a procedure', () => {
-  const env = { ...process.env, LARES_DISK_MIN_C_GB: '0', LARES_DISK_MIN_ROOT_GB: '999999999', LARES_DISK_MAX_WORKTREES: '100000', LARES_DISK_MAX_CODEX: '100000' };
+  const env = { ...process.env, LARES_DISK_MIN_C_GB: '0', LARES_DISK_MIN_ROOT_GB: '999999999', LARES_DISK_MAX_SPIRITS: '100000', LARES_DISK_MAX_CODEX: '100000' };
   const r = run('bash', ['tools/disk-witness.sh'], { env });
   assert.equal(r.status, 1, r.stdout + r.stderr);
   assert.match(r.stdout, /RED: \/ has/);

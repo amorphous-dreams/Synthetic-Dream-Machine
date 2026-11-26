@@ -3,3 +3,6 @@ type: text/vnd.tiddlywiki
 
 [prefix[$:/temp/]]
 [prefix[$:/state/]]
+[prefix[$:/status/]]
+[prefix[$:/StoryList]]
+[prefix[$:/HistoryList]]
