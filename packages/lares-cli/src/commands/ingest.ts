@@ -276,6 +276,12 @@ export async function cmdIngest(args: ParsedArgs, sink?: IngestSink): Promise<nu
   // on the next scan instead of re-landing.
   // R2 — a confirmed rename moved its base to the new location through the same door, with the history the source's base
   // vouched for, so the moved carrier reads `unchanged` next scan instead of re-landing.
+  if (settled.bases !== undefined && settled.bases.differs > 0) {
+    console.error(`  ${settled.bases.differs} base(s) pinned nothing: the island read each carrier's file and its own records, and they differ (a hand edit not yet in the records); its gate weighs each as it stands`);
+  }
+  if (settled.bases !== undefined && settled.bases.unread > 0) {
+    console.error(`  ${settled.bases.unread} base(s) pinned nothing: the island could not read the file there (it left, or it rests where the island cannot read); the next scan asks again`);
+  }
   if (settled.bases !== undefined && settled.bases.owed > 0) {
     console.error(`  ${settled.bases.owed} base(s) reached no owner (${settled.bases.why ?? "the island gave no answer"}): each such carrier reads as moved at the next scan, and its base asks again then`);
   }

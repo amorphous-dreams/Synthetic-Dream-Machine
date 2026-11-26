@@ -85,7 +85,7 @@
  */
 
 import { writeFileSync, mkdirSync, unlinkSync, existsSync, readFileSync, readdirSync, rmdirSync } from "fs";
-import { dirname, basename, extname, relative as relativePath, resolve as resolvePath } from "path";
+import { dirname, isAbsolute, basename, extname, relative as relativePath, resolve as resolvePath } from "path";
 import { confineMirrorWrite, carrierBaseRelPath, titleRelPath } from "./bag-paths.js";
 import { KAPAE_EXT, kapaeShadowBody } from "./kapae-shadow.js";
 import { contentHash, syncedTreeKey, SyncedTree, type SyncedBase } from "./synced-tree.js";
@@ -833,6 +833,7 @@ export class LarDiskProjector {
    * its own heads (`pin`), so the row waits on its seal like every pin of this tree.
    *
    *   unprojected  no ordinary mirror of this projector holds the bag: another island answers for it
+   *   outside-mirror  the file lies outside every ordinary mirror root of the bag: nothing pins
    *   unread       this island reads no file there (it left, or it rests where this island cannot read): nothing lands
    *   differs      the file and this island's records say different things, the bag holds no such record here, or the
    *                file answers to another document: no agreement stands, and the gate weighs the carrier as it stands
@@ -843,8 +844,15 @@ export class LarDiskProjector {
    * `from` names the vanished source of a rename the island confirmed: once the moved carrier's agreement stands, the
    * source gives up each base of those same bytes whose own file stands no more.
    */
-  async pinAgreement(bagId: string, uri: string, file: string, from?: string): Promise<"unprojected" | "unread" | "differs" | "waiting" | "kept" | "recorded"> {
+  async pinAgreement(bagId: string, uri: string, file: string, from?: string): Promise<"unprojected" | "outside-mirror" | "unread" | "differs" | "waiting" | "kept" | "recorded"> {
     if (!this.projects(bagId)) return "unprojected";
+    // A file outside every ordinary mirror of the bag stands beyond this island's reach: no pin lands there.
+    const within = this.mirrors.some((m) => {
+      if (m.bagId !== bagId || m.mirrorClass === "recovery") return false;
+      const rel = relativePath(resolvePath(m.mirrorRoot), resolvePath(file));
+      return rel !== "" && rel !== ".." && !rel.startsWith("../") && !rel.startsWith("..\\") && !isAbsolute(rel);
+    });
+    if (!within) return "outside-mirror";
     const render = await this.recordsRenderOf(bagId, uri);
     const metaPath = file + ".meta";
     const isBinary = render?.file.encoding === "base64";
