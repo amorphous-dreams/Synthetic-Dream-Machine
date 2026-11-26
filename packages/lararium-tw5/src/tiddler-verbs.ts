@@ -10,9 +10,9 @@
  *                                                                         → { has, recipe, title, lens, tiddler?: { fields, hash, textHash, bag, position, family?, orphan?, omitted? } | null,
  *                                                                             meme?: { uri, text?, canonicalHash, bytes, slots, slot?, page? }, grain, next, note? }
  *   wiki-render    { recipe, title | text, type?, form?, after?, maxBytes? } → { recipe, title, form, text, bytes, truncated, next }
- *   tiddler-put    { recipe, title, text?, fields?, unset?, tagsAdd?, tagsRemove?, base?, create? }
+ *   tiddler-put    { recipe, title, text?, fields?, unset?, tagsAdd?, tagsRemove?, cut?, base?, create? }
  *                                                                         → { recipe, title, decision: put|noop|conflict|exists, bag, created, changed, hash, textHash, position, family?,
- *                                                                             canonicalHash?, landed?, tombstoned?, warnings? }
+ *                                                                             canonicalHash?, landed?, kept?, tombstoned?, warnings? }
  *   tiddler-delete { recipe, title, base?, family?, mode? }               → { recipe, title, decision: removed|absent|conflict|refused, mode, tombstoned, retracted, hash?, refusal?, why?, consequence? }
  *   tiddler-rename { recipe, title, to, base? }                          → { recipe, title, to, decision: renamed|absent|conflict|refused, forwarder?, relinked?, moved?, skipped?, unreachable?, withheld?, hash?, refusal?, why?, consequence? }
  *   wiki-status    { recipe }                                             → { recipe, working, layers: [{ bag, mounted: writable|read-only|promotion-only, read, write, working?, why? }] }
@@ -50,7 +50,8 @@
  *
  * A PUT MOVES A FAMILY'S TEXT THROUGH THE CONFLUENCE GATE. A root and its slots stand as tiddlers; a text put on one lands as
  * the family (the record takes its place, the carrier recomposes, the gate re-splits and reseals in the root's turn), and a
- * first record of the carrier type founds its family the same way. The answer adds `canonicalHash`, `landed`, `tombstoned`.
+ * first record of the carrier type founds its family the same way. The answer adds `canonicalHash`, `landed`, `kept`, `tombstoned`. ABSENCE NEVER
+ * DELETES: a slot the new text omits stays standing by reference (`kept`); `cut` names the slots that leave.
  * `base` reads a record hash (`sha256-…`) or, on a family's text, the carrier's canonical hash (`sha256:…`).
  *
  * A DELETE DELETES PLAINLY; ONLY A LOWER LAYER MAKES IT A CHOICE (lar:///ha.ka.ba/lares/api/pono/kapae #/core-cut). With
@@ -88,7 +89,7 @@ import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { askerRefusal, handRefusalOf } from "@lararium/mesh/hand-refusal";
 import { consequence, familyOf, retractsOf, rootAddressOf, tombstonesOf, type Consequence, type DeleteMode, type FamilyPosition, type FamilyView } from "@lararium/mesh/family";
 import { anchorBagOf, readBagStore, readContainer, type MemeVerbOptions } from "./meme-verbs.js";
-import { composeMemberCarrier, framesCarrier, isMemeRoot, placeMeme, readMeme, renameFamilyInWiki, wikiFamilyView, wikiMemeSink, stageMemeTitle, STAGE_PATH_SHAPE_CODE, STAGE_MEME_PREFIX, type MemeSink } from "./place-meme.js";
+import { composeMemberCarrier, CUT_NOT_OMITTED_CODE, dropKaheaCalls, framesCarrier, isMemeRoot, placeMeme, readMeme, renameFamilyInWiki, wikiFamilyView, wikiMemeSink, stageMemeTitle, STAGE_PATH_SHAPE_CODE, STAGE_MEME_PREFIX, type MemeSink } from "./place-meme.js";
 import { READ_PAGE_BYTES, byteLength, cardBase, memeBase, readBase, grainOf, hasLine, memeGradient, param, slotHasLines, tagTokens, type CarrierSlot, type GrainEcho, type ReadGrain } from "./read-gradient.js";
 import { skinnyCid } from "./lazy-resolver.js";
 import { readCarrierShape } from "./carrier-shape.js";
@@ -1053,6 +1054,11 @@ export const makeTiddlerPutReactor = everyWiki("tiddler-put", true, (opts: Tiddl
       if (crossed.length > 0) throw new VerbRefusal("append-alone", `append-alone: an append lands its words at the end of the standing text and carries no ${crossed.map((n) => `\`${n}\``).join(", ")}; send those as their own put. Nothing moved.`);
       if (append === "") throw new VerbRefusal("append-empty", "append-empty: an append names the words it lands. Nothing moved.");
     }
+    // A CUT NAMES THE SLOTS THAT LEAVE: rooted paths (`#/a`), as a list or one TiddlyWiki list string. Absence never cuts.
+    const cutRaw = args["cut"];
+    const cut: string[] = Array.isArray(cutRaw) ? cutRaw.map(String) : typeof cutRaw === "string" && cutRaw.trim() !== "" ? (utils.parseStringArray(cutRaw) ?? []) : [];
+    const offPath = cut.filter((slot) => !/^#\/[^$\s]/.test(slot));
+    if (offPath.length > 0) throw new VerbRefusal("cut-malformed", `cut-malformed: a cut names a slot by its rooted path (\`#/name\`, \`#/name/child\`); got ${offPath.map((slot) => `"${slot}"`).join(", ")}. Nothing moved.`);
     const { view, mayRead } = await viewFor(opts, anchor, ctx.cap);
 
     // THE LANDING, AS A COMPARE-AND-SWAP ON THE LIVE WIKI. The wiki serializes every writer that passes through it in this
@@ -1080,7 +1086,7 @@ export const makeTiddlerPutReactor = everyWiki("tiddler-put", true, (opts: Tiddl
         if (!standing && !flagOn(args["create"])) throw new VerbRefusal("append-target-missing", `append-target-missing: no record "${title}" stands to append to; name \`create\` (\`--create\`) to land the words as a new record. Nothing moved.`);
       } else if (flagOn(args["create"]) && wiki.tiddlerExists(title)) return answer("exists", { created: false, changed: [], hash: liveHash, textHash: before ? textHashOf(before) : null });
       // A TEXT WRITE BY ANY PATH: `text`, a field patch naming `text`, or an unset of it. A card's base takes none of them.
-      const writesText = append !== null || typeof args["text"] === "string" || Object.prototype.hasOwnProperty.call(patchArg(args["fields"]), "text") || (namesArg(args["unset"]) ?? []).includes("text");
+      const writesText = cut.length > 0 || append !== null || typeof args["text"] === "string" || Object.prototype.hasOwnProperty.call(patchArg(args["fields"]), "text") || (namesArg(args["unset"]) ?? []).includes("text");
       const base = readBase(optionalStringArg(args, "base"), "tiddler-put", writesText);
       // TWO BASES, ONE DOOR: a record's hash (`sha256-…`, the record lens) guards the record; a carrier's canonical hash
       // (`sha256:…`, the meme lens) guards the family, and the Confluence gate reads it below where the put moves a family's text.
@@ -1093,6 +1099,8 @@ export const makeTiddlerPutReactor = everyWiki("tiddler-put", true, (opts: Tiddl
       const next: Record<string, string> = { ...(before ?? {}), ...patch, title };
       if (typeof args["text"] === "string") next["text"] = args["text"];
       if (append !== null) next["text"] = appendedText(before?.["text"] ?? "", append);
+      // A cut takes the slot's call out of this record's text, so the text omits what the cut names.
+      if (cut.length > 0 && typeof next["text"] === "string") next["text"] = dropKaheaCalls(next["text"], new Set(cut));
       for (const name of namesArg(args["unset"]) ?? []) if (name !== "title") delete next[name];
       const listArg = (raw: unknown): string[] => Array.isArray(raw) ? raw.map(String) : typeof raw === "string" ? (utils.parseStringArray(raw) ?? []) : [];
       const add = listArg(args["tagsAdd"]);
@@ -1120,20 +1128,24 @@ export const makeTiddlerPutReactor = everyWiki("tiddler-put", true, (opts: Tiddl
         const parent = typeof next["$fragment-parent"] === "string" ? next["$fragment-parent"] : rootAddressOf(title);
         throw new VerbRefusal("family-joins-by-text", `family-joins-by-text: "${title}" would land as a slot no parent text calls; a slot joins its family through its parent's text, and a fragment address founds no meme. Write the slot's \`<<~ ahu slot=…>>\` block into the parent's text (\`lares tiddler put "${parent}" --recipe ${anchor.recipe} --text …\`) and the split lands the slot. Nothing moved.`);
       }
-      const familyWrite = founds || (member && structural.includes("text"));
+      const familyWrite = founds || (member && (structural.includes("text") || cut.length > 0));
+      if (cut.length > 0 && !(member && standing)) {
+        throw new VerbRefusal("cut-not-omitted", `cut-not-omitted: a cut names slots of a standing meme family, and "${title}" stands as ${standing ? "a plain tiddler" : "no record"}. Name the family's root or the slot's parent (\`lares tiddler put <root> --recipe ${anchor.recipe} --cut '#/slot'\`). Nothing moved.`);
+      }
       if (carrierBase !== null && !familyWrite) return answer("conflict", { created: false, changed: [], hash: liveHash, textHash: before ? textHashOf(before) : null });
       // ONLY THE RENDERER WRITES A RENDERED TIDDLER: a put over one, or one that would land carrying `rendered-from`, refuses.
       refuseRenderedWrite(title, before, next, "tiddler put");
       refuseMalformedStagePath(title);
 
       const changed = Object.keys({ ...(before ?? {}), ...next }).filter(moved);
-      if (standing && changed.length === 0) return answer("noop", { created: false, changed, hash: liveHash, textHash: textHashOf(before!) });
+      if (standing && changed.length === 0 && cut.length === 0) return answer("noop", { created: false, changed, hash: liveHash, textHash: textHashOf(before!) });
 
       // THE CONFLUENCE GATE, INSIDE THE PUT. A text write on a family member, or a first record of the carrier type, lands
       // as the family: the member's record takes its place in a copy of the family, the one recompose frames the carrier
       // (`composeMemberCarrier`), and `placeMeme` lands it in the root's own turn under the hash it composed over. A root
-      // text that frames a whole carrier (its own head mark) speaks for the family as it stands. A slot the new text no
-      // longer calls leaves by the consequence, and the answer names it (`tombstoned`).
+      // text that frames a whole carrier (its own head mark) speaks for the family as it stands. ABSENCE NEVER DELETES: a slot
+      // the new text omits stays standing by reference (`kept`), as a folded read hands it back; a slot leaves only where
+      // `cut` names it (`tombstoned`), or by its own delete.
       if (familyWrite) {
         const root = place.family ?? title;
         const face = wornOrigin(ctx.worn).face;
@@ -1166,17 +1178,22 @@ export const makeTiddlerPutReactor = everyWiki("tiddler-put", true, (opts: Tiddl
           // The record this round read still stands as it read; a record that moved sends the round back.
           const now = wiki.getTiddler(title);
           if ((now ? hashOf(readRecord(now).fields) : null) !== liveHash) continue;
-          const receipt = await placeMeme({ uri: root, text: carrier.text, baseHash: carrier.baseHash, vet, holdAnswer: true, ...(ctx.signal ? { signal: ctx.signal } : {}) }, sink);
+          const receipt = await placeMeme({ uri: root, text: carrier.text, baseHash: carrier.baseHash, vet, keepAbsent: true, cut, holdAnswer: true, ...(ctx.signal ? { signal: ctx.signal } : {}) }, sink);
           if (receipt.decision === "refuse") {
+            const cutWall = receipt.diagnostics.find((d) => d.code === CUT_NOT_OMITTED_CODE);
+            if (cutWall) throw new VerbRefusal(CUT_NOT_OMITTED_CODE, cutWall.message);
             throw new VerbRefusal("family-gate-refused", `family-gate-refused: with this text the family of "${root}" no longer reads as one carrier: ${receipt.warnings.join("; ") || "the gate named no finding"}. Mend the text and put again; \`lares tiddler get "${root}" --recipe ${anchor.recipe} --meme --all\` shows the carrier as it stands. Nothing moved.`);
           }
           const after = wiki.getTiddler(title);
           const landed = after ? readRecord(after).fields : null;
-          const family = { canonicalHash: receipt.canonicalHash ?? null, landed: receipt.landed, tombstoned: receipt.tombstoned, ...(receipt.warnings.length > 0 ? { warnings: receipt.warnings } : {}) };
+          const family = { canonicalHash: receipt.canonicalHash ?? null, landed: receipt.landed, kept: receipt.kept ?? [], tombstoned: receipt.tombstoned, ...(receipt.warnings.length > 0 ? { warnings: receipt.warnings } : {}) };
           if (receipt.decision === "conflict") {
             // A base the caller named answers; a base this put composed over moved under it, and the round reads again.
             if (carrierBase === null) continue;
             return answer("conflict", { created: false, changed: [], hash: liveHash, textHash: before ? textHashOf(before) : null, ...family });
+          }
+          if (receipt.decision === "noop" && cut.length > 0) {
+            throw new VerbRefusal(CUT_NOT_OMITTED_CODE, `${CUT_NOT_OMITTED_CODE}: "${title}" calls none of ${cut.map((slot) => `\`${slot}\``).join(", ")}, so the cut moved nothing. Name the slot's parent as the put's title (\`lares tiddler get "${root}" --recipe ${anchor.recipe} --meme --tree\` shows which record calls it). Nothing moved.`);
           }
           if (receipt.decision === "noop") return answer("noop", { created: false, changed: [], hash: liveHash, textHash: before ? textHashOf(before) : null, ...family });
           const hash = landed ? hashOf(landed) : null;
@@ -1593,7 +1610,7 @@ export const makeTiddlerDeleteReactor = everyWiki("tiddler-delete", true, (opts:
     // A slot its parent calls leaves with the call: the parent's text would move, and that rides a put of the parent's text.
     const dangling = read.acts.find((row) => row.act === "put") ?? read.leaves.find((row) => row.why === "reference-dangles:kahea");
     if (dangling) {
-      return refused("tiddler-delete-in-a-family", `"${title}" stands as a slot "${dangling.title}" calls by \`kahea\`; the call leaves with the slot, and the parent's text moves by its own put: \`lares tiddler put "${dangling.title}" --recipe ${anchor.recipe} --text …\` with the slot's call gone lands the family without it.`);
+      return refused("tiddler-delete-in-a-family", `"${title}" stands as a slot "${dangling.title}" calls by \`kahea\`; the call leaves with the slot, and the parent's text moves by its own put: \`lares tiddler put "${dangling.title}" --recipe ${anchor.recipe} --cut '${String(title).slice(rootAddressOf(title).length)}'\` cuts the slot and its call in one put.`);
     }
     // A record no mounted layer holds (the engine's own, or a wiki with no store beneath it) has nothing to retract.
     const unheld = named === "reveal" ? read.acts.find((row) => row.act === "retract" && (row.holds?.length ?? 0) === 0) : undefined;

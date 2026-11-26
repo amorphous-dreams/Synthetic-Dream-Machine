@@ -228,6 +228,15 @@ export interface PlaceMemeInput {
   readonly signal?: AbortSignal;
   /** Reads every record an `ingest` decision would land, before the first lands; a throw lands nothing (a door's own wall). */
   readonly vet?: (records: readonly Record<string, unknown>[]) => void | Promise<void>;
+  /**
+   * ABSENCE NEVER DELETES (a door's write law; a disk wave leaves it unset and reads the file as the whole family). A slot
+   * the arriving text neither declares nor calls stays standing, as if folded: its parent's landing record gains the
+   * `kahea` call that keeps it, and the receipt names it under `kept`. A slot leaves only where `cut` names it.
+   */
+  readonly keepAbsent?: boolean;
+  /** The slots this write cuts, each a rooted path (`#/a`, `#/a/b`). Every entry must name a standing slot the arriving
+   *  text omits; one that names anything else refuses `cut-not-omitted` and nothing lands. Read only beside `keepAbsent`. */
+  readonly cut?: readonly string[];
 }
 
 /**
@@ -260,6 +269,8 @@ export interface PlaceMemeReceipt {
   readonly landed: readonly string[];
   /** Group members removed because the new text leaves them undeclared (ingest only). */
   readonly tombstoned: readonly string[];
+  /** Slots the new text omitted that stay standing by reference (`keepAbsent`, ingest only). */
+  readonly kept?: readonly string[];
   /** Hash of the canonical render the records now carry — the next writer's base. */
   readonly canonicalHash?: string;
   readonly warnings: readonly string[];
@@ -640,7 +651,6 @@ async function placeMemeNow(input: PlaceMemeInput, sink: MemeSink): Promise<Plac
 
   if (decision.kind !== "ingest") return receiptOfNonIngest(uri, currentRenderHash, decision);
   const grade = gradeOf(decision.diagnostics);
-  await input.vet?.(decision.records);
 
   const lands: string[] = [];
   for (const fields of decision.records) {
@@ -650,9 +660,55 @@ async function placeMemeNow(input: PlaceMemeInput, sink: MemeSink): Promise<Plac
   }
   // THE CONSEQUENCE NAMES THE STALE SLOTS: the family members the new text leaves undeclared, by the one
   // family law. A title the address merely prefixes (`uri/path`, an edge-less `uri#…`) stays where it stands.
-  const stale = tombstonesOf(consequence(view, { kind: "put", title: uri, lands }));
+  const undeclared = tombstonesOf(consequence(view, { kind: "put", title: uri, lands }));
+  let records: readonly TiddlerFields[] = decision.records;
+  let stale: readonly string[] = undeclared;
+  const kept: string[] = [];
+  if (input.keepAbsent) {
+    // ABSENCE NEVER DELETES. Among the members the new text leaves undeclared, a slot stays unless `cut` names it or a slot
+    // above it; a carriage part stays with the slot it belongs to and leaves with a parent that lands anew. Each kept slot
+    // whose parent lands gains its `kahea` call at the end of that parent's text, so the family reads it folded, by reference.
+    const address = rootAddressOf(uri);
+    const cut = new Set((input.cut ?? []).map((slot) => `${address}${slot}`));
+    const held = new Map<string, TiddlerFields>();
+    for (const title of undeclared) { const fields = await sink.read(title); if (fields) held.set(title, fields); }
+    const isSlot = (title: string): boolean => { const slot = held.get(title)?.["$slot"]; return typeof slot === "string" && !slot.startsWith("$"); };
+    const parentOf = (title: string): string | null => { const parent = held.get(title)?.["$fragment-parent"]; return typeof parent === "string" ? parent : null; };
+    const missed = [...cut].filter((title) => !isSlot(title));
+    if (missed.length > 0) {
+      const wall: MemeDiagnostic = {
+        from: 0, to: 0, severity: "error", source: MEMETIC_SOURCE, code: CUT_NOT_OMITTED_CODE,
+        message: `${CUT_NOT_OMITTED_CODE}: a cut names a standing slot the new text omits, and ${missed.join(", ")} ${missed.length === 1 ? "names" : "name"} none (the text still declares it, or no such slot stands); drop the slot's block from the text, or drop the cut. Nothing moved.`,
+      };
+      return { uri, decision: "refuse", grade: "error", landed: [], tombstoned: [], canonicalHash: currentRenderHash, warnings: [wall.message], diagnostics: [...decision.diagnostics, wall] };
+    }
+    const stays = (title: string, seen = 0): boolean => {
+      if (seen > 64 || !held.has(title)) return false;
+      const parent = parentOf(title);
+      const above = parent === null || !held.has(parent) || stays(parent, seen + 1);
+      return isSlot(title) ? !cut.has(title) && above : parent !== null && held.has(parent) && stays(parent, seen + 1);
+    };
+    const calls = new Map<string, string[]>();
+    for (const title of undeclared) {
+      if (!stays(title)) continue;
+      if (!isSlot(title)) continue;
+      kept.push(title);
+      const parent = parentOf(title) ?? uri;
+      if (lands.includes(parent)) calls.set(parent, [...(calls.get(parent) ?? []), `<<~ kahea ahu slot=\`${String(held.get(title)!["$slot"])}\`>>`]);
+    }
+    stale = undeclared.filter((title) => !stays(title));
+    if (calls.size > 0) {
+      records = decision.records.map((fields) => {
+        const add = calls.get(String(fields.title));
+        if (!add) return fields;
+        const standing = typeof fields.text === "string" ? fields.text.replace(/\s+$/, "") : "";
+        return { ...fields, text: [standing, ...add].filter((part) => part !== "").join("\n\n") };
+      });
+    }
+  }
+  await input.vet?.(records);
   const landed: string[] = [];
-  for (const fields of decision.records) {
+  for (const fields of records) {
     await sink.land(fields);
     landed.push(fields.title as string);
   }
@@ -667,7 +723,26 @@ async function placeMemeNow(input: PlaceMemeInput, sink: MemeSink): Promise<Plac
   const fenced = decision.diagnostics.filter((d) => d.code === QUOTEBLOCKED_CODE);
   const warnings = fenced.map((d) => d.message);
   await sink.surface?.(uri, fenced.length === 0 ? null : { child: uri, codes: [QUOTEBLOCKED_CODE], why: warnings.join("; ") });
-  return { uri, decision: "ingest", grade, landed, tombstoned, canonicalHash: hash(decision.canonicalText), warnings, diagnostics: decision.diagnostics };
+  // A kept slot rides the render the records now carry, which the gate's candidate text never held: the base reads off the sink.
+  const canonicalHash = kept.length > 0 ? ((await readMeme(uri, sink, hash))?.canonicalHash ?? hash(decision.canonicalText)) : hash(decision.canonicalText);
+  return { uri, decision: "ingest", grade, landed, tombstoned, ...(input.keepAbsent ? { kept } : {}), canonicalHash, warnings, diagnostics: decision.diagnostics };
+}
+
+/** The code a write refuses under when a cut names something other than a standing slot the new text omits. */
+export const CUT_NOT_OMITTED_CODE = "cut-not-omitted";
+
+/** A text with the `kahea` calls of the named slots (rooted paths) gone, read under the fence mask: the text a cut leaves. */
+export function dropKaheaCalls(text: string, slots: ReadonlySet<string>): string {
+  if (slots.size === 0 || !text.includes("kahea")) return text;
+  const gone = maskedExecAll(text, KAHEA_REF_RE).filter((match) => slots.has(match[1]!));
+  let out = text;
+  // Last call first, so each earlier index still reads true; the words either side of a call rejoin on one blank line.
+  for (const match of gone.reverse()) {
+    const head = out.slice(0, match.index).replace(/\n+$/, "");
+    const tail = out.slice(match.index + match[0].length).replace(/^\n+/, "");
+    out = head !== "" && tail !== "" ? `${head}\n\n${tail}` : head + tail;
+  }
+  return out;
 }
 
 /**

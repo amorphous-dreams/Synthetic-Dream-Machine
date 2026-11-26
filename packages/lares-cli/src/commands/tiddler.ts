@@ -8,7 +8,8 @@
  *
  * A tiddler verb acts on ONE record with its fields, whatever its type: a plain note, a data tiddler, a meme's root or
  * one of its slots. A meme family reads as tiddlers: a text put on a root or a slot lands through the Confluence gate
- * inside the put (split, recompose, the block check), and a field or tag patch lands beside it. A delete reads the one family
+ * inside the put (split, recompose, the block check), and a field or tag patch lands beside it. ABSENCE NEVER DELETES: a
+ * slot the new text omits stays standing by reference (`kept`), and `--cut '#/slot'` names each slot that leaves. A delete reads the one family
  * law: a plain tiddler leaves; a meme root or slot answers the consequence the delete would land and refuses
  * (`tiddler-delete-in-a-family`) unless the line names the family act (`--family`), which lands it as one change.
  * A delete deletes plainly: the record leaves its layer and no tombstone rises. Only a lower layer makes it a choice: where
@@ -107,6 +108,9 @@ export function tiddlerPlan(sub: Sub, args: ParsedArgs): DoorPlan {
   if (tagsAdd) out["tagsAdd"] = tagsAdd;
   const tagsRemove = wordOf(args.options["tag-remove"]);
   if (tagsRemove) out["tagsRemove"] = tagsRemove;
+  // THE SLOTS THAT LEAVE, by name: absence never cuts, so a put names each slot it removes (`--cut '#/a'`, repeatable).
+  const cut = wordOf(args.options["cut"]);
+  if (cut) out["cut"] = cut;
   const base = wordOf(args.options["base"]);
   if (base) out["base"] = base;
   if (args.flags["create"] === true) out["create"] = true;
@@ -350,7 +354,7 @@ export async function cmdTiddler(args: ParsedArgs): Promise<number> {
     // A slot write names one text source: --append <file>, --text <words> or --file <path> (the slot's whole body).
     const sources = [args.options["append"], args.options["text"], args.options["file"]].filter((value) => value !== undefined);
     const ambiguous = sub === "put" && (familySub === "patch" ? sources.length !== 1 : args.options["text"] !== undefined && args.options["file"] !== undefined);
-    const incompatible = sub === "put" && [args.options["fields"], args.options["unset"], args.options["tag-add"], args.options["tag-remove"]].some((value) => value !== undefined)
+    const incompatible = sub === "put" && [args.options["fields"], args.options["unset"], args.options["tag-add"], args.options["tag-remove"], args.options["cut"]].some((value) => value !== undefined)
       || familySub === "patch" && args.flags["create"] === true
       || sub === "delete" && (args.flags["family"] === true || args.options["mode"] !== undefined);
     if (ambiguous || incompatible) {

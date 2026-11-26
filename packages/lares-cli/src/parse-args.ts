@@ -56,11 +56,11 @@ export const VALUE_OR_FLAG: ReadonlySet<string> = new Set(["check", "face", "gra
 export const VALUE_FLAGS: ReadonlySet<string> = new Set(["fields", "note", "reason", "text"]);
 
 /**
- * THE LIST FLAGS: names that carry one TiddlyWiki list (`--tag-add 'one [[two words]]'`). A repeat gathers: each later
+ * THE LIST FLAGS: names that carry one TiddlyWiki list (`--tag-add 'one [[two words]]'`, `--cut '#/a #/b'`). A repeat gathers: each later
  * value joins the earlier with a space, in the order written, so `--tag-add a --tag-add b` reads `a b` and no tag drops
  * without a word (every other valued name keeps its last spelling).
  */
-export const LIST_FLAGS: ReadonlySet<string> = new Set(["tag-add", "tag-remove"]);
+export const LIST_FLAGS: ReadonlySet<string> = new Set(["cut", "tag-add", "tag-remove"]);
 
 /** One valued option into the table: a list flag's repeat joins the list, every other name takes the latest value. */
 function setOption(options: Record<string, string>, key: string, value: string): void {

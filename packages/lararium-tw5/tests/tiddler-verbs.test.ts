@@ -821,18 +821,44 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(r.engine.wiki.getTiddlerText(`${MEME}#/a`)).toContain("a slot's new words");
     expect(slot["canonicalHash"]).toBe((await readMeme(MEME, sink))!.canonicalHash);
     expect(await coherent()).toContain("a slot's new words");
+    // ABSENCE NEVER DELETES: a root text that names no slot keeps the slot standing, folded behind its `kahea` call.
     const root = await put({ ...A, title: MEME, text: "bare" }, ctx());
-    expect(root).toMatchObject({ decision: "put", position: "root", tombstoned: expect.arrayContaining([`${MEME}#/a`]) });
-    expect(r.engine.wiki.tiddlerExists(`${MEME}#/a`)).toBe(false);
+    expect(root).toMatchObject({ decision: "put", position: "root", kept: [`${MEME}#/a`], tombstoned: [] });
+    expect(r.engine.wiki.getTiddlerText(`${MEME}#/a`)).toContain("a slot's new words");
+    expect(r.engine.wiki.getTiddlerText(MEME)).toContain("bare");
+    expect(r.engine.wiki.getTiddlerText(MEME)).toContain("<<~ kahea ahu slot=`#/a`>>");
     expect(r.engine.wiki.getTiddler(MEME)?.fields["status"]).toBe("ripe");
+    expect(root["canonicalHash"]).toBe((await readMeme(MEME, sink))!.canonicalHash);
+    const folded = await coherent();
+    expect(folded).toContain("bare");
+    expect(folded).toContain("a slot's new words");
+    // A FOLDED HAND-BACK keeps too: the root's own text, call and all, put back changed lands with nothing kept or cut.
+    const handBack = await put({ ...A, title: MEME, text: "bare, trued\n\n<<~ kahea ahu slot=`#/a`>>" }, ctx());
+    expect(handBack).toMatchObject({ decision: "put", kept: [], tombstoned: [] });
+    expect(r.engine.wiki.tiddlerExists(`${MEME}#/a`)).toBe(true);
+    // A SLOT LEAVES BY NAME ALONE: a cut that names no standing omitted slot refuses and moves nothing; the cut that names
+    // `#/a` takes its call out of the root's text and tombstones it.
+    await expect(put({ ...A, title: MEME, cut: ["#/nope"] }, ctx())).rejects.toMatchObject({ reason: "cut-not-omitted" });
+    await expect(put({ ...A, title: MEME, cut: ["a"] }, ctx())).rejects.toMatchObject({ reason: "cut-malformed" });
+    await expect(put({ ...A, title: "Note 05", cut: ["#/a"] }, ctx())).rejects.toMatchObject({ reason: "cut-not-omitted" });
+    expect(r.engine.wiki.tiddlerExists(`${MEME}#/a`)).toBe(true);
+    const cut = await put({ ...A, title: MEME, cut: ["#/a"] }, ctx());
+    expect(cut).toMatchObject({ decision: "put", position: "root", kept: [], tombstoned: expect.arrayContaining([`${MEME}#/a`]) });
+    expect(r.engine.wiki.tiddlerExists(`${MEME}#/a`)).toBe(false);
+    expect(r.engine.wiki.getTiddlerText(MEME)).not.toContain("kahea");
     const whole = await coherent();
-    expect(whole).toContain("bare");
+    expect(whole).toContain("bare, trued");
     expect(whole).not.toContain("a slot's new words");
     // A WHOLE CARRIER ON THE ROOT speaks for the family: the same put re-splits it; a stale carrier base answers conflict.
     expect(await put({ ...A, title: MEME, text: memeText(["a", "b"]), base: "sha256:" + "0".repeat(64) }, ctx())).toMatchObject({ decision: "conflict" });
-    expect(await put({ ...A, title: MEME, text: memeText(["a", "b"]), base: root["canonicalHash"] as string }, ctx())).toMatchObject({ decision: "put", landed: expect.arrayContaining([`${MEME}#/a`, `${MEME}#/b`]) });
+    expect(await put({ ...A, title: MEME, text: memeText(["a", "b"]), base: cut["canonicalHash"] as string }, ctx())).toMatchObject({ decision: "put", landed: expect.arrayContaining([`${MEME}#/a`, `${MEME}#/b`]) });
     expect(r.engine.wiki.getTiddlerText(`${MEME}#/b`)).toContain("body of b");
     await coherent();
+    // A whole carrier that omits a standing slot keeps it as well; the same carrier with the cut named drops it.
+    expect(await put({ ...A, title: MEME, text: memeText(["a"]) }, ctx())).toMatchObject({ decision: "put", kept: [`${MEME}#/b`], tombstoned: [] });
+    expect((await coherent())).toContain("body of b");
+    expect(await put({ ...A, title: MEME, text: memeText(["a"]), cut: ["#/b"] }, ctx())).toMatchObject({ decision: "put", kept: [], tombstoned: expect.arrayContaining([`${MEME}#/b`]) });
+    expect((await coherent())).not.toContain("body of b");
     await expect(put({ ...A, title: "$:/temp/lares/secret", text: "y" }, ctx())).rejects.toMatchObject({ reason: "tiddler-withheld" });
     await expect(put({ ...A, title: "lar:///ha.ka.ba/kahua/memory/Feedback/x", text: "y" }, ctx())).rejects.toMatchObject({ reason: "stage-path-shape" });
     expect(await put({ ...A, title: "lar:///ha.ka.ba/kahua/memory/feedback/x", text: "y" }, ctx())).toMatchObject({ decision: "put" });

@@ -1782,7 +1782,7 @@ def build_mcp(coordinator: LaresCoordinator):
                     text: "str | None" = None, unset: "list | None" = None, tags_add: "str | list | None" = None,
                     tags_remove: "str | list | None" = None, base: "str | None" = None, create: bool = False,
                     meme: bool = False, bag: "str | None" = None, slot: "str | None" = None,
-                    append: "str | None" = None) -> dict:
+                    append: "str | None" = None, cut: "list | None" = None) -> dict:
         """Patch a tiddler or meme in a wiki or bag.
         PATCH ONE TIDDLER — `meme=True` places a whole carrier from `text`, or writes `slot` through exactly one of `text` (the slot's whole body, against `base`) and `append` (a paragraph at its end, no `base`: an append overwrites nothing, and the family reseals whole); a bag or a recipe names the family seat. A family under `lar:///ha.ka.ba/kahua/memory/<class>/<slug>` follows `stage-path-shape`. House canon bags refuse `seat-canon-reach`; offer through `meme_offer` after a recipe copy-up. The receipt's `layer` names a personal placement where this face holds no writer's seat.
         Set fields, unset fields, add and remove tags, and move the text ONLY where `text` names
@@ -1804,8 +1804,11 @@ def build_mcp(coordinator: LaresCoordinator):
         A WRITE THAT NEVER LANDED RAISES: `conflict` (a stale `base`; the error names the live hash) and `exists`.
         A MEME FAMILY READS AS TIDDLERS: a root and each slot (`<root>#/<slot>`) takes a field or tag patch AND a text
         write here. A text write lands through the Confluence gate inside this put (the family re-splits and reseals; the
-        answer adds `canonicalHash`, `landed`, `tombstoned`, and a slot the new text no longer calls leaves); a root text
-        that frames a whole carrier speaks for the family; `base` takes the record's hash or the carrier's canonical hash.
+        answer adds `canonicalHash`, `landed`, `kept`, `tombstoned`); a root text that frames a whole carrier speaks for
+        the family; `base` takes the record's hash or the carrier's canonical hash. ABSENCE NEVER DELETES: a slot the new
+        text omits (a folded read handed back, a root text with no `kahea` call) stays standing by reference and the answer
+        names it under `kept`; a slot leaves only where `cut=["#/slot"]` names it (a cut that names no standing omitted
+        slot refuses `cut-not-omitted`), so hand back what you read, folded or whole, and name what you remove.
         THE FENCES, each refused by name: a family's `type` and `$` carriage fields derive from its text
         (`family-carriage-derives`); a new slot joins through its parent's text (`family-joins-by-text`); a text the gate
         cannot read as one carrier refuses `family-gate-refused`; a record carrying a `$:/tags/StartupAction`
@@ -1817,8 +1820,8 @@ def build_mcp(coordinator: LaresCoordinator):
         writes it: edit the source tiddlers). CONTAINER: `recipe` names the wiki (a bag names no wiki and takes no engine verb): `recipe="default"` names the worn face's daemon wiki, `recipe=<slug>` any wiki this face reaches (one it hosts or one shared to it), answered in that wiki's own engine; a wiki it reaches none of refuses `wiki-unreached`; a put lands in that wiki's working layer (this face's personal layer of it where
         it holds no writer's seat)."""
         if meme:
-            if any(value is not None for value in (fields, unset, tags_add, tags_remove)) or create:
-                raise SeatArgumentRefused("tiddler_put: family text takes no record field or tag patch")
+            if any(value is not None for value in (fields, unset, tags_add, tags_remove, cut)) or create:
+                raise SeatArgumentRefused("tiddler_put: family text takes no record field or tag patch, and no cut (a cut rides the plain put: drop meme=True)")
             if slot is not None or append is not None:
                 if not slot or (text is None) == (append is None) or (text is not None and not base):
                     raise SeatArgumentRefused("tiddler_put: a slot write names slot and exactly one of text (the slot's whole body, with base) or append (base optional)")
@@ -1855,6 +1858,10 @@ def build_mcp(coordinator: LaresCoordinator):
             args["tagsAdd"] = tags_add
         if tags_remove:
             args["tagsRemove"] = tags_remove
+        if cut:
+            if not isinstance(cut, list) or not all(isinstance(s, str) and s.startswith("#/") for s in cut):
+                raise SeatArgumentRefused("tiddler_put: `cut` lists the slots that leave, each a rooted path (\"#/name\")")
+            args["cut"] = cut
         if base is not None:
             args["base"] = base
         if create:
