@@ -20,7 +20,7 @@ import { EventEmitter } from "node:events";
 import { cpSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { withLarRoot } from "../../../../tests/harness/with-lar-root.js";
+import { holdLarRoot, withLarRoot } from "../../../../tests/harness/with-lar-root.js";
 import { direct } from "../direct-store.js";
 import { TEST_CUSTODY, TEST_SLOT } from "../found-route.js";
 import { runInit, runFoundTheFace, foundSeedCharter, openNodeVessel, seatFaceRoute, seatWardGatherer } from "../../dist/src/index.js";
@@ -50,12 +50,13 @@ async function stage(founded: boolean): Promise<Staged> {
 }
 
 async function compose(at: Staged, floor: boolean): Promise<NodeVesselResult> {
-  const vessel = await withLarRoot(at.root, () => openNodeVessel({
+  // The root holds for the vessel's whole life: islands spawn after `openNodeVessel` returns and copy the env at their spawn.
+  const { value: vessel, release } = await holdLarRoot(at.root, () => openNodeVessel({
     hostId: "session-sign-reach", wikiId: "lares", storageDir: at.storageDir, genesisDir: at.genesisDir, wss: new EventEmitter() as never,
     ...(floor ? { sovereign: null } : {}),
   }));
-  leaving.push(async () => { await withLarRoot(at.root, () => vessel.teardown()); });
-  await withLarRoot(at.root, () => vessel.daemon.workerEa);
+  leaving.push(async () => { try { await vessel.teardown(); } finally { release(); } });
+  await vessel.daemon.workerEa;
   return vessel;
 }
 

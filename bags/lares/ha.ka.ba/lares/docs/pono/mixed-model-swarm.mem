@@ -64,7 +64,7 @@ The crew lines that bind a running lane stand at <<~ loulou uri=`lar:///ha.ka.ba
 ** ''Podge'' carries Yin and Ka, the Eristic face: what moves. It reads what the work does under change (the race, the other caller, the epoch that rolls, the case left out, the control that never bites).
 ** ''Spin'' carries Ba. Each face reads alone first; then the pair trades: each takes the other's findings, confirms or refutes each against the source, and reads the other's ground for what its own face missed. Orthogonal findings both stand; tensioned ones get measured, never voted; a finding one face alone raised stays a lead.
 * ''Overwatch.'' The controller reads every crew's handback and every chunk's diff before it lands, and names each finding it would block on. Work that moves a fact between processes or threads (a writer and its readers, a composer and its islands, a verb and its route) takes the controller's own read of the crossing, since a module's own reads catch its contract and miss its crossings.
-* ''The fresh read and the train.'' A lane's handback takes a fresh reader's whole-lane read before the batch lands; a HOLD sends the findings back as the next launch, up to five launches, with the uncertainties talked out between them. The controller then lands ready lanes in batches (#/the-lanes).
+* ''The fresh read and the train.'' A lane's handback takes a fresh reader's whole-lane read before the lane lands; a HOLD sends the findings back as the next launch, up to five launches, with the uncertainties talked out between them. The familiar then lands each ready lane from the landing bench (#/the-lanes).
 
 <<~/ahu>>
 
@@ -181,8 +181,8 @@ A premium request counts per prompt, never per tool call.
 * ''A verdict reads three states'': green, red, and UNREADABLE (GitHub unreachable or a 5xx), which waits and never reads as red or green; `tools/ci-verdict.mjs --wait` carries that wait, and its `job-minutes` line gives the CI currency below. A tool that reads CI reads GitHub no closer than three minutes apart (`POLL_FLOOR_S`, 180 s, in `tools/ci-verdict.mjs`; operator law, 2026-11-05, after the API quota ran out); the pace decides only when a tool reads again, never a verdict.
 * ''A pick carries a lane commit by commit'': `node tools/lane-pick.mjs <base>..<lane>` cherry-picks the range onto the checkout's branch, takes the span's side on a generated artifact (naming the rebuild owed) and on an evergreen ceiling or exception conflict (naming the lane's intended counts), re-seals a seal-only meme conflict with `lares meme normalize`, skips an empty commit, and stops by name on any other conflict with the pick left open for a hand; its JSON receipt names each step.
 * ''A picked span pushes after its pins'': a canon-touching push still owes the pins (`node --test tools/rite-walk.test.mjs`, `bash tools/bcc-witness.sh`, `bash tools/evergreen-boundary-witness.sh`, which the bench gate's `carrier-pins` and `witnesses-fast` steps carry), and a red pin refuses the push by name.
-* ''The controller lands in batches'' (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/controller-handoff`>> #/state). A batch forms once two or more features read green; a lone green feature drains as a batch of one when no other lane has a feature nearing green, and a span-fault cure or shared ground other lanes build on lands at once. Each lane's merge lands through the bench above, one at a time; past those merges, one train reads every green lane merged over the span as it stands: the shared packages' suites, `tools/witness-all.sh`, evergreen and the tallies (a suite log with no "Test Files" line reads red; a dirty tree reads red); the floor's proofs carried each lane's own tests. The land writes one commit per lane, chained, each with the train's merge tree, so the span's last tree equals the train's tree. The span pushes only while no run flies on it. A lane on an older base lands when the span moved only by lands since (subjects carrying ` — merge PR #N`).
-* ''Road commits'' (road items, o-takiage moves, `#/state`) ride behind a batch, never between queued lands.
+* ''The familiar lands one lane at a time'' (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/controller-handoff`>> #/state), through the landing bench above: a lane lands once its floor proof reads green and its owed cold read stands filed; a span-fault cure or shared ground other lanes build on lands first. The floor's proofs carry each lane's own tests, and a suite log with no "Test Files" line reads red, a dirty tree red. The span pushes only while no run flies on it. A lane on an older base lands when the span moved only by lands since.
+* ''Road commits'' (road items, o-takiage moves, `#/state`) ride behind a landing, never between queued lands.
 * ''After each land'' the build cache caps at 15GB (`docker builder prune -f --max-used-space 15GB`); no image or system prune without the operator's word.
 * ''Job-minutes make the CI currency'': every CI change reports total job-minutes beside the critical path, and the fewest, fullest cells win while the critical path stays at or under the slowest e2e shard.
 
@@ -308,6 +308,6 @@ Ruled by the operator, 2026-11-05: "Does it apply to all tasked spirits... all l
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;lZkNMjCY-9iFYoB2iAYZvkfYws_8eaRK5c5VB-vxjig`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;y8yE9KRNamuQGyX7KgNLsZj4ohkaikm2bKlN5-jz19E`>>
 
 <<^ code=`&#x0004;` to=`?`>>

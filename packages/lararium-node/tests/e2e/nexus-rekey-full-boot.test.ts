@@ -10,7 +10,7 @@ import { leaseEpochPrefix } from "@lararium/mesh/epoch-lease";
 import { quorumLeaseEpochOnBoard } from "@lararium/mesh/quorum-lease";
 import { charterHandLineage } from "@lararium/mesh/charter-hand-lineage";
 import { nexusAidOf } from "@lararium/mesh/nexus-seal-seed";
-import { withLarRoot } from "../../../../tests/harness/with-lar-root.js";
+import { holdLarRoot, withLarRoot } from "../../../../tests/harness/with-lar-root.js";
 import { heldCharter } from "../../../lararium-mesh/tests/charter-fixture.js";
 import { direct } from "../direct-store.js";
 import { TEST_CUSTODY, TEST_SLOT } from "../found-route.js";
@@ -32,8 +32,9 @@ const storageDir = join(root, "hearth", "vessel");
 const source = join(import.meta.dirname, "..", "..", "..", "..", "genesis");
 cpSync(source, genesisDir, { recursive: true });
 let vessel: NodeVesselResult | null = null;
+let release = (): void => {};
 let call = 0;
-afterAll(async () => { if (vessel) await withLarRoot(root, () => vessel!.teardown()); rmSync(root, { recursive: true, force: true }); });
+afterAll(async () => { try { if (vessel) await vessel.teardown(); } finally { release(); } rmSync(root, { recursive: true, force: true }); });
 
 // The ask hands the island the ports the host's own ask hands it (`islandAsk`): the control store, where each outcome rests.
 const ask = async (resource: string) => {
@@ -52,8 +53,11 @@ describe("nexus-rekey on a booted vessel", () => {
     const foreignKeys = await Promise.all([91, 92].map((byte) => ed.getPublicKeyAsync(new Uint8Array(32).fill(byte)).then(hex)));
     const foreign = heldCharter({ keys: foreignKeys, threshold: 2 });
     await withLarRoot(root, async () => writeNexusDoc(carriedCharterHome(larSealHome(), foreign.aid), foreign.doc()));
-    vessel = await withLarRoot(root, () => openNodeVessel({ hostId: "rekey", wikiId: "rekey", storageDir, genesisDir,
+    // The root holds for the vessel's whole life: islands spawn after `openNodeVessel` returns and copy the env at their spawn.
+    const held = await holdLarRoot(root, () => openNodeVessel({ hostId: "rekey", wikiId: "rekey", storageDir, genesisDir,
       wss: new EventEmitter() as never }));
+    vessel = held.value;
+    release = held.release;
     // The vessel stands as the boot stands it (main.ts): the island's ea; the lease slots rest in the control document.
     await vessel.daemon.workerEa;
     await withLarRoot(root, () => vessel!.daemon.mountHostWorkingLayer());

@@ -85,7 +85,7 @@
  */
 
 import { writeFileSync, mkdirSync, unlinkSync, existsSync, readFileSync, readdirSync, rmdirSync } from "fs";
-import { dirname, basename, extname, relative as relativePath, resolve as resolvePath } from "path";
+import { dirname, isAbsolute, basename, extname, relative as relativePath, resolve as resolvePath } from "path";
 import { confineMirrorWrite, carrierBaseRelPath, titleRelPath } from "./bag-paths.js";
 import { KAPAE_EXT, kapaeShadowBody } from "./kapae-shadow.js";
 import { contentHash, syncedTreeKey, SyncedTree, type SyncedBase } from "./synced-tree.js";
@@ -811,15 +811,22 @@ export class LarDiskProjector {
   }
 
   /**
-   * The render this island's records hold for one carrier of a bag, folded as the projecting leg folds it (`flush`): the
-   * resolved view's carrier where the view shows it from this bag, else the bag's own record. Null where the bag holds no
-   * such record here, the carrier never reaches disk, or its body rides a pointer whose bytes the tier lacks.
+   * The render this island's records hold for one carrier of a bag, folded as the projecting leg folds it (`flush`) and
+   * chosen as `reconcileCarrier` chooses: the resolved view's carrier where the view shows it from this bag, else the bag's
+   * own record where it stands shadowed and still projects (`shadowedOwnRecords`: none under a top tombstone, none for a
+   * pack member). Null where reconcile projects no such record, the carrier never reaches disk, or its body rides a pointer
+   * whose bytes the tier lacks.
    */
   private async recordsRenderOf(bagId: string, uri: string): Promise<{ readonly file: CarrierFile; readonly hash: string } | null> {
     const mirror = this.mirrors.find((m) => m.bagId === bagId && m.mirrorClass !== "recovery");
     if (!mirror || await this.neverOnDisk(mirror, uri)) return null;
+    // A pack member lives inside its pack file and projects no file of its own.
+    if (this.isPackMember(uri)) return null;
     const fields = this._tw5?.$tw.wiki.getTiddler?.(uri)?.fields as Record<string, unknown> | undefined;
-    const file = fields?.["$origin-bag"] === bagId ? await this.carrierFileFn(uri) : await this.recordFileFn?.(bagId, uri) ?? null;
+    const origin = typeof fields?.["$origin-bag"] === "string" ? fields["$origin-bag"] : undefined;
+    const winner = origin !== undefined && this.mirrors.some((m) => m.bagId === origin && m.mirrorClass !== "recovery") ? origin : undefined;
+    if (winner !== bagId && !(await this.shadowedOwnRecords(uri, winner)).includes(bagId)) return null;
+    const file = winner === bagId ? await this.carrierFileFn(uri) : await this.recordFileFn?.(bagId, uri) ?? null;
     if (file === null) return null;
     const { bodyPending, output } = await this.renderedOutput(uri, file);
     return bodyPending ? null : { file, hash: carrierHash(output, file.metaBody) };
@@ -833,6 +840,7 @@ export class LarDiskProjector {
    * its own heads (`pin`), so the row waits on its seal like every pin of this tree.
    *
    *   unprojected  no ordinary mirror of this projector holds the bag: another island answers for it
+   *   outside-mirror  the file lies outside every ordinary mirror root of the bag: nothing pins
    *   unread       this island reads no file there (it left, or it rests where this island cannot read): nothing lands
    *   differs      the file and this island's records say different things, the bag holds no such record here, or the
    *                file answers to another document: no agreement stands, and the gate weighs the carrier as it stands
@@ -843,12 +851,21 @@ export class LarDiskProjector {
    * `from` names the vanished source of a rename the island confirmed: once the moved carrier's agreement stands, the
    * source gives up each base of those same bytes whose own file stands no more.
    */
-  async pinAgreement(bagId: string, uri: string, file: string, from?: string): Promise<"unprojected" | "unread" | "differs" | "waiting" | "kept" | "recorded"> {
+  async pinAgreement(bagId: string, uri: string, file: string, from?: string): Promise<"unprojected" | "outside-mirror" | "unread" | "differs" | "waiting" | "kept" | "recorded"> {
     if (!this.projects(bagId)) return "unprojected";
+    // A file outside every ordinary mirror of the bag stands beyond this island's reach: no pin lands there.
+    const within = this.mirrors.some((m) => {
+      if (m.bagId !== bagId || m.mirrorClass === "recovery") return false;
+      const rel = relativePath(resolvePath(m.mirrorRoot), resolvePath(file));
+      return rel !== "" && rel !== ".." && !rel.startsWith("../") && !rel.startsWith("..\\") && !isAbsolute(rel);
+    });
+    if (!within) return "outside-mirror";
     const render = await this.recordsRenderOf(bagId, uri);
+    // The sidecar reads only where the render carries one, as the projecting leg reads it: a stray `.meta` beside a carrier
+    // whose render holds no metaBody stays no part of the disk's state.
     const metaPath = file + ".meta";
     const isBinary = render?.file.encoding === "base64";
-    const onDisk = this.diskCarrierText(file, existsSync(metaPath) ? metaPath : null, isBinary);
+    const onDisk = this.diskCarrierText(file, render?.file.metaBody !== undefined && existsSync(metaPath) ? metaPath : null, isBinary);
     if (onDisk === null) return "unread";
     if (render === null) return "differs";
     const disk = carrierHash(onDisk.body, onDisk.meta);
