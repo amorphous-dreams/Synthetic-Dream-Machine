@@ -245,6 +245,7 @@ SEAT_INSTRUCTIONS = (
     "included. Operator and node hold the frame together. A human-in-the-loop act (`lares sense harden`, `retire`, "
     "`un-retire`, `purge`, `teardown`) runs on a person's hand at a real terminal alone and holds no tool here: name "
     "the command for the operator to run on their own terminal, since no value a seat fills approves it."
+    " Your three gestures: `tiddler_get` reads (`meme=True, grain=\"whole\"` unfolds a carrier, and every affordance a carrier names unfolds through that one read line); `tiddler_put` writes (`append=` with `create=True` adds a paragraph or a new record with no base); `wiki_filter` finds titles by TiddlyWiki filter."
     " `wiki(verb=\"switch\", slug=...)` switches live; `wiki(verb=\"keep\", slug=...)` keeps the wiki warm on the worn face's keep list and `wiki(verb=\"unkeep\", slug=...)` drops it; a full keep budget refuses by name and drops no keep. "
     " `wiki_status()` surveys catalog, activation and vessel residency; name `recipe` for layer write reach."
     " `shore()` lists what stands for a hand at the disk shore (each standoff with its key, each pending removal; `face=N` reads a lit sibling's shore) and `shore_flush()` asks the vessel to write every island's owed mirrors now; settling a row stays the operator's `lares shore` at a terminal, so name that command."
