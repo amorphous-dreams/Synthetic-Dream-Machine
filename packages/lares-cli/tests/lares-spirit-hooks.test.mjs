@@ -167,6 +167,19 @@ test("the pure parts", async (t) => {
   });
 });
 
+test("a read started with a budget hands it to its child as the ask budget; one started with none hands none", async () => {
+  const { spawnRead, ASK_BUDGET_ENV } = await import(resolve(sourceDir, "lares-wake-core.mjs"));
+  const held = process.env[ASK_BUDGET_ENV];
+  delete process.env[ASK_BUDGET_ENV];
+  try {
+    const echo = ["-e", `process.stdout.write(process.env.${ASK_BUDGET_ENV} ?? "none")`];
+    assert.equal((await spawnRead(process.execPath, echo, null, 3500).done).stdout, "3500");
+    // CONTROL: no budget, and a value that names none, leave the child's environment as it stands.
+    assert.equal((await spawnRead(process.execPath, echo).done).stdout, "none");
+    assert.equal((await spawnRead(process.execPath, echo, null, 0).done).stdout, "none");
+  } finally { if (held !== undefined) process.env[ASK_BUDGET_ENV] = held; }
+});
+
 test("the hooks, spawned whole", async (t) => {
   const root = mkdtempSync(join(tmpdir(), "spirit-hooks-"));
   const hooks = join(root, "packages/lares-cli/.claude-plugin/hooks");
@@ -209,6 +222,25 @@ test("the hooks, spawned whole", async (t) => {
   /** A hook input inside the house (the checkout), the harness's own shape. */
   const at = (fields) => JSON.stringify({ cwd: root, ...fields });
   try {
+    await t.test("each door read carries the budget its hook settles it under, as the door's own ask budget", () => {
+      reset();
+      // A shim that logs the ask budget beside each argv: the gate carries the observation's, the read the om's.
+      writeFileSync(shim, [
+        "#!/bin/sh",
+        `printf '%s budget=%s\\n' "$*" "\${LARES_ASK_BUDGET_MS:-none}" >> '${log}'`,
+        'case "$*" in',
+        `"vessel stand"*) printf '%s\\n' '${UP}' ;;`,
+        `"spirit om lares-alpha"*) printf '%s\\n' '${om("Lares spirit om · lares-alpha: the card", { pet: "lares-alpha" })}' ;;`,
+        "*) exit 2 ;;",
+        "esac",
+        "",
+      ].join("\n"), { mode: 0o755 });
+      spawn("lares-om-hook.mjs", ["lares-alpha"], at({ hook_event_name: "SessionStart", source: "startup", session_id: "s-budget", session_title: "lares-alpha" }));
+      assert.match(calls(), new RegExp(`^vessel stand --observe --json budget=${OBSERVE_BUDGET_MS}$`, "m"));
+      assert.match(calls(), new RegExp(`^spirit om lares-alpha .* budget=${OM_BUDGET_MS}$`, "m"));
+      assert.doesNotMatch(calls(), /budget=none/);
+    });
+
     await t.test("om: with the vessel up, the seated familiar wakes in one read beside the title; the counter keeps the pet, epoch, cadence and title", () => {
       reset();
       plant({ "vessel stand": UP, "spirit om lares-alpha": om("Lares spirit om · lares-alpha: the card", { pet: "lares-alpha", epoch: 4, every: 10, digests: { "#/open": "0123456789abcdef", "bad": "x" } }) });

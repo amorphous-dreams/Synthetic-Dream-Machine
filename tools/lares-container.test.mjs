@@ -1,7 +1,8 @@
 /**
  * The host shims (lares-container.sh / .ps1) against a fake `docker` that records argv. The fake answers the two
  * questions the shim asks of a vessel: whether one runs (FAKE_RUNNING_ID) and what standing verdict the CLI reads
- * (FAKE_OBSERVE_OUTPUT); FAKE_PS_RC, FAKE_EXEC_RC and FAKE_OBSERVE_RC make each of the three calls fail. Nothing here starts
+ * (FAKE_OBSERVE_OUTPUT: named in a followed verb's own exit code, and printed by `vessel stand --observe`); FAKE_PS_RC,
+ * FAKE_EXEC_RC and FAKE_OBSERVE_RC make each of the three fail, and FAKE_STANDING_RC scripts the verb's exit. Nothing here starts
  * a container: the live proof (found, up, vessel read, ingest, restart, both holder refusals) runs against the
  * real image. This pins the shim's own contract: the verb routing, the refusals by name, the read-only capture
  * binds, and that no argv ever carries the docker socket.
@@ -79,7 +80,7 @@ process.exit(code);
 `);
 }
 
-async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, checkout, wornFace, keepSeat, houseFiles = {}, viaHarnessShell = false, rawSeat = false, hostInput, input, refuseInput = false, hostName = "host.mem", hostSibling, fifo = false, hostCwd = false, origin = false, sync, readFiles = [] } = {}) {
+async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, checkout, wornFace, keepSeat, houseFiles = {}, viaHarnessShell = false, rawSeat = false, rawStanding = false, hostInput, input, refuseInput = false, hostName = "host.mem", hostSibling, fifo = false, hostCwd = false, origin = false, sync, readFiles = [] } = {}) {
   const dir = await mkdtemp(join(tmpdir(), "lares-container-"));
   try {
     const log = join(dir, "calls.log");
@@ -154,7 +155,13 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       `case " $* " in *" tiddler put "*" --file - "*|*" tiddler put "*" --file=- "*|*" tiddler put "*" --append - "*|*" tiddler put "*" --append=- "*|*" spirit "*" --file - "*) cat > "$CALL_LOG.stdin";; esac\n` +
       // A WEAR the vessel answers as a test scripts (its prose and its exit); unscripted, it answers as any exec does.
       `case " $* " in *" wear "*) if [ -n "\${FAKE_WEAR_OUT:-}" ]; then printf '%s\\n' "\${FAKE_WEAR_OUT}" >&2; exit "\${FAKE_WEAR_RC:-0}"; fi;; esac\n` +
-      `case " $* " in *" exec "*) exit "\${FAKE_EXEC_RC:-0}";; esac\n`);
+      // THE VERB'S OWN EXIT NAMES THE STANDING where the shim asked for it (`-e LARES_STANDING_REPORT`), as the CLI's does: a verb
+      // that fails keeps its code; one that succeeds leaves by FAKE_STANDING_RC where a test scripts it (0 = a CLI whose exit
+      // names no verdict), else by the verdict the vessel's standing reads (FAKE_OBSERVE_OUTPUT: 90 attach, 91 restand with
+      // its reason on stderr, 92 none).
+      `case " $* " in *" exec "*) rc="\${FAKE_EXEC_RC:-0}"; if [ "$rc" = 0 ]; then case " $* " in *" -e LARES_STANDING_REPORT "*) ` +
+      `if [ -n "\${FAKE_STANDING_RC:-}" ]; then rc=$FAKE_STANDING_RC; elif [ "\${FAKE_OBSERVE_RC:-0}" != 0 ]; then rc=92; else case "\${FAKE_OBSERVE_OUTPUT:-}" in ` +
+      `*'"standing":{"act":"restand"'*) rc=91; printf 'lares: the standing asks for a re-stand: %s\\n' "$(printf '%s' "$FAKE_OBSERVE_OUTPUT" | sed -n 's/.*"reason":"\\([^"]*\\)".*/\\1/p')" >&2;; *'"standing":{"act":"attach"'*) rc=90;; *) rc=92;; esac; fi;; esac; fi; exit "$rc";; esac\n`);
     await chmod(join(dir, "docker"), 0o755);
     // The host's own build answers through pnpm: the fake names each call and fails where a test asks it to.
     await writeFile(join(dir, "pnpm"), `#!/bin/sh\nprintf 'PNPM %s\\n' "$*" >> "$CALL_LOG"\nexit "\${FAKE_PNPM_RC:-0}"\n`);
@@ -249,6 +256,8 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
     let calls = ""; try { calls = await readFile(log, "utf8"); } catch {}
     let received = null; try { received = await readFile(`${log}.stdin`); } catch {}
     if (SUITE_SEAT && !rawSeat && filled.CLAUDECODE === undefined && !viaHarnessShell) calls = calls.replaceAll(" -e CLAUDECODE", "");
+    // The shim's ask for the standing verdict rides each followed verb's exec; a case reads it only where it asks for the raw calls.
+    if (!rawStanding) calls = calls.replaceAll(" -e LARES_STANDING_REPORT", "");
     let worn = null; try { worn = (await readFile(join(house, "config", "last-worn-face"), "utf8")).trim(); } catch {}
     let seat = null; let seatMode = null; try { seat = JSON.parse(await readFile(join(house, "config", "keep-seat.json"), "utf8")); seatMode = (await stat(join(house, "config", "keep-seat.json"))).mode & 0o777; } catch {}
     const made = {};
@@ -631,7 +640,11 @@ for (const [name, shim] of shims) {
     });
     assert.equal(r.status, 0, r.stderr);
     assert.match(r.calls, /restart lares[\s\S]*up -d --wait lares/);
-    assert.match(r.stderr, /lares-container: face lit; restarting the vessel/);
+    // The verb's own process says why (the CLI's line); the shim says what it does about it.
+    assert.match(r.stderr, /lares: the standing asks for a re-stand: face lit/);
+    assert.match(r.stderr, /lares-container: the standing requires a re-stand; restarting the vessel/);
+    // ONE CLI PER CALL: the verdict rode the verb's own exit, so no second CLI ran to read it.
+    assert.doesNotMatch(r.calls, /--observe/);
   });
 
   // A VESSEL STANDS HOLDING NO KEY. With no TTY the shim names the one command that opens it, after every act
@@ -790,6 +803,56 @@ for (const [name, shim] of shims) {
     assert.doesNotMatch(r.calls, /restart lares/);
   });
 
+  // ONE CLI PER CALL: the shim asks for the standing on the verb's own exec, by name, and reads the verdict off its exit.
+  test(`${name}: a verb on a standing vessel runs one CLI: its exec carries the standing ask, and no observe follows`, async () => {
+    const r = await run(shim, ["tiddler", "get", "lar:///x", "--recipe", "default"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" }, rawStanding: true });
+    assert.equal(r.status, 0, r.stderr);
+    const execs = r.calls.split("\n").filter((line) => / lares node \S+ tiddler get /.test(line));
+    assert.equal(execs.length, 1, r.calls);
+    assert.match(execs[0], /exec -e LARES_EXEC_TAG -e LARES_STANDING_REPORT (?:-e \S+ )*-T lares node \S+ tiddler get lar:\/\/\/x --recipe default$/);
+    // The ask rides by name: its value never enters an argv.
+    assert.doesNotMatch(r.calls, /LARES_STANDING_REPORT=/);
+    assert.doesNotMatch(r.calls, /--observe/);
+    assert.doesNotMatch(r.calls, /restart lares/);
+  });
+
+  test(`${name}: a verb whose exit names no verdict (92) exits non-zero and says so, with no second CLI`, async () => {
+    const r = await run(shim, ["persona", "new", "1", "--name", "probe"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_STANDING_RC: "92" } });
+    assert.equal(r.status, 1);
+    assert.match(r.stderr, /the standing check after it answered no verdict/);
+    assert.doesNotMatch(r.calls, /--observe/);
+    assert.doesNotMatch(r.calls, /restart lares/);
+  });
+
+  // THE SAFE ANSWER AS DEFAULT: a bare 0 names no verdict, so the shim never reads it as "no lift"; one reading follows.
+  test(`${name}: a verb that exits a bare 0 under the ask gets one reading after it, and a restand there still lifts`, async () => {
+    const r = await run(shim, ["persona", "new", "0", "--name", "ci-face"], {
+      env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_STANDING_RC: "0", FAKE_OBSERVE_OUTPUT: '{"data":{"standing":{"act":"restand","reason":"face lit"}}}' },
+    });
+    assert.equal(r.status, 0, r.stderr);
+    assert.equal((r.calls.match(/vessel stand --observe --json/g) ?? []).length, 1);
+    assert.match(r.calls, /vessel stand --observe --json[\s\S]*restart lares[\s\S]*up -d --wait lares/);
+    assert.match(r.stderr, /lares-container: face lit; restarting the vessel/);
+  });
+
+  test(`${name}: CONTROL a reading the shim takes for itself carries no standing ask`, async () => {
+    const read = await run(shim, ["vessel", "read"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" }, rawStanding: true });
+    assert.equal(read.status, 0, read.stderr);
+    assert.doesNotMatch(read.calls, /LARES_STANDING_REPORT/);
+    const observe = await run(shim, ["vessel", "stand", "--observe", "--json"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" }, rawStanding: true });
+    assert.equal(observe.status, 0, observe.stderr);
+    assert.doesNotMatch(observe.calls, /LARES_STANDING_REPORT/);
+  });
+
+  test(`${name}: a caller's ask budget rides to the vessel by name, and only where the caller declares one`, async () => {
+    const r = await run(shim, ["tiddler", "get", "lar:///x", "--recipe", "default"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", LARES_ASK_BUDGET_MS: "3500" } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.calls, /exec -e LARES_EXEC_TAG (?:-e \S+ )*-e LARES_ASK_BUDGET_MS (?:-e \S+ )*-T lares node \S+ tiddler get/);
+    assert.doesNotMatch(r.calls, /3500/);
+    const none = await run(shim, ["tiddler", "get", "lar:///x", "--recipe", "default"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
+    assert.doesNotMatch(none.calls, /LARES_ASK_BUDGET_MS/);
+  });
+
   test(`${name}: vessel stand with no service stands and waits healthy`, async () => {
     const r = await run(shim, ["vessel", "stand"], { env: MOUNTS });
     assert.equal(r.status, 0, r.stderr);
@@ -853,7 +916,8 @@ for (const [name, shim] of shims) {
   });
 
   test(`${name}: a standing check that fails after a verb landed exits non-zero and says so`, async () => {
-    const r = await run(shim, ["persona", "new", "1", "--name", "probe"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_RC: "1" } });
+    // The verb's exit named no verdict (a bare 0), so one reading follows it, and that reading fails.
+    const r = await run(shim, ["persona", "new", "1", "--name", "probe"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_STANDING_RC: "0", FAKE_OBSERVE_RC: "1" } });
     assert.equal(r.status, 1);
     assert.match(r.stderr, /the standing check after it answered no verdict/);
     assert.doesNotMatch(r.calls, /restart lares/);
@@ -861,9 +925,12 @@ for (const [name, shim] of shims) {
 
   test(`${name}: a standing check that exits zero and names no verdict never passes as "no lift"`, async () => {
     for (const answer of ["", "not json", '{"data":{}}', '{"data":{"standing":{"act":"dance"}}}']) {
-      const r = await run(shim, ["persona", "new", "1", "--name", "probe"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_OUTPUT: answer } });
-      assert.equal(r.status, 1, JSON.stringify(answer));
-      assert.match(r.stderr, /answered no verdict/);
+      // Both roads refuse alike: the verb's own exit (92 off the same unreadable standing), and the reading after a bare 0.
+      for (const road of [{}, { FAKE_STANDING_RC: "0" }]) {
+        const r = await run(shim, ["persona", "new", "1", "--name", "probe"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_OUTPUT: answer, ...road } });
+        assert.equal(r.status, 1, JSON.stringify(answer));
+        assert.match(r.stderr, /answered no verdict/);
+      }
     }
   });
 

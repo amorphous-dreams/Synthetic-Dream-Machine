@@ -117,3 +117,52 @@ describe("vessel stand and the host-held engine", () => {
     expect(spawn).toHaveBeenCalledOnce();
   });
 });
+
+describe("a verb's own exit carries the standing verdict to the host shim", () => {
+  const ASK = { LARES_STANDING_REPORT: "exit" };
+  const readers = (alive: boolean) => ({ alive: async () => alive, marker: () => "{}", faceOnDisk: () => true });
+
+  it("a verb that succeeded under the shim's ask names a restand verdict by its code, and says the reason", async () => {
+    const { standingExit, STANDING_EXIT } = await import("../src/standing-report.js");
+    const said: string[] = [];
+    expect(await standingExit(0, ASK, readers(true), (line) => { said.push(line); })).toBe(STANDING_EXIT.restand);
+    expect(said).toEqual(["lares: the standing asks for a re-stand: face lit after boot"]);
+  });
+
+  it("an attach verdict names its own code, so a bare 0 never passes for a reading", async () => {
+    verdict = { act: "attach", reason: "steady" };
+    const { standingExit, STANDING_EXIT } = await import("../src/standing-report.js");
+    const said: string[] = [];
+    expect(await standingExit(0, ASK, readers(true), (line) => { said.push(line); })).toBe(STANDING_EXIT.attach);
+    expect(said).toEqual([]);
+  });
+
+  it("the process's own readers read the marker and the face the stand command reads", async () => {
+    const { standingExit, STANDING_EXIT } = await import("../src/standing-report.js");
+    expect(await standingExit(0, ASK, undefined, () => {})).toBe(STANDING_EXIT.restand);
+  });
+
+  it("no vessel answering, or a reading that throws, names no verdict", async () => {
+    const { standingExit, STANDING_EXIT } = await import("../src/standing-report.js");
+    expect(await standingExit(0, ASK, readers(false))).toBe(STANDING_EXIT.unread);
+    expect(await standingExit(0, ASK, { ...readers(true), marker: () => { throw new Error("unreadable"); } })).toBe(STANDING_EXIT.unread);
+  });
+
+  it("the entry takes the ask out of the environment, so a child a verb spawns never answers it", async () => {
+    const { takeStandingAsk, standingExit, STANDING_EXIT } = await import("../src/standing-report.js");
+    const env: Record<string, string | undefined> = { LARES_STANDING_REPORT: "exit", NO_COLOR: "1" };
+    const asked = takeStandingAsk(env);
+    expect(env).toEqual({ NO_COLOR: "1" });
+    expect(await standingExit(0, asked, readers(true), () => {})).toBe(STANDING_EXIT.restand);
+    // CONTROL: an environment that carries no ask answers none.
+    expect(await standingExit(0, takeStandingAsk({}), readers(true))).toBe(0);
+  });
+
+  it("CONTROL: a verb that failed keeps its own code, and no ask leaves every code as it stands", async () => {
+    const { standingExit } = await import("../src/standing-report.js");
+    const never = { alive: async () => { throw new Error("no reading runs"); }, marker: () => null, faceOnDisk: () => false };
+    expect(await standingExit(7, ASK, never)).toBe(7);
+    expect(await standingExit(0, {}, never)).toBe(0);
+    expect(await standingExit(0, { LARES_STANDING_REPORT: "1" }, never)).toBe(0);
+  });
+});

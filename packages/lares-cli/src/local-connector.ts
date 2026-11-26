@@ -477,3 +477,46 @@ export async function invokeLocal(
     });
   });
 }
+
+/** The environment name a caller declares its own wait by, in whole milliseconds counted from this process's start. */
+export const ASK_BUDGET_ENV = "LARES_ASK_BUDGET_MS";
+/** The code a process leaves by when its caller's budget ran out: the `outcome-unknown` family's own (`render.ts`). */
+export const ASK_BUDGET_EXIT = 6;
+
+/** The budget the environment declares, or null where it names none (absent, or anything but a positive whole number). */
+export function askBudgetMs(env: Readonly<Record<string, string | undefined>> = process.env): number | null {
+  const raw = env[ASK_BUDGET_ENV];
+  return raw !== undefined && /^[1-9]\d{0,8}$/.test(raw) ? Number(raw) : null;
+}
+
+/**
+ * A CALLER GONE LEAVES NO ASK WAITING. A caller that waits a bounded while (a hook under its harness's bound) declares
+ * that budget (`LARES_ASK_BUDGET_MS`), and this process leaves when it runs out: every socket it holds closes with it, so
+ * the vessel reads the hang-up the moment it reaches the line and never runs an ask nobody waits on (a read drops with
+ * no work; an act not yet admitted rests `abandoned`). The caller's own signal may arrive late or never (a host shim
+ * relays it through a second exec, and a kill of the shim strands the relay); the budget needs no relay.
+ *
+ * THE BUDGET BOUNDS THIS PROCESS'S OWN WAIT AND DECIDES NOTHING ELSE. It counts on this process's monotonic clock from
+ * its own start (`performance.now()`), never a wall clock, and no reading of it crosses the socket: the vessel learns
+ * only that its caller left. An act the vessel already admitted lands all the same, and its receipt reads it back.
+ *
+ * Answers the disarm (the verb finished first), or null where the environment declares no budget.
+ */
+export function armAskBudget(
+  env: Readonly<Record<string, string | undefined>> = process.env,
+  deps: { readonly sinceStartMs?: () => number; readonly leave?: (code: number) => void; readonly say?: (line: string) => void } = {},
+): (() => void) | null {
+  const budgetMs = askBudgetMs(env);
+  if (budgetMs === null) return null;
+  const sinceStartMs = deps.sinceStartMs ?? (() => performance.now());
+  const leave = deps.leave ?? ((code: number) => { process.exit(code); });
+  const say = deps.say ?? ((line: string) => { console.error(line); });
+  // LIVENESS: this process's own wait, on its caller's word; the verb's answer disarms it.
+  const timer = setTimeout(() => {
+    say(`lares: the caller's budget (${ASK_BUDGET_ENV}=${budgetMs} ms) ran out before the vessel answered, so this process leaves and its ask closes with it: a read the vessel had not reached never runs. Read again with a longer budget or none; an act already admitted lands all the same (\`lares vessel request <id>\` reads it).`);
+    leave(ASK_BUDGET_EXIT);
+  }, Math.max(0, budgetMs - sinceStartMs()));
+  // The budget never holds a finished process open.
+  timer.unref();
+  return () => { clearTimeout(timer); };
+}

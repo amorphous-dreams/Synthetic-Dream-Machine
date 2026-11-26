@@ -60,10 +60,13 @@ export const spiritArgv = (verb, pet, ...rest) => ["spirit", verb, pet, ...rest,
 /** The checkout this hook stands in (its `tools/lares-container.sh` reaches the vessel). */
 export const checkoutOf = (hookUrl) => join(dirname(fileURLToPath(hookUrl)), "..", "..", "..", "..");
 
-/** The hooks' runner: `observe` and every door verb ride the checkout's shim; `input` rides the shim's stdin whole. */
+/**
+ * The hooks' runner: `observe` and every door verb ride the checkout's shim; `input` rides the shim's stdin whole, and
+ * `budgetMs` (the budget its caller settles the read under) rides as the door's own ask budget (`spawnRead`).
+ */
 export function shimRun(hookUrl) {
   const shim = join(checkoutOf(hookUrl), "tools", "lares-container.sh");
-  return (argv, input = null) => spawnRead(shim, argv, input);
+  return (argv, input = null, budgetMs = null) => spawnRead(shim, argv, input, budgetMs);
 }
 
 /** The JSON answer a door printed: the whole output, else its last line that opens an object; null where none parses. */
@@ -97,7 +100,7 @@ export async function settle(read, budgetMs) {
  */
 export async function vesselReading(run, asks = 2) {
   for (let ask = 0; ask < asks; ask += 1) {
-    const seen = await settle(run(observeArgv()), OBSERVE_BUDGET_MS);
+    const seen = await settle(run(observeArgv(), null, OBSERVE_BUDGET_MS), OBSERVE_BUDGET_MS);
     const read = seen === null ? { up: false, owed: true } : observation(seen);
     if (read.up) return "up";
     if (!read.owed) return "down";

@@ -499,6 +499,27 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
     } finally { await v.teardown(); }
   });
 
+  test("each fact a door call records flushes the control document alone, never the whole Repo", async () => {
+    const counter = { n: 0 };
+    const v = await Vessel.boot({ placeVerbImpl: doneWorker(counter) });
+    try {
+      const named: unknown[] = [];
+      const realFlush = v.repo.flush.bind(v.repo);
+      v.repo.flush = ((...a: Parameters<Repo["flush"]>) => { named.push(a[0]); return realFlush(...a); }) as Repo["flush"];
+
+      const answer = await sendLine(v.socketPath, { verb: "nexus-kapae", args: {}, requestedBy: "did:key:test", requestId: "req-flush-names-control" });
+      expect(answer["status"]).toBe("done");
+      // The `committed` fact flushed before dispatch; the `done` fact flushes once the outcome's observation takes its turn.
+      for (let i = 0; i < 200 && named.length < 2; i++) await new Promise((r) => setTimeout(r, 10));
+      expect(named.length).toBeGreaterThanOrEqual(2);
+      // A flush that names no document walks every document the Repo holds: none of the ledger's does.
+      for (const documents of named) expect(documents).toEqual([v.workingHandle.documentId]);
+      // The fact still rests where a restart reads it.
+      await v.restart();
+      expect((await sendLine(v.socketPath, { op: "receipt", requestId: "req-flush-names-control" }))["state"]).toBe("done");
+    } finally { await v.teardown(); }
+  });
+
   test("the seed settle flushes the repo when it settled a fact, and not when it settled none", async () => {
     const counter = { n: 0 };
     const v = await Vessel.boot({ placeVerbImpl: () => { counter.n++; } });
