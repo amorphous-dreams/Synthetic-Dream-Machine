@@ -7,7 +7,9 @@ import { mkdirSync, mkdtempSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { ancestry, flocksOf, floorHeld, floorRefusal, requireFloor, FLOOR_EXIT } from './floor-lock.mjs';
+import { ancestry, flocksOf, floorHeld, floorRefusal, heldSlot, slotStatus, statusText, requireFloor, FLOOR_EXIT } from './floor-lock.mjs';
+import { spawn } from 'node:child_process';
+import { existsSync, symlinkSync } from 'node:fs';
 
 const TOOLS = fileURLToPath(new URL('.', import.meta.url));
 const BATTERY = join(TOOLS, 'battery.sh');
@@ -133,4 +135,76 @@ test('RED: a nested take under floor-run never waits on itself: floor-run -> bat
   const wall = spawnSync(process.execPath, [RUN, '--', process.execPath, join(TOOLS, 'provision-worktree.mjs'), '--existing', join(dir(), 'nowhere')], { encoding: 'utf8', env, timeout: 60_000 });
   assert.notEqual(wall.status, 64, wall.stderr);
   assert.doesNotMatch(wall.stderr, /floor: refused/);
+});
+
+// TWO SLOTS (operator, 2026-11-25). RED-FIRST: written by floor-wright#1, run by the familiar.
+const until = async (path, turns = 4000) => { for (let i = 0; i < turns && !existsSync(path); i++) await new Promise((r) => setTimeout(r, 5)); if (!existsSync(path)) throw new Error(`no handshake at ${path}`); };
+const exited = (child) => new Promise((res) => child.on('exit', (code) => res(code)));
+const slotShape = (d, slot2Held) => {
+  mkdirSync(d, { recursive: true });
+  const l1 = join(d, 'l1'), l2 = join(d, 'l2'); writeFileSync(l1, ''); writeFileSync(l2, '');
+  const proc = fakeProc(join(d, 'p'), { 30: 20, 20: 10, 10: 1, 1: 0 }, '');
+  mkdirSync(join(proc, '20', 'fd'), { recursive: true }); mkdirSync(join(proc, '20', 'fdinfo'), { recursive: true });
+  symlinkSync(slot2Held ? l2 : l1, join(proc, '20', 'fd', '9'));
+  writeFileSync(join(proc, '20', 'fdinfo', '9'), `pos:\t0\nlock:\t1: FLOCK  ADVISORY  WRITE 4444 08:20:1 0 EOF\n`);
+  writeFileSync(join(proc, '20', 'cmdline'), 'bash\0battery.sh\0pnpm\0test');
+  return { locks: [l1, l2], proc };
+};
+
+test('RED: heldSlot names the slot an ancestor holds by open file: slot 2 reads 2, slot 1 reads 1, a stranger reads 0', () => {
+  const d = dir();
+  const two = slotShape(join(d, 'a'), true);
+  assert.equal(heldSlot({ locks: two.locks, pid: 30, proc: two.proc }), 2);
+  const one = slotShape(join(d, 'b'), false);
+  assert.equal(heldSlot({ locks: one.locks, pid: 30, proc: one.proc }), 1);
+  assert.equal(heldSlot({ locks: one.locks, pid: 99, proc: one.proc }), 0);
+});
+
+test('RED: slotStatus names which slot each run holds (pid and command) and reads the other free', () => {
+  const d = dir();
+  const { locks, proc } = slotShape(d, true);
+  const rows = slotStatus({ locks, proc });
+  assert.equal(rows[0].holder, null);
+  assert.equal(rows[1].holder.pid, 20);
+  assert.equal(statusText(rows), 'slot 1 free\nslot 2 held by pid 20 (bash battery.sh pnpm test)');
+});
+
+test('RED: two real batteries hold slot 1 and slot 2 at once; each reads its own slot, and --status names both', async () => {
+  const d = dir(); const lock = join(d, '.battery.lock');
+  const env = { ...process.env, LARES_BATTERY_LOCK: lock };
+  const inA = join(d, 'a'), inB = join(d, 'b'), rel = join(d, 'rel');
+  const hold = (mark) => `touch ${mark}; node ${join(TOOLS, 'floor-lock.mjs')} --slot > ${mark}.tmp && mv ${mark}.tmp ${mark}.slot; while [ ! -e ${rel} ]; do :; done`;
+  const a = spawn('bash', [BATTERY, 'bash', '-c', hold(inA)], { env, stdio: 'ignore', detached: true });
+  const b = spawn('bash', [BATTERY, 'bash', '-c', hold(inB)], { env, stdio: 'ignore', detached: true });
+  try {
+  await until(inA);
+  await until(inB);
+  await until(`${inA}.slot`); await until(`${inB}.slot`);
+  const { readFileSync } = await import('node:fs');
+  const slots = [readFileSync(`${inA}.slot`, 'utf8').trim(), readFileSync(`${inB}.slot`, 'utf8').trim()];
+  assert.deepEqual([...slots].sort(), ['1', '2'], 'two runs, two slots, each reading its own (the take order races)');
+  const status = spawnSync(process.execPath, [join(TOOLS, 'floor-lock.mjs'), '--status'], { encoding: 'utf8', env }).stdout;
+  assert.match(status, /^slot 1 held by pid \d+/m);
+  assert.match(status, /^slot 2 held by pid \d+/m);
+  writeFileSync(rel, '');
+  assert.equal(await exited(a), 0); assert.equal(await exited(b), 0);
+  } finally { writeFileSync(rel, ''); for (const c of [a, b]) { try { process.kill(-c.pid, 'SIGKILL'); } catch { /* gone */ } } }
+});
+
+test('RED: a nested take inside slot 2 runs at once, never waiting on itself, with slot 1 held by another run', async () => {
+  const d = dir(); const lock = join(d, '.battery.lock');
+  const env = { ...process.env, LARES_BATTERY_LOCK: lock };
+  const inA = join(d, 'a'), rel = join(d, 'rel');
+  const a = spawn('bash', [BATTERY, 'bash', '-c', `touch ${inA}; while [ ! -e ${rel} ]; do :; done`], { env, stdio: 'ignore', detached: true });
+  try {
+  await until(inA);
+  // This battery takes slot 2; the nested battery inside it reads slot 2 held by its ancestor and runs at once.
+  const r = spawnSync('bash', [BATTERY, 'bash', BATTERY, 'node', join(TOOLS, 'floor-lock.mjs'), '--slot'], { encoding: 'utf8', env, timeout: 60_000 });
+  assert.equal(r.status, 0, r.stderr);
+  assert.equal(r.stdout.trim(), '2');
+  assert.match(r.stderr, /already stands held/);
+  assert.match(r.stderr, /holding the box, slot 2/);
+  writeFileSync(rel, '');
+  assert.equal(await exited(a), 0);
+  } finally { writeFileSync(rel, ''); try { process.kill(-a.pid, 'SIGKILL'); } catch { /* gone */ } }
 });

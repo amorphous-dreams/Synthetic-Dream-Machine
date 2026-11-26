@@ -34,25 +34,42 @@ test("an unopenable lock exits 64 and never runs the command", () => {
   assert.ok(!existsSync(marker), "the command ran unlocked");
 });
 
-test("two runs under two different HOMEs serialize on the one lock: the second starts after the first exits (handshake files, no sleep)", async () => {
+test("TWO SLOTS: two runs under two different HOMEs hold two slots at once; a third waits until one exits (handshake files, no sleep)", async () => {
   const d = dir();
   const lock = join(d, "lock");
-  const homeA = join(d, "homeA"), homeB = join(d, "homeB");
-  mkdirSync(homeA); mkdirSync(homeB);
-  const inA = join(d, "a-holding"), release = join(d, "a-release"), bStarted = join(d, "b-started"), aDone = join(d, "a-done");
-  // First: holds the box until the test releases it.
-  const first = spawn("bash", [BATTERY, "bash", "-c", `touch ${inA}; while [ ! -e ${release} ]; do :; done; touch ${aDone}`], { env: { ...process.env, HOME: homeA, LARES_BATTERY_LOCK: lock }, stdio: "ignore" });
+  const homes = ["homeA", "homeB", "homeC"].map((n) => { const h = join(d, n); mkdirSync(h); return h; });
+  const inA = join(d, "a-holding"), inB = join(d, "b-holding"), releaseA = join(d, "a-release"), releaseB = join(d, "b-release"), cStarted = join(d, "c-started"), aDone = join(d, "a-done");
+  const holder = (inFile, release, done) => `touch ${inFile}; while [ ! -e ${release} ]; do :; done; ${done ? `touch ${done}` : "true"}`;
+  const env = (home) => ({ ...process.env, HOME: home, LARES_BATTERY_LOCK: lock });
+  const kids = [];
+  const fly = (...a) => { const c = spawn(...a, { detached: true }); kids.push(c); return c; };
+  try {
+  const first = fly("bash", [BATTERY, "bash", "-c", holder(inA, releaseA, aDone)], { env: env(homes[0]), stdio: "ignore" });
   await until(inA);
-  // Second: its command may only run once the first has exited, so it records whether a-done stood when it began.
-  const second = spawn("bash", [BATTERY, "bash", "-c", `[ -e ${aDone} ] && touch ${bStarted}`], { env: { ...process.env, HOME: homeB, LARES_BATTERY_LOCK: lock }, stdio: "ignore" });
-  // While the first holds the box the second is queued: let the event loop turn many times, and it still has not started.
+  // The second flies beside the first: two heavy runs at once.
+  const second = fly("bash", [BATTERY, "bash", "-c", holder(inB, releaseB)], { env: env(homes[1]), stdio: "ignore" });
+  await until(inB);
+  // The third queues: its command may only run once a slot frees, so it records whether a-done stood when it began.
+  const third = fly("bash", [BATTERY, "bash", "-c", `[ -e ${aDone} ] && touch ${cStarted}`], { env: env(homes[2]), stdio: "ignore" });
   for (let i = 0; i < 200; i++) await new Promise((r) => setImmediate(r));
-  assert.ok(!existsSync(bStarted));
-  assert.equal(second.exitCode, null, "the second exited while the first held the lock");
-  writeFileSync(release, "");
+  assert.ok(!existsSync(cStarted));
+  assert.equal(third.exitCode, null, "the third exited while both slots stood held");
+  writeFileSync(releaseA, "");
   assert.equal(await exited(first), 0);
-  assert.equal(await exited(second), 0, "the second ran only after the first finished");
-  assert.ok(existsSync(bStarted));
+  assert.equal(await exited(third), 0, "the third ran only after a slot freed");
+  assert.ok(existsSync(cStarted));
+  writeFileSync(releaseB, "");
+  assert.equal(await exited(second), 0);
+  } finally { writeFileSync(releaseA, ""); writeFileSync(releaseB, ""); for (const c of kids) { try { process.kill(-c.pid, "SIGKILL"); } catch { /* gone */ } } }
+});
+
+test("--lock-paths names both slots: slot 1 the lock, slot 2 beside it with -2 before the .lock suffix", () => {
+  const d = dir();
+  const paths = (lock) => spawnSync("bash", [BATTERY, "--lock-paths"], { encoding: "utf8", env: { ...process.env, LARES_BATTERY_LOCK: lock } }).stdout.trim().split("\n");
+  assert.deepEqual(paths(join(d, ".battery.lock")), [join(d, ".battery.lock"), join(d, ".battery-2.lock")]);
+  assert.deepEqual(paths(join(d, "plain")), [join(d, "plain"), join(d, "plain-2")]);
+  const r = spawnSync("bash", [BATTERY, "--lock-paths"], { encoding: "utf8", env: { ...process.env, LARES_BATTERY_LOCK: "" } });
+  assert.deepEqual(r.stdout.trim().split("\n"), [join(userInfo().homedir, ".lares-scratch", ".battery.lock"), join(userInfo().homedir, ".lares-scratch", ".battery-2.lock")]);
 });
 
 test("--lock-path names the lock: LARES_BATTERY_LOCK wins; otherwise the PASSWD home's .lares-scratch, never $HOME", () => {
