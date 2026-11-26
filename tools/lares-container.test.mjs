@@ -1,8 +1,9 @@
 /**
  * The host shims (lares-container.sh / .ps1) against a fake `docker` that records argv. The fake answers the two
  * questions the shim asks of a vessel: whether one runs (FAKE_RUNNING_ID) and what standing verdict the CLI reads
- * (FAKE_OBSERVE_OUTPUT: named in a followed verb's own exit code, and printed by `vessel stand --observe`); FAKE_PS_RC,
- * FAKE_EXEC_RC and FAKE_OBSERVE_RC make each of the three fail, and FAKE_STANDING_RC scripts the verb's exit. Nothing here starts
+ * (FAKE_OBSERVE_OUTPUT: named in a followed verb's own report, and printed by `vessel stand --observe`); FAKE_PS_RC,
+ * FAKE_EXEC_RC and FAKE_OBSERVE_RC make each of the three fail, FAKE_STANDING_REPORT scripts the report's line, and FAKE_OLD_IMAGE
+ * plays an image older than the report (it writes none). Nothing here starts
  * a container: the live proof (found, up, vessel read, ingest, restart, both holder refusals) runs against the
  * real image. This pins the shim's own contract: the verb routing, the refusals by name, the read-only capture
  * binds, and that no argv ever carries the docker socket.
@@ -80,7 +81,7 @@ process.exit(code);
 `);
 }
 
-async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, checkout, wornFace, keepSeat, houseFiles = {}, viaHarnessShell = false, rawSeat = false, rawStanding = false, hostInput, input, refuseInput = false, hostName = "host.mem", hostSibling, fifo = false, hostCwd = false, origin = false, sync, readFiles = [] } = {}) {
+async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, checkout, wornFace, keepSeat, houseFiles = {}, viaHarnessShell = false, rawSeat = false, hostInput, input, refuseInput = false, hostName = "host.mem", hostSibling, fifo = false, hostCwd = false, origin = false, sync, readFiles = [] } = {}) {
   const dir = await mkdtemp(join(tmpdir(), "lares-container-"));
   try {
     const log = join(dir, "calls.log");
@@ -172,13 +173,17 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       `case " $* " in *" tiddler put "*" --file - "*|*" tiddler put "*" --file=- "*|*" tiddler put "*" --append - "*|*" tiddler put "*" --append=- "*|*" spirit "*" --file - "*) cat > "$CALL_LOG.stdin";; esac\n` +
       // A WEAR the vessel answers as a test scripts (its prose and its exit); unscripted, it answers as any exec does.
       `case " $* " in *" wear "*) if [ -n "\${FAKE_WEAR_OUT:-}" ]; then printf '%s\\n' "\${FAKE_WEAR_OUT}" >&2; exit "\${FAKE_WEAR_RC:-0}"; fi;; esac\n` +
-      // THE VERB'S OWN EXIT NAMES THE STANDING where the shim asked for it (`--standing-report`, the exec's last word), as the CLI's does: a verb
-      // that fails keeps its code; one that succeeds leaves by FAKE_STANDING_RC where a test scripts it (0 = a CLI whose exit
-      // names no verdict), else by the verdict the vessel's standing reads (FAKE_OBSERVE_OUTPUT: 90 attach, 91 restand with
-      // its reason on stderr, 92 none).
-      `case " $* " in *" exec "*) rc="\${FAKE_EXEC_RC:-0}"; if [ "$rc" = 0 ]; then case " $* " in *" --standing-report "*) ` +
-      `if [ -n "\${FAKE_STANDING_RC:-}" ]; then rc=$FAKE_STANDING_RC; elif [ "\${FAKE_OBSERVE_RC:-0}" != 0 ]; then rc=92; else case "\${FAKE_OBSERVE_OUTPUT:-}" in ` +
-      `*'"standing":{"act":"restand"'*) rc=91; printf 'lares: the standing asks for a re-stand: %s\\n' "$(printf '%s' "$FAKE_OBSERVE_OUTPUT" | sed -n 's/.*"reason":"\\([^"]*\\)".*/\\1/p')" >&2;; *'"standing":{"act":"attach"'*) rc=90;; *) rc=92;; esac; fi;; esac; fi; exit "$rc";; esac\n`);
+      // THE VERB'S OWN PROCESS REPORTS THE STANDING, asked by nothing (`standing-report.ts`): a tagged exec (`-e LARES_EXEC_TAG`) whose
+      // verb succeeded writes one line to the house's config bind, config/standing-report.<tag>, as the image's CLI does; the exit
+      // stays the verb's own. The line reads FAKE_STANDING_REPORT where a test scripts it, else the verdict the vessel's standing
+      // reads (FAKE_OBSERVE_OUTPUT: attach, restand <reason>, unread where none reads or the reading fails). FAKE_OLD_IMAGE plays an
+      // image older than the report: it writes none. Each report written logs `REPORT <line>`.
+      `case " $* " in *" exec -e LARES_EXEC_TAG "*) rc="\${FAKE_EXEC_RC:-0}"; if [ "$rc" = 0 ] && [ -z "\${FAKE_OLD_IMAGE:-}" ] && [ -n "\${LARES_EXEC_TAG:-}" ]; then ` +
+      `house="\${LARES_HOUSE:-}"; if [ -z "$house" ]; then ef=''; prev=''; for a in "$@"; do [ "$prev" = --env-file ] && ef=$a; prev=$a; done; [ -f "$ef" ] && house=$(sed -n 's/^[[:space:]]*LARES_HOUSE=//p' "$ef" | tail -n 1); fi; ` +
+      `if [ -n "\${FAKE_STANDING_REPORT:-}" ]; then line=$FAKE_STANDING_REPORT; elif [ "\${FAKE_OBSERVE_RC:-0}" != 0 ]; then line=unread; else case "\${FAKE_OBSERVE_OUTPUT:-}" in ` +
+      `*'"standing":{"act":"restand"'*) line="restand $(printf '%s' "$FAKE_OBSERVE_OUTPUT" | sed -n 's/.*"reason":"\\([^"]*\\)".*/\\1/p')";; *'"standing":{"act":"attach"'*) line=attach;; *) line=unread;; esac; fi; ` +
+      `if [ -n "$house" ]; then mkdir -p "$house/config" && printf '%s\\n' "$line" > "$house/config/standing-report.$LARES_EXEC_TAG" && printf 'REPORT %s\\n' "$line" >> "$CALL_LOG"; fi; fi; exit "$rc";; esac\n` +
+      `case " $* " in *" exec "*) exit "\${FAKE_EXEC_RC:-0}";; esac\n`);
     await chmod(join(dir, "docker"), 0o755);
     // The host's own build answers through pnpm: the fake names each call and fails where a test asks it to.
     await writeFile(join(dir, "pnpm"), `#!/bin/sh\nprintf 'PNPM %s\\n' "$*" >> "$CALL_LOG"\nexit "\${FAKE_PNPM_RC:-0}"\n`);
@@ -273,8 +278,6 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
     let calls = ""; try { calls = await readFile(log, "utf8"); } catch {}
     let received = null; try { received = await readFile(`${log}.stdin`); } catch {}
     if (SUITE_SEAT && !rawSeat && filled.CLAUDECODE === undefined && !viaHarnessShell) calls = calls.replaceAll(" -e CLAUDECODE", "");
-    // The shim's ask for the standing verdict rides each followed verb's exec; a case reads it only where it asks for the raw calls.
-    if (!rawStanding) calls = calls.replaceAll(" --standing-report", "");
     let worn = null; try { worn = (await readFile(join(house, "config", "last-worn-face"), "utf8")).trim(); } catch {}
     let seat = null; let seatMode = null; try { seat = JSON.parse(await readFile(join(house, "config", "keep-seat.json"), "utf8")); seatMode = (await stat(join(house, "config", "keep-seat.json"))).mode & 0o777; } catch {}
     const made = {};
@@ -283,7 +286,9 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
     let vesselLog = null; try { vesselLog = await readFile(join(house, "run", "vessel-last.log"), "utf8"); } catch {}
     const read = {}; for (const rel of readFiles) { try { read[rel] = await readFile(join(house, rel), "utf8"); read[`${rel}:mode`] = (await stat(join(house, rel))).mode & 0o777; } catch {} }
     let keepOwed = false; try { await stat(join(house, "run", "keep-owed")); keepOwed = true; } catch {}
-    return { ...r, read, calls, received, dir, made, worn, seat, seatMode, cacheLeft, vesselLog, keepOwed, house };
+    // A standing report outlives no call: the shim reads and removes the one its route asked about, and drops every other.
+    let reportsLeft = []; try { reportsLeft = (await readdir(join(house, "config"))).filter((f) => f.startsWith("standing-report.")); } catch {}
+    return { ...r, read, calls, received, dir, made, worn, seat, seatMode, cacheLeft, vesselLog, keepOwed, reportsLeft, house };
   } finally { await rm(dir, { recursive: true, force: true }); }
 }
 
@@ -657,11 +662,12 @@ for (const [name, shim] of shims) {
     });
     assert.equal(r.status, 0, r.stderr);
     assert.match(r.calls, /restart lares[\s\S]*up -d --wait lares/);
-    // The verb's own process says why (the CLI's line); the shim says what it does about it.
-    assert.match(r.stderr, /lares: the standing asks for a re-stand: face lit/);
-    assert.match(r.stderr, /lares-container: the standing requires a re-stand; restarting the vessel/);
-    // ONE CLI PER CALL: the verdict rode the verb's own exit, so no second CLI ran to read it.
+    // The verb's own process reported why (its report's reason); the shim names it and what it does about it.
+    assert.match(r.calls, /^REPORT restand face lit$/m);
+    assert.match(r.stderr, /lares-container: face lit; restarting the vessel/);
+    // ONE CLI PER CALL: the verdict rode the verb's own report, so no second CLI ran to read it, and the report outlived nothing.
     assert.doesNotMatch(r.calls, /--observe/);
+    assert.deepEqual(r.reportsLeft, []);
   });
 
   // A VESSEL STANDS HOLDING NO KEY. With no TTY the shim names the one command that opens it, after every act
@@ -820,51 +826,75 @@ for (const [name, shim] of shims) {
     assert.doesNotMatch(r.calls, /restart lares/);
   });
 
-  // ONE CLI PER CALL: the shim asks for the standing on the verb's own exec, as its argv's last word, and reads the verdict off its exit.
-  test(`${name}: a verb on a standing vessel runs one CLI: its exec carries the standing ask, and no observe follows`, async () => {
-    const r = await run(shim, ["tiddler", "get", "lar:///x", "--recipe", "default"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" }, rawStanding: true });
+  // ONE CLI PER CALL, AND NOTHING ASKS: the verb's own exec carries its argv alone, and the image's CLI REPORTS the standing as it
+  // leaves (config/standing-report.<tag>); the shim reads the report, removes it, and the exit stays the verb's own.
+  test(`${name}: RED a verb on a new image runs one CLI: its exec carries no standing word, the report reads attach, no observe follows, and no report outlives the call`, async () => {
+    const r = await run(shim, ["tiddler", "get", "lar:///x", "--recipe", "default"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
     assert.equal(r.status, 0, r.stderr);
     const execs = r.calls.split("\n").filter((line) => / lares node \S+ tiddler get /.test(line));
     assert.equal(execs.length, 1, r.calls);
-    assert.match(execs[0], /exec -e LARES_EXEC_TAG (?:-e \S+ )*-T lares node \S+ tiddler get lar:\/\/\/x --recipe default --standing-report$/);
-    // The ask rides the call itself: no environment name carries it.
-    assert.doesNotMatch(r.calls, /LARES_STANDING_REPORT/);
+    assert.match(execs[0], /exec -e LARES_EXEC_TAG (?:-e \S+ )*-T lares node \S+ tiddler get lar:\/\/\/x --recipe default$/);
+    assert.doesNotMatch(r.calls, /--standing-report|LARES_STANDING_REPORT/);
+    assert.match(r.calls, /^REPORT attach$/m);
     assert.doesNotMatch(r.calls, /--observe/);
     assert.doesNotMatch(r.calls, /restart lares/);
+    assert.doesNotMatch(r.stdout + r.stderr, /standing-report|^attach$/m, "the report never reaches what the call prints");
+    assert.deepEqual(r.reportsLeft, []);
   });
 
-  test(`${name}: a verb whose exit names no verdict (92) exits non-zero and says so, with no second CLI`, async () => {
-    const r = await run(shim, ["persona", "new", "1", "--name", "probe"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_STANDING_RC: "92" } });
+  // HOST/IMAGE SKEW BREAKS NO CALL: an image older than the report runs the same exec (no word it could refuse), writes nothing,
+  // and the shim takes the old observe path once; its absence IS the capability signal.
+  test(`${name}: RED an old image (no report) still serves the call: the exec carries no word it could refuse, one observe reading follows, and a restand there still lifts`, async () => {
+    const steady = await run(shim, ["tiddler", "get", "lar:///x", "--recipe", "default"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OLD_IMAGE: "1" } });
+    assert.equal(steady.status, 0, steady.stderr);
+    assert.doesNotMatch(steady.calls, /--standing-report|^REPORT /m);
+    assert.equal((steady.calls.match(/vessel stand --observe --json/g) ?? []).length, 1, steady.calls);
+    assert.doesNotMatch(steady.calls, /restart lares/);
+    const lifted = await run(shim, ["persona", "new", "0", "--name", "ci-face"], {
+      env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OLD_IMAGE: "1", FAKE_OBSERVE_OUTPUT: '{"data":{"standing":{"act":"restand","reason":"face lit"}}}' },
+    });
+    assert.equal(lifted.status, 0, lifted.stderr);
+    assert.equal((lifted.calls.match(/vessel stand --observe --json/g) ?? []).length, 1);
+    assert.match(lifted.calls, /vessel stand --observe --json[\s\S]*restart lares[\s\S]*up -d --wait lares/);
+    assert.match(lifted.stderr, /lares-container: face lit; restarting the vessel/);
+  });
+
+  test(`${name}: a verb whose report names no verdict (unread) exits non-zero and says so, with no second CLI`, async () => {
+    const r = await run(shim, ["persona", "new", "1", "--name", "probe"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_STANDING_REPORT: "unread" } });
     assert.equal(r.status, 1);
     assert.match(r.stderr, /the standing check after it answered no verdict/);
     assert.doesNotMatch(r.calls, /--observe/);
     assert.doesNotMatch(r.calls, /restart lares/);
+    assert.deepEqual(r.reportsLeft, []);
   });
 
-  // THE SAFE ANSWER AS DEFAULT: a bare 0 names no verdict, so the shim never reads it as "no lift"; one reading follows.
-  test(`${name}: a verb that exits a bare 0 under the ask gets one reading after it, and a restand there still lifts`, async () => {
-    const r = await run(shim, ["persona", "new", "0", "--name", "ci-face"], {
-      env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_STANDING_RC: "0", FAKE_OBSERVE_OUTPUT: '{"data":{"standing":{"act":"restand","reason":"face lit"}}}' },
-    });
-    assert.equal(r.status, 0, r.stderr);
-    assert.equal((r.calls.match(/vessel stand --observe --json/g) ?? []).length, 1);
-    assert.match(r.calls, /vessel stand --observe --json[\s\S]*restart lares[\s\S]*up -d --wait lares/);
-    assert.match(r.stderr, /lares-container: face lit; restarting the vessel/);
+  // THE EXIT STAYS THE VERB'S OWN: a verb that failed keeps its code (no report, no reading), and a verb that succeeded leaves 0
+  // through the shim whatever its report says, so no caller ever reads a changed code.
+  test(`${name}: RED the exit stays the verb's own: a failed verb keeps its code with no report, and a succeeded one reads 0 under every report`, async () => {
+    const failed = await run(shim, ["persona", "new", "1", "--name", "probe"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_EXEC_RC: "7" } });
+    assert.equal(failed.status, 7);
+    assert.doesNotMatch(failed.calls, /^REPORT |--observe/m);
+    for (const report of ["attach", "restand face lit"]) {
+      const r = await run(shim, ["persona", "new", "1", "--name", "probe"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_STANDING_REPORT: report } });
+      assert.equal(r.status, 0, `${report}: ${r.stderr}`);
+    }
   });
 
-  test(`${name}: CONTROL a reading the shim takes for itself carries no standing ask`, async () => {
-    const read = await run(shim, ["vessel", "read"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" }, rawStanding: true });
+  test(`${name}: CONTROL a reading the shim takes for itself carries no standing word, and leaves no report behind`, async () => {
+    const read = await run(shim, ["vessel", "read"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
     assert.equal(read.status, 0, read.stderr);
     assert.doesNotMatch(read.calls, /--standing-report/);
-    const observe = await run(shim, ["vessel", "stand", "--observe", "--json"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" }, rawStanding: true });
+    assert.deepEqual(read.reportsLeft, []);
+    const observe = await run(shim, ["vessel", "stand", "--observe", "--json"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
     assert.equal(observe.status, 0, observe.stderr);
     assert.doesNotMatch(observe.calls, /--standing-report/);
+    assert.deepEqual(observe.reportsLeft, []);
   });
 
-  test(`${name}: a caller's ask budget rides the call's own argv to the vessel, ahead of the standing ask, and no environment name carries one`, async () => {
-    const r = await run(shim, ["tiddler", "get", "lar:///x", "--recipe", "default", "--ask-budget-ms=3500"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", LARES_ASK_BUDGET_MS: "9" }, rawStanding: true });
+  test(`${name}: a caller's ask budget rides the call's own argv to the vessel as its last word, and no environment name carries one`, async () => {
+    const r = await run(shim, ["tiddler", "get", "lar:///x", "--recipe", "default", "--ask-budget-ms=3500"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", LARES_ASK_BUDGET_MS: "9" } });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /-T lares node \S+ tiddler get lar:\/\/\/x --recipe default --ask-budget-ms=3500 --standing-report$/m);
+    assert.match(r.calls, /-T lares node \S+ tiddler get lar:\/\/\/x --recipe default --ask-budget-ms=3500$/m);
     assert.doesNotMatch(r.calls, /LARES_ASK_BUDGET_MS/);
   });
 
@@ -931,8 +961,8 @@ for (const [name, shim] of shims) {
   });
 
   test(`${name}: a standing check that fails after a verb landed exits non-zero and says so`, async () => {
-    // The verb's exit named no verdict (a bare 0), so one reading follows it, and that reading fails.
-    const r = await run(shim, ["persona", "new", "1", "--name", "probe"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_STANDING_RC: "0", FAKE_OBSERVE_RC: "1" } });
+    // The image reported nothing (one older than the report), so one reading follows the verb, and that reading fails.
+    const r = await run(shim, ["persona", "new", "1", "--name", "probe"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OLD_IMAGE: "1", FAKE_OBSERVE_RC: "1" } });
     assert.equal(r.status, 1);
     assert.match(r.stderr, /the standing check after it answered no verdict/);
     assert.doesNotMatch(r.calls, /restart lares/);
@@ -940,8 +970,8 @@ for (const [name, shim] of shims) {
 
   test(`${name}: a standing check that exits zero and names no verdict never passes as "no lift"`, async () => {
     for (const answer of ["", "not json", '{"data":{}}', '{"data":{"standing":{"act":"dance"}}}']) {
-      // Both roads refuse alike: the verb's own exit (92 off the same unreadable standing), and the reading after a bare 0.
-      for (const road of [{}, { FAKE_STANDING_RC: "0" }]) {
+      // Both roads refuse alike: the verb's own report (unread off the same unreadable standing), and the reading after no report.
+      for (const road of [{}, { FAKE_OLD_IMAGE: "1" }]) {
         const r = await run(shim, ["persona", "new", "1", "--name", "probe"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_OUTPUT: answer, ...road } });
         assert.equal(r.status, 1, JSON.stringify(answer));
         assert.match(r.stderr, /answered no verdict/);
@@ -1942,6 +1972,13 @@ async function lone(shim, sig, standing) { return loneSignal(shim, sig, { standi
 
 // ── THE PŪLAMA (road L47e): the house's custody holder standing in its own container beside the vessel ──
 const PULAMA_ENV = "LARES_HOUSE=@HOUSE@\nLARES_WORKSPACE=@HOUSE@/ws\nLARES_PULAMA=1\n";
+// A LIT KEEPER THAT ADMITTED THE IMAGE THE TAG HOLDS (sha256:abc123): the boot order's step 3 reads it standing admitted, so an
+// `up` with no vessel standing raises one on it (an unadmitted image steps back or stops; see the waking cases below).
+const ADMITTED_ABC = { FAKE_PULAMA_STATUS: '{"op":"status","lit":true,"admitted":["sha256:abc123"],"ended":[]}' };
+// A CODE CLOSURE by one repeated hex digit, and a house after a kūkulu's build: module scope, since the pūlama cases and the waking
+// cases below both read them.
+const CL = (h) => "sha256:" + h.repeat(64);
+const REBUILT = { FAKE_PULAMA_ID: "p1", FAKE_PULAMA_IMAGE: "sha256:old", FAKE_IMAGE_ID: "sha256:new", FAKE_IMAGE_REV_LABEL: "0123456789abcdef0123456789abcdef01234567", FAKE_CUSTODY_OUTPUT: '{"ok":true,"data":{"door":{"op":"custody","unlocked":true}}}', FAKE_CENSUS_JSON: '{"ok":true,"data":{"facesLit":[0,2],"worn":null}}' };
 for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
 test(`${name}: pulama-mode up stands the pūlama first, reports the image digest to it, then raises the vessel over its socket`, { skip }, async () => {
   const r = await run(shim, ["up"], { envFile: PULAMA_ENV, env: { FAKE_IMAGE_ID: "sha256:abc123", ...ADMITTED_ABC } });
@@ -2329,8 +2366,6 @@ test(`${name}: pulama-skew-reads-the-closure: a pūlama on an older image whose 
 // and lights it ATTACHED on this terminal in the same run; a lit pūlama on a closure that stands stays lit; the admit asks
 // the route only where no admission and no kūkulu offer carries the image; with no terminal, a light or an admit owed stops
 // the run before anything moves, and a day that owes neither flows through.
-const CL = (h) => "sha256:" + h.repeat(64);
-const REBUILT = { FAKE_PULAMA_ID: "p1", FAKE_PULAMA_IMAGE: "sha256:old", FAKE_IMAGE_ID: "sha256:new", FAKE_IMAGE_REV_LABEL: "0123456789abcdef0123456789abcdef01234567", FAKE_CUSTODY_OUTPUT: '{"ok":true,"data":{"door":{"op":"custody","unlocked":true}}}', FAKE_CENSUS_JSON: '{"ok":true,"data":{"facesLit":[0,2],"worn":null}}' };
 const OFFER = { "config/kukulu-offer.json": '{"lei":[],"unstrung":[],"vouch":[{"body":{"image":"sha256:new"}}]}\n' };
 const ADMITTED = '{"op":"status","lit":true,"admitted":["sha256:new"],"ended":[]}';
 test(`${name}: rebuild-lights-a-moved-closure-in-the-same-run: on a terminal, build, down, pulama restand, ONE proof (the light attached admits the image), up, unlock, wear, one closing line`, { skip: skip || !haveScript }, async () => {
@@ -3003,7 +3038,8 @@ test("the hand verbs the shims send to the pūlama stay the names it dispatches 
     const lines = r.calls.split("\n");
     assert.equal(lines.filter((l) => /pulama-main\.js hoala$/.test(l)).length, 2, "the new code's waking, then the prior keeper's");
     assert.equal(lines.filter((l) => /--profile pulama up -d --force-recreate pulama$/.test(l)).length, 1, r.calls);
-    assert.match(r.calls, /--force-recreate pulama\nLARES_IMAGE=lares-surface:rev-0123456789ab\n/, "the prior keeper image stands for that recreate");
+    // The fake logs each call, then the pūlama mode's LAR_KUKULU_OFFER export, then the recreate's own LARES_IMAGE.
+    assert.match(r.calls, /--force-recreate pulama\n(?:LAR_KUKULU_OFFER=\S+\n)?LARES_IMAGE=lares-surface:rev-0123456789ab\n/, "the prior keeper image stands for that recreate");
     assert.doesNotMatch(r.calls, /pulama-main\.js light/);
     assert.match(r.stderr, /the new keeper code failed its waking \(hoala-slot-unsigned\) and locked, keeping what rests; the keeper steps back to the prior closure sha256:aaaaaaaaaaaa on lares-surface:rev-0123456789ab/);
     assert.equal(verdict(r), "lares-container: hoala: found the keeper dark, the new keeper code failing its waking, the vessel locked; did stepped the keeper back to the prior closure on lares-surface:rev-0123456789ab and lit it there by the hoʻāla lei (2 return(s) left), opened the vessel by the keeper's dial; now the keeper lit, the vessel unlocked, faces open: h0, h2, wearing h2");
