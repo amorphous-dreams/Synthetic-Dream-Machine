@@ -15,7 +15,9 @@
  *   · `from=` and `to=` ride in either order (lookaheads), the slot word rides as `slot=\`#…\``;
  *   · no pattern field keeps a `"`, an arrow, or the `[=:]` alternation;
  *   · no worked specimen in a comment keeps a quoted value or an arrow between values;
- *   · the burned tiddlers stay absent, `sigil-set.tid` fires `lares=`, `sigil-node.tid` stands.
+ *   · `sigil-set.tid` fires `lares=`, and `sigil-lares.tid` stands as the house's own act line. The burn
+ *     (no retired name keeps a tiddler) rides `seed-kupono-cut`, which reads the retired names off the
+ *     canon row at grammar-watch#/the-kupono-cut; this file keeps no list of them.
  *
  * CONTROLS ride beside each law: the OLD arrow forms fail the NEW patterns, a known-good existing
  * pattern still passes, and the checkers themselves flag a planted bad specimen.
@@ -204,8 +206,8 @@ const CASES: Case[] = [
   { head: "moolelo", field: "lar-pattern", call: "<<~ moolelo held=`the direction`>>", groups: ["the direction"] },
   { head: "talk-story", field: "lar-pattern", call: "<<~ talk-story slot=`#floor` ground=`the surface`>>", groups: ["#floor", "the surface"] },
   { head: "status", field: "lar-pattern", call: "<<~ status text=`harvest read-only`>>", groups: ["harvest read-only"] },
-  // the turn frame: ONE sigil, three firings
-  { head: "node", field: "lar-pattern", call: "<<~ node action=`refreshes the libation dish`>>", groups: ["refreshes the libation dish"] },
+  // the house's own act line: ONE ticked verb phrase on the `lares` head
+  { head: "lares", field: "lar-pattern", call: "<<~ lares action=`refreshes the libation dish`>>", groups: ["refreshes the libation dish"] },
 ];
 
 describe("the capture groups the builder indexes stay put", () => {
@@ -299,21 +301,9 @@ describe("a worked specimen inside a tiddler keeps the grammar", () => {
   });
 });
 
-// ── L6 · the burn, the set sigil, the node sigil, the names ───────────────────────────────────
-describe("the Cut 4 burns and the new frame sigils", () => {
-  const BURNED = ["frame", "lares", "hud", "aperture", "ooda-ha", "drift-ward"];
-
-  test("CONTROL — a live sibling tiddler stands where the burned ones stood", () => {
-    expect(existsSync(DIR + "sigil-frame-soh.tid")).toBe(true);
-    expect(existsSync(DIR + "sigil-oracle.tid")).toBe(true);
-  });
-
-  for (const head of BURNED) {
-    test(`★ sigil-${head}.tid stays burned ★`, () => {
-      expect(existsSync(DIR + `sigil-${head}.tid`)).toBe(false);
-    });
-  }
-
+// ── L6 · the set sigil, the lares act sigil, the names ────────────────────────────────────────
+// The burn lives in seed-kupono-cut ("no retired name keeps a sigil tiddler"), read off the canon row.
+describe("the Cut 4 frame sigils", () => {
   test("★ sigil-set.tid fires lares= with the aim, steer and yield orders ★", () => {
     const t = byHead.get("set")!;
     expect(t.text).toMatch(/^\\procedure set-aim\(\) lares from to mode mood mu stance aperture ooda-ha drift-ward$/m);
@@ -324,11 +314,16 @@ describe("the Cut 4 burns and the new frame sigils", () => {
     expect(firstLine(t.fields["lar-example"]!)).toMatch(/^<<~ set lares=`(aim|steer|yield)`/);
   });
 
-  test("★ sigil-node.tid stands with the action key ★", () => {
-    const t = byHead.get("node")!;
-    expect(t, "sigil-node.tid stands").toBeTruthy();
-    expect(t.text).toMatch(/^\\procedure ~node\(action[:)]/m);
-    expect(firstLine(t.fields["lar-example"]!)).toMatch(/^<<~ node action=`/);
+  test("★ sigil-lares.tid stands as the act line: the action key alone, and no firing ★", () => {
+    const t = byHead.get("lares")!;
+    expect(t, "sigil-lares.tid stands").toBeTruthy();
+    expect(t.fields["lar-pono-uri"]).toBe("lar:///ha.ka.ba/lares/api/noosphere-boot#/spirit-swarm");
+    expect(t.text).toMatch(/^\\procedure ~lares\(action[:)]/m);
+    expect(firstLine(t.fields["lar-example"]!)).toMatch(/^<<~ lares action=`/);
+    // The old frame rode this head with a firing; a firing rides `set` alone, so the act pattern reads none.
+    const act = new RegExp(t.fields["lar-pattern"]!);
+    for (const old of ["<<~ lares aim from=`a`>>", "<<~ lares fires=`aim`>>", "<<~ lares action=`a` fires=`yield`>>", "<<~ lares>>"])
+      expect(act.test(old), old).toBe(false);
   });
 
   test("★ sigil-wai.tid stands as the wikispace conditional's head, and its example matches its pattern ★", () => {

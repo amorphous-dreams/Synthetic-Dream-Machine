@@ -22,13 +22,19 @@
  * grammar as a tagged tiddler), so no law lists the LIVE heads. The old frame sigil reads retired by what it
  * DID, never by its head: a firing (`aim`, `steer`, `yield`) rides `set` alone, and ``<<~ lares action=`…`>>``,
  * the house's own act line, reads pono (operator ruling 2026-11-26).
+ *
+ * ── THE SHELF FOLLOWS THE SAME ROW ────────────────────────────────────────────────────────────────────────
+ * The sigil tiddlers under `tiddlers/sigil-*.tid` generate the grammar table, so a retired name that kept its
+ * tiddler would keep its sigil. This gate already reads the retired row, so the burn rides here: no retired
+ * name stands as `sigil-<name>.tid`, and `sigil-lares.tid` (the act line) stands.
  */
 
 import { describe, test, expect } from "vitest";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 
 const SEED = new URL("../../../bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem", import.meta.url).pathname;
 const seed = readFileSync(SEED, "utf8");
+const SHELF = new URL("../tiddlers/", import.meta.url).pathname;
 const CANON = new URL("../../../bags/lares/ha.ka.ba/lares/docs/pono/grammar-watch.mem", import.meta.url).pathname;
 const canon = readFileSync(CANON, "utf8");
 
@@ -175,6 +181,12 @@ const retiredSurface = (text: string, retired: Retired[] = retiredOf(canon)): st
     if (slot === "phrase") lines.forEach((l, i) => { if (l.includes(name.replace(/-/g, " "))) found.push(`${i + 1}: the "${name.replace(/-/g, " ")}" line still stands`); });
   }
   return found;
+};
+
+/** No retired name keeps a sigil tiddler on the shelf, whatever slot it retired under (`sigil-<name>.tid`). */
+const retiredOnShelf = (retired: Retired[], stands: (file: string) => boolean = (f) => existsSync(SHELF + f)): string[] => {
+  if (retired.length === 0) return ["no <<has entity=`kupono-cut` name=`retired` …>> row in grammar-watch#/the-kupono-cut to read the retired names from"];
+  return [...new Set(retired.map((r) => r.name))].map((n) => `sigil-${n}.tid`).filter(stands).map((f) => `${f} still stands on the shelf`);
 };
 
 /** Every internal cite of a slot carries the slash (`#/slot`), the form the openers mint. */
@@ -483,4 +495,21 @@ describe("the boot seed speaks the kupono grammar", () => {
       expect(law(seed)).toEqual([]);
     });
   }
+});
+
+// ── THE SHELF ──────────────────────────────────────────────────────────────────────────────────────────
+describe("no retired name keeps a sigil tiddler", () => {
+  test("CONTROL — a planted tiddler under a retired name reads red, under any slot; a name that leaves the row frees its tiddler", () => {
+    const planted = (file: string) => (f: string) => f === file;
+    expect(retiredOnShelf(retiredOf(ROW), planted("sigil-frame.tid"))).toEqual(["sigil-frame.tid still stands on the shelf"]);
+    expect(retiredOnShelf(retiredOf(ROW), planted("sigil-hud.tid"))).toEqual(["sigil-hud.tid still stands on the shelf"]);
+    expect(retiredOnShelf(retiredOf(ROW.replace("sigil/frame ", "")), planted("sigil-frame.tid"))).toEqual([]);
+    expect(retiredOnShelf(retiredOf("a record with no row")).join("\n")).toContain("no <<has entity=`kupono-cut` name=`retired`");
+  });
+  test("CONTROL — the shelf stands where this gate looks: live siblings answer", () => {
+    for (const live of ["sigil-set.tid", "sigil-oracle.tid", "sigil-lares.tid"]) expect(existsSync(SHELF + live), live).toBe(true);
+  });
+  test("★ the shelf carries no tiddler under a name the canon row retires ★", () => {
+    expect(retiredOnShelf(retiredOf(canon))).toEqual([]);
+  });
 });
