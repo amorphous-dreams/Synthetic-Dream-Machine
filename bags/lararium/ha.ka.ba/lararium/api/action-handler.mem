@@ -92,9 +92,10 @@ ALL CAPS by convention. The first six draw from set-algebra + cataloging, ''neve
    a watcher's unattended wave among them; `writesBag` in the residency verb table) reads the
    marker on its destination and refuses by name (`bag-retired: …`), pointing at CREATE; a
    preview refuses the same. A wiki island's own writes reach a bag through the composite's
-   write door instead (`CompositeStore`: a save, a delete, the delete `lares shore remove`
-   makes, a write into a named bag), and that door reads the target layer's marker before
-   anything lands: a write into a retired bag refuses by the same name, lands nothing, and the
+   write door instead (`CompositeStore`: a save, a delete, a write into a named bag), and
+   that door reads the target layer's marker before anything lands; the removal `lares shore
+   remove` makes reaches the bag's own layer and reads the same marker first
+   (`shore-remove-door.ts`): a write into a retired bag refuses by the same name, lands nothing, and the
    island holds the hand owed on its alert rail. A write that only adds new live effect records naming that
    bag, exactly as the ledger's own builder writes them, to its own residency ledger passes, so the record that retires the bag lands; no tombstone,
    removal, overwrite or write of the marker's own title passes. CREATE reads a retired doc as absent: it mints a fresh doc and re-points the
@@ -133,6 +134,6 @@ is shared, not duplicated (Sprint 6 parity).
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;HHjvUbZwIIuNtmmJGdou93Lc5QrJvnr22MLkMhlSIp0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;jm1lk6Nx1qdH3KC15Bc4Gybho-3S68502ilCO8Wi_RI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

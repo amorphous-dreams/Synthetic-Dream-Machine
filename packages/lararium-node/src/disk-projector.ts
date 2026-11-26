@@ -250,12 +250,17 @@ export interface LarDiskProjectorOptions {
   /** Fired once when a surfaced pending-removal set stops standing: it emptied, or its membership moved. */
   readonly onPendingRemovalResolved?: (info: { bagId: string; key: string }) => void;
   /**
-   * A HAND'S DELETE IN THE WIKI, for the `remove` answer: delete the carrier root where the wiki shore
-   * sees it, so the shore's own router lands the tombstone (the working layer, shadowing canon) and
-   * removes the slot children. Absent → a `remove` answer refuses by name: this projector holds no
-   * delete door.
+   * THE `remove` ANSWER'S DOOR: the carrier family leaves the bag whose mirror lost its file (`bagId`), in that
+   * bag's own layer (`shore-remove-door.ts`): a plain retract where no layer beneath holds the title, a kāpae in
+   * that bag where one does. Absent → a `remove` answer refuses by name: this projector holds no delete door.
    */
-  readonly removeCarrier?: (uri: string) => void | Promise<void>;
+  readonly removeCarrier?: (uri: string, bagId: string) => void | Promise<void>;
+  /**
+   * The layers beneath `bagId` in the composition that hold a live record of `uri` (`an unread layer` where one
+   * stands unread), or null where the composition mounts no such bag. A `remove` over a title a lower layer holds
+   * raises a kāpae, and asks a person's approval first. Absent → no layer beneath reads as holding anything.
+   */
+  readonly layersBeneath?: (bagId: string, uri: string) => Promise<readonly string[] | null>;
   /**
    * WHAT THE DISK BYTES SAY — `render(parse(diskText))` for the memetic-wikitext family
    * (`@lararium/tw5/carrier-canonical`, the ONE door; the pure subpath, no wasm). Feeds
@@ -555,6 +560,7 @@ export class LarDiskProjector {
   private readonly onPendingRemoval: LarDiskProjectorOptions["onPendingRemoval"];
   private readonly onPendingRemovalResolved: LarDiskProjectorOptions["onPendingRemovalResolved"];
   private readonly removeCarrier: LarDiskProjectorOptions["removeCarrier"];
+  private readonly layersBeneath: LarDiskProjectorOptions["layersBeneath"];
   private readonly canonicalizeFn: ((uri: string, diskText: string) => string | null) | undefined;
   private readonly canonicalizeNativeFn:
     | ((uri: string, ext: string, diskBody: string, diskMeta: string | undefined) => { readonly body: string; readonly metaBody?: string } | null)
@@ -591,6 +597,7 @@ export class LarDiskProjector {
     this.onPendingRemoval = opts.onPendingRemoval;
     this.onPendingRemovalResolved = opts.onPendingRemovalResolved;
     this.removeCarrier = opts.removeCarrier;
+    this.layersBeneath = opts.layersBeneath;
     this.canonicalizeFn = opts.canonicalizeFn;
     this.canonicalizeNativeFn = opts.canonicalizeNativeFn;
     this.readinessMap = opts.readinessMap;
@@ -1649,11 +1656,24 @@ export class LarDiskProjector {
   }
 
   /**
+   * The layers beneath `bagId` that hold a live record of `uri` (`layersBeneath`), or none: a `remove` over a title
+   * one of them holds raises a kāpae, and a pending row names them so the person's confirmation can.
+   */
+  async beneathOf(bagId: string, uri: string): Promise<readonly string[]> {
+    return (await this.layersBeneath?.(bagId, uri)) ?? [];
+  }
+
+  /**
    * A PERSON ANSWERS PENDING REMOVALS in one bag: `restore` writes each file back from the records and
-   * pins its base; `remove` deletes each carrier in the wiki through the wiki shore's own delete door
-   * (`removeCarrier`), so the tombstone lands where a hand's delete lands. `remove` leaves the base in
-   * the tree: a carrier that later returns from beneath its tombstone reads as pending again and asks its
-   * person afresh.
+   * pins its base; `remove` takes each carrier out of the bag whose mirror lost its file, in that bag's own
+   * layer (`removeCarrier`). `remove` leaves the base in the tree: a carrier that later returns reads as
+   * pending again and asks its person afresh.
+   *
+   * A REMOVE RETRACTS TO ABSENT; ONLY A LOWER COPY RAISES A KĀPAE (kapae#/disk-sense). Where no layer beneath the bag
+   * holds the title, the record leaves and nothing stands in its place: no tombstone, no `.kapae`. Where one does,
+   * the removal raises a kāpae in the bag so the lower copy never returns, and that act asks the person's approval
+   * (`kapae: true`, the y their confirmation line named it under): without it the answer refuses
+   * `remove-raises-kapae`, names each carrier with the layers beneath that hold it, and nothing runs.
    *
    * THE COUNT REPLACES A FRACTION. An answer over more than one carrier, or over `all`, names how many
    * carriers its giver read as pending in the bag. A count that moved refuses and changes nothing, so no
@@ -1667,10 +1687,10 @@ export class LarDiskProjector {
    */
   async answerRemovals(
     act: "remove" | "restore", bagId: string,
-    sel: { readonly uris?: readonly string[]; readonly all?: boolean; readonly count?: number },
+    sel: { readonly uris?: readonly string[]; readonly all?: boolean; readonly count?: number; readonly kapae?: boolean },
   ): Promise<
-    | { readonly ok: true; readonly done: readonly string[]; readonly left: readonly string[]; readonly unshadowed: ReadonlyArray<{ readonly uri: string; readonly bag: string }> }
-    | { readonly ok: false; readonly refusal: "not-pending" | "pending-count-moved" | "no-delete-door" | "no-wiki-view" | "answer-names-nothing"; readonly why: string; readonly count?: number }
+    | { readonly ok: true; readonly done: readonly string[]; readonly left: readonly string[]; readonly unshadowed: ReadonlyArray<{ readonly uri: string; readonly bag: string }>; readonly raised: ReadonlyArray<{ readonly uri: string; readonly beneath: readonly string[] }> }
+    | { readonly ok: false; readonly refusal: "not-pending" | "pending-count-moved" | "no-delete-door" | "no-wiki-view" | "answer-names-nothing" | "remove-raises-kapae" | "remove-bag-unmounted"; readonly why: string; readonly count?: number; readonly raising?: ReadonlyArray<{ readonly uri: string; readonly beneath: readonly string[] }> }
   > {
     const inBag = this.pendingRemovals().filter((p) => p.bagId === bagId).map((p) => p.uri);
     const asked = sel.all ? inBag : [...new Set(sel.uris ?? [])];
@@ -1685,11 +1705,25 @@ export class LarDiskProjector {
       return { ok: false, refusal: "pending-count-moved", why: `${inBag.length} carrier(s) of ${bagId} stand pending; the answer names ${sel.count ?? "no count"}`, count: inBag.length };
     }
     const unshadowed: Array<{ uri: string; bag: string }> = [];
+    const raising: Array<{ uri: string; beneath: readonly string[] }> = [];
     if (act === "remove") {
       if (!this.removeCarrier) return { ok: false, refusal: "no-delete-door", why: "this projector holds no wiki delete door" };
       const view = this._tw5?.$tw.wiki;
       if (!view) return { ok: false, refusal: "no-wiki-view", why: "this projector holds no wiki view to read the removal back; nothing ran" };
-      for (const uri of asked) await this.removeCarrier(uri);
+      // THE LAYERS BENEATH DECIDE THE ACT, before any door opens: none, a plain retract; one, a kāpae the person approves.
+      for (const uri of asked) {
+        const beneath = this.layersBeneath ? await this.layersBeneath(bagId, uri) : [];
+        if (beneath === null) return { ok: false, refusal: "remove-bag-unmounted", why: `this island mounts no layer for ${bagId}, so nothing leaves it here; nothing ran`, count: inBag.length };
+        if (beneath.length > 0) raising.push({ uri, beneath });
+      }
+      if (raising.length > 0 && sel.kapae !== true) {
+        const named = raising.map((r) => `a lower layer (${r.beneath.join(", ")}) holds ${r.uri}`).join("; ");
+        return {
+          ok: false, refusal: "remove-raises-kapae", raising, count: inBag.length,
+          why: `${named}; the removal raises a kāpae so it never returns, and waits on a person's y: run \`lares shore remove ${raising.map((r) => r.uri).join(" ")}\` at a terminal and answer the confirmation`,
+        };
+      }
+      for (const uri of asked) await this.removeCarrier(uri, bagId);
       // THE DELETE DOOR'S WORD PROVES NOTHING BY ITSELF. Each carrier gets read back from the wiki's resolved
       // view: one that left it, or that the view now resolves from another bag, leaves this bag's pending
       // set; one the view still holds here stays pending, and the answer names it as left. The view answers
@@ -1719,7 +1753,7 @@ export class LarDiskProjector {
     // `done` names what left the wiki; a carrier another bag answers now rides `unshadowed` alone.
     const standsBelow = unshadowed.filter((u) => !still.has(u.uri));
     const below = new Set(standsBelow.map((u) => u.uri));
-    return { ok: true, done: asked.filter((uri) => !still.has(uri) && !below.has(uri)), left: asked.filter((uri) => still.has(uri)), unshadowed: standsBelow };
+    return { ok: true, done: asked.filter((uri) => !still.has(uri) && !below.has(uri)), left: asked.filter((uri) => still.has(uri)), unshadowed: standsBelow, raised: raising.filter((r) => !still.has(r.uri)) };
   }
 
   private async _scheduleUnlinkByTitle(title: string, onlyBag?: string, spare?: ReadonlySet<string>): Promise<void> {
