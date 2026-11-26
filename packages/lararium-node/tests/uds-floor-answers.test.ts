@@ -206,7 +206,7 @@ async function foundedThenLocked() {
   const founding = heldRepo(inner);
   const address = { ...mintSecretHomeAddress(), controlId: mintVesselDocumentId() };
   await enrollSecretHome(founding.repo, address);
-  const daemonBytes = A.save((() => { const d = founding.repo.create<LarDoc>(emptyLarDoc()); nameControlHome(d, `automerge:${address.controlId}`); return d.doc(); })());
+  const daemonBytes = A.save((() => { const d = founding.repo.create<LarDoc>(emptyLarDoc()); nameControlHome(d, `automerge:${address.controlId}`); return d.doc()!; })());
   await founding.repo.flush();
   await founding.repo.shutdown();
   const locked = heldRepo(inner);

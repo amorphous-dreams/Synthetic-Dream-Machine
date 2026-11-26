@@ -416,7 +416,7 @@ describe("VerbDispatcher — effect dedup (D1)", () => {
     expect(await outcomeOf(control, "req-slow-2")).toBeNull(); // still waiting on the first
 
     // Release the first attempt's handler; it completes, writes its outcome + the effect index.
-    releaseFirstRun?.();
+    (releaseFirstRun as (() => void) | null)?.();
     await settle();
 
     expect(runCount).toBe(1); // the second attempt re-read and copied — it never called the handler

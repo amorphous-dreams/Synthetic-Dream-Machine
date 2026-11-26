@@ -309,7 +309,7 @@ describe("a stranded temp after a death mid-write", () => {
       // And the document opens whole over it.
       const repo = new Repo({ storage: new DurableNodeFSStorageAdapter(dir, { onStrandedTemp: () => { /* named above */ } }) });
       const h = await repo.find<{ text: string }>(`automerge:${docId}` as AutomergeUrl);
-      expect(h.doc().text).toBe("kept, and changed");
+      expect(h.doc()!.text).toBe("kept, and changed");
       await repo.shutdown();
     } finally { rmSync(dir, { recursive: true, force: true }); }
   });

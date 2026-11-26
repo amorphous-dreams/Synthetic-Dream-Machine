@@ -45,7 +45,7 @@ const makeDaemon = (): CompositeStore => {
 };
 const settle = async (): Promise<void> => { for (let i = 0; i < 20; i++) await new Promise((r) => setTimeout(r, 0)); };
 /** The verdict row's fields, with the `results` the whole answer carries in the store's answer ring (no row rests a body). */
-const outcomeOf = async (daemon: CompositeStore, id: string) => {
+const outcomeOf = async (daemon: CompositeStore, id: string): Promise<Record<string, unknown> | undefined> => {
   const row = (await daemon.getLive(OUTCOME_URI_PREFIX + id))?.tiddler;
   return row ? { ...row, results: answerRingOf(daemon).get(id)?.tiddler["results"] } : row;
 };

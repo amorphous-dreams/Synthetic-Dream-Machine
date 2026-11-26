@@ -87,8 +87,8 @@ describe("compaction by count and bytes", () => {
     expect(rows.chunks(handle.documentId, "incremental")).toBeLessThan(32);
     expect(rows.chunks(handle.documentId, "snapshot")).toBe(1);
     const reread = await stand(rows).find<Ledger>(handle.url);
-    expect(Object.keys(reread.doc().n)).toHaveLength(80);
-    expect(reread.doc().n["outcome-79"]).toBe("answer 79");
+    expect(Object.keys(reread.doc()!.n)).toHaveLength(80);
+    expect(reread.doc()!.n["outcome-79"]).toBe("answer 79");
   });
 
   test("LAW: incremental bytes past the bound compact, whatever the count", async () => {
