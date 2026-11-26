@@ -268,6 +268,12 @@ export interface WikiRecipe {
    * named offerings or none).
    */
   readonly pluginOfferingsFault?: string;
+  /**
+   * THE FLOOR-CLASS MARK. `clearRecipeOf` (`clear-recipe.ts`) alone sets it: the recipe then lays one memory-held temp layer
+   * over the bags that ride a floor and the oracle foot, with no draft, personal or working slot and no canon above the
+   * floor. Absent on every recipe a record, a catalog or a boot mints.
+   */
+  readonly clear?: true;
 }
 
 // ── Heads comparison helpers ────────────────────────────────────────────────
@@ -324,6 +330,8 @@ export type BagPinState =
  */
 export function expandRecipe(r: WikiRecipe): readonly SlotUri[] {
   const slug = r.wikiSlug;
+  // A clear recipe holds no instance slot below its memory top: the bags `clearRecipeOf` kept, then the floor.
+  if (r.clear === true) return [...new Set<SlotUri>([wikiSlotUri(slug, "temp"), ...(r.libraryBags ?? []), ORACLE_BAG])];
   // Deduped: when the wiki's OWN canon bag coincides with a structural slot (the
   // lares-as-wiki quine — slug "lares" → wikiBagUri = LARES_BAG), the slot
   // lays ONCE, at its highest-priority position.

@@ -724,6 +724,8 @@ export * from "./shore-log.js";
 export * from "./attempt-budget.js";
 
 // The one spirit record's stack and the fold's ranks and commands: each subpath lends what the barrel lends from its module.
+// Beside it, the herm's cap vocabulary and the clear wiki's recipe and floor pick.
 export * from "./spirit-stack.js";
 export * from "./herm-stack.js";
+export * from "./clear-recipe.js";
 export * from "./spirit-unfold.js";

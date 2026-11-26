@@ -14,7 +14,7 @@ import type { ChangeOrigin, LarTiddlerChange, LarTiddlerRecord, LarTiddlerStore 
 import { docPrototypeKeyFault } from "./prototype-key-shore.js";
 import { SYSTEM_CANON_SLUGS } from "./kahu-canon-reach.js";
 import { bagUri } from "./lar-uris.js";
-import type { CapTier } from "./cap-tier.js";
+import { floorCarriesTier } from "./cap-tier.js";
 import type { PluginOffering } from "./plugin-offering.js";
 
 /** The floor manifest's shape name. It carries no counter: a shape reads by its fields, and its bytes name it (the CID). */
@@ -25,14 +25,8 @@ export const GENESIS_FLOOR_TIDDLER = "lar:///ha.ka.ba/bags/oracle/genesis-cid-fl
 /** The snapshots every floor carries: the system canon, house canon on every vessel. */
 export const FLOOR_REQUIRED_SLUGS: readonly string[] = SYSTEM_CANON_SLUGS;
 
-/**
- * THE FLOOR CARRIES PUBLIC BAGS ALONE. Every recipe composes the floor read-only by a public CID, a faceless browser at the
- * veil among its readers, so the floor's holder-set reads `{world}`: a bag rides it only where the bag's OWN declaration
- * (`meta.mem` `cap-tier`) names `public`. A bag declared `contract`, `personagroup` or `veil` reaches a reader through its
- * realm document and the cap that tier names, never through a snapshot. The system canon (`FLOOR_REQUIRED_SLUGS`) stands on
- * every floor. Derived from the declaration at each cut; no slug list decides.
- */
-export function floorCarriesTier(tier: CapTier): boolean { return tier === "public"; }
+// THE FLOOR CARRIES PUBLIC BAGS ALONE: the law rests beside the tier order (`cap-tier.ts`), so a pure reader reaches it too.
+export { floorCarriesTier };
 
 /** The mime the plugins offering record rides in a seed's blob rows: never `application/json`, so it never loads as a boot plugin. */
 export const FLOOR_OFFERING_MIME = "application/vnd.lararium.plugin-offering+json";

@@ -36,6 +36,10 @@
       "import": "./dist/cap-stack.js",
       "types": "./dist/cap-stack.d.ts"
     },
+    "./clear-recipe": {
+      "import": "./dist/clear-recipe.js",
+      "types": "./dist/clear-recipe.d.ts"
+    },
     "./herm-stack": {
       "import": "./dist/herm-stack.js",
       "types": "./dist/herm-stack.d.ts"

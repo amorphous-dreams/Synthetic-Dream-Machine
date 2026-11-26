@@ -74,6 +74,9 @@ export async function buildPluginCjsTiddlers(): Promise<void> {
             // the deserializer ships ONCE as its own module tiddler; the placement and the nalu engine
             // require it by URI instead of carrying the whole reader.
             if (id === "lararium-deserializer") return true;
+            // the herm's cap vocabulary ships ONCE (lib/herm-stack); the clear recipe requires it by URI, so
+            // one table answers every reader in the VM.
+            if (id === "lararium-herm-stack") return true;
             return false;
           },
           output: {
@@ -97,6 +100,8 @@ export async function buildPluginCjsTiddlers(): Promise<void> {
                   ? "lar:///ha.ka.ba/lararium/tw5/modules/meme-project"
                 : id === "lararium-deserializer"
                   ? "lar:///ha.ka.ba/lararium/tw5/modules/deserializer"
+                : id === "lararium-herm-stack"
+                  ? "lar:///ha.ka.ba/lararium/tw5/lib/herm-stack"
                   : id === "smol-toml"
                     ? "lar:///ha.ka.ba/lararium/tw5/lib/smol-toml"
                     : id,
@@ -142,6 +147,11 @@ export async function buildPluginCjsTiddlers(): Promise<void> {
             : []),
           ...(mod.name !== "deserializer"
             ? [{ find: /^(\.\.?\/)+deserializer(\.js)?$/, replacement: "lararium-deserializer" }]
+            : []),
+          // herm-stack rides the same law: mesh's own relative import of it (from clear-recipe) rewrites to ONE
+          // bare id in every module except the library's own bundle.
+          ...(mod.name !== "herm-stack"
+            ? [{ find: /^(\.\.?\/)+herm-stack(\.js)?$/, replacement: "lararium-herm-stack" }]
             : []),
           // The frame library's own bundle inlines the package from SOURCE, so a plugin build never
           // packs a stale dist.

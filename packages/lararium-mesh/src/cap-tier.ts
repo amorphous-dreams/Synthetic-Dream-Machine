@@ -57,6 +57,15 @@ export function capTierRank(tier: CapTier): number {
 }
 
 /**
+ * THE FLOOR CARRIES PUBLIC BAGS ALONE. Every recipe composes the floor read-only by a public CID, a faceless browser at the
+ * veil among its readers, so the floor's holder-set reads `{world}`: a bag rides it only where the bag's OWN declaration
+ * (`meta.mem` `cap-tier`) names `public`. A bag declared `contract`, `personagroup` or `veil` reaches a reader through its
+ * realm document and the cap that tier names, never through a snapshot. The system canon (`FLOOR_REQUIRED_SLUGS`, `floor-manifest.ts`) stands on
+ * every floor. Derived from the declaration at each cut; no slug list decides.
+ */
+export function floorCarriesTier(tier: CapTier): boolean { return tier === "public"; }
+
+/**
  * parseCapTier — read a self-describing tier datum, FAIL-CLOSED to VEIL. Any value but the four exact
  * literals (absent, torn, mis-cased-beyond-lowercasing, an unknown string) reads VEIL — a torn datum must
  * NEVER silently open a bag. Isomorphic to `federationPostureFromDoc` (only the exact `"open"` opens).
