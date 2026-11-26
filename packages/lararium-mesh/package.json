@@ -1188,6 +1188,10 @@
       "import": "./dist/call-touches.js",
       "types": "./dist/call-touches.d.ts"
     },
+    "./compacting-storage": {
+      "import": "./dist/compacting-storage.js",
+      "types": "./dist/compacting-storage.d.ts"
+    },
     "./sealed-rest": {
       "import": "./dist/sealed-rest.js",
       "types": "./dist/sealed-rest.d.ts"
