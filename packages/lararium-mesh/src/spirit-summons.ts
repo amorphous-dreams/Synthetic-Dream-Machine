@@ -44,6 +44,8 @@ export const MODEL_SLUG = /^[A-Za-z0-9][A-Za-z0-9._:[\]-]{0,63}$/;
 export const FACE_INDEX = /^(0|[1-9][0-9]{0,5})$/;
 /** A host path a mandate names (`workdir`, `log`): absolute, one word, so it rides an argv and a field whole. */
 export const HOST_PATH = /^\/[^\s\0]{0,1023}$/;
+/** The tool rules a mandate names (`allowed-tools`): comma-joined `Tool` or `Tool(spec)`; the host launch tool matches the same source. */
+export const ALLOWED_TOOLS = /^[A-Za-z][A-Za-z0-9_]{0,63}(?:\([^(),\n]{1,200}\))?(?:,[A-Za-z][A-Za-z0-9_]{0,63}(?:\([^(),\n]{1,200}\))?){0,15}$/;
 /** The one line a launch carries, as a pattern: `wakeLine` writes it and the host launch tool matches the same source. */
 export const WAKE_LINE = /^wake as ([a-z0-9][a-z0-9-]{0,62})#([A-Za-z0-9_-]{1,128}): lares spirit om ([a-z0-9][a-z0-9-]{0,62}) --mandate (lar:\/\/\/[^\s@]+)@([0-9a-f]{64})(?: --face (0|[1-9][0-9]{0,5}))?$/;
 
@@ -51,9 +53,10 @@ export const WAKE_LINE = /^wake as ([a-z0-9][a-z0-9-]{0,62})#([A-Za-z0-9_-]{1,12
  * THE FIELDS A MANDATE'S HASH COVERS, in the order the hash reads them. `reads` (TW5 filters) and `links` (titles) hold one
  * entry per line; `paths`, `caps` and `grants` hold words. `lanes` names the arm-lane ceiling a COORDINATOR's mandate grants its
  * own summonses; `handback-shape` names what the instance hands back. `workdir` names the host directory the instance starts in and
- * `log` the host file its stream appends to: both ride the hash, so the same mandate starts in the same place.
+ * `log` the host file its stream appends to: both ride the hash, so the same mandate starts in the same place. `allowed-tools`
+ * names the tool rules the launch grants a headless instance; a mandate naming none grants no permission flag at all.
  */
-export const MANDATE_FIELDS = ["pet", "instance", "offerer", "parent", "face", "model", "launch-cap", "workdir", "log", "reads", "links", "paths", "caps", "grants", "lanes", "handback-shape"] as const;
+export const MANDATE_FIELDS = ["pet", "instance", "offerer", "parent", "face", "model", "launch-cap", "allowed-tools", "workdir", "log", "reads", "links", "paths", "caps", "grants", "lanes", "handback-shape"] as const;
 export type MandateField = (typeof MANDATE_FIELDS)[number];
 
 /** `<pet>#<n>`: an instance by its tag. */
@@ -106,6 +109,8 @@ export interface SpiritMandate {
   /** The face the mandate echoes (a handle index); null where it names none. */
   readonly face: number | null;
   readonly model: string | null; readonly launchCap: string;
+  /** The tool rules the launch passes to the instance, exactly as named; null: the launch passes no permission flag. */
+  readonly allowedTools: string | null;
   /** The host directory the instance starts in; null: the summoner's own. */
   readonly workdir: string | null;
   /** The host file the instance's stream appends to; null: the stream lands nowhere. */
@@ -155,7 +160,7 @@ export function mandateRead(uri: string, fields: Readonly<Record<string, string>
   return {
     uri, hash: stored, ...tag, offerer: fields["offerer"] ?? "", parent: recordRefOf(fields["parent"]), face,
     model: (fields["model"] ?? "").trim() || null, launchCap: (fields["launch-cap"] ?? "").trim() || DEFAULT_LAUNCH_CAP,
-    workdir: (fields["workdir"] ?? "").trim() || null, log: (fields["log"] ?? "").trim() || null,
+    allowedTools: (fields["allowed-tools"] ?? "").trim() || null, workdir: (fields["workdir"] ?? "").trim() || null, log: (fields["log"] ?? "").trim() || null,
     reads: linesOf(fields["reads"]), links: linesOf(fields["links"]), paths: wordsOf(fields["paths"]), caps: wordsOf(fields["caps"]),
     grants: wordsOf(fields["grants"]), lanes, handbackShape: fields["handback-shape"] ?? "", text,
   };
@@ -180,6 +185,9 @@ export function launchHolds(mandate: SpiritMandate): SpiritRefusal | null {
   }
   if (mandate.model !== null && !MODEL_SLUG.test(mandate.model)) {
     return new SpiritRefusal("mandate-model-malformed", `mandate-model-malformed: ${mandate.uri} names a model no launch cap takes as a slug; nothing started. Land the mandate again: \`lares spirit mandate ${shq(mandate.tag)} --file <carrier> --model <slug>\``, 4);
+  }
+  if (mandate.allowedTools !== null && !ALLOWED_TOOLS.test(mandate.allowedTools)) {
+    return new SpiritRefusal("mandate-allowed-tools-malformed", `mandate-allowed-tools-malformed: ${mandate.uri} names allowed tools no launch cap takes as comma-joined rules (\`Tool\` or \`Tool(spec)\`); nothing started. Land the mandate again: \`lares spirit mandate ${shq(mandate.tag)} --file <carrier> --allowed-tools 'Bash(lares:*)'\``, 4);
   }
   for (const [flag, path] of [["workdir", mandate.workdir], ["log", mandate.log]] as const) {
     if (path !== null && !HOST_PATH.test(path)) {
@@ -298,6 +306,7 @@ export function mandateWakeLines(mandate: SpiritMandate, cut = 2400): string {
     `om (the seed, then the card below): lares tiddler get 'lar:///ha.ka.ba/lares/api/noosphere-boot' --recipe default${face} --meme --all`,
     ...mandate.reads.map((f) => `reads: lares wiki filter ${shq(f)} --recipe default${face} --collapse --fields title,description`),
     ...mandate.links.map((l) => `link: lares tiddler get ${shq(l)} --recipe default${face} --meme --skinny`),
+    ...(mandate.allowedTools === null ? [] : [`allowed tools: ${mandate.allowedTools}`]),
     ...(mandate.workdir === null ? [] : [`workdir: ${mandate.workdir}`]),
     ...(mandate.log === null ? [] : [`log: ${mandate.log}`]),
     ...(mandate.paths.length === 0 ? [] : [`paths: ${mandate.paths.join(" ")}`]),

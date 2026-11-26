@@ -2,7 +2,7 @@
 /**
  * summon-launch — the house's launch cap: one host process started for one hash-pinned mandate (plan/mandate-summons).
  *
- *   node tools/summon-launch.mjs --cap claude-cli --prompt '<the one line>' [--model <slug>] [--cwd <dir>] [--log <file>] [--dry-run]
+ *   node tools/summon-launch.mjs --cap claude-cli --prompt '<the one line>' [--model <slug>] [--allowed-tools <rules>] [--cwd <dir>] [--log <file>] [--dry-run]
  *
  * A launch cap gates a host process, so it stands here beside the floor; everything a wiki can hold (the mandate's shape, its
  * hash, the edge, the lane ceiling, the custody read) stands in `@lararium/mesh/spirit-summons` and `lares spirit summon`.
@@ -13,12 +13,13 @@
  * and its affordances from the house. `WAKE_LINE` carries the same pattern as the mesh core's (`spirit-summons.ts`); this
  * tool's suite reads that source and the core's suite runs its `wakeLine` through `launchPlan`, so neither drifts alone.
  *
- * THE CAP GRANTS THE HOUSE'S DOORS AND NOTHING WIDER. A headless process holds no hand to answer a permission ask, so a tool
- * its settings never allowed gets denied and the instance would wake reaching nothing. The cap names one allow rule,
- * `DOOR_REACH` (`Bash(lares:*)`): the doors every summoner's seat already holds, where custody reads each act. It passes no
- * permission mode and skips no check; the checkout's own settings narrow it further.
+ * THE CAP GRANTS NO PERMISSION OF ITS OWN. A headless process holds no hand to answer a permission ask, so a tool its settings
+ * never allowed gets denied. Any wider reach rides the MANDATE: its hash-covered `allowed-tools` field arrives here as
+ * `--allowed-tools <rules>` (comma-joined tool rules, e.g. `Bash(lares:*)`) and passes through to the binary exactly; a launch
+ * naming none passes no permission flag at all. A value outside `ALLOWED_TOOLS` refuses `launch-allowed-tools-malformed`. The
+ * cap passes no permission mode and skips no check.
  *
- *   claude-cli   `claude -p <the one line> --allowedTools <DOOR_REACH> [--model <slug>]`, detached, in `--cwd` (default: the
+ *   claude-cli   `claude -p <the one line> [--allowedTools <rules>] [--model <slug>]`, detached, in `--cwd` (default: the
  *                caller's; a directory the host holds none of refuses `launch-workdir-absent`), its stream appended to `--log`
  *
  * It prints one JSON line: `{"ok":true,"cap":…,"pid":…,"argv":[…]}`, or `{"ok":false,"code":…,"message":…}` with exit 2.
@@ -34,12 +35,12 @@ export const WAKE_LINE = /^wake as ([a-z0-9][a-z0-9-]{0,62})#([A-Za-z0-9_-]{1,12
 /** A model's slug: it leads with a letter or digit, so it never reads as a flag. */
 export const MODEL_SLUG = /^[A-Za-z0-9][A-Za-z0-9._:[\]-]{0,63}$/;
 
-/** The one tool rule a launch grants: the house's own doors. */
-export const DOOR_REACH = "Bash(lares:*)";
+/** The tool rules a mandate names (the mesh core carries the same pattern): comma-joined `Tool` or `Tool(spec)`, so the value rides one argv word and never reads as a flag. */
+export const ALLOWED_TOOLS = /^[A-Za-z][A-Za-z0-9_]{0,63}(?:\([^(),\n]{1,200}\))?(?:,[A-Za-z][A-Za-z0-9_]{0,63}(?:\([^(),\n]{1,200}\))?){0,15}$/;
 
 /** Each launch cap: the binary it starts and the argv it builds from the one line and the model. */
 export const LAUNCH_CAPS = {
-  "claude-cli": { bin: "claude", argv: (prompt, model) => ["-p", prompt, "--allowedTools", DOOR_REACH, ...(model ? ["--model", model] : [])] },
+  "claude-cli": { bin: "claude", argv: (prompt, model, allowedTools) => ["-p", prompt, ...(allowedTools ? ["--allowedTools", allowedTools] : []), ...(model ? ["--model", model] : [])] },
 };
 
 export class LaunchRefused extends Error {
@@ -47,13 +48,14 @@ export class LaunchRefused extends Error {
 }
 
 /** The command a launch runs, checked: a cap this table names, the one line, a model slug. */
-export function launchPlan({ cap, prompt, model = null }) {
+export function launchPlan({ cap, prompt, model = null, allowedTools = null }) {
   const held = Object.hasOwn(LAUNCH_CAPS, cap ?? "") ? LAUNCH_CAPS[cap] : null;
   if (held === null) throw new LaunchRefused("launch-cap-unknown", `launch-cap-unknown: this host holds ${Object.keys(LAUNCH_CAPS).join(", ")}, and the launch names "${cap ?? ""}"; nothing started. Name one: --cap ${Object.keys(LAUNCH_CAPS)[0]}`);
   const m = WAKE_LINE.exec(prompt ?? "");
   if (m === null || m[1] !== m[3]) throw new LaunchRefused("launch-prompt-malformed", "launch-prompt-malformed: a launch carries the one wake line alone (`wake as <pet>#<n>: lares spirit om <pet> --mandate <uri>@<hash>`); nothing started. Start an instance through its mandate: `lares spirit summon <pet>#<n> --mandate <uri>@<hash>`");
   if (model !== null && !MODEL_SLUG.test(model)) throw new LaunchRefused("launch-model-malformed", "launch-model-malformed: --model names a slug (letters, digits, `.`, `_`, `:`, `-`); nothing started. Name the model as the mandate does: --model <slug>");
-  return { cap, bin: held.bin, argv: held.argv(prompt, model), instance: `${m[1]}#${m[2]}`, mandate: `${m[4]}@${m[5]}` };
+  if (allowedTools !== null && !ALLOWED_TOOLS.test(allowedTools)) throw new LaunchRefused("launch-allowed-tools-malformed", "launch-allowed-tools-malformed: --allowed-tools names comma-joined tool rules (`Tool` or `Tool(spec)`, no blank line, no nested parenthesis); nothing started. Land the mandate again naming them: `lares spirit mandate <pet>#<n> --file <carrier> --allowed-tools 'Bash(lares:*)'`");
+  return { cap, bin: held.bin, argv: held.argv(prompt, model, allowedTools), instance: `${m[1]}#${m[2]}`, mandate: `${m[4]}@${m[5]}` };
 }
 
 /**
@@ -83,12 +85,12 @@ export function launch(plan, { cwd = process.cwd(), log = null } = {}, deps = {}
 }
 
 function parse(argv) {
-  const o = { cap: null, prompt: null, model: null, cwd: null, log: null, dryRun: false };
+  const o = { cap: null, prompt: null, model: null, allowedTools: null, cwd: null, log: null, dryRun: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--dry-run") { o.dryRun = true; continue; }
-    const key = { "--cap": "cap", "--prompt": "prompt", "--model": "model", "--cwd": "cwd", "--log": "log" }[a];
-    if (key === undefined || i + 1 >= argv.length) throw new LaunchRefused("usage", `usage: node tools/summon-launch.mjs --cap <cap> --prompt '<the one line>' [--model <slug>] [--cwd <dir>] [--log <file>] [--dry-run] (got "${a}")`);
+    const key = { "--cap": "cap", "--prompt": "prompt", "--model": "model", "--allowed-tools": "allowedTools", "--cwd": "cwd", "--log": "log" }[a];
+    if (key === undefined || i + 1 >= argv.length) throw new LaunchRefused("usage", `usage: node tools/summon-launch.mjs --cap <cap> --prompt '<the one line>' [--model <slug>] [--allowed-tools <rules>] [--cwd <dir>] [--log <file>] [--dry-run] (got "${a}")`);
     o[key] = argv[++i];
   }
   return o;

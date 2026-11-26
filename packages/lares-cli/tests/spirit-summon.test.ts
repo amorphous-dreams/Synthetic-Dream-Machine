@@ -107,7 +107,7 @@ describe("the command table names the summons verbs", () => {
   test("mandate, summon and handback stand among the spirit door's verbs, their options accepted", () => {
     const row = COMMANDS.find((c) => c.name === "spirit")!;
     expect(row.verbs).toEqual(expect.arrayContaining(["mandate", "summon", "handback"]));
-    expect(row.accepts).toEqual(expect.arrayContaining(["cap", "caps", "grants", "handback", "lanes", "links", "log", "mandate", "model", "parent", "paths", "reads", "record", "workdir"]));
+    expect(row.accepts).toEqual(expect.arrayContaining(["allowed-tools", "cap", "caps", "grants", "handback", "lanes", "links", "log", "mandate", "model", "parent", "paths", "reads", "record", "workdir"]));
   });
 });
 
@@ -457,5 +457,30 @@ describe("the mandate names the workdir and the log", () => {
     expect(fieldsOf(summonsOf(m.hash))!["launched-in"]).toBe(process.cwd());
     expect(fieldsOf(summonsOf(m.hash))!["launched-log"]).toBeUndefined();
     expect(data(r)["log"]).toBeNull();
+  });
+});
+
+describe("the mandate, never the cap, names a headless instance's permission", () => {
+  test("a mandate naming no allowed tools launches with none asked of the host", async () => {
+    const m = arm(null);
+    const cap = stub();
+    const r = await run(argv(["summon", "cold-reader#00002"], { mandate: m.ref }), { launch: cap.launch });
+    expect(cap.asks[0]!.allowedTools).toBeNull();
+    expect(data(r)["allowedTools"]).toBeNull();
+  });
+  test("the allowed tools a mandate names land as a covered field and ride the launch exactly", async () => {
+    const landed = data(await run(argv(["mandate", "cold-reader#00002"], { text: WORDS, "allowed-tools": "Bash(lares:*)" })));
+    expect(fieldsOf(String(landed["uri"]))).toMatchObject({ "allowed-tools": "Bash(lares:*)" });
+    expect(landed["hash"]).not.toBe(data(await run(argv(["mandate", "cold-reader#00002"], { text: WORDS })))["hash"]);
+    const cap = stub();
+    await run(argv(["summon", "cold-reader#00002"], { mandate: String(landed["ref"]) }), { launch: cap.launch });
+    expect(cap.asks[0]!.allowedTools).toBe("Bash(lares:*)");
+  });
+  test("a flag-shaped value refuses mandate-allowed-tools-malformed before anything lands", async () => {
+    const before = h.store.size;
+    const r = await run(argv(["mandate", "cold-reader#00002"], { text: WORDS, "allowed-tools": "--dangerously-skip-permissions" }));
+    expect(error(r).code).toBe("mandate-allowed-tools-malformed");
+    expect(error(r).message).toContain("--allowed-tools 'Bash(lares:*)'");
+    expect(h.store.size).toBe(before);
   });
 });

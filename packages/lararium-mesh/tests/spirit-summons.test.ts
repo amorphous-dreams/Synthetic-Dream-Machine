@@ -164,7 +164,7 @@ describe("every refusal names its cure and carries no copula", () => {
       S.summonsGranted(false, arm, null)!, S.summonsGranted(false, arm, S.mandateRead(bare.w.uri, bare.stored, null))!,
       S.lanesHold(coordinator, ["a", "b"], "c")!, S.lanesHold(arm, [], "c")!,
       S.laneUnsettled(coordinator, "lares spirit summon x"),
-      S.launchHolds({ ...arm, workdir: "relative/dir" })!, S.launchHolds({ ...arm, log: "/var/log/two words.log" })!,
+      S.launchHolds({ ...arm, allowedTools: "--dangerously-skip-permissions" })!, S.launchHolds({ ...arm, workdir: "relative/dir" })!, S.launchHolds({ ...arm, log: "/var/log/two words.log" })!,
     ];
     for (const r of all) {
       expect(r.message.startsWith(`${r.code}: `), r.code).toBe(true);
@@ -260,5 +260,30 @@ describe("one wake line: the core writes it and the host launch tool takes it", 
     expect(plan.instance).toBe(arm.tag);
     expect(plan.mandate).toBe(S.refLine(arm.uri, arm.hash));
     expect(plan.argv).toContain(S.wakeLine(arm));
+  });
+  test("the host tool carries the same allowed-tools pattern", async () => {
+    const t = (await tool()) as unknown as { ALLOWED_TOOLS: RegExp };
+    expect(t.ALLOWED_TOOLS.source).toBe(S.ALLOWED_TOOLS.source);
+  });
+});
+
+describe("the mandate names the tools a headless instance may use", () => {
+  const granted = land({ pet: "cold-reader", instance: "00002", offerer: "hand", "allowed-tools": "Bash(lares:*)" });
+  test("allowed-tools rides the hash, and a mandate naming none reads null", () => {
+    const bare = land({ pet: "cold-reader", instance: "00002", offerer: "hand" });
+    expect(granted.w.hash).not.toBe(bare.w.hash);
+    const m = S.mandateRead(granted.w.uri, granted.stored, granted.w.hash);
+    expect(m.allowedTools).toBe("Bash(lares:*)");
+    expect(S.mandateWakeLines(m)).toContain("allowed tools: Bash(lares:*)");
+    expect(arm.allowedTools).toBeNull();
+    expect(S.launchHolds(m)).toBeNull();
+  });
+  test("a value that reads as a flag, nests a parenthesis or trails a comma refuses mandate-allowed-tools-malformed with its cure", () => {
+    for (const rules of ["--dangerously-skip-permissions", "Bash(a(b))", "Bash(lares:*),", "Bash(lares:*) --permission-mode x"]) {
+      const r = S.launchHolds({ ...arm, allowedTools: rules })!;
+      expect(r.code, rules).toBe("mandate-allowed-tools-malformed");
+      expect(r.message).toContain("--allowed-tools 'Bash(lares:*)'");
+    }
+    expect(S.launchHolds({ ...arm, allowedTools: "Bash(lares:*),Read,Bash(git status)" })).toBeNull();
   });
 });

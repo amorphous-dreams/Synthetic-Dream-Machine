@@ -2,7 +2,7 @@
  * `lares spirit mandate | summon | handback <pet>#<n>` — THE HOUSE STARTS ITS OWN ARMS (plan/mandate-summons).
  *
  *   mandate   `<pet>#<n> --file <carrier|-> | --text <words> [--parent <uri>@<hash>] [--model <slug>] [--cap <launch cap>]
- *              [--workdir <host dir>] [--log <host file>]
+ *              [--allowed-tools <rules>] [--workdir <host dir>] [--log <host file>]
  *              [--reads <filters, one per line>] [--links <titles, one per line>] [--paths <words>] [--caps <words>]
  *              [--grants <words>] [--lanes <n>] [--handback <shape>]`
  *             lands the mandate carrier on the answering face's memory stage at `mandate/<id16>`, keyed by its own hash, and
@@ -38,8 +38,8 @@ import { emit } from "../render.js";
 import { DoorUsage, wordOf } from "./door-call.js";
 import type { ParsedArgs } from "../parse-args.js";
 
-/** What a launch asks of the host: the cap, the one line, the model, where the process stands, and where its stream lands (null: nowhere). */
-export interface LaunchAsk { readonly cap: string; readonly prompt: string; readonly model: string | null; readonly cwd: string; readonly log: string | null }
+/** What a launch asks of the host: the cap, the one line, the model, the tool rules the mandate names (null: no permission flag), where the process stands, and where its stream lands (null: nowhere). */
+export interface LaunchAsk { readonly cap: string; readonly prompt: string; readonly model: string | null; readonly allowedTools: string | null; readonly cwd: string; readonly log: string | null }
 export type LaunchAnswer = { readonly ok: true; readonly pid: number | null } | { readonly ok: false; readonly code: string; readonly message: string };
 /** The launch seam: the host tool by default; a suite names a stub, so no test starts a model. */
 export type Launch = (ask: LaunchAsk) => Promise<LaunchAnswer>;
@@ -62,7 +62,7 @@ export const hostLaunch: Launch = (ask) => new Promise((resolve) => {
     resolve({ ok: false, code: "launch-cap-absent", message: `launch-cap-absent: this install holds no host launch tool (${TOOL}); nothing started. Run the summon from a checkout that holds it` });
     return;
   }
-  execFile(process.execPath, [TOOL, "--cap", ask.cap, "--prompt", ask.prompt, ...(ask.model === null ? [] : ["--model", ask.model]), "--cwd", ask.cwd, ...(ask.log === null ? [] : ["--log", ask.log])], { timeout: 30_000 }, (error, stdout) => {
+  execFile(process.execPath, [TOOL, "--cap", ask.cap, "--prompt", ask.prompt, ...(ask.model === null ? [] : ["--model", ask.model]), ...(ask.allowedTools === null ? [] : ["--allowed-tools", ask.allowedTools]), "--cwd", ask.cwd, ...(ask.log === null ? [] : ["--log", ask.log])], { timeout: 30_000 }, (error, stdout) => {
     const line = String(stdout ?? "").trim().split("\n").pop() ?? "";
     try {
       const out = JSON.parse(line) as { ok?: boolean; pid?: number | null; code?: string; message?: string };
@@ -157,13 +157,13 @@ export async function landMandate(args: ParsedArgs, ctx: SummonCtx): Promise<num
     ...(parent === null ? {} : { parent: refLine(parent.uri, parent.hash) }),
     ...(face === null ? {} : { face: String(face) }),
     model: wordOf(args.options["model"]) ?? "", "launch-cap": wordOf(args.options["cap"]) ?? "",
-    workdir: wordOf(args.options["workdir"]) ?? "", log: wordOf(args.options["log"]) ?? "",
+    "allowed-tools": wordOf(args.options["allowed-tools"]) ?? "", workdir: wordOf(args.options["workdir"]) ?? "", log: wordOf(args.options["log"]) ?? "",
     reads: args.options["reads"] ?? "", links: args.options["links"] ?? "", paths: args.options["paths"] ?? "", caps: args.options["caps"] ?? "",
     grants: args.options["grants"] ?? "", lanes: lanes ?? "", "handback-shape": args.options["handback"] ?? "",
   };
   const w = mandateWrite(covered, text);
   // The guard reads the words and every affordance a hand or seat typed; the hashes the house minted stay out of its read.
-  const shapes = secretCount([text, covered.model, covered["launch-cap"], covered.workdir, covered.log, covered.reads, covered.links, covered.paths, covered.caps, covered.grants, covered["handback-shape"]].join("\n"));
+  const shapes = secretCount([text, covered.model, covered["launch-cap"], covered["allowed-tools"], covered.workdir, covered.log, covered.reads, covered.links, covered.paths, covered.caps, covered.grants, covered["handback-shape"]].join("\n"));
   if (shapes > 0) throw new SpiritRefusal("spirit-secret-shaped", `spirit-secret-shaped: the mandate holds ${shapes} secret-shaped string(s), so nothing landed; clear them, then land it again: \`lares spirit mandate ${shq(tag.tag)} --file <scrubbed carrier>\``, 4);
   const refused = launchHolds(mandateRead(w.uri, { ...w.fields, text: w.text }, w.hash));
   if (refused !== null) throw refused;
@@ -218,7 +218,7 @@ export async function summonInstance(args: ParsedArgs, ctx: SummonCtx): Promise<
     if (decision !== "put" && decision !== "noop") throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${edge.uri}, so nothing started; read it: \`lares tiddler get ${shq(edge.uri)} --recipe default\``, 4);
   }
   const cwd = mandate.workdir ?? process.cwd();
-  const started = await ctx.launch({ cap: mandate.launchCap, prompt, model: mandate.model, cwd, log: mandate.log });
+  const started = await ctx.launch({ cap: mandate.launchCap, prompt, model: mandate.model, allowedTools: mandate.allowedTools, cwd, log: mandate.log });
   if (!started.ok) {
     // A LAUNCH THAT STARTED NOTHING FREES ITS LANE; one whose receipt never came (`launch-cap-failed`) keeps it, since a process may stand.
     if (coordinator !== null && started.code !== "launch-cap-failed") await releaseLane(ctx, "summon", coordinator, edge.uri);
@@ -234,7 +234,7 @@ export async function summonInstance(args: ParsedArgs, ctx: SummonCtx): Promise<
     ? `its stream lands nowhere (the mandate names no log; a mandate landed with \`--log /absolute/file\` keeps it)`
     : `its stream: ${mandate.log}`;
   emit(args, {
-    ok: true, data: { instance: mandate.tag, mandate: mandate.uri, hash: mandate.hash, edge: edge.uri, decision: "launched", launched, pid: started.pid, prompt, offerer: mandate.offerer, face: mandate.face, cwd, log: mandate.log },
+    ok: true, data: { instance: mandate.tag, mandate: mandate.uri, hash: mandate.hash, edge: edge.uri, decision: "launched", launched, pid: started.pid, prompt, offerer: mandate.offerer, face: mandate.face, allowedTools: mandate.allowedTools, cwd, log: mandate.log },
     human: () => console.log(`summoned: ${mandate.tag} under ${refLine(mandate.uri, mandate.hash)}\n  launched: ${launched}${started.pid === null ? "" : ` (pid ${started.pid})`} in ${cwd}\n  ${stream}\n  edge: ${edge.uri}\n  the lane frees at its hand-back: lares spirit handback ${shq(mandate.tag)} --record <uri>`),
   });
   return 0;

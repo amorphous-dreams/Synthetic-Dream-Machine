@@ -1,5 +1,5 @@
 /**
- * summon-launch.test — the launch cap carries the one wake line, the door reach and a model, and starts nothing else. Every case
+ * summon-launch.test — the launch cap carries the one wake line, a model and the tool rules a mandate names (none of its own), and starts nothing else. Every case
  * injects its spawn, its directory read and its log open: no test starts a model or writes a log. The wake line welds to the
  * mesh core: this suite reads the pattern out of `spirit-summons.ts` and holds the tool's to it.
  */
@@ -7,7 +7,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { EventEmitter } from "node:events";
 import { readFileSync } from "node:fs";
-import { DOOR_REACH, LAUNCH_CAPS, LaunchRefused, WAKE_LINE, launchPlan, run } from "./summon-launch.mjs";
+import { ALLOWED_TOOLS, LAUNCH_CAPS, LaunchRefused, WAKE_LINE, launchPlan, run } from "./summon-launch.mjs";
 
 const HASH = "ab".repeat(32);
 const LINE = `wake as cold-reader#00002: lares spirit om cold-reader --mandate lar:///ha.ka.ba/kahua/memory/mandate/${HASH.slice(0, 16)}@${HASH}`;
@@ -33,24 +33,50 @@ test("claude-cli starts `claude -p <the one line> --model <slug>`, detached, and
   assert.equal(exit, 0);
   assert.equal(calls.length, 1);
   assert.equal(calls[0].bin, "claude");
-  assert.deepEqual(calls[0].argv, ["-p", LINE, "--allowedTools", DOOR_REACH, "--model", "claude-fable-5-2"]);
+  assert.deepEqual(calls[0].argv, ["-p", LINE, "--model", "claude-fable-5-2"]);
   assert.equal(calls[0].opts.detached, true);
   assert.equal(calls[0].opts.cwd, "/tmp");
   assert.equal(calls[0].opts.env.LARES_SUMMONED, "cold-reader#00002");
   assert.equal(calls[0].child.unrefed, true);
-  assert.deepEqual(out, { ok: true, cap: "claude-cli", pid: 4242, argv: ["claude", "-p", LINE, "--allowedTools", DOOR_REACH, "--model", "claude-fable-5-2"] });
+  assert.deepEqual(out, { ok: true, cap: "claude-cli", pid: 4242, argv: ["claude", "-p", LINE, "--model", "claude-fable-5-2"] });
 });
 
 test("a mandate naming no model passes no --model; a face rides the line", () => {
-  assert.deepEqual(launchPlan({ cap: "claude-cli", prompt: `${LINE} --face 1` }).argv, ["-p", `${LINE} --face 1`, "--allowedTools", DOOR_REACH]);
+  assert.deepEqual(launchPlan({ cap: "claude-cli", prompt: `${LINE} --face 1` }).argv, ["-p", `${LINE} --face 1`]);
 });
 
-test("the cap grants the house's doors alone: one allow rule, no permission mode, no skipped check", () => {
+test("a launch naming no allowed tools passes no permission flag at all", () => {
   const argv = launchPlan({ cap: "claude-cli", prompt: LINE, model: "opus" }).argv;
-  assert.equal(DOOR_REACH, "Bash(lares:*)");
-  assert.equal(argv.filter((a) => a === "--allowedTools").length, 1);
-  assert.equal(argv[argv.indexOf("--allowedTools") + 1], DOOR_REACH);
-  assert.ok(!argv.some((a) => /permission|dangerously/.test(a) && a !== LINE));
+  assert.deepEqual(argv, ["-p", LINE, "--model", "opus"]);
+  assert.ok(!argv.some((a) => /allowed|permission|dangerously/i.test(a) && a !== LINE));
+});
+
+test("the allowed tools a mandate names ride the argv exactly, once", async () => {
+  const { calls, ...deps } = fakeSpawn();
+  const rules = "Bash(lares:*),Read";
+  const { exit, out } = await answer(["--cap", "claude-cli", "--prompt", LINE, "--allowed-tools", rules, "--model", "opus", "--cwd", "/tmp"], deps);
+  assert.equal(exit, 0);
+  assert.deepEqual(calls[0].argv, ["-p", LINE, "--allowedTools", rules, "--model", "opus"]);
+  assert.deepEqual(out.argv, ["claude", "-p", LINE, "--allowedTools", rules, "--model", "opus"]);
+});
+
+test("a malformed allowed-tools value refuses by name with its cure, and nothing starts", async () => {
+  for (const rules of ["--dangerously-skip-permissions", "Bash(lares:*) --permission-mode bypassPermissions", "Bash(a(b))", "Bash(lares:*),", "", "Bash(x)\nRead"]) {
+    const { calls, ...deps } = fakeSpawn();
+    const { exit, out } = await answer(["--cap", "claude-cli", "--prompt", LINE, "--allowed-tools", rules], deps);
+    assert.equal(exit, 2, rules);
+    assert.equal(out.code, "launch-allowed-tools-malformed");
+    assert.match(out.message, /lares spirit mandate .* --allowed-tools/);
+    assert.doesNotMatch(out.message, /\b(is|are|was|were|be|been|being|am)\b/);
+    assert.equal(calls.length, 0);
+  }
+});
+
+test("the allowed-tools pattern welds to the mesh core's", () => {
+  const core = readFileSync(new URL("../packages/lararium-mesh/src/spirit-summons.ts", import.meta.url), "utf8");
+  const literal = /^export const ALLOWED_TOOLS = \/(.+)\/;$/m.exec(core);
+  assert.ok(literal, "spirit-summons.ts exports ALLOWED_TOOLS as one regex literal");
+  assert.equal(literal[1], ALLOWED_TOOLS.source);
 });
 
 test("the wake line welds to the mesh core: one pattern, read from the core's own source", () => {
@@ -114,7 +140,7 @@ test("--dry-run prints the argv and spawns nothing", async () => {
   const { calls, spawn } = fakeSpawn();
   const { exit, out } = await answer(["--cap", "claude-cli", "--prompt", LINE, "--dry-run"], { spawn });
   assert.equal(exit, 0);
-  assert.deepEqual(out.argv, ["claude", "-p", LINE, "--allowedTools", DOOR_REACH]);
+  assert.deepEqual(out.argv, ["claude", "-p", LINE]);
   assert.equal(calls.length, 0);
 });
 
