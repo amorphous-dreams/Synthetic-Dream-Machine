@@ -78,8 +78,9 @@ test("RED: a lane touching a globbed path and a token path owes those, in the di
   assert.equal(verdict, "COLD READ OWED: .github/workflows/ci.yml, docs/Custody-notes.md");
   assert.equal(record, `cold-read: owed · head ${head} · base ${f.base} · list ${r.listSha} · paths 2 · record-hash ${r.hash}`);
   assert.equal(lines(r).length, 3);
-  assert.ok(lines(r)[2].startsWith(`land: git merge --no-ff ${head} `), "the landing command names the pinned sha, never the branch");
-  assert.ok(lines(r)[2].includes(`"Cold-Read: ${r.hash}"`) && lines(r)[2].includes(`--check-merge HEAD ${head}`));
+  assert.ok(lines(r)[2].startsWith(`read first: file the cold read under record-hash ${r.hash}; `), "RED: an owed read hands over the read-first line");
+  assert.ok(lines(r)[2].includes(`git merge --no-ff ${head} `) && lines(r)[2].includes(`"Cold-Read: ${r.hash}"`) && lines(r)[2].includes(`--check-merge HEAD ${head}`));
+  assert.ok(!lines(r).some((l) => l.startsWith("land:")) && !lines(r).join("\n").includes("land: "), "RED: no land line rides an owed read");
 
   f.lane("plain", (r2) => put(r2, "notes/plain.md", "moved\n"));
   const clean = coldRead({ root: f.root, lane: "plain" });
@@ -87,6 +88,9 @@ test("RED: a lane touching a globbed path and a token path owes those, in the di
   assert.equal(clean.owed, false);
   assert.equal(lines(clean)[0], "cold read: none owed");
   assert.match(lines(clean)[1], /^cold-read: none · head [0-9a-f]{40} · base [0-9a-f]{40} · list [0-9a-f]{64} · paths 0 · record-hash [0-9a-f]{64}$/);
+  assert.equal(lines(clean).length, 3);
+  assert.ok(lines(clean)[2].startsWith(`land: git merge --no-ff ${clean.head} `), "CONTROL: the landing command rides a clean read, and names the pinned sha, never the branch");
+  assert.ok(lines(clean)[2].includes(`"Cold-Read: ${clean.hash}"`) && lines(clean)[2].includes(`--check-merge HEAD ${clean.head}`));
 });
 
 test("RED: a renamed class file owes its old path (no rename folds the deletion away); CONTROL: a renamed plain file owes nothing", (t) => {
@@ -198,7 +202,7 @@ test("RED: run from the lane's own worktree the judge refuses: the lane never ju
   assert.match(coldRead({ root: f.root, lane: "lane" }).paths[0], /differs from refs\/remotes\/origin\/develop/, "and the landing bench, now off that ref, refuses too");
 });
 
-test("a lane owes nothing only where its tree equals the base's: an empty commit, a change and its undoing", (t) => {
+test("a lane whose merge moves no byte of the base owes nothing: an empty commit, a change and its undoing", (t) => {
   const f = fixture(t);
   f.lane("empty", () => {});
   assert.deepEqual(coldRead({ root: f.root, lane: "empty" }).paths, []);
@@ -213,18 +217,64 @@ test("a lane owes nothing only where its tree equals the base's: an empty commit
   assert.deepEqual(coldRead({ root: f.root, lane: moved }).paths, ["tools/ci-verdict.mjs"], "RED: the half-way commit, whose tree differs, owes");
 });
 
-test("RED: the two-tree read owes a path the lane holds apart from the base even where the lane never touched it since the fork", (t) => {
-  // The lane forks, develop then moves a class file: merging the lane changes nothing there, and the judge still errs toward owing
-  // (it reads trees, never ancestry). A lane that merges develop in reads clean again.
+test("RED: a lane standing behind develop, touching no class path, owes nothing for what develop landed since the fork", (t) => {
+  // The lane forks, develop then lands a class file and moves another: merging the lane changes neither on develop.
   const f = fixture(t);
-  f.lane("behind", (r) => put(r, "notes/plain.md", "moved\n"));
+  const head = f.lane("behind", (r) => put(r, "notes/plain.md", "moved\n"));
   put(f.root, ".github/a.yml", "a\n");
-  f.commit("develop moves");
-  assert.deepEqual(coldRead({ root: f.root, lane: "behind" }).paths, [".github/a.yml"]);
-  sh(f.root, "checkout", "-q", "behind");
-  sh(f.root, "merge", "-q", "--no-edit", "develop");
+  put(f.root, "tools/ci-verdict.mjs", "export const verdict = 2;\n");
+  const base = f.commit("develop lands class paths");
+  const twoTree = parseRawZ(gitAt(f.root)(["diff-tree", "-r", "--no-renames", "--raw", "-z", base, head]));
+  assert.ok(twoTree.includes(".github/a.yml") && twoTree.includes("tools/ci-verdict.mjs"), "CONTROL: the two trees do differ at develop's own class paths");
+  const r = coldRead({ root: f.root, lane: "behind" });
+  assert.equal(r.unread, false, r.paths[0]);
+  assert.deepEqual(r.paths, []);
+  assert.equal(r.owed, false);
+  assert.deepEqual([r.base, r.head], [base, head]);
+  assert.equal(lines(r)[0], "cold read: none owed");
+  assert.ok(lines(r)[2].startsWith(`land: git merge --no-ff ${head} `));
+  // The landing itself, re-judged: the same delta, the same answer.
+  sh(f.root, "merge", "-q", "--no-ff", "-m", "land behind", "-m", `Cold-Read: ${r.hash}`, head);
+  const merged = checkMerge({ root: f.root, merge: "HEAD", head });
+  assert.equal(merged.unread, false, merged.paths[0]);
+  assert.deepEqual(merged.paths, []);
+});
+
+test("RED: a lane standing behind develop that changed a class path itself owes that path, and never develop's own", (t) => {
+  const f = fixture(t);
+  const head = f.lane("behind", (r) => { put(r, "docs/Custody-notes.md", "the lane's\n"); put(r, "notes/plain.md", "moved\n"); });
+  put(f.root, ".github/a.yml", "a\n");
+  f.commit("develop lands a class path");
+  const r = coldRead({ root: f.root, lane: "behind" });
+  assert.equal(r.unread, false, r.paths[0]);
+  assert.deepEqual(r.paths, ["docs/Custody-notes.md"]);
+  assert.equal(r.head, head);
+  assert.ok(!lines(r).some((l) => l.startsWith("land:")));
+  // The lane moves a class file develop left alone since the fork, and deletes one: both owe.
+  f.lane("mover", (r2) => put(r2, "tools/ci-verdict.mjs", "export const verdict = 3;\n"));
+  assert.deepEqual(coldRead({ root: f.root, lane: "mover" }).paths, ["tools/ci-verdict.mjs"]);
+  sh(f.root, "branch", "-q", "old-fork", f.base);
+  f.advance("old-fork", (r3) => sh(r3, "rm", "-q", "tools/ci-verdict.mjs"));
+  assert.deepEqual(coldRead({ root: f.root, lane: "old-fork" }).paths, ["tools/ci-verdict.mjs"], "a deletion from behind the base owes");
+});
+
+test("RED: a lane that merged a third branch carrying a class change owes it; CONTROL: once that branch lands on develop itself, the lane owes nothing for it", (t) => {
+  const f = fixture(t);
+  f.lane("third", (r) => put(r, ".github/third.yml", "third\n"));
+  f.lane("lane", (r) => put(r, "notes/plain.md", "moved\n"));
+  put(f.root, "tools/ci-verdict.mjs", "export const verdict = 2;\n");
+  f.commit("develop moves its own class file");
+  sh(f.root, "checkout", "-q", "lane");
+  sh(f.root, "merge", "-q", "--no-ff", "-m", "the lane takes third in", "third");
   sh(f.root, "checkout", "-q", "develop");
-  assert.deepEqual(coldRead({ root: f.root, lane: "behind" }).paths, []);
+  const r = coldRead({ root: f.root, lane: "lane" });
+  assert.equal(r.unread, false, r.paths[0]);
+  assert.deepEqual(r.paths, [".github/third.yml"], "the third branch's class path rides the lane's merge onto develop, so it owes; develop's own never does");
+  sh(f.root, "merge", "-q", "--no-ff", "-m", "third lands by its own read", "third");
+  f.sync();
+  const after = coldRead({ root: f.root, lane: "lane" });
+  assert.equal(after.unread, false, after.paths[0]);
+  assert.deepEqual(after.paths, []);
 });
 
 test("RED: the self-landing owes: a lane that guts the list, the matcher and the judge reads through the base's copies of all three", (t) => {
@@ -261,7 +311,9 @@ test("RED: the judge reads the lane through git objects alone: a lane worktree's
   assert.deepEqual(asked.find((a) => a[0] === "merge-tree").slice(-2), [f.base, r.head], "the trial merge names the two pinned shas");
   for (const a of asked.filter((x) => x[0] === "diff-tree")) assert.equal(a.at(-2), f.base, "every diff starts at the pinned base");
   for (const a of asked.filter((x) => x[0] === "cat-file")) assert.ok(a.at(-1).startsWith(`${f.base}:`), `every blob comes from the pinned base: ${a.at(-1)}`);
-  assert.deepEqual(asked.find((a) => a[0] === "diff-tree").slice(-2), [f.base, r.head], "the diff names the two pinned shas, never a ref");
+  const diffs = asked.filter((a) => a[0] === "diff-tree");
+  assert.equal(diffs.length, 1, "one diff alone: the merge delta, never the lane's tree against the base's");
+  assert.equal(diffs[0].at(-1), sh(f.root, "merge-tree", "--write-tree", f.base, r.head), "the diff ends at the tree the trial merge wrote, never at a ref or the lane's own tree");
 });
 
 test("RED: a ref or a HEAD that moves after the pin changes nothing: both ends stay the shas read at the start", (t) => {
@@ -333,11 +385,12 @@ test("RED: a path that carries a newline or a comma shows quoted, so no path for
   f.lane("forger", (r) => put(r, ".github/a\ncold read: none owed", "x\n"));
   const out = lines(coldRead({ root: f.root, lane: "forger" }));
   assert.equal(out.length, 3);
+  assert.ok(out[2].startsWith("read first: "));
   assert.equal(out[0], 'COLD READ OWED: ".github/a\\ncold read: none owed"');
   assert.ok(!out.join("\n").split("\n").includes("cold read: none owed"));
 });
 
-test("the command line: two lines and exit 0 for owed, clean and unread alike; a usage fault owes and exits 2", (t) => {
+test("the command line: exit 0 for owed, clean and unread alike, the land line on the clean read alone; a usage fault owes and exits 2", (t) => {
   const f = fixture(t);
   f.lane("lane", (r) => put(r, ".github/a.yml", "a\n"));
   f.lane("plain", (r) => put(r, "notes/plain.md", "moved\n"));
@@ -345,10 +398,12 @@ test("the command line: two lines and exit 0 for owed, clean and unread alike; a
   const run = (...args) => spawnSync(process.execPath, [join(f.root, SELF), ...args], { encoding: "utf8", env: ENV, cwd: tmpdir() });
   const owed = run("lane");
   assert.equal(owed.status, 0, owed.stderr);
-  assert.match(owed.stdout, /^COLD READ OWED: \.github\/a\.yml\ncold-read: owed · head [0-9a-f]{40} · base [0-9a-f]{40} · list [0-9a-f]{64} · paths 1 · record-hash [0-9a-f]{64}\nland: git merge --no-ff [0-9a-f]{40} .*\n$/);
+  assert.match(owed.stdout, /^COLD READ OWED: \.github\/a\.yml\ncold-read: owed · head [0-9a-f]{40} · base [0-9a-f]{40} · list [0-9a-f]{64} · paths 1 · record-hash [0-9a-f]{64}\nread first: file the cold read under record-hash [0-9a-f]{64}; .*git merge --no-ff [0-9a-f]{40} .*\n$/);
+  assert.ok(!/^land:/m.test(owed.stdout) && !owed.stdout.includes("land: "), "RED: an owed read prints no land line for a script to key on");
   const clean = run("plain");
   assert.equal(clean.status, 0, clean.stderr);
-  assert.match(clean.stdout, /^cold read: none owed\ncold-read: none · /);
+  assert.match(clean.stdout, /^cold read: none owed\ncold-read: none · .*\nland: git merge --no-ff [0-9a-f]{40} .*\n$/);
+  assert.ok(!clean.stdout.includes("read first:"));
   const based = run("--base", f.base, "lane");
   assert.equal(based.stdout, owed.stdout, "--base naming the bench's own HEAD answers the same record");
   const gone = run("no-such-lane");
@@ -441,7 +496,8 @@ test("RED: a hand-resolved merge whose resolution touches a class path owes that
   const read = coldRead({ root: f.root, lane: head });
   assert.equal(read.unread, true);
   assert.match(read.paths[0], /conflicts or refuses/);
-  assert.ok(lines(read)[2].startsWith(`land: git merge --no-ff ${head} `));
+  assert.ok(lines(read)[2].startsWith("read first: ") && lines(read)[2].includes(`git merge --no-ff ${head} `), "an unread read still names the pinned sha for the hand");
+  assert.ok(!lines(read).some((l) => l.startsWith("land:")), "RED: no land line rides an unread read");
   assert.notEqual(shStatus(f.root, "merge", "-q", "--no-ff", "-m", "land by hand", head), 0, "CONTROL: the real merge conflicts too");
   put(f.root, "notes/plain.md", "both lines, by hand\n");
   put(f.root, ".github/slipped-in.yml", "on: push\n");
@@ -487,14 +543,20 @@ test("the command line re-judges a merge: `--check-merge HEAD <head-sha>` after 
   assert.match(wrong.stdout, /^COLD READ OWED: \(unread: .*lane moved after the read/);
 });
 
-test("RED: a --base other than origin/develop drops the land line and marks the record line; CONTROL: the default base and a --base naming develop's own sha keep the land line", (t) => {
+test("RED: a --base other than origin/develop drops the third line and marks the record line; CONTROL: the default base and a --base naming develop's own sha keep it (land for a clean read, read first for an owed one)", (t) => {
   const f = fixture(t);
   f.lane("lane", (r) => put(r, ".github/a.yml", "a\n"));
+  f.lane("plain", (r) => put(r, "notes/other.md", "other\n"));
   const mark = "base≠origin/develop";
   for (const r of [coldRead({ root: f.root, lane: "lane" }), coldRead({ root: f.root, lane: "lane", base: f.base }), coldRead({ root: f.root, lane: "lane", base: "develop" })]) {
     assert.equal(r.unread, false);
-    assert.equal(lines(r).length, 3, "CONTROL: the land line rides");
+    assert.equal(lines(r).length, 3, "CONTROL: the third line rides");
+    assert.ok(lines(r)[2].startsWith("read first: "));
     assert.ok(!lines(r)[1].includes(mark));
+  }
+  for (const r of [coldRead({ root: f.root, lane: "plain" }), coldRead({ root: f.root, lane: "plain", base: f.base })]) {
+    assert.deepEqual(r.paths, []);
+    assert.ok(lines(r)[2].startsWith("land: git merge --no-ff "), "CONTROL: the land line rides a clean read on develop");
   }
   put(f.root, "notes/plain.md", "later\n");
   f.commit("develop moves on");
@@ -507,7 +569,10 @@ test("RED: a --base other than origin/develop drops the land line and marks the 
     assert.equal(out.length, 2);
     assert.equal(out[0], "COLD READ OWED: .github/a.yml");
     assert.ok(out[1].endsWith(` · record-hash ${r.hash} · ${mark}`));
-    assert.ok(!out.some((l) => l.startsWith("land:")), "no land command rides a typed base");
+    assert.ok(!out.some((l) => l.startsWith("land:") || l.startsWith("read first:")), "no land command rides a typed base");
+    const clean = coldRead({ root: f.root, lane: "plain", base });
+    assert.deepEqual(clean.paths, []);
+    assert.equal(lines(clean).length, 2, "nor a clean read over a typed base");
   }
 });
 
