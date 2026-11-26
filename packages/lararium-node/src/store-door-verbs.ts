@@ -291,12 +291,11 @@ export const FLOOR_HAND_CODES: ReadonlyMap<string, string> = handCodesOf("floor"
 /**
  * The daemon island's wiki verbs a person's hand alone runs: `retire-wiki` unmints a face's wiki shell. It rides a session's
  * `session:call` (an island verb, never a face row), so the socket refuses a seat's call by this code, and the island's own
- * reactor refuses any asker but a terminal's (`retire-needs-hand`). `true-floor` rewrites one recipe to the canon floor by
- * place: the socket refuses a seat's ask, and the reactor any asker but a terminal's (`true-floor-needs-hand`). THE SHARE ROWS ARE A PERSON'S ACT (sealed-store#/the-share-config):
+ * reactor refuses any asker but a terminal's (`retire-needs-hand`). THE SHARE ROWS ARE A PERSON'S ACT (sealed-store#/the-share-config):
  * `share-set` writes who reads and writes a bag, and `share-apply` seats faces and hands each a lockbox under the owner's session,
  * so no agent surface reaches either.
  */
-export const WIKI_HAND_CODES: ReadonlyMap<string, string> = handCodesOf("retire", "share", "true-floor");
+export const WIKI_HAND_CODES: ReadonlyMap<string, string> = handCodesOf("retire", "share");
 
 /**
  * The sense lifecycle's hand verbs (`promote`, `retire`, `un-retire`, `purge`): island verbs a session's `session:call` carries,

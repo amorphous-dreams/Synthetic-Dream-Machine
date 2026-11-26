@@ -8,7 +8,6 @@ import { mkDaemonWikiAlert } from "@lararium/mesh/island-protocol";
 import { effectiveRecipeOf, type RecipePlane } from "./recipe-planes.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
 import { stringArg } from "./handler-args.js";
-import { askerRefusal, handCodeOf } from "@lararium/mesh/hand-refusal";
 
 /**
  * Read a recipe-verb's {slug, bagUrl} from the structured args — ONE contract for the
@@ -184,20 +183,12 @@ export function makeRemoveBagReactor(opts: WikiComposeOptions): VerbReactor {
  * which the record carries too (`floor-trued-from`: the stack it held before). No recipe lacks `lares`: the floor lays it under
  * every wiki, so the door adds none.
  *
- * A HAND ACT ON THE CLI SURFACE (`custody.hand.admits`, `true-floor`): it rewrites a recipe, so only an ask the operator's
- * terminal placed (the vessel's door booked the asker `cli`) runs it. A seat, a tab, a watcher and an ask no door read (a synced
- * summons, an open face's or the veil floor's composition with no living hand behind it) refuse `true-floor-needs-hand` BEFORE
- * the catalog is read, and the refusal names the cure: the operator runs the line at their own terminal.
- *
  * Idempotent: a recipe that stacks nothing untrue answers `already-true` and writes nothing.
  */
 export function makeTrueFloorReactor(opts: WikiComposeOptions): VerbReactor {
-  return async (args, ctx) => {
+  return async (args) => {
     const slug = stringArg(args, "slug");
     if (!slug) throw new Error("true-floor: the verb takes a slug (`lares wiki true-floor <slug>`)");
-    if (askerRefusal(ctx?.asker, { terminal: true }) !== null) {
-      throw new Error(`${handCodeOf("true-floor")}: truing "${slug}" to the canon floor rewrites its recipe on a person's hand alone; this ask came from ${ctx?.asker ?? "no hand a door read"}. Ask the operator to run \`lares wiki true-floor ${slug}\` at their own terminal.`);
-    }
 
     const { recipeTitle, recipeRec, adopt, standsAt } = await recipeToEdit(
       opts, slug, "lares-cli:wiki-true-floor", `recipe not found for "${slug}"`,

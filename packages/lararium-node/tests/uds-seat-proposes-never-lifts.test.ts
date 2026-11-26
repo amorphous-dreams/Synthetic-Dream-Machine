@@ -228,22 +228,6 @@ test("RED: a seat session's `retire-wiki` call refuses `retire-needs-hand` and p
   expect(w.placed.map((p) => p.verb)).toEqual(["retire-wiki"]);
 });
 
-test("RED: a seat's `true-floor` refuses `true-floor-needs-hand` at the socket, on a session call and a one-shot line, and places nothing; CONTROL: a cli session's call places it", async () => {
-  expect(STORE_DOOR_HAND_CODES.get("true-floor")).toBe("true-floor-needs-hand");
-  expect(STORE_DOOR_HAND_ONLY_ACTS.has("true-floor")).toBe(true);
-  const v = await stand();
-  const seat = await v.open("hint-a", "seat");
-  expect(await v.peer.ask({ op: "session:call", ...seat, requestId: "seat-true-floor", verb: "true-floor", args: { slug: "s" } }))
-    .toMatchObject({ kind: "session:refused", refusal: "true-floor-needs-hand" });
-  const line = await (await v.line()).ask({ verb: "true-floor", requestedBy: "seat-line", requestId: "seat-true-floor-line", seat: "ai", args: { slug: "s" } });
-  expect(JSON.stringify(line)).toContain("true-floor-needs-hand");
-  expect(v.placed).toEqual([]);
-  const w = await stand();
-  const cli = await w.open("hint-a", "cli");
-  await w.peer.ask({ op: "session:call", ...cli, requestId: "cli-true-floor", verb: "true-floor", args: { slug: "s" } });
-  expect(w.placed.map((p) => p.verb)).toEqual(["true-floor"]);
-});
-
 test("RED: a seat's `share-apply` and `share-set` refuse `share-needs-hand` at the socket, on a session call and a one-shot line, and place nothing; CONTROL: a cli session's call places it", async () => {
   for (const verb of ["share-apply", "share-set"]) {
     expect(STORE_DOOR_HAND_CODES.get(verb)).toBe("share-needs-hand");

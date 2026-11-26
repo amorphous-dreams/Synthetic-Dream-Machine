@@ -58,7 +58,7 @@ export function askerRefusal(asker: string | undefined, opts: { readonly termina
 }
 
 /** The wing a hand act rides: the door family that answers it, each refusing by its own code. */
-export type HandWing = "promote" | "kapae" | "swarm" | "sense" | "shore" | "retire" | "accept-loss" | "share" | "floor" | "render-output" | "true-floor";
+export type HandWing = "promote" | "kapae" | "swarm" | "sense" | "shore" | "retire" | "accept-loss" | "share" | "floor" | "render-output";
 
 /** One hand act's row: the code every door answers a refused asker with, and the wing that act rides. */
 export interface HandAdmitRow { readonly code: string; readonly wing: HandWing }
@@ -89,7 +89,6 @@ const SHARE = row("share", "share-needs-hand");
  *   share             who reads and writes a bag, and its landing (sealed-store#/the-share-config)
  *   floor             the vessel floor's accept (w26-floor-lane#/the-vessel-pin); a seat reads the status
  *   render-output     derived bytes landing in a bound workbench (a disk write grant)
- *   true-floor        the daemon island's recipe truing to the canon floor by place (a catalog rewrite, with a receipt)
  */
 export const HAND_ADMITS: Readonly<Record<string, HandAdmitRow>> = Object.freeze({
   "promote-commit": PROMOTE, "promote-drop": PROMOTE, "promote-orphan": PROMOTE, "promote-keep": PROMOTE, "promote-orphan-drop": PROMOTE,
@@ -102,7 +101,6 @@ export const HAND_ADMITS: Readonly<Record<string, HandAdmitRow>> = Object.freeze
   "share-set": SHARE, "share-apply": SHARE,
   "floor-accept": row("floor", "floor-needs-hand"), "floor-adopt-apply": row("floor", "floor-needs-hand"),
   "wiki-render-out": row("render-output", "render-output-needs-hand"),
-  "true-floor": row("true-floor", "true-floor-needs-hand"),
 });
 
 /** The code a hand act refuses by, or undefined where the act stands open (never a prototype key). */

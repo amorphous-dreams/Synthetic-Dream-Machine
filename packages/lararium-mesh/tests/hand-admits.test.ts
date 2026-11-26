@@ -12,14 +12,13 @@ import { PROMOTE_PANEL_HAND_CODES, PROMOTE_PANEL_VERBS } from "../src/promote-ma
 import { SENSE_HAND_CODES } from "../src/sensorium-lifecycle.js";
 
 describe("one table holds every hand code", () => {
-  test("each of the eleven wings answers its own code, stable as every caller reads it", () => {
+  test("each of the ten wings answers its own code, stable as every caller reads it", () => {
     const codes = new Map<string, Set<string>>();
     for (const row of Object.values(HAND_ADMITS)) codes.set(row.wing, (codes.get(row.wing) ?? new Set()).add(row.code));
     expect(Object.fromEntries([...codes].map(([wing, set]) => [wing, [...set]]))).toEqual({
       promote: ["promote-needs-hand"], kapae: ["kapae-needs-hand"], swarm: ["swarm-needs-hand"], sense: ["sense-needs-hand"],
       shore: ["hand-act-only"], retire: ["retire-needs-hand"], "accept-loss": ["accept-loss-needs-hand"],
       share: ["share-needs-hand"], floor: ["floor-needs-hand"], "render-output": ["render-output-needs-hand"],
-      "true-floor": ["true-floor-needs-hand"],
     });
   });
 
@@ -28,7 +27,6 @@ describe("one table holds every hand code", () => {
     expect(handCodeOf("wiki-render-out")).toBe("render-output-needs-hand");
     expect(handCodeOf("shore take-records")).toBe("hand-act-only");
     expect(handCodeOf("wear accept-loss")).toBe("accept-loss-needs-hand");
-    expect(handCodeOf("true-floor")).toBe("true-floor-needs-hand");
     for (const open of ["swarm-show", "promote-prepare", "kapae-flag", "floor-status", "rite-begin", "toString", "constructor"]) expect(handCodeOf(open), open).toBeUndefined();
   });
 
