@@ -100,6 +100,19 @@ export const recordCommand = (uri: string, face?: string | null): string => `lar
 /** The command that renders a card through the template its text transcludes. */
 export const cardRenderCommand = (card: string, face?: string | null): string => `lares wiki render ${shellWord(card)} --recipe default${faceFlag(face)} --form text`;
 
+/**
+ * THE INSTANCE KEEPS NAMING ITS OWN FACE (plan/companion-context #/4): every command a wake hands back binds to the face that
+ * answered it, so a turn of the mount leaves the instance's next call home. `--face <N>` joins each `lares spirit <verb> <pet>`
+ * after its pet and each `--recipe default` that names no face yet; a null face leaves the text as it stands.
+ */
+export function faceBound(text: string, face: number | null): string {
+  if (face === null) return text;
+  const flag = ` --face ${face}`;
+  return text
+    .replace(/(\blares spirit (?:om|ah|hum|hooili|residue|otakiage) [a-z0-9][a-z0-9-]{0,62})(?![a-z0-9-])(?! --face)/g, `$1${flag}`)
+    .replace(/(--recipe default)(?![\w-])(?! --face)/g, `$1${flag}`);
+}
+
 // ── THE CALL ───────────────────────────────────────────────────────────────────────────────────────────────────────
 
 /** The one macro call a door sends the wiki's render verb. Null where the pet name, the aperture or the face reads malformed. */

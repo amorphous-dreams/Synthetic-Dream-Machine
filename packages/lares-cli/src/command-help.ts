@@ -535,7 +535,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "measures each slot and folds one line to the month's ash ledger; `hooili` (the carry, hoʻoili, which writes nothing to the card) and `residue` " +
       "land a compaction summary or a handback (`--file -` reads stdin) after the strict secret-shape guard; `otakiage` burns the residue and keeps the card, on a person's hand alone. " +
       "The stack reads and writes as the slot `#/has`, one cap per line (`<a.b.c> <value>`): `ah --slot '#/has' --add` strings a cap (its tag and its field, one write), `hum --fold '#/has'` unstrings one; a cap names what the spirit holds and grants nothing, so any instance strings one (the mandate's cap alone lands by `--offer`), and a field named in `sealed` rides as its name alone. " +
-      "A card alone (`spirit-card/<pet>`, or a mask's `mask-card/<pet>`) answers through its fields; `ah --offer` sets a summon's offering (ʻālana) on `alana/<pet>` before any instance wakes, and an instance echoes its hash (`ah --echo <hash> --instance <id>`); a write from an instance that has not echoed lands and carries an `unechoed:` notice (a receipt, never a gate).",
+      "A card alone (`spirit-card/<pet>`, or a mask's `mask-card/<pet>`) answers through its fields; `ah --offer` sets a summon's offering (ʻālana) on `alana/<pet>` before any instance wakes, and an instance echoes its hash (`ah --echo <hash> --instance <id>`); a write from an instance that has not echoed lands and carries an `unechoed:` notice (a receipt, never a gate). " +
+      "The house starts its own arms: `mandate <pet>#<n>` lands a hash-keyed mandate carrier (`mandate/<id16>`), `summon <pet>#<n> --mandate <uri>@<hash>` verifies it, holds custody (a seat needs the coordinator's written `summons` grant) and the coordinator's lane ceiling, lands the edge `summons/<id16>` and starts the instance through the host launch cap with one wake line, and `handback <pet>#<n> --record <uri>` frees the lane.",
     examples: [
       "lares spirit om lares-alpha                                   # the wake text",
       "lares spirit ah lares-alpha --slot '#/open' --file open.txt     # true one slot",
@@ -547,6 +548,9 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares spirit otakiage lares-alpha                             # burn the residue (your hand)",
       "lares spirit ah blind-reader --offer --file mandate.txt        # ʻālana: the offering lands before any instance wakes",
       "lares spirit ah blind-reader --echo <hash> --instance <id>     # hoʻāla: an instance echoes the mandate's hash om handed it",
+      "lares spirit mandate 'cold-reader#00002' --file mandate.mem --model claude-fable-5-2 --parent <uri>@<hash>   # land a mandate carrier under its coordinator's",
+      "lares spirit summon 'cold-reader#00002' --mandate <uri>@<hash>  # the house starts the instance: one wake line through the launch cap",
+      "lares spirit handback 'cold-reader#00002' --record <uri>        # the edge names what came back; the lane frees",
     ],
   },
   hooks: {
