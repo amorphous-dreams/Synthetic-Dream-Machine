@@ -1079,6 +1079,40 @@ for (const [name, shim] of shims) {
     assert.match(r.stderr, /lares-container: the vessel's closing slice \(2 event\(s\), one line each\) rests at .*\/run\/vessel-last\.log/);
   });
 
+  // THE STOP'S OWN LINES JOIN THE SAVED LOG: the closing slice reads while the vessel still stands, so it ends before the
+  // stand-down speaks. Under a pūlama the vessel stops, and before its container leaves the down reads its log once more
+  // and appends the lines from the LAST `graceful shutdown` line on, as printed, naming their count in one line.
+  // CONTROL: a stop that printed no shutdown line appends nothing and says nothing.
+  test(`${name}: down-keeps-the-stand-down: the stop's own lines join run/vessel-last.log after the stop and before the removal`, async () => {
+    const underPulama = "LARES_HOUSE=@HOUSE@\nLARES_WORKSPACE=@HOUSE@/ws\nLARES_PULAMA=1\n";
+    const live = ['{"key":"a","kind":"sealed-rest/save-unsealed","count":7,"boot":"b1"}', '{"key":"b","kind":"faces/skips","count":1,"boot":"b1"}'].join("\n");
+    const stop = [
+      "[lararium] SIGTERM - graceful shutdown (durable flush, budget 6000ms)",
+      "[lararium] main replica flushed durably (main-flush 12ms)",
+      "[sealed-rest] stand-down: 1 document(s) waited as the stop began; 2 save(s) leave unsealed",
+      "[sealed-rest] 2 save(s) leave unsealed: 2 rest sealed-pending under the vessel's key (the next boot reads them back), 0 leave in memory alone",
+    ];
+    const log = ["[lararium] SIGTERM - graceful shutdown (an earlier life of this container)", "[lararium] an earlier life's flush line", "[lararium] phase → live", ...stop].join("\n");
+    const fakes = { FAKE_PULAMA_ID: "p1", FAKE_RUNNING_ID: "vessel", FAKE_CENSUS_OUTPUT: CLEAN };
+    const r = await run(shim, ["down"], { envFile: underPulama, env: { ...fakes, FAKE_VESSEL_LIVE: live, FAKE_VESSEL_LOG: log } });
+    assert.equal(r.status, 0, r.stderr);
+    const kept = (r.vesselLog ?? "").split("\n").map((l) => l.trimEnd()).filter((l) => l !== "");
+    assert.deepEqual(kept, [...live.split("\n"), ...stop]);
+    const at = (re) => r.calls.search(re);
+    assert.ok(at(/ stop lares$/m) >= 0 && at(/ stop lares$/m) < at(/^logs --tail 2000 vessel$/m), r.calls);
+    assert.ok(at(/^logs --tail 2000 vessel$/m) < at(/ rm -f lares$/m), r.calls);
+    assert.match(r.stderr, /lares-container: the stop's own lines \(\d+, from its graceful shutdown on\) join the saved log/);
+    const silent = await run(shim, ["down"], { envFile: underPulama, env: { ...fakes, FAKE_VESSEL_LIVE: live, FAKE_VESSEL_LOG: "[wire] no stop line here" } });
+    assert.equal(silent.status, 0, silent.stderr);
+    assert.deepEqual((silent.vesselLog ?? "").split("\n").filter((l) => l.trim() !== ""), live.split("\n"));
+    assert.doesNotMatch(silent.stderr, /the stop's own lines/);
+    assert.match(silent.calls, / rm -f lares$/m);
+    // A log that cannot be read after the stop never blocks the removal.
+    const refused = await run(shim, ["down"], { envFile: underPulama, env: { ...fakes, FAKE_VESSEL_LIVE: live, FAKE_LOGS_RC: "1" } });
+    assert.equal(refused.status, 0, refused.stderr);
+    assert.match(refused.calls, / rm -f lares$/m);
+  });
+
   // THE HOUSE KEEPS ITSELF: where a keep workspace stands named, down runs the host's `rite keep --if-due` while the vessel
   // still stands, before the census; a keep that refuses never blocks the down.
   const KEPT_ENVELOPE = '{"ok":true,"data":{"rite":"keep","due":true,"workspace":"house-backup"}}';

@@ -918,6 +918,25 @@ function SaveVesselLog([string]$id) {
     [Console]::Error.WriteLine("lares-container: the vessel's log (its last $VesselLogLines lines) rests at $file")
   } catch { [Console]::Error.WriteLine("lares-container: the vessel's log could not be read; the down goes on") }
 }
+# THE STOP'S OWN LINES JOIN THE SAVED LOG. The save above reads while the vessel still stands, so it ends before the
+# stand-down speaks. Once the vessel stopped and before its container leaves, the lines from its last `graceful shutdown`
+# line on (the flush spans, each `[sealed-rest]` stand-down row, `N save(s) leave unsealed`) append to that file as the
+# engine printed them, and one line names their count. A stop that printed none appends nothing and says nothing; a log
+# that cannot be read never blocks the removal.
+$StandDownLines = 2000
+function KeepStandDown([string]$id) {
+  $id = (($id -split "`r?`n") | Where-Object { $_.Trim() } | Select-Object -First 1)
+  if ([string]::IsNullOrWhiteSpace($id)) { return }
+  try {
+    $lines = @(& docker logs --tail $StandDownLines $id.Trim() 2>&1 | ForEach-Object { "$_" })
+    $from = -1
+    for ($i = 0; $i -lt $lines.Count; $i++) { if ($lines[$i] -match 'graceful shutdown') { $from = $i } }
+    if ($from -lt 0) { return }
+    $said = @($lines[$from..($lines.Count - 1)])
+    Add-Content -LiteralPath (Join-Path (Join-Path $House 'run') 'vessel-last.log') -Value $said -Encoding utf8
+    [Console]::Error.WriteLine("lares-container: the stop's own lines ($($said.Count), from its graceful shutdown on) join the saved log")
+  } catch { }
+}
 function DownVessel([string[]]$opts) {
   # A pūlama that reads unknown stops nothing: a full down would take a lit pūlama with it.
   $pulama = PulamaState
@@ -940,7 +959,7 @@ function DownVessel([string[]]$opts) {
   else { $script:KeepSaid = 'no vessel stood, so no keep ran' }
   if ($pulama -eq 'running') {
     # The pūlama keeps the hearth lit through the rebuild: the vessel alone stops (with down's options) and leaves.
-    Compose (@('stop') + $opts + @('lares')); Compose @('rm', '-f', 'lares')
+    Compose (@('stop') + $opts + @('lares')); KeepStandDown ($ids -join "`n"); Compose @('rm', '-f', 'lares')
   } else { Compose (@('down', '--remove-orphans') + $opts) }
 }
 

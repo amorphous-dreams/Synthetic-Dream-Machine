@@ -23,6 +23,7 @@ import { receiptInStore } from "@lararium/mesh/receipt-with-heads";
 import { repoHeadsRestAt, restedOnSave } from "./heads-rest.js";
 import { WardRefused } from "@lararium/mesh/ward-slots";
 import { wornAtOf } from "@lararium/mesh/sealed-doc-store";
+import { bootWait } from "@lararium/mesh/boot-wait";
 import {
   composeSealedRest,
   heldFateLine,
@@ -2982,7 +2983,8 @@ async function prepareNodeBootOn(
   // that mount, so no ask answers into a document the composite does not read yet. The composition returns only once it
   // stands; a boot caller mounts nothing. A restart's mount replays through the holder before its facade turns ready.
   let hostWorkingMounted: Promise<void> | null = null;
-  const mountHostWorking = (): Promise<void> => (hostWorkingMounted ??= daemonVm.workerEa.then(() => daemonVm.mountHostWorkingLayer()));
+  const mountHostWorking = (): Promise<void> => (hostWorkingMounted ??= bootWait("host-working", "the daemon island's ea (its keyhive, its archive floor and its working layer stand first), then the host working layer's mount",
+    () => daemonVm.workerEa.then(() => daemonVm.mountHostWorkingLayer())));
   let eventBus!:  LarEventBusImpl;         // set in makePool
   // R3 — the publication board this vessel materializes ONCE (openDaemon), read by every later
   // per-island plugin-offering resolution (makePool's pool, and the daemon VM's own recipe).
@@ -3542,7 +3544,11 @@ async function prepareNodeBootOn(
       if (!view || view.faceHandle() || !faceCatalogExpected) return;
       const secret = Buffer.from(secretHex, "hex");
       let face: DocHandle<LarDoc>;
-      try { face = await openFaceCatalog(repo, faceCatalogExpected, secret); } finally { secret.fill(0); }
+      // THE OPEN NAMES ITS WAIT: the sealed catalog hydrates only once the daemon island's holder stands and holds the face's key.
+      try {
+        face = await bootWait("face-catalog", "the face's sealed catalog, which hydrates through the daemon island's holder once its keyhive stands",
+          openFaceCatalog(repo, faceCatalogExpected, secret), (opened) => `${Object.keys(opened.doc()?.tiddlers ?? {}).length} row(s)`);
+      } finally { secret.fill(0); }
       view.bindFace(face);
       // THE FLOOR LETS GO ONLY OF WHAT RESTS SEALED: the face's change flushes through the sealed rest first, and a seal
       // that waits in memory (refused, unbooked) leaves the floor's rows standing for the next lift.
@@ -4121,7 +4127,9 @@ async function prepareNodeBootOn(
     // composition mounts (the worn one, else the founding face) names which row the veil restores from and which
     // row the island's export lands in. The island receives only that face's atom and archive.
     mountFace = sovereign && deviceEdge ? mountedFace : null;
-    const veilArchiveBytes = sovereign && activeAtom && personaGroupId ? await sovereign.veilArchive(personaGroupId) : null;
+    const veilArchiveBytes = sovereign && activeAtom && personaGroupId
+      ? await bootWait("veil-archive", "the mounted face's veil archive, read from custody", sovereign.veilArchive(personaGroupId), (bytes) => bytes ? `${bytes.byteLength} byte(s)` : "no archive rests")
+      : null;
     // THE OUTBOX KEY rides to the island the way the Archive does: opened here under the vessel key this thread holds,
     // and never at the floor, where the island's outbox holds shut (custody#/the-table, the outbox).
     // A row that stands and opens to no outbox key stops no boot: the island stands with its outbox shut, each parcel
@@ -4188,19 +4196,19 @@ async function prepareNodeBootOn(
     sealedRest.store.mapMoved();
     // THE SHARE CONFIG'S FILE WINS (sealed-store#/the-share-config): `$LAR_ROOT/config/share.tid` survives a re-founding and a
     // person edits it by hand, so each boot reconciles it into the control document, the rows' one authority while it stands.
-    await reconcileShareConfig(await readControlDoc()).catch((e: unknown) => console.warn(`[share] the share config stays as the control document holds it: ${e instanceof Error ? e.message : String(e)}`));
-    const daemonCanon = canonBagId && wornRelation ? await standFaceDaemonCanon({ repo, control: await readControlDoc(), faceRelation: wornRelation,
+    await bootWait("share-config", "the control document's read and the share config's reconcile into it", async () => reconcileShareConfig(await readControlDoc())).catch((e: unknown) => console.warn(`[share] the share config stays as the control document holds it: ${e instanceof Error ? e.message : String(e)}`));
+    const daemonCanon = canonBagId && wornRelation ? await bootWait("daemon-canon", "the worn face's daemon canon document (found or minted, mapped sealed before its first byte)", standFaceDaemonCanon({ repo, control: await readControlDoc(), faceRelation: wornRelation,
       beforeFirstByte: (bagId, documentId) => {
         if (deviceDocs.canonMinted(bagId, documentId, wornRelation)) reverdictLater();
         sealedRest.store.mapMoved();
-      } }) : null;
+      } })) : null;
     placeFace = faceLit && !!personaGroupId && wornFaceProved && activeAtom !== null && placeAid !== null
       ? placeProofSubjectRef({ atomKey: activeAtom.key, place: placeAid } as never) : null;
-    await standPlaceSession(placeFace !== null && personaGroupId && activeAtom ? { group: personaGroupId, atomKey: activeAtom.key } : null);
+    await bootWait("place-session", "the place session's stand under the worn face", standPlaceSession(placeFace !== null && personaGroupId && activeAtom ? { group: personaGroupId, atomKey: activeAtom.key } : null));
     // The control document stands before the daemon island opens over it, and the map names it from here on; the floor's
     // registry files beside it off the daemon document.
     readDeviceDaemonDocs((await readControlDoc()).doc());
-    await watchFloorRegistry();
+    await bootWait("floor-registry", "the floor registry's document and its watch", () => watchFloorRegistry());
     sealedRest.store.mapMoved();
     // A sibling's planes need their own face proof before registration; joinedFaceAuth hands each sibling the vessel ground alone.
     const siblingKel = sovereign ? makePersonaKelRingHolder({ repo, nexusPubkey }) : null;
@@ -4484,9 +4492,9 @@ async function prepareNodeBootOn(
     // island does (`resolveNodeIslandPluginCids`), never a vessel-wide hand-off. The
     // daemon's own one-recipe-model record names no offerings today, so this call is the floor
     // alone in practice — but it is the floor PROVEN through the selector, not assumed past it.
-    publicationHandle ??= await materializeSharedLarDoc(repo, publicationDocUrl(nexusPubkey), "board:publication");
+    publicationHandle ??= await bootWait("publication-board", "the publication board's document", materializeSharedLarDoc(repo, publicationDocUrl(nexusPubkey), "board:publication"));
     const offerings = publicationHandle;
-    daemonHolder = await standDaemonIsland({
+    daemonHolder = await bootWait("daemon-island", "the daemon island's open: each joined face's custody read, the plugin resolve and the worker's start", standDaemonIsland({
       readJoinedFaces,
       resolvePlugins: async () => resolveNodeIslandPluginCids({
         islandBlobs: assembly.islandHandle.doc()?.blobs,
@@ -4554,7 +4562,7 @@ async function prepareNodeBootOn(
         ownedDocument: true,
         projectionRoot: larProjectionsHome(),
       }),
-    });
+    }));
     daemonVm = daemonHolder.vm;
     daemonHolder.onRestarted(() => { if (seatSettler) void daemonVm.workerEa.then(() => seatSettler.onFold(), () => undefined); });
     // THE ISLAND SUPERVISOR: a refused drop composes the island again from the actors' states, and every open (that one, or any
@@ -4580,7 +4588,7 @@ async function prepareNodeBootOn(
         ...(kahuCanon.lares || kahuCanon.lararium ? { systemCanon: true } : {}),
       }).filter((bag) => !sent.has(bag));
       if (late.length) {
-        await daemonVm.registerFaceBags(activeAtom.key, late);
+        await bootWait("late-bags", "the island's registration of the bags the face's own catalog names", daemonVm.registerFaceBags(activeAtom.key, late), () => `${late.length} bag(s)`);
         sentRegisterBags = [...sentRegisterBags, ...late];
         console.log(`[catalog] the island registered ${late.length} bag(s) the face's own catalog names`);
       }
