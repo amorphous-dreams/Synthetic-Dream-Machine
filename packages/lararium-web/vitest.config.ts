@@ -1,8 +1,9 @@
-import { defineConfig, type TestProjectConfiguration } from "vitest/config";
+import { defineConfig, type TestProjectConfiguration, type TestProjectInlineConfiguration } from "vitest/config";
 import { playwright } from "@vitest/browser-playwright";
 import { webkit } from "playwright";
 import wasm from "vite-plugin-wasm";
 import { refusalIsHostDependency } from "./engine-refusal.js";
+import { LAMPS_ENV, lampsOf } from "../../tools/browser-lamps.mjs";
 
 // Web-surface tests run in real Chromium, Firefox and WebKit because this shore owns the DOM adapter and the engines
 // differ on exactly the seams it owns (editing stacks, focus, the accessibility tree). Pure phone-seat tests remain
@@ -40,7 +41,11 @@ async function engines(): Promise<Array<{ browser: "chromium" | "firefox" | "web
  * in the tree, untouched, and goes unrun until the browser Mu relights it. The account of what went dark and how to relight
  * stands in tools/ci-cells.mjs (BROWSER_LAMPS_DIM).
  *
- * TO RELIGHT: `projects: [webNode, ...(await browserProjects())]` below.
+ * THE LAMPS (the Pono Browser, lar:///ha.ka.ba/kahua/memory/wave/pono-browser): a thin set relit against the standing hull,
+ * named file by file with its proof in tools/browser-lamps.mjs (BROWSER_LAMPS_LIT). `LAR_BROWSER_LAMPS=1` joins the lamp
+ * projects to the run; each takes the settings of the dark project its files rode before.
+ *
+ * TO RELIGHT THE WHOLE PACKAGE: `projects: [webNode, ...(await browserProjects())]` below.
  */
 const webNode = {
   plugins: [wasm()],
@@ -61,13 +66,15 @@ const webNode = {
       "tests/page-life.test.ts",
       "tests/port-transport.test.ts",
       "tests/vessel-port.test.ts",
+      "tests/vessel-protocol-version.test.ts",
     ],
   },
 };
 
-/** The browser-run projects (real Chromium, Firefox, WebKit; the Playwright e2e walks), dark by default. */
-export const browserProjects = async (): Promise<TestProjectConfiguration[]> => [
-      {
+type NamedProject = TestProjectInlineConfiguration & { test: { name: string } };
+
+/** The three-engine project; building it probes WebKit on this host, so nothing else waits on it. */
+const webBrowser = async (): Promise<NamedProject> => ({
         test: {
           name: "web-browser",
           include: ["tests/**/*.test.ts"],
@@ -76,7 +83,10 @@ export const browserProjects = async (): Promise<TestProjectConfiguration[]> => 
           fileParallelism: false,
           browser: { enabled: true, headless: true, provider: playwright(), instances: await engines() },
         },
-      },
+});
+
+/** The dark projects that probe no engine to build: the vessel host's two engines and the Playwright e2e walks. */
+const launched: NamedProject[] = [
       {
         // The vessel worker's host over the real `@lararium/browser` (its Keyhive and Automerge WASM ride the wasm plugin): a
         // scratch store per case, the vessel it lights standing in, the host's own wiring read.
@@ -144,9 +154,19 @@ export const browserProjects = async (): Promise<TestProjectConfiguration[]> => 
       },
 ];
 
+/** The browser-run projects (real Chromium, Firefox, WebKit; the Playwright e2e walks), dark by default. */
+export const browserProjects = async (): Promise<TestProjectConfiguration[]> => [await webBrowser(), ...launched];
+
+/** Each lamp of this package as a project of its own: the dark project's settings over the lamp's own files. */
+export const lampProjects = (): TestProjectConfiguration[] => lampsOf("packages/lararium-web").map((lamp: { project: string; from: string; files: readonly { file: string }[] }) => {
+  const from = launched.find((project) => project.test.name === lamp.from);
+  if (!from) throw new Error(`tools/browser-lamps.mjs: lamp ${lamp.project} takes its settings from "${lamp.from}", which this config lacks`);
+  return { ...from, test: { ...from.test, name: lamp.project, include: lamp.files.map((f) => f.file) } };
+});
+
 export default defineConfig({
   test: {
     globalSetup: ["../../tools/vitest-dist-guard.mjs"],
-    projects: [webNode],
+    projects: [webNode, ...(process.env[LAMPS_ENV] === "1" ? lampProjects() : [])],
   },
 });
