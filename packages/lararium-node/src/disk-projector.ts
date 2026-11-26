@@ -840,7 +840,8 @@ export class LarDiskProjector {
    * its own heads (`pin`), so the row waits on its seal like every pin of this tree.
    *
    *   unprojected  no ordinary mirror of this projector holds the bag: another island answers for it
-   *   outside-mirror  the file lies outside every ordinary mirror root of the bag: nothing pins
+   *   outside-mirror  the file lies outside every ordinary mirror root of the bag and every folder such a mirror hears
+   *                (`hears`: a sourced wiki's working layer hears its canon folder): nothing pins
    *   unread       this island reads no file there (it left, or it rests where this island cannot read): nothing lands
    *   differs      the file and this island's records say different things, the bag holds no such record here, or the
    *                file answers to another document: no agreement stands, and the gate weighs the carrier as it stands
@@ -853,11 +854,14 @@ export class LarDiskProjector {
    */
   async pinAgreement(bagId: string, uri: string, file: string, from?: string): Promise<"unprojected" | "outside-mirror" | "unread" | "differs" | "waiting" | "kept" | "recorded"> {
     if (!this.projects(bagId)) return "unprojected";
-    // A file outside every ordinary mirror of the bag stands beyond this island's reach: no pin lands there.
+    // A file outside every ordinary mirror of the bag, and outside every folder such a mirror hears, stands beyond this
+    // island's reach: no pin lands there. A heard folder takes pins and never a write (`basedHomes` confines to the root).
     const within = this.mirrors.some((m) => {
       if (m.bagId !== bagId || m.mirrorClass === "recovery") return false;
-      const rel = relativePath(resolvePath(m.mirrorRoot), resolvePath(file));
-      return rel !== "" && rel !== ".." && !rel.startsWith("../") && !rel.startsWith("..\\") && !isAbsolute(rel);
+      return [m.mirrorRoot, ...(m.hears ?? [])].some((root) => {
+        const rel = relativePath(resolvePath(root), resolvePath(file));
+        return rel !== "" && rel !== ".." && !rel.startsWith("../") && !rel.startsWith("..\\") && !isAbsolute(rel);
+      });
     });
     if (!within) return "outside-mirror";
     const render = await this.recordsRenderOf(bagId, uri);

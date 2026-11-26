@@ -434,6 +434,36 @@ export function armWorkspaceWatch(o: WorkspaceWatchOptions): FacePoolWatch {
   });
 }
 
+// ── the canon source as a heard folder ─────────────────────────────────────────────────────────────────────────
+
+export interface CanonSourceWatchOptions {
+  /** The canon source: the folder holding one folder per canon bag (`daemonBagsDir()`). */
+  readonly canonBags: string;
+  /** The bag folders the watch hears (`projectionRoots(...).sourcedSlugs()`); a path under any other top opens no wave. */
+  readonly slugs: readonly string[];
+  /** The ear's ports (`canonEarPorts`, `canon-ear.ts`). */
+  readonly ports: Pick<FacePoolPorts, "catchUp" | "wave">;
+  readonly settleMs?: number;
+  readonly log?: (line: string) => void;
+  readonly watch?: FacePoolWatchOptions["watch"];
+  readonly cookie?: FacePoolWatchOptions["cookie"];
+}
+
+/**
+ * ARM THE WATCH over the canon source, the same seat a pool takes (`canon-ear.ts`): each settled change to a canon carrier
+ * lands in the working layer of its bag's wiki, and canon stays as it stood. The seat founds no history, tends no ignore
+ * block and commits nothing: the folder rests in the operator's own checkout, which the vessel never commits into.
+ */
+export function armCanonSourceWatch(o: CanonSourceWatchOptions): FacePoolWatch {
+  return armSeat({
+    root: o.canonBags, ports: o.ports, ...(o.settleMs !== undefined ? { settleMs: o.settleMs } : {}),
+    log: o.log ?? ((line: string) => console.log(`[canon-ear] ${line}`)),
+    ...(o.watch ? { watch: o.watch } : {}), ...(o.cookie ? { cookie: o.cookie } : {}),
+    accepts: (rel) => { const [top = "", ...rest] = rel.split("/"); return rest.length > 0 && o.slugs.includes(top); },
+    covers: `the canon source: ${o.slugs.join(", ")}`,
+  });
+}
+
 // ── the one seat both hosts take ───────────────────────────────────────────────────────────────────────────────
 
 interface SeatOptions {
@@ -449,7 +479,9 @@ interface SeatOptions {
   readonly prepare?: (log: (line: string) => void) => void;
   /** The wake's read: every stage edit made on disk since the last sitting. Absent: the wake names nothing and logs nothing. */
   readonly wake?: () => readonly StageEdit[];
-  readonly commit: (close: SittingClose) => Promise<SeamReading>;
+  /** The commit seam at the sitting's close. Absent (the canon source, whose history the operator's checkout keeps): the down
+   *  commits nothing and logs no seam. */
+  readonly commit?: (close: SittingClose) => Promise<SeamReading>;
   /** What the live line names the watch stands over. */
   readonly covers: string;
 }
@@ -520,6 +552,7 @@ function armSeat(o: SeatOptions): FacePoolWatch {
         // THE FINAL WAVE: what stands buffered drains; where no event could name what moved, the whole pool reads once.
         if (stood === "inotify-dead") { try { await o.ports.catchUp(); } catch (e) { fault("the final catch-up")(e); } }
         else await seat.flush();
+        if (o.commit === undefined) return { committed: false, why: "nothing-moved" };
         const reading = await o.commit(close).catch((e: unknown): SeamReading =>
           ({ committed: false, why: "commit-refused", detail: e instanceof Error ? e.message : String(e) }));
         log(reading.committed ? `the sitting closes at ${close}: the pool commits ${reading.sha.slice(0, 12)}`

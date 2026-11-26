@@ -317,6 +317,10 @@ export interface IngestAction extends ResidencyActionBase {
    *  that holds no base over records that say something else; the gate answers `conflict`, `no-base`,
    *  and a person settles it. Absent → a gesture a person named. */
   readonly unattended?: boolean;
+  /** WHERE THE WAVE'S WORDS CAME FROM, where no person's gesture carried them: `disk`, a file a hand edited under a folder
+   *  the house hears (a canon carrier in the canon source). The worn face's actor carries the wave; the receipt names the
+   *  disk as its writer. Absent → the asker wrote the words. */
+  readonly writer?: "disk";
   /**
    * THE FACE-NAMED WAVE (the lit set): the handle index of the face whose OWN layer this wave lands in. The handler resolves
    * that face's document through the island's face resolver and lands only where the vessel's device table names THAT face
@@ -409,6 +413,7 @@ export function encodeResidencyArgs(action: ResidencyAction): ResidencyArgs {
         ...(action.deletions ? { deletions: action.deletions } : {}),
         ...(action.kapae ? { kapae: action.kapae } : {}),
         ...(action.unattended === true ? { unattended: true } : {}),
+        ...(action.writer === "disk" ? { writer: "disk" } : {}),
         ...(action.face !== undefined ? { face: action.face } : {}),
       };
     default: {
@@ -534,6 +539,9 @@ export function parseResidencyAction(inv: Verb): ResidencyAction | null {
     // unattended and read as a person's gesture would adopt where it must stand off.
     const unattended = args["unattended"];
     if (unattended !== undefined && unattended !== true) return null;
+    // The writer reads `disk` or absent: any other spelling refuses, since a receipt names its writer or names none.
+    const writer = args["writer"];
+    if (writer !== undefined && writer !== "disk") return null;
     // A named face reads as a whole handle index; any other spelling refuses rather than land on a face nobody named.
     const face = args["face"];
     if (face !== undefined && (typeof face !== "number" || !Number.isSafeInteger(face) || face < 0)) return null;
@@ -542,6 +550,7 @@ export function parseResidencyAction(inv: Verb): ResidencyAction | null {
       ...(deletions.length > 0 ? { deletions } : {}),
       ...(kapae.length > 0 ? { kapae } : {}),
       ...(unattended === true ? { unattended: true } : {}),
+      ...(writer === "disk" ? { writer: "disk" as const } : {}),
       ...(typeof face === "number" ? { face } : {}),
     };
   }

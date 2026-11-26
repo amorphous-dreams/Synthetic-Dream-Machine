@@ -273,7 +273,7 @@ export interface IslandMsg_Manifest {
    * via `namedBagMirror(scope, mirrorRoot)` from `bag-paths`.
    * Absent = no disk projection for this island.
    */
-  diskMirrors?: readonly { bagId: string; mirrorRoot: string; scope: string; mirrorClass?: "recovery"; titlePaths?: boolean; tempLayer?: boolean }[];
+  diskMirrors?: readonly { bagId: string; mirrorRoot: string; scope: string; mirrorClass?: "recovery"; titlePaths?: boolean; tempLayer?: boolean; hears?: readonly string[] }[];
   /**
    * THE PERSON'S STAND-OFF COLLAPSE RULES, read from the worn face's daemon wiki (`$:/config/lares/shore/collapse/<rule>`,
    * each naming the bags it may collapse in) as the vessel mints this manifest: rule → bags. A wiki island reads its
@@ -1362,7 +1362,7 @@ export function mkManifest(
   opts?: {
     storage?:        IslandStorageConfig;
     ownedDocument?:  IslandOwnedDocumentScope;
-    diskMirrors?:    readonly { bagId: string; mirrorRoot: string; scope: string; mirrorClass?: "recovery"; titlePaths?: boolean; tempLayer?: boolean }[];
+    diskMirrors?:    readonly { bagId: string; mirrorRoot: string; scope: string; mirrorClass?: "recovery"; titlePaths?: boolean; tempLayer?: boolean; hears?: readonly string[] }[];
     daemonAuth?:      IslandMsg_Manifest["daemonAuth"];
     pluginCids?:     readonly string[];
     floorCid?:       string | null;

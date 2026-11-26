@@ -116,6 +116,20 @@ describe("seat-canon-reach — the AI seat never writes house canon live", () =>
     } finally { await r.repo.shutdown(); }
   });
 
+  test("RED: a seat-asked PROMOTE (a MOVE out of a working layer into house canon, one title or the whole layer) refuses seat-canon-reach and moves nothing", async () => {
+    const r = await rig();
+    try {
+      const move = async (args: Record<string, unknown>) =>
+        makeActionReactorFor("MOVE", { composite: r.composite, kahuReach: await kahuHand() })(args, ctxOf(r.composite, "MOVE", "seat"));
+      await r.stores.get(WORKING)!.put({ tiddler: { title: "W", text: "W" }, meta: { changeId: "change:W" } }, hand);
+      const before = r.heads();
+      expect(await reasonOf(() => move({ title: "W", "from-bag": WORKING, "to-bag": LARES, "change-id": "p1" }))).toBe("seat-canon-reach");
+      expect(await reasonOf(() => move({ "from-bag": WORKING, "to-bag": LARES, "change-id": "p2" }))).toBe("seat-canon-reach");
+      expect(r.heads()).toEqual(before);
+      expect(await r.stores.get(LARES)!.get("W")).toBeNull();
+    } finally { await r.repo.shutdown(); }
+  });
+
   test("RED: a routed act the island clears for main refuses a seat asker naming a house canon bag, with or without a verifier; CONTROL: a COPY OUT, a cli asker and a face row pass", async () => {
     const dispatcher = (asker?: Hand) => new VerbDispatcher({
       daemonVm: {} as never, daemon: new CompositeStore(), control: new CompositeStore(), registry: new VerbTable(),

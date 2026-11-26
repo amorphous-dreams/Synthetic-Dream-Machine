@@ -187,6 +187,9 @@ export interface UdsChannelOptions {
    * or null where this call settles nothing. It gates exactly as `handOnlyActs` does, on a session and on a one-shot line.
    */
   readonly handOnlyOp?: (verb: string, args: unknown) => string | null;
+  /** THE ACTS A LINE WHOSE PEER READS NOTHING NEVER PLACES, beyond the hand-only ones (`promotesIntoCanon`): a promote into
+   *  house canon books no asker from such a line, and the island reads an absent asker as the house's own road. */
+  readonly unattestedRefuses?: (verb: string, args: unknown) => boolean;
   /** The args an INGEST no person asked places with (`stampUnattendedIngest`): a seat's, or an unread peer's. */
   readonly unattendedIngest?: (verb: string, args: unknown) => unknown;
   /**
@@ -1520,6 +1523,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     const opCode = opts.handOnlyOp?.(frame["verb"], frame["args"]) ?? null;
     if (opCode !== null && state.supply.profile === "seat") return sessionRefuse(sock, opCode, requestId);
     if (opCode !== null && state.unattested) return sessionRefuse(sock, "hand-unattested", requestId);
+    if (state.unattested && opts.unattestedRefuses?.(frame["verb"], frame["args"])) return sessionRefuse(sock, "hand-unattested", requestId);
     if (opts.unattendedIngest && (state.supply.profile === "seat" || state.unattested)) frame["args"] = opts.unattendedIngest(frame["verb"], frame["args"]) as Record<string, unknown>;
     // NO SILENT STEWARD (`chore-face`): the daemon runs a chore on its mount's authority, so the session's face meets
     // `actingFaceOf` before any signer books or anything places; one wearing another lent face refuses by name, naming both.
@@ -1972,7 +1976,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
           if (seat !== null) inv.asker = "seat";
           else if (peer === "unknown") {
             delete inv.asker;
-            if (opts.handOnlyActs?.has(inv.verb) || opts.handOnlyOp?.(inv.verb, inv.args) != null) return fail(handRefusalOf("hand-unattested", { act: `"${inv.verb}"`, reads: "peer" }).message, "hand-unattested");
+            if (opts.handOnlyActs?.has(inv.verb) || opts.handOnlyOp?.(inv.verb, inv.args) != null || opts.unattestedRefuses?.(inv.verb, inv.args)) return fail(handRefusalOf("hand-unattested", { act: `"${inv.verb}"`, reads: "peer" }).message, "hand-unattested");
           } else inv.asker = "cli";
         }
         const named = namedFaceOf(inv.args);

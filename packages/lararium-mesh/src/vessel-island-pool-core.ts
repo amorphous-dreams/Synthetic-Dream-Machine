@@ -210,6 +210,13 @@ export type DiskMirrorGrant = readonly {
   sourcedRoots?: Readonly<Record<string, string>>; consentSlugs?: readonly string[]; tempLayer?: boolean;
   /** A wiki's WORKING grant: the operator's workspace dir per slug (`/lar/workspaces/<name>`), where its share row names one. */
   workspaceRoots?: Readonly<Record<string, string>>;
+  /** A wiki's WORKING grant: the canon source by slug (`<source>/bags`), for each slug whose canon bag stands there. The
+   *  resolved working mirror then HEARS that slug's canon folder (`hears`). */
+  canonSources?: Readonly<Record<string, string>>;
+  /** THE FOLDERS A RESOLVED MIRROR HEARS AND NEVER WRITES: a disk wave whose source rests under one may land in the mirror's
+   *  bag, and a base may pin at a file there, while the projector writes under `mirrorRoot` alone. A sourced wiki's working
+   *  layer hears its canon folder, so a hand's edit to a canon carrier lands in the working layer and canon stays as it stood. */
+  hears?: readonly string[];
   /** A FACE-ROOTED grant (a wiki's personal layer, its drafts, its temp layer): the face root's folder of the face the composition
    *  wears (its pet-name segment, `faces/<pet name>`), read at each mount, under the grant's `mirrorRoot` (`<projections>/faces`);
    *  none: no mirror. */
@@ -287,7 +294,10 @@ export function resolveDiskMirrors(
       const base = Object.hasOwn(g.sourcedRoots ?? {}, wikiSlug) ? g.sourcedRoots![wikiSlug]!
         : g.realmBase !== undefined ? g.realmBase(wikiSlug) ?? g.mirrorRoot
         : g.mirrorRoot;
-      const { sourcedRoots: _sourced, consentSlugs: _consent, workspaceRoots: _workspaces, faceFolder: _face, realmBase: _realm, ...held } = g;
+      const { sourcedRoots: _sourced, consentSlugs: _consent, workspaceRoots: _workspaces, faceFolder: _face, realmBase: _realm, canonSources: _canon, hears: _hears, ...granted } = g;
+      // A SOURCED WIKI'S WORKING LAYER HEARS ITS CANON FOLDER (`<source>/bags/{slug}`): read, never written.
+      const hears = g.wikiSlot === "working" && Object.hasOwn(g.canonSources ?? {}, wikiSlug) ? [`${g.canonSources![wikiSlug]!}/${wikiSlug}`] : [];
+      const held = hears.length > 0 ? { ...granted, hears } : granted;
       if (g.faceFolder !== undefined) {
         const plane = g.wikiSlot === "personal" || g.wikiSlot === "temp" ? g.wikiSlot : "recovery";
         return { ...held, bagId: perWikiBag(g), mirrorRoot: `${g.mirrorRoot}/${g.faceFolder()}/${plane}/${wikiSlug}`, ...(g.wikiSlot === "temp" ? { tempLayer: true } : {}) };

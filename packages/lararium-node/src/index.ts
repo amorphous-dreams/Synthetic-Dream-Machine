@@ -214,7 +214,7 @@ export { bagsFileToUri, wikisFileToUri, mirrorDirFileToUri, siteFileToTitle, typ
   isPrivateProjectionSlug, projectionRoots, type ProjectionRoots } from "./bag-paths.js";
 // The drain, one seat (face-pools W1, W2): the CLI's `lares ingest --watch` and the vessel's host over the worn face's pool.
 export { drainSeat, isWatchNoise, cookieSelfTest, COOKIE_WINDOW_MS, armFacePoolWatch, poolCommitSeam, tendPoolExclude, tendLitFacePool, type ExcludeTending, stageEditsSinceSitting, wakeStageLine, runGit,
-  armWorkspaceWatch, workspaceCommitSeam, WORKSPACE_SKIP, WORKSPACE_CLOSE_PREFIX, type WorkspaceWatchOptions,
+  armWorkspaceWatch, armCanonSourceWatch, type CanonSourceWatchOptions, workspaceCommitSeam, WORKSPACE_SKIP, WORKSPACE_CLOSE_PREFIX, type WorkspaceWatchOptions,
   WATCHED_PLANES, SITTING_CLOSE_PREFIX, POOL_SETTLE_MS, type DrainSeat, type FacePoolWatch, type FacePoolPorts, type FacePoolWatchOptions, type SeamReading,
   type SittingClose, type StageEdit, type WatchState, type GitRun } from "./watch-core.js";
 // ONE TREE PER ENTITY: the face, realm and workspace pools' one init, the house's idempotent ensure, the re-stand's heal and lift (`pool-tree`).
@@ -598,3 +598,5 @@ export { StandoffKeeper, keeperWikiOf, standoffActions, standoffAlertWords, stan
 
 export { FLOOR_WORDS, FLOOR_GRAINS, readFloorDrifts, rowInGrain, floorRowLine, floorCardFor, floorCardTitle, type FloorWord, type FloorGrain, type FloorDriftRow, type FloorCard, type FloorLagInput } from "./floor-card.js";
 export { VESSEL_LIVE_LOG, SHORE_ASH_DIR, openVesselLogSink, otakiageLiveLog, tapProcessStreams, mintBootId, type VesselLogSink, type VesselLogSinkOptions } from "./vessel-log-sink.js";
+export { canonEarPorts, canonAgreementAsk, readCanonGit, holdsConflictMarkers, CANON_GIT_READS, CANON_GIT_PAUSE_MS, type CanonEarOptions, type CanonGitRead, type CanonGitReading, type CanonGitPath, type CanonAgrees } from "./canon-ear.js";
+export { promotesIntoCanon } from "./promote-hand.js";

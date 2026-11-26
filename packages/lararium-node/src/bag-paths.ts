@@ -44,6 +44,12 @@ export interface BagMirrorConfig {
    * ({@link isTempLayerInternalTitle}) and projects only what a hand or a verb set down in the layer on purpose.
    */
   readonly tempLayer?: boolean;
+  /**
+   * THE FOLDERS THIS MIRROR HEARS AND NEVER WRITES (the manifest's `hears`): a sourced wiki's working layer hears its canon
+   * folder (`<source>/bags/<slug>`). A base may pin at a file there (`pinAgreement`), so the canon ear's next wave reads what the
+   * working layer already took; every write, unlink and home of this mirror stays under `mirrorRoot`.
+   */
+  readonly hears?: readonly string[];
 }
 
 /** The leaf a wiki's user temp layer projects under, beside its working mirror: `wikis/<wiki-folder>/temp`. */
@@ -143,10 +149,10 @@ export function carrierBaseRelPath(uri: string): string | null {
  */
 export function namedBagMirror(
   bagId: string, scope: string, mirrorRoot: string, titlePaths?: boolean, mirrorClass?: "recovery",
-  tempLayer?: boolean,
+  tempLayer?: boolean, hears?: readonly string[],
 ): BagMirrorConfig {
   void scope;
-  return { bagId, mirrorRoot, ...(titlePaths ? { titlePaths } : {}), ...(mirrorClass ? { mirrorClass } : {}), ...(tempLayer ? { tempLayer } : {}) };
+  return { bagId, mirrorRoot, ...(titlePaths ? { titlePaths } : {}), ...(mirrorClass ? { mirrorClass } : {}), ...(tempLayer ? { tempLayer } : {}), ...(hears !== undefined && hears.length > 0 ? { hears: [...hears] } : {}) };
 }
 
 /**

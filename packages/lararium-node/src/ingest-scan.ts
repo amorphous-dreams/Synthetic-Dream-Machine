@@ -1337,6 +1337,8 @@ export interface SubmitIngestOpts {
    * a file that holds no base over records that say something else: it answers `conflict`, `no-base`.
    */
   readonly unattended?: boolean;
+  /** The wave's words came off the disk with no person's gesture behind them (the canon ear): the receipt names `disk`. */
+  readonly writer?: "disk";
   /** THE FACE-NAMED WAVE (the lit set): the handle index of the open face whose own layer takes this wave. The island lands it
    *  only where its device table names that face as the target document's owner; it never falls back to the daemon mount. */
   readonly face?: number;
@@ -1435,6 +1437,7 @@ export function ingestWaveArgs(opts: SubmitIngestOpts, stage: CarrierStage = inl
     ...(deletions.length > 0 ? { deletions: deletions.map((d) => ({ uri: d.uri, syncedHash: d.syncedHash })) } : {}),
     ...(opts.kapae !== undefined && opts.kapae.length > 0 ? { kapae: [...opts.kapae] } : {}),
     ...(opts.unattended === true ? { unattended: true } : {}),
+    ...(opts.writer === "disk" ? { writer: "disk" } : {}),
     ...(opts.face !== undefined ? { face: opts.face } : {}),
   };
 }

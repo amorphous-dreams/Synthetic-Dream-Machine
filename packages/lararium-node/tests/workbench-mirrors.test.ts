@@ -108,6 +108,17 @@ describe("M2 — one shared resolution, two host grants", () => {
     // No workspace named: the workbench projects in the realm whose label holds the wiki.
     expect(resolveDiskMirrors(grant({}, "Heron"), designation, "notes")[0]!.mirrorRoot).toBe("/lar/projections/realms/Garden/wikis/notes");
   });
+  test("a sourced wiki's working mirror HEARS its canon folder and writes beside it; a slug outside the canon source hears nothing", () => {
+    const sourced: DiskMirrorGrant = [
+      { bagId: "working", mirrorRoot: "/lar/projections/realms", scope: "working", wikiSlot: "working", sourcedRoots: { lares: "/checkout/wikis" }, canonSources: { lares: "/checkout/bags" }, realmBase: (slug) => slug === "notes" ? "/lar/projections/realms/Garden/wikis" : null },
+    ];
+    expect(resolveDiskMirrors(sourced, [wikiSlotUri("lares", "working")], "lares")).toEqual([
+      { bagId: wikiSlotUri("lares", "working"), mirrorRoot: "/checkout/wikis/lares", scope: "working", wikiSlot: "working", hears: ["/checkout/bags/lares"] },
+    ]);
+    expect(resolveDiskMirrors(sourced, [wikiSlotUri("notes", "working")], "notes")).toEqual([
+      { bagId: wikiSlotUri("notes", "working"), mirrorRoot: "/lar/projections/realms/Garden/wikis/notes", scope: "working", wikiSlot: "working" },
+    ]);
+  });
   test("no face worn: no personal mirror; a host with no disk grant mirrors nothing and reads the same recipe", () => {
     expect(resolveDiskMirrors(grant({}, null), designation, "notes").map((m) => m.bagId)).toEqual([wikiSlotUri("notes", "working")]);
     expect(resolveDiskMirrors([], designation, "notes")).toEqual([]);

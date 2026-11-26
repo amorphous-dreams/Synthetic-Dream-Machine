@@ -21,7 +21,7 @@ import { createConnection, type Socket } from "node:net";
 import { Repo } from "@automerge/automerge-repo";
 import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
 import { CompositeStore } from "@lararium/mesh/composite-store";
-import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { DAEMON_BAG_ID, bagUri } from "@lararium/mesh/lar-uris";
 import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
 import { concludeVerb } from "@lararium/mesh/verb-tiddler";
 import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
@@ -30,6 +30,8 @@ import { makeUdsSeat, serveUdsFront, type UdsSessionDoor, type UdsSessionSigner 
 import { claimStore } from "../src/owned-store.js";
 import { harnessOnBranch, peerPidsIn, statOf, type PeerKind, type ProcReader } from "../src/uds-peer.js";
 import { STORE_DOOR_HAND_CODES, STORE_DOOR_HAND_ONLY_ACTS } from "../src/store-door-verbs.js";
+import { promotesIntoCanon } from "../src/promote-hand.js";
+import { seatHouseCanon } from "@lararium/mesh/kahu-canon-reach";
 
 const HARNESS_MARKS = ["CLAUDECODE", "CODEX_SANDBOX", "CODEX_SANDBOX_NETWORK_DISABLED"] as const;
 
@@ -41,7 +43,7 @@ const face = (name: string): SessionFace => ({
 const cleanups: Array<() => Promise<void> | void> = [];
 afterEach(async () => { for (const c of cleanups.splice(0).reverse()) await c(); });
 
-async function stand(opts: { peerKind?: (sock: Socket) => Promise<PeerKind> } = {}) {
+async function stand(opts: { peerKind?: (sock: Socket) => Promise<PeerKind>; unattestedRefuses?: (verb: string, args: unknown) => boolean } = {}) {
   const repo = new Repo({ sharePolicy: async () => true });
   const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
   const workingHandle = repo.create<LarDoc>(emptyLarDoc());
@@ -56,7 +58,7 @@ async function stand(opts: { peerKind?: (sock: Socket) => Promise<PeerKind> } = 
   const placed: Array<{ verb: string; requestId: string; asker?: string }> = [];
   const front = serveUdsFront({ claim });
   front.attach(makeUdsSeat({ controlHandle: daemonHandle, control: controlStoreOf(daemonHandle), claim, repo: { flush: (ids) => repo.flush(ids) }, sessions: door,
-    handOnlyActs: STORE_DOOR_HAND_ONLY_ACTS, handOnlyCodes: STORE_DOOR_HAND_CODES, ...(opts.peerKind ? { peerKind: opts.peerKind } : {}),
+    handOnlyActs: STORE_DOOR_HAND_ONLY_ACTS, handOnlyCodes: STORE_DOOR_HAND_CODES, ...(opts.peerKind ? { peerKind: opts.peerKind } : {}), ...(opts.unattestedRefuses ? { unattestedRefuses: opts.unattestedRefuses } : {}),
     switchActs: { write: async () => {} },
     mountOrdinal: () => 0,
     lentOrdinals: async () => [0],
@@ -175,6 +177,33 @@ test("RED: an unread peer's session refuses a hand-only call (retire-wiki, purge
   expect(out.match(/hand-unattested/g)?.length).toBe(2);
   expect(v.placed.map((p) => [(p as { verb: string }).verb, askerOf(p)])).toEqual([["meme-get", undefined]]);
 }, 20_000);
+
+// A PROMOTE TAKES THE HAND (operator ruling 2026-11-26): a line whose peer reads nothing books no asker, and the island reads
+// an absent asker as the house's own road, so the socket refuses its promote into house canon before it places.
+test("RED: an unread peer's promote into house canon (a MOVE, a wiki-act MOVE, offer-promote) refuses hand-unattested on a line and in a session; CONTROL: its MOVE between working layers places, and a hand's promote places cli", async () => {
+  seatHouseCanon(["lares"]);
+  const LARES = bagUri("lares");
+  const promote = { title: "W", "from-bag": wikiSlotUri("lares", "working"), "to-bag": LARES, "change-id": "p" };
+  const v = await stand({ peerKind: UNREAD, unattestedRefuses: promotesIntoCanon });
+  const line = await runClient(v.socketPath, [
+    { verb: "MOVE", args: promote, requestedBy: "0xop", requestId: "unread-move" },
+    { verb: "wiki-act", args: { wiki: "lares", verb: "move", args: promote }, requestedBy: "0xop", requestId: "unread-routed" },
+    { verb: "offer-promote", args: { cid: "bafy" }, requestedBy: "0xop", requestId: "unread-offer" },
+    { verb: "MOVE", args: { ...promote, "to-bag": wikiSlotUri("notes", "working") }, requestedBy: "0xop", requestId: "unread-sideways" },
+  ], false);
+  expect(line.match(/hand-unattested/g)?.length).toBe(3);
+  expect(v.placed.map((p) => [(p as { verb: string }).verb, askerOf(p)])).toEqual([["MOVE", undefined]]);
+  const s = await stand({ peerKind: UNREAD, unattestedRefuses: promotesIntoCanon });
+  const session = await runClient(s.socketPath, [
+    { op: "session:open", requestId: "open-h0", faceRef: "h0", hand: "cli" },
+    { op: "session:call", requestId: "promote-h0", verb: "MOVE", args: promote },
+  ], false);
+  expect(session).toMatch(/hand-unattested/);
+  expect(s.placed).toEqual([]);
+  const c = await stand({ peerKind: async () => "hand", unattestedRefuses: promotesIntoCanon });
+  await runClient(c.socketPath, [{ verb: "MOVE", args: promote, requestedBy: "0xop", requestId: "hand-move" }], false);
+  expect(c.placed.map((p) => [(p as { verb: string }).verb, askerOf(p)])).toEqual([["MOVE", "cli"]]);
+}, 30_000);
 
 test("CONTROL: a session whose peer reads hand places its hand-only call with asker cli", async () => {
   const v = await stand({ peerKind: async () => "hand" });

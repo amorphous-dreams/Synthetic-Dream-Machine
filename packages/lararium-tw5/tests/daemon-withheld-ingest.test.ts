@@ -72,6 +72,25 @@ describe.skipIf(wikiSkip)(`the island admits a disk wave by placement alone${ski
     expect(rows[0]!["decision"]).toBe("ingest");
   });
 
+  test("RED: a working mirror that HEARS its canon folder takes a wave sourced there, and its receipt names writer: disk; CONTROL: an unheard folder refuses by placement, and a booked asker's writer claim drops", async () => {
+    const WORKING = "lar:///ha.ka.ba/wikis/alpha/working";
+    const heard = [{ bagId: WORKING, mirrorRoot: "/checkout/wikis/alpha", scope: "working", hears: ["/checkout/bags/alpha"] }];
+    const r = rig(WORKING, heard);
+    const edited = carrier("lar:///ha.ka.ba/alpha/api/edited");
+    const wave = { "source-uri": "/checkout/bags/alpha", "to-bag": WORKING, "change-id": "chg-ear", carriers: [edited], unattended: true, writer: "disk" };
+    const out = await r.table.get("INGEST")!(wave, ctx(r.composite, wave)) as Record<string, unknown>;
+    expect((out["carriers"] as Array<Record<string, unknown>>)[0]?.["decision"]).toBe("ingest");
+    expect(out["writer"]).toBe("disk");
+    expect(await r.store.get(edited.uri)).not.toBeNull();
+    // The neighbouring bag's canon folder stands unheard: the same wave from there refuses.
+    const unheard = { ...wave, "source-uri": "/checkout/bags/beta", "change-id": "chg-ear-2" };
+    await expect(r.table.get("INGEST")!(unheard, ctx(r.composite, unheard))).rejects.toMatchObject({ code: "disk-wave-placement" });
+    // A line the socket booked names words it sent itself: its receipt names no disk.
+    const claimed = { ...wave, "change-id": "chg-ear-3", carriers: [carrier("lar:///ha.ka.ba/alpha/api/claimed")] };
+    const seat = await r.table.get("INGEST")!(claimed, { ...ctx(r.composite, claimed), asker: "seat" } as ReturnType<typeof ctx>) as Record<string, unknown>;
+    expect(seat["writer"]).toBeUndefined();
+  });
+
   test("placement grants reject cross-mirror waves and let an ordinary mirror ingest a receipt-fact title", async () => {
     const BAG_A = "lar:///ha.ka.ba/wikis/alpha/working";
     const BAG_B = "lar:///ha.ka.ba/wikis/beta/working";

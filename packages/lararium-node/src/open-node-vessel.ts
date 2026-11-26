@@ -238,7 +238,8 @@ import { projectionRoots, workspaceRootsOf, workbenchFolders, litFaceDiskMirrors
 import { ensureRealmLabel, realmPlacement, settleRealmMoves } from "./realm-labels.js";
 import { ledgerWorkbenches, ledgerWorkbenchRealms, workbenchSeats } from "@lararium/mesh/workbench";
 import { wikiSlotOf } from "@lararium/mesh/wiki-island-reach";
-import { armFacePoolWatch, armWorkspaceWatch, tendLitFacePool, type FacePoolWatch } from "./watch-core.js";
+import { armFacePoolWatch, armWorkspaceWatch, armCanonSourceWatch, tendLitFacePool, type FacePoolWatch } from "./watch-core.js";
+import { canonEarPorts, canonAgreementAsk } from "./canon-ear.js";
 import { ensurePoolTree, faceShelvingLine, healPoolTrees, poolTreeLine, shelveFaceRoot } from "./pool-tree.js";
 import { islandBaseDoor, islandIngestSubmit, openSyncedTree, poolIngestPorts, workspaceIngestPorts, type BaseRoad } from "./ingest-scan.js";
 import { poolHeads } from "./pool-head.js";
@@ -5406,7 +5407,7 @@ async function prepareNodeBootOn(
       // ONE FOLDER ANSWERS A WORKBENCH, whichever seated writer wears: `<projections>/realms/<realm pet name>/wikis/<slug>` (the
       // realm label that holds the slug, `realmBase`), and a sourced slug's beside its canon source (`<source>/../wikis/<slug>`,
       // the repo workspace: git tracks it). No face relation enters that path; a slug with no label takes its default one.
-      { bagId: "working",        mirrorRoot: join(projectionRoot, REALMS_PROJECTION_DIR), scope: "working",  wikiSlot: "working", sourcedRoots: projection.sourcedRoots("wikis"), workspaceRoots: workspaces.roots, realmBase: realmBaseOf("wikis") },
+      { bagId: "working",        mirrorRoot: join(projectionRoot, REALMS_PROJECTION_DIR), scope: "working",  wikiSlot: "working", sourcedRoots: projection.sourcedRoots("wikis"), canonSources: projection.sourcedRoots("bags"), workspaceRoots: workspaces.roots, realmBase: realmBaseOf("wikis") },
       // THE FACE-ROOTED GRANTS (face-pools #/shape): each holds one face's hand, so each rests in the wearing face's root
       // (`<projections>/faces/<pet name>/`), never under the shared `wikis/<slug>/` and never beside a canon source: nothing
       // face-private lands in a checkout or a realm pool. No face worn (or one whose pet name makes no folder): none stands.
@@ -5599,6 +5600,29 @@ async function prepareNodeBootOn(
         workspaceWatches.add(wsWatch);
         // The last workbench watch's down marks a quiet point: a rename or regroup the operator made while it held the folder moves now.
         stood.push({ what: `the workbench ${name}'s watch`, phase: "producers", down: async () => { await wsWatch.down("lock"); workspaceWatches.delete(wsWatch); if (workspaceWatches.size === 0) settleRealmFolders(); } });
+      }
+      // THE CANON EAR (operator ruling 2026-11-26: a change to a canon file on disk lands in the working layer, and promotion
+      // takes the human hand). No workbench watch covers a sourced slug, so the same seat stands over the canon source itself
+      // (`daemonBagsDir()`: `LAR_BAGS`, the config's bags, else `<corpus>/bags`), off the boot path: each settled change to a
+      // carrier under `<source>/<slug>/` lands as ONE unattended INGEST wave in `wikis/<slug>/working`, run in that wiki's own
+      // island under the worn face's actor, its receipt naming `writer: disk`; that island verifies and pins each base at the
+      // canon file its working mirror hears. A source-control move stands aside and a conflict-marked carrier refuses by name
+      // (`canon-ear.ts`). Canon takes nothing here; the projecting leg's own write-back reads as an echo and rides nothing.
+      const canonBags = daemonBagsDir();
+      const heard = projectionRoots({ projectionRoot: larProjectionsHome(), canonBags }).sourcedSlugs();
+      if (heard.length > 0) {
+        const earLog = (line: string): void => console.log(`[canon-ear] ${line}`);
+        const earRoads = (slug: string, bag: string): BaseRoad[] => [(args) => inWiki(slug, "shore", args), daemonRoad, ...wikiRoads(bag, slug)];
+        const earWatch = armCanonSourceWatch({
+          canonBags, slugs: heard, log: earLog,
+          ports: canonEarPorts({
+            canonBags, slugs: heard, did: requestedBy, log: earLog,
+            submit: (slug) => islandIngestSubmit((_verb, args) => inWiki(slug, routingString(args, "verb", "wiki-act"), routingObject(args, "args", "wiki-act"))),
+            base: (slug) => (synced) => islandBaseDoor((bag) => earRoads(slug, bag), synced),
+            canonAgrees: canonAgreementAsk(earRoads),
+          }),
+        });
+        stood.push({ what: "the canon ear's watch", phase: "producers", down: async () => { await earWatch.down("lock"); } });
       }
     }
     // A FACE'S HOME WIKI IS ITS OWN PREFERENCE, READ AT LIGHT (research/pin-mu#S2): the record sits in the lit face's own daemon

@@ -108,6 +108,7 @@ import { createEngineMeter, readProcessWasm, type EngineMeter } from "./engine-m
 import { armFallKeeper, clearEngineFalls, heldInFlight, keepFallDown, readEngineFalls, HELD_HAND_ACT, type FallKeeper } from "./engine-fall.js";
 import { readVesselLife } from "./vessel-life.js";
 import { shoreHandCode, stampUnattendedIngest, type ShoreFlushReading } from "./shore-verb.js";
+import { promotesIntoCanon } from "./promote-hand.js";
 import { setLoggerFactory } from "@automerge/automerge-repo";
 import { mountHttpFaceDispatcher } from "./http-face-dispatcher.js";
 import { createLanAnnouncement, createLanAnnouncer, dgramLanSocket, type LanDatagramSocket } from "./lan-discovery.js";
@@ -1012,6 +1013,8 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     handOnlyCodes: STORE_DOOR_HAND_CODES,
     // THE SHORE SETTLES BY A PERSON: a seat's take-records, restore or remove refuses `hand-act-only`, per op (`shoreHandCode`).
     handOnlyOp:   shoreHandCode,
+    // A PROMOTE TAKES THE HAND: a line whose peer reads nothing places no MOVE into house canon and no `offer-promote`.
+    unattestedRefuses: promotesIntoCanon,
     // AN INGEST NO PERSON ASKED RIDES UNATTENDED (`stampUnattendedIngest`): a seat's or an unread peer's wave stands off.
     unattendedIngest: stampUnattendedIngest,
     socketVerbs:  new Set([...STORE_DOOR_FACE_VERBS, ...REALM_KEY_VERBS]),

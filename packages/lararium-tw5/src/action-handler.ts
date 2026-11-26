@@ -276,7 +276,7 @@ export interface ActionHandlerOptions {
    */
   readonly faceTarget?: FaceTargetResolver;
   /** Concrete mirror grants from the vessel manifest. An empty list closes disk INGEST. */
-  readonly diskMirrors?: readonly { readonly bagId: string; readonly mirrorRoot: string; readonly scope: string; readonly mirrorClass?: "recovery" }[];
+  readonly diskMirrors?: readonly { readonly bagId: string; readonly mirrorRoot: string; readonly scope: string; readonly mirrorClass?: "recovery"; readonly hears?: readonly string[] }[];
   /** The host-task yield a LOAD takes between landing slices; `yieldToHost` when absent. */
   readonly yieldHostTask?: HostTaskYield;
   /** Native TW5 filetype deserialization (LOAD), closing over the island's $tw. */
@@ -392,10 +392,11 @@ function assertDiskWavePlacement(action: IngestAction, mirrors: ActionHandlerOpt
   if (source === null || candidates.length === 0) {
     throw new DiskWavePlacementRefusal(action.sourceUri, action.toBag, "the vessel grants no writable mirror for this source and destination");
   }
-  const allowed = candidates.some((m) => {
-    const root = normalizedAbsolutePath(m.mirrorRoot);
+  // A mirror's own root, and each folder it HEARS (a sourced wiki's working layer hears its canon folder: read, never written).
+  const allowed = candidates.some((m) => [m.mirrorRoot, ...(m.hears ?? [])].some((granted) => {
+    const root = normalizedAbsolutePath(granted);
     return root !== null && (source === root || source.startsWith(root.endsWith("/") ? root : `${root}/`));
-  });
+  }));
   if (!allowed) throw new DiskWavePlacementRefusal(action.sourceUri, action.toBag, "the selected source does not rest under this bag's granted mirror");
 }
 
@@ -624,7 +625,12 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
     // asked rides unattended whatever it claims, and the gate's no-base verdict stands off rather than adopting a file over
     // records that say something else. The socket stamps the same on every INGEST a seat or an unread peer sends
     // (`stampUnattendedIngest`), so a wave routed into a wiki island, where no asker rides, stands off the same way.
-    const action = parsed.verb === "INGEST" && ctx.asker === "seat" && parsed.unattended !== true ? { ...parsed, unattended: true } : parsed;
+    const stood = parsed.verb === "INGEST" && ctx.asker === "seat" && parsed.unattended !== true ? { ...parsed, unattended: true } : parsed;
+    // A RECEIPT'S WRITER RIDES THE VESSEL'S OWN WAVE ALONE (its road books no asker): a line the socket booked (a seat, a
+    // terminal, a tab) that names `writer: disk` names words it sent itself, so the claim drops and its receipt names no disk.
+    const action = stood.verb === "INGEST" && stood.writer !== undefined && ctx.asker !== undefined
+      ? (({ writer: _claimed, ...rest }) => rest)(stood) as typeof stood
+      : stood;
     // THE TW5 DOCS LIBRARY'S NAME HOLDS ONE RELATION (`tw5-docs-name`): no CREATE mints a bag under it, and no verb writes it,
     // as a destination or as a source, before any cap ask, placement check or store reach.
     if (action.verb === "CREATE") refuseTw5DocsReserved(action.bag, "CREATE");
@@ -1877,6 +1883,8 @@ async function executeIngest(action: IngestAction, access: BagAccess, opts: Acti
   return {
     sourceUri: action.sourceUri, toBag: action.toBag, changeId: action.changeId,
     carriers: results,
+    // THE RECEIPT NAMES ITS WRITER where the words came off the disk with no person's gesture behind them.
+    ...(action.writer === "disk" ? { writer: "disk" } : {}),
     ...(fresher.length > 0 ? { fresherCanon: fresherSummary(fresher) } : {}),
     ...(deletionSummary ? { deletions: deletionSummary } : {}),
     ...(kapaeSummary ? { kapae: kapaeSummary } : {}),
