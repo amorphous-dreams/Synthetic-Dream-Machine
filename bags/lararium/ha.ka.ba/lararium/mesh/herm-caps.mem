@@ -134,7 +134,7 @@ So a browser reaches clear content in one of two ways, both through a house:
 |S7 |reader pull |a library call beside `pullBulb`: pull, verify by own roots, mount at home |blind read |
 |S8 |browser floor parity |a locked browser vessel renders the clear wiki from its house's served bytes |cold read |
 
-S5 and S6 both touch `composeHerm` and the public shore: they run in sequence, never in parallel. Code that can live in the wiki VMs lives there, as mirrored module tiddlers (operator), so one module runs alike in every vessel, browser or node, and versions with the records it serves; only host-process gates stay in tools.
+S5 and S6 both touch `composeHerm` and the public shore: they run in sequence, never in parallel. Code that can live in the wiki VMs lives there, as mirrored module tiddlers (operator), so the code stays versioned, transcludable and readable through the doors; only host-process gates stay in tools.
 
 <<~/ahu>>
 
@@ -156,6 +156,6 @@ Open, the operator's own:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;vFx05dDHNo5LhvcPDbX3HFRQbI-LUzXCnhGlM_o-khw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZLAKFrsH_ZOG5tk06t0NmIiMeFuJInErhnbKK94lSPk`>>
 
 <<^ code=`&#x0004;` to=`?`>>

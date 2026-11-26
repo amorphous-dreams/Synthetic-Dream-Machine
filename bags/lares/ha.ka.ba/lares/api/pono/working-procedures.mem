@@ -190,7 +190,7 @@ The cadence the house keeps while an operator and a familiar steer a swarm. The 
 * ''Landing.'' A lane lands as a branch, merged `--no-ff` by the familiar after its floor proof and a read; a change that touches the hand gate, keys, seals, grants, the pūlama or a security-class path takes a cold read first. The landing bench, standing at develop, judges the class in two steps. Before the merge, `node tools/cold-read-owed.mjs <lane-ref>` pins develop and the lane head, reads the two trees and the tree the merge itself would make, and matches with develop's own list and matcher, so no lane judges itself; it answers `COLD READ OWED: <paths>` or `cold read: none owed`, a record hash the merge message quotes (`Cold-Read: <hash>`), and the landing command, which names the pinned head sha and never the branch. After the merge and before the push, `node tools/cold-read-owed.mjs --check-merge HEAD <head-sha>` holds the merge to that base and that head and judges the merge's own tree again, so a hand's resolution owes whatever it touched. A judge that cannot read answers owed, a conflict included, so an unread path never passes as none owed. Develop's CI judges the sum, and its runs never cancel one another. Web2 annotates and never decides: a hosted CI verdict comes from outside the house's causal island and goes dark when its service does, so no rite waits on one.
 * ''Reads through the doors, one at a time.'' Spirits enter only through the lares doors; door reads run serially. While the doors stand dark, a spirit keeps its record in the operator's notes directory and the familiar lands it once the doors answer.
 * ''Evidence decides, or the operator does.'' Where the evidence settles a fork, the house acts and says so in one line; where it splits, the house asks. Held questions reach the operator with a lean each, a few at a time; on the operator's ask, the familiar collapses its leans through an e-jing into a ruling. Outward acts, catma adoption and a keeper's choices stay the operator's word.
-* ''Code lives where it can.'' Logic that can run in a wiki VM ships there as mirrored module tiddlers, so one module runs alike in every vessel, browser or node, and versions with the records it serves; only what gates a host process (a file lock, a harness hook, docker, git) stays in `tools/`.
+* ''Code lives where it can.'' Logic that can run in a wiki VM ships there as mirrored module tiddlers, so the code stays versioned, transcludable and readable through the doors; only what gates a host process (a file lock, a harness hook, docker, git) stays in `tools/`.
 * ''Waves, never timers.'' Pacing rides the nalu: a queue of families, a crest that lands whole, the next crest after the landing. No timer decides a flush, an expiry or a violation, since a timer hands the decision to whoever moves the clock.
 * ''Talk story, a few at a time.'' The floors convene over held questions in small batches, each closing by a ruling, a kept dispute or an honest open hand.
 
@@ -253,6 +253,6 @@ git config merge.mem-seal.driver "node tools/mem-merge-driver.mjs %O %A %B %P %L
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Ga6JXkSSFMXwg3yx6WAGKKqbzwUdly-Ds5a7ogtox5I`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;N_Xqa0Ro5_uymSVh9kg8UYxNNBYh6aq412xKXaOBq8c`>>
 
 <<^ code=`&#x0004;` to=`?`>>
