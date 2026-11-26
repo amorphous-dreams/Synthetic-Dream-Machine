@@ -34,6 +34,7 @@ const browserNode = {
   extends: true as const,
   test: {
     name: "browser-node",
+    setupFiles: ["../../tools/vitest-silence-guard.mjs"],
     environment: "node" as const,
     include: [
       "tests/admit-carriage.test.ts",

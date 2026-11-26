@@ -36,7 +36,7 @@ describe("the node's veil-lift link", () => {
     // THE PLACE KEY SIGNED NOTHING THAT NAMES A FACE: the signature holds under the atom and fails under the vessel's key.
     const image = new Uint8Array([...new TextEncoder().encode("lararium/veil-lift\n"), ...canonicalJsonBytes({ kind: "veil-lift", veil: kept.veil, face: kept.face, atom: kept.atom })]);
     expect(await ed25519VerifyHex(kept.signature, image, kept.atom)).toBe(true);
-    expect(await ed25519VerifyHex(kept.signature, image, kept.veil).catch(() => false)).toBe(false);
+    expect(await ed25519VerifyHex(kept.signature, image, kept.veil)).toBe(false);
     expect(await keepNodeVeilLift("group-veil-a", await atomSeedOf(0)), "a replay answers the standing record").toEqual(kept);
   });
 

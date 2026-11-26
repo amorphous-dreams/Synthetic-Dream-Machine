@@ -198,8 +198,7 @@ describe("the typed first enrolment", () => {
 describe("what a board writer reaches", () => {
   test("★ a stranger's enrolment moves nothing: the fold sets it aside and the head stands ★", async () => {
     const { inception } = await oneOfOne();
-    const forged = await enrolled(inception, SEEDS.stranger).catch(() => null);
-    expect(forged).toBeNull();   // the mint checks the signature it took
+    await expect(enrolled(inception, SEEDS.stranger)).rejects.toThrow();   // the mint checks the signature it took
     const honest = await enrolled(inception);
     const strangerSigned = { ...honest, enrolSig: await signerOf(SEEDS.stranger)(personaEventBytes(honest)) };
     const fold = foldPersonaContests([inception, strangerSigned]);

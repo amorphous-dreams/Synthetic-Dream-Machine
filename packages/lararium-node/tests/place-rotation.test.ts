@@ -101,7 +101,7 @@ describe("place rotation", () => {
       const unread = await stageOnly(card, 77, false);
       await expect(reconcilePlaceRotation()).rejects.toThrow("place-rotation-torn");
       await expect(rotatePlace({ card, entropy: entropy(90), placeFoundingCard: { readBack: async () => {} } })).rejects.toThrow("place-rotation-torn");
-      expect((await loadPlaceKelChain().catch(() => [])).length).toBe(0);   // the torn stage refuses every read until it is cleared
+      await expect(loadPlaceKelChain()).rejects.toThrow("place-rotation-torn");   // the torn stage refuses every read until it is cleared
       rmSync(unread.path);
       expect((await loadPlaceKelChain()).length).toBe(1);
       const staged = await stageOnly(card, 78, true);

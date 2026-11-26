@@ -46,6 +46,7 @@ const webNode = {
   plugins: [wasm()],
   test: {
     name: "web-node",
+    setupFiles: ["../../tools/vitest-silence-guard.mjs"],
     environment: "node" as const,
     include: [
       "tests/arrival-relay.test.ts",

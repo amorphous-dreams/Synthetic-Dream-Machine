@@ -59,7 +59,9 @@ describe("★ a retired bag takes no landing through the composite ★", () => {
     expect((err as { reason: string }).reason).toBe("bag-retired");
     expect(String((err as Error).message)).toContain(BAG);
     expect(await store.get("lar:///t/new")).toBeNull();
-    expect((await store.get("lar:///t/kept"))?.meta?.deleted).toBeFalsy();
+    const kept = await store.get("lar:///t/kept");
+    expect(kept, "the kept row still stands").not.toBeNull();
+    expect(kept?.meta?.deleted).toBeFalsy();
   });
 
   test("RED: a bagless save, delete and remove into a retired working layer refuse, and land nothing", async () => {
@@ -73,7 +75,9 @@ describe("★ a retired bag takes no landing through the composite ★", () => {
       expect(isVerbRefusal(err) && (err as { reason: string }).reason).toBe("bag-retired");
     }
     expect(await store.get("lar:///t/new")).toBeNull();
-    expect((await store.get("lar:///t/kept"))?.meta?.deleted).toBeFalsy();
+    const kept = await store.get("lar:///t/kept");
+    expect(kept, "the kept row still stands").not.toBeNull();
+    expect(kept?.meta?.deleted).toBeFalsy();
   });
 
   test("CONTROL: the same writes into a bag no DROP retired land", async () => {
