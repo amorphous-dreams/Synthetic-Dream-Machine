@@ -19,9 +19,11 @@
  *
  * ── THE ASK ──────────────────────────────────────────────────────────────────────────────────────────────────────────
  * Through the filter door first: `lares wiki filter '[[<seam table>]floor-owes[runs],[<facts, percent-encoded>]]' --recipe
- * default --all`. The answer's header row (`OWES facts=<n> …`) must carry the count of fact lines sent; a door that
- * answers nothing, another leading row or another count reads as dark (a wiki holding no such operator answers an empty
- * list, never an error). Dark doors, or facts too long for one ask: the fold's source and the seam
+ * default --all`. The answer's header row (`OWES facts=<n> table=<sha256> …`) must carry the count of fact lines
+ * sent; a door that answers nothing, another leading row or another count reads as a dark door (a wiki holding no such
+ * operator answers an empty list, never an error). THE TABLE CHECKSUM: the header's `table=` must equal the digest of
+ * DEVELOP'S OWN seam table (`git show origin/develop:<the table>`); a door folding another table (a vessel standing on
+ * another plugin, a working-layer override) answers `dark` outright, and the gate fails wide, never narrow. Dark doors, or facts too long for one ask: the fold's source and the seam
  * table come out of DEVELOP'S git objects (`refs/remotes/origin/develop`, never the lane's tree and never the bench's files)
  * and run in a child node, as the security-class judge runs its matcher. Where that fails too the answer reads `dark`, and
  * the bench gate fails wide (the heavy tier of every touched package plus the whole node e2e set).
@@ -199,6 +201,11 @@ export function checkoutJudge(root = ROOT) {
   return { short: "checkout", fold: readFileSync(join(root, FOLD)), table: tidText(readFileSync(join(root, TABLE))) };
 }
 
+/** The digest a seam table names itself by, as the fold computes it: SHA-256 over its non-blank lines, trimmed, newline-joined. */
+export function tableDigest(table) {
+  return createHash("sha256").update(String(table).split("\n").map((l) => l.trim()).filter(Boolean).join("\n")).digest("hex");
+}
+
 /** The filter one door ask runs. */
 export const askFilter = (view, facts) => `[[${SEAMS}]floor-owes[${view}],[${encodeURIComponent(facts)}]]`;
 
@@ -227,6 +234,9 @@ export function headerHolds(rows, sent, word = "OWES") {
   if (head[0] !== word) return false;
   return word === "OWES" ? head.includes(`facts=${sent}`) : head.some((w) => w.startsWith("files="));
 }
+
+/** The table digest an answer's header carries (`table=<sha256>`), or the empty string. */
+export const tableOf = (rows) => String(rows?.[0] ?? "").split(/\s+/).find((w) => w.startsWith("table="))?.slice("table=".length) ?? "";
 
 /** The rows as the gate reads them: refusals, sets, globs and files, each with its why. */
 export function parseRows(rows) {
@@ -259,19 +269,24 @@ export function owes({ root = ROOT, base = DEVELOP, head = "HEAD", git = gitAt(r
   const text = facts.lines.join("\n");
   const sent = new Set(facts.lines).size;
   const answer = (via, rows, why = "") => { const parsed = parseRows(rows); return { via, why, touched: facts.touched, ...parsed, digest: owedDigest(parsed) }; };
+  const dark = (why) => ({ via: "dark", why, touched: facts.touched, refuse: [], sets: [], globs: [], files: [], digest: "" });
+  // DEVELOP'S TREE DECIDES: its fold and its table stand first, and its table's digest holds every answer, the door's included.
+  let j, want;
+  try { j = judge(git, base); want = tableDigest(j.table); } catch (e) { return dark(`develop: ${whyOf(e)}`); }
   const asked = askDoor("runs", text, { env, ...(door ? { door } : {}) });
   let doorWhy = asked.why ?? "";
   if (asked.rows) {
-    if (headerHolds(asked.rows, sent)) { try { return answer("door", asked.rows); } catch (e) { doorWhy = whyOf(e); } }
-    else doorWhy = `the door's answer leads with "${String(asked.rows[0] ?? "").slice(0, 60)}", where \`OWES facts=${sent}\` leads the fold's own`;
+    if (headerHolds(asked.rows, sent)) {
+      if (tableOf(asked.rows) !== want) return dark(`door: the wiki folds the seam table ${tableOf(asked.rows).slice(0, 12) || "(unnamed)"}, where develop ${j.short} holds ${want.slice(0, 12)}; bring the vessel onto develop's plugin (or drop the working-layer override of ${SEAMS}), then ask again`);
+      try { return answer("door", asked.rows); } catch (e) { doorWhy = whyOf(e); }
+    } else doorWhy = `the door's answer leads with "${String(asked.rows[0] ?? "").slice(0, 60)}", where \`OWES facts=${sent}\` leads the fold's own`;
   }
   try {
-    const j = judge(git, base);
     const rows = fold(j.fold, `${j.table}\n${text}`, "runs");
-    if (!headerHolds(rows, sent)) throw new Error(`develop's fold leads with "${String(rows[0] ?? "").slice(0, 60)}", where \`OWES facts=${sent}\` leads this host's read`);
+    if (!headerHolds(rows, sent) || tableOf(rows) !== want) throw new Error(`develop's fold leads with "${String(rows[0] ?? "").slice(0, 60)}", where \`OWES facts=${sent} table=${want.slice(0, 12)}…\` leads this host's read`);
     return answer(`develop ${j.short}`, rows, doorWhy);
   } catch (e) {
-    return { via: "dark", why: `${doorWhy ? `door: ${doorWhy}; ` : ""}develop: ${whyOf(e)}`, touched: facts.touched, refuse: [], sets: [], globs: [], files: [], digest: "" };
+    return dark(`${doorWhy ? `door: ${doorWhy}; ` : ""}develop: ${whyOf(e)}`);
   }
 }
 
