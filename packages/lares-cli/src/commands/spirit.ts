@@ -1,5 +1,5 @@
 /**
- * `lares spirit <om | ah | hum | otakiage | hooili | residue> <pet-name>` — A SPIRIT'S RECORD, BY ITS PET NAME. The carry's
+ * `lares spirit <om | ah | hum | otakiage | hooili | residue | handback> <pet-name>` — A SPIRIT'S RECORD, BY ITS PET NAME. The carry's
  * verb and name stand in one table (`spirit-words.ts`: `hooili` to type, hoʻoili to read).
  *
  * The pet name does the work. ONE RECORD answers it: `lar:///ha.ka.ba/lares/spirit/<pet>` (recipe default), a nameless entity the
@@ -27,6 +27,12 @@
  *                                   `record-base`, `depth`, `instance`); it writes nothing to the card and hands back the #/instances
  *                                   line (`<pet>#<instance8>`) the next instance files through `ah`
  *   residue   (residue)             land a spirit's handback, keyed idempotently (`--key <session:agent>`)
+ *   handback  (the return door)     THE ONE RETURN EVERY FIRE RUNS (`handback <pet>[#<n>] --file <path|-> | --text <words> |
+ *                                   --record <uri>[@<hash>]`): a report lands as residue under the pet's own name, once per
+ *                                   key (`--key`, else the instance's tag, else the words alone); `--record` names a record
+ *                                   already landed, read through the door before anything else moves. The record stands
+ *                                   first; then, where the house holds a summons edge for the instance, the edge names it
+ *                                   (`--mandate <uri>@<hash>` names which). A harness hook and a hand type the same line
  *   ah --offer (ʻālana, the offering)  a summon sets the mandate (`--file <path|->` · `--text <words>`, else the card's own
  *                                   `lane`), its lane's memory pointer (`--lane`), the grant's slice (`--grant`) and its
  *                                   offerer (`hand`, or `seat#<instance>`: a seat names `--instance`) on the spirit's shelf,
@@ -101,7 +107,7 @@ export {
 } from "@lararium/mesh/spirit-shrine";
 
 /** Every verb the spirit door answers. */
-export const SPIRIT_VERBS = ["help", "om", "ah", "hum", "otakiage", COMPACTION_WORD, "residue"] as const;
+export const SPIRIT_VERBS = ["help", "om", "ah", "hum", "otakiage", COMPACTION_WORD, "residue", "handback"] as const;
 type Verb = (typeof SPIRIT_VERBS)[number];
 
 const RECIPE = SPIRIT_RECIPE;
@@ -460,8 +466,20 @@ async function echo(args: ParsedArgs, ctx: Ctx, pet: string, hash: string): Prom
 // ── the crossing ──────────────────────────────────────────────────────────────────────────────────────────────────────
 
 /** The seams a suite names: the hand reading (the house gate over this command's own branch) and the clock. */
-export interface SpiritSeams { readonly hand?: HandRead; readonly now?: () => Date }
-interface Ctx { readonly now: () => Date; readonly hand: HandRead }
+export interface SpiritSeams { readonly hand?: HandRead; readonly now?: () => Date; /** The door that closes a summons edge (see `EdgeClose`). */ readonly edge?: EdgeClose }
+interface Ctx { readonly now: () => Date; readonly hand: HandRead; readonly edge: EdgeClose }
+
+/** One hand-back as the edge door reads it: who hands back, the record that stands, and the mandate the line named (null: none). */
+export interface EdgeAsk { readonly pet: string; readonly instance: string; readonly tag: string; readonly record: string; readonly mandate: string | null }
+/** What a closed edge answers: its address, who offered it, whether this call named the record on it, and how its lane settled. */
+export interface EdgeClosed { readonly edge: string; readonly offerer: string; readonly decision: "put" | "standing"; readonly lane: "none" | "freed" | "unsettled"; readonly cure?: string }
+/**
+ * THE SUMMONS EDGE RIDES OPTIONAL. A hand-back's record stands on its own; an edge adds one more record that names it. The door
+ * that keeps summons edges answers here: the edge it closed, or null where none names the instance. It refuses by its own codes.
+ */
+export type EdgeClose = (ask: EdgeAsk) => Promise<EdgeClosed | null>;
+/** A house that keeps no summons edges closes none. */
+const noEdge: EdgeClose = async () => null;
 
 /**
  * THE CROSSING RUNS PER INSTANCE, AND STAYS ADVISORY. Only the PreCompact hook marks it (`om --source precompact --instance <id>`), and
@@ -1015,19 +1033,99 @@ async function landCarry(args: ParsedArgs, ctx: Ctx): Promise<number> {
   return 0;
 }
 
+/**
+ * One hand-back landed as residue. It lands under its own pet name alone: a mask tag never reaches a familiar's record, nor
+ * mints its spirit-id. THE KEY MAKES IT IDEMPOTENT: the same words under the same key land once, however often a hook fires or
+ * a fire retries. A key the line names (`--key <session:agent>`) leads; an instance with none keys by its own tag, so two
+ * instances handing back the same words land apart; a pet alone keys by its words.
+ */
+async function landReport(args: ParsedArgs, ctx: Ctx, label: string, pet: string, instance: string | null): Promise<{ title: string; hash: string; landed: "put" | "exists"; cut: boolean }> {
+  const { text, cut } = await residueWords(args, label);
+  const salt = wordOf(args.options["key"]) ?? (instance === null ? null : `${pet}#${instance}`);
+  const hash = residueHash(text, salt);
+  const title = residueTitle(pet, hash);
+  const landed = await landResidue(args, label, title, text, { ...residueFields(pet, ctx.now()), ...(instance === null ? {} : { instance }) });
+  return { title, hash, landed, cut };
+}
+
 async function residue(args: ParsedArgs, ctx: Ctx): Promise<number> {
   const pet = petOf(args, "residue");
-  const { text, cut } = await residueWords(args, "residue");
-  // A handback lands under its own pet name alone: a mask tag never reaches a familiar's record, nor mints its spirit-id.
-  const key = pet;
-  // An idempotent key: the same handback from the same session and agent lands once, however often a hook fires.
-  const salt = wordOf(args.options["key"]);
-  const hash = residueHash(text, salt);
-  const title = residueTitle(key, hash);
-  const landed = await landResidue(args, "residue", title, text, residueFields(pet, ctx.now()));
+  const { title, hash, landed, cut } = await landReport(args, ctx, "residue", pet, null);
   emit(args, {
     ok: true, data: { pet, title, hash, landed, cut },
     human: () => console.log(`${landed === "put" ? "landed" : "already stands"}: ${title}${cut ? ` (cut at ${RESIDUE_CAP_CHARS} chars)` : ""}`),
+  });
+  return 0;
+}
+
+// ── the return door ────────────────────────────────────────────────────────────────────────────────────────────────
+
+/** Who hands back: a pet, or one instance of it (`<pet>#<n>`, the Circle's instance grammar). */
+function returnerOf(args: ParsedArgs): { pet: string; instance: string | null; tag: string } {
+  const word = args.positional[1] ?? "";
+  const at = word.indexOf("#");
+  const pet = at < 0 ? word : word.slice(0, at);
+  const instance = at < 0 ? null : word.slice(at + 1);
+  if (pet === "") throw new DoorUsage("a hand-back names who returns: `lares spirit handback <pet> --file -` (the report on stdin), or `<pet>#<n>` for one instance");
+  if (!PET.test(pet)) throw new SpiritRefusal("spirit-pet-malformed", `spirit-pet-malformed: "${pet}" reads as no pet name (lower-case letters, digits and hyphens); name the one who returns as its filing line does: \`lares spirit handback <pet> --file -\``, 2);
+  if (instance !== null && !INSTANCE.test(instance)) throw new DoorUsage(`an instance reads \`<pet>#<n>\` (letters, digits, '-' and '_' after the '#'; got "${word}")`);
+  return { pet, instance, tag: instance === null ? pet : `${pet}#${instance}` };
+}
+
+/** `<uri>[@<hash>]` as a hand-back names a landed record; null where the word reads as no `lar:` address. */
+function recordRef(word: string): { uri: string; hash: string | null } | null {
+  const at = word.lastIndexOf("@");
+  const split = at > 0 && !word.slice(at + 1).includes("/");
+  const uri = split ? word.slice(0, at) : word;
+  const hash = split ? word.slice(at + 1) : null;
+  return !uri.startsWith("lar:///") || /\s/.test(word) || hash === "" ? null : { uri, hash };
+}
+
+/**
+ * THE ONE RETURN DOOR. Every fire that wakes into the house hands back by this line, whatever harness carries it: a Claude
+ * sub-agent's hook, a Codex or Copilot session, a summoned instance, a hand. THE RECORD STANDS FIRST: a report (`--file`,
+ * `--text`) lands as residue under the pet's own name, keyed idempotently; `--record` names one already landed, and the door
+ * reads it (and the hash the line names) before anything else moves. THEN THE EDGE, where one stands: an instance's summons edge
+ * names the record and its lane frees. A hand-back no edge answers lands all the same; only a line that names its mandate
+ * (`--mandate`) refuses where no edge answers it, and the record it landed stays.
+ */
+async function handback(args: ParsedArgs, ctx: Ctx): Promise<number> {
+  const who = returnerOf(args);
+  const named = wordOf(args.options["record"]);
+  const sources = Number(named !== null) + Number(wordOf(args.options["file"]) !== null) + Number(typeof args.options["text"] === "string");
+  if (sources !== 1) throw new DoorUsage(`a hand-back names exactly one return: --file <path|-> (stdin carries the report), --text <words>, or --record <uri>[@<hash>] (a record already landed); e.g. \`lares spirit handback ${shq(who.tag)} --file -\``);
+  const mandate = wordOf(args.options["mandate"]);
+  let record: string;
+  let landed: "put" | "exists" | "standing";
+  let cut = false;
+  let hash: string | null;
+  if (named !== null) {
+    const ref = recordRef(named);
+    if (ref === null) throw new DoorUsage(`--record names a landed record as <lar uri>[@<hash>] (got "${named}")`);
+    const back = await recordOf(args, "handback", ref.uri);
+    if (back.hash === null) throw new SpiritRefusal("handback-unknown", `handback-unknown: no record stands at ${ref.uri} under the face that answered; nothing landed. Hand the report itself back: \`lares spirit handback ${shq(who.tag)} --file <path|->\``, 4);
+    if (ref.hash !== null && ref.hash !== back.hash && ref.hash !== back.hash.replace(/^[a-z0-9]+[:-]/, "")) {
+      throw new SpiritRefusal("handback-moved", `handback-moved: ${ref.uri} reads ${back.hash} now, another hash than the line names (${ref.hash}); nothing landed. Read it, then name the hash it holds: \`lares tiddler get ${shq(ref.uri)} --recipe default\``, 4);
+    }
+    record = ref.uri; landed = "standing"; hash = back.hash;
+  } else {
+    const report = await landReport(args, ctx, "handback", who.pet, who.instance);
+    record = report.title; landed = report.landed; cut = report.cut; hash = report.hash;
+  }
+  const again = `lares spirit handback ${shq(who.tag)} --record ${shq(record)}`;
+  // THE EDGE RIDES AFTER THE RECORD, and only an instance holds one: a pet handing back as itself names no summons.
+  const closed = who.instance === null ? null : await ctx.edge({ pet: who.pet, instance: who.instance, tag: who.tag, record, mandate });
+  if (closed === null && mandate !== null) {
+    throw new SpiritRefusal("summons-unknown", `summons-unknown: no summons edge answers ${who.tag} under the mandate ${mandate}; the hand-back itself stands at ${record}. Once the edge stands, name the record on it: \`${again} --mandate ${shq(mandate)}\``, 4);
+  }
+  emit(args, {
+    ok: true,
+    data: { pet: who.pet, instance: who.instance === null ? null : who.tag, record, title: record, hash, landed, cut, edge: closed },
+    human: () => {
+      console.log(`${landed === "put" ? "handed back" : landed === "exists" ? "already handed back" : "hand-back stands"}: ${who.tag} → ${record}${cut ? ` (cut at ${RESIDUE_CAP_CHARS} chars)` : ""}`);
+      if (closed === null) console.log("  no summons edge names it; the record stands on its own");
+      else console.log(`  edge: ${closed.edge} (offered by ${closed.offerer || "hand"}; ${closed.lane === "none" ? "it holds no lane" : closed.lane === "freed" ? "its lane stands free" : `its lane still holds; run the line again: ${closed.cure ?? again}`})`);
+    },
   });
   return 0;
 }
@@ -1095,6 +1193,7 @@ export async function cmdSpirit(args: ParsedArgs, seams: SpiritSeams = {}): Prom
   const ctx: Ctx = {
     hand: seams.hand ?? (() => readOwnHand({ proveRoute: false })),
     now: seams.now ?? (() => new Date()),
+    edge: seams.edge ?? noEdge,
   };
   return guardDoor(args, `spirit ${verb}`, async () => {
     try {
@@ -1105,6 +1204,7 @@ export async function cmdSpirit(args: ParsedArgs, seams: SpiritSeams = {}): Prom
         case "hum":           return await hum(args, ctx);
         case COMPACTION_WORD: return await landCarry(args, ctx);
         case "residue":       return await residue(args, ctx);
+        case "handback":      return await handback(args, ctx);
         case "otakiage":      return await otakiage(args, ctx);
         default:              return refuseUsage(args, "spirit", helpLines("spirit"), `unknown verb "${tableCovers(v)}"`);
       }

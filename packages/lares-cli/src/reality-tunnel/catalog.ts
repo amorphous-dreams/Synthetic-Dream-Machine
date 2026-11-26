@@ -158,7 +158,7 @@ export function repoItems(repo: string, d: Declared = declared(repo), textOf: Te
       }
       case "seed-link": return item("repo", s, path, { link: relative(dirname(path), seedAbs) });
       case "head-import": return item("repo", s, path, { transform: headLine(str(s, "line"), str(s, "render")) });
-      case "seedless": return item("repo", s, path, { transform: seedless(s["render"] as string | undefined) });
+      case "seedless": return item("repo", s, path, { transform: seedless(s["render"] as string | undefined, s["line"] as string | undefined) });
       case "toml-top-floor": return item("repo", s, path, { transform: tomlTopFloor(str(s, "key"), Number(s["floor"])), foreign: tomlShapeForeign(str(s, "key"), "number") });
       case "json-includes": return item("repo", s, path, includes(s));
       case "scout": {
@@ -349,7 +349,7 @@ function homeItem(
     case "toml-hooks-owned": return base(tomlHooksOwned(straysOf(s, d)));
     case "toml-table-key": return base({ transform: tomlTableKey(str(s, "table"), str(s, "key"), s["value"] as string), foreign: tomlTableForeign(str(s, "table")) });
     case "toml-table-unset": return base({ transform: tomlTableUnset(str(s, "table"), str(s, "key")), foreign: tomlTableForeign(str(s, "table")) });
-    case "seedless": return base({ transform: seedless() });
+    case "seedless": return base({ transform: seedless(undefined, s["line"] as string | undefined) });
     case "seed-rule": {
       const link = join(clone, ".claude", "noosphere-boot");
       return base({

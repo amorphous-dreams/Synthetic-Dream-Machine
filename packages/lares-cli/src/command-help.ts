@@ -534,12 +534,14 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "cap (#/open 2,048 bytes, #/attention 1,024; field `slot-budget` replaces both) while `hum` and `om` name the record's weight past `record-budget` (6,144) as advice, and `ah --new` lands a first shrine; `hum` (what remains after the fold) " +
       "measures each slot and folds one line to the month's ash ledger; `hooili` (the carry, hoʻoili, which writes nothing to the card) and `residue` " +
       "land a compaction summary or a handback (`--file -` reads stdin) after the strict secret-shape guard; `otakiage` burns the residue and keeps the card, on a person's hand alone. " +
+      "`handback <pet>[#<n>]` stands as the one return door every fire runs (a hook, a Codex or Copilot session, a summoned instance, a hand): `--file -` or `--text` lands the report as residue once per key, `--record <uri>[@<hash>]` names one already landed, and a summons edge standing for the instance names the record after it stands. " +
       "The stack reads and writes as the slot `#/has`, one cap per line (`<a.b.c> <value>`): `ah --slot '#/has' --add` strings a cap (its tag and its field, one write), `hum --fold '#/has'` unstrings one; a cap names what the spirit holds and grants nothing, so any instance strings one (the mandate's cap alone lands by `--offer`), and a field named in `sealed` rides as its name alone. " +
       "A card alone (`spirit-card/<pet>`, or a mask's `mask-card/<pet>`) answers through its fields; `ah --offer` sets a summon's offering (ʻālana) on `alana/<pet>` before any instance wakes, and an instance echoes its hash (`ah --echo <hash> --instance <id>`); a write from an instance that has not echoed lands and carries an `unechoed:` notice (a receipt, never a gate).",
     examples: [
       "lares spirit om lares-alpha                                   # the wake text",
       "lares spirit ah lares-alpha --slot '#/open' --file open.txt     # true one slot",
       "lares spirit ah lares-alpha --slot '#/kulana' --add '* a tell'  # one line at its end",
+      "lares spirit handback cold-reader --file -                    # the return door: the report on stdin lands as residue (`cold-reader#2` names one instance)",
       "lares spirit hum lares-alpha                                  # each waking slot against its cap, the record against its advisory weight",
       "lares spirit hum lares-alpha --fold '#/instances' --line 3    # move a line to the ash ledger",
       "lares spirit ah cold-reader --slot '#/has' --add 'spirit.lane.holds read a PR cold'   # string one cap on the stack (a cap gathers; it grants nothing)",
