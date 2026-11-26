@@ -231,7 +231,10 @@ export async function openMirror(options: Omit<GlassPortOptions, "wiki" | "Tiddl
       await engine.boot({ bytes: options.inputs.coreBytes, sha256: options.inputs.coreCid }, store, MIRROR_TOKEN, { modulePins });
       const tw = engine.$tw;
       census.refused.push(...(wikiCensus?.refused ?? []));
-      for (const refusal of census.refused) tw.wiki.addTiddler(new tw.Tiddler({ title: `$:/temp/lares/alert/refused/${refusal.kind}/${refusal.title}`, text: refusal.kind === "startup-offer" ? `Startup action offered, not run (another writer's, and no exec lei stands for it): ${refusal.title}` : refusal.kind === "skin-unattested" ? `Skin refused: ${refusal.title} carries bytes the attested genesis does not name; rebuild it through the pipeline (pnpm --filter @lararium/tw5 build:plugin) and re-found` : `Plugin refused: ${refusal.title}`, tags: ["$:/tags/Alert"] }));
+      for (const refusal of census.refused) tw.wiki.addTiddler(new tw.Tiddler({ title: `$:/temp/lares/alert/refused/${refusal.kind}/${refusal.title}`, text: refusal.kind === "startup-offer" ? `Startup action offered, not run (another writer's, and no exec lei stands for it): ${refusal.title}` : refusal.kind === "skin-unattested" ? `Skin refused: ${refusal.title} carries bytes the attested genesis does not name; rebuild it through the pipeline (pnpm --filter @lararium/tw5 build:plugin) and re-found` : `Plugin refused: ${refusal.title}`,
+        // A held startup offer is house-internal: a visitor's first screen carries no notice of it, and the vessel console lists it
+        // (`lar:///ha.ka.ba/lararium/tw5/ui/vessel-console`). An unattested skin and a refused plugin keep the loud alert.
+        ...(refusal.kind === "startup-offer" ? {} : { tags: ["$:/tags/Alert"] }) }));
       if (census.refused.length) options.shadowRoot.host.setAttribute("data-lar-refused-plugins", String(census.refused.length));
       const runtime = tw as unknown as { syncer?: unknown; syncadaptor?: unknown };
       if (runtime.syncer !== undefined || runtime.syncadaptor !== undefined) throw new Error("syncer-stood");
