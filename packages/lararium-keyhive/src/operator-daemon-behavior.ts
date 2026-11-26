@@ -446,7 +446,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       catch (error) {
         if (!face.recard || !(error instanceof FaceHoldsNoPrekeySecret)) throw error;
         // THE RECARD MEETS THE FAULT AT THE FACE'S OWN BAGS: the ground registered under a prekey this stand still held, and
-        // a later mint met one it did not. The card mints now, before the rest, and they register again.
+        // a later mint met one it did not. The card mints now, before the rest, and they register again. The ground rows
+        // the first pass held wait with the rest: the stale recard commits them through `landRecard`, past its archive check.
         await joined.keyhive.contactCard();
         try { await registerOwn(); }
         catch (again) {
