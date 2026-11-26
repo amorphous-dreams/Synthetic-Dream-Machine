@@ -427,3 +427,14 @@ def test_meme_all_propagates_a_stale_cursor_without_a_prefix(monkeypatch):
     monkeypatch.setattr(uds, "call", call)
     with pytest.raises(uds.LaresVerbError, match="read-cursor-stale"):
         _tools()["tiddler_get"](title="lar:///t/x", recipe="default", meme=True, all=True)
+
+
+def test_the_seat_instructions_a_waking_client_receives_name_its_read_write_and_find_doors(daemon):
+    """DELIVERY WITNESS (S7): the instructions the built server serves at first contact name the three doors
+    (read, write, find) and the one read line the affordance carriers unfold through."""
+    served = build_mcp(DaemonCoordinator(wing="w")).instructions
+    for door in ("tiddler_get", "tiddler_put", "wiki_filter"):
+        assert f"`{door}" in served, door
+    assert "append" in served
+    assert 'meme=True, grain="whole"' in served
+    assert "Read the house's law before you act" in served
