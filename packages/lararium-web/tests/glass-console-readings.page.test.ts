@@ -8,6 +8,8 @@ import { createReadings, PHASES_TITLE, READINGS_TITLE } from "../src/console-rea
 import { forgetEvidence, rig } from "./glass-rig.js";
 import housePlugin from "../../lararium-tw5/plugins/lares-memetic-wikitext.json";
 import larariumPlugin from "../../lararium-tw5/plugins/lares-lararium.json";
+import { carrierRecords } from "@lararium/tw5/carrier-canonical";
+import viewCarrier from "../../../bags/lararium/ha.ka.ba/lararium/tw5/ui/vessel-console.mem?raw";
 
 beforeEach(forgetEvidence); afterEach(forgetEvidence);
 const inputs = async () => ({ coreCid: "0".repeat(64), pluginCids: [] as string[] });
@@ -89,6 +91,40 @@ test("CONTROL: an unattested skin keeps its loud alert", async () => {
     const title = `${REFUSED}skin-unattested/${String((larariumPlugin as Record<string, unknown>)["title"])}`;
     expect(result.tw.wiki.tiddlerExists(title)).toBe(true);
     expect(tagsOf(result.tw, title)).toContain("$:/tags/Alert");
+    result.unmount();
+  } finally { r.host.remove(); }
+});
+
+const VIEW = "lar:///ha.ka.ba/lararium/tw5/ui/vessel-console";
+/** The view as the lararium bag lands it: the carrier's own records, read through the one memetic parse. */
+const viewRecords = () => (carrierRecords(VIEW, viewCarrier) ?? []).map(({ title, ...fields }) => ({ title: String(title), fields: fields as Record<string, unknown> }));
+
+test("RED: the vessel console view lists each reading, the phases and what the glass held back, with every value as text and never as wikitext", async () => {
+  const records = viewRecords();
+  expect(records.map(r => r.title)).toContain(VIEW);
+  const readings = createReadings(() => 42);
+  readings.set("status", "live — sovereign local island", "ok"); readings.set("relay", "<<danger>> {{$:/SiteTitle}} [[Link]]"); readings.phase("tw5-booted");
+  const r = await rig({ records: [...records, { title: "Held start", fields: { tags: "$:/tags/StartupAction", text: "" } }] });
+  try {
+    const result = await standPageMirror({ port: r.port, host: r.host, actor: "a", surface: () => "notes", mirrorInputs: inputs, readings,
+      startupAdmit: async () => [] }, r.seams) as any;
+    await result.settled;
+    const view = result.tw.wiki.getTiddler(VIEW);
+    expect([...view.fields.tags]).toContain("$:/tags/MoreSideBar");
+    expect(view.fields.caption).toBe("Vessel");
+    expect(result.tw.wiki.filterTiddlers("[all[shadows+tiddlers]tag[$:/tags/MoreSideBar]]")).toContain(VIEW);
+    const text = result.tw.wiki.renderTiddler("text/plain", VIEW) as string;
+    expect(text).toContain("status");
+    expect(text).toContain("live — sovereign local island");
+    expect(text).toContain("<<danger>> {{$:/SiteTitle}} [[Link]]");      // the value stays text: no macro call, no transclusion, no link
+    expect(text).toContain("tw5-booted");
+    expect(text).toContain("42 ms");
+    expect(text).toContain("startup-offer");
+    expect(text).toContain("Held start");
+    expect(text).toContain("Startup action offered, not run");
+    const html = result.tw.wiki.renderTiddler("text/html", VIEW) as string;
+    expect(html).toContain("lar-tone-ok");
+    expect(html).not.toContain("<a ");                                   // the [[Link]] in a value draws no link
     result.unmount();
   } finally { r.host.remove(); }
 });
