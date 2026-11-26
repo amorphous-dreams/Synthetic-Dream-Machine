@@ -668,6 +668,9 @@ describe("an observation rests the moment it gets recorded", () => {
  *   S3  a pending pin a crash takes costs nothing: the next boot reads no base there, so the carrier reads never agreed and pins again
  *   S4  a newer pin, or a removal, of the same row supersedes the pending one; a row with no heads lands at once
  *   S5  a reread keeps each pending pin over the directory's word
+ *   S6  a rest that answers nothing readable (unread, a fault) never lands a pin: it stays pending and names `pending: rest unread`
+ *   S7  two islands pin one path and the earlier pin's seal arrives last: the newer row stands, and the superseded pin drops
+ *       with no write (compare-and-set on the base it read, never last-writer-wins)
  */
 describe("the base pins only what sealed", () => {
   const KEY = "lar:///ha.ka.ba/bags/sdm\u0000lar:///a.b.c/sealed";
@@ -676,7 +679,7 @@ describe("the base pins only what sealed", () => {
   const steeredRest = () => {
     const asked: Array<{ doc: string; heads: readonly string[] }> = [];
     const state = { rested: false };
-    return { asked, state, rests: async (doc: string, heads: readonly string[]) => { asked.push({ doc, heads }); return state.rested; } };
+    return { asked, state, rests: async (doc: string, heads: readonly string[]) => { asked.push({ doc, heads }); return state.rested ? "rested" as const : "waiting" as const; } };
   };
 
   test("S1 a pending pin answers every read here at once, and no row reaches the directory before its heads rest", async () => {
@@ -759,6 +762,49 @@ describe("the base pins only what sealed", () => {
     tree.reread(KEY);
     expect(tree.baseAt(KEY, AT)?.disk).toBe(contentHash("alpha"));
     expect(new SyncedTree(dir).baseAt(KEY, AT)?.disk).toBe(contentHash("older"));
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("S6 a rest that answers nothing readable never lands a pin: it stays pending and names `pending: rest unread`", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "synced-sealed-"));
+    const unread = new SyncedTree(dir, { rests: async () => "unread" as const });
+    unread.set(KEY, AT, contentHash("alpha"), contentHash("alpha"), DOC, HEADS);
+    await unread.settle();
+    expect(unread.pendingPins()).toEqual([{ bagId: "lar:///ha.ka.ba/bags/sdm", uri: "lar:///a.b.c/sealed", path: AT, why: "pending: rest unread" }]);
+    const faulted = new SyncedTree(dir, { rests: async () => { throw new Error("the rest broke"); } });
+    faulted.set(KEY, AT, contentHash("beta"), contentHash("beta"), DOC, ["h2"]);
+    await faulted.settle();
+    expect(faulted.pendingPins().map((p) => p.why)).toEqual(["pending: rest unread"]);
+    expect(rowFiles(dir)).toEqual([]);
+    // CONTROL: the same pin over a rest that answers rested lands.
+    const rested = new SyncedTree(dir, { rests: async () => "rested" as const });
+    rested.set(KEY, AT, contentHash("alpha"), contentHash("alpha"), DOC, HEADS);
+    await rested.settle();
+    expect(rowFiles(dir)).toHaveLength(1);
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("S7 two islands pin one path and the earlier pin's seal arrives last: the newer row stands, and the superseded pin drops with no write", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "synced-sealed-"));
+    const early = steeredRest(), late = steeredRest();
+    const islandA = new SyncedTree(dir, { rests: early.rests });
+    const islandB = new SyncedTree(dir, { rests: late.rests });
+    islandA.set(KEY, AT, contentHash("alpha"), contentHash("alpha"), DOC, HEADS);
+    await islandA.settle();
+    late.state.rested = true;
+    islandB.set(KEY, AT, contentHash("beta"), contentHash("beta"), DOC, ["h2"]);
+    await islandB.settle();
+    expect(new SyncedTree(dir).baseAt(KEY, AT)).toMatchObject({ disk: contentHash("beta"), heads: ["h2"] });
+    // The earlier pin's seal arrives last.
+    early.state.rested = true;
+    expect(await islandA.settle()).toBe(0);
+    expect(islandA.pending).toBe(0);
+    expect(new SyncedTree(dir).baseAt(KEY, AT)).toMatchObject({ disk: contentHash("beta"), heads: ["h2"] });
+    expect(islandA.baseAt(KEY, AT)).toMatchObject({ disk: contentHash("beta"), heads: ["h2"] });
+    // CONTROL: a pin set over the row that still stands lands.
+    islandA.set(KEY, AT, contentHash("gamma"), contentHash("gamma"), DOC, ["h3"]);
+    await islandA.settle();
+    expect(new SyncedTree(dir).baseAt(KEY, AT)).toMatchObject({ disk: contentHash("gamma"), heads: ["h3"] });
     rmSync(dir, { recursive: true, force: true });
   });
 });

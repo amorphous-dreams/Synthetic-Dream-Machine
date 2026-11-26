@@ -11,7 +11,7 @@
  */
 
 import { inCallScope, takeCallTouches } from "@lararium/mesh/call-touches";
-import { vesselHeadsAsker } from "@lararium/mesh/sealed-rest";
+import { vesselHeadsAsker, type HeadsRestReading } from "@lararium/mesh/sealed-rest";
 import { isMainThread, parentPort } from "node:worker_threads";
 import { existsSync, readFileSync, realpathSync } from "node:fs";
 import { basename, dirname, join as joinPath, resolve as resolvePath, sep } from "node:path";
@@ -126,8 +126,8 @@ export function vmCarrierFile(tw5: Parameters<typeof exportCarrierFile>[0]): (ur
  */
 /** THIS THREAD'S ONE HEADS ASKER over its vessel port, or null outside an island thread (a projector a test or the CLI
  *  mounts on the main thread pins at once). Every projector the thread mounts, a lit sibling's included, shares it. */
-let threadHeadsAsker: ((doc: string, heads: readonly string[]) => Promise<boolean>) | null | undefined;
-function islandHeadsAsker(): ((doc: string, heads: readonly string[]) => Promise<boolean>) | null {
+let threadHeadsAsker: ((doc: string, heads: readonly string[]) => Promise<HeadsRestReading>) | null | undefined;
+function islandHeadsAsker(): ((doc: string, heads: readonly string[]) => Promise<HeadsRestReading>) | null {
   if (threadHeadsAsker !== undefined) return threadHeadsAsker;
   const port = isMainThread ? null : parentPort;
   return (threadHeadsAsker = port === null ? null : vesselHeadsAsker({

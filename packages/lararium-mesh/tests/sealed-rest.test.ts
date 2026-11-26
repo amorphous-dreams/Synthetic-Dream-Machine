@@ -1146,35 +1146,36 @@ describe("the base pins what sealed: a document's heads rest only once its saves
     const doc = repo.create<{ note?: string }>();
     doc.change((d) => { d.note = SECRET; });   // no session booked it: the save waits in memory
     const heads = A.getHeads(doc.doc());
-    expect(await restsAt(doc.documentId, heads)).toBe(false);
-    expect(await restsAt(doc.documentId, ["0".repeat(64)])).toBe(false);
+    expect(await restsAt(doc.documentId, heads)).toBe("waiting");
+    expect(await restsAt(doc.documentId, ["0".repeat(64)])).toBe("waiting");
     await rest.rebook({ id: "s-next", subject: r.own, signer: a.signer });
     expect(rest.store.waiting(doc.documentId)).toBe(0);
-    expect(await restsAt(doc.documentId, heads)).toBe(true);
+    expect(await restsAt(doc.documentId, heads)).toBe("rested");
     await repo.shutdown();
   });
 
-  it("the island asks across the port and reads the vessel's answer; a vessel with no sealed rest answers rested, a malformed ask and a faulted rest answer not yet", async () => {
+  it("the island asks across the port and reads the vessel's answer; no sealed rest, a faulted rest, a malformed ask and a failed post each read unread, never rested", async () => {
     const channel = new MessageChannel();
     const vesselSide = portOf(channel.port1), islandSide = portOf(channel.port2);
-    let door: ((documentId: string, heads: readonly string[]) => Promise<boolean>) | undefined = async (documentId) => documentId === "doc-rested";
+    let door: ((documentId: string, heads: readonly string[]) => Promise<"rested" | "waiting" | "unread">) | undefined = async (documentId) => (documentId === "doc-rested" ? "rested" : "waiting");
     const stop = answerHeadsAsks(vesselSide, () => door);
     const ask = vesselHeadsAsker(islandSide, { idPrefix: "heads" });
-    expect(await ask("doc-rested", ["h1"])).toBe(true);
-    expect(await ask("doc-waiting", ["h1"])).toBe(false);
+    expect(await ask("doc-rested", ["h1"])).toBe("rested");
+    expect(await ask("doc-waiting", ["h1"])).toBe("waiting");
     door = async () => { throw new Error("the rest broke"); };
-    expect(await ask("doc-rested", ["h1"])).toBe(false);
+    expect(await ask("doc-rested", ["h1"])).toBe("unread");
+    // THE SAFE ANSWER STANDS AS THE DEFAULT: a vessel that stands no sealed rest answers unread, never rested.
     door = undefined;
-    expect(await ask("doc-any", ["h1"])).toBe(true);
-    door = async () => true;
+    expect(await ask("doc-any", ["h1"])).toBe("unread");
+    door = async () => "rested";
     const answered: unknown[] = [];
     islandSide.listen((raw) => { if ((raw as { requestId?: string }).requestId === "bad-1") answered.push(raw); });
     islandSide.post({ type: "rest:heads", requestId: "bad-1", documentId: "doc-a", heads: "h1" });
     await new Promise((resolve) => setImmediate(resolve));
     await new Promise((resolve) => setImmediate(resolve));
-    expect(answered).toEqual([{ type: "rest:heads-answer", requestId: "bad-1", rested: false }]);
+    expect(answered).toEqual([{ type: "rest:heads-answer", requestId: "bad-1", reading: "unread" }]);
     const broken = vesselHeadsAsker({ post: () => { throw new Error("the port closed"); }, listen: () => () => {} }, { idPrefix: "broken" });
-    expect(await broken("doc-a", ["h1"])).toBe(false);
+    expect(await broken("doc-a", ["h1"])).toBe("unread");
     stop();
     channel.port1.close();
   });

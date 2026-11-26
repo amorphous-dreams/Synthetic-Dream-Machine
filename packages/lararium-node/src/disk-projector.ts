@@ -795,6 +795,11 @@ export class LarDiskProjector {
     await this.syncedTree.settle();
   }
 
+  /** Every Synced base pin this projector's tree holds pending in memory, waiting on its seal, with why it waits. */
+  pendingPins(): ReturnType<SyncedTree["pendingPins"]> {
+    return this.syncedTree.pendingPins();
+  }
+
   async stop(): Promise<void> {
     this.stopping = true;
     this.unwatchStandoffs?.();

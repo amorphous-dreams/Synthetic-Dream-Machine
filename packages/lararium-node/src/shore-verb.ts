@@ -202,6 +202,10 @@ export interface ShoreFlush {
   readonly unwrittenCount: number;
   readonly fileWrites: number;
   readonly drained: boolean;
+  /** Each Synced base pin still pending in memory after the flush, waiting on its seal, with why (`pending: rest unread`, ...).
+   *  A pending pin costs nothing at a crash: the next boot reads disk == records and pins again. */
+  readonly pendingPins?: ReadonlyArray<{ readonly uri: string; readonly bagId: string; readonly path: string; readonly why: string }>;
+  readonly pendingPinCount?: number;
 }
 
 /**
@@ -228,10 +232,12 @@ export async function shoreFlush(projector: LarDiskProjector, settleMs = CENSUS_
     ...failed.map((f) => ({ state: "failed" as const, ...f, why: "its reconcile threw again on the retry; the file stands as the failure left it" })),
     ...pending.filter((p) => !failedUris.has(p.uri)).map((p) => ({ state: "pending" as const, ...p, why: `the queue still owed it when the ${settleMs}ms wait ended` })),
   ].sort((a, b) => byCode(JSON.stringify([a.state, a.uri]), JSON.stringify([b.state, b.uri])));
+  const pins = projector.pendingPins().sort((a, b) => byCode(JSON.stringify([a.bagId, a.uri, a.path]), JSON.stringify([b.bagId, b.uri, b.path])));
   return {
     written: written.slice(0, SHORE_LIST_PAGE), writtenCount: written.length,
     unwritten: unwritten.slice(0, SHORE_LIST_PAGE), unwrittenCount: unwritten.length,
     fileWrites: projector.fileWrites() - writesBefore, drained,
+    pendingPins: pins.slice(0, SHORE_LIST_PAGE), pendingPinCount: pins.length,
   };
 }
 
@@ -280,6 +286,7 @@ export async function flushEveryShore(asks: readonly ShoreIslandAsk[], boundMs =
         written: o["written"] as ShoreFlush["written"], writtenCount: Number(o["writtenCount"] ?? (o["written"] as unknown[]).length),
         unwritten: o["unwritten"] as ShoreFlush["unwritten"], unwrittenCount: Number(o["unwrittenCount"] ?? (o["unwritten"] as unknown[]).length),
         fileWrites: o["fileWrites"] as number, drained: o["drained"] === true,
+        ...(Array.isArray(o["pendingPins"]) ? { pendingPins: o["pendingPins"] as NonNullable<ShoreFlush["pendingPins"]>, pendingPinCount: Number(o["pendingPinCount"] ?? (o["pendingPins"] as unknown[]).length) } : {}),
       };
     } catch (err) {
       const reason = (err as { reason?: unknown } | null)?.reason;
