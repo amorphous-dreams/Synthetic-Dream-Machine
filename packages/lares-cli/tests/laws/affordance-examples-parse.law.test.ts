@@ -12,7 +12,7 @@ import { describe, expect, test } from "vitest";
 import { COMMANDS, unknownFlags } from "../../src/bin/lares.js";
 import { parseArgs } from "../../src/parse-args.js";
 import { flattenVerbs } from "../../src/verb-table.js";
-import { REBAKE, SEED_ADDRESS, pack, shellWords } from "./affordance-harness.js";
+import { REBAKE, SEED_ADDRESS, SEED_ADDRESSES, pack, shellWords } from "./affordance-harness.js";
 
 /** Why one runnable line fails its door, or null where it parses clean. */
 export function misparse(line: string): string | null {
@@ -35,6 +35,16 @@ const lines = (): Array<readonly [string, string]> =>
 describe("W4 · every example and cure parses at its own door", () => {
   test("SEED: the oracle cast renders runnable cli lines", () => {
     expect(pack().carriers[SEED_ADDRESS]?.calls["cli"]?.length ?? 0, `the pack holds no cli calls for the oracle cast; ${REBAKE}`).toBeGreaterThan(0);
+  });
+
+  test("SEED: every address wave 1a flipped renders runnable cli lines", () => {
+    for (const address of SEED_ADDRESSES) expect(pack().carriers[address]?.calls["cli"]?.length ?? 0, `${address} renders no cli call; ${REBAKE}`).toBeGreaterThan(0);
+  });
+
+  test("a positional rides bare in its seat: the calendar's named day and the law's pin read as the door reads them", () => {
+    const calls = pack().carriers["lar:///oracle.calendar.dates"]?.calls["cli"] ?? [];
+    expect(calls).toContain("lares ddate 5 1 2024");
+    expect(pack().carriers["lar:///engine.law.pins"]?.calls["cli"] ?? []).toContain("lares law pin lar:///ha.ka.ba/lares/api/pono/lar-uri");
   });
 
   test.each(lines())("%s · `%s`", (_address, line) => {

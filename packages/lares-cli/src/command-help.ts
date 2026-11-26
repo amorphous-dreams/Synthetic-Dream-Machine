@@ -26,7 +26,7 @@
  * Every URI here comes HARVESTED from the owning module's own `Meme:` header — never invented at this seat.
  */
 import { PLANE_LABELS } from "@lararium/mesh/plane-labels";
-import { packDoor } from "@lararium/tw5/affordance-pack";
+import { packDoor, packRender, packRoute } from "@lararium/tw5/affordance-pack";
 
 export interface CommandHelp {
   /** the spine an operator greps for: `usage: lares <door> <a | b | c>`. */
@@ -46,62 +46,6 @@ export interface CommandHelp {
 }
 
 export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
-  ddate: {
-    usage: "usage: lares ddate [+FORMAT] [day month year]",
-    synopsis:
-      "Print the Discordian date, computed by the house's own calendar (no host ddate binary stands behind it). " +
-      "Five seasons of 73 days (Chaos, Discord, Confusion, Bureaucracy, The Aftermath), a five-day week (Sweetmorn, Boomtime, Pungenday, " +
-      "Prickle-Prickle, Setting Orange), YOLD = the Gregorian year + 1166, St. Tib's Day on February 29 (no season, no weekday), " +
-      "an apostle's holyday on day 5 of a season and its season holyday on day 50. With no date it reads today's local day. " +
-      "X-Day (Confusion 40, 9827 YOLD) is the Church of the SubGenius's date, set forward once the first X-Day passed without incident; %X counts the days to it.",
-    details: [
-      "  %A %a   weekday, long and short          %B %b   season, long and short",
-      "  %d      day of the season                %e      the ordinal (1st, 11th, 21st, 22nd, 23rd)",
-      "  %E      the ordinal by its last digit alone (11st, 12nd, 13rd): the first ddate's reading, an easter egg",
-      "  %H      the day's holyday, if any        %N      stop here unless the day holds a holyday",
-      "  %Y      the YOLD                         %X      days until X-Day (negative once it passed)",
-      "  %n %t   newline, tab                     %.      an exclamation from the platform's entropy door",
-      "  %{ %}   the span between them reads \"St. Tib's Day\" on February 29 and prints plain on every other day",
-    ],
-    examples: [
-      "lares ddate                                       # today, with the default format",
-      "lares ddate 5 1 2024                              # a named day: Setting Orange, Chaos 5, 3190 YOLD",
-      "lares ddate '+%{%A, the %e of %B%}, %Y. %N%nCelebrate %H' 19 2 2025",
-      "lares ddate +%X 20 11 2026                        # days until X-Day",
-      "lares ddate '+%. %E'                              # an exclamation and the first ddate's ordinal",
-    ],
-    flags: [
-      "--json       emit the envelope instead of the bare line: {text, entropy, gregorian, yold, tibs, season, dayOfSeason, weekday, holyday}; `entropy` names the door a `%.` drew from",
-    ],
-  },
-  law: {
-    usage: "usage: lares law list [--limit N] [--after <cursor>] [--all]  |  lares law pin <uri>  |  lares law unpin <uri>",
-    synopsis:
-      "Read the house's law, pinned law first, from the worn face's daemon wiki. The index derives from canon by filter and no list stands " +
-      "in code: the law reads every root meme under a bag's api/ tree, by title, and $:/config/lares/law/pins holds the pin set (the boot " +
-      "seed, then the Mu family), a TiddlyWiki filter the wiki's own engine runs. Only canon prints: a row stands where a canon layer " +
-      "answers its record, so nothing a face writes reads as law. A pin edits the pin set by one run, keeping its layout, and lands it in " +
-      "the face's working layer, never in house canon; a pin orders canon law and adds none.",
-    details: [
-      "  lares law list            the pinned titles (marked 📌), then the law they leave out, each with its description or role",
-      "  lares law pin <uri>       add a law meme to the pin set (a `[[uri]]` run); a title no canon law holds refuses law-pin-absent",
-      "  lares law unpin <uri>     take it out (its `[[uri]]` run leaves; a title a broader run names takes a `-[[uri]]` run)",
-    ],
-    examples: [
-      "lares law list                                              # the first page: pins, then law by title",
-      "lares law list --all --json                                 # every row: {filter, pins, rows, total, next}",
-      "lares law pin lar:///ha.ka.ba/lares/api/pono/lar-uri        # read the address law right after the Mu family",
-      "lares law unpin lar:///ha.ka.ba/lares/api/mu/chao           # drop one Mu member from the pins",
-    ],
-    flags: [
-      "--limit N        rows per page (the door's ceiling holds)",
-      "--after <c>      the page behind a cursor `list` named",
-      "--all            follow every cursor to the end",
-      "--json           emit the answer: list {filter, pinsTitle, pins, rows, total, next}; pin {title, uri, decision, pinned, text, hash}",
-    ],
-    next: ["lares tiddler get <uri> --recipe default --meme   # read one law meme whole"],
-    meme: "lar:///ha.ka.ba/lararium/tw5/daemon-law-tiddlers",
-  },
   herm: {
     usage: "usage: lares herm [--port N] [--relay-port N]  |  lares herm relay-rotate",
     synopsis: "Stand a herm: the wiki-less wayfarer that stands the carriage crossroads a family's hearths dial to carry sealed bodies between each other. It boots the same node the vessel runs, under the herm recipe, and prints the crossroads' dial URL(s) and gate key once the node attests ready.",
@@ -1467,7 +1411,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
  */
 export function helpDoor(command: string, positional: readonly string[]): string {
   const sub = positional[0];
-  if (sub && `${command} ${sub}` in COMMAND_HELP) return `${command} ${sub}`;
+  // A verb a carrier skins reads its own whole (`lares law pin --help`), the way a legacy sub-door reads its own entry.
+  if (sub && (`${command} ${sub}` in COMMAND_HELP || packRoute("cli", `${command} ${sub}`) !== undefined)) return `${command} ${sub}`;
   return command;
 }
 
@@ -1492,6 +1437,9 @@ export function helpLines(door: string, summary?: string): string[] {
   // (tests/laws/affordance-census.law.test.ts) counts the legacy doors down to zero, when this registry leaves.
   const packed = packDoor(door);
   if (packed !== undefined) return [...packed.help];
+  const verb = packRoute("cli", door);
+  const whole = verb === undefined ? undefined : packRender(verb, "cli", "whole");
+  if (whole !== undefined) return [...whole];
   const help = COMMAND_HELP[door];
   const about = ABOUT.get(door);
   if (!help) {

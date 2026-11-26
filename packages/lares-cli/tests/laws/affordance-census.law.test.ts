@@ -5,7 +5,7 @@
  * A door FLIPS when every affordance it skins holds a carrier: the baked pack then carries its help (`doors.<door>`), and the
  * flipping commit burns its `COMMAND_HELP` entry and every `"<door> <sub>"` key with it. LEGACY_CEILING records the legacy
  * count as it stands; a commit that flips a door lowers it by hand in the same act, and no commit may raise it. At zero,
- * `command-help.ts` leaves and the seam's second branch burns. Seed: `oracle` flipped first. Control: a door planted in both
+ * `command-help.ts` leaves and the seam's second branch burns. Seed: `oracle` flipped first, `ddate` and `law` with wave 1a. Control: a door planted in both
  * homes reads red, and a census over a pack that flips nothing breaks the ceiling.
  *
  * Law: lar:///ha.ka.ba/lares/docs/pono/cli-test-laws#/the-laws
@@ -15,8 +15,8 @@ import { COMMAND_HELP } from "../../src/command-help.js";
 import { COMMAND_NAMES } from "../../src/bin/lares.js";
 import { REBAKE, pack } from "./affordance-harness.js";
 
-/** The legacy count today: 45 doors, `oracle` flipped. Lower it in the commit that flips the next door; never raise it. */
-const LEGACY_CEILING = 44;
+/** The legacy count today: 45 doors, `oracle`, `ddate` and `law` flipped. Lower it in the commit that flips the next door; never raise it. */
+const LEGACY_CEILING = 42;
 
 function census(flippedDoors: readonly string[], help: Readonly<Record<string, unknown>> = COMMAND_HELP) {
   const flipped = COMMAND_NAMES.filter((d) => flippedDoors.includes(d));
@@ -29,8 +29,8 @@ function census(flippedDoors: readonly string[], help: Readonly<Record<string, u
 describe("the census ratchet: flipped + legacy = doors; legacy only falls; one home per door", () => {
   const c = census(Object.keys(pack().doors));
 
-  test("SEED: oracle reads flipped", () => {
-    expect(c.flipped, `the pack flips no oracle door; ${REBAKE}`).toContain("oracle");
+  test("SEED: oracle, ddate and law read flipped", () => {
+    for (const door of ["oracle", "ddate", "law"]) expect(c.flipped, `the pack flips no ${door} door; ${REBAKE}`).toContain(door);
   });
 
   test("★ every door counts once, flipped or legacy ★", () => {

@@ -11,6 +11,11 @@ export const pack = (): AffordancePack => affordancePack();
 /** The address the oracle cast flipped first at: every affordance law seeds on it, so an empty pack reads red, never vacuous. */
 export const SEED_ADDRESS = "lar:///oracle.cast.throws";
 
+/** Every address a canon carrier holds today, by hand: a pack that lacks one reads red, never vacuous. Wave 1a added the calendar and the law. */
+export const SEED_ADDRESSES = [
+  SEED_ADDRESS, "lar:///oracle.calendar.dates", "lar:///engine.law.indexes", "lar:///engine.law.pins", "lar:///engine.law.unpins",
+] as const;
+
 /** The cure every pack-shaped red names. */
 export const REBAKE = "re-bake: pnpm --filter @lararium/tw5 build, then commit packages/lararium-tw5/affordance-pack.json";
 

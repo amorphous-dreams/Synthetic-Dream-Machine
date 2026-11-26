@@ -5,7 +5,7 @@
 import { describe, expect, test } from "vitest";
 import {
   addressMatcher, addressOfTitle, digestOf, edgesOf, exampleCall, kaheaTitles, neutralCallOf, parseHasRows, parseParams, proseOf, renderCall,
-  spellArg, tokenize, usageOf, unfoldRead, type HasRow,
+  seatsOf, spellArg, tokenize, usageOf, unfoldRead, type HasRow,
 } from "../src/affordance-rows.js";
 import { affordView } from "../src/affordance-read.js";
 
@@ -107,5 +107,26 @@ describe("the canon seat (weaver#1: canon seats no bare root)", () => {
       .toEqual(["lar:///ha.ka.ba/lares/api/pono/affordance#/takes/container"]);
     const call = neutralCallOf("oracle.cast.throws fresh/true", "lar:///x.y.z");
     expect(renderCall("cli", "lares oracle cast", call)).toBe("lares oracle cast --fresh");
+  });
+});
+
+describe("a positional arg (`seat/N`)", () => {
+  const DATE = [
+    "<<has entity=`arg` name=`format` params=`takes/words seat/1 as/+FORMAT lead/+ ~ the format codes`>>",
+    "<<has entity=`arg` name=`day` params=`takes/number seat/2 as/<day> ~ the day`>>",
+    "<<has entity=`arg` name=`month` params=`takes/number seat/3 as/<month> ~ the month`>>",
+    "<<has entity=`arg` name=`json` params=`~ the envelope`>>",
+  ].join("\n");
+  const rows = parseHasRows(DATE);
+
+  test("RED 1: the cli rides it bare in its seat, the lead glued on; the code surfaces ride it by name, a whole number bare", () => {
+    const call = exampleCall(parseHasRows("<<has entity=`example` name=`x` params=`json day/5 format/[[%X]] month/1 ~ a day`>>")[0]!, "lar:///oracle.calendar.dates");
+    expect(renderCall("cli", "lares ddate", call, undefined, seatsOf(rows))).toBe("lares ddate '+%X' 5 1 --json");
+    expect(renderCall("mcp", "ddate", call)).toBe(`ddate(day=5, format="%X", month=1, json=True)`);
+  });
+
+  test("RED 2: the cli usage spine leads with the positionals in seat order, then the flags", () => {
+    expect(usageOf("cli", "lares ddate", rows)).toBe("usage: lares ddate [+FORMAT] [<day>] [<month>] [--json]");
+    expect(usageOf("mcp", "ddate", rows)).toBe("ddate([format=<words>], [day=<number>], [month=<number>], [json])");
   });
 });

@@ -37,15 +37,16 @@ def test_a_pack_routed_tool_takes_its_words_from_the_pack():
     assert held.description == "Cast the I Ching by three coins; the cast lands as a tiddler.\nthe throw stands"
     assert held.parameters["properties"]["asking"]["description"] == "the question, named before the throw"
     # CONTROL: a tool the pack routes nothing to keeps its own words.
-    assert mcp._tool_manager.get_tool("ddate").description  # noqa: SLF001
-    assert pack_tool_skin("ddate", FIXTURE_PACK) is None
+    assert mcp._tool_manager.get_tool("tiddler_get").description  # noqa: SLF001
+    assert pack_tool_skin("tiddler_get", FIXTURE_PACK) is None
 
 
 def test_w2_every_pack_routed_tool_names_exactly_its_carriers_mcp_args():
     pack = read_affordance_pack()
     routed = sorted((pack.get("routes") or {}).get("mcp") or {})
     # SEED: the oracle cast flipped first; a pack that routes no `oracle_cast` reads red until the familiar re-bakes.
-    assert "oracle_cast" in routed, "affordance-pack-stale: the pack routes no oracle_cast; re-bake: pnpm --filter @lararium/tw5 build"
+    for seed in ("oracle_cast", "ddate", "law_index", "law_pin", "law_unpin"):
+        assert seed in routed, f"affordance-pack-stale: the pack routes no {seed}; re-bake: pnpm --filter @lararium/tw5 build"
     mcp = build_mcp(DaemonCoordinator(wing="w"))
     for tool in routed:
         _, params = pack_tool_skin(tool, pack)

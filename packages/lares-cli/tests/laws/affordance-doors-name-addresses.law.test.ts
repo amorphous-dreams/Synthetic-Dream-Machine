@@ -45,6 +45,15 @@ describe("W1 · every door names one address; every skin names a live door", () 
     expect(pack().routes["cli"]?.["oracle cast"], `the pack routes no \`oracle cast\`; ${REBAKE}`).toBe(SEED_ADDRESS);
   });
 
+  test("SEED: the calendar and the law verbs route to their carriers", () => {
+    const routes = pack().routes;
+    expect(routes["cli"]?.["ddate"], REBAKE).toBe("lar:///oracle.calendar.dates");
+    expect(routes["cli"]?.["law index"], REBAKE).toBe("lar:///engine.law.indexes");
+    expect(routes["cli"]?.["law pin"], REBAKE).toBe("lar:///engine.law.pins");
+    expect(routes["cli"]?.["law unpin"], REBAKE).toBe("lar:///engine.law.unpins");
+    expect(routes["mcp"], REBAKE).toMatchObject({ ddate: "lar:///oracle.calendar.dates", law_index: "lar:///engine.law.indexes", law_pin: "lar:///engine.law.pins", law_unpin: "lar:///engine.law.unpins" });
+  });
+
   test("★ every skin in the pack names a door a live table holds ★", () => {
     expect(orphans(pack())).toEqual([]);
   });

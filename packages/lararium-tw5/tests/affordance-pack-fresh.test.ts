@@ -33,6 +33,17 @@ describe.skipIf(wikiSkip)(`W3 · the tracked pack equals a fresh bake of canon${
     expect(oracle!.bcc).toBe(bccOf(text!));
   });
 
+  test("SEED: the calendar and the three law verbs stand in the pack, each bcc the canon carrier's own frame check", () => {
+    const pack = JSON.parse(readFileSync(PACK_PATH, "utf8")) as { carriers: Record<string, { title: string; bcc: string | null }> };
+    for (const address of ["oracle.calendar.dates", "engine.law.indexes", "engine.law.pins", "engine.law.unpins"]) {
+      const carrier = pack.carriers[`lar:///${address}`];
+      expect(carrier, `the pack holds no lar:///${address}; ${CURE}`).toBeDefined();
+      const text = canonTexts(path.join(REPO, "bags")).find((t) => headUriOf(t) === carrier!.title);
+      expect(text).toBeDefined();
+      expect(carrier!.bcc).toBe(bccOf(text!));
+    }
+  });
+
   test("CONTROL: one byte moved in the pack disagrees with the bake", async () => {
     const fresh = canonicalJson(await bakeAffordancePack(canonTexts(path.join(REPO, "bags"))));
     expect(fresh.replace("oracle", "orac1e") === fresh).toBe(false);

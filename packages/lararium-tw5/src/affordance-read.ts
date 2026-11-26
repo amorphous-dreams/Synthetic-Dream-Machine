@@ -18,7 +18,7 @@
  */
 import {
   type NeutralCall, AFFORD_SURFACES, type AffordSurface, type HasRow, addressMatcher, addressOfTitle, bareAddressOf, digestOf, edgesOf, exampleCall, kaheaTitles, neutralCallOf,
-  parseHasRows, proseOf, renderCall, skinOmits, skinRow, spellArg, unfoldRead, usageOf,
+  parseHasRows, proseOf, renderCall, seatOf, seatsOf, skinOmits, skinRow, spellArg, unfoldRead, usageOf,
 } from "./affordance-rows.js";
 
 /** How this module reads one record's text: `undefined` where the wiki holds no such record. */
@@ -65,15 +65,18 @@ export function rowsOf(textOf: TextOf, address: string, slot: string, surface: A
     .filter((row) => !(row.entity === "arg" && !argOnSurface(row, surface, omitted)));
   // A call naming another affordance (a cure that reads `tiddler.get.reads`) renders under that address, marked foreign: this
   // carrier knows no spelling of another door, and witness W4 parses only the calls that name this one.
+  const seats = surface === "cli" ? seatsOf(parseHasRows(slotText(textOf, address, "#/takes")).filter((r) => argOnSurface(r, surface, omitted))) : undefined;
   const callOn = (call: NeutralCall): { line: string; foreign: boolean } =>
     call.address === own
-      ? { line: renderCall(surface, spells, call, skin), foreign: false }
+      ? { line: renderCall(surface, spells, call, skin, seats), foreign: false }
       : { line: renderCall(surface, bareAddressOf(call.address) ?? call.address, call), foreign: true };
   return rows.map((row) => {
     const out: Record<string, unknown> = { entity: row.entity, name: row.name, role: row.role, params: row.params, bare: row.bare };
     if (row.entity === "arg") {
-      out["spell"] = spellArg(surface, row.name, skin);
-      if (row.params["takes"]) out["value"] = row.params["takes"];
+      const seat = surface === "cli" ? seatOf(row) : null;
+      out["spell"] = seat !== null ? seat.as : spellArg(surface, row.name, skin);
+      if (seat !== null) out["positional"] = true;
+      else if (row.params["takes"]) out["value"] = row.params["takes"];
     }
     if (row.entity === "example") {
       const { line, foreign } = callOn(exampleCall(row, own));

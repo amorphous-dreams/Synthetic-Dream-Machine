@@ -75,7 +75,7 @@ const CLI_FORMS = {
   oracle_cast:    "oracle cast",
   // THE LAW INDEX — the pinned law first, then the law canon derives, read in the worn face's daemon wiki; a pin orders it.
   // Each tool mirrors `lares law <sub>` (the host `law` is a real top-level CLI command), riding the tiddler door's verbs.
-  law_index:      "law list",
+  law_index:      "law index",
   law_pin:        "law pin",
   law_unpin:      "law unpin",
   // THE HEARTH ROSTER — who is home, offered beside the law. The tool mirrors `lares vessel roster` (a `vessel` sub-door: the

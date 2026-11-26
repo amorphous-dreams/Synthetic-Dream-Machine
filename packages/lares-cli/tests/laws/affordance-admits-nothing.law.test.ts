@@ -3,7 +3,7 @@
  *
  * Inputs: every source file that reads the affordance pack or the carrier reader. The pack may feed WORDS alone (help lines,
  * a brief, a tool description); no admission branch may read a pack or carrier field (`gate`, `signs`, a tag) to admit, refuse
- * or route. So the CLI's pack readers stand in three word functions (`helpLines`, `packedBrief`, `packedAccount`), and the in-VM face never names
+ * or route. So the CLI's pack readers stand in four word functions (`helpLines`, `helpDoor`, `packedBrief`, `packedAccount`), and the in-VM face never names
  * a `gate` row in code. The seat's twin rides `test_affordance_skin.py`. Control: a planted admission branch reads red.
  *
  * Law: lar:///ha.ka.ba/lares/docs/pono/cli-test-laws#/the-laws
@@ -30,7 +30,7 @@ const code = (text: string): string => text.split("\n").filter((l) => !/^\s*(\/\
 /** The CLI files that import the pack, and the functions that call into it. */
 const PACK_IMPORT = /from\s+"@lararium\/tw5\/affordance-pack"/;
 const PACK_CALL = /\b(packDoor|packRoute|packRender|packTool|packDoors|affordancePack)\(/g;
-const ALLOWED: Readonly<Record<string, readonly string[]>> = { "command-help.ts": ["helpLines"], "bin/lares.ts": ["packedBrief", "packedAccount"] };
+const ALLOWED: Readonly<Record<string, readonly string[]>> = { "command-help.ts": ["helpLines", "helpDoor"], "bin/lares.ts": ["packedBrief", "packedAccount"] };
 
 /** Every pack call in one file that stands outside the functions allowed to feed words. */
 function strayCalls(rel: string, text: string): string[] {
@@ -49,7 +49,7 @@ function strayCalls(rel: string, text: string): string[] {
 const ADMITS = /(if\s*\(|\?)[^;\n]*\b(row|rows|carrier|pack|r)\b[^;\n]*\[\s*["'](gate|signs)["']\s*\]/;
 
 describe("W8 · no door admits on a carrier", () => {
-  test("★ the CLI reads the pack for words alone, in helpLines, packedBrief and packedAccount ★", () => {
+  test("★ the CLI reads the pack for words alone, in helpLines, helpDoor, packedBrief and packedAccount ★", () => {
     const stray: string[] = [];
     const importers: string[] = [];
     for (const f of walk(SRC)) {

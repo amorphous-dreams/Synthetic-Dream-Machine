@@ -205,18 +205,53 @@ export function exampleCall(row: HasRow, address: string): NeutralCall {
 const shellQuote = (v: string): string =>
   /^<[^\s<>]+>$/.test(v) || /^[A-Za-z0-9_./:,=@+-]+$/.test(v) ? v : `'${v.replace(/'/g, "'\\''")}'`;
 
+/**
+ * A positional arg's seat on the cli: the door reads its word by place, never by flag (`lares law pin <uri>`, `lares ddate
+ * [+FORMAT] [day month year]`). An arg row names it with `seat/N` (N from 1); `as/<spelling>` names how the cli writes it
+ * in a usage spine and `lead/<prefix>` the characters its word carries glued to it (`+` before a ddate format). Other
+ * surfaces spell the arg by name as ever.
+ */
+export interface Seat { readonly seat: number; readonly as: string; readonly lead: string }
+
+/** The seat an arg row names, or null where it rides a flag. */
+export function seatOf(row: HasRow): Seat | null {
+  const n = Number(row.params["seat"]);
+  return row.entity === "arg" && Number.isInteger(n) && n > 0 ? { seat: n, as: row.params["as"] ?? `<${row.name}>`, lead: row.params["lead"] ?? "" } : null;
+}
+
+/** The seats of every positional arg among a slot's rows, by neutral name. */
+export function seatsOf(rows: readonly HasRow[]): Map<string, Seat> {
+  const out = new Map<string, Seat>();
+  for (const row of rows) { const s = seatOf(row); if (s !== null) out.set(row.name, s); }
+  return out;
+}
+
+/** A value as a literal on the code surfaces: a whole number stands bare, anything else rides as a JSON string. */
+const literal = (v: string): string => (/^-?\d+$/.test(v) ? v : JSON.stringify(v));
+
 /** One neutral call rendered runnable on one surface, given that surface's spelling (`lares oracle cast`, `oracle_cast`, …). */
-export function renderCall(surface: AffordSurface, spells: string, call: NeutralCall, skin?: HasRow): string {
-  const named = call.args.map(([k, v]) => [spellArg(surface, k, skin), v] as const);
+export function renderCall(surface: AffordSurface, spells: string, call: NeutralCall, skin?: HasRow, seats?: ReadonlyMap<string, Seat>): string {
   switch (surface) {
-    case "cli":
-      return [spells, ...named.map(([k, v]) => (v === true ? k : `${k} ${shellQuote(v)}`))].join(" ");
-    case "mcp":
-      return `${spells}(${named.map(([k, v]) => `${k}=${v === true ? "True" : JSON.stringify(v)}`).join(", ")})`;
-    case "tw5":
+    case "cli": {
+      const seated = call.args
+        .filter(([k]) => seats?.has(k))
+        .sort((a, b) => seats!.get(a[0])!.seat - seats!.get(b[0])!.seat)
+        .map(([k, v]) => shellQuote(`${seats!.get(k)!.lead}${v === true ? "" : v}`));
+      const flags = call.args.filter(([k]) => !seats?.has(k)).map(([k, v]) => [spellArg(surface, k, skin), v] as const);
+      return [spells, ...seated, ...flags.map(([k, v]) => (v === true ? k : `${k} ${shellQuote(v)}`))].join(" ");
+    }
+    case "mcp": {
+      const named = call.args.map(([k, v]) => [spellArg(surface, k, skin), v] as const);
+      return `${spells}(${named.map(([k, v]) => `${k}=${v === true ? "True" : literal(v)}`).join(", ")})`;
+    }
+    case "tw5": {
+      const named = call.args.map(([k, v]) => [spellArg(surface, k, skin), v] as const);
       return `<$${spells}${named.map(([k, v]) => ` ${k}${v === true ? `="yes"` : `=${JSON.stringify(v)}`}`).join("")}/>`;
-    case "console":
-      return `$tw.lares.afford.run(${JSON.stringify(call.address.replace(/^lar:\/\/\//, ""))}, {${named.map(([k, v]) => `${JSON.stringify(k)}: ${v === true ? "true" : JSON.stringify(v)}`).join(", ")}})`;
+    }
+    case "console": {
+      const named = call.args.map(([k, v]) => [spellArg(surface, k, skin), v] as const);
+      return `$tw.lares.afford.run(${JSON.stringify(call.address.replace(/^lar:\/\/\//, ""))}, {${named.map(([k, v]) => `${JSON.stringify(k)}: ${v === true ? "true" : literal(v)}`).join(", ")}})`;
+    }
   }
 }
 
@@ -226,13 +261,17 @@ const oneOf = (row: HasRow): string[] | null => {
   return needs.startsWith("one-of:") ? needs.slice("one-of:".length).split(",").map((s) => s.trim()).filter(Boolean) : null;
 };
 
-/** The usage spine on one surface, derived from `#/takes` (the cli spine reads `usage: <spells> …`). */
+/** The usage spine on one surface, derived from `#/takes` (the cli spine reads `usage: <spells> …`; positionals lead it). */
 export function usageOf(surface: AffordSurface, spells: string, takes: readonly HasRow[], skin?: HasRow): string {
   const parts: string[] = [];
   const grouped = new Set<string>();
-  for (const row of takes) {
+  const seated = surface === "cli" ? takes.filter((r) => seatOf(r) !== null).sort((a, b) => seatOf(a)!.seat - seatOf(b)!.seat) : [];
+  const ordered = [...seated, ...takes.filter((r) => !seated.includes(r))];
+  for (const row of ordered) {
     if (row.entity !== "arg" || grouped.has(row.name)) continue;
     const spell = (r: HasRow): string => {
+      const own = surface === "cli" ? seatOf(r) : null;
+      if (own !== null) return own.as;
       const flag = spellArg(surface, r.name, skin);
       const value = r.params["takes"];
       if (surface === "cli") return value ? `${flag} <${value}>` : flag;

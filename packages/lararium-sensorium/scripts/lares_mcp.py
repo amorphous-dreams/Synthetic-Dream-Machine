@@ -203,7 +203,7 @@ KAHUA_VERBS = ("kahua_propose", "kahua_stage", "kahua_get")
 
 # THE LAW INDEX — the house's law offered where an agent wakes: `law_index` reads the pinned law first (the boot seed, then
 # the Mu family), then every root meme under a bag's `api/` tree, each with its one line (description, else role);
-# `law_pin` / `law_unpin` order the pins. Each mirrors `lares law list|pin|unpin`. The filters are `@lararium/tw5`'s
+# `law_pin` / `law_unpin` order the pins. Each mirrors `lares law index|pin|unpin`. The filters are `@lararium/tw5`'s
 # `daemon-law-tiddlers`: the law by address (every root meme under a bag's `api/` tree), the pin set the worn face's daemon
 # wiki holds (`$:/config/lares/law/pins`), and a canon guard that keeps every row to a record a canon layer answers (the
 # oracle floor, the system canon bags) under a title that reads as one `lar:` address, so nothing a face writes prints as
@@ -1526,16 +1526,8 @@ def build_mcp(coordinator: LaresCoordinator):
     @mcp.tool(annotations=_annotations("ddate"))
     def ddate(format: "str | None" = None, day: "int | None" = None, month: "int | None" = None,
               year: "int | None" = None) -> dict:
-        """Read THE DISCORDIAN DATE through the house's own calendar (no host `ddate` binary) — mirrors `lares ddate
-        [+FORMAT] [day month year]`. With no date it reads TODAY, the seat's own local day (the verb reads no clock). `day`,
-        `month` and `year` ride together or not at all (a BCE year rides negative). `format` takes the ddate(1) codes:
-        %A %a weekday · %B %b season · %d day of the season · %e its ordinal (11th, 21st) · %E the ordinal by its last digit
-        alone (the first ddate's 11st) · %H the holyday · %N stop unless it is a holyday · %n %t newline and tab · %Y the YOLD ·
-        %X days until X-Day (Confusion 40, 9827 YOLD, the Church of the SubGenius's date) · %. an exclamation drawn through the
-        platform's entropy door · %{ %} the span that reads "St. Tib's Day" on February 29. A bare call answers the default line
-        ("Today is Prickle-Prickle, the 32nd day of The Aftermath in the YOLD 3192"). Returns {text, entropy, gregorian,
-        yold, tibs, season, dayOfSeason, weekday, holyday}: `entropy` names the source a `%.` drew from, else null. A date out
-        of range raises. Rides the @daemon wire."""
+        # THE WORDS LIVE IN THE CARRIER (lar:///oracle.calendar.dates): `_dress_from_pack` hands this tool its description and
+        # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
         import datetime
         args: dict = {}
         if format is not None:
@@ -1667,48 +1659,42 @@ def build_mcp(coordinator: LaresCoordinator):
                 "hash": put.get("hash"), "bag": put.get("bag")}
 
     @mcp.tool(annotations=_annotations("law_index"))
-    def law_index(limit: "int | None" = None, after: "str | None" = None) -> dict:
-        """Read THE HOUSE'S LAW, PINNED LAW FIRST — mirrors `lares law list`. Read it before you act, the way you read your
-        working memory. The index derives from canon in the worn face's daemon wiki and no list stands in this seat: the pin
-        set (`$:/config/lares/law/pins`: the boot seed, then the Mu family) heads it in its own order, then every root meme
-        under a bag's `api/` tree the pins leave out, by title. Only canon prints: a row stands where a canon layer answers
-        its record, so nothing a face writes reads as law. Returns {filter, pinsTitle, pins, rows: [{title, description,
-        pinned}], total, next}: `description` reads the meme's description,
-        else its role; one page holds at most 32 rows, and `next` names the cursor of the page behind (hand it back as
-        `after`). Read one law whole with `tiddler_get(title=<title>, recipe="default", meme=True, grain="whole")`; order the pins with `law_pin` /
-        `law_unpin`. A law row comes from canon's settled ground; turn it through the five tools."""
+    def law_index(limit: "int | None" = None, after: "str | None" = None, all: bool = False) -> dict:
+        # THE WORDS LIVE IN THE CARRIER (lar:///engine.law.indexes): `_dress_from_pack` hands this tool its description and
+        # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
         pins = _law_titles(LAW_PINS_FILTER)
-        args: dict = {"recipe": "default", "filter": LAW_INDEX_FILTER, "fields": list(LAW_ROW_FIELDS)}
-        if limit is not None:
-            args["limit"] = limit
-        if after:
-            args["after"] = after
-        page = _meme_wire("wiki-filter", args) or {}
         pinned = set(pins)
-        rows = [{"title": r.get("title"), "description": _law_line(r.get("fields")), "pinned": r.get("title") in pinned}
-                for r in (page.get("rows") or [])]
+        rows: list = []
+        page: dict = {}
+        cursor = after or None
+        while True:
+            args: dict = {"recipe": "default", "filter": LAW_INDEX_FILTER, "fields": list(LAW_ROW_FIELDS)}
+            if limit is not None:
+                args["limit"] = limit
+            if cursor:
+                args["after"] = cursor
+            page = _meme_wire("wiki-filter", args) or {}
+            rows.extend({"title": r.get("title"), "description": _law_line(r.get("fields")), "pinned": r.get("title") in pinned}
+                        for r in (page.get("rows") or []))
+            nxt = page.get("next")
+            # `all` follows every cursor to the end, as `lares law index --all` does; otherwise one page answers.
+            if not all or not nxt or nxt == cursor:
+                break
+            cursor = nxt
         total = page.get("total")
         return {"filter": LAW_INDEX_FILTER, "pinsTitle": LAW_PINS_TITLE, "pins": pins,
                 "rows": rows, "total": total if isinstance(total, int) else len(rows), "next": page.get("next") or None}
 
     @mcp.tool(annotations=_annotations("law_pin"))
     def law_pin(uri: str) -> dict:
-        """Pin A LAW MEME so it heads the law index — mirrors `lares law pin <uri>`. The pin set
-        (`$:/config/lares/law/pins`, a TiddlyWiki filter) takes one `[[uri]]` run (or drops a `-[[uri]]` run that kept the
-        title out) and lands through `tiddler_put` in this face's working layer of its daemon wiki, against the base it
-        read, keeping its layout; house canon takes no byte. A title no canon law holds refuses `law-pin-absent` (a pin
-        orders canon law and adds none); one already pinned answers
-        `decision: "noop"`; a pin set that moved under the read refuses `law-pins-moved` (call again). Returns {title, uri,
-        decision, pinned, text, hash, bag}."""
+        # THE WORDS LIVE IN THE CARRIER (lar:///engine.law.pins): `_dress_from_pack` hands this tool its description and
+        # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
         return _law_move("law_pin", _law_uri("law_pin", uri), "pin")
 
     @mcp.tool(annotations=_annotations("law_unpin"))
     def law_unpin(uri: str) -> dict:
-        """Unpin A LAW MEME — mirrors `lares law unpin <uri>`. Its `[[uri]]` run leaves the pin set
-        (`$:/config/lares/law/pins`); a title a broader run still names (a Mu member) takes a `-[[uri]]` run instead. The
-        set lands through `tiddler_put` in this face's working layer, against the base it read. A title not pinned answers
-        `decision: "noop"`; a pin set that moved under the read refuses `law-pins-moved`. Returns {title, uri, decision,
-        pinned, text, hash, bag}."""
+        # THE WORDS LIVE IN THE CARRIER (lar:///engine.law.unpins): `_dress_from_pack` hands this tool its description and
+        # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
         return _law_move("law_unpin", _law_uri("law_unpin", uri), "unpin")
 
     # ── THE HEARTH ROSTER — who is home, the vessel's own reading ──

@@ -145,7 +145,8 @@ export async function bakeAffordancePack(texts: readonly string[]): Promise<Affo
         throw new Error(`affordance-door-claimed-twice: ${surface} \`${spelling}\` skins both ${claimed} and ${address}; one door names one address`);
       }
       routes[surface]![spelling] = address;
-      takes[surface] = rowsOf(textOf, title, "#/takes", surface).filter((r) => r["entity"] === "arg").map((r) => String(r["spell"]));
+      // A positional arg (`seat/N`) rides no flag: the door row's `accepts` names flags alone, so W2 reads these apart.
+      takes[surface] = rowsOf(textOf, title, "#/takes", surface).filter((r) => r["entity"] === "arg" && r["positional"] !== true).map((r) => String(r["spell"]));
       calls[surface] = [
         ...rowsOf(textOf, title, "#/shows", surface).flatMap((r) => (typeof r["call"] === "string" && r["foreign"] !== true ? [r["call"]] : [])),
         ...rowsOf(textOf, title, "#/refuses", surface).flatMap((r) => (typeof r["cure"] === "string" && r["foreign"] !== true ? [r["cure"]] : [])),
@@ -169,7 +170,7 @@ export async function bakeAffordancePack(texts: readonly string[]): Promise<Affo
     } else {
       entry.brief = entry.addresses.map((a) => carriers[a]!.role).join(" · ");
       entry.help = [
-        ...lines(engine.wiki.renderTiddler("text/plain", INDEX, { variables: { surface: "cli", pattern: `${bareAddressOf(entry.addresses[0]!)!.split(".")[0]}.*` } })),
+        ...lines(engine.wiki.renderTiddler("text/plain", INDEX, { variables: { surface: "cli", pattern: sharedPattern(entry.addresses) } })),
         "",
         `Read one: lares ${door} <verb> --help`,
       ];
@@ -180,6 +181,18 @@ export async function bakeAffordancePack(texts: readonly string[]): Promise<Affo
   const body = { title: PACK_TITLE, carriers, routes, doors, index };
   const hash = `sha256-${createHash("sha256").update(canonicalJson(body)).digest("hex")}`;
   return { title: PACK_TITLE, hash, carriers, routes, doors, index };
+}
+
+/** The wildcard a door's addresses share: their common leading terms (two at most), then `*` (`engine.law.*`, `oracle.*`). */
+function sharedPattern(addresses: readonly string[]): string {
+  const terms = addresses.map((a) => bareAddressOf(a)!.split("."));
+  const shared: string[] = [];
+  for (let i = 0; i < 2; i++) {
+    const t = terms[0]![i]!;
+    if (!terms.every((x) => x[i] === t)) break;
+    shared.push(t);
+  }
+  return `${shared.join(".")}.*`;
 }
 
 /** JSON with every object's keys sorted, two-space indent, one trailing newline: the pack's canonical bytes. */

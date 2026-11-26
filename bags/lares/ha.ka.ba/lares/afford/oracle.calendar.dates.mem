@@ -1,0 +1,131 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/oracle.calendar.dates`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "read the Discordian date from the house's own calendar; no vessel"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///oracle.calendar.dates"]
+title     = "lar:///ha.ka.ba/lares/afford/oracle.calendar.dates"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/oracle.calendar.dates"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! oracle.calendar.dates ~ the day in the Discordian calendar, from the house's own core
+
+The house computes the day in the Discordian calendar with its own isomorphic core, so a machine with no host `ddate` binary (a vessel's container, a bare host) reads it all the same. Five seasons of 73 days (Chaos, Discord, Confusion, Bureaucracy, The Aftermath) run a five-day week (Sweetmorn, Boomtime, Pungenday, Prickle-Prickle, Setting Orange); the YOLD runs the Gregorian year plus 1166; St. Tib's Day falls on February 29 with no season and no weekday; an apostle's holyday falls on day 5 of a season and its season holyday on day 50.
+
+With no date the verb reads today's local day: the command and the seat each read the clock once, at the caller's side of the seam, and hand the day to the core, which reads none. The `day`, `month` and `year` ride together or not at all (a BCE year rides negative), and a date out of range refuses. X-Day (Confusion 40, 9827 YOLD) stands as the Church of the SubGenius's date, moved forward once the first X-Day passed without incident; `%X` counts the days to it.
+
+Format codes follow ddate(1), with `%E` added: `%A %a` weekday, long and short · `%B %b` season, long and short · `%d` day of the season · `%e` the ordinal (1st, 11th, 21st, 22nd, 23rd) · `%E` the ordinal by its last digit alone (11st, 12nd, 13rd), the first ddate's reading, an easter egg · `%H` the day's holyday, if any · `%N` stop here unless the day holds a holyday · `%Y` the YOLD · `%X` days until X-Day (negative once it passed) · `%n %t` newline, tab · `%.` an exclamation from the platform's entropy door (crypto.getRandomValues) · `%{ %}` the span between them reads "St. Tib's Day" on February 29 and prints plain on every other day.
+
+A bare call answers the default line ("Today is Prickle-Prickle, the 32nd day of The Aftermath in the YOLD 3192"). On a terminal that line prints plain, like ddate(1), and `--json` answers the envelope the seat always returns: {text, entropy, gregorian, yold, tibs, season, dayOfSeason, weekday, holyday}, where `entropy` names the source a `%.` drew from, else null. The verb runs on the host and needs no vessel; the MCP tool rides the @daemon wire.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ today · a-named-day · a-format · days-to-x-day · an-exclamation
+
+```memetic-wikitext
+<<has entity=`example` name=`today` params=`~ today, with the default format`>>
+<<has entity=`example` name=`a-named-day` params=`day/5 month/1 year/2024 ~ a named day: Setting Orange, Chaos 5, 3190 YOLD`>>
+<<has entity=`example` name=`a-format` params=`format/[[%{%A, the %e of %B%}, %Y. %N%nCelebrate %H]] day/19 month/2 year/2025 ~ a format over a named day, the holyday line only on a holyday`>>
+<<has entity=`example` name=`days-to-x-day` params=`format/[[%X]] day/20 month/11 year/2026 ~ days until X-Day`>>
+<<has entity=`example` name=`an-exclamation` params=`format/[[%. %E]] ~ an exclamation and the first ddate's ordinal`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ format · day · month · year
+
+```memetic-wikitext
+<<has entity=`arg` name=`format` params=`takes/words seat/1 as/+FORMAT lead/+ ~ the ddate(1) format codes the head lists; absent, the default line`>>
+<<has entity=`arg` name=`day` params=`takes/number seat/2 as/<day> ~ the day of the month; day, month and year ride together or not at all`>>
+<<has entity=`arg` name=`month` params=`takes/number seat/3 as/<month> ~ the month, 1 to 12; rides with day and year`>>
+<<has entity=`arg` name=`year` params=`takes/number seat/4 as/<year> ~ the Gregorian year (a BCE year rides negative); rides with day and month`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ host · clock
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`host` params=`vessel/none house-root/none key/none ~ runs on the host and needs no vessel, no house root and no key`>>
+<<has entity=`gate` name=`clock` params=`who/caller ~ the caller names the day: with no date the command or the seat reads its own local calendar day once and hands it to the core, which reads no clock`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · date-out-of-range
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[oracle.calendar.dates day/5 month/1 year/2024]] ~ a malformed line (usage: ddate [+format] [day month year]); the human render prints the help lines and the code reads usage`>>
+<<has entity=`refusal` name=`date-out-of-range` params=`cure/[[oracle.calendar.dates day/19 month/2 year/2025]] ~ Invalid date -- out of range; the code reads usage and the MCP tool raises`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ line · envelope
+
+```memetic-wikitext
+<<has entity=`band` name=`line` params=`exit/0 ~ the bare line, prose first like ddate(1): the default answer on a terminal or a pipe`>>
+<<has entity=`band` name=`envelope` params=`exit/0 fields/[[text entropy gregorian yold tibs season dayOfSeason weekday holyday]] ~ the body the seat returns and --json prints; entropy names the door a %. drew from, else null`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli · mcp
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares ddate
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares ddate]] ~ the terminal; reads the local day once; the format rides as +FORMAT and the date as day month year`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins/mcp`>>
+
+!!! ddate
+
+```memetic-wikitext
+<<has entity=`skin` name=`mcp` params=`spells/ddate ~ the seat; reads the local day once at the call`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · oracle · core
+
+The calendar core stands at `@lararium/mesh/ddate` and its chance at `@lararium/mesh/entropy-door`, the one source `%.` draws from.
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/oracle`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;JgW3vlQBwkTLQ7qVt2mkQ2OZSkr4ZrEnmKxSGk8EvC4`>>
+
+<<^ code=`&#x0004;` to=`?`>>
