@@ -233,7 +233,7 @@ Promote enacts the face intent-plane law a second time (<<~ loulou uri=`lar:///h
 * ''The floor until then.'' The lift refuses `module-type` and executable types today. That refusal BURNS when promote lands (the alpha line keeps no back-compat).
 * ''The code class.'' `module-type`; the executable types; `$:/tags/StartupAction*`; RawMarkup (on the save path alone); the fields the tw5-module gate reads (a `stack` naming `tw5-module`, beside `source-sha256`).
 * ''The module gate reads genesis and the promoted set alone.'' The gate that defines tw5 modules reads genesis-sourced tiddlers and the device's own preloaded set, never the composite, so no stage or wiki layer seeds a module (the promote lane builds it).
-* ''StartupAction rides inert by layer.'' Every server-side island runs a StartupAction from the floor alone, as its module gate admits modules: the floor-admitted plugins' own actions run once at the engine's boot pass, and the seed pass runs only a floor plugin's shadow the boot pass never saw (a house seed laid after boot). A record the wiki's document lands (working, stage, any layer, with or without `kahua-cid`) rides inert on every island and runs in the tab alone, under that engine's own accept (state/decisions, "Native TW5 wikis, and the one wall a seat keeps", 2026-11-18, which narrows the operator's 2026-11-04 "a user's own wiki keeps full caps" for the island side alone). The daemon island and the kahua stage run none from the seed pass at all, a late floor shadow included, and name each in the boot log. The code: the seed pass and `startupGated` in `island-recipe.ts`.
+* ''StartupAction runs natively.'' Every island runs startup actions as TiddlyWiki runs them: wave zero hands the wiki's records to the boot store, so their startup actions run once at the engine's boot pass beside the floor plugins' own, and a startup record that reached the wiki after boot (a record landed by a later wave, any layer, with or without `kahua-cid`, or a floor plugin's shadow laid after boot) runs once the seed stands. The daemon island and the kahua stage run them too (2026-11-26: the operator's "a user's own wiki keeps full caps" stands whole again; early alpha holds no backwards compatibility). The door's seat fence stays: an AI seat's put of a startup record still refuses `seat-startup-offer`, which rules who writes, not what runs. The code: the seed pass in `island-recipe.ts` (`mountIslandShore`).
 
 * ''Kāpae, the emergency cap.'' A `kāpae` cap on the edge (face, wiki, digest), raised on the face's board, shadows every device's promotion of that digest: remove wins, the hand raises it and the AI prepares it, and a device restarts its island when the cap arrives. Withdraw stays a separate act.
 
@@ -372,6 +372,6 @@ Two research spirits read in parallel: Naʻau-Scout through neuroscience, Manaʻ
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ePIfAK1dugPhl1nSkYHrBowh66giTc9mRBGuSUHOu7g`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6y1yLPodfOzeIyFba0_rHI2QA5Kzv6uYgxQoUkh3mEM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

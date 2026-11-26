@@ -72,7 +72,7 @@ Order (controller, 2026-10-28): the lane runs on a port a page can reach (D2, PR
 * ''G7 on the shipped setup'' (the island as a Web Worker in the same tab, no relay; 2,000 tiddlers, Chromium on this WSL2 host, median of three runs; every phone figure UNMEASURED): process memory of every browser process, island worker included (Linux RSS), stock 575.5 / full 624.0 / skinny 589.4 MiB, so full costs +48.6 MiB (+8.4 %) over a stock tab: PASS against the +25 % and 150 MiB gate. The JS-heap row (stock 32.2 / full 35.6 / skinny 21.7 MiB) counts the page's main thread only. First paint 879 / 1,308 / 1,166 ms; keystroke to paint p95 15.1 / 26.8 / 26.8 ms; peer write 29.7 / 43.1 ms in order; hot swap 437 / 202 ms; one echo write, zero re-landings.
 * ''Skinny as the step'': a skinny open carries titles, `tags`, `modified`, `type` and `caption`, so a mirror the evidence holds at skinny, or one that stepped there, paints with no palette body and holds every plugin record back (nothing can read what it would evaluate). The skinny notch wants the system and plugin bodies in its projection; that row stands owed to the port's projection.
 * ''Full-width landing'': a landed record's tag reads the tiddler back as TW5 holds it, so a landing never posts itself as a write.
-* ''The seal's word'': the plugin gate opens on the vessel's `sealedRest`, and no vessel speaks it yet (`mirrorInputs` carries the names alone); S's item lands the feed. ''A wiki's StartupAction records'' wait out the mirror's boot and `$:/tags/StartupAction/PostRender` never runs on the surface: the island's gate decides which startup actions run. ''The node's page door'': the node vessel serves `ports.place` and refuses its daemon surface; no node-served page takes that port yet (#/the-handoff names the one protocol both vessels speak).
+* ''Native boot'': the mirror boots its wiki's records as TiddlyWiki boots any store: a person's plugin unpacks and its modules define, sealed rest or not, and ''a wiki's StartupAction records'' run at the mirror's boot pass. The census holds back only the boot set's own ground, a syncer (a syncadaptor or saver: the mirror takes its truth from the port alone), and a plugin whose body the port left out. ''The node's page door'': the node vessel serves `ports.place` and refuses its daemon surface; no node-served page takes that port yet (#/the-handoff names the one protocol both vessels speak).
 
 <<~/ahu>>
 
@@ -160,6 +160,6 @@ Stock binds its root messages in three browser startups the mirror's boot keeps 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;rQghsWUvBAeza0-v_tqjZjCcEOEdd9RaMby8sjDAUHI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;gG46lYj7JgmO44XvdihXeWJ0PehoJ9GO0nCcoFOT8mY`>>
 
 <<^ code=`&#x0004;` to=`?`>>
