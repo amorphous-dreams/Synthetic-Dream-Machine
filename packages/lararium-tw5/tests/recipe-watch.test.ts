@@ -183,7 +183,7 @@ describe("recipe-watch", () => {
     cstop?.();
   });
 
-  describe("two planes: the vessel's own composition shadows a system wiki's default", () => {
+  describe("two planes: the vessel's own composition shadows a house-canon wiki's default", () => {
     const ORACLE_RECIPE = recipeUri("oracle", SLUG);
     const withOracle = (h: ReturnType<typeof harness>, stack: string[]) => {
       const oracle = fakeHandle("automerge:oracle", {

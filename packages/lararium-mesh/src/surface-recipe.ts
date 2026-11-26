@@ -250,7 +250,7 @@ export async function resolveSurfaceRecipe(input: SurfaceRecipeInput): Promise<S
     return refused("face-malformed", "facePlaneId");
   }
 
-  // The record the wiki stands on: the vessel's own composition shadows a system wiki's default.
+  // The record the wiki stands on: the vessel's own composition shadows a house-canon wiki's default.
   const standing = effectiveRecipe(slug, (plane, title) => planes.read(plane, title));
   // A record that stands names its stack as a list string. A `bag-stack` torn away, or one that fails to read
   // as that string, would lay the recipe with its bags missing; it refuses, and never reads as a narrower recipe.

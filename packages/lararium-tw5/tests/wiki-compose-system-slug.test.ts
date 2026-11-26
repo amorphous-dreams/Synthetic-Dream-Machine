@@ -1,5 +1,5 @@
 /**
- * A system wiki's LIVE canon doc rests in the Kahu realm (the vessel's `systemCanonUrl`, named to a hand the cabal admits);
+ * A house-canon wiki's LIVE canon doc rests in the Kahu realm (the vessel's `systemCanonUrl`, named to a hand the cabal admits);
  * no catalog row names it. Its default recipe stands in the oracle plane. The vessel composes it
  * through its OWN catalog record: `init-wiki` mints nothing for a system slug, and `add-bag` /
  * `remove-bag` adopt the default into the catalog on the first edit. A user slug walks the
@@ -136,7 +136,7 @@ describe("a system slug composes through the vessel's own record", () => {
     expect((await list({}, ctx))["wikis"]).toEqual([expect.objectContaining({ slug: "lares", kind: "system", composition: "own", defaultDiffers: false })]);
   });
 
-  test("a default-composed system wiki lists once as default; pin-wiki reads the effective recipe", async () => {
+  test("a default-composed house-canon wiki lists once as default; pin-wiki reads the effective recipe", async () => {
     const r = rig();
     const rows = (await makeListWikisReactor(r.catalog.accessor, r.oracle.accessor)({}, ctx))["wikis"];
     expect(rows).toEqual([expect.objectContaining({ slug: "lares", composition: "default" })]);

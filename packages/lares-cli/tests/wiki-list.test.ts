@@ -1,6 +1,6 @@
 /**
  * wiki-list.test.ts — `lares wiki list` surfaces what the daemon's `list-wikis` answers: each row's
- * `composition` and `defaultDiffers`, so a vessel that composed its system wiki and stopped following
+ * `composition` and `defaultDiffers`, so a vessel that composed its house-canon wiki and stopped following
  * a re-baked default reads that from the CLI. `--json` emits the answer verbatim as `data`.
  */
 import { afterEach, describe, test, expect, vi } from "vitest";
@@ -53,7 +53,7 @@ describe("lares wiki list", () => {
     expect(mine).not.toMatch(/composition/);
   });
 
-  test("a system wiki whose canon reads through the floor says so plainly, never `(no doc)`; CONTROL: a user row with no document still reads `(no doc)`", async () => {
+  test("a house-canon wiki whose canon reads through the floor says so plainly, never `(no doc)`; CONTROL: a user row with no document still reads `(no doc)`", async () => {
     const c = capture();
     expect(await cmdWikiList(parseArgs(["wiki", "--no-json"]))).toBe(0);
     const lines = c.out().split("\n");

@@ -70,7 +70,7 @@ at all'' — it answers to a hash, and a hash answers to nobody.
 
 The catalog binds the two: `bags/oracle` → the genesis island's own doc URL, so the address a recipe floors on and the doc a CID pull reads name the same doc.
 
-`@oracle` splits from the memetic corpus (`disk-projection#oracle-split`); the LIVE `lares` and `lararium` documents never stand as the floor — they ride their own system wikis' stacks (the lares wiki-recipe = oracle floor + lararium bag + lares bag), while every other wiki reads their snapshots through the floor's read-face. `lararium` carries the engine's authored self-doc memes: corpus, never engine.
+`@oracle` splits from the memetic corpus (`disk-projection#oracle-split`); the LIVE `lares` and `lararium` documents never stand as the floor — they ride their own house-canon wikis' stacks (the lares wiki-recipe = oracle floor + lararium bag + lares bag), while every other wiki reads their snapshots through the floor's read-face. `lararium` carries the engine's authored self-doc memes: corpus, never engine.
 
 !! The isomorphic wiki core
 
@@ -90,6 +90,6 @@ Two maps, cleanly separated — each the operator's own, never a registry of oth
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/oracle-split`>> — separates floor records from vessel pointers
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/recipe-layer-model#/one-model`>> — places system floor beneath writable recipe layers
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;xhyXv1Tqermt_pRf980DJ48iL-Ei9bC40NrEUIVLIP8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QERQ79pQ2pzioOWFmQMOpDlXrUUPKOzrUp2cN3x-Kic`>>
 
 <<^ code=`&#x0004;` to=`?`>>

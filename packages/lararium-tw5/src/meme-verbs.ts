@@ -184,7 +184,7 @@ export function memeVerbOptions(
       const handle = await findOrThrow(ctx.repo, url, `${bag} (${kind} slot of ${slug})`);
       return new AutomergeDocStore(handle, bag, wearOf(ctx.repo));
     },
-    // The vessel's own composition shadows a system wiki's default: the one reader, own first.
+    // The vessel's own composition shadows a house-canon wiki's default: the one reader, own first.
     recipeOf: async (slug) => (await effectiveRecipeOf(slug, { catalog, oracle }))?.record ?? null,
     reach: async (key, bag, namedRealm) => {
       // THE REALM PLANE FIRST. A bag the relation carries (registered on the realm's shared CRDT by its

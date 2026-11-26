@@ -343,7 +343,7 @@ export function expandRecipe(r: WikiRecipe): readonly SlotUri[] {
     ...(r.canonBag !== undefined ? [wikiBagUri(slug)] : []),
     // oracle = the universal floor (engine + grammar + bag-oracle, and the house-canon snapshots its
     // read-face lays by CID). The LIVE lares and lararium documents never stand as the floor — they ride
-    // a system wiki's own stack (the lares wiki-recipe = oracle floor + lararium bag + lares bag).
+    // a house-canon wiki's own stack (the lares wiki-recipe = oracle floor + lararium bag + lares bag).
     ORACLE_BAG,
   ])];
 }

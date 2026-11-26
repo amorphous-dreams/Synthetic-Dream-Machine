@@ -41,7 +41,7 @@ island mounts from.
 
 Recipes split by bag tier, each plane its own home:
 
-* ''System wiki-recipes'' (`lares` wiki, `lararium` wiki) live in the
+* ''House-canon wiki-recipes'' (`lares` wiki, `lararium` wiki) live in the
   ''`@oracle`'' runtime-system-island plane — protocol substrate, seeded at
   genesis. `lares`/`lararium` stand in the house canon; their recipes are
   substrate, not user composition, and a vessel's own composition shadows them.
@@ -76,6 +76,6 @@ class, where the alert stays the permanent mechanism.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;1RRHzIkGHWVtRnquunOvFN05tmzaJV_cgebYRIiKS7c`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;z08Q-qCBxjOdsxbdinGakiXlGEkHlQ9SfCRRhKeKjhM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

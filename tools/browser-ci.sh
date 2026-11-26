@@ -216,7 +216,7 @@ case "$verb" in
         # The catalog recipe exists before composition changes are applied.
         json_verb wiki init "$slug" --json >/dev/null
         # WHERE THIS LANDS: `wiki add-bag` writes the NODE's own composition (its catalog recipe), which shadows a
-        # system wiki's default (oracle) recipe for the node's mount, its live watch and `get --recipe` alike. A
+        # house-canon wiki's default (oracle) recipe for the node's mount, its live watch and `get --recipe` alike. A
         # catalog never crosses, so an admitted leaf still mounts the default recipe.
         wikis=$(lares wiki status --json)
         if printf '%s' "$wikis" | node -e '
@@ -278,7 +278,7 @@ case "$verb" in
           slug: wiki.slug, kind: wiki.kind, bag: wiki.uri, doc: wiki.automergeUrl,
         }));
       const mine = docs.filter((d) => d.slug === e.INFO_SLUG);
-      // A system wiki (lares, lararium) registers its canon document on the ORACLE plane.
+      // A house-canon wiki (lares, lararium) registers its canon document on the ORACLE plane.
       const mounted = mine.find((d) => d.kind === "system") ?? mine.find((d) => d.kind === "user") ?? null;
       if (!mounted) {
         process.stderr.write(`WIKI_DOC_MISSING: wikiDoc is absent for ${e.INFO_SLUG}; run wiki init for that wiki before starting the walk.\n`);
@@ -297,7 +297,7 @@ case "$verb" in
           uri: "lar:///ha.ka.ba/bags/catalog/recipes/" + e.INFO_SLUG,
           bagStack: stack.length ? stack : null,
           // One reader walks the planes catalog first, oracle second, on the node. A catalog never crosses, so
-          // a leaf mounting a system wiki reads the default (oracle) recipe whatever the node composed.
+          // a leaf mounting a house-canon wiki reads the default (oracle) recipe whatever the node composed.
           leafReadsDefaultRecipe: mine.some((d) => d.kind === "system"),
         },
         bags: e.INFO_BAGS.split("\n").filter((l) => l.startsWith("lar:")),

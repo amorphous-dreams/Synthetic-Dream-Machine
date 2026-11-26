@@ -1469,7 +1469,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // The canon documents the admit named. The own-hearth gate opens exactly these, and this vessel's own oracle
   // replica points at them; the oracle plane itself stays behind the gate.
   const { hearthCanon } = crossing;
-  // The oracle doc as this boot holds it: the recipe reader reads a system wiki's default recipe off it. Null
+  // The oracle doc as this boot holds it: the recipe reader reads a house-canon wiki's default recipe off it. Null
   // until genesis loads.
   let oracleAtBoot: DocHandle<LarDoc> | null = null;
   // ── THE RELATIONSHIPS THIS VESSEL HOLDS — read live at boot (dyad read path) ────────────────
@@ -1611,7 +1611,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     if (!daemon || !vmManager || !wikiActivation) return;
     const active = vmManager.inspect().filter((s) => s.temperature === "wela").map((s) => s.wikiId);
     // The recipe surface edits the vessel's HOME wiki (always present) — read its bag-stack through the ONE
-    // recipe reader (the vessel's own composition in the catalog shadows a system wiki's default in the
+    // recipe reader (the vessel's own composition in the catalog shadows a house-canon wiki's default in the
     // oracle), so the widget paints the stack the mount and the live watch stand on.
     const recipeSlug = slotActiveWikiId ? slugFromUri(slotActiveWikiId) : "";
     let recipe: string[] = [];

@@ -92,7 +92,7 @@ export async function cmdWikiList(args: ParsedArgs): Promise<number> {
     /** `floor`: a system row with no document, its canon read through the floor snapshot (no Kahu reach on this face). */
     canon?: string;
   }>;
-  // `--json` answers the daemon's reply verbatim; the prose view adds `composition` (a system wiki's
+  // `--json` answers the daemon's reply verbatim; the prose view adds `composition` (a house-canon wiki's
   // own stack or the default) and whether an own stack differs from the default.
   emit(args, {
     ok: true, requestId: r.requestId, data: result,

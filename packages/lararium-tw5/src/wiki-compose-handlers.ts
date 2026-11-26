@@ -23,7 +23,7 @@ function recipeArgs(args: Readonly<Record<string, unknown>>): { slug: string; ba
 import type { WikiComposeOptions } from "./wiki-handler-options.js";
 
 /** The vessel's recipe for a slug, ready to edit. The effective record may stand in the oracle plane
- *  (a system wiki's default): the edit then writes the vessel's own record into the catalog, the
+ *  (a house-canon wiki's default): the edit then writes the vessel's own record into the catalog, the
  *  default's fields beneath it, `composed-from` naming the default. */
 async function recipeToEdit(
   opts: WikiComposeOptions, slug: string, authority: string, missing: string,
@@ -31,7 +31,7 @@ async function recipeToEdit(
   const effective = await effectiveRecipeOf(slug, opts);
   if (!effective) {
     throw new Error(SYSTEM_BAGS.has(wikiBagUri(slug))
-      ? `recipe not found for "${slug}" — the oracle plane carries no default recipe for this system wiki`
+      ? `recipe not found for "${slug}" — the oracle plane carries no default recipe for this house-canon wiki`
       : missing);
   }
   const recipeTitle = recipeUri("catalog", slug);

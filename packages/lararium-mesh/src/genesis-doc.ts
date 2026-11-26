@@ -696,7 +696,7 @@ export function buildGenesisSeed(inputs: GenesisInputs, coreSha256?: string): Ge
     };
   }
 
-  // SYSTEM wiki-recipes — the lares + lararium quine
+  // HOUSE-CANON wiki-recipes — the lares + lararium quine
   // wikis ride the oracle system plane, never the catalog registry (USER recipes mint into it).
   // The record spells the SAME cascade the mount lays (`recipeRecordFields` ⇆ `recipeFromRecord`):
   // the lares wiki = oracle floor + lararium library + its own canon; `writable-bag` = working.

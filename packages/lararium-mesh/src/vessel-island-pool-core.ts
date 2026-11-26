@@ -233,7 +233,7 @@ export type DiskMirrorGrant = readonly {
  *    `bags/{slug}` bag → disk `bags/{slug}`), yielding only when the recipe
  *    designates that canon AND no literal grant already covers it — so system
  *    wikis (lares/lararium, literal grants) keep their static roots and never
- *    double-project; a system wiki's canon never projects by self-canon at all
+ *    double-project; a house-canon wiki's canon never projects by self-canon at all
  *    (`bags/` projects on the Kahu's vessel alone, road `W26`).
  *
  *  A `temp` slot entry projects the wiki's user temp layer and yields only for a slug its `consentSlugs` names (the
@@ -276,7 +276,7 @@ export function resolveDiskMirrors(
       // A REALM-ROOTED grant lays where its realm base names a folder, or where a workspace or the canon source answers first.
       if (g.realmBase !== undefined && !Object.hasOwn(g.sourcedRoots ?? {}, wikiSlug)
         && !(g.wikiSlot === "working" && Object.hasOwn(g.workspaceRoots ?? {}, wikiSlug)) && g.realmBase(wikiSlug) === null) return false;
-      // A SYSTEM wiki's canon projects through its LITERAL grant alone, which only the Kahu's vessel holds: self-canon
+      // A HOUSE-CANON wiki's canon projects through its LITERAL grant alone, which only the Kahu's vessel holds: self-canon
       // never reaches `bags/lares` or `bags/lararium`, so no vessel outside the cabal writes under them.
       return g.selfCanon
         ? Boolean(mirrorBags?.includes(bag)) && !literalBags.has(bag) && !SYSTEM_BAGS.has(bag)

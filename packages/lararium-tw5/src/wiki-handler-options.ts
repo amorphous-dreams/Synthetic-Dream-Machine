@@ -21,7 +21,7 @@ import type { ResidencyOpPost } from "./worker-data-verbs.js";
 export interface WikiMintHandlerOptions {
   readonly repo:        Repo;
   readonly catalog:     CatalogAccessor;
-  /** The system plane: a system wiki's canon doc and default recipe stand here. A system slug mints nothing. */
+  /** The system plane: a house-canon wiki's canon doc and default recipe stand here. A system slug mints nothing. */
   readonly oracle?:     CatalogAccessor;
   /** The live doc url of a house canon bag THIS vessel holds, from the Kahu realm's standing registration; null where it
    *  holds none (a vessel outside the Kahu cabal). A house canon wiki's canon doc rests in the Kahu realm, never in the catalog. */
@@ -78,7 +78,7 @@ export interface PruneStaleOptions extends WikiMintHandlerOptions {
  *  island reconciles its own mount set. */
 export interface WikiComposeOptions {
   readonly catalog: CatalogAccessor;
-  /** The system plane: a system wiki's default recipe stands here; the first edit adopts it into the catalog. */
+  /** The system plane: a house-canon wiki's default recipe stands here; the first edit adopts it into the catalog. */
   readonly oracle?: CatalogAccessor;
   readonly post:    ResidencyOpPost;
 }

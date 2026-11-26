@@ -69,8 +69,8 @@ export interface IslandContext {
   /**
    * The oracle runtime system-island doc URL (= `grants.islandUrl`). The
    * **system** oracle plane: system bags (the oracle,
-   * lararium and lares docs) + the system wiki-recipes resolve from here, the way
-   * user bags resolve from the catalog registry. recipe-watch reads a system wiki's recipe
+   * lararium and lares docs) + the house-canon wiki-recipes resolve from here, the way
+   * user bags resolve from the catalog registry. recipe-watch reads a house-canon wiki's recipe
    * via `recipeUri("oracle", slug)` and resolves system bags from this doc.
    */
   oracleUrl: string | null;

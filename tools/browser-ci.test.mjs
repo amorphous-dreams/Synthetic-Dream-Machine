@@ -371,7 +371,7 @@ test("up names the synthetic face before the restart that mounts it, and wears n
   assert.doesNotMatch(r.calls, /persona wear/);
 });
 
-test("CONTROL: info reads the mounted wiki document from a registered JSON system wiki", async () => {
+test("CONTROL: info reads the mounted wiki document from a registered JSON house-canon wiki", async () => {
   const r = await run(["info"], {
     BROWSER_CI_WIKI: "lares",
     INFO_WIKIS: JSON.stringify({ ok: true, data: { wikis: [

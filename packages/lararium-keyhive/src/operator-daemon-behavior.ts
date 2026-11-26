@@ -1895,7 +1895,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         const catalog = makeCatalogAccessor(ctx.repo, ctx.catalogUrl, ctx.faceCatalogUrl);
         // The oracle accessor supplies default system recipes; the catalog supplies their document pointers.
         const sysPlane = ctx.oracleUrl ? makeCatalogAccessor(ctx.repo, ctx.oracleUrl) : undefined;
-        // A system wiki's LIVE canon doc rests in the Kahu realm: named only to a hand the cabal's predicate admits.
+        // A house-canon wiki's LIVE canon doc rests in the Kahu realm: named only to a hand the cabal's predicate admits.
         const systemCanonUrl = async (bagUri: string): Promise<string | null> =>
           (await holdsKahuReach(kahuReach)) ? realmStandingDocUrl((await catalog.handle()).doc(), bagUri) : null;
         const wikiMintOpts = {

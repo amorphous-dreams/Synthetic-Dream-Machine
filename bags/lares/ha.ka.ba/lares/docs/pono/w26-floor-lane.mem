@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/lares/docs/pono/w26-floor-lane"
 
 ! The W26 floor lane ~ one owner per registry, the floor by CID
 
-Road item `W26` carries the build of two operator rulings: //the system wikis release; every other wiki reads the floor// (2026-10-16) and //one owner per registry; the floor reads by CID// (2026-10-18), both at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>> #/rulings. Items `W21` and `P8` ride it. The law it enacts already stands at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/wiki-layer-ontology`>> #/oracle-planes: an oracle names documents at one scope, that scope's owner writes its registry, and a registry travels no wider than its scope.
+Road item `W26` carries the build of two operator rulings: //the house-canon wikis release; every other wiki reads the floor// (2026-10-16) and //one owner per registry; the floor reads by CID// (2026-10-18), both at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>> #/rulings. Items `W21` and `P8` ride it. The law it enacts already stands at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/wiki-layer-ontology`>> #/oracle-planes: an oracle names documents at one scope, that scope's owner writes its registry, and a registry travels no wider than its scope.
 
 <<~/ahu>>
 
@@ -118,7 +118,7 @@ action reactors, `meme` and `where` by `systemCanonUrl`, and a recipe's library 
 * RETIRED at slice 4: `OraclePointer`, `ORACLE_POINTER_DOMAIN`, `snapshotPublicOracle` and the node's oracle floor serve. The floor answers by the release at the porch; the flow map keeps its own pointer under `FLOW_POINTER_DOMAIN` (`flow-pointer`), and `oracle-substrate`, `oracle-read-client` and `oracle-read-face` live on as `flow-substrate`, `flow-read-client` and `flow-read-face`. Left for an o-takiage pass: the route and gate names that still say "oracle" (`ORACLE_SOCKET_ROUTE`, `OracleFloorGate`, `OracleGateArgs`), which name the flow map's socket and not a pointer.
 * Canon lines that named "the shared floor CID" now describe the release (`oracle-governance#/board-model`, `pronaos#/the-rung-ladder`, `genesis-doc#/the-oracle-pointer`, `disk-projection`, `dreamnet-architecture`); the docblocks that call the oracle "the vessel's own plane" or libraries "read-only from wiki" follow the slice whose code makes each line true.
 
-''The interim cure stays out.'' The lane's recipe-watch hold (commit `d1983aa75`, held at the tag `archive/w26-own-canon`, `dd78a181a`) keeps a system wiki's own canon against a shared pointer that slice 2 removes; under //build the end state// it lands nowhere. Its probes stand: the shared-oracle probe as slice 2's red, the `W25` creator probe as that item's measurement.
+''The interim cure stays out.'' The lane's recipe-watch hold (commit `d1983aa75`, held at the tag `archive/w26-own-canon`, `dd78a181a`) keeps a house-canon wiki's own canon against a shared pointer that slice 2 removes; under //build the end state// it lands nowhere. Its probes stand: the shared-oracle probe as slice 2's red, the `W25` creator probe as that item's measurement.
 
 <<~/ahu>>
 
@@ -216,6 +216,6 @@ action reactors, `meme` and `where` by `systemCanonUrl`, and a recipe's library 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;St3b8PVnG4k3EUcQz21Brj2B3-0vrPv1Px8nUGSrhjQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;wRCRls4KPmn7f0A0MUEf1Bh3K3YH0ysdeZoX5FRAMPU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

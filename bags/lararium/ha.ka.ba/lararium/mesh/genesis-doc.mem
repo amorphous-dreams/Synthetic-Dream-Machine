@@ -71,7 +71,7 @@ The genesis doc seeds the ''`@oracle` runtime system island'' — the protocol s
 |---|---|
 | engine + plugin descriptors | `{id, version, sha256}` in `.blobs` (NO bytes); the bytes ride `genesis/cas/<cid>` and the immutable seed derives their exact inventory |
 | system bag descriptors | `ROOT_BAGS`: `@oracle`, `lararium`, `@catalog`, `lares` — the universal floor, and nothing else |
-| system wiki-recipes | the ''`lares` wiki'' (`@oracle`+`lararium`+`lares`) and the ''`lararium` wiki'' — DreamNet system bags as quine wikis |
+| house-canon wiki-recipes | the ''`lares` wiki'' (`@oracle`+`lararium`+`lares`) and the ''`lararium` wiki'' — DreamNet system bags as quine wikis |
 | region witnesses | three tiddlers under the oracle doc URI — `genesis-cid-engine`, `genesis-cid-grammar`, `genesis-cid-plugins` — written in one pass (GD-4) |
 
 ''GD-7 — genesis declares only the floor it stands.'' NO FACE'S PLANE GETS DECLARED HERE. `@persona-<tag>`, `@circles-<tag>`, `@identities-<tag>` and `@sessions-<tag>` each derive their id from the tag their PersonaGroup mints, so no name for them exists when this seed gets built, and a genesis every vessel shares can describe no plane belonging to one person. They describe themselves at founding, where the knowledge lives, and resolve from `@catalog` — `@oracle` names what every vessel carries, and a person's relations reach no such universality.
@@ -196,6 +196,6 @@ Worse for a shelter brief: an implementation hash ''mandates a monoculture'', an
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;EQ6vHuSaIQg4Y1FvHp8frW3aDyS0rl5qqn1RGRKibBc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;fBR3ZKq8CEf1K7VsanbaVg2nlyKwbM9ih9sa26FxtgQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

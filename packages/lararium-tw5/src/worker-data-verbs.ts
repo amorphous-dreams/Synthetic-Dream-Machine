@@ -196,7 +196,7 @@ export function makeListWikisReactor(catalog: CatalogAccessor, sysPlane?: Catalo
     const wikis: Array<{ slug: string; uri: string; automergeUrl: string | null; kind: string; composition?: "own" | "default"; defaultDiffers?: boolean; canon?: "floor" }> = [];
     const cat = await catalog.handle();
     const catTiddlers: Record<string, LarTiddlerRecord> = Object.fromEntries(plainEntries(cat.doc()?.tiddlers));
-    // System wikis — oracle-plane recipes (the lares/lararium quine system bags) carry the DEFAULT.
+    // House-canon wikis — oracle-plane recipes (the lares/lararium quine system bags) carry the DEFAULT.
     // The vessel's own catalog record for the same slug is its composition: the row lists ONCE, as
     // the system row, and reads `composition: "own"` with whether the own stack differs from the default.
     const systemSlugs = new Set<string>();
@@ -242,11 +242,11 @@ export function makeListWikisReactor(catalog: CatalogAccessor, sysPlane?: Catalo
 // bookkeeping). No live composite layer mutation, so unlike add-bag/remove-bag these
 // move cleanly.
 
-/** The refusal for a slug with no effective recipe. A system wiki's recipe stands in the oracle plane
+/** The refusal for a slug with no effective recipe. A house-canon wiki's recipe stands in the oracle plane
  *  and `wiki init` mints nothing for it, so its advice names the oracle, never `wiki init`. */
 function recipeNotFound(slug: string, userAdvice: string): Error {
   return new Error(SYSTEM_BAGS.has(wikiBagUri(slug))
-    ? `recipe not found for "${slug}" — the oracle plane carries no default recipe for this system wiki`
+    ? `recipe not found for "${slug}" — the oracle plane carries no default recipe for this house-canon wiki`
     : `recipe not found for "${slug}"${userAdvice}`);
 }
 

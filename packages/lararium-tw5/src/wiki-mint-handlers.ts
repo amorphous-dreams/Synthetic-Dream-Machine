@@ -31,7 +31,7 @@ export function makeInitWikiReactor(opts: WikiMintHandlerOptions): VerbReactor {
     // capability in it. The catalog row and the cap rest on the canon bag; the answer names the stack and the canon bag apart.
     const canonBag = wikiBagUri(slug);
     const stackUri = wikiUri(slug);
-    // A system wiki's live canon doc rests in the Kahu realm (the vessel's `systemCanonUrl`); its default recipe stands in the oracle.
+    // A house-canon wiki's live canon doc rests in the Kahu realm (the vessel's `systemCanonUrl`); its default recipe stands in the oracle.
     if (SYSTEM_BAGS.has(canonBag)) {
       const wikiDocUrl = houseCanonUrl(await resolveHouseCanon<string>(canonBag, { realm: opts.systemCanonUrl, row: () => opts.catalog.urlOf(canonBag) }));
       const defaultRec = opts.oracle ? await opts.oracle.recordOf(recipeUri("oracle", slug)).catch(() => null) : null;

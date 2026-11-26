@@ -5419,7 +5419,7 @@ async function prepareNodeBootOn(
       { bagId: "temp",           mirrorRoot: join(projectionRoot, FACES_PROJECTION_DIR), scope: "temp", wikiSlot: "temp", mirrorClass: "recovery", consentSlugs: tempConsentedSlugs(loadLaresConfig()), faceFolder: () => wornDeviceRelation === null ? null : wornFaceSegment },
       // self-canon = the per-wiki CANON authority: a minted user wiki's own
       // @{slug} bag projects to realms/<realm pet name>/bags/{slug} (both bagId and leaf fill from the
-      // slug at mount), in the realm that holds it (its default label minted on first read). System wikis (lares/lararium) carry literal grants
+      // slug at mount), in the realm that holds it (its default label minted on first read). House-canon wikis (lares/lararium) carry literal grants
       // above, so resolveDiskMirrors skips this for them — no double-project.
       { bagId: "self",          mirrorRoot: join(projectionRoot, REALMS_PROJECTION_DIR), scope: "self",    perWikiSlug: true, selfCanon: true, sourcedRoots: projection.sourcedRoots("bags"), realmBase: realmBaseOf("bags") },
     ];

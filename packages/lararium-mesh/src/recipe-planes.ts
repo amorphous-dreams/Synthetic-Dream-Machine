@@ -1,7 +1,7 @@
 /**
  * recipe-planes — the ONE reader of a wiki's recipe record.
  *
- * Two registry planes can carry a recipe for a slug. The oracle plane holds a system wiki's DEFAULT
+ * Two registry planes can carry a recipe for a slug. The oracle plane holds a house-canon wiki's DEFAULT
  * recipe (written at genesis, shared by every vessel); the catalog holds the vessel's OWN composition
  * of any wiki, system or user. Own shadows default, exactly as a working layer shadows canon. Every
  * reader walks the planes in the order this module spells, so no site carries an order of its own: the
