@@ -54,7 +54,7 @@ Read with it, in order: the boot seed (<<~ loulou uri=`lar:///ha.ka.ba/lares/api
 * ''O-takiage'' closes every lane and every settle as `mixed-model-swarm#/the-otakiage` names it.
 * ''Fetch before you act, and again before you push.'' Another lane can merge into the work branch between two turns; a lane that pushes past it, or reasons from a stale origin, cures the wrong tree.
 * ''Two witnesses ride CI alone.'' `tools/tree-clean-witness.sh` and `browser-weld-witness` drive e2e boots, so a lane brief names them as CI's and no lane runs either locally.
-* ''A local green proves the tree it read.'' A worktree whose `node_modules` link into another checkout tests that checkout's build; every vitest config refuses a stale or foreign `dist` (`tools/vitest-dist-guard.mjs`). Provision lane worktrees with `tools/provision-worktree.mjs <empty-dir>`, and run the heavy battery through the battery lock (`mixed-model-swarm#/the-battery`).
+* ''A local green proves the tree it read.'' A worktree whose `node_modules` link into another checkout tests that checkout's build; every vitest config refuses a stale or foreign `dist` (`tools/vitest-dist-guard.mjs`). Provision lane worktrees with `tools/provision-worktree.mjs <empty-dir>`, and run the heavy battery inside a floor slot (`mixed-model-swarm#/the-battery`).
 * ''One red in CI masks every package after it.'' `pnpm test` runs the packages in order and stops at the first red, so a cured red can reveal the next. Before pushing a cure, run the packages that come after it, or read the next CI run whole.
 * ''Read the containers' own logs before naming a cause.'' A held-out cell uploads each container's log as an artifact (`gh run download <run> -n <cell>`); tallying each container's own lines split the carriage red where the witness's verdict could not. An in-process reproduction holds one Repo, so it cannot show a defect that lives between a CLI process and a running daemon.
 * ''Give a sandboxed spirit the logs it cannot fetch.'' A Codex build or read seat reaches no network; fetch the failing job logs and hand it the excerpt as a file.
@@ -87,7 +87,7 @@ A session reads this carrier and the roadmap alone; no note outside the reposito
 !!! The battery
 * One named e2e file whose own waits exceed the cap runs locally under `timeout 600`, still headless in the bwrap PID namespace with the 1536 MB heap; every other run keeps `timeout 180`, and no whole suite runs locally (operator, 2026-11-06: //"Approve the 600s e2e cap, OODA-HA."//). The 180 s CI poll floor separately governs GitHub reads.
 * A lane's bench gate runs on the floor before it lands, as the familiar's step and never a git hook: `node tools/floor-run.mjs -- node tools/bench-gate.mjs` runs the familiar's lane checks over the lane's touched packages with develop merged in (the fast witnesses, the carrier pins, the tool tests and each touched package's suites), so the sum of lanes reads green before any lane joins it; it runs every step and refuses by name (`BENCH GATE REFUSES: <step>`, exit 1), and a lane cures the named step before it lands.
-* One battery per batch, run through the battery lock as `mixed-model-swarm#/the-battery` orders it; one e2e file runs locally and the whole sets ride the lane branch's CI. A red CI run gets bisected (a `ci/<lane>` push per suspect head, the first red named between a proven green and a red), never guessed. A live commit says so in its message and ends a batch only where later work builds on its bytes.
+* One battery per batch, run inside a floor slot as `mixed-model-swarm#/the-battery` orders it; one e2e file runs locally and the whole sets ride the lane branch's CI. A red CI run gets bisected (a `ci/<lane>` push per suspect head, the first red named between a proven green and a red), never guessed. A live commit says so in its message and ends a batch only where later work builds on its bytes.
 * Suites run from source under a scratch `HOME` and a scratch `LAR_ROOT`, with `LAR_BAGS` unset. Never `pnpm install` in the main tree. Before landing a test file, the charter and gate-dial funnels and the unbuilt-laws witness run.
 * No standing test code produces load; a race gets pinned by a handshake between the parties.
 * A test that spawns or signals a process runs inside a bwrap PID namespace (`bwrap --unshare-pid --die-with-parent --dev-bind / / --proc /proc --`), under `NODE_OPTIONS=--max-old-space-size=1536` and `timeout 180`, with no fake pid 0 or 1: a group kill refuses any pgid at or below 1 (`killGroup` in `tools/launch-codex.mjs`), and a witness reads any `process.kill` outside it as red. Daemon-side verbs (`packages/lararium-node`, keyhive) run single test files only; CI runs the suites.
@@ -159,6 +159,6 @@ A session can close and a fresh one boot from carriers; a ''live'' handoff lets 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;FmX71KrOSwcXqhsz6-Gwnjwp6qCSQL_oSfiJpMLyA-8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;YeqC-Ykxcd1-D45V6mTcqP6xzAlMsm5Lych09WlvY_c`>>
 
 <<^ code=`&#x0004;` to=`?`>>

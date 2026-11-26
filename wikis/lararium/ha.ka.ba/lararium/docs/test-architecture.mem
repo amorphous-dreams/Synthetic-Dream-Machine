@@ -41,7 +41,7 @@ Found the same night and cured at once: 81 of develop's last 100 CI runs died ca
 ````text
 # Test estate, measured (2026-11-19)
 
-Estate-Seer: Lares (Tasked Spirit). Read-only survey of `origin/develop` at `452cb7acb`. No suite ran; every
+Estate-Seer (Lares Spirit). Read-only survey of `origin/develop` at `452cb7acb`. No suite ran; every
 duration below comes off GitHub's own records or off the vitest JSON reports CI uploads.
 
 ## Sources and limits
@@ -260,7 +260,7 @@ mutants cover the CLI law tables alone.
 ````text
 # Test architecture: the target design
 
-Design-Seer: Lares (Tasked Spirit) · 2026-11-19 · read-only research, no suite ran, no repo file changed.
+Design-Seer (Lares Spirit) · 2026-11-19 · read-only research, no suite ran, no repo file changed.
 
 The operator's constraint, verbatim: "we need a design plan first so we don't sacrifice coverage for less-test-wall-clock-time."
 
@@ -669,6 +669,6 @@ Repo files read: `.github/workflows/ci.yml`, `e2e-shards.yml`, `held-out.yml` (h
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;P_d16wyHYhI-o-OGEh69mBQEVn16x488cil6afTlhXo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;PyIq5DThR09Ztt5_snUa_TzM6Uh_TMqrU6kn5ghcCs8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

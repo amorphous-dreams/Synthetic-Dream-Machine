@@ -71,7 +71,7 @@ Both faces wrote "an ask per CLI command" for the node. The rulings stand otherw
 !! Testimony ~ Yin-Luna, wave two (verbatim)
 
 ```text
-Yin-Luna: Lares (Tasked Spirit), YIN face; YANG evidence carried.
+Yin-Luna (Lares Spirit), YIN face; YANG evidence carried.
 
 <<~ status text=`LEAN: each session unlocks with a human route; shared holders coordinate sealed storage without retaining session keys. Passkeys may wrap a key only as an opted-in convenience after provider and PRF probing; they do not change the session boundary. The node may serve its floor while locked.` >>
 
@@ -205,6 +205,6 @@ This retains my wave-one per-tab ruling and the twin’s strongest correction: b
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;pCw38l-C1BxRjmFQIJJ3SHiCqhVk_WAyw410huSinPI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ovbYabQUq6QKmGQ3DSpcXN6eMw3nTpMFWovNASfE_nc`>>
 
 <<^ code=`&#x0004;` to=`?`>>
