@@ -764,7 +764,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         boot: bootFromSet(ctx.bootSet, ctx.resolveByCid),
         ...(wear ? { wear } : {}),
       }, slug, need);
-    }, { idleMs: NAMED_WIKI_ENGINE_COLD_MS }));
+    }, { idleMs: NAMED_WIKI_ENGINE_COLD_MS, ...(reaches.writeSlot ? { seatOf: reaches.writeSlot } : {}) }));
   const litFaceTargetOf = (ctx: IslandContext) => {
     return makeLitFaceTarget({
       worn: () => asLit(daemonAuth),

@@ -163,6 +163,26 @@ describe.skipIf(wikiSkip)(`every wiki its engine${skipNote}`, () => {
       .rejects.toMatchObject({ reason: "wiki-unreached" });
   }, 60_000);
 
+  test("W6 RED: a seat change closes the engine composed over the old seat, and the next write lands in the new slot", async () => {
+    const w = sharedWiki({ standing: ["working", "personal"] });
+    let seat: "working" | "personal" = "working";
+    const deps = { ...w.deps, writeSlot: async () => seat };
+    const engines = wikiEngines((slug, need) => composeWikiEngineSource(deps, slug, need), { seatOf: async () => seat });
+    downs.push(() => engines.dropAll());
+    const opts = { composite: null as never, tw5: null as never, wikis: engines };
+    const first = await makeTiddlerPutReactor(opts)({ recipe: SLUG, title: "Under the old seat", text: "x" }, ctx());
+    expect(first).toMatchObject({ decision: "put", bag: WORKING });
+    await landIn(w.slots.get("working")!, "Under the old seat");
+    seat = "personal";
+    const after = await makeTiddlerPutReactor(opts)({ recipe: SLUG, title: "Under the new seat", text: "y" }, ctx());
+    expect(after, "the write rides the slot the new seat names").toMatchObject({ decision: "put", bag: PERSONAL });
+    await landIn(w.slots.get("personal")!, "Under the new seat");
+    expect(holds(w.slots.get("personal")!, "Under the new seat")).toBe(true);
+    expect(holds(w.slots.get("working")!, "Under the new seat"), "the old slot takes none of it").toBe(false);
+    const stand = await engines.of(SLUG, { write: false });
+    expect(await engines.of(SLUG, { write: false }), "a seat that holds keeps its engine").toBe(stand);
+  }, 60_000);
+
   test("W4 RED: a write mints the face's write layer where none stood and recomposes; a cold engine closes and the next ask composes afresh", async () => {
     const w = sharedWiki({ writeSlot: "personal", standing: ["working"] });
     let composed = 0;

@@ -28,6 +28,7 @@ import { daemonFaceCanonBag, wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
 import { type DocHandle, type Repo as RepoType } from "@lararium/mesh/automerge";
 import { composeCrossFaceView, composeFaceEngine, crossFaceViewSource, faceEngines, type FaceEngineSource } from "../src/face-engine.js";
+import { NoWorkingLayerRefusal } from "@lararium/mesh/composite-store";
 import { makeTiddlerGetReactor, makeTiddlerPutReactor, makeWikiFilterReactor, makeWikiRenderReactor } from "../src/tiddler-verbs.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
 import { bootTestWiki, skipNote, wikiSkip } from "./test-wiki.js";
@@ -121,6 +122,22 @@ describe.skipIf(wikiSkip)(`a lit face's own engine answers the tiddler door${ski
     expect(put).toMatchObject({ decision: "put", bag: WORKING });
     expect(holds(h1.working, "Note of h1"), "the put lands in the working document the slot named").toBe(true);
     expect(composed).toBeGreaterThanOrEqual(3);
+  }, 60_000);
+  test("E4c RED: a write before the working slot arrives refuses by name and lands nowhere, and the arrival lets the next write land", async () => {
+    const repo = new Repo({ network: [] }); downs.push(() => repo.shutdown());
+    const h1 = faceDocs(repo, R1, "Canon of h1");
+    const bare: FaceEngineSource = { ...h1.source, ready: h1.source.ready.filter((r) => r.slot !== WORKING) };
+    let slotRecorded = false;
+    const engines = faceEngines(async () => slotRecorded ? h1.source : bare);
+    downs.push(() => engines.dropAll());
+    const before = await engines.of(1);
+    await expect(makeTiddlerPutReactor(before as never)({ recipe: "default", title: "Early note", text: "too soon" }, ctx())).rejects.toBeInstanceOf(NoWorkingLayerRefusal);
+    await turns(8);
+    expect(holds(h1.working, "Early note"), "the early write lands in no document").toBe(false);
+    expect(holds(h1.canon, "Early note")).toBe(false);
+    slotRecorded = true;
+    const after = await engines.of(1);
+    expect(await putAndLand(after as never, h1.working, "Early note")).toMatchObject({ decision: "put", bag: WORKING });
   }, 60_000);
 });
 

@@ -69,12 +69,16 @@ export interface WikiEngineDeps {
 export interface WikiEngineSource extends FaceEngineSource {
   /** The wiki's canon bag: the door's read gate where the face holds no write layer of the wiki. */
   readonly gate: string;
+  /** The seat this source stood on: the face's write slot kind when the source composed (null: no write layer). */
+  readonly seat?: "working" | "personal" | null;
 }
 
 /** A named wiki's engine: the face engine, its read gate, and the layer a write lands in (null: none stands yet). */
 export interface WikiEngine extends FaceEngine {
   readonly gate: string;
   readonly writeLayer: string | null;
+  /** The write slot kind this engine composed over; a seat that moved since makes the engine stale. */
+  readonly seat: "working" | "personal" | null;
 }
 
 const INSTANCE: ReadonlySet<WikiSlotKind> = new Set(["draft", "working", "personal"]);
@@ -113,6 +117,7 @@ export async function composeWikiEngineSource(deps: WikiEngineDeps, slug: string
     boot: deps.boot, recipe, ready, gate: wikiCanonOf(recipe),
     ...(write === "personal" ? { writeSlot: "personal" as const } : {}),
     ...(deps.wear ? { wear: deps.wear } : {}),
+    seat: write,
   };
 }
 
@@ -121,7 +126,7 @@ export async function composeWikiEngine(source: WikiEngineSource): Promise<WikiE
   const engine = await composeFaceEngine(source);
   const wiki = engine.tw5.$tw.wiki as { getTiddlerText?: (title: string, fallback?: string) => string };
   const writeLayer = wiki.getTiddlerText?.(CURRENT_WIKI_BAG, "") || null;
-  return { ...engine, gate: source.gate, writeLayer };
+  return { ...engine, gate: source.gate, writeLayer, seat: source.seat ?? null };
 }
 
 /** One engine per named wiki, under the island's worn face. */
@@ -136,16 +141,23 @@ export interface WikiEngines {
 
 /** The engines of every named wiki the face reaches, each composed on its first ask and closed when cold (`idleMs`). */
 export function wikiEngines(
-  sourceOf: (slug: string, need: { readonly mint: boolean }) => Promise<WikiEngineSource | null>, opts: { readonly idleMs?: number } = {},
+  sourceOf: (slug: string, need: { readonly mint: boolean }) => Promise<WikiEngineSource | null>,
+  /** `seatOf` reads the face's write slot kind as it stands now: an engine composed over another seat closes and composes afresh on
+   *  the ask that finds the seat moved, so a seat or share change never leaves a write landing through the old slot. */
+  opts: { readonly idleMs?: number; readonly seatOf?: (slug: string) => Promise<"working" | "personal" | null> } = {},
 ): WikiEngines {
   const minting = new Set<string>();
   const pool = enginePool<string, WikiEngine>(async (slug) => {
     const source = await sourceOf(slug, { mint: minting.has(slug) });
     return source ? composeWikiEngine(source) : null;
-  }, opts);
+  }, opts.idleMs === undefined ? {} : { idleMs: opts.idleMs });
   return {
     of: async (slug, need) => {
-      const engine = await pool.of(slug);
+      let engine = await pool.of(slug);
+      if (engine !== null && opts.seatOf && !isTw5Docs(slug)) {
+        const seat = await opts.seatOf(slug);
+        if (seat !== engine.seat) { await pool.drop(slug); engine = await pool.of(slug); }
+      }
       if (!need.write || engine === null || engine.writeLayer !== null) return engine;
       // A WRITE WHERE NO WRITE LAYER STANDS: mint the face's own layer of the wiki, then recompose over it.
       await pool.drop(slug);
