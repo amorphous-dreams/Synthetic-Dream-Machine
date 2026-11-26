@@ -32,8 +32,8 @@ test("R4 RED: a content-born summon naming the place key reaches no fenced verb;
   const registry = new VerbTable();
   opts.wireWorkerVerbs!(registry, a.ctx);
   const place = `0x${a.daemonAuth.placeVerifyingKey}`;
-  // A fenced verb that runs on the mounted face's mint: `pin` commands main's residency through `ctx.post`.
-  const verb = "pin";
+  // A fenced verb that runs on the mounted face's mint: `register-cold` commands main's residency through `ctx.post`.
+  const verb = "register-cold";
   expect(registry.fenced(verb), "the verb under test stands fenced").toBe(true);
   const run = async (stamp: "content" | "surface", claim = place) => {
     const ask = islandEventAsk(claim, { verb, uri: "lar:///synced/summon", ...(stamp === "surface" ? { origin: "surface" } : {}) });

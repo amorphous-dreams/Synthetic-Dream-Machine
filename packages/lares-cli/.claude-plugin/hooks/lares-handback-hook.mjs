@@ -24,7 +24,7 @@ try {
       const agent = String(input.agent_id ?? input.agent_type ?? "spirit");
       const pet = handbackPetOf(message, agent);
       const key = `${String(input.session_id ?? "")}:${agent}`.replace(/[^A-Za-z0-9:_-]/g, "-");
-      await settle(run(spiritArgv("residue", pet, "--file", "-", "--key", key), message), RESIDUE_BUDGET_MS);
+      await settle(run(spiritArgv("residue", pet, "--file", "-", "--key", key), message, RESIDUE_BUDGET_MS), RESIDUE_BUDGET_MS);
     }
   }
 } catch { /* A handback that cannot land stays in the transcript. */ }

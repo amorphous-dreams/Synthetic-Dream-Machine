@@ -8,6 +8,7 @@
  * refuses triggers no mount (control: no wiki-switch recorded); a mount that cannot stand refuses by the name
  * `wiki-mount-refused: <cause>`; a daemon-slug or non-slot act asks no mount.
  */
+import { answerRingOf } from "@lararium/mesh/control-home";
 import { memoryControlStore } from "./control-store-fixture.js";
 import { describe, test, expect } from "vitest";
 import { CompositeStore } from "@lararium/mesh/composite-store";
@@ -43,7 +44,11 @@ const makeDaemon = (): CompositeStore => {
   return c;
 };
 const settle = async (): Promise<void> => { for (let i = 0; i < 20; i++) await new Promise((r) => setTimeout(r, 0)); };
-const outcomeOf = async (daemon: CompositeStore, id: string) => (await daemon.getLive(OUTCOME_URI_PREFIX + id))?.tiddler;
+/** The verdict row's fields, with the `results` the whole answer carries in the store's answer ring (no row rests a body). */
+const outcomeOf = async (daemon: CompositeStore, id: string): Promise<Record<string, unknown> | undefined> => {
+  const row = (await daemon.getLive(OUTCOME_URI_PREFIX + id))?.tiddler;
+  return row ? { ...row, results: answerRingOf(daemon).get(id)?.tiddler["results"] } : row;
+};
 
 const WORKING = "lar:///ha.ka.ba/wikis/orchard/working";
 function stand(opts: { textOnly?: boolean; switchAnswer?: Record<string, unknown> | Error; fence?: boolean; deny?: string } = {}) {

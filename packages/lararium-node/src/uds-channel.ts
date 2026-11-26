@@ -59,12 +59,13 @@ import {
   parseReceiptFact,
   outcomeBytesOf,
   verbInputDigest,
+  releasedBodyOf,
   type ReceiptFact,
   type ReceiptFactDraft,
 } from "@lararium/mesh/verb-tiddler";
 import { type LarDoc } from "@lararium/mesh/base-doc";
 import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
-import { ControlHomeUnavailable, controlHomeRefusal, assertControlHomeOpen } from "@lararium/mesh/control-home";
+import { ControlHomeUnavailable, controlHomeRefusal, assertControlHomeOpen, answerRingOf } from "@lararium/mesh/control-home";
 import { SessionTable, sessionBinding, type SessionBinding } from "@lararium/mesh/session-contract";
 import { faceScopedId } from "@lararium/mesh/face-scoped-id";
 import { type SessionReceipt } from "@lararium/mesh/session-receipt";
@@ -73,7 +74,7 @@ import { switchSession } from "@lararium/mesh/session-switch";
 import { ingestWaveRefusal } from "@lararium/mesh/ingest-wave-budget";
 import type { CapabilityProfile, Hand, Session, SessionFace } from "@lararium/mesh/session-contract";
 import type { SwitchIntent, SwitchOutcome } from "@lararium/mesh/session-switch";
-import { answersUntracked, inCallScope, takeCallTouches, takeCallUntracked, type CallTouches } from "@lararium/mesh/call-touches";
+import { answersUntracked, inCallScope, ridesAnswerRing, takeCallTouches, takeCallUntracked, READ_VERBS, type CallTouches } from "@lararium/mesh/call-touches";
 import type { SwitchActLog } from "./switch-act-log.js";
 
 /** The band a write door's answer carries where a document its call wrote still waits unsealed (`RestOwed`, sealed-rest). */
@@ -380,6 +381,8 @@ export interface ReceiptAnswer {
   readonly chore?: ChoreReceiptMark;
   /** A VISIT's outcome (a read of another lit face, `seat-hand`): its body answered its caller once, and a receipt withholds it. */
   readonly visit?: { readonly withheld: true };
+  /** A body the answer ring let go (its bound, or a restart): the verdict stands, with the measure of the body and the cure. */
+  readonly body?: { readonly released: true; readonly sha256?: string; readonly bytes?: number; readonly cure: string };
   /** The engine's fall (`engine-watch`), where the answer came from the settled ledger after the engine stopped. */
   readonly engine?: Record<string, unknown>;
 }
@@ -413,6 +416,13 @@ export class VesselWaitExpired extends Error {
     super(`verb "${verb}" — this vessel's own wait ended after ${budgetMs}ms (adaptive); outcome unknown. Check request ${requestId}.`);
   }
 }
+
+/**
+ * AN EVICTED BODY LEAVES THE DOCUMENT'S STANDING STATE. A kāpae tombstone keeps every field its record held, so a ring
+ * that evicted by one counted the body out while every replica of the control document went on holding it. The ring's
+ * tombstone rides bare: the title and the deleted mark stand, and the body's fields leave.
+ */
+const EVICTED_BODY = { bare: true } as const;
 
 /**
  * The DURABLE, single-writer request ledger (D1, P2.5 iter 4 — closes H1R + H4 + M1 + M3″). This
@@ -775,7 +785,7 @@ export class FactLedger {
     // the eviction. The other order would leave a body no fact answers for, outside every bound.
     const outcomeTitle = `${OUTCOME_URI_PREFIX}${victimId}`;
     for (const bagId of await this.composite.listBagsHolding(outcomeTitle)) {
-      await this.composite.tombstoneInBag(bagId, outcomeTitle, { kind: "lares-verb", requestId: victimId });
+      await this.composite.tombstoneInBag(bagId, outcomeTitle, { kind: "lares-verb", requestId: victimId }, EVICTED_BODY);
     }
     await this.composite.put(buildReceiptFact(evicted), { kind: "lares-verb", requestId: victimId });
     this.release(victimId);
@@ -806,7 +816,7 @@ export class FactLedger {
     };
     const outcomeTitle = `${OUTCOME_URI_PREFIX}${victimId}`;
     for (const bagId of await this.composite.listBagsHolding(outcomeTitle)) {
-      await this.composite.tombstoneInBag(bagId, outcomeTitle, { kind: "lares-verb", requestId: victimId });
+      await this.composite.tombstoneInBag(bagId, outcomeTitle, { kind: "lares-verb", requestId: victimId }, EVICTED_BODY);
     }
     await this.composite.put(buildReceiptFact(evicted), { kind: "lares-verb", requestId: victimId });
     this.tornAt.delete(victimId);
@@ -856,6 +866,9 @@ function inputDigestOf(inv: Pick<Invocation, "verb" | "args" | "face" | "effectK
     ...(inv.effectKey !== undefined && { effectKey: inv.effectKey }),
   });
 }
+
+/** A door call slower than this, read to outcome, logs one line naming its two spans (`noteSlowCall`). */
+export const SLOW_DOOR_CALL_MS = 2_000;
 
 export interface UdsChannel { close: () => void; }
 
@@ -1046,6 +1059,17 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
   const floorVerbs = opts.floorVerbs ?? FLOOR_VERBS;
   const timeoutMs = opts.timeoutMs ?? 30_000;
   const log = opts.onLog ?? (() => { /* quiet */ });
+  /**
+   * A DOOR CALL THAT RAN LONG SAYS WHERE ITS TIME WENT, one line: the span from this seat's read of the line to its admitted
+   * fact (the peer reading, the target, the digest, the ledger's record and flush), and the span on the island until the
+   * outcome landed. Monotonic readings (`performance.now()`), an annotation alone: no reading here admits, refuses or ends
+   * anything, and a call under {@link SLOW_DOOR_CALL_MS} says nothing.
+   */
+  const noteSlowCall = (verb: string, requestId: string, readAt: number, admittedAt: number): void => {
+    const landedAt = performance.now();
+    if (landedAt - readAt < SLOW_DOOR_CALL_MS) return;
+    log(`slow door call "${verb}" (request ${requestId}): ${Math.round(admittedAt - readAt)} ms from the read to the admitted fact, ${Math.round(landedAt - admittedAt)} ms on the island until its outcome landed`);
+  };
 
   // Outcomes and receipt facts rest in the vessel's control document, the control store's one default writable.
   const composite = opts.control;
@@ -1057,7 +1081,12 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
   // receipt-fact tiddler this channel alone writes; a restart reads the SAME fact a prior process
   // wrote, closing H1R (a same-id reuse re-running after restart) and H4 (a cancelled id's
   // abandonment not surviving one).
-  const ledger = new FactLedger(composite, opts.repo, opts.ring ?? RECEIPT_RING_DEFAULT, claim.life, opts.ringBytes ?? RECEIPT_RING_BYTES_DEFAULT, log);
+  // THE LEDGER'S FLOOR NAMES ITS OWN DOCUMENT. Every fact rests in the control document and nowhere else, so each record
+  // flushes that one document. A flush that names none walks every document the Repo holds (each one's heads read and
+  // compared, every save another document still paces forced at once), and a door call records two facts: the walk then
+  // costs each call twice, and grows with the house. A call's own writes rest by their own road (`restOwed`, per document).
+  const ledgerRest: Pick<Repo, "flush"> = { flush: () => opts.repo.flush([controlHandle.documentId]) };
+  const ledger = new FactLedger(composite, ledgerRest, opts.ring ?? RECEIPT_RING_DEFAULT, claim.life, opts.ringBytes ?? RECEIPT_RING_BYTES_DEFAULT, log);
   // THE OWNER'S EPOCH IS THE VESSEL'S LIFE (session-contract): one name for one relation, minted by the store claim.
   const ownerEpoch = claim.life;
   // NO RECEIPT CLAIMS DURABILITY OVER MEMORY: a stand-in control handle (the vessel's key shut) refuses by name, never
@@ -1069,19 +1098,36 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     return { docUrl: controlHandle.url, heads, ownerEpoch };
   };
 
-  const readOutcomeFor = async (requestId: string): Promise<Record<string, unknown> | null> => {
+  // THE ANSWER RING (`control-home` `answerRingOf`): the whole outcomes of the verbs this vessel ran, in memory alone. The
+  // island hands each across as it concludes; the control document rests the verdict row and no body.
+  const ring = answerRingOf(composite);
+  /** The outcome row the control document rests for `requestId` (a verdict row; a whole record where one rests), or null. */
+  const rowFieldsOf = async (requestId: string): Promise<Record<string, unknown> | null> => {
     const event = await composite.get(`${OUTCOME_URI_PREFIX}${requestId}`);
     if (!event || event.meta?.deleted) return null;
-    const fields = event.tiddler as Record<string, string>;
-    const status = fields["status"];
-    if (status !== "done" && status !== "error") return null;
+    const fields = event.tiddler as Record<string, unknown>;
+    return fields["status"] === "done" || fields["status"] === "error" ? fields : null;
+  };
+  /** The whole answer the ring holds for `requestId`, or null once it left. */
+  const heldFieldsOf = (requestId: string): Record<string, unknown> | null => {
+    const fields = ring.get(requestId)?.tiddler as Record<string, unknown> | undefined;
+    return fields && (fields["status"] === "done" || fields["status"] === "error") ? fields : null;
+  };
+  /**
+   * One outcome record as the door tells it. A record that carries `results` answers whole. A verdict alone answers its
+   * status, refusal and error, and names what became of the body: a visit's stays withheld, and any other reads
+   * `body: { released, sha256, bytes, cure }`, with no `touched`, so the seat reads its rest untracked (owed), never ok.
+   */
+  const toldOutcome = (fields: Record<string, unknown>, requestId: string): Record<string, unknown> => {
     let results: unknown;
-    if (typeof fields["results"] === "string" && fields["results"].length > 0) {
-      try { results = JSON.parse(fields["results"]); } catch { /* malformed — leave */ }
+    const whole = typeof fields["results"] === "string";
+    if (whole && (fields["results"] as string).length > 0) {
+      try { results = JSON.parse(fields["results"] as string); } catch { /* malformed — leave */ }
     }
     return {
-      status, requestId,
+      status: fields["status"], requestId,
       ...(results !== undefined ? { results } : {}),
+      ...(!whole ? (fields["visit"] === "true" ? { visit: { withheld: true as const } } : { body: releasedBodyOf(fields) }) : {}),
       ...(fields["error-message"] !== undefined ? { errorMessage: fields["error-message"] } : {}),
       // D1 commit 1 (mesh)'s additive `concludeVerb({refusal})` — a terminal outcome's own
       // machine-readable reason (e.g. "retention-gap", stamped by the tw5 dispatcher's
@@ -1100,10 +1146,44 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       ...(typeof fields["touched"] === "string" ? { touched: fields["touched"] } : {}),
     };
   };
+  /** READ THE RING, THEN THE ROW: the whole answer where the ring still holds it, else what the verdict row tells. */
+  const readOutcomeFor = async (requestId: string): Promise<Record<string, unknown> | null> => {
+    const held = heldFieldsOf(requestId);
+    if (held) return toldOutcome(held, requestId);
+    const row = await rowFieldsOf(requestId);
+    return row ? toldOutcome(row, requestId) : null;
+  };
+  /**
+   * THE IDS THIS SEAT DISPATCHED WHOSE WHOLE ANSWER STILL RIDES TOWARD THE RING. The island lands the verdict row first
+   * and the answer after it, so a wait that met the row alone would tell a released body a beat before the body came.
+   * A wait on such an id therefore holds for the ring. An id leaves the set when its answer stands, or when a wait on it
+   * ran its whole budget beside a standing row (the answer went missing with the island that owed it): from then on its
+   * row answers, body released.
+   */
+  const answerOwed = new Set<string>();
+  const unsubAnswers = ring.subscribe((requestId) => { answerOwed.delete(requestId); });
+  /**
+   * What a wait on `requestId` may answer now, or null while it still waits. `needsRow` names a ledgered dispatch: its
+   * answer leaves only once its verdict row stands in this vessel's own control document, so the answer never outruns
+   * the verdict a receipt would read. A read on the answer-ring road and a floor act wait on the answer alone.
+   */
+  const settledOutcomeFor = async (requestId: string, needsRow: boolean): Promise<Record<string, unknown> | null> => {
+    const held = heldFieldsOf(requestId);
+    if (held) return !needsRow || await rowFieldsOf(requestId) !== null ? toldOutcome(held, requestId) : null;
+    const row = await rowFieldsOf(requestId);
+    if (row === null) return null;
+    // THE RING MAY HAVE TAKEN THE ANSWER DURING THE ROW'S READ (its put clears the owed mark): the whole answer wins.
+    const landed = heldFieldsOf(requestId);
+    if (landed) return toldOutcome(landed, requestId);
+    // A row that rests a whole record answers by itself; a verdict whose answer still rides toward the ring waits for it.
+    if (typeof row["results"] !== "string" && answerOwed.has(requestId)) return null;
+    answerOwed.delete(requestId);
+    return toldOutcome(row, requestId);
+  };
 
   /** Await the durable outcome for `requestId` — NEVER places a verb. Shared by a fresh dispatch's
    *  own wait and by a legitimate concurrent re-read of an id this process already committed. */
-  const awaitOutcome = async (verb: string, requestId: string, askedTimeoutMs?: number): Promise<Record<string, unknown>> => {
+  const awaitOutcome = async (verb: string, requestId: string, askedTimeoutMs?: number, needsRow = false): Promise<Record<string, unknown>> => {
     return await new Promise<Record<string, unknown>>((resolve, reject) => {
       let settled = false;
       // MONOTONIC, NEVER Date.now(): an elapsed-duration measurement that fed the adaptive servo from a
@@ -1113,10 +1193,13 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       const t0 = performance.now();
       const settle = (fn: () => void) => { if (!settled) { settled = true; cleanup(); fn(); } };
       // Only a COMPLETION teaches the servo (a timeout/hang never records → can't drag the EWMA to CEIL).
-      const check = () => { void readOutcomeFor(requestId).then((r) => { if (r) settle(() => { recordMineDuration(verb, performance.now() - t0); resolve(r); }); }); };
+      const check = () => { void settledOutcomeFor(requestId, needsRow).then((r) => { if (r) settle(() => { recordMineDuration(verb, performance.now() - t0); resolve(r); }); }, () => { /* a read that faults answers nothing; the next change reads again */ }); };
       const onChange = () => check();
-      // THE LEDGER RESTS IN THE CONTROL DOCUMENT: the wait hears the control store and the document beneath it.
-      const unsubscribe = composite.subscribe((change) => { if (change.title === `${OUTCOME_URI_PREFIX}${requestId}`) check(); });
+      // THE VERDICT RESTS IN THE CONTROL DOCUMENT AND THE ANSWER IN THE RING: the wait hears the control store, the
+      // document beneath it, and the ring.
+      const unsubscribeStore = composite.subscribe((change) => { if (change.title === `${OUTCOME_URI_PREFIX}${requestId}`) check(); });
+      const unsubscribeRing = ring.subscribe((answered) => { if (answered === requestId) check(); });
+      const unsubscribe = (): void => { unsubscribeStore(); unsubscribeRing(); };
       controlHandle.on("change", onChange);
       // Fail on a GRADIENT: the wait grows with this verb's learned durations (EWMA·K, clamped
       // FLOOR..CEIL) — headroom for an honest long verb, while a real hang still dies within CEIL.
@@ -1135,14 +1218,18 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         floor: timeoutMs,
       });
       // LIVENESS: a dispatched act may never return; its eventual outcome remains available to read.
-      const timer = setTimeout(() => settle(() => reject(new VesselWaitExpired(verb, requestId, budget))), budget);
+      const timer = setTimeout(() => settle(() => {
+        // A VERDICT THAT STOOD THROUGH THIS WHOLE WAIT WITH NO ANSWER BESIDE IT lost its answer: later waits read the row.
+        if (answerOwed.has(requestId)) void rowFieldsOf(requestId).then((row) => { if (row !== null) answerOwed.delete(requestId); }, () => { /* unread: the id stays owed */ });
+        reject(new VesselWaitExpired(verb, requestId, budget));
+      }), budget);
       const cleanup = () => { controlHandle.off("change", onChange); unsubscribe(); clearTimeout(timer); };
       check(); // the outcome may already exist (idempotent re-submission)
     });
   };
 
   /**
-   * The verb behind `requestId` SETTLED: its outcome landed in the control document. No timer: a caller's own wait may give up
+   * The verb behind `requestId` SETTLED: its verdict landed in the control document, or its answer in the ring. No timer: a caller's own wait may give up
    * while the verb runs on, and the face's close waits on the verb, never on that caller. An island restart ends the verb, and
    * the face actor's supervisor frees its work there.
    */
@@ -1150,9 +1237,11 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     let landed = false;
     const check = () => { void readOutcomeFor(requestId).then((r) => { if (r && !landed) { landed = true; cleanup(); resolve(); } }, () => {}); };
     const onChange = () => check();
-    const unsubscribe = composite.subscribe((change) => { if (change.title === `${OUTCOME_URI_PREFIX}${requestId}`) check(); });
+    const unsubscribeStore = composite.subscribe((change) => { if (change.title === `${OUTCOME_URI_PREFIX}${requestId}`) check(); });
+    // A read on the answer-ring road lands no row: its answer in the ring says it settled.
+    const unsubscribeRing = ring.subscribe((answered) => { if (answered === requestId) check(); });
     controlHandle.on("change", onChange);
-    const cleanup = () => { controlHandle.off("change", onChange); unsubscribe(); };
+    const cleanup = () => { controlHandle.off("change", onChange); unsubscribeStore(); unsubscribeRing(); };
     check();
   });
 
@@ -1162,7 +1251,8 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
   // the daemon's documents — only the worker-written outcome (bags/control/outcomes/<id>)
   // lands, in the vessel's control document. A co-located CLI shares the worker's process, so the CRDT summons
   // (the remote-peer transport) would be a pointless content-bloating round-trip.
-  const runVerb = async (inv: Invocation, requestId: string): Promise<Record<string, unknown>> => {
+  const runVerb = async (inv: Invocation, requestId: string, needsRow = false): Promise<Record<string, unknown>> => {
+    answerOwed.add(requestId);
     opts.placeVerb({
       origin: "channel",
       verb:        inv.verb,
@@ -1175,7 +1265,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       ...(inv.chore !== undefined && { chore: inv.chore }),
       ...(inv.effectKey !== undefined && { effectKey: inv.effectKey }),
     });
-    try { return await awaitOutcome(inv.verb, requestId, inv.timeoutMs); }
+    try { return await awaitOutcome(inv.verb, requestId, inv.timeoutMs, needsRow); }
     finally { opts.retireAsk?.(requestId); }
   };
 
@@ -1207,6 +1297,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         requestId, state: status,
         ...(outcome["visit"] !== undefined ? { visit: { withheld: true as const } } : {}),
         ...(outcome["results"] !== undefined ? { results: outcome["results"] as Record<string, unknown> } : {}),
+        ...(outcome["body"] !== undefined ? { body: outcome["body"] as NonNullable<ReceiptAnswer["body"]> } : {}),
         ...(outcome["errorMessage"] !== undefined ? { errorMessage: outcome["errorMessage"] as string } : {}),
         ...(outcome["refusal"] !== undefined ? { refusal: outcome["refusal"] as { reason: string } } : {}),
         ...(outcome["chore"] !== undefined ? { chore: outcome["chore"] as ChoreReceiptMark } : {}),
@@ -1258,8 +1349,9 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     try { found = await ledger.get(scoped); }
     catch (error) { log(`receipt-fact ledger failed to read act ${requestId}: ${error instanceof Error ? error.message : String(error)}`); }
     const fact = found === "torn" || found?.face !== face ? null : found;
-    const event = await composite.get(`${OUTCOME_URI_PREFIX}${scoped}`);
-    const fields = event && !event.meta?.deleted ? event.tiddler as Record<string, unknown> : null;
+    // The ring's whole answer names its face as the row does; a read on the answer-ring road stands in the ring alone.
+    const event = heldFieldsOf(scoped) === null ? await composite.get(`${OUTCOME_URI_PREFIX}${scoped}`) : null;
+    const fields = heldFieldsOf(scoped) ?? (event && !event.meta?.deleted ? event.tiddler as Record<string, unknown> : null);
     const outcome = fields?.["face"] === face ? await retrievedOutcome(scoped) : null;
     const status = outcome?.["status"] === "done" || outcome?.["status"] === "error" ? outcome["status"] : undefined;
     const ran = unrecorded.get(scoped)?.status;
@@ -1273,6 +1365,12 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       position: { ownerEpoch: fact && "life" in fact && fact.life !== undefined ? fact.life : ownerEpoch,
         ...(fact && { seq: fact.seq }), ...(durable && { durable }) } };
   };
+
+  /** The reads on the answer-ring road still running, by request id: a same-id ask joins the wait, and a changed input refuses. */
+  const readsInFlight = new Map<string, { readonly digest: string; readonly run: Promise<Record<string, unknown>> }>();
+  /** What a reused id that carries another input hears: nothing ran under this ask, and the cure reads a fresh id. */
+  const reusedWithChangedInput = (requestId: string): string =>
+    `request ${requestId} was already used with different arguments — mint a fresh request id`;
 
   // Observe every terminal outcome landing in the durable doc, on ANY path (D1, H1R+M1). The
   // single-writer fact ledger promotes/mints the matching fact here — never inside the worker,
@@ -1897,6 +1995,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         // The floor keeps no receipt fact: an answer its memory still holds reads back; any other refuses by name.
         void retrievedOutcome(parsed.requestId).then((held) => held
           ? respond({ requestId: parsed.requestId, state: held["status"], ...(held["results"] !== undefined ? { results: held["results"] } : {}),
+            ...(held["body"] !== undefined ? { body: held["body"] } : {}), ...(held["visit"] !== undefined ? { visit: held["visit"] } : {}),
             ...(held["errorMessage"] !== undefined ? { errorMessage: held["errorMessage"] } : {}), ...(held["refusal"] !== undefined ? { refusal: held["refusal"] } : {}) })
           : fail(controlRefused.message, controlRefused.refusal), (err) => fail(err instanceof Error ? err.message : String(err)));
         return;
@@ -1959,7 +2058,17 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       // that extra poll pass run first. A live caller never half-closes before its own answer, so an
       // end seen here always means abandonment.
       arbitrating += 1;
+      const readAt = performance.now();
       setImmediate(() => setImmediate(() => { void (async () => {
+        // A READ WHOSE CALLER LEFT DROPS FIRST, AND LEAVES NO FACT. A read verb (`READ_VERBS`: it writes no document) under a
+        // caller already gone has nothing to protect: no effect could land twice, so a later line under the same id simply
+        // reads. So the hang-up check leads this tick for a read, ahead of the peer reading, the lent set, the target and the
+        // digest, and the drop writes nothing: a vessel answering slowly pays nothing for each reader whose budget ran out.
+        // Every other verb keeps the durable drop below (`abandonDrop`): an act that could land answers `abandoned` to a retry.
+        if (sessionRequestId === undefined && READ_VERBS.has(inv.verb) && (sock.destroyed || sock.readableEnded)) {
+          log(`dropped a hung-up "${inv.verb}" read (request ${requestId}): its caller's socket ended before this vessel read it, so it never ran and no fact records it; the caller reads again under any id`);
+          return;
+        }
         // THE AI SEAT ACTS INSIDE THE LENT SET, read off the seat kind its request line carries (`seat-hand`): a marked call
         // naming a face outside the set refuses by name before any dispatch; the operator's hand (no seat kind) names any open
         // face. The set reads async, so the check rides this deferred tick, and only where a seat names a face.
@@ -2032,7 +2141,13 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
             return;
           }
           const held = await retrievedOutcome(requestId);
-          if (held) return respond(held);
+          if (held) {
+            // THE FLOOR COMPARES TOO: an answer names the digest its request carried, and a reused id that carries
+            // another refuses by name. An answer that names none (a row of the place written with no digest) reads back.
+            const heldDigest = (heldFieldsOf(requestId) ?? await rowFieldsOf(requestId))?.["input-digest"];
+            if (typeof heldDigest === "string" && heldDigest !== inputDigest) return fail(reusedWithChangedInput(requestId), "request-id-reused-with-changed-input");
+            return respond(held);
+          }
           dispatched = inv.verb;
           runVerb(inv, requestId).then(
             (outcome) => { respond(outcome); },
@@ -2041,6 +2156,57 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
               fail(err instanceof Error ? err.message : String(err));
             },
           );
+          return;
+        }
+        // A READ RIDES THE ANSWER RING AND LEAVES THE LEDGER ALONE (`ridesAnswerRing`: a READ verb, no effect key): no
+        // receipt fact, no outcome row, no flush. Its laws hold in memory for the life of the ring entry. An id the
+        // ledger already knows (a cancel's abandonment, a fact a `read-verb-wrote` minted, a row another road rests)
+        // keeps the ledger's road below, so no standing verdict gets talked past.
+        if (ridesAnswerRing(inv.verb, inv.effectKey) && await ledger.get(requestId) === null) {
+          // A read whose caller left never runs and records nothing: the caller reads again under any id.
+          if (sock.destroyed || sock.readableEnded) {
+            log(`dropped a hung-up "${inv.verb}" read (request ${requestId}): its caller's socket ended before this vessel dispatched it, so it never ran and no fact records it; the caller reads again under any id`);
+            return;
+          }
+          if (!admit()) return;
+          const told = (outcome: Record<string, unknown>): void => {
+            // EVIDENCE BACKS THE DECLARATION: a read's change report comes back empty. One that names a document wrote
+            // after all; the island landed its verdict row after the fact, and this seat's outcome watch mints its fact.
+            const wrote = touchesOf(null, outcome["touched"]);
+            if (wrote !== null) log(`read-verb-wrote: "${inv.verb}" (request ${requestId}) stands in the read set and its call changed ${Object.keys(wrote).length} document(s); its verdict row and a done fact land after the fact. Take "${inv.verb}" out of READ_VERBS (mesh call-touches) or end the write in its handler.`);
+          };
+          const waitFailed = (err: unknown): void => {
+            if (err instanceof VesselWaitExpired) return answerUnknown(requestId);
+            fail(err instanceof Error ? err.message : String(err));
+          };
+          // THE HELD ANSWER: the same id with the same input reads it back and places nothing (a visit's body withheld);
+          // the same id with changed input refuses by name.
+          // A row that rests under the id (another road rests it) answers the same way.
+          const held = heldFieldsOf(requestId) ?? await rowFieldsOf(requestId);
+          if (held) {
+            settled();
+            const heldDigest = held["input-digest"];
+            if (typeof heldDigest === "string" && heldDigest !== inputDigest) return fail(reusedWithChangedInput(requestId), "request-id-reused-with-changed-input");
+            dispatched = inv.verb;
+            return respond(withheldVisit(toldOutcome(held, requestId)));
+          }
+          // THE SAME ID WHILE THE FIRST RUNS joins its wait; a changed input refuses here too.
+          const flying = readsInFlight.get(requestId);
+          if (flying) {
+            if (flying.digest !== inputDigest) { settled(); return fail(reusedWithChangedInput(requestId), "request-id-reused-with-changed-input"); }
+            dispatched = inv.verb;
+            releaseWhenSettled(flying.run, requestId);
+            flying.run.then((outcome) => { respond(withheldVisit(outcome)); }, waitFailed);
+            return;
+          }
+          dispatched = inv.verb;
+          const admittedAt = performance.now();
+          const running = runVerb(inv, requestId);
+          const flight = { digest: inputDigest, run: running };
+          readsInFlight.set(requestId, flight);
+          void running.then(() => {}, () => {}).then(() => { if (readsInFlight.get(requestId) === flight) readsInFlight.delete(requestId); });
+          releaseWhenSettled(running, requestId);
+          running.then((outcome) => { noteSlowCall(inv.verb, requestId, readAt, admittedAt); told(outcome); respond(outcome); }, waitFailed);
           return;
         }
         if (sock.destroyed || sock.readableEnded) {
@@ -2105,7 +2271,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
             ? `this vessel's receipt ring evicted request ${requestId} before it could be re-read — mint a fresh request id`
             : verdict.reason === "receipt-fact-torn"
             ? `this vessel's receipt for request ${requestId} is unreadable — mint a fresh request id`
-            : `request ${requestId} was already used with different arguments — mint a fresh request id`;
+            : reusedWithChangedInput(requestId);
           settled();
           return fail(why, verdict.reason);
         }
@@ -2113,10 +2279,12 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         try { opts.engine?.settled(controlHandle.heads()); } catch { /* heads unread: the admission still landed */ }
         // The work releases when the verb itself settles, never when this caller's wait gives up.
         dispatched = inv.verb;
-        const running = runVerb(inv, requestId);
+        const admittedAt = performance.now();
+        // A LEDGERED DISPATCH answers once its verdict row stands beside its answer (`settledOutcomeFor`).
+        const running = runVerb(inv, requestId, true);
         releaseWhenSettled(running, requestId);
         running.then(
-          (outcome) => { respond(outcome); },
+          (outcome) => { noteSlowCall(inv.verb, requestId, readAt, admittedAt); respond(outcome); },
           (err) => {
             if (err instanceof VesselWaitExpired) return answerUnknown(requestId); // M2: never told as {status:"error"}
             fail(err instanceof Error ? err.message : String(err));
@@ -2151,6 +2319,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       }
       if (!idle()) await new Promise<void>((resolve) => { drained = resolve; });
       unsubOutcomes();
+      unsubAnswers();
     },
   };
 }

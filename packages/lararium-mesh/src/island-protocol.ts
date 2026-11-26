@@ -811,10 +811,16 @@ export interface DaemonMsg_FloorAnswer {
   type: "daemon:floor-answer";
   /** The answer record, under an outcome or effect title (the vessel's floor store refuses any other). */
   record: { tiddler: Record<string, unknown>; meta?: Record<string, unknown> };
+  /**
+   * True where `record` carries a WHOLE outcome for the vessel's answer ring (`control-home` `answerRingOf`): every
+   * vessel's island hands each verb's whole answer across this way, floor or not, and the vessel holds it in memory for
+   * the caller that waits. Absent, the record rides to the floor store as before.
+   */
+  answer?: true;
 }
 
-export function mkDaemonFloorAnswer(record: DaemonMsg_FloorAnswer["record"]): DaemonMsg_FloorAnswer {
-  return { type: "daemon:floor-answer", record };
+export function mkDaemonFloorAnswer(record: DaemonMsg_FloorAnswer["record"], answer?: true): DaemonMsg_FloorAnswer {
+  return { type: "daemon:floor-answer", record, ...(answer ? { answer } : {}) };
 }
 
 export interface DaemonMsg_WikiAlert {
@@ -1322,7 +1328,8 @@ export function isIslandToVesselMsg(v: unknown): v is IslandToVesselMsg {
   if (v.type === "daemon:floor-answer") {
     const record = (v as Record<string, unknown>).record as Record<string, unknown> | undefined;
     const tiddler = record?.tiddler as Record<string, unknown> | undefined;
-    return typeof record === "object" && record !== null && typeof tiddler === "object" && tiddler !== null && typeof tiddler.title === "string";
+    const whole = (v as Record<string, unknown>).answer;
+    return typeof record === "object" && record !== null && typeof tiddler === "object" && tiddler !== null && typeof tiddler.title === "string" && (whole === undefined || whole === true);
   }
   return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "gate:clear", "gate:refused", "wiki:verb-result", "daemon:face-settled", "daemon:delegate-verb", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:gate-verb-result", "daemon:evict-request", "daemon:residency-op", "daemon:wear-actor-request", "daemon:wiki-alert", "cas:want", "dyad:ask", "receipt:request", "rest:ask", "custody:write", "session:sign", "view:catalog", "view:content", "view:settle", "docstore:sealed", "docstore:opened", "docstore:live", "docstore:slot", "docstore:answering", "docstore:silent"] as const).includes(
     v.type as Exclude<IslandToVesselMsg["type"], "receipt:asks-done" | "daemon:floor-answer" | LarIslandToVesselMsg["type"] | PortIslandToVesselMsg["type"]>,

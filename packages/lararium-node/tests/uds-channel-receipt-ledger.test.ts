@@ -499,6 +499,27 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
     } finally { await v.teardown(); }
   });
 
+  test("each fact a door call records flushes the control document alone, never the whole Repo", async () => {
+    const counter = { n: 0 };
+    const v = await Vessel.boot({ placeVerbImpl: doneWorker(counter) });
+    try {
+      const named: unknown[] = [];
+      const realFlush = v.repo.flush.bind(v.repo);
+      v.repo.flush = ((...a: Parameters<Repo["flush"]>) => { named.push(a[0]); return realFlush(...a); }) as Repo["flush"];
+
+      const answer = await sendLine(v.socketPath, { verb: "nexus-kapae", args: {}, requestedBy: "did:key:test", requestId: "req-flush-names-control" });
+      expect(answer["status"]).toBe("done");
+      // The `committed` fact flushed before dispatch; the `done` fact flushes once the outcome's observation takes its turn.
+      for (let i = 0; i < 200 && named.length < 2; i++) await new Promise((r) => setTimeout(r, 10));
+      expect(named.length).toBeGreaterThanOrEqual(2);
+      // A flush that names no document walks every document the Repo holds: none of the ledger's does.
+      for (const documents of named) expect(documents).toEqual([v.workingHandle.documentId]);
+      // The fact still rests where a restart reads it.
+      await v.restart();
+      expect((await sendLine(v.socketPath, { op: "receipt", requestId: "req-flush-names-control" }))["state"]).toBe("done");
+    } finally { await v.teardown(); }
+  });
+
   test("the seed settle flushes the repo when it settled a fact, and not when it settled none", async () => {
     const counter = { n: 0 };
     const v = await Vessel.boot({ placeVerbImpl: () => { counter.n++; } });
@@ -797,6 +818,23 @@ describe("the receipt ring bounds BYTES as well as count", () => {
     await land(b, 3);
     // The oldest REQUEST's body leaves, though it landed after the second's.
     expect(await Promise.all([1, 2, 3].map((n) => stateOf(b, n)))).toEqual(["evicted", "done", "done"]);
+    await s.repo.shutdown();
+  });
+
+  test("★ an evicted body leaves the document: the tombstone standing for it carries the title and the mark alone ★", async () => {
+    const s = stores();
+    const b = s.ledgerAt(Math.floor(WEIGHT * 2.5));           // room for two bodies and half a third
+    await land(b, 1);
+    await land(b, 2);
+    await land(b, 3);
+    expect(await stateOf(b, 1)).toBe("evicted");
+    const gone = s.daemonHandle.doc()!.tiddlers[`${OUTCOME_URI_PREFIX}${ID(1)}`]!;
+    expect(gone.meta?.deleted).toBe(true);
+    // The ring counted this body out, so the document holds none of it: no results, no verb, no digest.
+    expect(Object.keys(plainRecord(gone).tiddler)).toEqual(["title"]);
+    // CONTROL: a body the ring still keeps reads whole, at the weight the ledger counts for it.
+    const kept = plainRecord(s.daemonHandle.doc()!.tiddlers[`${OUTCOME_URI_PREFIX}${ID(3)}`]!).tiddler as Record<string, unknown>;
+    expect(outcomeBytesOf(kept)).toBe(WEIGHT);
     await s.repo.shutdown();
   });
 

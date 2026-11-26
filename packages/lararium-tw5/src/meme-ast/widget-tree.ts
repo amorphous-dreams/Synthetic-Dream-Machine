@@ -25,7 +25,7 @@ export const defaultWidgetRegistry: WidgetRegistry = {
   },
   sigils: {
     ahu: "section", loulou: "link-handle", kanawai: "link-handle",
-    node: "node", lares: "frame", set: "frame", oracle: "frame",
+    lares: "node", set: "frame", oracle: "frame",
   },
 };
 

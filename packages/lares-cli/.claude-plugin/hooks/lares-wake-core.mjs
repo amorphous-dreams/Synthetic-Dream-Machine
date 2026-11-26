@@ -40,13 +40,20 @@ export const TERM_GRACE_MS = 2_000;
  * the hook's pipes open past the read: SIGTERM first, so the shim's trap stops the act it waits on (an offline run's
  * container leaves with it), then SIGKILL once `TERM_GRACE_MS` passes with the group still standing. `input`, where
  * given, rides the child's stdin whole.
+ *
+ * `budgetMs`, where given, rides the child's argv as its last word (`ASK_BUDGET_FLAG=<N>`): the door's own process (the CLI inside the
+ * vessel, which the shim's exec reaches) leaves when that budget runs out, so its ask closes with no signal relayed. The
+ * kill above still runs; the budget covers the read whose relay lands late or never (the shim stops an exec'd act through
+ * a second exec, and a SIGKILL of the group ends that relay too).
  */
-export function spawnRead(command, argv, input = null) {
+export const ASK_BUDGET_FLAG = "--ask-budget-ms";
+export function spawnRead(command, argv, input = null, budgetMs = null) {
   let child;
   let output = "";
   const done = new Promise((resolve) => {
     try {
-      child = spawn(command, argv, { detached: true, stdio: [input === null ? "ignore" : "pipe", "pipe", "ignore"] });
+      const asked = Number.isSafeInteger(budgetMs) && budgetMs > 0 ? [...argv, `${ASK_BUDGET_FLAG}=${budgetMs}`] : argv;
+      child = spawn(command, asked, { detached: true, stdio: [input === null ? "ignore" : "pipe", "pipe", "ignore"] });
       if (input !== null) { child.stdin.on("error", () => { /* a child that left early reads no more */ }); child.stdin.end(input); }
     } catch (err) {
       resolve({ stdout: "", code: null, signal: null, error: err?.code ?? err?.message ?? "spawn error" });
@@ -68,12 +75,15 @@ export function spawnRead(command, argv, input = null) {
   return { done, kill };
 }
 
-/** The hooks' own runner: `observe` and `index` ride the checkout's container shim, `homes` rides the host CLI. */
-export function shimRunner(hookUrl) {
+/**
+ * The hooks' own runner: `observe` and `index` ride the checkout's container shim, `homes` rides the host CLI. Each shim
+ * read carries `budgetMs` (the wake's one budget, which every read shares from its start) as its ask budget.
+ */
+export function shimRunner(hookUrl, budgetMs = WAKE_BUDGET_MS) {
   const hookDir = dirname(fileURLToPath(hookUrl));
   const laresBin = join(hookDir, "..", "..", "bin", "lares.mjs");
   const shim = join(hookDir, "..", "..", "..", "..", "tools", "lares-container.sh");
-  return (name, argv) => (name === "menu" ? spawnRead(process.execPath, [join(hookDir, "lares-menu-read.mjs"), laresBin]) : name === "homes" ? spawnRead(process.execPath, [laresBin, ...argv]) : name === "git" ? spawnRead("git", argv) : spawnRead(shim, argv));
+  return (name, argv) => (name === "menu" ? spawnRead(process.execPath, [join(hookDir, "lares-menu-read.mjs"), laresBin]) : name === "homes" ? spawnRead(process.execPath, [laresBin, ...argv]) : name === "git" ? spawnRead("git", argv) : spawnRead(shim, argv, null, budgetMs));
 }
 
 /** One page of the view: the filter door's own row ceiling, and the byte cap both the door and the render keep. */

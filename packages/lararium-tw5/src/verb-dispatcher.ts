@@ -55,7 +55,7 @@ import { type CompositeStore } from "@lararium/mesh/composite-store";
 import { type CapabilityVerifier } from "@lararium/mesh/capability";
 import { type LarTiddlerChange } from "@lararium/mesh/tiddler-store";
 import { wikiSlugOfBag } from "@lararium/mesh/surface-recipe-door";
-import { ControlHomeUnavailable } from "@lararium/mesh/control-home";
+import { ControlHomeUnavailable, answerRingOf } from "@lararium/mesh/control-home";
 import type { Hand } from "@lararium/mesh/session-contract";
 import { dispatchVerb, placeVerb, copyEffectOutcome, writeOutcome, removeVerb, isVisitResults, EFFECT_URI_PREFIX } from "./verb-vm.js";
 import type { TW5Engine } from "./tw5-vm.js";
@@ -443,10 +443,11 @@ export class VerbDispatcher {
   }
 
   /**
-   * Effect dedup (D1, P2.5 iter 4) — before running, read `<daemon bag>/effects/<effectKey>`.
-   * A prior `done` attempt under a DIFFERENT requestId with a MATCHING input digest answers
-   * this attempt with a copy of that result (`effect-of: priorRequestId`) and never runs the
-   * handler. A changed-digest reuse of the same effectKey string skips the shortcut (logged by
+   * Effect dedup (D1, P2.5 iter 4) — before running, read `<control home>/effects/<effectKey>`.
+   * A prior `done` attempt under a DIFFERENT requestId with a MATCHING input digest (the digest the
+   * effect row itself names) answers this attempt as a copy (`effect-of: priorRequestId`) and never
+   * runs the handler: the copy carries the prior body where this island's answer ring still holds
+   * it, and the row's own measure of it (`result-sha256`, `result-bytes`) where the body left. A changed-digest reuse of the same effectKey string skips the shortcut (logged by
    * name) and runs fresh — the effectKey names an EFFECT, not merely a string, and two requests
    * that hashed differently never shared one. An `error` prior indexes nothing (writeOutcome's
    * own law), so this function never even observes one.
@@ -492,38 +493,68 @@ export class VerbDispatcher {
     const priorFact = await this.opts.control.getLive(EFFECT_URI_PREFIX + effectKey);
     const priorRequestId = priorFact ? String(priorFact.tiddler["request-id"] ?? "") : "";
     if (priorRequestId) {
-      const priorOutcome = await this.opts.control.getLive(OUTCOME_URI_PREFIX + priorRequestId);
-      if (!priorOutcome) {
-        // The effect index still names a prior requestId, but that attempt's own outcome
-        // is GONE (evicted by the CAS sweep's retention window) — the dedup shortcut has
-        // nothing to copy from, and a fresh-run fallthrough would silently re-perform an
-        // effect whose prior record a caller cannot check. Conclude THIS attempt
-        // as refused; never run the handler.
-        console.log(`[verb-dispatcher] effect "${effectKey}" indexes prior request "${priorRequestId}" whose outcome is evicted — refusing (retention-gap), handler not run`);
-        await writeOutcome(this.opts.control, {
-          invocation, status: "error",
-          errorMessage: `effect "${effectKey}" indexes a prior outcome ("${priorRequestId}") that is no longer retained`,
-          refusal: "retention-gap",
-          ...this.markOf(invocation),
-        });
-        removeVerb(this.opts.daemonVm, invocation.title);
-        return;
+      const field = (fields: Record<string, unknown> | undefined, key: string): string | undefined =>
+        typeof fields?.[key] === "string" && (fields[key] as string).length > 0 ? fields[key] as string : undefined;
+      const effectRow = priorFact!.tiddler as Record<string, unknown>;
+      // THE EFFECT ROW ANSWERS BY ITSELF where it names its attempt's digest: the decision joins no outcome row, so a
+      // prior verdict the ring let go changes nothing here. A row that names none (written before rows carried one)
+      // reads the prior outcome row for it, as it always did.
+      let priorDigest = field(effectRow, "input-digest");
+      let resultSha256 = field(effectRow, "result-sha256");
+      let resultBytes = field(effectRow, "result-bytes");
+      let priorVisit = false;
+      let restedResults: string | undefined;
+      if (priorDigest === undefined) {
+        const priorOutcome = await this.opts.control.getLive(OUTCOME_URI_PREFIX + priorRequestId);
+        if (!priorOutcome) {
+          // The effect index still names a prior requestId, the row names no digest of its own, and that attempt's
+          // outcome is GONE (evicted by the ring's retention bound): nothing stands to compare against, and a
+          // fresh-run fallthrough would silently re-perform an effect whose prior record a caller cannot check.
+          // Conclude THIS attempt as refused; never run the handler.
+          console.log(`[verb-dispatcher] effect "${effectKey}" indexes prior request "${priorRequestId}" whose outcome is evicted — refusing (retention-gap), handler not run`);
+          await writeOutcome(this.opts.control, {
+            invocation, status: "error",
+            errorMessage: `effect "${effectKey}" indexes a prior outcome ("${priorRequestId}") that is no longer retained; nothing ran. Read what the effect left where it landed, and to land it again mint a fresh effect key`,
+            refusal: "retention-gap",
+            ...this.markOf(invocation),
+          });
+          removeVerb(this.opts.daemonVm, invocation.title);
+          return;
+        }
+        const outcomeRow = priorOutcome.tiddler as Record<string, unknown>;
+        priorDigest = String(outcomeRow["input-digest"] ?? "");
+        resultSha256 = field(outcomeRow, "result-sha256");
+        resultBytes = field(outcomeRow, "result-bytes");
+        priorVisit = outcomeRow["visit"] === "true";
+        restedResults = field(outcomeRow, "results");
       }
-      const priorDigest = String(priorOutcome.tiddler["input-digest"] ?? "");
-      // The digests compare first; prior results read only for a match, and results that will not parse match nothing.
-      let priorResults: Record<string, VerbTargetResult> | null = null;
       if (priorDigest === inputDigest) {
-        try { priorResults = JSON.parse(String(priorOutcome.tiddler["results"] ?? "{}")) as Record<string, VerbTargetResult>; }
-        catch { console.log(`[verb-dispatcher] effect "${effectKey}" indexes prior request "${priorRequestId}" whose results do not parse — running fresh, no dedup`); }
+        // THE BODY, WHERE THIS ISLAND STILL HOLDS IT: the answer ring first, then a row that rests a whole record. A body
+        // that will not parse matches nothing, and a body that left answers by its measure alone.
+        const held = answerRingOf(this.opts.control).get(priorRequestId)?.tiddler as Record<string, unknown> | undefined;
+        const heldResults = held?.["status"] === "done" ? field(held, "results") : undefined;
+        let priorResults: Record<string, VerbTargetResult> | null = null;
+        let torn = false;
+        const stored = heldResults ?? restedResults;
+        if (stored !== undefined) {
+          try { priorResults = JSON.parse(stored) as Record<string, VerbTargetResult>; }
+          catch { torn = true; console.log(`[verb-dispatcher] effect "${effectKey}" indexes prior request "${priorRequestId}" whose results do not parse — no body rides this copy`); }
+        }
+        // A VISIT NEVER REPLAYS: an index naming a visit's outcome copies nothing, and the reactor runs afresh.
+        const visit = priorVisit || (priorResults !== null && isVisitResults(priorResults));
+        // A copy answers a body or the measure of one: a prior that offers neither (a torn body beside no hash) runs fresh.
+        const answerable = priorResults !== null || resultSha256 !== undefined;
+        if (!visit && answerable && this.replayAdmitted(invocation)) {
+          await copyEffectOutcome(this.opts.daemonVm, this.opts.control, invocation, {
+            priorRequestId, priorResults, inputDigest, ...this.markOf(invocation),
+            ...(resultSha256 !== undefined && { resultSha256 }), ...(resultBytes !== undefined && { resultBytes }),
+          });
+          return;
+        }
+        if (torn && !answerable) console.log(`[verb-dispatcher] effect "${effectKey}" (request=${invocation.requestId}, prior=${priorRequestId}) names no readable body and no measure — running fresh, no dedup`);
+      } else {
+        console.log(`[verb-dispatcher] effect "${effectKey}" reused with a changed digest (request=${invocation.requestId}, prior=${priorRequestId}) — running fresh, no dedup`);
       }
-      // A VISIT NEVER REPLAYS: an index naming a visit's outcome copies nothing, and the reactor runs afresh.
-      if (priorResults !== null && !isVisitResults(priorResults) && this.replayAdmitted(invocation)) {
-        await copyEffectOutcome(this.opts.daemonVm, this.opts.control, invocation, {
-          priorRequestId, priorResults, inputDigest, ...this.markOf(invocation),
-        });
-        return;
-      }
-      if (priorDigest !== inputDigest) console.log(`[verb-dispatcher] effect "${effectKey}" reused with a changed digest (request=${invocation.requestId}, prior=${priorRequestId}) — running fresh, no dedup`);
     }
 
     await dispatchVerb(this.opts.daemonVm, this.opts.control, invocation, () => this.runHandler(invocation, signal), this.opts.choreOf?.(invocation));

@@ -722,8 +722,8 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
   const runAct = (name: string, args: unknown) => async (): Promise<CustodyAnswer> => {
     // The log names an act only where the table names it: a caller's own text never reaches the log.
     const logged = isSealedActName(name) ? name : "(an act the table does not name)";
-    const refuse = (reason: string, errorMessage: string, extra: object = {}): CustodyAnswer => {
-      deps.onLog(`act ${logged}: refused (${reason})`);
+    const refuse = (reason: string, errorMessage: string, extra: object = {}, klass = ""): CustodyAnswer => {
+      deps.onLog(`act ${logged}: refused (${reason}${klass})`);
       return { op: "act", status: "error", errorMessage, refusal: { reason, ...extra } };
     };
     if (!deps.runAct) return refuse("acts-unavailable", "this vessel's custody door runs no acts");
@@ -734,7 +734,9 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       return { op: "act", act: name, result };
     } catch (e) {
       const fault = actFault(e);
-      return refuse(fault.reason, e instanceof Error ? e.message : String(e), fault.extra);
+      // The log keeps the refusal's class beside its code (the caller alone hears the message).
+      const klass = e instanceof SealedActRefused && e.klass !== undefined ? `, ${e.klass}` : "";
+      return refuse(fault.reason, e instanceof Error ? e.message : String(e), fault.extra, klass);
     }
   };
 

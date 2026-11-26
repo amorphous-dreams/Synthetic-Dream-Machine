@@ -15,9 +15,9 @@ describe("the node vessel's daemon seam", () => {
   test("daemonVm binds once, to the holder's facade; the island opens only inside the seam's open step", () => {
     expect((SRC.match(/^\s*daemonVm = /gm) ?? []).length).toBe(1);
     expect(SRC).toMatch(/daemonVm = daemonHolder\.vm;/);
-    expect((SRC.match(/await standDaemonIsland\(\{/g) ?? []).length).toBe(1);
+    expect((SRC.match(/bootWait\("daemon-island", [^\n]*standDaemonIsland\(\{/g) ?? []).length).toBe(1);
     expect((SRC.match(/openDaemonVm\(\{/g) ?? []).length).toBe(1);
-    expect(SRC.indexOf("openDaemonVm({")).toBeGreaterThan(SRC.indexOf("await standDaemonIsland({"));
+    expect(SRC.indexOf("openDaemonVm({")).toBeGreaterThan(SRC.indexOf("standDaemonIsland({"));
   });
 
   test("the auth is a function that reads the standing anchor at call time, and the seam reuses it for every open", () => {

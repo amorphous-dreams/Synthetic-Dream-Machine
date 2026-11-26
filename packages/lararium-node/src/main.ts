@@ -74,6 +74,7 @@ import { STORE_DOOR_HAND_CODES, STORE_DOOR_HAND_ONLY_ACTS, REALM_KEY_VERBS, REAL
 import { makeCustodyHolder } from "./custody-holder.js";
 import { isTestScratchRoot, testScratchNotice } from "./test-scratch-notice.js";
 import { heldPlaneLines } from "./doc-load-probe.js";
+import { bannerMemo, foldedBanner } from "./boot-banner.js";
 import { seatCustody, unlockedFaceOrdinals } from "./custody-seat.js";
 import { custodyFrameHandler, doorDarkLine, heldSavesLossLines, type CustodyDoor } from "./custody-frames.js";
 import { SESSION_ACTS, runSealedAct, type PersonaSelvesPlane, type SealedActContext } from "./sealed-acts.js";
@@ -86,7 +87,7 @@ import { vesselCustodyHomes } from "./vault-carriers.js";
 import { rendezvousDir, standingPath, markerIsOurs } from "@lararium/mesh/rendezvous-path";
 import { loadVesselIdentity, vesselFloorKeyDoor, sovereignStands, makeNodePersonaPetnameStore } from "./node-vessel-identity.js";
 import { CROSS_FACE_READ_VERBS } from "@lararium/mesh/cross-face-reach";
-import { KUKULU_OFFER_ENV, cleanGoodbye, lifeCloses, namesPulama, pulamaStandBy, readHouseWornFace, vesselPulamaHolder } from "./pulama-seat.js";
+import { KUKULU_OFFER_ENV, cleanGoodbye, lifeCloses, namesPulama, pulamaStandBy, readHouseWornFace, standFirstByPulama, vesselPulamaHolder } from "./pulama-seat.js";
 import { consumeKukuluOffer } from "./kukulu-offer.js";
 import { NoStoodNexus, stoodFloorPins } from "./hearth-sovereign-pin.js";
 import { getMempalaceClient }           from "@lararium/mempalace";
@@ -447,7 +448,9 @@ async function main(): Promise<void> {
   // EVERY BOOT RESTS AT THE FLOOR. A vessel's private rows rest sealed under its vessel key, and a boot holds no
   // key: nothing stored lifts it, so the first composition stands faceless and carrying whatever this place
   // holds. `lares vault unlock` hands the key in on the custody door, and the vessel composes again as what it
-  // then opens.
+  // then opens. A vessel standing by a lit pūlama rests at the floor too (its claim, its front, its custody door), and
+  // dials before it composes: a session the pūlama serves composes the vessel once, and no session leaves the floor's
+  // composition (`standFirstByPulama`).
   const faceLit  = faceStands();
   if (askedStanding !== "herm" && !faceLit) {
     console.log("[lararium] the PLACE stands and no face is lit — standing at the WAKING FLOOR.");
@@ -523,7 +526,10 @@ async function main(): Promise<void> {
   let signalHeld: string | null = null;
   // ONE RECOMPOSITION AT A TIME: the custody door and a pūlama session's drop both ask for one, and each waits its turn.
   let recomposing: Promise<unknown> = Promise.resolve();
+  /** How many compositions this life asked of the chain: the first stand reads whether one holds it already. */
+  let composeAsks = 0;
   const recompose = (sovereign: boolean, ward?: WardCredential): Promise<{ standing: string; refused?: string }> => {
+    composeAsks += 1;
     const run = recomposing.then(() => composeAgain(sovereign, ward));
     recomposing = run.catch(() => undefined);
     return run;
@@ -602,11 +608,26 @@ async function main(): Promise<void> {
     onLog: (line) => console.log(`[custody] ${line}`),
   });
 
-  composition = (await composeOrFloor(null)).stood;
-  standAgainOnMountClose(composition);
-  firstStood();
-  // The boot's one dial: the sovereign composition over the session, mounted on its own daemon mount among the faces lent.
-  const byPulama = standBy !== null && (await standBy.dial()).session;
+  let byPulama = false;
+  if (standBy === null) {
+    composition = (await composeOrFloor(null)).stood;
+    standAgainOnMountClose(composition);
+    firstStood();
+  } else {
+    // THE DIAL BEFORE ANY COMPOSITION: a session the pūlama serves composes this vessel ONCE, sovereign, mounted on its own
+    // daemon mount among the faces lent, so no floor composition opens the Repo, the catalog, the Nexus island and the genesis
+    // only to tear down for the composition that opens them again. Every composition of this path runs on the one
+    // recomposition chain, so the chain's gate opens here; a dial that serves no session, or a pūlama that stays silent past
+    // the dial's liveness bound, composes the floor (`standFirstByPulama`).
+    firstStood();
+    byPulama = (await standFirstByPulama({
+      dial: () => standBy.dial(),
+      floor: () => recompose(false),
+      asked: () => composeAsks > 0,
+      stands: () => composition !== null,
+      onLog: (line) => console.log(`[pulama] ${line}`),
+    })).session;
+  }
   // A vessel stands holding no vessel key, whatever it composed over: say so once, with the one verb that opens it.
   if (!byPulama && await custodyTreeStands(new FsCustodyIo(custodyHomes), custodyHomes)) {
     console.log("[custody] this vessel stands holding no vessel key — open it on a terminal: lares vault unlock");
@@ -710,6 +731,9 @@ interface StandingComposition {
   readonly wikiAwaits?: string | null;
 }
 
+/** What this process's compositions printed of their address rows: a later composition folds the rows it would repeat. */
+const processBanner = bannerMemo();
+
 /** The floor every vessel stands on: the daemon immune core and a served FLOW-map, no wiki, no pool. */
 async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: SovereignReaders | null): Promise<StandingComposition> {
   const { askedStanding, wikiId, storageDir, genesisDir, rootDir, catalogUrl, wss, httpServer, dispatcher, meshSelf,
@@ -738,9 +762,11 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
     onPhase:    (phase) => { if (phase === "boot") console.log(`[herm] boot pid ${process.pid}`); console.log(`[herm] phase → ${phase}`); },
   });
   console.log(`[herm] live — wiki-less wayfarer | storage: ${storageDir}`);
-  console.log(`[herm] catalog:   ${herm.catalogHandleUrl}`);
-  console.log(`[herm] oracle:    ${herm.oracleDocUrl}`);
-  console.log(`[herm] daemon:    ${herm.daemon.daemonHandle.url}`);
+  for (const line of foldedBanner(processBanner, "[herm]", [
+    ["catalog:   ", `${herm.catalogHandleUrl}`],
+    ["oracle:    ", `${herm.oracleDocUrl}`],
+    ["daemon:    ", `${herm.daemon.daemonHandle.url}`],
+  ], process.pid)) console.log(line);
   console.log(`[herm] FLOW-map read-face: proven peers only, over the gated ${FLOW_SOCKET_ROUTE} socket`);
   for (const line of heldPlaneLines("[herm]", herm.mountManifest)) console.log(line);
 
@@ -919,10 +945,12 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     }
   });
   console.log(`[lararium] live — wiki: ${result.activeWikiId} | storage: ${storageDir} | root: ${rootDir}`);
-  console.log(`[lararium] catalog:  ${result.catalogHandleUrl ?? "(none)"}`);
-  console.log(`[lararium] oracle:   ${result.oracleDocUrl ?? "(none)"}`);
-  console.log(`[lararium] lararium: ${result.larariumDocUrl ?? "(none)"}`);
-  console.log(`[lararium] daemon:   ${result.daemon.daemonHandle.url}`);
+  for (const line of foldedBanner(processBanner, "[lararium]", [
+    ["catalog:  ", result.catalogHandleUrl ?? "(none)"],
+    ["oracle:   ", result.oracleDocUrl ?? "(none)"],
+    ["lararium: ", result.larariumDocUrl ?? "(none)"],
+    ["daemon:   ", `${result.daemon.daemonHandle.url}`],
+  ], process.pid)) console.log(line);
   for (const line of heldPlaneLines("[lararium]", result.mountManifest)) console.log(line);
   readinessState.notePlanes(result.mountManifest);
   const bootDocFragment = result.oracleDocUrl ?? result.catalogHandleUrl ?? "";

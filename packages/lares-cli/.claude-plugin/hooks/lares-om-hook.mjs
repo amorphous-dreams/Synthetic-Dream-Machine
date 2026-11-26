@@ -35,7 +35,7 @@ try {
     else if (reading === "owed") say(omOwedLine(pet));
     else {
       const instance = typeof input.session_id === "string" && /^[A-Za-z0-9_-]{1,128}$/.test(input.session_id) ? ["--instance", input.session_id] : [];
-      const result = await settle(run(spiritArgv("om", pet, "--source", source, ...instance, ...(holdsPet({ source, held }, pet) ? ["--held"] : []), ...(title !== null ? ["--title", titleParts(title).title] : []))), OM_BUDGET_MS);
+      const result = await settle(run(spiritArgv("om", pet, "--source", source, ...instance, ...(holdsPet({ source, held }, pet) ? ["--held"] : []), ...(title !== null ? ["--title", titleParts(title).title] : [])), null, OM_BUDGET_MS), OM_BUDGET_MS);
       const answer = parseAnswer(result?.stdout);
       // Only an answer the door gave whole names the pet this session wears; a timeout or a refusal records nothing, and a
       // starter (an offer, no record yet) records no pet until a record stands.
