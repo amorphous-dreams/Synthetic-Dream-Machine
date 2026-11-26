@@ -1062,9 +1062,10 @@ export interface IslandMsg_RestAsk {
   documentId: string;
 }
 
-/** The refusals a rest answer names in place of a reading: the vessel's rest faulted (`rest-fault`), or the ask named no
- *  document (`ask-malformed`). A refusal never reads unsealed: the island rests no byte of the document. */
-export const REST_ASK_REFUSALS = ["rest-fault", "ask-malformed"] as const;
+/** The refusals a rest answer names in place of a reading: the vessel's rest faulted (`rest-fault`), the ask named no
+ *  document (`ask-malformed`), or the vessel stands no rest door to read (`rest-unread`). A refusal never reads unsealed:
+ *  the island rests no byte of the document. */
+export const REST_ASK_REFUSALS = ["rest-fault", "ask-malformed", "rest-unread"] as const;
 export type RestAskRefusalName = (typeof REST_ASK_REFUSALS)[number];
 
 /** Vessel → island: the rest answer: the vessel's rest holds the document sealed (`sealed`), or not, or the vessel

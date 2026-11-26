@@ -60,7 +60,7 @@ describe("a recard's ledger rows wait for its Archive", () => {
       return registerBagsDurably({ provider: p, bags: ["lar:///old"], ledger, hold });
     };
     const recard = await recardRegistration(register, async () => { carded = true; }, "f".repeat(64));
-    expect(passes, "an ordinary pass, then a held one after the card").toEqual([false, true]);
+    expect(passes, "a held pass, then a held one after the card").toEqual([true, true]);
     expect(recard).toMatchObject({ stale: true, reminted: ["lar:///old"] });
     expect(ledger.puts, "the stale pass rested no row").toEqual([]);
     // The Archive rested nothing: the landing refuses archive-unrested and the ledger stands as it stood.
@@ -72,14 +72,28 @@ describe("a recard's ledger rows wait for its Archive", () => {
     expect(ledger.rows.get("lar:///old")).toMatch(/^reminted-lar:\/\/\/old-/);
   });
 
-  test("CONTROL: a recard that never meets the fault registers once, unheld, and lands whatever its floor reads; a second fault after the card refuses still-refuses", async () => {
+  test("RED: the ground rows a clean first pass held wait when the face's own bags then meet the fault, and a refused landing commits none; past the archive check they rest", async () => {
+    const ledger = ledgerOf();
+    const ground = await recardRegistration((hold) => registerBagsDurably({ provider: provider(), bags: ["lar:///ground"], ledger, hold }), async () => { throw new Error("no card mints on a clean pass"); }, "f".repeat(64));
+    expect(ground.stale).toBe(false);
+    expect(ledger.puts, "the ground pass rested no row before the Archive").toEqual([]);
+    // The face's own bags met the fault after the ground pass: the light turns the recard stale over the ground's held rows.
+    const stale = { stale: true, reminted: ground.reminted, commit: ground.commit };
+    await expect(landRecard(stale, { wrote: [], refusals: [], barred: true }, "h3", 3)).rejects.toThrow(/archive-unrested/);
+    expect(ledger.rows.has("lar:///ground")).toBe(false);
+    await landRecard(stale, { wrote: [{}] as never, refusals: [], barred: false }, "h3", 3);
+    expect(ledger.rows.get("lar:///ground")).toMatch(/^fresh-lar:\/\/\/ground-/);
+  });
+
+  test("CONTROL: a recard that never meets the fault registers once, holding its rows, and lands them whatever its floor reads; a second fault after the card refuses still-refuses", async () => {
     const ledger = ledgerOf();
     const passes: boolean[] = [];
     const clean = await recardRegistration(async (hold) => { passes.push(hold); return registerBagsDurably({ provider: provider(), bags: ["lar:///new"], ledger, hold }); }, async () => { throw new Error("no card mints on a clean pass"); }, "f".repeat(64));
-    expect(passes).toEqual([false]);
+    expect(passes).toEqual([true]);
     expect(clean.stale).toBe(false);
-    expect(ledger.puts).toEqual(["lar:///new"]);
+    expect(ledger.puts).toEqual([]);
     await landRecard(clean, { wrote: [], refusals: [], barred: true }, "h1", 1);
+    expect(ledger.puts).toEqual(["lar:///new"]);
     await expect(recardRegistration(async () => { throw new PrekeySecretAbsent("lar:///x"); }, async () => {}, "f".repeat(64))).rejects.toThrow(/still-refuses/);
   });
 });

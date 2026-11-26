@@ -757,6 +757,9 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   readonly islandCaps: Readonly<CapabilityRecord>;
   /** The floor's rest key as this composition began with it: `stands` on an unlocked vessel, else the floor's refusal. */
   readonly floorKey: "stands" | "vessel-locked" | "floor-unkeyed";
+  /** Settles once the lit face's home-preference read ends: `activeWikiId` then names the wiki it opened, or the boot's own
+   *  where none stands or its wiki refused. Settles at once where no face lit. */
+  homeWikiSettled: () => Promise<void>;
   restartWiki: (wiki: string) => Promise<void>;
   /** The promote and kapae session acts in flight: main begins each one, the channel ends it once the reply left. */
   promoteActs: PromoteActGate;
@@ -1028,6 +1031,8 @@ interface NodeBootPrep {
   eventBus:         () => LarEventBusImpl;
   slotActiveWikiId: () => string;
   activeWikiSource: () => "boot-arg" | "home-preference" | "floor";
+  /** Settles once the lit face's home-preference read ends (opened, refused or absent); at once where no face lit. */
+  homeWikiSettled: () => Promise<void>;
   /** The wiki this composition stands in for on its floor wiki, waiting on a face; null where none waits. */
   wikiAwaitsFace:   () => FloorWikiRefusal | null;
   /** Stand down everything the prep and its closures stood, then the Repo; releases a floor the prep stood itself. */
@@ -2927,6 +2932,7 @@ async function prepareNodeBootOn(
   let selvesCatalogRow: ((record: SelvesRecordRef) => void) | null = null;   // each record's row in its own face's catalog
   let slotActiveWikiId = "";               // captured in wikiSlot
   let activeWikiSource: "boot-arg" | "home-preference" | "floor" = "boot-arg";
+  let homeWikiRead: Promise<void> = Promise.resolve();
   let wikiAwaitsFace: FloorWikiRefusal | null = null;   // captured in wikiSlot
   // The recall FORM leg holder — opened ONCE, lazily, shared by BOTH the dual recall fuse and the
   // worldline form pre-fetch (makeFormPalace ref-counts per canonical dir → one reference, never a
@@ -5574,10 +5580,15 @@ async function prepareNodeBootOn(
     }
     // A FACE'S HOME WIKI IS ITS OWN PREFERENCE, READ AT LIGHT (research/pin-mu#S2): the record sits in the lit face's own daemon
     // wiki's working layer, so only a face that stands lit reads it, and no boot pin names a wiki for the vessel.
-    if (wornDeviceGroup !== null) void (async () => {
+    // A preference whose wiki refuses activation leaves the boot's wiki standing and says why. The record rests in the
+    // daemon wiki's working layer, which the host mounts once the island answers (`mountHostWorking`): the read waits on
+    // that mount, or it reads the composite before the layer stands and finds no preference.
+    if (wornDeviceGroup !== null) homeWikiRead = (async () => {
+      await mountHostWorking();
       const home = readHomeWikiSlug(await daemonVm.composite.get(HOME_WIKI_TITLE));
       if (home === null || home === slotActiveWikiId) return;
-      if (!(await wikiActivation.ensureActive(home))) return;
+      const activation = await wikiActivation.ensureActive(home);
+      if (!activation.ok) { console.warn(`[home-wiki] the lit face's home preference names ${home}, which did not open (${activation.cause}: ${activation.detail}); ${slotActiveWikiId} stays active`); return; }
       slotActiveWikiId = home;
       activeWikiSource = "home-preference";
     })().catch((e: unknown) => console.warn(`[home-wiki] the lit face's home preference did not open: ${e instanceof Error ? e.message : String(e)}`));
@@ -5774,6 +5785,7 @@ async function prepareNodeBootOn(
     eventBus:         () => eventBus,
     slotActiveWikiId: () => slotActiveWikiId,
     activeWikiSource: () => activeWikiSource,
+    homeWikiSettled:  () => homeWikiRead,
     wikiAwaitsFace:   () => wikiAwaitsFace,
     teardown,
   };
@@ -5888,8 +5900,10 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
   let down: Promise<FacesClosed> | null = null;
   return {
     islandCaps: p.islandCaps,
-    activeWikiId: p.slotActiveWikiId(),
-    activeWikiSource: p.activeWikiSource(),
+    // Read live: the lit face's home preference may move the active wiki after the composition returns.
+    get activeWikiId() { return p.slotActiveWikiId(); },
+    get activeWikiSource() { return p.activeWikiSource(); },
+    homeWikiSettled: () => p.homeWikiSettled(),
     wikiAwaitsFace: p.wikiAwaitsFace(),
     pool: result.pool, repo: p.repo,
     ports: {

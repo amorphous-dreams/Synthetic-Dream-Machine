@@ -108,13 +108,14 @@ export interface BootDaemonKeyhiveResult {
 }
 
 /**
- * THE RECARD'S REGISTRATION: an ordinary pass first; where it meets `PrekeySecretAbsent`, the card mints FIRST (rotating in a
- * prekey whose secret this stand holds) and the registration runs again, HOLDING its ledger rows, since every Document it mints
- * now rides a card whose secret only the Archive after it holds. Nothing minted in the refused pass (the fault meets the first
- * mint). A second fault refuses `still-refuses`.
+ * THE RECARD'S REGISTRATION: a first pass that HOLDS its ledger rows, since a later registration of the same stand (the face's
+ * own bags) may still meet the fault and turn the recard stale; every row then waits for the Archive after the card
+ * (`landRecard`). Where the first pass meets `PrekeySecretAbsent`, the card mints FIRST (rotating in a prekey whose secret this
+ * stand holds) and the registration runs again, holding its rows too. Nothing minted in the refused pass (the fault meets the
+ * first mint). A second fault refuses `still-refuses`.
  */
 export async function recardRegistration(register: (hold: boolean) => Promise<DurableRegistration>, card: () => Promise<unknown>, face: string): Promise<BootDaemonKeyhiveRecard> {
-  try { return { stale: false, ...(await register(false)) }; }
+  try { return { stale: false, ...(await register(true)) }; }
   catch (error) { if (!(error instanceof PrekeySecretAbsent)) throw error; }
   await card();
   try { return { stale: true, ...(await register(true)) }; }
@@ -127,7 +128,7 @@ export async function recardRegistration(register: (hold: boolean) => Promise<Du
 /**
  * THE RECARD LANDS ONLY WITH ITS ARCHIVE: a stale stand's card and its fresh Documents live in the Archive after the card alone,
  * so a stale recard whose Archive rested nothing (or met a refusing row) refuses `archive-unrested` and commits no ledger row;
- * past that check the rows the stale pass held rest. A stand that never met the fault held none, and commits as it lands.
+ * past that check the rows every pass held rest. A stand that never met the fault commits its held rows as it lands.
  */
 export async function landRecard(recard: BootDaemonKeyhiveRecard, floor: Pick<ArchiveFloorOutcome, "wrote" | "refusals" | "barred">, handle: string, handleIndex?: number): Promise<void> {
   if (recard.stale && (floor.wrote.length === 0 || floor.refusals.length > 0)) {
@@ -281,7 +282,7 @@ export async function bootDaemonKeyhive(input: BootDaemonKeyhiveInput): Promise<
   // dance + the affiliation layer; boot itself proves identity only and does not read them.
 
   // Register the operator's writable bags so cap checks resolve against lar: URIs.
-  // A RECARD'S STALE PASS HOLDS ITS LEDGER ROWS (`hold`): the caller commits them once the Archive after the card rests.
+  // A RECARD HOLDS ITS LEDGER ROWS (`hold`): the caller commits them through `landRecard`, past its archive check.
   const register = async (hold = false): Promise<DurableRegistration> => {
     if (input.ledger) return registerBagsDurably({ provider: keyhive, bags: input.registerBags, ledger: input.ledger, hold });
     for (const bagUrl of input.registerBags) await keyhive.registerBag(bagUrl);

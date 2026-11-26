@@ -53,7 +53,7 @@ export interface CapabilityRecord {
    *  The answer is the detach. Absent → the vessel's sealed rest reaches no island. */
   docStore?: ((port: { post(msg: unknown): void; listen(cb: (msg: unknown) => void): () => void }) => () => void) | undefined;
   /** V2: does the vessel's rest hold a document sealed? The daemon island asks before its own store rests a byte of it
-   *  (`islandRestGuard`, `sealed-rest.ts`). Absent → every document reads unsealed. */
+   *  (`islandRestGuard`, `sealed-rest.ts`). Absent → the rest reads unread, and the island rests no byte (`rest-unread`). */
   restsSealed?: ((documentId: string) => Promise<boolean>) | undefined;
   /** Do these heads of a document rest in the vessel's sealed rest (`headsRestAt`, `sealed-rest.ts`)? A projector's Synced
    *  base pins only what sealed: each island's tree asks before a pin reaches its directory. Absent → every heads ask
@@ -117,13 +117,14 @@ export async function answerSessionSign(caps: CapabilityRecord, ask: Partial<Isl
   } catch { return { ...base, refusal: ask.op === "sign" ? "signer-refused" : "signer-unavailable" }; }
 }
 
-/** Answer one `rest:ask`. A vessel that stands no `restsSealed` seals no bag, so it answers unsealed; a malformed ask or
- *  a fault of the rest answers its refusal by name, never unsealed. */
+/** Answer one `rest:ask`. A vessel that stands no `restsSealed` door reads nothing, so it answers `rest-unread` and the
+ *  island's guard rests no byte; a malformed ask or a fault of the rest answers its refusal by name. Only the door's own
+ *  reading answers unsealed. */
 export async function answerRestAsk(caps: CapabilityRecord, ask: Partial<IslandMsg_RestAsk> & { requestId: string }): Promise<IslandMsg_RestAnswer> {
   const base = { type: "rest:answer" as const, requestId: ask.requestId };
   if (typeof ask.documentId !== "string" || ask.documentId.length === 0) return { ...base, refused: "ask-malformed" };
   const restsSealed = caps.restsSealed;
-  if (!restsSealed) return { ...base, sealed: false };
+  if (!restsSealed) return { ...base, refused: "rest-unread" };
   try { return { ...base, sealed: (await restsSealed(ask.documentId)) === true }; } catch { return { ...base, refused: "rest-fault" }; }
 }
 
