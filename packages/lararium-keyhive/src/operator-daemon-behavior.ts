@@ -25,7 +25,7 @@ import {
   makeOracleCastReactor,
   ddateVerb,
   makeWardAlertReactor, fileWardRefusal, makeIngestAlertRail,
-  makeAddBagReactor, makeRemoveBagReactor, makeCompactBagReactor, makeRotateRecipeReactor, makeRestampBagTierReactor,
+  makeAddBagReactor, makeRemoveBagReactor, makeTrueFloorReactor, makeCompactBagReactor, makeRotateRecipeReactor, makeRestampBagTierReactor,
   makeSwitcherStateReactor, makePromoteStateReactor,
   makePersonaStateReactor,
   makeCircleStateReactor,
@@ -2007,6 +2007,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         // live-layer mount/unmount: the recipe syncs, islands reconcile their own stacks.
         registry.register("add-bag",       underFace("add-bag", makeAddBagReactor({ catalog, ...(sysPlane ? { oracle: sysPlane } : {}), post: ctx.post })));
         registry.register("remove-bag",    underFace("remove-bag", makeRemoveBagReactor({ catalog, ...(sysPlane ? { oracle: sysPlane } : {}), post: ctx.post })));
+        // THE CANON FLOOR BY PLACE's migration door: a hand trues one recipe, with a receipt; no boot moves a record.
+        registry.register("true-floor",    underFace("true-floor", makeTrueFloorReactor({ catalog, ...(sysPlane ? { oracle: sysPlane } : {}), post: ctx.post })));
         // Catalog-writing residency verbs — mint/oracle via accessor + repo, command
         // residency via post. No live-layer swap (oracle/recipe sync; islands reconcile).
         registry.register("bag-compact", makeCompactBagReactor({ repo: ctx.repo, catalog, post: ctx.post }));

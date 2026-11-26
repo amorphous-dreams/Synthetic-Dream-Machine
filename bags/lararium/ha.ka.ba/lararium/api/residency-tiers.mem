@@ -119,7 +119,9 @@ Consequences (the rule's design, UNBUILT as wiring — no production path derive
 
 * A bag referenced by ANY `wela` island reads ''`wela`'' — its handle stays in cache.
 * A bag referenced by NO `wela` island reads ''`anu`'' — its handle MAY drop (the eviction `automerge-repo` does not do on its own; see [[issue #358|https://github.com/automerge/automerge-repo/issues/358]]).
-* ''Referenced bags inherit liveness.'' `lares` / `lararium` corpus and the session event-bus bag ride in multiple recipes; a wiki's own per-wiki live slots (`wikis/{slug}/{personal,draft,working}`) each bind one recipe. Either way, referenced by the pinned admin/primary/Session islands, they would read ''`wela` by derivation'' and keep their handles while a pinned island holds them. As built, the boot pins each such bag directly.
+* ''Referenced bags inherit liveness.'' The `lares` corpus rides under every recipe, the `lararium` corpus under the herm/hearth wiki's (the canon floor by place, below), and the session event-bus bag rides in several; a wiki's own per-wiki live slots (`wikis/{slug}/{personal,draft,working}`) each bind one recipe. Either way, referenced by the pinned admin/primary/Session islands, they would read ''`wela` by derivation'' and keep their handles while a pinned island holds them. As built, the boot pins each such bag directly.
+
+''The canon floor by place'' (ruling 2026-11-26-canon-floor-by-place, operator: //"I want `lares` in all wikis, `lararium+lares` in the herm/hearth wiki."//) names which house-canon bags each recipe references, so the derivation reads one table on both vessels: every wiki's recipe stacks `lares`; the herm/hearth wiki's stacks `lararium` and `lares`, and beneath every house layer TiddlyWiki5's own native docs (`tw5-docs`, `tw5-dev`, read-only); no other wiki stacks `lararium` by default. ''Why:'' the house's law reaches every wiki, while the lararium's own canon rides where the place holds law, and one table keeps the node and the browser from deriving two floors (normalize + check: `CANON_FLOOR` in `packages/lararium-mesh/src/wiki-recipe.ts`, read by `floorRecordsFor`; the witness `packages/lararium-mesh/tests/derive-wiki-recipe.test.ts` runs the vector both hosts share). A recipe record from before the ruling trues by hand through `lares wiki true-floor <slug>`, with a receipt; no boot moves it (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/recipe-layer-model`>> #/canon-floor-by-place).
 
 Two disciplines survive the collapse as bag-level mechanism (driven by the pool, not an independent authority):
 
@@ -180,6 +182,6 @@ through #third-tier-gate, and only after the research that meme charges.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;FT3acqI1isBnDHo954WPWybHJcwGUlZpFODhpUbaezk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;j47wmW2BKZ1HwQfx-CWaUkSV7MEELbqT__wXSOURufU`>>
 
 <<^ code=`&#x0004;` to=`?`>>
