@@ -970,6 +970,23 @@ save_vessel_log() { # $1 = the running vessel's container id
   fi
 }
 
+# THE STOP'S OWN LINES JOIN THE SAVED LOG. The save above reads while the vessel still stands, so it ends before the
+# stand-down speaks. Once the vessel stopped and before its container leaves, the lines from its last `graceful shutdown`
+# line on (the flush spans, each `[sealed-rest]` stand-down row, `N save(s) leave unsealed`) append to that file as the
+# engine printed them, and one line names their count. A stop that printed none appends nothing and says nothing; a log
+# that cannot be read never blocks the removal.
+STAND_DOWN_LINES=2000
+keep_stand_down() { # $1 = the stopped vessel's container id
+  sd_id=$(printf '%s\n' "$1" | tr -d '\r' | sed -n '1p')
+  [ -n "$sd_id" ] || return 0
+  sd_said=$(docker logs --tail "$STAND_DOWN_LINES" "$sd_id" 2>&1 | awk '/graceful shutdown/ { n = 0; on = 1 } on { buf[++n] = $0 } END { for (i = 1; i <= n; i++) print buf[i] }') || return 0
+  [ -n "$sd_said" ] || return 0
+  if printf '%s\n' "$sd_said" >> "$HOUSE/run/vessel-last.log" 2>/dev/null; then
+    printf "lares-container: the stop's own lines (%s, from its graceful shutdown on) join the saved log\n" "$(printf '%s\n' "$sd_said" | wc -l | tr -d ' ')" >&2
+  fi
+  return 0
+}
+
 # THE DOWN PATH (`down`, and every act that must stop the vessel first): the keep while the vessel stands, the census,
 # the refusal of a silent stop, the vessel's log; then the vessel alone stops where a pūlama runs, or the whole project downs.
 down_vessel() { # $@ = compose-down options
@@ -995,7 +1012,7 @@ down_vessel() { # $@ = compose-down options
   fi
   if [ "$d_pulama" = running ]; then
     # The pūlama keeps the hearth lit through the rebuild: the vessel alone stops (with down's options) and leaves.
-    compose stop "$@" lares && compose rm -f lares
+    compose stop "$@" lares && { keep_stand_down "${down_id:-}"; compose rm -f lares; }
   else
     compose down --remove-orphans "$@"
   fi

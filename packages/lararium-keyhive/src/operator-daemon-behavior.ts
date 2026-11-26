@@ -51,6 +51,7 @@ import { stoodDocumentBytes } from "@lararium/mesh/stood-document";
 import { ACTION_VERBS } from "@lararium/mesh/residency-actions";
 import { sha256HexBytesSync, canonicalJsonBytes } from "@lararium/mesh/crypto";
 import { DOCUMENT_HANG_BOUND_MS } from "@lararium/mesh/find-or-throw";
+import { bootWait } from "@lararium/mesh/boot-wait";
 import { VerbRefusal } from "@lararium/mesh/verb-refusal";
 import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
 import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
@@ -912,7 +913,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       }
       if (!resolved) throw new Error("working slot did not resolve");
       const workingUrl = resolved.url;
-      const handle = await findOrThrow(ctx.repo, workingUrl, `${working} (the daemon's working layer)`, { timeoutMs: DOCUMENT_HANG_BOUND_MS });
+      const handle = await bootWait("island-working-doc", "the daemon working layer's document, hydrating from the store", findOrThrow(ctx.repo, workingUrl, `${working} (the daemon's working layer)`, { timeoutMs: DOCUMENT_HANG_BOUND_MS }),
+        (opened) => `${Object.keys((opened.doc() as { tiddlers?: Record<string, unknown> } | undefined)?.tiddlers ?? {}).length} record(s)`);
       const store = new AutomergeDocStore(handle, working, wearOf(ctx.repo));
       // The face canon mounts after ea, so the working layer reads its seat off the recipe, never off the canon alone: an
       // absent canon read as index -1 seated working beneath the kahua stage, which then shadowed every working edit.
@@ -1123,7 +1125,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       }
       let booted: Awaited<ReturnType<typeof bootDaemonKeyhive>>;
       try {
-        booted = await bootDaemonKeyhive({
+        // THE HOLDER STANDS AFTER THIS STEP: a sealed document the vessel asks for meanwhile waits `holder-locked` on it.
+        booted = await bootWait("island-keyhive", "the daemon island's keyhive boot (the archive restore, the cap event replay and the Binding Gate); the sealed store's holder stands after it", bootDaemonKeyhive({
           ...(daemonAuth.atom ? { atomSeed: meshHexToBytes(daemonAuth.atom.seed) } : {}),
           eventStore:            secretEvents(ctx, daemonAuth.personaGroupId!),
           ...(daemonAuth.atom ? { faceVerifyingKey: daemonAuth.atom.key } : {}),
@@ -1143,7 +1146,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           ...(daemonAuth.veilArchiveBytes ? { veilArchiveBytes: daemonAuth.veilArchiveBytes } : {}),
           ...(sealedStore?.chunks ? { chunkRest: sealedStore.chunks } : {}),
           ...(typeof daemonAuth.handleIndex === "number" ? { handle: daemonAuth.handleIndex } : {}),
-        });
+        }));
       } catch (error) {
         const cause = error instanceof Error ? error.message : String(error);
         // A persona-bound boot that does not complete refuses the face, whichever step refused it.
@@ -1172,24 +1175,24 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             const planeBag = personaBagIdFor(daemonAuth.personaGroupId);
             const mounted = ctx.composite.hasBag(planeBag) ? ctx.composite.storeForBag(planeBag) : null;
             if (!mounted && !ctx.catalogUrl) throw new Error("catalog unavailable");
-            const store = mounted ?? await homeStoreOf(makeCatalogAccessor(ctx.repo, ctx.catalogUrl!, ctx.faceCatalogUrl), planeBag);
+            const store = mounted ?? await bootWait("island-face-plane", "the face's plane document, found through the face's own sealed catalog", homeStoreOf(makeCatalogAccessor(ctx.repo, ctx.catalogUrl!, ctx.faceCatalogUrl), planeBag));
             if (!store) throw new Error("face plane absent");
-            await store.listVisible();
+            await bootWait("island-plane-records", "the face plane's visible records", () => store.listVisible(), (titles) => `${titles.length} record(s)`);
             faceLedger = planeBagDocLedger(store);
           } catch (cause) {
             console.warn(`[daemon] face bag document plane unavailable (${(cause as Error)?.message ?? String(cause)}); registering face bags without durable bindings`);
           }
         }
         const faceBags = daemonAuth.registerBags.filter((bag) => !isVesselGround(bag));
-        await namingThePrekey(daemonAuth.atom.key, async () => {
+        await bootWait("island-face-bags", "the face bags' registration on the island's keyhive", namingThePrekey(daemonAuth.atom.key, async () => {
           if (faceLedger) await registerBagsDurably({ provider: keyhive, bags: faceBags, ledger: faceLedger });
           else for (const bag of faceBags) await keyhive.registerBag(bag);
-        }, daemonAuth.handleIndex);
+        }, daemonAuth.handleIndex), () => `${faceBags.length} bag(s)`);
       }
       // ── M3 — THE ARCHIVE FLOOR, THROUGH THE ONE DOOR ──────────────────────────────────────────
       // The face archive carries the atom's prekeys and capability state. The write door reads
       // custody standing before export; a shut face writes nothing. A failed write surfaces below.
-      const floor = await persistArchiveFloor({
+      const floor = await bootWait("island-archive-floor", "the face archive's export after its card, and its rest through the custody door", persistArchiveFloor({
         archiveOpens: daemonAuth.archiveOpens,
         writers: archiveWriters,
         // EACH ARCHIVE NAMES ITS FACE: the mounted hive's own PersonaGroup names the row, so the vessel never picks one.
@@ -1198,8 +1201,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         // a face-join or a crossing) presents that same card, so the Archive that
         // lands here holds the secret behind every prekey this boot presents.
         exportVeilArchive: () => keyhive.exportArchiveAfterTheCard(),
-      });
-      await attachDaemonWorking(ctx);
+      }));
+      await bootWait("island-working", "the daemon working layer's attach (its slot's address, its document, its registration)", attachDaemonWorking(ctx));
       // The edit slots stand beside the working layer; one that stands not names itself and holds no boot.
       await attachDaemonEditSlots(ctx).catch((cause: unknown) => console.warn(`[daemon] the daemon wiki's edit slots stand not: ${cause instanceof Error ? cause.message : String(cause)}`));
       return { keyhive, floor };

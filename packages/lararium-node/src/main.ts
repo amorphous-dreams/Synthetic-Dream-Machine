@@ -74,6 +74,7 @@ import { STORE_DOOR_HAND_CODES, STORE_DOOR_HAND_ONLY_ACTS, REALM_KEY_VERBS, REAL
 import { makeCustodyHolder } from "./custody-holder.js";
 import { isTestScratchRoot, testScratchNotice } from "./test-scratch-notice.js";
 import { heldPlaneLines } from "./doc-load-probe.js";
+import { bannerMemo, foldedBanner } from "./boot-banner.js";
 import { seatCustody, unlockedFaceOrdinals } from "./custody-seat.js";
 import { custodyFrameHandler, doorDarkLine, heldSavesLossLines, type CustodyDoor } from "./custody-frames.js";
 import { SESSION_ACTS, runSealedAct, type PersonaSelvesPlane, type SealedActContext } from "./sealed-acts.js";
@@ -710,6 +711,9 @@ interface StandingComposition {
   readonly wikiAwaits?: string | null;
 }
 
+/** What this process's compositions printed of their address rows: a later composition folds the rows it would repeat. */
+const processBanner = bannerMemo();
+
 /** The floor every vessel stands on: the daemon immune core and a served FLOW-map, no wiki, no pool. */
 async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: SovereignReaders | null): Promise<StandingComposition> {
   const { askedStanding, wikiId, storageDir, genesisDir, rootDir, catalogUrl, wss, httpServer, dispatcher, meshSelf,
@@ -738,9 +742,11 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
     onPhase:    (phase) => { if (phase === "boot") console.log(`[herm] boot pid ${process.pid}`); console.log(`[herm] phase → ${phase}`); },
   });
   console.log(`[herm] live — wiki-less wayfarer | storage: ${storageDir}`);
-  console.log(`[herm] catalog:   ${herm.catalogHandleUrl}`);
-  console.log(`[herm] oracle:    ${herm.oracleDocUrl}`);
-  console.log(`[herm] daemon:    ${herm.daemon.daemonHandle.url}`);
+  for (const line of foldedBanner(processBanner, "[herm]", [
+    ["catalog:   ", `${herm.catalogHandleUrl}`],
+    ["oracle:    ", `${herm.oracleDocUrl}`],
+    ["daemon:    ", `${herm.daemon.daemonHandle.url}`],
+  ], process.pid)) console.log(line);
   console.log(`[herm] FLOW-map read-face: proven peers only, over the gated ${FLOW_SOCKET_ROUTE} socket`);
   for (const line of heldPlaneLines("[herm]", herm.mountManifest)) console.log(line);
 
@@ -919,10 +925,12 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     }
   });
   console.log(`[lararium] live — wiki: ${result.activeWikiId} | storage: ${storageDir} | root: ${rootDir}`);
-  console.log(`[lararium] catalog:  ${result.catalogHandleUrl ?? "(none)"}`);
-  console.log(`[lararium] oracle:   ${result.oracleDocUrl ?? "(none)"}`);
-  console.log(`[lararium] lararium: ${result.larariumDocUrl ?? "(none)"}`);
-  console.log(`[lararium] daemon:   ${result.daemon.daemonHandle.url}`);
+  for (const line of foldedBanner(processBanner, "[lararium]", [
+    ["catalog:  ", result.catalogHandleUrl ?? "(none)"],
+    ["oracle:   ", result.oracleDocUrl ?? "(none)"],
+    ["lararium: ", result.larariumDocUrl ?? "(none)"],
+    ["daemon:   ", `${result.daemon.daemonHandle.url}`],
+  ], process.pid)) console.log(line);
   for (const line of heldPlaneLines("[lararium]", result.mountManifest)) console.log(line);
   readinessState.notePlanes(result.mountManifest);
   const bootDocFragment = result.oracleDocUrl ?? result.catalogHandleUrl ?? "";
