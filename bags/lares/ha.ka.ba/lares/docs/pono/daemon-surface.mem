@@ -50,7 +50,7 @@ What the daemon camera never holds: a wiki's truth, a wiki's `$:/state`, a secon
 | ''Breath'' | per mounting island, its phase and progress counter; a stall named after the stall budget | reads; a stalled mount offers //retry// and //evict// |
 | ''Alerts'' | the daemon's own rail (`$:/tags/Alert` under `$:/temp/lares/alert/*`): boot faults, refused services, `reboot-pending`, `disk-ward`, `engine-waiting`, `landing-failed`, `unrouted-save` | reads; dismisses one whose condition has cleared; follows an alert to the wiki it names |
 | ''Custody'' | the public receipt, read from the vessel's `status{seedRest}`: the vessel's `did`, the seed-at-rest class (cleartext or passkey-wrapped), the storage floor (persistent or evictable, with the estimate), the relay crossing | copies the key or the join command; never sees or moves key bytes |
-| ''Residency'' | per bag and wiki: warm (`wela`) or cold, pinned and why (`boot:daemon`, `boot:home-wiki`), the activation cap and pin budget | pins, unpins, evicts, registers cold; a refusal reads beside the button |
+| ''Residency'' | per bag and wiki: warm (`wela`) or cold, held and why (a lit face's hold, a face's keep), the activation cap and keep budget | keeps, unkeeps, evicts, registers cold; a refusal reads beside the button |
 
 ''Refused services read beside the act.'' When a wiki's engine asks a door the surface's manifest lacks (print, fullscreen, open-external on a shell that withholds them), the surface answers `page-action-unavailable` at once; the wiki's own pane shows the words of `page-controls#/refusals` beside the control, and the engine raises `$:/temp/lares/alert/refused/<kind>`. The daemon's Alerts pane carries the vessel-wide copy, so a person who missed the word beside the control still finds it.
 
@@ -78,7 +78,7 @@ Each record lives under `$:/temp/`, so the shore's `neverPersists` and the bag-p
 | open a wiki beside | the same act with a modifier or the //beside// button | `lar:service{kind: "open-surface"}` (the `tm-open-window` road, a second camera on that actor) | `ok`, or `page-action-unavailable` where the shell opens no second surface, with `$:/temp/lares/alert/refused/open-surface` |
 | open a sleeping wiki | `lar:act` | the actor wakes; the entry shows //waking//; one parked act per surface, a second answers `superseded` | `applied` against the woken frame, or `stale-target` with a fresh one |
 | touch a recipe wiki incidentally (a link) | `lar:act` | refuses `actor-not-spawned` and renders a //spawn// affordance | `refused` with the reason; only the explicit //spawn// births an actor |
-| pin, unpin, evict | `lar:act` | `wiki-hold` · `wiki-release` · `daemon:residency-op` · `daemon:evict-request`, gated on the actor's capability | `applied`, or `cap-refused` beside the button |
+| keep, unkeep, evict | `lar:act` | `wiki-keep` · `wiki-unkeep` · `daemon:residency-op` · `daemon:evict-request`, gated on the actor's capability | `applied`, or `cap-refused` beside the button |
 | add or remove a bag | `lar:act` | `add-bag` · `remove-bag`; the change syncs and raises `reboot-pending` on the affected live wiki | `applied`; the alert names //reboot to apply// |
 | type a carrier address | `lar:sense` (whole value, `localRev`) on the `lar-field`; `lar:act` `lar:commit` on blur | sets `$:/temp/lares/state/meme-project!!uri` | `sensedRevision[controlId]` in a later frame |
 | copy the key | page-native; no crossing | — | — |
@@ -170,6 +170,6 @@ Later that day the hearth-wiki itself boots with one dead module. The island kee
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;VZg2gGNT-e9DuKstvu884Q4RpTZFzUfWYuMa7lNANUg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;cvtzZZuuNZch_85YXqmJgwKkt2J3BqTcQs1riPd5b_Q`>>
 
 <<^ code=`&#x0004;` to=`?`>>

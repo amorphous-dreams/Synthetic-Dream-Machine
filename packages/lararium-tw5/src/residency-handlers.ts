@@ -1,9 +1,8 @@
 /**
  * residency-handlers — verb-tiddler handlers for operator-driven
- * residency control: pin, unpin, residency (stats).
+ * residency read: residency (stats).
  *
- * Operators invoke these via `lares pin <url>` / `lares unpin <url>` /
- * `lares residency`. Each handler closes over the BagStowage
+ * Operators invoke it via `lares residency`. Each handler closes over the BagStowage
  * the daemon constructs at boot.
  */
 
@@ -14,9 +13,9 @@ export interface ResidencyHandlerOptions {
   readonly residency: BagStowage;
 }
 
-// pin / unpin / register-cold RELOCATED to @lararium/tw5 (worker-data-verbs) — they run
+// register-cold lives in @lararium/tw5 (worker-data-verbs) — it runs
 // in the daemon worker (sovereign-worker, verify-then-delegate gated) and command this
-// main-resident BagStowage via daemon:residency-op. Only the `residency` stats
+// main-resident BagStowage via daemon:residency-op. A lit face holds what it needs warm (`holdLit`) and a face's keep list holds the wikis it names; no operator verb pins a bag. Only the `residency` stats
 // READ stays main (the manager lives here); the askMain research decides its eventual home.
 
 export function makeResidencyStatsReactor(opts: ResidencyHandlerOptions): VerbReactor {

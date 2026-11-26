@@ -13,7 +13,7 @@ import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { type Repo, type DocHandle } from "@lararium/mesh/automerge";
 import { makeInitWikiReactor } from "../src/wiki-mint-handlers.js";
 import { makeAddBagReactor, makeRemoveBagReactor } from "../src/wiki-compose-handlers.js";
-import { makeListWikisReactor, makeWikiPinReactor, makeWikiUnpinReactor } from "../src/worker-data-verbs.js";
+import { makeListWikisReactor } from "../src/worker-data-verbs.js";
 import type { CatalogAccessor } from "../src/catalog-accessor.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
 import { plainField, plainRecord, plainRecordOrNull } from "@lararium/mesh/stored-value";
@@ -136,13 +136,11 @@ describe("a system slug composes through the vessel's own record", () => {
     expect((await list({}, ctx))["wikis"]).toEqual([expect.objectContaining({ slug: "lares", kind: "system", composition: "own", defaultDiffers: false })]);
   });
 
-  test("a default-composed system wiki lists once as default; pin-wiki reads the effective recipe", async () => {
+  test("a default-composed system wiki lists once as default", async () => {
     const r = rig();
     const rows = (await makeListWikisReactor(r.catalog.accessor, r.oracle.accessor)({}, ctx))["wikis"];
     expect(rows).toEqual([expect.objectContaining({ slug: "lares", composition: "default" })]);
     expect(rows).toEqual([expect.not.objectContaining({ defaultDiffers: expect.anything() })]);
-    const pinned = await makeWikiPinReactor(r.catalog.accessor, r.post, r.oracle.accessor)({ slug: "lares" }, ctx);
-    expect((pinned["pinned"] as unknown[]).length).toBe(3);
   });
 
   test("a system slug with no oracle recipe refuses with advice that fits, never `wiki init`", async () => {
@@ -151,24 +149,6 @@ describe("a system slug composes through the vessel's own record", () => {
     const err = await makeAddBagReactor({ catalog: r.catalog.accessor, oracle: r.oracle.accessor, post: r.post })({ slug: "lares", bagUrl: X }, ctx).catch((e: Error) => e);
     expect(String(err)).toMatch(/oracle plane carries no default recipe/);
     expect(String(err)).not.toMatch(/wiki init/);
-  });
-
-  test("pin-wiki and unpin-wiki on a system slug with no oracle recipe refuse with advice that fits, never `wiki init`", async () => {
-    const r = rig();
-    delete r.oracle.tiddlers[recipeUri("oracle", "lares")];
-    for (const make of [makeWikiPinReactor, makeWikiUnpinReactor]) {
-      const err = await make(r.catalog.accessor, r.post, r.oracle.accessor)({ slug: "lares" }, ctx).catch((e: Error) => e);
-      expect(String(err)).toMatch(/oracle plane carries no default recipe/);
-      expect(String(err)).not.toMatch(/wiki init/);
-    }
-  });
-
-  test("CONTROL: pin-wiki and unpin-wiki on an unknown user slug still advise `wiki init` (pin) and refuse by name", async () => {
-    const r = rig();
-    const pin = await makeWikiPinReactor(r.catalog.accessor, r.post, r.oracle.accessor)({ slug: "nobody" }, ctx).catch((e: Error) => e);
-    expect(String(pin)).toMatch(/wiki init nobody/);
-    const unpin = await makeWikiUnpinReactor(r.catalog.accessor, r.post, r.oracle.accessor)({ slug: "nobody" }, ctx).catch((e: Error) => e);
-    expect(String(unpin)).toMatch(/recipe not found for "nobody"/);
   });
 
   describe("control: a user slug walks the mint-and-append path", () => {

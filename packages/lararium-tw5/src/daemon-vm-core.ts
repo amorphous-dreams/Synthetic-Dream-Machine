@@ -342,11 +342,11 @@ export interface DaemonVmCore {
    */
   onEvictRequest: (fn: (bagId: string) => Promise<void>) => void;
   /**
-   * Register the residency-op MECHANISM: the worker commands pin/unpin/register-cold
+   * Register the residency-op MECHANISM: the worker commands register-cold
    * (daemon:residency-op, keyhive-gated policy); main routes here to the BagStowage
    * (which stays at the resource). Set after the manager exists. Absent → fail closed.
    */
-  onResidencyOp: (fn: (op: "pin" | "unpin" | "register-cold", bagId: string, reason?: string) => Promise<void>) => void;
+  onResidencyOp: (fn: (op: "register-cold", bagId: string) => Promise<void>) => void;
   /**
    * Register the wiki-alert DELIVERY: the worker decided a change needs a reboot to
    * apply (daemon:wiki-alert) and names the affected wiki; main routes here to place a
@@ -424,7 +424,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
   // Pool eviction mechanism — set via onEvictRequest() after the pool exists.
   let _evictHandler: ((bagId: string) => Promise<void>) | null = null;
   // Residency-op mechanism — set via onResidencyOp() after the manager exists.
-  let _residencyHandler: ((op: "pin" | "unpin" | "register-cold", bagId: string, reason?: string) => Promise<void>) | null = null;
+  let _residencyHandler: ((op: "register-cold", bagId: string) => Promise<void>) | null = null;
   // Wiki-alert delivery — set via onWikiAlert() after the pool exists.
   let _wikiAlertHandler: ((wikiSlug: string, message: string, cause?: string, kind?: string, instance?: { key?: string; clear?: boolean }) => void) | null = null;
   // Camera forwarding — set via onFrame() / onControlResult() after the boot sink exists.
@@ -705,11 +705,11 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     }
 
     if (raw.type === "daemon:residency-op") {
-      // Sovereign-worker: the worker's residency verb (pin/unpin/register-cold) granted
+      // Sovereign-worker: the worker's residency verb (register-cold) granted
       // policy; main executes the mechanism on the BagStowage. Ack regardless.
       const msg = raw as DaemonMsg_ResidencyOp;
       const run = _residencyHandler
-        ? _residencyHandler(msg.op, msg.bagId, msg.reason)
+        ? _residencyHandler(msg.op, msg.bagId)
         : Promise.reject(new Error("no residency handler bound (manager not ready)"));
       run
         .then(() => worker.post(mkDaemonResidencyOpResult({ requestId: msg.requestId, ok: true })))
@@ -985,7 +985,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     onEvictRequest: (fn: (bagId: string) => Promise<void>) => {
       _evictHandler = fn;
     },
-    onResidencyOp: (fn: (op: "pin" | "unpin" | "register-cold", bagId: string, reason?: string) => Promise<void>) => {
+    onResidencyOp: (fn: (op: "register-cold", bagId: string) => Promise<void>) => {
       _residencyHandler = fn;
     },
     onWikiAlert: (fn: (wikiSlug: string, message: string, cause?: string, kind?: string, instance?: { key?: string; clear?: boolean }) => void) => {

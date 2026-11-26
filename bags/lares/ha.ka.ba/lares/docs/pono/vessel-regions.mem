@@ -81,7 +81,7 @@ The carriage serve-loop over Socket B, the carriage relay stand, the vessel's `c
 
 !!! Lifts cleanly
 
-* ''⑦ the verb-provider bundle'' → `makeNodeVerbProviders`, taking `daemonVm` and the recall and capture helpers as injected readings, with ZERO coupling to the verdict cells. The browser registers none of `wiki-act` · `realm-bag` · `realm-bags` · `nexus-rekey` · `nexus-reshare` · `cas-fetch` · `cad-seal`, and it composes six verbs the node does (`sync-wiki` · `residency` · `wiki-switch` · `wiki-hold` · `wiki-release` · `wiki-active`). The provider extraction leaves those six registrations separate (`wireVerbs` holds the node's); a further shared wiring step could give the six ONE spelling and leave each substrate its own.
+* ''⑦ the verb-provider bundle'' → `makeNodeVerbProviders`, taking `daemonVm` and the recall and capture helpers as injected readings, with ZERO coupling to the verdict cells. The browser registers none of `wiki-act` · `realm-bag` · `realm-bags` · `nexus-rekey` · `nexus-reshare` · `cas-fetch` · `cad-seal`, and it composes six verbs the node does (`sync-wiki` · `residency` · `wiki-switch` · `wiki-keep` · `wiki-unkeep` · `wiki-active`). The provider extraction leaves those six registrations separate (`wireVerbs` holds the node's); a further shared wiring step could give the six ONE spelling and leave each substrate its own.
 * ''③ the CAS capability'' (`cidDir` · `resolveCid` · `carriageLoop` · `fleetHolders` · `casBagTracker`) → a `NodeCas` holder. It couples to the verdict cluster through `sealRegistry`, and `carriageLoop` also takes `nexusMembership`, `antigenRing` and `selfSlotFedGate`, while the fleet reads consult `peerIdentifierMap` and `peerClassMap`; the module would take each as an injected cell rather than close over it. ''It stands `islandCaps.cas` on the vessel's own capability record'' (no process global since the record landed); the two-phase boot names that member's teardown (the cas capability, on the stood list), and a module would make the write as visible.
 * ''⑥ the pool / mailbox wiring'' → a `NodePool` holder over `vmManager` · `wikiActivation` · `mailbox` · `eventBus`. The residency wiring reads these cells before `makePool` writes them; a holder turns four forward-declared `let`s into one constructed thing.
 
@@ -140,6 +140,6 @@ A tasked spirit's walk at this codebase's grain, never a human's; the hours stan
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;pxfsxyRIZByXp0oCzBW_5ppwjhnVYjrZ_fMZ9HveSxE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;rLVgbyAoTmv7NmitiNZ_YQQ7c1MN5I-XFOsi41fcStg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

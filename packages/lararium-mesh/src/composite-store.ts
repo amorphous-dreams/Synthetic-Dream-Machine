@@ -25,7 +25,6 @@ import type {
 import {
   corpusLarUri,
 } from "./lar-uris.js";
-import { headsEqual } from "./wiki-recipe.js";
 import { assertStorableTitle } from "./title-law.js";
 import { OVERRIDE_BASE_META, isWorkingLayerBag, overrideBaseOf } from "./override-base.js";
 import { carrierHashOf } from "./carrier-form.js";
@@ -49,7 +48,6 @@ function sameFields(a: Record<string, unknown>, b: Record<string, unknown>): boo
   return keys.every((k) => Object.prototype.hasOwnProperty.call(b, k) && String(a[k]) === String(b[k]));
 }
 import { VerbRefusal } from "./verb-refusal.js";
-import type { WikiRecipe, BagPinState } from "./wiki-recipe.js";
 
 // Re-export so callers get bag IDs and URI helpers from a single import.
 export { corpusLarUri as corpusBagId };
@@ -709,52 +707,6 @@ export class CompositeStore implements LarTiddlerStore {
       const layer = this.layers[i]!;
       const rec = await layer.store.get(title);
       if (rec && rec.meta?.deleted) out.push(layer.bagId);
-    }
-    return out;
-  }
-
-  /**
-   * Residency Model — audit per-bag pin state against the recipe's `bagPins`.
-   *
-   * Returns a Map keyed by bagId carrying one BagPinState per pinned bag.
-   * Default policy: **audit-only**. Operators read the audit; downstream
-   * consumers MAY refuse, time-travel via `view(pinnedHeads)`, or warn. Loud
-   * silent refusal at the read path stays out of scope per the deferred-
-   * enactment design (modal-view reader belongs to a follow-up sprint with
-   * explicit "detached" operator UX, modelled on Loro's checkout cycle).
-   *
-   * Heads comparison uses `headsEqual` (set-semantics) — Automerge Heads form
-   * a mathematical set; order across save/load or implementations stays
-   * non-contractual. See wiki-recipe.headsEqual for sources.
-   *
-   * Bags whose store omits `getHeads()` (e.g. MemoryTiddlerStore) report
-   * `{ state: "opaque" }` rather than `matched` or `drifted` — the audit
-   * surfaces uninspectable layers honestly instead of asserting matches it
-   * cannot verify.
-   *
-   * Anti-pattern #5 defense (recipe-drift poisoning).
-   * Meme: lar:///ha.ka.ba/lararium/api/residency-model
-   */
-  async auditPins(recipe: WikiRecipe): Promise<Map<string, BagPinState>> {
-    const out = new Map<string, BagPinState>();
-    const pins = recipe.bagPins;
-    if (!pins || pins.size === 0) return out;
-    for (const [bagId, pinned] of pins) {
-      const layer = this.layers.find((l) => l.bagId === bagId);
-      if (!layer) { out.set(bagId, { state: "absent" }); continue; }
-      const getHeads = layer.store.getHeads;
-      if (typeof getHeads !== "function") {
-        out.set(bagId, { state: "opaque" });
-        continue;
-      }
-      const current = await getHeads.call(layer.store);
-      if (current === null) {
-        out.set(bagId, { state: "opaque" });
-        continue;
-      }
-      out.set(bagId, headsEqual(pinned, current)
-        ? { state: "matched", heads: current }
-        : { state: "drifted", pinned, current });
     }
     return out;
   }

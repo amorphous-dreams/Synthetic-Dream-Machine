@@ -48,8 +48,8 @@ describe("fewer front doors", () => {
     }
   });
 
-  test("★ every row of the one MOVED table answers at its cure, the door-local folds (`bag pin`, `wiki list`) among them ★", async () => {
-    expect(MOVED.map((m) => m.argv.join(" "))).toEqual(expect.arrayContaining(["bag pin", "bag list", "wiki list"]));
+  test("★ every row of the one MOVED table answers at its cure, the door-local folds (`bag stats`, `wiki list`) among them ★", async () => {
+    expect(MOVED.map((m) => m.argv.join(" "))).toEqual(expect.arrayContaining(["bag stats", "bag list", "wiki list"]));
     for (const { argv, to } of MOVED) {
       const r = await run([...argv]);
       expect(r.code, argv.join(" ")).toBe(2);

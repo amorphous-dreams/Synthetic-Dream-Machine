@@ -387,7 +387,6 @@ export type HostingDoor = NonNullable<SealedActContext["hosting"]>;
 import {
   makeResidencyStatsReactor,
   makeVesselResidency, type VesselResidency,
-  replayPinsFromDaemonDoc,
 } from "@lararium/tw5";   // residency stats — the lone read that stays main-resident; the shared residency/pool-wiring factory
 import { loadVesselIdentity, vesselPlaceSignerDoor, loadPersonaGroupRootVerifyingKey, listPersonaRoots, sovereignStands } from "./node-vessel-identity.js";
 import { socketsNoLongerHeld, ownPlacePosture, sameOperatorStands, seatedDeviceKey, type PlaceClass, type SeatedPresenter } from "./socket-sorter.js";
@@ -2886,7 +2885,17 @@ async function prepareNodeBootOn(
     await drainPlans(ordinal, plans, { drain: (session, docs) => sealedRest.drain(session, docs), waiting: (id) => sealedRest.store.waiting(id) });
   };
   /** A closed face's host side drops: what still waits unsaved (from memory, never to disk), its cache, session and keepers. */
+  /** A CLOSED FACE'S LIT LIFE ENDS: its keeps free at the keep-warm cap and the grains it held warm become cooling candidates.
+   *  The holder derives from the face's own group, so a close never frees another face's keeps. */
+  const endLitLife = (ordinal: number): void => {
+    const group = faceEntries.get(ordinal)?.personaGroupId ?? (ordinal === mountFace ? wornDeviceGroup : null);
+    if (!group) return;
+    const holder = `face-${group}`;
+    if (wikiActivation) wikiActivation.unkeepAll(holder);
+    residency.dropLit(holder);
+  };
   const teardownFaceHost = (ordinal: number, why?: "refused"): void => {
+    endLitLife(ordinal);
     for (const [group, held] of [...siblingFaces]) if (held.ordinal === ordinal) removeSibling(group, held, false, why);
     // THE LIT LIFE BOUNDS A SIBLING'S PLANE MOUNT: the close takes it whole, whether or not its host side ever stood.
     const closing = faceEntries.get(ordinal);
@@ -5173,9 +5182,9 @@ async function prepareNodeBootOn(
     // the grain (resolveWikiSpec wakes ANY registered wiki cold, single-flight). node is
     // headless — no #projection surface to flip — so a switch here is pure activation.
     registry.register("wiki-switch", (args) => wikiSwitchVerb(args, { activation: wikiActivation, pool: vmManager, holder: () => (wornDeviceGroup === null ? null : `face-${wornDeviceGroup}`) }));
-    // wiki-hold / wiki-release — the worn face's KEEP LIST over the vessel's one keep-warm cap. The face's own record
+    // wiki-keep / wiki-unkeep — the worn face's KEEP LIST over the vessel's one keep-warm cap. The face's own record
     // (`$:/config/lares/keep` in its daemon wiki) names what it keeps; a full cap refuses `keep-full` and drops no keep.
-    // Distinct from the recipe-bag `pin-wiki`: this keeps the wiki GRAIN warm in the collector.
+    // This keeps the wiki GRAIN warm in the collector.
     // The holder rides the lit worn face's own group, never a shared ordinal; the anon floor holds none and refuses by name.
     const litHolder = (): string | null => (wornDeviceGroup === null ? null : `face-${wornDeviceGroup}`);
     const keepHolder = (verb: string): string => {
@@ -5193,21 +5202,21 @@ async function prepareNodeBootOn(
       keepWrites = run.catch(() => {});
       return run;
     };
-    registry.register("wiki-hold", async (args) => {
-      const slug = routingString(args, "slug", "wiki-hold");
-      if (!slug) throw new Error("wiki-hold: `slug` required");
-      const holder = keepHolder("wiki-hold");
+    registry.register("wiki-keep", async (args) => {
+      const slug = routingString(args, "slug", "wiki-keep");
+      if (!slug) throw new Error("wiki-keep: `slug` required");
+      const holder = keepHolder("wiki-keep");
       const kept = await wikiActivation.keep(slug, holder);
       if (kept.ok) await writeKeepList((slugs) => keepListWith(slugs, slug));
-      return { verb: "wiki-hold", slug, held: kept.ok, ...(kept.ok ? {} : { cause: kept.cause, detail: kept.detail }), holds: [...wikiActivation.kept(holder)], budget: wikiActivation.grant.keepBudget };
+      return { verb: "wiki-keep", slug, held: kept.ok, ...(kept.ok ? {} : { cause: kept.cause, detail: kept.detail }), holds: [...wikiActivation.kept(holder)], budget: wikiActivation.grant.keepBudget };
     });
-    registry.register("wiki-release", async (args) => {
-      const slug = routingString(args, "slug", "wiki-release");
-      if (!slug) throw new Error("wiki-release: `slug` required");
-      const holder = keepHolder("wiki-release");
+    registry.register("wiki-unkeep", async (args) => {
+      const slug = routingString(args, "slug", "wiki-unkeep");
+      if (!slug) throw new Error("wiki-unkeep: `slug` required");
+      const holder = keepHolder("wiki-unkeep");
       wikiActivation.unkeep(slug, holder);
       await writeKeepList((slugs) => keepListWithout(slugs, slug));
-      return { verb: "wiki-release", slug, holds: [...wikiActivation.kept(holder)] };
+      return { verb: "wiki-unkeep", slug, holds: [...wikiActivation.kept(holder)] };
     });
     // wiki-active — the live switcher state: which wikis run now + which are held.
     registry.register("wiki-active", async () => {
@@ -5229,25 +5238,19 @@ async function prepareNodeBootOn(
     pendingVerbContribution(registry);
   };
 
-  // After the daemon VM lives: residency pins + sweeper, arm the inbound gate, refresh oracles.
+  // After the daemon VM lives: the lit face's holds + sweeper, arm the inbound gate, refresh oracles.
   const afterDaemon: VesselOrchestration<VesselIslandPool>["afterDaemon"] = (_daemon, assembly) => {
-    void residency.pin(BAG_IDS.catalog,    "boot:catalog");
-    void residency.pin(BAG_IDS.oracle,     "boot:oracle-island");
-    void residency.pin(BAG_IDS.lararium,   "boot:lararium-corpus");
-    if (assembly.laresHandle) void residency.pin(BAG_IDS.lares, "boot:lares-corpus");
-    // A face's planes pin under the face's own names — the vessel pins what it actually mounted.
-    const pinFace = bootstrap.personaBagId ? personaSiblingBagIds(bootstrap.personaBagId) : null;
-    if (pinFace) {
-      void residency.pin(pinFace.identities, "boot:identities");
-      void residency.pin(pinFace.circles,    "boot:circles");
-      void residency.pin(pinFace.sessions,   "boot:sessions");
-      void residency.pin(pinFace.intents,    "boot:intents");
+    // THE LIT SET HOLDS WHAT IT NEEDS WARM: the system bags and the lit face's own planes stay warm because a face stands
+    // lit, and the hold ends with that face's close (`endLitLife`). The anon floor stands no face, so it holds none.
+    if (wornDeviceGroup !== null) {
+      const pinFace = bootstrap.personaBagId ? personaSiblingBagIds(bootstrap.personaBagId) : null;
+      void residency.holdLit(`face-${wornDeviceGroup}`, [
+        BAG_IDS.catalog, BAG_IDS.oracle, BAG_IDS.lararium,
+        ...(assembly.laresHandle ? [BAG_IDS.lares] : []),
+        ...(pinFace ? [pinFace.identities, pinFace.circles, pinFace.sessions, pinFace.intents] : []),
+        DAEMON_BAG_ID,
+      ]);
     }
-    void residency.pin(DAEMON_BAG_ID,       "boot:daemon");
-    // Durable pin replay — BEFORE the sweeper starts, so a replayed pin never races the first
-    // idle-cool tick. Recovers whatever `lares wiki pin` persisted under the daemon doc across a
-    // restart (residency-tiers.mem#/pin-flag; see writePinTiddler/replayPinsFromDaemonDoc).
-    void replayPinsFromDaemonDoc(daemonVm.daemonHandle, residency);
     residency.startSweeper();
     assembly.composite.attachResidency(residency);
 
@@ -5866,7 +5869,6 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     self:        { ...opts.meshSelf, gatePubKey: p.vesselGateKey },
     cadenceKey: p.vesselGateKey,
     pullFlow:  p.carriagePull,
-    ...(p.residency ? { residency: p.residency } : {}),
     onLog: (l) => console.log(`[lararium] ${l}`),
   }) : [];
 
@@ -5889,7 +5891,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
   } });
   const extraCaps = [
     ...carriageCaps,
-    whoFaceCap({ repo: p.repo, crossroadsHandle, nexusPubkey: p.nexusPubkey, residency: p.residency }),
+    whoFaceCap({ repo: p.repo, crossroadsHandle, nexusPubkey: p.nexusPubkey }),
   ].map((cap) => ({
     ...cap,
     build: async (resolve: Parameters<typeof cap.build>[0]) => {
@@ -6029,7 +6031,7 @@ async function composeNodeHermOn(
   try {
   herm = await composeHerm({
     extraCaps: [whoFaceCap({
-      repo: p.repo, crossroadsHandle: hermCrossroads, nexusPubkey: p.nexusPubkey, residency: p.residency,
+      repo: p.repo, crossroadsHandle: hermCrossroads, nexusPubkey: p.nexusPubkey,
     })],
     keel:        p.orchestration.keel,
     openDaemon:  p.openDaemon,
@@ -6037,7 +6039,6 @@ async function composeNodeHermOn(
     afterDaemon: p.afterDaemon,
     repo:        p.repo,
     vesselKey:   p.vesselGateKey,
-    residency:   p.residency,
     httpServer:  opts.httpServer,
     ...(opts.dispatcher ? { dispatcher: opts.dispatcher } : {}),
     signer:      p.placeSigner,

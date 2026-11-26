@@ -51,7 +51,7 @@ describe("BagStowage — pin as orthogonal flag", () => {
     const hydrated: string[] = [];
     const m = new BagStowage({ onHydrate: async (u) => { hydrated.push(u); } });
     m.registerCold(A);
-    await m.pin(A, "boot:test");
+    await m.pin(A, "keep:test");
     expect(m.tier(A)).toBe("wela");     // temperature, NOT "pinned"
     expect(m.isPinned(A)).toBe(true);   // the orthogonal flag
     expect(hydrated).toEqual([A]);
@@ -73,6 +73,61 @@ describe("BagStowage — pin as orthogonal flag", () => {
     m.unpin(A);
     expect(m.isPinned(A)).toBe(false);
     expect(m.tier(A)).toBe("wela");     // still resident
+  });
+});
+
+describe("BagStowage — a lit face holds what it needs warm", () => {
+  test("holdLit heats a cold grain and exempts it until its face closes", async () => {
+    const hydrated: string[] = [];
+    const m = new BagStowage({ onHydrate: async (u) => { hydrated.push(u); } });
+    m.registerCold(A);
+    await m.holdLit("face-g1", [A]);
+    expect(m.tier(A)).toBe("wela");
+    expect(m.isPinned(A)).toBe(true);
+    expect(hydrated).toEqual([A]);
+    m.dropLit("face-g1");
+    expect(m.isPinned(A)).toBe(false);
+    expect(m.tier(A)).toBe("wela");     // still resident, now a cooling candidate
+  });
+
+  test("a grain two lit faces hold stays exempt until both close", async () => {
+    const m = new BagStowage();
+    await m.holdLit("face-g1", [A]);
+    await m.holdLit("face-g2", [A]);
+    m.dropLit("face-g1");
+    expect(m.isPinned(A)).toBe(true);
+    m.dropLit("face-g2");
+    expect(m.isPinned(A)).toBe(false);
+  });
+
+  test("a face's close leaves a keep over the same grain standing", async () => {
+    const m = new BagStowage();
+    await m.holdLit("face-g1", [A]);
+    await m.pin(A, "face:keep");
+    m.dropLit("face-g1");
+    expect(m.isPinned(A)).toBe(true);
+    m.unpin(A);
+    expect(m.isPinned(A)).toBe(false);
+  });
+
+  test("a keep released while a lit face still holds the grain leaves it exempt", async () => {
+    const m = new BagStowage();
+    await m.pin(A, "face:keep");
+    await m.holdLit("face-g1", [A]);
+    m.unpin(A);
+    expect(m.isPinned(A)).toBe(true);
+  });
+
+  test("a grain a lit face holds survives the idle sweep until the face closes", async () => {
+    let now = 0;
+    const m = new BagStowage({ idleMs: 10, clock: () => now });
+    await m.holdLit("face-g1", [A]);
+    now = 1000;
+    await m.sweepOnce();
+    expect(m.tier(A)).toBe("wela");
+    m.dropLit("face-g1");
+    await m.sweepOnce();
+    expect(m.tier(A)).toBe("anu");
   });
 });
 

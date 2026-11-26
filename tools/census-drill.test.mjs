@@ -331,8 +331,8 @@ test("P2 two real houses: export, import, par; then a deleted meme, a changed me
     old.must(["wiki", "share", "quiet", "--read", "engineer"]);
     // The rite holds each workbench before the export (a cold wiki reads `document-unavailable`), and the wiki carries a page,
     // so its workbench travels and the import re-stands it (an empty wiki carries its share row alone).
-    old.must(["wiki", "pin", "notes", "--rotate"]);
-    old.must(["wiki", "pin", "quiet", "--rotate"]);
+    old.must(["wiki", "keep", "notes"]);
+    old.must(["wiki", "keep", "quiet"]);
     const page = join(scratch, "page.mem");
     writeFileSync(page, memeText(PAGE, "a page on the shared wiki", ""));
     old.must(["tiddler", "put", "--meme", PAGE, "--recipe", "notes", "--file", page, "--json"]);
@@ -362,8 +362,8 @@ test("P2 two real houses: export, import, par; then a deleted meme, a changed me
     // The bundle carries the keep seat beside its roster: the staged root's route opens it at the import, and no file crosses.
     const imported = fresh.lares(["import", bundle, "--apply", "--json"]);
     assert.equal(JSON.parse(imported.stdout.trim().split("\n").pop()).data?.applied, true, `import: ${imported.stdout}\n${imported.stderr}`);
-    fresh.must(["wiki", "pin", "notes", "--rotate"]);
-    fresh.must(["wiki", "pin", "quiet", "--rotate"]);
+    fresh.must(["wiki", "keep", "notes"]);
+    fresh.must(["wiki", "keep", "quiet"]);
 
     // ── PAR over the real read doors ────────────────────────────────────────────────────────────────────────────
     const par = witness(snapshot, fresh);

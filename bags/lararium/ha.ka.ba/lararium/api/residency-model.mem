@@ -229,7 +229,7 @@ Six failure modes recur across OverlayFS, Docker, Nix, TW5, Ink & Switch CRDT re
 | 2 | ''Schema drift across multi-bag residency'' | Kleppmann EuroSys 2021 | Cambria-style read-time lenses, not write-time migration |
 | 3 | ''Kāpae resurrection'' | OverlayFS / moby#783 | First-class `tombstone` op distinct from "absent" (the toggleable shadow-vs-fall-through cut: [[kapae|lar:///ha.ka.ba/lares/api/pono/kapae]]) |
 | 4 | ''Shadow-override confusion'' | TW5 #570, #9139 | Surface `$origin-bag` as a tiddler field on every read |
-| 5 | ''Recipe-drift poisoning'' | Nix overlays / OCI layers | Recipe carries `bagPins` — slot → Automerge heads (DXOS-style); a `wiki diff` (not yet a door) would show what would change if pins bumped |
+| 5 | ''Recipe-drift poisoning'' | Nix overlays / OCI layers | The floor snapshots by CID and the release chain orders floors, which carry this defense; a recipe holds no per-bag heads pin |
 | 6 | ''Concurrent commits into same lower bag'' | Upwelling (explicitly unsolved) | Operator-visible commit queue per bag; surface the race rather than hide it |
 
 <<~/ahu>>
@@ -301,6 +301,6 @@ rhymes with this model's thermal residency yet stays distinct (retrieval grain, 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;wcH5Ral5qo2ZliviJb2yn0O5SS0fdp5tYbWIr-gRvpI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;uQVebDEBlbAA69mWTW1yxPeHSCQVKrnZysy-B25Szzw`>>
 
 <<^ code=`&#x0004;` to=`?`>>
