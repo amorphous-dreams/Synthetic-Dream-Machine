@@ -62,7 +62,7 @@ import type { LarDoc } from "./base-doc.js";
 import { genesisFloorCidOf } from "./floor-pin.js";
 import { floorSkinCids } from "./floor-offering.js";
 import {
-  floorShadowLine, floorShadowReadingLine, foldFloorShadowTally, readFloorShadow, readFloorShadowTally,
+  floorShadowExplained, floorShadowExplainedLine, floorShadowLine, floorShadowReadingLine, foldFloorShadowTally, readFloorShadow, readFloorShadowTally,
   type FloorShadowStore, type FloorShadowTally,
 } from "./floor-shadow.js";
 import { isCapabilityProfile, type CapabilityProfile, type Hand } from "./session-contract.js";
@@ -752,7 +752,8 @@ export class VesselIslandPoolCore {
         const tally = foldFloorShadowTally(prior, reading);
         this._shadowTally = tally;
         if (this._floorShadow) await this._floorShadow.save(tally);
-        if (reading.verdict === "mismatch") console.warn(floorShadowReadingLine(reading));
+        if (floorShadowExplained(reading, genesisFloorCidOf(record))) console.info(floorShadowExplainedLine(reading));
+        else if (reading.verdict === "mismatch") console.warn(floorShadowReadingLine(reading));
         else console.info(floorShadowReadingLine(reading));
         console.info(floorShadowLine(tally));
       } catch (err) {

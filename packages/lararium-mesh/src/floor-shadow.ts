@@ -12,7 +12,7 @@
 import type { LarBlobEntry } from "./base-doc.js";
 import { sha256HexBytesSync } from "./crypto.js";
 import { readFloorManifest } from "./floor-manifest.js";
-import { readFloorOffering, verifyFloorOfferingSet } from "./floor-offering.js";
+import { floorMountBlobRows, readFloorOffering, verifyFloorOfferingSet } from "./floor-offering.js";
 import { foundingRecordDigests } from "./genesis-compare.js";
 import { computeEngineCid } from "./genesis-doc.js";
 
@@ -25,7 +25,7 @@ export interface FloorShadowMove { readonly field: FloorShadowField; readonly fl
 
 export type FloorShadowReading =
   | { readonly verdict: "clean"; readonly manifest: string }
-  | { readonly verdict: "mismatch"; readonly manifest: string; readonly moved: readonly FloorShadowMove[] }
+  | { readonly verdict: "mismatch"; readonly manifest: string; readonly moved: readonly FloorShadowMove[]; readonly outgrew?: readonly string[] }
   | { readonly verdict: "unread"; readonly manifest: string | null; readonly why: string };
 
 /** Read the floor `manifestCid` names beside the founding record. Never throws. */
@@ -58,7 +58,14 @@ export async function readFloorShadow(args: {
       .filter((b) => b && typeof b.mimeType === "string")
       .map((b) => ({ id: b.id, version: b.version ?? "", sha256: b.sha256, mimeType: b.mimeType })));
     if (differs !== null) moved.push({ field: "plugins", floor: offeringCid, island: differs });
-    return moved.length === 0 ? { verdict: "clean", manifest } : { verdict: "mismatch", manifest, moved };
+    if (moved.length === 0) return { verdict: "clean", manifest };
+    // The image's plugins outgrew the floor where the island mounts an id the floor's offering never names: the un-reminted seed.
+    const offered = new Set(offering.offering.blobs.map((b) => b.id));
+    const outgrew = floorMountBlobRows(Object.values(args.islandBlobs)
+      .filter((b) => b && typeof b.mimeType === "string")
+      .map((b) => ({ id: b.id, version: b.version ?? "", sha256: b.sha256, mimeType: b.mimeType })))
+      .map((b) => b.id).filter((id) => !offered.has(id));
+    return { verdict: "mismatch", manifest, moved, ...(outgrew.length > 0 ? { outgrew } : {}) };
   } catch (error) {
     return { verdict: "unread", manifest, why: `the read faulted: ${error instanceof Error ? error.message : String(error)}` };
   }
@@ -179,6 +186,22 @@ export function floorShadowLine(tally: FloorShadowTally | null): string {
     return `${on}: first mismatch ${fields}; ${c.mismatchBoots} mismatched, ${c.cleanBoots} clean, ${unread}${aside}`;
   }
   return `${on}: clean across ${c.cleanBoots} boot${c.cleanBoots === 1 ? "" : "s"}, ${unread}${aside}`;
+}
+
+/**
+ * Whether a mismatch stands explained by a floor past the founding record: a pin that names another floor than the one the founding
+ * record names offers other plugins by construction (an adopt or an accept moved it), so only an engine move or a mismatch on the
+ * founding record's own floor reads as drift.
+ */
+export function floorShadowExplained(reading: FloorShadowReading, foundingFloor: string | null): boolean {
+  return reading.verdict === "mismatch" && reading.manifest !== foundingFloor && reading.moved.every((m) => m.field === "plugins");
+}
+
+/** The line for a mismatch a floor past the founding record explains: counted, kept, and never a warning. */
+export function floorShadowExplainedLine(reading: FloorShadowReading): string {
+  if (reading.verdict !== "mismatch") return floorShadowReadingLine(reading);
+  const grown = reading.outgrew && reading.outgrew.length > 0 ? `; the image's plugins outgrew the floor's offering (${reading.outgrew.join(", ")}), so the seed wants a new mint` : "";
+  return `[floor shadow] floor ${short(reading.manifest)} offers plugins past the founding record's, as an adopt or an accept leaves it${grown} — serving stays on the founding record`;
 }
 
 /** One reading's own line, for the boot log. */

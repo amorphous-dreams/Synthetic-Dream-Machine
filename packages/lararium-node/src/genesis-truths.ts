@@ -27,7 +27,7 @@ export interface FoundingRecordTruths {
   /** The founding record's digests, recomputed from its own blobs. */
   readonly record: GenesisDigests;
   /** The seed (offered) on disk: its CID and its reading per ratchet, or null where no seed reads. */
-  readonly seed: { readonly cid: string; readonly ratchets: readonly RatchetDifference[] } | null;
+  readonly seed: { readonly cid: string; readonly ratchets: readonly RatchetDifference[]; readonly onPin?: boolean } | null;
   /** The floor pin and its reading per ratchet, or null where the caller held no pin. */
   readonly floorPin: { readonly manifestCid: string; readonly ratchets: readonly RatchetDifference[] } | null;
   /** Why the read could not fold, where it could not; absent on a clean read. */
@@ -57,7 +57,7 @@ export function readFoundingRecordTruths(input: {
     const read = compareSeedToFoundingRecord({ record: input.record, seed: seed?.body ?? null, floorPin: input.floorPin ?? null });
     return Object.freeze({
       record: read.record,
-      seed: seed && read.seed ? Object.freeze({ cid: seed.cid, ratchets: read.seed }) : null,
+      seed: seed && read.seed ? Object.freeze({ cid: seed.cid, ratchets: read.seed, ...(read.seedOnPin === true ? { onPin: true } : {}) }) : null,
       floorPin: input.floorPin && read.floorPin ? Object.freeze({ manifestCid: input.floorPin.manifestCid, ratchets: read.floorPin }) : null,
     });
   } catch (e) {
@@ -80,6 +80,8 @@ export function foundingRecordLine(truths: FoundingRecordTruths, opts: { readonl
   const record = `founding record: engine ${short(r.engine)} · grammar ${short(r.grammar)} · lararium ${short(r.lararium)} · plugins ${short(r.plugins)} · floor ${short(r.floor)}`;
   const seed = truths.seed === null
     ? "seed (offered): none reads"
+    : ratchetsDiffer(truths.seed.ratchets) && truths.seed.onPin === true && truths.seed.ratchets.every((r) => r.ratchet !== "engine" || r.reading === "same")
+      ? `seed (offered) ${truths.seed.cid}: the pin already carries this seed; serving stands on the founding record because mounts read the floor beside it`
     : ratchetsDiffer(truths.seed.ratchets)
       ? `seed (offered) ${truths.seed.cid}: a newer seed waits: ${ratchetWords(truths.seed.ratchets)} — the founding record keeps serving; lay moves canon, never the founding record`
       : `seed (offered) ${truths.seed.cid}: same on every ratchet`;
