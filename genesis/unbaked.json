@@ -1,15 +1,15 @@
 {
-  "format": "lararium-genesis-unbaked",
-  "unbaked": [
-    {
-      "source": "packages/lararium-tw5/plugins/lares-lararium.json",
-      "sha256": "faa3fa78eea67b934da42e5fa1fac98b1d8cc3be5f29277b2502584202659b71",
-      "why": "The door-gradient lane (the door bands, the oracle's asking and seed door), the family-turn-settle lane (the clock sweeper: a held family turn waits on its settle and answers owed, never on a timer), the in-flight backstop lane (a framed root edited during a held placement places again on settle), and the fold (the filter module lar:///ha.ka.ba/lararium/tw5/filters/meme-fold with the meme-fold and spirit-fold operators, the macro lar:///ha.ka.ba/lararium/tw5/macros/spirit-unfold and the code-meme lar:///ha.ka.ba/lararium/tw5/heleuma/meme-fold), the projection preference (the shipped `$:/config/lares/ProjectionFilter` withholds TW5's status prefix and the story and history lists), and the shore log page (`$:/lares/shore/log`: the vessel's log records, one per distinct event, by counts per kind, then a kind, then raw, with ack, fold to the month's ash, and open) re-pack the house skin. The next labelled GENESIS RE-BAKE carries these bytes and deletes this row; a standing house folds once it adopts that house skin, and until then lares spirit om and hum read unfolded and name the read that shows the absent fold; the floor gate (the floor-queue module, its filter and page, the budget view ordered by verdict); the security-class filter (lar:///ha.ka.ba/lararium/tw5/filters/security-class: the familiar's cold-read list matched over a diff's paths); the home preference (the boot pointer and the open-wiki reactor burn; a lit face reads `$:/config/lares/home/wiki` at light)."
-    },
-    {
-      "source": "packages/lararium-tw5/plugins/lares-memetic-wikitext.json",
-      "sha256": "ba5aa49b2cb914cd380604baa97f52e0ff1003015ed29a5439c54d71afda5478",
-      "why": "The projection preference: the grammar-cache module carries the shipped `$:/config/lares/ProjectionFilter` base text, which now withholds TW5's status prefix and the story and history lists (UI navigation state, as TW5's own SaverFilter keeps them unsaved). The next labelled GENESIS RE-BAKE carries these bytes and deletes this row; until then a founded vessel's in-VM wiki reads the earlier base, and the daemon-side projector reads the new one from dist. The home preference re-packs the grammar skin too (the active-wiki meme burns its boot pointer)."
-    }
-  ]
+ "format": "lararium-genesis-unbaked",
+ "unbaked": [
+  {
+   "source": "packages/lararium-tw5/plugins/lares-lararium.json",
+   "sha256": "faa3fa78eea67b934da42e5fa1fac98b1d8cc3be5f29277b2502584202659b71",
+   "why": "The door-gradient lane (the door bands, the oracle's asking and seed door), the family-turn-settle lane (the clock sweeper: a held family turn waits on its settle and answers owed, never on a timer), the in-flight backstop lane (a framed root edited during a held placement places again on settle), and the fold (the filter module lar:///ha.ka.ba/lararium/tw5/filters/meme-fold with the meme-fold and spirit-fold operators, the macro lar:///ha.ka.ba/lararium/tw5/macros/spirit-unfold and the code-meme lar:///ha.ka.ba/lararium/tw5/heleuma/meme-fold), the projection preference (the shipped `$:/config/lares/ProjectionFilter` withholds TW5's status prefix and the story and history lists), and the shore log page (`$:/lares/shore/log`: the vessel's log records, one per distinct event, by counts per kind, then a kind, then raw, with ack, fold to the month's ash, and open) re-pack the house skin. The next labelled GENESIS RE-BAKE carries these bytes and deletes this row; a standing house folds once it adopts that house skin, and until then lares spirit om and hum read unfolded and name the read that shows the absent fold; the floor gate (the floor-queue module, its filter and page, the budget view ordered by verdict); the security-class filter (lar:///ha.ka.ba/lararium/tw5/filters/security-class: the familiar's cold-read list matched over a diff's paths); the home preference (the boot pointer and the open-wiki reactor burn; a lit face reads `$:/config/lares/home/wiki` at light)."
+  },
+  {
+   "source": "packages/lararium-tw5/plugins/lares-memetic-wikitext.json",
+   "sha256": "972060dc30ad95ce4947fc6b773ebb2efb05b1266126e4968609ef65bdaf082a",
+   "why": "The projection preference: the grammar-cache module carries the shipped `$:/config/lares/ProjectionFilter` base text, which now withholds TW5's status prefix and the story and history lists (UI navigation state, as TW5's own SaverFilter keeps them unsaved). The next labelled GENESIS RE-BAKE carries these bytes and deletes this row; until then a founded vessel's in-VM wiki reads the earlier base, and the daemon-side projector reads the new one from dist. The home preference re-packs the grammar skin too (the active-wiki meme burns its boot pointer). The spirit-swarm relink (the seed slot renamed from worker-swarm, the lar-pono-uri of sigil-node re-pointed) rides the same wait."
+  }
+ ]
 }
