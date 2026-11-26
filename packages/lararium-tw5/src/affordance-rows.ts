@@ -33,7 +33,7 @@ export const AFFORD_DEPTHS = ["line", "slot", "whole"] as const;
 export type AffordDepth = (typeof AFFORD_DEPTHS)[number];
 
 /** The closed slot set, in loop order (observe · orient · decide · act · hoʻoko), so a paged whole-read stops at a phase edge. */
-export const AFFORD_SLOTS = ["#/head", "#/shows", "#/takes", "#/gate", "#/refuses", "#/answers", "#/skins", "#/edges"] as const;
+export const AFFORD_SLOTS = ["#/head", "#/shows", "#/takes", "#/gate", "#/refuses", "#/answers", "#/loop", "#/skins", "#/edges"] as const;
 export type AffordSlot = (typeof AFFORD_SLOTS)[number];
 
 /** One `has` row: its entity, its name, its key/value params, its bare tokens, and the `~` line. */

@@ -116,6 +116,13 @@ export async function bakeAffordancePack(texts: readonly string[]): Promise<Affo
   const routes: Record<string, Record<string, string>> = Object.fromEntries(AFFORD_SURFACES.map((s) => [s, {}]));
   for (const title of tagged) {
     const address = addressOfTitle(title)!;
+    // ONE CLOSED SLOT SET: a carrier slot the set never names would bake silently unrendered, so it refuses the bake by name.
+    for (const child of engine.wiki.filterTiddlers(`[prefix[${title}#/]]`)) {
+      const slot = `#/${child.slice(title.length + 2).split("/")[0]}`;
+      if (!(AFFORD_SLOTS as readonly string[]).includes(slot)) {
+        throw new Error(`affordance-slot-unknown: ${title} holds ${slot}, outside the closed slot set (${AFFORD_SLOTS.join(" · ")}); rename the slot or name it in lar:///ha.ka.ba/lares/api/pono/affordance and AFFORD_SLOTS together`);
+      }
+    }
     const role = String((engine.wiki.getTiddler(title) as { fields?: Record<string, unknown> } | undefined)?.fields?.["role"] ?? "");
     const renders: Record<string, Record<string, readonly string[]>> = {};
     for (const surface of AFFORD_SURFACES) {
