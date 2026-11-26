@@ -86,3 +86,33 @@ def test_a_house_refusal_crosses_the_seat_in_its_own_words(daemon):
     daemon.error = {"status": "error", "error": "oracle-cast-untimed: name `at`"}
     with pytest.raises(uds.LaresVerbError):
         _tool()(recipe="default")
+
+
+def test_the_uncertainty_and_the_pointers_ride_the_wire_to_fill_the_first_slots(daemon):
+    # The cast lands as an OODA-HA meme: `observe` fills #/observe and `uncertain` fills #/orient beside the asking.
+    daemon.output = {"band": "answered", "slots": []}
+    _tool()(recipe="default", asking="which lane first?", uncertain="two leans, neither grounded",
+            observe="lar:///ha.ka.ba/kahua/memory/plan/x  spirit/lane")
+    args = daemon.wire()["args"]
+    assert args["uncertain"] == "two leans, neither grounded"
+    assert args["observe"] == ["lar:///ha.ka.ba/kahua/memory/plan/x", "spirit/lane"]
+    _tool()(recipe="default", asking="which lane first?", observe=["a", " ", "b"])
+    assert daemon.wire()["args"]["observe"] == ["a", "b"]
+
+
+def test_pointers_that_read_wrong_refuse_at_the_seat_and_blank_words_ride_as_none(daemon):
+    with pytest.raises(SeatArgumentRefused):
+        _tool()(recipe="default", asking="q", observe=[1, 2])
+    daemon.output = {"band": "answered"}
+    _tool()(recipe="default", asking="q", uncertain="  ", observe=[])
+    args = daemon.wire()["args"]
+    assert "uncertain" not in args and "observe" not in args
+
+
+def test_one_door_no_unfold_and_no_collapse(daemon):
+    # ONE door: the cast takes the uncertainty itself; no unfold axis and no second skin ride this tool.
+    tool = {t.name: t for t in asyncio.run(_mcp().list_tools())}["oracle_cast"]
+    props = set((tool.inputSchema or {}).get("properties", {}))
+    assert {"uncertain", "observe"} <= props
+    assert "unfold" not in props
+    assert "collapse" not in tool.description and "unfold" not in tool.description

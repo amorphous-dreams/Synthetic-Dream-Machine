@@ -1549,7 +1549,8 @@ def build_mcp(coordinator: LaresCoordinator):
 
     @mcp.tool(annotations=_annotations("oracle_cast"))
     def oracle_cast(recipe: "str | None" = None, bag: "str | None" = None, coins: "list | None" = None,
-                    caster: "str | None" = None, asking: "str | None" = None) -> dict:
+                    caster: "str | None" = None, asking: "str | None" = None, uncertain: "str | None" = None,
+                    observe: "list | str | None" = None) -> dict:
         # THE WORDS LIVE IN THE CARRIER (lar:///oracle.cast.throws): `_dress_from_pack` hands this tool its description and
         # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
         import datetime
@@ -1562,6 +1563,15 @@ def build_mcp(coordinator: LaresCoordinator):
         args["caster"] = caster.strip() if isinstance(caster, str) and caster.strip() else "agent"
         if isinstance(asking, str) and asking.strip():
             args["asking"] = asking.strip()
+        if isinstance(uncertain, str) and uncertain.strip():
+            args["uncertain"] = uncertain.strip()
+        if observe is not None:
+            pointers = observe.split() if isinstance(observe, str) else observe
+            if not isinstance(pointers, list) or not all(isinstance(x, str) for x in pointers):
+                raise SeatArgumentRefused("oracle_cast: `observe` names context pointers, a list of strings or one line")
+            pointers = [x.strip() for x in pointers if x.strip()]
+            if pointers:
+                args["observe"] = pointers
         now = datetime.datetime.now(datetime.timezone.utc)
         args["at"] = now.isoformat(timespec="milliseconds").replace("+00:00", "Z")
         return _meme_wire("oracle-cast", args)

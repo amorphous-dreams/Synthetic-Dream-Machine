@@ -1,15 +1,18 @@
 /**
- * oracle-cast-verb — the `oracle-cast` verb every vessel answers: a cast stands as an ACT that writes its result as one
- * tiddler under `casts/`, through the tiddler door's own put (its gates, its working layer), and answers the cast with
- * the readings the wiki holds for it. The coins draw through the platform's entropy door, or the operator types six.
- * The caller names the time; the verb reads no clock.
+ * oracle-cast-verb — the `oracle-cast` verb every vessel answers: a cast stands as an ACT that lands once as an OODA-HA meme
+ * under `casts/`, through the meme door's own gate, its slots read from canon (the carrier's `#/loop` calls
+ * api/pono/oracle-loop#/loop; the rig stands both slots from the canon files themselves), and answers the cast with the
+ * readings the wiki holds for it. The coins draw through the platform's entropy door, or a person types six. The caller
+ * names the time; the verb reads no clock.
  */
+import { readFileSync } from "node:fs";
 import { describe, test, expect } from "vitest";
 import { CompositeStore } from "@lararium/mesh/composite-store";
 import { bagUri } from "@lararium/mesh/lar-uris";
 import { isVerbRefusal } from "@lararium/mesh/verb-refusal";
 import { type Verb } from "@lararium/mesh/verb-tiddler";
 import { ORACLE_THROW_STANDS, askingCastTitle, askingId, readingTitle } from "@lararium/mesh/oracle-cast";
+import { LOOP_SLOT, ORACLE_AFFORDANCE, ORACLE_CARRIER, kaheaTarget, loopSlots, parseHasRows } from "@lararium/mesh/oracle-loop";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { bookedAsker, makeOracleCastReactor } from "../src/oracle-cast-verb.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
@@ -18,6 +21,21 @@ import { bootTestWiki, skipNote, wikiSkip } from "./test-wiki.js";
 const DAEMON = bagUri("daemon");
 const WORKING_POINTER = "lar:///ha.ka.ba/lararium/config/current-wiki-bag";
 const AT = "2026-11-20T23:15:02.123Z";
+/** Every cast ROOT standing (a cast meme's slot records carry `#/` in their titles and stay out). */
+const CAST_ROOTS = "[prefix[lar:///ha.ka.ba/lares/oracle/casts/]!regexp[#/]]";
+
+/** One ahu slot of a canon carrier, read off the checkout's own file: the rig stands canon's words, never a copy. */
+function canonSlot(rel: string, slot: string): string {
+  const text = readFileSync(new URL(`../../../bags/lares/ha.ka.ba/lares/${rel}`, import.meta.url), "utf8");
+  const open = text.indexOf(`<<~ ahu slot=\`${slot}\`>>`);
+  if (open < 0) throw new Error(`canon ${rel} carries no ${slot}`);
+  const body = text.indexOf("\n", open) + 1;
+  return text.slice(body, text.indexOf("<<~/ahu>>", body)).trim();
+}
+const CARRIER_LOOP = canonSlot("afford/oracle.cast.throws.mem", LOOP_SLOT);
+const LOOP_CALL = kaheaTarget(CARRIER_LOOP)!;
+const LOOP_ROWS = canonSlot("api/pono/oracle-loop.mem", LOOP_SLOT);
+const SLOT_NAMES = loopSlots(parseHasRows(LOOP_ROWS)).map((s) => s.name);
 
 const ctxOf = (composite: CompositeStore): VerbContext => ({
   daemon: composite,
@@ -26,9 +44,16 @@ const ctxOf = (composite: CompositeStore): VerbContext => ({
 } as VerbContext);
 
 describe.skipIf(wikiSkip)(`oracle-cast — a cast writes its result as a tiddler${skipNote}`, () => {
-  async function rig() {
+  async function rig(opts: { canon?: boolean } = {}) {
     const doa15 = readingTitle("doa", 15);
+    const loop = opts.canon === false ? [] : [
+      { title: ORACLE_CARRIER, text: "", "$origin-bag": DAEMON },
+      { title: `${ORACLE_CARRIER}${LOOP_SLOT}`, text: CARRIER_LOOP, "$origin-bag": DAEMON },
+      { title: LOOP_CALL.uri, text: "", "$origin-bag": DAEMON },
+      { title: `${LOOP_CALL.uri}${LOOP_CALL.slot ?? LOOP_SLOT}`, text: LOOP_ROWS, "$origin-bag": DAEMON },
+    ];
     const engine = await bootTestWiki({ tiddlers: [
+      ...loop,
       { title: WORKING_POINTER, text: DAEMON },
       { title: doa15, caption: "15. Turn Me On Dead Man", source: "DOA.html", license: "Kopyleft 2022", attribution: "DOA", "$origin-bag": DAEMON },
       { title: `${doa15}#/reading`, text: "! 15\n\nA reading.", "$origin-bag": DAEMON },
@@ -46,8 +71,9 @@ describe.skipIf(wikiSkip)(`oracle-cast — a cast writes its result as a tiddler
     const fields = r.engine.wiki.getTiddler(String(out["title"]))!.fields as Record<string, unknown>;
     expect(fields).toMatchObject({
       method: "three-coins", entropy: "operator:three-coins", lines: "8 8 9 6 8 8", changing: "3 4",
-      primary: "15", relating: "16", caster: "operator", "cast-at": AT, tags: ["oracle/cast"],
+      primary: "15", relating: "16", caster: "operator", "cast-at": AT,
     });
+    expect(fields["tags"]).toEqual(["oracle/cast", ORACLE_AFFORDANCE]);
     expect(String(fields["text"])).toContain(ORACLE_THROW_STANDS);
     expect(out["note"]).toBe(ORACLE_THROW_STANDS);
   }, 60_000);
@@ -81,7 +107,7 @@ describe.skipIf(wikiSkip)(`oracle-cast — a cast writes its result as a tiddler
     expect(again).toMatchObject({ band: "answered", replayed: true, created: false, title: first["title"], intent: first["intent"] });
     expect((again["cast"] as Record<string, unknown>)["lines"]).toEqual((first["cast"] as Record<string, unknown>)["lines"]);
     expect((again["cast"] as Record<string, unknown>)["at"]).toBe(AT);
-    expect(r.engine.wiki.filterTiddlers("[prefix[lar:///ha.ka.ba/lares/oracle/casts/]]")).toEqual([first["title"]]);
+    expect(r.engine.wiki.filterTiddlers(CAST_ROOTS)).toEqual([first["title"]]);
   }, 60_000);
 
   test("another booked asker, other words, or a fresh nonce stands as another asking and throws its own cast", async () => {
@@ -181,5 +207,51 @@ describe.skipIf(wikiSkip)(`oracle-cast — a cast writes its result as a tiddler
     expect(await why({ recipe: "default", caster: "operator" })).toBe("oracle-cast-untimed");
     expect(await why({ recipe: "default", caster: "operator", at: AT, coins: "7,7,7" })).toBe("oracle-cast-coins");
     expect(await why({ recipe: "default", caster: "operator", at: AT, coins: [7, 7, 7, 7, 7, 5] })).toBe("oracle-cast-coins");
+  }, 60_000);
+
+  test("RED: a seat's typed coins answer asks: a seat never picks the figure, and nothing moves", async () => {
+    const r = await rig();
+    const seat = { ...r.ctx, asker: "seat" } as VerbContext;
+    const out = await r.cast({ recipe: "default", caster: "agent", asking: "which road first?", coins: [9, 9, 9, 9, 9, 9], at: AT }, seat);
+    expect(out).toMatchObject({ band: "asks", decision: "asks" });
+    expect(String((out["asks"] as Record<string, unknown>)["answer"])).toContain("--coins");
+    expect(r.engine.wiki.filterTiddlers("[prefix[lar:///ha.ka.ba/lares/oracle/casts/]]")).toEqual([]);
+  }, 60_000);
+
+  test("RED: the cast lands as an OODA-HA meme whose slots read from canon, the ask filling the first and the seat owing the rest", async () => {
+    const r = await rig();
+    const out = await r.cast({
+      recipe: "default", caster: "operator", coins: "889688", asking: "which lane first?", at: AT,
+      uncertain: "two leans, neither grounded", observe: ["lar:///ha.ka.ba/kahua/memory/plan/x", "spirit/lane"],
+    }, r.ctx);
+    expect(out).toMatchObject({ band: "answered", created: true, replayed: false, uncertain: "two leans, neither grounded" });
+    const title = String(out["title"]);
+    const slots = out["slots"] as Array<{ slot: string; owed: boolean }>;
+    expect(slots.map((s) => s.slot)).toEqual(SLOT_NAMES);
+    expect(slots.map((s) => s.owed)).toEqual([false, false, true, true, true]);
+    const slotText = (name: string): string => String(r.engine.wiki.getTiddler(`${title}${name}`)?.fields["text"] ?? "");
+    expect(slotText(SLOT_NAMES[0]!)).toContain("lar:///ha.ka.ba/kahua/memory/plan/x");
+    expect(slotText(SLOT_NAMES[1]!)).toContain("two leans, neither grounded");
+    expect(slotText(SLOT_NAMES[2]!)).toContain("A reading.");
+    expect(slotText(SLOT_NAMES[2]!)).toContain("Kopyleft 2022");
+    expect(slotText(SLOT_NAMES[3]!)).toContain("(owed:");
+    expect(String((out["next"] as Record<string, unknown>)["append"])).toContain("--append");
+  }, 60_000);
+
+  test("RED: a replay names the uncertainty the record kept, and the replay's own words never rewrite it", async () => {
+    const r = await rig();
+    const first = await r.cast({ recipe: "default", caster: "operator", asking: "which lane first?", uncertain: "the first words", observe: "a b", at: AT }, r.ctx);
+    const again = await r.cast({ recipe: "default", caster: "operator", asking: "which lane first?", uncertain: "other words", at: AT }, r.ctx);
+    expect(again).toMatchObject({ replayed: true, title: first["title"], uncertain: "the first words", observe: ["a", "b"] });
+    expect(String(r.engine.wiki.getTiddler(`${String(first["title"])}${SLOT_NAMES[1]}`)?.fields["text"])).not.toContain("other words");
+  }, 60_000);
+
+  test("RED: a wiki that answers no loop rows from canon refuses before any coin draws, and nothing moves", async () => {
+    const r = await rig({ canon: false });
+    let reason = "ran";
+    try { await r.cast({ recipe: "default", caster: "operator", asking: "q", at: AT }, r.ctx); }
+    catch (e) { reason = isVerbRefusal(e) ? e.reason : String(e); }
+    expect(reason).toBe("oracle-loop-unread");
+    expect(r.engine.wiki.filterTiddlers("[prefix[lar:///ha.ka.ba/lares/oracle/casts/]]")).toEqual([]);
   }, 60_000);
 });

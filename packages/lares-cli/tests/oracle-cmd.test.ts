@@ -56,7 +56,7 @@ describe("lares oracle cast", () => {
   test("RED: the verb stands in the command table, rides the vessel, and its help names the oracle's limit", () => {
     const row = COMMANDS.find((c) => c.name === "oracle");
     expect(row).toBeDefined();
-    expect(row?.accepts).toEqual(["asking", "bag", "caster", "coins", "face", "fresh", "realm", "recipe", "seed"]);
+    expect(row?.accepts).toEqual(["asking", "bag", "caster", "coins", "face", "fresh", "observe", "realm", "recipe", "seed", "uncertain"]);
     expect(commandScope("oracle")).toBe("vessel");
     expect(row?.summary).toContain(ORACLE_THROW_STANDS);
     expect(helpLines("oracle").join("\n")).toContain(ORACLE_THROW_STANDS);
@@ -74,6 +74,33 @@ describe("lares oracle cast", () => {
   test("--asking names the asking and mints no nonce, so the same words answer the same throw", () => {
     expect(oraclePlan(argv(["cast"], { recipe: "default", asking: "which road?" }), AT, MINT))
       .toEqual({ verb: "oracle-cast", args: { recipe: "default", at: AT, caster: "operator", asking: "which road?" } });
+  });
+
+  test("RED: --uncertain and --observe ride the plan to fill the cast meme's first slots; one door, no collapse, no unfold", async () => {
+    expect(oraclePlan(argv(["cast"], { recipe: "default", asking: "which lane?", uncertain: "two leans", observe: "lar:///a/b  spirit/x" }), AT, MINT).args)
+      .toEqual({ recipe: "default", at: AT, caster: "operator", asking: "which lane?", uncertain: "two leans", observe: ["lar:///a/b", "spirit/x"] });
+    const help = helpLines("oracle").join("\n");
+    expect(help).toContain("--uncertain");
+    expect(help).toContain("--observe");
+    expect(help).not.toMatch(/collapse|--unfold/);
+    const r = await run(argv(["collapse"], { recipe: "default", uncertain: "u", asking: "q" }));
+    expect(r.exit).toBe(2);
+    expect(h.calls).toEqual([]);
+  });
+
+  test("an answered cast prints each slot the seat owes and the append line that fills it; a replay names the uncertainty it kept", async () => {
+    const cast = castFromCoins([8, 8, 9, 6, 8, 8], { caster: "operator", at: AT });
+    h.reply = {
+      band: "answered", replayed: true, decision: "exists", created: false, title: "t", cast: castRecord(cast), text: castText(cast), readings: [],
+      uncertain: "the first words", slots: [{ slot: "#/decide", phase: "◇", writer: "house-then-seat", owed: true }],
+      next: { read: "lares tiddler get t --recipe default --meme", append: "lares tiddler put t --recipe default --meme --slot '<the slot you owe>' --append '<your words>'" },
+      note: ORACLE_THROW_STANDS,
+    };
+    const r = await run(argv(["cast"], { recipe: "default", asking: "which road?" }, { json: false }));
+    expect(r.exit).toBe(0);
+    expect(r.out).toContain("kept: the uncertainty of the first throw: the first words");
+    expect(r.out).toContain("owed: ◇ #/decide");
+    expect(r.out).toContain("--append");
   });
 
   test("--fresh mints a nonce for the same words; --seed rides the person's words; the two never ride together", async () => {
