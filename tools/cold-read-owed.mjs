@@ -48,6 +48,10 @@
  *   cold-read: owed|none · merge <sha> · head <sha> · base <sha> · list <sha256> · paths <n> · record-hash <sha256>
  *   cold-read: beyond the read: <paths>           (only where the merge owes a path the read never named: a hand's resolution)
  * Its record hash covers the merge sha in the head's place.
+ * What each binding proves: the message's `Cold-Read:` hash proves CONSISTENCY alone (the hash the message quotes matches the
+ * read recomputed over the merge's own two parents, so the lane never moved between the read and the merge); anyone can
+ * recompute it, so it never proves a judge read happened. The `<head-sha>` form binds the merge to the sha the familiar's
+ * own read printed, and that read, with the cold Opus read filed under its hash, carries the witness that a judge read ran.
  *
  * ANY failure to read (no lane ref, a git refusal, a bench off the base, a base holding no judge, no list, no matcher, a
  * malformed list, a matcher that will not run or answers without the sentinel, a conflict, a merge of another shape) prints
@@ -212,7 +216,9 @@ export function checkMerge({ root = ROOT, merge, head, base, self = HERE, git = 
     if (pin.base !== accepted) throw new Error(`merge ${m}'s first parent (${pin.base.slice(0, 9)}) differs from the base (${accepted.slice(0, 9)}): the landing merges INTO develop, from the landing bench, before the push; redo the merge there, or name its base with --base`);
     if (expected !== undefined && pin.head !== expected) throw new Error(`merge ${m}'s second parent (${pin.head.slice(0, 9)}) differs from the head the read pinned (${expected.slice(0, 9)}): the lane moved after the read; undo the merge (git reset --hard ${pin.base.slice(0, 9)}), read the new head, and land its pinned sha`);
     // The read, recomputed over the merge's own parents: its judge check, list and matcher serve the re-judging too.
-    const pre = { head: pin.head, base: pin.base, listSha: "", landable: false };
+    // `offDevelop: false` stands named: the first parent already matched the accepted base above, and `readPinned` sets
+    // `landable` from it once the judge stands, which the catch below reads as "the judge stood, the merge-tree refused".
+    const pre = { head: pin.head, base: pin.base, listSha: "", landable: false, offDevelop: false };
     let prePaths, preUnread = false;
     try { prePaths = readPinned(pre, { git, self, match }); } catch (e) { if (!pre.landable) throw e; prePaths = [unreadWord(e)]; preUnread = true; }
     pin.listSha = pre.listSha;
