@@ -21,7 +21,7 @@ import { execFileSync, spawn, type ChildProcess } from "node:child_process";
 import { mkdtempSync, rmSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { procHolderPids, socketHolderPids } from "../src/local-connector.js";
+import { armAskBudget, askBudgetMs, ASK_BUDGET_EXIT, procHolderPids, socketHolderPids } from "../src/local-connector.js";
 
 /** A standalone script that binds a staging name, hard-links it onto `process.argv[2]`, unlinks the
  *  staging name, prints "ready", then sleeps — the EXACT shape `owned-store.ts`'s `bindClaim`
@@ -110,5 +110,41 @@ describe("socketHolderPids — names a listener the rendezvous hard link only PO
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
+  });
+});
+
+describe("armAskBudget: a caller's declared budget ends this process's own wait", () => {
+  const settle = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
+
+  it("a budget that runs out leaves by the outcome-unknown code and names the way on", async () => {
+    const left: number[] = [];
+    const said: string[] = [];
+    const disarm = armAskBudget(40, { sinceStartMs: () => 0, leave: (code) => { left.push(code); }, say: (line) => { said.push(line); } });
+    expect(disarm).not.toBeNull();
+    await settle(150);
+    expect(left).toEqual([ASK_BUDGET_EXIT]);
+    expect(said.join("\n")).toMatch(/budget \(--ask-budget-ms=40\) ran out/);
+    expect(said.join("\n")).toMatch(/lares vessel request/);
+  });
+
+  it("the budget counts from the process's own start: one already spent leaves at the next turn", async () => {
+    const left: number[] = [];
+    armAskBudget(5000, { sinceStartMs: () => 9_000, leave: (code) => { left.push(code); }, say: () => {} });
+    await settle(50);
+    expect(left).toEqual([ASK_BUDGET_EXIT]);
+  });
+
+  it("CONTROL: a verb that answers first disarms it, and nothing leaves", async () => {
+    const left: number[] = [];
+    const disarm = armAskBudget(40, { sinceStartMs: () => 0, leave: (code) => { left.push(code); }, say: () => {} });
+    disarm?.();
+    await settle(150);
+    expect(left).toEqual([]);
+  });
+
+  it("CONTROL: no budget declared arms nothing; a value that reads as no positive whole number declares none", () => {
+    expect(armAskBudget(null)).toBeNull();
+    for (const raw of [undefined, "", "0", "-5", "3.5", "soon", "1e3", " 40"]) expect(askBudgetMs(raw)).toBeNull();
+    expect(askBudgetMs("3500")).toBe(3500);
   });
 });

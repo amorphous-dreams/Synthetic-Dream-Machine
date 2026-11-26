@@ -27,6 +27,8 @@ import { stdout }         from "node:process";
 import { parseArgs, ArgsError, type ParsedArgs } from "../parse-args.js";
 import { CustodyLocked, CustodyRecordUnavailable, SealedActRefused } from "@lararium/node";
 import { bridge, commandScope, shimHelpLines, HOUSE_ABSENT_EXIT } from "../host-bridge.js";
+import { armAskBudget, ASK_BUDGET_FLAG } from "../local-connector.js";
+import { standingExit, takeEntryAsks } from "../standing-report.js";
 import { seatOfflineCustody, OfflineCustodyRefused } from "../offline-custody.js";
 import { seatNewFaceRoute } from "../face-route-prompt.js";
 import { cmdHerm }                    from "../commands/herm.js";
@@ -595,15 +597,26 @@ async function drainStdout(): Promise<void> {
   });
 }
 
+/**
+ * TWO ASKS RIDE THE ARGV INTO THIS ENTRY, and the entry takes both off before any verb reads it (`takeEntryAsks`), so
+ * no verb's parser meets them and no child a verb spawns inherits them. A caller's declared budget (`--ask-budget-ms=<N>`)
+ * bounds this process's own wait (`armAskBudget`: the verb's answer disarms it, and a budget that runs out first leaves at
+ * once, since nothing answered and so nothing waits to drain). The host shim's ask (`--standing-report`) rides the exit:
+ * a verb that succeeded names the standing verdict in its code (`standingExit`), so one process serves one call.
+ */
 export function runCli(): void {
-  const argv = process.argv.slice(2);
-  bridge(argv, COMMAND_NAMES).then((forwarded) => forwarded ?? dispatch(argv)).then(
+  const { argv, standing: asked, budgetMs } = takeEntryAsks(process.argv.slice(2));
+  const disarm = armAskBudget(budgetMs);
+  // A FORWARDED CALL KEEPS ITS BUDGET (the process that reaches the vessel leaves under it too) and never the standing ask:
+  // the shim alone asks for that, on the exec it runs.
+  bridge(budgetMs === null ? argv : [...argv, `${ASK_BUDGET_FLAG}=${budgetMs}`], COMMAND_NAMES).then((forwarded) => forwarded ?? dispatch(argv)).then(
     async (code) => {
+      disarm?.();
       try { await drainStdout(); }
       catch (err) { console.error(err); process.exitCode = 1; return; }
-      process.exitCode = code;
+      process.exitCode = await standingExit(code, asked);
     },
-    (err)  => { console.error(crashReading(err)); process.exitCode = houseRootUnnamed(err) ? HOUSE_ABSENT_EXIT : 1; },
+    (err)  => { disarm?.(); console.error(crashReading(err)); process.exitCode = houseRootUnnamed(err) ? HOUSE_ABSENT_EXIT : 1; },
   );
 }
 

@@ -73,7 +73,7 @@ import { switchSession } from "@lararium/mesh/session-switch";
 import { ingestWaveRefusal } from "@lararium/mesh/ingest-wave-budget";
 import type { CapabilityProfile, Hand, Session, SessionFace } from "@lararium/mesh/session-contract";
 import type { SwitchIntent, SwitchOutcome } from "@lararium/mesh/session-switch";
-import { answersUntracked, inCallScope, takeCallTouches, takeCallUntracked, type CallTouches } from "@lararium/mesh/call-touches";
+import { answersUntracked, inCallScope, takeCallTouches, takeCallUntracked, READ_VERBS, type CallTouches } from "@lararium/mesh/call-touches";
 import type { SwitchActLog } from "./switch-act-log.js";
 
 /** The band a write door's answer carries where a document its call wrote still waits unsealed (`RestOwed`, sealed-rest). */
@@ -857,6 +857,9 @@ function inputDigestOf(inv: Pick<Invocation, "verb" | "args" | "face" | "effectK
   });
 }
 
+/** A door call slower than this, read to outcome, logs one line naming its two spans (`noteSlowCall`). */
+export const SLOW_DOOR_CALL_MS = 2_000;
+
 export interface UdsChannel { close: () => void; }
 
 /** One composition's seat on the verb socket: the ledger, the outcome reads and the dispatch bound to its daemon. */
@@ -1046,6 +1049,17 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
   const floorVerbs = opts.floorVerbs ?? FLOOR_VERBS;
   const timeoutMs = opts.timeoutMs ?? 30_000;
   const log = opts.onLog ?? (() => { /* quiet */ });
+  /**
+   * A DOOR CALL THAT RAN LONG SAYS WHERE ITS TIME WENT, one line: the span from this seat's read of the line to its admitted
+   * fact (the peer reading, the target, the digest, the ledger's record and flush), and the span on the island until the
+   * outcome landed. Monotonic readings (`performance.now()`), an annotation alone: no reading here admits, refuses or ends
+   * anything, and a call under {@link SLOW_DOOR_CALL_MS} says nothing.
+   */
+  const noteSlowCall = (verb: string, requestId: string, readAt: number, admittedAt: number): void => {
+    const landedAt = performance.now();
+    if (landedAt - readAt < SLOW_DOOR_CALL_MS) return;
+    log(`slow door call "${verb}" (request ${requestId}): ${Math.round(admittedAt - readAt)} ms from the read to the admitted fact, ${Math.round(landedAt - admittedAt)} ms on the island until its outcome landed`);
+  };
 
   // Outcomes and receipt facts rest in the vessel's control document, the control store's one default writable.
   const composite = opts.control;
@@ -1057,7 +1071,12 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
   // receipt-fact tiddler this channel alone writes; a restart reads the SAME fact a prior process
   // wrote, closing H1R (a same-id reuse re-running after restart) and H4 (a cancelled id's
   // abandonment not surviving one).
-  const ledger = new FactLedger(composite, opts.repo, opts.ring ?? RECEIPT_RING_DEFAULT, claim.life, opts.ringBytes ?? RECEIPT_RING_BYTES_DEFAULT, log);
+  // THE LEDGER'S FLOOR NAMES ITS OWN DOCUMENT. Every fact rests in the control document and nowhere else, so each record
+  // flushes that one document. A flush that names none walks every document the Repo holds (each one's heads read and
+  // compared, every save another document still paces forced at once), and a door call records two facts: the walk then
+  // costs each call twice, and grows with the house. A call's own writes rest by their own road (`restOwed`, per document).
+  const ledgerRest: Pick<Repo, "flush"> = { flush: () => opts.repo.flush([controlHandle.documentId]) };
+  const ledger = new FactLedger(composite, ledgerRest, opts.ring ?? RECEIPT_RING_DEFAULT, claim.life, opts.ringBytes ?? RECEIPT_RING_BYTES_DEFAULT, log);
   // THE OWNER'S EPOCH IS THE VESSEL'S LIFE (session-contract): one name for one relation, minted by the store claim.
   const ownerEpoch = claim.life;
   // NO RECEIPT CLAIMS DURABILITY OVER MEMORY: a stand-in control handle (the vessel's key shut) refuses by name, never
@@ -1959,7 +1978,17 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       // that extra poll pass run first. A live caller never half-closes before its own answer, so an
       // end seen here always means abandonment.
       arbitrating += 1;
+      const readAt = performance.now();
       setImmediate(() => setImmediate(() => { void (async () => {
+        // A READ WHOSE CALLER LEFT DROPS FIRST, AND LEAVES NO FACT. A read verb (`READ_VERBS`: it writes no document) under a
+        // caller already gone has nothing to protect: no effect could land twice, so a later line under the same id simply
+        // reads. So the hang-up check leads this tick for a read, ahead of the peer reading, the lent set, the target and the
+        // digest, and the drop writes nothing: a vessel answering slowly pays nothing for each reader whose budget ran out.
+        // Every other verb keeps the durable drop below (`abandonDrop`): an act that could land answers `abandoned` to a retry.
+        if (sessionRequestId === undefined && READ_VERBS.has(inv.verb) && (sock.destroyed || sock.readableEnded)) {
+          log(`dropped a hung-up "${inv.verb}" read (request ${requestId}): its caller's socket ended before this vessel read it, so it never ran and no fact records it; the caller reads again under any id`);
+          return;
+        }
         // THE AI SEAT ACTS INSIDE THE LENT SET, read off the seat kind its request line carries (`seat-hand`): a marked call
         // naming a face outside the set refuses by name before any dispatch; the operator's hand (no seat kind) names any open
         // face. The set reads async, so the check rides this deferred tick, and only where a seat names a face.
@@ -2113,10 +2142,11 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         try { opts.engine?.settled(controlHandle.heads()); } catch { /* heads unread: the admission still landed */ }
         // The work releases when the verb itself settles, never when this caller's wait gives up.
         dispatched = inv.verb;
+        const admittedAt = performance.now();
         const running = runVerb(inv, requestId);
         releaseWhenSettled(running, requestId);
         running.then(
-          (outcome) => { respond(outcome); },
+          (outcome) => { noteSlowCall(inv.verb, requestId, readAt, admittedAt); respond(outcome); },
           (err) => {
             if (err instanceof VesselWaitExpired) return answerUnknown(requestId); // M2: never told as {status:"error"}
             fail(err instanceof Error ? err.message : String(err));

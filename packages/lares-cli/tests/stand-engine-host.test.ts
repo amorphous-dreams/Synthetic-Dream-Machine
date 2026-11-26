@@ -117,3 +117,71 @@ describe("vessel stand and the host-held engine", () => {
     expect(spawn).toHaveBeenCalledOnce();
   });
 });
+
+describe("a verb's own exit carries the standing verdict to the host shim", () => {
+  const ASK = true;
+  const readers = (alive: boolean) => ({ alive: async () => alive, marker: () => "{}", faceOnDisk: () => true });
+
+  it("a verb that succeeded under the shim's ask names a restand verdict by its code, and says the reason", async () => {
+    const { standingExit, STANDING_EXIT } = await import("../src/standing-report.js");
+    const said: string[] = [];
+    expect(await standingExit(0, ASK, readers(true), (line) => { said.push(line); })).toBe(STANDING_EXIT.restand);
+    expect(said).toEqual(["lares: the standing asks for a re-stand: face lit after boot"]);
+  });
+
+  it("an attach verdict names its own code, so a bare 0 never passes for a reading", async () => {
+    verdict = { act: "attach", reason: "steady" };
+    const { standingExit, STANDING_EXIT } = await import("../src/standing-report.js");
+    const said: string[] = [];
+    expect(await standingExit(0, ASK, readers(true), (line) => { said.push(line); })).toBe(STANDING_EXIT.attach);
+    expect(said).toEqual([]);
+  });
+
+  it("the process's own readers read the marker and the face the stand command reads", async () => {
+    const { standingExit, STANDING_EXIT } = await import("../src/standing-report.js");
+    expect(await standingExit(0, ASK, undefined, () => {})).toBe(STANDING_EXIT.restand);
+  });
+
+  it("no vessel answering, or a reading that throws, names no verdict", async () => {
+    const { standingExit, STANDING_EXIT } = await import("../src/standing-report.js");
+    expect(await standingExit(0, ASK, readers(false))).toBe(STANDING_EXIT.unread);
+    expect(await standingExit(0, ASK, { ...readers(true), marker: () => { throw new Error("unreadable"); } })).toBe(STANDING_EXIT.unread);
+  });
+
+  it("the entry takes both asks off the argv, so no verb's parser meets them and no environment carries them to a child", async () => {
+    const { takeEntryAsks, standingExit, STANDING_EXIT } = await import("../src/standing-report.js");
+    const asks = takeEntryAsks(["tiddler", "get", "lar:///x", "--recipe", "default", "--ask-budget-ms=3500", "--standing-report"]);
+    expect(asks).toEqual({ argv: ["tiddler", "get", "lar:///x", "--recipe", "default"], standing: true, budgetMs: 3500 });
+    expect(await standingExit(0, asks.standing, readers(true), () => {})).toBe(STANDING_EXIT.restand);
+    // The budget reads in either spelling, wherever it sits; a value that names no positive whole number declares none.
+    expect(takeEntryAsks(["--ask-budget-ms", "40", "vessel", "read"])).toEqual({ argv: ["vessel", "read"], standing: false, budgetMs: 40 });
+    expect(takeEntryAsks(["vessel", "read", "--ask-budget-ms=soon"])).toEqual({ argv: ["vessel", "read"], standing: false, budgetMs: null });
+    // CONTROL: a call that carries neither keeps its argv whole and answers no standing.
+    const plain = takeEntryAsks(["vessel", "read", "--json"]);
+    expect(plain).toEqual({ argv: ["vessel", "read", "--json"], standing: false, budgetMs: null });
+    expect(await standingExit(0, plain.standing, readers(true))).toBe(0);
+  });
+
+  it("no environment name asks for either: the house adds no env var for a call's own asks", async () => {
+    const { standingExit } = await import("../src/standing-report.js");
+    const held = { report: process.env["LARES_STANDING_REPORT"], budget: process.env["LARES_ASK_BUDGET_MS"] };
+    process.env["LARES_STANDING_REPORT"] = "exit";
+    process.env["LARES_ASK_BUDGET_MS"] = "1";
+    try {
+      const { takeEntryAsks } = await import("../src/standing-report.js");
+      const asks = takeEntryAsks(["vessel", "read"]);
+      expect(asks).toMatchObject({ standing: false, budgetMs: null });
+      expect(await standingExit(0, asks.standing, readers(true))).toBe(0);
+    } finally {
+      if (held.report === undefined) delete process.env["LARES_STANDING_REPORT"]; else process.env["LARES_STANDING_REPORT"] = held.report;
+      if (held.budget === undefined) delete process.env["LARES_ASK_BUDGET_MS"]; else process.env["LARES_ASK_BUDGET_MS"] = held.budget;
+    }
+  });
+
+  it("CONTROL: a verb that failed keeps its own code, and no ask leaves every code as it stands", async () => {
+    const { standingExit } = await import("../src/standing-report.js");
+    const never = { alive: async () => { throw new Error("no reading runs"); }, marker: () => null, faceOnDisk: () => false };
+    expect(await standingExit(7, ASK, never)).toBe(7);
+    expect(await standingExit(0, false, never)).toBe(0);
+  });
+});
