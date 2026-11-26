@@ -7,7 +7,7 @@
  */
 import { describe, expect, test } from "vitest";
 import { registerBagsDurably, type BagDocLedger } from "../src/index.js";
-import { landRecard, recardRegistration } from "../src/boot-daemon-keyhive.js";
+import { landRecard, recardFloorThrew, recardRegistration } from "../src/boot-daemon-keyhive.js";
 import { PrekeySecretAbsent } from "../src/keyhive-provider.js";
 import type { CapabilityProvider } from "../src/capability-provider.js";
 
@@ -95,5 +95,14 @@ describe("a recard's ledger rows wait for its Archive", () => {
     await landRecard(clean, { wrote: [], refusals: [], barred: true }, "h1", 1);
     expect(ledger.puts).toEqual(["lar:///new"]);
     await expect(recardRegistration(async () => { throw new PrekeySecretAbsent("lar:///x"); }, async () => {}, "f".repeat(64))).rejects.toThrow(/still-refuses/);
+  });
+  test("a floor that throws during a recard refuses archive-unrested and names each held row it drops; the ledger stands as it stood", async () => {
+    const ledger = ledgerOf({ "lar:///old": "doc-old" });
+    const held = await recardRegistration(async (hold) => registerBagsDurably({ provider: provider(), bags: ["lar:///ground", "lar:///face"], ledger, hold }), async () => {}, "f".repeat(64));
+    const refusal = recardFloorThrew(held, "h2", new Error("the rest door shut"), 2);
+    expect(refusal.reason).toBe("archive-unrested");
+    expect(refusal.message).toContain("lar:///ground, lar:///face");
+    expect(refusal.message).toContain("the rest door shut");
+    expect(ledger.puts).toEqual([]);
   });
 });
