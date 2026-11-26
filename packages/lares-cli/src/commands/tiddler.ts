@@ -7,8 +7,8 @@
  * `tiddler_get` · `tiddler_put` · `tiddler_delete` hand back, so a script and an AI session read one answer.
  *
  * A tiddler verb acts on ONE record with its fields, whatever its type: a plain note, a data tiddler, a meme's root or
- * one of its slots. The meme door (`lares meme`) stays the door for a FAMILY's text (split, recompose, the block
- * check); this door reads any record and patches fields and tags without touching text. A delete reads the one family
+ * one of its slots. A meme family reads as tiddlers: a text put on a root or a slot lands through the Confluence gate
+ * inside the put (split, recompose, the block check), and a field or tag patch lands beside it. A delete reads the one family
  * law: a plain tiddler leaves; a meme root or slot answers the consequence the delete would land and refuses
  * (`tiddler-delete-in-a-family`) unless the line names the family act (`--family`), which lands it as one change.
  * A delete deletes plainly: the record leaves its layer and no tombstone rises. Only a lower layer makes it a choice: where

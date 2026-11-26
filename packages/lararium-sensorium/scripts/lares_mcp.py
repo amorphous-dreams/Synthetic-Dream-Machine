@@ -165,7 +165,7 @@ MEME_VERBS = ("meme_project",)
 # THE TIDDLER DOOR (wiki-surface-scout #/a-lean, lane 1) — the MCP skin of the daemon's `tiddler-*` and `wiki-*` verbs:
 # every TiddlyWiki act over ONE record with its fields (`tiddler_get` · `tiddler_put` · `tiddler_delete`) or over a wiki's
 # own engine (`wiki_filter` · `wiki_render` · `wiki_status`). Base operations stop wearing `meme_*`: a tiddler verb reads
-# and patches any record, whatever its type, and the meme door above keeps the family's text. Each mirrors
+# and patches any record, whatever its type; a meme family's text lands through the same put, the gate inside it. Each mirrors
 # `lares tiddler get|put|delete` and `lares wiki filter|render|status`, puts the same `{verb, args}` on the wire and
 # hands back the same answer body (`fixtures/tiddler-door-answers.json` welds both skins to one table). THE CONTAINER
 # LAW holds; `recipe="default"` names the worn face's daemon wiki and `recipe=<slug>` any wiki that face reaches (one it
@@ -306,7 +306,7 @@ VERB_SEATS = {
     # The tiddler door — the reads run the wiki's own engine and move nothing; a put patches one record in the working
     # layer against a base (a re-put restores) and a delete lands a kāpae tombstone a re-put restores; all stay on the
     # face's own daemon wiki → HOTL. The vessel's own gates decide reach (the face's cap, the Kahu predicate, the
-    # family fence, and the one wall a seat keeps: its startup action offers); the seat adds none of its own.
+    # Confluence gate on a family's text, and the one wall a seat keeps: its startup action offers); the seat adds none of its own.
     "wiki_filter": (True, False),       # run a TiddlyWiki filter, one bounded page — a read → HOTL
     "tiddler_get": (True, False),       # one record with its fields and its base hash — a read → HOTL
     "wiki_render": (True, False),       # wikify a title or a span to text or html — a read → HOTL
@@ -1802,8 +1802,13 @@ def build_mcp(coordinator: LaresCoordinator):
         `seat-canon-reach` (the seat edits canon through `tiddler_put(meme=True, recipe=...)` and `meme_offer`). Returns {recipe, title, decision, bag, created,
         changed, hash, textHash, position}: `decision` reads `put`, or `noop` where the record already says it.
         A WRITE THAT NEVER LANDED RAISES: `conflict` (a stale `base`; the error names the live hash) and `exists`.
-        THE FENCES, each refused by name: a meme root or slot takes a field or tag patch here, and its text, type or
-        carriage fields refuse `tiddler-put-in-a-family` (use `tiddler_put(meme=True)`); a record carrying a `$:/tags/StartupAction`
+        A MEME FAMILY READS AS TIDDLERS: a root and each slot (`<root>#/<slot>`) takes a field or tag patch AND a text
+        write here. A text write lands through the Confluence gate inside this put (the family re-splits and reseals; the
+        answer adds `canonicalHash`, `landed`, `tombstoned`, and a slot the new text no longer calls leaves); a root text
+        that frames a whole carrier speaks for the family; `base` takes the record's hash or the carrier's canonical hash.
+        THE FENCES, each refused by name: a family's `type` and `$` carriage fields derive from its text
+        (`family-carriage-derives`); a new slot joins through its parent's text (`family-joins-by-text`); a text the gate
+        cannot read as one carrier refuses `family-gate-refused`; a record carrying a `$:/tags/StartupAction`
         tag (or one beneath it) refuses `seat-startup-offer`, since a wiki's startup action runs in the operator's tab
         and rides the operator's own hand (land it untagged, as data); every other shape lands natively, a `$:/` title
         or tag, a module or plugin field and a script type alike; a title that stays home refuses `tiddler-withheld`; a

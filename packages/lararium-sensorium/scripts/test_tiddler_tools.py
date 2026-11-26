@@ -284,7 +284,7 @@ def test_house_refusals_cross_the_seat_in_their_own_words(daemon):
     # put, a malformed filter, a face with no reach, each in the house's words and never as a bare crash line.
     mcp = _mcp()
     for refusal, name, args in (
-        ("tiddler-put-in-a-family: use the meme door. \"lar:///t/x\" stands as a meme root and this put moves `text`", "tiddler_put", {"title": "lar:///t/x", "recipe": "default", "text": "x"}),
+        ("family-carriage-derives: \"lar:///t/x\" stands as a meme root and this put moves `type`", "tiddler_put", {"title": "lar:///t/x", "recipe": "default", "fields": {"type": "text/plain"}}),
         ("filter-malformed: Missing ] in filter expression (in \"[tag[x\")", "wiki_filter", {"filter": "[tag[x", "recipe": "default"}),
         ("cap-denied: read on lar:///ha.ka.ba/wikis/daemon/working required (no-grant)", "wiki_status", {"recipe": "default"}),
         ("wiki-unreached: wiki-filter — no wiki \"elsewhere\" this face reaches", "wiki_filter", {"filter": "[tag[x]]", "recipe": "elsewhere"}),

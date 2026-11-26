@@ -754,6 +754,52 @@ export async function patchSlotCarrier(input: SlotPatchInput, sink: Pick<MemeSin
   return { kind: "carrier", text, canonicalHash };
 }
 
+/** One member record as a writer would leave it: the root, a slot or a carriage part, whole. */
+export interface MemberCarrierInput {
+  /** The family's root address. */
+  readonly uri: string;
+  /** The member's own title: the root, or `<root>#/slot`. */
+  readonly title: string;
+  /** The member's whole record after the write. */
+  readonly fields: TiddlerFields;
+  readonly hash?: (text: string) => string;
+}
+
+export type MemberCarrierReading =
+  /** No carrier stands or would stand at the root (the root rests absent, or holds another type): nothing recomposes. */
+  | { readonly kind: "no-carrier" }
+  /** The family's carrier with the member's record in place; `canonicalHash` names the render it composed over (null: the root founds here). */
+  | { readonly kind: "carrier"; readonly text: string; readonly canonicalHash: string | null };
+
+/**
+ * A MEMBER'S WRITE RECOMPOSES THE FAMILY. A family reads as tiddlers: the root, its slots, their carriage. A writer that moves
+ * one member's record (its text, a field) hands that record here; it takes its place in a copy of the family and the one
+ * recompose (`expandMemeRefs`) frames the whole carrier, minting the block check over the bytes it frames. The caller lands
+ * that text through `placeMeme` under `canonicalHash`, so the member's write passes the Confluence gate, re-splits the family
+ * (a slot the new text no longer calls leaves by the consequence) and reseals, in the family's own turn. A record of the
+ * carrier type at a root address nothing holds yet founds its family the same way.
+ */
+export async function composeMemberCarrier(input: MemberCarrierInput, sink: Pick<MemeSink, "titles" | "read">): Promise<MemberCarrierReading> {
+  const hash = input.hash ?? defaultHash;
+  const { records } = await familySnapshot(input.uri, sink);
+  const reader = (map: ReadonlyMap<string, TiddlerFields>) => (title: string): TiddlerFields | undefined => map.get(title);
+  const root = records.get(input.uri);
+  // A slot or a carriage part recomposes only beneath a root that stands; the root's own record may found the family.
+  if (root === undefined && input.title !== input.uri) return { kind: "no-carrier" };
+  const next = new Map(records);
+  next.set(input.title, input.fields);
+  const text = expandMemeRefs(reader(next), input.uri);
+  if (text === null) return { kind: "no-carrier" };
+  // The base reads as the gate reads the family's present render (`currentRender`): the recompose, or a held record's own bytes.
+  const canonicalHash = root === undefined ? null : hash(expandMemeRefs(reader(records), input.uri) ?? heldText(root));
+  return { kind: "carrier", text, canonicalHash };
+}
+
+/** True where a text carries a carrier's own head mark: it speaks as a whole carrier, never as one record's body. */
+export function framesCarrier(text: string): boolean {
+  return maskedExec(text, carrierMarkPattern("head", "g")) !== null;
+}
+
 /** The read half: the whole meme as text (children recomposed inline) and the canonical hash a
  *  writer hands back as its base. `null` when the sink holds no record under the URI. */
 export async function readMeme(
