@@ -100,6 +100,10 @@ modal-border: #504945
 modal-footer-background: #1d2021
 modal-footer-border: #504945
 modal-header-border: #504945
+alert-background: #3c3836
+alert-border: #d79921
+alert-highlight: #fabd2f
+alert-muted-foreground: #a89984
 notification-background: #3c3836
 notification-border: #d79921
 scrollbar-thumb: #504945
@@ -118,6 +122,6 @@ wikilist-toolbar-foreground: #ebdbb2
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;LncYssivtJSmxV_gYVkoPJSEJVPZNFJ9JDPP66QKIV4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6h8sK7Cow-eWffNKHo1EISf70MfpqpvJ0UG617M3Jfg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

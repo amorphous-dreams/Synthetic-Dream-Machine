@@ -60,6 +60,20 @@ describe("a founded vessel stands its mirror", () => {
     // The shadow root holds TW5's own story river with at least one tiddler frame: the story the surface opened with.
     const frames = await page.evaluate(() => document.querySelector("#mirror")?.shadowRoot?.querySelectorAll(".tc-story-river .tc-tiddler-frame").length ?? 0);
     expect(frames).toBeGreaterThan(0);
+    // The wiki takes the page (plan/full-glass-whole-page, Land A): once the mirror stands it fills the first viewport,
+    // and the page scrolls nowhere else.
+    const viewport = page.viewportSize()!;
+    const stood = await page.locator("#mirror").boundingBox();
+    expect(stood, "the mirror holds a box").not.toBeNull();
+    expect(stood!.y).toBeLessThan(viewport.height);
+    expect(stood!.width).toBeGreaterThanOrEqual(viewport.width * 0.9);
+    expect(stood!.height).toBeGreaterThanOrEqual(viewport.height * 0.9);
+    // The console stays one tap away: the corner toggle opens it (the boot phases show) and closes it back to the wiki.
+    await page.locator(".console-toggle").click();
+    expect(await page.locator("#phases").isVisible()).toBe(true);
+    expect((await page.locator("#mirror").boundingBox())!.width).toBeLessThan(viewport.width * 0.9);
+    await page.locator(".console-toggle").click();
+    expect((await page.locator("#mirror").boundingBox())!.width).toBeGreaterThanOrEqual(viewport.width * 0.9);
     await context.close();
   });
 });
