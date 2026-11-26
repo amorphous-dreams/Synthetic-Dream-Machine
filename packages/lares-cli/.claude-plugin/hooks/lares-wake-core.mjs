@@ -216,16 +216,26 @@ export function docsLines(result) {
   return "Library: tw5-docs (TiddlyWiki docs, read-only) · read a page: tiddler_get(title=\"backlinks Operator\", recipe=\"tw5-docs\") · the operators: wiki_filter(filter=\"[tag[Filter Operators]]\", recipe=\"tw5-docs\")";
 }
 
-/** The observation's line, and whether the vessel itself answered up. Each cause reads by its own name: only the vessel's own answer says "down". */
+/** The read a wake owes when the hearth did not answer inside its budget: the arm takes it by hand, never reading the hearth dark. */
+export const OWED_READ = "lares spirit om <pet>";
+/** The window the one retry rides (the harness's timeout stays the bound above both asks). */
+export const RETRY_MS = 1_500;
+
+/**
+ * The observation's line, whether the vessel answered up, and whether the read stays OWED. Only the vessel's own answer says
+ * "down" (node.up false): a read that timed out, did not start, exited empty or did not parse leaves the hearth unread, so the
+ * line says the answer is owed and names the read to take, never that no vessel stands and never to stand one.
+ */
 export function observation(result) {
-  const unobserved = (why) => `vessel unobserved: ${why}; read it with tools/lares-container.sh vessel stand --observe --json, or ${CURE}`;
-  if (result === BUDGET) return { up: false, line: `vessel observation timed out; ${CURE}` };
+  const owed = (why) => ({ up: false, owed: true, line: `the hearth did not answer the wake in time (${why}); its reads are owed, not dark: take them by hand with \`${OWED_READ}\`, or read the observation with tools/lares-container.sh vessel stand --observe --json` });
+  if (result === BUDGET) return owed(CLOSED);
   const fault = readFault(result, "shim");
-  if (fault) return { up: false, line: unobserved(fault) };
+  if (fault) return owed(fault);
   const frame = parseAnswer(result.stdout);
-  if (frame === null) return { up: false, line: unobserved(`the shim's answer did not parse (exit ${result.code ?? result.signal})`) };
+  if (frame === null) return owed(`the shim's answer did not parse (exit ${result.code ?? result.signal})`);
   const up = frame?.data?.node?.up === true;
-  return { up, library: up ? libraryLine(frame) : null, line: up ? JSON.stringify(frame) : `vessel down (the observation answered node.up ${JSON.stringify(frame?.data?.node?.up ?? null)}); ${CURE}` };
+  if (!up && frame?.data?.node?.up !== false) return owed(`the observation answered node.up ${JSON.stringify(frame?.data?.node?.up ?? null)}`);
+  return { up, owed: false, library: up ? libraryLine(frame) : null, line: up ? JSON.stringify(frame) : `vessel down (the observation answered node.up false); ${CURE}` };
 }
 
 /** A row's line, its description cut where the line would outrun `lineCap` bytes; its address stays whole. */
@@ -615,9 +625,20 @@ export async function wake({ run, budgetMs = WAKE_BUDGET_MS, source: _source = "
   const halvesRead = optional("halves", halvesArgv());
   const docsRead = optional("docs", docsArgv());
   const keepRead = keepWorkspace ? optional("keep", keepArgv(keepWorkspace)) : null;
-  const budget = underBudget(budgetMs);
+  let budget = underBudget(budgetMs);
   const homesRead = budget.settle(reads.homes);
-  const seen = observation(await budget.settle(reads.observe));
+  let seen = observation(await budget.settle(reads.observe));
+  // An owed answer retries once, on the event the first ask's close leaves (it stopped), never a sleep; a retry that answers
+  // gives the other reads a fresh window, since the first closed under them.
+  if (seen.owed) {
+    const retry = run("observe", observeArgv());
+    if (retry) {
+      const retryBudget = underBudget(Math.min(budgetMs, RETRY_MS));
+      const again = observation(await retryBudget.settle(retry));
+      retryBudget.close();
+      if (!again.owed) { seen = again; budget.close(); budget = underBudget(Math.min(budgetMs, RETRY_MS)); }
+    }
+  }
   // The index read started beside the observation; a vessel that answers no "up" stops it, and nothing waits on it.
   if (!seen.up) for (const read of [reads.index, attractorsRead, stateRead, lawRead, lawPinsRead, rosterRead, menuRead, halvesRead, keepRead, docsRead]) { try { read?.kill(); } catch { /* the read already left */ } }
   const attractors = attractorsRead && seen.up ? await budget.settle(attractorsRead) : null;
@@ -658,7 +679,8 @@ export async function wake({ run, budgetMs = WAKE_BUDGET_MS, source: _source = "
       lines.push(`Lares tool menu: unread (${String(cause).replace(/\s+/g, " ")})`);
     }
   }
-  if (!seen.up) lines.push("Attractor stores: unavailable (no vessel answers)");
+  if (seen.owed) lines.push(`Attractor stores: owed (the hearth did not answer in time; read them with \`${OWED_READ}\`)`);
+  else if (!seen.up) lines.push("Attractor stores: unavailable (no vessel answers)");
   else if (attractors !== null) {
     const { fault, answer } = filterAnswer(attractors);
     const titles = answer?.data?.titles;
@@ -669,7 +691,7 @@ export async function wake({ run, budgetMs = WAKE_BUDGET_MS, source: _source = "
   if (state !== null) lines.push(stateLines(state));
   if (law !== null) lines.push(lawLines(law, lawPins));
   if (roster !== null) lines.push(rosterLines(roster));
-  lines.push(seen.up ? indexLines(index) : "memory index skipped: no vessel answers (the line above names the cause)");
+  lines.push(seen.up ? indexLines(index) : seen.owed ? `memory index owed: the hearth did not answer in time (the line above names the read to take)` : "memory index skipped: no vessel answers (the line above names the cause)");
   if (docs !== null) lines.push(docsLines(docs));
   if (checkout && Object.keys(leiAnswers).length > 0) lines.push(...leiLines(checkout, leiAnswers));
   if (keep !== null) { const line = keepLines(keepWorkspace, keep); if (line) lines.push(line); }
