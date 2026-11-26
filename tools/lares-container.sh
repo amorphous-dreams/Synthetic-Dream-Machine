@@ -241,6 +241,21 @@ compose() {
 
 # Whether a vessel stands. A `ps` that fails reads as UNKNOWN, never as "none stands": the offline door opens only
 # on a reading, so a broken engine never routes an act beside a live holder.
+# Does the RUNNING vessel's image carry the CLI that takes `--standing-report` off its argv? The host shim reads the
+# checkout's newest code while the vessel runs whatever image it stood on, so the two islands can skew: an image built
+# before the ask landed refuses the word on every call. The image's own revision label answers by ancestry against the
+# checkout (the commit that taught the CLI the word); an image whose label names an older revision takes the observe
+# path, and a label the checkout cannot read (none, or a fake) keeps the ask. The report-not-ask cure retires this read.
+image_speaks_standing_report() {
+  cid=$(compose ps -q lares 2>/dev/null) || return 0
+  [ -n "$cid" ] || return 0
+  rev=$(docker inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' "$cid" 2>/dev/null | LC_ALL=C tr -cd '0-9a-f') || return 0
+  [ -n "$rev" ] || return 0
+  git -C "$ROOT" cat-file -e "${rev}^{commit}" 2>/dev/null || return 0
+  git -C "$ROOT" cat-file -e "ea919099c^{commit}" 2>/dev/null || return 0
+  git -C "$ROOT" merge-base --is-ancestor ea919099c "$rev" 2>/dev/null
+}
+
 running_vessel() {
   running_id=$(compose ps -q --status running lares) || die "cannot read the vessel's state (docker compose ps failed); nothing ran"
   [ -n "$running_id" ]
@@ -488,7 +503,7 @@ route_cli() {
     # verb's own process names the verdict in its exit code (`standing-report.ts`: 90 attach, 91 restand, 92 no verdict).
     # The ask rides the call itself, as the last word of its argv: the CLI's entry takes it off before the verb reads it.
     standing_ask=""
-    if [ -n "$follow_up" ]; then standing_ask='--standing-report'; fi
+    if [ -n "$follow_up" ] && image_speaks_standing_report; then standing_ask='--standing-report'; fi
     # shellcheck disable=SC2046,SC2086
     if [ -n "$stream_file" ]; then
       exec 4<&3
