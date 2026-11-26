@@ -53,7 +53,7 @@ export interface CapabilityRecord {
    *  The answer is the detach. Absent → the vessel's sealed rest reaches no island. */
   docStore?: ((port: { post(msg: unknown): void; listen(cb: (msg: unknown) => void): () => void }) => () => void) | undefined;
   /** V2: does the vessel's rest hold a document sealed? The daemon island asks before its own store rests a byte of it
-   *  (`islandRestGuard`, `sealed-rest.ts`). Absent → every document reads unsealed. */
+   *  (`islandRestGuard`, `sealed-rest.ts`). Absent → the rest reads unread, and the island rests no byte (`rest-unread`). */
   restsSealed?: ((documentId: string) => Promise<boolean>) | undefined;
 }
 

@@ -127,7 +127,7 @@ describe("R1: a private bag's change rests sealed through the door", () => {
     expect(r.sealedUnder.length).toBeGreaterThan(0);
     expect(restsClear(inner, doc.documentId, SECRET)).toBe(false);
     // THE LIVE WIKI IN MEMORY READS CLEAR (control).
-    expect(doc.doc().note).toBe(SECRET);
+    expect(doc.doc()?.note).toBe(SECRET);
     expect(restsClear(inner, clear.documentId, `${SECRET}-clear`)).toBe(true);
     // No booking outlives its seal.
     await r.rest.store.flush();
@@ -137,7 +137,7 @@ describe("R1: a private bag's change rests sealed through the door", () => {
     const again = standRest(a, inner, { sealed: (id) => id !== control });
     const repo2 = new Repo({ storage: again.rest.store, network: [] });
     const found = await repo2.find<{ note?: string }>(doc.documentId as unknown as AutomergeUrl);
-    expect(found.doc().note).toBe(SECRET);
+    expect(found.doc()?.note).toBe(SECRET);
     await repo2.shutdown();
   });
 });
@@ -222,7 +222,7 @@ describe("R2: a save the Repo makes on its own timer signs under the session tha
     expect(SEALED_DOCUMENT_REFUSALS).toContain("save-unbooked");
     expect(held).toContain(`save-unbooked:${doc.documentId}`);
     expect(restsAny(inner, doc.documentId)).toBe(false);
-    expect(doc.doc().note).toBe(SECRET);
+    expect(doc.doc()?.note).toBe(SECRET);
     expect(rest.store.waiting(doc.documentId)).toBeGreaterThan(0);
     // The next unlock's session books the waiting save and seals it.
     const sealed = await rest.rebook({ id: "s-next", subject: r.own, signer: a.signer });
@@ -234,7 +234,7 @@ describe("R2: a save the Repo makes on its own timer signs under the session tha
     a.restart();
     const again = standRest(a, inner);
     const repo2 = new Repo({ storage: again.rest.store, network: [] });
-    expect((await repo2.find<{ note?: string }>(doc.documentId as unknown as AutomergeUrl)).doc().note).toBe(SECRET);
+    expect((await repo2.find<{ note?: string }>(doc.documentId as unknown as AutomergeUrl)).doc()?.note).toBe(SECRET);
     await repo2.shutdown();
   });
 
@@ -254,7 +254,7 @@ describe("R2: a save the Repo makes on its own timer signs under the session tha
     r.seat(repo);
     // Hydration reads the clear chunk once, for the session's own face, and the first booked save sweeps it.
     const found = await repo.find<{ note?: string; more?: string }>(doc.documentId as unknown as AutomergeUrl);
-    expect(found.doc().note).toBe(SECRET);
+    expect(found.doc()?.note).toBe(SECRET);
     r.rest.wrote(doc.documentId, { id: "s-a", subject: r.own, signer: a.signer });
     found.change((d) => { d.more = "a second word"; });
     await repo.flush();
