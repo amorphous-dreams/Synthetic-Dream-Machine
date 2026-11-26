@@ -31,6 +31,7 @@ import {
   type PronaosFile, type PronaosPreparedProjection,
 } from "../src/pronaos-adapter.js";
 import { hermWaymarkDeclared, type LaresConfig } from "../src/lares-config.js";
+import { FOREIGN_NEXUS, PROBE_METHODS, WITNESS_NEXUS, WRITE_METHODS, probePaths } from "./herm-silence-witness.js";
 
 function fixtureBulb(): BulbArtifact {
   const coreBlob   = utf8Bytes("fake-tw5-core-for-bulb");
@@ -118,6 +119,29 @@ describe("SILENT — the herm hands over its bulb by CID and describes nothing",
       expect(await ask(origin, path, method), `${method} ${path}`).toEqual(door);
     }
   });
+
+  test("a title-shaped ask and a listing ask draw the closed door by every method; a write method draws it on every route", async () => {
+    const { origin, bulb } = await standHerm();
+    const cidOf = (text: string): string => sha256HexBytesSync(utf8Bytes(text));
+    const paths = probePaths({
+      bulbCid: genesisSeedCid(bulb.seedBytes), publicCid: cidOf("a blob no board here names"), withheldCid: cidOf("a blob this herm never rested"),
+      unknownCid: cidOf("a cid this herm never held"), ownNexus: WITNESS_NEXUS, foreignNexus: FOREIGN_NEXUS,
+    });
+    const door = new Map<string, Answer>();
+    for (const method of PROBE_METHODS) door.set(method, await ask(origin, "/nothing-here", method));
+    expect(door.get("GET")!.body).toBe(CLOSED_DOOR.body);
+
+    const guesses = paths.filter(([label]) => label.startsWith("title:") || label.startsWith("list:"));
+    expect(guesses.length).toBeGreaterThanOrEqual(12);
+    for (const [label, path] of guesses) {
+      for (const method of PROBE_METHODS) expect(await ask(origin, path, method), `${method} ${label}`).toEqual(door.get(method));
+    }
+    // The bulb route answers a GET for the CID the traveler brings, and no write method on any route.
+    expect((await ask(origin, `/bulb/${genesisSeedCid(bulb.seedBytes)}.bin`)).status).toBe(200);
+    for (const [label, path] of paths) {
+      for (const method of WRITE_METHODS) expect(await ask(origin, path, method), `${method} ${label}`).toEqual(door.get(method));
+    }
+  }, 30_000);
 
   test("CONTROL: a traveler who brings the bulb CID pulls the bulb and kindles a sovereign of its own", async () => {
     const { origin, bulb } = await standHerm();

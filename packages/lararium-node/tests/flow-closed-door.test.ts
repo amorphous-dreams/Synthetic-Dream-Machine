@@ -22,6 +22,7 @@ import { mountFlowReadFace } from "../src/flow-read-face.js";
 import { gatePath } from "../src/face-gate-server.js";
 import { createReadinessState, mountReadinessFace } from "../src/readiness-face.js";
 import { floorGates, presenter, pullFloor } from "./flow-floor-rig.js";
+import { WRITE_METHODS } from "./herm-silence-witness.js";
 
 const SEED   = new Uint8Array(32).fill(7);
 
@@ -118,6 +119,34 @@ describe("the flow face keeps silence", () => {
     knocker.binaryType = "arraybuffer";
     knocker.onopen = () => knocker.send(new Uint8Array(48).fill(7));
     expect(await framesOf(knocker, 4_000)).toEqual([]);
+
+    face.dispose();
+    dispatcher.dispose();
+    await repo.shutdown();
+  }, 30_000);
+
+  test("a write method on every flow path draws the closed door, the published snapshot's own path among them", async () => {
+    const server = createServer();
+    const dispatcher = mountHttpFaceDispatcher(server);
+    const storageDir = mkdtempSync(join(tmpdir(), "flow-door-writes-")); dirs.push(storageDir);
+    const repo = new Repo({ sharePolicy: async () => true });
+    const handle = repo.create<{ tiddlers: Record<string, unknown> }>({ tiddlers: { held: { text: "the map" } } });
+    const rig = floorGates(["nexus-a.synthetic"], { posture: "open" });
+    const face = await mountFlowReadFace({
+      httpServer: server, oracleHandle: handle, signer: placeSignerFromSeed(SEED), storageDir, gates: rig.gates, dispatcher, exportSnapshot: (doc) => exportFlowSnapshot(doc as never),
+    });
+    const origin = await listen(server);
+    const w = rig.worlds[0]!;
+    // The snapshot's own CID, read the one way the face hands it out.
+    const proven = await pullFloor(origin, w, await presenter(w, "reader"), { arm: null, publisherSeed: SEED });
+    expect(proven.ok, proven.reason).toBe(true);
+
+    const paths = ["/flow/pointer", `/flow/${proven.cid!}.bin`, `/flow/${"0".repeat(64)}.bin`, "/flow/", FLOW_SOCKET_ROUTE, gatePath(w.pin)];
+    for (const method of WRITE_METHODS) {
+      const control = await ask(origin, "/no-face-claims-this", method);
+      expect(control.status).toBe(CLOSED_DOOR.status);
+      for (const path of paths) expect(await ask(origin, path, method), `${method} ${path}`).toEqual(control);
+    }
 
     face.dispose();
     dispatcher.dispose();

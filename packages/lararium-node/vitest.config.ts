@@ -49,6 +49,8 @@ export const heavy = [
   "tests/herm-reshares-public-blob.test.ts",
   "tests/herm-cas-transit.test.ts",
   "tests/herm-rungs.test.ts",
+  // the outward-silence witness: each test stands two composed herm listeners and reads a transcript off each
+  "tests/herm-outward-silence.test.ts",
   "tests/one-seed-one-cid.test.ts",
   // nested worker_threads islands booting the full TW5 kernel off dist
   "tests/blob-sovereignty.test.ts",
