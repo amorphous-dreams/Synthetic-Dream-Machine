@@ -87,7 +87,7 @@ import { vesselOnlyBook } from "@lararium/mesh/vessel-only-book";
 import { islandPeersOf, wikiIslandPeersOf } from "@lararium/mesh/island-repo-door";
 import { slugFromUri, recipeHostFacets } from "@lararium/mesh/wiki-recipe";
 import { bagStackFromRec } from "@lararium/mesh/bag-stack-from-rec";
-import { type WikiActivationCap } from "@lararium/mesh/wiki-activation";
+import { type WikiActivationCap, activationRefusal } from "@lararium/mesh/wiki-activation";
 import { materializeGenesisIsland, genesisCasCidsFromOracle } from "@lararium/mesh/genesis-intake";
 import { genesisCasManifestFromSeed, type GenesisSeed } from "@lararium/mesh/genesis-doc";
 import { sha256HexBytesSync, hex } from "@lararium/mesh/crypto";
@@ -1586,7 +1586,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       await daemonHolder.restart(KAPAE_EMERGENCY_REASON);
     } else {
       await vmManager.unmountWiki(wiki);
-      await wikiActivation.ensureActive(wiki);
+      const refused = activationRefusal(await wikiActivation.ensureActive(wiki));
+      if (refused !== null) throw new Error(`reload ${wiki}: the wiki did not come back: ${refused}`);
     }
   };
   let wikiActivation!: WikiActivationCap;     // set in makePool — activation-on-reference cap (minimal grant)
@@ -2460,7 +2461,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       // daemon verb lives in the worker now (wireWorkerVerbs) — access≠load, write-then-sync.
       // Main keeps only sync-wiki (commands the pool's active wiki) + residency stats (a read).
       registry.register("sync-wiki", async (args, ctx) => {
-        await wikiActivation.ensureActive(slotActiveWikiId);   // reference wakes a cold grain (home wiki: no-op)
+        const refused = activationRefusal(await wikiActivation.ensureActive(slotActiveWikiId));   // reference wakes a cold grain (home wiki: no-op)
+        if (refused !== null) throw new Error(`sync-wiki: ${refused}`);
         return vmManager.placeWikiVerb(slotActiveWikiId, {
           verb: "sync-wiki", args: args as Record<string, unknown>, requestedBy: ctx.invocation.requestedBy,
         });

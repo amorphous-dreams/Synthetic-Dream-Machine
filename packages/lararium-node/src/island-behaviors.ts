@@ -11,6 +11,8 @@
  */
 
 import { inCallScope, takeCallTouches } from "@lararium/mesh/call-touches";
+import { islandHeadsAsker } from "./heads-rest.js";
+import { storeIsRetired } from "@lararium/mesh/effect-record";
 import { existsSync, readFileSync, realpathSync } from "node:fs";
 import { basename, dirname, join as joinPath, resolve as resolvePath, sep } from "node:path";
 import { mkWikiVerbResult } from "@lararium/mesh/island-protocol";
@@ -28,7 +30,8 @@ import { SyncedTree, syncedTreeDir, syncedTreeKey } from "./synced-tree.js";
 import { larProjectionCheckpointDir, larProjectionsHome } from "./vessel-paths.js";
 import { basePoolText, facePoolHeads } from "./pool-head.js";
 import { COLLAPSE_CONFIG_PREFIX, COLLAPSE_RULES, collapseConfigOf, collapseRuleTitle, rulesFor, type CollapseRule } from "./standoff-collapse.js";
-import { StandoffKeeper, keeperWikiOf, standoffAlertWords, type Tw5WikiLike } from "./standoff-drafts.js";
+import { nativeCarrierLanding } from "./native-landing.js";
+import { StandoffKeeper, keeperWikiOf, standoffAlertWords, readCarrierAt, pointerBodyAt, type Tw5WikiLike } from "./standoff-drafts.js";
 import { checkoutTracking } from "./checkout-carriers.js";
 import { readBackTempCarriers, TempLayerHousekeeper } from "./temp-layer.js";
 import { loadLaresConfig, tempExpiryDays, tempProjectionConsented } from "./lares-config.js";
@@ -167,7 +170,10 @@ export function mountDiskProjection(
   // never a meme surface, never inside bags/; the ingest gate reads the
   // same file. mirrorRoot shape under the full-path-inside-bag ruling:
   // <root>/bags/<scope> → up two.
-  const syncedTree = new SyncedTree(syncedTreeDir(larProjectionCheckpointDir()));   // runtime → <root>/hearth/checkpoints
+  // THE BASE PINS ONLY WHAT SEALED: inside an island thread, each pin that names a document and its heads waits pending
+  // until the vessel answers that those heads rest in its sealed rest (`rest:heads`).
+  const heads = islandHeadsAsker();
+  const syncedTree = new SyncedTree(syncedTreeDir(larProjectionCheckpointDir()), heads === null ? {} : { rests: heads.rests, rested: heads.rested });   // runtime → <root>/hearth/checkpoints
   // THE PERSON'S COLLAPSE RULES: the daemon face's own working layer where this island IS that face's daemon wiki, read at
   // each weighing; else the rules the vessel read from the worn face's daemon working layer into the manifest at mount. A
   // shared wiki's own config never enables a rule, nor does a shadow, canon or a plugin the composed wiki holds.
@@ -347,7 +353,7 @@ export function mountDiskProjection(
     saveBag: (title) => ctx.saveBagOf?.(title) ?? null,
     grants: granted,
     // ONE AUDIT ROW PER COLLAPSE, naming the rule, on the ward rail's durable ledger (no live alert rides it).
-    audit: (row) => ctx.post(hostEvent(ctx.wikiUri, "confluence:collapsed", { verb: "ward-alert", requestedBy: "projection-confluence", wardKind: "standoff-collapsed", auditOnly: true, bagId: row.bagId, uri: row.uri, reason: `${row.rule} collapsed the stand-off toward ${row.toward === "merged" ? "a merge of both sides" : `the ${row.toward}`} (${row.path})`, standoff: row.standoff, rule: row.rule })),
+    audit: (row) => ctx.post(hostEvent(ctx.wikiUri, "confluence:collapsed", { verb: "ward-alert", requestedBy: "projection-confluence", wardKind: "standoff-collapsed", auditOnly: true, bagId: row.bagId, uri: row.uri, reason: `${row.rule} collapsed the stand-off toward ${row.toward === "merged" ? "a merge of both sides" : `the ${row.toward}`} (${row.path})`, standoff: row.standoff, ...(row.writer !== undefined ? { writer: row.writer } : {}), rule: row.rule })),
     // THE AWAITING ALERT RIDES THE WARD RAIL, keyed by the stand-off: the rail raises it where the daemon face reads its
     // alerts and files its audit row once. Its clearing rides the rail's resolution (`onConflictResolved`).
     // A KEEP OF THE DISK SAYS SO, ONCE, on the vessel's log (its audit row rides the ward rail beside it). No port tells
@@ -356,6 +362,13 @@ export function mountDiskProjection(
     // The keep's own write must not read as a stranger's: the bag's quiet mark re-seats at its next asking, so the other
     // carriers of that document that fell behind still keep their disk with no hand.
     notice: (line, kept) => { mountedHeads.delete(kept.bagId); console.log(line); },
+    // ONE KEEPER FOR EVERY CARRIER: a native carrier reads off the disk as the judge reads it, a pointer body refuses by
+    // name, and TW5's own deserializer says the one record its bytes carry.
+    readCarrier: readCarrierAt,
+    pointerBody: pointerBodyAt,
+    landNative: (uri, ext, body, meta) => nativeCarrierLanding(makeTw5Deserializer(ctx.tw5), uri, ext, body, meta),
+    // THE SAME WALL INGEST KEEPS: a DROPped bag takes no keep either (`bag-retired`).
+    retired: async (bagId) => { const store = ctx.composite.storeForBag(bagId); return store !== null && await storeIsRetired(store, bagId).catch(() => true); },
     alert: (a) => {
       if (a.clear === true) return;
       const words = standoffAlertWords(a);
@@ -400,6 +413,7 @@ export function mountDiskProjection(
     bindRecoveryAtRest(ctx.tw5, null);
     if (mountedProjector === projector) mountedProjector = null;
     await stop();
+    syncedTree.dispose();
   };
 }
 

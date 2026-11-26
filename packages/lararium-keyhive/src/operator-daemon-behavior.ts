@@ -201,7 +201,7 @@ export function requireDyadReader(reader: DyadReader | undefined, gate: "the Bin
   }
   return reader;
 }
-import { bootDaemonKeyhive, FaceHoldsNoPrekeySecret, FaceRecardRefused, landRecard, recardCommand, type BootDaemonKeyhiveRecard } from "./boot-daemon-keyhive.js";
+import { bootDaemonKeyhive, FaceHoldsNoPrekeySecret, FaceRecardRefused, landRecard, recardCommand, recardFloorThrew, type BootDaemonKeyhiveRecard } from "./boot-daemon-keyhive.js";
 import { daemonBagDocLedger, planeBagDocLedger, registerBagsDurably, type BagDocLedger } from "./bag-doc-ledger.js";
 import { persistArchiveFloor } from "./archive-floor-write.js";
 import { replicaHeads } from "@lararium/mesh/island-repo-door";
@@ -446,14 +446,15 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       catch (error) {
         if (!face.recard || !(error instanceof FaceHoldsNoPrekeySecret)) throw error;
         // THE RECARD MEETS THE FAULT AT THE FACE'S OWN BAGS: the ground registered under a prekey this stand still held, and
-        // a later mint met one it did not. The card mints now, before the rest, and they register again.
+        // a later mint met one it did not. The card mints now, before the rest, and they register again. The ground rows
+        // the first pass held wait with the rest: the stale recard commits them through `landRecard`, past its archive check.
         await joined.keyhive.contactCard();
         try { await registerOwn(); }
         catch (again) {
           if (again instanceof PrekeySecretAbsent) throw new FaceRecardRefused("still-refuses", `face ${handle} held no prekey secret even after its card; read \`lares vault status --verbose\` and keep the face dark`);
           throw again;
         }
-        recard = { stale: true, reminted: recard?.reminted ?? [], commit: recard?.commit ?? (async () => {}) };
+        recard = { stale: true, reminted: recard?.reminted ?? [], ...(recard?.held ? { held: recard.held } : {}), commit: recard?.commit ?? (async () => {}) };
       }
       // THE SIBLING'S ARCHIVE FLOOR, as the mounted face's: its one card mints, then its Archive rests in its own row. Every
       // later ask of this stand (a grant, a workbench seat, a revoke) presents that same card, so the Archive the next light
@@ -464,7 +465,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         writers: archiveWriters,
         face: face.personaGroupId,
         exportVeilArchive: () => joined.keyhive.exportArchiveAfterTheCard(),
-      });
+      }).catch((cause: unknown) => { throw recard ? recardFloorThrew(recard, handle, cause, face.handleIndex) : cause; });
       await surfaceFloorRefusals(ctx, floor, key);
       if (recard) {
         // THE RECARD LANDS ONLY WITH ITS ARCHIVE (landRecard): a stale stand whose Archive rested nothing refuses

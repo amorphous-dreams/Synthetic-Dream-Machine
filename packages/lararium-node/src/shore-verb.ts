@@ -32,6 +32,17 @@
  *                  `shore-flush` frame), so a hand's flush reaches every island the teardown reaches
  *   drafts         name the drafts the disk side of a carrier's stand-offs loaded (`standoff-drafts.ts`), each with its
  *                  target, its stand-off's key and whether a person kept it; titles alone, never a draft's words
+ *   base           pin, in the Synced tree this island's projector owns, each agreement a wave names and THIS ISLAND READS
+ *                  ITSELF (`pinAgreement`, `disk-projector.ts`). The wave names the bag (`bag`) and, for each carrier it
+ *                  landed, the carrier and its file (`bases`: `{ uri, file, from? }`), and nothing else: no hash, no heads and
+ *                  no document a caller sends ever lands. The island hashes the file, renders its own records, and pins only
+ *                  where the two agree, under its own document and heads, waiting on its seal. ONE OWNER OF PENDING STATE:
+ *                  an agreement a pin already names waits with that pin. An island whose projector holds no mirror of the
+ *                  bag refuses `bag-unprojected`, and the door asks the island that projects it. Answers counts
+ *                  (`recorded`, `kept`, `waiting`, `unread`, `differs`) and how many pins still wait. A SEAT LANDS NO BASE:
+ *                  the socket refuses the act from a seat and from an unread peer, as it refuses the settling acts
+ *                  (`shoreHandCode`), and this door refuses a seat's booked asker by name; the projector pins the same
+ *                  agreement by itself at its next reconcile, so a seat's wave loses nothing
  *   keep-both      a person keeps both sides of one stand-off, named by its key: its drafts stay past its end as parallel
  *                  drafts, and the records' render writes over the file, as `take-records` writes it. A stand-off whose
  *                  file loaded no draft holds nothing to keep, and refuses `no-drafts-to-keep`, naming keep-disk and
@@ -67,6 +78,8 @@ import { sha256HexBytesSync } from "@lararium/mesh/crypto";
 import type { Hand } from "@lararium/mesh/session-contract";
 import { askerRefusal, handCodesOf, handRefusalOf } from "./hand-act-gate.js";
 import type { LarDiskProjector } from "./disk-projector.js";
+import { basePathsNamed } from "./ingest-scan.js";
+import { PENDING_UNREAD } from "./synced-tree.js";
 
 /** The verb an island answers at its disk shore. */
 export const SHORE_VERB = "shore";
@@ -75,7 +88,7 @@ export const SHORE_VERB = "shore";
 const HAND_OPS: ReadonlySet<string> = new Set(["take-records", "keep-both"]);
 
 /** The acts the verb carries. */
-export const SHORE_OPS = ["list", "sense", "settle", "take-records", "render", "restore", "remove", "census", "flush", "drafts", "keep-both"] as const;
+export const SHORE_OPS = ["list", "sense", "settle", "take-records", "render", "restore", "remove", "census", "flush", "drafts", "keep-both", "base"] as const;
 export type ShoreOp = (typeof SHORE_OPS)[number];
 
 /**
@@ -135,6 +148,19 @@ export function shoreList(
   }
   const next = behind.length > taken.length ? taken[taken.length - 1]!.cursor : null;
   return { standoffs, standoffCount: standing.length, pending, pendingCount: pendingAll.length, mark, next };
+}
+
+/**
+ * NO BASE WAITS SILENT. What this island's Synced tree holds back from its directory, by count: each pin waiting on its seal
+ * (`pendingPinCount`), how many of those wait on a rest that answered nothing readable (`pendingPinUnreadCount`), and how many
+ * of the waves' bases met a waiting pin and wait with it (`waitingBaseCount`). Every flush and every `base` act answers them,
+ * and a flush's line names them (`shoreFlushLines`).
+ */
+export interface PinsWaiting { readonly pendingPinCount: number; readonly pendingPinUnreadCount: number; readonly waitingBaseCount: number }
+
+export function pinsWaiting(projector: LarDiskProjector): PinsWaiting {
+  const pins = projector.pendingPins();
+  return { pendingPinCount: pins.length, pendingPinUnreadCount: pins.filter((p) => p.why === PENDING_UNREAD).length, waitingBaseCount: projector.waitingBases() };
 }
 
 /** The counts alone: what an act that names no rows answers, whatever the shore holds. */
@@ -202,6 +228,13 @@ export interface ShoreFlush {
   readonly unwrittenCount: number;
   readonly fileWrites: number;
   readonly drained: boolean;
+  /** Each Synced base pin still pending in memory after the flush, waiting on its seal, with why (`pending: rest unread`, ...).
+   *  A pending pin costs nothing at a crash: the next boot reads disk == records and pins again. */
+  readonly pendingPins?: ReadonlyArray<{ readonly uri: string; readonly bagId: string; readonly path: string; readonly why: string }>;
+  readonly pendingPinCount?: number;
+  /** How many of those pins wait on a rest that answered nothing readable, and how many of the waves' bases wait with a pin. */
+  readonly pendingPinUnreadCount?: number;
+  readonly waitingBaseCount?: number;
 }
 
 /**
@@ -228,10 +261,12 @@ export async function shoreFlush(projector: LarDiskProjector, settleMs = CENSUS_
     ...failed.map((f) => ({ state: "failed" as const, ...f, why: "its reconcile threw again on the retry; the file stands as the failure left it" })),
     ...pending.filter((p) => !failedUris.has(p.uri)).map((p) => ({ state: "pending" as const, ...p, why: `the queue still owed it when the ${settleMs}ms wait ended` })),
   ].sort((a, b) => byCode(JSON.stringify([a.state, a.uri]), JSON.stringify([b.state, b.uri])));
+  const pins = projector.pendingPins().sort((a, b) => byCode(JSON.stringify([a.bagId, a.uri, a.path]), JSON.stringify([b.bagId, b.uri, b.path])));
   return {
     written: written.slice(0, SHORE_LIST_PAGE), writtenCount: written.length,
     unwritten: unwritten.slice(0, SHORE_LIST_PAGE), unwrittenCount: unwritten.length,
     fileWrites: projector.fileWrites() - writesBefore, drained,
+    pendingPins: pins.slice(0, SHORE_LIST_PAGE), ...pinsWaiting(projector),
   };
 }
 
@@ -280,6 +315,9 @@ export async function flushEveryShore(asks: readonly ShoreIslandAsk[], boundMs =
         written: o["written"] as ShoreFlush["written"], writtenCount: Number(o["writtenCount"] ?? (o["written"] as unknown[]).length),
         unwritten: o["unwritten"] as ShoreFlush["unwritten"], unwrittenCount: Number(o["unwrittenCount"] ?? (o["unwritten"] as unknown[]).length),
         fileWrites: o["fileWrites"] as number, drained: o["drained"] === true,
+        ...(Array.isArray(o["pendingPins"]) ? { pendingPins: o["pendingPins"] as NonNullable<ShoreFlush["pendingPins"]>, pendingPinCount: Number(o["pendingPinCount"] ?? (o["pendingPins"] as unknown[]).length) } : {}),
+        ...(typeof o["pendingPinUnreadCount"] === "number" ? { pendingPinUnreadCount: o["pendingPinUnreadCount"] as number } : {}),
+        ...(typeof o["waitingBaseCount"] === "number" ? { waitingBaseCount: o["waitingBaseCount"] as number } : {}),
       };
     } catch (err) {
       const reason = (err as { reason?: unknown } | null)?.reason;
@@ -297,9 +335,21 @@ export async function flushEveryShore(asks: readonly ShoreIslandAsk[], boundMs =
  * phase. Pushed after the Repo's own flush entries it runs ahead of them (the registry stands down in reverse), and always before
  * the `islands` phase stands any island down: so a graceful stop (SIGTERM, a lock, a wear's recompose) writes what every island
  * holds to its mirrors while the islands still stand. Each island that gave no answer, or left carriers unwritten, warns by name.
+ *
+ * THE STAND-DOWN SEALS BEFORE THE SHORE'S LAST PINS LAND (`seal`): a Synced base pins only heads that rest sealed, so the sealed
+ * rest's stand-down runs first and the flush after it, and every pin an island still holds pending meets heads that rest. A
+ * seal that faults warns by name and the flush still runs: its pins stay pending, and the next boot reads disk == records and
+ * pins again.
  */
-export function shoreFlushStandDown(flush: () => Promise<ShoreFlushReading>, warn: (line: string) => void = console.warn): ShutdownEntry {
+export function shoreFlushStandDown(flush: () => Promise<ShoreFlushReading>, opts: {
+  readonly seal?: () => Promise<void>;
+  readonly warn?: (line: string) => void;
+} = {}): ShutdownEntry {
+  const warn = opts.warn ?? console.warn;
   return { what: "the shore's flush", phase: "flush", down: async () => {
+    if (opts.seal) {
+      try { await opts.seal(); } catch (err) { warn(`[lararium] teardown: the shore's flush: the sealed rest's stand-down faulted ahead of it: ${err instanceof Error ? err.message : String(err)}`); }
+    }
     const reading = await flush();
     for (const part of reading.islands) {
       if (!part.answered) warn(`[lararium] teardown: the shore's flush: the ${part.island} island did not answer: ${part.why}`);
@@ -332,6 +382,7 @@ export function shoreFlushLines(reading: ShoreFlushReading): string[] {
   return reading.islands.map((i) => i.answered
     ? `shore flush: the ${i.island} island wrote ${i.writtenCount} owed carrier(s) (${i.fileWrites} file write(s))`
       + (i.unwrittenCount > 0 ? `; ${i.unwrittenCount} unwritten: ${i.unwritten.map((u) => `${u.uri}${typeof (u as { face?: unknown }).face === "number" ? ` on h${(u as { face?: number }).face}` : ""} (${u.state}: ${u.why})`).join("; ")}` : "")
+      + ((i.pendingPinCount ?? 0) > 0 ? `; ${i.pendingPinCount} base pin(s) wait on their seal${(i.pendingPinUnreadCount ?? 0) > 0 ? `, ${i.pendingPinUnreadCount} on a rest that answered nothing readable` : ""}${(i.waitingBaseCount ?? 0) > 0 ? `, and ${i.waitingBaseCount} wave base(s) wait with them` : ""}` : "")
     : `shore flush: the ${i.island} island did not answer: ${i.refusal !== undefined ? `${i.refusal}: ` : ""}${i.why}`);
 }
 
@@ -341,6 +392,12 @@ export function shoreFlushLines(reading: ShoreFlushReading): string[] {
  * `shore` verb itself or `wiki-act` into the active wiki. A seat lists, reads a render and flushes; it never takes a side.
  */
 export const SHORE_HAND_OPS: ReadonlySet<string> = new Set([...handCodesOf("shore").keys()].map((act) => act.slice(act.indexOf(" ") + 1)));
+/**
+ * THE ACTS THE SOCKET ADMITS FROM A HAND ALONE: the settling acts, and `base`. A base pins an agreement in the Synced tree;
+ * the vessel's own waves ask it on the vessel's own road, past the socket, and a person's gesture asks it from a terminal. A
+ * seat's line and an unread peer's refuse at the socket by the same code and sentence as a settling act.
+ */
+export const SHORE_SOCKET_HAND_OPS: ReadonlySet<string> = new Set([...SHORE_HAND_OPS, "base"]);
 /** The refusal a seat's settling act reads: the siblings' code, as every hand act answers an AI seat (the one hand table's shore rows). */
 export const SHORE_HAND_CODE = handCodesOf("shore").get("shore take-records")!;
 
@@ -357,7 +414,7 @@ export function shoreHandCode(verb: string, args: unknown): string | null {
   const shore = verb.toLowerCase() === SHORE_VERB ? a : inner === SHORE_VERB ? (a["args"] ?? {}) as Record<string, unknown> : null;
   if (shore === null) return null;
   if (shore["op"] !== undefined && typeof shore["op"] !== "string") return "routing-arg-malformed";
-  return typeof shore["op"] === "string" && SHORE_HAND_OPS.has(shore["op"].toLowerCase()) ? SHORE_HAND_CODE : null;
+  return typeof shore["op"] === "string" && SHORE_SOCKET_HAND_OPS.has(shore["op"].toLowerCase()) ? SHORE_HAND_CODE : null;
 }
 
 /**
@@ -404,6 +461,13 @@ export async function answerShoreSeats(seats: ShoreSeats, args: Readonly<Record<
     }
     return { ...(await answerShore(projector, rest, asker)), face };
   }
+  if (op === "base") {
+    // A BASE REACHES THE PROJECTOR THAT PROJECTS ITS BAG: the worn face's own, else the lit sibling's whose mirrors hold it.
+    const named = text(args["bag"]);
+    const holds = (p: LarDiskProjector | null): p is LarDiskProjector => p !== null && named !== null && p.projects(named);
+    const projector = holds(seats.own) ? seats.own : seats.litFaces().map((face) => (face === seats.worn ? null : seats.lit(face))).find(holds) ?? seats.own;
+    return projector === null ? noShore : answerShore(projector, args, asker);
+  }
   if (op !== "flush") return seats.own === null ? noShore : answerShore(seats.own, args, asker);
   // Each projector drains side by side, so the island's answer waits one bounded drain, never one per face.
   const asked: Array<{ readonly face: number | null; readonly projector: LarDiskProjector }> = [];
@@ -422,6 +486,11 @@ export async function answerShoreSeats(seats: ShoreSeats, args: Readonly<Record<
     written: written.slice(0, SHORE_LIST_PAGE), writtenCount: parts.reduce((n, p) => n + p.flushed.writtenCount, 0),
     unwritten: unwritten.slice(0, SHORE_LIST_PAGE), unwrittenCount: parts.reduce((n, p) => n + p.flushed.unwrittenCount, 0),
     fileWrites: parts.reduce((n, p) => n + p.flushed.fileWrites, 0), drained: parts.every((p) => p.flushed.drained),
+    // NO BASE WAITS SILENT: each face's pins that still wait ride the one answer, each sibling's row naming its face.
+    pendingPins: parts.flatMap((p) => tagged(p.face, p.flushed.pendingPins ?? [])).slice(0, SHORE_LIST_PAGE),
+    pendingPinCount: parts.reduce((n, p) => n + (p.flushed.pendingPinCount ?? 0), 0),
+    pendingPinUnreadCount: parts.reduce((n, p) => n + (p.flushed.pendingPinUnreadCount ?? 0), 0),
+    waitingBaseCount: parts.reduce((n, p) => n + (p.flushed.waitingBaseCount ?? 0), 0),
     ...(parts.some((p) => p.face !== seats.worn) ? { faces: parts.map((p) => p.face).filter((f): f is number => f !== null) } : {}),
   };
 }
@@ -594,5 +663,22 @@ export async function answerShore(projector: LarDiskProjector, args: Readonly<Re
     return { ok: true, op, ...(await shoreCensus(projector, after)) };
   }
   if (op === "flush") return { ok: true, op, ...(await shoreFlush(projector)) };
+  if (op === "base") {
+    // A SEAT LANDS NO BASE: the socket refuses the act first (`shoreHandCode`); this door refuses the asker it booked too.
+    if (asker === "seat") return { ok: false, op, refusal: "hand-act-only", why: "a seat lands no base at the disk shore: the projector pins each agreement it reads at its own reconcile, and a person's gesture asks from a terminal" };
+    // THE ISLAND PINS ONLY WHAT IT READS ITSELF (`pinAgreement`): the wave names carriers and files, and every hash, the
+    // document and the heads come from this projector. The rest gets asked once before the answer leaves, so a pin whose
+    // heads already rest stands in the directory by the time the wave reads it.
+    const paths = basePathsNamed(args["bases"]);
+    if (bag === null || paths === null) return { ok: false, op, refusal: "shore-answer-incomplete", why: "base names the bag the wave landed in (`bag`) and each carrier with its file (`bases`: `{ uri, file, from? }`)" };
+    if (!projector.projects(bag)) return { ok: false, op, bag, refusal: "bag-unprojected", why: `this island's projector holds no mirror of ${bag}: the island that projects it pins its bases` };
+    const tally = { recorded: 0, kept: 0, waiting: 0, unread: 0, differs: 0 };
+    for (const path of paths) {
+      const read = await projector.pinAgreement(bag, path.uri, path.file, path.from);
+      if (read !== "unprojected") tally[read] += 1;
+    }
+    await projector.settlePins();
+    return { ok: true, op, bag, ...tally, ...pinsWaiting(projector) };
+  }
   return { ok: false, op, refusal: "shore-op-unknown", why: `the shore verb carries ${SHORE_OPS.join(", ")}; it names no "${op}"` };
 }

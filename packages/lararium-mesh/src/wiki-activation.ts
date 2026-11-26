@@ -46,6 +46,12 @@ export interface ActivationPool {
 export type WikiActivationResult =
   | { readonly ok: true }
   | { readonly ok: false; readonly cause: "no-such-bag" | "record-unparsable" | "no-read-grant" | "unmounted"; readonly detail: string };
+/**
+ * A refused activation as one line naming its cause, or null when the grain lives. The result is an OBJECT, so a
+ * bare `if (result)` reads true for a refusal too; a caller that wants the line reads it here and carries it.
+ */
+export const activationRefusal = (result: WikiActivationResult): string | null =>
+  result.ok ? null : `${result.cause}: ${result.detail}`;
 export type WikiSpecResolution =
   | { readonly ok: true; readonly spec: WikiMountSpec }
   | { readonly ok: false; readonly cause: "no-such-bag" | "record-unparsable" | "no-read-grant"; readonly detail: string };

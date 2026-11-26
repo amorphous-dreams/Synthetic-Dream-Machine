@@ -40,7 +40,7 @@ import { digestsEqual } from "@lararium/mesh/agile-digest";
 import { mediaTypeFromExt, ridesAsPointer } from "@lararium/mesh/content-handle";
 import { basePoolText, mergeStandoffSides } from "./shore-merge.js";
 import { carrierCasFlagged, declaredType } from "./cas-stage.js";
-import { scanFiles, settleIngest, submitIngest, type ScanRow, type SubmitIngestOpts } from "./ingest-core.js";
+import { scanFiles, settleIngest, type ScanRow, type SubmitIngestOpts } from "./ingest-core.js";
 import { readShoreList, type ShoreAnswer } from "./shore-core.js";
 import type { SubmitResult } from "./verb-result.js";
 
@@ -205,7 +205,7 @@ export async function takeDisk(req: TakeDiskRequest, deps: TakeDiskDeps): Promis
     // A wiki's instance slot ingests inside the active wiki's island; the daemon island's own working layer
     // ingests daemon-side, in the island that listed its standoff.
     { source: path, toBag: bag, candidates: [candidate], did: deps.did, ...(WIKI_SLOT_BAG_RE.test(bag) && named["island"] !== "daemon" ? { inWiki: true } : {}) },
-    deps.tree, deps.submit ?? submitIngest,
+    deps.tree, deps.submit,
   );
   const requestId = settled.first.requestId;
   if (settled.first.status === "error") return { ok: false, refusal: "verb-error", why: settled.first.errorMessage ?? "the daemon refused and named no reason", requestId };

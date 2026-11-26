@@ -9,6 +9,7 @@
  */
 
 import { describe, test, expect } from "vitest";
+import { activationRefusal } from "../src/wiki-activation.js";
 import { VesselIslandPoolCore } from "../src/vessel-island-pool-core.js";
 import { BagStowage } from "../src/bag-residency.js";
 import { makeWikiActivationCap, type ResolveWikiSpec } from "../src/wiki-activation.js";
@@ -64,6 +65,12 @@ describe("wiki-activation cap — activation-on-reference over the one collector
     const { residency, cap } = makeVesselTrio(2);
     expect(await cap.ensureActive("lar:///wiki/never")).toMatchObject({ ok: false, cause: "no-such-bag" });
     expect(residency.tier("lar:///wiki/never")).toBeNull();   // no phantom wela in the collector
+  });
+
+  test("a refusal names its cause line and a live grain names none: a result object never reads as a boolean", async () => {
+    const { cap } = makeVesselTrio(2);
+    expect(activationRefusal(await cap.ensureActive("lar:///wiki/never"))).toMatch(/^no-such-bag: /);
+    expect(activationRefusal({ ok: true })).toBeNull();
   });
 
   test("a NEVER-opened grain resolves its spec and activates (the true multi-wiki swap)", async () => {

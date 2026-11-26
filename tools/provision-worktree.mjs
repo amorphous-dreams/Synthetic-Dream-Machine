@@ -11,7 +11,7 @@ import { requireFloor } from './floor-lock.mjs';
 
 export const USAGE_EXISTING = 'usage: provision-worktree.mjs --existing <worktree>';
 export const USAGE_SOURCE_ONLY = 'usage: provision-worktree.mjs --source-only <empty-dir> [--branch <name>] [--base <ref>]';
-export const USAGE = `usage: provision-worktree.mjs <empty-dir>  |  ${USAGE_EXISTING}  (an existing branch worktree: submodules, then its own offline frozen pnpm install)  |  ${USAGE_SOURCE_ONLY}  (a tasked spirit's bench: the tracked tree alone)`;
+export const USAGE = `usage: provision-worktree.mjs <empty-dir>  |  ${USAGE_EXISTING}  (an existing branch worktree: submodules, its own offline frozen pnpm install, then the grammar wasm and the TW5 vendor)  |  ${USAGE_SOURCE_ONLY}  (a tasked spirit's bench: the tracked tree alone)`;
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const WASM = 'tree-sitter-memetic-wikitext';
 const canNest = (a, b) => b === a || b.startsWith(a + sep);
@@ -157,8 +157,9 @@ function assertNoLinkedModules(tree) {
   }
 }
 
-/** Provision a branch worktree that already exists (`git worktree add`): seat its submodules, then fill its OWN node_modules from the
- *  pnpm store, offline and frozen. It refuses a node_modules that links elsewhere, and it never hand-links another tree's modules. */
+/** Provision a branch worktree that already exists (`git worktree add`): seat its submodules, fill its OWN node_modules from the
+ *  pnpm store, offline and frozen, then seat the grammar wasm and the TW5 vendor its first build reads. It refuses a
+ *  node_modules that links elsewhere, and it never hand-links another tree's modules. */
 export function provisionExisting({ worktree, run = defaultRun, log = console.log, guard = assertDisk }) {
   if (!worktree) throw new Error(USAGE_EXISTING);
   if (!existsSync(worktree) || !statSync(worktree).isDirectory()) throw new Error(`${worktree} is no directory; create it first: git worktree add <path> -b <branch> origin/develop`);
@@ -174,7 +175,31 @@ export function provisionExisting({ worktree, run = defaultRun, log = console.lo
   assertNoLinkedModules(worktree);
   assertNoSharedInodes(worktree);
   if (!existsSync(join(worktree, 'node_modules'))) throw new Error('pnpm install left no root node_modules');
+  seatBuildInputs({ tree: worktree, run, log });
   return { worktree };
+}
+
+/** THE INPUTS A FIRST BUILD READS AND NO PACKAGE BUILD MAKES: the grammar wasm (kept where its stamp still binds it to the
+ *  grammar's sources, built otherwise) and the TW5 vendor blob, rendered from the tree's own submodule. A floor bench
+ *  provisioned whole then builds whole on its first run. */
+function seatBuildInputs({ tree, run, log }) {
+  const grammar = `packages/${WASM}`;
+  const stamp = join(tree, `node_modules/.lares-build/wasm/${WASM}`);
+  const wasms = () => readdirSync(join(tree, grammar)).filter(name => name.endsWith('.wasm'));
+  const standing = wasms();
+  const stamped = standing.length === 1 && existsSync(stamp) && readFileSync(stamp, 'utf8') === wasmStampBody(tree, WASM, standing[0]);
+  if (stamped) log(`KEPT ${grammar} wasm (its stamp binds it to the grammar's sources)`);
+  else {
+    for (const name of standing) rmSync(join(tree, grammar, name), { force: true });
+    run('pnpm', ['run', 'build:wasm'], join(tree, grammar));
+    if (wasms().length !== 1) throw new Error('build:wasm left no single grammar wasm');
+    log(`BUILT ${grammar} wasm (build:wasm)`);
+  }
+  const tw5 = join(tree, 'packages/lararium-tw5');
+  rmSync(join(tw5, 'tw5-core'), { recursive: true, force: true });
+  run('npm', ['run', 'build:tw5-vendor'], tw5);
+  if (!existsSync(join(tw5, 'tw5-core'))) throw new Error('build:tw5-vendor left no packages/lararium-tw5/tw5-core');
+  log('BUILT packages/lararium-tw5 TW5 vendor from the tree\'s own submodule');
 }
 
 /**

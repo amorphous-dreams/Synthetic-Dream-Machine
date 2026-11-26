@@ -20,6 +20,7 @@ import { shutdownComposition, closeCompositionRepo, ownDialPresentation, IslandS
 import { provedLitRelation } from "./lit-relation.js";
 import { takeWardTicket, type WardCredential } from "./ward-credential.js";
 import { receiptInStore } from "@lararium/mesh/receipt-with-heads";
+import { repoHeadsRestAt, restedOnSave } from "./heads-rest.js";
 import { WardRefused } from "@lararium/mesh/ward-slots";
 import { wornAtOf } from "@lararium/mesh/sealed-doc-store";
 import {
@@ -165,7 +166,7 @@ import { noteVesselRealm, readVesselRealms } from "./edge-board.js";
 import { makeEdgeShadowRing, ringDyadDoor, type EdgeShadowRing } from "./edge-shadow-ring.js";
 import { floorShadowRing } from "./floor-fleet-lanes.js";
 import type { JoinedFaceAuth } from "@lararium/mesh/island-protocol";
-import type { WikiActivationCap } from "@lararium/mesh/wiki-activation";
+import { type WikiActivationCap, activationRefusal } from "@lararium/mesh/wiki-activation";
 import type { PortIslandToVesselMsg } from "@lararium/mesh/record-port";
 import type { PortPolicy, PortPlacement } from "@lararium/mesh/port-lease";
 import type { DocCensusReading, DocRef } from "@lararium/mesh/doc-census";
@@ -206,7 +207,7 @@ import type { LarVessel } from "@lararium/mesh/lar-vessel";
 import { composeVessel } from "@lararium/mesh/cap-compose";
 import { islandFloorStack, islandLiftStack, larVesselOf } from "@lararium/mesh/lar-vessel";
 import {
-  DaemonRestarting, HOME_WIKI_TITLE, openHomePreference, KEEP_LIST_TITLE, keepListFilter, keepListWith, keepListWithout, readKeepList,
+  DaemonRestarting, HOME_WIKI_TITLE, readHomeWikiSlug, KEEP_LIST_TITLE, keepListFilter, keepListWith, keepListWithout, readKeepList,
   MemoryTiddlerStore,
   seedVesselDefaults,
   loadCatalogCorpora,
@@ -239,7 +240,7 @@ import { ledgerWorkbenches, ledgerWorkbenchRealms, workbenchSeats } from "@larar
 import { wikiSlotOf } from "@lararium/mesh/wiki-island-reach";
 import { armFacePoolWatch, armWorkspaceWatch, tendLitFacePool, type FacePoolWatch } from "./watch-core.js";
 import { ensurePoolTree, faceShelvingLine, healPoolTrees, poolTreeLine, shelveFaceRoot } from "./pool-tree.js";
-import { islandIngestSubmit, openSyncedTree, poolIngestPorts, workspaceIngestPorts } from "./ingest-scan.js";
+import { islandBaseDoor, islandIngestSubmit, openSyncedTree, poolIngestPorts, workspaceIngestPorts, type BaseRoad } from "./ingest-scan.js";
 import { poolHeads } from "./pool-head.js";
 import { newRequestId } from "@lararium/mesh/verb-tiddler";
 import { KAHUA_BAG } from "@lararium/mesh/wiki-recipe";
@@ -756,6 +757,9 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   readonly islandCaps: Readonly<CapabilityRecord>;
   /** The floor's rest key as this composition began with it: `stands` on an unlocked vessel, else the floor's refusal. */
   readonly floorKey: "stands" | "vessel-locked" | "floor-unkeyed";
+  /** Settles once the lit face's home-preference read ends: `activeWikiId` then names the wiki it opened, or the boot's own
+   *  where none stands or its wiki refused. Settles at once where no face lit. */
+  homeWikiSettled: () => Promise<void>;
   restartWiki: (wiki: string) => Promise<void>;
   /** The promote and kapae session acts in flight: main begins each one, the channel ends it once the reply left. */
   promoteActs: PromoteActGate;
@@ -1027,6 +1031,8 @@ interface NodeBootPrep {
   eventBus:         () => LarEventBusImpl;
   slotActiveWikiId: () => string;
   activeWikiSource: () => "boot-arg" | "home-preference" | "floor";
+  /** Settles once the lit face's home-preference read ends (opened, refused or absent); at once where no face lit. */
+  homeWikiSettled: () => Promise<void>;
   /** The wiki this composition stands in for on its floor wiki, waiting on a face; null where none waits. */
   wikiAwaitsFace:   () => FloorWikiRefusal | null;
   /** Stand down everything the prep and its closures stood, then the Repo; releases a floor the prep stood itself. */
@@ -1417,14 +1423,26 @@ async function prepareNodeBootOn(
   const docStoreDoor: NonNullable<CapabilityRecord["docStore"]> = (port) => docStorePort.attach(port);
   // V2: each island's own store rests no document this rest seals (`islandRestGuard`).
   const restsSealedDoor: NonNullable<CapabilityRecord["restsSealed"]> = (documentId) => sealedRest.restsSealed(documentId);
+  // THE BASE PINS WHAT SEALED: each island's Synced tree asks whether the heads a pin read rest here before the pin reaches
+  // its directory. This replica holds them, that one document's flush lands, and no save of it waits in memory.
+  // The Repo stands further down this boot, so the door reads it at each ask, never at composition.
+  const restsAtDoor: NonNullable<CapabilityRecord["restsAt"]> = (...ask) =>
+    repoHeadsRestAt(repo as never, (documentId) => sealedRest.store.waiting(documentId))(...ask);
+  // THE SAVE BOOK'S REST, TOLD: once a save of a document lands and none of its saves waits in memory, every island hears it,
+  // and each pending pin of that document asks again (`rest:rested`).
+  const restedDoor: NonNullable<CapabilityRecord["rested"]> = (listener) => { restedListeners.add(listener); return () => { restedListeners.delete(listener); }; };
   // THE TRAP-NAMED DOCUMENTS HOLD ON EVERY LOAD PATH (`engine-fall`): each document a resting engine fall names in flight
   // reaches the engine through no path, the storage source's included, until the hand clears the count.
   const heldBack = heldInFlight(readEngineFalls(storageDir));
   // THE REST-OWED WATCH (No silent loss): every save held back numbers here, so a write door reads, after its flush, which
   // documents its call wrote still wait unsealed, and answers `owed` rather than a bare ok (`restOwedAfter`).
   const owedWatch = restOwedWatch({ waiting: (documentId) => sealedRest.store.waiting(documentId) });
+  const restedListeners = new Set<(documentId: string) => void>();
   const sealedRest = composeSealedRest<NodeSaveSession>({
-    inner: holdBackStorage(new DurableNodeFSStorageAdapter(storageDir), heldBack, (line) => console.warn(`[lararium] ${line}`)),
+    inner: restedOnSave(holdBackStorage(new DurableNodeFSStorageAdapter(storageDir), heldBack, (line) => console.warn(`[lararium] ${line}`)), (documentId) => {
+      if (restedListeners.size === 0 || sealedRest.store.waiting(documentId) > 0) return;
+      for (const listener of [...restedListeners]) listener(documentId);
+    }),
     bagOf: sealedBagOf,
     // THE MAP BEFORE THE BYTES: a document named for a sealed bag ahead of its first byte maps by that bag's row (`nameDocument`).
     bagRow: (bagId) => sealedMap.bagRow(bagId),
@@ -1884,6 +1902,14 @@ async function prepareNodeBootOn(
     },
     onSettled: ({ documentId, status, reason }) => { if (status !== "mounted") console.warn(`[sealed-rest] ${documentId.slice(0, 12)}… stands ${status}, read-only: ${reason ?? ""}`); },
   });
+  // THE STAND-DOWN SEALS ONCE, BEFORE THE SHORE'S LAST PINS: the shore's flush entry runs it first (`shoreFlushStandDown`'s
+  // `seal`), so every pin its islands still hold pending meets heads that rest; the sealed rest's own entry then reads the
+  // same run. A boot that never went live stands no shore flush, and the sealed rest's entry runs it alone.
+  let sealedRestDowned: Promise<void> | null = null;
+  const sealedRestDown = (): Promise<void> => (sealedRestDowned ??= (async () => {
+    const waiting = await sealedRest.standDown((sealedCells.book?.seated() ?? []).map(saveSessionOf));
+    if (waiting > 0) nameHeldSaves(waiting);
+  })());
   // The Repo stands down after everything that writes through it: it flushes, then closes its storage and network.
   stood.push({ what: "the Repo", phase: "repo", down: () => closeCompositionRepo({
     flush: () => repo.flush(),
@@ -1895,10 +1921,7 @@ async function prepareNodeBootOn(
     endHydration: () => sealedRest.store.endHydration(),
     shutdown: () => repo.shutdown(),
   }) });
-  stood.push({ what: "the sealed rest", phase: "flush", down: async () => {
-    const waiting = await sealedRest.standDown((sealedCells.book?.seated() ?? []).map(saveSessionOf));
-    if (waiting > 0) nameHeldSaves(waiting);
-  } });
+  stood.push({ what: "the sealed rest", phase: "flush", down: () => sealedRestDown() });
   stood.push({ what: "the Repo's final session flush", phase: "flush", down: () => repo.flush() });
   // THE COMPOSITION'S ACTOR DOOR, seated on its Repo: every store over this Repo's documents (`wearOf(repo)`) writes a worn
   // face's change under the actor the wire identity derives, and the daemon island's own Repo asks for its actors here.
@@ -2797,7 +2820,8 @@ async function prepareNodeBootOn(
       await restartDaemonNow();
     } else {
       await vmManager.unmountWiki(wiki);
-      await wikiActivation.ensureActive(wiki);
+      const refused = activationRefusal(await wikiActivation.ensureActive(wiki));
+      if (refused !== null) throw new Error(`reload ${wiki}: the wiki did not come back: ${refused}`);
     }
   };
   // The store door's own verbs (commit, drop) run INSIDE the act that asks for the reload, so the daemon reload follows that act's completion.
@@ -2911,6 +2935,7 @@ async function prepareNodeBootOn(
   let selvesCatalogRow: ((record: SelvesRecordRef) => void) | null = null;   // each record's row in its own face's catalog
   let slotActiveWikiId = "";               // captured in wikiSlot
   let activeWikiSource: "boot-arg" | "home-preference" | "floor" = "boot-arg";
+  let homeWikiRead: Promise<void> = Promise.resolve();
   let wikiAwaitsFace: FloorWikiRefusal | null = null;   // captured in wikiSlot
   // The recall FORM leg holder — opened ONCE, lazily, shared by BOTH the dual recall fuse and the
   // worldline form pre-fetch (makeFormPalace ref-counts per canonical dir → one reference, never a
@@ -3047,7 +3072,7 @@ async function prepareNodeBootOn(
   // THE FLOOR COMPOSES (slice 5b): one record through the one composer, before any island stands. Its stand-down runs
   // after the islands shut (T27): its resource phase follows their shutdown phase, so their final asks still read the floor.
   const islandFloor = await composeVessel(islandFloorStack({
-    receipt: receiptDoor, cas: resolveCid, dyad: dyadDoor, docStore: docStoreDoor, restsSealed: restsSealedDoor,
+    receipt: receiptDoor, cas: resolveCid, dyad: dyadDoor, docStore: docStoreDoor, restsSealed: restsSealedDoor, restsAt: restsAtDoor, rested: restedDoor,
   }));
   const islandVessel = larVesselOf(islandFloor);
   const islandCaps = islandVessel.record;
@@ -4938,7 +4963,8 @@ async function prepareNodeBootOn(
     registry.register("sync-wiki", async (args, ctx) => {
       // Resolver-as-activator: a reference wakes a cold grain before the verb lands
       // (the pinned home wiki is already live → a cheap no-op).
-      await wikiActivation.ensureActive(slotActiveWikiId);
+      const refused = activationRefusal(await wikiActivation.ensureActive(slotActiveWikiId));
+      if (refused !== null) throw new Error(`sync-wiki: ${refused}`);
       return vmManager.placeWikiVerb(slotActiveWikiId, {
         verb: "sync-wiki", args: args as Record<string, unknown>, requestedBy: ctx.invocation.requestedBy,
       });
@@ -5510,8 +5536,9 @@ async function prepareNodeBootOn(
     const stopPromoteWatch = promoteWiringRef?.watch();
     if (stopPromoteWatch) stood.push({ what: "the promote watcher", phase: "producers", down: stopPromoteWatch });
     // THE TEARDOWN'S FLUSH PHASE ASKS EVERY SHORE FIRST: pushed after the Repo's own flush entries, it runs ahead of them (the
-    // registry stands down in reverse), so what the islands hold reaches the mirrors while the islands still stand.
-    stood.push(shoreFlushStandDown(flushShores));
+    // registry stands down in reverse), so what the islands hold reaches the mirrors while the islands still stand. It seals
+    // first: the shore's last pins reach each Synced tree's directory only once their heads rest sealed.
+    stood.push(shoreFlushStandDown(flushShores, { seal: sealedRestDown }));
     // THE WATCH OVER THE WORN FACE'S POOL (face-pools W1, W2): armed here, off the boot path (the arm hands back at once), over
     // `faces/<pet name>/`. It names the wake's stage edits, catches up once, and lands each settled wave by itself
     // (`poolIngestPorts`): an UNATTENDED INGEST wave per plane on the daemon island (`islandIngestSubmit`), the working layer
@@ -5530,7 +5557,17 @@ async function prepareNodeBootOn(
       const submit = islandIngestSubmit((verb, args, requestId) => islandAsk(daemonHolder)((ports) => askIslandVerb({ ...ports, verb, args, requestedBy, requestId })).answer);
       const log = (line: string): void => console.log(`[faces] ${line}`);
       const bags = { wiki: DAEMON_WORKING_SLOT, stage: KAHUA_BAG, ...(wornFaceCanonBag !== null ? { canon: wornFaceCanonBag } : {}) };
-      const watch = armFacePoolWatch({ pool, owner: wornFaceSegment, ports: poolIngestPorts({ pool, bags, submit, sense, did: requestedBy, heads: poolHeads(pool), log }), log });
+      // ONE OWNER OF PENDING STATE: each island's own Synced tree holds its projector's pending pins, so a wave's bases land
+      // through the shore (`base`) of the island that PROJECTS their bag, and this thread lands none itself. The roads for a
+      // bag: each resident wiki island whose recipe grants that bag a mirror, and the daemon island, the wave's own island
+      // first. An island that holds no mirror of the bag passes the ask on (`bag-unprojected`).
+      const daemonRoad: BaseRoad = (args) => islandAsk(daemonHolder)((ports) => askIslandVerb({ ...ports, verb: "shore", args, requestedBy, requestId: newRequestId() })).answer;
+      const wikiRoads = (bag: string, first?: string): BaseRoad[] => (vmManager?.inspect() ?? [])
+        .map(({ wikiId }) => wikiId)
+        .filter((wikiId) => wikiId !== first && (vmManager.mirrorBagsOf(wikiId) ?? []).includes(bag))
+        .map((wikiId): BaseRoad => (args) => vmManager.placeWikiVerb(wikiId, { verb: "shore", args, requestedBy }));
+      const base = (tree: ReturnType<typeof openSyncedTree>) => islandBaseDoor((bag) => [daemonRoad, ...wikiRoads(bag)], tree);
+      const watch = armFacePoolWatch({ pool, owner: wornFaceSegment, ports: poolIngestPorts({ pool, bags, submit, sense, base, did: requestedBy, heads: poolHeads(pool), log }), log });
       facePoolWatch = watch;
       stood.push({ what: "the face pool's watch", phase: "producers", down: async () => { await watch.down("lock"); if (facePoolWatch === watch) facePoolWatch = null; } });
       // THE WATCH OVER EACH SHARED WIKI'S WORKBENCH (a workbench serves as a pool): a wiki's one disk copy whichever face wears,
@@ -5556,7 +5593,9 @@ async function prepareNodeBootOn(
         // The submit port's `wiki-act` carries the INGEST and names this wiki: it places in that wiki's island alone.
         const wsSubmit = islandIngestSubmit((_verb, args) => inWiki(slug, routingString(args, "verb", "wiki-act"), routingObject(args, "args", "wiki-act")));
         const wsSense = (uris?: readonly string[]): Promise<unknown> => inWiki(slug, "shore", { op: "sense", ...(uris !== undefined ? { uris: [...uris] } : {}) });
-        const wsWatch = armWorkspaceWatch({ workspace: dir, tree, name, ports: workspaceIngestPorts({ workspace: dir, slug, submit: wsSubmit, sense: wsSense, did: requestedBy, heads: poolHeads(tree), log: wsLog }), log: wsLog });
+        // The workbench's bases land in that wiki island's own tree, through its shore, as the pool's do in the daemon island's.
+        const wsBase = (synced: ReturnType<typeof openSyncedTree>) => islandBaseDoor((bag) => [(args) => inWiki(slug, "shore", args), daemonRoad, ...wikiRoads(bag, slug)], synced);
+        const wsWatch = armWorkspaceWatch({ workspace: dir, tree, name, ports: workspaceIngestPorts({ workspace: dir, slug, submit: wsSubmit, sense: wsSense, base: wsBase, did: requestedBy, heads: poolHeads(tree), log: wsLog }), log: wsLog });
         workspaceWatches.add(wsWatch);
         // The last workbench watch's down marks a quiet point: a rename or regroup the operator made while it held the folder moves now.
         stood.push({ what: `the workbench ${name}'s watch`, phase: "producers", down: async () => { await wsWatch.down("lock"); workspaceWatches.delete(wsWatch); if (workspaceWatches.size === 0) settleRealmFolders(); } });
@@ -5564,17 +5603,21 @@ async function prepareNodeBootOn(
     }
     // A FACE'S HOME WIKI IS ITS OWN PREFERENCE, READ AT LIGHT (research/pin-mu#S2): the record sits in the lit face's own daemon
     // wiki's working layer, so only a face that stands lit reads it, and no boot pin names a wiki for the vessel.
-    // The same light read seats the face's keep list: each wiki it names takes a keep where the cap grants one, and a refusal names its cause.
-    if (wornDeviceGroup !== null) void (async () => {
+    // A preference whose wiki refuses activation leaves the boot's wiki standing and says why. The record rests in the
+    // daemon wiki's working layer, which the host mounts once the island answers (`mountHostWorking`): the read waits on
+    // that mount, or it reads the composite before the layer stands and finds no preference. The same light read seats the
+    // face's keep list: each wiki it names takes a keep where the cap grants one, and a refusal names its cause.
+    if (wornDeviceGroup !== null) homeWikiRead = (async () => {
+      await mountHostWorking();
       const holder = `face-${wornDeviceGroup}`;
       for (const slug of readKeepList(await daemonVm.composite.get(KEEP_LIST_TITLE))) {
         const kept = await wikiActivation.keep(slug, holder);
         if (!kept.ok) console.warn(`[keep-list] the face's keep of ${slug} refused: ${kept.cause}: ${kept.detail}`);
       }
-    })().catch((e: unknown) => console.warn(`[keep-list] the lit face's keep list did not open: ${e instanceof Error ? e.message : String(e)}`));
-    if (wornDeviceGroup !== null) void (async () => {
-      const home = await openHomePreference(await daemonVm.composite.get(HOME_WIKI_TITLE), (slug) => wikiActivation.ensureActive(slug), slotActiveWikiId);
-      if (home === null) return;
+      const home = readHomeWikiSlug(await daemonVm.composite.get(HOME_WIKI_TITLE));
+      if (home === null || home === slotActiveWikiId) return;
+      const activation = await wikiActivation.ensureActive(home);
+      if (!activation.ok) { console.warn(`[home-wiki] the lit face's home preference names ${home}, which did not open (${activation.cause}: ${activation.detail}); ${slotActiveWikiId} stays active`); return; }
       slotActiveWikiId = home;
       activeWikiSource = "home-preference";
     })().catch((e: unknown) => console.warn(`[home-wiki] the lit face's home preference did not open: ${e instanceof Error ? e.message : String(e)}`));
@@ -5771,6 +5814,7 @@ async function prepareNodeBootOn(
     eventBus:         () => eventBus,
     slotActiveWikiId: () => slotActiveWikiId,
     activeWikiSource: () => activeWikiSource,
+    homeWikiSettled:  () => homeWikiRead,
     wikiAwaitsFace:   () => wikiAwaitsFace,
     teardown,
   };
@@ -5885,8 +5929,10 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
   let down: Promise<FacesClosed> | null = null;
   return {
     islandCaps: p.islandCaps,
-    activeWikiId: p.slotActiveWikiId(),
-    activeWikiSource: p.activeWikiSource(),
+    // Read live: the lit face's home preference may move the active wiki after the composition returns.
+    get activeWikiId() { return p.slotActiveWikiId(); },
+    get activeWikiSource() { return p.activeWikiSource(); },
+    homeWikiSettled: () => p.homeWikiSettled(),
     wikiAwaitsFace: p.wikiAwaitsFace(),
     pool: result.pool, repo: p.repo,
     ports: {
