@@ -24,6 +24,8 @@ export interface PromoteActGate {
   /** True when acts of `kinds` stand and `run` waits on their completion; false when none stand and the caller acts now. */
   /** With `edges`, the run defers only when a standing act names EVERY one of them; an edge nobody here raised restarts now. */
   after(kinds: readonly string[], run: () => void, edges?: readonly string[]): boolean;
+  /** The acts standing now (begun, not yet ended): the floor restand's quiet point reads none standing. */
+  standing(): number;
 }
 
 export function promoteActGate(): PromoteActGate {
@@ -47,5 +49,6 @@ export function promoteActGate(): PromoteActGate {
       waiters.add({ left, run });
       return true;
     },
+    standing: () => open.size,
   };
 }

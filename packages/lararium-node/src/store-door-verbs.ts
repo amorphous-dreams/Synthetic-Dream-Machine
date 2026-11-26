@@ -202,6 +202,11 @@ export interface StoreDoorDeps {
    */
   readonly floorAlert?: (remount: Extract<FloorRemount, { act: "alert" }>) => Promise<readonly string[]>;
   /**
+   * Ask the standing vessel to restand itself at its next quiet point after an adopt applies (`floor-restand`): present where a
+   * pūlama holds the vessel's custody, so the raise wakes lit with no hand. Absent, the adopt raises the reboot-pending alert.
+   */
+  readonly floorRestand?: (manifest: string) => void;
+  /**
    * A face's local canon `bags/daemon-<F>` by relation, as the standing vessel opens it (`faceCanonThroughControl`): a kahua
    * lift reads its staged row there and `kahua-stage` writes one. Absent on a direct act, whose lift refuses
    * `kahua-lift-unstaged`.
@@ -708,7 +713,7 @@ function storeDoorVerbsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       const act = str(args["act"]) ?? "apply";
       if (act === "commit" || act === "revert") return { ...(await runFloorSettle({ ...common, act })) };
       if (act !== "apply") throw new Error(`floor-adopt-apply REFUSED: act names apply, commit or revert (got "${act}")`);
-      return { ...(await runFloorAdopt({ ...common, ...opt("floorAlert", deps.floorAlert),
+      return { ...(await runFloorAdopt({ ...common, ...opt("floorAlert", deps.floorAlert), ...opt("floorRestand", deps.floorRestand),
         seedCid: need("floor-adopt-apply", args, "seedCid"), seedFloor: need("floor-adopt-apply", args, "seedFloor"), apply: true })) };
     }),
 

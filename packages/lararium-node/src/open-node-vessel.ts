@@ -437,7 +437,8 @@ import { carriedSet, readCarriedCharters }       from "./carried-set.js";
 import { composeLararium, composeHerm, carriageStack, type MeshSelf } from "./node-caps.js";
 import { PLANE_LABELS } from "@lararium/mesh/plane-labels";
 import { shoreInbound } from "@lararium/mesh/prototype-key-shore-door";
-import { vesselMountFloorCid } from "@lararium/mesh/floor-pin";
+import { vesselMountFloorCid, type FloorBootMount } from "@lararium/mesh/floor-pin";
+import type { FloorMountReading } from "@lararium/mesh/surface-recipe-door";
 
 /** The genesis dir when a caller sites none — resolves through the composable genesis cap
  *  (`LAR_GENESIS` → `<root>/config/config.json` → repo-relative `<corpus>/genesis`). Genesis stays
@@ -570,6 +571,12 @@ export interface NodeVesselOptions extends LarariumVesselOptions {
    * vessel's console stays the flat log alone.
    */
   readonly shoreLog?: Pick<VesselLogSink, "attach" | "replay">;
+  /**
+   * THE HOUSE RESTANDS ITSELF after an adopt (`floor-restand`): the standing vessel's ask, present where a pūlama holds its custody
+   * (so a raise wakes lit with no hand). The store door's `floor-adopt-apply` hands it the staged manifest; absent, the adopt raises
+   * the reboot-pending alert.
+   */
+  readonly floorRestand?: (manifest: string) => void;
   portPolicy?: PortPolicy;
   onPortMessage?: (binding: string, islandKey: string, msg: PortIslandToVesselMsg) => void;
   storageDir: string;
@@ -849,6 +856,10 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   facePoolStandDown: () => Promise<void>;
   /** The census of saves this vessel's sealed rest holds in memory, by document and never by body (`lares vessel census`). */
   heldSaves: () => readonly HeldSaves[];
+  /** Hear each document the sealed rest tells rested (its save landed and none waits in memory). Returns the unsubscribe. */
+  rested: (listener: (documentId: string) => void) => () => void;
+  /** The daemon island's floor mount this boot (the floor's own set, or the founding record's and why); null before it resolved. */
+  daemonFloorMount: () => FloorBootMount;
   /** The document census of this vessel's stores, read-only (`lares vessel census --docs`). */
   docCensus: () => Promise<DocCensusReading>;
   /** Ask every island that mounts a disk shore to flush (`shore` op `flush`), each on its own road (`flushEveryShore`). */
@@ -958,6 +969,10 @@ interface NodeBootPrep {
   facePoolStandDown: () => Promise<void>;
   /** The census of saves the sealed rest holds in memory, by document and never by body. */
   heldSaves: () => readonly HeldSaves[];
+  /** Hear each document the sealed rest tells rested. Returns the unsubscribe. */
+  rested: (listener: (documentId: string) => void) => () => void;
+  /** The daemon island's floor mount this boot; null before it resolved. */
+  daemonFloorMount: () => FloorBootMount;
   /** Ask every island that mounts a disk shore to flush (`shore` op `flush`): the daemon island and each resident wiki island. */
   shoreFlush: () => Promise<ShoreFlushReading>;
   /** The document census of this vessel's stores, read-only (`lares vessel census --docs`). */
@@ -2917,6 +2932,12 @@ async function prepareNodeBootOn(
   let mountClosedHeard = false;
   const mountClosed = (): void => { if (mountClosedHeard) return; mountClosedHeard = true; for (const l of [...mountClosedListeners]) { try { l(); } catch (e) { console.warn(`[lit-set] a mount-closed listener faulted: ${e instanceof Error ? e.message : String(e)}`); } } };
   let daemonHolder!: DaemonVmHolder;
+  /** The daemon island's floor mount as its last plugin resolution read it; null before the daemon resolved its set. */
+  let daemonFloorMount: FloorBootMount = null;
+  const keepDaemonFloorMount = <V extends { readonly ok: boolean; readonly floor?: FloorMountReading }>(verdict: V): V => {
+    if (verdict.ok && verdict.floor) daemonFloorMount = verdict.floor;
+    return verdict;
+  };
   let daemonVm!:   DaemonVmCore;           // set in openDaemon
   let standDaemonVm: () => void = () => {};
   const daemonVmStood = new Promise<void>((resolve) => { standDaemonVm = resolve; });   // the receipt capability waits on the island's leg through it
@@ -4431,7 +4452,9 @@ async function prepareNodeBootOn(
     const offerings = publicationHandle;
     daemonHolder = await standDaemonIsland({
       readJoinedFaces,
-      resolvePlugins: async () => resolveNodeIslandPluginCids({
+      // THE DAEMON'S FLOOR MOUNT, kept: the floor its plugin set came from (or the founding record's set and why), the par
+      // reading the boot's settle of a staged floor reads (`settleFloorAtBoot`).
+      resolvePlugins: async () => keepDaemonFloorMount(await resolveNodeIslandPluginCids({
         islandBlobs: assembly.islandHandle.doc()?.blobs,
         floorCid: await vesselMountFloorCid({ control: readControlDoc, islandDoc: () => assembly.islandHandle.doc() }),
         onFloorFallback: logFloorFallback,
@@ -4440,7 +4463,7 @@ async function prepareNodeBootOn(
         readBytes: (cid) => readCasBlobFromFs(cid, cidDir),
         promoted: (slug) => promoteWiringRef ? promoteWiringRef.boot.promotedFor(slug) : Promise.resolve([]),
         onPromotedVoided: (wiki, digests) => console.warn(`[promote] ${wiki}: promoted digest(s) ${digests.join(", ")} failed the local byte check and were dropped from the plugin union`),
-      }),
+      })),
       open: async ({ pluginCids, joinedFaces }) => openDaemonVm({
         repo,
         caps: islandCaps,
@@ -5039,6 +5062,8 @@ async function prepareNodeBootOn(
       onRolled: afterRoll,
       // A floor accept raises the reboot-pending alert in every live wiki: no node island swaps its floor read-face live.
       floorAlert: (remount) => raiseFloorAlert(vmManager, remount),
+      // An adopt under a pūlama asks the vessel to restand itself at its next quiet point (`floor-restand`).
+      ...(opts.floorRestand ? { floorRestand: opts.floorRestand } : {}),
       // The swarm's controls rest in the daemon wiki, device-local by the daemon document's anchor.
       swarmWiki: controlSwarmWiki(readControlDoc),
       // The key side of a removal answers a SOVEREIGN vessel alone: the facts read the sealed roster, and a
@@ -5702,6 +5727,8 @@ async function prepareNodeBootOn(
     },
     facePoolStandDown: async () => { await facePoolWatch?.down("down"); await Promise.all([...workspaceWatches].map((w) => w.down("down"))); },
     heldSaves: () => sealedRest.store.held(),
+    rested: restedDoor,
+    daemonFloorMount: () => daemonFloorMount,
     shoreFlush: flushShores,
     // THE DOCUMENT CENSUS reads this vessel's own stores, read-only: the pointers this composition reads back, the roles
     // it knows its documents by, and the sealed rest under the worn session for a sealed document no handle holds.
@@ -5964,6 +5991,8 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     sealedRestStandDown: p.sealedRestStandDown,
     facePoolStandDown: p.facePoolStandDown,
     heldSaves:       p.heldSaves,
+    rested:          p.rested,
+    daemonFloorMount: p.daemonFloorMount,
     docCensus:       p.docCensus,
     shoreFlush:      p.shoreFlush,
     floorKey:        p.floorKey,

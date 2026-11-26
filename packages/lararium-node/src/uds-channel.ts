@@ -257,6 +257,9 @@ export interface UdsChannelOptions {
    * Each admission that settles durably marks the last settled wave. Absent: no watch, the prior behavior.
    */
   readonly engine?: EngineWatch;
+  /** THE DOOR TURNED IDLE: called each time the seat's last call or act in flight settles (no call and no arbitration stand).
+   *  The floor restand reads its quiet point at this event (`floor-restand`), never on a clock. A throw it raises never reaches a call. */
+  readonly onIdle?: () => void;
   readonly onLog?: (line: string) => void;
 }
 
@@ -868,6 +871,8 @@ export interface UdsSeat {
    * so the composition beneath it tears down under no request still reading its ledger or awaiting its worker.
    */
   readonly close: () => void | Promise<void>;
+  /** True while no call and no act stand in flight on this seat (the door idle the floor restand reads). */
+  readonly idle?: () => boolean;
 }
 
 /** The floor's hold on the verb socket: it serves the claim once and outlives every composition. */
@@ -1654,7 +1659,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       if (ran) { try { opts.sessionActs?.settled?.(name, bound); } catch (error) { log(`session act ${name} settle hook failed: ${error instanceof Error ? error.message : String(error)}`); } }
       work?.done();
       arbitrating -= 1;
-      if (idle()) drained?.();
+      if (idle()) turnedIdle();
     }
   };
   // The acts rest in the vessel's own sealed row, never in a document the face's fleet syncs (`switch-act-log`).
@@ -1735,8 +1740,13 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
   let arbitrating = 0;
   let drained: (() => void) | null = null;
   const idle = (): boolean => inFlight.size === 0 && arbitrating === 0;
+  /** The seat turned idle: a close waiting on the drain hears it, and so does the door's idle listener (`onIdle`). */
+  const turnedIdle = (): void => {
+    drained?.();
+    try { opts.onIdle?.(); } catch (error) { log(`the idle listener failed: ${error instanceof Error ? error.message : String(error)}`); }
+  };
   const settleOne = (sock: Socket): void => {
-    if (inFlight.delete(sock) && idle()) drained?.();
+    if (inFlight.delete(sock) && idle()) turnedIdle();
   };
   /** EVERY CALL RUNS IN ITS OWN SCOPE (`call-touches`): what the vessel's main thread changes for it tags the call's id. */
   const handle = (parsed: unknown, sock: Socket, sessionRequestId?: string, onSessionReply?: () => void, mark?: ChoreReceiptMark, gate?: DoorGate): void => {
@@ -1906,7 +1916,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       // while its read still holds the ledger, never lets the seat read as drained under them.
       const tended = (work: Promise<void>): void => {
         arbitrating += 1;
-        void work.finally(() => { arbitrating -= 1; if (idle()) drained?.(); });
+        void work.finally(() => { arbitrating -= 1; if (idle()) turnedIdle(); });
       };
       if (isReceiptQuery(parsed)) {
         tended(answerReceipt(parsed.requestId).then(
@@ -2135,12 +2145,13 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         }
         if (sessionRequestId !== undefined) { refuseSession("session-fault"); onSessionReply?.(); }
         else fail("this vessel faulted before dispatch; nothing ran", "ledger-unwritten");
-      }).finally(() => { arbitrating -= 1; if (idle()) drained?.(); }); }));
+      }).finally(() => { arbitrating -= 1; if (idle()) turnedIdle(); }); }));
   };
 
   return {
     handle,
     handleSessionFrame: queueSession,
+    idle,
     close: async () => {
       closing = true;
       interruptRosters(HEARTH_CLOSING);

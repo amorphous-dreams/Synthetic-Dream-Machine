@@ -66,7 +66,8 @@ import { faceStands } from "./commands/init.js";
 import { deriveMeshSelf } from "./node-caps.js";
 import { parseMeshPeer } from "@lararium/mesh/carriage-caps";
 import { ratedReceiptRing, ratedReceiptRingBytes } from "@lararium/mesh/verb-tiddler";
-import { makeUdsSeat, serveUdsFront, type UdsChannelOptions, type UdsFront } from "./uds-channel.js";
+import { makeUdsSeat, serveUdsFront, type UdsChannelOptions, type UdsFront, type UdsSeat } from "./uds-channel.js";
+import { floorRestandLane, readFloorQuiet, settleFloorAtBootLines } from "./floor-restand.js";
 import { hearthPlanesOver, readHearthPlane } from "./hearth-roster-read.js";
 import { floorVerbsFor } from "./floor-verbs.js";
 import { nodeSwitchActLog } from "./switch-act-log.js";
@@ -889,6 +890,21 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
   // Only an asked lararium lifts to the hearth, and an asked lararium composed its origins before listen.
   if (originCompositions === null) throw new Error("[lararium] a hearth stood without its composed origins");
 
+  // THE HOUSE RESTANDS ITSELF to mount an adopted floor (`floor-restand`): only where a pūlama holds this vessel's custody, so the
+  // raise its supervisor brings wakes lit with no hand. The lane reads its quiet point at events alone: the verb door turning idle
+  // and the sealed rest telling a document rested. At quiet, the vessel's own graceful stand-down runs, then its clean exit.
+  let seat: UdsSeat | null = null;
+  const floorRestand = namesPulama() && sovereign !== null ? floorRestandLane({
+    quiet: () => readFloorQuiet({
+      doorIdle:     () => seat?.idle?.() ?? false,
+      actsStanding: () => result.promoteActs.standing(),
+      heldSaves:    () => result.heldSaves().reduce((n, h) => n + h.saves, 0),
+      flushShores:  () => result.shoreFlush(),
+    }),
+    restand: (why) => { if (!shuttingDown) void shutdown(`floor restand (${why})`); },
+    log: (line) => console.log(`[lararium] ${line}`),
+  }) : null;
+
   // A Lararium also stands a first-class mesh-node: it carries the FLOW-map (meshpalace+carriage) from the SAME
   // derived meshSelf — a hearth that navigates the mesh, not a destination beside the roads.
   const result = await openNodeVessel({
@@ -905,6 +921,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     dispatcher,
     catalogUrl,
     meshSelf,
+    ...(floorRestand ? { floorRestand: (manifest: string) => floorRestand.arm(manifest) } : {}),
     onPhase: (phase) => {
       // THE BOOT NAMES ITSELF: its first line carries this process's pid, so a reader binds the log to the vessel it holds by identity, never by a file's time.
       if (phase === "boot") console.log(`[lararium] boot pid ${process.pid}`);
@@ -975,7 +992,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
   // mismatch — and `stand` attaches to a floor and a hearth alike. Written here, once the channel
   // answers: a marker that outlives what it names repeats the fault this vessel already met.
   publishStanding(storageDir, standing, faceLit);
-  front.attach(makeUdsSeat({
+  seat = makeUdsSeat({
     controlHandle: result.daemon.controlHandle,
     control:      result.daemon.control,
     // One reading on every composition: where no control document stands and the floor's rest key does, the veil's four verbs pass.
@@ -1027,11 +1044,17 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
       settled: (act, args) => { if (isPromoteAct(act)) result.promoteActs.end(args); },
     },
     ...(receiptRing !== undefined && { ring: receiptRing.count, ringBytes: receiptRing.bytes }),
+    ...(floorRestand ? { onIdle: () => floorRestand.poke() } : {}),
     onLog: (line) => console.log(`[lararium] ${line}`),
-  }));
+  });
+  front.attach(seat);
+  if (floorRestand) result.rested(() => floorRestand.poke());
   console.log(`[lararium] uds verb-channel on ${floor.storeClaim.socketPath} (perms 0600)`);
   console.log(`[lararium] phase → verb-seat`);
   await markReadyOnceStanding(readinessState, result.daemon.workerEa);
+  // THE BOOT SETTLES A STAGED FLOOR by its par (`settleFloorAtBoot`): the daemon island's mount stood on the staged floor, so it
+  // commits; anything else reverts it to the prior floor, naming why. A composition with no lit face reads no control home here.
+  if (sovereign !== null) for (const line of settleFloorAtBootLines(result.daemon.controlHandle, result.daemonFloorMount()).lines) console.log(`[lararium] ${line}`);
 
   // Pre-warm the mempalace read holder so the FIRST recall / recall-into-wake skips
   // the ~8s cold chromadb start (the pool then stays warm for the daemon's life).
@@ -1115,8 +1138,8 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     lightFace: result.lightFace, dropFace: result.dropFace,
     releaseFace: result.releaseFace, releaseFaces: result.releaseFaces, holdFace: result.holdFace, holdFaces: result.holdFaces, refusedLights: result.refusedLights, refusedCloses: result.refusedCloses, refusedHolds: result.refusedHolds, replayLend: result.replayLend, armRecard: result.armRecard, disarmRecard: result.disarmRecard,
     closeFaces: () => result.closeFaces("a whole lock closes every face", { strict: true }), onMountClosed: result.onMountClosed,
-    onSignal: (sig) => void shutdown(sig),
-    teardown: () => result.teardown(() => front.detach()),
+    onSignal: (sig) => { floorRestand?.disarm(); void shutdown(sig); },
+    teardown: () => { floorRestand?.disarm(); return result.teardown(() => front.detach()); },
     kelHead: async (prefix) => (await makeLocalPersonaKelHeadAndSeqResolver(result.repo))(prefix),
     personaSelves: result.personaSelves,
     walk: result.walkDial,

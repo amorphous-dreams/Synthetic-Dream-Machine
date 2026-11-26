@@ -28,12 +28,14 @@
  * `adopt` (3d, follow-lei S2) reads the seed the genesis dir offers (its CID, the receipt, and its floor manifest, the genesis
  * witness) and asks the vessel to adopt that seed's plugins over the pin's base as a LOCAL FLOOR: bare it previews and moves nothing
  * (`floor-adopt`, open to a seat); `--apply` lands it, and `--commit` / `--revert` settle a staged one, each the hand's act
- * (`floor-adopt-apply`, `floor-needs-hand`). The engine never adopts here, and the founding record never moves.
+ * (`floor-adopt-apply`, `floor-needs-hand`). The engine never adopts here, and the founding record never moves. Once the hand
+ * applies, a vessel whose custody a pūlama holds restands itself at its next quiet point, and the boot after commits the staged
+ * floor at par or reverts it to the prior floor, naming why (`floor-restand`, `settleFloorAtBoot`); `status` reads that receipt.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane#/the-vessel-pin
  */
 import { ratchetWords, ratchetsDiffer, type GenesisDigests, type RatchetDifference } from "@lararium/mesh/genesis-compare";
-import { type FloorAcceptOutcome, type FloorStatus, type FloorAdoptOutcome, type FloorLocalAct, type FloorPin } from "@lararium/mesh/floor-pin";
+import { type FloorAcceptOutcome, type FloorStatus, type FloorAdoptOutcome, type FloorLocalAct, type FloorPin, type FloorSettleReceipt } from "@lararium/mesh/floor-pin";
 import { type FloorDrift } from "@lararium/mesh/floor-drift";
 import { GENESIS_FLOOR_TIDDLER } from "@lararium/mesh/floor-manifest";
 import { type GenesisSeed } from "@lararium/mesh/genesis-doc";
@@ -76,6 +78,8 @@ export type FloorStatusOutput = Partial<FloorStatus> & {
   readonly drifts?: readonly FloorDriftRow[];
   /** The one card the read refreshed in the daemon wiki's working layer. */
   readonly card?: FloorCardReceipt;
+  /** The latest settle of a staged local floor (the boot after its restand): committed at par, or reverted by cause. */
+  readonly floorSettle?: FloorSettleReceipt;
 };
 
 /** What the card's write answered: its title and the door's decision (`put`, `noop`, or `unwritten` with the reason). */
@@ -139,6 +143,7 @@ export function floorStatusLines(s: FloorStatusOutput, grain: FloorGrain = "all"
   }
   lines.push(...(s.drifts ? driftRowLines(s, "all") : floorDriftLines(s.floorDrift, s.floorDriftWhy)));
   if (s.card) lines.push(`  card:            ${s.card.title} (${s.card.decision}${s.card.why ? `: ${s.card.why}` : ""})`);
+  if (s.floorSettle) lines.push(floorSettleReceiptLine(s.floorSettle));
   if (s.nexusRefused) {
     lines.push(`  nexus:           refused ${s.nexusRefused.refusal} — ${s.nexusRefused.message}`);
     return lines;
@@ -279,6 +284,18 @@ export function seedFloorOf(genesisDir: string): { readonly seedCid: string; rea
   return { seedCid: genesisSeedCid(new Uint8Array(bytes)), seedFloor: floor };
 }
 
+/**
+ * The landing's next line. Under a pūlama the house restands itself at its next quiet point; with no custody outside the vessel the
+ * hand's restart raises it. Either way the boot after settles the staged floor by its par (`settleFloorAtBoot`), under one receipt
+ * `floor status` reads, and `--commit` / `--revert` stay the hand's explicit acts.
+ */
+function floorAdoptNextLine(r: Extract<FloorAdoptOutcome, { ok: true; moved: true }> & { readonly alerted?: readonly string[] }): string {
+  const settle = "the boot after commits it at par, or reverts it to the prior floor and names why (`lares vessel floor status` reads the receipt); `lares vessel floor adopt --commit` stays the hand's act";
+  if (r.remount?.act === "restand") return `  next:     the house restands itself at its next quiet point to mount it (no write in flight, the sealed rest empty, the shores flushed); ${settle}`;
+  const alerted = r.alerted?.length ? ` (alerted: ${r.alerted.join(", ")})` : "";
+  return `  next:     no pūlama holds this vessel's custody, so the hand's restart mounts it (\`lares-container.sh down\`, then \`up\`); ${settle}${alerted}`;
+}
+
 /** The human lines of `floor adopt`: the preview or the landing, the local floor's base, receipt and prior, and the restart. */
 export function floorAdoptLines(r: FloorAdoptOutcome & { readonly alerted?: readonly string[] }): string[] {
   if (!r.ok) return [`floor adopt → REFUSED ${r.refusal}: ${r.detail}`];
@@ -290,10 +307,15 @@ export function floorAdoptLines(r: FloorAdoptOutcome & { readonly alerted?: read
     `  moves:    ${r.moves.join(", ")} (grammar, lararium and plugins ride the seed's offering ${r.manifest.plugins})`,
     `  receipt:  seed ${l.receipt}`,
     `  prior:    ${l.prior?.manifest ?? "(none)"} kept; \`lares vessel floor adopt --revert\` lands it back`,
-    r.applied
-      ? `  next:     the next boot mounts it; once that boot reads par, \`lares vessel floor adopt --commit\`${r.remount?.act === "alert" ? `; ${r.remount.why}` : ""}${r.alerted?.length ? ` (alerted: ${r.alerted.join(", ")})` : ""}`
-      : "  apply:    `lares vessel floor adopt --apply` (the hand's act)",
+    r.applied ? floorAdoptNextLine(r) : "  apply:    `lares vessel floor adopt --apply` (the hand's act)",
   ];
+}
+
+/** The boot's settle receipt, as `floor status` prints it: the floor, the seed and the par reading. */
+export function floorSettleReceiptLine(r: FloorSettleReceipt): string {
+  return r.act === "committed"
+    ? `  settle:          committed local floor ${r.floor} at par (seed ${r.seed})`
+    : `  settle:          reverted local floor ${r.floor} to ${r.pinned}: ${r.par} (seed ${r.seed}; the staged floor's bytes stay in the CAS)`;
 }
 
 /** The human lines of `floor adopt --commit | --revert`. */

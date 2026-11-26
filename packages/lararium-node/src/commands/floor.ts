@@ -14,6 +14,8 @@
  *   · `stage`    — this vessel's own CAS, so the next island boot resolves the accepted floor locally;
  *   · `mount`    — no node island swaps its `@oracle` read-face live today, so an accept raises the reboot-pending alert in
  *                  every live wiki through the standing vessel (`floorAlert`); a direct act holds no live wiki and says so.
+ *                  An adopt on a standing vessel whose custody a pūlama holds asks the vessel to restand itself at its next
+ *                  quiet point (`floorRestand`, `floor-restand`), and the boot after settles the staged floor by its par.
  *
  * THE STATUS NAMES BOTH TRUTHS, CHARTER-FREE (D1, shore recommendation 8). Beside the Nexus part, `status` reads the
  * founding record (the stored genesis island) against the seed (offered) on disk and against the floor pin, ratchet by
@@ -62,7 +64,7 @@ import { foundingRecordLine, readFoundingRecordTruths, type FoundingRecordTruths
 import { nodeCanonDocUrl, nodeCanonRows } from "./canon-rows.js";
 import { readFloorDrifts, type FloorDriftRow } from "../floor-card.js";
 import { readFloorShadowFileTold } from "../floor-shadow-file.js";
-import { adoptFloorSeed, settleLocalFloor, type FloorAdoptOutcome, type FloorLocalAct, type FloorPin } from "@lararium/mesh/floor-pin";
+import { adoptFloorSeed, readFloorSettle, settleLocalFloor, type FloorAdoptOutcome, type FloorLocalAct, type FloorPin, type FloorSettleReceipt } from "@lararium/mesh/floor-pin";
 
 /** A floor door refused by name. */
 export class FloorRefused extends Error {
@@ -98,6 +100,8 @@ export interface NodeFloorOptions {
   readonly porch?:   string;
   /** The standing vessel's alert delivery; absent on a direct act (no live wiki to alert). */
   readonly floorAlert?: (remount: Extract<FloorRemount, { act: "alert" }>) => Promise<readonly string[]>;
+  /** The standing vessel's restand ask (`floor-restand`): present where a pūlama holds its custody; absent, the alert serves. */
+  readonly floorRestand?: (manifest: string) => void;
   readonly fetchFn?: typeof fetch;
   /** The genesis dir whose seed reads as the offer; absent, the daemon's own resolution (`daemonGenesisDir`). */
   readonly genesisDir?: string;
@@ -145,6 +149,7 @@ export async function nodeFloorPorts(opts: NodeFloorOptions): Promise<FloorPinPo
     stage: async (blobs) => { writeCasEntriesFs(blobs.map((b) => ({ cid: b.cid, bytes: b.bytes })), opts.casDir); },
     mount: {
       floorSwap: false,
+      ...(opts.floorRestand ? { restand: (manifest: string) => { opts.floorRestand!(manifest); } } : {}),
       alert: async (remount) => { if (opts.floorAlert) alerted.push(...await opts.floorAlert(remount)); },
     },
   };
@@ -166,6 +171,8 @@ export type FloorStatusRead = Partial<FloorStatus> & {
   readonly floorShadow: FloorShadowTally | null;
   /** Why the tally reads nowhere where its file stands corrupt; absent where it reads or no file stands. */
   readonly floorShadowWhy?: string;
+  /** The latest settle of a staged local floor at this Nexus (the boot after a restand: committed at par, or reverted by cause). */
+  readonly floorSettle?: FloorSettleReceipt;
 };
 
 /**
@@ -207,7 +214,12 @@ function pinnedFloorOf(manifestCid: string, casDir: string): FloorPinLike | null
 export async function runFloorStatus(opts: NodeFloorOptions): Promise<FloorStatusRead> {
   let status: FloorStatus | null = null;
   let nexusRefused: FloorRefused | null = null;
-  try { status = await readFloorStatus(await nodeFloorPorts(opts)); }
+  let floorSettle: FloorSettleReceipt | null = null;
+  try {
+    const ports = await nodeFloorPorts(opts);
+    status = await readFloorStatus(ports);
+    floorSettle = readFloorSettle(ports.home.doc(), ports.nexus);
+  }
   catch (e) { if (!(e instanceof FloorRefused && e.refusal === "floor-no-charter")) throw e; nexusRefused = e; }
   // A store with no island has no founding record to read: the Nexus refusal (where one stands) names the place first.
   let island: LarDoc | undefined;
@@ -231,7 +243,7 @@ export async function runFloorStatus(opts: NodeFloorOptions): Promise<FloorStatu
   });
   return nexusRefused
     ? { genesis, nexusRefused: { refusal: nexusRefused.refusal, message: nexusRefused.message }, ...drift, drifts, floorShadow, ...("corrupt" in shadowRead && shadowRead.corrupt ? { floorShadowWhy: shadowRead.corrupt } : {}) }
-    : { ...status!, genesis, ...drift, drifts, floorShadow, ...("corrupt" in shadowRead && shadowRead.corrupt ? { floorShadowWhy: shadowRead.corrupt } : {}) };
+    : { ...status!, genesis, ...drift, drifts, floorShadow, ...("corrupt" in shadowRead && shadowRead.corrupt ? { floorShadowWhy: shadowRead.corrupt } : {}), ...(floorSettle ? { floorSettle } : {}) };
 }
 
 /** `lares vessel floor accept [<release-cid>]`: the outcome, and the live wikis the alert reached. */

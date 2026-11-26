@@ -20,5 +20,7 @@ export const FLOOR_MANIFEST_FORMAT = "lararium-floor" as const;
 export const FLOOR_ANSWER_FORMAT = "lararium-floor-answer" as const;
 /** A vessel's pin on a Nexus's floor (`<control>/floor-pin/<Nexus AID>`). */
 export const FLOOR_PIN_KIND = "floor-pin" as const;
+/** A vessel's settle of a staged local floor at the boot after its restand (`<control>/floor-settle/<Nexus AID>`). */
+export const FLOOR_SETTLE_KIND = "floor-settle" as const;
 /** A floor's signed announcement body. */
 export const FLOOR_ANNOUNCEMENT_KIND = "floor-announcement" as const;

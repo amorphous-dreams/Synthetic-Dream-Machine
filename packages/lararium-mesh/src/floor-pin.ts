@@ -27,7 +27,10 @@
  * (the pin already names the release) lands nothing: no stage, no write, no remount. Nothing accepts by itself.
  *
  * THE REMOUNT, BY CAPABILITY. An island that can swap its `@oracle` read-face live (`floorSwap`) swaps; one that mounts its
- * floor once at boot raises the reboot-pending alert, naming why. Neither host's island declares the swap today.
+ * floor once at boot raises the reboot-pending alert, naming why. Neither host's island declares the swap today. An adopt whose
+ * vessel binds a restand (`mount.restand`: a pūlama holds its custody, so a raise wakes lit with no hand) asks the house to restand
+ * itself at its next quiet point instead; the boot after it settles the staged floor (`settleFloorAtBoot`): par commits it, and
+ * anything else reverts it to the prior floor, naming why, each under one receipt (`<control>/floor-settle/<Nexus AID>`).
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane#/the-vessel-pin
  */
@@ -41,8 +44,8 @@ import { sha256HexBytesSync } from "./crypto.js";
 import { foldFloorReleases, type FloorRelease, type FloorReleaseRefused, type FloorReleaseStanding } from "./floor-release.js";
 
 /** The pin record's shape name: a reader tells a pin by `kind`, never by a counter. */
-import { FLOOR_PIN_KIND } from "./wire-names.js";
-export { FLOOR_PIN_KIND };
+import { FLOOR_PIN_KIND, FLOOR_SETTLE_KIND } from "./wire-names.js";
+export { FLOOR_PIN_KIND, FLOOR_SETTLE_KIND };
 /** Where the pins rest in the vessel's control document: one row per Nexus, keyed by its AID. */
 export const FLOOR_PIN_PREFIX = `${CONTROL_HOME_ID}/floor-pin/` as const;
 
@@ -365,19 +368,28 @@ export function revertLocalFloor(pin: FloorPin): FloorLocalAct {
 
 // ── the remount decision ────────────────────────────────────────────────────────────────────────────
 
-/** What an island can do with its floor read-face. `floorSwap`: it swaps `@oracle` live, without a restart. */
-export interface FloorMountCaps { readonly floorSwap: boolean }
+/** What an island can do with its floor read-face. `floorSwap`: it swaps `@oracle` live, without a restart. `restand`: the
+ *  vessel restands itself at a quiet point, its custody held outside it (a pūlama), so the raise wakes lit with no hand. */
+export interface FloorMountCaps { readonly floorSwap: boolean; readonly restand?: boolean }
 
 /** The alert kind the remount raises where no live swap stands: the existing reboot-pending alert. */
 export const FLOOR_REMOUNT_ALERT_KIND = "reboot-pending" as const;
 
 export type FloorRemount =
   | { readonly act: "swap-live" }
+  | { readonly act: "restand"; readonly why: string }
   | { readonly act: "alert"; readonly kind: typeof FLOOR_REMOUNT_ALERT_KIND; readonly why: string };
 
-/** Swap live where the island can; raise the reboot-pending alert where it cannot, naming why. By capability, never host. */
+/** Swap live where the island can; restand where the vessel can; raise the reboot-pending alert otherwise, naming why. By
+ *  capability, never host. */
 export function floorRemountDecision(caps: FloorMountCaps, manifest: string): FloorRemount {
   if (caps.floorSwap === true) return { act: "swap-live" };
+  if (caps.restand === true) {
+    return {
+      act: "restand",
+      why: `The floor moved to ${manifest.slice(0, 12)}…; the house restands itself at its next quiet point (no write in flight, the sealed rest empty, the shores flushed) to mount it, and the boot after commits it at par or reverts it to the prior floor, naming why.`,
+    };
+  }
   return {
     act: "alert", kind: FLOOR_REMOUNT_ALERT_KIND,
     why: `The floor moved to ${manifest.slice(0, 12)}…; this vessel's islands mount the floor read-face once at boot (no live floor swap), so the accepted floor mounts at the next boot.`,
@@ -429,6 +441,8 @@ export interface FloorPinPorts {
   readonly stage:           (blobs: ReadonlyArray<{ readonly cid: string; readonly bytes: Uint8Array }>) => Promise<void>;
   readonly mount:           FloorMountCaps & {
     readonly swap?:  (manifest: string) => Promise<void>;
+    /** Ask the vessel to restand itself at its next quiet point (an adopt's remount alone); absent, the alert serves. */
+    readonly restand?: (manifest: string) => Promise<void> | void;
     readonly alert:  (remount: Extract<FloorRemount, { act: "alert" }>) => Promise<void> | void;
   };
 }
@@ -523,8 +537,9 @@ export async function adoptFloorSeed(ports: FloorPinPorts, args: { readonly seed
   const whole = await resolveFloorWhole(decision.pin.manifest, async (cid) => ports.fetchCas(cid).catch(() => null), { required: ports.requiredBlobIds });
   if ("refusal" in whole) return { ok: false, refusal: whole.refusal === "floor-offering-refused" || whole.refusal === "floor-offering-incomplete" ? whole.refusal : "floor-bytes-absent", detail: `the local floor: ${whole.refusal}: ${whole.reason}` };
   ports.home.change((draft) => { writeFloorPin(draft, decision.pin); });
-  const remount = floorRemountDecision({ floorSwap: ports.mount.floorSwap === true && ports.mount.swap !== undefined }, decision.pin.manifest);
+  const remount = floorRemountDecision({ floorSwap: ports.mount.floorSwap === true && ports.mount.swap !== undefined, restand: ports.mount.restand !== undefined }, decision.pin.manifest);
   if (remount.act === "swap-live" && ports.mount.swap) await ports.mount.swap(decision.pin.manifest);
+  else if (remount.act === "restand" && ports.mount.restand) await ports.mount.restand(decision.pin.manifest);
   else if (remount.act === "alert") await ports.mount.alert(remount);
   return { ...decision, applied: true, staged, remount };
 }
@@ -535,6 +550,86 @@ export async function settleLocalFloor(ports: Pick<FloorPinPorts, "home" | "nexu
   const out = act === "commit" ? commitLocalFloor(pin) : revertLocalFloor(pin);
   if (out.ok && out.moved) ports.home.change((draft) => { writeFloorPin(draft, out.pin); });
   return out.ok ? { ...out, prior: pin } : out;
+}
+
+// ── the boot's settle: par commits, anything else reverts ─────────────────────────────────────────────
+
+/** Where a settle's receipt rests in the vessel's control document: one row per Nexus, the latest settle. */
+export const FLOOR_SETTLE_PREFIX = `${CONTROL_HOME_ID}/floor-settle/` as const;
+
+/** What this boot's mount read off the floor it stood on (the daemon island's plugin set): the floor itself served, or the
+ *  founding record's boot set served and why; null where no mount reading reached the settle. */
+export type FloorBootMount =
+  | { readonly source: "floor"; readonly manifest: string }
+  | { readonly source: "island"; readonly manifest: string | null; readonly why: string }
+  | null;
+
+/** The one receipt a settle rests: the floor it settled, the seed it adopted, and the par reading (`par`, else the cause). */
+export interface FloorSettleReceipt {
+  readonly kind:  typeof FLOOR_SETTLE_KIND;
+  readonly nexus: string;
+  readonly act:   "committed" | "reverted";
+  readonly floor: string;
+  readonly seed:  string;
+  readonly par:   string;
+  /** The manifest the pin stands on after the settle: the floor itself where it committed, the prior where it reverted. */
+  readonly pinned: string;
+}
+
+export type FloorBootSettle =
+  | { readonly act: "none" }
+  | { readonly act: "committed"; readonly receipt: FloorSettleReceipt }
+  | { readonly act: "reverted"; readonly receipt: FloorSettleReceipt; readonly cause: string }
+  | { readonly act: "held"; readonly why: string };
+
+/**
+ * PAR, read off the boot itself: the boot's mount stood on the staged floor (the floor served its plugin set, on the staged
+ * manifest). A mount that fell back to the founding record's set, stood on another floor, or named no mount reads not par,
+ * by cause. Pure.
+ */
+export function floorParOf(pin: FloorPin, mount: FloorBootMount): { readonly par: true } | { readonly par: false; readonly cause: string } {
+  if (mount === null) return { par: false, cause: "the boot named no floor mount for its daemon island" };
+  if (mount.source === "island") return { par: false, cause: `the staged floor did not serve its plugin set (${mount.why}); the founding record's boot set served` };
+  if (mount.manifest !== pin.manifest) return { par: false, cause: `the boot mounted ${mount.manifest.slice(0, 12)}…, never the staged ${pin.manifest.slice(0, 12)}…` };
+  return { par: true };
+}
+
+/** The settle receipt at `nexus` off the control document, or null where none rests (a torn row reads null). */
+export function readFloorSettle(controlDoc: LarDoc | null | undefined, nexus: string): FloorSettleReceipt | null {
+  const text = tiddlerText(ownEntry(controlDoc?.tiddlers, `${FLOOR_SETTLE_PREFIX}${nexus}`));
+  if (text === null) return null;
+  let v: unknown;
+  try { v = JSON.parse(text); } catch { return null; }
+  if (typeof v !== "object" || v === null || Array.isArray(v)) return null;
+  const r = v as Record<string, unknown>;
+  if (r["kind"] !== FLOOR_SETTLE_KIND || r["nexus"] !== nexus || (r["act"] !== "committed" && r["act"] !== "reverted")) return null;
+  for (const k of ["floor", "seed", "par", "pinned"] as const) if (typeof r[k] !== "string") return null;
+  return Object.freeze({ kind: FLOOR_SETTLE_KIND, nexus, act: r["act"] as FloorSettleReceipt["act"], floor: r["floor"] as string, seed: r["seed"] as string, par: r["par"] as string, pinned: r["pinned"] as string });
+}
+
+/**
+ * THE BOOT SETTLES A STAGED FLOOR by itself: par commits it, anything else reverts it to the prior floor and names why. The pin
+ * and its one receipt land in one change; the reverted floor's bytes stay in the CAS and the receipt names it and its seed, so
+ * the hand reads what stood staged. No staged floor lands nothing. The hand's `--commit` and `--revert` stay explicit acts beside it.
+ */
+export function settleFloorAtBoot(home: FloorPinHome, mount: FloorBootMount): FloorBootSettle {
+  const staged = floorPinsOf(home.doc()).filter((p) => p.local?.state === "staged");
+  if (staged.length === 0) return { act: "none" };
+  if (staged.length > 1) return { act: "held", why: `${staged.length} Nexuses hold a staged floor; the hand settles each (\`lares vessel floor adopt --commit\` or \`--revert\`)` };
+  const pin = staged[0]!;
+  const reading = floorParOf(pin, mount);
+  const out = reading.par ? commitLocalFloor(pin) : revertLocalFloor(pin);
+  if (!out.ok) return { act: "held", why: `${out.refusal}: ${out.detail}` };
+  const receipt: FloorSettleReceipt = Object.freeze({
+    kind: FLOOR_SETTLE_KIND, nexus: pin.nexus, act: reading.par ? "committed" as const : "reverted" as const,
+    floor: pin.manifest, seed: pin.local!.receipt, par: reading.par ? "par" : reading.cause, pinned: out.pin.manifest,
+  });
+  home.change((draft) => {
+    writeFloorPin(draft, out.pin);
+    const title = `${FLOOR_SETTLE_PREFIX}${pin.nexus}`;
+    draft.tiddlers[title] = storedLarRecord(title, { text: JSON.stringify(receipt) }, FLOOR_SETTLE_KIND);
+  });
+  return reading.par ? { act: "committed", receipt } : { act: "reverted", receipt, cause: reading.cause };
 }
 
 /**

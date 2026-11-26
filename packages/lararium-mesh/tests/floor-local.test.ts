@@ -3,7 +3,8 @@
  * base's engine and canon snapshots, the adopted seed's plugins offering), the base its descent walks from, a receipt (the adopted
  * seed's CID) and the prior pin kept alive. An adopt moves forward only and never stacks on an uncommitted one; the engine never
  * adopts here (held). A commit lands at par; a revert lands the prior back as a forward row, never a deletion. A release accept
- * over a local floor moves (the let-go), never reads as held.
+ * over a local floor moves (the let-go), never reads as held. Where the vessel binds a restand (a pūlama holds its custody), the
+ * apply asks the house to restand itself, and the boot after settles the staged floor by its par under one receipt.
  */
 import { describe, expect, test } from "vitest";
 import { sha256HexBytesSync, utf8Bytes } from "../src/crypto.js";
@@ -12,8 +13,8 @@ import { FLOOR_MANIFEST_FORMAT, cutFloorSnapshot, floorManifestBytes, readFloorM
 import { signFloorOffering } from "../src/floor-offering.js";
 import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "../src/lar-uris.js";
 import {
-  FLOOR_PIN_KIND, adoptFloorSeed, commitLocalFloor, decideFloorAccept, decideFloorAdopt, floorCidToMount, floorPinBase, floorPinOf,
-  readFloorPin, revertLocalFloor, writeFloorPin, type FloorPin, type FloorPinPorts,
+  FLOOR_PIN_KIND, FLOOR_SETTLE_KIND, adoptFloorSeed, commitLocalFloor, decideFloorAccept, decideFloorAdopt, floorCidToMount, floorPinBase, floorPinOf,
+  floorRemountDecision, readFloorPin, readFloorSettle, revertLocalFloor, settleFloorAtBoot, writeFloorPin, type FloorPin, type FloorPinPorts,
 } from "../src/floor-pin.js";
 import type { FloorReleaseStanding } from "../src/floor-release.js";
 
@@ -169,5 +170,70 @@ describe("the cold read's answers (#577, S2)", () => {
     const out = await adoptFloorSeed(ports, { seedCid: RECEIPT, seedFloor: SEED.cid, apply: true });
     expect(out).toMatchObject({ ok: false, refusal: "floor-bytes-absent" });
     expect(home.changes).toBe(0);
+  });
+});
+
+describe("the house restands itself, and the boot after settles by par", () => {
+  test("RED: an apply whose vessel binds a restand asks it with the staged manifest and raises no alert; its why names no next boot", async () => {
+    const home = memoryHome();
+    const { ports, alerts } = portsOver(home);
+    const restands: string[] = [];
+    const out = await adoptFloorSeed({ ...ports, mount: { ...ports.mount, restand: (m) => { restands.push(m); } } }, { seedCid: RECEIPT, seedFloor: SEED.cid, apply: true });
+    expect(out).toMatchObject({ ok: true, moved: true, applied: true, remount: { act: "restand" } });
+    if (!out.ok || !out.moved) return;
+    expect(restands).toEqual([out.pin.manifest]);
+    expect(alerts).toEqual([]);
+    const why = out.remount?.act === "restand" ? out.remount.why : "";
+    expect(why).toMatch(/restands itself at its next quiet point/);
+    expect(why).not.toMatch(/next boot/);
+    // CONTROL: the restand never rides a preview, and a vessel that binds none raises the alert as before.
+    expect(floorRemountDecision({ floorSwap: false }, "a".repeat(64))).toMatchObject({ act: "alert" });
+    expect(floorRemountDecision({ floorSwap: true, restand: true }, "a".repeat(64))).toEqual({ act: "swap-live" });
+  });
+
+  test("RED: a boot whose daemon mount stood on the staged floor commits it under one receipt naming the floor, the seed and par", async () => {
+    const home = memoryHome();
+    const { ports } = portsOver(home);
+    const applied = await adoptFloorSeed(ports, { seedCid: RECEIPT, seedFloor: SEED.cid, apply: true });
+    if (!applied.ok || !applied.moved) throw new Error("apply");
+    const settle = settleFloorAtBoot(home, { source: "floor", manifest: applied.pin.manifest });
+    expect(settle).toMatchObject({ act: "committed", receipt: { kind: FLOOR_SETTLE_KIND, nexus: NEXUS, act: "committed", floor: applied.pin.manifest, seed: RECEIPT, par: "par", pinned: applied.pin.manifest } });
+    expect(floorPinOf(home.doc(), NEXUS, BASE.cid).pin.local?.state).toBe("committed");
+    expect(readFloorSettle(home.doc(), NEXUS)).toMatchObject({ act: "committed", floor: applied.pin.manifest, seed: RECEIPT, par: "par" });
+    // A second boot finds nothing staged and lands nothing.
+    const before = home.changes;
+    expect(settleFloorAtBoot(home, { source: "floor", manifest: applied.pin.manifest })).toEqual({ act: "none" });
+    expect(home.changes).toBe(before);
+  });
+
+  test("RED: a boot whose mount fell back (or stood on another floor) reverts to the prior floor and names why in the receipt", async () => {
+    for (const mount of [
+      { source: "island" as const, manifest: "x".repeat(64), why: "floor-offering-incomplete: a blob reads absent" },
+      { source: "floor" as const, manifest: BASE.cid },
+      null,
+    ]) {
+      const home = memoryHome();
+      const { ports, cas } = portsOver(home);
+      const applied = await adoptFloorSeed(ports, { seedCid: RECEIPT, seedFloor: SEED.cid, apply: true });
+      if (!applied.ok || !applied.moved) throw new Error("apply");
+      const settle = settleFloorAtBoot(home, mount);
+      expect(settle.act).toBe("reverted");
+      if (settle.act !== "reverted") continue;
+      expect(settle.cause.length).toBeGreaterThan(0);
+      if (mount?.source === "island") expect(settle.cause).toContain("floor-offering-incomplete");
+      expect(floorPinOf(home.doc(), NEXUS, BASE.cid).pin).toEqual(genesisPin);
+      expect(readFloorSettle(home.doc(), NEXUS)).toMatchObject({ act: "reverted", floor: applied.pin.manifest, seed: RECEIPT, par: settle.cause, pinned: BASE.cid });
+      // The staged floor's bytes stay for the hand to read.
+      expect(cas.get(applied.pin.manifest)).toBeDefined();
+    }
+  });
+
+  test("CONTROL: a boot with no staged floor (a plain pin, or a committed one) settles nothing and writes nothing", () => {
+    const home = memoryHome();
+    writeFloorPin(home.doc(), genesisPin);
+    const before = home.changes;
+    expect(settleFloorAtBoot(home, null)).toEqual({ act: "none" });
+    expect(home.changes).toBe(before);
+    expect(readFloorSettle(home.doc(), NEXUS)).toBeNull();
   });
 });
