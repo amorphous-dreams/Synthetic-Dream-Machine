@@ -12,7 +12,7 @@ import { type LarDoc } from "@lararium/mesh/base-doc";
 import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { type Repo, type DocHandle } from "@lararium/mesh/automerge";
 import { makeInitWikiReactor } from "../src/wiki-mint-handlers.js";
-import { makeAddBagReactor, makeRemoveBagReactor } from "../src/wiki-compose-handlers.js";
+import { makeAddBagReactor, makeRemoveBagReactor, makeTrueFloorReactor } from "../src/wiki-compose-handlers.js";
 import { makeListWikisReactor } from "../src/worker-data-verbs.js";
 import type { CatalogAccessor } from "../src/catalog-accessor.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
@@ -168,5 +168,51 @@ describe("a system slug composes through the vessel's own record", () => {
       expect(added).not.toHaveProperty("adopted");
       expect(String(plainField(r.catalog.tiddlers[recipeUri("catalog", "elyncia")], "bag-stack")).endsWith(X)).toBe(true);
     });
+  });
+});
+
+describe("true-floor: a hand trues a pre-ruling recipe to the canon floor by place, with a receipt (ruling 2026-11-26-canon-floor-by-place)", () => {
+  const LARARIUM = wikiBagUri("lararium");
+  const ORACLE = "lar:///ha.ka.ba/bags/oracle";
+
+  test("the lares wiki's pre-ruling default (lararium as a library) trues: lararium drops, the record keeps its prior stack", async () => {
+    const r = rig();
+    const oracleBefore = JSON.stringify(r.oracle.tiddlers);
+    const out = await makeTrueFloorReactor({ catalog: r.catalog.accessor, oracle: r.oracle.accessor, post: r.post })({ slug: "lares" }, ctx);
+    expect(out).toMatchObject({ status: "trued", adopted: true, dropped: [LARARIUM], stack: [ORACLE, LARES] });
+    expect(out["receipt"]).toMatchObject({ verb: "true-floor", slug: "lares", before: DEFAULT_STACK.split(" "), after: [ORACLE, LARES], dropped: [LARARIUM] });
+    const own = plainRecord(r.catalog.tiddlers[recipeUri("catalog", "lares")]!);
+    expect(own.tiddler["bag-stack"]).toBe(`${ORACLE} ${LARES}`);
+    expect(own.tiddler["floor-trued-from"]).toBe(DEFAULT_STACK);
+    expect(own.meta?.authority).toBe("lares-cli:wiki-true-floor");
+    // No boot moves it, and the default plane takes no write: the hand's door writes the vessel's own record alone.
+    expect(JSON.stringify(r.oracle.tiddlers)).toBe(oracleBefore);
+    expect(r.posted).toEqual([expect.objectContaining({ cause: "true-floor" })]);
+  });
+
+  test("a true recipe answers already-true and writes nothing", async () => {
+    const r = rig();
+    const opts = { catalog: r.catalog.accessor, oracle: r.oracle.accessor, post: r.post };
+    await makeTrueFloorReactor(opts)({ slug: "lares" }, ctx);
+    const snapshot = JSON.stringify(r.catalog.tiddlers);
+    expect(await makeTrueFloorReactor(opts)({ slug: "lares" }, ctx)).toMatchObject({ status: "already-true", dropped: [] });
+    expect(JSON.stringify(r.catalog.tiddlers)).toBe(snapshot);
+  });
+
+  test("a user wiki that stacks lararium trues; one that stacks lares and another library keeps them", async () => {
+    const r = rig();
+    const title = recipeUri("catalog", "elyncia");
+    r.catalog.tiddlers[title] = rec(title, { "bag-stack": `${ORACLE} ${LARARIUM} ${LARES} ${X} ${wikiBagUri("elyncia")}` });
+    const out = await makeTrueFloorReactor({ catalog: r.catalog.accessor, oracle: r.oracle.accessor, post: r.post })({ slug: "elyncia" }, ctx);
+    expect(out).toMatchObject({ status: "trued", dropped: [LARARIUM] });
+    expect(out).not.toHaveProperty("adopted");
+    expect(plainField(r.catalog.tiddlers[title], "bag-stack")).toBe(`${ORACLE} ${LARES} ${X} ${wikiBagUri("elyncia")}`);
+  });
+
+  test("the door takes a slug, and refuses a slug no recipe stands for", async () => {
+    const r = rig();
+    const door = makeTrueFloorReactor({ catalog: r.catalog.accessor, oracle: r.oracle.accessor, post: r.post });
+    await expect(door({}, ctx)).rejects.toThrow(/true-floor: the verb takes a slug/);
+    await expect(door({ slug: "nowhere" }, ctx)).rejects.toThrow(/recipe not found for "nowhere"/);
   });
 });

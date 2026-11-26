@@ -112,7 +112,7 @@ export type { BuildIslandRecipeInput, RecipeReadyBinding } from "./island-recipe
 export { composeCrossFaceView, composeFaceEngine, crossFaceViewSource, enginePool, faceEngines } from "./face-engine.js";
 export { composeWikiEngine, composeWikiEngineSource, wikiEngines } from "./wiki-engine.js";
 export type { WikiEngine, WikiEngineDeps, WikiEngineSource, WikiEngines } from "./wiki-engine.js";
-export { TW5_DOCS_BAG, isTw5Docs, isTw5DocsBag, tw5DocsRecords } from "./tw5-docs-library.js";
+export { TW5_DEV_BAG, TW5_DOCS_BAG, isTw5Docs, isTw5DocsBag, tw5DocsRecords, tw5LibraryStackStore } from "./tw5-docs-library.js";
 export type { CrossFaceViewGuard, CrossFaceViewSource, EnginePool, FaceEngine, FaceEngines, FaceEngineSource } from "./face-engine.js";
 export { placeVerb, patchVerb, removeVerb, writeOutcome, dispatchVerb } from "./verb-vm.js";
 export type { VerbPlacement } from "./verb-vm.js";
@@ -230,7 +230,7 @@ export { projectMeme, projectCarrierText, projectTargetOf, recomposeMeme, wikiRe
 export type { ProjectTarget, ProjectRoute, MemeProjection } from "./meme-project.js";
 export type { LaresMemeFace, MemeCheck } from "./types/lares-globals.js";
 export { storeMemeSink, compositeMemeSink } from "./meme-sinks.js";
-export { makeAddBagReactor, makeRemoveBagReactor }    from "./wiki-compose-handlers.js";
+export { makeAddBagReactor, makeRemoveBagReactor, makeTrueFloorReactor } from "./wiki-compose-handlers.js";
 export type {
   WikiMintHandlerOptions, WikiRetireOptions, WikiShellPorts, WikiShellCounts, RetiredShellCarry, PruneStaleOptions, WikiComposeOptions, DraftHandlerOptions,
 } from "./wiki-handler-options.js";

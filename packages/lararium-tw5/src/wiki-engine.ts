@@ -43,7 +43,7 @@ import { type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh/tidd
 import { composeFaceEngine, enginePool, type FaceEngine, type FaceEngineSource } from "./face-engine.js";
 import type { RecipeReadyBinding } from "./island-recipe.js";
 import type { TW5Engine } from "./tw5-vm.js";
-import { TW5_DOCS_BAG, TW5_DOCS_RECIPE, isTw5Docs, tw5DocsStore } from "./tw5-docs-library.js";
+import { isTw5Docs, isTw5DocsLibraryBag, tw5DocsStore, tw5LibraryBag, tw5LibraryRecipe, tw5LibraryStackStore } from "./tw5-docs-library.js";
 
 /** The doors a named wiki's engine composes through: the meme door's own reaches, the island's held documents, and the boot. */
 export interface WikiEngineDeps {
@@ -87,8 +87,11 @@ const CURRENT_WIKI_BAG = "lar:///ha.ka.ba/lararium/config/current-wiki-bag";
  */
 export async function composeWikiEngineSource(deps: WikiEngineDeps, slug: string, need: { readonly mint: boolean }): Promise<WikiEngineSource | null> {
   if (slug === DAEMON_WIKI_SLUG) return null;
-  // THE TW5 DOCS LIBRARY: every face reaches it, on its one read-only layer, and no write layer ever stands (`tw5-docs-library`).
-  if (isTw5Docs(slug)) return { boot: deps.boot, recipe: TW5_DOCS_RECIPE, ready: [{ slot: TW5_DOCS_BAG, store: await tw5DocsStore() }], gate: TW5_DOCS_BAG };
+  // THE TW5 DOCS LIBRARIES: every face reaches each, on its one read-only layer, and no write layer ever stands (`tw5-docs-library`).
+  if (isTw5Docs(slug)) {
+    const bag = tw5LibraryBag(slug);
+    return { boot: deps.boot, recipe: tw5LibraryRecipe(slug), ready: [{ slot: bag, store: await tw5DocsStore(bag) }], gate: bag };
+  }
   const record = await deps.recipeOf(slug);
   if (record === null) return null;
   const recipe = recipeFromRecord(record, slug);
@@ -98,6 +101,8 @@ export async function composeWikiEngineSource(deps: WikiEngineDeps, slug: string
   for (const slot of expandRecipe(recipe)) {
     const kind = wikiSlotKindOf(slug, slot);
     if (kind === "temp" || slot === KAHUA_BAG || slot === DAEMON_BAG_ID) continue;
+    // A TW5 docs bag the recipe stacks (the herm/hearth wiki's foreign floor) rides code, read-only, and counts as no reach.
+    if (isTw5DocsLibraryBag(slot)) { ready.push({ slot, store: await tw5LibraryStackStore(slot) }); continue; }
     if (kind !== null && INSTANCE.has(kind)) {
       const store = await deps.slotStore(slug, kind, slot, { mint: need.mint && kind === write });
       if (store) { ready.push({ slot, store }); reached++; }
