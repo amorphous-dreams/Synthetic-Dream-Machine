@@ -1,0 +1,40 @@
+title: lar:///ha.ka.ba/lararium/tw5/afford/view
+tags: $:/tags/ViewTemplate
+list-after: $:/core/ui/ViewTemplate/title
+type: text/vnd.tiddlywiki
+caption: affordance carrier · the wiki view
+
+\whitespace trim
+\procedure fold(label)
+\whitespace trim
+<$list filter="[<currentTiddler>afford:tw5[rows],<slot>first[]] [<slot>match[#/head]then<currentTiddler>afford[prose],[#/head]first[]] [<slot>match[#/edges]then<currentTiddler>afford[edges]first[]] +[first[]]" variable="_">
+<$let state={{{ [<currentTiddler>addsuffix<slot>addprefix[$:/state/lares/afford/]] }}}>
+<div class="lar-afford-slot">
+<$reveal type="nomatch" state=<<state>> text="open">
+<$button set=<<state>> setTo="open" class="tc-btn-invisible">▸ <$text text=<<label>>/> <span class="lar-afford-digest"><$text text={{{ [<currentTiddler>afford[digest],<slot>] }}}/></span></$button>
+</$reveal>
+<$reveal type="match" state=<<state>> text="open">
+<$button set=<<state>> setTo="closed" class="tc-btn-invisible">▾ <$text text=<<label>>/></$button>
+<pre><$transclude $tiddler="lar:///ha.ka.ba/lararium/tw5/afford/skin/tw5" $mode="inline"/></pre>
+</$reveal>
+</div>
+</$let>
+</$list>
+\end
+
+<$list filter="[<currentTiddler>tag[lar:///ha.ka.ba/lares/api/pono/affordance]afford[match]]" variable="-">
+<div class="lar-afford">
+<p class="lar-afford-line"><code><$text text={{{ [<currentTiddler>afford[address]] }}}/></code> <$text text={{{ [<currentTiddler>get[role]] }}}/></p>
+<p class="lar-afford-testimony">The gate rows read as the carrier's testimony; the door checks the ocap (DAM law 1). Nothing on this card admits.</p>
+<$let depth="slot">
+<$let slot="#/head"><<fold "head">></$let>
+<$let slot="#/shows"><<fold "shows">></$let>
+<$let slot="#/takes"><<fold "takes">></$let>
+<$let slot="#/gate"><<fold "gate">></$let>
+<$let slot="#/refuses"><<fold "refuses">></$let>
+<$let slot="#/answers"><<fold "answers">></$let>
+<$let slot="#/skins"><<fold "skins">></$let>
+<$let slot="#/edges"><<fold "edges">></$let>
+</$let>
+</div>
+</$list>

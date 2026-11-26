@@ -1,0 +1,6 @@
+title: lar:///ha.ka.ba/lararium/tw5/afford/skin/console
+type: text/vnd.tiddlywiki
+caption: affordance skin · console
+
+\whitespace trim
+<$let surface="console"><$transclude $tiddler="lar:///ha.ka.ba/lararium/tw5/afford/skin/text"/></$let>

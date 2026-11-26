@@ -1,0 +1,6 @@
+title: lar:///ha.ka.ba/lararium/tw5/afford/skin/cli
+type: text/vnd.tiddlywiki
+caption: affordance skin · cli
+
+\whitespace trim
+<$let surface="cli"><$transclude $tiddler="lar:///ha.ka.ba/lararium/tw5/afford/skin/text"/></$let>

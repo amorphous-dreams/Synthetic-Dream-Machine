@@ -261,6 +261,53 @@ TOOL_NATURE = {
     **dict.fromkeys(('tiddler_put',), 'puts'),
 }
 
+# THE AFFORDANCE PACK — the words a tool's skin carries, baked from its affordance carrier
+# (lar:///ha.ka.ba/lares/api/pono/affordance) by `packages/lararium-tw5/scripts/build-affordance-pack.ts`. A tool the pack
+# routes (`routes.mcp`) takes its description and each parameter's from the pack at seat build; a tool it routes none of keeps
+# its docstring until its carrier lands. One file the CLI reads too, so a seat and a terminal render one carrier's bytes.
+AFFORDANCE_PACK_PATH = os.environ.get("LARES_AFFORDANCE_PACK") or os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "..", "..", "lararium-tw5", "affordance-pack.json")
+
+
+def read_affordance_pack(path=None):
+    """The baked pack, or an empty one where none stands (every tool then keeps its own words; witness W3 reads the gap)."""
+    try:
+        with open(path or AFFORDANCE_PACK_PATH, encoding="utf-8") as fh:
+            pack = json.load(fh)
+    except (OSError, ValueError):
+        return {"carriers": {}, "routes": {}}
+    return pack if isinstance(pack, dict) else {"carriers": {}, "routes": {}}
+
+
+def pack_tool_skin(tool, pack=None):
+    """One tool's skin from the pack: (description, {param: description}), or None where the pack routes no carrier to it."""
+    pack = read_affordance_pack() if pack is None else pack
+    address = ((pack.get("routes") or {}).get("mcp") or {}).get(tool)
+    carrier = (pack.get("carriers") or {}).get(address) if address else None
+    if not carrier:
+        return None
+    whole = ((carrier.get("renders") or {}).get("mcp") or {}).get("whole") or []
+    return "\n".join(whole), dict(carrier.get("params") or {})
+
+
+def _dress_from_pack(mcp, pack=None):
+    """Hand every pack-routed tool its carrier's words: the description, then each parameter's in the input schema. A
+    parameter the carrier names and the signature lacks (or the reverse) stays as it stands; witness W2 reads that red."""
+    pack = read_affordance_pack() if pack is None else pack
+    manager = getattr(mcp, "_tool_manager", None)
+    for tool in sorted((pack.get("routes") or {}).get("mcp") or {}):
+        skin = pack_tool_skin(tool, pack)
+        held = manager.get_tool(tool) if manager is not None else None
+        if skin is None or held is None:
+            continue
+        description, params = skin
+        held.description = description
+        properties = (held.parameters or {}).get("properties") or {}
+        for name, words in params.items():
+            if name in properties and words:
+                properties[name]["description"] = words
+
+
 def tool_annotation_hints(name):
     reversible, crossing = VERB_SEATS[name]
     nature = TOOL_NATURE[name]
@@ -1503,25 +1550,8 @@ def build_mcp(coordinator: LaresCoordinator):
     @mcp.tool(annotations=_annotations("oracle_cast"))
     def oracle_cast(recipe: "str | None" = None, bag: "str | None" = None, coins: "list | None" = None,
                     caster: "str | None" = None, asking: "str | None" = None) -> dict:
-        """Cast THE I CHING and let the vessel write the cast as one tiddler — mirrors `lares oracle cast`. Three coins a
-        line (heads three, tails two): 6 (old yin) and 9 (old yang) change, 7 and 8 hold; six lines, bottom first, name the
-        PRIMARY hexagram by its King Wen number (1-64), and the changing lines turned over name the RELATING one (none where
-        no line changes). With no `coins` the vessel draws the coins through the platform's entropy door
-        (`platform:crypto.getRandomValues`), so this seat never picks the figure; `coins` hands in six values the operator
-        threw with real coins (6, 7, 8 or 9, bottom line first), named `operator:three-coins`. `caster` names who cast
-        (default `agent`). The tiddler lands once under `lar:///ha.ka.ba/lares/oracle/casts/` in the wiki's working layer
-        with fields method, entropy, lines, changing, primary, relating, caster, cast-at and readings; reading it again
-        never casts again. ONE ASKING, ONE THROW: `asking` names the fork you cast at, in words; the same words by the same
-        caster answer the cast already standing (`replayed`; case, spacing and trailing punctuation never re-roll, and the
-        throw keys on the seat the vessel booked, `caster` annotating alone), so a retried call never throws twice. Name the
-        query before the cast: a call with no `asking` reads band `asks`. A fresh throw for the same words, or a seeded one, rides a person's hand alone (the
-        CLI's `--fresh` / `--seed`); a seat that asks either reads band `asks`. Returns {band, intent, replayed, decision,
-        created, title, cast, text, readings, asOf, note} (`asOf` labels the readings by the digest of the bytes read): `readings` carries the house's imported DOA and e-jing texts for each hexagram this wiki holds,
-        with their attribution and license, and names the ones it holds none of. A spirit's jolt rides this tool only when
-        its brief opts in, and the hand-back names the cast. CONTAINER LAW: exactly one of `recipe` / `bag`
-        (`recipe="default"` names the worn face's daemon wiki).
-        THE PLACE: a blind throw to collide uncertainty with: the throw stands, the reading stays open.
-        The seat casts at its own open forks, never at the operator's decisions uninvited, and enacts after."""
+        # THE WORDS LIVE IN THE CARRIER (lar:///oracle.cast.throws): `_dress_from_pack` hands this tool its description and
+        # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
         import datetime
         args: dict = dict(_meme_container("oracle_cast", recipe, bag))
         if coins is not None:
@@ -2084,6 +2114,7 @@ def build_mcp(coordinator: LaresCoordinator):
             args["name"] = name
         return uds.output("reconcile", args)
 
+    _dress_from_pack(mcp)
     return mcp
 
 

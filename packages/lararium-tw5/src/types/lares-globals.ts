@@ -53,12 +53,31 @@ export interface LaresMemeFace {
   parse(uri: string, text: string, grammar?: GrammarRules): ParseMemeResult;
 }
 
+/**
+ * `$tw.lares.afford` — the console skin of every affordance carrier the wiki holds (afford-face startup). The read verbs render
+ * the skin templates and print through `console.groupCollapsed`; `run` fires the carrier's glass skin. Nothing on it admits.
+ */
+export interface LaresAffordFace {
+  /** The carriers' bare addresses, a t2/t3 wildcard narrowing them (`oracle.*`); a t1 wildcard throws by name. */
+  list(pattern?: string): string[];
+  /** The has-stack line. */
+  line(address: string): string;
+  /** One slot's lines (`#/takes` or `takes`). */
+  slot(address: string, slot: string): string[];
+  /** Every slot, in loop order. */
+  whole(address: string): string[];
+  /** Fire the carrier's glass skin with the args bound; answers the action string it invoked. */
+  run(address: string, args?: Record<string, string | number | boolean>): { invoked: string };
+}
+
 export interface LaresNaluAPI {
   applyNalu(change: LarTiddlerChange): void;
   enqueueNalu?: (change: LarTiddlerChange) => void;
   isApplyingNalu(): boolean;
   /** The in-VM meme face (meme-face startup) — every meme law, under one name. */
   meme: LaresMemeFace;
+  /** The in-VM affordance face (afford-face startup) — the console skin of every affordance carrier. */
+  afford: LaresAffordFace;
   /** The host-door ask a mounted camera installs (tw5-projection) for the root-services startup. */
   serviceDoor: LaresServiceDoor;
 }

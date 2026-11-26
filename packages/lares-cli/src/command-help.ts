@@ -16,12 +16,17 @@
  * A KEY MAY NAME A SUB-DOOR. `"<door> <sub>"` keys the sub-verb's own entry; the dispatcher prefers the
  * longer key when the positional matches, so a sub-door's flags reach the reader instead of its parent's.
  *
- * PURE DATA, SO ANY VESSEL CAN HOLD IT. This module imports nothing — no `node:fs`, no environment read.
+ * A DOOR FLIPS TO ITS CARRIERS. Where every affordance a door skins holds an affordance carrier, `helpLines` reads the baked
+ * affordance pack (`@lararium/tw5/affordance-pack`) and the door's entry here burns in the same commit: one home, never two.
+ * `oracle` flipped first (lar:///oracle.cast.throws).
+ *
+ * PURE DATA, SO ANY VESSEL CAN HOLD IT. This module reads no `node:fs` and no environment; the pack rides as data.
  * The `meme` field NAMES the wiki record behind a verb door (`lar:` names; it never fetches); the `--meme`
  * reach rides the one read door `lares tiddler get --meme` already uses, which any vessel holding the cap can run.
  * Every URI here comes HARVESTED from the owning module's own `Meme:` header — never invented at this seat.
  */
 import { PLANE_LABELS } from "@lararium/mesh/plane-labels";
+import { packDoor } from "@lararium/tw5/affordance-pack";
 
 export interface CommandHelp {
   /** the spine an operator greps for: `usage: lares <door> <a | b | c>`. */
@@ -67,44 +72,6 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     ],
     flags: [
       "--json       emit the envelope instead of the bare line: {text, entropy, gregorian, yold, tibs, season, dayOfSeason, weekday, holyday}; `entropy` names the door a `%.` drew from",
-    ],
-  },
-  oracle: {
-    usage: "usage: lares oracle cast --recipe <slug> [--asking <words>] [--fresh | --seed <words>] [--coins <six values>] [--caster <name>]",
-    synopsis:
-      "Cast the I Ching by three coins a line and let the vessel write the cast as one tiddler under lar:///ha.ka.ba/lares/oracle/casts/. " +
-      "A line sums three coins, heads three and tails two: 6 (old yin) and 9 (old yang) change, 7 and 8 hold. The six lines, bottom first, " +
-      "name the primary hexagram by its King Wen number; the changing lines turned over name the relating one. With no --coins the coins draw " +
-      "through the platform's entropy door (crypto.getRandomValues); --coins hands in the operator's own throw with real coins, named " +
-      "operator:three-coins. A cast stands as an act: the tiddler holds the throw, and reading it again never casts again; " +
-      "a blind throw to collide uncertainty with: the throw stands, the reading stays open.",
-    details: [
-      "  The reading names the house's imported texts for each hexagram: the DOA (Kopyleft 2022, Steal and Share Alike) and the",
-      "  e-jing ((K)opyLeft, its quoted snippets under fair use), each with its attribution and license.",
-      "  One asking, one throw: --asking names the question, and the same words by the same caster answer the cast already",
-      "  standing (replayed), at any later time, so a retry never throws twice. A bare cast mints its own nonce at the word.",
-      "  A person's hand opens the second mode: --fresh throws anew for the same words, --seed <words> throws the same coins for",
-      "  the same seed; a seat that asks either reads `asks` with the line a person runs (exit 5). A lost answer reads owed",
-      "  (exit 6), never failed. The readings print as of the digest of the bytes read. The throw keys on the asker the",
-      "  vessel booked (--caster annotates) and on the words normalized (case, spacing, trailing punctuation never re-roll).",
-      "  A seat names its query before it casts: its bare cast reads `asks`. A sleeping vessel honors --seed and refuses a bare",
-      "  --asking. A weak seed reads back: the record names the seed by a 16-hex digest anyone can test guesses against, so",
-      "  choose a strong one.",
-    ],
-    examples: [
-      "lares oracle cast --recipe default                       # a house cast through the platform's entropy door",
-      "lares oracle cast --recipe default --coins 7,8,9,6,7,7   # the six lines you threw with real coins, bottom first",
-      "lares oracle cast --recipe default --json                # the verb's answer: cast, readings, the tiddler's title",
-      "lares oracle cast --recipe default --asking 'which road first?'          # asked again, the same throw answers",
-      "lares oracle cast --recipe default --asking 'which road first?' --fresh  # a person asks the same words anew",
-    ],
-    flags: [
-      "--asking <w>  the question: the same words by the same caster answer the cast already standing",
-      "--fresh       a person's hand: a new throw for the same words",
-      "--seed <w>    a person's hand: coins drawn from these words, the same seed the same throw (named by its digest)",
-      "--coins <v>   six line values of 6, 7, 8 or 9, bottom line first (7,8,9,6,7,7 or 789677): the operator's own throw",
-      "--caster <n>  who cast (default: operator)",
-      "--json        emit {band, intent, replayed, decision, created, title, cast, text, readings, asOf, note}",
     ],
   },
   law: {
@@ -1520,6 +1487,11 @@ export function seatAbout(door: string, about: string): void { ABOUT.set(door, a
  * from. A module that keeps its own copy of these words splits the two; the weld test refuses that.
  */
 export function helpLines(door: string, summary?: string): string[] {
+  // THE SEAM (lar:///ha.ka.ba/kahua/memory/plan/cap-memes-compass §4): a door every affordance of which holds a carrier reads
+  // the baked pack, its legacy entry burned in the flipping commit; every other door reads the registry below. The census law
+  // (tests/laws/affordance-census.law.test.ts) counts the legacy doors down to zero, when this registry leaves.
+  const packed = packDoor(door);
+  if (packed !== undefined) return [...packed.help];
   const help = COMMAND_HELP[door];
   const about = ABOUT.get(door);
   if (!help) {
