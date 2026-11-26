@@ -546,6 +546,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares spirit ah cold-reader --slot '#/has' --add 'spirit.lane.holds read a PR cold'   # string one cap on the stack (a cap gathers; it grants nothing)",
       "lares spirit hum cold-reader --fold '#/has'                   # the stack, cap by cap; --line <n> --expect <digest> unstrings one",
       "lares spirit otakiage lares-alpha                             # burn the residue (your hand)",
+      "lares spirit residue cold-reader --witness --transcripts <dir>  # read landed hand-backs and subagent transcripts for the frame and Personas: receipts and a tally, exit 0",
       "lares spirit ah blind-reader --offer --file mandate.txt        # ʻālana: the offering lands before any instance wakes",
       "lares spirit ah blind-reader --echo <hash> --instance <id>     # hoʻāla: an instance echoes the mandate's hash om handed it",
       "lares spirit mandate 'cold-reader#00002' --file mandate.mem --model claude-fable-5-2 --parent <uri>@<hash>   # land a mandate carrier under its coordinator's",
