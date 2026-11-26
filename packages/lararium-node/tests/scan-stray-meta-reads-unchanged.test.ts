@@ -25,12 +25,24 @@ test("a base that names the body alone reads unchanged beside a hand-edited stra
   writeFileSync(file, "the words\n");
   const bodyOnly = carrierHash("the words\n", undefined);
   const tree = { baseAt: () => ({ disk: bodyOnly, records: bodyOnly }) } as unknown as SyncedTree;
-  writeFileSync(file + ".meta", "title: stray\n");
+  writeFileSync(file + ".meta", `title: ${URI}\n`);
   const first = scanFiles(dir, [file], "lar:///ha.ka.ba/bags/probe", tree, siting);
   expect(first.rows.map((r) => r.status)).toEqual(["unchanged"]);
-  writeFileSync(file + ".meta", "title: stray, edited by hand\n");
+  writeFileSync(file + ".meta", `\n\ntitle: ${URI}\n\n`);
   const second = scanFiles(dir, [file], "lar:///ha.ka.ba/bags/probe", tree, siting);
   expect(second.rows.map((r) => r.status)).toEqual(["unchanged"]);
   writeFileSync(file, "other words\n");
   expect(scanFiles(dir, [file], "lar:///ha.ka.ba/bags/probe", tree, siting).rows.map((r) => r.status)).toEqual(["changed"]);
+});
+
+test("a hand-added .meta that names a field the records lack beside a body-only base reads changed", () => {
+  dir = mkdtempSync(join(tmpdir(), "lar-scan-new-meta-"));
+  const file = join(dir, "stray.mem");
+  writeFileSync(file, "the words\n");
+  const bodyOnly = carrierHash("the words\n", undefined);
+  const tree = { baseAt: () => ({ disk: bodyOnly, records: bodyOnly }) } as unknown as SyncedTree;
+  writeFileSync(file + ".meta", `title: ${URI}\ncaption: a field the hand added\n`);
+  const scan = scanFiles(dir, [file], "lar:///ha.ka.ba/bags/probe", tree, siting);
+  expect(scan.rows.map((r) => r.status)).toEqual(["changed"]);
+  expect(scan.rows[0]!.meta).toContain("caption: a field the hand added");
 });

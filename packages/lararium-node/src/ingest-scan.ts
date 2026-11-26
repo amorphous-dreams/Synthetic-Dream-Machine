@@ -361,7 +361,9 @@ export function scanFiles(
     // tagged form); `digestsEqual` compares them as `(algo, hex)`.
     // A STRAY `.meta` (beside a carrier whose render holds no metaBody) stays out of the disk's state, as the projecting leg
     // and `pinAgreement` read it: the base then names the body alone, so the body-only hash stands in where it agrees.
-    if (base !== null && meta !== undefined && !digestsEqual(diskHash, base.disk)) {
+    // It stays out only where it names nothing the carrier does not already hold (its own title, or a line its own header
+    // carries): a field the hand added there reads `changed` and ingests, as a hand edit does.
+    if (base !== null && meta !== undefined && !digestsEqual(diskHash, base.disk) && metaHoldsNothingNew(meta, text, uri)) {
       const bodyOnly = carrierHash(text, undefined);
       if (digestsEqual(bodyOnly, base.disk)) diskHash = bodyOnly;
     }
@@ -1253,6 +1255,12 @@ async function settleWave(
 /** The heads a row or a summary names: a whole list of head hashes, or none. */
 function headsNamed(value: unknown): readonly string[] | undefined {
   return Array.isArray(value) && value.length > 0 && value.every((h) => typeof h === "string" && h !== "") ? (value as string[]) : undefined;
+}
+
+/** A `.meta` that adds no field to its carrier: each `key: value` line names the carrier's own title or stands in its own text. */
+function metaHoldsNothingNew(meta: string, text: string, uri: string): boolean {
+  const held = new Set(text.split("\n").map((l) => l.trim()));
+  return meta.split("\n").map((l) => l.trim()).filter((l) => l !== "").every((l) => l === `title: ${uri}` || held.has(l));
 }
 
 /** The observation hash of a carrier file as it stands now (body plus `.meta` pairing), or null where unreadable. */
