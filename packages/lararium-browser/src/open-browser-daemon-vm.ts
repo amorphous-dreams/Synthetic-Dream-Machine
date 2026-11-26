@@ -20,7 +20,6 @@
 import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
 import { daemonFaceCanonBag, type WikiRecipe } from "@lararium/mesh/wiki-recipe";
 import { standControlHome } from "@lararium/mesh/control-home";
-import { floorCidToMount } from "@lararium/mesh/floor-pin";
 import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
 import { type Repo, type AutomergeUrl } from "@lararium/mesh/automerge";
 import { type IslandMsg_Manifest, type IslandGrants } from "@lararium/mesh/island-protocol";
@@ -36,6 +35,9 @@ import { browserNewSyncChannel, browserSpawnWorker } from "./worker-handle.js";
 
 export interface BrowserDaemonVmOptions {
   repo:             Repo;
+  /** The floor the daemon island mounts: the place's accept at its home charter (`floor-accept` `vesselFloorCid`, read by the
+   *  vessel at this open); absent or null, the island reads its genesis seed's floor. One shape with the node host. */
+  floorCid?:        string | null;
   daemonUrl:         string;
   /** The persona plane's doc URL (the PersonaGroup veiled identity) — resolved alongside the daemon doc. */
   /** ABSENT on a place that never grew a face. */
@@ -163,14 +165,9 @@ export async function openBrowserDaemonVm(
       documentUrl: daemonUrl,
       storage: { type: "idb" as const, dbName: ownedDaemonDbName(daemonUrl) },
     } } : {}),
-    // THE VESSEL'S FLOOR PIN, off the control document (one shape with the node host): the daemon island mounts the floor this
-    // vessel accepted; a control document that reads nothing names no pin, and the island reads its genesis seed's floor.
-    floorCid: () => {
-      let doc: LarDoc | undefined;
-      try { doc = controlHandle.doc(); } catch { return null; }
-      const pick = floorCidToMount({ controlDoc: doc, nexus: null, genesis: null });
-      return pick.source === "pin" ? pick.cid : null;
-    },
+    // THE PLACE'S FLOOR ACCEPT at its home charter (one shape with the node host): the daemon island mounts the floor this
+    // place accepted; none leaves the island on its genesis seed's floor.
+    floorCid: opts.floorCid ?? null,
     workerScriptUrl,
   });
 }

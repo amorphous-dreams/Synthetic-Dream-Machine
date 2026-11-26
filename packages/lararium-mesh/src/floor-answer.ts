@@ -13,7 +13,7 @@
  *   4. the chain: a release counts through an unbroken chain to the Nexus's first, and two heads read `unsettled`;
  *   5. the floor: the head's manifest and every snapshot it names (one per house-canon bag), each fetched by CID and re-hashed.
  *
- * It signs nothing and keeps no pin: the reader records no acceptance (the VESSEL accepts a release by its own act, `floor-pin`).
+ * It signs nothing and keeps no pin: the reader records no acceptance (the PLACE accepts a release by a hand's act, `floor-accept`).
  * It is isomorphic: the caller supplies `fetchCas`, and both a browser and a node read the floor through it.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane#/the-slices
@@ -61,7 +61,7 @@ export type FloorRead =
 const HEX64 = /^[0-9a-f]{64}$/;
 
 /** The release rows a porch answer carries for `nexus`, or the refusal by name. Verifies nothing beyond the shape: the
- *  fold verifies each row (`foldFloorReleases`), and the vessel's pin doors read the same rows (`floor-pin`). */
+ *  fold verifies each row (`foldFloorReleases`), and the place's accept doors read the same rows (`floor-accept`). */
 export function floorAnswerEntries(answer: unknown, nexus: string):
   | { readonly rows: ReadonlyArray<{ readonly keyCid: string; readonly record: unknown }> }
   | { readonly refusal: "answer-malformed" | "foreign-nexus" } {

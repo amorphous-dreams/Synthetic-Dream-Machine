@@ -44,7 +44,7 @@ const browserNode = {
       "tests/browser-docstore-crash.test.ts",
       "tests/browser-dyad-refusal.test.ts",
       "tests/browser-face-join.test.ts",
-      "tests/browser-floor-pin.test.ts",
+      "tests/browser-floor-accept.test.ts",
       "tests/browser-floor-read.test.ts",
       "tests/browser-flow-nexus.test.ts",
       "tests/browser-gate-pins.test.ts",

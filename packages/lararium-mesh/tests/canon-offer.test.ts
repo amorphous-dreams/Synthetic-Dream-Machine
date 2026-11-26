@@ -29,7 +29,7 @@ import {
 } from "../src/canon-offer.js";
 import { cutFloorSnapshot, floorManifestBytes, floorReadFace, floorRecordsInOrder, resolveFloor, type FloorManifest } from "../src/floor-manifest.js";
 import { assembleFloorRelease, openFloorReleaseBody } from "../src/floor-release.js";
-import { acceptFloorRelease, type FloorPinPorts } from "../src/floor-pin.js";
+import { acceptFloorRelease, type FloorAcceptPorts } from "../src/floor-accept.js";
 import { signFloorOffering } from "../src/floor-offering.js";
 import { sha256HexBytesSync } from "../src/crypto.js";
 import type { LarTiddlerRecord } from "../src/tiddler-store.js";
@@ -105,7 +105,7 @@ describe("the offer", () => {
   });
 
   test("RED: withheld and cap/** titles refuse to be offered; a forged row carrying one is set aside", async () => {
-    for (const title of ["lar:///ha.ka.ba/bags/daemon/cap/abc", "lar:///ha.ka.ba/bags/secret/cap/face/x", "$:/temp/scratch", "lar:///ha.ka.ba/bags/control/floor-pin/x", "lar:///ha.ka.ba/bags/lares/../daemon/cap/y"]) {
+    for (const title of ["lar:///ha.ka.ba/bags/daemon/cap/abc", "lar:///ha.ka.ba/bags/secret/cap/face/x", "$:/temp/scratch", "lar:///ha.ka.ba/bags/control/lease/x", "lar:///ha.ka.ba/bags/lares/../daemon/cap/y"]) {
       expect(offerWithheldTitle(title)).toBe(true);
       const working = memoryStore({ [title]: rec(title, "secret") });
       const board = memoryBoard();
@@ -398,19 +398,19 @@ describe("the loop", () => {
       body: openFloorReleaseBody({ nexus: c.aid, epoch: c.head.epochCid, prior: null, manifest: cut.manifestCid }),
       lineage: c.chain, manifestBytes: cut.manifestBytes, steward: steward!, approvers: [...await c.signers()],
     });
-    // 4 · h1's VESSEL ACCEPTS through Leap 1's door.
-    const home = { doc: () => controlDoc, change(fn: (d: LarDoc) => void) { fn(controlDoc); } };
-    const controlDoc = emptyLarDoc();
+    // 4 · h1's PLACE ACCEPTS through Leap 1's door, into its accept home.
+    const home = { doc: () => acceptsDoc, change(fn: (d: LarDoc) => void) { fn(acceptsDoc); } };
+    const acceptsDoc = emptyLarDoc();
     const local = new Map<string, Uint8Array>([[gl.cid, gl.bytes], [gr.cid, gr.bytes], [gCid, gBytes]]);
-    const pinPorts: FloorPinPorts = {
+    const acceptPorts: FloorAcceptPorts = {
       home, nexus: c.aid, genesisManifest: gCid, requiredBlobIds: [offering.offering.blobs[0]!.id],
       rows: async () => [{ keyCid: release.cid, record: JSON.parse(JSON.stringify(release)) as unknown }],
       fetchCas: async (cid) => local.get(cid) ?? cas.get(cid) ?? null,
       stage: async (blobs) => { for (const b of blobs) local.set(b.cid, b.bytes); },
       mount: { floorSwap: false, alert: () => {} },
     };
-    const accepted = await acceptFloorRelease(pinPorts);
-    expect(accepted).toMatchObject({ ok: true, moved: true, pin: { release: release.cid, manifest: cut.manifestCid } });
+    const accepted = await acceptFloorRelease(acceptPorts);
+    expect(accepted).toMatchObject({ ok: true, moved: true, accept: { release: release.cid, manifest: cut.manifestCid, took: [release.cid] } });
     // 5 · h1 READS the promoted record on its floor.
     const floor = await resolveFloor(cut.manifestCid, async (cid) => local.get(cid) ?? null);
     if ("refusal" in floor) throw new Error(floor.refusal);
@@ -421,7 +421,7 @@ describe("the loop", () => {
     // CONTROL: a cut over unmoved canon answers the prior's own CID (a replayed cut lands nothing new).
     const again = await cutReleaseFloor({ prior: async () => ({ manifestCid: gCid, bytes: gBytes }), canonRows: async (slug) => (slug === "lares" ? genesisLares : null), tier: () => null, blob: async (cid) => cas.get(cid) ?? null, stage: async () => {}, genesisEngine: () => genesis.engine });
     expect(again).toMatchObject({ manifestCid: gCid, moved: [] });
-    // CONTROL: the genesis floor still reads the old page (the pin moved, the old floor did not).
+    // CONTROL: the genesis floor still reads the old page (the accept moved, the old floor did not).
     const old = await resolveFloor(gCid, async (cid) => local.get(cid) ?? null);
     if ("refusal" in old) throw new Error(old.refusal);
     expect((await floorReadFace({ rows: floorRecordsInOrder(old) }).get(T1))?.tiddler.text).toBe("canon says one");

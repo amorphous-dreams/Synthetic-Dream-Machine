@@ -1,16 +1,16 @@
 /**
- * genesis-compare — the seed (offered) beside the founding record and the floor pin, ratchet by ratchet.
+ * genesis-compare — the seed (offered) beside the founding record and the floor accept, ratchet by ratchet.
  *
  * D1: the shipped seed stands as an OFFER and the stored island as the house's ground (the founding record). One
  * pure helper recomputes the founding record's folded digests from its own blobs (the same fold the mint and
- * the verify read) and names, per ratchet, whether the offered seed or the pinned floor reads the same, moved,
+ * the verify read) and names, per ratchet, whether the offered seed or the accepted floor reads the same, moved,
  * or absent. Absent never reads as same.
  */
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
-  compareGenesisDigests, compareSeedToFoundingRecord, floorPinDigests, foundingRecordDigests, ratchetWords,
+  compareGenesisDigests, compareSeedToFoundingRecord, floorAcceptDigests, foundingRecordDigests, ratchetWords,
   seedRatchetStances, seedStanceWords, SEED_HELD_NEXT, SEED_OFFER_NEXT,
 } from "../src/genesis-compare.js";
 import { GENESIS_CID_ENGINE_TIDDLER, GENESIS_CID_GRAMMAR_TIDDLER, GENESIS_CID_PLUGINS_TIDDLER, type GenesisSeed } from "../src/genesis-doc.js";
@@ -67,7 +67,7 @@ describe("seed (offered) beside the founding record", () => {
     const seed = shipped();
     const read = compareSeedToFoundingRecord({ record: seed, seed });
     expect(ratchetWords(read.seed!)).toBe("engine same · grammar same · lararium same · plugins same · floor same");
-    expect(read.floorPin).toBeNull();
+    expect(read.floorAccept).toBeNull();
   });
 
   it("CONTROL: one moved grammar reads grammar moved, and the other ratchets read same", () => {
@@ -95,7 +95,7 @@ describe("seed (offered) beside the founding record", () => {
   });
 });
 
-describe("the floor pin beside the founding record", () => {
+describe("the floor accept beside the founding record", () => {
   const provenance = { source: "https://example.test", commit: "0".repeat(40), path: "p.json", licence: "MIT" };
   const offerOf = (rows: ReadonlyArray<{ id: string; version: string; sha256: string }>) =>
     signFloorOffering({ seed: new Uint8Array(32).fill(8), blobs: rows.map((b) => ({ id: b.id, version: b.version, sha256: b.sha256, provenance })) });
@@ -106,21 +106,21 @@ describe("the floor pin beside the founding record", () => {
     const rows = floorMountBlobRows(Object.values(seed.blobs) as Array<{ id: string; version: string; sha256: string; mimeType: string }>);
     const whole = await offerOf(rows);
     const genesisFloor = { engine: record.engine!, plugins: whole.cid };
-    const same = compareSeedToFoundingRecord({ record: seed, floorPin: { manifestCid: record.floor!, manifest: genesisFloor, offering: whole.offering } });
-    expect(ratchetWords(same.floorPin!)).toBe("engine same · grammar same · lararium same · plugins same · floor same");
+    const same = compareSeedToFoundingRecord({ record: seed, floorAccept: { manifestCid: record.floor!, manifest: genesisFloor, offering: whole.offering } });
+    expect(ratchetWords(same.floorAccept!)).toBe("engine same · grammar same · lararium same · plugins same · floor same");
     expect(same.seed).toBeNull();
 
     const parserMoved = await offerOf(rows.map((r) => (r.id === LARES_MEMETIC_WIKITEXT_PLUGIN_URI ? { ...r, sha256: "f".repeat(64) } : r)));
-    const moved = compareSeedToFoundingRecord({ record: seed, floorPin: { manifestCid: "a".repeat(64), manifest: { ...genesisFloor, plugins: parserMoved.cid }, offering: parserMoved.offering } });
-    expect(ratchetWords(moved.floorPin!)).toBe("engine same · grammar moved · lararium same · plugins moved · floor moved");
+    const moved = compareSeedToFoundingRecord({ record: seed, floorAccept: { manifestCid: "a".repeat(64), manifest: { ...genesisFloor, plugins: parserMoved.cid }, offering: parserMoved.offering } });
+    expect(ratchetWords(moved.floorAccept!)).toBe("engine same · grammar moved · lararium same · plugins moved · floor moved");
   });
 
   it("a pin whose offering did not read names grammar and plugins absent, never same", () => {
     const seed = shipped();
     const record = foundingRecordDigests(seed);
-    const read = compareSeedToFoundingRecord({ record: seed, floorPin: { manifestCid: record.floor!, manifest: { engine: record.engine!, plugins: "b".repeat(64) }, offering: null } });
-    expect(ratchetWords(read.floorPin!)).toBe("engine same · grammar absent · lararium absent · plugins absent · floor same");
-    expect(ratchetWords(compareGenesisDigests(record, floorPinDigests("a".repeat(64), { engine: record.engine!, plugins: "b".repeat(64) }))))
+    const read = compareSeedToFoundingRecord({ record: seed, floorAccept: { manifestCid: record.floor!, manifest: { engine: record.engine!, plugins: "b".repeat(64) }, offering: null } });
+    expect(ratchetWords(read.floorAccept!)).toBe("engine same · grammar absent · lararium absent · plugins absent · floor same");
+    expect(ratchetWords(compareGenesisDigests(record, floorAcceptDigests("a".repeat(64), { engine: record.engine!, plugins: "b".repeat(64) }))))
       .toBe("engine same · grammar absent · lararium absent · plugins absent · floor moved");
   });
 });

@@ -1,7 +1,7 @@
 /**
- * floor-local (3d, follow-lei S2) — THE LOCAL FLOOR. The pin grows a local form over its base: the local manifest it mounts (the
+ * floor-local (3d, follow-lei S2) — THE LOCAL FLOOR. The accept grows a local form over its base: the local manifest it mounts (the
  * base's engine and canon snapshots, the adopted seed's plugins offering), the base its descent walks from, a receipt (the adopted
- * seed's CID) and the prior pin kept alive. An adopt moves forward only and never stacks on an uncommitted one; the engine never
+ * seed's CID) and the prior accept kept alive. An adopt moves forward only and never stacks on an uncommitted one; the engine never
  * adopts here (held). A commit lands at par; a revert lands the prior back as a forward row, never a deletion. A release accept
  * over a local floor moves (the let-go), never reads as held.
  */
@@ -12,9 +12,9 @@ import { FLOOR_MANIFEST_FORMAT, cutFloorSnapshot, floorManifestBytes, readFloorM
 import { signFloorOffering } from "../src/floor-offering.js";
 import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "../src/lar-uris.js";
 import {
-  FLOOR_PIN_KIND, adoptFloorSeed, commitLocalFloor, decideFloorAccept, decideFloorAdopt, floorCidToMount, floorPinBase, floorPinOf,
-  readFloorPin, revertLocalFloor, writeFloorPin, type FloorPin, type FloorPinPorts,
-} from "../src/floor-pin.js";
+  FLOOR_ACCEPT_KIND, adoptFloorSeed, commitLocalFloor, decideFloorAccept, decideFloorAdopt, floorToMount, floorAcceptBase, floorAcceptOf,
+  readFloorAccept, revertLocalFloor, writeFloorAccept, type FloorAccept, type FloorAcceptPorts,
+} from "../src/floor-accept.js";
 import type { FloorReleaseStanding } from "../src/floor-release.js";
 
 const NEXUS = "nexus-aid";
@@ -33,14 +33,14 @@ const BASE = manifestOf({ format: FLOOR_MANIFEST_FORMAT, engine: ENGINE, plugins
 const SEED = manifestOf({ format: FLOOR_MANIFEST_FORMAT, engine: ENGINE, plugins: OFFER2.cid, snapshots: { lares: "c".repeat(64), lararium: "d".repeat(64) } });
 const SEED_ENGINE_MOVED = manifestOf({ ...SEED.m, engine: "f".repeat(64) });
 const RECEIPT = "5".repeat(64);
-const genesisPin: FloorPin = { kind: FLOOR_PIN_KIND, nexus: NEXUS, release: null, manifest: BASE.cid };
+const genesisAccept: FloorAccept = { kind: FLOOR_ACCEPT_KIND, nexus: NEXUS, release: null, manifest: BASE.cid, took: [] };
 
 function memoryHome(doc: LarDoc = emptyLarDoc()) { return { changes: 0, doc: () => doc, change(fn: (d: LarDoc) => void) { this.changes += 1; fn(doc); } }; }
 function portsOver(home: ReturnType<typeof memoryHome>) {
   const cas = new Map<string, Uint8Array>([[BASE.cid, BASE.bytes], [SEED.cid, SEED.bytes], [SEED_ENGINE_MOVED.cid, SEED_ENGINE_MOVED.bytes],
     [OFFER1.cid, OFFER1.bytes], [OFFER2.cid, OFFER2.bytes], [G1.sha256, G1.bytes], [G2.sha256, G2.bytes], [SNAP_LARES.cid, SNAP_LARES.bytes], [SNAP_LARARIUM.cid, SNAP_LARARIUM.bytes]]);
   const staged: string[] = []; const alerts: string[] = [];
-  const ports: FloorPinPorts = {
+  const ports: FloorAcceptPorts = {
     home, nexus: NEXUS, genesisManifest: BASE.cid, requiredBlobIds: [LARES_MEMETIC_WIKITEXT_PLUGIN_URI],
     rows: async () => [], fetchCas: async (cid) => cas.get(cid) ?? null,
     stage: async (blobs) => { for (const b of blobs) { staged.push(b.cid); cas.set(b.cid, b.bytes); } },
@@ -50,70 +50,70 @@ function portsOver(home: ReturnType<typeof memoryHome>) {
 }
 
 describe("the local floor's shape", () => {
-  test("RED: a local pin reads at its exact shape, names its base, and mounts its local manifest; CONTROL: a plain pin still reads", () => {
-    const local: FloorPin = { ...genesisPin, manifest: "9".repeat(64), local: { base: BASE.cid, receipt: RECEIPT, prior: { release: null, manifest: BASE.cid, base: null, receipt: null }, state: "staged" } };
-    expect(readFloorPin(JSON.parse(JSON.stringify(local)), NEXUS)).toEqual(local);
-    expect(floorPinBase(local)).toBe(BASE.cid);
-    expect(floorPinBase(genesisPin)).toBe(BASE.cid);
-    expect(readFloorPin({ ...genesisPin }, NEXUS)).toEqual(genesisPin);
-    expect(readFloorPin({ ...local, local: { ...local.local, state: "maybe" } }, NEXUS)).toBeNull();
-    expect(readFloorPin({ ...local, local: { ...local.local, extra: 1 } }, NEXUS)).toBeNull();
+  test("RED: a local accept reads at its exact shape, names its base, and mounts its local manifest; CONTROL: a plain accept still reads", () => {
+    const local: FloorAccept = { ...genesisAccept, manifest: "9".repeat(64), local: { base: BASE.cid, receipt: RECEIPT, prior: { release: null, manifest: BASE.cid, base: null, receipt: null }, state: "staged" } };
+    expect(readFloorAccept(JSON.parse(JSON.stringify(local)), NEXUS)).toEqual(local);
+    expect(floorAcceptBase(local)).toBe(BASE.cid);
+    expect(floorAcceptBase(genesisAccept)).toBe(BASE.cid);
+    expect(readFloorAccept({ ...genesisAccept }, NEXUS)).toEqual(genesisAccept);
+    expect(readFloorAccept({ ...local, local: { ...local.local, state: "maybe" } }, NEXUS)).toBeNull();
+    expect(readFloorAccept({ ...local, local: { ...local.local, extra: 1 } }, NEXUS)).toBeNull();
     const doc = emptyLarDoc();
-    writeFloorPin(doc, local);
-    expect(floorPinOf(doc, NEXUS, BASE.cid)).toEqual({ pin: local, source: "accepted" });
-    expect(floorCidToMount({ controlDoc: doc, nexus: NEXUS, genesis: BASE.cid })).toEqual({ cid: "9".repeat(64), source: "pin" });
+    writeFloorAccept(doc, local);
+    expect(floorAcceptOf(doc, NEXUS, BASE.cid)).toEqual({ accept: local, source: "accepted" });
+    expect(floorToMount({ accepts: doc, pick: { nexus: NEXUS }, genesis: BASE.cid })).toEqual({ cid: "9".repeat(64), standing: "accepted", nexus: NEXUS });
   });
 });
 
 describe("the adopt decision", () => {
-  test("RED: an adopt over the base carries the base's engine and snapshots, the seed's plugins, the receipt and the prior pin", () => {
-    const d = decideFloorAdopt({ pin: genesisPin, base: BASE.m, seed: { cid: RECEIPT, manifest: SEED.m } });
+  test("RED: an adopt over the base carries the base's engine and snapshots, the seed's plugins, the receipt and the prior accept", () => {
+    const d = decideFloorAdopt({ accept: genesisAccept, base: BASE.m, seed: { cid: RECEIPT, manifest: SEED.m } });
     expect(d.ok && d.moved).toBe(true);
     if (!d.ok || !d.moved) return;
     expect(readFloorManifest(d.manifestBytes)).toEqual({ manifest: { format: FLOOR_MANIFEST_FORMAT, engine: ENGINE, plugins: OFFER2.cid, snapshots: SNAPS } });
-    expect(d.pin).toEqual({ kind: FLOOR_PIN_KIND, nexus: NEXUS, release: null, manifest: sha256HexBytesSync(d.manifestBytes),
+    expect(d.accept).toEqual({ kind: FLOOR_ACCEPT_KIND, nexus: NEXUS, release: null, manifest: sha256HexBytesSync(d.manifestBytes), took: [],
       local: { base: BASE.cid, receipt: RECEIPT, prior: { release: null, manifest: BASE.cid, base: null, receipt: null }, state: "staged" } });
     expect(d.moves).toEqual(["plugins"]);
   });
 
   test("RED: the engine never adopts here; an uncommitted adopt refuses a second; a replay lands nothing", () => {
-    expect(decideFloorAdopt({ pin: genesisPin, base: BASE.m, seed: { cid: RECEIPT, manifest: SEED_ENGINE_MOVED.m } })).toMatchObject({ ok: false, refusal: "adopt-engine-held" });
-    const first = decideFloorAdopt({ pin: genesisPin, base: BASE.m, seed: { cid: RECEIPT, manifest: SEED.m } });
+    expect(decideFloorAdopt({ accept: genesisAccept, base: BASE.m, seed: { cid: RECEIPT, manifest: SEED_ENGINE_MOVED.m } })).toMatchObject({ ok: false, refusal: "adopt-engine-held" });
+    const first = decideFloorAdopt({ accept: genesisAccept, base: BASE.m, seed: { cid: RECEIPT, manifest: SEED.m } });
     if (!first.ok || !first.moved) throw new Error("first adopt");
-    expect(decideFloorAdopt({ pin: first.pin, base: BASE.m, seed: { cid: "6".repeat(64), manifest: SEED.m } })).toMatchObject({ ok: false, refusal: "adopt-uncommitted" });
-    const committed = commitLocalFloor(first.pin);
+    expect(decideFloorAdopt({ accept: first.accept, base: BASE.m, seed: { cid: "6".repeat(64), manifest: SEED.m } })).toMatchObject({ ok: false, refusal: "adopt-uncommitted" });
+    const committed = commitLocalFloor(first.accept);
     if (!committed.ok) throw new Error("commit");
-    expect(decideFloorAdopt({ pin: committed.pin, base: BASE.m, seed: { cid: RECEIPT, manifest: SEED.m } })).toMatchObject({ ok: true, moved: false });
-    expect(decideFloorAdopt({ pin: genesisPin, base: BASE.m, seed: { cid: RECEIPT, manifest: BASE.m } })).toMatchObject({ ok: true, moved: false });
+    expect(decideFloorAdopt({ accept: committed.accept, base: BASE.m, seed: { cid: RECEIPT, manifest: SEED.m } })).toMatchObject({ ok: true, moved: false });
+    expect(decideFloorAdopt({ accept: genesisAccept, base: BASE.m, seed: { cid: RECEIPT, manifest: BASE.m } })).toMatchObject({ ok: true, moved: false });
   });
 
-  test("RED: commit lands at par; revert lands the prior back as a forward row; CONTROL: neither moves a plain pin", () => {
-    const first = decideFloorAdopt({ pin: genesisPin, base: BASE.m, seed: { cid: RECEIPT, manifest: SEED.m } });
+  test("RED: commit lands at par; revert lands the prior back as a forward row; CONTROL: neither moves a plain accept", () => {
+    const first = decideFloorAdopt({ accept: genesisAccept, base: BASE.m, seed: { cid: RECEIPT, manifest: SEED.m } });
     if (!first.ok || !first.moved) throw new Error("adopt");
-    const c = commitLocalFloor(first.pin);
-    expect(c).toMatchObject({ ok: true, moved: true, pin: { manifest: first.pin.manifest, local: { state: "committed" } } });
-    expect(commitLocalFloor(c.ok ? c.pin : first.pin)).toMatchObject({ ok: true, moved: false });
-    expect(revertLocalFloor(first.pin)).toEqual({ ok: true, moved: true, pin: genesisPin });
-    expect(commitLocalFloor(genesisPin)).toMatchObject({ ok: false, refusal: "adopt-none-local" });
-    expect(revertLocalFloor(genesisPin)).toMatchObject({ ok: false, refusal: "adopt-none-local" });
+    const c = commitLocalFloor(first.accept);
+    expect(c).toMatchObject({ ok: true, moved: true, accept: { manifest: first.accept.manifest, local: { state: "committed" } } });
+    expect(commitLocalFloor(c.ok ? c.accept : first.accept)).toMatchObject({ ok: true, moved: false });
+    expect(revertLocalFloor(first.accept)).toEqual({ ok: true, moved: true, accept: genesisAccept });
+    expect(commitLocalFloor(genesisAccept)).toMatchObject({ ok: false, refusal: "adopt-none-local" });
+    expect(revertLocalFloor(genesisAccept)).toMatchObject({ ok: false, refusal: "adopt-none-local" });
   });
 
   test("RED: a release accept over a local floor on its own base moves (the let-go), never reads held", () => {
     const releaseCid = "7".repeat(64);
     const standing = { standing: "released", head: { cid: releaseCid, body: { manifest: BASE.cid, prior: null } }, counted: [{ cid: releaseCid, body: { manifest: BASE.cid, prior: null } }], refused: [] } as unknown as FloorReleaseStanding;
-    const onRelease: FloorPin = { ...genesisPin, release: releaseCid };
-    const first = decideFloorAdopt({ pin: onRelease, base: BASE.m, seed: { cid: RECEIPT, manifest: SEED.m } });
+    const onRelease: FloorAccept = { ...genesisAccept, release: releaseCid };
+    const first = decideFloorAdopt({ accept: onRelease, base: BASE.m, seed: { cid: RECEIPT, manifest: SEED.m } });
     if (!first.ok || !first.moved) throw new Error("adopt");
-    expect(first.pin.release).toBe(releaseCid);
-    expect(decideFloorAccept({ pin: first.pin, standing, target: releaseCid })).toMatchObject({ ok: true, moved: true, pin: { release: releaseCid, manifest: BASE.cid } });
-    const after = decideFloorAccept({ pin: first.pin, standing, target: releaseCid });
-    if (after.ok) expect(after.pin.local).toBeUndefined();
-    expect(decideFloorAccept({ pin: onRelease, standing, target: releaseCid })).toMatchObject({ ok: true, moved: false });
+    expect(first.accept.release).toBe(releaseCid);
+    expect(decideFloorAccept({ accept: first.accept, standing, target: releaseCid })).toMatchObject({ ok: true, moved: true, accept: { release: releaseCid, manifest: BASE.cid } });
+    const after = decideFloorAccept({ accept: first.accept, standing, target: releaseCid });
+    if (after.ok) expect(after.accept.local).toBeUndefined();
+    expect(decideFloorAccept({ accept: onRelease, standing, target: releaseCid })).toMatchObject({ ok: true, moved: false });
   });
 });
 
 describe("the adopt door: previews, then applies by hand", () => {
-  test("RED: the preview writes nothing; the apply stages the local manifest, moves the pin and raises the reboot alert", async () => {
+  test("RED: the preview writes nothing; the apply stages the local manifest, moves the accept and raises the reboot alert", async () => {
     const home = memoryHome();
     const { ports, staged, alerts, cas } = portsOver(home);
     const preview = await adoptFloorSeed(ports, { seedCid: RECEIPT, seedFloor: SEED.cid, apply: false });
@@ -123,9 +123,9 @@ describe("the adopt door: previews, then applies by hand", () => {
     const applied = await adoptFloorSeed(ports, { seedCid: RECEIPT, seedFloor: SEED.cid, apply: true });
     expect(applied).toMatchObject({ ok: true, moved: true, applied: true });
     if (!applied.ok || !applied.moved) return;
-    expect(staged).toContain(applied.pin.manifest);
-    expect(cas.get(applied.pin.manifest)).toBeDefined();
-    expect(floorPinOf(home.doc(), NEXUS, BASE.cid).pin).toEqual(applied.pin);
+    expect(staged).toContain(applied.accept.manifest);
+    expect(cas.get(applied.accept.manifest)).toBeDefined();
+    expect(floorAcceptOf(home.doc(), NEXUS, BASE.cid).accept).toEqual(applied.accept);
     expect(alerts.length).toBe(1);
   });
 
@@ -142,27 +142,31 @@ describe("the cold read's answers (#577, S2)", () => {
   test("RED: a bare accept never lets a local floor go; only the named release does", () => {
     const releaseCid = "7".repeat(64);
     const standing = { standing: "released", head: { cid: releaseCid, body: { manifest: BASE.cid, prior: null } }, counted: [{ cid: releaseCid, body: { manifest: BASE.cid, prior: null } }], refused: [] } as unknown as FloorReleaseStanding;
-    const first = decideFloorAdopt({ pin: { ...genesisPin, release: releaseCid }, base: BASE.m, seed: { cid: RECEIPT, manifest: SEED.m } });
+    const first = decideFloorAdopt({ accept: { ...genesisAccept, release: releaseCid }, base: BASE.m, seed: { cid: RECEIPT, manifest: SEED.m } });
     if (!first.ok || !first.moved) throw new Error("adopt");
-    expect(decideFloorAccept({ pin: first.pin, standing })).toMatchObject({ ok: true, moved: false });
-    expect(decideFloorAccept({ pin: first.pin, standing, target: releaseCid })).toMatchObject({ ok: true, moved: true });
+    expect(decideFloorAccept({ accept: first.accept, standing })).toMatchObject({ ok: true, moved: false });
+    expect(decideFloorAccept({ accept: first.accept, standing, target: releaseCid })).toMatchObject({ ok: true, moved: true });
   });
 
   test("RED: a local row whose prior names another release reads torn", () => {
-    const local: FloorPin = { ...genesisPin, manifest: "9".repeat(64), local: { base: BASE.cid, receipt: RECEIPT, prior: { release: "1".repeat(64), manifest: BASE.cid, base: null, receipt: null }, state: "staged" } };
-    expect(readFloorPin(JSON.parse(JSON.stringify(local)), NEXUS)).toBeNull();
+    const local: FloorAccept = { ...genesisAccept, manifest: "9".repeat(64), local: { base: BASE.cid, receipt: RECEIPT, prior: { release: "1".repeat(64), manifest: BASE.cid, base: null, receipt: null }, state: "staged" } };
+    expect(readFloorAccept(JSON.parse(JSON.stringify(local)), NEXUS)).toBeNull();
   });
 
-  test("RED: an adopt refuses where the vessel holds pins at another Nexus (the mount would drop to genesis)", async () => {
+  test("RED: a local floor adopts at one Nexus while another Nexus holds an accept, and that other accept and its mount stay", async () => {
     const home = memoryHome();
-    writeFloorPin(home.doc(), { kind: FLOOR_PIN_KIND, nexus: "other-nexus", release: "2".repeat(64), manifest: BASE.cid });
+    const other = { kind: FLOOR_ACCEPT_KIND, nexus: "other-nexus", release: "2".repeat(64), manifest: "8".repeat(64), took: ["2".repeat(64)] } as const;
+    writeFloorAccept(home.doc(), other);
     const { ports } = portsOver(home);
-    const before = home.changes;
-    expect(await adoptFloorSeed(ports, { seedCid: RECEIPT, seedFloor: SEED.cid, apply: true })).toMatchObject({ ok: false, refusal: "adopt-many-floors" });
-    expect(home.changes).toBe(before);
+    const applied = await adoptFloorSeed(ports, { seedCid: RECEIPT, seedFloor: SEED.cid, apply: true });
+    expect(applied).toMatchObject({ ok: true, moved: true, applied: true });
+    if (!applied.ok || !applied.moved) return;
+    expect(floorAcceptOf(home.doc(), "other-nexus", BASE.cid)).toEqual({ accept: other, source: "accepted" });
+    expect(floorToMount({ accepts: home.doc(), pick: { nexus: "other-nexus" }, genesis: BASE.cid })).toEqual({ cid: "8".repeat(64), standing: "accepted", nexus: "other-nexus" });
+    expect(floorToMount({ accepts: home.doc(), pick: { nexus: NEXUS }, genesis: BASE.cid })).toEqual({ cid: applied.accept.manifest, standing: "accepted", nexus: NEXUS });
   });
 
-  test("RED: an adopt whose local manifest would not resolve whole (a base snapshot absent) refuses before the pin moves", async () => {
+  test("RED: an adopt whose local manifest would not resolve whole (a base snapshot absent) refuses before the accept moves", async () => {
     const home = memoryHome();
     const { ports, cas } = portsOver(home);
     cas.delete(SNAP_LARARIUM.cid);

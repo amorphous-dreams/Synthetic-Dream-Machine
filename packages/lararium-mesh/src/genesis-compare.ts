@@ -1,12 +1,12 @@
 /**
- * genesis-compare -- the seed (offered) beside the founding record and the floor pin, ratchet by ratchet.
+ * genesis-compare -- the seed (offered) beside the founding record and the floor accept, ratchet by ratchet.
  *
  * D1: the shipped seed stands as an OFFER, the stored genesis island as the house's ground (the founding record,
- * never written after founding), and the pinned floor as what the house chose. Nothing here moves any of them:
+ * never written after founding), and the accepted floor as what the house chose. Nothing here moves any of them:
  * every function stays pure and reads only what its caller hands it, so the boot line, the charter-free status
  * read, the kūkulu and the floor shadow read (vessel-island-pool-core) all print the same per-ratchet words.
  *
- * THE FIVE RATCHETS. `engine`, `grammar`, `lararium` and `plugins` name the folded digests (on a pinned floor, grammar, lararium
+ * THE FIVE RATCHETS. `engine`, `grammar`, `lararium` and `plugins` name the folded digests (on a accepted floor, grammar, lararium
  * and plugins read through its plugins offering: the floor names no grammar field) (`computeEngineCid`,
  * `computeGrammarCid`, `computeLarariumCid`, `computePluginsCid`); `floor` names the floor manifest CID. The grammar and the house
  * ride two skins with two ratchets, so a house edit moves `lararium` and leaves `grammar` standing. The founding record's folded
@@ -57,11 +57,11 @@ export interface StoredGenesisRecord {
 export type GenesisRecordLike = StoredGenesisRecord | Partial<Pick<GenesisSeed, "blobs" | "tiddlers">>;
 
 /**
- * The pinned floor as the comparison reads it: its manifest CID, its engine fold and plugins offering address, and the
+ * The accepted floor as the comparison reads it: its manifest CID, its engine fold and plugins offering address, and the
  * offering itself where its bytes read (null or absent where they did not). The floor names no grammar: the parser's and the
  * house's bytes ride the offering, so the offering decides the grammar, lararium and plugins readings.
  */
-export interface FloorPinLike {
+export interface FloorAcceptLike {
   readonly manifestCid: string;
   readonly manifest: Pick<FloorManifest, "engine" | "plugins">;
   readonly offering?: Pick<PluginOffering, "blobs"> | null;
@@ -89,13 +89,13 @@ export function foundingRecordDigests(record: GenesisRecordLike): GenesisDigests
 }
 
 /**
- * The digests a pinned floor names: its engine fold and the manifest CID as the floor. Grammar and plugins come from the
+ * The digests a accepted floor names: its engine fold and the manifest CID as the floor. Grammar and plugins come from the
  * offering read against the founding record (`offeringReadings`), absent where the caller hands none: the manifest's
  * `plugins` names an offering record, never a fold, so it never stands in for one.
  */
-export function floorPinDigests(
+export function floorAcceptDigests(
   manifestCid: string,
-  manifest: FloorPinLike["manifest"],
+  manifest: FloorAcceptLike["manifest"],
   offered: OfferedReadings = { grammar: null, lararium: null, plugins: null },
 ): GenesisDigests {
   const field = (v: string): string | null => (typeof v === "string" && v.length > 0 ? v : null);
@@ -105,15 +105,15 @@ export function floorPinDigests(
   });
 }
 
-/** The offering-read ratchets: what a pinned floor's plugins offering decides beside the founding record. */
+/** The offering-read ratchets: what a accepted floor's plugins offering decides beside the founding record. */
 export interface OfferedReadings { readonly grammar: string | null; readonly lararium: string | null; readonly plugins: string | null }
 
 /**
- * The grammar, lararium and plugins a pinned floor's offering reads as, beside the founding record: the record's own digest where
+ * The grammar, lararium and plugins a accepted floor's offering reads as, beside the founding record: the record's own digest where
  * the offering carries the same bytes (the parser's for grammar, the house plugin's for lararium, the whole boot set for plugins),
  * else the offering's address (so it reads moved); absent where no offering read or the record holds no blobs.
  */
-function offeringReadings(record: GenesisRecordLike, digests: GenesisDigests, pin: FloorPinLike): OfferedReadings {
+function offeringReadings(record: GenesisRecordLike, digests: GenesisDigests, pin: FloorAcceptLike): OfferedReadings {
   const blobs = record.blobs ?? null;
   if (!pin.offering || !blobs) return { grammar: null, lararium: null, plugins: null };
   const rows = Object.values(blobs).filter((b): b is LarBlobEntry => Boolean(b) && typeof b.mimeType === "string")
@@ -165,7 +165,7 @@ export function ratchetsDiffer(differences: readonly RatchetDifference[]): boole
 export type SeedStance = "offer" | "held (engine)";
 export interface SeedRatchetStance { readonly ratchet: GenesisRatchet; readonly stance: SeedStance; readonly next: string }
 
-/** The line that acts on an offered skin: the adopt's preview over the pin's base (S2); `--apply` lands it by hand. */
+/** The line that acts on an offered skin: the adopt's preview over the accept's base (S2); `--apply` lands it by hand. */
 export const SEED_OFFER_NEXT = "lares vessel floor adopt";
 /** The line that reads the held engine: the seed row of the floor status. */
 export const SEED_HELD_NEXT = "lares vessel floor status --grain seed";
@@ -193,25 +193,25 @@ export interface SeedToFoundingRecord {
   readonly record: GenesisDigests;
   /** The seed (offered) beside the founding record; null where no seed was handed in. */
   readonly seed: readonly RatchetDifference[] | null;
-  /** The floor pin beside the founding record; null where no pin was handed in. */
-  readonly floorPin: readonly RatchetDifference[] | null;
+  /** The floor accept beside the founding record; null where no pin was handed in. */
+  readonly floorAccept: readonly RatchetDifference[] | null;
 }
 
 /**
  * The one comparison: the founding record's recomputed digests beside the offered seed's (recomputed the same
- * way from the seed's blobs) and beside the pinned floor's fields. Pure: it reads, moves nothing, lays nothing.
+ * way from the seed's blobs) and beside the accepted floor's fields. Pure: it reads, moves nothing, lays nothing.
  */
 export function compareSeedToFoundingRecord(input: {
   readonly record: GenesisRecordLike;
   readonly seed?: GenesisRecordLike | null;
-  readonly floorPin?: FloorPinLike | null;
+  readonly floorAccept?: FloorAcceptLike | null;
 }): SeedToFoundingRecord {
   const record = foundingRecordDigests(input.record);
   return Object.freeze({
     record,
     seed: input.seed ? compareGenesisDigests(record, foundingRecordDigests(input.seed)) : null,
-    floorPin: input.floorPin
-      ? compareGenesisDigests(record, floorPinDigests(input.floorPin.manifestCid, input.floorPin.manifest, offeringReadings(input.record, record, input.floorPin)))
+    floorAccept: input.floorAccept
+      ? compareGenesisDigests(record, floorAcceptDigests(input.floorAccept.manifestCid, input.floorAccept.manifest, offeringReadings(input.record, record, input.floorAccept)))
       : null,
   });
 }

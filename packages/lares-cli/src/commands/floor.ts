@@ -1,17 +1,22 @@
 /**
- * `lares vessel floor status|accept [<release-cid>]|seed [--genesis <dir>]|adopt [--apply|--commit|--revert] [--genesis <dir>] [--nexus <aid>] [--porch <origin>]` — the vessel's pin on its Nexus's floor.
- * It rides the VESSEL door (the pin belongs to the vessel), never a top-level verb (the help's one-screen law).
+ * `lares vessel floor status|accept [<release-cid>]|seed [--genesis <dir>]|adopt [--apply|--commit|--revert]|rehome [--genesis <dir>] [--nexus <aid>] [--porch <origin>]` — the place's accept on its Nexus's floor.
+ * It rides the VESSEL door (the accept belongs to the place), never a top-level verb (the help's one-screen law).
  *
- * The VESSEL pins the floor (w26-floor-lane#/the-vessel-pin): one pin per (vessel, Nexus), in the vessel's control home.
- * `status` names the pinned release (or the genesis floor), the newest release the board shows, whether it descends from
- * the pin (a fast-forward) and whether a fork stands. `accept` fast-forwards along `prior` from the pin to the named
- * release, or the sole newest, verifying each one (the steward's seal, the cabal's approval, the epoch lineage); it refuses a
- * release that does not descend from the pin (`floor-not-descendant`) and refuses while two heads stand
+ * The PLACE accepts the floor (residency-tiers#/floor-accept): one accept per (place, Nexus), in the place's accept home under
+ * the floor's rest key; no face needs to stand. `status` names the accepted release (or the genesis floor), the newest release
+ * the board shows, whether it descends from the accept (a fast-forward), whether a fork stands, what the place mounts
+ * (`accepted`, `genesis`, or `carried-unaccepted` on a herm or a locked hearth), and any retired row waiting for `rehome`.
+ * `accept` fast-forwards along `prior` from the accept to the named release, or the sole newest, verifying each one (the
+ * steward's seal, the cabal's approval, the epoch lineage); it refuses a release that does not descend from the accept
+ * (`floor-not-descendant`) and refuses while two heads stand
  * (`floor-fork-unsettled`, naming both). Nothing accepts by itself. After an accept no island swaps its floor live, so each
  * live wiki raises the reboot-pending alert and the accepted floor mounts at the next boot. A seat session reads the status
  * and never accepts (`floor-needs-hand`).
  *
- * Both rows ride the store door (`floor-status`, `floor-accept`), so a standing vessel's own Repo answers.
+ * Every row rides the store door (`floor-status`, `floor-accept`, `floor-rehome`), so a standing vessel's own Repo answers.
+ *
+ * `rehome` (the hand's act) moves each retired row the control document still holds into the accept home, once, printing one
+ * receipt line per Nexus; a second run lands nothing. No boot moves a row.
  *
  * `seed [--genesis <dir>]` reads the seed a genesis dir offers (its CID and digests) beside the founding record's digests where
  * a house answers (`floor-status`), ratchet by ratchet; it moves nothing (`../seed-offered.ts`). The dir: `--genesis`, else the
@@ -22,18 +27,19 @@
  * answers (the one-shot image run at `up`), the founding record reads at boot.
  *
  * `status` prints both truths for every place (D1, shore recommendation 8): the founding record (the stored genesis island)
- * beside the seed (offered) and the floor pin, ratchet by ratchet. A place in no Nexus charter prints that part and names
+ * beside the seed (offered) and the floor accept, ratchet by ratchet. A place in no Nexus charter prints that part and names
  * the Nexus refusal on its own line; the read still answers.
  *
  * `adopt` (3d, follow-lei S2) reads the seed the genesis dir offers (its CID, the receipt, and its floor manifest, the genesis
- * witness) and asks the vessel to adopt that seed's plugins over the pin's base as a LOCAL FLOOR: bare it previews and moves nothing
+ * witness) and asks the vessel to adopt that seed's plugins over the accept's base as a LOCAL FLOOR: bare it previews and moves nothing
  * (`floor-adopt`, open to a seat); `--apply` lands it, and `--commit` / `--revert` settle a staged one, each the hand's act
  * (`floor-adopt-apply`, `floor-needs-hand`). The engine never adopts here, and the founding record never moves.
  *
- * Meme: lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane#/the-vessel-pin
+ * Meme: lar:///ha.ka.ba/lararium/api/residency-tiers#/floor-accept
  */
 import { ratchetWords, ratchetsDiffer, type GenesisDigests, type RatchetDifference } from "@lararium/mesh/genesis-compare";
-import { type FloorAcceptOutcome, type FloorStatus, type FloorAdoptOutcome, type FloorLocalAct, type FloorPin } from "@lararium/mesh/floor-pin";
+import { type FloorAcceptOutcome, type FloorStatus, type FloorAdoptOutcome, type FloorLocalAct, type FloorAccept, type CarriedFloor } from "@lararium/mesh/floor-accept";
+import { type FloorRehomeReceipt } from "@lararium/mesh/floor-rehome";
 import { type FloorDrift } from "@lararium/mesh/floor-drift";
 import { GENESIS_FLOOR_TIDDLER } from "@lararium/mesh/floor-manifest";
 import { type GenesisSeed } from "@lararium/mesh/genesis-doc";
@@ -62,11 +68,17 @@ export type FloorStatusOutput = Partial<FloorStatus> & {
   readonly genesis?: {
     readonly record: GenesisDigests;
     readonly seed: { readonly cid: string; readonly ratchets: readonly RatchetDifference[] } | null;
-    readonly floorPin: { readonly manifestCid: string; readonly ratchets: readonly RatchetDifference[] } | null;
+    readonly floorAccept: { readonly manifestCid: string; readonly ratchets: readonly RatchetDifference[] } | null;
     readonly line: string;
     readonly unread?: string;
   };
   readonly nexusRefused?: { readonly refusal: string; readonly message: string };
+  /** What the place mounts at its home charter, and why no accept reads where no floor key stands. */
+  readonly standing?: "accepted" | "genesis" | "carried-unaccepted";
+  readonly unavailable?: string;
+  readonly carried?: CarriedFloor;
+  /** The retired rows still waiting in the control document, with the door that moves them. */
+  readonly unmoved?: { readonly word: string; readonly nexuses: readonly string[]; readonly cure: string };
   /** How far the floor this vessel serves trails live public canon, by carrier; null (or absent, on a vessel older than the
    *  reading) where it does not read. */
   readonly floorDrift?: FloorDrift | null;
@@ -131,11 +143,11 @@ export function floorStatusLines(s: FloorStatusOutput, grain: FloorGrain = "all"
       : ratchetsDiffer(g.seed.ratchets)
         ? `  seed (offered):  ${g.seed.cid} — a newer seed waits: ${seedWords(g.seed.ratchets)}; the founding record keeps serving, and lay moves canon, never the founding record`
         : `  seed (offered):  ${g.seed.cid} — same on every ratchet`);
-    lines.push(g.floorPin !== null
-      ? `  floor pin:       ${g.floorPin.manifestCid} — ${ratchetWords(g.floorPin.ratchets)}`
+    lines.push(g.floorAccept !== null
+      ? `  floor accept:       ${g.floorAccept.manifestCid} — ${ratchetWords(g.floorAccept.ratchets)}`
       : s.nexusRefused
-        ? "  floor pin:       none (no Nexus charter; the founding record's genesis floor serves)"
-        : `  floor pin:       ${s.pinned?.manifest ?? "?"} — its manifest does not read from this vessel's CAS`);
+        ? "  floor accept:       none (no Nexus charter; the founding record's genesis floor serves)"
+        : `  floor accept:       ${s.accepted?.manifest ?? "?"} — its manifest does not read from this vessel's CAS`);
   }
   lines.push(...(s.drifts ? driftRowLines(s, "all") : floorDriftLines(s.floorDrift, s.floorDriftWhy)));
   if (s.card) lines.push(`  card:            ${s.card.title} (${s.card.decision}${s.card.why ? `: ${s.card.why}` : ""})`);
@@ -143,10 +155,14 @@ export function floorStatusLines(s: FloorStatusOutput, grain: FloorGrain = "all"
     lines.push(`  nexus:           refused ${s.nexusRefused.refusal} — ${s.nexusRefused.message}`);
     return lines;
   }
-  if (s.pinned) lines.push(`  pinned:  ${short(s.pinned.release)}  floor ${short(s.pinned.manifest)}  (${s.pinSource})`);
+  if (s.unmoved) lines.push(`  ${s.unmoved.word}: ${s.unmoved.nexuses.length} retired row(s) wait in the control document; the mount reads genesis until \`${s.unmoved.cure}\` moves them`);
+  if (s.unavailable) lines.push(`  accept:  none reads (floor-unavailable: ${s.unavailable}${s.unavailable === "vessel-locked" ? "; `lares vault unlock` opens it" : "; a herm carries and accepts nothing"})`);
+  if (s.standing === "carried-unaccepted" && s.carried?.cid) lines.push(`  mounts:  carried-unaccepted ${short(s.carried.cid)} — the head ${s.carried.heads.map(short).join(", ")} shows its canon snapshots over the genesis plugins; the stamp moves with sync`);
+  else if (s.carried && !s.carried.cid) lines.push(`  mounts:  genesis — the carried head shows nothing (${s.carried.why ?? `heads ${s.carried.heads.map(short).join(", ")}`})`);
+  if (s.accepted) lines.push(`  accepted: ${short(s.accepted.release)}  floor ${short(s.accepted.manifest)}  (${s.acceptSource}${s.accepted.took?.length ? `, took ${s.accepted.took.map(short).join(", ")}` : ""})`);
   if (s.fork) lines.push(`  FORK:    ${s.fork.join(" · ")} — the cabal settles it; no accept moves until then`);
   else if (s.newest === null || s.newest === undefined) lines.push("  newest:  no release counts on the board");
-  else lines.push(`  newest:  ${short(s.newest)}  ${s.newest === s.pinned?.release ? "(the pin)" : s.descends ? `fast-forward over ${s.path?.length ?? 0} release(s)` : "does NOT descend from the pin"}`);
+  else lines.push(`  newest:  ${short(s.newest)}  ${s.newest === s.accepted?.release ? "(the accept)" : s.descends ? `fast-forward over ${s.path?.length ?? 0} release(s)` : "does NOT descend from the accept"}`);
   if (s.refused && s.refused.length > 0) lines.push(`  set aside: ${s.refused.map((r) => `${short(r.keyCid)} ${r.reason}`).join(", ")}`);
   return lines;
 }
@@ -283,9 +299,9 @@ export function seedFloorOf(genesisDir: string): { readonly seedCid: string; rea
 export function floorAdoptLines(r: FloorAdoptOutcome & { readonly alerted?: readonly string[] }): string[] {
   if (!r.ok) return [`floor adopt → REFUSED ${r.refusal}: ${r.detail}`];
   if (!r.moved) return [`floor adopt → HELD: ${r.why}; nothing lands`];
-  const l = r.pin.local!;
+  const l = r.accept.local!;
   return [
-    r.applied ? `floor adopt → STAGED local floor ${r.pin.manifest}` : `floor adopt (preview) → would stage local floor ${r.pin.manifest}`,
+    r.applied ? `floor adopt → STAGED local floor ${r.accept.manifest}` : `floor adopt (preview) → would stage local floor ${r.accept.manifest}`,
     `  base:     ${l.base} (engine and canon snapshots stay the base's; the founding record never moves)`,
     `  moves:    ${r.moves.join(", ")} (grammar, lararium and plugins ride the seed's offering ${r.manifest.plugins})`,
     `  receipt:  seed ${l.receipt}`,
@@ -297,12 +313,18 @@ export function floorAdoptLines(r: FloorAdoptOutcome & { readonly alerted?: read
 }
 
 /** The human lines of `floor adopt --commit | --revert`. */
-export function floorSettleLines(act: "commit" | "revert", r: FloorLocalAct & { readonly prior?: FloorPin }): string[] {
+export function floorSettleLines(act: "commit" | "revert", r: FloorLocalAct & { readonly prior?: FloorAccept }): string[] {
   if (!r.ok) return [`floor adopt --${act} → REFUSED ${r.refusal}: ${r.detail}`];
-  if (!r.moved) return [`floor adopt --${act} → HELD: the local floor ${r.pin.manifest} already stands committed; nothing lands`];
+  if (!r.moved) return [`floor adopt --${act} → HELD: the local floor ${r.accept.manifest} already stands committed; nothing lands`];
   return act === "commit"
-    ? [`floor adopt --commit → COMMITTED local floor ${r.pin.manifest}`]
-    : [`floor adopt --revert → PINNED ${r.pin.manifest} back (a forward row; the reverted floor ${r.prior?.manifest ?? "?"} stays in the CAS)`, "  next:     the next boot mounts it"];
+    ? [`floor adopt --commit → COMMITTED local floor ${r.accept.manifest}`]
+    : [`floor adopt --revert → ACCEPTED ${r.accept.manifest} back (a forward row; the reverted floor ${r.prior?.manifest ?? "?"} stays in the CAS)`, "  next:     the next boot mounts it"];
+}
+
+/** The human lines of `floor rehome`: one receipt per Nexus, or the note that nothing waited. */
+export function floorRehomeLines(receipts: readonly FloorRehomeReceipt[]): string[] {
+  if (receipts.length === 0) return ["floor rehome → no retired row waits; nothing lands"];
+  return ["floor rehome", ...receipts.map((r) => `  ${r.nexus}: ${r.act.toUpperCase()}${r.manifest ? ` floor ${short(r.manifest)}` : ""} — ${r.detail}`)];
 }
 
 async function cmdFloorAdopt(args: ParsedArgs, common: Record<string, unknown>): Promise<number> {
@@ -315,7 +337,7 @@ async function cmdFloorAdopt(args: ParsedArgs, common: Record<string, unknown>):
   if (act === "commit" || act === "revert") {
     const { output } = await storeVerb("floor-adopt-apply", { ...common, act });
     if (typeof output["refused"] === "string") throw new FloorRefused(String(output["refusal"] ?? "floor-adopt-refused"), output["refused"]);
-    const r = output as unknown as FloorLocalAct & { prior?: FloorPin };
+    const r = output as unknown as FloorLocalAct & { prior?: FloorAccept };
     emit(args, { ok: r.ok, data: { ...r }, ...(r.ok ? {} : { error: { code: r.refusal, message: r.detail } }), human: () => { for (const line of floorSettleLines(act, r)) console.log(line); } });
     return r.ok ? 0 : 1;
   }
@@ -331,8 +353,8 @@ async function cmdFloorAdopt(args: ParsedArgs, common: Record<string, unknown>):
 export async function cmdFloor(args: ParsedArgs, doors: FloorDoors = LIVE_FLOOR_DOORS): Promise<number> {
   const act = args.positional[0];
   if (act === "seed") return cmdFloorSeed(args);
-  if (act !== "status" && act !== "accept" && act !== "adopt") {
-    emit(args, { ok: false, error: { code: "usage", message: "vessel floor takes status, accept, seed or adopt" }, human: () => console.error("lares vessel floor: name `status`, `accept [<release-cid>]`, `seed [--genesis <dir>]` or `adopt [--apply|--commit|--revert]`") });
+  if (act !== "status" && act !== "accept" && act !== "adopt" && act !== "rehome") {
+    emit(args, { ok: false, error: { code: "usage", message: "vessel floor takes status, accept, seed, adopt or rehome" }, human: () => console.error("lares vessel floor: name `status`, `accept [<release-cid>]`, `seed [--genesis <dir>]`, `adopt [--apply|--commit|--revert]` or `rehome`") });
     return 2;
   }
   const common = {
@@ -341,6 +363,13 @@ export async function cmdFloor(args: ParsedArgs, doors: FloorDoors = LIVE_FLOOR_
   };
   try {
     if (act === "adopt") return await cmdFloorAdopt(args, common);
+    if (act === "rehome") {
+      const { output } = await storeVerb("floor-rehome", {});
+      if (typeof output["refused"] === "string") throw new FloorRefused(String(output["refusal"] ?? "floor-rehome-refused"), output["refused"]);
+      const receipts = (output["receipts"] ?? []) as readonly FloorRehomeReceipt[];
+      emit(args, { ok: true, data: { receipts }, human: () => { for (const line of floorRehomeLines(receipts)) console.log(line); } });
+      return 0;
+    }
     if (act === "status") {
       const grain = (args.options["grain"] ?? "all") as FloorGrain;
       if (!(FLOOR_GRAINS as readonly string[]).includes(grain)) {
@@ -362,11 +391,12 @@ export async function cmdFloor(args: ParsedArgs, doors: FloorDoors = LIVE_FLOOR_
     emit(args, {
       ok: true, data: { ...r },
       human: () => {
-        if (!r.moved) { console.log(`floor accept → HELD: the pin already names ${short(r.pin.release)}; nothing lands`); return; }
-        console.log(`floor accept → PINNED ${r.pin.release}`);
+        if (!r.moved) { console.log(`floor accept → HELD: the accept already names ${short(r.accept.release)}; nothing lands`); return; }
+        console.log(`floor accept → ACCEPTED ${r.accept.release}`);
         console.log(`  from:     ${short(r.prior.release)}`);
         console.log(`  walked:   ${r.path.map(short).join(" → ")}`);
-        console.log(`  floor:    ${r.pin.manifest} (${r.staged.length} blob(s) staged in this vessel's CAS)`);
+        console.log(`  floor:    ${r.accept.manifest} (${r.staged.length} blob(s) staged in this vessel's CAS)`);
+        console.log(`  took:     ${r.accept.took.map(short).join(", ") || "(no head)"}`);
         if (r.remount?.act === "alert") console.log(`  remount:  ${r.remount.why}${r.alerted?.length ? ` (alerted: ${r.alerted.join(", ")})` : ""}`);
         else if (r.remount?.act === "swap-live") console.log("  remount:  the floor read-face swapped live");
       },

@@ -69,7 +69,8 @@ import { routingString } from "./routing-arg.js";
 import { takeWardTicket, type WardCredential } from "./ward-credential.js";
 import { WardRefused } from "@lararium/mesh/ward-slots";
 import { CanonOfferRefused } from "@lararium/mesh/canon-offer";
-import { type FloorRemount } from "@lararium/mesh/floor-pin";
+import { type FloorRemount } from "@lararium/mesh/floor-accept";
+import { type FloorKeyReading } from "@lararium/mesh/floor-accept-home";
 
 /** The route a row's own ticket resolved to, carried beside its arguments under a key no wire spells (seat-harness#/the-ward). */
 const WARD_ARG: unique symbol = Symbol("ward");
@@ -115,7 +116,7 @@ import { runCabalAct, runCabalCosign, runCabalStanding, NexusCabalError } from "
 import { runFloorRelease } from "./commands/nexus-release.js";
 import { runFloorCut } from "./commands/floor-cut.js";
 import { runOfferRetire } from "./commands/offer-retire.js";
-import { runFloorAccept, runFloorAdopt, runFloorSettle, runFloorStatus, FloorRefused } from "./commands/floor.js";
+import { runFloorAccept, runFloorAdopt, runFloorRehome, runFloorSettle, runFloorStatus, FloorRefused } from "./commands/floor.js";
 import { casDirForStorage } from "./node-cas.js";
 import { runNexusKapae, runNexusKapaeList, runNexusKapaeOpen, runNexusKapaePartial, NexusKapaeError } from "./commands/nexus-kapae.js";
 import { runNexusContract, runNexusContractOpen, runNexusContractPartial, runNexusRollAnchor, runNexusRollAnchorOpen, runNexusRollAnchorPartial, runEdgeRollAnchorOpen, runEdgeRollAnchorPartial, runEdgeRollAnchorStanding, runNexusRollPriorAnchorCheck, runNexusMembersList, NexusContractError } from "./commands/nexus-contract.js";
@@ -202,6 +203,11 @@ export interface StoreDoorDeps {
    */
   readonly floorAlert?: (remount: Extract<FloorRemount, { act: "alert" }>) => Promise<readonly string[]>;
   /**
+   * The standing vessel's floor key reading (`floorKeyGrant`): every floor row reads and writes the accept home under it, so a
+   * herm answers `floor-unkeyed` and a locked hearth `vessel-locked`. Absent on a direct act, which stands the key itself.
+   */
+  readonly floorKey?: () => FloorKeyReading;
+  /**
    * A face's local canon `bags/daemon-<F>` by relation, as the standing vessel opens it (`faceCanonThroughControl`): a kahua
    * lift reads its staged row there and `kahua-stage` writes one. Absent on a direct act, whose lift refuses
    * `kahua-lift-unstaged`.
@@ -229,7 +235,7 @@ export async function awaitOnRolled(call: boolean | void | Promise<boolean | voi
 /** The door's rows, by name — each command's routed call names exactly one of these. */
 export const STORE_DOOR_VERBS = [
   "nexus-kapae", "nexus-kapae-list", "nexus-kapae-open", "nexus-kapae-partial", "nexus-contract", "nexus-contract-open", "nexus-contract-partial", "nexus-roll-anchor", "nexus-roll-anchor-open", "nexus-roll-anchor-partial", "nexus-roll-prior-anchor", "nexus-members-list",
-  "nexus-cabal-act", "nexus-cabal-cosign", "nexus-cabal-standing", "nexus-release", "floor-cut", "offer-retire", "floor-status", "floor-accept", "floor-adopt", "floor-adopt-apply",
+  "nexus-cabal-act", "nexus-cabal-cosign", "nexus-cabal-standing", "nexus-release", "floor-cut", "offer-retire", "floor-status", "floor-accept", "floor-adopt", "floor-adopt-apply", "floor-rehome",
   "nexus-posture", "nexus-admit-take", "nexus-carry-take", "seal-home-refold",
   "edge-kapae", "edge-seat-facts", "edge-seat-duties", "edge-seat-marks", "edge-partial", "edge-cosign", "cabal-vouch", "cabal-join", "cabal-face", "cabal-feed",
   "fleet-join-offer", "fleet-join-answer", "nexus-roll-anchor-edge", "nexus-roll-anchor-edge-open", "nexus-roll-anchor-edge-partial", "nexus-roll-anchor-edge-standing",
@@ -683,34 +689,39 @@ function storeDoorVerbsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
         ...(Array.isArray(args["thin"]) ? { thin: (args["thin"] as unknown[]).filter((s): s is string => typeof s === "string") } : {}) })),
     })),
 
-    // THE VESSEL'S FLOOR PIN (w26-floor-lane#/the-vessel-pin): one pin per (vessel, Nexus) in the control home, moved only by
-    // the accept, which walks `prior` from the pin. Both rows answer the mesh's own decision; a refusal rides as data.
+    // THE PLACE'S FLOOR ACCEPT (residency-tiers#/floor-accept): one accept per (place, Nexus) in the place's accept home, sealed
+    // under the floor's rest key, moved only by a hand's accept, which walks `prior` from the accept. A refusal rides as data.
     "floor-status": (args) => answer("floor-status", async () => ({
-      ...(await runFloorStatus({ repo, sealHome, casDir: deps.casDir ?? casDirForStorage(storageDir), storageDir, ...opt("aid", str(args["aid"])), ...opt("porch", str(args["porch"])), ...opt("catalogUrl", deps.catalogUrl) })),
+      ...(await runFloorStatus({ repo, sealHome, casDir: deps.casDir ?? casDirForStorage(storageDir), storageDir, ...opt("aid", str(args["aid"])), ...opt("porch", str(args["porch"])), ...opt("catalogUrl", deps.catalogUrl), ...opt("floorKey", deps.floorKey) })),
     })),
     "floor-accept": (args) => answer("floor-accept", async () => ({
       ...(await runFloorAccept({
         repo, sealHome, casDir: deps.casDir ?? casDirForStorage(storageDir), ...opt("aid", str(args["aid"])), ...opt("porch", str(args["porch"])),
-        ...opt("target", str(args["release"])), ...opt("floorAlert", deps.floorAlert),
+        ...opt("target", str(args["release"])), ...opt("floorAlert", deps.floorAlert), ...opt("floorKey", deps.floorKey),
       })),
     })),
 
-    // THE LOCAL FLOOR (3d, follow-lei S2): `floor-adopt` previews the seed's plugins over the pin's base and writes nothing;
-    // `floor-adopt-apply` (the hand's) applies it, or commits or reverts a staged local floor (`act`).
+    // THE LOCAL FLOOR (3d, follow-lei S2): `floor-adopt` previews the seed's plugins over the accept's base and writes nothing;
+    // `floor-adopt-apply` (the hand's) applies it, or commits or reverts a staged local floor (`act`). Each Nexus adopts alone.
     "floor-adopt": (args) => answer("floor-adopt", async () => ({
       ...(await runFloorAdopt({
-        repo, sealHome, casDir: deps.casDir ?? casDirForStorage(storageDir), ...opt("aid", str(args["aid"])),
+        repo, sealHome, casDir: deps.casDir ?? casDirForStorage(storageDir), ...opt("aid", str(args["aid"])), ...opt("floorKey", deps.floorKey),
         seedCid: need("floor-adopt", args, "seedCid"), seedFloor: need("floor-adopt", args, "seedFloor"), apply: false,
       })),
     })),
     "floor-adopt-apply": (args) => answer("floor-adopt-apply", async () => {
-      const common = { repo, sealHome, casDir: deps.casDir ?? casDirForStorage(storageDir), ...opt("aid", str(args["aid"])) };
+      const common = { repo, sealHome, casDir: deps.casDir ?? casDirForStorage(storageDir), ...opt("aid", str(args["aid"])), ...opt("floorKey", deps.floorKey) };
       const act = str(args["act"]) ?? "apply";
       if (act === "commit" || act === "revert") return { ...(await runFloorSettle({ ...common, act })) };
       if (act !== "apply") throw new Error(`floor-adopt-apply REFUSED: act names apply, commit or revert (got "${act}")`);
       return { ...(await runFloorAdopt({ ...common, ...opt("floorAlert", deps.floorAlert),
         seedCid: need("floor-adopt-apply", args, "seedCid"), seedFloor: need("floor-adopt-apply", args, "seedFloor"), apply: true })) };
     }),
+    // THE REHOME DOOR (the hand's): each retired row moves out of the control document into the accept home, once, with a
+    // receipt per Nexus. No boot runs it; a second run lands nothing.
+    "floor-rehome": (args) => answer("floor-rehome", async () => ({
+      ...(await runFloorRehome({ repo, sealHome, casDir: deps.casDir ?? casDirForStorage(storageDir), ...opt("floorKey", deps.floorKey) })),
+    })),
 
     "nexus-posture": (args) => answer("nexus-posture", async () => {
       const doc = readNexusDoc(sealHome);

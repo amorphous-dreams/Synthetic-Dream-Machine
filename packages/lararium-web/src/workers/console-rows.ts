@@ -78,7 +78,7 @@ export function vesselConsoleRows(ctx: VesselConsoleCtx): ConsoleVerbRow[] {
   return [
     {
       path: ["vessel", "read"],
-      summary: "read this browser vessel: its place, standing, faces, relay, floor pin, pending asks and custody at rest",
+      summary: "read this browser vessel: its place, standing, faces, relay, floor accept, pending asks and custody at rest",
       run: async () => {
         const { house, idbName } = await standing(ctx);
         const session = ctx.session();
@@ -86,17 +86,17 @@ export function vesselConsoleRows(ctx: VesselConsoleCtx): ConsoleVerbRow[] {
         const worn = ctx.wearsLit();
         const face = session?.face ?? null;
         const admitted = session?.admission === "admitted";
-        const [place, named, joined, custody, faceCustody, seed, floorPin] = await Promise.all([
+        const [place, named, joined, custody, faceCustody, seed, floorAccept] = await Promise.all([
           orWhy(loadBrowserPlaceKel(idbName).then((kel) => kel && kel.ok ? { aid: kel.aid, kel: "armed" as const } : { aid: null, kel: "unfounded" as const })),
           orWhy(readBrowserVesselFaces(idbName)),
           orWhy(browserJoinedFaces(idbName)),
           orWhy(readBrowserCustody(idbName).then((c) => c.reading === "sealed" ? { reading: c.reading, ...(admitted ? { unlocked: c.unlocked } : {}), slots: c.slots.length } : c)),
           face === null ? null : orWhy(readFaceCustody(idbName, face).then((c) => admitted ? c : atRest(c))),
           orWhy(ctx.seedRest(face)),
-          // THE FLOOR PIN rests in the control document the lit vessel stood, so a vessel at its floor names the refusal the pin door itself names.
+          // THE FLOOR ACCEPT reads through the lit vessel's floor binding (the place's accept home); a tab at its floor names that.
           lit && worn
             ? orWhy(lit.floorStatus(ctx.readFace))
-            : { ok: false as const, refusal: "floor-control-unread", detail: "this vessel stands at its floor for this tab, so it holds no pin to read: the pin rests in the control document a lit vessel stands" },
+            : { ok: false as const, refusal: "floor-vessel-unlit", detail: "this tab stands at its floor and holds no lit vessel, so no floor binding reads the place's accept home here" },
         ]);
         return {
           standing: house.floor(),
@@ -104,7 +104,7 @@ export function vesselConsoleRows(ctx: VesselConsoleCtx): ConsoleVerbRow[] {
           session: session ? { admission: session.admission, admittedBy: session.admittedBy, face } : null,
           faces: { named, joined, ...(admitted ? { worn: lit ? lit.face : null } : {}) },
           relay: { dials: ctx.relayUrl(), connection: lit && worn ? lit.connectionState.getSnapshot() : null },
-          floorPin,
+          floorAccept,
           asks: ctx.asks(),
           custody: { place: custody, face: faceCustody, ...("unread" in seed ? { seed } : seed), ...(admitted ? { held: house.census() } : {}) },
           vessel: lit && worn ? { did: didFromVerifyingKey(lit.identity.verifyingKey), verifyingKey: lit.identity.verifyingKey, activeWikiId: lit.activeWikiId, ...(lit.wikiAwaitsFace ? { wikiAwaits: lit.wikiAwaitsFace.message } : {}) } : null,

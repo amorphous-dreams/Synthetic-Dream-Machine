@@ -134,7 +134,7 @@ export interface SurfaceRecipeInput {
   mayRead(bag: SlotUri): boolean;
   readonly plugins:  SurfacePluginInputs;
   readonly profile:  CapabilityProfile;
-  /** The floor manifest the vessel's accepted pin names (`floor-pin` `floorCidToMount`); absent or null, the genesis floor. */
+  /** The floor manifest the place accepted for this recipe's Nexus (`floor-accept` `floorToMount`); absent or null, the genesis floor. */
   readonly floorCid?: string | null;
 }
 

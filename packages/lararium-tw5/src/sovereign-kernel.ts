@@ -537,7 +537,7 @@ export function runSovereignKernel(
       return;
     }
 
-    // THE FLOOR THE VESSEL ACCEPTED (`floor-pin`): the manifest names it where the vessel's pin moved past genesis; absent,
+    // THE FLOOR THE PLACE ACCEPTED (`floor-accept`): the manifest names it where the place's accept moved past genesis; absent,
     // the genesis seed's own floor witness.
     const floorCidField = msg.floorCid ?? plainRecordOrNull(ownEntry(laraiumHandle.doc()?.tiddlers, GENESIS_FLOOR_TIDDLER))?.tiddler.cid;
     let floorRecords: readonly Readonly<Record<string, LarTiddlerRecord>>[] = [];

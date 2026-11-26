@@ -25,7 +25,7 @@
  *
  * WHAT IT NEVER DECIDES. It holds no key, reads no clock and keeps no store; signers arrive injected, the board
  * arrives as a doc, the manifest's bytes arrive from the caller's CAS. Which release a face ACCEPTS stays a person's
- * act of the VESSEL (`floor-pin`, one pin per vessel and Nexus): this module answers only which releases COUNT and where the chain stands.
+ * act of the PLACE (`floor-accept`, one accept per place and Nexus): this module answers only which releases COUNT and where the chain stands.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane#/the-slices
  */
@@ -243,7 +243,7 @@ export function floorReleaseEntriesFromBoard(doc: LarDoc | undefined | null): Ar
 }
 
 /** Every variant names the releases that COUNT (`counted`, each verified and chained to the Nexus's first): a vessel's
- *  accept walks `prior` through them from its pin to the release it takes (`floor-pin`). */
+ *  accept walks `prior` through them from the accept to the release it takes (`floor-accept`). */
 export type FloorReleaseStanding =
   | { readonly standing: "absent"; readonly head: null; readonly counted: readonly FloorRelease[]; readonly refused: readonly FloorReleaseRefused[] }
   | { readonly standing: "released"; readonly head: FloorRelease; readonly counted: readonly FloorRelease[]; readonly refused: readonly FloorReleaseRefused[] }

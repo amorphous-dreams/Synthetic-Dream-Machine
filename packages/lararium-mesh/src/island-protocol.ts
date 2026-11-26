@@ -234,8 +234,8 @@ export interface IslandMsg_Manifest {
    */
   pluginCids?: readonly string[];
   /**
-   * The floor manifest CID the island mounts as its `@oracle` read-face: the vessel's ACCEPTED floor pin
-   * (`floor-pin` `floorCidToMount`). Absent, the island mounts the floor its genesis seed names
+   * The floor manifest CID the island mounts as its `@oracle` read-face: the place's ACCEPT for this recipe's
+   * Nexus (`floor-accept` `floorToMount`), or its carried showing. Absent, the island mounts the floor its genesis seed names
    * (`GENESIS_FLOOR_TIDDLER`). The island resolves it from the local CAS exactly as it resolves the genesis floor.
    */
   floorCid?: string;

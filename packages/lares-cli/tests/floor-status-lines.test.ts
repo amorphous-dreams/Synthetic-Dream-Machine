@@ -1,6 +1,6 @@
 /**
  * floor-status-lines -- `lares vessel floor status` prints both truths for every place: the founding record beside the
- * seed (offered) and the floor pin, ratchet by ratchet (D1, shore recommendation 8). A place in no Nexus charter prints
+ * seed (offered) and the floor accept, ratchet by ratchet (D1, shore recommendation 8). A place in no Nexus charter prints
  * that part and names the Nexus refusal on its own line; the read still answers. The status names the floor's drift behind live
  * canon on its own line, by carrier; an unread drift says so, never a silent zero.
  */
@@ -13,46 +13,58 @@ const same = (r: GenesisRatchet): RatchetDifference => ({ ratchet: r, record: "x
 const record = { engine: "bafkreiengine000000000001", grammar: "bafkreigrammar00000000002", lararium: "bafkreilararium0000000004", plugins: "bafkreiplugins00000000003", floor: "f".repeat(64) };
 
 describe("the floor status lines", () => {
-  test("RED: a charterless place prints the founding record, the seed (offered), the floor pin's absence and the Nexus refusal by name", () => {
+  test("RED: a charterless place prints the founding record, the seed (offered), the floor accept's absence and the Nexus refusal by name", () => {
     const lines = floorStatusLines({
       genesis: {
         record,
         seed: { cid: "c".repeat(64), ratchets: (["engine", "plugins", "floor"] as const).map(same).concat([{ ratchet: "grammar", record: "a", other: "b", reading: "moved" }]) },
-        floorPin: null,
+        floorAccept: null,
         line: "",
       },
-      nexusRefused: { refusal: "floor-no-charter", message: "this vessel stands in no Nexus charter, so it holds no floor pin past genesis" },
+      nexusRefused: { refusal: "floor-no-charter", message: "this vessel stands in no Nexus charter, so it holds no floor accept past genesis" },
     });
     expect(lines[0]).toBe("floor status");
     expect(lines).toContain(`  founding record: engine ${record.engine} · grammar ${record.grammar} · lararium ${record.lararium} · plugins ${record.plugins} · floor ${record.floor}`);
     expect(lines).toContain(`  seed (offered):  ${"c".repeat(64)} — a newer seed waits: engine same · plugins same · the seed's floor same · grammar moved; the founding record keeps serving, and lay moves canon, never the founding record`);
-    expect(lines).toContain("  floor pin:       none (no Nexus charter; the founding record's genesis floor serves)");
-    expect(lines).toContain("  nexus:           refused floor-no-charter — this vessel stands in no Nexus charter, so it holds no floor pin past genesis");
+    expect(lines).toContain("  floor accept:       none (no Nexus charter; the founding record's genesis floor serves)");
+    expect(lines).toContain("  nexus:           refused floor-no-charter — this vessel stands in no Nexus charter, so it holds no floor accept past genesis");
   });
 
-  test("CONTROL: a chartered place prints the pin per ratchet and the Nexus part as before", () => {
+  test("CONTROL: a chartered place prints the accept per ratchet and the Nexus part as before", () => {
     const lines = floorStatusLines({
-      nexus: "aid-of-the-nexus", pinned: { kind: "floor-pin", nexus: "aid-of-the-nexus", release: null, manifest: "f".repeat(64) }, pinSource: "genesis",
+      nexus: "aid-of-the-nexus", accepted: { kind: "floor-accept", nexus: "aid-of-the-nexus", release: null, manifest: "f".repeat(64), took: [] }, acceptSource: "genesis",
       board: "absent", newest: null, heads: [], descends: null, fastForward: false, path: [], refused: [],
       genesis: {
         record,
         seed: { cid: "c".repeat(64), ratchets: (["engine", "grammar", "lararium", "plugins", "floor"] as const).map(same) },
-        floorPin: { manifestCid: "f".repeat(64), ratchets: (["engine", "grammar", "lararium", "plugins", "floor"] as const).map(same) },
+        floorAccept: { manifestCid: "f".repeat(64), ratchets: (["engine", "grammar", "lararium", "plugins", "floor"] as const).map(same) },
         line: "",
       },
     } as never);
     expect(lines).toContain(`  seed (offered):  ${"c".repeat(64)} — same on every ratchet`);
-    expect(lines).toContain(`  floor pin:       ${"f".repeat(64)} — engine same · grammar same · lararium same · plugins same · floor same`);
+    expect(lines).toContain(`  floor accept:       ${"f".repeat(64)} — engine same · grammar same · lararium same · plugins same · floor same`);
     expect(lines).toContain("floor status · nexus aid-of-the-nexus");
-    expect(lines.some((l) => l.startsWith("  pinned:  "))).toBe(true);
+    expect(lines.some((l) => l.startsWith("  accepted: "))).toBe(true);
     expect(lines.some((l) => l.startsWith("  nexus:           refused"))).toBe(false);
+  });
+
+  test("RED: a herm names why no accept reads and what it carries; a waiting retired row names the rehome door", () => {
+    const lines = floorStatusLines({
+      nexus: "aid-of-the-nexus", accepted: { kind: "floor-accept", nexus: "aid-of-the-nexus", release: null, manifest: "f".repeat(64), took: [] }, acceptSource: "genesis",
+      board: "released", newest: "1".repeat(64), heads: ["1".repeat(64)], descends: true, fastForward: true, path: ["1".repeat(64)], refused: [],
+      standing: "carried-unaccepted", unavailable: "floor-unkeyed", carried: { cid: "c".repeat(64), heads: ["1".repeat(64)] },
+      unmoved: { word: "floor-pin-unmoved", nexuses: ["aid-of-the-nexus"], cure: "lares vessel floor rehome" },
+    } as never);
+    expect(lines.some((l) => l.includes("floor-unavailable: floor-unkeyed"))).toBe(true);
+    expect(lines.some((l) => l.startsWith("  mounts:  carried-unaccepted"))).toBe(true);
+    expect(lines.some((l) => l.startsWith("  floor-pin-unmoved:") && l.includes("`lares vessel floor rehome`"))).toBe(true);
   });
 });
 
 describe("an unread founding record", () => {
   test("RED: the status prints the founding record unread with its reason, and no ratchet words", () => {
     const lines = floorStatusLines({
-      genesis: { record: { engine: null, grammar: null, lararium: null, plugins: null, floor: null }, seed: null, floorPin: null, line: "", unread: "the fold refused a blob row" },
+      genesis: { record: { engine: null, grammar: null, lararium: null, plugins: null, floor: null }, seed: null, floorAccept: null, line: "", unread: "the fold refused a blob row" },
       nexusRefused: { refusal: "floor-no-charter", message: "no charter" },
     });
     expect(lines).toContain("  founding record: unread here (the fold refused a blob row)");
@@ -64,7 +76,7 @@ describe("an unread founding record", () => {
     const ROSTER = "lar:///ha.ka.ba/lararium/mesh/hearth-roster";
     const PLAN = "lar:///ha.ka.ba/lararium/mesh/founding-runbook";
     const base = {
-      genesis: { record, seed: null, floorPin: null, line: "" },
+      genesis: { record, seed: null, floorAccept: null, line: "" },
       nexusRefused: { refusal: "floor-no-charter", message: "no charter" },
     };
     const lines = floorStatusLines({
@@ -83,7 +95,7 @@ describe("an unread founding record", () => {
 describe("the five drifts, each by its own word, and the one card", () => {
   const CREST = "lar:///ha.ka.ba/lararium/mesh/wave-crest";
   const driftedStatus = (over: Record<string, unknown> = {}): Record<string, unknown> => ({
-    genesis: { record, seed: { cid: "c".repeat(64), ratchets: (["engine", "plugins", "grammar"] as const).map(same).concat([{ ratchet: "floor", record: "a", other: "b", reading: "moved" }]) }, floorPin: null, line: "" },
+    genesis: { record, seed: { cid: "c".repeat(64), ratchets: (["engine", "plugins", "grammar"] as const).map(same).concat([{ ratchet: "floor", record: "a", other: "b", reading: "moved" }]) }, floorAccept: null, line: "" },
     nexusRefused: { refusal: "floor-no-charter", message: "no charter" },
     floorDrift: { manifest: "f".repeat(64), count: 1, carriers: [CREST], slugs: [{ slug: "lararium", missing: [CREST], older: [] }], unread: [] },
     floorShadow: null, ...over,
@@ -177,7 +189,7 @@ describe("the five drifts, each by its own word, and the one card", () => {
 
   test("RED: the not-yet-counted working-ahead row stays out of the state fold, so a healthy vessel's card reads level", async () => {
     const level = driftedStatus({
-      genesis: { record, seed: { cid: "c".repeat(64), ratchets: (["engine", "grammar", "lararium", "plugins", "floor"] as const).map(same) }, floorPin: null, line: "" },
+      genesis: { record, seed: { cid: "c".repeat(64), ratchets: (["engine", "grammar", "lararium", "plugins", "floor"] as const).map(same) }, floorAccept: null, line: "" },
       floorDrift: { manifest: "f".repeat(64), count: 0, carriers: [], slugs: [], unread: [] },
       floorShadow: { current: { floor: "f".repeat(64), cleanBoots: 2, mismatchBoots: 0, unreadBoots: 0, firstMismatch: null }, prior: [] },
     });

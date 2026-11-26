@@ -134,7 +134,7 @@ action reactors, `meme` and `where` by `systemCanonUrl`, and a recipe's library 
 * ''The status'' (`lares vessel floor status`, the browser's `floorStatus`) names the pinned release, the newest the board shows, whether it descends (a fast-forward, with the path it walks), and any fork, its heads named.
 * ''The accept'' (`lares vessel floor accept [<release>]`, the browser's `acceptFloor`) walks `prior` from the pin to the named release or the sole newest. It refuses a release that does not descend (`floor-not-descendant`, a rollback among them), refuses while two heads stand (`floor-fork-unsettled`, naming both: recency never settles a fork), stages the floor's manifest and snapshots whole in the vessel's own CAS before the pin moves, and lands nothing on a replay. A seat session reads the status and never accepts (`floor-needs-hand`).
 * ''The remount, by capability.'' An island that swaps `@oracle` live swaps; one that mounts its floor once at boot raises the reboot-pending alert in each live wiki, naming why (`floorRemountDecision`, `raiseFloorAlert`). Each mount after an accept reads the pin afresh (`VesselIslandPoolCoreOptions.floorCid`, the manifest's `floorCid`), so the next boot stands on the accepted floor.
-* ''One seam, two hosts.'' `@lararium/mesh` `floor-pin` holds every decision (`floorStatusOf`, `decideFloorAccept`, `floorRemountDecision`, `floorCidToMount`) and composes them over capability-named ports (`home`, `rows`, `fetchCas`, `stage`, `mount`). The node binds its control home, its board replica and its CAS (`lararium-node` `commands/floor`); the browser binds its control home, the porch's answer and its OPFS CAS (`browser-floor-pin`). Neither host declares a live swap today.
+* ''One seam, two hosts.'' `@lararium/mesh` `floor-accept` holds every decision (`floorStatusOf`, `decideFloorAccept`, `floorRemountDecision`, `floorToMount`) and composes them over capability-named ports (`home`, `rows`, `fetchCas`, `stage`, `mount`). The node binds the place's accept home, its board replica and its CAS (`lararium-node` `commands/floor`); the browser binds the same accept home, the porch's answer and its OPFS CAS (`browser-floor-accept`). Neither host declares a live swap today.
 * ''The announcements'' order by their links too: `foldFloorAnnouncements` reads one line (its head and order) or a fork (its heads named), never settled by recency.
 
 ''Moʻolelo, each overrulable.''
@@ -216,6 +216,6 @@ action reactors, `meme` and `where` by `systemCanonUrl`, and a recipe's library 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;St3b8PVnG4k3EUcQz21Brj2B3-0vrPv1Px8nUGSrhjQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;XTDA4d8RgEOZz8XdOp0JCPsZ5Bt-zrHG_67xA8RIoyg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

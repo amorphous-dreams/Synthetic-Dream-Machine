@@ -59,7 +59,7 @@ import type { WikiMountSpec, WikiRecipe } from "./wiki-recipe.js";
 import type { ResidencyTemperature } from "./bag-residency.js";
 import { SessionDocumentView } from "./session-document-view.js";
 import type { LarDoc } from "./base-doc.js";
-import { genesisFloorCidOf } from "./floor-pin.js";
+import { genesisFloorCidOf } from "./floor-accept.js";
 import { floorSkinCids } from "./floor-offering.js";
 import {
   floorShadowLine, floorShadowReadingLine, foldFloorShadowTally, readFloorShadow, readFloorShadowTally,
@@ -357,11 +357,12 @@ export interface VesselIslandPoolCoreOptions {
    * outright, exactly like any other mount failure (counted in the same OTP intensity ledger).
    */
   /**
-   * The floor manifest each mount's `@oracle` read-face stands on: the vessel's accepted pin (`floor-pin`
-   * `floorCidToMount`), read afresh at every activation, so the mount after an accept stands on the accepted floor.
-   * Absent, or answering null, the island mounts its genesis floor. Both hosts bind the same pick.
+   * The floor manifest each mount's `@oracle` read-face stands on, asked PER WIKI: the host resolves the wiki's slug -> realm
+   * -> Nexus (`floor-nexus`) and reads that Nexus's accept off the place's accept home (`floor-accept` `vesselFloorCid`),
+   * afresh at every activation, so the mount after an accept stands on the accepted floor. Absent, or answering null, the
+   * island mounts its genesis floor. Both hosts bind the same pick.
    */
-  floorCid?: () => string | null | Promise<string | null>;
+  floorCid?: (wikiId: string) => string | null | Promise<string | null>;
   resolvePluginCids: (recipe: WikiRecipe) => Promise<
     | { readonly ok: true; readonly pluginCids: readonly string[] }
     | { readonly ok: false; readonly error: string }
@@ -804,8 +805,8 @@ export class VesselIslandPoolCore {
     }
     const pluginCids = resolved.pluginCids;
     // THE FLOOR THIS MOUNT STANDS ON: a session's recipe names the floor its view admits (its first floor CID, the manifest's
-    // own); every other island reads the vessel's accepted pin afresh, so the mount after an accept stands on that floor.
-    const floorCid = plan.surface ? (plan.surface.mount.recipe.floorCids[0] ?? null) : ((await this._floorCid?.()) ?? null);
+    // own); every other island reads its own Nexus's accept afresh, so the mount after an accept stands on that floor.
+    const floorCid = plan.surface ? (plan.surface.mount.recipe.floorCids[0] ?? null) : ((await this._floorCid?.(wikiId)) ?? null);
     // The mirror of a wiki island reads the plugin list the island booted with, never a second resolution that an offering change could move.
     // It names the house skins by the CIDs the attested founding record holds (`floorSkinCids`), so the mirror admits a skin by its bytes.
     if (!plan.surface && plan.coreHash) {

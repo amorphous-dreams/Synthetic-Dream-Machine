@@ -131,7 +131,7 @@ import { provenPlaneUrls } from "@lararium/mesh/face-boot-proof";
 import { adoptKahuaStage } from "@lararium/mesh/kahua-stage";
 import { browserGatePins, type BrowserFacePresentation, dialDeadlines, fileFloorCard, fileOwnHearthPins, hearthNameOf, flowNexusFor } from "./browser-gate-pins.js";
 import { readHearthFloor, type HearthFloorRead } from "./browser-floor-read.js";
-import { browserFloorAccept, browserFloorStatus, type BrowserFloorBinding } from "./browser-floor-pin.js";
+import { browserFloorAccept, browserFloorStatus, type BrowserFloorBinding } from "./browser-floor-accept.js";
 import { composeBrowserFacePresentation } from "./browser-face-presentation.js";
 import { browserIslandReceipt, browserSessionLift, type BrowserUnlockedSession } from "./browser-island-caps.js";
 import { browserLiftsAtPlace, mintBrowserPlaceSession, type PlaceLiftReading } from "./browser-place-session.js";
@@ -167,7 +167,9 @@ import { composeBrowser }                    from "./browser-caps.js";
 import type { VesselWikiSlot, DaemonVmCore } from "@lararium/tw5";
 import { foundTheFace, runApplyAdmitPayload, foundThePlace, assemblePersonaGroupRing, archiveIsOf } from "@lararium/keyhive";
 import { standControlHome } from "@lararium/mesh/control-home";
-import { vesselFloorCid, vesselMountFloorCid, raiseFloorAlert, genesisFloorCidOf } from "@lararium/mesh/floor-pin";
+import { vesselFloorCid, vesselMountFloorCid, raiseFloorAlert, genesisFloorCidOf, type FloorNexusPick } from "@lararium/mesh/floor-accept";
+import { readFloorAcceptHome, standFloorAcceptHome } from "@lararium/mesh/floor-accept-home";
+import { floorNexusOf as floorNexusOfPin } from "./browser-floor-read.js";
 import { floorRequiredBlobIds } from "@lararium/mesh/floor-offering";
 import { promotePanelApi, isQuietSnapshot } from "@lararium/mesh/promote-panel-api";
 import { promoteMainVerbs } from "@lararium/mesh/promote-main-verbs";
@@ -599,8 +601,8 @@ export interface BrowserVesselResult extends VesselResult<BrowserVesselIslandPoo
    *  manifest's exact bytes, and each fetched blob hashes to its CID. It records no acceptance: the vessel accepts a release by
    *  a person's own act (`acceptFloor`), and the vessel mounts the floor its pin names. */
   readFloor: (baseUrl: string) => Promise<HearthFloorRead>;
-  /** The vessel's pin on that hearth's Nexus floor (w26-floor-lane#/the-vessel-pin): the same control-home row and the same
-   *  mesh read the node runs (`floor-pin`); a door this vessel cannot run refuses by name, saying why. */
+  /** The place's accept on that hearth's Nexus floor (residency-tiers#/floor-accept): the same accept-home row and the same
+   *  mesh read the node runs (`floor-accept`); a door this vessel cannot run refuses by name, saying why. */
   floorStatus: (baseUrl: string) => ReturnType<typeof browserFloorStatus>;
   /** Accept a release (or the sole newest) for that Nexus: the same mesh decision the node runs. The floor stages into the OPFS
    *  CAS before the pin moves; no browser island swaps its floor live, so live wikis raise the reboot-pending alert. */
@@ -1028,7 +1030,10 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // THE FLOOR'S REGISTRY rests in the place's daemon document (`device-daemon-docs` `readFloor`): each row files a floor
   // document under the floor's rest key and keeps it on this vessel, with no control document standing.
   const floorWatched = new Set<string>();
+  // The place's own daemon document (the first the boot watches): it names the place's floor accept home.
+  let placeDaemon: DocHandle<LarDoc> | null = null;
   const watchFloorRegistry = (daemon: DocHandle<LarDoc>): void => {
+    placeDaemon ??= daemon;
     if (floorWatched.has(daemon.documentId)) return;
     floorWatched.add(daemon.documentId);
     const refresh = () => {
@@ -1055,6 +1060,13 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // The first stand reads the keystore, so it runs once the Repo's stand-down stands recorded: a read that faults ends the
   // boot through its own teardown, never around it.
   let floorKeyGrant = await standFloorKey();
+  // THE PLACE'S FLOOR ACCEPTS (pin step 4): the accept home the place's daemon document names, read under this browser's
+  // floor key; a shut keystore reads `unavailable` and every mount stands on genesis, naming why. One shape with the node host.
+  const readFloorAccepts = async () => placeDaemon ? readFloorAcceptHome(repo, () => placeDaemon!, () => floorKeyGrant) : null;
+  // This browser holds no edge ledger: every recipe reads the hearth's home charter, the Nexus its floor card or dial names.
+  let floorHomeNexus: string | null = null;
+  const floorPick = (): FloorNexusPick => ({ nexus: floorHomeNexus });
+  const floorArgs = (islandDoc: () => LarDoc | null | undefined) => ({ accepts: readFloorAccepts, pick: floorPick(), islandDoc });
   // R2's booking, by the change's own writer (T4): a change this replica made books the vessel's unlocked session while
   // it stands, and a peer's change books its peer writer and rests as received under that session.
   sealedRest.watch(repo, () => sealedCells.session);
@@ -1434,6 +1446,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // THE SOVEREIGN PIN this hearth's dial knocks with: the full pin filed for the relay's hearth at the Nexus the joined
   // face's fleet join names. Its signing key names the gate a verified crossing proves.
   const sovereignNexus = relayDial?.nexus ?? social.hearthGatePin?.nexus ?? (walk ? hex(new TextEncoder().encode(walk.nexusAid)) : null);
+  // Every recipe's floor on this browser reads the hearth's home charter (no edge ledger here), named before any mount asks.
+  floorHomeNexus = floorNexusOfPin(sovereignNexus ?? carriedCard?.pin.nexus ?? null);
   const relayHeld = relayUrl && sovereignNexus !== null
     ? gatePins.get({ hearth: hearthNameOf(relayUrl), nexus: sovereignNexus, route: "/ws", tier: "sovereign" })
     : null;
@@ -2156,7 +2170,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       const resolveDaemonPlugins = async () => {
         const daemonPluginResolution = await resolveBrowserIslandPluginCids({
           islandBlobs: assembly.islandHandle.doc()?.blobs,
-          floorCid: await vesselMountFloorCid({ control: async () => watchedControl, islandDoc: () => assembly.islandHandle.doc() }),
+          floorCid: await vesselMountFloorCid(floorArgs(() => assembly.islandHandle.doc())),
           recipe: { wikiSlug: "daemon" },
           lookup: browserOfferingLookup(publicationHandle!.doc()),
           promoted: (slug) => promoteWiringRef ? promoteWiringRef.boot.promotedFor(slug) : Promise.resolve([]),
@@ -2315,7 +2329,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         held.stood.push({ what: "the island's lift", down: lockThenDrop });
         held.stood.push({ what: "the lift's lock", down: onBrowserCustodyLock(idbName, () => { void lockThenDrop(); }) });
       }
-      const openOnce = (pluginCids: readonly string[]) => openBrowserDaemonVm({
+      const openOnce = async (pluginCids: readonly string[]) => openBrowserDaemonVm({
+        floorCid: await vesselFloorCid(floorArgs(() => assembly.islandHandle.doc())),
         caps: islandCaps,
         repo, daemonUrl: social.daemonUrl, coreHash: assembly.coreHash, ownedDocument: true,
         // The persona plane rides only when a face stands. A browser vessel normally holds one — it IS
@@ -2694,14 +2709,14 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         portPolicy: opts.portPolicy ?? ((binding, islandKey) => pagePortGrant({ binding, islandKey, faceId: portFaceId, daemonKey: DAEMON_SURFACE_ID })),
         ...(opts.onPortMessage ? { onPortMessage: opts.onPortMessage } : {}),
         ...(opts.onRest ? { onRest: opts.onRest } : {}),
-        // THE FLOOR THE VESSEL ACCEPTED (`floor-pin`): the same pick the node binds; no pin mounts genesis.
-        floorCid: () => vesselFloorCid({ control: async () => watchedControl, islandDoc: () => assembly.islandHandle.doc() }),
+        // THE FLOOR THE PLACE ACCEPTED (`floor-accept`): the same pick the node binds; no accept mounts genesis.
+        floorCid: () => vesselFloorCid(floorArgs(() => assembly.islandHandle.doc())),
         foundingRecord: () => assembly.islandHandle.doc(), // the floor shadow read: each mount reads its floor beside the founding record, serving unchanged
         resolvePluginCids: async (recipe) => {
           publicationHandle ??= await materializeSharedLarDoc(repo, publicationDocUrl(nexusPubkey), "board:publication");
           return resolveBrowserIslandPluginCids({
             islandBlobs: assembly.islandHandle.doc()?.blobs,
-            floorCid: await vesselMountFloorCid({ control: async () => watchedControl, islandDoc: () => assembly.islandHandle.doc() }),
+            floorCid: await vesselMountFloorCid(floorArgs(() => assembly.islandHandle.doc())),
             recipe,
             lookup: browserOfferingLookup(publicationHandle.doc()),
             promoted: (slug) => promoteWiringRef ? promoteWiringRef.boot.promotedFor(slug) : Promise.resolve([]),
@@ -2829,12 +2844,18 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   if (result.wikiHandle) connectionState.setWikiDocUrl(result.wikiHandle.url);
 
   const bootedFace = social.personaGroupId ?? null;
-  // THE VESSEL'S FLOOR PIN on the browser (w26-floor-lane#/the-vessel-pin): the same Nexus the porch read names, the control
-  // document the boot stood, the genesis floor its island document witnesses, and the live wikis the alert reaches.
+  // THE PLACE'S FLOOR ACCEPT on the browser (residency-tiers#/floor-accept): the same Nexus the porch read names, the accept
+  // home the place's daemon document names, the genesis floor its island document witnesses, and the live wikis the alert reaches.
   const floorBinding = (baseUrl: string): BrowserFloorBinding => ({
     baseUrl,
     nexusPin: flowNexusFor(baseUrl, { relayUrl, nexus: sovereignNexus ?? carriedCard?.pin.nexus ?? null }),
-    home: () => watchedControl,
+    home: readFloorAccepts,
+    mintHome: async () => {
+      if (!placeDaemon) throw new Error("floor-accept-home-unnamed: this browser watches no place daemon document yet");
+      const home = await standFloorAcceptHome(repo, placeDaemon, { mint: true, floorKey: () => floorKeyGrant });
+      if (home === null) throw new Error("floor-accept-home-unnamed: the accept home did not mint");
+      return home;
+    },
     genesisManifest: genesisFloorCidOf(result.assembly.islandHandle?.doc()),
     requiredBlobIds: floorRequiredBlobIds(result.assembly.islandHandle?.doc()?.blobs),
     raiseAlert: (remount) => raiseFloorAlert(vmManager, remount),

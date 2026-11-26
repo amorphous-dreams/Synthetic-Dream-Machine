@@ -528,7 +528,7 @@ lares vault unlock --face 2 && lares vessel lay --apply --yes            # the r
 
 Read back per face: each face's memories through `/mcp`, its own personal layers of the shared wikis, and the promoted record in the steward's live canon (the canon source carried it, and the steward's lay laid it). Then `lares import ~/.lares/config/carry-2 --apply`, run wearing each face in turn, lands nothing and counts every record as `already` or, for another face's private records, `waiting`; and a final lay lands nothing and says nothing of shares.
 
-''The floor pin starts again at genesis.'' The vessel's pin rests in its control home and the release on the former Nexus's board, and a re-founding clears both: `lares vessel floor status` answers `pinSource: genesis`, `board: absent`, and a face outside the Kahu cabal reads the promoted record `not-found` from the floor. So the release block runs once more on the new founding (`nexus release floor.json --cut`, `down`, `nexus approve open …`, `up`, `nexus release floor.json --approval approval.json`, `vessel floor accept`), and from its next wear on every face reads the promoted record on the floor (`floor: true`).
+''The floor accept starts again at genesis.'' The place's accept rests in its accept home and the release on the former Nexus's board, and a re-founding clears both: `lares vessel floor status` answers `acceptSource: genesis`, `board: absent`, and a face outside the Kahu cabal reads the promoted record `not-found` from the floor. So the release block runs once more on the new founding (`nexus release floor.json --cut`, `down`, `nexus approve open …`, `up`, `nexus release floor.json --approval approval.json`, `vessel floor accept`), and from its next wear on every face reads the promoted record on the floor (`floor: true`).
 
 ''Proves'': three faces of one human stand on one hearth, write face-private memory, share one workbench, move canon by offer and release, take a browser in by carried files, and carry all of it across a re-founding by content.
 
@@ -592,6 +592,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;uUZlgl8UF6II4Aez0mYX-LlbamkNrWMD7Mo30TXCWzU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;wKf0R0_wTNYjNBP2G47JPlGPtNjxtaxmHbUkFYekCrs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

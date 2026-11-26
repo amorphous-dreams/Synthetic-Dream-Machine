@@ -257,7 +257,11 @@ import {
 import { groupSecretSealTitle, verifyGroupSecretSeal } from "@lararium/mesh/persona-group-secret";
 import { leaseEpochPrefix } from "@lararium/mesh/epoch-lease";
 import { standControlHome } from "@lararium/mesh/control-home";
-import { vesselFloorCid, raiseFloorAlert } from "@lararium/mesh/floor-pin";
+import { vesselFloorCid, raiseFloorAlert, carriedFloorOf, genesisFloorCidOf, type CarriedFloor, type FloorNexusPick } from "@lararium/mesh/floor-accept";
+import { readFloorAcceptHome } from "@lararium/mesh/floor-accept-home";
+import { recipeFloorNexusOf } from "@lararium/mesh/floor-nexus";
+import { floorReleaseEntriesFromBoard } from "@lararium/mesh/floor-release";
+import { floorRequiredBlobIds } from "@lararium/mesh/floor-offering";
 import { readFace } from "@lararium/mesh/face-reading";
 import { proveFaceFromLog } from "@lararium/mesh/face-boot-proof";
 import { adoptKahuaStage } from "@lararium/mesh/kahua-stage";
@@ -330,7 +334,7 @@ import { type MeshPalaceDoc } from "@lararium/mesh/mesh-palace";
 import { type FlowPullResult } from "@lararium/mesh/flow-read-client";
 import { gateReadingsFor, layStatementOn, flowFloorPinAt, vesselCarriagePull } from "./herm-carriage.js";
 import { readKeptAdmitBundles } from "./admit-bundle.js";
-import { readCasBlobFromFs } from "./node-cas.js";
+import { readCasBlobFromFs, writeCasEntriesFs } from "./node-cas.js";
 import { makeSourceCapture, type SourceCapture } from "./capture/capture-source.js";
 import { VesselIslandPool, NODE_WIKI_ACTIVATION_CAP } from "./vessel-island-pool.js";
 import { wikiSwitchVerb } from "./wiki-switch-verb.js";
@@ -436,7 +440,7 @@ import { carriedSet, readCarriedCharters }       from "./carried-set.js";
 import { composeLararium, composeHerm, carriageStack, type MeshSelf } from "./node-caps.js";
 import { PLANE_LABELS } from "@lararium/mesh/plane-labels";
 import { shoreInbound } from "@lararium/mesh/prototype-key-shore-door";
-import { vesselMountFloorCid } from "@lararium/mesh/floor-pin";
+import { vesselMountFloorCid } from "@lararium/mesh/floor-accept";
 
 /** The genesis dir when a caller sites none — resolves through the composable genesis cap
  *  (`LAR_GENESIS` → `<root>/config/config.json` → repo-relative `<corpus>/genesis`). Genesis stays
@@ -3191,6 +3195,32 @@ async function prepareNodeBootOn(
     return handle;
   };
 
+  // THE PLACE'S FLOOR ACCEPTS (pin step 4, residency-tiers#/floor-accept): the accept home the daemon document names, read
+  // under this composition's floor key (a herm or a locked hearth reads `unavailable`, and its mounts show the carried head
+  // `carried-unaccepted`, snapshots over genesis plugins). Each recipe reads its own realm's Nexus off the edge ledger, the
+  // home charter where its realm names none (`floor-nexus`). Nothing here writes an accept: only a hand's door does.
+  const readFloorAccepts = () => readFloorAcceptHome(repo, readDaemonDoc, () => floorKeyGrant);
+  const floorPickOf = (slug: string): FloorNexusPick => {
+    let ledger: LarDoc | undefined;
+    try { ledger = workbenchLedger?.doc(); } catch { ledger = undefined; }
+    return recipeFloorNexusOf(ledger, slug, ownNexusAid());
+  };
+  const carriedFloorFor = (islandDoc: () => LarDoc | null | undefined) => async (): Promise<CarriedFloor | null> => {
+    const nexus = ownNexusAid();
+    const genesis = genesisFloorCidOf(islandDoc());
+    if (nexus === null || genesis === null || !publicationHandle) return null;
+    const board = publicationHandle;
+    return carriedFloorOf({
+      rows: async () => floorReleaseEntriesFromBoard(board.doc()), nexus, genesisManifest: genesis,
+      requiredBlobIds: floorRequiredBlobIds(islandDoc()?.blobs),
+      fetchLocal: async (cid) => readCasBlobFromFs(cid, cidDir),
+      stage: async (blobs) => { writeCasEntriesFs(blobs.map((b) => ({ cid: b.cid, bytes: b.bytes })), cidDir); },
+    });
+  };
+  /** The floor read one recipe's mount takes: its Nexus's accept, the genesis floor, or the carried showing. */
+  const floorArgsFor = (slug: string, islandDoc: () => LarDoc | null | undefined) =>
+    ({ accepts: readFloorAccepts, pick: floorPickOf(slug), islandDoc, carried: carriedFloorFor(islandDoc) });
+
   const keel: VesselOrchestration<VesselIslandPool>["keel"] = {
     repo,
     catalogHandle,
@@ -4442,7 +4472,7 @@ async function prepareNodeBootOn(
       readJoinedFaces,
       resolvePlugins: async () => resolveNodeIslandPluginCids({
         islandBlobs: assembly.islandHandle.doc()?.blobs,
-        floorCid: await vesselMountFloorCid({ control: readControlDoc, islandDoc: () => assembly.islandHandle.doc() }),
+        floorCid: await vesselMountFloorCid(floorArgsFor("daemon", () => assembly.islandHandle.doc())),
         onFloorFallback: logFloorFallback,
         recipe: { wikiSlug: "daemon" },
         lookup: nodeOfferingLookup(offerings.doc()),
@@ -4452,6 +4482,7 @@ async function prepareNodeBootOn(
       }),
       open: async ({ pluginCids, joinedFaces }) => openDaemonVm({
         repo,
+        floorCid: await vesselFloorCid(floorArgsFor("daemon", () => assembly.islandHandle.doc())),
         caps: islandCaps,
         casData,
         daemonUrl: bootstrap.daemonUrl,
@@ -5048,6 +5079,8 @@ async function prepareNodeBootOn(
       onRolled: afterRoll,
       // A floor accept raises the reboot-pending alert in every live wiki: no node island swaps its floor read-face live.
       floorAlert: (remount) => raiseFloorAlert(vmManager, remount),
+      // Every floor row reads and writes the place's accept home under this composition's floor key.
+      floorKey: () => floorKeyGrant,
       // The swarm's controls rest in the daemon wiki, device-local by the daemon document's anchor.
       swarmWiki: controlSwarmWiki(readControlDoc),
       // The key side of a removal answers a SOVEREIGN vessel alone: the facts read the sealed roster, and a
@@ -5463,14 +5496,14 @@ async function prepareNodeBootOn(
       // slow keyhive reconverge spends it. (silence 120s / stall 360s, matching daemon-vm-core.)
       mountSilenceMs: 120_000,
       mountStallMs:   360_000,
-      // THE FLOOR THE VESSEL ACCEPTED (`floor-pin`): each mount reads the pin afresh; no pin mounts genesis.
-      floorCid: () => vesselFloorCid({ control: readControlDoc, islandDoc: () => assembly.islandHandle.doc() }),
+      // THE FLOOR THE PLACE ACCEPTED (`floor-accept`): each mount reads its own wiki's Nexus's accept afresh; none mounts genesis.
+      floorCid: (wikiId) => vesselFloorCid(floorArgsFor(wikiId, () => assembly.islandHandle.doc())),
       foundingRecord: () => assembly.islandHandle.doc(), // the floor shadow read: each mount reads its floor beside the founding record, serving unchanged
       resolvePluginCids: async (recipe) => resolveNodeIslandPluginCids({
         islandBlobs: assembly.islandHandle.doc()?.blobs,
         recipe,
         // THE FLIP (3c): the floor this mount stands on supplies its plugin set; the founding record's boot set serves only where none resolves.
-        floorCid: await vesselMountFloorCid({ control: readControlDoc, islandDoc: () => assembly.islandHandle.doc() }),
+        floorCid: await vesselMountFloorCid(floorArgsFor(recipe.wikiSlug, () => assembly.islandHandle.doc())),
         onFloorFallback: logFloorFallback,
         lookup:      nodeOfferingLookup(publicationHandle?.doc()),
         readBytes:   (cid) => readCasBlobFromFs(cid, casDir),

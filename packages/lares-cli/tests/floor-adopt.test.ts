@@ -8,7 +8,7 @@ import { join } from "node:path";
 import { afterEach, describe, expect, test } from "vitest";
 import { GENESIS_FLOOR_TIDDLER } from "@lararium/mesh/floor-manifest";
 import { sha256HexBytesSync } from "@lararium/mesh/crypto";
-import { type FloorAdoptOutcome } from "@lararium/mesh/floor-pin";
+import { type FloorAdoptOutcome } from "@lararium/mesh/floor-accept";
 import { floorAdoptLines, floorSettleLines, seedFloorOf } from "../src/commands/floor.js";
 
 const scratch: string[] = [];
@@ -27,8 +27,8 @@ describe("the adopt reads the seed and speaks its landing", () => {
     const local = { base: "b".repeat(64), receipt: "5".repeat(64), prior: { release: null, manifest: "b".repeat(64), base: null, receipt: null }, state: "staged" as const };
     const r = { ok: true, moved: true, applied: false, staged: [], remount: null, moves: ["plugins"], manifestBytes: new Uint8Array(),
       manifest: { format: "lararium-floor", engine: "e".repeat(64), plugins: "c".repeat(64), snapshots: {} },
-      prior: { kind: "floor-pin", nexus: "n", release: null, manifest: "b".repeat(64) },
-      pin: { kind: "floor-pin", nexus: "n", release: null, manifest: "d".repeat(64), local } } as unknown as FloorAdoptOutcome;
+      prior: { kind: "floor-accept", nexus: "n", release: null, manifest: "b".repeat(64), took: [] },
+      accept: { kind: "floor-accept", nexus: "n", release: null, manifest: "d".repeat(64), took: [], local } } as unknown as FloorAdoptOutcome;
     const preview = floorAdoptLines(r).join("\n");
     expect(preview).toContain(`would stage local floor ${"d".repeat(64)}`);
     expect(preview).toContain(`base:     ${"b".repeat(64)}`);
@@ -42,7 +42,7 @@ describe("the adopt reads the seed and speaks its landing", () => {
 
   test("CONTROL: a refusal and a replay speak by name", () => {
     expect(floorAdoptLines({ ok: false, refusal: "adopt-engine-held", detail: "engine moved" })).toEqual(["floor adopt → REFUSED adopt-engine-held: engine moved"]);
-    expect(floorAdoptLines({ ok: true, moved: false, applied: false, why: "the seed offers no plugins past the base", pin: {} as never })[0]).toContain("HELD");
+    expect(floorAdoptLines({ ok: true, moved: false, applied: false, why: "the seed offers no plugins past the base", accept: {} as never })[0]).toContain("HELD");
     expect(floorSettleLines("commit", { ok: false, refusal: "adopt-none-local", detail: "no local floor" })[0]).toContain("REFUSED adopt-none-local");
   });
 });

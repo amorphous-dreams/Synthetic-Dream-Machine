@@ -500,9 +500,9 @@ test("RED XV5 (#407 M1, M3): the door refuses a private bag first, then a write 
 test("CONTROL XV6 (Sol 407e): a verb outside the visit reads, carrying a numeric `target` of its own, never meets a face gate", async () => {
   const { lives } = actors(0);
   const v = await stand({ faceLife: lives, visitVerbs: VISITS });
-  const reply = await v.oneShot({ verb: "floor-pin", args: { target: 7 }, requestedBy: "0xplace", requestId: "pin-target" });
+  const reply = await v.oneShot({ verb: "floor-accept", args: { target: 7 }, requestedBy: "0xplace", requestId: "pin-target" });
   expect(reply).not.toMatchObject({ refusal: { reason: "face-not-open" } });
-  expect(v.placed.map((p) => [p.verb, p.args["target"]])).toEqual([["floor-pin", 7]]);
+  expect(v.placed.map((p) => [p.verb, p.args["target"]])).toEqual([["floor-accept", 7]]);
 });
 
 test("ONE-SHOT WORK RIDES THE WORK GATE (writes enter during the drain, the maintenance line): a one-shot write on the mount dispatched before its close holds the drain until it settles; one sent during the drain refuses face-closing and nothing places", async () => {

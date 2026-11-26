@@ -3,7 +3,7 @@
  * the Kahu steward reviews and promotes them, and a release after the promotion carries them to every face's floor.
  *
  * The loop (offering#/the-canon-offer): OFFER → PROMOTE → RELEASE → ACCEPT → READ. This module holds the first two whole and
- * the decisions they turn on; the release (`floor-release`) and the accept (`floor-pin`) stand as they stood, and
+ * the decisions they turn on; the release (`floor-release`) and the accept (`floor-accept`) stand as they stood, and
  * `cutCanonFloor` (`floor-manifest`) cuts the floor a release names from the canon documents the promotion wrote.
  *
  * "A gift announces itself; the receiver ratchets." An OFFER is a signed, immutable record keyed by its CID (sha-256 hex of the
@@ -745,7 +745,7 @@ export async function retireCanonOffer(ports: CanonOfferPorts & {
 
 /** The ports a floor cut reads: the floor the chain stands on, each house-canon slug's live rows, and the CAS the release reads. */
 export interface ReleaseFloorPorts {
-  /** The floor the next release builds over: the chain head's manifest where one counts, else the vessel's pinned floor. */
+  /** The floor the next release builds over: the chain head's manifest where one counts, else the place's accepted floor. */
   readonly prior:     () => Promise<{ readonly manifestCid: string; readonly bytes: Uint8Array } | null>;
   /** One house-canon slug's live rows off its canon document, or null where this vessel reaches no such document. */
   readonly canonRows: (slug: string) => Promise<Readonly<Record<string, LarTiddlerRecord>> | null>;

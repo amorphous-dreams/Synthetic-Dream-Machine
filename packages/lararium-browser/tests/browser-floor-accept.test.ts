@@ -1,23 +1,25 @@
 /**
- * browser-floor-pin — the browser vessel reads the same pin and reaches the same decision the node does
- * (w26-floor-lane#/the-vessel-pin).
+ * browser-floor-accept — the browser vessel reads the same accept and reaches the same decision the node does
+ * (residency-tiers#/floor-accept).
  *
- * The porch is a fake `fetch` over real release records; the control home is a plain document. REDS:
+ * The porch is a fake `fetch` over real release records; the accept home is a plain document. REDS:
  *   · PARITY: the browser's composition (porch rows, porch CAS, OPFS stage) and a node-shaped binding (board rows, a local
  *     CAS) over the same releases decide the same status and the same accept, through the mesh's one decision;
- *   · the browser's accept stages the floor before the pin moves and raises the reboot-pending alert (no live swap);
+ *   · the browser's accept stages the floor before the accept moves and raises the reboot-pending alert (no live swap);
+ *   · a home not yet named mints only where a hand's accept writes: a refusal mints none;
  *   · a fork refuses naming both heads; a replay lands nothing;
- *   · where the browser cannot run the door (no control document stood, no Nexus known), it refuses by name, saying why.
+ *   · where the browser cannot run the door (no floor key stands, no Nexus known), it refuses by name, saying why.
  */
 import { describe, expect, test } from "vitest";
-import { acceptFloorRelease, readFloorStatus, type FloorPinHome, type FloorPinPorts, type FloorRemount } from "@lararium/mesh/floor-pin";
+import { acceptFloorRelease, readFloorStatus, type FloorAcceptHome, type FloorAcceptPorts, type FloorRemount } from "@lararium/mesh/floor-accept";
+import type { FloorKeyRefusal } from "@lararium/mesh/floor-registry";
 import { assembleFloorRelease, openFloorReleaseBody, type FloorRelease } from "@lararium/mesh/floor-release";
 import { cutFloorSnapshot, floorManifestBytes } from "@lararium/mesh/floor-manifest";
 import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
 import { floorAnswerOf } from "@lararium/mesh/floor-answer";
 import { sha256HexBytesSync } from "@lararium/mesh/crypto";
 import { signFloorOffering } from "@lararium/mesh/floor-offering";
-import { browserFloorAccept, browserFloorStatus, type BrowserFloorBinding } from "../src/browser-floor-pin.js";
+import { browserFloorAccept, browserFloorStatus, type BrowserFloorBinding } from "../src/browser-floor-accept.js";
 import { oneSeatCharter, type OneSeat } from "./browser-charter.js";
 
 /** The plugins offering every test floor names: one blob whose bytes ride the porch's CAS beside the record. */
@@ -55,27 +57,29 @@ function porch(aid: string, releases: readonly FloorRelease[], cas: Map<string, 
     return bytes ? new Response(new Uint8Array(bytes), { status: 200 }) : new Response("route unavailable", { status: 404 });
   }) as typeof fetch;
 }
-const homeOf = (): FloorPinHome & { changes: number } => {
+const homeOf = (): FloorAcceptHome & { changes: number } => {
   const doc: LarDoc = emptyLarDoc();
   return { changes: 0, doc: () => doc, change(fn) { this.changes += 1; fn(doc); } };
 };
 const GENESIS = "9".repeat(64);
 const BASE = "https://hearth.example/ws";
 
-function browserBinding(c: OneSeat, releases: readonly FloorRelease[], cas: Map<string, Uint8Array>, home: FloorPinHome | null) {
+function browserBinding(c: OneSeat, releases: readonly FloorRelease[], cas: Map<string, Uint8Array>, home: FloorAcceptHome | { readonly unavailable: FloorKeyRefusal } | null) {
   const local = new Map<string, Uint8Array>();
   const alerts: FloorRemount[] = [];
+  const minted: Array<FloorAcceptHome & { changes: number }> = [];
   const binding: BrowserFloorBinding = {
-    baseUrl: BASE, nexusPin: pinOf(c.aid), home: () => home, genesisManifest: GENESIS, requiredBlobIds: [OFFERING.offering.blobs[0]!.id],
+    baseUrl: BASE, nexusPin: pinOf(c.aid), home: async () => home, genesisManifest: GENESIS, requiredBlobIds: [OFFERING.offering.blobs[0]!.id],
+    mintHome: async () => { const h = homeOf(); minted.push(h); return h; },
     fetchFn: porch(c.aid, releases, cas),
     readLocal: async (cid) => local.get(cid) ?? null,
     writeLocal: async (blobs) => { for (const b of blobs) local.set(b.cid, b.bytes); },
     raiseAlert: (r) => { alerts.push(r); return ["wiki-a"]; },
   };
-  return { binding, local, alerts };
+  return { binding, local, alerts, minted };
 }
 /** A node-shaped binding: board rows read straight, a local CAS, no porch. */
-function nodeShaped(c: OneSeat, releases: readonly FloorRelease[], cas: Map<string, Uint8Array>, home: FloorPinHome): FloorPinPorts {
+function nodeShaped(c: OneSeat, releases: readonly FloorRelease[], cas: Map<string, Uint8Array>, home: FloorAcceptHome): FloorAcceptPorts {
   return {
     home, nexus: c.aid, genesisManifest: GENESIS, requiredBlobIds: [OFFERING.offering.blobs[0]!.id],
     rows: async () => releases.map((r) => ({ keyCid: r.cid, record: r })),
@@ -85,7 +89,7 @@ function nodeShaped(c: OneSeat, releases: readonly FloorRelease[], cas: Map<stri
   };
 }
 
-describe("the browser vessel's floor pin", () => {
+describe("the browser vessel's floor accept", () => {
   test("RED PARITY: the browser composition and a node-shaped binding decide the same status and the same accept", async () => {
     const c = await oneSeatCharter(3, 0);
     const f1 = floor("one"), f2 = floor("two");
@@ -102,10 +106,10 @@ describe("the browser vessel's floor pin", () => {
     expect(bAccept).toMatchObject({ ok: true, moved: true, path: [r1.cid, r2.cid] });
     const { alerted: _alerted, ...bDecision } = bAccept as typeof bAccept & { alerted: unknown };
     expect(bDecision).toEqual(nAccept);
-    expect(bHome.doc()).toEqual(nHome.doc());                       // the same pin row, byte for byte
+    expect(bHome.doc()).toEqual(nHome.doc());                       // the same accept row, byte for byte
   });
 
-  test("RED: the browser's accept stages the floor before the pin moves and raises the reboot-pending alert", async () => {
+  test("RED: the browser's accept stages the floor before the accept moves and raises the reboot-pending alert", async () => {
     const c = await oneSeatCharter(4, 0);
     const f1 = floor("one");
     const r1 = await released(c, f1);
@@ -130,12 +134,29 @@ describe("the browser vessel's floor pin", () => {
     expect(home.changes).toBe(0);
   });
 
+  test("RED: a home not yet named mints only where a hand's accept writes; a refusal mints none", async () => {
+    const c = await oneSeatCharter(7, 0);
+    const f1 = floor("one"), fa = floor("a"), fb = floor("b");
+    const r1 = await released(c, f1);
+    const ra = await released(c, fa, r1.cid), rb = await released(c, fb, r1.cid);
+    const forked = browserBinding(c, [r1, ra, rb], new Map([...f1.cas, ...fa.cas, ...fb.cas]), null);
+    expect(await browserFloorAccept(forked.binding)).toMatchObject({ ok: false, refusal: "floor-fork-unsettled" });
+    expect(forked.minted).toEqual([]);
+    const fresh = browserBinding(c, [r1], f1.cas, null);
+    expect(await browserFloorStatus(fresh.binding)).toMatchObject({ ok: true, acceptSource: "genesis" });
+    expect(await browserFloorAccept(fresh.binding)).toMatchObject({ ok: true, moved: true, accept: { release: r1.cid, took: [r1.cid] } });
+    expect(fresh.minted).toHaveLength(1);
+    expect(Object.keys(fresh.minted[0]!.doc()!.tiddlers)).toHaveLength(1);
+  });
+
   test("where the browser cannot run the door, it refuses by name and says why", async () => {
     const c = await oneSeatCharter(6, 0);
     const f1 = floor("one");
     const r1 = await released(c, f1);
+    const locked = browserBinding(c, [r1], f1.cas, { unavailable: "vessel-locked" }).binding;
+    expect(await browserFloorStatus(locked)).toMatchObject({ ok: false, refusal: "floor-unavailable", detail: expect.stringMatching(/^vessel-locked:/) });
+    expect(await browserFloorAccept(locked)).toMatchObject({ ok: false, refusal: "floor-unavailable" });
     const unstood = browserBinding(c, [r1], f1.cas, null).binding;
-    expect(await browserFloorStatus(unstood)).toMatchObject({ ok: false, refusal: "floor-control-unread", detail: expect.stringMatching(/no control document/) });
     expect(await browserFloorAccept({ ...unstood, nexusPin: null })).toMatchObject({ ok: false, refusal: "floor-no-nexus" });
   });
 });

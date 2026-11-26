@@ -1,5 +1,5 @@
 /**
- * The daemon island mounts the floor the vessel pinned (`floor-pin` `floorCidToMount`), as every wiki island does. A walked
+ * The daemon island mounts the floor the place accepted (`floor-accept` `floorToMount`), as every wiki island does. A walked
  * hearth read a promoted record `not-found` from every face outside the Kahu cabal after `floor accept`: the daemon island's
  * manifest named no floor, so the island read its genesis seed's floor and the `--bag` read door answered the prior snapshot.
  */

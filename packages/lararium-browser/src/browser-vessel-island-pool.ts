@@ -61,8 +61,8 @@ export interface BrowserVesselIslandPoolOptions {
     | { readonly ok: true; readonly pluginCids: readonly string[] }
     | { readonly ok: false; readonly error: string }
   >;
-  /** The floor each mount stands on: the vessel's accepted pin (`@lararium/mesh` `vesselFloorCid`); null mounts genesis. */
-  floorCid?: () => string | null | Promise<string | null>;
+  /** The floor each mount stands on, asked per wiki: its Nexus's accept (`@lararium/mesh` `vesselFloorCid`); null mounts genesis. */
+  floorCid?: (wikiId: string) => string | null | Promise<string | null>;
   /** The founding record (the genesis island document): each wiki mount shadow-reads its floor beside it (`floor-shadow`).
    *  The browser keeps the tally for this pool's life alone; it prints each reading and the count to the vessel log. */
   foundingRecord?: () => LarDoc | null | undefined;

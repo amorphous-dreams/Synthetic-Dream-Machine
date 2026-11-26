@@ -1,6 +1,6 @@
 /**
  * genesis-truths -- both truths in one line: the founding record (the stored genesis island) beside the seed
- * (offered) on disk and the floor pin, ratchet by ratchet.
+ * (offered) on disk and the floor accept, ratchet by ratchet.
  *
  * D1: the boot names a newer seed and serves the founding record unchanged; nothing moves at boot, and lay moves
  * canon, never the founding record. The read stays pure over what the caller hands it.
@@ -53,9 +53,9 @@ describe("the founding record beside the seed (offered)", () => {
     expect(line).not.toContain("same on every ratchet");
   });
 
-  test("the floor pin prints beside them, per ratchet, when the caller holds it", async () => {
+  test("the floor accept prints beside them, per ratchet, when the caller holds it", async () => {
     const record = foundingRecordDigests(shipped());
-    // A pinned floor whose plugins offering carries a moved parser: grammar and plugins read moved through the offering.
+    // A accepted floor whose plugins offering carries a moved parser: grammar and plugins read moved through the offering.
     const rows = floorMountBlobRows(Object.values(shipped().blobs) as Array<{ id: string; version: string; sha256: string; mimeType: string }>);
     const offered = await signFloorOffering({ seed: new Uint8Array(32).fill(8), blobs: rows.map((r) => ({
       id: r.id, version: r.version, sha256: r.id === LARES_MEMETIC_WIKITEXT_PLUGIN_URI ? "f".repeat(64) : r.sha256,
@@ -63,11 +63,11 @@ describe("the founding record beside the seed (offered)", () => {
     })) });
     const truths = readFoundingRecordTruths({
       record: shipped(), genesisDir: SHIPPED,
-      floorPin: { manifestCid: "a".repeat(64), manifest: { engine: record.engine!, plugins: offered.cid }, offering: offered.offering },
+      floorAccept: { manifestCid: "a".repeat(64), manifest: { engine: record.engine!, plugins: offered.cid }, offering: offered.offering },
     });
-    expect(foundingRecordLine(truths)).toContain(`floor pin ${"a".repeat(64)}: engine same · grammar moved · lararium same · plugins moved · floor moved`);
+    expect(foundingRecordLine(truths)).toContain(`floor accept ${"a".repeat(64)}: engine same · grammar moved · lararium same · plugins moved · floor moved`);
     // CONTROL: with no pin handed in, the line names the pin unread, never same.
-    expect(foundingRecordLine(readFoundingRecordTruths({ record: shipped(), genesisDir: SHIPPED }))).toContain("floor pin: unread here");
+    expect(foundingRecordLine(readFoundingRecordTruths({ record: shipped(), genesisDir: SHIPPED }))).toContain("floor accept: unread here");
   });
 });
 

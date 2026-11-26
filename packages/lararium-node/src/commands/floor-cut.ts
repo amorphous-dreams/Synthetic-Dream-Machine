@@ -21,7 +21,7 @@ import { join } from "node:path";
 import type { Repo } from "@automerge/automerge-repo";
 import { BAG_MANIFEST_FILE } from "@lararium/mesh/bag-manifest";
 import { FloorCutThin, cutReleaseFloor } from "@lararium/mesh/canon-offer";
-import { floorPinOf, floorPinBase } from "@lararium/mesh/floor-pin";
+import { floorAcceptOf, floorAcceptBase } from "@lararium/mesh/floor-accept";
 import { floorReleaseEntriesFromBoard, foldFloorReleases } from "@lararium/mesh/floor-release";
 import { FloorManifestRefusal, readFloorManifest } from "@lararium/mesh/floor-manifest";
 import { publicationDocUrl, materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
@@ -97,7 +97,7 @@ export async function runFloorCut(opts: {
   /** The catalog the held store names (`StoreDoorDeps.catalogUrl`); absent, no canon document reads and every slug keeps its snapshot. */
   readonly catalogUrl?: string | undefined;
 }): Promise<FloorCutResult> {
-  const pinPorts = await nodeFloorPorts({ repo: opts.repo, sealHome: opts.sealHome, casDir: opts.casDir, ...(opts.aid !== undefined ? { aid: opts.aid } : {}) });
+  const acceptPorts = await nodeFloorPorts({ repo: opts.repo, sealHome: opts.sealHome, casDir: opts.casDir, ...(opts.aid !== undefined ? { aid: opts.aid } : {}) });
   const home = opts.aid !== undefined ? (charterHomeFor(opts.sealHome, opts.aid.trim().toLowerCase()) ?? opts.sealHome) : opts.sealHome;
   const board = await materializeSharedLarDoc(opts.repo, publicationDocUrl(nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey(), sealHome: home })), "board:publication");
   const casRead = async (cid: string) => readVerifiedCasBlobFromFs(cid, opts.casDir);
@@ -107,14 +107,14 @@ export async function runFloorCut(opts: {
     ...(opts.thin ? { thin: opts.thin } : {}),
     // The engine the genesis floor names: a cut carries the engine it stands on and never offers one.
     genesisEngine: async () => {
-      const bytes = pinPorts.genesisManifest ? await casRead(pinPorts.genesisManifest) : null;
+      const bytes = acceptPorts.genesisManifest ? await casRead(acceptPorts.genesisManifest) : null;
       const read = bytes ? readFloorManifest(bytes) : null;
       return read && "manifest" in read ? read.manifest.engine : null;
     },
     prior: async () => {
-      const standing = await foldFloorReleases({ rows: floorReleaseEntriesFromBoard(board.doc()), nexus: pinPorts.nexus, manifestBytesOf: casRead });
-      return standing.standing === "released" ? standing.head.body.manifest : floorPinBase(floorPinOf(pinPorts.home.doc(), pinPorts.nexus, pinPorts.genesisManifest).pin);
+      const standing = await foldFloorReleases({ rows: floorReleaseEntriesFromBoard(board.doc()), nexus: acceptPorts.nexus, manifestBytesOf: casRead });
+      return standing.standing === "released" ? standing.head.body.manifest : floorAcceptBase(floorAcceptOf(acceptPorts.home.doc(), acceptPorts.nexus, acceptPorts.genesisManifest).accept);
     },
   });
-  return { ...result, nexus: pinPorts.nexus };
+  return { ...result, nexus: acceptPorts.nexus };
 }

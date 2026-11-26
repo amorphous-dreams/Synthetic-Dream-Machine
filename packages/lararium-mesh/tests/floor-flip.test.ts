@@ -13,7 +13,7 @@ import { ENGINE_CORE_ID, type LarBlobEntry } from "../src/base-doc.js";
 import { LARES_LARARIUM_PLUGIN_URI, LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "../src/lar-uris.js";
 import { bootSetPluginCids } from "../src/cas.js";
 import { resolveRecipePluginCids, type FloorMountReading } from "../src/surface-recipe.js";
-import { FLOOR_PIN_KIND, vesselMountFloorCid, writeFloorPin } from "../src/floor-pin.js";
+import { FLOOR_ACCEPT_KIND, vesselMountFloorCid, writeFloorAccept } from "../src/floor-accept.js";
 import { GENESIS_FLOOR_TIDDLER } from "../src/floor-manifest.js";
 import { storedLarRecord } from "../src/stored-record.js";
 import type { LarDoc } from "../src/base-doc.js";
@@ -109,18 +109,22 @@ describe("the flip: a mount loads the floor's plugin set (3c)", () => {
   });
 });
 
-describe("the mount's floor pick: the pin, else the genesis floor the founding record names", () => {
-  test("RED: no pin mounts the genesis floor's CID; a pin mounts its own manifest", async () => {
-    const genesis = "9".repeat(64), pinned = "8".repeat(64);
+describe("the mount's floor pick: the recipe's Nexus's accept, else the genesis floor the founding record names", () => {
+  test("RED: no accept mounts the genesis floor's CID; an accept at the recipe's Nexus mounts its own manifest", async () => {
+    const genesis = "9".repeat(64), accepted = "8".repeat(64);
     const islandDoc = () => ({ tiddlers: { [GENESIS_FLOOR_TIDDLER]: storedLarRecord(GENESIS_FLOOR_TIDDLER, { cid: genesis }, "test") } }) as never;
-    expect(await vesselMountFloorCid({ control: async () => ({ doc: () => ({ tiddlers: {} }) as never }), islandDoc })).toBe(genesis);
-    const withPin = { tiddlers: {} } as never as LarDoc;
-    writeFloorPin(withPin, { kind: FLOOR_PIN_KIND, nexus: "aid", release: "7".repeat(64), manifest: pinned });
-    expect(await vesselMountFloorCid({ control: async () => ({ doc: () => withPin }), islandDoc })).toBe(pinned);
-    expect(await vesselMountFloorCid({ control: async () => { throw new Error("locked"); }, islandDoc })).toBe(genesis);
-    expect(await vesselMountFloorCid({ control: async () => null, islandDoc: () => null })).toBeNull();
+    const pick = { nexus: "aid" };
+    expect(await vesselMountFloorCid({ accepts: async () => ({ doc: () => ({ tiddlers: {} }) as never }), pick, islandDoc })).toBe(genesis);
+    const withAccept = { tiddlers: {} } as never as LarDoc;
+    writeFloorAccept(withAccept, { kind: FLOOR_ACCEPT_KIND, nexus: "aid", release: "7".repeat(64), manifest: accepted, took: ["7".repeat(64)] });
+    expect(await vesselMountFloorCid({ accepts: async () => ({ doc: () => withAccept }), pick, islandDoc })).toBe(accepted);
+    // CONTROL: another Nexus's recipe reads none of it.
+    expect(await vesselMountFloorCid({ accepts: async () => ({ doc: () => withAccept }), pick: { nexus: "other" }, islandDoc })).toBe(genesis);
+    expect(await vesselMountFloorCid({ accepts: async () => { throw new Error("locked"); }, pick, islandDoc })).toBe(genesis);
+    expect(await vesselMountFloorCid({ accepts: async () => ({ unavailable: "vessel-locked" }), pick, islandDoc })).toBe(genesis);
+    expect(await vesselMountFloorCid({ accepts: async () => null, pick, islandDoc: () => null })).toBeNull();
     // An island read that throws falls back, never rejects the mount (cold read #578, finding 5).
-    expect(await vesselMountFloorCid({ control: async () => ({ doc: () => withPin }), islandDoc: () => { throw new Error("torn"); } })).toBe(pinned);
-    expect(await vesselMountFloorCid({ control: async () => null, islandDoc: () => { throw new Error("torn"); } })).toBeNull();
+    expect(await vesselMountFloorCid({ accepts: async () => ({ doc: () => withAccept }), pick, islandDoc: () => { throw new Error("torn"); } })).toBe(accepted);
+    expect(await vesselMountFloorCid({ accepts: async () => null, pick, islandDoc: () => { throw new Error("torn"); } })).toBeNull();
   });
 });

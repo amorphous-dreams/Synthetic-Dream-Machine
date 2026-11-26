@@ -20,7 +20,7 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/control-home
  */
-import { CONTROL_HOME_ID, DAEMON_BAG_ID, bagUri } from "./lar-uris.js";
+import { CONTROL_HOME_ID, DAEMON_BAG_ID, FLOOR_ACCEPT_BAG, bagUri } from "./lar-uris.js";
 import { daemonFaceCanonBag, wikiSlotUri } from "./wiki-recipe.js";
 import { tiddlerText, type LarDoc } from "./base-doc.js";
 import { documentIdOfUrl, type SealedBag } from "./sealed-rest.js";
@@ -35,6 +35,9 @@ export const FLOOR_REGISTRY_ROOT = `${DAEMON_BAG_ID}/floor/`;
  * the floor's rest key, on every vessel class, and waits held from its announce until the daemon document names it.
  */
 export const FLOOR_SLOT_ROOT = `${FLOOR_REGISTRY_ROOT}slot/`;
+/** The floor row naming the place's FLOOR ACCEPT HOME (`floor-accept-home`): one document, one accept per Nexus, sealed
+ *  under the floor's rest key and filed under the floor-accept bag. */
+export const FLOOR_ACCEPT_HOME_TITLE = `${FLOOR_REGISTRY_ROOT}accept`;
 /** The daemon wiki's own floor device slots (`floor/daemon-slot/<kind>`): its working, draft and personal memory with no face. */
 export const FLOOR_DAEMON_SLOT_ROOT = `${FLOOR_REGISTRY_ROOT}daemon-slot/`;
 /** The floor row naming the daemon wiki's floor `kind` device slot. */
@@ -142,7 +145,8 @@ export function deviceDaemonDocs(io: {
   const working = new Map<string, string>();
   const floorWikiFiled = (documentId: string): { readonly bagId: string; readonly owner: Owner } | null => {
     const filed = owners.get(documentId);
-    return filed !== undefined && !filed.bagId.startsWith(DAEMON_SLOT_PREFIX) && (filed.owner.kind === "floor" || filed.owner.kind === "unnamed") ? filed : null;
+    // The accept home files as the floor's yet serves no wiki: it reaches no wiki island and never releases to a face.
+    return filed !== undefined && !filed.bagId.startsWith(DAEMON_SLOT_PREFIX) && filed.bagId !== FLOOR_ACCEPT_BAG && (filed.owner.kind === "floor" || filed.owner.kind === "unnamed") ? filed : null;
   };
   const file = (documentId: string, bagId: string, owner: Owner): boolean => {
     if (released.has(documentId) && (owner.kind === "floor" || owner.kind === "unnamed")) return false;
@@ -187,7 +191,10 @@ export function deviceDaemonDocs(io: {
         if (!title.startsWith(FLOOR_REGISTRY_ROOT)) continue;
         const documentId = documentIdOfUrl(tiddlerText(record));
         if (!documentId) continue;
-        if (title.startsWith(FLOOR_DAEMON_SLOT_ROOT)) {
+        if (title === FLOOR_ACCEPT_HOME_TITLE) {
+          // The place's accept home: the floor's own, sealed under the floor's rest key, never a face's.
+          moved = file(documentId, FLOOR_ACCEPT_BAG, { kind: "floor" }) || moved;
+        } else if (title.startsWith(FLOOR_DAEMON_SLOT_ROOT)) {
           const kind = title.slice(FLOOR_DAEMON_SLOT_ROOT.length);
           if (!kind || kind.includes("/")) continue;
           moved = file(documentId, wikiSlotUri("daemon", kind as never), { kind: "floor" }) || moved;

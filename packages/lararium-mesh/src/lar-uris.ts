@@ -355,6 +355,9 @@ export const DAEMON_BAG_ID    = bagUri("daemon");
  *  every control family (`control-home.ts`); no recipe composes it and no mirror names it. */
 export const CONTROL_HOME_ID = bagUri("control");
 export const SECRET_HOME_ID = bagUri("secret");
+/** The place's FLOOR ACCEPT HOME (`floor-accept`): one floor-filed document, sealed under the floor's rest key, holding one
+ *  accept per Nexus; the daemon document names it (`<daemon bag>/floor/accept`), no recipe mounts it and no mirror names it. */
+export const FLOOR_ACCEPT_BAG = bagUri("floor-accept");
 
 /** The swarm's live controls (house cap, lane shares, go, lane state, roster, receipts) rest in the control document under this prefix. */
 export const SWARM_URI_PREFIX = "$:/lares/swarm/";

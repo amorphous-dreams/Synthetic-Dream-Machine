@@ -8,7 +8,7 @@ import * as names from "../src/wire-names.js";
 import { GENESIS_SEED_FORMAT } from "../src/genesis-doc.js";
 import { FLOOR_MANIFEST_FORMAT } from "../src/floor-manifest.js";
 import { FLOOR_ANSWER_FORMAT } from "../src/floor-answer.js";
-import { FLOOR_PIN_KIND } from "../src/floor-pin.js";
+import { FLOOR_ACCEPT_KIND } from "../src/floor-accept.js";
 import { FLOOR_ANNOUNCEMENT_KIND } from "../src/floor-announcement.js";
 
 describe("the wire names", () => {
@@ -22,7 +22,7 @@ describe("the wire names", () => {
     expect(GENESIS_SEED_FORMAT).toBe(names.GENESIS_SEED_FORMAT);
     expect(FLOOR_MANIFEST_FORMAT).toBe(names.FLOOR_MANIFEST_FORMAT);
     expect(FLOOR_ANSWER_FORMAT).toBe(names.FLOOR_ANSWER_FORMAT);
-    expect(FLOOR_PIN_KIND).toBe(names.FLOOR_PIN_KIND);
+    expect(FLOOR_ACCEPT_KIND).toBe(names.FLOOR_ACCEPT_KIND);
     expect(FLOOR_ANNOUNCEMENT_KIND).toBe(names.FLOOR_ANNOUNCEMENT_KIND);
     for (const value of Object.values(names)) expect(value).not.toMatch(/(?:^|[-_.])v?\d+$/);
   });

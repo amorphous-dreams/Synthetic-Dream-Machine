@@ -1,18 +1,18 @@
 /**
- * floor-door — the node binds the vessel's floor pin to the store door (w26-floor-lane#/the-vessel-pin).
+ * floor-door — the node binds the place's floor accept to the store door (residency-tiers#/floor-accept).
  *
- *   · both rows stand on the door, as rows of the PLACE: the pin keys on (vessel, Nexus), so no face row carries it and a
- *     face switch reaches no pin;
+ *   · the rows stand on the door, as rows of the PLACE: the accept keys on (place, Nexus), so no face row carries it and a
+ *     face switch reaches no accept; the rehome door rides the hand;
  *   · the accept rides a person's hand alone (`floor-needs-hand`): a seat session reads the status and never moves the floor;
  *   · the node's binding answers the mesh's own decision: its module calls `acceptFloorRelease` and `readFloorStatus`, and
  *     declares no live floor swap (the remount raises the reboot-pending alert);
  *   · THE DOORS CROSS A REAL FOUNDING: on a hearth `runFoundHearth` stood (its bootstrap the founding's own, an address book of
- *     the social planes that names no catalog and no oracle), the status answers the genesis pin and the cut answers a
+ *     the social planes that names no catalog and no oracle), the status answers the genesis accept and the cut answers a
  *     manifest, each reading the oracle island at its deterministic address and the catalog its pointer file names, the two
  *     sources the standing vessel's own composition reads. CONTROLS: a bare place in no charter, and a founded store that
  *     holds no oracle island, each refuse by their own name (the row carries the refusal's own name, never the verb's);
  *   · THE STATUS NAMES BOTH TRUTHS CHARTER-FREE (D1, shore recommendation 8): the founding record beside the seed (offered)
- *     and the floor pin, ratchet by ratchet. A place in no Nexus charter whose store holds the island answers that part and
+ *     and the floor accept, ratchet by ratchet. A place in no Nexus charter whose store holds the island answers that part and
  *     refuses only the Nexus part, by name.
  *   · THE STATUS NAMES THE FLOOR'S DRIFT (`floorDrift`): on a founded hearth, a carrier live lararium canon holds and the floor
  *     lacks reads missing, by carrier, its slots counting once; each floor carrier the empty live lares canon no longer holds
@@ -34,7 +34,8 @@ import {
   writeRealmStanding,
 } from "@lararium/mesh/realm-bag";
 import { emptyLarDoc, type LarDoc } from "@lararium/mesh/base-doc";
-import { genesisFloorCidOf } from "@lararium/mesh/floor-pin";
+import { genesisFloorCidOf } from "@lararium/mesh/floor-accept";
+import { floorAcceptHomeUrlOf } from "@lararium/mesh/floor-accept-home";
 import { materializeSharedLarDoc } from "@lararium/mesh/deterministic-doc";
 import { resolveFloor } from "@lararium/mesh/floor-manifest";
 import { sha256HexBytesSync } from "@lararium/mesh/crypto";
@@ -51,10 +52,19 @@ import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
 import { foundHearthDirect } from "./found-route.js";
 
 describe("the floor rows on the node's store door", () => {
-  test("both rows stand, as rows of the place: no face row carries the pin", () => {
-    expect(STORE_DOOR_VERBS).toEqual(expect.arrayContaining(["floor-status", "floor-accept"]));
+  test("the rows stand, as rows of the place: no face row carries the accept", () => {
+    expect(STORE_DOOR_VERBS).toEqual(expect.arrayContaining(["floor-status", "floor-accept", "floor-rehome"]));
     expect(STORE_DOOR_FACE_VERBS.has("floor-status")).toBe(false);
     expect(STORE_DOOR_FACE_VERBS.has("floor-accept")).toBe(false);
+    expect(STORE_DOOR_FACE_VERBS.has("floor-rehome")).toBe(false);
+  });
+
+  test("RED: the rehome door rides a person's hand alone, and the boot never runs it", () => {
+    expect(STORE_DOOR_HAND_CODES.get("floor-rehome")).toBe("floor-needs-hand");
+    expect(STORE_DOOR_HAND_ONLY_ACTS.has("floor-rehome")).toBe(true);
+    for (const boot of ["../src/open-node-vessel.ts", "../src/main.ts"]) {
+      expect(readFileSync(new URL(boot, import.meta.url), "utf8")).not.toMatch(/rehomeFloorRows|runFloorRehome/);
+    }
   });
 
   test("RED: the accept rides a person's hand alone; the status stays open to a seat", () => {
@@ -73,7 +83,7 @@ describe("the floor rows on the node's store door", () => {
     expect(source).toMatch(/adoptFloorSeed\(ports, /);
     expect(source).not.toMatch(/decideFloorAdopt/);                              // no second copy of the decision
     const cut = readFileSync(new URL("../src/commands/floor-cut.ts", import.meta.url), "utf8");
-    expect(cut).toMatch(/floorPinBase\(floorPinOf\(/);                         // a cut builds on the base, never a local manifest
+    expect(cut).toMatch(/floorAcceptBase\(floorAcceptOf\(/);                         // a cut builds on the base, never a local manifest
   });
 
   test("the node's binding answers the mesh's one decision and declares no live swap", () => {
@@ -81,7 +91,7 @@ describe("the floor rows on the node's store door", () => {
     expect(source).toMatch(/acceptFloorRelease\(ports, opts\.target\)/);
     expect(source).toMatch(/readFloorStatus\(await nodeFloorPorts\(opts\)\)/);
     expect(source).toMatch(/floorSwap: false/);
-    expect(source).not.toMatch(/floorPathFromPin|decideFloorAccept/);          // no second copy of the decision
+    expect(source).not.toMatch(/floorPathFromAccept|decideFloorAccept/);          // no second copy of the decision
   });
 });
 
@@ -122,7 +132,7 @@ describe("the floor doors cross a founded hearth's own bootstrap", () => {
     });
   }
 
-  test("RED: on a founded hearth the status answers the genesis pin and the cut answers a manifest, though the bootstrap names no catalog and no oracle", async () => {
+  test("RED: on a founded hearth the status answers the genesis accept and the cut answers a manifest, though the bootstrap names no catalog and no oracle", async () => {
     await withLarRoot(r, () => foundHearthDirect({ storageDir: join(r, "hearth", "vessel"), genesisDir: join(r, "genesis") }));
     await withLarRoot(r, async () => {
       const { genesisFloor } = await standTheBootsDocuments(r);
@@ -134,12 +144,12 @@ describe("the floor doors cross a founded hearth's own bootstrap", () => {
 
       const status = await storeDoorDirect("floor-status", {}, { sealHome: larSealHome() });
       expect(status["refused"]).toEqual([]);                                      // the status's own list of releases it set aside: a refusal reads as a string
-      expect(status).toMatchObject({ verb: "floor-status", pinSource: "genesis", pinned: { manifest: genesisFloor, release: null }, board: "absent" });
-      // Both truths beside the Nexus part: the founding record against the seed (offered) and against the floor pin it reads.
+      expect(status).toMatchObject({ verb: "floor-status", acceptSource: "genesis", accepted: { manifest: genesisFloor, release: null, took: [] }, board: "absent", standing: "genesis" });
+      // Both truths beside the Nexus part: the founding record against the seed (offered) and against the floor accept it reads.
       const truths = status["genesis"] as { line?: string } | undefined;
       expect(truths?.line).toContain("seed (offered) ");
       expect(truths?.line).toContain(": same on every ratchet");
-      expect(truths?.line).toContain(`floor pin ${genesisFloor}: engine same · grammar same · lararium same · plugins same · floor same`);
+      expect(truths?.line).toContain(`floor accept ${genesisFloor}: engine same · grammar same · lararium same · plugins same · floor same`);
 
       // The cut reads the founding's own realm documents through the catalog the pointer file names. They hold no row yet (no
       // seed ran), so the steward names both thin; every other slug the genesis floor names holds no document here and keeps its snapshot.
@@ -154,6 +164,23 @@ describe("the floor doors cross a founded hearth's own bootstrap", () => {
       expect(sha256HexBytesSync(new Uint8Array(readFileSync(out)))).toBe(cut["manifestCid"]);
       const floor = await resolveFloor(String(cut["manifestCid"]), async (cid) => readVerifiedCasBlobFromFs(cid, casDirForStorage(larDataDir())));
       expect("refusal" in floor ? floor.refusal : null).toBeNull();
+    });
+  });
+
+  test("RED: an accept reaches the board through the place's accept home, never the control document, and a refused accept mints no home", async () => {
+    const faceless = freshRoot("accept-home");
+    await withLarRoot(faceless, () => foundHearthDirect({ storageDir: join(faceless, "hearth", "vessel"), genesisDir: join(faceless, "genesis") }));
+    await withLarRoot(faceless, async () => {
+      await standTheBootsDocuments(faceless);
+      // No release counts on the board: the accept refuses by the board's own name, never by a control document a face mints.
+      const out = await storeDoorDirect("floor-accept", {}, { sealHome: larSealHome() });
+      expect(out).toMatchObject({ verb: "floor-accept", refusal: "floor-no-release" });
+      expect(String(out["refused"] ?? "")).not.toMatch(/control-home/);
+      // The refusal landed nothing: the daemon document names no accept home.
+      const named = await ownedStore(larDataDir(), async (repo) => floorAcceptHomeUrlOf((await repo.find<LarDoc>(readBootTiddlers(larBootstrapPath())![DAEMON_BAG_ID]!.text as AutomergeUrl)).doc()));
+      expect(named).toBeNull();
+      // A rehome with no retired row lands nothing and answers no receipt.
+      expect(await storeDoorDirect("floor-rehome", {}, { sealHome: larSealHome() })).toMatchObject({ verb: "floor-rehome", receipts: [] });
     });
   });
 
@@ -212,7 +239,7 @@ describe("the floor doors cross a founded hearth's own bootstrap", () => {
       const line = String((out["genesis"] as { line?: string } | undefined)?.line);
       expect(line).toMatch(/^\[genesis\] founding record: engine \S+ · grammar \S+ · lararium \S+ · plugins \S+ · floor \S+/);
       expect(line).toContain(": same on every ratchet");
-      expect(line).toContain("floor pin: none — this vessel stands in no Nexus charter");
+      expect(line).toContain("floor accept: none — this place stands in no Nexus charter");
       // CONTROL: no catalog names live canon here, so the drift reads null, never a silent zero.
       expect(out).toHaveProperty("floorDrift", null);
       expect(out["floorDriftWhy"]).toMatch(/no catalog names live canon/);

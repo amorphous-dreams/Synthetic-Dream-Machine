@@ -87,7 +87,7 @@ const SHARE = row("share", "share-needs-hand");
  *   retire            the daemon island's unmint of a face's wiki shell
  *   accept-loss       a wear that drops the saves a refused face holds, on a person's typed word
  *   share             who reads and writes a bag, and its landing (sealed-store#/the-share-config)
- *   floor             the vessel floor's accept (w26-floor-lane#/the-vessel-pin); a seat reads the status
+ *   floor             the place's floor accept, adopt and rehome (residency-tiers#/floor-accept); a seat reads the status
  *   render-output     derived bytes landing in a bound workbench (a disk write grant)
  */
 export const HAND_ADMITS: Readonly<Record<string, HandAdmitRow>> = Object.freeze({
@@ -99,7 +99,7 @@ export const HAND_ADMITS: Readonly<Record<string, HandAdmitRow>> = Object.freeze
   "retire-wiki": row("retire", "retire-needs-hand"),
   "wear accept-loss": row("accept-loss", "accept-loss-needs-hand"),
   "share-set": SHARE, "share-apply": SHARE,
-  "floor-accept": row("floor", "floor-needs-hand"), "floor-adopt-apply": row("floor", "floor-needs-hand"),
+  "floor-accept": row("floor", "floor-needs-hand"), "floor-adopt-apply": row("floor", "floor-needs-hand"), "floor-rehome": row("floor", "floor-needs-hand"),
   "wiki-render-out": row("render-output", "render-output-needs-hand"),
 });
 

@@ -57,7 +57,7 @@ describe("the lay's live floor-drift door", () => {
     door.alive = true;
     door.answer = () => ({ verb: "floor-status", floorDrift: DRIFT });
     expect(await liveFloorDrift()).toEqual({ drift: DRIFT });
-    door.answer = () => ({ verb: "floor-status", pinSource: "genesis" });
+    door.answer = () => ({ verb: "floor-status", acceptSource: "genesis" });
     expect(await liveFloorDrift()).toEqual({ drift: null, why: expect.stringMatching(/answers no drift reading/) });
   });
 

@@ -493,12 +493,12 @@ export const STEPS = Object.freeze([
       const counts = r.stdout.split("\n").map((l) => l.trim()).filter((l) => /\blanded \d+/.test(l));
       return { ok: counts.length > 0 && counts.every((l) => /\blanded 0\b/.test(l)), answer: counts.join(" · ") || lineOf(r.stdout) };
     } },
-  { id: "pin-at-genesis", prose: "''The floor pin starts again at genesis.''", needs: ["up-refounded"], expect: "pinSource: genesis · board: absent",
-    quoted: ["`pinSource: genesis`, `board: absent`"],
+  { id: "accept-at-genesis", prose: "''The floor accept starts again at genesis.''", needs: ["up-refounded"], expect: "acceptSource: genesis · board: absent",
+    quoted: ["`acceptSource: genesis`, `board: absent`"],
     run: async (ctx) => {
       const r = await ctx.cli(["vessel", "floor", "status", "--json"]);
-      const pin = /"pinSource"\s*:\s*"([^"]+)"/.exec(r.stdout)?.[1];
+      const source = /"acceptSource"\s*:\s*"([^"]+)"/.exec(r.stdout)?.[1];
       const board = /"board"\s*:\s*"([^"]+)"/.exec(r.stdout)?.[1];
-      return { ok: r.code === 0 && pin === "genesis" && board === "absent", answer: `pinSource: ${pin} · board: ${board}` };
+      return { ok: r.code === 0 && source === "genesis" && board === "absent", answer: `acceptSource: ${source} · board: ${board}` };
     } },
 ]);

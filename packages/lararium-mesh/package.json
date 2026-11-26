@@ -612,9 +612,21 @@
       "import": "./dist/floor-offering.js",
       "types": "./dist/floor-offering.d.ts"
     },
-    "./floor-pin": {
-      "import": "./dist/floor-pin.js",
-      "types": "./dist/floor-pin.d.ts"
+    "./floor-accept": {
+      "import": "./dist/floor-accept.js",
+      "types": "./dist/floor-accept.d.ts"
+    },
+    "./floor-accept-home": {
+      "import": "./dist/floor-accept-home.js",
+      "types": "./dist/floor-accept-home.d.ts"
+    },
+    "./floor-nexus": {
+      "import": "./dist/floor-nexus.js",
+      "types": "./dist/floor-nexus.d.ts"
+    },
+    "./floor-rehome": {
+      "import": "./dist/floor-rehome.js",
+      "types": "./dist/floor-rehome.d.ts"
     },
     "./floor-registry": {
       "import": "./dist/floor-registry.js",

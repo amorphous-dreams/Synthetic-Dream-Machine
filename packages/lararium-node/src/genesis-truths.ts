@@ -1,6 +1,6 @@
 /**
  * genesis-truths -- both truths in one read: the founding record (the stored genesis island, never written after
- * founding) beside the seed (offered) on disk and the floor pin, ratchet by ratchet.
+ * founding) beside the seed (offered) on disk and the floor accept, ratchet by ratchet.
  *
  * D1: a seed on disk that differs from the founding record stands as an OFFER. The boot names it and serves the
  * founding record unchanged; nothing moves at boot, and lay moves canon into the bags, never the founding record.
@@ -16,7 +16,7 @@ import {
   compareSeedToFoundingRecord,
   ratchetWords,
   ratchetsDiffer,
-  type FloorPinLike,
+  type FloorAcceptLike,
   type GenesisDigests,
   type GenesisRecordLike,
   type RatchetDifference,
@@ -28,8 +28,8 @@ export interface FoundingRecordTruths {
   readonly record: GenesisDigests;
   /** The seed (offered) on disk: its CID and its reading per ratchet, or null where no seed reads. */
   readonly seed: { readonly cid: string; readonly ratchets: readonly RatchetDifference[] } | null;
-  /** The floor pin and its reading per ratchet, or null where the caller held no pin. */
-  readonly floorPin: { readonly manifestCid: string; readonly ratchets: readonly RatchetDifference[] } | null;
+  /** The floor accept and its reading per ratchet, or null where the caller held no pin. */
+  readonly floorAccept: { readonly manifestCid: string; readonly ratchets: readonly RatchetDifference[] } | null;
   /** Why the read could not fold, where it could not; absent on a clean read. */
   readonly unread?: string;
 }
@@ -45,24 +45,24 @@ function seedAt(genesisDir: string | undefined): { cid: string; body: GenesisRec
   } catch { return null; }
 }
 
-/** The founding record beside the seed (offered) at `genesisDir` and, when the caller holds one, the floor pin. */
+/** The founding record beside the seed (offered) at `genesisDir` and, when the caller holds one, the floor accept. */
 export function readFoundingRecordTruths(input: {
   readonly record: GenesisRecordLike;
   readonly genesisDir: string | undefined;
-  readonly floorPin?: FloorPinLike | null;
+  readonly floorAccept?: FloorAcceptLike | null;
 }): FoundingRecordTruths {
   try {
     if (input.record === null || typeof input.record !== "object") throw new Error("no founding record reads (the island doc stands empty)");
     const seed = seedAt(input.genesisDir);
-    const read = compareSeedToFoundingRecord({ record: input.record, seed: seed?.body ?? null, floorPin: input.floorPin ?? null });
+    const read = compareSeedToFoundingRecord({ record: input.record, seed: seed?.body ?? null, floorAccept: input.floorAccept ?? null });
     return Object.freeze({
       record: read.record,
       seed: seed && read.seed ? Object.freeze({ cid: seed.cid, ratchets: read.seed }) : null,
-      floorPin: input.floorPin && read.floorPin ? Object.freeze({ manifestCid: input.floorPin.manifestCid, ratchets: read.floorPin }) : null,
+      floorAccept: input.floorAccept && read.floorAccept ? Object.freeze({ manifestCid: input.floorAccept.manifestCid, ratchets: read.floorAccept }) : null,
     });
   } catch (e) {
     const reason = (e instanceof Error ? e.message : String(e)).replace(/[\r\n]+/g, " ").trim() || "the fold refused";
-    return Object.freeze({ record: NO_DIGESTS, seed: null, floorPin: null, unread: reason });
+    return Object.freeze({ record: NO_DIGESTS, seed: null, floorAccept: null, unread: reason });
   }
 }
 
@@ -72,9 +72,9 @@ const short = (digest: string | null): string => (digest === null ? "absent" : d
 /**
  * The one line: `[genesis] founding record: engine … · grammar … · lararium … · plugins … · floor …; seed (offered) <cid>: same on
  * every ratchet` or `… a newer seed waits: <ratchet words> — the founding record keeps serving; lay moves canon, never
- * the founding record`, then the floor pin, per ratchet where held, else `pinNote` (the boot's own default: `unread here`).
+ * the founding record`, then the floor accept, per ratchet where held, else `acceptNote` (the boot's own default: `unread here`).
  */
-export function foundingRecordLine(truths: FoundingRecordTruths, opts: { readonly pinNote?: string } = {}): string {
+export function foundingRecordLine(truths: FoundingRecordTruths, opts: { readonly acceptNote?: string } = {}): string {
   if (truths.unread !== undefined) return `[genesis] founding record: unread here (${truths.unread})`;
   const r = truths.record;
   const record = `founding record: engine ${short(r.engine)} · grammar ${short(r.grammar)} · lararium ${short(r.lararium)} · plugins ${short(r.plugins)} · floor ${short(r.floor)}`;
@@ -83,8 +83,8 @@ export function foundingRecordLine(truths: FoundingRecordTruths, opts: { readonl
     : ratchetsDiffer(truths.seed.ratchets)
       ? `seed (offered) ${truths.seed.cid}: a newer seed waits: ${ratchetWords(truths.seed.ratchets)} — the founding record keeps serving; lay moves canon, never the founding record`
       : `seed (offered) ${truths.seed.cid}: same on every ratchet`;
-  const pin = truths.floorPin === null
-    ? `floor pin: ${opts.pinNote ?? "unread here (lares floor status reads it)"}`
-    : `floor pin ${truths.floorPin.manifestCid}: ${ratchetWords(truths.floorPin.ratchets)}`;
+  const pin = truths.floorAccept === null
+    ? `floor accept: ${opts.acceptNote ?? "unread here (lares floor status reads it)"}`
+    : `floor accept ${truths.floorAccept.manifestCid}: ${ratchetWords(truths.floorAccept.ratchets)}`;
   return `[genesis] ${record}; ${seed}; ${pin}`;
 }

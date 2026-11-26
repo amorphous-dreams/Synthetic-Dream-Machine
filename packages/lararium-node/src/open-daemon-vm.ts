@@ -39,13 +39,15 @@ import { PLANE_LABELS } from "@lararium/mesh/plane-labels";
 import { personaScopeTag } from "@lararium/mesh/persona-scope";
 import { standControlHome } from "@lararium/mesh/control-home";
 import { daemonFaceCanonBag } from "@lararium/mesh/wiki-recipe";
-import { floorCidToMount } from "@lararium/mesh/floor-pin";
 import { type CapabilityRecord } from "@lararium/mesh/capability-record";
 
 const DEFAULT_ADMIN_WORKER_URL = new URL("./node-daemon-island.js", import.meta.url);
 
 export interface DaemonVmOptions {
   repo:              Repo;
+  /** The floor the daemon island mounts: the place's accept at its home charter, or the carried showing (`floor-accept`
+   *  `vesselFloorCid`, read by the vessel at this composition); absent or null, the island reads its genesis seed's floor. */
+  floorCid?:         string | null;
   /** The PersonaGroup a session's ordinal maps to (`DaemonVmCoreOptions.wornGroupOf`). */
   wornGroupOf?:      (ordinal: number) => string | null;
   /** A manifest face the island's open refused, by its atom key and the island's reason (`DaemonVmCoreOptions.onFaceRefused`). */
@@ -217,16 +219,10 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
     // source where one stands; the control document and the daemon document hold none. The pet name names the folder (it carries
     // across a re-found), the verified founding relation the bags; no daemon mount projects no private layer.
     ...(projectionRoot ? { diskMirrors: daemonDiskMirrors({ projectionRoot, canonBags: daemonBagsDir(), face: faceRelation && faceSegment ? { relation: faceRelation, segment: faceSegment } : null, canon: canonBag !== undefined, temp: tempMirror }) } : {}),
-    // THE VESSEL'S FLOOR PIN, off the control document that just stood: the daemon island mounts the accepted floor, so every
-    // face's `tiddler get --meme` and `meme list` over `--bag <house canon>` answers the released canon from its next composition on. A control document
-    // that reads nothing (a locked floor) names no pin, and the island reads its genesis seed's floor.
-    floorCid: () => {
-      let doc: LarDoc | undefined;
-      try { doc = controlHandle.doc(); } catch { return null; }
-      const pick = floorCidToMount({ controlDoc: doc, nexus: null, genesis: null });
-      if (pick.note) console.info(`[floor] ${pick.note}`);
-      return pick.source === "pin" ? pick.cid : null;
-    },
+    // THE PLACE'S FLOOR ACCEPT at its home charter (read by the vessel at this composition): the daemon island mounts the
+    // accepted floor, so every face's `tiddler get --meme` and `meme list` over `--bag <house canon>` answers the released canon
+    // from its next composition on. None (genesis, or no accept home) leaves the island on its genesis seed's floor.
+    floorCid: opts.floorCid ?? null,
     workerScriptUrl: workerScriptUrl ?? DEFAULT_ADMIN_WORKER_URL,
     ...(opts.wornGroupOf ? { wornGroupOf: opts.wornGroupOf } : {}),
     ...(opts.onFaceRefused ? { onFaceRefused: opts.onFaceRefused } : {}),

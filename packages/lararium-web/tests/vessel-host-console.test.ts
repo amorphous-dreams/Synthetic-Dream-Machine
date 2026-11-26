@@ -8,7 +8,7 @@
  *   H1 RED   a `verb` call for `help` answers over the port while the session's unlock ask still stands unanswered, and
  *            names the vessel's own rows.
  *   H2 RED   `vessel read` while the unlock waits names the pending ask and its kind, the floor standing, the session still
- *            asking, the face's custody bound (how it rests; H5 pins what stays withheld), and the floor pin's own refusal. CONTROL: once the ask reads
+ *            asking, the face's custody bound (how it rests; H5 pins what stays withheld), and the floor accept's own refusal. CONTROL: once the ask reads
  *            answered the same verb names no ask, the lit standing, the worn face and the vessel's public key; no reading
  *            carries a route.
  *   H4 RED   `vault status` answers the node's two halves: custody at rest (the place clear) and
@@ -119,13 +119,13 @@ describe("the vessel worker answers the console door over the page's own port", 
     expect(waiting.ok).toBe(true);
     const at = (waiting as { value: Record<string, never> }).value as never as {
       standing: string; session: { admission: string; face: string } | null; asks: readonly { askId: string; kind: string; ceremony: string; face: string | null }[];
-      custody: { face: { reading: string; unlocked?: boolean } | null }; floorPin: { ok: boolean; refusal?: string }; faces: { worn: string | null }; vessel: unknown; place: { aid: string | null; kel: string };
+      custody: { face: { reading: string; unlocked?: boolean } | null }; floorAccept: { ok: boolean; refusal?: string }; faces: { worn: string | null }; vessel: unknown; place: { aid: string | null; kel: string };
     };
     expect(at.asks, "the ask the vessel waits on reads by name").toEqual([{ askId: tab.ask.askId, kind: "unlock", act: "boot", face: tab.face, ceremony: "unopened" }]);
     expect(at.standing).toBe("floor");
     expect(at.session).toMatchObject({ admission: "asking", face: tab.face });
     expect(at.custody.face, "an unadmitted session reads how its face rests, never whether it stands unlocked").toEqual({ reading: "bound" });
-    expect(at.floorPin).toMatchObject({ ok: false, refusal: "floor-control-unread" });
+    expect(at.floorAccept).toMatchObject({ ok: false, refusal: "floor-vessel-unlit" });
     expect(at.place).toEqual({ aid: null, kel: "unfounded" });
     expect(at.faces, "the face a lit vessel wears reaches an admitted session alone").not.toHaveProperty("worn");
     expect(at.vessel).toBeNull();
@@ -140,7 +140,7 @@ describe("the vessel worker answers the console door over the page's own port", 
     expect(lit.faces.worn).toBe(tab.face);
     expect(lit.custody.face).toEqual({ reading: "bound", unlocked: true });
     expect(lit.vessel).toMatchObject({ verifyingKey: "00".repeat(32) });
-    expect(lit.floorPin).toMatchObject({ ok: false, refusal: "floor-no-nexus" });
+    expect(lit.floorAccept).toMatchObject({ ok: false, refusal: "floor-no-nexus" });
     expect(JSON.stringify(lit), "no reading carries the route").not.toContain("keeps its own fire");
   });
 
@@ -171,7 +171,7 @@ describe("the vessel worker answers the console door over the page's own port", 
     const LIVE = /(^|\.)(unlocked|held|worn)$/;
 
     const read = (await tab.verb("vessel", "read") as { value: Record<string, unknown> }).value;
-    expect(Object.keys(read).sort(), "the fields an unadmitted session's vessel read carries").toEqual(["asks", "custody", "faces", "floorPin", "place", "relay", "session", "standing", "vessel", "withheld"]);
+    expect(Object.keys(read).sort(), "the fields an unadmitted session's vessel read carries").toEqual(["asks", "custody", "faces", "floorAccept", "place", "relay", "session", "standing", "vessel", "withheld"]);
     expect(Object.keys(read["custody"] as object).sort()).toEqual(["face", "place", "seedRest"]);
     expect(read["custody"]).toMatchObject({ place: { reading: "clear" }, face: { reading: "bound" } });
     expect(Object.keys(read["faces"] as object).sort()).toEqual(["joined", "named"]);
