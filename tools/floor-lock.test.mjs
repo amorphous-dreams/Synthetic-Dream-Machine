@@ -10,6 +10,7 @@ import { fileURLToPath } from 'node:url';
 import { ancestry, flocksOf, floorHeld, floorRefusal, heldSlot, slotStatus, statusText, requireFloor, FLOOR_EXIT } from './floor-lock.mjs';
 import { spawn } from 'node:child_process';
 import { existsSync, symlinkSync } from 'node:fs';
+import { exited, floorEnv, gone, FLOOR_MARKS } from './floor-test-kit.mjs';
 
 const TOOLS = fileURLToPath(new URL('.', import.meta.url));
 const BATTERY = join(TOOLS, 'battery.sh');
@@ -47,7 +48,7 @@ test('RED: held where an ancestor holds a FLOCK on the lock inode; unheld for a 
 
 test('RED: requireFloor refuses with exit 64 and the floor-run cure; passes where held', () => {
   const said = []; let code = null;
-  const env = { ...process.env, LARES_BATTERY_LOCK: join(dir(), 'lock') };
+  const env = floorEnv(join(dir(), 'lock'));
   requireFloor('bench-gate.mjs', ['--base', 'x'], { env, held: () => false, exit: (c) => { code = c; }, say: (s) => said.push(s) });
   assert.equal(code, FLOOR_EXIT);
   assert.match(said.join('\n'), /pono: node tools\/floor-run\.mjs -- node tools\/bench-gate\.mjs --base x/);
@@ -57,7 +58,7 @@ test('RED: requireFloor refuses with exit 64 and the floor-run cure; passes wher
 
 test('RED: a real battery run reads as held inside, and --held reads unheld outside', () => {
   const lock = join(dir(), 'lock');
-  const env = { ...process.env, LARES_BATTERY_LOCK: lock };
+  const env = floorEnv(lock);
   const inside = spawnSync('bash', [BATTERY, process.execPath, join(TOOLS, 'floor-lock.mjs'), '--held'], { encoding: 'utf8', env });
   assert.equal(inside.status, 0, inside.stderr);
   const outside = spawnSync(process.execPath, [join(TOOLS, 'floor-lock.mjs'), '--held'], { encoding: 'utf8', env });
@@ -66,7 +67,7 @@ test('RED: a real battery run reads as held inside, and --held reads unheld outs
 
 test('RED: battery.sh re-enters: a battery run inside a held battery runs at once instead of waiting on itself', () => {
   const lock = join(dir(), 'lock');
-  const env = { ...process.env, LARES_BATTERY_LOCK: lock };
+  const env = floorEnv(lock);
   // The timeout guards a hang only (a nested flock would wait forever); the verdict reads the exit and the output.
   const r = spawnSync('bash', [BATTERY, 'bash', BATTERY, 'echo', 'nested-ran'], { encoding: 'utf8', env, timeout: 60_000 });
   assert.equal(r.status, 0, r.stderr);
@@ -75,7 +76,7 @@ test('RED: battery.sh re-enters: a battery run inside a held battery runs at onc
 });
 
 test('RED: the heavy CLIs refuse outside the floor (64, naming the cure) and their read verbs pass', () => {
-  const env = { ...process.env, LARES_BATTERY_LOCK: join(dir(), 'lock') };
+  const env = floorEnv(join(dir(), 'lock'));
   const node = (args) => spawnSync(process.execPath, args, { encoding: 'utf8', env, cwd: join(TOOLS, '..') });
   const gate = node([join(TOOLS, 'bench-gate.mjs')]);
   assert.equal(gate.status, FLOOR_EXIT, gate.stderr);
@@ -119,7 +120,7 @@ test('RED: held where /proc/locks names a gone flock(1) pid but an ancestor hold
 
 test('RED: a nested take under floor-run never waits on itself: floor-run -> battery.sh, floor-run -> floor-run, both run at once', () => {
   const lock = join(dir(), 'lock');
-  const env = { ...process.env, LARES_BATTERY_LOCK: lock, LARES_BIN: '/nonexistent/lares' };
+  const env = floorEnv(lock, { LARES_BIN: '/nonexistent/lares' });
   const RUN = join(TOOLS, 'floor-run.mjs');
   // The timeout guards a hang only (the deadlock waited forever); the verdict reads the exit and the output.
   const viaBattery = spawnSync(process.execPath, [RUN, '--', 'bash', BATTERY, 'echo', 'nested-battery-ran'], { encoding: 'utf8', env, timeout: 60_000 });
@@ -139,7 +140,6 @@ test('RED: a nested take under floor-run never waits on itself: floor-run -> bat
 
 // TWO SLOTS (operator, 2026-11-25). RED-FIRST: written by floor-wright#1, run by the familiar.
 const until = async (path, turns = 4000) => { for (let i = 0; i < turns && !existsSync(path); i++) await new Promise((r) => setTimeout(r, 5)); if (!existsSync(path)) throw new Error(`no handshake at ${path}`); };
-const exited = (child) => new Promise((res) => child.on('exit', (code) => res(code)));
 const slotShape = (d, slot2Held) => {
   mkdirSync(d, { recursive: true });
   const l1 = join(d, 'l1'), l2 = join(d, 'l2'); writeFileSync(l1, ''); writeFileSync(l2, '');
@@ -171,7 +171,7 @@ test('RED: slotStatus names which slot each run holds (pid and command) and read
 
 test('RED: two real batteries hold slot 1 and slot 2 at once; each reads its own slot, and --status names both', async () => {
   const d = dir(); const lock = join(d, '.battery.lock');
-  const env = { ...process.env, LARES_BATTERY_LOCK: lock };
+  const env = floorEnv(lock);
   const inA = join(d, 'a'), inB = join(d, 'b'), rel = join(d, 'rel');
   const hold = (mark) => `touch ${mark}; node ${join(TOOLS, 'floor-lock.mjs')} --slot > ${mark}.tmp && mv ${mark}.tmp ${mark}.slot; while [ ! -e ${rel} ]; do :; done`;
   const a = spawn('bash', [BATTERY, 'bash', '-c', hold(inA)], { env, stdio: 'ignore', detached: true });
@@ -193,7 +193,7 @@ test('RED: two real batteries hold slot 1 and slot 2 at once; each reads its own
 
 test('RED: a nested take inside slot 2 runs at once, never waiting on itself, with slot 1 held by another run', async () => {
   const d = dir(); const lock = join(d, '.battery.lock');
-  const env = { ...process.env, LARES_BATTERY_LOCK: lock };
+  const env = floorEnv(lock);
   const inA = join(d, 'a'), rel = join(d, 'rel');
   const a = spawn('bash', [BATTERY, 'bash', '-c', `touch ${inA}; while [ ! -e ${rel} ]; do :; done`], { env, stdio: 'ignore', detached: true });
   try {
@@ -207,4 +207,49 @@ test('RED: a nested take inside slot 2 runs at once, never waiting on itself, wi
   writeFileSync(rel, '');
   assert.equal(await exited(a), 0);
   } finally { writeFileSync(rel, ''); try { process.kill(-a.pid, 'SIGKILL'); } catch { /* gone */ } }
+});
+
+// THE GATE HUNG HERE (2026-11-26, 50 minutes at 0% CPU inside a floor run's tool-tests leg). Measured: the two-batteries
+// case wrote its release once and never reached its `finally`; no later case began. It awaited the first holder's exit and
+// only then listened for the second's, which had already gone on the loaded box, and node:test keeps a file alive for a
+// pending case while another stands queued. Nothing rode down from the live floor: the lock descriptor stops at floor-run
+// (node marks it close-on-exec) and no floor mark stands in the environment. RED-FIRST: written by ahi-loa#1, run by the familiar.
+test('RED: exited() answers for a child that has already gone: the event fired with no listener, the record still reads', async () => {
+  const child = spawn('true', [], { stdio: 'ignore' });
+  for (let i = 0; i < 4000 && !gone(child); i++) await new Promise((r) => setTimeout(r, 5));
+  assert.equal(child.exitCode, 0, 'the child never exited');
+  // One loop turn decides, never a clock: an answer off the record settles before the next turn; a late listener never does.
+  const got = await Promise.race([exited(child), new Promise((r) => setImmediate(() => r('never')))]);
+  assert.equal(got, 0);
+});
+
+test('RED: floorEnv hands a spawned floor tool no mark of the floor that runs the test: its own lock, a zero disk floor, no runner context', () => {
+  const live = Object.fromEntries(FLOOR_MARKS.map((k) => [k, 'live-floor']));
+  const env = floorEnv('/tmp/x/lock', { LARES_BIN: '/nonexistent/lares' }, { PATH: '/bin', ...live });
+  assert.deepEqual(env, { PATH: '/bin', LARES_BATTERY_LOCK: '/tmp/x/lock', LARES_DISK_MIN_C_GB: '0', LARES_BIN: '/nonexistent/lares' });
+  assert.ok(!Object.values(floorEnv('/tmp/x/lock', {}, live)).includes('live-floor'));
+});
+
+test('RED: a floor case run NESTED under a held floor finishes: a parent holds a slot, a node --test child runs the two-batteries case inside it', async () => {
+  const d = dir();
+  const SELF = fileURLToPath(import.meta.url);
+  // The parent's floor: a battery holding slot 1 of its own lock, the shape the gate's tool-tests leg stands under.
+  const env = floorEnv(join(d, '.battery.lock'));
+  // The name pattern picks one case and never this one, so the nested run cannot nest again.
+  const args = [BATTERY, process.execPath, '--test', '--test-isolation=process', '--test-reporter=tap', '--test-name-pattern=two real batteries hold slot 1 and slot 2 at once', SELF];
+  const child = spawn('bash', args, { env, stdio: ['ignore', 'pipe', 'pipe'], detached: true });
+  let out = '', err = '';
+  child.stdout.on('data', (c) => { out += c; }); child.stderr.on('data', (c) => { err += c; });
+  const closed = new Promise((res) => child.once('close', res));
+  try {
+  // Bounded by turns: the bound only keeps a nested hang from hanging this file too; the verdict reads the exit and the report.
+  for (let i = 0; i < 24000 && !gone(child); i++) await new Promise((r) => setTimeout(r, 5));
+  assert.ok(gone(child), `the nested floor case never finished under a held floor\n${out}\n${err}`);
+  await closed;
+  assert.equal(child.exitCode, 0, `${out}\n${err}`);
+  assert.match(err, /battery: holding the box, slot 1/, 'the parent held a slot around the nested run');
+  assert.match(out, /^# pass [1-9]\d*$/m, out);
+  assert.match(out, /^# fail 0$/m, out);
+  assert.match(out, /^# cancelled 0$/m, out);
+  } finally { try { process.kill(-child.pid, 'SIGKILL'); } catch { /* gone */ } }
 });

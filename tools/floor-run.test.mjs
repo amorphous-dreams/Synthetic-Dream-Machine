@@ -9,10 +9,11 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { admits, awaitAdmission, meteredRun, othersOf, parseArgs, remainingOf, reserve, stopVerdict, verdictOf, DEFAULT_BUDGET_GB, STOPPED_EXIT } from './floor-run.mjs';
 import { writeFileSync } from 'node:fs';
+import { exited, floorEnv } from './floor-test-kit.mjs';
 
 const TOOL = fileURLToPath(new URL('./floor-run.mjs', import.meta.url));
 const G = 1024 ** 3;
-const scratchEnv = () => { const d = mkdtempSync(join(tmpdir(), 'floor-run-')); return { d, env: { ...process.env, LARES_BATTERY_LOCK: join(d, 'lock'), LARES_BIN: '/nonexistent/lares' } }; };
+const scratchEnv = () => { const d = mkdtempSync(join(tmpdir(), 'floor-run-')); return { d, env: floorEnv(join(d, 'lock'), { LARES_BIN: '/nonexistent/lares' }) }; };
 
 test('RED: the stop verdict reads bytes alone: past the budget, under the floor, or run on; no C: never stops', () => {
   const b = { budgetBytes: 4 * G, floorBytes: 35 * G };
@@ -133,7 +134,6 @@ test('RED: two floor-runs fly at once on two slots; the third waits for one', as
   const rel = join(d, 'rel'), a = join(d, 'a'), b = join(d, 'b'), c = join(d, 'c');
   const hold = (mark) => ['--budget-gb', '0.001', '--', 'bash', '-c', `touch ${mark}; while [ ! -e ${rel} ]; do :; done`];
   const until = async (p) => { for (let i = 0; i < 4000 && !existsSync(p); i++) await new Promise((r) => setTimeout(r, 5)); assert.ok(existsSync(p), `no handshake at ${p}`); };
-  const exited = (ch) => new Promise((res) => ch.on('exit', (code) => res(code)));
   const kids = [];
   const fly = (args) => { const k = spawn(process.execPath, args, { env, stdio: 'ignore', detached: true }); kids.push(k); return k; };
   try {
