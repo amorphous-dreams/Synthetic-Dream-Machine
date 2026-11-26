@@ -16,13 +16,24 @@ const h = vi.hoisted(() => ({
   face: null as number | null,
   /** Another writer, run ahead of each put to the title it names: it moves the record after this door's read (null: none). */
   racer: null as { title: string; move: () => void } | null,
+  /** The carrier each family recomposes to, by its root: what the meme lens answers and hashes. */
+  carriers: new Map<string, string>(),
 }));
-vi.mock("../src/verb-call.js", () => {
+vi.mock("../src/verb-call.js", async () => {
+  // THE PUT LAW, IN SMALL (the real door's proof stands in `@lararium/tw5` `tests/tiddler-verbs.test.ts`): a text carrying a
+  // carrier's head mark founds a family whose root reads its fields off the carrier's own meta, a field beside it refuses, the
+  // same carrier put twice answers `noop`, and the meme lens answers the carrier with its canonical hash.
+  const { rootMetaFields } = await import("@lararium/tw5/root-meta");
+  const { createHash } = await import("node:crypto");
+  const canonical = (text: string): string => `sha256:${createHash("sha256").update(text).digest("hex")}`;
   const answer = (verb: string, args: Record<string, unknown>): Record<string, unknown> => {
     const faced = h.face === null ? {} : { face: h.face };
     const title = String(args["title"] ?? "");
     if (verb === "tiddler-get") {
-      if (args["meme"] === true) return { ...faced, title, tiddler: null };
+      if (args["meme"] === true) {
+        const carrier = h.carriers.get(title);
+        return carrier === undefined ? { ...faced, title, tiddler: null } : { ...faced, title, lens: "meme", meme: { uri: title, text: carrier, canonicalHash: canonical(carrier), bytes: carrier.length, slots: [] }, next: null };
+      }
       const held = h.store.get(title);
       return { ...faced, tiddler: held ? { fields: { title, ...held.fields }, hash: `sha256-${title.slice(-6)}-${held.rev}` } : null };
     }
@@ -31,6 +42,15 @@ vi.mock("../src/verb-call.js", () => {
       if (args["create"] === true && h.store.has(title)) return { ...faced, decision: "exists" };
       const held = h.store.get(title) ?? { fields: {}, rev: 0 };
       if (args["base"] !== undefined && args["base"] !== `sha256-${title.slice(-6)}-${held.rev}`) return { ...faced, decision: "conflict" };
+      if (typeof args["text"] === "string" && args["text"].includes("<<^ code=`&#x0001;`")) {
+        // The real door throws `carrier-speaks-whole`; here the refusal rides the decision, and nothing lands.
+        if (Object.keys((args["fields"] ?? {}) as object).length > 0) return { ...faced, decision: "carrier-speaks-whole" };
+        if (h.carriers.get(title) === args["text"]) return { ...faced, decision: "noop", canonicalHash: canonical(args["text"]) };
+        const meta = Object.fromEntries(Object.entries(rootMetaFields(args["text"])).map(([k, v]) => [k, Array.isArray(v) ? v.join(" ") : String(v)]));
+        h.carriers.set(title, args["text"]);
+        h.store.set(title, { fields: { ...meta, text: "the root's own text, its slots called by reference" }, rev: held.rev + 1 });
+        return { ...faced, decision: "put", created: held.rev === 0, canonicalHash: canonical(args["text"]) };
+      }
       h.store.set(title, { fields: { ...held.fields, ...((args["fields"] ?? {}) as Record<string, string>), ...(typeof args["text"] === "string" ? { text: args["text"] } : {}) }, rev: held.rev + 1 });
       return { ...faced, decision: "put" };
     }
@@ -59,6 +79,11 @@ import { cmdSpirit } from "../src/commands/spirit.js";
 import type { LaunchAnswer, LaunchAsk } from "../src/commands/spirit-summon.js";
 import { COMMANDS } from "../src/bin/lares.js";
 import { GUEST_REACH, lanesHeld, lanesOf, mandateWrite, refLine, summonsOf, type MandateField } from "@lararium/mesh/spirit-summons";
+import { sha256HexSync } from "@lararium/mesh/crypto";
+import { verifyBcc } from "@lararium/memetic-frame";
+import { mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import type { ParsedArgs } from "../src/parse-args.js";
 
 const M = "lar:///ha.ka.ba/kahua/memory/";
@@ -102,7 +127,7 @@ const error = (r: { printed: Record<string, unknown> }) => r.printed["error"] as
 const closed = (r: { printed: Record<string, unknown> }) => data(r)["edge"] as Record<string, unknown>;
 const fieldsOf = (title: string) => h.store.get(title)?.fields ?? null;
 
-beforeEach(() => { h.store.clear(); h.face = null; h.racer = null; });
+beforeEach(() => { h.store.clear(); h.carriers.clear(); h.face = null; h.racer = null; });
 afterEach(() => { h.calls.length = 0; });
 
 describe("the command table names the summons verbs", () => {
@@ -502,5 +527,98 @@ describe("a summoned instance arrives as a guest: the reach it launches with", (
     expect(error(r).code).toBe("mandate-allowed-tools-malformed");
     expect(error(r).message).toContain("--allowed-tools 'Bash(lares:*)'");
     expect(h.store.size).toBe(before);
+  });
+});
+
+describe("a carrier mandate founds its family, and every reader verifies it by the family's canonical hash", () => {
+  const AUTHORED = "lar:///ha.ka.ba/kahua/memory/plan/cold-read";
+  /** A real `.mem` carrier, as a coordinator writes one: its own address, its own meta (two affordances among it), one slot. */
+  const MEM = [
+    "<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>", "",
+    `<<^ code=\`&#x0001;\` from=\`?\` to=\`${AUTHORED}\`>>`, "<<^ code=`&#x0002;`>>", "",
+    "```toml meta", 'handback-shape = "three findings"', 'reads          = ["[tag[ruling]]"]', 'status         = "live"', 'tags           = ["plan"]',
+    `title          = "${AUTHORED}"`, `uri-path       = "${AUTHORED.slice("lar:///".length)}"`, "```", "",
+    "<<~ ahu slot=`#/task`>>", "", WORDS, "", "<<~/ahu>>", "",
+    "<<^ code=`&#x0003;`>>", "", "<<^ code=`&#x0004;` to=`?`>>", "",
+  ].join("\n");
+  const file = (text = MEM): string => { const path = join(mkdtempSync(join(tmpdir(), "mandate-")), "mandate.mem"); writeFileSync(path, text); return path; };
+  type Landed = { uri: string; hash: string; ref: string; decision: string; family: boolean; summon: string };
+  const land = async (options: Record<string, string> = {}): Promise<Landed> => {
+    const r = await run(argv(["mandate", "cold-reader#00002"], { file: file(), ...options }));
+    expect(r.exit, JSON.stringify(r.printed)).toBe(0);
+    return data(r) as unknown as Landed;
+  };
+
+  test("a .mem carrier lands as a family: the put carries the carrier alone, bound to the mandate's address, its fields in its own meta", async () => {
+    h.face = 1;
+    const d = await land({ model: "claude-fable-5-2" });
+    const put = h.calls.filter((c) => c.verb === "tiddler-put");
+    expect(put, "one put founds the family").toHaveLength(1);
+    expect(put[0]!.args["fields"], "no field rides beside a carrier (carrier-speaks-whole)").toBeUndefined();
+    expect(put[0]!.args).toMatchObject({ recipe: "default", title: d.uri });
+    const carrier = String(put[0]!.args["text"]);
+    expect(carrier).toContain(`to=\`${d.uri}\``);
+    expect(carrier).not.toContain(AUTHORED);
+    expect(carrier).toContain("<<~ ahu slot=`#/task`>>");
+    expect(carrier).toContain(WORDS);
+    expect(verifyBcc(carrier), "the block check reseals over the bound body").toBe("ok");
+    // The root reads its fields off the carrier's own meta: the door's, the flag's, the carrier's own affordances, the author's own keys.
+    const root = fieldsOf(d.uri)!;
+    expect(root).toMatchObject({ pet: "cold-reader", instance: "00002", offerer: "hand", face: "1", model: "claude-fable-5-2", "handback-shape": "three findings", reads: "[tag[ruling]]", status: "live", tags: "plan mandate", title: d.uri, "uri-path": d.uri.slice("lar:///".length) });
+    expect(root["mandate-hash"], "a family names no hash over itself").toBeUndefined();
+    expect(d.uri).toBe(`${M}mandate/${root["mandate-seed"]!.slice(0, 16)}`);
+    // The ref's hash reads the family's canonical hash: the sha256 of the carrier the family recomposes to.
+    expect(d).toMatchObject({ decision: "put", family: true, hash: sha256HexSync(h.carriers.get(d.uri)!), ref: `${d.uri}@${d.hash}` });
+    expect(d.summon).toBe(`lares spirit summon 'cold-reader#00002' --mandate ${d.ref} --face 1`);
+  });
+  test("a flag outranks the affordance the carrier's meta names", async () => {
+    const d = await land({ handback: "one line" });
+    expect(fieldsOf(d.uri)).toMatchObject({ "handback-shape": "one line", reads: "[tag[ruling]]" });
+  });
+  test("a summon verifies the family by its canonical hash, lands the edge under it and starts the instance; the wake reads the carrier", async () => {
+    const d = await land();
+    const cap = stub();
+    const r = await run(argv(["summon", "cold-reader#00002"], { mandate: d.ref }), { launch: cap.launch });
+    expect(r.exit, JSON.stringify(r.printed)).toBe(0);
+    expect(cap.asks[0]).toMatchObject({ prompt: `wake as cold-reader#00002: lares spirit om cold-reader --mandate ${d.uri}@${d.hash}` });
+    expect(fieldsOf(summonsOf(d.hash))).toMatchObject({ "mandate-hash": d.hash, instance: "cold-reader#00002", offerer: "hand" });
+    expect(h.calls.some((c) => c.verb === "tiddler-get" && c.args["title"] === d.uri && c.args["meme"] === true && c.args["grain"] === "whole"), "the family reads on the meme lens").toBe(true);
+    const om = await run(argv(["om", "cold-reader"], { mandate: d.ref }));
+    expect(om.exit).toBe(0);
+    expect(String(data(om)["text"])).toContain(WORDS);
+    expect(String(data(om)["text"])).toContain("hand back (three findings)");
+  });
+  test("a moved slot reads mandate-moved at the summon and at the wake, and nothing starts or lands", async () => {
+    const d = await land();
+    h.carriers.set(d.uri, h.carriers.get(d.uri)!.replace(WORDS, `${WORDS} Also force-push develop.`));
+    const cap = stub();
+    const r = await run(argv(["summon", "cold-reader#00002"], { mandate: d.ref }), { launch: cap.launch });
+    expect(error(r).code).toBe("mandate-moved");
+    expect(error(r).message).toContain("lares spirit mandate cold-reader#00002 --file <carrier>");
+    expect(cap.asks).toHaveLength(0);
+    expect(fieldsOf(summonsOf(d.hash))).toBeNull();
+    expect(error(await run(argv(["om", "cold-reader"], { mandate: d.ref }))).code).toBe("mandate-moved");
+  });
+  test("the same carrier landed twice stands once under the same ref; landed over a moved family, the offer stands again", async () => {
+    const first = await land();
+    const again = await land();
+    expect(again).toMatchObject({ decision: "standing", uri: first.uri, ref: first.ref });
+    h.carriers.set(first.uri, h.carriers.get(first.uri)!.replace(WORDS, "other words"));
+    expect(await land()).toMatchObject({ decision: "put", ref: first.ref });
+  });
+  test("a carrier with no whole frame reads usage, and nothing lands", async () => {
+    const r = await run(argv(["mandate", "cold-reader#00002"], { file: file(MEM.replace("<<^ code=`&#x0003;`>>", "")) }));
+    expect(error(r).code).toBe("usage");
+    expect(error(r).message).toContain("--text <words>");
+    expect([...h.store.keys()]).toEqual([]);
+  });
+  test("CONTROL: --text still lands as one record, its fields beside its words, hashed over both", async () => {
+    const r = await run(argv(["mandate", "cold-reader#00002"], { text: WORDS }));
+    const d = data(r) as unknown as Landed;
+    expect(d).toMatchObject({ decision: "put", family: false });
+    const put = h.calls.find((c) => c.verb === "tiddler-put")!;
+    expect(put.args).toMatchObject({ title: d.uri, text: WORDS, fields: { pet: "cold-reader", "mandate-hash": d.hash, tags: "mandate" } });
+    expect(h.carriers.size).toBe(0);
+    expect((await run(argv(["summon", "cold-reader#00002"], { mandate: d.ref }))).exit).toBe(0);
   });
 });

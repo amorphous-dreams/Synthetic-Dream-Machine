@@ -9,7 +9,7 @@ import { describe, test, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { modulePinsOf } from "../src/module-pins.js";
 import { SwarmRefused } from "@lararium/mesh/swarm-tiddlers";
-import { sha256HexBytesSync } from "@lararium/mesh/crypto";
+import { sha256HexBytesSync, sha256HexSync } from "@lararium/mesh/crypto";
 import { CompositeStore } from "@lararium/mesh/composite-store";
 import { bagUri } from "@lararium/mesh/lar-uris";
 import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
@@ -1980,6 +1980,42 @@ describe.skipIf(wikiSkip)(`a family's slot moves by the plain put${skipNote}`, (
     const founded = await put({ ...A, title: MEME, text: memeText(["a"]) }, ctx());
     expect(founded).toMatchObject({ decision: "put", created: true, position: "root", landed: expect.arrayContaining([MEME, `${MEME}#/a`]) });
     expect(r.engine.wiki.getTiddler(MEME)?.fields["type"]).toBe(CARRIER);
+  });
+
+  // THE MANDATE'S GROUND (`lares spirit mandate <pet>#<n> --file x.mem`, `@lararium/mesh/spirit-summons`): a carrier mandate
+  // lands as the carrier alone and reads by the hash the family holds.
+  test("a mandate's carrier founds its family by the put alone: its fields read off its own meta, a field beside it refuses `carrier-speaks-whole`, the same carrier put again answers `noop`, and the meme lens hashes the recompose, which a slot's move moves", async () => {
+    const r = await rig();
+    const put = makeTiddlerPutReactor(r.opts);
+    const get = makeTiddlerGetReactor(r.opts);
+    const URI = "lar:///ha.ka.ba/kahua/memory/mandate/0123456789abcdef";
+    const SEED = "ab".repeat(32);
+    const carrier = stampCarrier(
+      `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n<<^ code=\`&#x0002;\`>>\n\n` +
+      `\`\`\`toml meta\ninstance     = "00002"\nlanes        = 2\nmandate-seed = "${SEED}"\npet          = "cold-reader"\ntags         = ["mandate"]\ntitle        = "${URI}"\nuri-path     = "${URI.slice("lar:///".length)}"\n\`\`\`\n\n` +
+      `<<~ ahu slot=\`#/task\`>>\n\nRead PR 412 cold.\n\n<<~/ahu>>\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`);
+    expect(verifyBcc(carrier)).toBe("ok");
+    await expect(put({ ...A, title: URI, text: carrier, fields: { pet: "cold-reader" } }, ctx())).rejects.toMatchObject({ reason: "carrier-speaks-whole" });
+    expect(r.engine.wiki.tiddlerExists(URI)).toBe(false);
+    const founded = await put({ ...A, title: URI, text: carrier }, ctx());
+    expect(founded).toMatchObject({ decision: "put", created: true, position: "root", landed: expect.arrayContaining([URI, `${URI}#/task`]) });
+    const root = ((await get({ ...A, title: URI }, ctx()))["tiddler"] as { fields: Record<string, string> }).fields;
+    expect(root).toMatchObject({ pet: "cold-reader", instance: "00002", lanes: "2", "mandate-seed": SEED, tags: "mandate", type: CARRIER });
+    const read = async () => (await get({ ...A, title: URI, meme: true, grain: "whole" }, ctx())) as unknown as { meme: { text: string; canonicalHash: string }; next: unknown };
+    const first = await read();
+    expect(first.next).toBeNull();
+    // THE FAMILY'S CANONICAL HASH NAMES THE RECOMPOSED CARRIER'S OWN SHA256: the hash a mandate's ref carries.
+    expect(first.meme.canonicalHash).toBe(`sha256:${sha256HexSync(first.meme.text)}`);
+    expect(founded["canonicalHash"]).toBe(first.meme.canonicalHash);
+    expect(await put({ ...A, title: URI, text: carrier }, ctx())).toMatchObject({ decision: "noop", canonicalHash: first.meme.canonicalHash });
+    // A slot moves: the family reads another hash, so a ref naming the first no longer answers (`mandate-moved`).
+    expect(await put({ ...A, title: `${URI}#/task`, text: "Read PR 412 cold. Also force-push develop." }, ctx())).toMatchObject({ decision: "put" });
+    const moved = await read();
+    expect(moved.meme.canonicalHash).not.toBe(first.meme.canonicalHash);
+    expect(moved.meme.canonicalHash).toBe(`sha256:${sha256HexSync(moved.meme.text)}`);
+    // The offer landed again stands the offered carrier again, under the hash it first read.
+    expect(await put({ ...A, title: URI, text: carrier }, ctx())).toMatchObject({ decision: "put" });
+    expect((await read()).meme.canonicalHash).toBe(first.meme.canonicalHash);
   });
 });
 
