@@ -22,7 +22,7 @@ uri-path   = "ha.ka.ba/lararium/mesh/herm-caps"
 
 ! The herm's caps ~ the road beneath every house
 
-> //"Below the floor of all of the lararia, we have a herm. A relay that can transmit, but not decrypt. We had always wondered if it would eventually have a Wiki capability, and I think we just found it."// ~ the operator, 2026-11-25
+> //"Below the floor of all of the lararia, we have a herm. A relay that can transmit, but not decrypt. We had always wondered if it would eventually have a Wiki capability, and I think we just found it."// ~ the operator
 
 The herm stands where the Lares Viales stand: at the turning of the road, before any house. Canon already holds the shape: ''a herm names the floor capability set of every Lararium, and a Node Lararium lifts a herm floor and adds the Pronaos'' (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/harbor`>>). This meme names the herm's caps as one `#has` stack, defines the herm by what it refuses, and seats its clear wiki: the floor every recipe already ends on, rendered through TiddlyWiki.
 
@@ -41,7 +41,7 @@ The herm already rests, by CID, every byte a clear wiki needs: the bulb (the gen
 
 ''"Names no house" reads as identity, never as prose.'' The bulb law (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/pronaos#/the-rung-ladder`>>: "nothing that names a house or a Nexus", so two houses holding one genesis hold one bulb CID) guards the bulb's BYTES against carrying a particular house's identity: an AID, a key, a charter epoch, joining pointers, a Nexus's own release. Stock canon that speaks OF houses and Nexuses in general names none of them in that sense, and re-derives identically for every house from the published build, so it rides the bulb; the genesis floor already carries it. What stays off the bulb: a particular Nexus's released floor, which names that Nexus and answers only at `/floor/<Nexus AID>`.
 
-So the herm's wiki names no new thing. ''The clear wiki = the floor, rendered, with nothing sealed above it.'' One cap serves the crossroads herm and the locked lararium's waking floor alike.
+So the herm's wiki names no new thing. ''The clear wiki renders the floor, with nothing sealed above it.'' One cap serves the crossroads herm and the locked lararium's waking floor alike.
 
 <<~/ahu>>
 
@@ -73,7 +73,7 @@ Caps ride as three-term `lar:` roots, one per `#/has` line, the grammar the ʻĀ
 Unask "what can the herm do?" and ask what it never does; its holds fall out as the public remainder.
 
 |!refusal |!it never |!ground |
-|`lar:///herm.seal.never-opens` |unlocks, decrypts, or waits on an unlock |"a herm never unlocks" (operator, 2026-11-09); carry ⊥ read |
+|`lar:///herm.seal.never-opens` |unlocks, decrypts, or waits on an unlock |"a herm never unlocks" (operator); carry ⊥ read |
 |`lar:///herm.voice.never-signs-public` |signs a public claim under the place key |<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/pronaos#/the-rung-ladder`>> |
 |`lar:///herm.face.never-seats` |seats a persona root |SEATED ⊥ RAISED |
 |`lar:///herm.pronaos.never-lights` |lights an arrival page, a descriptor or a kindle |"only a lararium lights a Pronaos" |
@@ -104,7 +104,7 @@ The rung ladder measures the OUTWARD face: how much a vessel says about itself t
 
 !! No herm Pronaos ~ a stranger's browser kindles its own house
 
-The question (operator, 2026-11-25): do herms now need a Pronaos, to serve strangers or invited guests their content through a browser? ''No.'' Three grounds close it:
+The question (operator): do herms need a Pronaos, to serve strangers or invited guests their content through a browser? ''No.'' Three grounds close it:
 
 # ''The first arrival trusts the origin it reaches'' (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/pronaos#/the-first-arrival`>>). A phone cannot hash-check a top-level page; SRI covers subresources alone; Signed Exchanges ended. A page a herm origin served would run with that origin's authority, so the herm would become the house, which it never may.
 # ''A herm never signs anything public,'' and an arrival descriptor speaks for a house.
@@ -134,7 +134,7 @@ So a browser reaches clear content in one of two ways, both through a house:
 |S7 |reader pull |a library call beside `pullBulb`: pull, verify by own roots, mount at home |blind read |
 |S8 |browser floor parity |a locked browser vessel renders the clear wiki from its house's served bytes |cold read |
 
-S5 and S6 both touch `composeHerm` and the public shore: they run in sequence, never in parallel. Code that can live in the wiki VMs lives there, as mirrored module tiddlers (operator, 2026-11-25); only host-process gates stay in tools.
+S5 and S6 both touch `composeHerm` and the public shore: they run in sequence, never in parallel. Code that can live in the wiki VMs lives there, as mirrored module tiddlers (operator), so one module runs alike in every vessel, browser or node, and versions with the records it serves; only host-process gates stay in tools.
 
 <<~/ahu>>
 
@@ -156,6 +156,6 @@ Open, the operator's own:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;YFiS-1LOBIxOqMw_FFc_IOSYxXMz6ymklL8sv8O0pgs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;vFx05dDHNo5LhvcPDbX3HFRQbI-LUzXCnhGlM_o-khw`>>
 
 <<^ code=`&#x0004;` to=`?`>>
