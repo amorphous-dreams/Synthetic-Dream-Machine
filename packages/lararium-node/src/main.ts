@@ -911,6 +911,8 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
       console.log(`[lararium] phase → ${phase}`);
     },
   });
+  // The home preference reads once the daemon's working layer mounts; the line reads the settled slot.
+  await result.homeWikiSettled();
   if (result.activeWikiSource === "home-preference" && result.activeWikiId !== wikiId) {
     console.log(`[lararium] home wiki preference: ${wikiId} → ${result.activeWikiId}`);
   }
