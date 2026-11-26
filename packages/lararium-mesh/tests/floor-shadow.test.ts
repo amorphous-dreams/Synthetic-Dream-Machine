@@ -11,7 +11,7 @@ import { computeEngineCid } from "../src/genesis-doc.js";
 import { signFloorOffering } from "../src/floor-offering.js";
 import { ENGINE_CORE_ID, type LarBlobEntry } from "../src/base-doc.js";
 import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "../src/lar-uris.js";
-import { floorShadowLine, foldFloorShadowTally, readFloorShadow, readFloorShadowTally } from "../src/floor-shadow.js";
+import { floorShadowExplained, floorShadowExplainedLine, floorShadowLine, foldFloorShadowTally, readFloorShadow, readFloorShadowTally } from "../src/floor-shadow.js";
 
 const CORE_SHA = "c".repeat(64);
 const blobs: Record<string, LarBlobEntry> = {
@@ -42,6 +42,20 @@ describe("readFloorShadow reads the floor beside the founding record", () => {
     if (r.verdict === "mismatch") expect(r.moved.map((m) => m.field)).toEqual(["engine"]);
     expect(await readFloorShadow({ manifestCid: same.cid, readBytes: store(moved, same), islandBlobs: blobs, coreSha256: CORE_SHA }))
       .toEqual({ verdict: "clean", manifest: same.cid });
+  });
+
+  test("a plugins mismatch on a floor past the founding record reads explained; the founding floor and an engine move stay drift", async () => {
+    const adopted = manifest({ plugins: SHORT.cid });
+    const r = await readFloorShadow({ manifestCid: adopted.cid, readBytes: store(adopted), islandBlobs: blobs, coreSha256: CORE_SHA });
+    expect(r.verdict).toBe("mismatch");
+    expect(floorShadowExplained(r, "f".repeat(64))).toBe(true);
+    expect(floorShadowExplained(r, adopted.cid)).toBe(false);
+    // The island mounts an id the floor's offering never names: the image outgrew the seed, and the line says so.
+    if (r.verdict === "mismatch") expect(r.outgrew).toEqual(["$:/plugins/operator/extra"]);
+    expect(floorShadowExplainedLine(r)).toContain("outgrew");
+    const engine = manifest({ engine: computeEngineCid("d".repeat(64)) });
+    const e = await readFloorShadow({ manifestCid: engine.cid, readBytes: store(engine), islandBlobs: blobs, coreSha256: CORE_SHA });
+    expect(floorShadowExplained(e, "f".repeat(64))).toBe(false);
   });
 
   test("absent manifest bytes read unread by name, never a mismatch and never a throw", async () => {
