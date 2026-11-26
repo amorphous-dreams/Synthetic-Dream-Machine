@@ -14,7 +14,7 @@ const manifest = (patch: Partial<IslandMsg_Manifest> = {}): IslandMsg_Manifest =
 
 describe("browser island storage composition", () => {
   test("a manifest that names no store stands none: a wiki island rests nothing of its own", () => {
-    expect(browserIslandStorage(manifest())).toBeUndefined();
+    expect(browserIslandStorage(manifest(), async () => false)).toBeUndefined();
   });
 
   test("D-VR daemon primary omits storage while owned IDB remains explicit", () => {
@@ -22,7 +22,7 @@ describe("browser island storage composition", () => {
       documentUrl: "automerge:daemon",
       syncPort: {} as MessagePort,
       storage: { type: "idb", dbName: "owned-daemon" },
-    } }))).toBeUndefined();
-    expect(browserIslandStorage(manifest({ storage: { type: "idb", dbName: "owned-daemon" } }))).toBeDefined();
+    } }), async () => false)).toBeUndefined();
+    expect(browserIslandStorage(manifest({ storage: { type: "idb", dbName: "owned-daemon" } }), async () => false)).toBeDefined();
   });
 });

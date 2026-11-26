@@ -137,6 +137,16 @@ export async function landRecard(recard: BootDaemonKeyhiveRecard, floor: Pick<Ar
   await recard.commit();
 }
 
+/**
+ * THE FLOOR THAT THREW DURING A RECARD: its Archive never rested, so the rows the recard held drop and the ledger stands as it
+ * stood. The refusal names each dropped row (the bag it keeps) beside the throw's own words.
+ */
+export function recardFloorThrew(recard: Pick<BootDaemonKeyhiveRecard, "held">, handle: string, cause: unknown, handleIndex?: number): FaceRecardRefused {
+  const rows = recard.held && recard.held.length > 0 ? recard.held.join(", ") : "none held";
+  const why = cause instanceof Error ? cause.message : String(cause);
+  return new FaceRecardRefused("archive-unrested", `the Archive floor of face ${handle} threw after its card (${why}); the held ledger rows drop (${rows}), and the ledger stands as it stood. Run \`${recardCommand(handleIndex)}\` again once the floor takes writes`);
+}
+
 /** The command that recards a face, by its handle where known. */
 export const recardCommand = (handle?: number): string => `lares vault recard --face ${handle ?? "<N>"}`;
 

@@ -176,7 +176,9 @@ export async function poolCommitSeam(pool: string, close: SittingClose, git: Git
   if (added.code !== 0) return { committed: false, why: "commit-refused", detail: firstLine(added.stderr) };
   if (git(["diff", "--cached", "--quiet", "--", ...planes], pool).code === 0) return { committed: false, why: "nothing-moved" };
   const subject = `${SITTING_CLOSE_PREFIX}${close} — the sitting closes at ${close}; the watched planes commit as they stand`;
-  const done = git(["commit", "-q", "-m", subject, "--", ...planes], pool);
+  // The commit's pathspec names the planes whose index moved; a plane git holds no file for (an empty directory) stands out of it.
+  const held = planes.filter((p) => git(["diff", "--cached", "--name-only", "--", p], pool).stdout.trim() !== "");
+  const done = git(["commit", "-q", "-m", subject, "--", ...held], pool);
   if (done.code !== 0) return { committed: false, why: "commit-refused", detail: firstLine(done.stderr || done.stdout) };
   return { committed: true, sha: git(["rev-parse", "HEAD"], pool).stdout.trim() };
 }
