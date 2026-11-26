@@ -805,7 +805,8 @@ describe("the brief line", () => {
     const out = r.stdout;
     expect(out.trim().split("\n")).toHaveLength(1);
     expect(out).toMatch(/^reality tunnel: /);
-  });
+    // A cold spawn of the built CLI (two seconds on an idle floor): beside another heavy run the default 5 s clock runs out first.
+  }, 30_000);
 });
 
 describe("the brief line's count", () => {

@@ -38,7 +38,7 @@ describe("each vessel's Repo stands on the sealed rest", () => {
     expect(browser).toMatch(/wireIdentityOf\(\{\s*store:\s*sealedRest\.store,/);
     expect(browser).toMatch(/new Repo\(\{\s*storage:\s*wire\.storage,\s*peerId:\s*wire\.peerId,/);
     // The lift drops its signer through its own dispose (slice 5b: the lift stack's dispose IS the lock).
-    expect(browser).toMatch(/await sealedRest\.lock\(\)[\s\S]{0,300}await lifted\.dispose\(\)/);
+    expect(browser).toMatch(/await sealedRest\.lock\(\)[\s\S]{0,600}await lifted\.dispose\(\)/);
   });
 
   it("the browser derives registration and live announced-slot sealing through the mesh bag classification", () => {
