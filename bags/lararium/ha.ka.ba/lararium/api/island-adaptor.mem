@@ -37,7 +37,8 @@ own invariants and no more.
 | Subscribe to CompositeStore projection bus | IslandAdaptor (`start`) |
 | The ordered landing queue, its 200-change slices, the host-task yield between them, the seed checkpoint | IslandAdaptor through `WaveLanding` (`wave-landing.ts`) |
 | The queue's door at `$tw.lares.enqueueNalu` | IslandAdaptor (`installLandingQueue`; removed at `stop`) |
-| Resolve a bagged change through the composition (`store.resolveLayered`) | IslandAdaptor (`_landOne`) |
+| Resolve a bagged change through the composition (`store.resolveLayered`) | IslandAdaptor (`_prepareLanding`) |
+| Decide the hand and apply a prepared change, synchronously | IslandAdaptor (`_applyLanding`; `_landOne` carries one change whole, a standing hand first) |
 | Apply ONE change to the wiki | nalu-engine (`$tw.lares.applyNalu`, in-wiki) |
 | The landed ledger: per title the value, bag and heads the last wave left | IslandAdaptor (`LandedLedger`, `landed-ledger.ts`) |
 | Read a live wiki `change` dispatch: discrete acts first, then foam or a hand per title | the outbound bridge (`outbound-bridge.ts`) |
@@ -111,6 +112,17 @@ queue as ONE family (`enqueueFamily`), and the queue lands it inside one slice.
 installed, and clears the ledger, the sent values, the hand bases, the last-write bags and the
 unlanded marks. A restart seeds afresh and turns resident at its own seed checkpoint.
 
+''I-9 A slice lands in one wiki tick.''
+The adaptor hands the queue a split lander (`SliceLander`): `_prepareLanding` does every read that awaits
+(the composition, the heads, the kahua shadow) and `_applyLanding` writes the wiki synchronously. The
+queue prepares every change of a slice, then applies them all with no await between, so the wiki
+dispatches ONE `change` for the slice; a dispatch per tiddler re-runs the trackers over a tag index each add
+cleared, O(N²) across a bulk feed. The apply reads the hand afresh (the drain, `sent`, the ledger, the
+standing value, an act's removal), so a hand typed while the slice prepared still leaves first; an apply
+that meets a standing hand, or an own write that moved `sent` since its prepare, writes nothing, and the
+change (with every later change of its title in the slice) lands after the run through `_landOne`, in
+slice order.
+
 !! The seed
 
 The recipe (`buildIslandRecipe`) installs the landing queue and starts the adaptor, then drives
@@ -134,6 +146,6 @@ its tracked work settle and turns the shore resident (a seed landing that fails 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;0bxSetNbAQGSwaM7l5_dwoa3DRXqZFdcjKzQeJYf908`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ocbUsq4gKzi3FKyA0NswQ-7uw8VPOn_RohCirwY18Kw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

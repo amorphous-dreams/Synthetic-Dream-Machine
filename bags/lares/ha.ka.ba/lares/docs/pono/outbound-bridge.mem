@@ -91,7 +91,7 @@ Two facts the stock adaptors carry that the island's shape already mirrors: the 
 | the outbound delete | `island-adaptor.ts` `deleteTiddler` → `_flushHand` → `_tombstoneBag` | the bag of this shore's own last acknowledged write of the title answers first, then the landed ledger's bag; the composition's layer order then picks the tombstone's bag; `tombstoneInBag(bag, title, origin, { base })` |
 | the filter of what leaves | `packages/lararium-tw5/tiddlers/lar-bag-paths.tid` walked by `_routeBag`, settled by `_settle` | the cascade takes `SyncFilter`'s SHAPE (total, named exclusions) and adds a ROUTE per kind; a withholding stops a write only from a rule that names it; a gap lands at `current-wiki-bag` and warns; a route beneath the working layer, through an empty pointer or into an unmounted bag refuses by name |
 | the echo law | `packages/lararium-tw5/src/landed-ledger.ts`; `island-adaptor.ts` `isFoam`, `holdsHand` | content against the landed value (#/the-shore-law, clause 1) |
-| the inbound half | `onUriChanged` → the landing queue (`wave-landing.ts`) → `_landOne` → `$tw.lares.applyNalu` (`modules/nalu-engine.ts`) | every envelope joins one queue; each landing resolves its title through the composition (`resolveLayered`), meets any unsent hand, applies, and records the result in the ledger; `$origin-bag` rides from the envelope |
+| the inbound half | `onUriChanged` → the landing queue (`wave-landing.ts`) → `_prepareLanding` / `_applyLanding` (a standing hand: `_landOne`) → `$tw.lares.applyNalu` (`modules/nalu-engine.ts`) | every envelope joins one queue; each landing resolves its title through the composition (`resolveLayered`), meets any unsent hand, applies, and records the result in the ledger; a slice's applies share one wiki tick; `$origin-bag` rides from the envelope |
 | who calls the outbound methods | `outbound-bridge.ts` (the `change` listener `sovereign-kernel.ts` holds) and the tests | the one production caller |
 
 ''The seam.'' `packages/lararium-tw5/src/sovereign-kernel.ts` keeps `buildIslandRecipe`'s `adaptor` and hands it to `bridgeWikiToAdaptor(tw5, adaptor)`, the one `$tw.wiki.addEventListener("change", …)` the island holds, cancelled at teardown after the kernel awaits the wiki's queued dispatch (`awaitWikiDispatch`), so an edit whose notification had not fired reaches `stop()` as a marked hand. No `module-type: syncadaptor` ships in the plugin, so `$tw.syncer` never stands (`tw5-vm.ts` names the syncer as discarded on purpose).
@@ -199,6 +199,6 @@ CONTROLS standing green beside them: an explicit `--recipe default` put lands in
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;-_tsT8F10JN8ERLkZpFT9iCg5_HzzUiG72LUDyJomMk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;SA__q97whqpsKQnMQt1cz6ocXYGn3CBXi_X9dPbd0nM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

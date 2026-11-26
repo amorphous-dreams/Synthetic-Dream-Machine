@@ -21,7 +21,7 @@ module-type: startup
  *
  *   TS shore (Automerge, network, crypto, storage)
  *     AutomergeDocStore → MemeProvider → projection bus → IslandAdaptor.onUriChanged
- *     WaveLanding queue → IslandAdaptor._landOne → $tw.lares.applyNalu(change)
+ *     WaveLanding queue → IslandAdaptor._prepareLanding / _applyLanding → $tw.lares.applyNalu(change)
  *   ───────────────────────────────────────────────────────────────────────
  *   TW5 startup module (this file)
  *     applyNalu(change) → wiki.addTiddler / wiki.deleteTiddler
