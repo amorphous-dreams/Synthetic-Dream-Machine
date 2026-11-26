@@ -260,9 +260,8 @@ case "$verb" in
     bags=$(lares wiki status --json | node -e 'let s=""; process.stdin.on("data",c=>s+=c); process.stdin.on("end",()=>{const r=JSON.parse(s).data?.residency ?? {}; console.log([...(r.pinned ?? []), ...(r.wela ?? []).map(x=>x.url)].join("\n"));});')
     # Every document the catalog and oracle plane register is data in the JSON wiki status.
     wikis=$(lares wiki status --json)
-    # The recipe's bag stack, in order. No read-only verb names it; `wiki pin` walks it (and re-asserts the stowage of
-    # those same bags, which a mounted wiki wants held anyway). A wiki without a catalog recipe yet answers no stack.
-    stack=$(lares wiki pin "$slug" 2>/dev/null | sed -n 's/^  \(lar:[^ ]*\).*$/\1/p' || true)
+    # The recipe's bag stack, in the layer order `wiki status --recipe` answers. A wiki without a catalog recipe yet answers no stack.
+    stack=$(lares wiki status --recipe "$slug" --json 2>/dev/null | node -e 'let s=""; process.stdin.on("data",c=>s+=c); process.stdin.on("end",()=>{try{console.log((JSON.parse(s).data?.layers ?? []).map(l=>l.bag).join("\n"));}catch{}});' || true)
     INFO_ORIGIN_QA=$origin INFO_PORT=$PORT INFO_SLUG=$slug INFO_FACES=$faces INFO_GATE=$gate INFO_BAGS=$bags \
     INFO_KEY=$key INFO_WIKIS=$wikis INFO_STACK=$stack \
     node -e '

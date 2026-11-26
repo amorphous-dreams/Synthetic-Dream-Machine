@@ -28,7 +28,6 @@ import { plainRecord, sameStoredRecord, type StoredTiddlers, ownEntry } from "./
 import type { LarDoc } from "./base-doc.js";
 import type { LarTiddlerRecord } from "./tiddler-store.js";
 import type { VesselCoreAssembly } from "./open-vessel-core.js";
-import type { BagStowage } from "./bag-residency.js";
 import { storedRecord } from "./stored-record.js";
 import { materializeSharedLarDoc, meshPalaceDocUrl } from "./deterministic-doc.js";
 
@@ -51,13 +50,13 @@ const SUBSTRATE_CAP_ID = "substrate";
 export interface MeshPalaceComponent { readonly handle: DocHandle<MeshPalaceDoc>; }
 
 /** meshpalace — a writable meshpalace AutomergeDocStore layer (the vessel's own public FLOW-map) +
- *  a residency pin. Requires substrate (the composite to layer into).
+ *  Requires substrate (the composite to layer into).
  *
  *  ONE MAP PER VESSEL, FOUND AGAIN AT EVERY COMPOSE. The map stands at an address derived from the vessel's own key
  *  (`meshPalaceDocUrl`, the `deterministicDocUrl` road a vessel's edge ledger takes): a compose finds the map a prior
  *  boot rested and materializes it only when none stands. No pointer row stands between, so the map stands at every
  *  tier — a herm and the waking floor too, where the control home stays shut. */
-export function meshPalaceCap(deps: { repo: Repo; /** The vessel's own key: the map's address derives from it. */ vesselKey: string; residency?: BagStowage; seed?: readonly DialEntry[]; selfCoord?: Coord }): CapModule {
+export function meshPalaceCap(deps: { repo: Repo; /** The vessel's own key: the map's address derives from it. */ vesselKey: string; seed?: readonly DialEntry[]; selfCoord?: Coord }): CapModule {
   return {
     id: CARRIAGE_CAP.meshpalace, requires: [SUBSTRATE_CAP_ID],
     build: async (resolve) => {
@@ -88,7 +87,6 @@ export function meshPalaceCap(deps: { repo: Repo; /** The vessel's own key: the 
         // Written by NAME, never the default: the vessel alone names its working layer.
         writable: true, defaultWritable: false,
       });
-      await deps.residency?.pin(MESH_PALACE_BAG, "boot:meshpalace");
       return { handle };
     },
   };
@@ -417,7 +415,6 @@ export function carriageStack(deps: {
   repo:            Repo;
   /** The vessel's own key: its meshpalace map's address derives from it, so every compose finds the one map. */
   vesselKey:       string;
-  residency?:      BagStowage;
   self?:           MeshSelf;
   /** Public place id, never seed material; a leaf without one uses process-local randomness. */
   cadenceKey?:     string;
@@ -431,7 +428,6 @@ export function carriageStack(deps: {
     meshPalaceCap({
       repo: deps.repo,
       vesselKey: deps.vesselKey,
-      ...(deps.residency ? { residency: deps.residency } : {}),
       ...(self ? { seed: meshSelfSeed(self), selfCoord: self.coord } : {}),
     }),
     carriageCap({

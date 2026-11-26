@@ -21,10 +21,6 @@
  * Canon: lar:///ha.ka.ba/lararium/api/residency-tiers
  */
 
-import { DAEMON_BAG_ID } from "./lar-uris.js";
-import { mutableLarRecord, tiddlerText } from "./base-doc.js";
-import type { LarTiddlerRecord } from "./tiddler-store.js";
-import { storedDeleted, type StoredTiddlers } from "./stored-value.js";
 
 /** A bag's URL — Automerge doc URL, e.g. "automerge:abc123…". */
 export type BagUrl = string;
@@ -86,7 +82,7 @@ export interface BagResidencyEntry {
   readonly temperature:  ResidencyTemperature;   // "wela" | "anu"
   readonly pinned:       boolean;  // orthogonal flag — exempt from cooling
   readonly idleFor:      number;   // the stowage clock's reading minus the last touch, in its own unit (rolls, or ms on the wall floor)
-  readonly pinReason?:   string;   // operator-supplied or system pin reason
+  readonly pinReason?:   string;   // the keep's or the lit hold's reason
   readonly syncActive?:  boolean;  // true when peers are mid-replication
 }
 
@@ -152,7 +148,12 @@ export interface BagStowageOptions {
 /** Internal per-grain residency state (single-map model). */
 interface ResidencyState {
   temperature: ResidencyTemperature;
+  /** Exempt from cooling: a keep stands (`kept`) or a lit face holds the grain (`lit`). Derived, never set alone. */
   pinned:      boolean;
+  /** A keep stands: the activation cap's keep-warm grant over a wiki grain. */
+  kept:        boolean;
+  /** The lit holders (a lit face's group) whose lit life holds this grain warm; each ends with its own face. */
+  lit:         Set<string>;
   lastTouched: number;
   /** Grain type — `bag` (default) or `wiki`. Selects the per-type cap + the
    *  onHydrate/onEvict routing. Set on first registration; never changes. */
@@ -221,7 +222,7 @@ export class BagStowage {
   private _ensure(url: BagUrl, grainType: string = DEFAULT_GRAIN_TYPE): ResidencyState {
     let s = this._bags.get(url);
     if (!s) {
-      s = { temperature: "anu", pinned: false, lastTouched: this.clock(), grainType };
+      s = { temperature: "anu", pinned: false, kept: false, lit: new Set(), lastTouched: this.clock(), grainType };
       this._bags.set(url, s);
     }
     return s;
@@ -243,6 +244,7 @@ export class BagStowage {
   async pin(url: BagUrl, reason?: string, grainType: string = DEFAULT_GRAIN_TYPE): Promise<void> {
     const wasCold = (this._bags.get(url)?.temperature ?? "anu") === "anu";
     const s = this._ensure(url, grainType);
+    s.kept = true;
     s.pinned = true;
     if (reason !== undefined) s.pinReason = reason;
     if (wasCold) {
@@ -256,9 +258,39 @@ export class BagStowage {
    *  (hot/warm); it simply becomes a cooling candidate again. */
   unpin(url: BagUrl): void {
     const s = this._bags.get(url);
-    if (!s || !s.pinned) return;
-    s.pinned = false;
-    delete s.pinReason;
+    if (!s || !s.kept) return;
+    s.kept = false;
+    s.pinned = s.lit.size > 0;
+    if (!s.pinned) delete s.pinReason;
+  }
+
+  /**
+   * A lit face holds each grain it needs warm for its lit life: the system bags and the face's own planes stay warm because
+   * a face stands lit, never because a pin row says so. An anu grain heats to wela (hydrate); a wela grain stays resident.
+   * The hold ends with `dropLit(holder)` at the face's close, and a grain another lit face still holds stays warm.
+   */
+  async holdLit(holder: string, urls: readonly BagUrl[], grainType: string = DEFAULT_GRAIN_TYPE): Promise<void> {
+    for (const url of urls) {
+      const wasCold = (this._bags.get(url)?.temperature ?? "anu") === "anu";
+      const s = this._ensure(url, grainType);
+      s.lit.add(holder);
+      s.pinned = true;
+      if (s.pinReason === undefined) s.pinReason = `lit:${holder}`;
+      if (wasCold) {
+        s.temperature = "wela";
+        s.lastTouched = this.clock();
+        if (this.onHydrate) await this.onHydrate(url, s.grainType);
+      }
+    }
+  }
+
+  /** End every hold one lit face carries. A grain no other lit face holds and no keep stands over becomes a cooling candidate. */
+  dropLit(holder: string): void {
+    for (const s of this._bags.values()) {
+      if (!s.lit.delete(holder)) continue;
+      s.pinned = s.kept || s.lit.size > 0;
+      if (!s.pinned) delete s.pinReason;
+    }
   }
 
   /** Note that a bag was just touched (read or write) — `hoʻowela` to wela.
@@ -285,7 +317,7 @@ export class BagStowage {
    *  temperature into a verdict depend on the difference. */
   registerCold(url: BagUrl, grainType: string = DEFAULT_GRAIN_TYPE, cause?: CoolingCause): void {
     if (this._bags.has(url)) return;
-    const s: ResidencyState = { temperature: "anu", pinned: false, lastTouched: this.clock(), grainType };
+    const s: ResidencyState = { temperature: "anu", pinned: false, kept: false, lit: new Set(), lastTouched: this.clock(), grainType };
     if (cause) s.cooledBy = cause;
     this._bags.set(url, s);
   }
@@ -496,62 +528,4 @@ export class BagStowage {
       hotCap:   this.hotCap,
     };
   }
-}
-
-// ---------------------------------------------------------------------------
-// Pin tiddler shape — pins persist as tiddlers in the daemon doc.
-// Same pattern as bag-mirror configs. The dispatcher's residency
-// manager reads pin tiddlers at boot and applies them.
-// ---------------------------------------------------------------------------
-
-/** Build the URI for a pin tiddler under the daemon doc. */
-export function pinTiddlerUri(bagUrl: BagUrl): string {
-  return `${DAEMON_BAG_ID}/pin/${encodeURIComponent(bagUrl)}`;
-}
-
-/** Inverse of `pinTiddlerUri` — recover the bag URL a pin-tiddler title names, or `null` when
- *  `title` does not carry the `${DAEMON_BAG_ID}/pin/` prefix (not a pin tiddler at all — most
- *  titles in a daemon doc aren't). Never throws on a malformed percent-encoding; a foreign or
- *  corrupt title just fails to parse, same as "not a pin tiddler". */
-export function parsePinBagUrl(title: string): BagUrl | null {
-  const prefix = `${DAEMON_BAG_ID}/pin/`;
-  if (!title.startsWith(prefix)) return null;
-  try {
-    return decodeURIComponent(title.slice(prefix.length));
-  } catch {
-    return null;
-  }
-}
-
-/** Build the pin-tiddler record for a pin (or re-pin) of `bagUrl` — pure, so both the writer
- *  (vessel-residency-wiring's onResidencyOp) and any test can construct one without a live
- *  DocHandle. `reason` (absent → "") rides as the tiddler's `text` field, mirroring `pin()`'s
- *  own optional-reason shape. */
-export function pinTiddlerRecord(bagUrl: BagUrl, reason?: string): LarTiddlerRecord {
-  return mutableLarRecord(pinTiddlerUri(bagUrl), { text: reason ?? "" }, "residency-pin");
-}
-
-/** Scan a tiddlers map for pin/-prefixed entries, recovering (bagUrl, reason) pairs — pure and
- *  DocHandle-free, so the boot-time replay this feeds (`replayPinsFromDaemonDoc` in
- *  vessel-residency-wiring.ts) is testable against a plain object. A tombstoned pin tiddler
- *  (`meta.deleted`) is skipped — a hard-removed pin (see `removePinTiddler`) never resurrects
- *  via a lagging tombstone a sync leg still carries.
- *
- *  Canon: residency-tiers.mem#/pin-flag — "Pin is durable: pin state lives as tiddlers in the
- *  admin doc and federates to operator devices via the existing admin-doc sync surface." This is
- *  the READ half of that durability; `pinTiddlerRecord` + the tw5-layer `writePinTiddler` are the
- *  WRITE half. */
-export function scanPinTiddlers(
-  tiddlers: Readonly<StoredTiddlers> | undefined,
-): readonly { url: BagUrl; reason?: string }[] {
-  const out: { url: BagUrl; reason?: string }[] = [];
-  if (!tiddlers) return out;
-  for (const [title, record] of Object.entries(tiddlers)) {
-    if (storedDeleted(record)) continue;
-    const url = parsePinBagUrl(title);
-    if (!url) continue;
-    const reason = tiddlerText(record) ?? undefined;
-    out.push(reason ? { url, reason } : { url });
-  }
-  return out;
 }

@@ -155,7 +155,6 @@ import {
   loadCatalogCorpora, seedVesselDefaults,
   makeResidencyStatsReactor,
   makeVesselResidency, type VesselResidency,
-  replayPinsFromDaemonDoc,
   COHERENCE_FRAME,
   SENSORIUM_FRAME,
   createWikiSenseSupervisor, registerWikiSenseVerbs,
@@ -1703,7 +1702,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // it would put the substrate key on the social board, the one co-surface the two-key atom forbids.)
   const whoExtraCaps: CapModule[] = relayGated ? await (async () => {
     const crossroadsHandle = await materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads");
-    return [whoFaceCap({ repo, crossroadsHandle, nexusPubkey, residency })];
+    return [whoFaceCap({ repo, crossroadsHandle, nexusPubkey })];
   })() : [];
 
   const result = await composeBrowser<BrowserVesselIslandPool>({
@@ -2306,6 +2305,9 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           litDeviceGroup = null; litDeviceRelation = null;
           sealedCells.hold = null;
           docStoreDoor.lock();
+          // THE LIT LIFE ENDS AT THE LOCK: the wearer's keeps free at the cap and the grains the lit face held warm cool again.
+          if (wikiActivation) wikiActivation.unkeepAll(BROWSER_KEEP_HOLDER);
+          residency.dropLit(BROWSER_KEEP_HOLDER);
           await lifted.dispose();
           closeSession();
         };
@@ -2486,21 +2488,21 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         }
         return { verb: "wiki-switch", slug, active, held: [...wikiActivation.kept(BROWSER_KEEP_HOLDER)] };
       });
-      // wiki-hold / wiki-release — a keep on the vessel's one keep-warm cap (browser grant = one). A full cap refuses
+      // wiki-keep / wiki-unkeep — a keep on the vessel's one keep-warm cap (browser grant = one). A full cap refuses
       // `keep-full` by name and drops no keep. The browser's one wearer holds them under one holder.
-      registry.register("wiki-hold", async (args) => {
+      registry.register("wiki-keep", async (args) => {
         const slug = String(args["slug"] ?? "");
-        if (!slug) throw new Error("wiki-hold: `slug` required");
+        if (!slug) throw new Error("wiki-keep: `slug` required");
         const kept = await wikiActivation.keep(slug, BROWSER_KEEP_HOLDER);
         pushSwitcherState();
-        return { verb: "wiki-hold", slug, held: kept.ok, ...(kept.ok ? {} : { cause: kept.cause, detail: kept.detail }), holds: [...wikiActivation.kept(BROWSER_KEEP_HOLDER)], budget: wikiActivation.grant.keepBudget };
+        return { verb: "wiki-keep", slug, held: kept.ok, ...(kept.ok ? {} : { cause: kept.cause, detail: kept.detail }), holds: [...wikiActivation.kept(BROWSER_KEEP_HOLDER)], budget: wikiActivation.grant.keepBudget };
       });
-      registry.register("wiki-release", async (args) => {
+      registry.register("wiki-unkeep", async (args) => {
         const slug = String(args["slug"] ?? "");
-        if (!slug) throw new Error("wiki-release: `slug` required");
+        if (!slug) throw new Error("wiki-unkeep: `slug` required");
         wikiActivation.unkeep(slug, BROWSER_KEEP_HOLDER);
         pushSwitcherState();
-        return { verb: "wiki-release", slug, holds: [...wikiActivation.kept(BROWSER_KEEP_HOLDER)] };
+        return { verb: "wiki-unkeep", slug, holds: [...wikiActivation.kept(BROWSER_KEEP_HOLDER)] };
       });
       // wiki-active — the live switcher state: which wikis run now + which are held +
       // which surface holds the projection. The daemon widget's state-tiddler reads this.
@@ -2665,22 +2667,17 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     },
 
     afterDaemon: (_a, assembly) => {
-      void residency.pin(BAG_IDS.catalog,    "boot:catalog");
-      void residency.pin(BAG_IDS.oracle,   "boot:lararium-island");
-      if (assembly.laresHandle) void residency.pin(BAG_IDS.lares, "boot:lares-corpus");
-      // A face's planes pin under the face's own names — the vessel pins what it actually mounted.
-      const pinFace = social.personaBagId ? personaSiblingBagIds(social.personaBagId) : null;
-      if (pinFace) {
-        void residency.pin(pinFace.identities, "boot:identities");
-        void residency.pin(pinFace.circles,    "boot:circles");
-        void residency.pin(pinFace.sessions,   "boot:sessions");
-        void residency.pin(pinFace.intents,    "boot:intents");
+      // THE LIT SET HOLDS WHAT IT NEEDS WARM: the system bags and the lit face's own planes stay warm because a face stands
+      // lit, and the hold ends at the face's lock (`lockThenDrop`). The anon floor stands no face, so it holds none.
+      if (litDeviceGroup !== null) {
+        const pinFace = social.personaBagId ? personaSiblingBagIds(social.personaBagId) : null;
+        void residency.holdLit(BROWSER_KEEP_HOLDER, [
+          BAG_IDS.catalog, BAG_IDS.oracle,
+          ...(assembly.laresHandle ? [BAG_IDS.lares] : []),
+          ...(pinFace ? [pinFace.identities, pinFace.circles, pinFace.sessions, pinFace.intents] : []),
+          DAEMON_BAG_ID,
+        ]);
       }
-      void residency.pin(DAEMON_BAG_ID,       "boot:daemon");
-      // Durable pin replay — BEFORE the sweeper starts, so a replayed pin never races the first
-      // idle-cool tick. Recovers whatever an operator pin persisted under the daemon doc across a
-      // restart (residency-tiers.mem#/pin-flag; see writePinTiddler/replayPinsFromDaemonDoc).
-      void replayPinsFromDaemonDoc(daemon.daemonHandle, residency);
       residency.startSweeper();
       assembly.composite.attachResidency(residency);
       // NB: no inbound WS gate — a browser cannot listen on a socket (substrate floor).

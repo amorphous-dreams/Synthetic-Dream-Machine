@@ -351,7 +351,7 @@ export function scanFiles(
       const metaPath = file + ".meta";
       if (existsSync(metaPath)) meta = readFileSync(metaPath, "utf8");
     } catch { /* no readable sidecar — a self-contained filetype needs none */ }
-    const diskHash   = carrierHash(text, meta);
+    let diskHash     = carrierHash(text, meta);
     // THE BASE HOLDS TWO SIDES. The scan reads the disk side: a file whose bytes stand where the last
     // agreement left them reads `unchanged`, whatever framing they wear. The records side rides the
     // wave so the island's gate can tell "the records moved" from "the disk stands in another framing".
@@ -359,6 +359,14 @@ export function scanFiles(
     const base       = tree.baseAt(syncedTreeKey(toBag, uri), file);
     // Both sides ride tagged (`carrierHash` emits `sha256:…`; the tree stores the same
     // tagged form); `digestsEqual` compares them as `(algo, hex)`.
+    // A STRAY `.meta` (beside a carrier whose render holds no metaBody) stays out of the disk's state, as the projecting leg
+    // and `pinAgreement` read it: the base then names the body alone, so the body-only hash stands in where it agrees.
+    // It stays out only where it names nothing the carrier does not already hold (its own title, or a line its own header
+    // carries): a field the hand added there reads `changed` and ingests, as a hand edit does.
+    if (base !== null && meta !== undefined && !digestsEqual(diskHash, base.disk) && metaHoldsNothingNew(meta, text, uri)) {
+      const bodyOnly = carrierHash(text, undefined);
+      if (digestsEqual(bodyOnly, base.disk)) diskHash = bodyOnly;
+    }
     const status: ScanStatus =
       base === null ? "new" : digestsEqual(diskHash, base.disk) ? "unchanged" : "changed";
     // NO SYNCED BASE: the pool's HEAD stands in where it holds the file (a re-found cleared the tree, the pool kept its
@@ -419,8 +427,10 @@ export interface BaseAnswer {
   readonly waiting: number;
   /** The file moved since the wave's scan: its next reader owns that observation, and nothing recorded. */
   readonly moved: number;
-  /** The island that projects the bag reads no file there (it left, it rests where that island cannot read, or it lies outside the bag's mirror root): nothing lands. */
+  /** The island that projects the bag reads no file there (it left, or it rests where that island cannot read): nothing lands, and the next scan asks again. */
   readonly unread: number;
+  /** The file lies outside every ordinary mirror root of the bag: no pin lands there, and a rescan changes nothing. */
+  readonly outsideMirror: number;
   /** The island read the file and its own records, and they say different things (or it holds no such record): no agreement
    *  stands to pin, and the gate weighs the carrier as it stands. */
   readonly differs: number;
@@ -431,10 +441,10 @@ export interface BaseAnswer {
   readonly why?: string;
 }
 
-const NO_BASES: BaseAnswer = { recorded: 0, kept: 0, waiting: 0, moved: 0, unread: 0, differs: 0, owed: 0 };
+const NO_BASES: BaseAnswer = { recorded: 0, kept: 0, waiting: 0, moved: 0, unread: 0, outsideMirror: 0, differs: 0, owed: 0 };
 const sumBases = (a: BaseAnswer, b: BaseAnswer): BaseAnswer => ({
   recorded: a.recorded + b.recorded, kept: a.kept + b.kept, waiting: a.waiting + b.waiting, moved: a.moved + b.moved,
-  unread: a.unread + b.unread, differs: a.differs + b.differs, owed: a.owed + b.owed,
+  unread: a.unread + b.unread, outsideMirror: a.outsideMirror + b.outsideMirror, differs: a.differs + b.differs, owed: a.owed + b.owed,
   ...((a.why ?? b.why) !== undefined ? { why: (a.why ?? b.why)! } : {}),
 });
 /** The asks a wave's next scan reads as agreed: taken, already named, or waiting on the owner's pin. */
@@ -453,7 +463,7 @@ const basesAnswered = (a: BaseAnswer): number => a.recorded + a.kept + a.waiting
  *   · ELSE THE ROW SETS, with the owner's document and the wave's heads. A newer agreement supersedes a waiting pin.
  */
 export function landBases(tree: SyncedTree, bag: string, asks: readonly BaseAsk[], doc?: string): BaseAnswer {
-  const tally = { recorded: 0, kept: 0, waiting: 0, moved: 0, unread: 0, differs: 0, owed: 0 };
+  const tally = { recorded: 0, kept: 0, waiting: 0, moved: 0, unread: 0, outsideMirror: 0, differs: 0, owed: 0 };
   for (const ask of asks) {
     const now = diskHashNow(ask.file);
     if (now !== null && !digestsEqual(now, ask.disk)) { tally.moved += 1; continue; }
@@ -528,7 +538,7 @@ export function islandBaseDoor(roads: (bag: string) => readonly BaseRoad[], tree
           let o: Record<string, unknown>;
           try { o = ((await road({ op: "base", bag, bases })) ?? {}) as Record<string, unknown>; }
           catch (err) { fault ??= err instanceof Error ? err.message : String(err); continue; }
-          if (o["ok"] === true) { answer = { ...NO_BASES, recorded: count(o, "recorded"), kept: count(o, "kept"), waiting: count(o, "waiting"), unread: count(o, "unread") + count(o, "outsideMirror"), differs: count(o, "differs") }; break; }
+          if (o["ok"] === true) { answer = { ...NO_BASES, recorded: count(o, "recorded"), kept: count(o, "kept"), waiting: count(o, "waiting"), unread: count(o, "unread"), outsideMirror: count(o, "outsideMirror"), differs: count(o, "differs") }; break; }
           if (o["refusal"] === "no-disk-shore" || o["refusal"] === "bag-unprojected") continue;
           answer = owed(`${typeof o["refusal"] === "string" ? o["refusal"] : "base-answer-unread"}: ${typeof o["why"] === "string" ? o["why"] : "the island answered no base act"}`);
           break;
@@ -1247,6 +1257,12 @@ function headsNamed(value: unknown): readonly string[] | undefined {
   return Array.isArray(value) && value.length > 0 && value.every((h) => typeof h === "string" && h !== "") ? (value as string[]) : undefined;
 }
 
+/** A `.meta` that adds no field to its carrier: each `key: value` line names the carrier's own title or stands in its own text. */
+function metaHoldsNothingNew(meta: string, text: string, uri: string): boolean {
+  const held = new Set(text.split("\n").map((l) => l.trim()));
+  return meta.split("\n").map((l) => l.trim()).filter((l) => l !== "").every((l) => l === `title: ${uri}` || held.has(l));
+}
+
 /** The observation hash of a carrier file as it stands now (body plus `.meta` pairing), or null where unreadable. */
 function diskHashNow(file: string): string | null {
   try {
@@ -1727,6 +1743,7 @@ async function folderWave(
   const bases = settled.bases;
   if (bases !== undefined && bases.waiting > 0) log(`${bases.waiting} base(s) from ${folder.label} wait on the island's pending pin until its heads rest; \`lares shore flush\` names each pin that waits`);
   if (bases !== undefined && bases.unread + bases.differs > 0) log(`${bases.unread + bases.differs} base(s) from ${folder.label} pinned nothing: the island that projects ${folder.bag} read ${bases.differs} carrier(s) whose file and records differ and ${bases.unread} file(s) it could not read; its gate weighs each as it stands`);
+  if (bases !== undefined && bases.outsideMirror > 0) log(`${bases.outsideMirror} base(s) from ${folder.label} pinned nothing: each file lies outside every mirror root of ${folder.bag}, so a rescan changes nothing; move the file under a mirror root or leave it unpinned`);
   if (bases !== undefined && bases.owed > 0) log(`${bases.owed} base(s) from ${folder.label} reached no owner (${bases.why ?? "the island gave no answer"}); the next wave over those files asks again`);
   // A CARRIER THAT STOOD OFF GOES TO THE SHORE: the gate landed nothing for it, and the projector raises its keyed alert.
   for (const c of settled.conflicts) { sense.push(c.uri); log(`stands off: ${c.uri} (${c.why}); \`lares shore\` names it with its key`); }

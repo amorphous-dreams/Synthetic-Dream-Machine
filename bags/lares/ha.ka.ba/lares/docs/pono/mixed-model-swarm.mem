@@ -33,8 +33,8 @@ The crew lines that bind a running lane stand at <<~ loulou uri=`lar:///ha.ka.ba
 | ''Controller'' | Claude Opus | the session's seat: lane briefs, slot fill, the one watcher per seat, a read of every chunk's diff before it lands, the batch land, the road commit behind it, canon | solos a lane; lands a chunk it has not read |
 | ''Lane lead'' (Episkopos, a Wright) | Claude, named per lane (#/the-tiers), or Codex `gpt-6.1-terra` in the `lead` mode, run fresh per step (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/seat-harness`>> #/the-lead) | the lane's briefs, the specification of every red and the authoring of every judgment slice, every commit in its own worktree on its lane branch, the build before each seat, the batch battery, one push per feature, the short hand-back | pushes the span or `main`; arms a watcher; launches a seat on a stale dist |
 | ''Terra'' (builder) | Codex `gpt-6.1-terra`, medium effort | a mechanical edit over an exact file list and an exact change; typecheck; single-file unit runs that open no socket | commits, builds, opens a socket, writes outside its seat directory and the worktree |
-| ''Luna'' (reader, sweeper) | Codex `gpt-6-luna`, high effort, read-only | the cold read of each batch before its push, the aftermath sweep | builds, commits, reads a diff it wrote |
-| ''Sol'' (deep reader) | Codex `gpt-6.1-sol`, high effort, read-only | the read of every batch head, every caps, custody, crypto, gate or Keyhive slice, a named deep question | builds by default, commits, launches as `gpt-6-sol` |
+| ''Luna'' (reader, sweeper) | Codex `gpt-6-luna`, high effort, read-only | the cold read of each lane's branch before its push, the aftermath sweep | builds, commits, reads a diff it wrote |
+| ''Sol'' (deep reader) | Codex `gpt-6.1-sol`, high effort, read-only | the read of every landing head, every caps, custody, crypto, gate or Keyhive slice, a named deep question | builds by default, commits, launches as `gpt-6-sol` |
 | ''Copilot seat'' | Copilot `gpt-5.3-codex`, medium effort | the batch Aftermath read while the legacy allowance lasts; the walled builder when the Codex pool stands under its build floor | builds, commits, reads a diff it wrote, runs `--model fusion` |
 | ''Fresh reader'' | a lineage that built nothing in the piece, read-only | an adversarial read of a whole lane before its train, findings ranked with `file:line` | sees the builder's conclusions first |
 | ''Research pair'' | two seats woken apart | the code read and the field read of one question, each claim marked MEASURED or LEAD, then traded | shares a conclusion with its twin before the trade |
@@ -107,7 +107,7 @@ The crew lines that bind a running lane stand at <<~ loulou uri=`lar:///ha.ka.ba
 * ''Lane lead'': Codex `gpt-6.1-terra` in the `lead` mode by default, fresh per step, while the Codex pool stands over its lead floor; a Claude lead (Sonnet 5.5 by default, Opus 5.5 for a seam, custody or security lane) only where the brief names why. Under the floor the lead passes to Claude and the balance bends for the window. A lead retires at its PR's land and a fresh seat resumes from a cold brief.
 * ''Fable as a burst'': a Fable lead takes a named integration-judgment bottleneck when all four hold: the lead authors the code; one lane-day at most; no wait past an hour (on a longer wait it writes a brief, hands back and retires); the weekly Fable pool holds room. Fable never stands as a lane's standing lead.
 * ''Builder'': Terra 6.1 medium on file-listed edits alone. A `gpt-6.1-sol` build seat answers a named ask. No Opus or Fable builder seat.
-* ''Reader'': Luna high reads every batch. Sol 6.1 high reads once per TRAIN, over the merged head before the batch lands, covering every lane in it; a lane launches no Sol seat, a security-class slice included. A security-class slice takes the controller's own diff read and a Copilot cold read. A fresh Claude reader serves where the read needs house canon; Fable cold-reads only a spec with open forks that an expensive builder will inherit.
+* ''Reader'': Luna high reads every lane's branch. Sol 6.1 high reads each landing's head, one lane at a time, before the familiar lands it (`lares meme normalize` then `lares meme check` close each landing); a lane launches no Sol seat, a security-class slice included. A security-class slice takes the controller's own diff read and a Copilot cold read. A fresh Claude reader serves where the read needs house canon; Fable cold-reads only a spec with open forks that an expensive builder will inherit.
 * ''Researcher'': Terra high in the `read` mode for repo-grounded scouts and audits by default; Codex Sol with `--search` for one question; Fable for parallel web collides and Opus for research that needs the controller's live context.
 * ''General-purpose subagents'' run Sonnet unless the roster names Opus or Fable.
 
@@ -308,6 +308,6 @@ Ruled by the operator, 2026-11-05: "Does it apply to all tasked spirits... all l
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;y8yE9KRNamuQGyX7KgNLsZj4ohkaikm2bKlN5-jz19E`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Mum8cp0HB-HqfFXcXt5nL-V8Kk2txduAWI9gFFHj78A`>>
 
 <<^ code=`&#x0004;` to=`?`>>

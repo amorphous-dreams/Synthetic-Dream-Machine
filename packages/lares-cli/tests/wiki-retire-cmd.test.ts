@@ -60,7 +60,7 @@ afterEach(() => { vi.restoreAllMocks(); rmSync(projections, { recursive: true, f
 test("a landed retire rides the worn face's session, drops the hold, sets the folder aside by rename, and releases the realm id", async () => {
   expect(await run()).toBe(0);
   expect(calls).toEqual([{ verb: "retire-wiki", args: { slug: SLUG }, face: 2 }]);
-  expect(sent.map((s) => s.name)).toEqual(["wiki-release"]);
+  expect(sent.map((s) => s.name)).toEqual(["wiki-unkeep"]);
   expect(existsSync(folder())).toBe(false);
   const aside = readdirSync(join(projections, "realms", SLUG, "wikis")).filter((n) => n.startsWith(`${SLUG}.retired-`));
   expect(aside).toHaveLength(1);
@@ -89,7 +89,7 @@ test("a refusal names its code and exits 1; nothing local runs", async () => {
 test("RED (L2) a run that died after this face's retire finishes: `no-such-wiki` naming the label's own realm, with the ledger binding nothing, runs the local half", async () => {
   answer = { status: "error", errorMessage: `no-such-wiki: this face holds no shell of "${SLUG}": no catalog row and no workbench (own realm ${ID})` };
   expect(await run()).toBe(0);
-  expect(sent.map((s) => s.name)).toEqual(["wiki-release"]);
+  expect(sent.map((s) => s.name)).toEqual(["wiki-unkeep"]);
   expect(existsSync(folder())).toBe(false);
   expect(readRealmLabels(projections)[0]!.realms).toEqual([{ slug: SLUG, id: null }]);
   expect(text).toContain("already-retired");

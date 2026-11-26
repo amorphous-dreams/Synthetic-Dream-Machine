@@ -662,7 +662,7 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
   // A COLD WIKI'S PUTS RIDE NO MIRROR (cabal-realm#/the-workbench, OWED): the copy reads disk, so it names what disk cannot show.
   const woken = new Set(opts.woken ?? []);
   const cold = (doors.coldWikis ? await doors.coldWikis().catch(() => [] as readonly string[]) : []).filter((slug) => !woken.has(slug));
-  if (cold.length > 0) omissions.push({ kind: "cold-wikis", detail: `${[...cold].sort().join(", ")} stand${cold.length === 1 ? "s" : ""} cold (no island mounts ${cold.length === 1 ? "it" : "them"} now): a page a face put into a cold wiki since its last wake rests in its layer and projected nowhere, so no such page travels. Wearing each face that wrote there, wake the wiki (\`lares wiki pin <slug> --rotate\`), then export again`, items: [...cold].sort(), count: cold.length });
+  if (cold.length > 0) omissions.push({ kind: "cold-wikis", detail: `${[...cold].sort().join(", ")} stand${cold.length === 1 ? "s" : ""} cold (no island mounts ${cold.length === 1 ? "it" : "them"} now): a page a face put into a cold wiki since its last wake rests in its layer and projected nowhere, so no such page travels. Wearing each face that wrote there, wake the wiki (\`lares wiki keep <slug>\`), then export again`, items: [...cold].sort(), count: cold.length });
   // A WIKI THAT HOLDS NO PAGE carries by its catalog row alone; a sourced wiki rides git with its canon, and the daemon wiki is each face's own.
   let userWikis: string[] = [];
   if (doors.userWikis) {

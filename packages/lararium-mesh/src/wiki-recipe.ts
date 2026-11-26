@@ -38,7 +38,6 @@
  * Schema: lar:///ha.ka.ba/lares/api/lararium/wiki-recipe
  */
 
-import type { Heads } from "@automerge/automerge";
 import type { LarTiddlerRecord } from "./tiddler-store.js";
 import { ORACLE_DOC_URI, LARARIUM_DOC_URI, LARES_DOC_URI, CROSSROADS_DOC_URI, KAHUA_DOC_URI, bagUri, wikiUri } from "./lar-uris.js";
 import { bagStackFromRec } from "./bag-stack-from-rec.js";
@@ -220,16 +219,6 @@ export interface WikiRecipe {
    * authority — OCAP "don't separate designation from authority").
    */
   readonly mirrorBags?: readonly SlotUri[];
-  /**
-   * Optional bag PINS — Anti-pattern #5 defense (recipe-drift poisoning).
-   * Each pinned slot carries an Automerge Heads array naming the expected state.
-   * When a slot carries a pin, `CompositeStore.auditPins(recipe)` reports
-   * the drift state per bag; `resolveAllRespectingPins(recipe, title)` skips
-   * drifted bags from the read path. Default reads (`resolveAll` / `get` /
-   * `resolveTopmost`) stay unaffected — opt-in by call site.
-   * Default null/absent = unpinned.
-   */
-  readonly bagPins?: ReadonlyMap<SlotUri, Heads>;
 
   /**
    * THE RECIPE'S PLUGIN LIST — an ORDERED list of whole signed plugin-offering CIDs
@@ -295,28 +284,6 @@ export function headsEqual(a: readonly string[], b: readonly string[]): boolean 
   }
   return true;
 }
-
-/**
- * BagPinState — per-bag pin status returned by `CompositeStore.auditPins`.
- *
- *   unpinned  — the recipe carries no pin for this bag
- *   matched   — current bag heads equal the pinned heads (set-semantically)
- *   drifted   — current heads differ from pinned (bag moved since pin)
- *   absent    — pinned bag has no layer registered on this composite
- *   opaque    — bag layer exists but cannot expose heads (e.g. MemoryTiddlerStore)
- *
- * Default policy: audit-only. Operators read the audit; downstream consumers
- * MAY refuse, time-travel via `view(pinnedHeads)`, or warn. Loud silent
- * refusal at the read path stays out of scope per the
- * residency-model deferred-enactment design (modal-view reader belongs to
- * a follow-up sprint with explicit "detached" operator UX).
- */
-export type BagPinState =
-  | { readonly state: "unpinned" }
-  | { readonly state: "matched";  readonly heads:  readonly string[] }
-  | { readonly state: "drifted";  readonly pinned: readonly string[]; readonly current: readonly string[] }
-  | { readonly state: "absent" }
-  | { readonly state: "opaque" };
 
 /**
  * Full expanded slot order — top of array = highest priority (first wins).

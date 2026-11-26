@@ -56,17 +56,15 @@ describe("daemon cap — the immune core boots WITH or WITHOUT a wiki slot (the 
   });
 });
 
-describe("meshpalace cap — a writable meshpalace FLOW-map layer + residency pin", () => {
-  test("adds the meshpalace doc layer (writable) and pins it", async () => {
+describe("meshpalace cap — a writable meshpalace FLOW-map layer", () => {
+  test("adds the meshpalace doc layer (writable); a lit face, never a pin, keeps it warm", async () => {
     const repo = new Repo({ sharePolicy: async () => true });
     const added: Array<{ bagId: string; writable?: boolean; defaultWritable?: boolean }> = [];
     const composite = { addLayer: (l: { bagId: string; writable?: boolean; defaultWritable?: boolean }) => added.push(l) };
-    const pins: string[] = [];
-    const residency = { pin: async (b: string) => { pins.push(b); } };
 
     const stack: CapModule[] = [
       { id: CAP.substrate, build: () => ({ composite }) },
-      meshPalaceCap({ repo, vesselKey: "a".repeat(64), residency: residency as never }),
+      meshPalaceCap({ repo, vesselKey: "a".repeat(64) }),
     ];
     const v = await composeVessel(stack);
 
@@ -75,7 +73,6 @@ describe("meshpalace cap — a writable meshpalace FLOW-map layer + residency pi
     expect(added[0]!.writable).toBe(true);
     // Written by name: the vessel alone names its working layer, so the cap claims no working role.
     expect(added[0]!.defaultWritable).toBe(false);
-    expect(pins).toContain(MESH_PALACE_BAG);
     expect((v.get(CAP.meshpalace) as { handle: unknown }).handle).toBeDefined();
 
     await repo.shutdown();

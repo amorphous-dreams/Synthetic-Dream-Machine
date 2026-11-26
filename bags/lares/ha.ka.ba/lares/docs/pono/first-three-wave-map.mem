@@ -204,7 +204,7 @@ The store door hands the kahua memes the worn face, refuses a write for any othe
 
 * ''Burned by #390'': `works` answers on the tiddler door through its own engine (an unreachable recipe refuses `wiki-unreached`).
 * The rest seals for the roster: every face seated `write` writes `works`' workbench on one vessel.
-* A cold wiki's put reaches disk only once the wiki wakes (`lares wiki pin works --rotate`, by a face that holds a writer's seat there; an export names a wiki that still stands cold as `cold-wikis`).
+* A cold wiki's put reaches disk only once the wiki wakes (`lares wiki keep works`, by a face that holds a writer's seat there; an export names a wiki that still stands cold as `cold-wikis`).
 * The road's slot law awaits a ruling before `L17-2d` writes road items.
 * No provenance tells one spirit's write from another's (`F11`); the `spirit` field designates.
 
@@ -362,7 +362,7 @@ Each step names the call, the answer expected, and a mark: ''day one'' (reachabl
 # ''Read back at wake'' (after the operator's one `lares home tend`, road `L44`): a new session's `SessionStart` context carries `Lares memory index: 6 rows` and a line per meme. The wake's index read needs no config act and rides the merged tree; the tend seats the compaction hook and lifts each host hook command that names a house hook script no `[[home]]` entry declares, printing `lifted <scripts> from <path> (<id>)` per hook file (`claude.hooks-owned`, `codex.hooks-owned`, `copilot.hooks-owned`); before it, `lares home read --brief` names those items beside `lares home tend`.
 # ''A restart'' (day one): `tools/lares-container.sh down`, then `up` (the passphrase at the terminal), then step 7 again answers the same memes and hashes.
 # ''A re-wear'' (day one): `lares vault unlock --face 1`, `wiki_filter(…)` answers the engineer's own daemon wiki and none of the steward's memes (reach law); `lares vault unlock --face 0` and the memes answer again.
-# ''The works wiki'' (day one for the mint, at the operator's terminal; after `L17-2a` for its filter): `tools/lares-container.sh wiki init works` wearing the steward, since the seat's `wiki` tool carries `switch`, `hold`, `release` and `active` and mints nothing; then `wiki(verb="hold", slug="works")` or `lares wiki pin works --rotate`, and the first bridge card put into the steward's daemon wiki at `lar:///ha.ka.ba/works/lane/…`.
+# ''The works wiki'' (day one for the mint, at the operator's terminal; after `L17-2a` for its filter): `tools/lares-container.sh wiki init works` wearing the steward, since the seat's `wiki` tool carries `switch`, `hold`, `release` and `active` and mints nothing; then `wiki(verb="hold", slug="works")` or `lares wiki keep works`, and the first bridge card put into the steward's daemon wiki at `lar:///ha.ka.ba/works/lane/…`.
 # ''The house wiki'' (after `C2` and `L17-2a`): `lares wiki init house`, `lares wiki share house --write 'joshua-fontany-engineer joshua-fontany-referee' --face 0` (the names ride as a title list, `share-cmd.ts:30-39`), the house-law memes re-put there, and the engineer's `wiki_filter(…, recipe="house")` answers them.
 
 !!! The new session's first turn, in order
@@ -390,6 +390,6 @@ Each step names the call, the answer expected, and a mark: ''day one'' (reachabl
 * ''The unit suites' JSON reporter'': a `ci.yml` edit. Default: the controller's hand, in `L42b`'s window.
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;1ijJSNp3gt_YOTmfXELoM6TqvcnNVvbR3OwvxWnxojQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;H0K3l3gz9oe1uE-4kw7Sbrcmvoq0ZXketU7SiyXIHbc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

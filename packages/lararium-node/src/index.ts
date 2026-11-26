@@ -426,12 +426,11 @@ export { makeWhereReactor, makeResolveReactor } from "@lararium/tw5";
 // node-specific; both vessels hold them); a node caller reads them through this barrel.
 export {
   makeListWikisReactor, makeInitWikiReactor,
-  makeWikiPinReactor, makeWikiUnpinReactor,
   makeAddBagReactor, makeRemoveBagReactor,
   makePruneStaleReactor, makeDraftReactor,
   makeCompactBagReactor, makeRotateRecipeReactor,
   makeResidencyStatsReactor,
-  makePinReactor, makeUnpinReactor, makeRegisterColdReactor,
+  makeRegisterColdReactor,
 } from "@lararium/tw5";
 export type {
   WikiMintHandlerOptions,

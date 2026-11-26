@@ -84,8 +84,8 @@
  * nothing unlinks it: the carrier stands off, and the alert names the door that lands the file's words back.
  */
 
-import { writeFileSync, mkdirSync, unlinkSync, existsSync, readFileSync, readdirSync, rmdirSync } from "fs";
-import { dirname, isAbsolute, basename, extname, relative as relativePath, resolve as resolvePath } from "path";
+import { writeFileSync, mkdirSync, unlinkSync, existsSync, readFileSync, readdirSync, rmdirSync, realpathSync } from "fs";
+import { dirname, basename, extname, relative as relativePath, resolve as resolvePath, join as joinPath } from "path";
 import { confineMirrorWrite, carrierBaseRelPath, titleRelPath } from "./bag-paths.js";
 import { KAPAE_EXT, kapaeShadowBody } from "./kapae-shadow.js";
 import { contentHash, syncedTreeKey, SyncedTree, type SyncedBase } from "./synced-tree.js";
@@ -860,11 +860,14 @@ export class LarDiskProjector {
    */
   async pinAgreement(bagId: string, uri: string, file: string, from?: string): Promise<"unprojected" | "outside-mirror" | "unread" | "differs" | "waiting" | "kept" | "recorded"> {
     if (!this.projects(bagId)) return "unprojected";
-    // A file outside every ordinary mirror of the bag stands beyond this island's reach: no pin lands there.
+    // A file outside every ordinary mirror of the bag stands beyond this island's reach: no pin lands there. The check reads
+    // the roots as `confineMirrorWrite` reads them (the widened bags-dir grant included), over real paths on both sides, so a
+    // symlinked root weighs a realpath'd file as the projecting leg does.
+    const realFile = realPathOf(file);
     const within = this.mirrors.some((m) => {
       if (m.bagId !== bagId || m.mirrorClass === "recovery") return false;
-      const rel = relativePath(resolvePath(m.mirrorRoot), resolvePath(file));
-      return rel !== "" && rel !== ".." && !rel.startsWith("../") && !rel.startsWith("..\\") && !isAbsolute(rel);
+      const realRoot = realPathOf(m.mirrorRoot);
+      return confineMirrorWrite(realRoot, relativePath(realRoot, realFile), m.allowBagsRootFiles).ok;
     });
     if (!within) return "outside-mirror";
     const render = await this.recordsRenderOf(bagId, uri);
@@ -2560,5 +2563,14 @@ export class LarDiskProjector {
         this._leaveStandoff(otherMirror.bagId, tiddlerUri, "home");
       }
     }
+  }
+}
+
+/** A path with its symlinks resolved; a path gone from disk resolves through its nearest standing parent. */
+function realPathOf(path: string): string {
+  const abs = resolvePath(path);
+  try { return realpathSync(abs); } catch {
+    const parent = dirname(abs);
+    return parent === abs ? abs : joinPath(realPathOf(parent), basename(abs));
   }
 }

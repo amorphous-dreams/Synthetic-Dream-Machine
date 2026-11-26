@@ -20,7 +20,7 @@ import { cpSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
-import { HOME_WIKI_TITLE, homeWikiFilter } from "@lararium/tw5";
+import { HOME_WIKI_TITLE, homeWikiFilter, KEEP_LIST_TITLE, keepListFilter } from "@lararium/tw5";
 import { withLarRoot } from "../../../../tests/harness/with-lar-root.js";
 import { direct } from "../direct-store.js";
 import { TEST_CUSTODY, TEST_PASSPHRASE, TEST_SLOT } from "../found-route.js";
@@ -112,8 +112,8 @@ function askOverChannel(socketPath: string, inv: Record<string, unknown>): Promi
   });
 }
 
-/** Mint `slug` over the composition's served front, as `lares wiki init` asks it. */
-async function mintWiki(at: Staged, vessel: NodeVesselResult, slug: string): Promise<void> {
+/** One verb over the composition's served front, as the CLI asks it: the settled outcome's line. */
+async function askVerb(at: Staged, vessel: NodeVesselResult, verb: string, args: Record<string, unknown>): Promise<Record<string, unknown>> {
   const requestedBy = await withLarRoot(at.root, async () => `0x${await loadVesselVerifyingKey()}`);
   const front = serveUdsFront({ claim: vessel.storeClaim });
   front.attach(makeUdsSeat({
@@ -121,10 +121,28 @@ async function mintWiki(at: Staged, vessel: NodeVesselResult, slug: string): Pro
     placeVerb: (o) => vessel.daemon.placeVerb(o), claim: vessel.storeClaim, repo: vessel.repo,
     floorVerbs: floorVerbsFor(vessel.floorKey === "stands"),
   }));
-  try {
-    const minted = await askOverChannel(vessel.storeClaim.socketPath, { verb: "init-wiki", args: { slug }, requestedBy, requestId: `mint-${slug}` });
-    expect(minted["status"], `the face mints its wiki: ${JSON.stringify(minted)}`).toBe("done");
-  } finally { await front.close(); }
+  try { return await askOverChannel(vessel.storeClaim.socketPath, { verb, args, requestedBy, requestId: `${verb}-${args["slug"] ?? "ask"}` }); }
+  finally { await front.close(); }
+}
+
+/** Mint `slug` over the composition's served front, as `lares wiki init` asks it. */
+async function mintWiki(at: Staged, vessel: NodeVesselResult, slug: string): Promise<void> {
+  const minted = await askVerb(at, vessel, "init-wiki", { slug });
+  expect(minted["status"], `the face mints its wiki: ${JSON.stringify(minted)}`).toBe("done");
+}
+
+/** The face writes its keep list into its own daemon wiki's working layer, as `lares tiddler put … --recipe default` does. */
+async function putKeepList(at: Staged, vessel: NodeVesselResult, slugs: readonly string[]): Promise<void> {
+  await withLarRoot(at.root, () => vessel.daemon.composite.put({ tiddler: { title: KEEP_LIST_TITLE, text: keepListFilter(slugs) } },
+    { kind: "lares-verb", requestId: "lit-face-keep-put" } as never, { bag: DAEMON_WORKING }));
+}
+
+/** The wikis the worn face keeps now, read through the `wiki-active` verb. */
+async function keptNow(at: Staged, vessel: NodeVesselResult): Promise<string[]> {
+  const answer = await askVerb(at, vessel, "wiki-active", {});
+  const held = ((answer["results"] as { summary?: { output?: { held?: unknown } } } | undefined)?.summary?.output?.held
+    ?? (answer["output"] as { held?: unknown } | undefined)?.held) as unknown;
+  return Array.isArray(held) ? held.map(String) : [];
 }
 
 describe("a lit face lands on its own home wiki", () => {
@@ -157,5 +175,20 @@ describe("a lit face lands on its own home wiki", () => {
     await vessel.homeWikiSettled();
     expect(vessel.activeWikiId).toBe("lares");
     expect(vessel.activeWikiSource).not.toBe("home-preference");
+  }, 600_000);
+
+  test("K1 RED: the lit face's close frees its keeps at the cap, where its keep list seated them at light", async () => {
+    const at = await stageFounded();
+    const first = await composeLit(at, "lares");
+    await mintWiki(at, first.vessel, "keeps-own");
+    await putKeepList(at, first.vessel, ["keeps-own"]);
+    await first.down();
+    const { vessel } = await composeLit(at, "lares");
+    await vessel.homeWikiSettled();
+    expect(await keptNow(at, vessel), "the keep list seats its keep at light").toContain("keeps-own");
+    const ordinal = vessel.mountOrdinal();
+    expect(ordinal, "the worn face stands lit").not.toBeNull();
+    await vessel.dropFace(ordinal!);
+    expect(await keptNow(at, vessel), "the face's close frees every keep it held").toEqual([]);
   }, 600_000);
 });

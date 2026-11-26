@@ -183,7 +183,7 @@ export type { IslandHostShore } from "./sovereign-kernel.js";
 export { addSubstrateLayer, addReadOnlyLayer, seedVesselDefaults, mountPrimaryWiki, buildWikiMountSpec } from "./vessel-steps.js";
 export type { ResolveBagHandle, PrimaryMountPool, BindingResolver, PrimaryMountInputs } from "./vessel-steps.js";
 export {
-  makeVesselResidency, writePinTiddler, removePinTiddler, replayPinsFromDaemonDoc,
+  makeVesselResidency,
 } from "./vessel-residency-wiring.js";
 export type {
   VesselResidency, VesselResidencyPool, VesselResidencyConfig, VesselResidencyHooks,
@@ -193,8 +193,7 @@ export { loadCatalogCorpora } from "./load-corpora.js";
 export type { CorpusLoaderDeps } from "./load-corpora.js";
 export {
   makeWhereReactor, makeResolveReactor, makeListWikisReactor,
-  makePinReactor, makeUnpinReactor, makeRegisterColdReactor,
-  makeWikiPinReactor, makeWikiUnpinReactor,
+  makeRegisterColdReactor,
   makeWardAlertReactor, fileWardRefusal, makeIngestAlertRail,
 } from "./worker-data-verbs.js";
 export type { ResidencyOpPost } from "./worker-data-verbs.js";
