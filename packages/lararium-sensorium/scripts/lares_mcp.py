@@ -1502,21 +1502,27 @@ def build_mcp(coordinator: LaresCoordinator):
 
     @mcp.tool(annotations=_annotations("oracle_cast"))
     def oracle_cast(recipe: "str | None" = None, bag: "str | None" = None, coins: "list | None" = None,
-                    caster: "str | None" = None, asking: "str | None" = None) -> dict:
+                    caster: "str | None" = None, asking: "str | None" = None, uncertain: "str | None" = None,
+                    observe: "list | str | None" = None) -> dict:
         """Cast THE I CHING and let the vessel write the cast as one tiddler — mirrors `lares oracle cast`. Three coins a
         line (heads three, tails two): 6 (old yin) and 9 (old yang) change, 7 and 8 hold; six lines, bottom first, name the
         PRIMARY hexagram by its King Wen number (1-64), and the changing lines turned over name the RELATING one (none where
-        no line changes). With no `coins` the vessel draws the coins through the platform's entropy door
-        (`platform:crypto.getRandomValues`), so this seat never picks the figure; `coins` hands in six values the operator
-        threw with real coins (6, 7, 8 or 9, bottom line first), named `operator:three-coins`. `caster` names who cast
-        (default `agent`). The tiddler lands once under `lar:///ha.ka.ba/lares/oracle/casts/` in the wiki's working layer
-        with fields method, entropy, lines, changing, primary, relating, caster, cast-at and readings; reading it again
-        never casts again. ONE ASKING, ONE THROW: `asking` names the fork you cast at, in words; the same words by the same
+        no line changes). The vessel draws the coins through the platform's entropy door
+        (`platform:crypto.getRandomValues`), so this seat never picks the figure: `coins` (six values thrown with real coins)
+        rides a person's hand, and a seat that sends them reads band `asks` naming the line a person runs. `caster` names who
+        cast (default `agent`). THE CAST LANDS AS AN OODA-HA MEME (`lar:///oracle.cast.throws`; its slots read from canon,
+        api/pono/oracle-loop#/loop) once under `lar:///ha.ka.ba/lares/oracle/casts/`: `observe` (your context pointers:
+        records, hashes, branches) fills #/observe, `uncertain` (your gathered uncertainty, in any words) and `asking` fill
+        #/orient, the house fills #/decide with the throw and every reading with its credit, and #/decide, #/act and #/hooko
+        stay owed: append your reading, move and aftermath with `tiddler_put(title=<cast>, meme=True, slot="#/decide",
+        append=...)` (no base needed); reading it again never casts again. ONE ASKING, ONE THROW: `asking` names the fork you cast at, in words; the same words by the same
         caster answer the cast already standing (`replayed`; case, spacing and trailing punctuation never re-roll, and the
-        throw keys on the seat the vessel booked, `caster` annotating alone), so a retried call never throws twice. Name the
+        throw keys on the seat the vessel booked, `caster` annotating alone), so a retried call never throws twice, and the
+        replay names the uncertainty the record kept. Name the
         query before the cast: a call with no `asking` reads band `asks`. A fresh throw for the same words, or a seeded one, rides a person's hand alone (the
         CLI's `--fresh` / `--seed`); a seat that asks either reads band `asks`. Returns {band, intent, replayed, decision,
-        created, title, cast, text, readings, asOf, note} (`asOf` labels the readings by the digest of the bytes read): `readings` carries the house's imported DOA and e-jing texts for each hexagram this wiki holds,
+        created, title, cast, text, readings, asOf, uncertain, observe, slots, next, note} (`slots` names each act slot and
+        whether you owe it; `next` the read and append lines) (`asOf` labels the readings by the digest of the bytes read): `readings` carries the house's imported DOA and e-jing texts for each hexagram this wiki holds,
         with their attribution and license, and names the ones it holds none of. A spirit's jolt rides this tool only when
         its brief opts in, and the hand-back names the cast. CONTAINER LAW: exactly one of `recipe` / `bag`
         (`recipe="default"` names the worn face's daemon wiki).
@@ -1532,6 +1538,15 @@ def build_mcp(coordinator: LaresCoordinator):
         args["caster"] = caster.strip() if isinstance(caster, str) and caster.strip() else "agent"
         if isinstance(asking, str) and asking.strip():
             args["asking"] = asking.strip()
+        if isinstance(uncertain, str) and uncertain.strip():
+            args["uncertain"] = uncertain.strip()
+        if observe is not None:
+            pointers = observe.split() if isinstance(observe, str) else observe
+            if not isinstance(pointers, list) or not all(isinstance(x, str) for x in pointers):
+                raise SeatArgumentRefused("oracle_cast: `observe` names context pointers, a list of strings or one line")
+            pointers = [x.strip() for x in pointers if x.strip()]
+            if pointers:
+                args["observe"] = pointers
         now = datetime.datetime.now(datetime.timezone.utc)
         args["at"] = now.isoformat(timespec="milliseconds").replace("+00:00", "Z")
         return _meme_wire("oracle-cast", args)

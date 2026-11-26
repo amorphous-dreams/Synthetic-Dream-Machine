@@ -70,9 +70,10 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     ],
   },
   oracle: {
-    usage: "usage: lares oracle cast --recipe <slug> [--asking <words>] [--fresh | --seed <words>] [--coins <six values>] [--caster <name>]",
+    usage: "usage: lares oracle cast --recipe <slug> [--uncertain <words>] [--observe <pointers>] [--asking <words>] [--fresh | --seed <words>] [--coins <six values>] [--caster <name>]",
     synopsis:
-      "Cast the I Ching by three coins a line and let the vessel write the cast as one tiddler under lar:///ha.ka.ba/lares/oracle/casts/. " +
+      "Cast the I Ching by three coins a line and let the vessel land the cast once as an OODA-HA meme under lar:///ha.ka.ba/lares/oracle/casts/ " +
+      "(its slots read from canon, api/pono/oracle-loop#/loop: #/observe #/orient #/decide #/act #/hooko). " +
       "A line sums three coins, heads three and tails two: 6 (old yin) and 9 (old yang) change, 7 and 8 hold. The six lines, bottom first, " +
       "name the primary hexagram by its King Wen number; the changing lines turned over name the relating one. With no --coins the coins draw " +
       "through the platform's entropy door (crypto.getRandomValues); --coins hands in the operator's own throw with real coins, named " +
@@ -97,9 +98,12 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares oracle cast --recipe default --json                # the verb's answer: cast, readings, the tiddler's title",
       "lares oracle cast --recipe default --asking 'which road first?'          # asked again, the same throw answers",
       "lares oracle cast --recipe default --asking 'which road first?' --fresh  # a person asks the same words anew",
+      "lares oracle cast --recipe default --observe 'lar:///ha.ka.ba/kahua/memory/plan/x spirit/lane' --uncertain 'two leans, neither grounded' --asking 'which lane first?'",
     ],
     flags: [
       "--asking <w>  the question: the same words by the same caster answer the cast already standing",
+      "--uncertain <w>  the gathered uncertainty, in any words: fills #/orient at the first throw; a replay names the one it kept",
+      "--observe <p>    the arm's context pointers (records, hashes, branches; space-separated): fill #/observe at the first throw",
       "--fresh       a person's hand: a new throw for the same words",
       "--seed <w>    a person's hand: coins drawn from these words, the same seed the same throw (named by its digest)",
       "--coins <v>   six line values of 6, 7, 8 or 9, bottom line first (7,8,9,6,7,7 or 789677): the operator's own throw",
