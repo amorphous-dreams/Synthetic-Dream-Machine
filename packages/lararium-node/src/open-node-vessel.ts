@@ -41,6 +41,7 @@ import {
   DOCSTORE_SEAL_VERB,
   type SealedBag,
 } from "@lararium/mesh/sealed-rest";
+import { compactingStorage } from "@lararium/mesh/compacting-storage";
 import { standingSessionSeat, type BookedSession } from "@lararium/mesh/session-sign-book";
 import {
   bindSecretHomeRest,
@@ -1839,7 +1840,16 @@ async function prepareNodeBootOn(
   // The deny set GROWS as the control document names device documents: each growth re-asks every cached verdict.
   const vesselOnly = vesselOnlyBook(() => repo);
   const repo = new Repo({
-    storage: wire.storage,
+    // EVERY DOCUMENT COMPACTS BY COUNT AND BYTES, never by clock (`compactingStorage`): the control document's outcome ledger
+    // grew a 30 MB snapshot, so the engine's own policy (incremental bytes reach the snapshot's) left thousands of chunks
+    // standing between compactions. The live document a compaction snapshots comes off this Repo's own handle table.
+    storage: compactingStorage(wire.storage, {
+      liveDoc: (documentId) => {
+        const handle = (repo.handles as Record<string, { isReady(): boolean; doc(): unknown } | undefined>)[documentId];
+        return handle?.isReady() ? handle.doc() as A.Doc<unknown> : null;
+      },
+      onFault: (documentId, error) => console.warn(`[lararium] compaction of ${documentId} faulted; its chunks stay at rest: ${error instanceof Error ? error.message : String(error)}`),
+    }),
     peerId: wire.peerId,
     // THE PROTOTYPE-KEY SHORE: a sync message carrying a `__proto__` key never reaches the Repo.
     network: [shoreInbound(network)],
