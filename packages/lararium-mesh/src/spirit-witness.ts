@@ -41,8 +41,12 @@ export const PERSONA_ROLES = [
   "Gatekeeper", "Lorekeeper", "Scryer", "Council", "Muse", "Artificer", "Advocate", "Diplomat", "Pedagogue", "Hierophant", "Triage", "Stranger", "Liminal",
 ] as const;
 
-/** The filing line's shape, as the hand-back hook reads it, with or without the colon. */
-export const FILING_LINE = /^\W*([A-Za-z][\w-]{0,40})(?:#(\d{1,8}))?:?\s*\(Lares Spirit\)\s*$/;
+/**
+ * The filing line's shape: the seed's `<pet> (Lares Spirit)`, `<pet>#<n>` for one instance, a colon after the name reading the
+ * same. ONE READER: the hooks' `FILING.line` (`lares-spirit-core.mjs`, the table every reader of the line reads) holds this same
+ * pattern, and the CLI's residue-witness suite welds the two (the mesh core imports no hook, so the weld stands in a test).
+ */
+export const FILING_LINE = /^\W*([A-Za-z][\w-]{0,40})(?:#(\d{1,8}))?:?\s*\(Lares Spirit\)/;
 const PERSONA_TAG = new RegExp(`^[\\s>*_-]*([A-Z][\\w'-]*(?: [A-Z][\\w'-]*){0,3}) \\((${PERSONA_ROLES.join("|")})\\)[*_]*:`);
 const THROW = /^↯(\d+)\s*✲\s*([⚀-⚅])\((\d+)\)\s*⁂:\s*(.*)$/su;
 const SIGIL_SPAN_CAP = 8000;
@@ -151,7 +155,7 @@ export function frameWitness(text: string): FrameReading {
   const firstLine = text.split("\n").find((l) => l.trim() !== "") ?? "";
   const f = FILING_LINE.exec(firstLine.trim());
   const filing = f ? { pet: f[1]!.toLowerCase(), instance: f[2] ?? null } : null;
-  if (filing === null) tell("no-filing-line", WITNESS_SLOTS.filing, "the first line reads no `<pet>[#<n>]: (Lares Spirit)`");
+  if (filing === null) tell("no-filing-line", WITNESS_SLOTS.filing, "the first line reads no `<pet>[#<n>] (Lares Spirit)`");
 
   const sets = sigils.filter((s) => s.name === "set");
   const aimSigil = sets.find((s) => s.keys["lares"] === "aim") ?? null;

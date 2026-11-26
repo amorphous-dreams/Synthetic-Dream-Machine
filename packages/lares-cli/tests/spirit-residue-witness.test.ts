@@ -43,6 +43,7 @@ vi.mock("../src/env.js", async (orig) => ({
 import { cmdSpirit } from "../src/commands/spirit.js";
 import { COMMANDS } from "../src/bin/lares.js";
 import { compactionTitle, residueTitle } from "@lararium/mesh/spirit-shrine";
+import { FILING_LINE, frameWitness } from "@lararium/mesh/spirit-witness";
 import type { ParsedArgs } from "../src/parse-args.js";
 
 const NOW = () => new Date("2026-11-26T12:00:00Z");
@@ -156,5 +157,33 @@ describe("--transcripts reads hand-backs from disk", () => {
   });
   test("an empty directory reads one unread line", async () => {
     expect(data(await witness({ transcripts: scratch })).lines).toEqual([expect.stringMatching(/^unread .* · the directory holds no \*\.jsonl transcript; read it: ls /)]);
+  });
+});
+
+describe("one reader of the filing line", () => {
+  type Filing = { role: string; line: RegExp; verb: string };
+  type HookCore = { FILING: Filing; filingOf: (message: string) => { pet: string; instance: string | null } | null };
+  const hookCore = async (): Promise<HookCore> =>
+    (await import(new URL("../.claude-plugin/hooks/lares-spirit-core.mjs", import.meta.url).href)) as HookCore;
+
+  test("the witness's FILING_LINE equals the hooks' FILING table, pattern and flags", async () => {
+    const { FILING } = await hookCore();
+    expect(FILING_LINE.source).toBe(FILING.line.source);
+    expect(FILING_LINE.flags).toBe(FILING.line.flags);
+    expect(FILING.role).toBe("(Lares Spirit)");
+  });
+
+  test("both readers file the seed's line alike: bare, an instance, a colon, and a line that files nothing", async () => {
+    const { filingOf } = await hookCore();
+    const lines: Array<[string, { pet: string; instance: string | null } | null]> = [
+      ["cold-reader (Lares Spirit)", { pet: "cold-reader", instance: null }],
+      ["cold-reader#2 (Lares Spirit)", { pet: "cold-reader", instance: "2" }],
+      ["cold-reader#2: (Lares Spirit)", { pet: "cold-reader", instance: "2" }],
+      ["Here is what I found.", null],
+    ];
+    for (const [line, filed] of lines) {
+      expect(filingOf(`${line}\n\nreport`), line).toEqual(filed);
+      expect(frameWitness(`${line}\n\nreport`).filing, line).toEqual(filed);
+    }
   });
 });

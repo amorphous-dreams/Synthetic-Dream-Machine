@@ -288,7 +288,7 @@ for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
     const bytes = Buffer.from("!! Open\n\n* a loop\n", "utf8");
     // The carry's verb reads from the built table (`spirit-words.ts`), so a rename of the word reaches this match too.
     const { COMPACTION_WORD } = await import("../packages/lares-cli/dist/src/spirit-words.js");
-    for (const wire of [["spirit", "ah", "lares-alpha", "--slot", "#/open"], ["spirit", COMPACTION_WORD, "lares-alpha"], ["spirit", "residue", "om-wright"]]) {
+    for (const wire of [["spirit", "ah", "lares-alpha", "--slot", "#/open"], ["spirit", COMPACTION_WORD, "lares-alpha"], ["spirit", "residue", "om-wright"], ["spirit", "handback", "om-wright#2"]]) {
       const r = await run(shim, [...wire, "--file", "@HOST_FILE@"], { env, hostInput: bytes });
       assert.equal(r.status, 0, `${wire.join(" ")}: ${r.stderr}`);
       assert.deepEqual(r.received, bytes, wire.join(" "));

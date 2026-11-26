@@ -1,5 +1,5 @@
 /**
- * spirit-summon.test.ts — `lares spirit mandate | summon | handback <pet>#<n>` and `om --mandate`: the house reads a mandate
+ * spirit-summon.test.ts — `lares spirit mandate | summon <pet>#<n>`, the edge the one return door (`handback`) closes, and `om --mandate`: the house reads a mandate
  * through the door, verifies its hash, holds custody and the coordinator's lanes, lands the edge, and starts the instance through
  * the launch cap with the one wake line. The launch cap rides a stub in every case: no test starts a model. A lane claims on
  * the coordinator's ledger by compare-and-set: `h.racer` moves the ledger between this door's read and its write, as a second
@@ -98,6 +98,8 @@ async function run(args: ParsedArgs, seams: Record<string, unknown> = {}): Promi
 }
 const data = (r: { printed: Record<string, unknown> }) => r.printed["data"] as Record<string, unknown>;
 const error = (r: { printed: Record<string, unknown> }) => r.printed["error"] as { code: string; message: string };
+/** What the one return door answers of the summons edge it closed (`data.edge`; null where no edge names the instance). */
+const closed = (r: { printed: Record<string, unknown> }) => data(r)["edge"] as Record<string, unknown>;
 const fieldsOf = (title: string) => h.store.get(title)?.fields ?? null;
 
 beforeEach(() => { h.store.clear(); h.face = null; h.racer = null; });
@@ -217,13 +219,22 @@ describe("the relationship record lands", () => {
     const r = await run(argv(["handback", "cold-reader#00002"], { record }), { hand: SEAT });
     expect(r.exit).toBe(0);
     expect(fieldsOf(summonsOf(m.hash))!["handback"]).toBe(`${record}@sha256-bc-123-3`);
-    expect(data(r)).toMatchObject({ edge: summonsOf(m.hash), offerer: "lares-alpha#00001", decision: "put" });
+    expect(data(r)).toMatchObject({ instance: "cold-reader#00002", record, landed: "standing" });
+    expect(closed(r)).toMatchObject({ edge: summonsOf(m.hash), offerer: "lares-alpha#00001", decision: "put" });
   });
-  test("a handback naming no standing record, or an instance no summons names, refuses by name", async () => {
+  test("a handback naming no standing record refuses by name; one no summons names stands on its own, and refuses only under a named mandate", async () => {
     const m = arm(coordinator());
     await run(argv(["summon", "cold-reader#00002"], { mandate: m.ref }));
     expect(error(await run(argv(["handback", "cold-reader#00002"], { record: `${M}residue/none` }))).code).toBe("handback-unknown");
-    expect(error(await run(argv(["handback", "cold-reader#00007"], { record: `${M}residue/none` }))).code).toBe("summons-unknown");
+    const record = `${M}residue/back-9`;
+    h.store.set(record, { fields: { text: "done" }, rev: 1 });
+    const lone = await run(argv(["handback", "cold-reader#00007"], { record }));
+    expect(lone.exit).toBe(0);
+    expect(closed(lone)).toBeNull();
+    const named = error(await run(argv(["handback", "cold-reader#00007"], { record, mandate: m.ref })));
+    expect(named.code).toBe("summons-unknown");
+    expect(named.message).toContain(record);
+    expect(fieldsOf(summonsOf(m.hash))!["handback"]).toBeUndefined();
   });
 });
 
@@ -408,12 +419,12 @@ describe("a lane claims atomically on the coordinator's ledger", () => {
     await run(argv(["summon", "cold-reader#00002"], { mandate: m.ref }));
     h.store.set(`${M}residue/back-1`, { fields: { text: "done" }, rev: 1 });
     const back = await run(argv(["handback", "cold-reader#00002"], { record: `${M}residue/back-1` }));
-    expect(data(back)["lane"]).toBe("freed");
+    expect(closed(back)["lane"]).toBe("freed");
     expect(holds()).toEqual([]);
-    expect(data(await run(argv(["handback", "cold-reader#00002"], { record: `${M}residue/back-1` })))["lane"]).toBe("freed");
+    expect(closed(await run(argv(["handback", "cold-reader#00002"], { record: `${M}residue/back-1` })))["lane"]).toBe("freed");
     const byHand = arm(null, "00005");
     await run(argv(["summon", "cold-reader#00005"], { mandate: byHand.ref }));
-    expect(data(await run(argv(["handback", "cold-reader#00005"], { record: `${M}residue/back-1` })))["lane"]).toBe("none");
+    expect(closed(await run(argv(["handback", "cold-reader#00005"], { record: `${M}residue/back-1` })))["lane"]).toBe("none");
   });
   test("a hand-back whose ledger never held still lands on the edge and names the line that frees the lane", async () => {
     const m = arm(coordinator({ lanes: "1" }));
@@ -422,8 +433,8 @@ describe("a lane claims atomically on the coordinator's ledger", () => {
     h.racer = { title: LEDGER, move: () => { const held = h.store.get(LEDGER)!; h.store.set(LEDGER, { fields: { ...held.fields, note: String(held.rev) }, rev: held.rev + 1 }); } };
     const back = await run(argv(["handback", "cold-reader#00002"], { record: `${M}residue/back-1` }));
     expect(back.exit).toBe(0);
-    expect(data(back)["lane"]).toBe("unsettled");
-    expect(String(data(back)["cure"])).toContain("lares spirit handback 'cold-reader#00002'");
+    expect(closed(back)["lane"]).toBe("unsettled");
+    expect(String(closed(back)["cure"])).toContain("lares spirit handback 'cold-reader#00002'");
     expect(fieldsOf(summonsOf(m.hash))!["handback"]).toContain(`${M}residue/back-1@`);
     expect(holds()).toEqual([summonsOf(m.hash)]);
   });

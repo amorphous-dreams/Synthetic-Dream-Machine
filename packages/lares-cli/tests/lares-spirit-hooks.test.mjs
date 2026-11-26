@@ -10,7 +10,7 @@ import { join, resolve } from "node:path";
 import { tmpdir } from "node:os";
 import { spawnSync } from "node:child_process";
 import {
-  COMPACTION_DISPLAY, COMPACTION_WORD, OBSERVE_BUDGET_MS, OM_BUDGET_MS, PRECOMPACT_CHARS, WAKE_CEILING_MS, busy, compactionAsk, handbackPetOf, inHouse,
+  COMPACTION_DISPLAY, COMPACTION_WORD, OBSERVE_BUDGET_MS, OM_BUDGET_MS, PRECOMPACT_CHARS, WAKE_CEILING_MS, busy, compactionAsk, FILING, filingOf, handbackPetOf, handbackWho, inHouse,
   omContext, omSourceOf, petOf, precompactText, readState, sessionPet, stateDirOf, statePathOf, stopStep, holdsPet, titleLine, titleMismatch, trueUpText, updateState, wakePet, TRUE_UP_EVERY,
 } from "../.claude-plugin/hooks/lares-spirit-core.mjs";
 
@@ -157,6 +157,26 @@ test("the pure parts", async (t) => {
     assert.equal(handbackPetOf("relink-keeper#1 (Lares Spirit)\nreport", "a1"), "relink-keeper");
     assert.equal(handbackPetOf("seal-keeper#2: (Lares Spirit)\nreport", "a1"), "seal-keeper");
     assert.equal(handbackPetOf("Om-Wright: Lares (Tasked Spirit)\nreport", "Agent_9"), "agent-9");
+  });
+  await t.test("the filing line reads from one table: the role words, the one pattern built from them, and the return door's verb", () => {
+    assert.equal(FILING.role, "(Lares Spirit)");
+    assert.equal(FILING.verb, "handback");
+    assert.ok(FILING.line.source.includes("Lares Spirit"));
+    assert.deepEqual(filingOf("\n  Om-Wright (Lares Spirit)\nreport"), { pet: "om-wright", instance: null });
+    assert.deepEqual(filingOf("relink-keeper#1 (Lares Spirit)\nreport"), { pet: "relink-keeper", instance: "1" });
+    assert.deepEqual(filingOf("seal-keeper#00002: (Lares Spirit)\nreport"), { pet: "seal-keeper", instance: "00002" });
+    assert.equal(filingOf("plain report\nEvil (Lares Spirit)"), null);
+  });
+  await t.test("the return door hears the instance the filing line names, else the pet, else the agent's id", () => {
+    assert.equal(handbackWho("norton#1 (Lares Spirit)\nreport", "a1"), "norton#1");
+    assert.equal(handbackWho("Om-Wright (Lares Spirit)\nreport", "a1"), "om-wright");
+    assert.equal(handbackWho("plain report", "Agent_9"), "agent-9");
+    assert.equal(handbackWho("plain report", ""), "spirit");
+  });
+  await t.test("no hook reads the filing line by a pattern of its own", () => {
+    for (const name of readdirSync(sourceDir).filter((n) => n.endsWith(".mjs") && n !== "lares-spirit-core.mjs")) {
+      assert.doesNotMatch(readFileSync(join(sourceDir, name), "utf8"), /Lares Spirit\\\)/, name);
+    }
   });
   await t.test("a working directory reads inside the house only under the checkout or a bound workspace", () => {
     const root = mkdtempSync(join(tmpdir(), "in-house-"));
@@ -394,13 +414,24 @@ test("the hooks, spawned whole", async (t) => {
       const out = JSON.parse(spawn("lares-true-up-hook.mjs", [], at({ session_id: "s-7" })));
       assert.match(out.hookSpecificOutput.additionalContext, /lares spirit ah lares-awakens/);
     });
-    await t.test("handback: inside the house, the report lands whole on stdin under its first line's pet, keyed by session and agent", () => {
+    await t.test("handback: inside the house, the report rides whole on stdin through the one return door under its first line's pet, keyed by session and agent", () => {
       reset();
-      plant({ "vessel stand": UP, "spirit residue": JSON.stringify({ ok: true, data: {} }) });
+      plant({ "vessel stand": UP, "spirit handback": JSON.stringify({ ok: true, data: {} }) });
       const message = "Om-Wright (Lares Spirit)\nreport";
       spawn("lares-handback-hook.mjs", ["lares-alpha"], at({ tool_name: "SubagentHandback", session_id: "s-h", agent_id: "a-1", tool_input: { message } }));
-      assert.ok(calls().split("\n").includes("spirit residue om-wright --file - --key s-h:a-1 --json"));
+      assert.ok(calls().split("\n").includes("spirit handback om-wright --file - --key s-h:a-1 --json"));
+      assert.ok(!calls().includes("spirit residue"));
       assert.equal(readFileSync(fed, "utf8"), message);
+    });
+    await t.test("handback: an instance's filing line reaches the door as <pet>#<n>, so the door finds that instance's edge; no filing line falls back to the agent's id", () => {
+      reset();
+      plant({ "vessel stand": UP, "spirit handback": JSON.stringify({ ok: true, data: {} }) });
+      spawn("lares-handback-hook.mjs", ["lares-alpha"], at({ tool_name: "SubagentHandback", session_id: "s-h", agent_id: "a-2", tool_input: { message: "norton#1 (Lares Spirit)\nreport" } }));
+      assert.ok(calls().split("\n").includes("spirit handback norton#1 --file - --key s-h:a-2 --json"));
+      reset();
+      plant({ "vessel stand": UP, "spirit handback": JSON.stringify({ ok: true, data: {} }) });
+      spawn("lares-handback-hook.mjs", ["lares-alpha"], at({ tool_name: "SubagentHandback", session_id: "s-h", agent_id: "Agent_9", tool_input: { message: "a report with no filing line" } }));
+      assert.ok(calls().split("\n").includes("spirit handback agent-9 --file - --key s-h:Agent_9 --json"));
     });
     await t.test("handback: outside the house, with no familiar at all, or for another tool, nothing lands", () => {
       const elsewhere = mkdtempSync(join(tmpdir(), "elsewhere-"));
@@ -411,9 +442,9 @@ test("the hooks, spawned whole", async (t) => {
           [["lares-alpha"], { tool_name: "Bash", cwd: root, tool_input: { message: "m" } }],
         ]) {
           reset();
-          plant({ "vessel stand": UP, "spirit residue": "{}" });
+          plant({ "vessel stand": UP, "spirit handback": "{}" });
           spawn("lares-handback-hook.mjs", args, JSON.stringify(input));
-          assert.ok(!calls().includes("spirit residue"), JSON.stringify(input));
+          assert.ok(!calls().includes("spirit handback"), JSON.stringify(input));
         }
       } finally { rmSync(elsewhere, { recursive: true, force: true }); }
     });

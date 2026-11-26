@@ -88,6 +88,79 @@ describe("pointer lines and prose", () => {
   });
 });
 
+describe("a seedless file keeps the one line its row names", () => {
+  const LINE = "- hand back with `lares spirit handback <pet> --file -`";
+  it("an absent file takes the render, or the line alone where the row renders none", () => {
+    expect(seedless("## Surface\n\n" + LINE + "\n", LINE)(null)).toBe("## Surface\n\n" + LINE + "\n");
+    expect(seedless("## Surface\n", LINE)(null)).toBe("## Surface\n" + LINE + "\n");
+    expect(seedless(undefined, LINE)(null)).toBe(LINE + "\n");
+  });
+  it("a file another hand wrote gains the line at its end, every other line standing, and a second pass moves no byte", () => {
+    const mine = "## Mine\n\n- my own rule\n";
+    const kept = seedless(undefined, LINE)(mine)!;
+    expect(kept).toBe(mine + LINE + "\n");
+    expect(seedless(undefined, LINE)(kept)).toBe(kept);
+  });
+  it("the line counts only whole: prose that quotes it mid-sentence still takes it", () => {
+    const quoted = "note: " + LINE + " (quoted)\n";
+    expect(seedless(undefined, LINE)(quoted)).toBe(quoted + LINE + "\n");
+  });
+  it("a pointer lifts and the line lands in one pass; a row naming no line reads as before", () => {
+    expect(seedless(undefined, LINE)("-> [noosphere-boot.mem](x)\n")).toBe(LINE + "\n");
+    expect(seedless(undefined, LINE)("## Mine\n-> [noosphere-boot.mem](x)\n")).toBe("## Mine\n" + LINE + "\n");
+    expect(seedless()("## Mine\n")).toBe("## Mine\n");
+    expect(seedless()(null)).toBeNull();
+  });
+});
+
+describe("every fire reads the one return door (lar:///ha.ka.ba/lares/cli/reality-tunnel#/the-return-door)", () => {
+  const row = (id: string) => [...declared(REPO).repo, ...declared(REPO).home].find((s) => s.id === id)!;
+  const DOOR = "lares spirit handback <pet> --file -";
+
+  it("the carrier names the return line where Copilot and Codex read, and the hook that runs it for Claude", async () => {
+    // The hooks ship as plain .mjs a harness runs unbuilt; the weld loads the module itself.
+    const core = (await import(new URL("../.claude-plugin/hooks/lares-spirit-core.mjs", import.meta.url).href)) as { FILING: { verb: string } };
+    expect(DOOR).toContain(`lares spirit ${core.FILING.verb} `);
+    expect(row("copilot.github-seedless")).toMatchObject({ host: "copilot", kind: "seedless", file: ".github/copilot-instructions.md" });
+    expect(row("codex.home-seedless")).toMatchObject({ host: "codex", kind: "seedless", file: ".codex/AGENTS.md" });
+    for (const id of ["copilot.github-seedless", "codex.home-seedless"]) expect(String(row(id)["line"])).toContain(DOOR);
+    expect(String(row("copilot.github-seedless")["render"]).split("\n")).toContain(row("copilot.github-seedless")["line"]);
+    expect(row("claude.handback-hook")).toMatchObject({ event: "PostToolUse", matcher: "SubagentHandback" });
+    expect(String(row("claude.handback-hook").what)).toContain("lares spirit handback");
+    // AGENTS.md stays seedless and thin: Copilot's own file carries the line, and Codex never reads AGENTS.md inside the clone.
+    expect(row("agents.seedless")["line"]).toBeUndefined();
+  });
+
+  it("the checkout: a bare clone's tend writes Copilot's file holding the line; a file a hand wrote gains it and keeps its own lines", async () => {
+    const root = clone();
+    const l = ledger();
+    await tend(repoItems(root), l);
+    const at = join(root, ".github/copilot-instructions.md");
+    expect(readFileSync(at, "utf8").split("\n")).toContain(row("copilot.github-seedless")["line"]);
+    writeFileSync(at, "## Copilot\n\n- my own rule\n");
+    expect(read(repoItems(root), l).find((x) => x.id === "copilot.github-seedless")!.state).toBe("drift");
+    await tend(repoItems(root), l);
+    expect(readFileSync(at, "utf8")).toBe(`## Copilot\n\n- my own rule\n${String(row("copilot.github-seedless")["line"])}\n`);
+    expect((await tend(repoItems(root), l)).wrote).toEqual([]);
+  });
+
+  it("the home: Codex's own file takes the line beside whatever the operator keeps there, and a home with no Codex takes nothing", async () => {
+    const root = clone();
+    const native = mkdtempSync(join(dir, "home-"));
+    const bare = mkdtempSync(join(dir, "bare-"));
+    mkdirSync(join(native, ".codex"));
+    writeFileSync(join(native, ".codex/AGENTS.md"), "my own Codex notes\n");
+    const l = ledger();
+    const items = () => homeItems({ repo: root, homes: { native, windows: null }, mcp: MCP, claudeCli: false });
+    expect(read(items(), l).find((x) => x.id === "codex.home-seedless")!.state).toBe("drift");
+    await tend(items(), l);
+    expect(readFileSync(join(native, ".codex/AGENTS.md"), "utf8")).toBe(`my own Codex notes\n${String(row("codex.home-seedless")["line"])}\n`);
+    expect(read(items(), l).find((x) => x.id === "codex.home-seedless")!.state).toBe("aligned");
+    await tend(homeItems({ repo: root, homes: { native: bare, windows: null }, mcp: MCP, claudeCli: false }), ledger());
+    expect(existsSync(join(bare, ".codex"))).toBe(false);
+  });
+});
+
 describe("the engine", () => {
   const file = (p: string, what: Partial<Item>): Item => ({ id: `t.${p}`, radius: "home", host: "t", path: join(dir, p), what: p, ...what });
 

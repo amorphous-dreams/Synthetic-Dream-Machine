@@ -1,5 +1,5 @@
 /**
- * `lares spirit mandate | summon | handback <pet>#<n>` — THE HOUSE STARTS ITS OWN ARMS (plan/mandate-summons).
+ * `lares spirit mandate | summon <pet>#<n>`, and the edge half of `handback` — THE HOUSE STARTS ITS OWN ARMS (plan/mandate-summons).
  *
  *   mandate   `<pet>#<n> --file <carrier|-> | --text <words> [--parent <uri>@<hash>] [--model <slug>] [--cap <launch cap>]
  *              [--allowed-tools <rules | +rules>] [--workdir <host dir>] [--log <host file>]
@@ -15,8 +15,9 @@
  *             the instance through the host launch cap with the one wake line and the model the mandate names, in the
  *             mandate's workdir, its stream appended to the mandate's log. A launch that started nothing frees its lane. A
  *             summons whose edge already names a launch answers `standing` and starts nothing.
- *   handback  `<pet>#<n> --record <uri> [--mandate <uri>@<hash>]` names the record the instance handed back on its edge, then
- *             frees the lane it held on the coordinator's ledger.
+ *   handback  the one return door stands in `./spirit.ts` (the record lands or reads first); `closeEdge` here answers its
+ *             edge seam: the instance's edge names the record (`--mandate <uri>@<hash>` names which), then the lane it held
+ *             frees on the coordinator's ledger. Null where no edge names the instance.
  *
  * The pure core (shapes, hashes, refusals) stands in `@lararium/mesh/spirit-summons`; the host process gate stands in
  * `tools/summon-launch.mjs`. This door keeps the door calls, the hand read and the launch seam.
@@ -37,6 +38,7 @@ import {
 import { emit } from "../render.js";
 import { DoorUsage, wordOf } from "./door-call.js";
 import type { ParsedArgs } from "../parse-args.js";
+import type { EdgeAsk, EdgeClosed } from "./spirit.js";
 
 /** What a launch asks of the host: the cap, the one line, the model, the reach the instance holds (the guest's, or as its mandate shaped it; null: no permission flag), where the process stands, and where its stream lands (null: nowhere). */
 export interface LaunchAsk { readonly cap: string; readonly prompt: string; readonly model: string | null; readonly allowedTools: string | null; readonly cwd: string; readonly log: string | null }
@@ -242,45 +244,44 @@ export async function summonInstance(args: ParsedArgs, ctx: SummonCtx): Promise<
   return 0;
 }
 
-/** `lares spirit handback <pet>#<n> --record <uri>`: the edge names what came back, and the lane frees. */
-export async function landHandback(args: ParsedArgs, ctx: SummonCtx): Promise<number> {
-  const tag = tagOf(args, "handback");
-  const record = wordOf(args.options["record"]);
-  if (record === null || !record.startsWith("lar:///") || /\s/.test(record)) throw new DoorUsage(`a hand-back names the record it landed: \`lares spirit handback ${shq(tag.tag)} --record <lar uri>\``);
-  const named = wordOf(args.options["mandate"]);
-  const ref = named === null ? null : recordRefOf(named);
-  if (named !== null && (ref === null || ref.hash === null)) throw new DoorUsage(`--mandate names the mandate as <uri>@<hash> (got "${named}")`);
-  // WHICH EDGE: the one the mandate names, else this instance's one open edge.
+/**
+ * THE EDGE HALF OF THE ONE RETURN DOOR (`lares spirit handback <pet>#<n> …`, in `./spirit.ts`): the record already stands; here
+ * the instance's summons edge names it as `<uri>@<hash>` and the lane frees on the coordinator's ledger. Null where no edge
+ * names the instance (the hand-back stands on its own, and the return door decides whether a named `--mandate` refuses). WHICH
+ * EDGE: the one the mandate names, else this instance's one open edge; several with no mandate named refuse `summons-ambiguous`.
+ */
+export async function closeEdge(ctx: SummonCtx, ask: EdgeAsk): Promise<EdgeClosed | null> {
+  const again = `lares spirit handback ${shq(ask.tag)} --record ${shq(ask.record)}`;
+  const ref = ask.mandate === null ? null : recordRefOf(ask.mandate);
+  if (ask.mandate !== null && (ref === null || ref.hash === null)) throw new DoorUsage(`--mandate names the mandate as <uri>@<hash> (got "${ask.mandate}"); the hand-back itself stands at ${ask.record}, so name it on the edge: \`${again} --mandate <uri>@<hash>\``);
   let uri: string;
   if (ref !== null && ref.hash !== null) uri = summonsOf(ref.hash);
   else {
-    const filter = `[tag[${SUMMONS_TAG}]field:instance[${tag.tag}]]`;
+    const filter = `[tag[${SUMMONS_TAG}]field:instance[${ask.tag}]]`;
     const all = titlesOf(await ctx.door("handback", "wiki-filter", { recipe: RECIPE, filter }));
-    if (all.length === 0) throw new SpiritRefusal("summons-unknown", `summons-unknown: no summons names ${tag.tag} under the face that answered; nothing landed. List the summonses this face holds: \`lares wiki filter '[tag[${SUMMONS_TAG}]]' --recipe default\``, 4);
-    if (all.length > 1) throw new SpiritRefusal("summons-ambiguous", `summons-ambiguous: ${all.length} summonses name ${tag.tag} (${all.slice(0, 3).join(", ")}); nothing landed. Name the mandate this hand-back answers: \`lares spirit handback ${shq(tag.tag)} --record ${shq(record)} --mandate <uri>@<hash>\``, 4);
+    if (all.length === 0) return null;
+    if (all.length > 1) throw new SpiritRefusal("summons-ambiguous", `summons-ambiguous: ${all.length} summonses name ${ask.tag} (${all.slice(0, 3).join(", ")}); the hand-back itself stands at ${ask.record}, and no edge names it yet. Name the mandate this hand-back answers: \`${again} --mandate <uri>@<hash>\``, 4);
     uri = all[0]!;
   }
   const edge = await fieldsAt(ctx, "handback", uri);
   const standing = edgeRead(uri, edge.fields);
-  if (standing === null || standing.instance !== tag.tag) throw new SpiritRefusal("summons-unknown", `summons-unknown: ${uri} holds no summons of ${tag.tag}; nothing landed. List the summonses this face holds: \`lares wiki filter '[tag[${SUMMONS_TAG}]]' --recipe default\``, 4);
-  const back = await fieldsAt(ctx, "handback", record);
-  if (back.hash === null) throw new SpiritRefusal("handback-unknown", `handback-unknown: no record stands at ${record} under the face that answered; nothing landed. Land it first: \`lares spirit residue ${tag.pet} --file <path|->\` (it prints the record's address)`, 4);
-  const handback = refLine(record, back.hash);
+  if (standing === null || standing.instance !== ask.tag) return null;
+  const back = await fieldsAt(ctx, "handback", ask.record);
+  if (back.hash === null) throw new SpiritRefusal("handback-unknown", `handback-unknown: no record stands at ${ask.record} under the face that answered; the edge ${uri} names nothing. Hand the report itself back: \`lares spirit handback ${shq(ask.tag)} --file <path|->\``, 4);
+  const handback = refLine(ask.record, back.hash);
   if (standing.handback !== handback) {
     const receipt = await ctx.door("handback", "tiddler-put", { recipe: RECIPE, title: uri, ...(edge.hash !== null ? { base: edge.hash } : {}), fields: { handback, "handback-at": ctx.now().toISOString() } });
     const decision = String(receipt["decision"] ?? "");
-    if (decision !== "put" && decision !== "noop") throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${uri}; run the hand-back again once the edge settles: \`lares spirit handback ${shq(tag.tag)} --record ${shq(record)}\``, 4);
+    if (decision !== "put" && decision !== "noop") throw new SpiritRefusal("spirit-write-refused", `spirit-write-refused: the tiddler door answered ${decision || "nothing"} for ${uri}; the hand-back itself stands at ${ask.record}. Run the line again once the edge settles: \`${again}\``, 4);
   }
   // THE LANE FREES AFTER THE EDGE NAMES THE RECORD: a hand's summons held none; a coordinator's ledger drops this edge, and a
   // ledger that never held still leaves the hand-back standing with the line that frees the lane.
   const coordinator = instanceTagOf(standing.offerer);
   const freed = coordinator === null ? true : await releaseLane(ctx, "handback", coordinator, uri);
-  const again = `lares spirit handback ${shq(tag.tag)} --record ${shq(record)}`;
-  emit(args, {
-    ok: true, data: { instance: tag.tag, edge: uri, handback, offerer: standing.offerer, mandateHash: standing.mandateHash, decision: standing.handback === handback ? "standing" : "put", lane: coordinator === null ? "none" : freed ? "freed" : "unsettled", ...(freed ? {} : { cure: again }) },
-    human: () => console.log(`handed back: ${tag.tag} → ${standing.offerer || "hand"}\n  ${handback}\n  edge: ${uri} (${coordinator === null ? "a hand's summons holds no lane" : freed ? "its lane stands free" : `its lane still holds: the ledger ${lanesOf(coordinator)} moved under every read; run the line again: ${again}`})`),
-  });
-  return 0;
+  return {
+    edge: uri, offerer: standing.offerer, decision: standing.handback === handback ? "standing" : "put",
+    lane: coordinator === null ? "none" : freed ? "freed" : "unsettled", ...(freed ? {} : { cure: again }),
+  };
 }
 
 /**

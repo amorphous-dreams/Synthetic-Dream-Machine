@@ -246,8 +246,8 @@ afterEach(() => { h.calls.length = 0; });
 describe("the spirit door stands in the command table", () => {
   test("its row names every verb and every option its handler reads", () => {
     const row = COMMANDS.find((c) => c.name === "spirit")!;
-    expect(row.verbs).toEqual(["help", "om", "ah", "hum", "otakiage", COMPACTION_WORD, "residue", "mandate", "summon", "handback"]);
-    expect(row.accepts).toEqual(expect.arrayContaining(["add", "aperture", "base", "echo", "file", "fold", "grant", "lane", "line", "offer", "slot", "text"]));
+    expect(row.verbs).toEqual(["help", "om", "ah", "hum", "otakiage", COMPACTION_WORD, "residue", "handback", "mandate", "summon"]);
+    expect(row.accepts).toEqual(expect.arrayContaining(["add", "aperture", "base", "echo", "file", "fold", "grant", "key", "lane", "line", "mandate", "offer", "record", "slot", "text"]));
   });
 });
 
@@ -559,6 +559,128 @@ describe("the compaction verb and residue land after the strict secret-shape gua
     expect(String(data(r)["title"])).toMatch(new RegExp(`^${MEMORY_PREFIX}spirit/om-wright-handback-[0-9a-f]{12}$`));
   });
 
+});
+
+describe("handback: the one return door every fire runs", () => {
+  const BACK = `${MEMORY_PREFIX}spirit/om-wright-handback-0123456789ab`;
+  /** A record standing at `BACK` under a live hash, over the stage's own answers. */
+  function standingRecord(hash = "sha256-back") {
+    const base = h.answer;
+    h.answer = (verb, args) => (verb === "tiddler-get" && args["title"] === BACK ? { tiddler: { fields: { title: BACK, text: "a report" }, hash } } : base(verb, args));
+  }
+  const edgeSeam = () => {
+    const asks: Array<Record<string, unknown>> = [];
+    const putsAtAsk: number[] = [];
+    const edge = async (ask: Record<string, unknown>) => {
+      asks.push(ask);
+      putsAtAsk.push(h.calls.filter((c) => c.verb === "tiddler-put").length);
+      return { edge: `${MEMORY_PREFIX}summons/0123456789abcdef`, offerer: "hand", decision: "put" as const, lane: "none" as const };
+    };
+    return { asks, putsAtAsk, edge };
+  };
+
+  test("a report lands as the same residue `residue` lands, under the pet's own name, and no edge answers a pet alone", async () => {
+    stage();
+    const seam = edgeSeam();
+    const back = await run(argv(["handback", "om-wright"], { text: "Om-Wright (Lares Spirit)\nreport" }), { edge: seam.edge });
+    expect(back.exit).toBe(0);
+    const title = String(data(back)["record"]);
+    expect(title).toMatch(new RegExp(`^${MEMORY_PREFIX}spirit/om-wright-handback-[0-9a-f]{12}$`));
+    expect(puts(title)[0]!.args).toMatchObject({ create: true, text: "Om-Wright (Lares Spirit)\nreport", fields: { pet: "om-wright", landed: "2026-11-24T12:00:00.000Z" } });
+    expect(data(back)).toMatchObject({ pet: "om-wright", instance: null, landed: "put", edge: null });
+    expect(seam.asks).toEqual([]);
+    const residue = await run(argv(["residue", "om-wright"], { text: "Om-Wright (Lares Spirit)\nreport" }));
+    expect(data(residue)["title"]).toBe(title);
+    expect(h.calls.some((c) => c.args["title"] === URI)).toBe(false);
+  });
+
+  test("the same hand-back lands once: a key the line names, else the instance's tag, else the words alone", async () => {
+    stage();
+    const alone = String(data(await run(argv(["handback", "om-wright"], { text: "report" })))["record"]);
+    const two = await run(argv(["handback", "om-wright#2"], { text: "report" }));
+    const twoAgain = await run(argv(["handback", "om-wright#2"], { text: "report" }));
+    const three = await run(argv(["handback", "om-wright#3"], { text: "report" }));
+    const keyed = await run(argv(["handback", "om-wright#2"], { text: "report", key: "s-1:agent-1" }));
+    const hooked = await run(argv(["residue", "om-wright"], { text: "report", key: "s-1:agent-1" }));
+    expect(data(two)["record"]).toBe(data(twoAgain)["record"]);
+    expect(new Set([alone, data(two)["record"], data(three)["record"], data(keyed)["record"]]).size).toBe(4);
+    expect(data(keyed)["record"]).toBe(data(hooked)["title"]);
+    expect(data(two)["instance"]).toBe("om-wright#2");
+    expect(puts(String(data(two)["record"]))[0]!.args).toMatchObject({ fields: { pet: "om-wright", instance: "2" } });
+    stage({ put: "exists" });
+    const again = await run(argv(["handback", "om-wright#2"], { text: "report" }));
+    expect(again.exit).toBe(0);
+    expect(data(again)["landed"]).toBe("exists");
+  });
+
+  test("the record stands first, then the instance's summons edge names it", async () => {
+    stage();
+    const seam = edgeSeam();
+    const r = await run(argv(["handback", "om-wright#2"], { text: "report" }), { edge: seam.edge });
+    expect(r.exit).toBe(0);
+    expect(seam.asks).toEqual([{ pet: "om-wright", instance: "2", tag: "om-wright#2", record: data(r)["record"], mandate: null }]);
+    expect(seam.putsAtAsk).toEqual([1]);
+    expect(data(r)["edge"]).toMatchObject({ offerer: "hand", decision: "put", lane: "none" });
+  });
+
+  test("a hand-back no edge answers lands all the same; only a line naming its mandate refuses, and its record stays", async () => {
+    stage();
+    const free = await run(argv(["handback", "om-wright#2"], { text: "report" }));
+    expect(free.exit).toBe(0);
+    expect(data(free)["edge"]).toBeNull();
+    h.calls.length = 0;
+    const named = await run(argv(["handback", "om-wright#2"], { text: "report", mandate: `${MEMORY_PREFIX}mandate/0123456789abcdef@${"ab".repeat(32)}` }));
+    expect(named.exit).toBe(4);
+    expect(error(named).code).toBe("summons-unknown");
+    expect(error(named).message).toMatch(/the hand-back itself stands at .*om-wright-handback-[0-9a-f]{12}/);
+    expect(error(named).message).toContain("lares spirit handback 'om-wright#2' --record");
+    expect(h.calls.filter((c) => c.verb === "tiddler-put")).toHaveLength(1);
+  });
+
+  test("--record names a record already landed: read through the door, nothing written, the edge handed its address", async () => {
+    stage();
+    standingRecord();
+    const seam = edgeSeam();
+    const r = await run(argv(["handback", "om-wright#2"], { record: `${BACK}@sha256-back` }), { edge: seam.edge });
+    expect(r.exit).toBe(0);
+    expect(data(r)).toMatchObject({ record: BACK, landed: "standing", hash: "sha256-back" });
+    expect(h.calls.some((c) => c.verb === "tiddler-put")).toBe(false);
+    expect(seam.asks[0]).toMatchObject({ record: BACK, tag: "om-wright#2" });
+    expect((await run(argv(["handback", "om-wright"], { record: BACK }))).exit).toBe(0);
+  });
+
+  test("--record refuses by name where no record stands, or where it reads another hash than the line names, and the edge never hears of it", async () => {
+    stage();
+    const seam = edgeSeam();
+    const gone = await run(argv(["handback", "om-wright#2"], { record: BACK }), { edge: seam.edge });
+    expect(error(gone).code).toBe("handback-unknown");
+    expect(error(gone).message).toContain("lares spirit handback 'om-wright#2' --file <path|->");
+    standingRecord("sha256-moved");
+    const moved = await run(argv(["handback", "om-wright#2"], { record: `${BACK}@sha256-back` }), { edge: seam.edge });
+    expect(error(moved).code).toBe("handback-moved");
+    expect(error(moved).message).toContain("lares tiddler get");
+    expect(seam.asks).toEqual([]);
+    expect(h.calls.some((c) => c.verb === "tiddler-put")).toBe(false);
+  });
+
+  test("the strict guard reads a hand-back as it reads residue: a secret-shaped report lands nothing and closes no edge", async () => {
+    stage();
+    const seam = edgeSeam();
+    const r = await run(argv(["handback", "om-wright#2"], { text: "token ghp_" + "A".repeat(36) }), { edge: seam.edge });
+    expect(error(r).code).toBe("spirit-secret-shaped");
+    expect(h.calls).toEqual([]);
+    expect(seam.asks).toEqual([]);
+  });
+
+  test("a line names exactly one return and a well-formed returner", async () => {
+    stage();
+    expect((await run(argv(["handback", "om-wright"]))).exit).toBe(2);
+    expect((await run(argv(["handback", "om-wright"], { text: "report", record: BACK }))).exit).toBe(2);
+    expect((await run(argv(["handback", "om-wright#bad instance"], { text: "report" }))).exit).toBe(2);
+    expect((await run(argv(["handback", "om-wright"], { record: "not-a-lar-address" }))).exit).toBe(2);
+    expect(error(await run(argv(["handback", "Om Wright"], { text: "report" }))).code).toBe("spirit-pet-malformed");
+    expect(h.calls).toEqual([]);
+  });
 });
 
 describe("otakiage burns the residue and keeps the card", () => {
