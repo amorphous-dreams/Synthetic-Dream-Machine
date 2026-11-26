@@ -90,11 +90,11 @@ without a loom.
 <<~ ahu slot=`#/edges`>>
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot#/worker-swarm`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot#/spirit-swarm`>>
 <<~ loulou uri=`lar:///ha.ka.ba/elyncia/campaign/session-0-1-handoff-prompts`>>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;jZ8G03Ua-zqzVdHCZGUTNbOLvRFHr_jOmRvUpCAJ6RM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZKi0VGg3mvdUvkUzMuEJTpbBdfipoaYpUma4yuNhRuA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

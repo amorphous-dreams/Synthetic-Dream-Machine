@@ -170,7 +170,7 @@ Handoff: input <<input>>; output <<output>>. Aftermath: <<aftermath>>. Then <<th
 \end
 \procedure ~otakiage-burn(input:"unchecked" act:"unchecked" proof:"unchecked" hash:"unchecked" base:"unchecked" layers:"unchecked" commits:"unchecked" mode:"propose" caller:"unchecked" output:"unchecked" aftermath:"unchecked" then:"unchecked" mu:"_!" aperture:"2/pulse") Burn (<<mu>>, <<aperture>>): input <<input>>; act <<act>>; proof <<proof>>; hash <<hash>> or base <<base>>; layers <<layers>>; commits <<commits>>; caller <<caller>>; mode <<mode>>; output <<output>>. Aftermath: <<aftermath>>. Then <<then>> takes <<output>> as input.<$list filter="[<mode>match[fire]]"><$list filter="[<caller>match[unchecked]]"> VOID: mode=fire with caller unchecked; no fire may follow.</$list></$list>
 \procedure ~otakiage-rest(input:"unchecked" act:"unchecked" output:"unchecked" aftermath:"unchecked" then:"unchecked" mu:"_0" aperture:"10/measure") Rest (<<mu>>, <<aperture>>): input <<input>>; act <<act>>; output <<output>>. Aftermath: <<aftermath>>. Then <<then>> takes <<output>> as input.
-\procedure ~otakiage-brief(mask:"unchecked" lane:"lar:///ha.ka.ba/lares/api/pono/otakiage#/sigils" call:"unchecked" input:"unchecked" aftermath:"unchecked") <<mask>>: Lares (Tasked Spirit). Read <<lane>>. Run <<call>> with input <<input>>. Hand back its output and aftermath; reviewer checks <<aftermath>> before the next call.
+\procedure ~otakiage-brief(mask:"unchecked" lane:"lar:///ha.ka.ba/lares/api/pono/otakiage#/sigils" call:"unchecked" input:"unchecked" aftermath:"unchecked") <<mask>>: (Lares Spirit). Read <<lane>>. Run <<call>> with input <<input>>. Hand back its output and aftermath; reviewer checks <<aftermath>> before the next call.
 \procedure ~otakiage(stage:"unchecked" input:"unchecked" act:"unchecked" output:"unchecked" aftermath:"unchecked" then:"unchecked" mode:"propose" caller:"unchecked" proof:"unchecked" hash:"unchecked" base:"unchecked" layers:"unchecked" commits:"unchecked" carried:"unchecked" homes:"unchecked" clear:"unchecked" thanks:"unchecked")
 <$list filter="[<stage>regexp[^(shelf|read|lift|weld|thanks|burn|rest)$]]"><$transclude $variable={{{ [<stage>addprefix[~otakiage-]] }}} input=<<input>> act=<<act>> output=<<output>> aftermath=<<aftermath>> then=<<then>> mode=<<mode>> caller=<<caller>> proof=<<proof>> hash=<<hash>> base=<<base>> layers=<<layers>> commits=<<commits>> carried=<<carried>> homes=<<homes>> clear=<<clear>> thanks=<<thanks>>/></$list>
 \end
@@ -212,6 +212,6 @@ Worked calls and a single-stage invocation stand in <<~ loulou uri=`lar:///ha.ka
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ezBp1QdwJ-4XX50Vyv2BEt2am15_9V1UVzRhkmvYhG4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;t1cHh-4cXwkcRMzPGXDtJtE-ezxDGN8O98r56gyXbFU`>>
 
 <<^ code=`&#x0004;` to=`?`>>
