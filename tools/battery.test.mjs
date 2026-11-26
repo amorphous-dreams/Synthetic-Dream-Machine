@@ -10,7 +10,8 @@ const BATTERY = fileURLToPath(new URL("./battery.sh", import.meta.url));
 const dir = () => mkdtempSync(join(tmpdir(), "battery-"));
 // Bounded by turns, not by a clock: the handshake file is the signal, the turn count only keeps a broken run from hanging.
 const until = async (path, turns = 4000) => { for (let i = 0; i < turns && !existsSync(path); i++) await new Promise((r) => setTimeout(r, 5)); if (!existsSync(path)) throw new Error(`no handshake at ${path}`); };
-const exited = (child) => new Promise((res) => child.on("exit", (code) => res(code)));
+// The exit reads off the child's own record first: an exit that fired before anyone listened still answers (floor-test-kit).
+import { exited } from "./floor-test-kit.mjs";
 
 test("CONTROL: a free lock runs the command at once and its output reaches us", () => {
   const d = dir();
