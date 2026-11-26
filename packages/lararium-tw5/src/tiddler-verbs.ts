@@ -77,6 +77,8 @@
 import { NoWorkingLayerRefusal, type CompositeStore } from "@lararium/mesh/composite-store";
 import { VerbRefusal } from "@lararium/mesh/verb-refusal";
 import { verifyCidBytes } from "@lararium/mesh/cas-transit";
+import { ridesAsPointer } from "@lararium/mesh/content-handle";
+import { isContentAddress, POINTER_ADDRESS_FIELDS, POINTER_DIGEST_CODE, POINTER_INTEGRITY_CODE, readPointerAddress } from "@lararium/mesh/pointer-address";
 import { canonicalJsonBytes, sha256HexBytesSync } from "@lararium/mesh/crypto";
 import { refuseEffectLedgerWrite } from "@lararium/mesh/effect-record";
 import { refuseRenderedWrite, renderedWriteFault, RENDERED_DERIVES_REASON } from "@lararium/mesh/rendered-derives";
@@ -680,8 +682,30 @@ function recordHas(title: string, fields: Record<string, string>, from: Provenan
 /** The ports a read reaches beyond the engine: the corpus CAS, by CID alone (a web2 address names its body and never fetches). */
 type CasPort = TiddlerVerbOptions["resolveByCid"];
 
+/**
+ * WHAT A POINTER'S BODY STANDS AS, on every answer that names one. `verified`: the bytes the content tier holds hash to the
+ * digest the pointer names (the answer carries them, or the put read them). `owed`: no verified byte rode this answer (the handle
+ * went unread, the tier holds none, a web2 address names them), so `owes` names what stands open and `cure` the act that
+ * closes it. A pointer never answers clean on a body nobody verified.
+ */
+interface PointerBody {
+  readonly cid?: string;
+  readonly uri?: string;
+  readonly integrity?: string;
+  readonly body: "verified" | "owed";
+  readonly owes?: string;
+  readonly cure?: string;
+  /** A put alone: the fields the door wrote to seat the pointer as the house reads it. */
+  readonly seated?: readonly string[];
+}
+const CURE_READ = "read the body: `lares tiddler get <title> --recipe <wiki> --grain resolved` (MCP `grain=\"resolved\"`)";
+const CURE_STAGE = "`lares bag cas` surveys the content tier; an ingest of the file stages its bytes by their hash, and a resolved read then verifies them";
+const CURE_SOURCE = "fetch the bytes by hand, stage them into the content tier, and put the pointer by their hash (`_canonical_uri` as `ni:///sha-256;<base64url>`)";
+const CURE_NAME = "name the bytes in `_canonical_uri` as `ni:///sha-256;<base64url>`, `cid:<sha256 hex>` or `lar:///ha.ka.ba/cid/<sha256 hex>`";
+
 /** What the record lens answers: the fields it shows, what it left home, and the grain it applied and why. */
 interface RecordRead {
+  readonly pointer?: PointerBody;
   readonly fields: Record<string, string>;
   readonly shown: Record<string, string>;
   readonly omitted: string[];
@@ -698,30 +722,44 @@ interface RecordRead {
  */
 async function recordRead(engine: Engine, held: Record<string, string>, title: string, args: Readonly<Record<string, unknown>>, asked: ReadGrain | null, cas: CasPort): Promise<RecordRead> {
   const named = namesArg(args["fields"]) !== null;
-  const done = (fields: Record<string, string>, applied: ReadGrain, why: string, next: RecordRead["next"]): RecordRead => {
+  const done = (fields: Record<string, string>, applied: ReadGrain, why: string, next: RecordRead["next"], pointer?: PointerBody): RecordRead => {
     const carryWhole = asked === "fat" || asked === "whole" || applied === "resolved";
     const { shown, omitted } = narrowRecord(fields, title, args, applied === "skinny", carryWhole);
     // THE ECHO NAMES WHAT RODE. At the tiddler grain, fat only where the text rode (named fields or the byte cap may leave it home);
     // a pointer's body grain (handle, resolved) stays its own word whatever the fields.
     const tiddlerGrain = applied === "fat" || applied === "skinny";
     const rode: ReadGrain = tiddlerGrain ? (typeof shown["text"] === "string" ? "fat" : "skinny") : applied;
-    return { fields, shown, omitted, grain: { asked, applied: rode, why: named ? `the named fields (${rode === "fat" ? "the text among them" : "the text left home"})` : rode === applied ? why : `${why}; the byte cap left the text home` }, next };
+    return { fields, shown, omitted, grain: { asked, applied: rode, why: named ? `the named fields (${rode === "fat" ? "the text among them" : "the text left home"})` : rode === applied ? why : `${why}; the byte cap left the text home` }, next, ...(pointer ? { pointer } : {}) };
   };
   if (isPointer(held)) {
+    // ONE POINTER NAMES ONE DIGEST: names that disagree refuse before any byte reads.
+    const reading = readPointerAddress(held);
+    if (reading.kind === "refused" && reading.code === POINTER_INTEGRITY_CODE) throw new VerbRefusal(reading.code, `${reading.code}: "${title}": ${reading.why}. No byte read.`);
     const cid = skinnyCid(held);
     const web2 = cid === null && typeof held["_canonical_uri"] === "string";
+    const integrity = reading.kind === "address" ? reading.integrity : held["_integrity"];
+    const names = { ...(cid !== null ? { cid } : {}), ...(web2 ? { uri: held["_canonical_uri"]! } : {}), ...(integrity ? { integrity } : {}) };
+    // AN UNREAD OR UNVERIFIED POINTER ANSWERS OWED, NEVER CLEAN.
+    const owed = (owes: string, cure: string): PointerBody => ({ ...names, body: "owed", owes, cure });
+    const unnamed = owed("the pointer names no content address", CURE_NAME);
+    const source = owed("a web2 address names the body and the door never fetches it", CURE_SOURCE);
     // `whole` on a pointer asks for the whole body: the body grain's own word for it reads `resolved`.
     if (asked === "resolved" || asked === "whole") {
-      if (web2) return done(held, "handle", `a web2 \`_canonical_uri\` names the body and the door never fetches it (web3 only): ${held["_canonical_uri"]}`, null);
-      if (cid === null) return done(held, "handle", "the pointer names no CID to resolve", null);
+      if (web2) return done(held, "handle", `a web2 \`_canonical_uri\` names the body and the door never fetches it (web3 only): ${held["_canonical_uri"]}`, null, source);
+      if (cid === null) return done(held, "handle", "the pointer names no CID to resolve", null, unnamed);
       const bytes = cas ? await cas(cid) : null;
-      if (!bytes) return done(held, "handle", cas ? `the local CAS holds no bytes for ${cid}` : "this island holds no CAS shore to resolve from", null);
-      if (!verifyCidBytes(bytes, cid)) return done(held, "handle", `the bytes the local CAS holds for ${cid} hash otherwise: refused, never spliced`, null);
+      if (!bytes) {
+        const miss = cas ? `the local CAS holds no bytes for ${cid}` : "this island holds no CAS shore to resolve from";
+        return done(held, "handle", miss, null, owed(miss, CURE_STAGE));
+      }
+      // A WRONG DIGEST REFUSES BY NAME: bytes that hash otherwise never splice, and never answer as a quiet handle.
+      if (!verifyCidBytes(bytes, cid)) throw new VerbRefusal(POINTER_DIGEST_CODE, `${POINTER_DIGEST_CODE}: the bytes the content tier holds for ${cid} hash otherwise, so "${title}" answers no body. ${CURE_STAGE}. No byte spliced.`);
       const text = isBlob(engine, held) ? base64Of(bytes) : new TextDecoder().decode(bytes);
-      return done({ ...held, text }, "resolved", `the body resolved from the local CAS by CID ${cid}, verified`, null);
+      return done({ ...held, text }, "resolved", `the body resolved from the local CAS by CID ${cid}, verified`, null, { ...names, body: "verified" });
     }
     const why = web2 ? "a pointer: its web2 `_canonical_uri` names the body, never fetched" : "a pointer: the handle names its body by CID";
-    return done(held, "handle", asked === null || asked === "handle" ? why : `${why}; the tiddler grain reads no body a record does not hold`, web2 || cid === null ? null : { grain: "resolved" });
+    const unread = web2 ? source : cid === null ? unnamed : owed("unread: the handle names the body and this answer carries none of it", CURE_READ);
+    return done(held, "handle", asked === null || asked === "handle" ? why : `${why}; the tiddler grain reads no body a record does not hold`, web2 || cid === null ? null : { grain: "resolved" }, unread);
   }
   if (asked === "skinny") return done(held, "skinny", "asked: the fields, the text left home", { grain: "fat" });
   if (asked === "fat" || asked === "whole") return done(held, "fat", "asked: the record with its text", null);
@@ -746,8 +784,42 @@ function recordAnswer(from: Provenance & { readonly answered: Record<string, unk
       ...(read.omitted.length > 0 ? { omitted: read.omitted } : {}),
     },
     grain: read.grain, next: read.next,
+    ...(read.pointer ? { pointer: read.pointer } : {}),
     ...(note ? { note } : {}),
   };
+}
+
+/**
+ * A PUT SEATS A POINTER. A record that lands with no `text` and a content address (`_canonical_uri` as `ni:///sha-256;…`,
+ * `cid:…` or a `lar:` cid name, or a `textCid`) lands as the pointer every reader in the house already reads (THE BLOB LAW,
+ * clause 3): `textCid` carries the CAS key, `_integrity` the RFC 6920 name of the same digest, `_is_skinny` marks the lazy
+ * boundary. A type that rides as a pointer by kind (an image, audio, video, a font, a PDF) sheds its content-address
+ * `_canonical_uri`, which TiddlyWiki's image widget would emit as a dead `src`; a utf8 type keeps the address as written.
+ *
+ * Names that disagree, or an address under no spelling the house reads, refuse by name and nothing lands. Bytes the content
+ * tier already holds verify here: a wrong digest refuses, a right one stamps `size` and answers `verified`. Bytes the tier
+ * lacks leave the pointer `owed`, never clean. Only a put that moves a pointer field seats one: a tag or field patch over a
+ * standing pointer leaves it as it stood. The address names a hash and nothing else: no version, no counter, no clock.
+ */
+async function seatPointer(title: string, before: Record<string, string> | null, next: Record<string, string>, cas: CasPort): Promise<PointerBody | null> {
+  if (!POINTER_ADDRESS_FIELDS.some((name) => (before?.[name] ?? undefined) !== (next[name] ?? undefined))) return null;
+  const reading = readPointerAddress(next);
+  if (reading.kind === "inline" || reading.kind === "source") return null;
+  if (reading.kind === "refused") throw new VerbRefusal(reading.code, `${reading.code}: "${title}": ${reading.why}. Nothing moved.`);
+  const { cid, integrity } = reading;
+  const authored = { ...next };
+  next["textCid"] = cid;
+  next["_integrity"] = integrity;
+  next["_is_skinny"] = "yes";
+  const canonical = next["_canonical_uri"];
+  if (canonical !== undefined && isContentAddress(canonical) && ridesAsPointer(next["type"] ?? "")) delete next["_canonical_uri"];
+  const bytes = cas ? await cas(cid) : null;
+  if (bytes && !verifyCidBytes(bytes, cid)) throw new VerbRefusal(POINTER_DIGEST_CODE, `${POINTER_DIGEST_CODE}: the bytes the content tier holds for ${cid} hash otherwise, so "${title}" lands no pointer at them. ${CURE_STAGE}. Nothing moved.`);
+  if (bytes) next["size"] = String(bytes.length);
+  const seated = Object.keys({ ...authored, ...next }).filter((name) => authored[name] !== next[name]).sort();
+  return bytes
+    ? { cid, integrity, body: "verified", seated }
+    : { cid, integrity, body: "owed", owes: cas ? `the local CAS holds no bytes for ${cid}` : "this island holds no CAS shore to verify against", cure: CURE_STAGE, seated };
 }
 
 /**
@@ -1110,6 +1182,8 @@ export const makeTiddlerPutReactor = everyWiki("tiddler-put", true, (opts: Tiddl
         tags = [...tags.filter((tag) => !remove.has(tag)), ...add.filter((tag) => !tags.includes(tag) && !remove.has(tag))];
         if (tags.length > 0) next["tags"] = utils.stringifyList(tags); else delete next["tags"];
       }
+      // A POINTER SEATS BEFORE ANYTHING COMPARES: the record that lands reads as the house pointer, verified or owed.
+      const pointer = await seatPointer(title, before, next, opts.resolveByCid);
       if (bytesOf(next) > 1_048_576) throw new VerbRefusal("fields-malformed", "fields-malformed: one record carries at most 1048576 bytes through this door.");
 
       // A FAMILY READS AS TIDDLERS. A meme root and its slots stand as ordinary records, and a put moves any of them: a field or
@@ -1138,7 +1212,7 @@ export const makeTiddlerPutReactor = everyWiki("tiddler-put", true, (opts: Tiddl
       refuseMalformedStagePath(title);
 
       const changed = Object.keys({ ...(before ?? {}), ...next }).filter(moved);
-      if (standing && changed.length === 0 && cut.length === 0) return answer("noop", { created: false, changed, hash: liveHash, textHash: textHashOf(before!) });
+      if (standing && changed.length === 0 && cut.length === 0) return answer("noop", { created: false, changed, hash: liveHash, textHash: textHashOf(before!), ...(pointer ? { pointer } : {}) });
 
       // THE CONFLUENCE GATE, INSIDE THE PUT. A text write on a family member, or a first record of the carrier type, lands
       // as the family: the member's record takes its place in a copy of the family, the one recompose frames the carrier
@@ -1223,7 +1297,7 @@ export const makeTiddlerPutReactor = everyWiki("tiddler-put", true, (opts: Tiddl
       const hash = hashOf(landed);
       return {
         ...(append !== null ? { has: hasLine(title, [param("recipe", anchor.recipe), param("decision", "put"), param("hash", hash)]) } : {}),
-        ...answer("put", { created: !standing, changed, hash, textHash: textHashOf(landed), ...(append !== null ? { appended: bytesOf(append) } : {}) }),
+        ...answer("put", { created: !standing, changed, hash, textHash: textHashOf(landed), ...(append !== null ? { appended: bytesOf(append) } : {}), ...(pointer ? { pointer } : {}) }),
       };
     }
   };

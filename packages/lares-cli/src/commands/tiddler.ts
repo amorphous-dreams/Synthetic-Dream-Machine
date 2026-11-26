@@ -26,6 +26,7 @@
  */
 
 import { readFileSync } from "node:fs";
+import { extname } from "node:path";
 import { stdin, stdout } from "node:process";
 import { containerArgs, engineContainerArgs } from "../container-target.js";
 import { emit, exitFor, proseFirst } from "../render.js";
@@ -33,6 +34,9 @@ import { DoorUsage, countOf, guardDoor, namesOf, runDoor, wordOf, type DoorPlan 
 import { targetOf, targetOnWriteRefusal } from "../target-option.js";
 import { helpLines } from "../command-help.js";
 import { readCarrierShape } from "@lararium/tw5";
+import { mediaTypeFromExt, ridesAsPointer } from "@lararium/mesh/content-handle";
+import { niUriSha256FromHex } from "@lararium/mesh/crypto";
+import { stageBodyToCas } from "../cas-stage.js";
 import { cmdFamily } from "./family.js";
 import type { ParsedArgs } from "../parse-args.js";
 
@@ -117,21 +121,47 @@ export function tiddlerPlan(sub: Sub, args: ParsedArgs): DoorPlan {
   return { verb: "tiddler-put", args: out };
 }
 
-/** The bytes a named source holds: a host path, or `-` for stdin. */
-async function sourceBytes(flag: string, source: string): Promise<string> {
+/** The raw bytes a named source holds: a host path, or `-` for stdin. */
+async function sourceRaw(flag: string, source: string): Promise<Buffer> {
   if (source !== "-") {
-    try { return readFileSync(source, "utf8"); } catch { throw new DoorUsage(`cannot read --${flag} ${source}`); }
+    try { return readFileSync(source); } catch { throw new DoorUsage(`cannot read --${flag} ${source}`); }
   }
   const chunks: Buffer[] = [];
   for await (const chunk of stdin) chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
-  return Buffer.concat(chunks).toString("utf8");
+  return Buffer.concat(chunks);
+}
+
+/** The words a named source holds, read as utf8. */
+async function sourceBytes(flag: string, source: string): Promise<string> {
+  return (await sourceRaw(flag, source)).toString("utf8");
+}
+
+/** A put's pointer: the fields that name staged bytes by their hash, and the `text` the record sheds for them. */
+interface FilePointer { readonly fields: Record<string, string>; readonly unset: readonly string[] }
+
+/**
+ * A FILE WHOSE KIND RIDES AS A POINTER LANDS AS ONE (THE BLOB LAW). Two readings elect it, and nothing else: the line
+ * declares a pointer-kind `type` in `--fields` (an image, audio, video, a font, a PDF), or the bytes fail the utf8
+ * round-trip (a binary read as words would land mangled), where the type reads from the extension through TiddlyWiki's own
+ * registry and a kind the registry lacks rides `application/octet-stream`. The raw bytes stage into the content tier under
+ * their SHA-256, and the put carries `_canonical_uri` and `_integrity` naming that digest; the door seats the pointer and
+ * verifies the staged bytes. A utf8 file with no pointer-kind type declared rides as words, typed by the caller alone.
+ */
+function filePointer(raw: Buffer, source: string, declared: string | null): FilePointer | null {
+  const binary = !Buffer.from(raw.toString("utf8"), "utf8").equals(raw);
+  const type = declared ?? (binary ? mediaTypeFromExt(source === "-" ? "" : extname(source), true) : null);
+  if (type === null || !(ridesAsPointer(type) || binary)) return null;
+  // The stager decodes a `binary` carrier from base64 before it hashes, so the CID names the file's own bytes.
+  const staged = stageBodyToCas(raw.toString("base64"), { type: ridesAsPointer(type) ? type : "application/octet-stream", binary: true });
+  const address = niUriSha256FromHex(staged.cid);
+  return { fields: { type, _canonical_uri: address, _integrity: address, size: String(staged.size) }, unset: ["text"] };
 }
 
 /**
  * A put's words, only where the caller names a source: `--text <words>`, `--file <path>` (or `-` for stdin) for the whole text,
  * `--append <path>` (or `-`) for words that land at the end of the standing text. A field patch reads none.
  */
-async function putText(args: ParsedArgs): Promise<{ readonly text: string } | { readonly append: string } | null> {
+async function putText(args: ParsedArgs, declaredType: string | null = null): Promise<{ readonly text: string } | { readonly append: string } | { readonly pointer: FilePointer } | null> {
   const inline = args.options["text"];
   const file = wordOf(args.options["file"]);
   const append = wordOf(args.options["append"]);
@@ -139,7 +169,9 @@ async function putText(args: ParsedArgs): Promise<{ readonly text: string } | { 
   if (append) return { append: await sourceBytes("append", append) };
   if (typeof inline === "string") return { text: inline };
   if (!file) return null;
-  return { text: await sourceBytes("file", file) };
+  const raw = await sourceRaw("file", file);
+  const pointer = filePointer(raw, file, declaredType);
+  return pointer ? { pointer } : { text: raw.toString("utf8") };
 }
 
 interface GotTiddler { fields: Record<string, string>; hash: string; textHash: string | null; bag: string | null; position: string; family?: string; omitted?: string[] }
@@ -256,8 +288,13 @@ const FLOOR_NOTE = "read from the floor snapshot: this face holds no read on the
 
 async function tiddlerPut(args: ParsedArgs): Promise<number> {
   const plan = tiddlerPlan("put", args);
-  const words = await putText(args);
-  const ran = await runDoor(args, "tiddler put", words === null ? plan : { verb: plan.verb, args: { ...plan.args, ...words } });
+  const planned = plan.args["fields"] as Record<string, unknown> | undefined;
+  const words = await putText(args, typeof planned?.["type"] === "string" ? planned["type"] : null);
+  // A pointer rides as fields: the address and the digest join the line's own patch, and the record sheds its `text`.
+  const carried = words === null ? {}
+    : "pointer" in words ? { fields: { ...(planned ?? {}), ...words.pointer.fields }, unset: [...((plan.args["unset"] as string[] | undefined) ?? []), ...words.pointer.unset] }
+    : words;
+  const ran = await runDoor(args, "tiddler put", words === null ? plan : { verb: plan.verb, args: { ...plan.args, ...carried } });
   if (!ran.ok) return ran.exit;
   const receipt = ran.output;
   const decision = String(receipt["decision"] ?? "");

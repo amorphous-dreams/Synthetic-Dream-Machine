@@ -46,6 +46,7 @@ import type { TW5Wiki } from "./types/tiddlywiki.js";
 
 import { carrierMarkPattern, headUriOf, maskedExec, maskedExecAll } from "@lararium/memetic-frame";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
+import { isContentAddress } from "@lararium/mesh/pointer-address";
 import {
   componentsBeneath, consequence, edgeDescendantsOf, isFamilyRoot, memeOrphanAlertTitle, MEME_ORPHAN_ALERT_PREFIX, orphanFamilies, orphansUnder, rootAddressOf, tombstonesOf,
   type Consequence, type FamilyFields, type FamilyReference, type FamilyView,
@@ -468,8 +469,10 @@ function heldText(root: TiddlerFields | undefined): string {
  */
 export async function holdsUnreadPointer(uri: string, sink: Pick<MemeSink, "read">): Promise<boolean> {
   const root = await sink.read(uri);
+  // An authored pointer names its bytes in `_canonical_uri` alone (`ni:///sha-256;…`, `cid:…`); it reads unread too.
   return root !== undefined && typeof root.text !== "string"
-    && (root["_is_skinny"] === "yes" || typeof root["textCid"] === "string");
+    && (root["_is_skinny"] === "yes" || typeof root["textCid"] === "string"
+      || (typeof root["_canonical_uri"] === "string" && isContentAddress(root["_canonical_uri"])));
 }
 
 /** The code a read of an unread pointer refuses under. */
