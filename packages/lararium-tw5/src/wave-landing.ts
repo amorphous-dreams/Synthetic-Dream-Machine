@@ -67,6 +67,11 @@ export class WaveLanding {
     private readonly onLandingRecovered: (title: string) => void = () => {},
     /** Told once per slice the drain landed, with the rows it landed: the drain's own evidence that it moves. */
     private readonly onSliceLanded: (landed: number) => void = () => {},
+    /**
+     * THE ENGINE'S CREST DOOR (`$tw.lares.applyNaluCrest`): the slice's synchronous run of applies lands inside it, so the engine,
+     * not the shore, names the law that a crest lands in one dispatch. Absent, the run stands bare.
+     */
+    private readonly crest: <T>(run: () => T) => T = (run) => run(),
   ) {
     if (typeof lander === "function") { this.landOne = lander; this.prepare = null; }
     else { this.landOne = (change) => lander.landOne(change); this.prepare = (change) => lander.prepare(change); }
@@ -170,18 +175,21 @@ export class WaveLanding {
         }
         const deferred: number[] = [];
         const deferredTitles = new Set<string>();
-        // No await from here to the end of this loop: the applies share one tick.
-        for (let i = 0; i < count && !this.stopped; i++) {
-          const item = slice[i]!, apply = prepared[i];
-          if (!apply) continue;
-          // A title whose earlier change waits for the async road keeps its order: every later change of it waits too.
-          if (deferredTitles.has(item.title)) { deferred.push(i); continue; }
-          try {
-            if (apply()) landed(item, i);
-            else { deferred.push(i); deferredTitles.add(item.title); }
+        // ONE CREST: no await from here to the end of this run, which lands inside the engine's crest door, so the applies share
+        // one tick and the wiki dispatches the slice once.
+        this.crest(() => {
+          for (let i = 0; i < count && !this.stopped; i++) {
+            const item = slice[i]!, apply = prepared[i];
+            if (!apply) continue;
+            // A title whose earlier change waits for the async road keeps its order: every later change of it waits too.
+            if (deferredTitles.has(item.title)) { deferred.push(i); continue; }
+            try {
+              if (apply()) landed(item, i);
+              else { deferred.push(i); deferredTitles.add(item.title); }
+            }
+            catch (error) { failed.push({ item, error, at: i }); }
           }
-          catch (error) { failed.push({ item, error, at: i }); }
-        }
+        });
         for (const i of deferred) {
           const item = slice[i]!;
           try { await this.landOne(item); landed(item, i); }

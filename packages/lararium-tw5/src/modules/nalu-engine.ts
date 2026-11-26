@@ -13,7 +13,10 @@ module-type: startup
  *   applyNalu(change)   a tombstone or an absent record deletes the title; anything else adds the
  *                       tiddler the NALU FORM builds from the envelope (`naluFieldsOf`, `../nalu-form.ts`).
  *                       No queue, no timer, no frame.
- *   isApplyingNalu()    true while an `applyNalu` call runs, restored in a `finally`.
+ *   applyNaluCrest(run) THE CREST DOOR: one synchronous run of applies (the shore's slice) lands as ONE crest, so the wiki
+ *                       gathers every title it touches into one `change` dispatch. The engine names the law; the shore keeps
+ *                       its per-change ledger and hand bookkeeping inside `run`.
+ *   isApplyingNalu()    true while an `applyNalu` call or a crest runs, restored in a `finally`.
  *
  * The shore installs its own queue door at `$tw.lares.enqueueNalu` and removes it at teardown; this
  * module never holds one.
@@ -95,7 +98,24 @@ export function applyNalu(change: LarTiddlerChange): void {
   }
 }
 
-/** True while an `applyNalu` call runs. */
+/**
+ * Land one crest: `run` applies its changes (each through `applyNalu`) in one synchronous stretch, and the apply flag stays
+ * raised across the whole crest. TiddlyWiki gathers every title the crest touches until its own `nextTick`, so the crest
+ * reaches the wiki's observers as ONE dispatch: the nalu delivers a batch, never a tiddler at a time. `run` must not await;
+ * a promise it returns ends the crest at once, and the applies after its first await would scatter across dispatches.
+ */
+export function applyNaluCrest<T>(run: () => T): T {
+  if (!_wiki) throw new NaluWikiUnavailableError("(a crest)");
+  const outer = _applying;
+  _applying = true;
+  try {
+    return run();
+  } finally {
+    _applying = outer;
+  }
+}
+
+/** True while an `applyNalu` call or a crest runs. */
 export function isApplyingNalu(): boolean {
   return _applying;
 }
@@ -111,6 +131,7 @@ export function startup(): void {
 
   const lares = ($tw!.lares ?? {}) as Record<string, unknown>;
   lares["applyNalu"]      = applyNalu;
+  lares["applyNaluCrest"] = applyNaluCrest;
   lares["isApplyingNalu"] = isApplyingNalu;
   ($tw as { lares?: Record<string, unknown> }).lares = lares;
 }

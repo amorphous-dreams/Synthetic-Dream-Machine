@@ -162,6 +162,12 @@ interface PreparedLanding {
   readonly sentValue: unknown;
 }
 
+/** The engine's crest door bound to its engine, or a bare run where the engine's applier carries none. */
+function crestDoorOf(lares: LaresTw5Extension["lares"]): <T>(run: () => T) => T {
+  const door = lares?.applyNaluCrest;
+  return typeof door === "function" ? (run) => door.call(lares, run) : (run) => run();
+}
+
 /** How an apply ended: landed (or nothing to land), a standing hand leaves first, or an own write moved since the prepare. */
 type LandingVerdict = "landed" | "hand" | "stale";
 
@@ -324,6 +330,9 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
         if (this.tw5.$tw.wiki.getTiddler(alert)) this.tw5.$tw.wiki.deleteTiddler(alert);
       },
       (landed) => { for (const hear of [...this.sliceHearers]) hear(landed); },
+      // THE ENGINE'S CREST DOOR: each slice's applies land as one crest the engine names (`applyNaluCrest`). An engine whose
+      // applier predates the door (a fake engine, a plugin not yet rebuilt) lands the same run bare, in the same one tick.
+      crestDoorOf(lares),
     );
     this.landing = landing;
     this.engineApply = apply;

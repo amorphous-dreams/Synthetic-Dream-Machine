@@ -109,7 +109,50 @@ describe.skipIf(wikiSkip)(`nalu applier surface${skipNote}`, () => {
       expect(lares[name], `${name} must not be an engine surface`).toBeUndefined();
     }
     expect(typeof lares.applyNalu).toBe("function");
+    expect(typeof lares.applyNaluCrest, "the crest door").toBe("function");
     expect(typeof lares.isApplyingNalu).toBe("function");
+  });
+
+  test("a crest lands in one dispatch: the flag stays raised across every apply of the run, and the wiki tells its observers once", async () => {
+    const engine = await bootTestWiki();
+    const lares = (engine.$tw as unknown as { lares: { applyNalu(change: unknown): void; applyNaluCrest<T>(run: () => T): T; isApplyingNalu(): boolean } }).lares;
+    const wiki = engine.$tw.wiki as unknown as { addEventListener(type: "change", fn: (changes: Record<string, unknown>) => void): void };
+    const dispatches: string[][] = [];
+    wiki.addEventListener("change", (changes) => { dispatches.push(Object.keys(changes).filter((title) => title.startsWith("nalu/crest/"))); });
+    const raised: boolean[] = [];
+    const answer = lares.applyNaluCrest(() => {
+      for (let i = 0; i < 3; i++) {
+        lares.applyNalu({ title: `nalu/crest/${i}`, bag: "bag/crest", record: { tiddler: { text: String(i) } }, origin: { kind: "crdt-remote", edgeIsland: "peer" } });
+        raised.push(lares.isApplyingNalu());
+      }
+      return "crested";
+    });
+    expect(answer, "the crest hands back what its run answers").toBe("crested");
+    expect(raised, "between applies the crest still reads as applying").toEqual([true, true, true]);
+    expect(lares.isApplyingNalu()).toBe(false);
+    await new Promise<void>((resolve) => process.nextTick(resolve));
+    expect(dispatches.filter((titles) => titles.length > 0), "one dispatch carries the whole crest").toEqual([["nalu/crest/0", "nalu/crest/1", "nalu/crest/2"]]);
+  });
+
+  test("the shore lands each slice through the engine's crest door", async () => {
+    const engine = await bootTestWiki();
+    const lares = (engine.$tw as unknown as { lares: { applyNaluCrest<T>(run: () => T): T; isApplyingNalu(): boolean } }).lares;
+    const crest = lares.applyNaluCrest.bind(lares);
+    let crests = 0;
+    lares.applyNaluCrest = <T,>(run: () => T): T => { crests++; return crest(run); };
+    const bag = "lar:///ha.ka.ba/wikis/nalu-crest/working";
+    const memory = new MemoryTiddlerStore(bag);
+    const composite = new CompositeStore();
+    composite.addLayer({ bagId: bag, store: memory, writable: true });
+    const adaptor = new IslandAdaptor(engine, composite as never, "nalu-crest");
+    adaptor.installLandingQueue(async () => {});
+    adaptor.start();
+    const origin = { kind: "crdt-remote", edgeIsland: "nalu-crest-peer" } as const;
+    for (let i = 0; i < 5; i++) await memory.put({ tiddler: { title: `nalu/shore-crest/${i}`, text: String(i) } }, origin);
+    await adaptor.landingIdle();
+    expect(crests, "every slice the shore applied crossed the crest door").toBeGreaterThan(0);
+    expect((engine.$tw.wiki as unknown as { getTiddler(title: string): unknown }).getTiddler("nalu/shore-crest/4")).toBeTruthy();
+    await adaptor.stop();
   });
 
   test("stopping the shore removes its queue door", async () => {
