@@ -14,7 +14,7 @@ import { copyFileSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "nod
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { NODE_E2E, ROOT_E2E, VESSEL, checkOwes, owedSteps, plan, runGate, tracked } from "./bench-gate.mjs";
-import { DEVELOP, DOOR_ASK_BYTES, FOLD, ROOT, TABLE, askFilter, census, checkoutJudge, edgesOf, gatherFacts, headerHolds, lines, owes, resolveLiteral, runFold, secsOf, tidText } from "./floor-owes.mjs";
+import { DEVELOP, DOOR_ASK_BYTES, FOLD, ROOT, TABLE, askFilter, census, checkoutJudge, edgesOf, gatherFacts, headerHolds, lines, owes, resolveLiteral, runFold, secsOf, tableDigest, tidText } from "./floor-owes.mjs";
 
 /** The source paths the #585 merge moved (`git diff --name-only 31bd0e0c3^1 31bd0e0c3`, tests and the inventory aside). */
 const REPLAY_585 = [
@@ -108,7 +108,7 @@ test("RED: an unreadable fact owes MORE, never less; a hub and a barrel owe thei
 test("RED dark: where no fold answers, the gate fails wide (touched packages' heavy tier, the whole node e2e set); CONTROL: tools alone owe no e2e", () => {
   const dark = owes({ root: ROOT, paths: ["packages/lararium-mesh/src/sealed-rest.ts"], door: darkDoor, judge: () => { throw new Error("develop holds no fold"); } });
   assert.equal(dark.via, "dark");
-  assert.match(dark.why, /door: no hearth on this bench; develop: develop holds no fold/);
+  assert.match(dark.why, /^develop: develop holds no fold$/);
   assert.equal(checkOwes(dark, () => {}), 0, "a dark answer refuses nothing; it widens");
   assert.match(lines(dark).at(-1), /^owes=dark/);
   const weights = { "packages/lararium-mesh": Object.fromEntries(tracked("packages/lararium-mesh/tests/*.test.ts").slice(0, 3).map((p) => [p.slice("packages/lararium-mesh/".length), 30])) };
@@ -125,7 +125,8 @@ test("RED the door: an answer holds only where the fold's header leads it and co
   const paths = ["packages/lares-cli/src/commands/kapae.ts"];
   const sent = new Set(gatherFacts({ root: ROOT, paths }).lines).size;
   const answering = (titles) => () => ({ ok: true, stdout: JSON.stringify({ ok: true, data: { titles } }) });
-  const good = [`OWES facts=${sent} touched=1 seams=1 refuse=0 sets=0 globs=0 files=1`, "FILE vessel tests/e2e/from-the-door.test.ts · seam:planted"];
+  const table = tableDigest(own().table);
+  const good = [`OWES facts=${sent} table=${table} touched=1 seams=1 refuse=0 sets=0 globs=0 files=1`, "FILE vessel tests/e2e/from-the-door.test.ts · seam:planted"];
   const viaDoor = owes({ root: ROOT, paths, door: answering(good), judge: own });
   assert.equal(viaDoor.via, "door");
   assert.deepEqual(viaDoor.files.map((f) => f.path), ["tests/e2e/from-the-door.test.ts"]);
@@ -135,6 +136,15 @@ test("RED the door: an answer holds only where the fold's header leads it and co
     assert.equal(r.via, "develop checkout", `a door answering ${JSON.stringify(titles)} passed as the fold`);
     assert.ok(r.files.some((f) => f.path === "tests/e2e/tiddler-door.test.ts"));
   }
+  // RED the table checksum: a door folding another table than develop's (a vessel on an older plugin) reads dark, and the gate fails wide.
+  const stale = owes({ root: ROOT, paths, door: answering([good[0].replace(table, "0".repeat(64)), good[1]]), judge: own });
+  assert.equal(stale.via, "dark", "a stale table's answer passed as a narrow ticket");
+  assert.match(stale.why, /^door: the wiki folds the seam table 000000000000, where develop checkout holds [0-9a-f]{12}; bring the vessel onto develop's plugin/);
+  assert.deepEqual(stale.files, []);
+  assert.deepEqual(owedSteps({ owed: stale, weights: {}, touched: [], root: ROOT }).map((s) => s.name), ["e2e-node"], "the cli moved, so the dark answer owes the whole node e2e set");
+  assert.equal(owes({ root: ROOT, paths, door: answering([good[0].replace(` table=${table}`, ""), good[1]]), judge: own }).via, "dark", "an answer naming no table reads dark too");
+  // The fold's own digest equals the host's over one table, comments and blank lines included.
+  assert.ok(fold(["TOUCH wtf/README.md"])[0].includes(` table=${table} `));
   assert.equal(headerHolds(good, sent), true);
   assert.equal(headerHolds(good, sent + 1), false);
   // Facts past one argv word never reach the door.

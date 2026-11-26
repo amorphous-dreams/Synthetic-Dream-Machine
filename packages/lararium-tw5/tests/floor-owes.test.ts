@@ -4,7 +4,7 @@
  * house skin classes the operator. RED-FIRST: written by floor-owes#1, run by the familiar.
  */
 import { describe, expect, test } from "vitest";
-import { FLOOR_SEAMS, censusOf, floorOwesRows, owedOf, readOwes, refusalOf, seamsOfPath } from "../src/floor-owes.js";
+import { FLOOR_SEAMS, censusOf, floorOwesRows, owedOf, readOwes, refusalOf, seamsOfPath, sha256Hex, tableDigestOf } from "../src/floor-owes.js";
 import { floorOwes } from "../src/filters/floor-owes.js";
 import { LARARIUM_MODULES, skinOfModule } from "../plugin-build/skins.js";
 
@@ -38,11 +38,11 @@ const rows = (facts: string[], view = "runs"): string[] => floorOwesRows(`${TABL
 describe("the fold", () => {
   test("RED 1 (R2): a touched path owes its seam's guards, by tier; CONTROL: a FREE path owes nothing", () => {
     const out = rows(["TOUCH packages/node/src/shore-verb.ts"]);
-    expect(out[0]).toBe("OWES facts=1 touched=1 seams=1 refuse=0 sets=0 globs=1 files=2");
+    expect(out[0]).toBe(`OWES facts=1 table=${tableDigestOf(TABLE)} touched=1 seams=1 refuse=0 sets=0 globs=1 files=2`);
     expect(out).toContain("GLOB packages/cli/tests/shore-*.test.ts · seam:shore");
     expect(out).toContain("FILE heavy packages/cli/tests/ingest-settles.test.ts · seam:shore");
     expect(out).toContain("FILE dark packages/web/tests/e2e/shore.e2e.test.ts · seam:shore");
-    expect(rows(["TOUCH docs/notes.md"])).toEqual(["OWES facts=1 touched=1 seams=0 refuse=0 sets=0 globs=0 files=0"]);
+    expect(rows(["TOUCH docs/notes.md"])).toEqual([`OWES facts=1 table=${tableDigestOf(TABLE)} touched=1 seams=0 refuse=0 sets=0 globs=0 files=0`]);
   });
 
   test("RED 2 (R1): an edge test rides with its measured tier; a touched test owes itself; a GONE test owes nothing", () => {
@@ -136,6 +136,18 @@ describe("the fold", () => {
     expect(c.undeclared).toEqual(["tests/e2e/unowned.test.ts"]);
     expect(c.dead).toEqual(["boot tests/e2e/smoke.test.ts"]);
     expect(rows(tree.map((p) => `TOUCH ${p}`), "census")).toEqual(["CENSUS files=8 unmapped=0 undeclared=0 dead=0"]);
+  });
+
+  test("RED 14: the table names itself by its bytes: the digest reads the table rows alone, moves with any row, and holds through blank lines and facts", () => {
+    expect(sha256Hex("")).toBe("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
+    expect(sha256Hex("abc")).toBe("ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
+    expect(sha256Hex("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq")).toBe("248d6a61d20638b8e5c026930855e0644e59c94fca4f2e8a4ed91a3b54d4ae7c");
+    const digest = tableDigestOf(TABLE);
+    expect(digest).toMatch(/^[0-9a-f]{64}$/);
+    expect(tableDigestOf(`\n  ${TABLE.split("\n").join("  \n\n")}\nTOUCH a\nEDGE t a\nUNREAD diff`)).toBe(digest);
+    expect(tableDigestOf(`${TABLE}\nFREE scratch/**`)).not.toBe(digest);
+    expect(tableDigestOf(TABLE.replace("HUB 3", "HUB 4"))).not.toBe(digest);
+    expect(rows(["TOUCH docs/notes.md"])[0]).toContain(` table=${digest} `);
   });
 
   test("CONTROL: one diff answers one owed set, whatever order its facts arrive in", () => {
