@@ -8,6 +8,7 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
 
+import { answerRingOf } from "@lararium/mesh/control-home";
 import { memoryControlStore } from "./control-store-fixture.js";
 import { describe, test, expect } from "vitest";
 import { CompositeStore } from "@lararium/mesh/composite-store";
@@ -80,7 +81,8 @@ async function settle(turns = 20): Promise<void> {
 async function outcomeOf(daemon: CompositeStore, requestId: string) {
   const rec = await daemon.getLive(OUTCOME_URI_PREFIX + requestId);
   if (!rec) return null;
-  const results = JSON.parse(String(rec.tiddler["results"] ?? "{}")) as Record<string, { ok: boolean; output?: unknown }>;
+  // The row rests the verdict; the whole answer's results ride the store's answer ring.
+  const results = JSON.parse(String(answerRingOf(daemon).get(requestId)?.tiddler["results"] ?? "{}")) as Record<string, { ok: boolean; output?: unknown }>;
   return { fields: rec.tiddler, results };
 }
 

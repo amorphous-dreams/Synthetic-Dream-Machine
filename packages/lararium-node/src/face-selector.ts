@@ -14,10 +14,16 @@
 import { unlockedFaceOrdinals } from "./custody-seat.js";
 import { mountedFaceOrdinal } from "./node-vessel-identity.js";
 
-export class FaceNotNamed extends Error {}
+export class FaceNotNamed extends Error {
+  /** The refusal's class, for the one log line: `none-held` · `none-worn` · `name-one` · `face-not-open` · `face-row-other-face`. */
+  readonly klass: string;
+  constructor(message: string, klass = "name-one") { super(message); this.klass = klass; }
+}
 
 /** A seat named a face that stands shut on this vessel. */
-export class FaceNotOpen extends FaceNotNamed {}
+export class FaceNotOpen extends FaceNotNamed {
+  constructor(message: string) { super(message, "face-not-open"); }
+}
 
 export async function resolveFace(named?: number, opts: { readonly worn?: boolean } = {}): Promise<number> {
   if (named !== undefined && opts.worn !== true) return named;
@@ -27,11 +33,11 @@ export async function resolveFace(named?: number, opts: { readonly worn?: boolea
     throw new FaceNotOpen(`face-not-open: the face h${named} does not stand open on this vessel${open.length > 0 ? ` (open: ${open.map((i) => `h${i}`).join(", ")})` : ""}: open it with \`lares vault unlock --face ${named}\`, or name an open face`);
   }
   if (open.length === 1) return open[0]!;
-  if (open.length === 0) throw new FaceNotNamed("this vessel holds no face: found one with `lares persona new`");
+  if (open.length === 0) throw new FaceNotNamed("this vessel holds no face: found one with `lares persona new`", "none-held");
   if (opts.worn === true) {
     const mounted = mountedFaceOrdinal();
     if (mounted !== undefined && open.includes(mounted)) return mounted;
-    throw new FaceNotNamed(`this vessel stands faces ${open.map((i) => `h${i}`).join(", ")} open and wears none of them: wear one (\`lares vault unlock --face N\`), or name the face the seat acts as`);
+    throw new FaceNotNamed(`this vessel stands faces ${open.map((i) => `h${i}`).join(", ")} open and wears none of them: wear one (\`lares vault unlock --face N\`), or name the face the seat acts as`, "none-worn");
   }
   throw new FaceNotNamed(`this vessel stands faces ${open.map((i) => `h${i}`).join(", ")} open: name the face the command acts as (--face N)`);
 }

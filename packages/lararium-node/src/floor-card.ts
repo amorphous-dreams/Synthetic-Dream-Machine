@@ -62,7 +62,7 @@ export interface FloorDriftInputs {
   /** The floor drift reading; `null` with `why` where it does not read, `undefined` where the vessel answers none. */
   readonly canon:  { readonly drift: FloorDrift | null | undefined; readonly why?: string | undefined };
   /** The seed (offered) against the founding record; null where none reads. */
-  readonly seed:   { readonly cid: string; readonly ratchets: readonly RatchetDifference[] } | null;
+  readonly seed:   { readonly cid: string; readonly ratchets: readonly RatchetDifference[]; readonly onPin?: boolean } | null;
   readonly seedWhy?: string | undefined;
   readonly shadow: FloorShadowTally | null;
   /** Why the shadow tally reads nowhere where it stands corrupt (a missing file reads null with no reason). */
@@ -129,10 +129,13 @@ export function readFloorDrifts(input: FloorDriftInputs): FloorDriftRow[] {
     const moved = input.seed.ratchets.filter((r) => r.reading !== "same");
     // Each moved ratchet reads its stance (follow-lei S0): a skin waits as an offer, the engine stays held behind its own cadence.
     const stances = seedRatchetStances(input.seed.ratchets);
-    rows.push({ word: "seed offer", grain: "seed", state: ratchetsDiffer(input.seed.ratchets) ? "drifts" : "level", count: moved.length,
+    // The pin's own reading: a pin whose offering carries the seed's skins holds the offer already, so the status names no adopt.
+    const onPin = input.seed.onPin === true && moved.every((r) => r.ratchet !== "engine");
+    rows.push({ word: "seed offer", grain: "seed", state: !onPin && ratchetsDiffer(input.seed.ratchets) ? "drifts" : "level", count: moved.length,
       carriers: moved.map((r) => r.ratchet === "floor" ? "the seed's floor" : r.ratchet), heads: [`seed ${input.seed.cid}`],
-      detail: moved.length > 0 ? `a newer seed waits: ${input.seed.ratchets.map(seedRatchet).join(" · ")}; the founding record keeps serving; ${seedStanceWords(stances)}` : "the seed offered stands same on every ratchet",
-      next: stances.length > 0 && stances.every((s) => s.stance === "held (engine)") ? SEED_HELD_NEXT : stances.length > 0 ? SEED_OFFER_NEXT : SEED_NEXT, act: "read" });
+      detail: moved.length > 0 && onPin ? `the pin already carries this seed; serving stands on the founding record because mounts read the floor beside it and move once the shadow reads it clean (${input.seed.ratchets.map(seedRatchet).join(" · ")} against the founding record, which never moves)`
+        : moved.length > 0 ? `a newer seed waits: ${input.seed.ratchets.map(seedRatchet).join(" · ")}; the founding record keeps serving; ${seedStanceWords(stances)}` : "the seed offered stands same on every ratchet",
+      next: onPin ? SEED_NEXT : stances.length > 0 && stances.every((s) => s.stance === "held (engine)") ? SEED_HELD_NEXT : stances.length > 0 ? SEED_OFFER_NEXT : SEED_NEXT, act: "read" });
   }
 
   // shadow tally: level needs at least one clean boot; a tally no boot read clean says nothing level

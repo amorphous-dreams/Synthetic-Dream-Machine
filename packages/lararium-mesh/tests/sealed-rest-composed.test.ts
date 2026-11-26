@@ -27,7 +27,8 @@ describe("each vessel's Repo stands on the sealed rest", () => {
     expect(count(node, /composeSealedRest(<[^>]*>)?\(/)).toBe(1);
     // The Repo takes the sealed rest through its wire face (`wireIdentityOf`: the worn face's store id over the same store).
     expect(node).toMatch(/wireIdentityOf\(\{\s*store:\s*sealedRest\.store,/);
-    expect(node).toMatch(/new Repo\(\{\s*storage:\s*wire\.storage,\s*peerId:\s*wire\.peerId,/);
+    // The node's Repo wraps that rest in `compactingStorage` (every document compacts by count and bytes, never by clock).
+    expect(node).toMatch(/new Repo\(\{\s*storage:\s*compactingStorage\(wire\.storage,[\s\S]{0,800}?\}\),\s*peerId:\s*wire\.peerId,/);
     const uds = stripped(["lararium-node", "src", "uds-channel.ts"]);
     expect(uds).toMatch(/await opts\.beforeSignerDrops\?\.\(/);
   });

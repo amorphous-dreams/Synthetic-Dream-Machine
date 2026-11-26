@@ -48,7 +48,7 @@ import {
   CONTROL_HOME_ID, VOLATILE_VM_PREFIX,
   LARES_VERB_EVENT_TAG, LARES_VERB_TAG,
 } from "./lar-uris.js";
-import { sha256Hex, canonicalJsonBytes, defaultCryptoProvider, type DigestProvider } from "./crypto.js";
+import { sha256Hex, sha256HexBytesSync, canonicalJsonBytes, utf8Bytes, defaultCryptoProvider, type DigestProvider } from "./crypto.js";
 import { formatDigest } from "./agile-digest.js";
 import type { LarTiddlerRecord } from "./tiddler-store.js";
 import type { ChoreReceiptMark } from "./chore-ask.js";
@@ -488,6 +488,89 @@ export function concludeVerb(opts: {
       ...(opts.touched      !== undefined && { touched:         JSON.stringify(opts.touched) }),
     },
     meta: { authority: opts.authority ?? "lares-dispatcher" },
+  };
+}
+
+// ── The verdict row: what an outcome rests as ─────────────────────────────────────────────────────
+
+/** Past this many UTF-8 bytes a verdict row's `error-message` rests cut, with `error-sha256` naming the whole. */
+export const OUTCOME_ERROR_BOUND = 1024;
+
+/** The fields a verdict row carries over from the whole outcome as they stand. */
+const VERDICT_FIELDS = ["title", "tags", "request-id", "verb", "face", "status", "input-digest", "effect-key", "effect-of", "refusal", "chore"] as const;
+
+/** True where an outcome's `results` (its JSON, or the parsed map) answer a VISIT: the output carries `visit: true`. */
+function resultsNameVisit(results: unknown): boolean {
+  const output = ((results as Record<string, unknown> | null | undefined)?.[VERB_RESULT_KEY] as Record<string, unknown> | undefined)?.["output"];
+  return output !== null && typeof output === "object" && (output as Record<string, unknown>)["visit"] === true;
+}
+
+/** `text` cut to at most `bound` UTF-8 bytes on a character's edge. */
+function cutToBytes(text: string, bound: number): string {
+  if (utf8Bytes(text).length <= bound) return text;
+  let out = "";
+  let used = 0;
+  for (const ch of text) {
+    const weight = utf8Bytes(ch).length;
+    if (used + weight > bound) break;
+    out += ch;
+    used += weight;
+  }
+  return out;
+}
+
+/**
+ * THE VERDICT ROW: what a whole outcome (`concludeVerb`) rests as in the control document. It keeps the request id, the
+ * verb, the face, the status, the input digest, the effect key and `effect-of`, the refusal, the chore mark, an error
+ * message bounded at {@link OUTCOME_ERROR_BOUND} bytes (`error-sha256` names the whole where the cut fell), a `visit` flag
+ * where the output carried `visit: true`, and the measure of the body it left behind: `result-sha256` and `result-bytes`
+ * over the canonical bytes of the results map. It carries no `results`, `touched`, `cause`, `batch-mode` or completion
+ * stamp: a body answers its caller through the vessel's answer ring (`control-home` `answerRingOf`) and rests nowhere.
+ *
+ * A record that carries no `results` (a copy whose body already left, itself a verdict) keeps the measure it names.
+ */
+export function verdictRowOf(answer: LarTiddlerRecord): LarTiddlerRecord {
+  const whole = answer.tiddler as Record<string, unknown>;
+  const row: Record<string, unknown> = {};
+  for (const key of VERDICT_FIELDS) if (whole[key] !== undefined) row[key] = whole[key];
+  const error = whole["error-message"];
+  if (typeof error === "string") {
+    const cut = cutToBytes(error, OUTCOME_ERROR_BOUND);
+    row["error-message"] = cut;
+    if (cut !== error) row["error-sha256"] = sha256HexBytesSync(utf8Bytes(error));
+    else if (typeof whole["error-sha256"] === "string") row["error-sha256"] = whole["error-sha256"];
+  }
+  const raw = whole["results"];
+  if (typeof raw === "string") {
+    let parsed: unknown;
+    try { parsed = JSON.parse(raw); } catch { parsed = undefined; }
+    // The measure covers the canonical bytes of the map where it parses, and the stored text where it will not.
+    const bytes = parsed !== undefined ? canonicalJsonBytes(parsed) : utf8Bytes(raw);
+    row["result-sha256"] = sha256HexBytesSync(bytes);
+    row["result-bytes"] = String(bytes.length);
+    if (resultsNameVisit(parsed)) row["visit"] = "true";
+  } else {
+    for (const key of ["result-sha256", "result-bytes", "visit"] as const) if (typeof whole[key] === "string") row[key] = whole[key];
+  }
+  return { tiddler: row as LarTiddlerRecord["tiddler"], ...(answer.meta !== undefined ? { meta: answer.meta } : {}) };
+}
+
+/** True where an outcome record rests as a verdict alone: it carries no `results`, so its body rode the answer ring. */
+export function isVerdictRow(fields: Readonly<Record<string, unknown>>): boolean {
+  return typeof fields["results"] !== "string";
+}
+
+/**
+ * WHAT A BODY THAT LEFT ANSWERS: the verdict row's measure of it, and the cure. A body leaves the answer ring past its
+ * bound or with the vessel's life; the act it answered stands either way, so the cure never re-runs a write by its id.
+ */
+export function releasedBodyOf(fields: Readonly<Record<string, unknown>>): { readonly released: true; readonly sha256?: string; readonly bytes?: number; readonly cure: string } {
+  const bytes = typeof fields["result-bytes"] === "string" ? Number.parseInt(fields["result-bytes"], 10) : Number.NaN;
+  return {
+    released: true,
+    ...(typeof fields["result-sha256"] === "string" ? { sha256: fields["result-sha256"] } : {}),
+    ...(Number.isFinite(bytes) ? { bytes } : {}),
+    cure: "the verdict stands and its result body left this vessel's memory (a restart, or newer answers past the ring's bound): run a read again, or run the ingest again under a fresh request id, to read a body",
   };
 }
 

@@ -667,3 +667,47 @@ describe("RED (#428 F1) — the engine cascade never writes a residency ledger",
     expect(await c.storeForBag(BAG)!.get(effectRecordUri(BAG, "e1"))).not.toBeNull();
   });
 });
+
+describe("a bare tombstone sheds the record's fields; a kāpae keeps them", () => {
+  const BAG = "lar:///ha.ka.ba/test/bare-tombstone";
+  const ORIGIN: ChangeOrigin = { kind: "lares-verb", requestId: "bare" };
+  const rig = () => {
+    const repo = new Repo({ sharePolicy: async () => false });
+    const handle = repo.create<LarDoc>(emptyLarDoc());
+    const composite = new CompositeStore();
+    composite.addLayer({ bagId: BAG, store: new AutomergeDocStore(handle as never, BAG), writable: true });
+    const fieldsOf = (title: string): string[] => Object.keys(handle.doc()!.tiddlers[title]!.tiddler as Record<string, unknown>).sort();
+    return { handle, composite, fieldsOf };
+  };
+  const body = (title: string) => ({ tiddler: { title, text: "x".repeat(4096), verb: "tiddler-get" } });
+
+  test("★ a ring's tombstone rides bare: the title and the deleted mark stand, and the body leaves the document ★", async () => {
+    const { handle, composite, fieldsOf } = rig();
+    await composite.put(body("lar:///evicted"), ORIGIN, { bag: BAG });
+    await composite.put(body("lar:///hidden"), ORIGIN, { bag: BAG });
+    await composite.tombstoneInBag(BAG, "lar:///evicted", ORIGIN, { bare: true });
+    await composite.tombstoneInBag(BAG, "lar:///hidden", ORIGIN);
+    expect(handle.doc()!.tiddlers["lar:///evicted"]?.meta?.deleted).toBe(true);
+    expect(fieldsOf("lar:///evicted")).toEqual(["title"]);
+    // CONTROL: the kāpae hide keeps every field its record held.
+    expect(handle.doc()!.tiddlers["lar:///hidden"]?.meta?.deleted).toBe(true);
+    expect(fieldsOf("lar:///hidden")).toEqual(["text", "title", "verb"]);
+  });
+
+  test("a bare tombstone over a title a kāpae already hid sheds the fields that hide kept", async () => {
+    const { handle, composite, fieldsOf } = rig();
+    await composite.put(body("lar:///t"), ORIGIN, { bag: BAG });
+    await composite.tombstoneInBag(BAG, "lar:///t", ORIGIN);
+    expect(fieldsOf("lar:///t")).toEqual(["text", "title", "verb"]);
+    await composite.tombstoneInBag(BAG, "lar:///t", ORIGIN, { bare: true });
+    expect(handle.doc()!.tiddlers["lar:///t"]?.meta?.deleted).toBe(true);
+    expect(fieldsOf("lar:///t")).toEqual(["title"]);
+  });
+
+  test("a bare tombstone over an absent title mints the same key a kāpae mints", async () => {
+    const { handle, composite, fieldsOf } = rig();
+    await composite.tombstoneInBag(BAG, "lar:///never", ORIGIN, { bare: true });
+    expect(handle.doc()!.tiddlers["lar:///never"]?.meta?.deleted).toBe(true);
+    expect(fieldsOf("lar:///never")).toEqual(["title"]);
+  });
+});

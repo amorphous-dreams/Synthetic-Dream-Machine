@@ -117,7 +117,7 @@ describe("uds front", () => {
     composite.addLayer({ bagId: wikiSlotUri("daemon", "working"), store: new AutomergeDocStore(repo.create<LarDoc>(emptyLarDoc()), wikiSlotUri("daemon", "working")), writable: true });
     const ctlClaim = await setup();
     const channel = startUdsChannel({ controlHandle: daemonHandle, control: controlStoreOf(daemonHandle), placeVerb: (o) => {
-      daemonHandle.change((doc) => { doc.tiddlers[`${OUTCOME_URI_PREFIX}${o.requestId}`] = { tiddler: { status: "done", requestId: o.requestId }, meta: {} } as never; });
+      daemonHandle.change((doc) => { doc.tiddlers[`${OUTCOME_URI_PREFIX}${o.requestId}`] = { tiddler: { status: "done", requestId: o.requestId, results: "{}" }, meta: {} } as never; });
     }, claim: ctlClaim, repo });
     const result = dial(ctlClaim.socketPath, { verb: "ok", requestedBy: "did:key:test", requestId: "front-control" });
     await result.sent;
@@ -203,7 +203,7 @@ describe("uds front", () => {
     let land: (() => void) | null = null;
     const placed = new Promise<void>((resolve) => {
       front.attach(makeUdsSeat({ controlHandle: daemonHandle, control: controlStoreOf(daemonHandle), claim, repo, placeVerb: (o) => {
-        land = () => daemonHandle.change((doc) => { doc.tiddlers[`${OUTCOME_URI_PREFIX}${o.requestId}`] = { tiddler: { status: "done", requestId: o.requestId }, meta: {} } as never; });
+        land = () => daemonHandle.change((doc) => { doc.tiddlers[`${OUTCOME_URI_PREFIX}${o.requestId}`] = { tiddler: { status: "done", requestId: o.requestId, results: "{}" }, meta: {} } as never; });
         resolve();
       } }));
     });

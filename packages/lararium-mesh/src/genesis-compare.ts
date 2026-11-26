@@ -195,6 +195,11 @@ export interface SeedToFoundingRecord {
   readonly seed: readonly RatchetDifference[] | null;
   /** The floor pin beside the founding record; null where no pin was handed in. */
   readonly floorPin: readonly RatchetDifference[] | null;
+  /**
+   * Whether the pin's plugins offering already carries the seed's skins (grammar, lararium, plugins), read against the SEED's own
+   * bytes: true where `lares vessel floor adopt` would answer unmoved; null where no seed, no pin or no offering read.
+   */
+  readonly seedOnPin: boolean | null;
 }
 
 /**
@@ -207,7 +212,15 @@ export function compareSeedToFoundingRecord(input: {
   readonly floorPin?: FloorPinLike | null;
 }): SeedToFoundingRecord {
   const record = foundingRecordDigests(input.record);
+  let seedOnPin: boolean | null = null;
+  if (input.seed && input.floorPin?.offering) {
+    const seedDigests = foundingRecordDigests(input.seed);
+    const onPin = compareGenesisDigests(seedDigests, floorPinDigests(input.floorPin.manifestCid, input.floorPin.manifest, offeringReadings(input.seed, seedDigests, input.floorPin)));
+    const skins = onPin.filter((d) => d.ratchet === "grammar" || d.ratchet === "lararium" || d.ratchet === "plugins");
+    seedOnPin = skins.length > 0 && skins.every((d) => d.reading === "same");
+  }
   return Object.freeze({
+    seedOnPin,
     record,
     seed: input.seed ? compareGenesisDigests(record, foundingRecordDigests(input.seed)) : null,
     floorPin: input.floorPin

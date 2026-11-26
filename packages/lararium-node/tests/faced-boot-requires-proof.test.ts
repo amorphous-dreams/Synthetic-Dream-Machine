@@ -94,7 +94,7 @@ describe("a faced boot proves its face", () => {
     const node = read("lararium-node/src/open-node-vessel.ts");
     const raise = node.indexOf("raiseAnchorFromSlots(standingAnchor!, slots, personaKelChain)");
     const snapshot = node.indexOf("const daemonAuthNow = (joinedFaces: readonly JoinedFaceAuth[]) => ({");
-    const daemon = node.indexOf("await standDaemonIsland({");
+    const daemon = node.indexOf("standDaemonIsland({");
     expect(raise).toBeGreaterThan(0);
     expect(raise, "the raise precedes the snapshot").toBeLessThan(snapshot);
     expect(snapshot).toBeLessThan(daemon);

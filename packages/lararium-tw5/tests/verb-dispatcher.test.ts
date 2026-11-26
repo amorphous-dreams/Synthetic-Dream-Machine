@@ -18,6 +18,7 @@ import { describe, test, expect, vi } from "vitest";
 import { CompositeStore } from "@lararium/mesh/composite-store";
 import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
 import { OUTCOME_URI_PREFIX, VERB_RESULT_KEY, VERB_URI_PREFIX } from "@lararium/mesh/verb-tiddler";
+import { answerRingOf } from "@lararium/mesh/control-home";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { VerbDispatcher, VerbTable } from "../src/verb-dispatcher.js";
 import { EFFECT_URI_PREFIX } from "../src/verb-vm.js";
@@ -88,10 +89,13 @@ async function settle(turns = 20): Promise<void> {
   for (let i = 0; i < turns; i++) await new Promise((r) => setTimeout(r, 0));
 }
 
+/** One outcome as the island left it: the verdict row's fields, and the results the whole answer carries in the ring
+ *  (`{}` once the body left, or for a row that rests no body). */
 async function outcomeOf(control: CompositeStore, requestId: string) {
   const rec = await control.getLive(OUTCOME_URI_PREFIX + requestId);
   if (!rec) return null;
-  const results = JSON.parse(String(rec.tiddler["results"] ?? "{}")) as Record<string, { ok: boolean; output?: unknown }>;
+  const body = answerRingOf(control).get(requestId)?.tiddler["results"] ?? rec.tiddler["results"];
+  const results = JSON.parse(String(body ?? "{}")) as Record<string, { ok: boolean; output?: unknown }>;
   return { fields: rec.tiddler, results };
 }
 
@@ -412,7 +416,7 @@ describe("VerbDispatcher — effect dedup (D1)", () => {
     expect(await outcomeOf(control, "req-slow-2")).toBeNull(); // still waiting on the first
 
     // Release the first attempt's handler; it completes, writes its outcome + the effect index.
-    releaseFirstRun?.();
+    (releaseFirstRun as (() => void) | null)?.();
     await settle();
 
     expect(runCount).toBe(1); // the second attempt re-read and copied — it never called the handler
@@ -428,7 +432,7 @@ describe("VerbDispatcher — effect dedup (D1)", () => {
     dispatcher.stop();
   });
 
-  test("E1 — an effect-index hit whose prior outcome is EVICTED refuses (retention-gap) and never runs the handler; a digest-mismatch control falls through to a fresh run", async () => {
+  test("RED (ledger diet, step 2) — a dedup hit decides against the effect row alone: with the prior outcome row evicted and the body gone from the ring, it answers effect-of + the body's hash, handler not run", async () => {
     const tw5 = new FakeTW5Engine() as unknown as TW5Engine;
     const { daemon: daemonComposite, control } = makeStores();
     let runCount = 0;
@@ -441,7 +445,6 @@ describe("VerbDispatcher — effect dedup (D1)", () => {
     const dispatcher = new VerbDispatcher({ daemonVm: tw5, daemon: daemonComposite, control, registry });
     dispatcher.start();
 
-    // First attempt lands normally — handler runs once, effect index + outcome both written.
     dispatcher.placeVerb({
       verb: "do-evictable", args: { x: 1 }, requestedBy: "did:key:test",
       requestId: "req-evict-1", effectKey: "eff-evict",
@@ -450,35 +453,76 @@ describe("VerbDispatcher — effect dedup (D1)", () => {
     expect(runCount).toBe(1);
     const first = await outcomeOf(control, "req-evict-1");
     expect(first?.fields.status).toBe("done");
-    const factBefore = await control.getLive(EFFECT_URI_PREFIX + "eff-evict");
-    expect(factBefore?.tiddler["request-id"]).toBe("req-evict-1");
+    expect(first?.fields["results"], "the durable row rests no body").toBeUndefined();
+    const effectRow = await control.getLive(EFFECT_URI_PREFIX + "eff-evict");
+    expect(effectRow?.tiddler["request-id"]).toBe("req-evict-1");
+    expect(effectRow?.tiddler["input-digest"]).toBe(first?.fields["input-digest"]);
+    expect(effectRow?.tiddler["result-sha256"]).toBe(first?.fields["result-sha256"]);
 
-    // Simulate a CAS-sweep eviction: the outcome tiddler is gone, but the effect-index
-    // fact (a separate bag write) survives — exactly the retention-gap shape.
+    // The ring evicts the prior outcome row, and a restart empties the answer ring: the effect row stands alone.
     await control.tombstone(OUTCOME_URI_PREFIX + "req-evict-1", { kind: "lares-verb", requestId: "req-evict-1" });
-    expect(await outcomeOf(control, "req-evict-1")).toBeNull();
-    const factAfter = await control.getLive(EFFECT_URI_PREFIX + "eff-evict");
-    expect(factAfter?.tiddler["request-id"]).toBe("req-evict-1"); // the index survives the eviction
+    answerRingOf(control).clear();
 
-    // A SECOND attempt, same effectKey, SAME args (digest would have matched the gone outcome)
-    // — the dedup shortcut has nothing to copy from. It must REFUSE, not run the handler.
     dispatcher.placeVerb({
       verb: "do-evictable", args: { x: 1 }, requestedBy: "did:key:test",
       requestId: "req-evict-2", effectKey: "eff-evict",
     });
     await settle();
 
-    expect(runCount).toBe(1); // handler did NOT run for the evicted-effect attempt
-    const second = await outcomeOf(control, "req-evict-2");
-    expect(second?.fields.status).toBe("error");
-    expect(second?.fields.refusal).toBe("retention-gap");
+    expect(runCount, "the handler did not run for the dedup hit").toBe(1);
+    const second = await control.getLive(OUTCOME_URI_PREFIX + "req-evict-2");
+    expect(second?.tiddler.status).toBe("done");
+    expect(second?.tiddler["effect-of"]).toBe("req-evict-1");
+    expect(second?.tiddler["result-sha256"]).toBe(effectRow?.tiddler["result-sha256"]);
+    expect(second?.tiddler["results"]).toBeUndefined();
+    const answer = answerRingOf(control).get("req-evict-2")?.tiddler as Record<string, unknown>;
+    expect(answer["effect-of"]).toBe("req-evict-1");
+    expect(answer["results"], "no body rides a copy whose prior body left").toBeUndefined();
+
+    // CONTROL: while the island's ring still holds the prior body, the copy carries it whole.
+    dispatcher.placeVerb({ verb: "do-evictable", args: { x: 2 }, requestedBy: "did:key:test", requestId: "req-evict-3", effectKey: "eff-held" });
+    await settle();
+    dispatcher.placeVerb({ verb: "do-evictable", args: { x: 2 }, requestedBy: "did:key:test", requestId: "req-evict-4", effectKey: "eff-held" });
+    await settle();
+    expect(runCount).toBe(2);
+    const copied = await outcomeOf(control, "req-evict-4");
+    expect(copied?.fields["effect-of"]).toBe("req-evict-3");
+    expect(copied?.results[VERB_RESULT_KEY]?.output).toEqual({ ran: 2, echo: 2 });
+
+    dispatcher.stop();
+  });
+
+  test("E1 — an effect row that names no digest of its own (written before rows carried one) whose prior outcome is EVICTED refuses (retention-gap), names its cure, and never runs the handler", async () => {
+    const tw5 = new FakeTW5Engine() as unknown as TW5Engine;
+    const { daemon: daemonComposite, control } = makeStores();
+    let runCount = 0;
+    const registry = new VerbTable();
+    registry.register("do-evictable", async (args) => {
+      runCount++;
+      return { ran: runCount, echo: args["x"] };
+    });
+
+    const dispatcher = new VerbDispatcher({ daemonVm: tw5, daemon: daemonComposite, control, registry });
+    dispatcher.start();
+
+    // An effect row in the older shape: the key and the prior request id, no digest, and no outcome row behind it.
+    await control.put({ tiddler: { title: `${EFFECT_URI_PREFIX}eff-old`, "effect-key": "eff-old", "request-id": "req-old-1" }, meta: { authority: "lares-dispatcher" } } as never, { kind: "lares-verb", requestId: "plant" } as never);
+
+    dispatcher.placeVerb({
+      verb: "do-evictable", args: { x: 1 }, requestedBy: "did:key:test",
+      requestId: "req-old-2", effectKey: "eff-old",
+    });
+    await settle();
+
+    expect(runCount).toBe(0); // handler did NOT run for the evicted-effect attempt
+    const second = await control.getLive(OUTCOME_URI_PREFIX + "req-old-2");
+    expect(second?.tiddler.status).toBe("error");
+    expect(second?.tiddler.refusal).toBe("retention-gap");
+    expect(String(second?.tiddler["error-message"])).toContain("mint a fresh effect key");
     // The refused attempt is itself an "error" outcome, which writeOutcome's own law never
-    // indexes — so it did NOT clobber the effect-index fact with its own (non-)result; the
-    // index still names the original, now-evicted req-evict-1, and a future retention policy
-    // can tell "the thing this index points at is gone" from "nothing was ever indexed" — the
-    // two read differently on purpose.
-    const factAfterRefusal = await control.getLive(EFFECT_URI_PREFIX + "eff-evict");
-    expect(factAfterRefusal?.tiddler["request-id"]).toBe("req-evict-1");
+    // indexes — so it did NOT clobber the effect-index row; the index still names the original.
+    const factAfterRefusal = await control.getLive(EFFECT_URI_PREFIX + "eff-old");
+    expect(factAfterRefusal?.tiddler["request-id"]).toBe("req-old-1");
 
     dispatcher.stop();
   });

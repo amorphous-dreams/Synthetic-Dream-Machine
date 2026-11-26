@@ -1450,7 +1450,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   repo: {
-    usage: "usage: lares repo <read|tend|verify|undo> [--staged] [--force] [--probe] [--json]",
+    usage: "usage: lares repo <read|tend|verify|undo> [--root <dir>] [--staged] [--force] [--probe] [--json]",
     synopsis:
       "THE CHECKOUT'S DOOR — this checkout holds its declared reality tunnel (lar:///ha.ka.ba/lares/cli/reality-tunnel): the seed's links " +
       "and CLAUDE.md's import, the scouts that carry the seed, the files Copilot reads beside CLAUDE.md, Codex's doc cap, the " +
@@ -1459,12 +1459,14 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "`undo [gen]` restores one. Exit: 0 aligned · 1 drift · 2 usage · 3 foreign bytes refused · 4 a needed piece absent.",
     examples: [
       "lares repo read                  # every item, both diffs; writes nothing",
-      "lares repo read --staged         # what the commit carries (the pre-commit gate reads this)",
+      "lares repo read --staged         # what the commit carries",
+      "lares repo read --staged --root \"$(git rev-parse --show-toplevel)\"  # the committing repository's index (the pre-commit gate reads this)",
       "lares repo tend                  # converge; the root build runs this",
       "lares repo verify --probe        # Claude's /context, Codex's final hash, Copilot's sources",
       "lares repo undo                  # restore the latest tend generation",
     ],
     flags: [
+      "--root <dir>   the checkout to keep (default: the checkout this CLI lives in)",
       "--staged       read the index rather than the working tree (read only)",
       "--force        take bytes the house does not own; the ledger keeps them",
       "--probe        verify by asking each host (spends model calls)",

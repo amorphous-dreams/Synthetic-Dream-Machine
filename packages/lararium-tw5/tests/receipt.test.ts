@@ -210,7 +210,13 @@ describe.skipIf(wikiSkip)(`the coherence fold waits for the receipt capability t
       const receipt = makeReceiptCapability({ post: (m) => posts.push(m), handles: () => new Map() });
       const ctx = { wikiUri: "lar:///test/coherence-receipt", composite, tw5: engine, receipt, post: (m: IslandToVesselMsg) => { if ((m as { listenable?: string }).listenable === COHERENCE_FRAME) frames.push(m); } } as never;
       const stop = mountCoherenceProjection(ctx);
-      const advance = async (): Promise<void> => { await settle(); vi.advanceTimersByTime(100); await settle(); await settle(); };
+      // The paced fold gives the loop back through a real macrotask once a slice runs long (a cold fold on a loaded host):
+      // each advance grants a bounded count of host turns beside the fake beat, so the frame never waits on the host's speed.
+      const hostTurn = (): Promise<void> => new Promise<void>((resolve) => { setImmediate(resolve); });
+      const advance = async (): Promise<void> => {
+        await settle(); vi.advanceTimersByTime(100); await settle(); await settle();
+        for (let turn = 0; turn < 64; turn++) { await hostTurn(); await settle(); }
+      };
       await advance();
       expect(frames.length, "CONTROL: nothing waits, so the first frame lands on the beat").toBeGreaterThan(0);
       const before = frames.length;

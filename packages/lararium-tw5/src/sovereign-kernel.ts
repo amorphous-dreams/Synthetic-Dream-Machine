@@ -70,7 +70,7 @@ import { type KahuaStageFace } from "@lararium/mesh/kahua-stage-store";
 import { type Repo, type DocHandle, type AutomergeUrl, type StorageAdapterInterface } from "@lararium/mesh/automerge";
 import { type LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import { CONTROL_HOME_ID } from "@lararium/mesh/lar-uris";
-import { controlStoreOf, floorAnswerStore, ControlHomeUnavailable } from "@lararium/mesh/control-home";
+import { controlStoreOf, floorAnswerStore, answerRingOf, ControlHomeUnavailable } from "@lararium/mesh/control-home";
 import { AutomergeDocStore } from "@lararium/mesh/automerge-doc-store";
 import { IslandKernel } from "./island-kernel.js";
 import { waitForSlotDocument } from "./slot-wait.js";
@@ -457,6 +457,13 @@ export function runSovereignKernel(
       if (!controlHandle) return;
       _handles.set(CONTROL_HOME_ID, controlHandle);
       _control = controlStoreOf(controlHandle);
+    }
+    // EVERY WHOLE ANSWER CROSSES TO THE VESSEL'S ANSWER RING, floor or not: the island's ring holds each outcome its verbs
+    // conclude (`writeOutcome`), and hands it to the vessel's own ring over this message, where the verb door's caller
+    // waits. The control document rests the verdict row alone; the body rides here and rests nowhere.
+    if (_control) {
+      answerRingOf(_control).subscribe((_requestId, record) =>
+        _post(mkDaemonFloorAnswer({ tiddler: { ...record.tiddler }, ...(record.meta ? { meta: { ...record.meta } } : {}) }, true)));
     }
 
     const slots = expandRecipe(msg.recipe);

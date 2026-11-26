@@ -21,6 +21,7 @@ import type {
   LarRemoveOptions,
   MemeProjection,
   LarWriteOptions,
+  LarTombstoneOptions,
 } from "./tiddler-store.js";
 import {
   corpusLarUri,
@@ -516,7 +517,7 @@ export class CompositeStore implements LarTiddlerStore {
     return null;
   }
 
-  async tombstone(title: string, origin: ChangeOrigin, options?: { base?: readonly string[] }): Promise<void> {
+  async tombstone(title: string, origin: ChangeOrigin, options?: LarTombstoneOptions): Promise<void> {
     refuseHandOnLedger(origin, [title], "tombstone");
     this._requireBagForBase(options, "tombstone");
     if (!this.writableStore) throw new NoWorkingLayerRefusal("The bagless tombstone");
@@ -539,7 +540,7 @@ export class CompositeStore implements LarTiddlerStore {
    * ACTION removes the source-bag copy after writing the destination copy).
    * Throws when the named bag is absent or not writable.
    */
-  async tombstoneInBag(bagId: string, title: string, origin: ChangeOrigin, options?: { base?: readonly string[] }): Promise<void> {
+  async tombstoneInBag(bagId: string, title: string, origin: ChangeOrigin, options?: LarTombstoneOptions): Promise<void> {
     refuseHandOnLedger(origin, [title], "tombstoneInBag");
     const store = this._writableLayerOf(bagId);
     const retired = this._refuseRetired(store, [], "tombstoneInBag", [title]);
