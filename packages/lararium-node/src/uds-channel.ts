@@ -418,6 +418,13 @@ export class VesselWaitExpired extends Error {
 }
 
 /**
+ * AN EVICTED BODY LEAVES THE DOCUMENT'S STANDING STATE. A kāpae tombstone keeps every field its record held, so a ring
+ * that evicted by one counted the body out while every replica of the control document went on holding it. The ring's
+ * tombstone rides bare: the title and the deleted mark stand, and the body's fields leave.
+ */
+const EVICTED_BODY = { bare: true } as const;
+
+/**
  * The DURABLE, single-writer request ledger (D1, P2.5 iter 4 — closes H1R + H4 + M1 + M3″). This
  * channel is the receipt fact's ONE writer: it writes `committed` at arbitrate, `abandoned` at
  * EOF-drop/cancel, and `done`/`error` when it OBSERVES the durable outcome land (any path — the
@@ -442,13 +449,6 @@ export class VesselWaitExpired extends Error {
  *     a lone outcome heavier than the whole bound leaves when the next body lands.
  * The sum seeds from the facts themselves, so a restart reads the same weight a prior boot left.
  */
-/**
- * AN EVICTED BODY LEAVES THE DOCUMENT'S STANDING STATE. A kāpae tombstone keeps every field its record held, so a ring
- * that evicted by one counted the body out while every replica of the control document went on holding it. The ring's
- * tombstone rides bare: the title and the deleted mark stand, and the body's fields leave.
- */
-const EVICTED_BODY = { bare: true } as const;
-
 export class FactLedger {
   private readonly cache = new Map<string, ReceiptFact>();
   /** requestIds this ledger has read as TORN — a tiddler under {@link RECEIPT_FACT_URI_PREFIX} that
