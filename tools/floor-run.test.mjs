@@ -133,14 +133,18 @@ test('RED: two floor-runs fly at once on two slots; the third waits for one', as
   const hold = (mark) => ['--budget-gb', '0.001', '--', 'bash', '-c', `touch ${mark}; while [ ! -e ${rel} ]; do :; done`];
   const until = async (p) => { for (let i = 0; i < 4000 && !existsSync(p); i++) await new Promise((r) => setTimeout(r, 5)); assert.ok(existsSync(p), `no handshake at ${p}`); };
   const exited = (ch) => new Promise((res) => ch.on('exit', (code) => res(code)));
-  const one = spawn(process.execPath, [TOOL, ...hold(a)], { env, stdio: 'ignore' });
+  const kids = [];
+  const fly = (args) => { const k = spawn(process.execPath, args, { env, stdio: 'ignore', detached: true }); kids.push(k); return k; };
+  try {
+  const one = fly([TOOL, ...hold(a)]);
   await until(a);
-  const two = spawn(process.execPath, [TOOL, ...hold(b)], { env, stdio: 'ignore' });
+  const two = fly([TOOL, ...hold(b)]);
   await until(b);
-  const three = spawn(process.execPath, [TOOL, '--budget-gb', '0.001', '--', 'touch', c], { env, stdio: 'ignore' });
+  const three = fly([TOOL, '--budget-gb', '0.001', '--', 'touch', c]);
   for (let i = 0; i < 200; i++) await new Promise((r) => setImmediate(r));
   assert.ok(!existsSync(c), 'the third ran while both slots stood held');
   writeFileSync(rel, '');
   assert.equal(await exited(one), 0); assert.equal(await exited(two), 0); assert.equal(await exited(three), 0);
   assert.ok(existsSync(c));
+  } finally { writeFileSync(rel, ''); for (const k of kids) { try { process.kill(-k.pid, 'SIGKILL'); } catch { /* gone */ } } }
 });

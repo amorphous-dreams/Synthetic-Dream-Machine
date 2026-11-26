@@ -173,10 +173,11 @@ test('RED: two real batteries hold slot 1 and slot 2 at once; each reads its own
   const d = dir(); const lock = join(d, '.battery.lock');
   const env = { ...process.env, LARES_BATTERY_LOCK: lock };
   const inA = join(d, 'a'), inB = join(d, 'b'), rel = join(d, 'rel');
-  const hold = (mark) => `touch ${mark}; node ${join(TOOLS, 'floor-lock.mjs')} --slot > ${mark}.slot; while [ ! -e ${rel} ]; do :; done`;
-  const a = spawn('bash', [BATTERY, 'bash', '-c', hold(inA)], { env, stdio: 'ignore' });
+  const hold = (mark) => `touch ${mark}; node ${join(TOOLS, 'floor-lock.mjs')} --slot > ${mark}.tmp && mv ${mark}.tmp ${mark}.slot; while [ ! -e ${rel} ]; do :; done`;
+  const a = spawn('bash', [BATTERY, 'bash', '-c', hold(inA)], { env, stdio: 'ignore', detached: true });
+  const b = spawn('bash', [BATTERY, 'bash', '-c', hold(inB)], { env, stdio: 'ignore', detached: true });
+  try {
   await until(inA);
-  const b = spawn('bash', [BATTERY, 'bash', '-c', hold(inB)], { env, stdio: 'ignore' });
   await until(inB);
   await until(`${inA}.slot`); await until(`${inB}.slot`);
   const { readFileSync } = await import('node:fs');
@@ -187,13 +188,15 @@ test('RED: two real batteries hold slot 1 and slot 2 at once; each reads its own
   assert.match(status, /^slot 2 held by pid \d+/m);
   writeFileSync(rel, '');
   assert.equal(await exited(a), 0); assert.equal(await exited(b), 0);
+  } finally { writeFileSync(rel, ''); for (const c of [a, b]) { try { process.kill(-c.pid, 'SIGKILL'); } catch { /* gone */ } } }
 });
 
 test('RED: a nested take inside slot 2 runs at once, never waiting on itself, with slot 1 held by another run', async () => {
   const d = dir(); const lock = join(d, '.battery.lock');
   const env = { ...process.env, LARES_BATTERY_LOCK: lock };
   const inA = join(d, 'a'), rel = join(d, 'rel');
-  const a = spawn('bash', [BATTERY, 'bash', '-c', `touch ${inA}; while [ ! -e ${rel} ]; do :; done`], { env, stdio: 'ignore' });
+  const a = spawn('bash', [BATTERY, 'bash', '-c', `touch ${inA}; while [ ! -e ${rel} ]; do :; done`], { env, stdio: 'ignore', detached: true });
+  try {
   await until(inA);
   // This battery takes slot 2; the nested battery inside it reads slot 2 held by its ancestor and runs at once.
   const r = spawnSync('bash', [BATTERY, 'bash', BATTERY, 'node', join(TOOLS, 'floor-lock.mjs'), '--slot'], { encoding: 'utf8', env, timeout: 60_000 });
@@ -203,4 +206,5 @@ test('RED: a nested take inside slot 2 runs at once, never waiting on itself, wi
   assert.match(r.stderr, /holding the box, slot 2/);
   writeFileSync(rel, '');
   assert.equal(await exited(a), 0);
+  } finally { writeFileSync(rel, ''); try { process.kill(-a.pid, 'SIGKILL'); } catch { /* gone */ } }
 });

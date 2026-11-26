@@ -41,13 +41,16 @@ test("TWO SLOTS: two runs under two different HOMEs hold two slots at once; a th
   const inA = join(d, "a-holding"), inB = join(d, "b-holding"), releaseA = join(d, "a-release"), releaseB = join(d, "b-release"), cStarted = join(d, "c-started"), aDone = join(d, "a-done");
   const holder = (inFile, release, done) => `touch ${inFile}; while [ ! -e ${release} ]; do :; done; ${done ? `touch ${done}` : "true"}`;
   const env = (home) => ({ ...process.env, HOME: home, LARES_BATTERY_LOCK: lock });
-  const first = spawn("bash", [BATTERY, "bash", "-c", holder(inA, releaseA, aDone)], { env: env(homes[0]), stdio: "ignore" });
+  const kids = [];
+  const fly = (...a) => { const c = spawn(...a, { detached: true }); kids.push(c); return c; };
+  try {
+  const first = fly("bash", [BATTERY, "bash", "-c", holder(inA, releaseA, aDone)], { env: env(homes[0]), stdio: "ignore" });
   await until(inA);
   // The second flies beside the first: two heavy runs at once.
-  const second = spawn("bash", [BATTERY, "bash", "-c", holder(inB, releaseB)], { env: env(homes[1]), stdio: "ignore" });
+  const second = fly("bash", [BATTERY, "bash", "-c", holder(inB, releaseB)], { env: env(homes[1]), stdio: "ignore" });
   await until(inB);
   // The third queues: its command may only run once a slot frees, so it records whether a-done stood when it began.
-  const third = spawn("bash", [BATTERY, "bash", "-c", `[ -e ${aDone} ] && touch ${cStarted}`], { env: env(homes[2]), stdio: "ignore" });
+  const third = fly("bash", [BATTERY, "bash", "-c", `[ -e ${aDone} ] && touch ${cStarted}`], { env: env(homes[2]), stdio: "ignore" });
   for (let i = 0; i < 200; i++) await new Promise((r) => setImmediate(r));
   assert.ok(!existsSync(cStarted));
   assert.equal(third.exitCode, null, "the third exited while both slots stood held");
@@ -57,6 +60,7 @@ test("TWO SLOTS: two runs under two different HOMEs hold two slots at once; a th
   assert.ok(existsSync(cStarted));
   writeFileSync(releaseB, "");
   assert.equal(await exited(second), 0);
+  } finally { writeFileSync(releaseA, ""); writeFileSync(releaseB, ""); for (const c of kids) { try { process.kill(-c.pid, "SIGKILL"); } catch { /* gone */ } } }
 });
 
 test("--lock-paths names both slots: slot 1 the lock, slot 2 beside it with -2 before the .lock suffix", () => {
