@@ -186,7 +186,9 @@ export function procHolderPids(prefix: string): number[] {
  * standing the whole time would spend the WRONG patience and name the wrong story.
  *   - `error` (ECONNREFUSED/ENOENT, before any `connect`) → UNBOUND: `null`, nothing to connect to.
  *   - `timeout` after a successful `connect` but before any line arrives → WEDGED: something accepted
- *     the connection and then never answered. `socketHolderPids` names it when it can.
+ *     the connection and then never answered. `socketHolderPids` names it when it can. The reading says SILENT
+ *     and no more: a vessel that runs hot and one that stands frozen both land here, and the store door tells them
+ *     apart by the holder's own CPU counter (`store-door.ts`'s `readHolder`).
  *   - a parsed line within the timeout → PARKED: a vessel mid-boot, claimed but not yet serving verbs,
  *     answering its own `{holder:"?"}` probe live (the ordinary slow-but-live boot);
  *   - a line that says `serving: true` → SERVING: the live seat answered, naming its asks in flight and the
@@ -245,8 +247,8 @@ export function whoHolds(dataDir?: string | null, timeoutMs = 1_500, requestId?:
       if (!connected) { done(null); return; }                   // never even connected — genuinely unbound
       const pids = socketHolderPids(path);
       const message = pids.length > 0
-        ? `a listener at ${path} accepted the connection but gave no answer within ${timeoutMs}ms — frozen or wedged, still held by pid(s) ${pids.join(", ")}`
-        : `a listener at ${path} accepted the connection but gave no answer within ${timeoutMs}ms — frozen or wedged, answers to no discoverable pid`;
+        ? `a listener at ${path} accepted the connection but gave no answer within ${timeoutMs}ms — silent, still held by pid(s) ${pids.join(", ")}`
+        : `a listener at ${path} accepted the connection but gave no answer within ${timeoutMs}ms — silent, answers to no discoverable pid`;
       done({ phase: "wedged", holder: null, message });
     });
   });
