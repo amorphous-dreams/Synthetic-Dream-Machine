@@ -2008,7 +2008,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         // live-layer mount/unmount: the recipe syncs, islands reconcile their own stacks.
         registry.register("add-bag",       underFace("add-bag", makeAddBagReactor({ catalog, ...(sysPlane ? { oracle: sysPlane } : {}), post: ctx.post })));
         registry.register("remove-bag",    underFace("remove-bag", makeRemoveBagReactor({ catalog, ...(sysPlane ? { oracle: sysPlane } : {}), post: ctx.post })));
-        // THE CANON FLOOR BY PLACE's migration door: a hand trues one recipe, with a receipt; no boot moves a record.
+        // THE CANON FLOOR BY PLACE's migration door: a hand trues one recipe, with a receipt; no boot moves a record. A HAND ACT
+        // (`HAND_ADMITS` `true-floor`): the socket refuses a seat's ask, and the reactor refuses any asker but a terminal's
+        // BEFORE it reads the catalog, so neither an open face nor the veil floor admits it without a living hand.
         registry.register("true-floor",    underFace("true-floor", makeTrueFloorReactor({ catalog, ...(sysPlane ? { oracle: sysPlane } : {}), post: ctx.post })));
         // Catalog-writing residency verbs — mint/oracle via accessor + repo, command
         // residency via post. No live-layer swap (oracle/recipe sync; islands reconcile).

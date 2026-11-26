@@ -174,11 +174,13 @@ describe("a system slug composes through the vessel's own record", () => {
 describe("true-floor: a hand trues a pre-ruling recipe to the canon floor by place, with a receipt (ruling 2026-11-26-canon-floor-by-place)", () => {
   const LARARIUM = wikiBagUri("lararium");
   const ORACLE = "lar:///ha.ka.ba/bags/oracle";
+  // A HAND ACT (`custody.hand.admits`, `true-floor`): the operator's terminal books the asker `cli`.
+  const hand = { asker: "cli" } as VerbContext;
 
   test("the lares wiki's pre-ruling default (lararium as a library) trues: lararium drops, the record keeps its prior stack", async () => {
     const r = rig();
     const oracleBefore = JSON.stringify(r.oracle.tiddlers);
-    const out = await makeTrueFloorReactor({ catalog: r.catalog.accessor, oracle: r.oracle.accessor, post: r.post })({ slug: "lares" }, ctx);
+    const out = await makeTrueFloorReactor({ catalog: r.catalog.accessor, oracle: r.oracle.accessor, post: r.post })({ slug: "lares" }, hand);
     expect(out).toMatchObject({ status: "trued", adopted: true, dropped: [LARARIUM], stack: [ORACLE, LARES] });
     expect(out["receipt"]).toMatchObject({ verb: "true-floor", slug: "lares", before: DEFAULT_STACK.split(" "), after: [ORACLE, LARES], dropped: [LARARIUM] });
     const own = plainRecord(r.catalog.tiddlers[recipeUri("catalog", "lares")]!);
@@ -193,9 +195,9 @@ describe("true-floor: a hand trues a pre-ruling recipe to the canon floor by pla
   test("a true recipe answers already-true and writes nothing", async () => {
     const r = rig();
     const opts = { catalog: r.catalog.accessor, oracle: r.oracle.accessor, post: r.post };
-    await makeTrueFloorReactor(opts)({ slug: "lares" }, ctx);
+    await makeTrueFloorReactor(opts)({ slug: "lares" }, hand);
     const snapshot = JSON.stringify(r.catalog.tiddlers);
-    expect(await makeTrueFloorReactor(opts)({ slug: "lares" }, ctx)).toMatchObject({ status: "already-true", dropped: [] });
+    expect(await makeTrueFloorReactor(opts)({ slug: "lares" }, hand)).toMatchObject({ status: "already-true", dropped: [] });
     expect(JSON.stringify(r.catalog.tiddlers)).toBe(snapshot);
   });
 
@@ -203,7 +205,7 @@ describe("true-floor: a hand trues a pre-ruling recipe to the canon floor by pla
     const r = rig();
     const title = recipeUri("catalog", "elyncia");
     r.catalog.tiddlers[title] = rec(title, { "bag-stack": `${ORACLE} ${LARARIUM} ${LARES} ${X} ${wikiBagUri("elyncia")}` });
-    const out = await makeTrueFloorReactor({ catalog: r.catalog.accessor, oracle: r.oracle.accessor, post: r.post })({ slug: "elyncia" }, ctx);
+    const out = await makeTrueFloorReactor({ catalog: r.catalog.accessor, oracle: r.oracle.accessor, post: r.post })({ slug: "elyncia" }, hand);
     expect(out).toMatchObject({ status: "trued", dropped: [LARARIUM] });
     expect(out).not.toHaveProperty("adopted");
     expect(plainField(r.catalog.tiddlers[title], "bag-stack")).toBe(`${ORACLE} ${LARES} ${X} ${wikiBagUri("elyncia")}`);
@@ -212,7 +214,29 @@ describe("true-floor: a hand trues a pre-ruling recipe to the canon floor by pla
   test("the door takes a slug, and refuses a slug no recipe stands for", async () => {
     const r = rig();
     const door = makeTrueFloorReactor({ catalog: r.catalog.accessor, oracle: r.oracle.accessor, post: r.post });
-    await expect(door({}, ctx)).rejects.toThrow(/true-floor: the verb takes a slug/);
-    await expect(door({ slug: "nowhere" }, ctx)).rejects.toThrow(/recipe not found for "nowhere"/);
+    await expect(door({}, hand)).rejects.toThrow(/true-floor: the verb takes a slug/);
+    await expect(door({ slug: "nowhere" }, hand)).rejects.toThrow(/recipe not found for "nowhere"/);
+  });
+
+  test("RED: a seat asker refuses true-floor-needs-hand, naming the terminal cure, and the catalog stays unchanged", async () => {
+    const r = rig();
+    const title = recipeUri("catalog", "elyncia");
+    r.catalog.tiddlers[title] = rec(title, { "bag-stack": `${ORACLE} ${LARARIUM} ${LARES} ${wikiBagUri("elyncia")}` });
+    const before = JSON.stringify(r.catalog.tiddlers);
+    const door = makeTrueFloorReactor({ catalog: r.catalog.accessor, oracle: r.oracle.accessor, post: r.post });
+    await expect(door({ slug: "elyncia" }, { asker: "seat" } as VerbContext)).rejects.toThrow(/^true-floor-needs-hand: .*came from seat\. Ask the operator to run `lares wiki true-floor elyncia` at their own terminal\.$/);
+    await expect(door({ slug: "lares" }, { asker: "tab" } as VerbContext)).rejects.toThrow(/^true-floor-needs-hand: /);
+    expect(JSON.stringify(r.catalog.tiddlers)).toBe(before);
+    expect(r.posted).toEqual([]);
+  });
+
+  test("RED: an ask no door read (no asker: an open face or the veil floor with no living hand) refuses, and nothing writes", async () => {
+    const r = rig();
+    const before = JSON.stringify(r.catalog.tiddlers);
+    const door = makeTrueFloorReactor({ catalog: r.catalog.accessor, oracle: r.oracle.accessor, post: r.post });
+    await expect(door({ slug: "lares" }, ctx)).rejects.toThrow(/^true-floor-needs-hand: .*came from no hand a door read\./);
+    await expect(door({ slug: "lares" }, undefined as unknown as VerbContext)).rejects.toThrow(/^true-floor-needs-hand: /);
+    expect(JSON.stringify(r.catalog.tiddlers)).toBe(before);
+    expect(r.posted).toEqual([]);
   });
 });

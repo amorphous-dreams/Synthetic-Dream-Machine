@@ -481,8 +481,12 @@ describe.skipIf(!builtExists)("a lone SIGTERM to the host process leaves nothing
     const b = bench({ running });
     const child = spawn(process.execPath, [BIN, "persona", "list"], { env: { ...b.env, FAKE_SLEEP: "1" }, stdio: "ignore" });
     const pidFile = `${b.log}.pid`;
-    for (let i = 0; i < 100 && !existsSync(pidFile); i++) await new Promise((r) => setTimeout(r, 50));
-    expect(existsSync(pidFile)).toBe(true);
+    // THE WAIT FOR THE ACT TO START reads the act, never a clock the box sets: a cold start of the built CLI measured 4.0-4.5 s
+    // at load 30 (BUILT_CLI_BUDGET), so a 5 s poll read a loaded box as a shim that never ran. It polls inside the case's
+    // own budget, and a start that never came names itself.
+    const started = Date.now();
+    while (!existsSync(pidFile) && child.exitCode === null && Date.now() - started < 40_000) await new Promise((r) => setTimeout(r, 50));
+    expect(existsSync(pidFile), `the shim's act never started (host process exit ${child.exitCode}, calls ${JSON.stringify(calls(b))})`).toBe(true);
     const sleeper = Number(readFileSync(pidFile, "utf8").trim());
     // The host node pid ALONE: no terminal, no group.
     process.kill(child.pid!, sig);
@@ -497,7 +501,7 @@ describe.skipIf(!builtExists)("a lone SIGTERM to the host process leaves nothing
   it("standing vessel: the compose client ends, and the shim stops the tagged process inside the vessel", async () => {
     const { b, ended, sleeperAlive } = await lone("SIGTERM", true);
     try {
-      expect(ended.signal === "SIGTERM" || ended.code === 143).toBe(true);
+      expect(ended.signal === "SIGTERM" || ended.code === 143, `the host process ended ${JSON.stringify(ended)}`).toBe(true);
       expect(sleeperAlive).toBe(false);
       const exec = execCall(b)!;
       expect(exec).toContain("LARES_EXEC_TAG");
@@ -510,12 +514,12 @@ describe.skipIf(!builtExists)("a lone SIGTERM to the host process leaves nothing
   it("offline door: the compose client ends, and the shim removes the named run container", async () => {
     const { b, ended, sleeperAlive } = await lone("SIGHUP", false);
     try {
-      expect(ended.signal === "SIGHUP" || ended.code === 129).toBe(true);
+      expect(ended.signal === "SIGHUP" || ended.code === 129, `the host process ended ${JSON.stringify(ended)}`).toBe(true);
       expect(sleeperAlive).toBe(false);
       const run = calls(b).find((c) => c.includes("run"))!;
       const name = run[run.indexOf("--name") + 1];
       expect(name).toMatch(/^lares-offline-[0-9a-f]+$/);
-      expect(calls(b).some((c) => c.includes("rm") && c.includes(name))).toBe(true);
+      expect(calls(b).some((c) => c.includes("rm") && c.includes(name)), JSON.stringify(calls(b))).toBe(true);
     } finally { rmSync(b.dir, { recursive: true, force: true }); }
   });
 });

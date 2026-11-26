@@ -793,15 +793,20 @@ stop_act() { # $1 = the signal caught
 
 run_waited() { # $1 = exec|run; the rest = the compose argv
   act_kind=$1; shift
+  # THE TRAPS STAND BEFORE THE ACT: a signal that lands between the spawn and the traps would end this shell by default and
+  # leave the act running. A signal caught before the act's pid is known stops it again once the pid is known.
+  act_pid=""
+  trap 'stop_act TERM' TERM
+  trap 'stop_act HUP' HUP
+  trap 'stop_act INT' INT
   # The subshell EXECS docker, so the pid waited on and signalled names the compose client itself.
   (
+    trap - TERM HUP INT
     if [ -n "$ENV_ARGS" ]; then exec docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE_PATH" "$@"
     else exec docker compose --env-file /dev/null -f "$COMPOSE_FILE_PATH" "$@"; fi
   ) <&3 3<&- &
   act_pid=$!
-  trap 'stop_act TERM' TERM
-  trap 'stop_act HUP' HUP
-  trap 'stop_act INT' INT
+  if [ -n "$caught" ]; then stop_act "$caught"; fi
   while :; do
     if wait "$act_pid"; then act_rc=0; else act_rc=$?; fi
     kill -0 "$act_pid" 2>/dev/null || break

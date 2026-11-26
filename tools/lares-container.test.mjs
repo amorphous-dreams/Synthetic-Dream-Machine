@@ -2802,6 +2802,8 @@ for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
   }
   test(`${name}: plain put passes stdin and leaves a flag-shaped value alone`, { skip }, async () => {
     const piped = await run(shim, [...wire, "--file", "-"], { env, input: bytes });
+    // A run that never reached its exec (a refusal, a spawn timeout under load) names itself here, never as a bare null below.
+    assert.equal(piped.status, 0, `${piped.stderr}${piped.error ? ` (${piped.error.message})` : ""}${piped.signal ? ` (signal ${piped.signal})` : ""}`);
     assert.deepEqual(piped.received, bytes);
     const value = await run(shim, [...wire, "--text", "--file", "--text", "--create"], { env });
     assert.equal(value.status, 0, value.stderr); assert.equal(value.received, null);
