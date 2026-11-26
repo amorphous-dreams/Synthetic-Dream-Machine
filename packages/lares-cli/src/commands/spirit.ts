@@ -27,7 +27,9 @@
  *   hooili    (the carry, hoʻoili)  land a compaction summary as `hooili/<spirit-id>-<hash12>` with its lineage (`parent`,
  *                                   `record-base`, `depth`, `instance`); it writes nothing to the card and hands back the #/instances
  *                                   line (`<pet>#<instance8>`) the next instance files through `ah`
- *   residue   (residue)             land a spirit's handback, keyed idempotently (`--key <session:agent>`)
+ *   residue   (residue)             land a spirit's handback, keyed idempotently (`--key <session:agent>`); `--witness`
+ *                                   reads every landed handback (and `--transcripts <dir|file>`) for the frame and the
+ *                                   Personas (`@lararium/mesh/spirit-witness`): one receipt line each, one tally, exit 0
  *   ah --offer (ʻālana, the offering)  a summon sets the mandate (`--file <path|->` · `--text <words>`, else the card's own
  *                                   `lane`), its lane's memory pointer (`--lane`), the grant's slice (`--grant`) and its
  *                                   offerer (`hand`, or `seat#<instance>`: a seat names `--instance`) on the spirit's shelf,
@@ -63,7 +65,8 @@
  * Meme: lar:///ha.ka.ba/kahua/memory/wave/spirit-om-ah-hum · research: lar:///ha.ka.ba/kahua/memory/research/spirit-lifecycle-code
  * · the ʻĀlana Circle: lar:///ha.ka.ba/lares/docs/pono/spirit-circle (ruling lar:///ha.ka.ba/kahua/memory/ruling/2026-11-25-alana-circle-code)
  */
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync, statSync } from "node:fs";
+import { basename, join } from "node:path";
 import { stdin } from "node:process";
 import { readOwnHand, type HandReading } from "@lararium/node";
 import { CARRIER_TYPE, isCarrierType } from "@lararium/mesh/carrier-type";
@@ -80,6 +83,7 @@ import {
   ALANA_DISPLAY, MANDATE_HASH, cardField, cardRecordOf, cardSlotHeld, echoJoin, echoReceipt, echoStands, echoTurned, mandateLines, offerHeld, offererOf, offeringDamaged, offeringOf, offeringRead, offeringWrite,
   type SpiritOffering, type SideWrite, type SlotWrite, type SpiritAwake, type SpiritCarry, type SpiritRecord, type SpiritRow, type SpiritSource,
 } from "@lararium/mesh/spirit-shrine";
+import { transcriptHandbacks, unreadWitness, witnessLine, witnessOf, witnessTally, type Witnessed } from "@lararium/mesh/spirit-witness";
 import { STACK_SLOT, capHolder, capLine, maskCardOf, profilesOf, sealedOf, spiritOf, stackBody, stackLine, stackOf, stackWrite } from "@lararium/mesh/spirit-stack";
 import { FOLD_OPERATOR, UNFOLD_RANKS, faceBound, narrowerRank, spiritCardOf, unfoldCall, unfoldRank, type UnfoldRank } from "@lararium/mesh/spirit-unfold";
 import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
@@ -1050,8 +1054,66 @@ async function landCarry(args: ParsedArgs, ctx: Ctx): Promise<number> {
   return 0;
 }
 
+/**
+ * The transcripts `--transcripts` names, read from disk: a file reads alone, a directory reads its `*.jsonl` files sorted by
+ * name (never by mtime). Each agent's hand-back witnesses as one reading; whatever reads no hand-back answers a named unread
+ * line with the read that cures it.
+ */
+function transcriptWitness(path: string, pet: string): Witnessed[] {
+  let files: string[];
+  try {
+    files = statSync(path).isDirectory() ? readdirSync(path).filter((n) => n.endsWith(".jsonl")).sort().map((n) => join(path, n)) : [path];
+  } catch (e) {
+    return [unreadWitness(path, `the path reads nothing (${(e as NodeJS.ErrnoException).code ?? "unreadable"})`, `ls -l ${shq(path)}`)];
+  }
+  if (files.length === 0) return [unreadWitness(path, "the directory holds no *.jsonl transcript", `ls ${shq(path)}`)];
+  return files.flatMap((file): Witnessed[] => {
+    let jsonl: string;
+    try { jsonl = readFileSync(file, "utf8"); } catch (e) {
+      return [unreadWitness(basename(file), `the transcript reads nothing (${(e as NodeJS.ErrnoException).code ?? "unreadable"})`, `ls -l ${shq(file)}`)];
+    }
+    const handbacks = transcriptHandbacks(jsonl);
+    if (handbacks.length === 0) return [unreadWitness(basename(file), "the transcript holds no JSON event", `head -n 1 ${shq(file)}`)];
+    return handbacks.map(({ agent, text }) => {
+      const source = handbacks.length === 1 ? basename(file) : `${basename(file)}#${agent}`;
+      return text === null || text.trim() === ""
+        ? unreadWitness(source, "the agent's stream ends with no hand-back text", `tail -n 2 ${shq(file)}`)
+        : witnessOf(source, text, pet);
+    });
+  });
+}
+
+/**
+ * THE RESIDUE WITNESS (`residue <pet> --witness [--transcripts <dir|file>]`): every hand-back landed under the pet (its residue
+ * records, in title order) and every hand-back the named transcripts carry, read for the frame and the Personas. One receipt
+ * line per reading, one tally; it exits 0 on every reading, a dropped frame reading as a named tell with its seed slot.
+ */
+async function witnessResidue(args: ParsedArgs, pet: string): Promise<number> {
+  const listed = await door(args, "residue", "wiki-filter", { recipe: RECIPE, filter: residueFilter([pet]) });
+  const titles = residueOf([pet], titlesOf(listed)).filter((t) => !isCarry(t)).sort();
+  const readings: Witnessed[] = [];
+  for (const title of titles) {
+    const text = (await fieldsOf(args, "residue", title))["text"] ?? "";
+    readings.push(text.trim() === "" ? unreadWitness(title, "the record holds no words", `lares tiddler get ${shq(title)} --recipe default`) : witnessOf(title, text, pet));
+  }
+  const dir = wordOf(args.options["transcripts"]);
+  if (dir !== null) readings.push(...transcriptWitness(dir, pet));
+  const lines = readings.map(witnessLine);
+  const tally = witnessTally(pet, readings);
+  emit(args, {
+    ok: true,
+    data: {
+      pet, witness: true, lines, tally,
+      readings: readings.map((w) => (w.kind === "unread" ? w : { kind: w.kind, source: w.source, ...w.reading })),
+    },
+    human: () => { for (const line of lines) console.log(line); console.log(tally.line); },
+  });
+  return 0;
+}
+
 async function residue(args: ParsedArgs, ctx: Ctx): Promise<number> {
   const pet = petOf(args, "residue");
+  if (args.flags["witness"] === true) return await witnessResidue(args, pet);
   const { text, cut } = await residueWords(args, "residue");
   // A handback lands under its own pet name alone: a mask tag never reaches a familiar's record, nor mints its spirit-id.
   const key = pet;

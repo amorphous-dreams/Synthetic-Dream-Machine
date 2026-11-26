@@ -44,6 +44,10 @@
       "import": "./dist/spirit-summons.js",
       "types": "./dist/spirit-summons.d.ts"
     },
+    "./spirit-witness": {
+      "import": "./dist/spirit-witness.js",
+      "types": "./dist/spirit-witness.d.ts"
+    },
     "./hand-refusal": {
       "import": "./dist/hand-refusal.js",
       "types": "./dist/hand-refusal.d.ts"
