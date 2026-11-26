@@ -21,10 +21,22 @@ export const WAVE_2 = [
   "carriage.bag.tends", "realm.bag.shares", "sense.record.flows",
 ] as const;
 
-/** Every address a canon carrier holds today, by hand: a pack that lacks one reads red, never vacuous. Wave 1a added the calendar and the law; wave 2 the seven unhelped doors. */
+/** Wave 3a's carriers that skin a terminal door: `kahua` · `trust` · `kapae` · `events` · `hooks` · `mcp`. */
+export const WAVE_3A = [
+  "face.key.mints", "face.draft.proposes", "face.draft.stages", "face.hand.withdraws", "face.carry.restands", "face.draft.reads",
+  "carriage.draft.lifts", "realm.offer.reads", "realm.offer.prepares", "realm.offer.commits", "realm.offer.drops", "realm.offer.orphans",
+  "realm.kapae.raises", "realm.kapae.lowers", "realm.kapae.flags", "engine.status.follows", "sense.capture.pauses", "sense.capture.resumes",
+  "sense.capture.reads", "engine.seat.holds",
+] as const;
+
+/** Wave 3a's seat-only carriers: the sensorium branch mute and its restore render no cli line. */
+export const WAVE_3A_SEAT = ["sense.kapae.mutes", "sense.kapae.restores"] as const;
+
+/** Every address a canon carrier holds today, by hand: a pack that lacks one reads red, never vacuous. Wave 1a added the calendar and the law; wave 2 the seven unhelped doors; wave 3a the kahua, trust, kapae, events, hooks and mcp doors. */
 export const SEED_ADDRESSES = [
   SEED_ADDRESS, "lar:///oracle.calendar.dates", "lar:///engine.law.indexes", "lar:///engine.law.pins", "lar:///engine.law.unpins",
   ...WAVE_2.map((a) => `lar:///${a}`),
+  ...WAVE_3A.map((a) => `lar:///${a}`),
 ] as const;
 
 /** The cure every pack-shaped red names. */

@@ -1,0 +1,111 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/engine.status.follows`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "read the vessel journal from a cursor, optionally waiting on the next"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///engine.status.follows"]
+title     = "lar:///ha.ka.ba/lares/afford/engine.status.follows"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/engine.status.follows"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! engine.status.follows ~ the journal's matching entries, or the first one still to land
+
+Reads the vessel journal through the daemon. Without `--wait` it returns the matching entries already standing, within a ten-second read; with `--wait` it holds (up to two minutes) and answers on the first matching entry after `--since`, or after now where `--since` is absent. The cursor reads `<epoch:writer:seq>`, the seq a whole number from 1; the one kind today is `bag-projected`. Without a vessel standing the verb refuses by name and carries its hint.
+
+`--json` prints the structured payload; the human line reads `events: N`, then one JSON line per entry.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ what-stands · wait-for-a-projection · from-a-cursor
+
+```memetic-wikitext
+<<has entity=`example` name=`what-stands` params=`~ the entries already standing`>>
+<<has entity=`example` name=`wait-for-a-projection` params=`kind/bag-projected wait ~ hold for the first bag-projected entry to land`>>
+<<has entity=`example` name=`from-a-cursor` params=`since/genesis:node-daemon:12 ~ read after one cursor`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ since · kind · wait
+
+```memetic-wikitext
+<<has entity=`arg` name=`since` params=`takes/epoch:writer:seq ~ read entries after this cursor; a malformed cursor refuses as usage`>>
+<<has entity=`arg` name=`kind` params=`takes/kind ~ one kind of entry: bag-projected`>>
+<<has entity=`arg` name=`wait` params=`~ hold until the first matching entry lands after the cursor`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ read
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`read` params=`who/seat-or-hand ~ a read of the journal through the daemon; it writes nothing`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ unknown-kind · invalid-since · daemon-unreachable
+
+```memetic-wikitext
+<<has entity=`refusal` name=`unknown-kind` params=`cure/[[engine.status.follows kind/bag-projected]] ~ the kind names none the journal carries; bag-projected stands alone (exit 2)`>>
+<<has entity=`refusal` name=`invalid-since` params=`cure/[[engine.status.follows since/genesis:node-daemon:12]] ~ the cursor reads epoch:writer:seq with a whole seq from 1 (exit 2)`>>
+<<has entity=`refusal` name=`daemon-unreachable` params=`~ no vessel stands to answer; the line carries its hint`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ listed · refused
+
+```memetic-wikitext
+<<has entity=`band` name=`listed` params=`exit/0 fields/[[entries]] ~ the matching entries, each a JSON line on the terminal`>>
+<<has entity=`band` name=`refused` params=`~ the vessel refused by name; the line carries its reason`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares events
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares events]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;gj8YVua1NOBfog0vFqZ6oLnbwqmFNGg6lhzLqI168Vc`>>
+
+<<^ code=`&#x0004;` to=`?`>>

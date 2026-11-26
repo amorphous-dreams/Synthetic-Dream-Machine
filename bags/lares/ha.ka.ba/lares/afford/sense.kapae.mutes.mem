@@ -1,0 +1,98 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/sense.kapae.mutes`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "mute a conversation branch and its descendants in a sensorium"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///sense.kapae.mutes"]
+title     = "lar:///ha.ka.ba/lares/afford/sense.kapae.mutes"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/sense.kapae.mutes"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! sense.kapae.mutes ~ a worldline branch sets aside, move-not-delete
+
+Mutes a worldline branch (a fork-path-dead-end) and cascades the mute across a sensorium: the branch's turn-keys and every store's entries for them stop answering a recall. `sensorium` names the sensorium; absent, memory. Reversible, move-not-delete throughout: `sense.kapae.restores` brings the entries back, and the rows never leave.
+
+The answer is {branch, muted_entries, resolved}; a branch no turn names answers `resolved: false` with nothing muted, never a phantom mute. The word names five doors in the house: this is the seat's branch mute, beside a wiki's promotion brake (`realm.kapae.raises`), a nexus quorum ban and a relation's marker. The terminal's `lares sense worldline kapae <branch>` names the same act and refuses honestly where its handle reads read-only; it joins this address as a cli skin when the sense door flips.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ a-branch
+
+```memetic-wikitext
+<<has entity=`example` name=`a-branch` params=`branch/<branch> tick/1 ~ mute one branch at a tick`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ branch · tick · sensorium
+
+```memetic-wikitext
+<<has entity=`arg` name=`branch` params=`takes/branch-root needs/required ~ the worldline branch to mute, by the root turn-key of its fork`>>
+<<has entity=`arg` name=`tick` params=`takes/whole-number needs/required ~ the tick the mute lands at; the restore names the same tick`>>
+<<has entity=`arg` name=`sensorium` params=`takes/name ~ the sensorium to mute across; absent, memory`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ write
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`write` params=`who/seat-or-hand ~ reversible and trusted: a move-not-delete mute the seat runs on the operator's loop`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ muted · unresolved
+
+```memetic-wikitext
+<<has entity=`band` name=`muted` params=`exit/0 fields/[[branch muted_entries resolved]] ~ the branch's turn-keys and each store's entries for them stand muted`>>
+<<has entity=`band` name=`unresolved` params=`exit/0 ~ the branch names no turn; resolved reads false and nothing muted`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ mcp
+
+<<~ ahu slot=`#/skins/mcp`>>
+
+!!! kapae
+
+```memetic-wikitext
+<<has entity=`skin` name=`mcp` params=`spells/kapae ~ the seat`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · kapae
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kapae`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;oG55Lctbgh6UAWzXj7WichMAl7XviKOKn3wZMK2RT4o`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1042,15 +1042,14 @@ def build_mcp(coordinator: LaresCoordinator):
 
     @mcp.tool(annotations=_annotations("kapae"))
     def kapae(branch: str, tick: int, sensorium: "str | None" = None) -> dict:
-        """Mute a conversation branch and its descendants in a sensorium.
-        Mute a worldline branch (a fork-path-dead-end) + cascade the mute across a sensorium
-        (`sensorium` names it; absent → memory)."""
+        # THE WORDS LIVE IN THE CARRIER (lar:///sense.kapae.mutes): `_dress_from_pack` hands this tool its description and
+        # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
         return _call("kapae", sensorium, branch, tick)
 
     @mcp.tool(annotations=_annotations("un_kapae"))
     def un_kapae(branch: str, tick: int, sensorium: "str | None" = None) -> dict:
-        """Restore a muted conversation branch in a sensorium.
-        Restore a previously kapae-muted branch across a sensorium (`sensorium` names it; absent → memory)."""
+        # THE WORDS LIVE IN THE CARRIER (lar:///sense.kapae.restores): `_dress_from_pack` hands this tool its description and
+        # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
         return _call("un_kapae", sensorium, branch, tick)
 
     @mcp.tool(annotations=_annotations("analyze"))
@@ -1990,18 +1989,8 @@ def build_mcp(coordinator: LaresCoordinator):
 
     @mcp.tool(annotations=_annotations("kahua_propose"))
     def kahua_propose(proposals: list, face: "int | None" = None, session: "str | None" = None) -> dict:
-        """Propose items for the face's kahua stage — mirrors `lares kahua propose`. `proposals` lists
-        {title, revision, text | digest, taint}: the daemon title and revision the item distils, its body (or the body's
-        sha-256 digest) and every input from outside the face (web page, tool output, pasted text); an AI summary
-        inherits the taint of what it summarised. ONE batch per call rides the face's intents plane, pinned to this
-        device; it carries digests and never a body, and it grants nothing: the operator's hand lifts it with
-        `lares kahua lift <title> --proposal <id>`. TWO DIGESTS, ONE WORD: a proposal's `digest` names the BODY
-        digest, the sha-256 of the raw body bytes (UTF-8, lowercase hex), which this tool computes from `text`. The
-        ROW digest that `lares kahua stage` prints and `lift --digest` takes covers the body AND the row's carried
-        fields, so it differs. Hand `text`, or the BODY digest; a proposal built from the ROW digest refuses at the
-        lift with `proposal-digest`, as does one whose body differs by a byte from the staged row's. `face` may name any face inside the lent set (absent: the worn face); a face outside it refuses `face-not-lent`, a shut one `face-not-open`.
-        Returns {id, cid}. Rides a `seat` session over the @daemon wire; no MCP tool lifts (`kahua_stage` writes
-        the local row a lift names)."""
+        # THE WORDS LIVE IN THE CARRIER (lar:///face.draft.proposes): `_dress_from_pack` hands this tool its description and
+        # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
         if not isinstance(proposals, list) or not proposals:
             raise SeatArgumentRefused("kahua_propose: name `proposals` as a non-empty list of {title, revision, text|digest, taint}")
         args: dict = {"proposals": proposals}
@@ -2011,16 +2000,8 @@ def build_mcp(coordinator: LaresCoordinator):
 
     @mcp.tool(annotations=_annotations("kahua_stage"))
     def kahua_stage(title: str, text: str, fields: "dict | None" = None, face: "int | None" = None) -> dict:
-        """Stage one row into the face's local canon `bags/daemon-<F>` — mirrors `lares kahua stage <title> --text
-        <body> [--fields <json>]`. The first of memory's two crossings: local to this device, unsigned, and it lifts
-        nothing; the operator's hand carries a staged row to the fleet with `lares kahua lift <title>`, reading its
-        preview first. `text` carries the row's whole body; `fields` carries its string-valued fields (`title`, `text`
-        and any `kahua-` field never ride). A row already standing at `title` gives way to this one. Returns
-        {title, digest, relation, staged}: `digest` names the ROW digest (sha-256 over the body and the carried fields),
-        the one `lift --digest` takes, never the BODY digest a proposal carries (`kahua_propose`); `staged` reads
-        false where the row already stood at that digest and nothing moved. `face` may name any face inside the lent
-        set (absent: the worn face); a face outside it refuses `face-not-lent`, a shut one `face-not-open`. A face with no local canon
-        standing refuses `kahua-stage-no-canon`. Rides a `seat` session over the @daemon wire."""
+        # THE WORDS LIVE IN THE CARRIER (lar:///face.draft.stages): `_dress_from_pack` hands this tool its description and
+        # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
         if not isinstance(title, str) or not title:
             raise SeatArgumentRefused("kahua_stage: name the row's `title`")
         if not isinstance(text, str):
@@ -2035,9 +2016,8 @@ def build_mcp(coordinator: LaresCoordinator):
     @mcp.tool(annotations=_annotations("kahua_get"))
     def kahua_get(title: "str | None" = None, history: bool = False, face: "int | None" = None,
                   after: "str | None" = None, limit: "int | None" = None) -> dict:
-        """Get the face's verified kahua stage at two grains — mirrors `lares kahua get [<title>]`.
-        Without a title, lists bounded items with source, count, relation and continuation; a fresh face answers
-        `stage: "none"`. With a title, returns the verified item or null and optional history. Reads alone."""
+        # THE WORDS LIVE IN THE CARRIER (lar:///face.draft.reads): `_dress_from_pack` hands this tool its description and
+        # each parameter's from the baked affordance pack, so this function keeps behaviour alone and holds no docstring.
         if title is not None and (not isinstance(title, str) or not title):
             raise SeatArgumentRefused("kahua_get: name a nonempty `title`")
         if title is None and history:

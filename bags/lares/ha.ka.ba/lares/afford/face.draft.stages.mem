@@ -1,0 +1,126 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.draft.stages`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "stage one row into the face's local canon, unsigned, on this device"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.draft.stages"]
+title     = "lar:///ha.ka.ba/lares/afford/face.draft.stages"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.draft.stages"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.draft.stages ~ the first of memory's two crossings: a local row a lift later names
+
+`kahua stage <title>` writes ONE row into the face's local canon `bags/daemon-<F>`: local to this device, unsigned, and it lifts nothing. The operator's hand carries a staged row to the fleet with `lares kahua lift <title>`, reading its preview first. `text` carries the row's whole body; `fields` carries its string-valued fields (`title`, `text` and any `kahua-` field never ride). A row already standing at the title gives way to this one.
+
+The answer is {title, digest, relation, staged}. `digest` names the ROW digest (sha-256 over the body and the carried fields), the one a lift's `--digest` takes, never the BODY digest a proposal carries (`face.draft.proposes`); `staged` reads false where the row already stood at that digest and nothing moved. The terminal prints the same note on stderr beside the door's JSON. A face with no local canon standing refuses `kahua-stage-no-canon`. The seat's tool rides a `seat` session over the @daemon wire.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ a-row · a-row-with-fields · on-a-named-face
+
+```memetic-wikitext
+<<has entity=`example` name=`a-row` params=`title/T text/<body> ~ stage one row from a body on the line`>>
+<<has entity=`example` name=`a-row-with-fields` params=`title/T text/<body> fields/<fields> ~ carry string-valued fields beside the body`>>
+<<has entity=`example` name=`on-a-named-face` params=`title/T text/<body> face/1 ~ stage into one face's local canon`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ title · text · file · fields · face
+
+```memetic-wikitext
+<<has entity=`arg` name=`title` params=`takes/title needs/required seat/1 as/<title> ~ the row's title`>>
+<<has entity=`arg` name=`text` params=`takes/body ~ the row's whole body; the terminal names it by --text or --file (one of them), the seat's tool by text`>>
+<<has entity=`arg` name=`file` params=`takes/path skins/cli ~ the terminal's other way to name the body: a file the door reads`>>
+<<has entity=`arg` name=`fields` params=`takes/json-object ~ the row's string-valued fields (an object of strings on the seat, JSON on the terminal); 'title', 'text' and any 'kahua-' field never ride`>>
+<<has entity=`arg` name=`face` params=`takes/handle-index ~ any face inside the lent set, by persona index (a whole number from 0); absent, the worn face; a face outside the set refuses 'face-not-lent', a shut one 'face-not-open'`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat-or-hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat-or-hand` params=`who/seat-or-hand ~ a local, unsigned row on this device alone, in the face's local canon bags/daemon-<F>; any seat may stage, and a lift (the hand's act) is what carries it to the fleet`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ kahua-stage-text · kahua-stage-no-canon · fields-malformed · face-not-lent · face-not-open
+
+```memetic-wikitext
+<<has entity=`refusal` name=`kahua-stage-text` params=`cure/[[face.draft.stages title/T text/<body>]] ~ name the row's body by text or file, one of them, never both`>>
+<<has entity=`refusal` name=`kahua-stage-no-canon` params=`~ the face stands no local canon to stage into`>>
+<<has entity=`refusal` name=`fields-malformed` params=`cure/[[face.draft.stages title/T text/<body> fields/<fields>]] ~ fields needs JSON on the terminal, an object of string values on the seat`>>
+<<has entity=`refusal` name=`face-not-lent` params=`~ the face stands outside the lent set the seat may name`>>
+<<has entity=`refusal` name=`face-not-open` params=`~ the face stands shut; open it first`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ staged · unchanged
+
+```memetic-wikitext
+<<has entity=`band` name=`staged` params=`exit/0 fields/[[title digest relation staged]] ~ the row stands in the face's local canon at the row digest`>>
+<<has entity=`band` name=`unchanged` params=`exit/0 ~ staged reads false: the row already stood at that digest and nothing moved`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli · mcp
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares kahua stage
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares kahua stage]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins/mcp`>>
+
+!!! kahua_stage
+
+```memetic-wikitext
+<<has entity=`skin` name=`mcp` params=`spells/kahua_stage ~ the seat; rides a seat session over the @daemon wire`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · kahua-memory-stage
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;w6poyb-pca0UOKzrYhK1Blf0GxxHblLa9weGmr3zKOw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

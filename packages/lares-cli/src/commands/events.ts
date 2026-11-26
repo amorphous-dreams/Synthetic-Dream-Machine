@@ -1,6 +1,7 @@
 import { runVerb, verbFailure } from "../verb-call.js";
 import { vesselDid } from "../env.js";
 import { emit, exitFor } from "../render.js";
+import { helpLines } from "../command-help.js";
 import { summaryOutput } from "../verb-result.js";
 import type { JournalCursor } from "@lararium/mesh/vessel-journal";
 import type { ParsedArgs } from "../parse-args.js";
@@ -27,14 +28,14 @@ function parseSince(raw: string): JournalCursor | null {
 export async function cmdEvents(args: ParsedArgs): Promise<number> {
   const kindRaw = args.options["kind"];
   if (kindRaw !== undefined && !EVENT_KINDS.has(kindRaw as EventKind)) {
-    console.error("usage: lares events [--since <epoch:writer:seq>] [--kind <bag-projected>] [--wait] --json");
+    for (const line of helpLines("events")) console.error(line);
     console.error(`lares events: unknown kind "${kindRaw}"`);
     return 2;
   }
   const sinceRaw = args.options["since"];
   const since = typeof sinceRaw === "string" ? parseSince(sinceRaw) : undefined;
   if (sinceRaw !== undefined && since === null) {
-    console.error("usage: lares events [--since <epoch:writer:seq>] [--kind <bag-projected>] [--wait] --json");
+    for (const line of helpLines("events")) console.error(line);
     console.error(`lares events: invalid --since cursor "${sinceRaw}"`);
     return 2;
   }

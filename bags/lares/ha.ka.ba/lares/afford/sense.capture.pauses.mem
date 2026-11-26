@@ -1,0 +1,95 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/sense.capture.pauses`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "pause the capture hooks by writing the marker file they step aside on"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///sense.capture.pauses"]
+title     = "lar:///ha.ka.ba/lares/afford/sense.capture.pauses"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/sense.capture.pauses"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! sense.capture.pauses ~ capture minting stops at the source
+
+The hook-lever stands on its own: a marker file a capture hook checks and steps aside on when present (whatever runs the `lares sense capture` and `lares sense telemetry` legs on a session event). A migration or a `lares sense teardown` then runs WITHOUT daemon-spawn contention: the minting stops at the source, with no whack-a-mole against spawned children. `lares mempalace quiesce` pauses AND drains the warm daemons in one gesture; this lever suppresses minting alone, touching no live daemon.
+
+`hooks pause [--reason <t>]` writes the marker (the reason defaults to `manual`) and answers {wasPaused, hooksPaused, marker, since, reason}; pausing again refreshes the reason. Run `lares mempalace quiesce` to drain the warm daemons, and `hooks resume` to un-pause.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ pause · with-a-reason
+
+```memetic-wikitext
+<<has entity=`example` name=`pause` params=`~ suppress capture minting`>>
+<<has entity=`example` name=`with-a-reason` params=`reason/migrate ~ pause and record why`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ reason
+
+```memetic-wikitext
+<<has entity=`arg` name=`reason` params=`takes/words ~ record why the hooks were paused (default: manual)`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ write
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`write` params=`who/seat-or-hand ~ a marker file in the house's own run space; reversible by resume, trusted`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ paused
+
+```memetic-wikitext
+<<has entity=`band` name=`paused` params=`exit/0 fields/[[wasPaused hooksPaused marker since reason]] ~ the marker stands; a capture hook steps aside until resumed`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares hooks pause
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares hooks pause]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;CRTYSLf7IF9Gqf-APPw-L6DZ2DEPbUgmo__HmZ7qFI8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

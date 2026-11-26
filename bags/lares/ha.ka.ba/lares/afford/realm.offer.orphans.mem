@@ -1,0 +1,112 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/realm.offer.orphans`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "decide an orphaned promotion: keep it or drop it, by the hand"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///realm.offer.orphans"]
+title     = "lar:///ha.ka.ba/lares/afford/realm.offer.orphans"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/realm.offer.orphans"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! realm.offer.orphans ~ the hand keeps or drops what lost its source
+
+Every wiki wears promotion capability; its edge holds (face, wiki, digest). The AI prepares and flags; the hand commits and raises. The wiki rides `--wiki` (absent: the daemon wiki), the face `--face N`, and every answer prints as JSON.
+
+`trust orphan <digest> --keep|--drop` decides a promoted item whose source went away: `--keep` keeps it standing, `--drop` drops it. Name one, never both or neither. A person runs it at a real terminal.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ keep-it · drop-it
+
+```memetic-wikitext
+<<has entity=`example` name=`keep-it` params=`digest/<digest> keep ~ keep the orphan`>>
+<<has entity=`example` name=`drop-it` params=`digest/<digest> drop ~ drop the orphan`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ digest · wiki · face · keep · drop
+
+```memetic-wikitext
+<<has entity=`arg` name=`digest` params=`takes/hex64 needs/required seat/1 as/<digest> ~ the promotion's digest, 64 lowercase hex`>>
+<<has entity=`arg` name=`wiki` params=`takes/wiki-name ~ the wiki the promotion belongs to; absent, the daemon wiki`>>
+<<has entity=`arg` name=`face` params=`takes/handle-index ~ which face's promotion plane this call reads or acts on, by persona index (a whole number from 0)`>>
+<<has entity=`arg` name=`keep` params=`~ keep the orphan standing`>>
+<<has entity=`arg` name=`drop` params=`~ drop the orphan`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand ~ a hand alone decides: an AI harness refuses promote-needs-hand, naming the command the operator runs`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ promote-decision-malformed · promote-digest-malformed · promote-needs-hand
+
+```memetic-wikitext
+<<has entity=`refusal` name=`promote-decision-malformed` params=`cure/[[realm.offer.orphans digest/<digest> keep]] ~ name --keep or --drop, one of them`>>
+<<has entity=`refusal` name=`promote-digest-malformed` params=`cure/[[realm.offer.orphans digest/<digest> keep]] ~ name a hex64 digest`>>
+<<has entity=`refusal` name=`promote-needs-hand` params=`cure/[[realm.offer.reads]] ~ a hand must decide`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ decided
+
+```memetic-wikitext
+<<has entity=`band` name=`decided` params=`exit/0 ~ the orphan stands kept or dropped; the answer prints as JSON`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares trust orphan
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares trust orphan]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · kahua-memory-stage
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;X6_XM7rPKGjvgemphbFx7gNk6HV5S6uwlRiSK5P5hM0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

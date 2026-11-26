@@ -25,6 +25,15 @@ const WAVE_2 = [
   "carriage.bag.tends", "realm.bag.shares", "sense.record.flows",
 ];
 
+/** Wave 3a's carriers: `kahua` · `trust` · `kapae` · `events` · `hooks` · `mcp`, with the seat's branch mute and restore. */
+const WAVE_3A = [
+  "face.key.mints", "face.draft.proposes", "face.draft.stages", "face.hand.withdraws", "face.carry.restands", "face.draft.reads",
+  "carriage.draft.lifts", "realm.offer.reads", "realm.offer.prepares", "realm.offer.commits", "realm.offer.drops", "realm.offer.orphans",
+  "realm.kapae.raises", "realm.kapae.lowers", "realm.kapae.flags", "engine.status.follows", "sense.capture.pauses", "sense.capture.resumes",
+  "sense.capture.reads", "engine.seat.holds",
+  "sense.kapae.mutes", "sense.kapae.restores",
+];
+
 const CURE = "re-bake: pnpm --filter @lararium/tw5 build (or tsx scripts/build-affordance-pack.ts), then commit affordance-pack.json";
 
 describe.skipIf(wikiSkip)(`W3 · the tracked pack equals a fresh bake of canon${skipNote}`, () => {
@@ -56,7 +65,7 @@ describe.skipIf(wikiSkip)(`W3 · the tracked pack equals a fresh bake of canon${
 
   test("SEED: wave 2's thirty-two carriers stand in the pack, each bcc the canon carrier's own frame check", () => {
     const pack = JSON.parse(readFileSync(PACK_PATH, "utf8")) as { carriers: Record<string, { title: string; bcc: string | null }> };
-    for (const address of WAVE_2) {
+    for (const address of [...WAVE_2, ...WAVE_3A]) {
       const carrier = pack.carriers[`lar:///${address}`];
       expect(carrier, `the pack holds no lar:///${address}; ${CURE}`).toBeDefined();
       const text = canonTexts(path.join(REPO, "bags")).find((t) => headUriOf(t) === carrier!.title);

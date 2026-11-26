@@ -1,0 +1,111 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/realm.kapae.raises`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "raise a wiki's promotion brake on one digest, by the hand"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///realm.kapae.raises"]
+title     = "lar:///ha.ka.ba/lares/afford/realm.kapae.raises"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/realm.kapae.raises"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! realm.kapae.raises ~ the hand raises the brake and the promoted item stands aside
+
+Every wiki wears promotion capability; its edge holds (face, wiki, digest). The AI prepares and flags; the hand commits and raises. The brake sets one promoted item aside by a signed marker, and a lower takes the marker down. The wiki rides `--wiki` (absent: the daemon wiki), the face `--face N`, and every answer prints as JSON. The word names five doors in the house: the nexus quorum ban (`lares nexus kapae`) and a relation's marker (`lares edge kapae`) stay beside it, the seat's branch mute reads at `sense.kapae.mutes`, and a record's tombstone rides `lares tiddler delete`.
+
+`kapae raise <digest>` sets the item aside by a signed marker, a move-not-delete: the marker holds until a lower takes it down. A person runs it at a real terminal, and an AI seat flags (`realm.kapae.flags`) and names the command.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ one-digest · in-a-wiki
+
+```memetic-wikitext
+<<has entity=`example` name=`one-digest` params=`digest/<digest> ~ raise the brake on one item`>>
+<<has entity=`example` name=`in-a-wiki` params=`digest/<digest> wiki/garden ~ raise it in one wiki`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ digest · wiki · face · keep · drop
+
+```memetic-wikitext
+<<has entity=`arg` name=`digest` params=`takes/hex64 needs/required seat/1 as/<digest> ~ the promoted item's digest, 64 lowercase hex`>>
+<<has entity=`arg` name=`wiki` params=`takes/wiki-name ~ the wiki the promotion belongs to; absent, the daemon wiki`>>
+<<has entity=`arg` name=`face` params=`takes/handle-index ~ which face's promotion plane this call reads or acts on, by persona index (a whole number from 0)`>>
+<<has entity=`arg` name=`keep` params=`~ read by no kapae act: the trust door's orphan decision names it, and a kapae line ignores it`>>
+<<has entity=`arg` name=`drop` params=`~ read by no kapae act: the trust door's orphan decision names it, and a kapae line ignores it`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`hand` params=`who/hand ~ a hand alone raises: an AI harness refuses kapae-needs-hand, naming the command the operator runs`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ promote-digest-malformed · kapae-needs-hand
+
+```memetic-wikitext
+<<has entity=`refusal` name=`promote-digest-malformed` params=`cure/[[realm.kapae.raises digest/<digest>]] ~ name a hex64 digest`>>
+<<has entity=`refusal` name=`kapae-needs-hand` params=`cure/[[realm.kapae.flags digest/<digest> why/<reason>]] ~ a hand must raise; an AI seat flags and the operator raises`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ raised
+
+```memetic-wikitext
+<<has entity=`band` name=`raised` params=`exit/0 ~ the marker stands; the answer prints as JSON`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares kapae raise
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares kapae raise]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · kapae
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kapae`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;FAJIWDy6EhI-NnzybFzpX5H7b_qWdz6aRqhMSuObbS8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

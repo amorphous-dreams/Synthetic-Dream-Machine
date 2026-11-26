@@ -1,0 +1,124 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/face.draft.proposes`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "propose items for the face's kahua stage; a proposal grants nothing"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///face.draft.proposes"]
+title     = "lar:///ha.ka.ba/lares/afford/face.draft.proposes"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/face.draft.proposes"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! face.draft.proposes ~ a seat proposes one batch; the operator's hand lifts
+
+`proposals` lists {title, revision, text | digest, taint}: the daemon title and revision the item distils, its body (or the body's sha-256 digest) and every input from outside the face (a web page, tool output, pasted text); an AI summary inherits the taint of what it summarised. ONE batch per call rides the face's intents plane, pinned to this device; it carries digests and never a body, and it GRANTS NOTHING: the operator's hand lifts it with `lares kahua lift <title> --proposal <id>`.
+
+TWO DIGESTS, ONE WORD. A proposal's `digest` names the BODY digest, the sha-256 of the raw body bytes (UTF-8, lowercase hex); the seat's tool computes it from `text`. The ROW digest that `kahua stage` prints and `lift --digest` takes covers the body AND the row's carried fields, so it differs. Hand `text`, or the BODY digest; a proposal built from the ROW digest refuses at the lift with `proposal-digest`, as does one whose body differs by a byte from the staged row's.
+
+Any seat proposes. The seat's tool rides a local `seat` session over the @daemon wire, whose profile the vessel refuses every kahua pin, lift, withdraw and carry; no tool lifts (`face.draft.stages` writes the local row a lift names). Returns {id, cid}.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ a-batch · on-a-named-face
+
+```memetic-wikitext
+<<has entity=`example` name=`a-batch` params=`proposals/<proposals> ~ one proposal batch: a list of {title, revision, text or digest, taint}`>>
+<<has entity=`example` name=`on-a-named-face` params=`proposals/<proposals> face/1 ~ propose on one face inside the lent set`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ proposals · face · session
+
+```memetic-wikitext
+<<has entity=`arg` name=`proposals` params=`takes/json-list needs/required ~ the batch: a list of {title, revision, text | digest, taint}, never empty (a JSON list on the terminal)`>>
+<<has entity=`arg` name=`face` params=`takes/handle-index ~ any face inside the lent set, by persona index (a whole number from 0); absent, the worn face; a face outside the set refuses 'face-not-lent', a shut one 'face-not-open'`>>
+<<has entity=`arg` name=`session` params=`takes/session-id skins/mcp ~ the seat session the call rides; absent, the tool's own`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat-or-hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat-or-hand` params=`who/seat-or-hand ~ a proposal grants nothing: the operator's signed lift decides; it rides the face's intents plane pinned to this device, and a seat session proposes as the hand does`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ kahua-proposal-proposals · proposals-malformed · face-not-lent · face-not-open · proposal-digest
+
+```memetic-wikitext
+<<has entity=`refusal` name=`kahua-proposal-proposals` params=`cure/[[face.draft.proposes proposals/<proposals>]] ~ name proposals as a non-empty list of {title, revision, text | digest, taint}`>>
+<<has entity=`refusal` name=`proposals-malformed` params=`cure/[[face.draft.proposes proposals/<proposals>]] ~ --proposals needs JSON`>>
+<<has entity=`refusal` name=`face-not-lent` params=`~ the face stands outside the lent set the seat may name`>>
+<<has entity=`refusal` name=`face-not-open` params=`~ the face stands shut; open it first`>>
+<<has entity=`refusal` name=`proposal-digest` params=`~ at the lift: a proposal built from the row digest, or whose body differs by a byte from the staged row's, refuses there`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ proposed
+
+```memetic-wikitext
+<<has entity=`band` name=`proposed` params=`exit/0 fields/[[id cid]] ~ the batch landed on the face's intents plane; the id names it for a lift's --proposal`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli · mcp
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares kahua propose
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares kahua propose]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins/mcp`>>
+
+!!! kahua_propose
+
+```memetic-wikitext
+<<has entity=`skin` name=`mcp` params=`spells/kahua_propose ~ the seat; rides a seat session over the @daemon wire`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · kahua-memory-stage
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Jk8CCulr9YmBOSCKZN_3RPC-fOLY9dMzESjBLqK2tEs`>>
+
+<<^ code=`&#x0004;` to=`?`>>

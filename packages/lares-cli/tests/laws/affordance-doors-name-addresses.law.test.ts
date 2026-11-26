@@ -73,6 +73,30 @@ describe("W1 · every door names one address; every skin names a live door", () 
     expect(pack().routes["mcp"], REBAKE).toMatchObject({ shore: "lar:///carriage.disk.reads", shore_flush: "lar:///carriage.disk.flushes", flow: "lar:///sense.record.flows" });
   });
 
+  test("SEED: wave 3a's doors route each verb to a carrier, the two lifts apart", () => {
+    const cli = pack().routes["cli"] ?? {};
+    expect(cli["kahua mint"], REBAKE).toBe("lar:///face.key.mints");
+    expect(cli["kahua propose"], REBAKE).toBe("lar:///face.draft.proposes");
+    expect(cli["kahua stage"], REBAKE).toBe("lar:///face.draft.stages");
+    expect(cli["kahua lift"], REBAKE).toBe("lar:///face.hand.lifts");
+    expect(cli["shore lift-kahua"], REBAKE).toBe("lar:///carriage.draft.lifts");
+    expect(cli["kahua withdraw"], REBAKE).toBe("lar:///face.hand.withdraws");
+    expect(cli["kahua carry"], REBAKE).toBe("lar:///face.carry.restands");
+    expect(cli["kahua get"], REBAKE).toBe("lar:///face.draft.reads");
+    expect(cli["trust list"], REBAKE).toBe("lar:///realm.offer.reads");
+    expect(cli["trust orphan"], REBAKE).toBe("lar:///realm.offer.orphans");
+    expect(cli["kapae raise"], REBAKE).toBe("lar:///realm.kapae.raises");
+    expect(cli["kapae flag"], REBAKE).toBe("lar:///realm.kapae.flags");
+    expect(cli["events"], REBAKE).toBe("lar:///engine.status.follows");
+    expect(cli["hooks pause"], REBAKE).toBe("lar:///sense.capture.pauses");
+    expect(cli["hooks status"], REBAKE).toBe("lar:///sense.capture.reads");
+    expect(cli["mcp aho"], REBAKE).toBe("lar:///engine.seat.holds");
+    expect(pack().routes["mcp"], REBAKE).toMatchObject({
+      kahua_propose: "lar:///face.draft.proposes", kahua_stage: "lar:///face.draft.stages", kahua_get: "lar:///face.draft.reads",
+      kapae: "lar:///sense.kapae.mutes", un_kapae: "lar:///sense.kapae.restores",
+    });
+  });
+
   test("★ every skin in the pack names a door a live table holds ★", () => {
     expect(orphans(pack())).toEqual([]);
   });

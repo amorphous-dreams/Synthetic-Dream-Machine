@@ -1,0 +1,111 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/realm.kapae.flags`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "flag a promoted item for the hand to raise the brake on"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///realm.kapae.flags"]
+title     = "lar:///ha.ka.ba/lares/afford/realm.kapae.flags"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/realm.kapae.flags"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! realm.kapae.flags ~ the AI flags with a reason; the hand raises
+
+Every wiki wears promotion capability; its edge holds (face, wiki, digest). The AI prepares and flags; the hand commits and raises. The brake sets one promoted item aside by a signed marker, and a lower takes the marker down. The wiki rides `--wiki` (absent: the daemon wiki), the face `--face N`, and every answer prints as JSON. The word names five doors in the house: the nexus quorum ban (`lares nexus kapae`) and a relation's marker (`lares edge kapae`) stay beside it, the seat's branch mute reads at `sense.kapae.mutes`, and a record's tombstone rides `lares tiddler delete`.
+
+`kapae flag <digest> --why <reason>` puts a flag on the board for an item, found among the waiting items or the carried rows; it raises nothing. The reason rides the flag.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ with-a-reason
+
+```memetic-wikitext
+<<has entity=`example` name=`with-a-reason` params=`digest/<digest> why/[[the macro reads a file it should not]] ~ flag one item and say why`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ digest · wiki · face · why · keep · drop
+
+```memetic-wikitext
+<<has entity=`arg` name=`digest` params=`takes/hex64 needs/required seat/1 as/<digest> ~ the promoted item's digest, 64 lowercase hex`>>
+<<has entity=`arg` name=`wiki` params=`takes/wiki-name ~ the wiki the promotion belongs to; absent, the daemon wiki`>>
+<<has entity=`arg` name=`face` params=`takes/handle-index ~ which face's promotion plane this call reads or acts on, by persona index (a whole number from 0)`>>
+<<has entity=`arg` name=`why` params=`takes/words needs/required ~ the reason the brake should rise`>>
+<<has entity=`arg` name=`keep` params=`~ read by no kapae act: the trust door's orphan decision names it, and a kapae line ignores it`>>
+<<has entity=`arg` name=`drop` params=`~ read by no kapae act: the trust door's orphan decision names it, and a kapae line ignores it`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat-or-hand
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat-or-hand` params=`who/seat-or-hand ~ a flag grants nothing: the hand's raise decides`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ promote-digest-malformed · promote-why-missing
+
+```memetic-wikitext
+<<has entity=`refusal` name=`promote-digest-malformed` params=`cure/[[realm.kapae.flags digest/<digest> why/<reason>]] ~ name a hex64 digest`>>
+<<has entity=`refusal` name=`promote-why-missing` params=`cure/[[realm.kapae.flags digest/<digest> why/<reason>]] ~ name --why`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ flagged
+
+```memetic-wikitext
+<<has entity=`band` name=`flagged` params=`exit/0 ~ the flag stands on the board; the answer prints as JSON`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares kapae flag
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares kapae flag]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · kapae
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kapae`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;xOvUqfr6I6RZA0-ApII6l7UMTnKsut4oqnr8w4_v4Ak`>>
+
+<<^ code=`&#x0004;` to=`?`>>

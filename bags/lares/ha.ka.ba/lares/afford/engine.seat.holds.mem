@@ -1,0 +1,109 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/afford/engine.seat.holds`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "stable"
+role      = "hold an MCP client's seat steady while the surface falls and rises"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/affordance", "lar:///engine.seat.holds"]
+title     = "lar:///ha.ka.ba/lares/afford/engine.seat.holds"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/afford/engine.seat.holds"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! engine.seat.holds ~ the aho: the client never sees a respawn
+
+`lares mcp aho` holds an MCP client's stdio for the session's whole life and spawns the house's own surface as a child that may fall and rise, resolved again at each spawn (the container's seat where the container house stands, else the native one); `lares mcp aho -- <child argv…>` names another child (a test, another surface), and everything after `--` rides to it as written, flags and all. A bare `--` with nothing after it refuses as usage (exit 2).
+
+While no child stands the seat answers `initialize` and the tool list from what the child last answered, replays the handshake to each new child itself, and answers a call at once with the tool error `hearth-sleeps`. A call in flight at a child's death answers `outcome-unknown: re-read before re-trying`, and the seat never sends it again. It sends one `list_changed` when a new child lists other tools. It logs event names and counts alone and holds no key.
+
+A harness config records `lares mcp aho` and nothing beneath it (`lares home tend` writes that entry), so what stands under the verb may change with no config rewritten. The committed bin runs this seat before it loads the dispatcher, so the seat a harness spawns loads no custody, no vessel and no house root.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shows`>>
+
+!! shows ~ the-house-surface
+
+```memetic-wikitext
+<<has entity=`example` name=`the-house-surface` params=`~ the seat a harness config records: the house's own surface, resolved at each spawn`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/takes`>>
+
+!! takes ~ child
+
+```memetic-wikitext
+<<has entity=`arg` name=`child` params=`takes/argv seat/1 as/[[[-- <child argv…>]]] ~ another child to spawn, after a bare '--'; absent, the house's own surface`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate`>>
+
+!! gate ~ seat
+
+Testimony: the door checks; this slot grants nothing.
+
+```memetic-wikitext
+<<has entity=`gate` name=`seat` params=`who/seat-or-hand ~ a seat holds the client's stdio and keys nothing; it logs event names and counts alone and holds no key`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/refuses`>>
+
+!! refuses ~ usage · hearth-sleeps · outcome-unknown
+
+```memetic-wikitext
+<<has entity=`refusal` name=`usage` params=`cure/[[engine.seat.holds]] ~ a verb other than aho, or a bare '--' naming no child (exit 2)`>>
+<<has entity=`refusal` name=`hearth-sleeps` params=`~ a call arrived while no child stands; the client retries once the surface rises`>>
+<<has entity=`refusal` name=`outcome-unknown` params=`~ a call in flight at a child's death: re-read before re-trying; the seat never sends it again`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers`>>
+
+!! answers ~ held
+
+```memetic-wikitext
+<<has entity=`band` name=`held` params=`exit/0 ~ the client's stdio closed and the seat stood down`>>
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/skins`>>
+
+!! skins ~ cli
+
+<<~ ahu slot=`#/skins/cli`>>
+
+!!! lares mcp aho
+
+```memetic-wikitext
+<<has entity=`skin` name=`cli` params=`spells/[[lares mcp aho]] ~ the terminal`>>
+```
+
+<<~/ahu>>
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! edges ~ affordance · seat-harness
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/affordance`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/seat-harness`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2xCSJWON2zVQ4q3dFYXuTW-0p_y5sYSKkO5fflwSU5E`>>
+
+<<^ code=`&#x0004;` to=`?`>>

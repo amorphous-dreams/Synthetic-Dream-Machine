@@ -60,12 +60,6 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     ],
     next: ["where the host holds the engine, a herm stands as the container's own service: docker compose -f docker-compose.surface.yml --profile herm up -d herm"],
   },
-  trust: {
-    usage: "usage: lares trust list|prepare|commit|drop|orphan [digest] [--wiki wiki] [--face N]",
-    synopsis: "Every wiki wears promotion capability; its edge holds (face, wiki, digest). The AI prepares and flags; the hand commits and raises.",
-    examples: ["lares trust list --wiki garden", "lares trust prepare <digest> --why reason", "lares trust commit <digest>", "lares trust orphan <digest> --keep"],
-    flags: ["--wiki <wiki>   wiki name", "--face N   face index", "--why <reason>   preparation reason", "--keep   keep an orphan", "--drop   drop an orphan"],
-  },
   lei: {
     usage: "usage: lares lei show|kui|unstring|restring --rite push|kukulu|keep|exec --branch <name> [--scope '<json>'] [--head <h>] [--returns <n>] [--reach wide|head] [--after <cid>] [--lei <cid>] [--yes] [--face N | --all]  |  lares lei land '<pūlama answer>' [--face N]  |  lares lei terms kui|restring|unstring --rite <r> --branch <name> [--returns <n>] [--reach wide|head] [--head <h>] [--after <cid>] [--lei <cid>] [--yes] [--face N | --all]",
     synopsis:
@@ -145,34 +139,11 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--keeper-to <key> --keeper-next <closure>   (offer) the keeper move the vouches name: the successor's one-handoff key (64 hex) and the committed closure (sha256:<64 hex>), together or neither",
       "--tessera <id>   (land) the tessera a begin answered", "--face N   face index (a kūkulu naming none acts as the worn face; a keep naming none acts as the keep's face and says so; the floor refuses by name)"],
   },
-  kapae: {
-    usage: "usage: lares kapae raise|lower|flag <digest> [--wiki wiki] [--face N]",
-    synopsis: "Every wiki wears promotion capability; its edge holds (face, wiki, digest). The AI prepares and flags; the hand commits and raises.",
-    examples: ["lares kapae flag <digest> --why reason", "lares kapae raise <digest> --wiki garden", "lares kapae lower <digest>"],
-    flags: ["--wiki <wiki>   wiki name", "--face N   face index", "--why <reason>   flag reason", "--keep   keep an orphan", "--drop   drop an orphan"],
-  },
   "intent-relay": {
     usage: "usage: lares intent-relay enable|disable|status|rotate [--face N] [--json]",
     synopsis: "Control a face's sealed intent relay and inspect its public pin and admission key.",
     examples: ["lares intent-relay enable --face 1", "lares intent-relay status --face 1", "lares intent-relay rotate"],
     flags: ["--face N   face index", "--json   structured output"],
-  },
-  kahua: {
-    usage: "usage: lares kahua mint|propose|stage|lift|withdraw|carry|get [title|cid...] [--face N]",
-    synopsis: "Read and write one face's kahua stage, the fleet's working-memory stage. The face's founding act pins the stage, by whichever device founds the face; `mint` adopts that pin and registers it, and a face whose log names none refuses `kahua-mint-outside-founding`. Memory climbs in two crossings: `stage` writes a row into the face's local canon bags/daemon-<F> (local, unsigned; any seat may), and a lift carries one staged row to every device the face wears. A lift prints the staged row's preview (title, row digest, fields, body) and lifts only on that row digest typed back at a terminal, or `--digest <hex>` naming the row digest the preview printed; a bare --yes lifts nothing. Two digests share one word: the row digest (what `stage` answers and a lift names) covers the row's body and fields, while a proposal's `digest` names the body digest, the body bytes alone; a lift with `--proposal` compares the proposal's body digest with the staged body. A lift signs under the face's root, so a lift always asks the face's passphrase at a terminal; `--digest` spares the typed-back digest alone. The door reads the row back and refuses `kahua-lift-unstaged` (no such row) or `kahua-lift-digest-moved` (the row moved since the preview); a lift the head already carries lands nothing. An AI seat proposes and stages; the operator's hand lifts, withdraws and carries (after a root rotation, the earlier items stand again only once carried), each act signed under the face's root out of sealed custody. Every answer prints as JSON.",
-    examples: [
-      "lares kahua mint --face 1",
-      "lares kahua propose --face 1 --proposals '[{\"title\":\"T\",\"revision\":\"r1\",\"text\":\"body\",\"taint\":[]}]'",
-      "lares kahua stage T --face 1 --text body",
-      "lares kahua lift T --face 1 --taint none   # previews the staged row, asks for its row digest, then the face's passphrase",
-      "lares kahua lift T --face 1 --taint none --digest <hex> --proposal <intent-id>",
-      "lares kahua withdraw <cid> --face 1",
-      "lares kahua carry <cid> <cid> --face 1",
-      "lares kahua carry --all --face 1",
-      "lares kahua get T --face 1 --history",
-      "lares kahua get --face 1   # the stage's LIFTED items alone; a staged row rests in bags/daemon-<F> and lists here once its lift lands",
-    ],
-    flags: ["--face N   face index", "--text <body> | --file <path>   (stage) the row's body", "--fields <json>   (stage) the row's fields", "--digest <hex>   (lift) the staged row's row digest, as its preview printed it; it stands in for typing the digest back, and the passphrase prompt still needs a terminal", "--taint a,b | none   inputs from outside the face", "--sources <json>   further daemon sources the item distils (the staged row always rides)", "--parent <cid> | none   the revision a lift supersedes", "--proposal <id>   the proposal a lift answers", "--proposals <json>   a proposal batch", "--history   every revision of a title", "--all   (carry) every earlier head the history reads"],
   },
   intent: {
     usage: "usage: lares intent issue|show|ask|answer|claim|takeover|release|cancel|supersede|release-root|delegate|delegate-revoke|delegations|keeper-cosign [verb-or-id] [--face N]",
@@ -421,22 +392,6 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     next: ["lares sense teardown --confirm --drain   # tear the SOVEREIGN planes", "lares hooks status"],
   },
 
-  mcp: {
-    usage: "usage: lares mcp aho [-- <child argv…>]",
-    synopsis:
-      "The aho: it holds an MCP client's stdio for the session's whole life and spawns the house's own surface (or the argv " +
-      "after `--`) as a child that may fall and rise, so a surface restart never reaches the client. While no child " +
-      "stands the seat answers `initialize` and the tool list from what the child last answered; a call answers the " +
-      "tool error `hearth-sleeps` at once. A call in flight at a child's death answers `outcome-unknown: re-read " +
-      "before re-trying`, and the seat never sends it again. The seat logs event names and counts alone, and holds no key.",
-    examples: [
-      "lares mcp aho                      # the seat a harness config records: the house's own surface, resolved at each spawn",
-      "lares mcp aho -- <child argv…>     # name another child (a test, another surface)",
-      "lares home tend                    # writes the seat into each harness config",
-    ],
-    next: ["lares home read   # the seat each harness config names"],
-  },
-
   spirit: {
     usage: "usage: lares spirit <verb> <pet-name> [...]  (the verbs: `lares spirit` with no word lists the door's table)",
     synopsis:
@@ -459,22 +414,6 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares spirit ah blind-reader --offer --file mandate.txt        # ʻālana: the offering lands before any instance wakes",
       "lares spirit ah blind-reader --echo <hash> --instance <id>     # hoʻāla: an instance echoes the mandate's hash om handed it",
     ],
-  },
-  hooks: {
-    usage: "usage: lares hooks <pause|resume|status>",
-    synopsis:
-      "The hook-lever on its own: `pause` / `resume` / `status` capture hooks by writing / " +
-      "removing a marker file a capture hook checks and steps aside on when present. Lets a migration or a " +
-      "`lares sense teardown` run WITHOUT daemon-spawn contention. `lares mempalace quiesce` pauses AND " +
-      "drains in one gesture; this verb is the lever alone (suppress minting without touching live daemons).",
-    examples: [
-      "lares hooks status                 # is minting paused?",
-      "lares hooks pause                  # suppress capture minting",
-      "lares hooks pause --reason migrate # ... with a recorded reason",
-      "lares hooks resume                 # un-pause",
-    ],
-    flags: ["--reason <t>   (pause) record why the hooks were paused (default: manual)"],
-    next: ["lares mempalace status", "lares mempalace quiesce   # pause AND drain"],
   },
 
   host: {
@@ -914,24 +853,6 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     ],
     next: ["lares meme check <file.mem>", "lares meme sitting bags/   # what the fire could take; it BURNS NOTHING"],
     meme: "lar:///ha.ka.ba/lares/api/pono/meme",
-  },
-
-  events: {
-    usage: "usage: lares events [--since <epoch:writer:seq>] [--kind <bag-projected>] [--wait] --json",
-    synopsis:
-      "Read the vessel journal through the daemon. Without --wait it returns the matching entries already standing. " +
-      "With --wait it answers on the first matching entry after --since (or after now when --since is absent).",
-    examples: [
-      "lares events --json",
-      "lares events --kind bag-projected --wait --json",
-      "lares events --since genesis:node-daemon:12 --json",
-    ],
-    flags: [
-      "--since <epoch:writer:seq>  read entries after this cursor",
-      "--kind <k>                  one kind: bag-projected",
-      "--wait                      hold until the first matching entry lands",
-      "--json                      print the structured payload",
-    ],
   },
 
   library: {

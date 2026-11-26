@@ -70,9 +70,10 @@ describe("lares kahua", () => {
     expect(errs.join("\n")).toMatch(/ward-needs-tty.*\n.*a lift always asks the face's passphrase at a terminal; `--digest` names the preview's row digest in place of typing it back, and spares nothing else/);
     seam.refuse = null;
     // The help says both, and names the two digests apart.
-    const help = helpLines("kahua").join("\n");
-    expect(help).toMatch(/row digest/);
-    expect(help).toMatch(/body digest/);
+    // The words live in the carriers: the lift's own help and the stage's (the door's index names each verb and points at them).
+    const help = [...helpLines("kahua lift"), ...helpLines("kahua stage")].join("\n");
+    expect(help).toMatch(/row digest/i);
+    expect(help).toMatch(/body digest/i);
     expect(help).toMatch(/a lift always asks the face's passphrase at a terminal/);
     // CONTROL: a stage answer names its digest as the row's on stderr, and the JSON on stdout stays the door's own answer.
     errs.length = 0;
