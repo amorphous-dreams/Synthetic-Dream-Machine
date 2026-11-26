@@ -46,9 +46,26 @@ export function ambientLocks(): LockHost | null {
   return (globalThis as unknown as { navigator?: { locks?: LockHost } }).navigator?.locks ?? null;
 }
 
+/**
+ * THE FOUR LOCK NAMES, ONE HOME. Two builds of this site exclude each other from one store only while both ask the SAME
+ * names, so a rename lets two generations open one store. `tests/vessel-lock-names.test.ts` pins each name to its bytes; a
+ * rename moves that witness in the same change, where a reader sees it.
+ */
 /** The lock name a vessel store answers to — one per store, per origin. */
 export function vesselLockName(idbName: string): string {
   return `lares:vessel:${idbName}`;
+}
+/** The lock that chooses the one tab whose vessel worker owns the store (`floor-tab.ts`). */
+export function vesselLeaderLockName(idbName: string): string {
+  return `${vesselLockName(idbName)}:leader`;
+}
+/** The lock the vessel house holds for its life over one store (`vessel-sessions.ts`). */
+export function vesselOwnerLockName(idbName: string): string {
+  return `lares:vessel-owner:${idbName}`;
+}
+/** The lock a tab holds for its session's life; the vessel hears a lost tab when the platform hands it over. */
+export function vesselSessionLockName(sessionId: string): string {
+  return `lares:vessel-session:${sessionId}`;
 }
 
 export interface VesselLockHold {

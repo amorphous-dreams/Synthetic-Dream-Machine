@@ -14,7 +14,7 @@ export type { BrowserVesselIslandPoolOptions, PageLife, PageLifeFeed } from "./b
 
 export { openBrowserVessel, readBrowserVesselFaces, DAEMON_SURFACE_ID } from "./open-browser-vessel.js";
 export { readHearthFloor, floorNexusOf, porchOriginOf, type HearthFloorRead } from "./browser-floor-read.js";
-export { holdVesselLock, vesselLockName, ambientLocks } from "./vessel-lock.js";
+export { holdVesselLock, vesselLockName, vesselLeaderLockName, vesselOwnerLockName, vesselSessionLockName, ambientLocks } from "./vessel-lock.js";
 export type { LockHost, VesselLockHold } from "./vessel-lock.js";
 export { standVesselHouse, sessionLifetimeLock, VesselSessionRefused } from "./vessel-sessions.js";
 export type { VesselHouse, VesselSession, VesselFloorState, VesselLockReport, VesselHouseCensus, LitVessel, SessionKeyHolder, VesselSessionRefusal, HouseAsk, FaceProviderDoor, FaceBooking, FaceSwitchOptions } from "./vessel-sessions.js";

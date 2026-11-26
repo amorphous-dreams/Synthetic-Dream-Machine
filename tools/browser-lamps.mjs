@@ -51,6 +51,7 @@ export const BROWSER_LAMPS_LIT = Object.freeze([
       lit("tests/vessel-host-place-card.test.ts", "floor run 2026-11-27 (#00001, adc8802dd + develop): lamp-vessel-host 72 passed / 4 skipped over 12 files"),
       lit("tests/vessel-host-reset-gate.test.ts", "floor run 2026-11-27 (#00001, adc8802dd + develop): lamp-vessel-host 72 passed / 4 skipped over 12 files"),
       lit("tests/vessel-host-surface.test.ts", "floor run 2026-11-27 (#00001, adc8802dd + develop): lamp-vessel-host 72 passed / 4 skipped over 12 files"),
+      unproven("tests/vessel-host-protocol.test.ts"),
     ],
   },
   {

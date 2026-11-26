@@ -4,6 +4,7 @@
  */
 import { expect, test } from "vitest";
 import { standVesselPort, vesselWorkerOfPort, VesselRefused, type VesselWorkerLike } from "../src/vessel-port.js";
+import { PROTOCOL_SKEW, VESSEL_PROTOCOL } from "../src/vessel-protocol.js";
 import type { PageToVessel, VesselToPage } from "../src/vessel-protocol.js";
 
 function fakeWorker() {
@@ -120,7 +121,7 @@ test("RED: the greeting's session holds its lifetime lock before it says armed, 
   const greeted: unknown[] = [];
   const ended: unknown[] = [];
   const port = standVesselPort(worker, { onGreeting: (g) => greeted.push(g), onEnded: (why, stage, refusal) => ended.push({ why, stage, refusal }) }, { locks });
-  say({ t: "greeting", ownerEpoch: "e1", sessionId: "s1", lifetimeLock: "lares:vessel-session:s1" });
+  say({ t: "greeting", protocol: VESSEL_PROTOCOL, ownerEpoch: "e1", sessionId: "s1", lifetimeLock: "lares:vessel-session:s1" });
   await tick();
   expect(held).toEqual(["lares:vessel-session:s1"]);
   expect(sent.map((s) => s.msg)).toEqual([{ t: "session:armed", sessionId: "s1" }]);
@@ -134,7 +135,7 @@ test("RED: the greeting's session holds its lifetime lock before it says armed, 
 
   const bare = fakeWorker();
   standVesselPort(bare.worker, {}, { locks: null });
-  bare.say({ t: "greeting", ownerEpoch: "e1", sessionId: "s2", lifetimeLock: "lares:vessel-session:s2" });
+  bare.say({ t: "greeting", protocol: VESSEL_PROTOCOL, ownerEpoch: "e1", sessionId: "s2", lifetimeLock: "lares:vessel-session:s2" });
   await tick();
   expect(bare.sent, "CONTROL: a page with no Web Locks says no armed it cannot hold").toEqual([]);
 });
@@ -160,7 +161,7 @@ const settle = async (ok: () => boolean): Promise<void> => { for (let i = 0; i <
 test("RED: the owner's page asks its vessel to mint a follower's port and takes the minted end unread — CONTROL: a refusal mints null, another want's reply settles nothing", async () => {
   const { worker, sent, say } = fakeWorker();
   const port = standVesselPort(worker, {}, { locks: null });
-  say({ t: "greeting", ownerEpoch: "e1", sessionId: "s1", lifetimeLock: "lares:vessel-session:s1" });
+  say({ t: "greeting", protocol: VESSEL_PROTOCOL, ownerEpoch: "e1", sessionId: "s1", lifetimeLock: "lares:vessel-session:s1" });
   const minted = port.mintPort("w1", "tab-b");
   expect(sent.at(-1)?.msg, "the want crosses as a typed message").toEqual({ t: "port:want", wantId: "w1", tabSession: "tab-b" });
   const refused = port.mintPort("w2", "tab-c");
@@ -182,7 +183,7 @@ test("RED: a want that arrives before the vessel greets this page waits for the 
   const early = port.mintPort("w-early", "tab-c");
   await tick();
   expect(sent.some((x) => x.msg.t === "port:want"), "no session stands yet, so the want waits and the vessel refuses nothing").toBe(false);
-  say({ t: "greeting", ownerEpoch: "e1", sessionId: "s1", lifetimeLock: "lares:vessel-session:s1" });
+  say({ t: "greeting", protocol: VESSEL_PROTOCOL, ownerEpoch: "e1", sessionId: "s1", lifetimeLock: "lares:vessel-session:s1" });
   expect(sent.at(-1)?.msg, "the greeting releases the held want").toEqual({ t: "port:want", wantId: "w-early", tabSession: "tab-c" });
   const { port1, port2 } = new MessageChannel();
   say({ t: "port:minted", wantId: "w-early", port: port1 } as VesselToPage);
@@ -198,7 +199,7 @@ test("RED: a follower's vessel port over its brokered port holds its lifetime lo
   const held: string[] = [];
   const locks = { request: (name: string, callback: () => Promise<unknown>) => { held.push(name); return callback(); } };
   const port = standVesselPort(vesselWorkerOfPort(port1), {}, { locks });
-  port2.postMessage({ t: "greeting", ownerEpoch: "e1", sessionId: "s9", lifetimeLock: "lares:vessel-session:s9" } satisfies VesselToPage);
+  port2.postMessage({ t: "greeting", protocol: VESSEL_PROTOCOL, ownerEpoch: "e1", sessionId: "s9", lifetimeLock: "lares:vessel-session:s9" } satisfies VesselToPage);
   await settle(() => heard.length > 0);
   expect(held, "the follower's tab holds its own session's lifetime lock").toEqual(["lares:vessel-session:s9"]);
   expect(heard, "and says armed over the brokered port").toEqual([{ t: "session:armed", sessionId: "s9" }]);
@@ -209,4 +210,42 @@ test("RED: a follower's vessel port over its brokered port holds its lifetime lo
   port.pageLife("hidden");
   await new Promise((r) => setTimeout(r, 50));
   expect(heard, "a terminated follower port carries nothing more").toHaveLength(2);
+});
+
+test("W2 RED: a greeting naming another protocol, or none, ends the road by name with its cure: no greeting kept, no lock armed, the worker let go; CONTROL: this build's own name greets", async () => {
+  for (const theirs of [`sha256-${"0".repeat(64)}`, undefined]) {
+    const { worker, sent, say } = fakeWorker();
+    let terminated = 0;
+    worker.terminate = () => { terminated += 1; };
+    const held: string[] = [];
+    const locks = { request: (name: string, callback: () => Promise<unknown>) => { held.push(name); return callback(); } };
+    const greeted: unknown[] = [];
+    const ended: Array<{ why: string; stage: string; refusal: string | undefined }> = [];
+    const port = standVesselPort(worker, { onGreeting: (g) => greeted.push(g), onEnded: (why, stage, refusal) => ended.push({ why, stage, refusal }) }, { locks });
+    say({ t: "greeting", ...(theirs ? { protocol: theirs } : {}), ownerEpoch: "e1", sessionId: "s1", lifetimeLock: "lares:vessel-session:s1" } as VesselToPage);
+    await tick();
+    expect(ended).toHaveLength(1);
+    expect(ended[0]).toMatchObject({ stage: "open", refusal: PROTOCOL_SKEW });
+    expect(ended[0]!.why, "the refusal names its cure").toMatch(/Reload or close the other tabs of this site, then reload this one/);
+    expect(greeted, "a vessel of another build opens no session here").toEqual([]);
+    expect(port.greeting()).toBeNull();
+    expect(held, "no lifetime lock arms").toEqual([]);
+    expect(sent, "the page says nothing back").toEqual([]);
+    expect(terminated).toBe(1);
+  }
+  // CONTROL: one build.
+  const same = fakeWorker();
+  const ended: unknown[] = [];
+  const port = standVesselPort(same.worker, { onEnded: (why) => ended.push(why) }, { locks: null });
+  same.say({ t: "greeting", protocol: VESSEL_PROTOCOL, ownerEpoch: "e1", sessionId: "s1", lifetimeLock: "lares:vessel-session:s1" });
+  await tick();
+  expect(ended).toEqual([]);
+  expect(port.greeting()?.sessionId).toBe("s1");
+});
+
+test("W2: the hello names this build's protocol", () => {
+  const { worker, sent } = fakeWorker();
+  const port = standVesselPort(worker, {});
+  port.hello({ idbName: "i" } as never);
+  expect(sent[0]?.msg).toMatchObject({ t: "hello", protocol: VESSEL_PROTOCOL });
 });

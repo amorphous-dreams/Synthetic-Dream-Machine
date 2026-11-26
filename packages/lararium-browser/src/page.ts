@@ -9,7 +9,7 @@
  */
 export { DAEMON_SURFACE_ID } from "./daemon-surface.js";
 export { wardAskWords, type WardAskKind } from "./ward-ask-words.js";
-export { vesselLockName } from "./vessel-lock.js";
+export { vesselLeaderLockName, vesselLockName } from "./vessel-lock.js";
 export { requestDurableStorage, storageFloorReport } from "./secure-context-gate.js";
 export type { StoragePersistence, StorageReading } from "./secure-context-gate.js";
 export type { BrowserConnectionSnapshot, BrowserConnectionListener, BrowserConnectionState } from "./browser-connection-state.js";
