@@ -52,6 +52,7 @@ const webNode = {
       "tests/carriage-frames.test.ts",
       "tests/ceremony.test.ts",
       "tests/console-door.test.ts",
+      "tests/console-readings.test.ts",
       "tests/engine-refusal.test.ts",
       "tests/floor-broker.test.ts",
       "tests/floor-tab.test.ts",
