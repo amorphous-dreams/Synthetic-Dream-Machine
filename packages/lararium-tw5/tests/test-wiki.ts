@@ -84,13 +84,15 @@ export async function bootTestWiki(opts: {
   tiddlers?: Array<Record<string, string | string[]>>;
   /** The skins to load: both (a face-daemon or domain wiki, the default) or the grammar alone (a published wiki). */
   skins?: "house" | "grammar";
+  /** Wave zero: a wiki's own records in the nalu form, laid into the boot store after the boot set (`readIslandSeed`). */
+  seed?: readonly Record<string, unknown>[];
 } = {}): Promise<TW5Engine> {
   const engine = new TW5Engine();
   const grammarOnly = opts.skins === "grammar";
   await engine.boot(vendoredCore(), [
     ...(grammarOnly ? [LARES_MEMETIC_WIKITEXT_PLUGIN as unknown as Record<string, unknown>] : houseSkins()),
     ...(opts.extraPlugins ?? []),
-  ]);
+  ], undefined, opts.seed ? { seedTiddlers: opts.seed } : undefined);
   for (const t of opts.tiddlers ?? []) engine.setTiddler(t);
   return engine;
 }

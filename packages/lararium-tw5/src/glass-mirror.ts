@@ -7,6 +7,8 @@ import type { GlassDoor } from "./glass-root.js";
 import { mountGlassCamera } from "./glass-camera.js";
 import { openDefaultStory } from "./default-story.js";
 import { tendOrphanAlerts } from "./place-meme.js";
+import { bootSetModuleTitles, bootSetOwns, bootSetTitles } from "./boot-census.js";
+import { naluFieldsOf } from "./nalu-form.js";
 
 export interface MirrorSeams {
   bootEngine?: () => void | Promise<void>; paint?: () => void;
@@ -76,8 +78,9 @@ export function censusRecords(records: readonly PortWireRecord[], bootTitles: Re
     if (bootTitles.has(record.title)) { hold("boot-set-shadow"); continue; }
     // A record that shares its title with a MODULE the boot set packs (house canon names a carrier and its module alike) waits out
     // the boot: TW5 defines no shadow module an ordinary tiddler overrides, so the record in the boot store would unseat the
-    // engine's own code. Landed after boot it overrides the shadow's text and the module stands.
-    if (bootModules.has(record.title) || record.title.startsWith("$:/core/modules/") || record.title.startsWith("$:/boot/")) { held.push(record); continue; }
+    // engine's own code. Landed after boot it overrides the shadow's text and the module stands, exactly as in the island
+    // (`bootSetOwns`, the rule the island's wave zero shares).
+    if (bootSetOwns(record.title, bootTitles, bootModules)) { held.push(record); continue; }
     if (fields["plugin-type"] === undefined) {
       if (SYNCER_TYPES.includes(String(fields["module-type"]))) hold("module-syncadaptor");
       else preloaded.push(record);
@@ -90,24 +93,8 @@ export function censusRecords(records: readonly PortWireRecord[], bootTitles: Re
   }
   return { preloaded, held, refused };
 }
-/** Every module the boot set defines: each shadow a boot-set plugin packs with a `module-type`, and each loose preload carrying one. */
-export function bootSetModuleTitles(preloads: readonly Record<string, unknown>[]): Set<string> {
-  const titles = new Set<string>();
-  for (const preload of preloads) {
-    if (preload["plugin-type"] === undefined) { if (preload["module-type"] !== undefined && typeof preload["title"] === "string") titles.add(preload["title"]); continue; }
-    try {
-      const packed = (JSON.parse(String(preload["text"] ?? "{}")) as { tiddlers?: Record<string, Record<string, unknown>> }).tiddlers ?? {};
-      for (const [title, shadow] of Object.entries(packed)) if (shadow && shadow["module-type"] !== undefined) titles.add(title);
-    } catch { /* a plugin whose text will not parse packs nothing */ }
-  }
-  return titles;
-}
-/** The titles a record may never take in the boot store: each boot-set preload's own title, and the kernel's. */
-export function bootSetTitles(preloads: readonly Record<string, unknown>[]): Set<string> {
-  const titles = new Set<string>(["$:/core", "$:/boot/boot.js", "$:/boot/bootprefix.js", "$:/library/sjcl.js"]);
-  for (const preload of preloads) if (typeof preload["title"] === "string") titles.add(preload["title"]);
-  return titles;
-}
+// The boot set's titles and modules live in the census's one home (`boot-census.ts`), which the island's wave zero reads too.
+export { bootSetModuleTitles, bootSetTitles } from "./boot-census.js";
 
 /**
  * The one door through which a main-thread engine boots: engine, port adaptor and camera open together and close
@@ -170,7 +157,9 @@ export async function openMirror(options: Omit<GlassPortOptions, "wiki" | "Tiddl
       wikiCensus = options.opened ? censusRecords(options.opened.records, bootSetTitles(census.accepted), options.localFilter, bootSetModuleTitles(census.accepted)) : null;
       // THE STORE A SERVER HANDS A BROWSER: the verified boot set, then the wiki's own records, all in `$tw.preloadTiddlers`
       // before TW5 unpacks a plugin or defines a module.
-      const wikiPreloads: Record<string, unknown>[] = (wikiCensus?.preloaded ?? []).map(record => ({ ...record.fields, title: record.title }));
+      // THE NALU FORM, as the island's wave zero hands its seed to `bootTw5`: one boot shape, census -> form -> preloads. A port
+      // record names no envelope bag (its fields already carry the node's own `$origin-bag`), so the form stamps none.
+      const wikiPreloads: Record<string, unknown>[] = (wikiCensus?.preloaded ?? []).map(record => naluFieldsOf({ title: record.title, record: { tiddler: record.fields } }));
       const store = [...census.accepted, ...wikiPreloads];
       await engine.boot({ bytes: options.inputs.coreBytes, sha256: options.inputs.coreCid }, store, MIRROR_TOKEN);
       const tw = engine.$tw;

@@ -9,6 +9,10 @@
  *   4) IslandAdaptor projection registers
  *   5) initial replay enters the shore landing queue; its checkpoint resolves when that queue empties
  *
+ * WAVE ZERO splits the assembly at the engine: `layIslandComposition` (steps 1-3) stands before TiddlyWiki boots, the seed's
+ * records join the engine's boot store through the nalu form (`island-seed.ts`), and `mountIslandShore` (steps 4-5)
+ * runs once the engine stands. The replay still lands every title; each preloaded one reads as the same and writes nothing.
+ *
  * Node and browser sovereign workers both call this helper so recipe behavior
  * stays one shape across platforms.
  */
@@ -36,6 +40,7 @@ import { IslandAdaptor } from "./island-adaptor.js";
 import { kahuaLayerStore } from "./kahua-layer.js";
 import { MemoryTiddlerStore } from "./memory-store.js";
 import type { TW5Engine } from "./tw5-vm.js";
+import type { IslandSeed } from "./island-seed.js";
 
 /**
  * One slot's binding: a CRDT handle the recipe wraps in its own store, or a store already standing over that slot's document
@@ -87,22 +92,44 @@ function readOnlyStore(store: LarTiddlerStore, slot: string): LarTiddlerStore {
   });
 }
 
+/** The input a composition lays from: everything `buildIslandRecipe` reads except the engine. */
+export type LayIslandCompositionInput = Omit<BuildIslandRecipeInput, "tw5">;
+
 /**
- * Build the sovereign island recipe and return the adaptor.
- *
- * Cascade layering: walks `expandRecipe()` in reverse so the lowest-priority
- * slot (oracle, the floor) registers first via `addLayer`. CompositeStore's
- * "first wins" read order matches the slot array's top-first orientation.
+ * A composition laid and not yet mounted on an engine: the layers stand in the composite, and each one's store waits for the
+ * shore that will replay it (`mountIslandShore`).
+ */
+export interface LaidComposition {
+  readonly composite: CompositeStore;
+  readonly recipe: WikiRecipe;
+  readonly stores: ReadonlyArray<{ slot: SlotUri; store: LarTiddlerStore }>;
+  readonly tempStore: MemoryTiddlerStore | null;
+  /** The slot the wiki's unrouted saves land in, "" where the composer handed no binding for it. */
+  readonly writeLayer: string;
+}
+
+/**
+ * Build the sovereign island recipe and return the adaptor: lay the composition, then mount the shore on the engine at once.
+ * A caller that boots its engine over wave zero lays first (`layIslandComposition`), reads the seed off the laid composition
+ * (`readIslandSeed`), boots, then mounts (`mountIslandShore`).
  */
 export function buildIslandRecipe(input: BuildIslandRecipeInput): {
   adaptor: IslandAdaptor;
   stores: Array<{ slot: SlotUri; store: LarTiddlerStore }>;
 } {
-  const { tw5, composite, recipe, ready, floorRecords, writeSlot, readOnly } = input;
-  // The titles TW5's own startup pass already ran over the preloads: these never run again.
-  const STARTUP_ACTIONS = "[all[shadows+tiddlers]tag[$:/tags/StartupAction]!has[draft.of]]";
-  const ranAtBoot = new Set<string>(tw5.$tw.wiki.filterTiddlers(STARTUP_ACTIONS));
+  const { tw5, ...lay } = input;
+  return mountIslandShore(tw5, layIslandComposition(lay));
+}
 
+/**
+ * Lay the composition: no engine needed, so it stands before TiddlyWiki boots and wave zero reads it there.
+ *
+ * Cascade layering: walks `expandRecipe()` in reverse so the lowest-priority
+ * slot (oracle, the floor) registers first via `addLayer`. CompositeStore's
+ * "first wins" read order matches the slot array's top-first orientation.
+ */
+export function layIslandComposition(input: LayIslandCompositionInput): LaidComposition {
+  const { composite, recipe, ready, floorRecords, writeSlot, readOnly } = input;
   const boundBySlot    = new Map(ready.map((r) => [r.slot, r]));
   const slots          = expandRecipe(recipe);
   const slug           = recipe.wikiSlug;
@@ -147,6 +174,27 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
   // retract (recipe-layer-model#/the-delete). An instance slot with no binding holds no record yet, and temp lives here alone.
   composite.markUnreached(slots, slots.filter((slot) => slot !== tempSlot && !boundBySlot.has(slot) && wikiSlotKindOf(slug, slot) === null));
 
+  // A face that holds no writer's seat in the workbench routes its saves to its own `personal` slot, where that slot stands.
+  const writeLayer = boundBySlot.has(defaultWritableSlot(slug, writeSlot)) ? defaultWritableSlot(slug, writeSlot) : "";
+  return { composite, recipe, stores, tempStore, writeLayer };
+}
+
+/**
+ * Mount the shore on a booted engine over a laid composition: the adaptor registers, the slot pointers seed, every layer replays
+ * through the shore's landing queue, and the seed checkpoint arms. `seed`, where the engine booted over wave zero, hands the
+ * changes the composition told during the boot (`IslandSeed.release`): each lands afresh, after the replay.
+ */
+export function mountIslandShore(tw5: TW5Engine, laid: LaidComposition, seed?: Pick<IslandSeed, "release"> | null): {
+  adaptor: IslandAdaptor;
+  stores: Array<{ slot: SlotUri; store: LarTiddlerStore }>;
+} {
+  const { composite, recipe, tempStore, writeLayer } = laid;
+  const stores = [...laid.stores];
+  const slug = recipe.wikiSlug;
+  // The titles TW5's own startup pass already ran over the preloads: these never run again.
+  const STARTUP_ACTIONS = "[all[shadows+tiddlers]tag[$:/tags/StartupAction]!has[draft.of]]";
+  const ranAtBoot = new Set<string>(tw5.$tw.wiki.filterTiddlers(STARTUP_ACTIONS));
+
   const adaptor = new IslandAdaptor(tw5, composite, recipe.wikiSlug);
   adaptor.installLandingQueue();
   adaptor.start();
@@ -167,8 +215,6 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
   // pointers into the wiki on the same seed wave as the corpus, ahead of the seed checkpoint;
   // an empty write-layer pointer makes unrouted saves raise the alert-rail refusal.
   if (tempStore) {
-    // A face that holds no writer's seat in the workbench routes its saves to its own `personal` slot, where that slot stands.
-    const writeLayer = boundBySlot.has(defaultWritableSlot(slug, writeSlot)) ? defaultWritableSlot(slug, writeSlot) : "";
     const configSeed: Record<string, string> = {
       "lar:///ha.ka.ba/lararium/config/current-wiki-bag":      writeLayer,
       "lar:///ha.ka.ba/lararium/config/current-wiki-temp":     wikiSlotUri(slug, "temp"),
@@ -188,6 +234,10 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
       replays.markSyncComplete?.();
     }
   }
+
+  // THE BOOT'S GAP, closed: every change the composition told while the engine booted over wave zero lands afresh. A replay names
+  // each title a layer still holds; this names the one a layer let go of during the boot, so its preload leaves the wiki too.
+  for (const change of seed?.release() ?? []) adaptor.onUriChanged(change);
 
   // STARTUP ACTIONS RUN, as TiddlyWiki runs them. TW5's own startup pass ran `$:/tags/StartupAction` over the preloads at boot; a
   // startup record that reached the wiki after boot (landed by the seed's waves, or a floor plugin's shadow laid after boot) runs

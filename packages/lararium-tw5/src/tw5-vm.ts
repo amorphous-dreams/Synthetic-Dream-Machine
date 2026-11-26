@@ -32,6 +32,12 @@ export interface TW5BootOptions {
   onInstance?: (instance: TW5Instance) => void;
   /** The canonical digests of the preloads the caller verified by CID: the trusted-module walk promotes a granted library from them. */
   grantedDigests?: ReadonlySet<string>;
+  /**
+   * WAVE ZERO (`island-seed.ts`): a wiki's own records in the nalu form, laid into the boot store after the boot set. TW5 adds them
+   * before its change queue wakes, so they raise no `change` dispatch, and it unpacks their plugins, defines their modules and runs
+   * their startup actions as it does any store's. They join no grant: the trusted-module walk reads the boot set alone.
+   */
+  seedTiddlers?: readonly Record<string, unknown>[];
 }
 
 // ---------------------------------------------------------------------------
@@ -93,6 +99,9 @@ export class TW5Engine {
 
       instance.preloadTiddlers = instance.preloadTiddlers ?? [];
       for (const t of allPreloads) instance.preloadTiddlers.push(t as Record<string, unknown>);
+      // WAVE ZERO rides last: it joins the boot store after the boot set, and never the trusted-module walk's preloaded titles or
+      // granted records, so no seed record reads as granted bytes; TiddlyWiki defines its modules natively.
+      for (const t of options?.seedTiddlers ?? []) instance.preloadTiddlers.push(t as Record<string, unknown>);
 
       // The glass keeps its page lends while the engine lives: TW5 executes a module on its first use,
       // long after boot returns, and that module reads the lent names. `releaseGlass` gives them back.
