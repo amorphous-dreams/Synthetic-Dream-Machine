@@ -56,13 +56,12 @@ export class KeepRefused extends Error {
 }
 
 /**
- * The vessel's wiki switcher, as the wake reads it: what the catalog lists, which wikis run now, and the kept wikis (oldest
- * first). `hold` answers whether the wiki ends kept and live; a keep past the budget refuses, and the wiki stays cold.
+ * The vessel's wiki switcher, as the wake reads it: what the catalog lists and which wikis run now. `wake` activates one wiki
+ * for the bounded read of the cut and answers whether it stands live; it occupies no face's keep list and no keep budget.
  */
 export interface KeepWikiPorts {
-  read(): Promise<{ readonly listed: readonly string[]; readonly active: readonly string[]; readonly held: readonly string[] }>;
-  hold(slug: string): Promise<boolean>;
-  release(slug: string): Promise<void>;
+  read(): Promise<{ readonly listed: readonly string[]; readonly active: readonly string[] }>;
+  wake(slug: string): Promise<boolean>;
 }
 
 export interface KeepPorts {
@@ -176,37 +175,27 @@ export function keepWorkspaceDir(name: string): string {
   return dir;
 }
 
-/** The daemon wiki always stands and never takes a keep. */
+/** The daemon wiki always stands and never needs a wake. */
 const DAEMON_WIKI = "daemon";
 
 /**
- * THE WAKE: hold each listed wiki no island runs, in slug order, and answer the slugs that woke with the hand that gives the pins
- * back. A hold that never lands leaves its wiki cold, and the cut names it so; a switcher that will not read wakes nothing.
+ * THE WAKE: activate each listed wiki no island runs, in slug order, and answer the slugs that woke. An activation never takes a
+ * keep, so no face's keep list moves and nothing hands back. A wake that never lands leaves its wiki cold, and the cut names it
+ * so; a switcher that will not read wakes nothing.
  */
-async function wakeColdWikis(wikis: KeepWikiPorts | undefined): Promise<{ readonly woken: readonly string[]; readonly giveBack: () => Promise<void> }> {
-  const none = { woken: [] as string[], giveBack: async () => {} };
-  if (wikis === undefined) return none;
+async function wakeColdWikis(wikis: KeepWikiPorts | undefined): Promise<readonly string[]> {
+  if (wikis === undefined) return [];
   let stood: Awaited<ReturnType<KeepWikiPorts["read"]>>;
-  try { stood = await wikis.read(); } catch { return none; }
-  const before = [...stood.held], live = new Set(stood.active);
+  try { stood = await wikis.read(); } catch { return []; }
+  const live = new Set(stood.active);
   const cold = [...new Set(stood.listed)].filter((slug) => slug !== DAEMON_WIKI && !live.has(slug)).sort();
   const woken: string[] = [];
   for (const slug of cold) {
-    let held = false;
-    try { held = await wikis.hold(slug); } catch { held = false; }
-    if (held) woken.push(slug);
+    let up = false;
+    try { up = await wikis.wake(slug); } catch { up = false; }
+    if (up) woken.push(slug);
   }
-  const giveBack = async (): Promise<void> => {
-    try {
-      const now = (await wikis.read()).held;
-      for (const slug of now) if (!before.includes(slug)) await wikis.release(slug);
-      const kept = now.filter((slug) => before.includes(slug));
-      if (kept.length !== before.length || kept.some((slug, i) => slug !== before[i])) for (const slug of before) await wikis.hold(slug);
-    } catch (e) {
-      throw new KeepRefused("keep-pins-unreturned", `the wake could not hand the wiki pins back (${e instanceof Error ? e.message : String(e)}); the pins that stood before the keep: ${before.join(", ") || "(none)"}. Hold each again by hand (\`lares wiki pin <slug> --rotate\`) and keep again`);
-    }
-  };
-  return { woken, giveBack };
+  return woken;
 }
 
 /** The bundle id a standing directory holds whole, or null where it holds none that verifies. */
@@ -266,14 +255,10 @@ export async function riteKeep(ports: KeepPorts, opts: KeepOptions): Promise<Kee
   const tag = randomBytes(6).toString("hex");
   const staging = join(parent, `.${basename(target)}.keep-${tag}`);
   try {
-    // THE WAKE BEFORE THE CUT, AND THE PINS BACK BEFORE ANYTHING SPENDS: the cut reads disk, and a cold wiki's pages reach disk
-    // only at a wake.
-    const wake = await wakeColdWikis(ports.wikis);
+    // THE WAKE BEFORE THE CUT: the cut reads disk, and a cold wiki's pages reach disk only at a wake.
+    const woken = await wakeColdWikis(ports.wikis);
     // The cut answers the opened view (its faces by pet-name, read before the seal); the bundle on disk names each by key alone.
-    let cut: KeepCut;
-    try { cut = await ports.cut(staging,{ workspace: wsDir, acceptOmissions: opts.acceptOmissions === true, woken: wake.woken }); }
-    catch (e) { await wake.giveBack().catch(() => {}); throw e; }   // the cut's own refusal names the cause
-    await wake.giveBack();
+    const cut: KeepCut = await ports.cut(staging, { workspace: wsDir, acceptOmissions: opts.acceptOmissions === true, woken });
     // The keep's own reading of what it cut: every byte against the manifest, and the id over the file list.
     const manifest = verifyBundle(staging).manifest;
     const bundleId = manifest.bundleId;
