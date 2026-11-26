@@ -334,12 +334,17 @@ test('a submodule whose objects live in its own .git directory serves as the ref
 function existingFixture() {
   const base = realpathSync(mkdtempSync(join(tmpdir(), 'provision-existing-')));
   const worktree = join(base, 'bench'); mkdirSync(join(worktree, 'packages/a'), { recursive: true });
+  const grammar = join(worktree, 'packages/tree-sitter-memetic-wikitext');
+  mkdirSync(join(grammar, 'src'), { recursive: true }); writeFileSync(join(grammar, 'src/parser.c'), 'c');
+  mkdirSync(join(worktree, 'packages/lararium-tw5'), { recursive: true });
   const calls = [];
   const run = (cmd, args, cwd) => {
     calls.push([cmd, args, cwd]);
     if (cmd === 'git' && args.includes('--show-toplevel')) return worktree + '\n';
     if (cmd === 'git' && args.includes('--git-common-dir')) return join(base, 'main/.git') + '\n';
-    if (cmd === 'pnpm') mkdirSync(join(worktree, 'node_modules/.bin'), { recursive: true });
+    if (cmd === 'pnpm' && args[0] === 'install') mkdirSync(join(worktree, 'node_modules/.bin'), { recursive: true });
+    if (cmd === 'pnpm' && args.includes('build:wasm')) { writeFileSync(join(grammar, 'tree-sitter-memetic_wikitext.wasm'), 'wasm'); stampWasm(worktree, 'tree-sitter-memetic-wikitext'); }
+    if (cmd === 'npm' && args.includes('build:tw5-vendor')) { mkdirSync(join(worktree, 'packages/lararium-tw5/tw5-core'), { recursive: true }); writeFileSync(join(worktree, 'packages/lararium-tw5/tw5-core/tiddlywikicore.js'), 'rendered'); }
     return '';
   };
   return { base, worktree, calls, run, close: () => rmSync(base, { recursive: true, force: true }) };
@@ -352,8 +357,27 @@ test('an existing branch worktree takes the submodules with the file transport a
     const git = f.calls.filter(([cmd, args]) => cmd === 'git' && args.includes('submodule')).map(([, args]) => args);
     assert.equal(git.length, 2);
     for (const args of git) assert.deepEqual(args.slice(0, 2), ['-c', 'protocol.file.allow=always']);
-    const install = f.calls.filter(([cmd]) => cmd === 'pnpm');
+    const install = f.calls.filter(([cmd, args]) => cmd === 'pnpm' && args[0] === 'install');
     assert.deepEqual(install.map(([, args, cwd]) => [args, cwd]), [[['install', '--frozen-lockfile', '--offline', '--package-import-method=copy'], f.worktree]]);
+  } finally { f.close(); }
+});
+
+test('RED: an existing floor bench builds the grammar wasm and the TW5 vendor after its install, so its first build runs whole; a stamped wasm stays (control)', () => {
+  const f = existingFixture();
+  const logs = [];
+  try {
+    provisionExisting({ worktree: f.worktree, guard: noGuard, run: f.run, log: (line) => logs.push(line) });
+    const steps = f.calls.filter(([cmd]) => cmd === 'pnpm' || cmd === 'npm').map(([cmd, args, cwd]) => `${cmd} ${args[0] === 'run' ? args[1] : args[0]} @ ${relative(f.worktree, cwd) || '.'}`);
+    assert.deepEqual(steps, ['pnpm install @ .', 'pnpm build:wasm @ packages/tree-sitter-memetic-wikitext', 'npm build:tw5-vendor @ packages/lararium-tw5']);
+    assert.equal(existsSync(join(f.worktree, 'packages/tree-sitter-memetic-wikitext/tree-sitter-memetic_wikitext.wasm')), true);
+    assert.equal(existsSync(join(f.worktree, 'packages/lararium-tw5/tw5-core')), true);
+    assert.equal(logs.some(line => /BUILT packages\/tree-sitter-memetic-wikitext wasm/.test(line)), true);
+    // CONTROL: a second provision finds the wasm its stamp still binds and keeps it; the vendor renders again.
+    f.calls.length = 0;
+    provisionExisting({ worktree: f.worktree, guard: noGuard, run: f.run, log: (line) => logs.push(line) });
+    assert.equal(f.calls.some(([, args]) => args.includes('build:wasm')), false);
+    assert.equal(f.calls.some(([, args]) => args.includes('build:tw5-vendor')), true);
+    assert.equal(logs.some(line => /KEPT packages\/tree-sitter-memetic-wikitext wasm/.test(line)), true);
   } finally { f.close(); }
 });
 

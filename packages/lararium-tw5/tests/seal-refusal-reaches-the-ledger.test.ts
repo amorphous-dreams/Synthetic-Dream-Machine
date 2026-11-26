@@ -30,16 +30,30 @@ import { describe, expect, test } from "vitest";
 
 import { CompositeStore } from "@lararium/mesh/composite-store";
 import { DAEMON_BAG_ID } from "@lararium/mesh/lar-uris";
+import { wikiSlotUri } from "@lararium/mesh/wiki-recipe";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { makeWardAlertReactor, HOME_WIKI_TITLE } from "../src/index.js";
 import type { DaemonMsg_WikiAlert } from "../src/index.js";
 
-/** The daemon bag, in memory — the ledger this cure writes into is an ordinary bag write. */
+/** The face's daemon wiki's working layer: the face's home preference rests here, where only that face reads it. */
+const DAEMON_WORKING = wikiSlotUri("daemon", "working");
+const workingLayers = new WeakMap<CompositeStore, MemoryTiddlerStore>();
+
+/** The daemon bag, in memory — the ledger this cure writes into is an ordinary bag write — under the daemon's working layer. */
 async function daemonStore(): Promise<CompositeStore> {
   const composite = new CompositeStore();
   composite.addLayer({ bagId: DAEMON_BAG_ID, store: new MemoryTiddlerStore(DAEMON_BAG_ID), writable: true });
+  const working = new MemoryTiddlerStore(DAEMON_WORKING);
+  composite.addLayer({ bagId: DAEMON_WORKING, store: working, writable: true });
+  workingLayers.set(composite, working);
   controls.set(composite, memoryControlStore());
   return composite;
+}
+
+/** The face writes its home preference into its daemon wiki's working layer, by name, and the record rests there alone. */
+async function putHomePreference(composite: CompositeStore, slug: string): Promise<void> {
+  await composite.put({ tiddler: { title: HOME_WIKI_TITLE, text: `[[${slug}]]` } }, { kind: "lares-verb", requestId: "pin" }, { bag: DAEMON_WORKING });
+  expect(await workingLayers.get(composite)!.get(HOME_WIKI_TITLE), "the home preference rests in the daemon's working layer").toBeTruthy();
 }
 
 /** The ward ledger rests in the vessel's control document, one per daemon store here. */
@@ -106,10 +120,7 @@ describe("CURE 4 — the refusal reaches a durable audience", () => {
   test("CONTROL — a pinned VM receives the alert, on Rail A's own wire kind", async () => {
     const composite = await daemonStore();
     const posted: DaemonMsg_WikiAlert[] = [];
-    await composite.put(
-      { tiddler: { title: HOME_WIKI_TITLE, text: "[[home]]" } },
-      { kind: "lares-verb", requestId: "pin" },
-    );
+    await putHomePreference(composite, "home");
 
     await react(composite, (m) => posted.push(m));
     expect(posted.length).toBe(1);
@@ -124,10 +135,7 @@ describe("CURE 4 — the refusal reaches a durable audience", () => {
   test("CONTROL — a call with NO wardKind still files as `disk-ward`", async () => {
     const composite = await daemonStore();
     const posted: DaemonMsg_WikiAlert[] = [];
-    await composite.put(
-      { tiddler: { title: HOME_WIKI_TITLE, text: "[[home]]" } },
-      { kind: "lares-verb", requestId: "pin" },
-    );
+    await putHomePreference(composite, "home");
 
     const reactor = makeWardAlertReactor(composite, controlFor(composite), (m) => posted.push(m));
     await reactor({ bagId: "bag:x", uri: "lar:///x", reason: "shadowed canon copy" });

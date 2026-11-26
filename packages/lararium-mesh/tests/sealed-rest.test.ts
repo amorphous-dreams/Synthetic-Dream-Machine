@@ -127,7 +127,7 @@ describe("R1: a private bag's change rests sealed through the door", () => {
     expect(r.sealedUnder.length).toBeGreaterThan(0);
     expect(restsClear(inner, doc.documentId, SECRET)).toBe(false);
     // THE LIVE WIKI IN MEMORY READS CLEAR (control).
-    expect(doc.doc().note).toBe(SECRET);
+    expect(doc.doc()?.note).toBe(SECRET);
     expect(restsClear(inner, clear.documentId, `${SECRET}-clear`)).toBe(true);
     // No booking outlives its seal.
     await r.rest.store.flush();
@@ -137,7 +137,7 @@ describe("R1: a private bag's change rests sealed through the door", () => {
     const again = standRest(a, inner, { sealed: (id) => id !== control });
     const repo2 = new Repo({ storage: again.rest.store, network: [] });
     const found = await repo2.find<{ note?: string }>(doc.documentId as unknown as AutomergeUrl);
-    expect(found.doc().note).toBe(SECRET);
+    expect(found.doc()?.note).toBe(SECRET);
     await repo2.shutdown();
   });
 });
@@ -222,7 +222,7 @@ describe("R2: a save the Repo makes on its own timer signs under the session tha
     expect(SEALED_DOCUMENT_REFUSALS).toContain("save-unbooked");
     expect(held).toContain(`save-unbooked:${doc.documentId}`);
     expect(restsAny(inner, doc.documentId)).toBe(false);
-    expect(doc.doc().note).toBe(SECRET);
+    expect(doc.doc()?.note).toBe(SECRET);
     expect(rest.store.waiting(doc.documentId)).toBeGreaterThan(0);
     // The next unlock's session books the waiting save and seals it.
     const sealed = await rest.rebook({ id: "s-next", subject: r.own, signer: a.signer });
@@ -234,7 +234,7 @@ describe("R2: a save the Repo makes on its own timer signs under the session tha
     a.restart();
     const again = standRest(a, inner);
     const repo2 = new Repo({ storage: again.rest.store, network: [] });
-    expect((await repo2.find<{ note?: string }>(doc.documentId as unknown as AutomergeUrl)).doc().note).toBe(SECRET);
+    expect((await repo2.find<{ note?: string }>(doc.documentId as unknown as AutomergeUrl)).doc()?.note).toBe(SECRET);
     await repo2.shutdown();
   });
 
@@ -254,7 +254,7 @@ describe("R2: a save the Repo makes on its own timer signs under the session tha
     r.seat(repo);
     // Hydration reads the clear chunk once, for the session's own face, and the first booked save sweeps it.
     const found = await repo.find<{ note?: string; more?: string }>(doc.documentId as unknown as AutomergeUrl);
-    expect(found.doc().note).toBe(SECRET);
+    expect(found.doc()?.note).toBe(SECRET);
     r.rest.wrote(doc.documentId, { id: "s-a", subject: r.own, signer: a.signer });
     found.change((d) => { d.more = "a second word"; });
     await repo.flush();
@@ -1048,10 +1048,30 @@ describe("a fault or a refusal never lets a document rest clear", () => {
     expect(fault).toEqual({ type: "rest:answer", requestId: "r1", refused: "rest-fault" });
     const malformed = await answerRestAsk({ restsSealed: async () => false }, { requestId: "r2" });
     expect(malformed).toEqual({ type: "rest:answer", requestId: "r2", refused: "ask-malformed" });
-    // CONTROL: an answering rest answers as it reads, and a vessel that seals no bag answers unsealed.
+    // CONTROL: an answering rest answers as it reads.
     expect(await answerRestAsk({ restsSealed: async () => true }, { requestId: "r3", documentId: "doc-a" })).toEqual({ type: "rest:answer", requestId: "r3", sealed: true });
     expect(await answerRestAsk({ restsSealed: async () => false }, { requestId: "r4", documentId: "doc-a" })).toEqual({ type: "rest:answer", requestId: "r4", sealed: false });
-    expect(await answerRestAsk({}, { requestId: "r5", documentId: "doc-a" })).toEqual({ type: "rest:answer", requestId: "r5", sealed: false });
+  });
+
+  it("a vessel that stands no rest door answers unread, and the island's guard rests no byte behind that answer; the door's unsealed reading still rests (control)", async () => {
+    expect(await answerRestAsk({}, { requestId: "r5", documentId: "doc-a" })).toEqual({ type: "rest:answer", requestId: "r5", refused: "rest-unread" });
+    const channel = new MessageChannel();
+    const vesselSide = portOf(channel.port1), islandSide = portOf(channel.port2);
+    const record: { restsSealed?: (documentId: string) => Promise<boolean> } = {};
+    vesselSide.listen((raw) => {
+      const m = raw as { type?: string; requestId: string; documentId?: string };
+      if (m.type === "rest:ask") void answerRestAsk(record, m).then((answer) => vesselSide.post(answer));
+    });
+    const islandInner = memoryAdapter();
+    const guard = islandRestGuard(islandInner, vesselRestAsker(islandSide, { idPrefix: "doorless" }));
+    const doc = parseAutomergeUrl(generateAutomergeUrl()).documentId;
+    const bytes = Uint8Array.from(utf8Bytes(SECRET));
+    await expect(guard.save([doc, "snapshot", "h1"], bytes)).rejects.toMatchObject({ refusal: "rest-unread" });
+    expect(restsAny(islandInner, doc)).toBe(false);
+    // CONTROL: once the door stands and reads unsealed, the bytes rest.
+    record.restsSealed = async () => false;
+    await guard.save([doc, "snapshot", "h1"], bytes);
+    expect(restsClear(islandInner, doc, SECRET)).toBe(true);
   });
 
   it("the island's asker refuses a refused answer, a shapeless answer and a post that fails, each by name; a sealed answer still reads sealed (control)", async () => {
