@@ -10,7 +10,7 @@ import { describe, test, expect, beforeAll } from "vitest";
 import { stampCarrier } from "@lararium/memetic-frame";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { SHRINE_SLOTS, shrineSource } from "@lararium/mesh/spirit-shrine";
-import { UNFOLD_OPEN, UNFOLD_RANKS, cardRenderCommand, narrowerRank, recordCommand, shellWord, slotCommand, spiritCardOf, unfoldCall, unfoldRank, wholeCommand } from "@lararium/mesh/spirit-unfold";
+import { UNFOLD_OPEN, UNFOLD_RANKS, cardRenderCommand, faceBound, narrowerRank, recordCommand, shellWord, slotCommand, spiritCardOf, unfoldCall, unfoldRank, wholeCommand } from "@lararium/mesh/spirit-unfold";
 import { commandLine, foldCarrier } from "../src/carrier-fold.js";
 import { memeticWikitextDeserializer } from "../src/deserializer.js";
 import { normalizeMemeSource } from "../src/meme-normalize.js";
@@ -218,5 +218,15 @@ describe("the fold's pure core", () => {
     expect(folded).toContain("`unfold #/instances`");
     expect(foldCarrier(CARRIER, { open: () => true, buttons: () => [] })).toBe(CARRIER);
     expect(foldCarrier("plain words", { open: () => false, buttons: () => [] })).toBe("plain words");
+  });
+});
+
+describe("faceBound: a wake's handed commands keep naming the face that answered (plan/companion-context S3)", () => {
+  test("--face joins each spirit command after its pet and each recipe-default read naming none; a bound command stays as it stands", () => {
+    const text = "Echo it: lares spirit ah lares-alpha --echo ab --instance s-1\n"
+      + `${slotCommand("lar:///x", "#/open", "1")} · lares tiddler get lar:///y --recipe default --meme --all · \`lares spirit hum lares-alpha\`, lares spirit om lares-alpha --face 1`;
+    expect(faceBound(text, 1)).toBe("Echo it: lares spirit ah lares-alpha --face 1 --echo ab --instance s-1\n"
+      + `${slotCommand("lar:///x", "#/open", "1")} · lares tiddler get lar:///y --recipe default --face 1 --meme --all · \`lares spirit hum lares-alpha --face 1\`, lares spirit om lares-alpha --face 1`);
+    expect(faceBound(text, null)).toBe(text);
   });
 });

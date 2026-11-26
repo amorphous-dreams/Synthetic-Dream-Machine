@@ -1623,6 +1623,33 @@ describe("the ʻĀlana Circle: a card answers the slot verbs, a summon offers fi
     expect(card["instances"]).toBe("one\ntwo\nx");
     expect(data(named)).not.toHaveProperty("unechoed");
   });
+
+  /** A spirit command or a recipe-default read that names no `--face 1`. */
+  const UNBOUND = /\blares spirit (?:om|ah|hum|hooili|residue|otakiage) lares-alpha(?![a-z0-9-])(?! --face 1)|--recipe default(?![\w-])(?! --face 1)/;
+
+  test("S3: om under a worn h1 leads with the worn line and binds every command it hands back to --face 1, the fold included", async () => {
+    answering.face = 1;
+    facedStage({ kind: "none", card: CARD_FIELDS(), offering: offered() });
+    const r = await run(argv(["om", "lares-alpha"], { instance: "s-1" }));
+    expect(r.exit, JSON.stringify(r.printed)).toBe(0);
+    const text = String(data(r)["text"]);
+    expect(text).toContain("worn: h1");
+    expect(text).toContain(`lares spirit ah lares-alpha --face 1 --echo ${sha(MANDATE)} --instance s-1`);
+    expect(text).not.toMatch(UNBOUND);
+    expect(data(r)).toMatchObject({ face: 1 });
+    expect(String(h.calls.find((c) => c.verb === "wiki-render")?.args["text"] ?? "")).toContain(`face:"1"`);
+  });
+
+  test("S3: om --face 1 binds a folded shrine's doors the same way", async () => {
+    answering.face = 1;
+    facedStage({ carrier: "<<~ ahu slot=`#/entry`>>\n\nentry\n\n<<~/ahu>>" });
+    const r = await run(argv(["om", "lares-alpha"], { instance: "s-1", face: "1" }));
+    expect(r.exit, JSON.stringify(r.printed)).toBe(0);
+    const text = String(data(r)["text"]);
+    expect(text).toContain("worn: h1");
+    expect(text).toContain("lares spirit hum lares-alpha --face 1");
+    expect(text).not.toMatch(UNBOUND);
+  });
 });
 
 describe("one spirit record: a pet name answers at lares/spirit/<pet>, holding a stack of what it holds", () => {
