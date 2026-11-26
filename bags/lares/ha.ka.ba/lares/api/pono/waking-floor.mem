@@ -375,9 +375,12 @@ house minted (the node key, each lit face's custody key), never the human's rout
 house's `pulama/state`; the key that opens it rests in a Docker volume the keeper alone mounts. Whoever
 reads both halves (Docker as the operator plus the house directory, or the raw disk where it carries no
 encryption) opens the house with no route while a return stands; a copy of the house alone opens nothing.
-A count bounds it, never a clock; the keeper's code closure binds it, so a moved keeper takes the hand's
-light; an unstring destroys both halves at once, lit or unlit. Returns spent, the lei unstrung, the
-closure moved or either half missing: the boot rests at the floor as before and names the hand's cure.
+A count bounds it, never a clock; an unstring destroys both halves at once, lit or unlit. While a
+return stands the lei carries the operator's authorization for every act of the waking: the light, the
+admit of an image the keeper never admitted, and both across a move of the keeper's own code. The
+rollback guards the code move: the prior closure's image stays tagged, and a keeper whose new code fails
+its waking steps back to it and wakes there by the same lei. Returns spent, the lei unstrung or either
+half missing: the boot rests at the floor as before and names the hand's cure.
 The lift raises a restarted keeper alone: a keeper a hand locked stays locked.
 
 ''One rite walks the lifts'': `lares rite hoala` (hoʻāla, to waken) reads the keeper, the image and the
@@ -446,6 +449,6 @@ keeps ''the place'' — which is precisely the floor. The myth bore this load be
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;V9yTQTWy9LtpvUOWUv6WZybYTu-GrI4TyKrF8n5vlzU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;BNiNGHY2KAx8xmh3gyGNoGuzcJOBQSFBu3tvTGdorpw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

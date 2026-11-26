@@ -36,6 +36,9 @@
  *                                                   restarts
  *   node dist/src/pulama-main.js hoala            the start path's own act, no route: an unlit keeper that never stood lit in this
  *                                                   life spends ONE return of the hoʻāla lei and stands lit; exit 1 where none licenses
+ *   node dist/src/pulama-main.js hoala-admit      the start path's own act, no route: a LIT keeper spends ONE return of a standing hoʻāla lei
+ *                                                   to admit the image the host reports (the lei's caps license it); exit 1 where
+ *                                                   none covers it, and the hand's `admit` stays the path
  *   node dist/src/pulama-main.js hoala-unstring   end the hoʻāla lei at once, lit or unlit, no route: its slot and device key die
  *   node dist/src/pulama-main.js publish '<terms>'  the operator signs one plugin offering (`lares nexus publish plugins --terms`
  *                                                   prints the terms: the face and the closed descriptor): reads the route on a

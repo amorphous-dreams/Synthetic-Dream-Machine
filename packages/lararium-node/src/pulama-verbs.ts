@@ -99,7 +99,7 @@ export function readRoute(label: string, what: string, terminal: RouteTerminal =
   });
 }
 
-export const PULAMA_VERB_USAGE = `usage: pulama-main.js serve | light [--admit] | admit [face…] | unadmit <image digest> | rehive <face> | recard <face> | lei kui|restring|unstring '{"face":…,"rite":…,"branch":…,…}' | lei kui '{"faces":[…]}' | hoala-string <returns> [--yes] | hoala | hoala-unstring | publish '{"face":…,"offering":{"offeror":…,"pluginsCid":…,"blobs":[…]}}' | sign '{"face":…,"kind":"kahua-act"|"plugin-offering","record":{…}}' | keep-seat | lock | status | image <digest> | image '{"digest":…,"seed":…,"closure":…}' | tessera | closure <sha256:…> | name-successor <sha256:…> [--devices <n>] [--cosign <json>] | keeper-offer | keeper-vest '{"to":…,"closure":…}' | keeper-receive '{"slot":…}' | keeper-land | take-fire`;
+export const PULAMA_VERB_USAGE = `usage: pulama-main.js serve | light [--admit] | admit [face…] | unadmit <image digest> | rehive <face> | recard <face> | lei kui|restring|unstring '{"face":…,"rite":…,"branch":…,…}' | lei kui '{"faces":[…]}' | hoala-string <returns> [--yes] | hoala | hoala-admit | hoala-unstring | publish '{"face":…,"offering":{"offeror":…,"pluginsCid":…,"blobs":[…]}}' | sign '{"face":…,"kind":"kahua-act"|"plugin-offering","record":{…}}' | keep-seat | lock | status | image <digest> | image '{"digest":…,"seed":…,"closure":…}' | tessera | closure <sha256:…> | name-successor <sha256:…> [--devices <n>] [--cosign <json>] | keeper-offer | keeper-vest '{"to":…,"closure":…}' | keeper-receive '{"slot":…}' | keeper-land | take-fire`;
 
 /** A verb line the hand door holds no act for. */
 export class PulamaVerbUsage extends Error { override readonly name = "PulamaVerbUsage"; constructor() { super(PULAMA_VERB_USAGE); } }
@@ -116,7 +116,7 @@ export function handVerbExit(verb: string, answer: PulamaHandAnswer): 0 | 1 {
 /** The one reading each act that must land answers; any other reading exits 1, so the host shim never reads a refusal as done. */
 const HAND_VERB_LANDS: Readonly<Record<string, string>> = {
   rehive: "rehived", recard: "granted", publish: "signed", sign: "signed", "name-successor": "named", "name-successor-lei": "named", "keeper-offer": "offered", "keeper-vest": "vested", "keeper-receive": "landed", "keeper-land": "landed", "take-fire": "taken",
-  "hoala-string": "strung", hoala: "woke", "hoala-unstring": "unstrung",
+  "hoala-string": "strung", hoala: "woke", "hoala-unstring": "unstrung", "hoala-admit": "admitted",
 };
 
 /**
@@ -281,7 +281,7 @@ export async function runHandVerb(verb: string, arg: string | readonly string[] 
     if (typeof terms !== "object" || terms === null || Array.isArray(terms) || "op" in terms || "credentials" in terms) throw new PulamaVerbUsage();
     return ports.ask({ op: verb, ...(terms as Record<string, unknown>) });
   }
-  if ((verb === "lock" || verb === "status" || verb === "tessera" || verb === "keeper-offer" || verb === "keeper-land" || verb === "take-fire" || verb === "hoala" || verb === "hoala-unstring") && arg === undefined) return ports.ask({ op: verb });
+  if ((verb === "lock" || verb === "status" || verb === "tessera" || verb === "keeper-offer" || verb === "keeper-land" || verb === "take-fire" || verb === "hoala" || verb === "hoala-unstring" || verb === "hoala-admit") && arg === undefined) return ports.ask({ op: verb });
   if (verb === "image" && typeof arg === "string") {
     // `image '{"digest":…,"seed":…}'`: the host's structured frame, the seed line beside the digest; `image <digest>` carries none.
     if (!arg.trimStart().startsWith("{")) return ports.ask({ op: "image", digest: arg });

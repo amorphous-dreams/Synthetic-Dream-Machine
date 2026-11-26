@@ -148,11 +148,17 @@ export interface HoalaStrungBody {
 export interface HoalaSlotBody {
   readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "hoala-slot"; readonly lei: string; readonly returns: number; readonly n: number;
   readonly closure: string; readonly faces: readonly AdmittedFace[]; readonly to: string; readonly box: { readonly e: string; readonly n: string; readonly c: string };
+  /** THE ROLLBACK TARGET: the keeper closure the slot named before a return carried it across a code move; absent where none moved it. */
+  readonly prior?: string;
 }
 /** THE RECEIPT one spent return leaves: which lei, which return of how many, the closure and image the keeper stood on, the faces lit. */
 export interface HoalaWokeBody {
   readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "hoala-woke"; readonly lei: string; readonly n: number; readonly of: number;
   readonly slot: string; readonly closure: string; readonly image: string | null; readonly faces: readonly AdmittedFace[]; readonly nonce: string;
+  /** THE CLOSURE THE RETURN CARRIED THE LEI FROM, where the keeper's code moved under it: the rollback target. Absent on a level spend. */
+  readonly prior?: string;
+  /** WHAT THE RETURN LICENSED where it lit no keeper: `admit` names a return a lit keeper spent to admit `image` with no route. Absent: a waking. */
+  readonly licensed?: "admit";
 }
 /** THE UNSTRING: the lei ends, its slot and device key destroyed. A lit keeper signs it; an unlit one rests the bare word. */
 export interface HoalaUnstrungBody { readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "hoala-unstrung"; readonly lei: string; readonly nonce: string }

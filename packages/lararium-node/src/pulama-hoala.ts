@@ -41,10 +41,17 @@
  * A holder of both halves at one earlier moment can bring both back and spend a return again: the ratchet binds the house's own
  * doors, never a disk someone else rewinds.
  *
- * ── THE SAME KEEPER CODE, AND ONE LIFE ──────────────────────────────────────────────────────────
- * The slot names the closure the hand strung it under, and a keeper reporting another closure refuses `hoala-closure-moved`: a
- * moved keeper takes the hand's light (the struck fire), as the keeper tally asks. And a keeper that stood lit once in its life
- * refuses `hoala-keeper-lived`: a `lock` by the hand stays locked, since the lei re-stands a RESTARTED keeper alone.
+ * ── A MOVED KEEPER CODE SPENDS A RETURN TOO, AND THE PRIOR CLOSURE STAYS THE ROLLBACK ───────────
+ * Operator ruling, 2026-11-26: //"the leis + rollbacks handles that case too"//. A keeper whose code closure moved since the
+ * stringing wakes under the lei as a level one does: the return spends, and the slot it seals for the next return names the NEW
+ * closure and keeps the one before it (`prior`), as the receipt does. The safety rides the rollback, never a route: where the new
+ * code fails its own checks (the slot reads unsigned, the lei unverified, the payload unread), the keeper locks and what rests STAYS
+ * (a level keeper destroys it), so the host steps the keeper back to the prior closure's image, which still opens the same slot.
+ * A keeper that reports no closure still refuses (`closure-unreported`): nothing names what a rollback would return to.
+ *
+ * ── ONE LIFE ────────────────────────────────────────────────────────────────────────────────────
+ * A keeper that stood lit once in its life refuses `hoala-keeper-lived`: a `lock` by the hand stays locked, since the lei wakes
+ * a RESTARTED keeper alone.
  *
  * ── UNSTRING: REVOKE WINS ───────────────────────────────────────────────────────────────────────
  * `hoalaUnstring` asks no route and no light: it destroys the device key (overwritten, then unlinked), clears the slot row and
@@ -146,22 +153,22 @@ export async function hoalaSlotRead(records: SwarmWikiPort): Promise<{ readonly 
 }
 
 /** What `status` names of a standing hoʻāla lei: public counts alone, unverified while the keeper stands unlit. */
-export async function hoalaStanding(records: SwarmWikiPort): Promise<{ readonly lei: string; readonly returns: number; readonly left: number; readonly closure: string; readonly faces: readonly number[] } | null> {
+export async function hoalaStanding(records: SwarmWikiPort): Promise<{ readonly lei: string; readonly returns: number; readonly left: number; readonly closure: string; readonly prior?: string; readonly faces: readonly number[] } | null> {
   const read = await hoalaSlotRead(records);
   if (read === null) return null;
   const b = read.slot.body;
   if ((await records.read(hoalaUnstrungTitle(b.lei))) !== null) return null;
-  return { lei: b.lei, returns: b.returns, left: Math.max(0, b.returns - b.n), closure: b.closure, faces: b.faces.flatMap((f) => (Number.isSafeInteger(f?.ordinal) ? [f.ordinal] : [])).sort((x, y) => x - y) };
+  return { lei: b.lei, returns: b.returns, left: Math.max(0, b.returns - b.n), closure: b.closure, ...(typeof b.prior === "string" ? { prior: b.prior } : {}), faces: b.faces.flatMap((f) => (Number.isSafeInteger(f?.ordinal) ? [f.ordinal] : [])).sort((x, y) => x - y) };
 }
 
 /** Seal one payload for return `n` to a FRESH device key: the key rests first, the slot row switches, the keys before it die. */
-async function sealSlot(records: SwarmWikiPort, by: KukuluSigner, device: HoalaDevice, at: { readonly lei: string; readonly returns: number; readonly n: number; readonly closure: string; readonly payload: VestPayload }): Promise<SignedSlot> {
+async function sealSlot(records: SwarmWikiPort, by: KukuluSigner, device: HoalaDevice, at: { readonly lei: string; readonly returns: number; readonly n: number; readonly closure: string; readonly prior?: string | null; readonly payload: VestPayload }): Promise<SignedSlot> {
   const minted = mintSealedBoxRecipient();
   const to = hex(minted.pub);
   const plain = keeperPayloadPack({ node: at.payload.node, faces: at.payload.faces, spent: 0, worn: at.payload.worn });
   try {
     const box = sealToRecipient({ recipientPub: minted.pub, plaintext: plain, info: HOALA_INFO, extraSalt: saltOf(at.lei, at.closure, at.n) });
-    const slot = await signPulamaRecord<"hoala-slot">({ act: "hoala-slot", lei: at.lei, returns: at.returns, n: at.n, closure: at.closure, faces: at.payload.faces.map((f) => ({ fcid: f.fcid, ordinal: f.ordinal })), to, box: { e: hex(box.senderEphemeralPub), n: hex(box.aeadNonce), c: hex(box.ciphertext) } }, by) as SignedSlot;
+    const slot = await signPulamaRecord<"hoala-slot">({ act: "hoala-slot", lei: at.lei, returns: at.returns, n: at.n, closure: at.closure, faces: at.payload.faces.map((f) => ({ fcid: f.fcid, ordinal: f.ordinal })), ...(typeof at.prior === "string" ? { prior: at.prior } : {}), to, box: { e: hex(box.senderEphemeralPub), n: hex(box.aeadNonce), c: hex(box.ciphertext) } }, by) as SignedSlot;
     device.put(to, minted.secret);
     await records.write(hoalaSlotTitle(), JSON.stringify(slot));
     device.drop(to);
@@ -210,6 +217,26 @@ export async function hoalaString(records: SwarmWikiPort, by: KukuluSigner, devi
  * verifies a signature here (no key stands yet); `hoalaLand` does, once the node key seats. The caller zeroes the payload.
  */
 export async function hoalaOpen(records: SwarmWikiPort, device: HoalaDevice, at: { readonly closure: string | null }): Promise<{ readonly slot: SignedSlot; readonly text: string; readonly payload: VestPayload } | HoalaRefusal> {
+  const read = await standingSlot(records, device, at);
+  if ("refusal" in read) return read;
+  const b = read.slot.body;
+  const secret = device.take(b.to);
+  if (secret === null) return refuse("hoala-device-key-absent", `the hoʻāla lei's slot rests here, and this device holds no key that opens it (the device volume moved, or the house came from another machine); ${HOALA_HAND_CURE}`);
+  let plain: Uint8Array | null;
+  try { plain = openFromSender({ recipientSecret: secret, senderEphemeralPub: unhex(b.box.e), aeadNonce: unhex(b.box.n), ciphertext: unhex(b.box.c), info: HOALA_INFO, extraSalt: saltOf(b.lei, b.closure, b.n) }); } finally { secret.fill(0); }
+  if (plain === null) return refuse("hoala-slot-unopened", `the hoʻāla lei's slot opens under no key this device holds; ${HOALA_HAND_CURE}`);
+  let payload: VestPayload | null;
+  try { payload = keeperPayloadUnpack(plain); } finally { plain.fill(0); }
+  if (payload === null) return refuse("hoala-slot-unopened", `the hoʻāla lei's slot carries no payload this keeper reads; ${HOALA_HAND_CURE}`);
+  return { slot: read.slot, text: read.text, payload };
+}
+
+/**
+ * THE STANDING SLOT, read before any spend: a lei stands with a return left for the keeper closure the host reported, or the
+ * refusal names why none covers the act (absent, its returns spent, unstrung, the closure unreported or moved). A lei that
+ * ended destroys what rests on the way.
+ */
+async function standingSlot(records: SwarmWikiPort, device: HoalaDevice, at: { readonly closure: string | null }): Promise<{ readonly slot: SignedSlot; readonly text: string } | HoalaRefusal> {
   const read = await hoalaSlotRead(records);
   if (read === null) {
     // NOTHING RESTS: the row names how the last lei ended (its returns spent, a hand's unstring), or no lei ever stood.
@@ -224,16 +251,29 @@ export async function hoalaOpen(records: SwarmWikiPort, device: HoalaDevice, at:
   if ((await records.read(hoalaUnstrungTitle(b.lei))) !== null) { await destroy(records, device, "unstrung", b.lei); return refuse("hoala-lei-unstrung", `the hoʻāla lei ${b.lei} stands unstrung; ${HOALA_HAND_CURE}`); }
   if (b.n >= b.returns) { await destroy(records, device, "returns-spent", b.lei); return refuse("hoala-returns-spent", `the hoʻāla lei ${b.lei} spent each of its ${b.returns} return(s); ${HOALA_HAND_CURE}`); }
   if (at.closure === null) return refuse("closure-unreported", "the host reported no closure for this keeper, so the hoʻāla lei cannot read whether the keeper it licensed stands here; `lares up` reports it, and the stand tries the lei again");
-  if (at.closure !== b.closure) return refuse("hoala-closure-moved", `the hoʻāla lei licenses keeper closure ${b.closure}, and this keeper reports ${at.closure}: a keeper whose code moved takes the hand's light (the struck fire); ${HOALA_HAND_CURE}`);
-  const secret = device.take(b.to);
-  if (secret === null) return refuse("hoala-device-key-absent", `the hoʻāla lei's slot rests here, and this device holds no key that opens it (the device volume moved, or the house came from another machine); ${HOALA_HAND_CURE}`);
-  let plain: Uint8Array | null;
-  try { plain = openFromSender({ recipientSecret: secret, senderEphemeralPub: unhex(b.box.e), aeadNonce: unhex(b.box.n), ciphertext: unhex(b.box.c), info: HOALA_INFO, extraSalt: saltOf(b.lei, b.closure, b.n) }); } finally { secret.fill(0); }
-  if (plain === null) return refuse("hoala-slot-unopened", `the hoʻāla lei's slot opens under no key this device holds; ${HOALA_HAND_CURE}`);
-  let payload: VestPayload | null;
-  try { payload = keeperPayloadUnpack(plain); } finally { plain.fill(0); }
-  if (payload === null) return refuse("hoala-slot-unopened", `the hoʻāla lei's slot carries no payload this keeper reads; ${HOALA_HAND_CURE}`);
-  return { slot: read.slot, text: read.text, payload };
+  // A MOVED CLOSURE STOPS NOTHING: the lei's return licenses the waking under the new code, and the slot's own closure names the rollback.
+  return read;
+}
+
+/**
+ * A LIT KEEPER SPENDS ONE RETURN for an act the hand's stringing already authorized (operator ruling, 2026-11-26: //"standing lei
+ * caps grant the operator provided authz until the lei expires by spends"//). The lei must stand with a return left for this
+ * keeper's closure; the spend verifies slot and lei under the pūlama's key, claims the return's receipt (naming what it licensed)
+ * and moves the slot to the next return, sealed afresh from the keys the lit keeper holds. The caller acts only on a spend that
+ * landed, so the return claims before the act. A refusal spends nothing and leaves the keeper lit as it stood.
+ */
+export async function hoalaSpendLit(records: SwarmWikiPort, by: KukuluSigner, device: HoalaDevice, at: {
+  readonly closure: string | null; readonly keys: KeeperKeys; readonly worn: number | null; readonly image: string | null; readonly licensed: "admit";
+}): Promise<{ readonly lei: string; readonly n: number; readonly of: number; readonly left: number; readonly receipt: string; readonly faces: readonly AdmittedFace[] } | HoalaRefusal> {
+  const read = await standingSlot(records, device, at);
+  if ("refusal" in read) return read;
+  // THE LEI COVERS THE FACES LIT AT ITS STRINGING that stand lit now, and no other.
+  const strung = new Set(read.slot.body.faces.map((f) => f.fcid));
+  const faces: AdmittedFace[] = at.keys.faces.filter((f) => strung.has(f.fcid)).map((f) => ({ fcid: f.fcid, ordinal: f.ordinal })).sort((x, y) => x.ordinal - y.ordinal);
+  if (faces.length === 0) return refuse("hoala-faces-dark", `no face the hoʻāla lei was strung for stands lit at this keeper, so its return licenses nothing here; ${HOALA_HAND_CURE}`);
+  const payload: VestPayload = { node: at.keys.treeKey, faces: at.keys.faces.filter((f) => strung.has(f.fcid)).map((f) => ({ fcid: f.fcid, ordinal: f.ordinal, fck: f.fck, spent: 0 })), spent: 0, worn: at.worn };
+  const landed = await hoalaLand(records, by, device, { slot: read.slot, text: read.text, payload, image: at.image, lit: faces, closure: at.closure!, licensed: at.licensed });
+  return "refusal" in landed ? landed : { ...landed, faces };
 }
 
 /**
@@ -243,24 +283,38 @@ export async function hoalaOpen(records: SwarmWikiPort, device: HoalaDevice, at:
  */
 export async function hoalaLand(records: SwarmWikiPort, by: KukuluSigner, device: HoalaDevice, at: {
   readonly slot: SignedSlot; readonly text: string; readonly payload: VestPayload; readonly image: string | null; readonly lit: readonly AdmittedFace[];
-}): Promise<{ readonly lei: string; readonly n: number; readonly of: number; readonly left: number; readonly receipt: string } | HoalaRefusal> {
+  /** The closure this keeper runs, as the host reported it: where it differs from the slot's, the return carries the lei across the move. */
+  readonly closure: string;
+  /** What the return licenses where it lights no keeper (`admit`); absent on a waking. */
+  readonly licensed?: "admit";
+}): Promise<{ readonly lei: string; readonly n: number; readonly of: number; readonly left: number; readonly receipt: string; readonly closure: string; readonly prior: string | null } | HoalaRefusal> {
   const b = at.slot.body;
-  if (verifiedPulamaRecord(at.text, by.key) === null) { await destroy(records, device, "refused", b.lei); return refuse("hoala-slot-unsigned", `the hoʻāla lei's slot carries no signature of this house's keeper; it and its device key stand destroyed; ${HOALA_HAND_CURE}`); }
+  // UNDER A MOVED CLOSURE a failed check keeps what rests: the prior closure's keeper still opens this slot, and the host steps back to it.
+  const moved = at.closure !== b.closure;
+  const back = `this keeper runs closure ${at.closure}, and the lei's slot names ${b.closure}: the slot and its device key stay, so the keeper of the prior closure wakes by it (the host steps back to that image)`;
+  if (verifiedPulamaRecord(at.text, by.key) === null) {
+    if (moved) return refuse("hoala-slot-unsigned", `the hoʻāla lei's slot reads unsigned under this keeper's code; ${back}`);
+    await destroy(records, device, "refused", b.lei);
+    return refuse("hoala-slot-unsigned", `the hoʻāla lei's slot carries no signature of this house's keeper; it and its device key stand destroyed; ${HOALA_HAND_CURE}`);
+  }
   const strung = verifiedPulamaRecord(await records.read(hoalaLeiTitle(b.lei)), by.key);
-  if (strung === null || strung.body.act !== "hoala-strung" || pulamaRecordCid(strung) !== b.lei || strung.body.returns !== b.returns || strung.body.closure !== b.closure) {
+  if (strung === null || strung.body.act !== "hoala-strung" || pulamaRecordCid(strung) !== b.lei || strung.body.returns !== b.returns) {
+    if (moved) return refuse("hoala-lei-unverified", `the hoʻāla lei reads unverified under this keeper's code; ${back}`);
     await destroy(records, device, "refused", b.lei);
     return refuse("hoala-lei-unverified", `no hoʻāla lei this house's keeper signed stands behind the slot; it and its device key stand destroyed; ${HOALA_HAND_CURE}`);
   }
   const n = b.n + 1;
-  const receipt = await signPulamaRecord<"hoala-woke">({ act: "hoala-woke", lei: b.lei, n, of: b.returns, slot: pulamaRecordCid(at.slot), closure: b.closure, image: at.image, faces: [...at.lit], nonce: randomUUID() }, by);
+  const receipt = await signPulamaRecord<"hoala-woke">({ act: "hoala-woke", lei: b.lei, n, of: b.returns, slot: pulamaRecordCid(at.slot), closure: at.closure, ...(moved ? { prior: b.closure } : {}), image: at.image, faces: [...at.lit], nonce: randomUUID(), ...(at.licensed !== undefined ? { licensed: at.licensed } : {}) }, by);
   // THE RETURN CLAIMS BEFORE ANYTHING MOVES OR SERVES: a receipt already standing at this count means the slot came back from an older copy.
   if (!(await records.writeNew(hoalaReceiptTitle(b.lei, n), JSON.stringify(receipt)))) {
     await destroy(records, device, "refused", b.lei);
     return refuse("hoala-return-respent", `a receipt already rests for return ${n} of the hoʻāla lei ${b.lei}, so this slot came back from an older copy; it and its device key stand destroyed; ${HOALA_HAND_CURE}`);
   }
-  if (n < b.returns) await sealSlot(records, by, device, { lei: b.lei, returns: b.returns, n, closure: b.closure, payload: at.payload });
+  // THE NEXT RETURN'S SLOT NAMES THE CLOSURE THAT STANDS NOW, and keeps the one before it as the rollback target.
+  const prior = moved ? b.closure : b.prior ?? null;
+  if (n < b.returns) await sealSlot(records, by, device, { lei: b.lei, returns: b.returns, n, closure: at.closure, prior, payload: at.payload });
   else await destroy(records, device, "returns-spent", b.lei);
-  return { lei: b.lei, n, of: b.returns, left: b.returns - n, receipt: pulamaRecordCid(receipt) };
+  return { lei: b.lei, n, of: b.returns, left: b.returns - n, receipt: pulamaRecordCid(receipt), closure: at.closure, prior: moved ? b.closure : null };
 }
 
 /**

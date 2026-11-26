@@ -61,10 +61,12 @@
 # the kūkulu's own) walks one order, and each layer reads before the next moves:
 #   1  THE KEEPER stands (the pūlama's container), before any vessel composes, and a handoff a crash cut short settles.
 #   2  THE KEEPER LIGHTS BY THE CHEAPEST LIVING ANSWER (`keeper_light`): it stands lit already; else a lit successor takes the
-#      fire (`keeper_settle`); else a hoʻāla lei with a return left relights it with no route (`pulama-main.js hoala`); else
+#      fire (`keeper_settle`); else a hoʻāla lei with a return left relights it with no route (`pulama-main.js hoala`), across
+#      a move of the keeper's own code too, stepping back to the prior closure's kept image where the new code fails its waking; else
 #      it asks the hand's route ONCE on this terminal (`light --admit`: one proof lights and admits); with no terminal it stays
 #      dark and the line names the one act.
-#   3  THE IMAGE the tag names stands admitted at the keeper, or a kūkulu offer carries it (`admitted_image_or_name`); else the
+#   3  THE IMAGE the tag names stands admitted at the keeper, or a kūkulu offer carries it (`admitted_image_or_name`); else a
+#      standing hoʻāla lei admits it, one return spent and no hand asked (the lei carries the operator's authorization); else the
 #      tag steps back to an admitted image kept here (the unadmitted build keeps its revision tag for `lares rite kukulu`),
 #      or the stand stops BEFORE a vessel starts and names the admit.
 #   4  THE VESSEL stands, and UNLOCKS BY THE KEEPER'S DIAL as part of standing: no route rides a vessel under a pūlama, so no
@@ -1414,9 +1416,9 @@ resolve_image() { # $1 = a revision, or nothing for the prior image
 # THE PŪLAMA'S OWN STATUS (`pulama-main.js status`, read detached): whether it stands lit, and whether the admitted set it
 # reads under its key names the image and no tombstone ends it. An unlit pūlama lists no admission; a status that never
 # answers leaves both unread.
-ps_lit=""; ps_admitted=""; ps_vest=""; ps_struck=""; ps_successor=""; ps_stale=""; ps_lei=""
+ps_lit=""; ps_admitted=""; ps_vest=""; ps_struck=""; ps_successor=""; ps_stale=""; ps_lei=""; ps_hoala=""
 pulama_status_read() { # $1 = the image digest
-  ps_lit=""; ps_admitted=""; ps_vest=""; ps_struck=""; ps_successor=""; ps_stale=""; ps_closure=""; ps_lei=""
+  ps_lit=""; ps_admitted=""; ps_vest=""; ps_struck=""; ps_successor=""; ps_stale=""; ps_closure=""; ps_lei=""; ps_hoala=""
   ps_flat=$(compose --profile pulama exec -T "$(pulama_svc)" node "$PULAMA_MAIN" status </dev/null 2>/dev/null | tr -d ' \t\r\n') || return 0
   # THE KEEPER TALLY: the live successor's successor closure where it can vest, whether the struck fire is due, and any live successor.
   ps_vest=$(printf '%s' "$ps_flat" | sed -n 's/.*"vestReady":"\(sha256:[0-9a-f]\{64\}\)".*/\1/p')
@@ -1428,6 +1430,9 @@ pulama_status_read() { # $1 = the image digest
   case "$ps_flat" in *'"struckDue":true'*) ps_struck=yes ;; esac
   # THE KEEPER LEI: a return could spend (the keeper's own bounds; the host adds its testimony at the spend).
   case "$ps_flat" in *'"leiReady":true'*) ps_lei=yes ;; esac
+  # THE HOʻĀLA LEI: the returns it holds left (a count the keeper names lit or unlit); empty where none stands or none remains.
+  ps_hoala=$(printf '%s' "$ps_flat" | sed -n 's/.*"hoala":{[^}]*"left":\([0-9][0-9]*\).*/\1/p')
+  [ "$ps_hoala" != 0 ] || ps_hoala=""
   case "$ps_flat" in *'"lit":true'*) ps_lit=yes ;; *'"lit":false'*) ps_lit=no; return 0 ;; *) return 0 ;; esac
   ps_list=$(printf '%s' "$ps_flat" | sed -n 's/.*"admitted":\[\([^]]*\)\].*/\1/p')
   ps_ended=$(printf '%s' "$ps_flat" | sed -n 's/.*"ended":\[\([^]]*\)\].*/\1/p')
@@ -1475,8 +1480,10 @@ print_reading() {
     rd_when=$(date -u -r "$HOUSE/config/kukulu-offer.json" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null) || rd_when=""
     if printf '%s' "$rd_when" | grep -Eq '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$'; then rd_at=",\"offerAt\":\"$rd_when\""; fi
   else rd_offer=false; fi
-  printf '{"op":"rebuild-image","revision":"%s","image":"%s","how":"%s","vessel":"%s","current":%s,"pulama":"%s","lit":%s,"admitted":%s,"offer":%s%s%s}\n' \
-    "$R_REV" "$rd_image" "$R_HOW" "$rd_vessel" "$rd_current" "$rd_pulama" "$rd_lit" "$rd_admitted" "$rd_offer" "$rd_keeper" "$rd_at"
+  # A HOʻĀLA LEI WITH A RETURN LEFT rides the reading (`"hoala":true`): the rite then asks no hand for a light or an admit it covers.
+  rd_hoala=""; [ -z "${ps_hoala:-}" ] || rd_hoala=',"hoala":true'
+  printf '{"op":"rebuild-image","revision":"%s","image":"%s","how":"%s","vessel":"%s","current":%s,"pulama":"%s","lit":%s,"admitted":%s,"offer":%s%s%s%s}\n' \
+    "$R_REV" "$rd_image" "$R_HOW" "$rd_vessel" "$rd_current" "$rd_pulama" "$rd_lit" "$rd_admitted" "$rd_offer" "$rd_keeper" "$rd_at" "$rd_hoala"
 }
 # THE KUKULU LEI on a branch, read in the standing vessel as the rite's leiStands reads it, printed as one word: `yes` (a return
 # left), `returns-spent`, or the cause it stands not (`absent`, ...); nothing where the vessel answers no reading.
@@ -1737,7 +1744,7 @@ keeper_commit_lei() { # $1 = the revision, $2 = the branch whose kukulu lei lice
   # `lares rite hoala` then stands what the keeper serves, and the next `lares rite kukulu` retakes the build with no second build.
   # With no admitted image kept, the tag stays and the line says so; either way this answers 0, so the refusal below still speaks.
   gate_refused_tag_back() {
-    admitted_image_or_name || printf 'lares-container: name-successor --lei: the gate refused, and the tag stays on the ungated build: %s\n' "$IA_WHY" >&2
+    admitted_image_or_name step-only || printf 'lares-container: name-successor --lei: the gate refused, and the tag stays on the ungated build: %s\n' "$IA_WHY" >&2
     return 0
   }
   kl_bench_read() { # one word: green <sha256:hex>, red, differs, or unread
@@ -1898,11 +1905,54 @@ keeper_wake_by_lei() {
     ''|hoala-lei-absent|hoala-unavailable) KL_WHY="no hoʻāla lei stands" ;;
     hoala-returns-spent) KL_WHY="the hoʻāla lei's returns lie spent" ;;
     hoala-lei-unstrung) KL_WHY="the hoʻāla lei stands unstrung" ;;
-    hoala-closure-moved) KL_WHY="the keeper's code moved since the hoʻāla lei was strung" ;;
     hoala-keeper-lived) KL_WHY="a hand locked this keeper, and a hoʻāla lei wakes a restarted keeper alone" ;;
     closure-unreported) KL_WHY="the keeper's image carries no closure label, so the hoʻāla lei reads no keeper to license" ;;
     *) KL_WHY="the hoʻāla lei refused ($kb_reading) and what rested stands destroyed" ;;
   esac
+  return 1
+}
+# THE LEI WAKES ACROSS A CODE MOVE, AND THE PRIOR CLOSURE STAYS THE ROLLBACK (operator ruling, 2026-11-26: "the leis + rollbacks
+# handles that case too"). A keeper whose code closure moved since the hoʻāla lei was strung wakes under the lei as a level one
+# does, and the line names the rollback target. Where the NEW keeper code fails its own waking (the keeper locks and keeps what
+# rests), this steps the keeper back: the kept image whose closure label reads the lei's own closure (`<repo>:rev-…`) stands as
+# the keeper again and wakes by the same lei; the vessel's tag steps back to its admitted image beside it. No route gets asked.
+# It answers 0 lit (KL_PRIOR names a closure kept as the rollback; KL_ROLLED the image the keeper stepped back to), else 1 with KL_WHY.
+KL_PRIOR=""; KL_ROLLED=""
+keeper_wake_or_rollback() {
+  KL_PRIOR=""; KL_ROLLED=""
+  kw_svc=$(pulama_svc)
+  kw_lei=$(svc_status "$kw_svc" | sed -n 's/.*"hoala":{[^}]*"closure":"\(sha256:[0-9a-f]\{64\}\)".*/\1/p')
+  kw_id=$(svc_running "$kw_svc") || kw_id=""
+  kw_now=$(closure_label container "$kw_id")
+  kw_moved=""; if [ -n "$kw_lei" ] && [ -n "$kw_now" ] && [ "$kw_lei" != "$kw_now" ]; then kw_moved=yes; fi
+  if keeper_wake_by_lei; then
+    if [ -n "$kw_moved" ] && [ "$KL_BY" = lei ]; then
+      KL_PRIOR=$kw_lei
+      printf 'lares-container: the keeper woke under its NEW code closure %s by the lei; the prior closure %s stays the rollback (its image keeps its revision tag: `lares rite kukulu --rollback`)\n' "$(printf '%s' "$kw_now" | cut -c1-19)" "$(printf '%s' "$kw_lei" | cut -c1-19)" >&2
+    fi
+    return 0
+  fi
+  [ -n "$kw_moved" ] || return 1
+  # ONLY A CHECK THE NEW CODE FAILED steps back: a lei that stands not (absent, spent, unstrung), or a keeper a hand locked, names itself.
+  case "$kb_reading" in ''|hoala-lei-absent|hoala-unavailable|hoala-returns-spent|hoala-lei-unstrung|hoala-keeper-lived|closure-unreported) return 1 ;; esac
+  kw_failed=$kb_reading
+  kw_tags=$(docker image ls --format '{{.Tag}}' "$IMAGE_REPO" 2>/dev/null | tr -d '\r') || kw_tags=""
+  for kw_t in $kw_tags; do
+    case "$kw_t" in rev-*) ;; *) continue ;; esac
+    [ "$(closure_label image "$IMAGE_REPO:$kw_t")" = "$kw_lei" ] || continue
+    printf 'lares-container: the new keeper code failed its waking (%s) and locked, keeping what rests; the keeper steps back to the prior closure %s on %s\n' "$kw_failed" "$(printf '%s' "$kw_lei" | cut -c1-19)" "$IMAGE_REPO:$kw_t" >&2
+    # The prior image stands as the keeper for this recreate alone: the environment names it over the env file's image.
+    ( LARES_IMAGE="$IMAGE_REPO:$kw_t"; export LARES_IMAGE; compose --profile pulama up -d --force-recreate "$kw_svc" ) >&2 || { KL_WHY="the new keeper code failed its waking ($kw_failed), and the prior keeper image $IMAGE_REPO:$kw_t did not stand; stand it by hand: LARES_IMAGE=$IMAGE_REPO:$kw_t lares pulama restand, then \`lares rite hoala\`"; return 1; }
+    if keeper_wake_by_lei; then
+      KL_ROLLED="$IMAGE_REPO:$kw_t"; KL_PRIOR=$kw_lei
+      # THE VESSEL'S TAG STEPS BACK BESIDE ITS KEEPER where the image it names stands unadmitted (never under the lei: this build's code just failed).
+      admitted_image_or_name step-only || true
+      return 0
+    fi
+    KL_WHY="the new keeper code failed its waking ($kw_failed), and the prior keeper on $IMAGE_REPO:$kw_t woke nothing either ($KL_WHY)"
+    return 1
+  done
+  KL_WHY="the new keeper code failed its waking ($kw_failed), and no kept image carries the prior keeper closure $(printf '%s' "$kw_lei" | cut -c1-19) to step back to"
   return 1
 }
 # THE KEEPER LIGHTS BY THE CHEAPEST LIVING ANSWER (boot order, step 2). It stands lit: nothing. A lit successor took the fire
@@ -1917,7 +1967,7 @@ keeper_light() {
     *'"lit":false'*) ;;
     *) KL_WHY="the keeper answers no status (read it with \`lares pulama status\`)"; return 1 ;;
   esac
-  if keeper_wake_by_lei; then return 0; fi
+  if keeper_wake_or_rollback; then return 0; fi
   if [ -z "$HAVE_TTY" ] || [ "$HOST_CHAIN" != hand ]; then
     KL_WHY="$KL_WHY, and the keeper's light reads a hand's route on a terminal: run \`lares rite hoala\` on one (then, so the next restart asks nothing: $HOALA_LEI_STRING)"
     return 1
@@ -1933,9 +1983,36 @@ keeper_light() {
 # an admitted image kept here (`<repo>:rev-…`, newest first), and the build it held keeps its own revision tag, so
 # `lares rite kukulu` raises it through its gate with no second build. With no admitted image kept, it answers 1 and IA_WHY
 # names the image and the two acts that admit one. A dark keeper lists no admission: the light comes first, and this reads nothing.
-IA_STEPPED=""; IA_WHY=""
-admitted_image_or_name() {
-  IA_STEPPED=""; IA_WHY=""
+#
+# THE LEI'S CAPS LICENSE THE ADMIT (operator ruling, 2026-11-26: "standing lei caps grant the operator provided authz until the lei
+# expires by spends"). Before any step back and before any hand: where a hoʻāla lei stands with a return left for this keeper's
+# closure, the keeper admits the image the tag names under the lei, spends ONE return and rests its receipt, with no route and no
+# terminal (`keeper_admit_by_lei`). The hand's admit stays the path only where no standing lei covers it: none strung, its
+# returns spent, or unstrung (a moved keeper code stops nothing: the lei spends across it). `step-only` ($1) holds the lei out: a build whose gate just
+# REFUSED never admits under a lei, it only steps back.
+IA_STEPPED=""; IA_WHY=""; IA_BY=""; IA_LEFT=""; IA_LEI_WHY=""
+keeper_admit_by_lei() {
+  ka_out=$(compose --profile pulama exec -T "$(pulama_svc)" node "$PULAMA_MAIN" hoala-admit </dev/null 2>/dev/null) || true
+  ka_flat=$(printf '%s' "$ka_out" | tr -d ' \t\r\n')
+  ka_reading=$(printf '%s' "$ka_flat" | sed -n 's/.*"reading":"\([a-z-]*\)".*/\1/p')
+  case "$ka_reading" in
+    admitted)
+      IA_BY=lei
+      IA_LEFT=$(printf '%s' "$ka_flat" | sed -n 's/.*"left":\([0-9][0-9]*\).*/\1/p'); IA_LEFT=${IA_LEFT:-0}
+      printf 'lares-container: the pūlama admitted %s under the hoʻāla lei: one return spent, %s left; it asked no route and left one receipt (`lares pulama tessera`)\n' "$1" "$IA_LEFT" >&2
+      [ "$IA_LEFT" != 0 ] || printf 'lares-container: the hoʻāla lei'"'"'s returns lie spent; string another on a terminal: %s\n' "$HOALA_LEI_STRING" >&2
+      return 0 ;;
+    already-admitted) return 0 ;;
+    ''|hoala-lei-absent|hoala-unavailable) IA_LEI_WHY="no hoʻāla lei stands" ;;
+    hoala-returns-spent) IA_LEI_WHY="the hoʻāla lei's returns lie spent" ;;
+    hoala-lei-unstrung) IA_LEI_WHY="the hoʻāla lei stands unstrung" ;;
+    closure-unreported) IA_LEI_WHY="the keeper's image carries no closure label, so the hoʻāla lei reads no keeper to license" ;;
+    *) IA_LEI_WHY="the hoʻāla lei refused ($ka_reading)" ;;
+  esac
+  return 1
+}
+admitted_image_or_name() { # $1 = `step-only` to hold the lei's admit out, or nothing
+  IA_STEPPED=""; IA_WHY=""; IA_BY=""; IA_LEFT=""; IA_LEI_WHY=""
   [ -n "$PULAMA_MODE" ] || return 0
   ia_digest=$(image_id) || ia_digest=""
   [ -n "$ia_digest" ] || return 0
@@ -1943,6 +2020,9 @@ admitted_image_or_name() {
   [ "$ps_lit" = yes ] || return 0
   [ "$ps_admitted" != yes ] || return 0
   if offer_carries "$ia_digest"; then return 0; fi
+  if [ "${1:-}" != step-only ] && keeper_admit_by_lei "$ia_digest"; then return 0; fi
+  # THE STATUS READ AGAIN: the lei's spend ran no admit, and the admitted set reads as it stood for the step back below.
+  pulama_status_read "$ia_digest"
   ia_tags=$(docker image ls --format '{{.Tag}}' "$IMAGE_REPO" 2>/dev/null | tr -d '\r') || ia_tags=""
   for ia_t in $ia_tags; do
     case "$ia_t" in rev-*) ;; *) continue ;; esac
@@ -1957,6 +2037,7 @@ admitted_image_or_name() {
     return 0
   done
   IA_WHY="$IMAGE_REF holds $ia_digest, an image the pūlama never admitted and no kūkulu offer carries, and no admitted image stands kept here; admit it by hand on a terminal (\`lares pulama admit\`), or raise it through its gate (\`lares rite kukulu\`)"
+  [ -z "$IA_LEI_WHY" ] || IA_WHY="$IA_WHY; no standing lei covers the admit ($IA_LEI_WHY: $HOALA_LEI_STRING)"
   return 1
 }
 
@@ -1989,12 +2070,15 @@ hoala_verdict() { # $1 = what stands now where the rite stopped short, or nothin
 hoala_stop() { hoala_verdict "$1"; exit 1; }
 hoala_seat_gate() { # $1 = the vessel act this run would take
   [ "$HOST_CHAIN" != hand ] || return 0
+  # THE LEI CARRIES THE OPERATOR'S AUTHORIZATION by counted spends: a run where it spent a return (the light, or the admit) licenses
+  # the vessel acts of that same waking.
   [ "$KL_BY" != lei ] || return 0
-  hoala_stop "the house waits on a hand: an AI seat's hoʻāla lights by the hoʻāla lei and dials, and it may $1 only in a run where that lei spent a return; a hand runs \`lares rite hoala\` on a terminal"
+  [ "$IA_BY" != lei ] || return 0
+  hoala_stop "the house waits on a hand: an AI seat's hoʻāla lights and admits by the hoʻāla lei and dials, and it may $1 only in a run where that lei spent a return; a hand runs \`lares rite hoala\` on a terminal"
 }
 hoala_verb() {
   [ "$#" -eq 0 ] || die "rite hoala takes no argument: it reads where the house stands and walks only what that asks"
-  rs_found=""; rs_did=""; rs_stood=""; KL_BY=""
+  rs_found=""; rs_did=""; rs_stood=""; KL_BY=""; IA_BY=""
   ensure_house
   rs_vessel=$(compose ps -q --status running lares) || die "rite hoala stops before anything moves: docker compose ps failed, so whether a vessel stands reads unknown"
   # A HOUSE THAT STANDS AWAKE: one status line, and nothing moves.
@@ -2011,7 +2095,10 @@ hoala_verb() {
         rs_note_found "the keeper dark"
         if keeper_light; then
           case "$KL_BY" in
-            lei) rs_note_did "lit the keeper by the hoʻāla lei ($KL_LEFT return(s) left)" ;;
+            lei)
+              if [ -n "$KL_ROLLED" ]; then rs_note_found "the new keeper code failing its waking"; rs_note_did "stepped the keeper back to the prior closure on $KL_ROLLED and lit it there by the hoʻāla lei ($KL_LEFT return(s) left)"
+              elif [ -n "$KL_PRIOR" ]; then rs_note_found "the keeper's code moved"; rs_note_did "lit the keeper under its new code by the hoʻāla lei ($KL_LEFT return(s) left; rollback: the prior closure $(printf '%s' "$KL_PRIOR" | cut -c1-19) stays tagged, \`lares rite kukulu --rollback\`)"
+              else rs_note_did "lit the keeper by the hoʻāla lei ($KL_LEFT return(s) left)"; fi ;;
             hand) rs_note_did "lit the keeper by your route" ;;
             *) rs_note_did "the keeper stands lit" ;;
           esac
@@ -2020,6 +2107,7 @@ hoala_verb() {
     # 3  THE IMAGE: only where the vessel does not already stand unlocked on it.
     if [ -z "$rs_held" ]; then
       if admitted_image_or_name; then
+        if [ "$IA_BY" = lei ]; then rs_note_found "the tag on an image the keeper never admitted"; rs_note_did "admitted it under the hoʻāla lei ($IA_LEFT return(s) left)"; fi
         if [ -n "$IA_STEPPED" ]; then rs_note_found "the tag on an image the keeper never admitted"; rs_note_did "stepped the tag back to the admitted image $IMAGE_REPO:$IA_STEPPED"; stand_pulama; fi
       else
         rs_note_found "the tag on an image the keeper never admitted"
@@ -2088,7 +2176,7 @@ hoala_verb() {
 stand_house() {
   keeper_settle
   s_digest=$(image_id) || s_digest=""
-  s_restand=""; s_light=""; s_admit=""; s_stays=""; s_why=""; s_vest=""
+  s_restand=""; s_light=""; s_admit=""; s_stays=""; s_why=""; s_vest=""; s_wake=""
   if vessel_on_image; then s_stays=yes; fi
   if [ -n "$PULAMA_MODE" ]; then
     pulama_reading
@@ -2102,13 +2190,16 @@ stand_house() {
          if [ -n "$R_KEEPER_TO" ] && [ "$ps_lit" = yes ] && [ -z "$ps_struck" ] && [ -n "$ps_vest" ] && [ "$ps_vest" = "$(closure_label image "$IMAGE_REF")" ]; then s_vest=yes
          else
            s_restand=yes; s_light=yes; s_why="the pūlama's code closure moved"
+           # THE HOʻĀLA LEI CARRIES THE LIGHT ACROSS THE MOVE: with a return left, the re-stood keeper wakes under its new code by the
+           # lei (no route), and steps back to the prior closure where that code fails its waking (`keeper_wake_or_rollback`).
+           if [ -n "$ps_hoala" ] && [ -z "$ps_struck" ]; then s_light=""; s_wake=yes; fi
            [ -z "$ps_struck" ] || s_why="the pūlama's code closure moved and the keeper's handed run owes the struck fire"
          fi ;;
       *) pulama_status_read "$s_digest"
          case "$ps_lit" in
            yes) ;;
            # THE CHEAPEST LIVING ANSWER FIRST: a hoʻāla lei with a return left relights the keeper here, with no route.
-           no) if keeper_wake_by_lei; then pulama_status_read "$s_digest"; else s_light=yes; s_why="the pūlama stands unlit ($KL_WHY)"; fi ;;
+           no) if keeper_wake_by_lei; then pulama_status_read "$s_digest"; else s_light=yes; s_why="the pūlama stands unlit"; fi ;;
            *) die "rebuild stops before anything moves: the pūlama answers no status, so whether it stands lit reads unknown (read it with \`tools/lares-container.sh pulama status\`)" ;;
          esac ;;
     esac
@@ -2119,7 +2210,7 @@ stand_house() {
     if [ -z "$s_light" ] && [ -n "$s_stays" ] && [ "$ps_admitted" != yes ] && ! offer_carries "$s_digest" && ! key_held; then s_admit=yes; fi
     if [ -z "$HAVE_TTY" ]; then
       [ -z "$s_light" ] || die "rebuild stops before anything moves: $s_why, and its light reads your route on a terminal; $HAND_LINE"
-      [ -z "$s_admit" ] || die "rebuild stops before anything moves: the pūlama has not admitted this image and no kūkulu offer carries it, and its admit reads your route on a terminal; $HAND_LINE (or string a kukulu lei first: lares lei kui --rite kukulu --branch <name> --returns <n> --all)"
+      [ -z "$s_admit" ] || [ -n "$ps_hoala" ] || die "rebuild stops before anything moves: the pūlama has not admitted this image and no kūkulu offer carries it, and its admit reads your route on a terminal; $HAND_LINE (or string a kukulu lei first: lares lei kui --rite kukulu --branch <name> --returns <n> --all)"
     fi
   fi
   # THE VEST RUNS BEFORE THE DOWN: a red pair, or a crash, leaves the vessel standing on the lit fire, and nothing moved.
@@ -2133,6 +2224,18 @@ stand_house() {
   fi
   [ -z "$s_vest" ] || keeper_take_fire
   [ -z "$s_restand" ] || pulama_restand
+  if [ -n "$s_wake" ]; then
+    printf '%s\n' 'lares-container: rebuild: the pūlama'"'"'s code closure moved and a hoʻāla lei holds a return; the keeper wakes under its new code by the lei, and asks no route' >&2
+    if keeper_wake_or_rollback; then
+      [ -z "$KL_ROLLED" ] || printf 'lares-container: rebuild: the keeper stands on its prior closure (%s); the new keeper code waits for its cure, and `lares rite kukulu` raises it again\n' "$KL_ROLLED" >&2
+      pulama_status_read "$s_digest"
+      if [ -z "$s_stays" ] && [ "$ps_admitted" != yes ] && ! offer_carries "$s_digest"; then s_admit=yes; fi
+    else
+      # NO LEI WOKE IT AND NO ROLLBACK STOOD: the hand's light remains, on a terminal.
+      s_light=yes; s_why="the pūlama's code closure moved, and $KL_WHY"
+      [ -n "$HAVE_TTY" ] || die "the keeper stands dark: $s_why; its light reads your route on a terminal: $HAND_LINE"
+    fi
+  fi
   if [ -n "$s_light" ]; then
     # THE STRUCK FIRE IS ONE PROOF: where a new vessel rises on an image no offer carries, the light admits it under the same route.
     s_light_admit=""
@@ -2160,6 +2263,12 @@ stand_house() {
   if [ -z "$s_stays" ]; then REBUILDING=yes; up_verb; fi
   if [ -n "$PULAMA_MODE" ]; then
     if [ -n "$s_admit" ]; then
+      # THE LEI'S CAPS LICENSE THE ADMIT: a hoʻāla lei with a return left admits the image with no route; the hand's admit stays the
+      # path where none covers it.
+      if keeper_admit_by_lei "$s_digest"; then s_admit=""; fi
+    fi
+    if [ -n "$s_admit" ]; then
+      [ -n "$HAVE_TTY" ] || die "the pūlama has not admitted this image, no kūkulu offer carries it and no standing lei covers the admit ($IA_LEI_WHY); its admit reads your route on a terminal: $HAND_LINE"
       printf '%s\n' 'lares-container: rebuild: the pūlama admits the image; it reads your route on this terminal' >&2
       compose --profile pulama exec "$(pulama_svc)" node "$PULAMA_MAIN" admit || die "the pūlama admitted nothing (above); the vessel stands at the floor: \`tools/lares-container.sh pulama admit\`, then \`tools/lares-container.sh vault unlock --all\`"
     fi

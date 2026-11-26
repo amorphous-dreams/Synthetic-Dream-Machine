@@ -286,7 +286,7 @@ export function unlockLine(a: CustodyDoorAnswer): string {
 function pulamaWaitsLine(waits: string): string {
   const next = waits === "pulama-locked" ? "the pūlama rests unlit, and no unlock try was spent on it; `lares rite hoala` lights it (a hoʻāla lei where one holds a return, else your route once on a terminal: `lares-container.sh pulama light`) and dials again"
     : waits === "pulama-image-unadmitted" ? "this vessel's image stands unadmitted and it carries no offer; `lares rite hoala` steps the tag back to an admitted image kept here and stands that; or admit this image by hand at the pūlama (`lares-container.sh pulama admit`), or raise it through its gate (`lares rite kukulu`)"
-    : waits === "pulama-unreachable" ? "no pūlama answers its socket, and no unlock try was spent on the silence; `lares rite hoala` stands the keeper first, lights it (a hoʻāla lei, else your route once on a terminal) and dials again"
+    : waits === "pulama-unreachable" ? "no pūlama answers its socket, and no unlock try was spent on the silence; `lares rite hoala` stands the keeper first (by hand: `lares-container.sh pulama up`), lights it (a hoʻāla lei, else your route once on a terminal) and dials again"
     : waits === "composition-refused" ? "the pūlama served a session and the vessel refused to compose over it, so the session left; the vessel's log names the fault (`[lararium] the sovereign composition refused: …`), and a restart alone changes nothing"
     : waits.startsWith("kukulu-") || waits.startsWith("swarm-lei-") || waits.startsWith("rite-") ? "a rebuilt vessel enters by the rite: string a kukulu lei and run `lares rite kukulu`, which carries the lei and its vouch to the pūlama"
     : "read the pūlama's own log for that reading";

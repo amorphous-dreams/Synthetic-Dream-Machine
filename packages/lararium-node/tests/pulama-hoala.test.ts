@@ -195,20 +195,95 @@ describe("RED the stringing belongs to the hand's route, and each refusal lands 
   });
 });
 
-describe("RED the lei wakes the SAME keeper on THIS device in ONE life, and nothing else", () => {
-  test("a keeper whose closure moved, or reported none, refuses and stays locked; the lei still stands for the keeper it licensed", async () => {
-    const h = await house("closure");
+describe("RED a moved keeper code spends a return too, and the prior closure stays the rollback", () => {
+  test("closure moved + a lei with returns -> woke under the NEW closure, one return spent, the receipt and the next slot naming the prior closure; the next restart on the new closure wakes level", async () => {
+    const h = await house("closure-moved");
+    const strung = await h.string(3);
+    const moved = await h.restart(D2);
+    const woke = await moved.door({ op: "hoala" });
+    expect(woke).toMatchObject({ reading: "woke", n: 1, of: 3, left: 2, moved: true, prior: D, lit: true });
+    const by = await pulamaSignerOf(moved.holder);
+    const receipt = verifiedPulamaRecord(await h.records.read(hoalaReceiptTitle(String(strung["lei"]), 1)), by.key);
+    expect(receipt?.body).toMatchObject({ act: "hoala-woke", n: 1, closure: D2, prior: D });
+    // THE NEXT RETURN'S SLOT names the closure that stands now and keeps the one before it as the rollback target.
+    expect(await moved.door({ op: "status" })).toMatchObject({ hoala: { left: 2, closure: D2, prior: D, verified: true } });
+    await moved.holder.lock();
+    const level = await h.restart(D2);
+    const again = await level.door({ op: "hoala" });
+    expect(again).toMatchObject({ reading: "woke", n: 2, left: 1 });
+    expect(again["moved"]).toBeUndefined();
+    expect(await level.door({ op: "status" })).toMatchObject({ hoala: { left: 1, closure: D2, prior: D } });
+    await level.holder.lock();
+  });
+
+  test("a check that fails under the moved code locks the keeper and KEEPS what rests, so the prior closure's keeper still wakes by the same lei (the rollback); a keeper that reports no closure still refuses", async () => {
+    const h = await house("closure-rollback");
     await h.string(2);
+    const sound = (await h.records.read(hoalaSlotTitle()))!;
+    // THE NEW CODE READS THE SLOT WRONG: stood in for by a slot whose signed body reads otherwise under it.
+    const row = JSON.parse(sound) as { body: Record<string, unknown>; signer: string; sig: string };
+    await h.records.write(hoalaSlotTitle(), JSON.stringify({ ...row, body: { ...row.body, returns: 99 } }));
     const moved = await h.restart(D2);
     const refused = await moved.door({ op: "hoala" });
-    expect(refused).toMatchObject({ reading: "hoala-closure-moved", lit: false });
-    expect(String(refused["detail"])).toMatch(CURE);
+    expect(refused).toMatchObject({ reading: "hoala-slot-unsigned", lit: false });
+    expect(String(refused["detail"])).toMatch(/the slot and its device key stay, so the keeper of the prior closure wakes by it/);
+    expect(moved.holder.isUnlocked()).toBe(false);
+    expect(h.keys()).toHaveLength(1);
+    // THE ROLLBACK: the prior closure's keeper stands again over the same state and wakes by the lei, the return unspent until now.
+    await h.records.write(hoalaSlotTitle(), sound);
+    const prior = await h.restart(D);
+    expect(await prior.door({ op: "hoala" })).toMatchObject({ reading: "woke", n: 1, left: 1 });
+    await prior.holder.lock();
     const unreported = await h.restart(null);
     expect(await unreported.door({ op: "hoala" })).toMatchObject({ reading: "closure-unreported", lit: false });
-    const same = await h.restart();
-    expect(await same.door({ op: "hoala" })).toMatchObject({ reading: "woke", n: 1 });
-    await same.holder.lock();
   });
+});
+
+describe("RED the lei's caps license the admit: a standing lei spends a return and the image rests admitted with no route", () => {
+  test("a lit keeper, an unadmitted image and a lei with returns -> admitted under the lei, one return spent, the receipt naming the admit; an image already admitted spends nothing", async () => {
+    const h = await house("lei-admits");
+    const strung = await h.string(2);
+    const by = await pulamaSignerOf(fx!.kept);
+    const admissions = pulamaAdmissions(h.records);
+    expect(await admissions.admitted(IMAGE, by)).toBeNull();
+    const admitted = await h.lit({ op: "hoala-admit" });
+    expect(admitted).toMatchObject({ op: "hoala-admit", reading: "admitted", admitted: IMAGE, lei: strung["lei"], n: 1, of: 2, left: 1, lent: [0] });
+    expect(admitted["tessera"]).toEqual(expect.stringMatching(/^[0-9a-f]{64}$/));
+    expect(await admissions.admitted(IMAGE, by)).toMatchObject({ faces: [{ fcid: h.face.fcid, ordinal: 0 }] });
+    const receipt = verifiedPulamaRecord(await h.records.read(hoalaReceiptTitle(String(strung["lei"]), 1)), by.key);
+    expect(receipt?.body).toMatchObject({ act: "hoala-woke", licensed: "admit", n: 1, of: 2, image: IMAGE });
+    expect(await h.lit({ op: "status" })).toMatchObject({ hoala: { left: 1 } });
+    // AN IMAGE ALREADY ADMITTED SPENDS NOTHING.
+    expect(await h.lit({ op: "hoala-admit" })).toMatchObject({ reading: "already-admitted" });
+    expect(await h.lit({ op: "status" })).toMatchObject({ hoala: { left: 1 } });
+    expect(handVerbExit("hoala-admit", admitted)).toBe(0);
+  });
+
+  test("no standing lei covers it -> nothing admits and the refusal names the hand's admit: none strung, returns spent, unstrung; an unlit keeper admits nothing", async () => {
+    const h = await house("lei-admit-refusals");
+    const by = await pulamaSignerOf(fx!.kept);
+    const admissions = pulamaAdmissions(h.records);
+    const none = await h.lit({ op: "hoala-admit" });
+    expect(none).toMatchObject({ reading: "hoala-lei-absent" });
+    expect(String(none["detail"])).toMatch(/lares pulama admit/);
+    await h.string(1);
+    await h.lit({ op: "hoala-unstring" });
+    expect(await h.lit({ op: "hoala-admit" })).toMatchObject({ reading: "hoala-lei-unstrung" });
+    await h.string(1);
+    const woken = await h.restart();
+    expect(await woken.door({ op: "hoala" })).toMatchObject({ reading: "woke", left: 0 });
+    await woken.door({ op: "image", digest: "sha256:" + "2b".repeat(32), closure: D });
+    const spent = await woken.door({ op: "hoala-admit" });
+    expect(spent).toMatchObject({ reading: "hoala-returns-spent" });
+    expect(String(spent["detail"])).toMatch(/lares pulama admit/);
+    expect(await admissions.admitted(IMAGE, by)).toBeNull();
+    await woken.holder.lock();
+    const unlit = await h.restart();
+    expect(await unlit.door({ op: "hoala-admit" })).toMatchObject({ reading: "pulama-locked" });
+  });
+});
+
+describe("RED the lei wakes a keeper on THIS device in ONE life, and nothing else", () => {
 
   test("a house copied without its device key (the slot alone) opens nothing: `hoala-device-key-absent`, locked, cure named", async () => {
     const h = await house("device-absent");
