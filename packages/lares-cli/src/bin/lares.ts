@@ -615,8 +615,8 @@ export function runCli(): void {
       try { await drainStdout(); }
       catch (err) { console.error(err); process.exitCode = 1; return; }
       process.exitCode = code;
-      // A forwarded call reports nothing here (the shim's exec ran the verb, and that process reports); a shim from before the
-      // report (its retired ask on the argv) reads none, so none gets written for it.
+      // A forwarded call reports nothing here (the shim's exec ran the verb, and that process reports); a call carrying the
+      // retired ask comes from a shim that reads no report, so none gets written for it.
       if (!retiredAsk) await reportStanding(code);
     },
     (err)  => { disarm?.(); console.error(crashReading(err)); process.exitCode = houseRootUnnamed(err) ? HOUSE_ABSENT_EXIT : 1; },

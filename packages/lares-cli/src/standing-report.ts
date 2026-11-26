@@ -33,7 +33,7 @@ import { udsAlive } from "./local-connector.js";
 /** The report file's name stem: `standing-report.<tag>` in the house's config bind. The shims read the same name. */
 export const STANDING_REPORT_STEM = "standing-report.";
 /**
- * THE RETIRED ASK. A shim from before the report appends this word to every followed exec. The entry takes it off and acts on
+ * THE RETIRED ASK. A shim that reads no report appends this word to every followed exec. The entry takes it off and acts on
  * nothing (the exit stays the verb's own, so that shim reads a bare 0 and takes its own observe reading): a skew in that
  * direction breaks no call either. No shim of this house sends it any more.
  */
@@ -52,7 +52,7 @@ export interface EntryAsks {
   /** The argv the verb reads: every word but the entry's own budget flag. */
   readonly argv:     string[];
   readonly budgetMs: number | null;
-  /** Set where the call carried the retired standing ask: a shim from before the report, which reads none, so none gets written. */
+  /** Set where the call carried the retired standing ask: its shim reads no report, so none gets written. */
   readonly retiredAsk?: true;
 }
 

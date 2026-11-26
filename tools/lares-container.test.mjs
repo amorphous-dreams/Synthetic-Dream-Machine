@@ -843,7 +843,7 @@ for (const [name, shim] of shims) {
   });
 
   // HOST/IMAGE SKEW BREAKS NO CALL: an image older than the report runs the same exec (no word it could refuse), writes nothing,
-  // and the shim takes the old observe path once; its absence IS the capability signal.
+  // and the shim takes one observe reading; its absence IS the capability signal.
   test(`${name}: RED an old image (no report) still serves the call: the exec carries no word it could refuse, one observe reading follows, and a restand there still lifts`, async () => {
     const steady = await run(shim, ["tiddler", "get", "lar:///x", "--recipe", "default"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OLD_IMAGE: "1" } });
     assert.equal(steady.status, 0, steady.stderr);
@@ -3038,8 +3038,9 @@ test("the hand verbs the shims send to the pūlama stay the names it dispatches 
     const lines = r.calls.split("\n");
     assert.equal(lines.filter((l) => /pulama-main\.js hoala$/.test(l)).length, 2, "the new code's waking, then the prior keeper's");
     assert.equal(lines.filter((l) => /--profile pulama up -d --force-recreate pulama$/.test(l)).length, 1, r.calls);
-    // The fake logs each call, then the pūlama mode's LAR_KUKULU_OFFER export, then the recreate's own LARES_IMAGE.
-    assert.match(r.calls, /--force-recreate pulama\n(?:LAR_KUKULU_OFFER=\S+\n)?LARES_IMAGE=lares-surface:rev-0123456789ab\n/, "the prior keeper image stands for that recreate");
+    // The fake logs each call, then the pūlama mode's LAR_KUKULU_OFFER export and every file the call names under the scratch
+    // dir (the env file, the compose file), then the recreate's own LARES_IMAGE, before any next call's line.
+    assert.match(r.calls, /--force-recreate pulama\n(?:(?!compose |LARES_IMAGE=)[^\n]*\n)*LARES_IMAGE=lares-surface:rev-0123456789ab\n/, "the prior keeper image stands for that recreate");
     assert.doesNotMatch(r.calls, /pulama-main\.js light/);
     assert.match(r.stderr, /the new keeper code failed its waking \(hoala-slot-unsigned\) and locked, keeping what rests; the keeper steps back to the prior closure sha256:aaaaaaaaaaaa on lares-surface:rev-0123456789ab/);
     assert.equal(verdict(r), "lares-container: hoala: found the keeper dark, the new keeper code failing its waking, the vessel locked; did stepped the keeper back to the prior closure on lares-surface:rev-0123456789ab and lit it there by the hoʻāla lei (2 return(s) left), opened the vessel by the keeper's dial; now the keeper lit, the vessel unlocked, faces open: h0, h2, wearing h2");

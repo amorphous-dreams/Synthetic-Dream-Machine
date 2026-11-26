@@ -158,7 +158,7 @@ export async function readCensus(lines: CensusLines = LIVE_LINES): Promise<Censu
   // LOCKED SINCE BOOT HOLDS NOTHING BY CONSTRUCTION. The custody door names whether its key ever stood open in this life
   // (`everOpened`), and it counts held saves with no key (documents and counts, never a value). A vessel that never opened, whose
   // sealed rest names no held save (or sits uncomposed, with no store to hold one), wrote nothing: no carrier queue ever ran and
-  // no shore took a record. The census reads clean and says why. A door that names no `everOpened` (an older vessel), a key that
+  // no shore took a record. The census reads clean and says why. A door that names no `everOpened`, a key that
   // opened and shut again, or a held row in any shape this door cannot read stays unread, and the stop asks.
   const sealedRestUnread = unanswered.some((u) => u.part === "the sealed rest" && !/^no composition sits/.test(u.why));
   if (lockedHearth && custody?.["everOpened"] === false && !sealedRestUnread) {

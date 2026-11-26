@@ -184,7 +184,9 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   const [verb, ...argv] = process.argv.slice(2);
   const usage = 'usage: floor-ledger.mjs enqueue --lane <pet> [--sha <sha>] [--branch <b>] [--body <n>] [--base <ref>] [--run <cmd>]… [--why <w>] | land <ticket> <merge-sha> | miss <ticket> <words…> | drop <ticket> <reason…> | ask <view> [<arg>] | otakiage';
   const say = (r) => console.log(r.via === 'door' ? `floor-ledger: landed in ${LEDGER}` : `floor-ledger: the doors stand dark (${r.why}); landed in the mirror ${r.mirror}; fold it later: node tools/floor-ledger.mjs otakiage`);
-  try {
+  // NO TOP-LEVEL AWAIT: floor-owes.mjs imports this module, so a main that awaited its dynamic import would wait on its own
+  // evaluation and never settle. The verbs run in a function the module calls once its own evaluation completes.
+  const cli = async () => {
     if (verb === 'enqueue') {
       const o = { runs: [] };
       for (let i = 0; i < argv.length; i += 2) {
@@ -219,5 +221,6 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
       if (r.why) { console.error(`floor-ledger: the doors stand dark (${r.why}); the mirror stays`); process.exit(1); }
       console.log(`floor-ledger: folded ${r.folded} line(s) into ${LEDGER}`);
     } else { console.error(usage); process.exit(2); }
-  } catch (error) { console.error(`floor-ledger: ${error.message}`); process.exit(2); }
+  };
+  cli().catch((error) => { console.error(`floor-ledger: ${error.message}`); process.exit(2); });
 }

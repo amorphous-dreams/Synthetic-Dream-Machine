@@ -270,7 +270,7 @@ export async function hoalaSpendLit(records: SwarmWikiPort, by: KukuluSigner, de
   // THE LEI COVERS THE FACES LIT AT ITS STRINGING that stand lit now, and no other.
   const strung = new Set(read.slot.body.faces.map((f) => f.fcid));
   const faces: AdmittedFace[] = at.keys.faces.filter((f) => strung.has(f.fcid)).map((f) => ({ fcid: f.fcid, ordinal: f.ordinal })).sort((x, y) => x.ordinal - y.ordinal);
-  if (faces.length === 0) return refuse("hoala-faces-dark", `no face the hoʻāla lei was strung for stands lit at this keeper, so its return licenses nothing here; ${HOALA_HAND_CURE}`);
+  if (faces.length === 0) return refuse("hoala-faces-dark", `no face the hand strung the hoʻāla lei for stands lit at this keeper, so its return licenses nothing here; ${HOALA_HAND_CURE}`);
   const payload: VestPayload = { node: at.keys.treeKey, faces: at.keys.faces.filter((f) => strung.has(f.fcid)).map((f) => ({ fcid: f.fcid, ordinal: f.ordinal, fck: f.fck, spent: 0 })), spent: 0, worn: at.worn };
   const landed = await hoalaLand(records, by, device, { slot: read.slot, text: read.text, payload, image: at.image, lit: faces, closure: at.closure!, licensed: at.licensed });
   return "refusal" in landed ? landed : { ...landed, faces };

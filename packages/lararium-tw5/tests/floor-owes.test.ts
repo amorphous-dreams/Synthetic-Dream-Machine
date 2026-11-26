@@ -111,7 +111,7 @@ describe("the fold", () => {
 
   test("RED 9: duplicate fact lines fold once (the header counts unique lines); a path holding a space rides percent-encoded", () => {
     const out = rows(["TOUCH packages/node/src/shore-verb.ts", "TOUCH packages/node/src/shore-verb.ts", "TOUCH docs/a%20b.md"]);
-    expect(out[0]).toContain("facts=2 touched=2");
+    expect(out[0]).toMatch(/^OWES facts=2 table=[0-9a-f]{64} touched=2 /);
     expect(readOwes(`${TABLE}\nTOUCH docs/a%20b.md`).facts.touched).toEqual(["docs/a b.md"]);
   });
 
@@ -141,7 +141,7 @@ describe("the fold", () => {
   test("RED 14: the table names itself by its bytes: the digest reads the table rows alone, moves with any row, and holds through blank lines and facts", () => {
     expect(sha256Hex("")).toBe("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
     expect(sha256Hex("abc")).toBe("ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
-    expect(sha256Hex("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq")).toBe("248d6a61d20638b8e5c026930855e0644e59c94fca4f2e8a4ed91a3b54d4ae7c");
+    expect(sha256Hex("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq")).toBe("248d6a61d20638b8e5c026930c3e6039a33ce45964ff2167f6ecedd419db06c1");
     const digest = tableDigestOf(TABLE);
     expect(digest).toMatch(/^[0-9a-f]{64}$/);
     expect(tableDigestOf(`\n  ${TABLE.split("\n").join("  \n\n")}\nTOUCH a\nEDGE t a\nUNREAD diff`)).toBe(digest);
@@ -166,7 +166,7 @@ describe("the operator", () => {
   test("RED 12: the operator folds the seam record with the percent-encoded facts of its second operand", () => {
     const facts = "TOUCH packages/node/src/open-vessel.ts\nTOUCH packages/node/src/[odd].ts";
     const out = run([FLOOR_SEAMS], ["runs", encodeURIComponent(facts)], { [FLOOR_SEAMS]: TABLE });
-    expect(out[0]).toContain("facts=2 touched=2 seams=1 refuse=1");
+    expect(out[0]).toMatch(/^OWES facts=2 table=[0-9a-f]{64} touched=2 seams=1 refuse=1 /);
     expect(out).toContain("SET e2e-node · trunk:boot");
     expect(run([FLOOR_SEAMS, "facts"], ["sets"], { [FLOOR_SEAMS]: TABLE, facts: "TOUCH packages/node/src/open-vessel.ts" })).toEqual(["e2e-node"]);
   });
