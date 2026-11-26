@@ -320,8 +320,8 @@ describe.skipIf(!builtExists)("the built `lares` forwards through the real shim"
       const exec = execCall(b);
       expect(exec).toBeDefined();
       const at = exec!.indexOf("packages/lares-cli/bin/lares.mjs");
-      // The shim's standing ask rides the exec's last word (the CLI's entry takes it off); the call's own argv precedes it whole.
-      expect(exec!.slice(at + 1)).toEqual([...argv, "--standing-report"]);
+      // The call's own argv rides whole and alone: the standing arrives as the image's report, asked by no word.
+      expect(exec!.slice(at + 1)).toEqual(argv);
       expect(exec).toContain("-T");
     } finally { rmSync(b.dir, { recursive: true, force: true }); }
   });
@@ -378,9 +378,9 @@ describe.skipIf(!builtExists)("the built `lares` forwards through the real shim"
       const named = exec.flatMap((a, i) => a === "-e" ? [exec[i + 1]] : []);
       // The seat mark crosses too wherever this suite itself runs under a harness: the forwarder reads its own host chain.
       const seat = ownPeerKind({}) !== "hand" ? ["CLAUDECODE"] : [];
-      // The shim's own tag rides beside them; its ask for the standing verdict rides the argv's last word, never an env name.
+      // The shim's own tag rides beside them (the image's standing report rests under it); no word and no env name asks.
       expect(named.sort()).toEqual([...seat, "LARES_DEBUG", "LARES_EXEC_TAG", "NO_COLOR", "TERM"].sort());
-      expect(exec[exec.length - 1]).toBe("--standing-report");
+      expect(exec).not.toContain("--standing-report");
       expect(exec.join(" ")).not.toMatch(/xterm-256color|s3cret|SOME_TOKEN/);
     } finally { rmSync(b.dir, { recursive: true, force: true }); }
   });
@@ -403,7 +403,7 @@ describe.skipIf(!builtExists)("the built `lares` forwards through the real shim"
       mkdirSync(join(house, "config"), { recursive: true });
       const r = spawnSync(process.execPath, [BIN, "export", "carry/b1"], { env: b.env, cwd: join(house, "config"), encoding: "utf8" });
       expect(r.status, r.stderr).toBe(0);
-      expect(execCall(b)!.slice(-3)).toEqual(["export", "/lar/config/carry/b1", "--standing-report"]);
+      expect(execCall(b)!.slice(-2)).toEqual(["export", "/lar/config/carry/b1"]);
       const b2 = bench();
       try {
         const out = spawnSync(process.execPath, [BIN, "export", join(b2.dir, "elsewhere")], { env: b2.env, encoding: "utf8" });
@@ -453,7 +453,7 @@ describe.skipIf(!builtExists)("the built `lares` forwards through the real shim"
       const exec = execCall(b)!;
       expect(exec).toBeDefined();
       expect(exec).not.toContain("-T");
-      expect(exec.slice(-3)).toEqual(["vault", "unlock", "--standing-report"]);
+      expect(exec.slice(-2)).toEqual(["vault", "unlock"]);
     } finally { rmSync(b.dir, { recursive: true, force: true }); }
   });
 
