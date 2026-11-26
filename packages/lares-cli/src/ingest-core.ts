@@ -37,22 +37,23 @@ const BASE_ASK_MS = 60_000;
 
 /**
  * THE BASE DOOR OVER THE VERB SOCKET (`islandBaseDoor`, `@lararium/node` ingest-scan): a gesture in this process lands no base
- * by its own hand where a vessel stands. Each page of bases rides the shore's `base` act to the island that took the wave: the
- * daemon island by the `shore` verb, a wiki's island by `wiki-act` where the wave ran in one. That island's own Synced tree
- * holds its pending pins, so its answer stands for every reader. A verb that failed outright throws, and the door counts its
- * page owed.
+ * by its own hand where a vessel stands, and sends no hash: each page names carriers and files, and the island that PROJECTS
+ * the bag reads every agreement itself. Two roads reach the islands this socket reaches, the one that took the wave first:
+ * the daemon island by the `shore` verb, and a wiki's island by `wiki-act` (the wave's own wiki where it ran in one, else the
+ * active wiki). An island that holds no mirror of the bag passes the ask to the other road. A verb that failed outright
+ * throws (a seat's line refuses here: a base asks from a person's terminal), and the door counts its page owed, with why.
  */
 export function shoreBaseDoor(
   opts: Pick<SubmitIngestOpts, "did" | "inWiki" | "wiki">, tree: SyncedTree,
   run: (verb: string, args: Record<string, unknown>, did: string, o: { timeoutMs: number }) => Promise<SubmitResult> = runVerb,
 ): BaseDoor {
-  return islandBaseDoor(async (args) => {
-    const result = opts.inWiki
-      ? await run("wiki-act", { verb: "shore", args, ...(opts.wiki !== undefined ? { wiki: opts.wiki } : {}) }, opts.did, { timeoutMs: BASE_ASK_MS })
-      : await run("shore", args, opts.did, { timeoutMs: BASE_ASK_MS });
+  const read = (result: SubmitResult): Record<string, unknown> => {
     if (result.status === "error") throw new Error(result.errorMessage ?? "the daemon refused the base act and named no reason");
     return summaryOutput(result) ?? {};
-  }, tree);
+  };
+  const daemon = async (args: Record<string, unknown>) => read(await run("shore", args, opts.did, { timeoutMs: BASE_ASK_MS }));
+  const wiki = async (args: Record<string, unknown>) => read(await run("wiki-act", { verb: "shore", args, ...(opts.wiki !== undefined ? { wiki: opts.wiki } : {}) }, opts.did, { timeoutMs: BASE_ASK_MS }));
+  return islandBaseDoor(() => (opts.inWiki ? [wiki, daemon] : [daemon, wiki]), tree);
 }
 
 /**

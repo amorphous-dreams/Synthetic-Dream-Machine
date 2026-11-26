@@ -277,7 +277,7 @@ export async function cmdIngest(args: ParsedArgs, sink?: IngestSink): Promise<nu
   // R2 — a confirmed rename moved its base to the new location through the same door, with the history the source's base
   // vouched for, so the moved carrier reads `unchanged` next scan instead of re-landing.
   if (settled.bases !== undefined && settled.bases.owed > 0) {
-    console.error(`  ${settled.bases.owed} base(s) reached no owner (${settled.bases.why ?? "the island gave no answer"}): those carriers read as moved at the next scan and ask again; run \`lares ingest\` over the same source once the vessel answers`);
+    console.error(`  ${settled.bases.owed} base(s) reached no owner (${settled.bases.why ?? "the island gave no answer"}): each such carrier reads as moved at the next scan, and its base asks again then`);
   }
 
   // THE SETTLE WORD. Each carrier whose records this gesture moved causes a projection; the gesture asks the

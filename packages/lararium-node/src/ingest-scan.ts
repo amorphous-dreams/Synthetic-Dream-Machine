@@ -388,8 +388,10 @@ function headBaseOf(uri: string, head: { readonly body: string; readonly meta?: 
 }
 
 /**
- * ONE BASE A WAVE ASKS THE TREE'S OWNER TO LAND: the carrier, the file the agreement stands at, the bytes the disk held
- * there, and what the wave knows of the records side.
+ * ONE BASE A WAVE NAMES: the carrier, the file the agreement stands at, the bytes the disk held there, and what the wave
+ * knows of the records side. A caller that owns its tree lands it whole (`landBases`). The door to an island sends the
+ * carrier, the file and a rename's source alone (`islandBaseDoor`): the island reads every hash, the document and the heads
+ * itself, so nothing a caller computed lands in an island's tree.
  */
 export interface BaseAsk {
   readonly uri: string;
@@ -417,35 +419,41 @@ export interface BaseAnswer {
   readonly waiting: number;
   /** The file moved since the wave's scan: its next reader owns that observation, and nothing recorded. */
   readonly moved: number;
-  /** No owner answered (the door faulted or refused): nothing recorded, and the next wave over the file asks again. */
+  /** The island that projects the bag reads no file there (it left, or it rests where that island cannot read): nothing lands. */
+  readonly unread: number;
+  /** The island read the file and its own records, and they say different things (or it holds no such record): no agreement
+   *  stands to pin, and the gate weighs the carrier as it stands. */
+  readonly differs: number;
+  /** No owner answered (the door faulted or refused, or no island projects the bag): nothing recorded, and the next wave
+   *  over the file asks again. */
   readonly owed: number;
   /** Why the owner gave no answer, where `owed` counts any. */
   readonly why?: string;
 }
 
-const NO_BASES: BaseAnswer = { recorded: 0, kept: 0, waiting: 0, moved: 0, owed: 0 };
+const NO_BASES: BaseAnswer = { recorded: 0, kept: 0, waiting: 0, moved: 0, unread: 0, differs: 0, owed: 0 };
 const sumBases = (a: BaseAnswer, b: BaseAnswer): BaseAnswer => ({
-  recorded: a.recorded + b.recorded, kept: a.kept + b.kept, waiting: a.waiting + b.waiting, moved: a.moved + b.moved, owed: a.owed + b.owed,
+  recorded: a.recorded + b.recorded, kept: a.kept + b.kept, waiting: a.waiting + b.waiting, moved: a.moved + b.moved,
+  unread: a.unread + b.unread, differs: a.differs + b.differs, owed: a.owed + b.owed,
   ...((a.why ?? b.why) !== undefined ? { why: (a.why ?? b.why)! } : {}),
 });
 /** The asks a wave's next scan reads as agreed: taken, already named, or waiting on the owner's pin. */
 const basesAnswered = (a: BaseAnswer): number => a.recorded + a.kept + a.waiting;
 
 /**
- * LAND A WAVE'S BASES IN THE TREE ITS OWNER HOLDS (`SyncedTree`, ONE OWNER OF PENDING STATE). The island that took the wave's
- * INGEST runs this over its own tree, the one instance that holds its pending pins (the shore's `base` act); a house with no
- * island over the tree runs it over the tree the gesture opened. `doc` names the document the owner reads for the bag, where
- * it names one: a row that carries a document and heads waits pending in the owner's memory until those heads rest.
+ * LAND A WAVE'S BASES IN A TREE THE CALLER ITSELF OWNS (`SyncedTree`, ONE OWNER OF PENDING STATE): the gesture's own process,
+ * over a tree no island stands over (a tree held in memory, a rig, a caller that lends its own submit). An island never
+ * runs this on a caller's word: it reads each agreement itself (`pinAgreement`, `disk-projector.ts`; the shore's `base`
+ * act). `doc` names the document the owner reads for the bag, where it names one.
  *
- *   · THE FILE MOVED SINCE THE WAVE HASHED IT, where this reader reads it (the wave hashed it last, `baseAsksOf`; an owner in
- *     another file namespace reads nothing there and takes the wave's word): its next reader owns that observation.
+ *   · THE FILE MOVED SINCE THE WAVE HASHED IT (the wave hashed it last, `baseAsksOf`): its next reader owns that observation.
  *   · A PIN OF THE SAME AGREEMENT WAITS THERE: the ask waits with it (`metWaiting`). The pin lands the row, with its heads,
  *     once they rest; the projector's own echo meets this.
  *   · THE TREE ALREADY NAMES THE AGREEMENT, with heads or with none to add: the row stays put.
  *   · ELSE THE ROW SETS, with the owner's document and the wave's heads. A newer agreement supersedes a waiting pin.
  */
 export function landBases(tree: SyncedTree, bag: string, asks: readonly BaseAsk[], doc?: string): BaseAnswer {
-  const tally = { recorded: 0, kept: 0, waiting: 0, moved: 0, owed: 0 };
+  const tally = { recorded: 0, kept: 0, waiting: 0, moved: 0, unread: 0, differs: 0, owed: 0 };
   for (const ask of asks) {
     const now = diskHashNow(ask.file);
     if (now !== null && !digestsEqual(now, ask.disk)) { tally.moved += 1; continue; }
@@ -484,33 +492,48 @@ export function treeBaseDoor(tree: SyncedTree, doc?: string): BaseDoor {
   return { land: async (bag, asks) => landBases(tree, bag, asks, doc) };
 }
 
-/** How many bases one `base` act carries: each ask rides a few hundred bytes, well inside a verb's frame. */
+/** How many bases one `base` act carries: each names a carrier and a file, well inside a verb's frame. */
 export const BASE_PAGE = 256;
 
+/** One road to an island's shore: the `base` act out, the island's answer back. */
+export type BaseRoad = (args: Record<string, unknown>) => Promise<unknown>;
+
 /**
- * THE DOOR TO THE ISLAND THAT TOOK THE WAVE: each page of bases rides the shore's `base` act (`ask`) to the island's own tree.
- * An island that mounts no disk shore (`no-disk-shore`) holds no tree and no pin, so its bases land in the tree the gesture
- * opened. Any other refusal, or a fault, lands nothing and counts the page `owed`, with why: the door never falls back to a
- * row by its own hand, since the island's pin may wait where that row would land. After an answer the gesture's own tree
- * reads each carrier's rows afresh, so what the island landed answers the gesture's next read.
+ * THE DOOR TO THE ISLAND THAT PROJECTS THE BAG. Every island's Synced tree rests in one directory, and each island's pins
+ * live in its own memory, so a base lands only through the island whose projector mirrors its bag: that island alone holds
+ * the pin a row there would meet, and the document and heads the row vouches for. `roads` names the islands to ask for a
+ * bag, the likeliest first (the island that took the wave); an island that mounts no disk shore (`no-disk-shore`) or whose
+ * projector holds no mirror of the bag (`bag-unprojected`) passes the ask to the next road.
+ *
+ * Each page of bases rides the shore's `base` act carrying the carrier, the file and a rename's source ALONE: the island
+ * hashes the file, renders its own records and names its own document and heads (`pinAgreement`), so no hash this caller
+ * computed lands. Where no island projects the bag, where an island refuses, and where a road faults, nothing lands and the
+ * page counts `owed`, with why: the door never writes a row by its own hand. After an answer the gesture's own tree reads
+ * each carrier's rows afresh, so what the island landed answers the gesture's next read.
  */
-export function islandBaseDoor(ask: (args: Record<string, unknown>) => Promise<unknown>, tree: SyncedTree): BaseDoor {
+export function islandBaseDoor(roads: (bag: string) => readonly BaseRoad[], tree: SyncedTree): BaseDoor {
   const count = (o: Record<string, unknown>, name: string): number => (typeof o[name] === "number" && Number.isSafeInteger(o[name]) && (o[name] as number) >= 0 ? (o[name] as number) : 0);
   return {
     land: async (bag, asks) => {
+      const asked = roads(bag);
       let total = NO_BASES;
       for (let at = 0; at < asks.length; at += BASE_PAGE) {
         const page = asks.slice(at, at + BASE_PAGE);
-        let answer: BaseAnswer;
-        try {
-          const o = ((await ask({ op: "base", bag, bases: page.map((a) => ({ ...a, ...(a.heads !== undefined ? { heads: [...a.heads] } : {}) })) })) ?? {}) as Record<string, unknown>;
-          if (o["ok"] === true) answer = { recorded: count(o, "recorded"), kept: count(o, "kept"), waiting: count(o, "waiting"), moved: count(o, "moved"), owed: 0 };
-          else if (o["refusal"] === "no-disk-shore") answer = landBases(tree, bag, page);
-          else answer = { ...NO_BASES, owed: page.length, why: `${typeof o["refusal"] === "string" ? o["refusal"] : "base-answer-unread"}: ${typeof o["why"] === "string" ? o["why"] : "the island answered no base act"}` };
-        } catch (err) {
-          answer = { ...NO_BASES, owed: page.length, why: err instanceof Error ? err.message : String(err) };
+        const bases = page.map((a) => ({ uri: a.uri, file: a.file, ...(a.from !== undefined ? { from: a.from } : {}) }));
+        const owed = (why: string): BaseAnswer => ({ ...NO_BASES, owed: page.length, why });
+        let answer: BaseAnswer | null = null;
+        // A road that faulted names why, and the next road still gets asked: the island that projects the bag may stand behind it.
+        let fault: string | null = null;
+        for (const road of asked) {
+          let o: Record<string, unknown>;
+          try { o = ((await road({ op: "base", bag, bases })) ?? {}) as Record<string, unknown>; }
+          catch (err) { fault ??= err instanceof Error ? err.message : String(err); continue; }
+          if (o["ok"] === true) { answer = { ...NO_BASES, recorded: count(o, "recorded"), kept: count(o, "kept"), waiting: count(o, "waiting"), unread: count(o, "unread"), differs: count(o, "differs") }; break; }
+          if (o["refusal"] === "no-disk-shore" || o["refusal"] === "bag-unprojected") continue;
+          answer = owed(`${typeof o["refusal"] === "string" ? o["refusal"] : "base-answer-unread"}: ${typeof o["why"] === "string" ? o["why"] : "the island answered no base act"}`);
+          break;
         }
-        total = sumBases(total, answer);
+        total = sumBases(total, answer ?? owed(fault ?? `no island projects ${bag}: its bases wait for an island that mirrors it`));
         for (const a of page) { tree.reread(syncedTreeKey(bag, a.uri)); if (a.from !== undefined) tree.reread(syncedTreeKey(bag, a.from)); }
       }
       return total;
@@ -518,20 +541,19 @@ export function islandBaseDoor(ask: (args: Record<string, unknown>) => Promise<u
   };
 }
 
-/** The bases a shore `base` act names, read whole or not at all: each `{ uri, file, disk, records?, heads?, from? }`. */
-export function baseAsksNamed(value: unknown): BaseAsk[] | null {
+/** The carriers a shore `base` act names, read whole or not at all: each `{ uri, file, from? }`. Any other field a caller
+ *  sends (a hash, heads, a document) gets read by no one: the island computes each itself. */
+export function basePathsNamed(value: unknown): Array<{ readonly uri: string; readonly file: string; readonly from?: string }> | null {
   if (!Array.isArray(value)) return null;
   const filled = (v: unknown): v is string => typeof v === "string" && v !== "";
-  const asks: BaseAsk[] = [];
+  const paths: Array<{ readonly uri: string; readonly file: string; readonly from?: string }> = [];
   for (const raw of value as unknown[]) {
     if (raw === null || typeof raw !== "object" || Array.isArray(raw)) return null;
-    const { uri, file, disk, records, heads, from } = raw as Record<string, unknown>;
-    if (!filled(uri) || !filled(file) || !filled(disk)) return null;
-    if ((records !== undefined && !filled(records)) || (from !== undefined && !filled(from))) return null;
-    if (heads !== undefined && headsNamed(heads) === undefined) return null;
-    asks.push({ uri, file, disk, ...(records !== undefined ? { records } : {}), ...(heads !== undefined ? { heads: heads as string[] } : {}), ...(from !== undefined ? { from } : {}) });
+    const { uri, file, from } = raw as Record<string, unknown>;
+    if (!filled(uri) || !filled(file) || (from !== undefined && !filled(from))) return null;
+    paths.push({ uri, file, ...(from !== undefined ? { from } : {}) });
   }
-  return asks;
+  return paths;
 }
 
 /**
@@ -1704,6 +1726,7 @@ async function folderWave(
   // the island's pending pin, and one that reached no owner, each get named here, and the shore counts the pins that wait.
   const bases = settled.bases;
   if (bases !== undefined && bases.waiting > 0) log(`${bases.waiting} base(s) from ${folder.label} wait on the island's pending pin until its heads rest; \`lares shore flush\` names each pin that waits`);
+  if (bases !== undefined && bases.unread + bases.differs > 0) log(`${bases.unread + bases.differs} base(s) from ${folder.label} pinned nothing: the island that projects ${folder.bag} read ${bases.differs} carrier(s) whose file and records differ and ${bases.unread} file(s) it could not read; its gate weighs each as it stands`);
   if (bases !== undefined && bases.owed > 0) log(`${bases.owed} base(s) from ${folder.label} reached no owner (${bases.why ?? "the island gave no answer"}); the next wave over those files asks again`);
   // A CARRIER THAT STOOD OFF GOES TO THE SHORE: the gate landed nothing for it, and the projector raises its keyed alert.
   for (const c of settled.conflicts) { sense.push(c.uri); log(`stands off: ${c.uri} (${c.why}); \`lares shore\` names it with its key`); }
